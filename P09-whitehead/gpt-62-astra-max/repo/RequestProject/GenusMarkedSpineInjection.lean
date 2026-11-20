@@ -6,8 +6,6 @@ public import RequestProject.GenusWordInjection
 @[expose] public section
 
 /-! Structural injectivity for substitution by the actual finite surviving spine. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -17,16 +15,18 @@ variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (q : ℕ) [NeZero q] (u : Fin q × Bool → FreeGroup α)
 
 /-- Genuine finite spine relators with arbitrary prescribed old words substituted. -/
-noncomputable def finiteSpineWordBlock (s : PUnit.{1}) (m : NamedSpineRel q) :
-    FreeGroup (α ⊕ SpinePresentationGen q) :=
+noncomputable def finiteSpineWordBlock (s : PUnit.{1}) (m : NamedSpineRel q) :=
   blockSubst (Zt := fun _ : PUnit.{1} => SpinePresentationGen q) (fun _ => u) s
     (markedSpineBeta q m)
+
+/-- The presentation after the finite spine substitution. -/
+noncomputable abbrev spineSubstitution := substPresF ρ (finiteSpineWordBlock q u)
 
 variable (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
 include hrho in
 theorem finiteSpineWordBlock_filled : FilledF ρ (finiteSpineWordBlock q u) :=
-  markedSpine_filled q ρ (fun _ => u) (fun s => by cases s; exact hrho)
+  markedSpine_filled q ρ (fun _ => u) (fun s => hrho)
 
 /-- The structural inclusion is injective for the actual finite spine and arbitrary words. -/
 theorem finiteSpineWordBlock_injective :
@@ -36,7 +36,7 @@ theorem finiteSpineWordBlock_injective :
   let ep := namedPres ρ q u
   let aa := namedA (α := α) q
   let bb := namedB (α := α) q
-  have he : ep (Sum.inr PUnit.unit) = FreeGroup.mk (surfWord aa bb q) :=
+  have he :=
     namedPres_surface ρ q u
   let ww := genusW ep aa bb q
   let att := genusAtt ep aa bb q
@@ -44,7 +44,7 @@ theorem finiteSpineWordBlock_injective :
   let base := baseToQuotientW ep ww hh att
   let incl := SurfaceWordExpansion.inclusion ρ u (finitePairs q) hrho
   let j := base.comp incl
-  have hj : Function.Injective j :=
+  have hj :=
     (baseToQuotientW_injective ep ww hh att).comp
       (SurfaceWordExpansion.groupEquiv ρ u (finitePairs q) hrho).injective
   letI : Nonempty (GenusVertex q) := ⟨cV (gc q) (cyc (8 * q) 0)⟩
@@ -53,7 +53,7 @@ theorem finiteSpineWordBlock_injective :
   let recv := (blockToQW ww att (gBase q) [] T (genus_hcb ep aa bb q)).comp
     (pi1Conj (T.treePath_isPath (posQCube (gBase q))))
   apply markedSpine_substitution_injective q ρ (fun _ => u)
-    (fun s => by cases s; exact hrho) j hj (fun _ => recv)
+    (fun s => hrho) j hj (fun _ => recv)
   intro s x
   rw [spineMarkedLoop_toOld_class]
   change blockToQW ww att (gBase q) [] T (genus_hcb ep aa bb q)
@@ -74,6 +74,6 @@ theorem finiteSpineWordBlock_injective :
     rw [show lw x = [(Sum.inr x, true)] from namedLw_eq q PUnit.unit x]
     rfl
   rw [hnames]
-  exact congrArg base (SurfaceWordExpansion.name_eq_word ρ u (finitePairs q) x)
+  solve_by_elim [SurfaceWordExpansion.name_eq_word]
 
 end FiniteChains.Davis.Genus

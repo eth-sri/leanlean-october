@@ -1,14 +1,11 @@
 module
 
 public import RequestProject.ChamberZCoverDegreeGeneration
-public import RequestProject.OrderNormalizationSupport
+
 
 @[expose] public section
 
 /-! Genuine finite cellular two-cycle generation in the actual covering poset. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
@@ -29,8 +26,7 @@ theorem exists_cover_base_cellular_cycle (hf : IsPosetCover f)
     ((ordNerveChain2_cycle_iff z).mpr hz)
   let c := lengthProjection 3 c₀
   let y := lengthProjection 4 y₀
-  have hc : c ∈ IncOn (fun p => InZBase (f p)) := lengthProjection_mem_incOn _ hc₀
-  have hy : y ∈ Nerve.Inc P := lengthProjection_mem_inc _ hy₀
+  have hc : c ∈ IncOn _ := lengthProjection_mem_incOn _ hc₀
   have hdc : Nerve.bdry c = 0 := by
     dsimp only [c]
     rw [← lengthProjection_bdry, hdc₀, map_zero]
@@ -42,13 +38,11 @@ theorem exists_cover_base_cellular_cycle (hf : IsPosetCover f)
     rw [ordNerveChain2_decode (incOn_le_inc _ hc)]
     exact lengthProjection_idempotent _ _
   have hey : ordNerveChain3 (decodeOrdNerve3 y) = y := by
-    rw [ordNerveChain3_decode hy]
+    rw [ordNerveChain3_decode (lengthProjection_mem_inc _ hy₀)]
     exact lengthProjection_idempotent _ _
   refine ⟨decodeOrdNerve2 c, decodeOrdNerve2_supported hc, ?_, decodeOrdNerve3 y, ?_⟩
-  · apply (ordNerveChain2_cycle_iff _).mp
-    rw [hec, hdc]
+  · apply (ordNerveChain2_cycle_iff _).mp <;> simp_all
   · apply ordNerveChain2_injective
-    rw [map_add, hec, ordNerveChain2_ordBoundary3, hey]
-    exact he
+    simp_all [map_add, hec, ordNerveChain2_ordBoundary3, hey]
 
 end FiniteChains.Davis

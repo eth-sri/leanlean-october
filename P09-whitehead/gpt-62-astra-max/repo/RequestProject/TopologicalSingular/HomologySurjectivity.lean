@@ -8,21 +8,20 @@ public import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory
 
+variable {S T : ShortComplex (ModuleCat ℤ)}
+    (φ : S ⟶ T)
+    (h : ∀ c : T.X₂, T.g c = 0 → ∃ z : S.X₂, S.g z = 0 ∧ ∃ b : T.X₁, T.f b = c - φ.τ₂ z)
+include S T h
+
 /-- Representatives up to actual boundaries suffice to prove surjectivity
 of Mathlib's canonical homology map. -/
-theorem shortComplex_homologyMap_surjective_of_representatives
-    {S T : ShortComplex (ModuleCat ℤ)} (φ : S ⟶ T)
-    (h : ∀ c : T.X₂, T.g c = 0 →
-      ∃ z : S.X₂, S.g z = 0 ∧ ∃ b : T.X₁, T.f b = c - φ.τ₂ z) :
+theorem shortComplex_homologyMap_surjective_of_representatives :
     Function.Surjective (ShortComplex.homologyMap φ) := by
   intro q
   obtain ⟨y, hy⟩ := (ModuleCat.epi_iff_surjective T.homologyπ).mp inferInstance q
-  have hyz : T.g (T.iCycles y) = 0 := by
-    exact congrArg (fun f => f y) T.iCycles_g
-  obtain ⟨z, hz, b, hb⟩ := h (T.iCycles y) hyz
-  let z' : S.cycles := S.moduleCatCyclesIso.inv ⟨z, hz⟩
-  have hzi : S.iCycles z' = z := by
-    exact congrArg (fun f => f ⟨z, hz⟩) S.moduleCatCyclesIso_inv_iCycles
+  obtain ⟨z, hz, b, hb⟩ := h (T.iCycles y) (congrArg (fun f => f y) T.iCycles_g)
+  let z' := S.moduleCatCyclesIso.inv ⟨z, hz⟩
+  have hzi : S.iCycles z' = z := congrArg (fun f => f ⟨z, hz⟩) S.moduleCatCyclesIso_inv_iCycles
   refine ⟨S.homologyπ z', ?_⟩
   apply (ModuleCat.mono_iff_injective T.homologyι).mp inferInstance
   rw [← hy]
@@ -34,13 +33,9 @@ theorem shortComplex_homologyMap_surjective_of_representatives
   rw [hmap, hπ, hzi]
   apply (T.moduleCat_pOpcycles_eq_iff _ _).mpr
   refine ⟨-b, ?_⟩
-  rw [map_neg, hb]
-  abel
+  simp [map_neg, hb]
 
-theorem shortComplex_homologyMap_epi_of_representatives
-    {S T : ShortComplex (ModuleCat ℤ)} (φ : S ⟶ T)
-    (h : ∀ c : T.X₂, T.g c = 0 →
-      ∃ z : S.X₂, S.g z = 0 ∧ ∃ b : T.X₁, T.f b = c - φ.τ₂ z) :
+theorem shortComplex_homologyMap_epi_of_representatives :
     Epi (ShortComplex.homologyMap φ) :=
   (ModuleCat.epi_iff_surjective _).mpr (shortComplex_homologyMap_surjective_of_representatives φ h)
 

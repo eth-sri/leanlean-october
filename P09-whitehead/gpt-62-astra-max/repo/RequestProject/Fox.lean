@@ -23,6 +23,8 @@ The construction is the standard one: `w ↦ ![![w, ∂w/∂x_i], ![0, 1]]` is a
 homomorphism into the units of `2 × 2` matrices over the integral group ring.
 -/
 
+noncomputable section
+
 namespace FiniteChains
 
 open MonoidAlgebra
@@ -33,7 +35,7 @@ variable {α : Type*} [DecidableEq α]
 abbrev FreeGroupRing (α : Type*) := MonoidAlgebra ℤ (FreeGroup α)
 
 /-- The image of a group element in the group ring. -/
-noncomputable def grp (g : FreeGroup α) : FreeGroupRing α := MonoidAlgebra.of ℤ (FreeGroup α) g
+def grp (g : FreeGroup α) := MonoidAlgebra.of ℤ _ g
 
 omit [DecidableEq α] in
 @[simp] theorem grp_one : grp (1 : FreeGroup α) = 1 := map_one _
@@ -41,93 +43,87 @@ omit [DecidableEq α] in
 omit [DecidableEq α] in
 theorem grp_mul (g h : FreeGroup α) : grp (g * h) = grp g * grp h := map_mul _ _ _
 
+variable (g : FreeGroup α)
+
 omit [DecidableEq α] in
-@[simp] theorem grp_mul_grp_inv (g : FreeGroup α) : grp g * grp g⁻¹ = 1 := by
+@[simp] theorem grp_mul_grp_inv : grp g * grp g⁻¹ = 1 := by
   rw [← grp_mul]; simp
 
 omit [DecidableEq α] in
-@[simp] theorem grp_inv_mul_grp (g : FreeGroup α) : grp g⁻¹ * grp g = 1 := by
+@[simp] theorem grp_inv_mul_grp : grp g⁻¹ * grp g = 1 := by
   rw [← grp_mul]; simp
+
+variable (i : α)
 
 /-- The `2 × 2` matrix attached to a generator in the construction of the `i`-th Fox
 derivative: `![![x_k, δ_{ik}], ![0, 1]]`, as a unit of the matrix ring. -/
-noncomputable def foxGen (i : α) (k : α) :
+def foxGen (k : α) :
     (Matrix (Fin 2) (Fin 2) (FreeGroupRing α))ˣ where
   val := !![grp (FreeGroup.of k), if i = k then 1 else 0; 0, 1]
   inv := !![grp (FreeGroup.of k)⁻¹, -(grp (FreeGroup.of k)⁻¹ * (if i = k then 1 else 0)); 0, 1]
   val_inv := by
     ext r c
     fin_cases r <;> fin_cases c <;>
-      simp [Matrix.mul_apply, Fin.sum_univ_two]
+      simp [Matrix.mul_apply]
   inv_val := by
     ext r c
     fin_cases r <;> fin_cases c <;>
-      simp [Matrix.mul_apply, Fin.sum_univ_two]
+      simp [Matrix.mul_apply]
 
 /-- The homomorphism computing the `i`-th Fox derivative. -/
-noncomputable def foxHom (i : α) :
-    FreeGroup α →* (Matrix (Fin 2) (Fin 2) (FreeGroupRing α))ˣ :=
+def foxHom :=
   FreeGroup.lift (foxGen i)
 
-/-- The Fox derivative `∂w/∂x_i` as an element of the integral group ring. -/
-noncomputable def fox (i : α) (w : FreeGroup α) : FreeGroupRing α :=
-  ((foxHom i w : Matrix (Fin 2) (Fin 2) (FreeGroupRing α))) 0 1
+variable (w : FreeGroup α)
 
-theorem foxHom_entries (i : α) (w : FreeGroup α) :
-    (foxHom i w : Matrix (Fin 2) (Fin 2) (FreeGroupRing α)) 0 0 = grp w ∧
-    (foxHom i w : Matrix (Fin 2) (Fin 2) (FreeGroupRing α)) 1 0 = 0 ∧
-    (foxHom i w : Matrix (Fin 2) (Fin 2) (FreeGroupRing α)) 1 1 = 1 := by
+/-- The Fox derivative `∂w/∂x_i` as an element of the integral group ring. -/
+def fox :=
+  ((foxHom i w)) 0 1
+
+theorem foxHom_entries :
+    (foxHom i w) 0 0 = grp w ∧
+    (foxHom i w) 1 0 = 0 ∧
+    (foxHom i w) 1 1 = 1 := by
   induction w using FreeGroup.induction_on with
-  | one => simp [foxHom]
-  | of k => simp [foxHom, foxGen, FreeGroup.lift_apply_of]
+  | one => simp
+  | of k => simp [foxHom, foxGen]
   | inv_of k _ =>
       have : foxHom i (FreeGroup.of k)⁻¹ = (foxGen i k)⁻¹ := by
-        simp [foxHom, FreeGroup.lift_apply_of]
-      rw [this]
-      simp [foxGen, Units.inv_mk]
+        simp [foxHom]
+      simp [this, foxGen]
   | mul u v hu hv =>
-      have hmul : (foxHom i (u * v) : Matrix (Fin 2) (Fin 2) (FreeGroupRing α))
-          = (foxHom i u : Matrix (Fin 2) (Fin 2) (FreeGroupRing α)) *
-            (foxHom i v : Matrix (Fin 2) (Fin 2) (FreeGroupRing α)) := by
-        rw [map_mul]; rfl
-      refine ⟨?_, ?_, ?_⟩ <;>
-        simp [Matrix.mul_apply, Fin.sum_univ_two, hu.1, hu.2.1, hu.2.2, hv.1, hv.2.1,
-          hv.2.2, grp_mul]
+      simp_all [Matrix.mul_apply, hu.1, hu.2.1, hu.2.2, hv.1, hv.2.1, hv.2.2, grp_mul]
 
-@[simp] theorem fox_one (i : α) : fox i (1 : FreeGroup α) = 0 := by
-  simp [fox, foxHom]
+@[simp] theorem fox_one : fox i 1 = 0 := rfl
 
 /-- `∂x_k/∂x_i = δ_{ik}`. -/
 @[simp] theorem fox_of (i k : α) : fox i (FreeGroup.of k) = if i = k then 1 else 0 := by
   simp [fox, foxHom, foxGen, FreeGroup.lift_apply_of]
 
+variable (i : α)
+
 /-- The product rule `∂(uv)/∂x_i = ∂u/∂x_i + u · ∂v/∂x_i`. -/
-theorem fox_mul (i : α) (u v : FreeGroup α) :
+theorem fox_mul (u v : FreeGroup α) :
     fox i (u * v) = fox i u + grp u * fox i v := by
-  have hmul : (foxHom i (u * v) : Matrix (Fin 2) (Fin 2) (FreeGroupRing α))
-      = (foxHom i u : Matrix (Fin 2) (Fin 2) (FreeGroupRing α)) *
-        (foxHom i v : Matrix (Fin 2) (Fin 2) (FreeGroupRing α)) := by
-    rw [map_mul]; rfl
   obtain ⟨h00, h10, h11⟩ := foxHom_entries i u
   have : fox i (u * v)
-      = (foxHom i u : Matrix (Fin 2) (Fin 2) (FreeGroupRing α)) 0 0 * fox i v +
-        (foxHom i u : Matrix (Fin 2) (Fin 2) (FreeGroupRing α)) 0 1 *
-        (foxHom i v : Matrix (Fin 2) (Fin 2) (FreeGroupRing α)) 1 1 := by
-    simp [fox, Matrix.mul_apply, Fin.sum_univ_two]
-  rw [this, h00, (foxHom_entries i v).2.2, mul_one, add_comm]
-  rfl
+      = (foxHom i u) 0 0 * fox i v +
+        (foxHom i u) 0 1 *
+        (foxHom i v) 1 1 := by
+    simp [fox, Matrix.mul_apply]
+  rw [this, h00, (foxHom_entries i v).2.2, mul_one, add_comm] <;> rfl
 
-theorem fox_inv (i : α) (u : FreeGroup α) :
+theorem fox_inv (u : FreeGroup α) :
     fox i u⁻¹ = -(grp u⁻¹ * fox i u) := by
-  have h : (0 : FreeGroupRing α) = fox i u + grp u * fox i u⁻¹ := by
+  have h : 0 = fox i u + grp u * fox i u⁻¹ := by
     rw [← fox_mul i u u⁻¹]; simp
-  have h' : grp u * fox i u⁻¹ = -fox i u := eq_neg_of_add_eq_zero_right h.symm
+  have h' := eq_neg_of_add_eq_zero_right h.symm
   calc fox i u⁻¹ = grp u⁻¹ * (grp u * fox i u⁻¹) := by
-        rw [← mul_assoc, grp_inv_mul_grp, one_mul]
-    _ = -(grp u⁻¹ * fox i u) := by rw [h', mul_neg]
+        simp [← mul_assoc]
+    _ = -(grp u⁻¹ * fox i u) := by simp_all
 
 /-- The augmentation `ℤ[F] → ℤ`. -/
-noncomputable def aug : FreeGroupRing α →+* ℤ :=
+def aug :=
   (MonoidAlgebra.lift ℤ ℤ (FreeGroup α) 1).toRingHom
 
 omit [DecidableEq α] in
@@ -135,11 +131,11 @@ omit [DecidableEq α] in
   simp [aug, grp]
 
 /-- Exponent sum of the generator `i` in a word, as a group homomorphism. -/
-noncomputable def expSum (i : α) : FreeGroup α →* Multiplicative ℤ :=
+def expSum (i : α) :=
   FreeGroup.lift fun k => Multiplicative.ofAdd (if i = k then (1 : ℤ) else 0)
 
 @[simp] theorem expSum_of (i k : α) :
-    Multiplicative.toAdd (expSum i (FreeGroup.of k)) = if i = k then (1 : ℤ) else 0 := by
+    Multiplicative.toAdd (expSum i (FreeGroup.of k)) = if i = k then 1 else 0 := by
   simp [expSum, FreeGroup.lift_apply_of]
 
 /-- Augmenting the Fox derivative gives the exponent sum: this is the passage from the
@@ -148,10 +144,10 @@ theorem aug_fox (i : α) (w : FreeGroup α) :
     aug (fox i w) = Multiplicative.toAdd (expSum i w) := by
   induction w using FreeGroup.induction_on with
   | one => simp
-  | of k => simp [apply_ite (aug (α := α))]
+  | of k => simp
   | inv_of k h =>
       rw [fox_inv, map_neg, map_mul, aug_grp, one_mul, h, map_inv]
       simp
-  | mul u v hu hv => simp [fox_mul, map_mul, hu, hv]
+  | mul u v hu hv => simp [fox_mul, hu, hv]
 
 end FiniteChains

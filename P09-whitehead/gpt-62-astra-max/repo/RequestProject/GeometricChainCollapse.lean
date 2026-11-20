@@ -29,81 +29,83 @@ theorem mem_remainingTops (S : Finset T) (lp : List (T × F)) (t : T) :
     simp only [remainingTops, ih, Finset.mem_erase, List.map_cons, List.mem_cons]
     tauto
 
-theorem IsPairCollapse.suffix {left right : List (T × F)} {S : Finset T}
+theorem IsPairCollapse.suffix {left right : List _} {S : Finset T}
     (h : IsPairCollapse inc (left ++ right) S) :
     IsPairCollapse inc right (remainingTops S left) := by
   induction left generalizing S with
   | nil => exact h
   | cons p left ih => exact ih h.2.2
 
-theorem IsPairCollapse.top_mem {lp : List (T × F)} {S : Finset T}
-    (h : IsPairCollapse inc lp S) {p : T × F} (hp : p ∈ lp) : p.1 ∈ S := by
+section
+
+variable {lp : List (T × F)} {S : Finset T} (h : IsPairCollapse inc lp S)
+include S h
+
+theorem IsPairCollapse.top_mem {p : T × F} (hp : p ∈ lp) : p.1 ∈ S := by
   induction lp generalizing S with
-  | nil => simp at hp
+  | nil => simp_all
   | cons q lp ih =>
     rcases List.mem_cons.mp hp with rfl | hp
     · exact h.1
     · exact Finset.mem_of_mem_erase (ih h.2.2 hp)
 
-theorem IsPairCollapse.map_fst {lp : List (T × F)} {S : Finset T}
-    (h : IsPairCollapse inc lp S) : IsCollapse inc (lp.map Prod.fst) S := by
+theorem IsPairCollapse.map_fst : IsCollapse inc (lp.map Prod.fst) S := by
   induction lp generalizing S with
   | nil => exact h
   | cons p lp ih => exact ⟨h.1, ⟨p.2, h.2.1⟩, ih h.2.2⟩
 
-theorem IsPairCollapse.pair_inc {lp : List (T × F)} {S : Finset T}
-    (h : IsPairCollapse inc lp S) {p : T × F} (hp : p ∈ lp) : p.1 ∈ inc p.2 := by
+theorem IsPairCollapse.pair_inc {p : T × F} (hp : p ∈ lp) : p.1 ∈ inc p.2 := by
   induction lp generalizing S with
-  | nil => simp at hp
+  | nil => simp_all
   | cons q lp ih =>
     rcases List.mem_cons.mp hp with rfl | hp
     · have hm : p.1 ∈ inc p.2 ∩ S := by
         rw [h.2.1]
         exact Finset.mem_singleton_self _
-      exact (Finset.mem_inter.mp hm).1
+      simp_all
     · exact ih h.2.2 hp
 
+end
+
 /-- No later top cell meets the face deleted by the first elementary collapse. -/
-theorem IsPairCollapse.later_top_not_inc {t : T} {f : F} {lp : List (T × F)}
+theorem IsPairCollapse.later_top_not_inc {t : T} {f : F} {lp : List _}
     {S : Finset T} (h : IsPairCollapse inc ((t, f) :: lp) S)
     {p : T × F} (hp : p ∈ lp) : p.1 ∉ inc f := by
   intro hi
   have hs := h.2.2.top_mem hp
   have hm := Finset.mem_inter.mpr ⟨hi, Finset.mem_of_mem_erase hs⟩
-  rw [h.2.1] at hm
-  exact (Finset.mem_erase.mp hs).1 (Finset.mem_singleton.mp hm)
+  rw [h.2.1] at hm <;> simp_all
 
 /-- Earlier deleted faces never occur on the boundary of any later top cell. -/
-theorem IsPairCollapse.prefix_faces_avoid_suffix_tops {left right : List (T × F)}
+theorem IsPairCollapse.prefix_faces_avoid_suffix_tops {left right : List _}
     {S : Finset T} (h : IsPairCollapse inc (left ++ right) S)
     {p r : T × F} (hp : p ∈ left) (hr : r ∈ right) : r.1 ∉ inc p.2 := by
   induction left generalizing S with
-  | nil => simp at hp
+  | nil => simp_all
   | cons a left ih =>
     rcases List.mem_cons.mp hp with rfl | hp
     · exact h.later_top_not_inc (List.mem_append.mpr (Or.inr hr))
     · exact ih h.2.2 hp
 
-theorem IsPairCollapse.covers {lp : List (T × F)} {S : Finset T}
+theorem IsPairCollapse.covers {lp : List _} {S : Finset T}
     (h : IsPairCollapse inc lp S) {t : T} (ht : t ∈ S) : ∃ f, (t, f) ∈ lp := by
   have hm := mem_list_of_isCollapse h.map_fst t ht
-  obtain ⟨p, hp, he⟩ := List.mem_map.mp hm
-  exact ⟨p.2, by simpa only [← he, Prod.eta] using hp⟩
+  grind
 
 /-- Choose the free faces without losing their geometric certificates. -/
 theorem exists_pairCollapse {l : List T} {S : Finset T} (h : IsCollapse inc l S) :
-    ∃ lp : List (T × F), lp.map Prod.fst = l ∧ IsPairCollapse inc lp S := by
+    ∃ lp : List _, IsPairCollapse inc lp S := by
   induction l generalizing S with
-  | nil => exact ⟨[], rfl, h⟩
+  | nil => exact ⟨[], h⟩
   | cons t l ih =>
     obtain ⟨ht, ⟨f, hf⟩, hr⟩ := h
-    obtain ⟨lp, hm, hp⟩ := ih hr
-    exact ⟨(t, f) :: lp, by simp [hm], ht, hf, hp⟩
+    obtain ⟨lp, hp⟩ := ih hr
+    exact ⟨(t, f) :: lp, ht, hf, hp⟩
 
 /-- A genuine free-face collapse is also an oriented chain collapse whenever the
 differential has unit incidences and vanishes outside actual face incidences. -/
 theorem IsPairCollapse.chainCollapse {R : Type*} [Ring R]
-    {d : T → F → R} {tops S : Finset T} {lp : List (T × F)}
+    {d : T → F → R} {tops S : Finset T} {lp : List _}
     (hunit : ∀ t ∈ tops, ∀ f, t ∈ inc f → IsUnit (d t f))
     (hzero : ∀ t ∈ tops, ∀ f, t ∉ inc f → d t f = 0)
     (hS : S ⊆ tops) (h : IsPairCollapse inc lp S) : CollapseChain.IsChainCollapse d lp := by
@@ -114,7 +116,7 @@ theorem IsPairCollapse.chainCollapse {R : Type*} [Ring R]
       have hm : p.1 ∈ inc p.2 ∩ S := by
         rw [h.2.1]
         exact Finset.mem_singleton_self _
-      exact (Finset.mem_inter.mp hm).1
+      simp_all
     refine ⟨hunit p.1 (hS h.1) p.2 hpinc, ?_,
       ih (fun t ht => hS (Finset.mem_of_mem_erase ht)) h.2.2⟩
     intro q hq
@@ -122,58 +124,10 @@ theorem IsPairCollapse.chainCollapse {R : Type*} [Ring R]
     apply hzero q.1 (hS (Finset.mem_of_mem_erase hqS)) p.2
     intro hqi
     have hqt : q.1 = p.1 := by
-      have hm : q.1 ∈ inc p.2 ∩ S :=
+      have hm :=
         Finset.mem_inter.mpr ⟨hqi, Finset.mem_of_mem_erase hqS⟩
       rw [h.2.1] at hm
       exact Finset.mem_singleton.mp hm
-    exact (Finset.mem_erase.mp hqS).1 hqt
+    simp_all
 
 end FiniteChains.Collapse
-
-namespace FiniteChains
-variable {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
-
-/-- Both geometric and chain certificates for the very same chosen cubical collapse. -/
-theorem exists_geometric_chainCollapse {L : ASC V} {l : List (Cube V)}
-    {S : Finset (Cube V)} (hS : S ⊆ topCubes L)
-    (h : Collapse.IsCollapse (spineInc L) l S) :
-    ∃ lp : List (Cube V × (Cube V ⊕ Finset V)), lp.map Prod.fst = l ∧
-      Collapse.IsPairCollapse (spineInc L) lp S ∧
-      CollapseChain.IsChainCollapse (cubeBdry (V := V)) lp := by
-  obtain ⟨lp, hm, hp⟩ := Collapse.exists_pairCollapse h
-  refine ⟨lp, hm, hp, hp.chainCollapse ?_ ?_ hS⟩
-  · intro t ht f htf
-    cases f with
-    | inl g =>
-      by_cases hg : (freeSet g).card = 2
-      · rw [spineInc, if_pos hg] at htf
-        rcases cubeBdry_inl_eq_unit htf with h | h <;> rw [h] <;> simp
-      · simp [spineInc, hg] at htf
-    | inr σ =>
-      by_cases hσ : IsTri L σ
-      · rw [spineInc, if_pos hσ, Finset.mem_singleton] at htf
-        subst t
-        rw [cubeBdry_inr_eq_neg_one hσ.2]
-        simp
-      · simp [spineInc, hσ] at htf
-  · intro t ht f htf
-    cases f with
-    | inl g =>
-      apply cubeBdry_inl_eq_zero ht
-      intro hg
-      have hcard : (freeSet g).card = 2 := by
-        obtain ⟨j, hj, _, he⟩ := mem_cofaces.mp hg
-        have hfree : freeSet t = insert j (freeSet g) := by
-          rw [he]
-          exact freeSet_update_free g j
-        have htop := (mem_topCubes.mp ht).2
-        rw [hfree, Finset.card_insert_of_notMem (by simpa [mem_freeSet] using hj)] at htop
-        omega
-      exact htf (by simpa [spineInc, hcard] using hg)
-    | inr σ =>
-      apply cubeBdry_inr_eq_zero
-      intro he
-      have hσ : IsTri L σ := by simpa [he] using mem_topCubes.mp ht
-      exact htf (by simp [spineInc, hσ, he])
-
-end FiniteChains

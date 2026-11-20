@@ -29,7 +29,7 @@ theorem qOld_baseStar_unmixed (p r : Qpos A X att) (h : p ≤ r) :
   cases p with
   | inl c =>
     cases r with
-    | inl d => exact Or.inl ⟨trivial, trivial⟩
+    | inl d => solve_by_elim
     | inr y => exact False.elim h
   | inr x =>
     cases r with

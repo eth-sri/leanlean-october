@@ -10,7 +10,7 @@ universe u
 variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 
 /-- The two orders of inserting the missing coordinates give the same face. -/
-theorem simplex_double_face_swap (i : Fin (n + 3)) (k : Fin (n + 2)) (q : Domain n) :
+theorem simplex_double_face_swap (i : Fin _) (k : Fin _) (q : Domain n) :
     stdSimplex.map (SimplexCategory.δ i) (stdSimplex.map (SimplexCategory.δ k) q) =
       stdSimplex.map (SimplexCategory.δ (i.succAbove k))
         (stdSimplex.map (SimplexCategory.δ (k.predAbove i)) q) := by
@@ -21,10 +21,10 @@ theorem simplex_double_face_swap (i : Fin (n + 3)) (k : Fin (n + 2)) (q : Domain
       (i.succAbove k).succAbove ∘ (k.predAbove i).succAbove := by
     funext a
     exact (Fin.succAbove_succAbove_succAbove_predAbove i k a).symm
-  rw [he]
+  simp [he]
 
-theorem singular_double_face_swap (tau : Simplex X (n + 2))
-    (i : Fin (n + 3)) (k : Fin (n + 2)) :
+theorem singular_double_face_swap (tau : Simplex X _)
+    (i : Fin _) (k : Fin (n + 2)) :
     face k (face i tau) = face (k.predAbove i) (face (i.succAbove k) tau) := by
   apply ContinuousMap.ext
   intro q
@@ -32,10 +32,10 @@ theorem singular_double_face_swap (tau : Simplex X (n + 2))
 
 /-- A point in two different faces comes from one common codimension-two face,
 with a single parameter in the lower-dimensional simplex. -/
-theorem simplex_face_intersection_factor (i j : Fin (n + 3)) (hij : i ≠ j)
-    (z w : Domain (n + 1))
+theorem simplex_face_intersection_factor (i j : Fin _) (hij : i ≠ j)
+    (z w : Domain _)
     (h : stdSimplex.map (SimplexCategory.δ i) z = stdSimplex.map (SimplexCategory.δ j) w) :
-    ∃ (k l : Fin (n + 2)) (q : Domain n),
+    ∃ (k l : Fin _) (q : Domain n),
       z = stdSimplex.map (SimplexCategory.δ k) q ∧
       w = stdSimplex.map (SimplexCategory.δ l) q ∧
       ∀ a : Domain n,
@@ -49,8 +49,6 @@ theorem simplex_face_intersection_factor (i j : Fin (n + 3)) (hij : i ≠ j)
   have he (a : Domain n) := simplex_double_face_swap i k a
   rw [hk] at he
   refine ⟨k, k.predAbove i, q, hq.symm, ?_, he⟩
-  apply simplex_face_injective j
-  rw [← h, ← hq]
-  exact he q
+  apply simplex_face_injective j <;> grind
 
 end FiniteChains.TopologicalSingular

@@ -43,21 +43,14 @@ theorem cw_pathComponent_isClopen (x : X) : IsClopen (pathComponent x) := by
     · exact Or.inr (Set.disjoint_iff_inter_eq_empty.mpr (Set.not_nonempty_iff_eq_empty.mp h))
   refine ⟨isClosed_of_closedCell_constant (pathComponent x) hcell, ?_⟩
   apply isClosed_compl_iff.mp
-  apply isClosed_of_closedCell_constant
-  intro n j
-  rcases hcell n j with h | h
-  · right
-    exact Set.disjoint_left.mpr (fun _ hy hz => hz (h hy))
-  · left
-    intro y hy hz
-    exact Set.disjoint_left.mp h hy hz
+  apply isClosed_of_closedCell_constant <;> grind
 
 /-- Connected classical CW complexes are actually path connected. -/
 theorem cw_pathConnectedSpace [ConnectedSpace X] : PathConnectedSpace X where
   nonempty := inferInstance
   joined x y := by
     have h := (cw_pathComponent_isClopen x).eq_univ (pathComponent.nonempty x)
-    exact (show y ∈ pathComponent x from by rw [h]; trivial)
+    exact (show y ∈ pathComponent x from by simp_all)
 
 theorem zeroSkeleton_cellSeparated :
     CellSeparated (CWComplex.skeletonLT (Set.univ : Set X) (1 : ℕ∞) : Set X) := by
@@ -65,8 +58,7 @@ theorem zeroSkeleton_cellSeparated :
   by_cases hn : n = 0
   · subst n
     exact (Set.subsingleton_singleton (a := RelCWComplex.map 0 j ![])).anti (by
-      intro x hx
-      simpa only [CWComplex.openCell_zero_eq_singleton] using hx.2)
+      simp [CWComplex.openCell_zero_eq_singleton])
   · intro x hx y hy
     exact False.elim (Set.disjoint_left.mp
       (CWComplex.disjoint_skeletonLT_openCell (C := (Set.univ : Set X)) (j := j)
@@ -93,7 +85,7 @@ theorem zeroCellPoint_bijective : Function.Bijective (zeroCellPoint (X := X)) :=
       rfl
     have hlabel := RelCWComplex.eq_of_not_disjoint_openCell
       (fun hd => Set.disjoint_left.mp hd hi hj)
-    exact eq_of_heq (Sigma.mk.inj_iff.mp hlabel).2
+    simp_all
   · intro x
     have hx := x.property
     change x.val ∈ (CWComplex.skeletonLT (Set.univ : Set X) (1 : ℕ∞) : Set X) at hx
@@ -104,7 +96,7 @@ theorem zeroCellPoint_bijective : Function.Bijective (zeroCellPoint (X := X)) :=
     subst n
     refine ⟨j, Subtype.ext ?_⟩
     exact (show x.val = vertexPoint j from by
-      simpa only [CWComplex.openCell_zero_eq_singleton, Set.mem_singleton_iff, vertexPoint] using hj).symm
+      simp_all [CWComplex.openCell_zero_eq_singleton, Set.mem_singleton_iff, vertexPoint]).symm
 
 /-- The literal original zero-cells label the vertices bijectively. -/
 def zeroCellEquiv : RelCWComplex.cell (Set.univ : Set X) 0 ≃
@@ -128,14 +120,14 @@ theorem oneSkeleton_pathConnectedSpace : PathConnectedSpace (OneSkeleton K) wher
 
 abbrev originalGraphAttaching := skeletonAttachingMap (Set.univ : Set K) 1
 
-def originalGraph : Comb.Complex2 := graphCx (originalGraphAttaching K)
+def originalGraph := graphCx (originalGraphAttaching K)
 
 theorem originalGraph_isConnected : Comb.IsConnected (originalGraph K) := by
   letI := zeroSkeleton_discrete (X := K)
   letI : PathConnectedSpace (SkeletonCarrier (Set.univ : Set K) 2) :=
     oneSkeleton_pathConnectedSpace K
   let e := skeletonAsDiskAttachment (Set.univ : Set K) 1
-  letI : PathConnectedSpace (DiskAttachment (originalGraphAttaching K)) :=
+  letI :=
     e.surjective.pathConnectedSpace e.continuous
   exact graphCx_isConnected (originalGraphAttaching K) (originalGraphAttaching K).continuous
 

@@ -14,10 +14,6 @@ All algebraic chain assertions retain finite support. Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains.RelativeNormalForm
 open Davis Davis.Genus BlockFamily
 
@@ -53,33 +49,27 @@ def nextPredicate (p : S → Prop) : NextExtraCell core hcore extra → Prop
 
 theorem nextPredicate_mono {p t : S → Prop} (h : ∀ s, p s → t s) :
     ∀ s, nextPredicate core hcore extra p s → nextPredicate core hcore extra t s := by
-  intro s hs
-  cases s with
-  | inl m => exact h m.1 hs
-  | inr k => exact hs.elim
+  aesop
 
-def stageNextGen (p : S → Prop) :
+variable (p : S → Prop)
+
+def stageNextGen :
     (PairGen A Z ⊕ (Σ s : {s // p s}, SpinePresentationGen
       (restrictedGenus core hcore extra p s))) → A ⊕ NextExtraGen core hcore extra
   | Sum.inl (Sum.inl a) => Sum.inl a
   | Sum.inl (Sum.inr z) => Sum.inr (Sum.inl z)
   | Sum.inr s => Sum.inr (Sum.inr ⟨s.1.val, s.2⟩)
 
-theorem stageNextGen_injective (p : S → Prop) :
+theorem stageNextGen_injective :
     Function.Injective (stageNextGen core hcore extra p) := by
   rintro (a | ⟨s, x⟩) (b | ⟨t, y⟩) h
-  · cases a <;> cases b <;> simp_all [stageNextGen, NextExtraGen]
-  · cases a <;> simp [stageNextGen] at h <;> cases h
-  · cases b <;> simp [stageNextGen] at h <;> cases h
-  · have hh : (⟨s.val, x⟩ : Σ s, SpinePresentationGen
-        (normalizedGenus core hcore extra s)) = ⟨t.val, y⟩ := Sum.inr.inj (Sum.inr.inj h)
-    have hs : s = t := Subtype.ext (congrArg Sigma.fst hh)
-    subst t
-    have hx : x = y := eq_of_heq (Sigma.mk.inj hh).2
-    subst y
-    rfl
+  · grind [stageNextGen, NextExtraGen]
+  · grind [stageNextGen]
+  · grind [stageNextGen]
+  · have hh := Sum.inr.inj (Sum.inr.inj h)
+    grind
 
-def stageNextCell (p : S → Prop) :
+def stageNextCell :
     (C ⊕ (Σ s : {s // p s}, NamedSpineRel (restrictedGenus core hcore extra p s))) ≃
       (C ⊕ {s // nextPredicate core hcore extra p s}) where
   toFun
@@ -89,18 +79,15 @@ def stageNextCell (p : S → Prop) :
     | Sum.inl c => Sum.inl c
     | Sum.inr ⟨Sum.inl ⟨s, m⟩, hs⟩ => Sum.inr ⟨⟨s, hs⟩, m⟩
     | Sum.inr ⟨Sum.inr _, hs⟩ => hs.elim
-  left_inv := by rintro (c | ⟨⟨s, hs⟩, m⟩) <;> rfl
+  left_inv := by grind
   right_inv := by
-    rintro (c | ⟨⟨s, m⟩ | k, hs⟩)
-    · rfl
-    · rfl
-    · exact hs.elim
+    rintro (c | ⟨⟨s, m⟩ | k, hs⟩) <;> aesop
 
-def nextStage (p : S → Prop) :=
+def nextStage :=
   rawPresentation core (restrictedExtra (nextExtra core hcore extra)
     (nextPredicate core hcore extra p))
 
-theorem stageNext_rel (p : S → Prop)
+theorem stageNext_rel
     (j : C ⊕ (Σ s : {s // p s}, NamedSpineRel (restrictedGenus core hcore extra p s))) :
     nextStage core hcore extra p (stageNextCell core hcore extra p j) =
       FreeGroup.map (stageNextGen core hcore extra p)
@@ -113,8 +100,7 @@ theorem stageNext_rel (p : S → Prop)
       have hm : ((FreeGroup.map (stageNextGen core hcore extra p)).comp
           (FreeGroup.map Sum.inl)).comp (FreeGroup.map Sum.inl) = FreeGroup.map Sum.inl := by
         apply FreeGroup.ext_hom
-        intro a
-        rfl
+        solve_by_elim
       exact (DFunLike.congr_fun hm (core c)).symm
   | inr m =>
       have hm : (FreeGroup.map (stageNextGen core hcore extra p)).comp
@@ -132,25 +118,15 @@ theorem stageNext_rel (p : S → Prop)
         (familyFiniteSpineWordBlock (restrictedGenus core hcore extra p)
           (restrictedLoops core hcore extra p) m.1 m.2)).symm
 
-def stageNextMap (p : S → Prop) :
-    PresMorFS (restrictedBlockPresentation core hcore extra p) (nextStage core hcore extra p) :=
+def stageNextMap :=
   PresInclusionFS.mor _ _ (stageNextGen core hcore extra p) (stageNextCell core hcore extra p)
     (stageNextGen_injective core hcore extra p) (stageNextCell core hcore extra p).injective
     (stageNext_rel core hcore extra p)
 
-theorem stageNextMap_generates (p : S → Prop) : FSGenerates (stageNextMap core hcore extra p) :=
+theorem stageNextMap_generates : FSGenerates (stageNextMap core hcore extra p) :=
   PresInclusionFS.paddingRelabel_generates _ _ (stageNextGen core hcore extra p)
     (stageNextGen_injective core hcore extra p) (stageNextCell core hcore extra p)
     (stageNext_rel core hcore extra p)
-
-theorem nextStage_cockcroft (p : S → Prop)
-    (hp : FSIsCockcroft (rawPresentation core (restrictedExtra extra p))) :
-    FSIsCockcroft (nextStage core hcore extra p) := by
-  apply fsIsCockcroft_of_generates (stageNextMap core hcore extra p)
-    (stageNextMap_generates core hcore extra p)
-  apply fsIsCockcroft_of_generates (restrictedStructuralMap core hcore extra p)
-    (restrictedStructuralMap_generates core hcore extra p)
-  exact normalizedPresentation_cockcroft core hcore (restrictedExtra extra p) hp
 
 variable {p t : S → Prop} (hpt : ∀ s, p s → t s)
 
@@ -161,9 +137,7 @@ theorem nextStage_square
     (rawInclusion core (nextExtra core hcore extra)
       (nextPredicate_mono core hcore extra hpt)).cells ((stageNextMap core hcore extra p).cells x) =
     (stageNextMap core hcore extra t).cells ((blockInclusion core hcore extra hpt).cells x) := by
-  apply PresInclusionFS.square_cells
-  · rintro ((a | z) | s) <;> rfl
-  · rintro (c | s) <;> rfl
+  apply PresInclusionFS.square_cells <;> aesop
 
 theorem nextStage_preserves_zero
     (hzero : ∀ x, FSIsFoxCycle (rawPresentation core (restrictedExtra extra p)) x →
@@ -175,8 +149,7 @@ theorem nextStage_preserves_zero
     (stageNextMap core hcore extra t) (blockInclusion core hcore extra hpt)
     (rawInclusion core (nextExtra core hcore extra) (nextPredicate_mono core hcore extra hpt))
     (nextStage_square core hcore extra hpt) ?_ (stageNextMap_generates core hcore extra p) hx
-  intro y hy
-  exact relativeReplacement_preserves_zero core hcore extra hpt hzero hy
+  apply relativeReplacement_preserves_zero <;> assumption
 
 theorem nextStage_strict (s : S) (hs : t s) (hsp : ¬ p s) :
     ∃ m, nextPredicate core hcore extra t m ∧ ¬ nextPredicate core hcore extra p m := by

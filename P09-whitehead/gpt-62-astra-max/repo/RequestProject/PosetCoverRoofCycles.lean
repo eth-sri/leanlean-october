@@ -14,9 +14,8 @@ variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] {f : P → Q}
 theorem strict_oneCycle_cover_roof (hf : IsPosetCover f) (g : Q → Q)
     (hmono : Monotone g) (hg : ∀ q, g q ≤ q) (b : Q) (hb : ∀ q, g q ≤ b)
     (c : StrictOrdEdge P →₀ ℤ) (hc : bdry1 (strictOrderCx P) c = 0) :
-    ∃ y : StrictOrdTri P →₀ ℤ, bdry2 (strictOrderCx P) y = c := by
-  exact strict_oneCycle_boundary_of_roof_collapse
-    (hf.downTransform g hg) (hf.roofTransform g hg b hb)
+    ∃ y : StrictOrdTri P →₀ ℤ, bdry2 (strictOrderCx P) y = c := strict_oneCycle_boundary_of_roof_collapse
+    _ _
     (hf.downTransform_monotone g hmono hg)
     (hf.roofTransform_monotone g hg b hb hmono)
     (hf.downTransform_le g hg)

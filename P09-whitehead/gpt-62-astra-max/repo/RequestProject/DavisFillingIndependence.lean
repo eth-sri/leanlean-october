@@ -11,20 +11,20 @@ open RACG Mirror Comb
 universe u
 variable {V : Type u} [DecidableEq V] [Fintype V]
 
-/-- Two fillings of the same cover chain differ by an actual lifted three-boundary. -/
-theorem fillings_difference_boundary3 (A : CommRel V) (b : QCube A)
+variable (A : CommRel V)
+    (b : QCube A)
     (c d : (uCover (orderCx (QCube A)) b).F →₀ ℤ)
-    (h : Comb.bdry2 (uCover (orderCx (QCube A)) b) c =
-      Comb.bdry2 (uCover (orderCx (QCube A)) b) d) :
+    (h : Comb.bdry2 (uCover (orderCx (QCube A)) b) c = Comb.bdry2 (uCover (orderCx (QCube A)) b) d)
+include h
+
+/-- Two fillings of the same cover chain differ by an actual lifted three-boundary. -/
+theorem fillings_difference_boundary3 :
     ∃ y : UOrdTet (QCube A) b →₀ ℤ, uOrdBoundary3 y = c - d := by
   apply exists_universal_bdry3_of_cycle_qCube A b
-  rw [map_sub, h, sub_self]
+  simp_all
 
 /-- Projected fillings of the same lifted boundary differ by an ordinary three-boundary. -/
-theorem projected_fillings_difference_boundary3 (A : CommRel V) (b : QCube A)
-    (c d : (uCover (orderCx (QCube A)) b).F →₀ ℤ)
-    (h : Comb.bdry2 (uCover (orderCx (QCube A)) b) c =
-      Comb.bdry2 (uCover (orderCx (QCube A)) b) d) :
+theorem projected_fillings_difference_boundary3 :
     ∃ y : OrdTet (QCube A) →₀ ℤ,
       ordBoundary3 y = hurewicz (orderCx (QCube A)) b c -
         hurewicz (orderCx (QCube A)) b d := by

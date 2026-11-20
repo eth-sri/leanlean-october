@@ -23,9 +23,9 @@ theorem strict_twoCycle_cover_unmarked_chamber (hf : IsPosetCover f)
       strictOrdBoundary3 y = c := by
   let S : Set (Zpos A X M att) := {z | InZChamber w z}
   have hfc := IsPosetCover.restriction f S hf
-  let b : S := ⟨zApex (X := X) (att := att) hw,
-    inZChamber_zApex (X := X) (att := att) hw⟩
+  let b : S := ⟨zApex hw,
+    inZChamber_zApex (att := att) hw⟩
   have hb : ∀ q : S, b ≤ q := fun q => zApex_le hw q.2
-  exact strict_twoCycle_cover_lower_cone hfc b hb c hc
+  solve_by_elim [strict_twoCycle_cover_lower_cone]
 
 end FiniteChains.Davis

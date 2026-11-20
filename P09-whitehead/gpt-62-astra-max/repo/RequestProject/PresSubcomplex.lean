@@ -1,6 +1,15 @@
 module
 
-public import RequestProject.PresentationChain
+public import RequestProject.FoxNaturality
+public import RequestProject.Pi2Dictionary
+
+
+
+
+
+
+
+
 
 @[expose] public section
 
@@ -47,11 +56,17 @@ universe u
 
 variable {α β : Type u} [DecidableEq α] [DecidableEq β] {J K : Type u}
 
+variable (f : α → β)
+    (hf : Function.Injective f)
+    (ρ : J → FreeGroup α)
+    (σ : K → FreeGroup β)
+    (g : J → K)
+    (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j))
+
 /-- An inclusion of presentations — an injective map of generators and an injective map of
 two-cells carrying a two-cell to one attached along the same word — is a cellular map of
 the presentation complexes. -/
-def presInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGroup α)
-    (σ : K → FreeGroup β) (g : J → K) (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
+def presInclHom :
     Hom (presComplex ρ) (presComplex σ) where
   onV _ := PUnit.unit
   onE := f
@@ -60,26 +75,14 @@ def presInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGrou
   tgt_onE _ := rfl
   base_onF _ := rfl
   att_onF j := by
-    show FreeGroup.toWord (σ (g j)) = (FreeGroup.toWord (ρ j)).map (fun p => (f p.1, p.2))
-    rw [hg j, toWord_map f hf]
+    simp_all [toWord_map]
 
-@[simp] theorem presInclHom_onE (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGroup α)
-    (σ : K → FreeGroup β) (g : J → K) (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
+@[simp] theorem presInclHom_onE :
     (presInclHom f hf ρ σ g hg).onE = f := rfl
 
-@[simp] theorem presInclHom_onF (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGroup α)
-    (σ : K → FreeGroup β) (g : J → K) (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
+@[simp] theorem presInclHom_onF :
     (presInclHom f hf ρ σ g hg).onF = g := rfl
 
 end Comb
 
-namespace PresChain
-
-universe u
-
-variable {α J : Type u} {ρ : J → FreeGroup α} {n : ℕ} (h : PresChain ρ n)
-
-variable [DecidableEq α]
-
-end PresChain
 end FiniteChains

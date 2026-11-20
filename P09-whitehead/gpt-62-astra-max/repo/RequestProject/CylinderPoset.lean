@@ -43,7 +43,7 @@ open Nerve
 variable {X Sg : Type u} [Preorder X] [Preorder Sg]
 
 /-- The poset underlying the mapping cylinder of a monotone map `a : Σ →o X`. -/
-def CylP (_a : Sg →o X) : Type u := X ⊕ Sg
+def CylP (_a : Sg →o X) := X ⊕ Sg
 
 namespace CylP
 
@@ -102,7 +102,7 @@ def cylRetr : CylP a → X := Sum.elim id a
 
 theorem cylIn_injective : Function.Injective (cylIn a) := fun _ _ h => Sum.inl_injective h
 
-theorem cylIn_monotone : Monotone (cylIn a) := fun _ _ h => h
+theorem cylIn_monotone : Monotone (cylIn a) := by solve_by_elim
 
 theorem cylRetr_monotone : Monotone (cylRetr a) := by
   intro p q hpq
@@ -127,7 +127,7 @@ homotopy between them. -/
 theorem le_cylIn_cylRetr (p : CylP a) : p ≤ cylCollapse a p := by
   cases p with
   | inl x => exact le_refl x
-  | inr s => exact le_refl (a s)
+  | inr s => apply le_refl
 
 /-! ### The chain homotopy -/
 

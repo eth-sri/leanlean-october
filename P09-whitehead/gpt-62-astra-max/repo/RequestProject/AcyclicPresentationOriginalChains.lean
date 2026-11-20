@@ -3,7 +3,7 @@ module
 public import RequestProject.AcyclicPresentationActualChains
 public import RequestProject.PresWordDiskTopologicalChains
 public import RequestProject.PresAcyclicExponentMatrix
-public import RequestProject.TopologicalSingular.MathlibComparison
+
 
 @[expose] public section
 
@@ -32,8 +32,8 @@ theorem actual_hasOriginalFiniteChain [Finite A] [Finite C]
   apply (c.toPresChainFS hcore.1).hasOriginalTopologicalChain K a e₀ c.chain_proper true
   intro _
   have h := actualAmbientChain_finite core hcore n
-  letI : Finite c.extraGen := h.1
-  letI : Finite c.extraCell := h.2
+  letI := h.1
+  letI := h.2
   change Whitehead.FiniteCells K ∧ Finite (A ⊕ c.extraGen) ∧
     Finite (C ⊕ {s // c.stage n s})
   exact ⟨hK, inferInstance, inferInstance⟩
@@ -47,11 +47,9 @@ theorem actual_expMatrix_bijective_of_acyclic
     Function.Bijective (expMatrix core) := by
   let e := (presClassicalDiskComparison (presCanonicalWords core a)
     (presCanonicalWords_ne_nil core a)).trans e₀
-  have hmodel : Whitehead.Acyclic
-      (Comb.orderNerveRealization (PresPos (presCanonicalWords core a))) :=
+  have hmodel :=
     (Whitehead.acyclic_iff_of_homotopyEquiv e).mpr hK
-  exact expMatrix_bijective_of_presRealization_acyclic core (presCanonicalWords core a)
-    (mk_presCanonicalWords core a) (presCanonicalWords_positive core a) hmodel
+  solve_by_elim [expMatrix_bijective_of_presRealization_acyclic, mk_presCanonicalWords, presCanonicalWords_positive]
 
 /-- The finite original-cell version also derives its matrix premise from
 actual singular acyclicity; finiteness is used only for the finite conclusion. -/

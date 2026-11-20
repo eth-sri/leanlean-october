@@ -32,7 +32,7 @@ def actualInitial : AmbientChain core 0 := by
     ?_ (InitialFS.core_trivial core hcore.2)
   exact @FSIsCockcroft.redecide _ _ _ _ (InitialFS.isCockcroft core hcore) _
 
-def actualAmbientChain (n : ℕ) : AmbientChain core n :=
+def actualAmbientChain (n : ℕ) :=
   ambientChains core hcore (actualInitial core hcore) n
 
 theorem actualAmbientChain_finite [Finite A] (n : ℕ) :

@@ -16,14 +16,16 @@ open SpanningTree RelativeNormalForm RelativeTreeAmbientChain
 
 variable {D : Complex2.{0}} (T : SpanningTree D) (hD : IsAcyclic D)
 
-def acyclicRelativeStages (n : ℕ) : ℕ → Complex2 :=
+variable (n : ℕ)
+
+def acyclicRelativeStages :=
   stages T (actualAmbientChain (treeRel T) (expMatrix_bijective_of_acyclic T hD) n)
 
-def acyclicRelativeCellChain (n : ℕ) :
+def acyclicRelativeCellChain :
     RelativeCellChain (acyclicRelativeStages T hD n) (n + 1) :=
   actualRelativeChain T (expMatrix_bijective_of_acyclic T hD) n
 
-@[simp] theorem acyclicRelativeStages_zero (n : ℕ) :
+@[simp] theorem acyclicRelativeStages_zero :
     acyclicRelativeStages T hD n 0 = D := rfl
 
 end FiniteChains.Comb

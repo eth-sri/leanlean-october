@@ -20,14 +20,16 @@ open Set Topology TopologicalSingular
 universe u v
 variable {X : Type u} [TopologicalSpace X] {ι : Type v}
 
-theorem iterated_subdivide_zero (k n : ℕ) : ((subdivide (X := X) n)^[k]) 0 = 0 := by
-  rw [← Module.End.pow_apply, map_zero]
+variable (k n : ℕ)
 
-theorem iterated_subdivide_boundary (k n : ℕ) (c : Chain X (n + 1)) :
+theorem iterated_subdivide_zero : ((subdivide (X := X) n)^[k]) 0 = 0 := by
+  simp
+
+theorem iterated_subdivide_boundary (c : Chain X _) :
     ((subdivide n)^[k]) (boundary n c) = boundary n (((subdivide (n + 1))^[k]) c) := by
   induction k with
   | zero => rfl
-  | succ k ih => rw [Function.iterate_succ_apply', Function.iterate_succ_apply', ih, subdivide_boundary]
+  | succ k ih => simp [Function.iterate_succ_apply', ih, subdivide_boundary]
 
 noncomputable def iteratedHomotopy (n : ℕ) : ℕ → Chain X n →ₗ[ℤ] Chain X (n + 1)
   | 0 => 0
@@ -37,28 +39,22 @@ theorem iteratedHomotopy_zero (n : ℕ) (c : Chain X n) : iteratedHomotopy n 0 c
 
 theorem iteratedHomotopy_succ (n k : ℕ) (c : Chain X n) :
     iteratedHomotopy n (k + 1) c = homotopy n (((subdivide n)^[k]) c) + iteratedHomotopy n k c := by
-  simp only [iteratedHomotopy, LinearMap.add_apply, LinearMap.comp_apply, Module.End.pow_apply]
+  simp [iteratedHomotopy, LinearMap.add_apply, LinearMap.comp_apply, Module.End.pow_apply]
 
-theorem iteratedHomotopy_identity_succ (k n : ℕ) (c : Chain X (n + 1)) :
-    boundary (n + 1) (iteratedHomotopy (n + 1) k c) + iteratedHomotopy n k (boundary n c) =
+theorem iteratedHomotopy_identity_succ (k n : ℕ) (c : Chain X _) :
+    boundary _ (iteratedHomotopy _ k c) + iteratedHomotopy n k (boundary n c) =
       ((subdivide (n + 1))^[k]) c - c := by
   induction k with
-  | zero => simp only [iteratedHomotopy_zero, map_zero, add_zero, Function.iterate_zero_apply, sub_self]
+  | zero => simp_all [iteratedHomotopy_zero]
   | succ k ih =>
     rw [iteratedHomotopy_succ, iteratedHomotopy_succ, map_add, iterated_subdivide_boundary]
-    calc
-      _ = (boundary (n + 1) (homotopy (n + 1) (((subdivide (n + 1))^[k]) c)) +
-            homotopy n (boundary n (((subdivide (n + 1))^[k]) c))) +
-          (boundary (n + 1) (iteratedHomotopy (n + 1) k c) +
-            iteratedHomotopy n k (boundary n c)) := by abel
-      _ = (subdivide (n + 1) (((subdivide (n + 1))^[k]) c) - ((subdivide (n + 1))^[k]) c) +
-          (((subdivide (n + 1))^[k]) c - c) := by rw [homotopy_identity_succ, ih]
-      _ = _ := by rw [Function.iterate_succ_apply']; abel
+    rw [Function.iterate_succ_apply']
+    linear_combination (norm := abel) homotopy_identity_succ n (((subdivide (n + 1))^[k]) c) + ih
 
 theorem iteratedHomotopy_mem_small (U : ι → Set X) (k n : ℕ) {c : Chain X n}
-    (hc : c ∈ smallChains U n) : iteratedHomotopy n k c ∈ smallChains U (n + 1) := by
+    (hc : c ∈ smallChains U n) : iteratedHomotopy n k c ∈ smallChains U _ := by
   induction k with
-  | zero => rw [iteratedHomotopy_zero]; exact Submodule.zero_mem _
+  | zero => apply Submodule.zero_mem
   | succ k ih =>
     rw [iteratedHomotopy_succ]
     exact Submodule.add_mem _ (homotopy_mem_small U n (iterated_subdivide_mem_small U k n hc)) ih
@@ -66,11 +62,11 @@ theorem iteratedHomotopy_mem_small (U : ι → Set X) (k n : ℕ) {c : Chain X n
 variable (U : ι → Set X) (hU : ∀ i, IsOpen (U i)) (hcover : ∀ x, ∃ i, x ∈ U i)
 
 include hU hcover in
-theorem exists_small_cycle_representative (n : ℕ) (c : Chain X (n + 1)) (hc : boundary n c = 0) :
-    ∃ d : Chain X (n + 1), d ∈ smallChains U (n + 1) ∧ boundary n d = 0 ∧
-      d - c ∈ LinearMap.range (boundary (n + 1)) := by
-  obtain ⟨k, hk⟩ := exists_subdivision_small U hU hcover (n + 1) c
-  refine ⟨_, hk, ?_, iteratedHomotopy (n + 1) k c, ?_⟩
+theorem exists_small_cycle_representative (n : ℕ) (c : Chain X _) (hc : boundary n c = 0) :
+    ∃ d : Chain X _, d ∈ smallChains U _ ∧ boundary n d = 0 ∧
+      d - c ∈ LinearMap.range (boundary _) := by
+  obtain ⟨k, hk⟩ := exists_subdivision_small U hU hcover _ c
+  refine ⟨_, hk, ?_, iteratedHomotopy _ k c, ?_⟩
   · rw [← iterated_subdivide_boundary, hc, iterated_subdivide_zero]
   · simpa only [hc, map_zero, add_zero] using iteratedHomotopy_identity_succ k n c
 

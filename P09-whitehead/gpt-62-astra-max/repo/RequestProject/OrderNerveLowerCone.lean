@@ -1,8 +1,8 @@
 module
 
 public import RequestProject.OrderNerveConeBall
-public import RequestProject.OrderNervePosetCoverVertexStars
-public import RequestProject.PosetCoverLowerInterval
+
+
 
 @[expose] public section
 
@@ -54,13 +54,11 @@ def lowerConeOrderIso : WithTop P ≃o Set.Iic v where
         induction b using WithTop.recTopCoe with
         | top => exact iff_of_true le_rfl le_rfl
         | coe b =>
-            change v ≤ (e b).val ↔ (⊤ : WithTop P) ≤ b
             exact iff_of_false (not_le_of_gt (e b).property) (not_le_of_gt (WithTop.coe_lt_top b))
     | coe a =>
         induction b using WithTop.recTopCoe with
         | top => exact iff_of_true (e a).property.le le_top
         | coe b =>
-            change (e a).val ≤ (e b).val ↔ (a : WithTop P) ≤ b
             exact e.map_rel_iff.trans WithTop.coe_le_coe.symm
 
 def lowerConeBoundary : P →o Set.Iic v where
@@ -70,17 +68,13 @@ def lowerConeBoundary : P →o Set.Iic v where
 theorem lowerConeRealization_boundary (x : orderNerveRealization P) :
     orderNerveRealizationOrderIso (lowerConeOrderIso v e) (orderNerveConeBase P x) =
       orderNerveRealizationMap (lowerConeBoundary v e) (lowerConeBoundary v e).monotone x := by
-  change orderNerveRealizationMap (lowerConeOrderIso v e) (lowerConeOrderIso v e).monotone
-      (orderNerveRealizationMap (fun p : P => (p : WithTop P)) WithTop.coe_mono x) = _
-  rw [orderNerveRealizationMap_comp]
-  rfl
+  solve_by_elim [orderNerveRealizationMap_comp]
 
 variable [Fintype P] [Nonempty P]
     {E : Type} [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
     (b : orderNerveRealization P ≃ₜ RelativeAttachment.UnitBoundary E)
 
-def lowerConeBallHomeomorph :
-    orderNerveRealization (Set.Iic v) ≃ₜ RelativeAttachment.ClosedUnitBall E :=
+def lowerConeBallHomeomorph :=
   (orderNerveRealizationOrderIso (lowerConeOrderIso v e)).symm.trans
     (orderNerveWithTopBallHomeomorph b)
 

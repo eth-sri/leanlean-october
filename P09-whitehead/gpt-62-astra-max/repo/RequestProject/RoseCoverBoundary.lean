@@ -3,10 +3,7 @@ module
 public import RequestProject.RoseCoverIncidences
 
 @[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -38,14 +35,12 @@ theorem roseCover_boundary_mid (v : P) (i : α) (hv : f v = Rose.mid i)
     rw [bdry1_single (X := strictOrderCx P)]
     have ht := roseCover_mid_no_incoming f hf v i hv e
     by_cases he : e = l
-    · subst e
-      simp [strictOrderCx, ht, hl, hne.symm]
+    · simp_all [strictOrderCx, ht, hl, hne.symm]
     · by_cases her : e = r
-      · subst e
-        simp [strictOrderCx, ht, hr, hne]
+      · simp_all [strictOrderCx, ht, hr, hne]
       · have hs : e.1.1 ≠ v := by
           intro h
-          exact (roseCover_mid_outgoing_edge_cases f hf v i hv e h).elim he her
+          grind [roseCover_mid_outgoing_edge_cases]
         simp [strictOrderCx, ht, hs, he, her]
 
 /-- The edge-end boundary equation for the actual finite chain complex of a rose cover. -/
@@ -73,14 +68,12 @@ theorem roseCover_boundary_end (q : P) (i : α) (b : Bool) (hq : f q = Rose.edg 
     rw [bdry1_single (X := strictOrderCx P)]
     have hs := roseCover_end_no_outgoing f hf q i b hq e
     by_cases he : e = l
-    · subst e
-      simp [strictOrderCx, hs, hl, hne.symm]
+    · simp_all [strictOrderCx, hs, hl, hne.symm]
     · by_cases her : e = r
-      · subst e
-        simp [strictOrderCx, hs, hr, hne]
+      · simp_all [strictOrderCx, hs, hr, hne]
       · have ht : e.1.2 ≠ q := by
           intro h
-          exact (roseCover_incoming_edge_cases f hf q i b hq e h).elim he her
+          grind [roseCover_incoming_edge_cases]
         simp [strictOrderCx, ht, hs, he, her]
 
 end FiniteChains.PresModel

@@ -12,13 +12,15 @@ universe u
 variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 
-abbrev QLiftedBaseStar (a : Qpos A X att) :=
+variable (a : Qpos A X att)
+
+abbrev QLiftedBaseStar :=
   {p : UOrder (Qpos A X att) a // InQBaseStar (uOrderEnd p)}
 
-def qBaseIntoStar (a : Qpos A X att) (p : QLiftedBase a) : QLiftedBaseStar a :=
+def qBaseIntoStar (p : QLiftedBase a) : QLiftedBaseStar a :=
   ⟨p.1, inQBase_in_star p.2⟩
 
-theorem qBaseIntoStar_monotone (a : Qpos A X att) : Monotone (qBaseIntoStar a) :=
+theorem qBaseIntoStar_monotone : Monotone (qBaseIntoStar a) :=
   fun _ _ h => h
 
 variable (a : Qpos A X att) (hc : IsConnected (orderCx (Qpos A X att)))
@@ -30,8 +32,7 @@ noncomputable def qLiftedStarRetraction (p : QLiftedBaseStar a) : QLiftedBase a 
       have h := (uOrderEnd_isPosetCover hc).lowerMapLift_spec Subtype.val
         (fun p : QLiftedBaseStar a => qBaseStarRetraction ⟨uOrderEnd p.1, p.2⟩)
         (fun p => qBaseStarRetraction_le ⟨uOrderEnd p.1, p.2⟩) p
-      rw [h.2]
-      exact qBaseStarRetraction_mem_base _⟩
+      grind [qBaseStarRetraction_mem_base]⟩
 
 theorem qLiftedStarRetraction_monotone : Monotone (qLiftedStarRetraction a hc) := by
   intro p r h

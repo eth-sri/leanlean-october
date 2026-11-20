@@ -57,10 +57,12 @@ def qPositiveOldOrderIso : QPositiveOld (att := att) ≃o NeSpx A where
           exact (congrFun hp.2 v).trans (congrFun hr.2 v).symm
         · exact fun h => h.1
 
-abbrev QLiftedAttaching (a : Qpos A X att) :=
+variable (a : Qpos A X att)
+
+abbrev QLiftedAttaching :=
   {p : UOrder (Qpos A X att) a // InQOld (uOrderEnd p) ∧ InQBaseStar (uOrderEnd p)}
 
-def qAttachingCoverEnd (a : Qpos A X att) (p : QLiftedAttaching a) : NeSpx A :=
+def qAttachingCoverEnd (p : QLiftedAttaching a) :=
   qPositiveOldSimplex ⟨uOrderEnd p.1, p.2⟩
 
 variable [Fintype V]

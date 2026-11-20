@@ -1,15 +1,15 @@
 module
 
 public import RequestProject.PresWordEmbeddingFoxPi2
-public import RequestProject.PresWordEmbeddingTopology
-public import RequestProject.PresWordEmbeddingPi1
-public import RequestProject.PresValidPi2
+public import RequestProject.PresCanonicalWords
+public import RequestProject.PresValidFinite
+public import RequestProject.OrderCxNullTransfer
+public import RequestProject.ZeroPi2Descent
+public import RequestProject.OrderNerveContiguousHomotopy
+
+
 
 @[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb

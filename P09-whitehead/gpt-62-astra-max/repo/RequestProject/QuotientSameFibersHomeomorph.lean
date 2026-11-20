@@ -16,25 +16,23 @@ variable {X Y Z : Type*} [TopologicalSpace X] [TopologicalSpace Y] [TopologicalS
     (f : X → Y) (g : X → Z) (hf : IsQuotientMap f) (hg : IsQuotientMap g)
     (hfg : ∀ a b, f a = f b ↔ g a = g b)
 
-def sameFiberForward (y : Y) : Z := g (hf.surjective y).choose
+def sameFiberForward (y : Y) := g (hf.surjective y).choose
 
 include hfg in
 omit [TopologicalSpace Z] in
 theorem sameFiberForward_apply (x : X) :
     sameFiberForward f g hf (f x) = g x :=
-  (hfg _ _).mp (hf.surjective (f x)).choose_spec
+  by grind [sameFiberForward]
 
 def quotientSameFibersHomeomorph : Y ≃ₜ Z where
   toFun := sameFiberForward f g hf
   invFun := sameFiberForward g f hg
   left_inv y := by
     obtain ⟨x, rfl⟩ := hf.surjective y
-    rw [sameFiberForward_apply f g hf hfg]
-    exact sameFiberForward_apply g f hg (fun a b => (hfg a b).symm) x
+    simp_all [sameFiberForward_apply]
   right_inv z := by
     obtain ⟨x, rfl⟩ := hg.surjective z
-    rw [sameFiberForward_apply g f hg (fun a b => (hfg a b).symm)]
-    exact sameFiberForward_apply f g hf hfg x
+    simp_all [sameFiberForward_apply]
   continuous_toFun := by
     apply hf.continuous_iff.mpr
     have he : sameFiberForward f g hf ∘ f = g :=

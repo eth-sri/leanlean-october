@@ -1,10 +1,10 @@
 module
 
 public import RequestProject.StrictBottomLinkChains
-public import RequestProject.SurfaceLink
 public import RequestProject.GenusSurface
-public import RequestProject.GenusCellularFundamental
-public import RequestProject.CellularChainMapZero
+public import RequestProject.SurfaceFundamentalChain
+public import RequestProject.StrictChainCoefficients
+
 
 @[expose] public section
 
@@ -20,9 +20,9 @@ of this rigidity through the six flags of each inner triangle and through the
 collar, and its transport from the attaching barycentric cover, remain separate
 dependencies of the full B2 proof.
 -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
+noncomputable section
 
 namespace FiniteChains.Davis
 open Comb Cell
@@ -32,18 +32,20 @@ variable {κ ι : Type u} {M : ℕ} [NeZero M]
 
 abbrev PolygonPoleLink := StrictAbove (cC hc)
 
-def polygonPoleRadius (p : Fin M) : PolygonPoleLink hc :=
+variable (p : Fin M)
+
+def polygonPoleRadius : PolygonPoleLink hc :=
   ⟨cR hc p, ctr_lt_rad hc p⟩
 
-def polygonPoleTriangle (p : Fin M) : PolygonPoleLink hc :=
+def polygonPoleTriangle : PolygonPoleLink hc :=
   ⟨cI hc p, ctr_lt_inn hc p⟩
 
-def polygonPoleEdgePlus (p : Fin M) : StrictOrdEdge (PolygonPoleLink hc) :=
+def polygonPoleEdgePlus : StrictOrdEdge (PolygonPoleLink hc) :=
   ⟨(polygonPoleRadius hc p, polygonPoleTriangle hc p),
     (lt_inn_iff hc).2 (Or.inr (Or.inl rfl))⟩
 
-def polygonPoleEdgeMinus (p : Fin M) : StrictOrdEdge (PolygonPoleLink hc) :=
-  ⟨(polygonPoleRadius hc (p + 1), polygonPoleTriangle hc p),
+def polygonPoleEdgeMinus : StrictOrdEdge (PolygonPoleLink hc) :=
+  ⟨(polygonPoleRadius hc _, polygonPoleTriangle hc p),
     (lt_inn_iff hc).2 (Or.inr (Or.inr (Or.inl rfl)))⟩
 
 /-- All edges of the actual upper link are the two radial incidences of an
@@ -51,25 +53,23 @@ actual inner triangle; no presentation of the link is assumed. -/
 theorem polygonPoleLink_edge_cases (e : StrictOrdEdge (PolygonPoleLink hc)) :
     ∃ p : Fin M, e = polygonPoleEdgePlus hc p ∨ e = polygonPoleEdgeMinus hc p := by
   rcases e with ⟨⟨⟨a, ha⟩, ⟨b, hb⟩⟩, hab⟩
-  change toS vc ec hc ctr < toS vc ec hc a at ha
   change toS vc ec hc a < toS vc ec hc b at hab
   obtain ⟨p, hp | hp⟩ := (ctr_lt_iff hc).mp ha
   · subst a
     rcases (rad_lt_iff hc).mp hab with hb' | hb'
-    · subst b
-      exact ⟨p, Or.inl rfl⟩
+    · aesop
     · subst b
       refine ⟨fpred p, Or.inr ?_⟩
       apply Subtype.ext
       apply Prod.ext
-      · apply Subtype.ext
-        simp only [polygonPoleEdgeMinus, polygonPoleRadius, cR, toS, fpred_add_one]
+      · simp [polygonPoleEdgeMinus, polygonPoleRadius, cR, toS, fpred_add_one]
       · rfl
-  · subst a
-    have hh := (lt_iff_plt hc).mp hab
-    cases b <;> simp [plt] at hh
+  · have hh := (lt_iff_plt hc).mp hab
+    simp_all [plt]
 
-@[simp] theorem polygonPoleRadius_eq_iff (p r : Fin M) :
+variable (p r : Fin M)
+
+@[simp] theorem polygonPoleRadius_eq_iff :
     polygonPoleRadius hc p = polygonPoleRadius hc r ↔ p = r := by
   constructor
   · intro h
@@ -77,7 +77,7 @@ theorem polygonPoleLink_edge_cases (e : StrictOrdEdge (PolygonPoleLink hc)) :
   · rintro rfl
     rfl
 
-@[simp] theorem polygonPoleTriangle_eq_iff (p r : Fin M) :
+@[simp] theorem polygonPoleTriangle_eq_iff :
     polygonPoleTriangle hc p = polygonPoleTriangle hc r ↔ p = r := by
   constructor
   · intro h
@@ -85,17 +85,16 @@ theorem polygonPoleLink_edge_cases (e : StrictOrdEdge (PolygonPoleLink hc)) :
   · rintro rfl
     rfl
 
-@[simp] theorem polygonPoleRadius_ne_triangle (p r : Fin M) :
+@[simp] theorem polygonPoleRadius_ne_triangle :
     polygonPoleRadius hc p ≠ polygonPoleTriangle hc r := by
   intro he
-  have hh := congrArg Subtype.val he
-  cases hh
+  cases (congrArg Subtype.val he)
 
-@[simp] theorem polygonPoleTriangle_ne_radius (p r : Fin M) :
+@[simp] theorem polygonPoleTriangle_ne_radius :
     polygonPoleTriangle hc p ≠ polygonPoleRadius hc r :=
   (polygonPoleRadius_ne_triangle hc r p).symm
 
-@[simp] theorem polygonPoleEdgePlus_eq_iff (p r : Fin M) :
+@[simp] theorem polygonPoleEdgePlus_eq_iff :
     polygonPoleEdgePlus hc p = polygonPoleEdgePlus hc r ↔ p = r := by
   constructor
   · intro he
@@ -104,7 +103,7 @@ theorem polygonPoleLink_edge_cases (e : StrictOrdEdge (PolygonPoleLink hc)) :
   · rintro rfl
     rfl
 
-@[simp] theorem polygonPoleEdgeMinus_eq_iff (p r : Fin M) :
+@[simp] theorem polygonPoleEdgeMinus_eq_iff :
     polygonPoleEdgeMinus hc p = polygonPoleEdgeMinus hc r ↔ p = r := by
   constructor
   · intro he
@@ -113,108 +112,90 @@ theorem polygonPoleLink_edge_cases (e : StrictOrdEdge (PolygonPoleLink hc)) :
   · rintro rfl
     rfl
 
-theorem polygonPoleEdgePlus_ne_minus (hM : 2 ≤ M) (p r : Fin M) :
+section
+
+variable (hM : 2 ≤ M)
+include hM
+
+theorem polygonPoleEdgePlus_ne_minus (p r : Fin M) :
     polygonPoleEdgePlus hc p ≠ polygonPoleEdgeMinus hc r := by
   intro he
-  have hpr : p = r := (polygonPoleTriangle_eq_iff hc p r).mp
+  have hpr := (polygonPoleTriangle_eq_iff hc p r).mp
     (congrArg (fun e : StrictOrdEdge (PolygonPoleLink hc) => e.1.2) he)
   subst r
-  have hr : p = p + 1 := (polygonPoleRadius_eq_iff hc p (p + 1)).mp
+  have hr := (polygonPoleRadius_eq_iff hc p _).mp
     (congrArg (fun e : StrictOrdEdge (PolygonPoleLink hc) => e.1.1) he)
-  exact fin_succ_ne_self hM p hr.symm
+  solve_by_elim [fin_succ_ne_self]
+
+variable (d : StrictOrdEdge (PolygonPoleLink hc) →₀ ℤ)
+
+variable (p : Fin M)
 
 /-- The two actual incidences at an inner-triangle vertex have their genuine
 positive boundary signs. -/
-theorem polygonPole_boundary_triangle (hM : 2 ≤ M)
-    (d : StrictOrdEdge (PolygonPoleLink hc) →₀ ℤ) (p : Fin M) :
+theorem polygonPole_boundaries :
     Comb.bdry1 (strictOrderCx (PolygonPoleLink hc)) d (polygonPoleTriangle hc p) =
-      d (polygonPoleEdgePlus hc p) + d (polygonPoleEdgeMinus hc p) := by
-  classical
-  induction d using Finsupp.induction_linear with
-  | zero => simp
-  | add d e hd he => simp only [map_add, Finsupp.add_apply, hd, he]; ring
-  | single e n =>
-    obtain ⟨r, hr | hr⟩ := polygonPoleLink_edge_cases hc e
-    · subst e
-      rw (config := { transparency := .default }) [Comb.bdry1_single]
-      change (n • (Finsupp.single (polygonPoleTriangle hc r) (1 : ℤ) -
-        Finsupp.single (polygonPoleRadius hc r) 1) : PolygonPoleLink hc →₀ ℤ) _ = _
-      simp [Finsupp.single_apply, polygonPoleEdgePlus_ne_minus hc hM]
-    · subst e
-      have hne := fun r p => (polygonPoleEdgePlus_ne_minus hc hM p r).symm
-      rw (config := { transparency := .default }) [Comb.bdry1_single]
-      change (n • (Finsupp.single (polygonPoleTriangle hc r) (1 : ℤ) -
-        Finsupp.single (polygonPoleRadius hc (r + 1)) 1) : PolygonPoleLink hc →₀ ℤ) _ = _
-      simp [Finsupp.single_apply, hne]
-
-/-- At a radius, the two actual incidences have their genuine negative signs. -/
-theorem polygonPole_boundary_radius (hM : 2 ≤ M)
-    (d : StrictOrdEdge (PolygonPoleLink hc) →₀ ℤ) (p : Fin M) :
+      d (polygonPoleEdgePlus hc p) + d (polygonPoleEdgeMinus hc p) ∧
     Comb.bdry1 (strictOrderCx (PolygonPoleLink hc)) d (polygonPoleRadius hc (p + 1)) =
       -d (polygonPoleEdgePlus hc (p + 1)) - d (polygonPoleEdgeMinus hc p) := by
   classical
-  induction d using Finsupp.induction_linear with
-  | zero => simp
-  | add d e hd he => simp only [map_add, Finsupp.add_apply, hd, he]; ring
-  | single e n =>
-    obtain ⟨r, hr | hr⟩ := polygonPoleLink_edge_cases hc e
-    · subst e
-      rw (config := { transparency := .default }) [Comb.bdry1_single]
-      change (n • (Finsupp.single (polygonPoleTriangle hc r) (1 : ℤ) -
-        Finsupp.single (polygonPoleRadius hc r) 1) : PolygonPoleLink hc →₀ ℤ) _ = _
-      simp [Finsupp.single_apply, polygonPoleEdgePlus_ne_minus hc hM]
-    · subst e
-      have hne := fun r p => (polygonPoleEdgePlus_ne_minus hc hM p r).symm
-      rw (config := { transparency := .default }) [Comb.bdry1_single]
-      change (n • (Finsupp.single (polygonPoleTriangle hc r) (1 : ℤ) -
-        Finsupp.single (polygonPoleRadius hc (r + 1)) 1) : PolygonPoleLink hc →₀ ℤ) _ = _
-      simp [Finsupp.single_apply, hne]
+  constructor <;> (
+    induction d using Finsupp.induction_linear with
+    | zero => simp
+    | add d e hd he => simp only [map_add, Finsupp.add_apply, hd, he]; ring
+    | single e n =>
+      obtain ⟨r, hr | hr⟩ := polygonPoleLink_edge_cases hc e
+      · subst e
+        erw [Comb.bdry1_single]
+        change (n • (Finsupp.single (polygonPoleTriangle hc r) (1 : ℤ) -
+          Finsupp.single (polygonPoleRadius hc r) 1) : PolygonPoleLink hc →₀ ℤ) _ = _
+        simp_all [Finsupp.single_apply, polygonPoleEdgePlus_ne_minus]
+      · subst e
+        erw [Comb.bdry1_single]
+        change (n • (Finsupp.single (polygonPoleTriangle hc r) (1 : ℤ) -
+          Finsupp.single (polygonPoleRadius hc _) 1) : PolygonPoleLink hc →₀ ℤ) _ = _
+        simp [Finsupp.single_apply, (fun r p => (polygonPoleEdgePlus_ne_minus hc hM p r).symm)])
 
 /-- Every integral one-cycle of the actual polygon-centre link has a single
 coefficient.  This is the local coefficient rigidity used at each cover pole. -/
-theorem polygonPole_cycle_coefficients (hM : 2 ≤ M)
-    (d : StrictOrdEdge (PolygonPoleLink hc) →₀ ℤ)
+theorem polygonPole_cycle_coefficients
     (hd : Comb.bdry1 (strictOrderCx (PolygonPoleLink hc)) d = 0) (p : Fin M) :
     d (polygonPoleEdgePlus hc p) = d (polygonPoleEdgePlus hc 0) ∧
       d (polygonPoleEdgeMinus hc p) = -d (polygonPoleEdgePlus hc 0) := by
   have hlocal (r : Fin M) :
       d (polygonPoleEdgeMinus hc r) = -d (polygonPoleEdgePlus hc r) ∧
       d (polygonPoleEdgePlus hc (r + 1)) = d (polygonPoleEdgePlus hc r) := by
-    have ht := polygonPole_boundary_triangle hc hM d r
-    have hr := polygonPole_boundary_radius hc hM d r
-    rw (config := { transparency := .default }) [hd, Finsupp.zero_apply] at ht hr
+    obtain ⟨ht, hr⟩ := polygonPole_boundaries hc hM d r
+    rw [hd] at ht hr
+    simp only [Finsupp.zero_apply] at ht hr
     omega
   have hall : ∀ n (hn : n < M),
       d (polygonPoleEdgePlus hc ⟨n, hn⟩) = d (polygonPoleEdgePlus hc 0) := by
     intro n
     induction n with
-    | zero => intro hn; rfl
+    | zero => simp
     | succ n ih =>
       intro hn
       have hp : n < M := by omega
       have hs : (⟨n, hp⟩ : Fin M) + 1 = ⟨n + 1, hn⟩ := by
         apply Fin.ext
-        rw (config := { transparency := .default }) [fin_succ_val]
+        erw [fin_succ_val]
         exact Nat.mod_eq_of_lt hn
-      rw (config := { transparency := .default }) [← hs, (hlocal ⟨n, hp⟩).2]
-      exact ih hp
-  have he := hall p.val p.isLt
-  exact ⟨he, (hlocal p).1.trans (congrArg Neg.neg he)⟩
+      erw [← hs, (hlocal _).2] <;> simp_all
+  simp_all
 
 /-- Agreement at one actual radial incidence determines the entire pole link. -/
-theorem polygonPole_cycle_ext (hM : 2 ≤ M)
+theorem polygonPole_cycle_ext
     (c d : StrictOrdEdge (PolygonPoleLink hc) →₀ ℤ)
     (hc' : Comb.bdry1 (strictOrderCx (PolygonPoleLink hc)) c = 0)
     (hd : Comb.bdry1 (strictOrderCx (PolygonPoleLink hc)) d = 0)
     (he : c (polygonPoleEdgePlus hc 0) = d (polygonPoleEdgePlus hc 0)) : c = d := by
   ext e
   obtain ⟨p, hp | hp⟩ := polygonPoleLink_edge_cases hc e
-  · subst e
-    exact (polygonPole_cycle_coefficients hc hM c hc' p).1.trans
-      (he.trans (polygonPole_cycle_coefficients hc hM d hd p).1.symm)
-  · subst e
-    exact (polygonPole_cycle_coefficients hc hM c hc' p).2.trans
-      ((congrArg Neg.neg he).trans (polygonPole_cycle_coefficients hc hM d hd p).2.symm)
+  · simp_all [polygonPole_cycle_coefficients]
+  · simp_all [polygonPole_cycle_coefficients]
+
+end
 
 section Cover
 variable {P : Type u} [PartialOrder P] (f : P → SCell vc ec hc)
@@ -222,88 +203,78 @@ variable {P : Type u} [PartialOrder P] (f : P → SCell vc ec hc)
 
 theorem polygonCentre_minimal (a : SCell vc ec hc) (ha : a ≤ cC hc) : a = cC hc := by
   change a = cC hc ∨ plt vc ec a ctr at ha
-  rcases ha with ha | ha
-  · exact ha
-  · cases a <;> simp [plt] at ha
+  simp_all [plt]
+
+section
+
+variable (v : P) (hv : f v = cC hc)
+include hv
 
 include hf in
-theorem polygonCoverPole_minimal (v : P) (hv : f v = cC hc) :
+theorem polygonCoverPole_minimal :
     ∀ a, a ≤ v → a = v := by
   intro a ha
   have hfa := hf.mono ha
-  rw (config := { transparency := .default }) [hv] at hfa
+  erw [hv] at hfa
   exact hf.down_inj ha (le_refl v) ((polygonCentre_minimal hc (f a) hfa).trans hv.symm)
 
 /-- The actual upper link at each genuine lifted polygon centre. -/
-noncomputable def polygonCoverPoleOrderIso (v : P) (hv : f v = cC hc) :
-    StrictAbove v ≃o PolygonPoleLink hc :=
+def polygonCoverPoleOrderIso :=
   (hf.upperIntervalOrderIso v).trans (strictAboveCongr hv)
 
-theorem polygonCoverPoleOrderIso_apply_val (v : P) (hv : f v = cC hc)
+theorem polygonCoverPoleOrderIso_apply_val
     (x : StrictAbove v) :
     (polygonCoverPoleOrderIso hc f hf v hv x).val = f x.val := by
-  change (strictAboveCongr hv (hf.upperIntervalOrderIso v x)).val = f x.val
-  rw (config := { transparency := .default }) [strictAboveCongr_val]
-  rfl
+  solve_by_elim [strictAboveCongr_val]
 
-noncomputable def polygonCoverPoleHom (v : P) (hv : f v = cC hc) :
-    Hom (strictOrderCx (StrictAbove v)) (strictOrderCx (PolygonPoleLink hc)) :=
-  strictOrderCxMap (polygonCoverPoleOrderIso hc f hf v hv)
+def polygonCoverPoleHom :=
+  strictOrderCxMap _
     (polygonCoverPoleOrderIso hc f hf v hv).strictMono
 
-noncomputable def polygonCoverPoleLink (v : P) (hv : f v = cC hc)
-    (c : StrictOrdTri P →₀ ℤ) : StrictOrdEdge (PolygonPoleLink hc) →₀ ℤ :=
+variable (c : StrictOrdTri P →₀ ℤ)
+
+def polygonCoverPoleLink : StrictOrdEdge (PolygonPoleLink hc) →₀ ℤ :=
   chain1 (polygonCoverPoleHom hc f hf v hv) (strictBottomLinkChain v c)
 
 /-- A relative chain with boundary on the marked boundary graph gives a cycle
 at each lifted pole.  The two-chain itself is not assumed closed. -/
-theorem polygonCoverPoleLink_cycle (v : P) (hv : f v = cC hc)
-    (c : StrictOrdTri P →₀ ℤ)
+theorem polygonCoverPoleLink_cycle
     (hrel : ∀ e : StrictOrdEdge P,
       f e.1.1 = cC hc → Comb.bdry2 (strictOrderCx P) c e = 0) :
     Comb.bdry1 (strictOrderCx (PolygonPoleLink hc))
       (polygonCoverPoleLink hc f hf v hv c) = 0 := by
-  change Comb.bdry1 _ (chain1 (polygonCoverPoleHom hc f hf v hv)
-    (strictBottomLinkChain v c)) = 0
-  rw (config := { transparency := .default }) [bdry1_chain1]
-  have hlink := strictBottomLink_relative_cycle v
-    (polygonCoverPole_minimal hc f hf v hv) c (fun e he => hrel e (he.symm ▸ hv))
-  rw (config := { transparency := .default }) [hlink, map_zero]
+  erw [bdry1_chain1]; have hlink := strictBottomLink_relative_cycle v
+    (polygonCoverPole_minimal hc f hf v hv) c (fun e he => hrel e (he.symm ▸ hv)); erw [hlink, map_zero]
 
 /-- Projection within one lifted upper interval keeps every actual coefficient. -/
-theorem polygonCoverPoleLink_apply (v : P) (hv : f v = cC hc)
-    (c : StrictOrdTri P →₀ ℤ) (e : StrictOrdEdge (StrictAbove v)) :
+theorem polygonCoverPoleLink_apply (e : StrictOrdEdge (StrictAbove v)) :
     polygonCoverPoleLink hc f hf v hv c
       ((polygonCoverPoleHom hc f hf v hv).onE e) =
         c (strictBottomConeTriangle v e) :=
   (strictOrderCxMap_chain1_apply
-    (polygonCoverPoleOrderIso hc f hf v hv)
-    (polygonCoverPoleOrderIso hc f hf v hv).strictMono
+    _
+    _
     (polygonCoverPoleOrderIso hc f hf v hv).injective
-    (strictBottomLinkChain v c) e).trans (strictBottomLinkChain_apply v c e)
+    _ e).trans (strictBottomLinkChain_apply v c e)
 
-noncomputable def polygonCoverPoleFlagPlus (v : P) (hv : f v = cC hc)
-    (p : Fin M) : StrictOrdTri P :=
+variable (p : Fin M)
+
+def polygonCoverPoleFlagPlus :=
   strictBottomConeTriangle v
     ((strictOrderEdgeEquiv (polygonCoverPoleOrderIso hc f hf v hv)).symm
       (polygonPoleEdgePlus hc p))
 
-theorem polygonCoverPoleFlagPlus_projection (v : P) (hv : f v = cC hc) (p : Fin M) :
+theorem polygonCoverPoleFlagPlus_projection :
     f (polygonCoverPoleFlagPlus hc f hf v hv p).1.1 = cC hc ∧
     f (polygonCoverPoleFlagPlus hc f hf v hv p).1.2.1 = cR hc p ∧
     f (polygonCoverPoleFlagPlus hc f hf v hv p).1.2.2 = cI hc p := by
-  let iso := polygonCoverPoleOrderIso hc f hf v hv
-  let eqv := strictOrderEdgeEquiv iso
-  let e := eqv.symm (polygonPoleEdgePlus hc p)
-  have he : eqv e = polygonPoleEdgePlus hc p := eqv.apply_symm_apply _
+  let eqv := strictOrderEdgeEquiv (polygonCoverPoleOrderIso hc f hf v hv)
+  have he : eqv _ = polygonPoleEdgePlus hc p := eqv.apply_symm_apply _
   have h₁ := congrArg (fun z : StrictOrdEdge (PolygonPoleLink hc) => z.1.1.val) he
   have h₂ := congrArg (fun z : StrictOrdEdge (PolygonPoleLink hc) => z.1.2.val) he
-  change (iso e.1.1).val = cR hc p at h₁
-  change (iso e.1.2).val = cI hc p at h₂
-  rw (config := { transparency := .default }) [polygonCoverPoleOrderIso_apply_val] at h₁ h₂
-  exact ⟨hv, h₁, h₂⟩
+  erw [polygonCoverPoleOrderIso_apply_val] at h₁ h₂; exact ⟨hv, h₁, h₂⟩
 
-theorem polygonCoverPoleLink_plus (v : P) (hv : f v = cC hc)
+theorem polygonCoverPoleLink_plus
     (c : StrictOrdTri P →₀ ℤ) (p : Fin M) :
     polygonCoverPoleLink hc f hf v hv c (polygonPoleEdgePlus hc p) =
       c (polygonCoverPoleFlagPlus hc f hf v hv p) := by
@@ -312,14 +283,15 @@ theorem polygonCoverPoleLink_plus (v : P) (hv : f v = cC hc)
     (e.symm (polygonPoleEdgePlus hc p))
   change polygonCoverPoleLink hc f hf v hv c
     (e (e.symm (polygonPoleEdgePlus hc p))) = _ at hh
-  rw (config := { transparency := .default }) [e.apply_symm_apply] at hh
-  exact hh
+  aesop
+
+end
 
 /-- The actual finite set of nonzero coefficients is indexed by actual pole
 lifts, even for disconnected covers with arbitrarily many sheets. -/
 abbrev PolygonCoverPole := {v : P // f v = cC hc}
 
-noncomputable def polygonCoverPoleFlag (v : PolygonCoverPole hc f) : StrictOrdTri P :=
+def polygonCoverPoleFlag (v : PolygonCoverPole hc f) :=
   polygonCoverPoleFlagPlus hc f hf v.1 v.2 0
 
 theorem polygonCoverPoleFlag_injective :
@@ -328,7 +300,7 @@ theorem polygonCoverPoleFlag_injective :
   apply Subtype.ext
   exact congrArg (fun t : StrictOrdTri P => t.1.1) h
 
-noncomputable def polygonCoverPoleCoefficients :
+def polygonCoverPoleCoefficients :
     (StrictOrdTri P →₀ ℤ) →ₗ[ℤ] (PolygonCoverPole hc f →₀ ℤ) :=
   (Finsupp.comapDomain.addMonoidHom (polygonCoverPoleFlag_injective hc f hf)).toIntLinearMap
 
@@ -348,23 +320,22 @@ theorem polygonCoverPole_relative_ext (hM : 2 ≤ M)
     (he : polygonCoverPoleCoefficients hc f hf c = polygonCoverPoleCoefficients hc f hf d)
     (t : StrictOrdTri P) (ht : f t.1.1 = cC hc) : c t = d t := by
   let v : PolygonCoverPole hc f := ⟨t.1.1, ht⟩
-  have hp : c (polygonCoverPoleFlag hc f hf v) = d (polygonCoverPoleFlag hc f hf v) :=
+  have hp : c _ = d _ :=
     congrArg (fun z => z v) he
   have hlink := polygonPole_cycle_ext hc hM
-    (polygonCoverPoleLink hc f hf v.1 v.2 c)
-    (polygonCoverPoleLink hc f hf v.1 v.2 d)
+    _
+    _
     (polygonCoverPoleLink_cycle hc f hf v.1 v.2 c hc')
     (polygonCoverPoleLink_cycle hc f hf v.1 v.2 d hd)
-    (by simpa only [polygonCoverPoleLink_plus, polygonCoverPoleFlag] using hp)
+    (by simp_all [polygonCoverPoleLink_plus, polygonCoverPoleFlag])
   let e : StrictOrdEdge (StrictAbove v.1) :=
     ⟨(⟨t.1.2.1, t.2.1⟩, ⟨t.1.2.2, t.2.1.trans t.2.2⟩), t.2.2⟩
-  have hh := congrArg (fun z => z ((polygonCoverPoleHom hc f hf v.1 v.2).onE e)) hlink
-  convert hh using 1 <;> simp only [polygonCoverPoleLink_apply] <;> rfl
+  convert (congrArg (fun z => z ((polygonCoverPoleHom hc f hf v.1 v.2).onE e)) hlink) using 1 <;> simp only [polygonCoverPoleLink_apply] <;> rfl
 
 /-- Reindexing the genuine pole lifts by a group gives a full group-ring
 coefficient.  The next formula shows explicitly that no sheet is summed away. -/
-noncomputable def polygonCoverGroupCoefficient {G : Type u} [Group G]
-    (e : PolygonCoverPole hc f ≃ G) (c : StrictOrdTri P →₀ ℤ) : MonoidAlgebra ℤ G :=
+def polygonCoverGroupCoefficient {G : Type u} [Group G]
+    (e : PolygonCoverPole hc f ≃ G) (c : StrictOrdTri P →₀ ℤ) :=
   MonoidAlgebra.ofCoeff (Finsupp.mapDomain e (polygonCoverPoleCoefficients hc f hf c))
 
 end Cover
@@ -390,16 +361,8 @@ theorem polygonCover_boundary_vanishes_at_poles
   intro e he
   by_contra hn
   have hh := hboundary e (Finsupp.mem_support_iff.mpr hn)
-  rw (config := { transparency := .default }) [he] at hh
-  exact hh
+  aesop
 
 end BoundarySupport
 
-namespace Genus
-variable (q : ℕ) [NeZero q]
-
-variable {P : Type} [PartialOrder P]
-  (f : P → SCell (gvc q) (gec q) (gc q)) (hf : IsPosetCover f)
-
-end Genus
 end FiniteChains.Davis

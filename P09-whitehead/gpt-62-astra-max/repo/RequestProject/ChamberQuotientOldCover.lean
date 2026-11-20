@@ -8,9 +8,6 @@ public import RequestProject.ChamberZConnected
 @[expose] public section
 
 /-! The old-block part of the actual quotient universal cover is an actual poset cover. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -40,13 +37,17 @@ def qOldPartOrderIso : {p : Qpos A X att // InQOld p} ≃o QOld A where
       | inr x => exact False.elim hr
       | inl d => rfl
 
-abbrev QLiftedOld (a : Qpos A X att) :=
+variable (a : Qpos A X att)
+
+abbrev QLiftedOld :=
   {p : UOrder (Qpos A X att) a // InQOld (uOrderEnd p)}
 
-def qOldCoverEnd (a : Qpos A X att) (p : QLiftedOld a) : QOld A :=
+variable (p : QLiftedOld a)
+
+def qOldCoverEnd :=
   qOldPartOrderIso ⟨uOrderEnd p.1, p.2⟩
 
-theorem qOldCoverEnd_spec (a : Qpos A X att) (p : QLiftedOld a) :
+theorem qOldCoverEnd_spec :
     (Sum.inl (qOldCoverEnd a p) : Qpos A X att) = uOrderEnd p.1 :=
   congrArg Subtype.val (qOldPartOrderIso.symm_apply_apply ⟨uOrderEnd p.1, p.2⟩)
 

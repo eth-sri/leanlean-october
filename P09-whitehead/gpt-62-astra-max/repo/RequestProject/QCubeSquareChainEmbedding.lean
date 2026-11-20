@@ -12,8 +12,7 @@ variable {V C : Type} [DecidableEq V] {A : CommRel V}
   (cell : C → QCube A) (left right : C → V)
   (hne : ∀ i, left i ≠ right i) (hspx : ∀ i, (cell i).spx = {left i, right i})
 
-noncomputable def squareChainSubdivision : (C →₀ ℤ) →ₗ[ℤ]
-    ((strictOrderCx (QCube A)).F →₀ ℤ) :=
+noncomputable def squareChainSubdivision :=
   Finsupp.linearCombination ℤ
     (fun i => cubeSquareSubdivision (cell i) (left i) (right i) (hne i) (hspx i))
 
@@ -21,7 +20,7 @@ theorem squareChainSubdivision_filter_top (hcell : Function.Injective cell)
     (z : C →₀ ℤ) (i : C) :
     (squareChainSubdivision cell left right hne hspx z).filter
       (fun t : (strictOrderCx (QCube A)).F => t.1.2.2 = cell i) =
-      z i • cubeSquareSubdivision (cell i) (left i) (right i) (hne i) (hspx i) := by
+      z i • cubeSquareSubdivision _ _ _ (hne i) (hspx i) := by
   classical
   induction z using Finsupp.induction_linear with
   | zero => simp [Finsupp.filter_zero]
@@ -31,9 +30,8 @@ theorem squareChainSubdivision_filter_top (hcell : Function.Injective cell)
       rw [squareChainSubdivision, Finsupp.linearCombination_single,
         Finsupp.filter_smul, cubeSquareSubdivision_filter_top]
       by_cases hji : j = i
-      · subst j
-        simp
-      · have hci : cell j ≠ cell i := fun h => hji (hcell h)
-        simp [hci, hji]
+      · simp_all
+      · have hci := fun h => hji (hcell h)
+        simp_all
 
 end FiniteChains.Davis

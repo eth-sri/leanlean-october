@@ -6,16 +6,14 @@ public import RequestProject.QCubeSquareCoefficientSigns
 @[expose] public section
 
 /-! The genuine square radial boundary matrix has one-dimensional integral kernel. -/
-set_option maxHeartbeats 1000000
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 
-theorem squareInternalBoundary_facet (z : (Bool × ZMod 2 × Bool) →₀ ℤ)
+variable (z : (Bool × ZMod 2 × Bool) →₀ ℤ)
+
+theorem squareInternalBoundary_facet
     (e : Bool) (s : ZMod 2) :
     squareInternalBoundary z (.inl (e, s)) = z (e, s, false) + z (e, s, true) := by
   classical
@@ -27,7 +25,7 @@ theorem squareInternalBoundary_facet (z : (Bool × ZMod 2 × Bool) →₀ ℤ)
       cases e <;> cases f <;> fin_cases s <;> fin_cases t <;> cases b <;>
         simp [squareInternalBoundary, Prod.mk.injEq]
 
-theorem squareInternalBoundary_vertex (z : (Bool × ZMod 2 × Bool) →₀ ℤ)
+theorem squareInternalBoundary_vertex
     (s t : ZMod 2) :
     squareInternalBoundary z (.inr (s, t)) =
       -(z (true, s, decide (t = 0)) + z (false, t, decide (s = 0))) := by
@@ -40,7 +38,7 @@ theorem squareInternalBoundary_vertex (z : (Bool × ZMod 2 × Bool) →₀ ℤ)
       cases e <;> fin_cases r <;> cases b <;> fin_cases s <;> fin_cases t <;>
         simp [squareInternalBoundary, squareFlagCornerIndex, Prod.mk.injEq]
 
-theorem squareInternalBoundary_kernel (z : (Bool × ZMod 2 × Bool) →₀ ℤ)
+theorem squareInternalBoundary_kernel
     (hz : squareInternalBoundary z = 0) :
     ∀ i, z i = z (false, 0, false) * squareFlagSign i := by
   have hf00 := congrArg (fun w : SquareRadialIndex →₀ ℤ => w (.inl (false, 0))) hz
@@ -68,16 +66,14 @@ theorem squareChain_eq_scalar_subdivision {V : Type} [DecidableEq V] {A : CommRe
   let r := squareFlagCoordinates c a b hne hs z
   have hr : squareInternalBoundary r = 0 := by
     rw [← squareInternalBoundary_naturality c a b hne hs r]
-    rw [squareFlagCoordinates_reconstruct c a b hne hs z hz]
-    exact hint
+    grind [squareFlagCoordinates_reconstruct]
   have he : r = r (false, 0, false) •
       squareFlagCoordinates c a b hne hs (cubeSquareSubdivision c a b hne hs) := by
     ext i
     rw [Finsupp.smul_apply, squareFlagCoordinates_apply c a b hne hs
       (cubeSquareSubdivision c a b hne hs) i, squareSubdivision_flag_coefficient, smul_eq_mul]
-    exact squareInternalBoundary_kernel r hr i
+    apply squareInternalBoundary_kernel <;> assumption
   let f := Finsupp.lmapDomain ℤ ℤ (squareFlag c a b hne hs)
-  have hzr : f r = z := squareFlagCoordinates_reconstruct c a b hne hs z hz
   have hsr : f (squareFlagCoordinates c a b hne hs (cubeSquareSubdivision c a b hne hs)) =
       cubeSquareSubdivision c a b hne hs := by
     apply squareFlagCoordinates_reconstruct
@@ -86,10 +82,9 @@ theorem squareChain_eq_scalar_subdivision {V : Type} [DecidableEq V] {A : CommRe
     exact (Finsupp.mem_support_iff.mp ht)
       (cubeSquareSubdivision_eq_zero_off_top c a b hne hs t htop)
   calc
-    z = f r := hzr.symm
-    _ = f (r (false, 0, false) •
-        squareFlagCoordinates c a b hne hs (cubeSquareSubdivision c a b hne hs)) := congrArg f he
-    _ = r (false, 0, false) • cubeSquareSubdivision c a b hne hs := by rw [map_smul, hsr]
+    z = f r := (squareFlagCoordinates_reconstruct c a b hne hs z hz).symm
+    _ = f _ := congrArg f he
+    _ = r _ • cubeSquareSubdivision c a b hne hs := by rw [map_smul, hsr]
     _ = _ := rfl
 
 end FiniteChains.Davis

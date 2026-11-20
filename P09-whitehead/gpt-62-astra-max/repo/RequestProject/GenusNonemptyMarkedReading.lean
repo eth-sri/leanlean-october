@@ -21,20 +21,18 @@ theorem genusNonempty_hread (s : PUnit) (x : ℕ × Bool) :
         (genusNonemptyAtt ρ a b q).monotone) (gSig q x) ++ revPath [])
       (wordLoop (genusNonemptyW ρ a b q) (genusLw a b q s x)) := by
   set k : ℕ := 4 * (x.1 % q) + (if x.2 then 1 else 0) with hkdef
-  have hk : k < (genusNonemptyW ρ a b q (Sum.inr PUnit.unit)).length :=
+  have hk :=
     genus_index_lt a b q x
   have hsig : gSig q x = bdEdge (gc q) (cyc (8 * q) (2 * k)) ++
       bdEdge (gc q) (cyc (8 * q) (2 * k + 1)) := by
     have h1 : gSig q x = gPath q (2 * k) := by
       rw [gSig_eq, genus_index]
-    rw [h1]
-    exact pPath_eq (gc q) (2 * k)
+    assumption
   have hlet : (genusNonemptyW ρ a b q (Sum.inr PUnit.unit))[k]'hk = sLet a b k := by
     have h := surfWord_getElem? a b q k (by
       have := genus_index_lt a b q x
-      rw [surfWord_length] at this
-      exact this)
-    have h' : (genusNonemptyW ρ a b q (Sum.inr PUnit.unit))[k]? = some (sLet a b k) := h
+      simp_all)
+    have h' := h
     rw [List.getElem?_eq_getElem hk] at h'
     exact Option.some.inj h'
   have hmain := htpy_mapPath_letter (w := genusNonemptyW ρ a b q)
@@ -45,7 +43,6 @@ theorem genusNonempty_hread (s : PUnit) (x : ℕ × Bool) :
   have hword : wordLoop (genusNonemptyW ρ a b q) (genusLw a b q s x) =
       letterLoop (genusNonemptyW ρ a b q) (sLet a b k) := by
     simp [genusLw, wordLoop, hkdef]
-  rw [hword]
-  simpa using hmain
+  simp_all
 
 end FiniteChains.Davis.Genus

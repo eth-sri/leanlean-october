@@ -23,7 +23,7 @@ variable {D K L : Complex2.{u}} {Q : Type v} [Group Q]
 
 include hr he hf hEconn in
 theorem copy_ranges_eq_of_meet
-    (g h : Pi1 (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) (d e : D.V)
+    (g h : Pi1 _ _) (d e : D.V)
     (hmeet : (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onV d =
       (translatedOldLift p i hiV hiE hiF hconn d₀ ht h).onV e) :
     Set.range (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onV =
@@ -37,37 +37,33 @@ theorem copy_ranges_eq_of_meet
   refine ⟨?_, ?_, ?_⟩
   · ext v
     constructor
-    · rintro ⟨d, rfl⟩
-      exact ⟨a.smulV q d, (hV d).symm⟩
+    · grind
     · rintro ⟨d, rfl⟩
       refine ⟨a.smulV q⁻¹ d, ?_⟩
       simpa only [← a.mul_smulV, mul_inv_cancel, a.one_smulV] using hV (a.smulV q⁻¹ d)
   · ext e
     constructor
-    · rintro ⟨d, rfl⟩
-      exact ⟨a.smulE q d, (hE d).symm⟩
+    · grind
     · rintro ⟨d, rfl⟩
       refine ⟨a.smulE q⁻¹ d, ?_⟩
       simpa only [← a.mul_smulE, mul_inv_cancel, a.one_smulE] using hE (a.smulE q⁻¹ d)
   · ext f
     constructor
-    · rintro ⟨d, rfl⟩
-      exact ⟨a.smulF q d, (hF d).symm⟩
+    · grind
     · rintro ⟨d, rfl⟩
       refine ⟨a.smulF q⁻¹ d, ?_⟩
       simpa only [← a.mul_smulF, mul_inv_cancel, a.one_smulF] using hF (a.smulF q⁻¹ d)
 
 include hp hr he hf hiF hconn ht hEconn in
 theorem old_two_cycle_zero (hD : IsAcyclic D)
-    (z : (uCover (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).F →₀ ℤ)
+    (z : (uCover (pushoutComplex p i hiV hiE) _).F →₀ ℤ)
     (hs : ∀ f ∈ z.support, ∃ k : K.F, f.val.2 = Sum.inl k)
     (hz : bdry2 (uCover (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) z = 0) : z = 0 := by
   let φ := translatedOldLift p i hiV hiE hiF hconn d₀ ht
   have hs' : ∀ f ∈ z.support, AcyclicCopies.oldFace φ f := by
     intro f hf'
     obtain ⟨k, hk⟩ := hs f hf'
-    obtain ⟨g, d, hd⟩ := old_faces_covered p hp i hiV hiE hiF hconn d₀ ht f k hk
-    exact ⟨g, d, hd⟩
+    solve_by_elim [old_faces_covered]
   exact AcyclicCopies.two_cycle_zero φ
     (translatedOldLift_injective_E p hp a hr he i hiV hiE hiF hconn d₀ ht)
     (translatedOldLift_injective_F p hp a hr he i hiV hiE hiF hconn d₀ ht)

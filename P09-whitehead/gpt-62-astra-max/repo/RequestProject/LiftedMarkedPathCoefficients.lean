@@ -5,7 +5,7 @@ public import RequestProject.ReceivedTreeMarkedComparison
 @[expose] public section
 
 /-! Exact coefficient recovery from distinct first edges of actual lifted
-marking paths. 
+marking paths.
 -/
 open scoped Classical
 namespace FiniteChains.Comb
@@ -17,8 +17,8 @@ theorem pathChain_apply_zero_of_edge_absent {E : Type u} (p : List (E × Bool))
   induction p with
   | nil => simp
   | cons b p ih =>
-      have hb : b.1 ≠ e := hp b (List.mem_cons_self ..)
-      have ht : ∀ c ∈ p, c.1 ≠ e := fun c hc => hp c (List.mem_cons_of_mem b hc)
+      have hb := hp b (List.mem_cons_self ..)
+      have ht := fun c hc => hp c (List.mem_cons_of_mem b hc)
       rw [pathChain_cons, Finsupp.add_apply, ih ht]
       cases b.2 <;> simp [hb]
 
@@ -32,8 +32,8 @@ theorem liftedPathChain_apply_zero_of_edge_absent
   intro c hc hce
   have hm : (c.1.1.2, c.2) ∈ p := by
     rw [← map_uLiftPath p v b hp]
-    exact List.mem_map.mpr ⟨c, hc, rfl⟩
-  exact he _ hm (congrArg (fun e : UE X a => e.1.2) hce)
+    grind
+  grind
 
 section Markings
 variable {I J : Type u} (b : X.V) (edge : I → X.E)
@@ -47,8 +47,12 @@ theorem markedFirstEdge_src (i : I) : X.src (edge i) = b := (hp i).1.symm
 noncomputable def liftedMarkedFirstEdge (j : J) (i : I) : UE X a :=
   ⟨(v j, edge i), (hv j).trans (markedFirstEdge_src b edge tail hp i).symm⟩
 
-theorem liftedMarkedFirstEdge_injective (he : Function.Injective edge)
-    (hv' : Function.Injective v) :
+section
+
+variable (he : Function.Injective edge) (hv' : Function.Injective v)
+include he hv'
+
+theorem liftedMarkedFirstEdge_injective :
     Function.Injective (fun x : J × I => liftedMarkedFirstEdge b edge tail hp v hv x.1 x.2) := by
   intro x y hxy
   exact Prod.ext (hv' (congrArg (fun e : UE X a => e.1.1) hxy))
@@ -57,7 +61,6 @@ theorem liftedMarkedFirstEdge_injective (he : Function.Injective edge)
 /-- No occurrence later in any marking contributes to the distinguished
 lifted first-edge coefficient, regardless of its sheet. -/
 theorem liftedMarking_first_coefficient
-    (he : Function.Injective edge) (hv' : Function.Injective v)
     (ht : ∀ i k c, c ∈ tail k → c.1 ≠ edge i) (j k : J) (i l : I) :
     pathChain (uLiftPath ((edge l, true) :: tail l) (v k))
       (liftedMarkedFirstEdge b edge tail hp v hv j i) =
@@ -80,39 +83,42 @@ theorem liftedMarking_first_coefficient
         liftedMarkedFirstEdge b edge tail hp v hv j i ↔ (k, l) = (j, i) :=
     ⟨@hinj (k, l) (j, i),
       fun h => congrArg (fun x : J × I => liftedMarkedFirstEdge b edge tail hp v hv x.1 x.2) h⟩
-  simp only [Finsupp.single_apply, hsame]
+  grind
+
+end
 
 noncomputable def liftedMarkingChainMap : ((J × I) →₀ ℤ) →ₗ[ℤ] (UE X a →₀ ℤ) :=
   Finsupp.linearCombination ℤ
     (fun x => pathChain (uLiftPath ((edge x.2, true) :: tail x.2) (v x.1)))
 
+variable (he : Function.Injective edge)
+    (hv' : Function.Injective v)
+    (ht : ∀ i k c, c ∈ tail k → c.1 ≠ edge i)
+include he hv' ht
+
 /-- This recovers the original finite coefficient function, with no
 augmentation or sum over sheets. -/
 theorem liftedMarkingChainMap_coefficient
-    (he : Function.Injective edge) (hv' : Function.Injective v)
-    (ht : ∀ i k c, c ∈ tail k → c.1 ≠ edge i)
     (c : (J × I) →₀ ℤ) (j : J) (i : I) :
     liftedMarkingChainMap edge tail v c (liftedMarkedFirstEdge b edge tail hp v hv j i) =
       c (j, i) := by
   classical
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]
+  | add c d hc hd => simp [map_add, Finsupp.add_apply, hc, hd]
   | single x n =>
       rw [liftedMarkingChainMap, Finsupp.linearCombination_single, Finsupp.smul_apply,
         liftedMarking_first_coefficient b edge tail hp v hv he hv' ht]
       by_cases h : x = (j, i) <;> simp [h]
 
 include hp hv in
-theorem liftedMarkingChainMap_injective
-    (he : Function.Injective edge) (hv' : Function.Injective v)
-    (ht : ∀ i k c, c ∈ tail k → c.1 ≠ edge i) :
+theorem liftedMarkingChainMap_injective :
     Function.Injective (liftedMarkingChainMap edge tail v) := by
   intro c d hcd
   ext x
   have h := congrArg (fun z : UE X a →₀ ℤ =>
     z (liftedMarkedFirstEdge b edge tail hp v hv x.1 x.2)) hcd
-  simpa only [liftedMarkingChainMap_coefficient b edge tail hp v hv he hv' ht] using h
+  grind [liftedMarkingChainMap_coefficient]
 
 end Markings
 end FiniteChains.Comb

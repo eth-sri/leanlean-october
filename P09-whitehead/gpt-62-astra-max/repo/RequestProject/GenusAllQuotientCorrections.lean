@@ -9,8 +9,6 @@ group. This keeps the polygon scalar in its original ring until every
 spine and marking coordinate has been recovered. Awaiting Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -21,8 +19,7 @@ variable (q : ℕ) [NeZero q] {α Jr : Type}
 abbrev QuotientMarkingGroup :=
   Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)
 
-def allQuotientMarkingCorrection (g : QuotientMarkingGroup q ρ u) (i : Fin q × Bool) :
-    (uCover (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).F →₀ ℤ :=
+def allQuotientMarkingCorrection (g : QuotientMarkingGroup q ρ u) (i : Fin q × Bool) :=
   (univDeck (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).faceChains g
     (chain2 (oldCoverToNamedQuotient q ρ u) (spineOldMarkingCorrection q i))
 
@@ -37,17 +34,15 @@ theorem allQuotientMarkingCorrections_translate (g : QuotientMarkingGroup q ρ u
       (univDeck (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).faceChains g
         (allQuotientMarkingCorrections q ρ u c) := by
   induction c using Finsupp.induction_linear with
-  | zero => simp [ReceivedTree.translateCellChain]
+  | zero => rfl
   | add c d hc hd =>
-      simp only [ReceivedTree.translateCellChain, Finsupp.mapDomain_add, map_add] at hc hd ⊢
-      rw (config := { transparency := .default }) [hc, hd]
+      simp_all [ReceivedTree.translateCellChain, Finsupp.mapDomain_add, map_add, hc, hd]
   | single x n =>
-      rw (config := { transparency := .default }) [ReceivedTree.translateCellChain, Finsupp.mapDomain_single]
-      simp only [allQuotientMarkingCorrections, Finsupp.linearCombination_single,
-        map_smul, allQuotientMarkingCorrection, DeckAction.faceChains_mul]
+      simp [ReceivedTree.translateCellChain, Finsupp.mapDomain_single, allQuotientMarkingCorrections, Finsupp.linearCombination_single, map_smul, allQuotientMarkingCorrection, DeckAction.faceChains_mul]
+
+variable (w : MonoidAlgebra ℤ (QuotientMarkingGroup q ρ u))
 
 theorem allQuotientMarkingCorrections_multiply
-    (w : MonoidAlgebra ℤ (QuotientMarkingGroup q ρ u))
     (c : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ) :
     allQuotientMarkingCorrections q ρ u (ReceivedTree.multiplyCellChain c w) =
       Finsupp.linearCombination ℤ (fun g =>
@@ -55,19 +50,15 @@ theorem allQuotientMarkingCorrections_multiply
           (allQuotientMarkingCorrections q ρ u c)) w.coeff := by
   induction w using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add w z hw hz => simp only [map_add, MonoidAlgebra.coeff_add, hw, hz]
+  | add w z hw hz => simp_all
   | single g n =>
-      simp only [ReceivedTree.multiplyCellChain, LinearMap.comp_apply,
-        LinearEquiv.coe_toLinearMap, MonoidAlgebra.coeffLinearEquiv_apply,
-        MonoidAlgebra.coeff_single, Finsupp.linearCombination_single]
-      rw (config := { transparency := .default }) [map_smul,
-        allQuotientMarkingCorrections_translate]
+      simp [ReceivedTree.multiplyCellChain, LinearMap.comp_apply, LinearEquiv.coe_toLinearMap, MonoidAlgebra.coeffLinearEquiv_apply, MonoidAlgebra.coeff_single, Finsupp.linearCombination_single, map_smul, allQuotientMarkingCorrections_translate]
+
+variable (c d : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ)
 
 /-- The marked boundary detects the exact correction chain even when the
 scalar has support outside the substituted subgroup. -/
 theorem allQuotientMarkingCorrections_eq_of_boundary_multiple
-    (w : MonoidAlgebra ℤ (QuotientMarkingGroup q ρ u))
-    (c d : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ)
     (h : allQuotientSurfaceMarkingChains q ρ u c =
       Finsupp.linearCombination ℤ (fun g => chain1
         ((univDeck (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).cellHom g)
@@ -76,15 +67,13 @@ theorem allQuotientMarkingCorrections_eq_of_boundary_multiple
       Finsupp.linearCombination ℤ (fun g =>
         (univDeck (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).faceChains g
           (allQuotientMarkingCorrections q ρ u d)) w.coeff := by
-  rw (config := { transparency := .default }) [← allQuotientSurfaceMarkingChains_multiply] at h
-  rw (config := { transparency := .default }) [allQuotientSurfaceMarkingChains_injective q ρ u h,
+  erw [← allQuotientSurfaceMarkingChains_multiply] at h
+  erw [allQuotientSurfaceMarkingChains_injective q ρ u h,
     allQuotientMarkingCorrections_multiply]
 
 /-- Consequently the correction cancels from the relative difference as an
 equality of actual two-chains, before applying old-cover faithfulness. -/
 theorem allQuotientCorrection_cancel_difference
-    (w : MonoidAlgebra ℤ (QuotientMarkingGroup q ρ u))
-    (c d : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ)
     (x y : (uCover (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).F →₀ ℤ)
     (h : allQuotientSurfaceMarkingChains q ρ u c =
       Finsupp.linearCombination ℤ (fun g => chain1
@@ -107,9 +96,9 @@ theorem allQuotientCorrection_cancel_difference
     clear h
     induction w using MonoidAlgebra.induction_linear with
     | zero => simp
-    | add w z hw hz => rw (config := { transparency := .default }) [MonoidAlgebra.coeff_add, map_add, map_add, map_add, hw, hz]; abel
-    | single g n => simp only [MonoidAlgebra.coeff_single, Finsupp.linearCombination_single, map_sub, smul_sub]
-  rw (config := { transparency := .default }) [hs, ← allQuotientMarkingCorrections_eq_of_boundary_multiple q ρ u w c d h]
+    | add w z hw hz => erw [MonoidAlgebra.coeff_add, map_add, map_add, map_add, hw, hz]; abel
+    | single g n => simp [MonoidAlgebra.coeff_single, Finsupp.linearCombination_single, map_sub, smul_sub]
+  erw [hs, ← allQuotientMarkingCorrections_eq_of_boundary_multiple q ρ u w c d h]
   abel
 
 variable (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
@@ -121,11 +110,9 @@ theorem quotientMarkingCorrections_factor
         (Finsupp.mapDomain (fun x => (finiteSpineToQuotient ρ q u hrho x.1, x.2)) c) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.mapDomain_add, hc, hd]
+  | add c d hc hd => simp [map_add, Finsupp.mapDomain_add, hc, hd]
   | single x n =>
-      simp only [Finsupp.mapDomain_single, quotientMarkingCorrections,
-        allQuotientMarkingCorrections, Finsupp.linearCombination_single,
-        quotientMarkingCorrection, allQuotientMarkingCorrection]
+      simp [Finsupp.mapDomain_single, quotientMarkingCorrections, allQuotientMarkingCorrections, Finsupp.linearCombination_single, quotientMarkingCorrection, allQuotientMarkingCorrection]
 
 /-- Reflect the same polygon scalar on both parts of the named relation
 vector at once. This avoids choosing unrelated scalars for faces and markings. -/

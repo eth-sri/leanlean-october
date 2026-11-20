@@ -17,53 +17,39 @@ instance : PartialOrder VertexPuncturedCube where
   le_trans c d e hcd hde v := by
     rcases hde v with he | he
     · exact Or.inl he
-    · rcases hcd v with hd | hd
-      · exact Or.inl (he.symm.trans hd)
-      · exact Or.inr (hd.trans he)
+    · rcases hcd v with hd | hd <;> simp_all
   le_antisymm c d hcd hdc := by
     apply Subtype.ext
     funext v
     rcases hcd v with hd | hd
-    · rcases hdc v with hc | hc
-      · exact hc.trans hd.symm
-      · exact hc.symm
+    · rcases hdc v with hc | hc <;> simp_all
     · exact hd
 
-def vertexPunctureRight (c : VertexPuncturedCube) : Prop := c.1 0 ≠ CubeCoord.pos
+def vertexPunctureRight (c : VertexPuncturedCube) := c.1 0 ≠ CubeCoord.pos
 
 def vertexPunctureRightPole : {c : VertexPuncturedCube // vertexPunctureRight c} :=
   ⟨⟨coordinateFix 0 CubeCoord.neg (fun _ => CubeCoord.free), by
       constructor
+      · simp [coordinateFix, Function.update_self]
       · intro h
-        have hh := congrFun h 0
-        simp only [coordinateFix, Function.update_self] at hh
-        cases hh
-      · intro h
-        have hh := congrFun h 0
-        simp only [coordinateFix, Function.update_self] at hh
-        cases hh⟩, by
+        cases (congrFun h 0)⟩, by
     change coordinateFix 0 CubeCoord.neg (fun _ : Fin 3 => CubeCoord.free) 0 ≠ CubeCoord.pos
-    simp only [coordinateFix, Function.update_self]
     decide⟩
 
-def vertexPunctureRightProjection (c : {c : VertexPuncturedCube // vertexPunctureRight c}) :
+variable (c : {c : VertexPuncturedCube // vertexPunctureRight c})
+
+def vertexPunctureRightProjection :
     {c : VertexPuncturedCube // vertexPunctureRight c} :=
   ⟨⟨coordinateFix 0 CubeCoord.neg c.1.1, by
       constructor
       · intro h
-        have hh := congrFun h 0
-        simp only [coordinateFix, Function.update_self] at hh
-        cases hh
+        cases (congrFun h 0)
       · intro h
-        have hh := congrFun h 0
-        simp only [coordinateFix, Function.update_self] at hh
-        cases hh⟩, by
+        cases (congrFun h 0)⟩, by
     change coordinateFix 0 CubeCoord.neg c.1.1 0 ≠ CubeCoord.pos
-    simp only [coordinateFix, Function.update_self]
-    decide⟩
+    simp [coordinateFix, Function.update_self]⟩
 
-theorem vertexPunctureRightProjection_le
-    (c : {c : VertexPuncturedCube // vertexPunctureRight c}) :
+theorem vertexPunctureRightProjection_le :
     vertexPunctureRightProjection c ≤ c := by
   intro v
   by_cases hv : v = 0
@@ -71,21 +57,18 @@ theorem vertexPunctureRightProjection_le
     have hc : c.1.1 0 ≠ CubeCoord.pos := c.2
     cases he : c.1.1 0 with
     | free => exact Or.inl rfl
-    | pos => exact False.elim (hc he)
+    | pos => simp_all
     | neg =>
-      right
-      simp only [vertexPunctureRightProjection, coordinateFix, Function.update_self]
+      aesop
   · right
-    exact Function.update_of_ne hv _ _
+    apply Function.update_of_ne <;> assumption
 
-theorem vertexPunctureRightProjection_le_pole
-    (c : {c : VertexPuncturedCube // vertexPunctureRight c}) :
+theorem vertexPunctureRightProjection_le_pole :
     vertexPunctureRightProjection c ≤ vertexPunctureRightPole :=
-  coordinateFix_face_mono 0 CubeCoord.neg (fun _ => Or.inl rfl)
+  by solve_by_elim [coordinateFix_face_mono]
 
 theorem vertexPunctureRightProjection_monotone : Monotone vertexPunctureRightProjection := by
-  intro c d h
-  exact coordinateFix_face_mono 0 CubeCoord.neg h
+  solve_by_elim [coordinateFix_face_mono]
 
 theorem vertexPunctureRight_simplyConnected :
     SimplyConnected (orderCx {c : VertexPuncturedCube // vertexPunctureRight c}) :=
@@ -100,7 +83,7 @@ theorem vertexPunctureRight_connected :
 
 def vertexPunctureCornerEdge : Cube (Fin 3) := coordinateFix 0 CubeCoord.free (fun _ => CubeCoord.pos)
 
-def vertexPunctureLeft (c : VertexPuncturedCube) : Prop :=
+def vertexPunctureLeft (c : VertexPuncturedCube) :=
   c.1 0 ≠ CubeCoord.neg ∧ c.1 ≠ vertexPunctureCornerEdge
 
 theorem vertexPunctureLeftProjection_ne_vertex
@@ -109,64 +92,44 @@ theorem vertexPunctureLeftProjection_ne_vertex
   intro h
   have hrest (v : Fin 3) (hv : v ≠ 0) : c.1.1 v = CubeCoord.pos := by
     have hh := congrFun h v
-    simpa only [coordinateFix, Function.update_of_ne hv] using hh
+    simp_all [coordinateFix, Function.update_of_ne]
   cases he : c.1.1 0 with
-  | neg => exact c.2.1 he
+  | neg => apply c.2.1 <;> assumption
   | pos =>
-    apply c.1.2.2
-    funext v
-    by_cases hv : v = 0
-    · subst v
-      exact he
-    · exact hrest v hv
+    grind
   | free =>
     apply c.2.2
     funext v
     by_cases hv : v = 0
-    · subst v
-      simpa only [vertexPunctureCornerEdge, coordinateFix, Function.update_self] using he
-    · simpa only [vertexPunctureCornerEdge, coordinateFix, Function.update_of_ne hv] using hrest v hv
+    · aesop
+    · simp_all [vertexPunctureCornerEdge, coordinateFix, Function.update_of_ne]
 
 def vertexPunctureLeftPole : {c : VertexPuncturedCube // vertexPunctureLeft c} :=
   ⟨⟨coordinateFix 0 CubeCoord.pos (fun _ => CubeCoord.free), by
       constructor
+      · simp [coordinateFix, Function.update_self]
       · intro h
-        have hh := congrFun h 0
-        simp only [coordinateFix, Function.update_self] at hh
-        cases hh
-      · intro h
-        have hh := congrFun h (1 : Fin 3)
-        simp only [coordinateFix, Function.update_of_ne (by decide : (1 : Fin 3) ≠ 0)] at hh
-        cases hh⟩, by
+        cases (congrFun h 1)⟩, by
     constructor
-    · change coordinateFix 0 CubeCoord.pos (fun _ : Fin 3 => CubeCoord.free) 0 ≠ CubeCoord.neg
-      simp only [coordinateFix, Function.update_self]
-      decide
+    · decide
     · intro h
-      have hh := congrFun h 0
-      simp only [vertexPunctureCornerEdge, coordinateFix, Function.update_self] at hh
-      cases hh⟩
+      cases (congrFun h 0)⟩
 
-def vertexPunctureLeftProjection (c : {c : VertexPuncturedCube // vertexPunctureLeft c}) :
+variable (c : {c : VertexPuncturedCube // vertexPunctureLeft c})
+
+def vertexPunctureLeftProjection :
     {c : VertexPuncturedCube // vertexPunctureLeft c} :=
   ⟨⟨coordinateFix 0 CubeCoord.pos c.1.1, by
       constructor
       · intro h
-        have hh := congrFun h 0
-        simp only [coordinateFix, Function.update_self] at hh
-        cases hh
+        cases (congrFun h 0)
       · exact vertexPunctureLeftProjection_ne_vertex c⟩, by
     constructor
-    · change coordinateFix 0 CubeCoord.pos c.1.1 0 ≠ CubeCoord.neg
-      simp only [coordinateFix, Function.update_self]
-      decide
+    · simp [coordinateFix, Function.update_self]
     · intro h
-      have hh := congrFun h 0
-      simp only [vertexPunctureCornerEdge, coordinateFix, Function.update_self] at hh
-      cases hh⟩
+      cases (congrFun h 0)⟩
 
-theorem vertexPunctureLeftProjection_le
-    (c : {c : VertexPuncturedCube // vertexPunctureLeft c}) :
+theorem vertexPunctureLeftProjection_le :
     vertexPunctureLeftProjection c ≤ c := by
   intro v
   by_cases hv : v = 0
@@ -175,19 +138,16 @@ theorem vertexPunctureLeftProjection_le
     | free => exact Or.inl rfl
     | neg => exact False.elim (c.2.1 he)
     | pos =>
-      right
-      simp only [vertexPunctureLeftProjection, coordinateFix, Function.update_self]
+      aesop
   · right
-    exact Function.update_of_ne hv _ _
+    apply Function.update_of_ne <;> assumption
 
-theorem vertexPunctureLeftProjection_le_pole
-    (c : {c : VertexPuncturedCube // vertexPunctureLeft c}) :
+theorem vertexPunctureLeftProjection_le_pole :
     vertexPunctureLeftProjection c ≤ vertexPunctureLeftPole :=
-  coordinateFix_face_mono 0 CubeCoord.pos (fun _ => Or.inl rfl)
+  by solve_by_elim [coordinateFix_face_mono]
 
 theorem vertexPunctureLeftProjection_monotone : Monotone vertexPunctureLeftProjection := by
-  intro c d h
-  exact coordinateFix_face_mono 0 CubeCoord.pos h
+  solve_by_elim [coordinateFix_face_mono]
 
 theorem vertexPunctureLeft_simplyConnected :
     SimplyConnected (orderCx {c : VertexPuncturedCube // vertexPunctureLeft c}) :=
@@ -200,37 +160,32 @@ theorem vertexPunctureLeft_connected :
   isConnected_orderCx vertexPunctureLeftPole vertexPunctureLeftProjection
     vertexPunctureLeftProjection_le vertexPunctureLeftProjection_le_pole
 
-theorem vertexPuncture_positive_mem_left (c : VertexPuncturedCube)
+variable (c : VertexPuncturedCube)
+
+theorem vertexPuncture_positive_mem_left
     (hc : c.1 0 = CubeCoord.pos) : vertexPunctureLeft c := by
   constructor
-  · rw [hc]
-    decide
+  · simp_all
   · intro h
-    have hh := congrFun h 0
-    simp only [vertexPunctureCornerEdge, coordinateFix, Function.update_self, hc] at hh
-    cases hh
+    simp_all [vertexPunctureCornerEdge, coordinateFix, Function.update_self, hc]
 
-theorem vertexPuncture_cover (c : VertexPuncturedCube) :
+theorem vertexPuncture_cover :
     vertexPunctureLeft c ∨ vertexPunctureRight c := by
   by_cases hc : c.1 0 = CubeCoord.pos
-  · exact Or.inl (vertexPuncture_positive_mem_left c hc)
+  · solve_by_elim [vertexPuncture_positive_mem_left]
   · exact Or.inr hc
 
-theorem vertexPuncture_positive_not_below_edge (c : VertexPuncturedCube)
+theorem vertexPuncture_positive_not_below_edge
     (hc : c.1 0 = CubeCoord.pos) : ¬ CoordinateFace c.1 vertexPunctureCornerEdge := by
   intro h
   apply c.2.2
   funext v
   by_cases hv : v = 0
-  · subst v
-    exact hc
+  · simp_all
   · have he : vertexPunctureCornerEdge v = CubeCoord.pos := by
       simp only [vertexPunctureCornerEdge, coordinateFix, Function.update_of_ne hv]
     have hh := h v
-    rw [he] at hh
-    rcases hh with hh | hh
-    · cases hh
-    · exact hh
+    simp_all
 
 theorem vertexPuncture_unmixed (c d : VertexPuncturedCube) (h : c ≤ d) :
     (vertexPunctureLeft c ∧ vertexPunctureLeft d) ∨
@@ -239,37 +194,25 @@ theorem vertexPuncture_unmixed (c d : VertexPuncturedCube) (h : c ≤ d) :
   | pos =>
     have hc : c.1 0 = CubeCoord.pos := by
       have hh := h 0
-      rw [hd] at hh
-      rcases hh with hh | hh
-      · cases hh
-      · exact hh
-    exact Or.inl ⟨vertexPuncture_positive_mem_left c hc, vertexPuncture_positive_mem_left d hd⟩
+      simp_all
+    grind [vertexPuncture_positive_mem_left]
   | neg =>
     have hc : c.1 0 = CubeCoord.neg := by
       have hh := h 0
-      rw [hd] at hh
-      rcases hh with hh | hh
-      · cases hh
-      · exact hh
+      simp_all
     right
-    constructor <;> change _ ≠ CubeCoord.pos
-    · rw [hc]
-      decide
-    · rw [hd]
-      decide
+    constructor <;> change _ ≠ CubeCoord.pos <;> simp_all
   | free =>
     have hdr : vertexPunctureRight d := by
       change d.1 0 ≠ CubeCoord.pos
-      rw [hd]
-      decide
+      simp_all
     by_cases hcr : vertexPunctureRight c
-    · exact Or.inr ⟨hcr, hdr⟩
-    · have hc : c.1 0 = CubeCoord.pos := not_ne_iff.mp hcr
+    · simp_all
+    · have hc := not_ne_iff.mp hcr
       left
       refine ⟨vertexPuncture_positive_mem_left c hc, ?_⟩
       constructor
-      · rw [hd]
-        decide
+      · simp_all
       · intro he
         exact vertexPuncture_positive_not_below_edge c hc (he ▸ h)
 
@@ -281,15 +224,13 @@ theorem vertexPuncture_intersection_iff (c : VertexPuncturedCube) :
     refine ⟨?_, he⟩
     cases hc : c.1 0 with
     | free => rfl
-    | pos => exact False.elim (hp hc)
-    | neg => exact False.elim (hn hc)
+    | pos => solve_by_elim
+    | neg => simp_all
   · rintro ⟨hf, he⟩
     constructor
     · refine ⟨?_, he⟩
-      rw [hf]
-      decide
+      simp_all
     · change c.1 0 ≠ CubeCoord.pos
-      rw [hf]
-      decide
+      simp_all
 
 end FiniteChains.Davis

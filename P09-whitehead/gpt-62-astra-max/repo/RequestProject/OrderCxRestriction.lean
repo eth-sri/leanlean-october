@@ -9,10 +9,7 @@ public import RequestProject.ComponentComplex
 vertex support. The other face vertices are recovered from the attaching path.
 
 -/
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -24,11 +21,9 @@ theorem orderCxRestrict_edge_support (e : K.E) :
     S (k.onE e).1.1 ∧ S (k.onE e).1.2 := by
   constructor
   · change S ((orderCx P).src (k.onE e))
-    rw [k.src_onE]
-    exact hk _
+    simp_all [k.src_onE]
   · change S ((orderCx P).tgt (k.onE e))
-    rw [k.tgt_onE]
-    exact hk _
+    simp_all [k.tgt_onE]
 
 include hk in
 /-- The middle and final vertices of the image triangle occur as targets of
@@ -39,18 +34,12 @@ theorem orderCxRestrict_face_support (t : K.F) :
     intro e he
     rw [k.att_onF] at he
     obtain ⟨eb, _, heb⟩ := List.mem_map.mp he
-    have ht := congrArg (fun z : OrdEdge P × Bool => z.1.1.2) heb
-    change (k.onE eb.1).1.2 = e.1.2 at ht
-    rw [← ht]
-    exact (orderCxRestrict_edge_support k S hk eb.1).2
+    rw [← (congrArg (fun z : OrdEdge P × Bool => z.1.1.2) heb)]; exact (orderCxRestrict_edge_support k S hk eb.1).2
   refine ⟨?_, ?_, ?_⟩
   · change S ((orderCx P).base (k.onF t))
-    rw [k.base_onF]
-    exact hk _
-  · exact he ⟨((k.onF t).1.1, (k.onF t).1.2.1), (k.onF t).2.1⟩
-      (by simp [orderCx])
-  · exact he ⟨((k.onF t).1.2.1, (k.onF t).1.2.2), (k.onF t).2.2⟩
-      (by simp [orderCx])
+    simp_all [k.base_onF]
+  · simp_all [orderCx]
+  · simp_all [orderCx]
 
 def orderCxRestrictEdge (e : K.E) : OrdEdge {p : P // S p} :=
   ⟨(⟨(k.onE e).1.1, (orderCxRestrict_edge_support k S hk e).1⟩,
@@ -83,22 +72,15 @@ def orderCxRestrict : Hom K (orderCx {p : P // S p}) where
   base_onF t := Subtype.ext (k.base_onF t)
   att_onF t := by
     apply List.map_injective_iff.mpr (orderCxRestrict_germ_injective S)
-    rw [← (subposetHom S).att_onF]
-    change (orderCx P).att (k.onF t) =
-      ((K.att t).map (fun eb => (orderCxRestrictEdge k S hk eb.1, eb.2))).map
-        (fun eb => ((subposetHom S).onE eb.1, eb.2))
-    rw [List.map_map, k.att_onF]
-    congr 1
+    change (orderCx P).att _ =
+      ((K.att t).map _).map
+        _; rw [List.map_map, k.att_onF]; congr 1
 
 @[simp] theorem orderCxRestrict_onV (v : K.V) :
     (orderCxRestrict k S hk).onV v = ⟨k.onV v, hk v⟩ := rfl
 
 /-- Forgetting the support proofs recovers the original cellular map on every cell. -/
 theorem orderCxRestrict_projects :
-    (orderCxMap Subtype.val (fun _ _ h => h)).comp (orderCxRestrict k S hk) = k := by
-  apply Hom.ext'
-  · rfl
-  · rfl
-  · rfl
+    (orderCxMap Subtype.val (fun _ _ h => h)).comp (orderCxRestrict k S hk) = k := rfl
 
 end FiniteChains.Comb

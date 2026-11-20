@@ -19,7 +19,7 @@ theorem boundary_reflection_of_upper_section (r : P → Q) (s : Q → P)
   obtain ⟨y, hy, hdy⟩ := hbound
   have hp := bdry_prism_add_prism_bdry id (s ∘ r) c
   rw [hcyc, map_zero, add_zero, cmap_id] at hp
-  refine ⟨cmap s y - prism id (s ∘ r) c,
+  refine ⟨cmap s y - prism id _ c,
     AddSubgroup.sub_mem _ (cmap_mem_inc_of_monotone hs hy)
       (prism_mem_inc monotone_id (hs.comp hr) hle hc), ?_⟩
   rw [map_sub, ← cmap_bdry, hdy, cmap_comp, hp]

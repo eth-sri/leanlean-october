@@ -5,9 +5,6 @@ public import RequestProject.GeometricChainCollapse
 @[expose] public section
 
 /-! Positive corner cubes may always be collapsed across their own cut facets. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 variable {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
@@ -21,7 +18,7 @@ noncomputable def preferCutFaces (lp : List (Cube V × (Cube V ⊕ Finset V))) :
   lp.map preferCutFace
 
 omit [LinearOrder V] in
-theorem preferCutFaces_positive_pair {lp : List (Cube V × (Cube V ⊕ Finset V))}
+theorem preferCutFaces_positive_pair {lp : List _}
     {p : Cube V × (Cube V ⊕ Finset V)} (hp : p ∈ preferCutFaces lp)
     (hpos : p.1 = posCube (freeSet p.1)) : p.2 = Sum.inr (freeSet p.1) := by
   classical
@@ -33,10 +30,15 @@ theorem preferCutFaces_positive_pair {lp : List (Cube V × (Cube V ⊕ Finset V)
       simpa [Collapse.IsPairCollapse,preferCutFace, if_neg hr] using hpos
     exact False.elim (hr hbad)
 
+variable {L : ASC V}
+    {lp : List (Cube V × (Cube V ⊕ Finset V))}
+    {S : Finset (Cube V)}
+    (hS : S ⊆ topCubes L)
+    (h : Collapse.IsPairCollapse (spineInc L) lp S)
+include L S hS h
+
 omit [LinearOrder V] in
-theorem preferCutFaces_isPairCollapse {L : ASC V}
-    {lp : List (Cube V × (Cube V ⊕ Finset V))} {S : Finset (Cube V)}
-    (hS : S ⊆ topCubes L) (h : Collapse.IsPairCollapse (spineInc L) lp S) :
+theorem preferCutFaces_isPairCollapse :
     Collapse.IsPairCollapse (spineInc L) (preferCutFaces lp) S := by
   classical
   induction lp generalizing S with
@@ -47,17 +49,15 @@ theorem preferCutFaces_isPairCollapse {L : ASC V}
     by_cases hp : p.1 = posCube (freeSet p.1)
     · simp only [preferCutFaces, List.map_cons, preferCutFace, if_pos hp]
       refine ⟨h.1, ?_, hrest⟩
-      change spineInc L (Sum.inr (freeSet p.1)) ∩ S = {p.1}
+      change spineInc L _ ∩ S = {p.1}
       rw [spineInc, if_pos ht, ← hp]
       exact Finset.singleton_inter_of_mem h.1
     · simpa [Collapse.IsPairCollapse,preferCutFaces, List.map_cons, preferCutFace, if_neg hp] using
         And.intro h.1 (And.intro h.2.1 hrest)
 
 /-- The oriented chain certificate is determined by the actual free-face incidences. -/
-theorem spine_pair_chainCollapse {L : ASC V}
-    {lp : List (Cube V × (Cube V ⊕ Finset V))} {S : Finset (Cube V)}
-    (hS : S ⊆ topCubes L) (h : Collapse.IsPairCollapse (spineInc L) lp S) :
-    CollapseChain.IsChainCollapse (cubeBdry (V := V)) lp := by
+theorem spine_pair_chainCollapse :
+    CollapseChain.IsChainCollapse (cubeBdry) lp := by
   apply h.chainCollapse (tops := topCubes L) ?_ ?_ hS
   · intro t ht f htf
     cases f with
@@ -90,13 +90,6 @@ theorem spine_pair_chainCollapse {L : ASC V}
     | inr σ =>
       apply cubeBdry_inr_eq_zero
       intro he
-      have hσ : IsTri L σ := by simpa [he] using mem_topCubes.mp ht
-      exact htf (by simp [spineInc, hσ, he])
-
-theorem preferCutFaces_isChainCollapse {L : ASC V}
-    {lp : List (Cube V × (Cube V ⊕ Finset V))} {S : Finset (Cube V)}
-    (hS : S ⊆ topCubes L) (h : Collapse.IsPairCollapse (spineInc L) lp S) :
-    CollapseChain.IsChainCollapse (cubeBdry (V := V)) (preferCutFaces lp) :=
-  spine_pair_chainCollapse hS (preferCutFaces_isPairCollapse hS h)
+      exact htf (by simp [spineInc, (by simpa [he] using mem_topCubes.mp ht), he])
 
 end FiniteChains

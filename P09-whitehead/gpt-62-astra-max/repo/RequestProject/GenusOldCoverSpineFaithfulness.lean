@@ -6,8 +6,6 @@ public import RequestProject.GenusCoveredSpineCycleFaithfulness
 @[expose] public section
 
 /-! Actual covered-spine cycles are detected in the old cubical block. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -18,7 +16,7 @@ variable (q : ℕ) [NeZero q]
 abbrev OldCoveredSpine :=
   {p : TruncatedCover f // truncatedCoverProjection f p ∈ genusSpineCellSet q}
 
-def oldCoveredSpineToOld (p : OldCoveredSpine q f) : P := truncatedCoverRetraction f p.1
+def oldCoveredSpineToOld (p : OldCoveredSpine q f) := truncatedCoverRetraction f p.1
 
 theorem oldCoveredSpineToOld_monotone : Monotone (oldCoveredSpineToOld q f) :=
   fun _ _ h => h.1
@@ -46,6 +44,6 @@ theorem genus_old_cover_spine_chain_zero_of_boundary (hf : IsPosetCover f)
   change ∃ y ∈ Inc P, Nerve.bdry y =
     cmap (fun x : OldCoveredSpine q f => truncatedCoverRetraction f x.val)
       (ordNerveChain2 (ordStrictInclusion2 c)) at hbound
-  simpa only [z, cmap_comp, oldCoveredSpineToOld, Function.comp_def] using hbound
+  simp_all [z, cmap_comp, oldCoveredSpineToOld, Function.comp_def]
 
 end FiniteChains.Davis.Genus

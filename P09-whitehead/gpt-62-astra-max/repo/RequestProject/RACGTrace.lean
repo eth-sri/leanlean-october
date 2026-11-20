@@ -51,14 +51,14 @@ inductive Swap (Cm : V → V → Prop) : List V → List V → Prop
   | cons (x : V) {l l' : List V} : Swap Cm l l' → Swap Cm (x :: l) (x :: l')
 
 /-- Equality of traces: words modulo commutation of adjacent commuting letters. -/
-def CEq (Cm : V → V → Prop) : List V → List V → Prop := Relation.ReflTransGen (Swap Cm)
+def CEq (Cm : V → V → Prop) := Relation.ReflTransGen (Swap Cm)
 
 variable {Cm : V → V → Prop}
 
 theorem Swap.symm' (hs : ∀ {a b : V}, Cm a b → Cm b a) {l l' : List V} (h : Swap Cm l l') :
     Swap Cm l' l := by
   induction h with
-  | head h q => exact Swap.head (hs h) q
+  | head h q => solve_by_elim
   | cons x _ ih => exact Swap.cons x ih
 
 theorem Swap.length_eq {l l' : List V} (h : Swap Cm l l') : l.length = l'.length := by
@@ -96,27 +96,33 @@ def canStart (Cm : V → V → Prop) (s : V) : List V → Prop
   | [] => False
   | a :: t => a = s ∨ (Cm s a ∧ canStart Cm s t)
 
-@[simp] theorem canStart_nil (s : V) : ¬ canStart Cm s ([] : List V) := id
+@[simp] theorem canStart_nil (s : V) : ¬ canStart Cm s ([]) := id
 
 @[simp] theorem canStart_cons {s a : V} {t : List V} :
     canStart Cm s (a :: t) ↔ a = s ∨ (Cm s a ∧ canStart Cm s t) := Iff.rfl
 
+section
+
+variable [DecidableEq V]
+
 /-- Delete the occurrence of `s` that `canStart` refers to. -/
-def popStart [DecidableEq V] (s : V) : List V → List V
+def popStart (s : V) : List V → List V
   | [] => []
   | a :: t => if a = s then t else a :: popStart s t
 
-@[simp] theorem popStart_nil [DecidableEq V] (s : V) : popStart s ([] : List V) = [] := rfl
+@[simp] theorem popStart_nil (s : V) : popStart s ([]) = [] := rfl
 
-@[simp] theorem popStart_cons [DecidableEq V] (s a : V) (t : List V) :
+@[simp] theorem popStart_cons (s a : V) (t : List V) :
     popStart s (a :: t) = if a = s then t else a :: popStart s t := rfl
+
+end
 
 /-- A word is **reduced** when no letter can be moved to the front to meet an equal letter. -/
 def IsRed (Cm : V → V → Prop) : List V → Prop
   | [] => True
   | a :: t => IsRed Cm t ∧ ¬ canStart Cm a t
 
-@[simp] theorem isRed_nil : IsRed Cm ([] : List V) := trivial
+@[simp] theorem isRed_nil : IsRed Cm ([]) := trivial
 
 @[simp] theorem isRed_cons {a : V} {t : List V} :
     IsRed Cm (a :: t) ↔ IsRed Cm t ∧ ¬ canStart Cm a t := Iff.rfl
@@ -126,60 +132,54 @@ section Basic
 variable (hirr : ∀ a : V, ¬ Cm a a) (hsymm : ∀ {a b : V}, Cm a b → Cm b a)
 include hirr hsymm
 
+variable {s : V} {l l' : List V}
+
 omit hirr in
 /-- `canStart` only depends on the trace. -/
-theorem canStart_swap {s : V} {l l' : List V} (h : Swap Cm l l') :
+theorem canStart_swap (h : Swap Cm l l') :
     canStart Cm s l ↔ canStart Cm s l' := by
   induction h with
   | @head a b hab q =>
-      have hba : Cm b a := hsymm hab
-      simp only [canStart_cons]
-      constructor
-      · rintro (rfl | ⟨hsa, rfl | ⟨hsb, hq⟩⟩) <;> tauto
-      · rintro (rfl | ⟨hsb, rfl | ⟨hsa, hq⟩⟩) <;> tauto
-  | cons x _ ih => simp only [canStart_cons, ih]
+      grind [canStart_cons]
+  | cons x _ ih => simp_all
 
 omit hirr in
-theorem canStart_ceq {s : V} {l l' : List V} (h : CEq Cm l l') :
+theorem canStart_ceq (h : CEq Cm l l') :
     canStart Cm s l ↔ canStart Cm s l' := by
   induction h with
   | refl => exact Iff.rfl
   | tail _ hstep ih => exact ih.trans (canStart_swap hsymm hstep)
 
+variable {l l' : List V}
+
 /-- Reducedness only depends on the trace. -/
-theorem isRed_swap {l l' : List V} (h : Swap Cm l l') : IsRed Cm l ↔ IsRed Cm l' := by
+theorem isRed_swap (h : Swap Cm l l') : IsRed Cm l ↔ IsRed Cm l' := by
   induction h with
   | @head a b hab q =>
-      have hba : Cm b a := hsymm hab
-      have hne : a ≠ b := by rintro rfl; exact hirr _ hab
-      simp only [isRed_cons, canStart_cons]
-      constructor
-      · rintro ⟨⟨hq, hbq⟩, hstart⟩
-        refine ⟨⟨hq, fun hc => hstart (Or.inr ⟨hab, hc⟩)⟩, ?_⟩
-        rintro (h' | ⟨_, h'⟩)
-        · exact hne h'
-        · exact hbq h'
-      · rintro ⟨⟨hq, haq⟩, hstart⟩
-        refine ⟨⟨hq, fun hc => hstart (Or.inr ⟨hba, hc⟩)⟩, ?_⟩
-        rintro (h' | ⟨_, h'⟩)
-        · exact hne h'.symm
-        · exact haq h'
+      grind [isRed_cons, canStart_cons]
   | @cons x l₀ l₀' hstep ih =>
-      simp only [isRed_cons, ih, canStart_swap (s := x) hsymm hstep]
+      grind [isRed_cons, canStart_swap]
 
-theorem isRed_ceq {l l' : List V} (h : CEq Cm l l') : IsRed Cm l ↔ IsRed Cm l' := by
+theorem isRed_ceq (h : CEq Cm l l') : IsRed Cm l ↔ IsRed Cm l' := by
   induction h with
   | refl => exact Iff.rfl
-  | tail _ hstep ih => exact ih.trans (isRed_swap hirr hsymm hstep)
+  | tail _ hstep ih => grind [isRed_swap]
 
 variable [DecidableEq V]
 
+variable {s : V}
+
+section
+
+variable {l : List V} (h : canStart Cm s l)
+include h
+
 omit hirr in
 /-- If `s` can be moved to the front, the trace is `s` followed by the rest. -/
-theorem ceq_popStart {s : V} {l : List V} (h : canStart Cm s l) :
+theorem ceq_popStart :
     CEq Cm l (s :: popStart s l) := by
   induction l with
-  | nil => exact absurd h (canStart_nil s)
+  | nil => simp_all
   | cons a t ih =>
       by_cases hat : a = s
       · subst hat
@@ -187,21 +187,22 @@ theorem ceq_popStart {s : V} {l : List V} (h : canStart Cm s l) :
         exact CEq.refl _
       · rcases h with h | ⟨hsa, ht⟩
         · exact absurd h hat
-        · have h1 : CEq Cm (a :: t) (a :: s :: popStart s t) := CEq.cons a (ih ht)
-          have h2 : Swap Cm (a :: s :: popStart s t) (s :: a :: popStart s t) :=
-            Swap.head (hsymm hsa) _
-          have h3 : CEq Cm (a :: t) (s :: a :: popStart s t) := h1.trans (CEq.of_swap h2)
-          simpa [hat] using h3
+        · have h3 := (CEq.cons a (ih ht)).trans (CEq.of_swap (Swap.head (hsymm hsa) _))
+          simp_all
 
 omit hirr in
-theorem length_popStart {s : V} {l : List V} (h : canStart Cm s l) :
+theorem length_popStart :
     (popStart s l).length + 1 = l.length := by
   have := (ceq_popStart hsymm h).length_eq
-  simpa using this.symm
+  simp_all
+
+end
+
+variable {l l' : List V}
 
 omit hsymm in
 /-- `popStart` respects traces. -/
-theorem popStart_swap {s : V} {l l' : List V} (h : Swap Cm l l') :
+theorem popStart_swap (h : Swap Cm l l') :
     CEq Cm (popStart s l) (popStart s l') := by
   induction h with
   | @head a b hab q =>
@@ -216,14 +217,14 @@ theorem popStart_swap {s : V} {l l' : List V} (h : Swap Cm l l') :
           simp only [popStart_cons, if_neg hs]
           exact CEq.refl _
         · simp only [popStart_cons, if_neg hs, if_neg hbs]
-          exact CEq.of_swap (Swap.head hab _)
+          solve_by_elim [CEq.of_swap]
   | @cons x l₀ l₀' hstep ih =>
       by_cases hx : x = s
       · subst hx; simpa using CEq.of_swap hstep
       · simpa [hx] using CEq.cons x ih
 
 omit hsymm in
-theorem popStart_ceq {s : V} {l l' : List V} (h : CEq Cm l l') :
+theorem popStart_ceq (h : CEq Cm l l') :
     CEq Cm (popStart s l) (popStart s l') := by
   induction h with
   | refl => exact CEq.refl _
@@ -231,19 +232,26 @@ theorem popStart_ceq {s : V} {l l' : List V} (h : CEq Cm l l') :
 
 omit hsymm in
 /-- Traces are left cancellable. -/
-theorem cancel_head {s : V} {l l' : List V} (h : CEq Cm (s :: l) (s :: l')) : CEq Cm l l' := by
+theorem cancel_head (h : CEq Cm (s :: l) (s :: l')) : CEq Cm l l' := by
   simpa using popStart_ceq (s := s) hirr h
 
+section
+
+variable {l : List V} (hl : IsRed Cm l) (h : canStart Cm s l)
+include hl h
+
 /-- Deleting the front letter of a reduced word leaves a reduced word. -/
-theorem isRed_popStart {s : V} {l : List V} (hl : IsRed Cm l) (h : canStart Cm s l) :
+theorem isRed_popStart :
     IsRed Cm (popStart s l) :=
   ((isRed_ceq hirr hsymm (ceq_popStart hsymm h)).1 hl).1
 
 /-- After deleting the front occurrence of `s` from a reduced word, `s` can no longer be moved
 to the front. -/
-theorem not_canStart_popStart {s : V} {l : List V} (hl : IsRed Cm l) (h : canStart Cm s l) :
+theorem not_canStart_popStart :
     ¬ canStart Cm s (popStart s l) :=
   ((isRed_ceq hirr hsymm (ceq_popStart hsymm h)).1 hl).2
+
+end
 
 omit hirr in
 /-- **The right-angled descent lemma.**  Two distinct letters that can both be moved to the front
@@ -253,22 +261,13 @@ theorem canStart_two {s r : V} (hsr : s ≠ r) {l : List V}
     (hs : canStart Cm s l) (hr : canStart Cm r l) :
     Cm s r ∧ canStart Cm r (popStart s l) := by
   induction l with
-  | nil => exact absurd hs (canStart_nil s)
+  | nil => simp_all
   | cons a t ih =>
       by_cases has : a = s
-      · subst has
-        rcases hr with h | ⟨hra, hrt⟩
-        · exact absurd h hsr
-        · exact ⟨hsymm hra, by simpa using hrt⟩
+      · simp_all
       · rcases hs with h | ⟨hsa, hst⟩
         · exact absurd h has
-        · by_cases har : a = r
-          · subst har
-            exact ⟨hsa, by simp [has]⟩
-          · rcases hr with h | ⟨hra, hrt⟩
-            · exact absurd h har
-            · obtain ⟨hcom, hpop⟩ := ih hst hrt
-              exact ⟨hcom, by simp [has, har, hra, hpop]⟩
+        · aesop
 
 end Basic
 

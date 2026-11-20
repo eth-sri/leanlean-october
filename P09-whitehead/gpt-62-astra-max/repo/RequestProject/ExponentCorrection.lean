@@ -26,11 +26,9 @@ rule 3: the corrected word is a product of `q ≥ 2` commutators, so a block `B_
 substituted for it.
 -/
 
-open scoped commutatorElement
+noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+open scoped commutatorElement
 
 namespace FiniteChains
 
@@ -38,11 +36,13 @@ open Finsupp
 
 variable {α J : Type*} [DecidableEq α]
 
+variable (w : FreeGroup α)
+
 /-- The exponent vector of a word: its exponent sum in every generator. -/
-noncomputable def expVec (w : FreeGroup α) : α →₀ ℤ :=
+def expVec :=
   Multiplicative.toAdd (expSumTotal w)
 
-@[simp] theorem expVec_apply (w : FreeGroup α) (i : α) :
+@[simp] theorem expVec_apply (i : α) :
     expVec w i = Multiplicative.toAdd (expSum i w) := by
   rw [expVec, expSumTotal_apply]
 
@@ -54,45 +54,48 @@ omit [DecidableEq α] in
 theorem expVec_zpow (w : FreeGroup α) (n : ℤ) : expVec (w ^ n) = n • expVec w := by
   simp [expVec, map_zpow]
 
+variable (r : J → FreeGroup α)
+
 /-- **The exponent-sum map `M` of the core presentation** (formula (3.1) of the paper):
 a coefficient vector `c` is sent to `∑_j c_j · (exponent vector of r_j)`. -/
-noncomputable def expMatrix (r : J → FreeGroup α) : (J →₀ ℤ) →ₗ[ℤ] (α →₀ ℤ) :=
+def expMatrix :=
   Finsupp.linearCombination ℤ fun j => expVec (r j)
 
+variable (c : J →₀ ℤ)
+
 omit [DecidableEq α] in
-theorem expMatrix_apply (r : J → FreeGroup α) (c : J →₀ ℤ) :
+theorem expMatrix_apply :
     expMatrix r c = c.sum fun j n => n • expVec (r j) :=
-  Finsupp.linearCombination_apply _ _
+  rfl
 
 /-- The correcting word `∏_j r_j^{c_j}`, taken in a fixed order. -/
-noncomputable def correctionWord (r : J → FreeGroup α) (c : J →₀ ℤ) : FreeGroup α :=
+def correctionWord :=
   (c.support.toList.map fun j => r j ^ c j).prod
 
 omit [DecidableEq α] in
 theorem expVec_list_prod (L : List (FreeGroup α)) :
     expVec L.prod = (L.map expVec).sum := by
   induction L with
-  | nil => simp [expVec]
+  | nil => rfl
   | cons a t ih => simp [expVec_mul, ih]
 
+variable (r : J → FreeGroup α)
+
 omit [DecidableEq α] in
-theorem expVec_correctionWord (r : J → FreeGroup α) (c : J →₀ ℤ) :
+theorem expVec_correctionWord (c : J →₀ ℤ) :
     expVec (correctionWord r c) = expMatrix r c := by
   classical
   rw [correctionWord, expVec_list_prod, List.map_map, expMatrix_apply, Finsupp.sum]
-  have : ((expVec ∘ fun j => r j ^ c j) = fun j => c j • expVec (r j)) := by
-    funext j
-    simp [Function.comp, expVec_zpow]
-  rw [this, Finset.sum_map_toList]
+  simp_all [expVec_zpow]
 
 omit [DecidableEq α] in
 /-- **Rule 2.**  If the exponent-sum map of the core relators is surjective — which is the
 case for an acyclic core, where it is even bijective — then every word can be corrected by
 a product of core relators so that all its exponent sums vanish. -/
-theorem exists_correction (r : J → FreeGroup α) (w : FreeGroup α)
+theorem exists_correction (w : FreeGroup α)
     (hM : Function.Surjective (expMatrix r)) :
     ∃ c : J →₀ ℤ, expVec (w * correctionWord r c) = 0 := by
-  obtain ⟨c, hc⟩ := hM (-expVec w)
+  obtain ⟨c, hc⟩ := hM _
   exact ⟨c, by rw [expVec_mul, expVec_correctionWord, hc, add_neg_cancel]⟩
 
 end FiniteChains

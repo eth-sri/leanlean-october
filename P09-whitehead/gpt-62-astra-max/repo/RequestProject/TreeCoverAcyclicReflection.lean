@@ -9,9 +9,7 @@ No finiteness assumption on the original cells or cover is used.
 Pending final Lean verification. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.SpanningTree
 universe u
@@ -24,21 +22,19 @@ theorem piE_sectionE (z : (CovQ T N × NonTree T) →₀ ℤ) :
   classical
   induction z using Finsupp.induction_linear with
   | zero => simp
-  | add z w hz hw => rw [map_add, map_add, hz, hw]
+  | add z w hz hw => simp_all
   | single a n =>
       rcases a with ⟨q, e⟩
       rw [sectionE, Finsupp.linearCombination_single, map_smul, piE_pathChain_liftK]
-      have hl : FreeGroup.mk (letters T (loopPath T e)) = FreeGroup.mk [(e, true)] :=
-        (mk_letters (loopPath T e)).trans (pathWord_loopPath e)
-      rw [pathChain_liftPath_congr (T := T) (N := N) hl]
+      rw [pathChain_liftPath_congr (N := N) ((mk_letters (loopPath T e)).trans (pathWord_loopPath e))]
       simp [liftPath_cons_true, pathChain_cons, pathChain_nil]
 
-omit [N.Normal] [DecidableEq (NonTree T)] in
+omit [N.Normal] [DecidableEq _] in
 theorem piV_iotaV (z : CovQ T N →₀ ℤ) : piV T N (iotaV T N z) = z := by
   induction z using Finsupp.induction_linear with
   | zero => simp
-  | add z w hz hw => rw [map_add, map_add, hz, hw]
-  | single q n => rw [iotaV_single, piV_single]
+  | add z w hz hw => simp_all
+  | single q n => simp
 
 theorem coverComplex_isAcyclic_of_treeCover
     (h : IsAcyclic (treeCover T N hN)) : IsAcyclic (coverComplex N (treeRel T) hN) := by
@@ -46,17 +42,17 @@ theorem coverComplex_isAcyclic_of_treeCover
   · intro a b hab
     apply h.h2
     apply piE_injective_of_same_boundary T N hN
-    · rw [bdry1_bdry2, bdry1_bdry2]
-    · rw [piE_bdry2 (hN := hN), piE_bdry2 (hN := hN), hab]
+    · simp [bdry1_bdry2]
+    · simp_all [piE_bdry2]
   · intro z hz
     have hlift : bdry1 (treeCover T N hN) (sectionE T N z) = 0 := by
-      rw [bdry1_sectionE (hN := hN), hz, map_zero]
-    obtain ⟨a, ha⟩ := h.h1 (sectionE T N z) hlift
+      simp_all [bdry1_sectionE]
+    obtain ⟨a, ha⟩ := h.h1 _ hlift
     exact ⟨a, by rw [← piE_bdry2 (hN := hN), ha, piE_sectionE]⟩
   · intro z hz
     have hlift : augC (treeCover T N hN) (iotaV T N z) = 0 := by
       rw [← augC_piV (hN := hN), piV_iotaV, hz]
-    obtain ⟨a, ha⟩ := h.h0 (iotaV T N z) hlift
+    obtain ⟨a, ha⟩ := h.h0 _ hlift
     exact ⟨piE T N a, by rw [← piV_bdry1 (hN := hN), ha, piV_iotaV]⟩
 
 end FiniteChains.Comb.SpanningTree

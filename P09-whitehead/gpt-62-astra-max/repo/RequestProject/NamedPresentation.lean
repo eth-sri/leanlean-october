@@ -14,14 +14,7 @@ def rel : J ⊕ I → FreeGroup (α ⊕ I)
 
 theorem name_eq_word (i : I) :
     (QuotientGroup.mk (FreeGroup.of (Sum.inr i)) : PresGroup (rel ρ w)) =
-      QuotientGroup.mk (FreeGroup.map Sum.inl (w i)) := by
-  have h : (QuotientGroup.mk
-      (FreeGroup.of (Sum.inr i) * (FreeGroup.map Sum.inl (w i))⁻¹) : PresGroup (rel ρ w)) = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr (Subgroup.subset_normalClosure ⟨Sum.inr i, rfl⟩)
-  change (QuotientGroup.mk' (relSub (rel ρ w)))
-    (FreeGroup.of (Sum.inr i) * (FreeGroup.map Sum.inl (w i))⁻¹) = 1 at h
-  rw [map_mul, map_inv] at h
-  exact (mul_inv_eq_one.mp h)
+      QuotientGroup.mk (FreeGroup.map Sum.inl (w i)) := (mul_inv_eq_one.mp ((QuotientGroup.eq_one_iff _).mpr (Subgroup.subset_normalClosure ⟨Sum.inr i, rfl⟩)))
 
 def inclusion : PresGroup ρ →* PresGroup (rel ρ w) :=
   QuotientGroup.lift _ ((QuotientGroup.mk' (relSub (rel ρ w))).comp (FreeGroup.map Sum.inl)) (by
@@ -33,8 +26,7 @@ theorem folded_relator_eq_one (j : J ⊕ I) :
     (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (rel ρ w j)) : PresGroup ρ) = 1 := by
   cases j with
   | inl j =>
-    change (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (FreeGroup.map Sum.inl (ρ j))) :
-      PresGroup ρ) = 1
+    change (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (FreeGroup.map Sum.inl (ρ j)))) = 1
     rw [SurfaceWordExpansion.foldNames_map_inl]
     exact (QuotientGroup.eq_one_iff _).mpr (Subgroup.subset_normalClosure ⟨j, rfl⟩)
   | inr i =>
@@ -48,24 +40,23 @@ def elimination : PresGroup (rel ρ w) →* PresGroup ρ :=
   QuotientGroup.lift _ ((QuotientGroup.mk' (relSub ρ)).comp (SurfaceWordExpansion.foldNames w)) (by
     refine Subgroup.normalClosure_le_normal ?_
     rintro _ ⟨j, rfl⟩
-    exact folded_relator_eq_one ρ w j)
+    apply folded_relator_eq_one)
 
 theorem elimination_inclusion (g : PresGroup ρ) :
     elimination ρ w (inclusion ρ w g) = g := by
   induction g using QuotientGroup.induction_on with
   | H v =>
-    change (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (FreeGroup.map Sum.inl v)) :
-      PresGroup ρ) = _
-    rw [SurfaceWordExpansion.foldNames_map_inl]
+    change (QuotientGroup.mk (SurfaceWordExpansion.foldNames w _)) = _
+    simp [SurfaceWordExpansion.foldNames_map_inl]
 
-theorem inclusion_elimination (g : PresGroup (rel ρ w)) :
+theorem inclusion_elimination (g : PresGroup _) :
     inclusion ρ w (elimination ρ w g) = g := by
-  have h : ((QuotientGroup.mk' (relSub (rel ρ w))).comp
+  have h : ((QuotientGroup.mk' (relSub _)).comp
       (FreeGroup.map (Sum.inl (β := I)))).comp (SurfaceWordExpansion.foldNames w) =
         QuotientGroup.mk' (relSub (rel ρ w)) := by
     apply FreeGroup.ext_hom
     rintro (a | i)
-    · simp [SurfaceWordExpansion.foldNames]
+    · rfl
     · simpa [SurfaceWordExpansion.foldNames] using (name_eq_word ρ w i).symm
   induction g using QuotientGroup.induction_on with
   | H v => exact DFunLike.congr_fun h v

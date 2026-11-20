@@ -5,23 +5,23 @@ public import Mathlib.Topology.Separation.Hausdorff
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains.Comb
 open CategoryTheory
 open scoped Classical
 
+section
+
+variable (P : Type) [PartialOrder P]
+
 /-- The actual global barycentric-coordinate map of the poset-nerve realization. -/
-noncomputable def orderNerveRealizationCoordinates (P : Type) [PartialOrder P] :
+noncomputable def orderNerveRealizationCoordinates :
     C(orderNerveRealization P, P → ℝ) where
   toFun x p := orderNerveAffineRealization (fun q => if q = p then 1 else 0) x
   continuous_toFun := continuous_pi (fun p =>
     (orderNerveAffineRealization (fun q => if q = p then 1 else 0)).hom.continuous)
 
 /-- Global barycentric coordinates separate all points of the actual realization. -/
-theorem orderNerveRealizationCoordinates_injective (P : Type) [PartialOrder P] :
+theorem orderNerveRealizationCoordinates_injective :
     Function.Injective (orderNerveRealizationCoordinates P) := by
   classical
   intro x y h
@@ -63,13 +63,15 @@ theorem orderNerveRealizationCoordinates_injective (P : Type) [PartialOrder P] :
     intro i
     exact (orderNerveAffineSimplex_indicator s.val hs.injective i z).symm.trans
       ((hv (s.val.obj i)).trans (orderNerveAffineSimplex_indicator s.val hs.injective i w))
-  exact hx.symm.trans ((congrArg (orderNerveRealizationSimplex P s.val) hzw).trans hy)
+  simp_all
 
 /-- The actual geometric realization of every poset nerve is Hausdorff. -/
-instance orderNerveRealization_t2Space (P : Type) [PartialOrder P] :
+instance orderNerveRealization_t2Space :
     T2Space (orderNerveRealization P) :=
   T2Space.of_injective_continuous (orderNerveRealizationCoordinates_injective P)
     (orderNerveRealizationCoordinates P).continuous
+
+end
 
 /-- Nondegenerate realization simplices are closed embeddings of their compact domains. -/
 theorem orderNerveRealization_nonDegenerate_isClosedEmbedding {P : Type} [PartialOrder P]

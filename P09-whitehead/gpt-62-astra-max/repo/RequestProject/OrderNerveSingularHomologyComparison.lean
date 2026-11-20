@@ -5,55 +5,51 @@ public import RequestProject.FreeSingularChainComparison
 public import RequestProject.MathlibOrderNerveComplexNaturality
 
 @[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
 
 /-- The realization unit induces an actual map to Mathlib integral singular homology.
 This definition makes no claim that the map is an isomorphism. -/
-noncomputable def orderNerveSingularH2Comparison (P : Type) [PartialOrder P] :
-    (AlgebraicTopology.AlternatingFaceMapComplex.obj (mathlibOrderNerveModule P)).homology 2 ⟶
-      (((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
-        (ModuleCat.of ℤ ℤ)).obj (orderNerveRealization P)) :=
+noncomputable def orderNerveSingularH2Comparison (P : Type) [PartialOrder P] :=
   orderNerveRealizationH2Comparison P ≫
-    (FiniteChains.freeSingularHomologyIso (orderNerveRealization P) 2).hom
+    (FiniteChains.freeSingularHomologyIso _ 2).hom
+
+section
+
+variable {P Q : Type} [PartialOrder P] [PartialOrder Q] (f : P → Q) (hf : Monotone f)
+include Q
 
 /-- The actual singular-homology comparison is natural for monotone maps. -/
-theorem orderNerveSingularH2Comparison_natural {P Q : Type}
-    [PartialOrder P] [PartialOrder Q] (f : P → Q) (hf : Monotone f) :
-    (HomologicalComplex.homologyFunctor (ModuleCat.{0} ℤ) (ComplexShape.down ℕ) 2).map
+theorem orderNerveSingularH2Comparison_natural :
+    (HomologicalComplex.homologyFunctor (ModuleCat.{0} ℤ) _ 2).map
       (mathlibOrderNerveChainMap f hf) ≫ orderNerveSingularH2Comparison Q =
     orderNerveSingularH2Comparison P ≫
       (((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
-        (ModuleCat.of ℤ ℤ)).map (orderNerveRealizationMap f hf)) := by
+        _).map (orderNerveRealizationMap f hf)) := by
   unfold orderNerveSingularH2Comparison
   rw [← Category.assoc, orderNerveRealizationH2Comparison_natural, Category.assoc]
-  change _ ≫ ((HomologicalComplex.homologyFunctor (ModuleCat.{0} ℤ) (ComplexShape.down ℕ) 2).map
+  change _ ≫ ((HomologicalComplex.homologyFunctor (ModuleCat.{0} ℤ) _ 2).map
       (AlgebraicTopology.AlternatingFaceMapComplex.map
         (Functor.whiskerRight (TopCat.toSSet.map (orderNerveRealizationMap f hf))
           (ModuleCat.free ℤ))) ≫ _) = _
   rw [FiniteChains.freeSingularHomologyIso_natural, Category.assoc]
 
 /-- A zero order-homology pushdown annihilates all singular classes in the comparison image. -/
-theorem orderNerveSingularH2Comparison_pushdown_zero {P Q : Type}
-    [PartialOrder P] [PartialOrder Q] (f : P → Q) (hf : Monotone f)
+theorem orderNerveSingularH2Comparison_pushdown_zero
     (hzero : orderNerveH2Map f hf = 0) :
     orderNerveSingularH2Comparison P ≫
       (((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
-        (ModuleCat.of ℤ ℤ)).map (orderNerveRealizationMap f hf)) = 0 := by
+        _).map (orderNerveRealizationMap f hf)) = 0 := by
   rw [← orderNerveSingularH2Comparison_natural,
     mathlibOrderNerveComplex_homologyMap_zero f hf hzero]
   exact CategoryTheory.Limits.zero_comp
 
+end
+
 /-- The actual order-cell second-homology classes map to genuine singular classes. -/
-noncomputable def orderCellSingularH2Map (P : Type) [PartialOrder P] :
-    OrderNerveH2 P →ₗ[ℤ]
-      (((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
-        (ModuleCat.of ℤ ℤ)).obj (orderNerveRealization P)) :=
+noncomputable def orderCellSingularH2Map (P : Type) [PartialOrder P] :=
   (orderNerveSingularH2Comparison P).hom.comp
     (mathlibOrderNerveComplexH2Equiv P).toLinearMap
 
@@ -61,19 +57,19 @@ noncomputable def orderCellSingularH2Map (P : Type) [PartialOrder P] :
 theorem orderCellSingularH2Map_natural {P Q : Type} [PartialOrder P] [PartialOrder Q]
     (f : P → Q) (hf : Monotone f) (z : OrderNerveH2 P) :
     ((((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
-      (ModuleCat.of ℤ ℤ)).map (orderNerveRealizationMap f hf)).hom
+      _).map (orderNerveRealizationMap f hf)).hom
         (orderCellSingularH2Map P z)) = orderCellSingularH2Map Q (orderNerveH2Map f hf z) := by
   have h := congrArg (fun k :
       (AlgebraicTopology.AlternatingFaceMapComplex.obj (mathlibOrderNerveModule P)).homology 2 ⟶
         (((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
-          (ModuleCat.of ℤ ℤ)).obj (orderNerveRealization Q)) =>
+          _).obj _) =>
       k (mathlibOrderNerveComplexH2Equiv P z))
     (orderNerveSingularH2Comparison_natural f hf)
   change (orderNerveSingularH2Comparison Q).hom
       (((HomologicalComplex.homologyFunctor (ModuleCat.{0} ℤ) (ComplexShape.down ℕ) 2).map
         (mathlibOrderNerveChainMap f hf)).hom (mathlibOrderNerveComplexH2Equiv P z)) =
     ((((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
-      (ModuleCat.of ℤ ℤ)).map (orderNerveRealizationMap f hf)).hom
+      _).map _).hom
         (orderCellSingularH2Map P z)) at h
   rw [mathlibOrderNerveComplexH2Equiv_natural] at h
   exact h.symm

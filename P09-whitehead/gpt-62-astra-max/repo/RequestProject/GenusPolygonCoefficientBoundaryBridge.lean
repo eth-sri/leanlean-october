@@ -9,10 +9,7 @@ marked boundary before old-chain comparison. No independent marking-scalar
 hypothesis remains.  -/
 noncomputable section
 open scoped Classical
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open Nerve
@@ -24,7 +21,7 @@ theorem decodeOrdNerve2_boundary_of_encoded_boundary
     (b : OrdEdge P →₀ ℤ) (hb : Nerve.bdry c = ordNerveChain1 b) :
     Comb.bdry2 (orderCx P) (decodeOrdNerve2 c) = b := by
   apply ordNerveChain1_injective
-  rw [ordNerveChain1_bdry2, ordNerveChain2_decode hc, hd, hb]
+  grind [ordNerveChain1_bdry2, ordNerveChain2_decode]
 
 end FiniteChains.Comb
 
@@ -33,10 +30,11 @@ open RACG Mirror Comb PresModel BlockFamily Nerve
 variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (q : ℕ) [NeZero q] (u : Fin q × Bool → FreeGroup α)
 
+variable (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
+
 /-- Decode and normalize the genuine marked boundary of the attaching chain.
 All coefficients and cover sheets are retained. -/
 theorem namedAttachingNerveSurfaceChain_marked_boundary
-    (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
     (c : Ch (namedAttachingCover q ρ u)) (hc : c ∈ Inc _)
     (hd : lengthProjection 3 c = c)
     (b : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ)
@@ -45,8 +43,7 @@ theorem namedAttachingNerveSurfaceChain_marked_boundary
         (namedAttachingNerveSurfaceChain ρ q u c) =
       namedAttachingSurfaceChain1 q ρ u
         (normalizeOrdChain1 (namedAttachingMarkingChains q ρ u hrho b)) := by
-  have hdecoded : Comb.bdry2 (orderCx (namedAttachingCover q ρ u)) (decodeOrdNerve2 c) =
-      namedAttachingMarkingChains q ρ u hrho b :=
+  have hdecoded :=
     decodeOrdNerve2_boundary_of_encoded_boundary c hc hd
       (namedAttachingMarkingChains q ρ u hrho b) hb
   change Comb.bdry2 (strictOrderCx (NamedSurfaceCover ρ q u))
@@ -61,7 +58,6 @@ theorem namedAttachingNerveSurfaceChain_marked_boundary
 /-- The old three-chain in the relative comparison does not alter the
 actual attaching boundary. This proves the input of the preceding lemma. -/
 theorem namedAttaching_marked_boundary_of_relative_class
-    (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
     (β : NamedSpineRel q → MonoidAlgebra ℤ
       (PresGroup (substPresF ρ (finiteSpineWordBlock q u))))
     (hβ : ∀ z : SpinePresentationGen q,
@@ -90,26 +86,22 @@ theorem namedPolygonMultipleAt_boundary (v : NamedPolygonPole ρ q u)
           (Comb.bdry2 (strictOrderCx (NamedSurfaceCover ρ q u)) (namedPolygonFillingAt ρ q u v))) w.coeff := by
   induction w using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add w z hw hz => simp only [map_add, MonoidAlgebra.coeff_add, hw, hz]
+  | add w z hw hz => simp_all
   | single g n =>
       let f := fun g => chain2
         (strictOrderCxMap (namedSurfaceDeck ρ q u g) (namedSurfaceDeck ρ q u g).strictMono)
         (namedPolygonFillingAt ρ q u v)
       have hm : namedPolygonMultipleAt ρ q u v (MonoidAlgebra.single g n) = n • f g := by
         change Finsupp.linearCombination ℤ f (Finsupp.single g n) = n • f g
-        exact Finsupp.linearCombination_single ℤ n g
+        simp
       rw [hm, map_zsmul, bdry2_chain2]
-      let h := fun g => chain1
-        (strictOrderCxMap (namedSurfaceDeck ρ q u g) (namedSurfaceDeck ρ q u g).strictMono)
-        (Comb.bdry2 (strictOrderCx (NamedSurfaceCover ρ q u)) (namedPolygonFillingAt ρ q u v))
-      change n • h g = Finsupp.linearCombination ℤ h (Finsupp.single g n)
-      exact (Finsupp.linearCombination_single ℤ n g).symm
+      simp
 
+variable (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
 /-- Polygon rigidity itself supplies the previously separate equality of
 universal-cover marking chains, for the same full quotient-group scalar. -/
 theorem namedPolygon_reconstruction_marking_multiple
-    (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
     (c d : Ch (namedAttachingCover q ρ u)) (hc : c ∈ Inc _) (hd : d ∈ Inc _)
     (hcdegree : lengthProjection 3 c = c) (hddegree : lengthProjection 3 d = d)
     (b e : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ)
@@ -125,18 +117,17 @@ theorem namedPolygon_reconstruction_marking_multiple
           (quotientSurfaceMarkingChains q ρ u hrho e))
         (namedPolygonCoefficientAt ρ q u v (namedAttachingNerveSurfaceChain ρ q u c)).coeff := by
   let w := namedPolygonCoefficientAt ρ q u v (namedAttachingNerveSurfaceChain ρ q u c)
-  have hp : namedAttachingNerveSurfaceChain ρ q u c = namedPolygonMultipleAt ρ q u v w :=
+  have hp :=
     namedPolygon_reconstruct_at_pole ρ q u v _ hrelative
   have hb := congrArg (Comb.bdry2 (strictOrderCx (NamedSurfaceCover ρ q u))) hp
   rw [namedAttachingNerveSurfaceChain_marked_boundary ρ q u hrho c hc hcdegree b hcb,
     namedPolygonMultipleAt_boundary, ← hreference,
     namedAttachingNerveSurfaceChain_marked_boundary ρ q u hrho d hd hddegree e hdb] at hb
-  exact namedSurfaceMarking_multiple_reflect q ρ u hrho b e w hb
+  apply namedSurfaceMarking_multiple_reflect <;> assumption
 
 /-- The geometric principal-vector theorem with the marking comparison
 derived from reconstruction, rather than supplied as a hypothesis. -/
 theorem finiteSpine_polygon_reference_principal_of_geometry
-    (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
     (β γ : NamedSpineRel q → MonoidAlgebra ℤ
       (PresGroup (substPresF ρ (finiteSpineWordBlock q u))))
     (hβ : ∀ z : SpinePresentationGen q,

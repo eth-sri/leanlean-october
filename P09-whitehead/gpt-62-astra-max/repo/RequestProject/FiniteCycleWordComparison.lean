@@ -10,9 +10,6 @@ an actual endpoint-preserving path homotopy. Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.FinitePosetCycle
 open RelativeAttachment ContinuousEdgeWords
@@ -25,8 +22,7 @@ def mappedEdge (i : Fin (n + 1)) :=
 
 def mappedLastEdge := orderNerveComparablePath (C.closing.imp (fun h => hf h) (fun h => hf h))
 
-def mappedLoop : Path (orderNerveRealizationVertex (f (C.vertex 0)))
-    (orderNerveRealizationVertex (f (C.vertex 0))) :=
+def mappedLoop :=
   (arcConcat n (fun i => orderNerveRealizationVertex (f (C.vertex i)))
     (C.mappedEdge f hf)).trans (C.mappedLastEdge f hf)
 
@@ -76,6 +72,6 @@ theorem mappedLoop_homotopic_word :
         (fun i => hs i.castSucc) ht) ⟨hs _, hclose⟩)
   have he : List.ofFn (fun i : Fin (n + 1) => g i.castSucc) ++ [g (Fin.last (n + 1))] =
       List.ofFn g := by simpa only [List.concat_eq_append] using (List.ofFn_succ' g).symm
-  simpa only [he, mappedLoop, mappedLastEdge, affineOrderWordPath] using H
+  aesop
 
 end FiniteChains.Comb.FinitePosetCycle

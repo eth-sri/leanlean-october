@@ -14,23 +14,24 @@ open scoped Classical
 namespace FiniteChains.Comb
 universe u v w
 
-theorem finsupp_filter_of_constant_label {I : Type u} {J : Type v}
+variable {I : Type u} {J : Type v}
+
+theorem finsupp_filter_of_constant_label
     (label : I → J) (j : J) (c : I →₀ ℤ) (k : J)
     (hc : ∀ i, c i ≠ 0 → label i = j) :
     c.filter (fun i => label i = k) = if j = k then c else 0 := by
   ext i
   by_cases hjk : j = k
   · subst k
-    rw [if_pos rfl]
     by_cases hi : c i = 0
     · simp [Finsupp.filter_apply, hi]
-    · simp [hc i hi]
+    · simp_all
   · rw [if_neg hjk]
     by_cases hi : c i = 0
     · simp [Finsupp.filter_apply, hi]
-    · simp [hc i hi, hjk]
+    · simp_all
 
-theorem supported_label_boundary {I : Type u} {J : Type v} {T : Type w}
+theorem supported_label_boundary {T : Type w}
     (d : (I →₀ ℤ) →ₗ[ℤ] (J →₀ ℤ)) (labelI : I → T) (labelJ : J → T)
     (old : I → Prop)
     (hd : ∀ i, old i → ∀ j, d (Finsupp.single i 1) j ≠ 0 → labelJ j = labelI i)
@@ -44,28 +45,28 @@ theorem supported_label_boundary {I : Type u} {J : Type v} {T : Type w}
       apply hd i (hc i hi) j
       intro hz
       apply hj
-      have hsingle : Finsupp.single i (c i) = (c i) • Finsupp.single i (1 : ℤ) := by simp
+      have hsingle : Finsupp.single i (c i) = (c i) • Finsupp.single i 1 := by simp
       rw [hsingle, map_smul]
       simp [hz]
-    rw [finsupp_filter_of_constant_label labelJ (labelI i) _ k hm]
+    rw [finsupp_filter_of_constant_label labelJ _ _ k hm]
     by_cases hik : labelI i = k
     · rw [Finsupp.filter_single_of_pos (fun i => labelI i = k) hik, if_pos hik]
     · rw [Finsupp.filter_single_of_neg (fun i => labelI i = k) hik, if_neg hik, map_zero]
   calc
-    d (c.filter (fun i => labelI i = k)) =
+    d _ =
         d ((∑ i ∈ c.support, Finsupp.single i (c i)).filter (fun i => labelI i = k)) := by
-          rw [show (∑ i ∈ c.support, Finsupp.single i (c i)) = c from c.sum_single]
+          rw [show (∑ i ∈ c.support, Finsupp.single i _) = c from c.sum_single]
     _ = ∑ i ∈ c.support,
-        d ((Finsupp.single i (c i)).filter (fun i => labelI i = k)) := by
+        d _ := by
           rw [Finsupp.filter_sum, map_sum]
     _ = ∑ i ∈ c.support,
-        (d (Finsupp.single i (c i))).filter (fun j => labelJ j = k) :=
+        (d _).filter (fun j => labelJ j = k) :=
           Finset.sum_congr rfl hs
     _ = (d c).filter (fun j => labelJ j = k) := by
           rw [← Finsupp.filter_sum, ← map_sum]
-          rw [show (∑ i ∈ c.support, Finsupp.single i (c i)) = c from c.sum_single]
+          rw [show (∑ i ∈ c.support, Finsupp.single i _) = c from c.sum_single]
 
-theorem finsupp_sum_label_filters {I : Type u} {J : Type v}
+theorem finsupp_sum_label_filters
     (label : I → J) (c : I →₀ ℤ) :
     ∑ j ∈ c.support.image label, c.filter (fun i => label i = j) = c := by
   ext i
@@ -73,11 +74,6 @@ theorem finsupp_sum_label_filters {I : Type u} {J : Type v}
   · simp [Finsupp.filter_apply, hi]
   · have hm : label i ∈ c.support.image label :=
       Finset.mem_image.mpr ⟨i, Finsupp.mem_support_iff.mpr hi, rfl⟩
-    simp only [Finsupp.finset_sum_apply, Finsupp.filter_apply]
-    rw [Finset.sum_eq_single (label i)]
-    · simp
-    · intro j _ hj
-      simp [Ne.symm hj]
-    · exact fun h => False.elim (h hm)
+    simp only [Finsupp.finset_sum_apply, Finsupp.filter_apply] <;> simp_all
 
 end FiniteChains.Comb

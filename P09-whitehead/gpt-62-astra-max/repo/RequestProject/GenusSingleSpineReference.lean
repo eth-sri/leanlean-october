@@ -8,9 +8,7 @@ public import RequestProject.GenusNormalizedSpineBaseChange
 compatibility with the arbitrary-family reference. Awaiting Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily
@@ -29,13 +27,12 @@ theorem singleFiniteSpineReference_internal
         (Sum.inr ⟨PUnit.unit, z⟩) (Sum.inr ⟨PUnit.unit, m⟩)) = 0 := by
   letI : DecidableEq PUnit.{1} := Classical.decEq _
   have h := (finiteSpineFamilyFilling_isFilling ρ
-    (fun _ : PUnit.{1} => q) (fun _ => u) (fun s => by cases s; exact hrho)).internal
+    (fun _ : PUnit.{1} => q) (fun _ => u) (fun s => hrho)).internal
       PUnit.unit z
   rw [Finsupp.sum_fintype _ _ (fun _ => zero_mul _)] at h
   have hwords : familyFiniteSpineWordBlock (fun _ : PUnit.{1} => q) (fun _ => u) =
       finiteSpineWordBlock q u := by
     funext s
-    cases s
     rfl
   with_reducible
     convert h using 1
@@ -71,9 +68,5 @@ theorem singleFiniteSpineReference_markingChain :
 
 variable {S : Type} (σ : Jr ⊕ S → FreeGroup α)
   (qs : S → ℕ) [∀ s, NeZero (qs s)] (us : ∀ s, Fin (qs s) × Bool → FreeGroup α)
-
-theorem singleFiniteSpineReference_oneRel (s : S) :
-    singleFiniteSpineReference (oneRel σ s) (qs s) (us s) =
-      finiteSpineIndividualFilling σ qs us s := rfl
 
 end FiniteChains.Davis.Genus

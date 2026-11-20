@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.OrderNerveRealizationSubtypeHomeomorph
+
 public import RequestProject.OrderNerveRealizationOpenStars
 
 @[expose] public section
@@ -15,19 +15,19 @@ open CategoryTheory Simplicial Topology
 open scoped Classical
 variable {P : Type} [PartialOrder P]
 
-def orderReach (a : P) : Set P :=
+variable (a : P)
+
+def orderReach : Set P :=
   {b | ∃ p, IsPath (orderCx P).src (orderCx P).tgt p a b}
 
-theorem orderReach_le_iff (a : P) {b c : P} (h : b ≤ c) :
+theorem orderReach_le_iff {b c : P} (h : b ≤ c) :
     b ∈ orderReach a ↔ c ∈ orderReach a := by
   let e : (orderCx P).E := ⟨(b, c), h⟩
   constructor
   · rintro ⟨p, hp⟩
-    have hs : IsPath (orderCx P).src (orderCx P).tgt [(e, true)] b c := ⟨rfl, rfl⟩
-    exact ⟨p ++ [(e, true)], hp.append hs⟩
+    exact ⟨p ++ [(e, true)], hp.append (⟨rfl, rfl⟩)⟩
   · rintro ⟨p, hp⟩
-    have hs : IsPath (orderCx P).src (orderCx P).tgt [(e, false)] c b := ⟨rfl, rfl⟩
-    exact ⟨p ++ [(e, false)], hp.append hs⟩
+    exact ⟨p ++ [(e, false)], hp.append (⟨rfl, rfl⟩)⟩
 
 theorem orderNerveRealizationSubcomplex_isClosed (A : Set P) :
     IsClosed (orderNerveRealizationSubcomplex P A : Set (orderNerveRealization P)) := by
@@ -43,7 +43,7 @@ theorem orderReach_realization_compl (a : P) :
         x ∈ orderNerveRealizationSubcomplex P Aᶜ := by
     intro x
     obtain ⟨n, s, z, rfl⟩ := orderNerveRealizationSimplex_jointly_surjective P x
-    have hm : ∀ i, s.obj 0 ∈ A ↔ s.obj i ∈ A := fun i =>
+    have hm := fun i =>
       orderReach_le_iff a (leOfHom (s.map (homOfLE (Fin.zero_le i))))
     by_cases h : s.obj 0 ∈ A
     · exact Or.inl (orderNerveRealizationSimplex_supported A s
@@ -57,35 +57,31 @@ theorem orderReach_realization_compl (a : P) :
     obtain ⟨v, hv⟩ := orderNerveRealizationOpenStar_cover P x
     have hzero : orderNerveRealizationCoordinates P x v = 0 := by
       by_cases h : v ∈ A
-      · exact hy v (by simpa using h)
+      · solve_by_elim
       · exact hx v h
     change 0 < orderNerveRealizationCoordinates P x v at hv
-    rw [hzero] at hv
-    exact lt_irrefl _ hv
+    simp_all
   ext x
   constructor
   · intro hx
     exact (hcover x).resolve_left hx
-  · intro hx hy
-    exact hdisjoint x hy hx
+  · solve_by_elim
 
 theorem orderCx_isConnected_of_realization [PreconnectedSpace (orderNerveRealization P)] :
     IsConnected (orderCx P) := by
   intro a b
   change P at a b
   let A := orderNerveRealizationSubcomplex P (orderReach a)
-  have ha : orderNerveRealizationVertex a ∈ (A : Set (orderNerveRealization P)) :=
-    (orderNerveRealizationVertex_mem_subcomplex (orderReach a) a).mpr ⟨[], rfl⟩
   have hopen : IsOpen (A : Set (orderNerveRealization P)) := by
     apply isClosed_compl_iff.mp
     rw [orderReach_realization_compl]
     exact orderNerveRealizationSubcomplex_isClosed _
-  have hall : (A : Set (orderNerveRealization P)) = Set.univ :=
+  have hall :=
     (show IsClopen (A : Set (orderNerveRealization P)) from
-      ⟨orderNerveRealizationSubcomplex_isClosed _, hopen⟩).eq_univ ⟨_, ha⟩
-  have hb : orderNerveRealizationVertex b ∈ (A : Set (orderNerveRealization P)) := by
+      ⟨orderNerveRealizationSubcomplex_isClosed _, hopen⟩).eq_univ ⟨_, ((orderNerveRealizationVertex_mem_subcomplex (orderReach a) a).mpr ⟨[], rfl⟩)⟩
+  have hb : orderNerveRealizationVertex b ∈ (A : Set _) := by
     rw [hall]
     exact Set.mem_univ _
-  exact (orderNerveRealizationVertex_mem_subcomplex (orderReach a) b).mp hb
+  exact (orderNerveRealizationVertex_mem_subcomplex _ b).mp hb
 
 end FiniteChains.Comb

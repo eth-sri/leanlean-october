@@ -15,12 +15,14 @@ namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
 open scoped unitInterval Topology Classical
 
-def roseAttaching (A : Type) : C(BoundaryFamily A (Fin 1 → ℝ), PUnit) :=
+variable (A : Type)
+
+def roseAttaching : C(BoundaryFamily A (Fin 1 → ℝ), PUnit) :=
   ContinuousMap.const _ PUnit.unit
 
-abbrev Rose (A : Type) := DiskAttachment (roseAttaching A)
+abbrev Rose := DiskAttachment (roseAttaching A)
 
-def roseVertex (A : Type) : Rose A :=
+def roseVertex :=
   old (roseAttaching A) (boundaryFamilyInclusion A _) PUnit.unit
 
 variable {V J : Type} [TopologicalSpace V] [DiscreteTopology V]
@@ -39,38 +41,33 @@ def graphRoseHomotopyEquiv :
 
 @[simp] theorem graphRoseHomotopyEquiv_old (v : V) :
     graphRoseHomotopyEquiv r hr T (old r (boundaryFamilyInclusion J _) v) =
-      roseVertex {j : J // ¬T.isTree j} := rfl
+      roseVertex _ := rfl
 
 @[simp] theorem graphRoseHomotopyEquiv_treeCell
     (d : DiskFamily {j : J // T.isTree j} (Fin 1 → ℝ)) :
     graphRoseHomotopyEquiv r hr T
       (cell r (boundaryFamilyInclusion J _) ⟨d.1.val, d.2⟩) =
-      roseVertex {j : J // ¬T.isTree j} := by
-  change diskAttachmentBaseChangeHomotopyEquiv (nonTreeAttaching r hr T)
+      roseVertex _ := by
+  change diskAttachmentBaseChangeHomotopyEquiv _
       (treeHomotopyEquivPUnit r T)
-      (partitionRegroup r T.isTree (cell r (boundaryFamilyInclusion J _) ⟨d.1.val, d.2⟩)) = _
-  rw [partitionRegroup_firstCell r T.isTree d]
-  exact diskAttachmentBaseChangeHomotopyEquiv_old (nonTreeAttaching r hr T)
-    (treeHomotopyEquivPUnit r T)
-    (cell (partitionFirstAttaching r T.isTree)
-      (boundaryFamilyInclusion {j : J // T.isTree j} (Fin 1 → ℝ)) d)
+      (partitionRegroup r T.isTree _) = _
+  rw [partitionRegroup_firstCell r T.isTree d] <;> rfl
 
 @[simp] theorem graphRoseHomotopyEquiv_nonTreeCell
-    (d : DiskFamily {j : J // ¬T.isTree j} (Fin 1 → ℝ)) :
+    (d : DiskFamily _ (Fin 1 → ℝ)) :
     graphRoseHomotopyEquiv r hr T
       (cell r (boundaryFamilyInclusion J _) ⟨d.1.val, d.2⟩) =
-      cell (roseAttaching {j : J // ¬T.isTree j})
-        (boundaryFamilyInclusion {j : J // ¬T.isTree j} _) d := by
-  change diskAttachmentBaseChangeHomotopyEquiv (nonTreeAttaching r hr T)
+      cell _
+        _ d := by
+  change diskAttachmentBaseChangeHomotopyEquiv _
       (treeHomotopyEquivPUnit r T)
-      (partitionRegroup r T.isTree (cell r (boundaryFamilyInclusion J _) ⟨d.1.val, d.2⟩)) = _
+      (partitionRegroup r T.isTree _) = _
   rw [partitionRegroup_restCell r T.isTree d]
-  exact diskAttachmentBaseChangeHomotopyEquiv_cell (nonTreeAttaching r hr T)
-    (treeHomotopyEquivPUnit r T) d
+  apply diskAttachmentBaseChangeHomotopyEquiv_cell
 
 theorem graphRoseHomotopyEquiv_treePath (j : {j : J // T.isTree j}) (t : I) :
     graphRoseHomotopyEquiv r hr T (graphEdgePath r j.val t) =
-      roseVertex {j : J // ¬T.isTree j} :=
+      roseVertex _ :=
   graphRoseHomotopyEquiv_treeCell r hr T ⟨j, graphDiskHomeomorph t⟩
 
 end FiniteChains.ClassicalGraphModel

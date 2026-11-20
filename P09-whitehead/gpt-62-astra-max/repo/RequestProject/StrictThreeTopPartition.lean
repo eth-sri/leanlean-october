@@ -20,10 +20,7 @@ theorem strictThreeChain_top_partition (y : StrictOrdTet (QCube A) →₀ ℤ) :
   · simp [Finsupp.filter_apply, ht]
   · rw [Finset.sum_eq_single t.1.2.2.2]
     · simp
-    · intro c _ hne
-      simp [Ne.symm hne]
-    · intro hnot
-      exact False.elim (hnot (Finset.mem_image.mpr
-        ⟨t, Finsupp.mem_support_iff.mpr ht, rfl⟩))
+    · simp_all [Ne.symm]
+    · grind
 
 end FiniteChains.Davis

@@ -33,25 +33,24 @@ theorem presCoverConeCircleOrderIso_symm_projection (x : RelatorCircle w j) :
   rw [OrderIso.apply_symm_apply, strictBelowCongr_val] at hx
   exact hx
 
+variable (hpos : ∀ j, 0 < (w j).length)
+
 /-- The actual first incidence triangle of a nonempty presentation relator. -/
-noncomputable def presRelatorFirstTriangle (hpos : ∀ j, 0 < (w j).length) (j : J) :
-    StrictOrdTri (PresPos w) :=
-  strictConeTriangle (apexOf w j)
+noncomputable def presRelatorFirstTriangle (j : J) :=
+  strictConeTriangle _
     ((strictOrderEdgeEquiv (relatorCircleOrderIso w j))
       (relatorCircleEdge0 w j ⟨0, hpos j⟩))
 
 /-- The coordinate triangle lies over the genuine first relator incidence triangle. -/
-theorem presCoverRelatorTriangle_projection (hpos : ∀ j, 0 < (w j).length)
+theorem presCoverRelatorTriangle_projection
     (p : PresCoverRelator w f) :
     (strictOrderCxMap f hf.strictMono).onF (presCoverRelatorTriangle w f hf hpos p) =
       presRelatorFirstTriangle w hpos p.1.2 := by
   apply Subtype.ext
   apply Prod.ext
-  · exact presCoverConeCircleOrderIso_symm_projection w f hf p.1.1 p.1.2 p.2
-      (relatorCirclePoint w p.1.2 ⟨0, hpos p.1.2⟩ CPos.cor)
+  · apply presCoverConeCircleOrderIso_symm_projection <;> assumption
   · apply Prod.ext
-    · exact presCoverConeCircleOrderIso_symm_projection w f hf p.1.1 p.1.2 p.2
-        (relatorCirclePoint w p.1.2 ⟨0, hpos p.1.2⟩ CPos.cedgL)
+    · apply presCoverConeCircleOrderIso_symm_projection <;> assumption
     · exact p.2
 
 end FiniteChains.PresModel

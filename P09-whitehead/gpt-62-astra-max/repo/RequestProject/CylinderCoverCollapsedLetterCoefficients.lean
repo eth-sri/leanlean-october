@@ -33,9 +33,6 @@ theorem cylinderCoverCollapsedCircle_coordinates :
       (cylinderCoverCollapsedRoseChain w f hf
         (chain1 (strictOrderCxMap m hm) (relatorCircleFundamentalChain w j))) = _
   rw [cylinderCoverCollapsedCircle_chain w j f hf m hm hp]
-  exact roseCoverFundamentalChain_coordinates w j (cylinderCoverRoseEnd w f)
-    (cylinderCoverRoseEnd_isPosetCover w f hf) (cylinderCoverCollapsedCircle w j f hf m)
-    (cylinderCoverCollapsedCircle_strictMono w j f hf m hm hp)
-    (cylinderCoverCollapsedCircle_projection w j f hf m hp)
+  apply roseCoverFundamentalChain_coordinates
 
 end FiniteChains.PresModel

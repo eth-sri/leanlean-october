@@ -13,9 +13,6 @@ Finiteness is asserted only when both the old cells and new labels are finite. -
 noncomputable section
 open scoped Classical Topology
 open Set Topology Metric
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
@@ -23,10 +20,8 @@ namespace FiniteChains.RelativeAttachment
 theorem closedUnitBall_connectedSpace {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] : ConnectedSpace (ClosedUnitBall E) := by
   apply isConnected_iff_connectedSpace.mp
-  convert isConnected_closedBall (E := E) (x := (0 : E)) (r := (1 : ℝ)) zero_le_one using 1
-  ext x
-  simp only [Metric.mem_closedBall, dist_zero_right]
-  rfl
+  convert isConnected_closedBall (E := E) (x := 0) zero_le_one using 1
+  aesop
 
 /-- Every new disk meets the old connected space along its nonempty
 boundary. This holds for arbitrary, possibly infinite families of disks. -/
@@ -38,24 +33,21 @@ theorem diskAttachment_connectedSpace {X J E : Type}
   letI := closedUnitBall_connectedSpace (E := E)
   let x₀ : X := Classical.choice inferInstance
   let o := old r (boundaryFamilyInclusion J E)
-  have ho : Set.range o ⊆ connectedComponent (o x₀) :=
+  have ho : Set.range o ⊆ connectedComponent _ :=
     (isConnected_range (old_continuous r _)).subset_connectedComponent ⟨x₀, rfl⟩
   apply connectedSpace_iff_connectedComponent.mpr
   refine ⟨o x₀, Set.eq_univ_of_forall ?_⟩
   rintro (x | d)
-  · exact ho ⟨x, rfl⟩
-  · let f : ClosedUnitBall E → DiskAttachment r :=
-      fun v => cell r (boundaryFamilyInclusion J E) ⟨d.val.1, v⟩
-    have hf : Continuous f := (cell_continuous r _).comp continuous_sigmaMk
-    have hb : f (unitBoundaryInclusion E a) = o (r ⟨d.val.1, a⟩) :=
+  · solve_by_elim
+  · have hf : Continuous (fun v => cell r (boundaryFamilyInclusion J E) ⟨d.val.1, v⟩) := (cell_continuous r _).comp continuous_sigmaMk
+    have hb :=
       cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J E).injective
         ⟨d.val.1, a⟩
-    have hc : Sum.inr d ∈ connectedComponent (o (r ⟨d.val.1, a⟩)) :=
+    have hc :=
       (isConnected_range hf).subset_connectedComponent
         ⟨unitBoundaryInclusion E a, hb⟩
         ⟨d.val.2, cell_of_not_mem r _ d.val d.property⟩
-    rw [connectedComponent_eq (ho ⟨r ⟨d.val.1, a⟩, rfl⟩)]
-    exact hc
+    rw [connectedComponent_eq (ho ⟨r ⟨d.val.1, a⟩, rfl⟩)] <;> assumption
 
 /-- A distinguished boundary point for every positive-dimensional disk,
 using the same sup norm as the original classical CW characteristic maps. -/
@@ -78,10 +70,7 @@ def attachmentTotalCellEquiv (n : ℕ) :
     | Sum.inl ⟨m, j⟩ => ⟨m, Sum.inl j⟩
     | Sum.inr j => ⟨n, Sum.inr ⟨j, rfl⟩⟩
   left_inv := by
-    rintro ⟨m, j | ⟨j, h⟩⟩
-    · rfl
-    · subst m
-      rfl
+    rintro ⟨m, j | ⟨j, h⟩⟩ <;> aesop
   right_inv := by rintro (⟨m, j⟩ | j) <;> rfl
 
 end FiniteChains.RelativeAttachment
@@ -103,7 +92,6 @@ def diskAttachmentTwoComplex : TwoComplex where
   connected := diskAttachment_connectedSpace r (positiveDiskBoundaryPoint n hn)
   dimension m hm := ⟨by
     intro j
-    change AttachmentCell (X := K) (J := J) n m at j
     rcases j with j | ⟨j, h⟩
     · exact (K.dimension m hm).false j
     · omega⟩
@@ -114,10 +102,9 @@ def diskAttachmentOldSubcomplex :
 
 theorem diskAttachment_finiteCells (hK : FiniteCells K) [Finite J] :
     FiniteCells (diskAttachmentTwoComplex K n hn hn₂ r x₀ hb) := by
-  letI : Finite (Σ m, RelCWComplex.cell (Set.univ : Set K) m) := hK
-  change Finite (Σ m, AttachmentCell (X := K) (J := J) n m)
-  exact Finite.of_injective (attachmentTotalCellEquiv (X := K) (J := J) n)
-    (attachmentTotalCellEquiv (X := K) (J := J) n).injective
+  letI : Finite _ := hK
+  exact Finite.of_injective _
+    (attachmentTotalCellEquiv (X := K) n).injective
 
 /-- A nonempty attached family makes the old subcomplex proper. The
 witness is the center of any added disk. -/
@@ -127,7 +114,7 @@ theorem diskAttachment_old_ne_univ [Nonempty J] :
   let j : J := Classical.choice inferInstance
   let d := interiorDiskPoint (E := Fin n → ℝ) j ⟨0, by simp⟩
   intro h
-  have hd : fresh r (boundaryFamilyInclusion J (Fin n → ℝ)) d ∈
+  have hd : fresh r _ d ∈
       (diskAttachmentOldSubcomplex K n hn hn₂ r x₀ hb :
         Set (diskAttachmentTwoComplex K n hn hn₂ r x₀ hb)) := by
     rw [h]

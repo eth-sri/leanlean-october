@@ -14,7 +14,7 @@ variable {A B J K : Type} (f : A ↪ B) (c : J ↪ K)
     (s : C(BoundaryFamily K (Fin 2 → ℝ), Rose B))
     (h : ∀ z, diskRoseMap f (r z) = s ⟨c z.1, z.2⟩)
 
-def sourceIntoExtension : C(DiskAttachment r, DiskAttachment (twoAttaching f c r s)) :=
+def sourceIntoExtension :=
   (⟨old (twoAttaching f c r s) (boundaryFamilyInclusion (NewRelators c) _),
     old_continuous _ _⟩ : C(DiskAttachment (oneAttaching f r), _)).comp
       ⟨old (oneAttaching f r) (boundaryFamilyInclusion (NewGenerators f) _), old_continuous _ _⟩
@@ -38,7 +38,7 @@ def relatorDiskIntoExtension :
         (continuous_sigmaMk (σ := fun _ : NewRelators c => ClosedUnitBall (Fin 2 → ℝ))
           (i := ⟨k, hk⟩))
 
-def targetToExtension : C(DiskAttachment s, DiskAttachment (twoAttaching f c r s)) :=
+def targetToExtension :=
   desc s (boundaryFamilyInclusion K _)
     ((⟨old (twoAttaching f c r s) (boundaryFamilyInclusion (NewRelators c) _),
       old_continuous _ _⟩ : C(DiskAttachment (oneAttaching f r), _)).comp (roseIntoOne f r))
@@ -47,9 +47,9 @@ def targetToExtension : C(DiskAttachment s, DiskAttachment (twoAttaching f c r s
       change old (twoAttaching f c r s) _ (roseIntoOne f r (s ⟨k, a⟩)) =
         if hk : k ∈ Set.range c then _ else _
       split_ifs with hk
-      · have hj : c (Classical.choose hk) = k := Classical.choose_spec hk
+      · have hj := Classical.choose_spec hk
         have hs : s ⟨k, a⟩ = diskRoseMap f (r ⟨Classical.choose hk, a⟩) := by
-          rw [h ⟨Classical.choose hk, a⟩, hj]
+          grind
         rw [hs, roseIntoOne_map]
         exact congrArg (sourceIntoExtension f c r s)
           (cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J _).injective
@@ -69,7 +69,7 @@ theorem targetToExtension_cell_image (j : J) (d : ClosedUnitBall (Fin 2 → ℝ)
   change desc _ _ _ _ _ (cell _ _ _) = _
   rw [desc_cell]
   have hk : c j ∈ Set.range c := ⟨j, rfl⟩
-  have hj : Classical.choose hk = j := c.injective (Classical.choose_spec hk)
+  have hj := c.injective (Classical.choose_spec hk)
   simp only [relatorDiskIntoExtension, ContinuousMap.coe_mk, dif_pos hk, hj]
 
 theorem targetToExtension_cell_new (k : NewRelators c) (d : ClosedUnitBall (Fin 2 → ℝ)) :
@@ -79,7 +79,9 @@ theorem targetToExtension_cell_new (k : NewRelators c) (d : ClosedUnitBall (Fin 
   rw [desc_cell]
   simp only [relatorDiskIntoExtension, ContinuousMap.coe_mk, dif_neg k.property]
 
-theorem targetToExtension_source (x : DiskAttachment r) :
+variable (x : DiskAttachment r)
+
+theorem targetToExtension_source :
     targetToExtension f c r s h (sourceMap f c r s h x) = sourceIntoExtension f c r s x := by
   obtain ⟨z, rfl⟩ := quotientMap_surjective r (boundaryFamilyInclusion J _) x
   cases z with
@@ -92,7 +94,7 @@ theorem targetToExtension_source (x : DiskAttachment r) :
       rw [sourceMap_cell, targetToExtension_cell_image]
       rfl
 
-theorem extensionToTarget_source (x : DiskAttachment r) :
+theorem extensionToTarget_source :
     extensionToTarget f c r s h (sourceIntoExtension f c r s x) = sourceMap f c r s h x := rfl
 
 theorem extensionToTarget_inverse (x : DiskAttachment s) :
@@ -100,9 +102,7 @@ theorem extensionToTarget_inverse (x : DiskAttachment s) :
   obtain ⟨z, rfl⟩ := quotientMap_surjective s (boundaryFamilyInclusion K _) x
   cases z with
   | inl x =>
-      change extensionToTarget f c r s h (targetToExtension f c r s h (old s _ x)) = _
-      rw [targetToExtension_old, extensionToTarget_old, oneToTarget_rose]
-      rfl
+      solve_by_elim [extensionToTarget, targetToExtension_old, extensionToTarget_old, oneToTarget_rose]
   | inr d =>
       rcases d with ⟨k, d⟩
       by_cases hk : k ∈ Set.range c
@@ -124,10 +124,7 @@ theorem targetToExtension_inverse (x : DiskAttachment (twoAttaching f c r s)) :
         (boundaryFamilyInclusion (NewGenerators f) _) x
       cases z with
       | inl x =>
-          change targetToExtension f c r s h
-            (extensionToTarget f c r s h (sourceIntoExtension f c r s x)) = _
-          rw [extensionToTarget_source, targetToExtension_source]
-          rfl
+          solve_by_elim [extensionToTarget, extensionToTarget_source, targetToExtension_source]
       | inr d =>
           change targetToExtension f c r s h (extensionToTarget f c r s h
             (old (twoAttaching f c r s) _ (cell (oneAttaching f r) _ d))) = _
@@ -157,10 +154,5 @@ def extensionModel : Whitehead.DiskExtensionModel (DiskAttachment r) (DiskAttach
   oneAttaching := oneAttaching f r
   twoAttaching := twoAttaching f c r s
   comparison := (extensionHomeomorph f c r s h).toHomotopyEquiv
-
-theorem extensionModel_map : (extensionModel f c r s h).map = sourceMap f c r s h := by
-  apply ContinuousMap.ext
-  intro x
-  rfl
 
 end FiniteChains.RelativeAttachment.DiskPresentationExtension

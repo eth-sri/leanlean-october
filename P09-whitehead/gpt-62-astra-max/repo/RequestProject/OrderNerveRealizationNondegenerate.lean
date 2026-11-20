@@ -18,9 +18,6 @@ theorem orderNerveRealization_nonDegenerate_jointly_surjective (P : Type) [Parti
     obtain ⟨m, a, _, t, ht⟩ := (nerve P).exists_nonDegenerate s
     refine ⟨m, t, SimplexCategory.toTop.map a z, ?_⟩
     have h := congrArg (fun k => k z) (orderNerveRealizationSimplex_operator P a t.val)
-    change orderNerveRealizationSimplex P t.val (SimplexCategory.toTop.map a z) =
-      orderNerveRealizationSimplex P ((nerve P).map a.op t.val) z at h
-    rw [← ht] at h
-    exact h.trans hz
+    rw [← ht] at h; exact h.trans hz
 
 end FiniteChains.Comb

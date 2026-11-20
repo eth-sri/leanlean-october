@@ -13,30 +13,27 @@ their values agree at the corners. -/
 
 noncomputable section
 set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped Topology unitInterval Classical
 open Topology
 
 abbrev SquareSide := Fin 2 × Bool
-abbrev SquareBoundary := (Cube.boundary (Fin 2) : Set (Fin 2 → I))
+abbrev SquareBoundary := (Cube.boundary (Fin 2))
 
 def boolEndpoint (b : Bool) : I := if b then 1 else 0
 
 theorem boolEndpoint_injective : Function.Injective boolEndpoint := by
-  intro a b h
-  cases a <;> cases b <;> simp_all [boolEndpoint]
+  simp [boolEndpoint]
 
 theorem boolEndpoint_zero_or_one (b : Bool) : boolEndpoint b = 0 ∨ boolEndpoint b = 1 := by
-  cases b <;> simp [boolEndpoint]
+  simp [boolEndpoint]
 
 def squareSideMap (s : SquareSide) : C(I, SquareBoundary) where
   toFun t := ⟨Whitehead.squareEdge s.1 (boolEndpoint s.2) t, s.1, by
     rcases boolEndpoint_zero_or_one s.2 with h | h
-    · exact Or.inl (by simp [Whitehead.squareEdge, h])
-    · exact Or.inr (by simp [Whitehead.squareEdge, h])⟩
+    · simp [Whitehead.squareEdge, h]
+    · simp [Whitehead.squareEdge, h]⟩
   continuous_toFun := (Whitehead.squareEdge_continuous _ _).subtype_mk _
 
 def squareSideQuotient : C((Σ _ : SquareSide, I), SquareBoundary) :=
@@ -61,24 +58,22 @@ theorem squareSideQuotient_surjective : Function.Surjective squareSideQuotient :
 theorem squareSideMap_fiber {s r : SquareSide} {t u : I}
     (h : squareSideMap s t = squareSideMap r u) :
     (s = r ∧ t = u) ∨ (t = boolEndpoint r.2 ∧ u = boolEndpoint s.2) := by
-  have hv : Whitehead.squareEdge s.1 (boolEndpoint s.2) t =
-      Whitehead.squareEdge r.1 (boolEndpoint r.2) u := congrArg Subtype.val h
+  have hv : Whitehead.squareEdge s.1 _ t =
+      Whitehead.squareEdge r.1 _ u := congrArg Subtype.val h
   by_cases hi : s.1 = r.1
   · have hb : boolEndpoint s.2 = boolEndpoint r.2 := by
       have he := congrFun hv s.1
-      simpa [Whitehead.squareEdge, hi] using he
-    have hs : s = r := Prod.ext hi (boolEndpoint_injective hb)
-    subst r
+      simp_all [Whitehead.squareEdge, hi]
+    have hs := Prod.ext hi (boolEndpoint_injective hb)
     have ht : t = u := by
       have he := congrFun hv (if s.1 = 0 then 1 else 0)
-      rcases s with ⟨i, b⟩
-      fin_cases i <;> simpa [Whitehead.squareEdge] using he
-    exact Or.inl ⟨rfl, ht⟩
+      grind [Whitehead.squareEdge]
+    simp_all
   · refine Or.inr ⟨?_, ?_⟩
     · have he := congrFun hv r.1
-      simpa [Whitehead.squareEdge, hi, Ne.symm hi] using he
+      simp_all [Whitehead.squareEdge, hi, Ne.symm]
     · have he := congrFun hv s.1
-      simpa [Whitehead.squareEdge, hi, Ne.symm hi] using he.symm
+      simp_all [Whitehead.squareEdge, hi, Ne.symm]
 
 theorem squareSideQuotient_isQuotientMap : IsQuotientMap squareSideQuotient :=
   squareSideQuotient.continuous.isClosedMap.isQuotientMap
@@ -86,8 +81,10 @@ theorem squareSideQuotient_isQuotientMap : IsQuotientMap squareSideQuotient :=
 
 variable {X : Type} [TopologicalSpace X]
 
-def squareBoundaryDesc (f : C((Σ _ : SquareSide, I), X))
-    (hf : ∀ a b, squareSideQuotient a = squareSideQuotient b → f a = f b) :
+variable (f : C((Σ _ : SquareSide, I), X))
+    (hf : ∀ a b, squareSideQuotient a = squareSideQuotient b → f a = f b)
+
+def squareBoundaryDesc :
     C(SquareBoundary, X) where
   toFun x := f (Function.surjInv squareSideQuotient_surjective x)
   continuous_toFun := by
@@ -99,43 +96,38 @@ def squareBoundaryDesc (f : C((Σ _ : SquareSide, I), X))
     rw [he]
     exact f.continuous
 
-@[simp] theorem squareBoundaryDesc_side (f : C((Σ _ : SquareSide, I), X))
-    (hf : ∀ a b, squareSideQuotient a = squareSideQuotient b → f a = f b)
+@[simp] theorem squareBoundaryDesc_side
     (s : SquareSide) (t : I) :
     squareBoundaryDesc f hf (squareSideMap s t) = f ⟨s, t⟩ :=
   hf _ _ (Function.surjInv_eq squareSideQuotient_surjective _)
 
-def squareBoundaryPasting (f : SquareSide → C(I, X))
+variable (f : SquareSide → C(I, X))
     (V : SquareBoundary → X)
-    (hV : ∀ s t, t = 0 ∨ t = 1 → f s t = V (squareSideMap s t)) :
+    (hV : ∀ s t, t = 0 ∨ t = 1 → f s t = V (squareSideMap s t))
+
+def squareBoundaryPasting :
     C(SquareBoundary, X) := by
-  let F : C((Σ _ : SquareSide, I), X) :=
-    ⟨fun st => f st.1 st.2, continuous_sigma (fun s => (f s).continuous)⟩
-  apply squareBoundaryDesc F
+  apply squareBoundaryDesc (⟨fun st => f st.1 st.2, continuous_sigma (fun s => (f s).continuous)⟩)
   rintro ⟨s, t⟩ ⟨r, u⟩ he
   change f s t = f r u
   rcases squareSideMap_fiber he with ⟨rfl, rfl⟩ | ⟨ht, hu⟩
   · rfl
-  · change t = boolEndpoint r.2 at ht
-    change u = boolEndpoint s.2 at hu
-    rw [hV s t (by rw [ht]; exact boolEndpoint_zero_or_one r.2),
-      hV r u (by rw [hu]; exact boolEndpoint_zero_or_one s.2)]
+  · rw [hV s t (by grind [boolEndpoint_zero_or_one]),
+      hV r u (by grind [boolEndpoint_zero_or_one])]
     exact congrArg V he
 
-@[simp] theorem squareBoundaryPasting_side (f : SquareSide → C(I, X))
-    (V : SquareBoundary → X)
-    (hV : ∀ s t, t = 0 ∨ t = 1 → f s t = V (squareSideMap s t))
+@[simp] theorem squareBoundaryPasting_side
     (s : SquareSide) (t : I) :
-    squareBoundaryPasting f V hV (squareSideMap s t) = f s t := by
-  unfold squareBoundaryPasting
-  exact squareBoundaryDesc_side _ _ s t
+    squareBoundaryPasting f V hV (squareSideMap s t) = f s t := squareBoundaryDesc_side _ _ s t
+
+variable (H : SquareSide → C(I × I, X))
+    (V : I → SquareBoundary → X)
+    (hV : ∀ s τ t, t = 0 ∨ t = 1 → H s (τ, t) = V τ (squareSideMap s t))
 
 /-- Jointly continuous side homotopies paste to a jointly continuous
 boundary homotopy. Only corner values of `V` are used, so no continuity
 of a chosen family of vertex paths over the whole boundary is required. -/
-def squareBoundaryHomotopyPasting (H : SquareSide → C(I × I, X))
-    (V : I → SquareBoundary → X)
-    (hV : ∀ s τ t, t = 0 ∨ t = 1 → H s (τ, t) = V τ (squareSideMap s t)) :
+def squareBoundaryHomotopyPasting :
     C(I × SquareBoundary, X) := by
   let F : C((Σ _ : SquareSide, I), C(I, X)) :=
     ⟨fun st => ((H st.1).comp ⟨Prod.swap, continuous_swap⟩).curry st.2,
@@ -147,21 +139,16 @@ def squareBoundaryHomotopyPasting (H : SquareSide → C(I × I, X))
     change H s (τ, t) = H r (τ, u)
     rcases squareSideMap_fiber he with ⟨rfl, rfl⟩ | ⟨ht, hu⟩
     · rfl
-    · change t = boolEndpoint r.2 at ht
-      change u = boolEndpoint s.2 at hu
-      rw [hV s τ t (by rw [ht]; exact boolEndpoint_zero_or_one r.2),
-        hV r τ u (by rw [hu]; exact boolEndpoint_zero_or_one s.2)]
-      exact congrArg (V τ) he
+    · rw [hV s τ t (by grind [boolEndpoint_zero_or_one]),
+        hV r τ u (by grind [boolEndpoint_zero_or_one])]
+      solve_by_elim
   exact (squareBoundaryDesc F hF).uncurry.comp ⟨Prod.swap, continuous_swap⟩
 
 @[simp] theorem squareBoundaryHomotopyPasting_side
-    (H : SquareSide → C(I × I, X)) (V : I → SquareBoundary → X)
-    (hV : ∀ s τ t, t = 0 ∨ t = 1 → H s (τ, t) = V τ (squareSideMap s t))
     (s : SquareSide) (τ t : I) :
     squareBoundaryHomotopyPasting H V hV (τ, squareSideMap s t) = H s (τ, t) := by
   dsimp only [squareBoundaryHomotopyPasting, ContinuousMap.comp_apply,
     ContinuousMap.coe_mk, ContinuousMap.uncurry_apply, Function.uncurry, Prod.swap]
-  change (squareBoundaryDesc (X := C(I, X)) _ _) (squareSideMap s t) τ = _
   rw [squareBoundaryDesc_side]
   rfl
 

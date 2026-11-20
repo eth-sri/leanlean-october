@@ -18,7 +18,9 @@ open scoped Topology
 variable {A B J K : Type} {w : J → List (A × Bool)} {v : K → List (B × Bool)}
   (h : PresWordEmbedding w v) (hw : ∀ j, w j ≠ []) (hv : ∀ k, v k ≠ [])
 
-theorem actualPresWordAttaching_natural (z : BoundaryFamily J (Fin 2 → ℝ)) :
+variable (z : BoundaryFamily J (Fin 2 → ℝ))
+
+theorem actualPresWordAttaching_natural :
     orderNerveRealizationMap h.roseMap h.roseMap.monotone (actualPresWordAttaching w hw z) =
       actualPresWordAttaching v hv ⟨h.cell z.1, z.2⟩ := by
   rcases z with ⟨j, a⟩
@@ -30,15 +32,14 @@ theorem actualPresWordAttaching_natural (z : BoundaryFamily J (Fin 2 → ℝ)) :
   rw [← hs]
   exact h.presCircleWordMap_natural j _
 
-theorem classicalPresWordAttaching_natural (z : BoundaryFamily J (Fin 2 → ℝ)) :
+theorem classicalPresWordAttaching_natural :
     diskRoseMap h.gen (classicalPresWordAttaching w hw z) =
       classicalPresWordAttaching v hv ⟨h.cell z.1, z.2⟩ := by
   change diskRoseMap h.gen (orderRoseRealizationHomeomorph A (actualPresWordAttaching w hw z)) =
     orderRoseRealizationHomeomorph B (actualPresWordAttaching v hv ⟨h.cell z.1, z.2⟩)
   rw [← orderRoseRealizationHomeomorph_natural h, h.actualPresWordAttaching_natural hw hv z]
 
-def orderRoseMapContinuous : C(orderNerveRealization (PresModel.Rose A),
-    orderNerveRealization (PresModel.Rose B)) :=
+def orderRoseMapContinuous :=
   (orderNerveRealizationMap h.roseMap h.roseMap.monotone).hom
 
 def wordDiskCellMap : C(DiskFamily J (Fin 2 → ℝ), ActualPresWordDisks v hv) :=
@@ -47,7 +48,7 @@ def wordDiskCellMap : C(DiskFamily J (Fin 2 → ℝ), ActualPresWordDisks v hv) 
       ⟨fun d => ⟨h.cell d.1, d.2⟩, continuous_sigma (fun j => continuous_sigmaMk
           (σ := fun _ : K => ClosedUnitBall (Fin 2 → ℝ)) (i := h.cell j))⟩
 
-def wordDiskMap : C(ActualPresWordDisks w hw, ActualPresWordDisks v hv) :=
+def wordDiskMap :=
   desc (actualPresWordAttaching w hw) (boundaryFamilyInclusion J (Fin 2 → ℝ))
     ((⟨old (actualPresWordAttaching v hv) (boundaryFamilyInclusion K (Fin 2 → ℝ)),
       old_continuous _ _⟩ : C(orderNerveRealization (PresModel.Rose B), _)).comp
@@ -71,7 +72,7 @@ def wordDiskMap : C(ActualPresWordDisks w hw, ActualPresWordDisks v hv) :=
       RelativeAttachment.cell (actualPresWordAttaching v hv) (boundaryFamilyInclusion K (Fin 2 → ℝ))
         ⟨h.cell d.1, d.2⟩ := desc_cell ..
 
-def classicalWordDiskMap : C(ClassicalPresWordDisks w hw, ClassicalPresWordDisks v hv) :=
+def classicalWordDiskMap :=
   desc (classicalPresWordAttaching w hw) (boundaryFamilyInclusion J (Fin 2 → ℝ))
     ((⟨old (classicalPresWordAttaching v hv) (boundaryFamilyInclusion K (Fin 2 → ℝ)),
       old_continuous _ _⟩ : C(ClassicalGraphModel.Rose B, _)).comp (diskRoseMap h.gen))

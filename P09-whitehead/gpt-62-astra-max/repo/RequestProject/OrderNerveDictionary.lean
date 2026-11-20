@@ -1,27 +1,26 @@
 module
 
 public import RequestProject.OrderNormalizationHomotopy
-public import RequestProject.NervePrism
+
 
 @[expose] public section
 
 /-! The actual cellular boundary maps in degrees two and three agree with the full nerve. -/
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
+noncomputable section
 
 namespace FiniteChains.Comb
 universe u
 variable {P : Type u} [PartialOrder P]
 
-noncomputable def ordNerveChain1 : (OrdEdge P →₀ ℤ) →ₗ[ℤ] Nerve.Ch P :=
+def ordNerveChain1 : (OrdEdge P →₀ ℤ) →ₗ[ℤ] Nerve.Ch P :=
   Finsupp.linearCombination ℤ (fun e => FreeAbelianGroup.of [e.1.1, e.1.2])
 
-noncomputable def ordNerveChain2 : (OrdTri P →₀ ℤ) →ₗ[ℤ] Nerve.Ch P :=
+def ordNerveChain2 : (OrdTri P →₀ ℤ) →ₗ[ℤ] Nerve.Ch P :=
   Finsupp.linearCombination ℤ (fun t => FreeAbelianGroup.of [t.1.1, t.1.2.1, t.1.2.2])
 
-noncomputable def ordNerveChain3 : (OrdTet P →₀ ℤ) →ₗ[ℤ] Nerve.Ch P :=
+def ordNerveChain3 : (OrdTet P →₀ ℤ) →ₗ[ℤ] Nerve.Ch P :=
   Finsupp.linearCombination ℤ (fun t =>
     FreeAbelianGroup.of [t.1.1, t.1.2.1, t.1.2.2.1, t.1.2.2.2])
 
@@ -30,7 +29,7 @@ theorem ordNerveChain1_bdry2 (c : OrdTri P →₀ ℤ) :
     ordNerveChain1 (bdry2 (orderCx P) c) = Nerve.bdry (ordNerveChain2 c) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
+  | add c d hc hd => simp_all
   | single t n =>
     rw [bdry2_single]
     simp [ordNerveChain1, ordNerveChain2, pathChain, orderCx, Nerve.bdryOn,
@@ -42,9 +41,9 @@ theorem ordNerveChain2_ordBoundary3 (c : OrdTet P →₀ ℤ) :
     ordNerveChain2 (ordBoundary3 c) = Nerve.bdry (ordNerveChain3 c) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
+  | add c d hc hd => simp_all
   | single t n =>
-    simp [ordNerveChain2, ordNerveChain3, ordBoundary3, ordTetBoundary,
+    simp [ordNerveChain2, ordNerveChain3, ordBoundary3, relTetBoundary,
       Nerve.bdryOn, Nerve.consMap_of, smul_add, smul_sub]
     abel
 

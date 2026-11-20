@@ -19,7 +19,7 @@ theorem realization_hasDimensionLE (hf : IsPosetCover f) (d : ℕ)
   intro s
   rw [SSet.mem_degenerate_iff_notMem_nonDegenerate]
   intro hs
-  let t := (nerveMap hf.mono.functor).app _ s
+  let t := (nerveMap (Monotone.functor hf.mono)).app _ s
   have ht : t ∈ (nerve Q).nonDegenerate n := by
     apply (PartialOrder.mem_nerve_nonDegenerate_iff_strictMono t).mpr
     exact hf.strictMono.comp

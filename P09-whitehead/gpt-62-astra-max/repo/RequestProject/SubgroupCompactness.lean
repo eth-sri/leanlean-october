@@ -30,7 +30,7 @@ variable {G : Type*} [Group G]
 
 /-- A requirement is *finitely determined* when its truth value at a subgroup depends only
 on the membership of the elements of some fixed finite set. -/
-def FinitelyDetermined {ι : Type*} (Sat : Subgroup G → ι → Prop) : Prop :=
+def FinitelyDetermined {ι : Type*} (Sat : Subgroup G → ι → Prop) :=
   ∀ v : ι, ∃ F : Finset G, ∀ N N' : Subgroup G,
     (∀ g ∈ F, (g ∈ N ↔ g ∈ N')) → (Sat N v ↔ Sat N' v)
 
@@ -48,10 +48,12 @@ def toSubgroup (f : G → Bool) (hf : f ∈ NSSet G) : Subgroup G where
   mul_mem' ha hb := hf.2.1 _ _ ha hb
   inv_mem' ha := hf.2.2.1 _ ha
 
-theorem mem_toSubgroup {f : G → Bool} (hf : f ∈ NSSet G) (g : G) :
+variable {f : G → Bool} (hf : f ∈ NSSet G)
+
+theorem mem_toSubgroup (g : G) :
     g ∈ toSubgroup f hf ↔ f g = true := Iff.rfl
 
-theorem toSubgroup_normal {f : G → Bool} (hf : f ∈ NSSet G) :
+theorem toSubgroup_normal :
     (toSubgroup f hf).Normal :=
   ⟨fun n hn g => hf.2.2.2 g n hn⟩
 
@@ -63,8 +65,7 @@ theorem isClosed_of_finite_determination (P : (G → Bool) → Prop) (F : Finset
   rw [← isOpen_compl_iff, isOpen_iff_forall_mem_open]
   intro f hf
   refine ⟨{f' | ∀ g ∈ F, f' g = f g}, ?_, ?_, fun g _ => rfl⟩
-  · intro f' hf' hP
-    exact hf (hF f' f hf' hP)
+  · grind
   · have hset : {f' : G → Bool | ∀ g ∈ F, f' g = f g}
         = ⋂ g ∈ F, (fun h : G → Bool => h g) ⁻¹' {f g} := by
       ext f'; simp
@@ -75,26 +76,16 @@ theorem isClosed_NSSet : IsClosed (NSSet G) := by
   classical
   have h1 : IsClosed {f : G → Bool | f 1 = true} :=
     isClosed_of_finite_determination _ {1} (by
-      intro f f' hff' hf
-      simpa [← hff' 1 (by simp)] using hf)
+      simp_all)
   have h2 : ∀ a b : G, IsClosed {f : G → Bool | f a = true → f b = true → f (a * b) = true} := by
     intro a b
-    refine isClosed_of_finite_determination _ {a, b, a * b} ?_
-    intro f f' hff' hf ha hb
-    rw [← hff' _ (by simp)]
-    exact hf (by rw [hff' _ (by simp)]; exact ha) (by rw [hff' _ (by simp)]; exact hb)
+    refine isClosed_of_finite_determination _ {a, b, a * b} ?_ <;> simp_all
   have h3 : ∀ a : G, IsClosed {f : G → Bool | f a = true → f a⁻¹ = true} := by
     intro a
-    refine isClosed_of_finite_determination _ {a, a⁻¹} ?_
-    intro f f' hff' hf ha
-    rw [← hff' _ (by simp)]
-    exact hf (by rw [hff' _ (by simp)]; exact ha)
+    refine isClosed_of_finite_determination _ {a, a⁻¹} ?_ <;> simp_all
   have h4 : ∀ g a : G, IsClosed {f : G → Bool | f a = true → f (g * a * g⁻¹) = true} := by
     intro g a
-    refine isClosed_of_finite_determination _ {a, g * a * g⁻¹} ?_
-    intro f f' hff' hf ha
-    rw [← hff' _ (by simp)]
-    exact hf (by rw [hff' _ (by simp)]; exact ha)
+    refine isClosed_of_finite_determination _ {a, g * a * g⁻¹} ?_ <;> simp_all
   have hset : NSSet G = {f : G → Bool | f 1 = true}
       ∩ ((⋂ p : G × G, {f : G → Bool | f p.1 = true → f p.2 = true → f (p.1 * p.2) = true})
       ∩ ((⋂ a : G, {f : G → Bool | f a = true → f a⁻¹ = true})
@@ -115,7 +106,7 @@ theorem exists_normal_subgroup_forall {ι : Type*} (Sat : Subgroup G → ι → 
   classical
   choose F hF using hdet
   -- the closed set of indicator functions satisfying the requirement `v`
-  set B : ι → Set (G → Bool) := fun v =>
+  set B : ι → Set _ := fun v =>
     NSSet G ∩ {f | ∀ N : Subgroup G, (∀ g, g ∈ N ↔ f g = true) → Sat N v} with hB
   have hBclosed : ∀ v, IsClosed (B v) := by
     intro v
@@ -129,10 +120,9 @@ theorem exists_normal_subgroup_forall {ι : Type*} (Sat : Subgroup G → ι → 
       · intro f' hf' hf'B
         obtain ⟨hf'Z, hf'sat⟩ := hf'B
         have hNN' : Sat N v ↔ Sat (toSubgroup f' hf'Z) v := by
-          refine hF v N (toSubgroup f' hf'Z) ?_
-          intro g hg
-          rw [hNmem g, mem_toSubgroup hf'Z g, hf' g hg]
-        exact hNsat (hNN'.mpr (hf'sat _ (mem_toSubgroup hf'Z)))
+          refine hF v N _ ?_
+          grind [mem_toSubgroup]
+        grind [mem_toSubgroup]
       · have hset : {f' : G → Bool | ∀ g ∈ F v, f' g = f g}
             = ⋂ g ∈ F v, (fun h : G → Bool => h g) ⁻¹' {f g} := by
           ext f'; simp
@@ -146,21 +136,13 @@ theorem exists_normal_subgroup_forall {ι : Type*} (Sat : Subgroup G → ι → 
     · intro a b ha hb
       simp only [decide_eq_true_eq] at ha hb ⊢
       exact N.mul_mem ha hb
-    · intro a ha
-      simp only [decide_eq_true_eq] at ha ⊢
-      exact N.inv_mem ha
+    · simp
     · intro g a ha
       simp only [decide_eq_true_eq] at ha ⊢
-      exact hN.conj_mem a ha g
+      apply hN.conj_mem <;> assumption
   have hmemB : ∀ (N : Subgroup G), N.Normal → ∀ v, Sat N v →
       (fun g => decide (g ∈ N)) ∈ B v := by
-    intro N hN v hNv
-    refine ⟨hmemZ N hN, ?_⟩
-    intro N' hN'
-    have : N' = N := by
-      ext g
-      simpa using hN' g
-    rwa [this]
+    grind
   -- compactness
   have hne : (NSSet G ∩ ⋂ v, B v).Nonempty := by
     by_contra hempty
@@ -169,7 +151,7 @@ theorem exists_normal_subgroup_forall {ι : Type*} (Sat : Subgroup G → ι → 
     obtain ⟨N, hN, hNu⟩ := hfin u
     have hmem : (fun g => decide (g ∈ N)) ∈ NSSet G ∩ ⋂ v ∈ u, B v :=
       ⟨hmemZ N hN, Set.mem_iInter₂.mpr fun v hv => hmemB N hN v (hNu v hv)⟩
-    exact absurd hmem.2 (Set.disjoint_left.mp hu hmem.1)
+    grind
   obtain ⟨f, hfZ, hfB⟩ := hne
   refine ⟨toSubgroup f hfZ, toSubgroup_normal hfZ, fun v => ?_⟩
   exact (Set.mem_iInter.mp hfB v).2 _ (mem_toSubgroup hfZ)
@@ -180,14 +162,13 @@ end Compactness
 decreasing chains, then a normal subgroup satisfying them all contains a minimal such
 normal subgroup. -/
 theorem exists_minimal_normal_sat (Sat : Subgroup G → Prop)
-    (hchain : ∀ C : Set (Subgroup G), IsChain (· ≤ ·) C → C.Nonempty →
+    (hchain : ∀ C : Set _, IsChain (· ≤ ·) C → C.Nonempty →
       (∀ N ∈ C, N.Normal ∧ Sat N) → Sat (sInf C))
     (M : Subgroup G) (hM : M.Normal) (hMs : Sat M) :
     ∃ N : Subgroup G, N ≤ M ∧ N.Normal ∧ Sat N ∧
       ∀ N' : Subgroup G, N' ≤ N → N'.Normal → Sat N' → N' = N := by
   classical
-  set s : Set (Subgroup G) := {N | N ≤ M ∧ N.Normal ∧ Sat N} with hs
-  have hMem : M ∈ s := ⟨le_rfl, hM, hMs⟩
+  set s : Set _ := {N | N ≤ M ∧ N.Normal ∧ Sat N} with hs
   have hub : ∀ c ⊆ s, IsChain (· ≤ ·) c → ∀ y ∈ c, ∃ ub ∈ s, ∀ z ∈ c, ub ≤ z := by
     intro c hcs hchain' y hy
     have hne : c.Nonempty := ⟨y, hy⟩
@@ -198,15 +179,13 @@ theorem exists_minimal_normal_sat (Sat : Subgroup G → Prop)
       rw [Subgroup.mem_sInf] at hn ⊢
       intro N hN
       exact ((hcs hN).2.1).conj_mem n (hn N hN) g
-    · exact hchain c hchain' hne fun N hN => ⟨(hcs hN).2.1, (hcs hN).2.2⟩
-    · intro z hz
-      exact sInf_le hz
+    · grind
+    · apply sInf_le
   obtain ⟨m, -, hmax⟩ := zorn_le_nonempty₀ (α := (Subgroup G)ᵒᵈ) s
-    (fun c hcs hc y hy => hub c hcs hc.symm y hy) M hMem
+    (fun c hcs hc y hy => hub c hcs hc.symm y hy) M (⟨le_rfl, hM, hMs⟩)
   obtain ⟨hmM, hmN, hmS⟩ := hmax.1
   refine ⟨m, hmM, hmN, hmS, ?_⟩
   intro N' hN' hN'norm hN'sat
-  have hN's : N' ∈ s := ⟨hN'.trans hmM, hN'norm, hN'sat⟩
-  exact le_antisymm hN' (hmax.2 hN's hN')
+  exact le_antisymm hN' (hmax.2 (⟨hN'.trans hmM, hN'norm, hN'sat⟩) hN')
 
 end FiniteChains

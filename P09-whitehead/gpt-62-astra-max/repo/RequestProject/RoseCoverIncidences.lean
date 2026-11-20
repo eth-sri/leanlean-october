@@ -17,14 +17,14 @@ theorem roseCover_incoming_edge_cases (q : P) (i : α) (b : Bool) (hq : f q = Ro
       e = hf.strictEdgeLiftTo (roseMidEdge i b) q hq := by
   obtain ⟨k, s, he⟩ := rose_strict_edge_cases ((strictOrderCxMap f hf.strictMono).onE e)
   rcases he with he | he
-  · have hp : Rose.edg k s = Rose.edg i b :=
+  · have hp :=
       (congrArg (fun r : StrictOrdEdge (Rose α) => r.1.2) he).symm.trans
         ((congrArg f ht).trans hq)
     obtain ⟨hk, hs⟩ := Rose.edg.inj hp
     subst k
     subst s
     exact Or.inl (hf.strictEdgeLiftTo_unique (roseBaseEdge i b) q hq e he ht)
-  · have hp : Rose.edg k s = Rose.edg i b :=
+  · have hp :=
       (congrArg (fun r : StrictOrdEdge (Rose α) => r.1.2) he).symm.trans
         ((congrArg f ht).trans hq)
     obtain ⟨hk, hs⟩ := Rose.edg.inj hp
@@ -32,9 +32,13 @@ theorem roseCover_incoming_edge_cases (q : P) (i : α) (b : Bool) (hq : f q = Ro
     subst s
     exact Or.inr (hf.strictEdgeLiftTo_unique (roseMidEdge i b) q hq e he ht)
 
+section
+
+variable (v : P) (i : α) (hv : f v = Rose.mid i) (e : StrictOrdEdge P)
+include i hv
+
 /-- Exactly the two actual lifted midpoint incidences leave an actual midpoint vertex. -/
-theorem roseCover_mid_outgoing_edge_cases (v : P) (i : α) (hv : f v = Rose.mid i)
-    (e : StrictOrdEdge P) (hs : e.1.1 = v) :
+theorem roseCover_mid_outgoing_edge_cases (hs : e.1.1 = v) :
     e = hf.strictEdgeLiftFrom (roseMidEdge i false) v hv ∨
       e = hf.strictEdgeLiftFrom (roseMidEdge i true) v hv := by
   obtain ⟨k, b, he⟩ := rose_strict_edge_cases ((strictOrderCxMap f hf.strictMono).onE e)
@@ -42,26 +46,27 @@ theorem roseCover_mid_outgoing_edge_cases (v : P) (i : α) (hv : f v = Rose.mid 
   · have hp : Rose.base = Rose.mid i :=
       (congrArg (fun r : StrictOrdEdge (Rose α) => r.1.1) he).symm.trans
         ((congrArg f hs).trans hv)
-    cases hp
-  · have hp : Rose.mid k = Rose.mid i :=
+    simp_all
+  · have hp :=
       (congrArg (fun r : StrictOrdEdge (Rose α) => r.1.1) he).symm.trans
         ((congrArg f hs).trans hv)
     have hk := Rose.mid.inj hp
     subst k
-    have hl := hf.strictEdgeLiftFrom_unique (roseMidEdge i b) v hv e he hs
+    have hl := hf.strictEdgeLiftFrom_unique _ v hv e he hs
     cases b
     · exact Or.inl hl
     · exact Or.inr hl
 
 include hf in
 /-- No actual strict edge enters a lifted rose midpoint. -/
-theorem roseCover_mid_no_incoming (v : P) (i : α) (hv : f v = Rose.mid i)
-    (e : StrictOrdEdge P) : e.1.2 ≠ v := by
+theorem roseCover_mid_no_incoming : e.1.2 ≠ v := by
   intro ht
   obtain ⟨k, b, he⟩ := rose_strict_edge_cases ((strictOrderCxMap f hf.strictMono).onE e)
   rcases he with he | he <;>
     have hp := (congrArg (fun r : StrictOrdEdge (Rose α) => r.1.2) he).symm.trans
       ((congrArg f ht).trans hv) <;> cases hp
+
+end
 
 include hf in
 /-- No actual strict edge leaves a lifted rose edge-end. -/

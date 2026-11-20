@@ -26,12 +26,10 @@ theorem descInc_freshLoopOrFace (i : ℕ) (h : FreshLoopOrFace (R.inc i)) :
     | zero =>
         have hoff : ∀ d, (inclFrom c R.inc 1).onE d ≠ e := by
           intro d hd
-          exact he ⟨d, hd⟩
+          solve_by_elim
         let w : OffE (inclFrom c R.inc 1) := ⟨e, hoff⟩
         refine ⟨Sum.inr w, ?_, ?_⟩
-        · change pushV p (inclFrom c R.inc 1) ((c 1).src e) =
-            pushV p (inclFrom c R.inc 1) ((c 1).tgt e)
-          exact congrArg (pushV p (inclFrom c R.inc 1)) hloop
+        · exact congrArg (pushV p (inclFrom c R.inc 1)) hloop
         · rintro ⟨d, hd⟩
           exact Sum.inl_ne_inr hd
     | succ i =>
@@ -40,9 +38,7 @@ theorem descInc_freshLoopOrFace (i : ℕ) (h : FreshLoopOrFace (R.inc i)) :
           exact he ⟨(inclFrom c R.inc (i + 1)).onE d, hd⟩
         let w : OffE (inclFrom c R.inc (i + 2)) := ⟨e, hoff⟩
         refine ⟨Sum.inr w, ?_, ?_⟩
-        · change pushV p (inclFrom c R.inc (i + 2)) ((c (i + 2)).src e) =
-            pushV p (inclFrom c R.inc (i + 2)) ((c (i + 2)).tgt e)
-          exact congrArg (pushV p (inclFrom c R.inc (i + 2))) hloop
+        · exact congrArg (pushV p (inclFrom c R.inc (i + 2))) hloop
         · rintro ⟨d, hd⟩
           cases d with
           | inl d => exact Sum.inl_ne_inr hd
@@ -54,7 +50,7 @@ theorem descInc_freshLoopOrFace (i : ℕ) (h : FreshLoopOrFace (R.inc i)) :
     | zero =>
         have hoff : ∀ d, (inclFrom c R.inc 1).onF d ≠ f := by
           intro d hd
-          exact hf ⟨d, hd⟩
+          solve_by_elim
         refine ⟨Sum.inr (⟨f, hoff⟩ : OffF (inclFrom c R.inc 1)), ?_⟩
         rintro ⟨d, hd⟩
         exact Sum.inl_ne_inr hd
@@ -88,7 +84,7 @@ theorem inclusions_freshLoopOrFace (i : ℕ) (hi : i < n + 1) :
       exact Sum.inl_ne_inr hd
   | succ i =>
       rcases c.chain_proper (i + 1) hi with ⟨a, ha⟩ | ⟨f, hf⟩
-      · exact False.elim (ha ⟨a, rfl⟩)
+      · solve_by_elim
       · exact Or.inr ⟨f, hf⟩
 
 end RelativeTreeAmbientChain

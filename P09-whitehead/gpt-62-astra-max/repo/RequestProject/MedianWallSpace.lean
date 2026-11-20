@@ -1,3 +1,0 @@
-module
-public import RequestProject.MedianHalfspaces
-public import RequestProject.WallSpaceDualConnected

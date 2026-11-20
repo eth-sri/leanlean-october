@@ -21,62 +21,57 @@ variable {A C Z S : Type} (core : C → FreeGroup A)
   (hcore : Function.Surjective (expMatrix core))
   (extra : S → FreeGroup (A ⊕ Z))
 
-def restrictedPresentation (p : S → Prop) : C ⊕ {s // p s} → FreeGroup (PairGen A Z) :=
+variable (p : S → Prop)
+
+def restrictedPresentation : C ⊕ {s // p s} → FreeGroup (PairGen A Z) :=
   Sum.elim (fun c => FreeGroup.map Sum.inl (core c))
     (fun s => normalizedWord core hcore (extra s.val))
 
-def restrictedGenus (p : S → Prop) (s : {s // p s}) : ℕ :=
+variable (s : {s // p s})
+
+def restrictedGenus :=
   normalizedGenus core hcore extra s.val
 
-instance restrictedGenus_neZero (p : S → Prop) (s : {s // p s}) :
+instance restrictedGenus_neZero :
     NeZero (restrictedGenus core hcore extra p s) :=
   normalizedGenus_neZero core hcore extra s.val
 
-def restrictedLoops (p : S → Prop) (s : {s // p s}) :
+def restrictedLoops :
     Fin (restrictedGenus core hcore extra p s) × Bool → FreeGroup (PairGen A Z) :=
   normalizedLoops core hcore extra s.val
 
-theorem restrictedPresentation_surface (p : S → Prop) (s : {s // p s}) :
+theorem restrictedPresentation_surface :
     restrictedPresentation core hcore extra p (Sum.inr s) =
       commWord (restrictedLoops core hcore extra p s)
         (finitePairs (restrictedGenus core hcore extra p s)) :=
   normalizedPresentation_surface core hcore extra s.val
 
-def restrictedBlockPresentation (p : S → Prop) :
-    C ⊕ (Σ s : {s // p s}, NamedSpineRel (restrictedGenus core hcore extra p s)) →
-      FreeGroup (PairGen A Z ⊕
-        (Σ s : {s // p s}, SpinePresentationGen (restrictedGenus core hcore extra p s))) :=
+def restrictedBlockPresentation :=
   substPresF (restrictedPresentation core hcore extra p)
     (familyFiniteSpineWordBlock (restrictedGenus core hcore extra p)
       (restrictedLoops core hcore extra p))
 
-def restrictedStructuralMap (p : S → Prop) :
+def restrictedStructuralMap :
     PresMorFS (restrictedPresentation core hcore extra p)
       (restrictedBlockPresentation core hcore extra p) := by
   let dSrc : DecidableEq (PairGen A Z) := inferInstance
   let dTgt : DecidableEq (PairGen A Z ⊕ (Σ s : {s // p s},
       SpinePresentationGen (restrictedGenus core hcore extra p s))) := inferInstance
-  letI : DecidableEq (PairGen A Z) := Classical.decEq _
-  letI : DecidableEq {s // p s} := Classical.decEq _
-  let dFamilyTgt : DecidableEq (PairGen A Z ⊕ (Σ s : {s // p s},
+  letI : DecidableEq {s // p s} := Classical.decEq _; let dFamilyTgt : DecidableEq (PairGen A Z ⊕ (Σ s : {s // p s},
       SpinePresentationGen (restrictedGenus core hcore extra p s))) :=
-    @instDecidableEqSum _ _ (Classical.decEq _) inferInstance
-  exact @PresMorFS.redecide _ _ _ _ (Classical.decEq _) dFamilyTgt _ _
+    @instDecidableEqSum _ _ (Classical.decEq _) inferInstance; exact @PresMorFS.redecide _ _ _ _ (Classical.decEq _) dFamilyTgt _ _
     (finiteSpineFamilyStructuralMap (restrictedPresentation core hcore extra p)
     (restrictedGenus core hcore extra p) (restrictedLoops core hcore extra p)
     (restrictedPresentation_surface core hcore extra p)) dSrc dTgt
 
-theorem restrictedStructuralMap_generates (p : S → Prop) :
+theorem restrictedStructuralMap_generates :
     FSGenerates (restrictedStructuralMap core hcore extra p) := by
   let dSrc : DecidableEq (PairGen A Z) := inferInstance
   let dTgt : DecidableEq (PairGen A Z ⊕ (Σ s : {s // p s},
       SpinePresentationGen (restrictedGenus core hcore extra p s))) := inferInstance
-  letI : DecidableEq (PairGen A Z) := Classical.decEq _
-  letI : DecidableEq {s // p s} := Classical.decEq _
-  let dFamilyTgt : DecidableEq (PairGen A Z ⊕ (Σ s : {s // p s},
+  letI : DecidableEq {s // p s} := Classical.decEq _; let dFamilyTgt : DecidableEq (PairGen A Z ⊕ (Σ s : {s // p s},
       SpinePresentationGen (restrictedGenus core hcore extra p s))) :=
-    @instDecidableEqSum _ _ (Classical.decEq _) inferInstance
-  exact @FSGenerates.redecide _ _ _ _ (Classical.decEq _) dFamilyTgt _ _ _
+    @instDecidableEqSum _ _ (Classical.decEq _) inferInstance; exact @FSGenerates.redecide _ _ _ _ (Classical.decEq _) dFamilyTgt _ _ _
     (finiteSpineFamilyStructuralMap_generates (restrictedPresentation core hcore extra p)
     (restrictedGenus core hcore extra p) (restrictedLoops core hcore extra p)
     (restrictedPresentation_surface core hcore extra p)) dSrc dTgt
@@ -108,11 +103,7 @@ theorem sigma_labelIncl_injective {F : S → Type}
     : Function.Injective (fun z : Σ s : {s // p s}, F s.val =>
         (⟨labelIncl hpt z.1, z.2⟩ : Σ s : {s // t s}, F s.val)) := by
   rintro ⟨s, x⟩ ⟨s', x'⟩ h
-  have hs : s = s' := labelIncl_injective hpt (congrArg Sigma.fst h)
-  subst s'
-  have hx : x = x' := eq_of_heq (Sigma.mk.inj h).2
-  subst x'
-  rfl
+  grind [labelIncl_injective]
 
 theorem blockGenIncl_injective :
     Function.Injective (blockGenIncl core hcore extra hpt) :=
@@ -139,11 +130,7 @@ theorem blockGenIncl_genEmb (s : {s // p s}) :
     FreeGroup.map (genEmb (α := PairGen A Z)
       (Zt := fun r => SpinePresentationGen (restrictedGenus core hcore extra t r))
       (labelIncl hpt s)) := by
-  apply FreeGroup.ext_hom
-  intro x
-  rw [MonoidHom.comp_apply, FreeGroup.map.of, FreeGroup.map.of]
-  erw [FreeGroup.map.of]
-  cases x <;> rfl
+  aesop
 
 /-- Actual genus relators, not an abstract presentation assignment, respect
 the same ambient-label inclusion. -/
@@ -160,7 +147,6 @@ theorem restrictedBlockPresentation_incl
       have h : (FreeGroup.map (blockGenIncl core hcore extra hpt)).comp
           (FreeGroup.map Sum.inl) = FreeGroup.map Sum.inl := by
         apply FreeGroup.ext_hom
-        intro x
         simp [blockGenIncl]
       exact (congrArg (fun f => f (FreeGroup.map Sum.inl (core c))) h).symm
   | inr m =>

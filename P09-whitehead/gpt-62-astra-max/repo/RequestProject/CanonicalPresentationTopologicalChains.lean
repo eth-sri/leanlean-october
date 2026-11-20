@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.PresentationWordTopologicalChains
+public import RequestProject.PresCanonicalWords
 
 @[expose] public section
 

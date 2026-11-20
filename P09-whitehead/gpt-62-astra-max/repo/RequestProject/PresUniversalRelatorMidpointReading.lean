@@ -25,10 +25,8 @@ theorem presUniversalRelator_midpoint_reading
           (if ((w p.val.2)[k.val]).2 then 1 else (gen ((w p.val.2)[k.val]).1)⁻¹)) := by
   apply presUniversal_midpoint_reading w gen hrel (ptBase w) p.val.2 k.val _
     (List.getElem?_eq_getElem k.isLt)
-  · exact (presCoverCircleInclusion_lt_apex (P := UOrder (PresPos w) (ptBase w)) w uOrderEnd
-      (presUniversalEnd_isPosetCover w hpos) p _).le
-  · exact presCoverConeCircleOrderIso_symm_projection (P := UOrder (PresPos w) (ptBase w)) w uOrderEnd
-      (presUniversalEnd_isPosetCover w hpos) p.val.1 p.val.2 p.property _
+  · grind [presCoverCircleInclusion_lt_apex, presUniversalEnd_isPosetCover]
+  · apply presCoverConeCircleOrderIso_symm_projection
   · exact p.property
 
 end FiniteChains.PresModel

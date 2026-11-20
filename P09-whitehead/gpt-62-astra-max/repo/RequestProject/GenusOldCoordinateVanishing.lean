@@ -9,7 +9,9 @@ namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-theorem markedSpineSquareCoefficients_zero_of_collapse (d : (markedSpineCx q).F →₀ ℤ)
+variable (d : (markedSpineCx q).F →₀ ℤ)
+
+theorem markedSpineSquareCoefficients_zero_of_collapse
     (hd : CollapseChain.cmap (cubeBdry (V := GenusVertex q)) (genusChainCollapse q)
       (markedSpineExtendedCoordinateChain q d) = 0) :
     markedSpineSquareCoefficients q d = 0 := by
@@ -25,20 +27,15 @@ theorem markedSpineSquareCoefficients_zero_of_collapse (d : (markedSpineCx q).F 
     apply Finsupp.mapDomain_injective
       (Sum.inl_injective : Function.Injective
         (Sum.inl : Cube (GenusVertex q) → Cube (GenusVertex q) ⊕ Finset (GenusVertex q)))
-    change markedSpineExtendedCoordinateChain q d = Finsupp.mapDomain _ 0
-    rw [Finsupp.mapDomain_zero]
-    exact hfin
+    assumption
   apply Finsupp.mapDomain_injective
     (show Function.Injective
       (fun s : QSquare (cmpRel (GenusVertex q)) => qCubeToCoordinate s.1) from
-      fun _ _ h => Subtype.ext (qCubeToCoordinate_injective h))
-  change markedSpineCoordinateChain q d = Finsupp.mapDomain _ 0
-  rw [Finsupp.mapDomain_zero]
-  exact hcoord
+      fun _ _ h => Subtype.ext (qCubeToCoordinate_injective h)) <;> assumption
 
 /-- For an actual old-spine cycle, zero recovered square coefficients imply its normalized
 full-cube image is the zero chain by the proved two-cycle subdivision dictionary. -/
-theorem markedSpine_normalized_image_zero_of_coefficients (d : (markedSpineCx q).F →₀ ℤ)
+theorem markedSpine_normalized_image_zero_of_coefficients
     (hd : Comb.bdry2 (markedSpineCx q) d = 0)
     (hcoeff : markedSpineSquareCoefficients q d = 0) :
     normalizeOrdChain2 (chain2 (markedSpineToFullCube q) d) = 0 := by

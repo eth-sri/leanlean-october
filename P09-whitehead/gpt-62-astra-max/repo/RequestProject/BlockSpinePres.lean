@@ -1,6 +1,9 @@
 module
 
-public import RequestProject.SubstOneWayBlockLoops
+public import RequestProject.SubstOneWay
+public import RequestProject.PresPosetReading
+public import RequestProject.ChamberQuotientCover
+public import RequestProject.CombLoopWord
 public import RequestProject.TreePresentation
 public import RequestProject.CombPi1Conj
 
@@ -46,10 +49,6 @@ two-dimensional order complex of that poset:
   prescribed old word `u_h` along the chosen loop of the cut surface.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains
 namespace Davis
 
@@ -84,7 +83,7 @@ variable {X : Type u} [Preorder X] {att : NeSpx A →o X}
 def qOldIncl (c : QOld A) : Qpos A X att := qOld c.1 c.2
 
 omit [Fintype V] in
-theorem qOldIncl_monotone : Monotone (qOldIncl (X := X) (att := att)) := fun _ _ h => h
+theorem qOldIncl_monotone : Monotone (qOldIncl (att := att)) := by solve_by_elim
 
 /-- The block as a cellular map into the quotient. -/
 def blockCx (A : CommRel V) (X : Type u) [Preorder X] (att : NeSpx A →o X) :
@@ -95,37 +94,14 @@ omit [Fintype V] in
 /-- **The defining relation of the cylinder**: the image of a cell of the cut surface under the
 attaching map lies below that cell. -/
 theorem qNew_att_le_qOldIncl (σ : NeSpx A) :
-    (qNew (A := A) (att := att) (att σ)) ≤ qOldIncl (posQCube σ) :=
+    (qNew (att := att) (att σ)) ≤ qOldIncl (posQCube σ) :=
   ⟨rfl, σ.2.1, le_refl _⟩
 
 end Block
 
 /-! ### The block inside the quotient, based at the base point of the copy of the base -/
 
-section Spine
-
-variable {α J : Type u} (ρ : J → FreeGroup α) (att : NeSpx A →o presModelPos ρ) (σ₀ : NeSpx A)
-  (cb : List ((orderCx (presModelPos ρ)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
-
-end Spine
-
 /-! ### The marked presentation of the block and the application -/
-
-/-- **The internal generators `Z` of the block**: the edges of the two-dimensional order complex
-of the block outside the chosen spanning tree of its one-skeleton. -/
-abbrev spineGens (T : SpanningTree (orderCx (QOld A))) : Type u := SpanningTree.NonTree T
-
-/-- **The relators of the marked block presentation** `B_q = ⟨s_h, t_h, Z ∣ β_m⟩`: the two-cells
-of the block, and one marking relator per distinguished generator. -/
-abbrev spineRels (Su : Type u) : Type u := (orderCx (QOld A)).F ⊕ Su
-
-section Application
-
-variable {α J : Type u} (ρ : J → FreeGroup α) (att : NeSpx A →o presModelPos ρ) (σ₀ : NeSpx A)
-  (cb : List ((orderCx (presModelPos ρ)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
-  {Su : Type u}
-
-end Application
 
 end Davis
 end FiniteChains

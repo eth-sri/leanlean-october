@@ -28,17 +28,17 @@ def attachmentQuotientHomeomorph : Space r i ≃ₜ Y := by
   have hcomp : F ∘ quotientMap r i = Sum.elim f g := by
     funext z
     rcases z with b | d
-    · exact desc_old r i f g hbd b
-    · exact desc_cell r i f g hbd d
-  have hFq : IsQuotientMap F := IsQuotientMap.of_comp
+    · rfl
+    · apply desc_cell
+  have hFq := IsQuotientMap.of_comp
     (quotientMap_continuous r i) F.continuous (hcomp.symm ▸ hq)
   have hFi : Function.Injective F := by
     rintro (b | d) (c | e) he
-    · exact congrArg Sum.inl (hf he)
+    · solve_by_elim
     · have hd : g e.val ∈ Set.range f := ⟨b, he⟩
-      exact (e.property ((hsep e.val).mp hd)).elim
+      grind
     · have hd : g d.val ∈ Set.range f := ⟨c, he.symm⟩
-      exact (d.property ((hsep d.val).mp hd)).elim
+      grind
     · exact congrArg Sum.inr (Subtype.ext (hnew d.val e.val d.property e.property he))
   let E := Equiv.ofBijective F ⟨hFi, hFq.surjective⟩
   refine { E with continuous_toFun := F.continuous, continuous_invFun := ?_ }
@@ -50,7 +50,7 @@ def attachmentQuotientHomeomorph : Space r i ≃ₜ Y := by
 
 @[simp] theorem attachmentQuotientHomeomorph_old (b : B) :
     attachmentQuotientHomeomorph r i f g hbd hf hsep hnew hq (old r i b) = f b :=
-  desc_old r i f g hbd b
+  rfl
 
 @[simp] theorem attachmentQuotientHomeomorph_cell (d : D) :
     attachmentQuotientHomeomorph r i f g hbd hf hsep hnew hq (cell r i d) = g d :=

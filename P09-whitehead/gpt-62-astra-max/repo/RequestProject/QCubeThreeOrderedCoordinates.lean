@@ -7,18 +7,19 @@ public import RequestProject.QCubeThreeGeometricKernel
 /-! Exact coefficient coordinates for finite chains on the six actual facets of a three-cube. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-variable {V : Type} [DecidableEq V] {A : CommRel V}
+variable {V : Type} [DecidableEq V] [LinearOrder V] {A : CommRel V}
 
-noncomputable def qThreeOrderedCoordinates (c : QCube A) (u v w : V) (huv : u ≠ v) (huw : u ≠ w) (hvw : v ≠ w) (hs : c.spx = {u, v, w}) :
+variable (c : QThreeCube A)
+
+noncomputable def qThreeOrderedCoordinates :
     (QSquare A →₀ ℤ) →ₗ[ℤ] ((Fin 3 × ZMod 2) →₀ ℤ) :=
-  Finsupp.lcomapDomain (qThreeFaceSquare c u v w huv huw hvw hs) (qThreeFaceSquare_injective c u v w huv huw hvw hs)
+  Finsupp.lcomapDomain _ (qThreeFaceSquare_injective c)
 
 /-- The six actual facet coefficients reconstruct every chain supported below the three-cube. -/
-theorem qThreeOrderedCoordinates_reconstruct (c : QCube A) (u v w : V) (huv : u ≠ v) (huw : u ≠ w) (hvw : v ≠ w) (hs : c.spx = {u, v, w})
-    (r : QSquare A →₀ ℤ) (hr : ∀ s ∈ r.support, s.1 < c) :
-    Finsupp.mapDomain (qThreeFaceSquare c u v w huv huw hvw hs) (qThreeOrderedCoordinates c u v w huv huw hvw hs r) = r := by
-  apply Finsupp.mapDomain_comapDomain _ (qThreeFaceSquare_injective c u v w huv huw hvw hs)
-  intro s hmem
-  exact qThreeFaceSquare_exhaustive c u v w huv huw hvw hs s (hr s hmem)
+theorem qThreeOrderedCoordinates_reconstruct
+    (r : QSquare A →₀ ℤ) (hr : ∀ s ∈ r.support, s.1 < c.1) :
+    Finsupp.mapDomain (qThreeFaceSquare c) (qThreeOrderedCoordinates c r) = r := by
+  apply Finsupp.mapDomain_comapDomain _ (qThreeFaceSquare_injective c)
+  solve_by_elim [qThreeFaceSquare_exhaustive]
 
 end FiniteChains.Davis

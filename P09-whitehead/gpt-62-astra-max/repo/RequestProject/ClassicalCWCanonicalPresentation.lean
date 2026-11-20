@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.HomeomorphContinuousMap
+
 public import RequestProject.ClassicalCWWordDiskModel
 public import RequestProject.ClassicalRoseWordNaturality
 public import RequestProject.PresCircleWordParametrization
@@ -33,21 +33,22 @@ def canonicalRelators : CanonicalRel K → FreeGroup (CanonicalGen K)
 
 /-- This is literally the selector used by the presentation-chain
 construction, including its final cancelling pair. -/
-def canonicalWords : CanonicalRel K → List (CanonicalGen K × Bool) :=
+def canonicalWords :=
   presCanonicalWords (canonicalRelators K) (canonicalDummy K)
 
-theorem canonicalWords_ne_nil (j : CanonicalRel K) : canonicalWords K j ≠ [] :=
+variable (j : CanonicalRel K)
+
+theorem canonicalWords_ne_nil : canonicalWords K j ≠ [] :=
   presCanonicalWords_ne_nil (canonicalRelators K) (canonicalDummy K) j
 
-theorem canonicalWords_mk (j : CanonicalRel K) :
+theorem canonicalWords_mk :
     FreeGroup.mk (canonicalWords K j) = canonicalRelators K j :=
   mk_presCanonicalWords (canonicalRelators K) (canonicalDummy K) j
 
-def stabilizedOriginalCellBoundary (j : CanonicalRel K) :
-    C(UnitBoundary (Fin 2 → ℝ), ClassicalGraphModel.Rose (CanonicalGen K)) :=
+def stabilizedOriginalCellBoundary :=
   (StabilizedDiskPresentation.attaching (originalRoseWordAttaching K)).comp
     ⟨Sigma.mk (β := fun _ : CanonicalRel K => UnitBoundary (Fin 2 → ℝ)) j,
-      by exact continuous_sigmaMk⟩
+      continuous_sigmaMk⟩
 
 theorem stabilizedOriginalCellBoundary_old (j : OriginalRoseRel K) :
     (stabilizedOriginalCellBoundary K (Sum.inl j)).Homotopic
@@ -74,8 +75,7 @@ theorem stabilizedOriginalCellBoundary_dummy (u : PUnit) :
   have H := (ContinuousMap.Homotopic.refl (diskRoseMap f)).comp
     dummyCircleBoundaryHomeomorph_homotopic_word
   rw [classicalRoseWordBoundary_map] at H
-  have he : FreeGroup.mk ([(PUnit.unit, true)].map (fun p => (f p.1, p.2))) =
-      FreeGroup.mk (canonicalWords K (Sum.inr PUnit.unit)) :=
+  have he :=
     (canonicalWords_mk K (Sum.inr PUnit.unit)).symm
   have Hword := classicalRoseWordBoundary_homotopic_of_mk_eq he
   have Hcanonical := classicalPresWordAttaching_homotopic_read
@@ -85,9 +85,7 @@ theorem stabilizedOriginalCellBoundary_dummy (u : PUnit) :
 theorem stabilizedOriginalCellBoundary_homotopic (j : CanonicalRel K) :
     (stabilizedOriginalCellBoundary K j).Homotopic
       (classicalPresCellBoundary (canonicalWords K) j (canonicalWords_ne_nil K)) := by
-  cases j with
-  | inl j => exact stabilizedOriginalCellBoundary_old K j
-  | inr u => exact stabilizedOriginalCellBoundary_dummy K u
+  grind [stabilizedOriginalCellBoundary_old, stabilizedOriginalCellBoundary_dummy]
 
 /-- Disjoint-union topology assembles all the actual circle homotopies;
 the original cell family is allowed to be infinite. -/
@@ -95,15 +93,7 @@ def originalCanonicalAttachingHomotopy :
     (StabilizedDiskPresentation.attaching (originalRoseWordAttaching K)).Homotopy
       (classicalPresWordAttaching (canonicalWords K) (canonicalWords_ne_nil K)) := by
   let H (j : CanonicalRel K) := Classical.choice (stabilizedOriginalCellBoundary_homotopic K j)
-  let F : C(BoundaryFamily (CanonicalRel K) (Fin 2 → ℝ),
-      C(I, ClassicalGraphModel.Rose (CanonicalGen K))) :=
-    ⟨fun a => ((H a.1).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry a.2,
-      continuous_sigma (fun j =>
-        ((H j).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry.continuous)⟩
-  exact {
-    toContinuousMap := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
-    map_zero_left := fun a => (H a.1).apply_zero a.2
-    map_one_left := fun a => (H a.1).apply_one a.2 }
+  exact FiniteChains.sigmaHomotopy H
 
 /-- The original space itself, with no replacement hypothesis, is
 homotopy equivalent to the literal canonical rose-and-word-disks model. -/
@@ -118,16 +108,18 @@ def originalClassicalPresWordDiskEquiv :
         (classicalPresWordAttaching (canonicalWords K) (canonicalWords_ne_nil K))
         (originalCanonicalAttachingHomotopy K))
 
-def originalCanonicalRealizationEquiv :
-    ContinuousMap.HomotopyEquiv K (Comb.orderNerveRealization (PresPos (canonicalWords K))) :=
+def originalCanonicalRealizationEquiv :=
   (originalClassicalPresWordDiskEquiv K).trans
     (presClassicalDiskComparison (canonicalWords K) (canonicalWords_ne_nil K)).symm
 
-theorem canonicalGen_finite (hK : Whitehead.FiniteCells K) : Finite (CanonicalGen K) := by
+variable (hK : Whitehead.FiniteCells K)
+include hK
+
+theorem canonicalGen_finite : Finite (CanonicalGen K) := by
   letI := originalRoseGen_finite K hK
   infer_instance
 
-theorem canonicalRel_finite (hK : Whitehead.FiniteCells K) : Finite (CanonicalRel K) := by
+theorem canonicalRel_finite : Finite (CanonicalRel K) := by
   letI := originalRoseRel_finite K hK
   infer_instance
 

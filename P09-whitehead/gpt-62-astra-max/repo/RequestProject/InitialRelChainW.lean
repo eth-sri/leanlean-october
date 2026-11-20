@@ -1,10 +1,10 @@
 module
 
-public import RequestProject.InitialChain
+public import RequestProject.InitialComplex
 public import RequestProject.PresCockcroftDictionary
-public import RequestProject.PresentationComplexAcyclic
 public import RequestProject.CombHurewicz1Pres
-public import RequestProject.TheoremAAcyclic
+public import RequestProject.CombCellularIso
+public import RequestProject.MapChainDescent
 
 @[expose] public section
 
@@ -52,8 +52,8 @@ omit [LinearOrder I] [Fintype I] [Fintype J] [DecidableEq J] in
 theorem bdry2_presComplex_eq_expCol :
     bdry2 (presComplex r) = Finsupp.linearCombination ℤ (expCol r) := by
   refine Finsupp.lhom_ext' fun j => LinearMap.ext_ring ?_
-  show bdry2 (presComplex r) (Finsupp.single j (1 : ℤ))
-    = Finsupp.linearCombination ℤ (expCol r) (Finsupp.single j (1 : ℤ))
+  show bdry2 _ (Finsupp.single j 1)
+    = Finsupp.linearCombination ℤ (expCol r) (Finsupp.single j 1)
   rw [bdry2_pres_single, Finsupp.linearCombination_single, one_smul, expCol_eq_expVec]
   rfl
 

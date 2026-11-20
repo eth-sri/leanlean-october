@@ -7,10 +7,6 @@ public import RequestProject.SurfaceWordExpansion
 
 /-! Structural group injectivity for substitution of arbitrary words in a finite genus block. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains.Davis.Genus
 
 open RACG Mirror Comb PresModel BlockFamily
@@ -18,11 +14,13 @@ open RACG Mirror Comb PresModel BlockFamily
 variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (q : ℕ) [NeZero q] (u : Fin q × Bool → FreeGroup α)
 
+variable (h : ℕ)
+
 /-- Named generators for the two loops of a handle, extended periodically. -/
-def namedA (h : ℕ) : α ⊕ (Fin q × Bool) :=
+def namedA : α ⊕ (Fin q × Bool) :=
   Sum.inr (⟨h % q, Nat.mod_lt _ (Nat.pos_of_neZero q)⟩, false)
 
-def namedB (h : ℕ) : α ⊕ (Fin q × Bool) :=
+def namedB : α ⊕ (Fin q × Bool) :=
   Sum.inr (⟨h % q, Nat.mod_lt _ (Nat.pos_of_neZero q)⟩, true)
 
 abbrev namedPres := SurfaceWordExpansion.expandedRel ρ u (finitePairs q)
@@ -35,16 +33,14 @@ abbrev namedPres := SurfaceWordExpansion.expandedRel ρ u (finitePairs q)
         (fun x => FreeGroup.of (Sum.inr x)) := by
     funext x
     obtain ⟨h, b⟩ := x
-    have hm : h.val % q = h.val := Nat.mod_eq_of_lt h.isLt
+    have hm := Nat.mod_eq_of_lt h.isLt
     cases b <;> simp [genLw, namedA, namedB, hm] <;> rfl
-  rw [← h, commWord_finitePairs q (fun x =>
-    FreeGroup.mk (genLw (namedA (α := α) q) (namedB (α := α) q) x))]
-  exact (mk_surfWord (namedA (α := α) q) (namedB (α := α) q) q).symm
+  grind [commWord_finitePairs, mk_surfWord]
 
  theorem namedLw_eq (s : PUnit.{1}) (x : Fin q × Bool) :
     finiteLw (namedA (α := α) q) (namedB (α := α) q) q s x = [(Sum.inr x, true)] := by
   obtain ⟨h, b⟩ := x
-  have hm : h.val % q = h.val := Nat.mod_eq_of_lt h.isLt
+  have hm := Nat.mod_eq_of_lt h.isLt
   cases b
   · change [sLet (namedA (α := α) q) (namedB (α := α) q) (4 * (h.val % q) + 0)] = _
     rw [hm]

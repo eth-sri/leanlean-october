@@ -10,12 +10,7 @@ relative class. The scalar remains in the full quotient group until the last
 coefficient-retraction step. These proof terms are not yet Lean-verified. -/
 noncomputable section
 open scoped Classical
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-set_option maxHeartbeats 800000
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -32,43 +27,38 @@ theorem bdry2_multiplyCellChain (w : MonoidAlgebra ℤ G) (c : (G × K.F) →₀
       multiplyCellChain (Comb.bdry2 (cover T φ) c) w := by
   induction w using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add w z hw hz => simp only [map_add, MonoidAlgebra.coeff_add, hw, hz]
+  | add w z hw hz => simp_all
   | single g n =>
-      rw (config := { transparency := .default }) [multiplyCellChain]
-      erw [Finsupp.linearCombination_single]
-      rw (config := { transparency := .default }) [map_smul, bdry2_translateCellChain, multiplyCellChain]
-      erw [Finsupp.linearCombination_single]
+      simp [multiplyCellChain, Finsupp.linearCombination_single, map_smul, bdry2_translateCellChain]
 
-theorem markedChainMap_translate (p : I → List (K.E × Bool))
+variable (p : I → List (K.E × Bool))
+
+theorem markedChainMap_translate
     (g : G) (c : (G × I) →₀ ℤ) :
     markedChainMap T φ p (translateCellChain g c) =
       translateCellChain g (markedChainMap T φ p c) := by
   change markedChainMap T φ p (translateCellChain g c) =
     chain1 ((deck T φ).cellHom g) (markedChainMap T φ p c)
   induction c using Finsupp.induction_linear with
-  | zero => simp [translateCellChain]
+  | zero => rfl
   | add c d hc hd =>
-      simp only [translateCellChain, Finsupp.mapDomain_add, map_add] at hc hd ⊢
-      rw (config := { transparency := .default }) [hc, hd]
+      simp_all [translateCellChain, Finsupp.mapDomain_add, map_add, hc, hd]
   | single x n =>
-      rw (config := { transparency := .default }) [translateCellChain, Finsupp.mapDomain_single, markedChainMap_single,
+      erw [translateCellChain, Finsupp.mapDomain_single, markedChainMap_single,
         markedChainMap_single, map_smul]
       congr 1
-      rw (config := { transparency := .default }) [liftPath_translate]
+      erw [liftPath_translate]
       exact pathChain_map ((deck T φ).cellHom g) (liftPath T φ (p x.2) x.1)
 
-theorem markedChainMap_multiply (p : I → List (K.E × Bool))
+theorem markedChainMap_multiply
     (w : MonoidAlgebra ℤ G) (c : (G × I) →₀ ℤ) :
     markedChainMap T φ p (multiplyCellChain c w) =
       multiplyCellChain (markedChainMap T φ p c) w := by
   induction w using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add w z hw hz => simp only [map_add, MonoidAlgebra.coeff_add, hw, hz]
+  | add w z hw hz => simp_all
   | single g n =>
-      rw (config := { transparency := .default }) [multiplyCellChain]
-      erw [Finsupp.linearCombination_single]
-      rw (config := { transparency := .default }) [map_smul, markedChainMap_translate, multiplyCellChain]
-      erw [Finsupp.linearCombination_single]
+      simp [multiplyCellChain, Finsupp.linearCombination_single, map_smul, markedChainMap_translate]
 
 theorem markedChainMap_changeGroup (η : G →* H) (p : I → List (K.E × Bool))
     (c : (G × I) →₀ ℤ) :
@@ -77,13 +67,13 @@ theorem markedChainMap_changeGroup (η : G →* H) (p : I → List (K.E × Bool)
         (Finsupp.mapDomain (fun x : G × I => (η x.1, x.2)) c) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.mapDomain_add, hc, hd]
+  | add c d hc hd => simp [map_add, Finsupp.mapDomain_add, hc, hd]
   | single x n =>
-      rw (config := { transparency := .default }) [Finsupp.mapDomain_single, markedChainMap_single, markedChainMap_single, map_smul]
+      erw [Finsupp.mapDomain_single, markedChainMap_single, markedChainMap_single, map_smul]
       congr 1
       change Finsupp.mapDomain (changeGroup T φ η).onE (pathChain _) = _
-      rw (config := { transparency := .default }) [← pathChain_map]
-      exact congrArg pathChain (liftPath_map_group T φ η (p x.2) x.1)
+      erw [← pathChain_map]
+      solve_by_elim [liftPath_map_group]
 
 end FiniteChains.Comb.ReceivedTree
 
@@ -111,15 +101,12 @@ theorem receivedSpineFaceChain_marked_boundary
     (treeMarkedSpineLoop q) (fun i => β (Sum.inr i))
     (receivedSpineFaceChain ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit β)
   intro z
-  let βF : NamedSpineRel q → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ
-        (familyFiniteSpineWordBlock (fun _ : PUnit.{1} => q) (fun _ => u)))) := β
+  let βF := β
   have hz0 := receivedSpineFaceChain_relative_boundary ρ (fun _ : PUnit.{1} => q)
     (fun _ => u) PUnit.unit βF
   have hwords : familyFiniteSpineWordBlock (fun _ : PUnit.{1} => q) (fun _ => u) =
       finiteSpineWordBlock q u := by
     funext s
-    cases s
     rfl
   have hz := hz0 (by
     intro t
@@ -148,10 +135,10 @@ theorem allQuotientReceivedSpineToQuotient_chain2_translate
         (chain2 (allQuotientReceivedSpineToQuotient q ρ u hrho) c) := by
   change Finsupp.mapDomain _ (Finsupp.mapDomain _ c) =
     Finsupp.mapDomain _ (Finsupp.mapDomain _ c)
-  rw (config := { transparency := .default }) [← Finsupp.mapDomain_comp, ← Finsupp.mapDomain_comp]
+  erw [← Finsupp.mapDomain_comp, ← Finsupp.mapDomain_comp]
   apply congrArg (fun f => Finsupp.mapDomain f c)
   funext x
-  exact allQuotientReceivedSpineToQuotient_deckF q ρ u hrho g x.1 x.2
+  apply allQuotientReceivedSpineToQuotient_deckF
 
 theorem allQuotientReceivedSpineToQuotient_chain2_multiply
     (w : MonoidAlgebra ℤ (QuotientMarkingGroup q ρ u))
@@ -163,13 +150,12 @@ theorem allQuotientReceivedSpineToQuotient_chain2_multiply
           (chain2 (allQuotientReceivedSpineToQuotient q ρ u hrho) c)) w.coeff := by
   induction w using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add w z hw hz => simp only [map_add, MonoidAlgebra.coeff_add, hw, hz]
+  | add w z hw hz => simp [map_add, MonoidAlgebra.coeff_add, hw, hz]
   | single g n =>
       simp only [ReceivedTree.multiplyCellChain, LinearMap.comp_apply,
         LinearEquiv.coe_toLinearMap, MonoidAlgebra.coeffLinearEquiv_apply,
         MonoidAlgebra.coeff_single, Finsupp.linearCombination_single]
-      rw (config := { transparency := .default }) [map_smul,
-        allQuotientReceivedSpineToQuotient_chain2_translate]
+      rw [map_smul, allQuotientReceivedSpineToQuotient_chain2_translate]
 
 /-- Once polygon reconstruction identifies the genuine relative geometric
 class, all named coefficients are a single multiple of the reference vector.
@@ -199,20 +185,19 @@ theorem finiteSpine_relative_class_principal
               (quotientCorrectedRelativeChain q ρ u hrho γ)) w.coeff)) :
     ∃ a : MonoidAlgebra ℤ (PresGroup (substPresF ρ (finiteSpineWordBlock q u))),
       ∀ m, β m = a * γ m := by
-  let F : PresGroup (substPresF ρ (finiteSpineWordBlock q u)) →*
-      QuotientMarkingGroup q ρ u := finiteSpineToQuotient ρ q u hrho
-  let cβ : (singleReceivedSpineCover q ρ u).F →₀ ℤ :=
+  let F := finiteSpineToQuotient ρ q u hrho
+  let cβ :=
     receivedSpineFaceChain ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit β
-  let cγ : (singleReceivedSpineCover q ρ u).F →₀ ℤ :=
+  let cγ :=
     receivedSpineFaceChain ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit γ
-  let c : (QuotientMarkingGroup q ρ u × (markedSpineCx q).F) →₀ ℤ :=
+  let c :=
     Finsupp.mapDomain (fun x => (F x.1, x.2)) cβ
-  let d : (QuotientMarkingGroup q ρ u × (markedSpineCx q).F) →₀ ℤ :=
+  let d :=
     Finsupp.mapDomain (fun x => (F x.1, x.2)) cγ
-  let m : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ :=
+  let m :=
     Finsupp.mapDomain (fun x => (F x.1, x.2))
     ((ReceivedTree.cellCoordinates (Fin q × Bool)).symm (fun i => β (Sum.inr i)))
-  let n : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ :=
+  let n :=
     Finsupp.mapDomain (fun x => (F x.1, x.2))
     ((ReceivedTree.cellCoordinates (Fin q × Bool)).symm (fun i => γ (Sum.inr i)))
   have hm : allQuotientSurfaceMarkingChains q ρ u m =
@@ -221,28 +206,25 @@ theorem finiteSpine_relative_class_principal
         (allQuotientSurfaceMarkingChains q ρ u n)) w.coeff := by
     simpa only [quotientSurfaceMarkingChains_factor] using hmark
   have hmn : m = ReceivedTree.multiplyCellChain n w := by
-    rw (config := { transparency := .default }) [← allQuotientSurfaceMarkingChains_multiply] at hm
-    exact allQuotientSurfaceMarkingChains_injective q ρ u hm
+    erw [← allQuotientSurfaceMarkingChains_multiply] at hm
+    apply allQuotientSurfaceMarkingChains_injective <;> assumption
   let M := ReceivedTree.markedChainMap (markedSpineTree q)
     (allQuotientSpineReceiver q ρ u hrho) (fun i => (treeMarkedSpineLoop q i).1)
   have hc : Comb.bdry2 (allQuotientReceivedSpineCover q ρ u hrho) c = M m := by
     change Comb.bdry2 _ (chain2 (receivedSpineChangeToAllQuotient q ρ u hrho) cβ) = _
-    rw (config := { transparency := .default }) [bdry2_chain2, receivedSpineFaceChain_marked_boundary q ρ u β hβ]
-    exact ReceivedTree.markedChainMap_changeGroup _ _ F _ _
+    erw [bdry2_chain2, receivedSpineFaceChain_marked_boundary q ρ u β hβ]
+    apply ReceivedTree.markedChainMap_changeGroup
   have hd : Comb.bdry2 (allQuotientReceivedSpineCover q ρ u hrho) d = M n := by
     change Comb.bdry2 _ (chain2 (receivedSpineChangeToAllQuotient q ρ u hrho) cγ) = _
-    rw (config := { transparency := .default }) [bdry2_chain2, receivedSpineFaceChain_marked_boundary q ρ u γ hγ]
-    exact ReceivedTree.markedChainMap_changeGroup _ _ F _ _
+    erw [bdry2_chain2, receivedSpineFaceChain_marked_boundary q ρ u γ hγ]
+    apply ReceivedTree.markedChainMap_changeGroup
   have hcycle : Comb.bdry2 (allQuotientReceivedSpineCover q ρ u hrho)
       (c - ReceivedTree.multiplyCellChain d w) = 0 := by
-    rw (config := { transparency := .default }) [map_sub, hc, ReceivedTree.bdry2_multiplyCellChain, hd, hmn]
-    change M (ReceivedTree.multiplyCellChain n w) - ReceivedTree.multiplyCellChain (M n) w = 0
-    rw (config := { transparency := .default }) [ReceivedTree.markedChainMap_multiply, sub_self]
-  have hcmap : chain2 (allQuotientReceivedSpineToQuotient q ρ u hrho) c =
-      chain2 (receivedSpineToQuotient q ρ u hrho) cβ :=
+    erw [map_sub, hc, ReceivedTree.bdry2_multiplyCellChain, hd, hmn]
+    rw [ReceivedTree.markedChainMap_multiply, sub_self]
+  have hcmap :=
     allQuotientReceivedSpineToQuotient_chain2_changeGroup q ρ u hrho cβ
-  have hdmap : chain2 (allQuotientReceivedSpineToQuotient q ρ u hrho) d =
-      chain2 (receivedSpineToQuotient q ρ u hrho) cγ :=
+  have hdmap :=
     allQuotientReceivedSpineToQuotient_chain2_changeGroup q ρ u hrho cγ
   have hcorr : quotientCorrectedRelativeChain q ρ u hrho β -
       Finsupp.linearCombination ℤ (fun g =>
@@ -250,7 +232,7 @@ theorem finiteSpine_relative_class_principal
           (quotientCorrectedRelativeChain q ρ u hrho γ)) w.coeff =
       chain2 (allQuotientReceivedSpineToQuotient q ρ u hrho)
         (c - ReceivedTree.multiplyCellChain d w) := by
-    rw (config := { transparency := .default }) [map_sub, allQuotientReceivedSpineToQuotient_chain2_multiply, hcmap, hdmap]
+    erw [map_sub, allQuotientReceivedSpineToQuotient_chain2_multiply, hcmap, hdmap]
     simp only [quotientCorrectedRelativeChain, quotientMarkingCorrections_factor]
     exact allQuotientCorrection_cancel_difference q ρ u w m n
       (chain2 (receivedSpineToQuotient q ρ u hrho) cβ)
@@ -259,8 +241,6 @@ theorem finiteSpine_relative_class_principal
     apply sub_eq_zero.mp
     apply allQuotientReceivedSpine_cycle_zero_of_quotient_old_boundary q ρ u hrho _ hcycle
     simpa only [hcorr] using hrel
-  apply quotientNamedCoefficients_reflect_multiple q ρ u hrho β γ w
-  · convert hcd using 1 <;> rfl
-  · simpa only [m, n, F] using hmn
+  apply quotientNamedCoefficients_reflect_multiple <;> assumption
 
 end FiniteChains.Davis.Genus

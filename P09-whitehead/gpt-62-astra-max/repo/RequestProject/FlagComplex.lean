@@ -33,7 +33,7 @@ structure ASC (V : Type u) where
   /-- The family of faces. -/
   faces : Set (Finset V)
   /-- The empty simplex is a face. -/
-  empty_mem : (∅ : Finset V) ∈ faces
+  empty_mem : ∅ ∈ faces
   /-- Faces are closed under passing to subsets. -/
   down_closed : ∀ {s t : Finset V}, s ∈ faces → t ⊆ s → t ∈ faces
 
@@ -42,18 +42,15 @@ namespace ASC
 /-- The order complex of a preorder: its faces are the finite chains. -/
 def orderComplex (P : Type u) [Preorder P] : ASC P where
   faces := {s : Finset P | IsChain (· ≤ ·) (s : Set P)}
-  empty_mem := by simp [IsChain, Set.Pairwise]
+  empty_mem := by simp
   down_closed := by
     intro s t hs hts
-    exact hs.mono (by exact_mod_cast hts)
+    exact hs.mono (by assumption)
 
 @[simp] theorem mem_orderComplex {P : Type u} [Preorder P] {s : Finset P} :
     s ∈ (orderComplex P).faces ↔ IsChain (· ≤ ·) (s : Set P) := Iff.rfl
 
-/-- The poset of nonempty faces of `K`, ordered by inclusion. -/
-def Face (K : ASC V) : Type u := {s : Finset V // s ∈ K.faces ∧ s.Nonempty}
-
-instance (K : ASC V) : Preorder K.Face := Subtype.preorder _
+variable (K : ASC V)
 
 end ASC
 

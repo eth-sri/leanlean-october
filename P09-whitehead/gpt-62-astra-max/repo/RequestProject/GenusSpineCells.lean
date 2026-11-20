@@ -2,7 +2,6 @@ module
 
 public import RequestProject.GenusChainCollapse
 public import RequestProject.TruncatedCellDimension
-public import RequestProject.ChamberQuotientFinite
 public import RequestProject.StrictOrderComplex
 public import RequestProject.CombData
 
@@ -29,7 +28,9 @@ instance : Finite (GenusSpineCell q) :=
   Finite.of_injective (fun c : GenusSpineCell q => truncatedFaceIndex c.1)
     (fun _ _ h => Subtype.ext (truncatedFaceIndex_injective h))
 
-theorem genus_removedFace_dimension (c : GenusTruncatedCell q)
+variable (c : GenusTruncatedCell q)
+
+theorem genus_removedFace_dimension
     (hc : truncatedFaceIndex c ∈ (genusChainCollapse q).map Prod.snd) :
     truncatedCellDimension c = 2 := by
   obtain ⟨p, hp, he⟩ := List.mem_map.mp hc
@@ -47,15 +48,13 @@ theorem genus_removedFace_dimension (c : GenusTruncatedCell q)
       by_contra hn
       simp [truncatedFaceIndex, spineInc, hn] at hi
     change σ.1.card - 1 = 2
-    rw [hs.2]
+    simp [hs.2]
 
 /-- Every vertex and edge survives, since all chosen faces have dimension two. -/
-theorem genusSpineCellSet_of_dimension_lt_two (c : GenusTruncatedCell q)
+theorem genusSpineCellSet_of_dimension_lt_two
     (hc : truncatedCellDimension c < 2) : c ∈ genusSpineCellSet q := by
   refine ⟨Nat.le_of_lt hc, ?_⟩
-  intro hm
-  have hd := genus_removedFace_dimension q c hm
-  omega
+  grind [genus_removedFace_dimension]
 
 theorem genusSpineCell_dimension_le_two (c : GenusSpineCell q) :
     truncatedCellDimension c.1 ≤ 2 := c.2.1
@@ -121,16 +120,14 @@ theorem genusSpineCellSet_iff_survives (c : GenusTruncatedCell q) :
     · intro h
       exact ⟨h.2, trivial⟩
     · rintro ⟨hf, _⟩
-      exact ⟨genus_cutCell_dimension_le_two q σ, hf⟩
+      solve_by_elim [genus_cutCell_dimension_le_two]
 
 theorem genusSpineCellDimension_strictMono :
     StrictMono (fun c : GenusSpineCell q => truncatedCellDimension c.1) := by
-  intro c d hcd
-  apply truncatedCellDimension_strictMono
-  exact hcd
+  solve_by_elim [truncatedCellDimension_strictMono]
 
 /-- The genuine finite simplicial two-complex associated with the surviving cells. -/
-def genusSpineCx : Comb.Complex2 := Comb.strictOrderCx (GenusSpineCell q)
+def genusSpineCx := Comb.strictOrderCx (GenusSpineCell q)
 
 instance : Finite (genusSpineCx q).V := inferInstanceAs (Finite (GenusSpineCell q))
 instance : Finite (genusSpineCx q).E :=
@@ -138,7 +135,7 @@ instance : Finite (genusSpineCx q).E :=
 instance : Finite (genusSpineCx q).F :=
   inferInstanceAs (Finite (Comb.strictOrderCx (GenusSpineCell q)).F)
 
-def genusSpineCellToOld (c : GenusSpineCell q) : QOld (cmpRel (GenusVertex q)) :=
+def genusSpineCellToOld (c : GenusSpineCell q) :=
   truncatedCellRetraction c.1
 
 theorem genusSpineCellToOld_monotone : Monotone (genusSpineCellToOld q) :=
@@ -149,18 +146,19 @@ def genusSpineToOld : Comb.Hom (genusSpineCx q) (Comb.orderCx (QOld (cmpRel (Gen
   Comb.Hom.comp (Comb.orderCxMap (genusSpineCellToOld q) (genusSpineCellToOld_monotone q))
     (Comb.strictOrderIncl (GenusSpineCell q))
 
+variable (σ : NeSpx (cmpRel (GenusVertex q))) (hσ : σ.1.card ≤ 2)
+
 /-- The full cut one-skeleton survives. This supplies the cells of the canonical markings. -/
-def genusSpineCutCell (σ : NeSpx (cmpRel (GenusVertex q))) (hσ : σ.1.card ≤ 2) :
+def genusSpineCutCell :
     GenusSpineCell q :=
   ⟨Sum.inr ⟨σ.1, σ.2⟩, genusSpineCellSet_of_dimension_lt_two q _ (by
     change σ.1.card - 1 < 2
     omega)⟩
 
-@[simp] theorem genusSpineCellToOld_cutCell (σ : NeSpx (cmpRel (GenusVertex q)))
-    (hσ : σ.1.card ≤ 2) :
+@[simp] theorem genusSpineCellToOld_cutCell :
     genusSpineCellToOld q (genusSpineCutCell q σ hσ) = posQCube σ := rfl
 
 instance : Nonempty (GenusSpineCell q) :=
-  ⟨genusSpineCutCell q (spx1 (cC (gc q))) (by simp [spx1_val])⟩
+  ⟨genusSpineCutCell q (spx1 (cC (gc q))) (by simp)⟩
 
 end FiniteChains.Davis.Genus

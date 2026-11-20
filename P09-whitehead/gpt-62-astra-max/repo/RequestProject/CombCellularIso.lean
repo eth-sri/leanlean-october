@@ -23,7 +23,7 @@ theorem map_surjInv_map (q : List (L.E × Bool)) :
       fun eb => (Function.surjInv hE.2 eb.1, eb.2)) = q := by
   induction q with
   | nil => rfl
-  | cons a t ih => simp [ih, surjInv_apply_apply hE]
+  | cons a t ih => simp_all [ih, surjInv_apply_apply]
 
 /-- The inverse of a cellular map which is bijective on cells. -/
 noncomputable def homInv : Hom E L where
@@ -33,20 +33,20 @@ noncomputable def homInv : Hom E L where
   src_onE := by
     intro e
     obtain ⟨e', rfl⟩ := hE.2 e
-    rw [surjInv_apply_apply hE, ι.src_onE, surjInv_apply_apply hV]
+    simp_all [surjInv_apply_apply, ι.src_onE]
   tgt_onE := by
     intro e
     obtain ⟨e', rfl⟩ := hE.2 e
-    rw [surjInv_apply_apply hE, ι.tgt_onE, surjInv_apply_apply hV]
+    simp_all [surjInv_apply_apply, ι.tgt_onE]
   base_onF := by
     intro f
     obtain ⟨f', rfl⟩ := hF.2 f
-    rw [surjInv_apply_apply hF, ι.base_onF, surjInv_apply_apply hV]
+    simp_all [surjInv_apply_apply, ι.base_onF]
   att_onF := by
     intro f
     obtain ⟨f', rfl⟩ := hF.2 f
     rw [surjInv_apply_apply hF, ι.att_onF]
-    exact (map_surjInv_map ι hE (L.att f')).symm
+    grind [map_surjInv_map]
 
 @[simp] theorem homInv_onV_apply (y : E.V) : ι.onV ((homInv ι hV hE hF).onV y) = y :=
   Function.surjInv_eq hV.2 y
@@ -66,7 +66,7 @@ noncomputable def homInv : Hom E L where
 @[simp] theorem homInv_onF_comp (f : L.F) : (homInv ι hV hE hF).onF (ι.onF f) = f :=
   surjInv_apply_apply hF f
 
-theorem mapPath_homInv (q : List (L.E × Bool)) :
+theorem mapPath_homInv (q : List _) :
     mapPath (homInv ι hV hE hF) (mapPath ι q) = q :=
   map_surjInv_map ι hE q
 

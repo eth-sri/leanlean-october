@@ -33,34 +33,29 @@ theorem treeLetters_map (l : List (J × Bool)) :
     change treeLetters s U ((h.onE g.1, g.2) :: Comb.mapPath h l) = _
     by_cases hg : T.isTree g.1
     · have hu := (ht g.1).mpr hg
-      simpa only [treeLetters, dif_pos hg, dif_pos hu] using ih
-    · have hu : ¬U.isTree (h.onE g.1) := fun hu => hg ((ht g.1).mp hu)
-      simp only [treeLetters, dif_neg hg, dif_neg hu, List.map_cons]
-      rw [ih]
-      rfl
+      simp_all [treeLetters, dif_pos]
+    · simp only [treeLetters, dif_neg hg, dif_neg (fun hu => hg ((ht g.1).mp hu)), List.map_cons] <;> aesop
 
-theorem BoundaryWords.eraseTree_natural (b : BoundaryWords r) :
+variable (b : BoundaryWords r)
+
+theorem BoundaryWords.eraseTree_natural :
     (b.map h).eraseTree s U =
       (b.eraseTree r T).map (graphRoseCombinatorialMap r s T U h ht) := by
-  have hw : ∀ i, ((b.map h).eraseTree s U).word i =
-      ((b.eraseTree r T).map (graphRoseCombinatorialMap r s T U h ht)).word i :=
+  have hw :=
     fun i => treeLetters_map r s T U h ht (b.word i)
   have extWords (x y : BoundaryWords (roseAttaching {k : K // ¬U.isTree k}))
       (hv : x.vertex = y.vertex) (hw : x.word = y.word) : x = y := by
     cases x
-    cases y
-    cases hv
-    cases hw
-    rfl
+    simp_all
   apply extWords
   · rfl
   · exact funext hw
 
-theorem BoundaryWords.eraseTree_loop_natural (b : BoundaryWords r) :
+theorem BoundaryWords.eraseTree_loop_natural :
     ((b.map h).eraseTree s U).loopWord =
       ((b.eraseTree r T).loopWord).map
         (fun g => (graphNonTreeMap r s T U h ht g.1, g.2)) := by
   rw [BoundaryWords.eraseTree_natural r s T U h ht b]
-  exact BoundaryWords.loopWord_map (graphRoseCombinatorialMap r s T U h ht) (b.eraseTree r T)
+  apply BoundaryWords.loopWord_map
 
 end FiniteChains.ClassicalGraphModel

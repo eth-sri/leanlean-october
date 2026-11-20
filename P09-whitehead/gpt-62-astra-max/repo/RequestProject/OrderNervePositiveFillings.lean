@@ -6,9 +6,7 @@ public import RequestProject.OrderThreeNormalization
 @[expose] public section
 
 /-! Strict cellular fillings give genuine fillings in the homogeneous full nerve. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -43,13 +41,11 @@ theorem weak_oneCycle_filling_of_strict
   obtain ⟨y, hy⟩ := hfill _ hn
   have hy' : bdry2 (orderCx P) (ordStrictInclusion2 y) =
       ordStrictInclusion1 (normalizeOrdChain1 c) := by
-    change bdry2 (orderCx P) (chain2 (strictOrderIncl P) y) = _
+    change bdry2 _ (chain2 (strictOrderIncl P) y) = _
     rw [bdry2_chain2, hy]
     rfl
   refine ⟨ordStrictInclusion2 y + ordNormalizationHomotopy1 c, ?_⟩
   rw [map_add, hy', ordNormalization_one_boundary]
-  change ordStrictInclusion1 (normalizeOrdChain1 c) +
-    (c - ordStrictInclusion1 (normalizeOrdChain1 c)) = c
   abel
 
 def strictOrdTetWeak (t : StrictOrdTet P) : OrdTet P :=
@@ -65,8 +61,8 @@ theorem ordBoundary3_strict_inclusion (y : StrictOrdTet P →₀ ℤ) :
     rw [Finsupp.mapDomain_single, ordBoundary3, Finsupp.linearCombination_single,
       strictOrdBoundary3, Finsupp.linearCombination_single, map_smul]
     congr 1
-    simp only [strictOrdTetBoundary, map_sub, map_add]
-    simp [ordTetBoundary, strictOrdTetWeak, ordStrictInclusion2, strictOrderIncl]
+    simp only [relTetBoundary, map_sub, map_add]
+    simp [relTetBoundary, strictOrdTetWeak, ordStrictInclusion2, strictOrderIncl]
 
 theorem weak_twoCycle_filling_of_strict
     (hfill : ∀ c : StrictOrdTri P →₀ ℤ, bdry2 (strictOrderCx P) c = 0 →
@@ -97,9 +93,7 @@ theorem nerve_oneCycle_filling_of_strict
     ∃ y ∈ Nerve.Inc P, Nerve.bdry y = c := by
   have he : ordNerveChain1 (decodeOrdNerve1 c) = c := by
     rw [ordNerveChain1_decode hi, hd]
-  have hcyc : bdry1 (orderCx P) (decodeOrdNerve1 c) = 0 :=
-    (ordNerveChain1_cycle_iff _).mp (by rw [he]; exact hc)
-  obtain ⟨y, hy⟩ := weak_oneCycle_filling_of_strict hfill _ hcyc
+  obtain ⟨y, hy⟩ := weak_oneCycle_filling_of_strict hfill _ ((ordNerveChain1_cycle_iff _).mp (by rw [he]; exact hc))
   refine ⟨ordNerveChain2 y, ordNerveChain2_mem_inc y, ?_⟩
   rw [← ordNerveChain1_bdry2, hy, he]
 
@@ -111,9 +105,7 @@ theorem nerve_twoCycle_filling_of_strict
     ∃ y ∈ Nerve.Inc P, Nerve.bdry y = c := by
   have he : ordNerveChain2 (decodeOrdNerve2 c) = c := by
     rw [ordNerveChain2_decode hi, hd]
-  have hcyc : bdry2 (orderCx P) (decodeOrdNerve2 c) = 0 :=
-    (ordNerveChain2_cycle_iff _).mp (by rw [he]; exact hc)
-  obtain ⟨y, hy⟩ := weak_twoCycle_filling_of_strict hfill _ hcyc
+  obtain ⟨y, hy⟩ := weak_twoCycle_filling_of_strict hfill _ ((ordNerveChain2_cycle_iff _).mp (by rw [he]; exact hc))
   refine ⟨ordNerveChain3 y, ordNerveChain3_mem_inc y, ?_⟩
   rw [← ordNerveChain2_ordBoundary3, hy, he]
 

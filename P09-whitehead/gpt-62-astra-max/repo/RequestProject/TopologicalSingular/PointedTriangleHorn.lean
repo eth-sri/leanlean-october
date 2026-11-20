@@ -16,15 +16,15 @@ theorem pointed_triangle_horn_exists (i : Fin 4)
       (∀ (j : Fin 4) (k : Fin 3),
         face k (face j tau) = ContinuousMap.const (Domain 1) x) := by
   obtain ⟨tau, htau⟩ := singular_horn_filler_of_face_compatible i
-    (fun j _ => (a j).map) (by
+    _ (by
       intro j k hj hk
-      rw [(a j).based, (a (j.succAbove k)).based])
+      rw [(a j).based, (a _).based])
   refine ⟨tau, htau, ?_⟩
   intro j k
   by_cases hj : j = i
   · subst j
     rw [singular_double_face_swap tau i k,
-      htau (i.succAbove k) (Fin.succAbove_ne i k), (a (i.succAbove k)).based]
+      htau _ (Fin.succAbove_ne i k), (a _).based]
   · rw [htau j hj, (a j).based]
 
 end FiniteChains.TopologicalSingular

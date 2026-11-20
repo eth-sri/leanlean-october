@@ -11,7 +11,9 @@ namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V P : Type} [DecidableEq V] [PartialOrder P]
 
-theorem puncturedCubeBoundary_cover_fillings (t : Cube V) (j : V) (b z : CubeCoord)
+variable (t : Cube V) (j : V)
+
+theorem puncturedCubeBoundary_cover_fillings (b z : CubeCoord)
     (hb : b ≠ CubeCoord.free) (hz : z ≠ CubeCoord.free) (hbz : b ≠ z)
     (ht : t j = CubeCoord.free) {f : P → PuncturedCubeFace t j b} (hf : IsPosetCover f) :
     (∀ c : StrictOrdEdge P →₀ ℤ, Comb.bdry1 (strictOrderCx P) c = 0 →
@@ -35,7 +37,7 @@ theorem puncturedCubeBoundary_cover_fillings (t : Cube V) (j : V) (b z : CubeCoo
     (punctureOpen_monotone t j b z hb hz hbz ht) hupper hmiddle _ hend⟩
 
 /-- A genuine facet puncture supplies its own contraction, with no filling input. -/
-theorem ordinary_puncturedCubeBoundary_cover_fillings (t : Cube V) (j : V) (b : CubeCoord)
+theorem ordinary_puncturedCubeBoundary_cover_fillings (b : CubeCoord)
     (hb : b ≠ CubeCoord.free) (ht : t j = CubeCoord.free)
     {f : P → PuncturedCubeFace t j b} (hf : IsPosetCover f) :
     (∀ c : StrictOrdEdge P →₀ ℤ, Comb.bdry1 (strictOrderCx P) c = 0 →
@@ -43,7 +45,7 @@ theorem ordinary_puncturedCubeBoundary_cover_fillings (t : Cube V) (j : V) (b : 
     (∀ c : StrictOrdTri P →₀ ℤ, Comb.bdry2 (strictOrderCx P) c = 0 →
       ∃ d : StrictOrdTet P →₀ ℤ, strictOrdBoundary3 d = c) := by
   cases b with
-  | free => exact False.elim (hb rfl)
+  | free => simp_all
   | pos =>
       exact puncturedCubeBoundary_cover_fillings t j .pos .neg hb
         (by decide) (by decide) ht hf

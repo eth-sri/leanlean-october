@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.RelativeStructuralOperation
-public import RequestProject.FoxNaturality
+
 
 @[expose] public section
 
@@ -28,7 +28,7 @@ def groupHom : PresGroup ρ →* PresGroup (rel ρ f) :=
     rintro _ ⟨j, rfl⟩
     exact Subgroup.subset_normalClosure ⟨j, rfl⟩)
 
-def wordRetraction : FreeGroup B →* FreeGroup A :=
+def wordRetraction :=
   FreeGroup.lift (fun b => if h : ∃ a, f a = b then FreeGroup.of h.choose else 1)
 
 include hf in
@@ -39,8 +39,7 @@ theorem wordRetraction_map (w : FreeGroup A) :
     intro a
     have he : ∃ a', f a' = f a := ⟨a, rfl⟩
     simp only [MonoidHom.comp_apply, FreeGroup.map.of, wordRetraction,
-      FreeGroup.lift_apply_of, dif_pos he, MonoidHom.id_apply]
-    exact congrArg FreeGroup.of (hf he.choose_spec)
+      FreeGroup.lift_apply_of, dif_pos he, MonoidHom.id_apply] <;> grind
   exact congrArg (fun h : FreeGroup A →* FreeGroup A => h w) hmap
 
 def groupRetraction : PresGroup (rel ρ f) →* PresGroup ρ :=
@@ -58,7 +57,7 @@ theorem groupHom_injective : Function.Injective (groupHom ρ f) := by
   induction g using QuotientGroup.induction_on with
   | H w =>
       change QuotientGroup.mk (wordRetraction f (FreeGroup.map f w)) = QuotientGroup.mk w
-      rw [wordRetraction_map f hf]
+      simp_all [wordRetraction_map]
 
 def coefficients := MonoidAlgebra.mapDomainRingHom ℤ (groupHom ρ f)
 
@@ -66,7 +65,7 @@ theorem coefficients_proj (x : FreeGroupRing A) :
     coefficients ρ f (proj (relSub ρ) x) =
       proj (relSub (rel ρ f)) (freeRingMap f x) := by
   induction x using MonoidAlgebra.induction_linear with
-  | zero => simp [coefficients]
+  | zero => rfl
   | add x y hx hy => simp only [map_add, hx, hy]
   | single w a =>
       apply MonoidAlgebra.coeff_injective
@@ -74,8 +73,7 @@ theorem coefficients_proj (x : FreeGroupRing A) :
         (Finsupp.mapDomain (QuotientGroup.mk' (relSub ρ)) (Finsupp.single w a)) =
         Finsupp.mapDomain (QuotientGroup.mk' (relSub (rel ρ f)))
           (Finsupp.mapDomain (FreeGroup.map f) (Finsupp.single w a))
-      simp only [Finsupp.mapDomain_single]
-      rfl
+      aesop
 
 variable [DecidableEq A] [DecidableEq B]
 
@@ -103,9 +101,7 @@ theorem boundary_retained
   simp only [oldBoundary, fsRingMapBoundary, Finsupp.linearCombination_apply,
     Finsupp.sum_apply, Finsupp.smul_apply, smul_eq_mul, Finsupp.mapRange_apply]
   apply Finsupp.sum_congr
-  intro j hj
-  rw [matrix_retained ρ f hf]
-  rfl
+  solve_by_elim [matrix_retained]
 
 def structuralMap : PresMorFS ρ (rel ρ f) where
   hom := groupHom ρ f
@@ -116,10 +112,7 @@ def structuralMap : PresMorFS ρ (rel ρ f) where
     simp only [Finsupp.mapRange_apply, Finsupp.add_apply]
     exact map_add _ _ _
   cells_smul := by
-    intro a x
-    ext j : 1
-    simp only [Finsupp.mapRange_apply, Finsupp.smul_apply, smul_eq_mul]
-    exact map_mul _ _ _
+    aesop
   cells_cycle := by
     intro x hx
     change coverSecondBoundary _ _ _ = 0
@@ -131,14 +124,9 @@ def structuralMap : PresMorFS ρ (rel ρ f) where
       rw [fsRingMapBoundary_mapRange]
       erw [hx]
       rfl
-    · rw [fsCoverSecondBoundary_apply]
-      rw [Finsupp.sum]
-      apply Finset.sum_eq_zero
-      intro j hj
-      rw [matrix_fresh ρ f b hb, mul_zero]
+    · simp_all [fsCoverSecondBoundary_apply, matrix_fresh]
   cells_aug := by
     intro x hx j
-    change augPres (rel ρ f) (MonoidAlgebra.mapDomainRingHom ℤ (groupHom ρ f) (x j)) = 0
     exact (augQ_mapDomain (groupHom ρ f) (x j)).trans (hx j)
 
 theorem structuralMap_generates : FSGenerates (structuralMap ρ f hf) := by
@@ -147,8 +135,7 @@ theorem structuralMap_generates : FSGenerates (structuralMap ρ f hf) := by
     ext a : 1
     rw [← boundary_retained ρ f hf, hx]
     rfl
-  exact fs_cycle_mem_span_groupMap_cycles (groupHom ρ f) (groupHom_injective ρ f hf)
-    (fun j => coverFoxGradient (relSub ρ) (ρ j)) x hz
+  solve_by_elim [fs_cycle_mem_span_groupMap_cycles, groupHom_injective]
 
 end FreePadding
 end FiniteChains

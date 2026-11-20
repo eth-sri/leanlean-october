@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.TopologicalSingular.TetrahedronSquareDisks
+public import RequestProject.TopologicalSingular.SimplexFaceIntersections
 public import RequestProject.TopologicalSingular.SimplexLinearHomotopy
 
 @[expose] public section
@@ -18,9 +18,8 @@ theorem basedTetrahedron_eq_of_two_zero_coordinates (tau : Simplex X 3)
   obtain ⟨w, hw⟩ := domain_zero_coordinate_face z i hi
   obtain ⟨k, hk⟩ := Fin.exists_succAbove_eq hij.symm
   have hz : w.val k = 0 := by
-    rw [← simplex_face_coordinate_succAbove i w k, hk, hw, hj]
+    grind [simplex_face_coordinate_succAbove]
   obtain ⟨q, hq⟩ := domain_zero_coordinate_face w k hz
-  have he := congrArg (fun f : Simplex X 1 => f q) (hedge i k)
-  simpa only [face_apply, hq, hw, ContinuousMap.const_apply] using he
+  simpa only [face_apply, hq, hw, ContinuousMap.const_apply] using (congrArg (fun f : Simplex X 1 => f q) (hedge i k))
 
 end FiniteChains.TopologicalSingular

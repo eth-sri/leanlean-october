@@ -8,22 +8,18 @@ namespace FiniteChains
 variable {α : Type*} [DecidableEq α]
 
 /-- The group element read by one oriented letter. -/
-def foxWordLetter (p : α × Bool) : FreeGroup α :=
+def foxWordLetter (p : α × Bool) :=
   if p.2 then FreeGroup.of p.1 else (FreeGroup.of p.1)⁻¹
 
 /-- The signed contribution of an oriented generator edge to its Fox coordinate. -/
-noncomputable def foxWordIncidence (i : α) (p : α × Bool) : FreeGroupRing α :=
+noncomputable def foxWordIncidence (i : α) (p : α × Bool) :=
   if i = p.1 then (if p.2 then 1 else -grp (FreeGroup.of p.1)⁻¹) else 0
 
 omit [DecidableEq α] in
 theorem fox_mk_single_letter (p : α × Bool) :
     FreeGroup.mk [p] = foxWordLetter p := by
   obtain ⟨a, b⟩ := p
-  cases b
-  · change FreeGroup.mk [(a, false)] = (FreeGroup.of a)⁻¹
-    rw [show FreeGroup.of a = FreeGroup.mk [(a, true)] from rfl, FreeGroup.inv_mk]
-    rfl
-  · rfl
+  cases b <;> rfl
 
 theorem fox_letter_incidence (i : α) (p : α × Bool) :
     fox i (foxWordLetter p) = foxWordIncidence i p := by
@@ -40,7 +36,7 @@ noncomputable def foxWordPathBoundary (i : α) (g : FreeGroup α) :
       foxWordPathBoundary i (g * foxWordLetter p) l
 
 /-- The signed edge sum equals the translated Fox derivative of the actual word. -/
-theorem foxWordPathBoundary_eq (i : α) (g : FreeGroup α) (l : List (α × Bool)) :
+theorem foxWordPathBoundary_eq (i : α) (g : FreeGroup α) (l : List _) :
     foxWordPathBoundary i g l = grp g * fox i (FreeGroup.mk l) := by
   induction l generalizing g with
   | nil => simp [foxWordPathBoundary, ← FreeGroup.one_eq_mk]
@@ -52,7 +48,7 @@ theorem foxWordPathBoundary_eq (i : α) (g : FreeGroup α) (l : List (α × Bool
       mul_add, mul_assoc]
 
 /-- At the identity vertex, the word edge sum is exactly the Fox boundary entry. -/
-theorem foxWordPathBoundary_one (i : α) (l : List (α × Bool)) :
+theorem foxWordPathBoundary_one (i : α) (l : List _) :
     foxWordPathBoundary i 1 l = fox i (FreeGroup.mk l) := by
   rw [foxWordPathBoundary_eq, grp_one, one_mul]
 

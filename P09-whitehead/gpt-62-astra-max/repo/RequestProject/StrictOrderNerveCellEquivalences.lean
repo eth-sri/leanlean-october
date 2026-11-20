@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.MathlibOrderNerveCells
-public import RequestProject.StrictOrderComplex
+
 
 @[expose] public section
 
@@ -35,7 +35,6 @@ def strictEdgeNerveEquiv : StrictOrdEdge P ≃ (nerve P).nonDegenerate 1 where
   left_inv e := Subtype.ext rfl
   right_inv s := by
     apply Subtype.ext
-    change ordEdgeNerveEquiv P ((ordEdgeNerveEquiv P).symm s.val) = s.val
     exact (ordEdgeNerveEquiv P).apply_symm_apply s.val
 
 def strictTriNerveEquiv : StrictOrdTri P ≃ (nerve P).nonDegenerate 2 where
@@ -51,7 +50,6 @@ def strictTriNerveEquiv : StrictOrdTri P ≃ (nerve P).nonDegenerate 2 where
   left_inv t := Subtype.ext rfl
   right_inv s := by
     apply Subtype.ext
-    change ordTriNerveEquiv P ((ordTriNerveEquiv P).symm s.val) = s.val
     exact (ordTriNerveEquiv P).apply_symm_apply s.val
 
 end FiniteChains.Comb

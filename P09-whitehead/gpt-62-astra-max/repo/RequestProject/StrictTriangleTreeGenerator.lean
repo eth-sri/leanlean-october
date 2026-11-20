@@ -1,7 +1,6 @@
 module
 
 public import RequestProject.FreshLoopTreeStrictness
-public import RequestProject.StrictOrderComplex
 public import RequestProject.OriginalCoverCellChains
 public import RequestProject.PresIdentityCoverChains
 
@@ -36,22 +35,24 @@ theorem nonempty_nonTree_of_strictTriangle (T : SpanningTree (strictOrderCx P))
         change (T.ht t.val.1 + 1 = T.ht t.val.2.2 ∨
           T.ht t.val.2.2 + 1 = T.ht t.val.1) at h₃
         omega
-      · exact ⟨⟨e₀₂, h₀₂⟩⟩
-    · exact ⟨⟨e₁₂, h₁₂⟩⟩
-  · exact ⟨⟨e₀₁, h₀₁⟩⟩
+      · solve_by_elim
+    · solve_by_elim
+  · solve_by_elim
 
 end FiniteChains.Comb.SpanningTree
 
 namespace FiniteChains.ClassicalCW
 open Comb PresModel
 
-def canonicalStrictTriangle (K : Whitehead.TwoComplex) : StrictOrdTri (CanonicalPos K) :=
+variable (K : Whitehead.TwoComplex)
+
+def canonicalStrictTriangle :=
   presCoverRelatorTriangle (canonicalWords K) id (IdentityChains.cover (canonicalWords K))
     (presCanonicalWords_positive (canonicalRelators K) (canonicalDummy K))
     ⟨(apexOf (canonicalWords K) (Sum.inr PUnit.unit), Sum.inr PUnit.unit), rfl⟩
 
-def canonicalTreeGenerator (K : Whitehead.TwoComplex)
-    (T : SpanningTree (strictOrderCx (CanonicalPos K))) : SpanningTree.NonTree T :=
+def canonicalTreeGenerator
+    (T : SpanningTree (strictOrderCx (CanonicalPos K))) :=
   Classical.choice (T.nonempty_nonTree_of_strictTriangle (canonicalStrictTriangle K))
 
 end FiniteChains.ClassicalCW

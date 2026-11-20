@@ -18,7 +18,7 @@ universe v
 variable {D K : Complex2} (T : SpanningTree D) (hD : IsAcyclic D)
   (p : Hom D K)
 
-def regularCoverChainStages (n : ℕ) : ℕ → Complex2 :=
+def regularCoverChainStages (n : ℕ) :=
   (acyclicRelativeCellChain T hD n).desc p
 
 def regularCoverChainInclusion (n i : ℕ) :
@@ -28,15 +28,17 @@ def regularCoverChainInclusion (n i : ℕ) :
 @[simp] theorem regularCoverChainStages_zero (n : ℕ) :
     regularCoverChainStages T hD p n 0 = K := rfl
 
-theorem regularCoverChainInclusion_V (n i : ℕ) :
+variable (n i : ℕ)
+
+theorem regularCoverChainInclusion_V :
     Function.Injective (regularCoverChainInclusion T hD p n i).onV :=
   (acyclicRelativeCellChain T hD n).descInc_injective_V p i
 
-theorem regularCoverChainInclusion_E (n i : ℕ) :
+theorem regularCoverChainInclusion_E :
     Function.Injective (regularCoverChainInclusion T hD p n i).onE :=
   (acyclicRelativeCellChain T hD n).descInc_injective_E p i
 
-theorem regularCoverChainInclusion_F (n i : ℕ) :
+theorem regularCoverChainInclusion_F :
     Function.Injective (regularCoverChainInclusion T hD p n i).onF :=
   (acyclicRelativeCellChain T hD n).descInc_injective_F p i
 
@@ -56,17 +58,13 @@ theorem regularCoverChain_zeroPi2 (n i : ℕ) (hi : i < n + 1) :
 
 /-- The actual descended inclusions form an arbitrary-length cellular
 chain beginning literally at K. Strictness is regularCoverChain_proper. -/
-def regularCoverTopChain (n : ℕ) : TopChainFS K (n + 1) where
+def regularCoverTopChain (n : ℕ) : TopChainFS (n + 1) where
   X := regularCoverChainStages T hD p n
   inc := regularCoverChainInclusion T hD p n
   incV := regularCoverChainInclusion_V T hD p n
   incE := regularCoverChainInclusion_E T hD p n
   incF := regularCoverChainInclusion_F T hD p n
   conn := regularCoverChain_connected T hD p hp n
-  base := Hom.id K
-  baseV := Function.injective_id
-  baseE := Function.injective_id
-  baseF := Function.injective_id
   zero_pi2 := regularCoverChain_zeroPi2 T hD p hp a hr he hf n
 
 end FiniteChains.Comb

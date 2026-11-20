@@ -22,14 +22,14 @@ theorem roseFourVertex_surjective : Function.Surjective roseFourVertex := by
   intro p
   cases p with
   | base => exact ⟨0, rfl⟩
-  | mid a => cases a; exact ⟨2, rfl⟩
+  | mid a => exact ⟨2, rfl⟩
   | edg a b =>
       cases a
       cases b
       · exact ⟨1, rfl⟩
       · exact ⟨3, rfl⟩
 
-def roseFourVertexEquiv : Fin 4 ≃ Rose PUnit :=
+def roseFourVertexEquiv :=
   Equiv.ofBijective roseFourVertex ⟨roseFourVertex_injective, roseFourVertex_surjective⟩
 
 @[simp] theorem roseFourVertex_zero : roseFourVertex 0 = Rose.base := rfl

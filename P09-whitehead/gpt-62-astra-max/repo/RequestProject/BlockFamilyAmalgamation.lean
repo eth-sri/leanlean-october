@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.SubstOneWay
+
 public import RequestProject.BlockSurfaceFilling
 public import Mathlib.GroupTheory.PushoutI
 
@@ -29,8 +29,8 @@ theorem injective_substHomF_of_separate_receivers
   let B : BlockMaps ρ bsub (Monoid.PushoutI.base j) :=
     { b := fun s => (Monoid.PushoutI.of s).comp (b s)
       mark := fun s a => by
-        rw [MonoidHom.comp_apply, hmark s a, Monoid.PushoutI.of_apply_eq_base]
-      rel := fun s m => by rw [MonoidHom.comp_apply, hrel s m, map_one] }
+        simp [MonoidHom.comp_apply, hmark, Monoid.PushoutI.of_apply_eq_base]
+      rel := fun s m => by simp_all }
   exact B.injective_substHomF hfill (Monoid.PushoutI.base_injective hj)
 
 end FiniteChains.BlockFamily
@@ -50,39 +50,39 @@ theorem filledF_of_block_consequences
       (FreeGroup.map (Sum.inl (β := Zt s))) =
       FreeGroup.map (Sum.inl (α := α) (β := Σ s, Zt s)) := by
     apply FreeGroup.ext_hom
-    intro a
     simp
   rw [← DFunLike.congr_fun hm (ρ (Sum.inr s))]
   apply Davis.map_mem_normalClosure (FreeGroup.map (genEmb s)) ?_ (h s)
   rintro w ⟨m, rfl⟩
   exact Subgroup.subset_normalClosure ⟨Sum.inr ⟨s, m⟩, rfl⟩
 
+variable (s : Sx)
+
 /-- Reindex the source so that just the selected entry is replaced. -/
-def oneRel (s : Sx) : (Jr ⊕ {t : Sx // t ≠ s}) ⊕ PUnit.{1} → FreeGroup α :=
+def oneRel : (Jr ⊕ {t : Sx // t ≠ s}) ⊕ PUnit.{1} → FreeGroup α :=
   Sum.elim (Sum.elim (fun r => ρ (Sum.inl r)) (fun t => ρ (Sum.inr t.val)))
     (fun _ => ρ (Sum.inr s))
 
-theorem range_oneRel (s : Sx) : Set.range (oneRel ρ s) = Set.range ρ := by
+theorem range_oneRel : Set.range (oneRel ρ s) = Set.range ρ := by
   classical
   ext w
   constructor
   · rintro ⟨((r | t) | p), rfl⟩
-    · exact ⟨Sum.inl r, rfl⟩
+    · solve_by_elim
     · exact ⟨Sum.inr t.val, rfl⟩
     · exact ⟨Sum.inr s, rfl⟩
   · rintro ⟨(r | t), rfl⟩
-    · exact ⟨Sum.inl (Sum.inl r), rfl⟩
+    · solve_by_elim
     · by_cases h : t = s
       · subst t; exact ⟨Sum.inr PUnit.unit, rfl⟩
       · exact ⟨Sum.inl (Sum.inr ⟨t, h⟩), rfl⟩
 
 /-- The reindexing preserves the group and every old word. -/
-noncomputable def oneEquiv (s : Sx) : PresGroup ρ ≃* PresGroup (oneRel ρ s) :=
+noncomputable def oneEquiv : PresGroup ρ ≃* PresGroup (oneRel ρ s) :=
   QuotientGroup.congr _ _ (MulEquiv.refl _) (by
-    rw [MulEquiv.coe_monoidHom_refl, Subgroup.map_id]
-    simp only [relSub, range_oneRel])
+    simp [MulEquiv.coe_monoidHom_refl, Subgroup.map_id, relSub, range_oneRel])
 
-@[simp] theorem oneEquiv_mk (s : Sx) (w : FreeGroup α) :
+@[simp] theorem oneEquiv_mk (w : FreeGroup α) :
     oneEquiv ρ s (QuotientGroup.mk w) = QuotientGroup.mk w := rfl
 
 /-- Injectivity of every individual substitution implies injectivity of their simultaneous
@@ -94,7 +94,7 @@ theorem injective_substHomF_of_individual
       (substHomF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s) (hone s))) :
     Function.Injective (substHomF ρ bsub hfill) := by
   let G s := PresGroup (substPresF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
-  let j : ∀ s, PresGroup ρ →* G s := fun s =>
+  let j := fun s =>
     (substHomF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s) (hone s)).comp
       (oneEquiv ρ s).toMonoidHom
   let b : ∀ s, FreeGroup (α ⊕ Zt s) →* G s := fun s =>
@@ -102,8 +102,7 @@ theorem injective_substHomF_of_individual
       (FreeGroup.map (genEmb (Zt := fun _ : PUnit.{1} => Zt s) PUnit.unit))
   apply injective_substHomF_of_separate_receivers hfill j
     (fun s => (hinj s).comp (oneEquiv ρ s).injective) b
-  · intro s a
-    rfl
+  · solve_by_elim
   · intro s m
     apply (QuotientGroup.eq_one_iff _).2
     exact Subgroup.subset_normalClosure ⟨Sum.inr ⟨PUnit.unit, m⟩, rfl⟩

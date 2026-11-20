@@ -44,9 +44,7 @@ theorem normalized_core_trivial
     (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) :
       PresGroup (normalizedPresentation core hcore extra)) = 1 := by
   have h := congrArg (rawToNormalizedGroup core hcore extra) (htriv a)
-  change QuotientGroup.mk (pairSubstitution (FreeGroup.of (Sum.inl a))) =
-    rawToNormalizedGroup core hcore extra 1 at h
-  simpa only [pairSubstitution_core, map_one] using h
+  assumption
 
 def terminalPresentation :=
   addRels (blockPresentation core hcore extra)

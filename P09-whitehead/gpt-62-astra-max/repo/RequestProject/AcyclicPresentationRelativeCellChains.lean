@@ -46,7 +46,7 @@ theorem first_cellInclusion_pi1Trivial : Pi1Trivial (c.cellInclusion 0) := by
         intro a
         change (QuotientGroup.mk (FreeGroup.map Sum.inl (FreeGroup.of a)) :
           PresGroup (c.chainRel 1)) = 1
-        exact c.core_trivial 0 a
+        exact c.core_trivial a
       change (QuotientGroup.mk (FreeGroup.map Sum.inl w) : PresGroup (c.chainRel 1)) = 1
       exact DFunLike.congr_fun hf w
 

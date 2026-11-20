@@ -1,23 +1,18 @@
 module
 
 public import RequestProject.OrderRealizationCockcroft
-public import RequestProject.OrderThreeNormalization
 public import RequestProject.StrictOrderNormalizationMaps
 
 @[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-set_option maxHeartbeats 1600000
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q]
 
+variable [(nerve P).HasDimensionLE 2]
+
 /-- The stated nerve dimension bound excludes actual strictly increasing tetrahedra. -/
-theorem strictOrdTet_isEmpty_of_dimension_two [(nerve P).HasDimensionLE 2] :
+theorem strictOrdTet_isEmpty_of_dimension_two :
     IsEmpty (StrictOrdTet P) := by
   refine ⟨fun t => ?_⟩
   let s := ordTetNerveEquiv P ⟨t.1, t.2.1.le, t.2.2.1.le, t.2.2.2.le⟩
@@ -26,17 +21,17 @@ theorem strictOrdTet_isEmpty_of_dimension_two [(nerve P).HasDimensionLE 2] :
     apply Fin.strictMono_iff_lt_succ.mpr
     intro i
     fin_cases i
-    · exact t.2.1
-    · exact t.2.2.1
-    · exact t.2.2.2
+    · apply t.2.1
+    · apply t.2.2.1
+    · apply t.2.2.2
   have hdim := (nerve P).dim_le_of_nonDegenerate ⟨s, hs⟩ 2
   omega
 
-theorem normalizeOrdBoundary3_eq_zero_of_dimension_two [(nerve P).HasDimensionLE 2]
+theorem normalizeOrdBoundary3_eq_zero_of_dimension_two
     (b : OrdTet P →₀ ℤ) : normalizeOrdChain2 (ordBoundary3 b) = 0 := by
   letI := strictOrdTet_isEmpty_of_dimension_two (P := P)
-  rw (config := { transparency := .default }) [normalizeOrdChain2_ordBoundary3]
+  erw [normalizeOrdChain2_ordBoundary3]
   have hz : normalizeOrdChain3 b = 0 := Subsingleton.elim _ _
-  rw (config := { transparency := .default }) [hz, map_zero]
+  simp_all
 
 end FiniteChains.Comb

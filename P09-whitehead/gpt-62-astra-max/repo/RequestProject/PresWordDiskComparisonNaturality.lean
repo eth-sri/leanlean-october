@@ -10,9 +10,6 @@ The proof uses the actual old/cone quotient cover and the actual radial
 disk coordinates; no relative-model comparison is assumed. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment
@@ -23,12 +20,12 @@ variable {A B J K : Type} {w : J → List (A × Bool)} {v : K → List (B × Boo
 theorem actualPresWordDiskComparison_cone (hw : ∀ j, w j ≠ []) (j : J)
     (x : orderNerveRealization (Set.Iic (apexOf w j))) :
     actualPresWordDiskComparison w hw (coneAdjRealizationCell (circSet w) ⟨j, x⟩) =
-      RelativeAttachment.cell (actualPresWordAttaching w hw) (boundaryFamilyInclusion J (Fin 2 → ℝ))
+      RelativeAttachment.cell _ _
         ⟨j, presConeBallHomeomorph w j (List.length_pos_of_ne_nil (hw j)) x⟩ := by
-  letI : ∀ j, Nonempty (RelatorCircle w j) := fun j => relatorCircle_nonempty w j (hw j)
+  letI := fun j => relatorCircle_nonempty w j (hw j)
   change diskAttachmentBaseChangeHomotopyEquiv _ _
-    (coneAdjRealizationDiskHomeomorph _ _ _ _ (coneAdjRealizationCell _ ⟨j, x⟩)) = _
-  rw (config := { transparency := .default }) [coneAdjRealizationDiskHomeomorph_cell, diskAttachmentBaseChangeHomotopyEquiv_cell]
+    (coneAdjRealizationDiskHomeomorph _ _ _ _ _) = _
+  erw [coneAdjRealizationDiskHomeomorph_cell, diskAttachmentBaseChangeHomotopyEquiv_cell]
   rfl
 
 namespace PresWordEmbedding
@@ -40,15 +37,17 @@ def cylinderMap : CylBase w →o CylBase v where
     | .inr c => .inr (h.circleMap c)
   monotone' := by
     intro p q hpq
-    have H := h.posMap.monotone (show (ConeAdj.inc p : PresPos w) ≤ ConeAdj.inc q from hpq)
+    have H := h.posMap.monotone (show (ConeAdj.inc p) ≤ ConeAdj.inc q from hpq)
     cases p <;> cases q <;> exact H
 
-theorem cylinderMap_inc (p : CylBase w) :
+variable (p : CylBase w)
+
+theorem cylinderMap_inc :
     ConeAdj.inc (h.cylinderMap p) = h.posMap (ConeAdj.inc p) := by
   cases p <;> rfl
 
-theorem cylinderRetr_natural (p : CylBase w) :
-    cylRetr (aHom v) (h.cylinderMap p) = h.roseMap (cylRetr (aHom w) p) := by
+theorem cylinderRetr_natural :
+    cylRetr _ (h.cylinderMap p) = h.roseMap (cylRetr (aHom w) p) := by
   cases p with
   | inl r => rfl
   | inr c => exact h.attaching_map c
@@ -56,30 +55,29 @@ theorem cylinderRetr_natural (p : CylBase w) :
 def oldPartMap : ConeAdjBase (circSet w) →o ConeAdjBase (circSet v) where
   toFun x := ⟨h.posMap x.val, by
     obtain ⟨p, hp⟩ := x.property
-    rw (config := { transparency := .default }) [← hp]
+    erw [← hp]
     exact ⟨h.cylinderMap p, h.cylinderMap_inc p⟩⟩
   monotone' := fun _ _ hxy => h.posMap.monotone hxy
 
-theorem oldPartMap_baseOrderIso (x : ConeAdjBase (circSet w)) :
+theorem oldPartMap_baseOrderIso (x : ConeAdjBase _) :
     coneAdjBaseOrderIso (h.oldPartMap x) = h.cylinderMap (coneAdjBaseOrderIso x) := by
-  apply ConeAdj.inc_injective (S := circSet v)
-  rw (config := { transparency := .default }) [h.cylinderMap_inc]
+  apply ConeAdj.inc_injective
+  erw [h.cylinderMap_inc]
   exact (Classical.choose_spec (h.oldPartMap x).property).trans
     (congrArg h.posMap (Classical.choose_spec x.property)).symm
 
-theorem realization_old_natural (x : orderNerveRealization (ConeAdjBase (circSet w))) :
-    orderNerveRealizationMap h.posMap h.posMap.monotone (coneAdjRealizationOld (circSet w) x) =
-      coneAdjRealizationOld (circSet v)
-        (orderNerveRealizationMap h.oldPartMap h.oldPartMap.monotone x) := by
-  change orderNerveRealizationMap _ _ (orderNerveRealizationMap _ _ x) =
-    orderNerveRealizationMap _ _ (orderNerveRealizationMap _ _ x)
-  rw (config := { transparency := .default }) [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
-  rfl
+variable (x : orderNerveRealization (ConeAdjBase (circSet w)))
 
-theorem oldRoseCollapse_natural (x : orderNerveRealization (ConeAdjBase (circSet w))) :
+theorem realization_old_natural :
+    orderNerveRealizationMap h.posMap h.posMap.monotone (coneAdjRealizationOld (circSet w) x) =
+      coneAdjRealizationOld _
+        (orderNerveRealizationMap h.oldPartMap h.oldPartMap.monotone x) := by
+  erw [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]; rfl
+
+theorem oldRoseCollapse_natural :
     presOldRoseHomotopyEquiv v (orderNerveRealizationMap h.oldPartMap h.oldPartMap.monotone x) =
       orderNerveRealizationMap h.roseMap h.roseMap.monotone (presOldRoseHomotopyEquiv w x) := by
-  change orderNerveRealizationMap (cylRetr (aHom v)) (cylRetr_monotone (aHom v))
+  change orderNerveRealizationMap _ (cylRetr_monotone _)
       (orderNerveRealizationMap (coneAdjBaseOrderIso (S := circSet v))
         (coneAdjBaseOrderIso (S := circSet v)).monotone
         (orderNerveRealizationMap h.oldPartMap h.oldPartMap.monotone x)) =
@@ -88,22 +86,17 @@ theorem oldRoseCollapse_natural (x : orderNerveRealization (ConeAdjBase (circSet
         (orderNerveRealizationMap (coneAdjBaseOrderIso (S := circSet w))
           (coneAdjBaseOrderIso (S := circSet w)).monotone x))
   simp only [orderNerveRealizationMap_comp]
-  have hf : (cylRetr (aHom v) ∘ coneAdjBaseOrderIso ∘ h.oldPartMap) =
-      (h.roseMap ∘ cylRetr (aHom w) ∘ coneAdjBaseOrderIso) := by
+  have hf : (cylRetr _ ∘ coneAdjBaseOrderIso ∘ h.oldPartMap) =
+      (h.roseMap ∘ cylRetr _ ∘ coneAdjBaseOrderIso) := by
     funext p
-    change cylRetr (aHom v) (coneAdjBaseOrderIso (h.oldPartMap p)) = _
-    rw (config := { transparency := .default }) [h.oldPartMap_baseOrderIso, h.cylinderRetr_natural]
-    rfl
-  exact orderNerveRealizationMap_congr _ _ hf x
+    simp [h.oldPartMap_baseOrderIso, h.cylinderRetr_natural]
+  simp_all
 
 theorem realization_cone_natural (j : J) (x : orderNerveRealization (Set.Iic (apexOf w j))) :
     orderNerveRealizationMap h.posMap h.posMap.monotone (coneAdjRealizationCell (circSet w) ⟨j, x⟩) =
-      coneAdjRealizationCell (circSet v)
-        ⟨h.cell j, orderNerveRealizationMap (h.coneLowerMap j) (h.coneLowerMap j).monotone x⟩ := by
-  change orderNerveRealizationMap _ _ (orderNerveRealizationMap _ _ x) =
-    orderNerveRealizationMap _ _ (orderNerveRealizationMap _ _ x)
-  rw (config := { transparency := .default }) [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
-  rfl
+      coneAdjRealizationCell _
+        ⟨h.cell j, orderNerveRealizationMap _ (h.coneLowerMap j).monotone x⟩ := by
+  erw [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]; rfl
 
 variable (hw : ∀ j, w j ≠ []) (hv : ∀ k, v k ≠ [])
 
@@ -113,56 +106,36 @@ theorem actualPresWordDiskComparison_natural (x : orderNerveRealization (PresPos
   obtain ⟨z, rfl⟩ := (coneAdjRealization_piece_isQuotientMap (circSet w)).surjective x
   cases z with
   | inl x =>
-      change actualPresWordDiskComparison v hv
-        (orderNerveRealizationMap h.posMap h.posMap.monotone (coneAdjRealizationOld (circSet w) x)) =
-          h.wordDiskMap hw hv (actualPresWordDiskComparison w hw (coneAdjRealizationOld (circSet w) x))
-      rw (config := { transparency := .default }) [h.realization_old_natural, actualPresWordDiskComparison_old,
-        actualPresWordDiskComparison_old, h.wordDiskMap_old, h.oldRoseCollapse_natural]
+      simp [h.realization_old_natural, actualPresWordDiskComparison_old, h.wordDiskMap_old, h.oldRoseCollapse_natural]
   | inr z =>
       rcases z with ⟨j, x⟩
-      change actualPresWordDiskComparison v hv
-        (orderNerveRealizationMap h.posMap h.posMap.monotone (coneAdjRealizationCell (circSet w) ⟨j, x⟩)) =
-          h.wordDiskMap hw hv (actualPresWordDiskComparison w hw (coneAdjRealizationCell (circSet w) ⟨j, x⟩))
-      rw (config := { transparency := .default }) [h.realization_cone_natural, actualPresWordDiskComparison_cone,
+      erw [h.realization_cone_natural, actualPresWordDiskComparison_cone,
         actualPresWordDiskComparison_cone, h.wordDiskMap_cell, h.presConeBallHomeomorph_natural]
 
 theorem diskRoseBaseChange_natural (x : ActualPresWordDisks w hw) :
-    diskAttachmentBaseChangeHomotopyEquiv (actualPresWordAttaching v hv)
+    diskAttachmentBaseChangeHomotopyEquiv _
         (orderRoseRealizationHomeomorph B).toHomotopyEquiv (h.wordDiskMap hw hv x) =
       h.classicalWordDiskMap hw hv
         (diskAttachmentBaseChangeHomotopyEquiv (actualPresWordAttaching w hw)
           (orderRoseRealizationHomeomorph A).toHomotopyEquiv x) := by
-  obtain ⟨z, rfl⟩ := quotientMap_surjective (actualPresWordAttaching w hw)
-    (boundaryFamilyInclusion J (Fin 2 → ℝ)) x
+  obtain ⟨z, rfl⟩ := quotientMap_surjective _
+    _ x
   cases z with
   | inl x =>
-      change diskAttachmentBaseChangeHomotopyEquiv _ _
-        (h.wordDiskMap hw hv (old _ _ x)) =
-          h.classicalWordDiskMap hw hv
-            (diskAttachmentBaseChangeHomotopyEquiv (actualPresWordAttaching w hw)
-              (orderRoseRealizationHomeomorph A).toHomotopyEquiv (old _ _ x))
-      rw (config := { transparency := .default }) [h.wordDiskMap_old, diskAttachmentBaseChangeHomotopyEquiv_old,
-        diskAttachmentBaseChangeHomotopyEquiv_old]
       exact (congrArg
-        (old (classicalPresWordAttaching v hv) (boundaryFamilyInclusion K (Fin 2 → ℝ)))
+        _
         (orderRoseRealizationHomeomorph_natural h x)).trans
           (h.classicalWordDiskMap_old hw hv (orderRoseRealizationHomeomorph A x)).symm
   | inr d =>
-      change diskAttachmentBaseChangeHomotopyEquiv _ _
-        (h.wordDiskMap hw hv (RelativeAttachment.cell _ _ d)) =
-          h.classicalWordDiskMap hw hv
-            (diskAttachmentBaseChangeHomotopyEquiv (actualPresWordAttaching w hw)
-              (orderRoseRealizationHomeomorph A).toHomotopyEquiv (RelativeAttachment.cell _ _ d))
-      rw (config := { transparency := .default }) [h.wordDiskMap_cell, diskAttachmentBaseChangeHomotopyEquiv_cell,
-        diskAttachmentBaseChangeHomotopyEquiv_cell]
-      exact (h.classicalWordDiskMap_cell hw hv d).symm
+      erw [h.wordDiskMap_cell, diskAttachmentBaseChangeHomotopyEquiv_cell,
+        diskAttachmentBaseChangeHomotopyEquiv_cell]; exact (h.classicalWordDiskMap_cell hw hv d).symm
 
 theorem presClassicalDiskComparison_natural (x : orderNerveRealization (PresPos w)) :
     presClassicalDiskComparison v hv (orderNerveRealizationMap h.posMap h.posMap.monotone x) =
       h.classicalWordDiskMap hw hv (presClassicalDiskComparison w hw x) := by
   change diskAttachmentBaseChangeHomotopyEquiv _ _
-    (actualPresWordDiskComparison v hv (orderNerveRealizationMap h.posMap h.posMap.monotone x)) = _
-  rw (config := { transparency := .default }) [h.actualPresWordDiskComparison_natural hw hv, h.diskRoseBaseChange_natural hw hv]
+    (actualPresWordDiskComparison v hv _) = _
+  erw [h.actualPresWordDiskComparison_natural hw hv, h.diskRoseBaseChange_natural hw hv]
   rfl
 
 theorem classicalWordDiskMap_killsPi2_iff :
@@ -175,7 +148,7 @@ theorem classicalWordDiskMap_killsPi2_iff :
         (orderNerveRealizationMap h.posMap h.posMap.monotone).hom := by
     apply ContinuousMap.ext
     exact fun x => (h.presClassicalDiskComparison_natural hw hv x).symm
-  rw (config := { transparency := .default }) [hs]
+  aesop
 
 end PresWordEmbedding
 end FiniteChains.PresModel

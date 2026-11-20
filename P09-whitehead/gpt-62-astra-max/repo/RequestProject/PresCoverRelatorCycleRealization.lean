@@ -3,10 +3,7 @@ module
 public import RequestProject.PresCoverCylinderRelatorBoundary
 
 @[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -19,20 +16,21 @@ theorem presCoverCylinderRelatorBoundary_cycle (p : PresCoverRelator w f) :
       (presCoverCylinderRelatorBoundary w f hf p) = 0 := by
   change Comb.bdry1 _ (chain1 (strictOrderCxMap (presCoverCircleCylinderInclusion w f hf p)
     (presCoverCircleCylinderInclusion_strictMono w f hf p)) _) = 0
-  rw (config := { transparency := .default }) [bdry1_chain1, relatorCircleFundamentalChain_cycle, map_zero]
+  simp_all [bdry1_chain1, relatorCircleFundamentalChain_cycle]
 
-theorem presCoverCylinderRelatorBoundaryChain_cycle (c : PresCoverRelator w f →₀ ℤ) :
+variable (c : PresCoverRelator w f →₀ ℤ)
+
+theorem presCoverCylinderRelatorBoundaryChain_cycle :
     Comb.bdry1 (strictOrderCx {p : P // f p ∈ coneAdjBaseSet (S := circSet w)})
       (presCoverCylinderRelatorBoundaryChain w f hf c) = 0 := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, hc, hd, add_zero]
+  | add c d hc hd => simp_all
   | single p n =>
-    rw (config := { transparency := .default }) [presCoverCylinderRelatorBoundaryChain, Finsupp.linearCombination_single,
-      map_smul, presCoverCylinderRelatorBoundary_cycle, smul_zero]
+    simp [presCoverCylinderRelatorBoundaryChain, Finsupp.linearCombination_single, map_smul, presCoverCylinderRelatorBoundary_cycle, smul_zero]
 
 /-- A relator vector with actual collapsed boundary zero has an actual finite cylinder filling. -/
-theorem exists_presCover_relator_cylinder_filling (c : PresCoverRelator w f →₀ ℤ)
+theorem exists_presCover_relator_cylinder_filling
     (hc : normalizedStrictChain1 (presCoverCylinderCollapse w f hf)
       (presCoverCylinderCollapse_monotone w f hf)
       (presCoverCylinderRelatorBoundaryChain w f hf c) = 0) :
@@ -45,38 +43,36 @@ theorem exists_presCover_relator_cylinder_filling (c : PresCoverRelator w f →�
       (cylCollapse (aHom w)) (le_cylIn_cylRetr (aHom w)))
     (presCoverCylinderRelatorBoundaryChain w f hf c)
     (presCoverCylinderRelatorBoundaryChain_cycle w f hf c)
-  rw (config := { transparency := .default }) [hc, normalizedStrictChain1_id, zero_sub] at hd
-  exact ⟨-d, by rw (config := { transparency := .default }) [map_neg, hd, neg_neg]⟩
+  erw [hc, normalizedStrictChain1_id, zero_sub] at hd
+  exact ⟨-d, by simp_all⟩
+
+variable (hpos : ∀ j, 0 < (w j).length)
 
 /-- Actual cylinder triangle chains have zero genuine relator coordinates. -/
-theorem presCoverRelatorChain_cylinder_zero (hpos : ∀ j, 0 < (w j).length)
+theorem presCoverRelatorChain_cylinder_zero
     (c : StrictOrdTri {p : P // f p ∈ coneAdjBaseSet (S := circSet w)} →₀ ℤ) :
     presCoverRelatorChain w f hf hpos
       (chain2 (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}) c) = 0 := by
   classical
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, hc, hd, add_zero]
+  | add c d hc hd => simp_all [map_add, hc, hd, add_zero]
   | single t n =>
     change presCoverRelatorChain w f hf hpos
       (Finsupp.mapDomain (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}).onF
         (Finsupp.single t n)) = 0
-    rw (config := { transparency := .default }) [Finsupp.mapDomain_single]
+    erw [Finsupp.mapDomain_single]
     ext p
-    rw (config := { transparency := .default }) [presCoverRelatorChain_apply, Finsupp.zero_apply]
+    erw [presCoverRelatorChain_apply, Finsupp.zero_apply]
     have hn : (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}).onF t ≠
         presCoverRelatorTriangle w f hf hpos p := by
       intro he
       have hv := congrArg (fun r : StrictOrdTri P => f r.1.2.2) he
-      change f t.1.2.2.val = f p.1.1 at hv
-      have hp := t.1.2.2.property
-      rw (config := { transparency := .default }) [hv, p.2] at hp
-      simp [coneAdjBaseSet, ConeAdj.inc, apexOf, ConeAdj.apex] at hp
+      have hp := t.1.2.2.property; erw [hv, p.2] at hp; simp [coneAdjBaseSet, ConeAdj.inc, apexOf, ConeAdj.apex] at hp
     simp [hn]
 
 /-- Actual collapsed-boundary cycles are realized by genuine finite cover two-cycles. -/
-theorem exists_presCover_cycle_of_collapsed_relator_boundary
-    (hpos : ∀ j, 0 < (w j).length) (c : PresCoverRelator w f →₀ ℤ)
+theorem exists_presCover_cycle_of_collapsed_relator_boundary (c : PresCoverRelator w f →₀ ℤ)
     (hc : normalizedStrictChain1 (presCoverCylinderCollapse w f hf)
       (presCoverCylinderCollapse_monotone w f hf)
       (presCoverCylinderRelatorBoundaryChain w f hf c) = 0) :
@@ -86,7 +82,7 @@ theorem exists_presCover_cycle_of_collapsed_relator_boundary
   let I := strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}
   let L : StrictOrdTri {p : P // f p ∈ coneAdjBaseSet (S := circSet w)} → StrictOrdTri P :=
     fun t => ⟨(t.1.1.val, t.1.2.1.val, t.1.2.2.val), t.2⟩
-  let u : StrictOrdTri P →₀ ℤ := Finsupp.mapDomain L d
+  let u := Finsupp.mapDomain L d
   have hb : Comb.bdry2 (strictOrderCx P) u =
       Comb.bdry2 (strictOrderCx P) (presCoverRelatorFanChain w f hf c) :=
     (bdry2_chain2 I d).trans ((congrArg (chain1 I) hd).trans
@@ -94,7 +90,7 @@ theorem exists_presCover_cycle_of_collapsed_relator_boundary
   have hu : presCoverRelatorChain w f hf hpos u = 0 :=
     presCoverRelatorChain_cylinder_zero w f hf hpos d
   refine ⟨presCoverRelatorFanChain w f hf c - u, ?_, ?_⟩
-  · rw (config := { transparency := .default }) [map_sub, hb, sub_self]
-  · rw (config := { transparency := .default }) [map_sub, presCoverRelatorChain_fanChain, hu, sub_zero]
+  · simp_all
+  · simp_all [presCoverRelatorChain_fanChain]
 
 end FiniteChains.PresModel

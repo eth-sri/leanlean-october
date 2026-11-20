@@ -21,22 +21,19 @@ theorem orderNerveRadialCone_natural (r : I) (x : orderNerveRealization P) :
   apply orderNerveRealizationCoordinates_injective (WithTop Q)
   funext q
   obtain ⟨p, rfl⟩ := e.withTopCongr.surjective q
-  change orderNerveRealizationCoordinates (WithTop Q)
+  change orderNerveRealizationCoordinates _
       (orderNerveRealizationMap e.withTopCongr e.withTopCongr.monotone
         (orderNerveRadialCone P (r, x))) (e.withTopCongr p) = _
   rw [orderNerveRealizationCoordinates_map_injective _ _ e.withTopCongr.injective]
   induction p using WithTop.recTopCoe with
   | top =>
-      change orderNerveRealizationCoordinates (WithTop P) (orderNerveRadialCone P (r, x)) ⊤ =
-        orderNerveRealizationCoordinates (WithTop Q)
-          (orderNerveRadialCone Q (r, orderNerveRealizationOrderIso e x)) ⊤
-      rw [orderNerveRadialCone_top, orderNerveRadialCone_top]
+      simp
   | coe p =>
-      change orderNerveRealizationCoordinates (WithTop P) (orderNerveRadialCone P (r, x)) p =
-        orderNerveRealizationCoordinates (WithTop Q)
-          (orderNerveRadialCone Q (r, orderNerveRealizationOrderIso e x)) (e p)
+      change orderNerveRealizationCoordinates _ (orderNerveRadialCone P _) p =
+        orderNerveRealizationCoordinates _
+          (orderNerveRadialCone Q _) (e p)
       rw [orderNerveRadialCone_coordinate, orderNerveRadialCone_coordinate]
-      exact congrArg ((r : ℝ) * ·)
+      exact congrArg _
         (orderNerveRealizationCoordinates_map_injective e e.monotone e.injective x p).symm
 
 variable [Fintype P] [Nonempty P] [Fintype Q] [Nonempty Q]
@@ -50,7 +47,6 @@ theorem orderNerveWithTopBallHomeomorph_natural (x : orderNerveRealization (With
     orderNerveWithTopBallHomeomorph bQ (orderNerveRealizationOrderIso e.withTopCongr x) =
       orderNerveWithTopBallHomeomorph bP x := by
   obtain ⟨⟨r, y⟩, rfl⟩ := orderNerveRadialCone_surjective P x
-  rw [orderNerveRadialCone_natural, orderNerveWithTopBallHomeomorph_radial,
-    orderNerveWithTopBallHomeomorph_radial, hb]
+  simp [orderNerveRadialCone_natural, orderNerveWithTopBallHomeomorph_radial, hb]
 
 end FiniteChains.Comb

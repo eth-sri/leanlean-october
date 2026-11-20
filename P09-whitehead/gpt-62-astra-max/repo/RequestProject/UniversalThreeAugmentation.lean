@@ -1,21 +1,19 @@
 module
 
 public import RequestProject.OrderUniversalThree
-public import RequestProject.CombPi2
+
 
 @[expose] public section
 
 /-! Forgetting the deck coordinate of the actual lifted three-boundary. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
 variable {P : Type u} [PartialOrder P] (a : P)
 
 theorem hurewicz_uOrdTetBoundary (t : UOrdTet P a) :
-    hurewicz (orderCx P) a (uOrdTetBoundary t) = ordTetBoundary t.1.2 := by
+    hurewicz (orderCx P) a (uOrdTetBoundary t) = relTetBoundary t.1.2 := by
   have hs (c d : UF (orderCx P) a →₀ ℤ) :
       Finsupp.mapDomain (univProj (orderCx P) a).onF (c - d) =
         Finsupp.mapDomain (univProj (orderCx P) a).onF c -
@@ -31,10 +29,8 @@ theorem hurewicz_uOrdBoundary3 (c : UOrdTet P a →₀ ℤ) :
       ordBoundary3 (Finsupp.mapDomain (fun t : UOrdTet P a => t.1.2) c) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw [map_add, map_add, hc, hd, Finsupp.mapDomain_add, map_add]
+  | add c d hc hd => simp [map_add, hc, hd, Finsupp.mapDomain_add]
   | single t n =>
-      rw [uOrdBoundary3, Finsupp.linearCombination_single, map_smul,
-        hurewicz_uOrdTetBoundary, Finsupp.mapDomain_single, ordBoundary3,
-        Finsupp.linearCombination_single]
+      simp [uOrdBoundary3, Finsupp.linearCombination_single, map_smul, hurewicz_uOrdTetBoundary, Finsupp.mapDomain_single, ordBoundary3]
 
 end FiniteChains.Comb

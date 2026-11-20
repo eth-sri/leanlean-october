@@ -10,9 +10,6 @@ square. The forward collapse is canonical on every characteristic
 interval even though its homotopy inverse uses tree paths. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
@@ -39,38 +36,32 @@ def graphRoseCombinatorialMap :
   base_onF f := Empty.elim f
   att_onF f := Empty.elim f
 
-def graphRoseMap : C(Rose {j : J // ¬T.isTree j}, Rose {k : K // ¬U.isTree k}) :=
+def graphRoseMap :=
   diskFamilyMap (roseAttaching _) (roseAttaching _) (ContinuousMap.id PUnit)
     (graphNonTreeMap r s T U h ht) (fun _ _ => rfl)
 
 theorem graphRoseHomotopyEquiv_natural (f : C(DiskAttachment r, DiskAttachment s))
     (hv : ∀ v, f (old r (boundaryFamilyInclusion J _) v) =
-      old s (boundaryFamilyInclusion K _) (h.onV v))
+      old s _ (h.onV v))
     (he : ∀ j x, f (cell r (boundaryFamilyInclusion J _) ⟨j, x⟩) =
-      cell s (boundaryFamilyInclusion K _) ⟨h.onE j, x⟩) :
+      cell s _ ⟨h.onE j, x⟩) :
     (graphRoseMap r s T U h ht).comp (graphRoseHomotopyEquiv r hr T).toFun =
       (graphRoseHomotopyEquiv s hs U).toFun.comp f := by
-  apply hom_ext r (boundaryFamilyInclusion J (Fin 1 → ℝ))
+  apply hom_ext r (boundaryFamilyInclusion J _)
   · intro v
     change graphRoseMap r s T U h ht (graphRoseHomotopyEquiv r hr T (old _ _ v)) =
-      graphRoseHomotopyEquiv s hs U (f (old _ _ v))
-    rw [graphRoseHomotopyEquiv_old, hv]
-    change _ = graphRoseHomotopyEquiv s hs U (old s _ (h.onV v))
-    rw [graphRoseHomotopyEquiv_old]
-    rfl
+      graphRoseHomotopyEquiv s hs U _
+    rw [graphRoseHomotopyEquiv_old, hv] <;> rfl
   · rintro ⟨j, x⟩
-    change graphRoseMap r s T U h ht (graphRoseHomotopyEquiv r hr T (cell _ _ ⟨j, x⟩)) =
-      graphRoseHomotopyEquiv s hs U (f (cell _ _ ⟨j, x⟩))
+    change graphRoseMap r s T U h ht _ =
+      graphRoseHomotopyEquiv s hs U _
     rw [he]
     by_cases hj : T.isTree j
-    · have hk := (ht j).mpr hj
-      rw [graphRoseHomotopyEquiv_treeCell r hr T ⟨⟨j, hj⟩, x⟩,
-        graphRoseHomotopyEquiv_treeCell s hs U ⟨⟨h.onE j, hk⟩, x⟩]
+    · rw [graphRoseHomotopyEquiv_treeCell r hr T ⟨⟨j, hj⟩, x⟩,
+        graphRoseHomotopyEquiv_treeCell s hs U ⟨⟨h.onE j, ((ht j).mpr hj)⟩, x⟩]
       rfl
-    · have hk : ¬U.isTree (h.onE j) := fun hk => hj ((ht j).mp hk)
-      rw [graphRoseHomotopyEquiv_nonTreeCell r hr T ⟨⟨j, hj⟩, x⟩,
-        graphRoseHomotopyEquiv_nonTreeCell s hs U ⟨⟨h.onE j, hk⟩, x⟩]
-      exact diskFamilyMap_cell (roseAttaching _) (roseAttaching _) (ContinuousMap.id PUnit)
-        (graphNonTreeMap r s T U h ht) (fun _ _ => rfl) ⟨j, hj⟩ x
+    · rw [graphRoseHomotopyEquiv_nonTreeCell r hr T ⟨⟨j, hj⟩, x⟩,
+        graphRoseHomotopyEquiv_nonTreeCell s hs U ⟨⟨h.onE j, (fun hk => hj ((ht j).mp hk))⟩, x⟩]
+      apply diskFamilyMap_cell
 
 end FiniteChains.ClassicalGraphModel

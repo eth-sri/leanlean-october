@@ -1,4 +1,0 @@
-module
-public import RequestProject.TopologicalSingular.SimplexCoordinates
-public import RequestProject.OrderNerveRealizationAffineCone
-public import RequestProject.OrderNerveRealizationStarAcyclic

@@ -5,10 +5,6 @@ public import RequestProject.OrderComparableCycleHomotopy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains.PresModel
 open Comb
 universe u
@@ -29,7 +25,7 @@ theorem cylinder_strict_three_flags_empty (w : J → List (α × Bool)) :
   have h12 := cylinderDimension_strictMono w t.2.2.1
   have h23 := cylinderDimension_strictMono w t.2.2.2
   have hb := presPosDimension_le_two w (ConeAdj.inc (S := circSet w) t.1.2.2.2)
-  change cylinderDimension w t.1.2.2.2 ≤ 2 at hb
+  change cylinderDimension w _ ≤ 2 at hb
   omega
 
 end FiniteChains.PresModel

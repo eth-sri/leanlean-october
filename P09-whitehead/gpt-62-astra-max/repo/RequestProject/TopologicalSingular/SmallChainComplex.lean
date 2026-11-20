@@ -3,7 +3,11 @@ module
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
 public import RequestProject.TopologicalSingular.SmallChainHomology
-public import RequestProject.TopologicalSingular.SingularHomologySequence
+public import RequestProject.TopologicalSingular.SingularChainHomotopy
+public import RequestProject.TopologicalSingular.RelativeSingularMaps
+public import RequestProject.TopologicalSingular.ContractibleSingularChains
+public import Mathlib.Algebra.Homology.HomologySequence
+public import Mathlib.Algebra.Category.ModuleCat.EpiMono
 
 @[expose] public section
 
@@ -14,10 +18,6 @@ short exact sequence is valid for an arbitrary family of subsets; no
 openness or covering assumption is used in this file.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains.SingularSubdivision
 
 open CategoryTheory CategoryTheory.Limits TopologicalSingular Set
@@ -25,13 +25,14 @@ open CategoryTheory CategoryTheory.Limits TopologicalSingular Set
 universe u v
 variable {X : Type u} [TopologicalSpace X] {ι : Type v}
 
-noncomputable def smallBoundary (U : ι → Set X) (n : ℕ) :
-    smallChains U (n + 1) →ₗ[ℤ] smallChains U n :=
-  ((boundary n).comp (smallChains U (n + 1)).subtype).codRestrict _
+variable (U : ι → Set X) (n : ℕ)
+
+noncomputable def smallBoundary :=
+  ((boundary n).comp (smallChains U _).subtype).codRestrict _
     (fun c => boundary_mem_small U n c.property)
 
-theorem smallBoundary_squared (U : ι → Set X) (n : ℕ) :
-    (smallBoundary U n).comp (smallBoundary U (n + 1)) = 0 := by
+theorem smallBoundary_squared :
+    (smallBoundary U n).comp (smallBoundary U _) = 0 := by
   apply LinearMap.ext
   intro c
   apply Subtype.ext

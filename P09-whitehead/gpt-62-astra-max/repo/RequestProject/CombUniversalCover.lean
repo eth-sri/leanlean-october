@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.CombPi1
+public import RequestProject.CombCoveringLift
 
 @[expose] public section
 
@@ -25,10 +25,9 @@ base vertex.
 * `FiniteChains.Comb.univDeck` — the deck action of `π₁(X, x₀)` by left concatenation, and
   `FiniteChains.Comb.isRegular_univProj` — the cover is regular with this deck group.
 -/
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
+noncomputable section
 
 namespace FiniteChains
 namespace Comb
@@ -44,29 +43,31 @@ def endpt (X : Complex2.{u}) : X.V → List (X.E × Bool) → X.V
   | a, [] => a
   | _, eb :: t => endpt X (germTgt X.src X.tgt eb) t
 
-@[simp] theorem endpt_nil (a : X.V) : endpt X a [] = a := rfl
+variable (a : X.V)
 
-@[simp] theorem endpt_cons (a : X.V) (eb : X.E × Bool) (t : List (X.E × Bool)) :
+@[simp] theorem endpt_nil : endpt X a [] = a := rfl
+
+@[simp] theorem endpt_cons (eb : X.E × Bool) (t : List _) :
     endpt X a (eb :: t) = endpt X (germTgt X.src X.tgt eb) t := rfl
 
-theorem endpt_eq_of_isPath {p : List (X.E × Bool)} {a b : X.V}
+theorem endpt_eq_of_isPath {p : List _} {a b : X.V}
     (h : IsPath X.src X.tgt p a b) : endpt X a p = b := by
   induction p generalizing a with
   | nil => exact h
-  | cons eb t ih => exact ih h.2
+  | cons eb t ih => simp_all
 
-theorem endpt_append (a : X.V) (p q : List (X.E × Bool)) :
+theorem endpt_append (a : X.V) (p q : List _) :
     endpt X a (p ++ q) = endpt X (endpt X a p) q := by
   induction p generalizing a with
   | nil => rfl
-  | cons eb t ih => simpa using ih (germTgt X.src X.tgt eb)
+  | cons eb t ih => simp_all
 
 /-! ### The vertices of the universal cover -/
 
 variable (X) in
 /-- An edge path issued from `x₀`. -/
-def PathFrom (x₀ : X.V) : Type u :=
-  {p : List (X.E × Bool) // IsPath X.src X.tgt p x₀ (endpt X x₀ p)}
+def PathFrom (x₀ : X.V) :=
+  {p : List _ // IsPath X.src X.tgt p x₀ (endpt X x₀ p)}
 
 variable {x₀ : X.V}
 
@@ -76,19 +77,17 @@ instance pathFromSetoid (X : Complex2.{u}) (x₀ : X.V) : Setoid (PathFrom X x�
   iseqv := by
     refine ⟨fun p => Htpy.refl _, ?_, ?_⟩
     · intro p q h
-      have hq : IsPath X.src X.tgt q.1 x₀ (endpt X x₀ p.1) := h.isPath p.2
-      have he : endpt X x₀ q.1 = endpt X x₀ p.1 := endpt_eq_of_isPath hq
+      have he := endpt_eq_of_isPath (h.isPath p.2)
       rw [he]
       exact h.symm
     · intro p q r h h'
-      have hq : IsPath X.src X.tgt q.1 x₀ (endpt X x₀ p.1) := h.isPath p.2
-      have he : endpt X x₀ q.1 = endpt X x₀ p.1 := endpt_eq_of_isPath hq
+      have he := endpt_eq_of_isPath (h.isPath p.2)
       rw [he] at h'
       exact h.trans h'
 
 variable (X) in
 /-- The vertices of the universal cover: homotopy classes of edge paths from `x₀`. -/
-def UV (x₀ : X.V) : Type u := Quotient (pathFromSetoid X x₀)
+def UV (x₀ : X.V) := Quotient (pathFromSetoid X x₀)
 
 /-- The class of a path from `x₀`. -/
 def UV.mk (p : PathFrom X x₀) : UV X x₀ := Quotient.mk _ p
@@ -104,11 +103,10 @@ theorem UV.sound {p q : PathFrom X x₀} (h : Htpy X x₀ (endpt X x₀ p.1) p.1
 def UV.base (X : Complex2.{u}) (x₀ : X.V) : UV X x₀ := UV.mk ⟨[], rfl⟩
 
 /-- The endpoint of (any representative of) a class. -/
-def endV (c : UV X x₀) : X.V :=
+def endV (c : UV X x₀) :=
   Quotient.liftOn c (fun p => endpt X x₀ p.1) (by
     intro p q h
-    have hq : IsPath X.src X.tgt q.1 x₀ (endpt X x₀ p.1) := h.isPath p.2
-    exact (endpt_eq_of_isPath hq).symm)
+    exact (endpt_eq_of_isPath (h.isPath p.2)).symm)
 
 @[simp] theorem endV_mk (p : PathFrom X x₀) : endV (UV.mk p) = endpt X x₀ p.1 := rfl
 
@@ -116,105 +114,100 @@ def endV (c : UV X x₀) : X.V :=
 
 /-! ### Extending a class by an edge -/
 
-theorem endpt_append_single (a : X.V) (p : List (X.E × Bool)) (eb : X.E × Bool)
-    (h : endpt X a p = germSrc X.src X.tgt eb) :
+theorem endpt_append_single (a : X.V) (p : List _) (eb : X.E × Bool) :
     endpt X a (p ++ [eb]) = germTgt X.src X.tgt eb := by
-  rw [endpt_append, h]
-  rfl
+  simp [endpt_append]
 
-theorem isPath_append_single {p : List (X.E × Bool)} {a : X.V}
+theorem isPath_append_single {p : List _} {a : X.V}
     (hp : IsPath X.src X.tgt p a (endpt X a p)) (eb : X.E × Bool)
     (h : endpt X a p = germSrc X.src X.tgt eb) :
     IsPath X.src X.tgt (p ++ [eb]) a (endpt X a (p ++ [eb])) := by
-  rw [endpt_append_single a p eb h]
+  rw [endpt_append_single a p eb]
   exact isPath_append_iff.mpr ⟨germSrc X.src X.tgt eb, h ▸ hp, isPath_single eb⟩
 
 open Classical in
 /-- Appending an oriented edge to a path from `x₀` (the path is left unchanged if the edge
 does not start at its endpoint). -/
-noncomputable def extendP (eb : X.E × Bool) (p : PathFrom X x₀) : PathFrom X x₀ :=
+def extendP (eb : X.E × Bool) (p : PathFrom X x₀) :=
   if h : endpt X x₀ p.1 = germSrc X.src X.tgt eb then ⟨p.1 ++ [eb], isPath_append_single p.2 eb h⟩
   else p
 
-theorem extendP_pos {p : PathFrom X x₀} {eb : X.E × Bool}
-    (h : endpt X x₀ p.1 = germSrc X.src X.tgt eb) : (extendP eb p).1 = p.1 ++ [eb] := by
-  classical
-  simp only [extendP, dif_pos h]
+variable {p : PathFrom X x₀} {eb : X.E × Bool}
 
-theorem extendP_neg {p : PathFrom X x₀} {eb : X.E × Bool}
+theorem extendP_pos
+    (h : endpt X x₀ p.1 = germSrc X.src X.tgt eb) : (extendP eb p).1 = p.1 ++ [eb] := by
+  simp_all [extendP, dif_pos]
+
+theorem extendP_neg
     (h : ¬ endpt X x₀ p.1 = germSrc X.src X.tgt eb) : (extendP eb p).1 = p.1 := by
-  classical
-  simp only [extendP, dif_neg h]
+  simp_all [extendP, dif_neg]
 
 /-- Appending an oriented edge to a class of paths. -/
-noncomputable def extend (eb : X.E × Bool) (c : UV X x₀) : UV X x₀ :=
+def extend (eb : X.E × Bool) (c : UV X x₀) : UV X x₀ :=
   Quotient.map (extendP eb) (by
     intro p q hpq
-    have hq : IsPath X.src X.tgt q.1 x₀ (endpt X x₀ p.1) := hpq.isPath p.2
-    have he : endpt X x₀ q.1 = endpt X x₀ p.1 := endpt_eq_of_isPath hq
+    have he := endpt_eq_of_isPath (hpq.isPath p.2)
     by_cases h : endpt X x₀ p.1 = germSrc X.src X.tgt eb
     · show Htpy X x₀ (endpt X x₀ (extendP eb p).1) (extendP eb p).1 (extendP eb q).1
-      rw [extendP_pos h, extendP_pos (he.trans h), endpt_append_single x₀ p.1 eb h]
+      rw [extendP_pos h, extendP_pos (he.trans h), endpt_append_single x₀ p.1 eb]
       exact Htpy.append_congr (h ▸ p.2) (h ▸ isPath_single eb) hpq (Htpy.refl _)
-    · show Htpy X x₀ (endpt X x₀ (extendP eb p).1) (extendP eb p).1 (extendP eb q).1
-      rw [extendP_neg h, extendP_neg (fun hc => h (he ▸ hc))]
-      exact hpq) c
+    · simp_all [extendP, extendP_neg]) c
 
 theorem extend_mk (p : PathFrom X x₀) (eb : X.E × Bool) :
     extend eb (UV.mk p) = UV.mk (extendP eb p) := rfl
 
-theorem endV_extend {c : UV X x₀} {eb : X.E × Bool} (h : endV c = germSrc X.src X.tgt eb) :
+section
+
+variable {c : UV X x₀} {eb : X.E × Bool} (h : endV c = germSrc X.src X.tgt eb)
+include h
+
+theorem endV_extend :
     endV (extend eb c) = germTgt X.src X.tgt eb := by
   induction c using UV.ind with
   | h p =>
-      have h' : endpt X x₀ p.1 = germSrc X.src X.tgt eb := h
-      rw [extend_mk, endV_mk, extendP_pos h', endpt_append_single x₀ p.1 eb h']
+      simp_all [extend_mk, endV_mk, extendP_pos, endpt_append_single]
 
 /-- Extending by an edge and then by its reverse returns the original class. -/
-theorem extend_revGerm {c : UV X x₀} {eb : X.E × Bool} (h : endV c = germSrc X.src X.tgt eb) :
+theorem extend_revGerm :
     extend (revGerm eb) (extend eb c) = c := by
   induction c using UV.ind with
   | h p =>
-      have h' : endpt X x₀ p.1 = germSrc X.src X.tgt eb := h
+      have h' := h
       have h1 : endpt X x₀ (extendP eb p).1 = germSrc X.src X.tgt (revGerm eb) := by
-        rw [extendP_pos h', endpt_append_single x₀ p.1 eb h']
+        rw [extendP_pos h', endpt_append_single x₀ p.1 eb]
         simp
-      rw [extend_mk, extend_mk]
       refine Quotient.sound ?_
-      show Htpy X x₀ (endpt X x₀ (extendP (revGerm eb) (extendP eb p)).1)
-        (extendP (revGerm eb) (extendP eb p)).1 p.1
+      show Htpy X x₀ _
+        _ p.1
       rw [extendP_pos h1, extendP_pos h']
       have hp : IsPath X.src X.tgt p.1 x₀ (germSrc X.src X.tgt eb) := h' ▸ p.2
       have hbk : Htpy X (germSrc X.src X.tgt eb) (germSrc X.src X.tgt eb) [eb, revGerm eb] [] := by
         refine Htpy.of_step ⟨?_, rfl, Or.inl ⟨[], [], eb, rfl, rfl⟩⟩
-        exact ⟨rfl, by simp, by simp⟩
-      have hcongr : Htpy X x₀ (germSrc X.src X.tgt eb) (p.1 ++ [eb, revGerm eb]) (p.1 ++ []) :=
-        Htpy.append_congr hp (by refine ⟨rfl, ?_, ?_⟩ <;> simp) (Htpy.refl _) hbk
-      have hrw : p.1 ++ [eb] ++ [revGerm eb] = p.1 ++ [eb, revGerm eb] := by simp
-      have hend : endpt X x₀ (p.1 ++ [eb] ++ [revGerm eb]) = germSrc X.src X.tgt eb := by
-        rw [endpt_append, endpt_append, h']
         simp
-      rw [hend, hrw]
-      simpa using hcongr
+      have hcongr :=
+        Htpy.append_congr hp (by simp) (Htpy.refl _) hbk
+      simp_all [endpt_append]
+
+end
 
 /-- Extending a class by a whole path. -/
-noncomputable def extendList (q : List (X.E × Bool)) (c : UV X x₀) : UV X x₀ :=
+def extendList (q : List _) (c : UV X x₀) :=
   q.foldl (fun d eb => extend eb d) c
 
 @[simp] theorem extendList_nil (c : UV X x₀) : extendList [] c = c := rfl
 
-@[simp] theorem extendList_cons (eb : X.E × Bool) (q : List (X.E × Bool)) (c : UV X x₀) :
+@[simp] theorem extendList_cons (eb : X.E × Bool) (q : List _) (c : UV X x₀) :
     extendList (eb :: q) c = extendList q (extend eb c) := rfl
 
-theorem extendList_append (q r : List (X.E × Bool)) (c : UV X x₀) :
+theorem extendList_append (q r : List _) (c : UV X x₀) :
     extendList (q ++ r) c = extendList r (extendList q c) := by
   induction q generalizing c with
   | nil => rfl
-  | cons eb t ih => simpa using ih (extend eb c)
+  | cons eb t ih => simp_all
 
 /-- Extending the class of `p` by a path `q` issued from its endpoint gives the class of the
 concatenation. -/
-theorem extendList_mk : ∀ {q : List (X.E × Bool)} {p r : PathFrom X x₀} {w : X.V},
+theorem extendList_mk : ∀ {q : List _} {p r : PathFrom X x₀} {w : X.V},
     IsPath X.src X.tgt q (endpt X x₀ p.1) w → r.1 = p.1 ++ q →
       extendList q (UV.mk p) = UV.mk r := by
   intro q
@@ -222,71 +215,71 @@ theorem extendList_mk : ∀ {q : List (X.E × Bool)} {p r : PathFrom X x₀} {w 
   | nil =>
       intro p r w _ hr
       refine Quotient.sound ?_
-      show Htpy X x₀ (endpt X x₀ p.1) p.1 r.1
+      show Htpy X x₀ _ p.1 r.1
       rw [hr]
-      simpa using Htpy.refl (X := X) (a := x₀) (b := endpt X x₀ p.1) p.1
+      simpa using Htpy.refl p.1
   | cons eb t ih =>
       intro p r w hq hr
-      have h' : endpt X x₀ p.1 = germSrc X.src X.tgt eb := hq.1
       have hend : endpt X x₀ (extendP eb p).1 = germTgt X.src X.tgt eb := by
-        rw [extendP_pos h', endpt_append_single x₀ p.1 eb h']
-      rw [extendList_cons, extend_mk]
-      refine ih (p := extendP eb p) (r := r) (w := w) ?_ ?_
-      · rw [hend]; exact hq.2
-      · rw [extendP_pos h', hr]; simp
+        simp_all [extendP_pos, endpt_append_single]
+      refine ih (w := w) ?_ ?_
+      · simp_all
+      · simp_all [extendP_pos, hr]
 
-theorem endV_extendList : ∀ {q : List (X.E × Bool)} {c : UV X x₀} {w : X.V},
+theorem endV_extendList : ∀ {q : List _} {c : UV X x₀} {w : X.V},
     IsPath X.src X.tgt q (endV c) w → endV (extendList q c) = w := by
   intro q
   induction q with
-  | nil => intro c w hq; exact hq
+  | nil => simp
   | cons eb t ih =>
       intro c w hq
-      have h : endV c = germSrc X.src X.tgt eb := hq.1
-      refine ih (c := extend eb c) (w := w) ?_
-      rw [endV_extend h]
-      exact hq.2
+      refine ih ?_
+      simp_all [endV_extend]
 
 /-! ### The universal cover as a complex -/
 
 variable (X x₀) in
 /-- The edges of the universal cover: a vertex together with an edge of `X` issued from its
 endpoint. -/
-def UE : Type u := {ce : UV X x₀ × X.E // endV ce.1 = X.src ce.2}
+def UE := {ce : UV X x₀ × X.E // endV ce.1 = X.src ce.2}
 
 variable (X x₀) in
 /-- The two-cells of the universal cover: a vertex together with a two-cell of `X` based at
 its endpoint. -/
-def UF : Type u := {cf : UV X x₀ × X.F // endV cf.1 = X.base cf.2}
+def UF := {cf : UV X x₀ × X.F // endV cf.1 = X.base cf.2}
+
+variable (ce : UE X x₀)
 
 /-- The initial vertex of an edge of the universal cover. -/
-def uSrc (ce : UE X x₀) : UV X x₀ := ce.1.1
+def uSrc := ce.1.1
 
 /-- The terminal vertex of an edge of the universal cover. -/
-noncomputable def uTgt (ce : UE X x₀) : UV X x₀ := extend (ce.1.2, true) ce.1.1
+def uTgt := extend (ce.1.2, true) ce.1.1
 
 /-- The basepoint of a two-cell of the universal cover. -/
-def uBase (cf : UF X x₀) : UV X x₀ := cf.1.1
+def uBase (cf : UF X x₀) := cf.1.1
 
 /-- The lift of an oriented edge at a vertex of the cover. -/
-noncomputable def liftGerm (c : UV X x₀) :
+def liftGerm (c : UV X x₀) :
     (eb : X.E × Bool) → endV c = germSrc X.src X.tgt eb → UE X x₀ × Bool
   | (e, true), h => (⟨(c, e), h⟩, true)
   | (e, false), h =>
-      (⟨(extend (e, false) c, e), endV_extend (c := c) (eb := (e, false)) h⟩, false)
+      (⟨(extend _ c, e), endV_extend h⟩, false)
 
-@[simp] theorem liftGerm_true {c : UV X x₀} {e : X.E}
-    (h : endV c = germSrc X.src X.tgt (e, true)) :
+variable {c : UV X x₀} {e : X.E}
+
+@[simp] theorem liftGerm_true
+    (h : endV c = germSrc X.src X.tgt _) :
     liftGerm c (e, true) h = (⟨(c, e), h⟩, true) := rfl
 
-@[simp] theorem liftGerm_false {c : UV X x₀} {e : X.E}
-    (h : endV c = germSrc X.src X.tgt (e, false)) :
-    liftGerm c (e, false) h =
-      (⟨(extend (e, false) c, e), endV_extend (c := c) (eb := (e, false)) h⟩, false) := rfl
+@[simp] theorem liftGerm_false
+    (h : endV c = germSrc X.src X.tgt _) :
+    liftGerm c _ h =
+      (⟨(extend _ c, e), endV_extend (eb := (e, false)) h⟩, false) := rfl
 
 open Classical in
 /-- The lift of an edge path at a vertex of the cover. -/
-noncomputable def uLiftPath : List (X.E × Bool) → UV X x₀ → List (UE X x₀ × Bool)
+def uLiftPath : List (X.E × Bool) → UV X x₀ → List (UE X x₀ × Bool)
   | [], _ => []
   | eb :: t, c =>
       if h : endV c = germSrc X.src X.tgt eb then
@@ -295,28 +288,26 @@ noncomputable def uLiftPath : List (X.E × Bool) → UV X x₀ → List (UE X x�
 
 @[simp] theorem uLiftPath_nil (c : UV X x₀) : uLiftPath [] c = [] := rfl
 
-theorem uLiftPath_cons {eb : X.E × Bool} {t : List (X.E × Bool)} {c : UV X x₀}
+theorem uLiftPath_cons {eb : X.E × Bool} {t : List _} {c : UV X x₀}
     (h : endV c = germSrc X.src X.tgt eb) :
     uLiftPath (eb :: t) c = liftGerm c eb h :: uLiftPath t (extend eb c) := by
-  rw [uLiftPath, dif_pos h]
+  simp_all [uLiftPath, dif_pos]
 
 /-- The attaching path of a two-cell of the universal cover. -/
-noncomputable def uAtt (cf : UF X x₀) : List (UE X x₀ × Bool) :=
+def uAtt (cf : UF X x₀) :=
   uLiftPath (X.att cf.1.2) cf.1.1
 
-theorem germSrc_liftGerm {c : UV X x₀} {eb : X.E × Bool}
-    (h : endV c = germSrc X.src X.tgt eb) :
+variable {c : UV X x₀} {eb : X.E × Bool} (h : endV c = germSrc X.src X.tgt eb)
+
+theorem germSrc_liftGerm :
     germSrc uSrc uTgt (liftGerm c eb h) = c := by
   obtain ⟨e, b⟩ := eb
   cases b with
   | true => rfl
   | false =>
-      show uTgt (⟨(extend (e, false) c, e), _⟩ : UE X x₀) = c
-      show extend (e, true) (extend (e, false) c) = c
-      exact extend_revGerm (eb := (e, false)) h
+      exact extend_revGerm h
 
-theorem germTgt_liftGerm {c : UV X x₀} {eb : X.E × Bool}
-    (h : endV c = germSrc X.src X.tgt eb) :
+theorem germTgt_liftGerm :
     germTgt uSrc uTgt (liftGerm c eb h) = extend eb c := by
   obtain ⟨e, b⟩ := eb
   cases b with
@@ -324,20 +315,19 @@ theorem germTgt_liftGerm {c : UV X x₀} {eb : X.E × Bool}
   | false => rfl
 
 /-- The lift of a path is a path of the cover, from the given vertex to the extended one. -/
-theorem isPath_uLiftPath : ∀ (q : List (X.E × Bool)) (c : UV X x₀) (w : X.V),
+theorem isPath_uLiftPath : ∀ (q : List _) (c : UV X x₀) (w : X.V),
     IsPath X.src X.tgt q (endV c) w → IsPath uSrc uTgt (uLiftPath q c) c (extendList q c) := by
   intro q
   induction q with
-  | nil => intro c w _; rfl
+  | nil => simp
   | cons eb t ih =>
       intro c w hq
-      have h : endV c = germSrc X.src X.tgt eb := hq.1
+      have h := hq.1
       rw [uLiftPath_cons h, extendList_cons]
       refine ⟨(germSrc_liftGerm h).symm, ?_⟩
       rw [germTgt_liftGerm h]
-      refine ih (extend eb c) w ?_
-      rw [endV_extend h]
-      exact hq.2
+      refine ih _ w ?_
+      simp_all [endV_extend]
 
 /-- Extending a class along the attaching loop of a two-cell based at its endpoint returns
 the same class: this is exactly the two-cell cancellation. -/
@@ -345,42 +335,39 @@ theorem extendList_att {c : UV X x₀} {f : X.F} (h : endV c = X.base f) :
     extendList (X.att f) c = c := by
   induction c using UV.ind with
   | h p =>
-      have h' : endpt X x₀ p.1 = X.base f := h
+      have h' := h
       have hatt : IsPath X.src X.tgt (X.att f) (endpt X x₀ p.1) (X.base f) := h' ▸ X.att_isLoop f
-      have hp : IsPath X.src X.tgt (p.1 ++ X.att f) x₀ (X.base f) :=
+      have hp :=
         isPath_append_iff.mpr ⟨endpt X x₀ p.1, p.2, hatt⟩
-      have hend : endpt X x₀ (p.1 ++ X.att f) = X.base f := endpt_eq_of_isPath hp
-      refine (extendList_mk (p := p) (r := ⟨p.1 ++ X.att f, by rw [hend]; exact hp⟩) hatt
+      have hend := endpt_eq_of_isPath hp
+      refine (extendList_mk (r := ⟨p.1 ++ X.att f, by simp_all⟩) hatt
         rfl).trans ?_
       refine Quotient.sound ?_
-      show Htpy X x₀ (endpt X x₀ (p.1 ++ X.att f)) (p.1 ++ X.att f) p.1
+      show Htpy X x₀ _ (p.1 ++ X.att f) p.1
       rw [hend]
       refine Htpy.of_step ⟨hp, h' ▸ p.2, Or.inr ⟨p.1, [], f, ?_, ?_⟩⟩ <;> simp
 
 theorem uAtt_isLoop (cf : UF X x₀) : IsPath uSrc uTgt (uAtt cf) (uBase cf) (uBase cf) := by
-  have h : endV cf.1.1 = X.base cf.1.2 := cf.2
-  have hatt : IsPath X.src X.tgt (X.att cf.1.2) (endV cf.1.1) (X.base cf.1.2) :=
-    h ▸ X.att_isLoop cf.1.2
-  have := isPath_uLiftPath (X.att cf.1.2) cf.1.1 (X.base cf.1.2) hatt
+  have h := cf.2
+  have := isPath_uLiftPath (X.att cf.1.2) cf.1.1 _ (h ▸ X.att_isLoop cf.1.2)
   rwa [extendList_att h] at this
 
 /-- The lift of a path projects back to the path. -/
-theorem map_uLiftPath : ∀ (q : List (X.E × Bool)) (c : UV X x₀) (w : X.V),
+theorem map_uLiftPath : ∀ (q : List _) (c : UV X x₀) (w : X.V),
     IsPath X.src X.tgt q (endV c) w →
-      (uLiftPath q c).map (fun eb => ((eb.1 : UE X x₀).1.2, eb.2)) = q := by
+      (uLiftPath q c).map (fun eb => ((eb.1).1.2, eb.2)) = q := by
   intro q
   induction q with
-  | nil => intro c w _; rfl
+  | nil => simp
   | cons eb t ih =>
       intro c w hq
-      have h : endV c = germSrc X.src X.tgt eb := hq.1
-      rw [uLiftPath_cons h, List.map_cons, ih (extend eb c) w (by rw [endV_extend h]; exact hq.2)]
+      rw [uLiftPath_cons hq.1, List.map_cons, ih _ w (by simp_all [endV_extend])]
       obtain ⟨e, b⟩ := eb
       cases b <;> rfl
 
 variable (X x₀) in
 /-- **The universal cover** of a combinatorial two-complex. -/
-noncomputable def uCover : Complex2.{u} where
+def uCover : Complex2.{u} where
   V := UV X x₀
   E := UE X x₀
   F := UF X x₀
@@ -392,336 +379,174 @@ noncomputable def uCover : Complex2.{u} where
 
 variable (X x₀) in
 /-- The projection of the universal cover to the complex. -/
-noncomputable def univProj : Hom (uCover X x₀) X where
+def univProj : Hom (uCover X x₀) X where
   onV := endV
   onE := fun ce => ce.1.2
   onF := fun cf => cf.1.2
   src_onE := fun ce => ce.2.symm
   tgt_onE := by
     intro ce
-    show X.tgt ce.1.2 = endV (extend (ce.1.2, true) ce.1.1)
-    have h : endV ce.1.1 = germSrc X.src X.tgt (ce.1.2, true) := ce.2
-    rw [endV_extend h]
-    rfl
+    show X.tgt _ = endV (extend (ce.1.2, true) ce.1.1)
+    have h := ce.2
+    simp_all [endV_extend]
   base_onF := fun cf => cf.2.symm
   att_onF := by
     intro cf
-    have h : endV cf.1.1 = X.base cf.1.2 := cf.2
-    have hatt : IsPath X.src X.tgt (X.att cf.1.2) (endV cf.1.1) (X.base cf.1.2) :=
-      h ▸ X.att_isLoop cf.1.2
-    exact (map_uLiftPath (X.att cf.1.2) cf.1.1 (X.base cf.1.2) hatt).symm
+    have hatt :=
+      cf.2 ▸ X.att_isLoop _
+    exact (map_uLiftPath _ _ _ hatt).symm
 
 /-! ### The projection is a covering -/
 
-theorem endV_surjective (hX : IsConnected X) : Function.Surjective (endV (X := X) (x₀ := x₀)) := by
+section
+
+variable (hX : IsConnected X)
+include hX
+
+theorem endV_surjective : Function.Surjective (endV (X := X) (x₀ := x₀)) := by
   intro v
   obtain ⟨p, hp⟩ := hX x₀ v
-  have he : endpt X x₀ p = v := endpt_eq_of_isPath hp
-  exact ⟨UV.mk ⟨p, by rw [he]; exact hp⟩, he⟩
+  have he := endpt_eq_of_isPath hp
+  exact ⟨UV.mk ⟨p, by simp_all⟩, he⟩
 
-theorem isCovering_univProj (hX : IsConnected X) : IsCovering (univProj X x₀) := by
-  refine ⟨endV_surjective hX, ?_, ?_⟩
+omit hX in
+theorem univProj_lifts : LocalLifts (univProj X x₀) := by
+  constructor
   · intro c
-    constructor
-    · rintro ⟨⟨E, b⟩, hE⟩ ⟨⟨E', b'⟩, hE'⟩ heq
-      have hpair : (E.1.2, b) = (E'.1.2, b') := congrArg Subtype.val heq
-      have hb : b = b' := congrArg Prod.snd hpair
-      have he : E.1.2 = E'.1.2 := congrArg Prod.fst hpair
-      subst hb
-      have hEE : E = E' := by
-        cases b with
-        | true =>
-            have h1 : E.1.1 = c := hE
-            have h2 : E'.1.1 = c := hE'
-            exact Subtype.ext (Prod.ext (h1.trans h2.symm) he)
-        | false =>
-            have h1 : extend (E.1.2, true) E.1.1 = c := hE
-            have h2 : extend (E'.1.2, true) E'.1.1 = c := hE'
-            have k1 : E.1.1 = extend (E.1.2, false) c := by
-              rw [← h1]
-              exact (extend_revGerm (eb := (E.1.2, true)) E.2).symm
-            have k2 : E'.1.1 = extend (E'.1.2, false) c := by
-              rw [← h2]
-              exact (extend_revGerm (eb := (E'.1.2, true)) E'.2).symm
-            refine Subtype.ext (Prod.ext ?_ he)
-            rw [k1, k2, he]
-      subst hEE
-      rfl
-    · rintro ⟨⟨e, b⟩, hb⟩
-      cases b with
-      | true =>
-          have hsrc : endV c = X.src e := hb.symm
-          refine ⟨⟨(⟨(c, e), hsrc⟩, true), rfl⟩, ?_⟩
-          exact Subtype.ext rfl
-      | false =>
-          have h : endV c = germSrc X.src X.tgt (e, false) := hb.symm
-          have hend : endV (extend (e, false) c) = X.src e := endV_extend h
-          refine ⟨⟨(⟨(extend (e, false) c, e), hend⟩, false), ?_⟩, ?_⟩
-          · show extend (e, true) (extend (e, false) c) = c
-            exact extend_revGerm (eb := (e, false)) h
-          · exact Subtype.ext rfl
-  · constructor
-    · rintro ⟨⟨c, f⟩, h⟩ ⟨⟨c', f'⟩, h'⟩ heq
-      have hpair : (f, c) = (f', c') := congrArg Subtype.val heq
-      exact Subtype.ext (Prod.ext (congrArg Prod.snd hpair) (congrArg Prod.fst hpair))
-    · rintro ⟨⟨f, c⟩, h⟩
-      exact ⟨⟨(c, f), h.symm⟩, rfl⟩
+    apply Function.bijective_iff_has_inverse.mpr
+    refine ⟨fun g => ⟨liftGerm c g.1 _, germSrc_liftGerm g.2.symm⟩, ?_, ?_⟩
+    · rintro ⟨⟨⟨⟨v, e⟩, hv⟩, b⟩, he⟩
+      cases b <;> apply Subtype.ext <;> refine Prod.ext (Subtype.ext (Prod.ext ?_ rfl)) rfl
+      · subst c
+        exact extend_revGerm (eb := (e,true)) hv
+      · exact he.symm
+    · rintro ⟨⟨e, b⟩, h⟩; cases b <;> rfl
+  · exact Function.bijective_iff_has_inverse.mpr
+      ⟨fun g => ⟨(g.1.2, g.1.1), g.2.symm⟩, fun _ => rfl, fun _ => rfl⟩
+
+theorem isCovering_univProj : IsCovering (univProj X x₀) :=
+  ⟨endV_surjective hX, univProj_lifts⟩
+
+end
 
 theorem isConnected_univCover : IsConnected (uCover X x₀) := by
   -- every vertex is joined to the base vertex
-  have key : ∀ c : UV X x₀, ∃ l : List ((uCover X x₀).E × Bool),
+  have key : ∀ c : UV X x₀, ∃ l : List _,
       IsPath (uCover X x₀).src (uCover X x₀).tgt l (UV.base X x₀) c := by
     intro c
     induction c using UV.ind with
     | h p =>
-        have hp : IsPath X.src X.tgt p.1 (endV (UV.base X x₀)) (endpt X x₀ p.1) := p.2
-        refine ⟨uLiftPath p.1 (UV.base X x₀), ?_⟩
-        have hlift := isPath_uLiftPath p.1 (UV.base X x₀) (endpt X x₀ p.1) hp
+        have hp := p.2
+        have hlift := isPath_uLiftPath p.1 (UV.base X x₀) _ hp
         have hext : extendList p.1 (UV.base X x₀) = UV.mk p :=
-          extendList_mk (p := ({ val := [], property := rfl } : PathFrom X x₀)) (r := p)
-            (w := endpt X x₀ p.1) hp (by simp)
-        rwa [hext] at hlift
+          extendList_mk hp (by simp)
+        aesop
   intro c d
   obtain ⟨l, hl⟩ := key c
   obtain ⟨m, hm⟩ := key d
-  refine ⟨revPath (X := uCover X x₀) l ++ m, ?_⟩
-  exact isPath_append_iff (X := uCover X x₀).mpr
-    ⟨UV.base X x₀, isPath_revPath (X := uCover X x₀) hl, hm⟩
+  refine ⟨revPath l ++ m, ?_⟩
+  grind [isPath_append_iff, isPath_revPath]
 
 /-! ### The cover is simply connected -/
 
 /-- Lifting is additive along concatenation. -/
-theorem uLiftPath_append : ∀ (l : List (X.E × Bool)) (m : List (X.E × Bool)) (c : UV X x₀)
+theorem uLiftPath_append : ∀ (l : List _) (m : List _) (c : UV X x₀)
     (w : X.V), IsPath X.src X.tgt l (endV c) w →
       uLiftPath (l ++ m) c = uLiftPath l c ++ uLiftPath m (extendList l c) := by
   intro l
   induction l with
-  | nil => intro m c w _; rfl
+  | nil => simp
   | cons eb t ih =>
       intro m c w hl
-      have h : endV c = germSrc X.src X.tgt eb := hl.1
+      have h := hl.1
       rw [List.cons_append, uLiftPath_cons h, uLiftPath_cons h, extendList_cons,
-        ih m (extend eb c) w (by rw [endV_extend h]; exact hl.2)]
+        ih m _ w (by simp_all [endV_extend])]
       rfl
 
-/-- Homotopic paths extend a class in the same way. -/
-theorem extendList_htpy {c : UV X x₀} {l l' : List (X.E × Bool)} {w : X.V}
-    (hl : IsPath X.src X.tgt l (endV c) w) (h : Htpy X (endV c) w l l') :
-    extendList l c = extendList l' c := by
-  induction c using UV.ind with
-  | h p =>
-      have hl' : IsPath X.src X.tgt l' (endpt X x₀ p.1) w := h.isPath hl
-      have hpl : IsPath X.src X.tgt (p.1 ++ l) x₀ w :=
-        isPath_append_iff.mpr ⟨endpt X x₀ p.1, p.2, hl⟩
-      have hpl' : IsPath X.src X.tgt (p.1 ++ l') x₀ w :=
-        isPath_append_iff.mpr ⟨endpt X x₀ p.1, p.2, hl'⟩
-      have hend : endpt X x₀ (p.1 ++ l) = w := endpt_eq_of_isPath hpl
-      have hend' : endpt X x₀ (p.1 ++ l') = w := endpt_eq_of_isPath hpl'
-      rw [extendList_mk (p := p) (r := ⟨p.1 ++ l, by rw [hend]; exact hpl⟩) hl rfl,
-        extendList_mk (p := p) (r := ⟨p.1 ++ l', by rw [hend']; exact hpl'⟩) hl' rfl]
-      refine Quotient.sound ?_
-      show Htpy X x₀ (endpt X x₀ (p.1 ++ l)) (p.1 ++ l) (p.1 ++ l')
-      rw [hend]
-      exact Htpy.append_congr p.2 hl (Htpy.refl _) h
+variable {c : UV X x₀}
 
-/-- Lifting turns an elementary homotopy of the base into a homotopy of the cover. -/
-theorem htpy_step_uLiftPath {c : UV X x₀} {l l' : List (X.E × Bool)} {w : X.V}
-    (hstep : Step X (endV c) w l l') :
+variable {l l' : List (X.E × Bool)} {w : X.V}
+
+/-- The explicit lifted word is the unique lift with prescribed source. -/
+theorem eq_uLiftPath_of_isPath (L : (uCover X x₀).EdgeWord) (c d : UV X x₀)
+    (hL : (uCover X x₀).IsEdgePath L c d) : L = uLiftPath (mapPath (univProj X x₀) L) c := by
+  have h := isPath_mapPath (univProj X x₀) hL
+  apply liftPath_unique univProj_lifts L _ c d _ hL (isPath_uLiftPath _ c _ h)
+  exact (map_uLiftPath _ c _ h).symm
+
+/-- The cover of the component of the base point has local lifts even when
+`X` is disconnected. Apply general homotopy lifting and uniqueness there. -/
+theorem htpy_uLiftPath (hl : X.IsEdgePath l (endV c) w) (h : Htpy X (endV c) w l l') :
     Htpy (uCover X x₀) c (extendList l c) (uLiftPath l c) (uLiftPath l' c) := by
-  obtain ⟨hl, hl', hc⟩ := hstep
-  have hext : extendList l' c = extendList l c :=
-    (extendList_htpy hl (Htpy.of_step ⟨hl, hl', hc⟩)).symm
-  have hpath : IsPath (uCover X x₀).src (uCover X x₀).tgt (uLiftPath l c) c
-      (extendList l c) := isPath_uLiftPath l c w hl
-  have hpath' : IsPath (uCover X x₀).src (uCover X x₀).tgt (uLiftPath l' c) c
-      (extendList l c) := by
-    rw [← hext]; exact isPath_uLiftPath l' c w hl'
-  rcases hc with ⟨p, q, eb, hleq, hl'eq⟩ | ⟨p, q, f, hleq, hl'eq⟩
-  · subst hleq; subst hl'eq
-    obtain ⟨b₁, hp, hrest⟩ := isPath_append_iff.mp hl
-    have hc₁ : endV (extendList p c) = b₁ := endV_extendList hp
-    set c₁ := extendList p c with hc₁def
-    have h₁ : endV c₁ = germSrc X.src X.tgt eb := by rw [hc₁]; exact hrest.1
-    have h₂ : endV (extend eb c₁) = germSrc X.src X.tgt (revGerm eb) := by
-      rw [endV_extend h₁]; simp
-    have hrev : liftGerm (extend eb c₁) (revGerm eb) h₂
-        = revGerm (X := uCover X x₀) (liftGerm c₁ eb h₁) := by
-      obtain ⟨e, bb⟩ := eb
-      cases bb with
-      | true =>
-          refine Prod.ext ?_ rfl
-          refine Subtype.ext (Prod.ext ?_ rfl)
-          exact extend_revGerm (eb := (e, true)) h₁
-      | false =>
-          refine Prod.ext ?_ rfl
-          exact Subtype.ext (Prod.ext rfl rfl)
-    refine Htpy.of_step ⟨hpath, hpath', Or.inl ⟨uLiftPath p c, uLiftPath q c₁,
-      liftGerm c₁ eb h₁, ?_, ?_⟩⟩
-    · rw [uLiftPath_append p (eb :: revGerm eb :: q) c b₁ hp, ← hc₁def,
-        uLiftPath_cons h₁, uLiftPath_cons h₂, hrev, extend_revGerm h₁]
-    · rw [uLiftPath_append p q c b₁ hp, ← hc₁def]
-  · subst hleq; subst hl'eq
-    by_cases hnil : X.att f = []
-    · -- a two-cell with empty attaching path cancels nothing
-      rw [hnil]
-      simp only [List.append_nil]
-      exact Htpy.refl _
-    · obtain ⟨g, t, hgt⟩ : ∃ g t, X.att f = g :: t := by
-        cases hc : X.att f with
-        | nil => exact absurd hc hnil
-        | cons g t => exact ⟨g, t, rfl⟩
-      obtain ⟨b₂, hpa, hq⟩ := isPath_append_iff.mp hl
-      obtain ⟨b₁, hp, hatt⟩ := isPath_append_iff.mp hpa
-      have hc₁ : endV (extendList p c) = b₁ := endV_extendList hp
-      set c₁ := extendList p c with hc₁def
-      have hb₁ : b₁ = X.base f := by
-        have h1 : b₁ = germSrc X.src X.tgt g := by
-          have h := hatt; rw [hgt] at h; exact h.1
-        have h2 : X.base f = germSrc X.src X.tgt g := by
-          have h := X.att_isLoop f; rw [hgt] at h; exact h.1
-        rw [h1, h2]
-      have hbase : endV c₁ = X.base f := by rw [hc₁, hb₁]
-      have hattpath : IsPath X.src X.tgt (X.att f) (endV c₁) (X.base f) := by
-        rw [hbase]; exact X.att_isLoop f
-      have hpq : IsPath X.src X.tgt (p ++ X.att f) (endV c) (X.base f) :=
-        isPath_append_iff.mpr ⟨b₁, hp, hc₁ ▸ hattpath⟩
-      have hextpa : extendList (p ++ X.att f) c = c₁ := by
-        rw [extendList_append, ← hc₁def, extendList_att hbase]
-      refine Htpy.of_step ⟨hpath, hpath', Or.inr ⟨uLiftPath p c, uLiftPath q c₁,
-        ⟨(c₁, f), hbase⟩, ?_, ?_⟩⟩
-      · rw [uLiftPath_append (p ++ X.att f) q c (X.base f) hpq, hextpa,
-          uLiftPath_append p (X.att f) c b₁ hp, ← hc₁def]
-        rfl
-      · rw [uLiftPath_append p q c b₁ hp, ← hc₁def]
+  obtain ⟨m, hm, he, H⟩ := lift_htpy univProj_lifts (isPath_uLiftPath _ c _ hl) (by
+    change Htpy X _ (endV (extendList l c)) _ _
+    rw [endV_extendList hl, show mapPath (univProj X x₀) (uLiftPath l c) = l from map_uLiftPath _ c _ hl]
+    exact h)
+  rwa [eq_uLiftPath_of_isPath m c _ hm, he] at H
 
-/-- **Lifting is compatible with homotopy**: homotopic paths of the base have homotopic
-lifts. -/
-theorem htpy_uLiftPath {c : UV X x₀} {q q' : List (X.E × Bool)} {w : X.V}
-    (hq : IsPath X.src X.tgt q (endV c) w) (h : Htpy X (endV c) w q q') :
-    Htpy (uCover X x₀) c (extendList q c) (uLiftPath q c) (uLiftPath q' c) := by
-  induction h with
-  | refl => exact Htpy.refl _
-  | @tail m m' hstep hlast ih =>
-      have hm : IsPath X.src X.tgt m (endV c) w := Htpy.isPath (X := X) hstep hq
-      have hextm : extendList m c = extendList q c := (extendList_htpy hq hstep).symm
-      refine (ih).trans ?_
-      rcases hlast with hs | hs
-      · have := htpy_step_uLiftPath (c := c) (l := m) (l' := m') (w := w) hs
-        rwa [hextm] at this
-      · have hm' : IsPath X.src X.tgt m' (endV c) w := hs.1
-        have hextm' : extendList m' c = extendList q c :=
-          (extendList_htpy hm' (Htpy.of_step hs)).trans hextm
-        have := htpy_step_uLiftPath (c := c) (l := m') (l' := m) (w := w) hs
-        rw [hextm'] at this
-        exact this.symm
-
-/-- **Unique path lifting**: a path of the cover is the lift of its projection. -/
-theorem eq_uLiftPath_of_isPath : ∀ (L : List ((uCover X x₀).E × Bool)) (c d : UV X x₀),
-    IsPath (uCover X x₀).src (uCover X x₀).tgt L c d →
-      L = uLiftPath (mapPath (univProj X x₀) L) c := by
-  intro L
-  induction L with
-  | nil => intro c d _; rfl
-  | cons Eb T ih =>
-      rintro c d ⟨hc, hrest⟩
-      obtain ⟨E, b⟩ := Eb
-      have hE : endV E.1.1 = X.src E.1.2 := E.2
-      cases b with
-      | true =>
-          have hcE : c = E.1.1 := hc
-          have h : endV c = germSrc X.src X.tgt (E.1.2, true) := by rw [hcE]; exact hE
-          have hlift : liftGerm c (E.1.2, true) h = (E, true) := by
-            refine Prod.ext ?_ rfl
-            exact Subtype.ext (Prod.ext hcE rfl)
-          have hnext : extend (E.1.2, true) c
-              = germTgt (uCover X x₀).src (uCover X x₀).tgt (E, true) := by
-            show extend (E.1.2, true) c = extend (E.1.2, true) E.1.1
-            rw [hcE]
-          show (E, true) :: T = uLiftPath ((E.1.2, true) :: mapPath (univProj X x₀) T) c
-          rw [uLiftPath_cons h, hlift, hnext]
-          congr 1
-          exact ih _ d hrest
-      | false =>
-          have hcE : c = extend (E.1.2, true) E.1.1 := hc
-          have hEc : extend (E.1.2, false) c = E.1.1 := by
-            rw [hcE]
-            exact extend_revGerm (eb := (E.1.2, true)) hE
-          have h : endV c = germSrc X.src X.tgt (E.1.2, false) := by
-            rw [hcE, endV_extend (c := E.1.1) (eb := (E.1.2, true)) hE]
-            rfl
-          have hlift : liftGerm c (E.1.2, false) h = (E, false) := by
-            refine Prod.ext ?_ rfl
-            exact Subtype.ext (Prod.ext hEc rfl)
-          have hnext : extend (E.1.2, false) c
-              = germTgt (uCover X x₀).src (uCover X x₀).tgt (E, false) := hEc
-          show (E, false) :: T = uLiftPath ((E.1.2, false) :: mapPath (univProj X x₀) T) c
-          rw [uLiftPath_cons h, hlift, hnext]
-          congr 1
-          exact ih _ d hrest
+theorem extendList_htpy (hl : X.IsEdgePath l (endV c) w) (h : Htpy X (endV c) w l l') :
+    extendList l c = extendList l' c :=
+  isPath_endpoint_eq ((htpy_uLiftPath hl h).isPath (isPath_uLiftPath _ c _ hl))
+    (isPath_uLiftPath _ c _ (h.isPath hl))
 
 /-- **The universal cover is simply connected.** -/
 theorem simplyConnected_univCover : SimplyConnected (uCover X x₀) := by
   intro c L hL
   -- `L` is the lift of its projection
-  set q := mapPath (univProj X x₀) L with hqdef
-  have hLq : L = uLiftPath q c := eq_uLiftPath_of_isPath L c c hL
-  have hq : IsPath X.src X.tgt q (endV c) (endV c) := isPath_mapPath (univProj X x₀) hL
+  set q := mapPath _ L with hqdef
+  have hLq := eq_uLiftPath_of_isPath L c c hL
+  have hq := isPath_mapPath (univProj X x₀) hL
   -- the lift of `q` ends where `L` ends, that is at `c`
   have hext : extendList q c = c := by
-    have h1 : endpt (uCover X x₀) c L = c := endpt_eq_of_isPath hL
-    have h2 : endpt (uCover X x₀) c L = extendList q c := by
+    have h1 := endpt_eq_of_isPath hL
+    have h2 : endpt _ c L = extendList q c := by
       rw [hLq]
-      exact endpt_eq_of_isPath (isPath_uLiftPath q c (endV c) hq)
-    rw [← h2, h1]
+      solve_by_elim [endpt_eq_of_isPath, isPath_uLiftPath]
+    grind
   -- hence `q` is null-homotopic downstairs
   have hnull : Htpy X (endV c) (endV c) q [] := by
     induction c using UV.ind with
     | h p =>
-        have hv : endV (UV.mk p) = endpt X x₀ p.1 := rfl
-        have hpq : IsPath X.src X.tgt (p.1 ++ q) x₀ (endpt X x₀ p.1) :=
+        have hpq :=
           isPath_append_iff.mpr ⟨endpt X x₀ p.1, p.2, hq⟩
-        have hendpq : endpt X x₀ (p.1 ++ q) = endpt X x₀ p.1 := endpt_eq_of_isPath hpq
-        have hclass : UV.mk (⟨p.1 ++ q, by rw [hendpq]; exact hpq⟩ : PathFrom X x₀) = UV.mk p := by
-          rw [← extendList_mk (p := p) (r := ⟨p.1 ++ q, by rw [hendpq]; exact hpq⟩) hq rfl]
+        have hendpq := endpt_eq_of_isPath hpq
+        have hclass : UV.mk (⟨p.1 ++ q, by grind⟩) = UV.mk p := by
+          rw [← extendList_mk (r := ⟨p.1 ++ q, by grind⟩) hq rfl]
           exact hext
         have h1 : Htpy X x₀ (endpt X x₀ p.1) (p.1 ++ q) p.1 := by
           have := Quotient.exact hclass
-          show Htpy X x₀ (endpt X x₀ p.1) (p.1 ++ q) p.1
-          have h' : Htpy X x₀ (endpt X x₀ (p.1 ++ q)) (p.1 ++ q) p.1 := this
-          rwa [hendpq] at h'
+          have h' : Htpy X x₀ _ _ p.1 := this; rwa [hendpq] at h'
         set v := endpt X x₀ p.1 with hvdef
-        have hrp : IsPath X.src X.tgt (revPath p.1) v x₀ := isPath_revPath p.2
-        have hA : Htpy X v v (revPath p.1 ++ (p.1 ++ q)) (revPath p.1 ++ p.1) :=
-          Htpy.append_congr hrp hpq (Htpy.refl _) h1
-        have hB : Htpy X v v (revPath p.1 ++ p.1) [] := htpy_revPath_append p.2
-        have hC : Htpy X v v ((revPath p.1 ++ p.1) ++ q) (([] : List (X.E × Bool)) ++ q) :=
+        have hrp := isPath_revPath p.2
+        have hB := htpy_revPath_append p.2
+        have hC : Htpy X v v _ _ :=
           Htpy.append_congr (isPath_append_iff.mpr ⟨x₀, hrp, p.2⟩) hq hB (Htpy.refl _)
-        have hD : (revPath p.1 ++ p.1) ++ q = revPath p.1 ++ (p.1 ++ q) := by simp
         have hqA : Htpy X v v q (revPath p.1 ++ (p.1 ++ q)) := by
           have := hC.symm
-          rw [hD] at this
           simpa using this
-        exact (hqA.trans hA).trans hB
+        exact (hqA.trans (Htpy.append_congr hrp hpq (Htpy.refl _) h1)).trans hB
   -- and therefore so is `L` upstairs
-  have := htpy_uLiftPath (c := c) (q := q) (q' := []) hq hnull
+  have := htpy_uLiftPath hq hnull
   rw [hext] at this
   rw [hLq]
-  simpa using this
+  assumption
 
 /-! ### The deck action -/
 
+variable (g : Loop X x₀) (p : PathFrom X x₀)
+
 /-- Concatenating a loop at `x₀` in front of a path from `x₀`. -/
-def deckP (g : Loop X x₀) (p : PathFrom X x₀) : PathFrom X x₀ :=
+def deckP : PathFrom X x₀ :=
   ⟨g.1 ++ p.1, by
     have hend : endpt X x₀ (g.1 ++ p.1) = endpt X x₀ p.1 := by
-      rw [endpt_append, endpt_eq_of_isPath g.2]
+      grind [endpt_append, endpt_eq_of_isPath]
     rw [hend]
     exact isPath_append_iff.mpr ⟨x₀, g.2, p.2⟩⟩
 
-theorem endpt_deckP (g : Loop X x₀) (p : PathFrom X x₀) :
+theorem endpt_deckP :
     endpt X x₀ (deckP g p).1 = endpt X x₀ p.1 := by
   show endpt X x₀ (g.1 ++ p.1) = endpt X x₀ p.1
-  rw [endpt_append, endpt_eq_of_isPath g.2]
+  grind [endpt_append, endpt_eq_of_isPath]
 
 /-- The action of the fundamental group on the vertices of the universal cover. -/
 def deckV (γ : Pi1 X x₀) (c : UV X x₀) : UV X x₀ :=
@@ -740,13 +565,10 @@ def deckV (γ : Pi1 X x₀) (c : UV X x₀) : UV X x₀ :=
       induction c using UV.ind with
       | h p => exact endpt_deckP g p
 
-theorem deckV_one (c : UV X x₀) : deckV (1 : Pi1 X x₀) c = c := by
+theorem deckV_one (c : UV X x₀) : deckV 1 c = c := by
   induction c using UV.ind with
   | h p =>
-      refine Quotient.sound ?_
-      show Htpy X x₀ (endpt X x₀ (deckP ⟨[], rfl⟩ p).1) (deckP (⟨[], rfl⟩ : Loop X x₀) p).1 p.1
-      show Htpy X x₀ (endpt X x₀ ([] ++ p.1)) ([] ++ p.1) p.1
-      simpa using Htpy.refl (X := X) (a := x₀) (b := endpt X x₀ p.1) p.1
+      rfl
 
 theorem deckV_mul (γ δ : Pi1 X x₀) (c : UV X x₀) :
     deckV (γ * δ) c = deckV γ (deckV δ c) := by
@@ -760,10 +582,12 @@ theorem deckV_mul (γ δ : Pi1 X x₀) (c : UV X x₀) :
               show Htpy X x₀ (endpt X x₀ ((g.1 ++ g'.1) ++ p.1)) ((g.1 ++ g'.1) ++ p.1)
                 (g.1 ++ (g'.1 ++ p.1))
               simpa using
-                Htpy.refl (X := X) (a := x₀) (b := endpt X x₀ ((g.1 ++ g'.1) ++ p.1))
-                  ((g.1 ++ g'.1) ++ p.1)
+                Htpy.refl
+                  _
 
-theorem extend_deckV (γ : Pi1 X x₀) (eb : X.E × Bool) (c : UV X x₀) :
+variable (γ : Pi1 X x₀)
+
+theorem extend_deckV (eb : X.E × Bool) (c : UV X x₀) :
     extend eb (deckV γ c) = deckV γ (extend eb c) := by
   induction γ using Quotient.ind with
   | _ g =>
@@ -775,30 +599,24 @@ theorem extend_deckV (γ : Pi1 X x₀) (eb : X.E × Bool) (c : UV X x₀) :
                 rw [endpt_deckP]; exact h
               rw [extendP_pos h']
               show (g.1 ++ p.1) ++ [eb] = g.1 ++ (extendP eb p).1
-              rw [extendP_pos h]
-              simp
-            · have h' : ¬ endpt X x₀ (deckP g p).1 = germSrc X.src X.tgt eb := by
-                rw [endpt_deckP]; exact h
-              rw [extendP_neg h']
-              show (deckP g p).1 = g.1 ++ (extendP eb p).1
-              rw [extendP_neg h]
-              rfl
+              simp_all [extendP_pos]
+            · simp_all [endpt_deckP, extendP_neg, extendP]
           refine Quotient.sound ?_
-          show Htpy X x₀ (endpt X x₀ (extendP eb (deckP g p)).1) (extendP eb (deckP g p)).1
-            (deckP g (extendP eb p)).1
+          show Htpy X x₀ _ _
+            _
           rw [hl]
           exact Htpy.refl _
 
 /-- The action of the fundamental group on the edges of the universal cover. -/
-def deckE (γ : Pi1 X x₀) (E : UE X x₀) : UE X x₀ :=
+def deckE (E : UE X x₀) : UE X x₀ :=
   ⟨(deckV γ E.1.1, E.1.2), by rw [endV_deckV]; exact E.2⟩
 
 /-- The action of the fundamental group on the two-cells of the universal cover. -/
-def deckF (γ : Pi1 X x₀) (F : UF X x₀) : UF X x₀ :=
+def deckF (F : UF X x₀) : UF X x₀ :=
   ⟨(deckV γ F.1.1, F.1.2), by rw [endV_deckV]; exact F.2⟩
 
 theorem liftGerm_deckV {c : UV X x₀} {eb : X.E × Bool} (γ : Pi1 X x₀)
-    (h : endV c = germSrc X.src X.tgt eb) (h' : endV (deckV γ c) = germSrc X.src X.tgt eb) :
+    (h : endV c = germSrc X.src X.tgt eb) (h' : endV _ = germSrc X.src X.tgt eb) :
     liftGerm (deckV γ c) eb h' = (deckE γ (liftGerm c eb h).1, (liftGerm c eb h).2) := by
   obtain ⟨e, b⟩ := eb
   cases b with
@@ -806,25 +624,25 @@ theorem liftGerm_deckV {c : UV X x₀} {eb : X.E × Bool} (γ : Pi1 X x₀)
   | false =>
       refine Prod.ext ?_ rfl
       refine Subtype.ext (Prod.ext ?_ rfl)
-      exact extend_deckV γ (e, false) c
+      apply extend_deckV
 
-theorem uLiftPath_deckV (γ : Pi1 X x₀) : ∀ (q : List (X.E × Bool)) (c : UV X x₀) (w : X.V),
+theorem uLiftPath_deckV (γ : Pi1 X x₀) : ∀ (q : List _) (c : UV X x₀) (w : X.V),
     IsPath X.src X.tgt q (endV c) w →
       uLiftPath q (deckV γ c) = (uLiftPath q c).map (fun Eb => (deckE γ Eb.1, Eb.2)) := by
   intro q
   induction q with
-  | nil => intro c w _; rfl
+  | nil => simp
   | cons eb t ih =>
       intro c w hq
-      have h : endV c = germSrc X.src X.tgt eb := hq.1
+      have h := hq.1
       have h' : endV (deckV γ c) = germSrc X.src X.tgt eb := by rw [endV_deckV]; exact h
       rw [uLiftPath_cons h', uLiftPath_cons h, List.map_cons, liftGerm_deckV γ h h',
         extend_deckV γ eb c,
-        ih (extend eb c) w (by rw [endV_extend h]; exact hq.2)]
+        ih _ w (by simp_all [endV_extend])]
 
 variable (X x₀) in
 /-- The deck action of `π₁(X, x₀)` on the universal cover, by concatenation on the left. -/
-noncomputable def univDeck : DeckAction (uCover X x₀) (Pi1 X x₀) where
+def univDeck : DeckAction (uCover X x₀) (Pi1 X x₀) where
   smulV := deckV
   smulE := deckE
   smulF := deckF
@@ -835,21 +653,18 @@ noncomputable def univDeck : DeckAction (uCover X x₀) (Pi1 X x₀) where
   one_smulF := fun F => Subtype.ext (Prod.ext (deckV_one F.1.1) rfl)
   mul_smulF := fun γ δ F => Subtype.ext (Prod.ext (deckV_mul γ δ F.1.1) rfl)
   src_smul := fun _ _ => rfl
-  tgt_smul := fun γ E => extend_deckV γ (E.1.2, true) E.1.1
+  tgt_smul := fun γ E => extend_deckV γ _ _
   base_smul := fun _ _ => rfl
   att_smul := by
     intro γ F
-    show uLiftPath (X.att F.1.2) (deckV γ F.1.1) = _
-    have hbase : endV F.1.1 = X.base F.1.2 := F.2
     have hatt : IsPath X.src X.tgt (X.att F.1.2) (endV F.1.1) (X.base F.1.2) := by
-      rw [hbase]; exact X.att_isLoop F.1.2
-    exact uLiftPath_deckV γ (X.att F.1.2) F.1.1 (X.base F.1.2) hatt
+      rw [F.2]; apply X.att_isLoop
+    apply uLiftPath_deckV <;> assumption
 
 /-- **The universal cover is a regular cover with deck group `π₁(X, x₀)`.** -/
 theorem isRegular_univProj : IsRegular (univProj X x₀) (univDeck X x₀) := by
   constructor
-  · intro γ c
-    exact endV_deckV γ c
+  · apply endV_deckV
   · intro c d hcd
     induction c using UV.ind with
     | h p =>
@@ -857,8 +672,8 @@ theorem isRegular_univProj : IsRegular (univProj X x₀) (univDeck X x₀) := by
         | h r =>
             have hv : endpt X x₀ p.1 = endpt X x₀ r.1 := hcd
             have hvp : IsPath X.src X.tgt p.1 x₀ (endpt X x₀ r.1) := by rw [← hv]; exact p.2
-            have hrev : IsPath X.src X.tgt (revPath p.1) (endpt X x₀ r.1) x₀ := isPath_revPath hvp
-            have hrp : IsPath X.src X.tgt (r.1 ++ revPath p.1) x₀ x₀ :=
+            have hrev := isPath_revPath hvp
+            have hrp :=
               isPath_append_iff.mpr ⟨endpt X x₀ r.1, r.2, hrev⟩
             refine ⟨Quotient.mk _ ⟨r.1 ++ revPath p.1, hrp⟩, ?_, ?_⟩
             · -- the translate of `p` by this loop is `r`
@@ -868,32 +683,23 @@ theorem isRegular_univProj : IsRegular (univProj X x₀) (univDeck X x₀) := by
               have hend : endpt X x₀ ((r.1 ++ revPath p.1) ++ p.1) = endpt X x₀ r.1 := by
                 rw [endpt_append, endpt_eq_of_isPath hrp]
                 exact hv
-              rw [hend]
-              have hB : Htpy X (endpt X x₀ r.1) (endpt X x₀ r.1) (revPath p.1 ++ p.1) [] :=
-                htpy_revPath_append hvp
-              have hA : Htpy X x₀ (endpt X x₀ r.1) (r.1 ++ (revPath p.1 ++ p.1)) (r.1 ++ []) :=
-                Htpy.append_congr r.2 (isPath_append_iff.mpr ⟨x₀, hrev, hvp⟩) (Htpy.refl _) hB
-              have hassoc : (r.1 ++ revPath p.1) ++ p.1 = r.1 ++ (revPath p.1 ++ p.1) := by simp
-              rw [hassoc]
-              simpa using hA
+              have hA :=
+                Htpy.append_congr r.2 (isPath_append_iff.mpr ⟨x₀, hrev, hvp⟩) (Htpy.refl _) (htpy_revPath_append hvp)
+              simp_all
             · -- uniqueness
               rintro γ hγ
               induction γ using Quotient.ind with
               | _ g =>
                   refine Quotient.sound ?_
-                  show Htpy X x₀ x₀ g.1 (r.1 ++ revPath p.1)
-                  have hg : Htpy X x₀ (endpt X x₀ (g.1 ++ p.1)) (g.1 ++ p.1) r.1 :=
+                  have hg : Htpy X x₀ (endpt X x₀ (g.1 ++ p.1)) _ r.1 :=
                     Quotient.exact hγ
-                  have hgp : IsPath X.src X.tgt (g.1 ++ p.1) x₀ (endpt X x₀ r.1) :=
+                  have hgp :=
                     isPath_append_iff.mpr ⟨x₀, g.2, hvp⟩
-                  have hend : endpt X x₀ (g.1 ++ p.1) = endpt X x₀ r.1 :=
-                    endpt_eq_of_isPath hgp
-                  rw [hend] at hg
+                  rw [(endpt_eq_of_isPath hgp)] at hg
                   -- append `revPath p` on the right
-                  have h1 : Htpy X x₀ x₀ ((g.1 ++ p.1) ++ revPath p.1)
-                      (r.1 ++ revPath p.1) :=
+                  have h1 :=
                     Htpy.append_congr hgp hrev hg (Htpy.refl _)
-                  have h2 : Htpy X x₀ x₀ (g.1 ++ (p.1 ++ revPath p.1)) (g.1 ++ []) :=
+                  have h2 :=
                     Htpy.append_congr g.2 (isPath_append_iff.mpr ⟨endpt X x₀ r.1, hvp, hrev⟩)
                       (Htpy.refl _) (htpy_append_revPath hvp)
                   have hassoc : (g.1 ++ p.1) ++ revPath p.1 = g.1 ++ (p.1 ++ revPath p.1) := by

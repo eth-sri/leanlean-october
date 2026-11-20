@@ -3,9 +3,6 @@ module
 public import RequestProject.RoseCoverCycleCoordinates
 
 @[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
@@ -38,16 +35,15 @@ theorem roseCoverMidpointEdge_injective : Function.Injective (roseCoverMidpointE
 
 theorem roseCoverMidpointEdge_surjective : Function.Surjective (roseCoverMidpointEdge f hf) := by
   rintro ⟨e, i, he⟩
-  have hv : f e.val.1 = Rose.mid i :=
+  have hv :=
     congrArg (fun r : StrictOrdEdge (Rose α) => r.val.1) he
   refine ⟨⟨(e.val.1, i), hv⟩, ?_⟩
   apply Subtype.ext
-  exact (hf.strictEdgeLiftFrom_unique (roseMidEdge i true) e.val.1 hv e he rfl).symm
+  exact (hf.strictEdgeLiftFrom_unique _ e.val.1 hv e he rfl).symm
 
 /-- A proved equivalence between actual midpoint vertices and selected actual incidence edges. -/
-noncomputable def roseCoverMidpointEdgeEquiv :
-    roseCoverMidpoints f ≃ roseCoverGeneratorEdges f hf :=
-  Equiv.ofBijective (roseCoverMidpointEdge f hf)
+noncomputable def roseCoverMidpointEdgeEquiv :=
+  Equiv.ofBijective _
     ⟨roseCoverMidpointEdge_injective f hf, roseCoverMidpointEdge_surjective f hf⟩
 
 end FiniteChains.PresModel

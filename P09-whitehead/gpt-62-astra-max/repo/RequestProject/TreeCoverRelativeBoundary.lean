@@ -5,9 +5,7 @@ public import RequestProject.TreeCoverAcyclic
 @[expose] public section
 
 /-! Prescribed nonzero boundaries survive the actual spanning-tree collapse. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.SpanningTree
 universe u
@@ -22,10 +20,9 @@ theorem piE_injective_of_same_boundary (c d : (CovQ T N × K.E) →₀ ℤ)
     (he : piE T N c = piE T N d) : c = d := by
   classical
   apply sub_eq_zero.mp
-  apply treeChain_eq_zero (T := T) (N := N) (hN := hN)
-  · apply support_isTree_of_piE_eq_zero (T := T) (N := N)
-    rw [map_sub, he, sub_self]
-  · rw [map_sub, hb, sub_self]
+  apply treeChain_eq_zero (hN := hN)
+  · apply support_isTree_of_piE_eq_zero (N := N) <;> simp_all
+  · simp_all
 
 variable [DecidableEq (NonTree T)]
 

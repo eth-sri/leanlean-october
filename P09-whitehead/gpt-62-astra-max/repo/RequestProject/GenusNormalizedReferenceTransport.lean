@@ -10,10 +10,7 @@ to the actual substituted reference. This supplies its geometric reference
 class, not an additional B2 hypothesis. Awaiting final Lean verification. -/
 noncomputable section
 open scoped Classical
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -32,7 +29,7 @@ theorem univLiftV_extendList (f : Hom X Y) (a : X.V)
         exact hp.2
       change univLiftV a f (extendList p (extend e v)) =
         extendList (mapPath f p) (extend (f.onE e.1, e.2) (univLiftV a f v))
-      rw [ih (extend e v) htail, univLiftV_extend a f hp.1]
+      simp_all [ih, univLiftV_extend]
 
 theorem SpanningTree.univLiftV_mappedTreeReference (T : SpanningTree K)
     (f : Hom K X) (j : Hom X Y) (a : K.V) :
@@ -41,9 +38,7 @@ theorem SpanningTree.univLiftV_mappedTreeReference (T : SpanningTree K)
   rw [SpanningTree.mappedTreeReference,
     univLiftV_extendList j (f.onV T.root) (UV.base X (f.onV T.root))
       (isPath_mapPath f (T.treePath_isPath a))]
-  change extendList (mapPath j (mapPath f (T.treePath a))) (UV.base _ _) =
-    extendList (mapPath (j.comp f) (T.treePath a)) (UV.base _ _)
-  rw [mapPath_comp]
+  solve_by_elim [extendList, mapPath_comp]
 
 end FiniteChains.Comb
 
@@ -100,7 +95,7 @@ theorem universalNamedSpineComparison_square :
       (universalOldToNamedQuotient ρ q u).comp (universalNamedSpineComparison q) := by
   apply Hom.ext'
   · funext x
-    exact universalNamedSpineComparison_vertex_factor ρ q u hrho x.1 x.2
+    apply universalNamedSpineComparison_vertex_factor
   · funext e
     apply Subtype.ext
     exact Prod.ext (universalNamedSpineComparison_vertex_factor ρ q u hrho e.1 _ ) rfl
@@ -118,8 +113,9 @@ theorem universalNamedSpineComparison_chain2_factor
     (chain2 (universalReceivedSpineToSingle ρ q u) c) = _
   rw [← chain2_comp_apply, universalNamedSpineComparison_square, chain2_comp_apply]
 
+variable (g : PresGroup (namedSpinePresentation q))
+
 theorem universalOldToNamedQuotient_deckV
-    (g : PresGroup (namedSpinePresentation q))
     (v : UV (spineOldCx q) (universalSpineOldBase q)) :
     (universalOldToNamedQuotient ρ q u).onV (deckV (universalSpineOldReceiver q g) v) =
       deckV (finiteSpineToQuotient ρ q u hrho (singleSpineNamedReceiver ρ q u g))
@@ -129,14 +125,9 @@ theorem universalOldToNamedQuotient_deckV
       (deckV (universalSpineOldReceiver q g) v)) = _
   rw [univLiftV_deckV, uCoverPathTransport_deckV,
     ← universalSpineOldReceiver_to_single_old ρ q u hrho g]
-  change deckV (pi1Conj (spineQuotientCylinderPath_isPath q ρ u)
-    (pi1Conj (isPath_revPath (spineQuotientCylinderPath_isPath q ρ u))
-      (finiteSpineToQuotient ρ q u hrho (singleSpineNamedReceiver ρ q u g)))) _ = _
-  rw [pi1Conj_cancel_reverse]
-  rfl
+  solve_by_elim [spineQuotientCylinderPath_isPath, isPath_revPath, pi1Conj_cancel_reverse]
 
 theorem universalOldToNamedQuotient_deckF
-    (g : PresGroup (namedSpinePresentation q))
     (t : (uCover (spineOldCx q) (universalSpineOldBase q)).F) :
     (universalOldToNamedQuotient ρ q u).onF (deckF (universalSpineOldReceiver q g) t) =
       deckF (finiteSpineToQuotient ρ q u hrho (singleSpineNamedReceiver ρ q u g))
@@ -145,7 +136,6 @@ theorem universalOldToNamedQuotient_deckF
   exact Prod.ext (universalOldToNamedQuotient_deckV ρ q u hrho g t.1.1) rfl
 
 theorem universalOldToNamedQuotient_chain2_deck
-    (g : PresGroup (namedSpinePresentation q))
     (c : (uCover (spineOldCx q) (universalSpineOldBase q)).F →₀ ℤ) :
     chain2 (universalOldToNamedQuotient ρ q u)
       ((univDeck (spineOldCx q) (universalSpineOldBase q)).faceChains
@@ -159,7 +149,7 @@ theorem universalOldToNamedQuotient_chain2_deck
   rw [← Finsupp.mapDomain_comp, ← Finsupp.mapDomain_comp]
   congr 1
   funext t
-  exact universalOldToNamedQuotient_deckF ρ q u hrho g t
+  apply universalOldToNamedQuotient_deckF
 
 theorem universalOldToNamedQuotient_baseTransport_vertex
     (v : UV (spineOldCx q) (spineOldBase q)) :
@@ -167,20 +157,14 @@ theorem universalOldToNamedQuotient_baseTransport_vertex
       (oldCoverToNamedQuotient q ρ u).onV v := by
   induction v using UV.ind with
   | h p =>
-      change UV.mk (pathTransportP (spineQuotientCylinderPath_isPath q ρ u)
-        (mapPathFrom (universalSpineOldBase q) (oldIntoNamedQuotient q ρ u)
-          (pathTransportP (universalOldBasePath q) p))) =
-        UV.mk (pathTransportP (oldCylinderPath_isPath q ρ u)
-          (mapPathFrom (spineOldBase q) (oldIntoNamedQuotient q ρ u) p))
-      apply congrArg UV.mk
-      exact Subtype.ext rfl
+      rfl
 
 theorem universalOldToNamedQuotient_baseTransport_square :
     (universalOldToNamedQuotient ρ q u).comp (universalOldBaseTransport q) =
       oldCoverToNamedQuotient q ρ u := by
   apply Hom.ext'
   · funext v
-    exact universalOldToNamedQuotient_baseTransport_vertex ρ q u v
+    apply universalOldToNamedQuotient_baseTransport_vertex
   · funext e
     apply Subtype.ext
     exact Prod.ext (universalOldToNamedQuotient_baseTransport_vertex ρ q u e.1.1) rfl
@@ -205,7 +189,7 @@ theorem universalOldMarkingCorrections_factor
           (singleSpineNamedReceiver ρ q u x.1, x.2)) c) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.mapDomain_add, hc, hd]
+  | add c d hc hd => simp [map_add, Finsupp.mapDomain_add, hc, hd]
   | single x n =>
       rw [universalOldMarkingCorrections, Finsupp.linearCombination_single, map_smul,
         universalOldMarkingCorrection_factor, Finsupp.mapDomain_single,
@@ -238,7 +222,6 @@ theorem singleFiniteSpineReference_corrected_geometry :
     (chain2 (universalNamedSpineComparison q) (normalizedSpineReference q) -
       universalOldMarkingCorrections q (universalReferenceMarkingCoefficients q))
     (normalizedSpineReference_corrected_geometry q)
-  simpa only [quotientCorrectedRelativeNerveChain, singleFiniteSpineReference_corrected_chain]
-    using h
+  simp_all [quotientCorrectedRelativeNerveChain, singleFiniteSpineReference_corrected_chain]
 
 end FiniteChains.Davis.Genus

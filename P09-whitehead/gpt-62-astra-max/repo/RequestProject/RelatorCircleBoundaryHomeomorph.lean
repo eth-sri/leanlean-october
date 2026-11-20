@@ -2,7 +2,6 @@ module
 
 public import RequestProject.RelatorCircleFinite
 public import RequestProject.RelatorCircleEdges
-public import RequestProject.PresPosetDimension
 public import RequestProject.FinitePosetCycleRealization
 public import Mathlib.Logic.Equiv.Fin.Basic
 
@@ -40,7 +39,7 @@ def relatorCircleProductEquiv : RelatorCircle w j ≃ Fin (w j).length × CPos w
     exact Prod.ext x.property.1.symm rfl
   right_inv _ := rfl
 
-def relatorCircleIndexEquiv : RelatorCircle w j ≃ Fin ((w j).length * 4) :=
+def relatorCircleIndexEquiv :=
   (relatorCircleProductEquiv w j).trans
     ((Equiv.prodCongr (Equiv.refl _) cPosCyclicIndex).trans finProdFinEquiv)
 
@@ -52,10 +51,12 @@ theorem relatorCircleIndex_symm_pair (k : Fin (w j).length) (t : Fin 4) :
   apply (relatorCircleIndexEquiv w j).injective
   rw [Equiv.apply_symm_apply]
   change finProdFinEquiv (k, t) = finProdFinEquiv (k, cPosCyclicIndex (cPosCyclicIndex.symm t))
-  rw [Equiv.apply_symm_apply]
+  simp
 
-def relatorCircleSuccessor (x : RelatorCircle w j) : RelatorCircle w j :=
-  let k : Fin (w j).length := ⟨x.val.2.1, x.property.2⟩
+variable (x : RelatorCircle w j)
+
+def relatorCircleSuccessor :=
+  let k := ⟨x.val.2.1, x.property.2⟩
   match x.val.2.2 with
   | .cor => relatorCirclePoint w j k .cedgL
   | .cedgL => relatorCirclePoint w j k .cmid
@@ -63,18 +64,23 @@ def relatorCircleSuccessor (x : RelatorCircle w j) : RelatorCircle w j :=
   | .cedgR => relatorCirclePoint w j
       ⟨(k.val + 1) % (w j).length, Nat.mod_lt _ hn⟩ .cor
 
-theorem relatorCircleSuccessor_comparable (x : RelatorCircle w j) :
+theorem relatorCircleSuccessor_comparable :
     x ≤ relatorCircleSuccessor w j hn x ∨ relatorCircleSuccessor w j hn x ≤ x := by
   rcases x with ⟨⟨j', k, t⟩, hj, hk⟩
   change j' = j at hj
   subst j'
   cases t
-  · exact Or.inl (TCirc.cor_le_cedgL w hk)
-  · exact Or.inl (TCirc.cmid_le_cedgR w hk)
+  · solve_by_elim [TCirc.cor_le_cedgL]
+  · solve_by_elim [TCirc.cmid_le_cedgR]
   · exact Or.inr (TCirc.cmid_le_cedgL w hk)
   · exact Or.inr (TCirc.cor_csucc_le_cedgR w hk)
 
-theorem relatorCircle_le_neighbors (a b : RelatorCircle w j) (hne : a ≠ b) (hab : a ≤ b) :
+section
+
+variable (a b : RelatorCircle w j) (hne : a ≠ b)
+include hne
+
+theorem relatorCircle_le_neighbors (hab : a ≤ b) :
     relatorCircleSuccessor w j hn a = b ∨ relatorCircleSuccessor w j hn b = a := by
   change a.val = b.val ∨ TCirc.lt w a.val b.val at hab
   rcases hab with he | he
@@ -87,22 +93,14 @@ theorem relatorCircle_le_neighbors (a b : RelatorCircle w j) (hne : a ≠ b) (ha
   subst jb
   obtain ⟨_, _, ht⟩ := he
   rcases ht with ⟨rfl, rfl, hk⟩ | ⟨rfl, rfl, hk⟩ |
-    ⟨rfl, rfl, hk⟩ | ⟨rfl, rfl, hk⟩
-  · subst kb
-    exact Or.inl rfl
-  · subst kb
-    exact Or.inr rfl
-  · subst kb
-    exact Or.inl rfl
-  · subst ka
-    exact Or.inr rfl
+    ⟨rfl, rfl, hk⟩ | ⟨rfl, rfl, hk⟩ <;> aesop
 
-theorem relatorCircle_neighbors (a b : RelatorCircle w j) (hne : a ≠ b)
+theorem relatorCircle_neighbors
     (hab : a ≤ b ∨ b ≤ a) :
     relatorCircleSuccessor w j hn a = b ∨ relatorCircleSuccessor w j hn b = a := by
-  rcases hab with hab | hba
-  · exact relatorCircle_le_neighbors w j hn a b hne hab
-  · exact (relatorCircle_le_neighbors w j hn b a hne.symm hba).symm
+  grind [relatorCircle_le_neighbors]
+
+end
 
 theorem relatorCircleSuccessor_index (x : RelatorCircle w j) :
     (relatorCircleIndexEquiv w j (relatorCircleSuccessor w j hn x)).val =
@@ -128,33 +126,27 @@ theorem relatorCircleSuccessor_index (x : RelatorCircle w j) :
       rw [he, Nat.mod_self]
       split_ifs <;> omega
 
-def relatorCircleSize : ℕ := (w j).length * 4 - 2
+def relatorCircleSize := (w j).length * 4 - 2
 
 include hn in
 theorem relatorCircleSize_add_two : relatorCircleSize w j + 2 = (w j).length * 4 := by
   dsimp [relatorCircleSize]
   omega
 
-def relatorCircleEnumeration : Fin (relatorCircleSize w j + 2) ≃ RelatorCircle w j :=
+def relatorCircleEnumeration :=
   (finCongr (relatorCircleSize_add_two w j hn)).trans (relatorCircleIndexEquiv w j).symm
 
 theorem relatorCircleEnumeration_index (i : Fin (relatorCircleSize w j + 2)) :
     (relatorCircleIndexEquiv w j (relatorCircleEnumeration w j hn i)).val = i.val := by
   change (relatorCircleIndexEquiv w j
     ((relatorCircleIndexEquiv w j).symm (Fin.cast (relatorCircleSize_add_two w j hn) i))).val = i.val
-  rw [Equiv.apply_symm_apply]
-  rfl
+  simp
 
 theorem relatorCircleEnumeration_next (i : Fin (relatorCircleSize w j + 1)) :
     relatorCircleSuccessor w j hn (relatorCircleEnumeration w j hn i.castSucc) =
       relatorCircleEnumeration w j hn i.succ := by
   apply (relatorCircleIndexEquiv w j).injective
-  apply Fin.ext
-  rw [relatorCircleSuccessor_index, relatorCircleEnumeration_index, relatorCircleEnumeration_index]
-  have hi := i.isLt
-  have hN := relatorCircleSize_add_two w j hn
-  change (if i.val + 1 < (w j).length * 4 then i.val + 1 else 0) = i.val + 1
-  rw [if_pos (by omega)]
+  grind [relatorCircleSuccessor_index, relatorCircleEnumeration_index, relatorCircleSize_add_two]
 
 theorem relatorCircleEnumeration_last_next :
     relatorCircleSuccessor w j hn
@@ -164,8 +156,7 @@ theorem relatorCircleEnumeration_last_next :
   apply Fin.ext
   rw [relatorCircleSuccessor_index, relatorCircleEnumeration_index, relatorCircleEnumeration_index]
   have hN := relatorCircleSize_add_two w j hn
-  change (if relatorCircleSize w j + 1 + 1 < (w j).length * 4 then _ else 0) = 0
-  rw [if_neg (by omega)]
+  simp_all
 
 theorem relatorCircle_next_edge (a : RelatorCircle w j) :
     (∃ i : Fin (relatorCircleSize w j + 1),
@@ -175,28 +166,26 @@ theorem relatorCircle_next_edge (a : RelatorCircle w j) :
       relatorCircleSuccessor w j hn a = relatorCircleEnumeration w j hn 0) := by
   obtain ⟨k, rfl⟩ := (relatorCircleEnumeration w j hn).surjective a
   refine Fin.lastCases ?_ ?_ k
-  · exact Or.inr ⟨rfl, relatorCircleEnumeration_last_next w j hn⟩
-  · intro i
-    exact Or.inl ⟨i, rfl, relatorCircleEnumeration_next w j hn i⟩
+  · grind [relatorCircleEnumeration_last_next]
+  · simp_all [relatorCircleEnumeration_next]
 
 def relatorCircleCycle : FinitePosetCycle (RelatorCircle w j) (relatorCircleSize w j) where
   positive := by dsimp [relatorCircleSize]; omega
   vertex := relatorCircleEnumeration w j hn
   consecutive i := by
-    have h := relatorCircleSuccessor_comparable w j hn (relatorCircleEnumeration w j hn i.castSucc)
-    rwa [relatorCircleEnumeration_next] at h
+    grind [relatorCircleSuccessor_comparable, relatorCircleEnumeration_next]
   closing := by
     have h := relatorCircleSuccessor_comparable w j hn
       (relatorCircleEnumeration w j hn (Fin.last (relatorCircleSize w j + 1)))
-    rwa [relatorCircleEnumeration_last_next] at h
+    simp_all [relatorCircleEnumeration_last_next]
   edges a b hne hab := by
     rcases relatorCircle_neighbors w j hn a b hne hab with h | h
     · rcases relatorCircle_next_edge w j hn a with ⟨i, ha, hb⟩ | ⟨ha, hb⟩
-      · exact Or.inl ⟨i, Or.inl ⟨ha, h.symm.trans hb⟩⟩
-      · exact Or.inr (Or.inl ⟨ha, h.symm.trans hb⟩)
+      · simp_all
+      · simp_all
     · rcases relatorCircle_next_edge w j hn b with ⟨i, hb, ha⟩ | ⟨hb, ha⟩
-      · exact Or.inl ⟨i, Or.inr ⟨hb, h.symm.trans ha⟩⟩
-      · exact Or.inr (Or.inr ⟨hb, h.symm.trans ha⟩)
+      · simp_all
+      · simp_all
   height x := circleDimension w x.val
   height_strict := fun _ _ h => circleDimension_strictMono w h
   height_le x := circleDimension_le_one w x.val
@@ -205,8 +194,7 @@ def relatorCircleTraversal := (relatorCircleCycle w j hn).traversal
 
 /-- The actual valid relator-circle realization, with the explicit
 once-around parametrization retained by the exported traversal lemmas. -/
-def relatorCircleBoundaryHomeomorph :
-    orderNerveRealization (RelatorCircle w j) ≃ₜ UnitBoundary (Fin 2 → ℝ) :=
+def relatorCircleBoundaryHomeomorph :=
   (relatorCircleCycle w j hn).boundaryHomeomorph
 
 end FiniteChains.PresModel

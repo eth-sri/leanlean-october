@@ -20,18 +20,17 @@ theorem pathChain_revPath (p : List (X.E × Bool)) :
     cases b <;> simp [revGerm, pathChain_cons]
 
 /-- An elementary path cancellation has an explicit cellular two-chain witness. -/
-theorem Cancels.exists_boundary {p q : List (X.E × Bool)} (h : Cancels X p q) :
+theorem Cancels.exists_boundary {p q : List _} (h : Cancels X p q) :
     ∃ c : X.F →₀ ℤ, bdry2 X c = pathChain p - pathChain q := by
   rcases h with ⟨l, r, e, rfl, rfl⟩ | ⟨l, r, f, rfl, rfl⟩
   · refine ⟨0, ?_⟩
     obtain ⟨e, b⟩ := e
     cases b <;> simp [pathChain_append, pathChain_cons, revGerm]
   · refine ⟨Finsupp.single f 1, ?_⟩
-    rw [bdry2_single, one_smul, pathChain_append, pathChain_append, pathChain_append]
-    abel
+    simp_all [bdry2_single, pathChain_append]
 
 /-- Homotopic paths differ by the boundary of a finitely supported integral two-chain. -/
-theorem Htpy.exists_boundary {a b : X.V} {p q : List (X.E × Bool)}
+theorem Htpy.exists_boundary {a b : X.V} {p q : List _}
     (h : Htpy X a b p q) :
     ∃ c : X.F →₀ ℤ, bdry2 X c = pathChain p - pathChain q := by
   induction h with

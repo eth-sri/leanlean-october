@@ -136,7 +136,7 @@ variable {vc : Fin M → κ} {ec : Fin M → ι}
 theorem rk_lt_of_plt {x y : Cell κ ι M} (h : plt vc ec x y) : x.rk < y.rk := by
   cases x <;> cases y <;> simp_all [plt, rk]
 
-theorem plt_irrefl (x : Cell κ ι M) : ¬ plt vc ec x x := fun h => absurd (rk_lt_of_plt h) (by omega)
+theorem plt_irrefl (x : Cell κ ι M) : ¬ plt vc ec x x := by simp [plt]
 
 theorem not_plt_of_rk_le {x y : Cell κ ι M} (h : y.rk ≤ x.rk) : ¬ plt vc ec x y :=
   fun hh => absurd (rk_lt_of_plt hh) (by omega)
@@ -153,7 +153,7 @@ theorem plt_asymm {x y : Cell κ ι M} (h : plt vc ec x y) : ¬ plt vc ec y x :=
 /-- **The compatibility of the identification of the boundary with the identification of its
 endpoints**: two positions of the polygon carrying the same edge of the surface carry, in one of
 the two orders, the same pair of endpoints. -/
-def Compat (vc : Fin M → κ) (ec : Fin M → ι) : Prop :=
+def Compat (vc : Fin M → κ) (ec : Fin M → ι) :=
   ∀ i j : Fin M, ec i = ec j →
     (vc i = vc j ∧ vc (i + 1) = vc (j + 1)) ∨ (vc i = vc (j + 1) ∧ vc (i + 1) = vc j)
 
@@ -163,116 +163,96 @@ theorem plt_trans (hc : Compat vc ec) {x y z : Cell κ ι M} (hxy : plt vc ec x 
   | vtx _ => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
   | cvx _ => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
   | ctr => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
-  | tr1 _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
-  | tr2 _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
-  | inn _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
+  | tr1 _ => solve_by_elim
+  | tr2 _ => solve_by_elim
+  | inn _ => solve_by_elim
   | bed e =>
       cases x with
       | vtx v =>
           cases z with
           | tr1 p =>
               obtain ⟨i, hi, hv⟩ := hxy
-              have hep : ec i = ec p := by rw [hi]; exact hyz
-              rcases hc i p hep with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hv with rfl | rfl
+              rcases hc i p (by rw [hi]; exact hyz) with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hv with rfl | rfl
               · exact Or.inl h1.symm
               · exact Or.inr h2.symm
               · exact Or.inr h1.symm
               · exact Or.inl h2.symm
           | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+      | _ => simp_all [plt]
   | ced r =>
       cases x with
       | cvx q =>
           cases z with
           | tr2 p =>
-              have h : r = p := hyz
-              subst h
+              subst hyz
               exact hxy
           | inn p =>
-              have h : r = p := hyz
-              subst h
+              subst hyz
               exact hxy
           | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+      | _ => simp_all [plt]
   | dia r =>
       cases x with
       | vtx v =>
           cases z with
           | tr1 p =>
-              have hr : r = p + 1 := hyz
-              subst hr
+              subst hyz
               exact Or.inr hxy
           | tr2 p =>
-              have hr : r = p := hyz
-              subst hr
+              subst hyz
               exact hxy
           | _ => simp [plt] at hyz
       | cvx q =>
           cases z with
           | tr1 p =>
               have hr : r = p + 1 := hyz
-              have hq : q = r := hxy
-              show q = p + 1
-              rw [hq, hr]
+              aesop
           | tr2 p =>
-              have hr : r = p := hyz
-              have hq : q = r := hxy
-              show q = p ∨ q = p + 1
-              exact Or.inl (by rw [hq, hr])
+              exact Or.inl (by rw [hxy, hyz])
           | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+      | _ => simp_all [plt]
   | gdi r =>
       cases x with
       | vtx v =>
           cases z with
           | tr1 p =>
-              have hr : r = p := hyz
-              subst hr
+              subst hyz
               exact Or.inl hxy
           | tr2 p =>
-              have hr : r = p := hyz
-              subst hr
+              subst hyz
               exact hxy
           | _ => simp [plt] at hyz
       | cvx q =>
           cases z with
           | tr1 p =>
               have hr : r = p := hyz
-              have hq : q = r + 1 := hxy
-              show q = p + 1
-              rw [hq, hr]
+              aesop
           | tr2 p =>
-              have hr : r = p := hyz
-              have hq : q = r + 1 := hxy
-              show q = p ∨ q = p + 1
-              exact Or.inr (by rw [hq, hr])
+              exact Or.inr (by rw [hxy, hyz])
           | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+      | _ => simp_all [plt]
   | rad r =>
       cases x with
       | cvx q =>
           cases z with
           | inn p =>
               have hq : q = r := hxy
-              show q = p ∨ q = p + 1
-              rcases hyz with hr | hr
-              · exact Or.inl (by rw [hq, hr])
-              · exact Or.inr (by rw [hq, hr])
+              aesop
           | _ => simp [plt] at hyz
       | ctr =>
           cases z with
           | inn p => trivial
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+          | _ => assumption
+      | _ => simp_all [plt]
 
 /-! ### The face poset -/
 
 /-- **The face poset of the polygon with identified boundary.** -/
-def SCell (_vc : Fin M → κ) (_ec : Fin M → ι) (_hc : Compat vc ec) : Type u := Cell κ ι M
+def SCell (_vc : Fin M → κ) (_ec : Fin M → ι) (_hc : Compat vc ec) := Cell κ ι M
 
 variable (vc ec) in
 /-- The order of the face poset: equality or a strict face. -/
-def sle (_hc : Compat vc ec) (x y : Cell κ ι M) : Prop := x = y ∨ plt vc ec x y
+def sle (_hc : Compat vc ec) (x y : Cell κ ι M) := x = y ∨ plt vc ec x y
 
 instance instPartialOrderSCell (hc : Compat vc ec) : PartialOrder (SCell vc ec hc) where
   le x y := sle vc ec hc x y
@@ -288,7 +268,7 @@ instance instPartialOrderSCell (hc : Compat vc ec) : PartialOrder (SCell vc ec h
     · rfl
     rcases hba with rfl | h2
     · rfl
-    exact absurd h2 (plt_asymm h1)
+    solve_by_elim [plt_asymm]
 
 instance instDecidableEqSCell [DecidableEq κ] [DecidableEq ι] (hc : Compat vc ec) :
     DecidableEq (SCell vc ec hc) := inferInstanceAs (DecidableEq (Cell κ ι M))

@@ -6,14 +6,12 @@ public import RequestProject.OrderNerveRealizationNestedSubcomplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains.Comb
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q]
 
-theorem uOrderMap_monotone (f : P → Q) (hf : Monotone f) (a : P) :
+variable (f : P → Q) (hf : Monotone f) (a : P)
+
+theorem uOrderMap_monotone :
     Monotone (α := UOrder P a) (β := UOrder Q (f a))
       (@univLiftV (orderCx P) (orderCx Q) a (orderCxMap f hf)) := by
   intro v w hvw
@@ -23,7 +21,7 @@ theorem uOrderMap_monotone (f : P → Q) (hf : Monotone f) (a : P) :
   refine ⟨(he v).le.trans ((hf hvw.1).trans (he w).ge), ?_⟩
   have h := univLiftV_extend (X := orderCx P) (Y := orderCx Q) a (orderCxMap f hf) (eb := ordPos hvw.1) (c := v) rfl
   have hw : extend (ordPos hvw.1) v = w := hvw.2
-  rw (config := { transparency := .default }) [hw] at h
+  erw [hw] at h
   change extend (ordPos _) (@univLiftV (orderCx P) (orderCx Q) a (orderCxMap f hf) v) = _
   calc
     _ = extend ((orderCxMap f hf).onE (ordPos hvw.1).1, true)
@@ -36,26 +34,26 @@ theorem uOrderMap_monotone (f : P → Q) (hf : Monotone f) (a : P) :
     _ = _ := h.symm
 
 /-- Functorial map between the actual ordered universal covers. -/
-noncomputable def uOrderMap (f : P → Q) (hf : Monotone f) (a : P) :
+noncomputable def uOrderMap :
     UOrder P a →o UOrder Q (f a) :=
   ⟨@univLiftV (orderCx P) (orderCx Q) a (orderCxMap f hf), uOrderMap_monotone f hf a⟩
 
-theorem uOrderMap_end (f : P → Q) (hf : Monotone f) (a : P) (v : UOrder P a) :
+theorem uOrderMap_end (v : UOrder P a) :
     uOrderEnd (uOrderMap f hf a v) = f (uOrderEnd v) :=
   @endV_univLiftV (orderCx P) (orderCx Q) a (orderCxMap f hf) v
 
-theorem uOrderMap_realization_projection (f : P → Q) (hf : Monotone f) (a : P)
+theorem uOrderMap_realization_projection
     (x : orderNerveRealization (UOrder P a)) :
     orderNerveRealizationMap uOrderEnd uOrderEnd_monotone
       (orderNerveRealizationMap (uOrderMap f hf a) (uOrderMap f hf a).monotone x) =
     orderNerveRealizationMap f hf
       (orderNerveRealizationMap uOrderEnd uOrderEnd_monotone x) := by
-  rw (config := { transparency := .default }) [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
+  erw [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
   have hm : (⟨uOrderEnd ∘ uOrderMap f hf a,
       uOrderEnd_monotone.comp (uOrderMap f hf a).monotone⟩ :
       {g : UOrder P a → Q // Monotone g}) =
       ⟨f ∘ uOrderEnd, hf.comp uOrderEnd_monotone⟩ :=
     Subtype.ext (funext (uOrderMap_end f hf a))
-  exact congrArg (fun g => orderNerveRealizationMap g.1 g.2 x) hm
+  simp_all
 
 end FiniteChains.Comb

@@ -38,7 +38,7 @@ theorem exists_mem_smul_foxVec {P : Subgroup (FreeGroup α)} [P.Normal] (hP : P 
     ∃ w ∈ P, x • foxVec Nsub r = foxVec Nsub w := by
   classical
   induction x using MonoidAlgebra.induction_linear with
-  | zero => exact ⟨1, Subgroup.one_mem _, by simp⟩
+  | zero => aesop
   | add x₁ x₂ h₁ h₂ =>
       obtain ⟨w₁, hw₁, e₁⟩ := h₁
       obtain ⟨w₂, hw₂, e₂⟩ := h₂
@@ -46,12 +46,12 @@ theorem exists_mem_smul_foxVec {P : Subgroup (FreeGroup α)} [P.Normal] (hP : P 
         rw [foxVec_mul (hP hw₁), ← e₁, ← e₂, add_smul]⟩
   | single q n =>
       obtain ⟨f, rfl⟩ := Quotient.exists_rep q
-      have hconj : f * r * f⁻¹ ∈ P := Subgroup.Normal.conj_mem ‹P.Normal› r hr f
+      have hconj := Subgroup.Normal.conj_mem ‹P.Normal› r hr f
       refine ⟨(f * r * f⁻¹) ^ n, Subgroup.zpow_mem _ hconj n, ?_⟩
-      have hsingle : (single (QuotientGroup.mk f : FreeGroup α ⧸ Nsub) n : CoverRing Nsub)
+      have hsingle : (single (QuotientGroup.mk f : FreeGroup α ⧸ Nsub) n)
           = n • proj Nsub (grp f) := by
         rw [proj_grp, qgrp, MonoidAlgebra.smul_single, smul_eq_mul, mul_one]
-      rw [foxVec_zpow (Nsub := Nsub) (hP hconj) n, foxVec_conj (Nsub := Nsub) (hP hr),
+      rw [foxVec_zpow (hP hconj) n, foxVec_conj (hP hr),
         hsingle, smul_assoc]
 
 variable (Nsub ρ)

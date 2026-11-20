@@ -7,15 +7,15 @@ public import RequestProject.DavisFillingIndependence
 @[expose] public section
 
 /-! Comparison of the controlled and chosen cap fillings modulo actual three-boundaries. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-theorem rootedBaseCapFilling_hurewicz_eq (x : Fin q × Bool) :
+variable (x : Fin q × Bool)
+
+theorem rootedBaseCapFilling_hurewicz_eq :
     hurewicz _ ((markedSpineToFullCube q).onV (markedSpineTree q).root)
       (rootedBaseCapFilling q x) =
     hurewicz _ (fullCubeMarkBase q) (fullCubeBaseCapChain q x) := by
@@ -29,34 +29,30 @@ theorem rootedBaseCapFilling_hurewicz_eq (x : Fin q × Bool) :
     rfl
   unfold rootedBaseCapFilling SpanningTree.mappedTreeReference
   simp only [← markedSpineTree_root q, SpanningTree.treePath_root, mapPath,
-    List.map_nil, extendList_nil]
-  exact haux _ _
+    List.map_nil, extendList_nil] <;> simp_all
 
-theorem chosenCap_controlled_difference_boundary3 (x : Fin q × Bool) :
+theorem chosenCap_controlled_difference_boundary3 :
     ∃ y : OrdTet (QCube (cmpRel (GenusVertex q))) →₀ ℤ,
       ordBoundary3 y = hurewicz _ (fullCubeMarkBase q) (fullCubeBaseCapChain q x) -
         hurewicz _ (fullCubeMarkBase q) (controlledCoverCap q x) := by
   apply projected_fillings_difference_boundary3
-  rw (config := { transparency := .default }) [fullCubeBaseCapChain, fullCubeCoverCapChain_boundary, controlledCoverCap_boundary]
+  simp [fullCubeBaseCapChain, fullCubeCoverCapChain_boundary, controlledCoverCap_boundary]
 
-theorem rootedCap_controlled_difference_boundary3 (x : Fin q × Bool) :
+theorem rootedCap_controlled_difference_boundary3 :
     ∃ y : OrdTet (QCube (cmpRel (GenusVertex q))) →₀ ℤ,
       ordBoundary3 y = rootedAugmentedFace q (.inr x) -
         hurewicz _ (fullCubeMarkBase q) (controlledCoverCap q x) := by
   change ∃ y, ordBoundary3 y =
     hurewicz _ ((markedSpineToFullCube q).onV (markedSpineTree q).root)
       (rootedBaseCapFilling q x) - _
-  rw (config := { transparency := .default }) [rootedBaseCapFilling_hurewicz_eq]
-  exact chosenCap_controlled_difference_boundary3 q x
+  simp_all [rootedBaseCapFilling_hurewicz_eq, chosenCap_controlled_difference_boundary3]
 
 noncomputable def controlledAugmentedFace : (cappedSpineCx q).F →
     (orderCx (QCube (cmpRel (GenusVertex q)))).F →₀ ℤ
   | .inl f => Finsupp.single ((markedSpineToFullCube q).onF f) 1
   | .inr x => hurewicz _ (fullCubeMarkBase q) (controlledCoverCap q x)
 
-noncomputable def controlledAugmentedChain2 :
-    ((cappedSpineCx q).F →₀ ℤ) →ₗ[ℤ]
-      ((orderCx (QCube (cmpRel (GenusVertex q)))).F →₀ ℤ) :=
+noncomputable def controlledAugmentedChain2 :=
   Finsupp.linearCombination ℤ (controlledAugmentedFace q)
 
 /-- Replacing all chosen cap fillings by controlled fillings changes the comparison
@@ -70,7 +66,7 @@ theorem augmentedComparison_difference_boundary3 (c : (cappedSpineCx q).F →₀
       obtain ⟨y, hy⟩ := hc
       obtain ⟨z, hz⟩ := hd
       refine ⟨y + z, ?_⟩
-      rw (config := { transparency := .default }) [map_add, hy, hz, map_add, map_add]
+      erw [map_add, hy, hz, map_add, map_add]
       abel
   | single f n =>
       obtain f | x := f
@@ -79,7 +75,7 @@ theorem augmentedComparison_difference_boundary3 (c : (cappedSpineCx q).F →₀
           rootedAugmentedFace, controlledAugmentedFace]
       · obtain ⟨y, hy⟩ := rootedCap_controlled_difference_boundary3 q x
         refine ⟨n • y, ?_⟩
-        rw (config := { transparency := .default }) [map_smul, hy, rootedAugmentedChain2, controlledAugmentedChain2,
+        erw [map_smul, hy, rootedAugmentedChain2, controlledAugmentedChain2,
           Finsupp.linearCombination_single, Finsupp.linearCombination_single, smul_sub]
         rfl
 
@@ -91,8 +87,6 @@ theorem controlledAugmentedCycle_boundary3 (c : (cappedTreeCover q).F →₀ ℤ
   obtain ⟨y, hy⟩ := rootedAugmentedCycle_boundary3 q c hc
   obtain ⟨z, hz⟩ := augmentedComparison_difference_boundary3 q
     (Finsupp.mapDomain Prod.snd c)
-  refine ⟨y - z, ?_⟩
-  rw (config := { transparency := .default }) [map_sub, hy, hz]
-  abel
+  refine ⟨y - z, ?_⟩ <;> simp_all
 
 end FiniteChains.Davis.Genus

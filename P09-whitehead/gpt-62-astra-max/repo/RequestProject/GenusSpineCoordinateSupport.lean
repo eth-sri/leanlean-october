@@ -6,30 +6,28 @@ public import RequestProject.GenusOldCoordinateCollapse
 @[expose] public section
 
 /-! Actual recovered coordinate chains are supported on the surviving genus spine. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
+noncomputable section
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-noncomputable def markedSpineSquareCoefficients : ((markedSpineCx q).F →₀ ℤ) →ₗ[ℤ]
-    (QSquare (cmpRel (GenusVertex q)) →₀ ℤ) :=
+def markedSpineSquareCoefficients :=
   qSquareCycleCoefficients.comp (normalizeOrdChain2.comp (chain2 (markedSpineToFullCube q)))
 
-noncomputable def markedSpineCoordinateChain : ((markedSpineCx q).F →₀ ℤ) →ₗ[ℤ]
-    (Cube (GenusVertex q) →₀ ℤ) :=
+def markedSpineCoordinateChain :=
   (Finsupp.lmapDomain ℤ ℤ
     (fun s : QSquare (cmpRel (GenusVertex q)) => qCubeToCoordinate s.1)).comp
       (markedSpineSquareCoefficients q)
 
-noncomputable def markedSpineExtendedCoordinateChain : ((markedSpineCx q).F →₀ ℤ) →ₗ[ℤ]
+def markedSpineExtendedCoordinateChain : ((markedSpineCx q).F →₀ ℤ) →ₗ[ℤ]
     ((Cube (GenusVertex q) ⊕ Finset (GenusVertex q)) →₀ ℤ) :=
   (Finsupp.lmapDomain ℤ ℤ Sum.inl).comp (markedSpineCoordinateChain q)
 
-theorem markedSpineCoordinateChain_zero_on_removed_square
-    (d : (markedSpineCx q).F →₀ ℤ) (g : Cube (GenusVertex q))
+variable (d : (markedSpineCx q).F →₀ ℤ)
+
+theorem markedSpineCoordinateChain_zero_on_removed_square (g : Cube (GenusVertex q))
     (hg : Sum.inl g ∈ (genusChainCollapse q).map Prod.snd) :
     markedSpineCoordinateChain q d g = 0 := by
   classical
@@ -43,11 +41,9 @@ theorem markedSpineCoordinateChain_zero_on_removed_square
     (Finsupp.mem_support_iff.mp hs)
   have hnot := ha.2
   change Sum.inl (qCubeToCoordinate a.1) ∉ (genusChainCollapse q).map Prod.snd at hnot
-  rw [hae, he] at hnot
-  exact hnot hg
+  grind
 
-theorem markedSpineExtendedCoordinateChain_zero_on_removed_face
-    (d : (markedSpineCx q).F →₀ ℤ) (f : Cube (GenusVertex q) ⊕ Finset (GenusVertex q))
+theorem markedSpineExtendedCoordinateChain_zero_on_removed_face (f : Cube (GenusVertex q) ⊕ Finset (GenusVertex q))
     (hf : f ∈ (genusChainCollapse q).map Prod.snd) :
     markedSpineExtendedCoordinateChain q d f = 0 := by
   classical
@@ -57,13 +53,13 @@ theorem markedSpineExtendedCoordinateChain_zero_on_removed_face
         (Sum.inl : Cube (GenusVertex q) → Cube (GenusVertex q) ⊕ Finset (GenusVertex q))
         (markedSpineCoordinateChain q d) (Sum.inl g) = 0
       rw [Finsupp.mapDomain_apply_of_injective Sum.inl_injective]
-      exact markedSpineCoordinateChain_zero_on_removed_square q d g hf
+      apply markedSpineCoordinateChain_zero_on_removed_square <;> assumption
   | inr σ =>
-      exact Finsupp.mapDomain_notin_range _ _ (by rintro ⟨g, he⟩; cases he)
+      exact Finsupp.mapDomain_notin_range _ _ (by grind)
 
 /-- The actual recovered coordinate chain of every old-spine two-chain is fixed by the
 chosen geometric collapse because it has no coefficient on a removed face. -/
-theorem markedSpineExtendedCoordinateChain_fixed (d : (markedSpineCx q).F →₀ ℤ) :
+theorem markedSpineExtendedCoordinateChain_fixed :
     CollapseChain.cmap (cubeBdry (V := GenusVertex q)) (genusChainCollapse q)
       (markedSpineExtendedCoordinateChain q d) = markedSpineExtendedCoordinateChain q d := by
   apply CollapseChain.cmap_of_forall_eq_zero

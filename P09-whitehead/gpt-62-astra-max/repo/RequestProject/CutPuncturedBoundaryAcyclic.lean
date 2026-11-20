@@ -10,7 +10,9 @@ namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
 variable {V : Type} [Fintype V] [DecidableEq V] {A : CommRel V}
 
-theorem positiveRetainedBoundary_acyclic (t : QOld A)
+variable (t : QOld A)
+
+theorem positiveRetainedBoundary_acyclic
     (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3) :
     ∀ c ∈ Inc (RetainedProperBoundary t), Nerve.bdry c = 0 →
       ∃ y ∈ Inc (RetainedProperBoundary t), Nerve.bdry y = c :=
@@ -19,7 +21,7 @@ theorem positiveRetainedBoundary_acyclic (t : QOld A)
     vertexPuncturedCube_acyclic
 
 /-- The order homotopy to the retained proper faces supplies the missing prism. -/
-theorem positiveCutPuncturedBoundary_acyclic (t : QOld A)
+theorem positiveCutPuncturedBoundary_acyclic
     (hne : t.1.spx.Nonempty) (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3) :
     ∀ c ∈ Inc (CutPuncturedBoundary t hne), Nerve.bdry c = 0 →
       ∃ y ∈ Inc (CutPuncturedBoundary t hne), Nerve.bdry y = c := by

@@ -12,9 +12,7 @@ variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
 /-- The actual universal boundary in group-ring cell coordinates. -/
-noncomputable def presUniversalGroupRingBoundary :
-    (J →₀ MonoidAlgebra ℤ (PresGroup ρ)) →ₗ[ℤ]
-      (α →₀ MonoidAlgebra ℤ (PresGroup ρ)) :=
+noncomputable def presUniversalGroupRingBoundary :=
   groupCellChainEquiv.toLinearMap.comp
     ((presUniversalGroupBoundary ρ w hw hpos).comp groupCellChainEquiv.symm.toLinearMap)
 
@@ -42,8 +40,6 @@ theorem presUniversalGroupRingBoundary_actual_column
   rw [LinearEquiv.symm_apply_apply, presUniversalGroupBoundary_actual_column, map_sum]
   apply Finset.sum_congr rfl
   intro k _
-  rw [map_smul, groupCellChainEquiv_single]
-  congr 3
-  rw [prefixVal, presGroup_wordVal]
+  rw [map_smul, groupCellChainEquiv_single, prefixVal, presGroup_wordVal]
 
 end FiniteChains.PresModel

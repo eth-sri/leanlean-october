@@ -29,7 +29,7 @@ namespace FiniteChains
 variable {R S : Type*} [CommRing R] [IsDomain R] [CommRing S] [IsDomain S]
 
 /-- Coefficientwise reduction of a finitely supported vector along a ring map. -/
-noncomputable def reduceVec (ε : R →+* S) {κ : Type*} (v : κ →₀ R) : κ →₀ S :=
+noncomputable def reduceVec (ε : R →+* S) {κ : Type*} (v : κ →₀ R) :=
   Finsupp.mapRange ε ε.map_zero v
 
 omit [IsDomain R] [IsDomain S] in
@@ -68,13 +68,13 @@ theorem eq_zero_of_reduction_indep {κ ι : Type*} (ε : R →+* S)
         by_contra hall
         push_neg at hall
         have hzero : reduceVec ε (v j₀) = 0 := by
-          ext k; simpa using hall k
+          ext k; solve_by_elim
         have hsum : (∑ j ∈ T, (if j = j₀ then (1 : S) else 0) • reduceVec ε (v j)) = 0 := by
           refine Finset.sum_eq_zero fun j _ => ?_
           by_cases hj : j = j₀
           · subst hj; simp [hzero]
           · simp [hj]
-        have := hred (fun j => if j = j₀ then (1 : S) else 0) hsum j₀ hj₀
+        have := hred _ hsum j₀ hj₀
         simp at this
       obtain ⟨k, hk⟩ := hv₀
       set a : R := v j₀ k with ha
@@ -92,17 +92,14 @@ theorem eq_zero_of_reduction_indep {κ ι : Type*} (ε : R →+* S)
               = (∑ j ∈ T', (d j * ε a) • reduceVec ε (v j))
                 - (∑ j ∈ T', d j * ε (v j k)) • reduceVec ε (v j₀) := by
             rw [Finset.sum_smul, ← Finset.sum_sub_distrib]
-            refine Finset.sum_congr rfl fun j _ => ?_
-            rw [hw]
-            simp only [reduceVec_sub, reduceVec_smul, smul_sub, smul_smul]
+            simp [hw, reduceVec_sub, reduceVec_smul, smul_sub, smul_smul]
           have h1 : e j₀ = -(∑ j ∈ T', d j * ε (v j k)) := by simp [he]
-          have h3 : (∑ j ∈ T.erase j₀, e j • reduceVec ε (v j))
+          have h3 : (∑ j ∈ T.erase j₀, e j • reduceVec ε _)
               = ∑ j ∈ T', (d j * ε a) • reduceVec ε (v j) :=
             Finset.sum_congr rfl fun j hj' => by
               rw [show e j = d j * ε a by simp [he, Finset.ne_of_mem_erase hj']]
-          rw [← Finset.add_sum_erase T (fun j => e j • reduceVec ε (v j)) hj₀, h1, h3, neg_smul, ← sub_eq_neg_add, ← hcalc, hd]
-        have hj0 : j ∈ T := Finset.mem_of_mem_erase hj
-        have := hred e hsplit j hj0
+          rw [← Finset.add_sum_erase T (fun j => e j • reduceVec ε _) hj₀, h1, h3, neg_smul, ← sub_eq_neg_add, ← hcalc, hd]
+        have := hred e hsplit j (Finset.mem_of_mem_erase hj)
         rw [he] at this
         simp only [Finset.ne_of_mem_erase hj, if_false] at this
         rcases mul_eq_zero.mp this with h | h
@@ -120,16 +117,12 @@ theorem eq_zero_of_reduction_indep {κ ι : Type*} (ε : R →+* S)
         have hcalc : (∑ j ∈ T', c j • w j)
             = a • (∑ j ∈ T', c j • v j) - (∑ j ∈ T', c j * (v j k)) • v j₀ := by
           rw [Finset.smul_sum, Finset.sum_smul, ← Finset.sum_sub_distrib]
-          refine Finset.sum_congr rfl fun j _ => ?_
-          rw [hw]
-          simp only [smul_sub, smul_smul]
-          rw [mul_comm (c j) a]
+          simp [hw, smul_sub, smul_smul, mul_comm]
         rw [hcalc, hsum1, hcoord, smul_smul, neg_smul, sub_neg_eq_add, ← add_smul]
         have : a * -c j₀ + c j₀ * a = 0 := by ring
         rw [this, zero_smul]
       -- induction on the smaller family
-      have hsub : T' ⊂ T := Finset.erase_ssubset hj₀
-      have hzero' : ∀ j ∈ T', c j = 0 := ih T' hsub w hred' c hcw
+      have hzero' := ih T' (Finset.erase_ssubset hj₀) w hred' c hcw
       -- only the `j₀` term survives, and evaluating at `k` finishes the proof
       have honly : c j₀ • v j₀ = 0 := by
         have hsplit : c j₀ • v j₀ + ∑ j ∈ T', c j • v j = 0 := by
@@ -143,24 +136,24 @@ theorem eq_zero_of_reduction_indep {κ ι : Type*} (ε : R →+* S)
       rcases mul_eq_zero.mp this with h | h
       · exact h
       · exact absurd h ha0
-  exact key T v hred c hc
+  solve_by_elim
+
+variable (ε : R →+* S) {ι κ : Type*} (f : (ι →₀ R) →ₗ[R] (κ →₀ R))
+include ι κ
 
 /-- The reduction along `ε : R →+* S` of an `R`-linear map between free modules. -/
-noncomputable def reduceMap (ε : R →+* S) {ι κ : Type*}
-    (f : (ι →₀ R) →ₗ[R] (κ →₀ R)) : (ι →₀ S) →ₗ[S] (κ →₀ S) :=
+noncomputable def reduceMap :=
   Finsupp.lsum S fun i =>
     LinearMap.toSpanSingleton S (κ →₀ S) (reduceVec ε (f (Finsupp.single i 1)))
 
 omit [IsDomain R] [IsDomain S] in
-@[simp] theorem reduceMap_single (ε : R →+* S) {ι κ : Type*}
-    (f : (ι →₀ R) →ₗ[R] (κ →₀ R)) (i : ι) (s : S) :
+@[simp] theorem reduceMap_single (i : ι) (s : S) :
     reduceMap ε f (Finsupp.single i s) = s • reduceVec ε (f (Finsupp.single i 1)) := by
   simp [reduceMap, LinearMap.toSpanSingleton_apply]
 
 /-- **Lemma 2.1, module-theoretic core.**  Reduction along a ring homomorphism between
 commutative domains detects injectivity of maps between free modules of arbitrary rank. -/
-theorem injective_of_reduceMap_injective (ε : R →+* S) {ι κ : Type*}
-    (f : (ι →₀ R) →ₗ[R] (κ →₀ R)) (h : Function.Injective (reduceMap ε f)) :
+theorem injective_of_reduceMap_injective (h : Function.Injective (reduceMap ε f)) :
     Function.Injective f := by
   classical
   rw [injective_iff_map_eq_zero]
@@ -172,28 +165,25 @@ theorem injective_of_reduceMap_injective (ε : R →+* S) {ι κ : Type*}
     intro d hd j hj
     have hmap : reduceMap ε f (∑ j ∈ u.support, Finsupp.single j (d j)) = 0 := by
       rw [map_sum]
-      simpa [hv] using hd
+      simp_all
     have hzero : (∑ j ∈ u.support, Finsupp.single j (d j)) = 0 := by
-      have := h (by simpa using hmap : reduceMap ε f (∑ j ∈ u.support, Finsupp.single j (d j))
+      have := h (by assumption : reduceMap ε f (∑ j ∈ u.support, Finsupp.single j (d j))
         = reduceMap ε f 0)
-      simpa using this
+      assumption
     have := congrArg (fun x : ι →₀ S => x j) hzero
     simpa [Finset.sum_apply', Finsupp.single_apply, Finset.sum_ite_eq' u.support j, hj] using this
   -- the coefficients of `u` satisfy the corresponding relation
   have hc : (∑ j ∈ u.support, u j • v j) = 0 := by
-    have hu' : u = ∑ j ∈ u.support, Finsupp.single j (u j) := (Finsupp.sum_single u).symm
+    have hu' := (Finsupp.sum_single u).symm
     calc (∑ j ∈ u.support, u j • v j)
         = f (∑ j ∈ u.support, Finsupp.single j (u j)) := by
-          rw [map_sum]
-          refine Finset.sum_congr rfl fun j _ => ?_
-          rw [hv]
-          simp [← LinearMap.map_smul, Finsupp.smul_single]
-      _ = f u := by rw [← hu']
+          rw [hv]; simp [← LinearMap.map_smul, Finsupp.smul_single]
+      _ = f u := by solve_by_elim
       _ = 0 := hu
   have hzero := eq_zero_of_reduction_indep ε u.support v hred u hc
   ext j
   by_cases hj : j ∈ u.support
-  · simpa using hzero j hj
+  · solve_by_elim
   · simpa using Finsupp.notMem_support_iff.mp hj
 
 end FiniteChains

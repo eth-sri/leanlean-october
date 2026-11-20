@@ -34,8 +34,8 @@ instance : PartialOrder (TruncatedCell A) where
   le := TruncatedFace
   le_refl c := by
     cases c with
-    | inl c => exact le_refl c.1
-    | inr c => exact Finset.Subset.refl c.1
+    | inl c => apply le_refl
+    | inr c => apply Finset.Subset.refl
   le_trans c d e hcd hde := by
     cases c with
     | inl c =>
@@ -68,13 +68,13 @@ instance : PartialOrder (TruncatedCell A) where
 
 /-- A cut cell meets precisely the positive cubes whose directions contain its simplex. -/
 theorem cut_le_old_iff (σ : CutCell A) (c : QOld A) :
-    (Sum.inr σ : TruncatedCell A) ≤ Sum.inl c ↔
+    (Sum.inr σ) ≤ Sum.inl c ↔
       σ.1 ⊆ c.1.spx ∧ c.1.sgn = 0 := Iff.rfl
 
 /-- Retained cubes embed as their actual truncated cells. -/
 def oldCellIncl : QOld A → TruncatedCell A := Sum.inl
 
-theorem oldCellIncl_monotone : Monotone (oldCellIncl (A := A)) := fun _ _ h => h
+theorem oldCellIncl_monotone : Monotone (oldCellIncl (A := A)) := by solve_by_elim
 
 /-- Project a cut simplex to the positive cube containing it; retained cubes are fixed.
 This supplies the comparison with the older cube-poset block model. -/
@@ -94,9 +94,8 @@ theorem truncatedCellRetraction_monotone : Monotone (truncatedCellRetraction (A 
     | inl d =>
       refine ⟨h.1, ?_⟩
       intro v _
-      change (0 : ZMod 2) = d.1.sgn v
-      rw [h.2]
-      rfl
+      change 0 = d.1.sgn v
+      simp [h.2]
     | inr τ => exact posQCube_monotone h
 
 omit [DecidableEq V] in
@@ -109,24 +108,23 @@ theorem truncatedCell_le_retraction (c : TruncatedCell A) :
     c ≤ oldCellIncl (truncatedCellRetraction c) := by
   cases c with
   | inl c => exact le_refl _
-  | inr σ => exact ⟨Finset.Subset.refl _, rfl⟩
+  | inr σ => solve_by_elim
 
 variable [Fintype V]
 
 /-- The cut incidence can also be read directly from the coordinates used by the collapse. -/
 theorem cut_le_old_coordinate_iff (σ : CutCell A) (c : QOld A) :
-    (Sum.inr σ : TruncatedCell A) ≤ Sum.inl c ↔
+    (Sum.inr σ) ≤ Sum.inl c ↔
       σ.1 ⊆ freeSet (qCubeToCoordinate c.1) ∧
         qCubeToCoordinate c.1 = posCube c.1.spx := by
   rw [cut_le_old_iff, freeSet_qCubeToCoordinate]
   constructor
-  · rintro ⟨hs, hz⟩
-    exact ⟨hs, qCubeToCoordinate_sgn_zero c.1 hz⟩
+  · simp_all [qCubeToCoordinate_sgn_zero]
   · rintro ⟨hs, hz⟩
     refine ⟨hs, ?_⟩
     funext v
     by_cases hv : v ∈ c.1.spx
-    · exact c.1.sgn_eq_zero v hv
+    · apply c.1.sgn_eq_zero <;> assumption
     · rw [← qCubeToCoordinate_parity c.1 v, hz]
       simp [posCube, hv]
 

@@ -18,17 +18,17 @@ theorem rose_isConnected : IsConnected (orderCx (Rose α)) := by
     | mid i =>
         exact (orderComponentLabel_eq_of_le (Rose.mid_le_edg i false)).trans
           (orderComponentLabel_eq_of_le (Rose.base_le_edg i false)).symm
-    | edg i b => exact (orderComponentLabel_eq_of_le (Rose.base_le_edg i b)).symm
+    | edg i b => grind [orderComponentLabel_eq_of_le, Rose.base_le_edg]
   intro x y
   exact (orderComponentLabel_eq_iff _ _).mp ((h x).trans (h y).symm)
 
 /-- Nonempty attaching words give connected genuine presentation poset models. -/
 theorem presPos_isConnected (w : J → List (α × Bool)) (hw : ∀ j, w j ≠ []) :
     IsConnected (orderCx (PresPos w)) := by
-  apply coneAdj_isConnected (circSet w)
-    (cylP_isConnected (aHom w) rose_isConnected)
+  apply coneAdj_isConnected _
+    (cylP_isConnected _ rose_isConnected)
   intro j
-  exact ⟨cylOuter (aHom w) (TCirc.pt w j 0 CPos.cor),
+  exact ⟨cylOuter _ _,
     0, CPos.cor, List.length_pos_iff.mpr (hw j), rfl⟩
 
 end FiniteChains.PresModel

@@ -2,7 +2,7 @@ module
 
 public import RequestProject.OrderRoseRealizationHomeomorph
 public import RequestProject.PresWordEmbedding
-public import RequestProject.OrderNervePosetCoverVertexStars
+
 
 @[expose] public section
 
@@ -16,7 +16,7 @@ open scoped Classical unitInterval
 
 variable {A B : Type} (f : A → B)
 
-def diskRoseMap : C(Rose A, Rose B) :=
+def diskRoseMap :=
   desc (roseAttaching A) (boundaryFamilyInclusion A (Fin 1 → ℝ))
     (ContinuousMap.const _ (roseVertex B))
     ⟨fun d => cell (roseAttaching B) (boundaryFamilyInclusion B _) ⟨f d.1, d.2⟩,
@@ -49,11 +49,7 @@ theorem roseMapRealization_copy (a : A) (x : orderNerveRealization (Rose PUnit))
   have he : h.roseMap ∘ roseCopy a = (roseCopy (h.gen a) : Rose PUnit → Rose B) := by
     funext p
     cases p <;> rfl
-  have mapEq (f g : Rose PUnit → Rose B) (hf : Monotone f) (hg : Monotone g)
-      (he : f = g) : orderNerveRealizationMap f hf x = orderNerveRealizationMap g hg x := by
-    subst g
-    rfl
-  exact mapEq _ _ _ _ he
+  aesop
 
 theorem orderRoseRealizationHomeomorph_natural (x : orderNerveRealization (Rose A)) :
     orderRoseRealizationHomeomorph B (orderNerveRealizationMap h.roseMap h.roseMap.monotone x) =
@@ -64,8 +60,7 @@ theorem orderRoseRealizationHomeomorph_natural (x : orderNerveRealization (Rose 
           (orderNerveRealizationVertex Rose.base)) = _
     rw [realizedMap_vertex]
     change orderRoseRealizationHomeomorph B (orderRoseBase B) = _
-    rw [orderRoseRealizationHomeomorph_base, orderRoseRealizationHomeomorph_base,
-      diskRoseMap_vertex]
+    simp
   · obtain ⟨t, rfl⟩ := orderRoseTraversal_surjective u
     rw [roseMapRealization_copy, orderRoseRealizationHomeomorph_interval,
       orderRoseRealizationHomeomorph_interval, diskRoseMap_cell]

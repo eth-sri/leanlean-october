@@ -1,7 +1,6 @@
 module
 
 public import RequestProject.PresUniversalGroupCoordinates
-public import RequestProject.PresCoverRelatorChains
 public import RequestProject.OrderUniversalPoset
 
 @[expose] public section
@@ -15,7 +14,7 @@ variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
 /-- Actual lifted relators are indexed by their apex reading and actual relator label. -/
 noncomputable def presUniversalRelatorGroupEquiv :
     PresCoverRelator w (uOrderEnd (P := PresPos w) (a := ptBase w)) ≃ PresGroup ρ × J where
-  toFun p := ((presGroupCocycle ρ w hw).readVertex (ptBase w) p.val.1, p.val.2)
+  toFun p := ((presGroupCocycle ρ w hw).readVertex _ p.val.1, p.val.2)
   invFun q :=
     let p := (presUniversalFibreGroupEquiv ρ w hw hpos (apexOf w q.2)).symm q.1
     ⟨(p.val, q.2), p.property⟩
@@ -28,13 +27,11 @@ noncomputable def presUniversalRelatorGroupEquiv :
     · rfl
   right_inv q := by
     apply Prod.ext
-    · exact (presUniversalFibreGroupEquiv ρ w hw hpos (apexOf w q.2)).apply_symm_apply q.1
+    · exact (presUniversalFibreGroupEquiv ρ w hw hpos _).apply_symm_apply q.1
     · rfl
 
 /-- Finite actual relator coefficients expressed in actual presentation-group coordinates. -/
-noncomputable def presUniversalRelatorGroupChainEquiv :
-    (PresCoverRelator w (uOrderEnd (P := PresPos w) (a := ptBase w)) →₀ ℤ) ≃ₗ[ℤ]
-      (PresGroup ρ × J →₀ ℤ) :=
+noncomputable def presUniversalRelatorGroupChainEquiv :=
   Finsupp.domLCongr (R := ℤ) (M := ℤ) (presUniversalRelatorGroupEquiv ρ w hw hpos)
 
 end FiniteChains.PresModel

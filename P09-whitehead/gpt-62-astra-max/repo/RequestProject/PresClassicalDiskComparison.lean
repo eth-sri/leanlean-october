@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.HomeomorphContinuousMap
+
 public import RequestProject.PresRealizationWordDiskComparison
 public import RequestProject.OrderRoseRealizationHomeomorph
 
@@ -17,8 +17,7 @@ open scoped Topology
 
 variable {A J : Type} (w : J → List (A × Bool)) (hw : ∀ j, w j ≠ [])
 
-def classicalPresWordAttaching :
-    C(BoundaryFamily J (Fin 2 → ℝ), ClassicalGraphModel.Rose A) :=
+def classicalPresWordAttaching :=
   (orderRoseRealizationHomeomorph A).toContinuousMap.comp (actualPresWordAttaching w hw)
 
 abbrev ClassicalPresWordDisks := DiskAttachment (classicalPresWordAttaching w hw)
@@ -33,16 +32,16 @@ theorem classicalPresWordAttaching_link (j : J) (x : orderNerveRealization (Rela
     classicalPresWordAttaching w hw ⟨j, presCircleBoundaryHomeomorph w hw j x⟩ =
       orderRoseRealizationHomeomorph A (presCircleWordMap w j x) := by
   change orderRoseRealizationHomeomorph A
-    (actualPresWordAttaching w hw ⟨j, presCircleBoundaryHomeomorph w hw j x⟩) = _
-  rw [actualPresWordAttaching_link]
+    _ = _
+  simp [actualPresWordAttaching_link]
 
 @[simp] theorem presClassicalDiskComparison_old
-    (x : orderNerveRealization (ConeAdjBase (circSet w))) :
+    (x : orderNerveRealization (ConeAdjBase _)) :
     presClassicalDiskComparison w hw (coneAdjRealizationOld (circSet w) x) =
-      old (classicalPresWordAttaching w hw) (boundaryFamilyInclusion J (Fin 2 → ℝ))
+      old _ _
         (orderRoseRealizationHomeomorph A (presOldRoseHomotopyEquiv w x)) := by
   change diskAttachmentBaseChangeHomotopyEquiv _ _
-    (actualPresWordDiskComparison w hw (coneAdjRealizationOld (circSet w) x)) = _
+    (actualPresWordDiskComparison w hw _) = _
   rw [actualPresWordDiskComparison_old, diskAttachmentBaseChangeHomotopyEquiv_old]
   rfl
 

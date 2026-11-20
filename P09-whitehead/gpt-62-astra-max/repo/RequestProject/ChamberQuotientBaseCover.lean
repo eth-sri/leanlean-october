@@ -19,28 +19,28 @@ noncomputable def qBaseOrderIso : {q : Qpos A X att // InQBase q} ≃o X where
   left_inv q := Subtype.ext (Classical.choose_spec q.2)
   right_inv x := Sum.inr.inj (Classical.choose_spec (show InQBase (qNew x) from ⟨x, rfl⟩))
   map_rel_iff' {q r} := by
-    change Classical.choose q.2 ≤ Classical.choose r.2 ↔ q.1 ≤ r.1
-    have h : qNew (A := A) (att := att) (Classical.choose q.2) ≤
-        qNew (A := A) (att := att) (Classical.choose r.2) ↔ q.1 ≤ r.1 := by
-      rw [Classical.choose_spec q.2, Classical.choose_spec r.2]
+    have h : qNew (Classical.choose q.2) ≤
+        qNew (att := att) (Classical.choose r.2) ↔ q.1 ≤ r.1 := by
+      grind
     exact h
 
-abbrev QLiftedBase (a : Qpos A X att) :=
-  {p : UOrder (Qpos A X att) a // InQBase (uOrderEnd p)}
+variable (a : Qpos A X att)
 
-noncomputable def qBaseCoverEnd (a : Qpos A X att) (p : QLiftedBase a) : X :=
+abbrev QLiftedBase :=
+  {p : UOrder _ a // InQBase (uOrderEnd p)}
+
+noncomputable def qBaseCoverEnd (p : QLiftedBase a) :=
   qBaseOrderIso ⟨uOrderEnd p.1, p.2⟩
 
 omit [Fintype V] in
-theorem qBaseCoverEnd_isPosetCover (a : Qpos A X att)
+theorem qBaseCoverEnd_isPosetCover
     (hc : IsConnected (orderCx (Qpos A X att))) : IsPosetCover (qBaseCoverEnd a) := by
-  let S : Set (Qpos A X att) := {q | InQBase q}
-  have h := IsPosetCover.restriction (uOrderEnd (P := Qpos A X att) (a := a)) S
+  have h := IsPosetCover.restriction (uOrderEnd (P := Qpos A X att) (a := a)) ({q | InQBase q})
     (uOrderEnd_isPosetCover hc)
   exact h.postcompose_orderIso qBaseOrderIso
 
 omit [Fintype V] in
-theorem qBaseCoverEnd_spec (a : Qpos A X att) (p : QLiftedBase a) :
+theorem qBaseCoverEnd_spec (p : QLiftedBase a) :
     qNew (qBaseCoverEnd a p) = uOrderEnd p.1 := Classical.choose_spec p.2
 
 end FiniteChains.Davis

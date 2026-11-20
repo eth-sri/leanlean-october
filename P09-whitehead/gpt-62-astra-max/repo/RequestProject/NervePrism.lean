@@ -57,40 +57,45 @@ variable {P Q : Type u}
 /-- The augmented simplicial chains on the nerve: the free abelian group on finite lists.  A
 list of length `k+1` is a `k`-simplex, and the empty list is the generator of the augmentation
 degree. -/
-abbrev Ch (P : Type u) : Type u := FreeAbelianGroup (List P)
+abbrev Ch (P : Type u) := FreeAbelianGroup (List P)
+
+section
+
+variable {A : Type*} [AddCommGroup A] {F G : Ch P →+ A} (h : ∀ l : List P, F (of l) = G (of l))
+include A h
 
 /-- Two additive maps out of the chains agree as soon as they agree on lists. -/
-theorem hom_ext {A : Type*} [AddCommGroup A] {F G : Ch P →+ A}
-    (h : ∀ l : List P, F (of l) = G (of l)) : F = G := by
-  ext x
-  exact h x
+theorem hom_ext : F = G := by
+  aesop
 
-theorem ext_apply {A : Type*} [AddCommGroup A] {F G : Ch P →+ A}
-    (h : ∀ l : List P, F (of l) = G (of l)) (x : Ch P) : F x = G x := by
-  rw [hom_ext h]
+theorem ext_apply (x : Ch P) : F x = G x := by
+  solve_by_elim [hom_ext]
+
+end
 
 /-! ### The basic operators -/
 
-/-- Prepending a fixed element to every list. -/
-def consMap (a : P) : Ch P →+ Ch P := lift fun l => of (a :: l)
+variable (a : P)
 
-@[simp] theorem consMap_of (a : P) (l : List P) : consMap a (of l) = of (a :: l) :=
-  lift_apply_of _ _
+/-- Prepending a fixed element to every list. -/
+def consMap := lift fun l => of (a :: l)
+
+@[simp] theorem consMap_of (l : List P) : consMap a (of l) = of (a :: l) :=
+  rfl
 
 /-- Prepending a fixed list to every list. -/
-def consList (pre : List P) : Ch P →+ Ch P := lift fun l => of (pre ++ l)
+def consList (pre : List P) := lift fun l => of (pre ++ l)
 
 @[simp] theorem consList_of (pre l : List P) : consList pre (of l) = of (pre ++ l) :=
-  lift_apply_of _ _
+  rfl
 
-@[simp] theorem consList_nil (x : Ch P) : consList ([] : List P) x = x := by
-  refine ext_apply (F := consList ([] : List P)) (G := AddMonoidHom.id _) ?_ x
-  intro l; simp
+@[simp] theorem consList_nil (x : Ch P) : consList ([]) x = x := by
+  refine ext_apply (G := AddMonoidHom.id _) ?_ x
+  simp
 
 theorem consList_consMap (pre : List P) (a : P) (x : Ch P) :
     consList pre (consMap a x) = consList (pre ++ [a]) x := by
-  refine ext_apply (F := (consList pre).comp (consMap a)) (G := consList (pre ++ [a])) ?_ x
-  intro l; simp
+  refine ext_apply (F := (consList pre).comp (consMap a)) (G := consList _) ?_ x <;> simp_all
 
 /-- The boundary, on a basis element. -/
 def bdryOn : List P → Ch P
@@ -104,51 +109,51 @@ def bdry : Ch P →+ Ch P := lift bdryOn
 
 @[simp] theorem bdryOn_nil : bdryOn ([] : List P) = 0 := rfl
 
-theorem bdryOn_cons (a : P) (t : List P) : bdryOn (a :: t) = of t - consMap a (bdryOn t) := rfl
+variable (a : P)
+
+theorem bdryOn_cons (t : List P) : bdryOn (a :: t) = of t - consMap a (bdryOn t) := rfl
 
 /-- The boundary of a chain prefixed by one element. -/
-theorem bdry_consMap (a : P) (x : Ch P) : bdry (consMap a x) = x - consMap a (bdry x) := by
+theorem bdry_consMap (x : Ch P) : bdry (consMap a x) = x - consMap a (bdry x) := by
   refine ext_apply (F := bdry.comp (consMap a))
-    (G := (AddMonoidHom.id _) - (consMap a).comp bdry) ?_ x
-  intro l
-  simp [bdryOn_cons]
+    (G := (AddMonoidHom.id _) - (consMap a).comp bdry) ?_ x <;> aesop
 
 /-- `∂ ∘ ∂ = 0`: the chains of the nerve form a complex. -/
 theorem bdry_bdry (x : Ch P) : bdry (bdry x) = 0 := by
   refine ext_apply (F := bdry.comp bdry) (G := 0) ?_ x
   intro l
-  simp only [AddMonoidHom.coe_comp, Function.comp_apply, bdry_of, AddMonoidHom.zero_apply]
   induction l with
   | nil => simp
   | cons a t ih =>
-      rw [bdryOn_cons, map_sub, bdry_of, bdry_consMap, ih]
-      simp
+      simp_all [bdryOn_cons, bdry_of, bdry_consMap]
+
+variable (f : P → Q)
 
 /-- Pushing chains forward along a map of posets. -/
-def cmap (f : P → Q) : Ch P →+ Ch Q := lift fun l => of (l.map f)
+def cmap : Ch P →+ Ch Q := lift fun l => of (l.map f)
 
-@[simp] theorem cmap_of (f : P → Q) (l : List P) : cmap f (of l) = of (l.map f) :=
-  lift_apply_of _ _
+@[simp] theorem cmap_of (l : List P) : cmap f (of l) = of (l.map f) :=
+  rfl
 
 @[simp] theorem cmap_id (x : Ch P) : cmap id x = x := by
-  refine ext_apply (F := cmap id) (G := AddMonoidHom.id _) ?_ x
-  intro l; simp
+  refine ext_apply (G := AddMonoidHom.id _) ?_ x
+  simp
 
-theorem cmap_consMap (f : P → Q) (a : P) (x : Ch P) :
+variable (f : P → Q)
+
+theorem cmap_consMap (a : P) (x : Ch P) :
     cmap f (consMap a x) = consMap (f a) (cmap f x) := by
   refine ext_apply (F := (cmap f).comp (consMap a))
-    (G := (consMap (f a)).comp (cmap f)) ?_ x
-  intro l; simp
+    (G := (consMap _).comp _) ?_ x <;> simp_all
 
 /-- Pushforward is a chain map. -/
-theorem cmap_bdry (f : P → Q) (x : Ch P) : cmap f (bdry x) = bdry (cmap f x) := by
-  refine ext_apply (F := (cmap f).comp bdry) (G := bdry.comp (cmap f)) ?_ x
+theorem cmap_bdry (x : Ch P) : cmap f (bdry x) = bdry (cmap f x) := by
+  refine ext_apply (F := (cmap f).comp bdry) (G := bdry.comp _) ?_ x
   intro l
-  simp only [AddMonoidHom.coe_comp, Function.comp_apply, bdry_of, cmap_of]
   induction l with
   | nil => simp
   | cons a t ih =>
-      simp only [List.map_cons, bdryOn_cons, map_sub, cmap_consMap, ih, cmap_of]
+      simp_all [bdryOn_cons, cmap_consMap, cmap_of]
 
 /-! ### The prism operator -/
 
@@ -159,7 +164,7 @@ def prismOn (f g : P → P) : List P → Ch P
   | a :: t => of (f a :: (a :: t).map g) - consMap (f a) (prismOn f g t)
 
 /-- The prism operator of a pair of order maps. -/
-def prism (f g : P → P) : Ch P →+ Ch P := lift (prismOn f g)
+def prism (f g : P → P) := lift (prismOn f g)
 
 @[simp] theorem prism_of (f g : P → P) (l : List P) : prism f g (of l) = prismOn f g l :=
   lift_apply_of _ _
@@ -172,10 +177,8 @@ theorem prism_consMap (f g : P → P) (a : P) (x : Ch P) :
     prism f g (consMap a x) =
       consMap (f a) (consMap (g a) (cmap g x)) - consMap (f a) (prism f g x) := by
   refine ext_apply (F := (prism f g).comp (consMap a))
-    (G := ((consMap (f a)).comp ((consMap (g a)).comp (cmap g))) -
-      (consMap (f a)).comp (prism f g)) ?_ x
-  intro l
-  simp [prismOn_cons]
+    (G := ((consMap _).comp ((consMap _).comp _)) -
+      (consMap _).comp (prism f g)) ?_ x <;> aesop
 
 /-- **The prism identity**: `∂ P_{f,g} + P_{f,g} ∂ = g_* - f_*`.  No hypothesis on `f` and `g`
 is needed; monotonicity and `f ≤ g` enter only through the fact that the operator preserves the
@@ -192,8 +195,8 @@ theorem bdry_prism_add_prism_bdry (f g : P → P) (x : Ch P) :
         (consMap (g a) (cmap g X) - consMap (f a) (cmap g X) +
             consMap (f a) (consMap (g a) (bdry (cmap g X)))) -
           (prism f g X - consMap (f a) (bdry (prism f g X))) := by
-      rw [prism_consMap, map_sub, bdry_consMap (f a) (consMap (g a) (cmap g X)),
-        bdry_consMap (f a) (prism f g X), bdry_consMap (g a) (cmap g X), map_sub]
+      rw [prism_consMap, map_sub, bdry_consMap _ _,
+        bdry_consMap _ (prism f g X), bdry_consMap _ _, map_sub]
       abel
     have h2 : prism f g (bdry (consMap a X)) =
         prism f g X - (consMap (f a) (consMap (g a) (bdry (cmap g X))) -
@@ -204,19 +207,17 @@ theorem bdry_prism_add_prism_bdry (f g : P → P) (x : Ch P) :
       rw [← map_add, hX, map_sub]
     have h4 : cmap g (consMap a X) - cmap f (consMap a X) =
         consMap (g a) (cmap g X) - consMap (f a) (cmap f X) := by
-      rw [cmap_consMap, cmap_consMap]
+      simp [cmap_consMap]
     rw [h1, h2, h4]
     linear_combination (norm := abel) h3
   refine ext_apply (F := bdry.comp (prism f g) + (prism f g).comp bdry)
     (G := cmap g - cmap f) ?_ x
   intro l
-  simp only [AddMonoidHom.add_apply, AddMonoidHom.sub_apply, AddMonoidHom.coe_comp,
-    Function.comp_apply]
   induction l with
   | nil => simp [prismOn]
   | cons a t ih =>
-      have := key a (of t) ih
-      simpa using this
+      have := key a _ ih
+      assumption
 
 /-! ### Increasing chains -/
 
@@ -225,7 +226,7 @@ variable [Preorder P]
 /-- The simplicial chains of the order complex: the subgroup generated by the weakly increasing
 lists (the nondegenerate ones are the simplices of the order complex, the degenerate ones are
 the extra basis elements of the unnormalised complex of the nerve). -/
-def Inc (P : Type u) [Preorder P] : AddSubgroup (Ch P) :=
+def Inc (P : Type u) [Preorder P] :=
   AddSubgroup.closure {x : Ch P | ∃ l : List P, List.IsChain (· ≤ ·) l ∧ x = of l}
 
 theorem of_mem_inc {l : List P} (hl : List.IsChain (· ≤ ·) l) : of l ∈ Inc P :=
@@ -234,12 +235,7 @@ theorem of_mem_inc {l : List P} (hl : List.IsChain (· ≤ ·) l) : of l ∈ Inc
 /-- Removing an element from an increasing list leaves an increasing list. -/
 theorem isChain_append_of_isChain_append_cons {pre t : List P} {a : P}
     (h : List.IsChain (· ≤ ·) (pre ++ a :: t)) : List.IsChain (· ≤ ·) (pre ++ t) := by
-  rw [List.isChain_append] at h ⊢
-  obtain ⟨hpre, hat, hlast⟩ := h
-  rw [List.isChain_cons] at hat
-  refine ⟨hpre, hat.2, ?_⟩
-  intro x hx y hy
-  exact le_trans (hlast x hx a (by simp)) (hat.1 y hy)
+  grind
 
 /-- The boundary of an increasing list, with any increasing prefix adjoined, is an increasing
 chain. -/
@@ -247,52 +243,49 @@ theorem consList_bdryOn_mem_inc :
     ∀ (l pre : List P), List.IsChain (· ≤ ·) (pre ++ l) → consList pre (bdryOn l) ∈ Inc P := by
   intro l
   induction l with
-  | nil => intro pre _; simp
+  | nil => simp
   | cons a t ih =>
       intro pre hpre
       rw [bdryOn_cons, map_sub, consList_of, consList_consMap]
       refine AddSubgroup.sub_mem _ ?_ ?_
-      · exact of_mem_inc (isChain_append_of_isChain_append_cons hpre)
-      · refine ih (pre ++ [a]) ?_
-        simpa using hpre
+      · solve_by_elim [of_mem_inc, isChain_append_of_isChain_append_cons]
+      · simp_all
 
 theorem bdryOn_mem_inc {l : List P} (hl : List.IsChain (· ≤ ·) l) : bdryOn l ∈ Inc P := by
-  have := consList_bdryOn_mem_inc l [] (by simpa using hl)
-  simpa using this
+  have := consList_bdryOn_mem_inc l [] (by assumption)
+  simp_all
 
 /-- The boundary preserves the increasing chains. -/
 theorem bdry_mem_inc {x : Ch P} (hx : x ∈ Inc P) : bdry x ∈ Inc P := by
-  refine AddSubgroup.closure_induction (p := fun y _ => bdry y ∈ Inc P) ?_ ?_ ?_ ?_ hx
-  · rintro y ⟨l, hl, rfl⟩
-    simpa using bdryOn_mem_inc hl
+  refine AddSubgroup.closure_induction ?_ ?_ ?_ ?_ hx
+  · simp_all [bdryOn_mem_inc]
   · simp
   · intro y z _ _ hy hz
     simpa using AddSubgroup.add_mem _ hy hz
-  · intro y _ hy
-    simpa using AddSubgroup.neg_mem _ hy
+  · simp
 
 /-- Pushing forward along a monotone map preserves the increasing chains. -/
 theorem cmap_mem_inc {f : P → P} (hf : Monotone f) {x : Ch P} (hx : x ∈ Inc P) :
     cmap f x ∈ Inc P := by
-  refine AddSubgroup.closure_induction (p := fun y _ => cmap f y ∈ Inc P) ?_ ?_ ?_ ?_ hx
+  refine AddSubgroup.closure_induction ?_ ?_ ?_ ?_ hx
   · rintro y ⟨l, hl, rfl⟩
-    rw [cmap_of]
     exact of_mem_inc (List.isChain_map_of_isChain f (fun _ _ h => hf h) hl)
   · simp
   · intro y z _ _ hy hz
     simpa using AddSubgroup.add_mem _ hy hz
-  · intro y _ hy
-    simpa using AddSubgroup.neg_mem _ hy
+  · simp
+
+variable {f g : P → P}
 
 /-- The prism of an increasing list, with any increasing prefix adjoined, is an increasing
 chain.  This is where `f ≤ g` is used. -/
-theorem consList_prismOn_mem_inc {f g : P → P} (hg : Monotone g)
+theorem consList_prismOn_mem_inc (hg : Monotone g)
     (hfg : ∀ p : P, f p ≤ g p) :
     ∀ (l pre : List P), List.IsChain (· ≤ ·) l → List.IsChain (· ≤ ·) (pre ++ l.map f) →
       consList pre (prismOn f g l) ∈ Inc P := by
   intro l
   induction l with
-  | nil => intro pre _ _; simp [prismOn]
+  | nil => simp [prismOn]
   | cons a t ih =>
       intro pre hl hpre
       rw [prismOn_cons, map_sub, consList_of, consList_consMap]
@@ -302,32 +295,21 @@ theorem consList_prismOn_mem_inc {f g : P → P} (hg : Monotone g)
         obtain ⟨hp, hmf, hlast⟩ := hpre
         refine ⟨hp, ?_, ?_⟩
         · rw [List.isChain_cons]
-          refine ⟨?_, List.isChain_map_of_isChain g (fun _ _ h => hg h) hl⟩
-          intro y hy
-          have hya : y = g a := by simpa [eq_comm] using hy
-          rw [hya]
-          exact hfg a
-        · intro x hx y hy
-          have hyf : y = f a := by simpa [eq_comm] using hy
-          subst hyf
-          exact hlast x hx (f a) (by simp)
-      · refine ih (pre ++ [f a]) (List.isChain_cons.1 hl).2 ?_
-        simpa using hpre
+          refine ⟨?_, List.isChain_map_of_isChain g (fun _ _ h => hg h) hl⟩ <;> simp_all
+        · assumption
+      · grind
 
 /-- The prism operator preserves the increasing chains. -/
-theorem prism_mem_inc {f g : P → P} (hf : Monotone f) (hg : Monotone g) (hfg : ∀ p : P, f p ≤ g p)
+theorem prism_mem_inc (hf : Monotone f) (hg : Monotone g) (hfg : ∀ p : P, f p ≤ g p)
     {x : Ch P} (hx : x ∈ Inc P) : prism f g x ∈ Inc P := by
-  refine AddSubgroup.closure_induction (p := fun y _ => prism f g y ∈ Inc P) ?_ ?_ ?_ ?_ hx
+  refine AddSubgroup.closure_induction ?_ ?_ ?_ ?_ hx
   · rintro y ⟨l, hl, rfl⟩
-    rw [prism_of]
     have := consList_prismOn_mem_inc hg hfg l [] hl (by
-      simpa using List.isChain_map_of_isChain f (fun _ _ h => hf h) hl)
-    simpa using this
+      simpa using List.isChain_map_of_isChain f (fun _ _ h => hf h) hl); simpa using this
   · simp
   · intro y z _ _ hy hz
     simpa using AddSubgroup.add_mem _ hy hz
-  · intro y _ hy
-    simpa using AddSubgroup.neg_mem _ hy
+  · simp
 
 /-! ### The contraction -/
 
@@ -335,7 +317,7 @@ variable (ρ : P → P) (d : P)
 
 /-- The contracting homotopy of the source text: `P_{ρ,id} - P_{ρ,c_d}`, corrected by the cone
 on `d` which kills the constant map. -/
-noncomputable def contraction : Ch P →+ Ch P :=
+noncomputable def contraction :=
   prism ρ id - prism ρ (fun _ => d) + (consMap d).comp (cmap (fun _ => d))
 
 omit [Preorder P] in
@@ -345,8 +327,8 @@ theorem bdry_contraction_add_contraction_bdry (x : Ch P) :
     bdry (contraction ρ d x) + contraction ρ d (bdry x) = x := by
   have t1 : bdry (prism ρ id x) + prism ρ id (bdry x) = x - cmap ρ x := by
     have := bdry_prism_add_prism_bdry ρ id x
-    simpa using this
-  have t2 : bdry (prism ρ (fun _ => d) x) + prism ρ (fun _ => d) (bdry x) =
+    simp_all
+  have t2 : bdry _ + prism ρ _ _ =
       cmap (fun _ => d) x - cmap ρ x := bdry_prism_add_prism_bdry _ _ x
   have t3 : bdry (consMap d (cmap (fun _ => d) x)) + consMap d (cmap (fun _ => d) (bdry x)) =
       cmap (fun _ => d) x := by
@@ -356,56 +338,39 @@ theorem bdry_contraction_add_contraction_bdry (x : Ch P) :
     Function.comp_apply, map_add, map_sub]
   linear_combination (norm := abel) t1 - t2 + t3
 
-omit [Preorder P] in
-/-- The head of a constant list is the constant. -/
-theorem eq_of_mem_head?_map_const {l : List P} {y : P}
-    (hy : y ∈ (l.map (fun _ => d)).head?) : y = d := by
-  cases l with
-  | nil => simp at hy
-  | cons a t => simpa [eq_comm] using hy
-
 /-- Constant lists are increasing. -/
 theorem isChain_map_const (l : List P) : List.IsChain (· ≤ ·) (l.map (fun _ => d)) := by
   induction l with
   | nil => simp
   | cons a t ih =>
-      rw [List.map_cons, List.isChain_cons]
-      refine ⟨?_, ih⟩
-      intro y hy
-      rw [eq_of_mem_head?_map_const d hy]
+      rw [List.map_cons, List.isChain_cons] <;> grind
 
 theorem cone_const_mem_inc (x : Ch P) : consMap d (cmap (fun _ => d) x) ∈ Inc P := by
   refine FreeAbelianGroup.induction_on x (by simp) (fun l => ?_) (fun l hl => by
-    simpa using AddSubgroup.neg_mem _ hl) (fun u v hu hv => by
+    simp_all) (fun u v hu hv => by
     simpa using AddSubgroup.add_mem _ hu hv)
-  rw [cmap_of, consMap_of]
   refine of_mem_inc ?_
   rw [List.isChain_cons]
-  refine ⟨?_, isChain_map_const d l⟩
-  intro y hy
-  rw [eq_of_mem_head?_map_const d hy]
+  refine ⟨?_, isChain_map_const d l⟩ <;> grind
+
+variable (hρ : Monotone ρ)
+    (hρle : ∀ p : P, ρ p ≤ p)
+    (hρd : ∀ p : P, ρ p ≤ d)
+    {x : Ch P}
+    (hx : x ∈ Inc P)
+include hρ hρle hρd hx
 
 /-- The contraction preserves the increasing chains. -/
-theorem contraction_mem_inc (hρ : Monotone ρ) (hρle : ∀ p : P, ρ p ≤ p)
-    (hρd : ∀ p : P, ρ p ≤ d) {x : Ch P} (hx : x ∈ Inc P) : contraction ρ d x ∈ Inc P := by
-  have h1 : prism ρ id x ∈ Inc P := prism_mem_inc hρ monotone_id hρle hx
-  have h2 : prism ρ (fun _ => d) x ∈ Inc P :=
-    prism_mem_inc hρ (monotone_const) hρd hx
-  have h3 : consMap d (cmap (fun _ => d) x) ∈ Inc P := cone_const_mem_inc d x
-  simp only [contraction, AddMonoidHom.add_apply, AddMonoidHom.sub_apply, AddMonoidHom.coe_comp,
-    Function.comp_apply]
-  exact AddSubgroup.add_mem _ (AddSubgroup.sub_mem _ h1 h2) h3
+theorem contraction_mem_inc : contraction ρ d x ∈ Inc P := AddSubgroup.add_mem _ (AddSubgroup.sub_mem _ (prism_mem_inc hρ monotone_id hρle hx) (prism_mem_inc hρ (monotone_const) hρd hx)) (cone_const_mem_inc d x)
 
 /-- **Acyclicity of the order complex**: if `ρ` is monotone with `ρ ≤ id` and `ρ ≤ c_d`, then
 every increasing cycle — in every degree, including the augmentation degree — is the boundary of
 an increasing chain. -/
-theorem exists_bdry_eq_of_cycle (hρ : Monotone ρ) (hρle : ∀ p : P, ρ p ≤ p)
-    (hρd : ∀ p : P, ρ p ≤ d) {x : Ch P} (hx : x ∈ Inc P) (hcyc : bdry x = 0) :
+theorem exists_bdry_eq_of_cycle (hcyc : bdry x = 0) :
     ∃ y ∈ Inc P, bdry y = x := by
   refine ⟨contraction ρ d x, contraction_mem_inc ρ d hρ hρle hρd hx, ?_⟩
   have := bdry_contraction_add_contraction_bdry ρ d x
-  rw [hcyc, map_zero, add_zero] at this
-  exact this
+  simp_all
 
 end Nerve
 end FiniteChains

@@ -20,10 +20,6 @@ states it; the version proved here is the one used to compute the fundamental gr
 complex `Y_D` built in `RequestProject/InitialComplex.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains
 
 universe u v
@@ -33,43 +29,19 @@ variable {I : Type u} {H : Type v} [Group H]
 /-- The vector of exponent sums of a word, as a homomorphism to the free abelian group on
 the generators.  Its underlying function is `FiniteChains.expVec`. -/
 noncomputable def expVecHom : FreeGroup I →* Multiplicative (I →₀ ℤ) :=
-  FreeGroup.lift fun i => Multiplicative.ofAdd (Finsupp.single i (1 : ℤ))
+  FreeGroup.lift fun i => Multiplicative.ofAdd (Finsupp.single i 1)
 
 @[simp] theorem expVecHom_of (i : I) :
-    Multiplicative.toAdd (expVecHom (FreeGroup.of i)) = Finsupp.single i (1 : ℤ) := by
+    Multiplicative.toAdd (expVecHom (FreeGroup.of i)) = Finsupp.single i 1 := by
   simp [expVecHom, FreeGroup.lift_apply_of]
 
 /-- The column of the exponent-sum matrix belonging to the relator `r j`. -/
-noncomputable def expCol {J : Type*} (r : J → FreeGroup I) (j : J) : I →₀ ℤ :=
+noncomputable def expCol {J : Type*} (r : J → FreeGroup I) (j : J) :=
   Multiplicative.toAdd (expVecHom (r j))
 
 /-- The two descriptions of the exponent vector of a word agree. -/
 theorem expCol_eq_expVec [DecidableEq I] {J : Type*} (r : J → FreeGroup I) (j : J) :
-    expCol r j = expVec (r j) := by
-  have h : ∀ w : FreeGroup I, Multiplicative.toAdd (expVecHom w) = expVec w := by
-    intro w
-    induction w using FreeGroup.induction_on with
-    | one => simp [expVecHom, expVec]
-    | of i =>
-        rw [expVecHom_of]
-        refine Finsupp.ext fun k => ?_
-        rw [expVec_apply, expSum_of, Finsupp.single_apply]
-        by_cases h : i = k <;> simp [h, eq_comm]
-    | inv_of i ih =>
-        have hinv : Multiplicative.toAdd (expVecHom ((FreeGroup.of i)⁻¹))
-            = -Multiplicative.toAdd (expVecHom (FreeGroup.of i)) := by
-          rw [map_inv]; rfl
-        rw [hinv, ih]
-        have : ((FreeGroup.of i)⁻¹ : FreeGroup I) = (FreeGroup.of i) ^ (-1 : ℤ) := by
-          simp
-        rw [this, expVec_zpow]
-        simp
-    | mul w₁ w₂ h₁ h₂ =>
-        have hmul : Multiplicative.toAdd (expVecHom (w₁ * w₂))
-            = Multiplicative.toAdd (expVecHom w₁) + Multiplicative.toAdd (expVecHom w₂) := by
-          rw [map_mul]; rfl
-        rw [hmul, h₁, h₂, expVec_mul]
-  exact h (r j)
+    expCol r j = expVec (r j) := rfl
 
 section Commuting
 
@@ -77,8 +49,7 @@ variable (u : I → H) (hu : ∀ i k, Commute (u i) (u k))
 
 include hu in
 theorem commClosure_comm : ∀ x ∈ Set.range u, ∀ y ∈ Set.range u, x * y = y * x := by
-  rintro _ ⟨i, rfl⟩ _ ⟨k, rfl⟩
-  exact hu i k
+  aesop
 
 end Commuting
 
@@ -91,58 +62,48 @@ theorem eq_one_of_expCol_surjective {J : Type*} (u : I → H) (hu : ∀ i k, Com
     ∀ i, u i = 1 := by
   classical
   set S : Set H := Set.range u with hS
-  letI : CommGroup (Subgroup.closure S) :=
-    Subgroup.closureCommGroupOfComm (k := S) (fun a ha b hb _ => commClosure_comm u hu a ha b hb)
+  letI :=
+    Subgroup.closureCommGroupOfComm (fun a ha b hb _ => commClosure_comm u hu a ha b hb)
   set U : I → Subgroup.closure S := fun i => ⟨u i, Subgroup.subset_closure ⟨i, rfl⟩⟩ with hU
   -- the additive homomorphism `ℤ^{(I)} → A` sending `e_i` to `U i`
-  set g : (I →₀ ℤ) →+ Additive (Subgroup.closure S) :=
+  set g : (I →₀ ℤ) →+ Additive _ :=
     Finsupp.liftAddHom fun i =>
       zmultiplesHom (Additive (Subgroup.closure S)) (Additive.ofMul (U i)) with hg
   have hg_single : ∀ (i : I) (n : ℤ),
       Additive.toMul (g (Finsupp.single i n)) = U i ^ n := by
-    intro i n
-    rw [hg, Finsupp.liftAddHom_apply_single]
-    rfl
+    aesop
   -- the same map, read multiplicatively
-  set Gm : Multiplicative (I →₀ ℤ) →* Subgroup.closure S :=
+  set Gm : Multiplicative _ →* Subgroup.closure S :=
     { toFun := fun m => Additive.toMul (g (Multiplicative.toAdd m))
       map_one' := by simp
       map_mul' := fun m₁ m₂ => by
-        show Additive.toMul (g (Multiplicative.toAdd m₁ + Multiplicative.toAdd m₂)) = _
-        rw [map_add]
-        rfl } with hGm
+        simp } with hGm
   -- a word in pairwise commuting elements only depends on its exponent vector
   have key : Gm.comp expVecHom = FreeGroup.lift U := by
     refine FreeGroup.ext_hom _ _ fun i => ?_
-    show Additive.toMul (g (Multiplicative.toAdd (expVecHom (FreeGroup.of i)))) = _
-    rw [expVecHom_of, FreeGroup.lift_apply_of, hg_single i 1, zpow_one]
-  have hsub : ∀ w : FreeGroup I, ((FreeGroup.lift U w : Subgroup.closure S) : H)
+    simp_all
+  have hsub : ∀ w : FreeGroup I, ((FreeGroup.lift U w))
       = FreeGroup.lift u w := by
     intro w
     have : ((Subgroup.closure S).subtype).comp (FreeGroup.lift U) = FreeGroup.lift u := by
       refine FreeGroup.ext_hom _ _ fun i => ?_
-      simp [FreeGroup.lift_apply_of, hU]
+      rfl
     exact congrArg (fun f : FreeGroup I →* H => f w) this
   -- hence `g` kills every exponent vector of a relator
   have hcol : ∀ j, g (expCol r j) = 0 := by
     intro j
     have h1 : FreeGroup.lift U (r j) = 1 := by
       apply Subtype.ext
-      rw [hsub (r j), hrel j]
-      rfl
+      simp [hsub, hrel]
     have h2 : Gm (expVecHom (r j)) = 1 := by
       rw [← MonoidHom.comp_apply, key, h1]
-    have : Additive.toMul (g (expCol r j)) = 1 := h2
-    simpa [expCol] using this
+    assumption
   -- and therefore the whole image of the exponent matrix
   have hzero : ∀ c : J →₀ ℤ, g (Finsupp.linearCombination ℤ (expCol r) c) = 0 := by
-    intro c
-    rw [Finsupp.linearCombination_apply, Finsupp.sum, map_sum]
-    refine Finset.sum_eq_zero fun j _ => ?_
-    rw [AddMonoidHom.map_zsmul, hcol j, smul_zero]
+    simp [Finsupp.linearCombination_apply, Finsupp.sum, map_sum, hcol]
   intro i
   obtain ⟨c, hc⟩ := hsurj (Finsupp.single i 1)
-  have h0 : g (Finsupp.single i (1 : ℤ)) = 0 := by rw [← hc]; exact hzero c
+  have h0 : g (Finsupp.single i 1) = 0 := by rw [← hc]; exact hzero c
   have h1 : U i = 1 := by
     have hval := hg_single i 1
     rw [h0] at hval

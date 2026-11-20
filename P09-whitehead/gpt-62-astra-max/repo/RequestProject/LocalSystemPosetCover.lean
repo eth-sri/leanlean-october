@@ -9,8 +9,6 @@ The construction retains the whole fibre; no choice of group coordinates
 or covering classification theorem is needed. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.LocalSystem
@@ -28,18 +26,13 @@ instance coverPartialOrder : PartialOrder (Cover F) where
     obtain ⟨hyz, hfy⟩ := hyz
     refine ⟨hxy.trans hyz, ?_⟩
     have hh := ConcreteCategory.congr_hom (F.map_comp (homOfLE hxy) (homOfLE hyz)) x.2
-    change F.map (homOfLE (hxy.trans hyz)) x.2 =
-      F.map (homOfLE hyz) (F.map (homOfLE hxy) x.2) at hh
-    rw [hh, hfx, hfy]
+    simp_all
   le_antisymm x y hxy hyx := by
     rcases x with ⟨p, x⟩
     rcases y with ⟨q, y⟩
     obtain ⟨hpq, hx⟩ := hxy
     obtain ⟨hqp, _⟩ := hyx
-    obtain rfl := le_antisymm hpq hqp
-    have hxy : x = y := by simpa using hx
-    cases hxy
-    rfl
+    obtain rfl := le_antisymm hpq hqp <;> simp_all
 
 def projection : Cover F → P := Sigma.fst
 
@@ -55,13 +48,13 @@ theorem projection_isPosetCover
     rintro ⟨r, y⟩ ⟨⟨hxy, hy⟩, hr⟩
     change r = q at hr
     subst r
-    exact congrArg (Sigma.mk q) hy.symm
+    solve_by_elim
   · intro x q hqx
     obtain ⟨v, hv⟩ := (hF hqx).2 x.2
     refine ⟨⟨q, v⟩, ⟨⟨hqx, hv⟩, rfl⟩, ?_⟩
     rintro ⟨r, y⟩ ⟨⟨hyx, hy⟩, hr⟩
     change r = q at hr
     subst r
-    exact congrArg (Sigma.mk q) ((hF hqx).1 (hy.trans hv.symm))
+    exact congrArg _ ((hF hqx).1 (hy.trans hv.symm))
 
 end FiniteChains.Comb.LocalSystem

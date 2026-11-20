@@ -65,21 +65,23 @@ def inclusions : ∀ i, Hom (stages T c i) (stages T c (i + 1))
   | i + 1 => inclusion T (restrictedExtra c.rel (c.stage i))
       (restrictedExtra c.rel (c.stage (i + 1))) (labelIncl (c.mono i)) (fun _ => rfl)
 
-theorem inclusions_V (i : ℕ) : Function.Injective (inclusions T c i).onV := by
+variable (i : ℕ)
+
+theorem inclusions_V : Function.Injective (inclusions T c i).onV := by
   cases i <;> exact Function.injective_id
 
-theorem inclusions_E (i : ℕ) : Function.Injective (inclusions T c i).onE := by
+theorem inclusions_E : Function.Injective (inclusions T c i).onE := by
   cases i
   · exact Sum.inl_injective
   · exact Function.injective_id
 
-theorem inclusions_F (i : ℕ) : Function.Injective (inclusions T c i).onF := by
+theorem inclusions_F : Function.Injective (inclusions T c i).onF := by
   cases i with
   | zero => exact Sum.inl_injective
   | succ i =>
       exact c.chainCellIncl_injective (i + 1)
 
-theorem trees_inclusions (i : ℕ) (e : (stages T c i).E) :
+theorem trees_inclusions (e : (stages T c i).E) :
     (trees T c (i + 1)).isTree ((inclusions T c i).onE e) ↔
       (trees T c i).isTree e := by
   cases i <;> exact Iff.rfl
@@ -88,7 +90,9 @@ def generatorCoordinates : ∀ i, NonTree (trees T c i) ≃ c.chainGen i
   | 0 => Equiv.refl _
   | i + 1 => generatorEquiv T (restrictedExtra c.rel (c.stage i))
 
-theorem relatorCoordinates (i : ℕ) (f : (stages T c i).F) :
+variable (i : ℕ)
+
+theorem relatorCoordinates (f : (stages T c i).F) :
     c.chainRel i f = FreeGroup.map (generatorCoordinates T c i)
       (treeRel (trees T c i) f) := by
   cases i with
@@ -96,33 +100,31 @@ theorem relatorCoordinates (i : ℕ) (f : (stages T c i).F) :
   | succ i =>
       exact (treeRel_equation T (restrictedExtra c.rel (c.stage i)) f).symm
 
-def presentationCoordinates (i : ℕ) :
+def presentationCoordinates :
     Hom (presComplex (treeRel (trees T c i))) (c.cellComplex i) :=
   PresGeneratorRelabel.forward (generatorCoordinates T c i) _ _ (relatorCoordinates T c i)
 
-def inversePresentationCoordinates (i : ℕ) :
+def inversePresentationCoordinates :
     Hom (c.cellComplex i) (presComplex (treeRel (trees T c i))) :=
   PresGeneratorRelabel.backward (generatorCoordinates T c i) _ _ (relatorCoordinates T c i)
 
-def collapsedInclusion (i : ℕ) :
-    Hom (presComplex (treeRel (trees T c i)))
-      (presComplex (treeRel (trees T c (i + 1)))) :=
+def collapsedInclusion :=
   presInclHom (nonTreeIncl (trees_inclusions T c i))
     (nonTreeIncl_injective (trees_inclusions T c i) (inclusions_E T c i))
     _ _ (inclusions T c i).onF (treeRel_onF (trees_inclusions T c i))
 
-theorem generatorCoordinates_natural (i : ℕ) (a : NonTree (trees T c i)) :
+theorem generatorCoordinates_natural (a : NonTree (trees T c i)) :
     generatorCoordinates T c (i + 1) (nonTreeIncl (trees_inclusions T c i) a) =
       c.chainGenIncl i (generatorCoordinates T c i a) := by
   cases i with
   | zero => rfl
   | succ i => rcases a with ⟨a | z, ha⟩ <;> rfl
 
-theorem presentationCoordinates_square (i : ℕ) :
+theorem presentationCoordinates_square :
     (presentationCoordinates T c (i + 1)).comp (collapsedInclusion T c i) =
       (c.cellInclusion i).comp (presentationCoordinates T c i) := by
   apply Hom.ext'
-  · exact funext fun _ => rfl
+  · rfl
   · exact funext (generatorCoordinates_natural T c i)
   · cases i <;> rfl
 
@@ -154,22 +156,6 @@ theorem inclFrom_pi1Trivial : ∀ i, 1 ≤ i →
   | i + 2, _ => Pi1Trivial.comp_left (inclusions T c (i + 1))
       (inclFrom_pi1Trivial (i + 1) (by omega))
 
-theorem proper (i : ℕ) (hi : i < n + 1) :
-    (¬ Function.Surjective (inclusions T c i).onE) ∨
-      (¬ Function.Surjective (inclusions T c i).onF) := by
-  cases i with
-  | zero =>
-      left
-      intro hs
-      obtain ⟨e, he⟩ := hs (Sum.inr c.fresh)
-      exact Sum.inl_ne_inr he
-  | succ i =>
-      rcases c.chain_proper (i + 1) hi with ⟨a, ha⟩ | ⟨f, hf⟩
-      · exact False.elim (ha ⟨a, rfl⟩)
-      · right
-        intro hs
-        exact hf (hs f)
-
 def relativeChain (hinj : Function.Injective (expMatrix (treeRel T))) :
     RelativeCellChain (stages T c) (n + 1) where
   inc := inclusions T c
@@ -183,16 +169,14 @@ def relativeChain (hinj : Function.Injective (expMatrix (treeRel T))) :
         intro a b
         exact ⟨revPath (T.treePath a) ++ T.treePath b,
           (isPath_revPath (T.treePath_isPath a)).append (T.treePath_isPath b)⟩
-    | succ i => exact connected T (restrictedExtra c.rel (c.stage i))
+    | succ i => apply connected
   zero := zeroPi2_inclusions T c hinj
   pi1 := fun i hi _ => inclFrom_pi1Trivial T c i hi
-  proper := proper T c
 
 /-- An explicit relative chain over D itself, from the bijective
 exponent boundary of its tree presentation. No cells of D are collapsed
 in the resulting chain. -/
-def actualRelativeChain (h : Function.Bijective (expMatrix (treeRel T))) (n : ℕ) :
-    RelativeCellChain (stages T (actualAmbientChain (treeRel T) h n)) (n + 1) :=
+def actualRelativeChain (h : Function.Bijective (expMatrix (treeRel T))) (n : ℕ) :=
   relativeChain T (actualAmbientChain (treeRel T) h n) h.1
 
 end FiniteChains.Comb.RelativeTreeAmbientChain

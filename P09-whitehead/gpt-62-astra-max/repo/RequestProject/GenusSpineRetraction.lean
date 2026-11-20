@@ -28,18 +28,19 @@ theorem genus_positive_old_cell_survives (c : QOld (cmpRel (GenusVertex q)))
     exact genusChainCollapse_old_face_nonpositive q t (qCubeToCoordinate c.1) hp hpos
   · simp [spineInc, freeSet_qCubeToCoordinate, htwo] at hi
 
-theorem genusSpine_retraction_survives (c : GenusSpineCell q) :
+variable (c : GenusSpineCell q)
+
+theorem genusSpine_retraction_survives :
     oldCellIncl (truncatedCellRetraction c.1) ∈ genusSpineCellSet q := by
   cases hc : c.1 with
   | inl a => simpa [oldCellIncl, truncatedCellRetraction, hc] using c.2
   | inr σ =>
       have hs := c.2
       rw [hc] at hs
-      have hcard := genusSpine_cut_card_le_two q σ hs
-      apply genus_positive_old_cell_survives q (posQCube ⟨σ.1, σ.2⟩) rfl hcard
+      solve_by_elim [genusSpine_cut_card_le_two, genus_positive_old_cell_survives]
 
 /-- The retained-cube retraction is an actual endomorphism of the surviving spine. -/
-def genusSpineRetraction (c : GenusSpineCell q) : GenusSpineCell q :=
+def genusSpineRetraction : GenusSpineCell q :=
   ⟨oldCellIncl (truncatedCellRetraction c.1), genusSpine_retraction_survives q c⟩
 
 theorem genusSpineRetraction_monotone : Monotone (genusSpineRetraction q) :=

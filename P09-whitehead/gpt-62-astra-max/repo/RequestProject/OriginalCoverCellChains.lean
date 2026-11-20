@@ -1,10 +1,11 @@
 module
 
 public import RequestProject.ClassicalCWCanonicalPresentation
-public import RequestProject.TopologicalCoverCellChains
+public import RequestProject.TopologicalOrderCoverAcyclic
+public import RequestProject.RegularCoverAcyclicChains
 public import RequestProject.TopologicalAcyclicCoverHomotopy
-public import RequestProject.PresPosetConnected
-public import RequestProject.PresPosetDimension
+
+
 
 @[expose] public section
 
@@ -19,25 +20,27 @@ open scoped Classical
 namespace FiniteChains.ClassicalCW
 open Comb PresModel CategoryTheory
 
-abbrev CanonicalPos (K : Whitehead.TwoComplex) := PresPos (canonicalWords K)
+variable (K : Whitehead.TwoComplex)
 
-instance canonicalPos_nonempty (K : Whitehead.TwoComplex) : Nonempty (CanonicalPos K) :=
+abbrev CanonicalPos := PresPos (canonicalWords K)
+
+instance canonicalPos_nonempty : Nonempty (CanonicalPos K) :=
   ⟨Sum.inl (Sum.inl Rose.base)⟩
 
-instance canonicalPos_dimension (K : Whitehead.TwoComplex) :
+instance canonicalPos_dimension :
     (nerve (CanonicalPos K)).HasDimensionLE 2 :=
   orderNerve_hasDimensionLE (presPosDimension (canonicalWords K))
     (presPosDimension_strictMono (canonicalWords K)) 2
     (presPosDimension_le_two (canonicalWords K))
 
-def canonicalTwoComplex (K : Whitehead.TwoComplex) : Whitehead.TwoComplex :=
+def canonicalTwoComplex :=
   orderNerveTwoComplex (CanonicalPos K) (presPos_isConnected _ (canonicalWords_ne_nil K))
 
-def originalCanonicalTwoComplexEquiv (K : Whitehead.TwoComplex) :
+def originalCanonicalTwoComplexEquiv :
     ContinuousMap.HomotopyEquiv K (canonicalTwoComplex K) :=
   originalCanonicalRealizationEquiv K
 
-theorem canonicalTwoComplex_hasCover (K : Whitehead.TwoComplex)
+theorem canonicalTwoComplex_hasCover
     (h : Whitehead.HasAcyclicRegularCover K) :
     Whitehead.HasAcyclicRegularCover (canonicalTwoComplex K) :=
   Whitehead.hasAcyclicRegularCover_of_homotopyEquiv (canonicalTwoComplex K) K

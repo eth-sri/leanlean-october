@@ -12,10 +12,6 @@ equivalence and its literal word equality. Pending Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains.RelatorReindex
 
 universe u
@@ -31,7 +27,7 @@ def groupMap : PresGroup ρ →* PresGroup τ :=
     apply (QuotientGroup.eq_one_iff _).mpr
     exact Subgroup.subset_normalClosure ⟨e j, hrel j⟩)
 
-def coefficientMap : MonoidAlgebra ℤ (PresGroup ρ) →+* MonoidAlgebra ℤ (PresGroup τ) :=
+def coefficientMap :=
   MonoidAlgebra.mapDomainRingHom ℤ (groupMap ρ τ e hrel)
 
 omit [Fintype A] [DecidableEq A] [Fintype J] [Fintype K] in
@@ -42,16 +38,15 @@ theorem coefficientMap_quot (x : FreeGroupRing A) :
   | zero => simp
   | add x y hx hy => simp only [map_add, hx, hy]
   | single g n =>
-      change MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ (MonoidAlgebra.single g n)) =
+      change MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ _) =
         MonoidAlgebra.mapDomain _ (MonoidAlgebra.single g n)
-      simp only [MonoidAlgebra.mapDomain_single]
-      rfl
+      aesop
 
 omit [Fintype A] [Fintype J] [Fintype K] in
 theorem coefficientMap_matrix (a : A) (j : J) :
     coefficientMap ρ τ e hrel (foxMatrixPres ρ a j) = foxMatrixPres τ a (e j) := by
   change coefficientMap ρ τ e hrel (quotRingHom ℤ (relSub ρ) (fox a (ρ j))) =
-    quotRingHom ℤ (relSub τ) (fox a (τ (e j)))
+    quotRingHom ℤ (relSub τ) _
   rw [coefficientMap_quot, hrel]
 
 end FiniteChains.RelatorReindex

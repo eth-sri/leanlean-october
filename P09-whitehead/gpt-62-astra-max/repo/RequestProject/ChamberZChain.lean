@@ -33,6 +33,8 @@ about `Z` itself; transporting it to the universal cover with group-ring coeffic
 separate obligation.
 -/
 
+noncomputable section
+
 namespace FiniteChains
 namespace Davis
 
@@ -50,26 +52,30 @@ def InZBase : Zpos A X M att → Prop
 
 /-! ### Ordinary chambers -/
 
+section
+
+variable {w : CayGroup A} (hw : ¬ M w)
+include hw
+
 omit [Fintype V] in
-theorem not_isMarkedApex_apex {w : CayGroup A} (hw : ¬ M w) :
+theorem not_isMarkedApex_apex :
     ¬ IsMarkedApex M (chamberPt w (isSimplex_empty (A := A))) := by
   rintro ⟨-, h⟩
-  rw [chamberPt_empty_rep] at h
-  exact hw h
+  simp_all [chamberPt_empty_rep]
 
 /-- The apex of an unmarked chamber, as a cell of `Z`. -/
-noncomputable def zApex {w : CayGroup A} (hw : ¬ M w) : Zpos A X M att :=
-  zOld (chamberPt w (isSimplex_empty (A := A))) (not_isMarkedApex_apex hw)
+def zApex : Zpos A X M att :=
+  zOld _ (not_isMarkedApex_apex hw)
 
 omit [Fintype V] in
-theorem inZChamber_zApex {w : CayGroup A} (hw : ¬ M w) :
-    InZChamber w (zApex (X := X) (att := att) hw) :=
+theorem inZChamber_zApex :
+    InZChamber w (zApex (att := att) hw) :=
   chamberPt_inChamber w (isSimplex_empty (A := A))
 
 omit [Fintype V] in
 /-- The apex is the least cell of an unmarked chamber. -/
-theorem zApex_le {w : CayGroup A} (hw : ¬ M w) {z : Zpos A X M att} (hz : InZChamber w z) :
-    zApex (X := X) (att := att) hw ≤ z := by
+theorem zApex_le {z : Zpos A X M att} (hz : InZChamber w z) :
+    zApex (att := att) hw ≤ z := by
   cases z with
   | inl p =>
       exact le_of_inChamber (chamberPt_inChamber w (isSimplex_empty (A := A))) hz
@@ -77,13 +83,15 @@ theorem zApex_le {w : CayGroup A} (hw : ¬ M w) {z : Zpos A X M att} (hz : InZCh
   | inr wx =>
       exact absurd (hz ▸ wx.1.2) hw
 
+end
+
 /-! ### Modified chambers -/
 
 /-! ### The attaching intersection -/
 
 /-- The attaching subcomplex of the chamber of `w` inside `Z` is the attaching subcomplex of the
 chamber `F_w` of the Davis poset. -/
-noncomputable def zJSetOrderIso (w : CayGroup A) :
+def zJSetOrderIso (w : CayGroup A) :
     {z : Zpos A X M att // ZJSet w z} ≃o ChamberInter A w where
   toFun z :=
     match z with
@@ -91,10 +99,7 @@ noncomputable def zJSetOrderIso (w : CayGroup A) :
     | ⟨Sum.inr _, h⟩ => h.elim
   invFun q :=
     ⟨zOld q.1 (by
-        rintro ⟨hemp, -⟩
-        obtain ⟨s, hs⟩ := q.2.2
-        rw [hemp] at hs
-        simp at hs),
+        rintro ⟨hemp, -⟩ <;> grind),
       show JSet w q.1 from jSet_iff.2 ⟨q.2.1, q.2.2⟩⟩
   left_inv z := by
     rcases z with ⟨p | wx, h⟩
@@ -111,7 +116,7 @@ noncomputable def zJSetOrderIso (w : CayGroup A) :
 /-! ### The filtration by word length -/
 
 /-- The union of the chambers of `Z` of length at most `n`. -/
-def ZUpto (n : ℕ) (z : Zpos A X M att) : Prop := ∃ y : CayGroup A, RACG.clen A y ≤ n ∧ InZChamber y z
+def ZUpto (n : ℕ) (z : Zpos A X M att) := ∃ y : CayGroup A, RACG.clen A y ≤ n ∧ InZChamber y z
 
 omit [Fintype V] in
 theorem zUpto_up {n : ℕ} {z z' : Zpos A X M att} (h : z ≤ z') (hz : ZUpto n z) : ZUpto n z' := by
@@ -119,18 +124,17 @@ theorem zUpto_up {n : ℕ} {z z' : Zpos A X M att} (h : z ≤ z') (hz : ZUpto n 
   exact ⟨y, hy, inZChamber_of_le h hyz⟩
 
 omit [Fintype V] in
-theorem zUpto_zero_iff (z : Zpos A X M att) : ZUpto 0 z ↔ InZChamber (1 : CayGroup A) z := by
+theorem zUpto_zero_iff (z : Zpos A X M att) : ZUpto 0 z ↔ InZChamber 1 z := by
   constructor
   · rintro ⟨y, hy, hyz⟩
-    have : y = 1 := (RACG.clen_eq_zero_iff A).1 (Nat.le_zero.1 hy)
-    rwa [this] at hyz
+    simp_all [RACG.clen_eq_zero_iff]
   · intro h
     exact ⟨1, by simp, h⟩
 
 /-! ### The whole complex -/
 
 /-- The length of the chamber a cell of `Z` belongs to. -/
-noncomputable def zlen : Zpos A X M att → ℕ
+def zlen : Zpos A X M att → ℕ
   | Sum.inl p => RACG.clen A p.1.rep
   | Sum.inr wx => RACG.clen A wx.1.1
 

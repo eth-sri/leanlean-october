@@ -10,7 +10,9 @@ open RACG Mirror Comb
 universe u
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 
-theorem positiveCorner_le_iff (c : QCube A) :
+variable (c : QCube A)
+
+theorem positiveCorner_le_iff :
     positiveCorner A ≤ c ↔ c.sgn = 0 := by
   constructor
   · intro h
@@ -19,19 +21,18 @@ theorem positiveCorner_le_iff (c : QCube A) :
     · exact c.sgn_eq_zero v hv
     · exact (h.2 v hv).symm
   · intro h
-    exact ⟨Finset.empty_subset _, fun v _ => by rw [h]; rfl⟩
+    exact ⟨Finset.empty_subset _, fun v _ => by solve_by_elim⟩
 
-theorem le_positiveCorner_iff (c : QCube A) :
+theorem le_positiveCorner_iff :
     c ≤ positiveCorner A ↔ c = positiveCorner A := by
   constructor
   · intro h
     apply QCube.ext'
     · exact Finset.Subset.antisymm h.1 (Finset.empty_subset _)
     · exact h.2
-  · rintro rfl
-    exact le_refl _
+  · simp_all
 
-theorem positiveCorner_lt_iff (c : QCube A) :
+theorem positiveCorner_lt_iff :
     positiveCorner A < c ↔ c.spx.Nonempty ∧ c.sgn = 0 := by
   rw [lt_iff_le_and_ne, positiveCorner_le_iff]
   constructor
@@ -41,8 +42,7 @@ theorem positiveCorner_lt_iff (c : QCube A) :
     apply hn
     symm
     apply QCube.ext' he
-    intro v _
-    exact congrFun hs v
+    solve_by_elim
   · rintro ⟨hne, hs⟩
     refine ⟨hs, ?_⟩
     intro he
@@ -56,10 +56,7 @@ def positiveCornerLinkEquiv : Set.Ioi (positiveCorner A) ≃o NeSpx A where
   invFun σ := ⟨surfaceFullCube A σ, (positiveCorner_lt_iff A _).mpr ⟨σ.2.1, rfl⟩⟩
   left_inv c := by
     apply Subtype.ext
-    change surfaceFullCube A ⟨c.1.spx, ((positiveCorner_lt_iff A c.1).mp c.2).1, c.1.isSimplex⟩ = c.1
-    apply QCube.ext' (by rfl)
-    intro v _
-    exact (congrFun ((positiveCorner_lt_iff A c.1).mp c.2).2 v).symm
+    apply QCube.ext' (by rfl); intro v _; exact (congrFun ((positiveCorner_lt_iff A c.1).mp c.2).2 v).symm
   right_inv σ := rfl
   map_rel_iff' := by
     intro c d

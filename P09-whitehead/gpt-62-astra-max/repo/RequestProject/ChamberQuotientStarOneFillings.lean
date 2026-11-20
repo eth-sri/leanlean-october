@@ -1,8 +1,6 @@
 module
 
 public import RequestProject.ChamberQuotientLiftedStarRetraction
-public import RequestProject.ChamberQuotientBaseSimplyConnected
-public import RequestProject.ChamberZConnected
 public import RequestProject.OrderSimplyConnectedOneFillings
 public import RequestProject.NerveLowerMapFillings
 
@@ -17,10 +15,10 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
 theorem qLiftedBaseStar_oneCycle_filling (a : Qpos A X att)
     (hc : IsConnected (orderCx (Qpos A X att)))
-    (c : Ch (QLiftedBaseStar a)) (hi : c ∈ Inc _)
+    (c : Ch _) (hi : c ∈ Inc _)
     (hd : lengthProjection 2 c = c) (hcyc : Nerve.bdry c = 0) :
     ∃ y ∈ Inc (QLiftedBaseStar a), Nerve.bdry y = c :=
-  filling_of_lower_composite (qLiftedStarRetraction a hc) (qBaseIntoStar a)
+  filling_of_lower_composite _ _
     (qLiftedStarRetraction_monotone a hc) (qBaseIntoStar_monotone a)
     (qLiftedStarRetraction_le a hc) 2
     (nerve_oneCycle_filling_of_simplyConnected (qLiftedBase_simplyConnected a hc))
@@ -33,8 +31,8 @@ theorem qUniversal_baseStar_fillsDegree_two (x : X) (hx : IsConnected (orderCx X
   have hc : IsConnected (orderCx (Qpos A X att)) :=
     qpos_isConnected_of_zpos (zpos_isConnected hx)
   apply fillsDegreeIn_of_subtype
-  · obtain ⟨p, hp⟩ := (uOrderEnd_isPosetCover (a := qNew x) hc).surj (qNew x)
+  · obtain ⟨p, hp⟩ := (uOrderEnd_isPosetCover hc).surj (qNew x)
     exact ⟨p, by rw [hp]; trivial⟩
-  · exact qLiftedBaseStar_oneCycle_filling (qNew x) hc
+  · apply qLiftedBaseStar_oneCycle_filling <;> assumption
 
 end FiniteChains.Davis

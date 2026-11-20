@@ -6,8 +6,6 @@ public import RequestProject.GenusEquivariantCapFillings
 @[expose] public section
 
 /-! Genuine old-block cover chains correcting the surviving-spine marking to its surface loop. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -17,8 +15,10 @@ variable (q : ℕ) [NeZero q]
 noncomputable abbrev markingOldCover :=
   uCover (orderCx (QOld (cmpRel (GenusVertex q)))) (posQCube (gBase q))
 
+variable (x : Fin q × Bool)
+
 /-- The marking correction is supported on actual old-block cover faces. -/
-theorem exists_lifted_marking_correction (x : Fin q × Bool) :
+theorem exists_lifted_marking_correction :
     ∃ d : (markingOldCover q).F →₀ ℤ,
       Comb.bdry2 (fullCubeMarkCover q)
         (chain2 (univLift _ (oldToFullCube q) (posQCube (gBase q))) d) =
@@ -30,12 +30,12 @@ theorem exists_lifted_marking_correction (x : Fin q × Bool) :
   have hp := (spineMarkedLoop_toOld_htpy q x).symm.isPath
     (isPath_mapPath (surfCx _) (isPath_gSig q (x.1.val, x.2)))
   obtain ⟨d, hd⟩ := @exists_mapped_lifted_homotopy_chain
-    (orderCx (QOld (cmpRel (GenusVertex q)))) (orderCx (QCube (cmpRel (GenusVertex q))))
-    (posQCube (gBase q)) (oldToFullCube q)
-    (UV.base (orderCx (QOld (cmpRel (GenusVertex q)))) (posQCube (gBase q)))
-    (mapPath (genusSpineToOld q) (spineMarkedLoop q x).1)
-    (mapPath (surfCx (cmpRel (GenusVertex q))) (gSig q (x.1.val, x.2)))
-    (posQCube (gBase q)) hp (spineMarkedLoop_toOld_htpy q x)
+    (orderCx (QOld (cmpRel (GenusVertex q)))) _
+    _ _
+    (UV.base _ _)
+    _
+    _
+    _ hp (spineMarkedLoop_toOld_htpy q x)
   refine ⟨d, ?_⟩
   have he1 : mapPath (oldToFullCube q)
       (mapPath (genusSpineToOld q) (spineMarkedLoop q x).1) =
@@ -46,17 +46,13 @@ theorem exists_lifted_marking_correction (x : Fin q × Bool) :
   have he2 : mapPath (oldToFullCube q)
       (mapPath (surfCx (cmpRel (GenusVertex q))) (gSig q (x.1.val, x.2))) =
       mapPath (orderCxMap (surfaceFullCube (cmpRel (GenusVertex q)))
-        (surfaceFullCube_monotone _)) (gSig q (x.1.val, x.2)) := by
-    simp only [mapPath, List.map_map]
-    rfl
-  rw (config := { transparency := .default }) [he1, he2] at hd
-  exact hd
+        (surfaceFullCube_monotone _)) (gSig q (x.1.val, x.2)) := rfl
+  erw [he1, he2] at hd <;> assumption
 
-noncomputable def liftedMarkingCorrection (x : Fin q × Bool) :
-    (markingOldCover q).F →₀ ℤ :=
+noncomputable def liftedMarkingCorrection :=
   Classical.choose (exists_lifted_marking_correction q x)
 
-theorem liftedMarkingCorrection_boundary (x : Fin q × Bool) :
+theorem liftedMarkingCorrection_boundary :
     Comb.bdry2 (fullCubeMarkCover q)
       (chain2 (univLift _ (oldToFullCube q) (posQCube (gBase q)))
         (liftedMarkingCorrection q x)) =

@@ -61,17 +61,19 @@ namespace SpanningTree
 variable (T : SpanningTree K)
 
 /-- The parent of a non-root vertex: the other endpoint of its tree edge. -/
-def parent (a : K.V) (ha : a ≠ T.root) : K.V := germTgt K.src K.tgt (T.up a ha)
+def parent (a : K.V) (ha : a ≠ T.root) := germTgt K.src K.tgt (T.up a ha)
 
-theorem ht_parent {a : K.V} (ha : a ≠ T.root) : T.ht (T.parent a ha) + 1 = T.ht a :=
+variable {a : K.V} (ha : a ≠ T.root)
+
+theorem ht_parent : T.ht (T.parent a ha) + 1 = T.ht a :=
   T.up_ht a ha
 
-theorem isTree_up {a : K.V} (ha : a ≠ T.root) : T.isTree (T.up a ha).1 :=
+theorem isTree_up : T.isTree (T.up a ha).1 :=
   (T.isTree_iff _).2 ⟨a, ha, rfl⟩
 
 open Classical in
 /-- The tree path from the root to a vertex. -/
-noncomputable def treePath (T : SpanningTree K) (a : K.V) : List (K.E × Bool) :=
+noncomputable def treePath (T : SpanningTree K) (a : K.V) :=
   if h : a = T.root then [] else
     treePath T (T.parent a h) ++ [revGerm (T.up a h)]
   termination_by T.ht a
@@ -88,37 +90,36 @@ theorem treePath_of_ne {a : K.V} (ha : a ≠ T.root) :
   rw [treePath]
   simp [ha]
 
+variable (a : K.V)
+
 /-- The tree path from the root to `a` is an edge path from the root to `a`. -/
-theorem treePath_isPath (a : K.V) : IsPath K.src K.tgt (T.treePath a) T.root a := by
+theorem treePath_isPath : IsPath K.src K.tgt (T.treePath a) T.root a := by
   induction hn : T.ht a using Nat.strong_induction_on generalizing a with
   | _ n ih =>
       by_cases ha : a = T.root
-      · subst ha
-        simp
-      · have hp : T.ht (T.parent a ha) + 1 = T.ht a := T.ht_parent ha
-        have hlt : T.ht (T.parent a ha) < n := by omega
-        have hrest := ih _ hlt (T.parent a ha) rfl
+      · simp_all
+      · have hp := T.ht_parent ha
+        have hrest := ih _ (by omega) (T.parent a ha) rfl
         rw [T.treePath_of_ne ha]
         refine isPath_append_iff.mpr ⟨T.parent a ha, hrest, ?_⟩
         have h1 : germSrc K.src K.tgt (revGerm (T.up a ha)) = T.parent a ha := by
           simp [parent]
         have h2 : germTgt K.src K.tgt (revGerm (T.up a ha)) = a := by
           simpa using T.up_src a ha
-        exact ⟨h1.symm, by simp [h2]⟩
+        simp_all
 
 /-- Every edge of a tree path is a tree edge. -/
-theorem isTree_of_mem_treePath (a : K.V) {g : K.E × Bool} (hg : g ∈ T.treePath a) :
+theorem isTree_of_mem_treePath {g : K.E × Bool} (hg : g ∈ T.treePath a) :
     T.isTree g.1 := by
   induction hn : T.ht a using Nat.strong_induction_on generalizing a g with
   | _ n ih =>
       by_cases ha : a = T.root
-      · subst ha
-        simp at hg
-      · have hp : T.ht (T.parent a ha) + 1 = T.ht a := T.ht_parent ha
+      · aesop
+      · have hp := T.ht_parent ha
         have hlt : T.ht (T.parent a ha) < n := by omega
         rw [T.treePath_of_ne ha, List.mem_append] at hg
         rcases hg with hg | hg
-        · exact ih _ hlt (a := T.parent a ha) hg rfl
+        · solve_by_elim
         · simp only [List.mem_singleton] at hg
           subst hg
           exact T.isTree_up ha
@@ -128,59 +129,52 @@ theorem isTree_of_mem_treePath (a : K.V) {g : K.E × Bool} (hg : g ∈ T.treePat
 section Existence
 
 /-- The lengths of edge paths from a fixed vertex. -/
-def reach (K : Complex2.{u}) (r a : K.V) : Set ℕ := {n | ∃ p : List (K.E × Bool),
+def reach (K : Complex2.{u}) (r a : K.V) := {n | ∃ p : List _,
   p.length = n ∧ IsPath K.src K.tgt p r a}
 
-theorem reach_nonempty (hconn : IsConnected K) (r a : K.V) :
+variable (hconn : IsConnected K)
+include hconn
+
+theorem reach_nonempty (r a : K.V) :
     (reach K r a).Nonempty := by
   obtain ⟨p, hp⟩ := hconn r a
   exact ⟨p.length, p, rfl, hp⟩
 
 /-- **Every connected two-complex has a spanning tree**, rooted at any prescribed vertex. -/
-theorem exists_of_isConnected (hconn : IsConnected K) (r : K.V) :
+theorem exists_of_isConnected (r : K.V) :
     ∃ T : SpanningTree K, T.root = r := by
   classical
-  set d : K.V → ℕ := fun a => sInf (reach K r a) with hd
+  set d : K.V → ℕ := fun a => sInf _ with hd
   have hmem : ∀ a, d a ∈ reach K r a := fun a =>
     Nat.sInf_mem (reach_nonempty hconn r a)
-  have hle : ∀ (a : K.V) (p : List (K.E × Bool)), IsPath K.src K.tgt p r a → d a ≤ p.length :=
+  have hle : ∀ (a : K.V) (p : List _), IsPath K.src K.tgt p r a → d a ≤ p.length :=
     fun a p hp => Nat.sInf_le ⟨p, rfl, hp⟩
-  have hd_root : d r = 0 := Nat.le_antisymm (hle r [] rfl) (Nat.zero_le _)
+  have hd_root := Nat.le_antisymm (hle r [] rfl) (Nat.zero_le _)
   have hd_eq_zero : ∀ a, d a = 0 → a = r := by
     intro a ha
     obtain ⟨p, hlen, hp⟩ := hmem a
     rw [ha, List.length_eq_zero_iff] at hlen
-    subst hlen
-    exact hp.symm
+    simp_all
   have hstep : ∀ a : K.V, a ≠ r → ∃ g : K.E × Bool,
       germSrc K.src K.tgt g = a ∧ d (germTgt K.src K.tgt g) + 1 = d a := by
     intro a ha
     obtain ⟨p, hlen, hp⟩ := hmem a
     have hne : p ≠ [] := by
-      intro h
-      subst h
-      exact ha (hd_eq_zero a (by simpa using hlen.symm))
-    obtain ⟨q, g, rfl⟩ : ∃ (q : List (K.E × Bool)) (g : K.E × Bool), p = q ++ [g] :=
+      grind
+    obtain ⟨q, g, rfl⟩ : ∃ (q : List _) (g : K.E × Bool), p = q ++ [g] :=
       ⟨p.dropLast, p.getLast hne, (List.dropLast_append_getLast hne).symm⟩
     obtain ⟨m, hq, hg⟩ := isPath_append_iff.1 hp
-    have hgs : germSrc K.src K.tgt g = m := hg.1.symm
     have hgt : germTgt K.src K.tgt g = a := by
       have := hg.2
-      simpa using this
+      assumption
     refine ⟨revGerm g, by simpa using hgt, ?_⟩
-    have h1 : d m ≤ q.length := hle m q hq
     have h2 : d a ≤ d m + 1 := by
       obtain ⟨q', hlen', hq'⟩ := hmem m
-      have hpath : IsPath K.src K.tgt (q' ++ [g]) r a :=
+      have hpath :=
         isPath_append_iff.mpr ⟨m, hq', hg⟩
-      have := hle a _ hpath
-      simpa [hlen'] using this
-    have h3 : q.length + 1 = d a := by
-      simp only [List.length_append, List.length_singleton] at hlen
-      omega
-    have hmt : germTgt K.src K.tgt (revGerm g) = m := by simpa using hgs
-    rw [hmt]
-    omega
+      grind
+    have hmt : germTgt K.src K.tgt (revGerm g) = m := by simpa using hg.1.symm
+    grind
   choose upg hupsrc hupht using hstep
   exact ⟨{ root := r
            ht := d

@@ -75,10 +75,12 @@ def IsChainCollapse (d : T → F → R) : List (T × F) → Prop
 
 variable {d : T → F → R}
 
-@[simp] theorem retr_zero (t : T) (f : F) : retr d t f 0 = 0 := by
+variable (t : T) (f : F)
+
+@[simp] theorem retr_zero : retr d t f 0 = 0 := by
   funext g; simp [retr]
 
-theorem retr_add (t : T) (f : F) (x y : F → R) :
+theorem retr_add (x y : F → R) :
     retr d t f (x + y) = retr d t f x + retr d t f y := by
   funext g
   simp only [retr, Pi.add_apply, add_mul]
@@ -86,33 +88,33 @@ theorem retr_add (t : T) (f : F) (x y : F → R) :
 
 theorem retr_leftMul (a : R) (t : T) (f : F) (x : F → R) :
     retr d t f (fun g => a * x g) = fun g => a * retr d t f x g := by
-  funext g
-  simp only [retr, mul_sub, mul_assoc]
+  grind [retr, mul_sub, mul_assoc]
 
-@[simp] theorem cmap_zero (l : List (T × F)) : cmap d l 0 = 0 := by
+variable (l : List (T × F))
+
+@[simp] theorem cmap_zero : cmap d l 0 = 0 := by
   induction l with
   | nil => rfl
   | cons p l ih => obtain ⟨t, f⟩ := p; simp [cmap, ih]
 
-theorem cmap_add (l : List (T × F)) (x y : F → R) :
+theorem cmap_add (x y : F → R) :
     cmap d l (x + y) = cmap d l x + cmap d l y := by
   induction l generalizing x y with
   | nil => rfl
-  | cons p l ih => obtain ⟨t, f⟩ := p; simp [cmap, retr_add, ih]
+  | cons p l ih => simp [cmap, retr_add, ih]
 
-theorem cmap_leftMul (l : List (T × F)) (a : R) (x : F → R) :
+theorem cmap_leftMul (a : R) (x : F → R) :
     cmap d l (fun g => a * x g) = fun g => a * cmap d l x g := by
   induction l generalizing x with
   | nil => rfl
   | cons p l ih =>
       obtain ⟨t, f⟩ := p
-      show cmap d l (retr d t f fun g => a * x g) = fun g => a * cmap d l (retr d t f x) g
+      show cmap d l _ = fun g => a * cmap d l _ g
       rw [retr_leftMul, ih]
 
 /-- The retraction of an elementary collapse kills the boundary of the cell it removes. -/
 theorem retr_self {t : T} {f : F} (h : IsUnit (d t f)) : retr d t f (d t) = 0 := by
-  funext g
-  simp [retr, Ring.mul_inverse_cancel _ h]
+  ext <;> simp_all [retr, Ring.mul_inverse_cancel]
 
 /-- The retraction of an elementary collapse fixes the boundary of a cell which does not
 meet the face it is collapsed across. -/
@@ -120,45 +122,40 @@ theorem retr_of_notMem {t t' : T} {f : F} (h : d t' f = 0) : retr d t f (d t') =
   funext g; simp [retr, h]
 
 /-- **The chain map of a collapse kills the boundary of every collapsed cell.** -/
-theorem cmap_bdry_eq_zero {l : List (T × F)} (hl : IsChainCollapse d l) :
+theorem cmap_bdry_eq_zero {l : List _} (hl : IsChainCollapse d l) :
     ∀ p ∈ l, cmap d l (d p.1) = 0 := by
   induction l with
-  | nil => intro p hp; exact absurd hp List.not_mem_nil
+  | nil => simp
   | cons p l ih =>
       obtain ⟨t, f⟩ := p
       obtain ⟨hunit, hfree, hrest⟩ := hl
       intro r hr
       rcases List.mem_cons.1 hr with rfl | hrl
-      · show cmap d l (retr d t f (d t)) = 0
+      · show cmap d l _ = 0
         rw [retr_self hunit, cmap_zero]
-      · show cmap d l (retr d t f (d r.1)) = 0
+      · show cmap d l _ = 0
         rw [retr_of_notMem (hfree r hrl)]
-        exact ih hrest r hrl
+        solve_by_elim
 
 /-- The chain map of a collapse, applied to a combination of boundaries of top cells. -/
-theorem cmap_sum (l : List (T × F)) [DecidableEq T] (s : Finset T) (c : T → R) :
+theorem cmap_sum (l : List _) [DecidableEq T] (s : Finset T) (c : T → R) :
     cmap d l (fun g => ∑ t ∈ s, c t * d t g) = fun g => ∑ t ∈ s, c t * cmap d l (d t) g := by
   classical
   induction s using Finset.induction with
   | empty =>
-      have hz : (fun g => ∑ t ∈ (∅ : Finset T), c t * d t g) = (0 : F → R) := by
-        funext g; simp
-      rw [hz, cmap_zero]
-      funext g; simp
+      solve_by_elim [cmap_zero]
   | insert t s ht ih =>
       have hsplit : (fun g => ∑ u ∈ insert t s, c u * d u g)
           = (fun g => c t * d t g) + (fun g => ∑ u ∈ s, c u * d u g) := by
         funext g
-        simp only [Pi.add_apply]
-        rw [Finset.sum_insert ht]
-      rw [hsplit, cmap_add, cmap_leftMul, ih]
-      funext g
-      simp only [Pi.add_apply]
-      rw [Finset.sum_insert ht]
+        simp_all
+      rw [hsplit, cmap_add, cmap_leftMul, ih] <;> aesop
+
+variable {l : List (T × F)}
 
 /-- **The chain map of a collapse kills every combination of boundaries of collapsed
 cells.** -/
-theorem cmap_sum_eq_zero {l : List (T × F)} (hl : IsChainCollapse d l) [DecidableEq T]
+theorem cmap_sum_eq_zero (hl : IsChainCollapse d l) [DecidableEq T]
     (s : Finset T) (c : T → R) (hs : ∀ t ∈ s, ∃ f, (t, f) ∈ l) :
     cmap d l (fun g => ∑ t ∈ s, c t * d t g) = 0 := by
   classical
@@ -166,34 +163,31 @@ theorem cmap_sum_eq_zero {l : List (T × F)} (hl : IsChainCollapse d l) [Decidab
   funext g
   refine Finset.sum_eq_zero fun t htt => ?_
   obtain ⟨f, hf⟩ := hs t htt
-  rw [cmap_bdry_eq_zero hl (t, f) hf]
+  rw [cmap_bdry_eq_zero hl _ hf]
   simp
 
 /-- **The chain map of a collapse fixes the chains of the spine**: a chain which already
 vanishes on every collapsed face is left unchanged. -/
-theorem cmap_of_forall_eq_zero {l : List (T × F)} (x : F → R) (hx : ∀ p ∈ l, x p.2 = 0) :
+theorem cmap_of_forall_eq_zero (x : F → R) (hx : ∀ p ∈ l, x p.2 = 0) :
     cmap d l x = x := by
   induction l generalizing x with
   | nil => rfl
   | cons p l ih =>
       obtain ⟨t, f⟩ := p
-      have hf : x f = 0 := hx (t, f) List.mem_cons_self
       have hretr : retr d t f x = x := by
-        funext g; simp [retr, hf]
-      show cmap d l (retr d t f x) = x
-      rw [hretr]
-      exact ih x fun q hq => hx q (List.mem_cons_of_mem _ hq)
+        funext g; simp [retr, (hx _ List.mem_cons_self)]
+      show cmap d l _ = x
+      rw [hretr] <;> grind
 
 /-- **A boundary collapses to the zero chain of the spine.**  If every top cell is collapsed
 away, then the cellular chain obtained from a boundary is zero: this is the step "in a
 two-complex a homologically zero two-cycle is the zero cellular chain". -/
-theorem cmap_eq_zero_of_isBoundary {l : List (T × F)} (hl : IsChainCollapse d l)
+theorem cmap_eq_zero_of_isBoundary (hl : IsChainCollapse d l)
     [DecidableEq T] {s : Finset T} {c : T → R} (hs : ∀ t ∈ s, ∃ f, (t, f) ∈ l)
     {x : F → R} (hx : ∀ g, x g = ∑ t ∈ s, c t * d t g) :
     cmap d l x = 0 := by
-  have hxe : x = fun g => ∑ t ∈ s, c t * d t g := funext hx
-  rw [hxe]
-  exact cmap_sum_eq_zero hl s c hs
+  rw [(funext hx)]
+  apply cmap_sum_eq_zero <;> assumption
 
 /-! ### The surviving three-cell -/
 

@@ -10,30 +10,22 @@ namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-theorem genus_cutFaceChain_cycle_of_old_boundary (d : (markedSpineCx q).F →₀ ℤ)
+variable (d : (markedSpineCx q).F →₀ ℤ)
     (hd : Comb.bdry2 (markedSpineCx q) d = 0)
     (r : QThreeCube (cmpRel (GenusVertex q)) →₀ ℤ)
-    (he : Finsupp.lmapDomain ℤ ℤ
-      (fun s : QSquare (cmpRel (GenusVertex q)) => qCubeToCoordinate s.1)
-      (qSquareCycleCoefficients (normalizeOrdChain2 (chain2 (markedSpineToFullCube q) d))) =
-      Finsupp.linearCombination ℤ
-        (fun t : QThreeCube (cmpRel (GenusVertex q)) => qCubeCoordinateFacetChain t.1) r) :
+    (he : Finsupp.lmapDomain ℤ ℤ (fun s : QSquare (cmpRel (GenusVertex q)) => qCubeToCoordinate s.1) (qSquareCycleCoefficients (normalizeOrdChain2 (chain2 (markedSpineToFullCube q) d))) = Finsupp.linearCombination ℤ (fun t : QThreeCube (cmpRel (GenusVertex q)) => qCubeCoordinateFacetChain t.1) r)
+include d hd he
+
+theorem genus_cutFaceChain_cycle_of_old_boundary :
     simpBdry (qThreeCutFaceChain r) = 0 := by
   apply qThreeCutFaceChain_cycle
   intro σ
   rw [← he]
-  exact qSquareCoordinate_positive_zero _ (markedSpineCycle_positive_square_zero q d hd) σ
+  solve_by_elim [qSquareCoordinate_positive_zero, markedSpineCycle_positive_square_zero]
 
 /-- The cut correction of an actual ordinary boundary of an old-spine cycle is killed
 by the already constructed geometric genus collapse. -/
-theorem genus_cutFaceChain_collapse_zero_of_old_boundary (d : (markedSpineCx q).F →₀ ℤ)
-    (hd : Comb.bdry2 (markedSpineCx q) d = 0)
-    (r : QThreeCube (cmpRel (GenusVertex q)) →₀ ℤ)
-    (he : Finsupp.lmapDomain ℤ ℤ
-      (fun s : QSquare (cmpRel (GenusVertex q)) => qCubeToCoordinate s.1)
-      (qSquareCycleCoefficients (normalizeOrdChain2 (chain2 (markedSpineToFullCube q) d))) =
-      Finsupp.linearCombination ℤ
-        (fun t : QThreeCube (cmpRel (GenusVertex q)) => qCubeCoordinateFacetChain t.1) r) :
+theorem genus_cutFaceChain_collapse_zero_of_old_boundary :
     CollapseChain.cmap (cubeBdry (V := GenusVertex q)) (genusChainCollapse q)
       (Sum.elim 0 (fun σ => -qThreeCutFaceChain r σ)) = 0 := by
   apply genusChainCollapse_cutSurface_eq_zero q (qThreeCutFaceChain r)

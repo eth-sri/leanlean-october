@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.CombPi2
-public import RequestProject.Framework
+
+
 
 @[expose] public section
 
@@ -55,28 +56,14 @@ def Hom.comp {X Y Z : Complex2.{u}} (g : Hom Y Z) (h : Hom X Y) : Hom X Z where
   onE := g.onE ∘ h.onE
   onF := g.onF ∘ h.onF
   src_onE := fun e => by
-    show Z.src (g.onE (h.onE e)) = g.onV (h.onV (X.src e))
-    rw [g.src_onE, h.src_onE]
+    simp [g.src_onE, h.src_onE]
   tgt_onE := fun e => by
-    show Z.tgt (g.onE (h.onE e)) = g.onV (h.onV (X.tgt e))
-    rw [g.tgt_onE, h.tgt_onE]
+    simp [g.tgt_onE, h.tgt_onE]
   base_onF := fun f => by
-    show Z.base (g.onF (h.onF f)) = g.onV (h.onV (X.base f))
-    rw [g.base_onF, h.base_onF]
+    simp [g.base_onF, h.base_onF]
   att_onF := fun f => by
-    show Z.att (g.onF (h.onF f)) = (X.att f).map (fun eb => (g.onE (h.onE eb.1), eb.2))
-    rw [g.att_onF, h.att_onF]
-    simp
-
-/-- **Subcomplex**: a cellular map injective on vertices, edges and two-cells. -/
-def Sub (X Y : Complex2.{u}) : Prop :=
-  ∃ h : Hom X Y, Function.Injective h.onV ∧ Function.Injective h.onE ∧ Function.Injective h.onF
+    simp [g.att_onF, h.att_onF]
 
 end Comb
 
-namespace Comb
-
-/-! ### Non-vacuity: the one-point complex -/
-
-end Comb
 end FiniteChains

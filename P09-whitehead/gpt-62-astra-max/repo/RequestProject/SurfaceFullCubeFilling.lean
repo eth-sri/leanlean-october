@@ -17,7 +17,7 @@ def positiveCorner : QCube A :=
   ⟨∅, 0, by simp [IsSimplex], fun _ _ => rfl⟩
 
 /-- The actual surface inclusion in the full cube quotient. -/
-def surfaceFullCube (σ : NeSpx A) : QCube A := (posQCube σ).val
+def surfaceFullCube (σ : NeSpx A) := (posQCube σ).val
 
 theorem surfaceFullCube_monotone : Monotone (surfaceFullCube A) :=
   posQCube_monotone
@@ -28,11 +28,11 @@ theorem positiveCorner_le_surface (σ : NeSpx A) :
 
 /-- Every actual surface loop contracts through the restored positive corner. -/
 theorem surfaceFullCube_loop_null {σ : NeSpx A}
-    {p : List ((orderCx (NeSpx A)).E × Bool)}
+    {p : List _}
     (hp : IsPath (orderCx (NeSpx A)).src (orderCx (NeSpx A)).tgt p σ σ) :
-    Htpy (orderCx (QCube A)) (surfaceFullCube A σ) (surfaceFullCube A σ)
+    Htpy _ (surfaceFullCube A σ) (surfaceFullCube A σ)
       (mapPath (orderCxMap (surfaceFullCube A) (surfaceFullCube_monotone A)) p) [] :=
-  htpy_nil_mapPath_of_const_le (surfaceFullCube_monotone A) (surfaceFullCube_monotone A)
-    (fun _ => le_refl _) (positiveCorner A) (positiveCorner_le_surface A) hp
+  htpy_nil_mapPath_of_const_le _ (surfaceFullCube_monotone A)
+    (fun _ => le_refl _) _ (positiveCorner_le_surface A) hp
 
 end FiniteChains.Davis

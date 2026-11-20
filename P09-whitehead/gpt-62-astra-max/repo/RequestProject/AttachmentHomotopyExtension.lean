@@ -20,7 +20,7 @@ variable {A D X : Type u} [TopologicalSpace A] [TopologicalSpace D] [Topological
 
 /-- The ordinary homotopy extension property, retaining both equations as
 equalities of actual continuous maps. -/
-def HasHomotopyExtension (i : A → D) : Prop :=
+def HasHomotopyExtension (i : A → D) :=
   ∀ (Z : Type u) [TopologicalSpace Z] (f : C(D, Z)) (H : C(I × A, Z)),
     (∀ a, H (0, a) = f (i a)) →
     ∃ G : C(I × D, Z), (∀ d, G (0, d) = f d) ∧
@@ -31,13 +31,11 @@ theorem HasHomotopyExtension.homeomorph {A' D' : Type u}
     (h : HasHomotopyExtension i) (e : A ≃ₜ A') (d : D ≃ₜ D')
     (j : A' → D') (hsq : ∀ a, j (e a) = d (i a)) : HasHomotopyExtension j := by
   intro Z _ f H h₀
-  let f' : C(D, Z) := f.comp d.toContinuousMap
+  let f' := f.comp d.toContinuousMap
   let H' : C(I × A, Z) := H.comp
     ⟨fun ta => (ta.1, e ta.2), continuous_fst.prodMk (e.continuous.comp continuous_snd)⟩
   have h'₀ : ∀ a, H' (0, a) = f' (i a) := by
-    intro a
-    change H (0, e a) = f (d (i a))
-    rw [h₀, hsq]
+    aesop
   obtain ⟨G, hG₀, hGA⟩ := h Z f' H' h'₀
   refine ⟨G.comp ⟨fun td => (td.1, d.symm td.2),
     continuous_fst.prodMk (d.symm.continuous.comp continuous_snd)⟩, ?_, ?_⟩
@@ -49,7 +47,7 @@ theorem HasHomotopyExtension.homeomorph {A' D' : Type u}
     have hs : d.symm (j a) = i (e.symm a) := by
       apply d.injective
       rw [d.apply_symm_apply, ← hsq, e.apply_symm_apply]
-    change G (t, d.symm (j a)) = H (t, a)
+    change G (t, d.symm (j a)) = H _
     rw [hs, hGA]
     exact congrArg (fun b => H (t, b)) (e.apply_symm_apply a)
 

@@ -18,55 +18,55 @@ namespace FiniteChains.RelativeAttachment
 variable {E V J : Type} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [TopologicalSpace V]
 
-def vertexStar (r : BoundaryFamily J E → V) (v : V) : Set (DiskAttachment r) :=
+variable (r : BoundaryFamily J E → V) (v : V)
+
+def vertexStar :=
   oldCollar r 0 le_rfl {v}
 
 omit [TopologicalSpace V] in
-theorem vertexStar_subset_core (r : BoundaryFamily J E → V) (v : V) :
+theorem vertexStar_subset_core :
     vertexStar r v ⊆ puncturedAttachment r := by
   rintro (x | d) hx
   · trivial
   · exact ⟨hx.choose, trivial⟩
 
-def vertexStarPoint (r : BoundaryFamily J E → V) (v : V) : vertexStar r v :=
-  ⟨old r (boundaryFamilyInclusion J E) v, rfl⟩
+def vertexStarPoint : vertexStar r v :=
+  ⟨old r _ v, rfl⟩
 
 theorem vertexStar_isOpen [DiscreteTopology V] (r : BoundaryFamily J E → V)
     (hr : Continuous r) (v : V) : IsOpen (vertexStar r v) :=
-  oldCollar_isOpen r hr 0 le_rfl zero_lt_one {v} (isOpen_discrete _)
+  oldCollar_isOpen r hr 0 le_rfl zero_lt_one _ (isOpen_discrete _)
+
+variable (r : BoundaryFamily J E → V) (hr : Continuous r) (v : V)
+include hr
 
 /-- Restricting the actual radial homotopy gives an actual contraction,
 rather than just a claim about the induced fundamental group. -/
-def vertexStarContraction (r : BoundaryFamily J E → V) (hr : Continuous r) (v : V) :
-    ContinuousMap.Homotopy (ContinuousMap.id (vertexStar r v))
+def vertexStarContraction :
+    ContinuousMap.Homotopy (ContinuousMap.id _)
       (ContinuousMap.const _ (vertexStarPoint r v)) := by
   let j : C(vertexStar r v, puncturedAttachment r) :=
     ⟨fun z => ⟨z.val, vertexStar_subset_core r v z.property⟩,
       continuous_subtype_val.subtype_mk _⟩
   let H := radialCoreHomotopy r hr
   refine {
-    toFun := fun tx => ⟨H (tx.1, j tx.2),
-      radialCoreHomotopy_mem_oldCollar r hr tx.1 (j tx.2) {v} tx.2.property⟩
+    toFun := fun tx => ⟨H _,
+      radialCoreHomotopy_mem_oldCollar r hr tx.1 (j tx.2) _ tx.2.property⟩
     continuous_toFun :=
       (H.continuous.comp (continuous_fst.prodMk (j.continuous.comp continuous_snd))).subtype_mk _
     map_zero_left := ?_
     map_one_left := ?_ }
-  · intro z
-    exact Subtype.ext (H.map_zero_left (j z))
+  · aesop
   · intro z
     apply Subtype.ext
-    change H (1, j z) = old r (boundaryFamilyInclusion J E) v
-    refine (H.map_one_left (j z)).trans ?_
-    have hz : radialCoreBack r (j z) ∈ ({v} : Set V) :=
-      (radialCoreBack_mem_iff r (j z) {v}).mpr z.property
-    exact congrArg (old r (boundaryFamilyInclusion J E)) hz
+    refine (H.map_one_left _).trans ?_; exact congrArg _ ((radialCoreBack_mem_iff r (j z) {v}).mpr z.property)
 
-theorem vertexStar_contractible (r : BoundaryFamily J E → V) (hr : Continuous r) (v : V) :
+theorem vertexStar_contractible :
     ContractibleSpace (vertexStar r v) :=
   (contractible_iff_id_nullhomotopic _).mpr
     ⟨vertexStarPoint r v, ⟨vertexStarContraction r hr v⟩⟩
 
-theorem vertexStar_simplyConnected (r : BoundaryFamily J E → V) (hr : Continuous r) (v : V) :
+theorem vertexStar_simplyConnected :
     IsSimplyConnected (vertexStar r v) := by
   letI := vertexStar_contractible r hr v
   change SimplyConnectedSpace (vertexStar r v)

@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.FreePaddingNaturality
+public import RequestProject.PresentationInclusionFinsupp
 
 @[expose] public section
 
@@ -42,9 +42,7 @@ theorem square_group :
       have hm : (FreeGroup.map k).comp (FreeGroup.map a) =
           (FreeGroup.map b).comp (FreeGroup.map g) := by
         apply FreeGroup.ext_hom
-        intro x
-        simp only [MonoidHom.comp_apply, FreeGroup.map.of]
-        exact congrArg FreeGroup.of (hgen x)
+        simp_all
       exact congrArg (fun h : FreeGroup A →* FreeGroup E =>
         (QuotientGroup.mk (h w) : PresGroup υ)) hm
 
@@ -55,8 +53,7 @@ theorem square_cells (x : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
   induction x using Finsupp.induction_linear with
   | zero => simp
   | add x y hx hy =>
-      rw [PresMorFS.cells_add, PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
+      simp_all [PresMorFS.cells_add]
   | single j r =>
       change cells σ υ k l hσυ (cells ρ σ a c hρσ (Finsupp.single j r)) =
         cells τ υ b d hτυ (cells ρ τ g f hρτ (Finsupp.single j r))
@@ -85,7 +82,6 @@ theorem inverse_rel (k : K) :
   rw [hk]
   have hm : (FreeGroup.map g.symm).comp (FreeGroup.map g) = MonoidHom.id _ := by
     apply FreeGroup.ext_hom
-    intro x
     simp
   simpa using (congrArg (fun h : FreeGroup A →* FreeGroup A => h (ρ (f.symm k))) hm).symm
 
@@ -102,13 +98,12 @@ theorem relabel_cells_inverse (x : K →₀ MonoidAlgebra ℤ (PresGroup τ)) :
         change QuotientGroup.mk (FreeGroup.map g (FreeGroup.map g.symm w)) = QuotientGroup.mk w
         have hw : (FreeGroup.map g).comp (FreeGroup.map g.symm) = MonoidHom.id _ := by
           apply FreeGroup.ext_hom
-          intro b
           simp
         exact congrArg (fun h : FreeGroup B →* FreeGroup B =>
           (QuotientGroup.mk (h w) : PresGroup τ)) hw
   induction x using Finsupp.induction_linear with
   | zero => simp
-  | add x y hx hy => rw [PresMorFS.cells_add, PresMorFS.cells_add, hx, hy]
+  | add x y hx hy => simp [PresMorFS.cells_add, hx, hy]
   | single j r =>
       change cells ρ τ g f hrel (cells τ ρ g.symm f.symm
         (inverse_rel ρ τ g f hrel) (Finsupp.single j r)) = _
@@ -138,15 +133,14 @@ theorem paddingRelabel_generates : FSGenerates (mor ρ τ g f hg f.injective hre
   let σ := FreePadding.rel ρ g
   have hσ : ∀ j, τ (f j) = FreeGroup.map (Equiv.refl B) (σ j) := by
     intro j
-    simpa [σ, FreePadding.rel] using hrel j
+    aesop
   let pad := FreePadding.structuralMap ρ g hg
   let relabel := mor σ τ (Equiv.refl B) f (Equiv.refl B).injective f.injective hσ
   have hc : ∀ x, (mor ρ τ g f hg f.injective hrel).cells x = relabel.cells (pad.cells x) := by
     intro x
     induction x using Finsupp.induction_linear with
     | zero => simp
-    | add x y hx hy => rw [PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
+    | add x y hx hy => simp [PresMorFS.cells_add, hx, hy]
     | single j r =>
         change cells ρ τ g f hrel (Finsupp.single j r) =
           cells σ τ (Equiv.refl B) f hσ
@@ -163,14 +157,10 @@ theorem paddingRelabel_generates : FSGenerates (mor ρ τ g f hg f.injective hre
         change MonoidAlgebra.mapDomainRingHom ℤ (groupHom ρ τ g f hrel) r =
           MonoidAlgebra.mapDomainRingHom ℤ (groupHom σ τ (Equiv.refl B) f hσ)
             (MonoidAlgebra.mapDomainRingHom ℤ (FreePadding.groupHom ρ g) r)
-        rw [BlockMor.mapDomainRingHom_comp', ← hh]
+        simp_all
   have hgen := (relabel_generates σ τ (Equiv.refl B) f hσ).comp
     (FreePadding.structuralMap_generates ρ g hg)
-  intro x hx
-  have hs := hgen x hx
-  apply Submodule.span_mono _ hs
-  rintro z ⟨y, hy, rfl⟩
-  exact ⟨y, hy, (hc y).symm⟩
+  intro x hx <;> aesop
 end PaddingRelabel
 
 end FiniteChains.PresInclusionFS

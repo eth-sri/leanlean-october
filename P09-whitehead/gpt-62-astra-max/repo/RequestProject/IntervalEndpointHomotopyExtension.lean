@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.HomeomorphContinuousMap
+
 public import RequestProject.SquareBoundaryNormHomeomorph
 
 @[expose] public section
@@ -14,15 +14,15 @@ open scoped Topology unitInterval Classical
 
 variable {X : Type} [TopologicalSpace X]
 
-structure IntervalEndpointExtension (f : C(I, X)) {x₀ x₁ : X}
-    (p₀ : Path (f 0) x₀) (p₁ : Path (f 1) x₁) where
+variable (f : C(I, X)) {x₀ x₁ : X} (p₀ : Path (f 0) x₀) (p₁ : Path (f 1) x₁)
+
+structure IntervalEndpointExtension where
   map : C(I × I, X)
   zero : ∀ t, map (0, t) = f t
   side_zero : ∀ τ, map (τ, 0) = p₀ τ
   side_one : ∀ τ, map (τ, 1) = p₁ τ
 
-def intervalEndpointExtension (f : C(I, X)) {x₀ x₁ : X}
-    (p₀ : Path (f 0) x₀) (p₁ : Path (f 1) x₁) :
+def intervalEndpointExtension :
     IntervalEndpointExtension f p₀ p₁ := by
   let e := oneBallIntervalHomeomorph
   let P : C(UnitBoundary (Fin 1 → ℝ), C(I, X)) :=
@@ -32,7 +32,7 @@ def intervalEndpointExtension (f : C(I, X)) {x₀ x₁ : X}
     simp [P, oneBoundaryPoint]
   have hP₁ : P (oneBoundaryPoint true) = p₁.toContinuousMap := by
     norm_num [P, oneBoundaryPoint]
-  let H : C(I × UnitBoundary (Fin 1 → ℝ), X) :=
+  let H :=
     P.uncurry.comp ⟨Prod.swap, continuous_swap⟩
   let F := f.comp e.toContinuousMap
   have h₀ : ∀ a, H (0, a) = F (unitBoundaryInclusion _ a) := by
@@ -47,29 +47,19 @@ def intervalEndpointExtension (f : C(I, X)) {x₀ x₁ : X}
   have he (b : Bool) : e.symm (boolEndpoint b) =
       unitBoundaryInclusion _ (oneBoundaryPoint b) := by
     apply e.injective
-    rw [e.apply_symm_apply]
-    exact (oneBallIntervalHomeomorph_boundary b).symm
+    aesop
   refine {
     map := G.comp ⟨fun z => (z.1, e.symm z.2),
       continuous_fst.prodMk (e.symm.continuous.comp continuous_snd)⟩
     zero := ?_
     side_zero := ?_
     side_one := ?_ }
-  · intro t
-    change G (0, e.symm t) = f t
-    rw [ballHomotopyExtension_zero]
-    exact congrArg f (e.apply_symm_apply t)
+  · aesop
   · intro τ
     change G (τ, e.symm (boolEndpoint false)) = p₀ τ
-    rw [he, ballHomotopyExtension_boundary]
-    change P (oneBoundaryPoint false) τ = p₀ τ
-    rw [hP₀]
-    rfl
+    aesop
   · intro τ
     change G (τ, e.symm (boolEndpoint true)) = p₁ τ
-    rw [he, ballHomotopyExtension_boundary]
-    change P (oneBoundaryPoint true) τ = p₁ τ
-    rw [hP₁]
-    rfl
+    aesop
 
 end FiniteChains.RelativeAttachment

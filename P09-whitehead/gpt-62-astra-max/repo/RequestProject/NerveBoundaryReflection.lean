@@ -10,7 +10,7 @@ universe u
 variable {P : Type u} [Preorder P]
 
 /-- A homogeneous chain in `B` that bounds in `U` already bounds in `B`. -/
-def ReflectsBoundsIn (U B : P → Prop) (n : ℕ) : Prop :=
+def ReflectsBoundsIn (U B : P → Prop) (n : ℕ) :=
   ∀ c ∈ IncOn B, lengthProjection n c = c →
     (∃ y ∈ IncOn U, bdry y = c) → ∃ y ∈ IncOn B, bdry y = c
 
@@ -25,7 +25,6 @@ theorem reflectsBoundsIn_union_of_unmixed {A B U : P → Prop} {n : ℕ}
   let a := lengthProjection (n + 1) a₀
   let b := lengthProjection (n + 1) b₀
   have ha : a ∈ IncOn A := lengthProjection_mem_incOn _ ha₀
-  have hb : b ∈ IncOn B := lengthProjection_mem_incOn _ hb₀
   have hsum : bdry a + bdry b = c := by
     rw [← map_add, ← map_add, ← hsplit, ← lengthProjection_bdry, hdy, hd]
   have hdbA : bdry b ∈ IncOn A := by
@@ -34,11 +33,11 @@ theorem reflectsBoundsIn_union_of_unmixed {A B U : P → Prop} {n : ℕ}
     exact AddSubgroup.sub_mem _ hc (bdry_mem_incOn ha)
   have hdbJ : bdry b ∈ IncOn (fun p => A p ∧ B p) := by
     rw [← incOn_inf]
-    exact ⟨hdbA, bdry_mem_incOn hb⟩
+    exact ⟨hdbA, bdry_mem_incOn (lengthProjection_mem_incOn _ hb₀)⟩
   have hdbd : lengthProjection n (bdry b) = bdry b := by
     rw [lengthProjection_bdry]
     exact congrArg bdry (lengthProjection_idempotent _ _)
-  obtain ⟨z, hz, hdz⟩ := hJ (bdry b) hdbJ hdbd (by simp [bdry_bdry])
+  obtain ⟨z, hz, hdz⟩ := hJ _ hdbJ hdbd (by simp [bdry_bdry])
   refine ⟨a + z, AddSubgroup.add_mem _ ha (incOn_mono (fun _ h => h.1) hz), ?_⟩
   rw [map_add, hdz, hsum]
 

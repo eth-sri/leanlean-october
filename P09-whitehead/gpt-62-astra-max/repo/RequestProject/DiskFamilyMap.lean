@@ -16,7 +16,7 @@ variable {J K E X Y : Type} [NormedAddCommGroup E] [NormedSpace ℝ E]
   (f : C(X, Y)) (i : J → K)
   (h : ∀ j a, f (r ⟨j, a⟩) = s ⟨i j, a⟩)
 
-def diskFamilyMap : C(DiskAttachment r, DiskAttachment s) :=
+def diskFamilyMap :=
   desc r (boundaryFamilyInclusion J E)
     ((⟨old s (boundaryFamilyInclusion K E), old_continuous _ _⟩ : C(Y, DiskAttachment s)).comp f)
     ⟨fun d => cell s (boundaryFamilyInclusion K E) ⟨i d.1, d.2⟩,
@@ -32,14 +32,12 @@ def diskFamilyMap : C(DiskAttachment r, DiskAttachment s) :=
 omit [NormedSpace ℝ E] in
 @[simp] theorem diskFamilyMap_old (x : X) :
     diskFamilyMap r s f i h (old r (boundaryFamilyInclusion J E) x) =
-      old s (boundaryFamilyInclusion K E) (f x) := rfl
+      old s _ (f x) := rfl
 
 omit [NormedSpace ℝ E] in
 @[simp] theorem diskFamilyMap_cell (j : J) (x : ClosedUnitBall E) :
     diskFamilyMap r s f i h (cell r (boundaryFamilyInclusion J E) ⟨j, x⟩) =
-      cell s (boundaryFamilyInclusion K E) ⟨i j, x⟩ := by
-  unfold diskFamilyMap
-  rw [desc_cell]
-  rfl
+      cell s _ ⟨i j, x⟩ := by
+  solve_by_elim [desc_cell]
 
 end FiniteChains.RelativeAttachment

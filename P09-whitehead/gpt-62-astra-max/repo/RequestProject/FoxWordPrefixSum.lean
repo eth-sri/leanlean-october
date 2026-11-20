@@ -7,14 +7,16 @@ public import RequestProject.FoxWordBoundary
 namespace FiniteChains
 variable {α : Type*} [DecidableEq α]
 
+variable (i : α)
+
 /-- The actual Fox word boundary is its finite signed-prefix sum. -/
-theorem foxWordPathBoundary_prefix_sum (i : α) (g : FreeGroup α)
-    (l : List (α × Bool)) :
+theorem foxWordPathBoundary_prefix_sum (g : FreeGroup α)
+    (l : List _) :
     foxWordPathBoundary i g l =
       ∑ k : Fin l.length, grp (g * FreeGroup.mk (l.take k.val)) *
         foxWordIncidence i l[k.val] := by
   induction l generalizing g with
-  | nil => simp [foxWordPathBoundary]
+  | nil => rfl
   | cons p l ih =>
     rw [foxWordPathBoundary, ih]
     simp only [List.length_cons]
@@ -31,11 +33,11 @@ theorem foxWordPathBoundary_prefix_sum (i : α) (g : FreeGroup α)
     rw [hm, mul_assoc]
 
 /-- The actual Fox derivative is the finite signed-prefix sum at the identity. -/
-theorem fox_mk_prefix_sum (i : α) (l : List (α × Bool)) :
+theorem fox_mk_prefix_sum (l : List _) :
     fox i (FreeGroup.mk l) =
       ∑ k : Fin l.length, grp (FreeGroup.mk (l.take k.val)) *
         foxWordIncidence i l[k.val] := by
   rw [← foxWordPathBoundary_one]
-  simpa only [one_mul] using foxWordPathBoundary_prefix_sum i 1 l
+  solve_by_elim [foxWordPathBoundary_prefix_sum]
 
 end FiniteChains

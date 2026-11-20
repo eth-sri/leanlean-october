@@ -5,31 +5,36 @@ public import RequestProject.StrictOrderChains
 @[expose] public section
 
 /-! Explicit degree-two normalization homotopy in the full weak order nerve. -/
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
+noncomputable section
 
 namespace FiniteChains.Comb
 universe u
 variable {P : Type u} [PartialOrder P]
 
-def OrdTet (P : Type u) [PartialOrder P] :=
-  {t : P × P × P × P // t.1 ≤ t.2.1 ∧ t.2.1 ≤ t.2.2.1 ∧ t.2.2.1 ≤ t.2.2.2}
+variable {α : Type u} (r : α → α → Prop)
 
-noncomputable def ordTetBoundary (t : OrdTet P) : OrdTri P →₀ ℤ :=
+abbrev RelTetrahedron := {t : α × α × α × α // r t.1 t.2.1 ∧ r t.2.1 t.2.2.1 ∧ r t.2.2.1 t.2.2.2}
+
+variable {r} [Trans r r r]
+
+/-- Alternating sum of the four faces of a (strict or weak) flag. -/
+def relTetBoundary (t : RelTetrahedron r) : RelTriangle r →₀ ℤ :=
   Finsupp.single ⟨(t.1.2.1, t.1.2.2.1, t.1.2.2.2), t.2.2⟩ 1 -
-  Finsupp.single ⟨(t.1.1, t.1.2.2.1, t.1.2.2.2), t.2.1.trans t.2.2.1, t.2.2.2⟩ 1 +
-  Finsupp.single ⟨(t.1.1, t.1.2.1, t.1.2.2.2), t.2.1, t.2.2.1.trans t.2.2.2⟩ 1 -
+  Finsupp.single ⟨(t.1.1, t.1.2.2.1, t.1.2.2.2), Trans.trans t.2.1 t.2.2.1, t.2.2.2⟩ 1 +
+  Finsupp.single ⟨(t.1.1, t.1.2.1, t.1.2.2.2), t.2.1, Trans.trans t.2.2.1 t.2.2.2⟩ 1 -
   Finsupp.single ⟨(t.1.1, t.1.2.1, t.1.2.2.1), t.2.1, t.2.2.1⟩ 1
 
-noncomputable def ordBoundary3 : (OrdTet P →₀ ℤ) →ₗ[ℤ] (OrdTri P →₀ ℤ) :=
-  Finsupp.linearCombination ℤ ordTetBoundary
+abbrev OrdTet (P : Type u) [PartialOrder P] := RelTetrahedron (α := P) (· ≤ ·)
+
+def ordBoundary3 : (OrdTet P →₀ ℤ) →ₗ[ℤ] (OrdTri P →₀ ℤ) :=
+  Finsupp.linearCombination ℤ relTetBoundary
 
 /-- The alternating three-simplex boundary is a genuine cellular two-cycle. -/
 theorem bdry2_ordTetBoundary (t : OrdTet P) :
-    bdry2 (orderCx P) (ordTetBoundary t) = 0 := by
-  simp only [ordTetBoundary, map_sub, map_add, bdry2_single (X := orderCx P), one_smul]
+    bdry2 (orderCx P) (relTetBoundary t) = 0 := by
+  simp only [relTetBoundary, map_sub, map_add, bdry2_single (X := orderCx P), one_smul]
   simp [orderCx, pathChain]
   all_goals abel
 
@@ -37,19 +42,18 @@ theorem bdry2_ordBoundary3 (c : OrdTet P →₀ ℤ) :
     bdry2 (orderCx P) (ordBoundary3 c) = 0 := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd, add_zero]
+  | add c d hc hd => simp_all
   | single t n =>
-    simp only [ordBoundary3, Finsupp.linearCombination_single, map_smul,
-      bdry2_ordTetBoundary, smul_zero]
+    simp [ordBoundary3, Finsupp.linearCombination_single, map_smul, bdry2_ordTetBoundary, smul_zero]
 
-noncomputable def ordNormalizationHomotopy1 : (OrdEdge P →₀ ℤ) →ₗ[ℤ]
+def ordNormalizationHomotopy1 : (OrdEdge P →₀ ℤ) →ₗ[ℤ]
     (OrdTri P →₀ ℤ) := by
   classical
   exact Finsupp.linearCombination ℤ (fun e =>
     if e.1.1 = e.1.2 then
       Finsupp.single ⟨(e.1.1, e.1.1, e.1.1), le_rfl, le_rfl⟩ 1 else 0)
 
-noncomputable def ordNormalizationTriangleHomotopy (t : OrdTri P) : OrdTet P →₀ ℤ := by
+def ordNormalizationTriangleHomotopy (t : OrdTri P) : OrdTet P →₀ ℤ := by
   classical
   exact if h : t.1.1 = t.1.2.1 then
     Finsupp.single ⟨(t.1.1, t.1.1, t.1.1, t.1.2.2), le_rfl, le_rfl,
@@ -57,43 +61,37 @@ noncomputable def ordNormalizationTriangleHomotopy (t : OrdTri P) : OrdTet P →
     -Finsupp.single ⟨(t.1.1, t.1.2.1, t.1.2.1, t.1.2.1), t.2.1, le_rfl, le_rfl⟩ 1
     else 0
 
-noncomputable def ordNormalizationHomotopy2 : (OrdTri P →₀ ℤ) →ₗ[ℤ]
+def ordNormalizationHomotopy2 : (OrdTri P →₀ ℤ) →ₗ[ℤ]
     (OrdTet P →₀ ℤ) :=
   Finsupp.linearCombination ℤ ordNormalizationTriangleHomotopy
 
 /-- The discrepancy on a triangle is an explicit three-boundary plus the homotopy of
 its edge boundary. This includes triangles with coinciding vertices. -/
 theorem ordNormalization_triangle_identity (t : OrdTri P) :
-    Finsupp.single t (1 : ℤ) -
+    Finsupp.single t 1 -
       (Finsupp.mapDomain (strictOrderIncl P).onF (normalizeOrdTriangle t) : OrdTri P →₀ ℤ) =
     ordNormalizationHomotopy1 (pathChain ((orderCx P).att t)) +
       ordBoundary3 (ordNormalizationTriangleHomotopy t) := by
   classical
   rcases t with ⟨⟨a, b, c⟩, hab, hbc⟩
   by_cases heab : a = b
-  · subst b
-    by_cases hac : a = c
-    · subst c
-      simp [normalizeOrdTriangle, ordNormalizationHomotopy1, pathChain, orderCx,
-        ordNormalizationTriangleHomotopy, ordBoundary3, ordTetBoundary]
-    · simp [normalizeOrdTriangle, ordNormalizationHomotopy1, pathChain, orderCx,
-        ordNormalizationTriangleHomotopy, ordBoundary3, ordTetBoundary]
+  · simp_all [normalizeOrdTriangle, ordNormalizationHomotopy1, pathChain, orderCx, ordNormalizationTriangleHomotopy, ordBoundary3, relTetBoundary]
   · by_cases hebc : b = c
-    · subst c
-      simp [normalizeOrdTriangle, ordNormalizationHomotopy1, pathChain, orderCx,
-        ordNormalizationTriangleHomotopy, ordBoundary3, ordTetBoundary, heab]
-    · have hab' : a < b := lt_of_le_of_ne hab heab
-      have hbc' : b < c := lt_of_le_of_ne hbc hebc
+    · simp_all [normalizeOrdTriangle, ordNormalizationHomotopy1, pathChain, orderCx, ordNormalizationTriangleHomotopy, ordBoundary3, relTetBoundary, heab]
+    · have hab' := lt_of_le_of_ne hab heab
+      have hbc' := lt_of_le_of_ne hbc hebc
       simp [normalizeOrdTriangle, strictOrderIncl, ordNormalizationHomotopy1,
         pathChain, orderCx, ordNormalizationTriangleHomotopy, ordBoundary3,
         hab', hbc', heab, hebc, (hab'.trans hbc').ne]
 
 /-- The inclusion on strict two-chains, as an integer-linear map. -/
-noncomputable def ordStrictInclusion2 : (StrictOrdTri P →₀ ℤ) →ₗ[ℤ]
+def ordStrictInclusion2 : (StrictOrdTri P →₀ ℤ) →ₗ[ℤ]
     (OrdTri P →₀ ℤ) := Finsupp.lmapDomain ℤ ℤ (strictOrderIncl P).onF
 
+variable (c : OrdTri P →₀ ℤ)
+
 /-- The explicit normalization homotopy on arbitrary finitely supported two-chains. -/
-theorem ordNormalization_chain_identity (c : OrdTri P →₀ ℤ) :
+theorem ordNormalization_chain_identity :
     c - ordStrictInclusion2 (normalizeOrdChain2 c) =
     ordNormalizationHomotopy1 (bdry2 (orderCx P) c) +
       ordBoundary3 (ordNormalizationHomotopy2 c) := by
@@ -107,12 +105,11 @@ theorem ordNormalization_chain_identity (c : OrdTri P →₀ ℤ) :
     rw [bdry2_single]
     have h := congrArg (fun x : OrdTri P →₀ ℤ => n • x)
       (ordNormalization_triangle_identity t)
-    simpa [ordStrictInclusion2, ordNormalizationHomotopy2, smul_sub,
-      smul_add, Finsupp.smul_single] using h
+    simp_all [ordStrictInclusion2, ordNormalizationHomotopy2, smul_sub, smul_add, Finsupp.smul_single]
 
 /-- A cellular two-cycle differs from its normalized image by an explicit three-boundary
 in the full order nerve. No identification of the truncated second homotopy groups is used. -/
-theorem ordNormalization_cycle_boundary (c : OrdTri P →₀ ℤ)
+theorem ordNormalization_cycle_boundary
     (hc : bdry2 (orderCx P) c = 0) :
     c - ordStrictInclusion2 (normalizeOrdChain2 c) =
       ordBoundary3 (ordNormalizationHomotopy2 c) := by

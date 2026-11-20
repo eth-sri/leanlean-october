@@ -2,104 +2,33 @@ module
 
 public import RequestProject.QCubeThreeFaceIndex
 public import RequestProject.QCubeOrderedSquareFacets
+public import RequestProject.CubicalThreeBoundaryMatrix
 
 @[expose] public section
 
-/-! Geometric edge identifications for the six-face coefficient index. -/
+/-! Both boundary directions for a facet in the canonical decreasing frame. -/
+noncomputable section
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] [LinearOrder V] {A : CommRel V}
 
-theorem qThreeFaceSquare_zero_small (c : QCube A) (u v w : V)
-    (huv : v < u) (hvw : w < v) (hs : c.spx = {u, v, w}) (s t : ZMod 2) :
-    qSquareSmallFacet
-      (qThreeFaceSquare c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (0, s)) t =
-      qThreeEdge c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (1, s, t) := by
-  apply Subtype.ext
-  rw [qSquareSmallFacet_ordered _ hvw
-    (threeFacet_vw_spx c (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne) hs s)]
-  rfl
+variable (c : QThreeCube A)
 
-theorem qThreeFaceSquare_zero_large (c : QCube A) (u v w : V)
-    (huv : v < u) (hvw : w < v) (hs : c.spx = {u, v, w}) (s t : ZMod 2) :
-    qSquareLargeFacet
-      (qThreeFaceSquare c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (0, s)) t =
-      qThreeEdge c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (0, s, t) := by
-  apply Subtype.ext
-  rw [qSquareLargeFacet_ordered _ hvw
-    (threeFacet_vw_spx c (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne) hs s)]
-  rfl
-
-theorem qThreeFaceSquare_one_small (c : QCube A) (u v w : V)
-    (huv : v < u) (hvw : w < v) (hs : c.spx = {u, v, w}) (s t : ZMod 2) :
-    qSquareSmallFacet
-      (qThreeFaceSquare c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (1, s)) t =
-      qThreeEdge c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (2, s, t) := by
-  apply Subtype.ext
-  have h21 : (2 : Fin 3) ≠ 1 := by decide
-  have hspx := threeFacet_uw_spx c (Ne.symm huv.ne) (Ne.symm hvw.ne) hs s
-  have hval : (qThreeFaceSquare c u v w (Ne.symm huv.ne)
-      (Ne.symm (hvw.trans huv).ne) (Ne.symm hvw.ne) hs (1, s)).1 =
-      qCubeFacet c v s := by
-    simp [qThreeFaceSquare, qThreeFacetSquare, qCubeFacetIndex, qThreeDirection]
-  rw [qSquareSmallFacet_ordered _ (hvw.trans huv) (hval.symm ▸ hspx), hval]
-  rfl
-
-theorem qThreeFaceSquare_one_large (c : QCube A) (u v w : V)
-    (huv : v < u) (hvw : w < v) (hs : c.spx = {u, v, w}) (s t : ZMod 2) :
-    qSquareLargeFacet
-      (qThreeFaceSquare c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (1, s)) t =
-      qThreeEdge c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (0, t, s) := by
-  apply Subtype.ext
-  have h21 : (2 : Fin 3) ≠ 1 := by decide
-  have hspx := threeFacet_uw_spx c (Ne.symm huv.ne) (Ne.symm hvw.ne) hs s
-  have hval : (qThreeFaceSquare c u v w (Ne.symm huv.ne)
-      (Ne.symm (hvw.trans huv).ne) (Ne.symm hvw.ne) hs (1, s)).1 =
-      qCubeFacet c v s := by
-    simp [qThreeFaceSquare, qThreeFacetSquare, qCubeFacetIndex, qThreeDirection]
-  rw [qSquareLargeFacet_ordered _ (hvw.trans huv) (hval.symm ▸ hspx), hval]
-  simpa [qThreeEdge, qThreeEdgeCell, qCubeDoubleFacet, h21] using qCubeFacet_comm c huv.ne s t
-
-theorem qThreeFaceSquare_two_small (c : QCube A) (u v w : V)
-    (huv : v < u) (hvw : w < v) (hs : c.spx = {u, v, w}) (s t : ZMod 2) :
-    qSquareSmallFacet
-      (qThreeFaceSquare c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (2, s)) t =
-      qThreeEdge c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (2, t, s) := by
-  apply Subtype.ext
-  have h21 : (2 : Fin 3) ≠ 1 := by decide
-  have hspx := threeFacet_uv_spx c (Ne.symm (hvw.trans huv).ne) (Ne.symm hvw.ne) hs s
-  have hval : (qThreeFaceSquare c u v w (Ne.symm huv.ne)
-      (Ne.symm (hvw.trans huv).ne) (Ne.symm hvw.ne) hs (2, s)).1 =
-      qCubeFacet c w s := by
-    simp [qThreeFaceSquare, qThreeFacetSquare, qCubeFacetIndex, qThreeDirection, h21]
-  rw [qSquareSmallFacet_ordered _ (huv) (hval.symm ▸ hspx), hval]
-  simpa [qThreeEdge, qThreeEdgeCell, qCubeDoubleFacet, h21] using qCubeFacet_comm c hvw.ne s t
-
-theorem qThreeFaceSquare_two_large (c : QCube A) (u v w : V)
-    (huv : v < u) (hvw : w < v) (hs : c.spx = {u, v, w}) (s t : ZMod 2) :
-    qSquareLargeFacet
-      (qThreeFaceSquare c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (2, s)) t =
-      qThreeEdge c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-        (Ne.symm hvw.ne) hs (1, t, s) := by
-  apply Subtype.ext
-  have h21 : (2 : Fin 3) ≠ 1 := by decide
-  have hspx := threeFacet_uv_spx c (Ne.symm (hvw.trans huv).ne) (Ne.symm hvw.ne) hs s
-  have hval : (qThreeFaceSquare c u v w (Ne.symm huv.ne)
-      (Ne.symm (hvw.trans huv).ne) (Ne.symm hvw.ne) hs (2, s)).1 =
-      qCubeFacet c w s := by
-    simp [qThreeFaceSquare, qThreeFacetSquare, qCubeFacetIndex, qThreeDirection, h21]
-  rw [qSquareLargeFacet_ordered _ (huv) (hval.symm ▸ hspx), hval]
-  simpa [qThreeEdge, qThreeEdgeCell, qCubeDoubleFacet, h21] using qCubeFacet_comm c (hvw.trans huv).ne s t
+theorem qThreeFaceEdges (i : Fin 3 × ZMod 2) (t : ZMod 2) :
+    qSquareSmallFacet (qThreeFaceSquare c i) t = qThreeEdge c (smallEdgeIndex i t) ∧
+    qSquareLargeFacet (qThreeFaceSquare c i) t = qThreeEdge c (largeEdgeIndex i t) := by
+  obtain ⟨e, s⟩ := i
+  have h0 := threeFacet_vw_spx c.1 c.mid_lt.ne' (c.lo_lt.trans c.mid_lt).ne' c.directions s
+  have h1 := threeFacet_uw_spx c.1 c.mid_lt.ne' c.lo_lt.ne' c.directions s
+  have h2 := threeFacet_uv_spx c.1 (c.lo_lt.trans c.mid_lt).ne' c.lo_lt.ne' c.directions s
+  fin_cases e <;> constructor <;> apply Subtype.ext
+  all_goals first
+    | rw [qSquareSmallFacet_ordered _ c.lo_lt h0]
+    | rw [qSquareLargeFacet_ordered _ c.lo_lt h0]
+    | rw [qSquareSmallFacet_ordered _ (c.lo_lt.trans c.mid_lt) h1]
+    | rw [qSquareLargeFacet_ordered _ (c.lo_lt.trans c.mid_lt) h1]
+    | rw [qSquareSmallFacet_ordered _ c.mid_lt h2]
+    | rw [qSquareLargeFacet_ordered _ c.mid_lt h2]
+  all_goals first | rfl | exact qCubeFacet_comm _ c.mid_lt.ne s t | exact qCubeFacet_comm _ c.lo_lt.ne s t | exact qCubeFacet_comm _ (c.lo_lt.trans c.mid_lt).ne s t
 
 end FiniteChains.Davis

@@ -5,16 +5,15 @@ public import RequestProject.GenusOldCoverSpineFaithfulness
 public import RequestProject.ChamberQuotientOldCover
 public import RequestProject.StrictOrderPullbackHom
 public import RequestProject.OrderCxRestriction
-public import RequestProject.UniversalCoverPi1Injection
+
 
 @[expose] public section
 
 /-! The received spine is mapped into the genuine pulled-back old-cover spine.
 
 -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
+noncomputable section
 
 namespace FiniteChains.Comb
 variable {K Y Z : Complex2}
@@ -37,8 +36,7 @@ theorem uOrderHomInv_projection_square {P : Type} [PartialOrder P] (a : P) :
   apply Hom.ext'
   · funext x
     change uOrderEnd (uOrderHomInv.onV x) = endV x
-    rw (config := { transparency := .default }) [uOrderHomInv_vertex]
-    rfl
+    solve_by_elim [uOrderHomInv_vertex]
   · funext e
     exact uOrderHomInv_edge_projection e
   · funext t
@@ -85,10 +83,9 @@ variable (q : ℕ) [NeZero q] {α Jr : Type}
   (ρ : Jr ⊕ PUnit.{1} → FreeGroup α) (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
-noncomputable abbrev namedOldCover := QLiftedOld (namedQuotientBase ρ q u)
+abbrev namedOldCover := QLiftedOld (namedQuotientBase ρ q u)
 
-noncomputable def namedOldCoverProjection :
-    namedOldCover q ρ u → QOld (cmpRel (GenusVertex q)) :=
+def namedOldCoverProjection :=
   qOldCoverEnd (namedQuotientBase ρ q u)
 
 theorem namedOldCoverProjection_isPosetCover : IsPosetCover (namedOldCoverProjection q ρ u) :=
@@ -115,9 +112,7 @@ variable (q : ℕ) [NeZero q] {α Jr : Type}
   (ρ : Jr ⊕ PUnit.{1} → FreeGroup α) (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
-noncomputable def coveredSpineToStrictSpine :
-    Hom (strictOrderCx (OldCoveredSpine q (namedOldCoverProjection q ρ u)))
-      (strictOrderCx (GenusSpineCell q)) :=
+def coveredSpineToStrictSpine :=
   (strictPullbackProjection (namedOldCoverProjection q ρ u)
     (namedOldCoverProjection_isPosetCover q ρ u) (genusSpineCellToOld q)
     (genusSpineCellToOld_monotone q)).comp

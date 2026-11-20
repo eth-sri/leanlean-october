@@ -13,7 +13,6 @@ Barycenters will be used for the geometric specialization. Naturality
 requires that the vertex map carry the chosen centers to chosen centers.
 -/
 
-
 namespace FiniteChains.VertexChains
 
 universe u v
@@ -27,19 +26,19 @@ noncomputable def subdivide : (n : ℕ) → Chain V n →ₗ[ℤ] Chain V n
 
 theorem subdivide_zero (c : Chain V 0) : subdivide center 0 c = c := rfl
 
-theorem subdivide_succ_single (n : ℕ) (v : Vertices V (n + 1)) (r : ℤ) :
-    subdivide center (n + 1) (Finsupp.single v r) =
-      r • cone (center (n + 1) v) n (subdivide center n (boundary n (Finsupp.single v 1))) := by
-  simp only [subdivide, Finsupp.linearCombination_single]
+variable (n : ℕ)
 
-theorem boundary_subdivide (n : ℕ) :
-    (boundary n).comp (subdivide center (n + 1)) = (subdivide center n).comp (boundary n) := by
+theorem subdivide_succ_single (v : Vertices V _) (r : ℤ) :
+    subdivide center _ (Finsupp.single v r) =
+      r • cone (center (n + 1) v) n (subdivide center n (boundary n (Finsupp.single v 1))) := by
+  simp [subdivide, Finsupp.linearCombination_single]
+
+theorem boundary_subdivide :
+    (boundary n).comp (subdivide center _) = (subdivide center n).comp (boundary n) := by
   induction n with
   | zero =>
     apply linearMap_ext_basis
-    intro v
-    simp only [LinearMap.comp_apply, subdivide_succ_single, one_smul, subdivide_zero]
-    rw [boundary_cone_zero, augmentation_boundary, zero_smul, sub_zero]
+    simp_all [subdivide_succ_single, subdivide_zero, boundary_cone_zero, augmentation_boundary]
   | succ n ih =>
     apply linearMap_ext_basis
     intro v
@@ -48,9 +47,9 @@ theorem boundary_subdivide (n : ℕ) :
     have hz : boundary n (subdivide center (n + 1)
         (boundary (n + 1) (Finsupp.single v 1))) = 0 := by
       rw [← LinearMap.comp_apply, ih, LinearMap.comp_apply, boundary_boundary, map_zero]
-    rw [hz, map_zero, sub_zero]
+    simp_all
 
-theorem subdivide_boundary (n : ℕ) (c : Chain V (n + 1)) :
+theorem subdivide_boundary (c : Chain V _) :
     subdivide center n (boundary n c) = boundary n (subdivide center (n + 1) c) :=
   (DFunLike.congr_fun (boundary_subdivide center n) c).symm
 

@@ -1,6 +1,6 @@
 module
 
-public import Mathlib
+
 public import RequestProject.FoxCommutator
 
 @[expose] public section
@@ -32,32 +32,24 @@ topological input that is not formalized here — this is the hypothesis
 `RequestProject/FoxCommutator.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains
 
 open Function
 
 variable {U V : Type*} [AddCommGroup U] [AddCommGroup V]
 
-/-- Multiplication by `n` on an additive commutative group, as a homomorphism. -/
-def nsmulHom (n : ℕ) (U : Type*) [AddCommGroup U] : U →+ U where
-  toFun u := n • u
-  map_zero' := smul_zero n
-  map_add' a b := smul_add n a b
+variable (n : ℕ)
 
-@[simp] theorem nsmulHom_apply (n : ℕ) (u : U) : nsmulHom n U u = n • u := rfl
+variable (f : U →+ V)
 
 /-- `f` is *injective modulo `n`*: whenever `f u` is divisible by `n`, already `u` is.
 For maps between free modules this is injectivity of the reduction `f ⊗ ℤ/n`. -/
-def LiftsMod (f : U →+ V) (n : ℕ) : Prop :=
+def LiftsMod (n : ℕ) :=
   ∀ u : U, (∃ w : V, f u = n • w) → ∃ u' : U, u = n • u'
 
 /-- **The lifting step.**  If the target is torsion free and `f` is injective modulo every
 prime, then every element whose multiple lies in the image already lies in the image. -/
-theorem mem_range_of_nsmul_mem_range (f : U →+ V) [IsAddTorsionFree V]
+theorem mem_range_of_nsmul_mem_range [IsAddTorsionFree V]
     (hmod : ∀ p : ℕ, p.Prime → LiftsMod f p) :
     ∀ n : ℕ, n ≠ 0 → ∀ x : V, n • x ∈ f.range → x ∈ f.range := by
   intro n
@@ -65,18 +57,16 @@ theorem mem_range_of_nsmul_mem_range (f : U →+ V) [IsAddTorsionFree V]
   | _ n ih =>
     intro hn x hx
     rcases eq_or_ne n 1 with rfl | hn1
-    · simpa using hx
+    · simp_all
     · obtain ⟨p, hp, m, rfl⟩ : ∃ p, p.Prime ∧ ∃ m, n = p * m := by
         obtain ⟨p, hp, hdvd⟩ := Nat.exists_prime_and_dvd hn1
-        obtain ⟨m, rfl⟩ := hdvd
-        exact ⟨p, hp, m, rfl⟩
-      have hm : m ≠ 0 := by rintro rfl; simp at hn
-      have hpos : p ≠ 0 := hp.ne_zero
+        solve_by_elim
+      have hm : m ≠ 0 := by rintro rfl; simp_all
       obtain ⟨u, hu⟩ := hx
       -- `p` divides `f u`, hence `u`
       obtain ⟨u', hu'⟩ := hmod p hp u ⟨m • x, by rw [hu, mul_smul]⟩
       have hmx : m • x = f u' := by
-        refine IsAddTorsionFree.nsmul_right_injective hpos ?_
+        refine IsAddTorsionFree.nsmul_right_injective hp.ne_zero ?_
         show p • (m • x) = p • f u'
         rw [← mul_smul, ← hu, hu', map_nsmul]
       have : m • x ∈ f.range := ⟨u', hmx.symm⟩
@@ -95,10 +85,7 @@ theorem mem_range_of_nsmul_mem_range (f : U →+ V) [IsAddTorsionFree V]
 instance isAddTorsionFree_finsupp {α : Type*} {A : Type*} [AddCommGroup A]
     [IsAddTorsionFree A] : IsAddTorsionFree (α →₀ A) := by
   constructor
-  intro n hn a b hab
-  refine Finsupp.ext fun i => ?_
-  have : (n • a) i = (n • b) i := congrArg (fun v : α →₀ A => v i) hab
-  simpa using IsAddTorsionFree.nsmul_right_injective hn (by simpa using this)
+  intro n hn a b hab <;> simp_all
 
 /-- Group rings over `ℤ` are torsion free as additive groups. -/
 instance isAddTorsionFree_monoidAlgebra {Q : Type*} [Monoid Q] :
@@ -107,9 +94,9 @@ instance isAddTorsionFree_monoidAlgebra {Q : Type*} [Monoid Q] :
     constructor
     intro n hn a b hab
     let e := (MonoidAlgebra.coeffAddEquiv (R := ℤ) (M := Q)).toAddMonoidHom
-    have hc : n • a.coeff = n • b.coeff := calc
-      _ = e (n • a) := (map_nsmul e n a).symm
-      _ = e (n • b) := congrArg e hab
+    have hc := calc
+      _ = e _ := (map_nsmul e n a).symm
+      _ = e _ := congrArg e hab
       _ = _ := map_nsmul e n b
     apply MonoidAlgebra.coeff_injective
     exact IsAddTorsionFree.nsmul_right_injective hn hc
@@ -125,7 +112,6 @@ instance isMulTorsionFree_multiplicative {A : Type*} [AddMonoid A] [IsAddTorsion
     IsMulTorsionFree (Multiplicative A) := by
   constructor
   intro n hn a b hab
-  have h : n • (Multiplicative.toAdd a) = n • (Multiplicative.toAdd b) := hab
-  exact IsAddTorsionFree.nsmul_right_injective (M := A) hn h
+  exact IsAddTorsionFree.nsmul_right_injective (M := A) hn hab
 
 end FiniteChains

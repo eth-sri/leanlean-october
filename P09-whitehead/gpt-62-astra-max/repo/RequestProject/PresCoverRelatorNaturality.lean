@@ -1,13 +1,10 @@
 module
 
 public import RequestProject.PresCoverConeCircleProjection
-public import RequestProject.PosetCoverTopTriangle
+
+
 
 @[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -36,14 +33,11 @@ theorem presCoverRelatorTriangle_unique (p : PresCoverRelator w f) (t : StrictOr
     (ht : (strictOrderCxMap f hf.strictMono).onF t = presRelatorFirstTriangle w hpos p.1.2)
     (hv : t.1.2.2 = p.1.1) : t = presCoverRelatorTriangle w f hf hpos p := by
   let r := presCoverRelatorTriangle w f hf hpos p
-  have he : (strictOrderCxMap f hf.strictMono).onF t =
-      (strictOrderCxMap f hf.strictMono).onF r :=
+  have he :=
     ht.trans (presCoverRelatorTriangle_projection w f hf hpos p).symm
-  have hfa := congrArg (fun s : StrictOrdTri (PresPos w) => s.1.1) he
-  have hfb := congrArg (fun s : StrictOrdTri (PresPos w) => s.1.2.1) he
-  have ha : t.1.1 = r.1.1 := hf.down_inj (a := p.1.1)
-    (hv ▸ (t.2.1.le.trans t.2.2.le)) (r.2.1.le.trans r.2.2.le) hfa
-  have hb : t.1.2.1 = r.1.2.1 := hf.down_inj (a := p.1.1) (hv ▸ t.2.2.le) r.2.2.le hfb
+  have ha := hf.down_inj (a := p.1.1)
+    (hv ▸ (t.2.1.le.trans t.2.2.le)) (r.2.1.le.trans r.2.2.le) (congrArg (fun s : StrictOrdTri (PresPos w) => s.1.1) he)
+  have hb := hf.down_inj (a := p.1.1) (hv ▸ t.2.2.le) r.2.2.le (congrArg (fun s : StrictOrdTri (PresPos w) => s.1.2.1) he)
   exact Subtype.ext (Prod.ext ha (Prod.ext hb hv))
 
 end FiniteChains.PresModel

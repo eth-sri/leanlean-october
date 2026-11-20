@@ -18,41 +18,48 @@ variable {A C Z S : Type} (core : C → FreeGroup A)
   (hcore : Function.Surjective (expMatrix core))
   (extra : S → FreeGroup (A ⊕ Z))
 
-def rawPresentation : C ⊕ S → FreeGroup (A ⊕ Z) :=
+def rawPresentation :=
   Sum.elim (fun c => FreeGroup.map Sum.inl (core c)) extra
 
 theorem pairRel_rawPresentation : pairRel (rawPresentation core extra) =
     beforeCorrection core extra := by
   funext j
   cases j with
-  | inl c => exact pairSubstitution_map_core (core c)
+  | inl c => apply pairSubstitution_map_core
   | inr s => rfl
 
-def relativeRuleOneMap : PresMorFS (rawPresentation core extra) (beforeCorrection core extra) :=
+def relativeRuleOneMap :=
   (pairStructuralMap (rawPresentation core extra)).castTarget (pairRel_rawPresentation core extra)
 
-def pairGroupHomTo {B W J : Type} (ρ : J → FreeGroup (B ⊕ W))
-    (τ : J → FreeGroup (PairGen B W)) (h : pairRel ρ = τ) : PresGroup ρ →* PresGroup τ :=
+section
+
+variable {B W J : Type}
+    (ρ : J → FreeGroup (B ⊕ W))
+    (τ : J → FreeGroup (PairGen B W))
+    (h : pairRel ρ = τ)
+include B W J τ
+
+def pairGroupHomTo : PresGroup ρ →* PresGroup τ :=
   QuotientGroup.lift _ ((QuotientGroup.mk' _).comp pairSubstitution) (by
     refine Subgroup.normalClosure_le_normal ?_
     rintro _ ⟨j, rfl⟩
     apply (QuotientGroup.eq_one_iff _).mpr
     exact Subgroup.subset_normalClosure ⟨j, (congrFun h j).symm⟩)
 
-theorem pairCast_hom {B W J : Type} (ρ : J → FreeGroup (B ⊕ W))
-    (τ : J → FreeGroup (PairGen B W)) (h : pairRel ρ = τ) :
+theorem pairCast_hom :
     ((pairStructuralMap ρ).castTarget h).hom = pairGroupHomTo ρ τ h := by
   cases h
   rfl
 
-theorem pairCast_cells {B W J : Type} (ρ : J → FreeGroup (B ⊕ W))
-    (τ : J → FreeGroup (PairGen B W)) (h : pairRel ρ = τ)
+theorem pairCast_cells
     (x : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
     ((pairStructuralMap ρ).castTarget h).cells x =
       x.mapRange (MonoidAlgebra.mapDomainRingHom ℤ ((pairStructuralMap ρ).castTarget h).hom)
         (map_zero _) := by
   cases h
   rfl
+
+end
 
 @[simp] theorem relativeRuleOneMap_hom_mk (w : FreeGroup (A ⊕ Z)) :
     (relativeRuleOneMap core extra).hom (QuotientGroup.mk w) =
@@ -71,8 +78,7 @@ theorem relativeRuleOneMap_generates : FSGenerates (relativeRuleOneMap core extr
     (pairRel_rawPresentation core extra)
 
 /-- Rules 1 and 2 supply the normalized source used by the terminal theorem. -/
-def relativeNormalizationMap : PresMorFS (rawPresentation core extra)
-    (normalizedPresentation core hcore extra) :=
+def relativeNormalizationMap :=
   (normalizationSlideMap core hcore extra).comp (relativeRuleOneMap core extra)
 
 theorem relativeNormalizationMap_generates :

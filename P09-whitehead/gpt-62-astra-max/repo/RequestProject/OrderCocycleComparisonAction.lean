@@ -15,13 +15,12 @@ structure ComparisonPoint (G : Type v) where
 instance : MulAction (G × G) (ComparisonPoint G) where
   smul g x := ⟨g.1 * x.val * g.2⁻¹⟩
   one_smul x := by
-    change (⟨(1 : G) * x.val * (1 : G)⁻¹⟩ : ComparisonPoint G) = x
+    change (⟨(1 : G) * x.val * (1 : G)⁻¹⟩) = x
     cases x
     simp only [one_mul, inv_one, mul_one]
   mul_smul g h x := by
     change (⟨(g.1 * h.1) * x.val * (g.2 * h.2)⁻¹⟩ : ComparisonPoint G) =
       ⟨g.1 * (h.1 * x.val * h.2⁻¹) * g.2⁻¹⟩
-    congr 1
     group
 
 def comparisonOne : ComparisonPoint G := ⟨1⟩
@@ -31,21 +30,22 @@ theorem comparisonOne_fixed_iff (g h : G) :
   change (⟨g * 1 * h⁻¹⟩ : ComparisonPoint G) = ⟨1⟩ ↔ g = h
   rw [ComparisonPoint.mk.injEq, mul_one, mul_inv_eq_one]
 
-def product (c d : OrdCocycle P G) : OrdCocycle P (G × G) where
+variable (c d : OrdCocycle P G)
+
+def product : OrdCocycle P (G × G) where
   val a b := (c.val a b, d.val a b)
   comp hab hbd := Prod.ext (c.comp hab hbd) (d.comp hab hbd)
 
-theorem product_readGerm (c d : OrdCocycle P G) (e : (orderCx P).E × Bool) :
+theorem product_readGerm (e : (orderCx P).E × Bool) :
     (product c d).readGerm e = (c.readGerm e, d.readGerm e) := by
   obtain ⟨e, b⟩ := e
   cases b <;> rfl
 
-theorem product_readPath (c d : OrdCocycle P G) (p : List ((orderCx P).E × Bool)) :
+theorem product_readPath (p : List _) :
     (product c d).readPath p = (c.readPath p, d.readPath p) := by
   induction p with
   | nil => rfl
   | cons e p ih =>
-    rw [readPath_cons, product_readGerm, ih, readPath_cons, readPath_cons]
-    rfl
+    simp_all [readPath_cons, product_readGerm]
 
 end FiniteChains.Comb.OrdCocycle

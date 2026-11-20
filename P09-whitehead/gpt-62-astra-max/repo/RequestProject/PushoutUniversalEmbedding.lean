@@ -13,10 +13,7 @@ No universal-cover embedding hypothesis is assumed. Unverified source. -/
 
 noncomputable section
 open scoped Classical
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u v
@@ -24,11 +21,12 @@ universe u v
 namespace EdgeLabels
 variable {X : Complex2.{u}} {G : Type v} [Group G]
 
-def vertexRead (w : X.E → G) (hw : ∀ f, read w (X.att f) = 1) (a : X.V) : UV X a → G :=
-  Quotient.lift (fun p : PathFrom X a => read w p.val) (fun _ _ h => read_htpy w hw h)
+variable (w : X.E → G) (hw : ∀ f, read w (X.att f) = 1) (a : X.V)
 
-@[simp] theorem vertexRead_mk (w : X.E → G) (hw : ∀ f, read w (X.att f) = 1)
-    (a : X.V) (p : PathFrom X a) : vertexRead w hw a (UV.mk p) = read w p.val := rfl
+def vertexRead : UV X a → G :=
+  Quotient.lift _ (fun _ _ h => read_htpy w hw h)
+
+@[simp] theorem vertexRead_mk (p : PathFrom X a) : vertexRead w hw a (UV.mk p) = read w p.val := rfl
 end EdgeLabels
 
 namespace PushoutSheets
@@ -38,7 +36,7 @@ variable {D K L : Complex2.{u}} {Q : Type v} [Group Q]
   (i : Hom D L) (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
   (hiF : Function.Injective i.onF)
 
-def potential (v : L.V) : Q := if h : ∃ d, i.onV d = v then
+def potential (v : L.V) := if h : ∃ d, i.onV d = v then
   RegularCoverLabels.sheet p hp a hr h.choose else 1
 
 include hiV in
@@ -57,34 +55,31 @@ theorem labels_pushE (e : L.E) : labels p hp a hr i hiV hiE (pushE p i e) =
   by_cases h : ∃ d, i.onE d = e
   · obtain ⟨d, rfl⟩ := h
     rw [pushE_of_mem p hiE]
-    change RegularCoverLabels.edge p hp a hr (p.onE d) = _
     rw [i.src_onE, i.tgt_onE, potential_core p hp a hr i hiV,
-      potential_core p hp a hr i hiV]
-    exact RegularCoverLabels.edge_projection p hp a hr he d
+      potential_core p hp a hr i hiV]; exact RegularCoverLabels.edge_projection p hp a hr he d
   · rw [pushE_of_off p i ⟨e, fun d hd => h ⟨d, hd⟩⟩]
     rfl
 
 include he in
-theorem read_pushPath {l : List (L.E × Bool)} {v w : L.V}
+theorem read_pushPath {l : List _} {v w : L.V}
     (hl : IsPath L.src L.tgt l v w) :
     EdgeLabels.read (labels p hp a hr i hiV hiE)
       (mapPath (pushoutMap p i hiV hiE hiF) l) =
       (potential p hp a hr i v)⁻¹ * potential p hp a hr i w := by
   rw [EdgeLabels.read_mapPath]
-  exact EdgeLabels.read_potential _ (potential p hp a hr i)
-    (labels_pushE p hp a hr he i hiV hiE) hl
+  solve_by_elim [EdgeLabels.read_potential, labels_pushE]
 
 include he hiF in
 theorem labels_rel (f : (pushoutComplex p i hiV hiE).F) :
     EdgeLabels.read (labels p hp a hr i hiV hiE) ((pushoutComplex p i hiV hiE).att f) = 1 := by
   cases f with
   | inl f =>
-      change EdgeLabels.read _ (mapPath (pushoutInl p i hiV hiE) (K.att f)) = 1
+      change EdgeLabels.read _ (mapPath (pushoutInl p i hiV hiE) _) = 1
       rw [EdgeLabels.read_mapPath]
-      exact RegularCoverLabels.edge_rel p hp a hr he f
+      apply RegularCoverLabels.edge_rel <;> assumption
   | inr f =>
       have h := read_pushPath p hp a hr he i hiV hiE hiF (L.att_isLoop f.val)
-      simpa only [inv_mul_cancel, pushoutComplex, pushoutMap, mapPath, Sum.elim_inr] using h
+      aesop
 
 include hiV in
 /-- An old vertex is determined by its projected vertex together with its
@@ -96,23 +91,17 @@ theorem pushV_potential_injective {v w : L.V}
   · obtain ⟨d, rfl⟩ := hvD
     rw [pushV_of_mem p hiV] at hv
     by_cases hwD : ∃ e, i.onV e = w
-    · obtain ⟨e, rfl⟩ := hwD
-      rw [pushV_of_mem p hiV] at hv
-      rw [potential_core p hp a hr i hiV, potential_core p hp a hr i hiV] at hs
-      exact congrArg i.onV (RegularCoverLabels.sheet_fibre_injective p hp a hr
-        (Sum.inl.inj hv) hs)
-    · rw [pushV_of_off p i ⟨w, fun e he => hwD ⟨e, he⟩⟩] at hv
-      exact (Sum.inl_ne_inr hv).elim
+    · grind [pushV_of_mem, potential_core, RegularCoverLabels.sheet_fibre_injective]
+    · rw [pushV_of_off p i ⟨w, fun e he => hwD ⟨e, he⟩⟩] at hv <;> simp_all
   · rw [pushV_of_off p i ⟨v, fun d hd => hvD ⟨d, hd⟩⟩] at hv
     by_cases hwD : ∃ e, i.onV e = w
-    · obtain ⟨e, rfl⟩ := hwD
-      rw [pushV_of_mem p hiV] at hv
-      exact (Sum.inr_ne_inl hv).elim
-    · rw [pushV_of_off p i ⟨w, fun e he => hwD ⟨e, he⟩⟩] at hv
-      exact congrArg (fun x : OffV i => x.val) (Sum.inr.inj hv)
+    · grind [pushV_of_mem]
+    · rw [pushV_of_off p i ⟨w, fun e he => hwD ⟨e, he⟩⟩] at hv <;> grind
 
-theorem read_univLift (v₀ : L.V) (v : UV L v₀) :
-    EdgeLabels.vertexRead (labels p hp a hr i hiV hiE)
+variable (v₀ : L.V)
+
+theorem read_univLift (v : UV L v₀) :
+    EdgeLabels.vertexRead _
       (labels_rel p hp a hr he i hiV hiE hiF) (pushV p i v₀)
       (univLiftV v₀ (pushoutMap p i hiV hiE hiF) v) =
       (potential p hp a hr i v₀)⁻¹ * potential p hp a hr i (endV v) := by
@@ -120,34 +109,30 @@ theorem read_univLift (v₀ : L.V) (v : UV L v₀) :
   | h l => exact read_pushPath p hp a hr he i hiV hiE hiF l.property
 
 include hp hr he in
-theorem univLift_endpoint_reflect (v₀ : L.V) {v w : UV L v₀}
-    (h : univLiftV v₀ (pushoutMap p i hiV hiE hiF) v =
+theorem univLift_endpoint_reflect {v w : UV L v₀}
+    (h : univLiftV v₀ _ v =
       univLiftV v₀ (pushoutMap p i hiV hiE hiF) w) : endV v = endV w := by
   apply pushV_potential_injective p hp a hr i hiV
-  · have hv := congrArg endV h
-    simpa only [endV_univLiftV, pushoutMap] using hv
+  · simpa only [endV_univLiftV, pushoutMap] using (congrArg endV h)
   · have hv := congrArg (EdgeLabels.vertexRead (labels p hp a hr i hiV hiE)
       (labels_rel p hp a hr he i hiV hiE hiF) (pushV p i v₀)) h
     rw [read_univLift p hp a hr he i hiV hiE hiF v₀ v,
-      read_univLift p hp a hr he i hiV hiE hiF v₀ w] at hv
-    exact mul_left_cancel hv
+      read_univLift p hp a hr he i hiV hiE hiF v₀ w] at hv <;> simp_all
 
 include hp hr he in
 theorem univLift_vertices_injective (hD : IsConnected D) (hL : IsConnected L)
     (d₀ : D.V) (ht : Pi1Trivial i) :
     Function.Injective (univLiftV (i.onV d₀) (pushoutMap p i hiV hiE hiF)) := by
   intro v w h
-  have hv := univLift_endpoint_reflect p hp a hr he i hiV hiE hiF (i.onV d₀) h
-  obtain ⟨g, hg, _⟩ := (isRegular_univProj (X := L) (x₀ := i.onV d₀)).simply_transitive v w hv
+  obtain ⟨g, hg, _⟩ := (isRegular_univProj).simply_transitive v w (univLift_endpoint_reflect p hp a hr he i hiV hiE hiF (i.onV d₀) h)
   change deckV g v = w at hg
   have hfix : deckV (pi1Map (pushoutMap p i hiV hiE hiF) (i.onV d₀) g)
       (univLiftV (i.onV d₀) (pushoutMap p i hiV hiE hiF) v) =
-      univLiftV (i.onV d₀) (pushoutMap p i hiV hiE hiF) v := by
-    rw [← univLiftV_deckV, hg, h]
-  have hgone : g = 1 := PushoutFundamental.pi1_pushoutMap_injective p i hiV hiE hiF hD hL d₀ ht
+      univLiftV _ _ v := by
+    grind [univLiftV_deckV]
+  have hgone := PushoutFundamental.pi1_pushoutMap_injective p i hiV hiE hiF hD hL d₀ ht
     ((deckV_free _ _ _ hfix).trans (map_one _).symm)
-  rw [hgone, deckV_one] at hg
-  exact hg
+  simp_all [hgone, deckV_one]
 
 end PushoutSheets
 end FiniteChains.Comb

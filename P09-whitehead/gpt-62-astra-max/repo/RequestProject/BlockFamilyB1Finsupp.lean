@@ -48,7 +48,7 @@ theorem fsRingMapBoundary_mapRange (φ : R →+* S) (A : J → I →₀ R)
       simp only [Finsupp.mapRange_single, fsRingMapBoundary,
         Finsupp.linearCombination_single]
       ext i
-      exact (map_mul φ a (A j i)).symm
+      exact (map_mul φ a _).symm
 
 end RingMap
 
@@ -67,12 +67,12 @@ theorem fs_cycle_mem_span_groupMap_cycles (f : G →* G') (hf : Function.Injecti
         v = y.mapRange (MonoidAlgebra.mapDomainRingHom ℤ f) (map_zero _)} := by
   classical
   let H := f.range
-  let e : G ≃* H := MonoidHom.ofInjective hf
+  let e := MonoidHom.ofInjective hf
   let φ : MonoidAlgebra ℤ G →+* MonoidAlgebra ℤ H :=
     MonoidAlgebra.mapDomainRingHom ℤ e.toMonoidHom
-  let ψ : MonoidAlgebra ℤ H →+* MonoidAlgebra ℤ G :=
+  let ψ :=
     MonoidAlgebra.mapDomainRingHom ℤ e.symm.toMonoidHom
-  let θ : MonoidAlgebra ℤ G →+* MonoidAlgebra ℤ G' :=
+  let θ :=
     MonoidAlgebra.mapDomainRingHom ℤ f
   have hφ : ∀ a, subRingHom H (φ a) = θ a := by
     intro a
@@ -83,12 +83,12 @@ theorem fs_cycle_mem_span_groupMap_cycles (f : G →* G') (hf : Function.Injecti
     intro a
     change MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ a) = a
     rw [← MonoidAlgebra.mapDomain_comp]
-    have he : (e.toMonoidHom : G → H) ∘ (e.symm.toMonoidHom : H → G) = id := by
+    have he : e.toMonoidHom ∘ e.symm.toMonoidHom = id := by
       funext g
       exact e.apply_symm_apply g
     rw [he, MonoidAlgebra.mapDomain_id]
   have hφinj : Function.Injective φ := fun _ _ h => MonoidAlgebra.coeff_injective (Finsupp.mapDomain_injective e.injective (congrArg MonoidAlgebra.coeff h))
-  let A' : J → I →₀ MonoidAlgebra ℤ H :=
+  let A' :=
     fun j => (A j).mapRange φ (map_zero _)
   have hboundary : fsExtendedBoundary H A' = fsRingMapBoundary θ A := by
     apply Finsupp.lhom_ext
@@ -96,33 +96,29 @@ theorem fs_cycle_mem_span_groupMap_cycles (f : G →* G') (hf : Function.Injecti
     simp only [fsExtendedBoundary, fsRingMapBoundary, Finsupp.linearCombination_single]
     congr 1
     ext i : 1
-    exact hφ (A j i)
+    exact hφ _
   have hx' : fsExtendedBoundary H A' x = 0 := by
     rw [hboundary]
     exact hx
-  have hmem := fs_cycle_mem_span_subgroup_cycles H A' x hx'
-  refine Submodule.span_mono ?_ hmem
+  refine Submodule.span_mono ?_ (fs_cycle_mem_span_subgroup_cycles H A' x hx')
   rintro v ⟨w, hw, rfl⟩
   let y := w.mapRange ψ (map_zero _)
   have hy : y.mapRange φ (map_zero _) = w := by
     ext j : 1
-    exact hφψ (w j)
+    exact hφψ _
   refine ⟨y, ?_, ?_⟩
-  · have hb : (Finsupp.linearCombination (MonoidAlgebra ℤ G) A y).mapRange
+  · have hb : (Finsupp.linearCombination _ A y).mapRange
         φ (map_zero _) = 0 := by
       rw [← fsRingMapBoundary_mapRange]
-      change Finsupp.linearCombination (MonoidAlgebra ℤ H) A'
-        (y.mapRange φ (map_zero _)) = 0
       rw [hy]
       exact hw
     apply Finsupp.ext
     intro i
     apply hφinj
-    have hi := congrArg (fun z : I →₀ MonoidAlgebra ℤ H => z i) hb
-    simpa only [Finsupp.mapRange_apply, Finsupp.zero_apply, map_zero] using hi
+    simpa only [Finsupp.mapRange_apply, Finsupp.zero_apply, map_zero] using (congrArg (fun z : I →₀ MonoidAlgebra ℤ H => z i) hb)
   · apply Finsupp.ext
     intro j
-    change subRingHom H (w j) = θ (ψ (w j))
+    change subRingHom H _ = θ (ψ (w j))
     rw [← hφ, hφψ]
 
 end GroupMap
@@ -208,12 +204,13 @@ variable {α Jr Sx : Type u} {Zt Mt : Sx → Type u}
   (hfill : FilledF ρ bsub)
 
 local notation "R'" => MonoidAlgebra ℤ (PresGroup (substPresF ρ bsub))
+
 local notation "R₀" => MonoidAlgebra ℤ (PresGroup ρ)
 
 /-- The old Fox boundary over the actual substituted group ring. -/
 def fsFoxPushBoundary : ((Jr ⊕ Sx) →₀ R') →ₗ[R'] (α →₀ R') :=
   fsRingMapBoundary (coeffF ρ bsub hfill)
-    (fun k => coverFoxGradient (relSub ρ) (ρ k))
+    (fun k => coverFoxGradient _ (ρ k))
 
 omit [DecidableEq Sx] [∀ s, DecidableEq (Zt s)] in
 @[simp] theorem fsFoxPushBoundary_single (k : Jr ⊕ Sx) (i : α) :
@@ -253,10 +250,10 @@ theorem isFillingFS_of_finite_blocks [∀ s, Fintype (Mt s)]
 
 theorem fsSurfaceChain_boundary_apply (c : ∀ s, Mt s →₀ R') (s : Sx)
     (i : α ⊕ (Σ s, Zt s)) :
-    coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub)
+    coverSecondBoundary (relSub _) (substPresF ρ bsub)
         (fsSurfaceChain c s) i =
       (c s).sum (fun m a => a *
-        foxMatrixPres (substPresF ρ bsub) i (Sum.inr ⟨s, m⟩)) := by
+        foxMatrixPres _ i (Sum.inr ⟨s, m⟩)) := by
   rw [fsCoverSecondBoundary_apply]
   exact Finsupp.sum_mapDomain_index (fun _ => zero_mul _)
     (fun _ _ _ => add_mul _ _ _)
@@ -265,7 +262,7 @@ theorem fsSurfaceChain_boundary_apply (c : ∀ s, Mt s →₀ R') (s : Sx)
 simultaneous substitution chain map, without finite index assumptions. -/
 theorem fsCellsBase_chainMap (c : ∀ s, Mt s →₀ R')
     (hc : IsFillingFS ρ bsub hfill c) :
-    (coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub)).comp
+    (coverSecondBoundary (relSub _) (substPresF ρ bsub)).comp
         (fsCellsBase c) =
       fsOldOneIncl.comp (fsFoxPushBoundary ρ bsub hfill) := by
   classical
@@ -276,7 +273,6 @@ theorem fsCellsBase_chainMap (c : ∀ s, Mt s →₀ R')
   simp only [LinearMap.comp_apply]
   cases k with
   | inl j =>
-      rw [fsCellsBase_single_inl]
       ext i : 1
       cases i with
       | inl i =>
@@ -304,14 +300,14 @@ theorem fsCellsBase_chainMap (c : ∀ s, Mt s →₀ R')
 actual new boundary using the existing coefficient homomorphism. -/
 theorem fsCellsF_boundary (c : ∀ s, Mt s →₀ R')
     (hc : IsFillingFS ρ bsub hfill c) (y : (Jr ⊕ Sx) →₀ R₀) :
-    coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub)
+    coverSecondBoundary _ (substPresF ρ bsub)
         (fsCellsF ρ bsub hfill c y) =
-      fsOldOneIncl ((coverSecondBoundary (relSub ρ) ρ y).mapRange
+      fsOldOneIncl ((coverSecondBoundary _ ρ y).mapRange
         (coeffF ρ bsub hfill) (map_zero _)) := by
   have h := LinearMap.congr_fun (fsCellsBase_chainMap ρ bsub hfill c hc)
     (y.mapRange (coeffF ρ bsub hfill) (map_zero _))
   change _ = fsOldOneIncl (fsFoxPushBoundary ρ bsub hfill
-    (y.mapRange (coeffF ρ bsub hfill) (map_zero _))) at h
+    _) at h
   rw [fsFoxPushBoundary, fsRingMapBoundary_mapRange] at h
   exact h
 
@@ -321,16 +317,16 @@ theorem fsCycle_preimage (c : ∀ s, Mt s →₀ R')
     (hc : IsFillingFS ρ bsub hfill c)
     (hblock : BlockSurfaceGeneratesFS ρ bsub c)
     (x : (Jr ⊕ (Σ s, Mt s)) →₀ R')
-    (hx : coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub) x = 0) :
+    (hx : coverSecondBoundary _ (substPresF ρ bsub) x = 0) :
     ∃ y : (Jr ⊕ Sx) →₀ R', fsFoxPushBoundary ρ bsub hfill y = 0 ∧
       fsCellsBase c y = x := by
-  obtain ⟨y, hy, _, _⟩ := fsCellsBase_preimage_of_internal_zero ρ bsub c hblock x
+  obtain ⟨y, hy⟩ := fsCellsBase_preimage_of_internal_zero ρ bsub c hblock x
     (fun s z => congrArg (fun v => v (Sum.inr ⟨s, z⟩)) hx)
   refine ⟨y, ?_, hy⟩
   apply fsOldOneIncl_injective (Z := Σ s, Zt s)
   rw [map_zero]
   have h := LinearMap.congr_fun (fsCellsBase_chainMap ρ bsub hfill c hc) y
-  change coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub)
+  change coverSecondBoundary _ _
     (fsCellsBase c y) = fsOldOneIncl (fsFoxPushBoundary ρ bsub hfill y) at h
   rw [hy, hx] at h
   exact h.symm
@@ -343,13 +339,13 @@ theorem fsGenerates_familySubst (c : ∀ s, Mt s →₀ R')
     (hblock : BlockSurfaceGeneratesFS ρ bsub c)
     (hinj : Function.Injective (substHomF ρ bsub hfill))
     (x : (Jr ⊕ (Σ s, Mt s)) →₀ R')
-    (hx : coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub) x = 0) :
+    (hx : coverSecondBoundary _ (substPresF ρ bsub) x = 0) :
     x ∈ Submodule.span R'
       {v : (Jr ⊕ (Σ s, Mt s)) →₀ R' | ∃ y : (Jr ⊕ Sx) →₀ R₀,
-        coverSecondBoundary (relSub ρ) ρ y = 0 ∧ v = fsCellsF ρ bsub hfill c y} := by
+        coverSecondBoundary _ ρ y = 0 ∧ v = fsCellsF ρ bsub hfill c y} := by
   obtain ⟨y, hy, hxy⟩ := fsCycle_preimage ρ bsub hfill c hc hblock x hx
-  have hmem := fs_cycle_mem_span_groupMap_cycles (substHomF ρ bsub hfill) hinj
-    (fun k => coverFoxGradient (relSub ρ) (ρ k)) y hy
+  have hmem := fs_cycle_mem_span_groupMap_cycles _ hinj
+    _ y hy
   rw [← hxy]
   clear hy hxy
   induction hmem using Submodule.span_induction with

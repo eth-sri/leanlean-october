@@ -30,10 +30,6 @@ Together with `RequestProject/FlagComplex.lean` this verifies, for the subdivisi
 combinatorial hypotheses that the cube complex `C(L_q)` of the paper requires.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains
 
 namespace ASC
@@ -43,12 +39,12 @@ universe u
 variable {V : Type u} [DecidableEq V]
 
 /-- "The predicate `P` has exactly two witnesses." -/
-def ExactlyTwo {α : Sort*} (P : α → Prop) : Prop :=
+def ExactlyTwo {α : Sort*} (P : α → Prop) :=
   ∃ x y, x ≠ y ∧ P x ∧ P y ∧ ∀ z, P z → z = x ∨ z = y
 
 /-- Every edge of `K` lies in exactly two triangles: for every edge `e` there are exactly
 two vertices outside `e` spanning a triangle with it. -/
-def EdgeInTwoTriangles (K : ASC V) : Prop :=
+def EdgeInTwoTriangles (K : ASC V) :=
   ∀ e ∈ K.faces, e.card = 2 → ExactlyTwo (fun v => v ∉ e ∧ insert v e ∈ K.faces)
 
 section Chains
@@ -56,7 +52,7 @@ section Chains
 variable {P : Type u} [Preorder P]
 
 theorem isChain_triple {x y z : P} (hxy : x ≤ y ∨ y ≤ x) (hxz : x ≤ z ∨ z ≤ x)
-    (hyz : y ≤ z ∨ z ≤ y) : IsChain (· ≤ ·) ({x, y, z} : Set P) := by
+    (hyz : y ≤ z ∨ z ≤ y) : IsChain (· ≤ ·) ({x, y, z}) := by
   rintro p (rfl | rfl | rfl) q (rfl | rfl | rfl) hpq <;> first
     | exact absurd rfl hpq
     | exact hxy | exact hxy.symm | exact hxz | exact hxz.symm | exact hyz | exact hyz.symm
@@ -64,20 +60,12 @@ theorem isChain_triple {x y z : P} (hxy : x ≤ y ∨ y ≤ x) (hxz : x ≤ z �
 theorem le_or_le_of_isChain {s : Set P} (hs : IsChain (· ≤ ·) s) {x y : P} (hx : x ∈ s)
     (hy : y ∈ s) : x ≤ y ∨ y ≤ x := by
   by_cases hxy : x = y
-  · exact Or.inl (le_of_eq hxy)
-  · exact hs hx hy hxy
+  · simp_all
+  · solve_by_elim
 
 end Chains
 
-instance faceDecidableEq (K : ASC V) : DecidableEq K.Face := fun a b =>
-  decidable_of_iff (a.1 = b.1) (by
-    constructor
-    · intro h; exact Subtype.ext h
-    · intro h; rw [h])
-
-/-- The poset of faces of a complex on a finite vertex type is finite. -/
-noncomputable instance faceFintype (K : ASC V) [Fintype V] : Fintype K.Face :=
-  Fintype.ofInjective (fun a : K.Face => (a.1 : Finset V)) (fun _ _ h => Subtype.ext h)
+variable (K : ASC V)
 
 /-! ### Every vertex of the subdivision lies in a triangle -/
 

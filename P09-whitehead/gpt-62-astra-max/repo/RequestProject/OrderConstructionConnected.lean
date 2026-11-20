@@ -27,7 +27,7 @@ theorem coneAdj_isConnected {P T : Type u} [Preorder P] (S : T → P → Prop)
       orderComponentLabel _ v = orderComponentLabel _ (ConeAdj.inc (S := S) p) := by
     intro v
     cases v with
-    | inl p => exact ⟨p, rfl⟩
+    | inl p => solve_by_elim
     | inr t =>
       obtain ⟨p, hp⟩ := hs t
       exact ⟨p, (orderComponentLabel_eq_of_le (ConeAdj.inc_le_apex_of_mem hp)).symm⟩

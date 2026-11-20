@@ -6,8 +6,6 @@ public import RequestProject.UnivCoverIncl
 @[expose] public section
 
 /-! The cellular identification of the genuine universal-cover order complex. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -21,20 +19,18 @@ theorem uOrderFace_att (t : OrdTri (UOrder P a)) :
     uAtt (uOrderFace t) = ((orderCx (UOrder P a)).att t).map
       (fun eb => (uOrderEdge eb.1, eb.2)) := by
   obtain ⟨⟨v, w, z⟩, hvw, hwz⟩ := t
-  have hvw' : extend (ordPos (uOrderEnd_monotone hvw)) v = w := hvw.2
-  have hwz' : extend (ordPos (uOrderEnd_monotone hwz)) w = z := hwz.2
-  have hvz' : extend (ordPos (uOrderEnd_monotone (hvw.trans hwz))) v = z :=
+  have hvw' : extend _ v = w := hvw.2
+  have hwz' : extend _ w = z := hwz.2
+  have hvz' : extend _ v = z :=
     (hvw.trans hwz).2
   have hback : extend (ordNeg (uOrderEnd_monotone (hvw.trans hwz))) z = v := by
-    have h := extend_revGerm (c := (v : UV (orderCx P) a))
+    have h := extend_revGerm
       (eb := ordPos (uOrderEnd_monotone (hvw.trans hwz))) rfl
-    change extend (ordNeg (uOrderEnd_monotone (hvw.trans hwz)))
-      (extend (ordPos (uOrderEnd_monotone (hvw.trans hwz))) v) = v at h
-    rwa [hvz'] at h
+    simp_all
   change uLiftPath [ordPos (uOrderEnd_monotone hvw), ordPos (uOrderEnd_monotone hwz),
     ordNeg (uOrderEnd_monotone (hvw.trans hwz))] v =
-      [(uOrderEdge ⟨(v, w), hvw⟩, true), (uOrderEdge ⟨(w, z), hwz⟩, true),
-        (uOrderEdge ⟨(v, z), hvw.trans hwz⟩, false)]
+      [(uOrderEdge _, true), (uOrderEdge _, true),
+        (uOrderEdge _, false)]
   rw [uLiftPath_cons rfl, hvw', uLiftPath_cons rfl, hwz', uLiftPath_cons rfl,
     uLiftPath_nil]
   simp only [ordPos, ordNeg, liftGerm_true, liftGerm_false]
@@ -65,17 +61,13 @@ theorem uOrderHom_chain2_surjective :
   Finsupp.mapDomain_surjective uOrderFace_surjective
 
 theorem uOrderHom_cycle_iff (c : OrdTri (UOrder P a) →₀ ℤ) :
-    bdry2 (uCover (orderCx P) a) (chain2 uOrderHom c) = 0 ↔
+    bdry2 _ (chain2 uOrderHom c) = 0 ↔
       bdry2 (orderCx (UOrder P a)) c = 0 := by
   rw [bdry2_chain2]
   constructor
   · intro h
-    apply Finsupp.mapDomain_injective uOrderEdge_injective
-    change chain1 uOrderHom (bdry2 (orderCx (UOrder P a)) c) = Finsupp.mapDomain _ 0
-    rw [Finsupp.mapDomain_zero]
-    exact h
-  · intro h
-    rw [h, map_zero]
+    apply Finsupp.mapDomain_injective uOrderEdge_injective <;> assumption
+  · simp_all
 
 /-- Every actual universal-cover two-cycle has a unique finite cycle in the
 constructed lifted-order complex as its preimage. -/
@@ -85,7 +77,6 @@ theorem exists_unique_uOrder_cycle (c : UF (orderCx P) a →₀ ℤ)
       chain2 uOrderHom d = c ∧ bdry2 (orderCx (UOrder P a)) d = 0 := by
   obtain ⟨d, hd⟩ := uOrderHom_chain2_surjective c
   refine ⟨d, ⟨hd, (uOrderHom_cycle_iff d).mp (hd.symm ▸ hc)⟩, ?_⟩
-  intro e he
-  exact uOrderHom_chain2_injective (he.1.trans hd.symm)
+  grind [uOrderHom_chain2_injective]
 
 end FiniteChains.Comb

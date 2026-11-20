@@ -9,9 +9,11 @@ public import Mathlib.Algebra.Category.ModuleCat.Abelian
 namespace FiniteChains
 open CategoryTheory
 
+variable (X : TopCat)
+
 /-- Free integral chains on the actual singular simplicial set are naturally
 isomorphic to the actual Mathlib singular chain complex with integral coefficients. -/
-noncomputable def freeSingularChainComplexIso (X : TopCat) :
+noncomputable def freeSingularChainComplexIso :
     AlgebraicTopology.AlternatingFaceMapComplex.obj (TopCat.toSSet.obj X ⋙ ModuleCat.free ℤ) ≅
       ((AlgebraicTopology.singularChainComplexFunctor (ModuleCat ℤ)).obj
         (ModuleCat.of ℤ ℤ)).obj X :=
@@ -19,45 +21,43 @@ noncomputable def freeSingularChainComplexIso (X : TopCat) :
     (CategoryTheory.Functor.isoWhiskerLeft (TopCat.toSSet.obj X) freeIntegerCoproductNatIso)
 
 /-- Categorical homology of the free singular chains is genuine integral singular homology. -/
-noncomputable def freeSingularHomologyIso (X : TopCat) (n : ℕ) :
+noncomputable def freeSingularHomologyIso (n : ℕ) :
     (AlgebraicTopology.AlternatingFaceMapComplex.obj
       (TopCat.toSSet.obj X ⋙ ModuleCat.free ℤ)).homology n ≅
         (((AlgebraicTopology.singularHomologyFunctor (ModuleCat ℤ) n).obj
           (ModuleCat.of ℤ ℤ)).obj X) :=
-  (HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) n).mapIso
+  (HomologicalComplex.homologyFunctor (ModuleCat ℤ) _ n).mapIso
     (freeSingularChainComplexIso X)
 
+variable {X Y : TopCat} (f : X ⟶ Y)
+
 /-- The coefficient identification commutes with every actual continuous map. -/
-theorem freeSingularChainComplexIso_natural {X Y : TopCat} (f : X ⟶ Y) :
+theorem freeSingularChainComplexIso_natural :
     AlgebraicTopology.AlternatingFaceMapComplex.map
         (Functor.whiskerRight (TopCat.toSSet.map f) (ModuleCat.free ℤ)) ≫
       (freeSingularChainComplexIso Y).hom =
     (freeSingularChainComplexIso X).hom ≫
       (((AlgebraicTopology.singularChainComplexFunctor (ModuleCat ℤ)).obj
-        (ModuleCat.of ℤ ℤ)).map f) := by
+        _).map f) := by
   change (AlgebraicTopology.alternatingFaceMapComplex (ModuleCat ℤ)).map _ ≫
       (AlgebraicTopology.alternatingFaceMapComplex (ModuleCat ℤ)).map _ =
     (AlgebraicTopology.alternatingFaceMapComplex (ModuleCat ℤ)).map _ ≫
       (AlgebraicTopology.alternatingFaceMapComplex (ModuleCat ℤ)).map _
-  rw [← Functor.map_comp, ← Functor.map_comp]
-  congr 1
-  apply NatTrans.ext
-  funext i
-  exact freeIntegerCoproductNatIso.hom.naturality ((TopCat.toSSet.map f).app i)
+  aesop
 
 /-- Naturality of the identification with integral singular homology in every degree. -/
-theorem freeSingularHomologyIso_natural {X Y : TopCat} (f : X ⟶ Y) (n : ℕ) :
-    (HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) n).map
+theorem freeSingularHomologyIso_natural (n : ℕ) :
+    (HomologicalComplex.homologyFunctor (ModuleCat ℤ) _ n).map
       (AlgebraicTopology.AlternatingFaceMapComplex.map
         (Functor.whiskerRight (TopCat.toSSet.map f) (ModuleCat.free ℤ))) ≫
       (freeSingularHomologyIso Y n).hom =
     (freeSingularHomologyIso X n).hom ≫
       (((AlgebraicTopology.singularHomologyFunctor (ModuleCat ℤ) n).obj
-        (ModuleCat.of ℤ ℤ)).map f) := by
-  change (HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) n).map _ ≫
-      (HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) n).map _ =
-    (HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) n).map _ ≫
-      (HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) n).map _
-  rw [← Functor.map_comp, ← Functor.map_comp, freeSingularChainComplexIso_natural]
+        _).map f) := by
+  change (HomologicalComplex.homologyFunctor (ModuleCat ℤ) _ n).map _ ≫
+      (HomologicalComplex.homologyFunctor (ModuleCat ℤ) _ n).map _ =
+    (HomologicalComplex.homologyFunctor (ModuleCat ℤ) _ n).map _ ≫
+      (HomologicalComplex.homologyFunctor (ModuleCat ℤ) _ n).map _
+  grind [freeSingularChainComplexIso_natural]
 
 end FiniteChains

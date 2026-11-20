@@ -21,10 +21,7 @@ def roseRank : Rose PUnit → ℕ
 
 theorem roseRank_strictMono : StrictMono roseRank := by
   intro p q hpq
-  have hn := ne_of_lt hpq
-  have hl := hpq.le
-  change Rose.le p q at hl
-  cases p <;> cases q <;> simp_all [Rose.le, roseRank]
+  have hl := hpq.le; change Rose.le p q at hl; cases p <;> cases q <;> simp_all [Rose.le, roseRank]
 
 def roseFourCycle : FinitePosetCycle (Rose PUnit) 2 where
   positive := by decide
@@ -34,14 +31,14 @@ def roseFourCycle : FinitePosetCycle (Rose PUnit) 2 where
       Rose.le (roseFourVertex i.succ) (roseFourVertex i.castSucc)
     fin_cases i <;> simp [roseFourVertex, Rose.le]
   closing := by
-    change Rose.le (roseFourVertex (Fin.last 3)) (roseFourVertex 0) ∨
+    change Rose.le _ _ ∨
       Rose.le (roseFourVertex 0) (roseFourVertex (Fin.last 3))
     simp [roseFourVertex, Rose.le]
   edges a b hne hab := by
     obtain ⟨i, rfl⟩ := roseFourVertex_surjective a
     obtain ⟨j, rfl⟩ := roseFourVertex_surjective b
-    change Rose.le (roseFourVertex i) (roseFourVertex j) ∨
-      Rose.le (roseFourVertex j) (roseFourVertex i) at hab
+    change Rose.le _ _ ∨
+      Rose.le _ _ at hab
     fin_cases i <;> fin_cases j <;>
       simp_all [roseFourVertexEquiv, roseFourVertex, Rose.le, Fin.exists_fin_succ]
   height := roseRank
@@ -58,13 +55,14 @@ theorem orderRoseTraversal_fiber (s t : I) (h : orderRoseTraversal s = orderRose
     s = t ∨ (s = 0 ∧ t = 1) ∨ (s = 1 ∧ t = 0) :=
   roseFourCycle.traversal_fiber s t h
 
+variable (α : Type)
+
 /-- No extra traversal, injectivity, or topology premise remains in this map. -/
-def orderRoseRealizationHomeomorph (α : Type) :
-    orderNerveRealization (Rose α) ≃ₜ ClassicalGraphModel.Rose α :=
+def orderRoseRealizationHomeomorph :=
   (diskRoseOrderHomeomorphOfTraversal α orderRoseTraversal
     orderRoseTraversal_surjective orderRoseTraversal_fiber).symm
 
-@[simp] theorem orderRoseRealizationHomeomorph_base (α : Type) :
+@[simp] theorem orderRoseRealizationHomeomorph_base :
     orderRoseRealizationHomeomorph α (orderRoseBase α) = roseVertex α := by
   apply (orderRoseRealizationHomeomorph α).symm.injective
   rw [Homeomorph.symm_apply_apply]
@@ -72,7 +70,7 @@ def orderRoseRealizationHomeomorph (α : Type) :
 
 theorem orderRoseRealizationHomeomorph_interval {α : Type} (a : α) (t : I) :
     orderRoseRealizationHomeomorph α (roseCopyRealization a (orderRoseTraversal t)) =
-      cell (roseAttaching α) (boundaryFamilyInclusion α _) ⟨a, graphDiskHomeomorph t⟩ := by
+      cell _ _ ⟨a, graphDiskHomeomorph t⟩ := by
   apply (orderRoseRealizationHomeomorph α).symm.injective
   rw [Homeomorph.symm_apply_apply]
   exact (diskRoseOrderHomeomorphOfTraversal_interval α orderRoseTraversal

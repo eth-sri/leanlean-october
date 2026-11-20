@@ -5,9 +5,7 @@ public import RequestProject.OrderNormalizationNaturality
 @[expose] public section
 
 /-! Faithfulness of actual normalized strict maps on retained vertex sets. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -29,7 +27,7 @@ theorem normalizedStrictChain2_zero_of_injOn (f : P → Q) (hf : Monotone f)
     · exact lt_of_le_of_ne (hf t.1.2.2.le)
         (fun he => t.1.2.2.ne (hinj t.2.2.1 t.2.2.2 he))
   let image : D → StrictOrdTri Q := fun t =>
-    ⟨(f t.1.1.1, f t.1.1.2.1, f t.1.1.2.2), hstrict t⟩
+    ⟨(f _, f _, f _), hstrict t⟩
   have himage : Function.Injective image := by
     intro a b he
     apply Subtype.ext
@@ -48,19 +46,18 @@ theorem normalizedStrictChain2_zero_of_injOn (f : P → Q) (hf : Monotone f)
       normalizedStrictChain2 f hf (Finsupp.mapDomain incl w) = Finsupp.mapDomain image w := by
     induction w using Finsupp.induction_linear with
     | zero => simp
-    | add w z hw hz => simp only [Finsupp.mapDomain_add, map_add, hw, hz]
+    | add w z hw hz => simp [Finsupp.mapDomain_add, map_add, hw, hz]
     | single t n =>
         rw [Finsupp.mapDomain_single, normalizedStrictChain2_single, Finsupp.mapDomain_single]
         have hn : normalizeOrdTriangle ((orderCxMap f hf).onF ((strictOrderIncl P).onF (incl t))) =
             Finsupp.single (image t) 1 := by
-          change (if h : f t.1.1.1 < f t.1.1.2.1 ∧ f t.1.1.2.1 < f t.1.1.2.2 then
-            Finsupp.single (⟨(f t.1.1.1, f t.1.1.2.1, f t.1.1.2.2), h⟩ : StrictOrdTri Q) 1
+          change (if h : f _ < f _ ∧ f _ < f _ then
+            Finsupp.single (⟨(f t.1.1.1, f t.1.1.2.1, f t.1.1.2.2), h⟩) 1
             else 0) = Finsupp.single (image t) 1
-          rw [dif_pos (hstrict t)]
-        rw [hn]
-        simp
+          rw [dif_pos _]
+        simp_all
   have hz' : Finsupp.mapDomain image z = 0 := by rw [← hmap, hrecon, hz]
-  have he : z = 0 := Finsupp.mapDomain_injective himage (hz'.trans Finsupp.mapDomain_zero.symm)
-  rw [← hrecon, he, Finsupp.mapDomain_zero]
+  have he := Finsupp.mapDomain_injective himage (hz'.trans Finsupp.mapDomain_zero.symm)
+  simp_all
 
 end FiniteChains.Comb

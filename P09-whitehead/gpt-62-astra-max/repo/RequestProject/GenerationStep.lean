@@ -1,6 +1,7 @@
 module
 
-public import RequestProject.Pi2Generation
+public import RequestProject.Pi2Extension
+public import RequestProject.BaseChangeCycles
 
 @[expose] public section
 
@@ -36,10 +37,6 @@ The elementary move of rule 1 is packaged as a `PresMor` in
 treated.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains
 
 open MonoidAlgebra
@@ -64,7 +61,7 @@ structure PresMor (ρ : J → FreeGroup α) (ρ' : J' → FreeGroup α') where
   /-- The induced map of two-chains. -/
   cells : (J → MonoidAlgebra ℤ (PresGroup ρ)) → (J' → MonoidAlgebra ℤ (PresGroup ρ'))
   cells_add : ∀ y z, cells (y + z) = cells y + cells z
-  cells_smul : ∀ (c : MonoidAlgebra ℤ (PresGroup ρ)) (y : J → MonoidAlgebra ℤ (PresGroup ρ)),
+  cells_smul : ∀ (c : MonoidAlgebra ℤ _) (y : J → MonoidAlgebra ℤ _),
     cells (c • y) = MonoidAlgebra.mapDomainRingHom ℤ hom c • cells y
   /-- The map carries `π₂` into `π₂`. -/
   cells_cycle : ∀ y, IsFoxCycle ρ y → IsFoxCycle ρ' (cells y)
@@ -85,26 +82,12 @@ omit [Fintype α] [DecidableEq α] [Fintype J] [Fintype α'] [DecidableEq α'] [
   [Fintype α''] [DecidableEq α''] [Fintype J''] in
 /-- Pushing coefficients along a composite of group homomorphisms. -/
 theorem mapDomainRingHom_comp (g : PresGroup ρ' →* PresGroup ρ'') (f : PresGroup ρ →* PresGroup ρ')
-    (c : MonoidAlgebra ℤ (PresGroup ρ)) :
+    (c : MonoidAlgebra ℤ _) :
     MonoidAlgebra.mapDomainRingHom ℤ (g.comp f) c
       = MonoidAlgebra.mapDomainRingHom ℤ g (MonoidAlgebra.mapDomainRingHom ℤ f c) := by
-  change MonoidAlgebra.mapDomain (g.comp f) c = MonoidAlgebra.mapDomain g (MonoidAlgebra.mapDomain f c)
-  rw [← MonoidAlgebra.mapDomain_comp]
-  rfl
+  simp
 
-/-- The composite of two structural maps. -/
-def comp (g : PresMor ρ' ρ'') (f : PresMor ρ ρ') : PresMor ρ ρ'' where
-  hom := g.hom.comp f.hom
-  cells := fun y => g.cells (f.cells y)
-  cells_add := fun y z => by rw [f.cells_add, g.cells_add]
-  cells_smul := fun c y => by
-    rw [f.cells_smul, g.cells_smul, mapDomainRingHom_comp]
-  cells_cycle := fun y hy => g.cells_cycle _ (f.cells_cycle _ hy)
-  cells_aug := fun y hy => g.cells_aug _ (f.cells_aug _ hy)
-
-omit [Fintype α] [Fintype α'] [Fintype α''] in
-@[simp] theorem comp_cells (g : PresMor ρ' ρ'') (f : PresMor ρ ρ')
-    (y : J → MonoidAlgebra ℤ (PresGroup ρ)) : (g.comp f).cells y = g.cells (f.cells y) := rfl
+variable (g : PresMor ρ' ρ'') (f : PresMor ρ ρ')
 
 end PresMor
 

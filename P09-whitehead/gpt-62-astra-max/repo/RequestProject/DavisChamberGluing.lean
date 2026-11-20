@@ -42,26 +42,29 @@ variable {V : Type u} [DecidableEq V] {A : CommRel V}
 /-- **Chambers are upward closed**: a cell above a cell of `F_x` lies in `F_x`. -/
 theorem inChamber_of_le {x : CayGroup A} {p q : Sph A} (hpq : p ≤ q) (hp : InChamber x p) :
     InChamber x q := by
-  have h1 : p.rep⁻¹ * x ∈ specialSub A (q.spx : Set V) :=
-    specialSub_mono (by exact_mod_cast hpq.1) hp
   have h2 : q.rep⁻¹ * x = (p.rep⁻¹ * q.rep)⁻¹ * (p.rep⁻¹ * x) := by group
   rw [InChamber, h2]
-  exact Subgroup.mul_mem _ (Subgroup.inv_mem _ hpq.2) h1
+  exact Subgroup.mul_mem _ (Subgroup.inv_mem _ hpq.2) (specialSub_mono (by exact_mod_cast hpq.1) hp)
+
+variable (x : CayGroup A)
 
 /-- Every loop of the Davis complex inside one chamber is null-homotopic there. -/
-theorem nullIn_chamber (x : CayGroup A) : NullIn (InChamber (A := A) x) :=
+theorem nullIn_chamber : NullIn (InChamber x) :=
   nullIn_of_simplyConnected (chamber_simplyConnected x)
 
 /-- A chamber is connected. -/
-theorem connectedIn_chamber (x : CayGroup A) : ConnectedIn (InChamber (A := A) x) :=
+theorem connectedIn_chamber : ConnectedIn (InChamber x) :=
   connectedIn_of_isConnected (chamber_isConnected x)
 
 section Inter
 
 variable [Fintype V]
 
+variable {x : CayGroup A} (hx : x ≠ 1)
+include hx
+
 /-- The attaching subcomplex of a chamber is connected. -/
-theorem connectedIn_chamberInter {x : CayGroup A} (hx : x ≠ 1) :
+theorem connectedIn_chamberInter :
     ConnectedIn (fun p : Sph A => InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty) :=
   connectedIn_of_isConnected (chamberInter_isConnected hx)
 
@@ -70,26 +73,19 @@ is upward closed, kills its loops and is connected, and if its intersection with
 `F_x` is the union of the descending mirrors — which is the content of
 `FiniteChains.Davis.mem_earlier_chamber_iff` — then `Prev ∪ F_x` again kills its loops and is
 connected. -/
-theorem nullIn_union_chamber {x : CayGroup A} (hx : x ≠ 1) (Prev : Sph A → Prop)
+theorem nullIn_union_chamber (Prev : Sph A → Prop)
     (hup : ∀ p q : Sph A, p ≤ q → Prev p → Prev q)
     (hPrevNull : NullIn Prev) (hPrevConn : ConnectedIn Prev)
     (hinter : ∀ p : Sph A, (Prev p ∧ InChamber x p) ↔
       (InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty)) :
     NullIn (fun p => Prev p ∨ InChamber x p) ∧
       ConnectedIn (fun p => Prev p ∨ InChamber x p) := by
-  have hjmem : InChamber x (interTop hx).1 ∧
-      (((interTop hx).1).spx ∩ rdescFinset A x).Nonempty := (interTop hx).2
-  have hj : Prev (interTop hx).1 ∧ InChamber x (interTop hx).1 := (hinter _).2 hjmem
-  have hJconn : ConnectedIn (fun p : Sph A => Prev p ∧ InChamber x p) :=
-    connectedIn_congr (fun p => (hinter p).symm) (connectedIn_chamberInter hx)
+  have hj := (hinter _).2 (interTop hx).2
   have hmix : ∀ a b : Sph A, a ≤ b → (Prev a ∨ InChamber x a) → (Prev b ∨ InChamber x b) →
       ((Prev a ∧ Prev b) ∨ (InChamber x a ∧ InChamber x b)) := by
-    intro a b hab ha _
-    rcases ha with h | h
-    · exact Or.inl ⟨h, hup a b hab h⟩
-    · exact Or.inr ⟨h, inChamber_of_le hab h⟩
+    grind [inChamber_of_le]
   exact ⟨htpy_nil_of_pathIn_union (fun _ => Iff.rfl) hmix hPrevNull (nullIn_chamber x)
-      hPrevConn (connectedIn_chamber x) hJconn hj,
+      hPrevConn (connectedIn_chamber x) (connectedIn_congr (fun p => (hinter p).symm) (connectedIn_chamberInter hx)) hj,
     connectedIn_union (fun _ => Iff.rfl) hPrevConn (connectedIn_chamber x) hj⟩
 
 end Inter

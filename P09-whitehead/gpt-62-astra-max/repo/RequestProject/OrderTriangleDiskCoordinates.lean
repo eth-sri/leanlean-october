@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.HomeomorphContinuousMap
+
 public import RequestProject.SquareBoundaryNormHomeomorph
 public import Mathlib.Analysis.Convex.StdSimplex
 
@@ -33,10 +33,7 @@ def parametrization : C(Square, Triangle) where
       dsimp
       ring⟩
   continuous_toFun := by
-    apply Continuous.subtype_mk
-    apply continuous_pi
-    intro i
-    fin_cases i <;> dsimp <;> fun_prop
+    fun_prop
 
 theorem coordinate_sum (z : Triangle) : z.val 0 + z.val 1 + z.val 2 = 1 :=
   (Fin.sum_univ_three z.val).symm.trans z.property.2
@@ -73,10 +70,8 @@ theorem parametrization_section (z : Triangle) : parametrization (sectionPoint z
     · change 1 - (1 - z.val 0) = z.val 0
       ring
     · change (1 - z.val 0) * (1 - z.val 2 / (1 - z.val 0)) = z.val 1
-      rw [mul_sub, mul_one, mul_div_cancel₀ _ h]
-      linarith
-    · change (1 - z.val 0) * (z.val 2 / (1 - z.val 0)) = z.val 2
-      exact mul_div_cancel₀ _ h
+      grind
+    · exact mul_div_cancel₀ _ h
 
 theorem parametrization_surjective : Function.Surjective parametrization :=
   fun z => ⟨sectionPoint z, parametrization_section z⟩
@@ -85,23 +80,22 @@ theorem parametrization_isQuotientMap : IsQuotientMap parametrization :=
   parametrization.continuous.isClosedMap.isQuotientMap
     parametrization.continuous parametrization_surjective
 
-def SquareInterior (z : Square) : Prop := ∀ i, 0 < (z i : ℝ) ∧ (z i : ℝ) < 1
+variable (z : Square)
 
-theorem parametrization_positive_iff (z : Square) :
+def SquareInterior := ∀ i, 0 < (z i : ℝ) ∧ (z i : ℝ) < 1
+
+theorem parametrization_positive_iff :
     (∀ i, 0 < (parametrization z).val i) ↔ SquareInterior z := by
   constructor
   · intro h
     have h₀ : 0 < 1 - (z 1 : ℝ) := h 0
-    have h₁ : 0 < (z 1 : ℝ) * (1 - (z 0 : ℝ)) := h 1
-    have h₂ : 0 < (z 1 : ℝ) * (z 0 : ℝ) := h 2
-    have hxy : 0 < (z 1 : ℝ) ∧ 0 < (z 0 : ℝ) :=
+    have h₁ := h 1
+    have h₂ := h 2
+    have hxy :=
       (mul_pos_iff.mp h₂).resolve_right
         (fun hneg => (not_lt_of_ge (z 1).property.1) hneg.1)
-    have hy := hxy.1
-    have hx := hxy.2
-    have hx' : 0 < 1 - (z 0 : ℝ) := (mul_pos_iff_of_pos_left hy).mp h₁
-    intro i
-    fin_cases i <;> dsimp <;> constructor <;> linarith
+    obtain ⟨hy, hx⟩ := hxy
+    have hx' := (mul_pos_iff_of_pos_left hy).mp h₁; intro i; fin_cases i <;> dsimp <;> constructor <;> linarith
   · intro h i
     fin_cases i
     · exact sub_pos.mpr (h 1).2
@@ -117,8 +111,7 @@ theorem parametrization_injective_off_collapsed_side {z w : Square}
   have hx : (z 0 : ℝ) = (w 0 : ℝ) := by
     have he := congrArg (fun t : Triangle => t.val 2) h
     change (z 1 : ℝ) * (z 0 : ℝ) = (w 1 : ℝ) * (w 0 : ℝ) at he
-    rw [← hy] at he
-    exact (mul_left_cancel₀ hz) he
+    simp_all
   funext i
   apply Subtype.ext
   fin_cases i
@@ -129,24 +122,13 @@ def squareBallHomeomorph : ClosedUnitBall (Fin 2 → ℝ) ≃ₜ Square where
   toFun x i := ⟨(x.val i + 1) / 2, by
     have hi : |x.val i| ≤ 1 := by
       simpa only [Real.norm_eq_abs] using (norm_le_pi_norm x.val i).trans x.property
-    obtain ⟨hl, hu⟩ := abs_le.mp hi
-    constructor <;> linarith⟩
+    grind⟩
   invFun z := ⟨fun i => 2 * (z i : ℝ) - 1, by
     apply (pi_norm_le_iff_of_nonneg zero_le_one).mpr
-    intro i
-    rw [Real.norm_eq_abs]
-    apply abs_le.mpr
-    have hi := (z i).property
-    constructor <;> linarith [hi.1, hi.2]⟩
+    grind [Real.norm_eq_abs]⟩
   left_inv x := by
-    apply Subtype.ext
-    funext i
-    dsimp
     ring
   right_inv z := by
-    funext i
-    apply Subtype.ext
-    dsimp
     ring
   continuous_toFun := by
     apply continuous_pi
@@ -161,20 +143,17 @@ theorem squareBallHomeomorph_interior (x : ClosedUnitBall (Fin 2 → ℝ)) :
   constructor
   · intro h i
     have hi := h i
-    rw [Real.norm_eq_abs]
-    apply abs_lt.mpr
-    change 0 < (x.val i + 1) / 2 ∧ (x.val i + 1) / 2 < 1 at hi
-    constructor <;> linarith [hi.1, hi.2]
+    apply abs_lt.mpr; change 0 < (x.val i + 1) / 2 ∧ (x.val i + 1) / 2 < 1 at hi; constructor <;> linarith [hi.1, hi.2]
   · intro h i
-    have hi := abs_lt.mp (by simpa only [Real.norm_eq_abs] using h i)
+    have hi := abs_lt.mp (by solve_by_elim)
     change 0 < (x.val i + 1) / 2 ∧ (x.val i + 1) / 2 < 1
-    constructor <;> linarith [hi.1, hi.2]
+    grind
 
 theorem squareBallHomeomorph_boundary (z : UnitBoundary (Fin 2 → ℝ)) :
     squareBallHomeomorph (unitBoundaryInclusion _ z) =
       (unitBoundarySquareHomeomorph z).val := rfl
 
-def disk : C(ClosedUnitBall (Fin 2 → ℝ), Triangle) :=
+def disk :=
   parametrization.comp squareBallHomeomorph.toContinuousMap
 
 theorem disk_positive_iff (x : ClosedUnitBall (Fin 2 → ℝ)) :

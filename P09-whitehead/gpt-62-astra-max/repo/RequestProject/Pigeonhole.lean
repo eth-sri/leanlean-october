@@ -32,47 +32,27 @@ theorem exists_stage_satisfying_all {ι : Type*} [DecidableEq ι] {m : ℕ}
     ∃ r ≤ m, ∀ v ∈ S, P r v := by
   classical
   rcases S.eq_empty_or_nonempty with rfl | ⟨v₀, hv₀⟩
-  · exact ⟨0, Nat.zero_le _, by simp⟩
+  · aesop
   -- The stages at which some requirement from `S` fails.
   set bad : Finset ℕ :=
     (Finset.range (m + 1)).filter (fun r => ∃ v ∈ S, ¬ P r v) with hbad
   -- Each requirement fails at most once, so `bad` injects into `S`.
   have hbadcard : bad.card ≤ S.card := by
     have hmem : ∀ r ∈ bad, ∃ v ∈ S, ¬ P r v := by
-      intro r hr
-      simpa [hbad] using (Finset.mem_filter.mp hr).2
+      simp_all
     choose w hwS hwP using hmem
     refine Finset.card_le_card_of_injOn (fun r => if h : r ∈ bad then w r h else v₀)
       ?_ ?_
-    · intro r hr
-      simp only [Finset.mem_coe] at hr
-      simp only [Finset.mem_coe, dif_pos hr]
-      exact hwS r hr
+    · intro r hr <;> grind
     · intro r hr s hs hrs
-      simp only [Finset.mem_coe] at hr hs
-      simp only [dif_pos hr, dif_pos hs] at hrs
       by_contra hne
-      rcases lt_or_gt_of_ne hne with h | h
-      · have hsle : s ≤ m := by
-          have := (Finset.mem_filter.mp hs).1
-          simpa [Nat.lt_succ_iff] using Finset.mem_range.mp this
-        exact hwP s hs (hrs ▸ hlater r (w r hr) (hwP r hr) s h hsle)
-      · have hrle : r ≤ m := by
-          have := (Finset.mem_filter.mp hr).1
-          simpa [Nat.lt_succ_iff] using Finset.mem_range.mp this
-        exact hwP r hr (hrs ▸ hlater s (w s hs) (hwP s hs) r h hrle)
+      rcases lt_or_gt_of_ne hne with h | h <;> grind
   -- There are `m + 1` stages but at most `m` bad ones.
-  have hsub : bad ⊆ Finset.range (m + 1) := Finset.filter_subset _ _
   have : bad ≠ Finset.range (m + 1) := by
     intro h
-    have : m + 1 ≤ m := by
-      have := hbadcard.trans hcard
-      rwa [h, Finset.card_range] at this
-    omega
-  obtain ⟨r, hr, hrbad⟩ := Finset.exists_of_ssubset (hsub.ssubset_of_ne this)
-  refine ⟨r, by simpa [Nat.lt_succ_iff] using Finset.mem_range.mp hr, ?_⟩
-  intro v hv
-  by_contra hP
-  exact hrbad (Finset.mem_filter.mpr ⟨hr, ⟨v, hv, hP⟩⟩)
+    grind
+  obtain ⟨r, hr, hrbad⟩ := Finset.exists_of_ssubset ((Finset.filter_subset _ _).ssubset_of_ne this)
+  refine ⟨r, by grind, ?_⟩
+  grind
 
 end FiniteChains

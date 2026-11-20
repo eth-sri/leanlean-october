@@ -3,25 +3,24 @@ module
 public import RequestProject.RelatorCircleBoundary
 
 @[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
 universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
+variable (k : Fin (w j).length)
+
 /-- The four signed actual incidence edges for one letter of the attaching circle. -/
-noncomputable def relatorCircleLetterChain (k : Fin (w j).length) :
+noncomputable def relatorCircleLetterChain :
     StrictOrdEdge (RelatorCircle w j) →₀ ℤ :=
   Finsupp.single (relatorCircleEdge0 w j k) 1 -
     Finsupp.single (relatorCircleEdge1 w j k) 1 +
     Finsupp.single (relatorCircleEdge2 w j k) 1 -
     Finsupp.single (relatorCircleEdge3 w j k) 1
 
-theorem relatorCircleLetterChain_boundary (k : Fin (w j).length) :
+theorem relatorCircleLetterChain_boundary :
     Comb.bdry1 (strictOrderCx (RelatorCircle w j)) (relatorCircleLetterChain w j k) =
       Finsupp.single (relatorCirclePoint w j (relatorCircleNext w j k) CPos.cor) 1 -
       Finsupp.single (relatorCirclePoint w j k CPos.cor) 1 := by
@@ -31,17 +30,14 @@ theorem relatorCircleLetterChain_boundary (k : Fin (w j).length) :
     relatorCircleEdge0, relatorCircleEdge1, relatorCircleEdge2, relatorCircleEdge3]
 
 /-- The genuine finite attaching-circle fundamental chain. -/
-noncomputable def relatorCircleFundamentalChain : StrictOrdEdge (RelatorCircle w j) →₀ ℤ :=
-  ∑ k : Fin (w j).length, relatorCircleLetterChain w j k
+noncomputable def relatorCircleFundamentalChain :=
+  ∑ k : Fin _, relatorCircleLetterChain w j k
 
-theorem relatorCircleLetterChain_edge0 (l k : Fin (w j).length) :
+theorem relatorCircleLetterChain_edge0 (l k : Fin _) :
     relatorCircleLetterChain w j l (relatorCircleEdge0 w j k) = if l = k then 1 else 0 := by
   classical
   by_cases h : l = k
-  · subst l
-    simp [relatorCircleLetterChain, relatorCircleEdge0, relatorCircleEdge1,
-      relatorCircleEdge2, relatorCircleEdge3, relatorCirclePoint, TCirc.pt,
-      RelatorCircle, StrictOrdEdge, TCirc]
+  · simp_all [relatorCircleLetterChain, relatorCircleEdge0, relatorCircleEdge1, relatorCircleEdge2, relatorCircleEdge3, relatorCirclePoint, TCirc.pt, RelatorCircle, StrictOrdEdge, TCirc]
   · have hv : l.val ≠ k.val := fun he => h (Fin.ext he)
     simp [relatorCircleLetterChain, relatorCircleEdge0, relatorCircleEdge1,
       relatorCircleEdge2, relatorCircleEdge3, relatorCirclePoint, TCirc.pt,
@@ -52,19 +48,15 @@ theorem relatorCircleFundamentalChain_cycle :
   classical
   rw [relatorCircleFundamentalChain, map_sum]
   simp_rw [relatorCircleLetterChain_boundary]
-  rw [Finset.sum_sub_distrib]
-  let e : Fin (w j).length ≃ Fin (w j).length := Equiv.ofBijective
-    (relatorCircleNext w j) ⟨relatorCircleNext_injective w j,
+  let e := Equiv.ofBijective
+    _ ⟨relatorCircleNext_injective w j,
       Finite.surjective_of_injective (relatorCircleNext_injective w j)⟩
   have he := e.sum_comp (fun k =>
     Finsupp.single (relatorCirclePoint w j k CPos.cor) (1 : ℤ))
-  rw [show (∑ k, Finsupp.single
-      (relatorCirclePoint w j (relatorCircleNext w j k) CPos.cor) (1 : ℤ)) =
-      ∑ k, Finsupp.single (relatorCirclePoint w j k CPos.cor) (1 : ℤ) from he, sub_self]
+  aesop
 
-theorem relatorCircleFundamentalChain_edge0 (k : Fin (w j).length) :
+theorem relatorCircleFundamentalChain_edge0 (k : Fin _) :
     relatorCircleFundamentalChain w j (relatorCircleEdge0 w j k) = 1 := by
-  classical
   simp [relatorCircleFundamentalChain, relatorCircleLetterChain_edge0]
 
 /-- Every actual attaching-circle cycle is the corresponding integer multiple of

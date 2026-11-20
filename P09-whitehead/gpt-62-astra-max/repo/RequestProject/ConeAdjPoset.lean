@@ -40,12 +40,14 @@ section Comap
 
 variable {P Q : Type u} [Preorder P] [Preorder Q] {G : Type v} [Group G]
 
+variable (f : P → Q) (hf : Monotone f) (c : OrdCocycle Q G)
+
 /-- A cocycle pulls back along a monotone map. -/
-def OrdCocycle.comap (f : P → Q) (hf : Monotone f) (c : OrdCocycle Q G) : OrdCocycle P G where
-  val a b := c.val (f a) (f b)
+def OrdCocycle.comap : OrdCocycle P G where
+  val a b := c.val _ (f b)
   comp hab hbc := c.comp (hf hab) (hf hbc)
 
-@[simp] theorem OrdCocycle.comap_val (f : P → Q) (hf : Monotone f) (c : OrdCocycle Q G)
+@[simp] theorem OrdCocycle.comap_val
     (a b : P) : (c.comap f hf).val a b = c.val (f a) (f b) := rfl
 
 end Comap
@@ -55,7 +57,7 @@ end Comap
 variable {P : Type u} [Preorder P] {T : Type u}
 
 /-- The preorder `P` with a new point above the down-closure of `S t` for every `t : T`. -/
-def ConeAdj (_S : T → P → Prop) : Type u := P ⊕ T
+def ConeAdj (_S : T → P → Prop) := P ⊕ T
 
 namespace ConeAdj
 
@@ -107,16 +109,18 @@ instance : Preorder (ConeAdj S) where
 
 @[simp] theorem inc_le_inc {p q : P} : (inc p : ConeAdj S) ≤ inc q ↔ p ≤ q := Iff.rfl
 
-@[simp] theorem inc_le_apex {p : P} {t : T} :
+variable {p : P} {t : T}
+
+@[simp] theorem inc_le_apex :
     (inc p : ConeAdj S) ≤ apex t ↔ ∃ r, S t r ∧ p ≤ r := Iff.rfl
 
-@[simp] theorem not_apex_le_inc {p : P} {t : T} : ¬ (apex t : ConeAdj S) ≤ inc p := id
+@[simp] theorem not_apex_le_inc : ¬ (apex t : ConeAdj S) ≤ inc p := id
 
-theorem inc_monotone : Monotone (inc : P → ConeAdj S) := fun _ _ h => h
+theorem inc_monotone : Monotone (inc : P → ConeAdj S) := by solve_by_elim
 
 /-- The defining relation: an element of `S t` lies under the cone point `t`. -/
 theorem inc_le_apex_of_mem {p : P} {t : T} (h : S t p) : (inc p : ConeAdj S) ≤ apex t :=
-  ⟨p, h, le_refl p⟩
+  by aesop
 
 omit [Preorder P] in
 theorem inc_injective : Function.Injective (inc : P → ConeAdj S) := fun _ _ h => Sum.inl_injective h
@@ -127,9 +131,11 @@ end ConeAdj
 
 variable {G : Type v} [Group G] {S : T → P → Prop}
 
+variable (c : OrdCocycle P G) (h : T → P → G)
+
 /-- The extension of a cocycle over the adjoined cone points, given a trivialisation `h t` of
 the cocycle under each cone point. -/
-def OrdCocycle.coneAdjVal (c : OrdCocycle P G) (h : T → P → G) :
+def OrdCocycle.coneAdjVal :
     ConeAdj S → ConeAdj S → G
   | Sum.inl p, Sum.inl q => c.val p q
   | Sum.inl p, Sum.inr t => h t p
@@ -138,7 +144,7 @@ def OrdCocycle.coneAdjVal (c : OrdCocycle P G) (h : T → P → G) :
 
 /-- **Extension of a cocycle over the cone points.**  The hypothesis is that `h t` trivialises
 the cocycle on the elements lying under the cone point `t`. -/
-def OrdCocycle.coneAdj (c : OrdCocycle P G) (h : T → P → G)
+def OrdCocycle.coneAdj
     (hh : ∀ (t : T) {p q : P}, p ≤ q → (ConeAdj.inc q : ConeAdj S) ≤ ConeAdj.apex t →
       c.val p q * h t q = h t p) :
     OrdCocycle (ConeAdj S) G where
@@ -146,21 +152,23 @@ def OrdCocycle.coneAdj (c : OrdCocycle P G) (h : T → P → G)
   comp := by
     rintro (p | t) (q | t') (r | t'') hpq hqr
     · exact c.comp hpq hqr
-    · exact hh t'' hpq hqr
-    · exact absurd hqr (fun x => x)
-    · cases (hqr : t' = t'')
+    · solve_by_elim
+    · solve_by_elim
+    · cases hqr
       show h t' p * 1 = h t' p
-      rw [mul_one]
-    · exact absurd hpq (fun x => x)
-    · exact absurd hpq (fun x => x)
-    · exact absurd hqr (fun x => x)
-    · show (1 : G) * 1 = 1
-      rw [mul_one]
+      simp
+    · solve_by_elim
+    · solve_by_elim
+    · solve_by_elim
+    · show 1 * 1 = 1
+      simp
 
-@[simp] theorem OrdCocycle.coneAdj_val_inc (c : OrdCocycle P G) (h : T → P → G) (hh) (p q : P) :
+variable (hh)
+
+@[simp] theorem OrdCocycle.coneAdj_val_inc (p q : P) :
     (c.coneAdj (S := S) h hh).val (ConeAdj.inc p) (ConeAdj.inc q) = c.val p q := rfl
 
-@[simp] theorem OrdCocycle.coneAdj_val_apex (c : OrdCocycle P G) (h : T → P → G) (hh)
+@[simp] theorem OrdCocycle.coneAdj_val_apex
     (p : P) (t : T) :
     (c.coneAdj (S := S) h hh).val (ConeAdj.inc p) (ConeAdj.apex t) = h t p := rfl
 
@@ -168,10 +176,10 @@ def OrdCocycle.coneAdj (c : OrdCocycle P G) (h : T → P → G)
 
 /-- **A loop all of whose edges lie under a fixed element is null-homotopic.** -/
 theorem htpy_nil_of_pathIn_le {Pp : Type u} [Preorder Pp] (d : Pp) {v : Pp} (hv : v ≤ d)
-    {l : List ((orderCx Pp).E × Bool)}
+    {l : List _}
     (hp : IsPath (orderCx Pp).src (orderCx Pp).tgt l v v)
     (hl : PathIn (fun x => x ≤ d) l) :
-    Htpy (orderCx Pp) v v l [] :=
+    Htpy _ v v l [] :=
   htpy_nil_of_pathIn_le_top (A := fun x => x ≤ d) (le_refl d) (fun _ hx => hx) hv hp hl
 
 end Comb

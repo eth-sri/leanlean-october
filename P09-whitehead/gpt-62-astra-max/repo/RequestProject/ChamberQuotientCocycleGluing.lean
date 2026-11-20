@@ -1,8 +1,7 @@
 module
 
-public import RequestProject.BlockSpinePres
+
 public import RequestProject.OrderCocycleChains
-public import RequestProject.OrderCocyclePotential
 public import RequestProject.GenusSurfaceMonodromyExt
 public import RequestProject.GenusChainCollapse
 
@@ -14,9 +13,6 @@ The transition function comes from the marked surface theorem, not an assumed
 presentation of its fundamental group. This is the geometric construction
 needed for the reverse substituted-group comparison.
 -/
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
@@ -30,29 +26,28 @@ theorem eq_of_val_eq {c d : OrdCocycle P G} (h : ∀ a b, c.val a b = d.val a b)
   | mk cv cc =>
     cases d with
     | mk dv dc =>
-      have he : cv = dv := funext (fun a => funext (h a))
-      cases he
-      rfl
+      have he := funext (fun a => funext (h a))
+      simp_all
 
 theorem comap_readPath (c : OrdCocycle Q G) (f : P → Q) (hf : Monotone f)
-    (p : List ((orderCx P).E × Bool)) :
+    (p : List _) :
     (c.comap f hf).readPath p = c.readPath (mapPath (orderCxMap f hf) p) := by
   induction p with
   | nil => rfl
   | cons e p ih =>
-    simp only [mapPath, List.map_cons]
-    rw [readPath_cons, readPath_cons, ih]
-    congr 1
+    aesop
 
-def postcompose (c : OrdCocycle P G) (φ : G →* H) : OrdCocycle P H where
+variable (c : OrdCocycle P G) (φ : G →* H)
+
+def postcompose : OrdCocycle P H where
   val a b := φ (c.val a b)
-  comp hab hbc := by rw [← map_mul, c.comp hab hbc]
+  comp hab hbc := by grind [map_mul, c.comp]
 
-theorem postcompose_readPath (c : OrdCocycle P G) (φ : G →* H)
-    (p : List ((orderCx P).E × Bool)) :
+theorem postcompose_readPath
+    (p : List _) :
     (c.postcompose φ).readPath p = φ (c.readPath p) := by
   induction p with
-  | nil => exact (map_one φ).symm
+  | nil => simp
   | cons e p ih =>
     rw [readPath_cons, readPath_cons, map_mul, ih]
     congr 1
@@ -69,35 +64,31 @@ variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [Preorder X] {att : NeSpx A →o X}
   {G : Type v} [Group G]
 
-def positiveOldSimplex (d : QOld A) (hd : d.1.sgn = 0) : NeSpx A :=
+variable (d : QOld A) (hd : d.1.sgn = 0)
+
+def positiveOldSimplex : NeSpx A :=
   ⟨d.1.spx, Finset.nonempty_iff_ne_empty.mpr (fun h => d.2 ⟨h, hd⟩),
     d.1.isSimplex⟩
 
-theorem posQCube_positiveOldSimplex (d : QOld A) (hd : d.1.sgn = 0) :
+theorem posQCube_positiveOldSimplex :
     posQCube (positiveOldSimplex d hd) = d := by
   apply Subtype.ext
-  apply QCube.ext'
-  · rfl
-  · intro z _
-    exact (congrFun hd z).symm
+  apply QCube.ext' <;> aesop
 
 omit [DecidableEq V] in
 theorem positiveOldSimplex_posQCube (s : NeSpx A) :
-    positiveOldSimplex (posQCube s) rfl = s := by
-  apply Subtype.ext
-  rfl
+    positiveOldSimplex (posQCube s) rfl = s := rfl
 
 theorem positiveOld_upward {d e : QOld A} (hde : d ≤ e) (hd : d.1.sgn = 0) :
     e.1.sgn = 0 := by
   funext z
-  change e.1.sgn z = 0
   by_cases hz : z ∈ e.1.spx
-  · exact e.1.sgn_eq_zero z hz
+  · apply e.1.sgn_eq_zero <;> assumption
   · rw [← hde.2 z hz]
     exact congrFun hd z
 
 theorem new_le_positiveOld {x : X} {d : QOld A}
-    (h : qNew (A := A) (att := att) x ≤ qOldIncl d) :
+    (h : qNew (att := att) x ≤ qOldIncl d) :
     x ≤ att (positiveOldSimplex d h.1) := by
   obtain ⟨_, hn, hx⟩ := h
   exact hx
@@ -116,8 +107,7 @@ noncomputable def quotientCocycleValue : Qpos A X att → Qpos A X att → G
 theorem quotientCocycleValue_mixed (x : X) (e : QOld A) (he : e.1.sgn = 0) :
     quotientCocycleValue (att := att) old base k (.inr x) (.inl e) =
       base.val x (att (positiveOldSimplex e he)) * (k (positiveOldSimplex e he))⁻¹ := by
-  classical
-  simp only [quotientCocycleValue, dif_pos he]
+  simp_all [quotientCocycleValue, dif_pos]
 
 variable (hk : ∀ {s t : NeSpx A}, s ≤ t →
   old.val (posQCube s) (posQCube t) * k t = k s * base.val (att s) (att t))
@@ -141,10 +131,9 @@ theorem quotientCocycleValue_comp {a b c : Qpos A X att} (hab : a ≤ b) (hbc : 
       cases c with
       | inr z => exact False.elim hbc
       | inl f =>
-        have he : e.1.sgn = 0 := hab.1
-        have hf : f.1.sgn = 0 := positiveOld_upward hbc he
+        have he := hab.1
+        have hf := positiveOld_upward hbc he
         have hef : positiveOldSimplex e he ≤ positiveOldSimplex f hf := hbc.1
-        have hx : x ≤ att (positiveOldSimplex e he) := new_le_positiveOld hab
         have hg := hk hef
         rw [posQCube_positiveOldSimplex, posQCube_positiveOldSimplex] at hg
         have ht : (k (positiveOldSimplex e he))⁻¹ * old.val e f =
@@ -154,22 +143,21 @@ theorem quotientCocycleValue_comp {a b c : Qpos A X att} (hab : a ≤ b) (hbc : 
             _ = (k (positiveOldSimplex e he))⁻¹ *
                 (old.val e f * k (positiveOldSimplex f hf)) *
                   (k (positiveOldSimplex f hf))⁻¹ := by group
-            _ = _ := by rw [hg]; group
+            _ = _ := by simp [hg]
         rw [quotientCocycleValue_mixed old base k x e he,
           quotientCocycleValue_mixed old base k x f hf]
-        change (base.val x (att (positiveOldSimplex e he)) *
-            (k (positiveOldSimplex e he))⁻¹) * old.val e f = _
-        rw [mul_assoc, ht, ← mul_assoc, base.comp hx (att.monotone hef)]
+        change (base.val x _ *
+            (k _)⁻¹) * old.val e f = _
+        rw [mul_assoc, ht, ← mul_assoc, base.comp (new_le_positiveOld hab) (att.monotone hef)]
     | inr y =>
       cases c with
       | inr z => exact base.comp hab hbc
       | inl f =>
-        have hf : f.1.sgn = 0 := hbc.1
-        have hy : y ≤ att (positiveOldSimplex f hf) := new_le_positiveOld hbc
+        have hf := hbc.1
         rw [quotientCocycleValue_mixed old base k y f hf,
           quotientCocycleValue_mixed old base k x f hf]
-        change base.val x y * (base.val y (att (positiveOldSimplex f hf)) * _) = _
-        rw [← mul_assoc, base.comp hab hy]
+        change base.val x y * (base.val y _ * _) = _
+        rw [← mul_assoc, base.comp hab (new_le_positiveOld hbc)]
 
 noncomputable def gluedQuotientCocycle : OrdCocycle (Qpos A X att) G where
   val := quotientCocycleValue old base k
@@ -183,28 +171,28 @@ theorem gluedQuotientCocycle_base (x y : X) :
     (gluedQuotientCocycle old base k hk).val
       (qNew (att := att) x) (qNew y) = base.val x y := rfl
 
-theorem gluedQuotientCocycle_cylinder (s : NeSpx A) :
+variable (s : NeSpx A)
+
+theorem gluedQuotientCocycle_cylinder :
     (gluedQuotientCocycle old base k hk).val
       (qNew (att := att) (att s)) (qOldIncl (posQCube s)) = (k s)⁻¹ := by
   change quotientCocycleValue old base k (.inr (att s)) (.inl (posQCube s)) = _
-  rw [quotientCocycleValue_mixed old base k (att s) (posQCube s) rfl,
+  rw [quotientCocycleValue_mixed old base k _ (posQCube s) rfl,
     positiveOldSimplex_posQCube, base.val_refl, one_mul]
 
-def quotientOldBasedInclusion (s : NeSpx A) :
-    Pi1 (orderCx (QOld A)) (posQCube s) →*
-      Pi1 (orderCx (Qpos A X att)) (qNew (att := att) (att s)) :=
+def quotientOldBasedInclusion :=
   (pi1Conj (isPath_ordPos (qNew_att_le_qOldIncl (att := att) s))).comp
     (pi1Map (orderCxMap (qOldIncl (att := att)) qOldIncl_monotone) (posQCube s))
 
 /-- The normalized cylinder edge makes the reverse reading on the based old
 inclusion equal to the original old reading, without a conjugation factor. -/
-theorem monodromy_quotientOldBasedInclusion (s : NeSpx A)
-    (c : OrdCocycle (Qpos A X att) G) (χ : Pi1 (orderCx (QOld A)) (posQCube s) →* G)
+theorem monodromy_quotientOldBasedInclusion
+    (c : OrdCocycle (Qpos A X att) G) (χ : Pi1 _ _ →* G)
     (hcyl : c.val (qNew (att s)) (qOldIncl (posQCube s)) = 1)
-    (hread : ∀ p : Loop (orderCx (QOld A)) (posQCube s),
+    (hread : ∀ p : Loop _ _,
       c.readPath (mapPath (orderCxMap (qOldIncl (att := att)) qOldIncl_monotone) p.1) =
         χ (Pi1.mk p)) :
-    (c.monodromy (qNew (att s))).comp (quotientOldBasedInclusion (att := att) s) = χ := by
+    (c.monodromy _).comp (quotientOldBasedInclusion s) = χ := by
   apply MonoidHom.ext
   intro z
   refine Quotient.inductionOn z ?_
@@ -215,22 +203,21 @@ theorem monodromy_quotientOldBasedInclusion (s : NeSpx A)
       revPath [ordPos (qNew_att_le_qOldIncl (att := att) s)]) = _
   simp only [OrdCocycle.readPath_append, OrdCocycle.readPath_revPath,
     OrdCocycle.readPath_cons, OrdCocycle.readPath_nil,
-    OrdCocycle.readGerm_ordPos, hcyl, one_mul, mul_one, inv_one]
-  exact hread p
+    OrdCocycle.readGerm_ordPos, hcyl, one_mul, mul_one, inv_one] <;> aesop
 
 theorem monodromy_quotientBaseInclusion (x : X)
     (c : OrdCocycle (Qpos A X att) G) (d : OrdCocycle X G)
     (hd : ∀ a b, c.val (qNew a) (qNew b) = d.val a b) :
     (c.monodromy (qNew x)).comp
-      (pi1Map (orderCxMap (qNew (A := A) (att := att)) qNew_monotone) x) =
+      (pi1Map (orderCxMap _ qNew_monotone) x) =
         d.monodromy x := by
-  have he : c.comap (qNew (A := A) (att := att)) qNew_monotone = d :=
+  have he : c.comap _ qNew_monotone = d :=
     OrdCocycle.eq_of_val_eq hd
   apply MonoidHom.ext
   intro z
   refine Quotient.inductionOn z ?_
   intro p
-  change c.readPath (mapPath (orderCxMap (qNew (A := A) (att := att)) qNew_monotone) p.1) = _
+  change c.readPath _ = _
   rw [← OrdCocycle.comap_readPath, he]
   rfl
 
@@ -250,20 +237,19 @@ theorem exists_quotientCocycle_of_marked
       old.readPath (mapPath (surfCx (cmpRel (GenusVertex q)))
         (gSig q (x.1.val, x.2))) =
       base.readPath (mapPath (orderCxMap att att.monotone) (gSig q (x.1.val, x.2)))) :
-    ∃ c : OrdCocycle (Qpos (cmpRel (GenusVertex q)) X att) G,
+    ∃ c : OrdCocycle (Qpos _ X att) G,
       (∀ d e, c.val (qOldIncl d) (qOldIncl e) = old.val d e) ∧
       (∀ x y, c.val (qNew x) (qNew y) = base.val x y) ∧
       c.val (qNew (att (gBase q))) (qOldIncl (posQCube (gBase q))) = 1 := by
   have hm' : ∀ x : Fin q × Bool,
       (old.comap posQCube posQCube_monotone).readPath (gSig q (x.1.val, x.2)) =
       (base.comap att att.monotone).readPath (gSig q (x.1.val, x.2)) := by
-    intro x
-    simpa only [OrdCocycle.comap_readPath, surfCx] using hm x
+    solve_by_elim
   obtain ⟨k, hb, hk⟩ := genus_cocycle_gauge_of_marked q
-    (old.comap posQCube posQCube_monotone) (base.comap att att.monotone) hm'
+    _ _ hm'
   refine ⟨gluedQuotientCocycle old base k hk, ?_, ?_, ?_⟩
-  · exact gluedQuotientCocycle_old old base k hk
-  · exact gluedQuotientCocycle_base old base k hk
+  · apply gluedQuotientCocycle_old
+  · apply gluedQuotientCocycle_base
   · rw [gluedQuotientCocycle_cylinder, hb, inv_one]
 
 end FiniteChains.Davis.Genus

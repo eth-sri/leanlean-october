@@ -20,14 +20,13 @@ theorem zeroPi2_of_zeroPi2_presInclHom
     (hz : ZeroPi2 (presInclHom (nonTreeIncl hiff) (nonTreeIncl_injective hiff hE)
       (treeRel TX) (treeRel TY) h.onF (treeRel_onF hiff))) : ZeroPi2 h := by
   classical
-  have hzero := (zeroPi2_presInclHom_iff (ρ := treeRel TX) (σ := treeRel TY)
-    (nonTreeIncl hiff) (nonTreeIncl_injective hiff hE) h.onF (treeRel_onF hiff)).mp hz
+  have hzero := (zeroPi2_presInclHom_iff (ρ := treeRel TX)
+    _ _ h.onF (treeRel_onF hiff)).mp hz
   intro x z hz
-  have hcycle := (mem_pi2_iff_bdry2_univCover TX z).mp hz
   have hinj : Function.Injective (chain2 (treeUnivHom TY (h.onV x))) :=
     Finsupp.mapDomain_injective (uvFace_injective TY)
   apply hinj
   rw [map_zero, chain2_treeUnivHom_square hiff hE]
-  exact hzero _ hcycle
+  exact hzero _ ((mem_pi2_iff_bdry2_univCover TX z).mp hz)
 
 end FiniteChains.Comb.SpanningTree

@@ -37,26 +37,13 @@ universe u
 
 variable {V : Type u} [DecidableEq V]
 
-/-- The simplices of `L` that meet `D`: the poset `𝒫_D` whose order complex is the union of the
-mirrors `F_s`, `s ∈ D`. -/
-def MeetPoset (L : Finset V → Prop) (D : Finset V) : Type u :=
-  {σ : Finset V // L σ ∧ (σ ∩ D).Nonempty}
-
-instance (L : Finset V → Prop) (D : Finset V) : PartialOrder (MeetPoset L D) :=
-  Subtype.partialOrder _
-
-@[simp] theorem MeetPoset.le_def {L : Finset V → Prop} {D : Finset V} (σ τ : MeetPoset L D) :
-    σ ≤ τ ↔ σ.1 ⊆ τ.1 := Iff.rfl
+variable (L : Finset V → Prop) (D : Finset V)
 
 /-! ### The union of mirrors is the order complex of `𝒫_D` -/
 
 /-! ### Contractibility -/
 
 variable {L : Finset V → Prop} {D : Finset V}
-
-/-- The vertex `D` of the poset `𝒫_D`. -/
-def top (hLD : L D) (hD : D.Nonempty) : MeetPoset L D :=
-  ⟨D, hLD, by simpa using hD⟩
 
 /-! ### The descent set of an element of a right-angled Coxeter group -/
 
@@ -81,7 +68,7 @@ def IsSimplex (σ : Finset V) : Prop := ∀ s ∈ σ, ∀ r ∈ σ, s ≠ r → 
 
 omit [DecidableEq V] [Fintype V] in
 theorem isSimplex_subset {σ τ : Finset V} (hστ : σ ⊆ τ) (hτ : IsSimplex A τ) :
-    IsSimplex A σ := fun s hs r hr hsr => hτ s (hστ hs) r (hστ hr) hsr
+    IsSimplex A σ := by grind [IsSimplex]
 
 /-- **The descent set is a simplex of `L`**, in the form needed by the chamber argument. -/
 theorem isSimplex_rdescFinset (x : CayGroup A) : IsSimplex A (rdescFinset A x) := by

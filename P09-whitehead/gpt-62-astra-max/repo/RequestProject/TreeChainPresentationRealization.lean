@@ -15,42 +15,39 @@ noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb.TopChainFS
 open SpanningTree
-variable {K : Complex2} {n : ℕ} (c : TopChainFS K n)
+variable {n : ℕ} (c : TopChainFS.{0} n)
   (T₀ : SpanningTree (c.X 0))
 
-def stageTree (i : ℕ) : SpanningTree (c.X i) :=
+variable (i : ℕ)
+
+def stageTree : SpanningTree (c.X i) :=
   Nat.rec T₀ (fun i U =>
     (exists_extension (c.inc i) (c.conn (i + 1)) U.root U
       (c.incV i) (c.incE i)).choose) i
 
-theorem stageTree_compatible (i : ℕ) (e : (c.X i).E) :
+theorem stageTree_compatible (e : (c.X i).E) :
     (c.stageTree T₀ (i + 1)).isTree ((c.inc i).onE e) ↔
       (c.stageTree T₀ i).isTree e :=
   (exists_extension (c.inc i) (c.conn (i + 1)) (c.stageTree T₀ i).root
     (c.stageTree T₀ i) (c.incV i) (c.incE i)).choose_spec.2 e
 
-def treePresentationTopChain : PresChainTopFS (treeRel T₀) n where
+def treePresentationChain : PresChainFS (treeRel T₀) n where
   gen i := NonTree (c.stageTree T₀ i)
   cell i := (c.X i).F
   decGen _ := inferInstance
   rel i := treeRel (c.stageTree T₀ i)
-  genIncl i := nonTreeIncl (c.stageTree_compatible T₀ i)
-  genIncl_injective i := nonTreeIncl_injective (c.stageTree_compatible T₀ i) (c.incE i)
-  cellIncl i := (c.inc i).onF
-  cellIncl_injective := c.incF
+  genIncl i := ⟨_, nonTreeIncl_injective (c.stageTree_compatible T₀ i) (c.incE i)⟩
+  cellIncl i := ⟨_, c.incF i⟩
   rel_incl i := treeRel_onF (c.stageTree_compatible T₀ i)
-  baseGen := id
-  baseGen_injective := Function.injective_id
-  baseCell := id
-  baseCell_injective := Function.injective_id
+  baseGen := Function.Embedding.refl _
+  baseCell := Function.Embedding.refl _
   rel_base j := by
     change treeRel T₀ j = FreeGroup.map id (treeRel T₀ j)
-    rw [FreeGroup.map.id]
-  zero_pi2 i hi := zeroPi2_presInclHom_of_zeroPi2
-    (c.stageTree_compatible T₀ i) (c.incE i) (c.zero_pi2 i hi)
-
-def treePresentationChain : PresChainFS (treeRel T₀) n :=
-  (c.treePresentationTopChain T₀).toPresChainFS
+    simp
+  zero_pi2 i hi := (zeroPi2_presInclHom_iff (ρ := treeRel (c.stageTree T₀ i)) (σ := treeRel (c.stageTree T₀ (i + 1))) (nonTreeIncl (c.stageTree_compatible T₀ i))
+    (nonTreeIncl_injective (c.stageTree_compatible T₀ i) (c.incE i))
+    (c.inc i).onF (treeRel_onF (c.stageTree_compatible T₀ i))).mp
+      (zeroPi2_presInclHom_of_zeroPi2 (c.stageTree_compatible T₀ i) (c.incE i) (c.zero_pi2 i hi))
 
 theorem treePresentationChain_proper
     (hp : ∀ i, i < n → FreshLoopOrFace (c.inc i)) (i : ℕ) (hi : i < n) :

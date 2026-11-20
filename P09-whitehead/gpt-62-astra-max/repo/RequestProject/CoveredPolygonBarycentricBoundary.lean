@@ -10,9 +10,7 @@ public import RequestProject.BarycentricTwoChains
 boundary path, with all sheets retained. Pending final Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.CoveredPolygon
 open RACG Mirror Comb Cell
@@ -21,11 +19,12 @@ variable {κ ι P : Type} {M : ℕ} [NeZero M] [PartialOrder P]
   (f : P → SCell vc ec hc) (hf : IsPosetCover f)
   {v : PolygonCoverPole hc f} (D : CoveredPolygon hc f v)
 
-def subdivisionBoundaryEdge (p : Fin M) :
-    List ((orderCx (NeSpx (cmpRel P))).E × Bool) :=
+variable (p : Fin M)
+
+def subdivisionBoundaryEdge :=
   edgeHop (D.ve p) ++ revPath (edgeHop (D.v1e p))
 
-theorem subdivisionBoundaryEdge_isPath (p : Fin M) :
+theorem subdivisionBoundaryEdge_isPath :
     IsPath (orderCx (NeSpx (cmpRel P))).src (orderCx (NeSpx (cmpRel P))).tgt
       (D.subdivisionBoundaryEdge hc f p) (spx1 (D.V p)) (spx1 (D.V (p + 1))) :=
   (isPath_edgeHop (D.ve p)).append (isPath_revPath (isPath_edgeHop (D.v1e p)))
@@ -57,14 +56,12 @@ theorem barycentricChain1_boundaryEdges :
   have hpath (n : ℕ) : pathChain (D.subdivisionBoundaryPath hc f n) =
       ∑ k ∈ Finset.range n, pathChain (D.subdivisionBoundaryEdge hc f (cyc M k)) := by
     induction n with
-    | zero => simp [subdivisionBoundaryPath, pathChain]
+    | zero => rfl
     | succ n ih => rw [subdivisionBoundaryPath, pathChain_append, ih, Finset.sum_range_succ]
   have hcyc (i : Fin M) : cyc M i.val = i := Fin.ext (Nat.mod_eq_of_lt i.isLt)
   rw [hpath]
   rw [← Fin.sum_univ_eq_sum_range]
-  simp only [hcyc]
-  rw [boundaryEdges, map_sum]
-  exact Finset.sum_congr rfl (fun p _ => (hstep p).symm)
+  simp_all [hcyc, boundaryEdges, map_sum]
 
 theorem subdivisionBoundaryEdge_projection (p : Fin M) :
     mapPath (orderCxMap (barycentricMap f hf.mono) (barycentricMap_monotone f hf.mono))
@@ -83,13 +80,11 @@ theorem subdivisionBoundaryPath_projection (n : ℕ) :
   induction n with
   | zero => rfl
   | succ n ih =>
-    rw [subdivisionBoundaryPath, mapPath_append, ih,
-      D.subdivisionBoundaryEdge_projection hc f hf, bdPath]
+    simp_all [subdivisionBoundaryPath, mapPath_append, ih, D.subdivisionBoundaryEdge_projection, bdPath]
 
 theorem subdivisionFundamental_boundary :
     Comb.bdry2 (orderCx (NeSpx (cmpRel P))) (barycentricChain2 (decodeOrdNerve2 D.fundamental)) =
       pathChain (D.subdivisionBoundaryPath hc f M) := by
-  rw [barycentricChain2_boundary, D.decodedFundamental_boundary,
-    D.barycentricChain1_boundaryEdges hc f]
+  simp [barycentricChain2_boundary, D.decodedFundamental_boundary, D.barycentricChain1_boundaryEdges]
 
 end FiniteChains.Davis.CoveredPolygon

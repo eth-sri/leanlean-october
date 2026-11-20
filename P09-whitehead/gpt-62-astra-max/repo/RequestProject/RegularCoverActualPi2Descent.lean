@@ -36,13 +36,13 @@ theorem regularCover_cycle_mem_pi2FromSub_span
     (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
     (hiF : Function.Injective i.onF) (hL : IsConnected L) (ht : Pi1Trivial i)
     (x : (pushoutComplex p i hiV hiE).V)
-    (c : UF (pushoutComplex p i hiV hiE) x →₀ ℤ)
-    (hc : bdry2 (uCover (pushoutComplex p i hiV hiE) x) c = 0) :
+    (c : UF _ x →₀ ℤ)
+    (hc : bdry2 (uCover _ x) c = 0) :
     c ∈ Submodule.span ℤ (Pi2FromSub (pushoutMap p i hiV hiE hiF) x) := by
   have hT := isConnected_pushoutComplex p i hiV hiE
     (isConnected_of_covering p hp hDconn) hL d₀
   obtain ⟨l, hl⟩ := hT x ((pushoutMap p i hiV hiE hiF).onV (i.onV d₀))
-  apply pi2Generated_changeBase (pushoutMap p i hiV hiE hiF) hl _ c hc
+  apply pi2Generated_changeBase _ hl _ c hc
   exact PushoutRelativeCopies.cycle_mem_span_at_core p hp a hr he hf i hiV hiE hiF
     hDconn hL d₀ ht hD hT
 

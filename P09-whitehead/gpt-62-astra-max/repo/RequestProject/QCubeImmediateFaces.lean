@@ -10,36 +10,48 @@ namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] {A : CommRel V}
 
-theorem qCube_spx_ne_of_lt {d c : QCube A} (h : d < c) : d.spx ≠ c.spx := by
+variable {d c : QCube A}
+
+section
+
+variable (h : d < c)
+include h
+
+theorem qCube_spx_ne_of_lt : d.spx ≠ c.spx := by
   intro hs
   apply h.ne
   apply QCube.ext' hs
-  intro v hv
-  exact h.le.2 v hv
+  apply h.le.2
 
-theorem qCube_card_lt_of_lt {d c : QCube A} (h : d < c) : d.spx.card < c.spx.card :=
+theorem qCube_card_lt_of_lt : d.spx.card < c.spx.card :=
   Finset.card_lt_card ((Finset.ssubset_iff_subset_ne).mpr
     ⟨h.le.1, qCube_spx_ne_of_lt h⟩)
 
+end
+
 /-- Fixing the only removed direction reconstructs the actual face, including its sign. -/
-theorem qCube_eq_facet_of_spx_erase {d c : QCube A} (h : d ≤ c) (v : V)
+theorem qCube_eq_facet_of_spx_erase (h : d ≤ c) (v : V)
     (hs : d.spx = c.spx.erase v) : d = qCubeFacet c v (d.sgn v) := by
   apply QCube.ext' hs
   intro w hw
   by_cases hwv : w = v
-  · subst w
-    simp
-  · change d.sgn w = Function.update c.sgn v (d.sgn v) w
+  · simp_all
+  · change d.sgn w = Function.update c.sgn v _ w
     rw [Function.update_of_ne hwv]
     apply h.2
     intro hc
     apply hw
-    change w ∈ c.spx.erase v
     exact Finset.mem_erase.mpr ⟨hwv, hc⟩
 
+variable (d c : QCube A)
+
+section
+
+variable (h : d ≤ c) (hcard : c.spx.card = d.spx.card + 1)
+include h hcard
+
 /-- Every codimension-one face is one of the coordinate facets, with its actual fixed sign. -/
-theorem exists_qCube_facet_of_card (d c : QCube A) (h : d ≤ c)
-    (hcard : c.spx.card = d.spx.card + 1) :
+theorem exists_qCube_facet_of_card :
     ∃ v ∈ c.spx, d = qCubeFacet c v (d.sgn v) := by
   have hdiff : (c.spx \ d.spx).card = 1 := by
     rw [Finset.card_sdiff_of_subset h.1, hcard]
@@ -55,13 +67,11 @@ theorem exists_qCube_facet_of_card (d c : QCube A) (h : d ≤ c)
   · intro hw
     obtain ⟨hwv, hwc⟩ := Finset.mem_erase.mp hw
     by_contra hwd
-    have hm : w ∈ c.spx \ d.spx := Finset.mem_sdiff.mpr ⟨hwc, hwd⟩
-    rw [hv, Finset.mem_singleton] at hm
-    exact hwv hm
+    have hm := Finset.mem_sdiff.mpr ⟨hwc, hwd⟩
+    simp_all
 
 /-- The only two signs of a codimension-one face give the two actual coordinate facets. -/
-theorem exists_qCube_zero_or_one_facet (d c : QCube A) (h : d ≤ c)
-    (hcard : c.spx.card = d.spx.card + 1) :
+theorem exists_qCube_zero_or_one_facet :
     ∃ v ∈ c.spx, d = qCubeFacet c v 0 ∨ d = qCubeFacet c v 1 := by
   obtain ⟨v, hv, he⟩ := exists_qCube_facet_of_card d c h hcard
   refine ⟨v, hv, ?_⟩
@@ -70,19 +80,17 @@ theorem exists_qCube_zero_or_one_facet (d c : QCube A) (h : d ≤ c)
   · exact Or.inl he
   · exact Or.inr he
 
+end
+
 /-- A vertex strictly below an actual edge is one of that edge's two endpoints. -/
-theorem qCube_vertex_below_edge (d c : QCube A) (h : d < c) (v : V)
+theorem qCube_vertex_below_edge (h : d < c) (v : V)
     (hs : c.spx = {v}) : d = cubePositiveVertex c ∨ d = cubeNegativeVertex c v := by
   have hc : c.spx.card = 1 := by rw [hs]; simp
   have hd : d.spx.card = 0 := by
     have hh := qCube_card_lt_of_lt h
     omega
   obtain ⟨w, hw, he⟩ := exists_qCube_zero_or_one_facet d c h.le (by omega)
-  have hwv : w = v := by simpa [hs] using hw
-  subst w
-  rcases he with he | he
-  · exact Or.inl (he.trans (qCubeFacet_zero_of_singleton c v hs))
-  · exact Or.inr (he.trans (qCubeFacet_one_of_singleton c v hs))
+  simp_all [qCubeFacet_zero_of_singleton, qCubeFacet_one_of_singleton]
 
 /-- A genuine triangle below dimension two is necessarily a vertex-edge-square flag. -/
 theorem qCube_triangle_dimensions (t : (strictOrderCx (QCube A)).F)

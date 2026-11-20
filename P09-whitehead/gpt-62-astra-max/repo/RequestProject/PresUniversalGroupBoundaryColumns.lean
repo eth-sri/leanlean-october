@@ -12,8 +12,7 @@ variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
 /-- The genuine universal relator boundary expressed in actual group coordinates. -/
-noncomputable def presUniversalGroupBoundary :
-    (PresGroup ρ × J →₀ ℤ) →ₗ[ℤ] (PresGroup ρ × α →₀ ℤ) :=
+noncomputable def presUniversalGroupBoundary :=
   (presUniversalGeneratorGroupChainEquiv ρ w hw hpos).toLinearMap.comp
     ((presCoverRelatorGeneratorBoundary (P := UOrder (PresPos w) (ptBase w)) w uOrderEnd
       (presUniversalEnd_isPosetCover w hpos)).comp
@@ -41,9 +40,6 @@ theorem presUniversalGroupBoundary_actual_column
   rw [map_sum]
   apply Finset.sum_congr rfl
   intro k _
-  rw [map_smul]
-  congr 1
-  rw [presUniversalGeneratorGroupChainEquiv, Finsupp.domLCongr_single,
-    presUniversalGeneratorGroupEquiv_midpoint, presUniversalLetter_midpoint_coordinates]
+  rw [map_smul, presUniversalGeneratorGroupChainEquiv, Finsupp.domLCongr_single, presUniversalGeneratorGroupEquiv_midpoint, presUniversalLetter_midpoint_coordinates]
 
 end FiniteChains.PresModel

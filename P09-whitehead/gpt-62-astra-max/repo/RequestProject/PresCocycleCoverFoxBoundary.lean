@@ -2,7 +2,7 @@ module
 
 public import RequestProject.PresCocycleCoverCoordinates
 public import RequestProject.CoverFoxPrefixSum
-public import RequestProject.CoverComplexFinsupp
+
 
 @[expose] public section
 
@@ -17,7 +17,6 @@ theorem quotient_wordVal (l : List (α × Bool)) :
     wordVal (qof N) l = (QuotientGroup.mk (FreeGroup.mk l) : FreeGroup α ⧸ N) := by
   have h : FreeGroup.lift (qof N) = QuotientGroup.mk' N := by
     apply FreeGroup.ext_hom
-    intro i
     simp [qof]
   exact DFunLike.congr_fun h (FreeGroup.mk l)
 
@@ -26,8 +25,7 @@ variable (hword : ∀ j, FreeGroup.mk (w j) ∈ N)
 include hword in
 omit [DecidableEq α] in
 theorem quotient_relators_close (j : J) : wordVal (qof N) (w j) = 1 := by
-  rw [quotient_wordVal]
-  exact (QuotientGroup.eq_one_iff _).mpr (hword j)
+  simp_all [quotient_wordVal]
 
 abbrev QuotientCover := Space w (qof N) (quotient_relators_close w N hword)
 abbrev quotientProjection := projection w (qof N) (quotient_relators_close w N hword)
@@ -85,8 +83,7 @@ theorem quotient_two_cycle_zero (hpos : ∀ j, 0 < (w j).length)
     (hc : Comb.bdry2 (strictOrderCx (QuotientCover w N hword)) c = 0) : c = 0 := by
   let r := presCoverRelatorChain w (quotientProjection w N hword)
     (quotientCovering w N hword) hpos c
-  have hr : presCoverRelatorGeneratorBoundary w (quotientProjection w N hword)
-      (quotientCovering w N hword) r = 0 :=
+  have hr :=
     (presCoverCollapsedRelatorBoundary_eq_zero_iff_generator w
       (quotientProjection w N hword) (quotientCovering w N hword) r).mp
       (presCover_cycle_collapsed_relator_boundary_zero w (quotientProjection w N hword)
@@ -102,8 +99,6 @@ theorem quotient_two_cycle_zero (hpos : ∀ j, 0 < (w j).length)
     exact hz
   exact presCoverRelatorChain_cycle_injective w (quotientProjection w N hword)
     (quotientCovering w N hword) hpos c 0 hc (map_zero _) (by
-      change r = _
-      rw [map_zero]
-      exact hr0)
+      rw [map_zero]; exact hr0)
 
 end FiniteChains.PresModel.PresCocycleCover

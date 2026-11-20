@@ -8,11 +8,6 @@ public import RequestProject.TopologicalSingular.SingularChains
 
 /-! # Functorial maps on the explicit singular chain groups -/
 
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains.TopologicalSingular
 
 open Set Topology
@@ -22,48 +17,49 @@ universe u v w
 variable {X : Type u} {Y : Type v} {Z : Type w}
 variable [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]
 
-def simplexMap (f : C(X, Y)) (n : ℕ) (σ : Simplex X n) : Simplex Y n := f.comp σ
+variable (f : C(X, Y))
 
-@[simp] theorem simplexMap_apply (f : C(X, Y)) (n : ℕ) (σ : Simplex X n) (z : Domain n) :
+variable (n : ℕ) (σ : Simplex X n)
+
+def simplexMap := f.comp σ
+
+@[simp] theorem simplexMap_apply (z : Domain n) :
     simplexMap f n σ z = f (σ z) := rfl
 
-theorem face_simplexMap (f : C(X, Y)) {n : ℕ} (i : Fin (n + 2)) (σ : Simplex X (n + 1)) :
-    face i (simplexMap f (n + 1) σ) = simplexMap f n (face i σ) := rfl
+theorem face_simplexMap {n : ℕ} (i : Fin _) (σ : Simplex X _) :
+    face i (simplexMap f _ σ) = simplexMap f n (face i σ) := rfl
 
-noncomputable def map (f : C(X, Y)) (n : ℕ) : Chain X n →ₗ[ℤ] Chain Y n :=
+variable (n : ℕ)
+
+noncomputable def map :=
   Finsupp.lmapDomain ℤ ℤ (simplexMap f n)
 
-@[simp] theorem map_single (f : C(X, Y)) (n : ℕ) (σ : Simplex X n) (a : ℤ) :
+@[simp] theorem map_single (σ : Simplex X n) (a : ℤ) :
     map f n (Finsupp.single σ a) = Finsupp.single (simplexMap f n σ) a :=
   Finsupp.mapDomain_single
 
 theorem map_id (n : ℕ) : map (ContinuousMap.id X) n = LinearMap.id := by
-  apply Finsupp.lhom_ext
-  intro σ a
-  rw [map_single]
-  rfl
+  aesop
 
-theorem map_comp (f : C(X, Y)) (g : C(Y, Z)) (n : ℕ) :
+variable (f : C(X, Y))
+
+theorem map_comp (g : C(Y, Z)) (n : ℕ) :
     map (g.comp f) n = (map g n).comp (map f n) := by
-  apply Finsupp.lhom_ext
-  intro σ a
-  simp only [LinearMap.comp_apply, map_single]
-  rfl
+  aesop
 
-theorem map_boundary (f : C(X, Y)) (n : ℕ) (c : Chain X (n + 1)) :
-    map f n (boundary n c) = boundary n (map f (n + 1) c) := by
-  have he : (map f n).comp (boundary n) = (boundary n).comp (map f (n + 1)) := by
+theorem map_boundary (n : ℕ) (c : Chain X _) :
+    map f n (boundary n c) = boundary n (map f _ c) := by
+  have he : (map f n).comp (boundary n) = (boundary n).comp (map f _) := by
     apply Finsupp.lhom_ext
     intro σ a
     simp only [LinearMap.comp_apply, boundary_single, map_single, map_sum, map_smul,
       face_simplexMap]
   exact DFunLike.congr_fun he c
 
-theorem augmentation_map (f : C(X, Y)) (c : Chain X 0) : augmentation (map f 0 c) = augmentation c := by
+theorem augmentation_map (c : Chain X 0) : augmentation (map f 0 c) = augmentation c := by
   have he : augmentation.comp (map f 0) = augmentation := by
     apply Finsupp.lhom_ext
-    intro σ a
-    simp only [LinearMap.comp_apply, map_single, augmentation_single]
+    simp
   exact DFunLike.congr_fun he c
 
 end FiniteChains.TopologicalSingular

@@ -25,6 +25,6 @@ theorem hasChain_of_acyclicRegularCover (K : TwoComplex)
     (CanonicalPos K) T (canonicalTreeGenerator K T) hP
   cases n with
   | zero => omega
-  | succ n => exact hasChain_of_original_cover_tree_comparison K T e₀ h n
+  | succ n => apply hasChain_of_original_cover_tree_comparison <;> assumption
 
 end Whitehead

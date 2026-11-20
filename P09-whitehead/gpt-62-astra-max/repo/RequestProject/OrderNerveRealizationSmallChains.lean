@@ -1,13 +1,11 @@
 module
 
-public import RequestProject.TopologicalSingular.SmallMathlibComparison
-public import RequestProject.OrderNerveRealizationStarAcyclic
+public import RequestProject.TopologicalSingular.SmallChainComplex
+public import Mathlib.Algebra.Homology.QuasiIso
+public import RequestProject.TopologicalSingular.MathlibComparison
+public import RequestProject.OrderNerveRealizationStarContractible
 
 @[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular SingularSubdivision

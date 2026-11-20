@@ -24,60 +24,62 @@ variable {C S I R : Type u} [Ring R]
   ext i
   cases i <;> simp [Finsupp.single_apply]
 
+variable (lam : S → C →₀ R)
+
 /-- The off-diagonal correction has values entirely in the retained core. -/
-def coreSlideCorrection (lam : S → C →₀ R) :
+def coreSlideCorrection :
     ((C ⊕ S) →₀ R) →ₗ[R] ((C ⊕ S) →₀ R) :=
   Finsupp.linearCombination R
     (Sum.elim (fun _ : C => 0) (fun s => fsOldOneIncl (lam s)))
 
-@[simp] theorem coreSlideCorrection_single_inl (lam : S → C →₀ R) (c : C) (a : R) :
+@[simp] theorem coreSlideCorrection_single_inl (c : C) (a : R) :
     coreSlideCorrection lam (Finsupp.single (Sum.inl c) a) = 0 := by
   simp [coreSlideCorrection]
 
-@[simp] theorem coreSlideCorrection_single_inr (lam : S → C →₀ R) (s : S) (a : R) :
+@[simp] theorem coreSlideCorrection_single_inr (s : S) (a : R) :
     coreSlideCorrection lam (Finsupp.single (Sum.inr s) a) = a • fsOldOneIncl (lam s) := by
   simp [coreSlideCorrection]
 
-theorem coreSlideCorrection_core (lam : S → C →₀ R) (x : C →₀ R) :
+theorem coreSlideCorrection_core (x : C →₀ R) :
     coreSlideCorrection lam (fsOldOneIncl x) = 0 := by
   induction x using Finsupp.induction_linear with
   | zero => simp
-  | add x y hx hy => rw [map_add, map_add, hx, hy, add_zero]
-  | single c a => rw [fsOldOneIncl_single, coreSlideCorrection_single_inl]
+  | add x y hx hy => simp_all
+  | single c a => simp
 
-theorem coreSlideCorrection_square (lam : S → C →₀ R) (x : (C ⊕ S) →₀ R) :
+theorem coreSlideCorrection_square (x : (C ⊕ S) →₀ R) :
     coreSlideCorrection lam (coreSlideCorrection lam x) = 0 := by
   induction x using Finsupp.induction_linear with
   | zero => simp
-  | add x y hx hy => rw [map_add, map_add, hx, hy, add_zero]
+  | add x y hx hy => simp_all
   | single c a =>
       cases c with
       | inl c => simp
       | inr s =>
           rw [coreSlideCorrection_single_inr, map_smul, coreSlideCorrection_core, smul_zero]
 
-def coreSlideForward (lam : S → C →₀ R) :
-    ((C ⊕ S) →₀ R) →ₗ[R] ((C ⊕ S) →₀ R) :=
+def coreSlideForward :=
   LinearMap.id - coreSlideCorrection lam
 
-def coreSlideReverse (lam : S → C →₀ R) :
-    ((C ⊕ S) →₀ R) →ₗ[R] ((C ⊕ S) →₀ R) :=
+def coreSlideReverse :=
   LinearMap.id + coreSlideCorrection lam
 
-@[simp] theorem coreSlideForward_reverse (lam : S → C →₀ R) (x : (C ⊕ S) →₀ R) :
+variable (x : (C ⊕ S) →₀ R)
+
+@[simp] theorem coreSlideForward_reverse :
     coreSlideForward lam (coreSlideReverse lam x) = x := by
   simp only [coreSlideForward, coreSlideReverse, LinearMap.add_apply,
     LinearMap.sub_apply, LinearMap.id_apply, map_add, coreSlideCorrection_square]
   abel
 
-@[simp] theorem coreSlideReverse_forward (lam : S → C →₀ R) (x : (C ⊕ S) →₀ R) :
+@[simp] theorem coreSlideReverse_forward :
     coreSlideReverse lam (coreSlideForward lam x) = x := by
   simp only [coreSlideForward, coreSlideReverse, LinearMap.add_apply,
     LinearMap.sub_apply, LinearMap.id_apply, map_sub, coreSlideCorrection_square]
   abel
 
 /-- A column calculation suffices for the simultaneous boundary identity. -/
-theorem coreSlide_boundary (lam : S → C →₀ R)
+theorem coreSlide_boundary
     (old new : ((C ⊕ S) →₀ R) →ₗ[R] (I →₀ R))
     (hcore : ∀ c, new (Finsupp.single (Sum.inl c) 1) = old (Finsupp.single (Sum.inl c) 1))
     (hextra : ∀ s, new (Finsupp.single (Sum.inr s) 1) =
@@ -89,21 +91,19 @@ theorem coreSlide_boundary (lam : S → C →₀ R)
     rw [← Finsupp.smul_single_one k a, map_smul, map_smul]
     congr 1
     cases k with
-    | inl c => simpa [coreSlideReverse] using hcore c
-    | inr s => simpa [coreSlideReverse, map_add] using hextra s
+    | inl c => simp_all [coreSlideReverse]
+    | inr s => simp_all [coreSlideReverse, map_add]
   exact LinearMap.congr_fun hm x
 
-theorem coreSlideForward_aug_zero (lam : S → C →₀ R) (ε : R →+* ℤ)
+theorem coreSlideForward_aug_zero (ε : R →+* ℤ)
     (x : (C ⊕ S) →₀ R) (hx : ∀ k, ε (x k) = 0) (j : C ⊕ S) :
     ε (coreSlideForward lam x j) = 0 := by
   have hc : ε (coreSlideCorrection lam x j) = 0 := by
     rw [coreSlideCorrection, Finsupp.linearCombination_apply, Finsupp.sum_apply,
       map_finsuppSum]
     apply Finset.sum_eq_zero
-    intro k hk
-    change ε (x k * _) = 0
-    rw [map_mul, hx k, zero_mul]
+    simp [map_mul, hx, zero_mul]
   change ε (x j - coreSlideCorrection lam x j) = 0
-  rw [map_sub, hx j, hc, sub_self]
+  grind
 
 end FiniteChains

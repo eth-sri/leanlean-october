@@ -11,9 +11,6 @@ Thus connectedness of an actual word-disk model supplies connectedness
 of its labelled combinatorial graph. No finiteness is required. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
@@ -36,7 +33,7 @@ abbrev GraphComponents := Quotient (graphComponentSetoid r)
 local instance : TopologicalSpace (GraphComponents r) := ⊥
 local instance : DiscreteTopology (GraphComponents r) := ⟨rfl⟩
 
-def graphComponentMap : C(DiskAttachment r, GraphComponents r) :=
+def graphComponentMap :=
   desc r (boundaryFamilyInclusion J (Fin 1 → ℝ))
     ⟨Quotient.mk _, continuous_of_discreteTopology⟩
     ⟨fun d => Quotient.mk _ (graphSrc r d.1),
@@ -53,22 +50,21 @@ def graphComponentMap : C(DiskAttachment r, GraphComponents r) :=
 
 theorem graphComponentMap_path {x y : V}
     (p : Path (old r (boundaryFamilyInclusion J _) x)
-      (old r (boundaryFamilyInclusion J _) y)) (t : I) :
-    graphComponentMap r (p t) = Quotient.mk (graphComponentSetoid r) x := by
+      (old r _ y)) (t : I) :
+    graphComponentMap r (p t) = Quotient.mk _ x := by
   have h := TotallyDisconnectedSpace.eq_of_continuous
-    (fun t => graphComponentMap r (p t)) ((graphComponentMap r).continuous.comp p.continuous) t 0
-  simpa [p.source, graphComponentMap] using h
+    _ ((graphComponentMap r).continuous.comp p.continuous) t 0
+  aesop
 
 theorem graphComponentMap_boundaryWord (W : BoundaryWords r)
     (a : UnitBoundary (Fin 2 → ℝ)) :
     graphComponentMap r (W.boundaryMap a) =
-      Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap (0, false) 0)) := by
+      Quotient.mk _ (W.vertex (squareSideMap (0, false) 0)) := by
   have hedge (s : SquareSide) :
-      Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 0)) =
-        Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 1)) := by
-    exact Quotient.sound ⟨W.word s, W.isPath s⟩
+      Quotient.mk _ _ =
+        Quotient.mk (graphComponentSetoid r) _ := Quotient.sound ⟨W.word s, W.isPath s⟩
   have hcorner (s : SquareSide) :
-      Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 0)) =
+      Quotient.mk _ (W.vertex (squareSideMap s 0)) =
         Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap (0, false) 0)) := by
     rcases s with ⟨i, b⟩
     fin_cases i <;> cases b
@@ -81,21 +77,21 @@ theorem graphComponentMap_boundaryWord (W : BoundaryWords r)
         apply Subtype.ext
         funext i
         fin_cases i <;> rfl
-      exact (congrArg (fun z => Quotient.mk (graphComponentSetoid r) (W.vertex z)) h₁).trans
+      exact (congrArg (fun z => Quotient.mk _ _) h₁).trans
         ((hedge (1, false)).symm.trans
           (congrArg (fun z => Quotient.mk (graphComponentSetoid r) (W.vertex z)) h₀))
     · have h₀ : squareSideMap (1, false) 0 = squareSideMap (0, false) 0 := by
         apply Subtype.ext
         funext i
         fin_cases i <;> rfl
-      exact congrArg (fun z => Quotient.mk (graphComponentSetoid r) (W.vertex z)) h₀
+      solve_by_elim
     · have h₀ : squareSideMap (1, true) 0 = squareSideMap (0, false) 1 := by
         apply Subtype.ext
         funext i
         fin_cases i <;> rfl
-      exact (congrArg (fun z => Quotient.mk (graphComponentSetoid r) (W.vertex z)) h₀).trans
+      exact (congrArg (fun z => Quotient.mk _ _) h₀).trans
         (hedge (0, false)).symm
-  obtain ⟨⟨s, t⟩, hs⟩ := squareSideQuotient_surjective (unitBoundarySquareHomeomorph a)
+  obtain ⟨⟨s, t⟩, hs⟩ := squareSideQuotient_surjective _
   change squareSideMap s t = unitBoundarySquareHomeomorph a at hs
   change graphComponentMap r (W.squareMap (unitBoundarySquareHomeomorph a)) = _
   rw [← hs, W.squareMap_side, graphComponentMap_path]
@@ -106,9 +102,9 @@ variable (W : M → BoundaryWords r)
 def boundaryWordsAttaching : C(BoundaryFamily M (Fin 2 → ℝ), DiskAttachment r) :=
   ⟨fun a => (W a.1).boundaryMap a.2, continuous_sigma (fun m => (W m).boundaryMap.continuous)⟩
 
-def wordDiskComponentMap : C(DiskAttachment (boundaryWordsAttaching r W), GraphComponents r) :=
+def wordDiskComponentMap :=
   desc (boundaryWordsAttaching r W) (boundaryFamilyInclusion M (Fin 2 → ℝ))
-    (graphComponentMap r)
+    _
     ⟨fun d => Quotient.mk _ ((W d.1).vertex (squareSideMap (0, false) 0)),
       continuous_sigma (fun j =>
         (continuous_const : Continuous (fun _ : ClosedUnitBall (Fin 2 → ℝ) =>
@@ -120,7 +116,7 @@ theorem graphCx_isConnected_of_wordDisks
     Comb.IsConnected (graphCx r) := by
   intro a b
   apply Quotient.exact (s := graphComponentSetoid r)
-  exact TotallyDisconnectedSpace.eq_of_continuous (wordDiskComponentMap r W)
+  exact TotallyDisconnectedSpace.eq_of_continuous _
     (wordDiskComponentMap r W).continuous
     (old _ _ (old r _ a)) (old _ _ (old r _ b))
 
@@ -128,12 +124,12 @@ omit [DiscreteTopology V] in
 theorem graph_vertices_nonempty_of_wordDisks
     [Nonempty (DiskAttachment (boundaryWordsAttaching r W))] : Nonempty V := by
   obtain ⟨x⟩ := (inferInstance : Nonempty (DiskAttachment (boundaryWordsAttaching r W)))
-  obtain ⟨z, rfl⟩ := quotientMap_surjective (boundaryWordsAttaching r W)
-    (boundaryFamilyInclusion M (Fin 2 → ℝ)) x
+  obtain ⟨z, rfl⟩ := quotientMap_surjective _
+    _ x
   cases z with
   | inr d => exact ⟨(W d.1).vertex (squareSideMap (0, false) 0)⟩
   | inl x =>
-    obtain ⟨z, rfl⟩ := quotientMap_surjective r (boundaryFamilyInclusion J (Fin 1 → ℝ)) x
+    obtain ⟨z, rfl⟩ := quotientMap_surjective r _ x
     cases z with
     | inl v => exact ⟨v⟩
     | inr d => exact ⟨graphSrc r d.1⟩

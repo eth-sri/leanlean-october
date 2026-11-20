@@ -25,9 +25,7 @@ supported on the individual cosets.
 The main result is `FiniteChains.cycle_mem_span_subgroup_cycles`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+noncomputable section
 
 namespace FiniteChains
 
@@ -38,7 +36,7 @@ attribute [local instance 0] Classical.propDecidable
 variable {G : Type*} [Group G] (H : Subgroup G)
 
 /-- The inclusion `ℤ[H] → ℤ[G]` of group rings. -/
-noncomputable def subRingHom : MonoidAlgebra ℤ H →+* MonoidAlgebra ℤ G :=
+def subRingHom :=
   MonoidAlgebra.mapDomainRingHom ℤ H.subtype
 
 @[simp] theorem subRingHom_single (h : H) (m : ℤ) :
@@ -46,44 +44,42 @@ noncomputable def subRingHom : MonoidAlgebra ℤ H →+* MonoidAlgebra ℤ G :=
   MonoidAlgebra.mapDomain_single
 
 /-- Restriction of a group-ring element to the subgroup: the coefficients on `H`. -/
-noncomputable def restrictH : MonoidAlgebra ℤ G →+ MonoidAlgebra ℤ H :=
+def restrictH :=
   (MonoidAlgebra.coeffAddEquiv (R := ℤ) (M := H)).symm.toAddMonoidHom.comp
-    ((Finsupp.comapDomain.addMonoidHom (M := ℤ) (f := (Subtype.val : H → G))
+    ((Finsupp.comapDomain.addMonoidHom (M := ℤ) (f := Subtype.val)
       Subtype.coe_injective).comp (MonoidAlgebra.coeffAddEquiv (R := ℤ) (M := G)).toAddMonoidHom)
 
 theorem restrictH_apply (x : MonoidAlgebra ℤ G) (h : H) :
-    (restrictH H x).coeff h = x.coeff (h : G) := rfl
+    (restrictH H x).coeff h = x.coeff h := rfl
+
+variable (g : G)
 
 /-- The `g`-slice of a group-ring element: its coefficients on the left coset `gH`,
 translated back to `H`. -/
-noncomputable def slice (g : G) : MonoidAlgebra ℤ G →+ MonoidAlgebra ℤ H :=
-  (restrictH H).comp (AddMonoidHom.mulLeft (single g⁻¹ (1 : ℤ)))
+def slice :=
+  (restrictH H).comp (AddMonoidHom.mulLeft (single g⁻¹ 1))
 
-theorem slice_apply (g : G) (x : MonoidAlgebra ℤ G) (h : H) :
+theorem slice_apply (x : MonoidAlgebra ℤ G) (h : H) :
     (slice H g x).coeff h = x.coeff (g * h) := by
-  show (restrictH H (single g⁻¹ (1 : ℤ) * x)).coeff h = _
-  rw [restrictH_apply, MonoidAlgebra.coeff_single_mul_apply]
-  simp
+  show (restrictH H _).coeff h = _
+  simp [restrictH_apply, MonoidAlgebra.coeff_single_mul_apply]
 
 theorem restrictH_single (p : G) (m : ℤ) :
     restrictH H (single p m) = if hp : p ∈ H then single ⟨p, hp⟩ m else 0 := by
   by_cases hp : p ∈ H
   · rw [dif_pos hp]
     ext h
-    simp only [restrictH_apply, MonoidAlgebra.coeff_single, Finsupp.single_apply]
-    by_cases hh : (⟨p, hp⟩ : H) = h
-    · subst hh; simp
-    · rw [if_neg hh, if_neg (fun hc : p = (h : G) => hh (Subtype.ext hc))]
+    simp only [restrictH_apply, MonoidAlgebra.coeff_single, Finsupp.single_apply] <;> grind
   · rw [dif_neg hp]
     ext h
     simp only [restrictH_apply, MonoidAlgebra.coeff_single, Finsupp.single_apply,
-               MonoidAlgebra.coeff_zero, Finsupp.coe_zero, Pi.zero_apply]
-    have : (h : G) ≠ p := fun hc => hp (hc ▸ h.2)
-    simp [this, Ne.symm this]
+               MonoidAlgebra.coeff_zero, Finsupp.coe_zero, Pi.zero_apply] <;> grind
+
+variable (g : G) (x : MonoidAlgebra ℤ G)
 
 /-- **The slice is right `ℤ[H]`-linear.**  Multiplying on the right by an element of the
 subgroup ring does not mix the cosets. -/
-theorem slice_mul (g : G) (x : MonoidAlgebra ℤ G) (y : MonoidAlgebra ℤ H) :
+theorem slice_mul (y : MonoidAlgebra ℤ H) :
     slice H g (x * subRingHom H y) = slice H g x * y := by
   induction x using MonoidAlgebra.induction_linear with
   | zero => simp
@@ -100,61 +96,56 @@ theorem slice_mul (g : G) (x : MonoidAlgebra ℤ G) (y : MonoidAlgebra ℤ H) :
             rw [MonoidAlgebra.single_mul_single, one_mul, restrictH_single]
           rw [subRingHom_single, MonoidAlgebra.single_mul_single, hslice, hslice]
           by_cases hp : g⁻¹ * a ∈ H
-          · have hp' : g⁻¹ * (a * (b : G)) ∈ H := by
-              have : g⁻¹ * (a * (b : G)) = (g⁻¹ * a) * (b : G) := by group
+          · have hp' : g⁻¹ * (a * b) ∈ H := by
+              have : g⁻¹ * (a * b) = (g⁻¹ * a) * b := by group
               rw [this]
               exact H.mul_mem hp b.2
             rw [dif_pos hp, dif_pos hp', MonoidAlgebra.single_mul_single]
             congr 1
-            exact Subtype.ext (by simp [mul_assoc])
-          · have hp' : ¬ g⁻¹ * (a * (b : G)) ∈ H := by
+            ext <;> simp_all [mul_assoc]
+          · have hp' : ¬ g⁻¹ * (a * b) ∈ H := by
               intro hc
               apply hp
-              have : g⁻¹ * a = (g⁻¹ * (a * (b : G))) * (b : G)⁻¹ := by group
+              have : g⁻¹ * a = (g⁻¹ * (a * b)) * (b : G)⁻¹ := by group
               rw [this]
               exact H.mul_mem hc (H.inv_mem b.2)
-            rw [dif_neg hp, dif_neg hp', zero_mul]
+            simp_all
 
 /-- The coset piece of `x` at `g`, written as `g` times an element of the subgroup ring. -/
-theorem cosetPiece_apply (g : G) (x : MonoidAlgebra ℤ G) (p : G) :
-    (single g (1 : ℤ) * subRingHom H (slice H g x)).coeff p
+theorem cosetPiece_apply (p : G) :
+    (single g 1 * subRingHom H (slice H g x)).coeff p
       = if (QuotientGroup.mk p : G ⧸ H) = QuotientGroup.mk g then x.coeff p else 0 := by
   rw [MonoidAlgebra.coeff_single_mul_apply, one_mul]
   by_cases hp : g⁻¹ * p ∈ H
-  · have hq : (QuotientGroup.mk p : G ⧸ H) = QuotientGroup.mk g :=
-      (QuotientGroup.eq (s := H)).2 (by simpa using H.inv_mem hp)
-    rw [if_pos hq]
+  · rw [if_pos ((QuotientGroup.eq (s := H)).2 (by simpa using H.inv_mem hp))]
     have : (subRingHom H (slice H g x)).coeff (g⁻¹ * p) = (slice H g x).coeff ⟨g⁻¹ * p, hp⟩ := by
-      show Finsupp.mapDomain H.subtype (slice H g x).coeff (((⟨g⁻¹ * p, hp⟩ : H) : G)) = _
+      show Finsupp.mapDomain H.subtype (slice H g x).coeff (((⟨g⁻¹ * p, hp⟩ : H))) = _
       exact Finsupp.mapDomain_apply_of_injective Subtype.coe_injective _ _
-    rw [this, slice_apply]
-    congr 1
-    group
+    simp [this, slice_apply]
   · have hq : ¬ ((QuotientGroup.mk p : G ⧸ H) = QuotientGroup.mk g) := by
       intro hc
       exact hp (by simpa using H.inv_mem ((QuotientGroup.eq (s := H)).1 hc))
     rw [if_neg hq]
-    have hnot : ∀ h : H, (h : G) ≠ g⁻¹ * p := by
-      intro h hc
-      exact hp (hc ▸ h.2)
-    show Finsupp.mapDomain H.subtype (slice H g x).coeff (g⁻¹ * p) = 0
+    have hnot : ∀ h : H, h ≠ g⁻¹ * p := by
+      grind
     exact Finsupp.mapDomain_notin_range _ _ (by rintro ⟨h, hh⟩; exact hnot h hh)
+
+variable (x : MonoidAlgebra ℤ G)
 
 /-- **Coset decomposition.**  Every element of `ℤ[G]` is the sum, over the finitely many
 cosets meeting its support, of `g` times an element of `ℤ[H]`. -/
-theorem sum_cosetPieces (x : MonoidAlgebra ℤ G) :
+theorem sum_cosetPieces :
     ∑ C ∈ (x.coeff.support.image (fun p => (QuotientGroup.mk p : G ⧸ H))),
-      single (Quotient.out C) (1 : ℤ) * subRingHom H (slice H (Quotient.out C) x) = x := by
+      single (Quotient.out C) 1 * subRingHom H (slice H (Quotient.out C) x) = x := by
   classical
   ext p
   simp only [MonoidAlgebra.coeff_sum, Finsupp.finsetSum_apply]
-  have hterm : ∀ C ∈ x.coeff.support.image (fun q => (QuotientGroup.mk q : G ⧸ H)),
-      (single (Quotient.out C) (1 : ℤ) * subRingHom H (slice H (Quotient.out C) x)).coeff p
+  have hterm : ∀ C ∈ x.coeff.support.image (fun q => (QuotientGroup.mk q)),
+      (single (Quotient.out C) 1 * subRingHom H (slice H (Quotient.out C) x)).coeff p
         = if (QuotientGroup.mk p : G ⧸ H) = C then x.coeff p else 0 := by
     intro C _
     rw [cosetPiece_apply]
-    congr 1
-    simp [Quotient.out_eq]
+    simp
   rw [Finset.sum_congr rfl hterm, Finset.sum_ite_eq (b := fun _ => x.coeff p)]
   by_cases hp : p ∈ x.coeff.support
   · rw [if_pos (Finset.mem_image_of_mem _ hp)]
@@ -163,30 +154,28 @@ theorem sum_cosetPieces (x : MonoidAlgebra ℤ G) :
 
 /-- The coset decomposition over any finite set of cosets containing those that meet the
 support. -/
-theorem sum_cosetPieces_of_subset (x : MonoidAlgebra ℤ G) (S : Finset (G ⧸ H))
-    (hS : x.coeff.support.image (fun p => (QuotientGroup.mk p : G ⧸ H)) ⊆ S) :
-    ∑ C ∈ S, single (Quotient.out C) (1 : ℤ) * subRingHom H (slice H (Quotient.out C) x) = x := by
+theorem sum_cosetPieces_of_subset (S : Finset (G ⧸ H))
+    (hS : x.coeff.support.image (fun p => (QuotientGroup.mk p)) ⊆ S) :
+    ∑ C ∈ S, single (Quotient.out C) 1 * subRingHom H (slice H (Quotient.out C) x) = x := by
   classical
-  have hvanish : ∀ C ∈ S, C ∉ x.coeff.support.image (fun p => (QuotientGroup.mk p : G ⧸ H)) →
-      single (Quotient.out C) (1 : ℤ) * subRingHom H (slice H (Quotient.out C) x) = 0 := by
+  have hvanish : ∀ C ∈ S, C ∉ x.coeff.support.image (fun p => (QuotientGroup.mk p)) →
+      single (Quotient.out C) 1 * subRingHom H (slice H (Quotient.out C) x) = 0 := by
     intro C _ hC
     ext p
-    simp only [MonoidAlgebra.coeff_zero]
     rw [cosetPiece_apply]
     by_cases hq : (QuotientGroup.mk p : G ⧸ H) = QuotientGroup.mk (Quotient.out C)
-    · rw [if_pos hq]
-      by_contra hne
-      refine hC (Finset.mem_image.2 ⟨p, Finsupp.mem_support_iff.2 hne, ?_⟩)
-      simpa using hq
-    · rw [if_neg hq]
-      simp
+    · by_contra hne
+      simp_all
+    · simp_all
   rw [← Finset.sum_subset hS hvanish]
   exact sum_cosetPieces H x
 
 variable {J : Type*} [Fintype J] {ι : Type*}
 
+variable (A : ι → J → MonoidAlgebra ℤ H)
+
 /-- The set of cycles of a matrix with entries in the subgroup ring, pushed into `ℤ[G]`. -/
-def subgroupCycles (A : ι → J → MonoidAlgebra ℤ H) : Set (J → MonoidAlgebra ℤ G) :=
+def subgroupCycles :=
   {w | ∃ y : J → MonoidAlgebra ℤ H, (∀ i, ∑ j, y j * A i j = 0) ∧
         w = fun j => subRingHom H (y j)}
 
@@ -195,7 +184,7 @@ group ring of a subgroup `H ≤ G`, then every cycle over `ℤ[G]` is a `ℤ[G]`
 combination of (the images of) cycles over `ℤ[H]`.  This is the generation statement used in
 Lemma 3.9 and Proposition 3.11: the second homotopy group of the enlarged complex is
 generated over the enlarged group ring by the image of the old one. -/
-theorem cycle_mem_span_subgroup_cycles (A : ι → J → MonoidAlgebra ℤ H)
+theorem cycle_mem_span_subgroup_cycles
     (v : J → MonoidAlgebra ℤ G) (hv : ∀ i, ∑ j, v j * subRingHom H (A i j) = 0) :
     v ∈ Submodule.span (MonoidAlgebra ℤ G) (subgroupCycles H A) := by
   classical
@@ -204,26 +193,20 @@ theorem cycle_mem_span_subgroup_cycles (A : ι → J → MonoidAlgebra ℤ H)
     intro g i
     have h := congrArg (slice H g) (hv i)
     rw [map_sum, map_zero] at h
-    rw [← h]
-    exact Finset.sum_congr rfl fun j _ => (slice_mul H g (v j) (A i j)).symm
+    simp_all [slice_mul]
   -- the finite set of cosets meeting the support of the cycle
   set S : Finset (G ⧸ H) :=
-    (Finset.univ : Finset J).biUnion (fun j => (v j).coeff.support.image
-      (fun p => (QuotientGroup.mk p : G ⧸ H))) with hS
+    Finset.univ.biUnion (fun j => (v j).coeff.support.image
+      (fun p => (QuotientGroup.mk p))) with hS
   have hdecomp : v = ∑ C ∈ S, fun j =>
-      single (Quotient.out C) (1 : ℤ) * subRingHom H (slice H (Quotient.out C) (v j)) := by
+      single (Quotient.out C) 1 * subRingHom H (slice H (Quotient.out C) (v j)) := by
     funext j
     simp only [Finset.sum_apply]
-    refine (sum_cosetPieces_of_subset H (v j) S ?_).symm
-    exact Finset.subset_biUnion_of_mem
-      (fun j => (v j).coeff.support.image (fun p => (QuotientGroup.mk p : G ⧸ H)))
-      (Finset.mem_univ j)
+    refine (sum_cosetPieces_of_subset H _ S ?_).symm <;> grind
   rw [hdecomp]
   refine Submodule.sum_mem _ fun C _ => ?_
-  have hmem : (fun j => subRingHom H (slice H (Quotient.out C) (v j))) ∈ subgroupCycles H A :=
-    ⟨fun j => slice H (Quotient.out C) (v j), hslice (Quotient.out C), rfl⟩
   have := Submodule.smul_mem (Submodule.span (MonoidAlgebra ℤ G) (subgroupCycles H A))
-    (single (Quotient.out C) (1 : ℤ)) (Submodule.subset_span hmem)
-  simpa [Pi.smul_def, smul_eq_mul] using this
+    (single (Quotient.out C) 1) (Submodule.subset_span (⟨fun j => slice H (Quotient.out C) (v j), hslice (Quotient.out C), rfl⟩))
+  assumption
 
 end FiniteChains

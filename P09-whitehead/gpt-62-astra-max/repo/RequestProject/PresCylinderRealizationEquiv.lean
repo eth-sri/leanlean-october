@@ -16,9 +16,7 @@ open scoped Topology
 
 variable {A J : Type} (w : J → List (A × Bool))
 
-def presCylinderRealizationHomotopyEquiv :
-    ContinuousMap.HomotopyEquiv (orderNerveRealization (CylBase w))
-      (orderNerveRealization (Rose A)) :=
+def presCylinderRealizationHomotopyEquiv :=
   rankOneCylinderRealizationHomotopyEquiv (aHom w) (circleDimension w)
     (circleDimension_strictMono w) (circleDimension_le_one w)
 

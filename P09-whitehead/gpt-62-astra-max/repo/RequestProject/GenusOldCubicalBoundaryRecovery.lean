@@ -30,7 +30,7 @@ theorem cappedCoverCycle_old_coordinate_boundary (c : (cappedTreeCover q).F →�
   have hb : ∀ s ∈ (strictOrdBoundary3 z).support, s.1.2.2.spx.card ≤ 2 := by
     intro s hs
     rw [hz] at hs
-    exact markedSpineToFullCube_normalized_dimension q d s hs
+    apply markedSpineToFullCube_normalized_dimension <;> assumption
   obtain ⟨r, hr⟩ := qCube_three_coordinate_boundary_reconstruction z hdim hb
   refine ⟨d, r, hd, hcycle, ?_⟩
   rwa [hz] at hr

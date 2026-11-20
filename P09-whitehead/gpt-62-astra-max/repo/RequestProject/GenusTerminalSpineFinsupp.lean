@@ -5,7 +5,6 @@ public import RequestProject.CoreSignedCollapseFinsupp
 public import RequestProject.WedgeCockcroftFinsupp
 public import RequestProject.TerminalFinsupp
 public import RequestProject.CockcroftRelatorReindexFinsupp
-public import RequestProject.GenusStructuralFinsupp
 public import RequestProject.RelativeNormalizedWords
 
 @[expose] public section
@@ -31,21 +30,19 @@ theorem terminalSpineCore_expMatrix_cap (c : (M ⊕ K) →₀ ℤ) (k : K) :
     expMatrix (terminalSpineCore (K := K) core) c (Sum.inr k) = c (Sum.inr k) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]
+  | add c d hc hd => simp_all
   | single j n =>
       cases j with
       | inl m =>
-          have hz : expEntry (terminalSpineCore (K := K) core)
+          have hz : expEntry (terminalSpineCore core)
               (Sum.inr k) (Sum.inl m) = 0 := by
             rw [← augPres_foxMatrixPres]
-            change augPres (corePres core (fun k : K => FreeGroup.of (Sum.inr k)))
+            change augPres _
               (foxMatrixPres (corePres core (fun k : K => FreeGroup.of (Sum.inr k)))
                 (Sum.inr k) (Sum.inl m)) = 0
             rw [CoreSignedCollapse.matrix_core, map_zero]
           simp only [expMatrix, Finsupp.linearCombination_single,
-            Finsupp.smul_apply, smul_eq_mul, expVec_apply]
-          change n * expEntry (terminalSpineCore (K := K) core) (Sum.inr k) (Sum.inl m) = _
-          simp [hz]
+            Finsupp.smul_apply, smul_eq_mul, expVec_apply] <;> aesop
       | inr l =>
           simp [expMatrix, terminalSpineCore, corePres, expVec_apply, expSum_of,
             Finsupp.single_apply, eq_comm, mul_ite]
@@ -57,38 +54,45 @@ theorem terminalSpineCore_expMatrix_injective
     Function.Injective (expMatrix (terminalSpineCore (K := K) core)) := by
   intro c d h
   have hz : expMatrix (terminalSpineCore (K := K) core) (c - d) = 0 := by
-    rw [map_sub, h, sub_self]
+    simp_all
   have hcap (k : K) : (c - d) (Sum.inr k) = 0 := by
-    rw [← terminalSpineCore_expMatrix_cap core (c - d) k, hz]
+    rw [← terminalSpineCore_expMatrix_cap core _ k, hz]
     rfl
   exact sub_eq_zero.mp (corePres_expMatrix_kernel_reflect core
     (fun k : K => FreeGroup.of (Sum.inr k)) hcore (c - d) hz hcap)
 
 theorem terminalSpineWedge_fsIsCockcroft : FSIsCockcroft (terminalSpineWedge q) :=
-  fsIsCockcroft_sigmaWedgeRel (fun s => cappedSpinePresentation (q s))
+  fsIsCockcroft_sigmaWedgeRel _
     (fun s => cappedSpinePresentation_isCockcroft (q s))
 
-theorem terminalSpine_fsIsCockcroft (hcore : Function.Injective (expMatrix core)) :
+section
+
+variable (hcore : Function.Injective (expMatrix core))
+include hcore
+
+theorem terminalSpine_fsIsCockcroft :
     FSIsCockcroft (terminalSpinePres core q u) :=
-  CoreSignedCollapse.fsIsCockcroft (terminalSpineCore (K := K) core) (terminalSpineExtra q u)
-    (terminalSpineWedge q) (terminalSpineReverse q) (terminalSpine_collapse_word q u)
+  CoreSignedCollapse.fsIsCockcroft _ _
+    _ _ (terminalSpine_collapse_word q u)
     (terminalSpineCore_expMatrix_injective core hcore) (terminalSpineWedge_fsIsCockcroft q)
 
 /-- Actual addRels ordering, with no finiteness assumptions. -/
-theorem terminalSpineQ_fsIsCockcroft (hcore : Function.Injective (expMatrix core)) :
+theorem terminalSpineQ_fsIsCockcroft :
     FSIsCockcroft (terminalSpineQ core q u) :=
-  RelatorReindex.fsIsCockcroft_of (terminalSpineQ core q u) (terminalSpinePres core q u)
+  RelatorReindex.fsIsCockcroft_of _ _
     terminalCapReindex (terminalSpineQ_reindex core q u)
     (terminalSpine_fsIsCockcroft core q u hcore)
 
+end
+
 theorem actualTerminalSpineFS_isCockcroft
-    (ρ : M ⊕ S → FreeGroup (A ⊕ K))
+    (ρ : M ⊕ S → FreeGroup _)
     (hretained : ∀ m, ρ (Sum.inl m) = FreeGroup.map Sum.inl (core m))
     (hcore : Function.Injective (expMatrix core)) :
     FSIsCockcroft (addRels (substPresF ρ (familyFiniteSpineWordBlock q u))
       (terminalSpineCaps (A := A) (K := K) q)) := by
   rw [← terminalSpineQ_eq_actual core q u ρ hretained]
-  exact terminalSpineQ_fsIsCockcroft core q u hcore
+  apply terminalSpineQ_fsIsCockcroft <;> assumption
 
 variable (ρ : M ⊕ S → FreeGroup (A ⊕ K))
   (hrho : ∀ s, ρ (Sum.inr s) = commWord (u s) (finitePairs (q s)))
@@ -96,30 +100,17 @@ variable (ρ : M ⊕ S → FreeGroup (A ⊕ K))
 /-- The actual structural map with the equality instances of the terminal presentation. -/
 def terminalStructuralMapFS :
     PresMorFS ρ (substPresF ρ (familyFiniteSpineWordBlock q u)) := by
-  let dSrc : DecidableEq (A ⊕ K) := inferInstance
   let dTgt : DecidableEq ((A ⊕ K) ⊕ (Σ s, SpinePresentationGen (q s))) := inferInstance
-  letI : DecidableEq (A ⊕ K) := Classical.decEq _
-  letI : DecidableEq S := Classical.decEq _
-  let dFamilyTgt : DecidableEq ((A ⊕ K) ⊕ (Σ s, SpinePresentationGen (q s))) :=
-    @instDecidableEqSum _ _ (Classical.decEq _) inferInstance
-  exact @PresMorFS.redecide _ _ _ _ (Classical.decEq _) dFamilyTgt _ _
-    (finiteSpineFamilyStructuralMap ρ q u hrho) dSrc dTgt
+  letI : DecidableEq S := Classical.decEq _; exact @PresMorFS.redecide _ _ _ _ (Classical.decEq _) (@instDecidableEqSum _ _ (Classical.decEq _) inferInstance) _ _
+    (finiteSpineFamilyStructuralMap ρ q u hrho) inferInstance dTgt
 
 theorem terminalStructuralMapFS_generates : FSGenerates (terminalStructuralMapFS q u ρ hrho) := by
-  let dSrc : DecidableEq (A ⊕ K) := inferInstance
   let dTgt : DecidableEq ((A ⊕ K) ⊕ (Σ s, SpinePresentationGen (q s))) := inferInstance
-  letI : DecidableEq (A ⊕ K) := Classical.decEq _
-  letI : DecidableEq S := Classical.decEq _
-  let dFamilyTgt : DecidableEq ((A ⊕ K) ⊕ (Σ s, SpinePresentationGen (q s))) :=
-    @instDecidableEqSum _ _ (Classical.decEq _) inferInstance
-  exact @FSGenerates.redecide _ _ _ _ (Classical.decEq _) dFamilyTgt _ _ _
-    (finiteSpineFamilyStructuralMap_generates ρ q u hrho) dSrc dTgt
+  letI : DecidableEq S := Classical.decEq _; exact @FSGenerates.redecide _ _ _ _ (Classical.decEq _) (@instDecidableEqSum _ _ (Classical.decEq _) inferInstance) _ _ _
+    (finiteSpineFamilyStructuralMap_generates ρ q u hrho) inferInstance dTgt
 
 /-- The actual terminal inclusion, with supported chain modules. -/
-def actualTerminalSpineMorFS :
-    PresMorFS (substPresF ρ (familyFiniteSpineWordBlock q u))
-      (addRels (substPresF ρ (familyFiniteSpineWordBlock q u))
-        (terminalSpineCaps (A := A) (K := K) q)) :=
+def actualTerminalSpineMorFS :=
   addRelsMorFS (substPresF ρ (familyFiniteSpineWordBlock q u))
     (terminalSpineCaps (A := A) (K := K) q)
 
@@ -130,28 +121,23 @@ theorem actualTerminalSpineFS_composite_trivial
       (terminalStructuralMapFS q u ρ hrho)).hom g = 1 := by
   apply hom_eq_one_of_gens
   rintro (a | k)
-  · rw [hcoreTriv a, map_one]
-  · change (QuotientGroup.mk (FreeGroup.map Sum.inl (FreeGroup.of (Sum.inr k))) :
-      PresGroup (addRels (substPresF ρ (familyFiniteSpineWordBlock q u))
-        (terminalSpineCaps (A := A) (K := K) q))) = 1
-    rw [FreeGroup.map.of]
-    apply (QuotientGroup.eq_one_iff _).mpr
-    exact Subgroup.subset_normalClosure ⟨Sum.inr k, rfl⟩
+  · simp [hcoreTriv, map_one]
+  · apply (QuotientGroup.eq_one_iff _).mpr; exact Subgroup.subset_normalClosure ⟨Sum.inr k, rfl⟩
 
 include hrho in
 theorem actualTerminalSpineFS_cells_zero (hP : FSIsCockcroft ρ)
     (hcoreTriv : ∀ a : A,
       (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup ρ) = 1)
     (v : (M ⊕ (Σ s, NamedSpineRel (q s))) →₀
-      MonoidAlgebra ℤ (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u))))
-    (hv : FSIsFoxCycle (substPresF ρ (familyFiniteSpineWordBlock q u)) v) :
+      MonoidAlgebra ℤ _)
+    (hv : FSIsFoxCycle _ v) :
     (actualTerminalSpineMorFS q u ρ).cells v = 0 := by
-  apply fsCells_eq_zero_of_generates_comp (terminalStructuralMapFS q u ρ hrho)
+  apply fsCells_eq_zero_of_generates_comp _
     (actualTerminalSpineMorFS q u ρ)
     (terminalStructuralMapFS_generates q u ρ hrho) ?_ hv
   intro y hy
   exact fsCells_eq_zero_of_isCockcroft_of_hom_trivial
-    ((actualTerminalSpineMorFS q u ρ).comp (terminalStructuralMapFS q u ρ hrho))
+    _
     hP (actualTerminalSpineFS_composite_trivial q u ρ hrho hcoreTriv) y hy
 
 include hrho in
@@ -165,7 +151,7 @@ theorem actualTerminalSpineFS_conclusions
       (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup ρ) = 1) :
     FSIsCockcroft (addRels (substPresF ρ (familyFiniteSpineWordBlock q u))
         (terminalSpineCaps (A := A) (K := K) q)) ∧
-    (∀ v, FSIsFoxCycle (substPresF ρ (familyFiniteSpineWordBlock q u)) v →
+    (∀ v, FSIsFoxCycle _ v →
       (actualTerminalSpineMorFS q u ρ).cells v = 0) :=
   ⟨actualTerminalSpineFS_isCockcroft core q u ρ hretained hcore,
     fun v hv => actualTerminalSpineFS_cells_zero q u ρ hrho hP hcoreTriv v hv⟩

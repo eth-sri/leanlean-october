@@ -6,8 +6,6 @@ public import RequestProject.CombCellularIso
 @[expose] public section
 
 /-! Connectivity of the actual path-class universal-cover order complex. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -45,9 +43,6 @@ theorem uOrder_complex_simplyConnected : SimplyConnected (orderCx (UOrder P a)) 
   have h := simplyConnected_univCover (X := orderCx P) (x₀ := a) v
     (mapPath uOrderHom p) (isPath_mapPath uOrderHom hp)
   have hi := mapPath_htpy uOrderHomInv h
-  change Htpy (orderCx (UOrder P a)) (uOrderHomInv.onV v) (uOrderHomInv.onV v)
-    (mapPath uOrderHomInv (mapPath uOrderHom p)) [] at hi
-  rw [uOrderHomInv_path p] at hi
-  simpa only [uOrderHomInv_vertex] using hi
+  simp_all [uOrderHomInv_path, uOrderHomInv_vertex]
 
 end FiniteChains.Comb

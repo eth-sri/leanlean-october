@@ -23,10 +23,6 @@ never met.
   prescribed root, in particular rooted at a cell of the cut surface.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains
 namespace Davis
 
@@ -37,13 +33,13 @@ universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
 /-- Being joined by an edge path in the block. -/
-def ConnQ (a b : QOld A) : Prop :=
+def ConnQ (a b : QOld A) :=
   ∃ p, IsPath (orderCx (QOld A)).src (orderCx (QOld A)).tgt p a b
 
 namespace ConnQ
 
 omit [Fintype V] in
-theorem refl (a : QOld A) : ConnQ a a := ⟨[], rfl⟩
+theorem refl (a : QOld A) : ConnQ a a := by solve_by_elim
 
 omit [Fintype V] in
 theorem symm {a b : QOld A} (h : ConnQ a b) : ConnQ b a :=
@@ -53,62 +49,66 @@ omit [Fintype V] in
 theorem trans {a b c : QOld A} (h : ConnQ a b) (h' : ConnQ b c) : ConnQ a c :=
   ⟨h.choose ++ h'.choose, h.choose_spec.append h'.choose_spec⟩
 
-omit [Fintype V] in
-theorem of_le {a b : QOld A} (h : a ≤ b) : ConnQ a b := ⟨[ordPos h], isPath_ordPos h⟩
+variable {a b : QOld A}
 
 omit [Fintype V] in
-theorem of_ge {a b : QOld A} (h : b ≤ a) : ConnQ a b := ⟨[ordNeg h], isPath_ordNeg h⟩
+theorem of_le (h : a ≤ b) : ConnQ a b := ⟨[ordPos h], isPath_ordPos h⟩
+
+omit [Fintype V] in
+theorem of_ge (h : b ≤ a) : ConnQ a b := ⟨[ordNeg h], isPath_ordNeg h⟩
 
 end ConnQ
 
 /-- **A vertex cube**: the cube `(∅, ξ)` of a nonzero sign vector. -/
 def vtxCube (ξ : V → ZMod 2) (hξ : ξ ≠ 0) : QOld A :=
-  ⟨⟨∅, ξ, isSimplex_empty (A := A), fun v hv => absurd hv (Finset.notMem_empty v)⟩,
+  ⟨⟨∅, ξ, isSimplex_empty, fun v hv => absurd hv (Finset.notMem_empty v)⟩,
     fun h => hξ h.2⟩
 
 /-- **An edge cube**: the cube `({v}, ξ)` with the sign at `v` normalised away. -/
 def oneCube (v : V) (ξ : V → ZMod 2) : QOld A :=
-  ⟨⟨{v}, Function.update ξ v 0, isSimplex_singleton (A := A) v, fun w hw => by
-      rw [Finset.mem_singleton] at hw
-      subst hw
-      simp⟩,
-    fun h => by simpa using congrArg (fun s : Finset V => v ∈ s) h.1⟩
+  ⟨⟨{v}, Function.update ξ v 0, isSimplex_singleton v, fun w hw => by
+      simp_all⟩,
+    fun h => by simp_all⟩
+
+variable {ξ : V → ZMod 2}
 
 omit [Fintype V] in
-theorem vtxCube_le_oneCube {ξ : V → ZMod 2} (hξ : ξ ≠ 0) (v : V) :
+theorem vtxCube_le_oneCube (hξ : ξ ≠ 0) (v : V) :
     (vtxCube ξ hξ : QOld A) ≤ oneCube v ξ := by
   refine ⟨Finset.empty_subset _, fun w hw => ?_⟩
   have hwv : w ≠ v := fun h => hw (by rw [h]; exact Finset.mem_singleton_self v)
   simp [oneCube, vtxCube, hwv]
 
 omit [Fintype V] in
-theorem vtxCube_update_le_oneCube {ξ : V → ZMod 2} (v : V) (a : ZMod 2)
+theorem vtxCube_update_le_oneCube (v : V) (a : ZMod 2)
     (h : Function.update ξ v a ≠ 0) :
-    (vtxCube (Function.update ξ v a) h : QOld A) ≤ oneCube v ξ := by
+    (vtxCube _ h : QOld A) ≤ oneCube v ξ := by
   refine ⟨Finset.empty_subset _, fun w hw => ?_⟩
   have hwv : w ≠ v := fun h' => hw (by rw [h']; exact Finset.mem_singleton_self v)
   simp [oneCube, vtxCube, hwv]
 
 /-- The support of a sign vector. -/
-noncomputable def sgnSupport (ξ : V → ZMod 2) : Finset V :=
+noncomputable def sgnSupport (ξ : V → ZMod 2) :=
   Finset.univ.filter (fun v => ξ v ≠ 0)
 
 omit [DecidableEq V] in
 theorem mem_sgnSupport {ξ : V → ZMod 2} {v : V} : v ∈ sgnSupport ξ ↔ ξ v ≠ 0 := by
   simp [sgnSupport]
 
+variable (v₀ : V)
+
 /-- The distinguished sign vector: `1` at `v₀` and `0` elsewhere. -/
-def unitSgn (v₀ : V) : V → ZMod 2 := fun w => if w = v₀ then 1 else 0
+def unitSgn : V → ZMod 2 := fun w => if w = v₀ then 1 else 0
 
 omit [Fintype V] in
-theorem unitSgn_ne_zero (v₀ : V) : unitSgn (V := V) v₀ ≠ 0 := by
+theorem unitSgn_ne_zero : unitSgn v₀ ≠ 0 := by
   intro h
   simpa [unitSgn] using congrFun h v₀
 
 /-- **Every vertex cube whose sign at `v₀` is `1` is joined to the distinguished one.** -/
-theorem connQ_vtxCube_unit (v₀ : V) :
+theorem connQ_vtxCube_unit :
     ∀ (n : ℕ) (ξ : V → ZMod 2) (hξ : ξ ≠ 0), ξ v₀ = 1 → (sgnSupport ξ).card = n →
-      ConnQ (vtxCube ξ hξ : QOld A) (vtxCube (unitSgn v₀) (unitSgn_ne_zero v₀)) := by
+      ConnQ (vtxCube ξ hξ : QOld A) (vtxCube _ (unitSgn_ne_zero v₀)) := by
   intro n
   induction n using Nat.strong_induction_on with
   | _ n ih =>
@@ -122,7 +122,7 @@ theorem connQ_vtxCube_unit (v₀ : V) :
           simp [unitSgn, hv₀]
         · have : ξ w = 0 := by
             by_contra hne
-            exact hw (hsupp w hne)
+            solve_by_elim
           simp [unitSgn, hw, this]
       subst hxi
       exact ConnQ.refl _
@@ -144,13 +144,11 @@ theorem connQ_vtxCube_unit (v₀ : V) :
         · intro x hx
           rw [mem_sgnSupport] at hx ⊢
           by_cases hxw : x = w
-          · subst hxw
-            simp [hξ'] at hx
-          · rwa [hξ', Function.update_apply, if_neg hxw] at hx
+          · simp_all
+          · simp_all
         · intro hle
-          have : w ∈ sgnSupport ξ' := hle (mem_sgnSupport.2 hw)
-          rw [mem_sgnSupport, hξ'] at this
-          simp at this
+          have := hle (mem_sgnSupport.2 hw)
+          simp_all [mem_sgnSupport, hξ']
       have hlt : (sgnSupport ξ').card < n := by
         rw [← hcard]
         exact Finset.card_lt_card hsub
@@ -161,12 +159,12 @@ omit [Fintype V] in
 theorem connQ_to_vtxCube (c : QOld A) :
     ∃ (ξ : V → ZMod 2) (hξ : ξ ≠ 0), ConnQ c (vtxCube ξ hξ) := by
   by_cases hs : c.1.spx = ∅
-  · have hne : c.1.sgn ≠ 0 := fun h => c.2 ⟨hs, h⟩
+  · have hne := fun h => c.2 ⟨hs, h⟩
     refine ⟨c.1.sgn, hne, ?_⟩
-    have hEq : c = vtxCube c.1.sgn hne := by
+    have hEq : c = vtxCube _ hne := by
       apply Subtype.ext
-      exact QCube.ext' (by simpa [vtxCube] using hs) (fun v _ => rfl)
-    exact ConnQ.of_le (le_of_eq hEq)
+      solve_by_elim [QCube.ext']
+    solve_by_elim
   · obtain ⟨v, hv⟩ := Finset.nonempty_iff_ne_empty.2 hs
     refine ⟨Function.update c.1.sgn v 1, ?_, ?_⟩
     · intro h
@@ -175,8 +173,10 @@ theorem connQ_to_vtxCube (c : QOld A) :
       have hwv : w ≠ v := fun h => hw (h ▸ hv)
       simp [vtxCube, hwv]
 
+variable [Nonempty V]
+
 /-- **The block is connected.** -/
-theorem isConnected_orderCx_qOld [Nonempty V] : IsConnected (orderCx (QOld A)) := by
+theorem isConnected_orderCx_qOld : IsConnected (orderCx (QOld A)) := by
   obtain ⟨v₀⟩ := ‹Nonempty V›
   have key : ∀ c : QOld A, ConnQ c (vtxCube (unitSgn v₀) (unitSgn_ne_zero v₀)) := by
     intro c
@@ -197,7 +197,7 @@ theorem isConnected_orderCx_qOld [Nonempty V] : IsConnected (orderCx (QOld A)) :
 
 /-- **The block carries a spanning tree with any prescribed root**, in particular one rooted at a
 cell of the cut surface. -/
-theorem exists_spanningTree_qOld [Nonempty V] (r : QOld A) :
+theorem exists_spanningTree_qOld (r : QOld A) :
     ∃ T : SpanningTree (orderCx (QOld A)), T.root = r :=
   SpanningTree.exists_of_isConnected isConnected_orderCx_qOld r
 

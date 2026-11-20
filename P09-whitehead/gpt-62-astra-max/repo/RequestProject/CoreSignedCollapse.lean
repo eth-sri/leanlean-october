@@ -13,10 +13,6 @@ Written proof terms; not compiled in the current proof-first workflow. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains.CoreSignedCollapse
 
 variable {A B M J : Type}
@@ -26,18 +22,15 @@ def dropCore : FreeGroup (A ⊕ B) →* FreeGroup B :=
   FreeGroup.lift (Sum.elim (fun _ => 1) FreeGroup.of)
 
 @[simp] theorem dropCore_of_inl (a : A) :
-    dropCore (B := B) (FreeGroup.of (Sum.inl a)) = 1 := by
-  simp [dropCore]
+    dropCore (B := B) (FreeGroup.of (Sum.inl a)) = 1 := rfl
 
 @[simp] theorem dropCore_of_inr (b : B) :
-    dropCore (A := A) (FreeGroup.of (Sum.inr b)) = FreeGroup.of b := by
-  simp [dropCore]
+    dropCore (A := A) (FreeGroup.of (Sum.inr b)) = FreeGroup.of b := rfl
 
 @[simp] theorem dropCore_map_inl (w : FreeGroup A) :
     dropCore (B := B) (FreeGroup.map Sum.inl w) = 1 := by
   have h : (dropCore (A := A) (B := B)).comp (FreeGroup.map Sum.inl) = 1 := by
     apply FreeGroup.ext_hom
-    intro a
     simp
   exact DFunLike.congr_fun h w
 
@@ -46,7 +39,6 @@ def dropCore : FreeGroup (A ⊕ B) →* FreeGroup B :=
   have h : (dropCore (A := A) (B := B)).comp (FreeGroup.map Sum.inr) =
       MonoidHom.id _ := by
     apply FreeGroup.ext_hom
-    intro b
     simp
   exact DFunLike.congr_fun h w
 
@@ -61,9 +53,7 @@ def groupMap : PresGroup (corePres core extra) →* PresGroup target :=
     ((QuotientGroup.mk' (relSub target)).comp dropCore) (by
       refine Subgroup.normalClosure_le_normal ?_
       rintro _ ⟨m | j, rfl⟩
-      · change (QuotientGroup.mk' (relSub target))
-          (dropCore (FreeGroup.map Sum.inl (core m))) = 1
-        rw [dropCore_map_inl, map_one]
+      · simp
       · change (QuotientGroup.mk' (relSub target)) (dropCore (extra j)) = 1
         have ht : (QuotientGroup.mk (target j) : PresGroup target) = 1 :=
           (QuotientGroup.eq_one_iff _).mpr
@@ -71,11 +61,10 @@ def groupMap : PresGroup (corePres core extra) →* PresGroup target :=
         rw [hword j]
         cases rev j <;> simp [ht])
 
-def coefficientMap : MonoidAlgebra ℤ (PresGroup (corePres core extra)) →+*
-    MonoidAlgebra ℤ (PresGroup target) :=
+def coefficientMap :=
   MonoidAlgebra.mapDomainRingHom ℤ (groupMap core extra target rev hword)
 
-theorem coefficientMap_quot (x : FreeGroupRing (A ⊕ B)) :
+theorem coefficientMap_quot (x : FreeGroupRing _) :
     coefficientMap core extra target rev hword
       (quotRingHom ℤ (relSub (corePres core extra)) x) =
     quotRingHom ℤ (relSub target)
@@ -84,14 +73,15 @@ theorem coefficientMap_quot (x : FreeGroupRing (A ⊕ B)) :
   | zero => simp
   | add x y hx hy => simp only [map_add, hx, hy]
   | single g n =>
-      change MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ (MonoidAlgebra.single g n)) =
-        MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ (MonoidAlgebra.single g n))
-      simp only [MonoidAlgebra.mapDomain_single]
-      rfl
+      change MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ _) =
+        MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ _)
+      aesop
 
 variable [DecidableEq A] [DecidableEq B]
 
-theorem coefficientMap_fox (b : B) (w : FreeGroup (A ⊕ B)) :
+variable (b : B)
+
+theorem coefficientMap_fox (w : FreeGroup _) :
     coefficientMap core extra target rev hword
       (quotRingHom ℤ (relSub (corePres core extra)) (fox (Sum.inr b) w)) =
     quotRingHom ℤ (relSub target) (fox b (dropCore w)) := by
@@ -99,9 +89,9 @@ theorem coefficientMap_fox (b : B) (w : FreeGroup (A ⊕ B)) :
   congr 1
   symm
   apply fox_subst_coordinate
-  rintro (a | b') <;> simp [fox_of]
+  simp
 
-theorem quotientFox_inv_relator (b : B) (j : J) :
+theorem quotientFox_inv_relator (j : J) :
     quotRingHom ℤ (relSub target) (fox b (target j)⁻¹) =
       -foxMatrixPres target b j := by
   have ht : (QuotientGroup.mk ((target j)⁻¹) : PresGroup target) = 1 := by
@@ -114,12 +104,12 @@ theorem quotientFox_inv_relator (b : B) (j : J) :
   rw [fox_inv, map_neg, map_mul, hg, one_mul]
   rfl
 
-theorem matrix_core (b : B) (m : M) :
+theorem matrix_core (m : M) :
     foxMatrixPres (corePres core extra) (Sum.inr b) (Sum.inl m) = 0 := by
-  change quotRingHom ℤ _ (fox (Sum.inr b) (FreeGroup.map Sum.inl (core m))) = 0
-  rw [fox_map_of_not_mem_range Sum.inl (fun _ => Sum.inr_ne_inl), map_zero]
+  change quotRingHom ℤ _ (fox _ _) = 0
+  simp_all [fox_map_of_not_mem_range]
 
-theorem matrix_extra (b : B) (j : J) :
+theorem matrix_extra (j : J) :
     coefficientMap core extra target rev hword
       (foxMatrixPres (corePres core extra) (Sum.inr b) (Sum.inr j)) =
       if rev j then -foxMatrixPres target b j else foxMatrixPres target b j := by
@@ -128,7 +118,7 @@ theorem matrix_extra (b : B) (j : J) :
   rw [coefficientMap_fox, hword j]
   cases h : rev j
   · rfl
-  · exact quotientFox_inv_relator target b j
+  · apply quotientFox_inv_relator
 
 variable [Fintype M] [Fintype J]
 

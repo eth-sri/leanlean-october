@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.PresCoverFirstTriangleFibreEquiv
+public import RequestProject.PresCoverRelatorNaturality
 
 @[expose] public section
 
@@ -14,21 +14,13 @@ variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
 theorem presCoverRelatorChain_single_triangle (p : PresCoverRelator w f) (n : ℤ) :
     presCoverRelatorChain w f hf hpos
       (Finsupp.single (presCoverRelatorTriangle w f hf hpos p) n) = Finsupp.single p n := by
-  exact Finsupp.comapDomain_single (presCoverRelatorTriangle w f hf hpos) p n
-    (presCoverRelatorTriangle_injective w f hf hpos).injOn
+  apply Finsupp.comapDomain_single
 
 /-- Actual triangles outside all coordinate-triangle fibres contribute no relator coefficients. -/
 theorem presCoverRelatorChain_single_off_coordinates (t : StrictOrdTri P) (n : ℤ)
     (ht : ∀ j, (strictOrderCxMap f hf.strictMono).onF t ≠ presRelatorFirstTriangle w hpos j) :
     presCoverRelatorChain w f hf hpos (Finsupp.single t n) = 0 := by
   classical
-  ext p
-  rw [presCoverRelatorChain_apply]
-  have hn : t ≠ presCoverRelatorTriangle w f hf hpos p := by
-    intro he
-    apply ht p.val.2
-    rw [he]
-    exact presCoverRelatorTriangle_projection w f hf hpos p
-  simp [hn]
+  grind [presCoverRelatorChain_apply, presCoverRelatorTriangle_projection]
 
 end FiniteChains.PresModel

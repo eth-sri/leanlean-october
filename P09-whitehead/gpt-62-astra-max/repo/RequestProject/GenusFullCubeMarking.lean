@@ -7,50 +7,35 @@ public import RequestProject.ZeroPi2Descent
 @[expose] public section
 
 /-! The actual surviving-spine marking contracts in the full cube quotient. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
+noncomputable section
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-noncomputable def oldToFullCube :
+def oldToFullCube :
     Hom (orderCx (QOld (cmpRel (GenusVertex q))))
       (orderCx (QCube (cmpRel (GenusVertex q)))) :=
   orderCxMap Subtype.val (fun _ _ h => h)
 
-noncomputable def markedSpineToFullCube :
+def markedSpineToFullCube :
     Hom (markedSpineCx q) (orderCx (QCube (cmpRel (GenusVertex q)))) :=
   Hom.comp (oldToFullCube q)
     (Hom.comp (genusSpineToOld q) (componentIncl (genusSpineCx q) (spineBase q)))
 
 /-- The constructed map sends each actual capping loop to a null-homotopic loop. -/
 theorem markedSpineToFullCube_mark_null (x : Fin q × Bool) :
-    Htpy (orderCx (QCube (cmpRel (GenusVertex q))))
+    Htpy _
       ((markedSpineToFullCube q).onV (markedSpineBase q))
       ((markedSpineToFullCube q).onV (markedSpineBase q))
       (mapPath (markedSpineToFullCube q) (markedSpineLoop q x).1) [] := by
-  have h := mapPath_htpy (oldToFullCube q) (spineMarkedLoop_toOld_htpy q x)
-  have hf := surfaceFullCube_loop_null (cmpRel (GenusVertex q))
+  have hf := surfaceFullCube_loop_null _
     (isPath_gSig q (x.1.val, x.2))
-  have he : mapPath (oldToFullCube q)
-      (mapPath (surfCx (cmpRel (GenusVertex q))) (gSig q (x.1.val, x.2))) =
-      mapPath (orderCxMap (surfaceFullCube (cmpRel (GenusVertex q)))
-        (surfaceFullCube_monotone _)) (gSig q (x.1.val, x.2)) := by
-    simp only [mapPath, List.map_map]
-    rfl
-  rw (config := { transparency := .default }) [he] at h
-  have hh := h.trans hf
-  unfold markedSpineToFullCube
-  rw (config := { transparency := .default }) [← mapPath_comp, ← mapPath_comp, markedSpineLoop_inclusion]
-  exact hh
+  have hh := (mapPath_htpy (oldToFullCube q) (spineMarkedLoop_toOld_htpy q x)).trans hf; erw [← mapPath_comp, ← mapPath_comp, markedSpineLoop_inclusion]; exact hh
 
-noncomputable def spineFreeToFullCube :
-    FreeGroup (SpinePresentationGen q) →*
-      Pi1 (orderCx (QCube (cmpRel (GenusVertex q))))
-        ((markedSpineToFullCube q).onV (markedSpineTree q).root) :=
-  (pi1Map (markedSpineToFullCube q) (markedSpineTree q).root).comp
+def spineFreeToFullCube :=
+  (pi1Map (markedSpineToFullCube q) _).comp
     (SpanningTree.freeToPi1 (markedSpineTree q))
 
 /-- All actual capped presentation relators die in the full cube quotient. -/
@@ -59,35 +44,34 @@ theorem spineFreeToFullCube_capped_rel
     spineFreeToFullCube q (cappedSpinePresentation q m) = 1 := by
   cases m with
   | inl f =>
-      change pi1Map (markedSpineToFullCube q) _
+      change pi1Map _ _
         (SpanningTree.freeToPi1 (markedSpineTree q)
           (SpanningTree.treeRel (markedSpineTree q) f)) = 1
-      rw (config := { transparency := .default }) [SpanningTree.freeToPi1_treeRel, map_one]
+      simp_all [SpanningTree.freeToPi1_treeRel]
   | inr x =>
-      change pi1Map (markedSpineToFullCube q) _
-        (SpanningTree.freeToPi1 (markedSpineTree q)
-          (SpanningTree.pathWord (markedSpineTree q) (markedSpineLoop q x).1)) = 1
-      rw (config := { transparency := .default }) [SpanningTree.freeToPi1_pathWord _ (markedSpineLoop q x).2]
-      change pi1Map (markedSpineToFullCube q) _
+      change pi1Map _ _
+        _ = 1
+      erw [SpanningTree.freeToPi1_pathWord _ (markedSpineLoop q x).2]
+      change pi1Map _ _
         (pi1Conj ((markedSpineTree q).treePath_isPath (markedSpineBase q))
           (Pi1.mk (markedSpineLoop q x))) = 1
-      rw (config := { transparency := .default }) [pi1Map_pi1Conj]
-      have hz : pi1Map (markedSpineToFullCube q) (markedSpineBase q)
+      erw [pi1Map_pi1Conj]
+      have hz : pi1Map _ _
           (Pi1.mk (markedSpineLoop q x)) = 1 :=
         Quotient.sound (markedSpineToFullCube_mark_null q x)
-      rw (config := { transparency := .default }) [hz, map_one]
+      simp_all
 
 /-- The genuine capped presentation maps to the full-cube fundamental group. -/
-noncomputable def cappedPresentationToFullCube :
+def cappedPresentationToFullCube :
     PresGroup (cappedSpinePresentation q) →*
-      Pi1 (orderCx (QCube (cmpRel (GenusVertex q))))
+      Pi1 _
         ((markedSpineToFullCube q).onV (markedSpineTree q).root) :=
   QuotientGroup.lift _ (spineFreeToFullCube q) (by
     refine Subgroup.normalClosure_le_normal ?_
     rintro _ ⟨m, rfl⟩
     exact spineFreeToFullCube_capped_rel q m)
 
-@[simp] theorem cappedPresentationToFullCube_mk (w : FreeGroup (SpinePresentationGen q)) :
+@[simp] theorem cappedPresentationToFullCube_mk (w : FreeGroup _) :
     cappedPresentationToFullCube q (QuotientGroup.mk w) = spineFreeToFullCube q w := rfl
 
 end FiniteChains.Davis.Genus

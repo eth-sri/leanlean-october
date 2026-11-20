@@ -10,40 +10,34 @@ namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] [LinearOrder V] {A : CommRel V}
 
-theorem qSquare_frame_unique (c : QSquare A) {a b : V}
-    (h : b < a) (hs : c.1.spx = {a, b}) : qSquareLeft c = a ∧ qSquareRight c = b := by
+variable (c : QSquare A)
+
+section
+
+variable {a b : V} (h : b < a) (hs : c.1.spx = {a, b})
+include h hs
+
+theorem qSquare_frame_unique : qSquareLeft c = a ∧ qSquareRight c = b := by
   have hl : qSquareLeft c ∈ ({a, b} : Finset V) := by
     rw [← hs, qSquare_free_directions]
     simp
   have hr : qSquareRight c ∈ ({a, b} : Finset V) := by
     rw [← hs, qSquare_free_directions]
     simp
-  simp only [Finset.mem_insert, Finset.mem_singleton] at hl hr
-  have horder := qSquare_directions_decreasing c
-  rcases hl with hl | hl <;> rcases hr with hr | hr
-  · rw [hl, hr] at horder
-    exact False.elim ((lt_irrefl a) horder)
-  · exact ⟨hl, hr⟩
-  · rw [hl, hr] at horder
-    exact False.elim ((not_lt_of_ge h.le) horder)
-  · rw [hl, hr] at horder
-    exact False.elim ((lt_irrefl b) horder)
+  grind [qSquare_directions_decreasing]
 
-theorem qSquare_subdivision_ordered (c : QSquare A) {a b : V}
-    (h : b < a) (hs : c.1.spx = {a, b}) :
-    cubeSquareSubdivision c.1 (qSquareLeft c) (qSquareRight c)
+theorem qSquare_subdivision_ordered :
+    cubeSquareSubdivision c.1 _ _
       (qSquare_directions_ne c) (qSquare_free_directions c) =
       cubeSquareSubdivision c.1 a b (Ne.symm h.ne) hs := by
-  obtain ⟨hl, hr⟩ := qSquare_frame_unique c h hs
-  subst a
-  subst b
-  rfl
+  grind [qSquare_frame_unique]
 
-theorem qSquare_subdivision_single (c : QSquare A) (n : ℤ) {a b : V}
+end
+
+theorem qSquare_subdivision_single (n : ℤ) {a b : V}
     (h : b < a) (hs : c.1.spx = {a, b}) :
     qSquareChainSubdivision (Finsupp.single c n) =
       n • cubeSquareSubdivision c.1 a b (Ne.symm h.ne) hs := by
-  rw [qSquareChainSubdivision, squareChainSubdivision, Finsupp.linearCombination_single,
-    qSquare_subdivision_ordered c h hs]
+  grind [qSquareChainSubdivision, squareChainSubdivision, Finsupp.linearCombination_single, qSquare_subdivision_ordered]
 
 end FiniteChains.Davis

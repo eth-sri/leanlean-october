@@ -17,18 +17,20 @@ open CategoryTheory Topology
 variable {P : Type} [PartialOrder P] {E : Type} [TopologicalSpace E]
   (p : C(E, orderNerveRealization P)) (hp : IsCoveringMap p)
 
-def fibreFunctor : P ⥤ Type :=
+def fibreFunctor :=
   orderNerveRealizationFundamentalFunctor P ⋙ hp.monodromyFunctor
 
 abbrev Cover := LocalSystem.Cover (fibreFunctor p hp)
-def projection : Cover p hp → P := LocalSystem.projection (fibreFunctor p hp)
+def projection := LocalSystem.projection (fibreFunctor p hp)
 
 theorem projection_monotone : Monotone (projection p hp) :=
-  LocalSystem.projection_monotone (fibreFunctor p hp)
+  by apply LocalSystem.projection_monotone
 
-def point (v : Cover p hp) : E := v.2.val
+variable (v : Cover p hp)
 
-theorem point_projection (v : Cover p hp) : p (point p hp v) = orderNerveRealizationVertex v.1 :=
+def point := v.2.val
+
+theorem point_projection : p (point p hp v) = orderNerveRealizationVertex v.1 :=
   v.2.property
 
 theorem fibreFunctor_map_bijective {a b : P} (h : a ≤ b) :
@@ -37,10 +39,10 @@ theorem fibreFunctor_map_bijective {a b : P} (h : a ≤ b) :
 
 theorem projection_isPosetCover (hs : Function.Surjective p) : IsPosetCover (projection p hp) := by
   apply LocalSystem.projection_isPosetCover (fibreFunctor p hp)
-  · exact fun h => fibreFunctor_map_bijective p hp h
+  · solve_by_elim [fibreFunctor_map_bijective]
   · intro a
-    obtain ⟨x, hx⟩ := hs (orderNerveRealizationVertex a)
-    exact ⟨⟨x, hx⟩⟩
+    obtain ⟨x, hx⟩ := hs _
+    solve_by_elim
 
 /-- The defining incidence square retains the actual covering lift. -/
 theorem comparable_transport {v w : Cover p hp} (h : v ≤ w) :

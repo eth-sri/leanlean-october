@@ -21,9 +21,7 @@ include hb in
 theorem section_flat : c.IsFlatSection (surfaceSection hc c rv re (centreValue hc c rv)) := by
   intro a b hab
   rcases hab with heq | h
-  · subst b
-    rw [c.val_refl, one_smul]
-  change plt vc ec a b at h
+  · simp_all
   cases a <;> cases b <;> simp only [plt] at h
   case vtx.bed v e =>
     obtain ⟨p, hp, hv⟩ := h
@@ -33,88 +31,66 @@ theorem section_flat : c.IsFlatSection (surfaceSection hc c rv re (centreValue h
     · subst v; exact (hb p).2
   case vtx.dia v p =>
     subst v
-    exact v_d hc c rv re (centreValue hc c rv) p
+    apply v_d
   case vtx.gdi v p =>
     subst v
-    exact v_g hc c rv re (centreValue hc c rv) p
+    apply v_g
   case cvx.ced x p =>
     rcases h with h | h
-    · subst x; exact w_f hc c rv re (centreValue hc c rv) p
-    · subst x; exact w1_f hc c rv re (centreValue hc c rv) hb p
+    · subst x; apply w_f
+    · subst x; apply w1_f <;> assumption
   case cvx.dia x p =>
-    subst x
-    exact w_d hc c rv re (centreValue hc c rv) p
+    aesop
   case cvx.gdi x p =>
     subst x
-    exact w1_g hc c rv re (centreValue hc c rv) hb p
+    apply w1_g <;> assumption
   case cvx.rad x p =>
     subst x
-    exact w_r hc c rv re hb p
-  case ctr.rad p => exact c_r hc c rv re p
+    apply w_r <;> assumption
+  case ctr.rad p => apply c_r
   case bed.tr1 e p =>
     subst e
-    exact e_t1 hc c rv re (centreValue hc c rv) p
+    apply e_t1
   case ced.tr2 x p =>
     subst x
-    exact f_t2 hc c rv re (centreValue hc c rv) p
+    apply f_t2
   case ced.inn x p =>
     subst x
-    exact f_i hc c rv re hb p
+    apply f_i <;> assumption
   case dia.tr1 x p =>
     subst x
-    exact d1_t1 hc c rv re (centreValue hc c rv) hb p
+    apply d1_t1 <;> assumption
   case dia.tr2 x p =>
     subst x
-    exact d_t2 hc c rv re (centreValue hc c rv) p
+    apply d_t2
   case gdi.tr1 x p =>
     subst x
-    exact g_t1 hc c rv re (centreValue hc c rv) hb p
+    apply g_t1 <;> assumption
   case gdi.tr2 x p =>
     subst x
-    exact g_t2 hc c rv re (centreValue hc c rv) p
+    apply g_t2
   case rad.inn x p =>
     rcases h with h | h
-    · subst x; exact r_i hc c rv re p
-    · subst x; exact r1_i hc c rv re p
+    · subst x; apply r_i
+    · subst x; apply r1_i
   case vtx.tr1 v p =>
     rcases h with h | h
-    · subst v; exact v_t1 hc c rv re (centreValue hc c rv) hb p
-    · subst v; exact v1_t1 hc c rv re (centreValue hc c rv) hb p
+    · subst v; apply v_t1 <;> assumption
+    · subst v; apply v1_t1 <;> assumption
   case vtx.tr2 v p =>
     subst v
-    exact v_t2 hc c rv re (centreValue hc c rv) p
+    apply v_t2
   case cvx.tr1 x p =>
     subst x
-    exact w1_t1 hc c rv re (centreValue hc c rv) hb p
+    apply w1_t1 <;> assumption
   case cvx.tr2 x p =>
     rcases h with h | h
-    · subst x; exact w_t2 hc c rv re (centreValue hc c rv) p
-    · subst x; exact w1_t2 hc c rv re (centreValue hc c rv) hb p
+    · subst x; apply w_t2
+    · subst x; apply w1_t2 <;> assumption
   case cvx.inn x p =>
     rcases h with h | h
-    · subst x; exact w_i hc c rv re hb p
-    · subst x; exact w1_i hc c rv re hb p
-  case ctr.inn p => exact c_i hc c rv re p
-
-include hb in
-/-- No new monodromy is introduced by the collar and the interior fan. All
-flat boundary data extend for an arbitrary group action. -/
-theorem exists_flat_section : ∃ s : SCell vc ec hc → Ω,
-    c.IsFlatSection s ∧
-    (∀ v, s (toS vc ec hc (.vtx v)) = rv v) ∧
-    (∀ e, s (toS vc ec hc (.bed e)) = re e) :=
-  ⟨surfaceSection hc c rv re (centreValue hc c rv), section_flat hc c rv re hb,
-    fun _ => rfl, fun _ => rfl⟩
+    · subst x; apply w_i <;> assumption
+    · subst x; apply w1_i <;> assumption
+  case ctr.inn p => apply c_i
 
 end FiniteChains.Davis.SurfaceSection
-
-namespace FiniteChains.Davis
-open RACG Mirror Comb Cell
-universe u v w
-variable {κ ι : Type u} {M : ℕ} [NeZero M] [DecidableEq κ] [DecidableEq ι]
-  {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
-  {G : Type v} [Group G] {Ω : Type w} [MulAction G Ω]
-  (c : OrdCocycle (NeSpx (cmpRel (SCell vc ec hc))) G)
-  (rv : κ → Ω) (re : ι → Ω)
-
-end FiniteChains.Davis

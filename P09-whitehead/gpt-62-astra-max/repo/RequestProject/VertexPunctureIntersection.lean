@@ -1,23 +1,25 @@
 module
 
 public import RequestProject.VertexPuncturedCube
-public import RequestProject.OrderComplexRetraction
+
 
 @[expose] public section
 
 namespace FiniteChains.Davis
 open Comb
 
-def vertexIntersectionCoordinates (i : Fin 7) : Cube (Fin 3) :=
+variable (i : Fin 7)
+
+def vertexIntersectionCoordinates :=
   ![![CubeCoord.free, .neg, .neg], ![CubeCoord.free, .neg, .free],
     ![CubeCoord.free, .neg, .pos], ![CubeCoord.free, .pos, .neg],
     ![CubeCoord.free, .free, .neg], ![CubeCoord.free, .pos, .free],
     ![CubeCoord.free, .free, .pos]] i
 
-def vertexIntersectionCell (i : Fin 7) : VertexPuncturedCube :=
+def vertexIntersectionCell : VertexPuncturedCube :=
   ⟨vertexIntersectionCoordinates i, by fin_cases i <;> decide⟩
 
-theorem vertexIntersectionCell_mem (i : Fin 7) :
+theorem vertexIntersectionCell_mem :
     vertexPunctureLeft (vertexIntersectionCell i) ∧
       vertexPunctureRight (vertexIntersectionCell i) := by
   unfold vertexPunctureLeft vertexPunctureRight
@@ -45,11 +47,13 @@ theorem vertexIntersection_classify (c : VertexPuncturedCube)
   case neg.pos => exact ⟨2, Subtype.ext hv⟩
   case neg.neg => exact ⟨0, Subtype.ext hv⟩
 
-def vertexIntersectionAdjacent (i j : Fin 7) : Prop :=
+variable (i j : Fin 7)
+
+def vertexIntersectionAdjacent :=
   CoordinateFace (vertexIntersectionCoordinates i) (vertexIntersectionCoordinates j) ∨
     CoordinateFace (vertexIntersectionCoordinates j) (vertexIntersectionCoordinates i)
 
-instance (i j : Fin 7) : Decidable (vertexIntersectionAdjacent i j) := by
+instance : Decidable (vertexIntersectionAdjacent i j) := by
   unfold vertexIntersectionAdjacent CoordinateFace
   infer_instance
 
@@ -91,8 +95,6 @@ theorem vertexPuncture_intersection_connected :
 
 theorem vertexPuncturedCube_simplyConnected : SimplyConnected (orderCx VertexPuncturedCube) := by
   have hnull := htpy_nil_of_pathIn_union
-    (U := fun _ : VertexPuncturedCube => True)
-    (A := vertexPunctureLeft) (B := vertexPunctureRight)
     (fun c => ⟨fun _ => vertexPuncture_cover c, fun _ => trivial⟩)
     (fun c d h _ _ => vertexPuncture_unmixed c d h)
     (nullIn_of_simplyConnected vertexPunctureLeft_simplyConnected)
@@ -109,11 +111,9 @@ theorem vertexPuncturedCube_connected : IsConnected (orderCx VertexPuncturedCube
         p c (vertexIntersectionCell 0) := by
     rcases vertexPuncture_cover c with hc | hc
     · obtain ⟨p, hp, _⟩ := (connectedIn_of_isConnected vertexPunctureLeft_connected)
-        c (vertexIntersectionCell 0) hc (vertexIntersectionCell_mem 0).1
-      exact ⟨p, hp⟩
+        c _ hc (vertexIntersectionCell_mem 0).1 <;> grind
     · obtain ⟨p, hp, _⟩ := (connectedIn_of_isConnected vertexPunctureRight_connected)
-        c (vertexIntersectionCell 0) hc (vertexIntersectionCell_mem 0).2
-      exact ⟨p, hp⟩
+        c _ hc (vertexIntersectionCell_mem 0).2 <;> grind
   intro a b
   obtain ⟨p, hp⟩ := reach a
   obtain ⟨r, hr⟩ := reach b

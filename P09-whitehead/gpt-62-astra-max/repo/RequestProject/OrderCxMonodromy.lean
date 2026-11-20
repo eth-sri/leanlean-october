@@ -25,9 +25,6 @@ group presentation without computing its fundamental group.
 Both are used to build the comparison of a presentation with the order complex of the poset
 model of its presentation complex.
 -/
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -53,16 +50,17 @@ namespace OrdCocycle
 variable (c : OrdCocycle P G)
 
 @[simp] theorem val_refl (a : P) : c.val a a = 1 := by
-  have h := c.comp (le_refl a) (le_refl a)
-  simpa using h
+  simpa using (c.comp (le_refl a) (le_refl a))
 
 /-- The value of the cocycle on an oriented edge of the order complex. -/
-def readGerm (g : (orderCx P).E × Bool) : G :=
+def readGerm (g : (orderCx P).E × Bool) :=
   if g.2 then c.val g.1.1.1 g.1.1.2 else (c.val g.1.1.1 g.1.1.2)⁻¹
 
-@[simp] theorem readGerm_ordPos {a b : P} (h : a ≤ b) : c.readGerm (ordPos h) = c.val a b := rfl
+variable {a b : P} (h : a ≤ b)
 
-@[simp] theorem readGerm_ordNeg {a b : P} (h : a ≤ b) :
+@[simp] theorem readGerm_ordPos : c.readGerm (ordPos h) = c.val a b := rfl
+
+@[simp] theorem readGerm_ordNeg :
     c.readGerm (ordNeg h) = (c.val a b)⁻¹ := rfl
 
 @[simp] theorem readGerm_revGerm (g : (orderCx P).E × Bool) :
@@ -71,15 +69,14 @@ def readGerm (g : (orderCx P).E × Bool) : G :=
   cases b <;> simp [readGerm, revGerm]
 
 /-- The value of the cocycle on an edge path: the product of the values of its edges. -/
-def readPath (l : List ((orderCx P).E × Bool)) : G := (l.map c.readGerm).prod
+def readPath (l : List _) := (l.map c.readGerm).prod
 
 @[simp] theorem readPath_nil : c.readPath [] = 1 := rfl
 
-@[simp] theorem readPath_cons (g : (orderCx P).E × Bool) (l : List ((orderCx P).E × Bool)) :
-    c.readPath (g :: l) = c.readGerm g * c.readPath l := by
-  simp [readPath]
+@[simp] theorem readPath_cons (g : (orderCx P).E × Bool) (l : List _) :
+    c.readPath (g :: l) = c.readGerm g * c.readPath l := rfl
 
-@[simp] theorem readPath_append (l l' : List ((orderCx P).E × Bool)) :
+@[simp] theorem readPath_append (l l' : List _) :
     c.readPath (l ++ l') = c.readPath l * c.readPath l' := by
   simp [readPath]
 
@@ -91,17 +88,13 @@ def readPath (l : List ((orderCx P).E × Bool)) : G := (l.map c.readGerm).prod
     mul_inv_cancel]
 
 /-- An elementary cancellation does not change the value of a path. -/
-theorem readPath_cancels {l l' : List ((orderCx P).E × Bool)}
-    (h : Cancels (orderCx P) l l') : c.readPath l = c.readPath l' := by
-  rcases h with ⟨p, q, g, hl, hl'⟩ | ⟨p, q, t, hl, hl'⟩
-  · subst hl; subst hl'
-    simp only [c.readPath_append, c.readPath_cons, c.readGerm_revGerm, mul_inv_cancel_left]
-  · subst hl; subst hl'
-    simp only [c.readPath_append, c.readPath_att, one_mul, mul_one]
+theorem readPath_cancels {l l' : List _}
+    (h : Cancels _ l l') : c.readPath l = c.readPath l' := by
+  rcases h with ⟨p, q, g, hl, hl'⟩ | ⟨p, q, t, hl, hl'⟩ <;> simp_all
 
 /-- Homotopic paths have the same value. -/
-theorem readPath_htpy {a b : P} {l l' : List ((orderCx P).E × Bool)}
-    (h : Htpy (orderCx P) a b l l') : c.readPath l = c.readPath l' := by
+theorem readPath_htpy {a b : P} {l l' : List _}
+    (h : Htpy _ a b l l') : c.readPath l = c.readPath l' := by
   induction h with
   | refl => rfl
   | tail _ hstep ih =>
@@ -109,17 +102,19 @@ theorem readPath_htpy {a b : P} {l l' : List ((orderCx P).E × Bool)}
       · exact ih.trans (c.readPath_cancels hs.2.2)
       · exact ih.trans (c.readPath_cancels hs.2.2).symm
 
+variable (x : P)
+
 /-- **The reading homomorphism** attached to a cocycle: the monodromy of the associated flat
 bundle, read on edge loops. -/
-def monodromy (x : P) : Pi1 (orderCx P) x →* G where
-  toFun := Quotient.lift (fun p : Loop (orderCx P) x => c.readPath p.1)
+def monodromy : Pi1 (orderCx P) x →* G where
+  toFun := Quotient.lift _
     (fun _ _ h => c.readPath_htpy h)
   map_one' := rfl
   map_mul' := by
     rintro ⟨p⟩ ⟨q⟩
-    exact c.readPath_append p.1 q.1
+    apply c.readPath_append
 
-@[simp] theorem monodromy_mk (x : P) (p : Loop (orderCx P) x) :
+@[simp] theorem monodromy_mk (p : Loop (orderCx P) x) :
     c.monodromy x (Pi1.mk p) = c.readPath p.1 := rfl
 
 end OrdCocycle
@@ -129,14 +124,12 @@ end OrdCocycle
 /-- **A loop inside a subposet with a largest element is null-homotopic.**  The subposet need
 not be an interval: all that is used is an element of `A` above every element of `A`. -/
 theorem htpy_nil_of_pathIn_le_top {A : P → Prop} {d : P} (hd : A d)
-    (hAd : ∀ x, A x → x ≤ d) {v : P} (hv : A v) {l : List ((orderCx P).E × Bool)}
+    (hAd : ∀ x, A x → x ≤ d) {v : P} (hv : A v) {l : List _}
     (hp : IsPath (orderCx P).src (orderCx P).tgt l v v) (hl : PathIn A l) :
-    Htpy (orderCx P) v v l [] := by
+    Htpy _ v v l [] := by
   refine htpy_nil_of_pathIn ?_ hv hp hl
-  refine simplyConnected_orderCx (P := {p : P // A p}) ⟨d, hd⟩ id (fun x => le_refl x)
-    (fun x => hAd x.1 x.2) ?_
-  intro x y h
-  exact h
+  refine simplyConnected_orderCx ⟨d, hd⟩ id (fun x => le_refl x)
+    (fun x => hAd x.1 x.2) ?_ <;> simp_all
 
 end Comb
 end FiniteChains

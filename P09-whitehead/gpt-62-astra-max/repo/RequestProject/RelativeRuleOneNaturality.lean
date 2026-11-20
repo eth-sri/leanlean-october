@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.RelativeBlockNaturality
-public import RequestProject.RelativeStructuralOperation
+
 
 @[expose] public section
 
@@ -23,14 +23,12 @@ def restrictedExtra (p : S → Prop) (s : {s // p s}) := extra s.val
 def rawInclusion : PresMorFS (rawPresentation core (restrictedExtra extra p))
     (rawPresentation core (restrictedExtra extra t)) :=
   PresInclusionFS.mor _ _ id (oldCellIncl hpt) Function.injective_id
-    (oldCellIncl_injective hpt) (by intro j; cases j <;> simp [rawPresentation, oldCellIncl,
-      restrictedExtra, labelIncl])
+    (oldCellIncl_injective hpt) (by aesop)
 
 def pairInclusion : PresMorFS (beforeCorrection core (restrictedExtra extra p))
     (beforeCorrection core (restrictedExtra extra t)) :=
   PresInclusionFS.mor _ _ id (oldCellIncl hpt) Function.injective_id
-    (oldCellIncl_injective hpt) (by intro j; cases j <;> simp [beforeCorrection, oldCellIncl,
-      restrictedExtra, labelIncl])
+    (oldCellIncl_injective hpt) (by aesop)
 
 theorem ruleOne_group_square :
     (pairInclusion core extra hpt).hom.comp
@@ -57,8 +55,7 @@ theorem ruleOne_chain_square
   induction x using Finsupp.induction_linear with
   | zero => simp
   | add x y hx hy =>
-      rw [PresMorFS.cells_add, PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
+      simp_all [PresMorFS.cells_add]
   | single j a =>
       rw [relativeRuleOneMap_cells, Finsupp.mapRange_single]
       change Finsupp.mapDomain (oldCellIncl hpt)

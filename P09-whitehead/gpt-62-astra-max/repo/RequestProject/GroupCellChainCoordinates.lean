@@ -5,17 +5,12 @@ public import Mathlib.Algebra.MonoidAlgebra.Basic
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains
 universe u v
 variable {G : Type u} {I : Type v}
 
 /-- Integer coefficients on group/cell pairs are the corresponding group-ring cell coefficients. -/
-noncomputable def groupCellChainEquiv :
-    (G × I →₀ ℤ) ≃ₗ[ℤ] (I →₀ MonoidAlgebra ℤ G) :=
+noncomputable def groupCellChainEquiv :=
   ((Finsupp.domLCongr (R := ℤ) (M := ℤ) (Equiv.prodComm G I)).trans
     (Finsupp.curryLinearEquiv ℤ)).trans
     (Finsupp.mapRange.linearEquiv (MonoidAlgebra.coeffLinearEquiv (S := ℤ) (M := G) ℤ).symm)
@@ -25,9 +20,6 @@ theorem groupCellChainEquiv_single (g : G) (i : I) (n : ℤ) :
     groupCellChainEquiv (Finsupp.single (g, i) n) =
       Finsupp.single i (MonoidAlgebra.single g n) := by
   simp only [groupCellChainEquiv, LinearEquiv.trans_apply, Finsupp.domLCongr_single,
-    Finsupp.mapRange.linearEquiv_apply]
-  change Finsupp.mapRange _ _ (Finsupp.single (i, g) n).curry = _
-  rw [Finsupp.curry_single (i, g) n]
-  simp [Finsupp.mapRange_single, MonoidAlgebra.coeffLinearEquiv_symm_apply]
+    Finsupp.mapRange.linearEquiv_apply] <;> simp_all
 
 end FiniteChains

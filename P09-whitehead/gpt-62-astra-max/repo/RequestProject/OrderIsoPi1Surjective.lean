@@ -19,7 +19,7 @@ theorem orderIso_pi1_surjective (e : P ≃o Q) (a : P) :
       simpa only [orderCxMap, e.symm_apply_apply] using
         isPath_mapPath (orderCxMap e.symm e.symm.monotone) p.property
     refine ⟨Pi1.mk ⟨_, hp⟩, Quotient.sound ?_⟩
-    change Htpy (orderCx Q) (e a) (e a)
+    change Htpy _ _ _
       (mapPath (orderCxMap e e.monotone)
         (mapPath (orderCxMap e.symm e.symm.monotone) p.val)) p.val
     rw [mapPath_comp_eq_self e.symm.monotone e.monotone e.apply_symm_apply]

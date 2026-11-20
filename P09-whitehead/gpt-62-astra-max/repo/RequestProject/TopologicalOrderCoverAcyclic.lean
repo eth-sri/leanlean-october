@@ -2,10 +2,8 @@ module
 
 public import RequestProject.TopologicalOrderCoverHomeomorph
 public import RequestProject.OrderNerveConnectedReflection
-public import RequestProject.OrderNerveCoverDimension
-public import RequestProject.OrderNerveTwoComplex
 public import RequestProject.OrderStrictAcyclicityComparison
-public import RequestProject.TopologicalSingular.MathlibComparison
+
 
 @[expose] public section
 
@@ -22,37 +20,41 @@ variable {P : Type} [PartialOrder P] {E : Type} [TopologicalSpace E]
   (p : C(E, orderNerveRealization P)) (hp : IsCoveringMap p)
   (hs : Function.Surjective p)
 
+variable [ConnectedSpace E]
+
 include hs in
-theorem realization_connected [ConnectedSpace E] :
+theorem realization_connected :
     ConnectedSpace (orderNerveRealization (Cover p hp)) :=
   (realizationHomeomorph p hp hs).symm.surjective.connectedSpace
     (realizationHomeomorph p hp hs).symm.continuous
 
 include hs in
-theorem orderCover_connected [ConnectedSpace E] : IsConnected (orderCx (Cover p hp)) := by
+theorem orderCover_connected : IsConnected (orderCx (Cover p hp)) := by
   letI := realization_connected p hp hs
   exact orderCx_isConnected_of_realization
 
 include hs in
-theorem strictCover_connected [ConnectedSpace E] : IsConnected (strictOrderCx (Cover p hp)) :=
+theorem strictCover_connected : IsConnected (strictOrderCx (Cover p hp)) :=
   strictOrderCx_isConnected (orderCover_connected p hp hs)
 
+variable [(nerve P).HasDimensionLE 2]
+
 include hs in
-theorem strictCover_acyclic [ConnectedSpace E] [(nerve P).HasDimensionLE 2]
+theorem strictCover_acyclic
     (hac : Whitehead.Acyclic E) : IsAcyclic (strictOrderCx (Cover p hp)) := by
   letI := realization_connected p hp hs
   obtain ⟨x⟩ := (inferInstance : Nonempty (orderNerveRealization (Cover p hp)))
-  obtain ⟨n, s, z, hz⟩ := orderNerveRealizationSimplex_jointly_surjective (Cover p hp) x
-  letI : Nonempty (Cover p hp) := ⟨s.obj 0⟩
+  obtain ⟨n, s, z, hz⟩ := orderNerveRealizationSimplex_jointly_surjective _ x
+  letI : Nonempty _ := ⟨s.obj 0⟩
   letI := (projection_isPosetCover p hp hs).realization_hasDimensionLE 2
-  apply (orderRealization_acyclic_iff_strict_isAcyclic (Cover p hp)
+  apply (orderRealization_acyclic_iff_strict_isAcyclic _
     (orderCover_connected p hp hs)).mp
   exact (Whitehead.acyclic_iff_of_homotopyEquiv
     (realizationHomeomorph p hp hs).toHomotopyEquiv).mpr hac
 
 /-- The returned action has the edge and face compatibility needed by
 actual regular-cover chain descent, in addition to ordinary regularity. -/
-theorem reconstructed_cover_conclusions [ConnectedSpace E] [(nerve P).HasDimensionLE 2]
+theorem reconstructed_cover_conclusions
     (hr : Whitehead.Regular p) (hac : Whitehead.Acyclic E) :
     IsCovering (strictProjection p hp hs) ∧
     IsRegular (strictProjection p hp hs) (strictDeckAction p hp) ∧

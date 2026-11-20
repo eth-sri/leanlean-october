@@ -1,6 +1,7 @@
 module
 
-public import RequestProject.SubstOneWayQuotient
+public import RequestProject.SubstOneWay
+public import RequestProject.ChamberQuotientCover
 public import RequestProject.PresPosetAlphaW
 
 @[expose] public section
@@ -16,9 +17,6 @@ marked comparison of `ρ` with the fundamental group of the model is injective
 quotient `Q = Z/Γ` is injective on fundamental groups
 (`FiniteChains.Davis.pi1Map_qNew_injective`).
 -/
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -30,24 +28,26 @@ universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
+variable {α J : Type u}
+    (ρ : J → FreeGroup α)
+    (w : J → List (α × Bool))
+    (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
+    (att : NeSpx A →o PresPos w)
+include α J
+
 /-- **The comparison of the source presentation with the quotient**, over the model built on the
 prescribed relator words. -/
-noncomputable def baseToQuotientW {α J : Type u} (ρ : J → FreeGroup α)
-    (w : J → List (α × Bool)) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
-    (att : NeSpx A →o PresPos w) :
+noncomputable def baseToQuotientW :
     PresGroup ρ →*
       Comb.Pi1 (orderCx (Qpos A (PresPos w) att)) (qNew (A := A) (att := att) (ptBase w)) :=
   (Comb.pi1Map (orderCxMap (qNew (A := A) (X := PresPos w) (att := att)) qNew_monotone)
       (ptBase w)).comp (alphaHomW ρ w hw)
 
 /-- **The comparison is injective.** -/
-theorem baseToQuotientW_injective {α J : Type u} (ρ : J → FreeGroup α)
-    (w : J → List (α × Bool)) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
-    (att : NeSpx A →o PresPos w) :
+theorem baseToQuotientW_injective :
     Function.Injective (baseToQuotientW (A := A) ρ w hw att) := by
   intro x y h
-  exact alphaHomW_injective ρ w hw
-    (pi1Map_qNew_injective (A := A) (att := att) (ptBase w) h)
+  solve_by_elim [alphaHomW_injective, pi1Map_qNew_injective]
 
 end Davis
 end FiniteChains

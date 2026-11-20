@@ -17,10 +17,6 @@ relator label, so restricting a stage never repeats a choice.
 noncomputable section
 open scoped Classical commutatorElement
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains
 
 universe v
@@ -48,9 +44,7 @@ theorem FSGenerates.redecide {f : PresMorFS ρ τ} (hf : FSGenerates f)
       (@PresMorFS.redecide A J B K dA dB ρ τ f dA' dB') := by
   have hA : dA' = dA := Subsingleton.elim _ _
   have hB : dB' = dB := Subsingleton.elim _ _
-  subst dA'
-  subst dB'
-  exact hf
+  aesop
 
 end FiniteChains
 
@@ -73,24 +67,26 @@ def pairSubstitution : FreeGroup (A ⊕ Z) →* FreeGroup (PairGen A Z) :=
 
 @[simp] theorem forgetExtra_core (a : A) :
     forgetExtra (FreeGroup.of (Sum.inl (β := Z) a)) = FreeGroup.of a := by
-  simp [forgetExtra]
+  rfl
 
 @[simp] theorem forgetExtra_extra (z : Z) :
     forgetExtra (FreeGroup.of (Sum.inr (α := A) z)) = 1 := by
-  simp [forgetExtra]
+  rfl
 
 @[simp] theorem pairSubstitution_core (a : A) :
     pairSubstitution (FreeGroup.of (Sum.inl (β := Z) a)) =
       FreeGroup.of (Sum.inl a) := by
-  simp [pairSubstitution]
+  rfl
 
 @[simp] theorem pairSubstitution_extra (z : Z) :
     pairSubstitution (FreeGroup.of (Sum.inr (α := A) z)) =
       ⁅FreeGroup.of (Sum.inr (α := A) (z, false)),
         FreeGroup.of (Sum.inr (α := A) (z, true))⁆ := by
-  simp [pairSubstitution]
+  rfl
 
-@[simp] theorem forgetExtra_map_core (w : FreeGroup A) :
+variable (w : FreeGroup A)
+
+@[simp] theorem forgetExtra_map_core :
     forgetExtra (FreeGroup.map (Sum.inl (β := Z)) w) = w := by
   have h : (forgetExtra (A := A) (Z := Z)).comp (FreeGroup.map Sum.inl) =
       MonoidHom.id (FreeGroup A) := by
@@ -99,7 +95,7 @@ def pairSubstitution : FreeGroup (A ⊕ Z) →* FreeGroup (PairGen A Z) :=
     simp
   exact congrArg (fun f : FreeGroup A →* FreeGroup A => f w) h
 
-@[simp] theorem pairSubstitution_map_core (w : FreeGroup A) :
+@[simp] theorem pairSubstitution_map_core :
     pairSubstitution (FreeGroup.map (Sum.inl (β := Z)) w) =
       FreeGroup.map (Sum.inl (β := Z × Bool)) w := by
   have h : (pairSubstitution (A := A) (Z := Z)).comp (FreeGroup.map Sum.inl) =
@@ -109,30 +105,26 @@ def pairSubstitution : FreeGroup (A ⊕ Z) →* FreeGroup (PairGen A Z) :=
     simp
   exact congrArg (fun f : FreeGroup A →* FreeGroup (PairGen A Z) => f w) h
 
+variable (w : FreeGroup (A ⊕ Z))
+
 /-- Rule 1 leaves the core exponent sums unchanged and annihilates every
 extra exponent sum. -/
-theorem pairSubstitution_exp_core (w : FreeGroup (A ⊕ Z)) (a : A) :
+theorem pairSubstitution_exp_core (a : A) :
     expSum (Sum.inl a) (pairSubstitution w) = expSum a (forgetExtra w) := by
   have h : (expSum (Sum.inl (β := Z × Bool) a)).comp pairSubstitution =
       (expSum a).comp forgetExtra := by
     apply FreeGroup.ext_hom
-    intro x
-    cases x with
-    | inl x => simp [expSum]
-    | inr z =>
-        simp only [MonoidHom.comp_apply, pairSubstitution_extra,
-          forgetExtra_extra, map_one, map_commutatorElement]
-        exact commutatorElement_eq_one_iff_commute.mpr (Commute.all _ _)
+    aesop
   exact congrArg (fun f : FreeGroup (A ⊕ Z) →* Multiplicative ℤ => f w) h
 
-theorem pairSubstitution_exp_pair (w : FreeGroup (A ⊕ Z)) (z : Z × Bool) :
+theorem pairSubstitution_exp_pair (z : Z × Bool) :
     expSum (Sum.inr z) (pairSubstitution w) = 1 := by
   have h : (expSum (Sum.inr (α := A) z)).comp pairSubstitution =
       (1 : FreeGroup (A ⊕ Z) →* Multiplicative ℤ) := by
     apply FreeGroup.ext_hom
     intro x
     cases x with
-    | inl x => simp [expSum]
+    | inl x => rfl
     | inr x =>
         simp only [MonoidHom.comp_apply, pairSubstitution_extra,
           MonoidHom.one_apply, map_commutatorElement]
@@ -142,38 +134,38 @@ theorem pairSubstitution_exp_pair (w : FreeGroup (A ⊕ Z)) (z : Z × Bool) :
 variable (core : C → FreeGroup A)
   (hcore : Function.Surjective (expMatrix core))
 
+variable (w : FreeGroup (A ⊕ Z))
+
 /-- The correction is a finite core chain, chosen once for its ambient word. -/
-def correctionCoefficients (w : FreeGroup (A ⊕ Z)) : C →₀ ℤ :=
+def correctionCoefficients :=
   Classical.choose (exists_correction core (forgetExtra w) hcore)
 
-theorem correctionCoefficients_spec (w : FreeGroup (A ⊕ Z)) :
+theorem correctionCoefficients_spec :
     expVec (forgetExtra w * correctionWord core (correctionCoefficients core hcore w)) = 0 :=
   Classical.choose_spec (exists_correction core (forgetExtra w) hcore)
 
 /-- Rule 2 is a product with actual retained core relators. -/
-def correctedWord (w : FreeGroup (A ⊕ Z)) : FreeGroup (A ⊕ Z) :=
+def correctedWord :=
   w * FreeGroup.map Sum.inl (correctionWord core (correctionCoefficients core hcore w))
 
 /-- The result of simultaneous rules 1 and 2, before genus replacement. -/
-def normalizedWord (w : FreeGroup (A ⊕ Z)) : FreeGroup (PairGen A Z) :=
+def normalizedWord :=
   pairSubstitution (correctedWord core hcore w)
 
-theorem normalizedWord_eq (w : FreeGroup (A ⊕ Z)) :
+theorem normalizedWord_eq :
     normalizedWord core hcore w = pairSubstitution w *
       FreeGroup.map Sum.inl (correctionWord core (correctionCoefficients core hcore w)) := by
-  simp only [normalizedWord, correctedWord, map_mul, pairSubstitution_map_core]
+  simp [normalizedWord, correctedWord, map_mul, pairSubstitution_map_core]
 
-theorem normalizedWord_exp_zero (w : FreeGroup (A ⊕ Z)) (i : PairGen A Z) :
+theorem normalizedWord_exp_zero (i : PairGen A Z) :
     Multiplicative.toAdd (expSum i (normalizedWord core hcore w)) = 0 := by
   cases i with
   | inl a =>
       rw [normalizedWord, pairSubstitution_exp_core]
       have h := congrArg (fun v : A →₀ ℤ => v a) (correctionCoefficients_spec core hcore w)
-      simpa only [expVec_apply, correctedWord, map_mul, forgetExtra_map_core,
-        Finsupp.zero_apply] using h
+      simp_all [expVec_apply, correctedWord, map_mul, forgetExtra_map_core, Finsupp.zero_apply]
   | inr z =>
-      rw [normalizedWord, pairSubstitution_exp_pair]
-      rfl
+      simp [normalizedWord, pairSubstitution_exp_pair]
 
 /-- Surface data is constructed from the normalized word; it is not a
 hypothesis on the relative presentation. -/
@@ -183,7 +175,9 @@ structure SurfaceChoice (w : FreeGroup (PairGen A Z)) where
   loops : Fin genus × Bool → FreeGroup (PairGen A Z)
   word : w = commWord loops (finitePairs genus)
 
-theorem surfaceChoice_exists (w : FreeGroup (A ⊕ Z)) :
+variable (w : FreeGroup (A ⊕ Z))
+
+theorem surfaceChoice_exists :
     Nonempty (SurfaceChoice (normalizedWord core hcore w)) := by
   obtain ⟨q, a, b, hq, hword⟩ := exists_commutator_factorization
     (normalizedWord core hcore w) (normalizedWord_exp_zero core hcore w)
@@ -193,27 +187,29 @@ theorem surfaceChoice_exists (w : FreeGroup (A ⊕ Z)) :
     commutatorElement_def]
   rfl
 
-def surfaceChoice (w : FreeGroup (A ⊕ Z)) : SurfaceChoice (normalizedWord core hcore w) :=
+def surfaceChoice :=
   Classical.choice (surfaceChoice_exists core hcore w)
 
 variable (extra : S → FreeGroup (A ⊕ Z))
 
-def normalizedGenus (s : S) : ℕ := (surfaceChoice core hcore (extra s)).genus
+variable (s : S)
 
-instance normalizedGenus_neZero (s : S) : NeZero (normalizedGenus core hcore extra s) :=
+def normalizedGenus := (surfaceChoice core hcore (extra s)).genus
+
+instance normalizedGenus_neZero : NeZero (normalizedGenus core hcore extra s) :=
   ⟨by have h := (surfaceChoice core hcore (extra s)).genus_ge_two
       change (surfaceChoice core hcore (extra s)).genus ≠ 0
       omega⟩
 
-def normalizedLoops (s : S) :
+def normalizedLoops :
     Fin (normalizedGenus core hcore extra s) × Bool → FreeGroup (PairGen A Z) :=
   (surfaceChoice core hcore (extra s)).loops
 
-def beforeCorrection : C ⊕ S → FreeGroup (PairGen A Z) :=
+def beforeCorrection :=
   Sum.elim (fun c => FreeGroup.map Sum.inl (core c))
     (fun s => pairSubstitution (extra s))
 
-def normalizedPresentation : C ⊕ S → FreeGroup (PairGen A Z) :=
+def normalizedPresentation :=
   Sum.elim (fun c => FreeGroup.map Sum.inl (core c))
     (fun s => normalizedWord core hcore (extra s))
 
@@ -265,10 +261,7 @@ theorem relSub_normalizedPresentation :
       exact (Subgroup.mul_mem_cancel_right _ hc).mp hw
 
 /-- The final actual genus replacement of the normalized relative presentation. -/
-def blockPresentation :
-    C ⊕ (Σ s, NamedSpineRel (normalizedGenus core hcore extra s)) →
-      FreeGroup (PairGen A Z ⊕ (Σ s, SpinePresentationGen
-        (normalizedGenus core hcore extra s))) :=
+def blockPresentation :=
   substPresF (normalizedPresentation core hcore extra)
     (familyFiniteSpineWordBlock (normalizedGenus core hcore extra)
       (normalizedLoops core hcore extra))
@@ -280,11 +273,9 @@ def blockStructuralMap : PresMorFS (normalizedPresentation core hcore extra)
   let dSrc : DecidableEq (PairGen A Z) := inferInstance
   let dTgt : DecidableEq (PairGen A Z ⊕ (Σ s, SpinePresentationGen
       (normalizedGenus core hcore extra s))) := inferInstance
-  letI : DecidableEq (PairGen A Z) := Classical.decEq _
   let dFamilyTgt : DecidableEq (PairGen A Z ⊕ (Σ s, SpinePresentationGen
       (normalizedGenus core hcore extra s))) :=
-    @instDecidableEqSum _ _ (Classical.decEq _) inferInstance
-  exact @PresMorFS.redecide _ _ _ _ (Classical.decEq _) dFamilyTgt _ _
+    @instDecidableEqSum _ _ (Classical.decEq _) inferInstance; exact @PresMorFS.redecide _ _ _ _ (Classical.decEq _) dFamilyTgt _ _
     (finiteSpineFamilyStructuralMap (normalizedPresentation core hcore extra)
     (normalizedGenus core hcore extra) (normalizedLoops core hcore extra)
     (normalizedPresentation_surface core hcore extra)) dSrc dTgt

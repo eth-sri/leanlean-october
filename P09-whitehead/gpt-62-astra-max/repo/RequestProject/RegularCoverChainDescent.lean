@@ -11,40 +11,30 @@ Unverified source. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u v
 
-theorem pushE_eq_inr_imp {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
+section
+
+variable {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
+include D K
+
+theorem pushE_eq_inr_imp
     (hi : Function.Injective i.onE) (e : L.E) (w : OffE i)
     (h : pushE p i e = Sum.inr w) : e = w.val := by
   by_cases he : ∃ d, i.onE d = e
-  · obtain ⟨d, rfl⟩ := he
-    rw [pushE_of_mem p hi] at h
-    exact (Sum.inl_ne_inr h).elim
-  · rw [pushE_of_off p i ⟨e, fun d hd => he ⟨d, hd⟩⟩] at h
-    exact congrArg (fun x : OffE i => x.val) (Sum.inr.inj h)
+  · grind [pushE_of_mem]
+  · rw [pushE_of_off p i ⟨e, fun d hd => he ⟨d, hd⟩⟩] at h <;> grind
 
-theorem pushF_eq_inr_imp {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
+theorem pushF_eq_inr_imp
     (hi : Function.Injective i.onF) (e : L.F) (w : OffF i)
     (h : pushF p i e = Sum.inr w) : e = w.val := by
   by_cases he : ∃ d, i.onF d = e
-  · obtain ⟨d, rfl⟩ := he
-    rw [pushF_of_mem p hi] at h
-    exact (Sum.inl_ne_inr h).elim
-  · rw [pushF_of_off p i ⟨e, fun d hd => he ⟨d, hd⟩⟩] at h
-    exact congrArg (fun x : OffF i => x.val) (Sum.inr.inj h)
+  · grind [pushF_of_mem]
+  · rw [pushF_of_off p i ⟨e, fun d hd => he ⟨d, hd⟩⟩] at h <;> grind
 
-section Proper
-variable {D K L L' : Complex2.{u}} (p : Hom D K) (j : Hom D L) (j' : Hom D L')
-  (k : Hom L L') (hjV : Function.Injective j.onV) (hjE : Function.Injective j.onE)
-  (hj'V : Function.Injective j'.onV) (hj'E : Function.Injective j'.onE)
-  (hj'F : Function.Injective j'.onF) (hkj : k.comp j = j')
-
-end Proper
+end
 
 /-- Only actual map properties used in descent; no finite-cell assumptions. -/
 structure RelativeCellChain (c : ℕ → Complex2.{u}) (n : ℕ) where
@@ -55,21 +45,21 @@ structure RelativeCellChain (c : ℕ → Complex2.{u}) (n : ℕ) where
   conn : ∀ i, IsConnected (c i)
   zero : ∀ i < n, ZeroPi2 (inc i)
   pi1 : ∀ i, 1 ≤ i → i ≤ n → Pi1Trivial (inclFrom c inc i)
-  proper : ∀ i < n, (¬ Function.Surjective (inc i).onE) ∨
-    (¬ Function.Surjective (inc i).onF)
 
 namespace RelativeCellChain
 variable {c : ℕ → Complex2.{u}} {n : ℕ} (R : RelativeCellChain c n)
 
-theorem inclV (i : ℕ) : Function.Injective (inclFrom c R.inc i).onV := by
+variable (i : ℕ)
+
+theorem inclV : Function.Injective (inclFrom c R.inc i).onV := by
   induction i with
   | zero => exact Function.injective_id
   | succ i hi => exact (R.incV i).comp hi
-theorem inclE (i : ℕ) : Function.Injective (inclFrom c R.inc i).onE := by
+theorem inclE : Function.Injective (inclFrom c R.inc i).onE := by
   induction i with
   | zero => exact Function.injective_id
   | succ i hi => exact (R.incE i).comp hi
-theorem inclF (i : ℕ) : Function.Injective (inclFrom c R.inc i).onF := by
+theorem inclF : Function.Injective (inclFrom c R.inc i).onF := by
   induction i with
   | zero => exact Function.injective_id
   | succ i hi => exact (R.incF i).comp hi
@@ -96,13 +86,16 @@ theorem descInc_injective_F : ∀ i, Function.Injective (R.descInc p i).onF
   | 0 => Sum.inl_injective
   | i + 1 => RelChainW.pushoutFunctor_injF K p _ _ _ _ _ _ _ _ rfl (R.incF (i + 1))
 
-theorem desc_connected (hp : IsCovering p) (d₀ : (c 0).V) : ∀ i, IsConnected (R.desc p i)
+variable (hp : IsCovering p)
+include hp
+
+theorem desc_connected (d₀ : (c 0).V) : ∀ i, IsConnected (R.desc p i)
   | 0 => isConnected_of_covering p hp (R.conn 0)
   | i + 1 => isConnected_pushoutComplex p (inclFrom c R.inc (i + 1))
       (R.inclV (i + 1)) (R.inclE (i + 1))
       (isConnected_of_covering p hp (R.conn 0)) (R.conn (i + 1)) d₀
 
-theorem descInc_zeroPi2 (hp : IsCovering p) {Q : Type v} [Group Q]
+theorem descInc_zeroPi2 {Q : Type v} [Group Q]
     (a : DeckAction (c 0) Q) (hr : IsRegular p a)
     (he : ∀ q e, p.onE (a.smulE q e) = p.onE e)
     (hf : ∀ q f, p.onF (a.smulF q f) = p.onF f)

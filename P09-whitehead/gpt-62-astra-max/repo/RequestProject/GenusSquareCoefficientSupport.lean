@@ -10,22 +10,21 @@ namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-theorem markedSpineFace_top_dimension_two (f : (markedSpineCx q).F) :
+variable (f : (markedSpineCx q).F)
+
+theorem markedSpineFace_top_dimension_two :
     truncatedCellDimension f.1.1.2.2.1 = 2 := by
   have h01 := genusSpineCellDimension_strictMono q f.1.2.1
   have h12 := genusSpineCellDimension_strictMono q f.1.2.2
-  change truncatedCellDimension f.1.1.1.1 < truncatedCellDimension f.1.1.2.1.1 at h01
-  change truncatedCellDimension f.1.1.2.1.1 < truncatedCellDimension f.1.1.2.2.1 at h12
-  have hmax := genusSpineCell_dimension_le_two q f.1.1.2.2
-  omega
+  grind [genusSpineCell_dimension_le_two]
 
 /-- Every genuine two-flag of the surviving spine ends at an ordinary retained square,
 not at a cut cell (all cut triangles were removed). -/
-theorem markedSpineFace_top_old (f : (markedSpineCx q).F) :
+theorem markedSpineFace_top_old :
     ∃ a : QOld (cmpRel (GenusVertex q)), f.1.1.2.2.1 = Sum.inl a := by
   have hd := markedSpineFace_top_dimension_two q f
   cases hc : f.1.1.2.2.1 with
-  | inl a => exact ⟨a, rfl⟩
+  | inl a => simp
   | inr σ =>
       have hs := f.1.1.2.2.2
       rw [hc] at hs
@@ -57,6 +56,6 @@ theorem markedSpine_square_coefficient_support (d : (markedSpineCx q).F →₀ �
   rw [ha] at hmem
   refine ⟨a, hmem, ?_⟩
   change (genusSpineCellToOld q f.1.1.2.2).1 = s.1 at htop
-  simpa [genusSpineCellToOld, truncatedCellRetraction, ha] using htop
+  simp_all [genusSpineCellToOld, truncatedCellRetraction, ha]
 
 end FiniteChains.Davis.Genus

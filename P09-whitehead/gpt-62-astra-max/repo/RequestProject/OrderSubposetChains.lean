@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.LinearAlgebra.Finsupp.Supported
 public import RequestProject.StrictOrderChains
 public import RequestProject.UnivCoverIncl
 
@@ -8,57 +9,39 @@ public import RequestProject.UnivCoverIncl
 /-! Finite chains and cycles on an actual induced subposet. -/
 namespace FiniteChains.Comb
 universe u
-variable {P : Type u} [PartialOrder P] (S : Set P)
+variable {P : Type u} (r : P → P → Prop) [Trans r r r] (S : Set P)
 
-def ordSubposetIncl : Hom (orderCx S) (orderCx P) :=
-  orderCxMap Subtype.val (fun _ _ h => h)
+local instance : Trans (fun a b : S => r a b) (fun a b : S => r a b) (fun a b : S => r a b) :=
+  ⟨fun h => Trans.trans h⟩
 
-theorem ordSubposetIncl_onE_injective :
-    Function.Injective (ordSubposetIncl S).onE := by
-  intro a b h
-  apply Subtype.ext
-  apply Prod.ext <;> apply Subtype.ext
-  · exact congrArg (fun e : OrdEdge P => e.1.1) h
-  · exact congrArg (fun e : OrdEdge P => e.1.2) h
+abbrev inducedIncl : Hom (relSkeleton (fun a b : S => r a b)) (relSkeleton r) :=
+  relSkeletonMap Subtype.val (fun {_ _} h => h)
 
-theorem ordSubposetIncl_onF_injective :
-    Function.Injective (ordSubposetIncl S).onF := by
-  intro a b h
-  apply Subtype.ext
-  apply Prod.ext
-  · apply Subtype.ext
-    exact congrArg (fun t : OrdTri P => t.1.1) h
-  · apply Prod.ext <;> apply Subtype.ext
-    · exact congrArg (fun t : OrdTri P => t.1.2.1) h
-    · exact congrArg (fun t : OrdTri P => t.1.2.2) h
+theorem inducedIncl_edges : Function.Injective (inducedIncl r S).onE := by
+  rintro ⟨⟨a,b⟩, h⟩ ⟨⟨c,d⟩, k⟩ e
+  simpa [inducedIncl, relSkeletonMap, Subtype.ext_iff] using e
 
-/-- A triangle is in the induced subcomplex exactly when its three vertices lie in it. -/
-theorem ordSubposetIncl_onF_range (t : OrdTri P) :
-    t ∈ Set.range (ordSubposetIncl S).onF ↔
-      t.1.1 ∈ S ∧ t.1.2.1 ∈ S ∧ t.1.2.2 ∈ S := by
-  constructor
-  · rintro ⟨a, rfl⟩
-    exact ⟨a.1.1.2, a.1.2.1.2, a.1.2.2.2⟩
-  · rintro ⟨ha, hb, hc⟩
-    exact ⟨⟨(⟨t.1.1, ha⟩, ⟨t.1.2.1, hb⟩, ⟨t.1.2.2, hc⟩), t.2⟩,
-      Subtype.ext rfl⟩
+/-- Every chain supported on the induced subcomplex comes from a chain there. -/
+theorem inducedIncl_lift (c : RelTriangle r →₀ ℤ)
+    (hs : ∀ t ∈ c.support, t.1.1 ∈ S ∧ t.1.2.1 ∈ S ∧ t.1.2.2 ∈ S) :
+    c ∈ LinearMap.range (chain2 (inducedIncl r S)) := by
+  have h := Finsupp.lmapDomain_supported (M := ℤ) (R := ℤ) (inducedIncl r S).onF Set.univ
+  simp only [Finsupp.supported_univ, Submodule.map_top, Set.image_univ] at h
+  rw [chain2, h]
+  intro t ht
+  obtain ⟨ha,hb,hc⟩ := hs t ht
+  exact ⟨⟨(⟨_, ha⟩, ⟨_, hb⟩, ⟨_, hc⟩), t.2⟩, rfl⟩
 
-/-- Every finite chain supported on the actual subcomplex is the image of a finite
-chain on that subcomplex. If it is a cycle, its unique lift is a cycle too. -/
-theorem exists_ordSubposet_cycle (c : OrdTri P →₀ ℤ)
+/-- Since the inclusion is injective on edges, a lift of a cycle is itself a cycle. -/
+theorem inducedIncl_cycle (c : RelTriangle r →₀ ℤ)
     (hs : ∀ t ∈ c.support, t.1.1 ∈ S ∧ t.1.2.1 ∈ S ∧ t.1.2.2 ∈ S)
-    (hc : bdry2 (orderCx P) c = 0) :
-    ∃ d : OrdTri S →₀ ℤ,
-      chain2 (ordSubposetIncl S) d = c ∧ bdry2 (orderCx S) d = 0 := by
-  let d := Finsupp.comapDomain (ordSubposetIncl S).onF c
-    (ordSubposetIncl_onF_injective S).injOn
-  have hd : chain2 (ordSubposetIncl S) d = c :=
-    Finsupp.mapDomain_comapDomain _ (ordSubposetIncl_onF_injective S) c
-      (fun t ht => (ordSubposetIncl_onF_range S t).mpr (hs t ht))
-  refine ⟨d, hd, ?_⟩
-  apply Finsupp.mapDomain_injective (ordSubposetIncl_onE_injective S)
-  change chain1 (ordSubposetIncl S) (bdry2 (orderCx S) d) =
-    Finsupp.mapDomain _ 0
-  rw [Finsupp.mapDomain_zero, ← bdry2_chain2, hd, hc]
+    (hc : bdry2 (relSkeleton r) c = 0) :
+    ∃ d, chain2 (inducedIncl r S) d = c ∧ bdry2 _ d = 0 := by
+  obtain ⟨d, rfl⟩ := inducedIncl_lift r S c hs
+  refine ⟨d, rfl, Finsupp.mapDomain_injective (inducedIncl_edges r S) ?_⟩
+  rw [Finsupp.mapDomain_zero]
+  exact (bdry2_chain2 (inducedIncl r S) d).symm.trans hc
+
+abbrev ordSubposetIncl [PartialOrder P] := inducedIncl (· ≤ ·) S
 
 end FiniteChains.Comb

@@ -7,41 +7,41 @@ public import Mathlib.Analysis.Normed.Operator.Banach
 
 namespace FiniteChains
 
+variable (n : ℕ)
+
 /-- The strict-coordinate description is exactly the reduced simplex interior. -/
-theorem reducedSimplex_interior_eq (n : ℕ) :
+theorem reducedSimplex_interior_eq :
     interior (reducedSimplex n) = reducedSimplexPositive n := by
   apply Set.Subset.antisymm
   · intro x hx
     constructor
     · intro i
       have hi := interior_mono (show reducedSimplex n ⊆
-          (Function.eval i : (Fin n → ℝ) → ℝ) ⁻¹' Set.Ici 0 from fun _ h => h.1 i) hx
+          (Function.eval i) ⁻¹' Set.Ici 0 from fun _ h => h.1 i) hx
       have ht := (isOpenMap_eval i).interior_preimage_subset_preimage_interior hi
-      simpa only [Set.mem_preimage, interior_Ici, Set.mem_Ioi, Function.eval] using ht
+      simp_all
     · cases n with
       | zero => simp
       | succ n =>
         let L : (Fin (n + 1) → ℝ) →L[ℝ] ℝ :=
           { toFun := fun y => ∑ i, y i
-            map_add' := by intro y z; simp [Finset.sum_add_distrib]
-            map_smul' := by intro a y; simp [Finset.mul_sum]
+            map_add' := by simp [Finset.sum_add_distrib]
+            map_smul' := by simp [Finset.mul_sum]
             cont := continuous_finset_sum _ (fun i _ => continuous_apply i) }
         have hs : Function.Surjective L := by
           intro r
-          refine ⟨Pi.single (0 : Fin (n + 1)) r, ?_⟩
-          simp [L, Pi.single_apply, Finset.sum_ite_eq']
+          refine ⟨Pi.single 0 r, ?_⟩ <;> aesop
         have hi := interior_mono (show reducedSimplex (n + 1) ⊆
             L ⁻¹' Set.Iic 1 from fun _ h => h.2) hx
         have ht := (L.isOpenMap hs).interior_preimage_subset_preimage_interior hi
-        have ht' : L x < 1 := by simpa only [Set.mem_preimage, interior_Iic, Set.mem_Iio] using ht
-        exact ht'
+        aesop
   · exact interior_maximal (reducedSimplexPositive_subset n) (reducedSimplexPositive_isOpen n)
 
 /-- Reinserted barycentric coordinates are all positive exactly on the reduced simplex interior. -/
-theorem reducedSimplexToStandard_positive_iff (n : ℕ) (x : reducedSimplex n) :
+theorem reducedSimplexToStandard_positive_iff (x : reducedSimplex n) :
     (∀ i, 0 < (reducedSimplexToStandard n x).val i) ↔ x.val ∈ interior (reducedSimplex n) := by
   rw [reducedSimplex_interior_eq]
-  change (∀ i : Fin (n + 1), 0 < (Fin.cons (1 - (∑ j : Fin n, x.val j)) x.val : Fin (n + 1) → ℝ) i) ↔
+  change (∀ i : Fin _, 0 < (Fin.cons _ x.val : Fin _ → ℝ) i) ↔
     (∀ j, 0 < x.val j) ∧ ∑ j, x.val j < 1
   constructor
   · intro h
@@ -49,11 +49,8 @@ theorem reducedSimplexToStandard_positive_iff (n : ℕ) (x : reducedSimplex n) :
     · intro j
       simpa using h j.succ
     · have h0 := h 0
-      simp only [Fin.cons_zero] at h0
-      linarith
+      simp_all
   · rintro ⟨hp, hs⟩ i
-    refine Fin.cases ?_ (fun j => ?_) i
-    · simpa using sub_pos.mpr hs
-    · simpa using hp j
+    refine Fin.cases ?_ (fun j => ?_) i <;> simp_all
 
 end FiniteChains

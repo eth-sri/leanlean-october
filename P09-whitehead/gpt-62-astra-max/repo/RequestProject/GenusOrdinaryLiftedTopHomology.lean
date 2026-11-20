@@ -2,7 +2,7 @@ module
 
 public import RequestProject.PuncturedCubeCoverFillings
 public import RequestProject.PosetCoverPuncturedLower
-public import RequestProject.NerveMaximalDeletion
+public import RequestProject.NerveBoundaryReflection
 public import RequestProject.OrderNervePositiveFillings
 public import RequestProject.GenusOrdinaryPairCollapse
 
@@ -27,27 +27,16 @@ theorem genus_ordinary_lifted_link_fillings (hf : IsPosetCover f)
       (genusCollapseStage q left (f p) ∧ f p ≠ Sum.inl s) ∧ p < v) 2 ∧
     FillsDegreeIn (fun p =>
       (genusCollapseStage q left (f p) ∧ f p ≠ Sum.inl s) ∧ p < v) 3 := by
-  let pair : GenusCollapsePair q :=
-    (qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate s.1))
-  have htail : qCubeToCoordinate t.1 ∈ (pair :: right).map Prod.fst := by simp [pair]
-  have hcert := genusCollapseStage_suffix_certificate q left (pair :: right) hsplit
-  have hi : qCubeToCoordinate t.1 ∈ spineInc (ASC.orderComplex (GenusVertex q))
-      (Sum.inl (qCubeToCoordinate s.1)) := by
-    have hm : qCubeToCoordinate t.1 ∈
-        spineInc (ASC.orderComplex (GenusVertex q)) (Sum.inl (qCubeToCoordinate s.1)) ∩
-        Collapse.remainingTops (topCubes (ASC.orderComplex (GenusVertex q))) left := by
-      rw [hcert.2.1]
-      exact Finset.mem_singleton_self _
-    exact (Finset.mem_inter.mp hm).1
+  have g := recordedGeometry (s := Sum.inl s) (t := t) hsplit
   let e : {x : GenusTruncatedCell q // x < f v ∧ x ≠ Sum.inl s} ≃o
       OldPuncturedBoundary s t := {
     toFun := fun x => ⟨x.1, hv ▸ x.2.1, x.2.2⟩
     invFun := fun x => ⟨x.1, hv.symm ▸ x.2.1, x.2.2⟩
     left_inv := fun _ => rfl
     right_inv := fun _ => rfl
-    map_rel_iff' := by intros; rfl }
+    map_rel_iff' := by rfl }
   have hcover := (hf.puncturedLower_isPosetCover v (Sum.inl s)).postcompose_orderIso e
-  have hfill := ordinaryTruncatedBoundary_cover_fillings hordinary hi hcover
+  have hfill := ordinaryTruncatedBoundary_cover_fillings hordinary g.incident hcover
   have hne : ∃ p : P, p < v ∧ f p ≠ Sum.inl s := by
     obtain ⟨x, hxs, hxt⟩ := genus_top_boundary_nonempty q (Sum.inl s) hs t ht
     obtain ⟨p, hp⟩ := hcover.surj ⟨x, hxt, hxs⟩
@@ -56,8 +45,7 @@ theorem genus_ordinary_lifted_link_fillings (hf : IsPosetCover f)
       (genusCollapseStage q left (f p) ∧ f p ≠ Sum.inl s) ∧ p < v := by
     constructor
     · rintro ⟨hpv, hps⟩
-      refine ⟨⟨genusCollapseStage_boundary_mem q left (pair :: right) hsplit t htail
-        (f p) ?_, hps⟩, hpv⟩
+      refine ⟨⟨g.boundary _ ?_, hps⟩, hpv⟩
       rw [← hv]
       exact hf.strictMono hpv
     · exact fun h => ⟨h.2, h.1.2⟩

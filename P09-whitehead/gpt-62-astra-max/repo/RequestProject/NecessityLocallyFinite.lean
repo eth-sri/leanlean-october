@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.NecessityAlgebraicMod
-public import RequestProject.Fox
+
 
 @[expose] public section
 
@@ -16,24 +16,15 @@ theorem fox_generator_support_finite {α : Type*} [DecidableEq α] (w : FreeGrou
   induction w using FreeGroup.induction_on with
   | one => simp
   | of k =>
-      apply (Set.finite_singleton k).subset
-      intro i hi
-      by_contra hn
-      simp only [Set.mem_singleton_iff] at hn
-      simp [fox_of, hn] at hi
+      simp
   | inv_of k hk =>
       apply hk.subset
-      intro i hi
-      by_contra hz
-      simp only [Set.mem_setOf_eq, not_not] at hz
-      rw [Set.mem_setOf_eq, fox_inv, hz, mul_zero, neg_zero] at hi
-      exact hi rfl
+      simp_all [fox_inv]
   | mul a b ha hb =>
       apply (ha.union hb).subset
       intro i hi
       by_contra hz
-      simp only [Set.mem_union, Set.mem_setOf_eq, not_or, not_not] at hz
-      simp [fox_mul, hz.1, hz.2] at hi
+      simp_all [fox_mul]
 
 variable {G I J : Type*} [Group G] (b : I → J → MonoidAlgebra ℤ G)
 
@@ -44,17 +35,9 @@ theorem foxBoundary_support_finite
   classical
   apply (v.support.finite_toSet.biUnion (fun j _ => hcol j)).subset
   intro i hi
-  simp only [Set.mem_setOf_eq] at hi
-  simp only [Set.mem_iUnion, Finset.mem_coe]
   by_contra h
   apply hi
-  unfold foxBoundary
-  apply Finset.sum_eq_zero
-  intro j hj
-  have hz : b i j = 0 := by
-    by_contra hn
-    exact h ⟨j, hj, hn⟩
-  rw [hz, mul_zero]
+  apply Finset.sum_eq_zero <;> simp_all
 
 section Compactness
 

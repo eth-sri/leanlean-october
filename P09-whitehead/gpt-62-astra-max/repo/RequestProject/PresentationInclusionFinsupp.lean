@@ -33,7 +33,7 @@ theorem coefficients_proj (x : FreeGroupRing A) :
     coefficients ρ τ g f hrel (proj (relSub ρ) x) =
       proj (relSub τ) (freeRingMap g x) := by
   induction x using MonoidAlgebra.induction_linear with
-  | zero => simp [coefficients]
+  | zero => rfl
   | add x y hx hy => simp only [map_add, hx, hy]
   | single w a =>
       apply MonoidAlgebra.coeff_injective
@@ -41,8 +41,7 @@ theorem coefficients_proj (x : FreeGroupRing A) :
         (Finsupp.mapDomain (QuotientGroup.mk' (relSub ρ)) (Finsupp.single w a)) =
         Finsupp.mapDomain (QuotientGroup.mk' (relSub τ))
           (Finsupp.mapDomain (FreeGroup.map g) (Finsupp.single w a))
-      simp only [Finsupp.mapDomain_single]
-      rfl
+      aesop
 
 variable [DecidableEq A] [DecidableEq B]
 
@@ -58,13 +57,12 @@ theorem gradient (j : J) :
     rw [Finsupp.mapDomain_apply_of_injective hg]
     change proj _ (fox (g a) (FreeGroup.map g (ρ j))) =
       coefficients ρ τ g f hrel (proj _ (fox a (ρ j)))
-    rw [fox_map g hg, coefficients_proj]
+    simp_all [fox_map, coefficients_proj]
   · rw [Finsupp.mapDomain_notin_range _ b hb]
     change proj _ (fox b (FreeGroup.map g (ρ j))) = 0
     rw [fox_map_of_not_mem_range g (fun a h => hb ⟨a, h.symm⟩), map_zero]
 
-def cells (x : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
-    K →₀ MonoidAlgebra ℤ (PresGroup τ) :=
+def cells (x : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :=
   Finsupp.mapDomain f (x.mapRange (coefficients ρ τ g f hrel) (map_zero _))
 
 omit [DecidableEq A] [DecidableEq B] in
@@ -82,7 +80,7 @@ theorem boundary (x : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
   | zero => simp [cells]
   | add x y hx hy =>
       simp only [cells, Finsupp.mapRange_add', Finsupp.mapDomain_add, map_add] at *
-      rw [hx, hy]
+      simp_all
   | single j a =>
       rw [cells_single, coverSecondBoundary_single, coverSecondBoundary_single,
         gradient ρ τ g f hg hrel j]
@@ -92,8 +90,7 @@ theorem boundary (x : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
           (coverFoxGradient (relSub ρ) (ρ j)).mapRange
             (coefficients ρ τ g f hrel) (map_zero _) := by
         ext i : 1
-        simp only [Finsupp.mapRange_apply, Finsupp.smul_apply, smul_eq_mul]
-        exact map_mul _ _ _
+        simp
       rw [hmap, Finsupp.mapDomain_smul]
 
 def mor : PresMorFS ρ τ where
@@ -105,8 +102,7 @@ def mor : PresMorFS ρ τ where
     have h : (a • x).mapRange (coefficients ρ τ g f hrel) (map_zero _) =
         coefficients ρ τ g f hrel a • x.mapRange (coefficients ρ τ g f hrel) (map_zero _) := by
       ext j : 1
-      simp only [Finsupp.mapRange_apply, Finsupp.smul_apply, smul_eq_mul]
-      exact map_mul _ _ _
+      simp
     change Finsupp.mapDomain f _ = _
     rw [h, Finsupp.mapDomain_smul]
     rfl
@@ -121,9 +117,8 @@ def mor : PresMorFS ρ τ where
     · obtain ⟨j, rfl⟩ := hk
       change augPres τ (Finsupp.mapDomain f _ (f j)) = 0
       rw [Finsupp.mapDomain_apply_of_injective hf]
-      change augPres τ (MonoidAlgebra.mapDomainRingHom ℤ (groupHom ρ τ g f hrel) (x j)) = 0
       exact (augQ_mapDomain (groupHom ρ τ g f hrel) (x j)).trans (hx j)
     · change augPres τ (Finsupp.mapDomain f _ k) = 0
-      rw [Finsupp.mapDomain_notin_range _ k hk, map_zero]
+      simp_all [Finsupp.mapDomain_notin_range, map_zero]
 
 end FiniteChains.PresInclusionFS

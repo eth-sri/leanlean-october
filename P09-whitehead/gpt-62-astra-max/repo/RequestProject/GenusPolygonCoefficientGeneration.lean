@@ -9,9 +9,6 @@ Consequently a fixed degree-one geometric reference generates every vector
 satisfying the internal B2 equations. Written, unverified proof terms. -/
 noncomputable section
 open scoped Classical
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -29,19 +26,15 @@ theorem normalizedWeakChain1To_paths_boundary_support
   by_contra hnot
   have hz (i : I) : normalizedWeakChain1To f hf (pathChain (p i)) e = 0 := by
     apply normalizedWeakChain1To_path_apply_zero
-    intro a ha heq
-    apply hnot
-    rw [← heq]
-    exact hp i a ha
+    grind
   have hzero : normalizedWeakChain1To f hf
       (Finsupp.linearCombination ℤ (fun i => pathChain (p i)) c) e = 0 := by
     clear he
     induction c using Finsupp.induction_linear with
     | zero => simp
-    | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd, add_zero]
+    | add c d hc hd => simp [map_add, Finsupp.add_apply, hc, hd, add_zero]
     | single i n =>
-        simp only [Finsupp.linearCombination_single, map_smul, Finsupp.smul_apply,
-          hz, smul_zero]
+        simp [Finsupp.linearCombination_single, map_smul, Finsupp.smul_apply, hz, smul_zero]
   exact Finsupp.mem_support_iff.mp he hzero
 
 end FiniteChains.Comb
@@ -84,8 +77,7 @@ theorem namedSurfaceMarkingChains_boundary_support
     ∀ e ∈ (normalizedWeakChain1To (namedSurfaceForward q ρ u)
         (namedSurfaceForward_monotone q ρ u) (namedAttachingMarkingChains q ρ u hrho b)).support,
       InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.1) ∧
-        InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.2) := by
-  exact normalizedWeakChain1To_paths_boundary_support
+        InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.2) := normalizedWeakChain1To_paths_boundary_support
     (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)
     (fun p : NamedSurfaceCover ρ q u =>
       InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u p))
@@ -103,11 +95,11 @@ theorem namedAttachingNerveSurfaceChain_polygonRelative
     PolygonRelativeChain (gc q) (namedSurfaceProjection ρ q u)
       (namedAttachingNerveSurfaceChain ρ q u c) := by
   intro e he
-  rw [namedAttachingNerveSurfaceChain_marked_boundary ρ q u hrho c hc hd b hb] at he
+  erw [namedAttachingNerveSurfaceChain_marked_boundary ρ q u hrho c hc hd b hb] at he
   change e ∈ (normalizedChain1To (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)
     (normalizeOrdChain1 (namedAttachingMarkingChains q ρ u hrho b))).support at he
   rw [← normalizedWeakChain1To_normalize] at he
-  exact namedSurfaceMarkingChains_boundary_support q ρ u hrho b e he
+  apply namedSurfaceMarkingChains_boundary_support <;> assumption
 
 /-- Once the actual geometric reference is fixed, the only assumptions on
 an arbitrary coefficient vector are the original internal B2 equations.

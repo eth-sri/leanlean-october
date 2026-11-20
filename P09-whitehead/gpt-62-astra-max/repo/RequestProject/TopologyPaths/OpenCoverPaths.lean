@@ -26,8 +26,7 @@ variable {X : Type u} [TopologicalSpace X]
 theorem property_cast_iff (P : ∀ {a b : X}, Path a b → Prop)
     {a b a' b' : X} (p : Path a b) (ha : a' = a) (hb : b' = b) :
     P (p.cast ha hb) ↔ P p := by
-  subst a'; subst b'
-  rfl
+  aesop
 
 theorem path_induction {ι : Type v} (U : ι → Set X)
     (hU : ∀ i, IsOpen (U i)) (hcover : ∀ x, ∃ i, x ∈ U i)
@@ -42,13 +41,12 @@ theorem path_induction {ι : Type v} (U : ι → Set X)
   have hall : ∀ k ≤ N, P (PathSubdivision.concatenateCuts p t k) := by
     intro k
     induction k with
-    | zero => intro _; exact hrefl _
+    | zero => solve_by_elim
     | succ k ih =>
       intro hk
       exact htrans _ _ (ih (by omega)) (hlocal _ (ht k (by omega)))
   have hend := hhomotopy (PathSubdivision.concatenateCuts_homotopic p t N) (hall N le_rfl)
   rw [ht0,htN] at hend
-  have hp := hhomotopy (PathSubdivision.cut_zero_one_homotopic p) hend
-  exact (property_cast_iff P p p.source p.target).mp hp
+  exact (property_cast_iff P p p.source p.target).mp (hhomotopy (PathSubdivision.cut_zero_one_homotopic p) hend)
 
 end FiniteChains.OpenCoverPaths

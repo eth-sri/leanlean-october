@@ -1,16 +1,11 @@
 module
 
 public import RequestProject.CoverComplex
-public import RequestProject.CrowellFinsupp
 public import RequestProject.PresentationNecessityFinsupp
 
 @[expose] public section
 
 /-! Actual presentation covers with arbitrarily many edges and faces. -/
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 
@@ -19,21 +14,20 @@ universe u
 
 variable {α J : Type u} [DecidableEq α] (N : Subgroup (FreeGroup α)) [N.Normal]
 
-noncomputable def fsCoords (β : Type u) :
+variable (β : Type u)
+
+noncomputable def fsCoords :
     (((FreeGroup α ⧸ N) × β) →₀ ℤ) ≃ₗ[ℤ] (β →₀ CoverRing N) :=
   (Finsupp.domLCongr (Equiv.prodComm (FreeGroup α ⧸ N) β)).trans
     ((Finsupp.curryLinearEquiv (R := ℤ)).trans
       (Finsupp.mapRange.linearEquiv (MonoidAlgebra.coeffLinearEquiv ℤ).symm))
 
 omit [DecidableEq α] in
-theorem fsCoords_apply (β : Type u) (c : ((FreeGroup α ⧸ N) × β) →₀ ℤ)
-    (i : β) (q : FreeGroup α ⧸ N) : (fsCoords N β c i).coeff q = c (q, i) := by
-  show ((Finsupp.equivMapDomain (Equiv.prodComm _ β) c).curry i) q = c (q, i)
-  rw [Finsupp.curry_apply, Finsupp.equivMapDomain_apply]
-  rfl
+theorem fsCoords_apply (c : ((FreeGroup α ⧸ N) × β) →₀ ℤ)
+    (i : β) (q : FreeGroup α ⧸ N) : (fsCoords N β c i).coeff q = c (q, i) := rfl
 
 omit [DecidableEq α] in
-theorem fsCoords_single (β : Type u) (q : FreeGroup α ⧸ N) (i : β) (n : ℤ) :
+theorem fsCoords_single (q : FreeGroup α ⧸ N) (i : β) (n : ℤ) :
     fsCoords N β (Finsupp.single (q, i) n) =
       Finsupp.single i (MonoidAlgebra.single q n : CoverRing N) := by
   classical
@@ -68,7 +62,6 @@ theorem fsCoords_pathChain_liftPath_apply (L : List (α × Bool))
         rw [ih, fsCoords_single, mk_cons_false, fox_mul, fox_inv,
           map_add, map_neg, map_mul, map_mul, mul_add, mul_neg,
           ← mul_assoc, ← mul_assoc, ← hq]
-        congr 1
         by_cases h : i = k <;> simp [fox_of, h]
       · have hq : (MonoidAlgebra.single (q * qof N k) (1 : ℤ) : CoverRing N) =
             (MonoidAlgebra.single q (1 : ℤ) : CoverRing N) * proj N (grp (FreeGroup.of k)) := by
@@ -78,8 +71,7 @@ theorem fsCoords_pathChain_liftPath_apply (L : List (α × Bool))
         simp only [if_true, map_add, Finsupp.add_apply]
         rw [ih, fsCoords_single, mk_cons_true, fox_mul, map_add, map_mul, mul_add,
           ← mul_assoc, ← hq]
-        congr 1
-        by_cases h : i = k <;> simp [fox_of, h]
+        aesop
 
 variable (ρ : J → FreeGroup α) (hρ : ∀ j, ρ j ∈ N)
 
@@ -102,6 +94,27 @@ theorem fs_coverComplex_bdry2 (c : ((FreeGroup α ⧸ N) × J) →₀ ℤ) :
         n • ((MonoidAlgebra.single q 1 : CoverRing N) * proj N (fox i (ρ j)))
       rw [show (MonoidAlgebra.single q n : CoverRing N) =
           n • (MonoidAlgebra.single q 1 : CoverRing N) by
-        rw [MonoidAlgebra.smul_single, smul_eq_mul, mul_one], smul_mul_assoc]
+        simp, smul_mul_assoc]
+
+/-! On a finite alphabet these same coordinates are ordinary vectors. -/
+section Finite
+variable {α J : Type u} [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J]
+  {Nsub : Subgroup (FreeGroup α)} [Nsub.Normal] {ρ : J → FreeGroup α}
+
+theorem coords_pathChain_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
+    coords Nsub α (pathChain (liftPath L q)) =
+      fun i => (MonoidAlgebra.single q (1 : ℤ) : CoverRing Nsub) * proj Nsub (fox i (FreeGroup.mk L)) :=
+  funext (fsCoords_pathChain_liftPath_apply Nsub L q)
+
+theorem coverComplex_bdry2 (hρ : ∀ j, ρ j ∈ Nsub) (c : ((FreeGroup α ⧸ Nsub) × J) →₀ ℤ) :
+    _root_.FiniteChains.bdry2 Nsub ρ (coords Nsub J c) =
+      coords Nsub α (Comb.bdry2 (coverComplex Nsub ρ hρ) c) := by
+  funext i
+  have h := DFunLike.congr_fun (fs_coverComplex_bdry2 Nsub ρ hρ c) i
+  simp [coverSecondBoundary, Finsupp.linearCombination_apply, Finsupp.sum_apply,
+    Finsupp.sum_fintype, foxVec, Finsupp.smul_apply, smul_eq_mul] at h
+  exact h
+
+end Finite
 
 end FiniteChains.Comb

@@ -5,9 +5,7 @@ public import RequestProject.CubicalThreeBoundaryMatrix
 @[expose] public section
 
 /-! The genuine finite oriented six-face boundary chain. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 

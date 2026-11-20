@@ -20,24 +20,26 @@ theorem presCone_strictEdge_source_ne_apex (e : StrictOrdEdge (PresPos w)) :
     e.val.1 ≠ apexOf w j := by
   intro h
   have ht := presCone_apex_maximal w j e.val.2 (h ▸ e.property.le)
-  exact e.property.ne (h.trans ht.symm)
+  grind
+
+variable (e : (strictOrderCx (PresPos w)).E × Bool)
 
 /-- Every actual strict germ leaving an apex is a reversed incoming incidence. -/
-theorem presCone_strictGerm_from_apex (e : (strictOrderCx (PresPos w)).E × Bool)
+theorem presCone_strictGerm_from_apex
     (h : germSrc (strictOrderCx (PresPos w)).src (strictOrderCx (PresPos w)).tgt e = apexOf w j) :
     e.2 = false ∧ e.1.val.2 = apexOf w j := by
   rcases e with ⟨e, b⟩
   cases b with
-  | false => exact ⟨rfl, h⟩
-  | true => exact (presCone_strictEdge_source_ne_apex w j e h).elim
+  | false => solve_by_elim
+  | true => solve_by_elim [presCone_strictEdge_source_ne_apex]
 
 /-- Every actual strict germ entering an apex is a positive incoming incidence. -/
-theorem presCone_strictGerm_to_apex (e : (strictOrderCx (PresPos w)).E × Bool)
+theorem presCone_strictGerm_to_apex
     (h : germTgt (strictOrderCx (PresPos w)).src (strictOrderCx (PresPos w)).tgt e = apexOf w j) :
     e.2 = true ∧ e.1.val.2 = apexOf w j := by
   rcases e with ⟨e, b⟩
   cases b with
-  | false => exact (presCone_strictEdge_source_ne_apex w j e h).elim
-  | true => exact ⟨rfl, h⟩
+  | false => solve_by_elim [presCone_strictEdge_source_ne_apex]
+  | true => solve_by_elim
 
 end FiniteChains.PresModel

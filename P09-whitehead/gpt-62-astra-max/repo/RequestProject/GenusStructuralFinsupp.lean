@@ -26,9 +26,11 @@ variable {α Jr S : Type u} {Z M : S → Type u}
   (hfill : FilledF ρ b)
   (c : ∀ s, M s →₀ MonoidAlgebra ℤ (PresGroup (substPresF ρ b)))
 
+variable (hc : IsFillingFS ρ b hfill c)
+
 /-- The finite-support structural map of an arbitrary simultaneous block
 replacement, with exactly the original coefficient map and surface fillings. -/
-def substMorFS (hc : IsFillingFS ρ b hfill c) : PresMorFS ρ (substPresF ρ b) where
+def substMorFS : PresMorFS ρ (substPresF ρ b) where
   hom := substHomF ρ b hfill
   cells := fsCellsF ρ b hfill c
   cells_add := by
@@ -51,7 +53,7 @@ def substMorFS (hc : IsFillingFS ρ b hfill c) : PresMorFS ρ (substPresF ρ b) 
 
 /-- The structural map preserves the retained two-cells exactly, including
 their actual coefficients in the new group ring. -/
-theorem substMorFS_retained (hc : IsFillingFS ρ b hfill c)
+theorem substMorFS_retained
     (j : Jr) (a : MonoidAlgebra ℤ (PresGroup ρ)) :
     (substMorFS ρ b hfill c hc).cells (Finsupp.single (Sum.inl j) a) =
       Finsupp.single (Sum.inl j) (coeffF ρ b hfill a) := by
@@ -60,7 +62,7 @@ theorem substMorFS_retained (hc : IsFillingFS ρ b hfill c)
   | inl k =>
       change coeffF ρ b hfill (Finsupp.single (Sum.inl j) a (Sum.inl k)) = _
       by_cases h : k = j
-      · subst k; simp
+      · simp_all
       · simp [h]
   | inr p =>
       change coeffF ρ b hfill (Finsupp.single (Sum.inl j) a (Sum.inr p.1)) *
@@ -80,8 +82,7 @@ variable {α Jr S : Type} (σ : Jr ⊕ S → FreeGroup α)
 
 /-- Rule 3 with all its geometric inputs supplied, including for an
 infinite family over an infinite fixed core. -/
-def finiteSpineFamilyStructuralMap :
-    PresMorFS σ (substPresF σ (familyFiniteSpineWordBlock q u)) :=
+def finiteSpineFamilyStructuralMap :=
   substMorFS σ (familyFiniteSpineWordBlock q u)
     (familyFiniteSpineWordBlock_filled σ q u hσ)
     (finiteSpineFamilyFilling σ q u)
@@ -97,8 +98,7 @@ def finiteSpineFamilyStructuralMap :
 /-- Actual equation (3.3) for the simultaneous genus replacement. -/
 theorem finiteSpineFamilyStructuralMap_generates :
     FSGenerates (finiteSpineFamilyStructuralMap σ q u hσ) := by
-  intro y hy
-  exact finiteSpineFamily_fsGenerates_actual σ q u hσ y hy
+  apply finiteSpineFamily_fsGenerates_actual <;> assumption
 
 /-- On a retained core two-cell the structural map is literally the
 labelled inclusion with its induced change of group-ring coefficients. -/
@@ -113,11 +113,5 @@ theorem finiteSpineFamilyStructuralMap_core_cell
     (familyFiniteSpineWordBlock_filled σ q u hσ)
     (finiteSpineFamilyFilling σ q u)
     (finiteSpineFamilyFilling_isFilling σ q u hσ) j a
-
-section Finite
-
-variable [Fintype α] [Fintype Jr] [Fintype S]
-
-end Finite
 
 end FiniteChains.Davis.Genus

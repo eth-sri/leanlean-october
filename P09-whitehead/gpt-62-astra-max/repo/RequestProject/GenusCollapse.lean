@@ -36,10 +36,10 @@ variable (q : ℕ) [NeZero q]
 over the triangulation of the closed surface of genus `q` are removed by elementary collapses,
 leaving a two-dimensional spine. -/
 theorem genus_spine_collapse :
-    ∃ l : List (Cube (SCell (gvc q) (gec q) (gc q))),
+    ∃ l : List _,
       Collapse.IsCollapse (spineInc (orderComplex (SCell (gvc q) (gec q) (gc q)))) l
         (topCubes (orderComplex (SCell (gvc q) (gec q) (gc q)))) :=
-  exists_spine_collapse_SCell (gc q) (genus_polygonData q)
+  exists_spine_collapse_SCell _ (genus_polygonData q)
 
 end Genus
 end Davis

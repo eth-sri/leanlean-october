@@ -6,29 +6,26 @@ public import RequestProject.GenusFullCubeMarking
 @[expose] public section
 
 /-! Exact lifted path translations for the genuine capped presentation group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-noncomputable def rootedCappedFullVertex (g : PresGroup (cappedSpinePresentation q))
-    (a : (markedSpineCx q).V) :
-    UV (orderCx (QCube (cmpRel (GenusVertex q))))
-      ((markedSpineToFullCube q).onV (markedSpineTree q).root) :=
+variable (g : PresGroup (cappedSpinePresentation q))
+
+variable (a : (markedSpineCx q).V)
+
+noncomputable def rootedCappedFullVertex :=
   deckV (cappedPresentationToFullCube q g)
     (SpanningTree.mappedTreeReference (markedSpineTree q) (markedSpineToFullCube q) a)
 
-theorem rootedCappedFullVertex_end (g : PresGroup (cappedSpinePresentation q))
-    (a : (markedSpineCx q).V) :
+theorem rootedCappedFullVertex_end :
     endV (rootedCappedFullVertex q g a) = (markedSpineToFullCube q).onV a := by
   rw [rootedCappedFullVertex, endV_deckV, SpanningTree.mappedTreeReference_end]
 
 /-- Traversing any genuine spine path updates the comparison vertex by its capped-group word. -/
-theorem rootedCappedFullVertex_path (g : PresGroup (cappedSpinePresentation q))
-    {a b : (markedSpineCx q).V} {p : List ((markedSpineCx q).E × Bool)}
+theorem rootedCappedFullVertex_path
+    {a b : (markedSpineCx q).V} {p : List _}
     (hp : IsPath (markedSpineCx q).src (markedSpineCx q).tgt p a b) :
     extendList (mapPath (markedSpineToFullCube q) p) (rootedCappedFullVertex q g a) =
       rootedCappedFullVertex q
@@ -39,9 +36,9 @@ theorem rootedCappedFullVertex_path (g : PresGroup (cappedSpinePresentation q))
   rfl
 
 /-- Comparison edges are actual edges in the full path-class universal cover. -/
-noncomputable def rootedCappedFullEdge (g : PresGroup (cappedSpinePresentation q))
+noncomputable def rootedCappedFullEdge
     (e : (markedSpineCx q).E) :
-    UE (orderCx (QCube (cmpRel (GenusVertex q))))
+    UE _
       ((markedSpineToFullCube q).onV (markedSpineTree q).root) :=
   ⟨(rootedCappedFullVertex q g ((markedSpineCx q).src e),
     (markedSpineToFullCube q).onE e), by

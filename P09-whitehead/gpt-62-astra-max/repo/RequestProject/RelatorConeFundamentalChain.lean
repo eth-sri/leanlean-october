@@ -6,16 +6,12 @@ public import RequestProject.PresCoverConeCircleProjection
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
 namespace FiniteChains.PresModel
 open Comb
 universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
-def relatorCirclePresInclusion (x : RelatorCircle w j) : PresPos w := iCirc w x.val
+def relatorCirclePresInclusion (x : RelatorCircle w j) := iCirc w x.val
 
 theorem relatorCirclePresInclusion_strictMono : StrictMono (relatorCirclePresInclusion w j) :=
   fun _ _ h => iCirc_strictMono w h

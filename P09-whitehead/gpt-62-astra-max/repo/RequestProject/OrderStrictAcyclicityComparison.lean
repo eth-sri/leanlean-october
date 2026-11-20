@@ -17,7 +17,7 @@ theorem orderRealization_acyclic_iff_strict_isAcyclic (hP : IsConnected (orderCx
   · intro h
     refine ⟨?_, ?_, ?_⟩
     · apply (injective_iff_map_eq_zero (bdry2 (strictOrderCx P))).mpr
-      exact strict_twoCycle_eq_zero_of_singular_homology_zero (h 2 (by decide))
+      solve_by_elim [strict_twoCycle_eq_zero_of_singular_homology_zero]
     · exact orderRealization_homology_one_isZero_iff_strict_fillings.mp (h 1 (by decide))
     · exact strict_order_zeroCycle_filling_of_connected (P := P)
         (Classical.choice ‹Nonempty P›) hP

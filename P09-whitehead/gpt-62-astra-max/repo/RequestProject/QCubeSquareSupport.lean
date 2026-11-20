@@ -19,15 +19,9 @@ theorem cubeSquareSubdivision_filter_top (d c : QCube A) (v w : V) (hne : v ≠ 
   by_cases hdc : d = c
   · rw [if_pos hdc]
     apply (Finsupp.filter_eq_self_iff _ _).mpr
-    intro t ht
-    by_contra h
-    apply ht
-    exact cubeSquareSubdivision_eq_zero_off_top d v w hne hs t (by simpa [hdc] using h)
+    grind [cubeSquareSubdivision_eq_zero_off_top]
   · rw [if_neg hdc]
     apply (Finsupp.filter_eq_zero_iff _ _).mpr
-    intro t ht
-    apply cubeSquareSubdivision_eq_zero_off_top
-    intro he
-    exact hdc (he.symm.trans ht)
+    grind [cubeSquareSubdivision_eq_zero_off_top]
 
 end FiniteChains.Davis

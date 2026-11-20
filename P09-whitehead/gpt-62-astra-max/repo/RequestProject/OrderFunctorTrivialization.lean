@@ -12,26 +12,23 @@ universe u v w
 
 variable {P : Type u} [Preorder P] {C : Type v} [Groupoid.{w} C]
 
+variable (F : P ⥤ C) (a : P) (d : ∀ p : P, F.obj a ⟶ F.obj p)
+include d
+
 /-- A choice of arrows from a base object turns a groupoid-valued order functor
 into a cocycle. The opposite group makes multiplication follow path order. -/
-noncomputable def orderFunctorCocycle (F : P ⥤ C) (a : P)
-    (d : ∀ p : P, F.obj a ⟶ F.obj p) : OrdCocycle P (End (F.obj a))ᵐᵒᵖ where
+noncomputable def orderFunctorCocycle : OrdCocycle P (End (F.obj a))ᵐᵒᵖ where
   val p q := if h : p ≤ q then
     MulOpposite.op (d p ≫ F.map (homOfLE h) ≫ Groupoid.inv (d q)) else 1
   comp {p q r} hpq hqr := by
     simp only [dif_pos hpq, dif_pos hqr, dif_pos (hpq.trans hqr)]
     apply MulOpposite.unop_injective
-    change (d p ≫ F.map (homOfLE hpq) ≫ Groupoid.inv (d q)) ≫
-      (d q ≫ F.map (homOfLE hqr) ≫ Groupoid.inv (d r)) =
-      d p ≫ F.map (homOfLE (hpq.trans hqr)) ≫ Groupoid.inv (d r)
     have hc : homOfLE (hpq.trans hqr) = homOfLE hpq ≫ homOfLE hqr := rfl
-    rw [hc, F.map_comp]
-    simp only [Category.assoc, Groupoid.inv_eq_inv, IsIso.inv_hom_id_assoc]
+    rw [hc, F.map_comp] <;> simp_all
 
 /-- Combinatorial simple connectivity makes the arrows to all vertices coherent
 with every order morphism, in an arbitrary target groupoid. -/
-theorem orderFunctor_exists_coherent_arrows (F : P ⥤ C) (a : P)
-    (d : ∀ p : P, F.obj a ⟶ F.obj p)
+theorem orderFunctor_exists_coherent_arrows
     (hconn : IsConnected (orderCx P)) (hsc : SimplyConnected (orderCx P)) :
     ∃ k : ∀ p : P, F.obj a ⟶ F.obj p,
       ∀ {p q : P} (h : p ⟶ q), k p ≫ F.map h = k q := by
@@ -43,7 +40,6 @@ theorem orderFunctor_exists_coherent_arrows (F : P ⥤ C) (a : P)
   have h₁ := congrArg MulOpposite.unop (hk (leOfHom h))
   simp only [orderFunctorCocycle, dif_pos (leOfHom h), MulOpposite.unop_mul,
     MulOpposite.unop_op, End.mul_def, he] at h₁
-  have h₂ := congrArg (fun e : End (F.obj a) => e ≫ d q) h₁
-  simpa only [Category.assoc, Groupoid.inv_eq_inv, IsIso.inv_hom_id, Category.comp_id] using h₂
+  simpa only [Category.assoc, Groupoid.inv_eq_inv, IsIso.inv_hom_id, Category.comp_id] using (congrArg (fun e : End (F.obj a) => e ≫ d q) h₁)
 
 end FiniteChains.Comb

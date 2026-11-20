@@ -1,11 +1,11 @@
 module
 
-public import RequestProject.HomeomorphContinuousMap
+
 public import RequestProject.ClassicalRoseWordReduction
 public import RequestProject.BoundaryWordsLoopMatching
 public import RequestProject.DiskRoseMaps
 public import RequestProject.DummyLoopFilling
-public import RequestProject.FinitePosetCycleNaturality
+
 
 @[expose] public section
 
@@ -15,16 +15,16 @@ Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment ClassicalGraphModel ContinuousEdgeWords
 
 variable {A B : Type}
 
-theorem classicalRoseRead_map (f : A → B) (l : List (A × Bool)) (t : I) :
+variable (f : A → B) (l : List (A × Bool))
+
+theorem classicalRoseRead_map (t : I) :
     diskRoseMap f (classicalRoseRead l t) =
       classicalRoseRead (l.map (fun p => (f p.1, p.2))) t := by
   induction l generalizing t with
@@ -39,12 +39,11 @@ theorem classicalRoseRead_map (f : A → B) (l : List (A × Bool)) (t : I) :
     · simp only [List.map_cons, classicalRoseRead, Path.trans_apply, dif_neg ht, if_neg ht]
       exact ih _
 
-theorem classicalRoseWordBoundary_map (f : A → B) (l : List (A × Bool)) :
+theorem classicalRoseWordBoundary_map :
     (diskRoseMap f).comp (classicalRoseWordBoundary l) =
       classicalRoseWordBoundary (l.map (fun p => (f p.1, p.2))) := by
   apply ContinuousMap.ext
-  intro z
-  exact classicalRoseRead_map f l _
+  solve_by_elim [classicalRoseRead_map]
 
 theorem classicalRoseRead_eq_realize_apply (l : List (A × Bool))
     {a b : PUnit}
@@ -52,9 +51,7 @@ theorem classicalRoseRead_eq_realize_apply (l : List (A × Bool))
     classicalRoseRead l t = realize (graphSrc (roseAttaching A)) (graphTgt (roseAttaching A))
       (old (roseAttaching A) (boundaryFamilyInclusion A (Fin 1 → ℝ)))
       (graphEdgePath (roseAttaching A)) l hl t := by
-  cases a
-  cases b
-  exact congrArg (fun p => p t) (classicalRoseRead_eq_realize l hl)
+  simp_all [classicalRoseRead_eq_realize]
 
 theorem boundaryWords_homotopic_classicalWord (W : BoundaryWords (roseAttaching A)) :
     W.boundaryMap.Homotopic (classicalRoseWordBoundary W.loopWord) := by
@@ -66,7 +63,7 @@ theorem boundaryWords_homotopic_classicalWord (W : BoundaryWords (roseAttaching 
     apply ContinuousMap.ext
     intro z
     exact (classicalRoseRead_eq_realize_apply W.loopWord W.loopWord_isPath _).symm
-  rwa [he] at H
+  simp_all
 
 theorem roseCopyRealization_unit (x : orderNerveRealization (Rose PUnit)) :
     roseCopyRealization PUnit.unit x = x := by
@@ -75,13 +72,9 @@ theorem roseCopyRealization_unit (x : orderNerveRealization (Rose PUnit)) :
     funext p
     cases p with
     | base => rfl
-    | mid u => cases u; rfl
-    | edg u b => cases u; rfl
-  have mapEq (g : Rose PUnit → Rose PUnit) (hg : Monotone g) (he : g = id) :
-      orderNerveRealizationMap g hg x = x := by
-    subst g
-    exact orderNerveRealizationMap_id _ _
-  exact mapEq (roseCopy PUnit.unit) (roseCopy PUnit.unit).monotone hf
+    | mid u => rfl
+    | edg u b => rfl
+  simp_all [orderNerveRealizationMap_id]
 
 theorem dummyCircleBoundaryHomeomorph_traversal (t : I) :
     dummyCircleBoundaryHomeomorph
@@ -103,7 +96,7 @@ theorem dummyCircleBoundaryHomeomorph_eq :
   intro z
   obtain ⟨t, ht⟩ := squareBoundaryTraversal_surjective (unitBoundarySquareHomeomorph z)
   have hz : unitBoundarySquareHomeomorph.symm (squareBoundaryTraversal t) = z := by
-    rw [ht, Homeomorph.symm_apply_apply]
+    simp_all
   rw [← hz]
   change dummyCircleBoundaryHomeomorph
     (unitBoundarySquareHomeomorph.symm (squareBoundaryTraversal t)) =

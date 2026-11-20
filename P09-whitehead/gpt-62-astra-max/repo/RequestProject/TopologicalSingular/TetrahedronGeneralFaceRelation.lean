@@ -30,34 +30,33 @@ theorem tetrahedron_relation (a b c d : PointedSingularTriangle X x)
       face i U = ![(constant x).map, e.map, c.map, d.map] i := by
     intro i
     fin_cases i
-    · exact hU 0 (by decide)
+    · simp_all
     · rfl
-    · exact hU 2 (by decide)
-    · exact hU 3 (by decide)
-  have he : e.pi2 + d.pi2 = c.pi2 := first_face_constant_relation e c d U hUfaces
+    · simp_all
+    · simp_all
   obtain ⟨W, h0, h1, h2, h3⟩ := singular_four_horn_missing_one
     (singularDegeneracy 0 a.map) tau U (singularDegeneracy 2 d.map)
     (by simp [degeneracy_zero_faces, hfaces])
     (by simp [degeneracy_zero_faces, hUfaces])
     (by simp [degeneracy_zero_faces, degeneracy_two_faces])
-    (by simp [hfaces, hUfaces])
+    (by simp_all)
     (by simp [hfaces, degeneracy_two_faces])
     (by simp [hUfaces, degeneracy_two_faces])
   have hWfaces : ∀ i : Fin 4,
       face i W = ![a.map, b.map, e.map, (constant x).map] i := by
     intro i
     fin_cases i <;> simp_all [degeneracy_zero_faces, degeneracy_two_faces]
-  have hab : a.pi2 + e.pi2 = b.pi2 := last_face_constant_relation a b e W hWfaces
   calc
-    a.pi2 + c.pi2 = a.pi2 + (e.pi2 + d.pi2) := by rw [he]
+    a.pi2 + c.pi2 = a.pi2 + (e.pi2 + d.pi2) := by simp [(first_face_constant_relation e c d U hUfaces)]
     _ = (a.pi2 + e.pi2) + d.pi2 := (add_assoc _ _ _).symm
-    _ = b.pi2 + d.pi2 := by rw [hab]
+    _ = b.pi2 + d.pi2 := by simp [(last_face_constant_relation a b e W hWfaces)]
 
 end PointedSingularTriangle
 
-theorem tetrahedron_pi2_general_face_relation (tau : Simplex X 3)
-    (hedge : ∀ (i : Fin 4) (j : Fin 3),
-      face j (face i tau) = ContinuousMap.const (Domain 1) x) :
+variable (tau : Simplex X 3)
+    (hedge : ∀ (i : Fin 4) (j : Fin 3), face j (face i tau) = ContinuousMap.const (Domain 1) x)
+
+theorem tetrahedron_pi2_general_face_relation :
     tetrahedronFacePi2Class tau hedge 0 + tetrahedronFacePi2Class tau hedge 2 =
       tetrahedronFacePi2Class tau hedge 1 + tetrahedronFacePi2Class tau hedge 3 := by
   let a : Fin 4 → PointedSingularTriangle X x := fun i => ⟨face i tau, hedge i⟩
@@ -66,15 +65,12 @@ theorem tetrahedron_pi2_general_face_relation (tau : Simplex X 3)
 
 /-- The alternating boundary of every singular tetrahedron with constant edges
 vanishes in the genuine second homotopy group. -/
-theorem tetrahedron_pi2_alternating_sum_eq_zero (tau : Simplex X 3)
-    (hedge : ∀ (i : Fin 4) (j : Fin 3),
-      face j (face i tau) = ContinuousMap.const (Domain 1) x) :
-    ∑ i : Fin 4, (-1 : ℤ) ^ (i : ℕ) • tetrahedronFacePi2Class tau hedge i = 0 := by
+theorem tetrahedron_pi2_alternating_sum_eq_zero :
+    ∑ i : Fin 4, (-1) ^ (i : ℕ) • tetrahedronFacePi2Class tau hedge i = 0 := by
   have hsum {A : Type} [AddCommGroup A] (f : Fin 4 → A) :
-      ∑ i : Fin 4, (-1 : ℤ) ^ (i : ℕ) • f i = (f 0 + f 2) - (f 1 + f 3) := by
+      ∑ i : Fin 4, (-1) ^ (i : ℕ) • f i = (f 0 + f 2) - (f 1 + f 3) := by
     norm_num [Fin.sum_univ_four]
     abel
-  rw [hsum (tetrahedronFacePi2Class tau hedge),
-    tetrahedron_pi2_general_face_relation tau hedge, sub_self]
+  simp [hsum, tetrahedron_pi2_general_face_relation, sub_self]
 
 end FiniteChains.TopologicalSingular

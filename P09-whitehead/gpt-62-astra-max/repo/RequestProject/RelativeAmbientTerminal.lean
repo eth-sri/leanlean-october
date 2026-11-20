@@ -10,10 +10,7 @@ Awaiting final Lean verification. -/
 
 noncomputable section
 open scoped Classical
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeNormalForm
 open Davis Davis.Genus BlockFamily
@@ -32,8 +29,8 @@ def fullNextCell :
     | Sum.inl c => Sum.inl c
     | Sum.inr ⟨Sum.inl m, _⟩ => Sum.inr m
     | Sum.inr ⟨Sum.inr _, h⟩ => h.elim
-  left_inv := by rintro (c | m) <;> rfl
-  right_inv := by rintro (c | ⟨m | k, h⟩); rfl; rfl; exact h.elim
+  left_inv := by grind
+  right_inv := by rintro (c | ⟨m | k, h⟩) <;> aesop
 
 theorem fullNext_rel (j : C ⊕ (Σ s, NamedSpineRel (normalizedGenus core hcore extra s))) :
     nextStage core hcore extra (fun _ => True) (fullNextCell core hcore extra j) =
@@ -46,12 +43,10 @@ theorem fullNext_rel (j : C ⊕ (Σ s, NamedSpineRel (normalizedGenus core hcore
       have h : ((FreeGroup.map (flattenBlockGen core hcore extra)).comp
           (FreeGroup.map Sum.inl)).comp (FreeGroup.map Sum.inl) = FreeGroup.map Sum.inl := by
         apply FreeGroup.ext_hom
-        intro a
-        rfl
+        solve_by_elim
       exact (DFunLike.congr_fun h (core c)).symm
 
-def fullNextMap : PresMorFS (blockPresentation core hcore extra)
-    (nextStage core hcore extra (fun _ => True)) :=
+def fullNextMap :=
   PresInclusionFS.mor _ _ (flattenBlockGen core hcore extra) (fullNextCell core hcore extra)
     (flattenBlockGen core hcore extra).injective (fullNextCell core hcore extra).injective
     (fullNext_rel core hcore extra)
@@ -73,8 +68,7 @@ theorem terminalNext_rel
   · rfl
   · rfl
 
-def terminalNextMap : PresMorFS (terminalPresentation core hcore extra)
-    (rawPresentation core (nextExtra core hcore extra)) :=
+def terminalNextMap :=
   PresInclusionFS.mor _ _ (flattenBlockGen core hcore extra) (terminalNextCell core hcore extra)
     (flattenBlockGen core hcore extra).injective (terminalNextCell core hcore extra).injective
     (terminalNext_rel core hcore extra)
@@ -89,8 +83,7 @@ def stageIntoFull {B T : Type} (r : T → FreeGroup (A ⊕ B)) (p : T → Prop) 
     PresMorFS (rawPresentation core (restrictedExtra r p)) (rawPresentation core r) :=
   PresInclusionFS.mor _ _ id (Sum.map id Subtype.val) Function.injective_id
     (Function.Injective.sumMap Function.injective_id Subtype.val_injective) (by
-      intro j
-      cases j <;> simp [rawPresentation, restrictedExtra])
+      aesop)
 
 theorem nextTerminal_square
     (x : (C ⊕ (Σ s, NamedSpineRel (normalizedGenus core hcore extra s))) →₀
@@ -112,8 +105,7 @@ theorem nextTerminal_square
   induction x using Finsupp.induction_linear with
   | zero => simp
   | add x y hx hy =>
-      rw [PresMorFS.cells_add, PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
+      simp_all [PresMorFS.cells_add]
   | single j a =>
       change PresInclusionFS.cells _ _ _ _ _
         (PresInclusionFS.cells _ _ _ _ _ (Finsupp.single j a)) =
@@ -146,12 +138,7 @@ theorem nextTerminal_conclusions
   obtain ⟨hc, hz⟩ := relativeTerminal_conclusions core hcore extra hinj hP htriv
   refine ⟨fsIsCockcroft_of_generates (terminalNextMap core hcore extra)
     (terminalNextMap_generates core hcore extra) hc, ?_⟩
-  intro x hx
-  apply fsCells_eq_zero_of_generates (fullNextMap core hcore extra)
-    (terminalNextMap core hcore extra) (relativeTerminalMap core hcore extra)
-    (stageIntoFull core (nextExtra core hcore extra)
-      (nextPredicate core hcore extra (fun _ => True)))
-    (nextTerminal_square core hcore extra) hz (fullNextMap_generates core hcore extra) hx
+  solve_by_elim [fsCells_eq_zero_of_generates, fullNextMap, terminalNextMap, nextExtra, nextPredicate, nextTerminal_square, fullNextMap_generates]
 
 theorem block_core_trivial
     (htriv : ∀ a : A,
@@ -161,11 +148,7 @@ theorem block_core_trivial
       PresGroup (blockPresentation core hcore extra)) = 1 := by
   have hn := normalized_core_trivial core hcore extra htriv a
   have h := congrArg (blockStructuralMap core hcore extra).hom hn
-  change (QuotientGroup.mk (FreeGroup.map Sum.inl (FreeGroup.of (Sum.inl a))) :
-      PresGroup (blockPresentation core hcore extra)) =
-    (blockStructuralMap core hcore extra).hom 1 at h
-  simp only [FreeGroup.map.of, map_one] at h
-  convert h using 1 <;> rfl
+  assumption
 
 theorem nextStage_core_trivial (p : S → Prop)
     (htriv : ∀ a : A,
@@ -174,23 +157,7 @@ theorem nextStage_core_trivial (p : S → Prop)
     (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (nextStage core hcore extra p)) = 1 := by
   have h := congrArg (stageNextMap core hcore extra p).hom
     (block_core_trivial core hcore (restrictedExtra extra p) htriv a)
-  change QuotientGroup.mk (FreeGroup.map (stageNextGen core hcore extra p)
-    (FreeGroup.of (Sum.inl (Sum.inl a)))) = (stageNextMap core hcore extra p).hom 1 at h
-  simpa only [FreeGroup.map.of, stageNextGen, map_one] using h
-
-theorem nextFull_core_trivial
-    (htriv : ∀ a : A,
-      (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (rawPresentation core extra)) = 1)
-    (a : A) :
-    (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) :
-      PresGroup (rawPresentation core (nextExtra core hcore extra))) = 1 := by
-  have h := congrArg ((terminalNextMap core hcore extra).hom.comp
-    (relativeTerminalMap core hcore extra).hom) (block_core_trivial core hcore extra htriv a)
-  change QuotientGroup.mk (FreeGroup.map (flattenBlockGen core hcore extra)
-    (FreeGroup.of (Sum.inl (Sum.inl a)))) =
-      ((terminalNextMap core hcore extra).hom.comp (relativeTerminalMap core hcore extra).hom) 1 at h
-  simp only [FreeGroup.map.of, map_one] at h
-  convert h using 1 <;> rfl
+  assumption
 
 /-- Acyclicity of the core is used through its actual supported exponent
 matrix. It does not assert that the core has trivial second homotopy group. -/
@@ -213,8 +180,6 @@ theorem coreIntoRaw_zero (hinj : Function.Injective (expMatrix core))
     (coreIntoRaw core extra).cells x = 0 := by
   apply fsCells_eq_zero_of_isCockcroft_of_hom_trivial (coreIntoRaw core extra)
     (core_fsIsCockcroft core hinj) ?_ x hx
-  apply hom_eq_one_of_gens
-  intro a
-  exact htriv a
+  apply hom_eq_one_of_gens <;> assumption
 
 end FiniteChains.RelativeNormalForm

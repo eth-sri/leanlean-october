@@ -10,15 +10,15 @@ variable {α : Type*} [DecidableEq α]
   (N : Subgroup (FreeGroup α)) [N.Normal]
 
 /-- Projected Fox coefficients are the signed group-ring incidences at actual word prefixes. -/
-theorem coverFox_mk_prefix_sum (i : α) (l : List (α × Bool)) :
+theorem coverFox_mk_prefix_sum (i : α) (l : List _) :
     proj N (fox i (FreeGroup.mk l)) =
       ∑ k : Fin l.length,
         if i = l[k.val].1 then
           MonoidAlgebra.single
-            ((QuotientGroup.mk (FreeGroup.mk (l.take k.val)) : FreeGroup α ⧸ N) *
+            ((QuotientGroup.mk (FreeGroup.mk (l.take k.val))) *
               (if l[k.val].2 then 1 else
-                (QuotientGroup.mk (FreeGroup.of l[k.val].1) : FreeGroup α ⧸ N)⁻¹))
-            (if l[k.val].2 then (1 : ℤ) else -1)
+                (QuotientGroup.mk (FreeGroup.of l[k.val].1))⁻¹))
+            (if l[k.val].2 then 1 else -1)
         else 0 := by
   classical
   rw [fox_mk_prefix_sum, map_sum]

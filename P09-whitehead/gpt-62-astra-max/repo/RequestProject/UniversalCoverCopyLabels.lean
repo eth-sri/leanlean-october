@@ -12,45 +12,53 @@ distinct old vertices. Unverified source. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.UniversalCopy
 universe u
 variable {L E : Complex2.{u}} (f : Hom L E) (a : L.V)
 
-def map (g : Pi1 E (f.onV a)) : Hom (uCover L a) (uCover E (f.onV a)) :=
+variable (g : Pi1 E (f.onV a))
+
+def map :=
   ((univDeck E (f.onV a)).cellHom g).comp (univLift L f a)
 
-theorem projection_V (g : Pi1 E (f.onV a)) (v : UV L a) :
+theorem projection_V (v : UV L a) :
     endV ((map f a g).onV v) = f.onV (endV v) := by
   change endV (deckV g (univLiftV a f v)) = _
-  rw [endV_deckV, endV_univLiftV]
+  simp
 
-theorem projection_E (g : Pi1 E (f.onV a)) (e : UE L a) :
+theorem projection_E (e : UE L a) :
     ((map f a g).onE e).val.2 = f.onE e.val.2 := rfl
 
-theorem projection_F (g : Pi1 E (f.onV a)) (e : UF L a) :
+theorem projection_F (e : UF L a) :
     ((map f a g).onF e).val.2 = f.onF e.val.2 := rfl
 
-def vertexPair (g : Pi1 E (f.onV a)) (v : UV L a) : UV E (f.onV a) × L.V :=
+def vertexPair (v : UV L a) : UV E (f.onV a) × L.V :=
   ((map f a g).onV v, endV v)
 
-def vertices (g : Pi1 E (f.onV a)) : Set (UV E (f.onV a) × L.V) :=
+def vertices :=
   Set.range (vertexPair f a g)
 
-def label (v : UV E (f.onV a) × L.V) : Set (UV E (f.onV a) × L.V) :=
+def label (v : UV E (f.onV a) × L.V) :=
   {w | ∃ g, v ∈ vertices f a g ∧ w ∈ vertices f a g}
 
-theorem identified_of_meet (hE : IsConnected E)
-    (g h : Pi1 E (f.onV a)) (v w : UV L a)
-    (hm : vertexPair f a g v = vertexPair f a h w) :
+section
+
+variable (hE : IsConnected E)
+include hE
+
+section
+
+variable (g h : Pi1 E (f.onV a)) (v w : UV L a) (hm : vertexPair f a g v = vertexPair f a h w)
+include v w hm
+
+theorem identified_of_meet :
     ∃ k : Pi1 L a,
       (∀ x, (map f a g).onV x = (map f a h).onV (deckV k x)) ∧
       (∀ e, (map f a g).onE e = (map f a h).onE (deckE k e)) ∧
       (∀ t, (map f a g).onF t = (map f a h).onF (deckF k t)) := by
-  have hend : endV v = endV w := congrArg Prod.snd hm
+  have hend := congrArg Prod.snd hm
   obtain ⟨k, hk, _⟩ := (isRegular_univProj (X := L) (x₀ := a)).simply_transitive v w hend
   let F := map f a g
   let H := (map f a h).comp ((univDeck L a).cellHom k)
@@ -67,9 +75,7 @@ theorem identified_of_meet (hE : IsConnected E)
   exact ⟨k, hV, lift_onE_eq (isCovering_univProj hE) hprojE hV,
     lift_onF_eq (isCovering_univProj hE) hprojF hV⟩
 
-theorem vertices_eq_of_meet (hE : IsConnected E)
-    (g h : Pi1 E (f.onV a)) (v w : UV L a)
-    (hm : vertexPair f a g v = vertexPair f a h w) : vertices f a g = vertices f a h := by
+theorem vertices_eq_of_meet : vertices f a g = vertices f a h := by
   obtain ⟨k, hV, _, _⟩ := identified_of_meet f a hE g h v w hm
   ext z
   constructor
@@ -79,28 +85,36 @@ theorem vertices_eq_of_meet (hE : IsConnected E)
     refine ⟨deckV k⁻¹ x, Prod.ext ?_ (endV_deckV k⁻¹ x)⟩
     simpa only [← deckV_mul, mul_inv_cancel, deckV_one, vertexPair, map] using hV (deckV k⁻¹ x)
 
-theorem label_on_pair (hE : IsConnected E) (g : Pi1 E (f.onV a)) (v : UV L a) :
+end
+
+theorem label_on_pair (g : Pi1 E (f.onV a)) (v : UV L a) :
     label f a (vertexPair f a g v) = vertices f a g := by
   ext z
   constructor
   · rintro ⟨h, ⟨w, hw⟩, hz⟩
-    rw [vertices_eq_of_meet f a hE g h v w hw.symm]
-    exact hz
+    grind [vertices_eq_of_meet]
   · intro hz
     exact ⟨g, ⟨v, rfl⟩, hz⟩
+
+end
 
 theorem vertices_nonempty (g : Pi1 E (f.onV a)) : (vertices f a g).Nonempty :=
   ⟨vertexPair f a g (UV.base L a), ⟨UV.base L a, rfl⟩⟩
 
-theorem vertices_covered (hL : IsConnected L) (v : UV E (f.onV a)) (l : L.V)
+section
+
+variable (hL : IsConnected L)
+include hL
+
+theorem vertices_covered (v : UV E (f.onV a)) (l : L.V)
     (hv : endV v = f.onV l) : ∃ g x, vertexPair f a g x = (v, l) := by
   obtain ⟨x, hx⟩ := endV_surjective (x₀ := a) hL l
   have hproj : endV (univLiftV a f x) = endV v := by
-    rw [endV_univLiftV, hx, hv]
+    simp_all
   obtain ⟨g, hg, _⟩ := (isRegular_univProj (X := E) (x₀ := f.onV a)).simply_transitive _ _ hproj
   exact ⟨g, x, Prod.ext hg hx⟩
 
-theorem faces_covered (hL : IsConnected L) (t : UF E (f.onV a)) (l : L.F)
+theorem faces_covered (t : UF E (f.onV a)) (l : L.F)
     (ht : t.val.2 = f.onF l) :
     ∃ (g : Pi1 E (f.onV a)) (x : UF L a), (map f a g).onF x = t ∧ x.val.2 = l := by
   have hv : endV t.val.1 = f.onV (L.base l) := by
@@ -109,10 +123,10 @@ theorem faces_covered (hL : IsConnected L) (t : UF E (f.onV a)) (l : L.F)
   let t' : UF L a := ⟨(x, l), congrArg Prod.snd hx⟩
   refine ⟨g, t', ?_, rfl⟩
   apply Subtype.ext
-  change ((map f a g).onV x, f.onF l) = t.val
-  have hv' : (map f a g).onV x = t.val.1 :=
-    congrArg (fun z : UV E (f.onV a) × L.V => z.1) hx
-  exact Prod.ext hv' ht.symm
+  have hv' :=
+    congrArg (fun z : UV E (f.onV a) × L.V => z.1) hx; exact Prod.ext hv' ht.symm
+
+end
 
 theorem face_range_of_label (hE : IsConnected E) (hL : IsConnected L)
     (g : Pi1 E (f.onV a)) (t : UF E (f.onV a)) (l : L.F)
@@ -122,7 +136,7 @@ theorem face_range_of_label (hE : IsConnected E) (hL : IsConnected L)
   obtain ⟨h, x, hx, hxl⟩ := faces_covered f a hL t l ht
   have hp : vertexPair f a h x.val.1 = (t.val.1, L.base l) := by
     apply Prod.ext
-    · exact congrArg (fun t : UF E (f.onV a) => t.val.1) hx
+    · aesop
     · exact x.property.trans (congrArg L.base hxl)
   have hvg : vertices f a h = vertices f a g := by
     rw [← label_on_pair f a hE h x.val.1, hp]
