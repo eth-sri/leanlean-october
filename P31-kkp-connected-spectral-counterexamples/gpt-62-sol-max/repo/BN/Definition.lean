@@ -9,39 +9,19 @@ public import Mathlib.Combinatorics.SimpleGraph.LapMatrix
 public import Mathlib.Analysis.Matrix.Spectrum
 @[expose] public section
 
-/-!
-# Adjacency eigenvalues
-
-This file records the spectral conventions used in `docs/sol.tex`. The
-unordered family is indexed by the vertex type, so algebraic multiplicity is
-counted automatically. The ordered family is Mathlib's antitone
-`eigenvalues₀`, which is the paper's `λ₁ ≥ ⋯ ≥ λₙ` with `λ₁` at index `0`.
--/
-
 namespace BN
-
-variable {V : Type*} [Fintype V] [DecidableEq V]
-
-/-- The adjacency eigenvalues of a finite simple graph, indexed with algebraic
-multiplicity by its vertex type. -/
-noncomputable def adjacencyEigenvalues
-    (G : SimpleGraph V) [DecidableRel G.Adj] : V → ℝ :=
+variable {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
+-- Keep the Hermitian proof shared with the ordered definition, as in the benchmark.
+/-- Adjacency eigenvalues indexed by vertices, counting algebraic multiplicity. -/
+noncomputable def adjacencyEigenvalues :=
   (G.isHermitian_adjMatrix ℝ).eigenvalues
-
-/-- The adjacency eigenvalues in nonincreasing order. The value at `i` is the
-paper's `λ_{i+1}(G)`. -/
-noncomputable def adjacencyEigenvalues₀
-    (G : SimpleGraph V) [DecidableRel G.Adj] : Fin (Fintype.card V) → ℝ :=
+/-- Adjacency eigenvalues in nonincreasing order, with multiplicity. -/
+noncomputable def adjacencyEigenvalues₀ :=
   (G.isHermitian_adjMatrix ℝ).eigenvalues₀
-
-/-- The largest adjacency eigenvalue `λ₁(G)`. -/
-noncomputable def lambda1
-    (G : SimpleGraph V) [DecidableRel G.Adj] [Nonempty V] : ℝ :=
+/-- The largest adjacency eigenvalue. -/
+noncomputable def lambda1 [Nonempty V] :=
   adjacencyEigenvalues₀ G ⟨0, Fintype.card_pos⟩
-
-/-- The second-largest adjacency eigenvalue `λ₂(G)`. -/
-noncomputable def lambda2
-    (G : SimpleGraph V) [DecidableRel G.Adj] [Nontrivial V] : ℝ :=
+/-- The second largest ordered adjacency eigenvalue. -/
+noncomputable def lambda2 [Nontrivial V] :=
   adjacencyEigenvalues₀ G ⟨1, Fintype.one_lt_card⟩
-
 end BN
