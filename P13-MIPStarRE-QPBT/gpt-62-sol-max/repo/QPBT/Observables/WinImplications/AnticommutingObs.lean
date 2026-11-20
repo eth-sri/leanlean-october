@@ -2,7 +2,7 @@ module
 
 public import QPBT.Observables.WinImplications.CommutingObs
 public import QPBT.Test.MagicSquareTheorems.Rigidity.Anticommutation
-public import QPBT.Test.MagicSquareTheorems.Rigidity.AnticommutatorB
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Transfer
 
 /-!
 # Approximate anticommutation of the point observables on anticommuting tuples
@@ -33,38 +33,7 @@ noncomputable section
 
 namespace WinImplications
 
-/-! ## Reading the dilation back on the original space -/
-
-/-- The matrix of the identity isometry is the identity matrix.
-Formalization-only support for `thm:ms-rigidity`, blueprint
-`ch13_qpbt_test.tex:266-288`. -/
-theorem isometryMatrix_id {ι : Type} [Fintype ι] [DecidableEq ι] :
-    MagicSquareRigidity.isometryMatrix
-      (LinearIsometry.id (R := ℂ) (E := EuclideanSpace ℂ ι)) = 1 := by
-  ext k i
-  rw [MagicSquareRigidity.isometryMatrix_apply]
-  simp [Matrix.one_apply, EuclideanSpace.equiv]
-
-/-- Conjugation by the identity isometry is the identity. Formalization-only
-support for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
-theorem conjIsometry_id {ι : Type} [Fintype ι] [DecidableEq ι] (M : Op ι) :
-    conjIsometry (LinearIsometry.id (R := ℂ) (E := EuclideanSpace ℂ ι)) M = M := by
-  rw [MagicSquareRigidity.conjIsometry_eq, isometryMatrix_id]
-  simp
-
-/-- The two-sided identity isometry fixes every bipartite state.
-Formalization-only support for `thm:ms-rigidity`, blueprint
-`ch13_qpbt_test.tex:266-288`. -/
-theorem isometryTensor_id {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
-    isometryTensor (LinearIsometry.id (R := ℂ) (E := EuclideanSpace ℂ ιA))
-      (LinearIsometry.id (R := ℂ) (E := EuclideanSpace ℂ ιB)) ψ = ψ := by
-  ext p
-  rw [MagicSquareRigidity.isometryTensor_apply_eq, isometryMatrix_id,
-    isometryMatrix_id]
-  rw [show Matrix.kronecker (1 : Op ιA) (1 : Op ιB) = 1 from
-    Matrix.one_kronecker_one]
-  simp [Matrix.one_apply]
+/-! ## Anticommutation on the original space -/
 
 /-- Inflation to the ground slice is additive. Formalization-only support for
 `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
@@ -76,154 +45,17 @@ theorem naimarkInflation_add {ι α : Type} [Fintype ι] [DecidableEq ι]
   ext p q
   by_cases h : p.2 = none ∧ q.2 = none <;> simp [h]
 
-/-- An operator inflated on the second factor acts on the dilated state exactly
-as the original operator acts on the original state. Formalization-only support
-for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
-theorem applyOperatorToState_heteroKron_one_naimarkInflation
-    (α : Type) [Fintype α] [DecidableEq α]
+section
+
+variable (α : Type) [Fintype α] [DecidableEq α]
     {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (N : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
-    applyOperatorToState
-        (heteroKron (1 : Op (ιA × Option α))
-          (MagicSquareRigidity.naimarkInflation (α := α) N))
-        (MagicSquareRigidity.naimarkDilatedState α ψ) =
-      MagicSquareRigidity.naimarkDilatedState α
-        (applyOperatorToState (heteroKron (1 : Op ιA) N) ψ) := by
-  classical
-  ext p
-  rw [MagicSquareRigidity.applyOperatorToState_naimarkDilatedState,
-    MagicSquareRigidity.naimarkDilatedState_apply]
-  obtain ⟨⟨i, oa⟩, ⟨j, ob⟩⟩ := p
-  by_cases hoa : oa = none
-  · by_cases hob : ob = none
-    · subst hoa
-      subst hob
-      simp [heteroKron, applyOperatorToState, Matrix.mulVec, dotProduct,
-        Fintype.sum_prod_type, Matrix.one_apply]
-    · simp [hob, heteroKron]
-  · simp [hoa, heteroKron]
-
-/-- The state-dependent norm of an operator inflated on the second factor,
-measured on the dilated state, is the norm of the original operator on the
-original state. Formalization-only support for `thm:ms-rigidity`, blueprint
-`ch13_qpbt_test.tex:266-288`. -/
-theorem norm_heteroKron_one_naimarkInflation
-    (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (N : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
-    ‖applyOperatorToState
-        (heteroKron (1 : Op (ιA × Option α))
-          (MagicSquareRigidity.naimarkInflation (α := α) N))
-        (MagicSquareRigidity.naimarkDilatedState α ψ)‖ =
-      ‖applyOperatorToState (heteroKron (1 : Op ιA) N) ψ‖ := by
-  rw [applyOperatorToState_heteroKron_one_naimarkInflation,
-    MagicSquareRigidity.naimarkDilatedState_norm]
-
-/-! ## The Magic Square anticommutation on the undilated strategy -/
-
-/-- Bob's Magic Square variable reflections are the placed observables of his
-totalized variable measurements on the dilated strategy. Formalization-only
-support for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
-theorem msVarObsB_eq (S : Strategy msGame) (j : Fin 9) :
-    MagicSquareRigidity.msVarObsB S j =
-      heteroKron (1 : Op (S.ιA × Option MsAnswer))
-        (MagicSquareRigidity.dilatedObsB S (.var j) msBitOrZero) := by
-  rw [MagicSquareRigidity.msVarObsB,
-    MagicSquareRigidity.signObs_eq_obsOf_postprocess]
-  rfl
-
-/-- Bob's Magic Square variable observables approximately anticommute on the
-strategy state. This auxiliary estimate is proved on the projective dilation
-and read back through the ground slice. Paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:342-356`,
-blueprint `lem:qld-ms-anticommutator-original-state`. -/
-theorem msVarObs_anticommutator_le (S : Strategy msGame) (ε : ℝ) (hε : 0 ≤ ε)
-    (hwin : 1 - ε ≤ S.value) :
-    ‖applyOperatorToState
-        (heteroKron (1 : Op S.ιA)
-          (obsOf ((S.B (.var 0)).postprocess msBitOrZero) *
-              obsOf ((S.B (.var 4)).postprocess msBitOrZero) +
-            obsOf ((S.B (.var 4)).postprocess msBitOrZero) *
-              obsOf ((S.B (.var 0)).postprocess msBitOrZero)))
-        S.ψ‖ ^ 2 ≤ 1183680 * ε := by
-  classical
-  set xi : EuclideanSpace ℂ
-      ((S.ιA × Option MsAnswer) × (S.ιB × Option MsAnswer)) :=
-    MagicSquareRigidity.naimarkDilatedState MsAnswer S.ψ with hxidef
-  have hxi : ‖isometryTensor
-      (LinearIsometry.id (R := ℂ)
-        (E := EuclideanSpace ℂ (S.ιA × Option MsAnswer)))
-      (LinearIsometry.id (R := ℂ)
-        (E := EuclideanSpace ℂ (S.ιB × Option MsAnswer))) xi - xi‖ ≤ 0 := by
-    rw [isometryTensor_id, sub_self, norm_zero]
-  have htrans := MagicSquareRigidity.ms_anticommutator_transfer_B S
-    (LinearIsometry.id (R := ℂ)
-      (E := EuclideanSpace ℂ (S.ιA × Option MsAnswer)))
-    (LinearIsometry.id (R := ℂ)
-      (E := EuclideanSpace ℂ (S.ιB × Option MsAnswer))) xi ε 0 hwin hxi
-  simp only [MagicSquareRigidity.conjIsometry_comp_naimarkEmbedding,
-    conjIsometry_id, MagicSquareRigidity.opDistSq_uniform_unit] at htrans
-  rw [hxidef] at htrans
-  have hL : heteroKron (1 : Op (S.ιA × Option MsAnswer))
-        (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
-          (obsOf ((S.B (.var 0)).postprocess msBitOrZero))) *
-        heteroKron 1 (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
-          (obsOf ((S.B (.var 4)).postprocess msBitOrZero))) -
-      -(heteroKron 1 (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
-          (obsOf ((S.B (.var 4)).postprocess msBitOrZero))) *
-        heteroKron 1 (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
-          (obsOf ((S.B (.var 0)).postprocess msBitOrZero)))) =
-      heteroKron (1 : Op (S.ιA × Option MsAnswer))
-        (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
-          (obsOf ((S.B (.var 0)).postprocess msBitOrZero) *
-              obsOf ((S.B (.var 4)).postprocess msBitOrZero) +
-            obsOf ((S.B (.var 4)).postprocess msBitOrZero) *
-              obsOf ((S.B (.var 0)).postprocess msBitOrZero))) := by
-    simp only [heteroKron_mul, one_mul, sub_neg_eq_add,
-      MagicSquareRigidity.naimarkInflation_mul, ← heteroKron_add_right, naimarkInflation_add]
-  rw [hL, norm_heteroKron_one_naimarkInflation] at htrans
-  have hclose := MagicSquareRigidity.msVarObsB_anticommute S ε hwin
-  rw [msVarObsB_eq, msVarObsB_eq] at hclose
-  have hnorm : ‖applyOperatorToState
-      (heteroKron (1 : Op (S.ιA × Option MsAnswer))
-          (MagicSquareRigidity.dilatedObsB S (.var 0) msBitOrZero) *
-        heteroKron 1
-          (MagicSquareRigidity.dilatedObsB S (.var 4) msBitOrZero) -
-        -(heteroKron 1
-            (MagicSquareRigidity.dilatedObsB S (.var 4) msBitOrZero) *
-          heteroKron 1
-            (MagicSquareRigidity.dilatedObsB S (.var 0) msBitOrZero)))
-      (MagicSquareRigidity.naimarkDilatedState MsAnswer S.ψ)‖ ≤
-        624 * Real.sqrt ε := hclose
-  have hsq : ‖applyOperatorToState
-      (heteroKron (1 : Op (S.ιA × Option MsAnswer))
-          (MagicSquareRigidity.dilatedObsB S (.var 0) msBitOrZero) *
-        heteroKron 1
-          (MagicSquareRigidity.dilatedObsB S (.var 4) msBitOrZero) -
-        -(heteroKron 1
-            (MagicSquareRigidity.dilatedObsB S (.var 4) msBitOrZero) *
-          heteroKron 1
-            (MagicSquareRigidity.dilatedObsB S (.var 0) msBitOrZero)))
-      (MagicSquareRigidity.naimarkDilatedState MsAnswer S.ψ)‖ ^ 2 ≤
-        389376 * ε := by
-    have hnn : (0 : ℝ) ≤ 624 * Real.sqrt ε := by positivity
-    calc _ ≤ (624 * Real.sqrt ε) ^ 2 :=
-          (sq_le_sq₀ (norm_nonneg _) hnn).2 hnorm
-      _ = 389376 * ε := by
-          rw [mul_pow, Real.sq_sqrt hε]
-          ring
-  have h48 : (48 : ℝ) * 0 ^ 2 = 0 := by norm_num
-  rw [h48, add_zero] at htrans
-  refine le_trans htrans ?_
-  linarith
+    (M : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB))
+include α ιA ιB M ψ
 
 /-- An operator inflated on the first factor acts on the dilated state exactly
 as the original operator acts on the original state. Formalization-only support
 for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
-theorem applyOperatorToState_heteroKron_naimarkInflation_one
-    (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_heteroKron_naimarkInflation_one :
     applyOperatorToState
         (heteroKron (MagicSquareRigidity.naimarkInflation (α := α) M)
           (1 : Op (ιB × Option α)))
@@ -241,17 +73,14 @@ theorem applyOperatorToState_heteroKron_naimarkInflation_one
       subst hob
       simp [heteroKron, applyOperatorToState, Matrix.mulVec, dotProduct,
         Fintype.sum_prod_type, Matrix.one_apply]
-    · simp [hob, heteroKron]
-  · simp [hoa, heteroKron]
+    · simp_all [heteroKron]
+  · simp_all [heteroKron]
 
 /-- The state-dependent norm of an operator inflated on the first factor,
 measured on the dilated state, is the norm of the original operator on the
 original state. Formalization-only support for `thm:ms-rigidity`, blueprint
 `ch13_qpbt_test.tex:266-288`. -/
-theorem norm_heteroKron_naimarkInflation_one
-    (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem norm_heteroKron_naimarkInflation_one :
     ‖applyOperatorToState
         (heteroKron (MagicSquareRigidity.naimarkInflation (α := α) M)
           (1 : Op (ιB × Option α)))
@@ -259,6 +88,8 @@ theorem norm_heteroKron_naimarkInflation_one
       ‖applyOperatorToState (heteroKron M (1 : Op ιB)) ψ‖ := by
   rw [applyOperatorToState_heteroKron_naimarkInflation_one,
     MagicSquareRigidity.naimarkDilatedState_norm]
+
+end
 
 /-- Alice's Magic Square variable reflections are the placed observables of her
 totalized variable measurements on the dilated strategy. Formalization-only
@@ -271,13 +102,18 @@ theorem msVarObsA_eq (S : Strategy msGame) (j : Fin 9) :
     MagicSquareRigidity.signObs_eq_obsOf_postprocess]
   rfl
 
+section
+
+variable (S : Strategy msGame) (ε : ℝ) (hε : 0 ≤ ε)
+    (hwin : 1 - ε ≤ S.value)
+include S ε hε hwin
+
 /-- Alice's Magic Square variable observables approximately anticommute on the
 strategy state. This auxiliary estimate is proved on the projective dilation
 and read back through the ground slice on the first tensor factor. Paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:342-356`,
 blueprint `lem:qld-ms-anticommutator-original-state`. -/
-theorem msVarObsA_anticommutator_le (S : Strategy msGame) (ε : ℝ) (hε : 0 ≤ ε)
-    (hwin : 1 - ε ≤ S.value) :
+theorem msVarObsA_anticommutator_le :
     ‖applyOperatorToState
         (heteroKron
           (obsOf ((S.A (.var 0)).postprocess msBitOrZero) *
@@ -286,87 +122,78 @@ theorem msVarObsA_anticommutator_le (S : Strategy msGame) (ε : ℝ) (hε : 0 �
               obsOf ((S.A (.var 0)).postprocess msBitOrZero))
           (1 : Op S.ιB))
         S.ψ‖ ^ 2 ≤ 1183680 * ε := by
-  classical
-  set xi : EuclideanSpace ℂ
-      ((S.ιA × Option MsAnswer) × (S.ιB × Option MsAnswer)) :=
-    MagicSquareRigidity.naimarkDilatedState MsAnswer S.ψ with hxidef
-  have hxi : ‖isometryTensor
-      (LinearIsometry.id (R := ℂ)
-        (E := EuclideanSpace ℂ (S.ιA × Option MsAnswer)))
-      (LinearIsometry.id (R := ℂ)
-        (E := EuclideanSpace ℂ (S.ιB × Option MsAnswer))) xi - xi‖ ≤ 0 := by
-    rw [isometryTensor_id, sub_self, norm_zero]
-  have htrans := MagicSquareRigidity.ms_anticommutator_transfer_A S
-    (LinearIsometry.id (R := ℂ)
-      (E := EuclideanSpace ℂ (S.ιA × Option MsAnswer)))
-    (LinearIsometry.id (R := ℂ)
-      (E := EuclideanSpace ℂ (S.ιB × Option MsAnswer))) xi ε 0 hwin hxi
-  simp only [MagicSquareRigidity.conjIsometry_comp_naimarkEmbedding,
-    conjIsometry_id, MagicSquareRigidity.opDistSq_uniform_unit] at htrans
-  rw [hxidef] at htrans
-  have hL : heteroKron
-        (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
-          (obsOf ((S.A (.var 0)).postprocess msBitOrZero)))
-        (1 : Op (S.ιB × Option MsAnswer)) *
-        heteroKron (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
-          (obsOf ((S.A (.var 4)).postprocess msBitOrZero))) 1 -
-      -(heteroKron (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
-          (obsOf ((S.A (.var 4)).postprocess msBitOrZero))) 1 *
-        heteroKron (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
-          (obsOf ((S.A (.var 0)).postprocess msBitOrZero))) 1) =
-      heteroKron
-        (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
-          (obsOf ((S.A (.var 0)).postprocess msBitOrZero) *
-              obsOf ((S.A (.var 4)).postprocess msBitOrZero) +
-            obsOf ((S.A (.var 4)).postprocess msBitOrZero) *
-              obsOf ((S.A (.var 0)).postprocess msBitOrZero)))
-        (1 : Op (S.ιB × Option MsAnswer)) := by
-    simp only [heteroKron_mul, one_mul, sub_neg_eq_add,
-      MagicSquareRigidity.naimarkInflation_mul, ← heteroKron_add_left, naimarkInflation_add]
-  rw [hL, norm_heteroKron_naimarkInflation_one] at htrans
-  have hclose := MagicSquareRigidity.msVarObsA_anticommute S ε hwin
-  rw [msVarObsA_eq, msVarObsA_eq] at hclose
-  have hnorm : ‖applyOperatorToState
-      (heteroKron (MagicSquareRigidity.dilatedObsA S (.var 0))
-          (1 : Op (S.ιB × Option MsAnswer)) *
-        heteroKron (MagicSquareRigidity.dilatedObsA S (.var 4)) 1 -
-        -(heteroKron (MagicSquareRigidity.dilatedObsA S (.var 4)) 1 *
-          heteroKron (MagicSquareRigidity.dilatedObsA S (.var 0)) 1))
-      (MagicSquareRigidity.naimarkDilatedState MsAnswer S.ψ)‖ ≤
-        624 * Real.sqrt ε := hclose
-  have hsq : ‖applyOperatorToState
-      (heteroKron (MagicSquareRigidity.dilatedObsA S (.var 0))
-          (1 : Op (S.ιB × Option MsAnswer)) *
-        heteroKron (MagicSquareRigidity.dilatedObsA S (.var 4)) 1 -
-        -(heteroKron (MagicSquareRigidity.dilatedObsA S (.var 4)) 1 *
-          heteroKron (MagicSquareRigidity.dilatedObsA S (.var 0)) 1))
-      (MagicSquareRigidity.naimarkDilatedState MsAnswer S.ψ)‖ ^ 2 ≤
-        389376 * ε := by
-    have hnn : (0 : ℝ) ≤ 624 * Real.sqrt ε := by positivity
-    calc _ ≤ (624 * Real.sqrt ε) ^ 2 :=
-          (sq_le_sq₀ (norm_nonneg _) hnn).2 hnorm
-      _ = 389376 * ε := by
-          rw [mul_pow, Real.sq_sqrt hε]
-          ring
-  have h48 : (48 : ℝ) * 0 ^ 2 = 0 := by norm_num
-  rw [h48, add_zero] at htrans
-  refine le_trans htrans ?_
+  suffices h : ‖applyOperatorToState _ S.ψ‖ ≤ 648 * Real.sqrt ε by
+    calc
+      _ ≤ (648 * Real.sqrt ε) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) h 2
+      _ ≤ _ := by rw [mul_pow, Real.sq_sqrt hε]; nlinarith
+  rw [← norm_heteroKron_naimarkInflation_one MsAnswer, ← naimarkInflation_add,
+    ← MagicSquareRigidity.naimarkInflation_mul, ← MagicSquareRigidity.naimarkInflation_mul,
+    MagicSquareRigidity.naimarkInflation_obs_A, MagicSquareRigidity.naimarkInflation_obs_A]
+  let G := MagicSquareRigidity.groundProjection S.ιA MsAnswer
+  let L (M : Op (S.ιA × Option MsAnswer)) := heteroKron M (1 : Op (S.ιB × Option MsAnswer))
+  let X := MagicSquareRigidity.dilatedObsA S (.var 0)
+  let Z := MagicSquareRigidity.dilatedObsA S (.var 4)
+  have hproj := MagicSquareRigidity.isProj_groundProjection S.ιA MsAnswer
+  have hL (A B : Op (S.ιA × Option MsAnswer)) : L A * L B = L (A * B) := by
+    simp [L, heteroKron_mul]
+  have hLeak (A : Op (S.ιA × Option MsAnswer)) : (1 - L G) * L A = L ((1 - G) * A) := by
+    simp only [L, sub_mul, one_mul, heteroKron_sub_left, heteroKron_mul, mul_one]
+  have hcompress := MagicSquareRigidity.norm_compressed_anticommutator_le
+    (MagicSquareRigidity.naimarkDilatedState MsAnswer S.ψ) (L G) (L X) (L Z)
+    (by rw [hL]; exact congrArg L hproj.isIdempotentElem.eq)
+    (MagicSquareRigidity.applyOperatorToState_leftTensor_groundProjection MsAnswer S.ψ)
+    (MagicSquareRigidity.conjTranspose_mul_le_one_leftTensor
+      (MagicSquareRigidity.conjTranspose_mul_le_one_of_isProj hproj))
+    (MagicSquareRigidity.conjTranspose_mul_le_one_leftTensor
+      (MagicSquareRigidity.conjTranspose_mul_le_one_dilatedObsA S (.var 0)))
+    (MagicSquareRigidity.conjTranspose_mul_le_one_leftTensor
+      (MagicSquareRigidity.conjTranspose_mul_le_one_dilatedObsA S (.var 4)))
+  simp only [hL, hLeak] at hcompress
+  rw [heteroKron_add_left]
+  refine hcompress.trans ?_
+  have hanti := MagicSquareRigidity.msVarObsA_anticommute S ε hwin
+  simp only [MagicSquareRigidity.NormCloseOn, msVarObsA_eq, sub_neg_eq_add] at hanti
+  have h0 := MagicSquareRigidity.norm_leak_obs_le_sqrt S ε hwin 0 0
+  have h4 := MagicSquareRigidity.norm_leak_obs_le_sqrt S ε hwin 1 1
+  change ‖applyOperatorToState (L ((1 - G) * X)) _‖ ≤ _ at h0
+  change ‖applyOperatorToState (L ((1 - G) * Z)) _‖ ≤ _ at h4
+  change ‖applyOperatorToState (L X * L Z + L Z * L X)
+    (MagicSquareRigidity.naimarkDilatedState MsAnswer S.ψ)‖ ≤ _ at hanti
+  simp only [hL] at hanti
   linarith
+
+/-- Bob's original observables satisfy the same bound after player exchange. -/
+theorem msVarObs_anticommutator_le :
+    ‖applyOperatorToState
+        (heteroKron (1 : Op S.ιA)
+          (obsOf ((S.B (.var 0)).postprocess msBitOrZero) *
+              obsOf ((S.B (.var 4)).postprocess msBitOrZero) +
+            obsOf ((S.B (.var 4)).postprocess msBitOrZero) *
+              obsOf ((S.B (.var 0)).postprocess msBitOrZero))) S.ψ‖ ^ 2 ≤ 1183680 * ε := by
+  have hv : (msGameSymm.swapStrategy S).value = S.value := msGameSymm.swapStrategy_value S
+  have h := msVarObsA_anticommutator_le (msGameSymm.swapStrategy S) ε hε (hv.symm ▸ hwin)
+  have hn (M : Op S.ιB) :
+      ‖applyOperatorToState (heteroKron M (1 : Op S.ιA))
+        (reindexState (Equiv.prodComm _ _) S.ψ)‖ =
+      ‖applyOperatorToState (heteroKron (1 : Op S.ιA) M) S.ψ‖ := by
+    rw [norm_applyOperatorToState_reindexState, reindexOp_prodComm_heteroKron]
+  rw [← hn]
+  exact h
+
+end
 
 /-! ## Reflections and the product transfer -/
 
-/-- The tensor placement respects the adjoint. Formalization-only support for
-`fact:add-a-proj`, blueprint `ch12_qpbt_games.tex:305-321`. -/
-theorem heteroKron_conjTranspose {ιA ιB : Type*} (A : Op ιA) (B : Op ιB) :
-    (heteroKron A B)ᴴ = heteroKron Aᴴ Bᴴ := by
-  ext i j
-  simp [heteroKron, Matrix.kronecker, Matrix.conjTranspose_apply]
+section
+
+variable {ιA ιB : Type*} [DecidableEq ιA]
+    [DecidableEq ιB] [Fintype ιA] [Fintype ιB]
+include ιA ιB
 
 /-- Placing an isometry on the first factor gives an isometry.
 Formalization-only support for `fact:add-a-proj`, blueprint
 `ch12_qpbt_games.tex:305-321`. -/
-theorem heteroKron_left_isometry {ιA ιB : Type*} [DecidableEq ιA]
-    [DecidableEq ιB] [Fintype ιA] [Fintype ιB] (A : Op ιA)
+theorem heteroKron_left_isometry (A : Op ιA)
     (hA : Aᴴ * A = 1) :
     (heteroKron A (1 : Op ιB))ᴴ * heteroKron A 1 = 1 := by
   rw [heteroKron_conjTranspose, heteroKron_mul, hA, Matrix.conjTranspose_one,
@@ -375,12 +202,13 @@ theorem heteroKron_left_isometry {ιA ιB : Type*} [DecidableEq ιA]
 /-- Placing an isometry on the second factor gives an isometry.
 Formalization-only support for `fact:add-a-proj`, blueprint
 `ch12_qpbt_games.tex:305-321`. -/
-theorem heteroKron_right_isometry {ιA ιB : Type*} [DecidableEq ιA]
-    [DecidableEq ιB] [Fintype ιA] [Fintype ιB] (B : Op ιB)
+theorem heteroKron_right_isometry (B : Op ιB)
     (hB : Bᴴ * B = 1) :
     (heteroKron (1 : Op ιA) B)ᴴ * heteroKron 1 B = 1 := by
   rw [heteroKron_conjTranspose, heteroKron_mul, hB, Matrix.conjTranspose_one,
     one_mul, heteroKron_one_one]
+
+end
 
 /-- The observable of a binary projective measurement is a reflection.
 Formalization-only support for `lem:povm-to-obs`, blueprint
@@ -442,40 +270,31 @@ theorem norm_product_transfer_le {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA
 
 /-! ## From the Magic Square variables to the point observables -/
 
-/-- The signed sum of the effects of a binary measurement is its observable.
-Formalization-only support for `lem:povm-to-obs`, blueprint
-`ch14_qpbt_observables.tex:365-382`. -/
-theorem sum_phaseSign_smul_effect_eq_obsOf {ι : Type*} [Fintype ι]
-    [DecidableEq ι] (M : MIPStarRE.Quantum.Measurement (ZMod 2) ι) :
-    ∑ b : ZMod 2, phaseSign b • M.effect b = obsOf M := by
-  rw [sum_zmod_two, obsOf]
-  have hzero : phaseSign (0 : ZMod 2) = 1 := by simp [phaseSign]
-  have hone : phaseSign (1 : ZMod 2) = -1 := by
-    have h : (1 : ZMod 2) ≠ 0 := by decide
-    simp [phaseSign, h]
-  rw [hzero, hone, one_smul, neg_one_smul]
-  abel
+section
+
+variable {P : AdmissibleParams} {ε : ℝ}
+    (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
+    (r : PauliScalar P) (u : PauliPoint P)
+include P ε S side W r u
 
 /-- The strategy point observable is the observable of the trace-coarse-grained
 point measurement. This is `def:strategy-observables` read through
 `lem:povm-to-obs`, paper
 `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `ch14_qpbt_observables.tex:573-610`. -/
-theorem pointObs_eq_obsOf {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
-    (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+theorem pointObs_eq_obsOf :
     S.pointObs side W r u = obsOf (S.pointTraceMeas side W u r) := by
   rw [pointObs_eq_traceMeas_obs, sum_phaseSign_smul_effect_eq_obsOf]
 
 /-- The strategy point observable is a reflection. Paper
 `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `ch14_qpbt_observables.tex:573-610`. -/
-theorem pointObs_conjTranspose_mul_self {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
-    (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+theorem pointObs_conjTranspose_mul_self :
     (S.pointObs side W r u)ᴴ * S.pointObs side W r u = 1 := by
   rw [(S.pointObs_isHermitian side W r u).eq]
   exact S.pointObs_sq_eq_one side W r u
+
+end
 
 /-- Consistency of two oppositely placed binary measurements bounds the
 operator distance of their observables. This is `lem:povm-to-obs` in the form
@@ -489,8 +308,8 @@ theorem obsDist_le_of_consistencyDefect {X ιL ιR : Type*}
     (M : X → MIPStarRE.Quantum.Measurement (ZMod 2) ιL)
     (N : X → MIPStarRE.Quantum.Measurement (ZMod 2) ιR)
     (χ : EuclideanSpace ℂ (ιL × ιR)) {c : ℝ}
-    (h : consistencyDefect μ (fun x a => heteroKron ((M x).effect a) 1)
-      (fun x a => heteroKron 1 ((N x).effect a)) χ ≤ c) :
+    (h : bipartiteDefect μ M
+      N χ ≤ c) :
     opDistSq μ (fun x => heteroKron (obsOf (M x)) (1 : Op ιR))
       (fun x => heteroKron (1 : Op ιL) (obsOf (N x))) χ ≤ 4 * c := by
   classical
@@ -498,8 +317,8 @@ theorem obsDist_le_of_consistencyDefect {X ιL ιR : Type*}
     DistanceCalculus.leftPlacedMeasurement (ιB := ιR) (M x) with hAdef
   set B : X → MIPStarRE.Quantum.Measurement (ZMod 2) (ιL × ιR) := fun x =>
     DistanceCalculus.rightPlacedMeasurement (ιA := ιL) (N x) with hBdef
-  have hfam : opFamilyDistSq μ
-      (fun x b => (A x).effect b) (fun x b => (B x).effect b) χ ≤ 2 * c :=
+  have hfam : measurementDistSq μ
+      A B χ ≤ 2 * c :=
     opFamilyDistSq_placed_le_of_consistencyDefect_le μ M N χ h
   have hobs := povm_to_obs_of_measurements μ A B phaseSign norm_phaseSign χ
   have hleft : ∀ x, (∑ b : ZMod 2, phaseSign b • (A x).effect b) =
@@ -517,16 +336,14 @@ theorem obsDist_le_of_consistencyDefect {X ιL ιR : Type*}
     opDistSq μ (fun x => ∑ b : ZMod 2, phaseSign b • (A x).effect b)
       (fun x => ∑ b : ZMod 2, phaseSign b • (B x).effect b) χ := by
     congr 1 <;> funext x
-    · exact (hleft x).symm
-    · exact (hright x).symm
+    · simp_all
+    · simp_all
   rw [hrw]
   have hcast : (Fintype.card (ZMod 2) : ℝ) = 2 := by simp
   calc
-    _ ≤ (Fintype.card (ZMod 2) : ℝ) * opFamilyDistSq μ
-        (fun x b => (A x).effect b) (fun x b => (B x).effect b) χ := hobs
-    _ ≤ 2 * (2 * c) := by
-      rw [hcast]
-      exact mul_le_mul_of_nonneg_left hfam (by norm_num)
+    _ ≤ (Fintype.card (ZMod 2) : ℝ) * measurementDistSq μ
+        A B χ := hobs
+    _ ≤ 2 * (2 * c) := by simp_all
     _ = 4 * c := by ring
 
 /-! ## The anticommuting half of the twisted commutation -/
@@ -550,27 +367,28 @@ Formalization-only support for `def:tensor-product-value`, blueprint
 theorem strategy_value_le_one {G : Game} (S : Strategy G) : S.value ≤ 1 :=
   Strategy.value_le_one S
 
+section
+
+variable {P : AdmissibleParams} {ε : ℝ}
+    (S : ProjectiveSetting P ε)
+
 /-- The Magic Square value defect of a tuple is nonnegative and admissible as
 an error parameter for the rigidity input. Formalization-only support for
 `eq:qld-implication-ms-anticomm`, paper
 `14_analysis_of_the_pauli_basis_test.tex:349-356`. -/
-theorem msValueAt_defect_nonneg {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (ω : PauliTuple P) :
+theorem msValueAt_defect_nonneg (ω : PauliTuple P) :
     0 ≤ 1 - S.msValueAt ω ∧
       1 - (1 - S.msValueAt ω) ≤ (S.msStrategyAt ω).value := by
   have hle := strategy_value_le_one (S.msStrategyAt ω)
   have heq : S.msValueAt ω = (S.msStrategyAt ω).value := rfl
-  constructor
-  · rw [heq]; linarith
-  · rw [heq]; linarith
+  simp_all
 
 /-- The Magic Square variable observables induced by the test strategy at one
 tuple approximately anticommute on Bob's factor, with error the tuple's Magic
 Square defect. This is Equation `eq:qld-implication-ms-anticomm` before
 averaging, paper `14_analysis_of_the_pauli_basis_test.tex:349-356`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem msVarBitObs_anticommutator_le {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (ω : PauliTuple P) :
+theorem msVarBitObs_anticommutator_le (ω : PauliTuple P) :
     ‖applyOperatorToState
         (heteroKron (1 : Op S.toStrategy.ιA)
           (obsOf (S.msVarBitMeas .bob 0 ω) * obsOf (S.msVarBitMeas .bob 4 ω) +
@@ -578,24 +396,6 @@ theorem msVarBitObs_anticommutator_le {P : AdmissibleParams} {ε : ℝ}
         S.toStrategy.ψ‖ ^ 2 ≤ 1183680 * (1 - S.msValueAt ω) := by
   obtain ⟨hnn, hwin⟩ := msValueAt_defect_nonneg S ω
   exact msVarObs_anticommutator_le (S.msStrategyAt ω) (1 - S.msValueAt ω) hnn
-    hwin
-
-/-- The first-factor companion of the previous estimate: the Magic Square
-variable observables of Alice approximately anticommute at one tuple. Paper
-`14_analysis_of_the_pauli_basis_test.tex:349-356`, blueprint
-`ch14_qpbt_observables.tex:761-794`. -/
-theorem msVarBitObsA_anticommutator_le {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (ω : PauliTuple P) :
-    ‖applyOperatorToState
-        (heteroKron
-          (obsOf (S.msVarBitMeas .alice 0 ω) *
-              obsOf (S.msVarBitMeas .alice 4 ω) +
-            obsOf (S.msVarBitMeas .alice 4 ω) *
-              obsOf (S.msVarBitMeas .alice 0 ω))
-          (1 : Op S.toStrategy.ιB))
-        S.toStrategy.ψ‖ ^ 2 ≤ 1183680 * (1 - S.msValueAt ω) := by
-  obtain ⟨hnn, hwin⟩ := msValueAt_defect_nonneg S ω
-  exact msVarObsA_anticommutator_le (S.msStrategyAt ω) (1 - S.msValueAt ω) hnn
     hwin
 
 /-- The two point observables approximately anticommute once each of them is
@@ -622,89 +422,48 @@ theorem obs_anticommutator_avg_le {P : AdmissibleParams} {ιL ιR : Type}
       (heteroKron (OX ω * OZ ω) (1 : Op ιR) +
         heteroKron (OZ ω * OX ω) (1 : Op ιR)) χ‖ ^ 2) ≤
       24 * cd + 3 * cv := by
-  classical
-  have hpoint : ∀ ω : PauliTuple P,
-      ‖applyOperatorToState
-          (heteroKron (OX ω * OZ ω) (1 : Op ιR) +
-            heteroKron (OZ ω * OX ω) (1 : Op ιR)) χ‖ ^ 2 ≤
-        12 * ‖applyOperatorToState (heteroKron (OX ω) (1 : Op ιR) -
-            heteroKron (1 : Op ιL) (V0 ω)) χ‖ ^ 2 +
-        12 * ‖applyOperatorToState (heteroKron (OZ ω) (1 : Op ιR) -
-            heteroKron (1 : Op ιL) (V4 ω)) χ‖ ^ 2 +
-        3 * ‖applyOperatorToState
-            (heteroKron (1 : Op ιL) (V0 ω * V4 ω + V4 ω * V0 ω)) χ‖ ^ 2 := by
-    intro ω
-    have h1 := norm_product_transfer_le (OX ω) (OZ ω) (V0 ω) (V4 ω) χ
-      (heteroKron_left_isometry (OX ω) (hOX ω))
-      (heteroKron_right_isometry (V4 ω) (hV4 ω))
-    have h2 := norm_product_transfer_le (OZ ω) (OX ω) (V4 ω) (V0 ω) χ
-      (heteroKron_left_isometry (OZ ω) (hOZ ω))
-      (heteroKron_right_isometry (V0 ω) (hV0 ω))
-    have hdecomp : heteroKron (OX ω * OZ ω) (1 : Op ιR) +
-        heteroKron (OZ ω * OX ω) (1 : Op ιR) =
-      (heteroKron (OX ω * OZ ω) (1 : Op ιR) -
-          heteroKron (1 : Op ιL) (V4 ω * V0 ω)) +
-        (heteroKron (OZ ω * OX ω) (1 : Op ιR) -
-          heteroKron (1 : Op ιL) (V0 ω * V4 ω)) +
-        heteroKron (1 : Op ιL) (V0 ω * V4 ω + V4 ω * V0 ω) := by
+  let L (M : Op ιL) := heteroKron M (1 : Op ιR)
+  let R (N : Op ιR) := heteroKron (1 : Op ιL) N
+  let n (M : Op (ιL × ιR)) := ‖applyOperatorToState M χ‖
+  let a ω := n (L (OX ω) - R (V0 ω))
+  let b ω := n (L (OZ ω) - R (V4 ω))
+  let c ω := n (R (V0 ω * V4 ω + V4 ω * V0 ω))
+  let t ω := n (L (OX ω * OZ ω) + L (OZ ω * OX ω))
+  have hpoint ω : t ω ^ 2 ≤ 12 * a ω ^ 2 + 12 * b ω ^ 2 + 3 * c ω ^ 2 := by
+    let U := L (OX ω * OZ ω) - R (V4 ω * V0 ω)
+    let V := L (OZ ω * OX ω) - R (V0 ω * V4 ω)
+    let W := R (V0 ω * V4 ω + V4 ω * V0 ω)
+    have hU : n U ≤ b ω + a ω := norm_product_transfer_le _ _ _ _ χ
+      (heteroKron_left_isometry _ (hOX ω)) (heteroKron_right_isometry _ (hV4 ω))
+    have hV : n V ≤ a ω + b ω := norm_product_transfer_le _ _ _ _ χ
+      (heteroKron_left_isometry _ (hOZ ω)) (heteroKron_right_isometry _ (hV0 ω))
+    have ht : t ω = n (U + V + W) := by
+      refine congrArg n ?_
+      change L (OX ω * OZ ω) + L (OZ ω * OX ω) = U + V + W
+      dsimp only [U, V, W, R, L]
       rw [heteroKron_add_right]
       abel
-    set t1 : ℝ := ‖applyOperatorToState (heteroKron (OX ω) (1 : Op ιR) -
-      heteroKron (1 : Op ιL) (V0 ω)) χ‖ with ht1
-    set t2 : ℝ := ‖applyOperatorToState (heteroKron (OZ ω) (1 : Op ιR) -
-      heteroKron (1 : Op ιL) (V4 ω)) χ‖ with ht2
-    set t3 : ℝ := ‖applyOperatorToState
-      (heteroKron (1 : Op ιL) (V0 ω * V4 ω + V4 ω * V0 ω)) χ‖ with ht3
-    set t0 : ℝ := ‖applyOperatorToState (heteroKron (OX ω * OZ ω) (1 : Op ιR) +
-      heteroKron (OZ ω * OX ω) (1 : Op ιR)) χ‖ with ht0
-    have hsum : t0 ≤
-        ‖applyOperatorToState (heteroKron (OX ω * OZ ω) (1 : Op ιR) -
-            heteroKron (1 : Op ιL) (V4 ω * V0 ω)) χ‖ +
-          ‖applyOperatorToState (heteroKron (OZ ω * OX ω) (1 : Op ιR) -
-            heteroKron (1 : Op ιL) (V0 ω * V4 ω)) χ‖ + t3 := by
-      rw [ht0, ht3, hdecomp, MagicSquareRigidity.applyOperatorToState_add_op,
-        MagicSquareRigidity.applyOperatorToState_add_op]
-      exact le_trans (norm_add_le _ _)
-        (add_le_add (norm_add_le _ _) le_rfl)
-    have ht0nn : (0 : ℝ) ≤ t0 := by rw [ht0]; exact norm_nonneg _
-    have ht1nn : (0 : ℝ) ≤ t1 := by rw [ht1]; exact norm_nonneg _
-    have ht2nn : (0 : ℝ) ≤ t2 := by rw [ht2]; exact norm_nonneg _
-    have ht3nn : (0 : ℝ) ≤ t3 := by rw [ht3]; exact norm_nonneg _
-    have hbound : t0 ≤ 2 * t1 + 2 * t2 + t3 := by linarith
-    have key : t0 ^ 2 ≤ 12 * t1 ^ 2 + 12 * t2 ^ 2 + 3 * t3 ^ 2 := by
-      nlinarith [hbound, ht0nn, ht1nn, ht2nn, ht3nn,
-        sq_nonneg (t1 - t2), sq_nonneg (2 * t1 - t3), sq_nonneg (2 * t2 - t3)]
-    rw [ht0, ht1, ht2, ht3] at key
-    exact key
-  calc
-    _ ≤ avgOver (anticommTupleDist P) (fun ω =>
-        12 * ‖applyOperatorToState (heteroKron (OX ω) (1 : Op ιR) -
-            heteroKron (1 : Op ιL) (V0 ω)) χ‖ ^ 2 +
-        12 * ‖applyOperatorToState (heteroKron (OZ ω) (1 : Op ιR) -
-            heteroKron (1 : Op ιL) (V4 ω)) χ‖ ^ 2 +
-        3 * ‖applyOperatorToState
-          (heteroKron (1 : Op ιL) (V0 ω * V4 ω + V4 ω * V0 ω)) χ‖ ^ 2) :=
-      avgOver_mono _ _ _ hpoint
-    _ = 12 * avgOver (anticommTupleDist P) (fun ω =>
-          ‖applyOperatorToState (heteroKron (OX ω) (1 : Op ιR) -
-            heteroKron (1 : Op ιL) (V0 ω)) χ‖ ^ 2) +
-        12 * avgOver (anticommTupleDist P) (fun ω =>
-          ‖applyOperatorToState (heteroKron (OZ ω) (1 : Op ιR) -
-            heteroKron (1 : Op ιL) (V4 ω)) χ‖ ^ 2) +
-        3 * avgOver (anticommTupleDist P) (fun ω =>
-          ‖applyOperatorToState
-            (heteroKron (1 : Op ιL)
-              (V0 ω * V4 ω + V4 ω * V0 ω)) χ‖ ^ 2) := by
-      rw [avgOver_add, avgOver_add, avgOver_const_mul, avgOver_const_mul,
-        avgOver_const_mul]
-    _ ≤ 24 * cd + 3 * cv := by linarith
+    have htri (M N) : n (M + N) ≤ n M + n N := by
+      simpa only [n, MagicSquareRigidity.applyOperatorToState_add_op] using
+        norm_add_le (applyOperatorToState M χ) (applyOperatorToState N χ)
+    have hbound : t ω ≤ 2 * a ω + 2 * b ω + c ω := by
+      rw [ht]
+      have h := (htri (U + V) W).trans (add_le_add (htri U V) le_rfl)
+      change n (U + V + W) ≤ n U + n V + c ω at h
+      linarith
+    nlinarith only [DistanceCalculus.sq_le_three_sq_of_le (norm_nonneg _) hbound]
+  refine (avgOver_mono _ _ _ hpoint).trans ?_
+  simp only [avgOver_add, avgOver_const_mul]
+  change avgOver _ (fun ω => a ω ^ 2) ≤ cd at h0
+  change avgOver _ (fun ω => b ω ^ 2) ≤ cd at h4
+  change avgOver _ (fun ω => c ω ^ 2) ≤ cv at hv
+  linarith only [h0, h4, hv]
 
 /-- The observable of a binary projective measurement obtained from a strategy
 measurement by two postprocessings is a reflection. Formalization-only support
 for `eq:qld-implication-ms-anticomm`, blueprint
 `lem:qld-win-implications-obs`. -/
-theorem msVarBitObs_conjTranspose_mul_self {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (side : PlayerSide) (j : Fin 9)
+theorem msVarBitObs_conjTranspose_mul_self (side : PlayerSide) (j : Fin 9)
     (ω : PauliTuple P) :
     (obsOf (S.msVarBitMeas side j ω))ᴴ *
       obsOf (S.msVarBitMeas side j ω) = 1 := by
@@ -718,13 +477,18 @@ theorem msVarBitObs_conjTranspose_mul_self {P : AdmissibleParams} {ε : ℝ}
 /-- The observable of a trace-coarse-grained point measurement is a
 reflection. Paper `14_analysis_of_the_pauli_basis_test.tex:174-190`,
 blueprint `ch14_qpbt_observables.tex:573-610`. -/
-theorem pointTraceObs_conjTranspose_mul_self {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) :
+theorem pointTraceObs_conjTranspose_mul_self (side : PlayerSide) (W : PauliKind)
+    (u : PauliPoint P) (r : PauliScalar P) :
     (obsOf (S.pointTraceMeas side W u r))ᴴ *
       obsOf (S.pointTraceMeas side W u r) = 1 := by
   rw [← pointObs_eq_obsOf]
   exact pointObs_conjTranspose_mul_self S side W r u
+
+end
+
+abbrev anticommutingObsConstant : ℝ :=
+  96 * (16 * (Fintype.card PauliEdge : ℝ)) +
+    3551040 * (16 * (Fintype.card PauliEdge : ℝ))
 
 /-- The point observables approximately anticommute on anticommuting tuples.
 This is the anticommuting half of Equation `eq:pts-obs-commutation`, paper
@@ -734,72 +498,33 @@ theorem point_obs_anticommutator_anticomm_le_explicit :
     ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε), 0 ≤ ε →
       avgOver (anticommTupleDist P) (fun ω =>
         ‖applyOperatorToState
-          (heteroKron (S.pointObs .alice .X ω.2.2.1 ω.1 *
-              S.pointObs .alice .Z ω.2.2.2 ω.2.1) (1 : Op S.toStrategy.ιB) +
-            heteroKron (S.pointObs .alice .Z ω.2.2.2 ω.2.1 *
-              S.pointObs .alice .X ω.2.2.1 ω.1) (1 : Op S.toStrategy.ιB))
+          (heteroKron (S.pointProductAt .alice .X ω) (1 : Op S.toStrategy.ιB) +
+            heteroKron (S.pointProductAt .alice .Z ω) (1 : Op S.toStrategy.ιB))
           S.toStrategy.ψ‖ ^ 2) ≤
-        (96 * (16 * (Fintype.card PauliEdge : ℝ)) +
-          3551040 * (16 * (Fintype.card PauliEdge : ℝ))) * ε := by
+        anticommutingObsConstant * ε := by
   classical
   intro P ε S hε
-  simp only [pointObs_eq_obsOf]
-  have hdist : ∀ W : PauliKind,
-      avgOver (anticommTupleDist P) (fun ω => ‖applyOperatorToState
-        (heteroKron (ιA := S.toStrategy.ιA) (ιB := S.toStrategy.ιB)
-            (obsOf (S.pointTraceMeas .alice W (selectedTuplePoint W ω)
-              (selectedTupleScalar W ω))) 1 -
-          heteroKron (ιA := S.toStrategy.ιA) (ιB := S.toStrategy.ιB) 1
-            (obsOf (S.msVarBitMeas .bob (selectedMsVar W) ω)))
-        S.toStrategy.ψ‖ ^ 2) ≤
-          4 * ((16 * (Fintype.card PauliEdge : ℝ)) * ε) := by
-    intro W
-    have h := obsDist_le_of_consistencyDefect
-      (ιL := S.toStrategy.ιA) (ιR := S.toStrategy.ιB) (anticommTupleDist P)
-      (fun ω => S.pointTraceMeas .alice W (selectedTuplePoint W ω)
-        (selectedTupleScalar W ω))
-      (fun ω => S.msVarBitMeas .bob (selectedMsVar W) ω) S.toStrategy.ψ
-      (win_ms_cons_explicit P ε S hε W)
-    rw [opDistSq_eq_avgOver] at h
-    exact h
-  have hdefect : avgOver (anticommTupleDist P)
-      (fun ω => 1 - S.msValueAt ω) ≤
-        (16 * (Fintype.card PauliEdge : ℝ)) * ε := by
-    have hprob := anticommTupleDist_isProbability P
-    have hsplit : avgOver (anticommTupleDist P)
-        (fun ω => 1 - S.msValueAt ω) =
-        1 - avgOver (anticommTupleDist P) S.msValueAt := by
-      rw [avgOver_sub, avgOver_const_of_isProbability _ hprob]
-    rw [hsplit]
+  simp only [ProjectiveSetting.pointProductAt, ProjectiveSetting.pointObsAt, pointObs_eq_obsOf]
+  let M W ω := S.pointTraceAt .alice W ω
+  let N W ω := S.msVarBitMeas .bob (selectedMsVar W) ω
+  have hd W := obsDist_le_of_consistencyDefect (anticommTupleDist P) (M W) (N W)
+    S.toStrategy.ψ (win_ms_cons_explicit P ε S hε W)
+  simp only [opDistSq_eq_avgOver] at hd
+  let d := 16 * (Fintype.card PauliEdge : ℝ) * ε
+  have hv : avgOver (anticommTupleDist P) (fun ω => 1 - S.msValueAt ω) ≤ d := by
+    rw [avgOver_sub, avgOver_const_of_isProbability _ (anticommTupleDist_isProbability P)]
     exact le_of_abs_le (win_magic_square_explicit P ε S hε)
-  have hmsavg : avgOver (anticommTupleDist P) (fun ω =>
-      ‖applyOperatorToState
-        (heteroKron (ιA := S.toStrategy.ιA) (ιB := S.toStrategy.ιB) 1
-          (obsOf (S.msVarBitMeas .bob 0 ω) * obsOf (S.msVarBitMeas .bob 4 ω) +
-            obsOf (S.msVarBitMeas .bob 4 ω) *
-              obsOf (S.msVarBitMeas .bob 0 ω)))
-        S.toStrategy.ψ‖ ^ 2) ≤
-          1183680 * ((16 * (Fintype.card PauliEdge : ℝ)) * ε) := by
-    calc
-      _ ≤ avgOver (anticommTupleDist P)
-          (fun ω => 1183680 * (1 - S.msValueAt ω)) :=
-        avgOver_mono _ _ _ (fun ω => msVarBitObs_anticommutator_le S ω)
-      _ = 1183680 * avgOver (anticommTupleDist P)
-          (fun ω => 1 - S.msValueAt ω) := avgOver_const_mul _ _ _
-      _ ≤ 1183680 * ((16 * (Fintype.card PauliEdge : ℝ)) * ε) :=
-        mul_le_mul_of_nonneg_left hdefect (by norm_num)
-  have hmain := obs_anticommutator_avg_le (ιL := S.toStrategy.ιA)
-    (ιR := S.toStrategy.ιB)
-    (fun ω => obsOf (S.pointTraceMeas .alice .X ω.1 ω.2.2.1))
-    (fun ω => obsOf (S.pointTraceMeas .alice .Z ω.2.1 ω.2.2.2))
-    (fun ω => obsOf (S.msVarBitMeas .bob 0 ω))
-    (fun ω => obsOf (S.msVarBitMeas .bob 4 ω)) S.toStrategy.ψ
-    (fun ω => pointTraceObs_conjTranspose_mul_self S .alice .X ω.1 ω.2.2.1)
-    (fun ω => pointTraceObs_conjTranspose_mul_self S .alice .Z ω.2.1 ω.2.2.2)
+  have hms := avgOver_mono (anticommTupleDist P) _ _ (msVarBitObs_anticommutator_le S)
+  rw [avgOver_const_mul] at hms
+  have h := obs_anticommutator_avg_le
+    (fun ω => obsOf (M .X ω)) (fun ω => obsOf (M .Z ω))
+    (fun ω => obsOf (N .X ω)) (fun ω => obsOf (N .Z ω)) S.toStrategy.ψ
+    (fun ω => pointTraceObs_conjTranspose_mul_self S .alice .X _ _)
+    (fun ω => pointTraceObs_conjTranspose_mul_self S .alice .Z _ _)
     (fun ω => msVarBitObs_conjTranspose_mul_self S .bob 0 ω)
     (fun ω => msVarBitObs_conjTranspose_mul_self S .bob 4 ω)
-    (hdist .X) (hdist .Z) hmsavg
-  exact le_trans hmain (le_of_eq (by ring))
+    (hd .X) (hd .Z) (hms.trans (mul_le_mul_of_nonneg_left hv (by norm_num)))
+  exact h.trans_eq (by dsimp [d, anticommutingObsConstant]; ring)
 
 end WinImplications
 

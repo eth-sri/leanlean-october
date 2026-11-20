@@ -36,16 +36,79 @@ def evalCoefficient {K : Type*} [Semiring K] {n : ℕ}
     (c : Fin n → K) (t : K) : K :=
   ∑ i : Fin n, c i * t ^ i.val
 
+/-- Zero-extend a coefficient tuple to a larger index set. -/
+def padCoefficients {K : Type*} [Zero K] {n m : ℕ} (_h : n ≤ m)
+    (f : Fin n → K) : Fin m → K :=
+  fun i => if hi : i.val < n then f ⟨i.val, hi⟩ else 0
+
+section
+
+variable {K : Type*} [Semiring K] {n m : ℕ} (h : n ≤ m)
+include K n m h
+
+/-- Restricting to a prefix that contains the support leaves evaluation unchanged. -/
+theorem evalCoefficient_restrict
+    (f : Fin m → K) (hs : ∀ i, n ≤ i.val → f i = 0) (t : K) :
+    evalCoefficient (f ∘ Fin.castLE h) t = evalCoefficient f t := by
+  refine Fintype.sum_of_injective (Fin.castLE h) (Fin.castLE_injective h) _ _ ?_ (fun _ => rfl)
+  simp_all
+
+@[simp] theorem evalCoefficient_pad
+    (f : Fin n → K) (t : K) : evalCoefficient (padCoefficients h f) t = evalCoefficient f t := by
+  symm
+  simpa [Function.comp_def, padCoefficients, Fin.isLt] using
+    evalCoefficient_restrict h (padCoefficients h f)
+      (fun i hi => by simp [padCoefficients, Nat.not_lt.mpr hi]) t
+
+end
+
+namespace LineEvaluation
+
+section
+
+variable {K : Type*} (admissible : K → Prop) (f : K → K)
+include K admissible f
+
+/-- The admissible parameters are nonempty and all give the specified value. -/
+def Determines (a : K) : Prop :=
+  (∃ t, admissible t) ∧ ∀ t, admissible t → f t = a
+
+/-- Partial evaluation, including in degenerate line presentations. -/
+noncomputable def value : Option K :=
+  open Classical in
+  if h : ∃ a, Determines admissible f a then some (Classical.choose h) else none
+
+end
+
+theorem value_eq_some_iff {K : Type*} {admissible : K → Prop} {f : K → K} {a : K} :
+    value admissible f = some a ↔ Determines admissible f a := by
+  classical
+  unfold value
+  split_ifs with h
+  · rw [Option.some.injEq]
+    exact { mp := fun e ↦ e ▸ Classical.choose_spec h,   mpr := fun ha ↦     Exists.casesOn ha.left fun t ht ↦ Eq.trans (Eq.symm ((Classical.choose_spec h).right t ht)) (ha.right t ht) }
+  · exact ⟨by simp, fun ha => (h ⟨a, ha⟩).elim⟩
+
+end LineEvaluation
+
+section
+
+variable {K : Type*} [Semiring K]
+include K
+
+section
+
+variable {c : ℕ} (f : Fin (c + 1) → K)
+include c f
+
 /-- The univariate polynomial `sum_{i = 0}^c f_i X^i` determined by a bounded
 coefficient list. -/
-noncomputable def linePolynomialOfCoefficients {K : Type*} [Semiring K]
-    {c : ℕ} (f : Fin (c + 1) → K) : Polynomial K :=
+noncomputable def linePolynomialOfCoefficients : Polynomial K :=
   ∑ i : Fin (c + 1), Polynomial.C (f i) * Polynomial.X ^ i.val
 
 /-- Evaluating the polynomial represented by a coefficient list agrees with
 `evalCoefficient`. -/
-theorem linePolynomialOfCoefficients_eval {K : Type*} [Semiring K]
-    {c : ℕ} (f : Fin (c + 1) → K) (t : K) :
+theorem linePolynomialOfCoefficients_eval (t : K) :
     (linePolynomialOfCoefficients f).eval t = evalCoefficient f t := by
   change Polynomial.eval t
       (∑ i ∈ Finset.univ, Polynomial.C (f i) * Polynomial.X ^ i.val) =
@@ -53,29 +116,33 @@ theorem linePolynomialOfCoefficients_eval {K : Type*} [Semiring K]
   rw [Polynomial.eval_finsetSum]
   simp
 
+end
+
 /-- The coefficient sum is the polynomial with coefficient `f i` in degree
 `i.val` for `i : Fin (c + 1)` and zero coefficients in degrees greater than `c`. -/
-theorem linePolynomialOfCoefficients_eq_ofFn {K : Type*} [Semiring K]
+theorem linePolynomialOfCoefficients_eq_ofFn
     [DecidableEq K] {c : ℕ} (f : Fin (c + 1) → K) :
     linePolynomialOfCoefficients f = Polynomial.ofFn (c + 1) f := by
   simp only [linePolynomialOfCoefficients, Polynomial.ofFn_eq_sum_monomial,
     Polynomial.C_mul_X_pow_eq_monomial]
 
 /-- Distinct bounded coefficient vectors represent distinct polynomials. -/
-theorem linePolynomialOfCoefficients_injective {K : Type*} [Semiring K] (c : ℕ) :
+theorem linePolynomialOfCoefficients_injective (c : ℕ) :
     Function.Injective (linePolynomialOfCoefficients (K := K) (c := c)) := by
   classical
   intro first second heq
   exact Polynomial.injective_ofFn (c + 1)
-    (by simpa only [linePolynomialOfCoefficients_eq_ofFn] using heq)
+    (by simp_all [linePolynomialOfCoefficients_eq_ofFn])
 
 /-- The polynomial of a bounded coefficient vector has degree at most `n`. -/
-theorem linePolynomialOfCoefficients_natDegree_le {K : Type*} [Semiring K] {n : ℕ}
+theorem linePolynomialOfCoefficients_natDegree_le {n : ℕ}
     (f : Fin (n + 1) → K) :
     (linePolynomialOfCoefficients f).natDegree ≤ n := by
   classical
   rw [linePolynomialOfCoefficients_eq_ofFn]
   exact Nat.lt_succ_iff.mp (Polynomial.ofFn_natDegree_lt (Nat.succ_pos n) f)
+
+end
 
 /-- Distinct coefficient polynomials of degree at most `bound` agree at no
 more than `bound` elements of a finite integral domain. This is the univariate

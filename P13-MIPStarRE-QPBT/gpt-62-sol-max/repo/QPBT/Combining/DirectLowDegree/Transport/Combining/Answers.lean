@@ -68,21 +68,24 @@ theorem evalCoefficient_coefficientsOfPolynomial {K : Type*} [Semiring K] {n : �
     ← Fin.sum_univ_eq_sum_range (fun i => p.coeff i * t ^ i) (n + 1)]
   rfl
 
+section
+
+variable {K : Type*} [CommSemiring K] {n : ℕ}
+    (f : Fin (n + 1) → K)
+include K n f
+
 /-- The affine reparametrization `t ↦ evalCoefficient f (t + s)` of a bounded
 coefficient vector, as a univariate polynomial. -/
-def shiftedLinePolynomial {K : Type*} [CommSemiring K] {n : ℕ}
-    (f : Fin (n + 1) → K) (s : K) : Polynomial K :=
+def shiftedLinePolynomial (s : K) : Polynomial K :=
   (linePolynomialOfCoefficients f).comp (Polynomial.X + Polynomial.C s)
 
-theorem shiftedLinePolynomial_eval {K : Type*} [CommSemiring K] {n : ℕ}
-    (f : Fin (n + 1) → K) (s t : K) :
+theorem shiftedLinePolynomial_eval (s t : K) :
     (shiftedLinePolynomial f s).eval t = evalCoefficient f (t + s) := by
   rw [shiftedLinePolynomial, Polynomial.eval_comp]
   simpa using linePolynomialOfCoefficients_eval f (t + s)
 
 /-- Reparametrizing does not raise the degree of a line answer. -/
-theorem shiftedLinePolynomial_natDegree_le {K : Type*} [CommSemiring K] {n : ℕ}
-    (f : Fin (n + 1) → K) (s : K) :
+theorem shiftedLinePolynomial_natDegree_le (s : K) :
     (shiftedLinePolynomial f s).natDegree ≤ n := by
   refine le_trans Polynomial.natDegree_comp_le ?_
   have hshift : (Polynomial.X + Polynomial.C s : Polynomial K).natDegree ≤ 1 := by
@@ -93,43 +96,25 @@ theorem shiftedLinePolynomial_natDegree_le {K : Type*} [CommSemiring K] {n : ℕ
       ≤ n * 1 := Nat.mul_le_mul (linePolynomialOfCoefficients_natDegree_le f) hshift
     _ = n := mul_one n
 
+end
+
 /-! ## The answer polynomials of the combined strategy -/
 
-/-- The combined answer on an axis-parallel line of the combined space whose
-stored index is a point coordinate: the combining part `α` of the canonical
-base is constant along such a line, so the answer is the fixed combination
-`∑ r, α r * f r` of the measured line answers, reparametrized by `s`.  This is
-case 2 of `def:ld-combined-strategy`. -/
-def combinedAxisPolynomial {K : Type*} [CommSemiring K] {k n : ℕ}
-    (α : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) : Polynomial K :=
-  ∑ r : Fin k, Polynomial.C (α r) * shiftedLinePolynomial (f r) s
+section
 
-theorem combinedAxisPolynomial_natDegree_le {K : Type*} [CommSemiring K] {k n : ℕ}
-    (α : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) :
-    (combinedAxisPolynomial α s f).natDegree ≤ n := by
-  refine Polynomial.natDegree_sum_le_of_forall_le _ _ fun r _ => ?_
-  exact le_trans (Polynomial.natDegree_C_mul_le _ _)
-    (shiftedLinePolynomial_natDegree_le (f r) s)
-
-theorem combinedAxisPolynomial_eval {K : Type*} [CommSemiring K] {k n : ℕ}
-    (α : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) (t : K) :
-    (combinedAxisPolynomial α s f).eval t =
-      ∑ r : Fin k, α r * evalCoefficient (f r) (t + s) := by
-  rw [combinedAxisPolynomial, Polynomial.eval_finsetSum]
-  refine Finset.sum_congr rfl fun r _ => ?_
-  rw [Polynomial.eval_mul, Polynomial.eval_C, shiftedLinePolynomial_eval]
+variable {K : Type*} [CommSemiring K] {k n : ℕ}
+    (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K)
+include K k n α w s f
 
 /-- The combined answer on a diagonal line of the combined space whose stored
 index is a point coordinate: the combining part of the point at parameter `t`
 is `α + t • w`, so the answer is `∑ r, (α r + t * w r) * f r (t + s)`.  This is
 case 4 of `def:ld-combined-strategy`. -/
-def combinedDiagonalPolynomial {K : Type*} [CommSemiring K] {k n : ℕ}
-    (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) : Polynomial K :=
+def combinedDiagonalPolynomial : Polynomial K :=
   ∑ r : Fin k, (Polynomial.C (α r) + Polynomial.C (w r) * Polynomial.X) *
     shiftedLinePolynomial (f r) s
 
-theorem combinedDiagonalPolynomial_natDegree_le {K : Type*} [CommSemiring K]
-    {k n : ℕ} (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) :
+theorem combinedDiagonalPolynomial_natDegree_le :
     (combinedDiagonalPolynomial α w s f).natDegree ≤ n + 1 := by
   refine Polynomial.natDegree_sum_le_of_forall_le _ _ fun r _ => ?_
   refine le_trans (Polynomial.natDegree_mul_le) ?_
@@ -142,8 +127,7 @@ theorem combinedDiagonalPolynomial_natDegree_le {K : Type*} [CommSemiring K]
   have := shiftedLinePolynomial_natDegree_le (f r) s
   omega
 
-theorem combinedDiagonalPolynomial_eval {K : Type*} [CommSemiring K] {k n : ℕ}
-    (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) (t : K) :
+theorem combinedDiagonalPolynomial_eval (t : K) :
     (combinedDiagonalPolynomial α w s f).eval t =
       ∑ r : Fin k, (α r + t * w r) * evalCoefficient (f r) (t + s) := by
   rw [combinedDiagonalPolynomial, Polynomial.eval_finsetSum]
@@ -153,25 +137,49 @@ theorem combinedDiagonalPolynomial_eval {K : Type*} [CommSemiring K] {k n : ℕ}
     shiftedLinePolynomial_eval]
   ring
 
+end
+
+section
+
+variable {K : Type*} [CommSemiring K] {k n : ℕ}
+    (α : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K)
+include K k n α s f
+
+/-- For an axis direction with no combining component, the weight is constant. -/
+def combinedAxisPolynomial : Polynomial K :=
+  combinedDiagonalPolynomial α 0 s f
+
+theorem combinedAxisPolynomial_natDegree_le :
+    (combinedAxisPolynomial α s f).natDegree ≤ n := by
+  simp only [combinedAxisPolynomial, combinedDiagonalPolynomial, Pi.zero_apply,
+    map_zero, zero_mul, add_zero]
+  refine Polynomial.natDegree_sum_le_of_forall_le _ _ fun r _ => ?_
+  exact (Polynomial.natDegree_C_mul_le _ _).trans (shiftedLinePolynomial_natDegree_le (f r) s)
+
+end
+
+section
+
+variable {K : Type*} [CommSemiring K] {k : ℕ}
+    (α w b : Fin k → K)
+include K k α w b
+
 /-- The combined answer on a line of the combined space contained in a fiber of
 the projection to the point coordinates: the point part is constant along the
 line, the combined value at parameter `t` is `∑ r, (α r + t * w r) * b r`, and
 the measured outcome is the point answer `b`.  This is cases 3 and 5 of
 `def:ld-combined-strategy`; case 3 is the axis-parallel case, where `w` is the
 standard basis vector of the varying combining coordinate. -/
-def fiberLinePolynomial {K : Type*} [CommSemiring K] {k : ℕ}
-    (α w b : Fin k → K) : Polynomial K :=
+def fiberLinePolynomial : Polynomial K :=
   Polynomial.C (∑ r : Fin k, α r * b r) +
     Polynomial.C (∑ r : Fin k, w r * b r) * Polynomial.X
 
-theorem fiberLinePolynomial_natDegree_le {K : Type*} [CommSemiring K] {k : ℕ}
-    (α w b : Fin k → K) : (fiberLinePolynomial α w b).natDegree ≤ 1 := by
+theorem fiberLinePolynomial_natDegree_le : (fiberLinePolynomial α w b).natDegree ≤ 1 := by
   refine le_trans (Polynomial.natDegree_add_le _ _) (max_le ?_ ?_)
-  · exact le_trans (le_of_eq (Polynomial.natDegree_C _)) (Nat.zero_le 1)
+  · grind
   · exact le_trans (Polynomial.natDegree_C_mul_le _ _) Polynomial.natDegree_X_le
 
-theorem fiberLinePolynomial_eval {K : Type*} [CommSemiring K] {k : ℕ}
-    (α w b : Fin k → K) (t : K) :
+theorem fiberLinePolynomial_eval (t : K) :
     (fiberLinePolynomial α w b).eval t =
       ∑ r : Fin k, (α r + t * w r) * b r := by
   rw [fiberLinePolynomial]
@@ -179,6 +187,8 @@ theorem fiberLinePolynomial_eval {K : Type*} [CommSemiring K] {k : ℕ}
     Polynomial.eval_X]
   rw [Finset.sum_mul, ← Finset.sum_add_distrib]
   exact Finset.sum_congr rfl fun r _ => by ring
+
+end
 
 end
 

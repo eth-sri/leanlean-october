@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Combining.ExtendedLineGame.RoundedPolynomialEstimates
+public import QPBT.Combining.ExtendedLineGame.PairMeasurement
 public import Mathlib.Algebra.MvPolynomial.Equiv
 
 /-!
@@ -47,7 +47,7 @@ private theorem totalDegree_le_of_exponents {F : Type*} [CommSemiring F]
   intro e he
   rw [Finsupp.sum_fintype _ _ (by simp)]
   calc
-    ∑ i : Fin n, e i ≤ ∑ _i : Fin n, d := Finset.sum_le_sum fun i _ => h e he i
+    _ ≤ ∑ _i : Fin n, d := Finset.sum_le_sum fun i _ => h e he i
     _ = n * d := by simp
 
 private theorem sumRingEquiv_degrees {F : Type*} [CommSemiring F] {k n d : ℕ}
@@ -80,84 +80,82 @@ def scalarBaseCoordinateEquiv (m : ℕ) : Fin (2 * m + 2) ≃ Fin 2 ⊕ Fin (2 *
     ((Equiv.sumCongr (baseCoordinateEquiv m).symm (Equiv.refl _)).trans
       (Equiv.sumComm _ _))
 
+private theorem rename_exponents {F A B : Type*} [CommSemiring F] {d : ℕ}
+    (e : A ≃ B) (p : MvPolynomial A F) (h : ∀ v ∈ p.support, ∀ i, v i ≤ d) :
+    ∀ v ∈ (MvPolynomial.rename e p).support, ∀ j, v j ≤ d := by
+  intro v hv j
+  obtain ⟨u, rfl, hu⟩ := MvPolynomial.coeff_rename_ne_zero _ _ _
+    (MvPolynomial.mem_support_iff.mp hv)
+  simp_all
+
+section
+
+variable (P : AdmissibleParams) (g : ExtendedPoly P)
+
 /-- The actual singleton outcome as a polynomial in `alpha,beta` with
 coefficients in the `2m` base variables, over the canonical Pauli field. -/
-def scalarPolynomial (P : AdmissibleParams) (g : DirectPolyTuple P.extendedDirectLd) :
+def scalarPolynomial :
     MvPolynomial (Fin 2) (MvPolynomial (Fin (2 * P.m)) (PauliScalar P)) :=
   MvPolynomial.sumRingEquiv _ _ _
     (MvPolynomial.rename (scalarBaseCoordinateEquiv P.m)
-      (MvPolynomial.map (extendedDirectScalarEquiv P).toRingHom (g (0 : Fin 1)).1))
+      ((directPolynomialEquiv P) g).1)
 
-private theorem scalarPolynomial_renamed_exponents (P : AdmissibleParams)
-    (g : DirectPolyTuple P.extendedDirectLd) :
+/-- Outcomes linear in the two scalar coordinates, with arbitrary base coefficients. -/
+abbrev ScalarLinear : Prop :=
+  ∃ r t, scalarPolynomial P g = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1
+
+private theorem scalarPolynomial_renamed_exponents :
     ∀ e ∈ (MvPolynomial.rename (scalarBaseCoordinateEquiv P.m)
-      (MvPolynomial.map (extendedDirectScalarEquiv P).toRingHom (g (0 : Fin 1)).1)).support,
-      ∀ i, e i ≤ P.d := by
-  intro e he i
-  obtain ⟨v, hv, hvp⟩ := MvPolynomial.coeff_rename_ne_zero _ _ _
-    (MvPolynomial.mem_support_iff.mp he)
-  have hmem := MvPolynomial.support_map_subset _ _ (MvPolynomial.mem_support_iff.mpr hvp)
-  have hdeg := Preliminaries.degreeOf_le_of_mem_polyFunc (g (0 : Fin 1)).2
-    ((scalarBaseCoordinateEquiv P.m).symm i)
-  have hvbound := (MvPolynomial.le_degreeOf_of_mem_support _ hmem).trans hdeg
-  change v ((scalarBaseCoordinateEquiv P.m).symm i) ≤ P.d at hvbound
-  subst e
-  simpa only [Finsupp.mapDomain_equiv_apply] using hvbound
+      ((directPolynomialEquiv P) g).1).support, ∀ i, e i ≤ P.d :=
+  rename_exponents _ _ ((MvPolynomial.mem_restrictDegree _ _ _).mp ((directPolynomialEquiv P) g).2)
 
 /-- Both degree bounds follow from the genuine individual-degree certificate:
 every base coefficient has degree at most `2md`, and the outer scalar
 polynomial has degree at most `2d`. No degree hypothesis is added. -/
-theorem scalarPolynomial_degrees (P : AdmissibleParams)
-    (g : DirectPolyTuple P.extendedDirectLd) :
+theorem scalarPolynomial_degrees :
     (∀ a, ((scalarPolynomial P g).coeff a).totalDegree ≤ 2 * P.m * P.d) ∧
-      (scalarPolynomial P g).totalDegree ≤ 2 * P.d := by
-  exact sumRingEquiv_degrees _ (scalarPolynomial_renamed_exponents P g)
+      (scalarPolynomial P g).totalDegree ≤ 2 * P.d := sumRingEquiv_degrees _ (scalarPolynomial_renamed_exponents P g)
+
+/-- Base coordinates in the selected block order. -/
+def blockOrder (m : ℕ) (W : PauliKind) : Fin (2 * m) ≃ Fin m ⊕ Fin m :=
+  match W with
+  | .X => baseCoordinateEquiv m
+  | .Z => (baseCoordinateEquiv m).trans (Equiv.sumComm _ _)
 
 /-- Split a base coefficient into a polynomial in either varying block with
 coefficients in the fixed block. The order parameter selects either `x` or `z`
 as the varying block. This supports the two applications of `eq:qld-g-2` in
 paper lines 1341--1358 and blueprint `lem:qld-4-7`. -/
-def blockCoefficientPolynomial (P : AdmissibleParams)
-    (g : DirectPolyTuple P.extendedDirectLd) (a : Fin 2 →₀ ℕ) (reverse : Bool) :
+def blockCoefficientPolynomial (a : Fin 2 →₀ ℕ) (W : PauliKind) :
     MvPolynomial (Fin P.m) (MvPolynomial (Fin P.m) (PauliScalar P)) :=
   MvPolynomial.sumRingEquiv _ _ _ (MvPolynomial.rename
-    ((baseCoordinateEquiv P.m).trans
-      (if reverse then Equiv.sumComm _ _ else Equiv.refl _)) ((scalarPolynomial P g).coeff a))
+    (blockOrder P.m W) ((scalarPolynomial P g).coeff a))
 
-private theorem blockCoefficientPolynomial_renamed_exponents (P : AdmissibleParams)
-    (g : DirectPolyTuple P.extendedDirectLd) (a : Fin 2 →₀ ℕ) (reverse : Bool) :
-    ∀ e ∈ (MvPolynomial.rename ((baseCoordinateEquiv P.m).trans
-      (if reverse then Equiv.sumComm _ _ else Equiv.refl _))
+/-- Independence of the varying block for the second coefficient in the selected order. -/
+abbrev ScalarBlockConstant
+    (W : PauliKind) : Prop :=
+  ∃ r, blockCoefficientPolynomial P g (Finsupp.single (W.component (1, 0)) 1) W =
+    MvPolynomial.C r
+
+private theorem blockCoefficientPolynomial_renamed_exponents (a : Fin 2 →₀ ℕ) (W : PauliKind) :
+    ∀ e ∈ (MvPolynomial.rename (blockOrder P.m W)
         ((scalarPolynomial P g).coeff a)).support, ∀ i, e i ≤ P.d := by
-  intro e he i
-  let eqv := (baseCoordinateEquiv P.m).trans
-    (if reverse then Equiv.sumComm _ _ else Equiv.refl _)
-  obtain ⟨v, hv, hvp⟩ := MvPolynomial.coeff_rename_ne_zero _ _ _
-    (MvPolynomial.mem_support_iff.mp he)
-  have hcoeff :
-      (MvPolynomial.rename (scalarBaseCoordinateEquiv P.m)
-        (MvPolynomial.map (extendedDirectScalarEquiv P).toRingHom (g (0 : Fin 1)).1)).coeff
-        (Finsupp.sumFinsuppAddEquivProdFinsupp.symm (a, v)) ≠ 0 := by
-    simpa only [scalarPolynomial, coeff_coeff_sumRingEquiv] using hvp
-  have hb := scalarPolynomial_renamed_exponents P g _
-    (MvPolynomial.mem_support_iff.mpr hcoeff) (.inr (eqv.symm i))
-  change v (eqv.symm i) ≤ P.d at hb
-  subst e
-  simpa only [Finsupp.mapDomain_equiv_apply] using hb
+  apply rename_exponents
+  intro v hv i
+  exact scalarPolynomial_renamed_exponents P g _ (by
+    simpa only [scalarPolynomial, coeff_coeff_sumRingEquiv, MvPolynomial.mem_support_iff] using hv)
+    (.inr i)
 
 /-- Both partial degrees are at most `md`, for either choice of varying
 block, directly from the actual outcome's individual-degree certificate.
 This supplies the coefficient and fiber bounds in `eq:qld-g-2`, supporting
 blueprint `lem:qld-4-7`; no degree or specialization premise is added. -/
-theorem blockCoefficientPolynomial_degrees (P : AdmissibleParams)
-    (g : DirectPolyTuple P.extendedDirectLd) (a : Fin 2 →₀ ℕ) (reverse : Bool) :
-    (∀ e, ((blockCoefficientPolynomial P g a reverse).coeff e).totalDegree ≤ P.m * P.d) ∧
-      (blockCoefficientPolynomial P g a reverse).totalDegree ≤ P.m * P.d := by
-  exact sumRingEquiv_degrees _ (blockCoefficientPolynomial_renamed_exponents P g a reverse)
+theorem blockCoefficientPolynomial_degrees (a : Fin 2 →₀ ℕ) (W : PauliKind) :
+    (∀ e, ((blockCoefficientPolynomial P g a W).coeff e).totalDegree ≤ P.m * P.d) ∧
+      (blockCoefficientPolynomial P g a W).totalDegree ≤ P.m * P.d := sumRingEquiv_degrees _ (blockCoefficientPolynomial_renamed_exponents P g a W)
 
 /-- The combined degree term in the concentration estimate. -/
-theorem scalarPolynomial_degree_term_le (P : AdmissibleParams)
-    (g : DirectPolyTuple P.extendedDirectLd) :
+theorem scalarPolynomial_degree_term_le :
     ((scalarPolynomial P g).support.sup fun e =>
       ((scalarPolynomial P g).coeff e).totalDegree) +
         max 1 (scalarPolynomial P g).totalDegree + 1 ≤ (2 * P.m + 2) * P.d + 1 := by
@@ -171,6 +169,8 @@ theorem scalarPolynomial_degree_term_le (P : AdmissibleParams)
     _ ≤ 2 * P.m * P.d + 2 * P.d + 1 := Nat.add_le_add_right (Nat.add_le_add hc ho) 1
     _ = _ := by ring
 
+end
+
 private theorem eval_sumRingEquiv {F A B : Type*} [CommSemiring F]
     (p : MvPolynomial (A ⊕ B) F) (u : B → F) (v : A → F) :
     MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u)
@@ -180,60 +180,58 @@ private theorem eval_sumRingEquiv {F A B : Type*} [CommSemiring F]
   | add p q hp hq => simp [hp, hq]
   | mul_X p i hp => cases i <;> simp [hp]
 
+section
+
+variable (P : AdmissibleParams)
+
 /-- Split the full joint uniform point into the base point and scalar point.
 This is one equivalence of sample spaces, not four marginal identifications. -/
-def scalarBaseQuestionEquiv (P : AdmissibleParams) :
+def scalarBaseQuestionEquiv :
     ((Fin (2 * P.m) → PauliScalar P) × (Fin 2 → PauliScalar P)) ≃
       ExtendedPointQuestion P :=
   (((baseCoordinateEquiv P.m).piCongrLeft fun _ => PauliScalar P).trans
     (Equiv.sumPiEquivProdPi fun _ : Fin P.m ⊕ Fin P.m => PauliScalar P)).prodCongr
       (finTwoArrowEquiv (PauliScalar P))
 
-private theorem scalarBaseQuestionEquiv_direct (P : AdmissibleParams)
+private theorem scalarBaseQuestionEquiv_direct
     (u : Fin (2 * P.m) → PauliScalar P) (v : Fin 2 → PauliScalar P) :
     (directPointExtendedQuestionEquiv P).symm (scalarBaseQuestionEquiv P (u, v)) =
       fun i => (extendedDirectScalarEquiv P).symm
         (Sum.elim v u (scalarBaseCoordinateEquiv P.m i)) := by
   apply (directPointExtendedQuestionEquiv P).injective
-  rw [Equiv.apply_symm_apply, directPointExtendedQuestionEquiv_apply]
+  rw [Equiv.apply_symm_apply, directPointExtendedQuestionEquiv_apply, ExtendedPointQuestion.ofDirect]
   apply Prod.ext
   · apply Prod.ext <;> funext i <;>
       simp [scalarBaseQuestionEquiv, scalarBaseCoordinateEquiv, projX, projZ,
         embX, embZ, directPointToPauli, Equiv.piCongrLeft_apply]
-  · apply Prod.ext <;>
-      simp [scalarBaseQuestionEquiv, scalarBaseCoordinateEquiv, alphaVar, betaVar,
-        directPointToPauli]
+  · simp_all [scalarBaseQuestionEquiv, scalarBaseCoordinateEquiv, alphaVar, betaVar, directPointToPauli]
 
 /-- Evaluation of the nested polynomial is exactly the actual singleton readout,
 including the canonical field transport and all four coordinate blocks. -/
-theorem scalarPolynomial_eval (P : AdmissibleParams)
-    (g : DirectPolyTuple P.extendedDirectLd)
+theorem scalarPolynomial_eval
+    (g : ExtendedPoly P)
     (u : Fin (2 * P.m) → PauliScalar P) (v : Fin 2 → PauliScalar P) :
     MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) (scalarPolynomial P g)) =
       extendedPolynomialRead P (scalarBaseQuestionEquiv P (u, v)) g := by
-  rw [scalarPolynomial, eval_sumRingEquiv, MvPolynomial.eval_rename,
-    MvPolynomial.eval_map]
+  rw [scalarPolynomial, eval_sumRingEquiv, MvPolynomial.eval_rename]
+  change MvPolynomial.eval _ (MvPolynomial.map (extendedDirectScalarEquiv P).toRingHom (g 0).1) = _
+  rw [MvPolynomial.eval_map]
   unfold extendedPolynomialRead evalDirectPolyTupleAt
   rw [scalarBaseQuestionEquiv_direct]
   have h := (MvPolynomial.eval₂_comp (extendedDirectScalarEquiv P).toRingHom
       (fun i => (extendedDirectScalarEquiv P).symm
         (Sum.elim v u (scalarBaseCoordinateEquiv P.m i))) (g (0 : Fin 1)).1).symm
-  change MvPolynomial.eval₂ (extendedDirectScalarEquiv P).toRingHom
-      (fun i => extendedDirectScalarEquiv P ((extendedDirectScalarEquiv P).symm
-        (Sum.elim v u (scalarBaseCoordinateEquiv P.m i)))) (g (0 : Fin 1)).1 = _ at h
-  simp only [RingEquiv.apply_symm_apply] at h
-  exact h
+  assumption
 
 /-- Exact partial evaluation for either block order. This is the coefficient
 specialization used in `eq:qld-g-2`, supporting blueprint `lem:qld-4-7`. -/
-theorem blockCoefficientPolynomial_eval (P : AdmissibleParams)
-    (g : DirectPolyTuple P.extendedDirectLd) (a : Fin 2 →₀ ℕ) (reverse : Bool)
-    (x z : Fin P.m → PauliScalar P) :
+theorem blockCoefficientPolynomial_eval
+    (g : ExtendedPoly P) (a : Fin 2 →₀ ℕ) (W : PauliKind)
+    (x z : PauliPoint P) :
     MvPolynomial.eval x (MvPolynomial.map (MvPolynomial.eval z)
-      (blockCoefficientPolynomial P g a reverse)) =
+      (blockCoefficientPolynomial P g a W)) =
     MvPolynomial.eval (fun i => Sum.elim x z
-      (((baseCoordinateEquiv P.m).trans
-        (if reverse then Equiv.sumComm _ _ else Equiv.refl _)) i))
+      ((blockOrder P.m W) i))
       ((scalarPolynomial P g).coeff a) := by
   rw [blockCoefficientPolynomial, eval_sumRingEquiv, MvPolynomial.eval_rename]
   rfl
@@ -242,38 +240,34 @@ theorem blockCoefficientPolynomial_eval (P : AdmissibleParams)
 is fixed and the second varies. Reversal exchanges both the point blocks and
 the scalar coefficients, so its ordered product is `ZX`. This supports the
 two orders in `eq:qld-g-42/43` and blueprint `lem:qld-4-7`. -/
-def fiberQuestionEquiv (P : AdmissibleParams) (reverse : Bool) :
-    (((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) ×
+def fiberQuestionEquiv (W : PauliKind) :
+    ((PointPair P) ×
       (Fin 2 → PauliScalar P)) ≃ ExtendedPointQuestion P :=
-  (if reverse then Equiv.refl _ else Equiv.prodComm _ _).prodCongr
-    ((finTwoArrowEquiv (PauliScalar P)).trans
-      (if reverse then Equiv.prodComm _ _ else Equiv.refl _))
+  (W.other.pairOrder).prodCongr ((finTwoArrowEquiv (PauliScalar P)).trans W.pairOrder)
 
 /-- For a scalar-linear outcome, its actual readout equals the two specialized
 coefficient polynomials in the corresponding block and scalar order. This is
 an exact identity, with no field-size condition; support for `eq:qld-g-48`
 and blueprint `lem:qld-4-7`. -/
-theorem scalarPolynomial_linear_read_fiber (P : AdmissibleParams)
-    (g : DirectPolyTuple P.extendedDirectLd)
-    (hg : ∃ r t : MvPolynomial (Fin (2 * P.m)) (PauliScalar P),
-      scalarPolynomial P g = MvPolynomial.C r * MvPolynomial.X 0 +
-        MvPolynomial.C t * MvPolynomial.X 1)
-    (reverse : Bool) (x z : Fin P.m → PauliScalar P) (v : Fin 2 → PauliScalar P) :
-    extendedPolynomialRead P (fiberQuestionEquiv P reverse ((z, x), v)) g =
+theorem scalarPolynomial_linear_read_fiber
+    (g : ExtendedPoly P)
+    (hg : ScalarLinear P g)
+    (W : PauliKind) (x z : PauliPoint P) (v : Fin 2 → PauliScalar P) :
+    extendedPolynomialRead P (fiberQuestionEquiv P W ((z, x), v)) g =
       v 0 * MvPolynomial.eval x (MvPolynomial.map (MvPolynomial.eval z)
-        (blockCoefficientPolynomial P g (Finsupp.single (if reverse then 1 else 0) 1)
-          reverse)) +
+        (blockCoefficientPolynomial P g (Finsupp.single (W.component (0, 1)) 1)
+          W)) +
       v 1 * MvPolynomial.eval x (MvPolynomial.map (MvPolynomial.eval z)
-        (blockCoefficientPolynomial P g (Finsupp.single (if reverse then 0 else 1) 1)
-          reverse)) := by
+        (blockCoefficientPolynomial P g (Finsupp.single (W.component (1, 0)) 1)
+          W)) := by
   obtain ⟨r, t, hg⟩ := hg
-  let u : Fin (2 * P.m) → PauliScalar P := fun i => Sum.elim x z
-    (((baseCoordinateEquiv P.m).trans
-      (if reverse then Equiv.sumComm _ _ else Equiv.refl _)) i)
-  let v' : Fin 2 → PauliScalar P := if reverse then ![v 1, v 0] else v
+  let u := fun i => Sum.elim x z
+    ((blockOrder P.m W) i)
+  let v' := (finTwoArrowEquiv (PauliScalar P)).symm (W.pairOrder (v 0, v 1))
   have heq : scalarBaseQuestionEquiv P (u, v') =
-      fiberQuestionEquiv P reverse ((z, x), v) := by
-    cases reverse <;> simp [scalarBaseQuestionEquiv, fiberQuestionEquiv, u, v',
+      fiberQuestionEquiv P W ((z, x), v) := by
+    cases W <;> simp [scalarBaseQuestionEquiv, fiberQuestionEquiv, blockOrder, u, v',
+      PauliKind.other, PauliKind.pairOrder, finTwoArrowEquiv,
       Equiv.piCongrLeft_apply]
   rw [← heq, ← scalarPolynomial_eval, hg]
   simp_rw [blockCoefficientPolynomial_eval, hg]
@@ -282,8 +276,8 @@ theorem scalarPolynomial_linear_read_fiber (P : AdmissibleParams)
     simpa using congrArg (fun e : Fin 2 →₀ ℕ => e 0) h
   simp only [map_add, map_mul, MvPolynomial.map_C, MvPolynomial.map_X,
     MvPolynomial.eval_C, MvPolynomial.eval_X]
-  cases reverse <;>
-    simp only [Bool.false_eq_true, MvPolynomial.coeff_add,
+  cases W <;>
+    simp only [PauliKind.component, MvPolynomial.coeff_add,
       MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X, h01, Ne.symm h01,
       ↓reduceIte, mul_one, mul_zero, zero_add, add_zero]
   · change MvPolynomial.eval u r * v 0 + MvPolynomial.eval u t * v 1 =
@@ -303,11 +297,10 @@ private theorem sumRingEquiv_rename_inr {F A B : Type*} [CommSemiring F]
   | mul_X p i hp => simp [hp]
 
 private theorem blockCoefficientPolynomial_const {P : AdmissibleParams}
-    (g : DirectPolyTuple P.extendedDirectLd) (a : Fin 2 →₀ ℕ) (reverse : Bool)
-    (h : ∃ r, blockCoefficientPolynomial P g a reverse = MvPolynomial.C r) :
+    (g : ExtendedPoly P) (a : Fin 2 →₀ ℕ) (W : PauliKind)
+    (h : ∃ r, blockCoefficientPolynomial P g a W = MvPolynomial.C r) :
     ∃ r : Poly P, (scalarPolynomial P g).coeff a = MvPolynomial.rename
-      (fun i => ((baseCoordinateEquiv P.m).trans
-        (if reverse then Equiv.sumComm _ _ else Equiv.refl _)).symm (.inr i)) r.1 := by
+      (fun i => (blockOrder P.m W).symm (.inr i)) r.1 := by
   obtain ⟨r, hr⟩ := h
   have hmem : r ∈ Preliminaries.polyFunc P.m (PauliScalar P) P.d := by
     apply mem_polyFunc_of_degreeOf_le
@@ -315,21 +308,19 @@ private theorem blockCoefficientPolynomial_const {P : AdmissibleParams}
     apply MvPolynomial.degreeOf_le_iff.mpr
     intro b hb
     have hcoeff :
-        ((blockCoefficientPolynomial P g a reverse).coeff 0).coeff b ≠ 0 := by
-      simpa only [hr, MvPolynomial.coeff_C, ↓reduceIte] using MvPolynomial.mem_support_iff.mp hb
+        ((blockCoefficientPolynomial P g a W).coeff 0).coeff b ≠ 0 := by
+      simp_all
     have hsupport : Finsupp.sumFinsuppAddEquivProdFinsupp.symm (0, b) ∈
-        (MvPolynomial.rename ((baseCoordinateEquiv P.m).trans
-          (if reverse then Equiv.sumComm _ _ else Equiv.refl _))
+        (MvPolynomial.rename (blockOrder P.m W)
             ((scalarPolynomial P g).coeff a)).support := by
       simpa only [blockCoefficientPolynomial, coeff_coeff_sumRingEquiv,
         MvPolynomial.mem_support_iff] using hcoeff
-    simpa using blockCoefficientPolynomial_renamed_exponents P g a reverse _ hsupport (.inr i)
+    simpa using blockCoefficientPolynomial_renamed_exponents P g a W _ hsupport (.inr i)
   refine ⟨⟨r, hmem⟩, ?_⟩
-  let eqv := (baseCoordinateEquiv P.m).trans
-    (if reverse then Equiv.sumComm _ _ else Equiv.refl _)
+  let eqv := blockOrder P.m W
   apply MvPolynomial.rename_injective eqv eqv.injective
   apply (MvPolynomial.sumRingEquiv (PauliScalar P) (Fin P.m) (Fin P.m)).injective
-  change blockCoefficientPolynomial P g a reverse = _
+  change blockCoefficientPolynomial P g a W = _
   rw [hr, MvPolynomial.rename_rename]
   have heq : eqv ∘ (fun i => eqv.symm (.inr i)) = Sum.inr := by
     funext i
@@ -339,7 +330,7 @@ private theorem blockCoefficientPolynomial_const {P : AdmissibleParams}
       (eqv ∘ (fun i => eqv.symm (.inr i))) r)
   rw [heq, sumRingEquiv_rename_inr]
 
-private theorem scalarExpansion_combinePoly (P : AdmissibleParams)
+private theorem scalarExpansion_combinePoly
     (f h : MvPolynomial (Fin P.m) (PauliScalar P)) :
     MvPolynomial.sumRingEquiv _ _ _
       (MvPolynomial.rename (scalarBaseCoordinateEquiv P.m) (combinePoly f h)) =
@@ -371,34 +362,36 @@ outcome in the existing bounded `combinePoly` image. The two components have
 individual degree at most `d`, not merely total degree at most `md`.
 This identifies the separated image in `eq:qld-g-non-separable` with
 `def:combine-map`, supporting blueprint `lem:qld-4-7`. -/
-theorem exists_polyPair_of_scalar_separated (P : AdmissibleParams)
-    (g : DirectPolyTuple P.extendedDirectLd)
-    (hlin : ∃ r t : MvPolynomial (Fin (2 * P.m)) (PauliScalar P),
-      scalarPolynomial P g = MvPolynomial.C r * MvPolynomial.X 0 +
-        MvPolynomial.C t * MvPolynomial.X 1)
-    (hX : ∃ r, blockCoefficientPolynomial P g (Finsupp.single 0 1) true = MvPolynomial.C r)
-    (hZ : ∃ r, blockCoefficientPolynomial P g (Finsupp.single 1 1) false = MvPolynomial.C r) :
-    ∃ pair : PolyPair P,
-      MvPolynomial.map (extendedDirectScalarEquiv P).toRingHom (g (0 : Fin 1)).1 =
-        combinePoly pair.1.1 pair.2.1 := by
-  obtain ⟨f, hf⟩ := blockCoefficientPolynomial_const g _ true hX
-  obtain ⟨h, hh⟩ := blockCoefficientPolynomial_const g _ false hZ
-  refine ⟨(f, h), ?_⟩
+theorem scalarSeparated_mem_range
+    (g : ExtendedPoly P)
+    (hlin : ScalarLinear P g)
+    (hX : ScalarBlockConstant P g .Z) (hZ : ScalarBlockConstant P g .X) :
+    g ∈ Set.range (directCombinedEmbedding P) := by
+  obtain ⟨f, hf⟩ := blockCoefficientPolynomial_const g _ .Z hX
+  obtain ⟨h, hh⟩ := blockCoefficientPolynomial_const g _ .X hZ
+  refine ⟨(f, h), (directPolynomialEquiv P).injective ?_⟩
+  change directPolynomialEquiv P ((directPolynomialEquiv P).symm (combinedPolyEmbedding P (f, h))) = _
+  rw [Equiv.apply_symm_apply]
+  symm
+  apply Subtype.ext
   apply MvPolynomial.rename_injective (scalarBaseCoordinateEquiv P.m)
     (scalarBaseCoordinateEquiv P.m).injective
   apply (MvPolynomial.sumRingEquiv (PauliScalar P) (Fin 2) (Fin (2 * P.m))).injective
-  change scalarPolynomial P g = _
+  change scalarPolynomial P g = MvPolynomial.sumRingEquiv _ _ _
+    (MvPolynomial.rename (scalarBaseCoordinateEquiv P.m) (combinePoly f.1 h.1))
   rw [scalarExpansion_combinePoly]
   obtain ⟨r, t, hlin⟩ := hlin
   have h01 : (Finsupp.single (0 : Fin 2) 1 : Fin 2 →₀ ℕ) ≠ Finsupp.single 1 1 := by
     intro h
     simpa using congrArg (fun e : Fin 2 →₀ ℕ => e 0) h
-  simp only [hlin, MvPolynomial.coeff_add, MvPolynomial.coeff_C_mul,
+  simp only [hlin, PauliKind.component, MvPolynomial.coeff_add, MvPolynomial.coeff_C_mul,
     MvPolynomial.coeff_X, h01, Ne.symm h01, ↓reduceIte, mul_one, mul_zero,
     add_zero, zero_add] at hf hh
   change r = MvPolynomial.rename (fun i => (baseCoordinateEquiv P.m).symm (.inl i)) f.1 at hf
   change t = MvPolynomial.rename (fun i => (baseCoordinateEquiv P.m).symm (.inr i)) h.1 at hh
   rw [hlin, hf, hh]
+
+end
 
 end ExtendedLineGame
 

@@ -31,18 +31,7 @@ noncomputable section
 
 namespace WinImplications
 
-local instance pauliEdgeNonemptyCommObs : Nonempty PauliEdge :=
-  pauliEdge_nonempty
-
 /-! ## Algebraic preliminaries -/
-
-/-- The left tensor placement is homogeneous in its left factor.
-Formalization-only support for `eq:lc-12`, paper
-`14_analysis_of_the_pauli_basis_test.tex:330-341`. -/
-theorem heteroKron_smul_left {ιA ιB : Type*} (c : ℂ) (M : Op ιA) (B : Op ιB) :
-    heteroKron (c • M) B = c • heteroKron M B := by
-  ext i j
-  simp [heteroKron, Matrix.kronecker, mul_assoc]
 
 /-- The commutator of two reflections written as `1 - 2P` is four times the
 commutator of the projections. This is the algebra of Equation `eq:lc-12`,
@@ -67,7 +56,7 @@ Equation `eq:lc-12`, paper
 `ch14_qpbt_observables.tex:761-794`. -/
 theorem pointObs_eq_one_sub_two_smul {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
-    (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+    (r : PauliScalar P) (u : PauliPoint P) :
     S.pointObs side W r u =
       1 - (2 : ℂ) • (S.pointTraceMeas side W u r).effect 1 := by
   classical
@@ -89,17 +78,20 @@ theorem pointObs_eq_one_sub_two_smul {P : AdmissibleParams} {ε : ℝ}
 
 /-! ## Pair/W self-consistency on commuting tuples -/
 
+section
+
+variable {P : AdmissibleParams} {ε : ℝ}
+    (S : ProjectiveSetting P ε) (W : PauliKind)
+include P ε S W
+
 /-- Pair/W self-consistency is the Pair/W self-loop label mismatch. This is
 item 1 of `lem:qld-win-implications` read on the Pair/W questions, paper
 `14_analysis_of_the_pauli_basis_test.tex:197-199,315-320`, blueprint
 `ch14_qpbt_observables.tex:633-637`. -/
-theorem pairWConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
-    consistencyDefect (commTupleDist P)
-        (fun ω a => heteroKron
-          ((S.pairWMeas .alice W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a) 1)
-        (fun ω a => heteroKron 1
-          ((S.pairWMeas .bob W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a))
+theorem pairWConsistency_eq_mismatch :
+    bipartiteDefect (commTupleDist P)
+        (S.pairWAt .alice W)
+        (S.pairWAt .bob W)
         S.toStrategy.ψ =
       avgOver (commTupleDist P) (fun ω =>
         outcomeEventWeight S.toStrategy
@@ -107,52 +99,20 @@ theorem pairWConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
           (ProjectiveSetting.pairWQuestion P W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
           (fun A B => ProjectiveSetting.pairWAnswerOrZero A ≠
             ProjectiveSetting.pairWAnswerOrZero B)) := by
-  classical
-  let qA : PauliTuple P → PauliQuestion P := fun ω =>
+  let q (ω : PauliTuple P) :=
     ProjectiveSetting.pairWQuestion P W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2
-  let fA : PauliTuple P → PauliAnswer P → ZMod 2 := fun _ =>
-    ProjectiveSetting.pairWAnswerOrZero
-  have h := consistencyDefect_postprocess_eq_mismatch
-    (commTupleDist P) S.toStrategy qA qA fA fA
-  have hA : ∀ ω c,
-      heteroKron
-          ((S.pairWMeas .alice W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect c)
-          (1 : Op S.toStrategy.ιB) =
-        heteroKron (((S.toStrategy.A (qA ω)).postprocess (fA ω)).effect c)
-          (1 : Op S.toStrategy.ιB) := by
-    intro ω c
-    rfl
-  have hB : ∀ ω c,
-      heteroKron (1 : Op S.toStrategy.ιA)
-          ((S.pairWMeas .bob W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect c) =
-        heteroKron (1 : Op S.toStrategy.ιA)
-          (((S.toStrategy.B (qA ω)).postprocess (fA ω)).effect c) := by
-    intro ω c
-    rfl
-  calc
-    _ = consistencyDefect (commTupleDist P)
-        (fun ω c => heteroKron
-          (((S.toStrategy.A (qA ω)).postprocess (fA ω)).effect c) 1)
-        (fun ω c => heteroKron 1
-          (((S.toStrategy.B (qA ω)).postprocess (fA ω)).effect c))
-        S.toStrategy.ψ := consistencyDefect_congr _ _ _ _ _ _ hA hB
-    _ = avgOver (commTupleDist P) (fun ω =>
-        outcomeEventWeight S.toStrategy (qA ω) (qA ω)
-          (fun A B => fA ω A ≠ fA ω B)) := h
-    _ = _ := by rfl
+  exact consistencyDefect_postprocess_eq_mismatch _ S.toStrategy q q
+    (fun _ => ProjectiveSetting.pairWAnswerOrZero) (fun _ => ProjectiveSetting.pairWAnswerOrZero)
 
 /-- The Pair/W measurements are self-consistent on commuting tuples. This is
 item 1 of `lem:qld-win-implications` on the Pair/W questions, used in the
 chain leading to Equation `eq:lc-11`, paper
 `14_analysis_of_the_pauli_basis_test.tex:315-320`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem pairW_self_consistency_comm_le {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
-    consistencyDefect (commTupleDist P)
-        (fun ω a => heteroKron
-          ((S.pairWMeas .alice W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a) 1)
-        (fun ω a => heteroKron 1
-          ((S.pairWMeas .bob W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a))
+theorem pairW_self_consistency_comm_le :
+    bipartiteDefect (commTupleDist P)
+        (S.pairWAt .alice W)
+        (S.pairWAt .bob W)
         S.toStrategy.ψ ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
   classical
   rw [pairWConsistency_eq_mismatch]
@@ -187,13 +147,15 @@ theorem pairW_self_consistency_comm_le {P : AdmissibleParams} {ε : ℝ}
       rw [pauliCL_shared_eq P (.pairW W) rfl] at hs
       by_cases hcomm : IsCommuting (pauliSharedSplit P z).1
       · simp only [if_pos hcomm]
-        simpa [pauliSharedSplit, ProjectiveSetting.pairWQuestion] using hs
+        simpa [pauliSharedSplit_apply, ProjectiveSetting.pairWQuestion] using hs
       · simp only [if_neg hcomm]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
       rw [mul_assoc]
       exact mul_le_mul_of_nonneg_left (fixedEdgeRejection_le_error S _)
         (by norm_num)
+
+end
 
 /-! ## The chained relation of Equation `eq:lc-11` -/
 
@@ -207,15 +169,15 @@ theorem pointTrace_pairComponent_dist_le {P : AdmissibleParams}
     (MP QL : PauliTuple P → MIPStarRE.Quantum.Measurement (ZMod 2) ιL)
     (QR RR : PauliTuple P → MIPStarRE.Quantum.Measurement (ZMod 2) ιR)
     (χ : EuclideanSpace ℂ (ιL × ιR)) (hχ : ‖χ‖ = 1) {c₁ c₂ c₃ : ℝ}
-    (h1 : consistencyDefect (commTupleDist P)
-      (fun ω a => heteroKron ((MP ω).effect a) 1)
-      (fun ω a => heteroKron 1 ((QR ω).effect a)) χ ≤ c₁)
-    (h2 : consistencyDefect (commTupleDist P)
-      (fun ω a => heteroKron ((QL ω).effect a) 1)
-      (fun ω a => heteroKron 1 ((QR ω).effect a)) χ ≤ c₂)
-    (h3 : consistencyDefect (commTupleDist P)
-      (fun ω a => heteroKron ((QL ω).effect a) 1)
-      (fun ω a => heteroKron 1 ((RR ω).effect a)) χ ≤ c₃) :
+    (h1 : bipartiteDefect (commTupleDist P)
+      MP
+      QR χ ≤ c₁)
+    (h2 : bipartiteDefect (commTupleDist P)
+      QL
+      QR χ ≤ c₂)
+    (h3 : bipartiteDefect (commTupleDist P)
+      QL
+      RR χ ≤ c₃) :
     opFamilyDistSq (commTupleDist P)
       (fun ω a => heteroKron ((MP ω).effect a) 1)
       (fun ω a => heteroKron 1 ((RR ω).effect a)) χ ≤
@@ -230,165 +192,7 @@ theorem pointTrace_pairComponent_dist_le {P : AdmissibleParams}
   exact opFamilyDistSq_placed_le_of_consistencyDefect_le (commTupleDist P)
     MP RR χ hchain
 
-/-! ## The commutation analysis on commuting tuples -/
-
-/-- Padding an answer alphabet by a unit factor does not change the operator
-distance. Formalization-only support for `lem:commutation-analysis`, blueprint
-`ch12_qpbt_games.tex:418-431`. -/
-theorem opFamilyDistSq_unit_prod {X β ι : Type*} [Fintype β]
-    [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (M N : X → β → Op ι) (ψ : EuclideanSpace ℂ ι) :
-    opFamilyDistSq μ (fun x (ub : Unit × β) => M x ub.2)
-        (fun x (ub : Unit × β) => N x ub.2) ψ = opFamilyDistSq μ M N ψ := by
-  unfold opFamilyDistSq
-  congr 1
-  funext x
-  rw [Fintype.sum_prod_type]
-  simp
-
-/-- Relabelling the outcomes of a measurement along the inclusion into a
-one-point product leaves every effect unchanged. Formalization-only support for
-`lem:commutation-analysis`, blueprint `ch12_qpbt_games.tex:418-431`. -/
-theorem unitProd_postprocess_effect {β ι : Type*} [Fintype β] [DecidableEq β]
-    [Fintype ι] [DecidableEq ι] (M : MIPStarRE.Quantum.Measurement β ι)
-    (b : β) :
-    (M.postprocess (fun b' : β => ((), b'))).effect ((), b) = M.effect b := by
-  classical
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
-  rw [show (Finset.univ.filter
-      (fun b' : β => ((), b') = ((), b))) = {b} from by
-    ext b'
-    simp [Prod.ext_iff, Finset.mem_filter]]
-  exact Finset.sum_singleton _ _
-
-/-- The commutator of the two trace-coarse-grained point projections is small
-on commuting tuples. This is Equation `eq:qld-obs-comm`, obtained from
-`lem:commutation-analysis`; the statement is generic in the two tensor factors
-and in the state. Paper `14_analysis_of_the_pauli_basis_test.tex:322-329`,
-blueprint `ch14_qpbt_observables.tex:761-794`. -/
-theorem point_trace_commutator_comm_le_explicit :
-    ∀ {P : AdmissibleParams} {ιL ιR : Type} [Fintype ιL] [DecidableEq ιL]
-        [Fintype ιR] [DecidableEq ιR]
-        (MX MZ : PauliTuple P → MIPStarRE.Quantum.Measurement (ZMod 2) ιL)
-        (N : PauliTuple P →
-          MIPStarRE.Quantum.Measurement (ZMod 2 × ZMod 2) ιR)
-        (χ : EuclideanSpace ℂ (ιL × ιR)) {δ : ℝ},
-      (∀ ω, MIPStarRE.QPBT.Measurement.IsProjective (N ω)) →
-      opFamilyDistSq (commTupleDist P)
-          (fun ω b => heteroKron ((MX ω).effect b) 1)
-          (fun ω b => heteroKron 1
-            (((N ω).postprocess (fun bits => bits.1)).effect b)) χ ≤ δ →
-      opFamilyDistSq (commTupleDist P)
-          (fun ω b => heteroKron ((MZ ω).effect b) 1)
-          (fun ω b => heteroKron 1
-            (((N ω).postprocess (fun bits => bits.2)).effect b)) χ ≤ δ →
-      avgOver (commTupleDist P) (fun ω =>
-        ‖applyOperatorToState (heteroKron
-          ((MX ω).effect 1 * (MZ ω).effect 1 -
-            (MZ ω).effect 1 * (MX ω).effect 1) 1) χ‖ ^ 2) ≤ 16 * δ := by
-  classical
-  intro P ιL ιR _ _ _ _ MX MZ N χ δ hN hX hZ
-  set A : PauliTuple P →
-      MIPStarRE.Quantum.Measurement (Unit × ZMod 2) ιL := fun ω =>
-    (MX ω).postprocess (fun b => ((), b)) with hAdef
-  set D : PauliTuple P →
-      MIPStarRE.Quantum.Measurement (Unit × ZMod 2) ιL := fun ω =>
-    (MZ ω).postprocess (fun c => ((), c)) with hDdef
-  set B : PauliTuple P →
-      MIPStarRE.Quantum.Measurement ((Unit × ZMod 2) × ZMod 2) ιR := fun ω =>
-    (N ω).postprocess (fun bits => (((), bits.1), bits.2)) with hBdef
-  have hBproj : ∀ ω, MIPStarRE.QPBT.Measurement.IsProjective (B ω) := by
-    intro ω
-    exact SandwichProduct.postprocess_isProjective _ (hN ω) _
-  have hAB : opFamilyDistSq (commTupleDist P)
-      (fun ω ab => heteroKron ((A ω).effect ab) 1)
-      (fun ω ab => heteroKron 1
-        (((B ω).postprocess (fun abc => abc.1)).effect ab)) χ ≤ δ := by
-    have hrw : opFamilyDistSq (commTupleDist P)
-        (fun ω ab => heteroKron ((A ω).effect ab) 1)
-        (fun ω ab => heteroKron 1
-          (((B ω).postprocess (fun abc => abc.1)).effect ab)) χ =
-      opFamilyDistSq (commTupleDist P)
-        (fun ω (ub : Unit × ZMod 2) => heteroKron
-          ((MX ω).effect ub.2) (1 : Op ιR))
-        (fun ω (ub : Unit × ZMod 2) => heteroKron (1 : Op ιL)
-          (((N ω).postprocess (fun bits => bits.1)).effect ub.2)) χ := by
-      congr 1 <;> funext ω ab
-      · rw [hAdef]
-        obtain ⟨⟨⟩, b⟩ := ab
-        rw [unitProd_postprocess_effect]
-      · obtain ⟨⟨⟩, b⟩ := ab
-        congr 1
-        rw [hBdef, MIPStarRE.Quantum.Measurement.postprocess_comp]
-        rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
-          MIPStarRE.Quantum.Measurement.postprocess_effect]
-        refine Finset.sum_congr ?_ (fun _ _ => rfl)
-        ext bits
-        simp [Prod.ext_iff, Finset.mem_filter]
-    refine le_of_eq_of_le hrw ?_
-    refine le_of_eq_of_le (opFamilyDistSq_unit_prod (commTupleDist P)
-      (fun ω b => heteroKron ((MX ω).effect b) (1 : Op ιR))
-      (fun ω b => heteroKron (1 : Op ιL)
-        (((N ω).postprocess (fun bits => bits.1)).effect b)) χ) hX
-  have hDB : opFamilyDistSq (commTupleDist P)
-      (fun ω ac => heteroKron ((D ω).effect ac) 1)
-      (fun ω ac => heteroKron 1
-        (((B ω).postprocess (fun abc => (abc.1.1, abc.2))).effect ac))
-      χ ≤ δ := by
-    have hrw : opFamilyDistSq (commTupleDist P)
-        (fun ω ac => heteroKron ((D ω).effect ac) 1)
-        (fun ω ac => heteroKron 1
-          (((B ω).postprocess (fun abc => (abc.1.1, abc.2))).effect ac))
-        χ =
-      opFamilyDistSq (commTupleDist P)
-        (fun ω (ub : Unit × ZMod 2) => heteroKron
-          ((MZ ω).effect ub.2) (1 : Op ιR))
-        (fun ω (ub : Unit × ZMod 2) => heteroKron (1 : Op ιL)
-          (((N ω).postprocess (fun bits => bits.2)).effect ub.2)) χ := by
-      congr 1 <;> funext ω ac
-      · rw [hDdef]
-        obtain ⟨⟨⟩, c⟩ := ac
-        rw [unitProd_postprocess_effect]
-      · obtain ⟨⟨⟩, c⟩ := ac
-        congr 1
-        rw [hBdef, MIPStarRE.Quantum.Measurement.postprocess_comp]
-        rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
-          MIPStarRE.Quantum.Measurement.postprocess_effect]
-        refine Finset.sum_congr ?_ (fun _ _ => rfl)
-        ext bits
-        simp [Prod.ext_iff, Finset.mem_filter]
-    refine le_of_eq_of_le hrw ?_
-    refine le_of_eq_of_le (opFamilyDistSq_unit_prod (commTupleDist P)
-      (fun ω b => heteroKron ((MZ ω).effect b) (1 : Op ιR))
-      (fun ω b => heteroKron (1 : Op ιL)
-        (((N ω).postprocess (fun bits => bits.2)).effect b)) χ) hZ
-  have hout := op_dist_sq_commutator_le_explicit
-    (commTupleDist P) A B D χ δ hBproj hAB hDB
-  refine le_trans ?_ hout
-  unfold opFamilyDistSq
-  apply avgOver_mono
-  intro ω
-  simp only [sub_zero]
-  refine le_trans (le_of_eq ?_) (Finset.single_le_sum
-    (f := fun abc : (Unit × ZMod 2) × ZMod 2 =>
-      ‖applyOperatorToState (heteroKron
-        ((A ω).effect (abc.1.1, abc.1.2) * (D ω).effect (abc.1.1, abc.2) -
-          (D ω).effect (abc.1.1, abc.2) * (A ω).effect (abc.1.1, abc.1.2)) 1)
-        χ‖ ^ 2)
-    (fun _ _ => by positivity) (Finset.mem_univ (((), 1), 1)))
-  rw [hAdef, hDdef]
-  simp only [unitProd_postprocess_effect]
-
 /-! ## From projections to observables -/
-
-/-- Applying a scaled operator scales the resulting state. Formalization-only
-support for `eq:lc-12`, paper
-`14_analysis_of_the_pauli_basis_test.tex:330-341`. -/
-theorem applyOperatorToState_smul_op {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (c : ℂ) (M : Op ι) (v : EuclideanSpace ℂ ι) :
-    applyOperatorToState (c • M) v = c • applyOperatorToState M v := by
-  unfold applyOperatorToState
-  rw [map_smul, LinearMap.smul_apply]
 
 /-- Writing the two observables as the reflections `1 - 2P` makes their
 commutator four times the commutator of the two projections, so the squared
@@ -439,26 +243,24 @@ theorem point_obs_commutator_comm_le_explicit :
       (∀ ω, MIPStarRE.QPBT.Measurement.IsProjective (N ω)) →
       (∀ ω, OX ω = 1 - (2 : ℂ) • (MX ω).effect 1) →
       (∀ ω, OZ ω = 1 - (2 : ℂ) • (MZ ω).effect 1) →
-      consistencyDefect (commTupleDist P)
-        (fun ω a => heteroKron ((MX ω).effect a) 1)
-        (fun ω a => heteroKron 1 ((VX ω).effect a)) χ ≤ c₁ →
-      consistencyDefect (commTupleDist P)
-        (fun ω a => heteroKron ((MZ ω).effect a) 1)
-        (fun ω a => heteroKron 1 ((VZ ω).effect a)) χ ≤ c₁ →
-      consistencyDefect (commTupleDist P)
-        (fun ω a => heteroKron ((QX ω).effect a) 1)
-        (fun ω a => heteroKron 1 ((VX ω).effect a)) χ ≤ c₂ →
-      consistencyDefect (commTupleDist P)
-        (fun ω a => heteroKron ((QZ ω).effect a) 1)
-        (fun ω a => heteroKron 1 ((VZ ω).effect a)) χ ≤ c₂ →
-      consistencyDefect (commTupleDist P)
-        (fun ω a => heteroKron ((QX ω).effect a) 1)
-        (fun ω a => heteroKron 1
-          (((N ω).postprocess (fun bits => bits.1)).effect a)) χ ≤ c₃ →
-      consistencyDefect (commTupleDist P)
-        (fun ω a => heteroKron ((QZ ω).effect a) 1)
-        (fun ω a => heteroKron 1
-          (((N ω).postprocess (fun bits => bits.2)).effect a)) χ ≤ c₃ →
+      bipartiteDefect (commTupleDist P)
+        MX
+        VX χ ≤ c₁ →
+      bipartiteDefect (commTupleDist P)
+        MZ
+        VZ χ ≤ c₁ →
+      bipartiteDefect (commTupleDist P)
+        QX
+        VX χ ≤ c₂ →
+      bipartiteDefect (commTupleDist P)
+        QZ
+        VZ χ ≤ c₂ →
+      bipartiteDefect (commTupleDist P)
+        QX
+        (fun ω => (N ω).postprocess (fun bits => bits.1)) χ ≤ c₃ →
+      bipartiteDefect (commTupleDist P)
+        QZ
+        (fun ω => (N ω).postprocess (fun bits => bits.2)) χ ≤ c₃ →
       avgOver (commTupleDist P) (fun ω =>
         ‖applyOperatorToState
           (heteroKron (OX ω * OZ ω) (1 : Op ιR) -
@@ -471,7 +273,7 @@ theorem point_obs_commutator_comm_le_explicit :
     (fun ω => (N ω).postprocess (fun bits => bits.1)) χ hn a1 b1 d1
   have hchainZ := pointTrace_pairComponent_dist_le MZ QZ VZ
     (fun ω => (N ω).postprocess (fun bits => bits.2)) χ hn a2 b2 d2
-  have hproj := point_trace_commutator_comm_le_explicit MX MZ N χ hp hchainX hchainZ
+  have hproj := op_dist_sq_commutator_le_explicit (commTupleDist P) MX MZ N χ 1 1 hp hchainX hchainZ
   have hcongr : avgOver (commTupleDist P) (fun ω =>
       ‖applyOperatorToState
         (heteroKron (OX ω * OZ ω) (1 : Op ιR) -

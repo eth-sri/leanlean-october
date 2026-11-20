@@ -48,178 +48,64 @@ open MIPStarRE.LDT MIPStarRE.Quantum
 
 /-! ## The error of `thm:main-formal` at the combined parameters -/
 
-/-- The auxiliary sampling parameter at the combined parameters, in the
-parameters of the original directly indexed game. -/
-private theorem directCombinedAux_cast (D : DirectLdParams) :
-    (directLdAuxParameter D.combined : ℝ) =
-      2560000 * (((D.m + D.k : ℕ) : ℝ) ^ (3 : ℕ)) * (D.d : ℝ) := by
-  unfold directLdAuxParameter
-  simp only [DirectLdParams.combined_m, DirectLdParams.combined_d]
-  push_cast
-  ring
+section
 
-/-- The error of `thm:main-formal` at the combined parameters and the pass
-bound `30 ε`, written out in the parameters of the original directly indexed
-game. -/
-private theorem mainFormalError_combined_eq (D : DirectLdParams) (ε : ℝ) :
-    Test.mainFormalError D.combined.toLDTParameters
-        (directLdAuxParameter D.combined) (3 * (10 * ε)) =
-      100000 * ((directLdAuxParameter D.combined : ℝ) ^ (2 : ℕ)) *
-          (((D.m + D.k : ℕ) : ℝ) ^ (4 : ℕ)) *
-        (Real.rpow (3 * (10 * ε)) (1 / 40000) +
-          Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000) +
-          Real.exp (-((directLdAuxParameter D.combined : ℝ) /
-            (2560000 * (((D.m + D.k : ℕ) : ℝ) ^ (2 : ℕ)))))) := rfl
+variable (D : DirectLdParams) {ε : ℝ}
+    (hε0 : 0 < ε)
+include D ε hε0
 
-/-- The polynomial prefactor of the error of `thm:main-formal` at the combined
-parameters. -/
-private theorem directCombinedPrefactor_eq (D : DirectLdParams) :
-    100000 * ((directLdAuxParameter D.combined : ℝ) ^ (2 : ℕ)) *
-        (((D.m + D.k : ℕ) : ℝ) ^ (4 : ℕ)) =
-      655360000000000000 * (((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ)) * ((D.d : ℝ) ^ (2 : ℕ)) := by
-  rw [directCombinedAux_cast]
-  ring
-
-/-- With the auxiliary sampling parameter of the combined parameters the
-exponential scale of the error of `thm:main-formal` collapses: the argument of
-its exponential term is exactly `(m + k) d`. -/
-private theorem directCombinedAux_exp_arg (D : DirectLdParams) :
-    (directLdAuxParameter D.combined : ℝ) /
-        (2560000 * (((D.m + D.k : ℕ) : ℝ) ^ (2 : ℕ))) =
-      ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ) := by
-  have hM : (1 : ℝ) ≤ ((D.m + D.k : ℕ) : ℝ) := by
-    have h : 1 ≤ D.m + D.k := le_trans D.hm (Nat.le_add_right D.m D.k)
-    exact_mod_cast h
-  have hMpos : (0 : ℝ) < ((D.m + D.k : ℕ) : ℝ) := lt_of_lt_of_le zero_lt_one hM
-  have hne : (2560000 : ℝ) * (((D.m + D.k : ℕ) : ℝ) ^ (2 : ℕ)) ≠ 0 := ne_of_gt (by positivity)
-  rw [directCombinedAux_cast, div_eq_iff hne]
-  ring
-
-/-! ## The three terms of the error of `thm:main-formal` at the combined
-parameters -/
-
-/-- The test term of the error of `thm:main-formal` at the pass bound `30 ε`,
-bounded by the constant `30` times `ε^(1/80000)` in the regime `0 < ε ≤ 1`. -/
-private theorem directCombined_test_term_le {ε : ℝ} (hε0 : 0 < ε) (hε1 : ε ≤ 1) :
-    Real.rpow (3 * (10 * ε)) (1 / 40000) ≤ 30 * Real.rpow ε (1 / 80000) := by
-  have h30 : (3 : ℝ) * (10 * ε) = 30 * ε := by ring
-  rw [h30]
-  simp only [Real.rpow_eq_pow]
-  rw [Real.mul_rpow (by norm_num) hε0.le]
-  have hc : (30 : ℝ) ^ ((1 : ℝ) / 40000) ≤ 30 := by
-    calc (30 : ℝ) ^ ((1 : ℝ) / 40000) ≤ (30 : ℝ) ^ (1 : ℝ) :=
-          Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      _ = 30 := Real.rpow_one 30
-  have he : ε ^ ((1 : ℝ) / 40000) ≤ ε ^ ((1 : ℝ) / 80000) :=
-    Real.rpow_le_rpow_of_exponent_ge hε0 hε1 (by norm_num)
-  exact mul_le_mul hc he (Real.rpow_nonneg hε0.le _) (by norm_num)
-
-/-- The field term of the error of `thm:main-formal`, bounded by the polynomial
-`d` times `q^(-1/80000)`. -/
-private theorem directCombined_field_term_le (D : DirectLdParams) :
-    Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000) ≤
-      (D.d : ℝ) * Real.rpow (D.q : ℝ) (-(1 / 80000)) := by
-  have hd1 : (1 : ℝ) ≤ (D.d : ℝ) := by exact_mod_cast D.hd
-  have hqn : 1 ≤ D.q := D.toLDTParameters.hq
-  have hq1 : (1 : ℝ) ≤ (D.q : ℝ) := by exact_mod_cast hqn
-  simp only [Real.rpow_eq_pow]
-  rw [Real.div_rpow (by linarith) (by linarith), div_eq_mul_inv,
-    ← Real.rpow_neg (by linarith : (0 : ℝ) ≤ (D.q : ℝ))]
-  have hd : (D.d : ℝ) ^ ((1 : ℝ) / 40000) ≤ (D.d : ℝ) := by
-    calc (D.d : ℝ) ^ ((1 : ℝ) / 40000) ≤ (D.d : ℝ) ^ (1 : ℝ) :=
-          Real.rpow_le_rpow_of_exponent_le hd1 (by norm_num)
-      _ = (D.d : ℝ) := Real.rpow_one _
-  have hq : (D.q : ℝ) ^ (-((1 : ℝ) / 40000)) ≤ (D.q : ℝ) ^ (-((1 : ℝ) / 80000)) :=
-    Real.rpow_le_rpow_of_exponent_le hq1 (by norm_num)
-  exact mul_le_mul hd hq (Real.rpow_nonneg (by linarith) _) (by linarith)
-
-/-- The exponential term of the error of `thm:main-formal` at the auxiliary
-sampling parameter of the combined parameters is `exp (-(m + k) d)`, hence at most the
-base-two decay `2^(-m d/80000)` of `deltaLd`. -/
-private theorem directCombined_exponential_term_le (D : DirectLdParams) :
-    Real.exp (-(((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ))) ≤
-      Real.rpow 2 (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) := by
-  have hlog : Real.log 2 ≤ 1 := by
-    have h := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 2)
-    linarith
-  have hm0 : (0 : ℝ) ≤ (D.m : ℝ) := by positivity
-  have hd0 : (0 : ℝ) ≤ (D.d : ℝ) := by positivity
-  have hMm : (D.m : ℝ) ≤ ((D.m + D.k : ℕ) : ℝ) := by
-    have hk0 : (0 : ℝ) ≤ (D.k : ℝ) := by positivity
-    push_cast
-    linarith
-  have hcast : ((D.m * D.d : ℕ) : ℝ) = (D.m : ℝ) * (D.d : ℝ) := by push_cast; ring
-  rw [hcast]
-  simp only [Real.rpow_eq_pow]
-  rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2)]
-  apply Real.exp_le_exp.mpr
-  nlinarith [mul_le_mul_of_nonneg_right hMm hd0,
-    mul_le_mul_of_nonneg_left hlog (mul_nonneg hm0 hd0), mul_nonneg hm0 hd0]
-
-/-! ## The two contributions of the reduction -/
-
-/-- The error of `thm:main-formal` at the combined parameters and the pass
-bound `30 ε`, bounded by an explicit polynomial in the parameters times the inner factor of
-`deltaLd` at the transport exponent `b = 1/80000`. -/
-private theorem mainFormalError_combined_le (D : DirectLdParams) {ε : ℝ}
-    (hε0 : 0 < ε) (hε1 : ε ≤ 1) :
+/-- The combined main-test error uses the same prefactor and noise terms,
+with linear dimension `m + k` and test error `30 ε`. -/
+private theorem mainFormalError_combined_le (hε1 : ε ≤ 1) :
     Test.mainFormalError D.combined.toLDTParameters
         (directLdAuxParameter D.combined) (3 * (10 * ε)) ≤
       19660800000000000000 * (((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ)) * ((D.d : ℝ) ^ (3 : ℕ)) *
         transportEnvelope D ε := by
-  have hd1 : (1 : ℝ) ≤ (D.d : ℝ) := by exact_mod_cast D.hd
-  have hX : (0 : ℝ) ≤ Real.rpow ε (1 / 80000) := Real.rpow_nonneg hε0.le _
-  have hY : (0 : ℝ) ≤ Real.rpow (D.q : ℝ) (-(1 / 80000)) := Real.rpow_nonneg (by positivity) _
-  have hZ : (0 : ℝ) ≤ Real.rpow 2 (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) :=
-    Real.rpow_nonneg (by norm_num) _
-  have hsum : Real.rpow (3 * (10 * ε)) (1 / 40000) +
-      Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000) +
-      Real.exp (-((directLdAuxParameter D.combined : ℝ) /
-        (2560000 * (((D.m + D.k : ℕ) : ℝ) ^ (2 : ℕ))))) ≤
-      30 * (D.d : ℝ) * transportEnvelope D ε := by
-    rw [directCombinedAux_exp_arg D]
-    unfold transportEnvelope
-    linarith [directCombined_test_term_le hε0 hε1, directCombined_field_term_le D,
-      directCombined_exponential_term_le D, mul_nonneg (sub_nonneg.mpr hd1) hX,
-      mul_nonneg (sub_nonneg.mpr hd1) hY, mul_nonneg (sub_nonneg.mpr hd1) hZ, hX, hY, hZ]
-  rw [mainFormalError_combined_eq, directCombinedPrefactor_eq]
-  have hpre : (0 : ℝ) ≤ 655360000000000000 * (((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ)) *
-      ((D.d : ℝ) ^ (2 : ℕ)) := by positivity
-  refine le_trans (mul_le_mul_of_nonneg_left hsum hpre) (le_of_eq ?_)
+  have hd : (1 : ℝ) ≤ D.d := by exact_mod_cast D.hd
+  have hq : (1 : ℝ) ≤ D.q := by exact_mod_cast D.toLDTParameters.hq
+  have h1 : (3 * (10 * ε)) ^ (1 / 40000 : ℝ) ≤ 30 * ε ^ (1 / 80000 : ℝ) := by
+    rw [show 3 * (10 * ε) = 30 * ε by ring]
+    exact (transport_rpow_mul_le (by norm_num) hε0.le (by norm_num)).trans
+      (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_ge hε0 hε1 (by norm_num)) (by norm_num))
+  have h2 := transport_rpow_ratio_le hd hq (by norm_num : (1 / 80000 : ℝ) ≤ 1 / 40000) (by norm_num)
+  have h3 : Real.exp (-((D.combined.m : ℝ) * D.combined.d)) ≤
+      (2 : ℝ) ^ (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) := by
+    push_cast
+    apply transport_exp_le (by positivity) _ (by norm_num) (by norm_num)
+    gcongr
+    exact le_add_of_nonneg_right (Nat.cast_nonneg _)
+  have hNoise : directLdNoise D.combined (3 * (10 * ε)) ≤ 30 * (D.d : ℝ) * transportEnvelope D ε := by
+    simp only [directLdNoise, transportEnvelope, Real.rpow_eq_pow]
+    have hx := Real.rpow_nonneg hε0.le (1 / 80000 : ℝ)
+    have hy := Real.rpow_nonneg (Nat.cast_nonneg D.q : 0 ≤ (D.q : ℝ)) (-(1 / 80000))
+    have hz := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ)))
+    change (3 * (10 * ε)) ^ (1 / 40000 : ℝ) + ((D.d : ℝ) / D.q) ^ (1 / 40000 : ℝ) +
+      Real.exp (-((D.combined.m : ℝ) * D.combined.d)) ≤ _
+    nlinarith
+  rw [mainFormalError_direct_eq]
+  refine (mul_le_mul_of_nonneg_left hNoise (by positivity)).trans_eq ?_
+  unfold directLdPrefactor
+  change 655360000000000000 * (((D.m + D.k : ℕ) : ℝ) ^ 10) * ((D.d : ℝ) ^ 2) * _ = _
   ring
 
-/-- The recovery loss of `lem:ld-combining-recovery`, bounded by the polynomial
-`(m + k) d` times the inner factor of `deltaLd` at the transport exponent
-`b = 1/80000`. -/
-private theorem directCombinedRecoveryLoss_le (D : DirectLdParams) {ε : ℝ} (hε0 : 0 < ε) :
+private theorem directCombinedRecoveryLoss_le :
     ((D.combined.m * D.d : ℕ) : ℝ) / (D.q : ℝ) ≤
       ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ) * transportEnvelope D ε := by
-  have hqn : 1 ≤ D.q := D.toLDTParameters.hq
-  have hq1 : (1 : ℝ) ≤ (D.q : ℝ) := by exact_mod_cast hqn
-  have hqpos : (0 : ℝ) < (D.q : ℝ) := by linarith
-  have hcast : ((D.combined.m * D.d : ℕ) : ℝ) = ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ) := by
-    simp only [DirectLdParams.combined_m]
-    push_cast
-    ring
-  have hqb : Real.rpow (D.q : ℝ) (1 / 80000) ≤ (D.q : ℝ) := by
-    simp only [Real.rpow_eq_pow]
-    calc (D.q : ℝ) ^ ((1 : ℝ) / 80000) ≤ (D.q : ℝ) ^ (1 : ℝ) :=
-          Real.rpow_le_rpow_of_exponent_le hq1 (by norm_num)
-      _ = (D.q : ℝ) := Real.rpow_one _
-  have hqbpos : (0 : ℝ) < Real.rpow (D.q : ℝ) (1 / 80000) := Real.rpow_pos_of_pos hqpos _
-  have hinv : (D.q : ℝ)⁻¹ ≤ Real.rpow (D.q : ℝ) (-(1 / 80000)) := by
-    simp only [Real.rpow_eq_pow]
-    rw [Real.rpow_neg hqpos.le]
-    exact inv_anti₀ hqbpos hqb
-  have hstep : (D.q : ℝ)⁻¹ ≤ transportEnvelope D ε := by
-    have hX : (0 : ℝ) ≤ Real.rpow ε (1 / 80000) := Real.rpow_nonneg hε0.le _
-    have hZ : (0 : ℝ) ≤ Real.rpow 2 (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) :=
-      Real.rpow_nonneg (by norm_num) _
-    unfold transportEnvelope
-    linarith
-  have hMd : (0 : ℝ) ≤ ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ) := by positivity
-  rw [hcast, div_eq_mul_inv]
-  exact mul_le_mul_of_nonneg_left hstep hMd
+  let M := ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ)
+  have hM : 1 ≤ M := by
+    have h : 1 ≤ (D.m + D.k) * D.d := Nat.mul_pos (by have := D.hm; omega) D.hd
+    dsimp only [M]
+    exact_mod_cast h
+  have hq : (1 : ℝ) ≤ D.q := by exact_mod_cast D.toLDTParameters.hq
+  rw [Nat.cast_mul]
+  change M / D.q ≤ M * transportEnvelope D ε
+  calc _ ≤ M * (D.q : ℝ) ^ (-(1 / 80000 : ℝ)) := by
+        simpa only [Real.rpow_one] using
+          transport_rpow_ratio_le hM hq (by norm_num : (1 / 80000 : ℝ) ≤ 1) le_rfl
+    _ ≤ _ := mul_le_mul_of_nonneg_left (transportEnvelope_rpow_q_le D hε0.le)
+      (zero_le_one.trans hM)
+
+end
 
 /-! ## Absorption into the error function of `lem:ld-soundness` -/
 
@@ -242,73 +128,47 @@ theorem exists_directCombinedTransportConstants :
           deltaLd a b ε D.q D.m D.d D.k := by
   refine ⟨100000000000000000000000, 1 / 80000, by norm_num, by norm_num, by norm_num, ?_⟩
   intro D ε hε0 hε1
-  have hm1 : (1 : ℝ) ≤ (D.m : ℝ) := by exact_mod_cast D.hm
-  have hd1 : (1 : ℝ) ≤ (D.d : ℝ) := by exact_mod_cast D.hd
-  have hk1 : (1 : ℝ) ≤ (D.k : ℝ) := by exact_mod_cast D.hk
-  have hM1 : (1 : ℝ) ≤ ((D.m + D.k : ℕ) : ℝ) := by
-    have h : 1 ≤ D.m + D.k := le_trans D.hm (Nat.le_add_right D.m D.k)
-    exact_mod_cast h
-  have hN1 : (1 : ℝ) ≤ ((D.d * D.m * D.k : ℕ) : ℝ) := by
-    have h : 1 ≤ D.d * D.m * D.k := Nat.mul_pos (Nat.mul_pos D.hd D.hm) D.hk
-    exact_mod_cast h
-  have hT : (0 : ℝ) ≤ transportEnvelope D ε := transportEnvelope_nonneg D hε0.le
-  have hE := mainFormalError_combined_le D hε0 hε1
-  have hL := directCombinedRecoveryLoss_le D hε0
-  -- The combined dimension is dominated by the polynomial scale of `deltaLd`.
-  have hmk : (D.m : ℝ) + (D.k : ℝ) ≤ 2 * ((D.m : ℝ) * (D.k : ℝ)) := by
-    nlinarith [mul_nonneg (sub_nonneg.mpr hm1) (sub_nonneg.mpr hk1)]
-  have hmkd : 2 * ((D.m : ℝ) * (D.k : ℝ)) ≤ 2 * ((D.d : ℝ) * (D.m : ℝ) * (D.k : ℝ)) := by
-    nlinarith [mul_nonneg (mul_nonneg (sub_nonneg.mpr hd1) (by linarith : (0 : ℝ) ≤ (D.m : ℝ)))
-      (by linarith : (0 : ℝ) ≤ (D.k : ℝ))]
-  have hMN : ((D.m + D.k : ℕ) : ℝ) ≤ 2 * ((D.d * D.m * D.k : ℕ) : ℝ) := by
-    push_cast
-    linarith
-  have hdN : (D.d : ℝ) ≤ ((D.d * D.m * D.k : ℕ) : ℝ) := by
-    have hdm : (D.d : ℝ) ≤ (D.d : ℝ) * (D.m : ℝ) := le_mul_of_one_le_right (by linarith) hm1
-    have hdmk : (D.d : ℝ) * (D.m : ℝ) ≤ (D.d : ℝ) * (D.m : ℝ) * (D.k : ℝ) :=
-      le_mul_of_one_le_right (by positivity) hk1
-    push_cast
-    linarith
-  have hpoly : ((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ) * (D.d : ℝ) ^ (3 : ℕ) ≤
-      1024 * ((D.d * D.m * D.k : ℕ) : ℝ) ^ (13 : ℕ) := by
-    have e1 : ((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ) ≤
-        (2 * ((D.d * D.m * D.k : ℕ) : ℝ)) ^ (10 : ℕ) := by gcongr
-    have e2 : (D.d : ℝ) ^ (3 : ℕ) ≤ ((D.d * D.m * D.k : ℕ) : ℝ) ^ (3 : ℕ) := by gcongr
-    calc ((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ) * (D.d : ℝ) ^ (3 : ℕ)
-        ≤ (2 * ((D.d * D.m * D.k : ℕ) : ℝ)) ^ (10 : ℕ) *
-            ((D.d * D.m * D.k : ℕ) : ℝ) ^ (3 : ℕ) :=
-          mul_le_mul e1 e2 (by positivity) (by positivity)
-      _ = 1024 * ((D.d * D.m * D.k : ℕ) : ℝ) ^ (13 : ℕ) := by ring
-  have hMdle : ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ) ≤
-      ((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ) * (D.d : ℝ) ^ (3 : ℕ) := by
-    have e1 : ((D.m + D.k : ℕ) : ℝ) ≤ ((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ) := by
-      simpa using pow_le_pow_right₀ hM1 (by norm_num : 1 ≤ 10)
-    have e2 : (D.d : ℝ) ≤ (D.d : ℝ) ^ (3 : ℕ) := by
-      simpa using pow_le_pow_right₀ hd1 (by norm_num : 1 ≤ 3)
-    exact mul_le_mul e1 e2 (by linarith) (by positivity)
-  have hN13 : ((D.d * D.m * D.k : ℕ) : ℝ) ^ (13 : ℕ) ≤
-      Real.rpow ((D.d * D.m * D.k : ℕ) : ℝ) 100000000000000000000000 := by
-    simp only [Real.rpow_eq_pow]
-    rw [← Real.rpow_natCast (((D.d * D.m * D.k : ℕ) : ℝ)) 13]
-    exact Real.rpow_le_rpow_of_exponent_le hN1 (by push_cast; norm_num)
-  have hR0 : (0 : ℝ) ≤ Real.rpow ((D.d * D.m * D.k : ℕ) : ℝ) 100000000000000000000000 :=
-    Real.rpow_nonneg (by linarith) _
-  have hdelta : deltaLd 100000000000000000000000 (1 / 80000) ε D.q D.m D.d D.k =
-      100000000000000000000000 *
-          Real.rpow ((D.d * D.m * D.k : ℕ) : ℝ) 100000000000000000000000 *
-        transportEnvelope D ε := rfl
-  rw [hdelta]
-  have step1 : ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ) * transportEnvelope D ε ≤
-      ((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ) * (D.d : ℝ) ^ (3 : ℕ) * transportEnvelope D ε :=
-    mul_le_mul_of_nonneg_right hMdle hT
-  have step2 : ((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ) * (D.d : ℝ) ^ (3 : ℕ) *
-      transportEnvelope D ε ≤
-      1024 * ((D.d * D.m * D.k : ℕ) : ℝ) ^ (13 : ℕ) * transportEnvelope D ε :=
-    mul_le_mul_of_nonneg_right hpoly hT
-  have step3 : ((D.d * D.m * D.k : ℕ) : ℝ) ^ (13 : ℕ) * transportEnvelope D ε ≤
-      Real.rpow ((D.d * D.m * D.k : ℕ) : ℝ) 100000000000000000000000 *
-        transportEnvelope D ε :=
-    mul_le_mul_of_nonneg_right hN13 hT
-  linarith [hE, hL, step1, step2, step3, mul_nonneg hR0 hT]
+  let a : ℝ := 100000000000000000000000
+  let M := ((D.m + D.k : ℕ) : ℝ)
+  let N := ((D.d * D.m * D.k : ℕ) : ℝ)
+  let E := transportEnvelope D ε
+  have hm : (1 : ℝ) ≤ D.m := by exact_mod_cast D.hm
+  have hd : (1 : ℝ) ≤ D.d := by exact_mod_cast D.hd
+  have hk : (1 : ℝ) ≤ D.k := by exact_mod_cast D.hk
+  have hM : 1 ≤ M := by dsimp only [M]; exact_mod_cast (show 1 ≤ D.m + D.k by have := D.hm; omega)
+  have hN : 1 ≤ N := by
+    dsimp only [N]
+    exact_mod_cast (show 1 ≤ D.d * D.m * D.k from Nat.mul_pos (Nat.mul_pos D.hd D.hm) D.hk)
+  have hE : 0 ≤ E := transportEnvelope_nonneg D hε0.le
+  have hdN : (D.d : ℝ) ≤ N := by
+    dsimp only [N]; push_cast
+    exact le_mul_of_one_le_right (by positivity) hm |>.trans
+      (le_mul_of_one_le_right (by positivity) hk)
+  have hMN : M ≤ 2 * N := by
+    dsimp only [M, N]; push_cast
+    calc _ ≤ 2 * ((D.m : ℝ) * D.k) := by nlinarith
+      _ ≤ _ := by
+        rw [mul_assoc (D.d : ℝ)]
+        exact mul_le_mul_of_nonneg_left (le_mul_of_one_le_left (by positivity) hd) (by norm_num)
+  have hpoly : M ^ 10 * (D.d : ℝ) ^ 3 ≤ 1024 * N ^ 13 := by
+    calc _ ≤ (2 * N) ^ 10 * N ^ 3 := by gcongr
+      _ = _ := by ring
+  have hlinear : M * (D.d : ℝ) ≤ M ^ 10 * (D.d : ℝ) ^ 3 := by
+    gcongr
+    · simpa using pow_le_pow_right₀ hM (by decide : 1 ≤ 10)
+    · simpa using pow_le_pow_right₀ hd (by decide : 1 ≤ 3)
+  have hpow : N ^ (13 : ℕ) ≤ N ^ a := by
+    rw [← Real.rpow_natCast]
+    exact Real.rpow_le_rpow_of_exponent_le hN (by norm_num [a])
+  change _ ≤ a * N ^ a * E
+  calc _ ≤ 19660800000000000000 * M ^ 10 * (D.d : ℝ) ^ 3 * E + M * (D.d : ℝ) * E :=
+        add_le_add (mainFormalError_combined_le D hε0 hε1) (directCombinedRecoveryLoss_le D hε0)
+    _ ≤ 19660800000000000001 * (M ^ 10 * (D.d : ℝ) ^ 3) * E := by
+      linarith only [mul_le_mul_of_nonneg_right hlinear hE]
+    _ ≤ 19660800000000000001 * (1024 * N ^ a) * E := by
+      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
+        (hpoly.trans (mul_le_mul_of_nonneg_left hpow (by norm_num))) (by norm_num)) hE
+    _ = (19660800000000000001 * 1024) * N ^ a * E := by ring
+    _ ≤ _ := by gcongr; norm_num [a]
 
 end MIPStarRE.QPBT

@@ -1,6 +1,7 @@
 module
 
 public import QPBT.Combining.Points.Orthonormalization
+public import QPBT.Combining.Witnesses
 
 /-!
 # Closeness estimates for the combined point measurements
@@ -47,54 +48,11 @@ theorem opFamilyDistSq_uniform_le_four {X α ι : Type*} [Fintype X] [DecidableE
     (hA : ∀ x, ∑ a, (A x a)ᴴ * A x a ≤ 1) (hB : ∀ x, ∑ a, (B x a)ᴴ * B x a ≤ 1) :
     opFamilyDistSq (uniformDistribution X) A B ψ ≤ 4 := by
   unfold opFamilyDistSq
-  calc avgOver (uniformDistribution X) (fun x =>
-        ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2)
+  calc _
       ≤ avgOver (uniformDistribution X) (fun _ => (4 : ℝ)) := by
         refine avgOver_mono _ _ _ fun x => ?_
         exact sum_norm_sub_apply_sq_le_four (A x) (B x) ψ hψ (hA x) (hB x)
     _ = 4 := avgOver_uniform_const _
-
-/-- The products `A_a B_b` of the effects of two projective measurements on a
-common space satisfy `∑ a b, (A_a B_b)ᴴ * (A_a B_b) = 1`. -/
-theorem sum_mul_conjTranspose_mul_self_eq_one {α β ι : Type*} [Fintype α]
-    [Fintype β] [Fintype ι] [DecidableEq ι]
-    (A : Measurement α ι) (B : Measurement β ι)
-    (hA : MIPStarRE.QPBT.Measurement.IsProjective A)
-    (hB : MIPStarRE.QPBT.Measurement.IsProjective B) :
-    ∑ ab : α × β, (A.effect ab.1 * B.effect ab.2)ᴴ * (A.effect ab.1 * B.effect ab.2) =
-      1 := by
-  have hpt : ∀ (a : α) (b : β),
-      (A.effect a * B.effect b)ᴴ * (A.effect a * B.effect b) =
-        B.effect b * A.effect a * B.effect b := by
-    intro a b
-    rw [Matrix.conjTranspose_mul, (hA a).isSelfAdjoint.isHermitian.eq,
-      (hB b).isSelfAdjoint.isHermitian.eq, Matrix.mul_assoc _ _ (A.effect a * B.effect b),
-      ← Matrix.mul_assoc (A.effect a) (A.effect a), (hA a).isIdempotentElem.eq,
-      ← Matrix.mul_assoc]
-  rw [Fintype.sum_prod_type_right]
-  calc ∑ b : β, ∑ a : α, (A.effect a * B.effect b)ᴴ * (A.effect a * B.effect b)
-      = ∑ b : β, B.effect b * (∑ a : α, A.effect a) * B.effect b := by
-        refine Finset.sum_congr rfl fun b _ => ?_
-        rw [Finset.mul_sum, Finset.sum_mul]
-        exact Finset.sum_congr rfl fun a _ => hpt a b
-    _ = 1 := by
-        simp_rw [A.sum_eq_one, mul_one]
-        rw [Finset.sum_congr rfl fun b _ => (hB b).isIdempotentElem.eq]
-        exact B.sum_eq_one
-
-/-- The products `B_b A_a` of the effects of two projective measurements on a
-common space, indexed by the pair `(a, b)`, satisfy
-`∑ a b, (B_b A_a)ᴴ * (B_b A_a) = 1`. -/
-theorem sum_mul_conjTranspose_mul_self_eq_one' {α β ι : Type*} [Fintype α]
-    [Fintype β] [Fintype ι] [DecidableEq ι]
-    (A : Measurement α ι) (B : Measurement β ι)
-    (hA : MIPStarRE.QPBT.Measurement.IsProjective A)
-    (hB : MIPStarRE.QPBT.Measurement.IsProjective B) :
-    ∑ ab : α × β, (B.effect ab.2 * A.effect ab.1)ᴴ * (B.effect ab.2 * A.effect ab.1) =
-      1 := by
-  have h := sum_mul_conjTranspose_mul_self_eq_one B A hB hA
-  rw [Fintype.sum_prod_type, Finset.sum_comm] at h
-  simpa only [Fintype.sum_prod_type] using h
 
 /-! ## The chain of closeness estimates -/
 
@@ -110,83 +68,37 @@ the ordered products, the distances from `Q` on one placement to the two
 ordered products and to `Q` on the opposite placement are bounded by explicit
 combinations.  Paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:838-881`. -/
-theorem chain_bounds (S : ProjectiveSetting P ε)
-    (Q : (side : PlayerSide) → PointPair P →
-      Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace side))
-    (η C₁ C₂ C₃ : ℝ)
+theorem chain_bounds (S : ProjectiveSetting P ε) (Q : PointPairFamily S)
+    (η r c e : ℝ)
     (hQR : ∀ p : Placement, opFamilyDistSq (uniformDistribution (PointPair P))
-      (fun xz (ab : PauliScalar P × PauliScalar P) =>
-        S.place p ((Q p.side xz).effect ab))
-      (fun xz ab => S.place p ((S.sandwichPoint p.side xz.1 xz.2).effect ab))
-      S.psiHat ≤ η)
-    (h₁ : ∀ p : Placement, opFamilyDistSq (uniformDistribution (PointPair P))
-      (fun xz (ab : PauliScalar P × PauliScalar P) =>
-        S.place p ((S.sandwichPoint p.side xz.1 xz.2).effect ab))
-      (fun xz ab => S.place p
-        ((S.pointMeasExp p.side .Z xz.2).effect ab.2 *
-          (S.pointMeasExp p.side .X xz.1).effect ab.1))
-      S.psiHat ≤ C₁ * Real.sqrt ε)
-    (h₂ : ∀ p : Placement, opFamilyDistSq (uniformDistribution (PointPair P))
-      (fun xz (ab : PauliScalar P × PauliScalar P) => S.place p
-        ((S.pointMeasExp p.side .X xz.1).effect ab.1 *
-          (S.pointMeasExp p.side .Z xz.2).effect ab.2))
-      (fun xz ab => S.place p
-        ((S.pointMeasExp p.side .Z xz.2).effect ab.2 *
-          (S.pointMeasExp p.side .X xz.1).effect ab.1))
-      S.psiHat ≤ C₂ * Real.sqrt ε)
-    (h₃ : ∀ p₁ p₂ : Placement, p₁.IsOpposite p₂ →
-      opFamilyDistSq (uniformDistribution (PointPair P))
-        (fun xz (ab : PauliScalar P × PauliScalar P) => S.place p₁
-          ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2 *
-            (S.pointMeasExp p₁.side .X xz.1).effect ab.1))
-        (fun xz ab => S.place p₂
-          ((S.pointMeasExp p₂.side .X xz.1).effect ab.1 *
-            (S.pointMeasExp p₂.side .Z xz.2).effect ab.2))
-        S.psiHat ≤ C₃ * ε)
-    (p₁ p₂ : Placement) (hopp : p₁.IsOpposite p₂) :
-    opFamilyDistSq (uniformDistribution (PointPair P))
-        (fun xz (ab : PauliScalar P × PauliScalar P) =>
-          S.place p₁ ((Q p₁.side xz).effect ab))
-        (fun xz ab => S.place p₂
-          ((S.pointMeasExp p₂.side .X xz.1).effect ab.1 *
-            (S.pointMeasExp p₂.side .Z xz.2).effect ab.2))
-        S.psiHat ≤ 2 * η + 4 * (C₁ * Real.sqrt ε) + 4 * (C₃ * ε) ∧
-      opFamilyDistSq (uniformDistribution (PointPair P))
-        (fun xz (ab : PauliScalar P × PauliScalar P) =>
-          S.place p₁ ((Q p₁.side xz).effect ab))
-        (fun xz ab => S.place p₂
-          ((S.pointMeasExp p₂.side .Z xz.2).effect ab.2 *
-            (S.pointMeasExp p₂.side .X xz.1).effect ab.1))
-        S.psiHat ≤ 4 * η + 8 * (C₁ * Real.sqrt ε) + 8 * (C₃ * ε) +
-          2 * (C₂ * Real.sqrt ε) ∧
-      opFamilyDistSq (uniformDistribution (PointPair P))
-        (fun xz (ab : PauliScalar P × PauliScalar P) =>
-          S.place p₁ ((Q p₁.side xz).effect ab))
-        (fun xz ab => S.place p₂ ((Q p₂.side xz).effect ab))
-        S.psiHat ≤ 12 * η + 20 * (C₁ * Real.sqrt ε) + 16 * (C₃ * ε) +
-          4 * (C₂ * Real.sqrt ε) := by
-  -- `R_1 ≈ M^X M^Z` on the opposite placement
-  have hRXZ := opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
-    _ _ _ S.psiHat _ _ (h₁ p₁) (h₃ p₁ p₂ hopp)
-  -- `Q_1 ≈ M^X M^Z` on the opposite placement
-  have hQXZ := opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
-    _ _ _ S.psiHat _ _ (hQR p₁) hRXZ
-  -- `Q_1 ≈ M^Z M^X` on the opposite placement
-  have hQZX := opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
-    _ _ _ S.psiHat _ _ hQXZ (h₂ p₂)
-  -- `M^Z M^X ≈ Q_2` on the opposite placement
-  have hZXQ : opFamilyDistSq (uniformDistribution (PointPair P))
-      (fun xz (ab : PauliScalar P × PauliScalar P) => S.place p₂
-        ((S.pointMeasExp p₂.side .Z xz.2).effect ab.2 *
-          (S.pointMeasExp p₂.side .X xz.1).effect ab.1))
-      (fun xz ab => S.place p₂ ((Q p₂.side xz).effect ab))
-      S.psiHat ≤ 2 * η + 2 * (C₁ * Real.sqrt ε) := by
-    rw [opFamilyDistSq_symm]
-    exact opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
-      _ _ _ S.psiHat _ _ (hQR p₂) (h₁ p₂)
-  have hQQ := opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
-    _ _ _ S.psiHat _ _ hQZX hZXQ
-  refine ⟨by linarith, by linarith, by linarith⟩
+      (S.placedPointPairFamily Q p) (S.placedPointPairFamily S.sandwichPoint p) S.psiHat ≤ η)
+    (hRZ : ∀ p : Placement, opFamilyDistSq (uniformDistribution (PointPair P))
+      (S.placedPointPairFamily S.sandwichPoint p) (S.placedOrderedPointProduct p .Z) S.psiHat ≤ r)
+    (hXZ : ∀ p : Placement, opFamilyDistSq (uniformDistribution (PointPair P))
+      (S.placedOrderedPointProduct p .X) (S.placedOrderedPointProduct p .Z) S.psiHat ≤ c)
+    (hZX : ∀ p q : Placement, p.IsOpposite q → opFamilyDistSq (uniformDistribution (PointPair P))
+      (S.placedOrderedPointProduct p .Z) (S.placedOrderedPointProduct q .X) S.psiHat ≤ e)
+    (p q : Placement) (hop : p.IsOpposite q) :
+    (∀ W, opFamilyDistSq (uniformDistribution (PointPair P)) (S.placedPointPairFamily Q p)
+      (S.placedOrderedPointProduct q W) S.psiHat ≤ 4 * η + 8 * r + 8 * e + 2 * c) ∧
+    opFamilyDistSq (uniformDistribution (PointPair P)) (S.placedPointPairFamily Q p)
+      (S.placedPointPairFamily Q q) S.psiHat ≤ 12 * η + 20 * r + 16 * e + 4 * c := by
+  have hcombine {A B C : PointPair P → PauliScalar P × PauliScalar P →
+      Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB)} {u v : ℝ}
+      (h₁ : opFamilyDistSq (uniformDistribution (PointPair P)) A B S.psiHat ≤ u)
+      (h₂ : opFamilyDistSq (uniformDistribution (PointPair P)) B C S.psiHat ≤ v) :=
+    opFamilyDistSq_le_of_le_of_le _ _ _ _ _ _ _ h₁ h₂
+  have hX := hcombine (hQR p) (hcombine (hRZ p) (hZX p q hop))
+  have hZ := hcombine hX (hXZ q)
+  have hQ := hcombine (hQR q) (hRZ q)
+  rw [opFamilyDistSq_symm] at hQ
+  refine ⟨fun W => ?_, (hcombine hZ hQ).trans (by linarith)⟩
+  cases W
+  · exact hX.trans (by linarith [opFamilyDistSq_nonneg _ _ _ _ |>.trans (hQR p),
+      opFamilyDistSq_nonneg _ _ _ _ |>.trans (hRZ p),
+      opFamilyDistSq_nonneg _ _ _ _ |>.trans (hXZ q),
+      opFamilyDistSq_nonneg _ _ _ _ |>.trans (hZX p q hop)])
+  · exact hZ.trans (by linarith)
 
 end ProjectiveSetting
 
@@ -199,44 +111,19 @@ theorem error_terms_le_rpow_eighth {ε C₀ : ℝ} (hε : 0 ≤ ε) (hε1 : ε �
     ε ≤ Real.rpow ε (1 / 8 : ℝ) ∧ Real.sqrt ε ≤ Real.rpow ε (1 / 8 : ℝ) ∧
       Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4 : ℝ) ≤
         2 * C₀ * Real.rpow ε (1 / 8 : ℝ) := by
-  rcases eq_or_lt_of_le hε with h0 | hpos
-  · subst h0
-    have h8 : Real.rpow (0 : ℝ) (1 / 8 : ℝ) = 0 := Real.zero_rpow (by norm_num)
-    have h4 : Real.rpow (C₀ * (0 + Real.sqrt 0)) (1 / 4 : ℝ) = 0 := by
-      rw [Real.sqrt_zero, add_zero, mul_zero]
-      exact Real.zero_rpow (by norm_num)
-    rw [h8, h4, Real.sqrt_zero]
-    refine ⟨le_rfl, le_rfl, ?_⟩
-    positivity
-  · have hsqrt : Real.sqrt ε = Real.rpow ε (1 / 2 : ℝ) := Real.sqrt_eq_rpow ε
-    have hε1' : Real.rpow ε 1 = ε := Real.rpow_one ε
-    have hmono : ∀ y z : ℝ, z ≤ y → Real.rpow ε y ≤ Real.rpow ε z := fun y z hyz =>
-      Real.rpow_le_rpow_of_exponent_ge hpos hε1 hyz
-    refine ⟨?_, ?_, ?_⟩
-    · exact le_of_eq_of_le hε1'.symm (hmono 1 (1 / 8) (by norm_num))
-    · rw [hsqrt]
-      exact hmono (1 / 2) (1 / 8) (by norm_num)
-    · have hsum : ε + Real.sqrt ε ≤ 2 * Real.sqrt ε := by
-        have : ε ≤ Real.sqrt ε := by
-          rw [hsqrt]
-          exact le_of_eq_of_le hε1'.symm (hmono 1 (1 / 2) (by norm_num))
-        linarith
-      have hC : 0 ≤ 2 * C₀ := by linarith
-      calc Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4 : ℝ)
-          ≤ Real.rpow (2 * C₀ * Real.sqrt ε) (1 / 4 : ℝ) := by
-            apply Real.rpow_le_rpow (by positivity) _ (by norm_num)
-            nlinarith [Real.sqrt_nonneg ε]
-        _ = Real.rpow (2 * C₀) (1 / 4 : ℝ) * Real.rpow ε (1 / 8 : ℝ) := by
-            change (2 * C₀ * Real.sqrt ε) ^ (1 / 4 : ℝ) =
-              (2 * C₀) ^ (1 / 4 : ℝ) * ε ^ (1 / 8 : ℝ)
-            rw [Real.mul_rpow hC (Real.sqrt_nonneg ε), Real.sqrt_eq_rpow,
-              ← Real.rpow_mul hε]
-            norm_num
-        _ ≤ 2 * C₀ * Real.rpow ε (1 / 8 : ℝ) := by
-            refine mul_le_mul_of_nonneg_right ?_ (Real.rpow_nonneg hε _)
-            calc Real.rpow (2 * C₀) (1 / 4 : ℝ) ≤ Real.rpow (2 * C₀) 1 :=
-                  Real.rpow_le_rpow_of_exponent_le (by linarith) (by norm_num)
-              _ = 2 * C₀ := Real.rpow_one _
+  simp only [Real.rpow_eq_pow, Real.sqrt_eq_rpow]
+  have mono {r s : ℝ} (hr : 0 ≤ r) (hrs : r ≤ s) :=
+    Real.rpow_le_rpow_of_exponent_ge' hε hε1 hr hrs
+  have h : ε ≤ ε ^ (1 / 2 : ℝ) := by simpa using mono (by norm_num) (by norm_num : (1 / 2 : ℝ) ≤ 1)
+  refine ⟨h.trans (mono (by norm_num) (by norm_num)), mono (by norm_num) (by norm_num), ?_⟩
+  have hC : 0 ≤ 2 * C₀ := by linarith
+  calc
+    _ ≤ (2 * C₀ * ε ^ (1 / 2 : ℝ)) ^ (1 / 4 : ℝ) :=
+      Real.rpow_le_rpow (by positivity) (by nlinarith only [mul_le_mul_of_nonneg_left h (by linarith : 0 ≤ C₀)]) (by norm_num)
+    _ = (2 * C₀) ^ (1 / 4 : ℝ) * ε ^ (1 / 8 : ℝ) := by
+      rw [Real.mul_rpow hC (by positivity), ← Real.rpow_mul hε]
+      norm_num
+    _ ≤ _ := mul_le_mul_of_nonneg_right (Real.rpow_le_self_of_one_le (by linarith) (by norm_num)) (by positivity)
 
 end
 

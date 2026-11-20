@@ -37,9 +37,7 @@ and therefore positive.  This is a property of blueprint
 theorem IsAdmissibleSize.two_le {q : ℕ} (hq : IsAdmissibleSize q) : 2 ≤ q := by
   obtain ⟨k, hk, hqk⟩ := hq
   obtain ⟨j, hj⟩ := hk
-  rw [hqk, hj]
-  calc 2 = 2 ^ 1 := by norm_num
-    _ ≤ 2 ^ (2 * j + 1) := Nat.pow_le_pow_right (by norm_num) (by omega)
+  grind
 
 /-- An admissible field size is either two or a multiple of eight: its binary
 exponent is odd, hence either one or at least three.  This is a property of
@@ -52,9 +50,7 @@ theorem IsAdmissibleSize.eq_two_or_eight_dvd {q : ℕ} (hq : IsAdmissibleSize q)
   obtain ⟨k, hk, hqk⟩ := hq
   obtain ⟨j, hj⟩ := hk
   rcases Nat.eq_zero_or_pos j with hj0 | hj0
-  · left
-    rw [hqk, hj, hj0]
-    norm_num
+  · simp_all
   · right
     refine ⟨2 ^ (2 * j + 1 - 3), ?_⟩
     rw [hqk, hj, show (8 : ℕ) = 2 ^ 3 by norm_num, ← pow_add]
@@ -93,11 +89,16 @@ section GroupAlgebra
 
 variable {G : Type*} [CommGroup G]
 
+section
+
+variable (hodd : Odd (Nat.card G))
+include hodd
+
 /-- The squaring automorphism of a commutative group whose `Nat.card` is odd. -/
-noncomputable def squareMulEquiv (hodd : Odd (Nat.card G)) : G ≃* G :=
+noncomputable def squareMulEquiv : G ≃* G :=
   MulEquiv.ofBijective (powMonoidHom 2) hodd.coprime_two_right.pow_left_bijective
 
-theorem monoid_algebra_sq_eq_dom_congr (hodd : Odd (Nat.card G))
+theorem monoid_algebra_sq_eq_dom_congr
     (x : MonoidAlgebra (ZMod 2) G) :
     x ^ 2 = MonoidAlgebra.domCongr (ZMod 2) (ZMod 2) (squareMulEquiv hodd) x := by
   letI : CharP (MonoidAlgebra (ZMod 2) G) 2 :=
@@ -110,14 +111,12 @@ theorem monoid_algebra_sq_eq_dom_congr (hodd : Odd (Nat.card G))
       simp [MonoidAlgebra.single_pow, squareMulEquiv, ZMod.pow_card]
       rfl
 
-theorem monoid_algebra_sq_bijective (hodd : Odd (Nat.card G)) :
+theorem monoid_algebra_sq_bijective :
     Function.Bijective (fun x : MonoidAlgebra (ZMod 2) G => x ^ 2) := by
-  have heq : (fun x : MonoidAlgebra (ZMod 2) G => x ^ 2) =
-      MonoidAlgebra.domCongr (ZMod 2) (ZMod 2) (squareMulEquiv hodd) := by
-    funext x
-    exact monoid_algebra_sq_eq_dom_congr hodd x
-  rw [heq]
-  exact (MonoidAlgebra.domCongr (ZMod 2) (ZMod 2) (squareMulEquiv hodd)).bijective
+  simpa only [monoid_algebra_sq_eq_dom_congr hodd] using
+    (MonoidAlgebra.domCongr (ZMod 2) (ZMod 2) (squareMulEquiv hodd)).bijective
+
+end
 
 end GroupAlgebra
 
@@ -136,188 +135,83 @@ noncomputable local instance instCommGroupGaloisZMod2 : CommGroup G :=
 noncomputable local instance instDecidableEqGaloisZMod2 : DecidableEq G :=
   Classical.decEq G
 
-theorem normal_basis_trace_dual_apply (σ : G) :
-    (IsGalois.normalBasis (ZMod 2) K).traceDual σ =
-      σ ((IsGalois.normalBasis (ZMod 2) K).traceDual 1) := by
+local notation "A" => MonoidAlgebra (ZMod 2) G
+local notation "b" => IsGalois.normalBasis (ZMod 2) K
+
+private noncomputable def groupBasisEquiv (c : Module.Basis G (ZMod 2) K) : A ≃ₗ[ZMod 2] K :=
+  (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans c.repr.symm
+
+local notation "φ" => groupBasisEquiv b
+local notation "ψ" => groupBasisEquiv (Module.Basis.traceDual b)
+local notation "v" => LinearEquiv.symm φ (Module.Basis.traceDual b 1)
+local notation "invAlg" => MonoidAlgebra.domCongr (ZMod 2) (ZMod 2) (MulEquiv.inv G)
+
+@[local simp] private theorem groupBasisEquiv_single (c : Module.Basis G (ZMod 2) K)
+    (σ : G) (r : ZMod 2) : groupBasisEquiv c (MonoidAlgebra.single σ r) = r • c σ := by
+  simp [groupBasisEquiv, c.repr_symm_single]
+
+private theorem normal_basis_mul (σ τ : G) : b (σ * τ) = σ (b τ) := by
+  rw [IsGalois.normalBasis_apply (σ * τ), IsGalois.normalBasis_apply τ]
+  rfl
+
+private theorem normal_basis_trace_dual_apply (σ : G) : (b).traceDual σ = σ ((b).traceDual 1) := by
   classical
-  let b := IsGalois.normalBasis (ZMod 2) K
-  have hdual : (b.traceDual : G → K) = fun τ => τ (b.traceDual 1) := by
-    rw [b.traceDual_eq_iff]
+  have h : ((b).traceDual : G → K) = fun τ => τ ((b).traceDual 1) := by
+    rw [(b).traceDual_eq_iff]
     intro τ υ
-    simp only [Algebra.traceForm_apply]
-    calc
-      Algebra.trace (ZMod 2) K (τ (b.traceDual 1) * b υ) =
-          Algebra.trace (ZMod 2) K
-            (τ⁻¹ (τ (b.traceDual 1) * b υ)) := by
-              symm
-              exact Algebra.trace_eq_of_algEquiv τ⁻¹ _
-      _ = Algebra.trace (ZMod 2) K (b.traceDual 1 * b (τ⁻¹ * υ)) := by
-        congr 2
-        rw [map_mul]
-        have hτ : τ⁻¹ (τ (b.traceDual 1)) = b.traceDual 1 := by
-          change τ.symm (τ (b.traceDual 1)) = b.traceDual 1
-          exact τ.symm_apply_apply _
-        have hυ : τ⁻¹ (b υ) = b (τ⁻¹ * υ) := by
-          calc
-            τ⁻¹ (b υ) = τ⁻¹ (υ (b 1)) := by
-              rw [IsGalois.normalBasis_apply]
-            _ = (τ⁻¹ * υ) (b 1) := rfl
-            _ = b (τ⁻¹ * υ) := (IsGalois.normalBasis_apply _).symm
-        rw [hτ, hυ]
-      _ = if τ⁻¹ * υ = 1 then 1 else 0 := b.trace_traceDual_mul 1 (τ⁻¹ * υ)
-      _ = if υ = τ then 1 else 0 := by simp only [inv_mul_eq_one, eq_comm]
-  exact congr_fun hdual σ
+    rw [Algebra.traceForm_apply, ← Algebra.trace_eq_of_algEquiv τ⁻¹, map_mul,
+      ← normal_basis_mul, AlgEquiv.coe_inv, AlgEquiv.symm_apply_apply, (b).trace_traceDual_mul]
+    simp only [inv_mul_eq_one, eq_comm]
+  exact congr_fun h σ
 
-theorem normal_basis_repr_symm_mul_single
-    (a : MonoidAlgebra (ZMod 2) G) (σ : G) (r : ZMod 2) :
-    ((MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans
-        (IsGalois.normalBasis (ZMod 2) K).repr.symm)
-        (a * MonoidAlgebra.single σ r) =
-      r • σ (((MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans
-        (IsGalois.normalBasis (ZMod 2) K).repr.symm) a) := by
-  classical
-  let b := IsGalois.normalBasis (ZMod 2) K
-  let φ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.repr.symm
-  change φ (a * MonoidAlgebra.single σ r) = r • σ (φ a)
+private theorem normal_basis_repr_symm_mul_single (a : A) (σ : G) (r : ZMod 2) :
+    φ (a * MonoidAlgebra.single σ r) = r • σ (φ a) := by
   induction a using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add x y hx hy => simp only [add_mul, map_add, hx, hy, smul_add]
+  | add x y hx hy => simp [add_mul, hx, hy, smul_add]
   | single τ s =>
-      simp only [MonoidAlgebra.single_mul_single, φ, LinearEquiv.trans_apply,
-        MonoidAlgebra.coeffLinearEquiv_apply, MonoidAlgebra.coeff_single,
-        b.repr_symm_single, map_smul, smul_smul]
-      rw [mul_comm s r]
-      apply congrArg (fun x : K => (r * s) • x)
-      rw [mul_comm τ σ]
-      calc
-        b (σ * τ) = (σ * τ) (b 1) := IsGalois.normalBasis_apply _
-        _ = σ (τ (b 1)) := rfl
-        _ = σ (b τ) := congrArg σ (IsGalois.normalBasis_apply τ).symm
+      rw [MonoidAlgebra.single_mul_single, mul_comm τ σ]
+      simp [map_smul, smul_smul, normal_basis_mul, mul_comm s r]
 
-theorem normal_basis_transition (a : MonoidAlgebra (ZMod 2) G) :
-    let b := IsGalois.normalBasis (ZMod 2) K
-    let φ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.repr.symm
-    let ψ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.traceDual.repr.symm
-    let v := φ.symm (b.traceDual 1)
-    φ (v * a) = ψ a := by
-  classical
-  dsimp only
-  let b := IsGalois.normalBasis (ZMod 2) K
-  let φ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.repr.symm
-  let ψ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.traceDual.repr.symm
-  let v := φ.symm (b.traceDual 1)
-  change φ (v * a) = ψ a
+private theorem normal_basis_transition (a : A) : φ (v * a) = ψ a := by
   induction a using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add x y hx hy => simp only [mul_add, map_add, hx, hy]
-  | single σ r =>
-      rw [normal_basis_repr_symm_mul_single]
-      rw [show φ v = b.traceDual 1 from φ.apply_symm_apply _]
-      simp only [ψ, LinearEquiv.trans_apply, MonoidAlgebra.coeffLinearEquiv_apply,
-        MonoidAlgebra.coeff_single, b.traceDual.repr_symm_single]
-      exact congrArg (fun x : K => r • x) (normal_basis_trace_dual_apply σ).symm
+  | add x y hx hy => simp [mul_add, hx, hy]
+  | single σ r => simp [normal_basis_repr_symm_mul_single, normal_basis_trace_dual_apply σ]
 
-theorem normal_basis_transition_is_unit :
-    let b := IsGalois.normalBasis (ZMod 2) K
-    let φ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.repr.symm
-    IsUnit (φ.symm (b.traceDual 1)) := by
-  classical
-  dsimp only
-  let b := IsGalois.normalBasis (ZMod 2) K
-  let φ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.repr.symm
-  let ψ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.traceDual.repr.symm
-  let v := φ.symm (b.traceDual 1)
-  change IsUnit v
+private theorem normal_basis_transition_is_unit : IsUnit v := by
   rw [IsUnit.isUnit_iff_mulLeft_bijective]
-  have heq : (fun a => v * a) = fun a => φ.symm (ψ a) := by
-    funext a
-    apply φ.injective
-    rw [φ.apply_symm_apply]
-    exact normal_basis_transition a
-  rw [heq]
-  exact φ.symm.bijective.comp ψ.bijective
+  convert (φ).symm.bijective.comp (ψ).bijective using 1
+  funext a
+  exact (φ).symm_apply_eq.mpr (normal_basis_transition a).symm |>.symm
 
-theorem normal_basis_repr_apply_eq_trace (x : K) (σ : G) :
-    let b := IsGalois.normalBasis (ZMod 2) K
-    (b.repr x) σ = Algebra.trace (ZMod 2) K (x * b.traceDual σ) := by
+private theorem normal_basis_transition_inv : invAlg v = v := by
   classical
-  dsimp only
-  let b := IsGalois.normalBasis (ZMod 2) K
-  simpa only [Algebra.traceForm_apply, b.traceDual_traceDual] using
-    b.traceDual.traceDual_repr_apply x σ
-
-theorem normal_basis_transition_inv :
-    let b := IsGalois.normalBasis (ZMod 2) K
-    let φ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.repr.symm
-    let v := φ.symm (b.traceDual 1)
-    MonoidAlgebra.domCongr (ZMod 2) (ZMod 2) (MulEquiv.inv G) v = v := by
-  classical
-  dsimp only
-  let b := IsGalois.normalBasis (ZMod 2) K
-  let φ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.repr.symm
-  let v := φ.symm (b.traceDual 1)
-  let invAlg := MonoidAlgebra.domCongr (ZMod 2) (ZMod 2) (MulEquiv.inv G)
-  change invAlg v = v
+  have hv (τ : G) : (v).coeff τ = Algebra.trace (ZMod 2) K ((b).traceDual 1 * (b).traceDual τ) := by
+    change ((b).repr ((b).traceDual 1)) τ = _
+    simpa only [Algebra.traceForm_apply, (b).traceDual_traceDual] using
+      (b).traceDual.traceDual_repr_apply ((b).traceDual 1) τ
   ext σ
-  have hv (τ : G) : v.coeff τ =
-      Algebra.trace (ZMod 2) K (b.traceDual 1 * b.traceDual τ) := by
-    change (b.repr (b.traceDual 1)) τ = _
-    exact normal_basis_repr_apply_eq_trace (b.traceDual 1) τ
   rw [MonoidAlgebra.coeff_domCongr, hv, hv]
-  change Algebra.trace (ZMod 2) K (b.traceDual 1 * b.traceDual σ⁻¹) =
-    Algebra.trace (ZMod 2) K (b.traceDual 1 * b.traceDual σ)
-  calc
-    Algebra.trace (ZMod 2) K (b.traceDual 1 * b.traceDual σ⁻¹) =
-        Algebra.trace (ZMod 2) K
-          (σ (b.traceDual 1 * b.traceDual σ⁻¹)) := by
-            symm
-            exact Algebra.trace_eq_of_algEquiv σ _
-    _ = Algebra.trace (ZMod 2) K (b.traceDual σ * b.traceDual 1) := by
-      congr 2
-      rw [map_mul, ← normal_basis_trace_dual_apply σ,
-        normal_basis_trace_dual_apply σ⁻¹]
-      have hσ : σ (σ⁻¹ (b.traceDual 1)) = b.traceDual 1 := by
-        change σ (σ.symm (b.traceDual 1)) = b.traceDual 1
-        exact σ.apply_symm_apply _
-      rw [hσ]
-    _ = Algebra.trace (ZMod 2) K (b.traceDual 1 * b.traceDual σ) := by
-      rw [mul_comm]
+  change Algebra.trace (ZMod 2) K ((b).traceDual 1 * (b).traceDual σ⁻¹) = _
+  rw [← Algebra.trace_eq_of_algEquiv σ, map_mul, normal_basis_trace_dual_apply σ⁻¹,
+    AlgEquiv.coe_inv, AlgEquiv.apply_symm_apply, ← normal_basis_trace_dual_apply σ, mul_comm]
 
-theorem trace_group_algebra_pairing
-    (a d : MonoidAlgebra (ZMod 2) G) :
-    let b := IsGalois.normalBasis (ZMod 2) K
-    let φ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.repr.symm
-    let ψ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.traceDual.repr.symm
-    let invAlg := MonoidAlgebra.domCongr (ZMod 2) (ZMod 2) (MulEquiv.inv G)
+private theorem trace_group_algebra_pairing (a d : A) :
     Algebra.trace (ZMod 2) K (φ a * ψ d) = (invAlg a * d).coeff 1 := by
   classical
-  dsimp only
-  let b := IsGalois.normalBasis (ZMod 2) K
-  let φ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.repr.symm
-  let ψ := (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.traceDual.repr.symm
-  let invAlg := MonoidAlgebra.domCongr (ZMod 2) (ZMod 2) (MulEquiv.inv G)
-  change Algebra.trace (ZMod 2) K (φ a * ψ d) = (invAlg a * d).coeff 1
   induction a using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add x y hx hy =>
-      simp only [map_add, add_mul, hx, hy, MonoidAlgebra.coeff_add, Finsupp.add_apply]
+  | add x y hx hy => simp [add_mul, hx, hy]
   | single σ r =>
-      induction d using MonoidAlgebra.induction_linear with
-      | zero => simp
-      | add x y hx hy =>
-          simp only [map_add, mul_add, hx, hy, MonoidAlgebra.coeff_add,
-            Finsupp.add_apply]
-      | single τ s =>
-          simp only [φ, ψ, invAlg, LinearEquiv.trans_apply,
-            MonoidAlgebra.coeffLinearEquiv_apply, MonoidAlgebra.coeff_single,
-            b.repr_symm_single, b.traceDual.repr_symm_single, smul_mul_smul,
-            map_smul, b.trace_mul_traceDual, MonoidAlgebra.domCongr_single,
-            MonoidAlgebra.single_mul_single, MonoidAlgebra.coeff_single]
-          by_cases h : σ = τ
-          · subst τ
-            simp [mul_comm]
-          · have hne : σ⁻¹ * τ ≠ 1 := by simpa [inv_mul_eq_one]
-            simp [h, hne]
+      rw [groupBasisEquiv_single, smul_mul_assoc, map_smul, MonoidAlgebra.domCongr_single,
+        MonoidAlgebra.coeff_single_mul_apply]
+      change r • Algebra.trace (ZMod 2) K (b σ * ψ d) = r * d.coeff (σ⁻¹⁻¹ * 1)
+      simp only [inv_inv, mul_one, smul_eq_mul]
+      congr 1
+      simpa only [Algebra.traceForm_apply, mul_comm, groupBasisEquiv, LinearEquiv.trans_apply,
+        LinearEquiv.apply_symm_apply, MonoidAlgebra.coeffLinearEquiv_apply] using
+        ((b).traceDual_repr_apply (ψ d) σ).symm
 
 /-- A finite binary extension whose Galois group has odd cardinality admits a
 self-dual normal basis indexed by that group. Starting from Mathlib's normal
@@ -331,67 +225,28 @@ theorem exists_self_dual_normal_basis_gal (hodd : Odd (Nat.card G)) :
         if σ = τ then 1 else 0) ∧
       ∃ α : K, ∀ σ, c σ = σ α := by
   classical
-  let A := MonoidAlgebra (ZMod 2) G
-  let b := IsGalois.normalBasis (ZMod 2) K
-  let φ : A ≃ₗ[ZMod 2] K :=
-    (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.repr.symm
-  let ψ : A ≃ₗ[ZMod 2] K :=
-    (MonoidAlgebra.coeffLinearEquiv (ZMod 2)).trans b.traceDual.repr.symm
-  let v : A := φ.symm (b.traceDual 1)
-  let invAlg : A ≃ₐ[ZMod 2] A :=
-    MonoidAlgebra.domCongr (ZMod 2) (ZMod 2) (MulEquiv.inv G)
   obtain ⟨u, hu⟩ := (monoid_algebra_sq_bijective hodd).surjective v
   change u ^ 2 = v at hu
-  have hv_unit : IsUnit v := normal_basis_transition_is_unit
-  have hu_unit : IsUnit u := by
-    rw [← isUnit_pow_iff (by omega : 2 ≠ 0), hu]
-    exact hv_unit
-  let U : Aˣ := hu_unit.unit
-  have hU : (U : A) = u := hu_unit.unit_spec
-  have hu_inv : invAlg u = u := by
+  have hu_unit : IsUnit u :=
+    (isUnit_pow_iff (by decide : 2 ≠ 0)).mp (hu ▸ normal_basis_transition_is_unit)
+  lift u to Aˣ using hu_unit with U
+  have hinv : invAlg (U : A) = U := by
     apply (monoid_algebra_sq_bijective hodd).injective
-    calc
-      invAlg u ^ 2 = invAlg (u ^ 2) := (map_pow invAlg u 2).symm
-      _ = invAlg v := congrArg invAlg hu
-      _ = v := normal_basis_transition_inv
-      _ = u ^ 2 := hu.symm
-  let mulU : A ≃ₗ[ZMod 2] A := Units.mulLeftLinearEquiv (ZMod 2) A U
-  let c : Module.Basis G (ZMod 2) K :=
-    (MonoidAlgebra.basis G (ZMod 2)).map (mulU.trans φ)
-  have hc (σ : G) :
-      c σ = φ ((U : A) * MonoidAlgebra.single σ (1 : ZMod 2)) := by
-    simp only [c, Module.Basis.map_apply, LinearEquiv.trans_apply,
-      MonoidAlgebra.basis_apply]
-    exact congrArg φ (Units.mulLeftLinearEquiv_apply (ZMod 2) U _)
-  have htransition (a : A) : φ (v * a) = ψ a := normal_basis_transition a
-  have hc_dual (τ : G) :
-      c τ = ψ ((U⁻¹ : Aˣ) * MonoidAlgebra.single τ (1 : ZMod 2)) := by
-    rw [hc, ← htransition]
-    apply congrArg φ
-    rw [← hu, ← hU]
-    symm
-    calc
-      (U : A) ^ 2 * ((U⁻¹ : Aˣ) * MonoidAlgebra.single τ (1 : ZMod 2)) =
-          (U : A) * (((U : A) * (U⁻¹ : Aˣ)) *
-            MonoidAlgebra.single τ (1 : ZMod 2)) := by
-              simp only [pow_two, mul_assoc]
-      _ = (U : A) * MonoidAlgebra.single τ (1 : ZMod 2) := by simp
-  refine ⟨c, ?_, φ (U : A), ?_⟩
-  · intro σ τ
-    rw [hc σ, hc_dual τ, trace_group_algebra_pairing]
-    have hInvU : invAlg (U : A) = (U : A) := by simpa [hU] using hu_inv
-    rw [map_mul, hInvU, MonoidAlgebra.domCongr_single]
-    simp only [MulEquiv.inv_apply]
-    by_cases h : σ = τ
-    · subst τ
-      simp [mul_assoc, mul_comm, mul_left_comm]
-    · have hne : σ⁻¹ * τ ≠ 1 := by simpa [inv_mul_eq_one]
-      have hne' : τ * σ⁻¹ ≠ 1 := by simpa [mul_comm] using hne
-      simp [mul_assoc, mul_comm, mul_left_comm, h, hne']
-  · intro σ
-    rw [hc, normal_basis_repr_symm_mul_single]
-    simp only [one_smul]
-    rfl
+    change (invAlg (U : A)) ^ 2 = (U : A) ^ 2
+    rw [← map_pow, hu, normal_basis_transition_inv]
+  let c := (MonoidAlgebra.basis G (ZMod 2)).map
+    ((Units.mulLeftLinearEquiv (ZMod 2) A U).trans φ)
+  have hc (σ : G) : c σ = φ ((U : A) * MonoidAlgebra.single σ 1) := rfl
+  have hd (τ : G) : c τ = ψ ((↑(U⁻¹) : A) * MonoidAlgebra.single τ 1) := by
+    rw [hc, ← normal_basis_transition, ← hu]
+    simp [pow_two, ← mul_assoc, ← Units.val_mul]
+  refine ⟨c, fun σ τ => ?_, φ (U : A), fun σ => ?_⟩
+  · rw [hc, hd, trace_group_algebra_pairing, map_mul, hinv, MonoidAlgebra.domCongr_single]
+    rw [mul_mul_mul_comm, Units.mul_inv, one_mul, MonoidAlgebra.single_mul_single,
+      mul_one, MonoidAlgebra.coeff_single]
+    change (Finsupp.single (σ⁻¹ * τ) (1 : ZMod 2)) 1 = _
+    simp [Finsupp.single_apply, inv_mul_eq_one]
+  · rw [hc, normal_basis_repr_symm_mul_single, one_smul]
 
 end NormalTraceDual
 
@@ -407,18 +262,11 @@ theorem exists_selfDualNormalBasis {K : Type*} [Field K] [Fintype K]
   let G := Gal(K/(ZMod 2))
   letI : CommGroup G := IsCyclic.commGroup
   have hfinrank : Module.finrank (ZMod 2) K = k := by
-    apply Nat.pow_right_injective (by omega : 1 < 2)
-    change 2 ^ Module.finrank (ZMod 2) K = 2 ^ k
-    calc
-      2 ^ Module.finrank (ZMod 2) K =
-          Fintype.card (ZMod 2) ^ Module.finrank (ZMod 2) K := by norm_num
-      _ = Fintype.card K := Module.card_eq_pow_finrank.symm
-      _ = 2 ^ k := hcard
-  have hcardG : Nat.card G = k :=
-    (IsGalois.card_aut_eq_finrank (ZMod 2) K).trans hfinrank
-  have hoddG : Odd (Nat.card G) := hcardG ▸ hk
+    apply Nat.pow_right_injective (by decide : 1 < 2)
+    simpa [Module.card_eq_pow_finrank (K := ZMod 2) (V := K)] using hcard
+  have hcardG := (IsGalois.card_aut_eq_finrank (ZMod 2) K).trans hfinrank
   obtain ⟨cG, hcG_selfDual, α, hcG_normal⟩ :=
-    exists_self_dual_normal_basis_gal (K := K) hoddG
+    exists_self_dual_normal_basis_gal (K := K) (hcardG ▸ hk)
   let frob := FiniteField.frobeniusAlgEquivOfAlgebraic (ZMod 2) K
   let e₀ : Fin (Module.finrank (ZMod 2) K) ≃ G := Equiv.ofBijective
     (fun i => frob ^ i.1)
@@ -508,15 +356,14 @@ theorem exists_fixed_field_model (q : ℕ) (hq : IsAdmissibleSize q) :
     omega
   letI : Fact (Nat.Prime 2) := ⟨Nat.prime_two⟩
   let K := GaloisField 2 k
-  letI : Fintype K := Fintype.ofFinite K
+  letI := Fintype.ofFinite K
   have hcardK : Fintype.card K = 2 ^ k := by
     rw [Fintype.card_eq_nat_card, GaloisField.card 2 k hk0]
   obtain ⟨b, hb_selfDual, hb_normal⟩ :=
     exists_selfDualNormalBasis (K := K) k hk hcardK
   let bitEquiv : (Fin k → ZMod 2) ≃ (Fin k → Fin 2) :=
     Equiv.piCongrRight fun _ => (ZMod.finEquiv 2).symm
-  let fieldEquiv : K ≃ Fin (2 ^ k) :=
-    b.equivFun.toEquiv |>.trans bitEquiv |>.trans finFunctionFinEquiv
+  let fieldEquiv := b.equivFun.toEquiv |>.trans bitEquiv |>.trans finFunctionFinEquiv
   refine ⟨{
     toFieldModel := {
       K := K
@@ -558,16 +405,23 @@ noncomputable def fixedFieldModel (q : ℕ) (hq : IsAdmissibleSize q) :
     FixedFieldModel q :=
   Classical.choice (exists_fixed_field_model q hq)
 
-instance instFieldK {q : ℕ} (F : FixedFieldModel q) : Field F.K := F.toFieldModel.instField
-instance instFintypeK {q : ℕ} (F : FixedFieldModel q) : Fintype F.K := F.toFieldModel.instFintype
-instance instDecidableEqK {q : ℕ} (F : FixedFieldModel q) : DecidableEq F.K :=
+section
+
+variable {q : ℕ} (F : FixedFieldModel q)
+include q F
+
+instance instFieldK : Field F.K := F.toFieldModel.instField
+instance instFintypeK : Fintype F.K := F.toFieldModel.instFintype
+instance instDecidableEqK : DecidableEq F.K :=
   F.toFieldModel.instDecidableEq
-instance instAlgebraZModOfNatNatK {q : ℕ} (F : FixedFieldModel q) : Algebra (ZMod 2) F.K :=
+instance instAlgebraZModOfNatNatK : Algebra (ZMod 2) F.K :=
   F.algebra
 
 /-- The fixed binary representation obtained from the chosen basis coordinates. -/
-noncomputable def binaryRepresentation {q : ℕ} (F : FixedFieldModel q) : F.K ≃ Fin q :=
+noncomputable def binaryRepresentation : F.K ≃ Fin q :=
   F.toFieldModel.equiv
+
+end
 
 /--
 The coordinate map associated with a finite basis.  This is the `κ` of

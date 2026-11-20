@@ -3,8 +3,7 @@ module
 public import QPBT.Combining.PassingError
 public import QPBT.Combining.DirectLowDegree.ExtendedCoefficientLoss
 public import QPBT.Combining.DirectLowDegree.RejectionBounds
-public import QPBT.Combining.ExtendedLineGame.AxisParameterDefectTransport
-public import QPBT.Combining.ExtendedLineGame.DiagonalParameterDefectTransport
+public import QPBT.Combining.ExtendedLineGame.ParameterDefectTransport
 public import QPBT.Combining.ExtendedLineGame.ParameterEvaluatedLineBound
 public import QPBT.Combining.ExtendedLineGame.SameLineCoefficientBound
 public import QPBT.Combining.WitnessErrorNonneg
@@ -69,8 +68,8 @@ theorem seven_branch_rejections_le
     dline_dline_rejection_le_diagonalParameterEvaluatedCoefficientDefect_add lines
   rw [axis_parameter_evaluated_coefficient_defect_eq] at haxis
   rw [diagonal_parameter_evaluated_coefficient_defect_eq] at hdiagonal
-  have haxisEval := axis_parameter_evaluation_defect_le lines
-  have hdiagonalEval := diagonal_parameter_evaluation_defect_le lines
+  have haxisEval := parameterEvaluationDefect_le lines .axis
+  have hdiagonalEval := parameterEvaluationDefect_le lines .diagonal
   have hcollision :
       (P.d : Real) / (P.extendedDirectLd.q : Real) +
           (P.extendedDirectLd.m * P.extendedDirectLd.d : Real) /

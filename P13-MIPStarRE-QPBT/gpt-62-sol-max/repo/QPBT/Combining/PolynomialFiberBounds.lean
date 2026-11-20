@@ -136,40 +136,23 @@ private theorem avg_diagonalIndicator_linear_le
       (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 +
         stateQForm ψ (Z.effect t * X.effect r * Z.effect t) := by
   classical
-  let w (bc : F × F) : ℝ := stateQForm ψ
-    (Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2)
-  have hw (bc : F × F) : 0 ≤ w bc :=
-    stateQForm_nonneg ψ ((pastedMeasurement_isMeasurement X Z hZ).1 bc)
-  have hsum : ∑ bc, w bc = ‖ψ‖ ^ 2 := by
-    rw [← stateQForm_one ψ, ← (pastedMeasurement_isMeasurement X Z hZ).2,
-      stateQForm_finset_sum]
-    rfl
-  have hexpand (v : Fin 2 → F) :
-      stateQForm ψ (diagonalIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t)) =
-      ∑ bc : F × F, (if v 0 * bc.1 + v 1 * bc.2 = v 0 * r + v 1 * t
-        then 1 else 0) * w bc := by
-    rw [diagonalIndicator, stateQForm_finset_sum]
-    apply Finset.sum_congr rfl
-    intro bc _
-    split_ifs <;> simp [w, stateQForm, applyOperatorToState]
   have hcollision (bc : F × F) :
       avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
         if v 0 * bc.1 + v 1 * bc.2 = v 0 * r + v 1 * t then (1 : ℝ) else 0) =
         if bc = (r, t) then 1 else (Fintype.card F : ℝ)⁻¹ := by
     rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
     exact affine_collision_average bc (r, t)
-  simp_rw [hexpand, avgOver_sum, avgOver_mul_const, hcollision]
+  simp_rw [diagonalIndicator_as_weight_sum, avgOver_sum, avgOver_mul_const, hcollision]
   calc
     _ ≤ ∑ bc : F × F, ((Fintype.card F : ℝ)⁻¹ +
-        if bc = (r, t) then 1 else 0) * w bc := by
-      apply Finset.sum_le_sum
-      intro bc _
-      apply mul_le_mul_of_nonneg_right _ (hw bc)
+        if bc = (r, t) then 1 else 0) * sandwichWeight X Z ψ bc := by
+      refine Finset.sum_le_sum fun bc _ =>
+        mul_le_mul_of_nonneg_right ?_ (sandwichWeight_nonneg X Z hZ ψ bc)
       split_ifs <;> simp
     _ = _ := by
       simp_rw [add_mul, Finset.sum_add_distrib]
-      rw [← Finset.mul_sum, hsum]
-      simp [w]
+      rw [← Finset.mul_sum, sum_sandwichWeight X Z hZ ψ]
+      simp
 
 private theorem avg_orderedIndicator_linear_le
     (X Z : Quantum.Measurement F ι) (hX : Measurement.IsProjective X)
@@ -178,27 +161,14 @@ private theorem avg_orderedIndicator_linear_le
       ‖applyOperatorToState (orderedIndicator X Z (v 0) (v 1)
         (v 0 * r + v 1 * t)) ψ‖ ^ 2) ≤
       2 * (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 + stateQForm ψ (Z.effect t) := by
-  have hexc : avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => if v 1 = 0 then ‖ψ‖ ^ 2 else 0) =
-        (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
-    change avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => if ((finTwoArrowEquiv F) v).2 = 0 then ‖ψ‖ ^ 2 else 0) = _
-    rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
-    simp only [Equiv.apply_symm_apply]
-    rw [avgOver_uniform_snd (fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0)]
-    simp [avgOver_uniform_eq_inv_card_mul_sum]
   have hdrop : stateQForm ψ (Z.effect t * X.effect r * Z.effect t) ≤
       stateQForm ψ (Z.effect t) := by
     apply quadratic_form_mono
     simpa only [Matrix.star_eq_conjTranspose, measurement_effect_hermitian, mul_one,
       (hZ t).isIdempotentElem.eq] using
       star_left_conjugate_le_conjugate (measurement_effect_le_one X r) (Z.effect t)
-  have havg := avgOver_mono (uniformDistribution (Fin 2 → F)) _ _ (fun v =>
-    le_trans (le_abs_self _) (abs_orderedIndicator_norm_sq_sub_diagonal_le
-      X Z hX hZ (v 0) (v 1) (v 0 * r + v 1 * t) ψ))
-  rw [avgOver_sub, hexc] at havg
-  have hdiag := avg_diagonalIndicator_linear_le X Z hZ r t ψ
-  linarith
+  have havg := avg_orderedIndicator_norm_sq_le X Z hX hZ (fun v => v 0 * r + v 1 * t) ψ
+  linarith [avg_diagonalIndicator_linear_le X Z hZ r t ψ]
 
 /-- The wrong-variable coefficient is concentrated only after the middle
 contraction has been removed. The outer measurement depends solely on the

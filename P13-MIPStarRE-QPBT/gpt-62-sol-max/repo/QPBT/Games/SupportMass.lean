@@ -53,12 +53,10 @@ theorem mass_outside_support_le_point_defect
       stateQForm psi (heteroKron (meas.effect outcome) 1)) ≤
       ∑ outcome : Outcome, ∑ other : Outcome, if outcome = other then 0 else
         stateQForm psi (heteroKron (meas.effect outcome) (reference.effect other)) := by
-  have hnonneg (outcome other : Outcome) :
-      0 ≤ stateQForm psi (heteroKron (meas.effect outcome) (reference.effect other)) :=
+  have hnonneg (outcome other : Outcome) :=
     stateQForm_nonneg psi (kronecker_nonneg (meas.pos outcome) (reference.pos other))
   calc
-    (∑ outcome ∈ Finset.univ.filter (fun outcome => outcome ∉ allowed),
-        stateQForm psi (heteroKron (meas.effect outcome) 1)) =
+    _ =
         ∑ outcome ∈ Finset.univ.filter (fun outcome => outcome ∉ allowed),
           ∑ other : Outcome, if outcome = other then 0 else
             stateQForm psi

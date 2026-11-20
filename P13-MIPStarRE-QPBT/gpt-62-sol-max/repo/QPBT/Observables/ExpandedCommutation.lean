@@ -88,36 +88,18 @@ This is the exact half of the argument of `lem:qld-comm-cons`; blueprint
 `14_analysis_of_the_pauli_basis_test.tex:495-505`. -/
 theorem tauZ_mul_tauX (P : AdmissibleParams) (ω : PauliTuple P) :
     tauZ P ω * tauX P ω =
-      phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
+      ω.phase •
         (tauX P ω * tauZ P ω) := by
-  have h := tauObservable_X_mul_Z (K := PauliScalar P)
-    (fun h => ω.2.2.1 * indicatorVec ω.1 h)
-    (fun h => ω.2.2.2 * indicatorVec ω.2.1 h)
-  have hg : binTrace (PauliScalar P)
-      (dotProduct (fun h => ω.2.2.1 * indicatorVec ω.1 h)
-        (fun h => ω.2.2.2 * indicatorVec ω.2.1 h)) =
-      gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2 := rfl
-  rw [hg, show (tauObservable .X fun k => ω.2.2.1 * indicatorVec ω.1 k) =
-      tauX P ω from rfl,
-    show (tauObservable .Z fun k => ω.2.2.2 * indicatorVec ω.2.1 k) =
-      tauZ P ω from rfl] at h
-  have hsq := phaseSign_mul_self (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-  calc tauZ P ω * tauX P ω
-      = (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) *
-          phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)) •
-            (tauZ P ω * tauX P ω) := by rw [hsq, one_smul]
-    _ = phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-          (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-            (tauZ P ω * tauX P ω)) := by rw [smul_smul]
-    _ = phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-          (tauX P ω * tauZ P ω) := by rw [← h]
+  have h : tauX P ω * tauZ P ω = ω.phase • (tauZ P ω * tauX P ω) :=
+    tauObservable_X_mul_Z _ _
+  rw [h, smul_smul, PauliTuple.phase, phaseSign_mul_self, one_smul]
 
 /-- The twisted commutator of the two point observables at a tuple. -/
 noncomputable def twistedCommutator (S : ProjectiveSetting P ε)
     (side : PlayerSide) (ω : PauliTuple P) : Op (S.LocalSpace side) :=
-  S.pointObs side .X ω.2.2.1 ω.1 * S.pointObs side .Z ω.2.2.2 ω.2.1 -
-    phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-      (S.pointObs side .Z ω.2.2.2 ω.2.1 * S.pointObs side .X ω.2.2.1 ω.1)
+  S.pointProductAt side .X ω -
+    ω.phase •
+      (S.pointProductAt side .Z ω)
 
 /-- The commutator of the two expanded observables factorizes with the twisted
 commutator of the point observables on the strategy register. This is the
@@ -134,9 +116,10 @@ theorem expObs_commutator (S : ProjectiveSetting P ε) (side : PlayerSide)
     tauX P ω from rfl,
     show tauObservable .Z (fun h => ω.2.2.2 * indicatorVec ω.2.1 h) =
       tauZ P ω from rfl]
-  rw [tauZ_mul_tauX, MagicSquareRigidity.heteroKron_smul_right,
-    ← WinImplications.heteroKron_smul_left,
+  rw [tauZ_mul_tauX, heteroKron_smul_right,
+    ← heteroKron_smul_left,
     ← heteroKron_sub_left, twistedCommutator]
+  rfl
 
 /-! ## The approximate commutation on each placement -/
 
@@ -145,9 +128,7 @@ placement. Paper `14_analysis_of_the_pauli_basis_test.tex:420-450`,
 blueprint `ch14_qpbt_observables.tex:1002-1031`. -/
 theorem place_smul (S : ProjectiveSetting P ε) (p : Placement) (c : ℂ)
     (O : Op (S.ExpandedLocalSpace p.side)) :
-    S.place p (c • O) = c • S.place p O := by
-  ext i j
-  cases p <;> simp only [place, Matrix.smul_apply, smul_eq_mul] <;> ring
+    S.place p (c • O) = c • S.place p O := map_smul (S.placeLinear p) c _
 
 /-- The twisted commutator of the point observables is small on average, on
 either player side. This packages both orientations of
@@ -160,77 +141,19 @@ theorem twisted_commutator_avg_le_explicit :
       avgOver (uniformDistribution (PauliTuple P)) (fun ω =>
         ‖applyOperatorToState (S.placeStrategySide side (S.twistedCommutator side ω))
           S.toStrategy.ψ‖ ^ 2) ≤
-        2 * (2 * (1024 * (2 * (Fintype.card PauliEdge : ℝ)) +
-              1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) +
-            (96 * (16 * (Fintype.card PauliEdge : ℝ)) +
-              3551040 * (16 * (Fintype.card PauliEdge : ℝ))) + 4) *
+        2 * WinImplications.twistedCommutationConstant *
             Real.sqrt ε := by
   intro P ε S side hε
-  have hs : (0 : ℝ) ≤ Real.sqrt ε := Real.sqrt_nonneg ε
-  cases side with
-  | alice =>
-      have h := WinImplications.point_obs_twisted_commutation_explicit P ε S hε
-      rw [WinImplications.opDistSq_eq_avgOver] at h
-      refine le_trans (le_of_eq ?_) (le_trans h ?_)
-      · refine avgOver_congr _ _ _ (fun ω => ?_)
-        have hop : S.placeStrategySide .alice (S.twistedCommutator .alice ω) =
-            heteroKron (S.pointObs .alice .X ω.2.2.1 ω.1 *
-                S.pointObs .alice .Z ω.2.2.2 ω.2.1)
-                (1 : Op S.toStrategy.ιB) -
-              phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-                heteroKron (S.pointObs .alice .Z ω.2.2.2 ω.2.1 *
-                  S.pointObs .alice .X ω.2.2.1 ω.1) 1 := by
-          have h1 : heteroKron (S.twistedCommutator .alice ω)
-              (1 : Op S.toStrategy.ιB) =
-              heteroKron (S.pointObs .alice .X ω.2.2.1 ω.1 *
-                S.pointObs .alice .Z ω.2.2.2 ω.2.1) 1 -
-                heteroKron
-                  (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-                    (S.pointObs .alice .Z ω.2.2.2 ω.2.1 *
-                      S.pointObs .alice .X ω.2.2.1 ω.1)) 1 :=
-            heteroKron_sub_left _ _ _
-          rw [← WinImplications.heteroKron_smul_left]
-          exact h1
-        rw [hop]
-      · have hcoeff : 0 ≤
-            2 * (1024 * (2 * (Fintype.card PauliEdge : ℝ)) +
-                1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) +
-              (96 * (16 * (Fintype.card PauliEdge : ℝ)) +
-                3551040 * (16 * (Fintype.card PauliEdge : ℝ))) + 4 := by
-          positivity
-        nlinarith
-  | bob =>
-      have h :=
-        WinImplications.point_obs_twisted_commutation_interchanged_explicit P ε S hε
-      rw [WinImplications.opDistSq_eq_avgOver] at h
-      refine le_trans (le_of_eq ?_) (le_trans h ?_)
-      · refine avgOver_congr _ _ _ (fun ω => ?_)
-        have hop : S.placeStrategySide .bob (S.twistedCommutator .bob ω) =
-            heteroKron (1 : Op S.toStrategy.ιA)
-                (S.pointObs .bob .X ω.2.2.1 ω.1 *
-                  S.pointObs .bob .Z ω.2.2.2 ω.2.1) -
-              phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-                heteroKron 1 (S.pointObs .bob .Z ω.2.2.2 ω.2.1 *
-                  S.pointObs .bob .X ω.2.2.1 ω.1) := by
-          have h1 : heteroKron (1 : Op S.toStrategy.ιA)
-              (S.twistedCommutator .bob ω) =
-              heteroKron 1 (S.pointObs .bob .X ω.2.2.1 ω.1 *
-                S.pointObs .bob .Z ω.2.2.2 ω.2.1) -
-                heteroKron 1
-                  (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-                    (S.pointObs .bob .Z ω.2.2.2 ω.2.1 *
-                      S.pointObs .bob .X ω.2.2.1 ω.1)) :=
-            heteroKron_sub_right _ _ _
-          rw [← MagicSquareRigidity.heteroKron_smul_right]
-          exact h1
-        rw [hop]
-      · have hcoeff : 0 ≤
-            2 * (1024 * (2 * (Fintype.card PauliEdge : ℝ)) +
-                1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) +
-              (96 * (16 * (Fintype.card PauliEdge : ℝ)) +
-                3551040 * (16 * (Fintype.card PauliEdge : ℝ))) + 4 := by
-          positivity
-        nlinarith
+  have hn : 0 ≤ WinImplications.twistedCommutationConstant * Real.sqrt ε := by positivity
+  have hx : WinImplications.twistedCommutationConstant * Real.sqrt ε ≤
+      2 * WinImplications.twistedCommutationConstant * Real.sqrt ε := by linarith
+  cases side
+  · simpa only [WinImplications.opDistSq_eq_avgOver, placeStrategySide, twistedCommutator,
+      heteroKron_sub_left, heteroKron_smul_left] using
+      (WinImplications.point_obs_twisted_commutation_explicit P ε S hε).trans hx
+  · simpa only [WinImplications.opDistSq_eq_avgOver, placeStrategySide, twistedCommutator,
+      heteroKron_sub_right, heteroKron_smul_right] using
+      (WinImplications.point_obs_twisted_commutation_interchanged_explicit P ε S hε).trans hx
 
 end ProjectiveSetting
 

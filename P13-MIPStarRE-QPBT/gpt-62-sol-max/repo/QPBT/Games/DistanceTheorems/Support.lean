@@ -28,23 +28,50 @@ namespace MIPStarRE.QPBT.DistanceCalculus
 open MIPStarRE.LDT MIPStarRE.Quantum
 open MIPStarRE.LDT.MakingMeasurementsProjective
 
+section OperatorAction
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
+/-- Moving a matrix action between the arguments of the inner product takes its adjoint. -/
+theorem inner_applyOperatorToState_adjoint (M : Op ι) (u v : EuclideanSpace ℂ ι) :
+    inner ℂ u (applyOperatorToState Mᴴ v) = inner ℂ (applyOperatorToState M u) v := by
+  simp [applyOperatorToState, Matrix.toEuclideanLin_conjTranspose_eq_adjoint,
+    LinearMap.adjoint_inner_right]
+
+/-- The mixed inner product obtained by splitting a product inside an expectation. -/
+theorem stateQForm_mul_eq_inner (ψ : EuclideanSpace ℂ ι) (M N : Op ι) :
+    stateQForm ψ (M * N) =
+      (inner ℂ (applyOperatorToState Mᴴ ψ) (applyOperatorToState N ψ)).re := by
+  simp [stateQForm, applyOperatorToState, Matrix.toEuclideanLin_conjTranspose_eq_adjoint,
+    LinearMap.adjoint_inner_left]
+
 /-- The squared norm of `M ψ` is the quadratic form of `Mᴴ M`. -/
-private theorem norm_applyOperatorToState_sq_eq {ι : Type*}
+theorem norm_applyOperatorToState_sq (M : Op ι) (ψ : EuclideanSpace ℂ ι) :
+    ‖applyOperatorToState M ψ‖ ^ 2 = stateQForm ψ (Mᴴ * M) := by
+  rw [stateQForm_mul_eq_inner, Matrix.conjTranspose_conjTranspose]
+  exact (inner_self_eq_norm_sq (𝕜 := ℂ) _).symm
+
+/-- Polarization of the squared distance between two operator images. -/
+theorem norm_applyOperatorToState_sub_sq (M N : Op ι) (ψ : EuclideanSpace ℂ ι) :
+    ‖applyOperatorToState (M - N) ψ‖ ^ 2 =
+      ‖applyOperatorToState M ψ‖ ^ 2 + ‖applyOperatorToState N ψ‖ ^ 2 -
+        2 * stateQForm ψ (Mᴴ * N) := by
+  rw [stateQForm_mul_eq_inner, Matrix.conjTranspose_conjTranspose]
+  simp only [applyOperatorToState, map_sub, LinearMap.sub_apply, norm_sub_sq (𝕜 := ℂ),
+    RCLike.re_to_complex]
+  ring
+
+end OperatorAction
+
+section
+
+variable {ι : Type*}
     [Fintype ι] [DecidableEq ι]
-    (M : Op ι) (ψ : EuclideanSpace ℂ ι) :
-    ‖applyOperatorToState M ψ‖ ^ 2 =
-      (inner ℂ ψ (applyOperatorToState (Mᴴ * M) ψ)).re := by
-  rw [@norm_sq_eq_re_inner ℂ]
-  unfold applyOperatorToState
-  rw [Matrix.toEuclideanLin_conjTranspose_mul_self]
-  change (inner ℂ (Matrix.toEuclideanLin M ψ) (Matrix.toEuclideanLin M ψ)).re =
-    (inner ℂ ψ ((Matrix.toEuclideanLin M).adjoint (Matrix.toEuclideanLin M ψ))).re
-  rw [LinearMap.adjoint_inner_right]
+include ι
 
 /-- Formalization-only auxiliary lemma for Fact 4.20: evaluation in a fixed
 vector preserves operator order. -/
-theorem quadratic_form_mono {ι : Type*}
-    [Fintype ι] [DecidableEq ι]
+theorem quadratic_form_mono
     {S T : Op ι} (hST : S ≤ T) (v : EuclideanSpace ℂ ι) :
     (inner ℂ v (applyOperatorToState S v)).re ≤
       (inner ℂ v (applyOperatorToState T v)).re := by
@@ -65,13 +92,62 @@ with successive application. It supports the ground-slice transfer of the Magic
 Square rigidity bounds in `thm:ms-rigidity`; see blueprint
 `blueprint/src/chapter/ch13_qpbt_test.tex:268-290` and paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:612-652`. -/
-theorem applyOperatorToState_mul {ι : Type*}
-    [Fintype ι] [DecidableEq ι]
+theorem applyOperatorToState_mul
     (M N : Op ι) (v : EuclideanSpace ℂ ι) :
     applyOperatorToState (M * N) v =
       applyOperatorToState M (applyOperatorToState N v) := by
   unfold applyOperatorToState
   simp [Matrix.toEuclideanLin, Matrix.toLpLin_mul_same]
+
+/-- A positive semidefinite operator has nonnegative state quadratic form. This
+is the formalization-only order fact `lem:distance-qform-nonnegative`, used for
+the nonnegative overlap terms in `lem:ld-sandwich`; detailed source proof
+`references/neexp-paper/05_quantum_preliminaries.tex:952-999`. -/
+theorem stateQForm_nonneg
+    (ψ : EuclideanSpace ℂ ι) {M : Op ι} (hM : 0 ≤ M) :
+    0 ≤ stateQForm ψ M := by
+  calc
+    0 = stateQForm ψ 0 := by simp [stateQForm, applyOperatorToState]
+    _ ≤ stateQForm ψ M := quadratic_form_mono hM ψ
+
+/-- Formalization-only auxiliary lemma for the agreement facts (Facts 4.13 and
+4.14): the state quadratic form is additive in its operator. -/
+theorem stateQForm_add
+    (ψ : EuclideanSpace ℂ ι) (M N : Op ι) :
+    stateQForm ψ (M + N) = stateQForm ψ M + stateQForm ψ N := by
+  simp [stateQForm, applyOperatorToState]
+
+/-- The state quadratic form preserves operator subtraction. -/
+theorem stateQForm_sub
+    (ψ : EuclideanSpace ℂ ι) (M N : Op ι) :
+    stateQForm ψ (M - N) = stateQForm ψ M - stateQForm ψ N := by
+  simp [stateQForm, applyOperatorToState]
+
+end
+
+/-- The state quadratic form commutes with a finite sum. -/
+private theorem stateQForm_sum {α ι : Type*} [Fintype α]
+    [Fintype ι] [DecidableEq ι]
+    (ψ : EuclideanSpace ℂ ι) (M : α → Op ι) :
+    stateQForm ψ (∑ a, M a) = ∑ a, stateQForm ψ (M a) := by
+  simp [stateQForm, applyOperatorToState]
+
+/-- The quadratic form of the identity is the squared vector norm. -/
+theorem stateQForm_one {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (ψ : EuclideanSpace ℂ ι) :
+    stateQForm ψ (1 : Op ι) = ‖ψ‖ ^ 2 := by
+  simpa [stateQForm, applyOperatorToState] using inner_self_eq_norm_sq (𝕜 := ℂ) ψ
+
+/-- The total squared norm is the expectation of the sum of the Gram operators. -/
+theorem sum_norm_applyOperatorToState_sq {γ ι : Type*} [Fintype ι] [DecidableEq ι]
+    (ψ : EuclideanSpace ℂ ι) (s : Finset γ) (C : γ → Op ι) :
+    ∑ c ∈ s, ‖applyOperatorToState (C c) ψ‖ ^ 2 = stateQForm ψ (∑ c ∈ s, (C c)ᴴ * C c) := by
+  simp only [norm_applyOperatorToState_sq, stateQForm_finset_sum]
+
+/-- Evaluation at a fixed vector preserves the positive semidefinite order. -/
+theorem stateQForm_mono {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (ψ : EuclideanSpace ℂ ι) {M N : Op ι} (h : M ≤ N) : stateQForm ψ M ≤ stateQForm ψ N :=
+  quadratic_form_mono h ψ
 
 /-- Finite-subset form of contraction by square-summable left multipliers. -/
 private theorem finset_sum_norm_mul_apply_le {γ ι : Type*}
@@ -80,26 +156,9 @@ private theorem finset_sum_norm_mul_apply_le {γ ι : Type*}
     (hC : ∑ c ∈ s, (C c)ᴴ * C c ≤ 1) :
     ∑ c ∈ s, ‖applyOperatorToState (C c * D) v‖ ^ 2 ≤
       ‖applyOperatorToState D v‖ ^ 2 := by
-  calc
-    ∑ c ∈ s, ‖applyOperatorToState (C c * D) v‖ ^ 2 =
-        ∑ c ∈ s,
-          (inner ℂ (applyOperatorToState D v)
-            (applyOperatorToState ((C c)ᴴ * C c)
-              (applyOperatorToState D v))).re := by
-          apply Finset.sum_congr rfl
-          intro c _
-          rw [applyOperatorToState_mul]
-          exact norm_applyOperatorToState_sq_eq (C c) _
-    _ = (inner ℂ (applyOperatorToState D v)
-          (applyOperatorToState (∑ c ∈ s, (C c)ᴴ * C c)
-            (applyOperatorToState D v))).re := by
-          simp [applyOperatorToState]
-    _ ≤ (inner ℂ (applyOperatorToState D v)
-          (applyOperatorToState (1 : Op ι) (applyOperatorToState D v))).re :=
-      quadratic_form_mono hC _
-    _ = ‖applyOperatorToState D v‖ ^ 2 := by
-      simpa [applyOperatorToState] using
-        (norm_applyOperatorToState_sq_eq (1 : Op ι) (applyOperatorToState D v)).symm
+  simp_rw [applyOperatorToState_mul]
+  rw [sum_norm_applyOperatorToState_sq, ← stateQForm_one]
+  exact stateQForm_mono _ hC
 
 /-- Formalization-only auxiliary lemma for Fact 4.20: a square-summable family
 of left multipliers contracts total squared norm. -/
@@ -111,6 +170,17 @@ theorem sum_norm_mul_apply_le {γ ι : Type*}
       ‖applyOperatorToState D v‖ ^ 2 := by
   simpa using finset_sum_norm_mul_apply_le Finset.univ C D v (by simpa using hC)
 
+/-- The squared norm of a two-term sum. -/
+theorem norm_add_sq_le_two {E : Type*} [NormedAddCommGroup E] (u v : E) :
+    ‖u + v‖ ^ 2 ≤ 2 * ‖u‖ ^ 2 + 2 * ‖v‖ ^ 2 := by
+  nlinarith only [pow_le_pow_left₀ (norm_nonneg _) (norm_add_le u v) 2, sq_nonneg (‖u‖ - ‖v‖)]
+
+/-- A nonnegative quantity bounded by three terms satisfies the corresponding squared bound. -/
+theorem sq_le_three_sq_of_le {t a b c : ℝ} (ht : 0 ≤ t) (h : t ≤ a + b + c) :
+    t ^ 2 ≤ 3 * (a ^ 2 + b ^ 2 + c ^ 2) := by
+  have := (sq_le_sq₀ ht (ht.trans h)).2 h
+  nlinarith [sq_nonneg (a - b), sq_nonneg (b - c), sq_nonneg (a - c)]
+
 /-- The squared distance between two square-summable operator families is at
 most four on a unit vector. Formalization-only auxiliary bounding the
 state-dependent distance of `def:povm-distance` trivially. -/
@@ -119,33 +189,16 @@ theorem sum_norm_sub_apply_sq_le_four {α ι : Type*} [Fintype α]
     (hψ : ‖ψ‖ = 1) (hA : ∑ a : α, (A a)ᴴ * A a ≤ 1)
     (hB : ∑ a : α, (B a)ᴴ * B a ≤ 1) :
     ∑ a : α, ‖applyOperatorToState (A a - B a) ψ‖ ^ 2 ≤ 4 := by
-  have hAsum : ∑ a : α, ‖applyOperatorToState (A a) ψ‖ ^ 2 ≤ 1 := by
-    have h := sum_norm_mul_apply_le A 1 ψ hA
-    simpa [applyOperatorToState, hψ] using h
-  have hBsum : ∑ a : α, ‖applyOperatorToState (B a) ψ‖ ^ 2 ≤ 1 := by
-    have h := sum_norm_mul_apply_le B 1 ψ hB
-    simpa [applyOperatorToState, hψ] using h
-  have hpoint (a : α) :
-      ‖applyOperatorToState (A a - B a) ψ‖ ^ 2 ≤
-        2 * ‖applyOperatorToState (A a) ψ‖ ^ 2 +
-          2 * ‖applyOperatorToState (B a) ψ‖ ^ 2 := by
-    have hdecomp : applyOperatorToState (A a - B a) ψ =
-        applyOperatorToState (A a) ψ - applyOperatorToState (B a) ψ := by
-      simp [applyOperatorToState]
-    rw [hdecomp]
-    have hpar := parallelogram_law_with_norm ℂ
-      (applyOperatorToState (A a) ψ) (applyOperatorToState (B a) ψ)
-    nlinarith [sq_nonneg ‖applyOperatorToState (A a) ψ +
-      applyOperatorToState (B a) ψ‖]
-  calc
-    ∑ a : α, ‖applyOperatorToState (A a - B a) ψ‖ ^ 2 ≤
-        ∑ a : α, (2 * ‖applyOperatorToState (A a) ψ‖ ^ 2 +
-          2 * ‖applyOperatorToState (B a) ψ‖ ^ 2) :=
-      Finset.sum_le_sum fun a _ => hpoint a
-    _ = 2 * ∑ a : α, ‖applyOperatorToState (A a) ψ‖ ^ 2 +
-        2 * ∑ a : α, ‖applyOperatorToState (B a) ψ‖ ^ 2 := by
-      rw [Finset.sum_add_distrib, Finset.mul_sum, Finset.mul_sum]
-    _ ≤ 4 := by linarith
+  have hm (C : α → Op ι) (hC : ∑ a, (C a)ᴴ * C a ≤ 1) :
+      ∑ a, ‖applyOperatorToState (C a) ψ‖ ^ 2 ≤ 1 := by
+    simpa only [mul_one, applyOperatorToState_one, hψ, one_pow] using sum_norm_mul_apply_le C 1 ψ hC
+  have h := Finset.sum_le_sum (s := Finset.univ) fun a _ => by
+    simpa only [← sub_eq_add_neg, applyOperatorToState, map_sub, LinearMap.sub_apply,
+      norm_neg] using norm_add_sq_le_two (applyOperatorToState (A a) ψ)
+        (-applyOperatorToState (B a) ψ)
+  simp only [Finset.sum_add_distrib, ← Finset.mul_sum] at h
+  simp only [applyOperatorToState, map_sub, LinearMap.sub_apply] at hm ⊢
+  linarith only [h, hm A hA, hm B hB]
 
 /-- Formalization-only auxiliary lemma for the function-indexed multiplication
 estimate at paper lines 347--361: fiber-indexed left multiplication contracts
@@ -157,20 +210,8 @@ theorem sum_norm_mul_funIndexed_apply_le {α Γ ι : Type*}
     ∑ g : Γ, ‖applyOperatorToState (S g * D (eval g)) v‖ ^ 2 ≤
       ∑ a : α, ‖applyOperatorToState (D a) v‖ ^ 2 := by
   classical
-  rw [show (∑ g : Γ, ‖applyOperatorToState (S g * D (eval g)) v‖ ^ 2) =
-      ∑ a : α, ∑ g ∈ Finset.univ.filter (fun g => eval g = a),
-        ‖applyOperatorToState (S g * D a) v‖ ^ 2 by
-    calc
-      _ = ∑ a : α, ∑ g ∈ Finset.univ.filter (fun g => eval g = a),
-          ‖applyOperatorToState (S g * D (eval g)) v‖ ^ 2 :=
-        (Finset.sum_fiberwise Finset.univ eval
-          (fun g => ‖applyOperatorToState (S g * D (eval g)) v‖ ^ 2)).symm
-      _ = _ := by
-        apply Finset.sum_congr rfl
-        intro a _
-        apply Finset.sum_congr rfl
-        intro g hg
-        rw [(Finset.mem_filter.mp hg).2]]
+  rw [← Finset.sum_fiberwise_apply Finset.univ eval
+    (fun g a => ‖applyOperatorToState (S g * D a) v‖ ^ 2)]
   apply Finset.sum_le_sum
   intro a _
   apply finset_sum_norm_mul_apply_le
@@ -208,38 +249,22 @@ theorem projective_effect_mul_effect_eq_zero {α ι : Type*}
       simpa [P, H] using P.outcome_orthogonal a b hab
 
 /-- Gram expansion for a finite sum with mutually orthogonal left projectors. -/
-private theorem gram_finset_sum_projector_mul {α ι : Type*}
-    [Fintype ι]
-    (P D : α → Op ι) (hproj : ∀ a, IsProj (P a))
-    (horth : ∀ {a b}, a ≠ b → P a * P b = 0) (s : Finset α) :
+theorem gram_finset_sum_projector_mul {α ι : Type*}
+    [Fintype ι] (P D : α → Op ι) (hproj : ∀ a, IsProj (P a)) (s : Finset α)
+    (horth : ∀ a ∈ s, ∀ b ∈ s, a ≠ b → P a * P b = 0) :
     (∑ a ∈ s, P a * D a)ᴴ * (∑ a ∈ s, P a * D a) =
       ∑ a ∈ s, (D a)ᴴ * P a * D a := by
   classical
-  let T : α → Op ι := fun a => P a * D a
-  have hstar (a : α) : (P a)ᴴ = P a := by
-    simpa [Matrix.star_eq_conjTranspose] using (hproj a).isSelfAdjoint.star_eq
-  calc
-    _ = (∑ a ∈ s, (T a)ᴴ) * (∑ b ∈ s, T b) := by
-      simp only [T, Matrix.conjTranspose_sum]
-    _ = ∑ a ∈ s, ∑ b ∈ s, (T a)ᴴ * T b := by
-      rw [Matrix.sum_mul]
-      apply Finset.sum_congr rfl
-      intro a _
-      rw [Matrix.mul_sum]
-    _ = ∑ a ∈ s, (D a)ᴴ * P a * D a := by
-      apply Finset.sum_congr rfl
-      intro a ha
-      rw [Finset.sum_eq_single a]
-      · simp only [T, Matrix.conjTranspose_mul, hstar a]
-        rw [mul_assoc (D a)ᴴ (P a) (P a * D a),
-          ← mul_assoc (P a) (P a) (D a), (hproj a).isIdempotentElem.eq]
-        exact (mul_assoc (D a)ᴴ (P a) (D a)).symm
-      · intro b _ hba
-        calc
-          (T a)ᴴ * T b = (D a)ᴴ * (P a * P b) * D b := by
-            simp [T, Matrix.conjTranspose_mul, hstar a, mul_assoc]
-          _ = 0 := by rw [horth (Ne.symm hba)]; simp
-      · exact fun h => (h ha).elim
+  have hterm (a b : α) : (P a * D a)ᴴ * (P b * D b) = (D a)ᴴ * (P a * P b) * D b := by
+    have hstar : (P a)ᴴ = P a := (hproj a).isSelfAdjoint.star_eq
+    simp only [Matrix.conjTranspose_mul, hstar, mul_assoc]
+  rw [Matrix.conjTranspose_sum, Finset.sum_mul]
+  simp only [Finset.mul_sum, hterm]
+  refine Finset.sum_congr rfl fun a ha => ?_
+  rw [Finset.sum_eq_single_of_mem a ha]
+  · rw [(hproj a).isIdempotentElem.eq]
+  · intro b hb hne
+    rw [horth a ha b hb hne.symm, mul_zero, zero_mul]
 
 /-- Formalization-only auxiliary lemma for the projective-sum estimate at paper
 lines 364--380: an orthogonal projective left sum is bounded by the full input
@@ -255,7 +280,7 @@ theorem norm_finset_sum_projector_mul_sq_le {α ι : Type*}
   have hgram :
       (∑ a ∈ s, P a * D a)ᴴ * (∑ a ∈ s, P a * D a) ≤
         ∑ a : α, (D a)ᴴ * D a := by
-    rw [gram_finset_sum_projector_mul P D hproj horth s]
+    rw [gram_finset_sum_projector_mul P D hproj s (fun _ _ _ _ h => horth h)]
     calc
       ∑ a ∈ s, (D a)ᴴ * P a * D a ≤
           ∑ a ∈ s, (D a)ᴴ * D a := by
@@ -266,7 +291,7 @@ theorem norm_finset_sum_projector_mul_sq_le {α ι : Type*}
       _ ≤ ∑ a : α, (D a)ᴴ * D a :=
         Finset.sum_le_sum_of_subset_of_nonneg (by simp)
           (fun a _ _ => (Matrix.posSemidef_conjTranspose_mul_self (D a)).nonneg)
-  rw [norm_applyOperatorToState_sq_eq]
+  rw [norm_applyOperatorToState_sq]
   calc
     (inner ℂ ψ (applyOperatorToState
         ((∑ a ∈ s, P a * D a)ᴴ * (∑ a ∈ s, P a * D a)) ψ)).re ≤
@@ -278,82 +303,23 @@ theorem norm_finset_sum_projector_mul_sq_le {α ι : Type*}
     _ = ∑ a : α, ‖applyOperatorToState (D a) ψ‖ ^ 2 := by
       apply Finset.sum_congr rfl
       intro a _
-      exact (norm_applyOperatorToState_sq_eq (D a) ψ).symm
+      exact (norm_applyOperatorToState_sq (D a) ψ).symm
 
-/-- Formalization-only definition for the agreement facts (Facts 4.13 and 4.14):
-the real quadratic form of an operator evaluated in a state vector. -/
-noncomputable def stateQForm {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) (M : Op ι) : ℝ :=
-  (inner ℂ ψ (applyOperatorToState M ψ)).re
+/-- The state quadratic form is linear in real scalars on the operator. -/
+theorem stateQForm_real_smul {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (ψ : EuclideanSpace ℂ ι) (c : ℝ) (A : Op ι) :
+    stateQForm ψ (c • A) = c * stateQForm ψ A := by
+  rw [← Complex.coe_smul]
+  simp only [stateQForm, applyOperatorToState, map_smul, LinearMap.smul_apply,
+    inner_smul_right, smul_eq_mul, Complex.mul_re, Complex.ofReal_re,
+    Complex.ofReal_im, zero_mul, sub_zero]
 
-/-- Tensor placement is additive over finite sums in the left factor. This is
-the formalization-only identity `lem:distance-tensor-sum-left`, used to expand
-the relabeled overlaps in `lem:ld-sandwich`; detailed source proof
-`references/neexp-paper/05_quantum_preliminaries.tex:952-999`. -/
-theorem heteroKron_finset_sum_left {β ιA ιB : Type*} (s : Finset β)
-    (A : β → Op ιA) (C : Op ιB) :
-    heteroKron (∑ b ∈ s, A b) C = ∑ b ∈ s, heteroKron (A b) C := by
-  ext p q
-  simp [heteroKron, Matrix.kronecker, Matrix.sum_apply, Finset.sum_mul]
-
-/-- Tensor placement is additive over finite sums in the right factor. This is
-the formalization-only identity `lem:distance-tensor-sum-right`, used to expand
-the relabeled overlaps in `lem:ld-sandwich`; detailed source proof
-`references/neexp-paper/05_quantum_preliminaries.tex:952-999`. -/
-theorem heteroKron_finset_sum_right {β ιA ιB : Type*} (s : Finset β)
-    (A : Op ιA) (C : β → Op ιB) :
-    heteroKron A (∑ b ∈ s, C b) = ∑ b ∈ s, heteroKron A (C b) := by
-  ext p q
-  simp [heteroKron, Matrix.kronecker, Matrix.sum_apply, Finset.mul_sum]
-
-/-- The state quadratic form is additive over finite sums of operators. This is
-the formalization-only identity `lem:distance-qform-finset-sum`, used to expand
-the relabeled overlaps in `lem:ld-sandwich`; detailed source proof
-`references/neexp-paper/05_quantum_preliminaries.tex:952-999`. -/
-theorem stateQForm_finset_sum {β ι : Type*} [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) (s : Finset β) (M : β → Op ι) :
-    stateQForm ψ (∑ b ∈ s, M b) = ∑ b ∈ s, stateQForm ψ (M b) := by
-  simp [stateQForm, applyOperatorToState]
-
-/-- A positive semidefinite operator has nonnegative state quadratic form. This
-is the formalization-only order fact `lem:distance-qform-nonnegative`, used for
-the nonnegative overlap terms in `lem:ld-sandwich`; detailed source proof
-`references/neexp-paper/05_quantum_preliminaries.tex:952-999`. -/
-theorem stateQForm_nonneg {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) {M : Op ι} (hM : 0 ≤ M) :
-    0 ≤ stateQForm ψ M := by
-  calc
-    0 = stateQForm ψ 0 := by simp [stateQForm, applyOperatorToState]
-    _ ≤ stateQForm ψ M := quadratic_form_mono hM ψ
-
-/-- Formalization-only auxiliary lemma for the agreement facts (Facts 4.13 and
-4.14): the state quadratic form is additive in its operator. -/
-theorem stateQForm_add {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) (M N : Op ι) :
-    stateQForm ψ (M + N) = stateQForm ψ M + stateQForm ψ N := by
-  simp [stateQForm, applyOperatorToState]
-
-/-- The state quadratic form preserves operator subtraction. -/
-private theorem stateQForm_sub {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) (M N : Op ι) :
-    stateQForm ψ (M - N) = stateQForm ψ M - stateQForm ψ N := by
-  simp [stateQForm, applyOperatorToState]
-
-/-- The state quadratic form commutes with a finite sum. -/
-private theorem stateQForm_sum {α ι : Type*} [Fintype α]
-    [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) (M : α → Op ι) :
-    stateQForm ψ (∑ a, M a) = ∑ a, stateQForm ψ (M a) := by
-  simp [stateQForm, applyOperatorToState]
-
-/-- The quadratic form of the identity is the squared vector norm. -/
-theorem stateQForm_one {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) :
-    stateQForm ψ (1 : Op ι) = ‖ψ‖ ^ 2 := by
-  have hone : applyOperatorToState (1 : Op ι) ψ = ψ := by
-    simp [applyOperatorToState]
-  rw [stateQForm, hone]
-  simpa using (inner_self_eq_norm_sq (𝕜 := ℂ) ψ)
+/-- The state quadratic form is invariant under simultaneous reindexing. -/
+theorem stateQForm_reindexState {ι κ : Type*} [Fintype ι] [DecidableEq ι]
+    [Fintype κ] [DecidableEq κ] (e : ι ≃ κ) (T : Op κ) (ψ : EuclideanSpace ℂ ι) :
+    stateQForm (reindexState e ψ) T = stateQForm ψ (reindexOp e T) := by
+  rw [stateQForm, applyOperatorToState_reindexState]
+  simp only [reindexState_eq, LinearIsometryEquiv.inner_map_map, stateQForm]
 
 /-- The quadratic form of `Wᴴ M W` in `ψ` is the quadratic form of `M` in
 `W ψ`.  This is the conjugation identity behind the placed-sandwich
@@ -366,15 +332,18 @@ theorem stateQForm_conjTranspose_mul_mul {ι : Type*} [Fintype ι] [DecidableEq 
   unfold stateQForm
   rw [applyOperatorToState_mul, applyOperatorToState_mul]
   congr 1
-  change inner ℂ ψ (Matrix.toEuclideanLin Wᴴ _) =
-    inner ℂ (Matrix.toEuclideanLin W ψ) _
-  rw [Matrix.toEuclideanLin_conjTranspose_eq_adjoint, LinearMap.adjoint_inner_right]
+  exact inner_applyOperatorToState_adjoint W _ _
+
+section
+
+variable {α ι : Type*} [Fintype α]
+    [Fintype ι] [DecidableEq ι]
+    (M : MIPStarRE.Quantum.Measurement α ι) (a : α)
+include α ι M a
 
 /-- Formalization-only auxiliary lemma for the agreement facts (Facts 4.13 and
 4.14): every effect of a complete measurement is bounded by the identity. -/
-theorem measurement_effect_le_one {α ι : Type*} [Fintype α]
-    [Fintype ι] [DecidableEq ι]
-    (M : MIPStarRE.Quantum.Measurement α ι) (a : α) :
+theorem measurement_effect_le_one :
     M.effect a ≤ 1 := by
   calc
     M.effect a ≤ ∑ b : α, M.effect b :=
@@ -383,11 +352,27 @@ theorem measurement_effect_le_one {α ι : Type*} [Fintype α]
 
 /-- Formalization-only auxiliary lemma for the agreement facts (Facts 4.13 and
 4.14): every positive measurement effect is Hermitian. -/
-theorem measurement_effect_hermitian {α ι : Type*} [Fintype α]
-    [Fintype ι] [DecidableEq ι]
-    (M : MIPStarRE.Quantum.Measurement α ι) (a : α) :
+theorem measurement_effect_hermitian :
     (M.effect a)ᴴ = M.effect a :=
   (Matrix.nonneg_iff_posSemidef.mp (M.pos a)).isHermitian.eq
+
+end
+
+/-- The squared effects of a POVM sum to at most the identity. This is the
+formalization-only estimate `lem:sandwich-povm-square-sum` used in the
+contractions underlying `lem:ld-sandwich`; detailed source argument
+`references/neexp-paper/05_quantum_preliminaries.tex:930-946`. -/
+theorem _root_.MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one
+    {α I : Type*} [Fintype α] [Fintype I] [DecidableEq I]
+    (M : Quantum.Measurement α I) :
+    ∑ a : α, (M.effect a)ᴴ * M.effect a ≤ 1 := by
+  calc
+    ∑ a : α, (M.effect a)ᴴ * M.effect a ≤ ∑ a : α, M.effect a := by
+      apply Finset.sum_le_sum
+      intro a _
+      rw [measurement_effect_hermitian]
+      exact MIPStarRE.Quantum.sq_le_self (M.pos a) (measurement_effect_le_one M a)
+    _ = 1 := M.sum_eq_one
 
 /-- Expand the squared state-dependent distance between two measurement effects. -/
 private theorem norm_effect_sub_effect_sq_expand {α ι : Type*} [Fintype α]
@@ -398,48 +383,23 @@ private theorem norm_effect_sub_effect_sq_expand {α ι : Type*} [Fintype α]
       stateQForm ψ (A.effect a * A.effect a) +
       stateQForm ψ (B.effect a * B.effect a) -
       2 * stateQForm ψ (A.effect a * B.effect a) := by
-  rw [norm_applyOperatorToState_sq_eq]
-  change stateQForm ψ ((A.effect a - B.effect a)ᴴ *
-    (A.effect a - B.effect a)) = _
-  rw [show (A.effect a - B.effect a)ᴴ * (A.effect a - B.effect a) =
-      A.effect a * A.effect a - B.effect a * A.effect a -
-        (A.effect a * B.effect a - B.effect a * B.effect a) by
-    simp only [Matrix.conjTranspose_sub, measurement_effect_hermitian A a,
-      measurement_effect_hermitian B a]
-    noncomm_ring]
-  rw [stateQForm_sub, stateQForm_sub, stateQForm_sub]
-  have hcross : stateQForm ψ (B.effect a * A.effect a) =
-      stateQForm ψ (A.effect a * B.effect a) := by
-    unfold stateQForm applyOperatorToState
-    rw [show B.effect a * A.effect a = (A.effect a * B.effect a)ᴴ by
-      simp [Matrix.conjTranspose_mul, measurement_effect_hermitian A a,
-        measurement_effect_hermitian B a]]
-    rw [Matrix.toEuclideanLin_conjTranspose_eq_adjoint,
-      LinearMap.adjoint_inner_right]
-    simpa using (inner_re_symm (𝕜 := ℂ)
-      ((Matrix.toEuclideanLin (A.effect a * B.effect a)) ψ) ψ)
-  rw [hcross]
-  ring
+  rw [norm_applyOperatorToState_sub_sq]
+  simp only [norm_applyOperatorToState_sq, measurement_effect_hermitian]
 
 /-- Removing the diagonal term from a finite sum is subtraction of that term. -/
 private theorem sum_if_eq_zero_else {α : Type*} [Fintype α] [DecidableEq α]
     (f : α → ℝ) (a : α) :
     (∑ b : α, if a = b then 0 else f b) = (∑ b : α, f b) - f a := by
-  have herase := Finset.sum_erase_add (Finset.univ : Finset α) f
-    (Finset.mem_univ a)
-  calc
-    (∑ b : α, if a = b then 0 else f b) =
-        ∑ b ∈ (Finset.univ : Finset α).filter (fun b => b ≠ a), f b := by
-      rw [Finset.sum_filter]
-      apply Finset.sum_congr rfl
-      intro b _
-      by_cases h : a = b <;> simp [h, Ne.symm]
-    _ = ∑ b ∈ (Finset.univ : Finset α).erase a, f b := by
-      rw [Finset.filter_ne']
-    _ = (∑ b : α, f b) - f a := by linarith
+  rw [← Finset.sum_erase_eq_sub (Finset.mem_univ a), ← Finset.filter_ne']
+  simp [Finset.sum_filter, eq_comm]
+
+section
+
+variable {α ι : Type*} [Fintype α]
+include α ι
 
 /-- Summing a complete measurement in the right factor leaves the first operator. -/
-private theorem stateQForm_mul_sum_right {α ι : Type*} [Fintype α]
+private theorem stateQForm_mul_sum_right
     [Fintype ι] [DecidableEq ι]
     (B : MIPStarRE.Quantum.Measurement α ι)
     (ψ : EuclideanSpace ℂ ι) (M : Op ι) :
@@ -447,7 +407,7 @@ private theorem stateQForm_mul_sum_right {α ι : Type*} [Fintype α]
   rw [← stateQForm_sum, ← Finset.mul_sum, B.sum_eq_one, mul_one]
 
 /-- The quadratic forms of all effects sum to the squared vector norm. -/
-private theorem stateQForm_effect_sum {α ι : Type*} [Fintype α]
+private theorem stateQForm_effect_sum
     [Fintype ι] [DecidableEq ι]
     (A : MIPStarRE.Quantum.Measurement α ι)
     (ψ : EuclideanSpace ℂ ι) :
@@ -456,107 +416,86 @@ private theorem stateQForm_effect_sum {α ι : Type*} [Fintype α]
 
 /-- Formalization-only auxiliary lemma for the agreement facts (Facts 4.13 and
 4.14): pointwise inconsistency is total mass minus diagonal overlap. -/
-theorem point_defect_eq {α ι : Type*} [Fintype α] [DecidableEq α]
+theorem point_defect_eq [DecidableEq α]
     [Fintype ι] [DecidableEq ι]
     (A B : MIPStarRE.Quantum.Measurement α ι)
     (ψ : EuclideanSpace ℂ ι) :
     (∑ a : α, ∑ b : α,
       if a = b then 0 else stateQForm ψ (A.effect a * B.effect b)) =
       ‖ψ‖ ^ 2 - ∑ a : α, stateQForm ψ (A.effect a * B.effect a) := by
-  calc
-    _ = ∑ a : α, ((∑ b : α, stateQForm ψ (A.effect a * B.effect b)) -
-          stateQForm ψ (A.effect a * B.effect a)) := by
-      apply Finset.sum_congr rfl
-      intro a _
-      exact sum_if_eq_zero_else
-        (fun b => stateQForm ψ (A.effect a * B.effect b)) a
-    _ = ∑ a : α, (stateQForm ψ (A.effect a) -
-          stateQForm ψ (A.effect a * B.effect a)) := by
-      apply Finset.sum_congr rfl
-      intro a _
-      rw [stateQForm_mul_sum_right B ψ]
-    _ = (∑ a : α, stateQForm ψ (A.effect a)) -
-          ∑ a : α, stateQForm ψ (A.effect a * B.effect a) := by
-      rw [Finset.sum_sub_distrib]
-    _ = _ := by rw [stateQForm_effect_sum]
+  simp_rw [sum_if_eq_zero_else, stateQForm_mul_sum_right B ψ,
+    Finset.sum_sub_distrib, stateQForm_effect_sum A ψ]
 
-/-- Formalization-only auxiliary lemma for the agreement facts (Facts 4.13 and
-4.14): the matrix-vector term in `consistencyDefect` is the state quadratic
-form. -/
-theorem consistency_term_eq_stateQForm {ι : Type*}
-    [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) (M : Op ι) :
-    (inner ℂ ψ ((EuclideanSpace.equiv ι ℂ).symm (M.mulVec ψ))).re =
-      stateQForm ψ M := by
-  rfl
+end
+
+/-- Two pairs of complete measurements with the same overlap have the same defect. -/
+theorem measurementDefect_eq_of_overlap {X α β I : Type*}
+    [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
+    [Fintype I] [DecidableEq I] (μ : Distribution X)
+    (A B : X → Quantum.Measurement α I) (C D : X → Quantum.Measurement β I)
+    (ψ : EuclideanSpace ℂ I)
+    (h : ∀ x, (∑ a, (A x).effect a * (B x).effect a) = ∑ b, (C x).effect b * (D x).effect b) :
+    measurementDefect μ A B ψ = measurementDefect μ C D ψ := by
+  unfold measurementDefect consistencyDefect
+  exact avgOver_congr _ _ _ fun x => by
+    simp only [point_defect_eq, ← stateQForm_finset_sum, h]
+
+/-- Reversing complete measurements preserves real consistency. -/
+theorem measurementDefect_symm {X α I : Type*}
+    [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α] [Fintype I] [DecidableEq I]
+    (μ : Distribution X) (A B : X → Quantum.Measurement α I) (ψ : EuclideanSpace ℂ I) :
+    measurementDefect μ A B ψ = measurementDefect μ B A ψ := by
+  unfold measurementDefect consistencyDefect
+  refine avgOver_congr _ _ _ fun x => ?_
+  rw [point_defect_eq (A x) (B x), point_defect_eq (B x) (A x)]
+  simp only [stateQForm_mul_eq_inner, measurement_effect_hermitian]
+  congr 1
+  exact Finset.sum_congr rfl fun a _ => inner_re_symm (𝕜 := ℂ) _ _
+
+section
+
+variable {α ι : Type*}
+    [Fintype α] [DecidableEq α] [Fintype ι] [DecidableEq ι]
+    (A B : MIPStarRE.Quantum.Measurement α ι) (ψ : EuclideanSpace ℂ ι)
+include α ι A B ψ
+
+private theorem sum_effect_diag_eq_two_defect :
+    (∑ a, (stateQForm ψ (A.effect a) + stateQForm ψ (B.effect a) -
+        2 * stateQForm ψ (A.effect a * B.effect a))) =
+      2 * (∑ a, ∑ b, if a = b then 0 else stateQForm ψ (A.effect a * B.effect b)) := by
+  rw [Finset.sum_sub_distrib, Finset.sum_add_distrib, ← Finset.mul_sum,
+    stateQForm_effect_sum, stateQForm_effect_sum, point_defect_eq]
+  ring
 
 /-- Formalization-only auxiliary lemma for the agreement facts (Facts 4.13 and
 4.14), item 1: pointwise measurement distance is at most twice the
 inconsistency defect. -/
-theorem point_distance_le_two_defect {α ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype ι] [DecidableEq ι]
-    (A B : MIPStarRE.Quantum.Measurement α ι)
-    (ψ : EuclideanSpace ℂ ι) :
+theorem point_distance_le_two_defect :
     (∑ a : α, ‖applyOperatorToState (A.effect a - B.effect a) ψ‖ ^ 2) ≤
       2 * (∑ a : α, ∑ b : α,
         if a = b then 0 else stateQForm ψ (A.effect a * B.effect b)) := by
-  have hterm (a : α) :
-      ‖applyOperatorToState (A.effect a - B.effect a) ψ‖ ^ 2 ≤
-        stateQForm ψ (A.effect a) + stateQForm ψ (B.effect a) -
-          2 * stateQForm ψ (A.effect a * B.effect a) := by
-    rw [norm_effect_sub_effect_sq_expand A B ψ a]
-    have hA := quadratic_form_mono
-      (MIPStarRE.Quantum.sq_le_self (A.pos a) (measurement_effect_le_one A a)) ψ
-    have hB := quadratic_form_mono
-      (MIPStarRE.Quantum.sq_le_self (B.pos a) (measurement_effect_le_one B a)) ψ
-    exact sub_le_sub_right (add_le_add hA hB) _
-  calc
-    _ ≤ ∑ a : α, (stateQForm ψ (A.effect a) + stateQForm ψ (B.effect a) -
-          2 * stateQForm ψ (A.effect a * B.effect a)) :=
-      Finset.sum_le_sum fun a _ => hterm a
-    _ = (∑ a : α, stateQForm ψ (A.effect a)) +
-          (∑ a : α, stateQForm ψ (B.effect a)) -
-          2 * (∑ a : α, stateQForm ψ (A.effect a * B.effect a)) := by
-      rw [Finset.sum_sub_distrib, Finset.sum_add_distrib, Finset.mul_sum]
-    _ = 2 * (‖ψ‖ ^ 2 -
-          ∑ a : α, stateQForm ψ (A.effect a * B.effect a)) := by
-      rw [stateQForm_effect_sum A ψ, stateQForm_effect_sum B ψ]
-      ring
-    _ = _ := by rw [point_defect_eq A B ψ]
+  rw [← sum_effect_diag_eq_two_defect A B ψ]
+  refine Finset.sum_le_sum fun a _ => ?_
+  rw [norm_effect_sub_effect_sq_expand A B ψ a]
+  exact sub_le_sub_right (add_le_add
+    (quadratic_form_mono (MIPStarRE.Quantum.sq_le_self (A.pos a) (measurement_effect_le_one A a)) ψ)
+    (quadratic_form_mono (MIPStarRE.Quantum.sq_le_self (B.pos a) (measurement_effect_le_one B a)) ψ)) _
 
 /-- Formalization-only auxiliary lemma for the agreement facts (Facts 4.13 and
 4.14), item 2: projective measurements make distance exactly twice the
 pointwise defect. -/
-theorem point_distance_eq_two_defect_of_projective {α ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype ι] [DecidableEq ι]
-    (A B : MIPStarRE.Quantum.Measurement α ι)
-    (ψ : EuclideanSpace ℂ ι)
+theorem point_distance_eq_two_defect_of_projective
     (hA : MIPStarRE.QPBT.Measurement.IsProjective A)
     (hB : MIPStarRE.QPBT.Measurement.IsProjective B) :
     (∑ a : α, ‖applyOperatorToState (A.effect a - B.effect a) ψ‖ ^ 2) =
       2 * (∑ a : α, ∑ b : α,
         if a = b then 0 else stateQForm ψ (A.effect a * B.effect b)) := by
-  calc
-    _ = ∑ a : α, (stateQForm ψ (A.effect a * A.effect a) +
-          stateQForm ψ (B.effect a * B.effect a) -
-          2 * stateQForm ψ (A.effect a * B.effect a)) := by
-      apply Finset.sum_congr rfl
-      intro a _
-      exact norm_effect_sub_effect_sq_expand A B ψ a
-    _ = ∑ a : α, (stateQForm ψ (A.effect a) + stateQForm ψ (B.effect a) -
-          2 * stateQForm ψ (A.effect a * B.effect a)) := by
-      apply Finset.sum_congr rfl
-      intro a _
-      rw [(hA a).isIdempotentElem.eq, (hB a).isIdempotentElem.eq]
-    _ = (∑ a : α, stateQForm ψ (A.effect a)) +
-          (∑ a : α, stateQForm ψ (B.effect a)) -
-          2 * (∑ a : α, stateQForm ψ (A.effect a * B.effect a)) := by
-      rw [Finset.sum_sub_distrib, Finset.sum_add_distrib, Finset.mul_sum]
-    _ = 2 * (‖ψ‖ ^ 2 -
-          ∑ a : α, stateQForm ψ (A.effect a * B.effect a)) := by
-      rw [stateQForm_effect_sum A ψ, stateQForm_effect_sum B ψ]
-      ring
-    _ = _ := by rw [point_defect_eq A B ψ]
+  rw [← sum_effect_diag_eq_two_defect A B ψ]
+  refine Finset.sum_congr rfl fun a _ => ?_
+  rw [norm_effect_sub_effect_sq_expand A B ψ a,
+    (hA a).isIdempotentElem.eq, (hB a).isIdempotentElem.eq]
+
+end
 
 /-- Formalization-only auxiliary lemma for the agreement facts (Facts 4.13 and
 4.14), item 2: state-dependent squared distance between operator families is
@@ -570,9 +509,14 @@ theorem opFamilyDistSq_nonneg {X α ι : Type*}
   exact Finset.sum_nonneg fun x _ => mul_nonneg (μ.nonnegative x)
     (Finset.sum_nonneg fun a _ => sq_nonneg _)
 
-/-- Regard a unit Euclidean vector as an LDT pure state. -/
-private noncomputable def pureStateOfUnitVector {ι : Type*}
+section
+
+variable {ι : Type*}
     [Fintype ι] [DecidableEq ι] [Nonempty ι]
+include ι
+
+/-- Regard a unit Euclidean vector as an LDT pure state. -/
+noncomputable def pureStateOfUnitVector
     (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1) : PureState ι where
   vector := ψ.ofLp
   unit := by
@@ -593,20 +537,12 @@ index type, and are used both by the distance calculus and by the low-degree
 consistency transport; the two formulations of consistency they relate are
 `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:295-395` and
 `references/ldt-paper/preliminaries.tex:649-666`. -/
-noncomputable def pureStateEuclideanVector {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
+noncomputable def pureStateEuclideanVector
     (ψ : PureState ι) : EuclideanSpace ℂ ι :=
   (EuclideanSpace.equiv ι ℂ).symm ψ.vector
 
-@[simp] theorem pureStateEuclideanVector_apply {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (ψ : PureState ι) (i : ι) :
-    pureStateEuclideanVector ψ i = ψ.vector i :=
-  rfl
-
 /-- The Euclidean vector associated with an LDT pure state has norm one. -/
-theorem pureStateEuclideanVector_norm {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
+theorem pureStateEuclideanVector_norm
     (ψ : PureState ι) : ‖pureStateEuclideanVector ψ‖ = 1 := by
   have hsquareComplex :
       ((‖pureStateEuclideanVector ψ‖ ^ 2 : ℝ) : ℂ) = 1 := by
@@ -628,8 +564,7 @@ theorem pureStateEuclideanVector_norm {ι : Type*}
 Euclidean vector.  This identity relates the density formulation of consistency
 to the vector formulation; see
 `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:295-395`. -/
-theorem pureState_stateQForm_eq_ev {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
+theorem pureState_stateQForm_eq_ev
     (ψ : PureState ι) (T : Op ι) :
     stateQForm (pureStateEuclideanVector ψ) T = ev (ψ : QuantumState ι) T := by
   rw [PureState.ev_eq_re_inner]
@@ -640,110 +575,56 @@ theorem pureState_stateQForm_eq_ev {ι : Type*}
   rw [EuclideanSpace.inner_eq_star_dotProduct, dotProduct_comm]
   rfl
 
-/-- For a unit vector, `stateQForm` agrees with the LDT pure-state expectation.
-This is `pureState_stateQForm_eq_ev` read along `pureStateOfUnitVector`. -/
-private theorem stateQForm_eq_ev {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1) (T : Op ι) :
-    stateQForm ψ T = ev (pureStateOfUnitVector ψ hψ : QuantumState ι) T :=
-  pureState_stateQForm_eq_ev (pureStateOfUnitVector ψ hψ) T
+end
 
-/-- Pure-state evaluation of `Tᴴ T` is the squared norm of `T ψ`. -/
-private theorem ev_adjoint_mul_self_eq_norm_sq {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1) (T : Op ι) :
-    ev (pureStateOfUnitVector ψ hψ : QuantumState ι) (Tᴴ * T) =
-      ‖applyOperatorToState T ψ‖ ^ 2 := by
-  rw [← stateQForm_eq_ev]
-  exact (norm_applyOperatorToState_sq_eq T ψ).symm
+section
 
-/-- Formalization-only auxiliary lemma for Proposition 4.29: operator-family
-distance controls the change in diagonal overlap. -/
-theorem overlap_gap_le_of_opFamilyDistSq {X α ι : Type*}
-    [Fintype α]
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (μ : Distribution X)
-    (A B D : X → MIPStarRE.Quantum.Measurement α ι)
-    (ψ : EuclideanSpace ℂ ι) (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1)
-    (ζ : ℝ)
-    (hBD : opFamilyDistSq μ (fun x a => (B x).effect a)
-      (fun x a => (D x).effect a) ψ ≤ ζ) :
-    |avgOver μ (fun x => ∑ a, stateQForm ψ ((A x).effect a * (B x).effect a)) -
-      avgOver μ (fun x => ∑ a, stateQForm ψ ((A x).effect a * (D x).effect a))| ≤
-        Real.sqrt ζ := by
-  classical
-  let ψp : PureState ι := pureStateOfUnitVector ψ hψ
-  let H : FiniteHilbertSpace :=
-    { carrier := ι
-      instFintype := inferInstance
-      instDecidableEq := inferInstance
-      instNonempty := inferInstance }
-  let As : X → SubMeas α ι := fun x =>
-    (MatrixMeasurement.toMeasurement (H := H) (A x)).toSubMeas
-  let Bs : X → SubMeas α ι := fun x =>
-    (MatrixMeasurement.toMeasurement (H := H) (B x)).toSubMeas
-  let Ds : X → SubMeas α ι := fun x =>
-    (MatrixMeasurement.toMeasurement (H := H) (D x)).toSubMeas
-  have hmass : ∑ x ∈ μ.support, μ.weight x ≤ 1 := by
-    rw [hμ.weight_sum_eq_one]
-  have hsdd : SDDRel (ψp : QuantumState ι) μ Bs Ds ζ := by
-    constructor
-    unfold sddError qSDD qSDDCore
-    calc
-      avgOver μ (fun x => ∑ a, ev (ψp : QuantumState ι)
-          (((Bs x).outcome a - (Ds x).outcome a)ᴴ *
-            ((Bs x).outcome a - (Ds x).outcome a))) =
-          opFamilyDistSq μ (fun x a => (B x).effect a)
-            (fun x a => (D x).effect a) ψ := by
-        unfold opFamilyDistSq
-        apply avgOver_congr
-        intro x
-        apply Finset.sum_congr rfl
-        intro a _
-        simpa [ψp, Bs, Ds, H] using
-          ev_adjoint_mul_self_eq_norm_sq ψ hψ ((B x).effect a - (D x).effect a)
-      _ ≤ ζ := hBD
-  have hgap := MIPStarRE.LDT.Preliminaries.easyApproxFromApproxDelta
-    (ψp : QuantumState ι) ψp.toQuantumState_isNormalized μ hmass Bs Ds As ζ hsdd
-  have hBA : avgOver μ (fun x => ∑ a,
-      ev (ψp : QuantumState ι) ((A x).effect a * (B x).effect a)) =
-      avgOver μ (fun x => ∑ a,
-        ev (ψp : QuantumState ι) ((B x).effect a * (A x).effect a)) := by
-    apply avgOver_congr
-    intro x
-    apply Finset.sum_congr rfl
-    intro a _
-    exact ev_mul_comm_of_psd _ _ _ ((A x).pos a) ((B x).pos a)
-  have hDA : avgOver μ (fun x => ∑ a,
-      ev (ψp : QuantumState ι) ((A x).effect a * (D x).effect a)) =
-      avgOver μ (fun x => ∑ a,
-        ev (ψp : QuantumState ι) ((D x).effect a * (A x).effect a)) := by
-    apply avgOver_congr
-    intro x
-    apply Finset.sum_congr rfl
-    intro a _
-    exact ev_mul_comm_of_psd _ _ _ ((A x).pos a) ((D x).pos a)
-  rw [show avgOver μ (fun x => ∑ a,
-      stateQForm ψ ((A x).effect a * (B x).effect a)) =
-      avgOver μ (fun x => ∑ a,
-        ev (ψp : QuantumState ι) ((A x).effect a * (B x).effect a)) by
-    apply avgOver_congr
-    intro x
-    apply Finset.sum_congr rfl
-    intro a _
-    exact stateQForm_eq_ev ψ hψ _]
-  rw [show avgOver μ (fun x => ∑ a,
-      stateQForm ψ ((A x).effect a * (D x).effect a)) =
-      avgOver μ (fun x => ∑ a,
-        ev (ψp : QuantumState ι) ((A x).effect a * (D x).effect a)) by
-    apply avgOver_congr
-    intro x
-    apply Finset.sum_congr rfl
-    intro a _
-    exact stateQForm_eq_ev ψ hψ _]
-  rw [hBA, hDA]
-  simpa only [ψp, As, Bs, Ds, H,
-    MatrixMeasurement.toMeasurement_outcome] using hgap
+variable {X α I : Type*} [Fintype α] [Fintype I] [DecidableEq I]
+include X α I
+
+/-- Complete measurements have average squared effect mass at most one. -/
+theorem measurement_mass_le_one
+    (D : Distribution X) (A : X → Quantum.Measurement α I)
+    (ψ : EuclideanSpace ℂ I) (hD : D.IsProbability) (hψ : ‖ψ‖ = 1) :
+    opFamilyDistSq D (fun x a => (A x).effect a) (fun _ _ => 0) ψ ≤ 1 := by
+  rw [← avgOver_const_of_isProbability D hD (1 : ℝ)]
+  apply avgOver_mono
+  intro x
+  simp only [sub_zero]
+  rw [sum_norm_applyOperatorToState_sq, ← show stateQForm ψ (1 : Op I) = 1 by
+    rw [stateQForm_one, hψ, one_pow]]
+  exact quadratic_form_mono (measurement_sum_adjoint_mul_le_one (A x)) ψ
+
+/-- Cauchy–Schwarz for the averaged real inner product of two operator families. -/
+theorem abs_avgOver_inner_le
+    (μ : Distribution X) (U V : X → α → Op I) (ψ : EuclideanSpace ℂ I) :
+    |avgOver μ (fun x => ∑ a, stateQForm ψ ((U x a)ᴴ * V x a))| ≤
+      Real.sqrt (opFamilyDistSq μ U (fun _ _ => 0) ψ) *
+        Real.sqrt (opFamilyDistSq μ V (fun _ _ => 0) ψ) := by
+  simp only [opFamilyDistSq, sub_zero]
+  refine Preliminaries.weightedFinsetCauchySchwarz μ _ _ _ ?_
+    (fun _ _ => sq_nonneg _) (fun _ _ => sq_nonneg _)
+  intro x a
+  simp only [stateQForm_mul_eq_inner, Matrix.conjTranspose_conjTranspose,
+    Real.sqrt_sq (norm_nonneg _)]
+  exact (Complex.abs_re_le_norm _).trans (norm_inner_le_norm _ _)
+
+/-- A complete measurement bounds the change in overlap by the root of the squared distance. -/
+theorem abs_overlap_gap_le_sqrt_of_opFamilyDistSq
+    (μ : Distribution X) (A : X → Quantum.Measurement α I) (B C : X → α → Op I)
+    (ψ : EuclideanSpace ℂ I) (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1)
+    (ζ : ℝ) (hBC : opFamilyDistSq μ B C ψ ≤ ζ) :
+    |avgOver μ (fun x => ∑ a, stateQForm ψ ((A x).effect a * B x a)) -
+        avgOver μ (fun x => ∑ a, stateQForm ψ ((A x).effect a * C x a))| ≤ Real.sqrt ζ := by
+  have h := abs_avgOver_inner_le μ (fun x => (A x).effect) (fun x a => B x a - C x a) ψ
+  have hdist : opFamilyDistSq μ (fun x a => B x a - C x a) (fun _ _ => 0) ψ ≤ ζ := by
+    simpa only [opFamilyDistSq, sub_zero] using hBC
+  simpa only [measurement_effect_hermitian, mul_sub, stateQForm_sub, Finset.sum_sub_distrib,
+    avgOver_sub, Real.sqrt_one, one_mul] using h.trans
+      (mul_le_mul (Real.sqrt_le_sqrt (measurement_mass_le_one μ A ψ hμ hψ))
+        (Real.sqrt_le_sqrt hdist) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+
+end
 
 /-- Formalization-only auxiliary lemma for Proposition 4.29: on a unit state and
 probability distribution, defect is one minus diagonal overlap. -/
@@ -752,26 +633,12 @@ theorem consistencyDefect_eq_one_sub_overlap {X α ι : Type*}
     [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (A B : X → MIPStarRE.Quantum.Measurement α ι)
     (ψ : EuclideanSpace ℂ ι) (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1) :
-    consistencyDefect μ (fun x a => (A x).effect a)
-        (fun x a => (B x).effect a) ψ =
+    measurementDefect μ A
+        B ψ =
       1 - avgOver μ (fun x => ∑ a,
         stateQForm ψ ((A x).effect a * (B x).effect a)) := by
-  unfold consistencyDefect
-  simp_rw [consistency_term_eq_stateQForm]
-  calc
-    avgOver μ (fun x => ∑ a, ∑ b, if a = b then 0 else
-        stateQForm ψ ((A x).effect a * (B x).effect b)) =
-      avgOver μ (fun x => ‖ψ‖ ^ 2 - ∑ a,
-        stateQForm ψ ((A x).effect a * (B x).effect a)) := by
-      apply avgOver_congr
-      intro x
-      exact point_defect_eq (A x) (B x) ψ
-    _ = avgOver μ (fun _ => ‖ψ‖ ^ 2) - avgOver μ (fun x => ∑ a,
-        stateQForm ψ ((A x).effect a * (B x).effect a)) :=
-      avgOver_sub μ _ _
-    _ = _ := by
-      rw [avgOver_const_of_isProbability μ hμ, hψ]
-      norm_num
+  simp only [measurementDefect, consistencyDefect, point_defect_eq, hψ, one_pow,
+    avgOver_sub, avgOver_const_of_isProbability μ hμ]
 
 /-- Formalization-only auxiliary lemma for Proposition 4.29: state-dependent
 operator-family distance is symmetric. -/

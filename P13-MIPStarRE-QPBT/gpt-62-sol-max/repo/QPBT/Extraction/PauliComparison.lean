@@ -3,6 +3,7 @@ module
 public import QPBT.Extraction.OverlapTransfer
 public import QPBT.Extraction.EncodingSupport
 public import QPBT.Extraction.Defs
+public import QPBT.Games.EPR
 public import QPBT.Test.MagicSquareTheorems.Rigidity.Transfer
 
 /-!
@@ -30,24 +31,6 @@ open MIPStarRE.LDT hiding Measurement
 
 noncomputable section
 
-/-- A symmetric operator acts identically on the two halves of the extracted
-EPR pair, including arbitrary auxiliary registers in local player order. -/
-theorem extracted_epr_actions_eq {I J V : Type*}
-    [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
-    [Fintype V] [DecidableEq V] [Nonempty V]
-    (aux : EuclideanSpace ℂ (I × J)) (T : Op V) (hT : Tᵀ = T) :
-    applyOperatorToState (heteroKron (heteroKron (1 : Op I) T) (1 : Op (J × V)))
-        (reindexState prodShuffle (vecTensor aux (eprState V))) =
-      applyOperatorToState (heteroKron (1 : Op (I × V)) (heteroKron (1 : Op J) T))
-        (reindexState prodShuffle (vecTensor aux (eprState V))) := by
-  ext p
-  simp only [applyOperatorToState, Matrix.toEuclideanLin, Matrix.toLpLin_apply,
-    Matrix.mulVec, dotProduct, Fintype.sum_prod_type]
-  simp [heteroKron, Matrix.kronecker, Matrix.one_apply, reindexState, vecTensor,
-    eprState, prodShuffle, mul_ite, ite_mul, Prod.ext_iff, ite_and]
-  rw [show T p.2.2 p.1.2 = T p.1.2 p.2.2 from congrFun (congrFun hT p.1.2) p.2.2]
-  simp
-
 /-- The full answer-summed Pauli distance on `aux tensor EPR` is at most twice
 the evaluated-overlap deficit on `theta`, plus `2md/q` and four times the state
 distance. The bound holds for every local POVM and every normalized auxiliary
@@ -65,7 +48,7 @@ theorem pauli_distance_on_ideal_le {P : AdmissibleParams} {I J : Type*}
     (∑ h : PauliRegister P, ‖applyOperatorToState
       (heteroKron (A.effect h - heteroKron (1 : Op I) (pauliProj W h))
         (1 : Op (J × PauliRegister P))) ideal‖ ^ 2) ≤
-      2 * (1 - avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+      2 * (1 - avgOver (uniformDistribution (PauliPoint P)) (fun u =>
         ∑ a : PauliScalar P, stateQForm theta
           (heteroKron ((A.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)
             ((B.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)))) +
@@ -96,7 +79,7 @@ theorem pauli_distance_on_ideal_le {P : AdmissibleParams} {I J : Type*}
     rfl (fun h _ => congrArg (fun v => ‖v‖ ^ 2) (haction h))
   rw [hsum]
   have hoverlap := pauli_overlap_transfer A B theta ideal htheta hideal
-  simp only [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne,
+  simp only [leftPlacedMeasurement_effect, rightPlacedMeasurement_effect,
     placed_product_stateQForm_eq] at hdist
   exact hdist.trans (by dsimp [B] at hoverlap ⊢; linarith)
 

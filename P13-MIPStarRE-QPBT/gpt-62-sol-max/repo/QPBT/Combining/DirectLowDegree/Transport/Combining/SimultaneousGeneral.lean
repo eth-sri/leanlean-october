@@ -67,35 +67,8 @@ measurements with outcomes in the polynomials of `m + k` variables, and
 theorem exists_directSimultaneousPolynomialMeasurements_combinedError
     (D : DirectLdParams) (S : Strategy (directLdGame D)) (hS : S.IsProjective)
     (ε : Error) (hwin : 1 - ε ≤ S.value) :
-    ∃ GA : DirectPolyMeasTuple D S.ιA,
-      ∃ GB : DirectPolyMeasTuple D S.ιB,
-        consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
-            (fun u outcome => heteroKron
-              (((S.A (directLdPointQuestionOf D u)).postprocess
-                (directLdPointValuesOrZero D)).effect outcome) 1)
-            (fun u outcome => heteroKron 1
-              ((GB.postprocess (evalDirectPolyTupleAt u)).effect outcome))
-            S.ψ ≤
-          Test.mainFormalError D.combined.toLDTParameters
-              (directLdAuxParameter D.combined) (3 * (10 * ε)) +
-            ((D.combined.m * D.d : ℕ) : ℝ) / D.q ∧
-        consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
-            (fun u outcome => heteroKron
-              ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
-            (fun u outcome => heteroKron 1
-              (((S.B (directLdPointQuestionOf D u)).postprocess
-                (directLdPointValuesOrZero D)).effect outcome))
-            S.ψ ≤
-          Test.mainFormalError D.combined.toLDTParameters
-              (directLdAuxParameter D.combined) (3 * (10 * ε)) +
-            ((D.combined.m * D.d : ℕ) : ℝ) / D.q ∧
-        consistencyDefect (uniformDistribution Unit)
-            (fun _ g => heteroKron (GA.effect g) 1)
-            (fun _ g => heteroKron 1 (GB.effect g)) S.ψ ≤
-          Test.mainFormalError D.combined.toLDTParameters
-            (directLdAuxParameter D.combined) (3 * (10 * ε)) := by
+    let δ := Test.mainFormalError D.combined.toLDTParameters (directLdAuxParameter D.combined) (3 * (10 * ε))
+    ∃ GA GB, DirectLdConsistency S GA GB (δ + ((D.combined.m * D.d : ℕ) : ℝ) / D.q) δ := by
   obtain ⟨GA, GB, h1, h2, h3⟩ :=
     exists_directSimultaneousPolynomialMeasurements_of_k_eq_one D.combined rfl
       (directCombinedStrategy D S) (directCombinedStrategy_isProjective D S hS)

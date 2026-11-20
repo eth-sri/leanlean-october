@@ -38,13 +38,18 @@ type in blueprint
 -/
 abbrev Cube (m : ℕ) := Fin m → Bool
 
+section
+
+variable {K : Type*} [CommRing K] {m : ℕ}
+include K m
+
 /--
 The representative polynomial which is `1` at `y` on the Boolean cube and
 zero at the other cube points.  This is the indicator polynomial in blueprint
 `def:low-degree-encoding`; paper
 `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-noncomputable def indicatorPoly {K : Type*} [CommRing K] {m : ℕ} (y : Cube m) :
+noncomputable def indicatorPoly (y : Cube m) :
     MvPolynomial (Fin m) K :=
   ∏ i : Fin m, if y i then X i else (1 - X i)
 
@@ -55,18 +60,21 @@ quotienting by
 functional equality.  Blueprint: `def:low-degree-encoding`; paper origin:
 `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-noncomputable def lowDegreeEncoding {K : Type*} [CommRing K] {m : ℕ}
+noncomputable def lowDegreeEncoding
     (a : Cube m → K) : MvPolynomial (Fin m) K :=
   ∑ y : Cube m, a y • indicatorPoly y
 
 /- Evaluation shorthand for the representative polynomial in
 `def:low-degree-encoding`; it is Lean-only notation. -/
+section
+
+variable (a : Cube m → K) (x : Fin m → K)
+
 /-- Evaluation shorthand for the low-degree encoding.  Blueprint
 `def:low-degree-encoding`, paper origin
 `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-noncomputable def lowDegreeEnc {K : Type*} [CommRing K] {m : ℕ}
-    (a : Cube m → K) (x : Fin m → K) : K :=
+noncomputable def lowDegreeEnc : K :=
   eval x (lowDegreeEncoding a)
 
 /--
@@ -74,7 +82,7 @@ The indicator vector `ind_m(x)` of `def:indicator-vector`.
 Blueprint: `def:indicator-vector`; paper origin:
 `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-noncomputable def indicatorVec {K : Type*} [CommRing K] {m : ℕ}
+noncomputable def indicatorVec
     (x : Fin m → K) : Cube m → K :=
   fun y => eval x (indicatorPoly y)
 
@@ -84,10 +92,11 @@ Equation `eq:low-degree-encoding-definition` and `def:indicator-vector` in the
 blueprint, with source node `def:indicator-vector`; paper origin
 `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-theorem lowDegreeEnc_eq_dotProduct {K : Type*} [CommRing K] {m : ℕ}
-    (a : Cube m → K) (x : Fin m → K) :
+theorem lowDegreeEnc_eq_dotProduct :
     lowDegreeEnc a x = dotProduct a (indicatorVec x) := by
   simp [lowDegreeEnc, lowDegreeEncoding, indicatorVec, dotProduct]
+
+end
 
 /--
 The coordinatewise product form of an entry of the indicator vector: at a cube
@@ -96,10 +105,12 @@ true and of `1 - x i` over the remaining ones.  Blueprint
 `def:indicator-vector`;
 paper origin: `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-theorem indicatorVec_apply_eq_prod {K : Type*} [CommRing K] {m : ℕ}
+theorem indicatorVec_apply_eq_prod
     (x : Fin m → K) (y : Cube m) :
     indicatorVec x y = ∏ i : Fin m, if y i then x i else 1 - x i := by
   simp [indicatorVec, indicatorPoly, apply_ite]
+
+end
 
 /--
 Over a commutative ring of characteristic two, the inner product of two

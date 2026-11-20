@@ -1,6 +1,7 @@
 module
 
 public import QPBT.Combining.DirectLowDegree.Transport.Combining.Linearity
+public import Mathlib.Algebra.MvPolynomial.Equiv
 
 /-!
 # Restricting a polynomial in the combined variables to a point
@@ -66,48 +67,55 @@ theorem combinedVar_cases {m k : ℕ} (i : Fin (m + k)) :
     combinedPoint u α (combinedCoefficientVar m k r) = α r := by
   simp [combinedPoint, combinedCoefficientVar]
 
-/-! ## The restriction to a point -/
+/-- Order the combining variables before the point variables when currying. -/
+def combinedVariableEquiv (m k : ℕ) : Fin (m + k) ≃ Fin k ⊕ Fin m :=
+  finSumFinEquiv.symm.trans (Equiv.sumComm _ _)
 
-/-- The substitution replacing the point coordinates by the coordinates of `u`
-and keeping the combining coordinates as variables. -/
-def combinedRestrictSubstitution {K : Type*} [CommSemiring K] {m : ℕ} (k : ℕ)
-    (u : Fin m → K) : Fin (m + k) → MvPolynomial (Fin k) K :=
-  fun i => Sum.elim (fun j : Fin m => MvPolynomial.C (u j))
-    (fun r : Fin k => MvPolynomial.X r) (finSumFinEquiv.symm i)
+/-- Read the combining-variable polynomial with point-variable polynomial coefficients. -/
+def combinedCoefEquiv (K : Type*) [CommSemiring K] (m k : ℕ) :
+    MvPolynomial (Fin (m + k)) K ≃ₐ[K] MvPolynomial (Fin k) (MvPolynomial (Fin m) K) :=
+  (MvPolynomial.renameEquiv K (combinedVariableEquiv m k)).trans
+    (MvPolynomial.sumAlgEquiv K (Fin k) (Fin m))
 
-@[simp] theorem combinedRestrictSubstitution_point {K : Type*} [CommSemiring K]
-    {m k : ℕ} (u : Fin m → K) (j : Fin m) :
-    combinedRestrictSubstitution k u (combinedPointVar m k j) =
-      MvPolynomial.C (u j) := by
-  simp [combinedRestrictSubstitution, combinedPointVar]
+@[simp] theorem combinedCoefEquiv_X_point (K : Type*) [CommSemiring K] {m k : ℕ} (j : Fin m) :
+    combinedCoefEquiv K m k (MvPolynomial.X (combinedPointVar m k j)) =
+      MvPolynomial.C (MvPolynomial.X j) := by
+  simp [combinedCoefEquiv, combinedVariableEquiv, combinedPointVar]
 
-@[simp] theorem combinedRestrictSubstitution_coefficient {K : Type*} [CommSemiring K]
-    {m k : ℕ} (u : Fin m → K) (r : Fin k) :
-    combinedRestrictSubstitution k u (combinedCoefficientVar m k r) =
-      (MvPolynomial.X r : MvPolynomial (Fin k) K) := by
-  simp [combinedRestrictSubstitution, combinedCoefficientVar]
+@[simp] theorem combinedCoefEquiv_X_coefficient (K : Type*) [CommSemiring K]
+    {m k : ℕ} (r : Fin k) :
+    combinedCoefEquiv K m k (MvPolynomial.X (combinedCoefficientVar m k r)) =
+      MvPolynomial.X r := by
+  simp [combinedCoefEquiv, combinedVariableEquiv, combinedCoefficientVar]
 
-/-- The polynomial `p(u, ·)` in the combining variables obtained from `p` by
-substituting the point `u` for the point variables. -/
-def combinedRestrict {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) : MvPolynomial (Fin k) K :=
-  MvPolynomial.aeval (combinedRestrictSubstitution k u) p
+/-- Restriction evaluates each point-variable coefficient at `u`. -/
+def combinedRestrictHom {K : Type*} [CommSemiring K] {m k : ℕ} (u : Fin m → K) :
+    MvPolynomial (Fin (m + k)) K →ₐ[K] MvPolynomial (Fin k) K :=
+  (MvPolynomial.mapAlgHom (MvPolynomial.aeval u)).comp (combinedCoefEquiv K m k).toAlgHom
 
-/-- Evaluating the restriction of `p` at `u` at a combining vector `α`
-evaluates `p` at the combined point with parts `u` and `α`. -/
-theorem eval_combinedRestrict {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) (α : Fin k → K) :
+section
+
+variable {K : Type*} [CommSemiring K] {m k : ℕ}
+    (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K)
+include K m k p u
+
+/-- The partially evaluated polynomial `p(u, ·)`. -/
+def combinedRestrict : MvPolynomial (Fin k) K :=
+  combinedRestrictHom u p
+
+/-- Partial evaluation followed by evaluation of the combining variables is full evaluation. -/
+theorem eval_combinedRestrict (α : Fin k → K) :
     MvPolynomial.eval α (combinedRestrict p u) =
       MvPolynomial.eval (combinedPoint u α) p := by
-  have hcomp : (MvPolynomial.aeval (R := K) α).comp
-        (MvPolynomial.aeval (combinedRestrictSubstitution k u)) =
+  have h : (MvPolynomial.aeval α).comp (combinedRestrictHom u) =
       MvPolynomial.aeval (combinedPoint u α) := by
     apply MvPolynomial.algHom_ext
     intro i
-    rcases combinedVar_cases i with ⟨j, rfl⟩ | ⟨r, rfl⟩ <;> simp
-  show MvPolynomial.aeval α (MvPolynomial.aeval (combinedRestrictSubstitution k u) p) = _
-  rw [← AlgHom.comp_apply, hcomp]
-  rfl
+    rcases combinedVar_cases i with ⟨j, rfl⟩ | ⟨r, rfl⟩ <;>
+      simp [combinedRestrictHom, MvPolynomial.algebraMap_eq]
+  exact DFunLike.congr_fun h p
+
+end
 
 end
 

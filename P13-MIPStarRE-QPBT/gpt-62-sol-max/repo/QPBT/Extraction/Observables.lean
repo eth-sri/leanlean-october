@@ -61,6 +61,19 @@ noncomputable def marginalPoly {P : AdmissibleParams} {epsilon delta : ℝ}
     Measurement (Poly P) (S.ExpandedLocalSpace side) :=
   (w.Smeas side).postprocess W.selectPoly
 
+/-- Evaluating a single-basis marginal is the same finite postprocessing as
+evaluating the corresponding component of the joint polynomial outcome. This
+is the coarse-graining in the proof of blueprint
+`lem:qld-constructing-the-paulis-helper`, paper
+`14_analysis_of_the_pauli_basis_test.tex:1626-1637`. -/
+theorem marginalPoly_postprocess_eval {P : AdmissibleParams} {epsilon deltaG : ℝ}
+    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+    (side : PlayerSide) (W : PauliKind) (point : PauliPoint P) :
+    (w.marginalPoly side W).postprocess (fun g => evalPoly g point) =
+      (w.Smeas side).postprocess (evalAt W point) := by
+  rw [marginalPoly, MIPStarRE.Quantum.Measurement.postprocess_comp]
+  cases W <;> rfl
+
 /-- The single-basis marginal remains a projective measurement. This is the
 projectivity assertion implicit in blueprint
 `def:s-w-marginals`, paper
@@ -76,142 +89,56 @@ theorem marginalPoly_isProjective {P : AdmissibleParams} {epsilon delta : ℝ}
 
 end GlobalPairWitness
 
-/-- The pulled-apart projective-measurement effect from Equation `eq:tilde_M`.
-The polynomial marginal acts on the player's expanded local space and the
-dot-product projector acts on the newly adjoined register. Blueprint
-`eq:tilde_M`; paper
-`14_analysis_of_the_pauli_basis_test.tex:1425-1435`. -/
-noncomputable def tildeM {P : AdmissibleParams} {epsilon delta : ℝ}
+section
+
+variable {P : AdmissibleParams} {ε δ : ℝ}
+    {S : ProjectiveSetting P ε} (w : GlobalPairWitness S δ)
+    (side : PlayerSide) (W : PauliKind) (u : PauliRegister P)
+include P ε δ S w side W u
+
+/-- The pulled-apart measurement subtracts the Pauli dot product from the
+polynomial marginal's decoded label. -/
+noncomputable def tildeMMeasurement :
+    Measurement (PauliScalar P) (ExtractionBlock P (S.LocalSpace side)) :=
+  (tensorMeasurement (w.marginalPoly side W) (pauliRegisterMeas W)).postprocess
+    (fun gh => dotProduct (decodeFq gh.1) u - dotProduct gh.2 u)
+
+/-- The effect of the pulled-apart measurement. -/
+noncomputable abbrev tildeM (a : PauliScalar P) :=
+  (tildeMMeasurement w side W u).effect a
+
+/-- The pulled-apart effect expressed using dot-product projectors. -/
+theorem tildeM_eq_sum (a : PauliScalar P) :
+    tildeM w side W u a = ∑ g : Poly P, heteroKron ((w.marginalPoly side W).effect g)
+      (tauDotProj W u (dotProduct (decodeFq g) u - a)) := by
+  classical
+  have hlabel (g : Poly P) (h : PauliRegister P) :
+      dotProduct (decodeFq g) u - dotProduct h u = a ↔
+        dotProduct h u = dotProduct (decodeFq g) u - a := by
+    constructor <;> intro heq <;> linear_combination -heq
+  simp only [tildeM, tildeMMeasurement, Measurement.postprocess_effect, Finset.sum_filter,
+    Fintype.sum_prod_type, tensorMeasurement, Measurement.ofSumEqOne, pauliRegisterMeas,
+    tauDotProj, bracketOp, DistanceCalculus.heteroKron_finset_sum_right, hlabel]
+  simp_rw [apply_ite, heteroKron_zero_right]
+
+end
+
+section
+
+variable {P : AdmissibleParams} {epsilon delta : ℝ}
     {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S delta)
     (side : PlayerSide) (W : PauliKind) (u : PauliRegister P)
-    (a : PauliScalar P) : Op (ExtractionBlock P (S.LocalSpace side)) :=
-  ∑ g : Poly P,
-    heteroKron ((w.marginalPoly side W).effect g)
-      (tauDotProj W u (dotProduct (decodeFq g) u - a))
-
-/-- Each pulled-apart effect is a projector, as asserted in
-blueprint `lem:tilde-m-projective`, paper
-`14_analysis_of_the_pauli_basis_test.tex:1425-1435`.
-
-Each tensor summand is projective. Distinct polynomial marginals are
-orthogonal, so their tensor summands are orthogonal as well. -/
-theorem tildeM_isProj {P : AdmissibleParams} {epsilon delta : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S delta)
-    (side : PlayerSide) (W : PauliKind) (u : PauliRegister P)
-    (a : PauliScalar P) :
-    IsProj (tildeM w side W u a) := by
-  classical
-  have hproj (g : Poly P) : IsProj
-      (heteroKron ((w.marginalPoly side W).effect g)
-        (tauDotProj W u (dotProduct (decodeFq g) u - a))) :=
-    MakingMeasurementsProjective.isProj_kronecker
-      (w.marginalPoly_isProjective side W g) (tauDotProj_isProj W u _)
-  unfold tildeM
-  constructor
-  · change (∑ g : Poly P, _) * (∑ g : Poly P, _) = _
-    rw [Finset.sum_mul]
-    refine Finset.sum_congr rfl fun g _ => ?_
-    rw [Matrix.mul_sum, Finset.sum_eq_single g]
-    · exact (hproj g).isIdempotentElem
-    · intro g' _ hg'
-      rw [heteroKron_mul, MagicSquareRigidity.mul_eq_zero_of_isProj_family
-        (w.marginalPoly_isProjective side W) (w.marginalPoly side W).sum_le_one
-        hg'.symm]
-      simp [heteroKron]
-    · intro hg
-      exact (hg (Finset.mem_univ g)).elim
-  · change (∑ g : Poly P, _)ᴴ = _
-    rw [Matrix.conjTranspose_sum]
-    exact Finset.sum_congr rfl fun g _ => (hproj g).isSelfAdjoint
-
-/-- The pulled-apart effects are complete for each fixed basis and Pauli
-register vector. This is the completeness assertion in
-blueprint `lem:tilde-m-projective`, paper
-`14_analysis_of_the_pauli_basis_test.tex:1425-1435`.
-
-For each polynomial, subtracting the scalar outcome from its decoded dot
-product permutes the field. Completeness then follows by summing the
-dot-product projectors and the polynomial marginal effects. -/
-theorem sum_tildeM_eq_one {P : AdmissibleParams} {epsilon delta : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S delta)
-    (side : PlayerSide) (W : PauliKind) (u : PauliRegister P) :
-    ∑ a : PauliScalar P, tildeM w side W u a = 1 := by
-  classical
-  simp only [tildeM]
-  rw [Finset.sum_comm]
-  calc
-    _ = ∑ g : Poly P, heteroKron ((w.marginalPoly side W).effect g)
-        (∑ a : PauliScalar P, tauDotProj W u (dotProduct (decodeFq g) u - a)) := by
-      exact Finset.sum_congr rfl fun g _ =>
-        (DistanceCalculus.heteroKron_finset_sum_right _ _ _).symm
-    _ = ∑ g : Poly P, heteroKron ((w.marginalPoly side W).effect g) 1 := by
-      refine Finset.sum_congr rfl fun g _ => ?_
-      congr 1
-      calc
-        _ = ∑ a : PauliScalar P, tauDotProj W u a :=
-          (Equiv.subLeft (dotProduct (decodeFq g) u)).sum_comp (tauDotProj W u)
-        _ = 1 := sum_tauDotProj_eq_one W u
-    _ = heteroKron (∑ g : Poly P, (w.marginalPoly side W).effect g) 1 :=
-      (DistanceCalculus.heteroKron_finset_sum_left _ _ _).symm
-    _ = 1 := by rw [(w.marginalPoly side W).sum_eq_one, heteroKron_one_one]
+    (j : Fin P.model.basisDim)
+include P epsilon delta S w side W u j
 
 /-- The binary observable obtained from the trace coarse-graining of `tildeM`.
 This is Equation `eq:def-tildewj` in blueprint
 `def:tilde-w-observables`, paper
 `14_analysis_of_the_pauli_basis_test.tex:1437-1442`. -/
-noncomputable def tildeObs {P : AdmissibleParams} {epsilon delta : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S delta)
-    (side : PlayerSide) (W : PauliKind) (u : PauliRegister P)
-    (j : Fin P.model.basisDim) : Op (ExtractionBlock P (S.LocalSpace side)) :=
+noncomputable def tildeObs : Op (ExtractionBlock P (S.LocalSpace side)) :=
   ∑ a : PauliScalar P,
     phaseSign (fixedBinTrace P.model (P.model.basis j * a)) •
       tildeM w side W u a
-
-/-- Fourier regrouping of the dot-product effects after translating their
-outcomes. This is the change of variables in the product calculation at paper
-`14_analysis_of_the_pauli_basis_test.tex:1442-1450`, supporting blueprint
-`lem:tildew-product-form`. It uses only the definition of the coarse-graining,
-not its projectivity. -/
-private theorem sum_phaseSign_tauDotProj_sub {params : AdmissibleParams}
-    (kind : PauliKind) (vector : PauliRegister params)
-    (coefficient offset : PauliScalar params) :
-    (∑ value : PauliScalar params,
-      phaseSign (fixedBinTrace params.model (coefficient * value)) •
-        tauDotProj kind vector (offset - value)) =
-      phaseSign (fixedBinTrace params.model (coefficient * offset)) •
-        tauObservable kind (coefficient • vector) := by
-  classical
-  calc
-    _ = ∑ value : PauliScalar params,
-        phaseSign (fixedBinTrace params.model (coefficient * (offset - value))) •
-          tauDotProj kind vector value := by
-      symm
-      simpa using (Equiv.subLeft offset).sum_comp
-        (fun value => phaseSign (fixedBinTrace params.model (coefficient * value)) •
-          tauDotProj kind vector (offset - value))
-    _ = ∑ label : PauliRegister params,
-        phaseSign (fixedBinTrace params.model
-          (coefficient * (offset - dotProduct label vector))) • pauliProj kind label := by
-      simp only [tauDotProj, bracketOp, Finset.smul_sum]
-      rw [← Finset.sum_fiberwise Finset.univ (fun label => dotProduct label vector)
-        (fun label => phaseSign (fixedBinTrace params.model
-          (coefficient * (offset - dotProduct label vector))) • pauliProj kind label)]
-      apply Finset.sum_congr rfl
-      intro value _
-      apply Finset.sum_congr rfl
-      intro label hlabel
-      rw [(Finset.mem_filter.mp hlabel).2]
-    _ = _ := by
-      rw [tauObservable_eq_sum_pauliProj, Finset.smul_sum]
-      apply Finset.sum_congr rfl
-      intro label _
-      rw [smul_smul, smul_dotProduct, smul_eq_mul, dotProduct_comm vector label]
-      congr 1
-      rw [mul_sub, fixedBinTrace, map_sub]
-      have phaseSign_sub (first second : ZMod 2) :
-          phaseSign (first - second) = phaseSign first * phaseSign second := by
-        rw [sub_eq_add_neg, ZMod.neg_eq_self_mod_two, phaseSign_add]
-      exact phaseSign_sub _ _
 
 /-- Product form of the pulled-apart observable, Equation
 `eq:tildewj-product-form` of `lem:tildew-product-form`. Blueprint
@@ -220,10 +147,7 @@ private theorem sum_phaseSign_tauDotProj_sub {params : AdmissibleParams}
 regrouping uses `tauObservable_eq_sum_pauliProj` and the definitions of both
 marginalizations, independently of dot-product projectivity or consistency
 estimates. -/
-theorem tildeObs_eq_heteroKron {P : AdmissibleParams} {epsilon delta : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S delta)
-    (side : PlayerSide) (W : PauliKind) (u : PauliRegister P)
-    (j : Fin P.model.basisDim) :
+theorem tildeObs_eq_heteroKron :
     tildeObs w side W u j =
       heteroKron
         (∑ pair : PolyPair P,
@@ -232,45 +156,31 @@ theorem tildeObs_eq_heteroKron {P : AdmissibleParams} {epsilon delta : ℝ}
             (w.Smeas side).effect pair)
         (tauObservable W (P.model.basis j • u)) := by
   classical
-  simp only [tildeObs, tildeM, Finset.smul_sum]
+  let c := P.model.basis j
+  let χ (a : PauliScalar P) := phaseSign (fixedBinTrace P.model (c * a))
+  have hsub (a b : PauliScalar P) : χ (a - b) = χ a * χ b := by
+    dsimp only [χ]
+    rw [mul_sub, fixedBinTrace, map_sub]
+    have h (x y : ZMod 2) : phaseSign (x - y) = phaseSign x * phaseSign y := by
+      rw [sub_eq_add_neg, ZMod.neg_eq_self_mod_two, phaseSign_add]
+    exact h _ _
+  have hdot (h : PauliRegister P) :
+      phaseSign (binTrace (PauliScalar P) (dotProduct (c • u) h)) = χ (dotProduct h u) := by
+    simp [χ, fixedBinTrace, smul_dotProduct, smul_eq_mul, dotProduct_comm u h]
+  have hMarg := Measurement.sum_smul_postprocess (w.Smeas side) W.selectPoly
+    (fun g => χ (dotProduct (decodeFq g) u))
+  change (∑ a, χ a • (tildeMMeasurement w side W u).effect a) =
+    heteroKron (∑ pair, χ (dotProduct (decodeFq (W.selectPoly pair)) u) • (w.Smeas side).effect pair)
+      (tauObservable W (c • u))
+  rw [← hMarg, tildeMMeasurement, Measurement.sum_smul_postprocess, Fintype.sum_prod_type,
+    tauObservable_eq_sum_pauliProj]
+  simp only [DistanceCalculus.heteroKron_finset_sum_left, DistanceCalculus.heteroKron_finset_sum_right,
+    hdot, tensorMeasurement, Measurement.ofSumEqOne, pauliRegisterMeas, hsub]
   rw [Finset.sum_comm]
-  calc
-    _ = ∑ polynomial : Poly P,
-        heteroKron ((w.marginalPoly side W).effect polynomial)
-          (∑ value : PauliScalar P,
-            phaseSign (fixedBinTrace P.model (P.model.basis j * value)) •
-              tauDotProj W u (dotProduct (decodeFq polynomial) u - value)) := by
-      apply Finset.sum_congr rfl
-      intro polynomial _
-      rw [DistanceCalculus.heteroKron_finset_sum_right]
-      apply Finset.sum_congr rfl
-      intro value _
-      exact (Matrix.kronecker_smul _ _ _).symm
-    _ = heteroKron
-        (∑ polynomial : Poly P,
-          phaseSign (fixedBinTrace P.model
-            (P.model.basis j * dotProduct (decodeFq polynomial) u)) •
-              (w.marginalPoly side W).effect polynomial)
-        (tauObservable W (P.model.basis j • u)) := by
-      simp_rw [sum_phaseSign_tauDotProj_sub]
-      rw [DistanceCalculus.heteroKron_finset_sum_left]
-      apply Finset.sum_congr rfl
-      intro polynomial _
-      simp only [heteroKron, Matrix.kronecker, Matrix.kronecker_smul,
-        Matrix.smul_kronecker]
-    _ = _ := by
-      congr 1
-      simp only [GlobalPairWitness.marginalPoly, Measurement.postprocess_effect,
-        Finset.smul_sum]
-      rw [← Finset.sum_fiberwise Finset.univ W.selectPoly
-        (fun pair => phaseSign (fixedBinTrace P.model
-          (P.model.basis j * dotProduct (decodeFq (W.selectPoly pair)) u)) •
-            (w.Smeas side).effect pair)]
-      apply Finset.sum_congr rfl
-      intro polynomial _
-      apply Finset.sum_congr rfl
-      intro pair hpair
-      rw [(Finset.mem_filter.mp hpair).2]
+  simp only [GlobalPairWitness.marginalPoly, heteroKron, Matrix.kronecker, Matrix.smul_kronecker,
+    Matrix.kronecker_smul, smul_smul, mul_comm]
+
+end
 
 /-! ## Swap conjugation -/
 
@@ -285,11 +195,16 @@ private theorem swapPauli_mul_conjTranspose {P : AdmissibleParams}
     Matrix.mul_assoc (tauObservable .X (decodeFq pair.2)), tauObservable_sq,
     Matrix.mul_one, tauObservable_sq]
 
+section
+
+variable {P : AdmissibleParams}
+    (pair : PolyPair P) (W : PauliKind)
+include P pair W
+
 /-- The crossed Pauli factors acquire the phase determined by the selected
 polynomial. This is the commutation identity used at paper
 `14_analysis_of_the_pauli_basis_test.tex:1701-1713`. -/
-private theorem swapPauli_mul_tauObservable {P : AdmissibleParams}
-    (pair : PolyPair P) (W : PauliKind) (u : PauliRegister P) :
+private theorem swapPauli_mul_tauObservable (u : PauliRegister P) :
     (tauObservable .X (decodeFq pair.2) * tauObservable .Z (decodeFq pair.1)) *
         tauObservable W u =
       phaseSign (fixedBinTrace P.model
@@ -330,8 +245,7 @@ private theorem swapPauli_mul_tauObservable {P : AdmissibleParams}
 /-- Conjugating a Pauli observable by the crossed Pauli factors multiplies it
 by the selected binary phase, as in paper
 `14_analysis_of_the_pauli_basis_test.tex:1701-1713`. -/
-private theorem swapPauli_conj_tauObservable {P : AdmissibleParams}
-    (pair : PolyPair P) (W : PauliKind) (u : PauliRegister P) :
+private theorem swapPauli_conj_tauObservable (u : PauliRegister P) :
     conjBy (tauObservable .X (decodeFq pair.2) * tauObservable .Z (decodeFq pair.1))
         (tauObservable W u) =
       phaseSign (fixedBinTrace P.model
@@ -342,8 +256,7 @@ private theorem swapPauli_conj_tauObservable {P : AdmissibleParams}
 /-- Fourier inversion turns the Pauli conjugation phase into a translation of
 the projector label. This is the projector identity used at paper
 `14_analysis_of_the_pauli_basis_test.tex:1805-1822`. -/
-private theorem swapPauli_conj_pauliProj {P : AdmissibleParams}
-    (pair : PolyPair P) (W : PauliKind) (h : PauliRegister P) :
+private theorem swapPauli_conj_pauliProj (h : PauliRegister P) :
     conjBy (tauObservable .X (decodeFq pair.2) * tauObservable .Z (decodeFq pair.1))
         (pauliProj W h) =
       pauliProj W (h + decodeFq (W.selectPoly pair)) := by
@@ -364,8 +277,7 @@ private theorem swapPauli_conj_pauliProj {P : AdmissibleParams}
 is the finite reindexing in paper
 `14_analysis_of_the_pauli_basis_test.tex:1805-1822`; it does not require a
 polynomial to be in the image of the low-degree encoding. -/
-private theorem swapPauli_conj_tauDotProj {P : AdmissibleParams}
-    (pair : PolyPair P) (W : PauliKind) (u : PauliRegister P) (a : PauliScalar P) :
+private theorem swapPauli_conj_tauDotProj (u : PauliRegister P) (a : PauliScalar P) :
     conjBy (tauObservable .X (decodeFq pair.2) * tauObservable .Z (decodeFq pair.1))
         (tauDotProj W u a) =
       tauDotProj W u (a + dotProduct (decodeFq (W.selectPoly pair)) u) := by
@@ -381,13 +293,20 @@ private theorem swapPauli_conj_tauDotProj {P : AdmissibleParams}
   · intro h _
     rfl
 
+end
+
+section
+
+variable {P : AdmissibleParams} {epsilon delta : ℝ}
+    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S delta)
+    (side : PlayerSide)
+include P epsilon delta S w side
+
 /-- The swap map built from the global polynomial-pair measurement, with the
 crossed decoded arguments required by `def:v-swap-unitary`. Blueprint
 `def:v-swap-unitary`; paper
 `14_analysis_of_the_pauli_basis_test.tex:1687-1700`. -/
-noncomputable def swapUnitary {P : AdmissibleParams} {epsilon delta : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S delta)
-    (side : PlayerSide) : Op (ExtractionBlock P (S.LocalSpace side)) :=
+noncomputable def swapUnitary : Op (ExtractionBlock P (S.LocalSpace side)) :=
   ∑ pair : PolyPair P,
     heteroKron ((w.Smeas side).effect pair)
       (tauObservable .X (decodeFq pair.2) *
@@ -400,9 +319,7 @@ calculation of blueprint
 
 Projectivity and completeness of `w.Smeas side` reduce the product to its
 diagonal outcomes. The two Pauli involutions then cancel in reverse order. -/
-theorem swapUnitary_mul_conjTranspose {P : AdmissibleParams}
-    {epsilon delta : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S delta) (side : PlayerSide) :
+theorem swapUnitary_mul_conjTranspose :
     swapUnitary w side * (swapUnitary w side)ᴴ = 1 := by
   classical
   apply sum_heteroKron_mul_conjTranspose (w.Smeas side) (w.projective side)
@@ -415,18 +332,13 @@ calculation implicit in blueprint
 
 For finite square matrices, the right inverse identity also gives the left
 inverse identity. -/
-theorem conjTranspose_mul_swapUnitary {P : AdmissibleParams}
-    {epsilon delta : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S delta) (side : PlayerSide) :
-    (swapUnitary w side)ᴴ * swapUnitary w side = 1 := by
-  exact mul_eq_one_comm.mp (swapUnitary_mul_conjTranspose w side)
+theorem conjTranspose_mul_swapUnitary :
+    (swapUnitary w side)ᴴ * swapUnitary w side = 1 := mul_eq_one_comm.mp (swapUnitary_mul_conjTranspose w side)
 
 /-- Conjugation by the swap map acts separately on each joint outcome. This
 is the diagonal-projector reduction at paper
 `14_analysis_of_the_pauli_basis_test.tex:1701-1713,1805-1822`. -/
-private theorem swapUnitary_conj_controlled {P : AdmissibleParams}
-    {epsilon delta : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S delta) (side : PlayerSide)
+private theorem swapUnitary_conj_controlled
     (R : PolyPair P → Op (PauliRegister P)) :
     conjBy (swapUnitary w side)
         (∑ pair, heteroKron ((w.Smeas side).effect pair) (R pair)) =
@@ -436,10 +348,7 @@ private theorem swapUnitary_conj_controlled {P : AdmissibleParams}
   have hself (pair : PolyPair P) :
       ((w.Smeas side).effect pair)ᴴ = (w.Smeas side).effect pair :=
     (w.projective side pair).isSelfAdjoint
-  simp only [conjBy, swapUnitary, Matrix.conjTranspose_sum,
-    MagicSquareRigidity.heteroKron_conjTranspose, hself]
-  rw [sum_heteroKron_mul_sum_heteroKron (w.Smeas side) (w.projective side),
-    sum_heteroKron_mul_sum_heteroKron (w.Smeas side) (w.projective side)]
+  simp_all [conjBy, swapUnitary, Matrix.conjTranspose_sum, heteroKron_conjTranspose, hself, sum_heteroKron_mul_sum_heteroKron (w.Smeas side) (w.projective side)]
 
 /-- Exact conjugation of a pulled-apart observable by the swap map. This is
 Equation `eq:v-swap-obs-conjugation` in `lem:v-swap-conjugation`, blueprint
@@ -448,17 +357,15 @@ Equation `eq:v-swap-obs-conjugation` in `lem:v-swap-conjugation`, blueprint
 
 The product form and diagonal projector reduction leave two copies of the
 same binary phase, whose product is one. -/
-theorem swapUnitary_conj_tildeObs {P : AdmissibleParams}
-    {epsilon delta : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S delta) (side : PlayerSide) (W : PauliKind)
+theorem swapUnitary_conj_tildeObs (W : PauliKind)
     (u : PauliRegister P) (j : Fin P.model.basisDim) :
     conjBy (swapUnitary w side) (tildeObs w side W u j) =
       heteroKron (1 : Op (S.ExpandedLocalSpace side))
         (tauObservable W (P.model.basis j • u)) := by
   classical
   rw [tildeObs_eq_heteroKron, DistanceCalculus.heteroKron_finset_sum_left]
-  simp_rw [MagicSquareRigidity.heteroKron_smul_left,
-    ← MagicSquareRigidity.heteroKron_smul_right]
+  simp_rw [heteroKron_smul_left,
+    ← heteroKron_smul_right]
   rw [swapUnitary_conj_controlled]
   have hcancel (pair : PolyPair P) :
       conjBy (tauObservable .X (decodeFq pair.2) * tauObservable .Z (decodeFq pair.1))
@@ -485,10 +392,8 @@ Conjugation translates each Pauli projector and its dot-product constraint.
 The two copies of the decoded label cancel in characteristic two. The final
 identification is the encoding identity h · ind_m(u) = g_h(u) on indicator
 vectors, not an unrestricted decoder interpolation identity. -/
-theorem swapUnitary_conj_tildeM {P : AdmissibleParams}
-    {epsilon delta : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S delta) (side : PlayerSide) (W : PauliKind)
-    (u : Fin P.m -> PauliScalar P) (a : PauliScalar P) :
+theorem swapUnitary_conj_tildeM (W : PauliKind)
+    (u : PauliPoint P) (a : PauliScalar P) :
     conjBy (swapUnitary w side) (tildeM w side W (indicatorVec u) a) =
       heteroKron (1 : Op (S.ExpandedLocalSpace side))
         (bracketOp (pauliProj W) (fun h => lowDegreeEnc h u) a) := by
@@ -497,27 +402,49 @@ theorem swapUnitary_conj_tildeM {P : AdmissibleParams}
       ∑ pair : PolyPair P, heteroKron ((w.Smeas side).effect pair)
         (tauDotProj W (indicatorVec u)
           (dotProduct (decodeFq (W.selectPoly pair)) (indicatorVec u) - a)) := by
-    simp only [tildeM, GlobalPairWitness.marginalPoly, Measurement.postprocess_effect]
-    simp_rw [DistanceCalculus.heteroKron_finset_sum_left]
-    rw [← Finset.sum_fiberwise Finset.univ W.selectPoly
-      (fun pair => heteroKron ((w.Smeas side).effect pair)
-        (tauDotProj W (indicatorVec u)
-          (dotProduct (decodeFq (W.selectPoly pair)) (indicatorVec u) - a)))]
-    apply Finset.sum_congr rfl
-    intro g _
-    apply Finset.sum_congr rfl
-    intro pair hpair
-    rw [(Finset.mem_filter.mp hpair).2]
+    simp only [tildeM_eq_sum, GlobalPairWitness.marginalPoly, Measurement.postprocess_effect,
+      DistanceCalculus.heteroKron_finset_sum_left, Finset.sum_fiberwise_apply]
   rw [hM, swapUnitary_conj_controlled]
   simp_rw [swapPauli_conj_tauDotProj]
   have hcancel (b : PauliScalar P) : b - a + b = a := by
-    letI : CharP (PauliScalar P) 2 :=
+    letI :=
       (Algebra.charP_iff (ZMod 2) (PauliScalar P) 2).mp (ZMod.charP 2)
     rw [sub_eq_add_neg, CharTwo.neg_eq, add_right_comm, CharTwo.add_self_eq_zero, zero_add]
   simp_rw [hcancel]
   rw [← DistanceCalculus.heteroKron_finset_sum_left, (w.Smeas side).sum_eq_one]
   congr 1
   simp only [tauDotProj, bracketOp, lowDegreeEnc_eq_dotProduct]
+
+end
+
+namespace ProjectiveSetting
+
+variable {P : AdmissibleParams} {ε δ : ℝ} (S : ProjectiveSetting P ε)
+
+/-- The simultaneous swaps on the two extraction blocks. -/
+abbrev swapOperator (w : GlobalPairWitness S δ) :=
+  S.placeBoth (swapUnitary w .alice) (swapUnitary w .bob)
+
+/-- The expanded strategy state after the two swaps. -/
+abbrev swappedState (w : GlobalPairWitness S δ) :=
+  applyOperatorToState (S.swapOperator w) S.psiHat
+
+/-- The total-Pauli effect after placement and conjugation by its local swap. -/
+abbrev swapPauliOp (w : GlobalPairWitness S δ) (side : PlayerSide) (W : PauliKind)
+    (h : PauliRegister P) : Op S.ExpandedSpace :=
+  conjBy (S.placeSide side (swapUnitary w side)) (S.placePlayer side ((S.pauliMeas side W).effect h))
+
+/-- The ideal Pauli effect on the selected extracted register. -/
+abbrev idealPauliOp (side : PlayerSide) (W : PauliKind) (h : PauliRegister P) : Op S.ExpandedSpace :=
+  S.placeExtractedRegister side (pauliProj W h)
+
+/-- The squared comparison of the swapped and ideal total-Pauli effects. -/
+abbrev swapPauliDistance (w : GlobalPairWitness S δ) (aux : EuclideanSpace ℂ S.ExtractionAux)
+    (side : PlayerSide) (W : PauliKind) : ℝ :=
+  opFamilyDistSq (uniformDistribution Unit) (fun _ => S.swapPauliOp w side W)
+    (fun _ => S.idealPauliOp side W) (S.idealExpState aux)
+
+end ProjectiveSetting
 
 end
 

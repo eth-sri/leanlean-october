@@ -38,8 +38,7 @@ blueprint `def:ms-game`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:512-610`.
 -/
 def msConstraintVars (i : Fin 6) (j : Fin 3) : Fin 9 :=
-  ⟨if i.val < 3 then i.val * 3 + j.val else i.val - 3 + j.val * 3, by
-    by_cases h : i.val < 3 <;> simp [h] <;> omega⟩
+  ⟨if i.val < 3 then i.val * 3 + j.val else i.val - 3 + j.val * 3, by grind⟩
 
 /-- The exceptional Magic Square parity, equal to one only on the final
 constraint.  Blueprint `def:ms-game`; paper
@@ -61,9 +60,7 @@ nonempty-support API of `graphDistribution`.  This is the finite carrier fact
 used to instantiate blueprint `def:ms-game`,
 paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:512-610`.
 -/
-theorem msEdges_nonempty : msEdges.Nonempty := by
-  refine ⟨Sym2.mk (.constraint 0) (.var (msConstraintVars 0 0)), ?_⟩
-  exact Finset.mem_image.mpr ⟨(0, 0), Finset.mem_univ _, rfl⟩
+theorem msEdges_nonempty : msEdges.Nonempty := by decide
 
 /-- A Magic Square answer is a parity triple or a single cell bit, as prescribed
 by blueprint `def:ms-game`,
@@ -108,8 +105,6 @@ noncomputable def msAnswerEquiv : MsAnswer ≃ MsAnswerCode where
 noncomputable instance instFintypeMsAnswer : Fintype MsAnswer :=
   Fintype.ofEquiv MsAnswerCode msAnswerEquiv.symm
 
-instance instInhabitedMsAnswer : Inhabited MsAnswer := ⟨.bit 0⟩
-
 /-- The Magic Square consistency predicate.  Constructor mismatches are
 rejected, as required by blueprint `def:ms-game`; paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:512-610`.
@@ -143,7 +138,7 @@ def msWinPredicate :
   μ_prob := by
     apply Distribution.uniformOnFinset_isProbability
     refine ⟨(.constraint 0, .var (msConstraintVars 0 0)), ?_⟩
-    simp [msEdges]
+    tauto
   decide := msWinPredicate
 
 end MIPStarRE.QPBT

@@ -1,6 +1,7 @@
 module
 
 public import MIPStarRE.LDT.Basic.ParametersBase
+public import Mathlib.Analysis.MeanInequalitiesPow
 
 /-! # Polynomial error predicates
 
@@ -51,5 +52,47 @@ Dengnifer/MIPStarRE-QPBT-bak#196. -/
 def IsPolyErr₂ (f : ℝ → ℝ → ℝ) : Prop :=
   ∃ C r s : ℝ, 1 ≤ C ∧ 0 < r ∧ 0 < s ∧ ∀ x y, 0 ≤ x → 0 ≤ y →
     0 ≤ f x y ∧ f x y ≤ C * (Real.rpow x r + Real.rpow y s)
+
+section
+
+variable (q : ℕ)
+include q
+
+/-- The noise, field size, and finite-degree contributions to the two soundness errors. -/
+noncomputable abbrev soundnessTail (n b ε : ℝ) : ℝ :=
+  ε ^ b + (q : ℝ) ^ (-b) + (2 : ℝ) ^ (-(b * n))
+
+theorem soundnessTail_nonneg (n b : ℝ) {ε : ℝ} (hε : 0 ≤ ε) :
+    0 ≤ soundnessTail q n b ε := by positivity
+
+theorem rpow_noise_le_soundnessTail (n b ε : ℝ) :
+    ε ^ b ≤ soundnessTail q n b ε := by
+  exact le_add_of_nonneg_right (by positivity) |>.trans (le_add_of_nonneg_right (by positivity))
+
+theorem rpow_field_le_soundnessTail (n b : ℝ) {ε : ℝ} (hε : 0 ≤ ε) :
+    (q : ℝ) ^ (-b) ≤ soundnessTail q n b ε :=
+  (le_add_of_nonneg_left (Real.rpow_nonneg hε b)).trans (le_add_of_nonneg_right (by positivity))
+
+end
+
+theorem size_le_power_prefactor {n a : ℝ} (hn : 1 ≤ n) (ha : 1 ≤ a) : n ≤ a * n ^ a :=
+  (Real.self_le_rpow_of_one_le hn ha).trans (le_mul_of_one_le_left (by positivity) ha)
+
+/-- Taking a small power preserves the soundness envelope, scaling the noise exponent. -/
+theorem rpow_soundnessEnvelope_le (q : ℕ) (n b : ℝ) {C ε t : ℝ}
+    (hC : 1 ≤ C) (hε : 0 ≤ ε) (ht : 0 ≤ t) (ht₁ : t ≤ 1) :
+    (C * soundnessTail q n b ε) ^ t ≤ C * soundnessTail q n (b * t) ε := by
+  rw [Real.mul_rpow (by positivity) (soundnessTail_nonneg q n b hε)]
+  gcongr
+  · exact Real.rpow_le_self_of_one_le hC ht₁
+  · unfold soundnessTail
+    have h₁ := Real.rpow_nonneg hε b
+    have h₂ := Real.rpow_nonneg (Nat.cast_nonneg q) (-b)
+    have h₃ := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-(b * n))
+    refine (Real.rpow_add_le_add_rpow (add_nonneg h₁ h₂) h₃ ht ht₁).trans ?_
+    grw [Real.rpow_add_le_add_rpow h₁ h₂ ht ht₁]
+    rw [← Real.rpow_mul hε, ← Real.rpow_mul (Nat.cast_nonneg q),
+      ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2)]
+    simp only [neg_mul, mul_right_comm b n t, le_refl]
 
 end MIPStarRE.QPBT

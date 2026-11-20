@@ -1,5 +1,6 @@
 module
 
+public import QPBT.Games.ErrorFunctions
 public import QPBT.Combining.DirectLowDegree.Game
 public import QPBT.Combining.DirectLowDegree.Transport.Correspondence
 public import QPBT.Games.DistanceTheorems.TensorSupport
@@ -64,7 +65,7 @@ open scoped BigOperators MatrixOrder Matrix ComplexOrder
 
 namespace MIPStarRE.QPBT
 
-open MIPStarRE.LDT MIPStarRE.Quantum
+open MIPStarRE.LDT MIPStarRE.Quantum DistanceCalculus
 
 /-! ## The auxiliary sampling parameter -/
 
@@ -82,10 +83,10 @@ def directLdAuxParameter (D : DirectLdParams) : ℕ := 2560000 * D.m ^ 3 * D.d
 /-- The auxiliary sampling parameter is positive, which is the boundary
 hypothesis `0 < k` of `MIPStarRE.LDT.Test.mainFormal`. -/
 theorem directLdAuxParameter_pos (D : DirectLdParams) : 0 < directLdAuxParameter D := by
-  have hm : 0 < D.m := D.hm
-  have hd : 0 < D.d := D.hd
-  have hpow : 0 < D.m ^ 3 := pow_pos hm 3
-  exact Nat.mul_pos (Nat.mul_pos (by norm_num) hpow) hd
+  unfold directLdAuxParameter
+  have := D.hm
+  have := D.hd
+  positivity
 
 /-- The auxiliary sampling parameter satisfies the corrected large-sampling
 hypothesis `400 m d ≤ k` of `MIPStarRE.LDT.Test.mainFormal`, documented in
@@ -102,21 +103,28 @@ The four lemmas below are formalization-only conveniences: they record the
 positivity fields of `DirectLdParams` in the real numbers, where all the
 scalar estimates of this module take place. -/
 
-private theorem directLd_one_le_m (D : DirectLdParams) : (1 : ℝ) ≤ (D.m : ℝ) := by
-  have h : 1 ≤ D.m := D.hm
-  exact_mod_cast h
+section
 
-private theorem directLd_one_le_d (D : DirectLdParams) : (1 : ℝ) ≤ (D.d : ℝ) := by
-  have h : 1 ≤ D.d := D.hd
-  exact_mod_cast h
+variable (D : DirectLdParams)
+include D
 
-private theorem directLd_one_le_k (D : DirectLdParams) : (1 : ℝ) ≤ (D.k : ℝ) := by
-  have h : 1 ≤ D.k := D.hk
-  exact_mod_cast h
+private theorem directLd_one_le_m : (1 : ℝ) ≤ (D.m : ℝ) := by
+  have h := D.hm
+  simp_all
 
-private theorem directLd_one_le_q (D : DirectLdParams) : (1 : ℝ) ≤ (D.q : ℝ) := by
+private theorem directLd_one_le_d : (1 : ℝ) ≤ (D.d : ℝ) := by
+  have h := D.hd
+  simp_all
+
+private theorem directLd_one_le_k : (1 : ℝ) ≤ (D.k : ℝ) := by
+  have h := D.hk
+  simp_all
+
+private theorem directLd_one_le_q : (1 : ℝ) ≤ (D.q : ℝ) := by
   have h : 1 ≤ D.q := D.toLDTParameters.hq
-  exact_mod_cast h
+  simp_all
+
+end
 
 /-! ## The three terms of the LDT error -/
 
@@ -129,14 +137,10 @@ Formalization-only scalar identity for the error function displayed in
 theorem directLdAuxParameter_exp_arg (D : DirectLdParams) :
     (directLdAuxParameter D : ℝ) / (2560000 * ((D.m : ℝ) ^ (2 : ℕ))) =
       (D.m : ℝ) * (D.d : ℝ) := by
-  have hm : (0 : ℝ) < (D.m : ℝ) := lt_of_lt_of_le zero_lt_one (directLd_one_le_m D)
-  have hpow : (0 : ℝ) < (D.m : ℝ) ^ (2 : ℕ) := pow_pos hm 2
-  have hne : (2560000 : ℝ) * ((D.m : ℝ) ^ (2 : ℕ)) ≠ 0 :=
-    ne_of_gt (mul_pos (by norm_num) hpow)
+  have hm : (0 : ℝ) < D.m := zero_lt_one.trans_le (directLd_one_le_m D)
   unfold directLdAuxParameter
   push_cast
-  rw [div_eq_iff hne]
-  ring
+  field_simp
 
 /-! ## The transport envelope
 
@@ -152,238 +156,138 @@ noncomputable def transportEnvelope (D : DirectLdParams) (ε : ℝ) : ℝ :=
     Real.rpow 2 (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ)))
 
 theorem transportEnvelope_rpow_eps_le (D : DirectLdParams) (ε : ℝ) :
-    Real.rpow ε (1 / 80000) ≤ transportEnvelope D ε := by
-  have hy : (0 : ℝ) ≤ Real.rpow (D.q : ℝ) (-(1 / 80000)) :=
-    Real.rpow_nonneg (by positivity) _
-  have hz : (0 : ℝ) ≤ Real.rpow 2 (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) :=
-    Real.rpow_nonneg (by norm_num) _
-  unfold transportEnvelope
-  linarith
+    Real.rpow ε (1 / 80000) ≤ transportEnvelope D ε :=
+  rpow_noise_le_soundnessTail D.q (D.m * D.d : ℕ) _ ε
 
-theorem transportEnvelope_rpow_q_le (D : DirectLdParams) {ε : ℝ} (hε : 0 ≤ ε) :
-    Real.rpow (D.q : ℝ) (-(1 / 80000)) ≤ transportEnvelope D ε := by
-  have hx : (0 : ℝ) ≤ Real.rpow ε (1 / 80000) := Real.rpow_nonneg hε _
-  have hz : (0 : ℝ) ≤ Real.rpow 2 (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) :=
-    Real.rpow_nonneg (by norm_num) _
-  unfold transportEnvelope
-  linarith
+section
 
-theorem transportEnvelope_nonneg (D : DirectLdParams) {ε : ℝ} (hε : 0 ≤ ε) :
-    0 ≤ transportEnvelope D ε := by
-  have hx : (0 : ℝ) ≤ Real.rpow ε (1 / 80000) := Real.rpow_nonneg hε _
-  exact le_trans hx (transportEnvelope_rpow_eps_le D ε)
+variable (D : DirectLdParams) {ε : ℝ} (hε : 0 ≤ ε)
+include D ε hε
+
+theorem transportEnvelope_rpow_q_le :
+    Real.rpow (D.q : ℝ) (-(1 / 80000)) ≤ transportEnvelope D ε :=
+  rpow_field_le_soundnessTail D.q (D.m * D.d : ℕ) _ hε
+
+theorem transportEnvelope_nonneg :
+    0 ≤ transportEnvelope D ε :=
+  soundnessTail_nonneg D.q (D.m * D.d : ℕ) _ hε
+
+end
 
 /-! ## The LDT error at the auxiliary sampling parameter -/
 
-/-- The LDT error at the auxiliary sampling parameter, written out in the
-parameters of the directly indexed game. -/
-private theorem mainFormalError_direct_eq (D : DirectLdParams) (ε : ℝ) :
-    Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε) =
-      100000 * ((directLdAuxParameter D : ℝ) ^ (2 : ℕ)) * ((D.m : ℝ) ^ (4 : ℕ)) *
-        (Real.rpow (3 * ε) (1 / 40000) +
-          Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000) +
-          Real.exp (-((directLdAuxParameter D : ℝ) /
-            (2560000 * ((D.m : ℝ) ^ (2 : ℕ)))))) := rfl
+/-- The three noise terms when the auxiliary sample size is chosen to give
+exponential decay in `m d`. -/
+noncomputable abbrev directLdNoise (D : DirectLdParams) (η : ℝ) :=
+  η ^ (1 / 40000 : ℝ) + ((D.d : ℝ) / D.q) ^ (1 / 40000 : ℝ) +
+    Real.exp (-((D.m : ℝ) * D.d))
 
-private theorem directLdEnvelope_nonneg (D : DirectLdParams) {ε : ℝ} (hε : 0 ≤ ε) :
-    0 ≤ Real.rpow (3 * ε) (1 / 40000) +
-      Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000) +
-      Real.exp (-((directLdAuxParameter D : ℝ) / (2560000 * ((D.m : ℝ) ^ (2 : ℕ))))) := by
-  have h1 : (0 : ℝ) ≤ Real.rpow (3 * ε) (1 / 40000) := Real.rpow_nonneg (by linarith) _
-  have h2 : (0 : ℝ) ≤ Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000) :=
-    Real.rpow_nonneg (by positivity) _
-  have h3 : (0 : ℝ) ≤
-      Real.exp (-((directLdAuxParameter D : ℝ) / (2560000 * ((D.m : ℝ) ^ (2 : ℕ))))) :=
-    (Real.exp_pos _).le
-  linarith
+noncomputable abbrev directLdPrefactor (D : DirectLdParams) : ℝ :=
+  655360000000000000 * (D.m : ℝ) ^ 10 * (D.d : ℝ) ^ 2
 
-private theorem mainFormalError_direct_nonneg (D : DirectLdParams) {ε : ℝ} (hε : 0 ≤ ε) :
-    0 ≤ Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε) := by
-  rw [mainFormalError_direct_eq]
-  exact mul_nonneg (by positivity) (directLdEnvelope_nonneg D hε)
+/-- The main LDT error with the sample size substituted. -/
+theorem mainFormalError_direct_eq (D : DirectLdParams) (η : ℝ) :
+    Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) η =
+      directLdPrefactor D * directLdNoise D η := by
+  change 100000 * (directLdAuxParameter D : ℝ) ^ 2 * (D.m : ℝ) ^ 4 *
+    (η ^ (1 / 40000 : ℝ) + ((D.d : ℝ) / D.q) ^ (1 / 40000 : ℝ) +
+      Real.exp (-((directLdAuxParameter D : ℝ) / (2560000 * (D.m : ℝ) ^ 2)))) = _
+  rw [directLdAuxParameter_exp_arg]
+  unfold directLdAuxParameter directLdPrefactor directLdNoise
+  push_cast
+  ring
 
-/-- The square root of the polynomial prefactor of the LDT error at the
-auxiliary sampling parameter. -/
-private theorem sqrt_directLdPrefactor_le (D : DirectLdParams) :
-    Real.sqrt (100000 * ((directLdAuxParameter D : ℝ) ^ (2 : ℕ)) * ((D.m : ℝ) ^ (4 : ℕ))) ≤
-      820000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) := by
-  have hm1 := directLd_one_le_m D
-  have hd1 := directLd_one_le_d D
-  have hK : (directLdAuxParameter D : ℝ) = 2560000 * (D.m : ℝ) ^ (3 : ℕ) * (D.d : ℝ) := by
-    unfold directLdAuxParameter
+/-- A positive scaling factor at least one can be pulled out of a small real power. -/
+theorem transport_rpow_mul_le {c x b : ℝ} (hc : 1 ≤ c) (hx : 0 ≤ x) (hb : b ≤ 1) :
+    (c * x) ^ b ≤ c * x ^ b := by
+  rw [Real.mul_rpow (zero_le_one.trans hc) hx]
+  exact mul_le_mul_of_nonneg_right (Real.rpow_le_self_of_one_le hc hb) (Real.rpow_nonneg hx _)
+
+/-- A degree/field ratio loses at most one power of its numerator. -/
+theorem transport_rpow_ratio_le {d q b r : ℝ} (hd : 1 ≤ d) (hq : 1 ≤ q)
+    (hbr : b ≤ r) (hr : r ≤ 1) : (d / q) ^ r ≤ d * q ^ (-b) := by
+  have hq0 := zero_le_one.trans hq
+  rw [Real.div_rpow (zero_le_one.trans hd) hq0, div_eq_mul_inv, ← Real.rpow_neg hq0]
+  exact mul_le_mul (Real.rpow_le_self_of_one_le hd hr)
+    (Real.rpow_le_rpow_of_exponent_le hq (neg_le_neg hbr))
+    (Real.rpow_nonneg hq0 _) (zero_le_one.trans hd)
+
+/-- Exponential decay implies base-two decay at any smaller rate. -/
+theorem transport_exp_le {u v b : ℝ} (hu : 0 ≤ u) (huv : u ≤ v) (hb : 0 ≤ b) (hb1 : b ≤ 1) :
+    Real.exp (-v) ≤ (2 : ℝ) ^ (-(b * u)) := by
+  rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2)]
+  apply Real.exp_le_exp.mpr
+  have hlog : Real.log 2 ≤ 1 := by
+    linarith [Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 2)]
+  linarith only [mul_le_mul_of_nonneg_right hlog (mul_nonneg hb hu),
+    mul_le_of_le_one_left hu hb1, huv]
+
+private theorem sqrt_rpow_half {x : ℝ} (hx : 0 ≤ x) (r : ℝ) :
+    Real.sqrt (x ^ r) = x ^ (r / 2) := by
+  rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hx]
+  simp [div_eq_mul_inv]
+
+private theorem sqrt_directLdEnvelope_le (D : DirectLdParams) {ε : ℝ} (hε : 0 ≤ ε) :
+    Real.sqrt (directLdNoise D (3 * ε)) ≤ 3 * (D.d : ℝ) * transportEnvelope D ε := by
+  have hd := directLd_one_le_d D
+  have hq := directLd_one_le_q D
+  have hε' : 0 ≤ 3 * ε := by positivity
+  have hr : (1 / 40000 : ℝ) / 2 = 1 / 80000 := by norm_num
+  simp only [directLdNoise, transportEnvelope, Real.rpow_eq_pow]
+  refine (sqrt_add3_le_add3_sqrt (by positivity) (by positivity) (by positivity)).trans ?_
+  rw [sqrt_rpow_half hε', sqrt_rpow_half (by positivity : 0 ≤ (D.d : ℝ) / D.q), hr, ← Real.exp_half]
+  have h1 := transport_rpow_mul_le (c := 3) (b := 1 / 80000) (by norm_num) hε (by norm_num)
+  have h2 := transport_rpow_ratio_le hd hq (b := 1 / 80000) le_rfl (by norm_num)
+  have h3 : Real.exp (-((D.m : ℝ) * D.d) / 2) ≤
+      (2 : ℝ) ^ (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) := by
     push_cast
-    ring
-  have hX : (0 : ℝ) ≤ (D.m : ℝ) ^ (10 : ℕ) * (D.d : ℝ) ^ (2 : ℕ) := by positivity
-  have hC : (0 : ℝ) ≤ 820000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) := by positivity
-  have hlhs : 100000 * ((directLdAuxParameter D : ℝ) ^ (2 : ℕ)) * ((D.m : ℝ) ^ (4 : ℕ)) =
-      655360000000000000 * ((D.m : ℝ) ^ (10 : ℕ) * (D.d : ℝ) ^ (2 : ℕ)) := by
-    rw [hK]; ring
-  have hrhs : (820000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ)) ^ (2 : ℕ) =
-      672400000000000000 * ((D.m : ℝ) ^ (10 : ℕ) * (D.d : ℝ) ^ (2 : ℕ)) := by ring
-  calc Real.sqrt (100000 * ((directLdAuxParameter D : ℝ) ^ (2 : ℕ)) * ((D.m : ℝ) ^ (4 : ℕ)))
-      ≤ Real.sqrt ((820000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ)) ^ (2 : ℕ)) := by
-        apply Real.sqrt_le_sqrt
-        rw [hlhs, hrhs]
-        exact mul_le_mul_of_nonneg_right (by norm_num) hX
-    _ = 820000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) := Real.sqrt_sq hC
+    convert transport_exp_le (u := (D.m : ℝ) * D.d / 2) (v := (D.m : ℝ) * D.d / 2)
+      (b := 1 / 40000) (by positivity) le_rfl (by norm_num) (by norm_num) using 1 <;> ring_nf
+  nlinarith only [h1, h2, h3,
+    mul_nonneg (show 0 ≤ (D.d : ℝ) - 1 by linarith) (Real.rpow_nonneg hε (1 / 80000)),
+    mul_nonneg (show 0 ≤ (D.d : ℝ) by positivity)
+      (Real.rpow_nonneg (Nat.cast_nonneg D.q) (-(1 / 80000))),
+    mul_nonneg (show 0 ≤ 3 * (D.d : ℝ) - 1 by linarith)
+      (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))))]
 
-/-- Halving the exponents: the square root of the LDT envelope at the
-auxiliary sampling parameter is at most `3 d` times the transport envelope. -/
-private theorem sqrt_directLdEnvelope_le (D : DirectLdParams) {ε : ℝ} (hε0 : 0 < ε) :
-    Real.sqrt (Real.rpow (3 * ε) (1 / 40000) +
-        Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000) +
-        Real.exp (-((directLdAuxParameter D : ℝ) / (2560000 * ((D.m : ℝ) ^ (2 : ℕ)))))) ≤
-      3 * (D.d : ℝ) * transportEnvelope D ε := by
-  have hd1 := directLd_one_le_d D
-  have hq1 := directLd_one_le_q D
-  have h1n : (0 : ℝ) ≤ Real.rpow (3 * ε) (1 / 40000) := Real.rpow_nonneg (by linarith) _
-  have h2n : (0 : ℝ) ≤ Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000) :=
-    Real.rpow_nonneg (by positivity) _
-  have h3n : (0 : ℝ) ≤
-      Real.exp (-((directLdAuxParameter D : ℝ) / (2560000 * ((D.m : ℝ) ^ (2 : ℕ))))) :=
-    (Real.exp_pos _).le
-  have hb1 : Real.sqrt (Real.rpow (3 * ε) (1 / 40000)) ≤ 3 * Real.rpow ε (1 / 80000) := by
-    have e : Real.sqrt (Real.rpow (3 * ε) (1 / 40000)) = Real.rpow (3 * ε) (1 / 80000) := by
-      rw [Test.sqrt_rpow_one_div (by linarith : (0 : ℝ) ≤ 3 * ε)
-        (by norm_num : (0 : ℝ) < 40000)]
-      norm_num
-    rw [e]
-    simp only [Real.rpow_eq_pow]
-    rw [Real.mul_rpow (by norm_num) hε0.le]
-    have h3 : (3 : ℝ) ^ ((1 : ℝ) / 80000) ≤ 3 := by
-      calc (3 : ℝ) ^ ((1 : ℝ) / 80000) ≤ (3 : ℝ) ^ (1 : ℝ) :=
-            Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-        _ = 3 := Real.rpow_one 3
-    exact mul_le_mul_of_nonneg_right h3 (Real.rpow_nonneg hε0.le _)
-  have hb2 : Real.sqrt (Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000)) ≤
-      (D.d : ℝ) * Real.rpow (D.q : ℝ) (-(1 / 80000)) := by
-    have e : Real.sqrt (Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000)) =
-        Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 80000) := by
-      rw [Test.sqrt_rpow_one_div (by positivity : (0 : ℝ) ≤ (D.d : ℝ) / (D.q : ℝ))
-        (by norm_num : (0 : ℝ) < 40000)]
-      norm_num
-    rw [e]
-    simp only [Real.rpow_eq_pow]
-    rw [Real.div_rpow (by linarith) (by linarith), div_eq_mul_inv,
-      ← Real.rpow_neg (by linarith : (0 : ℝ) ≤ (D.q : ℝ))]
-    have hd : (D.d : ℝ) ^ ((1 : ℝ) / 80000) ≤ (D.d : ℝ) := by
-      calc (D.d : ℝ) ^ ((1 : ℝ) / 80000) ≤ (D.d : ℝ) ^ (1 : ℝ) :=
-            Real.rpow_le_rpow_of_exponent_le hd1 (by norm_num)
-        _ = (D.d : ℝ) := Real.rpow_one _
-    exact mul_le_mul_of_nonneg_right hd (Real.rpow_nonneg (by linarith) _)
-  have hb3 : Real.sqrt
-      (Real.exp (-((directLdAuxParameter D : ℝ) / (2560000 * ((D.m : ℝ) ^ (2 : ℕ)))))) ≤
-      Real.rpow 2 (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) := by
-    have hlog : Real.log 2 ≤ 1 := by
-      have h := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 2)
-      linarith
-    have hmd : (0 : ℝ) ≤ (D.m : ℝ) * (D.d : ℝ) := by positivity
-    have hcast : ((D.m * D.d : ℕ) : ℝ) = (D.m : ℝ) * (D.d : ℝ) := by push_cast; ring
-    rw [directLdAuxParameter_exp_arg D, ← Real.exp_half, hcast]
-    simp only [Real.rpow_eq_pow]
-    rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2)]
-    apply Real.exp_le_exp.mpr
-    nlinarith [mul_le_mul_of_nonneg_right hlog hmd]
-  have hx := Real.rpow_nonneg hε0.le (1 / 80000 : ℝ)
-  have hy := Real.rpow_nonneg (by linarith : (0 : ℝ) ≤ (D.q : ℝ)) (-(1 / 80000) : ℝ)
-  have hz := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ (2 : ℝ))
-    (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ)))
-  have p1 : (0 : ℝ) ≤ ((D.d : ℝ) - 1) * Real.rpow ε (1 / 80000) :=
-    mul_nonneg (by linarith) hx
-  have p2 : (0 : ℝ) ≤ (D.d : ℝ) * Real.rpow (D.q : ℝ) (-(1 / 80000)) :=
-    mul_nonneg (by linarith) hy
-  have p3 : (0 : ℝ) ≤ (3 * (D.d : ℝ) - 1) *
-      Real.rpow 2 (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) := mul_nonneg (by linarith) hz
-  calc Real.sqrt (Real.rpow (3 * ε) (1 / 40000) +
-        Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000) +
-        Real.exp (-((directLdAuxParameter D : ℝ) / (2560000 * ((D.m : ℝ) ^ (2 : ℕ))))))
-      ≤ Real.sqrt (Real.rpow (3 * ε) (1 / 40000)) +
-          Real.sqrt (Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000)) +
-          Real.sqrt
-            (Real.exp (-((directLdAuxParameter D : ℝ) /
-              (2560000 * ((D.m : ℝ) ^ (2 : ℕ)))))) :=
-        MIPStarRE.LDT.sqrt_add3_le_add3_sqrt h1n h2n h3n
-    _ ≤ 3 * Real.rpow ε (1 / 80000) + (D.d : ℝ) * Real.rpow (D.q : ℝ) (-(1 / 80000)) +
-          Real.rpow 2 (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) := by
-        linarith
-    _ ≤ 3 * (D.d : ℝ) * transportEnvelope D ε := by
-        unfold transportEnvelope
-        nlinarith [p1, p2, p3]
-
-/-- The square root of the whole scalar error of the transport, bounded by an
-explicit polynomial in the parameters times the transport envelope. -/
 private theorem sqrt_directLdTransportError_le (D : DirectLdParams) {ε : ℝ}
     (hε0 : 0 < ε) (hε1 : ε ≤ 1) :
     Real.sqrt (Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε) +
         ((D.m : ℝ) * (D.d : ℝ)) / (D.q : ℝ) + ε) ≤
       2500000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ) * transportEnvelope D ε := by
-  have hm1 := directLd_one_le_m D
-  have hd1 := directLd_one_le_d D
-  have hq1 := directLd_one_le_q D
-  have hT := transportEnvelope_nonneg D hε0.le
-  have hE := mainFormalError_direct_nonneg D hε0.le
-  have hmdq : (0 : ℝ) ≤ ((D.m : ℝ) * (D.d : ℝ)) / (D.q : ℝ) := by positivity
-  have hsE : Real.sqrt
-      (Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε)) ≤
-      820000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) *
-        (3 * (D.d : ℝ) * transportEnvelope D ε) := by
-    rw [mainFormalError_direct_eq, Real.sqrt_mul (by positivity)]
-    exact mul_le_mul (sqrt_directLdPrefactor_le D) (sqrt_directLdEnvelope_le D hε0)
-      (Real.sqrt_nonneg _) (by positivity)
-  have hsmd : Real.sqrt (((D.m : ℝ) * (D.d : ℝ)) / (D.q : ℝ)) ≤
-      (D.m : ℝ) * (D.d : ℝ) * Real.rpow (D.q : ℝ) (-(1 / 80000)) := by
-    have hmd1 : (1 : ℝ) ≤ (D.m : ℝ) * (D.d : ℝ) := by nlinarith
-    simp only [Real.rpow_eq_pow]
-    rw [Real.sqrt_eq_rpow, Real.div_rpow (by linarith) (by linarith), div_eq_mul_inv,
-      ← Real.rpow_neg (by linarith : (0 : ℝ) ≤ (D.q : ℝ))]
-    have h1 : ((D.m : ℝ) * (D.d : ℝ)) ^ ((1 : ℝ) / 2) ≤ (D.m : ℝ) * (D.d : ℝ) := by
-      calc ((D.m : ℝ) * (D.d : ℝ)) ^ ((1 : ℝ) / 2)
-          ≤ ((D.m : ℝ) * (D.d : ℝ)) ^ (1 : ℝ) :=
-            Real.rpow_le_rpow_of_exponent_le hmd1 (by norm_num)
-        _ = (D.m : ℝ) * (D.d : ℝ) := Real.rpow_one _
-    have h2 : (D.q : ℝ) ^ (-((1 : ℝ) / 2)) ≤ (D.q : ℝ) ^ (-((1 : ℝ) / 80000)) :=
-      Real.rpow_le_rpow_of_exponent_le hq1 (by norm_num)
-    exact mul_le_mul h1 h2 (Real.rpow_nonneg (by linarith) _) (by nlinarith)
-  have hsε : Real.sqrt ε ≤ Real.rpow ε (1 / 80000) := by
-    simp only [Real.rpow_eq_pow]
+  rw [mainFormalError_direct_eq]
+  have hm := directLd_one_le_m D
+  have hd := directLd_one_le_d D
+  have hq := directLd_one_le_q D
+  have hε := hε0.le
+  let M := (D.m : ℝ) ^ 5 * (D.d : ℝ) ^ 2
+  let E := transportEnvelope D ε
+  have hE : 0 ≤ E := transportEnvelope_nonneg D hε
+  have hmd : 1 ≤ (D.m : ℝ) * D.d := one_le_mul_of_one_le_of_one_le hm hd
+  have hM : (D.m : ℝ) * D.d ≤ M := by
+    dsimp only [M]
+    gcongr
+    · simpa using pow_le_pow_right₀ hm (show 1 ≤ 5 by decide)
+    · simpa using pow_le_pow_right₀ hd (show 1 ≤ 2 by decide)
+  have hP : Real.sqrt (directLdPrefactor D) ≤ 820000000 * (D.m : ℝ) ^ 5 * D.d := by
+    refine (Real.sqrt_le_iff).2 ⟨by positivity, ?_⟩
+    dsimp only [directLdPrefactor]
+    nlinarith only [show 0 ≤ (D.m : ℝ) ^ 10 * (D.d : ℝ) ^ 2 by positivity]
+  have h1 := mul_le_mul hP (sqrt_directLdEnvelope_le D hε) (Real.sqrt_nonneg _) (by positivity)
+  have h2 : Real.sqrt ((D.m : ℝ) * D.d / D.q) ≤ M * E := by
     rw [Real.sqrt_eq_rpow]
-    exact Real.rpow_le_rpow_of_exponent_ge hε0 hε1 (by norm_num)
-  have hqT : (D.m : ℝ) * (D.d : ℝ) * Real.rpow (D.q : ℝ) (-(1 / 80000)) ≤
-      (D.m : ℝ) * (D.d : ℝ) * transportEnvelope D ε :=
-    mul_le_mul_of_nonneg_left (transportEnvelope_rpow_q_le D hε0.le) (by positivity)
-  have hεT : Real.rpow ε (1 / 80000) ≤ 1 * transportEnvelope D ε := by
-    rw [one_mul]
-    exact transportEnvelope_rpow_eps_le D ε
-  have hP : (D.m : ℝ) * (D.d : ℝ) ≤ (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ) := by
-    have e1 : (D.m : ℝ) ≤ (D.m : ℝ) ^ (5 : ℕ) := by
-      simpa using pow_le_pow_right₀ hm1 (by norm_num : 1 ≤ 5)
-    have e2 : (D.d : ℝ) ≤ (D.d : ℝ) ^ (2 : ℕ) := by
-      simpa using pow_le_pow_right₀ hd1 (by norm_num : 1 ≤ 2)
-    exact mul_le_mul e1 e2 (by linarith) (by positivity)
-  have hP1 : (1 : ℝ) ≤ (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ) := by
-    have e1 : (1 : ℝ) ≤ (D.m : ℝ) ^ (5 : ℕ) := one_le_pow₀ hm1
-    have e2 : (1 : ℝ) ≤ (D.d : ℝ) ^ (2 : ℕ) := one_le_pow₀ hd1
-    nlinarith
-  have hcoef : 2460000000 * ((D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ)) +
-      (D.m : ℝ) * (D.d : ℝ) + 1 ≤
-      2500000000 * ((D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ)) := by linarith
-  have hkey : 820000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) *
-        (3 * (D.d : ℝ) * transportEnvelope D ε) +
-      (D.m : ℝ) * (D.d : ℝ) * transportEnvelope D ε + 1 * transportEnvelope D ε ≤
-      2500000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ) * transportEnvelope D ε := by
-    nlinarith [mul_le_mul_of_nonneg_right hcoef hT]
-  calc Real.sqrt (Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε) +
-        ((D.m : ℝ) * (D.d : ℝ)) / (D.q : ℝ) + ε)
-      ≤ Real.sqrt
-            (Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε)) +
-          Real.sqrt (((D.m : ℝ) * (D.d : ℝ)) / (D.q : ℝ)) + Real.sqrt ε :=
-        MIPStarRE.LDT.sqrt_add3_le_add3_sqrt hE hmdq hε0.le
-    _ ≤ 820000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) *
-            (3 * (D.d : ℝ) * transportEnvelope D ε) +
-          (D.m : ℝ) * (D.d : ℝ) * transportEnvelope D ε + 1 * transportEnvelope D ε := by
-        linarith
-    _ ≤ 2500000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ) * transportEnvelope D ε :=
-        hkey
+    refine (transport_rpow_ratio_le hmd hq (by norm_num : (1 / 80000 : ℝ) ≤ 1 / 2) (by norm_num)).trans ?_
+    exact mul_le_mul hM (transportEnvelope_rpow_q_le D hε) (by positivity) (zero_le_one.trans (hmd.trans hM))
+  have h3 : Real.sqrt ε ≤ M * E := by
+    rw [Real.sqrt_eq_rpow]
+    exact (Real.rpow_le_rpow_of_exponent_ge hε0 hε1 (by norm_num : (1 / 80000 : ℝ) ≤ 1 / 2)).trans
+      ((transportEnvelope_rpow_eps_le D ε).trans (le_mul_of_one_le_left hE (hmd.trans hM)))
+  refine (sqrt_add3_le_add3_sqrt (by positivity) (by positivity) hε).trans ?_
+  rw [Real.sqrt_mul (by positivity : 0 ≤ directLdPrefactor D)]
+  dsimp only [M, E] at h2 h3
+  have hME := mul_nonneg (zero_le_one.trans (hmd.trans hM)) hE
+  dsimp only [M, E] at hME
+  nlinarith only [h1, h2, h3, hME]
 
 /-! ## Absorption into the error function of `lem:ld-soundness` -/
 
@@ -409,52 +313,32 @@ theorem direct_ld_transport_constants_explicit (C₀ : ℝ) (hC₀ : 1 ≤ C₀)
           deltaLd (2500000000 * C₀) (1 / 80000) ε D.q D.m D.d D.k := by
   refine ⟨by linarith, by norm_num, by norm_num, ?_⟩
   intro D ε hε0 hε1
-  have hm1 := directLd_one_le_m D
-  have hd1 := directLd_one_le_d D
-  have hk1 := directLd_one_le_k D
+  have hm := directLd_one_le_m D
+  have hd := directLd_one_le_d D
+  have hk := directLd_one_le_k D
+  let N : ℝ := ((D.d * D.m * D.k : ℕ) : ℝ)
+  have hN : 1 ≤ N := by
+    dsimp only [N]
+    exact_mod_cast (show 1 ≤ D.d * D.m * D.k from Nat.mul_pos (Nat.mul_pos D.hd D.hm) D.hk)
   have hT := transportEnvelope_nonneg D hε0.le
-  have hdelta : deltaLd (2500000000 * C₀) (1 / 80000) ε D.q D.m D.d D.k =
-      2500000000 * C₀ * Real.rpow ((D.d * D.m * D.k : ℕ) : ℝ) (2500000000 * C₀) *
-        transportEnvelope D ε := rfl
-  have hbase : (1 : ℝ) ≤ ((D.d * D.m * D.k : ℕ) : ℝ) := by
-    have hn : 1 ≤ D.d * D.m * D.k := Nat.mul_pos (Nat.mul_pos D.hd D.hm) D.hk
-    exact_mod_cast hn
-  have hpow : ((D.d * D.m * D.k : ℕ) : ℝ) ^ (8 : ℕ) ≤
-      Real.rpow ((D.d * D.m * D.k : ℕ) : ℝ) (2500000000 * C₀) := by
-    simp only [Real.rpow_eq_pow]
-    rw [← Real.rpow_natCast (((D.d * D.m * D.k : ℕ) : ℝ)) 8]
-    exact Real.rpow_le_rpow_of_exponent_le hbase (by push_cast; linarith)
-  have hmono : (D.k : ℝ) * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ) ≤
-      ((D.d * D.m * D.k : ℕ) : ℝ) ^ (8 : ℕ) := by
-    have e1 : (D.k : ℝ) ≤ (D.k : ℝ) ^ (8 : ℕ) := by
-      simpa using pow_le_pow_right₀ hk1 (by norm_num : 1 ≤ 8)
-    have e2 : (D.m : ℝ) ^ (5 : ℕ) ≤ (D.m : ℝ) ^ (8 : ℕ) :=
-      pow_le_pow_right₀ hm1 (by norm_num)
-    have e3 : (D.d : ℝ) ^ (2 : ℕ) ≤ (D.d : ℝ) ^ (8 : ℕ) :=
-      pow_le_pow_right₀ hd1 (by norm_num)
+  have hpow : N ^ (5 : ℕ) ≤ N ^ (2500000000 * C₀) := by
+    rw [← Real.rpow_natCast]
+    exact Real.rpow_le_rpow_of_exponent_le hN (by push_cast; linarith)
+  have hpoly : (D.k : ℝ) * (D.m : ℝ) ^ 5 * (D.d : ℝ) ^ 2 ≤ N ^ (5 : ℕ) := by
+    dsimp only [N]
     push_cast
-    calc (D.k : ℝ) * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ)
-        ≤ (D.k : ℝ) ^ (8 : ℕ) * (D.m : ℝ) ^ (8 : ℕ) * (D.d : ℝ) ^ (8 : ℕ) :=
-          mul_le_mul (mul_le_mul e1 e2 (by positivity) (by positivity)) e3
-            (by positivity) (by positivity)
-      _ = ((D.d : ℝ) * (D.m : ℝ) * (D.k : ℝ)) ^ (8 : ℕ) := by ring
-  have hstep := sqrt_directLdTransportError_le D hε0 hε1
-  rw [hdelta]
-  calc C₀ * (D.k : ℝ) *
-        Real.sqrt (Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε) +
-          ((D.m : ℝ) * (D.d : ℝ)) / (D.q : ℝ) + ε)
-      ≤ C₀ * (D.k : ℝ) *
-          (2500000000 * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ) *
-            transportEnvelope D ε) :=
-        mul_le_mul_of_nonneg_left hstep (mul_nonneg (by linarith) (by positivity))
-    _ = 2500000000 * C₀ *
-          ((D.k : ℝ) * (D.m : ℝ) ^ (5 : ℕ) * (D.d : ℝ) ^ (2 : ℕ)) *
-          transportEnvelope D ε := by ring
-    _ ≤ 2500000000 * C₀ *
-          Real.rpow ((D.d * D.m * D.k : ℕ) : ℝ) (2500000000 * C₀) *
-          transportEnvelope D ε := by
-        apply mul_le_mul_of_nonneg_right _ hT
-        exact mul_le_mul_of_nonneg_left (le_trans hmono hpow) (by linarith)
+    -- Keep the three real bases separate for monotonicity in each exponent.
+    calc _ ≤ (D.k : ℝ) ^ 5 * (D.m : ℝ) ^ 5 * (D.d : ℝ) ^ 5 := by
+            gcongr
+            · simpa using pow_le_pow_right₀ hk (by decide : 1 ≤ 5)
+            · decide
+         _ = _ := by ring
+  change _ ≤ 2500000000 * C₀ * N ^ (2500000000 * C₀) * transportEnvelope D ε
+  calc _ ≤ C₀ * (D.k : ℝ) * (2500000000 * (D.m : ℝ) ^ 5 * (D.d : ℝ) ^ 2 *
+      transportEnvelope D ε) := by gcongr; exact sqrt_directLdTransportError_le D hε0 hε1
+    _ = 2500000000 * C₀ * ((D.k : ℝ) * (D.m : ℝ) ^ 5 * (D.d : ℝ) ^ 2) *
+        transportEnvelope D ε := by ring
+    _ ≤ _ := by gcongr; exact hpoly.trans hpow
 
 /-! ## The degenerate regimes
 
@@ -471,28 +355,13 @@ theorem one_le_deltaLd_of_one_le_error {a b ε : ℝ} (ha : 1 ≤ a) (hb : 0 ≤
     (hε : 1 ≤ ε) {q m d k : ℕ} (hm : 1 ≤ m) (hd : 1 ≤ d) (hk : 1 ≤ k) :
     1 ≤ deltaLd a b ε q m d k := by
   have hbase : (1 : ℝ) ≤ ((d * m * k : ℕ) : ℝ) := by
-    have hn : 1 ≤ d * m * k := Nat.mul_pos (Nat.mul_pos hd hm) hk
-    exact_mod_cast hn
-  have hX : (1 : ℝ) ≤ Real.rpow ((d * m * k : ℕ) : ℝ) a := by
-    simp only [Real.rpow_eq_pow]
-    calc (1 : ℝ) = (1 : ℝ) ^ a := (Real.one_rpow a).symm
-      _ ≤ ((d * m * k : ℕ) : ℝ) ^ a := Real.rpow_le_rpow (by norm_num) hbase (by linarith)
-  have hY : (1 : ℝ) ≤ Real.rpow ε b := by
-    simp only [Real.rpow_eq_pow]
-    calc (1 : ℝ) = (1 : ℝ) ^ b := (Real.one_rpow b).symm
-      _ ≤ ε ^ b := Real.rpow_le_rpow (by norm_num) hε hb
-  have hZ : (0 : ℝ) ≤ Real.rpow (q : ℝ) (-b) := Real.rpow_nonneg (by positivity) _
-  have hW : (0 : ℝ) ≤ Real.rpow 2 (-(b * ((m * d : ℕ) : ℝ))) :=
-    Real.rpow_nonneg (by norm_num) _
-  have hax : (1 : ℝ) ≤ a * Real.rpow ((d * m * k : ℕ) : ℝ) a := by nlinarith
-  have hsum : (1 : ℝ) ≤ Real.rpow ε b + Real.rpow (q : ℝ) (-b) +
-      Real.rpow 2 (-(b * ((m * d : ℕ) : ℝ))) := by linarith
-  unfold deltaLd
-  calc (1 : ℝ) = 1 * 1 := by norm_num
-    _ ≤ a * Real.rpow ((d * m * k : ℕ) : ℝ) a *
-        (Real.rpow ε b + Real.rpow (q : ℝ) (-b) +
-          Real.rpow 2 (-(b * ((m * d : ℕ) : ℝ)))) :=
-      mul_le_mul hax hsum (by norm_num) (by linarith)
+    exact_mod_cast (Nat.mul_pos (Nat.mul_pos hd hm) hk)
+  have hX := Real.one_le_rpow hbase (zero_le_one.trans ha)
+  have hY := Real.one_le_rpow hε hb
+  simp only [deltaLd, Real.rpow_eq_pow]
+  apply one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le ha hX)
+  exact hY.trans <| (le_add_of_nonneg_right (by positivity)).trans
+    (le_add_of_nonneg_right (by positivity))
 
 /-! ## A coarse universal bound on the consistency defect
 
@@ -520,38 +389,10 @@ theorem consistencyDefect_heteroKron_le_one {X α ιA ιB : Type*}
     (μ : Distribution X) (hμ : μ.IsProbability)
     (A : X → Quantum.Measurement α ιA) (B : X → Quantum.Measurement α ιB)
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1) :
-    consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
-        (fun x a => heteroKron 1 ((B x).effect a)) ψ ≤ 1 := by
-  have hEq : consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
-      (fun x a => heteroKron 1 ((B x).effect a)) ψ =
-      1 - avgOver μ (fun x => ∑ a : α,
-        DistanceCalculus.stateQForm ψ
-          (heteroKron ((A x).effect a) 1 * heteroKron 1 ((B x).effect a))) :=
-    DistanceCalculus.consistencyDefect_eq_one_sub_overlap μ
-      (fun x => DistanceCalculus.leftPlacedMeasurement (A x))
-      (fun x => DistanceCalculus.rightPlacedMeasurement (B x))
-      ψ hμ hψ
-  have hnn : 0 ≤ avgOver μ (fun x => ∑ a : α,
-      DistanceCalculus.stateQForm ψ
-        (heteroKron ((A x).effect a) 1 * heteroKron 1 ((B x).effect a))) := by
-    refine avgOver_nonneg μ _ (fun x => Finset.sum_nonneg (fun a _ => ?_))
-    have hprod : heteroKron ((A x).effect a) (1 : Op ιB) *
-        heteroKron (1 : Op ιA) ((B x).effect a) =
-        heteroKron ((A x).effect a) ((B x).effect a) := by
-      change Matrix.kroneckerMap (fun x1 x2 => x1 * x2) ((A x).effect a)
-            (1 : Op ιB) *
-          Matrix.kroneckerMap (fun x1 x2 => x1 * x2) (1 : Op ιA)
-            ((B x).effect a) =
-          Matrix.kroneckerMap (fun x1 x2 => x1 * x2) ((A x).effect a)
-            ((B x).effect a)
-      rw [← Matrix.mul_kronecker_mul, mul_one, one_mul]
-    rw [hprod]
-    unfold DistanceCalculus.stateQForm applyOperatorToState heteroKron
-    exact
-      (Matrix.isPositive_toEuclideanLin_iff.mpr
-        (Matrix.nonneg_iff_posSemidef.mp
-          (kronecker_nonneg ((A x).pos a) ((B x).pos a)))).re_inner_nonneg_right ψ
-  rw [hEq]
-  linarith
+    bipartiteDefect μ A
+        B ψ ≤ 1 := by
+  rw [consistencyDefect_placed_eq_one_sub_overlap μ A B ψ hμ hψ, sub_le_self_iff]
+  exact avgOver_nonneg _ _ fun x => Finset.sum_nonneg fun a _ =>
+    stateQForm_nonneg ψ (kronecker_nonneg ((A x).pos a) ((B x).pos a))
 
 end MIPStarRE.QPBT

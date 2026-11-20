@@ -1,6 +1,7 @@
 module
 
-public import QPBT.Algebra.Pauli
+public import QPBT.Games.EPR
+public import QPBT.Games.DistanceTheorems.Support
 public import QPBT.Test.MagicSquareTheorems.Basic
 public import MIPStarRE.Quantum.FiniteMatrix.Order
 
@@ -36,38 +37,6 @@ noncomputable def msPerfectState (ι : Type*) [Fintype ι] [DecidableEq ι]
     [Nonempty ι] : EuclideanSpace ℂ ((ι × ZMod 2) × (ι × ZMod 2)) :=
   reindexState prodShuffle (vecTensor (eprState ι) (eprState (ZMod 2)))
 
-/-- Formalization-only auxiliary lemma for
-`exists_ms_perfect_strategy_of_anticommuting` (blueprint
-`thm:ms-from-ac`): the EPR state on `V` is invariant under
-exchanging its two tensor factors. -/
-theorem reindexState_prodComm_eprState
-    (V : Type*) [Fintype V] [DecidableEq V] [Nonempty V] :
-    reindexState (Equiv.prodComm V V) (eprState V) = eprState V := by
-  apply (EuclideanSpace.equiv (V × V) ℂ).injective
-  funext p
-  rcases p with ⟨i, j⟩
-  simp only [reindexState, eprState, ContinuousLinearEquiv.apply_symm_apply,
-    Equiv.prodComm, Equiv.coe_fn_symm_mk]
-  by_cases hij : i = j
-  · subst j
-    simp
-  · have hji : j ≠ i := fun h => hij h.symm
-    simp [hij, hji]
-
-/-- Formalization-only auxiliary lemma for
-`exists_ms_perfect_strategy_of_anticommuting` (blueprint
-`thm:ms-from-ac`): a symmetric operator acting on the first factor
-of the EPR state acts on it exactly as it does on the second factor. -/
-theorem epr_action_eq_of_transpose
-    {V : Type*} [Fintype V] [DecidableEq V] [Nonempty V]
-    (E : Op V) (hE : Eᵀ = E) :
-    (heteroKron E 1).mulVec (eprState V) =
-      (heteroKron 1 E).mulVec (eprState V) := by
-  ext p
-  rcases p with ⟨i, j⟩
-  simpa [heteroKron, Matrix.mulVec, dotProduct, Fintype.sum_prod_type,
-    eprState, Matrix.one_apply] using congrFun (congrFun hE j) i
-
 private theorem binary_effects_sum
     {V : Type*} [Fintype V] [DecidableEq V]
     (M : Measurement (ZMod 2) V) :
@@ -80,15 +49,8 @@ private theorem binary_effects_orthogonal
     (M : Measurement (ZMod 2) V)
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     M.effect 0 * M.effect 1 = 0 ∧ M.effect 1 * M.effect 0 = 0 := by
-  have hsum := binary_effects_sum M
-  have hcomp : M.effect 1 = 1 - M.effect 0 := by
-    rw [← hsum]
-    abel
-  constructor
-  · rw [hcomp]
-    exact (hM 0).mul_one_sub_self
-  · rw [hcomp]
-    exact (hM 0).one_sub_mul_self
+  exact ⟨DistanceCalculus.projective_effect_mul_effect_eq_zero M hM (by decide),
+    DistanceCalculus.projective_effect_mul_effect_eq_zero M hM (by decide)⟩
 
 /-- Formalization-only auxiliary lemma for
 `exists_ms_perfect_strategy_of_anticommuting` (blueprint
@@ -113,45 +75,34 @@ theorem obsOf_sq
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     obsOf M * obsOf M = 1 := by
   rcases binary_effects_orthogonal M hM with ⟨h01, h10⟩
-  calc
-    obsOf M * obsOf M =
-        M.effect 0 * M.effect 0 - M.effect 0 * M.effect 1 -
-          M.effect 1 * M.effect 0 + M.effect 1 * M.effect 1 := by
-      simp only [obsOf]
-      noncomm_ring
-    _ = M.effect 0 + M.effect 1 := by
-      rw [(hM 0).isIdempotentElem.eq, (hM 1).isIdempotentElem.eq, h01, h10]
-      abel
-    _ = 1 := binary_effects_sum M
+  rw [obsOf, sub_mul, mul_sub, mul_sub, h01, h10,
+    (hM 0).isIdempotentElem.eq, (hM 1).isIdempotentElem.eq]
+  simpa using binary_effects_sum M
 
 /-- The effect with eigenvalue `(-1)^b` for a Hermitian involution. -/
 noncomputable def reflectionEffect {V : Type*} [Fintype V]
     [DecidableEq V] (O : Op V) (b : ZMod 2) : Op V :=
   if b = 0 then (2 : ℂ)⁻¹ • (1 + O) else (2 : ℂ)⁻¹ • (1 - O)
 
+theorem reflectionEffect_eq_sign {V : Type*} [Fintype V] [DecidableEq V]
+    (O : Op V) (b : ZMod 2) :
+    reflectionEffect O b = (2 : ℂ)⁻¹ • (1 + phaseSign b • O) := by
+  by_cases h : b = 0 <;> simp [reflectionEffect, phaseSign, sub_eq_add_neg, h]
+
 private theorem reflectionEffect_isProj
     {V : Type*} [Fintype V] [DecidableEq V]
     (O : Op V) (hO : Oᴴ = O) (hO_sq : O * O = 1) (b : ZMod 2) :
     IsProj (reflectionEffect O b) := by
-  have hplus : (1 + O) * (1 + O) = (2 : ℂ) • (1 + O) := by
-    calc
-      (1 + O) * (1 + O) = 1 + O + O + O * O := by noncomm_ring
-      _ = (2 : ℂ) • (1 + O) := by rw [hO_sq]; module
-  have hminus : (1 - O) * (1 - O) = (2 : ℂ) • (1 - O) := by
-    calc
-      (1 - O) * (1 - O) = 1 - O - O + O * O := by noncomm_ring
-      _ = (2 : ℂ) • (1 - O) := by rw [hO_sq]; module
+  rw [reflectionEffect_eq_sign]
   refine isStarProjection_iff'.2 ⟨?_, ?_⟩
-  · rcases zmod_two_eq_zero_or_one b with rfl | rfl
-    · simp only [reflectionEffect, if_pos]
-      rw [smul_mul_smul, hplus, smul_smul]
-      norm_num
-    · simp only [reflectionEffect, if_neg one_ne_zero]
-      rw [smul_mul_smul, hminus, smul_smul]
-      norm_num
-  · rcases zmod_two_eq_zero_or_one b with rfl | rfl
-    · simp [reflectionEffect, Matrix.star_eq_conjTranspose, hO]
-    · simp [reflectionEffect, Matrix.star_eq_conjTranspose, hO]
+  · rw [smul_mul_smul]
+    have h : (1 + phaseSign b • O) * (1 + phaseSign b • O) = (2 : ℂ) • (1 + phaseSign b • O) := by
+      simp only [add_mul, mul_add, one_mul, mul_one, smul_mul_smul, hO_sq,
+        phaseSign_mul_self, one_smul]
+      module
+    rw [h, smul_smul]
+    norm_num
+  · simp [Matrix.star_eq_conjTranspose, Matrix.conjTranspose_smul, star_phaseSign, hO]
 
 /-- The binary projective measurement associated with a Hermitian involution. -/
 noncomputable def reflectionMeasurement
@@ -190,23 +141,16 @@ theorem reflectionEffect_obsOf_measurement
   · simp only [reflectionEffect, if_pos, obsOf]
     rw [show (1 : Op V) = M.effect 0 + M.effect 1 from hsum.symm]
     module
-  · simp only [reflectionEffect, if_neg one_ne_zero, obsOf]
+  · simp [reflectionEffect, obsOf]
     rw [show (1 : Op V) = M.effect 0 + M.effect 1 from hsum.symm]
     module
 
 local notation "qubitX" => (tauShift (K := ZMod 2) 1)
 local notation "qubitZ" => (tauPhase (K := ZMod 2) 1)
 
-private theorem heteroKron_conjTranspose
-    {V W : Type*} (A : Op V) (B : Op W) :
-    (heteroKron A B)ᴴ = heteroKron Aᴴ Bᴴ := by
-  exact Matrix.conjTranspose_kronecker A B
-
 private theorem heteroKron_transpose
     {V W : Type*} (A : Op V) (B : Op W) :
-    (heteroKron A B)ᵀ = heteroKron Aᵀ Bᵀ := by
-  ext i j
-  rfl
+    (heteroKron A B)ᵀ = heteroKron Aᵀ Bᵀ := by rfl
 
 private theorem heteroKron_neg_neg
     {V W : Type*} (A : Op V) (B : Op W) :
@@ -225,25 +169,19 @@ private theorem anti_mul_sq
   calc
     (A * B) * (A * B) = A * (B * A) * B := by noncomm_ring
     _ = -(A * A) * (B * B) := by rw [hBA]; noncomm_ring
-    _ = -1 := by rw [hA, hB]; simp
+    _ = -1 := by simp_all
 
 private theorem anti_mul_conjTranspose
     {V : Type*} [Fintype V]
     (A B : Op V) (hA : Aᴴ = A) (hB : Bᴴ = B)
     (hAB : A * B = -(B * A)) :
-    (A * B)ᴴ = -(A * B) := by
-  rw [Matrix.conjTranspose_mul, hA, hB]
-  rw [hAB]
-  simp
+    (A * B)ᴴ = -(A * B) := by simp_all
 
 private theorem anti_mul_transpose
     {V : Type*} [Fintype V]
     (A B : Op V) (hA : Aᵀ = A) (hB : Bᵀ = B)
     (hAB : A * B = -(B * A)) :
-    (A * B)ᵀ = -(A * B) := by
-  rw [Matrix.transpose_mul, hA, hB]
-  rw [hAB]
-  simp
+    (A * B)ᵀ = -(A * B) := by simp_all
 
 /-- The nine observables in the operator table of `thm:ms-from-ac`. -/
 def msCellObservable
@@ -265,9 +203,7 @@ theorem msCellObservable_conjTranspose
     (msCellObservable OA OB j)ᴴ = msCellObservable OA OB j := by
   have hAB := anti_mul_conjTranspose OA OB hOA hOB hac
   have hZX := anti_mul_conjTranspose qubitZ qubitX binaryTauPhase_conjTranspose
-    binaryTauShift_conjTranspose (by
-      rw [binaryTauShift_mul_tauPhase]
-      simp)
+    binaryTauShift_conjTranspose (by simp [binaryTauShift_mul_tauPhase])
   fin_cases j <;>
     simp [msCellObservable, heteroKron_conjTranspose, hOA, hOB,
       binaryTauShift_conjTranspose, binaryTauPhase_conjTranspose, hAB, hZX,
@@ -283,9 +219,7 @@ theorem msCellObservable_sq
     (hac : OA * OB = -(OB * OA)) (j : Fin 9) :
     msCellObservable OA OB j * msCellObservable OA OB j = 1 := by
   have hAB := anti_mul_sq OA OB hOA hOB hac
-  have hZX := anti_mul_sq qubitZ qubitX binaryTauPhase_sq binaryTauShift_sq (by
-    rw [binaryTauShift_mul_tauPhase]
-    simp)
+  have hZX := anti_mul_sq qubitZ qubitX binaryTauPhase_sq binaryTauShift_sq (by simp [binaryTauShift_mul_tauPhase])
   fin_cases j <;>
     simp [msCellObservable, heteroKron_mul, hOA, hOB, binaryTauShift_sq,
       binaryTauPhase_sq, hAB, hZX, heteroKron_neg_neg, heteroKron_one_one]
@@ -301,82 +235,60 @@ theorem msCellObservable_transpose
     (msCellObservable OA OB j)ᵀ = msCellObservable OA OB j := by
   have hAB := anti_mul_transpose OA OB hOA hOB hac
   have hZX := anti_mul_transpose qubitZ qubitX binaryTauPhase_transpose
-    binaryTauShift_transpose (by
-      rw [binaryTauShift_mul_tauPhase]
-      simp)
+    binaryTauShift_transpose (by simp [binaryTauShift_mul_tauPhase])
   fin_cases j <;>
     simp [msCellObservable, heteroKron_transpose, hOA, hOB,
       binaryTauShift_transpose, binaryTauPhase_transpose, hAB, hZX,
       heteroKron_neg_neg]
 
-/-- Formalization-only auxiliary lemma for
-`exists_ms_perfect_strategy_of_anticommuting` (blueprint
-`thm:ms-from-ac`): the observables attached to any two cells of the
-same Magic Square constraint commute. -/
-theorem msConstraintObservable_commute
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (OA OB : Op V) (hOA : OA * OA = 1) (hOB : OB * OB = 1)
-    (hac : OA * OB = -(OB * OA)) (i : Fin 6) (k l : Fin 3) :
-    Commute (msCellObservable OA OB (msConstraintVars i k))
-      (msCellObservable OA OB (msConstraintVars i l)) := by
-  have hA_BA : OA * (OB * OA) = -OB := by
-    calc
-      OA * (OB * OA) = (OA * OB) * OA := (mul_assoc _ _ _).symm
-      _ = (-(OB * OA)) * OA := by rw [hac]
-      _ = -OB := by rw [neg_mul, mul_assoc, hOA, mul_one]
-  have hBA_A : OB * OA * OA = OB := by rw [mul_assoc, hOA, mul_one]
-  have hB_BA : OB * (OB * OA) = OA := by rw [← mul_assoc, hOB, one_mul]
-  have hBA_B : OB * OA * OB = -OA := by
-    calc
-      OB * OA * OB = OB * (OA * OB) := mul_assoc _ _ _
-      _ = OB * (-(OB * OA)) := by rw [hac]
-      _ = -OA := by rw [mul_neg, ← mul_assoc, hOB, one_mul]
-  have hZ_ZX : qubitZ * (qubitZ * qubitX) = qubitX := by
-    rw [← mul_assoc, binaryTauPhase_sq, one_mul]
-  have hZX_Z : qubitZ * qubitX * qubitZ = -qubitX := by
-    calc
-      qubitZ * qubitX * qubitZ = -(qubitX * qubitZ) * qubitZ := by
-        rw [show qubitZ * qubitX = -(qubitX * qubitZ) by
-          rw [binaryTauShift_mul_tauPhase]
-          simp]
-      _ = -qubitX := by rw [neg_mul, mul_assoc, binaryTauPhase_sq, mul_one]
-  have hX_ZX : qubitX * (qubitZ * qubitX) = -qubitZ := by
-    calc
-      qubitX * (qubitZ * qubitX) = (qubitX * qubitZ) * qubitX :=
-        (mul_assoc _ _ _).symm
-      _ = (-(qubitZ * qubitX)) * qubitX := by rw [binaryTauShift_mul_tauPhase]
-      _ = -qubitZ := by rw [neg_mul, mul_assoc, binaryTauShift_sq, mul_one]
-  have hZX_X : qubitZ * qubitX * qubitX = qubitZ := by
-    rw [mul_assoc, binaryTauShift_sq, mul_one]
-  fin_cases i <;> fin_cases k <;> fin_cases l <;>
-    simp [commute_iff_eq, msConstraintVars, msCellObservable,
-      heteroKron_mul, hOA, hOB, hac, binaryTauShift_sq, binaryTauPhase_sq,
-      binaryTauShift_mul_tauPhase, hA_BA, hBA_A, hB_BA, hBA_B, hZ_ZX,
-      hZX_Z, hX_ZX, hZX_X, heteroKron_neg_left,
-      heteroKron_neg_right]
+/-- The three cell observables of one row or column. -/
+abbrev msConstraintObservable {V : Type*} [Fintype V] [DecidableEq V]
+    (OA OB : Op V) (i : Fin 6) (k : Fin 3) :=
+  msCellObservable OA OB (msConstraintVars i k)
 
-/-- Formalization-only auxiliary lemma for
-`exists_ms_perfect_strategy_of_anticommuting` (blueprint
-`thm:ms-from-ac`): the three observables of a Magic Square
-constraint multiply to `1` for the five even constraints and to `-1` for the
-last one, which is the anticommuting column of the operator table. -/
-theorem msConstraintObservable_product
-    {V : Type*} [Fintype V] [DecidableEq V]
+private theorem msConstraintObservable_commute_first {V : Type*} [Fintype V] [DecidableEq V]
+    (OA OB : Op V) (hac : OA * OB = -(OB * OA)) (i : Fin 6) :
+    Commute (msConstraintObservable OA OB i 0) (msConstraintObservable OA OB i 1) := by
+  rw [commute_iff_eq]
+  fin_cases i <;> simp [msConstraintObservable, msConstraintVars, msCellObservable,
+    heteroKron_mul, binaryTauShift_mul_tauPhase, hac, heteroKron_neg_left, heteroKron_neg_right]
+
+private theorem msConstraintObservable_third {V : Type*} [Fintype V] [DecidableEq V]
+    (OA OB : Op V) (i : Fin 6) :
+    msConstraintObservable OA OB i 2 = phaseSign (msParity i) •
+      (msConstraintObservable OA OB i 0 * msConstraintObservable OA OB i 1) := by
+  fin_cases i <;> simp [msConstraintObservable, msConstraintVars, msCellObservable, msParity,
+    phaseSign, heteroKron_mul, binaryTauShift_mul_tauPhase, heteroKron_neg_right]
+
+/-- The three observables of each row or column commute. -/
+theorem msConstraintObservable_commute {V : Type*} [Fintype V] [DecidableEq V]
+    (OA OB : Op V) (hac : OA * OB = -(OB * OA)) (i : Fin 6) (k l : Fin 3) :
+    Commute (msConstraintObservable OA OB i k) (msConstraintObservable OA OB i l) := by
+  have h01 := msConstraintObservable_commute_first OA OB hac i
+  have h02 : Commute (msConstraintObservable OA OB i 0) (msConstraintObservable OA OB i 2) := by
+    rw [msConstraintObservable_third]
+    exact ((Commute.refl _).mul_right h01).smul_right _
+  have h12 : Commute (msConstraintObservable OA OB i 1) (msConstraintObservable OA OB i 2) := by
+    rw [msConstraintObservable_third]
+    exact (h01.symm.mul_right (Commute.refl _)).smul_right _
+  fin_cases k <;> fin_cases l <;> first
+    | exact Commute.refl _
+    | exact h01
+    | exact h01.symm
+    | exact h02
+    | exact h02.symm
+    | exact h12
+    | exact h12.symm
+
+/-- The product of the row or column is its prescribed sign times the identity. -/
+theorem msConstraintObservable_product {V : Type*} [Fintype V] [DecidableEq V]
     (OA OB : Op V) (hOA : OA * OA = 1) (hOB : OB * OB = 1)
     (hac : OA * OB = -(OB * OA)) (i : Fin 6) :
-    msCellObservable OA OB (msConstraintVars i 0) *
-        msCellObservable OA OB (msConstraintVars i 1) *
-    msCellObservable OA OB (msConstraintVars i 2) =
-      if i = 5 then -1 else 1 := by
-  have hAB := anti_mul_sq OA OB hOA hOB hac
-  have hZX := anti_mul_sq qubitZ qubitX binaryTauPhase_sq binaryTauShift_sq (by
-    rw [binaryTauShift_mul_tauPhase]
-    simp)
-  fin_cases i <;>
-    simp [msConstraintVars, msCellObservable, heteroKron_mul, hOA, hOB,
-      binaryTauShift_sq, binaryTauPhase_sq, binaryTauShift_mul_tauPhase, hAB, hZX,
-      heteroKron_neg_left, heteroKron_neg_right,
-      heteroKron_one_one]
+    msConstraintObservable OA OB i 0 * msConstraintObservable OA OB i 1 *
+      msConstraintObservable OA OB i 2 = phaseSign (msParity i) • 1 := by
+  rw [msConstraintObservable_third, mul_smul_comm,
+    (msConstraintObservable_commute_first OA OB hac i).symm.mul_mul_mul_comm]
+  simp only [msConstraintObservable, msCellObservable_sq OA OB hOA hOB hac, one_mul]
 
 /-- Formalization-only auxiliary lemma for
 `exists_ms_perfect_strategy_of_anticommuting` (blueprint
@@ -389,69 +301,36 @@ theorem binary_effect_mul
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
     (a b : ZMod 2) :
     M.effect a * M.effect b = if a = b then M.effect a else 0 := by
-  rcases binary_effects_orthogonal M hM with ⟨h01, h10⟩
-  rcases zmod_two_eq_zero_or_one a with rfl | rfl <;>
-    rcases zmod_two_eq_zero_or_one b with rfl | rfl <;>
-      simp [(hM _).isIdempotentElem.eq, h01, h10]
+  split_ifs with h
+  · subst b
+    exact (hM a).isIdempotentElem.eq
+  · exact DistanceCalculus.projective_effect_mul_effect_eq_zero M hM h
 
 /-- Formalization-only auxiliary lemma for
 `exists_ms_perfect_strategy_of_anticommuting` (blueprint
 `thm:ms-from-ac`): the reflection effects of two commuting Hermitian
 involutions commute. -/
-theorem reflectionEffect_commute
-    {V : Type*} [Fintype V] [DecidableEq V]
-    {O P : Op V} (hOP : Commute O P) (a b : ZMod 2) :
-    Commute (reflectionEffect O a) (reflectionEffect P b) := by
-  rw [commute_iff_eq]
-  rcases zmod_two_eq_zero_or_one a with rfl | rfl <;>
-    rcases zmod_two_eq_zero_or_one b with rfl | rfl <;>
-      simp only [reflectionEffect, if_pos, if_neg one_ne_zero]
-  all_goals rw [smul_mul_smul, smul_mul_smul]
-  all_goals congr 1
-  all_goals noncomm_ring [hOP.eq]
-
 private theorem reflectionEffect_commute_obs
     {V : Type*} [Fintype V] [DecidableEq V]
     {O P : Op V} (hOP : Commute O P) (a : ZMod 2) :
     Commute (reflectionEffect O a) P := by
-  rw [commute_iff_eq]
-  rcases zmod_two_eq_zero_or_one a with rfl | rfl <;>
-    simp only [reflectionEffect, if_pos, if_neg one_ne_zero]
-  all_goals rw [smul_mul_assoc, mul_smul_comm]
-  all_goals congr 1
-  all_goals noncomm_ring [hOP.eq]
+  rw [reflectionEffect_eq_sign]
+  exact ((Commute.one_left P).add_left (hOP.smul_left _)).smul_left _
 
-private theorem reflectionEffect_mul_obs_zero
+theorem reflectionEffect_commute
     {V : Type*} [Fintype V] [DecidableEq V]
-    (O : Op V) (hO : O * O = 1) :
-    reflectionEffect O 0 * O = reflectionEffect O 0 := by
-  simp only [reflectionEffect, if_pos]
-  rw [smul_mul_assoc, add_mul, one_mul, hO]
-  module
+    {O P : Op V} (hOP : Commute O P) (a b : ZMod 2) :
+    Commute (reflectionEffect O a) (reflectionEffect P b) :=
+  (reflectionEffect_commute_obs (reflectionEffect_commute_obs hOP a).symm b).symm
 
-private theorem reflectionEffect_mul_obs_one
+private theorem reflectionEffect_mul_obs
     {V : Type*} [Fintype V] [DecidableEq V]
-    (O : Op V) (hO : O * O = 1) :
-    reflectionEffect O 1 * O = -reflectionEffect O 1 := by
-  simp only [reflectionEffect, if_neg one_ne_zero]
-  rw [smul_mul_assoc, sub_mul, one_mul, hO]
-  module
-
-private theorem mul_reflectionEffect_zero_of_eigen_pos
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (E O : Op V) (hEO : E * O = E) :
-    E * reflectionEffect O 0 = E := by
-  simp only [reflectionEffect, if_pos]
-  rw [mul_smul_comm, mul_add, mul_one, hEO]
-  module
-
-private theorem mul_reflectionEffect_one_of_eigen_neg
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (E O : Op V) (hEO : E * O = -E) :
-    E * reflectionEffect O 1 = E := by
-  simp only [reflectionEffect, if_neg one_ne_zero]
-  rw [mul_smul_comm, mul_sub, mul_one, hEO]
-  module
+    (O : Op V) (hO : O * O = 1) (b : ZMod 2) :
+    reflectionEffect O b * O = phaseSign b • reflectionEffect O b := by
+  simp only [reflectionEffect_eq_sign, smul_mul_assoc, add_mul, one_mul,
+    hO, smul_add, smul_smul]
+  rw [mul_left_comm (phaseSign b) (2 : ℂ)⁻¹, phaseSign_mul_self, mul_one,
+    mul_comm (phaseSign b) (2 : ℂ)⁻¹, add_comm]
 
 private theorem reflection_pair_mul_observables
     {V : Type*} [Fintype V]
@@ -459,113 +338,40 @@ private theorem reflection_pair_mul_observables
     (h10 : Commute P1 O0)
     (h0 : P0 * O0 = s0 • P0) (h1 : P1 * O1 = s1 • P1) :
     (P0 * P1) * (O0 * O1) = (s0 * s1) • (P0 * P1) := by
-  calc
-    (P0 * P1) * (O0 * O1) = P0 * (P1 * O0) * O1 := by noncomm_ring
-    _ = P0 * (O0 * P1) * O1 := by rw [h10.eq]
-    _ = (P0 * O0) * (P1 * O1) := by noncomm_ring
-    _ = (s0 • P0) * (s1 • P1) := by rw [h0, h1]
-    _ = (s0 * s1) • (P0 * P1) := by rw [smul_mul_smul]
+  rw [h10.mul_mul_mul_comm, h0, h1, smul_mul_smul]
 
-/-- Formalization-only auxiliary lemma for
-`exists_ms_perfect_strategy_of_anticommuting` (blueprint
-`thm:ms-from-ac`): if `O0` and `O1` are commuting involutions and
-the product `O0 * O1 * O2` equals `(-1) ^ p`, then the third reflection effect
-taken at the outcome `p - b0 - b1` forced by the parity acts as the identity on
-the product of the first two reflection effects. -/
-theorem reflection_pair_absorbs_parity_effect
+/-- The product of the first two spectral effects is supported on the third
+outcome dictated by the parity of the three reflections. -/
+theorem reflection_pair_mul_parity_effect
     {V : Type*} [Fintype V] [DecidableEq V]
     (O0 O1 O2 : Op V)
     (hO0 : O0 * O0 = 1) (hO1 : O1 * O1 = 1)
     (h01 : Commute O0 O1)
-    (p b0 b1 : ZMod 2)
-    (hp : (p = 0 ∧ O0 * O1 * O2 = 1) ∨
-      (p = 1 ∧ O0 * O1 * O2 = -1)) :
-    (reflectionEffect O0 b0 * reflectionEffect O1 b1) *
-        reflectionEffect O2 (p - b0 - b1) =
-      reflectionEffect O0 b0 * reflectionEffect O1 b1 := by
-  rcases hp with ⟨rfl, hprod⟩ | ⟨rfl, hprod⟩
-  · have hO2eq : O2 = O0 * O1 := by
-      calc
-        O2 = (O0 * O0) * (O1 * O1) * O2 := by rw [hO0, hO1]; simp
-        _ = O0 * (O0 * O1) * O1 * O2 := by noncomm_ring
-        _ = O0 * (O1 * O0) * O1 * O2 := by rw [h01.eq]
-        _ = O0 * O1 * (O0 * O1 * O2) := by noncomm_ring
-        _ = O0 * O1 := by rw [hprod]; simp
-    rcases zmod_two_eq_zero_or_one b0 with rfl | rfl <;>
-      rcases zmod_two_eq_zero_or_one b1 with rfl | rfl
-    · apply mul_reflectionEffect_zero_of_eigen_pos
-      rw [hO2eq]
-      simpa using reflection_pair_mul_observables
-        (reflectionEffect O0 0) (reflectionEffect O1 0) O0 O1 1 1
-        (reflectionEffect_commute_obs h01.symm 0)
-        (by simpa using reflectionEffect_mul_obs_zero O0 hO0)
-        (by simpa using reflectionEffect_mul_obs_zero O1 hO1)
-    · apply mul_reflectionEffect_one_of_eigen_neg
-      rw [hO2eq]
-      simpa using reflection_pair_mul_observables
-        (reflectionEffect O0 0) (reflectionEffect O1 1) O0 O1 1 (-1)
-        (reflectionEffect_commute_obs h01.symm 1)
-        (by simpa using reflectionEffect_mul_obs_zero O0 hO0)
-        (by simpa using reflectionEffect_mul_obs_one O1 hO1)
-    · apply mul_reflectionEffect_one_of_eigen_neg
-      rw [hO2eq]
-      simpa using reflection_pair_mul_observables
-        (reflectionEffect O0 1) (reflectionEffect O1 0) O0 O1 (-1) 1
-        (reflectionEffect_commute_obs h01.symm 0)
-        (by simpa using reflectionEffect_mul_obs_one O0 hO0)
-        (by simpa using reflectionEffect_mul_obs_zero O1 hO1)
-    · apply mul_reflectionEffect_zero_of_eigen_pos
-      rw [hO2eq]
-      simpa using reflection_pair_mul_observables
-        (reflectionEffect O0 1) (reflectionEffect O1 1) O0 O1 (-1) (-1)
-        (reflectionEffect_commute_obs h01.symm 1)
-        (by simpa using reflectionEffect_mul_obs_one O0 hO0)
-        (by simpa using reflectionEffect_mul_obs_one O1 hO1)
-  · have hO2eq : O2 = -(O0 * O1) := by
-      calc
-        O2 = (O0 * O0) * (O1 * O1) * O2 := by rw [hO0, hO1]; simp
-        _ = O0 * (O0 * O1) * O1 * O2 := by noncomm_ring
-        _ = O0 * (O1 * O0) * O1 * O2 := by rw [h01.eq]
-        _ = O0 * O1 * (O0 * O1 * O2) := by noncomm_ring
-        _ = -(O0 * O1) := by rw [hprod]; simp
-    rcases zmod_two_eq_zero_or_one b0 with rfl | rfl <;>
-      rcases zmod_two_eq_zero_or_one b1 with rfl | rfl
-    · apply mul_reflectionEffect_one_of_eigen_neg
-      rw [hO2eq, mul_neg]
-      have hpair := reflection_pair_mul_observables
-        (reflectionEffect O0 0) (reflectionEffect O1 0) O0 O1 1 1
-        (reflectionEffect_commute_obs h01.symm 0)
-        (by simpa using reflectionEffect_mul_obs_zero O0 hO0)
-        (by simpa using reflectionEffect_mul_obs_zero O1 hO1)
-      rw [hpair]
-      simp
-    · apply mul_reflectionEffect_zero_of_eigen_pos
-      rw [hO2eq, mul_neg]
-      have hpair := reflection_pair_mul_observables
-        (reflectionEffect O0 0) (reflectionEffect O1 1) O0 O1 1 (-1)
-        (reflectionEffect_commute_obs h01.symm 1)
-        (by simpa using reflectionEffect_mul_obs_zero O0 hO0)
-        (by simpa using reflectionEffect_mul_obs_one O1 hO1)
-      rw [hpair]
-      simp
-    · apply mul_reflectionEffect_zero_of_eigen_pos
-      rw [hO2eq, mul_neg]
-      have hpair := reflection_pair_mul_observables
-        (reflectionEffect O0 1) (reflectionEffect O1 0) O0 O1 (-1) 1
-        (reflectionEffect_commute_obs h01.symm 0)
-        (by simpa using reflectionEffect_mul_obs_one O0 hO0)
-        (by simpa using reflectionEffect_mul_obs_zero O1 hO1)
-      rw [hpair]
-      simp
-    · apply mul_reflectionEffect_one_of_eigen_neg
-      rw [hO2eq, mul_neg]
-      have hpair := reflection_pair_mul_observables
-        (reflectionEffect O0 1) (reflectionEffect O1 1) O0 O1 (-1) (-1)
-        (reflectionEffect_commute_obs h01.symm 1)
-        (by simpa using reflectionEffect_mul_obs_one O0 hO0)
-        (by simpa using reflectionEffect_mul_obs_one O1 hO1)
-      rw [hpair]
-      simp
+    (p b0 b1 b : ZMod 2) (hp : O0 * O1 * O2 = phaseSign p • 1) :
+    let E := reflectionEffect O0 b0 * reflectionEffect O1 b1
+    E * reflectionEffect O2 b = if p - b0 - b1 = b then E else 0 := by
+  intro E
+  have hsq : (O0 * O1) * (O0 * O1) = 1 := by
+    rw [h01.symm.mul_mul_mul_comm, hO0, hO1, one_mul]
+  have hO2 : O2 = phaseSign p • (O0 * O1) := by
+    rw [← mul_one (O0 * O1), ← mul_smul_comm, ← hp, ← mul_assoc, hsq, one_mul]
+  have he := reflection_pair_mul_observables _ _ O0 O1 _ _
+    (reflectionEffect_commute_obs h01.symm b1)
+    (reflectionEffect_mul_obs O0 hO0 b0) (reflectionEffect_mul_obs O1 hO1 b1)
+  change E * (O0 * O1) = (phaseSign b0 * phaseSign b1) • E at he
+  have hbit : p + (b0 + b1) = p - b0 - b1 :=
+    (by decide : ∀ x y z : ZMod 2, x + (y + z) = x - y - z) p b0 b1
+  rw [reflectionEffect_eq_sign, mul_smul_comm, mul_add, mul_one,
+    mul_smul_comm, hO2, mul_smul_comm, he]
+  simp only [smul_smul, ← phaseSign_add, hbit]
+  by_cases h : p - b0 - b1 = b
+  · have hbb : b + b = 0 := CharTwo.add_self_eq_zero b
+    rw [ite_eq_left h, h, hbb]
+    simp only [phaseSign, ite_true, one_smul]
+    module
+  · have hb : b + (p - b0 - b1) = 1 :=
+      (by decide : ∀ x y : ZMod 2, y ≠ x → x + y = 1) _ _ h
+    simp [h, hb, phaseSign]
 
 end
 

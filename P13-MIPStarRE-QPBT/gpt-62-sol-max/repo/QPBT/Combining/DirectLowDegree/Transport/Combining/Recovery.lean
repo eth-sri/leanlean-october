@@ -61,8 +61,8 @@ noncomputable section
 /-- The field size of a directly indexed low-degree game is positive. -/
 theorem directLdFieldSize_pos (D : DirectLdParams) : (0 : ℝ) < (D.q : ℝ) := by
   have h : 0 < Fintype.card (DirectScalarQ D) := Fintype.card_pos
-  rw [card_directScalarQ] at h
-  exact_mod_cast h
+  simp at h
+  simp_all
 
 /-- Commuting the two factors of a combination of a tuple of scalars. -/
 private theorem directCombiningSum_comm {K : Type*} [CommSemiring K] {k : ℕ}
@@ -73,10 +73,7 @@ private theorem directCombiningSum_comm {K : Type*} [CommSemiring K] {k : ℕ}
 field size of the directly indexed game. -/
 private theorem directCombiningRatio_eq (D : DirectLdParams) (n : ℕ) :
     ((((n : ℕ) : ℚ≥0) / Fintype.card (DirectScalarQ D) : ℚ≥0) : Error) =
-      ((n : ℕ) : Error) / D.q := by
-  rw [card_directScalarQ]
-  push_cast
-  ring
+      ((n : ℕ) : Error) / D.q := by simp
 
 /-! ## The collision estimates in the combining variables -/
 
@@ -98,7 +95,7 @@ open scoped Classical in
 of a tuple of scalars, written with the combining vector as the left factor. -/
 private theorem directCombinedRestrictCollision_avg_le (D : DirectLdParams)
     (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
-    (u : Fin D.m → DirectScalarQ D) (b : Fin D.k → DirectScalarQ D)
+    (u : DirectPoint D) (b : Fin D.k → DirectScalarQ D)
     (hu : ∀ c : Fin D.k → DirectScalarQ D,
       combinedRestrict p.1 u ≠ combiningLinearForm c) :
     avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
@@ -113,15 +110,20 @@ private theorem directCombinedRestrictCollision_avg_le (D : DirectLdParams)
 
 /-! ## The estimate at a fixed point -/
 
+section
+
+variable (D : DirectLdParams)
+    (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
+    (u : DirectPoint D)
+include D p u
+
 open scoped Classical in
 /-- The bound at a fixed point of the recovery step: the collision probability
 `1 / q` of two combinations when the outcome is combined, and otherwise the
 indicator that the restriction of the outcome at the point is a linear form
 together with the collision probability `k d / q` of two polynomials of total
 degree at most `k d` in the combining variables. -/
-def directCombinedRecoveryLocalBound (D : DirectLdParams)
-    (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
-    (u : Fin D.m → DirectScalarQ D) : Error :=
+def directCombinedRecoveryLocalBound : Error :=
   if IsDirectCombined D p then (1 : Error) / D.q
   else
     (if ∃ c : Fin D.k → DirectScalarQ D,
@@ -137,9 +139,7 @@ the tuple of values at `u` of the components recovered from `p` differs from `b`
 while the value of `p` at the combined point with parts `u` and `α` equals the
 combination `∑_r α_r b_r`, is at most the bound at the point.  The bound does
 not depend on the tuple `b`. -/
-theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
-    (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
-    (u : Fin D.m → DirectScalarQ D) (b : Fin D.k → DirectScalarQ D) :
+theorem directCombinedRecoveryEvent_avg_le (b : Fin D.k → DirectScalarQ D) :
     avgOver (uniformDistribution (Fin D.k → DirectScalarQ D)) (fun α =>
         if evalDirectPolyTupleAt u (directTupleOfCombined D p) ≠ b ∧
             MvPolynomial.eval (combinedPoint u α) p.1 =
@@ -162,7 +162,7 @@ theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
         intro α
         refine if_neg ?_
         rintro ⟨hne, -⟩
-        exact hne hub
+        simp_all
       rw [avgOver_congr _ _ _ hzero, avgOver_zero]
       positivity
     · refine le_trans (avgOver_mono _ _
@@ -175,11 +175,8 @@ theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
             ∑ r : Fin D.k, α r * b r
       · have h2 := hev.2
         rw [directCombinedPolynomial_eval] at h2
-        rw [if_pos hev, if_pos h2]
-      · rw [if_neg hev]
-        split_ifs
-        · exact zero_le_one
-        · exact le_rfl
+        simp_all
+      · grind
   · rw [if_neg hc]
     by_cases hu : ∃ c : Fin D.k → DirectScalarQ D,
         combinedRestrict p.1 u = combiningLinearForm c
@@ -187,21 +184,18 @@ theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
       have hkd : (0 : Error) ≤ ((D.k * D.d : ℕ) : Error) / D.q := by positivity
       refine le_trans (avgOver_mono _ _ (fun _ => (1 : Error)) fun α => ?_) ?_
       · split_ifs
-        · exact le_rfl
-        · exact zero_le_one
-      · rw [avgOver_uniform_const]
-        linarith
+        · rfl
+        · simp
+      · simp_all [avgOver_uniform_const]
     · rw [if_neg hu, zero_add]
       push Not at hu
       refine le_trans (avgOver_mono _ _
         (fun α => if MvPolynomial.eval (combinedPoint u α) p.1 =
           ∑ r : Fin D.k, α r * b r then (1 : Error) else 0) fun α => ?_)
         (directCombinedRestrictCollision_avg_le D p u b hu)
-      split_ifs with h1 h2
-      · exact le_rfl
-      · exact absurd h1.2 h2
-      · exact zero_le_one
-      · exact le_rfl
+      grind
+
+end
 
 /-! ## The averaged estimate -/
 
@@ -214,7 +208,7 @@ restriction is a linear form averages to at most `m d / q` by
 `lem:ld-combining-exact-linearity`. -/
 theorem directCombinedRecoveryLocalBound_avg_le (D : DirectLdParams)
     (p : PolyIndex D.combined.m (DirectScalarQ D) D.d) :
-    avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+    avgOver (uniformDistribution (DirectPoint D))
         (directCombinedRecoveryLocalBound D p) ≤
       ((D.combined.m * D.d : ℕ) : Error) / D.q := by
   classical
@@ -222,15 +216,15 @@ theorem directCombinedRecoveryLocalBound_avg_le (D : DirectLdParams)
   have hsplit : ((D.combined.m * D.d : ℕ) : Error) / D.q =
       ((D.m * D.d : ℕ) : Error) / D.q + ((D.k * D.d : ℕ) : Error) / D.q := by
     have hn : (D.combined.m * D.d : ℕ) = D.m * D.d + D.k * D.d := by
-      simp [DirectLdParams.combined_m, Nat.add_mul]
+      simp [Nat.add_mul]
     rw [hn]
     push_cast
     ring
   by_cases hc : IsDirectCombined D p
-  · have hconst : ∀ u : Fin D.m → DirectScalarQ D,
+  · have hconst : ∀ u : DirectPoint D,
         directCombinedRecoveryLocalBound D p u = (1 : Error) / D.q := by
       intro u
-      rw [directCombinedRecoveryLocalBound, if_pos hc]
+      simp_all [directCombinedRecoveryLocalBound]
     rw [avgOver_congr _ _ _ hconst, avgOver_uniform_const]
     have h1 : (1 : Error) ≤ ((D.combined.m * D.d : ℕ) : Error) := by
       have hle : 1 ≤ D.combined.m * D.d := by
@@ -238,15 +232,15 @@ theorem directCombinedRecoveryLocalBound_avg_le (D : DirectLdParams)
       exact_mod_cast hle
     exact div_le_div_of_nonneg_right h1 hq.le
   · have hlin := directCombinedExactLinearity_avg_le D p hc
-    have heq : ∀ u : Fin D.m → DirectScalarQ D,
+    have heq : ∀ u : DirectPoint D,
         directCombinedRecoveryLocalBound D p u =
           (if ∃ c : Fin D.k → DirectScalarQ D,
               combinedRestrict p.1 u = combiningLinearForm c then (1 : Error)
             else 0) + ((D.k * D.d : ℕ) : Error) / D.q := by
       intro u
-      rw [directCombinedRecoveryLocalBound, if_neg hc]
+      simp_all [directCombinedRecoveryLocalBound]
     rw [avgOver_congr _ _ _ heq, avgOver_add, avgOver_uniform_const, hsplit]
-    linarith [hlin]
+    simp_all
 
 end
 

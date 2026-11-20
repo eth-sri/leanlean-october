@@ -28,39 +28,54 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
+/-- A degree-bounded multivariate polynomial of the directly indexed game. -/
+abbrev DirectPolynomial (D : DirectLdParams) := PolyIndex D.m (DirectScalarQ D) D.d
+
+
 /-- Coefficient lists for a univariate polynomial of degree at most `c` in the
 direct scalar field. -/
 abbrev DirectDegPoly (D : DirectLdParams) (c : ℕ) :=
   Fin (c + 1) → DirectScalarQ D
 
+section
+
+variable {D : DirectLdParams} {c : ℕ} (line : DirectLineDesc D)
+include D c line
+
 /-- A direct line polynomial evaluates to `a` at `u` when `u` lies on the line
 and every parameter presenting `u` gives value `a`.  The universal clause
 keeps the zero-direction case explicit. -/
-def DirectEvaluatesTo {D : DirectLdParams} {c : ℕ} (line : DirectLineDesc D)
-    (f : DirectDegPoly D c) (u : Fin D.m → DirectScalarQ D)
+def DirectEvaluatesTo
+    (f : DirectDegPoly D c) (u : DirectPoint D)
     (a : DirectScalarQ D) : Prop :=
-  (∃ t : DirectScalarQ D, u = line.base + t • line.direction) ∧
-    ∀ t : DirectScalarQ D, u = line.base + t • line.direction →
-      evalCoefficient f t = a
+  LineEvaluation.Determines (fun t => u = line.base + t • line.direction) (evalCoefficient f) a
 
 /-- Option-completed evaluation of a direct line polynomial.  `none` is an
 explicit outcome when the point does not determine an evaluation; no field
 value is used as a fallback. -/
-noncomputable def directEvalOpt {D : DirectLdParams} {c : ℕ}
-    (line : DirectLineDesc D) (u : Fin D.m → DirectScalarQ D)
-    (f : DirectDegPoly D c) : Option (DirectScalarQ D) := by
-  classical
-  exact if h : ∃ a : DirectScalarQ D, DirectEvaluatesTo line f u a then
-    some (Classical.choose h)
-  else none
+noncomputable def directEvalOpt (u : DirectPoint D)
+    (f : DirectDegPoly D c) : Option (DirectScalarQ D) :=
+  LineEvaluation.value (fun t => u = line.base + t • line.direction) (evalCoefficient f)
+
+theorem directEvalOpt_eq_some_iff
+    (u : DirectPoint D) (f : DirectDegPoly D c) (a : DirectScalarQ D) :
+    directEvalOpt line u f = some a ↔ DirectEvaluatesTo line f u a :=
+  LineEvaluation.value_eq_some_iff
+
+end
+
+section
+
+variable (D : DirectLdParams)
+include D
 
 /-- The typed question alphabet of the directly indexed game. -/
-abbrev DirectLdQuestion (D : DirectLdParams) := LdType × DirectLdSpace D
+abbrev DirectLdQuestion := LdType × DirectLdSpace D
 
 /-- Canonicalize a common direct sample for one question type.  Irrelevant
 coordinates are fixed, so point questions reveal no sampled line index and
 axis-line questions reveal no diagonal direction. -/
-noncomputable def directLdMap (D : DirectLdParams) :
+noncomputable def directLdMap :
     LdType → DirectLdSpace D → DirectLdSpace D
   | .point, sample => ⟨sample.point, D.firstIndex, 0⟩
   | .aline, sample =>
@@ -73,17 +88,19 @@ noncomputable def directLdMap (D : DirectLdParams) :
 /-- The directly indexed question distribution.  It has the same uniform
 ordered type-pair branches as `ldQuestionDistribution`, but its common sample
 contains an actual coordinate index rather than a field seed. -/
-noncomputable def directLdQuestionDistribution (D : DirectLdParams) :
+noncomputable def directLdQuestionDistribution :
     Distribution (DirectLdQuestion D × DirectLdQuestion D) :=
   (uniformDistribution ((LdType × LdType) × DirectLdSpace D)).map fun sample =>
     ((sample.1.1, directLdMap D sample.1.1 sample.2),
       (sample.1.2, directLdMap D sample.1.2 sample.2))
 
 /-- The directly indexed question law is probabilistic. -/
-theorem directLdQuestionDistribution_isProbability (D : DirectLdParams) :
+theorem directLdQuestionDistribution_isProbability :
     (directLdQuestionDistribution D).IsProbability := by
   exact (uniformDistribution_isProbability
     ((LdType × LdType) × DirectLdSpace D)).map _
+
+end
 
 /-- The answer alphabet of the directly indexed game. -/
 inductive DirectLdAnswer (D : DirectLdParams) where
@@ -92,15 +109,20 @@ inductive DirectLdAnswer (D : DirectLdParams) where
   | dlinePolys (a : Fin D.k → Fin (D.m * D.d + 1) → DirectScalarQ D)
   deriving DecidableEq
 
+section
+
+variable (D : DirectLdParams)
+include D
+
 /-- A finite code for the directly indexed answer alphabet. -/
-abbrev DirectLdAnswerCode (D : DirectLdParams) :=
+abbrev DirectLdAnswerCode :=
   (Fin D.k → DirectScalarQ D) ⊕
     ((Fin D.k → Fin (D.d + 1) → DirectScalarQ D) ⊕
       (Fin D.k → Fin (D.m * D.d + 1) → DirectScalarQ D))
 
 /-- The canonical code equivalence for `DirectLdAnswer`, sending point,
 axis-line, and diagonal-line answers to the three summands. -/
-noncomputable def directLdAnswerEquiv (D : DirectLdParams) :
+noncomputable def directLdAnswerEquiv :
     DirectLdAnswer D ≃ DirectLdAnswerCode D where
   toFun
     | .pointVals a => .inl a
@@ -111,18 +133,16 @@ noncomputable def directLdAnswerEquiv (D : DirectLdParams) :
     | .inr (.inl a) => .alinePolys a
     | .inr (.inr a) => .dlinePolys a
   left_inv := by intro answer; cases answer <;> rfl
-  right_inv := by
-    intro answer
-    rcases answer with a | a
-    · rfl
-    · rcases a with a | a <;> rfl
+  right_inv := by grind
 
-instance instInhabitedDirectLdAnswer (D : DirectLdParams) : Inhabited (DirectLdAnswer D) :=
+instance instInhabitedDirectLdAnswer : Inhabited (DirectLdAnswer D) :=
   ⟨.pointVals 0⟩
 
-noncomputable instance instFintypeDirectLdAnswer (D : DirectLdParams) :
+noncomputable instance instFintypeDirectLdAnswer :
     Fintype (DirectLdAnswer D) :=
   Fintype.ofEquiv (DirectLdAnswerCode D) (directLdAnswerEquiv D).symm
+
+end
 
 /-- Check that a direct-game answer has the constructor required by its
 question type. -/
@@ -134,8 +154,13 @@ def validDirectLdAnswer {D : DirectLdParams} (t : LdType)
   | .dline, .dlinePolys _ => true
   | _, _ => false
 
+section
+
+variable (D : DirectLdParams)
+include D
+
 /-- The directly indexed axis-line versus point acceptance relation. -/
-def directAlinePointCondition (D : DirectLdParams)
+def directAlinePointCondition
     (line point : DirectLdSpace D)
     (f : Fin D.k → Fin (D.d + 1) → DirectScalarQ D)
     (a : Fin D.k → DirectScalarQ D) : Prop :=
@@ -144,7 +169,7 @@ def directAlinePointCondition (D : DirectLdParams)
       ∀ j : Fin D.k, evalCoefficient (f j) t = a j
 
 /-- The directly indexed diagonal-line versus point acceptance relation. -/
-def directDlinePointCondition (D : DirectLdParams)
+def directDlinePointCondition
     (line point : DirectLdSpace D)
     (f : Fin D.k → Fin (D.m * D.d + 1) → DirectScalarQ D)
     (a : Fin D.k → DirectScalarQ D) : Prop :=
@@ -155,7 +180,7 @@ def directDlinePointCondition (D : DirectLdParams)
 /-- The directly indexed low-degree win predicate.  It differs from
 `ldWinPredicate` only by reading the coordinate index directly from each line
 question. -/
-noncomputable def directLdWinPredicate (D : DirectLdParams) :
+noncomputable def directLdWinPredicate :
     DirectLdQuestion D → DirectLdQuestion D →
       DirectLdAnswer D → DirectLdAnswer D → Bool :=
   open Classical in
@@ -176,10 +201,24 @@ noncomputable def directLdWinPredicate (D : DirectLdParams) :
       | _, _, _, _ => true
     else false
 
+/-- The direct verifier's acceptance condition is invariant under exchanging the players. -/
+theorem directLdWinPredicate_symm (x y : DirectLdQuestion D)
+    (a b : DirectLdAnswer D) :
+    directLdWinPredicate D x y a b = directLdWinPredicate D y x b a := by
+  rcases x with ⟨tx, x⟩
+  rcases y with ⟨ty, y⟩
+  cases tx <;> cases ty <;> cases a <;> cases b <;>
+    simp [directLdWinPredicate, validDirectLdAnswer, eq_comm]
+
+section
+
+variable (D : DirectLdParams)
+include D
+
 /-- The directly indexed low-degree game at an arbitrary positive dimension.
 It is an internal analysis game, not the conditionally linear verifier game
 `ldGame`. -/
-@[reducible] noncomputable def directLdGame (D : DirectLdParams) : Game where
+@[reducible] noncomputable def directLdGame : Game where
   QuestionA := DirectLdQuestion D
   QuestionB := DirectLdQuestion D
   AnswerA := DirectLdAnswer D
@@ -188,15 +227,17 @@ It is an internal analysis game, not the conditionally linear verifier game
   μ_prob := directLdQuestionDistribution_isProbability D
   decide := directLdWinPredicate D
 
+end
+
 /-- The canonical point question associated with a geometric point. -/
-def directLdPointQuestionOf (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) : DirectLdQuestion D :=
+def directLdPointQuestionOf
+    (u : DirectPoint D) : DirectLdQuestion D :=
   (.point, ⟨u, D.firstIndex, 0⟩)
 
 /-- Total point-answer relabeling used in the direct soundness conclusion.
 Wrong-form answers are folded into the zero tuple, exactly as for
 `ldPointValuesOrZero`. -/
-def directLdPointValuesOrZero (D : DirectLdParams) :
+def directLdPointValuesOrZero :
     DirectLdAnswer D → Fin D.k → DirectScalarQ D
   | .pointVals values => values
   | .alinePolys _ => 0
@@ -204,17 +245,19 @@ def directLdPointValuesOrZero (D : DirectLdParams) :
 
 /-- A simultaneous tuple of bounded polynomials for the directly indexed
 game. -/
-noncomputable abbrev DirectPolyTuple (D : DirectLdParams) :=
-  Fin D.k → PolyIndex D.m (DirectScalarQ D) D.d
+noncomputable abbrev DirectPolyTuple :=
+  Fin D.k → DirectPolynomial D
 
 /-- A polynomial-tuple POVM for the directly indexed game. -/
-noncomputable abbrev DirectPolyMeasTuple (D : DirectLdParams) (ι : Type*)
+noncomputable abbrev DirectPolyMeasTuple (ι : Type*)
     [Fintype ι] [DecidableEq ι] :=
   MIPStarRE.Quantum.Measurement (DirectPolyTuple D) ι
 
+end
+
 /-- Evaluate every component of a direct polynomial tuple at a point. -/
 def evalDirectPolyTupleAt {D : DirectLdParams}
-    (u : Fin D.m → DirectScalarQ D) (g : DirectPolyTuple D) :
+    (u : DirectPoint D) (g : DirectPolyTuple D) :
     Fin D.k → DirectScalarQ D :=
   fun j => MvPolynomial.eval u (g j).1
 

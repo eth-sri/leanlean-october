@@ -45,39 +45,13 @@ open scoped BigOperators Matrix MatrixOrder ComplexOrder
 
 namespace MIPStarRE.QPBT.MagicSquareRigidity
 
-open MIPStarRE.LDT MIPStarRE.Quantum
+open MIPStarRE.LDT MIPStarRE.Quantum DistanceCalculus
 
 noncomputable section
 
 /-! ## Rectangular tensor placement -/
 
 section Kron
-
-/-- Formalization-only: the tensor placement commutes with adjoints. -/
-theorem heteroKron_conjTranspose {ιA ιB : Type} (M : Op ιA) (N : Op ιB) :
-    (heteroKron M N)ᴴ = heteroKron Mᴴ Nᴴ := by
-  unfold heteroKron
-  exact Matrix.conjTranspose_kronecker M N
-
-/-- Formalization-only: scalars pass through the first factor. -/
-theorem heteroKron_smul_left {ιA ιB : Type} (c : ℂ) (M : Op ιA) (N : Op ιB) :
-    heteroKron (c • M) N = c • heteroKron M N := by
-  unfold heteroKron
-  exact Matrix.smul_kronecker c M N
-
-/-- Formalization-only: finite sums pass through the first factor. -/
-theorem heteroKron_sum_left {ιA ιB γ : Type} [Fintype γ]
-    (M : γ → Op ιA) (N : Op ιB) :
-    heteroKron (∑ c, M c) N = ∑ c, heteroKron (M c) N := by
-  ext p q
-  simp [heteroKron, Matrix.kronecker, Matrix.sum_apply, Finset.sum_mul]
-
-/-- Formalization-only: finite sums pass through the second factor. -/
-theorem heteroKron_sum_right {ιA ιB γ : Type} [Fintype γ]
-    (M : Op ιA) (N : γ → Op ιB) :
-    heteroKron M (∑ c, N c) = ∑ c, heteroKron M (N c) := by
-  ext p q
-  simp [heteroKron, Matrix.kronecker, Matrix.sum_apply, Finset.mul_sum]
 
 end Kron
 
@@ -86,12 +60,6 @@ end Kron
 section StateNorm
 
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
-
-/-- Formalization-only: the action of an operator on a state is homogeneous. -/
-theorem applyOperatorToState_smul (c : ℂ) (M : Op ι) (ψ : EuclideanSpace ℂ ι) :
-    applyOperatorToState (c • M) ψ = c • applyOperatorToState M ψ := by
-  unfold applyOperatorToState
-  simp only [map_smul, LinearMap.smul_apply]
 
 /-- Formalization-only: acting by a finite sum of operators is the sum of the
 actions. -/
@@ -104,13 +72,8 @@ theorem applyOperatorToState_sum {γ : Type} [Fintype γ]
 /-- An isometric operator preserves the norm of every state. -/
 theorem norm_applyOperatorToState_of_isometry {U : Op ι} (hU : Uᴴ * U = 1)
     (ψ : EuclideanSpace ℂ ι) : ‖applyOperatorToState U ψ‖ = ‖ψ‖ := by
-  have h : ‖applyOperatorToState U ψ‖ ^ 2 = ‖ψ‖ ^ 2 := by
-    rw [norm_applyOperatorToState_sq, hU, @norm_sq_eq_re_inner ℂ,
-      applyOperatorToState_one]
-    rfl
-  have h1 : (0 : ℝ) ≤ ‖applyOperatorToState U ψ‖ := norm_nonneg _
-  have h2 : (0 : ℝ) ≤ ‖ψ‖ := norm_nonneg _
-  nlinarith [h, h1, h2]
+  apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
+  rw [norm_applyOperatorToState_sq, hU, stateQForm_one]
 
 /-- Multiplying on the left by an isometric operator does not change the
 state-dependent norm. -/
@@ -183,7 +146,7 @@ theorem mono (h : NormCloseOn ψ δ M N) (hδ : δ ≤ η) : NormCloseOn ψ η M
 theorem trans (h₁ : NormCloseOn ψ δ M N) (h₂ : NormCloseOn ψ η N P) :
     NormCloseOn ψ (δ + η) M P := by
   have hsplit : M - P = (M - N) + (N - P) := by abel
-  calc ‖applyOperatorToState (M - P) ψ‖
+  calc _
       = ‖applyOperatorToState (M - N) ψ + applyOperatorToState (N - P) ψ‖ := by
         rw [hsplit, applyOperatorToState_add_op]
     _ ≤ ‖applyOperatorToState (M - N) ψ‖ + ‖applyOperatorToState (N - P) ψ‖ :=
@@ -214,7 +177,7 @@ state-dependent norm of the difference unchanged. -/
 theorem smul {c : ℂ} (hc : ‖c‖ = 1) (h : NormCloseOn ψ δ M N) :
     NormCloseOn ψ δ (c • M) (c • N) := by
   change ‖applyOperatorToState (c • M - c • N) ψ‖ ≤ δ
-  rw [← smul_sub, applyOperatorToState_smul, norm_smul, hc, one_mul]
+  rw [← smul_sub, applyOperatorToState_smul_op, norm_smul, hc, one_mul]
   exact h
 
 /-- Replacing the left factor of a product costs the distance between the two
@@ -227,12 +190,12 @@ theorem mul_left_subst {X X' K K' : Op ι}
     (hX : Xᴴ * X = 1) (hX' : X'ᴴ * X' = 1) (hK' : K'ᴴ * K' = 1)
     (hcX : X * K' = K' * X) (hcX' : X' * K' = K' * X') :
     NormCloseOn ψ (η + δ + η) (X * K) (X' * K) := by
-  have h1 : NormCloseOn ψ η (X * K) (X * K') := NormCloseOn.isometry_mul hX hKK'
+  have h1 := NormCloseOn.isometry_mul hX hKK'
   have h2 : NormCloseOn ψ δ (X * K') (X' * K') := by
     change ‖applyOperatorToState (X * K' - X' * K') ψ‖ ≤ δ
     rw [show X * K' - X' * K' = K' * X - K' * X' by rw [hcX, hcX']]
     exact NormCloseOn.isometry_mul hK' hXX'
-  have h3 : NormCloseOn ψ η (X' * K') (X' * K) := NormCloseOn.isometry_mul hX' hKK'.symm
+  have h3 := NormCloseOn.isometry_mul hX' hKK'.symm
   exact (h1.trans h2).trans h3
 
 end NormCloseOn
@@ -243,18 +206,23 @@ section SignObs
 
 variable {α d : Type} [Fintype α] [DecidableEq α] [Fintype d] [DecidableEq d]
 
+section
+
+variable (M : MIPStarRE.Quantum.Measurement α d)
+include M
+
 /-- The `±1`-valued observable attached to a measurement together with a binary
 relabelling of its answers: an answer labelled `0` carries the eigenvalue `1`
 and an answer labelled `1` carries the eigenvalue `-1`.  For the Magic Square
 these are the cell observables of `thm:ms-rigidity`, blueprint
 `ch13_qpbt_test.tex:224-253`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:612-652`. -/
-noncomputable def signObs (M : MIPStarRE.Quantum.Measurement α d) (f : α → ZMod 2) : Op d :=
+noncomputable def signObs (f : α → ZMod 2) : Op d :=
   ∑ a, (bitSign (f a) : ℂ) • M.effect a
 
 /-- The sign observable is the observable of the binary measurement obtained by
 relabelling the answers. -/
-theorem signObs_eq_obsOf_postprocess (M : MIPStarRE.Quantum.Measurement α d)
+theorem signObs_eq_obsOf_postprocess
     (f : α → ZMod 2) : signObs M f = obsOf (M.postprocess f) := by
   classical
   have hcases : ∀ x : ZMod 2, x = 0 ∨ x = 1 := by decide
@@ -271,13 +239,13 @@ theorem signObs_eq_obsOf_postprocess (M : MIPStarRE.Quantum.Measurement α d)
 omit [DecidableEq α] in
 /-- Formalization-only: the effects of a projective measurement are mutually
 orthogonal, so two spectral combinations of them multiply coefficientwise. -/
-private theorem sum_smul_effect_mul (M : MIPStarRE.Quantum.Measurement α d)
+private theorem sum_smul_effect_mul
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) (c e : α → ℂ) :
     (∑ a, c a • M.effect a) * (∑ a, e a • M.effect a) =
       ∑ a, (c a * e a) • M.effect a := by
   classical
   have horth : ∀ a b : α, a ≠ b → M.effect a * M.effect b = 0 := fun a b hab =>
-    mul_eq_zero_of_isProj_family hM M.sum_le_one hab
+    DistanceCalculus.projective_effect_mul_effect_eq_zero M hM hab
   rw [Finset.sum_mul]
   refine Finset.sum_congr rfl fun a _ => ?_
   have hidem : M.effect a * M.effect a = M.effect a := (hM a).isIdempotentElem
@@ -291,7 +259,7 @@ private theorem sum_smul_effect_mul (M : MIPStarRE.Quantum.Measurement α d)
 omit [DecidableEq α] in
 /-- Sign observables of one projective measurement multiply by adding their
 relabellings. -/
-theorem signObs_mul (M : MIPStarRE.Quantum.Measurement α d)
+theorem signObs_mul
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) (f g : α → ZMod 2) :
     signObs M f * signObs M g = signObs M (fun a => f a + g a) := by
   rw [signObs, signObs, sum_smul_effect_mul M hM, signObs]
@@ -300,17 +268,24 @@ theorem signObs_mul (M : MIPStarRE.Quantum.Measurement α d)
 
 omit [DecidableEq α] in
 /-- The sign observable of the zero relabelling is the identity. -/
-theorem signObs_const_zero (M : MIPStarRE.Quantum.Measurement α d) :
+theorem signObs_const_zero :
     signObs M (fun _ => 0) = 1 := by
   have hb : ((bitSign (0 : ZMod 2) : ℝ) : ℂ) = 1 := by norm_num [bitSign]
   rw [signObs]
   simp only [hb, one_smul]
   exact M.sum_eq_one
 
+end
+
+section
+
+variable (M : MIPStarRE.Quantum.Measurement α d)
+    (hM : MIPStarRE.QPBT.Measurement.IsProjective M) (f : α → ZMod 2)
+include M hM f
+
 omit [DecidableEq α] in
 /-- A sign observable of a projective measurement is an involution. -/
-theorem signObs_mul_self (M : MIPStarRE.Quantum.Measurement α d)
-    (hM : MIPStarRE.QPBT.Measurement.IsProjective M) (f : α → ZMod 2) :
+theorem signObs_mul_self :
     signObs M f * signObs M f = 1 := by
   rw [signObs_mul M hM]
   have hzero : (fun a => f a + f a) = fun _ : α => (0 : ZMod 2) := by
@@ -320,8 +295,7 @@ theorem signObs_mul_self (M : MIPStarRE.Quantum.Measurement α d)
 
 omit [DecidableEq α] in
 /-- A sign observable of a projective measurement is self-adjoint. -/
-theorem signObs_conjTranspose (M : MIPStarRE.Quantum.Measurement α d)
-    (hM : MIPStarRE.QPBT.Measurement.IsProjective M) (f : α → ZMod 2) :
+theorem signObs_conjTranspose :
     (signObs M f)ᴴ = signObs M f := by
   rw [← Matrix.star_eq_conjTranspose, signObs, star_sum]
   refine Finset.sum_congr rfl fun a _ => ?_
@@ -333,10 +307,11 @@ theorem signObs_conjTranspose (M : MIPStarRE.Quantum.Measurement α d)
 omit [DecidableEq α] in
 /-- A sign observable of a projective measurement is a binary observable, the
 reflection attached to the relabelling `f`. -/
-theorem isBinaryObservable_signObs (M : MIPStarRE.Quantum.Measurement α d)
-    (hM : MIPStarRE.QPBT.Measurement.IsProjective M) (f : α → ZMod 2) :
+theorem isBinaryObservable_signObs :
     IsBinaryObservable (signObs M f) :=
   ⟨signObs_conjTranspose M hM f, signObs_mul_self M hM f⟩
+
+end
 
 omit [DecidableEq α] in
 /-- Sign observables of one projective measurement commute. -/
@@ -353,12 +328,6 @@ end SignObs
 /-! ## Deviation of joint spectral combinations on the strategy state -/
 
 section JointDefect
-
-/-- Formalization-only: scalars pass through the second tensor factor. -/
-theorem heteroKron_smul_right {ιA ιB : Type} (c : ℂ) (M : Op ιA) (N : Op ιB) :
-    heteroKron M (c • N) = c • heteroKron M N := by
-  unfold heteroKron
-  exact Matrix.kronecker_smul c M N
 
 /-- Formalization-only: a real spectral combination of the effects of a
 projective measurement is self-adjoint. -/
@@ -382,35 +351,37 @@ private theorem re_inner_apply_sum_real_smul {ι γ : Type} [Fintype ι] [Decida
       ∑ c, r c * (inner ℂ ψ (applyOperatorToState (K c) ψ)).re := by
   rw [applyOperatorToState_sum, inner_sum, Complex.re_sum]
   refine Finset.sum_congr rfl fun c _ => ?_
-  rw [applyOperatorToState_smul, inner_smul_right]
+  rw [applyOperatorToState_smul_op, inner_smul_right]
   simp
 
 variable {G : Game}
 
+section
+
+variable (T : Strategy G) (x : G.QuestionA)
+    (y : G.QuestionB)
+include T x y
+
 /-- Formalization-only: the joint effects of the two players form a projective
 measurement on the composite space when both local measurements are
 projective. -/
-private noncomputable def jointMeasurement (T : Strategy G) (x : G.QuestionA)
-    (y : G.QuestionB) :
+private noncomputable def jointMeasurement :
     MIPStarRE.Quantum.Measurement (G.AnswerA × G.AnswerB) (T.ιA × T.ιB) :=
   MIPStarRE.Quantum.Measurement.ofSumEqOne
     (fun ab => heteroKron ((T.A x).effect ab.1) ((T.B y).effect ab.2))
     (fun ab => kronecker_nonneg ((T.A x).pos ab.1) ((T.B y).pos ab.2))
     (by
       rw [Fintype.sum_prod_type]
-      calc ∑ a : G.AnswerA, ∑ b : G.AnswerB,
-            heteroKron ((T.A x).effect a) ((T.B y).effect b)
+      calc _
           = ∑ a : G.AnswerA, heteroKron ((T.A x).effect a)
-              (∑ b : G.AnswerB, (T.B y).effect b) := by
-            exact Finset.sum_congr rfl fun a _ => (heteroKron_sum_right _ _).symm
+              (∑ b : G.AnswerB, (T.B y).effect b) := Finset.sum_congr rfl fun a _ => (heteroKron_finset_sum_right _ _ _).symm
         _ = heteroKron (∑ a : G.AnswerA, (T.A x).effect a) (1 : Op T.ιB) := by
-            rw [(T.B y).sum_eq_one, heteroKron_sum_left]
+            rw [(T.B y).sum_eq_one, heteroKron_finset_sum_left]
         _ = 1 := by rw [(T.A x).sum_eq_one, heteroKron_one_one])
 
 /-- Formalization-only: the quadratic form of a joint effect is the Born weight
 of the corresponding answer pair. -/
-private theorem re_inner_jointMeasurement_effect (T : Strategy G) (x : G.QuestionA)
-    (y : G.QuestionB) (ab : G.AnswerA × G.AnswerB) :
+private theorem re_inner_jointMeasurement_effect (ab : G.AnswerA × G.AnswerB) :
     (inner ℂ T.ψ (applyOperatorToState ((jointMeasurement T x y).effect ab) T.ψ)).re =
       outcomeWeight T x y ab.1 ab.2 := rfl
 
@@ -419,8 +390,7 @@ state-dependent norm, by at most the mass of the answer pairs carrying a nonzero
 coefficient, scaled by the squared coefficient bound.  This is the estimate that
 converts each Magic Square rejection mass into an operator bound;
 `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:224-253`. -/
-theorem norm_apply_joint_defect_sq_le (T : Strategy G) (x : G.QuestionA)
-    (y : G.QuestionB) (hA : MIPStarRE.QPBT.Measurement.IsProjective (T.A x))
+theorem norm_apply_joint_defect_sq_le (hA : MIPStarRE.QPBT.Measurement.IsProjective (T.A x))
     (hB : MIPStarRE.QPBT.Measurement.IsProjective (T.B y))
     (coef : G.AnswerA → G.AnswerB → ℝ) (E : G.AnswerA → G.AnswerB → Prop)
     [DecidableRel E] (hbound : ∀ a b, coef a b ^ 2 ≤ 4)
@@ -438,8 +408,7 @@ theorem norm_apply_joint_defect_sq_le (T : Strategy G) (x : G.QuestionA)
       ∑ ab : G.AnswerA × G.AnswerB, ((coef ab.1 ab.2 : ℝ) : ℂ) • J.effect ab := by
     rw [Fintype.sum_prod_type]
     rfl
-  have hsa : (∑ ab : G.AnswerA × G.AnswerB, ((coef ab.1 ab.2 : ℝ) : ℂ) • J.effect ab)ᴴ =
-      ∑ ab : G.AnswerA × G.AnswerB, ((coef ab.1 ab.2 : ℝ) : ℂ) • J.effect ab :=
+  have hsa :=
     sum_real_smul_effect_conjTranspose J hJproj (fun ab => coef ab.1 ab.2)
   have hsq : ∀ ab : G.AnswerA × G.AnswerB,
       ((coef ab.1 ab.2 : ℝ) : ℂ) * ((coef ab.1 ab.2 : ℝ) : ℂ) =
@@ -449,42 +418,38 @@ theorem norm_apply_joint_defect_sq_le (T : Strategy G) (x : G.QuestionA)
   rw [hcollapse, norm_applyOperatorToState_sq, hsa,
     sum_smul_effect_mul J hJproj]
   simp only [hsq]
-  rw [re_inner_apply_sum_real_smul]
+  rw [stateQForm, re_inner_apply_sum_real_smul]
   have hterm : ∀ ab : G.AnswerA × G.AnswerB,
       coef ab.1 ab.2 ^ 2 *
           (inner ℂ T.ψ (applyOperatorToState (J.effect ab) T.ψ)).re ≤
         (if E ab.1 ab.2 then 4 * outcomeWeight T x y ab.1 ab.2 else 0) := by
     intro ab
-    have hw : 0 ≤ outcomeWeight T x y ab.1 ab.2 := outcomeWeight_nonneg T x y ab.1 ab.2
+    have hw := outcomeWeight_nonneg T x y ab.1 ab.2
     rw [re_inner_jointMeasurement_effect]
     by_cases hE : E ab.1 ab.2
     · rw [if_pos hE]
       exact mul_le_mul_of_nonneg_right (hbound ab.1 ab.2) hw
     · rw [if_neg hE, hsupp ab.1 ab.2 hE]
       simp
-  calc ∑ ab : G.AnswerA × G.AnswerB, coef ab.1 ab.2 ^ 2 *
-        (inner ℂ T.ψ (applyOperatorToState (J.effect ab) T.ψ)).re
+  calc _
       ≤ ∑ ab : G.AnswerA × G.AnswerB,
           (if E ab.1 ab.2 then 4 * outcomeWeight T x y ab.1 ab.2 else 0) :=
         Finset.sum_le_sum fun ab _ => hterm ab
-    _ = 4 * outcomeEventWeight T x y E := by
-        rw [Fintype.sum_prod_type, outcomeEventWeight, Finset.mul_sum]
-        refine Finset.sum_congr rfl fun a _ => ?_
-        rw [Finset.mul_sum]
-        refine Finset.sum_congr rfl fun b _ => ?_
-        by_cases hE : E a b <;> simp [hE]
+    _ = _ := by simp only [Fintype.sum_prod_type, outcomeEventWeight, Finset.mul_sum, mul_ite, mul_zero]
 
 /-- Formalization-only: expansion of a product of two local spectral
 combinations into the joint effects. -/
-theorem joint_expand (T : Strategy G) (x : G.QuestionA) (y : G.QuestionB)
+theorem joint_expand
     (u : G.AnswerA → ℂ) (v : G.AnswerB → ℂ) :
     heteroKron (∑ a, u a • (T.A x).effect a) (∑ b, v b • (T.B y).effect b) =
       ∑ a, ∑ b, (u a * v b) • heteroKron ((T.A x).effect a) ((T.B y).effect b) := by
-  rw [heteroKron_sum_left]
+  rw [heteroKron_finset_sum_left]
   refine Finset.sum_congr rfl fun a _ => ?_
-  rw [heteroKron_smul_left, heteroKron_sum_right, Finset.smul_sum]
+  rw [heteroKron_smul_left, heteroKron_finset_sum_right, Finset.smul_sum]
   refine Finset.sum_congr rfl fun b _ => ?_
   rw [heteroKron_smul_right, smul_smul]
+
+end
 
 /-- Formalization-only: the identity as a spectral combination of the effects of
 a measurement. -/

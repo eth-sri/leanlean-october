@@ -1,4 +1,5 @@
 module
+public import QPBT.Games.MeasurementMap
 public import QPBT.Games.Defs
 public import QPBT.Games.Consistency
 public import QPBT.State
@@ -159,23 +160,7 @@ theorem padState_norm
     (aA : κA) (bB : κB) (ψ : EuclideanSpace ℂ (I × J)) :
     ‖padState aA bB ψ‖ = ‖ψ‖ := by
   apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
-  rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
-  simp only [padState, Fintype.sum_prod_type]
-  apply Finset.sum_congr rfl
-  intro i _
-  rw [Finset.sum_eq_single aA]
-  · apply Finset.sum_congr rfl
-    intro j _
-    rw [Finset.sum_eq_single bB]
-    · simp
-    · intro b _ hb
-      simp [hb]
-    · intro h
-      exact (h (Finset.mem_univ _)).elim
-  · intro a _ ha
-    simp [ha]
-  · intro h
-    exact (h (Finset.mem_univ _)).elim
+  simp_all [EuclideanSpace.norm_sq_eq, padState, Fintype.sum_prod_type, Finset.sum_eq_single aA, Finset.sum_eq_single bB]
 
 /-- The quadratic form of a padded state depends only on the compression of
 each local operator at the distinguished ancilla coordinate. -/
@@ -238,9 +223,7 @@ theorem oneMeasData_source_effect
     {α I : Type} [Fintype α] [DecidableEq α]
     [Fintype I] [DecidableEq I]
     (M : MIPStarRE.Quantum.Measurement α I) :
-    (oneMeasData M).source.effect = M.effect := by
-  exact congrArg MIPStarRE.Quantum.Submeasurement.effect
-    (Classical.choose_spec (oneMeasNaimark M.toSubmeasurement))
+    (oneMeasData M).source.effect = M.effect := congrArg Submeasurement.effect (Classical.choose_spec (oneMeasNaimark M.toSubmeasurement))
 
 /-- Complete the Naimark projectors at one outcome to obtain a projective POVM. -/
 def dilatedMeasurement
@@ -294,8 +277,7 @@ theorem dilatedMeasurement_compression
     rw [dif_pos rfl]
     rw [Matrix.add_apply, hcompress, Matrix.sub_apply, Matrix.one_apply, htotal]
     by_cases hij : i = j <;> simp [hij, Matrix.one_apply]
-  · rw [dif_neg ha]
-    exact hcompress a
+  · simp_all
 
 /-- Replace both local measurement families of a strategy by families on the
 enlarged local registers and pad the state at the distinguished ancilla
@@ -358,12 +340,8 @@ noncomputable def reindexMeasurement
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (e : I ≃ J) (M : MIPStarRE.Quantum.Measurement α J) :
     MIPStarRE.Quantum.Measurement α I :=
-  MIPStarRE.Quantum.Measurement.ofSumEqOne
-    (fun a => reindexOp e (M.effect a))
-    (fun a => MIPStarRE.Quantum.reindex_nonneg e.symm (M.pos a))
-    (by
-      change ∑ a : α, (Matrix.reindexAlgEquiv ℂ ℂ e.symm) (M.effect a) = 1
-      rw [← map_sum, M.sum_eq_one, map_one])
+  M.mapEffects (Matrix.reindexRingEquiv ℂ e.symm).toAddMonoidHom
+    (map_one (Matrix.reindexRingEquiv ℂ e.symm)) (fun {_} h => MIPStarRE.Quantum.reindex_nonneg e.symm h)
 
 /-- Reindexing a projective POVM preserves projectivity. -/
 theorem reindexMeasurement_isProjective
@@ -371,17 +349,8 @@ theorem reindexMeasurement_isProjective
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (e : I ≃ J) (M : MIPStarRE.Quantum.Measurement α J)
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
-    MIPStarRE.QPBT.Measurement.IsProjective (reindexMeasurement e M) := by
-  intro a
-  change IsProj (reindexOp e (M.effect a))
-  refine { isIdempotentElem := ?_, isSelfAdjoint := ?_ }
-  · change (Matrix.reindexAlgEquiv ℂ ℂ e.symm) (M.effect a) *
-        (Matrix.reindexAlgEquiv ℂ ℂ e.symm) (M.effect a) =
-      (Matrix.reindexAlgEquiv ℂ ℂ e.symm) (M.effect a)
-    rw [← map_mul, (hM a).isIdempotentElem.eq]
-  · exact (Matrix.IsHermitian.ext fun i j => by
-      simp [reindexOp, Matrix.reindex_apply,
-        (hM a).isSelfAdjoint.isHermitian.apply]).isSelfAdjoint
+    MIPStarRE.QPBT.Measurement.IsProjective (reindexMeasurement e M) :=
+  Measurement.mapEffects_isProjective M hM _ _ _ fun A => map_mul (Matrix.reindexRingEquiv ℂ e.symm) A A
 
 namespace SymmetrizationObstruction
 

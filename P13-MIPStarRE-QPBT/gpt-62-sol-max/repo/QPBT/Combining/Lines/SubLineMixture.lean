@@ -57,58 +57,31 @@ coordinate.  Blueprint `lem:qld-sublines`, paper
 theorem subLineBranchDist_eq_bind (P : AdmissibleParams) (kind : LineKind) :
     subLineBranchDist P kind =
       Distribution.bind (uniformDistribution (Fin (2 * P.m + 2))) fun k =>
-        (Distribution.prod (uniformDistribution (SubLinePointDir P))
-            (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
-              (subLineSeedDist P (subLineZIndex P k)))).map
-          fun w => subLineTripleOf P kind k w := by
+        (subLineBlocksDist P k).map (subLineTripleOf P kind k) := by
   classical
-  rw [subLineBranchDist, subLineSamplingDist, Distribution.bind_map]
-  refine Distribution.bind_congr_support _ _ _ fun k _ => ?_
-  rw [Distribution.map_map]
+  simp_all [subLineBranchDist, subLineSamplingDist, Distribution.bind_map, Distribution.map_map]
 
-/-- The `X` marginal of a uniform point of the extended line of one branch at
-one extended coordinate is the `X` component law of the pair of indices of
-that branch.  Blueprint `lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineBranchDist_map_subLineXProjection_at (P : AdmissibleParams)
+private theorem subLineBranchDist_map_joint_at (P : AdmissibleParams)
     (kind : LineKind) (k : Fin (2 * P.m + 2)) :
-    (subLinePointDist P
-        ((Distribution.prod (uniformDistribution (SubLinePointDir P))
-            (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
-              (subLineSeedDist P (subLineZIndex P k)))).map
-          fun w => subLineTripleOf P kind k w)).map subLineXProjection =
-      subLineXComponentDist P
-        (kind, (subLineXIndex P k, subLineZIndex P k)) := by
-  classical
+    (subLinePointDist P ((subLineBlocksDist P k).map (subLineTripleOf P kind k))).map
+        subLineJointProjection =
+      subLineComponentProduct P (kind, subLineXIndex P k, subLineZIndex P k) := by
   unfold subLinePointDist
   rw [Distribution.prod_map_left, Distribution.map_map, Distribution.map_map]
-  exact subLineBranchSamplingData_map_projX P kind k
-
-/-- The `Z` marginal of a uniform point of the extended line of one branch at
-one extended coordinate is the `Z` component law of the pair of indices of
-that branch.  Blueprint `lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineBranchDist_map_subLineZProjection_at (P : AdmissibleParams)
-    (kind : LineKind) (k : Fin (2 * P.m + 2)) :
-    (subLinePointDist P
-        ((Distribution.prod (uniformDistribution (SubLinePointDir P))
-            (Distribution.prod (subLineSeedDist P (subLineXIndex P k))
-              (subLineSeedDist P (subLineZIndex P k)))).map
-          fun w => subLineTripleOf P kind k w)).map subLineZProjection =
-      subLineZComponentDist P
-        (kind, (subLineXIndex P k, subLineZIndex P k)) := by
-  classical
-  unfold subLinePointDist
-  rw [Distribution.prod_map_left, Distribution.map_map, Distribution.map_map]
-  exact subLineBranchSamplingData_map_projZ P kind k
+  exact subLineBranchSamplingData_map_joint P kind k
 
 /-! ## The mixing law of the two indices -/
+
+section
+
+variable (P : AdmissibleParams)
+include P
 
 /-- The law of the kind and the pair of source indices assigned to a uniform
 extended coordinate of one branch.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-noncomputable def subLineComponentBranch (P : AdmissibleParams)
+noncomputable def subLineComponentBranch
     (kind : LineKind) : Distribution (SubLineComponent P) :=
   (uniformDistribution (Fin (2 * P.m + 2))).map fun k =>
     (kind, (subLineXIndex P k, subLineZIndex P k))
@@ -117,13 +90,13 @@ noncomputable def subLineComponentBranch (P : AdmissibleParams)
 of the law of the pair of source indices of a uniform extended coordinate.
 Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-noncomputable def subLineComponentDist (P : AdmissibleParams) :
+noncomputable def subLineComponentDist :
     Distribution (SubLineComponent P) :=
   Distribution.bind (uniformDistribution (Fin 2))
     ![subLineComponentBranch P .axis, subLineComponentBranch P .diagonal]
 
 /-- The mixing law has total mass one. -/
-theorem subLineComponentDist_isProbability (P : AdmissibleParams) :
+theorem subLineComponentDist_isProbability :
     (subLineComponentDist P).IsProbability := by
   refine Distribution.bind_isProbability _ _
     (uniformDistribution_isProbability _) fun c _ => ?_
@@ -133,86 +106,63 @@ theorem subLineComponentDist_isProbability (P : AdmissibleParams) :
   · exact Distribution.IsProbability.map
       (uniformDistribution_isProbability _) _
 
-/-! ## The two projected marginals of one branch -/
-
-/-- The `X` marginal of a uniform point of the extended line of one branch is
-the mixture, along the pair of source indices of a uniform extended
-coordinate, of the `X` component laws.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineBranchDist_map_subLineXProjection (P : AdmissibleParams)
-    (kind : LineKind) :
-    (subLinePointDist P (subLineBranchDist P kind)).map subLineXProjection =
-      Distribution.bind (subLineComponentBranch P kind)
-        (subLineXComponentDist P) := by
-  classical
+private theorem subLineBranchDist_map_joint (kind : LineKind) :
+    (subLinePointDist P (subLineBranchDist P kind)).map subLineJointProjection =
+      Distribution.bind (subLineComponentBranch P kind) (subLineComponentProduct P) := by
   rw [subLineBranchDist_eq_bind, subLinePointDist_bind, Distribution.bind_map,
     subLineComponentBranch, Distribution.bind_map_left]
-  refine Distribution.bind_congr_support _ _ _ fun k _ => ?_
-  exact subLineBranchDist_map_subLineXProjection_at P kind k
+  exact Distribution.bind_congr_support _ _ _ fun k _ => subLineBranchDist_map_joint_at P kind k
 
-/-- The `Z` marginal of a uniform point of the extended line of one branch is
-the mixture, along the pair of source indices of a uniform extended
-coordinate, of the `Z` component laws.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineBranchDist_map_subLineZProjection (P : AdmissibleParams)
-    (kind : LineKind) :
-    (subLinePointDist P (subLineBranchDist P kind)).map subLineZProjection =
-      Distribution.bind (subLineComponentBranch P kind)
-        (subLineZComponentDist P) := by
-  classical
-  rw [subLineBranchDist_eq_bind, subLinePointDist_bind, Distribution.bind_map,
-    subLineComponentBranch, Distribution.bind_map_left]
-  refine Distribution.bind_congr_support _ _ _ fun k _ => ?_
-  exact subLineBranchDist_map_subLineZProjection_at P kind k
-
-/-! ## The two projected marginals of the sub-line law -/
-
-/-- The `X` point marginal of the sub-line law is the mixture of the `X`
-component laws along the mixing law.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineDist_map_subLineXProjection (P : AdmissibleParams) :
-    (subLinePointDist P (subLineDist P)).map subLineXProjection =
-      Distribution.bind (subLineComponentDist P) (subLineXComponentDist P) := by
-  classical
+/-- The joint projected law is obtained by mixing independent restricted source samples. -/
+theorem subLineDist_source_mixture :
+    ∃ components : Distribution (SubLineComponent P), components.IsProbability ∧
+      (subLinePointDist P (subLineDist P)).map subLineJointProjection =
+        Distribution.bind components (subLineComponentProduct P) := by
+  refine ⟨subLineComponentDist P, subLineComponentDist_isProbability P, ?_⟩
   rw [subLineDist, subLinePointDist_bind, Distribution.bind_map,
     subLineComponentDist, Distribution.bind_bind]
   refine Distribution.bind_congr_support _ _ _ fun c _ => ?_
-  fin_cases c
-  · exact subLineBranchDist_map_subLineXProjection P .axis
-  · exact subLineBranchDist_map_subLineXProjection P .diagonal
+  fin_cases c <;> exact subLineBranchDist_map_joint P _
 
-/-- The `Z` point marginal of the sub-line law is the mixture of the `Z`
-component laws along the mixing law.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineDist_map_subLineZProjection (P : AdmissibleParams) :
-    (subLinePointDist P (subLineDist P)).map subLineZProjection =
-      Distribution.bind (subLineComponentDist P) (subLineZComponentDist P) := by
-  classical
-  rw [subLineDist, subLinePointDist_bind, Distribution.bind_map,
-    subLineComponentDist, Distribution.bind_bind]
-  refine Distribution.bind_congr_support _ _ _ fun c _ => ?_
-  fin_cases c
-  · exact subLineBranchDist_map_subLineZProjection P .axis
-  · exact subLineBranchDist_map_subLineZProjection P .diagonal
+/-- Integrate an arbitrary function of the two projected line-point samples. -/
+theorem SubLineWitness.exists_avgOver_joint (sublines : SubLineWitness P) :
+    ∃ components : Distribution (SubLineComponent P), components.IsProbability ∧
+      ∀ F : SourceLinePointPair P → ℝ,
+        avgOver sublines.D (fun sample =>
+          avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd)) (fun t =>
+            F (subLineJointProjection (sample, sample.1.base + t • sample.1.direction)))) =
+          avgOver components (fun c => avgOver (subLineComponentProduct P c) F) := by
+  obtain ⟨components, hc, h⟩ := sublines.source_mixture
+  refine ⟨components, hc, fun F => ?_⟩
+  simp_all [← avgOver_bind, ← h, Distribution.avgOver_map, subLinePointDist, SandwichProduct.avgOver_distribution_prod]
 
-/-- The two one-point projected marginals of the sub-line law are mixtures of
-the restricted product laws along one common mixing law.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineDist_source_mixture (P : AdmissibleParams) :
-    ∃ components : Distribution (SubLineComponent P),
-      components.IsProbability ∧
-        (subLinePointDist P (subLineDist P)).map subLineXProjection =
-          Distribution.bind components (subLineXComponentDist P) ∧
-        (subLinePointDist P (subLineDist P)).map subLineZProjection =
-          Distribution.bind components (subLineZComponentDist P) :=
-  ⟨subLineComponentDist P, subLineComponentDist_isProbability P,
-    subLineDist_map_subLineXProjection P,
-    subLineDist_map_subLineZProjection P⟩
+private theorem restrictedLinePointDist_map_point
+    (kind : LineKind) (i : Fin P.m) :
+    (restrictedLinePointDist P kind i).map Prod.snd = uniformDistribution (PauliPoint P) := by
+  rw [restrictedLinePointDist_eq_map_prod, Distribution.map_map]
+  apply Distribution.prod_map_fst
+  exact Distribution.prod_isProbability _ _ (subLineSeedDist_isProbability P i)
+    (uniformDistribution_isProbability _)
+
+/-- The two point blocks have the same uniform product law in each component. -/
+theorem SubLineWitness.avgOver_projX_projZ (sublines : SubLineWitness P)
+    (f : PointPair P → ℝ) :
+    avgOver sublines.D (fun sample =>
+      avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd)) (fun t =>
+        f (projX (directPointToPauli P (sample.1.base + t • sample.1.direction)),
+          projZ (directPointToPauli P (sample.1.base + t • sample.1.direction))))) =
+      avgOver (uniformDistribution (PointPair P)) f := by
+  obtain ⟨components, hc, h⟩ := sublines.exists_avgOver_joint P
+  refine (h (fun w => f (w.1.2, w.2.2))).trans ?_
+  have hcomponent (c : SubLineComponent P) :
+      (subLineComponentProduct P c).map (Prod.map Prod.snd Prod.snd) = uniformDistribution _ := by
+    simp_all [subLineComponentProduct, ← Distribution.prod_map_prodMap, restrictedLinePointDist_map_point, uniformDistribution_prod]
+  refine (avgOver_congr _ _ _ fun c => ?_).trans (avgOver_const_of_isProbability _ hc _)
+  change avgOver (subLineComponentProduct P c) (fun w => f (Prod.map Prod.snd Prod.snd w)) = _
+  rw [← Distribution.avgOver_map (subLineComponentProduct P c) (Prod.map Prod.snd Prod.snd) f,
+    hcomponent]
+
+end
 
 end
 

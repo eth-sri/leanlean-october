@@ -30,12 +30,21 @@ open MIPStarRE.LDT MIPStarRE.LDT.Preliminaries
 
 /-! ## Representative evaluation and decoding -/
 
+section
+
+variable {P : AdmissibleParams}
+include P
+
+section
+
+variable (g : Poly P)
+
 /-- Evaluate the polynomial representative carried by `Poly P`.
 
 This is polynomial evaluation on the source's `\ideg_{d,m}(\F_q)` carrier.  It
 does not identify representatives that induce the same polynomial function. -/
-noncomputable def evalPoly {P : AdmissibleParams} (g : Poly P)
-    (x : Fin P.m → PauliScalar P) : PauliScalar P :=
+noncomputable def evalPoly
+    (x : PauliPoint P) : PauliScalar P :=
   MvPolynomial.eval x g.1
 
 /-- Decode a bounded polynomial while retaining only values in `H`.
@@ -43,7 +52,7 @@ noncomputable def evalPoly {P : AdmissibleParams} (g : Poly P)
 This is the `H`-parameterized form of `def:decoding-map`; `decodeAt` remains
 the decoding map for arbitrary functions.  The Boolean cube is embedded in
 `PauliScalar P` by `cubeEmbed`. -/
-noncomputable def decodeOn {P : AdmissibleParams}
+noncomputable def decodeOn
     (H : Finset (PauliScalar P)) (g : Poly P) : PauliRegister P :=
   decodeAt H (fun x => evalPoly g x)
 
@@ -52,7 +61,7 @@ noncomputable def decodeOn {P : AdmissibleParams}
 The retained-value set is `Finset.univ`, so every field value is kept.  This
 choice is the correction recorded in
 `docs/paper-gaps/qpbt_decoding-identity.tex:87-123`. -/
-noncomputable abbrev decodeOnUniv {P : AdmissibleParams} (g : Poly P) :
+noncomputable abbrev decodeOnUniv :
     PauliRegister P :=
   decodeOn (Finset.univ : Finset (PauliScalar P)) g
 
@@ -61,9 +70,13 @@ noncomputable abbrev decodeOnUniv {P : AdmissibleParams} (g : Poly P) :
 The map `decodeFqRep` has the same definition on arbitrary polynomial
 representatives; `decodeFq` restricts its domain to the bounded-degree class
 `Poly P`. -/
-noncomputable abbrev decodeFq {P : AdmissibleParams} (g : Poly P) :
+noncomputable abbrev decodeFq :
     PauliRegister P :=
   decodeOnUniv g
+
+end
+
+end
 
 /-! ## The encoding image -/
 
@@ -94,10 +107,7 @@ theorem lowDegreeEncoding_mem_poly {P : AdmissibleParams}
   rw [indicatorPoly]
   refine (MvPolynomial.degreeOf_prod_le i Finset.univ _).trans ?_
   calc
-    ∑ j, MvPolynomial.degreeOf i
-        (if y j then
-          (MvPolynomial.X j : MvPolynomial (Fin P.m) (PauliScalar P))
-        else 1 - MvPolynomial.X j) ≤
+    _ ≤
         ∑ j, if i = j then 1 else 0 := by
       apply Finset.sum_le_sum
       intro j _
@@ -161,11 +171,11 @@ see `docs/paper-gaps/qpbt_decoding-identity.tex:87-123`.
 and representative semantics are documented in
 `docs/paper-gaps/qpbt_decoding-identity.tex:87-123`. -/
 theorem decodeFq_dotProduct_indicatorVec {P : AdmissibleParams}
-    {g : Poly P} (hg : IsEncoding g) (x : Fin P.m → PauliScalar P) :
+    {g : Poly P} (hg : IsEncoding g) (x : PauliPoint P) :
     dotProduct (decodeFq g) (indicatorVec x) = evalPoly g x := by
   unfold IsEncoding at hg
   calc
-    dotProduct (decodeFq g) (indicatorVec x) = lowDegreeEnc (decodeFq g) x :=
+    _ = lowDegreeEnc (decodeFq g) x :=
       (lowDegreeEnc_eq_dotProduct (decodeFq g) x).symm
     _ = evalPoly g x := by simp [lowDegreeEnc, evalPoly, hg]
 

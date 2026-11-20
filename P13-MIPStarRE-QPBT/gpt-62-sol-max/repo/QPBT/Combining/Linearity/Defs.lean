@@ -58,31 +58,34 @@ namespace IsBinaryObservable
 
 variable {ι : Type} [Fintype ι] [DecidableEq ι] {X Y : Op ι}
 
+section
+
+variable (hX : IsBinaryObservable X)
+include hX
+
 /-- A binary observable is self-adjoint. -/
-theorem conjTranspose_eq (hX : IsBinaryObservable X) : Xᴴ = X := hX.1
+theorem conjTranspose_eq : Xᴴ = X := hX.1
 
 /-- A binary observable squares to the identity. -/
-theorem mul_self_eq_one (hX : IsBinaryObservable X) : X * X = 1 := hX.2
+theorem mul_self_eq_one : X * X = 1 := hX.2
 
 /-- A binary observable is isometric: being self-adjoint and an involution, its
 adjoint is its own inverse. -/
-theorem isometry (hX : IsBinaryObservable X) : Xᴴ * X = 1 := by
+theorem isometry : Xᴴ * X = 1 := by
   rw [hX.conjTranspose_eq, hX.mul_self_eq_one]
 
-/-- The identity is a binary observable. -/
-theorem one : IsBinaryObservable (1 : Op ι) :=
-  ⟨Matrix.isHermitian_one, one_mul 1⟩
-
 /-- The product of two commuting binary observables is a binary observable. -/
-theorem mul (hX : IsBinaryObservable X) (hY : IsBinaryObservable Y)
+theorem mul (hY : IsBinaryObservable Y)
     (hcomm : X * Y = Y * X) : IsBinaryObservable (X * Y) := by
   refine ⟨?_, ?_⟩
   · rw [Matrix.IsHermitian, Matrix.conjTranspose_mul, hX.conjTranspose_eq,
       hY.conjTranspose_eq, ← hcomm]
   · calc X * Y * (X * Y) = X * (Y * X) * Y := by noncomm_ring
-      _ = X * (X * Y) * Y := by rw [hcomm]
+      _ = X * (X * Y) * Y := by simp_all
       _ = X * X * (Y * Y) := by noncomm_ring
       _ = 1 := by rw [hX.mul_self_eq_one, hY.mul_self_eq_one, one_mul]
+
+end
 
 end IsBinaryObservable
 
@@ -95,7 +98,7 @@ theorem isBinaryObservable_heteroKron_one {ι ι' : Type} [Fintype ι] [Decidabl
     [Fintype ι'] [DecidableEq ι'] {O : Op ι} (hO : IsBinaryObservable O) :
     IsBinaryObservable (heteroKron O (1 : Op ι')) := by
   unfold heteroKron
-  simp only [Matrix.kronecker]
+  simp
   refine ⟨?_, ?_⟩
   · rw [Matrix.IsHermitian, Matrix.conjTranspose_kronecker, hO.conjTranspose_eq,
       Matrix.conjTranspose_one]
@@ -110,7 +113,7 @@ theorem isBinaryObservable_one_heteroKron {ι ι' : Type} [Fintype ι] [Decidabl
     [Fintype ι'] [DecidableEq ι'] {O : Op ι'} (hO : IsBinaryObservable O) :
     IsBinaryObservable (heteroKron (1 : Op ι) O) := by
   unfold heteroKron
-  simp only [Matrix.kronecker]
+  simp
   refine ⟨?_, ?_⟩
   · rw [Matrix.IsHermitian, Matrix.conjTranspose_kronecker, hO.conjTranspose_eq,
       Matrix.conjTranspose_one]

@@ -2,6 +2,7 @@ module
 
 public import QPBT.Games.StrategyClasses
 public import QPBT.Test.MagicSquare
+public import QPBT.Algebra.Pauli
 
 /-!
 # Basic Magic Square symmetry facts
@@ -54,12 +55,24 @@ noncomputable def msGameSymm : SymmetricGame where
   decide := msWinPredicate
   decide_symm := msWinPredicate_symm
 
+section
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : Measurement (ZMod 2) ι)
+include ι M
+
 /-- The observable associated with a binary measurement; formalization-only notation
 used in blueprint `thm:ms-from-ac`, paper
 `08_classical_and_quantum_low_degree_tests.tex:658-722`. -/
-def obsOf {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (M : Measurement (ZMod 2) ι) : Op ι :=
+def obsOf : Op ι :=
   M.effect 0 - M.effect 1
+
+/-- The signed sum of a binary measurement is its observable. -/
+theorem sum_phaseSign_smul_effect_eq_obsOf : ∑ b, phaseSign b • M.effect b = obsOf M := by
+  rw [sum_zmod_two]
+  simp [phaseSign, obsOf, sub_eq_add_neg]
+
+end
 
 end
 

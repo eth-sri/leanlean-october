@@ -1,6 +1,7 @@
 module
 
 public import QPBT.Combining.Points.MarginalContraction
+public import QPBT.Combining.OrderedPoints
 
 /-!
 # Marginal distances for combined point witnesses
@@ -31,83 +32,52 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
-set_option maxHeartbeats 800000 in
-/-- The X marginal of any joint point witness is within squared distance
-`4 * δQ` of the opposite X point measurement. This is the display
-`eq:qld-qxz-close-to-point`, paper lines 914--917, whose supporting
-calculation is at lines 918--927. The supplied witness error is retained;
-the source later specializes to its constructed points. -/
-theorem CombinedPointsWitness.marginal_X_distance_le
-    {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δQ)
-    (p1 p2 : Placement) (hopp : p1.IsOpposite p2) :
-    opFamilyDistSq
-      (uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
-      (fun xz a => ∑ b, S.place p1 ((points.Q p1.side xz.1 xz.2).effect (a, b)))
-      (fun xz a => S.place p2 ((S.pointMeasExp p2.side .X xz.1).effect a))
-      S.psiHat ≤ 4 * δQ := by
-  classical
-  refine le_trans ?_ (mul_le_mul_of_nonneg_left (points.consistent_ZX p1 p2 hopp)
-    (by norm_num : (0 : ℝ) ≤ 4))
-  unfold opFamilyDistSq
-  rw [← avgOver_const_mul]
-  apply avgOver_mono
-  intro xz
-  rw [Fintype.sum_prod_type, Finset.mul_sum]
-  apply Finset.sum_le_sum
-  intro a _
-  simpa only [ProjectiveSetting.placedMeasurement_effect, ProjectiveSetting.place_mul] using
-    norm_marginal_sub_sq_le
-    (fun b => S.place p1 ((points.Q p1.side xz.1 xz.2).effect (a, b)))
-    (fun b => S.placedMeasurement_isProjective p1 _ (points.projective _ _ _) (a, b))
-    (fun hbc => DistanceCalculus.projective_effect_mul_effect_eq_zero
-      (S.placedMeasurement p1 (points.Q p1.side xz.1 xz.2))
-      (S.placedMeasurement_isProjective p1 _ (points.projective _ _ _))
-      (fun hpair => hbc (congrArg Prod.snd hpair)))
-    (S.placedMeasurement p2 (S.pointMeasExp p2.side .Z xz.2))
-    (S.placedMeasurement_isProjective p2 _ (S.pointMeasExp_isProjective _ _ _))
-    (fun b => S.place_comm p1 p2 hopp _ _)
-    (S.place p2 ((S.pointMeasExp p2.side .X xz.1).effect a)) S.psiHat
+/-- Order the outcome pair so that the marginal under consideration is first. -/
+private theorem postprocess_component_effect {α ι : Type*} [Fintype α] [DecidableEq α]
+    [Fintype ι] [DecidableEq ι] (M : Measurement (α × α) ι) (W : PauliKind) (a : α) :
+    (M.postprocess W.component).effect a = ∑ b, M.effect (W.pairOrder (a,b)) := by
+  rw [Measurement.postprocess_effect, Finset.sum_filter,
+    ← (W.pairOrder).sum_comp, Fintype.sum_prod_type]
+  simp [PauliKind.component_pairOrder, Finset.sum_ite]
 
 set_option maxHeartbeats 800000 in
-/-- The Z marginal of any joint point witness is within squared distance
-`4 * δQ` of the opposite Z point measurement. This is the symmetric display
-`eq:qld-qxz-close-to-point-2`, paper lines 928--930, which the source states
-at the end of line 927 and proves by the argument just given for the X
-marginal. -/
-theorem CombinedPointsWitness.marginal_Z_distance_le
+-- The elaborator compares the placed and unplaced measurement families.
+/-- The indicated marginal of the joint point witness is close to the
+opposite point measurement (`eq:qld-qxz-close-to-point` and its Z analogue). -/
+theorem CombinedPointsWitness.marginal_distance_le
     {P : AdmissibleParams} {ε δQ : ℝ} {S : ProjectiveSetting P ε}
     (points : CombinedPointsWitness S δQ)
-    (p1 p2 : Placement) (hopp : p1.IsOpposite p2) :
+    (p q : Placement) (hop : p.IsOpposite q) (W : PauliKind) :
     opFamilyDistSq
-      (uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
-      (fun xz b => ∑ a, S.place p1 ((points.Q p1.side xz.1 xz.2).effect (a, b)))
-      (fun xz b => S.place p2 ((S.pointMeasExp p2.side .Z xz.2).effect b))
+      (uniformDistribution (PointPair P))
+      (fun xz a => S.place p (((points.Q p.side xz.1 xz.2).postprocess W.component).effect a))
+      (fun xz a => S.place q ((S.pointMeasExp q.side W (W.component xz)).effect a))
       S.psiHat ≤ 4 * δQ := by
   classical
-  refine le_trans ?_ (mul_le_mul_of_nonneg_left (points.consistent_XZ p1 p2 hopp)
+  refine le_trans ?_ (mul_le_mul_of_nonneg_left (points.consistent_ordered p q hop W.other)
     (by norm_num : (0 : ℝ) ≤ 4))
   unfold opFamilyDistSq
   rw [← avgOver_const_mul]
-  apply avgOver_mono
-  intro xz
-  rw [Fintype.sum_prod_type, Finset.sum_comm, Finset.mul_sum]
-  apply Finset.sum_le_sum
-  intro b _
-  simpa only [ProjectiveSetting.placedMeasurement_effect, ProjectiveSetting.place_mul] using
+  refine avgOver_mono _ _ _ fun xz => ?_
+  rw [← (W.pairOrder).sum_comp, Fintype.sum_prod_type, Finset.mul_sum]
+  refine Finset.sum_le_sum fun a _ => ?_
+  simp only [postprocess_component_effect, ProjectiveSetting.place_finset_sum,
+    ProjectiveSetting.placedOrderedPointProduct, ProjectiveSetting.orderedPointProduct,
+    ProjectiveSetting.pointPairEffect, PauliKind.other_other, PauliKind.component_pairOrder,
+    PauliKind.other_component_pairOrder]
+  let Q := S.placedMeasurement p (points.Q p.side xz.1 xz.2)
+  let B := S.placedMeasurement q (S.pointMeasExp q.side W.other (W.other.component xz))
+  have hQ := S.placedMeasurement_isProjective p _ (points.projective p.side xz.1 xz.2)
+  have hB := S.placedMeasurement_isProjective q _
+    (S.pointMeasExp_isProjective q.side W.other (W.other.component xz))
+  simpa only [Q, B, ProjectiveSetting.placedMeasurement_effect, ProjectiveSetting.place_mul] using
     norm_marginal_sub_sq_le
-    (fun a => S.place p1 ((points.Q p1.side xz.1 xz.2).effect (a, b)))
-    (fun a => S.placedMeasurement_isProjective p1 _ (points.projective _ _ _) (a, b))
-    (fun hac => DistanceCalculus.projective_effect_mul_effect_eq_zero
-      (S.placedMeasurement p1 (points.Q p1.side xz.1 xz.2))
-      (S.placedMeasurement_isProjective p1 _ (points.projective _ _ _))
-      (fun hpair => hac (congrArg Prod.fst hpair)))
-    (S.placedMeasurement p2 (S.pointMeasExp p2.side .X xz.1))
-    (S.placedMeasurement_isProjective p2 _ (S.pointMeasExp_isProjective _ _ _))
-    (fun a => S.place_comm p1 p2 hopp _ _)
-    (S.place p2 ((S.pointMeasExp p2.side .Z xz.2).effect b)) S.psiHat
+      (fun b => Q.effect (W.pairOrder (a,b)))
+      (fun b => hQ (W.pairOrder (a,b)))
+      (fun hne => DistanceCalculus.projective_effect_mul_effect_eq_zero Q hQ
+        (fun e => hne (congrArg Prod.snd ((W.pairOrder).injective e))))
+      B hB (fun b => S.place_comm p q hop _ _)
+      (S.place q ((S.pointMeasExp q.side W (W.component xz)).effect a)) S.psiHat
 
 end
 

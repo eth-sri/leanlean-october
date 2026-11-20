@@ -39,18 +39,18 @@ theorem exists_extractionWitness :
     ∃ a b C : ℝ, 1 < a ∧ 0 < b ∧ b < 1 ∧ 1 ≤ C ∧
       ∀ (P : AdmissibleParams) (epsilon : ℝ),
         0 ≤ epsilon → epsilon ≤ 1 → ∀ S : ProjectiveSetting P epsilon,
-          ∃ w : GlobalPairWitness S (deltaQld a b epsilon P.m P.d P.q),
+          ∃ w : GlobalPairWitness S (P.qldError a b epsilon),
             Nonempty (ExtractionWitness S w
               (deltaExtract C
                 (deltaConstructPaulis C epsilon
-                  (deltaQld a b epsilon P.m P.d P.q) P.m P.d P.q)
+                  (P.qldError a b epsilon) P.m P.d P.q)
                 P.m P.d P.q)) := by
   obtain ⟨a, b, ha, hb, hb1, hglobal⟩ := exists_globalPairWitness
   obtain ⟨C, hC, hextract⟩ := exists_extractionWitness_ofGlobalPairWitness
   refine ⟨a, b, C, ha, hb, hb1, hC, ?_⟩
   intro P epsilon hepsilon0 hepsilon1 S
-  obtain ⟨w⟩ := hglobal P epsilon S
-  have hdeltaG : 0 ≤ deltaQld a b epsilon P.m P.d P.q := by
+  obtain ⟨w⟩ := hglobal P epsilon S hepsilon1
+  have hdeltaG : 0 ≤ P.qldError a b epsilon := by
     simp only [deltaQld, Real.rpow_eq_pow]
     positivity
   exact ⟨w, hextract P epsilon _ hepsilon0 hepsilon1 hdeltaG S w⟩

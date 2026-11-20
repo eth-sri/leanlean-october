@@ -37,183 +37,66 @@ variable {P : AdmissibleParams} {epsilon deltaQ deltaL : Real}
 variable {setting : ProjectiveSetting P epsilon}
 variable {points : CombinedPointsWitness setting deltaQ}
 
-/-- The consistency defect of the axis coefficient measurements after
-evaluation at an independent uniform affine parameter. -/
-def axisParameterEvaluatedCoefficientDefect
-    (lines : ExtendedLinesWitness setting points deltaL) : Real :=
-  consistencyDefect
-    (Distribution.prod ((directALinePointDist P.extendedDirectLd).map Prod.fst)
-      (uniformDistribution (DirectScalarQ P.extendedDirectLd)))
-    (fun sample value => heteroKron
-      (((((lines.Qline .alice sample.1).postprocess (axisRead P)).postprocess
-        (fun coefficients => evalCoefficient coefficients sample.2)).effect value)) 1)
-    (fun sample value => heteroKron 1
-      (((((lines.Qline .bob sample.1).postprocess (axisRead P)).postprocess
-        (fun coefficients => evalCoefficient coefficients sample.2)).effect value)))
-    (pairState setting)
+section
 
-/-- The consistency defect of the diagonal coefficient measurements after
-evaluation at an independent uniform affine parameter. -/
-def diagonalParameterEvaluatedCoefficientDefect
-    (lines : ExtendedLinesWitness setting points deltaL) : Real :=
-  consistencyDefect
-    (Distribution.prod ((directDLinePointDist P.extendedDirectLd).map Prod.fst)
-      (uniformDistribution (DirectScalarQ P.extendedDirectLd)))
-    (fun sample value => heteroKron
-      (((((lines.Qline .alice sample.1).postprocess (diagonalRead P)).postprocess
-        (fun coefficients => evalCoefficient coefficients sample.2)).effect value)) 1)
-    (fun sample value => heteroKron 1
-      (((((lines.Qline .bob sample.1).postprocess (diagonalRead P)).postprocess
-        (fun coefficients => evalCoefficient coefficients sample.2)).effect value)))
-    (pairState setting)
+variable (lines : ExtendedLinesWitness setting points deltaL)
+include lines
 
-private theorem axisCoefficientAnswerDefect_le_raw
-    (lines : ExtendedLinesWitness setting points deltaL) :
-    @LE.le Real Real.instLE (axisCoefficientAnswerDefect lines)
-      (consistencyDefect ((directALinePointDist P.extendedDirectLd).map Prod.fst)
-        (fun line coefficients => heteroKron
-          (((lines.Qline .alice line).postprocess (axisRead P)).effect coefficients) 1)
-        (fun line coefficients => heteroKron 1
-          (((lines.Qline .bob line).postprocess (axisRead P)).effect coefficients))
-        (pairState setting)) := by
-  let A := fun line => (lines.Qline .alice line).postprocess (axisRead P)
-  let B := fun line => (lines.Qline .bob line).postprocess (axisRead P)
-  let wrap : DirectDegPoly P.extendedDirectLd P.d ->
-      DirectLdAnswer P.extendedDirectLd := fun coefficients =>
-    @DirectLdAnswer.alinePolys P.extendedDirectLd
-      (fun _ index => coefficients index)
-  have hwrap : (fun coefficients => wrap (axisRead P coefficients)) = axisAnswer P := by
-    funext coefficients
-    dsimp [wrap, axisAnswer]
-  have h := consistencyDefect_postprocess_le
-    ((directALinePointDist P.extendedDirectLd).map Prod.fst)
-    A B (pairState setting) wrap
-  have hEq : axisCoefficientAnswerDefect lines =
-      consistencyDefect ((directALinePointDist P.extendedDirectLd).map Prod.fst)
-        (fun line answer => heteroKron (((A line).postprocess wrap).effect answer) 1)
-        (fun line answer => heteroKron 1 (((B line).postprocess wrap).effect answer))
-        (pairState setting) := by
-    unfold axisCoefficientAnswerDefect
-    apply consistencyDefect_congr
-    · intro line answer
-      apply congrArg (fun effect => heteroKron effect 1)
-      rw [<- hwrap]
-      simpa only [A] using
-        (SandwichProduct.postprocess_postprocess_effect
-          (lines.Qline .alice line) (axisRead P) wrap answer).symm
-    · intro line answer
-      apply congrArg (fun effect => heteroKron 1 effect)
-      rw [<- hwrap]
-      simpa only [B] using
-        (SandwichProduct.postprocess_postprocess_effect
-          (lines.Qline .bob line) (axisRead P) wrap answer).symm
-  rw [hEq]
-  exact h
+/-- The defect after reading a coefficient vector and evaluating it at an
+independent uniform parameter. -/
+def evaluatedLineDefect
+    (μ : Distribution (DirectLineDesc P.extendedDirectLd)) {d : ℕ}
+    (read : DirectDegPoly P.extendedDirectLd (P.m * P.d + 1) → DirectDegPoly P.extendedDirectLd d) :
+    ℝ :=
+  bipartiteDefect (Distribution.prod μ (uniformDistribution (DirectScalarQ P.extendedDirectLd)))
+    (fun s => ((lines.Qline .alice s.1).postprocess read).postprocess
+      (fun c => evalCoefficient c s.2))
+    (fun s => ((lines.Qline .bob s.1).postprocess read).postprocess
+      (fun c => evalCoefficient c s.2)) (pairState setting)
 
-private theorem diagonalCoefficientAnswerDefect_le_raw
-    (lines : ExtendedLinesWitness setting points deltaL) :
-    @LE.le Real Real.instLE (diagonalCoefficientAnswerDefect lines)
-      (consistencyDefect ((directDLinePointDist P.extendedDirectLd).map Prod.fst)
-        (fun line coefficients => heteroKron
-          (((lines.Qline .alice line).postprocess (diagonalRead P)).effect coefficients) 1)
-        (fun line coefficients => heteroKron 1
-          (((lines.Qline .bob line).postprocess (diagonalRead P)).effect coefficients))
-        (pairState setting)) := by
-  let A := fun line => (lines.Qline .alice line).postprocess (diagonalRead P)
-  let B := fun line => (lines.Qline .bob line).postprocess (diagonalRead P)
-  let wrap : DirectDegPoly P.extendedDirectLd
-      (P.extendedDirectLd.m * P.extendedDirectLd.d) ->
-      DirectLdAnswer P.extendedDirectLd := fun coefficients =>
-    @DirectLdAnswer.dlinePolys P.extendedDirectLd (fun _ => coefficients)
-  have hwrap : (fun coefficients => wrap (diagonalRead P coefficients)) =
-      diagonalAnswer P := by
-    funext coefficients
-    rfl
-  have h := consistencyDefect_postprocess_le
-    ((directDLinePointDist P.extendedDirectLd).map Prod.fst)
-    A B (pairState setting) wrap
-  have hEq : diagonalCoefficientAnswerDefect lines =
-      consistencyDefect ((directDLinePointDist P.extendedDirectLd).map Prod.fst)
-        (fun line answer => heteroKron (((A line).postprocess wrap).effect answer) 1)
-        (fun line answer => heteroKron 1 (((B line).postprocess wrap).effect answer))
-        (pairState setting) := by
-    unfold diagonalCoefficientAnswerDefect
-    apply consistencyDefect_congr
-    · intro line answer
-      apply congrArg (fun effect => heteroKron effect 1)
-      rw [<- hwrap]
-      simpa only [A] using
-        (SandwichProduct.postprocess_postprocess_effect
-          (lines.Qline .alice line) (diagonalRead P) wrap answer).symm
-    · intro line answer
-      apply congrArg (fun effect => heteroKron 1 effect)
-      rw [<- hwrap]
-      simpa only [B] using
-        (SandwichProduct.postprocess_postprocess_effect
-          (lines.Qline .bob line) (diagonalRead P) wrap answer).symm
-  rw [hEq]
-  exact h
+abbrev axisParameterEvaluatedCoefficientDefect :=
+  evaluatedLineDefect lines ((directALinePointDist P.extendedDirectLd).map Prod.fst) (axisRead P)
 
-/-- The axis-axis branch rejection is bounded by the independently evaluated
-axis coefficient defect plus `d / q`. -/
-theorem aline_aline_rejection_le_axisParameterEvaluatedCoefficientDefect_add
-    (lines : ExtendedLinesWitness setting points deltaL) :
-    @LE.le Real Real.instLE
-      (directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
-        (.aline, .aline))
-      (axisParameterEvaluatedCoefficientDefect lines +
-        (P.d : Real) / (P.extendedDirectLd.q : Real)) := by
-  rw [aline_aline_rejection_eq_axisCoefficientAnswerDefect]
-  calc
-    axisCoefficientAnswerDefect lines <=
-        consistencyDefect ((directALinePointDist P.extendedDirectLd).map Prod.fst)
-          (fun line coefficients => heteroKron
-            (((lines.Qline .alice line).postprocess (axisRead P)).effect coefficients) 1)
-          (fun line coefficients => heteroKron 1
-            (((lines.Qline .bob line).postprocess (axisRead P)).effect coefficients))
-          (pairState setting) := axisCoefficientAnswerDefect_le_raw lines
-    _ <= _ := by
-      have hProbability :
-          ((directALinePointDist P.extendedDirectLd).map Prod.fst).IsProbability :=
-        (directALinePointDist_isProbability P.extendedDirectLd).map _
-      simpa [axisParameterEvaluatedCoefficientDefect] using
-        (consistencyDefect_directCoefficients_le_evaluated_add
-          P.extendedDirectLd P.d
-          ((directALinePointDist P.extendedDirectLd).map Prod.fst)
-          (fun line => (lines.Qline .alice line).postprocess (axisRead P))
-          (fun line => (lines.Qline .bob line).postprocess (axisRead P))
-          (pairState setting) hProbability (pairState_norm setting))
+abbrev diagonalParameterEvaluatedCoefficientDefect :=
+  evaluatedLineDefect lines ((directDLinePointDist P.extendedDirectLd).map Prod.fst) (diagonalRead P)
 
-/-- The diagonal-diagonal branch rejection is bounded by the independently
-evaluated diagonal coefficient defect plus `md / q`. -/
-theorem dline_dline_rejection_le_diagonalParameterEvaluatedCoefficientDefect_add
-    (lines : ExtendedLinesWitness setting points deltaL) :
-    @LE.le Real Real.instLE
-      (directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
-        (.dline, .dline))
-      (diagonalParameterEvaluatedCoefficientDefect lines +
-        (P.extendedDirectLd.m * P.extendedDirectLd.d : Real) /
-          (P.extendedDirectLd.q : Real)) := by
-  rw [dline_dline_rejection_eq_diagonalCoefficientAnswerDefect]
-  calc
-    diagonalCoefficientAnswerDefect lines <=
-        consistencyDefect ((directDLinePointDist P.extendedDirectLd).map Prod.fst)
-          (fun line coefficients => heteroKron
-            (((lines.Qline .alice line).postprocess (diagonalRead P)).effect coefficients) 1)
-          (fun line coefficients => heteroKron 1
-            (((lines.Qline .bob line).postprocess (diagonalRead P)).effect coefficients))
-          (pairState setting) := diagonalCoefficientAnswerDefect_le_raw lines
-    _ <= _ := by
-      have hProbability :
-          ((directDLinePointDist P.extendedDirectLd).map Prod.fst).IsProbability :=
-        (directDLinePointDist_isProbability P.extendedDirectLd).map _
-      simpa [diagonalParameterEvaluatedCoefficientDefect] using
-        (consistencyDefect_directCoefficients_le_evaluated_add
-          P.extendedDirectLd (P.extendedDirectLd.m * P.extendedDirectLd.d)
-          ((directDLinePointDist P.extendedDirectLd).map Prod.fst)
-          (fun line => (lines.Qline .alice line).postprocess (diagonalRead P))
-          (fun line => (lines.Qline .bob line).postprocess (diagonalRead P))
-          (pairState setting) hProbability (pairState_norm setting))
+/-- Wrapping a coefficient vector in an answer tag cannot increase the
+coefficient defect, which itself is controlled by the collision estimate. -/
+private theorem coefficientAnswerDefect_le_evaluated
+    (μ : Distribution (DirectLineDesc P.extendedDirectLd)) (hμ : μ.IsProbability) {d : ℕ}
+    (read : DirectDegPoly P.extendedDirectLd (P.m * P.d + 1) → DirectDegPoly P.extendedDirectLd d)
+    (wrap : DirectDegPoly P.extendedDirectLd d → DirectLdAnswer P.extendedDirectLd) :
+    bipartiteDefect μ
+      (fun l => (lines.Qline .alice l).postprocess (fun c => wrap (read c)))
+      (fun l => (lines.Qline .bob l).postprocess (fun c => wrap (read c)))
+      (pairState setting) ≤ evaluatedLineDefect lines μ read + (d : ℝ) / P.extendedDirectLd.q := by
+  let A := fun l => (lines.Qline .alice l).postprocess read
+  let B := fun l => (lines.Qline .bob l).postprocess read
+  have h := consistencyDefect_postprocess_le μ A B (pairState setting) wrap
+  simp only [A, B, Measurement.postprocess_comp] at h
+  exact h.trans (consistencyDefect_directCoefficients_le_evaluated_add P.extendedDirectLd d μ
+    A B (pairState setting) hμ (pairState_norm setting))
+
+/-- The axis-axis rejection is bounded by evaluated coefficient defect plus `d / q`. -/
+theorem aline_aline_rejection_le_axisParameterEvaluatedCoefficientDefect_add :
+    directLdBranchRejectionProbability P.extendedDirectLd (strategy lines) (.aline, .aline) ≤
+      axisParameterEvaluatedCoefficientDefect lines + (P.d : ℝ) / P.extendedDirectLd.q := by
+  rw [sameLine_rejection_eq_coefficientAnswerDefect lines .axis]
+  exact coefficientAnswerDefect_le_evaluated lines _
+    ((directALinePointDist_isProbability P.extendedDirectLd).map _) (axisRead P)
+    (fun c => .alinePolys (fun _ => c))
+
+/-- The diagonal-diagonal rejection is bounded by evaluated coefficient defect plus `md / q`. -/
+theorem dline_dline_rejection_le_diagonalParameterEvaluatedCoefficientDefect_add :
+    directLdBranchRejectionProbability P.extendedDirectLd (strategy lines) (.dline, .dline) ≤
+      diagonalParameterEvaluatedCoefficientDefect lines +
+        (P.extendedDirectLd.m * P.extendedDirectLd.d : ℝ) / P.extendedDirectLd.q := by
+  rw [sameLine_rejection_eq_coefficientAnswerDefect lines .diagonal, ← Nat.cast_mul]
+  exact coefficientAnswerDefect_le_evaluated lines _
+    ((directDLinePointDist_isProbability P.extendedDirectLd).map _) (diagonalRead P)
+    (fun c => .dlinePolys (fun _ => c))
+
+end
 
 end ExtendedLineGame
 

@@ -38,8 +38,8 @@ theorem prod_linePointDist_nondegenerate_mass_pos (L : LdParams) :
 on nonzero first-line direction and relabeling the two samples for pasting. -/
 def nondegenerateLinePastingDist (L : LdParams) :
     Distribution (((LineDesc L × LineDesc L) ×
-      (LineDesc L × (Fin L.m → ScalarQ L))) ×
-        (LineDesc L × (Fin L.m → ScalarQ L))) :=
+      (LinePointSample L)) ×
+        (LinePointSample L)) :=
   (Distribution.restrict (Distribution.prod (linePointDist L) (linePointDist L))
     (fun samples => samples.1.1.direction ≠ 0)
     (prod_linePointDist_nondegenerate_mass_pos L)).map

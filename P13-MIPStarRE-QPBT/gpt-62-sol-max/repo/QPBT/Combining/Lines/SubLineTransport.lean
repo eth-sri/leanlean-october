@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Combining.Lines.SubLinePrefix
+public import QPBT.Combining.Lines.SubLineUniform
 
 /-!
 # Uniformity under the identification of the two scalar fields
@@ -42,7 +42,7 @@ source scalar field on one source block, presented as a bijection.  Blueprint
 `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
 noncomputable def directBlockToPauliEquiv (P : AdmissibleParams) :
-    (Fin P.m → DirectScalarQ P.extendedDirectLd) ≃ (Fin P.m → PauliScalar P) where
+    (Fin P.m → DirectScalarQ P.extendedDirectLd) ≃ (PauliPoint P) where
   toFun v := fun i => extendedDirectScalarEquiv P (v i)
   invFun v := fun i => (extendedDirectScalarEquiv P).symm (v i)
   left_inv v := by
@@ -63,8 +63,8 @@ theorem uniformDistribution_map_projX_projZ_pauli (P : AdmissibleParams) :
           (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
         (fun u => (projX (directPointToPauli P u),
           projZ (directPointToPauli P u))) =
-      Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
-        (uniformDistribution (Fin P.m → PauliScalar P)) := by
+      Distribution.prod (uniformDistribution (PauliPoint P))
+        (uniformDistribution (PauliPoint P)) := by
   classical
   have hfun :
       (fun u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd =>

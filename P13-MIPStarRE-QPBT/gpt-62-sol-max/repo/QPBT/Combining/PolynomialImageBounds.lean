@@ -1,7 +1,12 @@
 module
 
 public import MIPStarRE.LDT.Preliminaries.Polynomials
-public import QPBT.Games.Sandwich
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
+public import QPBT.Games.Sandwich.Pasting.Assembly
+public import QPBT.Games.Sandwich.Pasting.SchmidtMirror
+public import QPBT.Games.Sandwich.Support
+public import MIPStarRE.LDT.MakingMeasurementsProjective.NaimarkCore
+public import QPBT.Games.ErrorFunctions
 public import QPBT.Test.MagicSquareTheorems.Rigidity.GroundSlice
 
 /-!
@@ -55,43 +60,36 @@ def diagonalIndicator (X Z : Quantum.Measurement F ι) (α β a : F) : Op ι :=
     if α * bc.1 + β * bc.2 = a then
       Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2 else 0
 
-/-- For a nonzero second coefficient, X orthogonality and cancellation in
-the field eliminate every off-diagonal term of the ordered Gram operator.
-This is the exact local algebra behind `eq:qld-g-prime`; no commutation of
-the X and Z measurements is assumed. -/
+/-- When the second coefficient is nonzero, the linear constraint meets each
+first-outcome fiber at most once. On any subset of the constraint, the Gram
+operator is therefore the diagonal sandwich sum. -/
+theorem orderedIndicator_filtered_gram (X Z : Quantum.Measurement F ι)
+    (hX : Measurement.IsProjective X) (α β a : F) (hβ : β ≠ 0)
+    (keep : F × F → Prop) [DecidablePred keep] :
+    let T := ∑ bc : F × F, if α * bc.1 + β * bc.2 = a ∧ keep bc then
+      X.effect bc.1 * Z.effect bc.2 else 0
+    Tᴴ * T = ∑ bc : F × F, if α * bc.1 + β * bc.2 = a ∧ keep bc then
+      Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2 else 0 := by
+  dsimp only
+  simp_rw [← Finset.sum_filter]
+  let s := Finset.univ.filter (fun p : F × F => α * p.1 + β * p.2 = a ∧ keep p)
+  have ho : ∀ p ∈ s, ∀ q ∈ s, p ≠ q → X.effect p.1 * X.effect q.1 = 0 := by
+    intro p hp q hq hne
+    apply projective_effect_mul_effect_eq_zero X hX
+    intro hfst
+    have h := (Finset.mem_filter.mp hp).2.1.trans (Finset.mem_filter.mp hq).2.1.symm
+    rw [hfst] at h
+    exact hne (Prod.ext hfst (mul_left_cancel₀ hβ (add_left_cancel h)))
+  simpa only [measurement_effect_hermitian] using!
+    gram_finset_sum_projector_mul (fun p => X.effect p.1) (fun p => Z.effect p.2)
+      (fun p => hX p.1) s ho
+
 private theorem orderedIndicator_gram_of_ne_zero (X Z : Quantum.Measurement F ι)
     (hX : Measurement.IsProjective X) (α β a : F) (hβ : β ≠ 0) :
     (orderedIndicator X Z α β a)ᴴ * orderedIndicator X Z α β a =
       diagonalIndicator X Z α β a := by
-  classical
-  unfold orderedIndicator diagonalIndicator
-  rw [Matrix.conjTranspose_sum, Finset.sum_mul]
-  refine Finset.sum_congr rfl fun bc _ => ?_
-  rw [Finset.mul_sum, Finset.sum_eq_single bc]
-  · by_cases h : α * bc.1 + β * bc.2 = a
-    · simp only [if_pos h, Matrix.conjTranspose_mul, measurement_effect_hermitian]
-      rw [mul_assoc (Z.effect bc.2), ← mul_assoc (X.effect bc.1),
-        (hX bc.1).isIdempotentElem.eq, ← mul_assoc]
-    · simp [h]
-  · intro bc' _ hne
-    by_cases h : α * bc.1 + β * bc.2 = a
-    · by_cases h' : α * bc'.1 + β * bc'.2 = a
-      · have hb : bc.1 ≠ bc'.1 := by
-          intro hb
-          have hc : bc.2 = bc'.2 := mul_left_cancel₀ hβ (by
-            apply add_left_cancel (a := α * bc.1)
-            simpa only [hb] using h.trans h'.symm)
-          exact hne (Prod.ext hb hc).symm
-        simp only [if_pos h, if_pos h', Matrix.conjTranspose_mul,
-          measurement_effect_hermitian]
-        calc
-          Z.effect bc.2 * X.effect bc.1 * (X.effect bc'.1 * Z.effect bc'.2) =
-              Z.effect bc.2 * (X.effect bc.1 * X.effect bc'.1) * Z.effect bc'.2 := by
-            simp only [mul_assoc]
-          _ = 0 := by rw [projective_effect_mul_effect_eq_zero X hX hb]; simp
-      · simp [h']
-    · simp [h]
-  · simp
+  simpa only [orderedIndicator, diagonalIndicator, and_true] using
+    orderedIndicator_filtered_gram X Z hX α β a hβ (fun _ => True)
 
 /-- The squared state norm of the ordered indicator equals its diagonal
 sandwich quadratic form when the second coefficient is nonzero. -/
@@ -100,31 +98,51 @@ private theorem orderedIndicator_norm_sq_of_ne_zero (X Z : Quantum.Measurement F
     (ψ : EuclideanSpace ℂ ι) :
     ‖applyOperatorToState (orderedIndicator X Z α β a) ψ‖ ^ 2 =
       stateQForm ψ (diagonalIndicator X Z α β a) := by
-  rw [MagicSquareRigidity.norm_applyOperatorToState_sq,
+  rw [norm_applyOperatorToState_sq,
     orderedIndicator_gram_of_ne_zero X Z hX α β a hβ]
-  rfl
 
-/-- The diagonal indicator is a positive contraction, since it selects
-effects from the complete sandwich POVM. -/
+/-- The diagonal indicator selects effects from the complete sandwich POVM. -/
 private theorem diagonalIndicator_bounds (X Z : Quantum.Measurement F ι)
     (hZ : Measurement.IsProjective Z) (α β a : F) :
     0 ≤ diagonalIndicator X Z α β a ∧ diagonalIndicator X Z α β a ≤ 1 := by
-  obtain ⟨hpos, hsum⟩ := pastedMeasurement_isMeasurement X Z hZ
-  change (∀ bc : F × F, 0 ≤ Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2) at hpos
-  change (∑ bc : F × F, Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2) = 1 at hsum
-  constructor
-  · exact Finset.sum_nonneg fun bc _ => by
-      split_ifs
-      · exact hpos bc
-      · exact le_refl 0
-  · calc
-      diagonalIndicator X Z α β a ≤
-          ∑ bc : F × F, Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2 := by
-        refine Finset.sum_le_sum fun bc _ => ?_
-        split_ifs
-        · exact le_refl _
-        · exact hpos bc
-      _ = 1 := hsum
+  let M := (pastedPOVM X Z hZ).postprocess (fun bc => α * bc.1 + β * bc.2)
+  simpa only [M, Quantum.Measurement.postprocess_effect, Finset.sum_filter, pastedPOVM,
+    Quantum.Measurement.ofSumEqOne, pastedMeasurement, diagonalIndicator] using
+    And.intro (M.pos a) (measurement_effect_le_one M a)
+
+/-- The Born mass of a sandwich outcome. -/
+abbrev sandwichWeight (X Z : Quantum.Measurement F ι) (ψ : EuclideanSpace ℂ ι) (bc : F × F) : ℝ :=
+  stateQForm ψ (Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2)
+
+theorem sandwichWeight_nonneg (X Z : Quantum.Measurement F ι) (hZ : Measurement.IsProjective Z)
+    (ψ : EuclideanSpace ℂ ι) (bc : F × F) : 0 ≤ sandwichWeight X Z ψ bc :=
+  stateQForm_nonneg ψ ((pastedPOVM X Z hZ).pos bc)
+
+theorem sum_sandwichWeight (X Z : Quantum.Measurement F ι) (hZ : Measurement.IsProjective Z)
+    (ψ : EuclideanSpace ℂ ι) : ∑ bc, sandwichWeight X Z ψ bc = ‖ψ‖ ^ 2 := by
+  rw [← stateQForm_one ψ, ← (pastedPOVM X Z hZ).sum_eq_one, stateQForm_finset_sum]
+  rfl
+
+/-- The selected sandwich mass is an indicator-weighted sum. -/
+theorem sandwichWeight_indicator_sum (X Z : Quantum.Measurement F ι) (ψ : EuclideanSpace ℂ ι)
+    (keep : F × F → Prop) [DecidablePred keep] :
+    stateQForm ψ (∑ bc : F × F, if keep bc then
+      Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2 else 0) =
+      ∑ bc, (if keep bc then 1 else 0) * sandwichWeight X Z ψ bc := by
+  rw [stateQForm_finset_sum]
+  refine Finset.sum_congr rfl fun bc _ => ?_
+  split_ifs <;> simp [stateQForm, applyOperatorToState]
+
+theorem diagonalIndicator_as_weight_sum (X Z : Quantum.Measurement F ι)
+    (ψ : EuclideanSpace ℂ ι) (α β a : F) :
+    stateQForm ψ (diagonalIndicator X Z α β a) =
+      ∑ bc, (if α * bc.1 + β * bc.2 = a then 1 else 0) * sandwichWeight X Z ψ bc :=
+  sandwichWeight_indicator_sum X Z ψ _
+
+/-- The exceptional second coefficient is zero with probability `1/q`. -/
+theorem avgOver_last_coefficient_zero (C : ℝ) :
+    avgOver (uniformDistribution (Fin 2 → F)) (fun v => if v 1 = 0 then C else 0) =
+      (Fintype.card F : ℝ)⁻¹ * C := by simp_all [avgOver_uniform_equiv (finTwoArrowEquiv F), avgOver_uniform_snd (fun β : F => if β = 0 then C else 0), avgOver_uniform_eq_inv_card_mul_sum]
 
 /-- At the exceptional coefficient zero, completeness of Z leaves a
 coarse-grained X projection. This includes zero first coefficient. -/
@@ -134,8 +152,7 @@ private theorem orderedIndicator_zero (X Z : Quantum.Measurement F ι) (α a : F
   rw [Fintype.sum_prod_type, Quantum.Measurement.postprocess_effect, Finset.sum_filter]
   refine Finset.sum_congr rfl fun b _ => ?_
   by_cases h : α * b = a
-  · simp only [zero_mul, add_zero, h, if_true]
-    rw [← Finset.mul_sum, Z.sum_eq_one, mul_one]
+  · simp_all [zero_mul, add_zero, h, if_true, ← Finset.mul_sum, Z.sum_eq_one, mul_one]
   · simp [h]
 
 /-- Every linear-answer ordered indicator is a contraction. For nonzero
@@ -164,7 +181,7 @@ theorem abs_orderedIndicator_norm_sq_sub_diagonal_le (X Z : Quantum.Measurement 
   · rw [if_pos hβ]
     have hA0 := sq_nonneg ‖applyOperatorToState (orderedIndicator X Z α β a) ψ‖
     have hA1 : ‖applyOperatorToState (orderedIndicator X Z α β a) ψ‖ ^ 2 ≤ ‖ψ‖ ^ 2 := by
-      rw [MagicSquareRigidity.norm_applyOperatorToState_sq, ← stateQForm_one ψ]
+      rw [norm_applyOperatorToState_sq, ← stateQForm_one ψ]
       exact quadratic_form_mono (orderedIndicator_gram_le_one X Z hX hZ α β a) ψ
     have hD := diagonalIndicator_bounds X Z hZ α β a
     have hD0 := stateQForm_nonneg ψ hD.1
@@ -175,13 +192,27 @@ theorem abs_orderedIndicator_norm_sq_sub_diagonal_le (X Z : Quantum.Measurement 
   · rw [if_neg hβ, orderedIndicator_norm_sq_of_ne_zero X Z hX α β a hβ ψ]
     simp
 
+/-- Averaging the Gram comparison loses at most `1/q` times the state mass. -/
+theorem avg_orderedIndicator_norm_sq_le (X Z : Quantum.Measurement F ι)
+    (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
+    (a : (Fin 2 → F) → F) (ψ : EuclideanSpace ℂ ι) :
+    avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+      ‖applyOperatorToState (orderedIndicator X Z (v 0) (v 1) (a v)) ψ‖ ^ 2) ≤
+      avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
+        stateQForm ψ (diagonalIndicator X Z (v 0) (v 1) (a v))) +
+        (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
+  have h := avgOver_mono (uniformDistribution (Fin 2 → F)) _ _ (fun v =>
+    (le_abs_self _).trans (abs_orderedIndicator_norm_sq_sub_diagonal_le X Z hX hZ (v 0) (v 1) (a v) ψ))
+  rw [avgOver_sub, avgOver_last_coefficient_zero] at h
+  linarith
+
 /-- Completeness and projectivity preserve total squared state mass. This is
 the normalization used after summing `eq:qld-g-prime` over polynomial labels. -/
 theorem sum_projective_state_norm_sq {Γ : Type*} [Fintype Γ]
     (S : Quantum.Measurement Γ ι) (hS : Measurement.IsProjective S)
     (ψ : EuclideanSpace ℂ ι) :
     ∑ g : Γ, ‖applyOperatorToState (S.effect g) ψ‖ ^ 2 = ‖ψ‖ ^ 2 := by
-  simp_rw [MagicSquareRigidity.norm_applyOperatorToState_sq, measurement_effect_hermitian,
+  simp_rw [norm_applyOperatorToState_sq, measurement_effect_hermitian,
     fun g => (hS g).isIdempotentElem.eq]
   change (∑ g : Γ, stateQForm ψ (S.effect g)) = ‖ψ‖ ^ 2
   rw [← stateQForm_finset_sum, S.sum_eq_one, stateQForm_one]
@@ -289,32 +320,18 @@ private theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
   obtain ⟨e, he0, he1, he⟩ := exists_nonzero_nonlinear_coeff p hp
   let D : ℕ := p.support.sup fun e => (p.coeff e).totalDegree
   let E : ℝ := (max 1 p.totalDegree : ℕ) / (Fintype.card F : ℝ)
-  let w (u : Fin n → F) (bc : F × F) : ℝ :=
-    stateQForm ψ ((Z u).effect bc.2 * (X u).effect bc.1 * (Z u).effect bc.2)
   let f (u : Fin n → F) (v : Fin 2 → F) : F :=
     MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p)
-  have hw (u : Fin n → F) (bc : F × F) : 0 ≤ w u bc :=
-    stateQForm_nonneg ψ ((pastedMeasurement_isMeasurement (X u) (Z u) (hZ u)).1 bc)
-  have hsum (u : Fin n → F) : ∑ bc : F × F, w u bc = ‖ψ‖ ^ 2 := by
-    rw [← stateQForm_one ψ,
-      ← (pastedMeasurement_isMeasurement (X u) (Z u) (hZ u)).2, stateQForm_finset_sum]
-    rfl
-  have hexpand (u : Fin n → F) (v : Fin 2 → F) :
-      stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v)) =
-        ∑ bc : F × F, (if f u v = v 0 * bc.1 + v 1 * bc.2 then 1 else 0) * w u bc := by
-    rw [diagonalIndicator, stateQForm_finset_sum]
-    refine Finset.sum_congr rfl fun bc _ => ?_
-    by_cases h : f u v = v 0 * bc.1 + v 1 * bc.2
-    · simp [h, w]
-    · simp [Ne.symm h, h, stateQForm, applyOperatorToState]
   have hgood (u : Fin n → F) (hu : MvPolynomial.eval u (p.coeff e) ≠ 0) :
       avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
         stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v))) ≤
         E * ‖ψ‖ ^ 2 := by
-    simp_rw [hexpand, avgOver_sum, avgOver_mul_const]
-    rw [← hsum u, Finset.mul_sum]
+    simp_rw [diagonalIndicator_as_weight_sum, avgOver_sum, avgOver_mul_const]
+    rw [← sum_sandwichWeight _ _ (hZ u) ψ, Finset.mul_sum]
     exact Finset.sum_le_sum fun bc _ => mul_le_mul_of_nonneg_right
-      (avg_specialization_eq_linear_le_of_coeff p e he0 he1 u hu bc.1 bc.2) (hw u bc)
+      (by simpa only [eq_comm] using
+        avg_specialization_eq_linear_le_of_coeff p e he0 he1 u hu bc.1 bc.2)
+      (sandwichWeight_nonneg _ _ (hZ u) ψ bc)
   have hpoint (u : Fin n → F) :
       avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
         stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v))) ≤
@@ -346,7 +363,7 @@ private theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
 /-- Adding the genuinely uniform zero-coefficient contribution gives the
 ordered-product estimate for a polynomial outside the scalar-linear image.
 The right side retains the squared norm of the unnormalized state. -/
-private theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
+theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
     (p : MvPolynomial (Fin 2) (MvPolynomial (Fin n) F))
     (hp : ¬ ∃ r s : MvPolynomial (Fin n) F,
       p = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C s * MvPolynomial.X 1)
@@ -359,60 +376,13 @@ private theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
           (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p))) ψ‖ ^ 2)) ≤
       ((p.support.sup fun e => (p.coeff e).totalDegree) + max 1 p.totalDegree + 1 : ℕ) /
         (Fintype.card F : ℝ) * ‖ψ‖ ^ 2 := by
-  let f (u : Fin n → F) (v : Fin 2 → F) : F :=
-    MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p)
-  have hexc : avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => if v 1 = 0 then ‖ψ‖ ^ 2 else 0) =
-        (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
-    change avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => if ((finTwoArrowEquiv F) v).2 = 0 then ‖ψ‖ ^ 2 else 0) = _
-    rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
-    simp only [Equiv.apply_symm_apply]
-    rw [avgOver_uniform_snd (fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0)]
-    simp [avgOver_uniform_eq_inv_card_mul_sum]
-  calc
-    _ ≤ avgOver (uniformDistribution (Fin n → F)) (fun u =>
-        avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
-          stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v)) +
-            (if v 1 = 0 then ‖ψ‖ ^ 2 else 0))) := by
-      apply avgOver_mono
-      intro u
-      apply avgOver_mono
-      intro v
-      have habs := abs_orderedIndicator_norm_sq_sub_diagonal_le
-        (X u) (Z u) (hX u) (hZ u) (v 0) (v 1) (f u v) ψ
-      have hle := le_trans (le_abs_self _) habs
-      linarith
-    _ = avgOver (uniformDistribution (Fin n → F)) (fun u =>
-        avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
-          stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v)))) +
-            (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
-      simp_rw [avgOver_add, hexc, avgOver_uniform_const]
-    _ ≤ ((p.support.sup fun e => (p.coeff e).totalDegree) + max 1 p.totalDegree : ℕ) /
-        (Fintype.card F : ℝ) * ‖ψ‖ ^ 2 + (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 :=
-      add_le_add (avg_diagonalIndicator_le_of_not_linear p hp X Z hZ ψ) le_rfl
-    _ = _ := by push_cast; ring
-
-/-- The ordered polynomial estimate sums over any specified set of polynomial
-labels outside the scalar-linear image. Each label is weighted by its actual
-state mass; the estimate never replaces a sum by the number of labels. -/
-private theorem avg_sum_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ} {Γ : Type*}
-    (s : Finset Γ) (p : Γ → MvPolynomial (Fin 2) (MvPolynomial (Fin n) F))
-    (hp : ∀ g ∈ s, ¬ ∃ r t : MvPolynomial (Fin n) F,
-      p g = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1)
-    (X Z : (Fin n → F) → Quantum.Measurement F ι)
-    (hX : ∀ u, Measurement.IsProjective (X u))
-    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : Γ → EuclideanSpace ℂ ι) :
-    avgOver (uniformDistribution (Fin n → F)) (fun u =>
-      avgOver (uniformDistribution (Fin 2 → F)) (fun v => ∑ g ∈ s,
-        ‖applyOperatorToState (orderedIndicator (X u) (Z u) (v 0) (v 1)
-          (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) (p g)))) (ψ g)‖ ^ 2)) ≤
-      ∑ g ∈ s,
-        (((p g).support.sup fun e => ((p g).coeff e).totalDegree) +
-          max 1 (p g).totalDegree + 1 : ℕ) / (Fintype.card F : ℝ) * ‖ψ g‖ ^ 2 := by
-  simp_rw [avgOver_finset_sum]
-  exact Finset.sum_le_sum fun g hg =>
-    avg_orderedIndicator_norm_sq_le_of_not_linear (p g) (hp g hg) X Z hX hZ (ψ g)
+  have h := avgOver_mono (uniformDistribution (Fin n → F)) _ _ (fun u =>
+    avg_orderedIndicator_norm_sq_le (X u) (Z u) (hX u) (hZ u)
+      (fun v => MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p)) ψ)
+  rw [avgOver_add, avgOver_uniform_const] at h
+  refine h.trans ?_
+  have hd := avg_diagonalIndicator_le_of_not_linear p hp X Z hZ ψ
+  convert add_le_add_right hd ((Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2) using 1 <;> push_cast <;> ring
 
 omit [DecidableEq ι] in
 /-- The squared-norm triangle inequality retains each outcome's state vector.
@@ -429,44 +399,6 @@ theorem sum_mass_le_residual_add_image {Γ : Type*} (s : Finset Γ)
   rw [sub_add_cancel] at htriangle
   have hsquare := pow_le_pow_left₀ (norm_nonneg _) htriangle 2
   nlinarith [sq_nonneg (‖ψ g - A g‖ - ‖A g‖)]
-
-/-- Scalar-linearity concentration with the actual ordered-correlation error
-displayed in the conclusion. Combining this inequality with `eq:qld-g-42`
-requires deriving that correlation from the source measurements; no such
-estimate is an input to this auxiliary theorem. -/
-theorem nonlinear_mass_le_ordered_error {n : ℕ} {Γ : Type*}
-    (s : Finset Γ) (p : Γ → MvPolynomial (Fin 2) (MvPolynomial (Fin n) F))
-    (hp : ∀ g ∈ s, ¬ ∃ r t : MvPolynomial (Fin n) F,
-      p g = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1)
-    (X Z : (Fin n → F) → Quantum.Measurement F ι)
-    (hX : ∀ u, Measurement.IsProjective (X u))
-    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : Γ → EuclideanSpace ℂ ι) :
-    ∑ g ∈ s, ‖ψ g‖ ^ 2 ≤
-      2 * avgOver (uniformDistribution (Fin n → F)) (fun u =>
-        avgOver (uniformDistribution (Fin 2 → F)) (fun v => ∑ g ∈ s,
-          ‖ψ g - applyOperatorToState (orderedIndicator (X u) (Z u) (v 0) (v 1)
-            (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) (p g)))) (ψ g)‖ ^ 2)) +
-      2 * ∑ g ∈ s,
-        (((p g).support.sup fun e => ((p g).coeff e).totalDegree) +
-          max 1 (p g).totalDegree + 1 : ℕ) / (Fintype.card F : ℝ) * ‖ψ g‖ ^ 2 := by
-  let A (u : Fin n → F) (v : Fin 2 → F) (g : Γ) : EuclideanSpace ℂ ι :=
-    applyOperatorToState (orderedIndicator (X u) (Z u) (v 0) (v 1)
-      (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) (p g)))) (ψ g)
-  have hpoint (u : Fin n → F) (v : Fin 2 → F) :
-      ∑ g ∈ s, ‖ψ g‖ ^ 2 ≤
-        2 * ∑ g ∈ s, ‖ψ g - A u v g‖ ^ 2 + 2 * ∑ g ∈ s, ‖A u v g‖ ^ 2 :=
-    sum_mass_le_residual_add_image s ψ (A u v)
-  have havg := avgOver_mono (uniformDistribution (Fin n → F)) _ _ fun u =>
-    avgOver_mono (uniformDistribution (Fin 2 → F)) _ _ (hpoint u)
-  simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at havg
-  have hnorm := avg_sum_orderedIndicator_norm_sq_le_of_not_linear s p hp X Z hX hZ ψ
-  change ∑ g ∈ s, ‖ψ g‖ ^ 2 ≤ 2 * avgOver (uniformDistribution (Fin n → F))
-    (fun u => avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => ∑ g ∈ s, ‖ψ g - A u v g‖ ^ 2)) + _
-  change avgOver (uniformDistribution (Fin n → F))
-    (fun u => avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => ∑ g ∈ s, ‖A u v g‖ ^ 2)) ≤ _ at hnorm
-  linarith
 
 end PolynomialImageBounds
 

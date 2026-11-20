@@ -1,7 +1,7 @@
 module
 
 public import QPBT.Extraction.Consistency
-public import QPBT.Extraction.PointConsistencyPrime
+public import QPBT.Extraction.PointConsistency
 public import QPBT.Extraction.NonencodingSupport
 
 /-!
@@ -24,246 +24,83 @@ open scoped BigOperators Matrix MatrixOrder ComplexOrder
 namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT hiding Measurement
-open MIPStarRE.Quantum DistanceCalculus
+open MIPStarRE.Quantum DistanceCalculus ProjectiveSetting
 
 noncomputable section
 
-/-- For a supplied global polynomial-pair witness, the pulled-apart defect is
-bounded by its point-consistency error plus the non-encoding mass. This is the
-support-restricted form of the calculation in paper
-`14_analysis_of_the_pauli_basis_test.tex:1483-1492`, supporting blueprint
-`lem:qld-construct-the-paulis`. It uses no estimate for the non-encoding mass;
-the need for that separate estimate is explained in
-`docs/paper-gaps/qpbt_decoding-identity.tex`. -/
-theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-      (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
-      (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat ≤
-      deltaG + nonencodingMarginalMass w .bob W := by
+section
+
+variable {P : AdmissibleParams} {ε δ : ℝ}
+    {S : ProjectiveSetting P ε} (w : GlobalPairWitness S δ)
+include P ε δ S w
+
+private theorem marginalReadoutDefect_eq (p q : Placement) (W : PauliKind)
+    (f : (PauliPoint P) → Poly P → PauliScalar P) :
+    marginalReadoutDefect w p q W f = 1 - avgOver (uniformDistribution _) (fun u =>
+      marginalReadoutOverlap w p q W u (f u)) := by
+  refine (consistencyDefect_eq_one_sub_overlap _ _ _ _
+    (uniformDistribution_isProbability _) S.psiHat_norm).trans ?_
+  congr 1
+  refine avgOver_congr _ _ _ fun u => ?_
+  simp only [placedMeasurement_effect, marginalReadoutOverlap, ← stateQForm_finset_sum,
+    sum_marginalPoly_readout_mul]
+
+private theorem marginalDecodedDefect_le {p : Placement}
+    (hp : p.Primary) (W : PauliKind) :
+    marginalReadoutDefect w p (overlapPartner p) W (fun u g => dotProduct (decodeFq g) (indicatorVec u)) ≤
+      δ + nonencodingMarginalMass w p.side W := by
   classical
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
-  let evaluated := fun u : Fin P.m → PauliScalar P =>
-    S.placedMeasurement .BB' ((w.marginalPoly .bob W).postprocess
-      (fun g => MvPolynomial.eval u g.1))
-  let expanded := fun u : Fin P.m → PauliScalar P =>
-    S.placedMeasurement .AB'' (S.pointMeasExp .alice W u)
-  have hdefect := consistencyDefect_eq_one_sub_overlap mu evaluated expanded S.psiHat
-    (uniformDistribution_isProbability _) S.psiHat_norm
-  have hw := marginalPoly_pointMeas_consistent_bob w W
-  change consistencyDefect mu (fun u a => (evaluated u).effect a)
-    (fun u a => (expanded u).effect a) S.psiHat ≤ deltaG at hw
-  rw [hdefect] at hw
-  have hregroup (u : Fin P.m → PauliScalar P) :
-      (∑ a : PauliScalar P, stateQForm S.psiHat
-        ((evaluated u).effect a * (expanded u).effect a)) =
-      ∑ g : Poly P, stateQForm S.psiHat
-        (S.place .BB' ((w.marginalPoly .bob W).effect g) *
-          S.place .AB'' ((S.pointMeasExp .alice W u).effect
-            (MvPolynomial.eval u g.1))) := by
-    rw [← stateQForm_finset_sum]
-    change stateQForm S.psiHat
-      (∑ a : PauliScalar P, S.place .BB'
-        (((w.marginalPoly .bob W).postprocess
-          (fun g => MvPolynomial.eval u g.1)).effect a) *
-            S.place .AB'' ((S.pointMeasExp .alice W u).effect a)) = _
-    exact (congrArg (stateQForm S.psiHat)
-      (sum_marginalPoly_eval_mul w .BB' W u
-        (fun a => S.place .AB'' ((S.pointMeasExp .alice W u).effect a)))).trans
-      (stateQForm_finset_sum _ _ _)
-  simp only [hregroup] at hw
-  have hcompare := avgOver_mono mu _ _
-    (fun u => marginal_eval_overlap_le_decoded_add_nonencoding w W u)
-  rw [avgOver_add, avgOver_const_of_isProbability mu
-    (uniformDistribution_isProbability _)] at hcompare
-  have hmass_eq : nonencodingMarginalMass w .bob W =
-      ∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
-        stateQForm S.psiHat (S.place .BB' ((w.marginalPoly .bob W).effect g)) := by
-    unfold nonencodingMarginalMass
-    simp only [S.placeSide_bob_tensor_one]
-    rfl
-  rw [← hmass_eq] at hcompare
-  rw [tildeM_consistencyDefect_eq_one_sub_decoded_overlap]
-  dsimp only [mu] at hw hcompare
+  have h := marginalPoly_pointMeas_consistent w hp W
+  rw [marginalReadoutDefect_eq] at h ⊢
+  have hpq := p.opposite_partner
+  have hcompare := avgOver_mono (uniformDistribution _) _ _ (fun u =>
+    marginal_eval_overlap_le_decoded_add_nonencoding w p (overlapPartner p) hpq W u)
+  rw [avgOver_add, avgOver_const_of_isProbability _ (uniformDistribution_isProbability _)] at hcompare
+  have hm : (∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
+      stateQForm S.psiHat (S.place p ((w.marginalPoly p.side W).effect g))) =
+      nonencodingMarginalMass w p.side W := by
+    cases hp <;> simp only [nonencodingMarginalMass,
+      S.placeSide_alice_tensor_one, S.placeSide_bob_tensor_one] <;> rfl
+  rw [hm] at hcompare
+  change _ - avgOver _ (fun u => marginalReadoutOverlap w p (overlapPartner p) W u
+    (fun g => MvPolynomial.eval u g.1)) ≤ _ at h
   linarith
 
-/-- Conditional consistency of Alice's original point measurement with Bob's
-pulled-apart measurement, averaged over uniformly random points. This is the
-supplied-witness form of the first display of Item 1 in paper
-`14_analysis_of_the_pauli_basis_test.tex:1463-1492`.
+end
 
-The source reuses `deltaS` after absorbing the non-encoding and game-error
-terms. The bound keeps the global polynomial-pair witness error `deltaG`
-separate in `deltaConstructPaulis`.
-
-The encoding-supported reference and Schwartz--Zippel estimates in
-`NonencodingSupport` control the non-encoding mass required by the restricted
-decoder identity; see `docs/paper-gaps/qpbt_decoding-identity.tex`.
-**Conditional:** The premise `w : GlobalPairWitness S deltaG` is supplied rather
-than constructed here, so this declaration is not the source-facing result.
-The theorem `exists_pulled_apart_consistency` now obtains the witness from
-`exists_globalPairWitness`, including at zero error, and applies this estimate
-together with the other two supplied-witness estimates to the same witness.
-The completed composition and the remaining extraction obligations are recorded
-in `docs/paper-gaps/qpbt_extraction-transfer.tex` under issue Dengnifer/MIPStarRE-QPBT-bak#123. -/
-theorem tilde_m_consistent_point_meas_of_global_pair_witness_explicit :
-    ∀ (P : AdmissibleParams) (epsilon deltaG : ℝ),
-        0 ≤ epsilon → epsilon ≤ 1 → 0 ≤ deltaG →
-          ∀ (S : ProjectiveSetting P epsilon)
-            (w : GlobalPairWitness S deltaG) (W : PauliKind),
-            consistencyDefect
-              (uniformDistribution (Fin P.m → PauliScalar P))
-              (fun u a =>
-                S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
-              (fun u a => S.placeSide .bob
-                (tildeM w .bob W (indicatorVec u) a))
-              S.psiHat ≤
-                deltaConstructPaulis (2 + 2 * Real.sqrt 172)
-                  epsilon deltaG P.m P.d P.q := by
-  classical
-  intro P epsilon deltaG hepsilon _ hdeltaG S w W
-  have hdefect := tildeM_consistencyDefect_le_deltaG_add_nonencoding w W
-  have href :=
-    (global_marginal_encoding_consistency_explicit P epsilon deltaG hepsilon S w W).2
-  have hmass := right_mass_outside_encoding_le_evaluated_defect
-    (S.encodingPauliMeas .alice W) (w.marginalPoly .bob W)
-    (ExtendedLineGame.pairState S) (ExtendedLineGame.pairState_norm S)
-    (S.encodingPauliMeas_effect_eq_zero_of_not_isEncoding .alice W)
-  have hm : nonencodingMarginalMass w .bob W ≤
-      deltaG + (1 + 2 * Real.sqrt 172) * Real.sqrt epsilon +
-        (P.m * P.d : ℝ) / P.q := by
-    unfold nonencodingMarginalMass
-    change (∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
-      stateQForm S.psiHat (S.placeSide .bob
-        (heteroKron ((w.marginalPoly .bob W).effect g) (1 : Op (PauliRegister P))))) ≤ _
-    simp_rw [stateQForm_placeSide_bob_tensor_one S _
-      (Matrix.nonneg_iff_posSemidef.mp ((w.marginalPoly .bob W).pos _)).isHermitian]
-    exact hmass.trans (add_le_add href le_rfl)
+private theorem absorb_nonencoding {P : AdmissibleParams} {ε δ mass defect : ℝ}
+    (hδ : 0 ≤ δ) (h : defect ≤ δ + mass)
+    (hm : mass ≤ δ + (1 + 2 * Real.sqrt 172) * Real.sqrt ε + (P.m * P.d : ℝ) / P.q) :
+    defect ≤ deltaConstructPaulis (2 + 2 * Real.sqrt 172) ε δ P.m P.d P.q := by
   unfold deltaConstructPaulis
   rw [Nat.cast_mul]
-  have hratio : 0 ≤ (P.m * P.d : ℝ) / P.q := by positivity
-  have hsqrt : 0 ≤ Real.sqrt epsilon := Real.sqrt_nonneg epsilon
-  have hroot : 0 ≤ Real.sqrt (172 : ℝ) := Real.sqrt_nonneg _
-  nlinarith
+  have hr : 0 ≤ (P.m * P.d : ℝ) / P.q := by positivity
+  nlinarith [Real.sqrt_nonneg ε, Real.sqrt_nonneg (172 : ℝ)]
 
-/-- For a supplied global polynomial-pair witness, the Alice-pulled/Bob-point
-defect is bounded by its point-consistency error plus Alice's non-encoding
-mass. This is the register-interchanged, support-restricted calculation in
-paper `14_analysis_of_the_pauli_basis_test.tex:1483-1492`, supporting blueprint
-`lem:qld-construct-the-paulis`. The estimate uses no bound for that mass; see
-`docs/paper-gaps/qpbt_decoding-identity.tex` for the decoder restriction. -/
-theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding'
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-      (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
-      (fun u a => S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) S.psiHat ≤
-      deltaG + nonencodingMarginalMass w .alice W := by
+/-- The decoded pulled-apart measurement is consistent with the other player's original points. -/
+theorem tilde_point_defect_le {P : AdmissibleParams} {ε δ : ℝ}
+    {S : ProjectiveSetting P ε} (w : GlobalPairWitness S δ) {p : Placement}
+    (hp : p.Primary) (W : PauliKind) (hε : 0 ≤ ε) (hδ : 0 ≤ δ) :
+    measurementDefect (uniformDistribution (PauliPoint P))
+      (fun u => S.blockMeasurement p.side (tildeMMeasurement w p.side W (indicatorVec u)))
+      (fun u => S.playerMeasurement (overlapPartner p).side (S.pointMeas (overlapPartner p).side W u))
+      S.psiHat ≤ deltaConstructPaulis (2 + 2 * Real.sqrt 172) ε δ P.m P.d P.q := by
   classical
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
-  let evaluated := fun u : Fin P.m → PauliScalar P =>
-    S.placedMeasurement .AA' ((w.marginalPoly .alice W).postprocess
-      (fun g => MvPolynomial.eval u g.1))
-  let expanded := fun u : Fin P.m → PauliScalar P =>
-    S.placedMeasurement .BA'' (S.pointMeasExp .bob W u)
-  have hdefect := consistencyDefect_eq_one_sub_overlap mu evaluated expanded S.psiHat
-    (uniformDistribution_isProbability _) S.psiHat_norm
-  have hw := marginalPoly_pointMeas_consistent_alice w W
-  change consistencyDefect mu (fun u a => (evaluated u).effect a)
-    (fun u a => (expanded u).effect a) S.psiHat ≤ deltaG at hw
-  rw [hdefect] at hw
-  have hregroup (u : Fin P.m → PauliScalar P) :
-      (∑ a : PauliScalar P, stateQForm S.psiHat
-        ((evaluated u).effect a * (expanded u).effect a)) =
-      ∑ g : Poly P, stateQForm S.psiHat
-        (S.place .AA' ((w.marginalPoly .alice W).effect g) *
-          S.place .BA'' ((S.pointMeasExp .bob W u).effect
-            (MvPolynomial.eval u g.1))) := by
-    rw [← stateQForm_finset_sum]
-    change stateQForm S.psiHat
-      (∑ a : PauliScalar P, S.place .AA'
-        (((w.marginalPoly .alice W).postprocess
-          (fun g => MvPolynomial.eval u g.1)).effect a) *
-            S.place .BA'' ((S.pointMeasExp .bob W u).effect a)) = _
-    exact (congrArg (stateQForm S.psiHat)
-      (sum_marginalPoly_eval_mul w .AA' W u
-        (fun a => S.place .BA'' ((S.pointMeasExp .bob W u).effect a)))).trans
-      (stateQForm_finset_sum _ _ _)
-  simp only [hregroup] at hw
-  have hcompare := avgOver_mono mu _ _
-    (fun u => marginal_eval_overlap_le_decoded_add_nonencoding' w W u)
-  rw [avgOver_add, avgOver_const_of_isProbability mu
-    (uniformDistribution_isProbability _)] at hcompare
-  have hmass_eq : nonencodingMarginalMass w .alice W =
-      ∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
-        stateQForm S.psiHat (S.place .AA' ((w.marginalPoly .alice W).effect g)) := by
-    unfold nonencodingMarginalMass
-    simp only [S.placeSide_alice_tensor_one]
-    rfl
-  rw [← hmass_eq] at hcompare
-  rw [tildeM_consistencyDefect_eq_one_sub_decoded_overlap']
-  dsimp only [mu] at hw hcompare
-  linarith
-
-/-- Conditional consistency of Alice's pulled-apart measurement with Bob's
-original point measurement, averaged over uniformly random points. This is the
-supplied-witness form of the register-interchanged display of Item 1 in paper
-`14_analysis_of_the_pauli_basis_test.tex:1463-1492`.
-
-The conclusion uses the same explicit construction scale as the first player
-ordering.
-
-The non-encoding mass is controlled by the encoding-supported reference and
-Schwartz--Zippel estimates of `NonencodingSupport`. Thus the restricted decoder
-identity suffices, as explained in `docs/paper-gaps/qpbt_decoding-identity.tex`.
-
-**Conditional:** The premise `w : GlobalPairWitness S deltaG` is supplied rather
-than constructed here, so this declaration is not the source-facing result.
-The theorem `exists_pulled_apart_consistency` now obtains the witness from
-`exists_globalPairWitness`, including at zero error, and applies this estimate
-together with the other two supplied-witness estimates to the same witness.
-The completed composition and the remaining extraction obligations are recorded
-in `docs/paper-gaps/qpbt_extraction-transfer.tex` under issue Dengnifer/MIPStarRE-QPBT-bak#123. -/
-theorem tilde_m_consistent_point_meas'_of_global_pair_witness_explicit :
-    ∀ (P : AdmissibleParams) (epsilon deltaG : ℝ),
-        0 ≤ epsilon → epsilon ≤ 1 → 0 ≤ deltaG →
-          ∀ (S : ProjectiveSetting P epsilon)
-            (w : GlobalPairWitness S deltaG) (W : PauliKind),
-            consistencyDefect
-              (uniformDistribution (Fin P.m → PauliScalar P))
-              (fun u a => S.placeSide .alice
-                (tildeM w .alice W (indicatorVec u) a))
-              (fun u a =>
-                S.placePlayer .bob ((S.pointMeas .bob W u).effect a))
-              S.psiHat ≤
-                deltaConstructPaulis (2 + 2 * Real.sqrt 172)
-                  epsilon deltaG P.m P.d P.q := by
-  classical
-  intro P epsilon deltaG hepsilon _ hdeltaG S w W
-  have hdefect := tildeM_consistencyDefect_le_deltaG_add_nonencoding' w W
-  have href :=
-    (global_marginal_encoding_consistency_explicit P epsilon deltaG hepsilon S w W).1
-  have hmass := mass_outside_encoding_le_evaluated_defect
-    (w.marginalPoly .alice W) (S.encodingPauliMeas .bob W)
-    (ExtendedLineGame.pairState S) (ExtendedLineGame.pairState_norm S)
-    (S.encodingPauliMeas_effect_eq_zero_of_not_isEncoding .bob W)
-  have hm : nonencodingMarginalMass w .alice W ≤
-      deltaG + (1 + 2 * Real.sqrt 172) * Real.sqrt epsilon +
-        (P.m * P.d : ℝ) / P.q := by
-    unfold nonencodingMarginalMass
-    change (∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
-      stateQForm S.psiHat (S.placeSide .alice
-        (heteroKron ((w.marginalPoly .alice W).effect g) (1 : Op (PauliRegister P))))) ≤ _
-    simp_rw [stateQForm_placeSide_alice_tensor_one S _
-      (Matrix.nonneg_iff_posSemidef.mp ((w.marginalPoly .alice W).pos _)).isHermitian]
-    exact hmass.trans (add_le_add href le_rfl)
-  unfold deltaConstructPaulis
-  rw [Nat.cast_mul]
-  have hratio : 0 ≤ (P.m * P.d : ℝ) / P.q := by positivity
-  have hsqrt : 0 ≤ Real.sqrt epsilon := Real.sqrt_nonneg epsilon
-  have hroot : 0 ≤ Real.sqrt (172 : ℝ) := Real.sqrt_nonneg _
-  nlinarith
+  rw [pullingReadout_defect_eq w hp W _ _ (fun u a => tildeM_eq_sum w p.side W (indicatorVec u) a)]
+  refine absorb_nonencoding hδ (marginalDecodedDefect_le w hp W) ?_
+  have href := global_marginal_encoding_consistency_explicit P ε δ hε S w W
+  have hψ := ExtendedLineGame.pairState_norm S
+  cases hp
+  · have hm := mass_outside_encoding_le_evaluated_defect (w.marginalPoly .alice W)
+      (S.encodingPauliMeas .bob W) _ hψ (S.encodingPauliMeas_effect_eq_zero_of_not_isEncoding .bob W)
+    simp only [nonencodingMarginalMass, Placement.side]
+    simp_rw [stateQForm_placeSide_alice_tensor_one S]
+    exact hm.trans (add_le_add href.1 le_rfl)
+  · have hm := right_mass_outside_encoding_le_evaluated_defect (S.encodingPauliMeas .alice W)
+      (w.marginalPoly .bob W) _ hψ (S.encodingPauliMeas_effect_eq_zero_of_not_isEncoding .alice W)
+    simp only [nonencodingMarginalMass, Placement.side]
+    simp_rw [stateQForm_placeSide_bob_tensor_one S]
+    exact hm.trans (add_le_add href.2 le_rfl)
 
 end
 

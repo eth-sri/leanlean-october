@@ -3,6 +3,8 @@ module
 public import QPBT.Combining.DirectLowDegree.Transport.BranchComparison
 public import QPBT.Combining.DirectLowDegree.Transport.Combining.QuestionLaw
 
+public import QPBT.Games.AnswerTransport
+
 /-!
 # Index-conditioned rejection probabilities of the directly indexed game
 
@@ -44,14 +46,18 @@ noncomputable section
 
 /-! ## The index-conditioned branch rejection probability -/
 
+section
+
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+    (types : LdType × LdType)
+include D S types
+
 /-- The rejection probability of an ordered pair of low-degree question types
 conditioned on the stored coordinate index of the common sample, averaged over
 the sampled point and the sampled direction alone. -/
-def directLdIndexedBranchRejectionProbability
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (types : LdType × LdType) (i : Fin D.m) : ℝ :=
+def directLdIndexedBranchRejectionProbability (i : Fin D.m) : ℝ :=
   avgOver (uniformDistribution
-      ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
+      ((DirectPoint D) × (DirectPoint D)))
     fun pd => directRejectedMass D S
       (types.1, directLdMap D types.1 ⟨pd.1, i, pd.2⟩)
       (types.2, directLdMap D types.2 ⟨pd.1, i, pd.2⟩)
@@ -62,34 +68,38 @@ probabilities.  This is the refinement used to split a branch of the combined
 game according to the event of `lem:ld-combined-question-law`, whose two cases
 are the point coordinates and the combining coordinates of the combined
 dimension. -/
-theorem directLdBranchRejectionProbability_eq_avgOver_index
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (types : LdType × LdType) :
+theorem directLdBranchRejectionProbability_eq_avgOver_index :
     directLdBranchRejectionProbability D S types =
       avgOver (uniformDistribution (Fin D.m))
         (directLdIndexedBranchRejectionProbability D S types) := by
   rw [directLdBranchRejectionProbability_eq_avgOver]
   exact avgOver_uniform_equiv_prod (e := directLdSpaceIndexEquiv D) _
 
+end
+
 /-! ## The point-versus-point branch -/
+
+section
+
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+include D S
 
 /-- Both questions of a point-versus-point branch are the point question at the
 sampled point, so the index-conditioned rejection probability of that branch is
 the average over the sampled point alone, for every stored coordinate index. -/
-theorem directLdIndexedBranchRejectionProbability_point_point
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) (i : Fin D.m) :
+theorem directLdIndexedBranchRejectionProbability_point_point (i : Fin D.m) :
     directLdIndexedBranchRejectionProbability D S (.point, .point) i =
-      avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) fun u =>
+      avgOver (uniformDistribution (DirectPoint D)) fun u =>
         directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u) := by
   have hsplit : directLdIndexedBranchRejectionProbability D S (.point, .point) i =
       avgOver (uniformDistribution
-          ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
-        (fun pd => (fun (u _ : Fin D.m → DirectScalarQ D) =>
+          ((DirectPoint D) × (DirectPoint D)))
+        (fun pd => (fun (u _ : DirectPoint D) =>
           directRejectedMass D S (directLdPointQuestionOf D u)
             (directLdPointQuestionOf D u)) pd.1 pd.2) := rfl
   rw [hsplit,
-    avgOver_uniform_prod (f := fun (u _ : Fin D.m → DirectScalarQ D) =>
+    avgOver_uniform_prod (f := fun (u _ : DirectPoint D) =>
       directRejectedMass D S (directLdPointQuestionOf D u)
         (directLdPointQuestionOf D u))]
   apply avgOver_congr
@@ -100,50 +110,22 @@ theorem directLdIndexedBranchRejectionProbability_point_point
 over the sampled point of the rejected mass at the two equal point questions.
 This is the branch to which the combining coordinates of the combined game
 reduce, by `directCombined_measuredQuestion_of_coefficientVar`. -/
-theorem directLdBranchRejectionProbability_point_point_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+theorem directLdBranchRejectionProbability_point_point_eq :
     directLdBranchRejectionProbability D S (.point, .point) =
-      avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) fun u =>
+      avgOver (uniformDistribution (DirectPoint D)) fun u =>
         directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u) := by
   rw [directLdBranchRejectionProbability_eq_avgOver_index,
     show directLdIndexedBranchRejectionProbability D S (.point, .point) =
-      fun _ => avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) fun u =>
+      fun _ => avgOver (uniformDistribution (DirectPoint D)) fun u =>
         directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u) from
       funext (directLdIndexedBranchRejectionProbability_point_point D S)]
   exact avgOver_uniform_const _
 
-/-! ## The rejected mass of the combined strategy -/
+end
 
-/-- The Born weight of an answer pair of the combined strategy is the total
-Born weight, at the measured questions, of the answer pairs of the original
-strategy that the relabelling of `def:ld-combined-strategy` sends to it.  Each
-measurement of the combined strategy is a coarse-graining of a measurement of
-the original strategy, so its effects are the fiber sums of the original
-effects. -/
-theorem outcomeWeight_directCombinedStrategy (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (x y : DirectLdQuestion D.combined)
-    (a' b' : DirectLdAnswer D.combined) :
-    outcomeWeight (directCombinedStrategy D S) x y a' b' =
-      ∑ a ∈ Finset.univ.filter (fun a => directCombinedAnswerMap D x a = a'),
-        ∑ b ∈ Finset.univ.filter (fun b => directCombinedAnswerMap D y b = b'),
-          outcomeWeight S (directCombinedMeasuredQuestion D x)
-            (directCombinedMeasuredQuestion D y) a b := by
-  classical
-  show DistanceCalculus.stateQForm S.ψ
-      (heteroKron
-        (((S.A (directCombinedMeasuredQuestion D x)).postprocess
-            (directCombinedAnswerMap D x)).effect a')
-        (((S.B (directCombinedMeasuredQuestion D y)).postprocess
-            (directCombinedAnswerMap D y)).effect b')) = _
-  rw [Measurement.postprocess_effect, Measurement.postprocess_effect,
-    DistanceCalculus.heteroKron_finset_sum_left,
-    DistanceCalculus.stateQForm_finset_sum]
-  refine Finset.sum_congr rfl fun a _ => ?_
-  rw [DistanceCalculus.heteroKron_finset_sum_right,
-    DistanceCalculus.stateQForm_finset_sum]
-  exact Finset.sum_congr rfl fun b _ => rfl
+/-! ## The rejected mass of the combined strategy -/
 
 /-- Rejected-mass comparison for `def:ld-combined-strategy`.  If every answer
 pair accepted by the win predicate of the original game at the measured
@@ -162,49 +144,12 @@ theorem directRejectedMass_directCombinedStrategy_le (D : DirectLdParams)
     directRejectedMass D.combined (directCombinedStrategy D S) x y ≤
       directRejectedMass D S (directCombinedMeasuredQuestion D x)
         (directCombinedMeasuredQuestion D y) := by
-  classical
-  set mx := directCombinedMeasuredQuestion D x with hmx
-  set my := directCombinedMeasuredQuestion D y with hmy
-  set F : DirectLdAnswer D → DirectLdAnswer D → ℝ := fun a b =>
-    if directLdWinPredicate D.combined x y
-        (directCombinedAnswerMap D x a) (directCombinedAnswerMap D y b) then 0
-    else outcomeWeight S mx my a b with hF
-  have hmass : directRejectedMass D.combined (directCombinedStrategy D S) x y =
-      ∑ a : DirectLdAnswer D, ∑ b : DirectLdAnswer D, F a b := by
-    have step : ∀ a' b' : DirectLdAnswer D.combined,
-        (if directLdWinPredicate D.combined x y a' b' then 0
-          else outcomeWeight (directCombinedStrategy D S) x y a' b') =
-          ∑ a ∈ Finset.univ.filter (fun a => directCombinedAnswerMap D x a = a'),
-            ∑ b ∈ Finset.univ.filter (fun b => directCombinedAnswerMap D y b = b'),
-              F a b := by
-      intro a' b'
-      by_cases hw : directLdWinPredicate D.combined x y a' b' = true
-      · rw [if_pos hw]
-        refine (Finset.sum_eq_zero fun a ha => Finset.sum_eq_zero fun b hb => ?_).symm
-        rw [Finset.mem_filter] at ha hb
-        rw [hF]
-        simp only [ha.2, hb.2, hw, if_true]
-      · rw [if_neg hw, outcomeWeight_directCombinedStrategy]
-        refine Finset.sum_congr rfl fun a ha => Finset.sum_congr rfl fun b hb => ?_
-        rw [Finset.mem_filter] at ha hb
-        simp [hF, ha.2, hb.2, hw, hmx, hmy]
-    rw [directRejectedMass]
-    simp_rw [step]
-    rw [← Finset.sum_fiberwise Finset.univ (directCombinedAnswerMap D x)
-      (fun a => ∑ b : DirectLdAnswer D, F a b)]
-    refine Finset.sum_congr rfl fun a' _ => ?_
-    rw [Finset.sum_comm]
-    exact Finset.sum_congr rfl fun a _ =>
-      Finset.sum_fiberwise Finset.univ (directCombinedAnswerMap D y) (F a)
-  rw [hmass, directRejectedMass]
-  refine Finset.sum_le_sum fun a _ => Finset.sum_le_sum fun b _ => ?_
-  simp only [hF]
-  by_cases hw : directLdWinPredicate D mx my a b = true
-  · simp only [if_pos hw, if_pos (himp a b hw), le_refl]
-  · rw [if_neg hw]
-    split_ifs
-    · exact outcomeWeight_nonneg S mx my a b
-    · exact le_rfl
+  let mx := directCombinedMeasuredQuestion D x
+  let my := directCombinedMeasuredQuestion D y
+  rw [directRejectedMass_eq_event, directRejectedMass_eq_event, outcomeEventWeight_postprocess S (directCombinedStrategy D S) mx my x y
+    (directCombinedAnswerMap D x) (directCombinedAnswerMap D y) (fun _ _ => rfl)]
+  apply outcome_event_weight_mono
+  grind only
 
 end
 

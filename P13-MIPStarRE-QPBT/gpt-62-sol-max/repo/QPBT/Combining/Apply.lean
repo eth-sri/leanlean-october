@@ -4,11 +4,20 @@ public import QPBT.Combining.Points
 public import QPBT.Combining.PairCompletion
 public import QPBT.Combining.ExtendedLines.Estimates
 public import QPBT.Combining.ActualErrorBounds
-public import QPBT.Combining.ExplicitScalarBounds
+public import QPBT.Combining.ErrorBounds
+public import QPBT.Combining.PassingError
+public import QPBT.Combining.DirectLowDegree.Transport.Error
+public import QPBT.ExplicitConstants
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
 public import QPBT.Combining.ExtendedLineGame.PairPointConsistency
-public import QPBT.Combining.PointErrorObstruction
-public import QPBT.Combining.ErrorObstruction
-public import QPBT.Combining.Lines.SubLineJoint
+public import QPBT.Combining.Witnesses
+public import QPBT.Games.ErrorFunctions
+public import QPBT.Test.PauliBasisTest
+public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+public import QPBT.Combining.Lines.SubLineMixture
+public import QPBT.Combining.Lines.RestrictedAverage
+public import QPBT.Combining.Lines.ConsistencyPositivity
 public import QPBT.Test.SoundnessDefs
 
 /-!
@@ -103,12 +112,11 @@ The proof uses the point, line, and subline constructions together with both
 opposite-placement comparisons. -/
 theorem exists_extendedLinesWitness_established_ofPointsWitness
     (deltaQ : ℝ → ℝ) (hdeltaQ : IsPolyErr deltaQ) :
-    ∃ C : ℝ, 0 < C ∧
-      ∃ deltaCombine : ℝ → ℝ → ℝ, IsPolyErr₂ deltaCombine ∧
+    ∃ deltaCombine : ℝ → ℝ → ℝ, IsPolyErr₂ deltaCombine ∧
         ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε)
           (points : CombinedPointsWitness S (deltaQ ε)),
           Nonempty (ExtendedLinesWitness S points
-            (C * (P.m : ℝ) *
+            ((P.m : ℝ) *
               deltaCombine ε ((P.m * P.d : ℕ) / (P.q : ℝ)))) := by
   classical
   obtain ⟨deltaP, hdeltaP, hlines⟩ :=
@@ -116,31 +124,17 @@ theorem exists_extendedLinesWitness_established_ofPointsWitness
   obtain ⟨constant, hconstant, hnear⟩ := subline_joint_overlap_near_one_at
   obtain ⟨deltaCombine, hdeltaCombine, hscalar⟩ :=
     exists_combining_polynomial_bound deltaQ hdeltaQ deltaP hdeltaP constant hconstant.le
-  refine ⟨1, by norm_num, deltaCombine, hdeltaCombine, ?_⟩
+  refine ⟨deltaCombine, hdeltaCombine, ?_⟩
   intro P ε S points
   obtain ⟨lines⟩ := hlines P ε S points
   obtain ⟨sublines⟩ := exists_subLineWitness P
   have hplaced (first second : Placement) (hopposite : first.IsOpposite second) :
-      consistencyDefect (directLinePointDist P.extendedDirectLd)
-        (fun sample answer => S.place first
-          (((sublines.extendedMeasurement lines first.side sample.1).postprocess
-            (fun polynomial => (directEvalOpt sample.1 sample.2 polynomial).map
-              (extendedDirectScalarEquiv P))).effect answer))
-        (fun sample answer => S.place second
-          (((points.Q second.side (projX (directPointToPauli P sample.2))
-            (projZ (directPointToPauli P sample.2))).postprocess (fun values => some
-              ((directPointToPauli P sample.2) (alphaVar P.m) * values.1 +
-                (directPointToPauli P sample.2) (betaVar P.m) * values.2))).effect answer))
-        S.psiHat ≤ (P.m : ℝ) * deltaCombine ε ((P.m * P.d : ℕ) / (P.q : ℝ)) := by
+      ExtendedLineGame.completedDefect points first second (directLinePointDist P.extendedDirectLd)
+        (sublines.extendedMeasurement lines first.side) ≤ (P.m : ℝ) * deltaCombine ε ((P.m * P.d : ℕ) / (P.q : ℝ)) := by
     refine (le_min ?_ ?_).trans
       (hscalar ε ((P.m * P.d : ℕ) / (P.q : ℝ)) (P.m : ℝ)
         S.eps_nonneg (by positivity) (by exact_mod_cast P.one_le_m))
-    · unfold consistencyDefect
-      calc
-        _ ≤ avgOver (directLinePointDist P.extendedDirectLd) (fun _ => 1) :=
-          avgOver_mono _ _ _ fun sample =>
-            consistencyDefect_integrand_le_one S first second hopposite _ _
-        _ = 1 := avgOver_const_of_isProbability _ (directLinePointDist_isProbability _) 1
+    · exact S.placedDefect_le_one _ _ _ _ _ hopposite (directLinePointDist_isProbability _)
     · refine (sublines.extended_consistencyDefect_le lines first second hopposite).trans ?_
       exact (le_abs_self _).trans (by
         simpa only [abs_sub_comm] using
@@ -149,12 +143,9 @@ theorem exists_extendedLinesWitness_established_ofPointsWitness
   refine ⟨{
     Qline := sublines.extendedMeasurement lines
     axis_degree := sublines.extendedMeasurement_axis_degree lines
-    consistent_alice := ?_
-    consistent_bob := ?_ }⟩
-  · simp only [one_mul]
-    with_unfolding_all exact hplaced .AA' .BA'' trivial
-  · simp only [one_mul]
-    with_unfolding_all exact hplaced .BB' .AB'' trivial
+    consistent := ?_ }⟩
+  intro p hp
+  exact hplaced p _ p.opposite_partner
 
 /-- Directly indexed construction for the auxiliary estimate
 `C * m * poly(epsilon, md / q)`. This has the same directly indexed estimate as
@@ -183,20 +174,19 @@ The proof constructs the polynomially controlled point family of `lem:qld-4-10`
 and applies the conditional companion above to that same family. -/
 theorem exists_extendedLinesWitness_established :
     ∃ deltaQ : ℝ → ℝ, IsPolyErr deltaQ ∧
-      ∃ C : ℝ, 0 < C ∧
         ∃ deltaCombine : ℝ → ℝ → ℝ, IsPolyErr₂ deltaCombine ∧
-          ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε),
+          ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε), ε ≤ 1 →
             ∃ points : CombinedPointsWitness S (deltaQ ε),
               Nonempty (ExtendedLinesWitness S points
-                (C * (P.m : ℝ) *
+                ((P.m : ℝ) *
                   deltaCombine ε ((P.m * P.d : ℕ) / (P.q : ℝ)))) := by
   classical
   obtain ⟨deltaQ, hdeltaQ, hpoints⟩ := exists_combinedPointsWitness
-  obtain ⟨C, hC, deltaCombine, hdeltaCombine, hlines⟩ :=
+  obtain ⟨deltaCombine, hdeltaCombine, hlines⟩ :=
     exists_extendedLinesWitness_established_ofPointsWitness deltaQ hdeltaQ
-  refine ⟨deltaQ, hdeltaQ, C, hC, deltaCombine, hdeltaCombine, ?_⟩
-  intro P ε S
-  obtain ⟨points⟩ := hpoints P ε S
+  refine ⟨deltaQ, hdeltaQ, deltaCombine, hdeltaCombine, ?_⟩
+  intro P ε S hε
+  obtain ⟨points⟩ := hpoints P ε S hε
   exact ⟨points, hlines P ε S points⟩
 
 /-- Construction of the projective global polynomial-pair measurements from
@@ -221,46 +211,29 @@ The proof below composes the established direct-line construction with the actua
 rounded polynomial-pair construction. Its four defects are bounded both by one
 and by the constructed error. `exists_actual_rounded_global_pair_error_bound`
 absorbs their minimum, including the eighth-root rounding term and both point
-and line errors, for every nonnegative strategy error. This alternative proof
+and line errors, for strategy errors at most one. This alternative proof
 does not require an identification with the source's seed-bearing auxiliary game.
 -/
 theorem exists_globalPairWitness :
     ∃ a b : ℝ, 1 < a ∧ 0 < b ∧ b < 1 ∧
-      ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε),
-        Nonempty (GlobalPairWitness S (deltaQld a b ε P.m P.d P.q)) := by
-  obtain ⟨pointError, hpoint, C, hC, lineError, hline, hlines⟩ :=
+      ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε), ε ≤ 1 →
+        Nonempty (GlobalPairWitness S (P.qldError a b ε)) := by
+  obtain ⟨pointError, hpoint, lineError, hline, hlines⟩ :=
     exists_extendedLinesWitness_established
-  obtain ⟨a, b, ha, hb, hb1, hpairs⟩ :=
-    ExtendedLineGame.exists_pairWitness_of_points_lines
+  let a := pauliBaselineLowDegreeConstant
+  let b := pauliBaselineLowDegreePower
+  have ha : 1 ≤ a := by norm_num [a, pauliBaselineLowDegreeConstant]
+  have hb : 0 < b := by norm_num [b, pauliBaselineLowDegreePower]
   obtain ⟨A, B, hA, hB, hB1, hscalar⟩ :=
     exists_actual_rounded_global_pair_error_bound pointError hpoint lineError hline
-      C a b hC.le ha hb hb1
+      a b ha hb
   refine ⟨A, B, hA, hB, hB1, ?_⟩
-  intro P ε S
-  obtain ⟨points, ⟨lines⟩⟩ := hlines P ε S
-  obtain ⟨pair⟩ := hpairs P ε (pointError ε)
-    (C * (P.m : ℝ) * lineError ε ((P.m * P.d : ℕ) / (P.q : ℝ))) S points lines
-  have hbound := hscalar P ε S.eps_nonneg
-  simp only [Nat.cast_mul] at hbound
-  refine ⟨{ pair with point_consistent_alice := ?_, point_consistent_bob := ?_ }⟩
-  · intro W
-    refine (le_min (show _ ≤ (1 : ℝ) from ?_) (pair.point_consistent_alice W)).trans ?_
-    · unfold consistencyDefect
-      calc
-        _ ≤ avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun _ => 1) :=
-          avgOver_mono _ _ _ fun u => consistencyDefect_integrand_le_one
-            S .AA' .BA'' (by trivial) _ _
-        _ = 1 := avgOver_const_of_isProbability _ (uniformDistribution_isProbability _) 1
-    · with_unfolding_all simpa only [Nat.cast_mul, Real.rpow_eq_pow] using hbound
-  · intro W
-    refine (le_min (show _ ≤ (1 : ℝ) from ?_) (pair.point_consistent_bob W)).trans ?_
-    · unfold consistencyDefect
-      calc
-        _ ≤ avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun _ => 1) :=
-          avgOver_mono _ _ _ fun u => consistencyDefect_integrand_le_one
-            S .BB' .AB'' (by trivial) _ _
-        _ = 1 := avgOver_const_of_isProbability _ (uniformDistribution_isProbability _) 1
-    · with_unfolding_all simpa only [Nat.cast_mul, Real.rpow_eq_pow] using hbound
+  intro P ε S hε
+  obtain ⟨points, ⟨lines⟩⟩ := hlines P ε S hε
+  obtain ⟨pair⟩ := ExtendedLineGame.pair_witness_of_points_lines_explicit P ε (pointError ε)
+    ((P.m : ℝ) * lineError ε ((P.m * P.d : ℕ) / (P.q : ℝ))) S points lines
+  exact ⟨{ pair with point_consistent := fun hp W =>
+    (pair.point_consistent hp W).trans (hscalar P ε S.eps_nonneg hε) }⟩
 
 end
 

@@ -114,7 +114,7 @@ theorem evaluated_overlap_state_transfer {Y α R I J : Type*}
 fraction of points. Injectivity follows from the exact decoder identity. -/
 theorem pauli_encoding_collision_le {P : AdmissibleParams}
     (h k : PauliRegister P) (hne : h ≠ k) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P))
+    avgOver (uniformDistribution (PauliPoint P))
       (fun u => if evalPoly (encodingPoly h) u = evalPoly (encodingPoly k) u
         then (1 : ℝ) else 0) ≤ (P.m * P.d : ℝ) / P.q := by
   apply poly_eval_collision_le
@@ -132,7 +132,7 @@ theorem pauli_overlap_transfer {P : AdmissibleParams} {I J : Type*}
     (A : Measurement (PauliRegister P) I) (B : Measurement (PauliRegister P) J)
     (theta ideal : EuclideanSpace ℂ (I × J))
     (htheta : ‖theta‖ = 1) (hideal : ‖ideal‖ = 1) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+    avgOver (uniformDistribution (PauliPoint P)) (fun u =>
       ∑ a : PauliScalar P, stateQForm theta
         (heteroKron ((A.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)
           ((B.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a))) ≤

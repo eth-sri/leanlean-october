@@ -4,7 +4,17 @@ public import QPBT.Algebra.PauliTheorems
 public import QPBT.Games.DistanceTheorems.TensorSupport
 public import QPBT.Observables.ExpandedCommutation
 public import QPBT.Observables.LineMeasurement.Restriction
-public import QPBT.Test.MagicSquareTheorems
+public import QPBT.Algebra.Pauli
+public import QPBT.Test.MagicSquareTheorems.Basic
+public import QPBT.Test.MagicSquareTheorems.PerfectStrategy
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Relations
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Dilation
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Anticommutation
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Transfer
+public import QPBT.Test.MagicSquareTheorems.PerfectStrategy.Observables
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Consistency
+public import QPBT.Test.MagicSquareTheorems.Rigidity.GroundSlice
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Marginals
 public import QPBT.Test.PauliBasisTest
 
 /-!
@@ -69,44 +79,16 @@ noncomputable def pauliBasisMeasurement (W : PauliKind) :
     Measurement (ι → K) (ι → K) :=
   Measurement.ofSumEqOne (pauliProj W) (pauliProj_nonneg W) (sum_pauliProj_eq_one W)
 
-/-- The effect of the generalized Pauli basis measurement at outcome `e` is the
-projector `τ^W_e` onto the corresponding generalized Pauli eigenspace. -/
-@[simp] theorem pauliBasisMeasurement_effect (W : PauliKind) (e : ι → K) :
-    (pauliBasisMeasurement W).effect e = pauliProj W e := rfl
-
 /-! ### Symmetry and Hermiticity of the generalized Pauli observables -/
 
-omit [Fintype K] in
 /-- Generalized Pauli observables are symmetric matrices in the computational
 basis.  Symmetry is what makes the honest measurements consistent on the EPR
 state used by `lem:pauli-completeness`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1237-1360`. -/
 theorem tauObservable_transpose (W : PauliKind) (a : ι → K) :
     (tauObservable W a)ᵀ = tauObservable W a := by
-  haveI : CharP K 2 := (Algebra.charP_iff (ZMod 2) K 2).mp (ZMod.charP 2)
-  have hswap : ∀ x y c : K, (x = y + c) ↔ (y = x + c) := by
-    intro x y c
-    constructor
-    · rintro rfl
-      rw [add_assoc, CharTwo.add_self_eq_zero, add_zero]
-    · rintro rfl
-      rw [add_assoc, CharTwo.add_self_eq_zero, add_zero]
-  ext x y
-  rw [Matrix.transpose_apply]
-  cases W with
-  | X =>
-      refine Finset.prod_congr rfl fun i _ => ?_
-      change (if y i = x i + a i then (1 : ℂ) else 0) = if x i = y i + a i then 1 else 0
-      by_cases h : x i = y i + a i
-      · rw [if_pos h, if_pos ((hswap _ _ _).mp h)]
-      · rw [if_neg h, if_neg (fun hc => h ((hswap _ _ _).mp hc))]
-  | Z =>
-      refine Finset.prod_congr rfl fun i _ => ?_
-      change (if y i = x i then phaseSign (binTrace K (a i * x i)) else 0) =
-        if x i = y i then phaseSign (binTrace K (a i * y i)) else 0
-      by_cases h : x i = y i
-      · rw [h]
-      · rw [if_neg h, if_neg (fun hc => h hc.symm)]
+  rw [tauObservable_eq_sum_pauliProj]
+  simp [Matrix.transpose_sum, Matrix.transpose_smul, pauliProj_transpose]
 
 /-! ### Orthogonality of the generalized Pauli projectors
 
@@ -122,16 +104,6 @@ theorem pauliProj_isProj (W : PauliKind) (e : ι → K) : IsProj (pauliProj W e)
   · simpa using pauliProj_mul_pauliProj W e e
   · rw [Matrix.star_eq_conjTranspose, pauliProj_conjTranspose]
 
-/-- Every coarse-graining of a generalized Pauli basis measurement is
-projective.  This is the projectivity of the honest Point, Line and Pauli
-measurements in the proof of `lem:pauli-completeness`, paper
-`references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1364-1370`. -/
-theorem pauliBasisMeasurement_postprocess_projective {β : Type*} [Fintype β]
-    [DecidableEq β] (W : PauliKind) (g : (ι → K) → β) :
-    MIPStarRE.QPBT.Measurement.IsProjective ((pauliBasisMeasurement W).postprocess g) :=
-  SandwichProduct.postprocess_isProjective (pauliBasisMeasurement W)
-    (fun e => pauliProj_isProj W e) g
-
 /-! ### The honest Pair/W measurements
 
 For an ambient question `ω = (u_X, u_Z, r_X, r_Z)` the honest player measures
@@ -145,7 +117,7 @@ the Pauli register in basis `W` and reports the binary trace
 measurement on the Pauli label `h`.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1277-1286`. -/
 noncomputable def pauliTraceBit (P : AdmissibleParams)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) (h : PauliRegister P) : ZMod 2 :=
+    (u : PauliPoint P) (r : PauliScalar P) (h : PauliRegister P) : ZMod 2 :=
   fixedBinTrace P.model (lowDegreeEnc h u * r)
 
 /-- The honest Pair/W measurement `τ^W_{[tr(g_·(u) r) = β]}` of the proof of
@@ -154,81 +126,40 @@ by the trace bit.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1277-1286`,
 blueprint `lem:pauli-completeness`. -/
 noncomputable def pauliTraceMeasurement (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) :
+    (u : PauliPoint P) (r : PauliScalar P) :
     Measurement (ZMod 2) (PauliRegister P) :=
   (pauliBasisMeasurement W).postprocess (pauliTraceBit P u r)
 
-/-- The effect of the honest Pair/`W` measurement at the bit `β` is the sum of
-the generalized Pauli projectors over the labels whose trace bit equals `β`,
-which is the coarse-grained projector `τ^W_{[tr(g_·(u) r) = β]}` of the paper. -/
-theorem pauliTraceMeasurement_effect (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) (b : ZMod 2) :
-    (pauliTraceMeasurement P W u r).effect b =
-      ∑ h ∈ Finset.univ.filter (fun h : PauliRegister P => pauliTraceBit P u r h = b),
-        pauliProj W h := rfl
+/-- The trace measurement at the basis-selected blocks of a joint query. -/
+noncomputable abbrev pauliTraceReadout (P : AdmissibleParams) (W : PauliKind) (z : PauliSpace P) :=
+  pauliTraceMeasurement P W (pauliPointBlock W z) (pauliTraceFactor W z)
+
+section
+
+variable (P : AdmissibleParams) (W : PauliKind)
+    (u : PauliPoint P) (r : PauliScalar P)
+include P W u r
 
 /-- Equation `eq:finally-got-an-observable`: the observable of the honest
 Pair/W measurement is the generalized Pauli observable at the label
 `ind_m(u) r`.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1300-1315`. -/
-theorem obsOf_pauliTraceMeasurement (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) :
+theorem obsOf_pauliTraceMeasurement :
     obsOf (pauliTraceMeasurement P W u r) =
       tauObservable W (r • indicatorVec u) := by
-  classical
-  have hdot : ∀ e : PauliRegister P,
-      dotProduct (r • indicatorVec u) e = lowDegreeEnc e u * r := by
-    intro e
-    rw [lowDegreeEnc_eq_dotProduct]
-    simp only [dotProduct, Finset.sum_mul, Pi.smul_apply, smul_eq_mul]
-    exact Finset.sum_congr rfl fun y _ => by ring
-  have hp : ∀ e : PauliRegister P,
-      phaseSign (binTrace (PauliScalar P) (dotProduct (r • indicatorVec u) e)) =
-        phaseSign (pauliTraceBit P u r e) := by
-    intro e
-    rw [hdot e]
-    rfl
-  rw [tauObservable_eq_sum_pauliProj,
-    Finset.sum_congr rfl (fun e (_ : e ∈ Finset.univ) => by rw [hp e]),
-    ← Finset.sum_filter_add_sum_filter_not (Finset.univ : Finset (PauliRegister P))
-      (fun e => pauliTraceBit P u r e = 0)]
-  have hfilter :
-      (Finset.univ.filter fun e : PauliRegister P => ¬ pauliTraceBit P u r e = 0) =
-        Finset.univ.filter fun e : PauliRegister P => pauliTraceBit P u r e = 1 := by
-    ext e
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-    rcases zmod_two_eq_zero_or_one (pauliTraceBit P u r e) with h | h <;> simp [h]
-  have h0 : ∑ e ∈ Finset.univ.filter (fun e : PauliRegister P => pauliTraceBit P u r e = 0),
-      phaseSign (pauliTraceBit P u r e) • pauliProj W e =
-      (pauliTraceMeasurement P W u r).effect 0 := by
-    rw [pauliTraceMeasurement_effect]
-    refine Finset.sum_congr rfl fun e he => ?_
-    rw [(Finset.mem_filter.mp he).2]
-    simp [phaseSign]
-  have h1 : ∑ e ∈ Finset.univ.filter (fun e : PauliRegister P => ¬ pauliTraceBit P u r e = 0),
-      phaseSign (pauliTraceBit P u r e) • pauliProj W e =
-      -(pauliTraceMeasurement P W u r).effect 1 := by
-    rw [hfilter, pauliTraceMeasurement_effect]
-    calc ∑ e ∈ Finset.univ.filter (fun e : PauliRegister P => pauliTraceBit P u r e = 1),
-          phaseSign (pauliTraceBit P u r e) • pauliProj W e
-        = ∑ e ∈ Finset.univ.filter (fun e : PauliRegister P => pauliTraceBit P u r e = 1),
-            (-1 : ℂ) • pauliProj W e :=
-          Finset.sum_congr rfl fun e he => by
-            rw [(Finset.mem_filter.mp he).2]
-            norm_num [phaseSign]
-      _ = (-1 : ℂ) • ∑ e ∈ Finset.univ.filter
-            (fun e : PauliRegister P => pauliTraceBit P u r e = 1), pauliProj W e :=
-          Finset.smul_sum.symm
-      _ = _ := neg_one_smul ℂ _
-  rw [h0, h1, ← sub_eq_add_neg]
+  rw [← sum_phaseSign_smul_effect_eq_obsOf, pauliTraceMeasurement,
+    Measurement.sum_smul_postprocess, tauObservable_eq_sum_pauliProj]
+  refine Finset.sum_congr rfl fun h _ => ?_
+  change phaseSign (fixedBinTrace P.model (lowDegreeEnc h u * r)) • pauliProj W h = _
+  rw [lowDegreeEnc_eq_dotProduct, smul_dotProduct, smul_eq_mul, dotProduct_comm (indicatorVec u),
+    mul_comm r]
   rfl
 
 /-- Each effect of the honest Pair/W measurement is the spectral projector of
 its observable, so the measurement is projective; part of the projectivity
 assertion of the honest strategy in the proof of `lem:pauli-completeness`,
 paper `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1364-1370`. -/
-theorem pauliTraceMeasurement_effect_eq_reflectionEffect (P : AdmissibleParams)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) (r : PauliScalar P) (b : ZMod 2) :
+theorem pauliTraceMeasurement_effect_eq_reflectionEffect (b : ZMod 2) :
     (pauliTraceMeasurement P W u r).effect b =
       reflectionEffect (tauObservable W (r • indicatorVec u)) b := by
   rw [← obsOf_pauliTraceMeasurement, reflectionEffect_obsOf_measurement]
@@ -236,8 +167,7 @@ theorem pauliTraceMeasurement_effect_eq_reflectionEffect (P : AdmissibleParams)
 /-- The honest Pair/W measurement is projective, as asserted for the honest
 strategy in the proof of `lem:pauli-completeness`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1364-1370`. -/
-theorem pauliTraceMeasurement_projective (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) :
+theorem pauliTraceMeasurement_projective :
     MIPStarRE.QPBT.Measurement.IsProjective (pauliTraceMeasurement P W u r) := by
   intro b
   rw [pauliTraceMeasurement_effect_eq_reflectionEffect]
@@ -245,8 +175,7 @@ theorem pauliTraceMeasurement_projective (P : AdmissibleParams) (W : PauliKind)
     (tauObservable_conjTranspose W _) (tauObservable_sq W _) b
 
 /-- The effects of the honest Pair/W measurement are symmetric matrices. -/
-theorem pauliTraceMeasurement_effect_transpose (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (r : PauliScalar P) (b : ZMod 2) :
+theorem pauliTraceMeasurement_effect_transpose (b : ZMod 2) :
     ((pauliTraceMeasurement P W u r).effect b)ᵀ =
       (pauliTraceMeasurement P W u r).effect b := by
   rw [pauliTraceMeasurement_effect_eq_reflectionEffect]
@@ -258,21 +187,7 @@ theorem pauliTraceMeasurement_effect_transpose (P : AdmissibleParams) (W : Pauli
     rw [Matrix.transpose_smul, Matrix.transpose_sub, Matrix.transpose_one,
       tauObservable_transpose]
 
-/-! ### The honest Point/W measurements -/
-
-/-- The honest Point/W measurement: the generalized Pauli basis measurement
-coarse-grained by the value `g_h(u)` of the low-degree encoding at the point
-`u`.  Paper
-`references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1248-1261`. -/
-noncomputable def pauliPointMeasurement (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) : Measurement (PauliScalar P) (PauliRegister P) :=
-  (pauliBasisMeasurement W).postprocess (fun h => lowDegreeEnc h u)
-
-/-- The honest Point/W measurement is projective. -/
-theorem pauliPointMeasurement_projective (P : AdmissibleParams) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
-    MIPStarRE.QPBT.Measurement.IsProjective (pauliPointMeasurement P W u) :=
-  pauliBasisMeasurement_postprocess_projective W _
+end
 
 /-! ### Honest line measurements -/
 
@@ -304,51 +219,17 @@ theorem evalCoefficient_restrictToAxisLine_lowDegreeEncoding
         (L.d + 1)
     _ = _ := eval_polynomialOnLine L line (lowDegreeEncoding h) t
 
-/-- The honest axis-line measurement is the generalized Pauli basis
-measurement coarse-grained by the degree-`d` restriction of `g_h` to the
-canonical line carried by the question. -/
-noncomputable def pauliALineMeasurement (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
-    Measurement (Fin (P.d + 1) → PauliScalar P) (PauliRegister P) :=
-    (pauliBasisMeasurement W).postprocess fun h =>
-    restrictToAxisLine P.toLdParams
-      (aLineDescOf P.toLdParams
-        (ldALineCL P.toLdParams (pauliToLd P W z))) (lowDegreeEncoding h)
-
-/-- The honest axis-line measurement is projective. -/
-theorem pauliALineMeasurement_projective (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
-    MIPStarRE.QPBT.Measurement.IsProjective (pauliALineMeasurement P W z) :=
-  pauliBasisMeasurement_postprocess_projective W _
-
-/-- The honest diagonal-line measurement is the generalized Pauli basis
-measurement coarse-grained by the degree-`m d` restriction of `g_h` to the
-canonical line carried by the question. -/
-noncomputable def pauliDLineMeasurement (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
-    Measurement (Fin (P.m * P.d + 1) → PauliScalar P) (PauliRegister P) :=
-    (pauliBasisMeasurement W).postprocess fun h =>
-    restrictToLine P.toLdParams
-      (dLineDescOf P.toLdParams
-        (ldDLineCL P.toLdParams (pauliToLd P W z))) (lowDegreeEncoding h)
-
-/-- The honest diagonal-line measurement is projective. -/
-theorem pauliDLineMeasurement_projective (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
-    MIPStarRE.QPBT.Measurement.IsProjective (pauliDLineMeasurement P W z) :=
-  pauliBasisMeasurement_postprocess_projective W _
-
 /-! ### The commutation law of the honest pair -/
 
 /-- The commutation law `𝒪_A 𝒪_B = (-1)^γ 𝒪_B 𝒪_A` of the proof of
 `lem:pauli-completeness`, with `γ` the phase bit `eq:gamma-value`.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1316-1330`. -/
 theorem obsOf_pauliTraceMeasurement_mul_comm (P : AdmissibleParams) (z : PauliSpace P) :
-    obsOf (pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)) *
-        obsOf (pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)) =
+    obsOf (pauliTraceReadout P .X z) *
+        obsOf (pauliTraceReadout P .Z z) =
       phaseSign (pauliPairGamma P z) •
-        (obsOf (pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)) *
-          obsOf (pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z))) := by
+        (obsOf (pauliTraceReadout P .Z z) *
+          obsOf (pauliTraceReadout P .X z)) := by
   rw [obsOf_pauliTraceMeasurement, obsOf_pauliTraceMeasurement, tauObservable_X_mul_Z]
   rfl
 
@@ -357,25 +238,27 @@ observables anticommute.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1316-1330`. -/
 theorem obsOf_pauliTraceMeasurement_anticommute (P : AdmissibleParams)
     (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0) :
-    obsOf (pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)) *
-        obsOf (pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)) =
-      -(obsOf (pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)) *
-        obsOf (pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z))) := by
+    obsOf (pauliTraceReadout P .X z) *
+        obsOf (pauliTraceReadout P .Z z) =
+      -(obsOf (pauliTraceReadout P .Z z) *
+        obsOf (pauliTraceReadout P .X z)) := by
   rw [obsOf_pauliTraceMeasurement_mul_comm]
-  rcases zmod_two_eq_zero_or_one (pauliPairGamma P z) with h | h
-  · exact absurd h hgamma
-  · rw [h]
-    simp [phaseSign]
+  simp_all [phaseSign]
 
 /-! ### The pointwise Magic Square measurement -/
 
+section
+
+variable (P : AdmissibleParams)
+    (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0)
+include P z hgamma
+
 /-- The nine cell measurements obtained from the anticommuting Pair/X and
 Pair/Z observables at a question with nonzero phase bit. -/
-noncomputable def pauliMagicCellMeasurement (P : AdmissibleParams)
-    (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0) :
+noncomputable def pauliMagicCellMeasurement :
     Fin 9 → Measurement (ZMod 2) (PauliRegister P × ZMod 2) :=
-  let A := pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)
-  let B := pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)
+  let A := pauliTraceReadout P .X z
+  let B := pauliTraceReadout P .Z z
   msCellMeasurement (obsOf A) (obsOf B)
     (obsOf_conjTranspose A (pauliTraceMeasurement_projective P .X _ _))
     (obsOf_conjTranspose B (pauliTraceMeasurement_projective P .Z _ _))
@@ -384,11 +267,10 @@ noncomputable def pauliMagicCellMeasurement (P : AdmissibleParams)
     (obsOf_pauliTraceMeasurement_anticommute P z hgamma)
 
 /-- Every Pauli-induced Magic Square cell measurement is projective. -/
-theorem pauliMagicCellMeasurement_projective (P : AdmissibleParams)
-    (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0) (j : Fin 9) :
+theorem pauliMagicCellMeasurement_projective (j : Fin 9) :
     MIPStarRE.QPBT.Measurement.IsProjective
       (pauliMagicCellMeasurement P z hgamma j) := by
-  simp only [pauliMagicCellMeasurement]
+  simp [pauliMagicCellMeasurement]
   exact msCellMeasurement_projective _ _
     (obsOf_conjTranspose _ (pauliTraceMeasurement_projective P .X _ _))
     (obsOf_conjTranspose _ (pauliTraceMeasurement_projective P .Z _ _))
@@ -397,44 +279,37 @@ theorem pauliMagicCellMeasurement_projective (P : AdmissibleParams)
     (obsOf_pauliTraceMeasurement_anticommute P z hgamma) j
 
 /-- Cell effects belonging to one Magic Square constraint commute. -/
-theorem pauliMagicCellMeasurement_commute (P : AdmissibleParams)
-    (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0)
+theorem pauliMagicCellMeasurement_commute
     (i : Fin 6) (k l : Fin 3) (a b : ZMod 2) :
     Commute
       ((pauliMagicCellMeasurement P z hgamma (msConstraintVars i k)).effect a)
       ((pauliMagicCellMeasurement P z hgamma (msConstraintVars i l)).effect b) := by
-  simp only [pauliMagicCellMeasurement]
+  simp [pauliMagicCellMeasurement]
   exact reflectionEffect_commute
     (msConstraintObservable_commute _ _
-      (obsOf_sq _ (pauliTraceMeasurement_projective P .X _ _))
-      (obsOf_sq _ (pauliTraceMeasurement_projective P .Z _ _))
       (obsOf_pauliTraceMeasurement_anticommute P z hgamma) i k l) a b
 
 /-- The Magic Square measurement family used at a Pauli question with nonzero
 phase bit. -/
-noncomputable def pauliMagicMeasurement (P : AdmissibleParams)
-    (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0) :
+noncomputable def pauliMagicMeasurement :
     MsType → Measurement MsAnswer (PauliRegister P × ZMod 2) :=
   msStrategyMeasurement (pauliMagicCellMeasurement P z hgamma)
     (pauliMagicCellMeasurement_projective P z hgamma)
     (pauliMagicCellMeasurement_commute P z hgamma)
 
 /-- The Pauli-induced Magic Square measurement is projective. -/
-theorem pauliMagicMeasurement_projective (P : AdmissibleParams)
-    (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0) (x : MsType) :
+theorem pauliMagicMeasurement_projective (x : MsType) :
     MIPStarRE.QPBT.Measurement.IsProjective
-      (pauliMagicMeasurement P z hgamma x) := by
-  exact msStrategyMeasurement_projective _ _ _ x
+      (pauliMagicMeasurement P z hgamma x) := msStrategyMeasurement_projective _ _ _ x
 
 /-- Every effect of the Pauli-induced Magic Square measurement is symmetric. -/
-theorem pauliMagicMeasurement_effect_transpose (P : AdmissibleParams)
-    (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0)
+theorem pauliMagicMeasurement_effect_transpose
     (x : MsType) (a : MsAnswer) :
     ((pauliMagicMeasurement P z hgamma x).effect a)ᵀ =
       (pauliMagicMeasurement P z hgamma x).effect a := by
   apply msStrategyMeasurement_effect_transpose
   intro j b
-  simp only [pauliMagicCellMeasurement]
+  simp [pauliMagicCellMeasurement]
   apply msCellMeasurement_transpose
   · rw [obsOf_pauliTraceMeasurement]
     exact tauObservable_transpose _ _
@@ -443,32 +318,29 @@ theorem pauliMagicMeasurement_effect_transpose (P : AdmissibleParams)
 
 /-- The Pauli-induced Magic Square measurements commute on an incident
 constraint-variable pair. -/
-theorem pauliMagicMeasurement_incident_commute (P : AdmissibleParams)
-    (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0)
+theorem pauliMagicMeasurement_incident_commute
     (i : Fin 6) (k : Fin 3) (a b : MsAnswer) :
     Commute ((pauliMagicMeasurement P z hgamma (.constraint i)).effect a)
       ((pauliMagicMeasurement P z hgamma
-        (.var (msConstraintVars i k))).effect b) := by
-  exact msStrategyMeasurement_incident_commute _ _ _ i k a b
+        (.var (msConstraintVars i k))).effect b) := msStrategyMeasurement_incident_commute _ _ _ i k a b
 
 /-- The distinguished variable effects of the Pauli-induced Magic Square
 measurement are the tensor placements of the Pair/X and Pair/Z effects. -/
-theorem pauliMagicMeasurement_var_effect (P : AdmissibleParams)
-    (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0) (b : ZMod 2) :
+theorem pauliMagicMeasurement_var_effect (b : ZMod 2) :
     (pauliMagicMeasurement P z hgamma (.var 0)).effect (.bit b) =
         heteroKron
-          ((pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)).effect b)
+          ((pauliTraceReadout P .X z).effect b)
           (1 : Op (ZMod 2)) ∧
       (pauliMagicMeasurement P z hgamma (.var 4)).effect (.bit b) =
         heteroKron
-          ((pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)).effect b)
+          ((pauliTraceReadout P .Z z).effect b)
           (1 : Op (ZMod 2)) := by
   constructor
   · unfold pauliMagicMeasurement
     rw [msStrategyMeasurement_var_bit]
     change reflectionEffect
         (heteroKron
-          (obsOf (pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)))
+          (obsOf (pauliTraceReadout P .X z))
           (1 : Op (ZMod 2))) b = _
     rw [← MagicSquareRigidity.reflectionEffect_heteroKron_left,
       reflectionEffect_obsOf_measurement]
@@ -476,10 +348,12 @@ theorem pauliMagicMeasurement_var_effect (P : AdmissibleParams)
     rw [msStrategyMeasurement_var_bit]
     change reflectionEffect
         (heteroKron
-          (obsOf (pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)))
+          (obsOf (pauliTraceReadout P .Z z))
           (1 : Op (ZMod 2))) b = _
     rw [← MagicSquareRigidity.reflectionEffect_heteroKron_left,
       reflectionEffect_obsOf_measurement]
+
+end
 
 /-! ### The Pair measurement in the case `γ = 0`
 
@@ -489,13 +363,18 @@ Equation `eq:pair-definition` in the proof of `lem:pauli-completeness`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1331-1344`.
 -/
 
+section
+
+variable (P : AdmissibleParams)
+    (z : PauliSpace P)
+include P z
+
 /-- If the phase bit `γ` of `eq:gamma-value` vanishes, the two honest Pair/W
 observables commute.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1316-1330`. -/
-theorem obsOf_pauliTraceMeasurement_commute (P : AdmissibleParams)
-    (z : PauliSpace P) (hgamma : pauliPairGamma P z = 0) :
-    Commute (obsOf (pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)))
-      (obsOf (pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z))) := by
+theorem obsOf_pauliTraceMeasurement_commute (hgamma : pauliPairGamma P z = 0) :
+    Commute (obsOf (pauliTraceReadout P .X z))
+      (obsOf (pauliTraceReadout P .Z z)) := by
   rw [commute_iff_eq, obsOf_pauliTraceMeasurement_mul_comm, hgamma]
   simp [phaseSign]
 
@@ -503,10 +382,9 @@ theorem obsOf_pauliTraceMeasurement_commute (P : AdmissibleParams)
 measurements commute; this is the commutation assertion of the honest strategy
 in the case `γ = 0`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1374-1382`. -/
-theorem pauliTraceMeasurement_effect_commute (P : AdmissibleParams)
-    (z : PauliSpace P) (hgamma : pauliPairGamma P z = 0) (a b : ZMod 2) :
-    Commute ((pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)).effect a)
-      ((pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)).effect b) := by
+theorem pauliTraceMeasurement_effect_commute (hgamma : pauliPairGamma P z = 0) (a b : ZMod 2) :
+    Commute ((pauliTraceReadout P .X z).effect a)
+      ((pauliTraceReadout P .Z z).effect b) := by
   have hOO :
       Commute (tauObservable PauliKind.X (pauliRXBlock z • indicatorVec (pauliXBlock z)))
         (tauObservable PauliKind.Z (pauliRZBlock z • indicatorVec (pauliZBlock z))) := by
@@ -520,15 +398,15 @@ theorem pauliTraceMeasurement_effect_commute (P : AdmissibleParams)
 /-- The Pair effect `E^{Pair,ω}_{β_X, β_Z} = A_{β_X} B_{β_Z}` of Equation
 `eq:pair-definition`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1331-1339`. -/
-noncomputable def pauliPairEffect (P : AdmissibleParams) (z : PauliSpace P)
+noncomputable def pauliPairEffect
     (β : ZMod 2 × ZMod 2) : Op (PauliRegister P) :=
-  (pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)).effect β.1 *
-    (pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)).effect β.2
+  (pauliTraceReadout P .X z).effect β.1 *
+    (pauliTraceReadout P .Z z).effect β.2
 
 /-- For `γ = 0` the Pair effects are projectors, being products of commuting
 projectors.  Paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1331-1344`. -/
-theorem pauliPairEffect_isProj (P : AdmissibleParams) (z : PauliSpace P)
+theorem pauliPairEffect_isProj
     (hgamma : pauliPairGamma P z = 0) (β : ZMod 2 × ZMod 2) :
     IsProj (pauliPairEffect P z β) :=
   IsStarProjection.mul (pauliTraceMeasurement_projective P .X _ _ β.1)
@@ -536,35 +414,27 @@ theorem pauliPairEffect_isProj (P : AdmissibleParams) (z : PauliSpace P)
     (pauliTraceMeasurement_effect_commute P z hgamma β.1 β.2)
 
 /-- The Pair effects sum to the identity. -/
-theorem sum_pauliPairEffect (P : AdmissibleParams) (z : PauliSpace P) :
+theorem sum_pauliPairEffect :
     ∑ β : ZMod 2 × ZMod 2, pauliPairEffect P z β = 1 := by
-  calc ∑ β : ZMod 2 × ZMod 2, pauliPairEffect P z β
-      = ∑ a : ZMod 2, ∑ b : ZMod 2,
-          (pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)).effect a *
-            (pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)).effect b :=
-        Fintype.sum_prod_type _
-    _ = ∑ a : ZMod 2,
-          (pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)).effect a *
-            ∑ b : ZMod 2,
-              (pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)).effect b :=
-        Finset.sum_congr rfl fun a _ => by rw [Finset.mul_sum]
-    _ = 1 := by
-        rw [(pauliTraceMeasurement P .Z (pauliZBlock z) (pauliRZBlock z)).sum_eq_one]
-        simp [(pauliTraceMeasurement P .X (pauliXBlock z) (pauliRXBlock z)).sum_eq_one]
+  rw [Fintype.sum_prod_type]
+  simp [pauliPairEffect, ← Finset.mul_sum, (pauliTraceReadout P .X z).sum_eq_one,
+    (pauliTraceReadout P .Z z).sum_eq_one]
 
 /-- The Pair measurement of Equation `eq:pair-definition` in the case `γ = 0`,
 paper `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1331-1344`,
 blueprint `lem:pauli-completeness`. -/
-noncomputable def pauliPairMeasurement (P : AdmissibleParams) (z : PauliSpace P)
+noncomputable def pauliPairMeasurement
     (hgamma : pauliPairGamma P z = 0) : Measurement (ZMod 2 × ZMod 2) (PauliRegister P) :=
   Measurement.ofSumEqOne (pauliPairEffect P z)
     (fun β => (pauliPairEffect_isProj P z hgamma β).nonneg) (sum_pauliPairEffect P z)
 
 /-- The Pair measurement is projective. -/
-theorem pauliPairMeasurement_projective (P : AdmissibleParams) (z : PauliSpace P)
+theorem pauliPairMeasurement_projective
     (hgamma : pauliPairGamma P z = 0) :
     MIPStarRE.QPBT.Measurement.IsProjective (pauliPairMeasurement P z hgamma) :=
   pauliPairEffect_isProj P z hgamma
+
+end
 
 end
 

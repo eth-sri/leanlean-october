@@ -22,6 +22,13 @@ open scoped BigOperators Matrix MatrixOrder ComplexOrder
 
 namespace MIPStarRE.Quantum.Measurement
 
+/-- Principal submatrix on the slice with ancillary coordinate `k₀`. -/
+def sliceEffects {I κ : Type*} (k₀ : κ) :
+    MIPStarRE.Quantum.Op (I × κ) →+ MIPStarRE.Quantum.Op I where
+  toFun M := M.submatrix (fun i => (i, k₀)) (fun i => (i, k₀))
+  map_zero' := rfl
+  map_add' _ _ := rfl
+
 /-- Restrict every effect of a POVM to the matrix block at one fixed ancillary
 coordinate. The principal submatrix of a positive semidefinite effect remains
 positive semidefinite, and restricting the sum of the effects restricts the
@@ -32,25 +39,13 @@ noncomputable def compressAt
     [Fintype κ] [DecidableEq κ]
     (k₀ : κ) (M : MIPStarRE.Quantum.Measurement Outcome (I × κ)) :
     MIPStarRE.Quantum.Measurement Outcome I :=
-  MIPStarRE.Quantum.Measurement.ofSumEqOne
-    (fun a => (M.effect a).submatrix (fun i => (i, k₀)) (fun i => (i, k₀)))
-    (fun a => Matrix.nonneg_iff_posSemidef.mpr
-      ((Matrix.nonneg_iff_posSemidef.mp (M.pos a)).submatrix (fun i => (i, k₀))))
+  M.mapEffects (sliceEffects k₀)
     (by
-      classical
       ext i j
-      simpa only [Matrix.sum_apply, Matrix.submatrix_apply, Matrix.one_apply,
-        Prod.mk.injEq, and_true]
-        using congrFun (congrFun M.sum_eq_one (i, k₀)) (j, k₀))
-
-@[simp] theorem compressAt_effect
-    {Outcome I κ : Type*}
-    [Fintype Outcome] [Fintype I] [DecidableEq I]
-    [Fintype κ] [DecidableEq κ]
-    (k₀ : κ) (M : MIPStarRE.Quantum.Measurement Outcome (I × κ)) (a : Outcome) :
-    (M.compressAt k₀).effect a =
-      (M.effect a).submatrix (fun i => (i, k₀)) (fun i => (i, k₀)) :=
-  rfl
+      change (1 : MIPStarRE.Quantum.Op (I × κ)) (i, k₀) (j, k₀) = _
+      simp [Matrix.one_apply])
+    (fun {_} h => Matrix.nonneg_iff_posSemidef.mpr
+      ((Matrix.nonneg_iff_posSemidef.mp h).submatrix (fun i => (i, k₀))))
 
 /-- Restricting a POVM to a fixed ancillary coordinate commutes with
 deterministic relabeling of its outcomes. -/
@@ -59,13 +54,8 @@ theorem compressAt_postprocess
     [Fintype A] [DecidableEq A] [Fintype B] [DecidableEq B]
     [Fintype I] [DecidableEq I] [Fintype κ] [DecidableEq κ]
     (k₀ : κ) (M : MIPStarRE.Quantum.Measurement A (I × κ)) (f : A → B) :
-    (M.postprocess f).compressAt k₀ = (M.compressAt k₀).postprocess f := by
-  classical
-  apply MIPStarRE.Quantum.Measurement.ext
-  intro b
-  ext i j
-  simp only [compressAt_effect, MIPStarRE.Quantum.Measurement.postprocess_effect,
-    Matrix.submatrix_apply, Matrix.sum_apply]
+    (M.postprocess f).compressAt k₀ = (M.compressAt k₀).postprocess f :=
+  (M.mapEffects_postprocess (sliceEffects k₀) _ _ f).symm
 
 end MIPStarRE.Quantum.Measurement
 
@@ -103,15 +93,15 @@ theorem consistencyDefect_padState_compressAt
     (MA : X → MIPStarRE.Quantum.Measurement Outcome (I × κA))
     (MB : X → MIPStarRE.Quantum.Measurement Outcome (J × κB))
     (a₀ : κA) (b₀ : κB) (ψ : EuclideanSpace ℂ (I × J)) :
-    consistencyDefect μ
-        (fun x a => heteroKron ((MA x).effect a) 1)
-        (fun x a => heteroKron 1 ((MB x).effect a))
+    bipartiteDefect μ
+        MA
+        MB
         (padState a₀ b₀ ψ) =
-      consistencyDefect μ
-        (fun x a => heteroKron (((MA x).compressAt a₀).effect a) 1)
-        (fun x a => heteroKron 1 (((MB x).compressAt b₀).effect a))
+      bipartiteDefect μ
+        (fun x => (MA x).compressAt a₀)
+        (fun x => (MB x).compressAt b₀)
         ψ := by
-  unfold consistencyDefect
+  unfold bipartiteDefect consistencyDefect
   apply avgOver_congr
   intro x
   apply Finset.sum_congr rfl

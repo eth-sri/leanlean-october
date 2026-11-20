@@ -35,13 +35,22 @@ open MIPStarRE.LDT
 
 noncomputable section
 
+section
+
+variable (L : LdParams) (line : LineDesc L)
+include L line
+
+section
+
+variable (g : MvPolynomial (Fin L.m) (ScalarQ L))
+include g
+
 /-- Substitute the affine parameterization of a canonical line into a
 multivariate polynomial. This is the polynomial `g_h(u₀ + tv)` used in
 `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:535-557`, blueprint
 `def:expanded-line-measurement`. -/
-noncomputable def polynomialOnLine (L : LdParams) (line : LineDesc L)
-    (g : MvPolynomial (Fin L.m) (ScalarQ L)) : Polynomial (ScalarQ L) :=
+noncomputable def polynomialOnLine : Polynomial (ScalarQ L) :=
   MvPolynomial.eval₂Hom _root_.Polynomial.C
     (fun i : Fin L.m =>
       (_root_.Polynomial.C (line.base i) +
@@ -52,14 +61,15 @@ noncomputable def polynomialOnLine (L : LdParams) (line : LineDesc L)
 This is the concrete restriction operation in `def:expanded-line-measurement`,
 paper `14_analysis_of_the_pauli_basis_test.tex:535-557`, blueprint
 `def:expanded-line-measurement`. -/
-noncomputable def restrictToLine (L : LdParams) (line : LineDesc L)
-    (g : MvPolynomial (Fin L.m) (ScalarQ L)) : DegPoly L (L.m * L.d) :=
+noncomputable def restrictToLine : DegPoly L (L.m * L.d) :=
   fun i => (polynomialOnLine L line g).coeff i.val
+
+end
 
 /-- Each coordinate of the affine parameterization has degree at most one.
 This is a formalization-only auxiliary for the multilinearity argument in
 blueprint `lem:low-degree-encoding-line-restriction`. -/
-private theorem natDegree_lineCoordinate_le (L : LdParams) (line : LineDesc L)
+private theorem natDegree_lineCoordinate_le
     (i : Fin L.m) :
     (_root_.Polynomial.C (line.base i) +
         _root_.Polynomial.X * _root_.Polynomial.C (line.direction i) :
@@ -72,20 +82,17 @@ private theorem natDegree_lineCoordinate_le (L : LdParams) (line : LineDesc L)
 /-- A coordinate with zero direction is constant along the line.
 This is a formalization-only auxiliary for the axis case of blueprint
 `lem:low-degree-encoding-line-restriction`. -/
-private theorem natDegree_lineCoordinate_eq_zero (L : LdParams)
-    (line : LineDesc L) (i : Fin L.m) (hi : line.direction i = 0) :
+private theorem natDegree_lineCoordinate_eq_zero (i : Fin L.m) (hi : line.direction i = 0) :
     (_root_.Polynomial.C (line.base i) +
         _root_.Polynomial.X * _root_.Polynomial.C (line.direction i) :
-        Polynomial (ScalarQ L)).natDegree = 0 := by
-  rw [hi, map_zero, mul_zero, add_zero, Polynomial.natDegree_C]
+        Polynomial (ScalarQ L)).natDegree = 0 := by simp_all
 
 /-- The degree of a restricted multilinear encoding is bounded by the sum
 of coordinatewise degree bounds for the affine parameterization.
 This is a formalization-only auxiliary for blueprint
 `lem:low-degree-encoding-line-restriction`, using the product formula in
 equation `eq:ld-encoding`, paper `04_preliminaries.tex:869-896`. -/
-theorem polynomialOnLine_lowDegreeEncoding_natDegree_le_sum (L : LdParams)
-    (line : LineDesc L) (h : Cube L.m → ScalarQ L) (bound : Fin L.m → ℕ)
+theorem polynomialOnLine_lowDegreeEncoding_natDegree_le_sum (h : Cube L.m → ScalarQ L) (bound : Fin L.m → ℕ)
     (hbound : ∀ i : Fin L.m,
       (_root_.Polynomial.C (line.base i) +
           _root_.Polynomial.X * _root_.Polynomial.C (line.direction i) :
@@ -103,8 +110,7 @@ theorem polynomialOnLine_lowDegreeEncoding_natDegree_le_sum (L : LdParams)
   rw [map_prod]
   refine (Polynomial.natDegree_prod_le _ _).trans (Finset.sum_le_sum fun i _ => ?_)
   by_cases hy : y i = true
-  · rw [if_pos hy, MvPolynomial.eval₂Hom_X']
-    exact hbound i
+  · simp_all
   · rw [if_neg hy, map_sub, map_one, MvPolynomial.eval₂Hom_X']
     refine (Polynomial.natDegree_sub_le _ _).trans (max_le ?_ (hbound i))
     simp
@@ -113,8 +119,7 @@ theorem polynomialOnLine_lowDegreeEncoding_natDegree_le_sum (L : LdParams)
 `m*d`. This is the degree justification in `def:expanded-line-measurement`,
 paper `14_analysis_of_the_pauli_basis_test.tex:535-557`, blueprint
 `def:expanded-line-measurement`. -/
-theorem polynomialOnLine_lowDegreeEncoding_natDegree_le (L : LdParams)
-    (line : LineDesc L) (h : Cube L.m → ScalarQ L) :
+theorem polynomialOnLine_lowDegreeEncoding_natDegree_le (h : Cube L.m → ScalarQ L) :
     (polynomialOnLine L line (lowDegreeEncoding h)).natDegree ≤ L.m * L.d := by
   refine (polynomialOnLine_lowDegreeEncoding_natDegree_le_sum L line h
     (fun _ => 1) (fun i => natDegree_lineCoordinate_le L line i)).trans ?_
@@ -126,8 +131,7 @@ theorem polynomialOnLine_lowDegreeEncoding_natDegree_le (L : LdParams)
 encoding has degree at most one. This proves the axis assertion in blueprint
 `lem:low-degree-encoding-line-restriction`, used for the honest line answer
 in paper `08_classical_and_quantum_low_degree_tests.tex:1264-1273`. -/
-theorem polynomialOnLine_lowDegreeEncoding_natDegree_le_one_of_axis
-    (L : LdParams) (line : LineDesc L) (haxis : line.kind = .axis)
+theorem polynomialOnLine_lowDegreeEncoding_natDegree_le_one_of_axis (haxis : line.kind = .axis)
     (h : Cube L.m → ScalarQ L) :
     (polynomialOnLine L line (lowDegreeEncoding h)).natDegree ≤ 1 := by
   classical
@@ -146,6 +150,8 @@ theorem polynomialOnLine_lowDegreeEncoding_natDegree_le_one_of_axis
           change coordinateDirection (chiIndex L seed) i = 0
           simp [coordinateDirection, hij]
       · simp
+
+end
 
 /-- A degree-`m*d` coefficient list actually lies in the embedded degree-`d`
 subspace when all coefficients above `d` vanish. This is the coefficient
@@ -202,13 +208,18 @@ theorem eval_polynomialOnLine (L : LdParams) (line : LineDesc L)
   rw [h1, h2]
   rfl
 
+section
+
+variable (L : LdParams) (line : LineDesc L)
+    (g : MvPolynomial (Fin L.m) (ScalarQ L))
+    (hg : (polynomialOnLine L line g).natDegree ≤ L.m * L.d)
+include L line g hg
+
 /-- The coefficient-list evaluation agrees with polynomial evaluation when
 the restriction has degree at most `m*d`. This is a formalization-only
 coefficient identity for blueprint `lem:low-degree-encoding-line-restriction`.
 Its degree hypothesis prevents truncation of a general polynomial. -/
-theorem evalCoefficient_restrictToLine (L : LdParams) (line : LineDesc L)
-    (g : MvPolynomial (Fin L.m) (ScalarQ L))
-    (hg : (polynomialOnLine L line g).natDegree ≤ L.m * L.d) (t : ScalarQ L) :
+theorem evalCoefficient_restrictToLine (t : ScalarQ L) :
     evalCoefficient (restrictToLine L line g) t =
       Polynomial.eval t (polynomialOnLine L line g) := by
   unfold evalCoefficient restrictToLine
@@ -220,10 +231,8 @@ theorem evalCoefficient_restrictToLine (L : LdParams) (line : LineDesc L)
 every point on the line. This is a formalization-only identity for the
 evaluation classes in blueprint `def:ideg-deg-polynomials`, paper
 `14_analysis_of_the_pauli_basis_test.tex:51-58`. -/
-theorem evaluatesTo_restrictToLine (L : LdParams) (line : LineDesc L)
-    (g : MvPolynomial (Fin L.m) (ScalarQ L))
-    (hg : (polynomialOnLine L line g).natDegree ≤ L.m * L.d)
-    (u : Fin L.m → ScalarQ L) (hu : u ∈ line.pointSet) :
+theorem evaluatesTo_restrictToLine
+    (u : LdPoint L) (hu : u ∈ line.pointSet) :
     EvaluatesTo line (restrictToLine L line g) u (MvPolynomial.eval u g) := by
   refine ⟨hu, fun t ht => ?_⟩
   rw [evalCoefficient_restrictToLine L line g hg, eval_polynomialOnLine, ht]
@@ -233,13 +242,13 @@ original polynomial value at a point on the line. This is a
 formalization-only identity for the evaluation classes in blueprint
 `def:ideg-deg-polynomials`, paper
 `14_analysis_of_the_pauli_basis_test.tex:51-58`. -/
-theorem evalOpt_restrictToLine (L : LdParams) (line : LineDesc L)
-    (g : MvPolynomial (Fin L.m) (ScalarQ L))
-    (hg : (polynomialOnLine L line g).natDegree ≤ L.m * L.d)
-    (u : Fin L.m → ScalarQ L) (hu : u ∈ line.pointSet) :
+theorem evalOpt_restrictToLine
+    (u : LdPoint L) (hu : u ∈ line.pointSet) :
     evalOpt line u (restrictToLine L line g) = some (MvPolynomial.eval u g) :=
   WinImplications.evalOpt_eq_some_of_evaluatesTo line _ u _
     (evaluatesTo_restrictToLine L line g hg u hu)
+
+end
 
 /-- The restricted encoding evaluates to `g_h(u) = h · ind_m(u)` at every
 point on the line. This proves the evaluation assertion in blueprint
@@ -247,7 +256,7 @@ point on the line. This proves the evaluation assertion in blueprint
 `eq:low-degree-encoding-definition`, paper `04_preliminaries.tex:892-896`. -/
 theorem evalOpt_restrictToLine_lowDegreeEncoding (L : LdParams)
     (line : LineDesc L) (h : Cube L.m → ScalarQ L)
-    (u : Fin L.m → ScalarQ L) (hu : u ∈ line.pointSet) :
+    (u : LdPoint L) (hu : u ∈ line.pointSet) :
     evalOpt line u (restrictToLine L line (lowDegreeEncoding h)) =
       some (dotProduct h (indicatorVec u)) := by
   rw [evalOpt_restrictToLine L line _

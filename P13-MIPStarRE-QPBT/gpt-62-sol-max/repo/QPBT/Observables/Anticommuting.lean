@@ -29,42 +29,69 @@ Pauli-test parameter tuple. This is the tuple space of
 blueprint `def:anticommuting-tuple`, paper
 `14_analysis_of_the_pauli_basis_test.tex:64-68`. -/
 abbrev PauliTuple (P : AdmissibleParams) :=
-  (Fin P.m → PauliScalar P) ×
-    (Fin P.m → PauliScalar P) × PauliScalar P × PauliScalar P
+  (PauliPoint P) ×
+    (PauliPoint P) × PauliScalar P × PauliScalar P
+
+section
+
+variable {P : AdmissibleParams} (ω : PauliTuple P)
+include P ω
+
+/-- Point and scalar coordinates in the indicated basis. -/
+abbrev PauliTuple.point (W : PauliKind) :=
+  W.component (ω.1, ω.2.1)
+
+abbrev PauliTuple.scalar (W : PauliKind) :=
+  W.component ω.2.2
+
+/-- The binary commutation phase of a tuple, and its sign. -/
+abbrev PauliTuple.phaseBit :=
+  gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2
+
+abbrev PauliTuple.phase := phaseSign ω.phaseBit
 
 /-- A Pauli tuple is anticommuting when its phase bit is nonzero. This is
 blueprint `def:anticommuting-tuple`, paper
 `14_analysis_of_the_pauli_basis_test.tex:64-68`. -/
-def IsAnticommuting {P : AdmissibleParams} (ω : PauliTuple P) : Prop :=
-  gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2 ≠ 0
+def IsAnticommuting : Prop :=
+  ω.phaseBit ≠ 0
 
 /-- A Pauli tuple is commuting when its phase bit vanishes. This is the
 complementary case in blueprint
 `def:anticommuting-tuple`, paper
 `14_analysis_of_the_pauli_basis_test.tex:64-68`. -/
-def IsCommuting {P : AdmissibleParams} (ω : PauliTuple P) : Prop :=
-  gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2 = 0
+def IsCommuting : Prop :=
+  ω.phaseBit = 0
 
-noncomputable instance instDecidablePredPauliTupleIsAnticommuting (P : AdmissibleParams) :
+end
+
+section
+
+variable (P : AdmissibleParams)
+include P
+
+noncomputable instance instDecidablePredPauliTupleIsAnticommuting :
     DecidablePred (@IsAnticommuting P) := Classical.decPred _
 
-noncomputable instance instDecidablePredPauliTupleIsCommuting (P : AdmissibleParams) :
+noncomputable instance instDecidablePredPauliTupleIsCommuting :
     DecidablePred (@IsCommuting P) := Classical.decPred _
 
 /-- The uniform probability of the anticommuting event. This is the first
 quantity in blueprint
 `fact:omega-anticomm-prob`, paper
 `14_analysis_of_the_pauli_basis_test.tex:70-77`. -/
-noncomputable def anticommProb (P : AdmissibleParams) : ℝ :=
+noncomputable def anticommProb : ℝ :=
   ((Finset.univ.filter (@IsAnticommuting P)).card : ℝ) /
     Fintype.card (PauliTuple P)
 
 /-- The complementary uniform probability of the commuting event in
 blueprint `fact:omega-anticomm-prob`,
 paper `14_analysis_of_the_pauli_basis_test.tex:70-77`. -/
-noncomputable def commProb (P : AdmissibleParams) : ℝ :=
+noncomputable def commProb : ℝ :=
   ((Finset.univ.filter (@IsCommuting P)).card : ℝ) /
     Fintype.card (PauliTuple P)
+
+end
 
 /-! ### Auxiliary counting lemmas
 
@@ -73,17 +100,22 @@ proof of blueprint
 `fact:omega-anticomm-prob`. They record the cardinalities used by the
 exact computation of the anticommuting probability. -/
 
+section
+
+variable (P : AdmissibleParams)
+include P
+
 /-- Formalization-only auxiliary: the scalar carrier of an admissible parameter
 tuple has characteristic two, since it is an algebra over the two-element
 field. Blueprint `fact:omega-anticomm-prob`. -/
-private theorem pauliScalar_charTwo (P : AdmissibleParams) :
+private theorem pauliScalar_charTwo :
     CharP (PauliScalar P) 2 :=
   (Algebra.charP_iff (ZMod 2) (PauliScalar P) 2).mp (ZMod.charP 2)
 
 /-- Formalization-only auxiliary: the scalar carrier of an admissible parameter
 tuple has exactly `q` elements. Blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem card_pauliScalar (P : AdmissibleParams) :
+private theorem card_pauliScalar :
     Fintype.card (PauliScalar P) = P.q :=
   @FieldModel.card P.q P.model.toFieldModel
 
@@ -91,13 +123,12 @@ private theorem card_pauliScalar (P : AdmissibleParams) :
 of the coordinate sums `1 + u_{X,i} + u_{Z,i}`. This is the closed form of
 `γ(ω)` derived in the proof of blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem gammaValue_eq_trace_prod (P : AdmissibleParams)
-    (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) :
+private theorem gammaValue_eq_trace_prod
+    (uX uZ : PauliPoint P) (rX rZ : PauliScalar P) :
     gammaValue P uX uZ rX rZ =
       fixedBinTrace P.model (rZ * (rX * ∏ i : Fin P.m, (1 + uX i + uZ i))) := by
   haveI := pauliScalar_charTwo P
-  have hprod : (∑ y : Cube P.m, indicatorVec uX y * indicatorVec uZ y)
-      = ∏ i : Fin P.m, (1 + uX i + uZ i) :=
+  have hprod :=
     sum_indicatorVec_mul_indicatorVec uX uZ
   unfold gammaValue
   congr 1
@@ -109,197 +140,80 @@ private theorem gammaValue_eq_trace_prod (P : AdmissibleParams)
 takes each of its two values on exactly half of the scalars. This is the final
 step of the proof of blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem two_mul_card_trace_ne (P : AdmissibleParams) :
+private theorem two_mul_card_trace_ne :
     2 * (Finset.univ.filter
         (fun a : PauliScalar P => fixedBinTrace P.model a ≠ 0)).card = P.q := by
   classical
-  haveI := pauliScalar_charTwo P
-  have hK := card_pauliScalar P
-  have hadd : ∀ a c : PauliScalar P,
-      fixedBinTrace P.model (a + c)
-        = fixedBinTrace P.model a + fixedBinTrace P.model c := by
-    intro a c
-    simp [fixedBinTrace, binTrace]
-  obtain ⟨b, hb⟩ : ∃ b : PauliScalar P, fixedBinTrace P.model b = 1 := by
-    have hpos : 0 < P.model.basisDim := by
-      obtain ⟨j, hj⟩ := P.model.basisDimOdd
-      omega
-    exact ⟨P.model.basis ⟨0, hpos⟩,
-      fixedFieldModel_trace_basis_eq_one P.model ⟨0, hpos⟩⟩
-  have hbb : b + b = 0 := CharTwo.add_self_eq_zero b
-  have himg :
-      (Finset.univ.filter
-          (fun a : PauliScalar P => fixedBinTrace P.model a = 0)).image (fun a => a + b)
-        = Finset.univ.filter
-            (fun a : PauliScalar P => ¬ (fixedBinTrace P.model a = 0)) := by
-    ext a
-    simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and]
-    constructor
-    · rintro ⟨c, hc, rfl⟩
-      rw [hadd, hc, hb]
-      simp
-    · intro ha
-      refine ⟨a + b, ?_, ?_⟩
-      · rw [hadd, hb]
-        have hone : fixedBinTrace P.model a = 1 := by
-          revert ha
-          generalize fixedBinTrace P.model a = t
-          revert t
-          decide
-        rw [hone]
-        decide
-      · rw [add_assoc, hbb, add_zero]
-  have hinj : Function.Injective (fun a : PauliScalar P => a + b) :=
-    fun _ _ h => by simpa using h
-  have hcard :
-      (Finset.univ.filter (fun a : PauliScalar P => fixedBinTrace P.model a = 0)).card
-        = (Finset.univ.filter
-            (fun a : PauliScalar P => ¬ (fixedBinTrace P.model a = 0))).card := by
-    rw [← himg, Finset.card_image_of_injective _ hinj]
-  have hsplit :
-      (Finset.univ.filter (fun a : PauliScalar P => fixedBinTrace P.model a = 0)).card
-          + (Finset.univ.filter
-              (fun a : PauliScalar P => ¬ (fixedBinTrace P.model a = 0))).card
-        = Fintype.card (PauliScalar P) :=
-    Finset.card_filter_add_card_filter_not _
-  rw [hK] at hsplit
-  simp only [ne_eq]
-  omega
+  let trace := fixedBinTrace P.model
+  obtain ⟨b, hb⟩ := Algebra.trace_surjective (ZMod 2) (PauliScalar P) (1 : ZMod 2)
+  change trace b = 1 at hb
+  have h := Fintype.sum_equiv (Equiv.addRight b)
+    (fun a => if trace a = 0 then (1 : ℕ) else 0)
+    (fun a => if trace a ≠ 0 then (1 : ℕ) else 0) (by
+      intro a
+      have ht : trace (a + b) = trace a + 1 := by
+        rw [← hb]
+        exact map_add (Algebra.trace (ZMod 2) (PauliScalar P)) a b
+      change (if trace a = 0 then (1 : ℕ) else 0) = (if trace (a + b) ≠ 0 then 1 else 0)
+      rw [ht]
+      have : ∀ z : ZMod 2, z + 1 ≠ 0 ↔ z = 0 := by decide
+      simp only [this])
+  simp only [← Finset.card_filter] at h
+  have hsum := Finset.card_filter_add_card_filter_not (s := Finset.univ) (fun a => trace a = 0)
+  rw [Finset.card_univ, card_pauliScalar, h] at hsum
+  exact (two_mul _).trans hsum
 
 /-- Formalization-only auxiliary: the number of Pauli tuples. Blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem card_pauliTuple (P : AdmissibleParams) :
-    Fintype.card (PauliTuple P) = P.q ^ P.m * (P.q ^ P.m * (P.q * P.q)) := by
-  have hK := card_pauliScalar P
-  simp [PauliTuple, Fintype.card_prod, hK]
+private theorem card_pauliTuple :
+    Fintype.card (PauliTuple P) = P.q ^ P.m * (P.q ^ P.m * (P.q * P.q)) := by simp_all
 
 /-- Twice the number of anticommuting tuples is `q^{m+1}(q-1)^{m+1}`. This is
 the exact count established in the proof of blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem two_mul_card_anticommuting (P : AdmissibleParams) :
+private theorem two_mul_card_anticommuting :
     2 * (Finset.univ.filter (@IsAnticommuting P)).card
       = P.q ^ (P.m + 1) * (P.q - 1) ^ (P.m + 1) := by
   classical
-  haveI := pauliScalar_charTwo P
-  have h2 : (2 : PauliScalar P) = 0 := CharTwo.two_eq_zero
-  have hK := card_pauliScalar P
-  have htr0 : fixedBinTrace P.model 0 = 0 := by
-    simp [fixedBinTrace, binTrace]
-  set N := (Finset.univ.filter
-    (fun a : PauliScalar P => fixedBinTrace P.model a ≠ 0)).card with hNdef
-  have hN : 2 * N = P.q := two_mul_card_trace_ne P
-  -- the innermost sum, over the second scalar coordinate
-  have hinner : ∀ c : PauliScalar P,
-      (∑ r : PauliScalar P, if fixedBinTrace P.model (r * c) ≠ 0 then (1 : ℕ) else 0)
-        = if c = 0 then 0 else N := by
-    intro c
+  let trace := fixedBinTrace P.model
+  have htr0 : trace 0 = 0 := map_zero (Algebra.trace (ZMod 2) (PauliScalar P))
+  have htrace (c : PauliScalar P) :
+      (∑ r, if fixedBinTrace P.model (r * c) ≠ 0 then (2 : ℕ) else 0) = if c = 0 then 0 else P.q := by
     by_cases hc : c = 0
-    · subst hc
-      simp [htr0]
-    · rw [if_neg hc, hNdef, Finset.card_filter]
-      exact Fintype.sum_equiv (Equiv.mulRight₀ c hc)
-        (fun r => if fixedBinTrace P.model (r * c) ≠ 0 then (1 : ℕ) else 0)
-        (fun a => if fixedBinTrace P.model a ≠ 0 then (1 : ℕ) else 0)
-        (fun r => rfl)
-  -- the sum over the first scalar coordinate
-  have hnzcard :
-      (Finset.univ.filter (fun x : PauliScalar P => ¬ (x = 0))).card = P.q - 1 := by
-    have h1 : (Finset.univ.filter (fun x : PauliScalar P => x ≠ 0))
-        = Finset.univ.erase 0 := Finset.filter_ne' _ _
-    simp only [ne_eq] at h1
-    rw [h1, Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ, hK]
-  have hmid : ∀ dd : PauliScalar P,
-      (∑ rX : PauliScalar P, if rX * dd = 0 then (0 : ℕ) else N)
-        = if dd = 0 then 0 else (P.q - 1) * N := by
-    intro dd
-    by_cases hd : dd = 0
-    · subst hd
-      simp
-    · rw [if_neg hd]
-      have hcong : ∀ rX : PauliScalar P,
-          (if rX * dd = 0 then (0 : ℕ) else N) = if rX = 0 then 0 else N := by
-        intro rX
-        by_cases hr : rX = 0
-        · simp [hr]
-        · rw [if_neg (by simpa using mul_ne_zero hr hd), if_neg hr]
-      rw [Finset.sum_congr rfl (fun x _ => hcong x), Finset.sum_ite]
-      simp [hnzcard]
-  -- the sum over the second point block
-  have hDcard : ∀ uX : Fin P.m → PauliScalar P,
-      (Finset.univ.filter (fun uZ : Fin P.m → PauliScalar P =>
-        ¬ ((∏ i : Fin P.m, (1 + uX i + uZ i)) = 0))).card = (P.q - 1) ^ P.m := by
-    intro uX
-    have hset : (Finset.univ.filter (fun uZ : Fin P.m → PauliScalar P =>
-        ¬ ((∏ i : Fin P.m, (1 + uX i + uZ i)) = 0)))
-        = Fintype.piFinset (fun i : Fin P.m => Finset.univ.erase (1 + uX i)) := by
+    · simp [hc, ← show trace = fixedBinTrace P.model from rfl, htr0]
+    · rw [ite_eq_right hc, Fintype.sum_equiv (Equiv.mulRight₀ c hc)
+        (fun r => if fixedBinTrace P.model (r * c) ≠ 0 then (2 : ℕ) else 0)
+        (fun a => if trace a ≠ 0 then (2 : ℕ) else 0) (fun _ => rfl)]
+      simp only [Finset.sum_ite, Finset.sum_const, Finset.sum_const_zero, add_zero, smul_eq_mul]
+      rw [mul_comm]
+      exact two_mul_card_trace_ne P
+  have hscale (c : PauliScalar P) :
+      (∑ r, if r * c = 0 then (0 : ℕ) else P.q) =
+        if c = 0 then 0 else (P.q - 1) * P.q := by
+    by_cases hc : c = 0 <;>
+      simp [hc, mul_eq_zero, Finset.sum_ite, Finset.filter_ne',
+        Finset.card_erase_of_mem, card_pauliScalar]
+  have hpoints (uX : PauliPoint P) :
+      (∑ uZ : PauliPoint P,
+        if (∏ i, (1 + uX i + uZ i)) = 0 then 0 else (P.q - 1) * P.q) =
+          (P.q - 1) ^ P.m * ((P.q - 1) * P.q) := by
+    have hset : Finset.univ.filter (fun uZ : PauliPoint P =>
+        (∏ i, (1 + uX i + uZ i)) ≠ 0) =
+          Fintype.piFinset (fun i => Finset.univ.erase (-(1 + uX i))) := by
       ext uZ
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Fintype.mem_piFinset,
-        Finset.mem_erase, and_true]
-      constructor
-      · intro h i hi
-        refine h ?_
-        refine Finset.prod_eq_zero (Finset.mem_univ i) ?_
-        rw [hi]
-        linear_combination (1 + uX i) * h2
-      · intro h hz
-        rw [Finset.prod_eq_zero_iff] at hz
-        obtain ⟨i, -, hi⟩ := hz
-        exact h i (by linear_combination hi - (1 + uX i) * h2)
-    rw [hset, Fintype.card_piFinset]
-    simp [Finset.card_erase_of_mem, Finset.card_univ, hK]
-  have houter : ∀ uX : Fin P.m → PauliScalar P,
-      (∑ uZ : Fin P.m → PauliScalar P,
-          if (∏ i : Fin P.m, (1 + uX i + uZ i)) = 0 then (0 : ℕ) else (P.q - 1) * N)
-        = (P.q - 1) ^ P.m * ((P.q - 1) * N) := by
-    intro uX
+      simp [Finset.prod_ne_zero_iff, add_eq_zero_iff_eq_neg']
     rw [Finset.sum_ite]
-    simp [hDcard uX]
-  have step1 : ∀ (uX uZ : Fin P.m → PauliScalar P) (rX : PauliScalar P),
-      (∑ rZ : PauliScalar P,
-          if IsAnticommuting ((uX, uZ, rX, rZ) : PauliTuple P) then (1 : ℕ) else 0)
-        = if rX * ∏ i : Fin P.m, (1 + uX i + uZ i) = 0 then 0 else N := by
-    intro uX uZ rX
-    have hcongr : ∀ rZ : PauliScalar P,
-        (if IsAnticommuting ((uX, uZ, rX, rZ) : PauliTuple P) then (1 : ℕ) else 0)
-          = if fixedBinTrace P.model
-              (rZ * (rX * ∏ i : Fin P.m, (1 + uX i + uZ i))) ≠ 0 then 1 else 0 := by
-      intro rZ
-      have hiff : IsAnticommuting ((uX, uZ, rX, rZ) : PauliTuple P)
-          ↔ fixedBinTrace P.model
-              (rZ * (rX * ∏ i : Fin P.m, (1 + uX i + uZ i))) ≠ 0 := by
-        unfold IsAnticommuting
-        rw [gammaValue_eq_trace_prod]
-      by_cases h : fixedBinTrace P.model
-          (rZ * (rX * ∏ i : Fin P.m, (1 + uX i + uZ i))) ≠ 0
-      · rw [if_pos (hiff.mpr h), if_pos h]
-      · rw [if_neg (fun hh => h (hiff.mp hh)), if_neg h]
-    rw [Finset.sum_congr rfl (fun x _ => hcongr x), hinner]
-  have hcount : (Finset.univ.filter (@IsAnticommuting P)).card
-      = P.q ^ P.m * ((P.q - 1) ^ P.m * ((P.q - 1) * N)) := by
-    rw [Finset.card_filter]
-    simp only [Fintype.sum_prod_type]
-    calc (∑ uX : Fin P.m → PauliScalar P, ∑ uZ : Fin P.m → PauliScalar P,
-            ∑ rX : PauliScalar P, ∑ rZ : PauliScalar P,
-              (if IsAnticommuting ((uX, uZ, rX, rZ) : PauliTuple P) then (1 : ℕ) else 0))
-        = ∑ _uX : Fin P.m → PauliScalar P, (P.q - 1) ^ P.m * ((P.q - 1) * N) := by
-          refine Finset.sum_congr rfl fun uX _ => ?_
-          rw [← houter uX]
-          refine Finset.sum_congr rfl fun uZ _ => ?_
-          rw [← hmid (∏ i : Fin P.m, (1 + uX i + uZ i))]
-          exact Finset.sum_congr rfl fun rX _ => step1 uX uZ rX
-      _ = P.q ^ P.m * ((P.q - 1) ^ P.m * ((P.q - 1) * N)) := by
-          rw [Finset.sum_const, Finset.card_univ, smul_eq_mul]
-          congr 1
-          simp [hK]
-  rw [hcount]
-  have hexpand : 2 * (P.q ^ P.m * ((P.q - 1) ^ P.m * ((P.q - 1) * N)))
-      = P.q ^ P.m * ((P.q - 1) ^ P.m * ((P.q - 1) * (2 * N))) := by ring
-  rw [hexpand, hN, pow_succ, pow_succ]
+    simp [hset, Fintype.card_piFinset, Finset.card_erase_of_mem, card_pauliScalar]
+  simp only [Finset.card_filter, Fintype.sum_prod_type, Finset.mul_sum, mul_ite, mul_one,
+    mul_zero, IsAnticommuting, gammaValue_eq_trace_prod, htrace, hscale, hpoints,
+    Finset.sum_const, Finset.card_univ, smul_eq_mul, Fintype.card_fun, Fintype.card_fin,
+    card_pauliScalar]
+  rw [pow_succ, pow_succ]
   ring
 
 /-- The anticommuting and commuting events partition the tuple space.
 Blueprint `fact:omega-anticomm-prob`. -/
-private theorem card_comm_add_card_anticomm (P : AdmissibleParams) :
+private theorem card_comm_add_card_anticomm :
     (Finset.univ.filter (@IsCommuting P)).card
       + (Finset.univ.filter (@IsAnticommuting P)).card
       = Fintype.card (PauliTuple P) := by
@@ -314,21 +228,25 @@ private theorem card_comm_add_card_anticomm (P : AdmissibleParams) :
 
 /-- Formalization-only auxiliary: the tuple space is nonempty and finite.
 Blueprint `fact:omega-anticomm-prob`. -/
-private theorem card_pauliTuple_pos (P : AdmissibleParams) :
-    0 < Fintype.card (PauliTuple P) := by
-  have hq : 0 < P.q := lt_of_lt_of_le (by norm_num) P.hq.two_le
-  rw [card_pauliTuple P]
-  exact Nat.mul_pos (pow_pos hq _) (Nat.mul_pos (pow_pos hq _) (Nat.mul_pos hq hq))
+private theorem card_pauliTuple_pos :
+    0 < Fintype.card (PauliTuple P) := by positivity
+
+end
 
 /-! ### The exact anticommuting probability -/
+
+section
+
+variable (P : AdmissibleParams)
+include P
 
 /-- Exact anticommuting probability from blueprint
 `fact:omega-anticomm-prob`; its derivation replaces the erroneous
 Schwartz--Zippel argument at paper
 `14_analysis_of_the_pauli_basis_test.tex:79-93`. -/
-theorem anticommProb_eq (P : AdmissibleParams) :
+theorem anticommProb_eq :
     anticommProb P = (1 - (P.q : ℝ)⁻¹) ^ (P.m + 1) / 2 := by
-  have hq2 : 2 ≤ P.q := P.hq.two_le
+  have hq2 := P.hq.two_le
   have hqR : (0 : ℝ) < (P.q : ℝ) := by
     have h : 0 < P.q := by omega
     exact_mod_cast h
@@ -350,7 +268,7 @@ theorem anticommProb_eq (P : AdmissibleParams) :
 anticommuting one. This is the complementarity clause of
 blueprint `fact:omega-anticomm-prob`,
 paper `14_analysis_of_the_pauli_basis_test.tex:70-77`. -/
-theorem commProb_eq_one_sub_anticommProb (P : AdmissibleParams) :
+theorem commProb_eq_one_sub_anticommProb :
     commProb P = 1 - anticommProb P := by
   have hpos : (0 : ℝ) < (Fintype.card (PauliTuple P) : ℝ) := by
     exact_mod_cast card_pauliTuple_pos P
@@ -364,21 +282,17 @@ theorem commProb_eq_one_sub_anticommProb (P : AdmissibleParams) :
 /-- Formalization-only auxiliary: the base `1 - q^{-1}` of the exact
 anticommuting probability lies in the unit interval. Blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem base_mem_unit_interval (P : AdmissibleParams) :
+private theorem base_mem_unit_interval :
     (0 : ℝ) ≤ 1 - (P.q : ℝ)⁻¹ ∧ (1 : ℝ) - (P.q : ℝ)⁻¹ ≤ 1 := by
-  have hq2 : 2 ≤ P.q := P.hq.two_le
-  have hqR : (2 : ℝ) ≤ (P.q : ℝ) := by exact_mod_cast hq2
-  have hinv : (P.q : ℝ)⁻¹ ≤ 1 / 2 := by
-    rw [inv_le_comm₀ (by linarith) (by norm_num)]
-    linarith
-  have hinv0 : (0 : ℝ) ≤ (P.q : ℝ)⁻¹ := by positivity
-  constructor <;> linarith
+  have hq : (1 : ℝ) ≤ P.q := by exact_mod_cast (show 1 ≤ P.q from P.hq.two_le.trans' (by decide))
+  have hi := (inv_le_one₀ (by positivity)).mpr hq
+  constructor <;> linarith [inv_nonneg.mpr (Nat.cast_nonneg P.q : (0 : ℝ) ≤ P.q)]
 
 /-- The commuting event has probability at least one half. This is the
 complementary bound in blueprint
 `fact:omega-anticomm-prob`, paper
 `14_analysis_of_the_pauli_basis_test.tex:70-77`. -/
-theorem commProb_ge_half (P : AdmissibleParams) : 1 / 2 ≤ commProb P := by
+theorem commProb_ge_half : 1 / 2 ≤ commProb P := by
   obtain ⟨h0, h1⟩ := base_mem_unit_interval P
   have hle : (1 - (P.q : ℝ)⁻¹) ^ (P.m + 1) ≤ 1 := pow_le_one₀ h0 h1
   rw [commProb_eq_one_sub_anticommProb, anticommProb_eq]
@@ -387,63 +301,45 @@ theorem commProb_ge_half (P : AdmissibleParams) : 1 / 2 ≤ commProb P := by
 /-- When `m ≤ q`, the anticommuting event has the uniform constant lower
 bound added in blueprint
 `fact:omega-anticomm-prob`. -/
-theorem anticommProb_ge_of_m_le_q (P : AdmissibleParams) (hmq : P.m ≤ P.q) :
+theorem anticommProb_ge_of_m_le_q (hmq : P.m ≤ P.q) :
     (2 : ℝ) ^ (-4 : ℤ) ≤ anticommProb P := by
-  obtain ⟨h0, h1⟩ := base_mem_unit_interval P
-  have hq2 : 2 ≤ P.q := P.hq.two_le
-  have hqR : (2 : ℝ) ≤ (P.q : ℝ) := by exact_mod_cast hq2
-  have hmain : (1 : ℝ) / 8 ≤ (1 - (P.q : ℝ)⁻¹) ^ (P.m + 1) := by
-    rcases P.hq.eq_two_or_eight_dvd with hq | hdvd
-    · have hm : P.m ≤ 2 := hq ▸ hmq
-      have hb : (1 : ℝ) - (P.q : ℝ)⁻¹ = 1 / 2 := by
-        rw [hq]
-        norm_num
-      rw [hb]
-      calc (1 : ℝ) / 8 = (1 / 2 : ℝ) ^ 3 := by norm_num
-        _ ≤ (1 / 2 : ℝ) ^ (P.m + 1) :=
-            pow_le_pow_of_le_one (by norm_num) (by norm_num) (by omega)
-    · obtain ⟨j, hj⟩ := hdvd
-      have hj1 : 1 ≤ j := by omega
-      have hjR : (P.q : ℝ) = 8 * (j : ℝ) := by
-        rw [hj]
-        push_cast
-        ring
-      have hjR0 : (0 : ℝ) < (j : ℝ) := by exact_mod_cast hj1
-      have hbern : (7 : ℝ) / 8 ≤ (1 - (P.q : ℝ)⁻¹) ^ j := by
-        have hle : (-2 : ℝ) ≤ -(P.q : ℝ)⁻¹ := by
-          have : (0 : ℝ) ≤ (P.q : ℝ)⁻¹ := by positivity
-          have h2 : (P.q : ℝ)⁻¹ ≤ 1 := by
-            rw [inv_le_one₀ (by linarith)]
-            linarith
-          linarith
-        have hb := one_add_mul_le_pow hle j
-        have hrw : (1 : ℝ) + (j : ℝ) * (-(P.q : ℝ)⁻¹) = 7 / 8 := by
-          rw [hjR]
-          field_simp
-          ring
-        have hbase : (1 : ℝ) + -(P.q : ℝ)⁻¹ = 1 - (P.q : ℝ)⁻¹ := by ring
-        rw [hrw, hbase] at hb
-        exact hb
-      have hexp : P.m + 1 ≤ 9 * j := by omega
-      have hstep : (1 - (P.q : ℝ)⁻¹) ^ (9 * j) ≤ (1 - (P.q : ℝ)⁻¹) ^ (P.m + 1) :=
-        pow_le_pow_of_le_one h0 h1 hexp
-      have hpow : ((7 : ℝ) / 8) ^ 9 ≤ ((1 - (P.q : ℝ)⁻¹) ^ j) ^ 9 := by
-        gcongr
-      rw [← pow_mul, mul_comm j 9] at hpow
-      have hnum : (1 : ℝ) / 8 ≤ ((7 : ℝ) / 8) ^ 9 := by norm_num
-      linarith
   rw [anticommProb_eq]
-  have hconst : (2 : ℝ) ^ (-4 : ℤ) = 1 / 8 / 2 := by norm_num
-  rw [hconst]
-  linarith
+  suffices h : (1 : ℝ) / 8 ≤ (1 - (P.q : ℝ)⁻¹) ^ (P.m + 1) by norm_num at *; linarith
+  obtain ⟨h0, h1⟩ := base_mem_unit_interval P
+  rcases P.hq.eq_two_or_eight_dvd with hq | ⟨j, hj⟩
+  · have hm : P.m + 1 ≤ 3 := by omega
+    rw [hq] at h0 h1 ⊢
+    exact (by norm_num : (1 : ℝ) / 8 ≤ (1 - ((2 : ℕ) : ℝ)⁻¹) ^ (3 : ℕ)).trans
+      (pow_le_pow_of_le_one h0 h1 hm)
+  · have hq := P.hq.two_le
+    have hj0 : (j : ℝ) ≠ 0 := by exact_mod_cast (show j ≠ 0 by omega)
+    let r : ℝ := 1 - (P.q : ℝ)⁻¹
+    have hbern : (7 : ℝ) / 8 ≤ r ^ j := by
+      have h := one_add_mul_le_pow (show (-2 : ℝ) ≤ - (P.q : ℝ)⁻¹ by linarith) j
+      convert h using 1
+      · rw [hj, Nat.cast_mul]
+        field_simp
+        <;> ring
+    calc
+      _ ≤ ((7 : ℝ) / 8) ^ 9 := by norm_num
+      _ ≤ (r ^ j) ^ 9 := by gcongr
+      _ = r ^ (j * 9) := (pow_mul ..).symm
+      _ ≤ _ := pow_le_pow_of_le_one h0 h1 (by omega)
+
+end
 
 /-! ### Conditional uniform distributions -/
+
+section
+
+variable (P : AdmissibleParams)
+include P
 
 /-- The conditional uniform distribution on anticommuting tuples. This is the
 sampling convention for the anticommuting cases of
 blueprint `lem:qld-win-implications`,
 paper `14_analysis_of_the_pauli_basis_test.tex:210-287`. -/
-noncomputable def anticommTupleDist (P : AdmissibleParams) :
+noncomputable def anticommTupleDist :
     Distribution (PauliTuple P) :=
   Distribution.uniformOnFinset (Finset.univ.filter (@IsAnticommuting P))
 
@@ -451,18 +347,18 @@ noncomputable def anticommTupleDist (P : AdmissibleParams) :
 sampling convention for the commuting cases of blueprint
 `lem:qld-win-implications`, paper
 `14_analysis_of_the_pauli_basis_test.tex:210-287`. -/
-noncomputable def commTupleDist (P : AdmissibleParams) :
+noncomputable def commTupleDist :
     Distribution (PauliTuple P) :=
   Distribution.uniformOnFinset (Finset.univ.filter (@IsCommuting P))
 
 /-- The anticommuting conditional distribution is probabilistic. This is the
 well-formedness companion to the conditional sampling in
 blueprint `lem:qld-win-implications`. -/
-theorem anticommTupleDist_isProbability (P : AdmissibleParams) :
+theorem anticommTupleDist_isProbability :
     (anticommTupleDist P).IsProbability := by
   refine Distribution.uniformOnFinset_isProbability _ ?_
   rw [← Finset.card_pos]
-  have hq2 : 2 ≤ P.q := P.hq.two_le
+  have hq2 := P.hq.two_le
   have hcount := two_mul_card_anticommuting P
   have hpos : 0 < P.q ^ (P.m + 1) * (P.q - 1) ^ (P.m + 1) :=
     Nat.mul_pos (pow_pos (by omega) _) (pow_pos (by omega) _)
@@ -471,13 +367,15 @@ theorem anticommTupleDist_isProbability (P : AdmissibleParams) :
 /-- The commuting conditional distribution is probabilistic. This is the
 well-formedness companion to the conditional sampling in
 blueprint `lem:qld-win-implications`. -/
-theorem commTupleDist_isProbability (P : AdmissibleParams) :
+theorem commTupleDist_isProbability :
     (commTupleDist P).IsProbability := by
   refine Distribution.uniformOnFinset_isProbability _ ⟨0, ?_⟩
   refine Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩
   change gammaValue P 0 0 0 0 = 0
   rw [gammaValue_eq_trace_prod]
   simp [fixedBinTrace, binTrace]
+
+end
 
 end
 

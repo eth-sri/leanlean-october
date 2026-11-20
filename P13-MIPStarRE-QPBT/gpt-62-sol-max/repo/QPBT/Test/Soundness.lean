@@ -59,13 +59,7 @@ theorem pauli_soundness :
       ∀ (P : AdmissibleParams) (ε : ℝ), 0 ≤ ε →
         ∀ S : Strategy (pauliBasisTest P), 1 - ε ≤ S.value →
           ∃ w : PauliSoundnessWitness P S,
-            ‖isometryTensor w.φA w.φB S.ψ - idealState P w.aux‖ ≤
-                deltaQld a b ε P.m P.d P.q ∧
-            (∀ W : PauliKind,
-              rawPauliOperatorDistanceA P S w W ≤ deltaQld a b ε P.m P.d P.q) ∧
-            (∀ W : PauliKind,
-              rawPauliOperatorDistanceB P S w W ≤ deltaQld a b ε P.m P.d P.q) := by
-  exact exists_arbitrary_strategy_raw_isometry_bounds
+            w.rawWithin (P.qldError a b ε) := exists_arbitrary_strategy_raw_isometry_bounds
 
 end
 

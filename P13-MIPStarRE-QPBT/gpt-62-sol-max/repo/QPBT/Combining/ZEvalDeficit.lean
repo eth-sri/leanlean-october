@@ -6,21 +6,11 @@ public import QPBT.Combining.OverlapGap
 public import QPBT.Combining.Points.Placement
 
 /-!
-# Z-point deficits of the evaluated pair-line measurement
+# Marginal deficits of the evaluated pair-line measurement
 
-This module bounds the deficit of the overlap between the evaluated paired-line
-measurement and the expanded Z-point measurement. The proof inserts the completed
-joint point measurement, replaces it by the X-then-Z ordered product, and sums
-the X effects. It uses evaluated consistency and the distance from the joint
-point measurement to that ordered product. The bound holds first over any
-probability law on pairs of line-point pairs and then over a product of restricted
-line-point laws, whose point marginal is the uniform pair.
-
-The estimates hold for arbitrary opposite placements, with first-player
-specializations; register commutation requires no symmetry of the state.
-The completed-outcome and real-overlap lemmas are also available for other
-calculations. The concrete X-deficit argument is separate, in
-`MIPStarRE.QPBT.Combining.Lines.ConcreteXDeficit`.
+Closeness to the ordered product of the two expanded point measurements controls
+its overlap with the first basis. The distance bound needs only that the joint
+point marginal is uniform, and applies to both restricted and extended line laws.
 
 ## References
 
@@ -50,64 +40,47 @@ theorem sum_option_prod_eq_of_none {β γ : Type*} [Fintype β] [Fintype γ]
     (F : Option β × Option γ → ℝ) (h1 : ∀ o2, F (none, o2) = 0)
     (h2 : ∀ o1, F (o1, none) = 0) :
     (∑ o, F o) = ∑ bc : β × γ, F (some bc.1, some bc.2) := by
-  calc (∑ o : Option β × Option γ, F o)
-      = ∑ o1 : Option β, ∑ o2 : Option γ, F (o1, o2) := Fintype.sum_prod_type (f := F)
-    _ = (∑ o2 : Option γ, F (none, o2)) +
-          ∑ b : β, ∑ o2 : Option γ, F (some b, o2) := Fintype.sum_option _
-    _ = ∑ b : β, ∑ o2 : Option γ, F (some b, o2) := by
-        rw [Finset.sum_eq_zero fun o2 _ => h1 o2, zero_add]
-    _ = ∑ b : β, (F (some b, none) + ∑ c : γ, F (some b, some c)) :=
-        Finset.sum_congr rfl fun b _ => Fintype.sum_option _
-    _ = ∑ b : β, ∑ c : γ, F (some b, some c) := by
-        refine Finset.sum_congr rfl fun b _ => ?_
-        rw [h2 (some b), zero_add]
-    _ = ∑ bc : β × γ, F (some bc.1, some bc.2) :=
-        (Fintype.sum_prod_type (f := fun bc : β × γ => F (some bc.1, some bc.2))).symm
+  simp only [Fintype.sum_prod_type, Fintype.sum_option, h1, h2, Finset.sum_const_zero, zero_add]
+
+section
+
+variable {β γ d : Type*} [Fintype β] [Fintype γ]
+    [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
+    (Q : Measurement (β × γ) d)
+include β γ d Q
 
 /-- The completed joint measurement has the joint effect on a pair of
 evaluations. -/
-theorem completedPair_effect_some {β γ d : Type*} [Fintype β] [Fintype γ]
-    [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
-    (Q : Measurement (β × γ) d) (bc : β × γ) :
+theorem completedPair_effect_some (bc : β × γ) :
     (Q.postprocess fun ab => (some ab.1, some ab.2)).effect (some bc.1, some bc.2) =
-      Q.effect bc := by
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
-    show (Finset.univ.filter fun cd : β × γ =>
-        (some cd.1, some cd.2) = (some bc.1, some bc.2)) = {bc} by
-      ext cd; simp [Prod.ext_iff, eq_comm]]
-  simp
+      Q.effect bc :=
+  SandwichProduct.postprocess_effect_of_injective Q _ (by intro a b h; simpa [Prod.ext_iff] using h) bc
 
 /-- The completed joint measurement vanishes on outcomes outside the image of
 the completion. -/
-theorem completedPair_effect_eq_zero {β γ d : Type*} [Fintype β] [Fintype γ]
-    [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
-    (Q : Measurement (β × γ) d) (o : Option β × Option γ)
+theorem completedPair_effect_eq_zero (o : Option β × Option γ)
     (ho : ∀ bc : β × γ, (some bc.1, some bc.2) ≠ o) :
-    (Q.postprocess fun ab => (some ab.1, some ab.2)).effect o = 0 := by
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
-  exact Finset.sum_eq_zero fun bc hbc =>
-    absurd (Finset.mem_filter.mp hbc).2 (ho bc)
+    (Q.postprocess fun ab => (some ab.1, some ab.2)).effect o = 0 :=
+  SandwichProduct.postprocess_effect_eq_zero_of_notMem Q _ (fun ⟨bc, hbc⟩ => ho bc hbc)
 
 /-- The completion of a projective joint measurement is projective. -/
-theorem completedPair_isProjective {β γ d : Type*} [Fintype β] [Fintype γ]
-    [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
-    (Q : Measurement (β × γ) d) (hQ : Measurement.IsProjective Q) :
-    Measurement.IsProjective (Q.postprocess fun ab => (some ab.1, some ab.2)) := by
-  intro o
-  by_cases h : ∃ bc : β × γ, (some bc.1, some bc.2) = o
-  · obtain ⟨bc, rfl⟩ := h
-    rw [completedPair_effect_some]
-    exact hQ bc
-  · push Not at h
-    rw [completedPair_effect_eq_zero Q o h]
-    exact IsStarProjection.zero _
+theorem completedPair_isProjective (hQ : Measurement.IsProjective Q) :
+    Measurement.IsProjective (Q.postprocess fun ab => (some ab.1, some ab.2)) :=
+  SandwichProduct.postprocess_isProjective Q hQ _
+
+end
 
 namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
 
+section
+
+variable (S : ProjectiveSetting P ε)
+include S
+
 /-- A placed projection is a projection. -/
-theorem place_isProj (S : ProjectiveSetting P ε) (p : Placement)
+theorem place_isProj (p : Placement)
     {E : Op (S.ExpandedLocalSpace p.side)} (hE : IsProj E) :
     IsProj (S.place p E) := by
   refine isStarProjection_iff'.2 ⟨?_, ?_⟩
@@ -118,23 +91,17 @@ theorem place_isProj (S : ProjectiveSetting P ε) (p : Placement)
 
 /-- Every effect of the completed expanded point measurement is a projection,
 the `none` effect being zero. -/
-theorem pointMeasExpOption_isProj (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+theorem pointMeasExpOption_isProj
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (o : Option (PauliScalar P)) :
-    IsProj ((S.pointMeasExpOption side W u).effect o) := by
-  cases o with
-  | none =>
-    rw [S.pointMeasExpOption_effect_none]
-    exact IsStarProjection.zero _
-  | some a =>
-    rw [S.pointMeasExpOption_effect_some]
-    exact S.pointMeasExp_isProjective side W u a
+    IsProj ((S.pointMeasExpOption side W u).effect o) :=
+  SandwichProduct.postprocess_isProjective _ (S.pointMeasExp_isProjective side W u) some o
 
 /-- The completed joint point measurement and a completed point product differ
 only on outcome pairs with two evaluations, so their placed state-dependent
 squared distance is the one of the joint point measurement and the point
 product.  Blueprint `ch15_qpbt_combining.tex:2651-2698`. -/
-theorem sum_norm_place_completedPair_sub_sq (S : ProjectiveSetting P ε)
+theorem sum_norm_place_completedPair_sub_sq
     (p : Placement)
     (Q : Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace p.side))
     (Gc : Option (PauliScalar P) × Option (PauliScalar P) →
@@ -149,307 +116,139 @@ theorem sum_norm_place_completedPair_sub_sq (S : ProjectiveSetting P ε)
       ∑ ab : PauliScalar P × PauliScalar P,
         ‖applyOperatorToState (S.place p (Q.effect ab) - S.place p (G ab))
           S.psiHat‖ ^ 2 := by
-  refine Eq.trans (sum_option_prod_eq_of_none _ ?_ ?_) ?_
-  · intro o2
-    rw [completedPair_effect_eq_zero Q (none, o2) (fun ab => by simp), hnone1,
-      place_zero, sub_self]
+  refine Eq.trans (sum_option_prod_eq_of_none _ ?_ ?_) (Finset.sum_congr rfl fun ab _ => ?_)
+  · intro o
+    rw [completedPair_effect_eq_zero Q (none, o) (fun _ => by simp), hnone1, place_zero, sub_self]
     simp [applyOperatorToState]
-  · intro o1
-    rw [completedPair_effect_eq_zero Q (o1, none) (fun ab => by simp), hnone2,
-      place_zero, sub_self]
+  · intro o
+    rw [completedPair_effect_eq_zero Q (o, none) (fun _ => by simp), hnone2, place_zero, sub_self]
     simp [applyOperatorToState]
-  · refine Finset.sum_congr rfl fun ab _ => ?_
-    rw [completedPair_effect_some, hsome]
+  · rw [completedPair_effect_some, hsome]
 
-/-- The completed `Z`-then-`X` point product vanishes on both `none` classes
-and restricts to the ordered product on evaluated pairs. -/
-theorem completedPair_norm_sq_sum_ZX (S : ProjectiveSetting P ε) {δ : ℝ}
-    (points : CombinedPointsWitness S δ) (p : Placement)
-    (x z : Fin P.m → PauliScalar P) :
-    (∑ o : Option (PauliScalar P) × Option (PauliScalar P),
-        ‖applyOperatorToState
-          (S.place p (((points.Q p.side x z).postprocess (fun ab =>
-              (some ab.1, some ab.2))).effect o) -
-            S.place p
-              ((S.pointMeasExpOption p.side .Z z).effect o.2 *
-                (S.pointMeasExpOption p.side .X x).effect o.1))
-          S.psiHat‖ ^ 2) =
-      ∑ ab : PauliScalar P × PauliScalar P,
-        ‖applyOperatorToState
-          (S.place p ((points.Q p.side x z).effect ab) -
-            S.place p
-              ((S.pointMeasExp p.side .Z z).effect ab.2 *
-                (S.pointMeasExp p.side .X x).effect ab.1))
-          S.psiHat‖ ^ 2 := by
-  refine S.sum_norm_place_completedPair_sub_sq p (points.Q p.side x z) _ _ ?_ ?_ ?_
-  · intro ab
-    rw [S.pointMeasExpOption_effect_some, S.pointMeasExpOption_effect_some]
-  · intro o2
-    rw [S.pointMeasExpOption_effect_none, mul_zero]
-  · intro o1
-    rw [S.pointMeasExpOption_effect_none, zero_mul]
+/-- Read the component of a completed point pair in the chosen basis. -/
+abbrev completedPointPairEffect (side : PlayerSide) (W : PauliKind)
+    (xz : PointPair P)
+    (o : Option (PauliScalar P) × Option (PauliScalar P)) :=
+  (S.pointMeasExpOption side W (W.component xz)).effect (W.component o)
+
+end
 
 end ProjectiveSetting
 
 /-! ## The abstract one-point deficit -/
 
-/-- Let `A` be a complete measurement, `Q` a projective measurement, `R` a
-family of projections and `W` a family of operators, all indexed by the same
-outcomes, with `Q`, `R` and `W` commuting with the effects of `A` and with
-`W R = W`.  If `A` and `Q` are consistent with defect at most `η` and `Q` is
-within squared distance `ζ` of `Wᴴ`, then the deficit of the overlap of `A`
-with `R` is at most `2 √η + 2 √ζ`.  The proof inserts `Q` before `R`, replaces
-`Q R` by `W R = W`, and compares `W` with `Q`; each of the three steps is a
-Cauchy--Schwarz estimate weighted by `A`.  This is the common estimate behind
-the deficits in the proofs of `lem:claim-17-2` and `lem:claim-17-3`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1168-1239`. -/
+/-- Agreement with `Q` and proximity to `T = R T` force agreement with `R`.
+The three overlap comparisons insert `Q`, replace `Q` by `T`, and remove `R`
+from `R T`. This is the common argument of `lem:claim-17-2` and `lem:claim-17-3`. -/
 theorem one_sub_overlap_le_of_consistencyDefect {X α ι : Type*}
     [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (A Q : X → Measurement α ι) (R W : X → α → Op ι)
+    (μ : Distribution X) (A Q : X → Measurement α ι) (R T : X → α → Op ι)
     (ψ : EuclideanSpace ℂ ι) (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1)
     (hQ : ∀ x, Measurement.IsProjective (Q x)) (hR : ∀ x a, IsProj (R x a))
     (hAQ : ∀ x a, Commute ((A x).effect a) ((Q x).effect a))
     (hAR : ∀ x a, Commute ((A x).effect a) (R x a))
-    (hAW : ∀ x a, Commute ((A x).effect a) (W x a))
-    (hWR : ∀ x a, W x a * R x a = W x a)
-    (hnonneg : ∀ x a, 0 ≤ stateQForm ψ ((A x).effect a * (Q x).effect a))
+    (hRT : ∀ x a, R x a * T x a = T x a)
     (η ζ : ℝ)
-    (hcons : consistencyDefect μ (fun x a => (A x).effect a)
-      (fun x a => (Q x).effect a) ψ ≤ η)
+    (hcons : measurementDefect μ A
+      Q ψ ≤ η)
     (hdist : opFamilyDistSq μ (fun x a => (Q x).effect a)
-      (fun x a => (W x a)ᴴ) ψ ≤ ζ) :
+      T ψ ≤ ζ) :
     1 - avgOver μ (fun x => ∑ a, stateQForm ψ ((A x).effect a * R x a)) ≤
       2 * Real.sqrt η + 2 * Real.sqrt ζ := by
-  set ovQ := avgOver μ (fun x =>
-    ∑ a, stateQForm ψ ((A x).effect a * (Q x).effect a)) with hovQ
-  have h1 : 1 - ovQ ≤ η := by
-    rw [← consistencyDefect_eq_one_sub_overlap μ A Q ψ hμ hψ]
+  let Qe := fun x a => (Q x).effect a
+  let L := fun B : X → α → Op ι => avgOver μ (fun x =>
+    ∑ a, stateQForm ψ ((A x).effect a * B x a))
+  have hsub (B C : X → α → Op ι) : L B - L C = L (fun x a => B x a - C x a) := by
+    simp only [L, mul_sub, stateQForm_sub, Finset.sum_sub_distrib, avgOver_sub]
+  have h1 : 1 - L Qe ≤ η := by
+    rw [show 1 - L Qe = measurementDefect μ A Q ψ from
+      (consistencyDefect_eq_one_sub_overlap μ A Q ψ hμ hψ).symm]
     exact hcons
-  have hovQ_nonneg : 0 ≤ ovQ :=
-    avgOver_nonneg μ _ fun x => Finset.sum_nonneg fun a _ => hnonneg x a
-  have hovQ_le : ovQ ≤ 1 :=
-    avgOver_sum_stateQForm_mul_le_one μ A (fun x a => (Q x).effect a) ψ hμ hψ
+  have h1' : 1 - L Qe ≤ Real.sqrt η := by
+    have hn : 0 ≤ L Qe := avgOver_nonneg μ _ fun x => Finset.sum_nonneg fun a _ => by
+      rw [← stateQForm_applyOperatorToState_eq_of_isProj ψ (hQ x a) (hAQ x a)]
+      exact stateQForm_nonneg _ ((A x).pos a)
+    have hu : L Qe ≤ 1 := avgOver_sum_stateQForm_mul_le_one μ A Qe ψ hμ hψ
       (fun x a => hQ x a) hAQ
-  have h1' : 1 - ovQ ≤ Real.sqrt η := by
-    have h0 : 0 ≤ 1 - ovQ := by linarith
-    calc 1 - ovQ = Real.sqrt ((1 - ovQ) ^ 2) := (Real.sqrt_sq h0).symm
-      _ ≤ Real.sqrt η := Real.sqrt_le_sqrt (by nlinarith)
-  -- comparing `Q` with `W` under the weight `A`
-  have hWconj : ∀ x a, stateQForm ψ ((A x).effect a * W x a) =
-      stateQForm ψ ((A x).effect a * (W x a)ᴴ) := by
-    intro x a
-    rw [← stateQForm_conjTranspose ψ ((A x).effect a * W x a),
-      Matrix.conjTranspose_mul, measurement_effect_hermitian]
-    congr 1
-    have h := congrArg Matrix.conjTranspose (hAW x a).eq
-    rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_mul,
-      measurement_effect_hermitian] at h
-    exact h
-  have h2 : |ovQ - avgOver μ (fun x =>
-      ∑ a, stateQForm ψ ((A x).effect a * W x a))| ≤ Real.sqrt ζ := by
-    rw [avgOver_congr μ _ _ fun x => Finset.sum_congr rfl fun a _ => hWconj x a]
-    exact abs_overlap_gap_le_sqrt_of_opFamilyDistSq μ A
-      (fun x a => (Q x).effect a) (fun x a => (W x a)ᴴ) ψ hμ hψ ζ hdist
-  -- replacing `Q R` by `W R = W`
-  have h4 : |avgOver μ (fun x =>
-      ∑ a, stateQForm ψ ((A x).effect a * ((Q x).effect a * R x a))) -
-        avgOver μ (fun x => ∑ a, stateQForm ψ ((A x).effect a * W x a))| ≤
-      Real.sqrt ζ := by
-    have hpt : ∀ x,
-        (∑ a, stateQForm ψ ((A x).effect a * ((Q x).effect a * R x a))) -
-          (∑ a, stateQForm ψ ((A x).effect a * W x a)) =
-        ∑ a, stateQForm ψ ((A x).effect a * (((Q x).effect a - W x a) * R x a)) := by
-      intro x
-      rw [← Finset.sum_sub_distrib]
-      refine Finset.sum_congr rfl fun a _ => ?_
-      rw [sub_mul, hWR]
-      simp [stateQForm, applyOperatorToState, mul_sub]
-    rw [← avgOver_sub, avgOver_congr μ _ _ hpt]
-    have hcs := abs_avgOver_sum_stateQForm_mul_le_sqrt_of_isProj' μ A
-      (fun x a => (Q x).effect a - W x a) R ψ hμ hψ hR hAR
-      (fun x a => (hAQ x a).sub_right (hAW x a))
-    refine hcs.trans (Real.sqrt_le_sqrt ?_)
-    have hdist' : avgOver μ (fun x =>
-        ∑ a, ‖applyOperatorToState ((Q x).effect a - (W x a)ᴴ) ψ‖ ^ 2) ≤ ζ :=
-      hdist
-    refine le_of_eq_of_le ?_ hdist'
-    refine avgOver_congr μ _ _ fun x => Finset.sum_congr rfl fun a _ => ?_
-    rw [Matrix.conjTranspose_sub, measurement_effect_hermitian]
-  -- inserting `Q` before `R`
-  have h5 : |avgOver μ (fun x =>
-      ∑ a, stateQForm ψ ((A x).effect a * ((Q x).effect a * R x a))) -
-        avgOver μ (fun x => ∑ a, stateQForm ψ ((A x).effect a * R x a))| ≤
-      Real.sqrt η := by
-    have hpt : ∀ x,
-        (∑ a, stateQForm ψ ((A x).effect a * R x a)) -
-          (∑ a, stateQForm ψ ((A x).effect a * ((Q x).effect a * R x a))) =
-        ∑ a, stateQForm ψ ((A x).effect a * ((1 - (Q x).effect a) * R x a)) := by
-      intro x
-      rw [← Finset.sum_sub_distrib]
-      refine Finset.sum_congr rfl fun a _ => ?_
-      simp [stateQForm, applyOperatorToState, sub_mul, mul_sub]
-    rw [abs_sub_comm, ← avgOver_sub, avgOver_congr μ _ _ hpt]
-    have hcs := abs_avgOver_sum_stateQForm_mul_mul_le_sqrt_mul_sqrt μ A
-      (fun x a => 1 - (Q x).effect a) R ψ (fun x a => (hQ x a).one_sub)
-      (fun x a => (Commute.one_right _).sub_right (hAQ x a))
-    have hfirst : avgOver μ (fun x =>
-        ∑ a, stateQForm ψ ((A x).effect a * (1 - (Q x).effect a))) = 1 - ovQ := by
-      have hx : ∀ x,
-          (∑ a, stateQForm ψ ((A x).effect a * (1 - (Q x).effect a))) =
-            1 - ∑ a, stateQForm ψ ((A x).effect a * (Q x).effect a) := by
-        intro x
-        rw [← sum_stateQForm_effect_eq_one (A x) ψ hψ, ← Finset.sum_sub_distrib]
-        refine Finset.sum_congr rfl fun a _ => ?_
-        simp [stateQForm, applyOperatorToState, mul_sub]
-      rw [avgOver_congr μ _ _ hx, avgOver_sub, avgOver_const_of_isProbability μ hμ]
-    have hsecond : avgOver μ (fun x =>
-        ∑ a, stateQForm (applyOperatorToState (R x a) ψ) ((A x).effect a)) ≤ 1 := by
-      rw [avgOver_congr μ _ _ fun x => Finset.sum_congr rfl fun a _ =>
-        stateQForm_applyOperatorToState_eq_of_isProj ψ (hR x a) (hAR x a)]
-      exact avgOver_sum_stateQForm_mul_le_one μ A R ψ hμ hψ hR hAR
-    rw [hfirst] at hcs
-    calc
-      _ ≤ _ := hcs
-      _ ≤ Real.sqrt (1 - ovQ) * 1 := by
-        refine mul_le_mul_of_nonneg_left ?_ (Real.sqrt_nonneg _)
-        rw [← Real.sqrt_one]
-        exact Real.sqrt_le_sqrt hsecond
-      _ = Real.sqrt (1 - ovQ) := mul_one _
-      _ ≤ Real.sqrt η := Real.sqrt_le_sqrt h1
-  have h2' := abs_le.mp h2
-  have h4' := abs_le.mp h4
-  have h5' := abs_le.mp h5
-  linarith [h2'.1, h4'.1, h5'.1, h2'.2, h4'.2, h5'.2]
+    exact Real.le_sqrt_of_sq_le (by nlinarith)
+  have h2 : |L Qe - L T| ≤ Real.sqrt ζ :=
+    abs_overlap_gap_le_sqrt_of_opFamilyDistSq μ A Qe T ψ hμ hψ ζ hdist
+  have h4 : |L (fun x a => R x a * Qe x a) - L T| ≤ Real.sqrt ζ := by
+    rw [hsub, show (fun x a => R x a * Qe x a - T x a) =
+        (fun x a => R x a * (Qe x a - T x a)) by ext x a; rw [mul_sub, hRT]]
+    exact (abs_avgOver_sum_stateQForm_mul_le_sqrt_of_isProj μ A R
+      (fun x a => Qe x a - T x a) ψ hμ hψ hR hAR).trans (Real.sqrt_le_sqrt hdist)
+  have h5 : |L (fun x a => R x a * Qe x a) - L R| ≤ Real.sqrt η :=
+    (abs_overlap_gap_le_sqrt_one_sub_of_isProj μ A Qe R ψ hμ hψ
+      (fun x a => hQ x a) hR hAQ hAR).trans (Real.sqrt_le_sqrt h1)
+  change 1 - L R ≤ _
+  linarith [(abs_le.mp h2).2, (abs_le.mp h4).1, (abs_le.mp h5).2]
 
 /-! ## The two placed deficits -/
-
-/-- A pair of line-point pairs of the source space: the sample type of the
-consistency display of `lem:qld-xz-lines`. -/
-abbrev LinePointPairSample (P : AdmissibleParams) :=
-  (LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
-    (LineDesc P.toLdParams × (Fin P.m → PauliScalar P))
 
 section Placed
 
 variable {P : AdmissibleParams} {ε δQ δP : ℝ} {S : ProjectiveSetting P ε}
   {points : CombinedPointsWitness S δQ}
 
-/-- The `Z`-point deficit of the evaluated pair-line measurement over a
-probability law on pairs of line-point pairs, from the consistency of the
-evaluated pair-line measurement with the completed joint point measurement
-and the closeness of the latter to the `Z`-then-`X` product.  This is the
-deficit bounded in the proof of `lem:claim-17-3`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1204-1239`. -/
-theorem CombinedLinesWitness.one_sub_Z_overlap_le_at
-    (lines : CombinedLinesWitness S points δP)
-    (first second : Placement) (hopposite : first.IsOpposite second)
-    (ν : Distribution (LinePointPairSample P)) (hν : ν.IsProbability) (η ζ : ℝ)
-    (hcons : consistencyDefect ν
-      (fun s o => S.place first
-        (((lines.T first.side s.1.1 s.2.1).postprocess fun fs =>
-          (evalOpt s.1.1 s.1.2 fs.1, evalOpt s.2.1 s.2.2 fs.2)).effect o))
-      (fun s o => S.place second
-        (((points.Q second.side s.1.2 s.2.2).postprocess fun ab =>
-          (some ab.1, some ab.2)).effect o))
-      S.psiHat ≤ η)
-    (hZX : opFamilyDistSq ν
-      (fun s o => S.place second
-        (((points.Q second.side s.1.2 s.2.2).postprocess fun ab =>
-          (some ab.1, some ab.2)).effect o))
-      (fun s o => S.place second
-        ((S.pointMeasExpOption second.side .Z s.2.2).effect o.2 *
-          (S.pointMeasExpOption second.side .X s.1.2).effect o.1))
-      S.psiHat ≤ ζ) :
-    1 - avgOver ν (fun s =>
-      ∑ o : Option (PauliScalar P) × Option (PauliScalar P),
-        stateQForm S.psiHat
-          (S.place first
-            (((lines.T first.side s.1.1 s.2.1).postprocess fun fs =>
-              (evalOpt s.1.1 s.1.2 fs.1, evalOpt s.2.1 s.2.2 fs.2)).effect o) *
-            S.place second ((S.pointMeasExpOption second.side .Z s.2.2).effect o.2))) ≤
+/-- On opposite placements, closeness to an ordered product controls the
+marginal overlap with its first (projective) factor. -/
+theorem one_sub_placed_overlap_le_of_product_distance {Y α : Type*}
+    [Fintype Y] [DecidableEq Y] [Fintype α] [DecidableEq α]
+    (first second : Placement) (hopp : first.IsOpposite second)
+    (ν : Distribution Y) (hν : ν.IsProbability) (η ζ : ℝ)
+    (A : Y → Measurement α (S.ExpandedLocalSpace first.side))
+    (Q : Y → Measurement α (S.ExpandedLocalSpace second.side))
+    (R T : Y → α → Op (S.ExpandedLocalSpace second.side))
+    (hQ : ∀ x, Measurement.IsProjective (Q x))
+    (hR : ∀ x a, IsProj (R x a))
+    (hcons : S.placedDefect first second ν (fun x => A x) (fun x => Q x) ≤ η)
+    (hdist : opFamilyDistSq ν (fun x a => S.place second ((Q x).effect a))
+      (fun x a => S.place second (R x a * T x a)) S.psiHat ≤ ζ) :
+    1 - avgOver ν (fun x => ∑ a,
+      S.placedCorrelation first second ((A x).effect a) (R x a)) ≤
       2 * Real.sqrt η + 2 * Real.sqrt ζ := by
-  have hQproj : ∀ s : LinePointPairSample P,
-      Measurement.IsProjective (S.placedMeasurement second
-        ((points.Q second.side s.1.2 s.2.2).postprocess fun ab => (some ab.1, some ab.2))) :=
-    fun s => S.placedMeasurement_isProjective _ _
-      (completedPair_isProjective _ (points.projective _ _ _))
-  have hRproj : ∀ (s : LinePointPairSample P)
-      (o : Option (PauliScalar P) × Option (PauliScalar P)),
-      IsProj (S.place second ((S.pointMeasExpOption second.side .Z s.2.2).effect o.2)) :=
-    fun s o => S.place_isProj _ (S.pointMeasExpOption_isProj _ _ _ _)
-  have hWR : ∀ (s : LinePointPairSample P)
-      (o : Option (PauliScalar P) × Option (PauliScalar P)),
-      S.place second ((S.pointMeasExpOption second.side .X s.1.2).effect o.1 *
-          (S.pointMeasExpOption second.side .Z s.2.2).effect o.2) *
-        S.place second ((S.pointMeasExpOption second.side .Z s.2.2).effect o.2) =
-      S.place second ((S.pointMeasExpOption second.side .X s.1.2).effect o.1 *
-        (S.pointMeasExpOption second.side .Z s.2.2).effect o.2) := by
-    intro s o
-    have hlocal : (S.pointMeasExpOption second.side .X s.1.2).effect o.1 *
-          (S.pointMeasExpOption second.side .Z s.2.2).effect o.2 *
-        (S.pointMeasExpOption second.side .Z s.2.2).effect o.2 =
-        (S.pointMeasExpOption second.side .X s.1.2).effect o.1 *
-          (S.pointMeasExpOption second.side .Z s.2.2).effect o.2 := by
-      rw [mul_assoc, (S.pointMeasExpOption_isProj second.side .Z s.2.2 o.2).isIdempotentElem.eq]
-    exact (ProjectiveSetting.place_mul S second _ _).symm.trans
-      (congrArg (S.place second) hlocal)
-  have hnonneg : ∀ (s : LinePointPairSample P)
-      (o : Option (PauliScalar P) × Option (PauliScalar P)),
-      0 ≤ stateQForm S.psiHat
-        (S.place first
-          (((lines.T first.side s.1.1 s.2.1).postprocess fun fs =>
-            (evalOpt s.1.1 s.1.2 fs.1, evalOpt s.2.1 s.2.2 fs.2)).effect o) *
-          S.place second
-            (((points.Q second.side s.1.2 s.2.2).postprocess fun ab =>
-              (some ab.1, some ab.2)).effect o)) :=
-    fun s o => stateQForm_nonneg _ (S.place_mul_place_nonneg first second hopposite
-      (((lines.T first.side s.1.1 s.2.1).postprocess fun fs =>
-        (evalOpt s.1.1 s.1.2 fs.1, evalOpt s.2.1 s.2.2 fs.2)).pos o)
-      (((points.Q second.side s.1.2 s.2.2).postprocess fun ab =>
-        (some ab.1, some ab.2)).pos o))
-  have hdist : opFamilyDistSq ν
-      (fun s o => S.place second
-        (((points.Q second.side s.1.2 s.2.2).postprocess fun ab =>
-          (some ab.1, some ab.2)).effect o))
-      (fun s o => (S.place second
-        ((S.pointMeasExpOption second.side .X s.1.2).effect o.1 *
-          (S.pointMeasExpOption second.side .Z s.2.2).effect o.2))ᴴ)
-      S.psiHat ≤ ζ := by
-    refine le_of_eq_of_le ?_ hZX
-    unfold opFamilyDistSq
-    refine avgOver_congr _ _ _ fun s => Finset.sum_congr rfl fun o _ => ?_
-    have hlocal : ((S.pointMeasExpOption second.side .X s.1.2).effect o.1 *
-          (S.pointMeasExpOption second.side .Z s.2.2).effect o.2)ᴴ =
-        (S.pointMeasExpOption second.side .Z s.2.2).effect o.2 *
-          (S.pointMeasExpOption second.side .X s.1.2).effect o.1 := by
-      rw [Matrix.conjTranspose_mul,
-        (S.pointMeasExpOption_isProj second.side .Z s.2.2 o.2).isSelfAdjoint.isHermitian.eq,
-        (S.pointMeasExpOption_isProj second.side .X s.1.2 o.1).isSelfAdjoint.isHermitian.eq]
-    have hplace : (S.place second
-        ((S.pointMeasExpOption second.side .X s.1.2).effect o.1 *
-          (S.pointMeasExpOption second.side .Z s.2.2).effect o.2))ᴴ =
-        S.place second ((S.pointMeasExpOption second.side .Z s.2.2).effect o.2 *
-          (S.pointMeasExpOption second.side .X s.1.2).effect o.1) :=
-      (ProjectiveSetting.place_conjTranspose S second _).symm.trans
-        (congrArg (S.place second) hlocal)
-    dsimp only
-    rw [hplace]
-  exact one_sub_overlap_le_of_consistencyDefect ν
-    (fun s => S.placedMeasurement first
-      ((lines.T first.side s.1.1 s.2.1).postprocess fun fs =>
-        (evalOpt s.1.1 s.1.2 fs.1, evalOpt s.2.1 s.2.2 fs.2)))
-    (fun s => S.placedMeasurement second
-      ((points.Q second.side s.1.2 s.2.2).postprocess fun ab => (some ab.1, some ab.2)))
-    (fun s o => S.place second ((S.pointMeasExpOption second.side .Z s.2.2).effect o.2))
-    (fun s o => S.place second
-      ((S.pointMeasExpOption second.side .X s.1.2).effect o.1 *
-        (S.pointMeasExpOption second.side .Z s.2.2).effect o.2))
-    S.psiHat hν S.psiHat_norm hQproj hRproj
-    (fun s o => S.place_comm first second hopposite _ _)
-    (fun s o => S.place_comm first second hopposite _ _)
-    (fun s o => S.place_comm first second hopposite _ _)
-    hWR hnonneg η ζ hcons hdist
+  refine one_sub_overlap_le_of_consistencyDefect ν
+    (fun x => S.placedMeasurement first (A x)) (fun x => S.placedMeasurement second (Q x))
+    (fun x a => S.place second (R x a)) (fun x a => S.place second (R x a * T x a))
+    S.psiHat hν S.psiHat_norm (fun x => S.placedMeasurement_isProjective _ _ (hQ x))
+    (fun x a => S.place_isProj _ (hR x a))
+    (fun _ _ => S.place_comm first second hopp _ _)
+    (fun _ _ => S.place_comm first second hopp _ _)
+    ?_ η ζ hcons hdist
+  intro x a
+  rw [← S.place_mul, ← mul_assoc, (hR x a).isIdempotentElem.eq]
+
+/-- A law with uniform joint point marginal has small distance from the
+completed joint measurement to the ordered product, in either order. -/
+theorem CombinedPointsWitness.completedProduct_dist_le {Y : Type*}
+    (points : CombinedPointsWitness S δQ) (p : Placement) (W : PauliKind)
+    (ν : Distribution Y)
+    (point : Y → PointPair P)
+    (hpoint : ∀ f, avgOver ν (f ∘ point) = avgOver (uniformDistribution _) f) :
+    opFamilyDistSq ν
+      (fun y o => S.place p ((points.completedPair p.side (point y).1 (point y).2).effect o))
+      (fun y o => S.place p (S.completedPointPairEffect p.side W (point y) o *
+        S.completedPointPairEffect p.side W.other (point y) o)) S.psiHat ≤ 4 * δQ := by
+  let integrand (xz : PointPair P) :=
+    ∑ o, ‖applyOperatorToState (S.place p ((points.completedPair p.side xz.1 xz.2).effect o) -
+      S.place p (S.completedPointPairEffect p.side W xz o *
+        S.completedPointPairEffect p.side W.other xz o)) S.psiHat‖ ^ 2
+  change avgOver ν (integrand ∘ point) ≤ _
+  rw [hpoint]
+  refine le_of_eq_of_le (avgOver_congr _ _ _ fun xz => ?_) (points.ordered_point_dist_le p W)
+  refine S.sum_norm_place_completedPair_sub_sq p (points.Q p.side xz.1 xz.2) _ _ ?_ ?_ ?_
+  · intro ab
+    cases W <;> simp only [ProjectiveSetting.orderedPointProduct, ProjectiveSetting.pointPairEffect,
+      ProjectiveSetting.completedPointPairEffect,
+      PauliKind.other, PauliKind.component, S.pointMeasExpOption_effect_some]
+  · intro o
+    cases W <;> simp only [ProjectiveSetting.completedPointPairEffect, PauliKind.other, PauliKind.component,
+      S.pointMeasExpOption_effect_none, zero_mul, mul_zero]
+  · intro o
+    cases W <;> simp only [ProjectiveSetting.completedPointPairEffect, PauliKind.other, PauliKind.component,
+      S.pointMeasExpOption_effect_none, zero_mul, mul_zero]
 
 end Placed
 
@@ -458,18 +257,14 @@ end Placed
 /-- Every restricted line-point law has total mass one. -/
 theorem restrictedLinePointDist_isProbability (P : AdmissibleParams)
     (kind : LineKind) (i : Fin P.m) :
-    (restrictedLinePointDist P kind i).IsProbability := by
-  cases kind
-  · change (restrictedALineDist P.toLdParams i).IsProbability
-    exact restrictedALineDist_isProbability P.toLdParams i
-  · change (restrictedDLineDist P.toLdParams i).IsProbability
-    exact restrictedDLineDist_isProbability P.toLdParams i
+    (restrictedLinePointDist P kind i).IsProbability :=
+  restrictedLineDist_isProbability P.toLdParams kind i
 
 /-- The point marginal of a restricted line-point law is uniform. -/
 theorem restrictedLinePointDist_map_snd (P : AdmissibleParams) (kind : LineKind)
     (i : Fin P.m) :
     (restrictedLinePointDist P kind i).map Prod.snd =
-      uniformDistribution (Fin P.m → PauliScalar P) := by
+      uniformDistribution (PauliPoint P) := by
   rw [restrictedLinePointDist_eq_map_prod, Distribution.map_map]
   exact Distribution.prod_map_fst _ _ (Distribution.prod_isProbability _ _
     (subLineSeedDist_isProbability P i) (uniformDistribution_isProbability _))
@@ -481,95 +276,68 @@ theorem prod_restrictedLinePointDist_map_points (P : AdmissibleParams)
     (Distribution.prod (restrictedLinePointDist P kindX i)
         (restrictedLinePointDist P kindZ j)).map (fun s => (s.1.2, s.2.2)) =
       uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) := by
+        (PointPair P) := by
   have h : Distribution.prod ((restrictedLinePointDist P kindX i).map Prod.snd)
       ((restrictedLinePointDist P kindZ j).map Prod.snd) =
       uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) := by
+        (PointPair P) := by
     rw [restrictedLinePointDist_map_snd, restrictedLinePointDist_map_snd,
       uniformDistribution_prod]
   rw [← h, Distribution.prod_map_left, Distribution.prod_map_right,
     Distribution.map_map]
-
-/-- A state-dependent distance between two families depending on the pair of
-points only, averaged over a product of two restricted line-point laws, is the
-distance averaged over a uniform pair of points. -/
-theorem opFamilyDistSq_prod_restricted_points {α ι : Type*} [Fintype α]
-    [Fintype ι] [DecidableEq ι] (P : AdmissibleParams) (kindX kindZ : LineKind)
-    (i j : Fin P.m)
-    (F G : (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P) → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι) :
-    opFamilyDistSq
-        (Distribution.prod (restrictedLinePointDist P kindX i)
-          (restrictedLinePointDist P kindZ j))
-        (fun s a => F (s.1.2, s.2.2) a) (fun s a => G (s.1.2, s.2.2) a) ψ =
-      opFamilyDistSq
-        (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P))) F G ψ := by
-  unfold opFamilyDistSq
-  rw [← prod_restrictedLinePointDist_map_points P kindX kindZ i j,
-    Distribution.avgOver_map]
 
 section Restricted
 
 variable {P : AdmissibleParams} {ε δQ δP : ℝ} {S : ProjectiveSetting P ε}
   {points : CombinedPointsWitness S δQ}
 
-/-- The `Z`-point deficit over a product of two restricted line-point laws,
-with the inflation `4 m ^ 2` of the line consistency error and the inflation
-`4` of the point consistency error. -/
-theorem CombinedLinesWitness.one_sub_Z_overlap_restricted_le_at
-    (lines : CombinedLinesWitness S points δP)
-    (first second : Placement) (hopposite : first.IsOpposite second) (kindX kindZ : LineKind)
-    (i j : Fin P.m) :
+section
+
+variable (lines : CombinedLinesWitness S points δP)
+    (first second : Placement) (hopposite : first.IsOpposite second)
+include lines first second hopposite
+
+/-- Restricting both line directions costs at most the product of the two
+line-distribution density bounds. -/
+theorem CombinedLinesWitness.consistent_restricted
+    (kindX kindZ : LineKind) (i j : Fin P.m) :
+    S.placedDefect first second (Distribution.prod (restrictedLinePointDist P kindX i)
+        (restrictedLinePointDist P kindZ j)) (lines.evalPair first.side) (fun s => points.completedPair second.side s.1.2 s.2.2) ≤ 4 * (P.m : ℝ) ^ 2 * δP :=
+  (avgOver_prod_restrictedLinePointDist_le _ (fun s =>
+    consistencyDefect_integrand_nonneg S first second hopposite
+      (lines.evalPair first.side s) (points.completedPair second.side s.1.2 s.2.2))
+    kindX kindZ i j).trans
+    (mul_le_mul_of_nonneg_left (lines.consistent first second hopposite) (by positivity))
+
+set_option maxHeartbeats 500000 in
+/-- The marginal deficit in basis `W` for restricted line-point laws.
+Restriction inflates the line error by `4 m ^ 2`; the point marginal remains uniform. -/
+theorem CombinedLinesWitness.one_sub_overlap_restricted_le (W : PauliKind)
+    (kindX kindZ : LineKind) (i j : Fin P.m) :
     1 - avgOver
-      (Distribution.prod (restrictedLinePointDist P kindX i)
-        (restrictedLinePointDist P kindZ j))
-      (fun s => ∑ o : Option (PauliScalar P) × Option (PauliScalar P),
-        stateQForm S.psiHat
-          (S.place first
-            (((lines.T first.side s.1.1 s.2.1).postprocess fun fs =>
-              (evalOpt s.1.1 s.1.2 fs.1, evalOpt s.2.1 s.2.2 fs.2)).effect o) *
-            S.place second ((S.pointMeasExpOption second.side .Z s.2.2).effect o.2))) ≤
+      (Distribution.prod (restrictedLinePointDist P kindX i) (restrictedLinePointDist P kindZ j))
+      (fun s => ∑ o, S.placedCorrelation first second
+        ((lines.evalPair first.side s).effect o) (S.completedPointPairEffect second.side W (s.1.2, s.2.2) o)) ≤
       2 * Real.sqrt (4 * (P.m : ℝ) ^ 2 * δP) + 2 * Real.sqrt (4 * δQ) := by
-  refine lines.one_sub_Z_overlap_le_at first second hopposite _
+  refine one_sub_placed_overlap_le_of_product_distance first second hopposite _
     (Distribution.prod_isProbability _ _
-      (restrictedLinePointDist_isProbability P kindX i)
-      (restrictedLinePointDist_isProbability P kindZ j)) _ _ ?_ ?_
-  · unfold consistencyDefect at ⊢
-    refine le_trans
-      (avgOver_prod_restrictedLinePointDist_le _ ?_ kindX kindZ i j) ?_
-    · intro sample
-      exact consistencyDefect_integrand_nonneg S first second hopposite
-        ((lines.T first.side sample.1.1 sample.2.1).postprocess fun fs =>
-          (evalOpt sample.1.1 sample.1.2 fs.1, evalOpt sample.2.1 sample.2.2 fs.2))
-        ((points.Q second.side sample.1.2 sample.2.2).postprocess fun ab =>
-          (some ab.1, some ab.2))
-    · exact mul_le_mul_of_nonneg_left (lines.consistent first second hopposite) (by positivity)
-  · calc
-      _ = opFamilyDistSq
-            (uniformDistribution
-              ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
-            (fun xz o => S.place second
-              (((points.Q second.side xz.1 xz.2).postprocess fun ab =>
-                (some ab.1, some ab.2)).effect o))
-            (fun xz o => S.place second
-              ((S.pointMeasExpOption second.side .Z xz.2).effect o.2 *
-                (S.pointMeasExpOption second.side .X xz.1).effect o.1))
-            S.psiHat :=
-        opFamilyDistSq_prod_restricted_points P kindX kindZ i j _ _ _
-      _ = opFamilyDistSq
-            (uniformDistribution
-              ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
-            (fun xz ab => S.place second ((points.Q second.side xz.1 xz.2).effect ab))
-            (fun xz ab => S.place second
-              ((S.pointMeasExp second.side .Z xz.2).effect ab.2 *
-                (S.pointMeasExp second.side .X xz.1).effect ab.1))
-            S.psiHat := by
-        unfold opFamilyDistSq
-        exact avgOver_congr _ _ _ fun xz =>
-          S.completedPair_norm_sq_sum_ZX points second xz.1 xz.2
-      _ ≤ 4 * δQ := points.orderedZX_dist_le second
+      (restrictedLinePointDist_isProbability P kindX i) (restrictedLinePointDist_isProbability P kindZ j))
+    _ _ (lines.evalPair first.side) (fun s => points.completedPair second.side s.1.2 s.2.2)
+    (fun s => S.completedPointPairEffect second.side W (s.1.2, s.2.2))
+    (fun s => S.completedPointPairEffect second.side W.other (s.1.2, s.2.2))
+    (fun _ => completedPair_isProjective _ (points.projective _ _ _))
+    (fun _ _ => S.pointMeasExpOption_isProj _ _ _ _)
+    (lines.consistent_restricted first second hopposite kindX kindZ i j)
+    ?_
+  apply points.completedProduct_dist_le second W
+    (Distribution.prod (restrictedLinePointDist P kindX i) (restrictedLinePointDist P kindZ j))
+    (fun s => (s.1.2, s.2.2))
+  intro f
+  simp only [Function.comp_def]
+  rw [← Distribution.avgOver_map _ (fun s : SourceLinePointPair P => (s.1.2, s.2.2)) f,
+    prod_restrictedLinePointDist_map_points]
+
+end
 
 end Restricted
 

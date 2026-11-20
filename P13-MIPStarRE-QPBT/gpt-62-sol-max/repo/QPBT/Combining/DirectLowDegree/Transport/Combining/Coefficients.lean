@@ -16,24 +16,20 @@ individual degrees of the coefficients are bounded by those of `p`, so each
 `c_μ` has total degree at most `m d` and the Schwartz--Zippel lemma applies to
 it.
 
-The rereading is the algebra homomorphism sending the point variables to
-constants and keeping the combining variables; it is injective, its left
-inverse being the substitution which renames the point variables back and sends
-the combining variables to the combining coordinates.
+The rereading uses the polynomial algebra equivalence for a sum of variable sets.
 
 ## Main definitions
 
 * `combinedPointExp`, `combinedCoefExp` — the two blocks of an exponent vector
   of the combined dimension.
-* `combinedCoefAlgHom` — the rereading of a polynomial in the combined
+* `combinedCoefEquiv` — the rereading of a polynomial in the combined
   variables as a polynomial in the combining variables with polynomial
   coefficients.
 * `combinedCoef` — the coefficient of the combining monomial `μ`.
 
 ## Main statements
 
-* `combinedCoefAlgHom_monomial` — the rereading of a monomial.
-* `combinedCoefAlgHom_injective` — the rereading is injective.
+* `combinedCoefEquiv_monomial` — the rereading of a monomial.
 * `eval_combinedCoef` — the value at `u` of `c_μ` is the coefficient of `μ` in
   the restriction `p(u, ·)`.
 * `combinePolyTuple_combinedCoef_iff` — `p` is combined exactly when `c_μ`
@@ -59,159 +55,64 @@ noncomputable section
 
 /-! ## The two blocks of an exponent vector -/
 
+section
+
+variable {m k : ℕ} (s : Fin (m + k) →₀ ℕ)
+include m k s
+
 /-- The point block of an exponent vector of the combined dimension. -/
-def combinedPointExp {m k : ℕ} (s : Fin (m + k) →₀ ℕ) : Fin m →₀ ℕ :=
+def combinedPointExp : Fin m →₀ ℕ :=
   Finsupp.comapDomain (combinedPointVar m k) s (combinedPointVar_injective m k).injOn
 
 /-- The combining block of an exponent vector of the combined dimension. -/
-def combinedCoefExp {m k : ℕ} (s : Fin (m + k) →₀ ℕ) : Fin k →₀ ℕ :=
+def combinedCoefExp : Fin k →₀ ℕ :=
   Finsupp.comapDomain (combinedCoefficientVar m k) s
     (combinedCoefficientVar_injective m k).injOn
 
-@[simp] theorem combinedPointExp_apply {m k : ℕ} (s : Fin (m + k) →₀ ℕ) (j : Fin m) :
+@[simp] theorem combinedPointExp_apply (j : Fin m) :
     combinedPointExp s j = s (combinedPointVar m k j) := rfl
+
+end
 
 @[simp] theorem combinedCoefExp_apply {m k : ℕ} (s : Fin (m + k) →₀ ℕ) (r : Fin k) :
     combinedCoefExp s r = s (combinedCoefficientVar m k r) := rfl
 
-/-- A product over the combined dimension splits into the product over the point
-coordinates and the product over the combining coordinates. -/
-private theorem prod_combinedVar_split {M : Type*} [CommMonoid M] {m k : ℕ}
-    (f : Fin (m + k) → M) :
-    ∏ i : Fin (m + k), f i =
-      (∏ j : Fin m, f (combinedPointVar m k j)) *
-        ∏ r : Fin k, f (combinedCoefficientVar m k r) := by
-  rw [← Fintype.prod_equiv finSumFinEquiv (fun x => f (finSumFinEquiv x)) f fun _ => rfl,
-    Fintype.prod_sum_type]
-  rfl
-
-/-! ## Rereading a polynomial in the combining variables -/
-
-/-- The substitution reading the point variables as constants of the polynomial
-ring in the point variables and keeping the combining variables. -/
-def combinedCoefSubstitution (K : Type*) [CommSemiring K] (m k : ℕ) :
-    Fin (m + k) → MvPolynomial (Fin k) (MvPolynomial (Fin m) K) :=
-  fun i => Sum.elim
-    (fun j : Fin m => MvPolynomial.C (MvPolynomial.X j))
-    (fun r : Fin k => MvPolynomial.X r) (finSumFinEquiv.symm i)
-
-@[simp] theorem combinedCoefSubstitution_point (K : Type*) [CommSemiring K] (m k : ℕ)
-    (j : Fin m) :
-    combinedCoefSubstitution K m k (combinedPointVar m k j) =
-      MvPolynomial.C (MvPolynomial.X j) := by
-  simp [combinedCoefSubstitution, combinedPointVar]
-
-@[simp] theorem combinedCoefSubstitution_coefficient (K : Type*) [CommSemiring K] (m k : ℕ)
-    (r : Fin k) :
-    combinedCoefSubstitution K m k (combinedCoefficientVar m k r) =
-      (MvPolynomial.X r : MvPolynomial (Fin k) (MvPolynomial (Fin m) K)) := by
-  simp [combinedCoefSubstitution, combinedCoefficientVar]
-
-/-- The rereading of a polynomial in the `m + k` combined variables as a
-polynomial in the `k` combining variables with coefficients in the polynomial
-ring in the `m` point variables. -/
-def combinedCoefAlgHom (K : Type*) [CommSemiring K] (m k : ℕ) :
-    MvPolynomial (Fin (m + k)) K →ₐ[K]
-      MvPolynomial (Fin k) (MvPolynomial (Fin m) K) :=
-  MvPolynomial.aeval (combinedCoefSubstitution K m k)
-
-@[simp] theorem combinedCoefAlgHom_X (K : Type*) [CommSemiring K] (m k : ℕ)
-    (i : Fin (m + k)) :
-    combinedCoefAlgHom K m k (MvPolynomial.X i) = combinedCoefSubstitution K m k i :=
-  MvPolynomial.aeval_X _ _
-
-theorem combinedCoefAlgHom_C (K : Type*) [CommSemiring K] (m k : ℕ) (a : K) :
-    combinedCoefAlgHom K m k (MvPolynomial.C a) =
-      MvPolynomial.C (MvPolynomial.C a) := by
-  rw [combinedCoefAlgHom, MvPolynomial.aeval_C]
-  simp [MvPolynomial.algebraMap_eq]
-
-/-- The rereading of a monomial: its exponent vector splits into the combining
-block, which becomes the exponent of the outer monomial, and the point block,
-which becomes the exponent of the inner monomial. -/
-theorem combinedCoefAlgHom_monomial {K : Type*} [CommSemiring K] {m k : ℕ}
+/-- A monomial splits into its outer combining exponent and inner point exponent. -/
+theorem combinedCoefEquiv_monomial {K : Type*} [CommSemiring K] {m k : ℕ}
     (s : Fin (m + k) →₀ ℕ) (a : K) :
-    combinedCoefAlgHom K m k (MvPolynomial.monomial s a) =
+    combinedCoefEquiv K m k (MvPolynomial.monomial s a) =
       MvPolynomial.monomial (combinedCoefExp s)
         (MvPolynomial.monomial (combinedPointExp s) a) := by
-  classical
-  set A := MvPolynomial (Fin k) (MvPolynomial (Fin m) K)
-  have hL : combinedCoefAlgHom K m k (MvPolynomial.monomial s a) =
-      MvPolynomial.C (MvPolynomial.C a) *
-        ((∏ j : Fin m, (MvPolynomial.C (MvPolynomial.X j) : A) ^ s (combinedPointVar m k j)) *
-          ∏ r : Fin k, (MvPolynomial.X r : A) ^ s (combinedCoefficientVar m k r)) := by
-    rw [MvPolynomial.monomial_eq,
-      Finsupp.prod_fintype _ _ fun _ => pow_zero _, map_mul, map_prod,
-      combinedCoefAlgHom_C]
-    simp only [map_pow, combinedCoefAlgHom_X]
-    rw [prod_combinedVar_split (fun i => (combinedCoefSubstitution K m k i) ^ s i)]
-    simp
-  have hR : MvPolynomial.monomial (combinedCoefExp s)
-        (MvPolynomial.monomial (combinedPointExp s) a) =
-      MvPolynomial.C (MvPolynomial.C a) *
-        ((∏ j : Fin m, (MvPolynomial.C (MvPolynomial.X j) : A) ^ s (combinedPointVar m k j)) *
-          ∏ r : Fin k, (MvPolynomial.X r : A) ^ s (combinedCoefficientVar m k r)) := by
-    rw [MvPolynomial.monomial_eq (s := combinedCoefExp s),
-      Finsupp.prod_fintype _ _ fun _ => pow_zero _,
-      MvPolynomial.monomial_eq (s := combinedPointExp s),
-      Finsupp.prod_fintype _ _ fun _ => pow_zero _, map_mul, map_prod]
-    simp only [map_pow, combinedPointExp_apply, combinedCoefExp_apply]
-    ring
-  rw [hL, hR]
-
-/-! ## Injectivity of the rereading -/
-
-/-- The substitution inverting the rereading: rename the point variables back to
-the point coordinates and send the combining variables to the combining
-coordinates. -/
-def combinedCoefInv (K : Type*) [CommSemiring K] (m k : ℕ) :
-    MvPolynomial (Fin k) (MvPolynomial (Fin m) K) →+* MvPolynomial (Fin (m + k)) K :=
-  MvPolynomial.eval₂Hom ((MvPolynomial.rename (combinedPointVar m k)).toRingHom)
-    (fun r : Fin k => MvPolynomial.X (combinedCoefficientVar m k r))
-
-theorem combinedCoefInv_combinedCoefAlgHom {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) :
-    combinedCoefInv K m k (combinedCoefAlgHom K m k p) = p := by
-  have h : (combinedCoefInv K m k).comp
-      ((combinedCoefAlgHom K m k : MvPolynomial (Fin (m + k)) K →ₐ[K] _) :
-        MvPolynomial (Fin (m + k)) K →+* _) = RingHom.id _ := by
-    apply MvPolynomial.ringHom_ext
-    · intro a
-      simp [combinedCoefInv]
-    · intro i
-      rcases combinedVar_cases i with ⟨j, rfl⟩ | ⟨r, rfl⟩ <;>
-        simp [combinedCoefInv]
-  exact RingHom.congr_fun h p
-
-/-- The rereading is injective: a polynomial in the combined variables is
-determined by its coefficients in the combining variables. -/
-theorem combinedCoefAlgHom_injective {K : Type*} [CommSemiring K] {m k : ℕ} :
-    Function.Injective (combinedCoefAlgHom K m k) :=
-  Function.LeftInverse.injective combinedCoefInv_combinedCoefAlgHom
+  have h : Finsupp.sumFinsuppAddEquivProdFinsupp (s.mapDomain (combinedVariableEquiv m k)) =
+      (combinedCoefExp s, combinedPointExp s) := by
+    apply Prod.ext <;> apply Finsupp.ext <;> intro j <;>
+      simp only [Finsupp.fst_sumFinsuppAddEquivProdFinsupp, Finsupp.snd_sumFinsuppAddEquivProdFinsupp,
+        Finsupp.mapDomain_equiv_apply, combinedPointExp_apply, combinedCoefExp_apply] <;> rfl
+  simp only [combinedCoefEquiv, AlgEquiv.trans_apply, MvPolynomial.renameEquiv_apply,
+    MvPolynomial.rename_monomial, MvPolynomial.sumAlgEquiv]
+  simp only [MvPolynomial.monomial, AddMonoidAlgebra.lsingle_apply,
+    AddMonoidAlgebra.domCongr_single, h, AddMonoidAlgebra.curryAlgEquiv_single]
 
 /-! ## The coefficients -/
 
+section
+
+variable {K : Type*} [CommSemiring K] {m k : ℕ}
+    (p : MvPolynomial (Fin (m + k)) K)
+include K m k p
+
 /-- The coefficient of the combining monomial `μ` in `p`: a polynomial in the
 point variables. -/
-def combinedCoef {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) (μ : Fin k →₀ ℕ) : MvPolynomial (Fin m) K :=
-  (combinedCoefAlgHom K m k p).coeff μ
+def combinedCoef (μ : Fin k →₀ ℕ) : MvPolynomial (Fin m) K :=
+  (combinedCoefEquiv K m k p).coeff μ
 
 /-- The value at `u` of the coefficient of `μ` is the coefficient of `μ` in the
 restriction of `p` at `u`. -/
-theorem eval_combinedCoef {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) (μ : Fin k →₀ ℕ) :
+theorem eval_combinedCoef (u : Fin m → K) (μ : Fin k →₀ ℕ) :
     MvPolynomial.eval u (combinedCoef p μ) =
-      (combinedRestrict p u).coeff μ := by
-  have h : (MvPolynomial.mapAlgHom (MvPolynomial.aeval u)).comp (combinedCoefAlgHom K m k) =
-      MvPolynomial.aeval (combinedRestrictSubstitution k u) := by
-    apply MvPolynomial.algHom_ext
-    intro i
-    rcases combinedVar_cases i with ⟨j, rfl⟩ | ⟨r, rfl⟩ <;> simp
-  have hp := AlgHom.congr_fun h p
-  simp only [AlgHom.coe_comp, Function.comp_apply, MvPolynomial.mapAlgHom_apply] at hp
-  rw [combinedRestrict, ← hp, combinedCoef, MvPolynomial.coeff_map]
-  rfl
+      (combinedRestrict p u).coeff μ := rfl
+
+end
 
 /-! ## Combined polynomials in terms of the coefficients -/
 
@@ -233,51 +134,54 @@ theorem eq_sum_monomial_single {B : Type*} [CommSemiring B] {k : ℕ}
   rw [Finset.sum_subset hsub, Finset.sum_image]
   · intro r _ r' _ hrr'
     exact Finsupp.single_left_injective one_ne_zero hrr'
-  · intro μ _ hμ
-    rw [MvPolynomial.notMem_support_iff.mp hμ, map_zero]
+  · simp_all
+
+section
+
+variable {K : Type*} [CommSemiring K] {m k : ℕ}
+    (g : Fin k → MvPolynomial (Fin m) K)
+include K m k g
 
 /-- The rereading of a combined polynomial: its coefficients are the components
 of the tuple, at the standard basis vectors. -/
-theorem combinedCoefAlgHom_combinePolyTuple {K : Type*} [CommSemiring K] {m k : ℕ}
-    (g : Fin k → MvPolynomial (Fin m) K) :
-    combinedCoefAlgHom K m k (combinePolyTuple g) =
+theorem combinedCoefEquiv_combinePolyTuple :
+    combinedCoefEquiv K m k (combinePolyTuple g) =
       ∑ r : Fin k, MvPolynomial.monomial (Finsupp.single r 1) (g r) := by
   classical
-  have hrename : ∀ h : MvPolynomial (Fin m) K,
-      combinedCoefAlgHom K m k (MvPolynomial.rename (combinedPointVar m k) h) =
-        MvPolynomial.C h := by
-    intro h
-    induction h using MvPolynomial.induction_on with
-    | C a => simp
-    | add p q hp hq => simp [hp, hq]
-    | mul_X p j hp => simp [hp]
+  have hrename : (combinedCoefEquiv K m k).toAlgHom.comp
+      (MvPolynomial.rename (combinedPointVar m k)) =
+        IsScalarTower.toAlgHom K (MvPolynomial (Fin m) K) _ := by
+    ext j
+    simp [MvPolynomial.algebraMap_eq]
   rw [combinePolyTuple, map_sum]
   refine Finset.sum_congr rfl fun r _ => ?_
-  rw [map_mul, combinedCoefAlgHom_X, combinedCoefSubstitution_coefficient, hrename,
-    mul_comm, MvPolynomial.C_mul_X_eq_monomial]
+  rw [map_mul, combinedCoefEquiv_X_coefficient]
+  change MvPolynomial.X r * ((combinedCoefEquiv K m k).toAlgHom.comp
+    (MvPolynomial.rename (combinedPointVar m k))) (g r) = _
+  rw [hrename, IsScalarTower.toAlgHom_apply, MvPolynomial.algebraMap_eq, mul_comm,
+    MvPolynomial.C_mul_X_eq_monomial]
 
-theorem combinedCoef_combinePolyTuple {K : Type*} [CommSemiring K] {m k : ℕ}
-    (g : Fin k → MvPolynomial (Fin m) K) (r : Fin k) :
+theorem combinedCoef_combinePolyTuple (r : Fin k) :
     combinedCoef (combinePolyTuple g) (Finsupp.single r 1) = g r := by
   classical
-  rw [combinedCoef, combinedCoefAlgHom_combinePolyTuple, MvPolynomial.coeff_sum,
+  rw [combinedCoef, combinedCoefEquiv_combinePolyTuple, MvPolynomial.coeff_sum,
     Finset.sum_eq_single r]
   · simp
   · intro s _ hs
     rw [MvPolynomial.coeff_monomial, if_neg]
     exact fun hEq => hs (Finsupp.single_left_injective one_ne_zero hEq)
-  · intro h
-    exact absurd (Finset.mem_univ r) h
+  · simp_all
 
-theorem combinedCoef_combinePolyTuple_eq_zero {K : Type*} [CommSemiring K] {m k : ℕ}
-    (g : Fin k → MvPolynomial (Fin m) K) {μ : Fin k →₀ ℕ}
+theorem combinedCoef_combinePolyTuple_eq_zero {μ : Fin k →₀ ℕ}
     (hμ : ∀ r : Fin k, μ ≠ Finsupp.single r 1) :
     combinedCoef (combinePolyTuple g) μ = 0 := by
   classical
-  rw [combinedCoef, combinedCoefAlgHom_combinePolyTuple, MvPolynomial.coeff_sum]
+  rw [combinedCoef, combinedCoefEquiv_combinePolyTuple, MvPolynomial.coeff_sum]
   refine Finset.sum_eq_zero fun r _ => ?_
   rw [MvPolynomial.coeff_monomial, if_neg]
   exact fun hEq => hμ r hEq.symm
+
+end
 
 /-- A polynomial in the combined variables is combined exactly when its
 coefficients vanish outside the `k` standard basis vectors.  This is the
@@ -291,9 +195,9 @@ theorem combinePolyTuple_combinedCoef_iff {K : Type*} [CommSemiring K] {m k : �
   · rintro ⟨g, rfl⟩ μ hμ
     exact combinedCoef_combinePolyTuple_eq_zero g hμ
   · intro h
-    refine ⟨fun r => combinedCoef p (Finsupp.single r 1), combinedCoefAlgHom_injective ?_⟩
-    rw [combinedCoefAlgHom_combinePolyTuple]
-    exact eq_sum_monomial_single (combinedCoefAlgHom K m k p) h
+    refine ⟨fun r => combinedCoef p (Finsupp.single r 1), (combinedCoefEquiv K m k).injective ?_⟩
+    rw [combinedCoefEquiv_combinePolyTuple]
+    exact eq_sum_monomial_single (combinedCoefEquiv K m k p) h
 
 /-! ## The degree bound on the coefficients -/
 
@@ -307,14 +211,18 @@ theorem combinedCoef_eq_sum {K : Type*} [CommSemiring K] {m k : ℕ}
   rw [combinedCoef]
   conv_lhs => rw [p.as_sum]
   rw [map_sum, MvPolynomial.coeff_sum]
-  refine Finset.sum_congr rfl fun s _ => ?_
-  rw [combinedCoefAlgHom_monomial, MvPolynomial.coeff_monomial]
+  simp_all [combinedCoefEquiv_monomial, MvPolynomial.coeff_monomial]
+
+section
+
+variable {K : Type*} [CommSemiring K] {m k d : ℕ}
+    {p : MvPolynomial (Fin (m + k)) K}
+include K m k d p
 
 /-- The coefficients inherit the individual-degree bound of `p`: the individual
 degree of `c_μ` in the point variable `j` is at most the individual degree of
 `p` in the corresponding point coordinate. -/
-theorem degreeOf_combinedCoef_le {K : Type*} [CommSemiring K] {m k d : ℕ}
-    {p : MvPolynomial (Fin (m + k)) K} (hp : ∀ i, p.degreeOf i ≤ d)
+theorem degreeOf_combinedCoef_le (hp : ∀ i, p.degreeOf i ≤ d)
     (μ : Fin k →₀ ℕ) (j : Fin m) : (combinedCoef p μ).degreeOf j ≤ d := by
   classical
   rw [MvPolynomial.degreeOf_le_iff]
@@ -331,18 +239,21 @@ theorem degreeOf_combinedCoef_le {K : Type*} [CommSemiring K] {m k d : ℕ}
   · rw [if_neg hc] at hνs
     simp at hνs
 
+section
+
+variable (hp : p ∈ polyFunc (m + k) K d)
+include hp
+
 /-- The coefficients of a polynomial of individual degree at most `d` lie in the
 low individual degree class in the point variables. -/
-theorem combinedCoef_mem_polyFunc {K : Type*} [CommSemiring K] {m k d : ℕ}
-    {p : MvPolynomial (Fin (m + k)) K} (hp : p ∈ polyFunc (m + k) K d) (μ : Fin k →₀ ℕ) :
+theorem combinedCoef_mem_polyFunc (μ : Fin k →₀ ℕ) :
     combinedCoef p μ ∈ polyFunc m K d :=
   mem_polyFunc_of_degreeOf_le
     (degreeOf_combinedCoef_le (degreeOf_le_of_mem_polyFunc hp) μ)
 
 /-- The components of a combined polynomial of individual degree at most `d`
 have individual degree at most `d`: they are among its coefficients. -/
-theorem mem_polyFunc_of_combinePolyTuple {K : Type*} [CommSemiring K] {m k d : ℕ}
-    {p : MvPolynomial (Fin (m + k)) K} (hp : p ∈ polyFunc (m + k) K d)
+theorem mem_polyFunc_of_combinePolyTuple
     {g : Fin k → MvPolynomial (Fin m) K} (hg : p = combinePolyTuple g) (r : Fin k) :
     g r ∈ polyFunc m K d := by
   have h := combinedCoef_mem_polyFunc hp (Finsupp.single r 1)
@@ -351,11 +262,14 @@ theorem mem_polyFunc_of_combinePolyTuple {K : Type*} [CommSemiring K] {m k d : �
 /-- The coefficients of a polynomial of individual degree at most `d` have total
 degree at most `m d`, which is the bound the Schwartz--Zippel lemma is applied
 to in `lem:ld-combining-exact-linearity`. -/
-theorem totalDegree_combinedCoef_le {K : Type*} [CommSemiring K] {m k d : ℕ}
-    {p : MvPolynomial (Fin (m + k)) K} (hp : p ∈ polyFunc (m + k) K d) (μ : Fin k →₀ ℕ) :
+theorem totalDegree_combinedCoef_le (μ : Fin k →₀ ℕ) :
     (combinedCoef p μ).totalDegree ≤ m * d :=
   totalDegree_le_mul_of_degreeOf_le
     (degreeOf_combinedCoef_le (degreeOf_le_of_mem_polyFunc hp) μ)
+
+end
+
+end
 
 end
 

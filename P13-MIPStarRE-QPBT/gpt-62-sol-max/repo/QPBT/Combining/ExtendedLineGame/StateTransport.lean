@@ -42,10 +42,15 @@ namespace ExtendedLineGame
 
 variable {P : AdmissibleParams} {epsilon : Real}
 
+section
+
+variable (setting : ProjectiveSetting P epsilon)
+include setting
+
 /-- Regroup the six registers as `(AA', BA'')` and the unused pair `(B', B'')`.
 This is the first opposite-placement partition of `eq:def-psihat`. -/
-def aaBaRegrouping (setting : ProjectiveSetting P epsilon) :
-    SixReg P setting.toStrategy.ιA setting.toStrategy.ιB ≃
+def aaBaRegrouping :
+    setting.ExpandedSpace ≃
       (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) ×
         (PauliRegister P × PauliRegister P) :=
   (aaBaBipartition P setting.toStrategy.ιA setting.toStrategy.ιB).trans
@@ -53,8 +58,8 @@ def aaBaRegrouping (setting : ProjectiveSetting P epsilon) :
 
 /-- Regroup the six registers as `(AB'', BB')` and the unused pair `(A', A'')`.
 This is the second opposite-placement partition of `eq:def-psihat`. -/
-def abBbRegrouping (setting : ProjectiveSetting P epsilon) :
-    SixReg P setting.toStrategy.ιA setting.toStrategy.ιB ≃
+def abBbRegrouping :
+    setting.ExpandedSpace ≃
       (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) ×
         (PauliRegister P × PauliRegister P) :=
   (abBbBipartition P setting.toStrategy.ιA setting.toStrategy.ιB).trans
@@ -63,16 +68,14 @@ def abBbRegrouping (setting : ProjectiveSetting P epsilon) :
 /-- In the `AA'`--`BA''` grouping, the expanded state is `pairState` tensored
 with the unused EPR pair. This is a coordinate consequence of `eq:def-psihat`,
 not an assumption on the strategy or its measurement effects. -/
-theorem reindexState_aaBaRegrouping_psiHat (setting : ProjectiveSetting P epsilon) :
+theorem reindexState_aaBaRegrouping_psiHat :
     reindexState (aaBaRegrouping setting) setting.psiHat =
-      vecTensor (pairState setting) (eprState (PauliRegister P)) := by
-  ext p
-  rfl
+      vecTensor (pairState setting) (eprState (PauliRegister P)) := by rfl
 
 /-- The `AB''`--`BB'` grouping has the same two-player state because an EPR
 pair is invariant under exchanging its registers. The other EPR pair is unused.
 This is a coordinate consequence of `eq:def-psihat`. -/
-theorem reindexState_abBbRegrouping_psiHat (setting : ProjectiveSetting P epsilon) :
+theorem reindexState_abBbRegrouping_psiHat :
     reindexState (abBbRegrouping setting) setting.psiHat =
       vecTensor (pairState setting) (eprState (PauliRegister P)) := by
   ext p
@@ -90,87 +93,48 @@ theorem reindexState_abBbRegrouping_psiHat (setting : ProjectiveSetting P epsilo
   rw [hswap]
   ring
 
-/-- Arbitrary Hermitian expanded operators have the same correlation on
-`pairState` as their `AA'`--`BA''` placements on `psiHat`. Hermiticity holds for
-POVM effects; no factorization or consistency hypothesis is required. This
-transports Born correlations in the first proof paragraph of `lem:qld-4-7`. -/
-theorem stateQForm_pairState_eq_AA'_BA'' (setting : ProjectiveSetting P epsilon)
-    (A : Op (setting.ExpandedLocalSpace .alice))
-    (B : Op (setting.ExpandedLocalSpace .bob))
-    (hA : A.IsHermitian) (hB : B.IsHermitian) :
-    DistanceCalculus.stateQForm (pairState setting) (heteroKron A B) =
-      DistanceCalculus.stateQForm setting.psiHat
-        (setting.place .AA' A * setting.place .BA'' B) := by
-  let I : Op (PauliRegister P × PauliRegister P) := 1
-  have hop : reindexOp (aaBaRegrouping setting) (heteroKron (heteroKron A B) I) =
-      setting.place .AA' A * setting.place .BA'' B := by
-    change Op (setting.toStrategy.ιA × PauliRegister P) at A
-    change Op (setting.toStrategy.ιB × PauliRegister P) at B
-    change reindexOp (aaBaBipartition P setting.toStrategy.ιA setting.toStrategy.ιB)
-      (reindexOp (Equiv.prodAssoc _ _ _).symm (heteroKron (heteroKron A B) I)) = _
-    rw [show reindexOp (Equiv.prodAssoc _ _ _).symm
-        (heteroKron (heteroKron A B) I) = heteroKron A (heteroKron B I) from
-      Matrix.kronecker_assoc A B I]
-    rw [show heteroKron A (heteroKron B I) =
-        heteroKron A 1 * heteroKron 1 (heteroKron B I) by
-      rw [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]]
-    exact (WinImplications.reindexOp_mul _ _ _).trans
-      (congrArg₂ (fun X Y => X * Y)
-        (reindexOp_aaBaBipartition_left setting A)
-        (reindexOp_aaBaBipartition_right setting B))
-  calc
-    DistanceCalculus.stateQForm (pairState setting) (heteroKron A B) =
-        DistanceCalculus.stateQForm
-          (vecTensor (pairState setting) (eprState (PauliRegister P)))
-          (heteroKron (heteroKron A B) I) := by
-      rw [stateQForm_vecTensor_heteroKron _ _ _ _
-        (heteroKron_isHermitian A B hA hB) Matrix.isHermitian_one]
-      simp [stateQForm_one_eq_norm_sq, eprState_norm]
-    _ = DistanceCalculus.stateQForm setting.psiHat
-        (setting.place .AA' A * setting.place .BA'' B) := by
-      rw [← reindexState_aaBaRegrouping_psiHat setting,
-        WinImplications.stateQForm_reindexState, hop]
+end
 
-/-- Arbitrary Hermitian expanded operators have the same correlation on
-`pairState` as their `AB''`--`BB'` placements on `psiHat`. This is the second
-orientation of the Born-correlation transport for `lem:qld-4-7`; EPR symmetry
-reverses the active ancillary registers without transposing either operator. -/
-theorem stateQForm_pairState_eq_AB''_BB' (setting : ProjectiveSetting P epsilon)
-    (A : Op (setting.ExpandedLocalSpace .alice))
-    (B : Op (setting.ExpandedLocalSpace .bob))
-    (hA : A.IsHermitian) (hB : B.IsHermitian) :
-    DistanceCalculus.stateQForm (pairState setting) (heteroKron A B) =
-      DistanceCalculus.stateQForm setting.psiHat
-        (setting.place .AB'' A * setting.place .BB' B) := by
+/-- The unused normalized EPR factor does not contribute to the correlation. -/
+private theorem stateQForm_pairState_eq_reindex (S : ProjectiveSetting P epsilon)
+    (e : S.ExpandedSpace ≃
+      (S.toStrategy.ιA × PauliRegister P) ×
+        ((S.toStrategy.ιB × PauliRegister P) × (PauliRegister P × PauliRegister P)))
+    (hψ : reindexState (e.trans (Equiv.prodAssoc _ _ _).symm) S.psiHat =
+      vecTensor (pairState S) (eprState (PauliRegister P)))
+    (A : Op (S.toStrategy.ιA × PauliRegister P)) (B : Op (S.toStrategy.ιB × PauliRegister P)) :
+    DistanceCalculus.stateQForm (pairState S) (heteroKron A B) =
+      DistanceCalculus.stateQForm S.psiHat
+        (reindexOp e (heteroKron A 1) * reindexOp e (heteroKron 1 (heteroKron B 1))) := by
   let I : Op (PauliRegister P × PauliRegister P) := 1
-  have hop : reindexOp (abBbRegrouping setting) (heteroKron (heteroKron A B) I) =
-      setting.place .AB'' A * setting.place .BB' B := by
-    change Op (setting.toStrategy.ιA × PauliRegister P) at A
-    change Op (setting.toStrategy.ιB × PauliRegister P) at B
-    change reindexOp (abBbBipartition P setting.toStrategy.ιA setting.toStrategy.ιB)
-      (reindexOp (Equiv.prodAssoc _ _ _).symm (heteroKron (heteroKron A B) I)) = _
-    rw [show reindexOp (Equiv.prodAssoc _ _ _).symm
-        (heteroKron (heteroKron A B) I) = heteroKron A (heteroKron B I) from
-      Matrix.kronecker_assoc A B I]
-    rw [show heteroKron A (heteroKron B I) =
-        heteroKron A 1 * heteroKron 1 (heteroKron B I) by
-      rw [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]]
-    exact (WinImplications.reindexOp_mul _ _ _).trans
-      (congrArg₂ (fun X Y => X * Y)
-        (reindexOp_abBbBipartition_left setting A)
-        (reindexOp_abBbBipartition_right setting B))
-  calc
-    DistanceCalculus.stateQForm (pairState setting) (heteroKron A B) =
-        DistanceCalculus.stateQForm
-          (vecTensor (pairState setting) (eprState (PauliRegister P)))
-          (heteroKron (heteroKron A B) I) := by
-      rw [stateQForm_vecTensor_heteroKron _ _ _ _
-        (heteroKron_isHermitian A B hA hB) Matrix.isHermitian_one]
-      simp [stateQForm_one_eq_norm_sq, eprState_norm]
-    _ = DistanceCalculus.stateQForm setting.psiHat
-        (setting.place .AB'' A * setting.place .BB' B) := by
-      rw [← reindexState_abBbRegrouping_psiHat setting,
-        WinImplications.stateQForm_reindexState, hop]
+  have h := stateQForm_vecTensor_right_hermitian (heteroKron A B) (1 : Op (PauliRegister P × PauliRegister P))
+    (pairState S) (eprState (PauliRegister P)) Matrix.isHermitian_one
+  rw [← hψ, DistanceCalculus.stateQForm_reindexState,
+    DistanceCalculus.stateQForm_one, eprState_norm, one_pow, mul_one] at h
+  change DistanceCalculus.stateQForm S.psiHat
+    (reindexOp e (reindexOp (Equiv.prodAssoc _ _ _).symm (heteroKron (heteroKron A B) I))) = _ at h
+  rw [show reindexOp (Equiv.prodAssoc _ _ _).symm (heteroKron (heteroKron A B) I) = _ from
+    Matrix.kronecker_assoc A B I] at h
+  rw [← reindexOp_mul, heteroKron_mul, Matrix.mul_one, Matrix.one_mul]
+  exact h.symm
+
+/-- Correlations on the expanded state, in the `AA'_BA''` register partition. -/
+theorem stateQForm_pairState_eq_AA'_BA'' (S : ProjectiveSetting P epsilon)
+    (A : Op (S.ExpandedLocalSpace .alice)) (B : Op (S.ExpandedLocalSpace .bob)) :
+    DistanceCalculus.stateQForm (pairState S) (heteroKron A B) =
+      S.placedCorrelation .AA' .BA'' A B := by
+  have h := stateQForm_pairState_eq_reindex S (aaBaBipartition P _ _)
+    (reindexState_aaBaRegrouping_psiHat S) A B
+  rwa [reindexOp_aaBaBipartition_left, reindexOp_aaBaBipartition_right] at h
+
+/-- Correlations on the expanded state, in the `AB''_BB'` register partition. -/
+theorem stateQForm_pairState_eq_AB''_BB' (S : ProjectiveSetting P epsilon)
+    (A : Op (S.ExpandedLocalSpace .alice)) (B : Op (S.ExpandedLocalSpace .bob)) :
+    DistanceCalculus.stateQForm (pairState S) (heteroKron A B) =
+      S.placedCorrelation .AB'' .BB' A B := by
+  have h := stateQForm_pairState_eq_reindex S (abBbBipartition P _ _)
+    (reindexState_abBbRegrouping_psiHat S) A B
+  rwa [reindexOp_abBbBipartition_left, reindexOp_abBbBipartition_right] at h
 
 end ExtendedLineGame
 

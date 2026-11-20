@@ -52,11 +52,6 @@ structure LdParams where
   hq : IsAdmissibleSize q
   hdvd : m ∣ q
 
-/-- The positive dimension in `LdParams` supplies the finite coordinate type
-used by the uniform axis and prefix-index marginals. -/
-instance instNonemptyFinM (L : LdParams) : Nonempty (Fin L.m) :=
-  ⟨⟨0, lt_of_lt_of_le Nat.zero_lt_one L.hm⟩⟩
-
 /-- The fixed scalar model of a low-degree parameter tuple.  It is a
 compatibility view of the global `fixedFieldModel` selector, not an
 independently quantified field representation.  Blueprint `def:ld-game`; paper origin
@@ -71,6 +66,14 @@ Blueprint `def:ld-game`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
 abbrev ScalarQ (P : LdParams) := (P.model).K
+
+/-- A point of the low-degree test before adding the auxiliary field coordinates. -/
+abbrev LdPoint (P : LdParams) := Fin P.m → ScalarQ P
+
+/-- The common residue carrier of the seed fibers. -/
+abbrev SeedResidue (L : LdParams) := Fin (L.q / L.m)
+
+
 
 /-- The three low-degree question types of blueprint
 `def:ld-game`, paper origin
@@ -98,7 +101,7 @@ abbrev LdSpace (P : LdParams) := LdIndex P → ScalarQ P
 /-- The point coordinates of an ambient low-degree vector in
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def LdSpace.point {P : LdParams} (z : LdSpace P) : Fin P.m → ScalarQ P :=
+def LdSpace.point {P : LdParams} (z : LdSpace P) : LdPoint P :=
   fun i => z (.inl (.inl i))
 
 /-- The shared scalar coordinate of an ambient low-degree vector in
@@ -110,7 +113,7 @@ def LdSpace.seed {P : LdParams} (z : LdSpace P) : ScalarQ P :=
 /-- The direction coordinates of an ambient low-degree vector in
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def LdSpace.direction {P : LdParams} (z : LdSpace P) : Fin P.m → ScalarQ P :=
+def LdSpace.direction {P : LdParams} (z : LdSpace P) : LdPoint P :=
   fun i => z (.inr i)
 
 /-- The zero-based coordinate index corresponding to the paper's map `χ`:
@@ -119,8 +122,7 @@ is `eq:chi-func` in blueprint `def:ld-question-distribution`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
 noncomputable def chiIndex (P : LdParams) (s : ScalarQ P) : Fin P.m := by
-  letI : NeZero P.m := ⟨by
-    exact Nat.ne_of_gt (lt_of_lt_of_le Nat.zero_lt_one P.hm)⟩
+  letI : NeZero P.m := ⟨Nat.ne_of_gt (lt_of_lt_of_le Nat.zero_lt_one P.hm)⟩
   exact Fin.ofNat P.m ((binaryRepresentation P.model s).val / (P.q / P.m))
 
 /-! ### Formalization-only coordinate-index fibers
@@ -138,7 +140,7 @@ theorem LdParams.seedFiberCard_pos (L : LdParams) : 0 < L.q / L.m := by
   exact Nat.div_pos (Nat.le_of_dvd (by
     obtain ⟨n, hn, hq⟩ := L.hq
     rw [hq]
-    exact Nat.pow_pos (by decide)) L.hdvd) L.hm
+    simp) L.hdvd) L.hm
 
 /-- Divisibility identifies the scalar cardinality with the product of the
 coordinate-index cardinality and the common fiber cardinality.  This supports
@@ -158,7 +160,7 @@ natural-number representative. -/
 `chiIndex` fiber.  This is the exact decomposition underlying
 `lem:chi-seed-fibers` in blueprint chapter 13. -/
 noncomputable def seedFiberEquiv (L : LdParams) :
-    ScalarQ L ≃ Fin L.m × Fin (L.q / L.m) :=
+    ScalarQ L ≃ Fin L.m × SeedResidue L :=
   (binaryRepresentation L.model).trans <|
     (Equiv.cast <| congrArg Fin L.seedFiberProduct_eq).trans
       finProdFinEquiv.symm
@@ -184,18 +186,18 @@ noncomputable def seedFiberEquiv (L : LdParams) :
 /-- Reconstruct the scalar seed belonging to a coordinate and its fiber
 residue. -/
 noncomputable def seedOfIndexResidue (L : LdParams)
-    (i : Fin L.m) (r : Fin (L.q / L.m)) : ScalarQ L :=
+    (i : Fin L.m) (r : SeedResidue L) : ScalarQ L :=
   (seedFiberEquiv L).symm (i, r)
 
 /-- Decomposing a reconstructed seed recovers its coordinate and residue. -/
 @[simp] theorem seedFiberEquiv_seedOfIndexResidue (L : LdParams)
-    (i : Fin L.m) (r : Fin (L.q / L.m)) :
+    (i : Fin L.m) (r : SeedResidue L) :
     seedFiberEquiv L (seedOfIndexResidue L i r) = (i, r) :=
   (seedFiberEquiv L).apply_symm_apply (i, r)
 
 /-- A reconstructed seed belongs to the prescribed `chiIndex` fiber. -/
 @[simp] theorem chiIndex_seedOfIndexResidue (L : LdParams)
-    (i : Fin L.m) (r : Fin (L.q / L.m)) :
+    (i : Fin L.m) (r : SeedResidue L) :
     chiIndex L (seedOfIndexResidue L i r) = i := by
   rw [← seedFiberEquiv_fst]
   simp
@@ -206,8 +208,8 @@ prefix restriction in blueprint
 `def:ld-question-distribution`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def prefixProjection {P : LdParams} (i : Fin P.m) (v : Fin P.m → ScalarQ P) :
-    Fin P.m → ScalarQ P :=
+def prefixProjection {P : LdParams} (i : Fin P.m) (v : LdPoint P) :
+    LdPoint P :=
   fun j => if j.val < i.val then 0 else v j
 
 /-- Zeroing the coordinates preceding a fixed index is idempotent.  This is a
@@ -215,12 +217,10 @@ formalization-only consequence of the prefix restriction in
 `def:ld-question-distribution`, recorded as `lem:prefix-projection-idempotent`
 in blueprint chapter 13. -/
 theorem prefixProjection_idempotent {P : LdParams} (i : Fin P.m)
-    (v : Fin P.m → ScalarQ P) :
+    (v : LdPoint P) :
     prefixProjection i (prefixProjection i v) = prefixProjection i v := by
   funext j
-  by_cases h : j.val < i.val
-  · simp only [prefixProjection, if_pos h]
-  · simp only [prefixProjection, if_neg h]
+  simp_all [prefixProjection]
 
 /-- The point CL map, retaining the point block and clearing the auxiliary
 blocks.  It is the map `L_point` of blueprint
@@ -328,17 +328,7 @@ noncomputable def ldAnswerEquiv (P : LdParams) :
     | .inr (.inl a) => .alinePolys a
     | .inr (.inr a) => .dlinePolys a
   left_inv := by intro x; cases x <;> rfl
-  right_inv := by
-    intro x
-    cases x with
-    | inl a => rfl
-    | inr x =>
-        cases x with
-        | inl a => rfl
-        | inr a => rfl
-
-instance instInhabitedLdAnswer (P : LdParams) : Inhabited (LdAnswer P) :=
-  ⟨.pointVals (fun _ => 0)⟩
+  right_inv := by grind
 
 noncomputable instance instFintypeLdAnswer (P : LdParams) : Fintype (LdAnswer P) :=
   Fintype.ofEquiv (LdAnswerCode P) (ldAnswerEquiv P).symm

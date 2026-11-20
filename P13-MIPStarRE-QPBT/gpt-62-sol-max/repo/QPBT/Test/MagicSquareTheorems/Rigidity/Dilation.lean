@@ -1,6 +1,6 @@
 module
 
-public import MIPStarRE.LDT.MakingMeasurementsProjective.NaimarkFull
+public import QPBT.Games.MeasurementCompression
 public import QPBT.Test.MagicSquareTheorems.Rigidity.Relations
 
 /-!
@@ -55,72 +55,6 @@ open MIPStarRE.LDT.MakingMeasurementsProjective
 
 noncomputable section
 
-/-! ## Orthogonality inside a subnormalized family of projections -/
-
-/-- Formalization-only auxiliary lemma for the dilation of `thm:ms-rigidity`
-(blueprint `thm:ms-rigidity`).  If an orthogonal projection `P` and a
-positive semidefinite operator `Q` satisfy `P + Q ≤ 1`, then `P` annihilates
-`Q`.  Indeed `Tr(P Q)` is nonnegative because both operators are positive
-semidefinite, while `0 ≤ Tr(P (1 - P - Q)) = -Tr(P Q)` because `1 - P - Q` is
-positive semidefinite and `P` is idempotent; so the pairing vanishes and the
-product of two positive semidefinite operators with vanishing trace pairing is
-zero. -/
-theorem mul_eq_zero_of_isProj_of_add_le_one {d : Type*} [Fintype d] [DecidableEq d]
-    {P Q : Op d} (hP : IsProj P) (hQ : 0 ≤ Q) (hPQ : P + Q ≤ 1) :
-    P * Q = 0 := by
-  have hrest : (0 : Op d) ≤ 1 - (P + Q) := sub_nonneg.mpr hPQ
-  have hexpand : P * (1 - (P + Q)) = -(P * Q) := by
-    have hPP : P * P = P := hP.isIdempotentElem
-    rw [Matrix.mul_sub, Matrix.mul_add, hPP, Matrix.mul_one]
-    abel
-  have hle : Complex.re (Matrix.trace (P * Q)) ≤ 0 := by
-    have h := trace_mul_nonneg_of_nonneg hP.nonneg hrest
-    rw [hexpand] at h
-    simpa using h
-  have hge : 0 ≤ Complex.re (Matrix.trace (P * Q)) :=
-    trace_mul_nonneg_of_nonneg hP.nonneg hQ
-  exact mul_eq_zero_of_nonneg_of_trace_mul_eq_zero hP.nonneg hQ (le_antisymm hle hge)
-
-/-- Formalization-only auxiliary lemma for the dilation of `thm:ms-rigidity`
-(blueprint `thm:ms-rigidity`).  A finite family of orthogonal
-projections whose sum is at most the identity is mutually orthogonal: for two
-distinct indices the two projections already sum to at most the identity, so the
-previous lemma applies. -/
-theorem mul_eq_zero_of_isProj_family {d α : Type*} [Fintype d] [DecidableEq d]
-    [Fintype α] {P : α → Op d} (hP : ∀ a, IsProj (P a))
-    (hsum : ∑ a, P a ≤ 1) {a b : α} (hab : a ≠ b) :
-    P a * P b = 0 := by
-  classical
-  refine mul_eq_zero_of_isProj_of_add_le_one (hP a) (hP b).nonneg ?_
-  refine le_trans ?_ hsum
-  have hpair : ∑ c ∈ ({a, b} : Finset α), P c = P a + P b := by
-    rw [Finset.sum_pair hab]
-  rw [← hpair]
-  exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
-    (fun c _ _ => (hP c).nonneg)
-
-/-- Formalization-only auxiliary lemma for the dilation of `thm:ms-rigidity`
-(blueprint `thm:ms-rigidity`).  The sum of a mutually orthogonal
-family of projections is again an orthogonal projection; mutual orthogonality is
-supplied by the hypothesis that the sum is at most the identity. -/
-theorem isProj_sum_of_isProj_of_sum_le_one {d α : Type*} [Fintype d] [DecidableEq d]
-    [Fintype α] {P : α → Op d} (hP : ∀ a, IsProj (P a))
-    (hsum : ∑ a, P a ≤ 1) :
-    IsProj (∑ a, P a) := by
-  classical
-  constructor
-  · change (∑ a, P a) * (∑ a, P a) = ∑ a, P a
-    rw [Finset.sum_mul]
-    refine Finset.sum_congr rfl fun a _ => ?_
-    rw [Matrix.mul_sum, Finset.sum_eq_single a]
-    · exact (hP a).isIdempotentElem
-    · exact fun b _ hba => mul_eq_zero_of_isProj_family hP hsum (Ne.symm hba)
-    · intro ha
-      exact absurd (Finset.mem_univ a) ha
-  · change star (∑ a, P a) = ∑ a, P a
-    rw [star_sum]
-    exact Finset.sum_congr rfl fun a _ => (hP a).isSelfAdjoint
-
 /-! ## The ground slice of an enlarged local space -/
 
 /-- The linear map sending a vector `x` of `ℂ^ι` to `x ⊗ |⊥⟩`, where `|⊥⟩` is the
@@ -134,10 +68,8 @@ def naimarkEmbeddingMap (ι α : Type) [Fintype ι] [DecidableEq ι]
     (fun p => if p.2 = none then x p.1 else 0)
   map_add' x y := by
     ext p
-    by_cases h : p.2 = none <;> simp [h]
-  map_smul' c x := by
-    ext p
-    by_cases h : p.2 = none <;> simp [h]
+    by_cases h : p.2 = none <;> simp_all
+  map_smul' c x := by ext <;> simp
 
 /-- The isometric identification of a local Hilbert space `ℂ^ι` with the *ground
 slice* `ℂ^ι ⊗ |⊥⟩` of the enlarged space `ℂ^{ι × Option α}`.  This single
@@ -171,34 +103,6 @@ theorem naimarkCompression_apply {ι α : Type} [Fintype ι] [DecidableEq ι]
     [Fintype α] [DecidableEq α] (M : Op (ι × Option α)) (i j : ι) :
     naimarkCompression (α := α) M i j = M (i, none) (j, none) := rfl
 
-/-- The compression of the zero operator to the ground slice vanishes. -/
-@[simp]
-theorem naimarkCompression_zero {ι α : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype α] [DecidableEq α] :
-    naimarkCompression (α := α) (0 : Op (ι × Option α)) = 0 := by
-  ext i j; simp
-
-/-- The compression to the ground slice is additive. -/
-theorem naimarkCompression_add {ι α : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype α] [DecidableEq α] (M N : Op (ι × Option α)) :
-    naimarkCompression (α := α) (M + N) =
-      naimarkCompression (α := α) M + naimarkCompression (α := α) N := by
-  ext i j; simp
-
-/-- The compression to the ground slice commutes with finite sums. -/
-theorem naimarkCompression_sum {ι α β : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype α] [DecidableEq α] [Fintype β] (M : β → Op (ι × Option α)) :
-    naimarkCompression (α := α) (∑ b, M b) = ∑ b, naimarkCompression (α := α) (M b) := by
-  ext i j; simp [Matrix.sum_apply]
-
-/-- The compression of the identity to the ground slice is the identity. -/
-@[simp]
-theorem naimarkCompression_one {ι α : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype α] [DecidableEq α] :
-    naimarkCompression (α := α) (1 : Op (ι × Option α)) = 1 := by
-  ext i j
-  by_cases h : i = j <;> simp [Matrix.one_apply, h]
-
 /-- The operator on the enlarged space that acts as `M` on the ground slice and
 annihilates its orthogonal complement.  Formalization-only support for the
 dilation of blueprint `thm:ms-rigidity`. -/
@@ -213,239 +117,76 @@ theorem naimarkInflation_apply {ι α : Type} [Fintype ι] [DecidableEq ι]
     naimarkInflation (α := α) M p q =
       if p.2 = none ∧ q.2 = none then M p.1 q.1 else 0 := rfl
 
-/-- Inflating an operator to the enlarged space and compressing it back returns
-the original operator. -/
-@[simp]
-theorem naimarkCompression_naimarkInflation {ι α : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype α] [DecidableEq α] (M : Op ι) :
-    naimarkCompression (α := α) (naimarkInflation (α := α) M) = M := by
-  ext i j; simp
-
-/-- The compression to the ground slice respects differences. -/
-theorem naimarkCompression_sub {ι α : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype α] [DecidableEq α] (M N : Op (ι × Option α)) :
-    naimarkCompression (α := α) (M - N) =
-      naimarkCompression (α := α) M - naimarkCompression (α := α) N := by
-  ext i j; simp
-
-/-! ## The dilated projective measurement -/
-
-/-- A one-measurement Naimark dilation of a positive operator valued measure,
-chosen once and for all.  It provides orthogonal projections on the enlarged
-space `ℂ^{d × Option α}` whose ground-slice compressions are the given effects;
-see `references/ldt-paper/orthonormalization.tex:121-159`. -/
-noncomputable def naimarkData {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) : OneMeasNaimarkData α d :=
-  Classical.choose (oneMeasNaimark M.toSubmeasurement)
-
-/-- The chosen dilation dilates the intended measurement. -/
-theorem naimarkData_source {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) :
-    (naimarkData M).source = M.toSubmeasurement :=
-  Classical.choose_spec (oneMeasNaimark M.toSubmeasurement)
-
-/-- The dilated projections indexed by genuine answers already sum to at most the
-identity, since the projection attached to the adjoined point is positive
-semidefinite. -/
-theorem naimarkData_sum_some_le_one {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) :
-    ∑ a : α, (naimarkData M).liftedEffect (some a) ≤ 1 := by
-  have hsplit : ∑ oa : Option α, (naimarkData M).liftedEffect oa =
-      (naimarkData M).liftedEffect none +
-        ∑ a : α, (naimarkData M).liftedEffect (some a) :=
-    Fintype.sum_option (f := fun oa => (naimarkData M).liftedEffect oa)
-  have hle := (naimarkData M).lifted_sum_le_one
-  rw [hsplit] at hle
-  have hnone : (0 : Op (d × Option α)) ≤ (naimarkData M).liftedEffect none :=
-    (naimarkData M).lifted_pos none
-  exact le_trans (le_add_of_nonneg_left hnone) hle
-
-/-- The sum of the dilated projections indexed by genuine answers is itself an
-orthogonal projection. -/
-theorem naimarkData_isProj_sum_some {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) :
-    IsProj (∑ a : α, (naimarkData M).liftedEffect (some a)) :=
-  isProj_sum_of_isProj_of_sum_le_one
-    (fun a => (naimarkData M).lifted_isProj (some a))
-    (naimarkData_sum_some_le_one M)
-
-/-- The effects of the dilated measurement.  The projection attached to the
-answer `a` is the Naimark projection of `a`, except that the distinguished answer
-`a₀` also absorbs the deficiency `1 - ∑_a P_a`, which makes the family complete.
-Formalization-only construction supporting blueprint
-`thm:ms-rigidity`. -/
-noncomputable def naimarkDilatedEffect {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) (a₀ a : α) :
-    Op (d × Option α) :=
-  (naimarkData M).liftedEffect (some a) +
-    (if a = a₀ then 1 - ∑ b : α, (naimarkData M).liftedEffect (some b) else 0)
-
-/-- The dilated effects are positive semidefinite. -/
-theorem naimarkDilatedEffect_pos {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) (a₀ a : α) :
-    0 ≤ naimarkDilatedEffect M a₀ a := by
-  unfold naimarkDilatedEffect
-  refine add_nonneg ((naimarkData M).lifted_pos (some a)) ?_
-  by_cases h : a = a₀
-  · simpa [h] using sub_nonneg.mpr (naimarkData_sum_some_le_one M)
-  · simp [h]
-
-/-- The dilated effects sum to the identity. -/
-theorem naimarkDilatedEffect_sum {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) (a₀ : α) :
-    ∑ a : α, naimarkDilatedEffect M a₀ a = 1 := by
-  unfold naimarkDilatedEffect
-  rw [Finset.sum_add_distrib, Finset.sum_ite_eq' Finset.univ a₀]
-  simp only [Finset.mem_univ, if_pos]
-  abel
-
-/-- Every dilated effect is an orthogonal projection. -/
-theorem naimarkDilatedEffect_isProj {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) (a₀ a : α) :
-    IsProj (naimarkDilatedEffect M a₀ a) := by
-  unfold naimarkDilatedEffect
-  by_cases h : a = a₀
-  · subst h
-    refine IsStarProjection.add
-      ((naimarkData M).lifted_isProj (some a)) ?_ ?_
-    · simpa using (naimarkData_isProj_sum_some M).one_sub
-    · have hmul : (naimarkData M).liftedEffect (some a) *
-          ∑ b : α, (naimarkData M).liftedEffect (some b) =
-          (naimarkData M).liftedEffect (some a) := by
-        rw [Matrix.mul_sum, Finset.sum_eq_single a]
-        · exact ((naimarkData M).lifted_isProj (some a)).isIdempotentElem
-        · intro b _ hba
-          exact mul_eq_zero_of_isProj_family
-            (fun c => (naimarkData M).lifted_isProj (some c))
-            (naimarkData_sum_some_le_one M) (Ne.symm hba)
-        · intro ha
-          exact absurd (Finset.mem_univ a) ha
-      simp [Matrix.mul_sub, hmul]
-  · simpa [h] using (naimarkData M).lifted_isProj (some a)
-
-/-- The dilated measurement: a complete projective measurement on the enlarged
-local space whose ground-slice compression is the original positive operator
-valued measure.  Formalization-only construction supporting blueprint
-`thm:ms-rigidity`. -/
-noncomputable def naimarkDilatedMeasurement {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) (a₀ : α) :
-    MIPStarRE.Quantum.Measurement α (d × Option α) :=
-  MIPStarRE.Quantum.Measurement.ofSumEqOne (naimarkDilatedEffect M a₀)
-    (naimarkDilatedEffect_pos M a₀) (naimarkDilatedEffect_sum M a₀)
-
-/-- The effects of the dilated measurement are the dilated effects. -/
-@[simp]
-theorem naimarkDilatedMeasurement_effect {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) (a₀ a : α) :
-    (naimarkDilatedMeasurement M a₀).effect a = naimarkDilatedEffect M a₀ a := rfl
-
-/-- The dilated measurement is projective, which is the property the self-testing
-argument of `thm:ms-rigidity` uses. -/
-theorem naimarkDilatedMeasurement_isProjective {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) (a₀ : α) :
-    MIPStarRE.QPBT.Measurement.IsProjective (naimarkDilatedMeasurement M a₀) :=
-  fun a => naimarkDilatedEffect_isProj M a₀ a
-
-/-- The compression of a dilated effect to the ground slice is the original
-effect.  This is the defining property of a Naimark dilation, and the reason the
-dilated strategy reproduces every Born probability of the original one. -/
-theorem naimarkCompression_naimarkDilatedEffect {α d : Type} [Fintype α] [DecidableEq α]
-    [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) (a₀ a : α) :
-    naimarkCompression (naimarkDilatedEffect M a₀ a) = M.effect a := by
-  have hlift : ∀ b : α,
-      naimarkCompression ((naimarkData M).liftedEffect (some b)) = M.effect b := by
-    intro b
-    ext i j
-    have h := (naimarkData M).compression_none_none b i j
-    rw [naimarkData_source M] at h
-    simpa using h
-  have hdef : naimarkCompression
-      (1 - ∑ b : α, (naimarkData M).liftedEffect (some b)) = 0 := by
-    rw [naimarkCompression_sub, naimarkCompression_one, naimarkCompression_sum]
-    simp only [hlift]
-    rw [M.sum_eq_one, sub_self]
-  unfold naimarkDilatedEffect
-  rw [naimarkCompression_add, hlift]
-  by_cases h : a = a₀
-  · simp [h, hdef]
-  · simp [h]
-
 /-! ## The dilated state -/
+
+section
+
+variable (α : Type) [Fintype α] [DecidableEq α]
+    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+    (ψ : EuclideanSpace ℂ (ιA × ιB))
+include α ιA ιB ψ
 
 /-- The image of a bipartite state under the two ground embeddings.  This is the
 state of the dilated strategy supporting blueprint
 `thm:ms-rigidity`. -/
-noncomputable def naimarkDilatedState (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+noncomputable def naimarkDilatedState :
     EuclideanSpace ℂ ((ιA × Option α) × (ιB × Option α)) :=
   isometryTensor (naimarkEmbedding ιA α) (naimarkEmbedding ιB α) ψ
+
+/-- The joint dilation commutes with exchanging the players. -/
+theorem naimarkDilatedState_prodComm :
+    naimarkDilatedState α (reindexState (Equiv.prodComm ιA ιB) ψ) =
+      reindexState (Equiv.prodComm (ιA × Option α) (ιB × Option α)) (naimarkDilatedState α ψ) :=
+  isometryTensor_prodComm _ _ _
 
 /-- The coordinates of the dilated state: the original amplitudes sit on the
 ground slice, where both auxiliary registers carry the adjoined basis vector,
 and all remaining coordinates vanish. -/
-theorem naimarkDilatedState_apply (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (p : (ιA × Option α) × (ιB × Option α)) :
+theorem naimarkDilatedState_apply (p : (ιA × Option α) × (ιB × Option α)) :
     naimarkDilatedState α ψ p =
       if p.1.2 = none ∧ p.2.2 = none then ψ (p.1.1, p.2.1) else 0 := by
   classical
   obtain ⟨⟨i, oa⟩, ⟨j, ob⟩⟩ := p
   simp only [naimarkDilatedState, isometryTensor]
   by_cases hoa : oa = none
-  · by_cases hob : ob = none
-    · simp [hoa, hob, EuclideanSpace.equiv, eq_comm]
-    · simp [hob]
-  · simp [hoa]
+  · simp_all
+  · simp_all
 
-/-- The quadratic form of an operator on a pure state, written out in the
-computational basis.  Formalization-only support for the dilation of
-blueprint `thm:ms-rigidity`. -/
-theorem inner_applyOperatorToState {ι : Type} [Fintype ι] [DecidableEq ι]
-    (K : Op ι) (u : EuclideanSpace ℂ ι) :
-    inner ℂ u (applyOperatorToState K u) =
-      ∑ p : ι, ∑ q : ι, (starRingEnd ℂ) (u p) * (K p q * u q) := by
-  simp [PiLp.inner_apply, RCLike.inner_apply, applyOperatorToState,
-    Matrix.mulVec, dotProduct, Finset.mul_sum, mul_comm]
+end
+
+/-- The two ground embeddings realize the coordinate padding operation. -/
+theorem naimarkDilatedState_eq_padState (α : Type) [Fintype α] [DecidableEq α]
+    {I J : Type} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
+    (ψ : EuclideanSpace ℂ (I × J)) :
+    naimarkDilatedState α ψ = padState none none ψ := by
+  ext p
+  rw [naimarkDilatedState_apply]
+  simp only [padState, EuclideanSpace.equiv]
+  split_ifs <;> simp_all
+
+section
+
+variable (α : Type) [Fintype α] [DecidableEq α]
+    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+    (ψ : EuclideanSpace ℂ (ιA × ιB))
+include α ιA ιB ψ
 
 /-- On the ground slice the dilated state factors as the original amplitude
 times the two indicator amplitudes of the auxiliary registers. -/
-theorem naimarkDilatedState_apply_mul (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (i : ιA) (oa : Option α) (j : ιB) (ob : Option α) :
+theorem naimarkDilatedState_apply_mul (i : ιA) (oa : Option α) (j : ιB) (ob : Option α) :
     naimarkDilatedState α ψ ((i, oa), (j, ob)) =
       (if oa = none then (1 : ℂ) else 0) *
         ((if ob = none then (1 : ℂ) else 0) * ψ (i, j)) := by
   rw [naimarkDilatedState_apply]
-  by_cases h1 : oa = none <;> by_cases h2 : ob = none <;> simp [h1, h2]
-
-/-- The quadratic form of a product operator on the dilated state agrees with the
-quadratic form of the two ground-slice compressions on the original state.  This
-is the identity that makes the dilation invisible to every observable quantity of
-the strategy. -/
-theorem inner_heteroKron_naimarkDilatedState (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB))
-    (M : Op (ιA × Option α)) (N : Op (ιB × Option α)) :
-    inner ℂ (naimarkDilatedState α ψ)
-        (applyOperatorToState (heteroKron M N) (naimarkDilatedState α ψ)) =
-      inner ℂ ψ (applyOperatorToState
-        (heteroKron (naimarkCompression M) (naimarkCompression N)) ψ) := by
-  classical
-  rw [inner_applyOperatorToState, inner_applyOperatorToState]
-  simp [Fintype.sum_prod_type, Fintype.sum_option, naimarkDilatedState_apply_mul,
-    heteroKron, Matrix.kroneckerMap_apply, mul_comm, mul_assoc]
+  grind
 
 /-- The ground embeddings are isometric, so the dilated state is again a unit
 vector when the original one is. -/
-theorem naimarkDilatedState_norm (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem naimarkDilatedState_norm :
     ‖naimarkDilatedState α ψ‖ = ‖ψ‖ := by
-  classical
-  rw [EuclideanSpace.norm_eq, EuclideanSpace.norm_eq]
-  congr 1
-  simp [Fintype.sum_prod_type, Fintype.sum_option, naimarkDilatedState_apply_mul]
+  rw [naimarkDilatedState_eq_padState, padState_norm]
+
+end
 
 /-! ## The dilated Magic Square strategy -/
 
@@ -464,67 +205,41 @@ noncomputable def msDilatedStrategy (S : Strategy msGame) : Strategy msGame wher
     show ‖naimarkDilatedState MsAnswer S.ψ‖ = 1
     rw [naimarkDilatedState_norm]
     exact S.ψ_norm
-  A x := naimarkDilatedMeasurement (α := MsAnswer) (S.A x) (MsAnswer.bit 0)
-  B y := naimarkDilatedMeasurement (α := MsAnswer) (S.B y) (MsAnswer.bit 0)
-
-/-- The state of the dilated strategy is the image of the original state under
-the two ground embeddings. -/
-@[simp]
-theorem msDilatedStrategy_psi (S : Strategy msGame) :
-    (msDilatedStrategy S).ψ = naimarkDilatedState MsAnswer S.ψ := rfl
-
-/-- Alice's dilated question measurements are the Naimark dilations of her
-original ones. -/
-@[simp]
-theorem msDilatedStrategy_A_effect (S : Strategy msGame) (x : MsType) (a : MsAnswer) :
-    ((msDilatedStrategy S).A x).effect a =
-      naimarkDilatedEffect (α := MsAnswer) (S.A x) (MsAnswer.bit 0) a := rfl
-
-/-- Bob's dilated question measurements are the Naimark dilations of his
-original ones. -/
-@[simp]
-theorem msDilatedStrategy_B_effect (S : Strategy msGame) (y : MsType) (b : MsAnswer) :
-    ((msDilatedStrategy S).B y).effect b =
-      naimarkDilatedEffect (α := MsAnswer) (S.B y) (MsAnswer.bit 0) b := rfl
+  A x := dilatedMeasurement (MsAnswer.bit 0) (S.A x)
+  B y := dilatedMeasurement (MsAnswer.bit 0) (S.B y)
 
 /-- Every question measurement of the dilated strategy is projective, which is
 the hypothesis under which the Coladangelo--Stark self-test is stated. -/
 theorem msDilatedStrategy_isProjective_A (S : Strategy msGame) (x : MsType) :
     MIPStarRE.QPBT.Measurement.IsProjective ((msDilatedStrategy S).A x) :=
-  naimarkDilatedMeasurement_isProjective (α := MsAnswer) (S.A x) (MsAnswer.bit 0)
+  dilatedMeasurement_isProjective (MsAnswer.bit 0) (S.A x)
 
 /-- Every question measurement of the dilated strategy is projective on Bob's
 side as well. -/
 theorem msDilatedStrategy_isProjective_B (S : Strategy msGame) (y : MsType) :
     MIPStarRE.QPBT.Measurement.IsProjective ((msDilatedStrategy S).B y) :=
-  naimarkDilatedMeasurement_isProjective (α := MsAnswer) (S.B y) (MsAnswer.bit 0)
+  dilatedMeasurement_isProjective (MsAnswer.bit 0) (S.B y)
 
 /-! ## Preservation of the value-to-parity layer -/
 
+section
+
+variable (S : Strategy msGame)
+include S
+
 /-- The dilation preserves every conditioned Born mass. -/
-theorem ms_dilated_strategy_outcome_weight (S : Strategy msGame) (x y : MsType)
+theorem ms_dilated_strategy_outcome_weight (x y : MsType)
     (a b : MsAnswer) :
     outcomeWeight (msDilatedStrategy S) x y a b = outcomeWeight S x y a b := by
-  change (inner ℂ (naimarkDilatedState MsAnswer S.ψ)
-      (applyOperatorToState
-        (heteroKron (naimarkDilatedEffect (α := MsAnswer) (S.A x) (MsAnswer.bit 0) a)
-          (naimarkDilatedEffect (α := MsAnswer) (S.B y) (MsAnswer.bit 0) b))
-        (naimarkDilatedState MsAnswer S.ψ))).re =
-    (inner ℂ S.ψ (applyOperatorToState
-      (heteroKron ((S.A x).effect a) ((S.B y).effect b)) S.ψ)).re
-  rw [inner_heteroKron_naimarkDilatedState, naimarkCompression_naimarkDilatedEffect,
-    naimarkCompression_naimarkDilatedEffect]
-
-/-- The dilation preserves Alice's marginal Born masses. -/
-theorem ms_dilated_strategy_alice_outcome_weight (S : Strategy msGame) (x : MsType)
-    (a : MsAnswer) :
-    aliceOutcomeWeight (msDilatedStrategy S) x a = aliceOutcomeWeight S x a := by
-  rw [← sum_outcome_weight_right (msDilatedStrategy S) x x a,
-    ← sum_outcome_weight_right S x x a]
-  exact Finset.sum_congr rfl fun b _ => ms_dilated_strategy_outcome_weight S x x a b
+  change vectorQForm (naimarkDilatedState MsAnswer S.ψ)
+    (heteroKron ((msDilatedStrategy S).A x |>.effect a) ((msDilatedStrategy S).B y |>.effect b)) = _
+  rw [naimarkDilatedState_eq_padState]
+  exact stateQForm_padState none none S.ψ _ _ _ _
+    (dilatedMeasurement_compression (MsAnswer.bit 0) a (S.A x))
+    (dilatedMeasurement_compression (MsAnswer.bit 0) b (S.B y))
 
 /-- The dilation preserves Bob's marginal Born masses. -/
-theorem ms_dilated_strategy_bob_outcome_weight (S : Strategy msGame) (y : MsType)
+theorem ms_dilated_strategy_bob_outcome_weight (y : MsType)
     (b : MsAnswer) :
     bobOutcomeWeight (msDilatedStrategy S) y b = bobOutcomeWeight S y b := by
   rw [← sum_outcome_weight_left (msDilatedStrategy S) y y b,
@@ -532,52 +247,34 @@ theorem ms_dilated_strategy_bob_outcome_weight (S : Strategy msGame) (y : MsType
   exact Finset.sum_congr rfl fun a _ => ms_dilated_strategy_outcome_weight S y y a b
 
 /-- The dilation preserves the mass of every answer event. -/
-theorem ms_dilated_strategy_outcome_event_weight (S : Strategy msGame) (x y : MsType)
+theorem ms_dilated_strategy_outcome_event_weight (x y : MsType)
     (E : MsAnswer → MsAnswer → Prop) [DecidableRel E] :
     outcomeEventWeight (msDilatedStrategy S) x y E = outcomeEventWeight S x y E := by
   unfold outcomeEventWeight
   exact Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun b _ => by
-    by_cases h : E a b <;> simp [h, ms_dilated_strategy_outcome_weight]
-
-/-- The dilation preserves the mass of every event depending only on Alice's
-answer. -/
-theorem ms_dilated_strategy_alice_event_weight (S : Strategy msGame) (x : MsType)
-    (E : MsAnswer → Prop) [DecidablePred E] :
-    aliceEventWeight (msDilatedStrategy S) x E = aliceEventWeight S x E := by
-  unfold aliceEventWeight
-  exact Finset.sum_congr rfl fun a _ => by
-    by_cases h : E a <;> simp [h, ms_dilated_strategy_alice_outcome_weight]
+    by_cases h : E a b <;> simp [ms_dilated_strategy_outcome_weight]
 
 /-- The dilation preserves the mass of every event depending only on Bob's
 answer. -/
-theorem ms_dilated_strategy_bob_event_weight (S : Strategy msGame) (y : MsType)
+theorem ms_dilated_strategy_bob_event_weight (y : MsType)
     (E : MsAnswer → Prop) [DecidablePred E] :
     bobEventWeight (msDilatedStrategy S) y E = bobEventWeight S y E := by
   unfold bobEventWeight
   exact Finset.sum_congr rfl fun b _ => by
-    by_cases h : E b <;> simp [h, ms_dilated_strategy_bob_outcome_weight]
-
-/-- The dilation preserves the forward cell-consistency defect. -/
-theorem ms_dilated_strategy_forward_cell_mismatch_mass (S : Strategy msGame)
-    (i : Fin 6) (k : Fin 3) :
-    forwardCellMismatchMass (msDilatedStrategy S) i k = forwardCellMismatchMass S i k :=
-  ms_dilated_strategy_outcome_event_weight S _ _ _
+    by_cases h : E b <;> simp [ms_dilated_strategy_bob_outcome_weight]
 
 /-- The dilation preserves the reverse cell-consistency defect. -/
-theorem ms_dilated_strategy_reverse_cell_mismatch_mass (S : Strategy msGame)
+theorem ms_dilated_strategy_reverse_cell_mismatch_mass
     (i : Fin 6) (k : Fin 3) :
     reverseCellMismatchMass (msDilatedStrategy S) i k = reverseCellMismatchMass S i k :=
   ms_dilated_strategy_outcome_event_weight S _ _ _
 
-/-- The dilation preserves Alice's row or column parity-failure mass. -/
-theorem ms_dilated_strategy_alice_parity_failure_mass (S : Strategy msGame) (i : Fin 6) :
-    aliceParityFailureMass (msDilatedStrategy S) i = aliceParityFailureMass S i :=
-  ms_dilated_strategy_alice_event_weight S _ _
-
 /-- The dilation preserves Bob's row or column parity-failure mass. -/
-theorem ms_dilated_strategy_bob_parity_failure_mass (S : Strategy msGame) (i : Fin 6) :
+theorem ms_dilated_strategy_bob_parity_failure_mass (i : Fin 6) :
     bobParityFailureMass (msDilatedStrategy S) i = bobParityFailureMass S i :=
   ms_dilated_strategy_bob_event_weight S _ _
+
+end
 
 /-! ## Composition of the dilation with later local isometries -/
 
@@ -611,36 +308,34 @@ theorem isometryMatrix_apply {ι ι' : Type} [Fintype ι] [DecidableEq ι]
     [Fintype ι'] [DecidableEq ι']
     (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') (k : ι') (i : ι) :
     isometryMatrix φ k i =
-      φ ((EuclideanSpace.equiv ι ℂ).symm (Pi.single i 1)) k := by
-  have h := congrFun (isometryMatrix_mulVec φ
-    ((EuclideanSpace.equiv ι ℂ).symm (Pi.single i 1))) k
-  rw [← h]
-  simp [Matrix.mulVec, dotProduct, EuclideanSpace.equiv, eq_comm]
+      φ ((EuclideanSpace.equiv ι ℂ).symm (Pi.single i 1)) k := by rfl
 
-/-- The matrix of a composite isometry is the product of the two matrices. -/
-theorem isometryMatrix_comp {ι κ ν : Type} [Fintype ι] [DecidableEq ι]
+section
+
+variable {ι κ ν : Type} [Fintype ι] [DecidableEq ι]
     [Fintype κ] [DecidableEq κ] [Fintype ν] [DecidableEq ν]
     (φ : EuclideanSpace ℂ κ →ₗᵢ[ℂ] EuclideanSpace ℂ ν)
-    (E : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ) :
+    (E : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ)
+include ι κ ν φ E
+
+/-- The matrix of a composite isometry is the product of the two matrices. -/
+theorem isometryMatrix_comp :
     isometryMatrix (φ.comp E) = isometryMatrix φ * isometryMatrix E := by
   ext k i
   have h := congrFun (isometryMatrix_mulVec φ
     (E ((EuclideanSpace.equiv ι ℂ).symm (Pi.single i 1)))) k
-  rw [isometryMatrix_apply, Matrix.mul_apply]
-  simp only [isometryMatrix_apply E]
-  simpa [Matrix.mulVec, dotProduct] using h.symm
+  tauto
 
 /-- Conjugating by a composite isometry is conjugating twice.  This is how the
 ground embeddings of the dilation combine with the local isometries produced by
 the self-testing argument of blueprint
 `thm:ms-rigidity`. -/
-theorem conjIsometry_comp {ι κ ν : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] [Fintype ν] [DecidableEq ν]
-    (φ : EuclideanSpace ℂ κ →ₗᵢ[ℂ] EuclideanSpace ℂ ν)
-    (E : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ) (M : Op ι) :
+theorem conjIsometry_comp (M : Op ι) :
     conjIsometry (φ.comp E) M = conjIsometry φ (conjIsometry E M) := by
   rw [conjIsometry_eq, conjIsometry_eq, conjIsometry_eq, isometryMatrix_comp]
-  simp [Matrix.conjTranspose_mul, Matrix.mul_assoc]
+  simp [Matrix.mul_assoc]
+
+end
 
 /-- The two-sided isometry image of a bipartite state, written through the
 Kronecker product of the two isometry matrices. -/
@@ -682,7 +377,7 @@ theorem isometryTensor_comp {ιA ιB κA κB νA νB : Type}
         (isometryMatrix EA).kronecker (isometryMatrix EB) :=
     Matrix.mul_kronecker_mul _ _ _ _
   rw [hk, Matrix.mul_apply, Finset.sum_mul]
-  exact Finset.sum_congr rfl fun x _ => by ring
+  noncomm_ring
 
 /-! ## Transfer of state-dependent bounds -/
 
@@ -697,8 +392,8 @@ theorem conjIsometry_naimarkEmbedding {ι α : Type} [Fintype ι] [DecidableEq �
   simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, isometryMatrix_apply,
     naimarkEmbedding_apply, naimarkInflation_apply, EuclideanSpace.equiv]
   by_cases hp : p.2 = none
-  · by_cases hq : q.2 = none <;> simp [hp, hq, eq_comm]
-  · simp [hp]
+  · by_cases hq : q.2 = none <;> simp_all
+  · simp_all
 
 /-- Conjugating an operator by the ground embedding followed by a later local
 isometry is conjugating its inflation by that isometry.  This is the form in
@@ -717,20 +412,19 @@ theorem naimarkCompression_msDilatedStrategy_A_effect (S : Strategy msGame)
     (x : MsType) (a : MsAnswer) :
     naimarkCompression (α := MsAnswer) (((msDilatedStrategy S).A x).effect a) =
       (S.A x).effect a :=
-  naimarkCompression_naimarkDilatedEffect (α := MsAnswer) (S.A x) (MsAnswer.bit 0) a
+  by
+    ext i j
+    exact dilatedMeasurement_compression (MsAnswer.bit 0) a (S.A x) i j
 
-/-- Compressing one of Bob's dilated Magic Square effects to the ground slice
-returns his original effect. -/
-theorem naimarkCompression_msDilatedStrategy_B_effect (S : Strategy msGame)
-    (y : MsType) (b : MsAnswer) :
-    naimarkCompression (α := MsAnswer) (((msDilatedStrategy S).B y).effect b) =
-      (S.B y).effect b :=
-  naimarkCompression_naimarkDilatedEffect (α := MsAnswer) (S.B y) (MsAnswer.bit 0) b
+section
+
+variable (α : Type) [Fintype α] [DecidableEq α]
+    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+include α ιA ιB
 
 /-- The action of an operator on the dilated state only sees its ground-slice
 columns. -/
-theorem applyOperatorToState_naimarkDilatedState (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem applyOperatorToState_naimarkDilatedState
     (K : Op ((ιA × Option α) × (ιB × Option α)))
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (p : (ιA × Option α) × (ιB × Option α)) :
     applyOperatorToState K (naimarkDilatedState α ψ) p =
@@ -743,8 +437,6 @@ theorem applyOperatorToState_naimarkDilatedState (α : Type) [Fintype α] [Decid
 operators act on the original state.  This is the identity that transfers
 state-dependent effect bounds back to the undilated strategy. -/
 theorem applyOperatorToState_heteroKron_naimarkInflation
-    (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (M : Op ιA) (N : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
     applyOperatorToState
         (heteroKron (naimarkInflation (α := α) M) (naimarkInflation (α := α) N))
@@ -758,8 +450,10 @@ theorem applyOperatorToState_heteroKron_naimarkInflation
   · by_cases hob : ob = none
     · simp [hoa, hob, heteroKron, applyOperatorToState, Matrix.mulVec, dotProduct,
         Fintype.sum_prod_type, mul_assoc]
-    · simp [hob, heteroKron]
-  · simp [hoa, heteroKron]
+    · simp_all [heteroKron]
+  · simp_all [heteroKron]
+
+end
 
 end
 

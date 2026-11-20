@@ -76,24 +76,30 @@ noncomputable section
 
 /-! ## Coordinates of a combined question -/
 
+section
+
+variable (D : DirectLdParams)
+    (z : Fin D.combined.m → DirectScalarQ D)
+include D z
+
 /-- The point part of a point of the combined space, at the combined
 parameters of `def:ld-combining-parameters`. -/
-def directCombinedPointPart (D : DirectLdParams)
-    (z : Fin D.combined.m → DirectScalarQ D) : Fin D.m → DirectScalarQ D :=
+def directCombinedPointPart : DirectPoint D :=
   combinedPointPart (m := D.m) (k := D.k) z
 
 /-- The combining part of a point of the combined space. -/
-def directCombinedCoefficientPart (D : DirectLdParams)
-    (z : Fin D.combined.m → DirectScalarQ D) : Fin D.k → DirectScalarQ D :=
+def directCombinedCoefficientPart : Fin D.k → DirectScalarQ D :=
   combinedCoefficientPart (m := D.m) (k := D.k) z
 
+end
+
 @[simp] theorem directCombinedPointPart_combinedPoint (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) (α : Fin D.k → DirectScalarQ D) :
+    (u : DirectPoint D) (α : Fin D.k → DirectScalarQ D) :
     directCombinedPointPart D (combinedPoint u α) = u :=
   combinedPointPart_combinedPoint u α
 
 @[simp] theorem directCombinedCoefficientPart_combinedPoint (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) (α : Fin D.k → DirectScalarQ D) :
+    (u : DirectPoint D) (α : Fin D.k → DirectScalarQ D) :
     directCombinedCoefficientPart D (combinedPoint u α) = α :=
   combinedCoefficientPart_combinedPoint u α
 
@@ -124,13 +130,18 @@ def directCombinedQuestionDirection (D : DirectLdParams)
 
 /-! ## The measured question -/
 
+section
+
+variable (D : DirectLdParams)
+    (q : DirectLdQuestion D.combined)
+include D q
+
 /-- The direction of the line of the original game measured on a question of
 the combined game.  It is the coordinate direction of the stored point
 coordinate for an axis-parallel question, and the prefix projection of the
 point part of the combined direction for a diagonal question; on the three
 cases measuring a point question it is the zero direction. -/
-def directCombinedMeasuredDirection (D : DirectLdParams)
-    (q : DirectLdQuestion D.combined) : Fin D.m → DirectScalarQ D :=
+def directCombinedMeasuredDirection : DirectPoint D :=
   match q.1, directCombinedIndexSplit D q.2.index with
   | .aline, .inl j => coordinateDirection j
   | .dline, .inl j =>
@@ -142,8 +153,7 @@ the point part of the canonical base of the combined line and its presentation
 by its own canonical base.  It is the canonical parameter of that line for the
 measured direction; it is needed because the canonical base of a line of the
 combined space need not project to the canonical base of its image line. -/
-def directCombinedRebaseParameter (D : DirectLdParams)
-    (q : DirectLdQuestion D.combined) : DirectScalarQ D :=
+def directCombinedRebaseParameter : DirectScalarQ D :=
   directLineRepParameter (directCombinedMeasuredDirection D q)
     (directCombinedPointPart D q.2.point)
 
@@ -151,8 +161,7 @@ def directCombinedRebaseParameter (D : DirectLdParams)
 question of the combined game.  This is the case distinction of
 `def:ld-combined-strategy`: cases 1, 3 and 5 measure a point question, case 2
 an axis-parallel line question, and case 4 a diagonal line question. -/
-def directCombinedMeasuredQuestion (D : DirectLdParams)
-    (q : DirectLdQuestion D.combined) : DirectLdQuestion D :=
+def directCombinedMeasuredQuestion : DirectLdQuestion D :=
   match q.1, directCombinedIndexSplit D q.2.index with
   | .aline, .inl j =>
       (.aline, directLdMap D .aline
@@ -162,6 +171,8 @@ def directCombinedMeasuredQuestion (D : DirectLdParams)
         ⟨directCombinedPointPart D q.2.point, j,
           directCombinedPointPart D q.2.direction⟩)
   | _, _ => directLdPointQuestionOf D (directCombinedPointPart D q.2.point)
+
+end
 
 /-! ## The relabelling of the measured outcome -/
 
@@ -217,11 +228,16 @@ def directCombinedAnswerMap (D : DirectLdParams)
 
 /-! ## The combined strategy -/
 
+section
+
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+include D S
+
 /-- The combined strategy of `def:ld-combined-strategy`: the same state and the
 same two Hilbert spaces, each question of the combined game answered by
 measuring `directCombinedMeasuredQuestion` and relabelling its outcome by
 `directCombinedAnswerMap`. -/
-def directCombinedStrategy (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+def directCombinedStrategy :
     Strategy (directLdGame D.combined) where
   ιA := S.ιA
   ιB := S.ιB
@@ -234,30 +250,16 @@ def directCombinedStrategy (D : DirectLdParams) (S : Strategy (directLdGame D)) 
     (S.B (directCombinedMeasuredQuestion D q)).postprocess
       (directCombinedAnswerMap D q)
 
-@[simp] theorem directCombinedStrategy_state (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) : (directCombinedStrategy D S).ψ = S.ψ := rfl
-
-@[simp] theorem directCombinedStrategy_A (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (q : DirectLdQuestion D.combined) :
-    (directCombinedStrategy D S).A q =
-      (S.A (directCombinedMeasuredQuestion D q)).postprocess
-        (directCombinedAnswerMap D q) := rfl
-
-@[simp] theorem directCombinedStrategy_B (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (q : DirectLdQuestion D.combined) :
-    (directCombinedStrategy D S).B q =
-      (S.B (directCombinedMeasuredQuestion D q)).postprocess
-        (directCombinedAnswerMap D q) := rfl
-
 /-- Projectivity transfer for `def:ld-combined-strategy`: each measurement of
 the combined strategy is a coarse-graining of a measurement of the original
 strategy, and coarse-graining preserves projectivity. -/
-theorem directCombinedStrategy_isProjective (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (hS : S.IsProjective) :
+theorem directCombinedStrategy_isProjective (hS : S.IsProjective) :
     (directCombinedStrategy D S).IsProjective := by
   refine ⟨fun q => ?_, fun q => ?_⟩
   · exact MIPStarRE.QPBT.SandwichProduct.postprocess_isProjective _ (hS.1 _) _
   · exact MIPStarRE.QPBT.SandwichProduct.postprocess_isProjective _ (hS.2 _) _
+
+end
 
 end
 

@@ -42,62 +42,16 @@ theorem exists_spcc_value_one (P : PauliParams) :
   let T' := SymmetricStrategy.ofSymmetricStrategy T
   let S := SymmetricStrategy.relabel T'
     (pauliQuestionEquiv Q).symm (pauliAnswerEquivCompact Q).symm
-  have hspcc' : T'.IsSPCC
-      (SymmetricGame.ofSymmetricGame (MIPStarRE.QPBT.pauliBasisTestSymm Q)) :=
-    (SymmetricStrategy.isSPCC_ofSymmetricStrategy_iff T).2 hspcc
-  have hspccS : S.IsSPCC (pauliSymmetricGame Q) := by
-    apply (SymmetricStrategy.relabel_isSPCC_iff
-      (SymmetricGame.ofSymmetricGame (MIPStarRE.QPBT.pauliBasisTestSymm Q))
-      (pauliSymmetricGame Q) T'
-      (pauliQuestionEquiv Q).symm (pauliAnswerEquivCompact Q).symm rfl).2
-    exact hspcc'
-  have hvalueS : S.toStrategy.value (pauliSymmetricGame Q).toGame = 1 := by
-    calc
-      S.toStrategy.value (pauliSymmetricGame Q).toGame =
-          T'.toStrategy.value
-            (SymmetricGame.ofSymmetricGame
-              (MIPStarRE.QPBT.pauliBasisTestSymm Q)).toGame := by
-        exact Strategy.value_relabel
-          (SymmetricGame.ofSymmetricGame
-            (MIPStarRE.QPBT.pauliBasisTestSymm Q)).toGame
-          T'.toStrategy (pauliQuestionEquiv Q).symm
-          (pauliQuestionEquiv Q).symm (pauliAnswerEquivCompact Q).symm
-          (pauliAnswerEquivCompact Q).symm
-      _ = T.toStrategy.value := SymmetricStrategy.value_ofSymmetricStrategy T
-      _ = 1 := hvalue
-  have hP : PauliParams.ofAdmissibleParams Q = P := by
-    simp [Q]
-  let statement : PauliParams → Prop := fun R =>
-    ∃ U : SymmetricPauliStrategy R
-        (MIPStarRE.QPBT.fixedFieldModel R.q R.is_admissible_size).K,
-      U.IsPauliSPCC R
-          (MIPStarRE.QPBT.binaryRepresentation
-            (MIPStarRE.QPBT.fixedFieldModel R.q R.is_admissible_size)) ∧
-        U.toStrategy.value
-          (pauliGame R
-            (MIPStarRE.QPBT.binaryRepresentation
-              (MIPStarRE.QPBT.fixedFieldModel R.q R.is_admissible_size))
-            (MIPStarRE.QPBT.fixedBinTrace
-              (MIPStarRE.QPBT.fixedFieldModel R.q R.is_admissible_size))) = 1
-  have hstatement : statement (PauliParams.ofAdmissibleParams Q) := by
-    let R := PauliParams.ofAdmissibleParams Q
-    let fieldStatement : MIPStarRE.QPBT.FixedFieldModel Q.q → Prop := fun F =>
-      ∃ U : SymmetricPauliStrategy R F.K,
-        U.IsPauliSPCC R (MIPStarRE.QPBT.binaryRepresentation F) ∧
-          U.toStrategy.value
-            (pauliGame R (MIPStarRE.QPBT.binaryRepresentation F)
-              (MIPStarRE.QPBT.fixedBinTrace F)) = 1
-    have hfield : fieldStatement Q.model := by
-      refine ⟨S, ?_, ?_⟩
-      · exact (isPauliSPCC_iff_isSPCC Q S).2 hspccS
-      · rw [← pauliSymmetricGame_toGame Q]
-        exact hvalueS
-    have hmodel : Q.model =
-        MIPStarRE.QPBT.fixedFieldModel R.q R.is_admissible_size := by
-      rfl
-    have htransported := Eq.mp (congrArg fieldStatement hmodel) hfield
-    exact htransported
-  exact Eq.mp (congrArg statement hP) hstatement
+  refine ⟨S, (isPauliSPCC_iff_isSPCC Q S).2 ?_, ?_⟩
+  · exact (SymmetricStrategy.relabel_isSPCC_iff
+      (SymmetricGame.ofSymmetricGame (QPBT.pauliBasisTestSymm Q))
+      (pauliSymmetricGame Q) T' _ _ rfl).2
+        ((SymmetricStrategy.isSPCC_ofSymmetricStrategy_iff T).2 hspcc)
+  · change S.toStrategy.value (pauliGame (PauliParams.ofAdmissibleParams Q)
+      (QPBT.binaryRepresentation Q.model) (QPBT.fixedBinTrace Q.model)) = 1
+    rw [← pauliSymmetricGame_toGame Q]
+    exact (Strategy.value_relabel _ T'.toStrategy _ _ _ _).trans
+      ((SymmetricStrategy.value_ofSymmetricStrategy T).trans hvalue)
 
 end
 

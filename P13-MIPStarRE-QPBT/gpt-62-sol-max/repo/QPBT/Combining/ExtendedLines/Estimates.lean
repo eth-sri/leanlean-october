@@ -29,219 +29,42 @@ open scoped BigOperators Matrix MatrixOrder ComplexOrder
 
 noncomputable section
 
-/-- Removing the X factor costs exactly the coefficient `2` in the current
-proof. This Lean-only quantitative form exposes the witness used for paper
-`lem:qld-sublines`, lines 1168--1201, for issue Dengnifer/MIPStarRE-QPBT-bak#729. -/
-theorem subline_remove_x_factor_at_explicit
-    (P : AdmissibleParams) (ε δQ δP : ℝ)
-    (S : ProjectiveSetting P ε) (points : CombinedPointsWitness S δQ)
+/-- Remove the two point factors in succession, using their marginal deficits. -/
+private theorem subline_ordered_overlap_near_one
+    {P : AdmissibleParams} {ε δQ δP : ℝ}
+    {S : ProjectiveSetting P ε} {points : CombinedPointsWitness S δQ}
     (lines : CombinedLinesWitness S points δP) (sublines : SubLineWitness P)
-    (first second : Placement) (hopposite : first.IsOpposite second) :
-    |avgOver sublines.D (fun sample =>
-        avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd)) (fun t =>
-          let u := directPointToPauli P
-            (sample.1.base + t • sample.1.direction)
-          let x := projX u
-          let z := projZ u
-          ∑ fX, ∑ fZ,
-            (inner ℂ S.psiHat ((EuclideanSpace.equiv
-              (SixReg P S.toStrategy.ιA S.toStrategy.ιB) ℂ).symm
-                ((S.place first
-                    ((lines.T first.side sample.2.1 sample.2.2).effect (fX, fZ)) *
-                  S.place second
-                    (S.expPointEffectAtLineAnswer second.side .Z sample.2.2 z fZ *
-                      S.expPointEffectAtLineAnswer second.side .X sample.2.1 x fX)).mulVec
-                        S.psiHat))).re)) -
-      avgOver sublines.D (fun sample =>
-        avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd)) (fun t =>
-          let u := directPointToPauli P
-            (sample.1.base + t • sample.1.direction)
-          let z := projZ u
-          ∑ fX, ∑ fZ,
-            (inner ℂ S.psiHat ((EuclideanSpace.equiv
-              (SixReg P S.toStrategy.ιA S.toStrategy.ιB) ℂ).symm
-                ((S.place first
-                    ((lines.T first.side sample.2.1 sample.2.2).effect (fX, fZ)) *
-                  S.place second
-                    (S.expPointEffectAtLineAnswer second.side .Z sample.2.2 z fZ)).mulVec
-                      S.psiHat))).re))| ≤
-      2 * Real.sqrt (P.m : ℝ) *
-        (Real.rpow δP (1 / 4 : ℝ) + Real.rpow δQ (1 / 4 : ℝ)) := by
-  classical
-  have hside := sublines.avgOver_regrouped_eq_at lines first second
-  have hprob : (Distribution.prod sublines.D
-      (uniformDistribution (DirectScalarQ P.extendedDirectLd))).IsProbability :=
-    Distribution.prod_isProbability _ _ sublines.isProbability
-      (uniformDistribution_isProbability _)
-  have hδP : 0 ≤ δP := by
-    refine le_trans ?_ (lines.consistent first second hopposite)
-    unfold consistencyDefect
-    exact avgOver_nonneg _ _ fun s =>
-      consistencyDefect_integrand_nonneg S first second hopposite
-        ((lines.T first.side s.1.1 s.2.1).postprocess fun fs =>
-          (evalOpt s.1.1 s.1.2 fs.1, evalOpt s.2.1 s.2.2 fs.2))
-        ((points.Q second.side s.1.2 s.2.2).postprocess fun ab => (some ab.1, some ab.2))
-  have hδQ : 0 ≤ δQ :=
-    le_trans (opFamilyDistSq_nonneg _ _ _ _) (points.self_consistent first second hopposite)
-  have hm : (1 : ℝ) ≤ (P.m : ℝ) := by exact_mod_cast P.one_le_m
-  simp only [← ProjectiveSetting.pointMeasExpOption_effect_evalOpt]
-  rw [hside (fun x z o1 o2 => (S.pointMeasExpOption second.side .Z z).effect o2 *
-      (S.pointMeasExpOption second.side .X x).effect o1),
-    hside (fun x z o1 o2 => (S.pointMeasExpOption second.side .Z z).effect o2)]
-  have hcs := abs_overlap_gap_le_sqrt_one_sub_of_isProj'
-    (Distribution.prod sublines.D
-      (uniformDistribution (DirectScalarQ P.extendedDirectLd)))
-    (fun s => S.placedMeasurement first
-      ((lines.T first.side s.1.2.1 s.1.2.2).postprocess (fun fs =>
-        (evalOpt s.1.2.1 (projX (directPointToPauli P
-            (s.1.1.base + s.2 • s.1.1.direction))) fs.1,
-          evalOpt s.1.2.2 (projZ (directPointToPauli P
-            (s.1.1.base + s.2 • s.1.1.direction))) fs.2))))
-    (fun (s : SubLineTriple P × DirectScalarQ P.extendedDirectLd)
-        (o : Option (PauliScalar P) × Option (PauliScalar P)) =>
-      S.place second ((S.pointMeasExpOption second.side .X
-        (projX (directPointToPauli P
-          (s.1.1.base + s.2 • s.1.1.direction)))).effect o.1))
-    (fun (s : SubLineTriple P × DirectScalarQ P.extendedDirectLd)
-        (o : Option (PauliScalar P) × Option (PauliScalar P)) =>
-      S.place second ((S.pointMeasExpOption second.side .Z
-        (projZ (directPointToPauli P
-          (s.1.1.base + s.2 • s.1.1.direction)))).effect o.2))
-    (fun (s : SubLineTriple P × DirectScalarQ P.extendedDirectLd)
-        (o : Option (PauliScalar P) × Option (PauliScalar P)) =>
-      S.place second
-        ((S.pointMeasExpOption second.side .Z
-            (projZ (directPointToPauli P
-              (s.1.1.base + s.2 • s.1.1.direction)))).effect o.2 *
-          (S.pointMeasExpOption second.side .X
-            (projX (directPointToPauli P
-              (s.1.1.base + s.2 • s.1.1.direction)))).effect o.1))
-    S.psiHat hprob S.psiHat_norm
-    (fun s o => S.place_isProj _ (S.pointMeasExpOption_isProj _ _ _ _))
-    (fun s o => S.place_isProj _ (S.pointMeasExpOption_isProj _ _ _ _))
-    (fun s o => S.place_comm first second hopposite _ _)
-    (fun s o => S.place_comm first second hopposite _ _)
-    (fun s o => ProjectiveSetting.place_mul S second _ _)
-  refine hcs.trans ?_
-  have hrew : avgOver (Distribution.prod sublines.D
-      (uniformDistribution (DirectScalarQ P.extendedDirectLd)))
-      (fun s => ∑ o : Option (PauliScalar P) × Option (PauliScalar P),
-        stateQForm S.psiHat
-          ((S.placedMeasurement first
-            ((lines.T first.side s.1.2.1 s.1.2.2).postprocess (fun fs =>
-              (evalOpt s.1.2.1 (projX (directPointToPauli P
-                  (s.1.1.base + s.2 • s.1.1.direction))) fs.1,
-                evalOpt s.1.2.2 (projZ (directPointToPauli P
-                  (s.1.1.base + s.2 • s.1.1.direction))) fs.2)))).effect o *
-            S.place second ((S.pointMeasExpOption second.side .X
-              (projX (directPointToPauli P
-                (s.1.1.base + s.2 • s.1.1.direction)))).effect o.1))) =
-      avgOver sublines.D (fun sample =>
-        avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd))
-          (fun t => xPointOverlapAt lines first second (sample.2, projX (directPointToPauli P
-            (sample.1.base + t • sample.1.direction))))) := by
-    rw [SandwichProduct.avgOver_distribution_prod]
-    refine avgOver_congr _ _ _ fun sample => avgOver_congr _ _ _ fun t => ?_
-    exact regroup_line_answer_sum_at lines first second sample.2.1 sample.2.2 _ _
-      (fun o1 _ => (S.pointMeasExpOption second.side .X (projX (directPointToPauli P
-        (sample.1.base + t • sample.1.direction)))).effect o1)
-  refine (Real.sqrt_le_sqrt ?_).trans (sqrt_deficit_bound_le _ _ _ hm hδP hδQ)
-  have hX := sublines.one_sub_avgOver_xPointOverlap_le_at lines first second hopposite
-  rw [← hrew] at hX
-  exact hX
+    (first second : Placement) (hop : first.IsOpposite second) :
+    |avgOver sublines.D (orderedSublineOverlap S points lines first second) - 1| ≤
+      4 * Real.sqrt (P.m : ℝ) * (δP ^ (1 / 4 : ℝ) + δQ ^ (1 / 4 : ℝ)) := by
+  have hδP := (S.placedDefect_nonneg _ _ _ (lines.evalPair first.side)
+    (fun s => points.completedPair second.side s.1.2 s.2.2) hop).trans (lines.consistent first second hop)
+  have hδQ := (opFamilyDistSq_nonneg _ _ _ _).trans (points.self_consistent first second hop)
+  have hroot (W : PauliKind) :=
+    (Real.sqrt_le_sqrt (sublines.one_sub_avgOver_pointOverlap_le_at lines first second hop W)).trans
+      (sqrt_deficit_bound_le _ _ _ (by exact_mod_cast P.one_le_m) hδP hδQ)
+  let μ := sublines.drawLaw
+  let A := lines.placedSublineEval first
+  let B (W : PauliKind) (s : SubLineDraw P) (o : Option (PauliScalar P) × Option (PauliScalar P)) :=
+    S.place second (S.completedPointPairEffect second.side W (SubLineDraw.basePoints s) o)
+  have hB (W : PauliKind) (s) (o) : IsProj (B W s o) :=
+    S.place_isProj _ (S.pointMeasExpOption_isProj _ _ _ _)
+  have hAB (W : PauliKind) (s) (o) : Commute ((A s).effect o) (B W s o) :=
+    S.place_comm first second hop _ _
+  have hX := abs_overlap_gap_le_sqrt_one_sub_of_isProj μ A (B .X) (B .Z) S.psiHat
+    sublines.drawLaw_isProbability S.psiHat_norm (hB .X) (hB .Z) (hAB .X) (hAB .Z)
+  have hZ := abs_overlap_gap_le_sqrt_one_sub_of_isProj μ A (B .Z) (fun _ _ => 1) S.psiHat
+    sublines.drawLaw_isProbability S.psiHat_norm (hB .Z) (fun _ _ => IsStarProjection.one _)
+    (hAB .Z) (fun _ _ => Commute.one_right _)
+  simp only [one_mul, mul_one, sum_stateQForm_effect_eq_one _ _ S.psiHat_norm] at hZ
+  rw [avgOver_const_of_isProbability _ sublines.drawLaw_isProbability] at hZ
+  unfold orderedSublineOverlap
+  rw [sublines.avgOver_sublineOverlap_eq]
+  simp_rw [S.place_mul]
+  have h := (abs_sub_le _ _ (1 : ℝ)).trans
+    (add_le_add (hX.trans (hroot .X)) (hZ.trans (hroot .Z)))
+  exact h.trans_eq (by simp only [Real.rpow_eq_pow]; ring)
 
-/-- The remaining Z overlap costs exactly the coefficient `2` in the current
-proof. This Lean-only quantitative form exposes the witness used for paper
-`claim:17-3`, lines 1204--1239, for issue Dengnifer/MIPStarRE-QPBT-bak#729. -/
-theorem subline_z_term_near_one_at_explicit
-    (P : AdmissibleParams) (ε δQ δP : ℝ)
-    (S : ProjectiveSetting P ε) (points : CombinedPointsWitness S δQ)
-    (lines : CombinedLinesWitness S points δP) (sublines : SubLineWitness P)
-    (first second : Placement) (hopposite : first.IsOpposite second) :
-    |avgOver sublines.D (fun sample =>
-        avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd)) (fun t =>
-          let u := directPointToPauli P
-            (sample.1.base + t • sample.1.direction)
-          let z := projZ u
-          ∑ fX, ∑ fZ,
-            (inner ℂ S.psiHat ((EuclideanSpace.equiv
-              (SixReg P S.toStrategy.ιA S.toStrategy.ιB) ℂ).symm
-                ((S.place first
-                    ((lines.T first.side sample.2.1 sample.2.2).effect (fX, fZ)) *
-                  S.place second
-                    (S.expPointEffectAtLineAnswer second.side .Z sample.2.2 z fZ)).mulVec
-                      S.psiHat))).re)) - 1| ≤
-      2 * Real.sqrt (P.m : ℝ) *
-        (Real.rpow δP (1 / 4 : ℝ) + Real.rpow δQ (1 / 4 : ℝ) +
-          Real.rpow ε (1 / 4 : ℝ)) := by
-  classical
-  have hδP : 0 ≤ δP := by
-    refine le_trans ?_ (lines.consistent first second hopposite)
-    unfold consistencyDefect
-    exact avgOver_nonneg _ _ fun s =>
-      consistencyDefect_integrand_nonneg S first second hopposite
-        ((lines.T first.side s.1.1 s.2.1).postprocess fun fs =>
-          (evalOpt s.1.1 s.1.2 fs.1, evalOpt s.2.1 s.2.2 fs.2))
-        ((points.Q second.side s.1.2 s.2.2).postprocess fun ab => (some ab.1, some ab.2))
-  have hδQ : 0 ≤ δQ :=
-    le_trans (opFamilyDistSq_nonneg _ _ _ _) (points.self_consistent first second hopposite)
-  have hm : (1 : ℝ) ≤ (P.m : ℝ) := by exact_mod_cast P.one_le_m
-  have hLHS : avgOver sublines.D (fun sample =>
-      avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd)) (fun t =>
-        let u := directPointToPauli P
-          (sample.1.base + t • sample.1.direction)
-        let z := projZ u
-        ∑ fX, ∑ fZ,
-          (inner ℂ S.psiHat ((EuclideanSpace.equiv
-            (SixReg P S.toStrategy.ιA S.toStrategy.ιB) ℂ).symm
-              ((S.place first
-                  ((lines.T first.side sample.2.1 sample.2.2).effect (fX, fZ)) *
-                S.place second
-                  (S.expPointEffectAtLineAnswer second.side .Z sample.2.2 z fZ)).mulVec
-                    S.psiHat))).re)) =
-      avgOver sublines.D (fun sample =>
-        avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd))
-          (fun t => zPointOverlapAt lines first second (sample.2, projZ (directPointToPauli P
-            (sample.1.base + t • sample.1.direction))))) := by
-    refine avgOver_congr _ _ _ fun sample => avgOver_congr _ _ _ fun t => ?_
-    simp only [zPointOverlapAt, ← ProjectiveSetting.pointMeasExpOption_effect_evalOpt]
-    rfl
-  rw [hLHS]
-  set L := avgOver sublines.D (fun sample =>
-    avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd))
-      (fun t => zPointOverlapAt lines first second (sample.2, projZ (directPointToPauli P
-        (sample.1.base + t • sample.1.direction))))) with hL
-  have hdef := sublines.one_sub_avgOver_zPointOverlap_le_at lines first second hopposite
-  have hle := sublines.avgOver_zPointOverlap_le_one_at lines first second hopposite
-  have hnonneg : 0 ≤ L :=
-    avgOver_nonneg _ _ fun sample => avgOver_nonneg _ _ fun t =>
-      zPointOverlap_nonneg_at lines first second hopposite _
-  rw [← hL] at hdef hle
-  have h0 : 0 ≤ 1 - L := by linarith
-  have hsq : (1 - L) ^ 2 ≤ 1 - L := by nlinarith
-  calc
-    |L - 1| = 1 - L := by rw [abs_sub_comm, abs_of_nonneg h0]
-    _ = Real.sqrt ((1 - L) ^ 2) := (Real.sqrt_sq h0).symm
-    _ ≤ Real.sqrt (2 * Real.sqrt (4 * (P.m : ℝ) ^ 2 * δP) +
-          2 * Real.sqrt (4 * δQ)) := Real.sqrt_le_sqrt (hsq.trans hdef)
-    _ ≤ 2 * Real.sqrt (P.m : ℝ) *
-          (Real.rpow δP (1 / 4 : ℝ) + Real.rpow δQ (1 / 4 : ℝ)) :=
-      sqrt_deficit_bound_le _ _ _ hm hδP hδQ
-    _ ≤ _ := by
-      have hε := rpow_quarter_nonneg ε
-      have hsm : 0 ≤ 2 * Real.sqrt (P.m : ℝ) :=
-        mul_nonneg (by norm_num) (Real.sqrt_nonneg _)
-      nlinarith [mul_nonneg hsm hε]
-
-/-- Expand the state quadratic form before specializing the register carrier. -/
-private theorem stateQForm_eq_inner_mulVec {Carrier : Type*}
-    [Fintype Carrier] [DecidableEq Carrier]
-    (state : EuclideanSpace ℂ Carrier) (operator : Op Carrier) :
-    stateQForm state operator = (inner ℂ state
-      ((EuclideanSpace.equiv Carrier ℂ).symm (operator.mulVec state))).re := rfl
-
-set_option maxHeartbeats 800000 in
--- Expanding the nested averages and matrix quadratic forms is elaboration-intensive.
 /-- The first-route paired overlap estimate with its exact coefficient `6`.
 This Lean-only quantitative specialization supports paper `lem:qld-4-13`,
 lines 1020--1034, and exposes the current proof's witness for issue
@@ -256,48 +79,20 @@ theorem subline_joint_overlap_near_one_at_explicit
       6 * (pointError ^ (1 / 2 : ℝ) + Real.sqrt (params.m : ℝ) *
         (lineError ^ (1 / 4 : ℝ) + pointError ^ (1 / 4 : ℝ) +
           error ^ (1 / 4 : ℝ))) := by
-  let zOverlap := avgOver sublines.D (fun sample =>
-    avgOver (uniformDistribution (DirectScalarQ params.extendedDirectLd)) (fun parameter =>
-      zPointOverlapAt lines first second (sample.2, projZ (directPointToPauli params
-        (sample.1.base + parameter • sample.1.direction)))))
-  have hfirst : |avgOver sublines.D
-      (pairedSublineOverlap setting points lines first second) - avgOver sublines.D
-        (orderedSublineOverlap setting points lines first second)| ≤
-      2 * pointError ^ (1 / 2 : ℝ) := by
-    have heq : Real.sqrt (4 * pointError) = 2 * pointError ^ (1 / 2 : ℝ) := by
-      rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 4)]
-      norm_num [Real.sqrt_eq_rpow]
-    exact (sublines.paired_ordered_overlap_gap_le lines first second).trans_eq heq
-  have hsecond : |avgOver sublines.D
-      (orderedSublineOverlap setting points lines first second) - zOverlap| ≤
-      2 * Real.sqrt (params.m : ℝ) *
-        (lineError ^ (1 / 4 : ℝ) + pointError ^ (1 / 4 : ℝ)) := by
-    have hbound := subline_remove_x_factor_at_explicit params error pointError lineError
-      setting points lines sublines first second hopposite
-    simp only [← ProjectiveSetting.pointMeasExpOption_effect_evalOpt] at hbound
-    unfold orderedSublineOverlap zOverlap zPointOverlapAt
-    simp only [Fintype.sum_prod_type, stateQForm_eq_inner_mulVec]
-    with_unfolding_all exact hbound
-  have hthird : |zOverlap - 1| ≤ 2 * Real.sqrt (params.m : ℝ) *
-      (lineError ^ (1 / 4 : ℝ) + pointError ^ (1 / 4 : ℝ) + error ^ (1 / 4 : ℝ)) := by
-    have hbound := subline_z_term_near_one_at_explicit params error pointError lineError
-      setting points lines sublines first second hopposite
-    simp only [← ProjectiveSetting.pointMeasExpOption_effect_evalOpt] at hbound
-    unfold zOverlap zPointOverlapAt
-    simp only [stateQForm_eq_inner_mulVec]
-    with_unfolding_all exact hbound
-  have hchain := (abs_sub_le _ _ (1 : ℝ)).trans
-    (add_le_add hfirst ((abs_sub_le _ zOverlap (1 : ℝ)).trans (add_le_add hsecond hthird)))
-  have hhalf : 0 ≤ pointError ^ (1 / 2 : ℝ) := by
-    rw [← Real.sqrt_eq_rpow]
-    exact Real.sqrt_nonneg _
-  have hsum : 0 ≤ lineError ^ (1 / 4 : ℝ) + pointError ^ (1 / 4 : ℝ) :=
-    add_nonneg (rpow_quarter_nonneg _) (rpow_quarter_nonneg _)
-  have hquarter := rpow_quarter_nonneg error
-  simp only [Real.rpow_eq_pow] at hquarter
-  have hdimension := Real.sqrt_nonneg (params.m : ℝ)
-  refine hchain.trans ?_
-  nlinarith [mul_nonneg hdimension hsum, mul_nonneg hdimension hquarter]
+  have hfirst := sublines.paired_ordered_overlap_gap_le lines first second
+  rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 4)] at hfirst
+  norm_num [Real.sqrt_eq_rpow] at hfirst
+  have h := (abs_sub_le _ _ (1 : ℝ)).trans
+    (add_le_add hfirst (subline_ordered_overlap_near_one lines sublines first second hopposite))
+  refine h.trans ?_
+  have hr : 0 ≤ pointError ^ (1 / 2 : ℝ) := by rw [← Real.sqrt_eq_rpow]; positivity
+  have hP := rpow_quarter_nonneg lineError
+  have hQ := rpow_quarter_nonneg pointError
+  have hE := rpow_quarter_nonneg error
+  simp only [Real.rpow_eq_pow] at hP hQ hE
+  nlinarith [mul_nonneg (Real.sqrt_nonneg (params.m : ℝ)) hP,
+    mul_nonneg (Real.sqrt_nonneg (params.m : ℝ)) hQ,
+    mul_nonneg (Real.sqrt_nonneg (params.m : ℝ)) hE]
 
 /-- A universal constant bounds the deviation of the paired subline overlap from
 one in terms of the point, line, and strategy errors. -/
@@ -311,8 +106,7 @@ theorem subline_joint_overlap_near_one_at :
         |avgOver sublines.D (pairedSublineOverlap setting points lines first second) - 1| ≤
           constant * (pointError ^ (1 / 2 : ℝ) + Real.sqrt (params.m : ℝ) *
             (lineError ^ (1 / 4 : ℝ) + pointError ^ (1 / 4 : ℝ) +
-              error ^ (1 / 4 : ℝ))) := by
-  exact ⟨6, by norm_num, subline_joint_overlap_near_one_at_explicit⟩
+              error ^ (1 / 4 : ℝ))) := ⟨6, by norm_num, subline_joint_overlap_near_one_at_explicit⟩
 
 end
 

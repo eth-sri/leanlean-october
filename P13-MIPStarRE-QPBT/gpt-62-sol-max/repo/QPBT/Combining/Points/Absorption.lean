@@ -43,7 +43,7 @@ theorem norm_sub_projective_mul_sq_le {α ι : Type*} [Fintype α]
     rw [Matrix.conjTranspose_sub, Matrix.conjTranspose_one,
       (hM a).isSelfAdjoint.isHermitian.eq]
     calc
-      (1 - M.effect a) * (1 - M.effect a) = 1 - M.effect a := by
+      _ = 1 - M.effect a := by
         simp only [sub_mul, mul_sub, one_mul, mul_one, hidem]
         abel
       _ ≤ 1 := sub_le_self _ (M.pos a)

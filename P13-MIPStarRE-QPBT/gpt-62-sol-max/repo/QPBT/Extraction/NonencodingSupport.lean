@@ -37,24 +37,6 @@ open MIPStarRE.Quantum DistanceCalculus ProjectiveSetting
 
 noncomputable section
 
-/-- For commuting families, reversing the order of the measurements preserves
-the consistency defect. This is finite-sum algebra for opposite placements. -/
-theorem consistencyDefect_comm_of_commute {X A I : Type*}
-    [Fintype X] [DecidableEq X] [Fintype A] [DecidableEq A]
-    [Fintype I] [DecidableEq I] (mu : Distribution X)
-    (first second : X → A → Op I) (psi : EuclideanSpace ℂ I)
-    (hcomm : ∀ x a b, first x a * second x b = second x b * first x a) :
-    consistencyDefect mu first second psi = consistencyDefect mu second first psi := by
-  unfold consistencyDefect
-  apply avgOver_congr
-  intro x
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro b _
-  apply Finset.sum_congr rfl
-  intro a _
-  simp only [hcomm x a b, eq_comm]
-
 /-- A polynomial measurement's mass outside the encoding image is at most
 its evaluated inconsistency with an encoding-supported reference, plus `md/q`.
 This is the Schwartz-Zippel step in blueprint `eq:qld-nonencoding-mass`.
@@ -67,10 +49,10 @@ theorem mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
     (hsupport : ∀ g, ¬ IsEncoding g → reference.effect g = 0) :
     (∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
       stateQForm psi (heteroKron (meas.effect g) 1)) ≤
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron ((meas.postprocess (fun g => evalPoly g u)).effect a) 1)
-        (fun u a => heteroKron 1 ((reference.postprocess
-          (fun g => evalPoly g u)).effect a)) psi + (P.m * P.d : ℝ) / P.q := by
+      bipartiteDefect (uniformDistribution (PauliPoint P))
+        (fun u => meas.postprocess (fun g => evalPoly g u))
+        (fun u => reference.postprocess
+          (fun g => evalPoly g u)) psi + (P.m * P.d : ℝ) / P.q := by
   classical
   have hmass := mass_outside_support_le_point_defect meas reference psi
     (Finset.univ.filter IsEncoding) (by simpa using hsupport)
@@ -83,70 +65,50 @@ theorem mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
 
 namespace ProjectiveSetting
 
-/-- Adjoining the ideal point outcomes preserves the Pauli-basis check on the
-two-player expanded state, in the point--Pauli orientation. -/
-theorem point_encodingPauli_consistency_eq {P : AdmissibleParams} {epsilon : ℝ}
-    (S : ProjectiveSetting P epsilon) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron ((S.pointMeasExp .alice W u).effect a) 1)
-        (fun u a => heteroKron 1 (((S.encodingPauliMeas .bob W).postprocess
-          (fun g => evalPoly g u)).effect a)) (ExtendedLineGame.pairState S) =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
-        (fun u a => heteroKron 1 ((S.pauliEvalMeas .bob W u).effect a))
-        S.toStrategy.ψ := by
-  have h := consistencyDefect_convolution_eq_of_perfect
-    (uniformDistribution (Fin P.m → PauliScalar P))
-    (S.pointMeas .alice W) (S.pauliEvalMeas .bob W)
-    (tauPointMeas W) (tauPointMeas W) S.toStrategy.ψ
-    (eprState (PauliRegister P)) (eprState_norm _)
-    (tauPointProj_epr_offDiagonal_eq_zero W)
-  simp_rw [encodingPauliMeas_eval_effect_eq_convolution S .bob W]
-  simpa only [pointMeasExp, Measurement.ofSumEqOne, expPointOp_eq_convolution,
-    tauPointMeas, ExtendedLineGame.pairState] using h
+variable {P : AdmissibleParams} {ε : ℝ}
 
-/-- The same exact preservation holds in the Pauli--point orientation. -/
-theorem encodingPauli_point_consistency_eq {P : AdmissibleParams} {epsilon : ℝ}
-    (S : ProjectiveSetting P epsilon) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron (((S.encodingPauliMeas .alice W).postprocess
-          (fun g => evalPoly g u)).effect a) 1)
-        (fun u a => heteroKron 1 ((S.pointMeasExp .bob W u).effect a))
-        (ExtendedLineGame.pairState S) =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron ((S.pauliEvalMeas .alice W u).effect a) 1)
-        (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
-        S.toStrategy.ψ := by
-  have h := consistencyDefect_convolution_eq_of_perfect
-    (uniformDistribution (Fin P.m → PauliScalar P))
-    (S.pauliEvalMeas .alice W) (S.pointMeas .bob W)
-    (tauPointMeas W) (tauPointMeas W) S.toStrategy.ψ
-    (eprState (PauliRegister P)) (eprState_norm _)
-    (tauPointProj_epr_offDiagonal_eq_zero W)
-  simp_rw [encodingPauliMeas_eval_effect_eq_convolution S .alice W]
-  simpa only [pointMeasExp, Measurement.ofSumEqOne, expPointOp_eq_convolution,
-    tauPointMeas, ExtendedLineGame.pairState] using h
+/-- Adjoin an ideal point answer and add it to the original answer. -/
+private def pointConvolution {I : Type*} [Fintype I] [DecidableEq I]
+    (W : PauliKind) (A : PauliPoint P → Measurement (PauliScalar P) I) :
+    PauliPoint P → Measurement (PauliScalar P) (I × PauliRegister P) :=
+  fun u => (tensorMeasurement (A u) (tauPointMeas W u)).postprocess (fun ab => ab.1 + ab.2)
 
-/-- Adjoining the same ideal point measurements also preserves point
-self-consistency exactly. -/
-theorem expanded_point_consistency_eq {P : AdmissibleParams} {epsilon : ℝ}
-    (S : ProjectiveSetting P epsilon) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron ((S.pointMeasExp .alice W u).effect a) 1)
-        (fun u a => heteroKron 1 ((S.pointMeasExp .bob W u).effect a))
-        (ExtendedLineGame.pairState S) =
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
-        (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))
-        S.toStrategy.ψ := by
-  have h := consistencyDefect_convolution_eq_of_perfect
-    (uniformDistribution (Fin P.m → PauliScalar P))
-    (S.pointMeas .alice W) (S.pointMeas .bob W)
-    (tauPointMeas W) (tauPointMeas W) S.toStrategy.ψ
+section
+
+variable (S : ProjectiveSetting P ε)
+    (side : PlayerSide) (W : PauliKind)
+include S side W
+
+private theorem pointMeasExp_eq_convolution :
+    S.pointMeasExp side W = pointConvolution W (S.pointMeas side W) := by
+  funext u
+  apply Quantum.Measurement.ext
+  intro c
+  simp only [pointMeasExp, Measurement.ofSumEqOne, expPointOp_eq_convolution,
+    pointConvolution, Measurement.postprocess_effect, tensorMeasurement, tauPointMeas_effect]
+
+private theorem encodingEval_eq_convolution :
+    (fun u => (S.encodingPauliMeas side W).postprocess (fun g => evalPoly g u)) =
+      pointConvolution W (S.pauliEvalMeas side W) := by
+  funext u
+  apply Quantum.Measurement.ext
+  intro c
+  rw [encodingPauliMeas_eval_effect_eq_convolution]
+  rfl
+
+end
+
+/-- A common perfectly correlated ideal point shift preserves the defect. -/
+private theorem pointConvolution_defect (S : ProjectiveSetting P ε) (W : PauliKind)
+    (A : PauliPoint P → Measurement (PauliScalar P) S.toStrategy.ιA)
+    (B : PauliPoint P → Measurement (PauliScalar P) S.toStrategy.ιB) :
+    bipartiteDefect (uniformDistribution _) (pointConvolution W A) (pointConvolution W B)
+      (ExtendedLineGame.pairState S) = bipartiteDefect (uniformDistribution _) A B S.toStrategy.ψ :=
+  bipartiteDefect_tensor_shift_eq _ A B (tauPointMeas W) (tauPointMeas W) _
     (eprState (PauliRegister P)) (eprState_norm _)
-    (tauPointProj_epr_offDiagonal_eq_zero W)
-  simpa only [pointMeasExp, Measurement.ofSumEqOne, expPointOp_eq_convolution,
-    tauPointMeas, ExtendedLineGame.pairState] using h
+    (fun a c => a + c) (fun _ _ _ => add_right_cancel)
+    (fun u _ _ => tauPointProj_epr_joint_eq_zero_of_ne W u)
+    (sum_tauPointProj_pair_stateQForm_eprState W)
 
 end ProjectiveSetting
 
@@ -159,17 +121,17 @@ theorem right_mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
     (hsupport : ∀ g, ¬ IsEncoding g → reference.effect g = 0) :
     (∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
       stateQForm psi (heteroKron 1 (meas.effect g))) ≤
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron ((reference.postprocess
-          (fun g => evalPoly g u)).effect a) 1)
-        (fun u a => heteroKron 1 ((meas.postprocess (fun g => evalPoly g u)).effect a))
+      bipartiteDefect (uniformDistribution (PauliPoint P))
+        (fun u => reference.postprocess
+          (fun g => evalPoly g u))
+        (fun u => meas.postprocess (fun g => evalPoly g u))
         psi + (P.m * P.d : ℝ) / P.q := by
   have h := mass_outside_encoding_le_evaluated_defect meas reference
     (reindexState (Equiv.prodComm I J) psi)
     (by rw [reindexState_norm_eq, hpsi]) hsupport
-  simpa only [WinImplications.stateQForm_reindexState,
-    WinImplications.reindexOp_prodComm_heteroKron,
-    WinImplications.consistencyDefect_swappedState] using h
+  simpa only [DistanceCalculus.stateQForm_reindexState,
+    reindexOp_prodComm_heteroKron,
+    DistanceCalculus.consistencyDefect_prodComm] using h
 
 /-- For a supplied global polynomial-pair witness, both evaluated global
 marginals are consistent with the opposite encoding-supported reference.
@@ -180,91 +142,76 @@ theorem global_marginal_encoding_consistency_explicit :
     ∀ (P : AdmissibleParams) (epsilon deltaG : ℝ),
       0 ≤ epsilon → ∀ (S : ProjectiveSetting P epsilon)
         (w : GlobalPairWitness S deltaG) (W : PauliKind),
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-          (fun u a => heteroKron (((w.marginalPoly .alice W).postprocess
-            (fun g => evalPoly g u)).effect a) 1)
-          (fun u a => heteroKron 1 (((S.encodingPauliMeas .bob W).postprocess
-            (fun g => evalPoly g u)).effect a)) (ExtendedLineGame.pairState S) ≤
+      bipartiteDefect (uniformDistribution (PauliPoint P))
+          (fun u => (w.marginalPoly .alice W).postprocess
+            (fun g => evalPoly g u))
+          (fun u => (S.encodingPauliMeas .bob W).postprocess
+            (fun g => evalPoly g u)) (ExtendedLineGame.pairState S) ≤
         deltaG + (1 + 2 * Real.sqrt 172) * Real.sqrt epsilon ∧
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-          (fun u a => heteroKron (((S.encodingPauliMeas .alice W).postprocess
-            (fun g => evalPoly g u)).effect a) 1)
-          (fun u a => heteroKron 1 (((w.marginalPoly .bob W).postprocess
-            (fun g => evalPoly g u)).effect a)) (ExtendedLineGame.pairState S) ≤
+      bipartiteDefect (uniformDistribution (PauliPoint P))
+          (fun u => (S.encodingPauliMeas .alice W).postprocess
+            (fun g => evalPoly g u))
+          (fun u => (w.marginalPoly .bob W).postprocess
+            (fun g => evalPoly g u)) (ExtendedLineGame.pairState S) ≤
         deltaG + (1 + 2 * Real.sqrt 172) * Real.sqrt epsilon := by
   intro P epsilon deltaG hepsilon S w W
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
+  let mu := uniformDistribution (PauliPoint P)
   let psi := ExtendedLineGame.pairState S
-  let pointA := fun u => leftPlacedMeasurement (ιB := S.ExpandedLocalSpace .bob)
+  let left := leftPlacedMeasurement (ιA := S.ExpandedLocalSpace .alice)
+    (ιB := S.ExpandedLocalSpace .bob) (α := PauliScalar P)
+  let right := rightPlacedMeasurement (ιA := S.ExpandedLocalSpace .alice)
+    (ιB := S.ExpandedLocalSpace .bob) (α := PauliScalar P)
+  let pointA := fun u => left
     (S.pointMeasExp .alice W u)
-  let pointB := fun u => rightPlacedMeasurement (ιA := S.ExpandedLocalSpace .alice)
+  let pointB := fun u => right
     (S.pointMeasExp .bob W u)
-  let refA := fun u => leftPlacedMeasurement (ιB := S.ExpandedLocalSpace .bob)
+  let refA := fun u => left
     ((S.encodingPauliMeas .alice W).postprocess (fun g => evalPoly g u))
-  let refB := fun u => rightPlacedMeasurement (ιA := S.ExpandedLocalSpace .alice)
+  let refB := fun u => right
     ((S.encodingPauliMeas .bob W).postprocess (fun g => evalPoly g u))
-  let margA := fun u => leftPlacedMeasurement (ιB := S.ExpandedLocalSpace .bob)
+  let margA := fun u => left
     ((w.marginalPoly .alice W).postprocess (fun g => evalPoly g u))
-  let margB := fun u => rightPlacedMeasurement (ιA := S.ExpandedLocalSpace .alice)
+  let margB := fun u => right
     ((w.marginalPoly .bob W).postprocess (fun g => evalPoly g u))
-  have hpost (side : PlayerSide) (u : Fin P.m → PauliScalar P) :
-      (w.marginalPoly side W).postprocess (fun g => evalPoly g u) =
-        (w.Smeas side).postprocess (evalAt W u) := by
-    rw [GlobalPairWitness.marginalPoly, Measurement.postprocess_comp]
-    cases W <;> rfl
-  have hab : consistencyDefect mu (fun u a => (margA u).effect a)
-      (fun u a => (pointB u).effect a) psi ≤ deltaG := by
-    change consistencyDefect mu
-      (fun u a => heteroKron (((w.marginalPoly .alice W).postprocess
-        (fun g => evalPoly g u)).effect a) 1)
-      (fun u a => heteroKron 1 ((S.pointMeasExp .bob W u).effect a)) psi ≤ deltaG
+  have hab : measurementDefect mu margA
+      pointB psi ≤ deltaG := by
+    change bipartiteDefect mu
+      (fun u => (w.marginalPoly .alice W).postprocess
+        (fun g => evalPoly g u))
+      (S.pointMeasExp .bob W) psi ≤ deltaG
     rw [S.consistencyDefect_pairState_eq_AA'_BA'']
-    simpa only [hpost] using w.point_consistent_alice W
-  have hba : consistencyDefect mu (fun u a => (margB u).effect a)
-      (fun u a => (pointA u).effect a) psi ≤ deltaG := by
-    rw [consistencyDefect_comm_of_commute _ _ _ _ (by
-      intro u a b
-      exact (WinImplications.heteroKron_left_right_comm _ _).symm)]
-    change consistencyDefect mu
-      (fun u a => heteroKron ((S.pointMeasExp .alice W u).effect a) 1)
-      (fun u a => heteroKron 1 (((w.marginalPoly .bob W).postprocess
-        (fun g => evalPoly g u)).effect a)) psi ≤ deltaG
-    rw [S.consistencyDefect_pairState_eq_AB''_BB',
-      consistencyDefect_comm_of_commute _ _ _ _ (by
-        intro u a b
-        exact S.place_comm .AB'' .BB' trivial _ _)]
-    simpa only [hpost] using w.point_consistent_bob W
-  have hpoints : consistencyDefect mu (fun u a => (pointA u).effect a)
-      (fun u a => (pointB u).effect a) psi ≤ 86 * epsilon := by
-    change consistencyDefect mu
-      (fun u a => heteroKron ((S.pointMeasExp .alice W u).effect a) 1)
-      (fun u a => heteroKron 1 ((S.pointMeasExp .bob W u).effect a)) psi ≤ _
-    rw [S.expanded_point_consistency_eq]
+    simpa only [w.marginalPoly_postprocess_eval] using w.point_consistent .alice W
+  have hba : measurementDefect mu margB pointA psi ≤ deltaG := by
+    rw [measurementDefect_symm]
+    change bipartiteDefect mu (S.pointMeasExp .alice W)
+      (fun u => (w.marginalPoly .bob W).postprocess (fun g => evalPoly g u)) psi ≤ deltaG
+    rw [S.consistencyDefect_pairState_eq_BB'_AB'']
+    simpa only [w.marginalPoly_postprocess_eval] using w.point_consistent .bob W
+  have hpoints : measurementDefect mu pointA
+      pointB psi ≤ 86 * epsilon := by
+    change bipartiteDefect mu
+      (S.pointMeasExp .alice W)
+      (S.pointMeasExp .bob W) psi ≤ _
+    rw [pointMeasExp_eq_convolution, pointMeasExp_eq_convolution, pointConvolution_defect]
     simpa only [pauli_edge_card, Nat.cast_ofNat] using point_self_consistency_le S W
-  have hpoints' : consistencyDefect mu (fun u a => (pointB u).effect a)
-      (fun u a => (pointA u).effect a) psi ≤ 86 * epsilon := by
-    rw [consistencyDefect_comm_of_commute _ _ _ _ (by
-      intro u a b
-      exact (WinImplications.heteroKron_left_right_comm _ _).symm)]
-    exact hpoints
-  have hpb : consistencyDefect mu (fun u a => (pointA u).effect a)
-      (fun u a => (refB u).effect a) psi ≤ 86 * epsilon := by
-    change consistencyDefect mu
-      (fun u a => heteroKron ((S.pointMeasExp .alice W u).effect a) 1)
-      (fun u a => heteroKron 1 (((S.encodingPauliMeas .bob W).postprocess
-        (fun g => evalPoly g u)).effect a)) psi ≤ _
-    rw [S.point_encodingPauli_consistency_eq]
+  have hpoints' : measurementDefect mu pointB pointA psi ≤ 86 * epsilon :=
+    (measurementDefect_symm mu pointB pointA psi).trans_le hpoints
+  have hpb : measurementDefect mu pointA
+      refB psi ≤ 86 * epsilon := by
+    change bipartiteDefect mu
+      (S.pointMeasExp .alice W)
+      (fun u => (S.encodingPauliMeas .bob W).postprocess
+        (fun g => evalPoly g u)) psi ≤ _
+    rw [pointMeasExp_eq_convolution, encodingEval_eq_convolution, pointConvolution_defect]
     exact WinImplications.win_pauli_basis_cons_explicit P epsilon S hepsilon W
-  have hpa : consistencyDefect mu (fun u a => (pointB u).effect a)
-      (fun u a => (refA u).effect a) psi ≤ 86 * epsilon := by
-    rw [consistencyDefect_comm_of_commute _ _ _ _ (by
-      intro u a b
-      exact (WinImplications.heteroKron_left_right_comm _ _).symm)]
-    change consistencyDefect mu
-      (fun u a => heteroKron (((S.encodingPauliMeas .alice W).postprocess
-        (fun g => evalPoly g u)).effect a) 1)
-      (fun u a => heteroKron 1 ((S.pointMeasExp .bob W u).effect a)) psi ≤ _
-    rw [S.encodingPauli_point_consistency_eq]
+  have hpa : measurementDefect mu pointB
+      refA psi ≤ 86 * epsilon := by
+    rw [measurementDefect_symm]
+    change bipartiteDefect mu
+      (fun u => (S.encodingPauliMeas .alice W).postprocess
+        (fun g => evalPoly g u))
+      (S.pointMeasExp .bob W) psi ≤ _
+    rw [encodingEval_eq_convolution, pointMeasExp_eq_convolution, pointConvolution_defect]
     exact WinImplications.win_pauli_basis_cons_interchanged_explicit
       P epsilon S hepsilon W
   have hscalar : deltaG + 2 * Real.sqrt (86 * epsilon + 86 * epsilon) ≤
@@ -279,52 +226,36 @@ theorem global_marginal_encoding_consistency_explicit :
   · have h := (consistencyDefect_trans_le mu margB pointA pointB refA psi
       deltaG (86 * epsilon) (86 * epsilon) (uniformDistribution_isProbability _)
       (ExtendedLineGame.pairState_norm S) hba hpoints' hpa).trans hscalar
-    rw [consistencyDefect_comm_of_commute _ _ _ _ (by
-      intro u a b
-      exact (WinImplications.heteroKron_left_right_comm _ _).symm)] at h
+    rw [measurementDefect_symm] at h
     exact h
+
+section
+
+variable {P : AdmissibleParams} {epsilon : ℝ}
+    (S : ProjectiveSetting P epsilon)
+include P epsilon S
 
 /-- A marginal acting on `AA'` has the same mass in the extraction-block
 notation and the two-player expanded state. The unused registers carry identities. -/
-theorem stateQForm_placeSide_alice_tensor_one {P : AdmissibleParams} {epsilon : ℝ}
-    (S : ProjectiveSetting P epsilon) (A : Op (S.ExpandedLocalSpace .alice))
-    (hA : A.IsHermitian) :
+theorem stateQForm_placeSide_alice_tensor_one (A : Op (S.ExpandedLocalSpace .alice))
+    :
     stateQForm S.psiHat (S.placeSide .alice (heteroKron A (1 : Op (PauliRegister P)))) =
       stateQForm (ExtendedLineGame.pairState S) (heteroKron A 1) := by
-  have hplace : S.placeSide .alice (heteroKron A (1 : Op (PauliRegister P))) =
-      S.place .AA' A := by
-    ext row col
-    simp only [placeSide, sixRegExtractionEquiv, reindexOp, place, heteroKron,
-      Matrix.kronecker, Matrix.one_apply, mul_ite, ite_mul]
-    split_ifs <;> simp_all
-  rw [hplace]
-  have h := ExtendedLineGame.stateQForm_pairState_eq_AA'_BA'' S A 1 hA
-    Matrix.isHermitian_one
-  have hone : S.place .BA'' (1 : Op (S.ExpandedLocalSpace .bob)) = 1 := by
-    convert S.place_one .BA'' using 1
-  rw [hone, Matrix.mul_one] at h
-  exact h.symm
+  rw [S.placeSide_alice_tensor_one]
+  simpa only [ProjectiveSetting.placedCorrelation, S.place_one, Matrix.mul_one] using
+    (ExtendedLineGame.stateQForm_pairState_eq_AA'_BA'' S A 1).symm
 
 /-- The corresponding marginal-mass identity for `BB'`. The opposite placement
 uses the second EPR pair, as in the witness's Bob consistency hypothesis. -/
-theorem stateQForm_placeSide_bob_tensor_one {P : AdmissibleParams} {epsilon : ℝ}
-    (S : ProjectiveSetting P epsilon) (B : Op (S.ExpandedLocalSpace .bob))
-    (hB : B.IsHermitian) :
+theorem stateQForm_placeSide_bob_tensor_one (B : Op (S.ExpandedLocalSpace .bob))
+    :
     stateQForm S.psiHat (S.placeSide .bob (heteroKron B (1 : Op (PauliRegister P)))) =
       stateQForm (ExtendedLineGame.pairState S) (heteroKron 1 B) := by
-  have hplace : S.placeSide .bob (heteroKron B (1 : Op (PauliRegister P))) =
-      S.place .BB' B := by
-    ext row col
-    simp only [placeSide, sixRegExtractionEquiv, reindexOp, place, heteroKron,
-      Matrix.kronecker, Matrix.one_apply, mul_ite, ite_mul]
-    split_ifs <;> simp_all
-  rw [hplace]
-  have h := ExtendedLineGame.stateQForm_pairState_eq_AB''_BB' S 1 B
-    Matrix.isHermitian_one hB
-  have hone : S.place .AB'' (1 : Op (S.ExpandedLocalSpace .alice)) = 1 := by
-    convert S.place_one .AB'' using 1
-  rw [hone, Matrix.one_mul] at h
-  exact h.symm
+  rw [S.placeSide_bob_tensor_one]
+  simpa only [ProjectiveSetting.placedCorrelation, S.place_one, Matrix.one_mul] using
+    (ExtendedLineGame.stateQForm_pairState_eq_AB''_BB' S 1 B).symm
+
+end
 
 end
 

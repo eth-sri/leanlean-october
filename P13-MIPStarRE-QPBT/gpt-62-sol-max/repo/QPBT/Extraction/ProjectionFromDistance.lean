@@ -46,7 +46,7 @@ theorem norm_sub_pauliCorrelation_sq_le
   let C (u : I → K) :=
     heteroKron (1 : Op R) (heteroKron (tauObservable W u) (tauObservable W u))
   have hL (u : I → K) : (L u)ᴴ * L u = 1 := by
-    simp only [L, MagicSquareRigidity.heteroKron_conjTranspose, Matrix.conjTranspose_one,
+    simp only [L, heteroKron_conjTranspose, Matrix.conjTranspose_one,
       heteroKron_mul, Matrix.one_mul, tauObservable_conjTranspose_mul_self,
       heteroKron_one_one]
   have halg (u : I → K) : L u * (L u - B u) = 1 - C u := by
@@ -80,7 +80,7 @@ theorem norm_sub_pauliCorrelation_sq_le
     (fun _ => by simp) psi
   rw [havg, hdist] at h
   simpa only [MagicSquareRigidity.applyOperatorToState_sub_op,
-    MagicSquareRigidity.applyOperatorToState_one] using h
+    applyOperatorToState_one] using h
 
 /-- Bounds on both Pauli disagreements imply proximity to the EPR subspace.
 The auxiliary register is arbitrary, and the estimate requires no division

@@ -32,7 +32,7 @@ complete second sample, but on the first sample only through its line. No
 condition is imposed on the second direction. -/
 theorem prod_linePointDist_nondegenerate_weighted_collision_le
     {L : LdParams} {bound : ℕ}
-    (weight : LineDesc L → (LineDesc L × (Fin L.m → ScalarQ L)) → ℝ)
+    (weight : LineDesc L → (LinePointSample L) → ℝ)
     (hweight : ∀ line sample, 0 ≤ weight line sample)
     (first second : DegPoly L bound) (hne : first ≠ second) :
     avgOver (Distribution.prod (linePointDist L) (linePointDist L)) (fun samples =>

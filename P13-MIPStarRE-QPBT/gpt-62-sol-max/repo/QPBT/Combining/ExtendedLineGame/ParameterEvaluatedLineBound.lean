@@ -41,379 +41,103 @@ variable {P : AdmissibleParams} {epsilon deltaQ deltaL : ℝ}
 variable {setting : ProjectiveSetting P epsilon}
 variable {points : CombinedPointsWitness setting deltaQ}
 
-/-- The unique coordinate in the extended direct game. -/
-def lineCoordinate : Fin P.extendedDirectLd.k :=
-  ⟨0, by change 0 < 1; decide⟩
+local notation "D" => P.extendedDirectLd
+local notation "Sample" => DirectLdSpace D
+local notation "Scalar" => DirectScalarQ D
+local notation "LinePoint" => DirectLineDesc D × (Fin P.extendedDirectLd.m → Scalar)
 
-private theorem coordinate_eq_lineCoordinate (i : Fin P.extendedDirectLd.k) :
-    i = lineCoordinate (P := P) := by
-  apply Fin.ext
-  have hi := i.isLt
-  change i.val < 1 at hi
-  change i.val = 0
-  omega
+/-- The degree bound for the coefficient vector returned by a line question. -/
+abbrev lineDegree (P : AdmissibleParams) : LineKind → ℕ
+  | .axis => P.d
+  | .diagonal => P.extendedDirectLd.m * P.extendedDirectLd.d
 
-/-- Read the axis coefficient vector from a direct-game answer. Wrong answer
-formats receive an arbitrary zero value; their Born weight is zero. -/
-def axisCoefficients
-    (answer : DirectLdAnswer P.extendedDirectLd) :
-    DirectDegPoly P.extendedDirectLd P.d :=
-  match answer with
-  | .alinePolys coefficients => coefficients lineCoordinate
-  | _ => 0
+section
 
-/-- Read the diagonal coefficient vector from a direct-game answer. Wrong
-answer formats receive an arbitrary zero value; their Born weight is zero. -/
-def diagonalCoefficients
-    (answer : DirectLdAnswer P.extendedDirectLd) :
-    DirectDegPoly P.extendedDirectLd
-      (P.extendedDirectLd.m * P.extendedDirectLd.d) :=
-  match answer with
-  | .dlinePolys coefficients => coefficients lineCoordinate
-  | _ => 0
+variable (kind : LineKind)
 
-/-- The canonical direct-game axis question represented by an axis line. -/
-def axisQuestion (line : DirectLineDesc P.extendedDirectLd) :
-    DirectLdQuestion P.extendedDirectLd :=
-  (.aline, ⟨line.base, line.index, 0⟩)
+/-- Read the unique component of a valid line answer. Wrong formats have zero weight. -/
+abbrev lineCoefficients (a : DirectLdAnswer D) :
+    DirectDegPoly D (lineDegree P kind) :=
+  match kind, a with
+  | .axis, .alinePolys c => c onlyCoordinate
+  | .diagonal, .dlinePolys c => c onlyCoordinate
+  | _, _ => 0
 
-/-- The canonical direct-game diagonal question represented by a diagonal line. -/
-def diagonalQuestion (line : DirectLineDesc P.extendedDirectLd) :
-    DirectLdQuestion P.extendedDirectLd :=
-  (.dline, ⟨line.base, line.index, line.direction⟩)
+/-- The canonical direct-game question represented by the sampled line. -/
+abbrev lineQuestion (l : DirectLineDesc D) : DirectLdQuestion D :=
+  (lineTag kind, ⟨l.base, l.index, match kind with | .axis => 0 | .diagonal => l.direction⟩)
 
-/-- The axis parameter-evaluation defect under the actual axis-line marginal
-and an independent uniform affine parameter. -/
-noncomputable def axisParameterEvaluationDefect
-    (lines : ExtendedLinesWitness setting points deltaL) : ℝ :=
-  avgOver (directALinePointDist P.extendedDirectLd) fun sample =>
-    avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd)) fun parameter =>
-      parameterEvalDefect (strategy lines) (axisQuestion sample.1)
-        (axisQuestion sample.1) axisCoefficients axisCoefficients parameter
+/-- The evaluation defect under the line marginal and an independent affine parameter. -/
+def parameterEvaluationDefect (lines : ExtendedLinesWitness setting points deltaL)
+    (kind : LineKind) : ℝ :=
+  avgOver (linePointLaw P kind) fun s =>
+    avgOver (uniformDistribution Scalar) fun t =>
+      parameterEvalDefect (strategy lines) (lineQuestion kind s.1) (lineQuestion kind s.1)
+        (lineCoefficients kind) (lineCoefficients kind) t
 
-/-- The diagonal parameter-evaluation defect under the actual diagonal-line
-marginal and an independent uniform affine parameter, including zero directions. -/
-noncomputable def diagonalParameterEvaluationDefect
-    (lines : ExtendedLinesWitness setting points deltaL) : ℝ :=
-  avgOver (directDLinePointDist P.extendedDirectLd) fun sample =>
-    avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd)) fun parameter =>
-      parameterEvalDefect (strategy lines) (diagonalQuestion sample.1)
-        (diagonalQuestion sample.1) diagonalCoefficients diagonalCoefficients parameter
+private theorem sample_line_question (s : Sample) :
+    lineQuestion kind (sampleLine kind s) = sampleQuestion (lineTag kind) s := by
+  cases kind <;> rfl
 
-private theorem axisQuestion_directALineDescOf
-    (sample : DirectLdSpace P.extendedDirectLd) :
-    axisQuestion (directALineDescOf P.extendedDirectLd sample) =
-      (.aline, directLdMap P.extendedDirectLd .aline sample) := by
-  rfl
+private theorem lineGameRead_eq (s : Sample) (a : DirectLdAnswer D)
+    (h : validDirectLdAnswer (lineTag kind) a = true) :
+    lineGameRead kind s a =
+      (directEvalOpt (sampleLine kind s) s.point (lineCoefficients kind a)).map
+        (extendedDirectScalarEquiv P) := by
+  cases kind <;> cases a <;> simp [lineTag, validDirectLdAnswer] at h <;> rfl
 
-private theorem diagonalQuestion_directDLineDescOf
-    (sample : DirectLdSpace P.extendedDirectLd) :
-    diagonalQuestion (directDLineDescOf P.extendedDirectLd sample) =
-      (.dline, directLdMap P.extendedDirectLd .dline sample) := by
-  rfl
+private theorem avgOver_line_resample (F : LinePoint → ℝ) :
+    avgOver ((linePointLaw P kind).map Prod.fst) (fun l =>
+      avgOver (uniformDistribution Scalar) (fun t => F (l, l.base + t • l.direction))) =
+    avgOver (linePointLaw P kind) F := by
+  cases kind
+  · exact avgOver_directALinePointDist_resample D F
+  · exact avgOver_directDLinePointDist_resample D F
 
-private theorem axis_completed_mismatch_eq
-    (lines : ExtendedLinesWitness setting points deltaL)
-    (sample : DirectLdSpace P.extendedDirectLd) :
-    outcomeEventWeight (strategy lines)
-        (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (fun answerA answerB =>
-          directEvalOpt (directALineDescOf P.extendedDirectLd sample) sample.point
-              (axisCoefficients answerA) ≠
-            directEvalOpt (directALineDescOf P.extendedDirectLd sample) sample.point
-              (axisCoefficients answerB)) =
-      outcomeEventWeight (strategy lines)
-        (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (fun answerA answerB => axisGameRead sample answerA ≠ axisGameRead sample answerB) := by
-  classical
-  unfold outcomeEventWeight
-  apply Finset.sum_congr rfl
-  intro answerA _
-  apply Finset.sum_congr rfl
-  intro answerB _
-  by_cases hinvalid : validDirectLdAnswer (D := P.extendedDirectLd) .aline answerA = false ∨
-      validDirectLdAnswer (D := P.extendedDirectLd) .aline answerB = false
-  · rw [outcomeWeight_eq_zero_of_invalid lines _ _ answerA answerB hinvalid]
-    simp
-  · cases answerA <;> cases answerB <;> simp [validDirectLdAnswer] at hinvalid
-    have hmap : Function.Injective (Option.map (extendedDirectScalarEquiv P)) :=
-      Option.map_injective (extendedDirectScalarEquiv P).injective
-    simp only [axisCoefficients, axisGameRead, coordinate_eq_lineCoordinate,
-      ne_eq, hmap.eq_iff]
-    rfl
+end
 
-private theorem diagonal_completed_mismatch_eq
-    (lines : ExtendedLinesWitness setting points deltaL)
-    (sample : DirectLdSpace P.extendedDirectLd) :
-    outcomeEventWeight (strategy lines)
-        (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (fun answerA answerB =>
-          directEvalOpt (directDLineDescOf P.extendedDirectLd sample) sample.point
-              (diagonalCoefficients answerA) ≠
-            directEvalOpt (directDLineDescOf P.extendedDirectLd sample) sample.point
-              (diagonalCoefficients answerB)) =
-      outcomeEventWeight (strategy lines)
-        (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (fun answerA answerB =>
-          diagonalGameRead sample answerA ≠ diagonalGameRead sample answerB) := by
-  classical
-  unfold outcomeEventWeight
-  apply Finset.sum_congr rfl
-  intro answerA _
-  apply Finset.sum_congr rfl
-  intro answerB _
-  by_cases hinvalid : validDirectLdAnswer (D := P.extendedDirectLd) .dline answerA = false ∨
-      validDirectLdAnswer (D := P.extendedDirectLd) .dline answerB = false
-  · rw [outcomeWeight_eq_zero_of_invalid lines _ _ answerA answerB hinvalid]
-    simp
-  · cases answerA <;> cases answerB <;> simp [validDirectLdAnswer] at hinvalid
-    have hmap : Function.Injective (Option.map (extendedDirectScalarEquiv P)) :=
-      Option.map_injective (extendedDirectScalarEquiv P).injective
-    simp only [diagonalCoefficients, diagonalGameRead, coordinate_eq_lineCoordinate,
-      ne_eq, hmap.eq_iff]
-    rfl
-
-private theorem axis_none_mass_eq
-    (lines : ExtendedLinesWitness setting points deltaL)
-    (side : PlayerSide) (sample : DirectLdSpace P.extendedDirectLd) :
-    (match side with
-      | .alice => aliceEventWeight (strategy lines)
-          (.aline, directLdMap P.extendedDirectLd .aline sample)
-          (fun answer => directEvalOpt (directALineDescOf P.extendedDirectLd sample)
-            sample.point (axisCoefficients answer) = none)
-      | .bob => bobEventWeight (strategy lines)
-          (.aline, directLdMap P.extendedDirectLd .aline sample)
-          (fun answer => directEvalOpt (directALineDescOf P.extendedDirectLd sample)
-            sample.point (axisCoefficients answer) = none)) =
-    (match side with
-      | .alice => aliceEventWeight (strategy lines)
-          (.aline, directLdMap P.extendedDirectLd .aline sample)
-          (fun answer => axisGameRead sample answer = none)
-      | .bob => bobEventWeight (strategy lines)
-          (.aline, directLdMap P.extendedDirectLd .aline sample)
-          (fun answer => axisGameRead sample answer = none)) := by
-  cases side <;> dsimp only
-  all_goals first
-  | rw [← outcome_event_weight_left_eq (strategy lines)
-      (.aline, directLdMap P.extendedDirectLd .aline sample)
-      (.aline, directLdMap P.extendedDirectLd .aline sample),
-      ← outcome_event_weight_left_eq (strategy lines)
-        (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (.aline, directLdMap P.extendedDirectLd .aline sample)]
-  | rw [← outcome_event_weight_right_eq (strategy lines)
-      (.aline, directLdMap P.extendedDirectLd .aline sample)
-      (.aline, directLdMap P.extendedDirectLd .aline sample),
-      ← outcome_event_weight_right_eq (strategy lines)
-        (.aline, directLdMap P.extendedDirectLd .aline sample)
-        (.aline, directLdMap P.extendedDirectLd .aline sample)]
-  all_goals
-    unfold outcomeEventWeight
-    apply Finset.sum_congr rfl
-    intro answerA _
-    apply Finset.sum_congr rfl
-    intro answerB _
-  · by_cases hinvalid : validDirectLdAnswer (D := P.extendedDirectLd) .aline answerA = false
-    · rw [outcomeWeight_eq_zero_of_invalid lines _ _ answerA answerB (Or.inl hinvalid)]
-      simp
-    · cases answerA <;> simp [validDirectLdAnswer] at hinvalid
-      simp [axisCoefficients, axisGameRead, coordinate_eq_lineCoordinate]
-      rfl
-  · by_cases hinvalid : validDirectLdAnswer (D := P.extendedDirectLd) .aline answerB = false
-    · rw [outcomeWeight_eq_zero_of_invalid lines _ _ answerA answerB (Or.inr hinvalid)]
-      simp
-    · cases answerB <;> simp [validDirectLdAnswer] at hinvalid
-      simp [axisCoefficients, axisGameRead, coordinate_eq_lineCoordinate]
-      rfl
-
-private theorem diagonal_none_mass_eq
-    (lines : ExtendedLinesWitness setting points deltaL)
-    (side : PlayerSide) (sample : DirectLdSpace P.extendedDirectLd) :
-    (match side with
-      | .alice => aliceEventWeight (strategy lines)
-          (.dline, directLdMap P.extendedDirectLd .dline sample)
-          (fun answer => directEvalOpt (directDLineDescOf P.extendedDirectLd sample)
-            sample.point (diagonalCoefficients answer) = none)
-      | .bob => bobEventWeight (strategy lines)
-          (.dline, directLdMap P.extendedDirectLd .dline sample)
-          (fun answer => directEvalOpt (directDLineDescOf P.extendedDirectLd sample)
-            sample.point (diagonalCoefficients answer) = none)) =
-    (match side with
-      | .alice => aliceEventWeight (strategy lines)
-          (.dline, directLdMap P.extendedDirectLd .dline sample)
-          (fun answer => diagonalGameRead sample answer = none)
-      | .bob => bobEventWeight (strategy lines)
-          (.dline, directLdMap P.extendedDirectLd .dline sample)
-          (fun answer => diagonalGameRead sample answer = none)) := by
-  cases side <;> dsimp only
-  all_goals first
-  | rw [← outcome_event_weight_left_eq (strategy lines)
-      (.dline, directLdMap P.extendedDirectLd .dline sample)
-      (.dline, directLdMap P.extendedDirectLd .dline sample),
-      ← outcome_event_weight_left_eq (strategy lines)
-        (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (.dline, directLdMap P.extendedDirectLd .dline sample)]
-  | rw [← outcome_event_weight_right_eq (strategy lines)
-      (.dline, directLdMap P.extendedDirectLd .dline sample)
-      (.dline, directLdMap P.extendedDirectLd .dline sample),
-      ← outcome_event_weight_right_eq (strategy lines)
-        (.dline, directLdMap P.extendedDirectLd .dline sample)
-        (.dline, directLdMap P.extendedDirectLd .dline sample)]
-  all_goals
-    unfold outcomeEventWeight
-    apply Finset.sum_congr rfl
-    intro answerA _
-    apply Finset.sum_congr rfl
-    intro answerB _
-  · by_cases hinvalid : validDirectLdAnswer (D := P.extendedDirectLd) .dline answerA = false
-    · rw [outcomeWeight_eq_zero_of_invalid lines _ _ answerA answerB (Or.inl hinvalid)]
-      simp
-    · cases answerA <;> simp [validDirectLdAnswer] at hinvalid
-      simp [diagonalCoefficients, diagonalGameRead, coordinate_eq_lineCoordinate]
-      rfl
-  · by_cases hinvalid : validDirectLdAnswer (D := P.extendedDirectLd) .dline answerB = false
-    · rw [outcomeWeight_eq_zero_of_invalid lines _ _ answerA answerB (Or.inr hinvalid)]
-      simp
-    · cases answerB <;> simp [validDirectLdAnswer] at hinvalid
-      simp [diagonalCoefficients, diagonalGameRead, coordinate_eq_lineCoordinate]
-      rfl
-
-/-- Averaging the parameter/completed-read comparison over the actual axis law. -/
-private theorem axis_parameter_evaluation_defect_le_completed
-    (lines : ExtendedLinesWitness setting points deltaL) :
-    axisParameterEvaluationDefect lines ≤
-      axisSameLineEvaluationDefect lines + axisAliceNoneMass lines + axisBobNoneMass lines := by
-  let F : DirectLineDesc P.extendedDirectLd ×
-      (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) → ℝ := fun sample =>
-    outcomeEventWeight (strategy lines) (axisQuestion sample.1) (axisQuestion sample.1)
-        (fun answerA answerB => directEvalOpt sample.1 sample.2 (axisCoefficients answerA) ≠
-          directEvalOpt sample.1 sample.2 (axisCoefficients answerB)) +
-      aliceEventWeight (strategy lines) (axisQuestion sample.1)
-        (fun answer => directEvalOpt sample.1 sample.2 (axisCoefficients answer) = none) +
-      bobEventWeight (strategy lines) (axisQuestion sample.1)
-        (fun answer => directEvalOpt sample.1 sample.2 (axisCoefficients answer) = none)
-  have havg : axisParameterEvaluationDefect lines ≤
-      avgOver (directALinePointDist P.extendedDirectLd) F := by
-    rw [← avgOver_directALinePointDist_resample P.extendedDirectLd F,
-      Distribution.avgOver_map]
-    unfold axisParameterEvaluationDefect
-    apply avgOver_mono
-    intro sample
-    apply avgOver_mono
-    intro parameter
-    exact parameterEvalDefect_le_completed_add_none
-      (strategy lines) (axisQuestion sample.1) (axisQuestion sample.1)
-      axisCoefficients axisCoefficients sample.1 parameter
+private theorem parameterEvaluationDefect_le_completed
+    (lines : ExtendedLinesWitness setting points deltaL) (kind : LineKind) :
+    parameterEvaluationDefect lines kind ≤ sameLineEvaluationDefect lines kind +
+      lineNoneMass lines kind .alice + lineNoneMass lines kind .bob := by
+  let S := strategy lines
+  let q := lineQuestion (P := P) kind
+  let e (s : LinePoint) a := directEvalOpt s.1 s.2 (lineCoefficients kind a)
+  let F (s : LinePoint) := outcomeEventWeight S (q s.1) (q s.1) (fun a b => e s a ≠ e s b) +
+    aliceEventWeight S (q s.1) (fun a => e s a = none) +
+    bobEventWeight S (q s.1) (fun b => e s b = none)
   calc
-    axisParameterEvaluationDefect lines ≤
-        avgOver (directALinePointDist P.extendedDirectLd) F := havg
-    _ = axisSameLineEvaluationDefect lines + axisAliceNoneMass lines +
-        axisBobNoneMass lines := by
-      simp only [F, directALinePointDist, Distribution.avgOver_map,
-        axisQuestion_directALineDescOf, axis_completed_mismatch_eq,
-        axis_none_mass_eq lines .alice, axis_none_mass_eq lines .bob, avgOver_add]
-      change _ + axisAliceNoneMass lines + axisBobNoneMass lines =
-        axisSameLineEvaluationDefect lines + axisAliceNoneMass lines + axisBobNoneMass lines
-      congr 2
-      exact (WinImplications.consistencyDefect_postprocess_eq_mismatch
-        (uniformDistribution (DirectLdSpace P.extendedDirectLd)) (strategy lines)
-        (fun sample => (.aline, directLdMap P.extendedDirectLd .aline sample))
-        (fun sample => (.aline, directLdMap P.extendedDirectLd .aline sample))
-        axisGameRead axisGameRead).symm
+    _ ≤ avgOver (linePointLaw P kind) F := by
+      rw [← avgOver_line_resample kind F, Distribution.avgOver_map]
+      exact avgOver_mono _ _ _ fun s => avgOver_mono _ _ _ fun t =>
+        parameterEvalDefect_le_completed_add_none S (q s.1) (q s.1)
+          (lineCoefficients kind) (lineCoefficients kind) s.1 t
+    _ = _ := by
+      rw [show sameLineEvaluationDefect lines kind = _ from
+        WinImplications.consistencyDefect_postprocess_eq_mismatch
+          (uniformDistribution Sample) S (sampleQuestion (lineTag kind))
+          (sampleQuestion (lineTag kind)) (lineGameRead kind) (lineGameRead kind)]
+      simp only [linePointLaw, Distribution.avgOver_map, lineNoneMass, ← avgOver_add]
+      refine avgOver_congr _ _ _ fun s => ?_
+      dsimp only [F, q, e, sideEventWeight, S]
+      rw [sample_line_question]
+      simp_rw [← outcome_event_weight_left_eq (strategy lines) _ (sampleQuestion (lineTag kind) s),
+        ← outcome_event_weight_right_eq (strategy lines) (sampleQuestion (lineTag kind) s)]
+      congr 1 <;> (first | apply outcomeEventWeight_congr_valid | congr 1 <;>
+        apply outcomeEventWeight_congr_valid)
+      all_goals
+        intro a b ha hb
+        simp [lineGameRead_eq kind s a ha, lineGameRead_eq kind s b hb,
+          (Option.map_injective (extendedDirectScalarEquiv P).injective).eq_iff]
 
-/-- Averaging the parameter/completed-read comparison over the actual diagonal law. -/
-private theorem diagonal_parameter_evaluation_defect_le_completed
-    (lines : ExtendedLinesWitness setting points deltaL) :
-    diagonalParameterEvaluationDefect lines ≤
-      diagonalSameLineEvaluationDefect lines + diagonalAliceNoneMass lines +
-        diagonalBobNoneMass lines := by
-  let F : DirectLineDesc P.extendedDirectLd ×
-      (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) → ℝ := fun sample =>
-    outcomeEventWeight (strategy lines) (diagonalQuestion sample.1) (diagonalQuestion sample.1)
-        (fun answerA answerB => directEvalOpt sample.1 sample.2 (diagonalCoefficients answerA) ≠
-          directEvalOpt sample.1 sample.2 (diagonalCoefficients answerB)) +
-      aliceEventWeight (strategy lines) (diagonalQuestion sample.1)
-        (fun answer => directEvalOpt sample.1 sample.2 (diagonalCoefficients answer) = none) +
-      bobEventWeight (strategy lines) (diagonalQuestion sample.1)
-        (fun answer => directEvalOpt sample.1 sample.2 (diagonalCoefficients answer) = none)
-  have havg : diagonalParameterEvaluationDefect lines ≤
-      avgOver (directDLinePointDist P.extendedDirectLd) F := by
-    rw [← avgOver_directDLinePointDist_resample P.extendedDirectLd F,
-      Distribution.avgOver_map]
-    unfold diagonalParameterEvaluationDefect
-    apply avgOver_mono
-    intro sample
-    apply avgOver_mono
-    intro parameter
-    exact parameterEvalDefect_le_completed_add_none
-      (strategy lines) (diagonalQuestion sample.1) (diagonalQuestion sample.1)
-      diagonalCoefficients diagonalCoefficients sample.1 parameter
-  calc
-    diagonalParameterEvaluationDefect lines ≤
-        avgOver (directDLinePointDist P.extendedDirectLd) F := havg
-    _ = diagonalSameLineEvaluationDefect lines + diagonalAliceNoneMass lines +
-        diagonalBobNoneMass lines := by
-      simp only [F, directDLinePointDist, Distribution.avgOver_map,
-        diagonalQuestion_directDLineDescOf, diagonal_completed_mismatch_eq,
-        diagonal_none_mass_eq lines .alice, diagonal_none_mass_eq lines .bob, avgOver_add]
-      change _ + diagonalAliceNoneMass lines + diagonalBobNoneMass lines =
-        diagonalSameLineEvaluationDefect lines + diagonalAliceNoneMass lines +
-          diagonalBobNoneMass lines
-      congr 2
-      exact (WinImplications.consistencyDefect_postprocess_eq_mismatch
-        (uniformDistribution (DirectLdSpace P.extendedDirectLd)) (strategy lines)
-        (fun sample => (.dline, directLdMap P.extendedDirectLd .dline sample))
-        (fun sample => (.dline, directLdMap P.extendedDirectLd .dline sample))
-        diagonalGameRead diagonalGameRead).symm
-
-/-- Independently evaluating the supplied axis-line measurements has defect at
-most `6 * deltaL + 2 * sqrt (deltaQ + 2 * deltaL)`. This is a formalization-only
-estimate supporting `lem:qld-4-7`, paper lines 1279--1288. -/
-theorem axis_parameter_evaluation_defect_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
-    axisParameterEvaluationDefect lines ≤
-      6 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
-  have hforward := (completedLinePointDefect_sums_le lines).1
-  rw [← aline_point_rejection_eq_completedLinePointDefect lines,
-    ← dline_point_rejection_eq_completedLinePointDefect lines] at hforward
-  have hreverse := (completedLinePointDefect_sums_le lines).2
-  rw [← point_aline_rejection_eq_completedLinePointDefect lines,
-    ← point_dline_rejection_eq_completedLinePointDefect lines] at hreverse
-  have hforwardNonneg := directLdBranchRejectionProbability_nonneg
-    P.extendedDirectLd (strategy lines) (.dline, .point)
-  have hreverseNonneg := directLdBranchRejectionProbability_nonneg
-    P.extendedDirectLd (strategy lines) (.point, .dline)
-  have hcomparison := axis_same_line_evaluation_defect_le lines
-  have hnoneA := axis_alice_none_mass_le_rejection lines
-  have hnoneB := axis_bob_none_mass_le_rejection lines
-  have hparameter := axis_parameter_evaluation_defect_le_completed lines
-  linarith
-
-/-- Independently evaluating the supplied diagonal-line measurements has
-defect at most `6 * deltaL + 2 * sqrt (deltaQ + 2 * deltaL)`, including zero
-directions. This is a formalization-only estimate supporting `lem:qld-4-7`,
-paper lines 1279--1288. -/
-theorem diagonal_parameter_evaluation_defect_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
-    diagonalParameterEvaluationDefect lines ≤
-      6 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
-  have hforward := (completedLinePointDefect_sums_le lines).1
-  rw [← aline_point_rejection_eq_completedLinePointDefect lines,
-    ← dline_point_rejection_eq_completedLinePointDefect lines] at hforward
-  have hreverse := (completedLinePointDefect_sums_le lines).2
-  rw [← point_aline_rejection_eq_completedLinePointDefect lines,
-    ← point_dline_rejection_eq_completedLinePointDefect lines] at hreverse
-  have hforwardNonneg := directLdBranchRejectionProbability_nonneg
-    P.extendedDirectLd (strategy lines) (.aline, .point)
-  have hreverseNonneg := directLdBranchRejectionProbability_nonneg
-    P.extendedDirectLd (strategy lines) (.point, .aline)
-  have hcomparison := diagonal_same_line_evaluation_defect_le lines
-  have hnoneA := diagonal_alice_none_mass_le_rejection lines
-  have hnoneB := diagonal_bob_none_mass_le_rejection lines
-  have hparameter := diagonal_parameter_evaluation_defect_le_completed lines
+/-- Independent evaluations disagree only at the rate of completed disagreements and failures. -/
+theorem parameterEvaluationDefect_le
+    (lines : ExtendedLinesWitness setting points deltaL) (kind : LineKind) :
+    parameterEvaluationDefect lines kind ≤ 6 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
+  have h := parameterEvaluationDefect_le_completed lines kind
+  have hsame := sameLineEvaluationDefect_le lines kind
+  have ha := (alice_line_none_mass_le_rejection lines kind).trans (line_point_rejection_le lines kind)
+  have hb := (bob_line_none_mass_le_rejection lines kind).trans (point_line_rejection_le lines kind)
   linarith
 
 end ExtendedLineGame

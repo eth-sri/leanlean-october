@@ -29,14 +29,15 @@ noncomputable section
 private theorem conjBy_reindexOp {I J : Type} [Fintype I] [Fintype J]
     (e : I ≃ J) (U A : Op J) :
     conjBy (reindexOp e U) (reindexOp e A) = reindexOp e (conjBy U A) := by
+  classical
   rw [conjBy, ← ProjectiveSetting.reindexOp_conjTranspose,
-    ← WinImplications.reindexOp_mul, ← WinImplications.reindexOp_mul, conjBy]
+    ← reindexOp_mul, ← reindexOp_mul, conjBy]
 
 private theorem conjBy_heteroKron {I J : Type} [Fintype I] [Fintype J]
     (U A : Op I) (V B : Op J) :
     conjBy (heteroKron U V) (heteroKron A B) =
       heteroKron (conjBy U A) (conjBy V B) := by
-  simp only [conjBy, MagicSquareRigidity.heteroKron_conjTranspose, heteroKron_mul]
+  simp only [conjBy, heteroKron_conjTranspose, heteroKron_mul]
 
 /-- Simultaneous swaps conjugate each local operator by its own swap. This
 retains the heterogeneous local spaces in the calculation at paper lines 1701-1713. -/
@@ -44,10 +45,10 @@ theorem ProjectiveSetting.conjBy_placeBoth_swap_placeSide
     {P : AdmissibleParams} {epsilon deltaG : ℝ} (S : ProjectiveSetting P epsilon)
     (w : GlobalPairWitness S deltaG) (side : PlayerSide)
     (A : Op (ExtractionBlock P (S.LocalSpace side))) :
-    conjBy (S.placeBoth (swapUnitary w .alice) (swapUnitary w .bob)) (S.placeSide side A) =
+    conjBy (S.swapOperator w) (S.placeSide side A) =
       S.placeSide side (conjBy (swapUnitary w side) A) := by
   classical
-  cases side <;> simp only [ProjectiveSetting.placeBoth, ProjectiveSetting.placeSide,
+  cases side <;> simp only [ProjectiveSetting.swapOperator, ProjectiveSetting.placeBoth, ProjectiveSetting.placeSide,
     conjBy_reindexOp, conjBy_heteroKron]
   · congr 2
     change swapUnitary w .bob * 1 * (swapUnitary w .bob)ᴴ = 1
@@ -81,11 +82,9 @@ theorem opDistSq_extracted_eq_tildeObs
     {P : AdmissibleParams} {epsilon deltaG : ℝ} (S : ProjectiveSetting P epsilon)
     (w : GlobalPairWitness S deltaG) (W : PauliKind) (j : Fin P.model.basisDim) :
     opDistSq (uniformDistribution (PauliRegister P))
-      (fun u => S.placeSide .alice (heteroKron (1 : Op (S.ExpandedLocalSpace .alice))
-        (tauObservable W (P.model.basis j • u))))
-      (fun u => S.placeSide .bob (heteroKron (1 : Op (S.ExpandedLocalSpace .bob))
-        (tauObservable W (P.model.basis j • u))))
-      (S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat) =
+      (fun u => S.placeExtractedRegister .alice (tauObservable W (P.model.basis j • u)))
+      (fun u => S.placeExtractedRegister .bob (tauObservable W (P.model.basis j • u)))
+      (S.swappedState w) =
     opDistSq (uniformDistribution (PauliRegister P))
       (fun u => S.placeSide .alice (tildeObs w .alice W u j))
       (fun u => S.placeSide .bob (tildeObs w .bob W u j)) S.psiHat := by
@@ -97,7 +96,7 @@ theorem opDistSq_extracted_eq_tildeObs
     S.conjBy_placeBoth_swap_placeSide w .bob,
     swapUnitary_conj_tildeObs w .alice W,
     swapUnitary_conj_tildeObs w .bob W] at h
-  simpa only [ProjectiveSetting.applyBoth] using h
+  exact h
 
 /-- The supplied global witness bounds the canonical Pauli disagreement on
 the swapped state, with a universal constant independent of the parameters.
@@ -114,11 +113,9 @@ theorem extracted_obs_self_consistent_of_global_pair_witness_explicit
     (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG)
     (W : PauliKind) (j : Fin P.model.basisDim) :
     opDistSq (uniformDistribution (PauliRegister P))
-      (fun u => S.placeSide .alice (heteroKron (1 : Op (S.ExpandedLocalSpace .alice))
-        (tauObservable W (P.model.basis j • u))))
-      (fun u => S.placeSide .bob (heteroKron (1 : Op (S.ExpandedLocalSpace .bob))
-        (tauObservable W (P.model.basis j • u))))
-      (S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat) ≤
+      (fun u => S.placeExtractedRegister .alice (tauObservable W (P.model.basis j • u)))
+      (fun u => S.placeExtractedRegister .bob (tauObservable W (P.model.basis j • u)))
+      (S.swappedState w) ≤
         deltaConstructPaulis pauliBaselineExtractionConstant
           epsilon deltaG P.m P.d P.q := by
   rw [opDistSq_extracted_eq_tildeObs]

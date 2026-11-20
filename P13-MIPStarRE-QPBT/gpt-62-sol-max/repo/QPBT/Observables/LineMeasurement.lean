@@ -1,6 +1,7 @@
 module
 
-public import QPBT.Observables.LineMeasurement.LinePointConsistency
+public import QPBT.Observables.PlacementSupport
+public import QPBT.Observables.LineMeasurement.BipartiteTransport
 
 /-!
 # Expanded line measurements
@@ -62,12 +63,9 @@ open scoped BigOperators Matrix MatrixOrder ComplexOrder
 namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT hiding Measurement
-open MIPStarRE.Quantum
+open MIPStarRE.Quantum DistanceCalculus
 
 noncomputable section
-
-local instance pauliEdgeNonemptyLineMeasurement : Nonempty PauliEdge :=
-  pauliEdge_nonempty
 
 /-- The square-root error exhibited by the expanded-line consistency proof.
 This is the final quantitative conclusion of `lem:qld-comm-line-cons`, paper
@@ -75,6 +73,8 @@ This is the final quantitative conclusion of `lem:qld-comm-line-cons`, paper
 noncomputable def deltaLine (ε : ℝ) : ℝ :=
   Real.sqrt ε
 
+set_option maxHeartbeats 1000000 in
+set_option synthInstance.maxSize 400 in
 /-- Evaluation classes of expanded line measurements are consistent with the
 completed expanded point family, including the `none` class. This is item 3 of
 `lem:qld-comm-line-cons`, paper
@@ -96,43 +96,55 @@ theorem exp_line_point_cons_explicit' :
           ((S.pointMeasExpOption p₂.side W sample.2).effect a))
         S.psiHat ≤ 348 * deltaLine ε := by
   intro P ε S p₁ p₂ hopp W
-  have hε : 0 ≤ ε := S.eps_nonneg
-  have key : ∀ (x a : ℝ), 1 ≤ a → a ≤ 86 + 86 → 0 ≤ x → x ≤ 2 * (a * ε) →
-      x ≤ 4 → x ≤ 348 * deltaLine ε := by
-    intro x a ha haC hx0 hxa hx4
-    calc
-      x ≤ (2 * a + 4) * Real.sqrt ε :=
-        le_mul_sqrt_of_le_mul_of_le_four (by linarith) hx0
-          (by rw [mul_assoc]; exact hxa) hx4
-      _ ≤ 348 * Real.sqrt ε := by
-        apply mul_le_mul_of_nonneg_right _ (Real.sqrt_nonneg ε)
-        linarith
-  have htwo : (0 : ℝ) ≤ 2 := by norm_num
-  cases p₁ <;> cases p₂ <;> simp only [Placement.IsOpposite] at hopp
-  · have hb := (ProjectiveSetting.evalClassDist_aaBa_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
-      (ProjectiveSetting.evalClassDist_aaBa_le_four S W)
-  · have hb := (ProjectiveSetting.evalClassDist_baAa_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_interchanged_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
-      (ProjectiveSetting.evalClassDist_baAa_le_four S W)
-  · have hb := (ProjectiveSetting.evalClassDist_bbAb_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_interchanged_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
-      (ProjectiveSetting.evalClassDist_bbAb_le_four S W)
-  · have hb := (ProjectiveSetting.evalClassDist_abBb_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
-      (ProjectiveSetting.evalClassDist_abBb_le_four S W)
+  classical
+  obtain rfl := Placement.eq_overlapPartner hopp
+  let μ := linePointDist P.toLdParams
+  let q := ProjectiveSetting.overlapPartner p₁
+  let A := fun x : LinePointSample P.toLdParams =>
+    S.placedMeasurement p₁ (S.lineEvalMeasExp p₁.side W x.1 x.2)
+  let B := fun x : LinePointSample P.toLdParams =>
+    S.placedMeasurement q (S.pointMeasExpOption q.side W x.2)
+  have hμ := linePointDist_isProbability P.toLdParams
+  have h := opFamilyDistSq_le_two_mul_consistencyDefect μ A B S.psiHat
+  rw [consistencyDefect_eq_one_sub_overlap μ A B S.psiHat hμ S.psiHat_norm] at h
+  simp only [A, B, q, ProjectiveSetting.placedMeasurement_effect] at h
+  simp_rw [S.sum_stateQForm_evalClass_placement_eq] at h
+  let ov := fun x : LinePointSample P.toLdParams =>
+    ∑ a, S.strategyOverlap p₁ ((S.lineEvalMeas p₁.side W x.1 x.2).effect a)
+      ((S.pointMeasOption q.side W x.2).effect a)
+  change _ ≤ 2 * (1 - avgOver μ ov) at h
+  have hw : 1 - avgOver μ ov ≤ 86 * ε := by
+    have hA := WinImplications.win_low_degree_explicit P ε S S.eps_nonneg W
+    have hB := WinImplications.win_low_degree_interchanged_explicit P ε S S.eps_nonneg W
+    rw [consistencyDefect_placed_eq_one_sub_overlap μ
+      (fun x => S.lineEvalMeas .alice W x.1 x.2) (fun x => S.pointMeasOption .bob W x.2)
+      _ hμ S.toStrategy.ψ_norm] at hA
+    rw [consistencyDefect_placed_eq_one_sub_overlap μ
+      (fun x => S.pointMeasOption .alice W x.2) (fun x => S.lineEvalMeas .bob W x.1 x.2)
+      _ hμ S.toStrategy.ψ_norm] at hB
+    cases p₁
+    case AA' | AB'' => exact hA
+    case BA'' | BB' => exact hB
+  have hpos : 0 ≤ avgOver μ ov := by
+    unfold ov
+    apply avgOver_nonneg
+    intro x
+    refine Finset.sum_nonneg fun a _ => ?_
+    cases p₁
+    case AA' | AB'' =>
+      exact stateQForm_nonneg _ (kronecker_nonneg ((S.lineEvalMeas .alice W x.1 x.2).pos a)
+        ((S.pointMeasOption .bob W x.2).pos a))
+    case BA'' | BB' =>
+      exact stateQForm_nonneg _ (kronecker_nonneg ((S.pointMeasOption .alice W x.2).pos a)
+        ((S.lineEvalMeas .bob W x.1 x.2).pos a))
+  change measurementDistSq μ A B S.psiHat ≤ _
+  have hlin := h.trans (mul_le_mul_of_nonneg_left hw (by norm_num : (0 : ℝ) ≤ 2))
+  have hfour := h.trans (show 2 * (1 - avgOver μ ov) ≤ 4 by linarith)
+  rw [show 2 * (86 * ε) = 172 * ε by ring] at hlin
+  have hs := le_mul_sqrt_of_le_mul_of_le_four (by norm_num : (1 : ℝ) ≤ 172)
+    (opFamilyDistSq_nonneg μ _ _ _) hlin hfour
+  change _ ≤ 348 * Real.sqrt ε
+  exact hs.trans (mul_le_mul_of_nonneg_right (by norm_num) (Real.sqrt_nonneg ε))
 
 end
 

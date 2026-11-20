@@ -56,7 +56,7 @@ private theorem min_linear_sqrt_le_directPassingErrorEnvelope (x y : ℝ)
   · have hsqrtOne : Real.sqrt x ≤ 1 := by
       simpa using Real.sqrt_le_sqrt hxOne
     have hxSqrt : x ≤ Real.sqrt x := by
-      nlinarith [Real.sq_sqrt hx, Real.sqrt_nonneg x]
+      simp_all
     exact (min_le_right _ _).trans (by
       dsimp [directPassingErrorEnvelope]
       nlinarith)

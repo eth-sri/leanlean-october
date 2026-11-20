@@ -1,10 +1,9 @@
 module
 
-public import QPBT.Games.DistanceTheorems.TensorSupport
+public import QPBT.Games.DistanceTheorems.LdtBridge
 public import MIPStarRE.LDT.MakingMeasurementsProjective.Orthonormalization
 public import MIPStarRE.LDT.Preliminaries.Completion
 public import MIPStarRE.LDT.Preliminaries.Triangles.Core
-public import MIPStarRE.LDT.Test.StrategyRole.Algebra
 
 /-!
 # Projective rounding for consistent POVMs
@@ -15,15 +14,10 @@ error constant: if a POVM `Q` on Alice's space and a POVM `R` on Bob's space are
 measurement `P` on her original space with `P_a ⊗ 1` within `220 · δ^(1/4)` of
 `Q_a ⊗ 1` on `ψ`.
 
-The argument passes to Alice's reduced state and follows the construction of the
-LDT orthonormalization theorem. Rounding the almost-projective effects of `Q` and
-reducing their ranks gives a family of projectors `Q_a` whose ranges are almost
-orthogonal; assembling those ranges into one auxiliary space gives an operator
-`X`, whose positive-Gram polar factor `X̂` is a coisometry; and pulling the block
-projector of each outcome back along `X̂`, so that `P_a = X̂ᴴ T_a X̂`, gives a
-projective family close to `Q`. The family `P` lives on Alice's original space
-and is completed to a measurement at one fixed outcome once its missing state
-mass has been shown to be small.
+The LDT orthonormalization theorem supplies a projective submeasurement. To
+bound the cost of completing it, compare to the other party's almost-projective
+measurement: the completion increases the matching mass, and missing mass is
+bounded by the squared distance to the other party plus its projectivity defect.
 
 ## References
 
@@ -45,44 +39,6 @@ open MIPStarRE.LDT.MakingMeasurementsProjective
 
 noncomputable section
 
-/-- The normalized pure state whose vector is the given unit Euclidean vector. -/
-private noncomputable def roundPureState {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1) : PureState ι where
-  vector := ψ.ofLp
-  unit := by
-    calc
-      star ψ.ofLp ⬝ᵥ ψ.ofLp = ψ.ofLp ⬝ᵥ star ψ.ofLp := dotProduct_comm _ _
-      _ = inner ℂ ψ ψ := (EuclideanSpace.inner_eq_star_dotProduct ψ ψ).symm
-      _ = (‖ψ‖ ^ 2 : ℂ) := inner_self_eq_norm_sq_to_K ψ
-      _ = 1 := by rw [hψ]; norm_num
-
-/-- The QPBT vector quadratic form equals evaluation in `roundPureState`. -/
-private theorem round_stateQForm_eq_ev {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1) (T : Op ι) :
-    stateQForm ψ T = ev (roundPureState ψ hψ : QuantumState ι) T := by
-  rw [PureState.ev_eq_re_inner]
-  simp only [roundPureState]
-  change (inner ℂ ψ (WithLp.toLp 2 (T *ᵥ ψ.ofLp))).re =
-    (star ψ.ofLp ⬝ᵥ T *ᵥ ψ.ofLp).re
-  rw [EuclideanSpace.inner_eq_star_dotProduct, dotProduct_comm]
-
-/-- Evaluation of an operator square in `roundPureState` is the squared vector norm. -/
-private theorem round_ev_adjoint_mul_self_eq_norm_sq {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1) (T : Op ι) :
-    ev (roundPureState ψ hψ : QuantumState ι) (Tᴴ * T) =
-      ‖applyOperatorToState T ψ‖ ^ 2 := by
-  rw [← round_stateQForm_eq_ev]
-  symm
-  rw [@norm_sq_eq_re_inner ℂ]
-  unfold stateQForm applyOperatorToState
-  rw [Matrix.toEuclideanLin_conjTranspose_mul_self]
-  change (inner ℂ (Matrix.toEuclideanLin T ψ) (Matrix.toEuclideanLin T ψ)).re =
-    (inner ℂ ψ ((Matrix.toEuclideanLin T).adjoint (Matrix.toEuclideanLin T ψ))).re
-  rw [LinearMap.adjoint_inner_right]
-
 /-- Regard a nonempty finite coordinate set as an LDT finite Hilbert space. -/
 @[reducible] private def roundFiniteHilbertSpace (ι : Type*) [Fintype ι] [DecidableEq ι]
     [Nonempty ι] : FiniteHilbertSpace :=
@@ -97,388 +53,139 @@ private theorem round_measurement_outcome_nonempty {α ι : Type*}
     (M : MIPStarRE.Quantum.Measurement α ι) : Nonempty α := by
   classical
   by_contra hα
-  haveI : IsEmpty α := not_nonempty_iff.mp hα
+  haveI := not_nonempty_iff.mp hα
   let i : ι := Classical.choice inferInstance
   have heq := congrArg (fun X : Op ι => X i i) M.sum_eq_one
   simp [Matrix.sum_apply] at heq
 
-/-- QPBT vector consistency is the LDT bipartite consistency relation on the
-associated pure state and concrete measurements. -/
-private lemma round_consRel_of_consistencyDefect {ιA ιB α : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype α] [DecidableEq α] [Nonempty ιA] [Nonempty ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
-    (Q : MIPStarRE.Quantum.Measurement α ιA)
-    (R : MIPStarRE.Quantum.Measurement α ιB) (δ : Error)
-    (hcons : consistencyDefect (uniformDistribution Unit)
-      (fun _ a => heteroKron (Q.effect a) 1)
-      (fun _ a => heteroKron 1 (R.effect a)) ψ ≤ δ) :
-    let ψp : PureState (ιA × ιB) := roundPureState ψ hψ
-    let HA : FiniteHilbertSpace := roundFiniteHilbertSpace ιA
-    let HB : FiniteHilbertSpace := roundFiniteHilbertSpace ιB
-    let A : MIPStarRE.LDT.Measurement α ιA :=
-      MatrixMeasurement.toMeasurement (H := HA) Q
-    let B : MIPStarRE.LDT.Measurement α ιB :=
-      MatrixMeasurement.toMeasurement (H := HB) R
-    ConsRel (ψp : QuantumState (ιA × ιB)) (uniformDistribution Unit)
-      (constSubMeasFamily A.toSubMeas) (constSubMeasFamily B.toSubMeas) δ := by
-    dsimp
-    let Qm : MatrixMeasurement α (roundFiniteHilbertSpace ιA) := Q
-    let Rm : MatrixMeasurement α (roundFiniteHilbertSpace ιB) := R
-    constructor
-    change bipartiteConsError
-        (roundPureState ψ hψ : QuantumState (ιA × ιB))
-        (uniformDistribution Unit)
-        (constSubMeasFamily (MatrixMeasurement.toMeasurement Qm).toSubMeas)
-        (constSubMeasFamily (MatrixMeasurement.toMeasurement Rm).toSubMeas) ≤ δ
-    rw [show bipartiteConsError
-        (roundPureState ψ hψ : QuantumState (ιA × ιB))
-        (uniformDistribution Unit)
-        (constSubMeasFamily
-          (MatrixMeasurement.toMeasurement Qm).toSubMeas)
-        (constSubMeasFamily
-          (MatrixMeasurement.toMeasurement Rm).toSubMeas) =
-        qBipartiteConsDefect
-          (roundPureState ψ hψ : QuantumState (ιA × ιB))
-          (MatrixMeasurement.toMeasurement Qm).toSubMeas
-          (MatrixMeasurement.toMeasurement Rm).toSubMeas by
-      simp [bipartiteConsError, avgOver, uniformDistribution, constSubMeasFamily]]
-    rw [qBipartiteConsDefect_of_measurements]
-    rw [ev_one_of_isNormalized _ (roundPureState ψ hψ).toQuantumState_isNormalized]
-    rw [show qBipartiteMatchMass (roundPureState ψ hψ : QuantumState (ιA × ιB))
-        (MatrixMeasurement.toMeasurement Qm).toSubMeas
-        (MatrixMeasurement.toMeasurement Rm).toSubMeas =
-      ∑ a : α, stateQForm ψ (heteroKron (Q.effect a) (R.effect a)) by
-      unfold qBipartiteMatchMass
-      apply Finset.sum_congr rfl
-      intro a _
-      simpa [Qm, Rm, MatrixMeasurement.toMeasurement_outcome,
-        MIPStarRE.QPBT.heteroKron, MIPStarRE.LDT.opTensor] using
-        (round_stateQForm_eq_ev ψ hψ (heteroKron (Q.effect a) (R.effect a))).symm]
-    have hpoint := point_defect_eq
-      (DistanceCalculus.leftPlacedMeasurement (ιB := ιB) Q)
-      (DistanceCalculus.rightPlacedMeasurement (ιA := ιA) R) ψ
-    have hdefect : consistencyDefect (uniformDistribution Unit)
-        (fun _ a => heteroKron (Q.effect a) 1)
-        (fun _ a => heteroKron 1 (R.effect a)) ψ =
-        1 - ∑ a : α, stateQForm ψ (heteroKron (Q.effect a) (R.effect a)) := by
-      unfold consistencyDefect
-      simp_rw [consistency_term_eq_stateQForm]
-      rw [show avgOver (uniformDistribution Unit)
-          (fun _ => ∑ a : α, ∑ b : α, if a = b then 0 else
-            stateQForm ψ
-              (heteroKron (Q.effect a) 1 * heteroKron 1 (R.effect b))) =
-          ∑ a : α, ∑ b : α, if a = b then 0 else
-            stateQForm ψ
-              (heteroKron (Q.effect a) 1 * heteroKron 1 (R.effect b)) by
-        simp [avgOver, uniformDistribution]]
-      rw [show (∑ a : α, ∑ b : α, if a = b then 0 else
-            stateQForm ψ
-              (heteroKron (Q.effect a) 1 * heteroKron 1 (R.effect b))) =
-          ‖ψ‖ ^ 2 - ∑ a : α,
-            stateQForm ψ (heteroKron (Q.effect a) (R.effect a)) by
-        have hdiag :
-            (∑ a : α,
-                stateQForm ψ (heteroKron (Q.effect a) (R.effect a))) =
-              ∑ a : α, stateQForm ψ
-                ((DistanceCalculus.leftPlacedMeasurement (ιB := ιB) Q).effect a *
-                  (DistanceCalculus.rightPlacedMeasurement (ιA := ιA) R).effect a) := by
-          apply Finset.sum_congr rfl
-          intro a _
-          symm
-          simpa [DistanceCalculus.leftPlacedMeasurement,
-            DistanceCalculus.rightPlacedMeasurement,
-            MIPStarRE.Quantum.Measurement.ofSumEqOne] using
-              DistanceCalculus.placed_product_stateQForm_eq ψ (Q.effect a) (R.effect a)
-        rw [hdiag]
-        simpa [DistanceCalculus.leftPlacedMeasurement,
-          DistanceCalculus.rightPlacedMeasurement,
-          MIPStarRE.Quantum.Measurement.ofSumEqOne] using hpoint]
-      rw [hψ]
-      norm_num
-    rw [← hdefect]
-    exact hcons
+open MIPStarRE.LDT.Preliminaries
 
-/-- Rank reduction of the almost-projective effects, orthonormalization of the
-resulting ranges into the family `P_a = X̂ᴴ T_a X̂`, and completion at one fixed
-outcome give a projective measurement on Alice's original space within
-`220 * δ^(1/4)` of the given one. -/
-private lemma round_projective_ldt {ιA ιB α : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype α] [DecidableEq α] [Nonempty ιA] [Nonempty ιB]
-    (Ψ : QuantumState (ιA × ιB)) (hΨ : Ψ.IsNormalized)
-    (A : MIPStarRE.LDT.Measurement α ιA)
-    (B : MIPStarRE.LDT.Measurement α ιB) (a₀ : α) (δ : Error)
-    (hδ : 0 ≤ δ)
+/-- A weighted squared triangle inequality, giving more weight to the smaller error. -/
+private theorem qSDD_weighted_triangle {ι α : Type*} [Fintype ι] [DecidableEq ι] [Fintype α]
+    (ψ : QuantumState ι) (A B C : SubMeas α ι) :
+    qSDD ψ A C ≤ 9 / 8 * qSDD ψ A B + 9 * qSDD ψ B C := by
+  unfold qSDD qSDDCore
+  simp only [Finset.mul_sum, ← Finset.sum_add_distrib]
+  refine Finset.sum_le_sum fun a _ => ?_
+  let X := A.outcome a - B.outcome a
+  let Y := B.outcome a - C.outcome a
+  rw [show A.outcome a - C.outcome a = X + Y by dsimp [X, Y]; abel]
+  have h := ev_adjoint_self_nonneg ψ (X - (8 : ℝ) • Y)
+  simp only [Matrix.conjTranspose_sub, Matrix.conjTranspose_smul, star_trivial, sub_mul, mul_sub,
+    smul_mul_assoc, mul_smul_comm, ev_sub, ev_real_smul] at h
+  simp only [Matrix.conjTranspose_add, add_mul, mul_add, ev_add]
+  change _ ≤ 9 / 8 * ev ψ (Xᴴ * X) + 9 * ev ψ (Yᴴ * Y)
+  linarith
+
+variable {ιA ιB α : Type*}
+  [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Fintype α]
+
+/-- When the left family is projective, its squared diagonal mass is its ordinary mass. -/
+private theorem qSDD_left_projective_eq (ψ : QuantumState (ιA × ιB))
+    (P : SubMeas α ιA) (B : SubMeas α ιB) (hP : ∀ a, P.outcome a * P.outcome a = P.outcome a) :
+    qSDD ψ (leftPlacedSubMeas (ιB := ιB) P) (rightPlacedSubMeas (ιA := ιA) B) =
+      ev ψ (leftTensor (ι₂ := ιB) P.total) +
+        (∑ a, ev ψ (rightTensor (ι₁ := ιA) (B.outcome a * B.outcome a))) -
+        2 * qBipartiteMatchMass ψ P B := by
+  simp only [qSDD, qSDDCore, qBipartiteMatchMass, Matrix.conjTranspose_sub,
+    SubMeas.outcome_hermitian, leftPlacedSubMeas_outcome, rightPlacedSubMeas_outcome,
+    leftTensor_conjTranspose, rightTensor_conjTranspose,
+    sub_mul, mul_sub, leftTensor_mul_leftTensor, rightTensor_mul_rightTensor, hP,
+    leftTensor_mul_rightTensor_eq_opTensor, rightTensor_mul_leftTensor_eq_opTensor,
+    ev_sub, Finset.sum_sub_distrib]
+  have hsum : (∑ a, ev ψ (leftTensor (ι₂ := ιB) (P.outcome a))) =
+      ev ψ (leftTensor (ι₂ := ιB) P.total) := by
+    rw [← ev_sum, leftTensor_finset_sum, P.sum_eq_total]
+  rw [hsum]
+  ring
+
+/-- Completing on Alice's side improves the overlap with the right family.
+Its squared distance grows by at most the old squared distance plus the
+right measurement's projectivity defect. -/
+private theorem qSDD_complete_left_le (ψ : QuantumState (ιA × ιB)) (hψ : ψ.IsNormalized)
+    (P : ProjSubMeas α ιA) (B : SubMeas α ιB) (a₀ : α) :
+    qSDD ψ (leftPlacedSubMeas (ιB := ιB) (completeAtOutcomeProj P a₀).toSubMeas)
+        (rightPlacedSubMeas (ιA := ιA) B) ≤
+      2 * qSDD ψ (leftPlacedSubMeas (ιB := ιB) P.toSubMeas) (rightPlacedSubMeas (ιA := ιA) B) +
+        (1 - ∑ a, ev ψ (rightTensor (ι₁ := ιA) (B.outcome a * B.outcome a))) := by
+  let C := completeAtOutcomeProj P a₀
+  have hmono : qBipartiteMatchMass ψ P.toSubMeas B ≤ qBipartiteMatchMass ψ C.toSubMeas B := by
+    classical
+    unfold qBipartiteMatchMass
+    refine Finset.sum_le_sum fun a _ => ev_mono ψ _ _ (opTensor_mono_left ?_ (B.outcome_pos a))
+    by_cases h : a = a₀
+    · simpa [C, completeAtOutcome, h] using P.toSubMeas.total_le_one
+    · simp [C, completeAtOutcome, h]
+  have htotal : qBipartiteMatchMass ψ P.toSubMeas B ≤ ev ψ (leftTensor (ι₂ := ιB) P.total) := by
+    unfold qBipartiteMatchMass
+    rw [← P.toSubMeas.sum_eq_total,
+      ← leftTensor_finset_sum (ι₂ := ιB) Finset.univ P.toSubMeas.outcome, ev_sum]
+    exact Finset.sum_le_sum fun a _ => ev_mono ψ _ _
+      (opTensor_mono_right (P.outcome_pos a) (B.outcome_le_one a))
+  change qSDD ψ (leftPlacedSubMeas (ιB := ιB) C.toSubMeas) _ ≤ _
+  rw [qSDD_left_projective_eq ψ _ _ C.proj, qSDD_left_projective_eq ψ _ _ P.proj,
+    C.toMeasurement.total_eq_one, leftTensor_one, ev_one_of_isNormalized _ hψ]
+  linarith
+
+/-- Complete the LDT submeasurement without changing the `220 δ^(1/4)` bound. -/
+private lemma round_projective_ldt
+    [DecidableEq α] (Ψ : QuantumState (ιA × ιB)) (hΨ : Ψ.IsNormalized)
+    (A : MIPStarRE.LDT.Measurement α ιA) (B : MIPStarRE.LDT.Measurement α ιB)
+    (a₀ : α) (δ : Error) (hδ : 0 ≤ δ)
     (hCons : ConsRel Ψ (uniformDistribution Unit)
       (constSubMeasFamily A.toSubMeas) (constSubMeasFamily B.toSubMeas) δ) :
     ∃ C : ProjMeas α ιA,
       qSDD Ψ (leftPlacedSubMeas (ιB := ιB) A.toSubMeas)
-        (leftPlacedSubMeas (ιB := ιB) C.toSubMeas) ≤
-          220 * zetaQuarterRoot δ := by
-  classical
-  let φ : QuantumState ιA := leftMarginalState Ψ
-  have hφ : φ.IsNormalized := leftMarginalState_isNormalized hΨ
-  let t : Error := zetaQuarterRoot δ
-  have ht_nonneg : 0 ≤ t := zetaQuarterRoot_nonneg hδ
-  by_cases ht_small : t ≤ 1 / (24 : Error)
-  · have hδ_small : δ ≤ 1 / (4 : Error) := by
-      have ht_four : t ^ (4 : Nat) = δ := by
+        (leftPlacedSubMeas (ιB := ιB) C.toSubMeas) ≤ 220 * zetaQuarterRoot δ := by
+  let t := zetaQuarterRoot δ
+  let AL := leftPlacedSubMeas (ιB := ιB) A.toSubMeas
+  let BR := rightPlacedSubMeas (ιA := ιA) B.toSubMeas
+  have ht : 0 ≤ t := zetaQuarterRoot_nonneg hδ
+  by_cases hs : t ≤ 1 / 8
+  · have hδt : δ ≤ t / 512 := by
+      have hpow : t ^ 4 = δ := by
         dsimp [t, zetaQuarterRoot]
-        calc
-          (Real.rpow δ (1 / (4 : Error))) ^ (4 : Nat) =
-              Real.rpow δ ((1 / (4 : Error)) * 4) := by
-                rw [← Real.rpow_natCast]
-                simpa using
-                  (Real.rpow_mul hδ (1 / (4 : Error)) (4 : Error)).symm
-          _ = δ := by norm_num [Real.rpow_natCast]
-      have hpow := pow_le_pow_left₀ ht_nonneg ht_small 4
-      rw [ht_four] at hpow
-      calc
-        δ ≤ (1 / (24 : Error)) ^ (4 : Nat) := hpow
-        _ ≤ 1 / (4 : Error) := by norm_num
-    have hAlmost := consistencyToAlmostProjective
-      (ψ := Ψ) (A := A) (B := B) (ζ := δ) hCons
-    have hsourceLifted := hAlmost.sourceAlmostProjective
-    have hterm : ∀ a : α,
-        ev Ψ
-          ((leftLiftedMeasurement (ιB := ιB) A).outcome a -
-            (leftLiftedMeasurement (ιB := ιB) A).outcome a *
-              (leftLiftedMeasurement (ιB := ιB) A).outcome a) =
-        ev φ (A.outcome a - A.outcome a * A.outcome a) := by
-      intro a
-      simpa [φ, leftLiftedMeasurement, leftPlacedSubMeas, leftTensor_sub,
-        leftTensor_mul_leftTensor] using
-        (leftMarginal_ev_eq Ψ (A.outcome a - A.outcome a * A.outcome a))
-    have hsource :
-        ∑ a, ev φ (A.outcome a - A.outcome a * A.outcome a) ≤ 2 * δ := by
-      simpa [hterm, consistencyToAlmostProjectiveError] using hsourceLifted
-    obtain ⟨qLayer, hRank⟩ :=
-      projectiveLowRankSum φ A δ hφ hδ hδ_small hsource
-    have hq_complete :
-        ev φ (QTotal qLayer) ≥ 1 - 11 * t := by
-      simpa [t] using qCompleteness φ A δ qLayer hφ hδ hδ_small hRank
-    have hsigma : Nonempty (FiniteHilbertSpace.sigmaFinCarrier
-        (fun a : α => (qLayer.q.outcome a).rank)) := by
-      by_contra hsigma
-      have hzero_rank : ∀ a : α, (qLayer.q.outcome a).rank = 0 := by
-        intro a
-        by_contra hrank
-        have hpos : 0 < (qLayer.q.outcome a).rank := Nat.pos_of_ne_zero hrank
-        have : Nonempty (FiniteHilbertSpace.sigmaFinCarrier
-            (fun a : α => (qLayer.q.outcome a).rank)) := by
-          refine ⟨⟨Fintype.equivFin α a, ⟨0, ?_⟩⟩⟩
-          simpa [Fintype.equivFin] using hpos
-        exact hsigma this
-      have hzero : ∀ a : α, qLayer.q.outcome a = 0 := by
-        intro a
-        exact matrix_eq_zero_of_rank_eq_zero
-          (qLayer.q.outcome a) (hzero_rank a)
-      have htotal_zero : QTotal qLayer = 0 := by
-        calc
-          QTotal qLayer = ∑ a, qLayer.q.outcome a := hRank.sum_eq_total.symm
-          _ = 0 := Finset.sum_eq_zero fun a _ => hzero a
-      have : ev φ (QTotal qLayer) = 0 := by simp [htotal_zero, ev]
-      rw [this] at hq_complete
-      nlinarith
-    letI := hsigma
-    obtain ⟨_xHat, _hxHat_coisometry, _hxHat_mixed, data, hq, _hx, _hxHat, hQP⟩ :=
-      pQApprox_ofRankReductionSigmaRangePositiveGram φ A δ hRank hφ hδ hδ_small
-    have hRankData : RankReductionWitness φ A δ data.qLayer := by
-      exact hq.symm ▸ hRank.toSigmaRangeQLayer
-    have hAQ :
-        SDDOpRel φ (uniformDistribution Unit)
-          (constOpFamily (A.toSubMeas : OpFamily α ιA))
-          (constOpFamily data.qLayer.q) (roundingToProjectiveError δ) := by
-      simpa [hq] using hRank.toSigmaRangeQLayer.closeness
-    have hAP :
-        SDDOpRel φ (uniformDistribution Unit)
-          (constOpFamily (A.toSubMeas : OpFamily α ιA))
-          (constOpFamily (PFamily data)) (84 * t) := by
-      have htri := MIPStarRE.LDT.Preliminaries.sddOpRel_triangle φ
-        (uniformDistribution Unit)
-        (constOpFamily (A.toSubMeas : OpFamily α ιA))
-        (constOpFamily data.qLayer.q) (constOpFamily (PFamily data))
-        (roundingToProjectiveError δ) (30 * zetaQuarterRoot δ) hAQ hQP
-      refine MIPStarRE.LDT.Preliminaries.sddOpRel_mono φ
-        (uniformDistribution Unit)
-        (constOpFamily (A.toSubMeas : OpFamily α ιA))
-        (constOpFamily (PFamily data))
-        (2 * (roundingToProjectiveError δ + 30 * zetaQuarterRoot δ))
-        (84 * t) htri ?_
-      have htrunc : spectralTruncationError δ ≤ zetaQuarterRoot δ :=
-        spectralTruncationError_le_zetaQuarterRoot δ hδ hδ_small
-      dsimp [roundingToProjectiveError, spectralTruncationError, t]
-      dsimp [spectralTruncationError] at htrunc
-      nlinarith
-    let P : ProjSubMeas α ιA := qxpProjSubMeas data
-    let pMass : Error := ev φ P.toSubMeas.total
-    let qMass : Error := ev φ (QTotal data.qLayer)
-    let sqrtMass : Error := ev φ (CFC.sqrt (QTotal data.qLayer))
-    have hqtotal_nonneg : 0 ≤ QTotal data.qLayer := by
-      rw [← hRankData.sum_eq_total]
-      exact Finset.sum_nonneg fun a _ => hRankData.outcome_nonneg a
-    have hq_nonneg : 0 ≤ qMass := by
-      dsimp [qMass]
-      exact ev_nonneg_of_psd φ _ hqtotal_nonneg
-    have hp_nonneg : 0 ≤ pMass := by
-      exact ev_nonneg_of_psd φ P.toSubMeas.total P.toSubMeas.total_nonneg
-    have hp_le_one : pMass ≤ 1 := by
-      calc
-        pMass ≤ ev φ (1 : Op ιA) :=
-          ev_mono φ _ _ P.toSubMeas.total_le_one
-        _ = 1 := ev_one_of_isNormalized φ hφ
-    have hsqrt_nonneg : 0 ≤ sqrtMass := by
-      exact ev_nonneg_of_psd φ _ (CFC.sqrt_nonneg (QTotal data.qLayer))
-    have hsqrt_complete : sqrtMass ≥ 1 - 12 * t := by
-      simpa [sqrtMass, t] using
-        sqrtQCompleteness φ A δ data.qLayer hφ hδ hδ_small hRankData
-    have hsupport :
-        CFC.sqrt (QTotal data.qLayer) * P.toSubMeas.total =
-          CFC.sqrt (QTotal data.qLayer) := by
-      rw [show P.toSubMeas.total = data.xHatᴴ * data.xHat by
-        exact qxpProjSubMeas_total_eq_xHat_adjoint_mul_xHat data]
-      rw [← data.xHat_mixed]
-      calc
-        data.xᴴ * data.xHat * (data.xHatᴴ * data.xHat) =
-            data.xᴴ * (data.xHat * data.xHatᴴ) * data.xHat := by
-              simp only [Matrix.mul_assoc]
-        _ = data.xᴴ * data.xHat := by simp [data.xHat_coisometry]
-    have hq_sqrt_sq :
-        CFC.sqrt (QTotal data.qLayer) * (CFC.sqrt (QTotal data.qLayer))ᴴ =
-          QTotal data.qLayer := by
-      have hsqrt_herm : (CFC.sqrt (QTotal data.qLayer))ᴴ =
-          CFC.sqrt (QTotal data.qLayer) :=
-        (Matrix.nonneg_iff_posSemidef.mp
-          (CFC.sqrt_nonneg (QTotal data.qLayer))).isHermitian.eq
-      calc
-        CFC.sqrt (QTotal data.qLayer) * (CFC.sqrt (QTotal data.qLayer))ᴴ =
-            CFC.sqrt (QTotal data.qLayer) * CFC.sqrt (QTotal data.qLayer) := by
-              rw [hsqrt_herm]
-        _ = QTotal data.qLayer :=
-          CFC.sqrt_mul_sqrt_self _ hqtotal_nonneg
-    have hp_sq : P.toSubMeas.totalᴴ * P.toSubMeas.total =
-        P.toSubMeas.total := by
-      rw [(Matrix.nonneg_iff_posSemidef.mp P.toSubMeas.total_nonneg).isHermitian.eq]
-      exact MIPStarRE.LDT.Preliminaries.projSubMeas_total_proj P
-    have hcs : |sqrtMass| ≤ Real.sqrt qMass * Real.sqrt pMass := by
-      have hcs0 :=
-        ev_abs_mul_le_sqrt φ (CFC.sqrt (QTotal data.qLayer)) P.toSubMeas.total
-      rw [hsupport, hq_sqrt_sq, hp_sq] at hcs0
-      simpa [sqrtMass, qMass, pMass] using hcs0
-    have hsquare : sqrtMass ^ 2 ≤ qMass * pMass := by
-      have hsquare' : |sqrtMass| ^ 2 ≤
-          (Real.sqrt qMass * Real.sqrt pMass) ^ 2 :=
-        (sq_le_sq₀ (abs_nonneg sqrtMass)
-          (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))).2 hcs
-      simpa [sq_abs, mul_pow, Real.sq_sqrt hq_nonneg,
-        Real.sq_sqrt hp_nonneg] using hsquare'
-    have hq_le : qMass ≤ 1 + 2 * t := by
-      have hbound := ev_mono φ _ _ hRankData.total_le
-      have hbound' : qMass ≤ 1 + 2 * spectralTruncationError δ := by
-        have hscale :=
-          ev_scale φ (1 + 2 * spectralTruncationError δ) (1 : Op ιA)
-        rw [ev_one_of_isNormalized φ hφ, mul_one] at hscale
-        have hscalar :
-            (((1 : Error) + 2 * spectralTruncationError δ : Error) : ℂ) =
-              (1 : ℂ) + 2 * (spectralTruncationError δ : ℂ) := by
-          norm_num
-        rw [hscalar] at hscale
-        dsimp [qMass]
-        exact hbound.trans_eq hscale
-      have htrunc := spectralTruncationError_le_zetaQuarterRoot δ hδ hδ_small
-      dsimp [t]
-      linarith
-    have hbase_nonneg : 0 ≤ 1 - 12 * t := by linarith
-    have hbase_sq : (1 - 12 * t) ^ 2 ≤ sqrtMass ^ 2 :=
-      (sq_le_sq₀ hbase_nonneg hsqrt_nonneg).2 hsqrt_complete
-    have hqpmass : qMass * pMass ≤ (1 + 2 * t) * pMass :=
-      mul_le_mul_of_nonneg_right hq_le hp_nonneg
-    have hp_lower : 1 - 26 * t ≤ pMass := by
-      nlinarith [sq_nonneg t]
-    have hresidual :
-        ev φ ((1 - P.toSubMeas.total) * (1 - P.toSubMeas.total)) ≤ 26 * t := by
-      have hresidual_eq :
-          (1 - P.toSubMeas.total) * (1 - P.toSubMeas.total) =
-            1 - P.toSubMeas.total := by
-        calc
-          (1 - P.toSubMeas.total) * (1 - P.toSubMeas.total) =
-              1 - P.toSubMeas.total - P.toSubMeas.total +
-                P.toSubMeas.total * P.toSubMeas.total := by noncomm_ring
-          _ = 1 - P.toSubMeas.total := by
-            rw [MIPStarRE.LDT.Preliminaries.projSubMeas_total_proj P]
-            abel
-      rw [hresidual_eq, ev_sub, ev_one_of_isNormalized φ hφ]
-      dsimp [pMass] at hp_lower
-      linarith
-    let C : ProjMeas α ιA :=
-      MIPStarRE.LDT.Preliminaries.completeAtOutcomeProj P a₀
-    have hAPq : qSDD φ A.toSubMeas P.toSubMeas ≤ 84 * t := by
-      have hraw : qSDDCore φ A.outcome (PFamily data).outcome ≤ 84 * t := by
-        simpa [SDDOpRel, sddErrorOp, avgOver, uniformDistribution,
-          constOpFamily, qSDDOp, SubMeas.toOpFamily] using hAP.squaredDistanceBound
-      unfold qSDD qSDDCore
-      unfold qSDDCore at hraw
-      simpa [P, PFamily, pFamilyFromXHat, Pa, qxpProjSubMeas_outcome] using hraw
-    have hPCq : qSDD φ P.toSubMeas C.toSubMeas ≤ 26 * t := by
-      rw [show C.toSubMeas =
-          (MIPStarRE.LDT.Preliminaries.completeAtOutcome P.toSubMeas a₀).toSubMeas by
-        rfl]
-      rw [MIPStarRE.LDT.Preliminaries.completion_self_distance]
-      exact hresidual
-    have hACq : qSDD φ A.toSubMeas C.toSubMeas ≤ 220 * t := by
-      calc
-        qSDD φ A.toSubMeas C.toSubMeas ≤
-            2 * (qSDD φ A.toSubMeas P.toSubMeas +
-              qSDD φ P.toSubMeas C.toSubMeas) :=
-          MIPStarRE.LDT.Preliminaries.questionSDD_triangle
-            φ A.toSubMeas P.toSubMeas C.toSubMeas
-        _ ≤ 2 * (84 * t + 26 * t) := by gcongr
-        _ = 220 * t := by ring
-    refine ⟨C, ?_⟩
-    have hlift :
-        qSDD Ψ (leftPlacedSubMeas (ιB := ιB) A.toSubMeas)
-          (leftPlacedSubMeas (ιB := ιB) C.toSubMeas) =
-        qSDD φ A.toSubMeas C.toSubMeas := by
-      unfold qSDD qSDDCore
-      apply Finset.sum_congr rfl
-      intro a _
-      simpa [φ, leftPlacedSubMeas, leftTensor_sub, leftTensor_conjTranspose,
-        leftTensor_mul_leftTensor] using
-        leftMarginal_ev_eq Ψ
-          ((A.outcome a - C.outcome a)ᴴ * (A.outcome a - C.outcome a))
-    rw [hlift]
-    exact hACq
-  · -- Outside the small-error range, the universal distance bound is below `220 * t`.
-    let Z : ProjSubMeas α ιA := zeroProjSubMeas
-    let C : ProjMeas α ιA :=
-      MIPStarRE.LDT.Preliminaries.completeAtOutcomeProj Z a₀
-    have hAZ :
-        qSDD Ψ (leftPlacedSubMeas (ιB := ιB) A.toSubMeas)
-          (leftPlacedSubMeas (ιB := ιB) Z.toSubMeas) ≤ 1 :=
-      qSDD_leftPlaced_zeroProjSubMeas_le_one Ψ hΨ A.toSubMeas
-    have hCZ :
-        qSDD Ψ (leftPlacedSubMeas (ιB := ιB) C.toSubMeas)
-          (leftPlacedSubMeas (ιB := ιB) Z.toSubMeas) ≤ 1 :=
-      qSDD_leftPlaced_zeroProjSubMeas_le_one Ψ hΨ C.toSubMeas
-    have hZC :
-        qSDD Ψ (leftPlacedSubMeas (ιB := ιB) Z.toSubMeas)
-          (leftPlacedSubMeas (ιB := ιB) C.toSubMeas) ≤ 1 := by
-      simpa [MIPStarRE.LDT.Preliminaries.qSDD_symm] using hCZ
-    refine ⟨C, ?_⟩
-    calc
-      qSDD Ψ (leftPlacedSubMeas (ιB := ιB) A.toSubMeas)
-          (leftPlacedSubMeas (ιB := ιB) C.toSubMeas) ≤
-          2 * (qSDD Ψ (leftPlacedSubMeas (ιB := ιB) A.toSubMeas)
-              (leftPlacedSubMeas (ιB := ιB) Z.toSubMeas) +
-            qSDD Ψ (leftPlacedSubMeas (ιB := ιB) Z.toSubMeas)
-              (leftPlacedSubMeas (ιB := ιB) C.toSubMeas)) :=
-        MIPStarRE.LDT.Preliminaries.questionSDD_triangle Ψ
-          (leftPlacedSubMeas (ιB := ιB) A.toSubMeas)
-          (leftPlacedSubMeas (ιB := ιB) Z.toSubMeas)
-          (leftPlacedSubMeas (ιB := ιB) C.toSubMeas)
-      _ ≤ 4 := by linarith
-      _ ≤ 220 * t := by nlinarith
+        rw [← Real.rpow_natCast (δ ^ (1 / 4 : ℝ)) 4, ← Real.rpow_mul hδ]
+        norm_num
+      have hc := pow_le_pow_left₀ ht hs 3
+      rw [← hpow, show t ^ 4 = t ^ 3 * t by ring]
+      convert mul_le_mul_of_nonneg_right hc ht using 1 <;> ring
+    obtain ⟨P, hP⟩ := orthonormalizationMainLemma Ψ hΨ A B δ hδ hCons
+    let PL := leftPlacedSubMeas (ιB := ιB) P.toSubMeas
+    let C := completeAtOutcomeProj P a₀
+    let CL := leftPlacedSubMeas (ιB := ιB) C.toSubMeas
+    have hPA : qSDD Ψ PL AL ≤ 84 * t := by
+      rw [qSDD_symm]
+      simpa only [AL, PL, t, zetaQuarterRoot, constFamily_sdd_unit, orthonormalizationMainLemmaError] using hP.squaredDistanceBound
+    have hAB : qSDD Ψ AL BR ≤ 2 * δ := by
+      have h := simeqToApprox_heterogeneous Ψ (uniformDistribution Unit) (fun _ => A) (fun _ => B)
+        δ hCons
+      exact (constFamily_sdd_unit Ψ AL BR).symm ▸ h.squaredDistanceBound
+    have hB : 1 - (∑ a, ev Ψ (rightTensor (ι₁ := ιA) (B.outcome a * B.outcome a))) ≤ 4 * δ := by
+      have h := (consistencyToAlmostProjective_right Ψ A B δ hCons).sourceAlmostProjective
+      have hsum : (∑ a, ev Ψ (BR.outcome a)) = 1 := by
+        rw [← ev_sum, BR.sum_eq_total]
+        change ev Ψ (rightTensor (ι₁ := ιA) B.total) = _
+        rw [B.total_eq_one, rightTensor_one, ev_one_of_isNormalized _ hΨ]
+      change (∑ a, ev Ψ (BR.outcome a - BR.outcome a * BR.outcome a)) ≤ 2 * δ at h
+      simp only [ev_sub, Finset.sum_sub_distrib, hsum] at h
+      simpa only [BR, rightPlacedSubMeas_outcome, rightTensor_mul_rightTensor] using
+        h.trans (show 2 * δ ≤ 4 * δ by linarith)
+    have hPB := qSDD_weighted_triangle Ψ PL AL BR
+    have hCB := qSDD_complete_left_le Ψ hΨ P B.toSubMeas a₀
+    change qSDD Ψ CL BR ≤ 2 * qSDD Ψ PL BR + _ at hCB
+    have hCA := qSDD_weighted_triangle Ψ CL BR AL
+    rw [qSDD_symm Ψ BR AL, qSDD_symm Ψ CL AL] at hCA
+    exact ⟨C, by linarith⟩
+  · let Z : ProjSubMeas α ιA := zeroProjSubMeas
+    let C := completeAtOutcomeProj Z a₀
+    let ZL := leftPlacedSubMeas (ιB := ιB) Z.toSubMeas
+    let CL := leftPlacedSubMeas (ιB := ιB) C.toSubMeas
+    have hAZ : qSDD Ψ AL ZL ≤ 1 := qSDD_leftPlaced_zeroProjSubMeas_le_one Ψ hΨ A.toSubMeas
+    have hCZ : qSDD Ψ CL ZL ≤ 1 := qSDD_leftPlaced_zeroProjSubMeas_le_one Ψ hΨ C.toSubMeas
+    have h := questionSDD_triangle Ψ AL ZL CL
+    rw [qSDD_symm Ψ ZL CL] at h
+    exact ⟨C, by linarith⟩
 
 /-- A consistent pair of POVMs admits an Alice-side projective rounding with
 the explicit dimension-independent error `220 * δ^(1/4)`. -/
@@ -488,9 +195,9 @@ theorem projective_rounding_with_explicit_constant {ιA ιB α : Type*}
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
     (Q : MIPStarRE.Quantum.Measurement α ιA)
     (R : MIPStarRE.Quantum.Measurement α ιB) (δ : Error) (hδ : 0 ≤ δ)
-    (hcons : consistencyDefect (uniformDistribution Unit)
-      (fun _ a => heteroKron (Q.effect a) 1)
-      (fun _ a => heteroKron 1 (R.effect a)) ψ ≤ δ) :
+    (hcons : bipartiteDefect (uniformDistribution Unit)
+      (fun _ => Q)
+      (fun _ => R) ψ ≤ δ) :
     ∃ Pm : MIPStarRE.Quantum.Measurement α ιA,
       MIPStarRE.QPBT.Measurement.IsProjective Pm ∧
       opFamilyDistSq (uniformDistribution Unit)
@@ -505,10 +212,10 @@ theorem projective_rounding_with_explicit_constant {ιA ιB α : Type*}
     norm_num at hψ
   haveI : Nonempty ιA := ⟨(Classical.choice hι).1⟩
   haveI : Nonempty ιB := ⟨(Classical.choice hι).2⟩
-  have hα : Nonempty α := round_measurement_outcome_nonempty Q
-  letI : Nonempty α := hα
+  have hα := round_measurement_outcome_nonempty Q
+  letI := hα
   let a₀ : α := Classical.choice hα
-  let Ψ : PureState (ιA × ιB) := roundPureState ψ hψ
+  let Ψ : PureState (ιA × ιB) := pureStateOfUnitVector ψ hψ
   let HA : FiniteHilbertSpace := roundFiniteHilbertSpace ιA
   let HB : FiniteHilbertSpace := roundFiniteHilbertSpace ιB
   let A : MIPStarRE.LDT.Measurement α ιA :=
@@ -517,21 +224,12 @@ theorem projective_rounding_with_explicit_constant {ιA ιB α : Type*}
     MatrixMeasurement.toMeasurement (H := HB) R
   have hCons : ConsRel (Ψ : QuantumState (ιA × ιB)) (uniformDistribution Unit)
       (constSubMeasFamily A.toSubMeas) (constSubMeasFamily B.toSubMeas) δ := by
-    simpa [Ψ, HA, HB, A, B] using
-      round_consRel_of_consistencyDefect ψ hψ Q R δ hcons
+    exact (ldt_consRel_iff_consistencyDefect Ψ (uniformDistribution Unit) (fun _ => A)
+      (fun _ => B) δ).mpr hcons
   obtain ⟨C, hC⟩ := round_projective_ldt (Ψ : QuantumState (ιA × ιB))
     Ψ.toQuantumState_isNormalized A B a₀ δ hδ hCons
-  let Pm : MIPStarRE.Quantum.Measurement α ιA :=
-    MIPStarRE.Quantum.Measurement.ofSumEqOne C.outcome C.outcome_pos <| by
-      rw [C.sum_eq_total, C.total_eq_one]
-  have hPm_projective : MIPStarRE.QPBT.Measurement.IsProjective Pm := by
-    intro a
-    change IsProj (C.outcome a)
-    exact
-      { isIdempotentElem := C.proj a
-        isSelfAdjoint :=
-          (Matrix.nonneg_iff_posSemidef.mp (C.outcome_pos a)).isHermitian.eq }
-  refine ⟨Pm, hPm_projective, ?_⟩
+  let Pm := ldtMeasurementToMatrixMeasurement C.toMeasurement
+  refine ⟨Pm, fun a => ⟨C.proj a, (Matrix.nonneg_iff_posSemidef.mp (C.outcome_pos a)).isHermitian.eq⟩, ?_⟩
   have hdist :
       opFamilyDistSq (uniformDistribution Unit)
           (fun _ a => heteroKron (Pm.effect a) 1)
@@ -539,23 +237,11 @@ theorem projective_rounding_with_explicit_constant {ιA ιB α : Type*}
         qSDD (Ψ : QuantumState (ιA × ιB))
           (leftPlacedSubMeas (ιB := ιB) C.toSubMeas)
           (leftPlacedSubMeas (ιB := ιB) A.toSubMeas) := by
-    unfold opFamilyDistSq
-    rw [show avgOver (uniformDistribution Unit)
-        (fun _ => ∑ a : α,
-          ‖applyOperatorToState
-            (heteroKron (Pm.effect a) 1 - heteroKron (Q.effect a) 1) ψ‖ ^ 2) =
-        ∑ a : α,
-          ‖applyOperatorToState
-            (heteroKron (Pm.effect a) 1 - heteroKron (Q.effect a) 1) ψ‖ ^ 2 by
-      simp [avgOver, uniformDistribution]]
+    rw [opFamilyDistSq, avgOver_uniform_const]
     unfold qSDD qSDDCore
-    apply Finset.sum_congr rfl
-    intro a _
-    rw [round_ev_adjoint_mul_self_eq_norm_sq ψ hψ]
-    simp only [Pm, A, HA, leftPlacedSubMeas, mkLeftPlacedSubMeas_outcome,
-      MatrixMeasurement.toMeasurement_outcome,
-      MIPStarRE.Quantum.Measurement.ofSumEqOne]
-    rfl
+    refine Finset.sum_congr rfl fun a _ => ?_
+    rw [norm_applyOperatorToState_sq]
+    exact pureState_stateQForm_eq_ev Ψ _
   rw [hdist]
   rw [MIPStarRE.LDT.Preliminaries.qSDD_symm]
   simpa [zetaQuarterRoot] using hC

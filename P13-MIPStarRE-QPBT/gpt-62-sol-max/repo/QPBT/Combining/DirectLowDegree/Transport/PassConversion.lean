@@ -55,6 +55,12 @@ private theorem directLdRejectionProbability_eq_sum (D : DirectLdParams)
     show Fintype.card LdType = 3 by decide, div_eq_inv_mul]
   norm_num
 
+section
+
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+    (hS : S.IsProjective) (r : Fin D.k)
+include D S hS r
+
 /-- Failure of the coordinate strategy compared with the LDT-weighted
 rejection of the direct game.  The point and axis-line branches are dominated
 termwise, while each diagonal branch is dominated up to the factor two of the
@@ -63,9 +69,7 @@ branches.  The bare inequality against `directLdLdtWeightedFailureProbability`
 fails for index-sensitive strategies that answer the canonical question of
 a direction badly and the non-canonical questions of the same geometric line
 well, so the surplus term is not an artifact of the proof. -/
-theorem directCoordinate_failure_le_weightedFailure
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) :
+theorem directCoordinate_failure_le_weightedFailure :
     letI := D.toLDTFieldModel
     (directCoordinateProjStrat D S hS r).lowIndividualDegreeFailureProbability ≤
       directLdLdtWeightedFailureProbability D S +
@@ -85,9 +89,7 @@ theorem directCoordinate_failure_le_weightedFailure
 
 /-- Failure of the coordinate strategy is at most three times the uniformly
 weighted rejection of the direct game. -/
-theorem directCoordinate_failure_le_three_mul_rejection
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) :
+theorem directCoordinate_failure_le_three_mul_rejection :
     letI := D.toLDTFieldModel
     (directCoordinateProjStrat D S hS r).lowIndividualDegreeFailureProbability ≤
       3 * directLdRejectionProbability D S := by
@@ -109,11 +111,14 @@ theorem directCoordinate_failure_le_three_mul_rejection
   have hdd := hnonneg (.dline, .dline)
   linarith
 
+section
+
+variable (ε : ℝ) (hwin : 1 - ε ≤ S.value)
+include ε hwin
+
 /-- A direct strategy of value at least `1 - ε` has coordinate strategies of
 low individual degree failure at most `3 * ε`. -/
-theorem directCoordinate_failure_le_three_mul_error
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
+theorem directCoordinate_failure_le_three_mul_error :
     letI := D.toLDTFieldModel
     (directCoordinateProjStrat D S hS r).lowIndividualDegreeFailureProbability ≤
       3 * ε := by
@@ -122,7 +127,7 @@ theorem directCoordinate_failure_le_three_mul_error
     rw [directLdRejectionProbability_eq_one_sub_value]
     linarith
   calc
-    (directCoordinateProjStrat D S hS r).lowIndividualDegreeFailureProbability ≤
+    _ ≤
         3 * directLdRejectionProbability D S :=
       directCoordinate_failure_le_three_mul_rejection D S hS r
     _ ≤ 3 * ε := by linarith
@@ -130,13 +135,15 @@ theorem directCoordinate_failure_le_three_mul_error
 /-- The pass hypothesis of the low individual degree theorem for every
 coordinate of a direct strategy of value at least `1 - ε`, with error
 `3 * ε` and no further assumption. -/
-theorem directCoordinate_passes
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
+theorem directCoordinate_passes :
     letI := D.toLDTFieldModel
     (directCoordinateProjStrat D S hS r).PassesLowIndividualDegreeTest (3 * ε) := by
   letI := D.toLDTFieldModel
   exact ⟨directCoordinate_failure_le_three_mul_error D S hS r ε hwin⟩
+
+end
+
+end
 
 end
 

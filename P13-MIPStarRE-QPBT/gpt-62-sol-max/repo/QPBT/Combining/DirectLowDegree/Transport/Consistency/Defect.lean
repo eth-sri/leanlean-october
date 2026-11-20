@@ -30,62 +30,56 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
+/-- The direct game's point readout, with ill-formed answers folded into zero. -/
+noncomputable abbrev directLdPointReadout {D : DirectLdParams} {I : Type*}
+    [Fintype I] [DecidableEq I]
+    (M : DirectLdQuestion D → Quantum.Measurement (DirectLdAnswer D) I)
+    (u : DirectPoint D) :=
+  (M (directLdPointQuestionOf D u)).postprocess (directLdPointValuesOrZero D)
+
+/-- The two point-versus-polynomial bounds and the polynomial agreement bound. -/
+abbrev DirectLdConsistency {D : DirectLdParams} (S : Strategy (directLdGame D))
+    (GA : DirectPolyMeasTuple D S.ιA) (GB : DirectPolyMeasTuple D S.ιB)
+    (pointError polynomialError : ℝ) : Prop :=
+  bipartiteDefect (uniformDistribution (DirectPoint D))
+      (directLdPointReadout S.A) (fun u => GB.postprocess (evalDirectPolyTupleAt u)) S.ψ ≤
+      pointError ∧
+  bipartiteDefect (uniformDistribution (DirectPoint D))
+      (fun u => GA.postprocess (evalDirectPolyTupleAt u)) (directLdPointReadout S.B) S.ψ ≤
+      pointError ∧
+  bipartiteDefect (uniformDistribution Unit) (fun _ => GA) (fun _ => GB) S.ψ ≤ polynomialError
+
 /-! ## The three LDT conclusions in direct coordinates -/
 
-/-- The direct single-coordinate point/global defect is exactly the LDT
-defect after the polynomial, point, and scalar equivalences. -/
-theorem directPointPolynomial_consistencyDefect_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) :
-    letI := D.toLDTFieldModel
-    ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB),
-      consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
-          (fun u a => heteroKron
-            ((directPointCoordinateMeasurementA D S r u).effect a) 1)
-          (fun u a => heteroKron 1
-            ((directPolynomialEvaluationMeasurement D G u).effect a)) S.ψ =
-        consistencyDefect (uniformDistribution (Point D.toLDTParameters))
-          (ldtPointAPlaced D S hS r)
-          (ldtPolynomialEvaluationRight D G) S.ψ := by
-  letI := D.toLDTFieldModel
-  intro G
-  calc
-    consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
-        (fun u a => heteroKron
-          ((directPointCoordinateMeasurementA D S r u).effect a) 1)
-        (fun u a => heteroKron 1
-          ((directPolynomialEvaluationMeasurement D G u).effect a)) S.ψ =
-      consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
-        (fun u a => ldtPointAPlaced D S hS r
-          (directPointEquiv D u) (directScalarEquiv D a))
-        (fun u a => ldtPolynomialEvaluationRight D G
-          (directPointEquiv D u) (directScalarEquiv D a)) S.ψ := by
-          apply consistencyDefect_congr
-          · intro u a
-            unfold ldtPointAPlaced
-            congr 1
-            exact (directCoordinatePointMeasurement_effect_transport
-              D S hS r u a).symm
-          · intro u a
-            unfold ldtPolynomialEvaluationRight
-            congr 1
-            exact directPolynomialMeasurement_evaluation_effect D G u a
-    _ = consistencyDefect (uniformDistribution (Point D.toLDTParameters))
-        (ldtPointAPlaced D S hS r)
-        (ldtPolynomialEvaluationRight D G) S.ψ :=
-      consistencyDefect_uniform_question_outcome_equiv
-        (directPointEquiv D) (directScalarEquiv D)
-        (ldtPointAPlaced D S hS r)
-        (ldtPolynomialEvaluationRight D G) S.ψ
+/-- A complete LDT consistency relation gives the corresponding vector
+bound after relabeling questions and outcomes by equivalences. -/
+private theorem reindexedConsRel_defect_le {G : Game} (S : Strategy G)
+    {X Y a b : Type*} [Fintype X] [DecidableEq X] [Nonempty X]
+    [Fintype Y] [DecidableEq Y] [Nonempty Y]
+    [Fintype a] [DecidableEq a] [Fintype b] [DecidableEq b]
+    (e : X ≃ Y) (o : a ≃ b)
+    (A : X → MIPStarRE.Quantum.Measurement a S.ιA)
+    (B : X → MIPStarRE.Quantum.Measurement a S.ιB)
+    (A' : Y → ProjMeas b S.ιA) (B' : Y → ProjMeas b S.ιB)
+    (ha : ∀ x v, (A x).effect v = (A' (e x)).outcome (o v))
+    (hb : ∀ x v, (B x).effect v = (B' (e x)).outcome (o v)) {δ : ℝ}
+    (h : ConsRel (strategyQuantumState S) (uniformDistribution Y)
+      (fun y => (A' y).toSubMeas) (fun y => (B' y).toSubMeas) δ) :
+    bipartiteDefect (uniformDistribution X) A
+      B S.ψ ≤ δ := by
+  have ht := strategyConsRel_consistencyDefect_le S _ (uniformDistribution_isProbability Y) A' B' δ h
+  rw [← consistencyDefect_uniform_question_outcome_equiv e o] at ht
+  grind only
+
+section
+
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+include D S
 
 /-- Convert the point-on-Alice/global-on-Bob conclusion of `LDT.Test.mainFormal`
 for one simultaneous coordinate to the direct QPBT defect, with the identical
 numerical bound. -/
 theorem directPointPolynomial_consistencyDefect_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB)
@@ -95,82 +89,23 @@ theorem directPointPolynomial_consistencyDefect_le
           (IdxProjMeas.toIdxSubMeas
             (directCoordinateProjStrat D S hS r).pointMeasurementA)
           (polynomialEvaluationFamily D.toLDTParameters G.toSubMeas) delta →
-        consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
-          (fun u a => heteroKron
-            ((directPointCoordinateMeasurementA D S r u).effect a) 1)
-          (fun u a => heteroKron 1
-            ((directPolynomialEvaluationMeasurement D G u).effect a))
+        bipartiteDefect
+          (uniformDistribution (DirectPoint D))
+          (directPointCoordinateMeasurementA D S r)
+          (directPolynomialEvaluationMeasurement D G)
           S.ψ ≤ delta := by
   letI := D.toLDTFieldModel
   intro G delta h
-  rw [directPointPolynomial_consistencyDefect_eq D S hS r G]
-  apply strategyConsRel_consistencyDefect_le S
-    (uniformDistribution (Point D.toLDTParameters))
-    (uniformDistribution_isProbability (Point D.toLDTParameters))
-    (ldtCoordinatePointMeasurementA D S hS r)
-    (ldtPolynomialEvaluationMeasurement D G) delta
-  change ConsRel (directCoordinateProjStrat D S hS r).state
-    (uniformDistribution (Point D.toLDTParameters))
-    (IdxProjMeas.toIdxSubMeas
-      (directCoordinateProjStrat D S hS r).pointMeasurementA)
-    (polynomialEvaluationFamily D.toLDTParameters G.toSubMeas) delta
-  exact h
-
-/-- The direct single-coordinate global/point defect is exactly the LDT
-defect after the polynomial, point, and scalar equivalences. -/
-theorem directPolynomialPoint_consistencyDefect_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) :
-    letI := D.toLDTFieldModel
-    ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA),
-      consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
-          (fun u a => heteroKron
-            ((directPolynomialEvaluationMeasurement D G u).effect a) 1)
-          (fun u a => heteroKron 1
-            ((directPointCoordinateMeasurementB D S r u).effect a)) S.ψ =
-        consistencyDefect (uniformDistribution (Point D.toLDTParameters))
-          (ldtPolynomialEvaluationLeft D G)
-          (ldtPointBPlaced D S hS r) S.ψ := by
-  letI := D.toLDTFieldModel
-  intro G
-  calc
-    consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
-        (fun u a => heteroKron
-          ((directPolynomialEvaluationMeasurement D G u).effect a) 1)
-        (fun u a => heteroKron 1
-          ((directPointCoordinateMeasurementB D S r u).effect a)) S.ψ =
-      consistencyDefect
-        (uniformDistribution (Fin D.m → DirectScalarQ D))
-        (fun u a => ldtPolynomialEvaluationLeft D G
-          (directPointEquiv D u) (directScalarEquiv D a))
-        (fun u a => ldtPointBPlaced D S hS r
-          (directPointEquiv D u) (directScalarEquiv D a)) S.ψ := by
-          apply consistencyDefect_congr
-          · intro u a
-            unfold ldtPolynomialEvaluationLeft
-            congr 1
-            exact directPolynomialMeasurement_evaluation_effect D G u a
-          · intro u a
-            unfold ldtPointBPlaced
-            congr 1
-            exact (directCoordinatePointMeasurementB_effect_transport
-              D S hS r u a).symm
-    _ = consistencyDefect (uniformDistribution (Point D.toLDTParameters))
-        (ldtPolynomialEvaluationLeft D G)
-        (ldtPointBPlaced D S hS r) S.ψ :=
-      consistencyDefect_uniform_question_outcome_equiv
-        (directPointEquiv D) (directScalarEquiv D)
-        (ldtPolynomialEvaluationLeft D G)
-        (ldtPointBPlaced D S hS r) S.ψ
+  exact reindexedConsRel_defect_le S (directPointEquiv D) (directScalarEquiv D)
+    (directPointCoordinateMeasurementA D S r) (directPolynomialEvaluationMeasurement D G)
+    ((directCoordinateProjStrat D S hS r).pointMeasurementA) (ldtPolynomialEvaluationMeasurement D G)
+    (directCoordinatePointMeasurement_effect_transport D S.A hS.1 r)
+    (directPolynomialMeasurement_evaluation_effect D G) h
 
 /-- Convert the global-on-Alice/point-on-Bob conclusion of
 `LDT.Test.mainFormal` for one simultaneous coordinate to the direct QPBT
 defect, with the identical numerical bound. -/
 theorem directPolynomialPoint_consistencyDefect_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA)
@@ -180,88 +115,22 @@ theorem directPolynomialPoint_consistencyDefect_le
           (polynomialEvaluationFamily D.toLDTParameters G.toSubMeas)
           (IdxProjMeas.toIdxSubMeas
             (directCoordinateProjStrat D S hS r).pointMeasurementB) delta →
-        consistencyDefect
-          (uniformDistribution (Fin D.m → DirectScalarQ D))
-          (fun u a => heteroKron
-            ((directPolynomialEvaluationMeasurement D G u).effect a) 1)
-          (fun u a => heteroKron 1
-            ((directPointCoordinateMeasurementB D S r u).effect a))
+        bipartiteDefect
+          (uniformDistribution (DirectPoint D))
+          (directPolynomialEvaluationMeasurement D G)
+          (directPointCoordinateMeasurementB D S r)
           S.ψ ≤ delta := by
   letI := D.toLDTFieldModel
   intro G delta h
-  have hbase :
-      ConsRel (strategyQuantumState S)
-        (uniformDistribution (Point D.toLDTParameters))
-        (fun u => (ldtPolynomialEvaluationMeasurement D G u).toSubMeas)
-        (fun u => (ldtCoordinatePointMeasurementB D S hS r u).toSubMeas)
-        delta := by
-    change ConsRel (directCoordinateProjStrat D S hS r).state
-      (uniformDistribution (Point D.toLDTParameters))
-      (polynomialEvaluationFamily D.toLDTParameters G.toSubMeas)
-      (IdxProjMeas.toIdxSubMeas
-        (directCoordinateProjStrat D S hS r).pointMeasurementB) delta
-    exact h
-  have hldt := strategyConsRel_consistencyDefect_le S
-    (uniformDistribution (Point D.toLDTParameters))
-    (uniformDistribution_isProbability (Point D.toLDTParameters))
-    (ldtPolynomialEvaluationMeasurement D G)
-    (ldtCoordinatePointMeasurementB D S hS r) delta hbase
-  have heq := consistencyDefect_congr
-    (uniformDistribution (Point D.toLDTParameters))
-    (ldtPolynomialEvaluationLeft D G)
-    (fun u a => heteroKron
-      ((ldtPolynomialEvaluationMeasurement D G u).outcome a) 1)
-    (ldtPointBPlaced D S hS r)
-    (fun u a => heteroKron 1
-      ((ldtCoordinatePointMeasurementB D S hS r u).outcome a)) S.ψ
-    (by intro u a; rfl) (by intro u a; rfl)
-  rw [directPolynomialPoint_consistencyDefect_eq D S hS r G, heq]
-  exact hldt
-
-/-- Relabeling both global polynomial measurements identifies their direct
-QPBT defect with the LDT global/global defect. -/
-theorem directPolynomialPolynomial_consistencyDefect_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
-    letI := D.toLDTFieldModel
-    ∀ (GA : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA)
-      (GB : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB),
-      consistencyDefect (uniformDistribution Unit)
-          (fun _ g => heteroKron ((directPolynomialMeasurement D GA).effect g) 1)
-          (fun _ g => heteroKron 1 ((directPolynomialMeasurement D GB).effect g))
-          S.ψ =
-        consistencyDefect (uniformDistribution Unit)
-          (fun _ g => ldtPolynomialLeftPlaced D GA g)
-          (fun _ g => ldtPolynomialRightPlaced D GB g) S.ψ := by
-  letI := D.toLDTFieldModel
-  intro GA GB
-  calc
-    consistencyDefect (uniformDistribution Unit)
-        (fun _ g => heteroKron ((directPolynomialMeasurement D GA).effect g) 1)
-        (fun _ g => heteroKron 1 ((directPolynomialMeasurement D GB).effect g))
-        S.ψ =
-      consistencyDefect (uniformDistribution Unit)
-        (fun _ g => ldtPolynomialLeftPlaced D GA (directPolyEquivPolynomial D g))
-        (fun _ g => ldtPolynomialRightPlaced D GB (directPolyEquivPolynomial D g))
-        S.ψ := by
-          apply consistencyDefect_congr
-          · intro _ g
-            unfold ldtPolynomialLeftPlaced
-            rw [directPolynomialMeasurement_effect]
-          · intro _ g
-            unfold ldtPolynomialRightPlaced
-            rw [directPolynomialMeasurement_effect]
-    _ = consistencyDefect (uniformDistribution Unit)
-        (fun _ g => ldtPolynomialLeftPlaced D GA g)
-        (fun _ g => ldtPolynomialRightPlaced D GB g) S.ψ :=
-      consistencyDefect_outcome_equiv (uniformDistribution Unit)
-        (directPolyEquivPolynomial D)
-        (fun _ g => ldtPolynomialLeftPlaced D GA g)
-        (fun _ g => ldtPolynomialRightPlaced D GB g) S.ψ
+  exact reindexedConsRel_defect_le S (directPointEquiv D) (directScalarEquiv D)
+    (directPolynomialEvaluationMeasurement D G) (directPointCoordinateMeasurementB D S r)
+    (ldtPolynomialEvaluationMeasurement D G) ((directCoordinateProjStrat D S hS r).pointMeasurementB)
+    (directPolynomialMeasurement_evaluation_effect D G)
+    (directCoordinatePointMeasurement_effect_transport D S.B hS.2 r) h
 
 /-- Convert the global/global conclusion of `LDT.Test.mainFormal` to the direct
 QPBT defect, with the identical numerical bound. -/
-theorem directPolynomialPolynomial_consistencyDefect_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+theorem directPolynomialPolynomial_consistencyDefect_le :
     letI := D.toLDTFieldModel
     ∀ (GA : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA)
       (GB : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB)
@@ -269,23 +138,18 @@ theorem directPolynomialPolynomial_consistencyDefect_le
       ConsRel (strategyQuantumState S) (uniformDistribution Unit)
           (constSubMeasFamily GA.toSubMeas)
           (constSubMeasFamily GB.toSubMeas) delta →
-        consistencyDefect (uniformDistribution Unit)
-          (fun _ g => heteroKron ((directPolynomialMeasurement D GA).effect g) 1)
-          (fun _ g => heteroKron 1 ((directPolynomialMeasurement D GB).effect g))
+        bipartiteDefect (uniformDistribution Unit)
+          (fun _ => directPolynomialMeasurement D GA)
+          (fun _ => directPolynomialMeasurement D GB)
           S.ψ ≤ delta := by
   letI := D.toLDTFieldModel
   intro GA GB delta h
-  have hldt := strategyConsRel_consistencyDefect_le S
-    (uniformDistribution Unit) (uniformDistribution_isProbability Unit)
-    (fun _ => GA) (fun _ => GB) delta h
-  have heq := consistencyDefect_congr (uniformDistribution Unit)
-    (fun _ g => ldtPolynomialLeftPlaced D GA g)
-    (fun _ g => heteroKron (GA.outcome g) 1)
-    (fun _ g => ldtPolynomialRightPlaced D GB g)
-    (fun _ g => heteroKron 1 (GB.outcome g)) S.ψ
-    (by intro _ g; rfl) (by intro _ g; rfl)
-  rw [directPolynomialPolynomial_consistencyDefect_eq D S GA GB, heq]
-  exact hldt
+  exact reindexedConsRel_defect_le S (Equiv.refl Unit) (directPolyEquivPolynomial D)
+    (fun _ => directPolynomialMeasurement D GA) (fun _ => directPolynomialMeasurement D GB)
+    (fun _ => GA) (fun _ => GB) (fun _ => directPolynomialMeasurement_effect D GA)
+    (fun _ => directPolynomialMeasurement_effect D GB) h
+
+end
 
 end
 

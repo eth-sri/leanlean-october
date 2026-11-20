@@ -1,7 +1,6 @@
 module
 
 public import QPBT.Combining.Lines.ZeroDirectionMass
-public import QPBT.Combining.Lines.DiagonalResampling
 
 /-! # Discarded zero-direction mass
 
@@ -40,26 +39,21 @@ theorem dLinePointDist_zero_direction_mass_le (L : LdParams) :
     rw [← Distribution.avgOver_map (uniformDistribution (LdSpace L))
       (fun raw => raw coord) (fun value => if value = 0 then (1 : ℝ) else 0), hmap]
     simp [avgOver, uniformDistribution_weight_apply, mul_ite]
-  unfold dLinePointDist clDistribution
-  rw [Distribution.avgOver_map, Distribution.avgOver_map]
+  rw [dLinePointDist, lineKindPointDist, Distribution.avgOver_map]
   refine le_trans (avgOver_mono _ _ _ ?_) hzero.le
   intro raw
-  dsimp only
-  rw [dLineDescOf_ldDLineCL]
-  split_ifs with hdir hcoord hcoord
-  · exact le_rfl
-  · exfalso
-    apply hcoord
-    have hlast := congrFun hdir last
-    change prefixProjection (chiIndex L (LdSpace.seed raw))
-      (LdSpace.direction raw) last = 0 at hlast
-    have hindex : ¬ last.val < (chiIndex L (LdSpace.seed raw)).val := by
-      have := (chiIndex L (LdSpace.seed raw)).isLt
+  by_cases hdir : (sampledLine L .diagonal raw).direction = 0
+  · have hlast := congrFun hdir last
+    change prefixProjection (chiIndex L raw.seed) raw.direction last = 0 at hlast
+    have hindex : ¬ last.val < (chiIndex L raw.seed).val := by
+      have := (chiIndex L raw.seed).isLt
       dsimp [last]
       omega
-    simpa [prefixProjection, hindex, LdSpace.direction, coord] using hlast
-  · norm_num
-  · exact le_rfl
+    have hcoord : raw coord = 0 := by
+      simpa [prefixProjection, hindex, LdSpace.direction, coord] using hlast
+    simp [hdir, hcoord]
+  · simp only [ite_eq_right hdir]
+    split_ifs <;> norm_num
 
 /-- The equal mixture of axis and diagonal line-point laws gives zero directions
 mass at most `1 / (2q)`. This formalization-only estimate preserves the source sampler of
@@ -86,7 +80,7 @@ theorem prod_linePointDist_zero_X_direction_mass_le (L : LdParams) :
     avgOver (Distribution.prod (linePointDist L) (linePointDist L))
       (fun samples => if samples.1.1.direction = 0 then 1 else 0) ≤
       1 / (2 * Fintype.card (ScalarQ L)) := by
-  rw [SandwichProduct.avgOver_distribution_prod]
+  rw [Distribution.avgOver_prod]
   change avgOver (linePointDist L) (fun sample => avgOver (linePointDist L)
     (fun _ => if sample.1.direction = 0 then 1 else 0)) ≤ _
   simp_rw [avgOver_const_of_isProbability _ (linePointDist_isProbability L)]

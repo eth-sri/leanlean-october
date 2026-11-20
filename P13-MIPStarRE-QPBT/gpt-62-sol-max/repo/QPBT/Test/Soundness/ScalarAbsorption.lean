@@ -27,41 +27,6 @@ The companion constant adjustments are `deltaQld_mono`
 
 namespace MIPStarRE.QPBT
 
-/-- The Pauli soundness error is nonnegative whenever its prefactor and its
-error argument are. The remaining two summands of the error bracket are
-`rpow`s of nonnegative bases, so no admissibility hypothesis is needed. -/
-theorem deltaQld_nonneg {P : AdmissibleParams} {a b epsilon : ℝ}
-    (ha : 0 ≤ a) (hepsilon : 0 ≤ epsilon) :
-    0 ≤ deltaQld a b epsilon P.m P.d P.q := by
-  have hdegree0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := Nat.cast_nonneg _
-  have h1 := Real.rpow_nonneg hepsilon b
-  have h2 := Real.rpow_nonneg (Nat.cast_nonneg P.q) (-b)
-  have h3 := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2)
-    (-(b * ((P.m * P.d : ℕ) : ℝ)))
-  unfold deltaQld
-  simp only [Real.rpow_eq_pow]
-  exact mul_nonneg (mul_nonneg ha (Real.rpow_nonneg hdegree0 a)) (by linarith)
-
-/-- The shape of the absorption once the error bracket has been separated:
-doubling the `rpow` exponent is dominated by raising it to `21 * a ^ 2`. -/
-private theorem rpow_absorb_aux {degree tail a : ℝ}
-    (hdegree : 1 ≤ degree) (htail : 0 ≤ tail) (ha : 1 ≤ a) :
-    21 * (a * degree ^ a) * (a * degree ^ a * tail) ≤
-      21 * a ^ 2 * degree ^ (21 * a ^ 2) * tail := by
-  have hdegree0 : (0 : ℝ) < degree := lt_of_lt_of_le zero_lt_one hdegree
-  have hexp : a + a ≤ 21 * a ^ 2 := by nlinarith
-  have hsplit : degree ^ (a + a) = degree ^ a * degree ^ a :=
-    Real.rpow_add hdegree0 a a
-  have hpow : degree ^ (a + a) ≤ degree ^ (21 * a ^ 2) :=
-    Real.rpow_le_rpow_of_exponent_le hdegree hexp
-  have hcoeff : (0 : ℝ) ≤ 21 * a ^ 2 := by positivity
-  calc 21 * (a * degree ^ a) * (a * degree ^ a * tail)
-      = 21 * a ^ 2 * (degree ^ a * degree ^ a) * tail := by ring
-    _ = 21 * a ^ 2 * degree ^ (a + a) * tail := by rw [hsplit]
-    _ ≤ 21 * a ^ 2 * degree ^ (21 * a ^ 2) * tail :=
-        mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left hpow hcoeff) htail
-
 /-- **Scalar absorption.** On the source parameter domain the combination
 `3 * δ + 6 * δ ^ 2` of the Pauli soundness error `δ = deltaQld a b ε m d q` is
 again a Pauli soundness error, with the universal prefactor enlarged from `a`
@@ -75,55 +40,28 @@ Lean-only constant-bookkeeping helper, not an additional hypothesis of
 It is stated as blueprint `lem:delta-qld-scalar-absorption-support`. -/
 theorem three_add_six_sq_deltaQld_le {P : AdmissibleParams} {a b epsilon : ℝ}
     (ha : 1 ≤ a) (hb : 0 < b) (hepsilon : 0 ≤ epsilon) (hepsilon1 : epsilon ≤ 1) :
-    3 * deltaQld a b epsilon P.m P.d P.q +
-        6 * deltaQld a b epsilon P.m P.d P.q ^ 2 ≤
-      deltaQld (21 * a ^ 2) b epsilon P.m P.d P.q := by
-  have hdegree : (1 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) :=
-    Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
-  have hdegree0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := zero_le_one.trans hdegree
-  have hq : (1 : ℝ) ≤ (P.q : ℝ) := by
-    obtain ⟨k, -, hk⟩ := P.hq
-    rw [hk]
-    exact_mod_cast Nat.one_le_pow _ _ (by norm_num)
-  have ha0 : (0 : ℝ) ≤ a := zero_le_one.trans ha
-  have hprefactor : (1 : ℝ) ≤ a * ((P.m * P.d : ℕ) : ℝ) ^ a :=
-    one_le_mul_of_one_le_of_one_le ha (Real.one_le_rpow hdegree ha0)
-  have hprefactor0 : (0 : ℝ) ≤ a * ((P.m * P.d : ℕ) : ℝ) ^ a :=
-    zero_le_one.trans hprefactor
-  -- The error bracket lies in `[0, 3]`: each summand is an `rpow` bounded by
-  -- one on the source parameter domain.
-  have htail0 : (0 : ℝ) ≤ epsilon ^ b + (P.q : ℝ) ^ (-b) +
-      (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) := by
-    have h1 := Real.rpow_nonneg hepsilon b
-    have h2 := Real.rpow_nonneg (Nat.cast_nonneg P.q) (-b)
-    have h3 := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2)
-      (-(b * ((P.m * P.d : ℕ) : ℝ)))
-    linarith
-  have htail3 : epsilon ^ b + (P.q : ℝ) ^ (-b) +
-      (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) ≤ 3 := by
-    have h1 : epsilon ^ b ≤ 1 := Real.rpow_le_one hepsilon hepsilon1 hb.le
-    have h2 : (P.q : ℝ) ^ (-b) ≤ 1 :=
-      Real.rpow_le_one_of_one_le_of_nonpos hq (neg_nonpos.mpr hb.le)
-    have h3 : (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) ≤ 1 :=
-      Real.rpow_le_one_of_one_le_of_nonpos (by norm_num)
-        (neg_nonpos.mpr (mul_nonneg hb.le hdegree0))
-    linarith
-  have hnonneg : 0 ≤ deltaQld a b epsilon P.m P.d P.q :=
-    deltaQld_nonneg ha0 hepsilon
-  have hub : deltaQld a b epsilon P.m P.d P.q ≤
-      3 * (a * ((P.m * P.d : ℕ) : ℝ) ^ a) := by
-    unfold deltaQld
-    simp only [Real.rpow_eq_pow]
-    nlinarith [mul_nonneg hprefactor0 (sub_nonneg.mpr htail3)]
-  calc 3 * deltaQld a b epsilon P.m P.d P.q +
-        6 * deltaQld a b epsilon P.m P.d P.q ^ 2
-      ≤ 21 * (a * ((P.m * P.d : ℕ) : ℝ) ^ a) *
-          deltaQld a b epsilon P.m P.d P.q := by
-        nlinarith [mul_nonneg hnonneg (sub_nonneg.mpr hub),
-          mul_nonneg hnonneg (sub_nonneg.mpr hprefactor)]
-    _ ≤ deltaQld (21 * a ^ 2) b epsilon P.m P.d P.q := by
-        unfold deltaQld
-        simp only [Real.rpow_eq_pow]
-        exact rpow_absorb_aux hdegree htail0 ha
+    3 * P.qldError a b epsilon +
+        6 * P.qldError a b epsilon ^ 2 ≤
+      P.qldError (21 * a ^ 2) b epsilon := by
+  let s := P.degreeBudget
+  let t := P.qldTail b epsilon
+  let k := a * s ^ a
+  let δ := P.qldError a b epsilon
+  have hs : 1 ≤ s := P.degreeBudget_ge_one
+  have hs' := zero_lt_one.trans_le hs
+  have kt : δ = k * t := rfl
+  have hk : 1 ≤ k := one_le_mul_of_one_le_of_one_le ha (Real.one_le_rpow hs (by linarith))
+  have ht : 0 ≤ t := P.qldTail_nonneg b hepsilon
+  have hδ : 0 ≤ δ := deltaQld_nonneg (by linarith) hepsilon
+  have hδ' : δ ≤ 3 * k := by
+    rw [kt, mul_comm 3]
+    exact mul_le_mul_of_nonneg_left (P.qldTail_le_three hb.le hepsilon hepsilon1) (by linarith)
+  calc
+    3 * δ + 6 * δ ^ 2 ≤ 21 * k * δ := by nlinarith
+    _ = (21 * a ^ 2) * s ^ (a + a) * t := by
+      rw [kt, Real.rpow_add hs']; dsimp only [k]; ring
+    _ ≤ (21 * a ^ 2) * s ^ (21 * a ^ 2) * t := by
+      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
+        (Real.rpow_le_rpow_of_exponent_le hs (by nlinarith)) (by positivity)) ht
 
 end MIPStarRE.QPBT

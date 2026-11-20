@@ -67,14 +67,7 @@ theorem combiningLinearForm_coeff {K : Type*} [CommSemiring K] {k : ℕ}
     (c : Fin k → K) (r : Fin k) :
     (combiningLinearForm c).coeff (Finsupp.single r 1) = c r := by
   classical
-  rw [combiningLinearForm, MvPolynomial.coeff_sum, Finset.sum_eq_single r]
-  · simp [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X]
-  · intro s _ hs
-    rw [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X, if_neg, mul_zero]
-    intro hEq
-    exact hs (Finsupp.single_left_injective one_ne_zero hEq)
-  · intro h
-    exact absurd (Finset.mem_univ r) h
+  rw [combiningLinearForm, MvPolynomial.coeff_sum, Finset.sum_eq_single r] <;> simp_all
 
 /-- A linear form determines its coefficients. -/
 theorem combiningLinearForm_injective {K : Type*} [CommSemiring K] {k : ℕ} :
@@ -90,7 +83,7 @@ theorem combiningLinearForm_agreementProbability_le {K : Type*} [Field K] [Finty
     [DecidableEq K] {k : ℕ} (c b : Fin k → K) (hne : c ≠ b) :
     polynomialAgreementProbability k K (combiningLinearForm c) (combiningLinearForm b) ≤
       1 / Fintype.card K := by
-  have hpoly : combiningLinearForm c ≠ combiningLinearForm b := fun h =>
+  have hpoly := fun h =>
     hne (combiningLinearForm_injective h)
   simpa using schwartzZippel_totalDegree (d := 1) hpoly
     (combiningLinearForm_totalDegree_le_one c) (combiningLinearForm_totalDegree_le_one b)
@@ -108,25 +101,7 @@ theorem polynomialAgreement_avg_eq_agreementProbability {m : ℕ} {K : Type*} [F
     [Fintype K] [DecidableEq K] (g h : MvPolynomial (Fin m) K) :
     avgOver (uniformDistribution (Fin m → K))
         (fun u => if MvPolynomial.eval u g = MvPolynomial.eval u h then (1 : Error) else 0) =
-      (polynomialAgreementProbability m K g h : Error) := by
-  classical
-  calc
-    avgOver (uniformDistribution (Fin m → K))
-        (fun u => if MvPolynomial.eval u g = MvPolynomial.eval u h then (1 : Error) else 0)
-      = ∑ u : Fin m → K,
-          if MvPolynomial.eval u g = MvPolynomial.eval u h then
-            (Fintype.card K ^ m : Error)⁻¹ else 0 := by
-        simp [avgOver, uniformDistribution]
-    _ = ∑ u ∈ Finset.univ.filter (fun u : Fin m → K =>
-          MvPolynomial.eval u g = MvPolynomial.eval u h),
-          (Fintype.card K ^ m : Error)⁻¹ := by
-        rw [← Finset.sum_filter]
-    _ = (((Finset.univ.filter fun u : Fin m → K =>
-          MvPolynomial.eval u g = MvPolynomial.eval u h).card : ℕ) : Error) *
-          (Fintype.card K ^ m : Error)⁻¹ := by
-        simp
-    _ = (polynomialAgreementProbability m K g h : Error) := by
-        simp [polynomialAgreementProbability, div_eq_mul_inv]
+      (polynomialAgreementProbability m K g h : Error) := by simp_all [avgOver, uniformDistribution, ← Finset.sum_filter, polynomialAgreementProbability, div_eq_mul_inv]
 
 /-- The collision estimate of the recovery step, in the averaged form used by
 the consistency calculus of the directly indexed game: if the tuple of values
@@ -141,21 +116,16 @@ theorem directCombiningCollision_avg_le (D : DirectLdParams)
   classical
   have hagree := combiningLinearForm_agreementProbability_le c b hne
   calc
-    avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
-        (fun α => if ∑ r : Fin D.k, c r * α r = ∑ r : Fin D.k, b r * α r then
-          (1 : Error) else 0)
+    _
       = avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
           (fun α => if MvPolynomial.eval α (combiningLinearForm c) =
-            MvPolynomial.eval α (combiningLinearForm b) then (1 : Error) else 0) := by
-        apply avgOver_congr
-        intro α
-        rw [combiningLinearForm_eval, combiningLinearForm_eval]
+            MvPolynomial.eval α (combiningLinearForm b) then (1 : Error) else 0) := by simp_all
     _ = (polynomialAgreementProbability D.k (DirectScalarQ D)
           (combiningLinearForm c) (combiningLinearForm b) : Error) :=
         polynomialAgreement_avg_eq_agreementProbability _ _
     _ ≤ ((1 / Fintype.card (DirectScalarQ D) : ℚ≥0) : Error) := by
         exact_mod_cast hagree
-    _ = (1 : Error) / D.q := by
+    _ = _ := by
         rw [card_directScalarQ]
         simp
 

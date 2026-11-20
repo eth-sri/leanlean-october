@@ -49,9 +49,7 @@ private theorem avg_phaseSign_dotProduct (v : ι → K) :
     change (if v = 0 then (1 : ℂ) else 0) * star (if v = 0 then 1 else 0) = _
     split <;> simp
   simp only [dotProduct_zero, map_zero, phaseSign, ite_true, one_smul] at h
-  rw [hv] at h
-  simpa only [Matrix.smul_apply, Matrix.sum_apply, smul_eq_mul,
-    tauObservable_Z_apply, ite_true, one_mul] using h.symm
+  simp_all [Matrix.smul_apply, Matrix.sum_apply, smul_eq_mul, tauObservable_Z_apply]
 
 /-- The Z correlation projects onto equal computational-basis labels.
 This is the Fourier cancellation in paper lines 1736-1740. -/
@@ -88,12 +86,7 @@ theorem pauliCorrelation_X_apply_diagonal (x : (ι → K) × (ι → K)) (a : ι
   simp_rw [tauObservable_X_apply]
   rw [Finset.sum_eq_single (x.1 - a)]
   · simp [add_sub_cancel, eq_comm]
-  · intro u _ hu
-    have h : x.1 ≠ a + u := by
-      intro h
-      apply hu
-      rw [h, add_sub_cancel_left]
-    simp [h]
+  · grind only
   · simp
 
 /-- The product `H_X H_Z` is the ordinary rank-one EPR projection, with no

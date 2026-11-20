@@ -37,7 +37,7 @@ theorem nondegenerateLinePastingMass_bounds (L : LdParams) :
     1 / 2 ≤ nondegenerateLinePastingMass L ∧
       nondegenerateLinePastingMass L ≤ 1 := by
   classical
-  let indicator := fun sample : LineDesc L × (Fin L.m → ScalarQ L) =>
+  let indicator := fun sample : LinePointSample L =>
     if sample.1.direction ≠ 0 then (1 : ℝ) else 0
   have hmass : nondegenerateLinePastingMass L =
       avgOver (linePointDist L) indicator := by

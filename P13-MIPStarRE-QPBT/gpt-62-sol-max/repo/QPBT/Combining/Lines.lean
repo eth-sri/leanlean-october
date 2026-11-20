@@ -2,33 +2,24 @@ module
 
 public import QPBT.Combining.Lines.Construction
 public import QPBT.Combining.Lines.CombinedMeasurement
-public import QPBT.Combining.Lines.ConditionalConsistency
-public import QPBT.Combining.Lines.Marginal
 public import QPBT.Combining.Lines.ConsistencyPositivity
+public import QPBT.Games.RestrictedAverage
 public import QPBT.Combining.Lines.ConditionalCollision
-public import QPBT.Combining.Lines.AxisLineResampling
-public import QPBT.Combining.Lines.DiagonalResampling
 public import QPBT.Combining.Lines.MixedResampling
 public import QPBT.Combining.Lines.ProductWeightedCollision
 public import QPBT.Combining.Lines.NondegeneratePastingDistribution
 public import QPBT.Combining.Lines.NondegeneratePastingMass
 public import QPBT.Combining.Lines.PairStateConsistencyTransport
 public import QPBT.Combining.Lines.RestrictedAverage
-public import QPBT.Combining.Lines.NondegeneratePastingResampling
 public import QPBT.Combining.Lines.SubLineMixture
 public import QPBT.Combining.Lines.UniformAffineCollision
 public import QPBT.Combining.Lines.WeightedCollision
-public import QPBT.Combining.Lines.PointwiseDefect
-public import QPBT.Combining.Lines.PointSelfConsistencyCompleted
+public import QPBT.Combining.Lines.Conditioning
 public import QPBT.Combining.Points
 public import QPBT.Combining.Witnesses
 public import QPBT.Combining.Lines.AffineEvaluation
 public import QPBT.Combining.Lines.FiberCollision
-public import QPBT.Combining.Lines.NondegenerateFiberCollision
 public import QPBT.Combining.Lines.ZeroDirectionMass
-public import QPBT.Combining.Lines.RestrictedConsistency
-public import QPBT.Combining.Lines.PastingRestoration
-public import QPBT.Games.RestrictedAverage
 
 /-!
 # Combined lines and restricted line distributions
@@ -124,8 +115,8 @@ conditional form for a supplied polynomially controlled point family. -/
 
 /-! ## The sub-line distribution -/
 
-/-- Existence of the directly indexed sub-line distribution with its two
-separate projected point marginals and axis-line closure.  It supports
+/-- Existence of the directly indexed sub-line distribution with its
+joint projected point law and axis-line closure.  It supports
 `lem:qld-sublines` and `rem:qld-sublines-property-three` in
 `blueprint/src/chapter/ch15_qpbt_combining.tex`, whose source is
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1069` with
@@ -136,16 +127,15 @@ This is a formalization auxiliary assertion, not the source-labelled
 line-point law of `docs/paper-gaps/qpbt_ld-dimension-divisibility.tex` in
 place of the seed-indexed line-point distribution over `F_q^(2m+2)` of the
 source statement, so the statement carries no divisibility hypothesis and its
-transport to the source carrier remains open.  Its `source_mixture` field
-asserts only the separate X and Z marginal mixtures, not a stronger joint
-conditional law.
+transport to the source carrier remains open. Its `source_mixture` field
+gives one mixture of product laws for the two projected point-line pairs.
 
 The witness is the sub-line law `subLineDist` of the sampling procedure.  Its
 pointwise fields follow from `subLineTripleOf_incidence`,
 `subLineTripleOf_compatibility`, and `subLineTripleOf_axis_closure`, after
 recovering the sampling data with `exists_samplingData_of_mem_subLineDist_support`.
-Its extended-line marginal is `subLineDist_map_fst`, and its two projected
-point marginals are the separate mixtures of `subLineDist_source_mixture`. -/
+Its extended-line marginal is `subLineDist_map_fst`, and its joint projected
+law is `subLineDist_source_mixture`. -/
 theorem exists_subLineWitness (P : AdmissibleParams) :
     Nonempty (SubLineWitness P) := by
   refine ⟨{ D := subLineDist P

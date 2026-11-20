@@ -22,7 +22,7 @@ issue Dengnifer/MIPStarRE-QPBT-bak#123 in `docs/paper-gaps/qpbt_extraction-trans
 
 @[expose] public section
 
-open scoped BigOperators Matrix MatrixOrder ComplexOrder
+open scoped BigOperators Matrix MatrixOrder ComplexOrder Classical
 
 namespace MIPStarRE.QPBT
 
@@ -49,7 +49,7 @@ theorem sum_basis_character_effect_eq {P : AdmissibleParams} {ι : Type*}
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.smul_sum]
   apply Finset.sum_congr rfl
   intro a ha
-  rw [(Finset.mem_filter.mp ha).2]
+  simp_all
 
 /-- A fixed basis character costs at most four times the field measurement
 consistency defect. The question distribution and basis coordinate are retained
@@ -67,8 +67,8 @@ theorem basis_character_opDistSq_le_four_consistencyDefect
         (∑ a, phaseSign (fixedBinTrace P.model (P.model.basis j * a)) • (A x).effect a) 1)
       (fun x => heteroKron 1
         (∑ a, phaseSign (fixedBinTrace P.model (P.model.basis j * a)) • (B x).effect a)) ψ ≤
-      4 * consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
-        (fun x a => heteroKron 1 ((B x).effect a)) ψ := by
+      4 * bipartiteDefect μ A
+        B ψ := by
   classical
   let f := fun a : PauliScalar P => fixedBinTrace P.model (P.model.basis j * a)
   let A' := fun x => (A x).postprocess f
@@ -84,9 +84,22 @@ theorem basis_character_opDistSq_le_four_consistencyDefect
   simp only [ZMod.card, Nat.cast_ofNat] at hobs
   have hbound := hobs.trans (mul_le_mul_of_nonneg_left hfam (by norm_num : (0 : ℝ) ≤ 2))
   simpa only [sum_basis_character_effect_eq, heteroKron_left_sum_smul,
-    heteroKron_right_sum_smul, leftPlacedMeasurement, rightPlacedMeasurement,
-    MIPStarRE.Quantum.Measurement.ofSumEqOne, ← mul_assoc, show (2 : ℝ) * 2 = 4 by norm_num]
+    heteroKron_right_sum_smul, leftPlacedMeasurement_effect, rightPlacedMeasurement_effect, ← mul_assoc, show (2 : ℝ) * 2 = 4 by norm_num]
     using hbound
+
+/-- The coordinate change to two extraction blocks preserves the consistency
+defect, including every off-diagonal outcome and the question distribution. -/
+theorem ProjectiveSetting.consistencyDefect_placeSide {P : AdmissibleParams} {epsilon : ℝ}
+    {X A : Type*} [Fintype X] [DecidableEq X] [Fintype A] [DecidableEq A]
+    (S : ProjectiveSetting P epsilon) (mu : Distribution X)
+    (left : X → A → Op (ExtractionBlock P (S.LocalSpace .alice)))
+    (right : X → A → Op (ExtractionBlock P (S.LocalSpace .bob))) :
+    consistencyDefect mu (fun x a => S.placeSide .alice (left x a))
+        (fun x a => S.placeSide .bob (right x a)) S.psiHat =
+      consistencyDefect mu (fun x a => heteroKron (left x a) 1)
+        (fun x a => heteroKron 1 (right x a))
+        (reindexState S.extractionBlocks S.psiHat) := by
+  simp only [consistencyDefect, stateQForm_reindexState, reindexOp_mul, ProjectiveSetting.placeSide]
 
 /-- The final measurement-to-observable step of blueprint
 `lem:qld-construct-the-paulis`, Item 2, on the original six-register state.
@@ -105,49 +118,17 @@ theorem tildeObs_opDistSq_le_four_consistencyDefect
         (fun u a => S.placeSide .alice (tildeM w .alice W u a))
         (fun u a => S.placeSide .bob (tildeM w .bob W u a)) S.psiHat := by
   classical
-  let M (side : PlayerSide) (u : PauliRegister P) :
-      Measurement (PauliScalar P) (ExtractionBlock P (S.LocalSpace side)) :=
-    MIPStarRE.Quantum.Measurement.ofSumEqOne (tildeM w side W u)
-      (fun a => (tildeM_isProj w side W u a).nonneg) (sum_tildeM_eq_one w side W u)
-  let e := sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB
+  let M (side : PlayerSide) (u : PauliRegister P) := tildeMMeasurement w side W u
+  let e := S.extractionBlocks
   have h := basis_character_opDistSq_le_four_consistencyDefect
     (uniformDistribution (PauliRegister P)) (M .alice) (M .bob)
     (reindexState e S.psiHat) j
-  have hd : opDistSq (uniformDistribution (PauliRegister P))
-      (fun u => heteroKron (tildeObs w .alice W u j) 1)
-      (fun u => heteroKron 1 (tildeObs w .bob W u j)) (reindexState e S.psiHat) =
-      opDistSq (uniformDistribution (PauliRegister P))
-        (fun u => S.placeSide .alice (tildeObs w .alice W u j))
-        (fun u => S.placeSide .bob (tildeObs w .bob W u j)) S.psiHat := by
-    unfold opDistSq opFamilyDistSq
-    simp only [Fintype.sum_unique]
-    apply avgOver_congr
-    intro u
-    rw [norm_applyOperatorToState_reindexState, reindexOp_sub]
-    rfl
-  have hc : consistencyDefect (uniformDistribution (PauliRegister P))
-      (fun u a => heteroKron (tildeM w .alice W u a) 1)
-      (fun u a => heteroKron 1 (tildeM w .bob W u a)) (reindexState e S.psiHat) =
-      consistencyDefect (uniformDistribution (PauliRegister P))
-        (fun u a => S.placeSide .alice (tildeM w .alice W u a))
-        (fun u a => S.placeSide .bob (tildeM w .bob W u a)) S.psiHat := by
-    unfold consistencyDefect
-    apply avgOver_congr
-    intro u
-    apply Finset.sum_congr rfl
-    intro a _
-    apply Finset.sum_congr rfl
-    intro b _
-    by_cases hab : a = b
-    · simp only [hab, if_true]
-    · simp only [if_neg hab, consistency_term_eq_stateQForm]
-      rw [stateQForm_reindexState, reindexOp_mul]
-      rfl
   change opDistSq _ (fun u => heteroKron (tildeObs w .alice W u j) 1)
     (fun u => heteroKron 1 (tildeObs w .bob W u j)) _ ≤
       4 * consistencyDefect _ (fun u a => heteroKron (tildeM w .alice W u a) 1)
         (fun u a => heteroKron 1 (tildeM w .bob W u a)) _ at h
-  rwa [hd, hc] at h
+  rw [S.consistencyDefect_placeSide]
+  simpa only [opDistSq, opFamilyDistSq_reindexState, e, ProjectiveSetting.placeSide] using h
 
 end
 

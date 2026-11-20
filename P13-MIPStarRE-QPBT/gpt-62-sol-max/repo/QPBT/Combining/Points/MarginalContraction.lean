@@ -51,8 +51,7 @@ theorem norm_marginal_sub_sq_le {β ι : Type*} [Fintype β]
     refine le_trans (DistanceCalculus.norm_finset_sum_projector_mul_sq_le
       Q (fun b => Q b - B.effect b * Q b) hQ horth Finset.univ ψ) ?_
     exact Finset.sum_le_sum fun b _ => norm_sub_projective_mul_sq_le B hB b (Q b) D ψ
-  have hV : ‖applyOperatorToState V ψ‖ ^ 2 ≤
-      ∑ b, ‖applyOperatorToState (Q b - B.effect b * D) ψ‖ ^ 2 :=
+  have hV :=
     DistanceCalculus.norm_finset_sum_projector_mul_sq_le B.effect
       (fun b => Q b - B.effect b * D) hB
       (fun hbc => DistanceCalculus.projective_effect_mul_effect_eq_zero B hB hbc)
@@ -70,12 +69,12 @@ theorem norm_marginal_sub_sq_le {β ι : Type*} [Fintype β]
     rw [hfirst, hsecond, Finset.sum_sub_distrib]
     abel
   rw [hsum]
-  have htriangle : ‖applyOperatorToState (U + V) ψ‖ ≤
-      ‖applyOperatorToState U ψ‖ + ‖applyOperatorToState V ψ‖ := by
+  have ht : ‖applyOperatorToState (U + V) ψ‖ ^ 2 ≤
+      2 * ‖applyOperatorToState U ψ‖ ^ 2 + 2 * ‖applyOperatorToState V ψ‖ ^ 2 := by
     simpa only [applyOperatorToState, map_add, LinearMap.add_apply] using
-      norm_add_le (applyOperatorToState U ψ) (applyOperatorToState V ψ)
-  have hsquare := pow_le_pow_left₀ (norm_nonneg _) htriangle 2
-  nlinarith [sq_nonneg (‖applyOperatorToState U ψ‖ - ‖applyOperatorToState V ψ‖)]
+      DistanceCalculus.norm_add_sq_le_two (applyOperatorToState U ψ) (applyOperatorToState V ψ)
+  change ‖applyOperatorToState V ψ‖ ^ 2 ≤ _ at hV
+  linarith
 
 end
 

@@ -58,77 +58,37 @@ theorem decodeFq_pullingPoly {P : AdmissibleParams}
     simp [decodeOn, decodeAt, evalPoly, MvPolynomial.eval_sub]
   rw [pullingPoly, hsub, decodeFq_lowDegreeEncoding]
 
+section
+
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ}
+    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+    (side : PlayerSide) (W : PauliKind)
+include P epsilon deltaG S w side W
+
 /-- The projective measurement with polynomial outcomes `g - g_h` used to
 organize the last step of the pulling argument. Its input witness remains
 supplied; no global witness is constructed by this definition. -/
-def pullingMeas {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) :
+def pullingMeas :
     Measurement (Poly P) (ExtractionBlock P (S.LocalSpace side)) :=
   (tensorMeasurement (w.marginalPoly side W) (pauliRegisterMeas W)).postprocess pullingPoly
 
 /-- The joint effects are tensor products of orthogonal projections, and
 postprocessing retains projectivity. -/
-theorem pullingMeas_isProjective {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) :
+theorem pullingMeas_isProjective :
     Measurement.IsProjective (pullingMeas w side W) := by
-  apply SandwichProduct.postprocess_isProjective
-  intro outcome
-  exact MakingMeasurementsProjective.isProj_kronecker
-    (w.marginalPoly_isProjective side W outcome.1)
-    ⟨by simp [IsIdempotentElem, pauliRegisterMeas, Measurement.ofSumEqOne,
-        pauliProj_mul_pauliProj],
-      (posSemidef_pauliProj W outcome.2).isHermitian⟩
+  exact SandwichProduct.postprocess_isProjective _
+    (tensorMeasurement_isProjective (w.marginalPoly_isProjective side W)
+      (pauliRegisterMeas_isProjective W)) _
 
 /-- Decoding the difference-polynomial measurement recovers `eq:tilde_M`
 exactly. The equality holds on the full bounded polynomial carrier. -/
-theorem pullingMeas_postprocess_effect {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) (u : PauliRegister P) (a : PauliScalar P) :
+theorem pullingMeas_postprocess_effect (u : PauliRegister P) (a : PauliScalar P) :
     ((pullingMeas w side W).postprocess (fun g => dotProduct (decodeFq g) u)).effect a =
       tildeM w side W u a := by
-  classical
-  rw [pullingMeas, Measurement.postprocess_comp]
-  simp only [Measurement.postprocess_effect, Finset.sum_filter,
-    decodeFq_pullingPoly, tensorMeasurement, Measurement.ofSumEqOne, pauliRegisterMeas]
-  rw [Fintype.sum_prod_type]
-  unfold tildeM tauDotProj bracketOp
-  simp_rw [heteroKron_finset_sum_right, Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro g _
-  apply Finset.sum_congr rfl
-  intro h _
-  have hlabel : dotProduct (decodeFq g - h) u = a ↔
-      dotProduct h u = dotProduct (decodeFq g) u - a := by
-    rw [sub_dotProduct]
-    constructor <;> intro heq <;> linear_combination -heq
-  simp only [hlabel]
+  simp only [pullingMeas, Measurement.postprocess_comp, tildeM, tildeMMeasurement,
+    decodeFq_pullingPoly, sub_dotProduct]
 
-/-- The coordinate change to two extraction blocks preserves the consistency
-defect, including every off-diagonal outcome and the question distribution. -/
-private theorem consistencyDefect_placeSide_eq {P : AdmissibleParams} {epsilon : ℝ}
-    {X A : Type*} [Fintype X] [DecidableEq X] [Fintype A] [DecidableEq A]
-    (S : ProjectiveSetting P epsilon) (mu : Distribution X)
-    (left : X → A → Op (ExtractionBlock P (S.LocalSpace .alice)))
-    (right : X → A → Op (ExtractionBlock P (S.LocalSpace .bob))) :
-    consistencyDefect mu (fun x a => S.placeSide .alice (left x a))
-        (fun x a => S.placeSide .bob (right x a)) S.psiHat =
-      consistencyDefect mu (fun x a => heteroKron (left x a) 1)
-        (fun x a => heteroKron 1 (right x a))
-        (reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB) S.psiHat) := by
-  unfold consistencyDefect
-  apply avgOver_congr
-  intro x
-  apply Finset.sum_congr rfl
-  intro a _
-  apply Finset.sum_congr rfl
-  intro b _
-  by_cases hab : a = b
-  · simp only [hab, if_true]
-  · simp only [if_neg hab, consistency_term_eq_stateQForm]
-    rw [stateQForm_reindexState, reindexOp_mul]
-    rfl
+end
 
 /-- Polynomial collision and deterministic decoding, before choosing a
 register placement. This separates the finite probability calculation from
@@ -137,14 +97,12 @@ private theorem polynomial_decoding_defect_le_evaluated_add {P : AdmissibleParam
     {I J : Type*} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (A : Measurement (Poly P) I) (B : Measurement (Poly P) J)
     (psi : EuclideanSpace ℂ (I × J)) (hpsi : ‖psi‖ = 1) :
-    consistencyDefect (uniformDistribution (PauliRegister P))
-        (fun u a => heteroKron
-          ((A.postprocess (fun g => dotProduct (decodeFq g) u)).effect a) 1)
-        (fun u a => heteroKron 1
-          ((B.postprocess (fun g => dotProduct (decodeFq g) u)).effect a)) psi ≤
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-        (fun u a => heteroKron ((A.postprocess (fun g => evalPoly g u)).effect a) 1)
-        (fun u a => heteroKron 1 ((B.postprocess (fun g => evalPoly g u)).effect a)) psi +
+    bipartiteDefect (uniformDistribution (PauliRegister P))
+        (fun u => A.postprocess (fun g => dotProduct (decodeFq g) u))
+        (fun u => B.postprocess (fun g => dotProduct (decodeFq g) u)) psi ≤
+      bipartiteDefect (uniformDistribution (PauliPoint P))
+        (fun u => A.postprocess (fun g => evalPoly g u))
+        (fun u => B.postprocess (fun g => evalPoly g u)) psi +
           (P.m * P.d : ℝ) / P.q := by
   have hcollision := SandwichProduct.point_codeword_defect_le_avg_evaluated_add
     A B psi evalPoly ((P.m * P.d : ℝ) / P.q) hpsi
@@ -153,11 +111,17 @@ private theorem polynomial_decoding_defect_le_evaluated_add {P : AdmissibleParam
     (uniformDistribution Unit) (fun _ => A) (fun _ => B) psi
     (fun g => dotProduct (decodeFq g) u)
   simp only [consistencyDefect, avgOver_uniform_const,
-    consistency_term_eq_stateQForm, placed_product_stateQForm_eq] at hpost
-  simp only [consistencyDefect, consistency_term_eq_stateQForm,
-    placed_product_stateQForm_eq]
+    placed_product_stateQForm_eq] at hpost
+  simp only [consistencyDefect, placed_product_stateQForm_eq]
   exact (avgOver_mono _ _ _ hpost).trans
     ((avgOver_uniform_const _).le.trans hcollision)
+
+section
+
+variable {P : AdmissibleParams}
+    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
+    (w : GlobalPairWitness S deltaG) (W : PauliKind)
+include P epsilon deltaG S w W
 
 /-- The last polynomial-collision step of the pulling argument, followed by
 decoding. The field-measurement defect is bounded by the evaluated
@@ -168,53 +132,34 @@ measurement. Bounding the evaluated defect from the witness's point
 consistency remains the preceding steps of `eq:qld-pulling-cons`; no estimate
 for that defect is assumed here. The state and placements are the original
 six-register ones. -/
-theorem tildeM_consistencyDefect_le_pulling_eval_add {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem tildeM_consistencyDefect_le_pulling_eval_add :
     consistencyDefect (uniformDistribution (PauliRegister P))
         (fun u a => S.placeSide .alice (tildeM w .alice W u a))
         (fun u a => S.placeSide .bob (tildeM w .bob W u a)) S.psiHat ≤
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (uniformDistribution (PauliPoint P))
         (fun u a => S.placeSide .alice
           (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a))
         (fun u a => S.placeSide .bob
           (((pullingMeas w .bob W).postprocess (fun g => evalPoly g u)).effect a))
         S.psiHat + (P.m * P.d : ℝ) / P.q := by
   classical
-  rw [consistencyDefect_placeSide_eq, consistencyDefect_placeSide_eq]
+  rw [S.consistencyDefect_placeSide, S.consistencyDefect_placeSide]
   have h := polynomial_decoding_defect_le_evaluated_add
       (pullingMeas w .alice W) (pullingMeas w .bob W)
-      (reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB) S.psiHat)
+      (reindexState S.extractionBlocks S.psiHat)
       (by rw [reindexState_norm_eq, S.psiHat_norm])
-  have hAlice :
-      (fun u a => heteroKron (tildeM w .alice W u a)
-        (1 : Op (ExtractionBlock P S.toStrategy.ιB))) =
-        fun u a => heteroKron
-          (((pullingMeas w .alice W).postprocess (fun g => dotProduct (decodeFq g) u)).effect a)
-          (1 : Op (ExtractionBlock P S.toStrategy.ιB)) := by
-    funext u a
-    rw [pullingMeas_postprocess_effect]
-  have hBob :
-      (fun u a => heteroKron (1 : Op (ExtractionBlock P S.toStrategy.ιA))
-        (tildeM w .bob W u a)) =
-        fun u a => heteroKron (1 : Op (ExtractionBlock P S.toStrategy.ιA))
-          (((pullingMeas w .bob W).postprocess (fun g => dotProduct (decodeFq g) u)).effect a) := by
-    funext u a
-    rw [pullingMeas_postprocess_effect]
-  rw [hAlice, hBob]
+  simp_rw [← pullingMeas_postprocess_effect]
   exact h
 
 /-- Observable consistency reduces to the evaluated difference-polynomial
 defect. The coefficient four, uniform register average, and fixed basis
 coordinate are exactly those of the established character conversion.
 This estimate assumes no bound on the remaining evaluated defect. -/
-theorem tildeObs_opDistSq_le_pulling_eval_add {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) (j : Fin P.model.basisDim) :
+theorem tildeObs_opDistSq_le_pulling_eval_add (j : Fin P.model.basisDim) :
     opDistSq (uniformDistribution (PauliRegister P))
         (fun u => S.placeSide .alice (tildeObs w .alice W u j))
         (fun u => S.placeSide .bob (tildeObs w .bob W u j)) S.psiHat ≤
-      4 * (consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      4 * (consistencyDefect (uniformDistribution (PauliPoint P))
         (fun u a => S.placeSide .alice
           (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a))
         (fun u a => S.placeSide .bob
@@ -223,6 +168,8 @@ theorem tildeObs_opDistSq_le_pulling_eval_add {P : AdmissibleParams}
   exact (tildeObs_opDistSq_le_four_consistencyDefect w W j).trans
     (mul_le_mul_of_nonneg_left (tildeM_consistencyDefect_le_pulling_eval_add w W)
       (by norm_num))
+
+end
 
 end
 

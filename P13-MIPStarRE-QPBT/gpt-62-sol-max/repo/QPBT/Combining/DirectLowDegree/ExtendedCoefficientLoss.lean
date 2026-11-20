@@ -1,6 +1,7 @@
 module
 
-public import QPBT.Combining.DirectLowDegree.ResampledCoefficientConsistency
+public import QPBT.Combining.DirectLowDegree.CoefficientConsistency
+public import QPBT.Combining.DirectLowDegree.Transport.LineResampling
 
 /-!
 # Extended direct coefficient-collision loss
@@ -44,6 +45,6 @@ theorem extendedDirectLd_coefficientCollisionLoss_le_five_mul
   rw [show 5 * ((P.m : ℝ) * (P.d : ℝ) / (P.q : ℝ)) =
     (5 * ((P.m : ℝ) * (P.d : ℝ))) / (P.q : ℝ) by ring]
   apply (div_le_div_iff_of_pos_right hq).2
-  nlinarith [show (0 : ℝ) ≤ (P.d : ℝ) by positivity]
+  nlinarith
 
 end MIPStarRE.QPBT

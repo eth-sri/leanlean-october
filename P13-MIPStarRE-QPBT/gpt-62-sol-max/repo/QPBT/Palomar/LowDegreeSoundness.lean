@@ -49,14 +49,10 @@ theorem exists_ld_soundness :
   classical
   obtain ⟨a, b, ha, hb, hb1, hsound⟩ := MIPStarRE.QPBT.exists_ld_soundness
   refine ⟨a, b, ha, hb, hb1, ?_⟩
-  rintro ⟨q, m, d, k, hm, hd, hk, hq, hdvd⟩ ε hε S hprojective hvalue
-  let L : MIPStarRE.QPBT.LdParams :=
-    ⟨q, m, d, k, hm, hd, hk, hq, hdvd⟩
-  have hprojective' : (lowDegreeStrategyToLibrary L S).IsProjective :=
-    (lowDegreeStrategyToLibrary_isProjective_iff L S).2 hprojective
-  have hvalue' : 1 - ε ≤ (lowDegreeStrategyToLibrary L S).value := by
-    rw [lowDegreeStrategyToLibrary_value]
-    exact hvalue
+  intro P ε hε S hprojective hvalue
+  let L := P.toLdParams
+  have hprojective' := (lowDegreeStrategyToLibrary_isProjective_iff L S).2 hprojective
+  have hvalue' := hvalue.trans_eq (lowDegreeStrategyToLibrary_value L S).symm
   obtain ⟨GA, GB, hpointPolynomial, hpolynomialPoint, hpolynomialPolynomial⟩ :=
     hsound L ε hε (lowDegreeStrategyToLibrary L S) hprojective' hvalue'
   refine ⟨POVM.ofMeasurement GA, POVM.ofMeasurement GB, ?_, ?_, ?_⟩

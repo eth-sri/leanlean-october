@@ -31,11 +31,15 @@ noncomputable section
 
 namespace ExtendedLineGame
 
+section
+
+variable {params : DirectLdParams} {degree : ℕ}
+    (line : DirectLineDesc params)
+include params degree line
+
 /-- A successful completed readout at the point represented by `parameter`
 equals coefficient evaluation at `parameter`.  This includes zero directions. -/
-theorem evalCoefficient_eq_of_directEvalOpt_affine_eq_some
-    {params : DirectLdParams} {degree : ℕ}
-    (line : DirectLineDesc params) (coeffs : DirectDegPoly params degree)
+theorem evalCoefficient_eq_of_directEvalOpt_affine_eq_some (coeffs : DirectDegPoly params degree)
     (parameter answer : DirectScalarQ params)
     (hread : directEvalOpt line (line.base + parameter • line.direction) coeffs =
       some answer) :
@@ -46,9 +50,7 @@ theorem evalCoefficient_eq_of_directEvalOpt_affine_eq_some
 
 /-- If two coefficient vectors disagree at a parameter, then their completed
 readouts at the represented point disagree, or at least one readout is `none`. -/
-theorem evalCoefficient_ne_imp_directEvalOpt_ne_or_eq_none
-    {params : DirectLdParams} {degree : ℕ}
-    (line : DirectLineDesc params) (coeffsA coeffsB : DirectDegPoly params degree)
+theorem evalCoefficient_ne_imp_directEvalOpt_ne_or_eq_none (coeffsA coeffsB : DirectDegPoly params degree)
     (parameter : DirectScalarQ params)
     (hne : evalCoefficient coeffsA parameter ≠ evalCoefficient coeffsB parameter) :
     directEvalOpt line (line.base + parameter • line.direction) coeffsA ≠
@@ -78,41 +80,52 @@ theorem evalCoefficient_ne_imp_directEvalOpt_ne_or_eq_none
               (evalCoefficient_eq_of_directEvalOpt_affine_eq_some
                 line coeffsB parameter answerB hreadB).symm
 
-/-- Born mass of disagreement between the two parameter evaluations. -/
-def parameterEvalDefect {G : Game} {params : DirectLdParams} {degree : ℕ}
-    (S : Strategy G) (questionA : G.QuestionA) (questionB : G.QuestionB)
+end
+
+section
+
+variable {G : Game} {params : DirectLdParams} {degree : ℕ}
+    (S : Strategy G)
+include G params degree S
+
+section
+
+variable (questionA : G.QuestionA) (questionB : G.QuestionB)
     (readA : G.AnswerA → DirectDegPoly params degree)
     (readB : G.AnswerB → DirectDegPoly params degree)
+include questionA questionB readA readB
+
+/-- Born mass of disagreement between the two parameter evaluations. -/
+def parameterEvalDefect
     (parameter : DirectScalarQ params) : ℝ :=
   outcomeEventWeight S questionA questionB fun answerA answerB =>
     evalCoefficient (readA answerA) parameter ≠
       evalCoefficient (readB answerB) parameter
 
 /-- Born mass of disagreement between the two completed evaluation readouts. -/
-def completedEvalDefect {G : Game} {params : DirectLdParams} {degree : ℕ}
-    (S : Strategy G) (questionA : G.QuestionA) (questionB : G.QuestionB)
-    (readA : G.AnswerA → DirectDegPoly params degree)
-    (readB : G.AnswerB → DirectDegPoly params degree)
+def completedEvalDefect
     (line : DirectLineDesc params) (parameter : DirectScalarQ params) : ℝ :=
   outcomeEventWeight S questionA questionB fun answerA answerB =>
     directEvalOpt line (line.base + parameter • line.direction) (readA answerA) ≠
       directEvalOpt line (line.base + parameter • line.direction) (readB answerB)
 
+end
+
 /-- Alice's marginal Born mass of a failed completed evaluation. -/
-def completedEvalNoneMassA {G : Game} {params : DirectLdParams} {degree : ℕ}
-    (S : Strategy G) (questionA : G.QuestionA)
+def completedEvalNoneMassA (questionA : G.QuestionA)
     (readA : G.AnswerA → DirectDegPoly params degree)
     (line : DirectLineDesc params) (parameter : DirectScalarQ params) : ℝ :=
   aliceEventWeight S questionA fun answerA =>
     directEvalOpt line (line.base + parameter • line.direction) (readA answerA) = none
 
 /-- Bob's marginal Born mass of a failed completed evaluation. -/
-def completedEvalNoneMassB {G : Game} {params : DirectLdParams} {degree : ℕ}
-    (S : Strategy G) (questionB : G.QuestionB)
+def completedEvalNoneMassB (questionB : G.QuestionB)
     (readB : G.AnswerB → DirectDegPoly params degree)
     (line : DirectLineDesc params) (parameter : DirectScalarQ params) : ℝ :=
   bobEventWeight S questionB fun answerB =>
     directEvalOpt line (line.base + parameter • line.direction) (readB answerB) = none
+
+end
 
 set_option maxHeartbeats 600000 in
 -- Expanding three nested outcome events requires repeated finite-sum normalization.
@@ -134,57 +147,14 @@ theorem parameterEvalDefect_le_completed_add_none
   rw [← outcome_event_weight_left_eq S questionA questionB,
     ← outcome_event_weight_right_eq S questionA questionB]
   unfold parameterEvalDefect completedEvalDefect outcomeEventWeight
-  calc
-    (∑ answerA : G.AnswerA, ∑ answerB : G.AnswerB,
-        if evalCoefficient (readA answerA) parameter ≠
-            evalCoefficient (readB answerB) parameter then
-          outcomeWeight S questionA questionB answerA answerB else 0) ≤
-      ∑ answerA : G.AnswerA, ∑ answerB : G.AnswerB,
-        ((if directEvalOpt line (line.base + parameter • line.direction)
-              (readA answerA) ≠
-            directEvalOpt line (line.base + parameter • line.direction)
-              (readB answerB) then
-            outcomeWeight S questionA questionB answerA answerB else 0) +
-          (if directEvalOpt line (line.base + parameter • line.direction)
-              (readA answerA) = none then
-            outcomeWeight S questionA questionB answerA answerB else 0) +
-          if directEvalOpt line (line.base + parameter • line.direction)
-              (readB answerB) = none then
-            outcomeWeight S questionA questionB answerA answerB else 0) := by
-      apply Finset.sum_le_sum
-      intro answerA _
-      apply Finset.sum_le_sum
-      intro answerB _
-      have hweight := outcomeWeight_nonneg S questionA questionB answerA answerB
-      by_cases hparameter : evalCoefficient (readA answerA) parameter ≠
-          evalCoefficient (readB answerB) parameter
-      · rcases evalCoefficient_ne_imp_directEvalOpt_ne_or_eq_none
-          line (readA answerA) (readB answerB) parameter hparameter with
-          hcompleted | hnoneA | hnoneB
-        · simp [hparameter, hcompleted]
-          split_ifs <;> linarith
-        · simp [hparameter, hnoneA]
-          split_ifs <;> linarith
-        · simp [hparameter, hnoneB]
-          split_ifs <;> linarith
-      · simp [hparameter]
-        split_ifs <;> linarith
-    _ =
-        (∑ answerA : G.AnswerA, ∑ answerB : G.AnswerB,
-          if directEvalOpt line (line.base + parameter • line.direction)
-                (readA answerA) ≠
-              directEvalOpt line (line.base + parameter • line.direction)
-                (readB answerB) then
-            outcomeWeight S questionA questionB answerA answerB else 0) +
-        (∑ answerA : G.AnswerA, ∑ answerB : G.AnswerB,
-          if directEvalOpt line (line.base + parameter • line.direction)
-              (readA answerA) = none then
-            outcomeWeight S questionA questionB answerA answerB else 0) +
-        ∑ answerA : G.AnswerA, ∑ answerB : G.AnswerB,
-          if directEvalOpt line (line.base + parameter • line.direction)
-              (readB answerB) = none then
-            outcomeWeight S questionA questionB answerA answerB else 0 := by
-      simp_rw [Finset.sum_add_distrib]
+  simp_rw [← Finset.sum_add_distrib]
+  refine Finset.sum_le_sum fun a _ => Finset.sum_le_sum fun b _ => ?_
+  have hw := outcomeWeight_nonneg S questionA questionB a b
+  by_cases h : evalCoefficient (readA a) parameter ≠ evalCoefficient (readB b) parameter
+  · rcases evalCoefficient_ne_imp_directEvalOpt_ne_or_eq_none line _ _ _ h with h' | h' | h' <;>
+      simp [h, h'] <;> split_ifs <;> linarith
+  · simp [h]
+    split_ifs <;> linarith
 
 end ExtendedLineGame
 

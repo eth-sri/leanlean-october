@@ -40,82 +40,32 @@ noncomputable section
 
 /-! ## Absorption of expanded point measurements -/
 
-namespace GlobalPairWitness
+section
 
-/-- Evaluating a single-basis marginal is the same finite postprocessing as
-evaluating the corresponding component of the joint polynomial outcome. This
-is the coarse-graining in the proof of blueprint
-`lem:qld-constructing-the-paulis-helper`, paper
-`14_analysis_of_the_pauli_basis_test.tex:1626-1637`. -/
-theorem marginalPoly_postprocess_eval {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) (point : Fin P.m → PauliScalar P) :
-    (w.marginalPoly side W).postprocess (fun poly => MvPolynomial.eval point poly.1) =
-      (w.Smeas side).postprocess (evalAt W point) := by
-  rw [marginalPoly, MIPStarRE.Quantum.Measurement.postprocess_comp]
-  cases W <;> rfl
+variable {P : AdmissibleParams} {ε δ : ℝ}
+    {S : ProjectiveSetting P ε} (w : GlobalPairWitness S δ)
+include P ε δ S w
 
-end GlobalPairWitness
+/-- Regrouping the polynomial outcomes by any scalar readout preserves the agreement operator. -/
+theorem sum_marginalPoly_readout_mul (p : Placement) (W : PauliKind)
+    (f : Poly P → PauliScalar P) (B : PauliScalar P → Op (S.ExpandedSpace)) :
+    (∑ a, S.place p (((w.marginalPoly p.side W).postprocess f).effect a) * B a) =
+      ∑ g, S.place p ((w.marginalPoly p.side W).effect g) * B (f g) := by
+  simp only [Measurement.postprocess_effect, place_finsetSum, Finset.sum_mul, Finset.sum_fiberwise_apply]
 
-/-- Regrouping polynomial outcomes by their value at a point preserves the
-agreement operator. This is the finite-sum identity behind paper
-`14_analysis_of_the_pauli_basis_test.tex:1626-1637`, blueprint
-`lem:qld-constructing-the-paulis-helper`. -/
-theorem sum_marginalPoly_eval_mul {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (placement : Placement) (W : PauliKind) (point : Fin P.m → PauliScalar P)
-    (family : PauliScalar P → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
-    (∑ answer : PauliScalar P, S.place placement
-      (((w.marginalPoly placement.side W).postprocess
-        (fun poly => MvPolynomial.eval point poly.1)).effect answer) * family answer) =
-      ∑ poly : Poly P, S.place placement ((w.marginalPoly placement.side W).effect poly) *
-        family (MvPolynomial.eval point poly.1) := by
-  classical
-  simp only [MIPStarRE.Quantum.Measurement.postprocess_effect, place_finsetSum,
-    Finset.sum_mul]
-  calc
-    _ = ∑ answer : PauliScalar P,
-        ∑ poly ∈ Finset.univ.filter (fun poly : Poly P =>
-          MvPolynomial.eval point poly.1 = answer),
-          S.place placement ((w.marginalPoly placement.side W).effect poly) *
-            family (MvPolynomial.eval point poly.1) := by
-      apply Finset.sum_congr rfl
-      intro answer _
-      apply Finset.sum_congr rfl
-      intro poly hpoly
-      rw [(Finset.mem_filter.mp hpoly).2]
-    _ = _ := Finset.sum_fiberwise _ _ _
+/-- The defect after reading a polynomial marginal at a point, against the crossed point measurement. -/
+abbrev marginalReadoutDefect (p q : Placement) (W : PauliKind)
+    (f : (PauliPoint P) → Poly P → PauliScalar P) : ℝ :=
+  S.placedDefect p q (uniformDistribution (PauliPoint P))
+    (fun u => (w.marginalPoly p.side W).postprocess (f u)) (S.pointMeasExp q.side W)
 
-/-- Alice's evaluated marginal on `AA'` retains the witness consistency with
-Bob's expanded point measurement on `BA''`. This is the direct placement in
-paper `14_analysis_of_the_pauli_basis_test.tex:1626-1637`, supporting blueprint
-`lem:qld-constructing-the-paulis-helper`; no register transfer is used. -/
-theorem marginalPoly_pointMeas_consistent_alice {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-      (fun point answer => S.place .AA'
-        (((w.marginalPoly .alice W).postprocess
-          (fun poly => MvPolynomial.eval point poly.1)).effect answer))
-      (fun point answer => S.place .BA''
-        ((S.pointMeasExp .bob W point).effect answer)) S.psiHat ≤ deltaG := by
-  simpa only [w.marginalPoly_postprocess_eval] using w.point_consistent_alice W
+/-- Evaluating the marginal retains the witness consistency with the opposite expanded points. -/
+theorem marginalPoly_pointMeas_consistent {p : Placement}
+    (hp : p.Primary) (W : PauliKind) :
+    marginalReadoutDefect w p (overlapPartner p) W (fun u g => evalPoly g u) ≤ δ := by
+  simpa only [marginalReadoutDefect, w.marginalPoly_postprocess_eval] using w.point_consistent hp W
 
-/-- Bob's evaluated marginal on `BB'` retains the witness consistency with
-Alice's expanded point measurement on `AB''`. This is the reverse-player
-direct placement of paper `14_analysis_of_the_pauli_basis_test.tex:1626-1637`,
-supporting blueprint `lem:qld-constructing-the-paulis-helper`; no register
-transfer is used. -/
-theorem marginalPoly_pointMeas_consistent_bob {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
-    consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
-      (fun point answer => S.place .BB'
-        (((w.marginalPoly .bob W).postprocess
-          (fun poly => MvPolynomial.eval point poly.1)).effect answer))
-      (fun point answer => S.place .AB''
-        ((S.pointMeasExp .alice W point).effect answer)) S.psiHat ≤ deltaG := by
-  simpa only [w.marginalPoly_postprocess_eval] using w.point_consistent_bob W
+end
 
 /-! ## Non-encoding support -/
 
@@ -134,12 +84,8 @@ noncomputable def nonencodingMarginalMass {P : AdmissibleParams}
     (w : GlobalPairWitness S deltaS) (side : PlayerSide) (W : PauliKind) : ℝ := by
   classical
   exact ∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
-    (inner ℂ S.psiHat
-      (applyOperatorToState
-        (S.placeSide side
-          (heteroKron ((w.marginalPoly side W).effect g)
-            (1 : Op (PauliRegister P))))
-        S.psiHat)).re
+    DistanceCalculus.stateQForm S.psiHat
+      (S.placeSide side (heteroKron ((w.marginalPoly side W).effect g) (1 : Op (PauliRegister P))))
 
 end
 

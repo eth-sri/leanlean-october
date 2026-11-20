@@ -1,7 +1,7 @@
 module
 
 public import QPBT.Extraction.EPRProjection
-public import QPBT.Test.MagicSquareTheorems.Rigidity.JointState
+public import Mathlib.Analysis.Normed.Module.Normalize
 
 /-!
 # The auxiliary vector from the EPR projection
@@ -25,16 +25,6 @@ namespace MIPStarRE.QPBT
 open MIPStarRE.Quantum
 
 noncomputable section
-
-/-- Move each extracted register before its auxiliary registers. This
-permutation puts the ideal state in the order used by
-`MagicSquareRigidity.exists_unit_residual`. -/
-def extractionEprFirstEquiv (P : AdmissibleParams) (ιA ιB : Type*) :
-    SixReg P ιA ιB ≃
-      (PauliRegister P × (ιA × PauliRegister P)) ×
-        (PauliRegister P × (ιB × PauliRegister P)) :=
-  (sixRegExtractionEquiv P ιA ιB).trans
-    (Equiv.prodCongr (Equiv.prodComm _ _) (Equiv.prodComm _ _))
 
 namespace Extraction
 
@@ -77,31 +67,17 @@ variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
 
 open scoped Classical
 
-/-- In EPR-first local coordinates, the ideal extraction state is the target
-of the existing auxiliary-state normalization theorem. -/
-theorem reindexState_idealExpState
-    (aux : EuclideanSpace ℂ
-      (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
-    reindexState (extractionEprFirstEquiv P S.toStrategy.ιA S.toStrategy.ιB)
-        (S.idealExpState aux) =
-      reindexState prodShuffle (vecTensor (eprState (PauliRegister P)) aux) := by
-  ext index
-  change aux ((index.1.2.1, index.1.2.2), (index.2.2.1, index.2.2.2)) *
-      eprState (PauliRegister P) (index.1.1, index.2.1) =
-    eprState (PauliRegister P) (index.1.1, index.2.1) * aux (index.1.2, index.2.2)
-  exact mul_comm _ _
-
 /-- Tensoring an auxiliary vector with EPR preserves its norm. -/
 theorem idealExpState_norm
     (aux : EuclideanSpace ℂ
-      (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
+      (S.ExtractionAux)) :
     ‖S.idealExpState aux‖ = ‖aux‖ := by
   rw [idealExpState, reindexState_norm_eq, vecTensor_norm_eq, eprState_norm, mul_one]
 
 /-- A normalized reference vector on `AA'BB'`, formed from the original state
 and one EPR pair. It is used when the EPR projection of the given state vanishes. -/
 def extractionAuxReference : EuclideanSpace ℂ
-    (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB) :=
+    (S.ExtractionAux) :=
   reindexState prodShuffle (vecTensor S.toStrategy.ψ (eprState (PauliRegister P)))
 
 /-- The reference auxiliary vector has norm one. -/
@@ -111,64 +87,75 @@ theorem extractionAuxReference_norm : ‖S.extractionAuxReference‖ = 1 := by
 
 /-- The EPR projection on registers `A''B''`, with identity on `AA'BB'`.
 Paper lines 1766-1769 use this projection to select the auxiliary vector. -/
-def extractionEprProjection : Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
-  reindexOp (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm
-    (heteroKron (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+def extractionEprProjection : Op (S.ExpandedSpace) :=
+  reindexOp S.extractionShuffle.symm
+    (heteroKron (1 : Op (S.ExtractionAux))
       (Matrix.vecMulVec (fun x => eprState (PauliRegister P) x)
         (fun y => star (eprState (PauliRegister P) y))))
 
 /-- The auxiliary vector before normalization, obtained by contracting the
 extracted registers against EPR. This is `aux_0` at paper line 1769. -/
 def extractionAux0
-    (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
-    EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB) :=
+    (θ : EuclideanSpace ℂ (S.ExpandedSpace)) :
+    EuclideanSpace ℂ (S.ExtractionAux) :=
   Extraction.eprPartialInner
-    (reindexState (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm θ)
+    (reindexState S.extractionShuffle.symm θ)
 
 /-- The unnormalized ideal extraction state is the EPR projection of the
 given six-register state. This identifies the actual auxiliary construction
 with the projection in paper lines 1776-1779, retaining the heterogeneous
 player spaces of blueprint `lem:qld-unitary`. -/
 theorem idealExpState_extractionAux0
-    (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
+    (θ : EuclideanSpace ℂ (S.ExpandedSpace)) :
     S.idealExpState (S.extractionAux0 θ) =
       applyOperatorToState S.extractionEprProjection θ := by
   unfold idealExpState extractionAux0
   rw [Extraction.vecTensor_eprPartialInner]
   ext x
-  let e := (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm
+  let e := S.extractionShuffle.symm
   let T := heteroKron
-    (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+    (1 : Op (S.ExtractionAux))
     (Matrix.vecMulVec (fun x => eprState (PauliRegister P) x)
       (fun y => star (eprState (PauliRegister P) y)))
   change (T *ᵥ (fun j => θ (e.symm j))) (e x) =
     ((T.submatrix e e) *ᵥ (fun j => θ j)) x
   exact (congrFun (Matrix.submatrix_mulVec_equiv T (fun j => θ j) e e) x).symm
 
-/-- Normalize the projected auxiliary vector, at twice the projection error.
-This is the normalization step at paper lines 1773-1783. The existing
-normalization theorem also covers a zero projection, using the reference
-vector above; no nonvanishing assumption is added. -/
+/-- Normalize the projected auxiliary vector at twice the projection error,
+using the reference vector when the projection vanishes. -/
 theorem exists_unit_aux_near_eprProjection
-    (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) (hθ : ‖θ‖ = 1) :
-    ∃ aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB),
+    (θ : EuclideanSpace ℂ (S.ExpandedSpace)) (hθ : ‖θ‖ = 1) :
+    ∃ aux : EuclideanSpace ℂ (S.ExtractionAux),
       ‖aux‖ = 1 ∧ ‖θ - S.idealExpState aux‖ ≤
         2 * ‖θ - applyOperatorToState S.extractionEprProjection θ‖ := by
-  let e := extractionEprFirstEquiv P S.toStrategy.ιA S.toStrategy.ιB
-  have hdist (aux : EuclideanSpace ℂ
-      (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
-      ‖reindexState e θ -
-        reindexState prodShuffle (vecTensor (eprState (PauliRegister P)) aux)‖ =
-          ‖θ - S.idealExpState aux‖ := by
-    rw [← S.reindexState_idealExpState]
-    exact (LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ e).norm_map (θ - S.idealExpState aux)
-  obtain ⟨aux, haux, hclose⟩ := MagicSquareRigidity.exists_unit_residual
-    (reindexState e θ) (by rwa [reindexState_norm_eq])
-    S.extractionAuxReference S.extractionAuxReference_norm
-    ‖θ - applyOperatorToState S.extractionEprProjection θ‖ (S.extractionAux0 θ)
-    (((hdist (S.extractionAux0 θ)).trans
-      (congrArg (fun v => ‖θ - v‖) (S.idealExpState_extractionAux0 θ))).le)
-  exact ⟨aux, haux, (hdist aux).symm.trans_le hclose⟩
+  rw [← S.idealExpState_extractionAux0]
+  let a := S.extractionAux0 θ
+  change ∃ b, ‖b‖ = 1 ∧ ‖θ - S.idealExpState b‖ ≤ 2 * ‖θ - S.idealExpState a‖
+  have hgap := abs_norm_sub_norm_le θ (S.idealExpState a)
+  rw [hθ, S.idealExpState_norm] at hgap
+  by_cases hz : a = 0
+  · refine ⟨S.extractionAuxReference, S.extractionAuxReference_norm, ?_⟩
+    have ha : ‖a‖ = 0 := by simp [hz]
+    rw [ha, sub_zero, abs_one] at hgap
+    have ht := norm_sub_le θ (S.idealExpState S.extractionAuxReference)
+    rw [hθ, S.idealExpState_norm, S.extractionAuxReference_norm] at ht
+    linarith
+  · let b := NormedSpace.normalize a
+    have hb : ‖b‖ = 1 := NormedSpace.norm_normalize hz
+    have hf (r : ℝ) (v : EuclideanSpace ℂ S.ExtractionAux) :
+        S.idealExpState (r • v) = r • S.idealExpState v := by
+      ext x
+      simp [idealExpState, reindexState, vecTensor, EuclideanSpace.equiv, Algebra.smul_def, mul_assoc]
+    have hs : ‖a‖ • S.idealExpState b = S.idealExpState a := by
+      rw [← hf]
+      exact congrArg S.idealExpState (NormedSpace.norm_smul_normalize a)
+    have hd : ‖S.idealExpState a - S.idealExpState b‖ = |1 - ‖a‖| := calc
+      _ = ‖(‖a‖ - 1) • S.idealExpState b‖ := by rw [← hs, sub_smul, one_smul]
+      _ = _ := by rw [norm_smul, Real.norm_eq_abs, S.idealExpState_norm, hb, mul_one, abs_sub_comm]
+    refine ⟨b, hb, ?_⟩
+    have ht := norm_sub_le_norm_sub_add_norm_sub θ (S.idealExpState a) (S.idealExpState b)
+    rw [hd] at ht
+    linarith
 
 end ProjectiveSetting
 

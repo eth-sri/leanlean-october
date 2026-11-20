@@ -33,34 +33,24 @@ noncomputable section
 private noncomputable def rawPauliTransferFactor : ℝ :=
   2 + 4 * (Fintype.card PauliEdge : ℝ)
 
-private theorem epsilon_le_deltaQld {P : AdmissibleParams}
-    {a b ε : ℝ} (ha : 1 ≤ a) (hb : 0 < b) (hb1 : b < 1)
-    (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) :
-    ε ≤ deltaQld a b ε P.m P.d P.q := by
-  have hmd : (1 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) :=
-    Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
-  have hmd0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := zero_le_one.trans hmd
-  have ha0 : 0 ≤ a := zero_le_one.trans ha
-  have hpref : 1 ≤ a * ((P.m * P.d : ℕ) : ℝ) ^ a :=
-    one_le_mul_of_one_le_of_one_le ha (Real.one_le_rpow hmd ha0)
-  have hεpow : ε ≤ ε ^ b := by
-    simpa using Real.rpow_le_rpow_of_exponent_ge' hε0 hε1 hb.le hb1.le
-  have hq := Real.rpow_nonneg (Nat.cast_nonneg P.q) (-b)
-  have htwo := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2)
-    (-(b * ((P.m * P.d : ℕ) : ℝ)))
-  unfold deltaQld
-  simp only [Real.rpow_eq_pow]
-  nlinarith [mul_nonneg (sub_nonneg.mpr hpref)
-    (add_nonneg (add_nonneg (Real.rpow_nonneg hε0 b) hq) htwo)]
+section
 
-private theorem raw_pauli_error_absorb {P : AdmissibleParams}
+variable {P : AdmissibleParams}
     {a b ε : ℝ} (ha : 1 ≤ a) (hb : 0 < b) (hb1 : b < 1)
-    (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) :
-    2 * deltaQld a b ε P.m P.d P.q +
-        4 * deltaQld a b ε P.m P.d P.q ^ 2 +
+    (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1)
+include P a b ε ha hb hb1 hε0 hε1
+
+private theorem epsilon_le_deltaQld :
+    ε ≤ P.qldError a b ε := by
+  exact (by simpa using Real.rpow_le_rpow_of_exponent_ge' hε0 hε1 hb.le hb1.le : ε ≤ ε ^ b).trans
+    (rpow_noise_le_deltaQld ha hε0)
+
+private theorem raw_pauli_error_absorb :
+    2 * P.qldError a b ε +
+        4 * P.qldError a b ε ^ 2 +
         4 * (Fintype.card PauliEdge : ℝ) * ε ≤
-      deltaQld (rawPauliTransferFactor * (21 * a ^ 2)) b ε P.m P.d P.q := by
-  let d := deltaQld a b ε P.m P.d P.q
+      P.qldError (rawPauliTransferFactor * (21 * a ^ 2)) b ε := by
+  let d := P.qldError a b ε
   let K := rawPauliTransferFactor
   have hd : 0 ≤ d := deltaQld_nonneg (zero_le_one.trans ha) hε0
   have hεd : ε ≤ d := epsilon_le_deltaQld ha hb hb1 hε0 hε1
@@ -69,7 +59,7 @@ private theorem raw_pauli_error_absorb {P : AdmissibleParams}
     have hcard : (0 : ℝ) ≤ Fintype.card PauliEdge := Nat.cast_nonneg _
     linarith
   have hbase : 3 * d + 6 * d ^ 2 ≤
-      deltaQld (21 * a ^ 2) b ε P.m P.d P.q :=
+      P.qldError (21 * a ^ 2) b ε :=
     three_add_six_sq_deltaQld_le ha hb hε0 hε1
   calc
     2 * d + 4 * d ^ 2 + 4 * (Fintype.card PauliEdge : ℝ) * ε ≤
@@ -80,10 +70,12 @@ private theorem raw_pauli_error_absorb {P : AdmissibleParams}
       dsimp only [K, rawPauliTransferFactor]
       have hcard : (0 : ℝ) ≤ Fintype.card PauliEdge := Nat.cast_nonneg _
       nlinarith [mul_nonneg hcard hd, mul_nonneg hcard (sq_nonneg d), sq_nonneg d]
-    _ ≤ K * deltaQld (21 * a ^ 2) b ε P.m P.d P.q :=
+    _ ≤ K * P.qldError (21 * a ^ 2) b ε :=
       mul_le_mul_of_nonneg_left hbase (zero_le_one.trans hK)
-    _ ≤ deltaQld (K * (21 * a ^ 2)) b ε P.m P.d P.q := by
+    _ ≤ P.qldError (K * (21 * a ^ 2)) b ε := by
       exact scale_deltaQld_le (by nlinarith [sq_nonneg a]) hε0 hK
+
+end
 
 /-- The arbitrary-strategy soundness estimates for the raw prescribed Pauli
 answer effects of `thm:pauli`. The completed-family Naimark estimates remain
@@ -93,12 +85,7 @@ theorem exists_arbitrary_strategy_raw_isometry_bounds :
       ∀ (P : AdmissibleParams) (ε : ℝ), 0 ≤ ε →
         ∀ S : Strategy (pauliBasisTest P), 1 - ε ≤ S.value →
           ∃ w : PauliSoundnessWitness P S,
-            ‖isometryTensor w.φA w.φB S.ψ - idealState P w.aux‖ ≤
-                deltaQld A b ε P.m P.d P.q ∧
-            (∀ W : PauliKind,
-              rawPauliOperatorDistanceA P S w W ≤ deltaQld A b ε P.m P.d P.q) ∧
-            (∀ W : PauliKind,
-              rawPauliOperatorDistanceB P S w W ≤ deltaQld A b ε P.m P.d P.q) := by
+            w.rawWithin (P.qldError A b ε) := by
   obtain ⟨a, b, ha, hb, hb1, hcompleted⟩ := exists_arbitrary_strategy_isometry_bounds
   let A := rawPauliTransferFactor * (21 * a ^ 2)
   have hfactor : 1 ≤ rawPauliTransferFactor := by
@@ -120,51 +107,34 @@ theorem exists_arbitrary_strategy_raw_isometry_bounds :
   have hsmall : ∀ (P : AdmissibleParams) (ε : ℝ), 0 ≤ ε → ε ≤ 1 →
       ∀ S : Strategy (pauliBasisTest P), 1 - ε ≤ S.value →
         ∃ w : PauliSoundnessWitness P S,
-          ‖isometryTensor w.φA w.φB S.ψ - idealState P w.aux‖ ≤
-              deltaQld A b ε P.m P.d P.q ∧
-          (∀ W : PauliKind,
-            rawPauliOperatorDistanceA P S w W ≤ deltaQld A b ε P.m P.d P.q) ∧
-          (∀ W : PauliKind,
-            rawPauliOperatorDistanceB P S w W ≤ deltaQld A b ε P.m P.d P.q) := by
+          w.rawWithin (P.qldError A b ε) := by
     intro P ε hε0 hε1 S hwin
     obtain ⟨w, hstate, hcompletedA, hcompletedB⟩ :=
       hcompleted P ε hε0 hε1 S hwin
-    let d := deltaQld a b ε P.m P.d P.q
+    let d := P.qldError a b ε
     have habsorb : 2 * d + 4 * d ^ 2 +
         4 * (Fintype.card PauliEdge : ℝ) * ε ≤
-          deltaQld A b ε P.m P.d P.q := by
+          P.qldError A b ε := by
       dsimp only [d, A]
       exact raw_pauli_error_absorb ha hb hb1 hε0 hε1
-    have hmono : d ≤ deltaQld A b ε P.m P.d P.q := by
+    have hmono : d ≤ P.qldError A b ε := by
       dsimp only [d]
       exact deltaQld_mono ha haA le_rfl hb hε0 hε1
-    refine ⟨w, hstate.trans hmono, ?_, ?_⟩
-    · intro W
-      calc
-        rawPauliOperatorDistanceA P S w W ≤
-            2 * pauliOperatorDistanceA P S w W + 4 * d ^ 2 +
-              4 * (Fintype.card PauliEdge : ℝ) * ε :=
-          raw_pauli_operator_distanceA_le_completed S hwin w hstate W
-        _ ≤ 2 * d + 4 * d ^ 2 + 4 * (Fintype.card PauliEdge : ℝ) * ε := by
-          linarith [hcompletedA W]
-        _ ≤ _ := habsorb
-    · intro W
-      calc
-        rawPauliOperatorDistanceB P S w W ≤
-            2 * pauliOperatorDistanceB P S w W + 4 * d ^ 2 +
-              4 * (Fintype.card PauliEdge : ℝ) * ε :=
-          raw_pauli_operator_distanceB_le_completed S hwin w hstate W
-        _ ≤ 2 * d + 4 * d ^ 2 + 4 * (Fintype.card PauliEdge : ℝ) * ε := by
-          linarith [hcompletedB W]
-        _ ≤ _ := habsorb
+    have transfer {x y : ℝ}
+        (h : x ≤ 2 * y + 4 * d ^ 2 + 4 * (Fintype.card PauliEdge : ℝ) * ε)
+        (hy : y ≤ d) : x ≤ P.qldError A b ε :=
+      (show x ≤ 2 * d + 4 * d ^ 2 + 4 * (Fintype.card PauliEdge : ℝ) * ε by linarith).trans habsorb
+    exact ⟨w, hstate.trans hmono,
+      fun W => transfer (raw_pauli_operator_distanceA_le_completed S hwin w hstate W) (hcompletedA W),
+      fun W => transfer (raw_pauli_operator_distanceB_le_completed S hwin w hstate W) (hcompletedB W)⟩
   refine ⟨A, b, hA, hb, hb1, ?_⟩
   intro P ε hε0 S hwin
   rcases le_or_gt ε 1 with hε1 | hε1
   · exact hsmall P ε hε0 hε1 S hwin
   · obtain ⟨w, hstate, hAraw, hBraw⟩ :=
       hsmall P 1 zero_le_one le_rfl S (by simpa using S.value_nonneg)
-    have hmono : deltaQld A b 1 P.m P.d P.q ≤
-        deltaQld A b ε P.m P.d P.q :=
+    have hmono : P.qldError A b 1 ≤
+        P.qldError A b ε :=
       deltaQld_mono_epsilon hA hb zero_le_one hε1.le
     exact ⟨w, hstate.trans hmono, fun W => (hAraw W).trans hmono,
       fun W => (hBraw W).trans hmono⟩

@@ -1,8 +1,6 @@
 module
 
 public import Mathlib
-public import QPBT.Algebra.RowEchelon
-public import QPBT.Algebra.Subspaces
 
 /-!
 # Lines and canonical representatives
@@ -32,12 +30,17 @@ open scoped BigOperators
 
 variable {K : Type*} [Field K]
 
+section
+
+variable {m : ℕ}
+include m
+
 /--
 The affine line through `u` in direction `v`, including the singleton case
 `v = 0`.  Blueprint `def:line`; paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:106-124`.
 -/
-def linePoints {m : ℕ}
+def linePoints
     (u v : Fin m → K) : Set (Fin m → K) :=
   {x | ∃ t : K, x = u + t • v}
 
@@ -45,201 +48,101 @@ def linePoints {m : ℕ}
 blueprint `def:line`; paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:106-124`.
 -/
-def coordinateDirection {m : ℕ}
+def coordinateDirection
     (i : Fin m) : Fin m → K :=
   Pi.single i 1
 
-/--
-Changing the base point to another point on a line leaves the line unchanged.
-This is blueprint `prop:line-equiv`,
-with paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:128-132`.
--/
-theorem linePoints_eq_of_mem {m : ℕ}
-    (u v u' : Fin m → K) (h : u' ∈ linePoints u v) :
-    linePoints u v = linePoints u' v := by
-  obtain ⟨t, rfl⟩ := h
-  ext x
-  constructor
-  · rintro ⟨s, rfl⟩
-    exact ⟨s - t, by module⟩
-  · rintro ⟨s, rfl⟩
-    exact ⟨t + s, by module⟩
+section
 
-/--
-The canonical linear representative map of a line direction.  It projects onto
-the coordinate complement of the span of `v`; for `v = 0` the span is bottom,
-so the resulting map is the identity.  Blueprint `def:line-representative`;
-paper origin
-`references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:143-174`.
--/
-noncomputable def lineRepMap {m : ℕ}
-    (v : Fin m → K) : (Fin m → K) →ₗ[K] (Fin m → K) :=
-  canonicalProjOfKernel (Submodule.span K ({v} : Set (Fin m → K)))
+variable (v : Fin m → K) (hv : v ≠ 0)
+include v hv
 
 /-- The least coordinate at which a nonzero line direction is nonzero. This is
 Lean-only support for the elementary formula for the canonical representative;
 coordinates use the same left-to-right order as paper `def:cl-canonical`. -/
-noncomputable def linePivotIndex {m : ℕ} (v : Fin m → K) (hv : v ≠ 0) : Fin m := by
+noncomputable def linePivotIndex : Fin m := by
   classical
   let support := Finset.univ.filter fun j => v j ≠ 0
   have hsupport : support.Nonempty := by
-    by_contra h
-    apply hv
-    funext j
-    by_contra hj
-    apply h
-    refine ⟨j, ?_⟩
-    simp only [support, Finset.mem_filter, Finset.mem_univ, true_and]
-    simpa using hj
+    simpa [support, Finset.filter_nonempty_iff, funext_iff] using hv
   exact support.min' hsupport
 
 /-- The pivot coordinate of a nonzero direction is nonzero. -/
-theorem linePivotIndex_ne_zero {m : ℕ} (v : Fin m → K) (hv : v ≠ 0) :
+theorem linePivotIndex_ne_zero :
     v (linePivotIndex v hv) ≠ 0 := by
   classical
   have hmem :
       linePivotIndex v hv ∈ Finset.univ.filter fun j => v j ≠ 0 := by
     unfold linePivotIndex
     exact Finset.min'_mem _ _
-  exact (Finset.mem_filter.mp hmem).2
+  simp_all
 
-/-- Every coordinate before the pivot coordinate of a nonzero direction vanishes. -/
-theorem linePivotIndex_zero_before {m : ℕ} (v : Fin m → K) (hv : v ≠ 0)
-    (i : Fin m) (hi : i < linePivotIndex v hv) : v i = 0 := by
+/-- The pivot is the first nonzero coordinate. -/
+theorem linePivotIndex_le (i : Fin m) (hi : v i ≠ 0) : linePivotIndex v hv ≤ i := by
   classical
-  by_contra hvi
-  unfold linePivotIndex at hi
-  exact (not_le_of_gt hi) (Finset.min'_le _ i (by simp [hvi]))
+  unfold linePivotIndex
+  exact Finset.min'_le _ _ (by simp [hi])
 
-/--
-The elementary canonical representative of the line through `u` in direction
-`v`. The zero direction returns `u`. Otherwise it subtracts the unique multiple
-of `v` that makes the least nonzero coordinate of `v` vanish. This Lean-only
-formula is used to replace the general canonical-complement construction in the
-compact Palomar statement while preserving paper `def:line-representative`.
--/
-noncomputable def explicitLineRep {m : ℕ}
-    (u v : Fin m → K) : Fin m → K :=
+end
+
+/-- The affine coordinate read at the first nonzero entry of the direction.
+For the singleton line it is set to zero. -/
+noncomputable def directLineRepParameter (v : Fin m → K) : (Fin m → K) →ₗ[K] K :=
   open Classical in
-    if hv : v = 0 then u
-    else
-      let j := linePivotIndex v hv
-      u - (u j / v j) • v
+  if hv : v = 0 then 0 else (v (linePivotIndex v hv))⁻¹ • LinearMap.proj (linePivotIndex v hv)
 
-/- The point-valued companion to `lineRepMap`; Lean-only notation for the
-canonical representative in `def:line-representative`. -/
+/-- Project onto the coordinate complement of the direction by subtracting
+its affine coordinate. This is the least-pivot form of `def:line-representative`. -/
+noncomputable def lineRepMap (v : Fin m → K) : (Fin m → K) →ₗ[K] (Fin m → K) :=
+  LinearMap.id - (directLineRepParameter v).smulRight v
 
-/--
-Formalization support node blueprint `lem:line-rep-kernel` for
-`def:line-representative` (paper origin
-`references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:143-174`).
-The canonical representative map is a projection whose kernel is the line
-`K v`, so a point and its canonical representative differ by a scalar multiple
-of the direction.
--/
-theorem sub_lineRepMap_mem_span {m : ℕ} (v u : Fin m → K) :
-    u - lineRepMap v u ∈ Submodule.span K ({v} : Set (Fin m → K)) := by
-  have hc :
-      IsCompl
-        (registerSubmodule K
-          (canonicalComplement (Submodule.span K ({v} : Set (Fin m → K)))))
-        (Submodule.span K ({v} : Set (Fin m → K))) :=
-    (isCompl_registerSubmodule_canonicalComplement
-      (Submodule.span K ({v} : Set (Fin m → K)))).symm
-  have hrep : lineRepMap v u =
-      (registerSubmodule K
-        (canonicalComplement (Submodule.span K ({v} : Set (Fin m → K))))).projection
-        (Submodule.span K ({v} : Set (Fin m → K))) hc u := rfl
-  rw [hrep, ← Submodule.projection_eq_self_sub_projection hc u]
-  exact Submodule.projection_apply_mem hc.symm u
+section
 
-/--
-The canonical line representative is exactly the elementary least-pivot
-formula `explicitLineRep`, for every point and direction, including `v = 0`.
-This is a Lean-only representation theorem for the compact Palomar statement;
-it proves an exact identity and does not alter paper `def:line-representative`.
--/
-theorem lineRepMap_apply_eq_explicitLineRep {m : ℕ} (v u : Fin m → K) :
-    lineRepMap v u = explicitLineRep u v := by
+variable (v u : Fin m → K)
+include v u
+
+/-- Reconstruction from the representative and its affine coordinate. -/
+theorem directLineRepParameter_spec : u = lineRepMap v u + directLineRepParameter v u • v :=
+  (sub_add_cancel _ _).symm
+
+omit v u in
+/-- The affine coordinate is determined uniquely for a nonzero direction. -/
+theorem directLineRepParameter_eq_of_nonzero {v u : Fin m → K} (hv : v ≠ 0) {t : K}
+    (ht : u = lineRepMap v u + t • v) : directLineRepParameter v u = t :=
+  smul_left_injective K hv (add_left_cancel ((directLineRepParameter_spec v u).symm.trans ht))
+
+omit u in
+private theorem directLineRepParameter_self (hv : v ≠ 0) : directLineRepParameter v v = 1 := by
   classical
-  by_cases hv : v = 0
-  · subst v
-    have hspan : Submodule.span K ({0} : Set (Fin m → K)) = ⊥ := by simp
-    have h := sub_lineRepMap_mem_span (0 : Fin m → K) u
-    rw [hspan, Submodule.mem_bot, sub_eq_zero] at h
-    simpa [explicitLineRep] using h.symm
-  · let j := linePivotIndex v hv
-    have hjv : v j ≠ 0 := linePivotIndex_ne_zero v hv
-    let w : Fin m → K := (v j)⁻¹ • v
-    let B : Matrix (Fin 1) (Fin m) K := Matrix.replicateRow (Fin 1) w
-    let pivot : Fin 1 ↪o Fin m :=
-      ({j} : Finset (Fin m)).orderEmbOfFin (Finset.card_singleton j)
-    have hpivot (i : Fin 1) : pivot i = j := by
-      simp [pivot]
-    have hB : IsReducedRowEchelon B pivot := by
-      constructor
-      · intro i k
-        have hik : i = k := Subsingleton.elim _ _
-        subst k
-        simp [B, w, hpivot, hjv]
-      · intro i k hki
-        have hkj : k < j := by simpa [hpivot] using hki
-        have hvk : v k = 0 := linePivotIndex_zero_before v hv k hkj
-        simp [B, w, hvk]
-    have hrange : Set.range B.row = {w} := by
-      ext x
-      constructor
-      · rintro ⟨i, rfl⟩
-        funext k
-        rfl
-      · intro hx
-        rw [Set.mem_singleton_iff] at hx
-        subst x
-        refine ⟨0, ?_⟩
-        funext k
-        rfl
-    have hspan :
-        Submodule.span K (Set.range B.row) =
-          Submodule.span K ({v} : Set (Fin m → K)) := by
-      rw [hrange, Submodule.span_singleton_eq_span_singleton]
-      refine ⟨Units.mk0 (v j) hjv, ?_⟩
-      funext k
-      simp [w, hjv]
-    have hcomplement :
-        canonicalComplement (Submodule.span K ({v} : Set (Fin m → K))) =
-          ({j} : Finset (Fin m))ᶜ := by
-      rw [← hspan, hB.canonicalComplement_eq_nonpivot_indices]
-      simp [pivot]
-    have hrep_mem :
-        lineRepMap v u ∈
-          registerSubmodule K
-            (canonicalComplement (Submodule.span K ({v} : Set (Fin m → K)))) := by
-      simp [lineRepMap, canonicalProjOfKernel]
-    rw [hcomplement, registerSubmodule_eq_spanSubset] at hrep_mem
-    have hrep_zero : lineRepMap v u j = 0 :=
-      Pi.mem_spanSubset_iff.mp hrep_mem j (by simp)
-    obtain ⟨t, ht⟩ :=
-      Submodule.mem_span_singleton.mp (sub_lineRepMap_mem_span v u)
-    have htj : t = u j / v j := by
-      apply (eq_div_iff hjv).2
-      have := congrFun ht j
-      simpa [hrep_zero] using this
-    have hrep : lineRepMap v u = u - t • v := by
-      rw [ht]
-      abel
-    rw [explicitLineRep, dif_neg hv, hrep, htj]
+  simp [directLineRepParameter, hv, linePivotIndex_ne_zero]
 
-/--
-Formalization support node blueprint `lem:line-rep-incidence` for
-`def:line-representative` (paper origin
-`references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:166-174`).
-Every point lies on the line through its own canonical representative in the
-same direction; this is the incidence property used by the line-versus-point
-samplers.
--/
-theorem mem_linePoints_lineRepMap {m : ℕ} (v u : Fin m → K) :
-    u ∈ linePoints (lineRepMap v u) v := by
-  obtain ⟨t, ht⟩ := Submodule.mem_span_singleton.mp (sub_lineRepMap_mem_span v u)
-  exact ⟨t, by rw [ht]; abel⟩
+omit v u in
+/-- Translating the point by a multiple of its direction adds that parameter. -/
+theorem directLineRepParameter_add_smul {v u : Fin m → K} (hv : v ≠ 0) (t : K) :
+    directLineRepParameter v (u + t • v) = directLineRepParameter v u + t := by
+  simp [directLineRepParameter_self v hv]
+
+/-- Translation along the direction does not change the representative. -/
+theorem lineRepMap_add_smul (t : K) : lineRepMap v (u + t • v) = lineRepMap v u := by
+  suffices lineRepMap v v = 0 by simp [this]
+  by_cases hv : v = 0
+  · simp [hv]
+  · change v - directLineRepParameter v v • v = 0
+    simp [directLineRepParameter_self v hv]
+
+/-- A canonical representative is fixed by the projection. -/
+theorem lineRepMap_apply_self : lineRepMap v (lineRepMap v u) = lineRepMap v u := by
+  change lineRepMap v (u - directLineRepParameter v u • v) = _
+  rw [sub_eq_add_neg, ← neg_smul, lineRepMap_add_smul]
+
+theorem lineRepMap_apply : lineRepMap v u = u - directLineRepParameter v u • v := rfl
+
+/-- The representative lies on the same affine line. -/
+theorem mem_linePoints_lineRepMap : u ∈ linePoints (lineRepMap v u) v :=
+  ⟨_, directLineRepParameter_spec v u⟩
+
+end
+
+end
 
 end MIPStarRE.QPBT

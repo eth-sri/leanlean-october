@@ -56,39 +56,46 @@ noncomputable section
 
 /-! ## The coordinates of the combined dimension -/
 
+section
+
+variable (m k : ℕ)
+include m k
+
 /-- The point coordinates of the combined dimension `m + k`.  The `m` point
 coordinates come first, so that zeroing a prefix of a direction of the combined
 space restricts to zeroing the corresponding prefix of its point part. -/
-def combinedPointVar (m k : ℕ) (j : Fin m) : Fin (m + k) :=
+def combinedPointVar (j : Fin m) : Fin (m + k) :=
   finSumFinEquiv (Sum.inl j)
 
 /-- The combining coordinates of the combined dimension `m + k`.  Coordinate
 `combinedCoefficientVar m k r` carries the scalar `α_r` multiplying the `r`-th
 component of a polynomial tuple. -/
-def combinedCoefficientVar (m k : ℕ) (r : Fin k) : Fin (m + k) :=
+def combinedCoefficientVar (r : Fin k) : Fin (m + k) :=
   finSumFinEquiv (Sum.inr r)
 
-theorem combinedPointVar_injective (m k : ℕ) :
+theorem combinedPointVar_injective :
     Function.Injective (combinedPointVar m k) := by
   intro j j' h
   simpa using finSumFinEquiv.injective h
 
-theorem combinedCoefficientVar_injective (m k : ℕ) :
+theorem combinedCoefficientVar_injective :
     Function.Injective (combinedCoefficientVar m k) := by
   intro r r' h
   simpa using finSumFinEquiv.injective h
 
 /-- The two coordinate blocks of the combined dimension are disjoint. -/
-theorem combinedCoefficientVar_ne_combinedPointVar (m k : ℕ) (r : Fin k) (j : Fin m) :
+theorem combinedCoefficientVar_ne_combinedPointVar (r : Fin k) (j : Fin m) :
     combinedCoefficientVar m k r ≠ combinedPointVar m k j := by
   intro h
   have := finSumFinEquiv.injective h
-  simp at this
+  simp_all
 
-theorem combinedCoefficientVar_notMem_range (m k : ℕ) (r : Fin k) :
+theorem combinedCoefficientVar_notMem_range (r : Fin k) :
     combinedCoefficientVar m k r ∉ Set.range (combinedPointVar m k) := by
   rintro ⟨j, hj⟩
   exact combinedCoefficientVar_ne_combinedPointVar m k r j hj.symm
+
+end
 
 /-- The point part of a point of the combined space. -/
 def combinedPointPart {K : Type*} {m k : ℕ} (z : Fin (m + k) → K) : Fin m → K :=
@@ -140,9 +147,7 @@ theorem combinePolyTuple_eval {K : Type*} [CommSemiring K] {m k : ℕ}
 theorem combinePolyTuple_eval_combinedPoint {K : Type*} [CommSemiring K] {m k : ℕ}
     (g : Fin k → MvPolynomial (Fin m) K) (u : Fin m → K) (α : Fin k → K) :
     MvPolynomial.eval (combinedPoint u α) (combinePolyTuple g) =
-      ∑ r : Fin k, α r * MvPolynomial.eval u (g r) := by
-  rw [combinePolyTuple_eval, combinedPointPart_combinedPoint,
-    combinedCoefficientPart_combinedPoint]
+      ∑ r : Fin k, α r * MvPolynomial.eval u (g r) := by simp [combinePolyTuple_eval]
 
 /-! ## Recovering the components -/
 
@@ -188,9 +193,7 @@ theorem splitCombinedPoly_combinePolyTuple {K : Type*} [CommSemiring K] {m k : �
     intro s
     rw [map_mul, MvPolynomial.aeval_X, combinedSubstitution_coefficient,
       MvPolynomial.aeval_rename, hcomp, MvPolynomial.aeval_X_left_apply]
-  rw [splitCombinedPoly, combinePolyTuple, map_sum]
-  simp only [hterm, ite_mul, one_mul, zero_mul]
-  simp
+  simp_all [splitCombinedPoly, combinePolyTuple, map_sum, hterm, ite_mul, one_mul, zero_mul]
 
 /-- The combining map is injective: the components of a combined polynomial are
 determined by it. -/
@@ -216,13 +219,12 @@ private theorem degreeOf_X_le_one {τ K : Type*} [CommSemiring K] (c i : τ) :
     (MvPolynomial.X c : MvPolynomial τ K).degreeOf i ≤ 1 := by
   rw [MvPolynomial.degreeOf_le_iff]
   intro s hs
-  have hs' : s ∈ ({Finsupp.single c 1} : Finset (τ →₀ ℕ)) :=
-    MvPolynomial.support_monomial_subset hs
-  rw [Finset.mem_singleton] at hs'
+  have hs' := MvPolynomial.support_monomial_subset hs
+  simp at hs'
   subst hs'
   by_cases h : c = i
-  · simp [h]
-  · simp [h]
+  · simp_all
+  · simp_all
 
 private theorem degreeOf_rename_le {σ τ K : Type*} [CommSemiring K]
     {f : σ → τ} (hf : Function.Injective f) {p : MvPolynomial σ K} {d : ℕ}
@@ -237,8 +239,7 @@ private theorem degreeOf_rename_le {σ τ K : Type*} [CommSemiring K]
   · obtain ⟨j, rfl⟩ := hi
     rw [Finsupp.mapDomain_apply_of_injective hf]
     exact le_trans (MvPolynomial.le_degreeOf_of_mem_support j ht) (hp j)
-  · rw [Finsupp.mapDomain_of_notMem_range t i (by simpa using hi)]
-    exact Nat.zero_le d
+  · simp [Finsupp.mapDomain_of_notMem_range t i (by simpa using hi)]
 
 private theorem degreeOf_rename_eq_zero_of_notMem_range {σ τ K : Type*} [CommSemiring K]
     {f : σ → τ} (hf : Function.Injective f) (p : MvPolynomial σ K)

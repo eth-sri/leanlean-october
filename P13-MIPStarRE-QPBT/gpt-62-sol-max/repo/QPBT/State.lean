@@ -60,6 +60,21 @@ noncomputable def isometryTensor
             (φB ((EuclideanSpace.equiv ιB ℂ).symm (Pi.single j 1))) p.2) *
           ((EuclideanSpace.equiv (ιA × ιB) ℂ) ψ (i, j)))
 
+/-- Interchanging the factors commutes with applying the two local isometries. -/
+theorem isometryTensor_prodComm {ιA ιB κA κB : Type*}
+    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
+    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
+    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+    isometryTensor φB φA (reindexState (Equiv.prodComm ιA ιB) ψ) =
+      reindexState (Equiv.prodComm κA κB) (isometryTensor φA φB ψ) := by
+  apply (EuclideanSpace.equiv (κB × κA) ℂ).injective
+  simp only [isometryTensor, reindexState, ContinuousLinearEquiv.apply_symm_apply,
+    Equiv.prodComm_symm, Equiv.prodComm_apply]
+  funext p
+  rw [Finset.sum_comm]
+  simp [mul_comm]
+
 /-- Coordinate tensor used in the ideal state of blueprint
 `thm:ms-rigidity`, paper
 `08_classical_and_quantum_low_degree_tests.tex:620-652`. -/
@@ -75,6 +90,42 @@ noncomputable def vecTensor {ι κ : Type*}
 def reindexOp {ι ι' : Type*} (e : ι ≃ ι') (M : Op ι') : Op ι :=
   (Matrix.reindex e.symm e.symm) M
 
+/-- Operator transport commutes with subtraction. -/
+theorem reindexOp_sub {ι κ : Type*} (e : ι ≃ κ) (M N : Op κ) :
+    reindexOp e (M - N) = reindexOp e M - reindexOp e N := rfl
+
+/-- Operator transport commutes with scalar multiplication. -/
+theorem reindexOp_smul {ι κ : Type*} (e : ι ≃ κ) (c : ℂ) (M : Op κ) :
+    reindexOp e (c • M) = c • reindexOp e M := rfl
+
+/-- Operator transport commutes with multiplication. -/
+theorem reindexOp_mul {ι κ : Type*} [Fintype ι] [DecidableEq ι]
+    [Fintype κ] [DecidableEq κ] (e : ι ≃ κ) (M N : Op κ) :
+    reindexOp e (M * N) = reindexOp e M * reindexOp e N :=
+  map_mul (Matrix.reindexRingEquiv ℂ e.symm) M N
+
+/-- Relabeling an operator distributes over summation. -/
+theorem reindexOp_sum {ι κ α : Type*} (e : ι ≃ κ) (s : Finset α) (A : α → Op κ) :
+    reindexOp e (∑ a ∈ s, A a) = ∑ a ∈ s, reindexOp e (A a) := by
+  ext i j
+  simp only [reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply, Equiv.symm_symm, Matrix.sum_apply]
+
+/-- An identity operator is independent of its coordinate names. -/
+theorem reindexOp_one {ι κ : Type*} [DecidableEq ι] [DecidableEq κ] (e : ι ≃ κ) :
+    reindexOp e (1 : Op κ) = 1 := by
+  ext i j
+  simp [reindexOp, Matrix.one_apply]
+
+/-- Forward relabeling also fixes the identity. -/
+theorem matrixReindex_one {ι κ : Type*} [DecidableEq ι] [DecidableEq κ] (e : ι ≃ κ) :
+    Matrix.reindex e e (1 : Op ι) = 1 := reindexOp_one e.symm
+
+/-- Separate relabeling of two factors commutes with their tensor product. -/
+theorem reindex_kronecker {I J K L : Type*} (e : I ≃ K) (f : J ≃ L)
+    (A : Op I) (B : Op J) :
+    Matrix.reindex (e.prodCongr f) (e.prodCongr f) (Matrix.kronecker A B) =
+      Matrix.kronecker (Matrix.reindex e e A) (Matrix.reindex f f B) := rfl
+
 /-- Four-factor tensor shuffle used by blueprint
 `thm:ms-rigidity`, paper
 `08_classical_and_quantum_low_degree_tests.tex:620-652`. -/
@@ -82,23 +133,26 @@ def prodShuffle {α β γ δ : Type*} :
     (α × β) × (γ × δ) ≃ (α × γ) × (β × δ) where
   toFun p := ((p.1.1, p.2.1), (p.1.2, p.2.2))
   invFun p := ((p.1.1, p.2.1), (p.1.2, p.2.2))
-  left_inv p := by cases p; rfl
-  right_inv p := by cases p; rfl
+  left_inv p := by rfl
+  right_inv p := by rfl
 
 /-! ## Norm identities for the coordinate operations -/
 
-/-- Reindexing Euclidean coordinates along an equivalence preserves norm.
-This is a formalization-only auxiliary identity (no source counterpart). -/
-theorem reindexState_norm_eq
-    {iota kappa : Type*}
-    [Fintype iota] [DecidableEq iota]
-    [Fintype kappa] [DecidableEq kappa]
-    (e : iota ≃ kappa) (psi : EuclideanSpace ℂ iota) :
-    ‖reindexState e psi‖ = ‖psi‖ := by
-  rw [← sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)]
-  rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
-  change (∑ j : kappa, ‖psi (e.symm j)‖ ^ 2) = ∑ i : iota, ‖psi i‖ ^ 2
-  exact e.symm.sum_comp (fun i => ‖psi i‖ ^ 2)
+variable {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
+
+/-- Reindexing is Mathlib's Euclidean permutation isometry. -/
+theorem reindexState_eq (e : ι ≃ κ) (ψ : EuclideanSpace ℂ ι) :
+    reindexState e ψ = LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ e ψ := rfl
+
+/-- Reindexing Euclidean coordinates preserves the norm. -/
+theorem reindexState_norm_eq (e : ι ≃ κ) (ψ : EuclideanSpace ℂ ι) :
+    ‖reindexState e ψ‖ = ‖ψ‖ :=
+  (LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ e).norm_map ψ
+
+/-- Reindexing preserves the distance between Euclidean vectors. -/
+theorem norm_reindexState_sub_eq (e : ι ≃ κ) (ψ φ : EuclideanSpace ℂ ι) :
+    ‖reindexState e ψ - reindexState e φ‖ = ‖ψ - φ‖ :=
+  reindexState_norm_eq e (ψ - φ)
 
 /-- The coordinate tensor of two Euclidean vectors has the product norm.
 This is a formalization-only auxiliary identity (no source counterpart). -/
@@ -113,7 +167,7 @@ theorem vecTensor_norm_eq
     EuclideanSpace.norm_sq_eq]
   change (∑ p : iota × kappa, ‖u p.1 * v p.2‖ ^ 2) =
     (∑ i : iota, ‖u i‖ ^ 2) * ∑ j : kappa, ‖v j‖ ^ 2
-  simp only [norm_mul, mul_pow]
+  simp [norm_mul, mul_pow]
   rw [← Finset.univ_product_univ, Finset.sum_product, Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro i _

@@ -1,6 +1,7 @@
 module
 
 public import QPBT.Combining.Points.Commutation
+public import QPBT.Games.DistanceTheorems.Calculus
 
 /-!
 # The sandwich POVM of the expanded point measurements
@@ -47,55 +48,52 @@ namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
 
+section
+
+variable (S : ProjectiveSetting P ε)
+    (side : PlayerSide)
+include S side
+
+section
+
+variable (W : PauliKind) (u : PauliPoint P)
+    (a : PauliScalar P)
+include W u a
+
 /-- An expanded point effect is self-adjoint. -/
-theorem pointMeasExp_effect_conjTranspose (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
-    (a : PauliScalar P) :
+theorem pointMeasExp_effect_conjTranspose :
     ((S.pointMeasExp side W u).effect a)ᴴ = (S.pointMeasExp side W u).effect a :=
   (S.pointMeasExp_isProjective side W u a).isSelfAdjoint.isHermitian.eq
 
 /-- An expanded point effect is idempotent. -/
-theorem pointMeasExp_effect_mul_self (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
-    (a : PauliScalar P) :
+theorem pointMeasExp_effect_mul_self :
     (S.pointMeasExp side W u).effect a * (S.pointMeasExp side W u).effect a =
       (S.pointMeasExp side W u).effect a :=
   (S.pointMeasExp_isProjective side W u a).isIdempotentElem.eq
 
+end
+
+section
+
+variable (x z : PauliPoint P)
+include x z
+
 /-- The sandwich `M^Z_b M^X_a M^Z_b` is `(M^X_a M^Z_b)ᴴ (M^X_a M^Z_b)`. -/
-theorem sandwich_eq_conjTranspose_mul_self (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P) (a b : PauliScalar P) :
+theorem sandwich_eq_conjTranspose_mul_self (a b : PauliScalar P) :
     (S.pointMeasExp side .Z z).effect b * (S.pointMeasExp side .X x).effect a *
         (S.pointMeasExp side .Z z).effect b =
       ((S.pointMeasExp side .X x).effect a * (S.pointMeasExp side .Z z).effect b)ᴴ *
-        ((S.pointMeasExp side .X x).effect a * (S.pointMeasExp side .Z z).effect b) := by
-  rw [Matrix.conjTranspose_mul, pointMeasExp_effect_conjTranspose,
-    pointMeasExp_effect_conjTranspose, Matrix.mul_assoc _ _
-      ((S.pointMeasExp side .X x).effect a * (S.pointMeasExp side .Z z).effect b),
-    ← Matrix.mul_assoc ((S.pointMeasExp side .X x).effect a)
-      ((S.pointMeasExp side .X x).effect a), pointMeasExp_effect_mul_self,
-    ← Matrix.mul_assoc]
+        ((S.pointMeasExp side .X x).effect a * (S.pointMeasExp side .Z z).effect b) := by grind only [Matrix.conjTranspose_mul, pointMeasExp_effect_conjTranspose, pointMeasExp_effect_mul_self]
 
 /-- The sandwich effects resolve the identity. -/
-theorem sum_sandwich_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) :
+theorem sum_sandwich_eq_one :
     ∑ ab : PauliScalar P × PauliScalar P,
         (S.pointMeasExp side .Z z).effect ab.2 *
           (S.pointMeasExp side .X x).effect ab.1 *
           (S.pointMeasExp side .Z z).effect ab.2 = 1 := by
-  rw [Fintype.sum_prod_type_right]
-  calc ∑ b : PauliScalar P, ∑ a : PauliScalar P,
-        (S.pointMeasExp side .Z z).effect b * (S.pointMeasExp side .X x).effect a *
-          (S.pointMeasExp side .Z z).effect b
-      = ∑ b : PauliScalar P, (S.pointMeasExp side .Z z).effect b *
-          (∑ a : PauliScalar P, (S.pointMeasExp side .X x).effect a) *
-          (S.pointMeasExp side .Z z).effect b := by
-        refine Finset.sum_congr rfl fun b _ => ?_
-        rw [Finset.mul_sum, Finset.sum_mul]
-    _ = 1 := by
-        simp_rw [(S.pointMeasExp side .X x).sum_eq_one, mul_one,
-          pointMeasExp_effect_mul_self]
-        exact (S.pointMeasExp side .Z z).sum_eq_one
+  simp_rw [Fintype.sum_prod_type_right, ← Finset.sum_mul, ← Finset.mul_sum,
+    Measurement.sum_eq_one, mul_one, pointMeasExp_effect_mul_self]
+  exact (S.pointMeasExp side .Z z).sum_eq_one
 
 /-- The sandwich POVM `R^{x,z}_{a,b} = M^Z_b M^X_a M^Z_b` of the two expanded
 point measurements, with outcomes in `F_q × F_q`.  This is the POVM of the
@@ -103,8 +101,7 @@ first step of the proof of `lem:qld-4-10`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:731-736`,
 formed directly with field-valued outcomes rather than from the binary
 refinements; see `docs/paper-gaps/qpbt_combined-points-field-valued.tex`. -/
-def sandwichPoint (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) :
+def sandwichPoint :
     Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace side) :=
   Measurement.ofSumEqOne
     (fun ab => (S.pointMeasExp side .Z z).effect ab.2 *
@@ -116,9 +113,13 @@ def sandwichPoint (S : ProjectiveSetting P ε) (side : PlayerSide)
         (Matrix.posSemidef_conjTranspose_mul_self _))
     (sum_sandwich_eq_one S side x z)
 
+end
+
+end
+
 /-- The effects of the sandwich POVM. -/
 @[simp] theorem sandwichPoint_effect (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (x z : PauliPoint P)
     (ab : PauliScalar P × PauliScalar P) :
     (S.sandwichPoint side x z).effect ab =
       (S.pointMeasExp side .Z z).effect ab.2 *
@@ -130,7 +131,7 @@ def sandwichPoint (S : ProjectiveSetting P ε) (side : PlayerSide)
 `eq:qld-r-2`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:737-742`. -/
 theorem sandwichPoint_effect_sub_ordered (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (x z : PauliPoint P)
     (ab : PauliScalar P × PauliScalar P) :
     (S.sandwichPoint side x z).effect ab -
         (S.pointMeasExp side .Z z).effect ab.2 *
@@ -190,82 +191,23 @@ theorem ordered_cross_dist_le_explicit :
             (S.pointMeasExp p₂.side .Z xz.2).effect ab.2))
         S.psiHat ≤ 688 * ε := by
   intro P ε S p₁ p₂ hopp
-  have hX := exp_point_self_cons_explicit P ε S p₁ p₂ hopp .X
-  have hZ := exp_point_self_cons_explicit P ε S p₁ p₂ hopp .Z
-  -- the middle family is `M^Z_b` on the first placement times `M^X_a` on the
-  -- second; each factor is transported by the self-consistency of that factor
-  have h₁ : opFamilyDistSq (uniformDistribution (PointPair P))
-      (fun xz (ab : PauliScalar P × PauliScalar P) => S.place p₁
-        ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2 *
-          (S.pointMeasExp p₁.side .X xz.1).effect ab.1))
-      (fun xz ab => S.place p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2) *
-        S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect ab.1))
-      S.psiHat ≤ 172 * ε := by
-    refine le_trans ?_ (le_of_eq_of_le (avgOver_uniform_fst
-      (β := Fin P.m → PauliScalar P)
-      (fun x => ∑ a : PauliScalar P, ‖applyOperatorToState
-        (S.place p₁ ((S.pointMeasExp p₁.side .X x).effect a) -
-          S.place p₂ ((S.pointMeasExp p₂.side .X x).effect a)) S.psiHat‖ ^ 2)) hX)
-    unfold opFamilyDistSq
-    refine avgOver_mono _ _ _ fun xz => ?_
-    have hpt : ∀ ab : PauliScalar P × PauliScalar P,
-        S.place p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2 *
-            (S.pointMeasExp p₁.side .X xz.1).effect ab.1) -
-          S.place p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2) *
-            S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect ab.1) =
-          S.place p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2) *
-            (S.place p₁ ((S.pointMeasExp p₁.side .X xz.1).effect ab.1) -
-              S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect ab.1)) := by
-      intro ab
-      rw [S.place_mul p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2)
-        ((S.pointMeasExp p₁.side .X xz.1).effect ab.1), mul_sub]
-    simp only [hpt, Fintype.sum_prod_type]
-    refine Finset.sum_le_sum fun a _ => ?_
-    exact DistanceCalculus.sum_norm_mul_apply_le
-      (fun b => S.place p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect b))
-      (S.place p₁ ((S.pointMeasExp p₁.side .X xz.1).effect a) -
-        S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect a)) S.psiHat
-      (measurement_sum_adjoint_mul_le_one
-        (S.placedMeasurement p₁ (S.pointMeasExp p₁.side .Z xz.2)))
-  have h₂ : opFamilyDistSq (uniformDistribution (PointPair P))
-      (fun xz (ab : PauliScalar P × PauliScalar P) =>
-        S.place p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2) *
-          S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect ab.1))
-      (fun xz ab => S.place p₂
-        ((S.pointMeasExp p₂.side .X xz.1).effect ab.1 *
-          (S.pointMeasExp p₂.side .Z xz.2).effect ab.2))
-      S.psiHat ≤ 172 * ε := by
-    refine le_trans ?_ (le_of_eq_of_le (avgOver_uniform_snd
-      (α := Fin P.m → PauliScalar P)
-      (fun z => ∑ b : PauliScalar P, ‖applyOperatorToState
-        (S.place p₁ ((S.pointMeasExp p₁.side .Z z).effect b) -
-          S.place p₂ ((S.pointMeasExp p₂.side .Z z).effect b)) S.psiHat‖ ^ 2)) hZ)
-    unfold opFamilyDistSq
-    refine avgOver_mono _ _ _ fun xz => ?_
-    have hpt : ∀ ab : PauliScalar P × PauliScalar P,
-        S.place p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2) *
-            S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect ab.1) -
-          S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect ab.1 *
-            (S.pointMeasExp p₂.side .Z xz.2).effect ab.2) =
-          S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect ab.1) *
-            (S.place p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2) -
-              S.place p₂ ((S.pointMeasExp p₂.side .Z xz.2).effect ab.2)) := by
-      intro ab
-      rw [S.place_mul p₂ ((S.pointMeasExp p₂.side .X xz.1).effect ab.1)
-        ((S.pointMeasExp p₂.side .Z xz.2).effect ab.2),
-        S.place_comm p₁ p₂ hopp ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2)
-          ((S.pointMeasExp p₂.side .X xz.1).effect ab.1), ← mul_sub]
-    simp only [hpt, Fintype.sum_prod_type_right]
-    refine Finset.sum_le_sum fun b _ => ?_
-    exact DistanceCalculus.sum_norm_mul_apply_le
-      (fun a => S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect a))
-      (S.place p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect b) -
-        S.place p₂ ((S.pointMeasExp p₂.side .Z xz.2).effect b)) S.psiHat
-      (measurement_sum_adjoint_mul_le_one
-        (S.placedMeasurement p₂ (S.pointMeasExp p₂.side .X xz.1)))
-  have htri := opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
-    _ _ _ S.psiHat (172 * ε) (172 * ε) h₁ h₂
-  linarith
+  have hr := hopp.symm
+  let μ := uniformDistribution (PointPair P)
+  let A (p : Placement) (xz : PointPair P) :=
+    S.placedMeasurement p (S.pointMeasExp p.side .X xz.1)
+  let B (p : Placement) (xz : PointPair P) :=
+    S.placedMeasurement p (S.pointMeasExp p.side .Z xz.2)
+  have hA := exp_point_self_cons_explicit P ε S p₂ p₁ hr .X
+  have hB := exp_point_self_cons_explicit P ε S p₂ p₁ hr .Z
+  unfold opFamilyDistSq at hA hB
+  rw [← avgOver_uniform_fst (β := PauliPoint P)] at hA
+  rw [← avgOver_uniform_snd (α := PauliPoint P)] at hB
+  change measurementDistSq μ (A p₂) (A p₁) S.psiHat ≤ _ at hA
+  change measurementDistSq μ (B p₂) (B p₁) S.psiHat ≤ _ at hB
+  have h := product_distance_le μ (A p₂) (A p₁) (B p₂) (B p₁) S.psiHat
+    (fun _ _ _ => S.place_comm p₂ p₁ hr _ _)
+  rw [DistanceCalculus.opFamilyDistSq_symm]
+  simpa only [A, B, placedMeasurement_effect, ← place_mul] using h.trans (by linarith)
 
 end ProjectiveSetting
 

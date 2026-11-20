@@ -42,60 +42,17 @@ theorem Placement.exists_isOpposite (p : Placement) :
   | BB' => exact ⟨.AB'', trivial, trivial⟩
   | AB'' => exact ⟨.BB', trivial, trivial⟩
 
-/-- On a single placement, the joint point measurement is close to the ordered
-`Z`-then-`X` point product, with inflation factor four. -/
-theorem CombinedPointsWitness.orderedZX_dist_le {P : AdmissibleParams}
+/-- On a single placement the joint point measurement is close to the ordered
+point product with the indicated first basis. -/
+theorem CombinedPointsWitness.ordered_point_dist_le {P : AdmissibleParams}
     {ε δ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δ) (p : Placement) :
+    (points : CombinedPointsWitness S δ) (p : Placement) (W : PauliKind) :
     opFamilyDistSq
-        (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
-        (fun xz ab => S.place p ((points.Q p.side xz.1 xz.2).effect ab))
-        (fun xz ab => S.place p
-          ((S.pointMeasExp p.side .Z xz.2).effect ab.2 *
-            (S.pointMeasExp p.side .X xz.1).effect ab.1))
-        S.psiHat ≤ 4 * δ := by
+      (uniformDistribution (PointPair P))
+      (S.placedPointPairFamily points.Q p) (S.placedOrderedPointProduct p W) S.psiHat ≤ 4 * δ := by
   obtain ⟨q, hpq, hqp⟩ := p.exists_isOpposite
-  have htri := opFamilyDistSq_le_of_le_of_le
-    (uniformDistribution
-      ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
-    (fun xz ab => S.place p ((points.Q p.side xz.1 xz.2).effect ab))
-    (fun xz ab => S.place q ((points.Q q.side xz.1 xz.2).effect ab))
-    (fun xz ab => S.place p
-      ((S.pointMeasExp p.side .Z xz.2).effect ab.2 *
-        (S.pointMeasExp p.side .X xz.1).effect ab.1))
-    S.psiHat δ δ (points.self_consistent p q hpq)
-    (points.consistent_ZX q p hqp)
-  linarith
-
-/-- On a single placement, the joint point measurement is close to the ordered
-`X`-then-`Z` point product, with the inflation factor four.  This is the
-same-placement form of the other ordered display of `lem:qld-4-10`, obtained
-from the self-consistency display in the same way. -/
-theorem CombinedPointsWitness.orderedXZ_dist_le {P : AdmissibleParams}
-    {ε δ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δ) (p : Placement) :
-    opFamilyDistSq
-        (uniformDistribution
-          ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
-        (fun xz ab => S.place p ((points.Q p.side xz.1 xz.2).effect ab))
-        (fun xz ab => S.place p
-          ((S.pointMeasExp p.side .X xz.1).effect ab.1 *
-            (S.pointMeasExp p.side .Z xz.2).effect ab.2))
-        S.psiHat ≤ 4 * δ := by
-  obtain ⟨q, hpq, hqp⟩ := p.exists_isOpposite
-  have htri := opFamilyDistSq_le_of_le_of_le
-    (uniformDistribution
-      ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
-    (fun xz ab => S.place p ((points.Q p.side xz.1 xz.2).effect ab))
-    (fun xz ab => S.place q ((points.Q q.side xz.1 xz.2).effect ab))
-    (fun xz ab => S.place p
-      ((S.pointMeasExp p.side .X xz.1).effect ab.1 *
-        (S.pointMeasExp p.side .Z xz.2).effect ab.2))
-    S.psiHat δ δ (points.self_consistent p q hpq)
-    (points.consistent_XZ q p hqp)
-  linarith
-
+  exact (opFamilyDistSq_le_of_le_of_le _ _ _ _ _ δ δ (points.self_consistent p q hpq)
+    (points.consistent_ordered q p hqp W)).trans (by linarith)
 
 end
 

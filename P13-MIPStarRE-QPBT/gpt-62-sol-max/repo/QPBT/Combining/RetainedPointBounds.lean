@@ -37,7 +37,7 @@ private theorem wrong_mul_effect (X : Quantum.Measurement F ι)
   by_cases h : b = r
   · simp [h, sub_mul, (hX r).isIdempotentElem.eq]
   · rw [sub_mul, one_mul, projective_effect_mul_effect_eq_zero X hX (Ne.symm h)]
-    simp [h]
+    simp_all
 
 private theorem wrong_ordered_gram (X Z : Quantum.Measurement F ι)
     (hX : Measurement.IsProjective X) (r α β a : F) (hβ : β ≠ 0) :
@@ -49,68 +49,37 @@ private theorem wrong_ordered_gram (X Z : Quantum.Measurement F ι)
   have hexpand : (1 - X.effect r) * orderedIndicator X Z α β a =
       ∑ bc : F × F, if α * bc.1 + β * bc.2 = a ∧ bc.1 ≠ r then
         X.effect bc.1 * Z.effect bc.2 else 0 := by
-    rw [orderedIndicator, Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro bc _
-    by_cases h : α * bc.1 + β * bc.2 = a
-    · simp only [h, if_true, true_and, ← mul_assoc, wrong_mul_effect X hX]
-      split_ifs <;> simp_all
-    · simp [h]
+    simp only [orderedIndicator, Finset.mul_sum, mul_ite, mul_zero, ← mul_assoc, wrong_mul_effect X hX]
+    refine Finset.sum_congr rfl fun bc _ => ?_
+    split_ifs <;> simp_all
   dsimp only
-  rw [hexpand, Matrix.conjTranspose_sum, Finset.sum_mul]
-  refine Finset.sum_congr rfl fun bc _ => ?_
-  rw [Finset.mul_sum, Finset.sum_eq_single bc]
-  · by_cases h : α * bc.1 + β * bc.2 = a ∧ bc.1 ≠ r
-    · simp only [if_pos h, Matrix.conjTranspose_mul, measurement_effect_hermitian]
-      rw [mul_assoc (Z.effect bc.2), ← mul_assoc (X.effect bc.1),
-        (hX bc.1).isIdempotentElem.eq, ← mul_assoc]
-    · simp [h]
-  · intro bc' _ hne
-    by_cases h : α * bc.1 + β * bc.2 = a ∧ bc.1 ≠ r
-    · by_cases h' : α * bc'.1 + β * bc'.2 = a ∧ bc'.1 ≠ r
-      · have hb : bc.1 ≠ bc'.1 := by
-          intro hb
-          have hc : bc.2 = bc'.2 := mul_left_cancel₀ hβ (by
-            apply add_left_cancel (a := α * bc.1)
-            simpa only [hb] using h.1.trans h'.1.symm)
-          exact hne (Prod.ext hb hc).symm
-        simp only [if_pos h, if_pos h', Matrix.conjTranspose_mul,
-          measurement_effect_hermitian]
-        calc
-          _ = Z.effect bc.2 * (X.effect bc.1 * X.effect bc'.1) * Z.effect bc'.2 := by
-            simp only [mul_assoc]
-          _ = 0 := by rw [projective_effect_mul_effect_eq_zero X hX hb]; simp
-      · simp [h']
-    · simp [h]
-  · simp
+  rw [hexpand]
+  exact orderedIndicator_filtered_gram X Z hX α β a hβ (fun bc => bc.1 ≠ r)
+
+section
+
+variable (X Z : Quantum.Measurement F ι)
+    (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
+    (r t : F) (ψ : EuclideanSpace ℂ ι)
+include X Z hX hZ r t ψ
 
 /-- The wrong outer projection of a scalar-linear ordered product has
 average squared norm at most `2/q` times the actual vector mass. One `1/q`
 comes from scalar collisions and one from the zero second coefficient.
 This is the retained-outcome calculation supporting `eq:qld-sgg-mhat-sandwich`.
 -/
-theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
-    (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
-    (r t : F) (ψ : EuclideanSpace ℂ ι) :
+theorem avg_wrong_ordered_norm_sq_le :
     avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
       ‖applyOperatorToState ((1 - X.effect r) *
         orderedIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t)) ψ‖ ^ 2) ≤
       2 * (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
   classical
-  let w (bc : F × F) := stateQForm ψ
-    (Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2)
-  have hw (bc : F × F) : 0 ≤ w bc :=
-    stateQForm_nonneg ψ ((pastedMeasurement_isMeasurement X Z hZ).1 bc)
-  have hsum : ∑ bc, w bc = ‖ψ‖ ^ 2 := by
-    rw [← stateQForm_one ψ, ← (pastedMeasurement_isMeasurement X Z hZ).2,
-      stateQForm_finset_sum]
-    rfl
   have hpoint (v : Fin 2 → F) :
       ‖applyOperatorToState ((1 - X.effect r) *
         orderedIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t)) ψ‖ ^ 2 ≤
       (if v 1 = 0 then ‖ψ‖ ^ 2 else 0) + ∑ bc : F × F,
         (if v 0 * bc.1 + v 1 * bc.2 = v 0 * r + v 1 * t ∧ bc.1 ≠ r
-          then 1 else 0) * w bc := by
+          then 1 else 0) * sandwichWeight X Z ψ bc := by
     by_cases hv : v 1 = 0
     · rw [if_pos hv]
       apply le_trans (b := ‖ψ‖ ^ 2)
@@ -121,23 +90,10 @@ theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
           (MagicSquareRigidity.norm_applyOperatorToState_le
             (orderedIndicator_gram_le_one X Z hX hZ _ _ _) ψ)
       · exact le_add_of_nonneg_right (Finset.sum_nonneg fun bc _ =>
-          mul_nonneg (by split_ifs <;> norm_num) (hw bc))
-    · rw [if_neg hv, zero_add, MagicSquareRigidity.norm_applyOperatorToState_sq]
+          mul_nonneg (by split_ifs <;> norm_num) (sandwichWeight_nonneg X Z hZ ψ bc))
+    · rw [if_neg hv, zero_add, norm_applyOperatorToState_sq]
       change stateQForm ψ _ ≤ _
-      rw [wrong_ordered_gram X Z hX r _ _ _ hv, stateQForm_finset_sum]
-      apply le_of_eq
-      apply Finset.sum_congr rfl
-      intro bc _
-      split_ifs <;> simp [w, stateQForm, applyOperatorToState]
-  have hexc : avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => if v 1 = 0 then ‖ψ‖ ^ 2 else 0) =
-        (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
-    change avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => if ((finTwoArrowEquiv F) v).2 = 0 then ‖ψ‖ ^ 2 else 0) = _
-    rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
-    simp only [Equiv.apply_symm_apply]
-    rw [avgOver_uniform_snd (fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0)]
-    simp [avgOver_uniform_eq_inv_card_mul_sum]
+      rw [wrong_ordered_gram X Z hX r _ _ _ hv, sandwichWeight_indicator_sum]
   have hcollision (bc : F × F) :
       avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
         if v 0 * bc.1 + v 1 * bc.2 = v 0 * r + v 1 * t ∧ bc.1 ≠ r
@@ -149,20 +105,18 @@ theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
       have hne : bc ≠ (r, t) := fun h => hb (congrArg Prod.fst h)
       simpa [finTwoArrowEquiv, hb, hne] using h.le
   have h := avgOver_mono (uniformDistribution (Fin 2 → F)) _ _ hpoint
-  simp only [avgOver_add, avgOver_sum, avgOver_mul_const, hexc] at h
+  simp only [avgOver_add, avgOver_sum, avgOver_mul_const, avgOver_last_coefficient_zero] at h
   refine h.trans ?_
   have hc := Finset.sum_le_sum (s := Finset.univ) fun bc _ =>
-    mul_le_mul_of_nonneg_right (hcollision bc) (hw bc)
-  rw [← Finset.mul_sum, hsum] at hc
+    mul_le_mul_of_nonneg_right (hcollision bc) (sandwichWeight_nonneg X Z hZ ψ bc)
+  rw [← Finset.mul_sum, sum_sandwichWeight X Z hZ ψ] at hc
   linarith
 
 /-- Point mismatch on a retained polynomial is at most twice its ordered
 residual plus `4/q` times its unnormalized mass. Reverse the point order to
 obtain the other Pauli marginal. This supports `eq:qld-sgg-mhat-sandwich`.
 -/
-theorem point_mismatch_le_ordered_error (X Z : Quantum.Measurement F ι)
-    (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
-    (r t : F) (ψ : EuclideanSpace ℂ ι) :
+theorem point_mismatch_le_ordered_error :
     ‖applyOperatorToState (1 - X.effect r) ψ‖ ^ 2 ≤
       2 * avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
         ‖ψ - applyOperatorToState
@@ -198,6 +152,8 @@ theorem point_mismatch_le_ordered_error (X Z : Quantum.Measurement F ι)
   simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at h
   have hm := avg_wrong_ordered_norm_sq_le X Z hX hZ r t ψ
   linarith
+
+end
 
 end
 

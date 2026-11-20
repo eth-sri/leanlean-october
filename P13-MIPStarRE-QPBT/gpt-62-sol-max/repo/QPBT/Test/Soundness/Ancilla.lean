@@ -31,9 +31,14 @@ noncomputable section
 variable {ι κ ν : Type} [Fintype ι] [DecidableEq ι]
   [Fintype κ] [DecidableEq κ] [Fintype ν] [DecidableEq ν]
 
+section
+
+variable (eta : EuclideanSpace ℂ (κ × ν)) (heta : ‖eta‖ = 1)
+include eta heta
+
 /-- Adjoin a unit ancilla on the last two registers, in the extraction order
 `(AA')A''`. The norm condition is precisely the normalization of that ancilla. -/
-def ancillaBlockIsometry (eta : EuclideanSpace ℂ (κ × ν)) (heta : ‖eta‖ = 1) :
+def ancillaBlockIsometry :
     EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ((ι × κ) × ν) where
   toFun psi := reindexState (Equiv.prodAssoc ι κ ν).symm (vecTensor psi eta)
   map_add' psi chi := by
@@ -49,7 +54,6 @@ def ancillaBlockIsometry (eta : EuclideanSpace ℂ (κ × ν)) (heta : ‖eta‖
 /-- The columns of the ancilla isometry are the original basis vectors
 tensored with the fixed ancilla. -/
 theorem ancillaBlockIsometry_matrix_apply
-    (eta : EuclideanSpace ℂ (κ × ν)) (heta : ‖eta‖ = 1)
     (p : (ι × κ) × ν) (i : ι) :
     isometryMatrix (ancillaBlockIsometry (ι := ι) eta heta) p i =
       if p.1.1 = i then eta (p.1.2, p.2) else 0 := by
@@ -58,8 +62,7 @@ theorem ancillaBlockIsometry_matrix_apply
 
 /-- Extending an operator by identities commutes with adjoining a fixed ancilla.
 This exact identity is independent of any success or consistency estimate. -/
-theorem ancillaBlockIsometry_intertwines
-    (eta : EuclideanSpace ℂ (κ × ν)) (heta : ‖eta‖ = 1) (M : Op ι) :
+theorem ancillaBlockIsometry_intertwines (M : Op ι) :
     heteroKron (heteroKron M (1 : Op κ)) (1 : Op ν) *
         isometryMatrix (ancillaBlockIsometry (ι := ι) eta heta) =
       isometryMatrix (ancillaBlockIsometry (ι := ι) eta heta) * M := by
@@ -67,10 +70,17 @@ theorem ancillaBlockIsometry_intertwines
   simp [Matrix.mul_apply, ancillaBlockIsometry_matrix_apply, heteroKron,
     Matrix.kronecker, Matrix.one_apply, Fintype.sum_prod_type, mul_comm]
 
+end
+
+section
+
+variable (eta : EuclideanSpace ℂ (κ × ν)) (heta : ‖eta‖ = 1)
+    (U : Op ((ι × κ) × ν)) (hU : Uᴴ * U = 1)
+include eta heta U hU
+
 /-- Apply a matrix isometry after adjoining the unit ancilla. In the source
 proof the matrix is the swap unitary and the ancilla is the local EPR state. -/
-def unitaryAncillaIsometry (eta : EuclideanSpace ℂ (κ × ν)) (heta : ‖eta‖ = 1)
-    (U : Op ((ι × κ) × ν)) (hU : Uᴴ * U = 1) :
+def unitaryAncillaIsometry :
     EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ((ι × κ) × ν) where
   toLinearMap := (Matrix.toEuclideanLin U).comp
     (ancillaBlockIsometry eta heta).toLinearMap
@@ -80,32 +90,22 @@ def unitaryAncillaIsometry (eta : EuclideanSpace ℂ (κ × ν)) (heta : ‖eta�
 
 /-- The matrix of the extraction isometry is the unitary times the ancilla
 embedding, with no range projection omitted. -/
-theorem unitaryAncillaIsometry_matrix
-    (eta : EuclideanSpace ℂ (κ × ν)) (heta : ‖eta‖ = 1)
-    (U : Op ((ι × κ) × ν)) (hU : Uᴴ * U = 1) :
+theorem unitaryAncillaIsometry_matrix :
     isometryMatrix (unitaryAncillaIsometry eta heta U hU) =
-      U * isometryMatrix (ancillaBlockIsometry (ι := ι) eta heta) := by
-  apply Matrix.toEuclideanLin.injective
-  apply LinearMap.ext
-  intro psi
-  rw [toEuclideanLin_mul_apply]
-  simp only [isometryMatrix, Matrix.toEuclideanLin.apply_symm_apply]
-  rfl
+      U * isometryMatrix (ancillaBlockIsometry (ι := ι) eta heta) := rfl
 
 /-- The unitary conjugate of an extended operator intertwines with the
 extraction isometry. This proves the exact hypothesis needed by
 `sum_norm_leftTensor_conjIsometry_sub_sq_le` and its Bob-side counterpart
 for the local isometries used in the final proof of `thm:pauli`. -/
-theorem unitaryAncillaIsometry_intertwines
-    (eta : EuclideanSpace ℂ (κ × ν)) (heta : ‖eta‖ = 1)
-    (U : Op ((ι × κ) × ν)) (hU : Uᴴ * U = 1) (M : Op ι) :
+theorem unitaryAncillaIsometry_intertwines (M : Op ι) :
     (U * heteroKron (heteroKron M (1 : Op κ)) (1 : Op ν) * Uᴴ) *
         isometryMatrix (unitaryAncillaIsometry eta heta U hU) =
       isometryMatrix (unitaryAncillaIsometry eta heta U hU) * M := by
   rw [unitaryAncillaIsometry_matrix]
-  simp only [Matrix.mul_assoc]
-  rw [← Matrix.mul_assoc Uᴴ U, hU, Matrix.one_mul,
-    ancillaBlockIsometry_intertwines]
+  simp_all [Matrix.mul_assoc, ← Matrix.mul_assoc Uᴴ U, hU, Matrix.one_mul, ancillaBlockIsometry_intertwines]
+
+end
 
 end
 
