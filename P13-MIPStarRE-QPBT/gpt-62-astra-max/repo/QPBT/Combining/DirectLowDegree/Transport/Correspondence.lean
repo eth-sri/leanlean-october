@@ -30,9 +30,13 @@ noncomputable section
 
 /-! ## Parameters and finite-field coordinates -/
 
+section
+
+variable (D : DirectLdParams) {K : Type*} [Field K] (n : ℕ) (c : Fin (n + 1) → K)
+
 /-- Regard direct-game parameters as low individual degree test parameters.
 The field size, dimension, and degree are unchanged. -/
-@[reducible] def DirectLdParams.toLDTParameters (D : DirectLdParams) : Parameters where
+@[reducible] def DirectLdParams.toLDTParameters : Parameters where
   m := D.m
   q := D.q
   d := D.d
@@ -47,12 +51,12 @@ The field size, dimension, and degree are unchanged. -/
 
 /-- The fixed QPBT field model, viewed as the field model of the low
 individual degree test. -/
-@[reducible] noncomputable def DirectLdParams.toLDTFieldModel (D : DirectLdParams) :
+@[reducible] noncomputable def DirectLdParams.toLDTFieldModel :
     FieldModel D.toLDTParameters.q :=
   D.model.toFieldModel
 
 /-- Coordinate coding from the direct scalar field to the LDT carrier. -/
-noncomputable def directScalarEquiv (D : DirectLdParams) :
+noncomputable def directScalarEquiv :
     DirectScalarQ D ≃ Fq D.toLDTParameters :=
   binaryRepresentation D.model
 
@@ -65,8 +69,8 @@ the low individual degree test zeroes a *suffix*
 Reversing the coordinate order aligns the two restriction conventions, as
 required by the game
 correspondence in `docs/paper-gaps/qpbt_ld-dimension-divisibility.tex`. -/
-noncomputable def directPointEquiv (D : DirectLdParams) :
-    (Fin D.m → DirectScalarQ D) ≃ Point D.toLDTParameters where
+noncomputable def directPointEquiv :
+    (DirectPoint D) ≃ Point D.toLDTParameters where
   toFun u i := directScalarEquiv D (u (Fin.rev i))
   invFun u j := (directScalarEquiv D).symm (u (Fin.rev j))
   left_inv u := by
@@ -76,12 +80,12 @@ noncomputable def directPointEquiv (D : DirectLdParams) :
     funext i
     simp
 
-@[simp] theorem directPointEquiv_apply (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) (i : Fin D.m) :
+@[simp] theorem directPointEquiv_apply
+    (u : DirectPoint D) (i : Fin D.m) :
     directPointEquiv D u i = directScalarEquiv D (u (Fin.rev i)) :=
   rfl
 
-@[simp] theorem directPointEquiv_symm_apply (D : DirectLdParams)
+@[simp] theorem directPointEquiv_symm_apply
     (u : Point D.toLDTParameters) (j : Fin D.m) :
     (directPointEquiv D).symm u j =
       (directScalarEquiv D).symm (u (Fin.rev j)) :=
@@ -89,119 +93,113 @@ noncomputable def directPointEquiv (D : DirectLdParams) :
 
 /-! ## Bounded coefficient vectors -/
 
+variable {n} in
 /-- Turn a coefficient vector into its polynomial of degree at most `n`. -/
-noncomputable def coefficientPolynomial
-    {K : Type*} [Field K] (n : ℕ) (c : Fin (n + 1) → K) : Polynomial K :=
+noncomputable def coefficientPolynomial : Polynomial K :=
   ((Polynomial.degreeLTEquiv K (n + 1)).symm c).1
 
-private theorem coefficientPolynomial_degree_le
-    {K : Type*} [Field K] (n : ℕ) (c : Fin (n + 1) → K) :
-    (coefficientPolynomial n c).natDegree ≤ n := by
+variable {n} in
+private theorem coefficientPolynomial_degree_le :
+    (coefficientPolynomial c).natDegree ≤ n := by
   let p := (Polynomial.degreeLTEquiv K (n + 1)).symm c
   have hp : p.1 ∈ Polynomial.degreeLE K n := by
     rw [← Polynomial.degreeLT_succ_eq_degreeLE]
     exact p.2
-  have hdegree : p.1.degree ≤ n := Polynomial.mem_degreeLE.mp hp
+  have hdegree := Polynomial.mem_degreeLE.mp hp
   by_cases hzero : p.1 = 0
   · simp [coefficientPolynomial, p, hzero]
   · exact Polynomial.natDegree_le_iff_degree_le.mpr hdegree
 
+variable {n} in
 @[simp] private theorem coefficientPolynomial_coeff
-    {K : Type*} [Field K] (n : ℕ) (c : Fin (n + 1) → K)
     (i : Fin (n + 1)) :
-    (coefficientPolynomial n c).coeff i = c i := by
-  exact congrFun ((Polynomial.degreeLTEquiv K (n + 1)).apply_symm_apply c) i
+    (coefficientPolynomial c).coeff i = c i := congrFun ((Polynomial.degreeLTEquiv K (n + 1)).apply_symm_apply c) i
 
-private theorem coefficientPolynomial_eval
-    {K : Type*} [Field K] (n : ℕ) (c : Fin (n + 1) → K) (t : K) :
-    (coefficientPolynomial n c).eval t = evalCoefficient c t := by
+private theorem coefficientPolynomial_eval (t : K) :
+    (coefficientPolynomial c).eval t = evalCoefficient c t := by
   simpa [coefficientPolynomial, evalCoefficient] using
     (Polynomial.eval_eq_sum_degreeLTEquiv
       (((Polynomial.degreeLTEquiv K (n + 1)).symm c).2) t)
 
 /-- Direct axis-line coefficients are equivalent to LDT bounded axis-line
 polynomials over the fixed field model. -/
-noncomputable def directAxisAnswerEquiv (D : DirectLdParams) :
+noncomputable def directAxisAnswerEquiv :
     letI := D.toLDTFieldModel
     DirectDegPoly D D.d ≃ AxisLinePolynomial D.toLDTParameters := by
   letI := D.toLDTFieldModel
   refine
     { toFun := fun c =>
-        { poly := coefficientPolynomial D.d c
+        { poly := coefficientPolynomial c
           degreeBounded := by
-            exact coefficientPolynomial_degree_le D.d c }
+            exact coefficientPolynomial_degree_le c }
       invFun := fun f i => f.poly.coeff i
       left_inv := by
         intro c
         funext i
-        exact coefficientPolynomial_coeff D.d c i
+        exact coefficientPolynomial_coeff c i
       right_inv := by
         intro f
         apply AxisLinePolynomial.ext
         apply linePolynomial_coeff_fin_injective D.toLDTParameters
-          (coefficientPolynomial_degree_le D.d fun i => f.poly.coeff i)
+          (coefficientPolynomial_degree_le fun i => f.poly.coeff i)
           f.degreeBounded
         intro i
-        exact coefficientPolynomial_coeff D.d (fun j => f.poly.coeff j) i }
+        exact coefficientPolynomial_coeff (fun j => f.poly.coeff j) i }
 
 /-- Direct diagonal-line coefficients are equivalent to LDT bounded
 diagonal-line polynomials over the fixed field model. -/
-noncomputable def directDiagonalAnswerEquiv (D : DirectLdParams) :
+noncomputable def directDiagonalAnswerEquiv :
     letI := D.toLDTFieldModel
     DirectDegPoly D (D.m * D.d) ≃ DiagonalLinePolynomial D.toLDTParameters := by
   letI := D.toLDTFieldModel
   refine
     { toFun := fun c =>
-        { poly := coefficientPolynomial (D.m * D.d) c
+        { poly := coefficientPolynomial c
           degreeBounded := by
-            exact coefficientPolynomial_degree_le (D.m * D.d) c }
+            exact coefficientPolynomial_degree_le c }
       invFun := fun f i => f.poly.coeff i
       left_inv := by
         intro c
         funext i
-        exact coefficientPolynomial_coeff (D.m * D.d) c i
+        exact coefficientPolynomial_coeff c i
       right_inv := by
         intro f
         apply DiagonalLinePolynomial.ext
         apply linePolynomial_coeff_fin_injective D.toLDTParameters
-          (coefficientPolynomial_degree_le (D.m * D.d) fun i => f.poly.coeff i)
+          (coefficientPolynomial_degree_le fun i => f.poly.coeff i)
           f.degreeBounded
         intro i
-        exact coefficientPolynomial_coeff (D.m * D.d) (fun j => f.poly.coeff j) i }
+        exact coefficientPolynomial_coeff (fun j => f.poly.coeff j) i }
 
 /-- Coefficient evaluation agrees with evaluation of the corresponding LDT
 axis-line polynomial. -/
-theorem directAxisAnswerEquiv_apply (D : DirectLdParams)
+theorem directAxisAnswerEquiv_apply
     (c : DirectDegPoly D D.d) (t : DirectScalarQ D) :
     letI := D.toLDTFieldModel
     directAxisAnswerEquiv D c (directScalarEquiv D t) =
       directScalarEquiv D (evalCoefficient c t) := by
   letI := D.toLDTFieldModel
-  simp only [directAxisAnswerEquiv, AxisLinePolynomial.toFun,
-    evalLinePolynomialModel]
+  simp [directAxisAnswerEquiv, AxisLinePolynomial.toFun, evalLinePolynomialModel]
   rw [show decodeScalar (directScalarEquiv D t) = t by
-    exact (FieldModel.equiv (q := D.q)).symm_apply_apply t]
-  change encodeScalar ((coefficientPolynomial D.d c).eval t) =
-    directScalarEquiv D (evalCoefficient c t)
-  exact congrArg (FieldModel.equiv (q := D.q))
+    exact Equiv.symm_apply_apply FieldModel.equiv t]
+  exact congrArg _
     (coefficientPolynomial_eval D.d c t)
 
 /-- Coefficient evaluation agrees with evaluation of the corresponding LDT
 diagonal-line polynomial. -/
-theorem directDiagonalAnswerEquiv_apply (D : DirectLdParams)
+theorem directDiagonalAnswerEquiv_apply
     (c : DirectDegPoly D (D.m * D.d)) (t : DirectScalarQ D) :
     letI := D.toLDTFieldModel
     directDiagonalAnswerEquiv D c (directScalarEquiv D t) =
       directScalarEquiv D (evalCoefficient c t) := by
   letI := D.toLDTFieldModel
-  simp only [directDiagonalAnswerEquiv, DiagonalLinePolynomial.toFun,
-    evalLinePolynomialModel]
+  simp [directDiagonalAnswerEquiv, DiagonalLinePolynomial.toFun, evalLinePolynomialModel]
   rw [show decodeScalar (directScalarEquiv D t) = t by
-    exact (FieldModel.equiv (q := D.q)).symm_apply_apply t]
-  change encodeScalar ((coefficientPolynomial (D.m * D.d) c).eval t) =
-    directScalarEquiv D (evalCoefficient c t)
-  exact congrArg (FieldModel.equiv (q := D.q))
-    (coefficientPolynomial_eval (D.m * D.d) c t)
+    exact Equiv.symm_apply_apply FieldModel.equiv t]
+  exact congrArg _
+    (coefficientPolynomial_eval _ c t)
+
+end
 
 /-! ## Parameters and answers of the two QPBT game presentations -/
 
@@ -216,16 +214,14 @@ theorem directDiagonalAnswerEquiv_apply (D : DirectLdParams)
   hk := L.hk
   hq := L.hq
 
-@[simp] theorem LdParams.toDirectLdParams_model (L : LdParams) :
-    L.toDirectLdParams.model = L.model := by
-  unfold DirectLdParams.model LdParams.model LdParams.toDirectLdParams
-  congr
+variable (L : LdParams) (t : LdType) (sample : DirectLdSpace L.toDirectLdParams)
+  (residue : Fin (L.q / L.m))
 
 /-- The canonical answer equivalence between the seed-indexed and directly
 indexed QPBT games: point answers correspond to point answers, axis-line
 answers to axis-line answers, and diagonal-line answers to diagonal-line
 answers. -/
-noncomputable def ldDirectAnswerEquiv (L : LdParams) :
+noncomputable def ldDirectAnswerEquiv :
     LdAnswer L ≃ DirectLdAnswer L.toDirectLdParams where
   toFun
     | .pointVals a => .pointVals a
@@ -242,7 +238,7 @@ noncomputable def ldDirectAnswerEquiv (L : LdParams) :
 
 /-- Parse a seed-indexed question into the directly indexed question carrying
 the coordinate selected by `chiIndex`. -/
-noncomputable def parseLdQuestion (L : LdParams) :
+noncomputable def parseLdQuestion :
     LdQuestion L → DirectLdQuestion L.toDirectLdParams
   | (.point, z) =>
       (.point, ⟨z.point, L.toDirectLdParams.firstIndex, 0⟩)
@@ -251,42 +247,35 @@ noncomputable def parseLdQuestion (L : LdParams) :
   | (.dline, z) =>
       (.dline, ⟨z.point, chiIndex L z.seed, z.direction⟩)
 
+variable {L} in
 /-- Embed a direct sample into the seed-indexed ambient space using the
 specified residue in the selected seed fiber. -/
-noncomputable def ldSpaceOfDirectResidue (L : LdParams)
-    (sample : DirectLdSpace L.toDirectLdParams)
-    (residue : Fin (L.q / L.m)) : LdSpace L
+noncomputable def ldSpaceOfDirectResidue : LdSpace L
   | .inl (.inl i) => sample.point i
   | .inl (.inr _) => seedOfIndexResidue L sample.index residue
   | .inr i => sample.direction i
 
-@[simp] theorem ldSpaceOfDirectResidue_point (L : LdParams)
-    (sample : DirectLdSpace L.toDirectLdParams)
-    (residue : Fin (L.q / L.m)) :
-    (ldSpaceOfDirectResidue L sample residue).point = sample.point :=
+@[simp] theorem ldSpaceOfDirectResidue_point :
+    (ldSpaceOfDirectResidue sample residue).point = sample.point :=
   rfl
 
-@[simp] theorem ldSpaceOfDirectResidue_seed (L : LdParams)
-    (sample : DirectLdSpace L.toDirectLdParams)
-    (residue : Fin (L.q / L.m)) :
-    (ldSpaceOfDirectResidue L sample residue).seed =
+@[simp] theorem ldSpaceOfDirectResidue_seed :
+    (ldSpaceOfDirectResidue sample residue).seed =
       seedOfIndexResidue L sample.index residue :=
   rfl
 
-@[simp] theorem ldSpaceOfDirectResidue_direction (L : LdParams)
-    (sample : DirectLdSpace L.toDirectLdParams)
-    (residue : Fin (L.q / L.m)) :
-    (ldSpaceOfDirectResidue L sample residue).direction = sample.direction :=
+@[simp] theorem ldSpaceOfDirectResidue_direction :
+    (ldSpaceOfDirectResidue sample residue).direction = sample.direction :=
   rfl
 
 /-- The ambient seed-indexed sample space is a direct sample together with a
 uniform residue in the selected seed fiber. -/
-noncomputable def ldSpaceSeedFiberEquiv (L : LdParams) :
+noncomputable def ldSpaceSeedFiberEquiv :
     LdSpace L ≃ DirectLdSpace L.toDirectLdParams × Fin (L.q / L.m) where
   toFun z :=
     (⟨z.point, (seedFiberEquiv L z.seed).1, z.direction⟩,
       (seedFiberEquiv L z.seed).2)
-  invFun x := ldSpaceOfDirectResidue L x.1 x.2
+  invFun x := ldSpaceOfDirectResidue x.1 x.2
   left_inv z := by
     funext i
     rcases i with (i | i)
@@ -308,12 +297,10 @@ noncomputable def ldSpaceSeedFiberEquiv (L : LdParams) :
 
 /-- Parsing a canonical seed-indexed question reconstructed from a direct
 sample gives exactly the corresponding direct canonical question. -/
-theorem parseLdQuestion_ldCL_ofDirectResidue (L : LdParams)
-    (t : LdType) (sample : DirectLdSpace L.toDirectLdParams)
-    (residue : Fin (L.q / L.m)) :
+theorem parseLdQuestion_ldCL_ofDirectResidue :
     parseLdQuestion L
-        (t, ldCL L t (ldSpaceOfDirectResidue L sample residue)) =
-      (t, directLdMap L.toDirectLdParams t sample) := by
+        (t, ldCL L t (ldSpaceOfDirectResidue sample residue)) =
+      (t, directLdMap t sample) := by
   cases t with
   | point =>
     rfl
@@ -334,7 +321,7 @@ theorem parseLdQuestion_ldCL_ofDirectResidue (L : LdParams)
 
 /-- The seed-indexed and direct predicates agree after parsing questions and
 transporting answers. -/
-theorem ldWinPredicate_parse (L : LdParams)
+theorem ldWinPredicate_parse
     (x y : LdQuestion L) (a b : LdAnswer L) :
     directLdWinPredicate L.toDirectLdParams
         (parseLdQuestion L x) (parseLdQuestion L y)
@@ -348,7 +335,7 @@ theorem ldWinPredicate_parse (L : LdParams)
 
 /-- The common source sample is a direct common sample together with its
 uniform seed-fiber residue. -/
-noncomputable def ldQuestionSeedFiberEquiv (L : LdParams) :
+noncomputable def ldQuestionSeedFiberEquiv :
     ((LdType × LdType) × LdSpace L) ≃
       (((LdType × LdType) × DirectLdSpace L.toDirectLdParams) ×
         Fin (L.q / L.m)) :=

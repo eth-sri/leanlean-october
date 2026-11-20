@@ -1,34 +1,7 @@
 module
 
 public import QPBT.Combining.Lines.Construction
-public import QPBT.Combining.Lines.CombinedMeasurement
-public import QPBT.Combining.Lines.ConditionalConsistency
-public import QPBT.Combining.Lines.Marginal
-public import QPBT.Combining.Lines.ConsistencyPositivity
-public import QPBT.Combining.Lines.ConditionalCollision
-public import QPBT.Combining.Lines.AxisLineResampling
-public import QPBT.Combining.Lines.DiagonalResampling
-public import QPBT.Combining.Lines.MixedResampling
-public import QPBT.Combining.Lines.ProductWeightedCollision
-public import QPBT.Combining.Lines.NondegeneratePastingDistribution
-public import QPBT.Combining.Lines.NondegeneratePastingMass
 public import QPBT.Combining.Lines.PairStateConsistencyTransport
-public import QPBT.Combining.Lines.RestrictedAverage
-public import QPBT.Combining.Lines.NondegeneratePastingResampling
-public import QPBT.Combining.Lines.SubLineMixture
-public import QPBT.Combining.Lines.UniformAffineCollision
-public import QPBT.Combining.Lines.WeightedCollision
-public import QPBT.Combining.Lines.PointwiseDefect
-public import QPBT.Combining.Lines.PointSelfConsistencyCompleted
-public import QPBT.Combining.Points
-public import QPBT.Combining.Witnesses
-public import QPBT.Combining.Lines.AffineEvaluation
-public import QPBT.Combining.Lines.FiberCollision
-public import QPBT.Combining.Lines.NondegenerateFiberCollision
-public import QPBT.Combining.Lines.ZeroDirectionMass
-public import QPBT.Combining.Lines.RestrictedConsistency
-public import QPBT.Combining.Lines.PastingRestoration
-public import QPBT.Games.RestrictedAverage
 
 /-!
 # Combined lines and restricted line distributions
@@ -149,24 +122,61 @@ point marginals are the separate mixtures of `subLineDist_source_mixture`. -/
 theorem exists_subLineWitness (P : AdmissibleParams) :
     Nonempty (SubLineWitness P) := by
   refine ⟨{ D := subLineDist P
-            isProbability := subLineDist_isProbability P
-            extended_marginal := subLineDist_map_fst P
+            isProbability := (by
+                               refine Distribution.bind_isProbability _ _
+                                 (uniformDistribution_isProbability _) fun c _ => ?_
+                               fin_cases c
+                               · exact Distribution.IsProbability.map (subLineSamplingDist_isProbability P) _
+                               · exact Distribution.IsProbability.map (subLineSamplingDist_isProbability P) _)
+            extended_marginal := (by
+                                   classical
+                                   have haxis : (subLineBranchDist P .axis).map Prod.fst =
+                                       (directALinePointDist P.extendedDirectLd).map Prod.fst := by
+                                     rw [subLineBranchDist_map_fst, directALinePointDist, Distribution.map_map]
+                                     rfl
+                                   have hdiag : (subLineBranchDist P .diagonal).map Prod.fst =
+                                       (directDLinePointDist P.extendedDirectLd).map Prod.fst := by
+                                     rw [subLineBranchDist_map_fst, directDLinePointDist, Distribution.map_map]
+                                     rfl
+                                   rw [subLineDist, Distribution.bind_map, directLinePointDist,
+                                     ← Distribution.bind_uniform_fin_two, Distribution.bind_map]
+                                   refine Distribution.bind_congr_support _ _ _ fun c _ => ?_
+                                   fin_cases c
+                                   · exact haxis
+                                   · exact hdiag)
             incidence := ?_
             compatibility := ?_
-            source_mixture := subLineDist_source_mixture P
+            source_mixture := (⟨subLineComponentDist P, (by
+                                                          refine Distribution.bind_isProbability _ _
+                                                            (uniformDistribution_isProbability _) fun c _ => ?_
+                                                          fin_cases c
+                                                          · exact Distribution.IsProbability.map
+                                                              (uniformDistribution_isProbability _) _
+                                                          · exact Distribution.IsProbability.map
+                                                              (uniformDistribution_isProbability _) _),
+                                subLineDist_map_subLineXProjection P,
+                                subLineDist_map_subLineZProjection P⟩)
             axis_closure := ?_ }⟩
   · intro sample hsample u hu
     obtain ⟨kind, k, w, hx, hz, rfl⟩ :=
-      exists_samplingData_of_mem_subLineDist_support P hsample
-    exact subLineTripleOf_incidence P kind k w hx hz hu
+      exists_samplingData_of_mem_subLineDist_support hsample
+    exact ⟨projX_mem_pointSet P _ _ _ (subLineTripleOf_xBase kind hx)
+              (subLineTripleOf_xSpan kind hx) hu,
+            projZ_mem_pointSet P _ _ _ (subLineTripleOf_zBase kind hz)
+              (subLineTripleOf_zSpan kind hz) hu⟩
   · intro sample hsample
     obtain ⟨kind, k, w, hx, hz, rfl⟩ :=
-      exists_samplingData_of_mem_subLineDist_support P hsample
-    exact subLineTripleOf_compatibility P kind k w hx hz
+      exists_samplingData_of_mem_subLineDist_support hsample
+    solve_by_elim [subLineTripleOf_compatibility]
   · intro sample hsample haxis
     obtain ⟨kind, k, w, hx, hz, rfl⟩ :=
-      exists_samplingData_of_mem_subLineDist_support P hsample
-    exact subLineTripleOf_axis_closure P kind k w haxis
+      exists_samplingData_of_mem_subLineDist_support hsample
+    have hkind : kind = .axis := by
+      have h : (subLineExtLine P kind k w).kind = kind := by cases kind <;> rfl
+      rw [← h]
+      exact haxis
+    subst hkind
+    constructor <;> assumption
 
 end
 

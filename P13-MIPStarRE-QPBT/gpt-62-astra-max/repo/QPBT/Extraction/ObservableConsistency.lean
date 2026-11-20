@@ -1,8 +1,6 @@
 module
 
-public import QPBT.Extraction.Consistency
 public import QPBT.Extraction.PullingDefect
-public import QPBT.ExplicitConstants
 
 /-!
 # Self-consistency of the pulled-apart observables
@@ -67,17 +65,15 @@ theorem tilde_obs_self_consistent_of_global_pair_witness_card :
                   epsilon deltaG P.m P.d P.q := by
   have hcard : 0 ≤ (Fintype.card PauliEdge : ℝ) := Nat.cast_nonneg _
   intro P epsilon deltaG hepsilon hepsilon_one hdeltaG S w W j
-  have hbound := (tildeObs_opDistSq_le_pulling_eval_add w W j).trans
-    (mul_le_mul_of_nonneg_left
-      (add_le_add (pullingMeas_eval_consistencyDefect_le w W) (le_refl _))
-      (by norm_num : (0 : ℝ) ≤ 4))
-  have heps : epsilon ≤ Real.sqrt epsilon := Real.le_sqrt_self_iff.mpr hepsilon_one
-  have hsqrt := Real.sqrt_nonneg epsilon
+  have heps := Real.le_sqrt_self_iff.mpr hepsilon_one
   have hratio : 0 ≤ (P.m * P.d : ℝ) / P.q :=
     div_nonneg (mul_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)) (Nat.cast_nonneg _)
-  have hscaled := mul_le_mul_of_nonneg_left heps
-    (mul_nonneg (by norm_num : (0 : ℝ) ≤ 32) hcard)
-  refine hbound.trans ?_
+  refine ((((tildeObs_opDistSq_le_four_consistencyDefect w W j).trans
+           (mul_le_mul_of_nonneg_left (tildeM_consistencyDefect_le_pulling_eval_add w W)
+           (by norm_num)))).trans
+    (mul_le_mul_of_nonneg_left
+    (add_le_add (pullingMeas_eval_consistencyDefect_le w W) (le_refl _))
+    (by norm_num : (0 : ℝ) ≤ 4))).trans ?_
   unfold deltaConstructPaulis
   rw [Nat.cast_mul]
   nlinarith [mul_nonneg hcard hdeltaG, mul_nonneg hcard hratio]

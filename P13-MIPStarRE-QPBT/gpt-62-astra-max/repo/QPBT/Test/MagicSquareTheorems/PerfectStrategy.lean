@@ -52,7 +52,7 @@ incident variable effect in the measurement family built from commuting
 projective cell measurements. -/
 theorem msStrategyMeasurement_incident_commute
     {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
+    {P : Fin 9 → Measurement (ZMod 2) V}
     (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
     (hcomm : ∀ i k l a b,
       Commute ((P (msConstraintVars i k)).effect a)
@@ -64,13 +64,9 @@ theorem msStrategyMeasurement_incident_commute
   by_cases ha : a ∈ Set.range (fun ab => MsAnswer.triple (parityTriple i ab))
   · rcases ha with ⟨ab, rfl⟩
     rw [msStrategyMeasurement_constraint_triple]
-    by_cases hb : b ∈ Set.range (MsAnswer.bit : ZMod 2 → MsAnswer)
+    by_cases hb : b ∈ Set.range MsAnswer.bit
     · rcases hb with ⟨c, rfl⟩
       rw [msStrategyMeasurement_var_bit]
-      change Commute
-        ((P (msConstraintVars i 0)).effect ab.1 *
-          (P (msConstraintVars i 1)).effect ab.2)
-        ((P (msConstraintVars i k)).effect c)
       exact (hcomm i 0 k ab.1 c).mul_left (hcomm i 1 k ab.2 c)
     · rw [msStrategyMeasurement_var_zero _ _ _ _ hb]
       exact Commute.zero_right _
@@ -97,39 +93,18 @@ private theorem msStrategyMeasurement_rejected_mul
   by_cases ha : a ∈ Set.range (fun ab => MsAnswer.triple (parityTriple i ab))
   · rcases ha with ⟨ab, rfl⟩
     rw [msStrategyMeasurement_constraint_triple]
-    by_cases hb : b ∈ Set.range (MsAnswer.bit : ZMod 2 → MsAnswer)
+    by_cases hb : b ∈ Set.range MsAnswer.bit
     · rcases hb with ⟨c, rfl⟩
       rw [msStrategyMeasurement_var_bit]
       have hne : parityTriple i ab k ≠ c := by
         simpa [msWinPredicate, parityTriple_sum,
           msConstraintVars_exists_iff] using hrej
-      rw [hmul i k ab c]
+      rw [hmul]
       simp [hne]
     · rw [msStrategyMeasurement_var_zero _ _ _ _ hb]
       simp
   · rw [msStrategyMeasurement_constraint_zero _ _ _ _ ha]
     simp
-
-private theorem msStrategyMeasurement_rejected_mul_reverse
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
-    (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
-    (hcomm : ∀ i k l a b,
-      Commute ((P (msConstraintVars i k)).effect a)
-        ((P (msConstraintVars i l)).effect b))
-    (hmul : ∀ i k ab b,
-      (msConstraintJoint P hP hcomm i).effect ab *
-          (P (msConstraintVars i k)).effect b =
-        if parityTriple i ab k = b then
-          (msConstraintJoint P hP hcomm i).effect ab else 0)
-    (i : Fin 6) (k : Fin 3) (a b : MsAnswer)
-    (hrej : msWinPredicate (.var (msConstraintVars i k)) (.constraint i) a b = false) :
-    ((msStrategyMeasurement P hP hcomm
-        (.var (msConstraintVars i k))).effect a) *
-      ((msStrategyMeasurement P hP hcomm (.constraint i)).effect b) = 0 := by
-  rw [(msStrategyMeasurement_incident_commute P hP hcomm i k b a).symm.eq]
-  exact msStrategyMeasurement_rejected_mul P hP hcomm hmul i k b a
-    (by simpa [msWinPredicate_symm] using hrej)
 
 /-- Formalization-only auxiliary for the perfect Magic Square strategy and the
 proof of `lem:pauli-completeness`: every supported Magic Square question
@@ -140,11 +115,7 @@ theorem msGame_support_incidence (x y : MsType)
       x = .constraint i ∧ y = .var (msConstraintVars i k)) ∨
       ∃ i : Fin 6, ∃ k : Fin 3,
         x = .var (msConstraintVars i k) ∧ y = .constraint i := by
-  change (x, y) ∈
-    Finset.univ.filter (fun ab : MsType × MsType =>
-      Sym2.mk ab.1 ab.2 ∈ msEdges) at hxy
-  have hedge : Sym2.mk x y ∈ msEdges := (Finset.mem_filter.mp hxy).2
-  rw [msEdges] at hedge
+  have hedge := (Finset.mem_filter.mp hxy).2
   rcases Finset.mem_image.mp hedge with ⟨⟨i, k⟩, _, hik⟩
   rcases Sym2.eq_iff.mp hik with hik | hik
   · left
@@ -174,9 +145,11 @@ theorem msStrategyMeasurement_rejected_mul_on_support
       ((msStrategyMeasurement P hP hcomm y).effect b) = 0 := by
   rcases msGame_support_incidence x y hxy with hxy | hxy
   · rcases hxy with ⟨i, k, rfl, rfl⟩
-    exact msStrategyMeasurement_rejected_mul P hP hcomm hmul i k a b hrej
+    apply msStrategyMeasurement_rejected_mul <;> assumption
   · rcases hxy with ⟨i, k, rfl, rfl⟩
-    exact msStrategyMeasurement_rejected_mul_reverse P hP hcomm hmul i k a b hrej
+    rw [(msStrategyMeasurement_incident_commute hP hcomm i k b a).symm.eq]
+    exact msStrategyMeasurement_rejected_mul P hP hcomm hmul i k b a
+      (by simpa [msWinPredicate_symm] using hrej)
 
 /-- Formalization-only auxiliary for the perfect Magic Square strategy and the
 proof of `lem:pauli-completeness`: the constructed Magic Square family has
@@ -195,9 +168,9 @@ theorem msStrategyMeasurement_effect_transpose
       (msStrategyMeasurement P hP hcomm x).effect a := by
   cases x with
   | var j =>
-      exact postprocess_effect_transpose (P j) MsAnswer.bit (hPt j) a
+      solve_by_elim [postprocess_effect_transpose]
   | constraint i =>
-      exact postprocess_effect_transpose (msConstraintJoint P hP hcomm i)
+      exact postprocess_effect_transpose _
         (fun ab => .triple (parityTriple i ab))
         (msConstraintJoint_effect_transpose P hP hcomm hPt i) a
 
@@ -214,12 +187,11 @@ theorem heteroKron_mulVec_epr_eq_zero_of_mul_eq_zero
     rw [heteroKron_mul]
     simp
   rw [hfactor, ← Matrix.mulVec_mulVec,
-    ← epr_action_eq_of_transpose F hFt, Matrix.mulVec_mulVec,
+    ← epr_action_eq_of_transpose hFt, Matrix.mulVec_mulVec,
     heteroKron_mul, hEF]
   have hz : heteroKron (0 : Op V) (1 : Op V) = 0 := by
-    ext ⟨i, k⟩ ⟨j, l⟩
-    simp [heteroKron, Matrix.kronecker, Matrix.kroneckerMap_apply]
-  simp only [mul_one]
+    simp [heteroKron]
+  simp
   rw [hz]
   exact Matrix.zero_mulVec _
 

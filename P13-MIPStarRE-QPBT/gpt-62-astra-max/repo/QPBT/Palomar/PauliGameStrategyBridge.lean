@@ -31,16 +31,18 @@ local instance compactPauliQuestionDecidableEq
 
 namespace PMF
 
+variable {X Y : Type*} (p : PMF X) (e : X ≃ Y)
+
 /-- Pushing a PMF through an equivalence preserves its mass at corresponding points. -/
-@[simp] theorem map_equiv_apply {X Y : Type*} (p : PMF X) (e : X ≃ Y) (x : X) :
+@[simp] theorem map_equiv_apply (x : X) :
     (p.map e) (e x) = p x := by
   classical
-  simp [PMF.map_apply, e.injective.eq_iff]
+  simp
 
 /-- A PMF pushed through an equivalence is evaluated by pulling the point back. -/
-theorem map_equiv_apply' {X Y : Type*} (p : PMF X) (e : X ≃ Y) (y : Y) :
+theorem map_equiv_apply' (y : Y) :
     (p.map e) y = p (e.symm y) := by
-  simpa only [e.apply_symm_apply] using map_equiv_apply p e (e.symm y)
+  simpa using map_equiv_apply p e (e.symm y)
 
 end PMF
 
@@ -55,7 +57,7 @@ theorem relabel_isConsistentOn_iff {A B I : Type*} [Fintype A] [Fintype B]
   · intro h a
     simpa using h (e a)
   · intro h b
-    exact h (e.symm b)
+    apply h
 
 end POVM
 
@@ -73,15 +75,13 @@ theorem isCommutingOn_relabel_iff
       IsCommutingOn μ alice bob := by
   constructor
   · intro h x y hxy a b
-    have hxy' : 0 < (μ.map (Equiv.prodCongr eX eY)) (eX x, eY y) := by
+    simpa using h (eX x) (eY y) (by
       rw [show (eX x, eY y) = (Equiv.prodCongr eX eY) (x, y) by rfl]
-      simpa only [PMF.map_equiv_apply] using hxy
-    simpa using h (eX x) (eY y) hxy' (eA a) (eB b)
+      simpa only [PMF.map_equiv_apply] using hxy) (eA a) (eB b)
   · intro h x y hxy a b
-    have hxy' : 0 < μ (eX.symm x, eY.symm y) := by
+    simpa using h (eX.symm x) (eY.symm y) (by
       rw [PMF.map_equiv_apply'] at hxy
-      simpa using hxy
-    simpa using h (eX.symm x) (eY.symm y) hxy' (eA.symm a) (eB.symm b)
+      simpa using hxy) (eA.symm a) (eB.symm b)
 
 namespace Game
 
@@ -100,9 +100,7 @@ theorem relabel_symm_relabel {X Y A B X' Y' A' B' : Type}
     change ((G.μ.map (Equiv.prodCongr eX eY)).map
       (Equiv.prodCongr eX.symm eY.symm)) xy = G.μ xy
     rw [PMF.map_equiv_apply']
-    change (G.μ.map (Equiv.prodCongr eX eY))
-      ((Equiv.prodCongr eX eY) xy) = G.μ xy
-    exact PMF.map_equiv_apply G.μ (Equiv.prodCongr eX eY) xy
+    apply PMF.map_equiv_apply
   · funext x y a b
     simp [Game.relabel]
 
@@ -131,10 +129,14 @@ end SymmetricGame
 
 namespace SymmetricStrategy
 
+variable {X A X' A' : Type} [Fintype X] [Fintype A] [Fintype X'] [Fintype A']
+
+section
+
+variable (S : SymmetricStrategy X A) (eX : X ≃ X') (eA : A ≃ A')
+
 /-- Relabel the questions and outcomes of a compact symmetric strategy. -/
-def relabel {X A X' A' : Type}
-    [Fintype X] [Fintype A] [Fintype X'] [Fintype A']
-    (S : SymmetricStrategy X A) (eX : X ≃ X') (eA : A ≃ A') :
+def relabel :
     SymmetricStrategy X' A' where
   ι := S.ι
   ψ := S.ψ
@@ -142,55 +144,45 @@ def relabel {X A X' A' : Type}
   ψ_swap := S.ψ_swap
   meas := fun x => POVM.relabel eA (S.meas (eX.symm x))
 
-/-- Symmetric relabeling agrees with relabeling the underlying general strategy. -/
-@[simp] theorem relabel_toStrategy {X A X' A' : Type}
-    [Fintype X] [Fintype A] [Fintype X'] [Fintype A']
-    (S : SymmetricStrategy X A) (eX : X ≃ X') (eA : A ≃ A') :
-    (relabel S eX eA).toStrategy =
-      Strategy.relabel S.toStrategy eX eX eA eA :=
-  rfl
-
 /-- Symmetric relabeling preserves projectivity of the measurement family exactly. -/
-theorem relabel_isProjective_iff {X A X' A' : Type}
-    [Fintype X] [Fintype A] [Fintype X'] [Fintype A']
-    (S : SymmetricStrategy X A) (eX : X ≃ X') (eA : A ≃ A') :
+theorem relabel_isProjective_iff :
     (∀ x, ((relabel S eX eA).meas x).IsProjective) ↔
       ∀ x, (S.meas x).IsProjective := by
   constructor
   · intro h x
     have hx := h (eX x)
-    change (POVM.relabel eA (S.meas (eX.symm (eX x)))).IsProjective at hx
-    rw [eX.symm_apply_apply] at hx
+    change (POVM.relabel eA _).IsProjective at hx
+    simp at hx
     exact (POVM.relabel_isProjective_iff eA (S.meas x)).mp hx
   · intro h x
     exact (POVM.relabel_isProjective_iff eA (S.meas (eX.symm x))).mpr
       (h (eX.symm x))
 
+end
+
 /-- Symmetric relabeling preserves consistency exactly. -/
-theorem relabel_isConsistent_iff {X A X' A' : Type}
-    [Fintype X] [Fintype A] [Fintype X'] [Fintype A']
+theorem relabel_isConsistent_iff
     [DecidableEq A] [DecidableEq A']
     (S : SymmetricStrategy X A) (eX : X ≃ X') (eA : A ≃ A') :
     (relabel S eX eA).IsConsistent ↔ S.IsConsistent := by
   constructor
   · intro h x
     have hx := h (eX x)
-    change (POVM.relabel eA (S.meas (eX.symm (eX x)))).IsConsistentOn S.ψ at hx
-    rw [eX.symm_apply_apply] at hx
+    change (POVM.relabel eA _).IsConsistentOn S.ψ at hx
+    simp at hx
     exact (POVM.relabel_isConsistentOn_iff eA (S.meas x) S.ψ).mp hx
   · intro h x
     exact (POVM.relabel_isConsistentOn_iff eA (S.meas (eX.symm x)) S.ψ).mpr
       (h (eX.symm x))
 
 /-- Symmetric relabeling preserves the SPCC predicate under the exact PMF push-forward. -/
-theorem relabel_isSPCC_iff {X A X' A' : Type}
-    [Fintype X] [Fintype A] [Fintype X'] [Fintype A']
+theorem relabel_isSPCC_iff
     [DecidableEq X] [DecidableEq A] [DecidableEq X'] [DecidableEq A']
     (G : SymmetricGame X A) (G' : SymmetricGame X' A')
     (S : SymmetricStrategy X A) (eX : X ≃ X') (eA : A ≃ A')
     (hμ : G.μ.map (Equiv.prodCongr eX eX) = G'.μ) :
     (relabel S eX eA).IsSPCC G' ↔ S.IsSPCC G := by
-  rw [SymmetricStrategy.IsSPCC, SymmetricStrategy.IsSPCC, ← hμ]
+  simp [SymmetricStrategy.IsSPCC, ← hμ]
   constructor
   · rintro ⟨hproj, hcons, hcomm⟩
     exact ⟨(relabel_isProjective_iff S eX eA).mp hproj,
@@ -203,8 +195,10 @@ theorem relabel_isSPCC_iff {X A X' A' : Type}
 
 end SymmetricStrategy
 
+variable (P : MIPStarRE.QPBT.AdmissibleParams)
+
 /-- Relabeling the concrete compact Pauli game gives the registered game exactly. -/
-theorem pauliGame_relabel_eq (P : MIPStarRE.QPBT.AdmissibleParams) :
+theorem pauliGame_relabel_eq :
     Game.relabel
         (pauliGame (PauliParams.ofAdmissibleParams P)
           (MIPStarRE.QPBT.binaryRepresentation P.model)
@@ -215,7 +209,7 @@ theorem pauliGame_relabel_eq (P : MIPStarRE.QPBT.AdmissibleParams) :
   apply Game.ext
   · exact pauliQuestionPMF_map P
   · funext x y a b
-    change pauliWin (PauliParams.ofAdmissibleParams P)
+    change pauliWin _
         (MIPStarRE.QPBT.binaryRepresentation P.model)
         (MIPStarRE.QPBT.fixedBinTrace P.model)
         ((pauliQuestionEquiv P).symm x) ((pauliQuestionEquiv P).symm y)
@@ -225,13 +219,13 @@ theorem pauliGame_relabel_eq (P : MIPStarRE.QPBT.AdmissibleParams) :
       ((pauliQuestionEquiv P).symm x) ((pauliQuestionEquiv P).symm y)
       ((pauliAnswerEquivCompact P).symm a) ((pauliAnswerEquivCompact P).symm b)
 
+section
+
+variable
+  (S : Strategy (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)))
+
 /-- Convert a compact Pauli strategy into a strategy for the registered game. -/
-def pauliStrategyToLibrary (P : MIPStarRE.QPBT.AdmissibleParams)
-    (S : Strategy
-      (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))) :
+def pauliStrategyToLibrary :
     MIPStarRE.QPBT.Strategy (MIPStarRE.QPBT.pauliBasisTest P) :=
   Strategy.toStrategy (G := MIPStarRE.QPBT.pauliBasisTest P)
     (Strategy.relabel S
@@ -239,12 +233,7 @@ def pauliStrategyToLibrary (P : MIPStarRE.QPBT.AdmissibleParams)
       (pauliAnswerEquivCompact P) (pauliAnswerEquivCompact P))
 
 /-- Conversion to the registered Pauli game preserves strategy value exactly. -/
-theorem pauliStrategyToLibrary_value (P : MIPStarRE.QPBT.AdmissibleParams)
-    (S : Strategy
-      (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))) :
+theorem pauliStrategyToLibrary_value :
     (pauliStrategyToLibrary P S).value =
       S.value (pauliGame (PauliParams.ofAdmissibleParams P)
         (MIPStarRE.QPBT.binaryRepresentation P.model)
@@ -253,9 +242,8 @@ theorem pauliStrategyToLibrary_value (P : MIPStarRE.QPBT.AdmissibleParams)
     (pauliQuestionEquiv P) (pauliQuestionEquiv P)
     (pauliAnswerEquivCompact P) (pauliAnswerEquivCompact P)
   calc
-    (pauliStrategyToLibrary P S).value =
-        (Strategy.ofStrategy (pauliStrategyToLibrary P S)).value
-          (Game.ofGame (MIPStarRE.QPBT.pauliBasisTest P)) :=
+    _ =
+        _ :=
       (Strategy.value_ofStrategy (pauliStrategyToLibrary P S)).symm
     _ = S'.value (Game.ofGame (MIPStarRE.QPBT.pauliBasisTest P)) := by
       simp [pauliStrategyToLibrary, S']
@@ -266,13 +254,13 @@ theorem pauliStrategyToLibrary_value (P : MIPStarRE.QPBT.AdmissibleParams)
         (pauliQuestionEquiv P) (pauliQuestionEquiv P)
         (pauliAnswerEquivCompact P) (pauliAnswerEquivCompact P)) := by
       rw [pauliGame_relabel_eq]
-    _ = S.value (pauliGame (PauliParams.ofAdmissibleParams P)
-        (MIPStarRE.QPBT.binaryRepresentation P.model)
-        (MIPStarRE.QPBT.fixedBinTrace P.model)) :=
+    _ = _ :=
       Strategy.value_relabel _ _ _ _ _ _
 
+end
+
 /-- The compact Pauli game has the exact symmetric presentation transported from the source. -/
-noncomputable def pauliSymmetricGame (P : MIPStarRE.QPBT.AdmissibleParams) :
+noncomputable def pauliSymmetricGame :
     SymmetricGame
       (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
       (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :=
@@ -281,13 +269,13 @@ noncomputable def pauliSymmetricGame (P : MIPStarRE.QPBT.AdmissibleParams) :
     (pauliQuestionEquiv P).symm (pauliAnswerEquivCompact P).symm
 
 /-- The symmetric compact presentation has the compact Pauli game as its underlying game. -/
-@[simp] theorem pauliSymmetricGame_toGame (P : MIPStarRE.QPBT.AdmissibleParams) :
+@[simp] theorem pauliSymmetricGame_toGame :
     (pauliSymmetricGame P).toGame =
       pauliGame (PauliParams.ofAdmissibleParams P)
         (MIPStarRE.QPBT.binaryRepresentation P.model)
         (MIPStarRE.QPBT.fixedBinTrace P.model) := by
   calc
-    (pauliSymmetricGame P).toGame =
+    _ =
         Game.relabel (Game.ofGame (MIPStarRE.QPBT.pauliBasisTest P))
           (pauliQuestionEquiv P).symm (pauliQuestionEquiv P).symm
           (pauliAnswerEquivCompact P).symm (pauliAnswerEquivCompact P).symm := rfl
@@ -301,31 +289,8 @@ noncomputable def pauliSymmetricGame (P : MIPStarRE.QPBT.AdmissibleParams) :
           (pauliAnswerEquivCompact P).symm
           (pauliAnswerEquivCompact P).symm := by
       rw [pauliGame_relabel_eq]
-    _ = pauliGame (PauliParams.ofAdmissibleParams P)
-        (MIPStarRE.QPBT.binaryRepresentation P.model)
-        (MIPStarRE.QPBT.fixedBinTrace P.model) :=
+    _ = _ :=
       Game.relabel_symm_relabel _ _ _ _ _
-
-/-- Convert a compact symmetric Pauli strategy into a registered symmetric strategy. -/
-def pauliSymmetricStrategyToLibrary (P : MIPStarRE.QPBT.AdmissibleParams)
-    (S : SymmetricStrategy
-      (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))) :
-    MIPStarRE.QPBT.SymmetricStrategy (MIPStarRE.QPBT.pauliBasisTestSymm P) :=
-  SymmetricStrategy.toSymmetricStrategy
-    (SymmetricStrategy.relabel S (pauliQuestionEquiv P) (pauliAnswerEquivCompact P))
-
-/-- Symmetric conversion is exactly the relabeled compact symmetric strategy. -/
-@[simp] theorem of_pauliSymmetricStrategyToLibrary
-    (P : MIPStarRE.QPBT.AdmissibleParams)
-    (S : SymmetricStrategy
-      (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))) :
-    SymmetricStrategy.ofSymmetricStrategy (pauliSymmetricStrategyToLibrary P S) =
-      SymmetricStrategy.relabel S (pauliQuestionEquiv P)
-        (pauliAnswerEquivCompact P) := by
-  simp [pauliSymmetricStrategyToLibrary]
-  rfl
 
 end
 

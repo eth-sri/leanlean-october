@@ -42,20 +42,14 @@ theorem directCoefficientCollision_avg_le (D : DirectLdParams) (degree : ℕ)
           (1 : ℝ) else 0) ≤
       (degree : ℝ) / (D.q : ℝ) := by
   classical
-  let collisionSet : Finset (DirectScalarQ D) :=
+  let collisionSet :=
     Finset.univ.filter fun t => evalCoefficient a t = evalCoefficient b t
-  have hcollision_card : collisionSet.card ≤ degree :=
-    evalCoefficient_collision_card_le a b hne
   calc
-    avgOver (uniformDistribution (DirectScalarQ D))
-        (fun t => if evalCoefficient a t = evalCoefficient b t then
-          (1 : ℝ) else 0) =
+    _ =
         (collisionSet.card : ℝ) /
           Fintype.card (DirectScalarQ D) := by
       calc
-        avgOver (uniformDistribution (DirectScalarQ D))
-            (fun t => if evalCoefficient a t = evalCoefficient b t then
-              (1 : ℝ) else 0) =
+        _ =
             ∑ t : DirectScalarQ D,
               if evalCoefficient a t = evalCoefficient b t then
                 (1 / Fintype.card (DirectScalarQ D) : ℝ) else 0 := by
@@ -63,13 +57,11 @@ theorem directCoefficientCollision_avg_le (D : DirectLdParams) (degree : ℕ)
         _ = ∑ _t ∈ collisionSet,
               (1 / Fintype.card (DirectScalarQ D) : ℝ) := by
           rw [← Finset.sum_filter]
-        _ = (collisionSet.card : ℝ) /
-              Fintype.card (DirectScalarQ D) := by
+        _ = _ := by
           simp [div_eq_mul_inv]
-    _ ≤ (degree : ℝ) / Fintype.card (DirectScalarQ D) := by
-      exact div_le_div_of_nonneg_right (by exact_mod_cast hcollision_card) (by positivity)
-    _ = (degree : ℝ) / (D.q : ℝ) := by
-      rw [card_directScalarQ]
+    _ ≤ (degree : ℝ) / Fintype.card (DirectScalarQ D) := div_le_div_of_nonneg_right (by exact_mod_cast (evalCoefficient_collision_card_le hne)) (by positivity)
+    _ = _ := by
+      simp
 
 end
 

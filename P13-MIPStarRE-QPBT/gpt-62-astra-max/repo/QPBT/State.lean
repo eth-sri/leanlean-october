@@ -1,7 +1,6 @@
 module
 
 public import QPBT.Upstream
-
 public import MIPStarRE.Quantum.FiniteMatrix.Basic
 
 /-!
@@ -29,7 +28,7 @@ noncomputable def conjIsometry {ι ι' : Type*}
     [Fintype ι] [DecidableEq ι] [Fintype ι'] [DecidableEq ι']
     (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι')
     (M : Op ι) : Op ι' :=
-  let U : Matrix ι' ι ℂ := Matrix.toEuclideanLin.symm φ.toLinearMap
+  let U := Matrix.toEuclideanLin.symm φ.toLinearMap
   U * M * Uᴴ
 
 /-- Coordinate transport used by blueprint
@@ -96,8 +95,7 @@ theorem reindexState_norm_eq
     (e : iota ≃ kappa) (psi : EuclideanSpace ℂ iota) :
     ‖reindexState e psi‖ = ‖psi‖ := by
   rw [← sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)]
-  rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
-  change (∑ j : kappa, ‖psi (e.symm j)‖ ^ 2) = ∑ i : iota, ‖psi i‖ ^ 2
+  simp [EuclideanSpace.norm_sq_eq]
   exact e.symm.sum_comp (fun i => ‖psi i‖ ^ 2)
 
 /-- The coordinate tensor of two Euclidean vectors has the product norm.
@@ -109,14 +107,12 @@ theorem vecTensor_norm_eq
     (u : EuclideanSpace ℂ iota) (v : EuclideanSpace ℂ kappa) :
     ‖vecTensor u v‖ = ‖u‖ * ‖v‖ := by
   rw [← sq_eq_sq₀ (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _))]
-  rw [EuclideanSpace.norm_sq_eq, mul_pow, EuclideanSpace.norm_sq_eq,
-    EuclideanSpace.norm_sq_eq]
+  simp [EuclideanSpace.norm_sq_eq, mul_pow]
   change (∑ p : iota × kappa, ‖u p.1 * v p.2‖ ^ 2) =
-    (∑ i : iota, ‖u i‖ ^ 2) * ∑ j : kappa, ‖v j‖ ^ 2
+    _
   simp only [norm_mul, mul_pow]
   rw [← Finset.univ_product_univ, Finset.sum_product, Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro i _
+  congr 1 with i
   rw [Finset.mul_sum]
 
 end MIPStarRE.QPBT

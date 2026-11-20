@@ -51,26 +51,22 @@ theorem projective_refinement_ordered_dist_le {X Γ α ι : Type*}
   have hlift (U V : X → α → Op ι) :
       opFamilyDistSq μ (fun x g => R.effect g * U x (ev x g))
         (fun x g => R.effect g * V x (ev x g)) ψ ≤ opFamilyDistSq μ U V ψ := by
-    unfold opFamilyDistSq
     apply avgOver_mono
     intro x
     simpa only [mul_sub] using sum_norm_mul_funIndexed_apply_le (ev x) R.effect
       (fun a => U x a - V x a) ψ (measurement_sum_adjoint_mul_le_one R)
-  have hinsert : opFamilyDistSq μ (fun _ g => R.effect g)
-      (fun x g => R.effect g * (B x).effect (ev x g)) ψ ≤ 2 * eta := by
-    have h := hlift (fun x a => (R.postprocess (ev x)).effect a)
-      (fun x a => (B x).effect a)
-    simp only [effect_mul_postprocess_effect_self R hR] at h
-    exact h.trans ((opFamilyDistSq_le_two_mul_consistencyDefect μ
-      (fun x => R.postprocess (ev x)) B ψ).trans (mul_le_mul_of_nonneg_left hpoint
-        (by norm_num)))
-  have htail := (hlift (fun x a => (B x).effect a) T).trans
-    (opFamilyDistSq_le_of_le_of_le μ (fun x a => (B x).effect a)
-      (fun x a => (A x).effect a) T ψ deltaSelf deltaOrder hself horder)
-  have h := opFamilyDistSq_le_of_le_of_le μ (fun _ g => R.effect g)
-    (fun x g => R.effect g * (B x).effect (ev x g))
-    (fun x g => R.effect g * T x (ev x g)) ψ (2 * eta)
-    (2 * deltaSelf + 2 * deltaOrder) hinsert htail
+  have h := opFamilyDistSq_le_of_le_of_le (μ := μ) _
+    _
+    _ ψ _
+    _ (by
+      have h := hlift (fun x a => (R.postprocess (ev x)).effect a)
+        (fun x a => (B x).effect a)
+      simp only [effect_mul_postprocess_effect_self R hR] at h
+      exact h.trans ((opFamilyDistSq_le_two_mul_consistencyDefect μ
+        (fun x => R.postprocess (ev x)) B ψ).trans (mul_le_mul_of_nonneg_left hpoint
+          (by norm_num)))) ((hlift (fun x => (B x).effect) T).trans
+      (opFamilyDistSq_le_of_le_of_le _
+      _ T ψ deltaSelf deltaOrder hself horder))
   convert h using 1
   ring
 
@@ -119,23 +115,21 @@ theorem ordered_dist_le {P : AdmissibleParams} {ε δQ : ℝ}
       (fun x a => ((S.placedMeasurement p1 R).postprocess (ev x)).effect a)
       (fun x a => (B x).effect a) S.psiHat ≤ eta := by
     simpa only [Measurement.postprocess_effect, ProjectiveSetting.placedMeasurement_effect,
-      ProjectiveSetting.place_finsetSum, B] using hpoint
+      ProjectiveSetting.place_finset_sum, B] using hpoint
   have hself : opFamilyDistSq (uniformDistribution (ExtendedPointQuestion P))
       (fun x a => (B x).effect a) (fun x a => (A x).effect a) S.psiHat ≤ δQ := by
     rw [opFamilyDistSq_symm]
     exact (extendedQ_spec points).2.1 p1 p2 hopposite
   have hbound := projective_refinement_ordered_dist_le
-    (uniformDistribution (ExtendedPointQuestion P)) (S.placedMeasurement p1 R)
+    (uniformDistribution (ExtendedPointQuestion P)) _
     (S.placedMeasurement_isProjective p1 R hR) ev A B
   constructor
-  · have h := hbound _ S.psiHat eta δQ δQ hpoint' hself
-      ((extendedQ_spec points).2.2.1 p1 p2 hopposite)
-    simpa only [ProjectiveSetting.placedMeasurement_effect,
-      show 4 * eta + 4 * δQ + 4 * δQ = 4 * eta + 8 * δQ by ring] using h
-  · have h := hbound _ S.psiHat eta δQ δQ hpoint' hself
-      ((extendedQ_spec points).2.2.2 p1 p2 hopposite)
-    simpa only [ProjectiveSetting.placedMeasurement_effect,
-      show 4 * eta + 4 * δQ + 4 * δQ = 4 * eta + 8 * δQ by ring] using h
+  · simpa only [ProjectiveSetting.placedMeasurement_effect,
+      show 4 * eta + 4 * δQ + 4 * δQ = 4 * eta + 8 * δQ by ring] using (hbound _ S.psiHat eta δQ δQ hpoint' hself
+        ((extendedQ_spec points).2.2.1 p1 p2 hopposite))
+  · simpa only [ProjectiveSetting.placedMeasurement_effect,
+      show 4 * eta + 4 * δQ + 4 * δQ = 4 * eta + 8 * δQ by ring] using (hbound _ S.psiHat eta δQ δQ hpoint' hself
+        ((extendedQ_spec points).2.2.2 p1 p2 hopposite))
 
 end CombinedPointsWitness
 

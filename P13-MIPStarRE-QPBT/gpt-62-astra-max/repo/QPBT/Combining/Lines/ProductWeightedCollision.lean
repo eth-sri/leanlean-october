@@ -1,6 +1,5 @@
 module
 
-public import QPBT.Combining.Lines.RestrictedAverage
 public import QPBT.Combining.Lines.WeightedCollision
 
 /-!
@@ -32,7 +31,7 @@ complete second sample, but on the first sample only through its line. No
 condition is imposed on the second direction. -/
 theorem prod_linePointDist_nondegenerate_weighted_collision_le
     {L : LdParams} {bound : ℕ}
-    (weight : LineDesc L → (LineDesc L × (Fin L.m → ScalarQ L)) → ℝ)
+    (weight : LineDesc L → (LineDesc L × (LdPoint L)) → ℝ)
     (hweight : ∀ line sample, 0 ≤ weight line sample)
     (first second : DegPoly L bound) (hne : first ≠ second) :
     avgOver (Distribution.prod (linePointDist L) (linePointDist L)) (fun samples =>
@@ -43,7 +42,7 @@ theorem prod_linePointDist_nondegenerate_weighted_collision_le
       avgOver (Distribution.prod (linePointDist L) (linePointDist L)) (fun samples =>
         if samples.1.1.direction ≠ 0 then weight samples.1.1 samples.2 else 0) := by
   classical
-  simp only [SandwichProduct.avgOver_distribution_prod]
+  simp only [avgOver_prod]
   rw [avgOver_comm, avgOver_comm (linePointDist L) (linePointDist L)
     (fun firstSample secondSample =>
       if firstSample.1.direction ≠ 0 then weight firstSample.1 secondSample else 0)]
@@ -51,7 +50,7 @@ theorem prod_linePointDist_nondegenerate_weighted_collision_le
   apply avgOver_mono
   intro sample
   exact linePointDist_nondegenerate_weighted_collision_le
-    (fun line => weight line sample) (fun line => hweight line sample)
+    _ (fun line => hweight line sample)
     first second hne
 
 end

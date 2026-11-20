@@ -1,19 +1,6 @@
 module
 
 public meta import Lean
-public import QPBT.Test.Soundness
-public import QPBT.Test.QubitForm
-public import QPBT.Test.QuantitativeSoundness
-public import QPBT.Test.QuantitativeQubitForm
-public import QPBT.Test.LowDegreeGameTheorems
-public import QPBT.Test.Completeness
-public import QPBT.Test.Soundness.ProjectiveSetting
-public import QPBT.Test.Soundness.NaimarkAssembly
-public import QPBT.Test.Soundness.OperatorTransfer
-public import QPBT.Combining.Lines
-public import QPBT.Combining.Apply
-public import QPBT.Combining.ActualErrorBounds
-public import QPBT.Games.Symmetrization
 public import QPBT.Palomar.PauliCompleteness
 public import QPBT.Palomar.LowDegreeSoundness
 public import QPBT.Palomar.PauliSoundness

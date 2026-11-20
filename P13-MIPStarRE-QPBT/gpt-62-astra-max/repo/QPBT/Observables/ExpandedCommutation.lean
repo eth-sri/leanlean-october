@@ -34,10 +34,14 @@ noncomputable section
 
 /-! ## Algebraic preliminaries -/
 
+section
+
+variable {K ι : Type*} [Field K]
+
 /-- The generalized Pauli observables are self-adjoint. This identity supports
 `lem:qld-comm-cons`. Blueprint `lem:twisted-commutation`,
 paper `references/qpbt-paper/04_preliminaries.tex:1052-1096`. -/
-theorem tauObservable_conjTranspose {K ι : Type*} [Field K] [Finite K]
+theorem tauObservable_conjTranspose [Finite K]
     [DecidableEq K] [Algebra (ZMod 2) K] [Fintype ι] [DecidableEq ι]
     (W : PauliKind) (v : ι → K) :
     (tauObservable W v)ᴴ = tauObservable W v := by
@@ -51,11 +55,13 @@ theorem tauObservable_conjTranspose {K ι : Type*} [Field K] [Finite K]
 /-- The generalized Pauli observables are reflections. Blueprint
 `ch11_qpbt_algebra.tex:596-644`, paper
 `references/qpbt-paper/04_preliminaries.tex:1088-1089`. -/
-theorem tauObservable_conjTranspose_mul_self {K ι : Type*} [Field K]
+theorem tauObservable_conjTranspose_mul_self
     [Fintype K] [DecidableEq K] [Algebra (ZMod 2) K] [Fintype ι]
     [DecidableEq ι] (W : PauliKind) (v : ι → K) :
     (tauObservable W v)ᴴ * tauObservable W v = 1 := by
   rw [tauObservable_conjTranspose, tauObservable_sq]
+
+end
 
 namespace ProjectiveSetting
 
@@ -63,22 +69,26 @@ variable {P : AdmissibleParams} {ε : ℝ}
 
 /-! ## The commutator of two expanded point projections -/
 
+section
+
+variable (P : AdmissibleParams) (ω : PauliTuple P)
+
 /-- The Pauli-register factor of the expanded `X` observable at a tuple. -/
-noncomputable def tauX (P : AdmissibleParams) (ω : PauliTuple P) :
+noncomputable def tauX :
     Op (PauliRegister P) :=
   tauObservable .X (fun h => ω.2.2.1 * indicatorVec ω.1 h)
 
 /-- The Pauli-register factor of the expanded `Z` observable at a tuple. -/
-noncomputable def tauZ (P : AdmissibleParams) (ω : PauliTuple P) :
+noncomputable def tauZ :
     Op (PauliRegister P) :=
   tauObservable .Z (fun h => ω.2.2.2 * indicatorVec ω.2.1 h)
 
 /-- The product of the two Pauli-register factors is an isometry. Blueprint
 `ch11_qpbt_algebra.tex:596-644`, paper
 `references/qpbt-paper/04_preliminaries.tex:1088-1095`. -/
-theorem tauX_mul_tauZ_isometry (P : AdmissibleParams) (ω : PauliTuple P) :
+theorem tauX_mul_tauZ_isometry :
     (tauX P ω * tauZ P ω)ᴴ * (tauX P ω * tauZ P ω) = 1 :=
-  WinImplications.mul_conjTranspose_mul_self
+  MagicSquareRigidity.isometry_mul_isometry
     (tauObservable_conjTranspose_mul_self _ _)
     (tauObservable_conjTranspose_mul_self _ _)
 
@@ -86,11 +96,11 @@ theorem tauX_mul_tauZ_isometry (P : AdmissibleParams) (ω : PauliTuple P) :
 This is the exact half of the argument of `lem:qld-comm-cons`; blueprint
 `ch11_qpbt_algebra.tex:596-644`, paper
 `14_analysis_of_the_pauli_basis_test.tex:495-505`. -/
-theorem tauZ_mul_tauX (P : AdmissibleParams) (ω : PauliTuple P) :
+theorem tauZ_mul_tauX :
     tauZ P ω * tauX P ω =
       phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
         (tauX P ω * tauZ P ω) := by
-  have h := tauObservable_X_mul_Z (K := PauliScalar P)
+  have h := tauObservable_X_mul_Z
     (fun h => ω.2.2.1 * indicatorVec ω.1 h)
     (fun h => ω.2.2.2 * indicatorVec ω.2.1 h)
   have hg : binTrace (PauliScalar P)
@@ -102,52 +112,40 @@ theorem tauZ_mul_tauX (P : AdmissibleParams) (ω : PauliTuple P) :
     show (tauObservable .Z fun k => ω.2.2.2 * indicatorVec ω.2.1 k) =
       tauZ P ω from rfl] at h
   have hsq := phaseSign_mul_self (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-  calc tauZ P ω * tauX P ω
+  calc _
       = (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) *
           phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)) •
-            (tauZ P ω * tauX P ω) := by rw [hsq, one_smul]
+            (tauZ P ω * tauX P ω) := by simp_all
     _ = phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
           (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
             (tauZ P ω * tauX P ω)) := by rw [smul_smul]
-    _ = phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-          (tauX P ω * tauZ P ω) := by rw [← h]
+    _ = _ := by rw [← h]
+
+end
+
+section
+
+variable (S : ProjectiveSetting P ε)
 
 /-- The twisted commutator of the two point observables at a tuple. -/
-noncomputable def twistedCommutator (S : ProjectiveSetting P ε)
+noncomputable def twistedCommutator
     (side : PlayerSide) (ω : PauliTuple P) : Op (S.LocalSpace side) :=
   S.pointObs side .X ω.2.2.1 ω.1 * S.pointObs side .Z ω.2.2.2 ω.2.1 -
     phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
       (S.pointObs side .Z ω.2.2.2 ω.2.1 * S.pointObs side .X ω.2.2.1 ω.1)
-
-/-- The commutator of the two expanded observables factorizes with the twisted
-commutator of the point observables on the strategy register. This is the
-display following `eq:lc-23` in the proof of `lem:qld-comm-cons`, paper
-`14_analysis_of_the_pauli_basis_test.tex:487-505`, blueprint
-`ch14_qpbt_observables.tex:1164-1175`. -/
-theorem expObs_commutator (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (ω : PauliTuple P) :
-    S.expObs side .X ω.2.2.1 ω.1 * S.expObs side .Z ω.2.2.2 ω.2.1 -
-        S.expObs side .Z ω.2.2.2 ω.2.1 * S.expObs side .X ω.2.2.1 ω.1 =
-      heteroKron (S.twistedCommutator side ω) (tauX P ω * tauZ P ω) := by
-  rw [expObs, expObs, heteroKron_mul, heteroKron_mul]
-  rw [show tauObservable .X (fun h => ω.2.2.1 * indicatorVec ω.1 h) =
-    tauX P ω from rfl,
-    show tauObservable .Z (fun h => ω.2.2.2 * indicatorVec ω.2.1 h) =
-      tauZ P ω from rfl]
-  rw [tauZ_mul_tauX, MagicSquareRigidity.heteroKron_smul_right,
-    ← WinImplications.heteroKron_smul_left,
-    ← heteroKron_sub_left, twistedCommutator]
 
 /-! ## The approximate commutation on each placement -/
 
 /-- The placement of a scalar multiple is the scalar multiple of the
 placement. Paper `14_analysis_of_the_pauli_basis_test.tex:420-450`,
 blueprint `ch14_qpbt_observables.tex:1002-1031`. -/
-theorem place_smul (S : ProjectiveSetting P ε) (p : Placement) (c : ℂ)
+theorem place_smul (p : Placement) (c : ℂ)
     (O : Op (S.ExpandedLocalSpace p.side)) :
     S.place p (c • O) = c • S.place p O := by
   ext i j
   cases p <;> simp only [place, Matrix.smul_apply, smul_eq_mul] <;> ring
+
+end
 
 /-- The twisted commutator of the point observables is small on average, on
 either player side. This packages both orientations of
@@ -166,7 +164,7 @@ theorem twisted_commutator_avg_le_explicit :
               3551040 * (16 * (Fintype.card PauliEdge : ℝ))) + 4) *
             Real.sqrt ε := by
   intro P ε S side hε
-  have hs : (0 : ℝ) ≤ Real.sqrt ε := Real.sqrt_nonneg ε
+  have hs := Real.sqrt_nonneg ε
   cases side with
   | alice =>
       have h := WinImplications.point_obs_twisted_commutation_explicit P ε S hε
@@ -176,27 +174,18 @@ theorem twisted_commutator_avg_le_explicit :
         have hop : S.placeStrategySide .alice (S.twistedCommutator .alice ω) =
             heteroKron (S.pointObs .alice .X ω.2.2.1 ω.1 *
                 S.pointObs .alice .Z ω.2.2.2 ω.2.1)
-                (1 : Op S.toStrategy.ιB) -
+                1 -
               phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
                 heteroKron (S.pointObs .alice .Z ω.2.2.2 ω.2.1 *
                   S.pointObs .alice .X ω.2.2.1 ω.1) 1 := by
-          have h1 : heteroKron (S.twistedCommutator .alice ω)
-              (1 : Op S.toStrategy.ιB) =
-              heteroKron (S.pointObs .alice .X ω.2.2.1 ω.1 *
-                S.pointObs .alice .Z ω.2.2.2 ω.2.1) 1 -
-                heteroKron
-                  (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-                    (S.pointObs .alice .Z ω.2.2.2 ω.2.1 *
-                      S.pointObs .alice .X ω.2.2.1 ω.1)) 1 :=
-            heteroKron_sub_left _ _ _
           rw [← WinImplications.heteroKron_smul_left]
-          exact h1
+          apply heteroKron_sub_left
         rw [hop]
       · have hcoeff : 0 ≤
-            2 * (1024 * (2 * (Fintype.card PauliEdge : ℝ)) +
-                1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) +
-              (96 * (16 * (Fintype.card PauliEdge : ℝ)) +
-                3551040 * (16 * (Fintype.card PauliEdge : ℝ))) + 4 := by
+            2 * (1024 * (2 * (Fintype.card PauliEdge)) +
+                1024 * Real.sqrt (4 * (Fintype.card PauliEdge))) +
+              (96 * (16 * (Fintype.card PauliEdge)) +
+                3551040 * (16 * (Fintype.card PauliEdge))) + 4 := by
           positivity
         nlinarith
   | bob =>
@@ -206,29 +195,20 @@ theorem twisted_commutator_avg_le_explicit :
       refine le_trans (le_of_eq ?_) (le_trans h ?_)
       · refine avgOver_congr _ _ _ (fun ω => ?_)
         have hop : S.placeStrategySide .bob (S.twistedCommutator .bob ω) =
-            heteroKron (1 : Op S.toStrategy.ιA)
+            heteroKron 1
                 (S.pointObs .bob .X ω.2.2.1 ω.1 *
                   S.pointObs .bob .Z ω.2.2.2 ω.2.1) -
               phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
                 heteroKron 1 (S.pointObs .bob .Z ω.2.2.2 ω.2.1 *
                   S.pointObs .bob .X ω.2.2.1 ω.1) := by
-          have h1 : heteroKron (1 : Op S.toStrategy.ιA)
-              (S.twistedCommutator .bob ω) =
-              heteroKron 1 (S.pointObs .bob .X ω.2.2.1 ω.1 *
-                S.pointObs .bob .Z ω.2.2.2 ω.2.1) -
-                heteroKron 1
-                  (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-                    (S.pointObs .bob .Z ω.2.2.2 ω.2.1 *
-                      S.pointObs .bob .X ω.2.2.1 ω.1)) :=
-            heteroKron_sub_right _ _ _
           rw [← MagicSquareRigidity.heteroKron_smul_right]
-          exact h1
+          apply heteroKron_sub_right
         rw [hop]
       · have hcoeff : 0 ≤
-            2 * (1024 * (2 * (Fintype.card PauliEdge : ℝ)) +
-                1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) +
-              (96 * (16 * (Fintype.card PauliEdge : ℝ)) +
-                3551040 * (16 * (Fintype.card PauliEdge : ℝ))) + 4 := by
+            2 * (1024 * (2 * (Fintype.card PauliEdge)) +
+                1024 * Real.sqrt (4 * (Fintype.card PauliEdge))) +
+              (96 * (16 * (Fintype.card PauliEdge)) +
+                3551040 * (16 * (Fintype.card PauliEdge))) + 4 := by
           positivity
         nlinarith
 

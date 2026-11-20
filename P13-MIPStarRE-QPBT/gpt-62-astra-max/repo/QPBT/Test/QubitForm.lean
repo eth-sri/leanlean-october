@@ -1,6 +1,5 @@
 module
 
-public import QPBT.Algebra.PauliTheorems
 public import QPBT.Test.Soundness
 
 /-!
@@ -88,7 +87,7 @@ noncomputable def qubitProjOnA'' (P : AdmissibleParams)
     Op ((ιA' × QubitRegister P) × (ιB' × QubitRegister P)) :=
   fun p q =>
     if p.1.1 = q.1.1 ∧ p.2 = q.2 then
-      qubitPauliProj W (kappaVec P.model u) p.1.2 q.1.2
+      qubitPauliProj W (kappaVec u) p.1.2 q.1.2
     else 0
 
 /-- Bob's ideal qubit projector placed on the joint target space. -/
@@ -99,7 +98,7 @@ noncomputable def qubitProjOnB'' (P : AdmissibleParams)
     Op ((ιA' × QubitRegister P) × (ιB' × QubitRegister P)) :=
   fun p q =>
     if p.1 = q.1 ∧ p.2.1 = q.2.1 then
-      qubitPauliProj W (kappaVec P.model u) p.2.2 q.2.2
+      qubitPauliProj W (kappaVec u) p.2.2 q.2.2
     else 0
 
 /-- Lift a conjugated Alice effect to the full qubit target space. -/
@@ -122,10 +121,13 @@ noncomputable def liftedQubitBEffect {P : AdmissibleParams} {G : Game}
     Op ((ιA' × QubitRegister P) × (ιB' × QubitRegister P)) :=
   heteroKron 1 (conjIsometry φB M)
 
+section
+
+variable (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
+  (w : QubitSoundnessWitness P S) (W : PauliKind)
+
 /-- Alice's qubit-projector family distance in `cor:pauli-binary`. -/
-noncomputable def qubitOperatorDistanceA
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : QubitSoundnessWitness P S) (W : PauliKind) : ℝ :=
+noncomputable def qubitOperatorDistanceA : ℝ :=
   ∑ u : PauliRegister P,
     ‖applyOperatorToState
       (liftedQubitAEffect S w.φA
@@ -134,9 +136,7 @@ noncomputable def qubitOperatorDistanceA
       (idealQubitState P w.aux)‖ ^ 2
 
 /-- Bob's qubit-projector family distance in `cor:pauli-binary`. -/
-noncomputable def qubitOperatorDistanceB
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : QubitSoundnessWitness P S) (W : PauliKind) : ℝ :=
+noncomputable def qubitOperatorDistanceB : ℝ :=
   ∑ u : PauliRegister P,
     ‖applyOperatorToState
       (liftedQubitBEffect S w.φB
@@ -144,54 +144,55 @@ noncomputable def qubitOperatorDistanceB
         qubitProjOnB'' P W u)
       (idealQubitState P w.aux)‖ ^ 2
 
+end
+
 namespace BinaryWitnessTransport
+
+section
+
+variable {q : ℕ} {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
+  (equiv : ι ≃ κ) (left operator right : Op ι) (state : EuclideanSpace ℂ ι)
 
 /-- Exact forward transport of a generalized Pauli projector to the existing
 binary projector. This reorients the shared arbitrary-index calculation
 `pauliProj_reindex_quditQubitLabelEquiv` from `lem:pauli-binary`, without a
 second Fourier-inversion proof or a soundness hypothesis. -/
-theorem pauli_projector_reindex {q : ℕ} {ι : Type*}
-    [Fintype ι] [DecidableEq ι] (F : FixedFieldModel q)
+theorem pauli_projector_reindex (F : FixedFieldModel q)
     (W : PauliKind) (label : ι → F.K) :
     Matrix.reindex (quditQubitLabelEquiv F) (quditQubitLabelEquiv F) (pauliProj W label) =
-      qubitPauliProj W (kappaVec F label) := by
+      qubitPauliProj W (kappaVec label) := by
   classical
-  have hinverse := pauliProj_reindex_quditQubitLabelEquiv F W label
   ext row col
   simpa only [Matrix.reindex_apply, Matrix.submatrix_apply,
     Equiv.symm_symm, Equiv.apply_symm_apply] using
-    congrFun (congrFun hinverse ((quditQubitLabelEquiv F).symm row))
+    congrFun (congrFun (pauliProj_reindex_quditQubitLabelEquiv F W label) ((quditQubitLabelEquiv F).symm row))
       ((quditQubitLabelEquiv F).symm col)
 
 /-- Reindexing a vector agrees with Mathlib's Euclidean permutation isometry. -/
-theorem reindex_state_eq {ι κ : Type*} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (equiv : ι ≃ κ) (state : EuclideanSpace ℂ ι) :
+theorem reindex_state_eq :
     reindexState equiv state = LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ equiv state := rfl
 
 /-- Simultaneous coordinate transport intertwines matrix action on a state. -/
-theorem operator_action_reindex {ι κ : Type*} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (equiv : ι ≃ κ) (operator : Op ι)
-    (state : EuclideanSpace ℂ ι) :
+theorem operator_action_reindex :
     applyOperatorToState (Matrix.reindex equiv equiv operator) (reindexState equiv state) =
       reindexState equiv (applyOperatorToState operator state) := by
   ext position
   change (operator.submatrix equiv.symm equiv.symm *ᵥ
       (fun index => state (equiv.symm index))) position =
-    (operator *ᵥ (fun index => state index)) (equiv.symm position)
-  rw [Matrix.submatrix_mulVec_equiv]
-  simp [Function.comp_def]
+    (operator *ᵥ (state)) (equiv.symm position)
+  simp [Matrix.submatrix_mulVec_equiv, Function.comp_def]
 
 /-- Simultaneous transport of two operators and their reference state preserves
 the norm of their difference applied to that state. -/
-theorem operator_error_reindex {ι κ : Type*} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (equiv : ι ≃ κ) (left right : Op ι)
-    (state : EuclideanSpace ℂ ι) :
+theorem operator_error_reindex :
     ‖applyOperatorToState (Matrix.reindex equiv equiv left -
         Matrix.reindex equiv equiv right) (reindexState equiv state)‖ =
       ‖applyOperatorToState (left - right) state‖ := by
   change ‖applyOperatorToState (Matrix.reindex equiv equiv (left - right))
-    (reindexState equiv state)‖ = _
+    _‖ = _
   rw [operator_action_reindex, reindexState_norm_eq]
+
+end
 
 /-- The paired EPR vector is invariant under simultaneous computational-basis
 relabeling. This uses a permutation, not an arbitrary complex unitary. -/
@@ -201,9 +202,9 @@ theorem epr_reindex {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Nonempty ι]
   ext position
   change (if equiv.symm position.1 = equiv.symm position.2 then
       (Real.sqrt (Fintype.card ι : ℝ) : ℂ)⁻¹ else 0) =
-    if position.1 = position.2 then (Real.sqrt (Fintype.card κ : ℝ) : ℂ)⁻¹ else 0
+    if position.1 = position.2 then _⁻¹ else 0
   rw [Fintype.card_congr equiv]
-  simp only [Equiv.apply_eq_iff_eq]
+  simp
 
 /-- Post-composing both local maps with coordinate permutations reindexes their
 joint image. This is the permutation specialization of local isometry composition. -/
@@ -220,18 +221,6 @@ theorem tensor_reindex_comp {ιA ιB κA κB νA νB : Type*}
         ((LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ equivB).toLinearIsometry.comp mapB)
         state = reindexState (Equiv.prodCongr equivA equivB)
           (isometryTensor mapA mapB state) := rfl
-
-/-- Conjugation by a post-composed local coordinate permutation is matrix
-reindexing of the original conjugated effect. -/
-theorem conjugate_reindex_comp {ι κ ν : Type*}
-    [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    [Fintype ν] [DecidableEq ν] (equiv : κ ≃ ν)
-    (map : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ) (operator : Op ι) :
-    conjIsometry
-        ((LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ equiv).toLinearIsometry.comp map)
-        operator = Matrix.reindex equiv equiv (conjIsometry map operator) := by
-  ext row col
-  rfl
 
 /-- The local label equivalence leaves the auxiliary coordinate unchanged. -/
 noncomputable def localEquiv (P : AdmissibleParams) (auxIndex : Type*) :
@@ -253,7 +242,7 @@ theorem ideal_state_reindex (P : AdmissibleParams)
   ext position
   exact congrArg (fun state : EuclideanSpace ℂ (QubitRegister P × QubitRegister P) =>
     aux (position.1.1, position.2.1) * state (position.1.2, position.2.2))
-    (epr_reindex (quditQubitLabelEquiv (ι := Cube P.m) P.model))
+    (epr_reindex (quditQubitLabelEquiv P.model))
 
 /-- Forward binary transport of Alice's lifted effect, including the identity
 on Bob's entire local register. -/
@@ -268,14 +257,13 @@ theorem lifted_effect_a_reindex {P : AdmissibleParams} {G : Game} (S : Strategy 
         ((LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ
           (localEquiv P auxA)).toLinearIsometry.comp mapA) operator := by
   classical
-  rw [liftedQubitAEffect, conjugate_reindex_comp]
   ext row col
   change (if (localEquiv P auxB).symm row.2 = (localEquiv P auxB).symm col.2 then
       conjIsometry mapA operator ((localEquiv P auxA).symm row.1)
         ((localEquiv P auxA).symm col.1) else 0) =
     conjIsometry mapA operator ((localEquiv P auxA).symm row.1)
       ((localEquiv P auxA).symm col.1) * (if row.2 = col.2 then 1 else 0)
-  simp only [Equiv.apply_eq_iff_eq, mul_ite, mul_one, mul_zero]
+  simp
 
 /-- Forward binary transport of Bob's lifted effect, including the identity
 on Alice's entire local register. -/
@@ -290,7 +278,6 @@ theorem lifted_effect_b_reindex {P : AdmissibleParams} {G : Game} (S : Strategy 
         ((LinearIsometryEquiv.piLpCongrLeft 2 ℂ ℂ
           (localEquiv P auxB)).toLinearIsometry.comp mapB) operator := by
   classical
-  rw [liftedQubitBEffect, conjugate_reindex_comp]
   ext row col
   change (if (localEquiv P auxA).symm row.1 = (localEquiv P auxA).symm col.1 then
       conjIsometry mapB operator ((localEquiv P auxB).symm row.2)
@@ -298,7 +285,7 @@ theorem lifted_effect_b_reindex {P : AdmissibleParams} {G : Game} (S : Strategy 
     (if row.1 = col.1 then 1 else 0) *
       conjIsometry mapB operator ((localEquiv P auxB).symm row.2)
         ((localEquiv P auxB).symm col.2)
-  simp only [Equiv.apply_eq_iff_eq, ite_mul, one_mul, zero_mul]
+  simp
 
 /-- Forward binary transport of the ideal projector on Alice's extracted
 register, with the other three tensor factors fixed. -/
@@ -314,9 +301,9 @@ theorem ideal_projector_a_reindex (P : AdmissibleParams)
       (Matrix.reindex (quditQubitLabelEquiv P.model) (quditQubitLabelEquiv P.model)
         (pauliProj W label)) row.1.2 col.1.2 else 0) =
     if row.1.1 = col.1.1 ∧ row.2 = col.2 then
-      qubitPauliProj W (kappaVec P.model label) row.1.2 col.1.2 else 0
+      _ else 0
   rw [pauli_projector_reindex]
-  simp only [Equiv.apply_eq_iff_eq]
+  simp
 
 /-- Forward binary transport of the ideal projector on Bob's extracted
 register, with the other three tensor factors fixed. -/
@@ -332,9 +319,9 @@ theorem ideal_projector_b_reindex (P : AdmissibleParams)
       (Matrix.reindex (quditQubitLabelEquiv P.model) (quditQubitLabelEquiv P.model)
         (pauliProj W label)) row.2.2 col.2.2 else 0) =
     if row.1 = col.1 ∧ row.2.1 = col.2.1 then
-      qubitPauliProj W (kappaVec P.model label) row.2.2 col.2.2 else 0
+      _ else 0
   rw [pauli_projector_reindex]
-  simp only [Equiv.apply_eq_iff_eq]
+  simp
 
 end BinaryWitnessTransport
 
@@ -354,12 +341,15 @@ noncomputable def PauliSoundnessWitness.toQubit
   aux := w.aux
   aux_norm := w.aux_norm
 
+section
+
+variable (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
+  (w : PauliSoundnessWitness P S) (W : PauliKind)
+
 /-- Exact preservation of state error for a supplied witness. This Lean-only
 transport identity has no success assumption or error bound and does not assert
 the existence conclusion of `cor:pauli-binary`. -/
-theorem qubit_state_error_to_qubit
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) :
+theorem qubit_state_error_to_qubit :
     ‖isometryTensor w.toQubit.φA w.toQubit.φB S.ψ -
         idealQubitState P w.toQubit.aux‖ =
       ‖isometryTensor w.φA w.φB S.ψ - idealState P w.aux‖ := by
@@ -370,19 +360,15 @@ theorem qubit_state_error_to_qubit
         (BinaryWitnessTransport.localEquiv P w.ιB')).toLinearIsometry.comp w.φB)
       S.ψ - idealQubitState P w.aux‖ = _
   rw [BinaryWitnessTransport.tensor_reindex_comp,
-    ← BinaryWitnessTransport.ideal_state_reindex]
-  rw [BinaryWitnessTransport.reindex_state_eq, BinaryWitnessTransport.reindex_state_eq]
-  rw [BinaryWitnessTransport.jointEquiv, ← map_sub, LinearIsometryEquiv.norm_map]
+    ← BinaryWitnessTransport.ideal_state_reindex, BinaryWitnessTransport.reindex_state_eq, BinaryWitnessTransport.reindex_state_eq, BinaryWitnessTransport.jointEquiv, ← map_sub, LinearIsometryEquiv.norm_map]
 
 /-- Exact preservation of Alice's squared operator-family distance for a
 supplied witness. The answer sum is still field-valued, and both distances are
 evaluated on their ideal auxiliary-EPR state. No soundness bound is assumed. -/
-theorem qubit_operator_distance_a_to_qubit
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) (W : PauliKind) :
+theorem qubit_operator_distance_a_to_qubit :
     qubitOperatorDistanceA P S w.toQubit W = rawPauliOperatorDistanceA P S w W := by
   unfold qubitOperatorDistanceA rawPauliOperatorDistanceA
-  refine Finset.sum_congr rfl fun label _ => ?_
+  congr 1 with label
   have hnorm := BinaryWitnessTransport.operator_error_reindex
     (BinaryWitnessTransport.jointEquiv P w.ιA' w.ιB')
     (liftedAEffect S w.φA
@@ -396,12 +382,10 @@ theorem qubit_operator_distance_a_to_qubit
 /-- Exact preservation of Bob's squared operator-family distance for a supplied
 witness. This is a given-witness transport identity, independent of the open
 existence conclusion of `cor:pauli-binary`. -/
-theorem qubit_operator_distance_b_to_qubit
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) (W : PauliKind) :
+theorem qubit_operator_distance_b_to_qubit :
     qubitOperatorDistanceB P S w.toQubit W = rawPauliOperatorDistanceB P S w W := by
   unfold qubitOperatorDistanceB rawPauliOperatorDistanceB
-  refine Finset.sum_congr rfl fun label _ => ?_
+  congr 1 with label
   have hnorm := BinaryWitnessTransport.operator_error_reindex
     (BinaryWitnessTransport.jointEquiv P w.ιA' w.ιB')
     (liftedBEffect S w.φB
@@ -411,6 +395,8 @@ theorem qubit_operator_distance_b_to_qubit
     BinaryWitnessTransport.ideal_projector_b_reindex,
     BinaryWitnessTransport.ideal_state_reindex] at hnorm
   exact congrArg (fun error : ℝ => error ^ 2) hnorm
+
+end
 
 /-- `cor:pauli-binary`: soundness of the Pauli basis test in qubit
 coordinates. Blueprint `cor:pauli-binary`, paper

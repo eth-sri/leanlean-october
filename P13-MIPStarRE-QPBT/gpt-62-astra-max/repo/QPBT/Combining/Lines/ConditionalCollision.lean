@@ -4,7 +4,6 @@ public import QPBT.Combining.Lines.FiberCollision
 public import QPBT.Combining.Lines.NondegeneratePastingDistribution
 public import QPBT.Combining.Lines.ProductWeightedCollision
 public import QPBT.Games.RestrictedAverage
-public import QPBT.Observables.WinImplications.Setup
 
 /-!
 # Conditional collision bound for nondegenerate line pasting
@@ -41,23 +40,16 @@ theorem nondegenerateLinePastingDist_collision_bound
   apply collision_bound_of_fiber_averages
   intro fixed first second hne
   simp only [nondegenerateLinePastingDist, Distribution.avgOver_map]
-  have hpos := prod_linePointDist_nondegenerate_mass_pos P.toLdParams
-  apply (mul_le_mul_iff_right₀ hpos).mp
-  rw [avgOver_restrict_mul_mass, mul_left_comm _ ((bound : ℝ) /
-    Fintype.card (ScalarQ P.toLdParams)), avgOver_restrict_mul_mass]
+  apply (mul_le_mul_iff_right₀ (prod_linePointDist_nondegenerate_mass_pos P.toLdParams)).mp
+  rw [avgOver_restrict_mul_mass, mul_left_comm, avgOver_restrict_mul_mass]
   have h := prod_linePointDist_nondegenerate_weighted_collision_le
     (fun line sample => if ((line, sample.1), sample) = fixed then 1 else 0)
     (fun line sample => by split_ifs <;> norm_num) first second hne
-  have hswap (condition other : Prop) [Decidable condition] [Decidable other] (value : ℝ) :
-      (if condition then (if other then value else 0) else 0) =
-        (if other then (if condition then value else 0) else 0) := by
-    split_ifs <;> rfl
-  rw [Finset.sum_filter, Finset.sum_filter]
+  simp [Finset.sum_filter]
   unfold avgOver at h
-  simp only [mul_ite, mul_one, mul_zero] at h ⊢
+  simp at h ⊢
   convert h using 1
-  apply Finset.sum_congr rfl
-  intro sample _
+  congr 1 with sample
   split_ifs <;> rfl
 
 end

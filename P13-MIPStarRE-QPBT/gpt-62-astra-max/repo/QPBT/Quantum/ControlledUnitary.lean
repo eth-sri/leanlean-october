@@ -1,7 +1,5 @@
 module
 
-public import QPBT.Upstream
-
 public import QPBT.Games.DistanceTheorems.Support
 
 /-!
@@ -48,9 +46,8 @@ theorem sum_heteroKron_mul_sum_heteroKron
   classical
   rw [Finset.sum_mul]
   simp_rw [Finset.mul_sum, heteroKron_mul]
-  apply Finset.sum_congr rfl
-  intro outcome _
-  rw [Finset.sum_eq_single outcome]
+  congr 1 with outcome
+  rw [Finset.sum_eq_single]
   · rw [(hprojective outcome).isIdempotentElem.eq]
   · intro other _ hother
     rw [DistanceCalculus.projective_effect_mul_effect_eq_zero
@@ -77,12 +74,10 @@ theorem sum_heteroKron_mul_conjTranspose
   calc
     _ = (∑ outcome, heteroKron (measurement.effect outcome) (operators outcome)) *
         (∑ outcome, heteroKron (measurement.effect outcome) ((operators outcome)ᴴ)) := by
-      simp only [Matrix.conjTranspose_sum, heteroKron, Matrix.kronecker,
-        Matrix.conjTranspose_kronecker, hself]
-    _ = ∑ outcome, heteroKron (measurement.effect outcome)
-        (operators outcome * (operators outcome)ᴴ) :=
+      simp [Matrix.conjTranspose_sum, heteroKron, Matrix.conjTranspose_kronecker, hself]
+    _ = _ :=
       sum_heteroKron_mul_sum_heteroKron measurement hprojective _ _
-    _ = ∑ outcome, heteroKron (measurement.effect outcome) (1 : Op Target) := by
+    _ = ∑ outcome, heteroKron (measurement.effect outcome) 1 := by
       simp_rw [hunitary]
     _ = 1 := by
       rw [← DistanceCalculus.heteroKron_finset_sum_left, measurement.sum_eq_one,

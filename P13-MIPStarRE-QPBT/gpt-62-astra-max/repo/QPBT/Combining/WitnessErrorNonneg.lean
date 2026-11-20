@@ -37,13 +37,12 @@ noncomputable section
 theorem CombinedPointsWitness.delta_nonneg {P : AdmissibleParams} {epsilon deltaQ : ℝ}
     {setting : ProjectiveSetting P epsilon}
     (points : CombinedPointsWitness setting deltaQ) :
-    0 ≤ deltaQ := by
-  exact le_trans
+    0 ≤ deltaQ := le_trans
     (DistanceCalculus.opFamilyDistSq_nonneg
       (uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
-      (fun xz ab => setting.place .AA' ((points.Q .alice xz.1 xz.2).effect ab))
-      (fun xz ab => setting.place .BA'' ((points.Q .bob xz.1 xz.2).effect ab))
+        ((PauliPoint P) × (PauliPoint P)))
+      _
+      _
       setting.psiHat)
     (points.self_consistent .AA' .BA'' trivial)
 
@@ -61,31 +60,26 @@ theorem completedLinePointDefect_aaBa_nonneg
     (lines : ExtendedLinesWitness setting points deltaL)
     (mu : Distribution
       (DirectLineDesc P.extendedDirectLd ×
-        (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd))) :
+        (DirectPoint P.extendedDirectLd))) :
     0 ≤ completedLinePointDefect lines .AA' .BA'' mu := by
   let lineMeasurement :
       (DirectLineDesc P.extendedDirectLd ×
-        (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)) →
-        Measurement (Option (PauliScalar P)) (setting.ExpandedLocalSpace .alice) :=
+        (DirectPoint P.extendedDirectLd)) →
+        _ :=
     fun sample =>
       (lines.Qline .alice sample.1).postprocess
         (fun coeffs => (directEvalOpt sample.1 sample.2 coeffs).map
           (extendedDirectScalarEquiv P))
   let pointMeasurement :
       (DirectLineDesc P.extendedDirectLd ×
-        (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)) →
-        Measurement (Option (PauliScalar P)) (setting.ExpandedLocalSpace .bob) :=
+        (DirectPoint P.extendedDirectLd)) →
+        _ :=
     fun sample =>
       (points.Q .bob
-        (projX (directPointToPauli P sample.2))
-        (projZ (directPointToPauli P sample.2))).postprocess fun values =>
-          some (directPointToPauli P sample.2 (alphaVar P.m) * values.1 +
-            directPointToPauli P sample.2 (betaVar P.m) * values.2)
-  change 0 ≤ consistencyDefect mu
-    (fun sample answer => setting.place .AA' ((lineMeasurement sample).effect answer))
-    (fun sample answer => setting.place .BA'' ((pointMeasurement sample).effect answer))
-    setting.psiHat
-  unfold consistencyDefect avgOver
+        (projX (directPointToPauli sample.2))
+        (projZ (directPointToPauli sample.2))).postprocess fun values =>
+          some (directPointToPauli sample.2 (alphaVar P.m) * values.1 +
+            directPointToPauli sample.2 (betaVar P.m) * values.2)
   refine Finset.sum_nonneg fun sample _ =>
     mul_nonneg (mu.nonnegative sample) ?_
   refine Finset.sum_nonneg fun answerA _ => ?_
@@ -94,12 +88,10 @@ theorem completedLinePointDefect_aaBa_nonneg
   · simp [hab]
   · simp only [hab, if_false, DistanceCalculus.consistency_term_eq_stateQForm]
     rw [← stateQForm_pairState_eq_AA'_BA'' setting
-      ((lineMeasurement sample).effect answerA)
-      ((pointMeasurement sample).effect answerB)
-      (Matrix.nonneg_iff_posSemidef.mp
-        ((lineMeasurement sample).pos answerA)).isHermitian
-      (Matrix.nonneg_iff_posSemidef.mp
-        ((pointMeasurement sample).pos answerB)).isHermitian]
+      _
+      _
+      (measurement_effect_hermitian (lineMeasurement sample) answerA)
+      (measurement_effect_hermitian (pointMeasurement sample) answerB)]
     exact DistanceCalculus.stateQForm_nonneg (pairState setting)
       (MIPStarRE.Quantum.kronecker_nonneg
         ((lineMeasurement sample).pos answerA)
@@ -114,8 +106,7 @@ theorem ExtendedLinesWitness.delta_nonneg {P : AdmissibleParams}
     {epsilon deltaQ deltaL : ℝ} {setting : ProjectiveSetting P epsilon}
     {points : CombinedPointsWitness setting deltaQ}
     (lines : ExtendedLinesWitness setting points deltaL) :
-    0 ≤ deltaL := by
-  exact le_trans
+    0 ≤ deltaL := le_trans
     (ExtendedLineGame.completedLinePointDefect_aaBa_nonneg lines
       (directLinePointDist P.extendedDirectLd))
     lines.consistent_alice

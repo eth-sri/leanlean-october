@@ -1,9 +1,5 @@
 module
 
-public import QPBT.Observables.WinImplications.LowDegree
-public import QPBT.Observables.WinImplications.Interchange
-public import QPBT.Observables.Defs
-public import QPBT.Combining.ActualErrorBounds
 public import QPBT.Test.Soundness.NaimarkAssembly
 public import QPBT.Test.Soundness.EpsReduction
 
@@ -49,44 +45,24 @@ theorem completedPauliEffect_eq_raw_add_wrongForm {P : AdmissibleParams} {ι : T
     Finset.sum_filter]
   by_cases hu : u = 0
   · subst u
-    simp only [ite_true]
     calc
-      (∑ answer, if pauliAnswerOrZero answer = 0 then M.effect answer else 0) =
+      _ =
           ∑ answer, ((if answer = .pauliOutcome 0 then M.effect answer else 0) +
             (if validPauliAnswer (.pauli W) answer = false then M.effect answer else 0)) := by
-        apply Finset.sum_congr rfl
-        intro answer _
+        congr 1 with answer
         cases answer <;> simp [pauliAnswerOrZero, validPauliAnswer] <;> rfl
       _ = _ := by
-        rw [Finset.sum_add_distrib]
-        congr 1
-        · simp
-        · rw [← Finset.sum_filter]
-  · simp only [hu, ite_false, add_zero]
+        simp [Finset.sum_add_distrib, ← Finset.sum_filter]
+  · simp_all
     rw [Finset.sum_eq_single (.pauliOutcome u)]
     · simp [pauliAnswerOrZero]
     · intro answer _ hanswer
-      have hzero : (0 : PauliRegister P) ≠ u := by
+      have hzero : 0 ≠ u := by
         simpa [eq_comm] using hu
       cases answer <;> simp_all [pauliAnswerOrZero]
     · simp
 
 namespace WinImplications
-
-/-- A strategy winning with probability at least `1 - ε` has average Pauli-edge
-rejection probability at most `ε`. -/
-theorem pauliRejectionAverage_le_error_of_win {P : AdmissibleParams} {ε : ℝ}
-    (S : Strategy (pauliBasisTest P)) (hwin : 1 - ε ≤ S.value) :
-    avgOver (uniformDistribution (PauliEdge × PauliSpace P))
-        (fun ez => pauliRejectionAt S ez.1 ez.2) ≤ ε := by
-  have havg : avgOver (uniformDistribution (PauliEdge × PauliSpace P))
-      (fun ez => pauliRejectionAt S ez.1 ez.2) = 1 - S.value := by
-    rw [← rejectionEventAverage_eq_one_sub_value S]
-    unfold pauliBasisTest pauliQuestionDistribution
-    rw [Distribution.avgOver_map]
-    rfl
-  rw [havg]
-  linarith
 
 /-- Rejection on one fixed oriented edge is at most the number of edge types
 times the total rejection probability. -/
@@ -95,14 +71,18 @@ theorem fixedEdgeRejection_le_error_of_win {P : AdmissibleParams} {ε : ℝ}
     avgOver (uniformDistribution (PauliSpace P)) (pauliRejectionAt S e) ≤
       (Fintype.card PauliEdge : ℝ) * ε := by
   calc
-    avgOver (uniformDistribution (PauliSpace P)) (pauliRejectionAt S e) ≤
-        (Fintype.card PauliEdge : ℝ) *
-          avgOver (uniformDistribution (PauliEdge × PauliSpace P))
-            (fun ez => pauliRejectionAt S ez.1 ez.2) := by
-      exact avgOver_uniform_fixed_le_card_mul_prod _
-        (fun edge z => pauliRejectionAt_nonneg S edge z) e
-    _ ≤ (Fintype.card PauliEdge : ℝ) * ε := by
-      exact mul_le_mul_of_nonneg_left (pauliRejectionAverage_le_error_of_win S hwin)
+    _ ≤
+        _ := avgOver_uniform_fixed_le_card_mul_prod
+        (pauliRejectionAt_nonneg S) e
+    _ ≤ _ := mul_le_mul_of_nonneg_left ((by
+                                          have havg : avgOver (uniformDistribution (PauliEdge × PauliSpace _))
+                                              (fun ez => pauliRejectionAt S ez.1 ez.2) = 1 - S.value := by
+                                            rw [← rejectionEventAverage_eq_one_sub_value S]
+                                            unfold pauliBasisTest pauliQuestionDistribution
+                                            rw [Distribution.avgOver_map]
+                                            rfl
+                                          rw [havg]
+                                          linarith))
         (Nat.cast_nonneg _)
 
 end WinImplications
@@ -112,7 +92,7 @@ open DistanceCalculus
 /-- Alice's malformed Pauli-answer mass is bounded by rejection on the
 Pauli-to-point edge. -/
 theorem wrongFormPauliMass_alice_le_error {P : AdmissibleParams} {ε : ℝ}
-    (S : Strategy (pauliBasisTest P)) (hwin : 1 - ε ≤ S.value) (W : PauliKind) :
+    {S : Strategy (pauliBasisTest P)} (hwin : 1 - ε ≤ S.value) (W : PauliKind) :
     stateQForm S.ψ
         (heteroKron
           (ProjectiveSetting.wrongFormEffect (.pauli W) (S.A (pauliQuestion P W))) 1) ≤
@@ -131,23 +111,16 @@ theorem wrongFormPauliMass_alice_le_error {P : AdmissibleParams} {ε : ℝ}
             (fun a => validPauliAnswer (.pauli W) a = false) := by
       unfold ProjectiveSetting.wrongFormEffect aliceEventWeight
       rw [heteroKron_finset_sum_left, stateQForm_finset_sum, Finset.sum_filter]
-      apply Finset.sum_congr rfl
-      intro a _
-      by_cases ha : validPauliAnswer (.pauli W) a = false
-      · simp [ha, stateQForm, aliceOutcomeWeight]
-      · simp [ha]
+      rfl
     rw [hmass]
-    rw [← outcome_event_weight_left_eq S (pauliQuestion P W)
-      ((.point W), pauliCL P (.point W) z)]
+    rw [← outcome_event_weight_left_eq]
     unfold WinImplications.pauliRejectionAt WinImplications.pauliSourceQuestions
-    simp only [WinImplications.pauliPointEdge, pauliCL, pauliQuestion]
+    simp [WinImplications.pauliPointEdge]
     apply outcome_event_weight_mono
     intro a b ha
     simp [pauliWinPredicate, ha]
   calc
-    stateQForm S.ψ
-        (heteroKron
-          (ProjectiveSetting.wrongFormEffect (.pauli W) (S.A (pauliQuestion P W))) 1) =
+    _ =
         avgOver (uniformDistribution (PauliSpace P)) (fun _ =>
           stateQForm S.ψ
             (heteroKron
@@ -155,9 +128,7 @@ theorem wrongFormPauliMass_alice_le_error {P : AdmissibleParams} {ε : ℝ}
                 (S.A (pauliQuestion P W))) 1)) := by
       symm
       exact avgOver_uniform_const _
-    _ ≤ avgOver (uniformDistribution (PauliSpace P))
-        (WinImplications.pauliRejectionAt S (WinImplications.pauliPointEdge W)) := by
-      exact avgOver_mono _ _ _ hpoint
+    _ ≤ _ := avgOver_mono _ _ _ hpoint
     _ ≤ _ := WinImplications.fixedEdgeRejection_le_error_of_win S hwin _
 
 /-- Bob's malformed Pauli-answer mass is bounded by rejection on the
@@ -168,99 +139,63 @@ theorem wrongFormPauliMass_bob_le_error {P : AdmissibleParams} {ε : ℝ}
         (heteroKron 1
           (ProjectiveSetting.wrongFormEffect (.pauli W) (S.B (pauliQuestion P W)))) ≤
       (Fintype.card PauliEdge : ℝ) * ε := by
-  have hpoint (z : PauliSpace P) :
-      stateQForm S.ψ
-          (heteroKron 1
-            (ProjectiveSetting.wrongFormEffect (.pauli W) (S.B (pauliQuestion P W)))) ≤
-        WinImplications.pauliRejectionAt S (WinImplications.pointPauliEdge W) z := by
-    have hmass :
-        stateQForm S.ψ
-            (heteroKron 1
-              (ProjectiveSetting.wrongFormEffect (.pauli W)
-                (S.B (pauliQuestion P W)))) =
-          bobEventWeight S (pauliQuestion P W)
-            (fun b => validPauliAnswer (.pauli W) b = false) := by
-      unfold ProjectiveSetting.wrongFormEffect bobEventWeight
-      rw [heteroKron_finset_sum_right, stateQForm_finset_sum, Finset.sum_filter]
-      apply Finset.sum_congr rfl
-      intro b _
-      by_cases hb : validPauliAnswer (.pauli W) b = false
-      · simp [hb, stateQForm, bobOutcomeWeight]
-      · simp [hb]
-    rw [hmass]
-    rw [← outcome_event_weight_right_eq S
-      ((.point W), pauliCL P (.point W) z) (pauliQuestion P W)]
-    unfold WinImplications.pauliRejectionAt WinImplications.pauliSourceQuestions
-    simp only [WinImplications.pointPauliEdge, pauliCL, pauliQuestion]
-    apply outcome_event_weight_mono
-    intro a b hb
-    simp [pauliWinPredicate, hb]
-  calc
-    stateQForm S.ψ
-        (heteroKron 1
-          (ProjectiveSetting.wrongFormEffect (.pauli W) (S.B (pauliQuestion P W)))) =
-        avgOver (uniformDistribution (PauliSpace P)) (fun _ =>
-          stateQForm S.ψ
-            (heteroKron 1
-              (ProjectiveSetting.wrongFormEffect (.pauli W)
-                (S.B (pauliQuestion P W))))) := by
-      symm
-      exact avgOver_uniform_const _
-    _ ≤ avgOver (uniformDistribution (PauliSpace P))
-        (WinImplications.pauliRejectionAt S (WinImplications.pointPauliEdge W)) := by
-      exact avgOver_mono _ _ _ hpoint
-    _ ≤ _ := WinImplications.fixedEdgeRejection_le_error_of_win S hwin _
+  let G := pauliBasisTestSymm P
+  have h := wrongFormPauliMass_alice_le_error (P := P) (ε := ε) ((G.value_swapStrategy S).symm ▸ hwin) W
+  change DistanceCalculus.stateQForm (reindexState (Equiv.prodComm _ _) S.ψ)
+    (heteroKron (ProjectiveSetting.wrongFormEffect (.pauli W) (S.B (pauliQuestion P W))) 1) ≤ _ at h
+  rwa [WinImplications.stateQForm_reindexState, WinImplications.reindexOp_prodComm_heteroKron] at h
 
-private theorem raw_transfer_liftedAEffect_eq_tensor {P : AdmissibleParams} {G : Game}
-    (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB']
-    (φA : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
-      EuclideanSpace ℂ (ιA' × PauliRegister P)) (M : Op S.ιA) :
-    liftedAEffect S (ιB' := ιB') φA M =
-      heteroKron (conjIsometry φA M) (1 : Op (ιB' × PauliRegister P)) := by
-  ext i j
-  simp [liftedAEffect, heteroKron, Matrix.kronecker, Matrix.one_apply]
+section
 
-private theorem raw_transfer_liftedBEffect_eq_tensor {P : AdmissibleParams} {G : Game}
-    (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB']
-    (φB : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]
-      EuclideanSpace ℂ (ιB' × PauliRegister P)) (M : Op S.ιB) :
-    liftedBEffect S (ιA' := ιA') φB M =
-      heteroKron (1 : Op (ιA' × PauliRegister P)) (conjIsometry φB M) := by
-  ext i j
-  simp [liftedBEffect, heteroKron, Matrix.kronecker, Matrix.one_apply]
+variable {P : AdmissibleParams} {G : Game} (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA']
+  [DecidableEq ιA'] [Fintype ιB'] [DecidableEq ιB']
 
-private theorem raw_transfer_liftedAEffect_add {P : AdmissibleParams} {G : Game}
-    (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB']
+private theorem raw_transfer_liftedAEffect_add
     (φA : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
       EuclideanSpace ℂ (ιA' × PauliRegister P)) (A B : Op S.ιA) :
     liftedAEffect S (ιB' := ιB') φA (A + B) =
       liftedAEffect S φA A + liftedAEffect S φA B := by
-  rw [raw_transfer_liftedAEffect_eq_tensor, raw_transfer_liftedAEffect_eq_tensor,
-    raw_transfer_liftedAEffect_eq_tensor, ← heteroKron_add_left]
-  congr 1
+  rw [liftedAEffect_eq_tensor, liftedAEffect_eq_tensor,
+    liftedAEffect_eq_tensor, ← heteroKron_add_left]
   simp [conjIsometry, Matrix.mul_add, Matrix.add_mul]
 
-private theorem raw_transfer_liftedBEffect_add {P : AdmissibleParams} {G : Game}
-    (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB']
+private theorem raw_transfer_liftedBEffect_add
     (φB : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]
       EuclideanSpace ℂ (ιB' × PauliRegister P)) (A B : Op S.ιB) :
     liftedBEffect S (ιA' := ιA') φB (A + B) =
       liftedBEffect S φB A + liftedBEffect S φB B := by
-  rw [raw_transfer_liftedBEffect_eq_tensor, raw_transfer_liftedBEffect_eq_tensor,
-    raw_transfer_liftedBEffect_eq_tensor, ← heteroKron_add_right]
-  congr 1
+  rw [liftedBEffect_eq_tensor, liftedBEffect_eq_tensor,
+    liftedBEffect_eq_tensor, ← heteroKron_add_right]
   simp [conjIsometry, Matrix.mul_add, Matrix.add_mul]
+
+end
 
 private theorem wrongFormEffect_eq_validity_effect {P : AdmissibleParams} {ι : Type*}
     [Fintype ι] [DecidableEq ι] (M : Measurement (PauliAnswer P) ι)
     (W : PauliKind) :
     ProjectiveSetting.wrongFormEffect (.pauli W) M =
       (M.postprocess (validPauliAnswer (.pauli W))).effect false := by
-  rw [ProjectiveSetting.wrongFormEffect, Measurement.postprocess_effect]
+  rfl
+
+/-- Transfer an effect's Born mass to the squared action norm of a contraction
+on a nearby state. Only the action norm on the transported state is needed. -/
+private theorem effect_norm_transfer {ι κ α : Type} [Fintype ι] [DecidableEq ι]
+    [Fintype κ] [DecidableEq κ] [Fintype α] (M : Measurement α ι) (a : α)
+    {ψ : EuclideanSpace ℂ ι} {θ Δ : EuclideanSpace ℂ κ} {Q : Op κ} {δ r : ℝ}
+    (hQ : Qᴴ * Q ≤ 1) (hmass : stateQForm ψ (M.effect a) ≤ r) (hstate : ‖θ - Δ‖ ≤ δ)
+    (hiso : ‖applyOperatorToState Q θ‖ = ‖applyOperatorToState (M.effect a) ψ‖) :
+    ‖applyOperatorToState Q Δ‖ ^ 2 ≤ 2 * δ ^ 2 + 2 * r := by
+  have hθ : ‖applyOperatorToState Q θ‖ ^ 2 ≤ r := by
+    rw [hiso, DistanceCalculus.norm_applyOperatorToState_sq_eq, measurement_effect_hermitian]
+    exact (quadratic_form_mono (MIPStarRE.Quantum.sq_le_self (M.pos a) (measurement_effect_le_one M a)) ψ).trans hmass
+  let v := applyOperatorToState Q (Δ - θ)
+  let w := applyOperatorToState Q θ
+  have hv : ‖v‖ ≤ δ := (MagicSquareRigidity.norm_applyOperatorToState_le hQ _).trans ((norm_sub_rev θ Δ) ▸ hstate)
+  have he : applyOperatorToState Q Δ = v + w := by simp [v, w, applyOperatorToState]
+  change ‖w‖ ^ 2 ≤ _ at hθ
+  rw [he]
+  nlinarith [pow_le_pow_left₀ (norm_nonneg _) (norm_add_le v w) 2,
+    pow_le_pow_left₀ (norm_nonneg _) hv 2, sq_nonneg (‖v‖ - ‖w‖)]
 
 private theorem wrongFormEffect_ideal_norm_alice_le {P : AdmissibleParams}
     (S : Strategy (pauliBasisTest P)) (w : PauliSoundnessWitness P S)
@@ -273,55 +208,15 @@ private theorem wrongFormEffect_ideal_norm_alice_le {P : AdmissibleParams}
         (liftedAEffect S w.φA
           (ProjectiveSetting.wrongFormEffect (.pauli W) (S.A (pauliQuestion P W))))
         (idealState P w.aux)‖ ^ 2 ≤ 2 * δ ^ 2 + 2 * r := by
-  let M : Measurement (PauliAnswer P) S.ιA := S.A (pauliQuestion P W)
-  let E := ProjectiveSetting.wrongFormEffect (.pauli W) M
-  let Q := liftedAEffect S (ιB' := w.ιB') w.φA E
-  let theta := isometryTensor w.φA w.φB S.ψ
-  let Delta := idealState P w.aux
-  let N := M.postprocess (validPauliAnswer (.pauli W))
-  have hE : E = N.effect false := by
-    exact wrongFormEffect_eq_validity_effect M W
-  have hEcontr : Eᴴ * E ≤ 1 := by
-    rw [hE]
-    exact MagicSquareRigidity.conjTranspose_mul_le_one_of_effect N false
-  have hQcontr : Qᴴ * Q ≤ 1 := by
-    dsimp only [Q]
-    rw [raw_transfer_liftedAEffect_eq_tensor]
-    exact MagicSquareRigidity.conjTranspose_mul_le_one_leftTensor
-      (MagicSquareRigidity.conjTranspose_mul_le_one_conjIsometry w.φA hEcontr)
-  have htheta : ‖applyOperatorToState Q theta‖ ^ 2 ≤ r := by
-    dsimp only [Q, theta]
-    rw [raw_transfer_liftedAEffect_eq_tensor,
-      MagicSquareRigidity.applyOperatorToState_leftTensor_conjIsometry,
-      MagicSquareRigidity.norm_isometryTensor]
-    have hEpos : 0 ≤ E := by rw [hE]; exact N.pos false
-    have hEle : E ≤ 1 := by rw [hE]; exact measurement_effect_le_one N false
-    have hKpos : 0 ≤ heteroKron E (1 : Op S.ιB) :=
-      kronecker_nonneg hEpos (by simp)
-    have hKle : heteroKron E (1 : Op S.ιB) ≤ 1 := by
-      rw [← Matrix.one_kronecker_one]
-      exact kronecker_mono_left hEle (by simp)
-    rw [MagicSquareRigidity.norm_applyOperatorToState_sq]
-    have hKH : (heteroKron E (1 : Op S.ιB))ᴴ = heteroKron E 1 :=
-      (Matrix.nonneg_iff_posSemidef.mp hKpos).isHermitian.eq
-    rw [hKH]
-    exact (quadratic_form_mono (MIPStarRE.Quantum.sq_le_self hKpos hKle) S.ψ).trans
-      hmass
-  have hdecomp : applyOperatorToState Q Delta =
-      applyOperatorToState Q (Delta - theta) + applyOperatorToState Q theta := by
-    simp [applyOperatorToState]
-  rw [hdecomp]
-  have hfirst : ‖applyOperatorToState Q (Delta - theta)‖ ≤ δ := by
-    exact (MagicSquareRigidity.norm_applyOperatorToState_le hQcontr _).trans (by
-      rw [norm_sub_rev]
-      exact hstate)
-  have htri := norm_add_le (applyOperatorToState Q (Delta - theta))
-    (applyOperatorToState Q theta)
-  have hsquare := pow_le_pow_left₀ (norm_nonneg _) htri 2
-  have hfirstsq := pow_le_pow_left₀
-    (norm_nonneg (applyOperatorToState Q (Delta - theta))) hfirst 2
-  nlinarith [sq_nonneg (‖applyOperatorToState Q (Delta - theta)‖ -
-    ‖applyOperatorToState Q theta‖)]
+  let N := (S.A (pauliQuestion P W)).postprocess (validPauliAnswer (.pauli W))
+  rw [wrongFormEffect_eq_validity_effect] at hmass ⊢
+  rw [liftedAEffect_eq_tensor]
+  refine effect_norm_transfer (leftPlacedMeasurement N) false ?_ hmass hstate ?_
+  · exact MagicSquareRigidity.conjTranspose_mul_le_one_leftTensor
+      (MagicSquareRigidity.conjTranspose_mul_le_one_conjIsometry _
+        (MagicSquareRigidity.conjTranspose_mul_le_one_of_effect N false))
+  · rw [MagicSquareRigidity.applyOperatorToState_leftTensor_conjIsometry, MagicSquareRigidity.norm_isometryTensor]
+    rfl
 
 private theorem wrongFormEffect_ideal_norm_bob_le {P : AdmissibleParams}
     (S : Strategy (pauliBasisTest P)) (w : PauliSoundnessWitness P S)
@@ -334,55 +229,50 @@ private theorem wrongFormEffect_ideal_norm_bob_le {P : AdmissibleParams}
         (liftedBEffect S w.φB
           (ProjectiveSetting.wrongFormEffect (.pauli W) (S.B (pauliQuestion P W))))
         (idealState P w.aux)‖ ^ 2 ≤ 2 * δ ^ 2 + 2 * r := by
-  let M := S.B (pauliQuestion P W)
+  let N := (S.B (pauliQuestion P W)).postprocess (validPauliAnswer (.pauli W))
+  rw [wrongFormEffect_eq_validity_effect] at hmass ⊢
+  rw [liftedBEffect_eq_tensor]
+  refine effect_norm_transfer (rightPlacedMeasurement N) false ?_ hmass hstate ?_
+  · exact MagicSquareRigidity.conjTranspose_mul_le_one_rightTensor
+      (MagicSquareRigidity.conjTranspose_mul_le_one_conjIsometry _
+        (MagicSquareRigidity.conjTranspose_mul_le_one_of_effect N false))
+  · rw [MagicSquareRigidity.applyOperatorToState_rightTensor_conjIsometry, MagicSquareRigidity.norm_isometryTensor]
+    rfl
+
+/-- Raw and completed answers differ only at zero. This transfers squared
+operator error for either player's additive lifting map. -/
+private theorem raw_completed_sum_le {P : AdmissibleParams} {ι κ : Type*}
+    [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
+    (M : Measurement (PauliAnswer P) ι) (W : PauliKind) (L : Op ι → Op κ)
+    (hadd : ∀ A B, L (A + B) = L A + L B) (T : PauliRegister P → Op κ)
+    (ψ : EuclideanSpace ℂ κ) (δ r : ℝ)
+    (hb : ‖applyOperatorToState (L (ProjectiveSetting.wrongFormEffect (.pauli W) M)) ψ‖ ^ 2 ≤
+      2 * δ ^ 2 + 2 * r) :
+    ∑ u, ‖applyOperatorToState (L (M.effect (.pauliOutcome u)) - T u) ψ‖ ^ 2 ≤
+      2 * ∑ u, ‖applyOperatorToState (L ((M.postprocess pauliAnswerOrZero).effect u) - T u) ψ‖ ^ 2 +
+      4 * δ ^ 2 + 4 * r := by
   let E := ProjectiveSetting.wrongFormEffect (.pauli W) M
-  let Q := liftedBEffect S (ιA' := w.ιA') w.φB E
-  let theta := isometryTensor w.φA w.φB S.ψ
-  let Delta := idealState P w.aux
-  let N := M.postprocess (validPauliAnswer (.pauli W))
-  have hE : E = N.effect false := by
-    exact wrongFormEffect_eq_validity_effect M W
-  have hEcontr : Eᴴ * E ≤ 1 := by
-    rw [hE]
-    exact MagicSquareRigidity.conjTranspose_mul_le_one_of_effect N false
-  have hQcontr : Qᴴ * Q ≤ 1 := by
-    dsimp only [Q]
-    rw [raw_transfer_liftedBEffect_eq_tensor]
-    exact MagicSquareRigidity.conjTranspose_mul_le_one_rightTensor
-      (MagicSquareRigidity.conjTranspose_mul_le_one_conjIsometry w.φB hEcontr)
-  have htheta : ‖applyOperatorToState Q theta‖ ^ 2 ≤ r := by
-    dsimp only [Q, theta]
-    rw [raw_transfer_liftedBEffect_eq_tensor,
-      MagicSquareRigidity.applyOperatorToState_rightTensor_conjIsometry,
-      MagicSquareRigidity.norm_isometryTensor]
-    have hEpos : 0 ≤ E := by rw [hE]; exact N.pos false
-    have hEle : E ≤ 1 := by rw [hE]; exact measurement_effect_le_one N false
-    have hKpos : 0 ≤ heteroKron (1 : Op S.ιA) E :=
-      kronecker_nonneg (by simp) hEpos
-    have hKle : heteroKron (1 : Op S.ιA) E ≤ 1 := by
-      rw [← Matrix.one_kronecker_one]
-      exact kronecker_le_kronecker_right_one (by simp) hEle
-    rw [MagicSquareRigidity.norm_applyOperatorToState_sq]
-    have hKH : (heteroKron (1 : Op S.ιA) E)ᴴ = heteroKron 1 E :=
-      (Matrix.nonneg_iff_posSemidef.mp hKpos).isHermitian.eq
-    rw [hKH]
-    exact (quadratic_form_mono (MIPStarRE.Quantum.sq_le_self hKpos hKle) S.ψ).trans
-      hmass
-  have hdecomp : applyOperatorToState Q Delta =
-      applyOperatorToState Q (Delta - theta) + applyOperatorToState Q theta := by
-    simp [applyOperatorToState]
-  rw [hdecomp]
-  have hfirst : ‖applyOperatorToState Q (Delta - theta)‖ ≤ δ := by
-    exact (MagicSquareRigidity.norm_applyOperatorToState_le hQcontr _).trans (by
-      rw [norm_sub_rev]
-      exact hstate)
-  have htri := norm_add_le (applyOperatorToState Q (Delta - theta))
-    (applyOperatorToState Q theta)
-  have hsquare := pow_le_pow_left₀ (norm_nonneg _) htri 2
-  have hfirstsq := pow_le_pow_left₀
-    (norm_nonneg (applyOperatorToState Q (Delta - theta))) hfirst 2
-  nlinarith [sq_nonneg (‖applyOperatorToState Q (Delta - theta)‖ -
-    ‖applyOperatorToState Q theta‖)]
+  let C u := applyOperatorToState (L ((M.postprocess pauliAnswerOrZero).effect u) - T u) ψ
+  let e := applyOperatorToState (L E) ψ
+  have hpoint u : ‖applyOperatorToState (L (M.effect (.pauliOutcome u)) - T u) ψ‖ ^ 2 ≤
+      2 * ‖C u‖ ^ 2 + if u = 0 then 2 * ‖e‖ ^ 2 else 0 := by
+    by_cases hu : u = 0
+    · subst u
+      rw [if_pos rfl]
+      have heq : applyOperatorToState (L (M.effect (.pauliOutcome 0)) - T 0) ψ = C 0 - e := by
+        dsimp only [C, e, E]
+        rw [completedPauliEffect_eq_raw_add_wrongForm M W, if_pos rfl, hadd]
+        simp [applyOperatorToState]
+        abel
+      rw [heq]
+      nlinarith [pow_le_pow_left₀ (norm_nonneg _) (norm_sub_le (C 0) e) 2, sq_nonneg (‖C 0‖ - ‖e‖)]
+    · dsimp only [C]
+      rw [completedPauliEffect_eq_raw_add_wrongForm M W u, if_neg hu, if_neg hu, add_zero, add_zero]
+      nlinarith
+  have hsum := Finset.sum_le_sum (s := Finset.univ) (fun u _ => hpoint u)
+  rw [Finset.sum_add_distrib, ← Finset.mul_sum] at hsum
+  simp [Finset.sum_ite_eq'] at hsum
+  linarith
 
 /-- Alice's raw prescribed-answer distance is controlled by the completed
 distance, state error, and malformed-answer rejection mass. -/
@@ -392,103 +282,12 @@ theorem raw_pauli_operator_distanceA_le_completed {P : AdmissibleParams} {ε δ 
     (hstate : ‖isometryTensor w.φA w.φB S.ψ - idealState P w.aux‖ ≤ δ)
     (W : PauliKind) :
     rawPauliOperatorDistanceA P S w W ≤
-      2 * pauliOperatorDistanceA P S w W + 4 * δ ^ 2 +
+      2 * pauliOperatorDistanceA w W + 4 * δ ^ 2 +
         4 * (Fintype.card PauliEdge : ℝ) * ε := by
-  let M : Measurement (PauliAnswer P) S.ιA := S.A (pauliQuestion P W)
-  let E := ProjectiveSetting.wrongFormEffect (.pauli W) M
-  let bad := ‖applyOperatorToState (liftedAEffect S w.φA E)
-    (idealState P w.aux)‖ ^ 2
-  have hmass := wrongFormPauliMass_alice_le_error S hwin W
-  have hbad : bad ≤ 2 * δ ^ 2 + 2 * (Fintype.card PauliEdge : ℝ) * ε := by
-    simpa only [bad, E, M, mul_assoc] using
-      wrongFormEffect_ideal_norm_alice_le S w W δ _ hstate hmass
-  have hpoint (u : PauliRegister P) :
-      ‖applyOperatorToState
-          (liftedAEffect S w.φA (M.effect (.pauliOutcome u)) -
-            pauliProjOnA'' P W u) (idealState P w.aux)‖ ^ 2 ≤
-        2 * ‖applyOperatorToState
-          (liftedAEffect S w.φA
-              ((M.postprocess pauliAnswerOrZero).effect u) -
-            pauliProjOnA'' P W u) (idealState P w.aux)‖ ^ 2 +
-          if u = 0 then 2 * bad else 0 := by
-    by_cases hu : u = 0
-    · subst u
-      rw [if_pos rfl, completedPauliEffect_eq_raw_add_wrongForm M W 0]
-      simp only [ite_true]
-      have hvec :
-          applyOperatorToState
-              (liftedAEffect S w.φA
-                  (M.effect (.pauliOutcome 0)) -
-                pauliProjOnA'' P W 0) (idealState P w.aux) =
-            applyOperatorToState
-                (liftedAEffect S w.φA
-                    (M.effect (.pauliOutcome 0) + E) -
-                  pauliProjOnA'' P W 0) (idealState P w.aux) -
-              applyOperatorToState (liftedAEffect S w.φA E)
-                (idealState P w.aux) := by
-        rw [raw_transfer_liftedAEffect_add]
-        simp only [applyOperatorToState, map_sub, LinearMap.sub_apply, map_add,
-          LinearMap.add_apply]
-        abel
-      rw [hvec]
-      have htri := norm_sub_le
-        (applyOperatorToState
-          (liftedAEffect S w.φA
-              (M.effect (.pauliOutcome 0) + E) -
-            pauliProjOnA'' P W 0) (idealState P w.aux))
-        (applyOperatorToState (liftedAEffect S w.φA E) (idealState P w.aux))
-      have hsquare := pow_le_pow_left₀ (norm_nonneg _) htri 2
-      dsimp only [bad]
-      nlinarith [sq_nonneg
-        (‖applyOperatorToState
-          (liftedAEffect S w.φA
-              (M.effect (.pauliOutcome 0) + E) -
-            pauliProjOnA'' P W 0) (idealState P w.aux)‖ -
-          ‖applyOperatorToState (liftedAEffect S w.φA E) (idealState P w.aux)‖)]
-    · rw [if_neg hu, completedPauliEffect_eq_raw_add_wrongForm M W u]
-      simp only [hu, ite_false, add_zero]
-      nlinarith [sq_nonneg
-        ‖applyOperatorToState
-          (liftedAEffect S w.φA (M.effect (.pauliOutcome u)) -
-            pauliProjOnA'' P W u) (idealState P w.aux)‖]
-  unfold rawPauliOperatorDistanceA pauliOperatorDistanceA
-  change (∑ u : PauliRegister P,
-      ‖applyOperatorToState
-        (liftedAEffect S w.φA (M.effect (.pauliOutcome u)) - pauliProjOnA'' P W u)
-        (idealState P w.aux)‖ ^ 2) ≤
-    2 * (∑ u : PauliRegister P,
-      ‖applyOperatorToState
-        (liftedAEffect S w.φA ((M.postprocess pauliAnswerOrZero).effect u) -
-          pauliProjOnA'' P W u) (idealState P w.aux)‖ ^ 2) +
-      4 * δ ^ 2 + 4 * (Fintype.card PauliEdge : ℝ) * ε
-  calc
-    (∑ u : PauliRegister P,
-        ‖applyOperatorToState
-          (liftedAEffect S w.φA (M.effect (.pauliOutcome u)) -
-            pauliProjOnA'' P W u) (idealState P w.aux)‖ ^ 2) ≤
-        ∑ u : PauliRegister P,
-          (2 * ‖applyOperatorToState
-            (liftedAEffect S w.φA
-                ((M.postprocess pauliAnswerOrZero).effect u) -
-              pauliProjOnA'' P W u) (idealState P w.aux)‖ ^ 2 +
-            if u = 0 then 2 * bad else 0) :=
-      Finset.sum_le_sum fun u _ => hpoint u
-    _ = 2 * (∑ u : PauliRegister P,
-          ‖applyOperatorToState
-            (liftedAEffect S w.φA
-                ((M.postprocess pauliAnswerOrZero).effect u) -
-              pauliProjOnA'' P W u) (idealState P w.aux)‖ ^ 2) + 2 * bad := by
-      rw [Finset.sum_add_distrib, ← Finset.mul_sum]
-      simp
-    _ ≤ 2 * (∑ u : PauliRegister P,
-          ‖applyOperatorToState
-            (liftedAEffect S w.φA
-                ((M.postprocess pauliAnswerOrZero).effect u) -
-              pauliProjOnA'' P W u) (idealState P w.aux)‖ ^ 2) +
-          2 * (2 * δ ^ 2 + 2 * (Fintype.card PauliEdge : ℝ) * ε) := by
-      linarith
-    _ = _ := by
-      ring
+  simpa only [rawPauliOperatorDistanceA, pauliOperatorDistanceA, mul_assoc] using raw_completed_sum_le (S.A (pauliQuestion P W)) W
+    (liftedAEffect S w.φA) (raw_transfer_liftedAEffect_add S w.φA)
+    (pauliProjOnA'' P W) (idealState P w.aux) δ _
+    (wrongFormEffect_ideal_norm_alice_le S w W δ _ hstate (wrongFormPauliMass_alice_le_error hwin W))
 
 /-- Bob's raw prescribed-answer distance is controlled by the completed
 distance, state error, and malformed-answer rejection mass. -/
@@ -498,99 +297,12 @@ theorem raw_pauli_operator_distanceB_le_completed {P : AdmissibleParams} {ε δ 
     (hstate : ‖isometryTensor w.φA w.φB S.ψ - idealState P w.aux‖ ≤ δ)
     (W : PauliKind) :
     rawPauliOperatorDistanceB P S w W ≤
-      2 * pauliOperatorDistanceB P S w W + 4 * δ ^ 2 +
+      2 * pauliOperatorDistanceB w W + 4 * δ ^ 2 +
         4 * (Fintype.card PauliEdge : ℝ) * ε := by
-  let M : Measurement (PauliAnswer P) S.ιB := S.B (pauliQuestion P W)
-  let E := ProjectiveSetting.wrongFormEffect (.pauli W) M
-  let bad := ‖applyOperatorToState (liftedBEffect S w.φB E)
-    (idealState P w.aux)‖ ^ 2
-  have hmass := wrongFormPauliMass_bob_le_error S hwin W
-  have hbad : bad ≤ 2 * δ ^ 2 + 2 * (Fintype.card PauliEdge : ℝ) * ε := by
-    simpa only [bad, E, M, mul_assoc] using
-      wrongFormEffect_ideal_norm_bob_le S w W δ _ hstate hmass
-  have hpoint (u : PauliRegister P) :
-      ‖applyOperatorToState
-          (liftedBEffect S w.φB (M.effect (.pauliOutcome u)) -
-            pauliProjOnB'' P W u) (idealState P w.aux)‖ ^ 2 ≤
-        2 * ‖applyOperatorToState
-          (liftedBEffect S w.φB
-              ((M.postprocess pauliAnswerOrZero).effect u) -
-            pauliProjOnB'' P W u) (idealState P w.aux)‖ ^ 2 +
-          if u = 0 then 2 * bad else 0 := by
-    by_cases hu : u = 0
-    · subst u
-      rw [if_pos rfl, completedPauliEffect_eq_raw_add_wrongForm M W 0]
-      simp only [ite_true]
-      have hvec :
-          applyOperatorToState
-              (liftedBEffect S w.φB (M.effect (.pauliOutcome 0)) -
-                pauliProjOnB'' P W 0) (idealState P w.aux) =
-            applyOperatorToState
-                (liftedBEffect S w.φB (M.effect (.pauliOutcome 0) + E) -
-                  pauliProjOnB'' P W 0) (idealState P w.aux) -
-              applyOperatorToState (liftedBEffect S w.φB E)
-                (idealState P w.aux) := by
-        rw [raw_transfer_liftedBEffect_add]
-        simp only [applyOperatorToState, map_sub, LinearMap.sub_apply, map_add,
-          LinearMap.add_apply]
-        abel
-      rw [hvec]
-      have htri := norm_sub_le
-        (applyOperatorToState
-          (liftedBEffect S w.φB (M.effect (.pauliOutcome 0) + E) -
-            pauliProjOnB'' P W 0) (idealState P w.aux))
-        (applyOperatorToState (liftedBEffect S w.φB E) (idealState P w.aux))
-      have hsquare := pow_le_pow_left₀ (norm_nonneg _) htri 2
-      dsimp only [bad]
-      nlinarith [sq_nonneg
-        (‖applyOperatorToState
-          (liftedBEffect S w.φB (M.effect (.pauliOutcome 0) + E) -
-            pauliProjOnB'' P W 0) (idealState P w.aux)‖ -
-          ‖applyOperatorToState (liftedBEffect S w.φB E) (idealState P w.aux)‖)]
-    · rw [if_neg hu, completedPauliEffect_eq_raw_add_wrongForm M W u]
-      simp only [hu, ite_false, add_zero]
-      nlinarith [sq_nonneg
-        ‖applyOperatorToState
-          (liftedBEffect S w.φB (M.effect (.pauliOutcome u)) -
-            pauliProjOnB'' P W u) (idealState P w.aux)‖]
-  unfold rawPauliOperatorDistanceB pauliOperatorDistanceB
-  change (∑ u : PauliRegister P,
-      ‖applyOperatorToState
-        (liftedBEffect S w.φB (M.effect (.pauliOutcome u)) - pauliProjOnB'' P W u)
-        (idealState P w.aux)‖ ^ 2) ≤
-    2 * (∑ u : PauliRegister P,
-      ‖applyOperatorToState
-        (liftedBEffect S w.φB ((M.postprocess pauliAnswerOrZero).effect u) -
-          pauliProjOnB'' P W u) (idealState P w.aux)‖ ^ 2) +
-      4 * δ ^ 2 + 4 * (Fintype.card PauliEdge : ℝ) * ε
-  calc
-    (∑ u : PauliRegister P,
-        ‖applyOperatorToState
-          (liftedBEffect S w.φB (M.effect (.pauliOutcome u)) -
-            pauliProjOnB'' P W u) (idealState P w.aux)‖ ^ 2) ≤
-        ∑ u : PauliRegister P,
-          (2 * ‖applyOperatorToState
-            (liftedBEffect S w.φB
-                ((M.postprocess pauliAnswerOrZero).effect u) -
-              pauliProjOnB'' P W u) (idealState P w.aux)‖ ^ 2 +
-            if u = 0 then 2 * bad else 0) :=
-      Finset.sum_le_sum fun u _ => hpoint u
-    _ = 2 * (∑ u : PauliRegister P,
-          ‖applyOperatorToState
-            (liftedBEffect S w.φB
-                ((M.postprocess pauliAnswerOrZero).effect u) -
-              pauliProjOnB'' P W u) (idealState P w.aux)‖ ^ 2) + 2 * bad := by
-      rw [Finset.sum_add_distrib, ← Finset.mul_sum]
-      simp
-    _ ≤ 2 * (∑ u : PauliRegister P,
-          ‖applyOperatorToState
-            (liftedBEffect S w.φB
-                ((M.postprocess pauliAnswerOrZero).effect u) -
-              pauliProjOnB'' P W u) (idealState P w.aux)‖ ^ 2) +
-          2 * (2 * δ ^ 2 + 2 * (Fintype.card PauliEdge : ℝ) * ε) := by
-      linarith
-    _ = _ := by
-      ring
+  simpa only [rawPauliOperatorDistanceB, pauliOperatorDistanceB, mul_assoc] using raw_completed_sum_le (S.B (pauliQuestion P W)) W
+    (liftedBEffect S w.φB) (raw_transfer_liftedBEffect_add S w.φB)
+    (pauliProjOnB'' P W) (idealState P w.aux) δ _
+    (wrongFormEffect_ideal_norm_bob_le S w W δ _ hstate (wrongFormPauliMass_bob_le_error S hwin W))
 
 end
 

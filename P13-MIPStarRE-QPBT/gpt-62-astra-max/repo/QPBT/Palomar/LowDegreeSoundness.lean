@@ -52,13 +52,10 @@ theorem exists_ld_soundness :
   rintro ⟨q, m, d, k, hm, hd, hk, hq, hdvd⟩ ε hε S hprojective hvalue
   let L : MIPStarRE.QPBT.LdParams :=
     ⟨q, m, d, k, hm, hd, hk, hq, hdvd⟩
-  have hprojective' : (lowDegreeStrategyToLibrary L S).IsProjective :=
-    (lowDegreeStrategyToLibrary_isProjective_iff L S).2 hprojective
-  have hvalue' : 1 - ε ≤ (lowDegreeStrategyToLibrary L S).value := by
-    rw [lowDegreeStrategyToLibrary_value]
-    exact hvalue
   obtain ⟨GA, GB, hpointPolynomial, hpolynomialPoint, hpolynomialPolynomial⟩ :=
-    hsound L ε hε (lowDegreeStrategyToLibrary L S) hprojective' hvalue'
+    hsound L ε hε _ ((lowDegreeStrategyToLibrary_isProjective_iff L S).2 hprojective) (by
+      rw [lowDegreeStrategyToLibrary_value]
+      exact hvalue)
   refine ⟨POVM.ofMeasurement GA, POVM.ofMeasurement GB, ?_, ?_, ?_⟩
   · exact (ldPointPolynomialDefect_ofMeasurement_eq L S GB).trans_le
       hpointPolynomial

@@ -47,12 +47,14 @@ structure IsReducedRowEchelon (B : Matrix (Fin m) (Fin n) K)
   pivot_entry : ∀ i j, B i (pivot j) = if i = j then 1 else 0
   zero_before : ∀ i j, j < pivot i → B i j = 0
 
+variable {B : Matrix (Fin m) (Fin n) K} {pivot : Fin m ↪o Fin n}
+  (hB : IsReducedRowEchelon B pivot)
+
+include hB in
 /-- The rank of the first `k` columns is the number of pivots in those columns.
 Rows whose pivots lie beyond the prefix restrict to zero, and the remaining
 rows are independent on their pivot columns. -/
-lemma IsReducedRowEchelon.prefixRank_eq_card
-    {B : Matrix (Fin m) (Fin n) K} {pivot : Fin m ↪o Fin n}
-    (hB : IsReducedRowEchelon B pivot) {k : ℕ} (hk : k ≤ n) :
+lemma IsReducedRowEchelon.prefixRank_eq_card {k : ℕ} (hk : k ≤ n) :
     prefixRank (Submodule.span K (Set.range B.row)) k hk =
       (Finset.univ.filter fun i => (pivot i).val < k).card := by
   classical
@@ -92,12 +94,11 @@ lemma IsReducedRowEchelon.prefixRank_eq_card
   rw [hspan, finrank_span_eq_card hb]
   exact Fintype.card_coe s
 
+include hB in
 /-- The intrinsic canonical complement of the row span of an RREF matrix is
 exactly its nonpivot index set. This identifies the index sets underlying paper
 `def:canonical-complement`, independently of an elimination algorithm. -/
-theorem IsReducedRowEchelon.canonicalComplement_eq_nonpivot_indices
-    {B : Matrix (Fin m) (Fin n) K} {pivot : Fin m ↪o Fin n}
-    (hB : IsReducedRowEchelon B pivot) :
+theorem IsReducedRowEchelon.canonicalComplement_eq_nonpivot_indices :
     canonicalComplement (Submodule.span K (Set.range B.row)) =
       (Finset.univ.image pivot)ᶜ := by
   classical
@@ -107,12 +108,10 @@ theorem IsReducedRowEchelon.canonicalComplement_eq_nonpivot_indices
   constructor
   · intro hcard hpivot
     obtain ⟨i, hi⟩ := hpivot
-    have hsub : (Finset.univ.filter fun a => (pivot a).val < j.val) ⊆
-        (Finset.univ.filter fun a => (pivot a).val < j.val + 1) := by
+    have heq := Finset.eq_of_subset_of_card_le (by
       intro a ha
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ha ⊢
-      omega
-    have heq := Finset.eq_of_subset_of_card_le hsub hcard.le
+      simp at ha ⊢
+      omega) hcard.le
     have hi' : i ∈ Finset.univ.filter fun a => (pivot a).val < j.val + 1 := by
       simp [hi]
     rw [← heq] at hi'
@@ -120,7 +119,7 @@ theorem IsReducedRowEchelon.canonicalComplement_eq_nonpivot_indices
   · intro hpivot
     congr 1
     ext i
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    simp
     have hne : (pivot i).val ≠ j.val := by
       intro h
       exact hpivot ⟨i, Fin.ext h⟩

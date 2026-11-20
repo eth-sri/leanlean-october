@@ -72,6 +72,9 @@ Blueprint `def:ld-game`, paper origin
 -/
 abbrev ScalarQ (P : LdParams) := (P.model).K
 
+/-- Points queried in the low-degree game. -/
+abbrev LdPoint (L : LdParams) := Fin L.m → ScalarQ L
+
 /-- The three low-degree question types of blueprint
 `def:ld-game`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
@@ -95,22 +98,26 @@ abbrev LdIndex (P : LdParams) := (Fin P.m ⊕ Unit) ⊕ Fin P.m
 -/
 abbrev LdSpace (P : LdParams) := LdIndex P → ScalarQ P
 
+section
+
+variable (L : LdParams) {P : LdParams} (i : Fin L.m) (z : LdSpace P) (r : Fin (L.q / L.m))
+
 /-- The point coordinates of an ambient low-degree vector in
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def LdSpace.point {P : LdParams} (z : LdSpace P) : Fin P.m → ScalarQ P :=
+def LdSpace.point : LdPoint P :=
   fun i => z (.inl (.inl i))
 
 /-- The shared scalar coordinate of an ambient low-degree vector in
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def LdSpace.seed {P : LdParams} (z : LdSpace P) : ScalarQ P :=
+def LdSpace.seed : ScalarQ P :=
   z (.inl (.inr ()) )
 
 /-- The direction coordinates of an ambient low-degree vector in
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def LdSpace.direction {P : LdParams} (z : LdSpace P) : Fin P.m → ScalarQ P :=
+def LdSpace.direction : LdPoint P :=
   fun i => z (.inr i)
 
 /-- The zero-based coordinate index corresponding to the paper's map `χ`:
@@ -119,8 +126,7 @@ is `eq:chi-func` in blueprint `def:ld-question-distribution`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
 noncomputable def chiIndex (P : LdParams) (s : ScalarQ P) : Fin P.m := by
-  letI : NeZero P.m := ⟨by
-    exact Nat.ne_of_gt (lt_of_lt_of_le Nat.zero_lt_one P.hm)⟩
+  letI : NeZero P.m := ⟨Nat.ne_of_gt (lt_of_lt_of_le Nat.zero_lt_one P.hm)⟩
   exact Fin.ofNat P.m ((binaryRepresentation P.model s).val / (P.q / P.m))
 
 /-! ### Formalization-only coordinate-index fibers
@@ -134,16 +140,14 @@ of the exact seed decomposition supporting the balance assertion in
 `def:ld-question-distribution`, blueprint `lem:chi-seed-fibers`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:215-221`.
 -/
-theorem LdParams.seedFiberCard_pos (L : LdParams) : 0 < L.q / L.m := by
-  exact Nat.div_pos (Nat.le_of_dvd (by
+theorem LdParams.seedFiberCard_pos : 0 < L.q / L.m := Nat.div_pos (Nat.le_of_dvd (by
     obtain ⟨n, hn, hq⟩ := L.hq
-    rw [hq]
-    exact Nat.pow_pos (by decide)) L.hdvd) L.hm
+    simp_all) L.hdvd) L.hm
 
 /-- Divisibility identifies the scalar cardinality with the product of the
 coordinate-index cardinality and the common fiber cardinality.  This supports
 `lem:chi-seed-fibers` in blueprint chapter 13. -/
-theorem LdParams.seedFiberProduct_eq (L : LdParams) :
+theorem LdParams.seedFiberProduct_eq :
     L.q = L.m * (L.q / L.m) :=
   (Nat.mul_div_cancel' L.hdvd).symm
 
@@ -157,48 +161,48 @@ natural-number representative. -/
 /-- A scalar seed is uniquely a coordinate index and a residue in its
 `chiIndex` fiber.  This is the exact decomposition underlying
 `lem:chi-seed-fibers` in blueprint chapter 13. -/
-noncomputable def seedFiberEquiv (L : LdParams) :
+noncomputable def seedFiberEquiv :
     ScalarQ L ≃ Fin L.m × Fin (L.q / L.m) :=
   (binaryRepresentation L.model).trans <|
     (Equiv.cast <| congrArg Fin L.seedFiberProduct_eq).trans
       finProdFinEquiv.symm
 
 /-- The coordinate component of the exact seed decomposition is `chiIndex`. -/
-@[simp] theorem seedFiberEquiv_fst (L : LdParams) (s : ScalarQ L) :
+@[simp] theorem seedFiberEquiv_fst (s : ScalarQ L) :
     (seedFiberEquiv L s).1 = chiIndex L s := by
   letI : NeZero L.m := ⟨Nat.ne_of_gt (lt_of_lt_of_le Nat.zero_lt_one L.hm)⟩
-  have hquot : (binaryRepresentation L.model s).val / (L.q / L.m) < L.m := by
-    apply (Nat.div_lt_iff_lt_mul L.seedFiberCard_pos).mpr
-    rw [Nat.mul_div_cancel' L.hdvd]
-    exact (binaryRepresentation L.model s).isLt
-  simp only [seedFiberEquiv, Equiv.trans_apply]
   apply Fin.ext
   change
     (Equiv.cast (congrArg Fin L.seedFiberProduct_eq)
       (binaryRepresentation L.model s)).val / (L.q / L.m) =
-      (Fin.ofNat L.m ((binaryRepresentation L.model s).val / (L.q / L.m))).val
+      _
   rw [equivCastFin_val]
-  · exact (Nat.mod_eq_of_lt hquot).symm
+  · exact (Nat.mod_eq_of_lt (by
+    apply (Nat.div_lt_iff_lt_mul L.seedFiberCard_pos).mpr
+    simp [Nat.mul_div_cancel' L.hdvd])).symm
   · exact L.seedFiberProduct_eq
 
 /-- Reconstruct the scalar seed belonging to a coordinate and its fiber
 residue. -/
-noncomputable def seedOfIndexResidue (L : LdParams)
-    (i : Fin L.m) (r : Fin (L.q / L.m)) : ScalarQ L :=
+noncomputable def seedOfIndexResidue : ScalarQ L :=
   (seedFiberEquiv L).symm (i, r)
 
 /-- Decomposing a reconstructed seed recovers its coordinate and residue. -/
-@[simp] theorem seedFiberEquiv_seedOfIndexResidue (L : LdParams)
-    (i : Fin L.m) (r : Fin (L.q / L.m)) :
+@[simp] theorem seedFiberEquiv_seedOfIndexResidue :
     seedFiberEquiv L (seedOfIndexResidue L i r) = (i, r) :=
   (seedFiberEquiv L).apply_symm_apply (i, r)
 
 /-- A reconstructed seed belongs to the prescribed `chiIndex` fiber. -/
-@[simp] theorem chiIndex_seedOfIndexResidue (L : LdParams)
-    (i : Fin L.m) (r : Fin (L.q / L.m)) :
+@[simp] theorem chiIndex_seedOfIndexResidue :
     chiIndex L (seedOfIndexResidue L i r) = i := by
   rw [← seedFiberEquiv_fst]
   simp
+
+end
+
+section
+
+variable {P : LdParams} (i : Fin P.m) (v : LdPoint P)
 
 /-- The projection used in the diagonal-line map zeroes coordinates before the
 chosen index and retains the suffix of the direction vector.  This is the
@@ -206,28 +210,32 @@ prefix restriction in blueprint
 `def:ld-question-distribution`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def prefixProjection {P : LdParams} (i : Fin P.m) (v : Fin P.m → ScalarQ P) :
-    Fin P.m → ScalarQ P :=
+def prefixProjection :
+    LdPoint P :=
   fun j => if j.val < i.val then 0 else v j
 
 /-- Zeroing the coordinates preceding a fixed index is idempotent.  This is a
 formalization-only consequence of the prefix restriction in
 `def:ld-question-distribution`, recorded as `lem:prefix-projection-idempotent`
 in blueprint chapter 13. -/
-theorem prefixProjection_idempotent {P : LdParams} (i : Fin P.m)
-    (v : Fin P.m → ScalarQ P) :
+theorem prefixProjection_idempotent :
     prefixProjection i (prefixProjection i v) = prefixProjection i v := by
   funext j
   by_cases h : j.val < i.val
   · simp only [prefixProjection, if_pos h]
   · simp only [prefixProjection, if_neg h]
 
+end
+
+variable (P : LdParams) (line z point : LdSpace P) (f : Fin P.k → Fin (P.d + 1) → ScalarQ P)
+  (a : Fin P.k → ScalarQ P)
+
 /-- The point CL map, retaining the point block and clearing the auxiliary
 blocks.  It is the map `L_point` of blueprint
 `def:ld-question-distribution`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def ldPointCL (P : LdParams) (z : LdSpace P) : LdSpace P :=
+def ldPointCL : LdSpace P :=
   fun i => match i with
   | .inl (.inl j) => z (.inl (.inl j))
   | .inl (.inr _) => 0
@@ -238,7 +246,7 @@ line representative map from `def:line-representative`, while the point block
 is retained (blueprint `def:ld-question-distribution`; paper
 origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`).
 -/
-noncomputable def ldALineCL (P : LdParams) (z : LdSpace P) : LdSpace P :=
+noncomputable def ldALineCL : LdSpace P :=
   let i := chiIndex P (z.seed)
   let rep := lineRepMap (coordinateDirection i)
   fun i => match i with
@@ -253,7 +261,7 @@ block.  This is the `L_DLine` clause of
 `def:ld-question-distribution`; paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`).
 -/
-noncomputable def ldDLineCL (P : LdParams) (z : LdSpace P) : LdSpace P :=
+noncomputable def ldDLineCL : LdSpace P :=
   let i := chiIndex P (z.seed)
   let direction := prefixProjection i (z.direction)
   let rep := lineRepMap direction
@@ -267,7 +275,7 @@ This is the typed construction in blueprint
 `def:ld-question-distribution`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-noncomputable def ldCL (P : LdParams) : LdType → LdSpace P → LdSpace P
+noncomputable def ldCL : LdType → LdSpace P → LdSpace P
   | .point => ldPointCL P
   | .aline => ldALineCL P
   | .dline => ldDLineCL P
@@ -276,13 +284,13 @@ noncomputable def ldCL (P : LdParams) : LdType → LdSpace P → LdSpace P
 `def:ld-game`; paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`).
 -/
-abbrev LdQuestion (P : LdParams) := LdType × LdSpace P
+abbrev LdQuestion := LdType × LdSpace P
 
 /-- The typed CL question distribution.  This is the inlined construction in
 blueprint `def:ld-question-distribution`; paper
 origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-noncomputable def ldQuestionDistribution (P : LdParams) :
+noncomputable def ldQuestionDistribution :
     Distribution (LdQuestion P × LdQuestion P) :=
   Distribution.map
     (uniformDistribution ((LdType × LdType) × LdSpace P))
@@ -295,7 +303,7 @@ the paper, as required by `def:ld-win-predicate` (blueprint
 `def:ld-win-predicate`; paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`).
 -/
-inductive LdAnswer (P : LdParams) where
+inductive LdAnswer where
   | pointVals (a : Fin P.k → ScalarQ P)
   | alinePolys (a : Fin P.k → Fin (P.d + 1) → ScalarQ P)
   | dlinePolys (a : Fin P.k → Fin (P.m * P.d + 1) → ScalarQ P)
@@ -306,7 +314,7 @@ instance; the public constructors are those of blueprint
 `def:ld-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-abbrev LdAnswerCode (P : LdParams) :=
+abbrev LdAnswerCode :=
   (Fin P.k → ScalarQ P) ⊕
     ((Fin P.k → Fin (P.d + 1) → ScalarQ P) ⊕
       (Fin P.k → Fin (P.m * P.d + 1) → ScalarQ P))
@@ -317,7 +325,7 @@ support for blueprint
 `def:ld-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`).
 -/
-noncomputable def ldAnswerEquiv (P : LdParams) :
+noncomputable def ldAnswerEquiv :
     LdAnswer P ≃ LdAnswerCode P where
   toFun
     | .pointVals a => .inl a
@@ -337,10 +345,7 @@ noncomputable def ldAnswerEquiv (P : LdParams) :
         | inl a => rfl
         | inr a => rfl
 
-instance instInhabitedLdAnswer (P : LdParams) : Inhabited (LdAnswer P) :=
-  ⟨.pointVals (fun _ => 0)⟩
-
-noncomputable instance instFintypeLdAnswer (P : LdParams) : Fintype (LdAnswer P) :=
+noncomputable instance instFintypeLdAnswer : Fintype (LdAnswer P) :=
   Fintype.ofEquiv (LdAnswerCode P) (ldAnswerEquiv P).symm
 
 /-- Check that an answer has the constructor prescribed by its question type;
@@ -359,9 +364,7 @@ def validLdAnswer {P : LdParams} (t : LdType) (a : LdAnswer P) : Bool :=
 `def:ld-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def alinePointCondition (P : LdParams) (line point : LdSpace P)
-    (f : Fin P.k → Fin (P.d + 1) → ScalarQ P)
-    (a : Fin P.k → ScalarQ P) : Prop :=
+def alinePointCondition : Prop :=
   -- Universal quantification follows the zero-direction convention in
   -- `rem:ld-win-zero-direction`.
   ∀ t : ScalarQ P,
@@ -372,7 +375,7 @@ def alinePointCondition (P : LdParams) (line point : LdSpace P)
 `def:ld-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def dlinePointCondition (P : LdParams) (line point : LdSpace P)
+def dlinePointCondition
     (f : Fin P.k → Fin (P.m * P.d + 1) → ScalarQ P)
     (a : Fin P.k → ScalarQ P) : Prop :=
   ∀ t : ScalarQ P,
@@ -384,7 +387,7 @@ constructor shape.  This is blueprint
 `def:ld-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-noncomputable def ldWinPredicate (P : LdParams) :
+noncomputable def ldWinPredicate :
     LdQuestion P → LdQuestion P → LdAnswer P → LdAnswer P → Bool :=
   open Classical in
   fun (tA, xA) (tB, xB) a b =>
@@ -409,14 +412,13 @@ predicate. This is blueprint
 `def:ld-game`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-noncomputable def ldGame (P : LdParams) : Game where
+noncomputable def ldGame : Game where
   QuestionA := LdQuestion P
   QuestionB := LdQuestion P
   AnswerA := LdAnswer P
   AnswerB := LdAnswer P
   μ := ldQuestionDistribution P
-  μ_prob := by
-    exact Distribution.IsProbability.map
+  μ_prob := Distribution.IsProbability.map
       (uniformDistribution_isProbability ((LdType × LdType) × LdSpace P)) _
   decide := ldWinPredicate P
 

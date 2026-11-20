@@ -1,6 +1,8 @@
 module
 
-public import QPBT.Test.MagicSquareTheorems.Rigidity.SwapTransport
+public import QPBT.Test.MagicSquareTheorems.Rigidity.AnticommutatorB
+public import QPBT.Test.MagicSquareTheorems.PerfectStrategy.Observables
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Anticommutation
 public import QPBT.Test.MagicSquareTheorems.Rigidity.IdealTarget
 
 /-!
@@ -68,20 +70,24 @@ end SecondPair
 
 /-! ## Normalizing the residual -/
 
+section
+
+variable {ι κ : Type} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ] (e : ι ≃ κ)
+  (c : ℂ)
+
 /-- The coordinate tensor is homogeneous in its second argument. -/
-theorem vecTensor_smul_right {ι κ : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (c : ℂ) (u : EuclideanSpace ℂ ι) (v : EuclideanSpace ℂ κ) :
+theorem vecTensor_smul_right (u : EuclideanSpace ℂ ι) (v : EuclideanSpace ℂ κ) :
     vecTensor u (c • v) = c • vecTensor u v := by
   ext p
-  simp [vecTensor, EuclideanSpace.equiv]
+  simp [vecTensor]
   ring
 
 /-- Reindexing is homogeneous. -/
-theorem reindexState_smul {ι κ : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (e : ι ≃ κ) (c : ℂ) (x : EuclideanSpace ℂ ι) :
+theorem reindexState_smul (x : EuclideanSpace ℂ ι) :
     reindexState e (c • x) = c • reindexState e x := by
-  ext p
-  simp [reindexState, EuclideanSpace.equiv]
+  apply reindexState.eq_1
+
+end
 
 /-- The residual of the joint state estimate can be replaced by a unit vector at
 twice the cost.  This is the normalization step of the conclusion of
@@ -95,57 +101,47 @@ theorem exists_unit_residual {V : Type} [Fintype V] [DecidableEq V] [Nonempty V]
       ‖u - reindexState prodShuffle (vecTensor (eprState V) r)‖ ≤ 2 * c := by
   have htarget : ∀ r : EuclideanSpace ℂ (ιA × ιB),
       ‖reindexState prodShuffle (vecTensor (eprState V) r)‖ = ‖r‖ :=
-    fun r => norm_reindexState_prodShuffle_vecTensor_eprState r
+    fun r => (by simp [reindexState_norm_eq, vecTensor_norm_eq, eprState_norm])
   have hgap : |1 - ‖r0‖| ≤ c := by
     have h1 := abs_norm_sub_norm_le u
       (reindexState prodShuffle (vecTensor (eprState V) r0))
-    rw [hu, htarget] at h1
-    exact le_trans h1 h
-  have hc0 : 0 ≤ c := le_trans (abs_nonneg _) hgap
+    simp [*] at h1
+    bound
   by_cases h0 : r0 = 0
   · refine ⟨ψ, hψ, ?_⟩
-    have h1 : (1 : ℝ) ≤ c := by
-      rw [h0, norm_zero] at hgap
+    have h1 : 1 ≤ c := by
+      simp [*] at hgap
       simpa using hgap
-    calc ‖u - reindexState prodShuffle (vecTensor (eprState V) ψ)‖
-        ≤ ‖u‖ + ‖reindexState prodShuffle (vecTensor (eprState V) ψ)‖ := norm_sub_le _ _
-      _ = 2 := by rw [hu, htarget, hψ]; norm_num
+    calc _
+        ≤ _ := norm_sub_le _ _
+      _ = 2 := by simp_all; norm_num
       _ ≤ 2 * c := by linarith
-  · have hN : 0 < ‖r0‖ := norm_pos_iff.mpr h0
+  · have hN := norm_pos_iff.mpr h0
     refine ⟨((‖r0‖ : ℝ) : ℂ)⁻¹ • r0, ?_, ?_⟩
-    · rw [norm_smul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hN,
-        inv_mul_cancel₀ (ne_of_gt hN)]
-    · have hscal : reindexState prodShuffle
-          (vecTensor (eprState V) (((‖r0‖ : ℝ) : ℂ)⁻¹ • r0)) =
-          ((‖r0‖ : ℝ) : ℂ)⁻¹ • reindexState prodShuffle (vecTensor (eprState V) r0) := by
-        rw [vecTensor_smul_right, reindexState_smul]
-      have hdiff : ‖reindexState prodShuffle (vecTensor (eprState V) r0) -
+    · simp [norm_smul, norm_inv, Complex.norm_real, Real.norm_eq_abs, inv_mul_cancel₀ (ne_of_gt hN)]
+    · have hdiff : ‖reindexState prodShuffle (vecTensor (eprState V) r0) -
           reindexState prodShuffle
             (vecTensor (eprState V) (((‖r0‖ : ℝ) : ℂ)⁻¹ • r0))‖ = |1 - ‖r0‖| := by
         have hcollect : reindexState prodShuffle (vecTensor (eprState V) r0) -
             ((‖r0‖ : ℝ) : ℂ)⁻¹ •
               reindexState prodShuffle (vecTensor (eprState V) r0) =
-            ((1 : ℂ) - ((‖r0‖ : ℝ) : ℂ)⁻¹) •
+            (1 - ((‖r0‖ : ℝ) : ℂ)⁻¹) •
               reindexState prodShuffle (vecTensor (eprState V) r0) := by
           module
-        have hs : ‖(1 : ℂ) - ((‖r0‖ : ℝ) : ℂ)⁻¹‖ = |1 - ‖r0‖⁻¹| := by
-          rw [show (1 : ℂ) - ((‖r0‖ : ℝ) : ℂ)⁻¹ = (((1 - ‖r0‖⁻¹ : ℝ)) : ℂ) by
-            push_cast
-            ring]
-          rw [Complex.norm_real, Real.norm_eq_abs]
         have hfin : |1 - ‖r0‖⁻¹| * ‖r0‖ = |1 - ‖r0‖| := by
           have h1 : (1 - ‖r0‖⁻¹) * ‖r0‖ = -(1 - ‖r0‖) := by
             field_simp
             ring
-          calc |1 - ‖r0‖⁻¹| * ‖r0‖ = |1 - ‖r0‖⁻¹| * |‖r0‖| := by rw [abs_of_pos hN]
-            _ = |(1 - ‖r0‖⁻¹) * ‖r0‖| := (abs_mul _ _).symm
+          calc _ = |1 - ‖r0‖⁻¹| * |‖r0‖| := by simp
+            _ = _ := (abs_mul _ _).symm
             _ = |-(1 - ‖r0‖)| := by rw [h1]
-            _ = |1 - ‖r0‖| := abs_neg _
-        rw [hscal, hcollect, norm_smul, htarget, hs, hfin]
+            _ = _ := abs_neg _
+        rw [vecTensor_smul_right, reindexState_smul, hcollect, norm_smul, htarget, show (1 : ℂ) - ((‖r0‖ : ℝ) : ℂ)⁻¹ = (((1 - ‖r0‖⁻¹ : ℝ)) : ℂ) by
+            push_cast
+            ring, Complex.norm_real, Real.norm_eq_abs, hfin]
       have htri := norm_sub_le_norm_sub_add_norm_sub u
         (reindexState prodShuffle (vecTensor (eprState V) r0))
         (reindexState prodShuffle (vecTensor (eprState V) (((‖r0‖ : ℝ) : ℂ)⁻¹ • r0)))
-      rw [hdiff] at htri
       linarith [htri, h, hgap]
 
 end

@@ -40,15 +40,17 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
+variable (L : LdParams) (S : Strategy (ldGame L)) (t tA tB : LdType)
+  (sample : DirectLdSpace L.toDirectLdParams)
+
 /-- Canonicalizing the seeded embedding of a canonical direct sample gives the
 canonical seeded sample of the original direct sample: the seed-indexed
 question asked in a residue block of the dilation is the seed-indexed
 question of the common sample carrying that residue. -/
-theorem ldCL_ldSpaceOfDirectResidue_directLdMap (L : LdParams) (t : LdType)
-    (sample : DirectLdSpace L.toDirectLdParams) (residue : Fin (L.q / L.m)) :
-    ldCL L t (ldSpaceOfDirectResidue L
-        (directLdMap L.toDirectLdParams t sample) residue) =
-      ldCL L t (ldSpaceOfDirectResidue L sample residue) := by
+theorem ldCL_ldSpaceOfDirectResidue_directLdMap (residue : Fin (L.q / L.m)) :
+    ldCL L t (ldSpaceOfDirectResidue
+        (directLdMap t sample) residue) =
+      ldCL L t (ldSpaceOfDirectResidue sample residue) := by
   cases t with
   | point =>
       funext idx
@@ -56,41 +58,36 @@ theorem ldCL_ldSpaceOfDirectResidue_directLdMap (L : LdParams) (t : LdType)
   | aline =>
       funext idx
       rcases idx with (j | ⟨⟩) | j
-      · simp only [ldCL, ldALineCL, ldSpaceOfDirectResidue_point,
-          ldSpaceOfDirectResidue_seed, directLdMap, chiIndex_seedOfIndexResidue]
+      · simp [ldCL, ldALineCL, ldSpaceOfDirectResidue_point, ldSpaceOfDirectResidue_seed, directLdMap, chiIndex_seedOfIndexResidue]
         exact congrFun (lineRepMap_apply_self _ _) j
-      · rfl
-      · rfl
+      all_goals rfl
   | dline =>
       funext idx
       rcases idx with (j | ⟨⟩) | j
-      · simp only [ldCL, ldDLineCL, ldSpaceOfDirectResidue_point,
-          ldSpaceOfDirectResidue_seed, ldSpaceOfDirectResidue_direction, directLdMap,
-          chiIndex_seedOfIndexResidue]
+      · simp [ldCL, ldDLineCL, ldSpaceOfDirectResidue_point, ldSpaceOfDirectResidue_seed, ldSpaceOfDirectResidue_direction, directLdMap, chiIndex_seedOfIndexResidue]
         change lineRepMap
             (directPrefixProjection sample.index
               (directPrefixProjection sample.index sample.direction))
             (lineRepMap (directPrefixProjection sample.index sample.direction)
               sample.point) j =
-          lineRepMap (directPrefixProjection sample.index sample.direction) sample.point j
+          _
         rw [directPrefixProjection_idem]
         exact congrFun (lineRepMap_apply_self _ _) j
       · rfl
-      · simp only [ldCL, ldDLineCL, ldSpaceOfDirectResidue_seed,
-          ldSpaceOfDirectResidue_direction, directLdMap, chiIndex_seedOfIndexResidue]
+      · simp [ldCL, ldDLineCL, ldSpaceOfDirectResidue_seed, ldSpaceOfDirectResidue_direction, directLdMap, chiIndex_seedOfIndexResidue]
         change directPrefixProjection sample.index
-            (directPrefixProjection sample.index sample.direction) j =
+            _ j =
           directPrefixProjection sample.index sample.direction j
         rw [directPrefixProjection_idem]
 
 /-- Accepted Born mass at a fixed pair of seed-indexed questions. -/
-private def ldAcceptedMass (L : LdParams) (S : Strategy (ldGame L))
+private def ldAcceptedMass
     (x y : LdQuestion L) : ℝ :=
   ∑ a : LdAnswer L, ∑ b : LdAnswer L,
     if ldWinPredicate L x y a b then outcomeWeight S x y a b else 0
 
 /-- Accepted Born mass at a fixed pair of direct questions. -/
-private def directAcceptedMass (D : DirectLdParams) (S : Strategy (directLdGame D))
+private def directAcceptedMass {D : DirectLdParams} (S : Strategy (directLdGame D))
     (x y : DirectLdQuestion D) : ℝ :=
   ∑ a : DirectLdAnswer D, ∑ b : DirectLdAnswer D,
     if directLdWinPredicate D x y a b then outcomeWeight S x y a b else 0
@@ -98,119 +95,83 @@ private def directAcceptedMass (D : DirectLdParams) (S : Strategy (directLdGame 
 /-- At the canonical direct questions of a common direct sample, the accepted
 mass of the dilation is the uniform residue average of the accepted mass of
 the original strategy at the seeded canonical questions. -/
-private theorem directAcceptedMass_ldStrategyToDirect (L : LdParams)
-    (S : Strategy (ldGame L)) (tA tB : LdType)
-    (sample : DirectLdSpace L.toDirectLdParams) :
-    directAcceptedMass L.toDirectLdParams (ldStrategyToDirect L S)
-        (tA, directLdMap L.toDirectLdParams tA sample)
-        (tB, directLdMap L.toDirectLdParams tB sample) =
+private theorem directAcceptedMass_ldStrategyToDirect :
+    directAcceptedMass (ldStrategyToDirect S)
+        (tA, directLdMap tA sample)
+        (tB, directLdMap tB sample) =
       (Fintype.card (Fin (L.q / L.m)) : ℝ)⁻¹ * ∑ residue : Fin (L.q / L.m),
         ldAcceptedMass L S
-          (tA, ldCL L tA (ldSpaceOfDirectResidue L sample residue))
-          (tB, ldCL L tB (ldSpaceOfDirectResidue L sample residue)) := by
+          (tA, ldCL L tA (ldSpaceOfDirectResidue sample residue))
+          (tB, ldCL L tB (ldSpaceOfDirectResidue sample residue)) := by
   classical
   have hwin : ∀ (residue : Fin (L.q / L.m)) (a b : DirectLdAnswer L.toDirectLdParams),
       directLdWinPredicate L.toDirectLdParams
-          (tA, directLdMap L.toDirectLdParams tA sample)
-          (tB, directLdMap L.toDirectLdParams tB sample) a b =
+          (tA, directLdMap tA sample)
+          (tB, directLdMap tB sample) a b =
         ldWinPredicate L
-          (tA, ldCL L tA (ldSpaceOfDirectResidue L sample residue))
-          (tB, ldCL L tB (ldSpaceOfDirectResidue L sample residue))
+          (tA, ldCL L tA (ldSpaceOfDirectResidue sample residue))
+          (tB, ldCL L tB (ldSpaceOfDirectResidue sample residue))
           ((ldDirectAnswerEquiv L).symm a) ((ldDirectAnswerEquiv L).symm b) := by
-    intro residue a b
-    rw [← ldWinPredicate_parse, parseLdQuestion_ldCL_ofDirectResidue,
-      parseLdQuestion_ldCL_ofDirectResidue, Equiv.apply_symm_apply,
-      Equiv.apply_symm_apply]
+    simp [← ldWinPredicate_parse, parseLdQuestion_ldCL_ofDirectResidue, Equiv.apply_symm_apply]
   have hseeded : ∀ (t : LdType) (residue : Fin (L.q / L.m)),
-      seededLdQuestion L (t, directLdMap L.toDirectLdParams t sample) residue =
-        (t, ldCL L t (ldSpaceOfDirectResidue L sample residue)) := by
+      seededLdQuestion L (t, directLdMap t sample) residue =
+        (t, ldCL L t (ldSpaceOfDirectResidue sample residue)) := by
     intro t residue
-    exact congrArg (fun z => (t, z))
+    exact congrArg _
       (ldCL_ldSpaceOfDirectResidue_directLdMap L t sample residue)
   have hmass : ∀ residue : Fin (L.q / L.m),
       ldAcceptedMass L S
-          (tA, ldCL L tA (ldSpaceOfDirectResidue L sample residue))
-          (tB, ldCL L tB (ldSpaceOfDirectResidue L sample residue)) =
+          (tA, ldCL L tA (ldSpaceOfDirectResidue sample residue))
+          (tB, ldCL L tB (ldSpaceOfDirectResidue sample residue)) =
         ∑ a' : DirectLdAnswer L.toDirectLdParams,
           ∑ b' : DirectLdAnswer L.toDirectLdParams,
             if directLdWinPredicate L.toDirectLdParams
-                (tA, directLdMap L.toDirectLdParams tA sample)
-                (tB, directLdMap L.toDirectLdParams tB sample) a' b' then
+                (tA, directLdMap tA sample)
+                (tB, directLdMap tB sample) a' b' then
               outcomeWeight S
-                (tA, ldCL L tA (ldSpaceOfDirectResidue L sample residue))
-                (tB, ldCL L tB (ldSpaceOfDirectResidue L sample residue))
+                (tA, ldCL L tA (ldSpaceOfDirectResidue sample residue))
+                (tB, ldCL L tB (ldSpaceOfDirectResidue sample residue))
                 ((ldDirectAnswerEquiv L).symm a') ((ldDirectAnswerEquiv L).symm b')
             else 0 := by
     intro residue
     unfold ldAcceptedMass
     rw [← Equiv.sum_comp (ldDirectAnswerEquiv L).symm]
-    refine Finset.sum_congr rfl fun a' _ => ?_
+    congr 1 with a'
     rw [← Equiv.sum_comp (ldDirectAnswerEquiv L).symm]
-    refine Finset.sum_congr rfl fun b' _ => ?_
-    rw [hwin residue a' b']
-  unfold directAcceptedMass
+    congr 1 with b'
+    rw [hwin]
   simp only [hmass]
   calc
-    ∑ a' : DirectLdAnswer L.toDirectLdParams,
-        ∑ b' : DirectLdAnswer L.toDirectLdParams,
-          (if directLdWinPredicate L.toDirectLdParams
-              (tA, directLdMap L.toDirectLdParams tA sample)
-              (tB, directLdMap L.toDirectLdParams tB sample) a' b' then
-            outcomeWeight (ldStrategyToDirect L S)
-              (tA, directLdMap L.toDirectLdParams tA sample)
-              (tB, directLdMap L.toDirectLdParams tB sample) a' b'
-          else 0) =
+    _ =
         ∑ a' : DirectLdAnswer L.toDirectLdParams,
           ∑ b' : DirectLdAnswer L.toDirectLdParams,
             ∑ residue : Fin (L.q / L.m),
               (Fintype.card (Fin (L.q / L.m)) : ℝ)⁻¹ *
                 (if directLdWinPredicate L.toDirectLdParams
-                    (tA, directLdMap L.toDirectLdParams tA sample)
-                    (tB, directLdMap L.toDirectLdParams tB sample) a' b' then
+                    (tA, directLdMap tA sample)
+                    (tB, directLdMap tB sample) a' b' then
                   outcomeWeight S
-                    (tA, ldCL L tA (ldSpaceOfDirectResidue L sample residue))
-                    (tB, ldCL L tB (ldSpaceOfDirectResidue L sample residue))
+                    (tA, ldCL L tA (ldSpaceOfDirectResidue sample residue))
+                    (tB, ldCL L tB (ldSpaceOfDirectResidue sample residue))
                     ((ldDirectAnswerEquiv L).symm a') ((ldDirectAnswerEquiv L).symm b')
                 else 0) := by
       refine Finset.sum_congr rfl fun a' _ => Finset.sum_congr rfl fun b' _ => ?_
       by_cases hc : directLdWinPredicate L.toDirectLdParams
-          (tA, directLdMap L.toDirectLdParams tA sample)
-          (tB, directLdMap L.toDirectLdParams tB sample) a' b' = true
+          (tA, directLdMap tA sample)
+          (tB, directLdMap tB sample) a' b' = true
       · simp only [hc, if_true]
         rw [← Finset.mul_sum, ldStrategyToDirect_bornWeight]
         simp only [hseeded]
       · simp [hc]
-    _ = ∑ a' : DirectLdAnswer L.toDirectLdParams,
-          ∑ residue : Fin (L.q / L.m),
-            ∑ b' : DirectLdAnswer L.toDirectLdParams,
-              (Fintype.card (Fin (L.q / L.m)) : ℝ)⁻¹ *
-                (if directLdWinPredicate L.toDirectLdParams
-                    (tA, directLdMap L.toDirectLdParams tA sample)
-                    (tB, directLdMap L.toDirectLdParams tB sample) a' b' then
-                  outcomeWeight S
-                    (tA, ldCL L tA (ldSpaceOfDirectResidue L sample residue))
-                    (tB, ldCL L tB (ldSpaceOfDirectResidue L sample residue))
-                    ((ldDirectAnswerEquiv L).symm a') ((ldDirectAnswerEquiv L).symm b')
-                else 0) :=
+    _ = _ :=
       Finset.sum_congr rfl fun a' _ => Finset.sum_comm
-    _ = ∑ residue : Fin (L.q / L.m),
-          ∑ a' : DirectLdAnswer L.toDirectLdParams,
-            ∑ b' : DirectLdAnswer L.toDirectLdParams,
-              (Fintype.card (Fin (L.q / L.m)) : ℝ)⁻¹ *
-                (if directLdWinPredicate L.toDirectLdParams
-                    (tA, directLdMap L.toDirectLdParams tA sample)
-                    (tB, directLdMap L.toDirectLdParams tB sample) a' b' then
-                  outcomeWeight S
-                    (tA, ldCL L tA (ldSpaceOfDirectResidue L sample residue))
-                    (tB, ldCL L tB (ldSpaceOfDirectResidue L sample residue))
-                    ((ldDirectAnswerEquiv L).symm a') ((ldDirectAnswerEquiv L).symm b')
-                else 0) :=
+    _ = _ :=
       Finset.sum_comm
     _ = _ := by
       rw [Finset.mul_sum]
-      refine Finset.sum_congr rfl fun residue _ => ?_
+      congr 1 with residue
       rw [Finset.mul_sum]
-      refine Finset.sum_congr rfl fun a' _ => ?_
+      congr 1 with a'
       rw [Finset.mul_sum]
 
 /-- The correlated seed-fiber dilation preserves the value exactly: the
@@ -219,18 +180,18 @@ value of `S`.  Both values are averages over the ordered type pair and the
 common sample; the direct sample together with a uniform residue is the
 seed-indexed sample, and the dilation realizes, in each residue block, the
 original strategy at the seed-indexed questions of that sample. -/
-theorem ldStrategyToDirect_value_eq (L : LdParams) (S : Strategy (ldGame L)) :
-    (ldStrategyToDirect L S).value = S.value := by
+theorem ldStrategyToDirect_value_eq :
+    (ldStrategyToDirect S).value = S.value := by
   classical
-  letI : Nonempty (Fin (L.q / L.m)) :=
+  letI :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
-  have hsymm : ∀ b : ((LdType × LdType) × DirectLdSpace L.toDirectLdParams) ×
+  have hsymm : ∀ b : _ ×
       Fin (L.q / L.m),
       (ldQuestionSeedFiberEquiv L).symm b =
-        (b.1.1, ldSpaceOfDirectResidue L b.1.2 b.2) :=
+        (b.1.1, ldSpaceOfDirectResidue b.1.2 b.2) :=
     fun b => rfl
   change avgOver (directLdQuestionDistribution L.toDirectLdParams)
-      (fun xy => directAcceptedMass L.toDirectLdParams (ldStrategyToDirect L S) xy.1 xy.2) =
+      (fun xy => directAcceptedMass (ldStrategyToDirect S) xy.1 xy.2) =
     avgOver (ldQuestionDistribution L) (fun xy => ldAcceptedMass L S xy.1 xy.2)
   unfold directLdQuestionDistribution ldQuestionDistribution
   rw [Distribution.avgOver_map, Distribution.avgOver_map,
@@ -239,8 +200,8 @@ theorem ldStrategyToDirect_value_eq (L : LdParams) (S : Strategy (ldGame L)) :
   rw [avgOver_uniform_prod (fun (src : (LdType × LdType) × DirectLdSpace L.toDirectLdParams)
       (residue : Fin (L.q / L.m)) =>
       ldAcceptedMass L S
-        (src.1.1, ldCL L src.1.1 (ldSpaceOfDirectResidue L src.2 residue))
-        (src.1.2, ldCL L src.1.2 (ldSpaceOfDirectResidue L src.2 residue)))]
+        (src.1.1, ldCL L src.1.1 (ldSpaceOfDirectResidue src.2 residue))
+        (src.1.2, ldCL L src.1.2 (ldSpaceOfDirectResidue src.2 residue)))]
   apply avgOver_congr
   intro src
   rw [directAcceptedMass_ldStrategyToDirect, avgOver_uniform_eq_inv_card_mul_sum]

@@ -1,6 +1,5 @@
 module
 
-public import QPBT.Test.MagicSquareTheorems.Rigidity.Transfer
 public import QPBT.Test.MagicSquareTheorems.Rigidity.AnticommutatorB
 public import QPBT.Test.MagicSquareTheorems.Rigidity.CellRelations
 
@@ -86,7 +85,7 @@ theorem applyOperatorToState_finset_sum {β ι : Type*} [Fintype ι] [DecidableE
     (s : Finset β) (M : β → Op ι) (ψ : EuclideanSpace ℂ ι) :
     applyOperatorToState (∑ b ∈ s, M b) ψ = ∑ b ∈ s, applyOperatorToState (M b) ψ := by
   unfold applyOperatorToState
-  simp only [map_sum, LinearMap.sum_apply]
+  simp
 
 end
 

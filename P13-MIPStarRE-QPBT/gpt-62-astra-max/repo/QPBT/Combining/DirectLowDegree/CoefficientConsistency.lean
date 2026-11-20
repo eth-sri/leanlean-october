@@ -39,29 +39,26 @@ theorem consistencyDefect_directCoefficients_le_evaluated_add
     {X ιA ιB : Type*}
     [Fintype X] [DecidableEq X]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (D : DirectLdParams) (degree : ℕ) (μ : Distribution X)
+    (D : DirectLdParams) {degree : ℕ} (μ : Distribution X)
     (A : X → Measurement (DirectDegPoly D degree) ιA)
     (B : X → Measurement (DirectDegPoly D degree) ιB)
     (ψ : EuclideanSpace ℂ (ιA × ιB))
     (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1) :
-    consistencyDefect μ
-        (fun x coefficients => heteroKron ((A x).effect coefficients) 1)
-        (fun x coefficients => heteroKron 1 ((B x).effect coefficients)) ψ ≤
-      consistencyDefect
+    bipartiteDefect μ
+        A
+        B ψ ≤
+      bipartiteDefect
         (Distribution.prod μ (uniformDistribution (DirectScalarQ D)))
-        (fun xt value => heteroKron
-          (((A xt.1).postprocess
-            (fun coefficients => evalCoefficient coefficients xt.2)).effect value) 1)
-        (fun xt value => heteroKron 1
-          (((B xt.1).postprocess
-            (fun coefficients => evalCoefficient coefficients xt.2)).effect value)) ψ +
+        (fun xt => (A xt.1).postprocess
+        (fun coefficients => evalCoefficient coefficients xt.2))
+        (fun xt => (B xt.1).postprocess
+        (fun coefficients => evalCoefficient coefficients xt.2)) ψ +
         (degree : ℝ) / (D.q : ℝ) := by
   apply SandwichProduct.consistencyDefect_codewords_le_evaluated_add
-      μ A B ψ (fun coefficients t => evalCoefficient coefficients t)
+      μ A B ψ _
       ((degree : ℝ) / (D.q : ℝ)) hμ hψ
   · positivity
-  · intro a b hne
-    exact directCoefficientCollision_avg_le D degree a b hne
+  · solve_by_elim [directCoefficientCollision_avg_le]
 
 end
 

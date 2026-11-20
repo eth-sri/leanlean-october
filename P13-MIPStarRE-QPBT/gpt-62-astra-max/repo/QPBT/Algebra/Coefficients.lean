@@ -27,25 +27,27 @@ open scoped BigOperators
 
 namespace MIPStarRE.QPBT
 
+section
+
+variable {K : Type*} [Semiring K] {c n : ℕ} (f : Fin (c + 1) → K) (t : K)
+
 /-- Evaluation of a coefficient tuple at a field element. This is the
 representative convention used by the line answers in blueprint
 `def:ld-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def evalCoefficient {K : Type*} [Semiring K] {n : ℕ}
+def evalCoefficient
     (c : Fin n → K) (t : K) : K :=
   ∑ i : Fin n, c i * t ^ i.val
 
 /-- The univariate polynomial `sum_{i = 0}^c f_i X^i` determined by a bounded
 coefficient list. -/
-noncomputable def linePolynomialOfCoefficients {K : Type*} [Semiring K]
-    {c : ℕ} (f : Fin (c + 1) → K) : Polynomial K :=
+noncomputable def linePolynomialOfCoefficients : Polynomial K :=
   ∑ i : Fin (c + 1), Polynomial.C (f i) * Polynomial.X ^ i.val
 
 /-- Evaluating the polynomial represented by a coefficient list agrees with
 `evalCoefficient`. -/
-theorem linePolynomialOfCoefficients_eval {K : Type*} [Semiring K]
-    {c : ℕ} (f : Fin (c + 1) → K) (t : K) :
+theorem linePolynomialOfCoefficients_eval :
     (linePolynomialOfCoefficients f).eval t = evalCoefficient f t := by
   change Polynomial.eval t
       (∑ i ∈ Finset.univ, Polynomial.C (f i) * Polynomial.X ^ i.val) =
@@ -55,27 +57,29 @@ theorem linePolynomialOfCoefficients_eval {K : Type*} [Semiring K]
 
 /-- The coefficient sum is the polynomial with coefficient `f i` in degree
 `i.val` for `i : Fin (c + 1)` and zero coefficients in degrees greater than `c`. -/
-theorem linePolynomialOfCoefficients_eq_ofFn {K : Type*} [Semiring K]
+theorem linePolynomialOfCoefficients_eq_ofFn
     [DecidableEq K] {c : ℕ} (f : Fin (c + 1) → K) :
     linePolynomialOfCoefficients f = Polynomial.ofFn (c + 1) f := by
   simp only [linePolynomialOfCoefficients, Polynomial.ofFn_eq_sum_monomial,
     Polynomial.C_mul_X_pow_eq_monomial]
 
 /-- Distinct bounded coefficient vectors represent distinct polynomials. -/
-theorem linePolynomialOfCoefficients_injective {K : Type*} [Semiring K] (c : ℕ) :
+theorem linePolynomialOfCoefficients_injective (c : ℕ) :
     Function.Injective (linePolynomialOfCoefficients (K := K) (c := c)) := by
   classical
   intro first second heq
-  exact Polynomial.injective_ofFn (c + 1)
+  exact Polynomial.injective_ofFn _
     (by simpa only [linePolynomialOfCoefficients_eq_ofFn] using heq)
 
 /-- The polynomial of a bounded coefficient vector has degree at most `n`. -/
-theorem linePolynomialOfCoefficients_natDegree_le {K : Type*} [Semiring K] {n : ℕ}
+theorem linePolynomialOfCoefficients_natDegree_le
     (f : Fin (n + 1) → K) :
     (linePolynomialOfCoefficients f).natDegree ≤ n := by
   classical
   rw [linePolynomialOfCoefficients_eq_ofFn]
   exact Nat.lt_succ_iff.mp (Polynomial.ofFn_natDegree_lt (Nat.succ_pos n) f)
+
+end
 
 /-- Distinct coefficient polynomials of degree at most `bound` agree at no
 more than `bound` elements of a finite integral domain. This is the univariate
@@ -84,19 +88,18 @@ root bound underlying the Schwartz-Zippel step in `lem:qld-xz-lines`, paper
 No restriction of the degree relative to the field size is required. -/
 theorem evalCoefficient_collision_card_le {K : Type*} [CommRing K] [IsDomain K]
     [Fintype K] [DecidableEq K] {bound : ℕ}
-    (first second : Fin (bound + 1) → K) (hne : first ≠ second) :
+    {first second : Fin (bound + 1) → K} (hne : first ≠ second) :
     (Finset.univ.filter fun param => evalCoefficient first param =
       evalCoefficient second param).card ≤ bound := by
   classical
   by_contra hcard
-  have heq := Polynomial.eq_of_natDegree_lt_card_of_eval_eq'
+  exact hne (linePolynomialOfCoefficients_injective bound (Polynomial.eq_of_natDegree_lt_card_of_eval_eq'
     (linePolynomialOfCoefficients first) (linePolynomialOfCoefficients second)
     (Finset.univ.filter fun param => evalCoefficient first param =
-      evalCoefficient second param)
+    evalCoefficient second param)
     (fun param hparam => by
-      simpa only [linePolynomialOfCoefficients_eval] using (Finset.mem_filter.mp hparam).2)
+    simpa only [linePolynomialOfCoefficients_eval] using (Finset.mem_filter.mp hparam).2)
     (lt_of_le_of_lt (max_le (linePolynomialOfCoefficients_natDegree_le first)
-      (linePolynomialOfCoefficients_natDegree_le second)) (Nat.lt_of_not_ge hcard))
-  exact hne (linePolynomialOfCoefficients_injective bound heq)
+    (linePolynomialOfCoefficients_natDegree_le second)) (Nat.lt_of_not_ge hcard))))
 
 end MIPStarRE.QPBT

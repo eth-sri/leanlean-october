@@ -1,6 +1,7 @@
 module
 
-public import QPBT.Test.MagicSquareTheorems.Rigidity.Assembly
+public import QPBT.Test.MagicSquareTheorems.Rigidity.JointState
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Consistency
 
 /-!
 # Transporting the first logical pair through the two-qubit controlled swap
@@ -70,7 +71,7 @@ theorem reflectionEffect_heteroKron_left (Z : Op ιA) (b : ZMod 2) :
   rcases zmod_two_eq_zero_or_one b with rfl | rfl
   · simp only [reflectionEffect, if_pos]
     rw [heteroKron_smul_left, heteroKron_add_left, heteroKron_one_one]
-  · simp only [reflectionEffect, if_neg one_ne_zero]
+  · simp [reflectionEffect, if_neg]
     rw [heteroKron_smul_left, heteroKron_sub_left, heteroKron_one_one]
 
 end

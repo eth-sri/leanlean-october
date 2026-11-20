@@ -1,7 +1,6 @@
 module
 
-public import QPBT.Palomar.ExtractionBridge
-public import QPBT.Palomar.PauliExtraction
+public import QPBT.Test.QubitForm
 public import QPBT.Palomar.PauliGameStrategyBridge
 
 /-!
@@ -29,13 +28,17 @@ noncomputable section
 
 attribute [local instance] compactPauliQuestionDecidableEq
 
+section
+
+variable (P : PauliParams)
+
 /-- The compact admissibility witness has the registered named proposition. -/
-theorem PauliParams.is_admissible_size (P : PauliParams) :
+theorem PauliParams.is_admissible_size :
     MIPStarRE.QPBT.IsAdmissibleSize P.q :=
   P.hq
 
 /-- Copy compact numerical parameters into the registered Pauli-test domain. -/
-def PauliParams.toAdmissibleParams (P : PauliParams) :
+def PauliParams.toAdmissibleParams :
     MIPStarRE.QPBT.AdmissibleParams where
   q := P.q
   m := P.m
@@ -44,23 +47,7 @@ def PauliParams.toAdmissibleParams (P : PauliParams) :
   hq := P.is_admissible_size
   hdvd := P.hdvd
 
-/-- Compact parameters are recovered exactly after conversion to the library record. -/
-@[simp] theorem PauliParams.ofAdmissibleParams_toAdmissibleParams (P : PauliParams) :
-    PauliParams.ofAdmissibleParams P.toAdmissibleParams = P := by
-  cases P
-  rfl
-
-/-- Registered parameters are recovered exactly after conversion to the compact record. -/
-@[simp] theorem PauliParams.toAdmissibleParams_ofAdmissibleParams
-    (P : MIPStarRE.QPBT.AdmissibleParams) :
-    (PauliParams.ofAdmissibleParams P).toAdmissibleParams = P := by
-  cases P
-  rfl
-
-/-- The compact error function is definitionally the registered `deltaQld`. -/
-@[simp] theorem deltaQld_eq_library (a b epsilon : ℝ) (m d q : ℕ) :
-    deltaQld a b epsilon m d q = MIPStarRE.QPBT.deltaQld a b epsilon m d q :=
-  rfl
+end
 
 /-- The concrete compact SPCC predicate is exactly the transported symmetric-game predicate. -/
 theorem isPauliSPCC_iff_isSPCC (P : MIPStarRE.QPBT.AdmissibleParams)
@@ -70,18 +57,18 @@ theorem isPauliSPCC_iff_isSPCC (P : MIPStarRE.QPBT.AdmissibleParams)
         (MIPStarRE.QPBT.binaryRepresentation P.model) ↔
       S.IsSPCC (pauliSymmetricGame P) := by
   unfold SymmetricStrategy.IsPauliSPCC SymmetricStrategy.IsSPCC
-  have hgame := congrArg Game.μ
-    (pauliSymmetricGame_toGame P)
   have hmu : (pauliSymmetricGame P).μ =
-      pauliQuestionPMF (PauliParams.ofAdmissibleParams P)
+      pauliQuestionPMF _
         (MIPStarRE.QPBT.binaryRepresentation P.model) := by
-    simpa only [pauliGame] using hgame
+    simpa only [pauliGame] using (congrArg Game.μ
+      (pauliSymmetricGame_toGame P))
   rw [hmu]
 
+variable {P : PauliParams}
+  {S : PauliStrategy P (MIPStarRE.QPBT.fixedFieldModel P.q P.is_admissible_size).K}
+
 /-- Convert a registered qudit soundness witness to the compact strategy. -/
-def ExtractionWitness.ofPauliSoundnessWitness {P : PauliParams}
-    {S : PauliStrategy P
-      (MIPStarRE.QPBT.fixedFieldModel P.q P.is_admissible_size).K}
+def ExtractionWitness.ofPauliSoundnessWitness
     (w : MIPStarRE.QPBT.PauliSoundnessWitness P.toAdmissibleParams
       (pauliStrategyToLibrary P.toAdmissibleParams S)) :
     ExtractionWitness (R := PauliRegister P
@@ -94,9 +81,7 @@ def ExtractionWitness.ofPauliSoundnessWitness {P : PauliParams}
   aux_norm := w.aux_norm
 
 /-- Convert a registered qubit soundness witness to the compact strategy. -/
-def ExtractionWitness.ofQubitSoundnessWitness {P : PauliParams}
-    {S : PauliStrategy P
-      (MIPStarRE.QPBT.fixedFieldModel P.q P.is_admissible_size).K}
+def ExtractionWitness.ofQubitSoundnessWitness
     (w : MIPStarRE.QPBT.QubitSoundnessWitness P.toAdmissibleParams
       (pauliStrategyToLibrary P.toAdmissibleParams S)) :
     ExtractionWitness (R := QubitRegister P
@@ -109,9 +94,7 @@ def ExtractionWitness.ofQubitSoundnessWitness {P : PauliParams}
   aux_norm := w.aux_norm
 
 /-- The compact qudit state error is exactly the registered unsquared state error. -/
-@[simp] theorem stateError_ofPauliSoundnessWitness {P : PauliParams}
-    {S : PauliStrategy P
-      (MIPStarRE.QPBT.fixedFieldModel P.q P.is_admissible_size).K}
+@[simp] theorem stateError_ofPauliSoundnessWitness
     (w : MIPStarRE.QPBT.PauliSoundnessWitness P.toAdmissibleParams
       (pauliStrategyToLibrary P.toAdmissibleParams S)) :
     stateError (ExtractionWitness.ofPauliSoundnessWitness w) =
@@ -121,9 +104,7 @@ def ExtractionWitness.ofQubitSoundnessWitness {P : PauliParams}
   rfl
 
 /-- The compact qubit state error is exactly the registered unsquared state error. -/
-@[simp] theorem stateError_ofQubitSoundnessWitness {P : PauliParams}
-    {S : PauliStrategy P
-      (MIPStarRE.QPBT.fixedFieldModel P.q P.is_admissible_size).K}
+@[simp] theorem stateError_ofQubitSoundnessWitness
     (w : MIPStarRE.QPBT.QubitSoundnessWitness P.toAdmissibleParams
       (pauliStrategyToLibrary P.toAdmissibleParams S)) :
     stateError (ExtractionWitness.ofQubitSoundnessWitness w) =
@@ -133,9 +114,7 @@ def ExtractionWitness.ofQubitSoundnessWitness {P : PauliParams}
   rfl
 
 /-- Alice's compact qudit sum is exactly the registered raw-effect distance. -/
-theorem rawPauliAliceError_ofPauliSoundnessWitness {P : PauliParams}
-    {S : PauliStrategy P
-      (MIPStarRE.QPBT.fixedFieldModel P.q P.is_admissible_size).K}
+theorem rawPauliAliceError_ofPauliSoundnessWitness
     (w : MIPStarRE.QPBT.PauliSoundnessWitness P.toAdmissibleParams
       (pauliStrategyToLibrary P.toAdmissibleParams S)) (W : PauliKind) :
     rawPauliAliceError P S (ExtractionWitness.ofPauliSoundnessWitness w)
@@ -146,9 +125,7 @@ theorem rawPauliAliceError_ofPauliSoundnessWitness {P : PauliParams}
   cases W <;> rfl
 
 /-- Bob's compact qudit sum is exactly the registered raw-effect distance. -/
-theorem rawPauliBobError_ofPauliSoundnessWitness {P : PauliParams}
-    {S : PauliStrategy P
-      (MIPStarRE.QPBT.fixedFieldModel P.q P.is_admissible_size).K}
+theorem rawPauliBobError_ofPauliSoundnessWitness
     (w : MIPStarRE.QPBT.PauliSoundnessWitness P.toAdmissibleParams
       (pauliStrategyToLibrary P.toAdmissibleParams S)) (W : PauliKind) :
     rawPauliBobError P S (ExtractionWitness.ofPauliSoundnessWitness w)
@@ -159,9 +136,7 @@ theorem rawPauliBobError_ofPauliSoundnessWitness {P : PauliParams}
   cases W <;> rfl
 
 /-- Alice's compact qubit sum is exactly the registered field-indexed distance. -/
-theorem rawQubitAliceError_ofQubitSoundnessWitness {P : PauliParams}
-    {S : PauliStrategy P
-      (MIPStarRE.QPBT.fixedFieldModel P.q P.is_admissible_size).K}
+theorem rawQubitAliceError_ofQubitSoundnessWitness
     (w : MIPStarRE.QPBT.QubitSoundnessWitness P.toAdmissibleParams
       (pauliStrategyToLibrary P.toAdmissibleParams S)) (W : PauliKind) :
     rawQubitAliceError P S (ExtractionWitness.ofQubitSoundnessWitness w)
@@ -171,9 +146,7 @@ theorem rawQubitAliceError_ofQubitSoundnessWitness {P : PauliParams}
   cases W <;> rfl
 
 /-- Bob's compact qubit sum is exactly the registered field-indexed distance. -/
-theorem rawQubitBobError_ofQubitSoundnessWitness {P : PauliParams}
-    {S : PauliStrategy P
-      (MIPStarRE.QPBT.fixedFieldModel P.q P.is_admissible_size).K}
+theorem rawQubitBobError_ofQubitSoundnessWitness
     (w : MIPStarRE.QPBT.QubitSoundnessWitness P.toAdmissibleParams
       (pauliStrategyToLibrary P.toAdmissibleParams S)) (W : PauliKind) :
     rawQubitBobError P S (ExtractionWitness.ofQubitSoundnessWitness w)

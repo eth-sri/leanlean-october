@@ -30,19 +30,21 @@ open MIPStarRE.LDT hiding Measurement
 
 noncomputable section
 
+section
+
+variable {P : AdmissibleParams} {I J V : Type*} [Fintype I] [DecidableEq I] [Fintype J]
+  [DecidableEq J] (A : Measurement (PauliRegister P) (I × PauliRegister P)) [Fintype V]
+  [DecidableEq V] (W : PauliKind) [Nonempty V] (aux : EuclideanSpace ℂ (I × J))
+
 /-- A symmetric operator acts identically on the two halves of the extracted
 EPR pair, including arbitrary auxiliary registers in local player order. -/
-theorem extracted_epr_actions_eq {I J V : Type*}
-    [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
-    [Fintype V] [DecidableEq V] [Nonempty V]
-    (aux : EuclideanSpace ℂ (I × J)) (T : Op V) (hT : Tᵀ = T) :
+theorem extracted_epr_actions_eq (T : Op V) (hT : Tᵀ = T) :
     applyOperatorToState (heteroKron (heteroKron (1 : Op I) T) (1 : Op (J × V)))
         (reindexState prodShuffle (vecTensor aux (eprState V))) =
       applyOperatorToState (heteroKron (1 : Op (I × V)) (heteroKron (1 : Op J) T))
         (reindexState prodShuffle (vecTensor aux (eprState V))) := by
   ext p
-  simp only [applyOperatorToState, Matrix.toEuclideanLin, Matrix.toLpLin_apply,
-    Matrix.mulVec, dotProduct, Fintype.sum_prod_type]
+  simp [applyOperatorToState, Matrix.toLpLin_apply, Matrix.mulVec, dotProduct, Fintype.sum_prod_type]
   simp [heteroKron, Matrix.kronecker, Matrix.one_apply, reindexState, vecTensor,
     eprState, prodShuffle, mul_ite, ite_mul, Prod.ext_iff, ite_and]
   rw [show T p.2.2 p.1.2 = T p.1.2 p.2.2 from congrFun (congrFun hT p.1.2) p.2.2]
@@ -54,10 +56,7 @@ distance. The bound holds for every local POVM and every normalized auxiliary
 state, with no restriction on the field, Pauli basis, or local dimensions.
 This is the quantitative combination of paper `eq:qld-unitary-7` through
 `eq:qld-unitary-9` and its following state-transfer estimate. -/
-theorem pauli_distance_on_ideal_le {P : AdmissibleParams} {I J : Type*}
-    [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
-    (A : Measurement (PauliRegister P) (I × PauliRegister P)) (W : PauliKind)
-    (aux : EuclideanSpace ℂ (I × J)) (haux : ‖aux‖ = 1)
+theorem pauli_distance_on_ideal_le (haux : ‖aux‖ = 1)
     (theta : EuclideanSpace ℂ ((I × PauliRegister P) × (J × PauliRegister P)))
     (htheta : ‖theta‖ = 1) :
     let ideal := reindexState prodShuffle (vecTensor aux (eprState (PauliRegister P)))
@@ -65,7 +64,7 @@ theorem pauli_distance_on_ideal_le {P : AdmissibleParams} {I J : Type*}
     (∑ h : PauliRegister P, ‖applyOperatorToState
       (heteroKron (A.effect h - heteroKron (1 : Op I) (pauliProj W h))
         (1 : Op (J × PauliRegister P))) ideal‖ ^ 2) ≤
-      2 * (1 - avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+      2 * (1 - avgOver (uniformDistribution (PauliPoint P)) (fun u =>
         ∑ a : PauliScalar P, stateQForm theta
           (heteroKron ((A.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)
             ((B.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)))) +
@@ -78,27 +77,33 @@ theorem pauli_distance_on_ideal_le {P : AdmissibleParams} {I J : Type*}
   have hdist := point_distance_le_two_defect
     (leftPlacedMeasurement (ιB := J × PauliRegister P) A)
     (rightPlacedMeasurement (ιA := I × PauliRegister P) B) ideal
-  rw [point_defect_eq, hideal, one_pow] at hdist
+  simp [point_defect_eq, hideal] at hdist
   have haction (h : PauliRegister P) :
       applyOperatorToState
-          (heteroKron (A.effect h - heteroKron (1 : Op I) (pauliProj W h))
-            (1 : Op (J × PauliRegister P))) ideal =
+          (heteroKron (A.effect h - heteroKron 1 (pauliProj W h))
+            1) ideal =
         applyOperatorToState
-          ((leftPlacedMeasurement (ιB := J × PauliRegister P) A).effect h -
-            (rightPlacedMeasurement (ιA := I × PauliRegister P) B).effect h) ideal := by
-    change applyOperatorToState (heteroKron (A.effect h - _) _) ideal =
+          ((leftPlacedMeasurement A).effect h -
+            (rightPlacedMeasurement B).effect h) ideal := by
+    change _ =
       applyOperatorToState (heteroKron (A.effect h) _ -
         heteroKron _ (heteroKron _ (pauliProj W h))) ideal
-    rw [heteroKron_sub_left, MagicSquareRigidity.applyOperatorToState_sub_op,
-      MagicSquareRigidity.applyOperatorToState_sub_op,
+    rw [heteroKron_sub_left, DistanceCalculus.applyOperatorToState_sub_op,
+      DistanceCalculus.applyOperatorToState_sub_op,
       extracted_epr_actions_eq aux _ (pauliProj_transpose W h)]
-  have hsum := Finset.sum_congr (s₁ := (Finset.univ : Finset (PauliRegister P)))
-    rfl (fun h _ => congrArg (fun v => ‖v‖ ^ 2) (haction h))
-  rw [hsum]
-  have hoverlap := pauli_overlap_transfer A B theta ideal htheta hideal
-  simp only [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne,
-    placed_product_stateQForm_eq] at hdist
-  exact hdist.trans (by dsimp [B] at hoverlap ⊢; linarith)
+  rw [(Finset.sum_congr (s₁ := (Finset.univ : Finset (PauliRegister P)))
+    rfl (fun h _ => congrArg (fun v => ‖v‖ ^ 2) (haction h)))]
+  have hoverlap := by
+                     have ht := evaluated_overlap_state_transfer A B
+                       (fun h u => evalPoly (encodingPoly h) u) theta ideal htheta hideal
+                     have hc := SandwichProduct.avg_diagonal_postprocess_stateQForm_le A B ideal
+                       (fun h u => evalPoly (encodingPoly h) u) ((P.m * P.d : ℝ) / P.q) hideal
+                       (by positivity) pauli_encoding_collision_le
+                     exact ht.trans (add_le_add hc le_rfl)
+  simp [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne, placed_product_stateQForm_eq] at hdist
+  exact hdist.trans (by linarith)
+
+end
 
 /-- At construction error at most one, a universal extraction coefficient of
 at least eighteen absorbs both the proved state error and the Pauli comparison
@@ -118,10 +123,9 @@ theorem extraction_small_error_absorption (C delta : ℝ) (m d q : ℕ)
   have hp := mul_le_mul_of_nonneg_right hC
     (add_nonneg (Real.rpow_nonneg hdelta (1 / 4)) hr)
   constructor
-  · exact (show 16 * delta ≤ 18 * (delta ^ (1 / 4 : ℝ) +
-      ((m * d : ℕ) : ℝ) / q) by nlinarith).trans hp
-  · exact (show 2 * delta + 2 * (((m * d : ℕ) : ℝ) / q) + 16 * Real.sqrt delta ≤
-      18 * (delta ^ (1 / 4 : ℝ) + ((m * d : ℕ) : ℝ) / q) by nlinarith).trans hp
+  · exact (show 16 * delta ≤ _ by nlinarith).trans hp
+  · exact (show 2 * delta + 2 * ((m * d : ℕ) / q) + 16 * Real.sqrt delta ≤
+      _ by nlinarith).trans hp
 
 end
 

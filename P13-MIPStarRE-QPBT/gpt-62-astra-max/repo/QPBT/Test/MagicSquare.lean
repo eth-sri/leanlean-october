@@ -62,8 +62,8 @@ used to instantiate blueprint `def:ms-game`,
 paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:512-610`.
 -/
 theorem msEdges_nonempty : msEdges.Nonempty := by
-  refine ⟨Sym2.mk (.constraint 0) (.var (msConstraintVars 0 0)), ?_⟩
-  exact Finset.mem_image.mpr ⟨(0, 0), Finset.mem_univ _, rfl⟩
+  constructor
+  solve_by_elim [Finset.mem_image.mpr]
 
 /-- A Magic Square answer is a parity triple or a single cell bit, as prescribed
 by blueprint `def:ms-game`,
@@ -108,8 +108,6 @@ noncomputable def msAnswerEquiv : MsAnswer ≃ MsAnswerCode where
 noncomputable instance instFintypeMsAnswer : Fintype MsAnswer :=
   Fintype.ofEquiv MsAnswerCode msAnswerEquiv.symm
 
-instance instInhabitedMsAnswer : Inhabited MsAnswer := ⟨.bit 0⟩
-
 /-- The Magic Square consistency predicate.  Constructor mismatches are
 rejected, as required by blueprint `def:ms-game`; paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:512-610`.
@@ -139,7 +137,7 @@ def msWinPredicate :
   QuestionB := MsType
   AnswerA := MsAnswer
   AnswerB := MsAnswer
-  μ := graphDistribution msEdges msEdges_nonempty
+  μ := graphDistribution msEdges_nonempty
   μ_prob := by
     apply Distribution.uniformOnFinset_isProbability
     refine ⟨(.constraint 0, .var (msConstraintVars 0 0)), ?_⟩

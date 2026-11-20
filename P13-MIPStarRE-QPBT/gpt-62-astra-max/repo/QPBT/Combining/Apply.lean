@@ -1,15 +1,9 @@
 module
 
-public import QPBT.Combining.Points
-public import QPBT.Combining.PairCompletion
 public import QPBT.Combining.ExtendedLines.Estimates
-public import QPBT.Combining.ActualErrorBounds
-public import QPBT.Combining.ExplicitScalarBounds
 public import QPBT.Combining.ExtendedLineGame.PairPointConsistency
-public import QPBT.Combining.PointErrorObstruction
-public import QPBT.Combining.ErrorObstruction
-public import QPBT.Combining.Lines.SubLineJoint
-public import QPBT.Test.SoundnessDefs
+public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /-!
 # Applying the classical low-degree test
@@ -113,9 +107,8 @@ theorem exists_extendedLinesWitness_established_ofPointsWitness
   classical
   obtain ⟨deltaP, hdeltaP, hlines⟩ :=
     exists_combinedLinesWitness_ofPointsWitness deltaQ hdeltaQ
-  obtain ⟨constant, hconstant, hnear⟩ := subline_joint_overlap_near_one_at
   obtain ⟨deltaCombine, hdeltaCombine, hscalar⟩ :=
-    exists_combining_polynomial_bound deltaQ hdeltaQ deltaP hdeltaP constant hconstant.le
+    exists_combining_polynomial_bound deltaQ hdeltaQ deltaP hdeltaP 6 (by norm_num)
   refine ⟨1, by norm_num, deltaCombine, hdeltaCombine, ?_⟩
   intro P ε S points
   obtain ⟨lines⟩ := hlines P ε S points
@@ -127,34 +120,28 @@ theorem exists_extendedLinesWitness_established_ofPointsWitness
             (fun polynomial => (directEvalOpt sample.1 sample.2 polynomial).map
               (extendedDirectScalarEquiv P))).effect answer))
         (fun sample answer => S.place second
-          (((points.Q second.side (projX (directPointToPauli P sample.2))
-            (projZ (directPointToPauli P sample.2))).postprocess (fun values => some
-              ((directPointToPauli P sample.2) (alphaVar P.m) * values.1 +
-                (directPointToPauli P sample.2) (betaVar P.m) * values.2))).effect answer))
-        S.psiHat ≤ (P.m : ℝ) * deltaCombine ε ((P.m * P.d : ℕ) / (P.q : ℝ)) := by
+          (((points.Q second.side (projX (directPointToPauli sample.2))
+            (projZ (directPointToPauli sample.2))).postprocess (fun values => some
+              ((directPointToPauli sample.2) (alphaVar P.m) * values.1 +
+                (directPointToPauli sample.2) (betaVar P.m) * values.2))).effect answer))
+        S.psiHat ≤ P.m * deltaCombine ε ((P.m * P.d : ℕ) / P.q) := by
     refine (le_min ?_ ?_).trans
-      (hscalar ε ((P.m * P.d : ℕ) / (P.q : ℝ)) (P.m : ℝ)
+      (hscalar ε ((P.m * P.d : ℕ) / P.q) P.m
         S.eps_nonneg (by positivity) (by exact_mod_cast P.one_le_m))
-    · unfold consistencyDefect
-      calc
-        _ ≤ avgOver (directLinePointDist P.extendedDirectLd) (fun _ => 1) :=
-          avgOver_mono _ _ _ fun sample =>
-            consistencyDefect_integrand_le_one S first second hopposite _ _
-        _ = 1 := avgOver_const_of_isProbability _ (directLinePointDist_isProbability _) 1
-    · refine (sublines.extended_consistencyDefect_le lines first second hopposite).trans ?_
-      exact (le_abs_self _).trans (by
-        simpa only [abs_sub_comm] using
-          hnear P ε (deltaQ ε) (deltaP ε ((P.m * P.d : ℕ) / (P.q : ℝ)))
-            S points lines sublines first second hopposite)
+    · rw [← avgOver_const_of_isProbability _ (directLinePointDist_isProbability _) 1]
+      exact avgOver_mono _ _ _ fun sample =>
+        consistencyDefect_integrand_le_one S first second hopposite _ _
+    · exact (sublines.extended_consistencyDefect_le lines first second hopposite).trans
+        (sublines.paired_deficit lines first second hopposite)
   refine ⟨{
     Qline := sublines.extendedMeasurement lines
     axis_degree := sublines.extendedMeasurement_axis_degree lines
     consistent_alice := ?_
     consistent_bob := ?_ }⟩
   · simp only [one_mul]
-    with_unfolding_all exact hplaced .AA' .BA'' trivial
+    with_unfolding_all solve_by_elim [hplaced]
   · simp only [one_mul]
-    with_unfolding_all exact hplaced .BB' .AB'' trivial
+    with_unfolding_all solve_by_elim [hplaced]
 
 /-- Directly indexed construction for the auxiliary estimate
 `C * m * poly(epsilon, md / q)`. This has the same directly indexed estimate as
@@ -238,25 +225,22 @@ theorem exists_globalPairWitness :
   refine ⟨A, B, hA, hB, hB1, ?_⟩
   intro P ε S
   obtain ⟨points, ⟨lines⟩⟩ := hlines P ε S
-  obtain ⟨pair⟩ := hpairs P ε (pointError ε)
-    (C * (P.m : ℝ) * lineError ε ((P.m * P.d : ℕ) / (P.q : ℝ))) S points lines
+  obtain ⟨pair⟩ := hpairs P ε _
+    _ S points lines
   have hbound := hscalar P ε S.eps_nonneg
-  simp only [Nat.cast_mul] at hbound
   refine ⟨{ pair with point_consistent_alice := ?_, point_consistent_bob := ?_ }⟩
   · intro W
     refine (le_min (show _ ≤ (1 : ℝ) from ?_) (pair.point_consistent_alice W)).trans ?_
-    · unfold consistencyDefect
-      calc
-        _ ≤ avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun _ => 1) :=
+    · calc
+        _ ≤ avgOver (uniformDistribution (PauliPoint P)) (fun _ => 1) :=
           avgOver_mono _ _ _ fun u => consistencyDefect_integrand_le_one
             S .AA' .BA'' (by trivial) _ _
         _ = 1 := avgOver_const_of_isProbability _ (uniformDistribution_isProbability _) 1
     · with_unfolding_all simpa only [Nat.cast_mul, Real.rpow_eq_pow] using hbound
   · intro W
     refine (le_min (show _ ≤ (1 : ℝ) from ?_) (pair.point_consistent_bob W)).trans ?_
-    · unfold consistencyDefect
-      calc
-        _ ≤ avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun _ => 1) :=
+    · calc
+        _ ≤ avgOver (uniformDistribution (PauliPoint P)) (fun _ => 1) :=
           avgOver_mono _ _ _ fun u => consistencyDefect_integrand_le_one
             S .BB' .AB'' (by trivial) _ _
         _ = 1 := avgOver_const_of_isProbability _ (uniformDistribution_isProbability _) 1

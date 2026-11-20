@@ -31,97 +31,58 @@ open MIPStarRE.Quantum MagicSquareRigidity
 
 noncomputable section
 
+variable (P : AdmissibleParams)
+
+section
+
+variable (S : Strategy (pauliBasisTest P))
+
 /-- The question-independent embedding of Alice's original space in the
 ground slice of the completed Naimark dilation. -/
-def pauliNaimarkEmbeddingA (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) :
+def pauliNaimarkEmbeddingA :
     EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
       EuclideanSpace ℂ (S.ιA × Option (PauliAnswer P)) :=
   naimarkEmbedding S.ιA (PauliAnswer P)
 
 /-- The corresponding question-independent embedding of Bob's space. -/
-def pauliNaimarkEmbeddingB (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) :
+def pauliNaimarkEmbeddingB :
     EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]
       EuclideanSpace ℂ (S.ιB × Option (PauliAnswer P)) :=
   naimarkEmbedding S.ιB (PauliAnswer P)
 
-/-- Complete the Naimark dilation separately for every question and both
-players, padding the original bipartite state at the ground coordinates. -/
-@[reducible] def pauliNaimarkStrategy (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) : Strategy (pauliBasisTest P) :=
-  paddedStrategy S (none : Option (PauliAnswer P)) (none : Option (PauliAnswer P))
-    (fun question => dilatedMeasurement (default : PauliAnswer P) (S.A question))
-    (fun question => dilatedMeasurement (default : PauliAnswer P) (S.B question))
-
-/-- Both local families of the dilated strategy are projective measurements. -/
-theorem pauliNaimarkStrategy_isProjective (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) : (pauliNaimarkStrategy P S).IsProjective :=
-  paddedStrategy_isProjective S none none _ _
-    (fun question => dilatedMeasurement_isProjective
-      (default : PauliAnswer P) (S.A question))
-    (fun question => dilatedMeasurement_isProjective
-      (default : PauliAnswer P) (S.B question))
-
-/-- The two ground-slice compressions preserve the value of the game exactly. -/
-theorem pauliNaimarkStrategy_value (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) : (pauliNaimarkStrategy P S).value = S.value :=
-  paddedStrategy_value S none none _ _
-    (fun question answer => dilatedMeasurement_compression
-      (default : PauliAnswer P) answer (S.A question))
-    (fun question answer => dilatedMeasurement_compression
-      (default : PauliAnswer P) answer (S.B question))
+variable {P} in
+/-- Dilation of a Pauli basis test strategy. -/
+abbrev pauliNaimarkStrategy := S.naimark
 
 /-- The padded state is precisely the tensor image under the two fixed ground
 embeddings; there is no identification of Alice's and Bob's local spaces. -/
-theorem pauliNaimarkStrategy_state (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) :
-    (pauliNaimarkStrategy P S).ψ =
-      isometryTensor (pauliNaimarkEmbeddingA P S) (pauliNaimarkEmbeddingB P S) S.ψ := by
-  change padState none none S.ψ = naimarkDilatedState (PauliAnswer P) S.ψ
-  ext p
-  rw [naimarkDilatedState_apply]
-  simp only [padState, EuclideanSpace.equiv]
-  by_cases hA : p.1.2 = none <;> by_cases hB : p.2.2 = none <;> simp [hA, hB]
+theorem pauliNaimarkStrategy_state :
+    (pauliNaimarkStrategy S).ψ =
+      isometryTensor (pauliNaimarkEmbeddingA P S) (pauliNaimarkEmbeddingB P S) S.ψ :=
+  (naimarkDilatedState_eq_padState _ _).symm
+
+end
 
 /-- A winning strategy supplies a projective setting after dilation, with no
 extra premise beyond the original winning inequality. -/
-def pauliNaimarkSetting (P : AdmissibleParams) (epsilon : ℝ)
+def pauliNaimarkSetting (epsilon : ℝ)
     (S : Strategy (pauliBasisTest P)) (hwin : 1 - epsilon ≤ S.value) :
     ProjectiveSetting P epsilon where
-  toStrategy := pauliNaimarkStrategy P S
-  isProjective := pauliNaimarkStrategy_isProjective P S
-  win := by rw [pauliNaimarkStrategy_value]; exact hwin
+  toStrategy := pauliNaimarkStrategy S
+  isProjective := S.naimark_isProjective
+  win := S.naimark_value.symm ▸ hwin
 
-/-- Compression commutes with the complete `pauliAnswerOrZero` postprocessing
-of Alice's Pauli-question measurement, including wrong-form outcomes. -/
-theorem pauliNaimarkStrategy_pauli_compressA (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) (W : PauliKind) :
-    (((pauliNaimarkStrategy P S).A (pauliQuestion P W)).postprocess
-      pauliAnswerOrZero).compressAt none =
-        (S.A (pauliQuestion P W)).postprocess pauliAnswerOrZero := by
-  change ((dilatedMeasurement (default : PauliAnswer P)
-      (S.A (pauliQuestion P W))).postprocess pauliAnswerOrZero).compressAt none = _
-  rw [MIPStarRE.Quantum.Measurement.compressAt_postprocess,
-    Measurement.compressAt_dilatedMeasurement]
+section
 
-/-- Compression commutes with the complete `pauliAnswerOrZero` postprocessing
-of Bob's Pauli-question measurement, including wrong-form outcomes. -/
-theorem pauliNaimarkStrategy_pauli_compressB (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) (W : PauliKind) :
-    (((pauliNaimarkStrategy P S).B (pauliQuestion P W)).postprocess
-      pauliAnswerOrZero).compressAt none =
-        (S.B (pauliQuestion P W)).postprocess pauliAnswerOrZero := by
-  change ((dilatedMeasurement (default : PauliAnswer P)
-      (S.B (pauliQuestion P W))).postprocess pauliAnswerOrZero).compressAt none = _
-  rw [MIPStarRE.Quantum.Measurement.compressAt_postprocess,
-    Measurement.compressAt_dilatedMeasurement]
+variable (S : Strategy (pauliBasisTest P))
+
+section
+
+variable (w : PauliSoundnessWitness P (pauliNaimarkStrategy S))
 
 /-- Compose a witness on the dilated strategy with the ground embeddings,
 keeping both auxiliary carrier spaces and the same normalized auxiliary state. -/
-@[reducible] def pauliNaimarkWitness (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P (pauliNaimarkStrategy P S)) :
+@[reducible] def pauliNaimarkWitness :
     PauliSoundnessWitness P S where
   ιA' := w.ιA'
   ιB' := w.ιB'
@@ -135,27 +96,27 @@ keeping both auxiliary carrier spaces and the same normalized auxiliary state. -
   aux_norm := w.aux_norm
 
 /-- The extracted original state is exactly the extracted dilated state. -/
-theorem pauli_naimark_witness_state_eq (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P (pauliNaimarkStrategy P S)) :
+theorem pauli_naimark_witness_state_eq :
     isometryTensor (pauliNaimarkWitness P S w).φA
         (pauliNaimarkWitness P S w).φB S.ψ =
-      isometryTensor w.φA w.φB (pauliNaimarkStrategy P S).ψ := by
+      isometryTensor w.φA w.φB (pauliNaimarkStrategy S).ψ := by
   rw [pauliNaimarkStrategy_state]
-  exact isometryTensor_comp w.φA w.φB
-    (pauliNaimarkEmbeddingA P S) (pauliNaimarkEmbeddingB P S) S.ψ
+  ext p
+  rw [isometryTensor_apply_eq, isometryTensor_apply_eq]
+  simp only [isometryTensor_apply_eq, isometryMatrix_comp, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun r _ => ?_
+  have hk : (isometryMatrix w.φA * isometryMatrix (pauliNaimarkEmbeddingA P S)).kronecker
+        (isometryMatrix w.φB * isometryMatrix (pauliNaimarkEmbeddingB P S)) =
+      (isometryMatrix w.φA).kronecker (isometryMatrix w.φB) *
+        (isometryMatrix (pauliNaimarkEmbeddingA P S)).kronecker (isometryMatrix (pauliNaimarkEmbeddingB P S)) :=
+    Matrix.mul_kronecker_mul _ _ _ _
+  rw [hk, Matrix.mul_apply, Finset.sum_mul]
+  exact Finset.sum_congr rfl fun x _ => by ring
 
-/-- Consequently the original and dilated witnesses have equal state-distance
-quantities from the same ideal auxiliary state. -/
-theorem pauli_naimark_witness_state_distance_eq (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P (pauliNaimarkStrategy P S)) :
-    ‖isometryTensor (pauliNaimarkWitness P S w).φA
-        (pauliNaimarkWitness P S w).φB S.ψ -
-      idealState P (pauliNaimarkWitness P S w).aux‖ =
-    ‖isometryTensor w.φA w.φB (pauliNaimarkStrategy P S).ψ -
-      idealState P w.aux‖ := by
-  rw [pauli_naimark_witness_state_eq]
+end
+
+end
 
 end
 

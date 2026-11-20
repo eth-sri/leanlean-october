@@ -37,30 +37,31 @@ noncomputable section
 
 /-! ## The trivial bound -/
 
+section
+
+variable {X α β ι : Type*} [Fintype X] [DecidableEq X] [Nonempty X] [Fintype α] [Fintype β]
+  [Fintype ι] [DecidableEq ι] (A : Measurement α ι) (B : Measurement β ι)
+  (hA : MIPStarRE.QPBT.Measurement.IsProjective A)
+  (hB : MIPStarRE.QPBT.Measurement.IsProjective B)
+
 /-- The averaged squared state-dependent distance of two families is at most
 `4` on a unit vector, under a uniform distribution, provided the sums
 `∑ a, (A x a)ᴴ * A x a` and `∑ a, (B x a)ᴴ * B x a` are at most the identity
 for every question `x`. -/
-theorem opFamilyDistSq_uniform_le_four {X α ι : Type*} [Fintype X] [DecidableEq X]
-    [Nonempty X] [Fintype α] [Fintype ι] [DecidableEq ι]
-    (A B : X → α → Op ι) (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1)
+theorem opFamilyDistSq_uniform_le_four
+    {A B : X → α → Op ι} {ψ : EuclideanSpace ℂ ι} (hψ : ‖ψ‖ = 1)
     (hA : ∀ x, ∑ a, (A x a)ᴴ * A x a ≤ 1) (hB : ∀ x, ∑ a, (B x a)ᴴ * B x a ≤ 1) :
     opFamilyDistSq (uniformDistribution X) A B ψ ≤ 4 := by
-  unfold opFamilyDistSq
-  calc avgOver (uniformDistribution X) (fun x =>
-        ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2)
-      ≤ avgOver (uniformDistribution X) (fun _ => (4 : ℝ)) := by
+  calc _
+      ≤ avgOver (uniformDistribution X) (fun _ => 4) := by
         refine avgOver_mono _ _ _ fun x => ?_
-        exact sum_norm_sub_apply_sq_le_four (A x) (B x) ψ hψ (hA x) (hB x)
+        exact sum_norm_sub_apply_sq_le_four hψ (hA x) (hB x)
     _ = 4 := avgOver_uniform_const _
 
+include hB hA in
 /-- The products `A_a B_b` of the effects of two projective measurements on a
 common space satisfy `∑ a b, (A_a B_b)ᴴ * (A_a B_b) = 1`. -/
-theorem sum_mul_conjTranspose_mul_self_eq_one {α β ι : Type*} [Fintype α]
-    [Fintype β] [Fintype ι] [DecidableEq ι]
-    (A : Measurement α ι) (B : Measurement β ι)
-    (hA : MIPStarRE.QPBT.Measurement.IsProjective A)
-    (hB : MIPStarRE.QPBT.Measurement.IsProjective B) :
+theorem sum_mul_conjTranspose_mul_self_eq_one :
     ∑ ab : α × β, (A.effect ab.1 * B.effect ab.2)ᴴ * (A.effect ab.1 * B.effect ab.2) =
       1 := by
   have hpt : ∀ (a : α) (b : β),
@@ -68,33 +69,32 @@ theorem sum_mul_conjTranspose_mul_self_eq_one {α β ι : Type*} [Fintype α]
         B.effect b * A.effect a * B.effect b := by
     intro a b
     rw [Matrix.conjTranspose_mul, (hA a).isSelfAdjoint.isHermitian.eq,
-      (hB b).isSelfAdjoint.isHermitian.eq, Matrix.mul_assoc _ _ (A.effect a * B.effect b),
+      (hB b).isSelfAdjoint.isHermitian.eq, Matrix.mul_assoc,
       ← Matrix.mul_assoc (A.effect a) (A.effect a), (hA a).isIdempotentElem.eq,
       ← Matrix.mul_assoc]
   rw [Fintype.sum_prod_type_right]
-  calc ∑ b : β, ∑ a : α, (A.effect a * B.effect b)ᴴ * (A.effect a * B.effect b)
+  calc _
       = ∑ b : β, B.effect b * (∑ a : α, A.effect a) * B.effect b := by
         refine Finset.sum_congr rfl fun b _ => ?_
         rw [Finset.mul_sum, Finset.sum_mul]
-        exact Finset.sum_congr rfl fun a _ => hpt a b
+        solve_by_elim [Finset.sum_congr]
     _ = 1 := by
-        simp_rw [A.sum_eq_one, mul_one]
+        simp [A.sum_eq_one]
         rw [Finset.sum_congr rfl fun b _ => (hB b).isIdempotentElem.eq]
         exact B.sum_eq_one
 
+include hB hA in
 /-- The products `B_b A_a` of the effects of two projective measurements on a
 common space, indexed by the pair `(a, b)`, satisfy
 `∑ a b, (B_b A_a)ᴴ * (B_b A_a) = 1`. -/
-theorem sum_mul_conjTranspose_mul_self_eq_one' {α β ι : Type*} [Fintype α]
-    [Fintype β] [Fintype ι] [DecidableEq ι]
-    (A : Measurement α ι) (B : Measurement β ι)
-    (hA : MIPStarRE.QPBT.Measurement.IsProjective A)
-    (hB : MIPStarRE.QPBT.Measurement.IsProjective B) :
+theorem sum_mul_conjTranspose_mul_self_eq_one' :
     ∑ ab : α × β, (B.effect ab.2 * A.effect ab.1)ᴴ * (B.effect ab.2 * A.effect ab.1) =
       1 := by
   have h := sum_mul_conjTranspose_mul_self_eq_one B A hB hA
   rw [Fintype.sum_prod_type, Finset.sum_comm] at h
   simpa only [Fintype.sum_prod_type] using h
+
+end
 
 /-! ## The chain of closeness estimates -/
 
@@ -166,25 +166,23 @@ theorem chain_bounds (S : ProjectiveSetting P ε)
         S.psiHat ≤ 12 * η + 20 * (C₁ * Real.sqrt ε) + 16 * (C₃ * ε) +
           4 * (C₂ * Real.sqrt ε) := by
   -- `R_1 ≈ M^X M^Z` on the opposite placement
-  have hRXZ := opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
-    _ _ _ S.psiHat _ _ (h₁ p₁) (h₃ p₁ p₂ hopp)
-  -- `Q_1 ≈ M^X M^Z` on the opposite placement
-  have hQXZ := opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
-    _ _ _ S.psiHat _ _ (hQR p₁) hRXZ
+  have hQXZ := opFamilyDistSq_le_of_le_of_le
+    _ _ _ S.psiHat _ _ (hQR p₁) (opFamilyDistSq_le_of_le_of_le
+      _ _ _ S.psiHat _ _ (h₁ p₁) (h₃ p₁ p₂ hopp))
   -- `Q_1 ≈ M^Z M^X` on the opposite placement
-  have hQZX := opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
+  have hQZX := opFamilyDistSq_le_of_le_of_le
     _ _ _ S.psiHat _ _ hQXZ (h₂ p₂)
   -- `M^Z M^X ≈ Q_2` on the opposite placement
   have hZXQ : opFamilyDistSq (uniformDistribution (PointPair P))
-      (fun xz (ab : PauliScalar P × PauliScalar P) => S.place p₂
+      (fun xz ab => S.place p₂
         ((S.pointMeasExp p₂.side .Z xz.2).effect ab.2 *
           (S.pointMeasExp p₂.side .X xz.1).effect ab.1))
       (fun xz ab => S.place p₂ ((Q p₂.side xz).effect ab))
       S.psiHat ≤ 2 * η + 2 * (C₁ * Real.sqrt ε) := by
     rw [opFamilyDistSq_symm]
-    exact opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
+    exact opFamilyDistSq_le_of_le_of_le
       _ _ _ S.psiHat _ _ (hQR p₂) (h₁ p₂)
-  have hQQ := opFamilyDistSq_le_of_le_of_le (uniformDistribution (PointPair P))
+  have hQQ := opFamilyDistSq_le_of_le_of_le
     _ _ _ S.psiHat _ _ hQZX hZXQ
   refine ⟨by linarith, by linarith, by linarith⟩
 
@@ -201,40 +199,39 @@ theorem error_terms_le_rpow_eighth {ε C₀ : ℝ} (hε : 0 ≤ ε) (hε1 : ε �
         2 * C₀ * Real.rpow ε (1 / 8 : ℝ) := by
   rcases eq_or_lt_of_le hε with h0 | hpos
   · subst h0
-    have h8 : Real.rpow (0 : ℝ) (1 / 8 : ℝ) = 0 := Real.zero_rpow (by norm_num)
-    have h4 : Real.rpow (C₀ * (0 + Real.sqrt 0)) (1 / 4 : ℝ) = 0 := by
+    have h8 : Real.rpow 0 (1 / 8) = 0 := Real.zero_rpow (by norm_num)
+    have h4 : Real.rpow (C₀ * (0 + Real.sqrt 0)) (1 / 4) = 0 := by
       rw [Real.sqrt_zero, add_zero, mul_zero]
       exact Real.zero_rpow (by norm_num)
     rw [h8, h4, Real.sqrt_zero]
     refine ⟨le_rfl, le_rfl, ?_⟩
     positivity
-  · have hsqrt : Real.sqrt ε = Real.rpow ε (1 / 2 : ℝ) := Real.sqrt_eq_rpow ε
-    have hε1' : Real.rpow ε 1 = ε := Real.rpow_one ε
-    have hmono : ∀ y z : ℝ, z ≤ y → Real.rpow ε y ≤ Real.rpow ε z := fun y z hyz =>
-      Real.rpow_le_rpow_of_exponent_ge hpos hε1 hyz
+  · have hsqrt := Real.sqrt_eq_rpow ε
+    have hε1' := Real.rpow_one ε
+    have hmono : ∀ y z : ℝ, z ≤ y → Real.rpow ε y ≤ Real.rpow ε z := fun y z => Real.rpow_le_rpow_of_exponent_ge hpos hε1
     refine ⟨?_, ?_, ?_⟩
     · exact le_of_eq_of_le hε1'.symm (hmono 1 (1 / 8) (by norm_num))
     · rw [hsqrt]
-      exact hmono (1 / 2) (1 / 8) (by norm_num)
+      exact hmono _ (1 / 8) (by norm_num)
     · have hsum : ε + Real.sqrt ε ≤ 2 * Real.sqrt ε := by
         have : ε ≤ Real.sqrt ε := by
           rw [hsqrt]
           exact le_of_eq_of_le hε1'.symm (hmono 1 (1 / 2) (by norm_num))
         linarith
       have hC : 0 ≤ 2 * C₀ := by linarith
-      calc Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4 : ℝ)
+      calc _
           ≤ Real.rpow (2 * C₀ * Real.sqrt ε) (1 / 4 : ℝ) := by
             apply Real.rpow_le_rpow (by positivity) _ (by norm_num)
             nlinarith [Real.sqrt_nonneg ε]
-        _ = Real.rpow (2 * C₀) (1 / 4 : ℝ) * Real.rpow ε (1 / 8 : ℝ) := by
+        _ = Real.rpow (2 * C₀) (1 / 4) * Real.rpow ε (1 / 8) := by
             change (2 * C₀ * Real.sqrt ε) ^ (1 / 4 : ℝ) =
-              (2 * C₀) ^ (1 / 4 : ℝ) * ε ^ (1 / 8 : ℝ)
+              _
             rw [Real.mul_rpow hC (Real.sqrt_nonneg ε), Real.sqrt_eq_rpow,
               ← Real.rpow_mul hε]
             norm_num
-        _ ≤ 2 * C₀ * Real.rpow ε (1 / 8 : ℝ) := by
+        _ ≤ _ := by
             refine mul_le_mul_of_nonneg_right ?_ (Real.rpow_nonneg hε _)
-            calc Real.rpow (2 * C₀) (1 / 4 : ℝ) ≤ Real.rpow (2 * C₀) 1 :=
+            calc _ ≤ _ :=
                   Real.rpow_le_rpow_of_exponent_le (by linarith) (by norm_num)
               _ = 2 * C₀ := Real.rpow_one _
 

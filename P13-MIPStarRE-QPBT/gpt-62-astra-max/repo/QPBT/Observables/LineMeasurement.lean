@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Observables.LineMeasurement.LinePointConsistency
+public import QPBT.Observables.LineMeasurement.EvalClassConsistency
 
 /-!
 # Expanded line measurements
@@ -96,7 +96,7 @@ theorem exp_line_point_cons_explicit' :
           ((S.pointMeasExpOption p₂.side W sample.2).effect a))
         S.psiHat ≤ 348 * deltaLine ε := by
   intro P ε S p₁ p₂ hopp W
-  have hε : 0 ≤ ε := S.eps_nonneg
+  have hε := S.eps_nonneg
   have key : ∀ (x a : ℝ), 1 ≤ a → a ≤ 86 + 86 → 0 ≤ x → x ≤ 2 * (a * ε) →
       x ≤ 4 → x ≤ 348 * deltaLine ε := by
     intro x a ha haC hx0 hxa hx4
@@ -104,34 +104,30 @@ theorem exp_line_point_cons_explicit' :
       x ≤ (2 * a + 4) * Real.sqrt ε :=
         le_mul_sqrt_of_le_mul_of_le_four (by linarith) hx0
           (by rw [mul_assoc]; exact hxa) hx4
-      _ ≤ 348 * Real.sqrt ε := by
+      _ ≤ _ := by
         apply mul_le_mul_of_nonneg_right _ (Real.sqrt_nonneg ε)
         linarith
   have htwo : (0 : ℝ) ≤ 2 := by norm_num
   cases p₁ <;> cases p₂ <;> simp only [Placement.IsOpposite] at hopp
-  · have hb := (ProjectiveSetting.evalClassDist_aaBa_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
+  · simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
+      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) ((ProjectiveSetting.evalClassDist_aaBa_le S W).trans
+        (mul_le_mul_of_nonneg_left
+        (WinImplications.win_low_degree_explicit P ε S hε W) htwo))
       (ProjectiveSetting.evalClassDist_aaBa_le_four S W)
-  · have hb := (ProjectiveSetting.evalClassDist_baAa_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_interchanged_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
+  · simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
+      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) ((ProjectiveSetting.evalClassDist_baAa_le S W).trans
+        (mul_le_mul_of_nonneg_left
+        (WinImplications.win_low_degree_interchanged_explicit P ε S hε W) htwo))
       (ProjectiveSetting.evalClassDist_baAa_le_four S W)
-  · have hb := (ProjectiveSetting.evalClassDist_bbAb_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_interchanged_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
+  · simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
+      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) ((ProjectiveSetting.evalClassDist_bbAb_le S W).trans
+        (mul_le_mul_of_nonneg_left
+        (WinImplications.win_low_degree_interchanged_explicit P ε S hε W) htwo))
       (ProjectiveSetting.evalClassDist_bbAb_le_four S W)
-  · have hb := (ProjectiveSetting.evalClassDist_abBb_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
+  · simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
+      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) ((ProjectiveSetting.evalClassDist_abBb_le S W).trans
+        (mul_le_mul_of_nonneg_left
+        (WinImplications.win_low_degree_explicit P ε S hε W) htwo))
       (ProjectiveSetting.evalClassDist_abBb_le_four S W)
 
 end

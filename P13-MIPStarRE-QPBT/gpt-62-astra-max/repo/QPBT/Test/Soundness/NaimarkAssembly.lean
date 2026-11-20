@@ -56,9 +56,9 @@ theorem exists_arbitrary_strategy_isometry_bounds :
             ‖isometryTensor w.φA w.φB S.ψ - idealState P w.aux‖ ≤
                 deltaQld a b ε P.m P.d P.q ∧
             (∀ W : PauliKind,
-              pauliOperatorDistanceA P S w W ≤ deltaQld a b ε P.m P.d P.q) ∧
+              pauliOperatorDistanceA w W ≤ deltaQld a b ε P.m P.d P.q) ∧
             (∀ W : PauliKind,
-              pauliOperatorDistanceB P S w W ≤ deltaQld a b ε P.m P.d P.q) := by
+              pauliOperatorDistanceB w W ≤ deltaQld a b ε P.m P.d P.q) := by
   obtain ⟨a, b, ha, hb, hb1, hproj⟩ := exists_projective_setting_isometry_bounds
   have haa : a ≤ 21 * a ^ 2 := by nlinarith
   refine ⟨21 * a ^ 2, b, by nlinarith, hb, hb1, ?_⟩
@@ -66,44 +66,40 @@ theorem exists_arbitrary_strategy_isometry_bounds :
   have hprojective := hproj P ε hε0 hε1 (pauliNaimarkSetting P ε S hwin)
   simp only [pauliNaimarkSetting] at hprojective
   obtain ⟨t, hstate, hA, hB⟩ := hprojective
-  have hmono : deltaQld a b ε P.m P.d P.q ≤
-      deltaQld (21 * a ^ 2) b ε P.m P.d P.q :=
-    deltaQld_mono ha haa le_rfl hb hε0 hε1
-  have hstate' : ‖isometryTensor t.φA t.φB (pauliNaimarkStrategy P S).ψ -
+  let state := isometryTensor t.φA t.φB (pauliNaimarkStrategy S).ψ
+  have hstate' : ‖state -
       idealState P t.aux‖ ≤ deltaQld a b ε P.m P.d P.q := hstate
-  have hsq : ‖isometryTensor t.φA t.φB (pauliNaimarkStrategy P S).ψ -
+  have hsq : ‖state -
       idealState P t.aux‖ ^ 2 ≤ deltaQld a b ε P.m P.d P.q ^ 2 := by
-    nlinarith [norm_nonneg (isometryTensor t.φA t.φB (pauliNaimarkStrategy P S).ψ -
+    nlinarith [norm_nonneg (state -
       idealState P t.aux)]
-  have habsorb : 3 * deltaQld a b ε P.m P.d P.q +
-      6 * deltaQld a b ε P.m P.d P.q ^ 2 ≤
+  have habsorb : 3 * _ +
+      6 * _ ^ 2 ≤
         deltaQld (21 * a ^ 2) b ε P.m P.d P.q :=
     three_add_six_sq_deltaQld_le ha hb hε0 hε1
   refine ⟨pauliNaimarkWitness P S t, ?_, ?_, ?_⟩
-  · rw [pauli_naimark_witness_state_distance_eq]
-    exact hstate'.trans hmono
+  · rw [pauli_naimark_witness_state_eq]
+    exact hstate'.trans (deltaQld_mono ha haa le_rfl hb hε0 hε1)
   · intro W
-    have hA' : pauliOperatorDistanceA P (pauliNaimarkStrategy P S) t W ≤
-        deltaQld a b ε P.m P.d P.q := hA W
-    calc pauliOperatorDistanceA P S (pauliNaimarkWitness P S t) W
-        ≤ 3 * pauliOperatorDistanceA P (pauliNaimarkStrategy P S) t W +
-            6 * ‖isometryTensor t.φA t.φB (pauliNaimarkStrategy P S).ψ -
+    have hA' := hA W
+    calc _
+        ≤ 3 * pauliOperatorDistanceA t W +
+            6 * ‖state -
               idealState P t.aux‖ ^ 2 :=
           pauli_naimark_operator_distanceA_le P S t W
       _ ≤ 3 * deltaQld a b ε P.m P.d P.q +
             6 * deltaQld a b ε P.m P.d P.q ^ 2 := by linarith
-      _ ≤ deltaQld (21 * a ^ 2) b ε P.m P.d P.q := habsorb
+      _ ≤ _ := habsorb
   · intro W
-    have hB' : pauliOperatorDistanceB P (pauliNaimarkStrategy P S) t W ≤
-        deltaQld a b ε P.m P.d P.q := hB W
-    calc pauliOperatorDistanceB P S (pauliNaimarkWitness P S t) W
-        ≤ 3 * pauliOperatorDistanceB P (pauliNaimarkStrategy P S) t W +
-            6 * ‖isometryTensor t.φA t.φB (pauliNaimarkStrategy P S).ψ -
+    have hB' := hB W
+    calc _
+        ≤ 3 * pauliOperatorDistanceB t W +
+            6 * ‖state -
               idealState P t.aux‖ ^ 2 :=
           pauli_naimark_operator_distanceB_le P S t W
       _ ≤ 3 * deltaQld a b ε P.m P.d P.q +
             6 * deltaQld a b ε P.m P.d P.q ^ 2 := by linarith
-      _ ≤ deltaQld (21 * a ^ 2) b ε P.m P.d P.q := habsorb
+      _ ≤ _ := habsorb
 
 end
 

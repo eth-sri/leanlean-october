@@ -59,14 +59,13 @@ theorem vecTensor_eprPartialInner {R V : Type*} [Fintype R] [DecidableEq R]
   ext x
   change (∑ p : V × V, star (eprState V p) * ψ (x.1, p)) * eprState V x.2 =
     ∑ j : R × (V × V),
-      ((1 : Op R) x.1 j.1 * (eprState V x.2 * star (eprState V j.2))) * ψ j
+      (_ * (eprState V x.2 * star (eprState V j.2))) * ψ j
   conv_rhs => rw [Fintype.sum_prod_type]
   simp only [Matrix.one_apply, ite_mul, one_mul, zero_mul]
   conv_rhs => rw [Finset.sum_comm]
-  simp only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  simp
   rw [Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro p _
+  congr 1 with p
   ring
 
 end Extraction
@@ -77,26 +76,25 @@ variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
 
 open scoped Classical
 
+section
+
+variable (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+
 /-- In EPR-first local coordinates, the ideal extraction state is the target
 of the existing auxiliary-state normalization theorem. -/
-theorem reindexState_idealExpState
-    (aux : EuclideanSpace ℂ
-      (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
+theorem reindexState_idealExpState :
     reindexState (extractionEprFirstEquiv P S.toStrategy.ιA S.toStrategy.ιB)
         (S.idealExpState aux) =
       reindexState prodShuffle (vecTensor (eprState (PauliRegister P)) aux) := by
   ext index
-  change aux ((index.1.2.1, index.1.2.2), (index.2.2.1, index.2.2.2)) *
-      eprState (PauliRegister P) (index.1.1, index.2.1) =
-    eprState (PauliRegister P) (index.1.1, index.2.1) * aux (index.1.2, index.2.2)
-  exact mul_comm _ _
+  apply mul_comm
 
 /-- Tensoring an auxiliary vector with EPR preserves its norm. -/
-theorem idealExpState_norm
-    (aux : EuclideanSpace ℂ
-      (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
+theorem idealExpState_norm :
     ‖S.idealExpState aux‖ = ‖aux‖ := by
-  rw [idealExpState, reindexState_norm_eq, vecTensor_norm_eq, eprState_norm, mul_one]
+  simp [idealExpState, reindexState_norm_eq, vecTensor_norm_eq, eprState_norm]
+
+end
 
 /-- A normalized reference vector on `AA'BB'`, formed from the original state
 and one EPR pair. It is used when the EPR projection of the given state vanishes. -/
@@ -106,8 +104,7 @@ def extractionAuxReference : EuclideanSpace ℂ
 
 /-- The reference auxiliary vector has norm one. -/
 theorem extractionAuxReference_norm : ‖S.extractionAuxReference‖ = 1 := by
-  rw [extractionAuxReference, reindexState_norm_eq, vecTensor_norm_eq, eprState_norm,
-    S.toStrategy.ψ_norm, one_mul]
+  simp [extractionAuxReference, reindexState_norm_eq, vecTensor_norm_eq, eprState_norm, S.toStrategy.ψ_norm]
 
 /-- The EPR projection on registers `A''B''`, with identity on `AA'BB'`.
 Paper lines 1766-1769 use this projection to select the auxiliary vector. -/
@@ -117,10 +114,11 @@ def extractionEprProjection : Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
       (Matrix.vecMulVec (fun x => eprState (PauliRegister P) x)
         (fun y => star (eprState (PauliRegister P) y))))
 
+variable (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB))
+
 /-- The auxiliary vector before normalization, obtained by contracting the
 extracted registers against EPR. This is `aux_0` at paper line 1769. -/
-def extractionAux0
-    (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
+def extractionAux0 :
     EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB) :=
   Extraction.eprPartialInner
     (reindexState (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm θ)
@@ -129,8 +127,7 @@ def extractionAux0
 given six-register state. This identifies the actual auxiliary construction
 with the projection in paper lines 1776-1779, retaining the heterogeneous
 player spaces of blueprint `lem:qld-unitary`. -/
-theorem idealExpState_extractionAux0
-    (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
+theorem idealExpState_extractionAux0 :
     S.idealExpState (S.extractionAux0 θ) =
       applyOperatorToState S.extractionEprProjection θ := by
   unfold idealExpState extractionAux0
@@ -139,18 +136,15 @@ theorem idealExpState_extractionAux0
   let e := (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm
   let T := heteroKron
     (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
-    (Matrix.vecMulVec (fun x => eprState (PauliRegister P) x)
+    (Matrix.vecMulVec (eprState (PauliRegister P))
       (fun y => star (eprState (PauliRegister P) y)))
-  change (T *ᵥ (fun j => θ (e.symm j))) (e x) =
-    ((T.submatrix e e) *ᵥ (fun j => θ j)) x
-  exact (congrFun (Matrix.submatrix_mulVec_equiv T (fun j => θ j) e e) x).symm
+  exact (congrFun (Matrix.submatrix_mulVec_equiv T _ e e) x).symm
 
 /-- Normalize the projected auxiliary vector, at twice the projection error.
 This is the normalization step at paper lines 1773-1783. The existing
 normalization theorem also covers a zero projection, using the reference
 vector above; no nonvanishing assumption is added. -/
-theorem exists_unit_aux_near_eprProjection
-    (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) (hθ : ‖θ‖ = 1) :
+theorem exists_unit_aux_near_eprProjection (hθ : ‖θ‖ = 1) :
     ∃ aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB),
       ‖aux‖ = 1 ∧ ‖θ - S.idealExpState aux‖ ≤
         2 * ‖θ - applyOperatorToState S.extractionEprProjection θ‖ := by

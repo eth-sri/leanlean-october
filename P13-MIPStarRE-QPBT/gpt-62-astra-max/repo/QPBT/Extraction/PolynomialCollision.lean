@@ -1,6 +1,5 @@
 module
 
-public import MIPStarRE.LDT.Basic.DistributionAvg
 public import QPBT.Algebra.Decoding
 
 /-!
@@ -44,13 +43,13 @@ theorem polyFunc_eval_collision_le {m d : ℕ} {K : Type*} [Field K] [Fintype K]
   have havg :
       avgOver (uniformDistribution (Fin m → K))
         (fun point => if MvPolynomial.eval point first.1 = MvPolynomial.eval point second.1
-          then (1 : ℝ) else 0) =
-        (polynomialAgreementProbability m K first.1 second.1 : ℝ) := by
-    rw [avgOver_uniform_eq_inv_card_mul_sum, ← Finset.sum_filter]
+          then 1 else 0) =
+        (polynomialAgreementProbability m K first.1 second.1) := by
+    simp [avgOver_uniform_eq_inv_card_mul_sum]
     simp [polynomialAgreementProbability, div_eq_mul_inv, mul_comm]
   rw [havg]
   have hbound := schwartzZippel_individualDegree first second hne
-  have hreal : (polynomialAgreementProbability m K first.1 second.1 : ℝ) ≤
+  have hreal : (polynomialAgreementProbability m K first.1 second.1) ≤
       ((((m * d : ℕ) : ℚ≥0) / Fintype.card K) : ℝ) := by
     exact_mod_cast hbound
   simpa using hreal
@@ -63,13 +62,10 @@ This specializes `polyFunc_eval_collision_le` to the fixed field model and
 blueprint `eq:qld-nonencoding-mass`. -/
 theorem poly_eval_collision_le {P : AdmissibleParams}
     (first second : Poly P) (hne : first ≠ second) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P))
+    avgOver (uniformDistribution (PauliPoint P))
       (fun point => if evalPoly first point = evalPoly second point then (1 : ℝ) else 0) ≤
         (P.m * P.d : ℝ) / P.q := by
-  have hcard : Fintype.card (PauliScalar P) = P.q :=
-    @FieldModel.card P.q P.model.toFieldModel
-  unfold evalPoly
-  conv_rhs => rw [← hcard]
-  exact polyFunc_eval_collision_le first second hne
+  conv_rhs => rw [← (@FieldModel.card P.q P.model.toFieldModel)]
+  solve_by_elim [polyFunc_eval_collision_le]
 
 end MIPStarRE.QPBT

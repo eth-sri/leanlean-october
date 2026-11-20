@@ -41,15 +41,23 @@ theorem linePointDist_nondegenerate_weighted_collision_le {L : LdParams}
         avgOver (linePointDist L) (fun sample =>
           if sample.1.direction ≠ 0 then weight sample.1 else 0) := by
   classical
-  rw [avgOver_linePointDist_resample_parameter]
-  rw [← avgOver_const_mul]
+  rw [avgOver_linePointDist_resample_parameter, ← avgOver_const_mul]
   apply avgOver_mono
   intro sample
   by_cases hdir : sample.1.direction ≠ 0
   · simp only [if_pos hdir]
     rw [avgOver_const_mul]
     exact (mul_le_mul_of_nonneg_left
-      (evalOpt_uniform_parameter_collision_le sample.1 hdir first second hne)
+      ((by
+         classical
+         simp_rw [evalOpt_affine_parameter_of_direction_ne_zero sample.1 hdir,
+           Option.some.injEq]
+         have hcard := evalCoefficient_collision_card_le hne
+         unfold avgOver
+         simp only [uniformDistribution_support, uniformDistribution_weight_apply,
+           mul_ite, mul_one, mul_zero, ← Finset.sum_filter]
+         rw [Finset.sum_const, nsmul_eq_mul, mul_one_div]
+         gcongr))
       (hweight sample.1)).trans_eq
       (mul_comm _ _)
   · simp [hdir, avgOver]

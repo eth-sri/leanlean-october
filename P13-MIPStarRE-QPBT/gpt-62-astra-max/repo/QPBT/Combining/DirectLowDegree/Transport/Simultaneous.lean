@@ -3,9 +3,12 @@ module
 public import MIPStarRE.LDT.Preliminaries.PolynomialAgreement
 public import MIPStarRE.LDT.Test.MainTheorem.MainFormal
 public import QPBT.Combining.DirectLowDegree.Transport.Consistency.Defect
-public import QPBT.Combining.DirectLowDegree.Transport.Error
 public import QPBT.Combining.DirectLowDegree.Transport.PassConversion
-public import QPBT.Combining.QuantitativeScalars
+public import QPBT.Combining.ActualErrorBounds
+public import MIPStarRE.LDT.Test.MainTheorem.ScalarBounds.CascadeBounds.SigmaZeta1
+public import MIPStarRE.LDT.Test.MainTheorem.SourceScalars
+public import MIPStarRE.LDT.Preliminaries.DistanceBounds
+public import MIPStarRE.LDT.Test.MainTheorem.SourceRoleRegister.Final
 
 /-!
 # Simultaneous polynomial measurements for the direct low-degree game
@@ -81,21 +84,16 @@ hypothesis of blueprint `lem:ld-sandwich`
 (paper `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:465-501`). -/
 theorem directPolynomialAgreement_avg_le_mdq (D : DirectLdParams)
     (g g' : PolyIndex D.m (DirectScalarQ D) D.d) (hneq : g ≠ g') :
-    avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+    avgOver (uniformDistribution (DirectPoint D))
         (fun u => if MvPolynomial.eval u g.1 = MvPolynomial.eval u g'.1 then
           (1 : Error) else 0) ≤
       (D.m * D.d : Error) / D.q := by
   letI := D.toLDTFieldModel
   let gLdt := directPolyEquivPolynomial D g
   let g'Ldt := directPolyEquivPolynomial D g'
-  have hneqLdt : gLdt ≠ g'Ldt := by
-    intro heq
-    exact hneq ((directPolyEquivPolynomial D).injective heq)
   calc
-    avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
-        (fun u => if MvPolynomial.eval u g.1 = MvPolynomial.eval u g'.1 then
-          (1 : Error) else 0) =
-      avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+    _ =
+      avgOver (uniformDistribution (DirectPoint D))
         (fun u => if gLdt (directPointEquiv D u) =
           g'Ldt (directPointEquiv D u) then (1 : Error) else 0) := by
             apply avgOver_congr
@@ -103,71 +101,20 @@ theorem directPolynomialAgreement_avg_le_mdq (D : DirectLdParams)
             simp only [gLdt, g'Ldt, directPolyEquivPolynomial_apply]
             exact if_congr
               ((directScalarEquiv D).injective.eq_iff.symm) rfl rfl
-    _ = avgOver (uniformDistribution (Point D.toLDTParameters))
-        (fun u : Point D.toLDTParameters =>
-          if gLdt u = g'Ldt u then (1 : Error) else 0) := by
+    _ = _ := by
       simpa using
         (avgOver_uniform_equiv (directPointEquiv D)
-          (fun u : Fin D.m → DirectScalarQ D =>
+          (fun u : DirectPoint D =>
             if gLdt (directPointEquiv D u) =
-              g'Ldt (directPointEquiv D u) then (1 : Error) else 0))
-    _ ≤ (D.m * D.d : Error) / D.q :=
-      polynomialAgreement_avg_le_mdq D.toLDTParameters gLdt g'Ldt hneqLdt
+              g'Ldt (directPointEquiv D u) then 1 else 0))
+    _ ≤ _ :=
+      polynomialAgreement_avg_le_mdq D.toLDTParameters gLdt g'Ldt (by
+        intro heq
+        exact hneq ((directPolyEquivPolynomial D).injective heq))
 
 /-! ## Coordinatewise low individual degree soundness -/
 
-/-- Quantum soundness of the low individual degree test (`thm:main-formal`,
-paper `references/ldt-paper/test_definition.tex:180-202`) applied to one
-coordinate of a projective strategy for the direct low-degree game.
-
-The coordinate strategy passes the test with failure probability at most
-`3 ε`, and the theorem is instantiated at the auxiliary sampling parameter
-`directLdAuxParameter D`; both numerical side conditions of the theorem follow
-from the positivity of the dimension and of the degree.  Blueprint
-`lem:ld-soundness`, paper
-`references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:413-458`. -/
-theorem directCoordinateMainFormal
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) (ε : Error)
-    (hwin : 1 - ε ≤ S.value) :
-    letI := D.toLDTFieldModel
-    ∃ GA : ProjMeas (Polynomial D.toLDTParameters) S.ιA,
-      ∃ GB : ProjMeas (Polynomial D.toLDTParameters) S.ιB,
-        ConsRel (directCoordinateProjStrat D S hS r).state
-            (uniformDistribution (Point D.toLDTParameters))
-            (IdxProjMeas.toIdxSubMeas
-              (directCoordinateProjStrat D S hS r).pointMeasurementA)
-            (polynomialEvaluationFamily D.toLDTParameters GB.toSubMeas)
-            (Test.mainFormalError D.toLDTParameters
-              (directLdAuxParameter D) (3 * ε)) ∧
-          ConsRel (directCoordinateProjStrat D S hS r).state
-            (uniformDistribution (Point D.toLDTParameters))
-            (polynomialEvaluationFamily D.toLDTParameters GA.toSubMeas)
-            (IdxProjMeas.toIdxSubMeas
-              (directCoordinateProjStrat D S hS r).pointMeasurementB)
-            (Test.mainFormalError D.toLDTParameters
-              (directLdAuxParameter D) (3 * ε)) ∧
-          ConsRel (directCoordinateProjStrat D S hS r).state
-            (uniformDistribution Unit)
-            (constSubMeasFamily GA.toSubMeas)
-            (constSubMeasFamily GB.toSubMeas)
-            (Test.mainFormalError D.toLDTParameters
-              (directLdAuxParameter D) (3 * ε)) := by
-  letI := D.toLDTFieldModel
-  exact Test.mainFormal D.toLDTParameters
-    (directCoordinateProjStrat D S hS r) (3 * ε)
-    (directCoordinate_passes D S hS r ε hwin).soundnessHypothesis
-    (directLdAuxParameter D) (four_hundred_mul_le_directLdAuxParameter D)
-    (directLdAuxParameter_pos D)
-
 /-! ## One-coordinate tuples -/
-
-/-- Relabeling an outcome by a constant tuple over a one-element index set is
-selected by the value of the tuple at the unique index. -/
-private theorem const_tuple_eq_iff {iota beta : Type*} [Unique iota]
-    (v : iota → beta) (b : beta) :
-    v = (fun _ => b) ↔ v default = b :=
-  funext_iff.trans Unique.forall_iff
 
 /-- The effect of a tuple-relabeled measurement at a constant tuple over a
 one-element index set is the effect of the relabeling by the unique
@@ -179,9 +126,8 @@ private theorem postprocess_effect_const_tuple
     (M : Quantum.Measurement alpha d) (f : alpha → iota → beta) (b : beta) :
     (M.postprocess f).effect (fun _ => b) =
       (M.postprocess (fun a => f a default)).effect b := by
-  simp only [Quantum.Measurement.postprocess_effect]
   exact Finset.sum_congr
-    (Finset.filter_congr fun a _ => const_tuple_eq_iff (f a) b)
+    (Finset.filter_congr fun a _ => (funext_iff.trans Unique.forall_iff))
     (fun _ _ => rfl)
 
 /-- Reading a measurement as a one-coordinate tuple measurement does not
@@ -195,54 +141,48 @@ private theorem postprocess_const_tuple_effect_self
   simp only [Quantum.Measurement.postprocess_effect, Finset.filter_eq',
     Finset.mem_univ, if_true, Finset.sum_singleton]
 
+variable (D : DirectLdParams) (hk : D.k = 1) (S : Strategy (directLdGame D))
+  (hS : S.IsProjective)
+
+include hk in
 /-- Transport one-coordinate polynomial measurements to singleton tuples
 without changing any of the three consistency bounds. -/
-private theorem direct_coordinate_measurements_to_tuple_of_k_eq_one
-    (D : DirectLdParams) (hk : D.k = 1) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) (bound : ℝ)
+private theorem direct_coordinate_measurements_to_tuple_of_k_eq_one (r : Fin D.k) (bound : ℝ)
     (hcoord :
       letI := D.toLDTFieldModel
       ∃ GA₀ : ProjMeas (Polynomial D.toLDTParameters) S.ιA,
         ∃ GB₀ : ProjMeas (Polynomial D.toLDTParameters) S.ιB,
-          ConsRel (directCoordinateProjStrat D S hS r).state
+          ConsRel (directCoordinateProjStrat S hS r).state
               (uniformDistribution (Point D.toLDTParameters))
               (IdxProjMeas.toIdxSubMeas
-                (directCoordinateProjStrat D S hS r).pointMeasurementA)
+                (directCoordinateProjStrat S hS r).pointMeasurementA)
               (polynomialEvaluationFamily D.toLDTParameters GB₀.toSubMeas) bound ∧
-            ConsRel (directCoordinateProjStrat D S hS r).state
+            ConsRel (directCoordinateProjStrat S hS r).state
               (uniformDistribution (Point D.toLDTParameters))
               (polynomialEvaluationFamily D.toLDTParameters GA₀.toSubMeas)
               (IdxProjMeas.toIdxSubMeas
-                (directCoordinateProjStrat D S hS r).pointMeasurementB) bound ∧
-            ConsRel (directCoordinateProjStrat D S hS r).state
+                (directCoordinateProjStrat S hS r).pointMeasurementB) bound ∧
+            ConsRel (directCoordinateProjStrat S hS r).state
               (uniformDistribution Unit)
               (constSubMeasFamily GA₀.toSubMeas)
               (constSubMeasFamily GB₀.toSubMeas) bound) :
     ∃ GA : DirectPolyMeasTuple D S.ιA,
       ∃ GB : DirectPolyMeasTuple D S.ιB,
-        consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
-            (fun u outcome =>
-              heteroKron
-                (((S.A (directLdPointQuestionOf D u)).postprocess
-                  (directLdPointValuesOrZero D)).effect outcome) 1)
-            (fun u outcome =>
-              heteroKron 1
-                ((GB.postprocess (evalDirectPolyTupleAt u)).effect outcome))
+        bipartiteDefect
+            (uniformDistribution (DirectPoint D))
+            (fun u => (S.A (directLdPointQuestionOf D u)).postprocess
+            (directLdPointValuesOrZero D))
+            (fun u => GB.postprocess (evalDirectPolyTupleAt u))
             S.ψ ≤ bound ∧
-        consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
-            (fun u outcome =>
-              heteroKron
-                ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
-            (fun u outcome =>
-              heteroKron 1
-                (((S.B (directLdPointQuestionOf D u)).postprocess
-                  (directLdPointValuesOrZero D)).effect outcome))
+        bipartiteDefect
+            (uniformDistribution (DirectPoint D))
+            (fun u => GA.postprocess (evalDirectPolyTupleAt u))
+            (fun u => (S.B (directLdPointQuestionOf D u)).postprocess
+            (directLdPointValuesOrZero D))
             S.ψ ≤ bound ∧
-        consistencyDefect (uniformDistribution Unit)
-            (fun _ g => heteroKron (GA.effect g) 1)
-            (fun _ g => heteroKron 1 (GB.effect g)) S.ψ ≤ bound := by
+        bipartiteDefect (uniformDistribution Unit)
+            (fun _ => GA)
+            (fun _ => GB) S.ψ ≤ bound := by
   letI := D.toLDTFieldModel
   haveI hU : Unique (Fin D.k) :=
     { default := ⟨0, by omega⟩
@@ -250,30 +190,28 @@ private theorem direct_coordinate_measurements_to_tuple_of_k_eq_one
   have hr : r = default := Subsingleton.elim _ _
   subst r
   obtain ⟨GA₀, GB₀, h1, h2, h3⟩ := hcoord
-  refine ⟨(directPolynomialMeasurement D GA₀).postprocess (fun g _ => g),
-    (directPolynomialMeasurement D GB₀).postprocess (fun g _ => g), ?_, ?_, ?_⟩
-  · have h1' := directPointPolynomial_consistencyDefect_le D S hS default GB₀ _ h1
-    refine ((consistencyDefect_outcome_equiv _
+  refine ⟨(directPolynomialMeasurement GA₀).postprocess (fun g _ => g),
+    (directPolynomialMeasurement GB₀).postprocess (fun g _ => g), ?_, ?_, ?_⟩
+  · refine ((consistencyDefect_outcome_equiv _
       (Equiv.funUnique (Fin D.k) (DirectScalarQ D)).symm _ _ S.ψ).symm.trans
-      (consistencyDefect_congr _ _ _ _ _ S.ψ ?_ ?_)).trans_le h1'
+      (consistencyDefect_congr _ _ _ _ _ S.ψ ?_ ?_)).trans_le (directPointPolynomial_consistencyDefect_le D S hS default GB₀ _ h1)
     · intro u a
       change heteroKron (((S.A (directLdPointQuestionOf D u)).postprocess
         (directLdPointValuesOrZero D)).effect (fun _ => a)) 1 = _
       rw [postprocess_effect_const_tuple]
       rfl
     · intro u a
-      change heteroKron 1 ((((directPolynomialMeasurement D GB₀).postprocess
+      change heteroKron 1 ((((directPolynomialMeasurement GB₀).postprocess
         (fun g _ => g)).postprocess (evalDirectPolyTupleAt u)).effect
           (fun _ => a)) = _
       rw [MIPStarRE.Quantum.Measurement.postprocess_comp,
         postprocess_effect_const_tuple]
       rfl
-  · have h2' := directPolynomialPoint_consistencyDefect_le D S hS default GA₀ _ h2
-    refine ((consistencyDefect_outcome_equiv _
+  · refine ((consistencyDefect_outcome_equiv _
       (Equiv.funUnique (Fin D.k) (DirectScalarQ D)).symm _ _ S.ψ).symm.trans
-      (consistencyDefect_congr _ _ _ _ _ S.ψ ?_ ?_)).trans_le h2'
+      (consistencyDefect_congr _ _ _ _ _ S.ψ ?_ ?_)).trans_le (directPolynomialPoint_consistencyDefect_le D S hS default GA₀ _ h2)
     · intro u a
-      change heteroKron ((((directPolynomialMeasurement D GA₀).postprocess
+      change heteroKron ((((directPolynomialMeasurement GA₀).postprocess
         (fun g _ => g)).postprocess (evalDirectPolyTupleAt u)).effect
           (fun _ => a)) 1 = _
       rw [MIPStarRE.Quantum.Measurement.postprocess_comp,
@@ -284,20 +222,20 @@ private theorem direct_coordinate_measurements_to_tuple_of_k_eq_one
         (directLdPointValuesOrZero D)).effect (fun _ => a)) = _
       rw [postprocess_effect_const_tuple]
       rfl
-  · have h3' := directPolynomialPolynomial_consistencyDefect_le D S GA₀ GB₀ _ h3
-    refine ((consistencyDefect_outcome_equiv _
+  · refine ((consistencyDefect_outcome_equiv _
       (Equiv.funUnique (Fin D.k) (PolyIndex D.m (DirectScalarQ D) D.d)).symm _ _
         S.ψ).symm.trans
-      (consistencyDefect_congr _ _ _ _ _ S.ψ ?_ ?_)).trans_le h3'
+      (consistencyDefect_congr _ _ _ _ _ S.ψ ?_ ?_)).trans_le (directPolynomialPolynomial_consistencyDefect_le D S GA₀ GB₀ _ h3)
     · intro _ p
-      change heteroKron (((directPolynomialMeasurement D GA₀).postprocess
+      change heteroKron (((directPolynomialMeasurement GA₀).postprocess
         (fun g _ => g)).effect (fun _ => p)) 1 = _
       rw [postprocess_const_tuple_effect_self]
     · intro _ p
-      change heteroKron 1 (((directPolynomialMeasurement D GB₀).postprocess
+      change heteroKron 1 (((directPolynomialMeasurement GB₀).postprocess
         (fun g _ => g)).effect (fun _ => p)) = _
       rw [postprocess_const_tuple_effect_self]
 
+include hS hk in
 /-- The polynomial-tuple conclusion of `lem:ld-soundness` for simultaneity
 parameter `1`: the coordinate conclusions of the low individual degree
 theorem, read as one-coordinate tuples.
@@ -311,41 +249,38 @@ measurements; see the module docstring and
 `docs/paper-gaps/qpbt_ld-simultaneous-sandwich.tex`.  Blueprint
 `lem:ld-soundness`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:413-458`. -/
-theorem exists_directSimultaneousPolynomialMeasurements_of_k_eq_one
-    (D : DirectLdParams) (hk : D.k = 1) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (ε : Error) (hwin : 1 - ε ≤ S.value) :
+theorem exists_directSimultaneousPolynomialMeasurements_of_k_eq_one (ε : Error) (hwin : 1 - ε ≤ S.value) :
     ∃ GA : DirectPolyMeasTuple D S.ιA,
       ∃ GB : DirectPolyMeasTuple D S.ιB,
-        consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
-            (fun u outcome =>
-              heteroKron
-                (((S.A (directLdPointQuestionOf D u)).postprocess
-                  (directLdPointValuesOrZero D)).effect outcome) 1)
-            (fun u outcome =>
-              heteroKron 1
-                ((GB.postprocess (evalDirectPolyTupleAt u)).effect outcome))
+        bipartiteDefect
+            (uniformDistribution (DirectPoint D))
+            (fun u => (S.A (directLdPointQuestionOf D u)).postprocess
+            (directLdPointValuesOrZero D))
+            (fun u => GB.postprocess (evalDirectPolyTupleAt u))
             S.ψ ≤
           Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε) ∧
-        consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
-            (fun u outcome =>
-              heteroKron
-                ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
-            (fun u outcome =>
-              heteroKron 1
-                (((S.B (directLdPointQuestionOf D u)).postprocess
-                  (directLdPointValuesOrZero D)).effect outcome))
+        bipartiteDefect
+            (uniformDistribution (DirectPoint D))
+            (fun u => GA.postprocess (evalDirectPolyTupleAt u))
+            (fun u => (S.B (directLdPointQuestionOf D u)).postprocess
+            (directLdPointValuesOrZero D))
             S.ψ ≤
           Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε) ∧
-        consistencyDefect (uniformDistribution Unit)
-            (fun _ g => heteroKron (GA.effect g) 1)
-            (fun _ g => heteroKron 1 (GB.effect g))
+        bipartiteDefect (uniformDistribution Unit)
+            (fun _ => GA)
+            (fun _ => GB)
             S.ψ ≤
           Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε) := by
-  apply direct_coordinate_measurements_to_tuple_of_k_eq_one D hk S hS ⟨0, D.hk⟩ _
+  apply direct_coordinate_measurements_to_tuple_of_k_eq_one <;> try assumption
   letI := D.toLDTFieldModel
-  exact directCoordinateMainFormal D S hS ⟨0, D.hk⟩ ε hwin
+  letI := D.toLDTFieldModel
+  exact Test.mainFormal D.toLDTParameters
+    (directCoordinateProjStrat S hS ⟨0, D.hk⟩) (3 * ε)
+    (directCoordinate_passes D S hS _ ε hwin).soundnessHypothesis
+    (directLdAuxParameter D) ((Nat.mul_le_mul (Nat.mul_le_mul (by norm_num) (Nat.le_self_pow (by norm_num) D.m)) le_rfl))
+    ((by
+       have hm := D.hm
+       exact Nat.mul_pos (Nat.mul_pos (by norm_num) (pow_pos hm 3)) D.hd))
 
 end
 

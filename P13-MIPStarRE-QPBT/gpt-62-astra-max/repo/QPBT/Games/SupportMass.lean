@@ -53,25 +53,21 @@ theorem mass_outside_support_le_point_defect
       stateQForm psi (heteroKron (meas.effect outcome) 1)) ≤
       ∑ outcome : Outcome, ∑ other : Outcome, if outcome = other then 0 else
         stateQForm psi (heteroKron (meas.effect outcome) (reference.effect other)) := by
-  have hnonneg (outcome other : Outcome) :
-      0 ≤ stateQForm psi (heteroKron (meas.effect outcome) (reference.effect other)) :=
+  have hnonneg (outcome other : Outcome)  :=
     stateQForm_nonneg psi (kronecker_nonneg (meas.pos outcome) (reference.pos other))
   calc
-    (∑ outcome ∈ Finset.univ.filter (fun outcome => outcome ∉ allowed),
-        stateQForm psi (heteroKron (meas.effect outcome) 1)) =
+    _ =
         ∑ outcome ∈ Finset.univ.filter (fun outcome => outcome ∉ allowed),
           ∑ other : Outcome, if outcome = other then 0 else
             stateQForm psi
               (heteroKron (meas.effect outcome) (reference.effect other)) := by
       apply Finset.sum_congr rfl
       intro outcome houtcome
-      have hzero := hsupport outcome (Finset.mem_filter.mp houtcome).2
       rw [← reference.sum_eq_one, heteroKron_finset_sum_right, stateQForm_finset_sum]
-      apply Finset.sum_congr rfl
-      intro other _
+      congr 1 with other
       by_cases heq : outcome = other
       · subst other
-        simp [hzero, heteroKron, stateQForm, applyOperatorToState]
+        simp [(hsupport outcome (Finset.mem_filter.mp houtcome).2), heteroKron, stateQForm, applyOperatorToState]
       · rw [if_neg heq]
     _ ≤ _ := by
       apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
@@ -80,6 +76,6 @@ theorem mass_outside_support_le_point_defect
       intro other _
       split_ifs
       · exact le_rfl
-      · exact hnonneg outcome other
+      · apply hnonneg
 
 end MIPStarRE.QPBT

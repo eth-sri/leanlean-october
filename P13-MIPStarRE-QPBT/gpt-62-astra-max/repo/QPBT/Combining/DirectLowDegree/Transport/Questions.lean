@@ -44,104 +44,101 @@ noncomputable section
 
 /-! ## Canonical line rebasing of LDT lines -/
 
+section
+
+variable {K : Type*} [Field K] {m : ℕ}
+
 /-- A chosen affine parameter expressing a point relative to its canonical
 line representative. -/
-noncomputable def directLineRepParameter
-    {K : Type*} [Field K] {m : ℕ} (v u : Fin m → K) : K :=
+noncomputable def directLineRepParameter (v u : Fin m → K) : K :=
   Classical.choose (mem_linePoints_lineRepMap v u)
 
 /-- The chosen canonical rebase parameter reconstructs the original point. -/
-theorem directLineRepParameter_spec
-    {K : Type*} [Field K] {m : ℕ} (v u : Fin m → K) :
+theorem directLineRepParameter_spec (v u : Fin m → K) :
     u = lineRepMap v u + directLineRepParameter v u • v :=
   Classical.choose_spec (mem_linePoints_lineRepMap v u)
 
 /-- Canonical line representatives are unchanged by translation along their
 direction. -/
 theorem lineRepMap_add_smul
-    {K : Type*} [Field K] {m : ℕ}
     (v u : Fin m → K) (t : K) :
     lineRepMap v (u + t • v) = lineRepMap v u := by
-  let W : Submodule K (Fin m → K) := Submodule.span K ({v} : Set (Fin m → K))
-  have hv : v ∈ W := Submodule.subset_span (Set.mem_singleton v)
-  have hzero : lineRepMap v v = 0 := by
-    simp [lineRepMap, canonicalProjOfKernel, W, LinearMap.comp_apply,
-      Submodule.projectionOnto_apply_of_mem_right
-        (isCompl_registerSubmodule_canonicalComplement W).symm hv]
-  simp [map_add, map_smul, hzero]
+  simp_all [lineRepMap, canonicalProjOfKernel, Submodule.projectionOnto_apply_of_mem_right]
 
 /-- For a nonzero direction, the canonical rebase parameter is unique. -/
 theorem directLineRepParameter_eq_of_nonzero
-    {K : Type*} [Field K] {m : ℕ}
     {v u : Fin m → K} (hv : v ≠ 0) {t : K}
     (ht : u = lineRepMap v u + t • v) :
     directLineRepParameter v u = t := by
-  have hfun : directLineRepParameter v u • v = t • v := by
-    apply add_left_cancel (a := lineRepMap v u)
-    exact (directLineRepParameter_spec v u).symm.trans ht
   obtain ⟨i, hi⟩ : ∃ i, v i ≠ 0 := by
     by_contra h
     apply hv
     funext i
     simpa using not_exists.mp h i
-  have hcoord := congrFun hfun i
-  simp only [Pi.smul_apply, smul_eq_mul] at hcoord
+  have hcoord := congrFun (by
+    apply add_left_cancel (a := lineRepMap v u)
+    exact (directLineRepParameter_spec v u).symm.trans ht) i
   exact mul_right_cancel₀ hi hcoord
 
 /-- Translating a point on a nonzero line adds the translation to its
 canonical rebase parameter. -/
 theorem directLineRepParameter_add_smul
-    {K : Type*} [Field K] {m : ℕ}
     {v u : Fin m → K} (hv : v ≠ 0) (t : K) :
     directLineRepParameter v (u + t • v) =
       directLineRepParameter v u + t := by
   apply directLineRepParameter_eq_of_nonzero hv
   rw [lineRepMap_add_smul]
   calc
-    u + t • v =
+    _ =
         (lineRepMap v u + directLineRepParameter v u • v) + t • v := by
-      rw [← directLineRepParameter_spec v u]
-    _ = lineRepMap v u + (directLineRepParameter v u + t) • v := by
+      rw [← directLineRepParameter_spec]
+    _ = _ := by
       module
+
+end
 
 /-! ## The leading index of a direction -/
 
+section
+
+variable (D : DirectLdParams)
+
 /-- The coordinates at which a direct direction vector is nonzero. -/
-def directionSupport (D : DirectLdParams) (v : Fin D.m → DirectScalarQ D) :
+def directionSupport (v : DirectPoint D) :
     Finset (Fin D.m) :=
   open Classical in
   Finset.univ.filter fun j => v j ≠ 0
 
-theorem mem_directionSupport (D : DirectLdParams)
-    (v : Fin D.m → DirectScalarQ D) (j : Fin D.m) :
+theorem mem_directionSupport
+    (v : DirectPoint D) (j : Fin D.m) :
     j ∈ directionSupport D v ↔ v j ≠ 0 := by
   simp [directionSupport]
 
+variable {D} in
 /-- The leading index of a direction: the least coordinate at which it is
 nonzero, or the last coordinate for the zero direction.  Every coordinate
 before the leading index vanishes, so a direction is the prefix projection of
 itself at its leading index, and the pair (leading index, direction) is a
 canonical direct diagonal sample.  It is the direct index of the sample
 whenever the sampled direction is nonzero at the sampled index. -/
-noncomputable def directDiagonalIndexOf (D : DirectLdParams)
-    (v : Fin D.m → DirectScalarQ D) : Fin D.m :=
+noncomputable def directDiagonalIndexOf
+    (v : DirectPoint D) : Fin D.m :=
   open Classical in
   if h : (directionSupport D v).Nonempty then (directionSupport D v).min' h
   else Fin.rev D.firstIndex
 
 /-- A direction vanishing before `i` and nonzero at `i` has leading index
 `i`. -/
-theorem directDiagonalIndexOf_eq (D : DirectLdParams)
-    {v : Fin D.m → DirectScalarQ D} {i : Fin D.m}
+theorem directDiagonalIndexOf_eq
+    {v : DirectPoint D} {i : Fin D.m}
     (hzero : ∀ j : Fin D.m, j.val < i.val → v j = 0) (hi : v i ≠ 0) :
-    directDiagonalIndexOf D v = i := by
+    directDiagonalIndexOf v = i := by
   classical
-  have hmem : i ∈ directionSupport D v := (mem_directionSupport D v i).mpr hi
-  have hnonempty : (directionSupport D v).Nonempty := ⟨i, hmem⟩
+  have hmem := (mem_directionSupport D v i).mpr hi
   unfold directDiagonalIndexOf
-  rw [dif_pos hnonempty]
+  rw [dif_pos ⟨i, hmem⟩]
   apply le_antisymm
-  · exact Finset.min'_le _ _ hmem
+  · solve_by_elim [Finset.min'_le]
   · apply Finset.le_min'
     intro j hj
     by_contra hlt
@@ -152,9 +149,9 @@ theorem directDiagonalIndexOf_eq (D : DirectLdParams)
 whenever the direction is nonzero there.  This is the generic direct
 diagonal sample: the sampled index is recovered from the projected direction
 alone. -/
-theorem directDiagonalIndexOf_prefixProjection (D : DirectLdParams)
-    (i : Fin D.m) (v : Fin D.m → DirectScalarQ D) (hi : v i ≠ 0) :
-    directDiagonalIndexOf D (directPrefixProjection i v) = i := by
+theorem directDiagonalIndexOf_prefixProjection
+    (i : Fin D.m) (v : DirectPoint D) (hi : v i ≠ 0) :
+    directDiagonalIndexOf (directPrefixProjection i v) = i := by
   apply directDiagonalIndexOf_eq
   · intro j hj
     simp [directPrefixProjection, hj]
@@ -164,39 +161,42 @@ theorem directDiagonalIndexOf_prefixProjection (D : DirectLdParams)
 
 /-- Decode an LDT point into the fixed direct scalar field, reversing the
 coordinate order. -/
-abbrev ldtPointToDirect (D : DirectLdParams) :
-    Point D.toLDTParameters → Fin D.m → DirectScalarQ D :=
+abbrev ldtPointToDirect :
+    Point D.toLDTParameters → DirectPoint D :=
   (directPointEquiv D).symm
 
 /-- The direct canonical axis question represented by an LDT axis line.
 The LDT coordinate index is reversed together with the point
 coordinates. -/
-noncomputable def directAxisQuestionOf (D : DirectLdParams)
+noncomputable def directAxisQuestionOf
     (line : AxisParallelLine D.toLDTParameters) : DirectLdQuestion D :=
   let u := ldtPointToDirect D line.base
-  let i : Fin D.m := Fin.rev line.direction
-  let v : Fin D.m → DirectScalarQ D := coordinateDirection i
+  let i := Fin.rev line.direction
+  let v := coordinateDirection i
   (.aline, ⟨lineRepMap v u, i, 0⟩)
 
+variable {D} in
 /-- The direct canonical diagonal question represented by an LDT diagonal
 line.  The decoded direction is kept and the direct index is its leading
 index, so the question is the canonical direct question of the direct sample
 formed by the decoded base, the leading index, and the decoded direction
 (`directDiagonalQuestionOf_eq_directLdMap`). -/
-noncomputable def directDiagonalQuestionOf (D : DirectLdParams)
+noncomputable def directDiagonalQuestionOf
     (line : DiagonalLine D.toLDTParameters) : DirectLdQuestion D :=
   let u := ldtPointToDirect D line.base
   let v := ldtPointToDirect D line.direction
-  (.dline, ⟨lineRepMap v u, directDiagonalIndexOf D v, v⟩)
+  (.dline, ⟨lineRepMap v u, directDiagonalIndexOf v, v⟩)
 
+variable {D} in
 /-- The direct point question represented by an LDT point. -/
-noncomputable def directPointQuestionOf (D : DirectLdParams)
+noncomputable def directPointQuestionOf
     (u : Point D.toLDTParameters) : DirectLdQuestion D :=
   directLdPointQuestionOf D (ldtPointToDirect D u)
 
+variable {D} in
 /-- The LDT diagonal line represented by a direct sample: the encoded
 point and the encoded direction. -/
-def ldtDiagonalLineOf (D : DirectLdParams) (sample : DirectLdSpace D) :
+def ldtDiagonalLineOf (sample : DirectLdSpace D) :
     DiagonalLine D.toLDTParameters :=
   { base := directPointEquiv D sample.point
     direction := directPointEquiv D sample.direction }
@@ -204,27 +204,25 @@ def ldtDiagonalLineOf (D : DirectLdParams) (sample : DirectLdSpace D) :
 /-- An LDT `j`-restricted diagonal direction decodes to a direct direction
 vanishing before index `Fin.rev j`: the suffix restriction of the low
 individual degree test is the prefix restriction of the direct game. -/
-theorem ldtPointToDirect_extendRestrictedDirection_prefix_zero
-    (D : DirectLdParams) (j : Fin D.m)
+theorem ldtPointToDirect_extendRestrictedDirection_prefix_zero (j : Fin D.m)
     (free : Fin (j.val + 1) → Fq D.toLDTParameters) :
     letI := D.toLDTFieldModel
     ∀ c : Fin D.m, c.val < (Fin.rev j).val →
       ldtPointToDirect D (extendRestrictedDirection j free) c = 0 := by
   letI := D.toLDTFieldModel
   intro c hc
-  have hj := j.isLt
   have hgt : ¬ (Fin.rev c).val ≤ j.val := by
-    rw [Fin.val_rev] at hc ⊢
+    simp at hc ⊢
     omega
   simp only [ldtPointToDirect, directPointEquiv_symm_apply,
     extendRestrictedDirection, dif_neg hgt]
-  exact (FieldModel.equiv (q := D.q)).symm_apply_apply 0
+  exact Equiv.symm_apply_apply FieldModel.equiv 0
 
 /-! ## Rebasing lines -/
 
 /-- Decoding an axis-line rebase is translation by the decoded scalar along
 the reversed direct coordinate direction. -/
-theorem ldtPointToDirect_axis_rebase (D : DirectLdParams)
+theorem ldtPointToDirect_axis_rebase
     (line : AxisParallelLine D.toLDTParameters)
     (t : Fq D.toLDTParameters) :
     letI := D.toLDTFieldModel
@@ -234,23 +232,21 @@ theorem ldtPointToDirect_axis_rebase (D : DirectLdParams)
           coordinateDirection (Fin.rev line.direction) := by
   letI := D.toLDTFieldModel
   funext i
-  simp only [ldtPointToDirect, directPointEquiv_symm_apply,
-    AxisParallelLine.rebaseAt, AxisParallelLine.pointAt, Pi.add_apply,
-    Pi.smul_apply]
+  simp [ldtPointToDirect, directPointEquiv_symm_apply, AxisParallelLine.rebaseAt, AxisParallelLine.pointAt]
   by_cases hi : i = Fin.rev line.direction
   · subst hi
     simp only [coordinateDirection, Fin.rev_rev, if_pos, smul_eq_mul]
-    rw [Pi.single_eq_same, mul_one]
-    exact (FieldModel.equiv (q := D.q)).symm_apply_apply _
+    simp
+    exact (FieldModel.equiv).symm_apply_apply _
   · have hrev : Fin.rev i ≠ line.direction := by
       intro h
       apply hi
-      rw [← h, Fin.rev_rev]
+      simp [← h]
     simp [hi, hrev, coordinateDirection]
 
 /-- Decoding a diagonal-line rebase is translation by the decoded scalar
 along the decoded direct direction. -/
-theorem ldtPointToDirect_diagonal_rebase (D : DirectLdParams)
+theorem ldtPointToDirect_diagonal_rebase
     (line : DiagonalLine D.toLDTParameters)
     (t : Fq D.toLDTParameters) :
     letI := D.toLDTFieldModel
@@ -268,66 +264,62 @@ theorem ldtPointToDirect_diagonal_rebase (D : DirectLdParams)
 
 /-- Canonical direct axis questions do not depend on the chosen base point of
 the LDT line. -/
-theorem directAxisQuestionOf_rebase (D : DirectLdParams)
+theorem directAxisQuestionOf_rebase
     (line : AxisParallelLine D.toLDTParameters)
     (t : Fq D.toLDTParameters) :
     letI := D.toLDTFieldModel
     directAxisQuestionOf D (line.rebaseAt t) = directAxisQuestionOf D line := by
   letI := D.toLDTFieldModel
-  simp only [directAxisQuestionOf, AxisParallelLine.rebaseAt_direction]
+  simp [directAxisQuestionOf]
   rw [ldtPointToDirect_axis_rebase, lineRepMap_add_smul]
 
 /-- Canonical direct diagonal questions do not depend on the chosen base point
 of the LDT line; the leading index depends only on the direction. -/
-theorem directDiagonalQuestionOf_rebase (D : DirectLdParams)
+theorem directDiagonalQuestionOf_rebase
     (line : DiagonalLine D.toLDTParameters)
     (t : Fq D.toLDTParameters) :
     letI := D.toLDTFieldModel
-    directDiagonalQuestionOf D (line.rebaseAt t) =
-      directDiagonalQuestionOf D line := by
+    directDiagonalQuestionOf (line.rebaseAt t) =
+      directDiagonalQuestionOf line := by
   letI := D.toLDTFieldModel
-  simp only [directDiagonalQuestionOf, DiagonalLine.rebaseAt]
+  simp [directDiagonalQuestionOf, DiagonalLine.rebaseAt]
   have hrebase := ldtPointToDirect_diagonal_rebase D line t
   change ldtPointToDirect D (line.pointAt t) =
-      ldtPointToDirect D line.base +
-        (directScalarEquiv D).symm t • ldtPointToDirect D line.direction at hrebase
+      _ at hrebase
   rw [hrebase, lineRepMap_add_smul]
 
 /-- The fixed scalar coding transports field addition to LDT coordinate
 addition. -/
-theorem directScalarEquiv_add (D : DirectLdParams)
+theorem directScalarEquiv_add
     (x y : DirectScalarQ D) :
     letI := D.toLDTFieldModel
     directScalarEquiv D (x + y) =
       addCoord (directScalarEquiv D x) (directScalarEquiv D y) := by
   letI := D.toLDTFieldModel
-  change FieldModel.equiv (x + y) =
+  change FieldModel.equiv _ =
     FieldModel.equiv
       (FieldModel.equiv.symm (FieldModel.equiv x) +
         FieldModel.equiv.symm (FieldModel.equiv y))
-  rw [FieldModel.equiv.symm_apply_apply, FieldModel.equiv.symm_apply_apply]
+  simp [FieldModel.equiv.symm_apply_apply]
 
-private theorem coordinateDirection_ne_zero
-    {K : Type*} [Field K] {m : ℕ} (i : Fin m) :
-    (coordinateDirection i : Fin m → K) ≠ 0 := by
-  intro h
-  have hi := congrFun h i
-  simp [coordinateDirection] at hi
+end
+
+variable (D : DirectLdParams)
 
 /-- Canonical rebase parameter for an LDT axis-parallel line. -/
-noncomputable def directAxisRebaseParameter (D : DirectLdParams)
+noncomputable def directAxisRebaseParameter
     (line : AxisParallelLine D.toLDTParameters) : DirectScalarQ D :=
   directLineRepParameter (coordinateDirection (Fin.rev line.direction))
     (ldtPointToDirect D line.base)
 
 /-- Canonical rebase parameter for an LDT diagonal line. -/
-noncomputable def directDiagonalRebaseParameter (D : DirectLdParams)
+noncomputable def directDiagonalRebaseParameter
     (line : DiagonalLine D.toLDTParameters) : DirectScalarQ D :=
   directLineRepParameter (ldtPointToDirect D line.direction)
     (ldtPointToDirect D line.base)
 
 /-- Axis-line canonical parameters add under LDT line rebasing. -/
-theorem directAxisRebaseParameter_rebase (D : DirectLdParams)
+theorem directAxisRebaseParameter_rebase
     (line : AxisParallelLine D.toLDTParameters)
     (t : Fq D.toLDTParameters) :
     letI := D.toLDTFieldModel
@@ -337,10 +329,11 @@ theorem directAxisRebaseParameter_rebase (D : DirectLdParams)
   unfold directAxisRebaseParameter
   rw [ldtPointToDirect_axis_rebase]
   exact directLineRepParameter_add_smul
-    (coordinateDirection_ne_zero (Fin.rev line.direction)) _
+    ((by
+       simp [coordinateDirection])) _
 
 /-- Nonzero diagonal-line canonical parameters add under LDT line rebasing. -/
-theorem directDiagonalRebaseParameter_rebase (D : DirectLdParams)
+theorem directDiagonalRebaseParameter_rebase
     (line : DiagonalLine D.toLDTParameters)
     (t : Fq D.toLDTParameters)
     (hdir : ldtPointToDirect D line.direction ≠ 0) :
@@ -355,7 +348,7 @@ theorem directDiagonalRebaseParameter_rebase (D : DirectLdParams)
 /-! ## Reading direct answers as LDT answers -/
 
 /-- The constant diagonal-line answer with the given direct value. -/
-noncomputable def constantDiagonalAnswer (D : DirectLdParams)
+noncomputable def constantDiagonalAnswer
     (x : DirectScalarQ D) :
     letI := D.toLDTFieldModel
     DiagonalLinePolynomial D.toLDTParameters := by
@@ -364,28 +357,31 @@ noncomputable def constantDiagonalAnswer (D : DirectLdParams)
           degreeBounded := by simp }
 
 /-- Constant answers are fixed by every reparametrization. -/
-theorem constantDiagonalAnswer_reparamAt (D : DirectLdParams)
+theorem constantDiagonalAnswer_reparamAt
     (x : DirectScalarQ D) (t : Fq D.toLDTParameters) :
     letI := D.toLDTFieldModel
     DiagonalLinePolynomial.reparamAt (constantDiagonalAnswer D x) t =
       constantDiagonalAnswer D x := by
-  letI := D.toLDTFieldModel
-  apply DiagonalLinePolynomial.ext
   simp [constantDiagonalAnswer, DiagonalLinePolynomial.reparamAt]
 
 /-- A constant answer evaluates to its value at every parameter. -/
-theorem constantDiagonalAnswer_apply (D : DirectLdParams)
+theorem constantDiagonalAnswer_apply
     (x : DirectScalarQ D) (t : Fq D.toLDTParameters) :
     letI := D.toLDTFieldModel
     constantDiagonalAnswer D x t = directScalarEquiv D x := by
   letI := D.toLDTFieldModel
   change encodeScalar ((Polynomial.C x).eval (decodeScalar t)) =
-    directScalarEquiv D x
-  rw [Polynomial.eval_C]
+    _
+  simp
   rfl
 
+section
+
+variable (r : Fin D.k)
+
+variable {D} in
 /-- Read one simultaneous coordinate from a direct point answer. -/
-noncomputable def directPointAnswerReadout (D : DirectLdParams) (r : Fin D.k) :
+noncomputable def directPointAnswerReadout :
     letI := D.toLDTFieldModel
     DirectLdAnswer D → Fq D.toLDTParameters := by
   letI := D.toLDTFieldModel
@@ -397,7 +393,7 @@ noncomputable def directPointAnswerReadout (D : DirectLdParams) (r : Fin D.k) :
 
 /-- Read one simultaneous coordinate from a direct axis-line answer and
 rebase its polynomial from the canonical direct line to the LDT line. -/
-noncomputable def directAxisAnswerReadout (D : DirectLdParams) (r : Fin D.k)
+noncomputable def directAxisAnswerReadout
     (line : AxisParallelLine D.toLDTParameters) :
     letI := D.toLDTFieldModel
     DirectLdAnswer D → AxisLinePolynomial D.toLDTParameters := by
@@ -418,7 +414,7 @@ function is constant with the point's value (`rem:ld-win-zero-direction`);
 the answer is read as the constant polynomial carrying its value at the base
 point, which is fixed by every reparametrization.  Wrong-form answers are
 sent to the default polynomial. -/
-noncomputable def directDiagonalAnswerReadout (D : DirectLdParams) (r : Fin D.k)
+noncomputable def directDiagonalAnswerReadout
     (line : DiagonalLine D.toLDTParameters) :
     letI := D.toLDTFieldModel
     DirectLdAnswer D → DiagonalLinePolynomial D.toLDTParameters := by
@@ -436,7 +432,7 @@ noncomputable def directDiagonalAnswerReadout (D : DirectLdParams) (r : Fin D.k)
     | .alinePolys _ => default
 
 /-- Axis answer readout is covariant under LDT line rebasing. -/
-theorem directAxisAnswerReadout_rebase (D : DirectLdParams) (r : Fin D.k)
+theorem directAxisAnswerReadout_rebase
     (line : AxisParallelLine D.toLDTParameters)
     (t : Fq D.toLDTParameters) (answer : DirectLdAnswer D) :
     letI := D.toLDTFieldModel
@@ -449,13 +445,13 @@ theorem directAxisAnswerReadout_rebase (D : DirectLdParams) (r : Fin D.k)
   | alinePolys a =>
       simp only [directAxisAnswerReadout]
       rw [directAxisRebaseParameter_rebase, directScalarEquiv_add]
-      rw [(directScalarEquiv D).apply_symm_apply]
+      simp
       exact (AxisLinePolynomial.reparamAt_reparamAt
         (directAxisAnswerEquiv D (a r)) _ _).symm
 
 /-- Diagonal answer readout is covariant under LDT line rebasing, including
 the constant zero-direction convention. -/
-theorem directDiagonalAnswerReadout_rebase (D : DirectLdParams) (r : Fin D.k)
+theorem directDiagonalAnswerReadout_rebase
     (line : DiagonalLine D.toLDTParameters)
     (t : Fq D.toLDTParameters) (answer : DirectLdAnswer D) :
     letI := D.toLDTFieldModel
@@ -469,16 +465,17 @@ theorem directDiagonalAnswerReadout_rebase (D : DirectLdParams) (r : Fin D.k)
   | dlinePolys a =>
       by_cases hdir : ldtPointToDirect D line.direction = 0
       · have hrebase : ldtPointToDirect D (line.rebaseAt t).direction = 0 := by
-          simpa [DiagonalLine.rebaseAt] using hdir
+          exact hdir
         simp [directDiagonalAnswerReadout, hdir, hrebase,
           constantDiagonalAnswer_reparamAt]
       · have hrebase : ldtPointToDirect D (line.rebaseAt t).direction ≠ 0 := by
-          simpa [DiagonalLine.rebaseAt] using hdir
-        simp only [directDiagonalAnswerReadout, hdir, hrebase, ↓reduceIte]
-        rw [directDiagonalRebaseParameter_rebase D line t hdir,
-          directScalarEquiv_add, (directScalarEquiv D).apply_symm_apply]
+          exact hdir
+        simp [directDiagonalAnswerReadout, hdir, hrebase]
+        simp [directDiagonalRebaseParameter_rebase D line t hdir, directScalarEquiv_add]
         exact (DiagonalLinePolynomial.reparamAt_reparamAt
           (directDiagonalAnswerEquiv D (a r)) _ _).symm
+
+end
 
 end
 

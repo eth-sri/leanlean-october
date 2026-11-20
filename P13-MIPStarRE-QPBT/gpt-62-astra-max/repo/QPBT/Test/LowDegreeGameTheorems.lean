@@ -3,7 +3,6 @@ module
 public import QPBT.Combining.DirectLowDegree.Soundness
 public import QPBT.Combining.DirectLowDegree.Transport.PointAgreement
 public import QPBT.Combining.DirectLowDegree.Transport.SeedError
-public import QPBT.Games.Sandwich.Support
 
 /-!
 # Quantum soundness of the seed-indexed low-degree game
@@ -37,13 +36,13 @@ coordinates collides. This formalization auxiliary for `lem:ld-soundness`
 therefore has the same Schwartz--Zippel bound for every simultaneity parameter. -/
 theorem polyTupleAgreement_avg_le_mdq (L : LdParams)
     (g g' : PolyTuple L) (hne : g ≠ g') :
-    avgOver (uniformDistribution (Fin L.m → ScalarQ L))
+    avgOver (uniformDistribution (LdPoint L))
         (fun u => if evalPolyTupleAt u g = evalPolyTupleAt u g' then
           (1 : ℝ) else 0) ≤
       ((L.m : ℝ) * (L.d : ℝ)) / (L.q : ℝ) := by
   obtain ⟨i, hi⟩ := Function.ne_iff.mp hne
   refine le_trans (avgOver_mono _ _ _ fun u => ?_)
-    (directPolynomialAgreement_avg_le_mdq L.toDirectLdParams (g i) (g' i) hi)
+    (directPolynomialAgreement_avg_le_mdq L.toDirectLdParams _ _ hi)
   split_ifs with h h'
   · exact le_rfl
   · exact False.elim (h' (congrFun h i))
@@ -90,27 +89,19 @@ theorem exists_ld_soundness :
       ∀ (L : LdParams) (ε : ℝ), 0 < ε →
         ∀ S : Strategy (ldGame L), S.IsProjective → 1 - ε ≤ S.value →
           ∃ GA : PolyMeasTuple L S.ιA, ∃ GB : PolyMeasTuple L S.ιB,
-            consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
-                (fun u outcome =>
-                  heteroKron
-                    (((S.A (ldPointQuestionOf L u)).postprocess
-                      (ldPointValuesOrZero L)).effect outcome) 1)
-                (fun u outcome =>
-                  heteroKron 1
-                    ((GB.postprocess (evalPolyTupleAt u)).effect outcome))
+            bipartiteDefect (uniformDistribution (LdPoint L))
+                (fun u => (S.A (ldPointQuestionOf L u)).postprocess
+                (ldPointValuesOrZero L))
+                (fun u => GB.postprocess (evalPolyTupleAt u))
                 S.ψ ≤ deltaLd a b ε L.q L.m L.d L.k ∧
-            consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
-                (fun u outcome =>
-                  heteroKron
-                    ((GA.postprocess (evalPolyTupleAt u)).effect outcome) 1)
-                (fun u outcome =>
-                  heteroKron 1
-                    (((S.B (ldPointQuestionOf L u)).postprocess
-                      (ldPointValuesOrZero L)).effect outcome))
+            bipartiteDefect (uniformDistribution (LdPoint L))
+                (fun u => GA.postprocess (evalPolyTupleAt u))
+                (fun u => (S.B (ldPointQuestionOf L u)).postprocess
+                (ldPointValuesOrZero L))
                 S.ψ ≤ deltaLd a b ε L.q L.m L.d L.k ∧
-            consistencyDefect (uniformDistribution Unit)
-                (fun _ g => heteroKron (GA.effect g) 1)
-                (fun _ g => heteroKron 1 (GB.effect g))
+            bipartiteDefect (uniformDistribution Unit)
+                (fun _ => GA)
+                (fun _ => GB)
                 S.ψ ≤ deltaLd a b ε L.q L.m L.d L.k := by
   classical
   obtain ⟨a, b, ha, hb, hb1, hs⟩ := exists_direct_ld_soundness
@@ -119,37 +110,36 @@ theorem exists_ld_soundness :
   let D := L.toDirectLdParams
   let E := deltaLd a b ε L.q L.m L.d L.k
   let F := deltaLd (10 * a) (b / 2) ε L.q L.m L.d L.k
-  obtain ⟨GA₀, GB₀, h1, h2, _⟩ := hs D ε hε (ldStrategyToDirect L S)
+  obtain ⟨GA₀, GB₀, h1, h2⟩ := hs D ε hε (ldStrategyToDirect S)
     (ldStrategyToDirect_isProjective L S hS)
     (by simpa only [ldStrategyToDirect_value_eq] using hwin)
-  let GA : PolyMeasTuple L S.ιA := seedFiberCompressPolyMeasTuple L GA₀
-  let GB : PolyMeasTuple L S.ιB := seedFiberCompressPolyMeasTuple L GB₀
-  have c1 : consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
-      (fun u outcome => heteroKron
-        (((S.A (ldPointQuestionOf L u)).postprocess
-          (ldPointValuesOrZero L)).effect outcome) 1)
-      (fun u outcome => heteroKron 1
-        ((GB.postprocess (evalPolyTupleAt u)).effect outcome)) S.ψ ≤ E := by
+  let GA := seedFiberCompressPolyMeasTuple L GA₀
+  let GB := seedFiberCompressPolyMeasTuple L GB₀
+  have c1 : bipartiteDefect (uniformDistribution (LdPoint L))
+      (fun u => (S.A (ldPointQuestionOf L u)).postprocess
+      (ldPointValuesOrZero L))
+      (fun u => GB.postprocess (evalPolyTupleAt u)) S.ψ ≤ E := by
     rw [show GB = seedFiberCompressPolyMeasTuple L GB₀ from rfl,
       ← ldStrategyToDirect_pointPolynomial_compression L S GB₀]
     exact h1
-  have c2 : consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
-      (fun u outcome => heteroKron
-        ((GA.postprocess (evalPolyTupleAt u)).effect outcome) 1)
-      (fun u outcome => heteroKron 1
-        (((S.B (ldPointQuestionOf L u)).postprocess
-          (ldPointValuesOrZero L)).effect outcome)) S.ψ ≤ E := by
+  have c2 : bipartiteDefect (uniformDistribution (LdPoint L))
+      (fun u => GA.postprocess (evalPolyTupleAt u))
+      (fun u => (S.B (ldPointQuestionOf L u)).postprocess
+      (ldPointValuesOrZero L)) S.ψ ≤ E := by
     rw [show GA = seedFiberCompressPolyMeasTuple L GA₀ from rfl,
       ← ldStrategyToDirect_polynomialPoint_compression L S GA₀]
     exact h2
-  have c3 := ldPointPair_consistencyDefect_le L S hS ε hwin
-  have ctrans : consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
-      (fun u outcome => heteroKron
-        ((GA.postprocess (evalPolyTupleAt u)).effect outcome) 1)
-      (fun u outcome => heteroKron 1
-        ((GB.postprocess (evalPolyTupleAt u)).effect outcome)) S.ψ ≤
+  have c3 : bipartiteDefect (uniformDistribution (LdPoint L)) (fun u => (S.A (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L)) (fun u => (S.B (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L)) S.ψ ≤ 9 * ε := by
+         rw [← ldStrategyToDirect_pointPair_compression]
+         refine directLdPointPair_consistencyDefect_le L.toDirectLdParams
+           _ (ldStrategyToDirect_isProjective L S hS) ε ?_
+         rw [ldStrategyToDirect_value_eq]
+         exact hwin
+  have ctrans : bipartiteDefect (uniformDistribution (LdPoint L))
+      (fun u => GA.postprocess (evalPolyTupleAt u))
+      (fun u => GB.postprocess (evalPolyTupleAt u)) S.ψ ≤
       E + 2 * Real.sqrt (9 * ε + E) :=
-    consistencyDefect_trans_le (uniformDistribution (Fin L.m → ScalarQ L))
+    consistencyDefect_trans_le (uniformDistribution (LdPoint L))
       (fun u => DistanceCalculus.leftPlacedMeasurement
         (GA.postprocess (evalPolyTupleAt u)))
       (fun u => DistanceCalculus.rightPlacedMeasurement
@@ -158,11 +148,44 @@ theorem exists_ld_soundness :
         ((S.A (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L)))
       (fun u => DistanceCalculus.rightPlacedMeasurement
         (GB.postprocess (evalPolyTupleAt u)))
-      S.ψ E (9 * ε) E (uniformDistribution_isProbability _) S.ψ_norm c2 c3 c1
-  have ccode : consistencyDefect (uniformDistribution Unit)
-      (fun _ g => heteroKron (GA.effect g) 1)
-      (fun _ g => heteroKron 1 (GB.effect g)) S.ψ ≤
-      E + 2 * Real.sqrt (9 * ε + E) + (L.m : ℝ) * L.d / L.q := by
+      S.ψ E _ E (uniformDistribution_isProbability _) S.ψ_norm c2 c3 c1
+  have hsqrt : 10 * Real.sqrt E ≤ F := ten_sqrt_deltaLd_le D ha hε.le
+  have hEnn : 0 ≤ E := by dsimp [E, deltaLd]; positivity
+  have hbound {X α : Type} [Fintype X] [DecidableEq X] [Nonempty X]
+      [Fintype α] [DecidableEq α]
+      (A : X → MIPStarRE.Quantum.Measurement α S.ιA)
+      (B : X → MIPStarRE.Quantum.Measurement α S.ιB)
+      (hc : bipartiteDefect (uniformDistribution X)
+        A
+        B S.ψ ≤
+        E + 2 * Real.sqrt (9 * ε + E) + L.m * L.d / L.q) :
+      bipartiteDefect (uniformDistribution X)
+        A
+        B S.ψ ≤ F := by
+    have hone := consistencyDefect_heteroKron_le_one
+      _ (uniformDistribution_isProbability _) A B S.ψ S.ψ_norm
+    by_cases hε1 : ε ≤ 1
+    · by_cases hE1 : E ≤ 1
+      · obtain ⟨he, hm⟩ := error_and_collision_le_deltaLd D ha hb1 hε hε1
+        have hEs := le_sqrt_of_le_of_le_one le_rfl hE1
+        have hroot : Real.sqrt (9 * ε + E) ≤ 4 * Real.sqrt E := by
+          apply (Real.sqrt_le_iff).mpr
+          refine ⟨by positivity, ?_⟩
+          nlinarith [Real.sq_sqrt hEnn]
+        exact hc.trans (by linarith)
+      · have hEs : 1 ≤ Real.sqrt E := by
+          simpa using Real.sqrt_le_sqrt (not_le.mp hE1).le
+        exact hone.trans (by linarith)
+    · exact hone.trans (one_le_deltaLd_of_one_le_error (by linarith) (by positivity)
+        (not_le.mp hε1).le L.hm L.hd L.hk)
+  have hrem : 0 ≤ 2 * Real.sqrt (9 * ε + E) + L.m * L.d / L.q := by
+    positivity
+  refine ⟨GA, GB, ?_, ?_, ?_⟩
+  · apply hbound
+    exact c1.trans (by linarith)
+  · apply hbound
+    exact c2.trans (by linarith)
+  · exact hbound _ _ (by
     have hstep := SandwichProduct.consistencyDefect_codewords_le_evaluated_add
       (uniformDistribution Unit) (fun _ : Unit => GA) (fun _ : Unit => GB) S.ψ
       (fun g u => evalPolyTupleAt u g) ((L.m : ℝ) * L.d / L.q)
@@ -176,54 +199,13 @@ theorem exists_ld_soundness :
         consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
           (fun u => A ((), u)) (fun u => B ((), u)) S.ψ := by
       intro A B
-      unfold consistencyDefect
-      rw [SandwichProduct.avgOver_distribution_prod,
+      simp [consistencyDefect]
+      rw [avgOver_prod,
         avgOver_uniform_eq_inv_card_mul_sum]
       simp
+    simp only [bipartiteDefect] at hstep
     rw [hprod] at hstep
-    exact hstep.trans (by linarith)
-  have hsqrt : 10 * Real.sqrt E ≤ F := ten_sqrt_deltaLd_le D ha hε.le
-  have hEnn : 0 ≤ E := by dsimp [E, deltaLd]; positivity
-  have hbound {X α : Type} [Fintype X] [DecidableEq X] [Nonempty X]
-      [Fintype α] [DecidableEq α]
-      (A : X → MIPStarRE.Quantum.Measurement α S.ιA)
-      (B : X → MIPStarRE.Quantum.Measurement α S.ιB)
-      (hc : consistencyDefect (uniformDistribution X)
-        (fun x o => heteroKron ((A x).effect o) 1)
-        (fun x o => heteroKron 1 ((B x).effect o)) S.ψ ≤
-        E + 2 * Real.sqrt (9 * ε + E) + (L.m : ℝ) * L.d / L.q) :
-      consistencyDefect (uniformDistribution X)
-        (fun x o => heteroKron ((A x).effect o) 1)
-        (fun x o => heteroKron 1 ((B x).effect o)) S.ψ ≤ F := by
-    have hone := consistencyDefect_heteroKron_le_one
-      (uniformDistribution X) (uniformDistribution_isProbability _) A B S.ψ S.ψ_norm
-    by_cases hε1 : ε ≤ 1
-    · by_cases hE1 : E ≤ 1
-      · obtain ⟨he, hm⟩ := error_and_collision_le_deltaLd D ha hb1 hε hε1
-        change ε ≤ E at he
-        change (L.m : ℝ) * L.d / L.q ≤ E at hm
-        have hEs : E ≤ Real.sqrt E := le_sqrt_of_le_of_le_one le_rfl hE1
-        have hroot : Real.sqrt (9 * ε + E) ≤ 4 * Real.sqrt E := by
-          apply (Real.sqrt_le_iff).mpr
-          refine ⟨by positivity, ?_⟩
-          nlinarith [Real.sq_sqrt hEnn]
-        exact hc.trans (by linarith)
-      · have hEs : 1 ≤ Real.sqrt E := by
-          simpa using Real.sqrt_le_sqrt (not_le.mp hE1).le
-        exact hone.trans (by linarith)
-    · exact hone.trans (one_le_deltaLd_of_one_le_error (by linarith) (by positivity)
-        (not_le.mp hε1).le L.hm L.hd L.hk)
-  have hrem : 0 ≤ 2 * Real.sqrt (9 * ε + E) + (L.m : ℝ) * L.d / L.q := by
-    positivity
-  refine ⟨GA, GB, ?_, ?_, ?_⟩
-  · apply hbound
-      (fun u => (S.A (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L))
-      (fun u => GB.postprocess (evalPolyTupleAt u))
-    exact c1.trans (by linarith)
-  · apply hbound (fun u => GA.postprocess (evalPolyTupleAt u))
-      (fun u => (S.B (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L))
-    exact c2.trans (by linarith)
-  · exact hbound (fun _ : Unit => GA) (fun _ : Unit => GB) ccode
+    exact hstep.trans (by linarith))
 
 end
 

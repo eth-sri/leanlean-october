@@ -30,51 +30,29 @@ open MIPStarRE.Quantum
 
 namespace DistanceCalculus
 
-/-- The adjoint squares of a left-placed complete measurement sum to at most
-the identity on the product space. -/
-theorem leftPlaced_sum_adjoint_mul_le_one {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : MIPStarRE.Quantum.Measurement α ιA) :
-    ∑ a : α, (heteroKron (M.effect a) (1 : Op ιB))ᴴ *
-      heteroKron (M.effect a) (1 : Op ιB) ≤ 1 :=
-  MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one
-    (leftPlacedMeasurement (ιB := ιB) M)
-
-/-- The adjoint squares of a right-placed complete measurement sum to at most
-the identity on the product space. -/
-theorem rightPlaced_sum_adjoint_mul_le_one {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : MIPStarRE.Quantum.Measurement α ιB) :
-    ∑ a : α, (heteroKron (1 : Op ιA) (M.effect a))ᴴ *
-      heteroKron (1 : Op ιA) (M.effect a) ≤ 1 :=
-  MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one
-    (rightPlacedMeasurement (ιA := ιA) M)
+variable {X α ιA ιB : Type*} [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
+  [DecidableEq ιB]
 
 /-- The state-dependent distance between two complete measurements placed on
 opposite tensor factors is at most four. Formalization-only auxiliary: this is
 the trivial bound used to pass from a linear error to the common square-root
 error of `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:527-545`. -/
-theorem opFamilyDistSq_placed_le_four {X α ιA ιB : Type*}
-    [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (μ : Distribution X) (hμ : μ.IsProbability)
+theorem opFamilyDistSq_placed_le_four
+    {μ : Distribution X} (hμ : μ.IsProbability)
     (A : X → MIPStarRE.Quantum.Measurement α ιA)
     (B : X → MIPStarRE.Quantum.Measurement α ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1) :
+    {ψ : EuclideanSpace ℂ (ιA × ιB)} (hψ : ‖ψ‖ = 1) :
     opFamilyDistSq μ (fun x a => heteroKron ((A x).effect a) 1)
       (fun x a => heteroKron 1 ((B x).effect a)) ψ ≤ 4 := by
-  unfold opFamilyDistSq
-  calc
-    avgOver μ (fun x => ∑ a : α,
-        ‖applyOperatorToState
-          (heteroKron ((A x).effect a) 1 - heteroKron 1 ((B x).effect a)) ψ‖ ^ 2)
-        ≤ avgOver μ (fun _ => (4 : ℝ)) := by
-      apply avgOver_mono
-      intro x
-      exact sum_norm_sub_apply_sq_le_four _ _ ψ hψ
-        (leftPlaced_sum_adjoint_mul_le_one (A x))
-        (rightPlaced_sum_adjoint_mul_le_one (B x))
-    _ = 4 := avgOver_const_of_isProbability μ hμ 4
+  rw [← avgOver_const_of_isProbability μ hμ 4]
+  apply avgOver_mono
+  intro x
+  exact sum_norm_sub_apply_sq_le_four hψ
+    ((MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one
+       (leftPlacedMeasurement (A x))))
+    ((MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one
+       (rightPlacedMeasurement (B x))))
 
 end DistanceCalculus
 
@@ -88,22 +66,19 @@ theorem le_mul_sqrt_of_le_mul_of_le_four {x ε a : ℝ} (ha : 1 ≤ a) (hx0 : 0 
     (hxa : x ≤ a * ε) (hx4 : x ≤ 4) : x ≤ (a + 4) * Real.sqrt ε := by
   have hε : 0 ≤ ε := by
     by_contra hneg
-    have hlt : ε < 0 := lt_of_not_ge hneg
     nlinarith
-  have hsqrt : 0 ≤ Real.sqrt ε := Real.sqrt_nonneg ε
   by_cases hε1 : ε ≤ 1
   · have hle : ε ≤ Real.sqrt ε := by
-      rw [Real.le_sqrt hε hε]
+      simp
       nlinarith
-    calc
-      x ≤ a * ε := hxa
-      _ ≤ a * Real.sqrt ε := mul_le_mul_of_nonneg_left hle (by linarith)
-      _ ≤ (a + 4) * Real.sqrt ε := by nlinarith
-  · have hone : 1 ≤ Real.sqrt ε :=
+    apply le_trans
+    gcongr
+    nlinarith
+  · have hone :=
       Real.one_le_sqrt.mpr (lt_of_not_ge hε1).le
     calc
       x ≤ 4 := hx4
       _ ≤ 4 * Real.sqrt ε := by nlinarith
-      _ ≤ (a + 4) * Real.sqrt ε := by nlinarith
+      _ ≤ _ := by nlinarith
 
 end MIPStarRE.QPBT

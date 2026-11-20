@@ -43,20 +43,16 @@ theorem collision_bound_of_fiber_averages {X Y₁ Y₂ R₂ Γ₂ : Type*}
   classical
   intro question point _ first second hne
   have havg (value : ((X × Y₁) × Y₂) → ℝ) :
-      avgOver dist value = ∑ sample, dist.weight sample * value sample := by
-    exact (dist.sum_univ_eq_sum_support _ (fun sample hout => by
-      rw [dist.outsideSupport sample hout, zero_mul])).symm
+      avgOver dist value = ∑ sample, dist.weight sample * value sample := (dist.sum_univ_eq_sum_support _ (fun sample hout => by
+      simp [dist.outsideSupport sample hout])).symm
   have hmass : (dist.map Prod.fst).weight (question, point) =
       avgOver dist (fun sample => if sample.1 = (question, point) then 1 else 0) := by
-    rw [Distribution.map_weight]
-    unfold avgOver
+    simp
     rw [Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro sample _
+    congr 1 with sample
     by_cases hfixed : sample.1 = (question, point) <;> simp [hfixed]
   rw [hmass]
-  have h := hbound (question, point) first second hne
-  simpa [havg, Fintype.sum_prod_type, mul_ite] using h
+  simpa [havg, Fintype.sum_prod_type, mul_ite] using (hbound (question, point) first second hne)
 
 end
 

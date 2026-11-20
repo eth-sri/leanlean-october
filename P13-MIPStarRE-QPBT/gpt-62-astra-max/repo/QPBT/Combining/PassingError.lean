@@ -25,21 +25,23 @@ and at infinity.
 
 namespace MIPStarRE.QPBT
 
+variable (Q x L y r : ℝ) (hQ : 0 ≤ Q) (hL : 0 ≤ L) (hr : 0 ≤ r)
+
 /-- The concrete two-variable polynomial envelope for the capped scalar bound. -/
-noncomputable def directPassingErrorEnvelope (x y : ℝ) : ℝ :=
+noncomputable def directPassingErrorEnvelope : ℝ :=
   3 * (Real.sqrt x + y)
 
 /-- A positive second input makes the direct passing-error envelope positive. -/
-theorem directPassingErrorEnvelope_pos (x y : ℝ) (hy : 0 < y) :
+theorem directPassingErrorEnvelope_pos (hy : 0 < y) :
     0 < directPassingErrorEnvelope x y := by
   dsimp [directPassingErrorEnvelope]
   nlinarith [Real.sqrt_nonneg x]
 
+include hr hL hQ in
 /-- The proposed seven-term scalar error is bounded by nine times the uncapped
 linear-square-root expression. The variables are only nonnegative real numbers here;
 no game-level branch estimate is asserted. -/
-theorem seven_branch_scalar_error_le (Q L r : ℝ) (hQ : 0 ≤ Q) (hL : 0 ≤ L)
-    (hr : 0 ≤ r) :
+theorem seven_branch_scalar_error_le :
     Q + 16 * L + 4 * Real.sqrt (Q + 2 * L) + 5 * r ≤
       9 * (2 * (Q + L) + Real.sqrt (Q + L) + r) := by
   have hQL : 0 ≤ Q + L := by linarith
@@ -49,38 +51,33 @@ theorem seven_branch_scalar_error_le (Q L r : ℝ) (hQ : 0 ≤ Q) (hL : 0 ≤ L)
       Real.sqrt_nonneg (Q + L), Real.sqrt_nonneg (Q + 2 * L)]
   nlinarith [Real.sqrt_nonneg (Q + L)]
 
-private theorem min_linear_sqrt_le_directPassingErrorEnvelope (x y : ℝ)
+private theorem min_linear_sqrt_le_directPassingErrorEnvelope
     (hx : 0 ≤ x) (hy : 0 ≤ y) :
     min 1 (2 * x + Real.sqrt x + y) ≤ directPassingErrorEnvelope x y := by
   by_cases hxOne : x ≤ 1
-  · have hsqrtOne : Real.sqrt x ≤ 1 := by
-      simpa using Real.sqrt_le_sqrt hxOne
-    have hxSqrt : x ≤ Real.sqrt x := by
+  · have hxSqrt : x ≤ Real.sqrt x := by
       nlinarith [Real.sq_sqrt hx, Real.sqrt_nonneg x]
     exact (min_le_right _ _).trans (by
       dsimp [directPassingErrorEnvelope]
       nlinarith)
   · have hsqrtOne : 1 ≤ Real.sqrt x := by
-      have hxOne' : 1 ≤ x := le_of_not_ge hxOne
+      have hxOne' := le_of_not_ge hxOne
       simpa using Real.sqrt_le_sqrt hxOne'
     exact (min_le_left _ _).trans (by
       dsimp [directPassingErrorEnvelope]
       nlinarith [Real.sqrt_nonneg x])
 
+include hr hL hQ in
 /-- After averaging the seven scalar contributions by the nine equally weighted game
 branches and applying the probability cap, the result is bounded by the concrete
 polynomial envelope. This theorem assumes only the displayed nonnegative scalar inputs;
 it does not establish the unfinished branch bounds that would supply them. -/
-theorem seven_branch_capped_error_le_directPassingErrorEnvelope
-    (Q L r : ℝ) (hQ : 0 ≤ Q) (hL : 0 ≤ L) (hr : 0 ≤ r) :
+theorem seven_branch_capped_error_le_directPassingErrorEnvelope :
     min 1 ((Q + 16 * L + 4 * Real.sqrt (Q + 2 * L) + 5 * r) / 9) ≤
       directPassingErrorEnvelope (Q + L) r := by
   have hraw := seven_branch_scalar_error_le Q L r hQ hL hr
-  have hdiv :
-      (Q + 16 * L + 4 * Real.sqrt (Q + 2 * L) + 5 * r) / 9 ≤
-        2 * (Q + L) + Real.sqrt (Q + L) + r := by
-    nlinarith
-  exact (min_le_min_left 1 hdiv).trans
+  refine (min_le_min_left 1 ?_).trans
     (min_linear_sqrt_le_directPassingErrorEnvelope (Q + L) r (by linarith) hr)
+  nlinarith
 
 end MIPStarRE.QPBT

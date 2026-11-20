@@ -43,19 +43,27 @@ noncomputable section
 
 /-! ## The canonical representative for the zero direction -/
 
+section
+
+variable {K : Type*} [Field K]
+
 /-- For the zero direction the canonical representative map of
 `def:line-representative` is the identity, since the span of the zero vector
 is trivial.  Blueprint `def:line-representative`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:143-174`.
 -/
-theorem lineRepMap_zero_apply {K : Type*} [Field K] {m : ℕ}
+theorem lineRepMap_zero_apply {m : ℕ}
     (u : Fin m → K) : lineRepMap (0 : Fin m → K) u = u := by
   have hspan : Submodule.span K ({0} : Set (Fin m → K)) = ⊥ := by simp
-  have h := sub_lineRepMap_mem_span (0 : Fin m → K) u
-  rw [hspan, Submodule.mem_bot, sub_eq_zero] at h
+  have h := sub_lineRepMap_mem_span 0 u
+  simp [sub_eq_zero] at h
   exact h.symm
 
 /-! ## Uniform points of a line -/
+
+section
+
+variable [Fintype K] [DecidableEq K] {m : ℕ} (v : Fin m → K)
 
 /-- The point at a uniformly random affine parameter on the line through the
 canonical representative of a uniformly random point is uniformly random on
@@ -65,8 +73,7 @@ the parameter and canonical representative are fixed, while the input point
 varies over a coset of the span of the direction. For the zero direction the
 input point is fixed and the parameter is free. Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem uniformDistribution_map_lineRepMap_add_smul {K : Type*} [Field K]
-    [Fintype K] [DecidableEq K] {m : ℕ} (v : Fin m → K) :
+theorem uniformDistribution_map_lineRepMap_add_smul :
     (uniformDistribution ((Fin m → K) × K)).map
         (fun w => lineRepMap v w.1 + w.2 • v) =
       uniformDistribution (Fin m → K) := by
@@ -74,58 +81,52 @@ theorem uniformDistribution_map_lineRepMap_add_smul {K : Type*} [Field K]
   by_cases hv : v = 0
   · subst hv
     have hfilter :
-        ((Finset.univ : Finset ((Fin m → K) × K)).filter
-            fun w => lineRepMap (0 : Fin m → K) w.1 + w.2 • (0 : Fin m → K)
+        (Finset.univ.filter
+            fun w => lineRepMap 0 w.1 + w.2 • 0
               = x)
-          = ({x} : Finset (Fin m → K)) ×ˢ (Finset.univ : Finset K) := by
+          = ({x}) ×ˢ (Finset.univ : Finset K) := by
       ext w
       simp only [Finset.mem_filter, Finset.mem_univ, true_and,
         Finset.mem_product, Finset.mem_singleton, and_true, smul_zero,
         add_zero, lineRepMap_zero_apply]
-    rw [hfilter, Finset.card_product]
-    simp
+    simp_all
   · have hinj : Function.Injective
         (fun c : K => (lineRepMap v x + c • v, directLineRepParameter v x)) := by
       intro c₁ c₂ hc
       have hc' : c₁ • v = c₂ • v := by
-        have h := congrArg Prod.fst hc
-        simpa using h
+        simpa using (congrArg Prod.fst hc)
       have hsub : (c₁ - c₂) • v = 0 := by
-        rw [sub_smul, hc', sub_self]
+        simp_all
       rcases smul_eq_zero.mp hsub with h | h
       · exact sub_eq_zero.mp h
       · exact absurd h hv
     have himg :
-        ((Finset.univ : Finset ((Fin m → K) × K)).filter
+        (Finset.univ.filter
             fun w => lineRepMap v w.1 + w.2 • v = x)
           = (Finset.univ : Finset K).image
               (fun c => (lineRepMap v x + c • v,
                 directLineRepParameter v x)) := by
       ext w
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_image]
+      simp
       constructor
       · intro hw
         have hrep : lineRepMap v w.1 = lineRepMap v x := by
           rw [← hw, lineRepMap_add_smul, lineRepMap_apply_self]
-        have hx : x = lineRepMap v x + w.2 • v := by
-          rw [← hrep]
-          exact hw.symm
-        have ht : directLineRepParameter v x = w.2 :=
-          directLineRepParameter_eq_of_nonzero hv hx
+        have ht :=
+          directLineRepParameter_eq_of_nonzero hv (by
+            rw [← hrep]
+            exact hw.symm)
         obtain ⟨c, hc⟩ := Submodule.mem_span_singleton.mp
           (sub_lineRepMap_mem_span v w.1)
-        refine ⟨c, ?_⟩
-        have hw1 : lineRepMap v x + c • v = w.1 := by
-          rw [← hrep, hc]
-          abel
+        constructor
         rw [Prod.ext_iff]
-        exact ⟨hw1, ht⟩
+        refine ⟨?_, ht⟩
+        rw [← hrep, hc]
+        abel
       · rintro ⟨c, rfl⟩
-        show lineRepMap v (lineRepMap v x + c • v) +
-          directLineRepParameter v x • v = x
         rw [lineRepMap_add_smul, lineRepMap_apply_self]
         exact (directLineRepParameter_spec v x).symm
-    rw [himg, Finset.card_image_of_injective _ hinj, Finset.card_univ]
+    simp [himg, Finset.card_image_of_injective _ hinj]
 
 /-! ## Resampling a uniform point along its canonical line -/
 
@@ -137,20 +138,22 @@ has constant fibers there too.  This formalization-only identity is the
 common core of the axis and diagonal line-point resampling identities used at
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:950-963`;
 the canonical representative map is blueprint `def:line-representative`. -/
-theorem avgOver_uniform_lineRepMap_resample_parameter {K : Type*} [Field K]
-    [Fintype K] [DecidableEq K] {m : ℕ} (v : Fin m → K)
+theorem avgOver_uniform_lineRepMap_resample_parameter
     (value : (Fin m → K) → (Fin m → K) → ℝ) :
     avgOver (uniformDistribution (Fin m → K))
         (fun point => value (lineRepMap v point) point) =
       avgOver (uniformDistribution (Fin m → K)) (fun point =>
         avgOver (uniformDistribution K) (fun param =>
           value (lineRepMap v point) (lineRepMap v point + param • v))) := by
-  have hmap := uniformDistribution_map_lineRepMap_add_smul v
   have havg := congrArg (fun dist => avgOver dist
-    (fun point => value (lineRepMap v point) point)) hmap
+    (fun point => value (lineRepMap v point) point)) (uniformDistribution_map_lineRepMap_add_smul v)
   rw [Distribution.avgOver_map, uniformDistribution_prod,
-    SandwichProduct.avgOver_distribution_prod] at havg
+    avgOver_prod] at havg
   simpa only [lineRepMap_add_smul, lineRepMap_apply_self] using havg.symm
+
+end
+
+end
 
 /-! ## Injectivity of the two block embeddings -/
 
@@ -170,11 +173,15 @@ theorem embZ_injective (m : ℕ) : Function.Injective (embZ m) := by
 
 /-! ## The blocks of an elementary coordinate direction -/
 
+section
+
+variable {K : Type*} [Field K] {m : ℕ}
+
 /-- The `X` block of the elementary direction at an `X`-block coordinate is
 the elementary direction of the source space at that coordinate.  Blueprint
 `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projX_coordinateDirection_embX {K : Type*} [Field K] {m : ℕ}
+theorem projX_coordinateDirection_embX
     (i : Fin m) :
     projX (coordinateDirection (embX m i) : Fin (2 * m + 2) → K) =
       coordinateDirection i := by
@@ -184,7 +191,7 @@ theorem projX_coordinateDirection_embX {K : Type*} [Field K] {m : ℕ}
 /-- The `X` block of the elementary direction at a `Z`-block coordinate
 vanishes.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projX_coordinateDirection_embZ {K : Type*} [Field K] {m : ℕ}
+theorem projX_coordinateDirection_embZ
     (i : Fin m) :
     projX (coordinateDirection (embZ m i) : Fin (2 * m + 2) → K) = 0 := by
   funext j
@@ -196,7 +203,7 @@ theorem projX_coordinateDirection_embZ {K : Type*} [Field K] {m : ℕ}
 /-- The `X` block of the elementary direction at the first scalar coordinate
 vanishes.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projX_coordinateDirection_alphaVar {K : Type*} [Field K] {m : ℕ} :
+theorem projX_coordinateDirection_alphaVar :
     projX (coordinateDirection (alphaVar m) : Fin (2 * m + 2) → K) = 0 := by
   funext j
   have hne : embX m j ≠ alphaVar m := by
@@ -207,7 +214,7 @@ theorem projX_coordinateDirection_alphaVar {K : Type*} [Field K] {m : ℕ} :
 /-- The `X` block of the elementary direction at the second scalar coordinate
 vanishes.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projX_coordinateDirection_betaVar {K : Type*} [Field K] {m : ℕ} :
+theorem projX_coordinateDirection_betaVar :
     projX (coordinateDirection (betaVar m) : Fin (2 * m + 2) → K) = 0 := by
   funext j
   have hne : embX m j ≠ betaVar m := by
@@ -219,7 +226,7 @@ theorem projX_coordinateDirection_betaVar {K : Type*} [Field K] {m : ℕ} :
 the elementary direction of the source space at that coordinate.  Blueprint
 `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projZ_coordinateDirection_embZ {K : Type*} [Field K] {m : ℕ}
+theorem projZ_coordinateDirection_embZ
     (i : Fin m) :
     projZ (coordinateDirection (embZ m i) : Fin (2 * m + 2) → K) =
       coordinateDirection i := by
@@ -229,7 +236,7 @@ theorem projZ_coordinateDirection_embZ {K : Type*} [Field K] {m : ℕ}
 /-- The `Z` block of the elementary direction at an `X`-block coordinate
 vanishes.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projZ_coordinateDirection_embX {K : Type*} [Field K] {m : ℕ}
+theorem projZ_coordinateDirection_embX
     (i : Fin m) :
     projZ (coordinateDirection (embX m i) : Fin (2 * m + 2) → K) = 0 := by
   funext j
@@ -241,7 +248,7 @@ theorem projZ_coordinateDirection_embX {K : Type*} [Field K] {m : ℕ}
 /-- The `Z` block of the elementary direction at the first scalar coordinate
 vanishes.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projZ_coordinateDirection_alphaVar {K : Type*} [Field K] {m : ℕ} :
+theorem projZ_coordinateDirection_alphaVar :
     projZ (coordinateDirection (alphaVar m) : Fin (2 * m + 2) → K) = 0 := by
   funext j
   have hne : embZ m j ≠ alphaVar m := by
@@ -252,7 +259,7 @@ theorem projZ_coordinateDirection_alphaVar {K : Type*} [Field K] {m : ℕ} :
 /-- The `Z` block of the elementary direction at the second scalar coordinate
 vanishes.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projZ_coordinateDirection_betaVar {K : Type*} [Field K] {m : ℕ} :
+theorem projZ_coordinateDirection_betaVar :
     projZ (coordinateDirection (betaVar m) : Fin (2 * m + 2) → K) = 0 := by
   funext j
   have hne : embZ m j ≠ betaVar m := by
@@ -260,63 +267,56 @@ theorem projZ_coordinateDirection_betaVar {K : Type*} [Field K] {m : ℕ} :
     simpa using (finCombineEquiv m).symm.injective h
   simp [projZ, coordinateDirection, hne]
 
+end
+
 /-! ## The coordinates occupied by the two blocks -/
+
+section
+
+variable (m : ℕ)
 
 /-- The `i`-th `X`-block coordinate of the extended space is its `i`-th
 coordinate.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem embX_val (m : ℕ) (i : Fin m) : (embX m i).val = i.val := rfl
+theorem embX_val (i : Fin m) : (embX m i).val = i.val := rfl
 
 /-- The `i`-th `Z`-block coordinate of the extended space is its `(m + i)`-th
 coordinate.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem embZ_val (m : ℕ) (i : Fin m) : (embZ m i).val = m + i.val := rfl
+theorem embZ_val (i : Fin m) : (embZ m i).val = m + i.val := rfl
 
 /-- The extended coordinate carrying the first scalar is the coordinate
 `2 m`.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem alphaVar_val (m : ℕ) : (alphaVar m).val = 2 * m := by
+theorem alphaVar_val : (alphaVar m).val = 2 * m := by
   simp [alphaVar, finCombineEquiv]
 
 /-- The extended coordinate carrying the second scalar is the coordinate
 `2 m + 1`.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem betaVar_val (m : ℕ) : (betaVar m).val = 2 * m + 1 := by
+theorem betaVar_val : (betaVar m).val = 2 * m + 1 := by
   simp [betaVar, finCombineEquiv]
+
+end
 
 /-! ## The blocks of a point of an extended line -/
 
-/-- Transporting the extended scalar field to the source scalar field carries
-a point of a line to a point of the transported line, since the transport is
-a coordinatewise field isomorphism.  Blueprint
-`lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem directPointToPauli_mem_linePoints (P : AdmissibleParams)
-    {b d x : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd}
-    (hx : x ∈ linePoints b d) :
-    directPointToPauli P x ∈
-      linePoints (directPointToPauli P b) (directPointToPauli P d) := by
-  obtain ⟨t, rfl⟩ := hx
-  refine ⟨extendedDirectScalarEquiv P t, ?_⟩
-  funext i
-  change extendedDirectScalarEquiv P (b i + t * d i) =
-    extendedDirectScalarEquiv P (b i) +
-      extendedDirectScalarEquiv P t * extendedDirectScalarEquiv P (d i)
-  rw [map_add, map_mul]
+section
+
+variable {K : Type*} [Field K] {m : ℕ} (b d : Fin (2 * m + 2) → K)
 
 /-- The `X` block of a point of a line lies on the source line through the
 canonical representative of the `X` block of the base, as soon as the `X`
 block of the direction is a multiple of the source direction.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projX_mem_linePoints {K : Type*} [Field K] {m : ℕ}
-    (b d : Fin (2 * m + 2) → K) (dX : Fin m → K)
+theorem projX_mem_linePoints (dX : Fin m → K)
     (hd : projX d ∈ Submodule.span K ({dX} : Set (Fin m → K)))
     {x : Fin (2 * m + 2) → K} (hx : x ∈ linePoints b d) :
     projX x ∈ linePoints (lineRepMap dX (projX b)) dX := by
   obtain ⟨t, rfl⟩ := hx
   obtain ⟨c, hc⟩ := Submodule.mem_span_singleton.mp hd
-  rw [linePoints_eq_of_mem _ dX (projX b)
+  rw [linePoints_eq_of_mem _ dX _
     (mem_linePoints_lineRepMap dX (projX b))]
   refine ⟨t * c, ?_⟩
   rw [projX_add, projX_smul, ← hc]
@@ -327,43 +327,33 @@ canonical representative of the `Z` block of the base, as soon as the `Z`
 block of the direction is a multiple of the source direction.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projZ_mem_linePoints {K : Type*} [Field K] {m : ℕ}
-    (b d : Fin (2 * m + 2) → K) (dZ : Fin m → K)
+theorem projZ_mem_linePoints (dZ : Fin m → K)
     (hd : projZ d ∈ Submodule.span K ({dZ} : Set (Fin m → K)))
     {x : Fin (2 * m + 2) → K} (hx : x ∈ linePoints b d) :
     projZ x ∈ linePoints (lineRepMap dZ (projZ b)) dZ := by
   obtain ⟨t, rfl⟩ := hx
   obtain ⟨c, hc⟩ := Submodule.mem_span_singleton.mp hd
-  rw [linePoints_eq_of_mem _ dZ (projZ b)
+  rw [linePoints_eq_of_mem _ dZ _
     (mem_linePoints_lineRepMap dZ (projZ b))]
   refine ⟨t * c, ?_⟩
   rw [projZ_add, projZ_smul, ← hc]
   module
 
+end
+
 /-! ## Incidence of the blocks of an extended line -/
+
+variable (P : AdmissibleParams)
 
 /-- The identification of the extended scalar field with the source scalar
 field carries an elementary coordinate direction to the elementary coordinate
 direction at the same coordinate.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem directPointToPauli_coordinateDirection (P : AdmissibleParams)
+theorem directPointToPauli_coordinateDirection
     (k : Fin P.extendedDirectLd.m) :
-    directPointToPauli P (coordinateDirection k) = coordinateDirection k := by
-  change Fin (2 * P.m + 2) at k
-  funext j
-  by_cases h : k = j
-  · subst j
-    change extendedDirectScalarEquiv P
-        ((Pi.single k 1 : Fin (2 * P.m + 2) →
-          DirectScalarQ P.extendedDirectLd) k) =
-      (Pi.single k 1 : Fin (2 * P.m + 2) → PauliScalar P) k
-    rw [Pi.single_eq_same, map_one]
-  · change extendedDirectScalarEquiv P
-        ((Pi.single k 1 : Fin (2 * P.m + 2) →
-          DirectScalarQ P.extendedDirectLd) j) =
-      (Pi.single k 1 : Fin (2 * P.m + 2) → PauliScalar P) j
-    rw [Pi.single_eq_of_ne (Ne.symm h), map_zero]
+    directPointToPauli (coordinateDirection k) = coordinateDirection k := by
+  aesop
 
 /-- Incidence of the `X` blocks: if a source line has as base the canonical
 representative, in its own direction, of the `X` block of the base of an
@@ -372,19 +362,19 @@ lies in the span of the source direction, then the `X` block of every point
 of the extended line is a point of the source line.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projX_mem_pointSet (P : AdmissibleParams)
-    (base dir : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
+theorem projX_mem_pointSet
+    (base dir : DirectPoint P.extendedDirectLd)
     (lineX : LineDesc P.toLdParams)
     (hbase : lineX.base =
-      lineRepMap lineX.direction (projX (directPointToPauli P base)))
-    (hdir : projX (directPointToPauli P dir) ∈
+      lineRepMap lineX.direction (projX (directPointToPauli base)))
+    (hdir : projX (directPointToPauli dir) ∈
       Submodule.span (PauliScalar P)
-        ({lineX.direction} : Set (Fin P.m → PauliScalar P)))
-    {u : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd}
+        ({lineX.direction} : Set (PauliPoint P)))
+    {u : DirectPoint P.extendedDirectLd}
     (hu : u ∈ linePoints base dir) :
-    projX (directPointToPauli P u) ∈ lineX.pointSet := by
+    projX (directPointToPauli u) ∈ lineX.pointSet := by
   rw [LineDesc.pointSet, hbase]
-  exact projX_mem_linePoints _ _ _ hdir (directPointToPauli_mem_linePoints P hu)
+  solve_by_elim [projX_mem_linePoints]
 
 /-- Incidence of the `Z` blocks: if a source line has as base the canonical
 representative, in its own direction, of the `Z` block of the base of an
@@ -393,19 +383,19 @@ lies in the span of the source direction, then the `Z` block of every point
 of the extended line is a point of the source line.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projZ_mem_pointSet (P : AdmissibleParams)
-    (base dir : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
+theorem projZ_mem_pointSet
+    (base dir : DirectPoint P.extendedDirectLd)
     (lineZ : LineDesc P.toLdParams)
     (hbase : lineZ.base =
-      lineRepMap lineZ.direction (projZ (directPointToPauli P base)))
-    (hdir : projZ (directPointToPauli P dir) ∈
+      lineRepMap lineZ.direction (projZ (directPointToPauli base)))
+    (hdir : projZ (directPointToPauli dir) ∈
       Submodule.span (PauliScalar P)
-        ({lineZ.direction} : Set (Fin P.m → PauliScalar P)))
-    {u : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd}
+        ({lineZ.direction} : Set (PauliPoint P)))
+    {u : DirectPoint P.extendedDirectLd}
     (hu : u ∈ linePoints base dir) :
-    projZ (directPointToPauli P u) ∈ lineZ.pointSet := by
+    projZ (directPointToPauli u) ∈ lineZ.pointSet := by
   rw [LineDesc.pointSet, hbase]
-  exact projZ_mem_linePoints _ _ _ hdir (directPointToPauli_mem_linePoints P hu)
+  solve_by_elim [projZ_mem_linePoints]
 
 end
 

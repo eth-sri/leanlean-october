@@ -47,65 +47,68 @@ noncomputable section
 
 /-! ## The two coordinate blocks -/
 
+section
+
+variable {K : Type*} {m k : ℕ} (u : Fin m → K) (α : Fin k → K)
+
 /-- Every coordinate of the combined dimension is either a point coordinate or
 a combining coordinate. -/
-theorem combinedVar_cases {m k : ℕ} (i : Fin (m + k)) :
+theorem combinedVar_cases (i : Fin (m + k)) :
     (∃ j : Fin m, i = combinedPointVar m k j) ∨
       ∃ r : Fin k, i = combinedCoefficientVar m k r := by
   rcases h : finSumFinEquiv.symm i with j | r
-  · exact Or.inl ⟨j, by rw [combinedPointVar, ← h, Equiv.apply_symm_apply]⟩
-  · exact Or.inr ⟨r, by rw [combinedCoefficientVar, ← h, Equiv.apply_symm_apply]⟩
+  · exact Or.inl ⟨j, by simp [combinedPointVar, ← h]⟩
+  · exact Or.inr ⟨r, by simp [combinedCoefficientVar, ← h]⟩
 
-@[simp] theorem combinedPoint_combinedPointVar {K : Type*} {m k : ℕ}
-    (u : Fin m → K) (α : Fin k → K) (j : Fin m) :
+@[simp] theorem combinedPoint_combinedPointVar (j : Fin m) :
     combinedPoint u α (combinedPointVar m k j) = u j := by
   simp [combinedPoint, combinedPointVar]
 
-@[simp] theorem combinedPoint_combinedCoefficientVar {K : Type*} {m k : ℕ}
-    (u : Fin m → K) (α : Fin k → K) (r : Fin k) :
+@[simp] theorem combinedPoint_combinedCoefficientVar (r : Fin k) :
     combinedPoint u α (combinedCoefficientVar m k r) = α r := by
   simp [combinedPoint, combinedCoefficientVar]
 
+end
+
 /-! ## The restriction to a point -/
+
+variable {K : Type*} [CommSemiring K] {m k : ℕ} (p : MvPolynomial (Fin (m + k)) K)
+  (u : Fin m → K)
 
 /-- The substitution replacing the point coordinates by the coordinates of `u`
 and keeping the combining coordinates as variables. -/
-def combinedRestrictSubstitution {K : Type*} [CommSemiring K] {m : ℕ} (k : ℕ)
+def combinedRestrictSubstitution (k : ℕ)
     (u : Fin m → K) : Fin (m + k) → MvPolynomial (Fin k) K :=
   fun i => Sum.elim (fun j : Fin m => MvPolynomial.C (u j))
     (fun r : Fin k => MvPolynomial.X r) (finSumFinEquiv.symm i)
 
-@[simp] theorem combinedRestrictSubstitution_point {K : Type*} [CommSemiring K]
-    {m k : ℕ} (u : Fin m → K) (j : Fin m) :
+@[simp] theorem combinedRestrictSubstitution_point (j : Fin m) :
     combinedRestrictSubstitution k u (combinedPointVar m k j) =
       MvPolynomial.C (u j) := by
   simp [combinedRestrictSubstitution, combinedPointVar]
 
-@[simp] theorem combinedRestrictSubstitution_coefficient {K : Type*} [CommSemiring K]
-    {m k : ℕ} (u : Fin m → K) (r : Fin k) :
+@[simp] theorem combinedRestrictSubstitution_coefficient (r : Fin k) :
     combinedRestrictSubstitution k u (combinedCoefficientVar m k r) =
       (MvPolynomial.X r : MvPolynomial (Fin k) K) := by
   simp [combinedRestrictSubstitution, combinedCoefficientVar]
 
 /-- The polynomial `p(u, ·)` in the combining variables obtained from `p` by
 substituting the point `u` for the point variables. -/
-def combinedRestrict {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) : MvPolynomial (Fin k) K :=
+def combinedRestrict : MvPolynomial (Fin k) K :=
   MvPolynomial.aeval (combinedRestrictSubstitution k u) p
 
 /-- Evaluating the restriction of `p` at `u` at a combining vector `α`
 evaluates `p` at the combined point with parts `u` and `α`. -/
-theorem eval_combinedRestrict {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) (α : Fin k → K) :
+theorem eval_combinedRestrict (α : Fin k → K) :
     MvPolynomial.eval α (combinedRestrict p u) =
       MvPolynomial.eval (combinedPoint u α) p := by
-  have hcomp : (MvPolynomial.aeval (R := K) α).comp
+  have hcomp : (MvPolynomial.aeval α).comp
         (MvPolynomial.aeval (combinedRestrictSubstitution k u)) =
       MvPolynomial.aeval (combinedPoint u α) := by
     apply MvPolynomial.algHom_ext
     intro i
     rcases combinedVar_cases i with ⟨j, rfl⟩ | ⟨r, rfl⟩ <;> simp
-  show MvPolynomial.aeval α (MvPolynomial.aeval (combinedRestrictSubstitution k u) p) = _
+  show MvPolynomial.aeval α (MvPolynomial.aeval _ p) = _
   rw [← AlgHom.comp_apply, hcomp]
   rfl
 

@@ -50,10 +50,9 @@ theorem exists_extractionWitness :
   refine ⟨a, b, C, ha, hb, hb1, hC, ?_⟩
   intro P epsilon hepsilon0 hepsilon1 S
   obtain ⟨w⟩ := hglobal P epsilon S
-  have hdeltaG : 0 ≤ deltaQld a b epsilon P.m P.d P.q := by
-    simp only [deltaQld, Real.rpow_eq_pow]
-    positivity
-  exact ⟨w, hextract P epsilon _ hepsilon0 hepsilon1 hdeltaG S w⟩
+  refine ⟨w, hextract P epsilon _ hepsilon0 hepsilon1 ?_ S w⟩
+  simp [deltaQld]
+  positivity
 
 end
 

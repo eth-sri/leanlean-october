@@ -34,14 +34,16 @@ noncomputable section
 
 /-! ## The coordinate-index event on a scalar seed -/
 
+variable (L : LdParams) (i : Fin L.m)
+
 /-- The coordinate-index event of `def:ith-restricted-line` read on a scalar
 seed alone.  Blueprint `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-def ldSeedIndexEvent (L : LdParams) (i : Fin L.m) (s : ScalarQ L) : Prop :=
+def ldSeedIndexEvent (s : ScalarQ L) : Prop :=
   chiIndex L s = i
 
 /-- Decidability of the coordinate-index event on a scalar seed. -/
-instance ldSeedIndexEvent_decidablePred (L : LdParams) (i : Fin L.m) :
+instance ldSeedIndexEvent_decidablePred :
     DecidablePred (ldSeedIndexEvent L i) := by
   intro s
   unfold ldSeedIndexEvent
@@ -50,7 +52,7 @@ instance ldSeedIndexEvent_decidablePred (L : LdParams) (i : Fin L.m) :
 /-- Every coordinate-index event of a scalar seed has positive mass under the
 uniform law.  Blueprint `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-theorem ldSeedIndexEvent_positive (L : LdParams) (i : Fin L.m) :
+theorem ldSeedIndexEvent_positive :
     0 < ∑ s ∈ (uniformDistribution (ScalarQ L)).support.filter
         (ldSeedIndexEvent L i),
       (uniformDistribution (ScalarQ L)).weight s := by
@@ -59,8 +61,7 @@ theorem ldSeedIndexEvent_positive (L : LdParams) (i : Fin L.m) :
     (fun a _ => (uniformDistribution (ScalarQ L)).nonnegative a)
     ⟨seedOfIndexResidue L i ⟨0, L.seedFiberCard_pos⟩,
       Finset.mem_filter.mpr ⟨by simp, ?_⟩, ?_⟩
-  · change chiIndex L (seedOfIndexResidue L i ⟨0, L.seedFiberCard_pos⟩) = i
-    exact chiIndex_seedOfIndexResidue L i _
+  · apply chiIndex_seedOfIndexResidue
   · simp only [uniformDistribution, Distribution.uniformOnFinset_weight,
       Finset.mem_univ, if_true]
     positivity
@@ -71,16 +72,15 @@ theorem ldSeedIndexEvent_positive (L : LdParams) (i : Fin L.m) :
 conditioned on the coordinate-index fiber of `i` together with an independent
 uniform direction block.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem freshDiagonalPairDist_eq_prod (L : LdParams) (i : Fin L.m) :
+theorem freshDiagonalPairDist_eq_prod :
     freshDiagonalPairDist L i =
       Distribution.prod
         (Distribution.restrict (uniformDistribution (ScalarQ L))
           (ldSeedIndexEvent L i) (ldSeedIndexEvent_positive L i))
-        (uniformDistribution (Fin L.m → ScalarQ L)) := by
+        (uniformDistribution (LdPoint L)) := by
   classical
-  unfold freshDiagonalPairDist
-  exact restrict_uniform_prod_fst (ldSeedIndexEvent L i)
-    (ldSeedIndexEvent_positive L i) (ldSeedDirEvent_positive L i)
+  exact restrict_uniform_prod_fst _
+    (ldSeedIndexEvent_positive L i) _
 
 end
 

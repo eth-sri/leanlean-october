@@ -58,58 +58,18 @@ noncomputable section
 
 /-! ## Elementary facts about the parameters -/
 
-/-- The field size of a directly indexed low-degree game is positive. -/
-theorem directLdFieldSize_pos (D : DirectLdParams) : (0 : ℝ) < (D.q : ℝ) := by
-  have h : 0 < Fintype.card (DirectScalarQ D) := Fintype.card_pos
-  rw [card_directScalarQ] at h
-  exact_mod_cast h
-
 /-- Commuting the two factors of a combination of a tuple of scalars. -/
 private theorem directCombiningSum_comm {K : Type*} [CommSemiring K] {k : ℕ}
     (c α : Fin k → K) : ∑ r : Fin k, α r * c r = ∑ r : Fin k, c r * α r :=
   Finset.sum_congr rfl fun _ _ => mul_comm _ _
 
-/-- The rational bound produced by the Schwartz--Zippel estimates, read in the
-field size of the directly indexed game. -/
-private theorem directCombiningRatio_eq (D : DirectLdParams) (n : ℕ) :
-    ((((n : ℕ) : ℚ≥0) / Fintype.card (DirectScalarQ D) : ℚ≥0) : Error) =
-      ((n : ℕ) : Error) / D.q := by
-  rw [card_directScalarQ]
-  push_cast
-  ring
+variable (D : DirectLdParams)
 
 /-! ## The collision estimates in the combining variables -/
 
-open scoped Classical in
-/-- Collision of two combinations with distinct coefficient tuples, written with
-the combining vector as the left factor. -/
-private theorem directCombiningCollision_avg_le_comm (D : DirectLdParams)
-    (c b : Fin D.k → DirectScalarQ D) (hne : c ≠ b) :
-    avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
-        (fun α => if ∑ r : Fin D.k, α r * c r = ∑ r : Fin D.k, α r * b r then
-          (1 : Error) else 0) ≤ (1 : Error) / D.q := by
-  refine le_trans (le_of_eq (avgOver_congr _ _ _ fun α => ?_))
-    (directCombiningCollision_avg_le D c b hne)
-  rw [directCombiningSum_comm c α, directCombiningSum_comm b α]
+section
 
-set_option maxHeartbeats 1000000 in
-open scoped Classical in
-/-- Collision of a restriction which is not a linear form with the linear form
-of a tuple of scalars, written with the combining vector as the left factor. -/
-private theorem directCombinedRestrictCollision_avg_le (D : DirectLdParams)
-    (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
-    (u : Fin D.m → DirectScalarQ D) (b : Fin D.k → DirectScalarQ D)
-    (hu : ∀ c : Fin D.k → DirectScalarQ D,
-      combinedRestrict p.1 u ≠ combiningLinearForm c) :
-    avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
-        (fun α => if MvPolynomial.eval (combinedPoint u α) p.1 =
-          ∑ r : Fin D.k, α r * b r then (1 : Error) else 0) ≤
-      ((D.k * D.d : ℕ) : Error) / D.q := by
-  have hkd : 1 ≤ D.k * D.d := by simpa using Nat.mul_le_mul D.hk D.hd
-  have hbound := combinedRestrict_collision_avg_le (d := D.d) p.2 hkd u b hu
-  refine le_trans (le_of_eq (avgOver_congr _ _ _ fun α => ?_))
-    (le_trans hbound (le_of_eq (directCombiningRatio_eq D (D.k * D.d))))
-  rw [directCombiningSum_comm b α]
+variable (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
 
 /-! ## The estimate at a fixed point -/
 
@@ -119,9 +79,8 @@ open scoped Classical in
 indicator that the restriction of the outcome at the point is a linear form
 together with the collision probability `k d / q` of two polynomials of total
 degree at most `k d` in the combining variables. -/
-def directCombinedRecoveryLocalBound (D : DirectLdParams)
-    (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
-    (u : Fin D.m → DirectScalarQ D) : Error :=
+def directCombinedRecoveryLocalBound
+    (u : DirectPoint D) : Error :=
   if IsDirectCombined D p then (1 : Error) / D.q
   else
     (if ∃ c : Fin D.k → DirectScalarQ D,
@@ -137,16 +96,14 @@ the tuple of values at `u` of the components recovered from `p` differs from `b`
 while the value of `p` at the combined point with parts `u` and `α` equals the
 combination `∑_r α_r b_r`, is at most the bound at the point.  The bound does
 not depend on the tuple `b`. -/
-theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
-    (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
-    (u : Fin D.m → DirectScalarQ D) (b : Fin D.k → DirectScalarQ D) :
+theorem directCombinedRecoveryEvent_avg_le
+    (u : DirectPoint D) (b : Fin D.k → DirectScalarQ D) :
     avgOver (uniformDistribution (Fin D.k → DirectScalarQ D)) (fun α =>
         if evalDirectPolyTupleAt u (directTupleOfCombined D p) ≠ b ∧
             MvPolynomial.eval (combinedPoint u α) p.1 =
               ∑ r : Fin D.k, α r * b r then (1 : Error) else 0) ≤
       directCombinedRecoveryLocalBound D p u := by
   classical
-  have hq := directLdFieldSize_pos D
   rw [directCombinedRecoveryLocalBound]
   by_cases hc : IsDirectCombined D p
   · rw [if_pos hc]
@@ -160,7 +117,7 @@ theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
                   (directCombinedPolynomial D g).1 =
                 ∑ r : Fin D.k, α r * b r then (1 : Error) else 0) = 0 := by
         intro α
-        refine if_neg ?_
+        apply if_neg
         rintro ⟨hne, -⟩
         exact hne hub
       rw [avgOver_congr _ _ _ hzero, avgOver_zero]
@@ -168,7 +125,10 @@ theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
     · refine le_trans (avgOver_mono _ _
         (fun α => if ∑ r : Fin D.k, α r * evalDirectPolyTupleAt u g r =
           ∑ r : Fin D.k, α r * b r then (1 : Error) else 0) fun α => ?_)
-        (directCombiningCollision_avg_le_comm D _ b hub)
+        ((by
+           refine le_trans (le_of_eq (avgOver_congr _ _ _ fun α => ?_))
+             (directCombiningCollision_avg_le D _ b hub)
+           simp [directCombiningSum_comm _ α]))
       by_cases hev : evalDirectPolyTupleAt u g ≠ b ∧
           MvPolynomial.eval (combinedPoint u α)
               (directCombinedPolynomial D g).1 =
@@ -176,8 +136,7 @@ theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
       · have h2 := hev.2
         rw [directCombinedPolynomial_eval] at h2
         rw [if_pos hev, if_pos h2]
-      · rw [if_neg hev]
-        split_ifs
+      · split_ifs
         · exact zero_le_one
         · exact le_rfl
   · rw [if_neg hc]
@@ -196,7 +155,15 @@ theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
       refine le_trans (avgOver_mono _ _
         (fun α => if MvPolynomial.eval (combinedPoint u α) p.1 =
           ∑ r : Fin D.k, α r * b r then (1 : Error) else 0) fun α => ?_)
-        (directCombinedRestrictCollision_avg_le D p u b hu)
+        ((by
+           have hkd : 1 ≤ D.k * D.d := by simpa using Nat.mul_le_mul D.hk D.hd
+           have hbound := combinedRestrict_collision_avg_le (d := D.d) p.2 hkd u b hu
+           refine le_trans (le_of_eq (avgOver_congr _ _ _ fun α => ?_))
+             (le_trans hbound (le_of_eq ((by
+                                           rw [card_directScalarQ]
+                                           push_cast
+                                           ring))))
+           rw [directCombiningSum_comm b α]))
       split_ifs with h1 h2
       · exact le_rfl
       · exact absurd h1.2 h2
@@ -212,33 +179,31 @@ open scoped Classical in
 bound is the constant `1 / q`; for a non-combined outcome the indicator that the
 restriction is a linear form averages to at most `m d / q` by
 `lem:ld-combining-exact-linearity`. -/
-theorem directCombinedRecoveryLocalBound_avg_le (D : DirectLdParams)
-    (p : PolyIndex D.combined.m (DirectScalarQ D) D.d) :
-    avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
+theorem directCombinedRecoveryLocalBound_avg_le :
+    avgOver (uniformDistribution (DirectPoint D))
         (directCombinedRecoveryLocalBound D p) ≤
       ((D.combined.m * D.d : ℕ) : Error) / D.q := by
   classical
-  have hq := directLdFieldSize_pos D
+  have hq : (0 : ℝ) < (D.q : ℝ) := by
+         have h : 0 < Fintype.card (DirectScalarQ D) := Fintype.card_pos
+         simp at h
+         exact_mod_cast h
   have hsplit : ((D.combined.m * D.d : ℕ) : Error) / D.q =
       ((D.m * D.d : ℕ) : Error) / D.q + ((D.k * D.d : ℕ) : Error) / D.q := by
-    have hn : (D.combined.m * D.d : ℕ) = D.m * D.d + D.k * D.d := by
-      simp [DirectLdParams.combined_m, Nat.add_mul]
-    rw [hn]
+    simp [DirectLdParams.combined_m]
     push_cast
     ring
   by_cases hc : IsDirectCombined D p
-  · have hconst : ∀ u : Fin D.m → DirectScalarQ D,
+  · have hconst : ∀ u : DirectPoint D,
         directCombinedRecoveryLocalBound D p u = (1 : Error) / D.q := by
       intro u
       rw [directCombinedRecoveryLocalBound, if_pos hc]
     rw [avgOver_congr _ _ _ hconst, avgOver_uniform_const]
-    have h1 : (1 : Error) ≤ ((D.combined.m * D.d : ℕ) : Error) := by
-      have hle : 1 ≤ D.combined.m * D.d := by
-        simpa using Nat.mul_le_mul D.combined.hm D.combined.hd
-      exact_mod_cast hle
-    exact div_le_div_of_nonneg_right h1 hq.le
-  · have hlin := directCombinedExactLinearity_avg_le D p hc
-    have heq : ∀ u : Fin D.m → DirectScalarQ D,
+    gcongr
+    have hle : 1 ≤ D.combined.m * D.d := by
+      simpa using Nat.mul_le_mul D.combined.hm D.combined.hd
+    exact_mod_cast hle
+  · have heq : ∀ u : DirectPoint D,
         directCombinedRecoveryLocalBound D p u =
           (if ∃ c : Fin D.k → DirectScalarQ D,
               combinedRestrict p.1 u = combiningLinearForm c then (1 : Error)
@@ -246,7 +211,9 @@ theorem directCombinedRecoveryLocalBound_avg_le (D : DirectLdParams)
       intro u
       rw [directCombinedRecoveryLocalBound, if_neg hc]
     rw [avgOver_congr _ _ _ heq, avgOver_add, avgOver_uniform_const, hsplit]
-    linarith [hlin]
+    linarith [(directCombinedExactLinearity_avg_le D p hc)]
+
+end
 
 end
 

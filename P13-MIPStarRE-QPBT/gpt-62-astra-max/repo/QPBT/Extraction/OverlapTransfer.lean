@@ -30,21 +30,6 @@ open MIPStarRE.LDT hiding Measurement
 
 noncomputable section
 
-/-- Any selected sum of effects of a complete measurement is a contraction.
-The estimate applies to the whole sum and has no outcome-cardinality factor. -/
-theorem norm_apply_measurement_sum_le {α ι : Type*} [Fintype α]
-    [Fintype ι] [DecidableEq ι] (M : Measurement α ι) (s : Finset α)
-    (psi : EuclideanSpace ℂ ι) :
-    ‖applyOperatorToState (∑ a ∈ s, M.effect a) psi‖ ≤ ‖psi‖ := by
-  have hpos : 0 ≤ ∑ a ∈ s, M.effect a := Finset.sum_nonneg (fun a _ => M.pos a)
-  have hle : ∑ a ∈ s, M.effect a ≤ 1 := by
-    rw [← M.sum_eq_one]
-    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ s)
-      (fun a _ _ => M.pos a)
-  apply MagicSquareRigidity.norm_applyOperatorToState_le
-  rw [(Matrix.nonneg_iff_posSemidef.mp hpos).isHermitian.eq]
-  exact (MIPStarRE.Quantum.sq_le_self hpos hle).trans hle
-
 /-- Changing a unit vector changes the expectation of a contraction by at most
 twice the vector distance. No positivity or self-adjointness is required. -/
 theorem abs_stateQForm_sub_le_of_contraction {ι : Type*}
@@ -57,17 +42,12 @@ theorem abs_stateQForm_sub_le_of_contraction {ι : Type*}
         (inner ℂ phi (applyOperatorToState T (psi - phi))).re := by
     simp [stateQForm, applyOperatorToState]
   rw [hsplit]
-  calc
-    _ ≤ |(inner ℂ (psi - phi) (applyOperatorToState T psi)).re| +
-        |(inner ℂ phi (applyOperatorToState T (psi - phi))).re| := abs_add_le _ _
-    _ ≤ ‖psi - phi‖ * ‖applyOperatorToState T psi‖ +
-        ‖phi‖ * ‖applyOperatorToState T (psi - phi)‖ :=
-      add_le_add ((Complex.abs_re_le_norm _).trans (norm_inner_le_norm _ _))
-        ((Complex.abs_re_le_norm _).trans (norm_inner_le_norm _ _))
-    _ ≤ ‖psi - phi‖ * ‖psi‖ + ‖phi‖ * ‖psi - phi‖ :=
-      add_le_add (mul_le_mul_of_nonneg_left (hT psi) (norm_nonneg _))
-        (mul_le_mul_of_nonneg_left (hT (psi - phi)) (norm_nonneg _))
-    _ = _ := by rw [hpsi, hphi]; ring
+  refine le_trans (abs_add_le _ _) ?_
+  refine le_trans (add_le_add ((Complex.abs_re_le_norm _).trans (norm_inner_le_norm _ _))
+    ((Complex.abs_re_le_norm _).trans (norm_inner_le_norm _ _))) ?_
+  refine LE.le.trans_eq (add_le_add (mul_le_mul_of_nonneg_left (hT psi) (norm_nonneg _))
+    (mul_le_mul_of_nonneg_left (hT (psi - phi)) (norm_nonneg _))) ?_
+  simp_all; ring
 
 /-- The complete diagonal overlap of two local measurements is stable under a
 change of unit state. The tensor factors can have different dimensions. -/
@@ -84,8 +64,16 @@ theorem abs_diagonal_overlap_state_sub_le {α I J : Type*}
     simp [s, Finset.sum_filter, Fintype.sum_prod_type, tensorMeasurement,
       Measurement.ofSumEqOne]
   have h := abs_stateQForm_sub_le_of_contraction _
-    (norm_apply_measurement_sum_le (tensorMeasurement A B) s) psi phi hpsi hphi
-  rw [heq, stateQForm_finset_sum, stateQForm_finset_sum] at h
+    ((by
+       have hpos : 0 ≤ ∑ a ∈ s, (tensorMeasurement A B).effect a := Finset.sum_nonneg (fun a _ => (tensorMeasurement A B).pos a)
+       have hle : ∑ a ∈ s, (tensorMeasurement A B).effect a ≤ 1 := by
+         rw [← (tensorMeasurement A B).sum_eq_one]
+         exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ s)
+           (fun a _ _ => (tensorMeasurement A B).pos a)
+       apply MagicSquareRigidity.norm_applyOperatorToState_le
+       rw [(Matrix.nonneg_iff_posSemidef.mp hpos).isHermitian.eq]
+       exact (MIPStarRE.Quantum.sq_le_self hpos hle).trans hle)) psi phi hpsi hphi
+  simp [heq, stateQForm_finset_sum] at h
   exact h
 
 /-- Averaging evaluated overlaps does not increase the state-transfer cost.
@@ -114,36 +102,13 @@ theorem evaluated_overlap_state_transfer {Y α R I J : Type*}
 fraction of points. Injectivity follows from the exact decoder identity. -/
 theorem pauli_encoding_collision_le {P : AdmissibleParams}
     (h k : PauliRegister P) (hne : h ≠ k) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P))
+    avgOver (uniformDistribution (PauliPoint P))
       (fun u => if evalPoly (encodingPoly h) u = evalPoly (encodingPoly k) u
         then (1 : ℝ) else 0) ≤ (P.m * P.d : ℝ) / P.q := by
   apply poly_eval_collision_le
   intro heq
   apply hne
-  have hd := congrArg (fun g : Poly P => decodeFq g) heq
-  simpa only [decodeFq_lowDegreeEncoding] using hd
-
-/-- The unevaluated Pauli overlap on a unit comparison state is bounded below
-by the evaluated overlap on another unit state, minus the collision and state
-errors. This combines paper `eq:qld-unitary-8` with the transfer following
-`eq:qld-unitary-9`, without any dimension or answer-count factor. -/
-theorem pauli_overlap_transfer {P : AdmissibleParams} {I J : Type*}
-    [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
-    (A : Measurement (PauliRegister P) I) (B : Measurement (PauliRegister P) J)
-    (theta ideal : EuclideanSpace ℂ (I × J))
-    (htheta : ‖theta‖ = 1) (hideal : ‖ideal‖ = 1) :
-    avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
-      ∑ a : PauliScalar P, stateQForm theta
-        (heteroKron ((A.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)
-          ((B.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a))) ≤
-      (∑ h, stateQForm ideal (heteroKron (A.effect h) (B.effect h))) +
-        (P.m * P.d : ℝ) / P.q + 2 * ‖theta - ideal‖ := by
-  have ht := evaluated_overlap_state_transfer A B
-    (fun h u => evalPoly (encodingPoly h) u) theta ideal htheta hideal
-  have hc := SandwichProduct.avg_diagonal_postprocess_stateQForm_le A B ideal
-    (fun h u => evalPoly (encodingPoly h) u) ((P.m * P.d : ℝ) / P.q) hideal
-    (by positivity) pauli_encoding_collision_le
-  exact ht.trans (add_le_add hc le_rfl)
+  simpa only [decodeFq_lowDegreeEncoding] using (congrArg (fun g : Poly P => decodeFq g) heq)
 
 end
 

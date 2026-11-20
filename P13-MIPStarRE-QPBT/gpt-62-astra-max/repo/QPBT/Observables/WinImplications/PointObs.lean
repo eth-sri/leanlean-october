@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Observables.WinImplications.Approx
+public import QPBT.Observables.WinImplications.ApproxLines
 
 /-!
 # Self-consistency of the strategy point observables
@@ -34,27 +34,28 @@ local instance pauliEdgeNonemptyPointObs : Nonempty PauliEdge :=
 
 /-! ## Linearity of the tensor placement -/
 
+section
+
+variable {α ιA ιB : Type*} [Fintype α] (c : α → ℂ)
+
 /-- The left tensor placement commutes with weighted finite sums. This is
 formalization-only support for `lem:povm-to-obs`, blueprint
 `ch14_qpbt_observables.tex:365-382`. -/
-theorem heteroKron_left_sum_smul {α ιA ιB : Type*} [Fintype α]
-    (c : α → ℂ) (A : α → Op ιA) (B : Op ιB) :
+theorem heteroKron_left_sum_smul (A : α → Op ιA) (B : Op ιB) :
     heteroKron (∑ a, c a • A a) B = ∑ a, c a • heteroKron (A a) B := by
   ext i j
-  simp only [heteroKron, Matrix.kronecker, Matrix.kroneckerMap_apply,
-    Matrix.sum_apply, Matrix.smul_apply, smul_eq_mul, Finset.sum_mul,
-    mul_assoc]
+  simp [heteroKron, Matrix.kroneckerMap_apply, Matrix.sum_apply, Matrix.smul_apply, smul_eq_mul, Finset.sum_mul, mul_assoc]
 
 /-- The right tensor placement commutes with weighted finite sums. This is
 formalization-only support for `lem:povm-to-obs`, blueprint
 `ch14_qpbt_observables.tex:365-382`. -/
-theorem heteroKron_right_sum_smul {α ιA ιB : Type*} [Fintype α]
-    (c : α → ℂ) (A : Op ιA) (B : α → Op ιB) :
+theorem heteroKron_right_sum_smul (A : Op ιA) (B : α → Op ιB) :
     heteroKron A (∑ a, c a • B a) = ∑ a, c a • heteroKron A (B a) := by
   ext i j
-  simp only [heteroKron, Matrix.kronecker, Matrix.kroneckerMap_apply,
-    Matrix.sum_apply, Matrix.smul_apply, smul_eq_mul, Finset.mul_sum]
+  simp [heteroKron, Matrix.kroneckerMap_apply, Matrix.sum_apply, Matrix.smul_apply, smul_eq_mul, Finset.mul_sum]
   exact Finset.sum_congr rfl fun a _ => by ring
+
+end
 
 /-- The binary phase character has unit modulus. Paper
 `references/qpbt-paper/04_preliminaries.tex:1052-1081`. -/
@@ -69,7 +70,7 @@ binary observable of the trace-coarse-grained point measurement. Paper
 `ch14_qpbt_observables.tex:573-610`. -/
 theorem pointObs_eq_traceMeas_obs {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
-    (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+    (r : PauliScalar P) (u : PauliPoint P) :
     S.pointObs side W r u =
       ∑ b : ZMod 2, phaseSign b • (S.pointTraceMeas side W u r).effect b := by
   classical
@@ -85,8 +86,7 @@ theorem pointObs_eq_traceMeas_obs {P : AdmissibleParams} {ε : ℝ}
   rw [ProjectiveSetting.pointTraceMeas,
     MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.smul_sum]
   refine Finset.sum_congr rfl ?_
-  intro a ha
-  rw [(Finset.mem_filter.mp ha).2]
+  simp_all
 
 /-! ## Trace-coarse-grained point self-consistency -/
 

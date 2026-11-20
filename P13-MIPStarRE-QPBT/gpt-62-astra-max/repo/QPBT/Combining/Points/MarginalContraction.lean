@@ -44,29 +44,43 @@ theorem norm_marginal_sub_sq_le {β ι : Type*} [Fintype β]
     ‖applyOperatorToState ((∑ b, Q b) - D) ψ‖ ^ 2 ≤
       4 * ∑ b, ‖applyOperatorToState (Q b - B.effect b * D) ψ‖ ^ 2 := by
   classical
-  let U : Op ι := ∑ b, Q b * (Q b - B.effect b * Q b)
-  let V : Op ι := ∑ b, B.effect b * (Q b - B.effect b * D)
+  let U := ∑ b, Q b * (Q b - B.effect b * Q b)
+  let V := ∑ b, B.effect b * (Q b - B.effect b * D)
   have hU : ‖applyOperatorToState U ψ‖ ^ 2 ≤
       ∑ b, ‖applyOperatorToState (Q b - B.effect b * D) ψ‖ ^ 2 := by
     refine le_trans (DistanceCalculus.norm_finset_sum_projector_mul_sq_le
-      Q (fun b => Q b - B.effect b * Q b) hQ horth Finset.univ ψ) ?_
-    exact Finset.sum_le_sum fun b _ => norm_sub_projective_mul_sq_le B hB b (Q b) D ψ
-  have hV : ‖applyOperatorToState V ψ‖ ^ 2 ≤
-      ∑ b, ‖applyOperatorToState (Q b - B.effect b * D) ψ‖ ^ 2 :=
+      Q _ hQ horth Finset.univ ψ) ?_
+    exact Finset.sum_le_sum fun b _ => (by
+                                         have hidem := (hB b).isIdempotentElem.eq
+                                         have hgram : (1 - B.effect b)ᴴ * (1 - B.effect b) ≤ 1 := by
+                                           rw [Matrix.conjTranspose_sub, Matrix.conjTranspose_one,
+                                             (hB b).isSelfAdjoint.isHermitian.eq]
+                                           calc
+                                             _ = 1 - B.effect b := by
+                                               simp only [sub_mul, mul_sub, one_mul, mul_one, hidem]
+                                               abel
+                                             _ ≤ 1 := sub_le_self _ (B.pos b)
+                                         have heq : (Q b) - B.effect b * (Q b) =
+                                             (1 - B.effect b) * ((Q b) - B.effect b * D) := by
+                                           simp only [sub_mul, mul_sub, one_mul, ← mul_assoc, hidem]
+                                           abel
+                                         rw [heq, DistanceCalculus.applyOperatorToState_mul]
+                                         exact pow_le_pow_left₀ (norm_nonneg _)
+                                           (MagicSquareRigidity.norm_applyOperatorToState_le hgram _) 2)
+  have hV :=
     DistanceCalculus.norm_finset_sum_projector_mul_sq_le B.effect
       (fun b => Q b - B.effect b * D) hB
-      (fun hbc => DistanceCalculus.projective_effect_mul_effect_eq_zero B hB hbc)
+      (DistanceCalculus.projective_effect_mul_effect_eq_zero B hB)
       Finset.univ ψ
   have hsum : (∑ b, Q b) - D = U + V := by
     have hfirst : U = ∑ b, (Q b - B.effect b * Q b) := by
       apply Finset.sum_congr rfl
       intro b _
-      rw [mul_sub, ← mul_assoc, hcomm b, mul_assoc,
+      rw [mul_sub, ← mul_assoc, hcomm, mul_assoc,
         (hQ b).isIdempotentElem.eq]
     have hsecond : V = (∑ b, B.effect b * Q b) - D := by
       dsimp [V]
-      simp only [mul_sub, ← mul_assoc, (hB _).isIdempotentElem.eq,
-        Finset.sum_sub_distrib, ← Finset.sum_mul, B.sum_eq_one, one_mul]
+      simp [mul_sub, ← mul_assoc, (hB _).isIdempotentElem.eq, Finset.sum_sub_distrib, ← Finset.sum_mul, B.sum_eq_one]
     rw [hfirst, hsecond, Finset.sum_sub_distrib]
     abel
   rw [hsum]

@@ -31,25 +31,28 @@ open MIPStarRE.LDT.Preliminaries
 
 noncomputable section
 
+section
+
+variable (P : AdmissibleParams) (ιA ιB : Type*)
+
 /-- The six registers `AA'A''BB'B''`, retaining distinct Alice and Bob local
 spaces. This is the register index type of `def:expanded-state`, paper
 `14_analysis_of_the_pauli_basis_test.tex:367-372`, blueprint
 `def:expanded-state`. -/
-abbrev SixReg (P : AdmissibleParams) (ιA ιB : Type*) :=
+abbrev SixReg :=
   (ιA × (PauliRegister P × PauliRegister P)) ×
     (ιB × (PauliRegister P × PauliRegister P))
 
 /-- Equality of six-register indices is supplied by classical decidability for
 the register type. This is the index set of blueprint
 `def:expanded-state`. -/
-noncomputable instance sixRegDecidableEq (P : AdmissibleParams)
-    (ιA ιB : Type*) : DecidableEq (SixReg P ιA ιB) :=
+noncomputable instance sixRegDecidableEq : DecidableEq (SixReg P ιA ιB) :=
   Classical.decEq _
 
 /-- Reassociate the tensor product of the strategy state and two EPR states
 directly into register order `AA'A''BB'B''` for
 `eq:def-psihat`, paper `14_analysis_of_the_pauli_basis_test.tex:367-372`. -/
-def sixRegShuffle (P : AdmissibleParams) (ιA ιB : Type*) :
+def sixRegShuffle :
     (((ιA × ιB) × (PauliRegister P × PauliRegister P)) ×
         (PauliRegister P × PauliRegister P)) ≃ SixReg P ιA ιB where
   toFun p := ((p.1.1.1, (p.1.2.1, p.1.2.2)),
@@ -58,6 +61,8 @@ def sixRegShuffle (P : AdmissibleParams) (ιA ιB : Type*) :
     (p.2.2.1, p.2.2.2))
   left_inv p := by cases p; rfl
   right_inv p := by cases p; rfl
+
+end
 
 /-- The four placements `AA'`, `BA''`, `BB'`, and `AB''` used explicitly in
 the chapter-14 consistency statements. Paper
@@ -69,12 +74,6 @@ inductive Placement where
   | BB'
   | AB''
   deriving DecidableEq, Repr, Inhabited
-
-instance instFintypePlacement : Fintype Placement where
-  elems := {.AA', .BA'', .BB', .AB''}
-  complete := by
-    intro placement
-    cases placement <;> simp
 
 /-- The strategy-player side supplying the local Hilbert space in each of the
 four register placements at paper
@@ -89,17 +88,21 @@ namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
 
+section
+
+variable (S : ProjectiveSetting P ε)
+
 /-- A strategy-local register paired with one generalized-Pauli register. This
 is the operator space in `def:expanded-observables`, paper
 `14_analysis_of_the_pauli_basis_test.tex:374-382`. -/
-abbrev ExpandedLocalSpace (S : ProjectiveSetting P ε) (side : PlayerSide) :=
+abbrev ExpandedLocalSpace (side : PlayerSide) :=
   S.LocalSpace side × PauliRegister P
 
 /-- The strategy state tensored with EPR states on `A'A''` and `B'B''`, in the
 six-register order. This is `eq:def-psihat`, paper
 `14_analysis_of_the_pauli_basis_test.tex:367-372`, blueprint
 `eq:def-psihat`. -/
-noncomputable def psiHat (S : ProjectiveSetting P ε) :
+noncomputable def psiHat :
     EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB) := by
   classical
   exact
@@ -113,7 +116,7 @@ identity on all remaining registers. The input local space is determined by
 the placement, so no equality between the player spaces is assumed. Paper
 `14_analysis_of_the_pauli_basis_test.tex:420-450`; blueprint
 `def:symmetric-equivalents`. -/
-noncomputable def place (S : ProjectiveSetting P ε) (p : Placement)
+noncomputable def place (p : Placement)
     (O : Op (S.ExpandedLocalSpace p.side)) :
     Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
   fun i j =>
@@ -147,8 +150,8 @@ noncomputable def place (S : ProjectiveSetting P ε) (p : Placement)
 `W^r(u) tensor tau^W(r * ind_m(u))` on a selected player side. This is
 Equation `eq:lc-23`, paper `14_analysis_of_the_pauli_basis_test.tex:374-382`,
 blueprint `eq:lc-23`. -/
-noncomputable def expObs (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+noncomputable def expObs (side : PlayerSide)
+    (W : PauliKind) (r : PauliScalar P) (u : PauliPoint P) :
     Op (S.ExpandedLocalSpace side) :=
   heteroKron (S.pointObs side W r u)
     (tauObservable W (fun h => r * indicatorVec u h))
@@ -157,18 +160,23 @@ noncomputable def expObs (S : ProjectiveSetting P ε) (side : PlayerSide)
 display of `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:384-418`, blueprint
 `def:expanded-point-measurement`. -/
-noncomputable def expPointOp (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+noncomputable def expPointOp (side : PlayerSide)
+    (W : PauliKind) (u : PauliPoint P) (a : PauliScalar P) :
     Op (S.ExpandedLocalSpace side) :=
   averageOperatorOverDistribution (uniformDistribution (PauliScalar P)) fun r =>
     phaseSign (fixedBinTrace P.model (a * r)) • S.expObs side W r u
+
+end
+
+section
+
+variable (W : PauliKind) (u : PauliPoint P)
 
 /-- The Pauli-register projector onto labels whose low-degree encoding has
 value `a` at `u`. This is Equation `eq:qld-point-obs-def`, paper
 `14_analysis_of_the_pauli_basis_test.tex:389-394`, blueprint
 `eq:qld-point-obs-def`. -/
-noncomputable def tauPointProj (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) : Op (PauliRegister P) :=
+noncomputable def tauPointProj (a : PauliScalar P) : Op (PauliRegister P) :=
   ∑ h ∈ Finset.univ.filter (fun h : PauliRegister P =>
       dotProduct h (indicatorVec u) = a),
     pauliProj W h
@@ -177,18 +185,15 @@ noncomputable def tauPointProj (W : PauliKind)
 This is the EPR-transport identity used for the perfect ancilla consistency in
 item 1 of `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
-theorem tauPointProj_transpose (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+theorem tauPointProj_transpose (a : PauliScalar P) :
     (tauPointProj W u a)ᵀ = tauPointProj W u a := by
-  classical
-  simp only [tauPointProj, Matrix.transpose_sum, pauliProj_transpose]
+  simp [tauPointProj, Matrix.transpose_sum, pauliProj_transpose]
 
 /-- Pauli point projectors belonging to distinct values are orthogonal, while
 each projector is idempotent. This is the ancillary product calculation in
 item 1 of `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
-theorem tauPointProj_mul_tauPointProj (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a b : PauliScalar P) :
+theorem tauPointProj_mul_tauPointProj (a b : PauliScalar P) :
     tauPointProj W u a * tauPointProj W u b =
       if a = b then tauPointProj W u a else 0 := by
   classical
@@ -197,14 +202,14 @@ theorem tauPointProj_mul_tauPointProj (W : PauliKind)
   simp_rw [Finset.mul_sum]
   by_cases hab : a = b
   · subst b
-    rw [if_pos rfl]
+    simp
     apply Finset.sum_congr rfl
     intro e he
-    rw [Finset.sum_eq_single e]
+    rw [Finset.sum_eq_single]
     · rw [pauliProj_mul_pauliProj, if_pos rfl]
     · intro f hf hfe
       rw [pauliProj_mul_pauliProj, if_neg hfe.symm]
-    · exact fun h => (h he).elim
+    · grind
   · rw [if_neg hab]
     apply Finset.sum_eq_zero
     intro e he
@@ -213,13 +218,15 @@ theorem tauPointProj_mul_tauPointProj (W : PauliKind)
     rw [pauliProj_mul_pauliProj, if_neg]
     intro hef
     apply hab
-    rw [← (Finset.mem_filter.mp he).2, ← (Finset.mem_filter.mp hf).2, hef]
+    simp_all
+
+end
 
 /-- The phase induced by the fixed binary trace is an additive character. -/
-private theorem phaseSign_fixedBinTrace_mul (x y : PauliScalar P) :
+theorem phaseSign_fixedBinTrace_mul (x y : PauliScalar P) :
     phaseSign (fixedBinTrace P.model x) * phaseSign (fixedBinTrace P.model y) =
       phaseSign (fixedBinTrace P.model (x + y)) := by
-  rw [fixedBinTrace, map_add]
+  simp [fixedBinTrace]
   exact (phaseSign_add _ _).symm
 
 /-- The trace phase converts addition of coefficients to multiplication. -/
@@ -228,19 +235,14 @@ private theorem phaseSign_fixedBinTrace_mul_add (x y r : PauliScalar P) :
         phaseSign (fixedBinTrace P.model (y * r)) =
       phaseSign (fixedBinTrace P.model ((x + y) * r)) := by
   rw [add_mul]
-  exact phaseSign_fixedBinTrace_mul (x * r) (y * r)
+  apply phaseSign_fixedBinTrace_mul
 
-/-- Orthogonality of the fixed trace character over the Pauli scalar field. -/
-private theorem phaseSign_fixedBinTrace_expect (c : PauliScalar P) :
-    (𝔼 r : PauliScalar P, phaseSign (fixedBinTrace P.model (c * r))) =
-      if c = 0 then (1 : ℂ) else 0 := by
-  simpa only [fixedBinTrace, phaseSign_eq_ffChar,
-    MIPStarRE.LDT.Preliminaries.ffChar_apply, mul_comm c] using
-    (fourier_fact_scalar (p := 2) (F := PauliScalar P) c)
+section
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 /-- Averaging a trace phase times an operator selects the zero coefficient. -/
 private theorem average_phaseSign_fixedBinTrace_smul
-    {ι : Type*} [Fintype ι] [DecidableEq ι]
     (c : PauliScalar P) (A : Op ι) :
     averageOperatorOverDistribution (uniformDistribution (PauliScalar P))
         (fun r => phaseSign (fixedBinTrace P.model (c * r)) • A) =
@@ -249,61 +251,53 @@ private theorem average_phaseSign_fixedBinTrace_smul
   rw [averageOperatorOverDistribution_smul_const]
   simp only [uniformDistribution, Distribution.uniformOnFinset,
     Finset.mem_univ, if_true, Finset.card_univ, ← Finset.mul_sum]
-  have havg := phaseSign_fixedBinTrace_expect (P := P) c
+  have havg : (𝔼 r : PauliScalar _, phaseSign (fixedBinTrace P.model (c * r))) = if c = 0 then (1 : ℂ) else 0 := by
+         simpa only [fixedBinTrace, phaseSign_eq_ffChar,
+           MIPStarRE.LDT.Preliminaries.ffChar_apply, mul_comm] using
+           (fourier_fact_scalar (p := 2) c)
   rw [Fintype.expect_eq_sum_div_card] at havg
   have hcoeff :
-      ((1 / (Fintype.card (PauliScalar P) : ℝ) : ℝ) : ℂ) *
+      (1 / (Fintype.card (PauliScalar P) : ℝ) : ℝ) *
           (∑ r : PauliScalar P,
             phaseSign (fixedBinTrace P.model (c * r))) =
-        if c = 0 then (1 : ℂ) else 0 := by
-    push_cast
-    simpa only [one_div, div_eq_mul_inv, one_mul, mul_comm] using havg
+        if c = 0 then 1 else 0 := by
+    simpa [one_div, div_eq_mul_inv, mul_comm] using havg
   rw [hcoeff]
-  by_cases hc : c = 0 <;> simp [hc]
+  simp
 
 /-- Averaging three fixed trace characters imposes the convolution constraint. -/
 private theorem average_three_phaseSign_fixedBinTrace_smul
-    {ι : Type*} [Fintype ι] [DecidableEq ι]
     (a x y : PauliScalar P) (A : Op ι) :
     averageOperatorOverDistribution (uniformDistribution (PauliScalar P))
         (fun r => phaseSign (fixedBinTrace P.model (a * r)) •
           (phaseSign (fixedBinTrace P.model (x * r)) •
             (phaseSign (fixedBinTrace P.model (y * r)) • A))) =
       if x + y = a then A else 0 := by
-  haveI : CharP (PauliScalar P) 2 :=
+  haveI :=
     (Algebra.charP_iff (ZMod 2) (PauliScalar P) 2).mp (ZMod.charP 2)
   have hzero : a + x + y = 0 ↔ x + y = a := by
     constructor
-    · intro h
-      exact (CharTwo.add_eq_zero.mp (by simpa only [add_assoc] using h)).symm
-    · intro h
-      rw [add_assoc]
-      exact CharTwo.add_eq_zero.mpr h.symm
-  calc
-    averageOperatorOverDistribution (uniformDistribution (PauliScalar P))
-        (fun r => phaseSign (fixedBinTrace P.model (a * r)) •
-          (phaseSign (fixedBinTrace P.model (x * r)) •
-            (phaseSign (fixedBinTrace P.model (y * r)) • A))) =
-      averageOperatorOverDistribution (uniformDistribution (PauliScalar P))
-        (fun r => phaseSign (fixedBinTrace P.model ((a + x + y) * r)) • A) := by
-          apply averageOperatorOverDistribution_congr
-          intro r
-          rw [smul_smul, phaseSign_fixedBinTrace_mul_add a x r, smul_smul,
-            phaseSign_fixedBinTrace_mul_add (a + x) y r]
-    _ = if a + x + y = 0 then A else 0 :=
-      average_phaseSign_fixedBinTrace_smul (a + x + y) A
-    _ = if x + y = a then A else 0 := if_congr hzero rfl rfl
+    · grind
+    · grind
+  rw [← if_congr hzero rfl rfl]
+  rw [← average_phaseSign_fixedBinTrace_smul (a + x + y) A]
+  apply averageOperatorOverDistribution_congr
+  intro r
+  rw [smul_smul, phaseSign_fixedBinTrace_mul_add, smul_smul,
+    phaseSign_fixedBinTrace_mul_add]
+
+end
 
 /-- A scalar in the indicator vector factors out of the dot product. -/
 private theorem dot_smul_indicator (r : PauliScalar P)
-    (u : Fin P.m → PauliScalar P) (e : PauliRegister P) :
+    (u : PauliPoint P) (e : PauliRegister P) :
     dotProduct (fun h => r * indicatorVec u h) e =
       dotProduct e (indicatorVec u) * r := by
   change dotProduct (r • indicatorVec u) e = _
-  rw [smul_dotProduct, dotProduct_comm, smul_eq_mul, mul_comm]
+  simp [dotProduct_comm, smul_eq_mul, mul_comm]
 
 /-- Tensor products distribute over the sums in both factors. -/
-private theorem heteroKron_sum_sum {α β ι κ : Type*}
+theorem heteroKron_sum_sum {α β ι κ : Type*}
     [Fintype α] [Fintype β] (A : α → Op ι) (B : β → Op κ) :
     heteroKron (∑ x, A x) (∑ y, B y) =
       ∑ x, ∑ y, heteroKron (A x) (B y) := by
@@ -323,23 +317,24 @@ measurement and the Pauli-register point projection. This is the final display
 of `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:395-418`. -/
 theorem expPointOp_eq_convolution (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) :
     S.expPointOp side W u a =
       ∑ p ∈ Finset.univ.filter (fun p : PauliScalar P × PauliScalar P =>
           p.1 + p.2 = a),
         heteroKron ((S.pointMeas side W u).effect p.1)
           (tauPointProj W u p.2) := by
+  let effectAt := (S.pointMeas side W u).effect
   classical
   rw [expPointOp]
-  simp only [expObs, pointObs, tauObservable_eq_sum_pauliProj]
+  simp [expObs, pointObs, tauObservable_eq_sum_pauliProj]
   simp_rw [dot_smul_indicator]
   calc
     averageOperatorOverDistribution (uniformDistribution (PauliScalar P))
         (fun r => phaseSign (fixedBinTrace P.model (a * r)) •
           heteroKron
             (∑ x, phaseSign (fixedBinTrace P.model (x * r)) •
-              (S.pointMeas side W u).effect x)
+              effectAt x)
             (∑ e, phaseSign (fixedBinTrace P.model
               (dotProduct e (indicatorVec u) * r)) • pauliProj W e)) =
       averageOperatorOverDistribution (uniformDistribution (PauliScalar P))
@@ -348,7 +343,7 @@ theorem expPointOp_eq_convolution (S : ProjectiveSetting P ε)
             (phaseSign (fixedBinTrace P.model (x * r)) •
               (phaseSign (fixedBinTrace P.model
                 (dotProduct e (indicatorVec u) * r)) •
-                  heteroKron ((S.pointMeas side W u).effect x)
+                  heteroKron (effectAt x)
                     (pauliProj W e)))) := by
           apply averageOperatorOverDistribution_congr
           intro r
@@ -356,78 +351,48 @@ theorem expPointOp_eq_convolution (S : ProjectiveSetting P ε)
           simp_rw [heteroKron_smul_smul, Finset.smul_sum]
     _ = ∑ x, ∑ e,
           if x + dotProduct e (indicatorVec u) = a then
-            heteroKron ((S.pointMeas side W u).effect x) (pauliProj W e)
+            heteroKron (effectAt x) (pauliProj W e)
           else 0 := by
-      rw [averageOperatorOverDistribution_sum]
       simp_rw [averageOperatorOverDistribution_sum]
       simp_rw [average_three_phaseSign_fixedBinTrace_smul]
-    _ = ∑ p ∈ Finset.univ.filter (fun p : PauliScalar P × PauliScalar P =>
-          p.1 + p.2 = a),
-        heteroKron ((S.pointMeas side W u).effect p.1)
-          (tauPointProj W u p.2) := by
+    _ = _ := by
       simp only [tauPointProj]
       rw [Finset.sum_filter, Fintype.sum_prod_type]
       apply Finset.sum_congr rfl
       intro x hx
-      calc
-        (∑ e, if x + dotProduct e (indicatorVec u) = a then
-              heteroKron ((S.pointMeas side W u).effect x) (pauliProj W e)
-            else 0) =
-          ∑ y, ∑ e ∈ Finset.univ.filter
-              (fun e : PauliRegister P => dotProduct e (indicatorVec u) = y),
-            if x + dotProduct e (indicatorVec u) = a then
-              heteroKron ((S.pointMeas side W u).effect x) (pauliProj W e)
-            else 0 :=
-          (Finset.sum_fiberwise Finset.univ
-            (fun e : PauliRegister P => dotProduct e (indicatorVec u))
-            (fun e => if x + dotProduct e (indicatorVec u) = a then
-              heteroKron ((S.pointMeas side W u).effect x) (pauliProj W e)
-            else 0)).symm
-        _ = ∑ y, if x + y = a then
-              heteroKron ((S.pointMeas side W u).effect x)
-                (∑ e ∈ Finset.univ.filter
-                  (fun e : PauliRegister P =>
-                    dotProduct e (indicatorVec u) = y),
-                  pauliProj W e)
-            else 0 := by
-          apply Finset.sum_congr rfl
-          intro y hy
-          by_cases hxy : x + y = a
-          · rw [if_pos hxy, DistanceCalculus.heteroKron_finset_sum_right]
-            apply Finset.sum_congr rfl
-            intro e he
-            rw [if_pos]
-            rw [(Finset.mem_filter.mp he).2]
-            exact hxy
-          · rw [if_neg hxy]
-            apply Finset.sum_eq_zero
-            intro e he
-            rw [if_neg]
-            intro heq
-            apply hxy
-            rw [← (Finset.mem_filter.mp he).2]
-            exact heq
+      refine Eq.trans ((Finset.sum_fiberwise Finset.univ
+        (fun e : PauliRegister P => dotProduct e (indicatorVec u))
+        (fun e => if x + dotProduct e (indicatorVec u) = a then
+          heteroKron (effectAt x) (pauliProj W e)
+        else 0)).symm) ?_
+      apply Finset.sum_congr rfl
+      intro y hy
+      by_cases hxy : x + y = a
+      · rw [if_pos hxy, DistanceCalculus.heteroKron_finset_sum_right]
+        apply Finset.sum_congr rfl
+        aesop
+      · rw [if_neg hxy]
+        apply Finset.sum_eq_zero
+        aesop
+
+section
+
+variable (W : PauliKind) (u : PauliPoint P)
 
 /-- Each point fiber is a sum of positive Pauli projectors. -/
-private theorem tauPointProj_nonneg (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+private theorem tauPointProj_nonneg (a : PauliScalar P) :
     0 ≤ tauPointProj W u a := by
   classical
-  unfold tauPointProj
   exact Finset.sum_nonneg fun e he =>
     Matrix.nonneg_iff_posSemidef.mpr (posSemidef_pauliProj W e)
 
 /-- The point fibers partition the complete family of Pauli eigenspace projectors. -/
-private theorem sum_tauPointProj_eq_one (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+private theorem sum_tauPointProj_eq_one :
     ∑ a, tauPointProj W u a = 1 := by
   classical
   rw [show (∑ a, tauPointProj W u a) =
-      ∑ e : PauliRegister P, pauliProj W e by
-    simp only [tauPointProj]
-    exact Finset.sum_fiberwise Finset.univ
-      (fun e : PauliRegister P => dotProduct e (indicatorVec u))
-      (fun e => pauliProj W e)]
+      _ by
+    apply Finset.sum_fiberwise]
   exact sum_pauliProj_eq_one W
 
 /-- The projective point measurement on one Pauli register obtained by
@@ -436,25 +401,26 @@ This is the ancillary measurement used in item 1 of `lem:qld-comm-cons`, paper
 `eq:qld-point-obs-def` in
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:385-411`,
 blueprint `def:ancillary-point-measurement`. -/
-noncomputable def tauPointMeas (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+noncomputable def tauPointMeas :
     Measurement (PauliScalar P) (PauliRegister P) :=
   Measurement.ofSumEqOne (tauPointProj W u) (by
     exact tauPointProj_nonneg W u) (by
     exact sum_tauPointProj_eq_one W u)
 
-/-- The effects of the Pauli point measurement are the point projectors. -/
-@[simp] theorem tauPointMeas_effect (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
-    (tauPointMeas W u).effect a = tauPointProj W u a := rfl
+end
+
+variable (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
+
+section
+
+variable (u : PauliPoint P)
 
 /-- The fine product measurement underlying the convolution definition of an
 expanded point measurement. Its outcome records the strategy and Pauli point
 values separately. Paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:390-411`,
 blueprint `def:point-tau-measurement`. -/
-noncomputable def pointTauMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+noncomputable def pointTauMeas :
     Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace side) :=
   Measurement.ofSumEqOne
     (fun p => heteroKron ((S.pointMeas side W u).effect p.1)
@@ -466,29 +432,14 @@ noncomputable def pointTauMeas (S : ProjectiveSetting P ε) (side : PlayerSide)
           heteroKron ((S.pointMeas side W u).effect p.1)
             (tauPointProj W u p.2) = 1
       rw [Fintype.sum_prod_type]
-      calc
-        (∑ x, ∑ y, heteroKron ((S.pointMeas side W u).effect x)
-            (tauPointProj W u y)) =
-            heteroKron (∑ x, (S.pointMeas side W u).effect x)
-              (∑ y, tauPointProj W u y) := (heteroKron_sum_sum _ _).symm
-        _ = 1 := by
-          rw [(S.pointMeas side W u).sum_eq_one, sum_tauPointProj_eq_one]
-          exact Matrix.one_kronecker_one)
-
-/-- Effects of the fine product measurement are the corresponding Kronecker
-products of strategy and Pauli point effects. -/
-@[simp] theorem pointTauMeas_effect (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
-    (p : PauliScalar P × PauliScalar P) :
-    (S.pointTauMeas side W u).effect p =
-      heteroKron ((S.pointMeas side W u).effect p.1)
-        (tauPointProj W u p.2) := rfl
+      refine Eq.trans ((heteroKron_sum_sum _ _).symm) ?_
+      rw [(S.pointMeas side W u).sum_eq_one, sum_tauPointProj_eq_one]
+      exact Matrix.one_kronecker_one)
 
 /-- Expanded point effects are positive semidefinite. This is the positivity
 obligation in `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:384-418`. -/
-theorem expPointOp_nonneg (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+theorem expPointOp_nonneg (a : PauliScalar P) :
     0 ≤ S.expPointOp side W u a := by
   rw [expPointOp_eq_convolution]
   exact Finset.sum_nonneg fun p hp => Quantum.kronecker_nonneg
@@ -497,42 +448,36 @@ theorem expPointOp_nonneg (S : ProjectiveSetting P ε) (side : PlayerSide)
 /-- Expanded point effects sum to the identity. This is the completeness
 obligation in `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:384-418`. -/
-theorem expPointOp_sum_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem expPointOp_sum_eq_one :
     ∑ a, S.expPointOp side W u a = 1 := by
   simp_rw [expPointOp_eq_convolution]
+  let effectAt := (S.pointMeas side W u).effect
   calc
-    (∑ a, ∑ p ∈ Finset.univ.filter
-        (fun p : PauliScalar P × PauliScalar P => p.1 + p.2 = a),
-      heteroKron ((S.pointMeas side W u).effect p.1)
-        (tauPointProj W u p.2)) =
+    _ =
       ∑ p : PauliScalar P × PauliScalar P,
-        heteroKron ((S.pointMeas side W u).effect p.1)
+        heteroKron (effectAt p.1)
           (tauPointProj W u p.2) := by
       let f : PauliScalar P × PauliScalar P → PauliScalar P :=
         fun p => p.1 + p.2
       let A : PauliScalar P × PauliScalar P →
           Op (S.ExpandedLocalSpace side) := fun p =>
-        heteroKron ((S.pointMeas side W u).effect p.1)
+        heteroKron (effectAt p.1)
           (tauPointProj W u p.2)
-      change (∑ a, ∑ p ∈ Finset.univ.filter (fun p => f p = a), A p) =
-        ∑ p, A p
-      exact Finset.sum_fiberwise Finset.univ f A
-    _ = heteroKron (∑ x, (S.pointMeas side W u).effect x)
+      apply Finset.sum_fiberwise
+    _ = heteroKron (∑ x, effectAt x)
         (∑ y, tauPointProj W u y) := by
       rw [Fintype.sum_prod_type]
       exact (heteroKron_sum_sum _ _).symm
     _ = 1 := by
       rw [(S.pointMeas side W u).sum_eq_one,
-        sum_tauPointProj_eq_one (P := P)]
+        sum_tauPointProj_eq_one]
       exact Matrix.one_kronecker_one
 
 /-- The complete expanded point measurement on the chosen player and Pauli
 register. Its effects are those of `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:384-418`, blueprint
 `def:expanded-point-measurement`. -/
-noncomputable def pointMeasExp (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+noncomputable def pointMeasExp :
     Measurement (PauliScalar P) (S.ExpandedLocalSpace side) :=
   Measurement.ofSumEqOne (S.expPointOp side W u)
     (S.expPointOp_nonneg side W u) (S.expPointOp_sum_eq_one side W u)
@@ -542,28 +487,24 @@ strategy--Pauli product measurement. This is the data-processing presentation
 used in item 1 of `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:390-411`,
 blueprint `lem:expanded-point-measurement-properties`. -/
-theorem pointMeasExp_effect_eq_pointTauMeas_postprocess
-    (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+theorem pointMeasExp_effect_eq_pointTauMeas_postprocess (a : PauliScalar P) :
     (S.pointMeasExp side W u).effect a =
       ((S.pointTauMeas side W u).postprocess (fun p => p.1 + p.2)).effect a := by
-  change S.expPointOp side W u a = _
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
-  exact expPointOp_eq_convolution S side W u a
+  apply expPointOp_eq_convolution
+
+end
 
 /-- Expanded observables inherit the additive representation law. -/
-private theorem expObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r s : PauliScalar P)
-    (u : Fin P.m → PauliScalar P) :
+private theorem expObs_mul (r s : PauliScalar P)
+    (u : PauliPoint P) :
     S.expObs side W r u * S.expObs side W s u =
       S.expObs side W (r + s) u := by
   calc
-    S.expObs side W r u * S.expObs side W s u =
+    _ =
         heteroKron
           (S.pointObs side W r u * S.pointObs side W s u)
           (tauObservable W (fun h => r * indicatorVec u h) *
-            tauObservable W (fun h => s * indicatorVec u h)) := by
-      exact (Matrix.mul_kronecker_mul
+            tauObservable W (fun h => s * indicatorVec u h)) := (Matrix.mul_kronecker_mul
         (S.pointObs side W r u) (S.pointObs side W s u)
         (tauObservable W (fun h => r * indicatorVec u h))
         (tauObservable W (fun h => s * indicatorVec u h))).symm
@@ -571,34 +512,31 @@ private theorem expObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
         (tauObservable W ((fun h => r * indicatorVec u h) +
           (fun h => s * indicatorVec u h))) := by
       rw [pointObs_mul, tauObservable_mul]
-    _ = S.expObs side W (r + s) u := by
+    _ = _ := by
       congr 2
       funext h
-      simp only [Pi.add_apply]
+      simp
       ring
 
 /-- Idempotence of the expanded point effect, the idempotence half of projectivity
 in `def:expanded-point-measurement`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:384-418`. -/
-private theorem expPointOp_mul_self (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+private theorem expPointOp_mul_self (u : PauliPoint P)
     (a : PauliScalar P) :
     S.expPointOp side W u a * S.expPointOp side W u a =
       S.expPointOp side W u a := by
   classical
   let D := uniformDistribution (PauliScalar P)
-  let F : PauliScalar P → Op (S.ExpandedLocalSpace side) := fun r =>
+  let F : PauliScalar P → _ := fun r =>
     phaseSign (fixedBinTrace P.model (a * r)) • S.expObs side W r u
   change averageOperatorOverDistribution D F *
-      averageOperatorOverDistribution D F = averageOperatorOverDistribution D F
+      averageOperatorOverDistribution D F = _
   calc
-    averageOperatorOverDistribution D F * averageOperatorOverDistribution D F =
-        averageOperatorOverDistribution D
-          (fun r => F r * averageOperatorOverDistribution D F) := by
+    _ =
+        _ := by
       simpa using (averageOperatorOverDistribution_mul_left_right D
         1 (averageOperatorOverDistribution D F) F).symm
-    _ = averageOperatorOverDistribution D
-          (fun r => averageOperatorOverDistribution D (fun s => F r * F s)) := by
+    _ = _ := by
       apply averageOperatorOverDistribution_congr
       intro r
       simpa using
@@ -609,38 +547,26 @@ private theorem expPointOp_mul_self (S : ProjectiveSetting P ε)
       intro r
       apply averageOperatorOverDistribution_congr
       intro s
-      dsimp only [F]
       rw [Matrix.smul_mul, Matrix.mul_smul, smul_smul, expObs_mul]
       congr 1
       simpa only [mul_add] using
-        phaseSign_fixedBinTrace_mul (P := P) (a * r) (a * s)
-    _ = averageOperatorOverDistribution D
-          (fun _ => averageOperatorOverDistribution D F) := by
+        phaseSign_fixedBinTrace_mul (a * r) (a * s)
+    _ = _ := by
       apply averageOperatorOverDistribution_congr
       intro r
       exact (averageOperatorOverDistribution_uniform_equiv
         ((Equiv.addLeft r).symm) F).symm
-    _ = averageOperatorOverDistribution D F := by
-      exact averageOperatorOverDistribution_const_of_isProbability D
+    _ = _ := averageOperatorOverDistribution_const_of_isProbability D
         (uniformDistribution_isProbability (PauliScalar P)) _
-
-/-- A Fourier coefficient of the expanded representation is a projection. -/
-private theorem expPointOp_isProj (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
-    (a : PauliScalar P) : IsProj (S.expPointOp side W u a) := by
-  refine isStarProjection_iff'.2 ⟨expPointOp_mul_self S side W u a, ?_⟩
-  rw [Matrix.star_eq_conjTranspose]
-  exact (Matrix.nonneg_iff_posSemidef.mp (S.expPointOp_nonneg side W u a)).isHermitian.eq
 
 /-- The expanded point measurement is projective, as asserted after the
 convolution formula in `def:expanded-point-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:395-418`. -/
-theorem pointMeasExp_isProjective (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem pointMeasExp_isProjective (u : PauliPoint P) :
     MIPStarRE.QPBT.Measurement.IsProjective (S.pointMeasExp side W u) := by
   intro a
-  change IsProj (S.expPointOp side W u a)
-  exact expPointOp_isProj S side W u a
+  refine isStarProjection_iff'.2 ⟨expPointOp_mul_self S side W u a, ?_⟩
+  exact (Matrix.nonneg_iff_posSemidef.mp (S.expPointOp_nonneg side W u a)).isHermitian.eq
 
 end ProjectiveSetting
 

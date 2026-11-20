@@ -42,7 +42,7 @@ source scalar field on one source block, presented as a bijection.  Blueprint
 `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
 noncomputable def directBlockToPauliEquiv (P : AdmissibleParams) :
-    (Fin P.m → DirectScalarQ P.extendedDirectLd) ≃ (Fin P.m → PauliScalar P) where
+    (Fin P.m → DirectScalarQ P.extendedDirectLd) ≃ (PauliPoint P) where
   toFun v := fun i => extendedDirectScalarEquiv P (v i)
   invFun v := fun i => (extendedDirectScalarEquiv P).symm (v i)
   left_inv v := by
@@ -61,39 +61,21 @@ source scalar field, are independent and uniformly random.  Blueprint
 theorem uniformDistribution_map_projX_projZ_pauli (P : AdmissibleParams) :
     (uniformDistribution
           (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
-        (fun u => (projX (directPointToPauli P u),
-          projZ (directPointToPauli P u))) =
-      Distribution.prod (uniformDistribution (Fin P.m → PauliScalar P))
-        (uniformDistribution (Fin P.m → PauliScalar P)) := by
+        (fun u => (projX (directPointToPauli u),
+          projZ (directPointToPauli u))) =
+      Distribution.prod (uniformDistribution (PauliPoint P))
+        (uniformDistribution (PauliPoint P)) := by
   classical
   have hfun :
       (fun u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd =>
-          (projX (directPointToPauli P u), projZ (directPointToPauli P u))) =
+          (projX (directPointToPauli u), projZ (directPointToPauli u))) =
         fun u => (Equiv.prodCongr (directBlockToPauliEquiv P)
           (directBlockToPauliEquiv P)) (projX u, projZ u) := rfl
-  rw [hfun, ← Distribution.map_map _ (fun u => (projX u, projZ u)),
+  rw [hfun, ← Distribution.map_map,
     uniformDistribution_map_projX_projZ, ← uniformDistribution_prod,
     uniformDistribution_map_equiv, uniformDistribution_prod]
 
 /-! ## Resampling a uniform point along a line -/
-
-/-- Reading a function at the point of a uniformly random affine parameter on
-the line through the canonical representative, in a fixed direction, of a
-uniformly random point is the same as reading that function at a uniformly
-random point.  Blueprint `lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem uniformDistribution_map_lineRepMap_add_smul_comp {K : Type*} [Field K]
-    [Fintype K] [DecidableEq K] {m : ℕ} {γ : Type*} [DecidableEq γ]
-    (v : Fin m → K) (g : (Fin m → K) → γ) :
-    (Distribution.prod (uniformDistribution (Fin m → K))
-          (uniformDistribution K)).map
-        (fun w => g (lineRepMap v w.1 + w.2 • v)) =
-      (uniformDistribution (Fin m → K)).map g := by
-  classical
-  rw [← uniformDistribution_prod,
-    ← Distribution.map_map _ (fun w : (Fin m → K) × K =>
-      lineRepMap v w.1 + w.2 • v) g,
-    uniformDistribution_map_lineRepMap_add_smul]
 
 end
 

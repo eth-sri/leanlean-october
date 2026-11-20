@@ -69,44 +69,42 @@ theorem exists_directSimultaneousPolynomialMeasurements_combinedError
     (ε : Error) (hwin : 1 - ε ≤ S.value) :
     ∃ GA : DirectPolyMeasTuple D S.ιA,
       ∃ GB : DirectPolyMeasTuple D S.ιB,
-        consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
-            (fun u outcome => heteroKron
-              (((S.A (directLdPointQuestionOf D u)).postprocess
-                (directLdPointValuesOrZero D)).effect outcome) 1)
-            (fun u outcome => heteroKron 1
-              ((GB.postprocess (evalDirectPolyTupleAt u)).effect outcome))
+        bipartiteDefect
+            (uniformDistribution (DirectPoint D))
+            (fun u => (S.A (directLdPointQuestionOf D u)).postprocess
+            (directLdPointValuesOrZero D))
+            (fun u => GB.postprocess (evalDirectPolyTupleAt u))
             S.ψ ≤
           Test.mainFormalError D.combined.toLDTParameters
               (directLdAuxParameter D.combined) (3 * (10 * ε)) +
             ((D.combined.m * D.d : ℕ) : ℝ) / D.q ∧
-        consistencyDefect
-            (uniformDistribution (Fin D.m → DirectScalarQ D))
-            (fun u outcome => heteroKron
-              ((GA.postprocess (evalDirectPolyTupleAt u)).effect outcome) 1)
-            (fun u outcome => heteroKron 1
-              (((S.B (directLdPointQuestionOf D u)).postprocess
-                (directLdPointValuesOrZero D)).effect outcome))
+        bipartiteDefect
+            (uniformDistribution (DirectPoint D))
+            (fun u => GA.postprocess (evalDirectPolyTupleAt u))
+            (fun u => (S.B (directLdPointQuestionOf D u)).postprocess
+            (directLdPointValuesOrZero D))
             S.ψ ≤
           Test.mainFormalError D.combined.toLDTParameters
               (directLdAuxParameter D.combined) (3 * (10 * ε)) +
-            ((D.combined.m * D.d : ℕ) : ℝ) / D.q ∧
-        consistencyDefect (uniformDistribution Unit)
-            (fun _ g => heteroKron (GA.effect g) 1)
-            (fun _ g => heteroKron 1 (GB.effect g)) S.ψ ≤
-          Test.mainFormalError D.combined.toLDTParameters
-            (directLdAuxParameter D.combined) (3 * (10 * ε)) := by
-  obtain ⟨GA, GB, h1, h2, h3⟩ :=
+            ((D.combined.m * D.d : ℕ) : ℝ) / D.q := by
+  obtain ⟨GA, GB, h1, h2, _⟩ :=
     exists_directSimultaneousPolynomialMeasurements_of_k_eq_one D.combined rfl
-      (directCombinedStrategy D S) (directCombinedStrategy_isProjective D S hS)
-      (10 * ε) (directCombinedStrategy_value_ge D S ε hwin)
+      (directCombinedStrategy D S) ((by
+                                      refine ⟨fun q => ?_, fun q => ?_⟩
+                                      · exact MIPStarRE.QPBT.SandwichProduct.postprocess_isProjective _ (hS.1 _) _
+                                      · exact MIPStarRE.QPBT.SandwichProduct.postprocess_isProjective _ (hS.2 _) _))
+      (10 * ε) ((by
+                  have hcomb := directLdRejectionProbability_directCombinedStrategy_le D S
+                  rw [directLdRejectionProbability_eq_one_sub_value,
+                    directLdRejectionProbability_eq_one_sub_value] at hcomb
+                  linarith))
   refine ⟨GA.postprocess (directTupleOfCombinedTuple D),
-    GB.postprocess (directTupleOfCombinedTuple D), ?_, ?_, ?_⟩
-  · exact le_trans (directCombinedRecovery_relation_one D S GB)
-      (add_le_add h1 le_rfl)
-  · exact le_trans (directCombinedRecovery_relation_two D S GA)
-      (add_le_add h2 le_rfl)
-  · exact le_trans (directCombinedRecovery_relation_three D S GA GB) h3
+    GB.postprocess (directTupleOfCombinedTuple D), ?_, ?_⟩
+  · exact (directCombinedRecovery_bound D S.A S.ψ S.ψ_norm GB).trans (add_le_add h1 le_rfl)
+  · refine (bipartiteDefect_prodComm _ _ _ S.ψ).symm.trans_le <|
+      (directCombinedRecovery_bound D S.B _ ((reindexState_norm_eq _ _).trans S.ψ_norm) GA).trans
+        (add_le_add ?_ le_rfl)
+    exact (bipartiteDefect_prodComm _ _ _ S.ψ).trans_le h2
 
 end
 

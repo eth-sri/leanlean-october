@@ -28,14 +28,6 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
-/-- Symmetry of the Magic Square question distribution from blueprint
-`def:ms-game`, paper
-`08_classical_and_quantum_low_degree_tests.tex:512-610`. -/
-theorem msQuestionDistribution_symm (x y : MsType) :
-    msGame.μ.weight (x, y) = msGame.μ.weight (y, x) := by
-  classical
-  simp [msGame, graphDistribution, Sym2.eq_swap]
-
 /-- Symmetry of the Magic Square decision predicate from blueprint
 `def:ms-game`, paper
 `08_classical_and_quantum_low_degree_tests.tex:512-610`. -/
@@ -50,7 +42,9 @@ noncomputable def msGameSymm : SymmetricGame where
   Answer := MsAnswer
   μ := msGame.μ
   μ_prob := msGame.μ_prob
-  μ_symm := msQuestionDistribution_symm
+  μ_symm := (by
+              classical
+              simp [msGame, graphDistribution, Sym2.eq_swap])
   decide := msWinPredicate
   decide_symm := msWinPredicate_symm
 

@@ -39,16 +39,13 @@ theorem consistencyDefect_integrand_le_one {P : AdmissibleParams} {ε : ℝ}
         (S.place p1 (first.effect answer) * S.place p2 (second.effect other))) ≤ 1 := by
   have h := DistanceCalculus.point_defect_eq
     (S.placedMeasurement p1 first) (S.placedMeasurement p2 second) S.psiHat
-  simp only [ProjectiveSetting.placedMeasurement_effect, S.psiHat_norm, one_pow] at h
-  rw [h]
-  have hproduct (answer : Outcome) :
-      0 ≤ S.place p1 (first.effect answer) * S.place p2 (second.effect answer) := by
-    exact Commute.mul_nonneg
+  simp [S.psiHat_norm] at h
+  have hproduct (answer : Outcome)  := Commute.mul_nonneg
       (S.place_nonneg p1 (first.pos answer))
       (S.place_nonneg p2 (second.pos answer))
       (S.place_comm p1 p2 hopp _ _)
   have hdiag : 0 ≤ ∑ answer : Outcome, DistanceCalculus.stateQForm S.psiHat
-      (S.place p1 (first.effect answer) * S.place p2 (second.effect answer)) :=
+      _ :=
     Finset.sum_nonneg fun answer _ => DistanceCalculus.stateQForm_nonneg _
       (hproduct answer)
   linarith

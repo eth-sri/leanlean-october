@@ -1,8 +1,6 @@
 module
 
 public import QPBT.Games.DistanceTheorems.Support
-public import MIPStarRE.LDT.Basic.TensorPlacement
-public import MIPStarRE.LDT.MakingMeasurementsProjective.Defs
 public import MIPStarRE.LDT.Preliminaries.ComparisonCore
 
 /-!
@@ -24,14 +22,18 @@ open scoped BigOperators Matrix MatrixOrder ComplexOrder
 
 namespace MIPStarRE.QPBT.DistanceCalculus
 
-open MIPStarRE.LDT MIPStarRE.Quantum
+open MIPStarRE.LDT hiding Measurement
+open MIPStarRE.Quantum
 open MIPStarRE.LDT.MakingMeasurementsProjective
+
+section
+
+variable {X α β γ δ ιA ιB : Type*} [Fintype α] [Fintype β] [Fintype γ] [Fintype δ]
+  [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
 
 /-- Formalization-only definition used in the proof of Fact 4.26: place a
 complete measurement on the left tensor factor. -/
-noncomputable def leftPlacedMeasurement {α ιA ιB : Type*}
-    [Fintype α] [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB]
+noncomputable def leftPlacedMeasurement
     (M : MIPStarRE.Quantum.Measurement α ιA) :
     MIPStarRE.Quantum.Measurement α (ιA × ιB) :=
   MIPStarRE.Quantum.Measurement.ofSumEqOne
@@ -44,9 +46,7 @@ noncomputable def leftPlacedMeasurement {α ιA ιB : Type*}
 
 /-- Formalization-only definition used in the proof of Fact 4.26: place a
 complete measurement on the right tensor factor. -/
-noncomputable def rightPlacedMeasurement {α ιA ιB : Type*}
-    [Fintype α] [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB]
+noncomputable def rightPlacedMeasurement
     (M : MIPStarRE.Quantum.Measurement α ιB) :
     MIPStarRE.Quantum.Measurement α (ιA × ιB) :=
   MIPStarRE.Quantum.Measurement.ofSumEqOne
@@ -59,184 +59,125 @@ noncomputable def rightPlacedMeasurement {α ιA ιB : Type*}
 
 /-- Formalization-only auxiliary lemma for Fact 4.26: products of left and right
 placements evaluate as a Kronecker product. -/
-theorem placed_product_stateQForm_eq {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB]
+theorem placed_product_stateQForm_eq
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (A : Op ιA) (B : Op ιB) :
     stateQForm ψ (heteroKron A 1 * heteroKron 1 B) =
       stateQForm ψ (heteroKron A B) := by
   congr 1
-  exact leftTensor_mul_rightTensor_eq_opTensor A B
+  apply leftTensor_mul_rightTensor_eq_opTensor
 
-/-- The (possibly unnormalized) rank-one state associated to a Euclidean vector. -/
-private noncomputable def vectorQuantumState {ι : Type*}
-    [Fintype ι] [DecidableEq ι]
-    (ψ : EuclideanSpace ℂ ι) : QuantumState ι where
-  density := pureDensity ψ.ofLp
-  density_psd := by
-    refine Matrix.nonneg_iff_posSemidef.mpr ?_
-    exact (Matrix.posSemidef_vecMulVec_self_star ψ.ofLp).smul
-      (by positivity : 0 ≤ (Fintype.card ι : ℂ))
+variable (ψ : EuclideanSpace ℂ (ιA × ιB))
 
-/-- Evaluation in the rank-one vector state is the corresponding quadratic form. -/
-private theorem vectorQuantumState_ev_eq_stateQForm {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (ψ : EuclideanSpace ℂ ι) (T : Op ι) :
-    ev (vectorQuantumState ψ) T = stateQForm ψ T := by
-  have hcard : (Fintype.card ι : ℂ) ≠ 0 :=
-    Nat.cast_ne_zero.mpr Fintype.card_ne_zero
-  change (MIPStarRE.Quantum.normalizedTrace (pureDensity ψ.ofLp * T)).re =
-    stateQForm ψ T
-  rw [MIPStarRE.Quantum.normalizedTrace_mul_comm]
-  unfold pureDensity MIPStarRE.Quantum.normalizedTrace
-  rw [Matrix.mul_smul, Matrix.mul_vecMulVec, Matrix.trace_smul, Matrix.trace_vecMulVec]
-  change (((Fintype.card ι : ℂ) *
-      ((T *ᵥ ψ.ofLp) ⬝ᵥ star ψ.ofLp)) /
-      (Fintype.card ι : ℂ)).re = stateQForm ψ T
-  rw [mul_div_cancel_left₀ _ hcard]
-  unfold stateQForm applyOperatorToState
-  rw [EuclideanSpace.inner_eq_star_dotProduct]
-  simp [Matrix.toEuclideanLin, Matrix.toLpLin_apply]
-
-/-- Formalization-only auxiliary lemma for Fact 4.26: postprocessing can only
-increase diagonal tensor overlap. -/
-theorem diagonal_postprocess_stateQForm_ge {α β ιA ιB : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB))
-    (A : MIPStarRE.Quantum.Measurement α ιA)
-    (B : MIPStarRE.Quantum.Measurement α ιB) (f : α → β) :
-    (∑ b : β, stateQForm ψ
-        (heteroKron ((A.postprocess f).effect b) ((B.postprocess f).effect b))) ≥
-      ∑ a : α, stateQForm ψ (heteroKron (A.effect a) (B.effect a)) := by
+/-- A scalar payoff may be pulled back along the two outcome maps. -/
+theorem born_payoff_postprocess [DecidableEq α] [DecidableEq β] [DecidableEq γ] [DecidableEq δ]
+    (A : Measurement α ιA) (B : Measurement β ιB) (f : α → γ) (g : β → δ) (v : γ → δ → ℝ) :
+    (∑ i, ∑ j, v i j * stateQForm ψ (heteroKron ((A.postprocess f).effect i)
+      ((B.postprocess g).effect j))) =
+      ∑ a, ∑ b, v (f a) (g b) * stateQForm ψ (heteroKron (A.effect a) (B.effect b)) := by
   classical
-  cases isEmpty_or_nonempty (ιA × ιB) with
-  | inl hι =>
-      letI := hι
-      have hψ : ψ = 0 := Subsingleton.elim _ _
-      subst ψ
-      simp [stateQForm, applyOperatorToState]
-  | inr hι =>
-      letI := hι
-      letI : Nonempty ιA := ⟨(Classical.choice hι).1⟩
-      letI : Nonempty ιB := ⟨(Classical.choice hι).2⟩
-      let HA : FiniteHilbertSpace :=
-        { carrier := ιA
-          instFintype := inferInstance
-          instDecidableEq := inferInstance
-          instNonempty := inferInstance }
-      let HB : FiniteHilbertSpace :=
-        { carrier := ιB
-          instFintype := inferInstance
-          instDecidableEq := inferInstance
-          instNonempty := inferInstance }
-      let As : SubMeas α ιA :=
-        (MatrixMeasurement.toMeasurement (H := HA) A).toSubMeas
-      let Bs : SubMeas α ιB :=
-        (MatrixMeasurement.toMeasurement (H := HB) B).toSubMeas
-      have hAoutcome (a : α) : As.outcome a = A.effect a := by
-        simp [As, HA]
-      have hBoutcome (a : α) : Bs.outcome a = B.effect a := by
-        simp [Bs, HB]
-      have hApost (b : β) :
-          (MIPStarRE.LDT.postprocess As f).outcome b =
-            (A.postprocess f).effect b := by
-        rw [SubMeas.postprocess_outcome,
-          MIPStarRE.Quantum.Measurement.postprocess_effect]
-        apply Finset.sum_congr rfl
-        intro a _
-        exact hAoutcome a
-      have hBpost (b : β) :
-          (MIPStarRE.LDT.postprocess Bs f).outcome b =
-            (B.postprocess f).effect b := by
-        rw [SubMeas.postprocess_outcome,
-          MIPStarRE.Quantum.Measurement.postprocess_effect]
-        apply Finset.sum_congr rfl
-        intro a _
-        exact hBoutcome a
-      have h := MIPStarRE.LDT.Preliminaries.qMatchMass_leftRight_postprocess_ge
-        (vectorQuantumState ψ) As Bs f
-      unfold qMatchMass at h
-      simp only [leftPlacedSubMeas_outcome, rightPlacedSubMeas_outcome] at h
-      simpa only [hAoutcome, hBoutcome, hApost, hBpost,
-        leftTensor_mul_rightTensor_eq_opTensor,
-        vectorQuantumState_ev_eq_stateQForm, MIPStarRE.QPBT.heteroKron] using h
+  simp only [Measurement.postprocess_effect, heteroKron_finset_sum_left,
+    stateQForm_finset_sum, Finset.mul_sum]
+  simp only [heteroKron_finset_sum_right, stateQForm_finset_sum, Finset.mul_sum]
+  conv_lhs => arg 2; intro i; rw [Finset.sum_comm]
+  rw [Finset.sum_readout f]
+  exact Finset.sum_congr rfl fun a _ => Finset.sum_readout g _
+
+noncomputable def diagonalOverlap (A : Measurement α ιA) (B : Measurement α ιB) :=
+  ∑ a, stateQForm ψ (heteroKron (A.effect a) (B.effect a))
+
+theorem bipartiteDefect_eq_one_sub [Fintype X] [DecidableEq X] [DecidableEq α]
+    {μ : Distribution X} (A : X → Measurement α ιA) (B : X → Measurement α ιB)
+    (hμ : μ.IsProbability) (hψ : ‖ψ‖ = 1) :
+    bipartiteDefect μ A B ψ = 1 - avgOver μ (fun x => diagonalOverlap ψ (A x) (B x)) := by
+  simpa only [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne,
+    diagonalOverlap, placed_product_stateQForm_eq] using consistencyDefect_eq_one_sub_overlap
+      (fun x => leftPlacedMeasurement (A x)) (fun x => rightPlacedMeasurement (B x)) hμ hψ
+
+variable [DecidableEq α] [DecidableEq β] (A : Measurement α ιA) (B : Measurement α ιB) (f : α → β)
+
+theorem diagonal_postprocess_stateQForm_eq_pair_sum :
+    (∑ b, stateQForm ψ (heteroKron ((A.postprocess f).effect b) ((B.postprocess f).effect b))) =
+      ∑ a, ∑ b, if f a = f b then stateQForm ψ (heteroKron (A.effect a) (B.effect b)) else 0 := by
+  simpa [ite_mul] using born_payoff_postprocess ψ A B f f (fun i j => if i = j then 1 else 0)
+
+/-- Postprocessing can only increase diagonal tensor overlap. -/
+theorem diagonal_postprocess_stateQForm_ge :
+    (∑ b, stateQForm ψ (heteroKron ((A.postprocess f).effect b) ((B.postprocess f).effect b))) ≥
+      ∑ a, stateQForm ψ (heteroKron (A.effect a) (B.effect a)) := by
+  rw [diagonal_postprocess_stateQForm_eq_pair_sum]
+  refine Finset.sum_le_sum fun a _ => ?_
+  simpa using Finset.single_le_sum (f := fun b => if f a = f b then
+    stateQForm ψ (heteroKron (A.effect a) (B.effect b)) else 0)
+    (fun b _ => ite_nonneg (stateQForm_nonneg ψ (kronecker_nonneg (A.pos a) (B.pos b)))
+      le_rfl)
+    (Finset.mem_univ a)
+
+end
+
+section
+
+variable {α β ι ιA ιB : Type*} [Fintype α] [Fintype β] [Fintype ι] [DecidableEq ι] [Fintype ιA]
+  [DecidableEq ιA] (M : MIPStarRE.Quantum.Measurement (α × β) ι) [Fintype ιB] [DecidableEq ιB]
+  (a : α)
 
 /-- The squared effects in one fiber of a pair-valued measurement sum to at
 most the identity. This is the formalization-only estimate
 `lem:sandwich-pair-fiber-sum` used for a joint-measurement marginal in
 `lem:ld-sandwich`; detailed source argument
 `references/neexp-paper/05_quantum_preliminaries.tex:930-946`. -/
-theorem measurement_fiber_sum_adjoint_mul_le_one {α β ι : Type*}
-    [Fintype α] [Fintype β] [Fintype ι] [DecidableEq ι]
-    (M : MIPStarRE.Quantum.Measurement (α × β) ι) (a : α) :
+theorem measurement_fiber_sum_adjoint_mul_le_one :
     ∑ b : β, (M.effect (a, b))ᴴ * M.effect (a, b) ≤ 1 := by
   classical
   have hsquare_le (z : α × β) :
       (M.effect z)ᴴ * M.effect z ≤ M.effect z := by
-    rw [measurement_effect_hermitian M z]
+    rw [measurement_effect_hermitian]
     exact MIPStarRE.Quantum.sq_le_self (M.pos z) (measurement_effect_le_one M z)
-  calc
-    ∑ b : β, (M.effect (a, b))ᴴ * M.effect (a, b) ≤
-        ∑ b : β, M.effect (a, b) :=
-      Finset.sum_le_sum fun b _ => hsquare_le (a, b)
-    _ ≤ ∑ a' : α, ∑ b : β, M.effect (a', b) :=
-      Finset.single_le_sum
-        (fun a' _ => Finset.sum_nonneg fun b _ => M.pos (a', b))
-        (Finset.mem_univ a)
-    _ = ∑ z : α × β, M.effect z := (Fintype.sum_prod_type _).symm
-    _ = 1 := M.sum_eq_one
+  rw [← M.sum_eq_one]
+  rw [← (Fintype.sum_prod_type _).symm]
+  refine le_trans (Finset.sum_le_sum fun b _ => hsquare_le (a, b)) ?_
+  exact Finset.single_le_sum
+    (fun a' _ => Finset.sum_nonneg fun b _ => M.pos (a', b))
+    (Finset.mem_univ a)
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: a left-placed measurement fiber is square-summable. -/
-theorem left_fiber_contraction {α β ιA ιB : Type*}
-    [Fintype α] [Fintype β]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem left_fiber_contraction
     (M : MIPStarRE.Quantum.Measurement (α × β) ιA) (a : α) :
     (1 - ∑ b : β, (leftTensor (ι₂ := ιB) (M.effect (a, b)))ᴴ *
       leftTensor (ι₂ := ιB) (M.effect (a, b))).PosSemidef := by
   apply Matrix.nonneg_iff_posSemidef.mp
   rw [sub_nonneg]
   calc
-    ∑ b : β, (leftTensor (ι₂ := ιB) (M.effect (a, b)))ᴴ *
-          leftTensor (ι₂ := ιB) (M.effect (a, b)) =
-        ∑ b : β, leftTensor (ι₂ := ιB)
-          ((M.effect (a, b))ᴴ * M.effect (a, b)) := by
-      apply Finset.sum_congr rfl
-      intro b _
-      rw [leftTensor_conjTranspose, leftTensor_mul_leftTensor]
-    _ = leftTensor (ι₂ := ιB)
-        (∑ b : β, (M.effect (a, b))ᴴ * M.effect (a, b)) :=
+    _ =
+        _ := by
+      congr 1 with b
+      simp [leftTensor_mul_leftTensor]
+    _ = _ :=
       leftTensor_finset_sum Finset.univ _
-    _ ≤ leftTensor (ι₂ := ιB) (1 : Op ιA) :=
+    _ ≤ _ :=
       leftTensor_mono (measurement_fiber_sum_adjoint_mul_le_one M a)
     _ = 1 := leftTensor_one
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: a right-placed measurement fiber is square-summable. -/
-theorem right_fiber_contraction {α β ιA ιB : Type*}
-    [Fintype α] [Fintype β]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem right_fiber_contraction
     (M : MIPStarRE.Quantum.Measurement (α × β) ιB) (a : α) :
     (1 - ∑ b : β, (rightTensor (ι₁ := ιA) (M.effect (a, b)))ᴴ *
       rightTensor (ι₁ := ιA) (M.effect (a, b))).PosSemidef := by
   apply Matrix.nonneg_iff_posSemidef.mp
   rw [sub_nonneg]
   calc
-    ∑ b : β, (rightTensor (ι₁ := ιA) (M.effect (a, b)))ᴴ *
-          rightTensor (ι₁ := ιA) (M.effect (a, b)) =
-        ∑ b : β, rightTensor (ι₁ := ιA)
-          ((M.effect (a, b))ᴴ * M.effect (a, b)) := by
-      apply Finset.sum_congr rfl
-      intro b _
-      rw [rightTensor_conjTranspose, rightTensor_mul_rightTensor]
-    _ = rightTensor (ι₁ := ιA)
-        (∑ b : β, (M.effect (a, b))ᴴ * M.effect (a, b)) :=
+    _ =
+        _ := by
+      congr 1 with b
+      simp [rightTensor_mul_rightTensor]
+    _ = _ :=
       rightTensor_finset_sum Finset.univ _
-    _ ≤ rightTensor (ι₁ := ιA) (1 : Op ιB) :=
+    _ ≤ _ :=
       rightTensor_mono (measurement_fiber_sum_adjoint_mul_le_one M a)
     _ = 1 := rightTensor_one
+
+end
 
 /-- A projective effect is selected exactly by its matching postprocessing
 fiber. This is the formalization-only identity
@@ -254,7 +195,7 @@ theorem postprocess_effect_mul_effect {ζ α ι : Type*}
   classical
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.sum_mul]
   calc
-    ∑ y ∈ Finset.univ.filter (fun y => f y = b), M.effect y * M.effect z =
+    _ =
         ∑ y ∈ Finset.univ.filter (fun y => f y = b),
           if y = z then M.effect z else 0 := by
       apply Finset.sum_congr rfl
@@ -264,15 +205,15 @@ theorem postprocess_effect_mul_effect {ζ α ι : Type*}
         rw [if_pos rfl]
         exact (hM z).isIdempotentElem.eq
       · rw [if_neg hyz]
-        exact projective_effect_mul_effect_eq_zero M hM hyz
-    _ = if f z = b then M.effect z else 0 := by simp
+        solve_by_elim [projective_effect_mul_effect_eq_zero]
+    _ = _ := by simp
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: compatible projective marginals multiply to the joint effect. -/
 theorem joint_marginal_product {α β γ ι : Type*}
     [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
     [Fintype γ] [DecidableEq γ] [Fintype ι] [DecidableEq ι]
-    (M : MIPStarRE.Quantum.Measurement ((α × β) × γ) ι)
+    {M : MIPStarRE.Quantum.Measurement ((α × β) × γ) ι}
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
     (a : α) (b : β) (c : γ) :
     ((M.postprocess (fun abc => abc.1)).effect (a, b)) *
@@ -282,23 +223,17 @@ theorem joint_marginal_product {α β γ ι : Type*}
   simp only [MIPStarRE.Quantum.Measurement.postprocess_effect]
   rw [Finset.mul_sum]
   calc
-    ∑ z ∈ Finset.univ.filter (fun z : (α × β) × γ =>
-        (z.1.1, z.2) = (a, c)),
-        ((M.postprocess (fun abc => abc.1)).effect (a, b)) * M.effect z =
-      ∑ z ∈ Finset.univ.filter (fun z : (α × β) × γ =>
-        (z.1.1, z.2) = (a, c)), if z.1 = (a, b) then M.effect z else 0 := by
+    _ =
+      _ := by
       apply Finset.sum_congr rfl
       intro z _
-      exact postprocess_effect_mul_effect M hM (fun abc => abc.1) (a, b) z
-    _ = M.effect ((a, b), c) := by
+      solve_by_elim [postprocess_effect_mul_effect]
+    _ = _ := by
       rw [Finset.sum_eq_single ((a, b), c)]
       · simp
       · intro z hz hne
-        have hzfiber := (Finset.mem_filter.mp hz).2
         rw [if_neg]
-        intro hzfirst
-        apply hne
-        exact Prod.ext hzfirst (congrArg (fun p : α × γ => p.2) hzfiber)
+        grind
       · simp
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
@@ -313,13 +248,10 @@ theorem joint_marginal_product_rev {α β γ ι : Type*}
     ((M.postprocess (fun abc => (abc.1.1, abc.2))).effect (a, c)) *
         ((M.postprocess (fun abc => abc.1)).effect (a, b)) =
       M.effect ((a, b), c) := by
-  have habHerm := measurement_effect_hermitian
-    (M.postprocess (fun abc => abc.1)) (a, b)
-  have hacHerm := measurement_effect_hermitian
-    (M.postprocess (fun abc => (abc.1.1, abc.2))) (a, c)
-  have hjointHerm := measurement_effect_hermitian M ((a, b), c)
-  have h := congrArg Matrix.conjTranspose (joint_marginal_product M hM a b c)
-  rw [Matrix.conjTranspose_mul, hacHerm, habHerm, hjointHerm] at h
+  have h := congrArg Matrix.conjTranspose (joint_marginal_product hM a b c)
+  rw [Matrix.conjTranspose_mul, (measurement_effect_hermitian
+    (M.postprocess (fun abc => (abc.1.1, abc.2))) (a, c)), (measurement_effect_hermitian
+    (M.postprocess (fun abc => abc.1)) (a, b)), (measurement_effect_hermitian M ((a, b), c))] at h
   exact h
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
@@ -332,58 +264,45 @@ theorem left_right_commute {ιA ιB : Type*}
   rw [leftTensor_mul_rightTensor_eq_opTensor,
     rightTensor_mul_leftTensor_eq_opTensor]
 
+section
+
+variable {X α β ι : Type*} [Fintype α] [Fintype β] [Fintype ι] [DecidableEq ι]
+  (μ : Distribution X) (e : α ≃ β) (A B A' B' : X → α → Op ι) (ψ : EuclideanSpace ℂ ι)
+
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: reindexing an operator family along an equivalence preserves its
 distance. -/
-theorem opFamilyDistSq_reindex {X α β ι : Type*}
-    [Fintype α] [Fintype β] [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (e : α ≃ β) (A B : X → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι) :
+theorem opFamilyDistSq_reindex :
     opFamilyDistSq μ A B ψ =
       opFamilyDistSq μ (fun x b => A x (e.symm b))
         (fun x b => B x (e.symm b)) ψ := by
-  unfold opFamilyDistSq avgOver
   apply Finset.sum_congr rfl
   intro x _
   congr 1
   exact Fintype.sum_equiv e
-    (fun a => ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2)
+    _
     (fun b => ‖applyOperatorToState (A x (e.symm b) - B x (e.symm b)) ψ‖ ^ 2)
     (by intro a; simp)
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: pointwise equal operator families have equal state-dependent
 distance. -/
-theorem opFamilyDistSq_congr {X α ι : Type*}
-    [Fintype α] [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (A B A' B' : X → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι)
+theorem opFamilyDistSq_congr
     (hA : ∀ x a, A x a = A' x a) (hB : ∀ x a, B x a = B' x a) :
     opFamilyDistSq μ A B ψ = opFamilyDistSq μ A' B' ψ := by
   unfold opFamilyDistSq avgOver
-  apply Finset.sum_congr rfl
-  intro x _
-  congr 1
-  apply Finset.sum_congr rfl
-  intro a _
-  rw [hA x a, hB x a]
+  simp_all
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: pointwise equal operator differences have equal state-dependent
 distance. -/
-theorem opFamilyDistSq_congr_sub {X α ι : Type*}
-    [Fintype α] [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (A B A' B' : X → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι)
+theorem opFamilyDistSq_congr_sub
     (h : ∀ x a, A x a - B x a = A' x a - B' x a) :
     opFamilyDistSq μ A B ψ = opFamilyDistSq μ A' B' ψ := by
   unfold opFamilyDistSq avgOver
-  apply Finset.sum_congr rfl
-  intro x _
-  congr 1
-  apply Finset.sum_congr rfl
-  intro a _
-  rw [h x a]
+  simp_all
+
+end
 
 /-- Formalization-only definition used in approximate commutation at paper
 lines 410--461: exchange the final two coordinates of a nested product. -/

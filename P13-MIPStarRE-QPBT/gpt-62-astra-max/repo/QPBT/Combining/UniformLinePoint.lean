@@ -1,12 +1,6 @@
 module
 
-public import QPBT.Combining.DirectLowDegree.Transport.Questions
 public import QPBT.Combining.Lines.SubLineTransport
-public import QPBT.Combining.Lines.SubLineUniform
-public import QPBT.Combining.Witnesses
-public import QPBT.Games.DistributionAux
-public import QPBT.Games.DistributionMarginals
-public import MIPStarRE.LDT.Basic.DistributionAvg
 
 /-!
 # A uniform point of the extended space from the sub-line law
@@ -46,31 +40,32 @@ theorem uniformDistribution_map_uncurry {α β γ : Type*}
     (hg : ∀ a, (uniformDistribution β).map (fun b => g (a, b)) = ν) :
     (uniformDistribution (α × β)).map g = ν := by
   rw [← bind_uniformDistribution_map (fun a b => g (a, b)),
-    show (fun a => (uniformDistribution β).map (fun b => g (a, b))) =
-      fun _ => ν from funext hg]
+    (funext hg)]
   exact Distribution.bind_const _ (uniformDistribution_isProbability α) ν
+
+section
+
+variable (D : DirectLdParams)
+
+section
+
+variable (V : Fin D.m × (DirectPoint D) → (DirectPoint D))
 
 /-- Reading a point at a uniform affine parameter on the canonical line of a
 uniform direct sample gives a uniform point of the direct coordinate space. -/
-theorem uniformDistribution_map_directLine_add_smul (D : DirectLdParams)
-    (V : Fin D.m × (Fin D.m → DirectScalarQ D) → (Fin D.m → DirectScalarQ D)) :
+theorem uniformDistribution_map_directLine_add_smul :
     (uniformDistribution (DirectLdSpace D × DirectScalarQ D)).map
         (fun p => lineRepMap (V (p.1.index, p.1.direction)) p.1.point +
           p.2 • V (p.1.index, p.1.direction)) =
-      uniformDistribution (Fin D.m → DirectScalarQ D) := by
+      uniformDistribution (DirectPoint D) := by
   classical
   let e : DirectLdSpace D × DirectScalarQ D ≃
-      (Fin D.m × (Fin D.m → DirectScalarQ D)) ×
-        ((Fin D.m → DirectScalarQ D) × DirectScalarQ D) :=
+      _ ×
+        _ :=
     { toFun := fun p => ((p.1.index, p.1.direction), (p.1.point, p.2))
       invFun := fun w => (⟨w.2.1, w.1.1, w.1.2⟩, w.2.2)
       left_inv := by rintro ⟨⟨pt, i, dir⟩, t⟩; rfl
       right_inv := by rintro ⟨⟨i, dir⟩, pt, t⟩; rfl }
-  have hequiv :
-      (uniformDistribution (DirectLdSpace D × DirectScalarQ D)).map e =
-        uniformDistribution ((Fin D.m × (Fin D.m → DirectScalarQ D)) ×
-          ((Fin D.m → DirectScalarQ D) × DirectScalarQ D)) :=
-    uniformDistribution_map_equiv e
   have hmap :
       (uniformDistribution (DirectLdSpace D × DirectScalarQ D)).map
           (fun p => lineRepMap (V (p.1.index, p.1.direction)) p.1.point +
@@ -79,48 +74,40 @@ theorem uniformDistribution_map_directLine_add_smul (D : DirectLdParams)
           (fun w => lineRepMap (V w.1) w.2.1 + w.2.2 • V w.1) := by
     rw [Distribution.map_map]
     rfl
-  rw [hmap, hequiv]
+  rw [hmap, (uniformDistribution_map_equiv e)]
   refine uniformDistribution_map_uncurry _ _ fun a => ?_
   exact uniformDistribution_map_lineRepMap_add_smul (V a)
 
 /-- Averaging a function at a uniform affine parameter on the canonical line
 of a uniform direct sample is averaging it at a uniform point. -/
-theorem avgOver_uniform_directLdSpace_line_add_smul (D : DirectLdParams)
-    (V : Fin D.m × (Fin D.m → DirectScalarQ D) → (Fin D.m → DirectScalarQ D))
-    (g : (Fin D.m → DirectScalarQ D) → ℝ) :
+theorem avgOver_uniform_directLdSpace_line_add_smul
+    (g : (DirectPoint D) → ℝ) :
     avgOver (uniformDistribution (DirectLdSpace D)) (fun s =>
         avgOver (uniformDistribution (DirectScalarQ D)) (fun t =>
           g (lineRepMap (V (s.index, s.direction)) s.point +
             t • V (s.index, s.direction)))) =
-      avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) g := by
+      avgOver (uniformDistribution (DirectPoint D)) g := by
   classical
   rw [← avgOver_uniform_prod]
-  calc
-    avgOver (uniformDistribution (DirectLdSpace D × DirectScalarQ D))
-          (fun p => g (lineRepMap (V (p.1.index, p.1.direction)) p.1.point +
-            p.2 • V (p.1.index, p.1.direction))) =
-        avgOver ((uniformDistribution
-            (DirectLdSpace D × DirectScalarQ D)).map
-          (fun p => lineRepMap (V (p.1.index, p.1.direction)) p.1.point +
-            p.2 • V (p.1.index, p.1.direction))) g :=
-      (Distribution.avgOver_map _ _ g).symm
-    _ = avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) g := by
-      rw [uniformDistribution_map_directLine_add_smul]
+  refine Eq.trans ((Distribution.avgOver_map _ _ g).symm) ?_
+  rw [uniformDistribution_map_directLine_add_smul]
+
+end
 
 /-- A uniform point on a line drawn from the directly indexed line-point law
 is uniform in the ambient coordinate space. -/
-theorem avgOver_directLinePointDist_line_add_smul (D : DirectLdParams)
-    (g : (Fin D.m → DirectScalarQ D) → ℝ) :
+theorem avgOver_directLinePointDist_line_add_smul
+    (g : (DirectPoint D) → ℝ) :
     avgOver ((directLinePointDist D).map Prod.fst) (fun line =>
         avgOver (uniformDistribution (DirectScalarQ D)) (fun t =>
           g (line.base + t • line.direction))) =
-      avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) g := by
+      avgOver (uniformDistribution (DirectPoint D)) g := by
   classical
   have haxis :
       avgOver (directALinePointDist D) (fun sample =>
           avgOver (uniformDistribution (DirectScalarQ D)) (fun t =>
             g (sample.1.base + t • sample.1.direction))) =
-        avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) g := by
+        avgOver (uniformDistribution (DirectPoint D)) g := by
     rw [directALinePointDist, Distribution.avgOver_map]
     exact avgOver_uniform_directLdSpace_line_add_smul D
       (fun w => coordinateDirection w.1) g
@@ -128,48 +115,50 @@ theorem avgOver_directLinePointDist_line_add_smul (D : DirectLdParams)
       avgOver (directDLinePointDist D) (fun sample =>
           avgOver (uniformDistribution (DirectScalarQ D)) (fun t =>
             g (sample.1.base + t • sample.1.direction))) =
-        avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) g := by
+        avgOver (uniformDistribution (DirectPoint D)) g := by
     rw [directDLinePointDist, Distribution.avgOver_map]
     exact avgOver_uniform_directLdSpace_line_add_smul D
       (fun w => directPrefixProjection w.1 w.2) g
   rw [Distribution.avgOver_map, directLinePointDist,
-    WinImplications.avgOver_mix, haxis, hdiag]
+    MIPStarRE.QPBT.avgOver_mix, haxis, hdiag]
   ring
+
+end
 
 /-- Under a sub-line witness, the two source blocks of the point at a uniform
 affine parameter are independent uniform source points. -/
 theorem SubLineWitness.avgOver_projX_projZ (P : AdmissibleParams)
     (sublines : SubLineWitness P)
-    (f : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) → ℝ) :
+    (f : ((PauliPoint P) × (PauliPoint P)) → ℝ) :
     avgOver sublines.D (fun sample =>
         avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd))
           (fun t =>
-            f (projX (directPointToPauli P
+            f (projX (directPointToPauli
                 (sample.1.base + t • sample.1.direction)),
-              projZ (directPointToPauli P
+              projZ (directPointToPauli
                 (sample.1.base + t • sample.1.direction))))) =
       avgOver (uniformDistribution
-        ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P))) f := by
+        ((PauliPoint P) × (PauliPoint P))) f := by
   classical
   have hmarginal :
       avgOver sublines.D (fun sample =>
           avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd))
-            (fun t => f (projX (directPointToPauli P
+            (fun t => f (projX (directPointToPauli
                 (sample.1.base + t • sample.1.direction)),
-              projZ (directPointToPauli P
+              projZ (directPointToPauli
                 (sample.1.base + t • sample.1.direction))))) =
         avgOver ((directLinePointDist P.extendedDirectLd).map Prod.fst)
           (fun line =>
             avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd))
-              (fun t => f (projX (directPointToPauli P
+              (fun t => f (projX (directPointToPauli
                   (line.base + t • line.direction)),
-                projZ (directPointToPauli P
+                projZ (directPointToPauli
                   (line.base + t • line.direction))))) := by
     rw [← sublines.extended_marginal, Distribution.avgOver_map]
-  refine hmarginal.trans ?_
+  apply hmarginal.trans
   refine (avgOver_directLinePointDist_line_add_smul P.extendedDirectLd
-    (fun u => f (projX (directPointToPauli P u),
-      projZ (directPointToPauli P u)))).trans ?_
+    (fun u => f (projX (directPointToPauli u),
+      projZ (directPointToPauli u)))).trans ?_
   rw [uniformDistribution_prod, ← uniformDistribution_map_projX_projZ_pauli,
     Distribution.avgOver_map]
 

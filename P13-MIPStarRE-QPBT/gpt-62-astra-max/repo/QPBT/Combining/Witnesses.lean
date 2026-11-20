@@ -1,10 +1,10 @@
 module
 
-public import QPBT.Combining.Defs
-public import QPBT.Combining.DirectLowDegree
-public import QPBT.Games.Consistency
+public import QPBT.Combining.DirectLowDegree.AnyStrategySoundness
+public import QPBT.Combining.DirectLowDegree.RejectionBounds
+public import QPBT.Combining.DirectLowDegree.Transport.PointAgreement
+public import QPBT.Combining.DirectLowDegree.ExtendedCoefficientLoss
 public import QPBT.Observables.LineMeasurement
-public import QPBT.Observables.WinImplications
 
 /-!
 # Witnesses for combining the Pauli bases
@@ -50,7 +50,7 @@ noncomputable def extendedDirectScalarEquiv (P : AdmissibleParams) :
   exact RingEquiv.refl _
 
 /-- Transport an extended direct point into the canonical Pauli scalar field. -/
-def directPointToPauli (P : AdmissibleParams)
+def directPointToPauli {P : AdmissibleParams}
     (u : Fin P.extendedDirectLd.m -> DirectScalarQ P.extendedDirectLd) :
     Fin (2 * P.m + 2) -> PauliScalar P :=
   fun i => extendedDirectScalarEquiv P (u i)
@@ -108,8 +108,8 @@ structure CombinedLinesWitness {P : AdmissibleParams} {ε δQ : ℝ}
   T : (side : PlayerSide) ->
     LineDesc P.toLdParams -> LineDesc P.toLdParams ->
     Measurement
-      (DegPoly P.toLdParams (P.m * P.d) ×
-        DegPoly P.toLdParams (P.m * P.d))
+      (PauliLinePoly P ×
+        PauliLinePoly P)
       (S.ExpandedLocalSpace side)
   /-- On an axis-parallel X line, outcomes outside degree `d` have zero effect. -/
   axis_degree_X : ∀ side lineX lineZ fX fZ,
@@ -136,70 +136,86 @@ structure CombinedLinesWitness {P : AdmissibleParams} {ε δQ : ℝ}
 
 /-! ## The subline distribution -/
 
+section
+
+variable (P : AdmissibleParams)
+
 /-- A tuple consisting of an extended line and its projected X and Z lines. -/
-abbrev SubLineTriple (P : AdmissibleParams) :=
+abbrev SubLineTriple :=
   DirectLineDesc P.extendedDirectLd ×
     (LineDesc P.toLdParams × LineDesc P.toLdParams)
 
 /-- An extended line tuple together with a point sampled uniformly on it. -/
-abbrev SubLinePointSample (P : AdmissibleParams) :=
+abbrev SubLinePointSample :=
   SubLineTriple P ×
     (Fin P.extendedDirectLd.m -> DirectScalarQ P.extendedDirectLd)
 
 /-- The shared restricted line kind and two coordinate indices in one mixture
 component of the subline law. -/
-abbrev SubLineComponent (P : AdmissibleParams) :=
+abbrev SubLineComponent :=
   LineKind × (Fin P.m × Fin P.m)
 
+variable {P} in
 /-- Select the restricted line-point distribution of a given kind and index. -/
-noncomputable def restrictedLinePointDist (P : AdmissibleParams)
+noncomputable def restrictedLinePointDist
     (kind : LineKind) (i : Fin P.m) :
     Distribution (LineDesc P.toLdParams × (Fin P.m -> PauliScalar P)) :=
   match kind with
   | .axis => restrictedALineDist P.toLdParams i
   | .diagonal => restrictedDLineDist P.toLdParams i
 
+variable {P} in
 /-- Sample a subline tuple and then a uniform affine parameter on its
 extended line. -/
-noncomputable def subLinePointDist (P : AdmissibleParams)
+noncomputable def subLinePointDist
     (D : Distribution (SubLineTriple P)) :
     Distribution (SubLinePointSample P) :=
   (Distribution.prod D
     (uniformDistribution (DirectScalarQ P.extendedDirectLd))).map fun sample =>
       (sample.1, sample.1.1.base + sample.2 • sample.1.1.direction)
 
+end
+
+section
+
+variable {P : AdmissibleParams} (sample : SubLinePointSample P)
+
 /-- Retain the projected line pair and the X projection of an extended point. -/
-def subLineXProjection {P : AdmissibleParams} (sample : SubLinePointSample P) :
+def subLineXProjection :
     (LineDesc P.toLdParams × LineDesc P.toLdParams) ×
       (Fin P.m -> PauliScalar P) :=
-  (sample.1.2, projX (directPointToPauli P sample.2))
+  (sample.1.2, projX (directPointToPauli sample.2))
 
 /-- Retain the projected line pair and the Z projection of an extended point. -/
-def subLineZProjection {P : AdmissibleParams} (sample : SubLinePointSample P) :
+def subLineZProjection :
     (LineDesc P.toLdParams × LineDesc P.toLdParams) ×
       (Fin P.m -> PauliScalar P) :=
-  (sample.1.2, projZ (directPointToPauli P sample.2))
+  (sample.1.2, projZ (directPointToPauli sample.2))
+
+end
+
+section
+
+variable (P : AdmissibleParams) (component : SubLineComponent P)
 
 /-- The X-point marginal associated with one restricted product component. -/
-noncomputable def subLineXComponentDist (P : AdmissibleParams)
-    (component : SubLineComponent P) :
+noncomputable def subLineXComponentDist :
     Distribution
       ((LineDesc P.toLdParams × LineDesc P.toLdParams) ×
         (Fin P.m -> PauliScalar P)) :=
   (Distribution.prod
-    (restrictedLinePointDist P component.1 component.2.1)
-    ((restrictedLinePointDist P component.1 component.2.2).map Prod.fst)).map
+    (restrictedLinePointDist component.1 component.2.1)
+    ((restrictedLinePointDist component.1 component.2.2).map Prod.fst)).map
       fun sample => ((sample.1.1, sample.2), sample.1.2)
 
 /-- The Z-point marginal associated with one restricted product component. -/
-noncomputable def subLineZComponentDist (P : AdmissibleParams)
-    (component : SubLineComponent P) :
+noncomputable def subLineZComponentDist :
     Distribution
       ((LineDesc P.toLdParams × LineDesc P.toLdParams) ×
         (Fin P.m -> PauliScalar P)) :=
   (Distribution.prod
-    ((restrictedLinePointDist P component.1 component.2.1).map Prod.fst)
-    (restrictedLinePointDist P component.1 component.2.2)).map
+    ((restrictedLinePointDist component.1 component.2.1).map Prod.fst)
+    (restrictedLinePointDist component.1 component.2.2)).map
       fun sample => ((sample.1, sample.2.1), sample.2.2)
 
 /-- Directly indexed form of the subline distribution of `lem:qld-sublines`,
@@ -210,7 +226,7 @@ line-point law rather than the seed-indexed line-point distribution over
 formalization auxiliary record, not the source-labelled statement.  Its
 source-mixture field records the X and Z point marginals separately; it does
 not assert a joint conditional law for the pair of projected points. -/
-structure SubLineWitness (P : AdmissibleParams) where
+structure SubLineWitness where
   /-- The actual distribution of an extended line and two projected lines. -/
   D : Distribution (SubLineTriple P)
   /-- The distribution has total mass one. -/
@@ -220,15 +236,15 @@ structure SubLineWitness (P : AdmissibleParams) where
     (directLinePointDist P.extendedDirectLd).map Prod.fst
   /-- Every point of an extended line projects onto both stored source lines. -/
   incidence : ∀ sample ∈ D.support, ∀ u ∈ sample.1.pointSet,
-    projX (directPointToPauli P u) ∈ sample.2.1.pointSet ∧
-      projZ (directPointToPauli P u) ∈ sample.2.2.pointSet
+    projX (directPointToPauli u) ∈ sample.2.1.pointSet ∧
+      projZ (directPointToPauli u) ∈ sample.2.2.pointSet
   /-- Each line triple carries affine data sufficient for
   `combineLinePoly_spec`. -/
   compatibility : ∀ sample ∈ D.support,
     ∃ aX bX aZ bZ uAlpha vAlpha uBeta vBeta : PauliScalar P,
       IsCombineLineCompatible
-        (directPointToPauli P sample.1.base)
-        (directPointToPauli P sample.1.direction)
+        (directPointToPauli sample.1.base)
+        (directPointToPauli sample.1.direction)
         sample.2.1.base sample.2.1.direction
         sample.2.2.base sample.2.2.direction
         aX bX aZ bZ uAlpha vAlpha uBeta vBeta
@@ -236,23 +252,26 @@ structure SubLineWitness (P : AdmissibleParams) where
   laws.  No equality for their joint conditional law is claimed. -/
   source_mixture : ∃ components : Distribution (SubLineComponent P),
     components.IsProbability ∧
-      (subLinePointDist P D).map subLineXProjection =
+      (subLinePointDist D).map subLineXProjection =
         Distribution.bind components (subLineXComponentDist P) ∧
-      (subLinePointDist P D).map subLineZProjection =
+      (subLinePointDist D).map subLineZProjection =
         Distribution.bind components (subLineZComponentDist P)
   /-- An extended axis line has axis-parallel projected lines. -/
   axis_closure : ∀ sample ∈ D.support, sample.1.kind = .axis ->
     sample.2.1.kind = .axis ∧ sample.2.2.kind = .axis
 
+end
+
 /-! ## Extended lines and global polynomial pairs -/
+
+variable {P : AdmissibleParams} {ε δQ : ℝ} (S : ProjectiveSetting P ε)
+  (points : CombinedPointsWitness S δQ) (δ : ℝ)
 
 /-- Extended-line POVMs and directly indexed, completed-answer forms of the two
 consistency relations in `lem:qld-4-13`, paper lines 1020--1034. The direct line
 carrier avoids the dimension-divisibility obstruction documented in
 `docs/paper-gaps/qpbt_ld-dimension-divisibility.tex`. -/
-structure ExtendedLinesWitness {P : AdmissibleParams} {ε δQ : ℝ}
-    (S : ProjectiveSetting P ε) (points : CombinedPointsWitness S δQ)
-    (δ : ℝ) where
+structure ExtendedLinesWitness where
   /-- The complete extended-line measurement on each player side. -/
   Qline : (side : PlayerSide) -> DirectLineDesc P.extendedDirectLd ->
     Measurement (DirectDegPoly P.extendedDirectLd (P.m * P.d + 1))
@@ -271,10 +290,10 @@ structure ExtendedLinesWitness {P : AdmissibleParams} {ε δQ : ℝ}
           (extendedDirectScalarEquiv P))).effect answer))
     (fun sample answer => S.place .BA''
       (((points.Q .bob
-        (projX (directPointToPauli P sample.2))
-        (projZ (directPointToPauli P sample.2))).postprocess fun ab =>
-          some (directPointToPauli P sample.2 (alphaVar P.m) * ab.1 +
-            directPointToPauli P sample.2 (betaVar P.m) * ab.2)).effect answer))
+        (projX (directPointToPauli sample.2))
+        (projZ (directPointToPauli sample.2))).postprocess fun ab =>
+          some (directPointToPauli sample.2 (alphaVar P.m) * ab.1 +
+            directPointToPauli sample.2 (betaVar P.m) * ab.2)).effect answer))
     S.psiHat <= δ
   /-- Bob's evaluated line measurement is consistent with Alice's completed
   combined point measurement. -/
@@ -286,17 +305,16 @@ structure ExtendedLinesWitness {P : AdmissibleParams} {ε δQ : ℝ}
           (extendedDirectScalarEquiv P))).effect answer))
     (fun sample answer => S.place .AB''
       (((points.Q .alice
-        (projX (directPointToPauli P sample.2))
-        (projZ (directPointToPauli P sample.2))).postprocess fun ab =>
-          some (directPointToPauli P sample.2 (alphaVar P.m) * ab.1 +
-            directPointToPauli P sample.2 (betaVar P.m) * ab.2)).effect answer))
+        (projX (directPointToPauli sample.2))
+        (projZ (directPointToPauli sample.2))).postprocess fun ab =>
+          some (directPointToPauli sample.2 (alphaVar P.m) * ab.1 +
+            directPointToPauli sample.2 (betaVar P.m) * ab.2)).effect answer))
     S.psiHat <= δ
 
 /-- The side-indexed global polynomial-pair measurements handed to Chapter 16.
 This is the exact conclusion of `lem:qld-4-7`, paper lines 1267--1274, with
 the two heterogeneous point-consistency displays stated separately. -/
-structure GlobalPairWitness {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (δ : ℝ) where
+structure GlobalPairWitness where
   /-- The complete global polynomial-pair measurement on each player side. -/
   Smeas : (side : PlayerSide) ->
     Measurement (PolyPair P) (S.ExpandedLocalSpace side)

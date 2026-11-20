@@ -73,40 +73,34 @@ theorem exists_combined_points_witness_explicit :
       Nonempty (CombinedPointsWitness S
         (pauliBaselinePointConstant * Real.rpow ε (1 / 8 : ℝ))) := by
   intro P ε S
-  let C₀ : ℝ := 344 + 3 * pauliBaselineTwistedConstant
-  let C₁ : ℝ := pauliBaselineTwistedConstant
-  let C₂ : ℝ := pauliBaselineTwistedConstant
+  let C₀ := 344 + 3 * pauliBaselineTwistedConstant
+  let C₁ := pauliBaselineTwistedConstant
+  let C₂ := pauliBaselineTwistedConstant
   let C₃ : ℝ := 688
-  have hC₀ : (1 : ℝ) ≤ C₀ := by
+  have hC₀ : 1 ≤ C₀ := by
     dsimp [C₀, pauliBaselineTwistedConstant, pauliBaselineCommutatorConstant]
-    nlinarith [Real.sqrt_nonneg (344 : ℝ)]
-  have hC₁ : (1 : ℝ) ≤ C₁ := by
+    nlinarith [Real.sqrt_nonneg 344]
+  have hC₁ : 1 ≤ C₁ := by
     dsimp [C₁, pauliBaselineTwistedConstant, pauliBaselineCommutatorConstant]
-    nlinarith [Real.sqrt_nonneg (344 : ℝ)]
-  have hC₂ : (1 : ℝ) ≤ C₂ := by simpa only [C₂] using hC₁
-  have hC₃ : (1 : ℝ) ≤ C₃ := by norm_num [C₃]
+    nlinarith [Real.sqrt_nonneg 344]
   have h₀ := ProjectiveSetting.avg_sandwich_defect_bound_le_explicit
-  have h₁ := ProjectiveSetting.sandwich_point_ordered_dist_le_explicit
-  have h₂ := ProjectiveSetting.exp_point_comm_explicit
-  have h₃ := ProjectiveSetting.ordered_cross_dist_le_explicit
-  -- the universal constant of the final error `K ε^{1/8}`
   set K : ℝ := pauliBaselinePointConstant with hK
   have hKformula : K =
       12 * (440 * (2 * C₀)) + 20 * C₁ + 16 * C₃ + 4 * C₂ := by
     rw [hK]
-    dsimp [C₀, C₁, C₂, C₃]
     unfold pauliBaselinePointConstant
     ring
-  have hK4 : (4 : ℝ) ≤ K := by rw [hKformula]; nlinarith
-  have hε : (0 : ℝ) ≤ ε := by
-    have hv := WinImplications.strategy_value_le_one S.toStrategy
+  have hε : 0 ≤ ε := by
+    have hv := Strategy.value_le_one S.toStrategy
     have hw := S.win
     linarith
-  obtain ⟨Qa, hQa, -, hQaR⟩ := S.exists_projective_close_sandwich_alice
-  obtain ⟨Qb, hQb, -, hQbR⟩ := S.exists_projective_close_sandwich_bob
+  obtain ⟨Qa, hQa, hQaR⟩ := S.exists_projective_close_sandwich .AA' .BA'' trivial
+    (ProjectiveSetting.aaBaBipartition P _ _) (S.reindexOp_aaBaBipartition_left) (S.reindexOp_aaBaBipartition_right)
+  obtain ⟨Qb, hQb, hQbR⟩ := S.exists_projective_close_sandwich .BA'' .AA' trivial
+    (baAaBipartition P _ _) (S.reindexOp_baAaBipartition_left) (S.reindexOp_baAaBipartition_right)
   -- the joint measurements on the two sides
   let Q : (side : PlayerSide) → PointPair P →
-      Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace side) :=
+      Measurement _ (S.ExpandedLocalSpace side) :=
     fun side => match side with
       | .alice => Qa
       | .bob => Qb
@@ -116,75 +110,59 @@ theorem exists_combined_points_witness_explicit :
     · exact hQa xz
     · exact hQb xz
   -- the closeness of `Q` to the sandwich on every placement
-  set η : ℝ := 440 * Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4 : ℝ) with hη
+  set η : ℝ := 440 * Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4) with hη
   have hbound : ∀ p₁ p₂ : Placement, p₁.IsOpposite p₂ →
       220 * Real.rpow (avgOver (uniformDistribution (PointPair P))
-        (S.sandwichDefectBound p₁ p₂)) (1 / 4 : ℝ) ≤ η := by
+        (S.sandwichDefectBound p₁ p₂)) (1 / 4) ≤ η := by
     intro p₁ p₂ hopp
     have hnn : 0 ≤ avgOver (uniformDistribution (PointPair P))
-        (S.sandwichDefectBound p₁ p₂) :=
+        _ :=
       avgOver_nonneg _ _ (S.sandwichDefectBound_nonneg p₁ p₂)
     have hr : Real.rpow (avgOver (uniformDistribution (PointPair P))
-        (S.sandwichDefectBound p₁ p₂)) (1 / 4 : ℝ) ≤
-        Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4 : ℝ) :=
-      Real.rpow_le_rpow hnn (by simpa only [C₀] using h₀ P ε S p₁ p₂ hopp)
+        (S.sandwichDefectBound p₁ p₂)) (1 / 4) ≤
+        Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4) :=
+      Real.rpow_le_rpow hnn (by solve_by_elim [h₀])
         (by norm_num)
-    have hr0 : 0 ≤ Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4 : ℝ) :=
+    have hr0 : 0 ≤ Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4) :=
       Real.rpow_nonneg (by positivity) _
-    rw [hη]
     nlinarith
-  have hQR : ∀ p : Placement, opFamilyDistSq (uniformDistribution (PointPair P))
-      (fun xz (ab : PauliScalar P × PauliScalar P) =>
-        S.place p ((Q p.side xz).effect ab))
-      (fun xz ab => S.place p ((S.sandwichPoint p.side xz.1 xz.2).effect ab))
-      S.psiHat ≤ η := by
-    intro p
-    cases p
-    · exact le_trans hQaR (hbound .AA' .BA'' trivial)
-    · exact le_trans hQbR (hbound .BA'' .AA' trivial)
-    · rw [ProjectiveSetting.opFamilyDistSq_place_BB'_eq_BA'']
-      exact le_trans hQbR (hbound .BA'' .AA' trivial)
-    · rw [ProjectiveSetting.opFamilyDistSq_place_AB''_eq_AA']
-      exact le_trans hQaR (hbound .AA' .BA'' trivial)
-  have hchain := fun (p₁ p₂ : Placement) (hopp : p₁.IsOpposite p₂) =>
-    S.chain_bounds Q η C₁ C₂ C₃ hQR
-      (by simpa only [C₁] using h₁ P ε S)
-      (by simpa only [C₂] using h₂ P ε S)
-      (by simpa only [C₃] using h₃ P ε S) p₁ p₂ hopp
+  have hchain := fun (p₁ p₂) hopp =>
+    S.chain_bounds Q η C₁ C₂ C₃ (by
+      intro p
+      cases p
+      · exact le_trans hQaR (hbound .AA' .BA'' trivial)
+      · exact le_trans hQbR (hbound .BA'' .AA' trivial)
+      · rw [ProjectiveSetting.opFamilyDistSq_place_BB'_eq_BA'']
+        exact le_trans hQbR (hbound .BA'' .AA' trivial)
+      · rw [ProjectiveSetting.opFamilyDistSq_place_AB''_eq_AA']
+        exact le_trans hQaR (hbound .AA' .BA'' trivial))
+      (by solve_by_elim [ProjectiveSetting.sandwich_point_ordered_dist_le_explicit])
+      (by solve_by_elim [ProjectiveSetting.exp_point_comm_explicit])
+      (by simpa only [C₃] using ProjectiveSetting.ordered_cross_dist_le_explicit P ε S) p₁ p₂ hopp
   -- the numeric bound on the longest chain, in the two regimes of `ε`
   have hηnn : 0 ≤ η := by
-    rw [hη]
     exact mul_nonneg (by norm_num)
       (Real.rpow_nonneg (mul_nonneg (by linarith) (add_nonneg hε (Real.sqrt_nonneg ε))) _)
-  have hs : 0 ≤ Real.sqrt ε := Real.sqrt_nonneg ε
+  have hs := Real.sqrt_nonneg ε
   have htotal : 12 * η + 20 * (C₁ * Real.sqrt ε) + 16 * (C₃ * ε) +
-      4 * (C₂ * Real.sqrt ε) ≤ K * Real.rpow ε (1 / 8 : ℝ) ∨ 1 < ε := by
+      4 * (C₂ * Real.sqrt ε) ≤ K * Real.rpow ε (1 / 8) ∨ 1 < ε := by
     by_cases hε1 : ε ≤ 1
     · left
       obtain ⟨hε8, hs8, hq8⟩ := error_terms_le_rpow_eighth hε hε1 hC₀
-      rw [hη, hKformula]
       nlinarith [mul_le_mul_of_nonneg_left hq8 (by norm_num : (0 : ℝ) ≤ 440),
-        mul_le_mul_of_nonneg_left hs8 (by linarith : (0 : ℝ) ≤ C₁),
-        mul_le_mul_of_nonneg_left hs8 (by linarith : (0 : ℝ) ≤ C₂),
-        mul_le_mul_of_nonneg_left hε8 (by linarith : (0 : ℝ) ≤ C₃)]
+        mul_le_mul_of_nonneg_left hs8 (by linarith),
+        mul_le_mul_of_nonneg_left hs8 (by linarith),
+        mul_le_mul_of_nonneg_left hε8 (by linarith)]
     · right
       exact lt_of_not_ge hε1
-  have hK8 : 1 < ε → (4 : ℝ) ≤ K * Real.rpow ε (1 / 8 : ℝ) := by
+  have hK8 : 1 < ε → 4 ≤ K * Real.rpow ε (1 / 8) := by
     intro hε1
-    have h1 : (1 : ℝ) ≤ Real.rpow ε (1 / 8 : ℝ) :=
+    have h1 : 1 ≤ Real.rpow ε (1 / 8) :=
       Real.one_le_rpow (le_of_lt hε1) (by norm_num)
     nlinarith
-  have hsub1 : 2 * η + 4 * (C₁ * Real.sqrt ε) + 4 * (C₃ * ε) ≤
-      12 * η + 20 * (C₁ * Real.sqrt ε) + 16 * (C₃ * ε) + 4 * (C₂ * Real.sqrt ε) := by
-    nlinarith
-  have hsub2 : 4 * η + 8 * (C₁ * Real.sqrt ε) + 8 * (C₃ * ε) +
-      2 * (C₂ * Real.sqrt ε) ≤
-      12 * η + 20 * (C₁ * Real.sqrt ε) + 16 * (C₃ * ε) + 4 * (C₂ * Real.sqrt ε) := by
-    nlinarith
-  -- square-summability of the families, for the trivial bound
   have hsqQ : ∀ (p : Placement) (xz : PointPair P),
       (∑ ab : PauliScalar P × PauliScalar P,
-        (S.place p ((Q p.side xz).effect ab))ᴴ *
+        _ᴴ *
           S.place p ((Q p.side xz).effect ab)) ≤ 1 :=
     fun p xz => measurement_sum_adjoint_mul_le_one
       (S.placedMeasurement p (Q p.side xz))
@@ -195,7 +173,7 @@ theorem exists_combined_points_witness_explicit :
         S.place p ((S.pointMeasExp p.side .X xz.1).effect ab.1 *
           (S.pointMeasExp p.side .Z xz.2).effect ab.2)) ≤ 1 := by
     intro p xz
-    refine le_of_eq ?_
+    apply le_of_eq
     simp only [ProjectiveSetting.place_mul]
     exact sum_mul_conjTranspose_mul_self_eq_one
       (S.placedMeasurement p (S.pointMeasExp p.side .X xz.1))
@@ -209,7 +187,7 @@ theorem exists_combined_points_witness_explicit :
         S.place p ((S.pointMeasExp p.side .Z xz.2).effect ab.2 *
           (S.pointMeasExp p.side .X xz.1).effect ab.1)) ≤ 1 := by
     intro p xz
-    refine le_of_eq ?_
+    apply le_of_eq
     simp only [ProjectiveSetting.place_mul]
     exact sum_mul_conjTranspose_mul_self_eq_one'
       (S.placedMeasurement p (S.pointMeasExp p.side .X xz.1))
@@ -217,23 +195,22 @@ theorem exists_combined_points_witness_explicit :
       (S.placedMeasurement_isProjective p _ (S.pointMeasExp_isProjective _ _ _))
       (S.placedMeasurement_isProjective p _ (S.pointMeasExp_isProjective _ _ _))
   refine ⟨CombinedPointsWitness.mk (fun side x z => Q side (x, z)) ?_ ?_ ?_ ?_⟩
-  · intro side x z
-    exact hQproj side (x, z)
+  · intros; apply hQproj
   · intro p₁ p₂ hopp
     rcases htotal with htot | hε1
     · exact le_trans (hchain p₁ p₂ hopp).2.2 htot
-    · exact le_trans (opFamilyDistSq_uniform_le_four _ _ S.psiHat S.psiHat_norm
-        (fun xz => hsqQ p₁ xz) (fun xz => hsqQ p₂ xz)) (hK8 hε1)
+    · exact le_trans (opFamilyDistSq_uniform_le_four S.psiHat_norm
+        (hsqQ p₁) (hsqQ p₂)) (hK8 hε1)
   · intro p₁ p₂ hopp
     rcases htotal with htot | hε1
-    · exact le_trans (hchain p₁ p₂ hopp).1 (le_trans hsub1 htot)
-    · exact le_trans (opFamilyDistSq_uniform_le_four _ _ S.psiHat S.psiHat_norm
-        (fun xz => hsqQ p₁ xz) (fun xz => hsqXZ p₂ xz)) (hK8 hε1)
+    · exact le_trans (hchain p₁ p₂ hopp).1 (le_trans (by nlinarith) htot)
+    · exact le_trans (opFamilyDistSq_uniform_le_four S.psiHat_norm
+        (hsqQ p₁) (hsqXZ p₂)) (hK8 hε1)
   · intro p₁ p₂ hopp
     rcases htotal with htot | hε1
-    · exact le_trans (hchain p₁ p₂ hopp).2.1 (le_trans hsub2 htot)
-    · exact le_trans (opFamilyDistSq_uniform_le_four _ _ S.psiHat S.psiHat_norm
-        (fun xz => hsqQ p₁ xz) (fun xz => hsqZX p₂ xz)) (hK8 hε1)
+    · exact le_trans (hchain p₁ p₂ hopp).2.1 (le_trans (by nlinarith) htot)
+    · exact le_trans (opFamilyDistSq_uniform_le_four S.psiHat_norm
+        (hsqQ p₁) (hsqZX p₂)) (hK8 hε1)
 
 /-- The fixed polynomial error `pauliBaselinePointConstant * ε^(1/8)` produces a
 combined-point witness for every projective Pauli-test setting. -/
@@ -241,24 +218,13 @@ theorem exists_combinedPointsWitness :
     ∃ deltaQ : ℝ -> ℝ, IsPolyErr deltaQ ∧
       ∀ (P : AdmissibleParams) (ε : ℝ) (S : ProjectiveSetting P ε),
         Nonempty (CombinedPointsWitness S (deltaQ ε)) := by
-  have hQ : (1 : ℝ) ≤ pauliBaselinePointConstant := by
-    simp only [pauliBaselinePointConstant, pauliBaselineTwistedConstant,
-      pauliBaselineCommutatorConstant]
-    nlinarith [Real.sqrt_nonneg (344 : ℝ)]
-  refine ⟨fun ε => pauliBaselinePointConstant * Real.rpow ε (1 / 8 : ℝ),
+  have hQ : 1 ≤ pauliBaselinePointConstant := by
+    simp [pauliBaselinePointConstant, pauliBaselineTwistedConstant, pauliBaselineCommutatorConstant]
+    nlinarith [Real.sqrt_nonneg 344]
+  refine ⟨fun ε => pauliBaselinePointConstant * Real.rpow ε (1 / 8),
     ⟨pauliBaselinePointConstant, 1 / 8, hQ, by norm_num, fun ε hε =>
       ⟨mul_nonneg (by linarith) (Real.rpow_nonneg hε _), le_rfl⟩⟩,
     exists_combined_points_witness_explicit⟩
-
-/-- Register placement distributes over a filtered outcome sum. -/
-private theorem place_finset_sum {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) {α : Type*}
-    (s : Finset α) (A : α → Op (S.ExpandedLocalSpace p.side)) :
-    S.place p (∑ a ∈ s, A a) = ∑ a ∈ s, S.place p (A a) := by
-  classical
-  ext i j
-  cases p <;> simp [ProjectiveSetting.place, Matrix.sum_apply,
-    Finset.sum_mul, Finset.mul_sum]
 
 set_option maxHeartbeats 1600000 in
 -- Coarse-graining the joint point POVM expands three large finite consistency sums.
@@ -307,44 +273,44 @@ theorem extendedQ_spec {P : AdmissibleParams} {ε δ : ℝ}
   · intro side x z alpha beta
     exact SandwichProduct.postprocess_isProjective _ (points.projective side x z) _
   · intro p1 p2 hopposite
-    let A : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
-        (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
+    let A : ((PauliPoint P) × (PauliPoint P)) →
+        _ → _ :=
       fun xz ab => S.place p1 ((points.Q p1.side xz.1 xz.2).effect ab)
-    let B : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
-        (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
+    let B : ((PauliPoint P) × (PauliPoint P)) →
+        _ → _ :=
       fun xz ab => S.place p2 ((points.Q p2.side xz.1 xz.2).effect ab)
     refine le_trans ?_ (points.self_consistent p1 p2 hopposite)
     have h := opFamilyDistSq_uniform_affine_postprocess_le A B S.psiHat (fun xz => ?_)
     · simpa only [A, B, CombinedPointsWitness.extendedQ,
-        Measurement.postprocess_effect, place_finset_sum] using h
+        Measurement.postprocess_effect, ProjectiveSetting.place_finset_sum] using h
     · rw [sum_placed_measurement_eq_one, sum_placed_measurement_eq_one]
   · intro p1 p2 hopposite
-    let A : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
-        (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
+    let A : ((PauliPoint P) × (PauliPoint P)) →
+        _ → _ :=
       fun xz ab => S.place p1 ((points.Q p1.side xz.1 xz.2).effect ab)
-    let B : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
-        (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
+    let B : ((PauliPoint P) × (PauliPoint P)) →
+        (PauliScalar P × PauliScalar P) → _ :=
       fun xz ab => S.place p2
         ((S.pointMeasExp p2.side .X xz.1).effect ab.1 *
           (S.pointMeasExp p2.side .Z xz.2).effect ab.2)
     refine le_trans ?_ (points.consistent_XZ p1 p2 hopposite)
     have h := opFamilyDistSq_uniform_affine_postprocess_le A B S.psiHat (fun xz => ?_)
     · simpa only [A, B, CombinedPointsWitness.extendedQ,
-        Measurement.postprocess_effect, place_finset_sum] using h
+        Measurement.postprocess_effect, ProjectiveSetting.place_finset_sum] using h
     · rw [sum_placed_measurement_eq_one, sum_placed_measurement_products_eq_one]
   · intro p1 p2 hopposite
-    let A : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
-        (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
+    let A : ((PauliPoint P) × (PauliPoint P)) →
+        _ → _ :=
       fun xz ab => S.place p1 ((points.Q p1.side xz.1 xz.2).effect ab)
-    let B : ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)) →
-        (PauliScalar P × PauliScalar P) → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB) :=
+    let B : ((PauliPoint P) × (PauliPoint P)) →
+        (PauliScalar P × PauliScalar P) → _ :=
       fun xz ab => S.place p2
         ((S.pointMeasExp p2.side .Z xz.2).effect ab.2 *
           (S.pointMeasExp p2.side .X xz.1).effect ab.1)
     refine le_trans ?_ (points.consistent_ZX p1 p2 hopposite)
     have h := opFamilyDistSq_uniform_affine_postprocess_le A B S.psiHat (fun xz => ?_)
     · simpa only [A, B, CombinedPointsWitness.extendedQ,
-        Measurement.postprocess_effect, place_finset_sum] using h
+        Measurement.postprocess_effect, ProjectiveSetting.place_finset_sum] using h
     · rw [sum_placed_measurement_eq_one]
       have htotal := sum_placed_measurement_products_eq_one S p2
         (S.pointMeasExp p2.side .Z xz.2) (S.pointMeasExp p2.side .X xz.1)

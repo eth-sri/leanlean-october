@@ -45,9 +45,9 @@ theorem exists_projective_setting_isometry_bounds :
           ∃ t : PauliSoundnessWitness P S.toStrategy,
             ‖isometryTensor t.φA t.φB S.toStrategy.ψ - idealState P t.aux‖ ≤
               deltaQld a b epsilon P.m P.d P.q ∧
-            (∀ W : PauliKind, pauliOperatorDistanceA P S.toStrategy t W ≤
+            (∀ W : PauliKind, pauliOperatorDistanceA t W ≤
               deltaQld a b epsilon P.m P.d P.q) ∧
-            (∀ W : PauliKind, pauliOperatorDistanceB P S.toStrategy t W ≤
+            (∀ W : PauliKind, pauliOperatorDistanceB t W ≤
               deltaQld a b epsilon P.m P.d P.q) := by
   obtain ⟨a, b, C, ha, hb, hb1, hC, hextract⟩ := exists_extractionWitness
   obtain ⟨A, B, hA, hB, hB1, htransfer⟩ :=
@@ -55,7 +55,7 @@ theorem exists_projective_setting_isometry_bounds :
   refine ⟨A, B, hA, hB, hB1, ?_⟩
   intro P epsilon hepsilon0 hepsilon1 S
   obtain ⟨w, ⟨v⟩⟩ := hextract P epsilon hepsilon0 hepsilon1 S
-  exact htransfer P epsilon hepsilon0 hepsilon1 S w v
+  solve_by_elim [htransfer]
 
 end
 

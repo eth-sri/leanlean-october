@@ -38,40 +38,52 @@ noncomputable section
 
 /-! ## Linearity of the coordinate blocks -/
 
+section
+
+variable {K : Type*} [AddCommMonoid K] {m : ℕ} (u v : Fin (2 * m + 2) → K)
+
 /-- The `X` block of a sum of extended points is the sum of the blocks.
 Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projX_add {K : Type*} [AddCommMonoid K] {m : ℕ}
-    (u v : Fin (2 * m + 2) → K) :
+theorem projX_add :
     projX (u + v) = projX u + projX v := rfl
 
 /-- The `Z` block of a sum of extended points is the sum of the blocks.
 Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projZ_add {K : Type*} [AddCommMonoid K] {m : ℕ}
-    (u v : Fin (2 * m + 2) → K) :
+theorem projZ_add :
     projZ (u + v) = projZ u + projZ v := rfl
+
+end
+
+section
+
+variable {K : Type*} [Monoid K] {m : ℕ} (t : K) (u : Fin (2 * m + 2) → K)
 
 /-- The `X` block of a scalar multiple of an extended point is the scalar
 multiple of the block.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projX_smul {K : Type*} [Monoid K] {m : ℕ} (t : K)
-    (u : Fin (2 * m + 2) → K) :
+theorem projX_smul :
     projX (t • u) = t • projX u := rfl
 
 /-- The `Z` block of a scalar multiple of an extended point is the scalar
 multiple of the block.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projZ_smul {K : Type*} [Monoid K] {m : ℕ} (t : K)
-    (u : Fin (2 * m + 2) → K) :
+theorem projZ_smul :
     projZ (t • u) = t • projZ u := rfl
 
+end
+
 /-! ## The coordinate blocks of an extended point -/
+
+section
+
+variable (P : AdmissibleParams) (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)
 
 /-- Split an extended point into its two source point blocks and its two
 scalar coordinates.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-def extendedPointBlockEquiv (P : AdmissibleParams) :
+def extendedPointBlockEquiv :
     (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) ≃
       ((Fin P.m → DirectScalarQ P.extendedDirectLd) ×
           (Fin P.m → DirectScalarQ P.extendedDirectLd)) ×
@@ -82,36 +94,21 @@ def extendedPointBlockEquiv (P : AdmissibleParams) :
       (Equiv.prodCongr (Equiv.sumArrowEquivProdArrow _ _ _) (Equiv.refl _)))
 
 /-- The first block of the decomposition is the `X` block. -/
-theorem extendedPointBlockEquiv_projX (P : AdmissibleParams)
-    (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) :
+theorem extendedPointBlockEquiv_projX :
     (extendedPointBlockEquiv P u).1.1 = projX u := by
   funext i
   rfl
 
 /-- The second block of the decomposition is the `Z` block. -/
-theorem extendedPointBlockEquiv_projZ (P : AdmissibleParams)
-    (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) :
+theorem extendedPointBlockEquiv_projZ :
     (extendedPointBlockEquiv P u).1.2 = projZ u := by
   funext i
   rfl
 
-/-- The block decomposition of an extended point carries the uniform law to
-the uniform law.  Blueprint `lem:qld-sublines`, paper
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem uniformDistribution_map_extendedPointBlockEquiv (P : AdmissibleParams) :
-    (uniformDistribution
-          (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
-        (extendedPointBlockEquiv P) =
-      uniformDistribution
-        (((Fin P.m → DirectScalarQ P.extendedDirectLd) ×
-            (Fin P.m → DirectScalarQ P.extendedDirectLd)) ×
-          (Fin 2 → DirectScalarQ P.extendedDirectLd)) :=
-  uniformDistribution_map_equiv _
-
 /-- The two source blocks of a uniformly sampled extended point are
 independent and uniform.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem uniformDistribution_map_projX_projZ (P : AdmissibleParams) :
+theorem uniformDistribution_map_projX_projZ :
     (uniformDistribution
           (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
         (fun u => (projX u, projZ u)) =
@@ -126,9 +123,11 @@ theorem uniformDistribution_map_projX_projZ (P : AdmissibleParams) :
     rw [Prod.ext_iff]
     exact ⟨(extendedPointBlockEquiv_projX P u).symm,
       (extendedPointBlockEquiv_projZ P u).symm⟩
-  rw [hfun, ← Distribution.map_map _ (extendedPointBlockEquiv P) Prod.fst,
-    uniformDistribution_map_extendedPointBlockEquiv,
+  rw [hfun, ← Distribution.map_map,
+    uniformDistribution_map_equiv _,
     uniformDistribution_map_fst, uniformDistribution_prod]
+
+end
 
 /-! ## Transport to the source scalar field -/
 

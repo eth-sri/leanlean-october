@@ -1,6 +1,5 @@
 module
 
-public import QPBT.Games.DistanceTheorems
 public import QPBT.Games.Sandwich.Defs
 
 /-! # Quantitative support for sandwiched measurements
@@ -26,80 +25,11 @@ open DistanceCalculus
 
 namespace SandwichProduct
 
-/-- Averaging over the product of two finite distributions is iterated
-averaging. This is the formalization-only identity
-`lem:sandwich-product-average` used in the proof of `lem:ld-sandwich`; detailed
-source argument `references/neexp-paper/05_quantum_preliminaries.tex:952-994`. -/
-theorem avgOver_distribution_prod {X Y : Type*}
-    [DecidableEq X] [DecidableEq Y] (μ : Distribution X) (ν : Distribution Y)
-    (f : X × Y → ℝ) :
-    avgOver (Distribution.prod μ ν) f =
-      avgOver μ (fun x => avgOver ν (fun y => f (x, y))) := by
-  unfold avgOver
-  change (∑ p ∈ μ.support.product ν.support,
-    (μ.weight p.1 * ν.weight p.2) * f p) = _
-  calc
-    (∑ p ∈ μ.support.product ν.support,
-        (μ.weight p.1 * ν.weight p.2) * f p) =
-        ∑ x ∈ μ.support, ∑ y ∈ ν.support,
-          (μ.weight x * ν.weight y) * f (x, y) := by
-      exact Finset.sum_product' μ.support ν.support
-        (fun x y => (μ.weight x * ν.weight y) * f (x, y))
-    _ = _ := by
-      apply Finset.sum_congr rfl
-      intro x _
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro y _
-      ring
+section
 
-/-- The diagonal overlap after a common relabeling is the sum over pairs of
-original outcomes with equal labels. This is the formalization-only identity
-`lem:sandwich-diagonal-postprocess` used in the proof of `lem:ld-sandwich`;
-detailed source argument
-`references/neexp-paper/05_quantum_preliminaries.tex:952-994`. -/
-theorem diagonal_postprocess_stateQForm_eq_pair_sum
-    {α β ιA ιB : Type*} [Fintype α] [DecidableEq α]
-    [Fintype β] [DecidableEq β]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (A : Measurement α ιA) (B : Measurement α ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (f : α → β) :
-    (∑ b : β, stateQForm ψ
-      (heteroKron ((A.postprocess f).effect b) ((B.postprocess f).effect b))) =
-      ∑ a : α, ∑ a' : α, if f a = f a' then
-        stateQForm ψ (heteroKron (A.effect a) (B.effect a')) else 0 := by
-  classical
-  have hterm (b : β) : stateQForm ψ
-      (heteroKron ((A.postprocess f).effect b) ((B.postprocess f).effect b)) =
-      ∑ a : α, ∑ a' : α, if f a = b ∧ f a' = b then
-        stateQForm ψ (heteroKron (A.effect a) (B.effect a')) else 0 := by
-    rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
-      MIPStarRE.Quantum.Measurement.postprocess_effect,
-      heteroKron_finset_sum_left, stateQForm_finset_sum, Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro a _
-    by_cases hab : f a = b
-    · rw [if_pos hab, heteroKron_finset_sum_right, stateQForm_finset_sum,
-        Finset.sum_filter]
-      apply Finset.sum_congr rfl
-      intro a' _
-      by_cases ha'b : f a' = b <;> simp [hab, ha'b]
-    · simp [hab]
-  simp_rw [hterm]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro a _
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro a' _
-  by_cases haa' : f a = f a'
-  · rw [haa']
-    simp
-  · apply Eq.trans (Finset.sum_eq_zero (fun b _ => by
-      simp only [ite_eq_right_iff]
-      intro hpair
-      exact (haa' (hpair.1.trans hpair.2.symm)).elim))
-    simp [haa']
+variable {X α β ιA ιB : Type*} [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
+  [Fintype β] [DecidableEq β] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+  (A : Measurement α ιA) (B : Measurement α ιB) (ψ : EuclideanSpace ℂ (ιA × ιB))
 
 /-- The consistency defect of tensor-placed local measurements is the average
 of their pointwise off-diagonal tensor overlap. This is the formalization-only
@@ -107,28 +37,78 @@ identity `lem:sandwich-placed-defect-expansion` used in the proof of
 `lem:ld-sandwich`; detailed source argument
 `references/neexp-paper/05_quantum_preliminaries.tex:952-994`. -/
 theorem consistencyDefect_placed_eq_avg_point
-    {X α ιA ιB : Type*}
-    [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement α ιA)
     (B : X → Measurement α ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
-    consistencyDefect μ
-        (fun x a => heteroKron ((A x).effect a) 1)
-        (fun x a => heteroKron 1 ((B x).effect a)) ψ =
+    bipartiteDefect μ
+        A
+        B ψ =
       avgOver μ (fun x => ∑ a : α, ∑ a' : α, if a = a' then 0 else
         stateQForm ψ (heteroKron ((A x).effect a) ((B x).effect a'))) := by
-  unfold consistencyDefect
+  simp [bipartiteDefect]
   apply avgOver_congr
   intro x
-  apply Finset.sum_congr rfl
-  intro a _
-  apply Finset.sum_congr rfl
-  intro a' _
+  congr 1 with a
+  congr 1 with a'
   by_cases haa' : a = a'
   · simp [haa']
-  · simp only [if_neg haa']
-    rw [consistency_term_eq_stateQForm, placed_product_stateQForm_eq]
+  · rw [consistency_term_eq_stateQForm, placed_product_stateQForm_eq]
 
+end
+
+/-- The contribution of distinct codewords which have the same readout. -/
+def collisionPart {Γ R : Type*} [Fintype Γ] [DecidableEq Γ] [DecidableEq R]
+    (f : Γ → R) (w : Γ → Γ → ℝ) :=
+  ∑ a, ∑ b, if a = b then 0 else if f a = f b then w a b else 0
+
+theorem readout_agreement_eq {Γ R : Type*} [Fintype Γ] [DecidableEq Γ] [DecidableEq R]
+    (f : Γ → R) (w : Γ → Γ → ℝ) :
+    (∑ a, ∑ b, if f a = f b then w a b else 0) = ∑ a, w a a + collisionPart f w := by
+  simp only [collisionPart, ← Finset.sum_add_distrib]
+  congr 1 with a
+  have hs (b : Γ) : (if f a = f b then w a b else 0) =
+      (if a = b then w a b else 0) + (if a = b then 0 else if f a = f b then w a b else 0) := by
+    by_cases h : a = b <;> simp [h]
+  simp only [Finset.sum_congr rfl (fun b _ => hs b), Finset.sum_add_distrib]
+  simp
+
+/-- Average collision contribution for any nonnegative pair weights and any
+(possibly unnormalized) law on evaluation points. -/
+theorem weighted_collision_le {Γ Y R : Type*} [Fintype Γ] [DecidableEq Γ] [Fintype Y] [DecidableEq R]
+    (t : Y → ℝ) (eval : Γ → Y → R) (w : Γ → Γ → ℝ) {k : ℝ}
+    (hw : ∀ a b, 0 ≤ w a b)
+    (hk : ∀ a b, a ≠ b → (∑ y, t y * (if eval a y = eval b y then 1 else 0)) ≤ k) :
+    (∑ y, t y * collisionPart (fun a => eval a y) w) ≤ (∑ a, ∑ b, if a = b then 0 else w a b) * k := by
+  simp only [collisionPart, Finset.mul_sum, Finset.sum_mul]
+  rw [Finset.sum_comm]
+  refine Finset.sum_le_sum fun a _ => ?_
+  rw [Finset.sum_comm]
+  refine Finset.sum_le_sum fun b _ => ?_
+  by_cases h : a = b
+  · simp [h]
+  · simpa [h, mul_ite, ite_mul, Finset.sum_mul, mul_comm (w a b)] using
+      mul_le_mul_of_nonneg_right (hk a b h) (hw a b)
+
+theorem placed_offdiag_eq {α I J : Type*} [Fintype α] [DecidableEq α] [Fintype I] [DecidableEq I]
+    [Fintype J] [DecidableEq J] (A : Measurement α I) (B : Measurement α J) (ψ : EuclideanSpace ℂ (I × J)) :
+    (∑ a, ∑ b, if a = b then 0 else stateQForm ψ (heteroKron (A.effect a) (B.effect b))) =
+      ‖ψ‖ ^ 2 - ∑ a, stateQForm ψ (heteroKron (A.effect a) (B.effect a)) := by
+  simpa only [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne,
+    placed_product_stateQForm_eq] using point_defect_eq (leftPlacedMeasurement A) (rightPlacedMeasurement B) ψ
+
+theorem placed_offdiag_le_one {α I J : Type*} [Fintype α] [DecidableEq α] [Fintype I] [DecidableEq I]
+    [Fintype J] [DecidableEq J] (A : Measurement α I) (B : Measurement α J) {ψ : EuclideanSpace ℂ (I × J)}
+    (hψ : ‖ψ‖ = 1) : (∑ a, ∑ b, if a = b then 0 else stateQForm ψ (heteroKron (A.effect a) (B.effect b))) ≤ 1 := by
+  rw [placed_offdiag_eq, hψ, one_pow]
+  exact sub_le_self _ (Finset.sum_nonneg fun a _ => stateQForm_nonneg _ (kronecker_nonneg (A.pos a) (B.pos a)))
+
+section
+
+variable {Y Γ R ιA ιB : Type*} [Fintype Y] [DecidableEq Y] [Nonempty Y] [Fintype Γ]
+  [DecidableEq Γ] [Fintype R] [DecidableEq R] [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
+  [DecidableEq ιB] (A : Measurement Γ ιA) (B : Measurement Γ ιB)
+  (ψ : EuclideanSpace ℂ (ιA × ιB)) (eval : Γ → Y → R) (ε : ℝ) (hψ : ‖ψ‖ = 1) (hε : 0 ≤ ε)
+
+include hε hψ in
 set_option maxHeartbeats 600000 in
 -- The collision estimate expands two nested outcome sums at each evaluation point.
 /-- Averaged diagonal overlap after evaluation exceeds the original diagonal
@@ -137,13 +117,6 @@ estimate `lem:sandwich-evaluated-diagonal-overlap` used in the proof of
 `lem:ld-sandwich`; detailed source argument
 `references/neexp-paper/05_quantum_preliminaries.tex:975-987`. -/
 theorem avg_diagonal_postprocess_stateQForm_le
-    {Y Γ R ιA ιB : Type*}
-    [Fintype Y] [DecidableEq Y] [Nonempty Y]
-    [Fintype Γ] [DecidableEq Γ] [Fintype R] [DecidableEq R]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (A : Measurement Γ ιA) (B : Measurement Γ ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (eval : Γ → Y → R) (ε : ℝ)
-    (hψ : ‖ψ‖ = 1) (hε : 0 ≤ ε)
     (hcollision : ∀ g g' : Γ, g ≠ g' →
       avgOver (uniformDistribution Y)
         (fun y => if eval g y = eval g' y then 1 else 0) ≤ ε) :
@@ -153,110 +126,14 @@ theorem avg_diagonal_postprocess_stateQForm_le
           ((A.postprocess (fun g => eval g y)).effect r)
           ((B.postprocess (fun g => eval g y)).effect r))) ≤
       (∑ g : Γ, stateQForm ψ (heteroKron (A.effect g) (B.effect g))) + ε := by
-  classical
-  let w : Γ → Γ → ℝ := fun g g' =>
-    stateQForm ψ (heteroKron (A.effect g) (B.effect g'))
-  have hw (g g' : Γ) : 0 ≤ w g g' := by
-    apply stateQForm_nonneg
-    exact MIPStarRE.Quantum.kronecker_nonneg (A.pos g) (B.pos g')
-  have hoffdiag_le_one :
-      (∑ g : Γ, ∑ g' : Γ, if g = g' then 0 else w g g') ≤ 1 := by
-    let AL := leftPlacedMeasurement (ιB := ιB) A
-    let BR := rightPlacedMeasurement (ιA := ιA) B
-    have hpoint := point_defect_eq AL BR ψ
-    simp only [AL, BR, leftPlacedMeasurement, rightPlacedMeasurement,
-      MIPStarRE.Quantum.Measurement.ofSumEqOne] at hpoint
-    simp_rw [placed_product_stateQForm_eq] at hpoint
-    have hdiag : 0 ≤ ∑ g : Γ, w g g :=
-      Finset.sum_nonneg fun g _ => hw g g
-    change (∑ g : Γ, ∑ g' : Γ, if g = g' then 0 else
-      stateQForm ψ (heteroKron (A.effect g) (B.effect g'))) ≤ 1
-    rw [hpoint, hψ]
-    norm_num
-    exact hdiag
-  have hdiagpart :
-      (∑ g : Γ, ∑ g' : Γ, if g = g' then w g g' else 0) =
-        ∑ g : Γ, w g g := by
-    apply Finset.sum_congr rfl
-    intro g _
-    rw [Fintype.sum_eq_single g]
-    · simp
-    · intro g' hg'
-      simp [Ne.symm hg']
-  have hsplit :
-      (∑ g : Γ, ∑ g' : Γ,
-        if g = g' then w g g' else ε * w g g') =
-      (∑ g : Γ, w g g) +
-        ε * (∑ g : Γ, ∑ g' : Γ,
-          if g = g' then 0 else w g g') := by
-    calc
-      (∑ g : Γ, ∑ g' : Γ,
-          if g = g' then w g g' else ε * w g g') =
-          ∑ g : Γ, ∑ g' : Γ,
-            ((if g = g' then w g g' else 0) +
-              ε * (if g = g' then 0 else w g g')) := by
-        apply Finset.sum_congr rfl
-        intro g _
-        apply Finset.sum_congr rfl
-        intro g' _
-        by_cases hgg' : g = g' <;> simp [hgg']
-      _ = (∑ g : Γ, ∑ g' : Γ,
-            if g = g' then w g g' else 0) +
-          ε * (∑ g : Γ, ∑ g' : Γ,
-            if g = g' then 0 else w g g') := by
-        simp_rw [Finset.sum_add_distrib, ← Finset.mul_sum]
-      _ = _ := by rw [hdiagpart]
-  change avgOver (uniformDistribution Y) (fun y =>
-      ∑ r : R, stateQForm ψ
-        (heteroKron
-          ((A.postprocess (fun g => eval g y)).effect r)
-          ((B.postprocess (fun g => eval g y)).effect r))) ≤
-    (∑ g : Γ, w g g) + ε
-  calc
-    avgOver (uniformDistribution Y) (fun y =>
-        ∑ r : R, stateQForm ψ
-          (heteroKron
-            ((A.postprocess (fun g => eval g y)).effect r)
-            ((B.postprocess (fun g => eval g y)).effect r))) =
-        ∑ g : Γ, ∑ g' : Γ,
-          avgOver (uniformDistribution Y) (fun y =>
-            if eval g y = eval g' y then w g g' else 0) := by
-      simp_rw [diagonal_postprocess_stateQForm_eq_pair_sum]
-      rw [avgOver_sum]
-      apply Finset.sum_congr rfl
-      intro g _
-      rw [avgOver_sum]
-    _ ≤ ∑ g : Γ, ∑ g' : Γ,
-        if g = g' then w g g' else ε * w g g' := by
-      apply Finset.sum_le_sum
-      intro g _
-      apply Finset.sum_le_sum
-      intro g' _
-      by_cases hgg' : g = g'
-      · subst g'
-        simp only [if_pos]
-        exact le_of_eq (avgOver_uniform_const (w g g))
-      · rw [if_neg hgg']
-        calc
-          avgOver (uniformDistribution Y) (fun y =>
-              if eval g y = eval g' y then w g g' else 0) =
-              avgOver (uniformDistribution Y) (fun y =>
-                (if eval g y = eval g' y then 1 else 0) * w g g') := by
-            apply avgOver_congr
-            intro y
-            by_cases heq : eval g y = eval g' y <;> simp [heq]
-          _ = avgOver (uniformDistribution Y)
-              (fun y => if eval g y = eval g' y then 1 else 0) * w g g' :=
-            avgOver_mul_const _ _ _
-          _ ≤ ε * w g g' :=
-            mul_le_mul_of_nonneg_right (hcollision g g' hgg') (hw g g')
-    _ = (∑ g : Γ, w g g) +
-        ε * (∑ g : Γ, ∑ g' : Γ,
-          if g = g' then 0 else w g g') := hsplit
-    _ ≤ (∑ g : Γ, w g g) + ε := by
-      gcongr
-      simpa using mul_le_mul_of_nonneg_left hoffdiag_le_one hε
+  simp_rw [diagonal_postprocess_stateQForm_eq_pair_sum, readout_agreement_eq]
+  rw [avgOver_add, avgOver_uniform_const, avgOver_eq_sum_univ]
+  apply add_le_add_right
+  apply (weighted_collision_le _ _ _ (fun a b => stateQForm_nonneg ψ
+    (kronecker_nonneg (A.pos a) (B.pos b))) (by simpa [avgOver_eq_sum_univ] using hcollision)).trans
+  exact mul_le_of_le_one_left hε (placed_offdiag_le_one A B hψ)
 
+include hε hψ in
 set_option maxHeartbeats 600000 in
 -- Complementary overlaps require simultaneous expansions before averaging.
 /-- Taking complements converts the diagonal-overlap estimate into a
@@ -265,13 +142,6 @@ pointwise consistency-defect estimate. This is the formalization-only estimate
 detailed source argument
 `references/neexp-paper/05_quantum_preliminaries.tex:975-987`. -/
 theorem point_codeword_defect_le_avg_evaluated_add
-    {Y Γ R ιA ιB : Type*}
-    [Fintype Y] [DecidableEq Y] [Nonempty Y]
-    [Fintype Γ] [DecidableEq Γ] [Fintype R] [DecidableEq R]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (A : Measurement Γ ιA) (B : Measurement Γ ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (eval : Γ → Y → R) (ε : ℝ)
-    (hψ : ‖ψ‖ = 1) (hε : 0 ≤ ε)
     (hcollision : ∀ g g' : Γ, g ≠ g' →
       avgOver (uniformDistribution Y)
         (fun y => if eval g y = eval g' y then 1 else 0) ≤ ε) :
@@ -285,37 +155,10 @@ theorem point_codeword_defect_le_avg_evaluated_add
               ((B.postprocess (fun g => eval g y)).effect r'))) + ε := by
   have hdiag_avg := avg_diagonal_postprocess_stateQForm_le
     A B ψ eval ε hψ hε hcollision
-  have hfull := point_defect_eq
-    (leftPlacedMeasurement (ιB := ιB) A)
-    (rightPlacedMeasurement (ιA := ιA) B) ψ
-  simp only [leftPlacedMeasurement, rightPlacedMeasurement,
-    MIPStarRE.Quantum.Measurement.ofSumEqOne] at hfull
-  simp_rw [placed_product_stateQForm_eq] at hfull
-  have hevaluated (y : Y) := point_defect_eq
-    (leftPlacedMeasurement (ιB := ιB)
-      (A.postprocess (fun g => eval g y)))
-    (rightPlacedMeasurement (ιA := ιA)
-      (B.postprocess (fun g => eval g y))) ψ
-  simp only [leftPlacedMeasurement, rightPlacedMeasurement,
-    MIPStarRE.Quantum.Measurement.ofSumEqOne] at hevaluated
-  simp_rw [placed_product_stateQForm_eq] at hevaluated
-  have heval_avg : avgOver (uniformDistribution Y) (fun y =>
-      ∑ r : R, ∑ r' : R, if r = r' then 0 else
-        stateQForm ψ
-          (heteroKron
-            ((A.postprocess (fun g => eval g y)).effect r)
-            ((B.postprocess (fun g => eval g y)).effect r'))) =
-      1 - avgOver (uniformDistribution Y) (fun y =>
-        ∑ r : R, stateQForm ψ
-          (heteroKron
-            ((A.postprocess (fun g => eval g y)).effect r)
-            ((B.postprocess (fun g => eval g y)).effect r))) := by
-    simp_rw [hevaluated]
-    rw [avgOver_sub, avgOver_uniform_const]
-    rw [hψ]
-    norm_num
-  rw [hfull, hψ, one_pow, heval_avg]
+  simp_rw [placed_offdiag_eq, avgOver_sub, avgOver_uniform_const]
   linarith
+
+end
 
 set_option maxHeartbeats 600000 in
 -- The proof rearranges question, evaluation, and two outcome sums.
@@ -337,79 +180,39 @@ theorem consistencyDefect_codewords_le_evaluated_add
     (hcollision : ∀ g g' : Γ, g ≠ g' →
       avgOver (uniformDistribution Y)
         (fun y => if eval g y = eval g' y then 1 else 0) ≤ ε) :
-    consistencyDefect μ
-        (fun x g => heteroKron ((A x).effect g) 1)
-        (fun x g => heteroKron 1 ((B x).effect g)) ψ ≤
-      consistencyDefect (Distribution.prod μ (uniformDistribution Y))
-        (fun xy r => heteroKron
-          (((A xy.1).postprocess (fun g => eval g xy.2)).effect r) 1)
-        (fun xy r => heteroKron 1
-          (((B xy.1).postprocess (fun g => eval g xy.2)).effect r)) ψ + ε := by
-  classical
-  let w : X → Γ → Γ → ℝ := fun x g g' =>
-    stateQForm ψ (heteroKron ((A x).effect g) ((B x).effect g'))
-  have hpoint (x : X) :
-      (∑ g : Γ, ∑ g' : Γ, if g = g' then 0 else w x g g') ≤
-        avgOver (uniformDistribution Y) (fun y =>
-          ∑ r : R, ∑ r' : R, if r = r' then 0 else
-            stateQForm ψ
-              (heteroKron
-                (((A x).postprocess (fun g => eval g y)).effect r)
-                (((B x).postprocess (fun g => eval g y)).effect r'))) + ε := by
-    exact point_codeword_defect_le_avg_evaluated_add
-      (A x) (B x) ψ eval ε hψ hε hcollision
-  rw [consistencyDefect_placed_eq_avg_point μ A B]
-  rw [consistencyDefect_placed_eq_avg_point
-    (Distribution.prod μ (uniformDistribution Y))
-    (fun xy => (A xy.1).postprocess (fun g => eval g xy.2))
-    (fun xy => (B xy.1).postprocess (fun g => eval g xy.2))]
-  change avgOver μ (fun x =>
-      ∑ g : Γ, ∑ g' : Γ, if g = g' then 0 else w x g g') ≤ _
-  rw [avgOver_distribution_prod]
-  calc
-    avgOver μ (fun x =>
-        ∑ g : Γ, ∑ g' : Γ, if g = g' then 0 else w x g g') ≤
-        avgOver μ (fun x =>
-          avgOver (uniformDistribution Y) (fun y =>
-            ∑ r : R, ∑ r' : R, if r = r' then 0 else
-              stateQForm ψ
-                (heteroKron
-                  (((A x).postprocess (fun g => eval g y)).effect r)
-                  (((B x).postprocess (fun g => eval g y)).effect r'))) + ε) := by
-      apply avgOver_mono
-      exact hpoint
-    _ = avgOver μ (fun x =>
-          avgOver (uniformDistribution Y) (fun y =>
-            ∑ r : R, ∑ r' : R, if r = r' then 0 else
-              stateQForm ψ
-                (heteroKron
-                  (((A x).postprocess (fun g => eval g y)).effect r)
-                  (((B x).postprocess (fun g => eval g y)).effect r')))) +
-        avgOver μ (fun _ => ε) := avgOver_add _ _ _
-    _ = _ := by rw [avgOver_const_of_isProbability μ hμ]
+    bipartiteDefect μ
+        A
+        B ψ ≤
+      bipartiteDefect (Distribution.prod μ (uniformDistribution Y))
+        (fun xy => (A xy.1).postprocess (fun g => eval g xy.2))
+        (fun xy => (B xy.1).postprocess (fun g => eval g xy.2)) ψ + ε := by
+  simp_rw [consistencyDefect_placed_eq_avg_point, avgOver_prod]
+  have h := avgOver_mono μ _ _ fun x => point_codeword_defect_le_avg_evaluated_add
+    (A x) (B x) ψ eval ε hψ hε hcollision
+  simpa only [avgOver_add, avgOver_const_of_isProbability μ hμ] using h
 
+variable {α β γ ι : Type*} [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β] [Fintype γ]
+  [DecidableEq γ] [Fintype ι] [DecidableEq ι] (M : Measurement α ι)
+  (hM : MIPStarRE.QPBT.Measurement.IsProjective M) (f : α → β) (hf : Function.Injective f)
+  (b : β) (a : α)
+
+include hM in
 /-- Coarsening the outcomes of a projective measurement preserves
 projectivity. This is the formalization-only fact
 `lem:sandwich-postprocess-projective` used in the palindromic construction of
 `lem:ld-sandwich`; detailed source argument
 `references/neexp-paper/05_quantum_preliminaries.tex:930-946`. -/
-theorem postprocess_isProjective {α β ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ι] [DecidableEq ι]
-    (M : Measurement α ι) (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
-    (f : α → β) : MIPStarRE.QPBT.Measurement.IsProjective (M.postprocess f) := by
+theorem postprocess_isProjective : MIPStarRE.QPBT.Measurement.IsProjective (M.postprocess f) := by
   classical
   intro b
   refine { isIdempotentElem := ?_, isSelfAdjoint := ?_ }
-  · change (M.postprocess f).effect b * (M.postprocess f).effect b =
+  · change _ =
       (M.postprocess f).effect b
     simp only [MIPStarRE.Quantum.Measurement.postprocess_effect]
     rw [Finset.sum_mul]
     simp_rw [Finset.mul_sum]
     calc
-      (∑ a ∈ Finset.univ.filter (fun a => f a = b),
-          ∑ a' ∈ Finset.univ.filter (fun a' => f a' = b),
-            M.effect a * M.effect a') =
+      _ =
           ∑ a ∈ Finset.univ.filter (fun a => f a = b),
             ∑ a' ∈ Finset.univ.filter (fun a' => f a' = b),
               if a' = a then M.effect a else 0 := by
@@ -421,67 +224,43 @@ theorem postprocess_isProjective {α β ι : Type*}
         · subst a'
           simp [(hM a).isIdempotentElem.eq]
         · rw [if_neg haa']
-          exact DistanceCalculus.projective_effect_mul_effect_eq_zero
-            M hM (Ne.symm haa')
-      _ = ∑ a ∈ Finset.univ.filter (fun a => f a = b), M.effect a := by
-        apply Finset.sum_congr rfl
-        intro a ha
-        simp [ha]
-  · change ((M.postprocess f).effect b)ᴴ = (M.postprocess f).effect b
-    exact
+          solve_by_elim [DistanceCalculus.projective_effect_mul_effect_eq_zero]
+      _ = _ := by
+        simp_all
+  · exact
       (Matrix.nonneg_iff_posSemidef.mp ((M.postprocess f).pos b)).isHermitian.eq
 
-/-- Performing two outcome relabelings has the same effects as their
-composition. This is the formalization-only identity
-`lem:sandwich-postprocess-compose` used to align the coordinate marginals in
-`lem:ld-sandwich`; detailed source argument
-`references/neexp-paper/05_quantum_preliminaries.tex:952-994`. It reads at a
-single outcome the equality of the twice-relabeled measurement with the
-measurement relabeled along the composite map. -/
-theorem postprocess_postprocess_effect {α β γ ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype γ] [DecidableEq γ] [Fintype ι] [DecidableEq ι]
-    (M : Measurement α ι) (f : α → β) (g : β → γ) (c : γ) :
-    ((M.postprocess f).postprocess g).effect c =
-      (M.postprocess (fun a => g (f a))).effect c := by
-  rw [MIPStarRE.Quantum.Measurement.postprocess_comp]
-
+include hf in
 /-- An injective relabeling does not merge the effect at a relabeled
 outcome. This is the formalization-only identity
 `lem:sandwich-injective-postprocess` used to identify product outcomes in
 `lem:ld-sandwich`; detailed source argument
 `references/neexp-paper/05_quantum_preliminaries.tex:930-946`. -/
-theorem postprocess_effect_of_injective {α β ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ι] [DecidableEq ι]
-    (M : Measurement α ι) (f : α → β) (hf : Function.Injective f) (a : α) :
+theorem postprocess_effect_of_injective :
     (M.postprocess f).effect (f a) = M.effect a := by
   simp only [MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.sum_filter]
   rw [Fintype.sum_eq_single a]
   · simp
   · intro z hza
     rw [if_neg]
-    exact fun h => hza (hf h)
+    grind
 
+include hM in
 /-- A projective joint effect selects its matching postprocessing fiber when
 multiplied on the right. This is the formalization-only identity
 `lem:sandwich-postprocess-effect-right` used in the joint-family comparison for
 `lem:ld-sandwich`; detailed source argument
 `references/neexp-paper/05_quantum_preliminaries.tex:930-946`. -/
-theorem effect_mul_postprocess_effect {α β ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ι] [DecidableEq ι]
-    (M : Measurement α ι) (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
-    (f : α → β) (b : β) (a : α) :
+theorem effect_mul_postprocess_effect :
     M.effect a * (M.postprocess f).effect b =
       if f a = b then M.effect a else 0 := by
   have h := congrArg Matrix.conjTranspose
     (DistanceCalculus.postprocess_effect_mul_effect M hM f b a)
   rw [Matrix.conjTranspose_mul,
-    DistanceCalculus.measurement_effect_hermitian M a,
-    DistanceCalculus.measurement_effect_hermitian (M.postprocess f) b] at h
+    measurement_effect_hermitian M a,
+    measurement_effect_hermitian (M.postprocess f) b] at h
   by_cases hab : f a = b
-  · simpa [hab, DistanceCalculus.measurement_effect_hermitian M a] using h
+  · simpa [hab, measurement_effect_hermitian M a] using h
   · simpa [hab] using h
 
 end SandwichProduct

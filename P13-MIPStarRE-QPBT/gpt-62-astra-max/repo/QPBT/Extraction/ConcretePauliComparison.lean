@@ -25,19 +25,20 @@ open MIPStarRE.LDT hiding Measurement
 
 noncomputable section
 
+section
+
+variable {P : AdmissibleParams} {I J : Type*} [Fintype I] [DecidableEq I] [Fintype J]
+  [DecidableEq J]
+
 /-- Coordinate transport preserves the distance between two state vectors. -/
-theorem norm_reindexState_sub_eq {I J : Type*}
-    [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
+theorem norm_reindexState_sub_eq
     (e : I ≃ J) (psi phi : EuclideanSpace ℂ I) :
-    ‖reindexState e psi - reindexState e phi‖ = ‖psi - phi‖ := by
-  change ‖reindexState e (psi - phi)‖ = _
-  exact reindexState_norm_eq e _
+    ‖reindexState e psi - reindexState e phi‖ = ‖psi - phi‖ := id (reindexState_norm_eq e (psi - phi))
 
 /-- The full Pauli comparison with the total measurement on the right block.
 This follows from the left-block estimate by exchanging both auxiliary and
 extracted registers; the EPR factor is invariant under this exchange. -/
-theorem pauli_distance_on_ideal_right_le {P : AdmissibleParams} {I J : Type*}
-    [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
+theorem pauli_distance_on_ideal_right_le
     (A : Measurement (PauliRegister P) (J × PauliRegister P)) (W : PauliKind)
     (aux : EuclideanSpace ℂ (I × J)) (haux : ‖aux‖ = 1)
     (theta : EuclideanSpace ℂ ((I × PauliRegister P) × (J × PauliRegister P)))
@@ -47,7 +48,7 @@ theorem pauli_distance_on_ideal_right_le {P : AdmissibleParams} {I J : Type*}
     (∑ h : PauliRegister P, ‖applyOperatorToState
       (heteroKron (1 : Op (I × PauliRegister P))
         (A.effect h - heteroKron (1 : Op J) (pauliProj W h))) ideal‖ ^ 2) ≤
-      2 * (1 - avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
+      2 * (1 - avgOver (uniformDistribution (PauliPoint P)) (fun u =>
         ∑ a : PauliScalar P, stateQForm theta
           (heteroKron ((B.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)
             ((A.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)))) +
@@ -57,7 +58,6 @@ theorem pauli_distance_on_ideal_right_le {P : AdmissibleParams} {I J : Type*}
   have hideal : reindexState prodShuffle
       (vecTensor (reindexState (Equiv.prodComm I J) aux) (eprState (PauliRegister P))) =
       reindexState e ideal := by
-    ext p
     simp [reindexState, vecTensor, prodShuffle, eprState, e, ideal, eq_comm]
   have h := pauli_distance_on_ideal_le A W (reindexState (Equiv.prodComm I J) aux)
     (by rw [reindexState_norm_eq, haux]) (reindexState e theta)
@@ -69,46 +69,47 @@ theorem pauli_distance_on_ideal_right_le {P : AdmissibleParams} {I J : Type*}
     WinImplications.stateQForm_reindexState, WinImplications.reindexOp_prodComm_heteroKron] at h
   exact h
 
+end
+
 namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {epsilon deltaG : ℝ}
     (S : ProjectiveSetting P epsilon)
 
+variable (w : GlobalPairWitness S deltaG)
+  (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+  (haux : ‖aux‖ = 1) (side : PlayerSide) (W : PauliKind)
+
 /-- The evaluated total-Pauli consistency defect against the opposite
 pulled-apart measurement, with the tensor factors in Alice--Bob order. -/
-def evaluatedPauliDefect (w : GlobalPairWitness S deltaG) (side : PlayerSide)
-    (W : PauliKind) : ℝ :=
+def evaluatedPauliDefect : ℝ :=
   match side with
-  | .alice => consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+  | .alice => consistencyDefect (uniformDistribution (PauliPoint P))
       (fun u a => S.placePlayer .alice ((S.pauliEvalMeas .alice W u).effect a))
       (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat
-  | .bob => consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+  | .bob => consistencyDefect (uniformDistribution (PauliPoint P))
       (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
       (fun u a => S.placePlayer .bob ((S.pauliEvalMeas .bob W u).effect a)) S.psiHat
 
 /-- The ideal state in local extraction-block order. -/
-theorem reindexState_idealExpState_blocks
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
+theorem reindexState_idealExpState_blocks :
     reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
       (S.idealExpState aux) = reindexState prodShuffle (vecTensor aux
-        (eprState (PauliRegister P))) := by
-  rfl
+        (eprState (PauliRegister P))) := rfl
 
 /-- Subtraction of block operators agrees with subtraction after placement. -/
-theorem placeSide_sub (side : PlayerSide)
+theorem placeSide_sub
     (A B : Op (ExtractionBlock P (S.LocalSpace side))) :
     S.placeSide side (A - B) = S.placeSide side A - S.placeSide side B := by
   cases side
   · ext row col
-    exact sub_mul _ _ _
+    apply sub_mul
   · ext row col
-    exact mul_sub _ _ _
+    apply mul_sub
 
 /-- The entire answer-summed distance in block coordinates is the distance
 appearing in `ExtractionWitness.pauli_close`, for either player. -/
-theorem extraction_pauli_dist_eq_sum (w : GlobalPairWitness S deltaG)
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
-    (side : PlayerSide) (W : PauliKind) :
+theorem extraction_pauli_dist_eq_sum :
     opFamilyDistSq (uniformDistribution Unit)
       (fun (_ : Unit) (h : PauliRegister P) =>
         conjBy (S.placeSide side (swapUnitary w side))
@@ -122,14 +123,13 @@ theorem extraction_pauli_dist_eq_sum (w : GlobalPairWitness S deltaG)
   simp_rw [S.placeSide_sub, S.placeSide_swappedPauliMeas, S.placeSide_extracted]
   exact avgOver_uniform_const _
 
+include haux in
 set_option maxHeartbeats 800000 in
 /-- For the concrete swaps, the full Pauli distance on the normalized ideal
 state is bounded by the evaluated consistency defect and the two established
 comparison losses. This instantiates `eq:qld-unitary-7`--`eq:qld-unitary-9`
 with all six-register placements and both player orientations. -/
-theorem extraction_pauli_dist_le (w : GlobalPairWitness S deltaG)
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
-    (haux : ‖aux‖ = 1) (side : PlayerSide) (W : PauliKind) :
+theorem extraction_pauli_dist_le :
     opFamilyDistSq (uniformDistribution Unit)
       (fun (_ : Unit) (h : PauliRegister P) =>
         conjBy (S.placeSide side (swapUnitary w side))
@@ -147,24 +147,22 @@ theorem extraction_pauli_dist_le (w : GlobalPairWitness S deltaG)
   rw [S.extraction_pauli_dist_eq_sum]
   cases side
   · have h := pauli_distance_on_ideal_le (S.swappedPauliMeas w .alice W) W aux haux
-      (reindexState e theta) htheta
+      _ htheta
     dsimp only at h
-    erw [S.swapped_pauli_overlap_alice w W, sub_sub_cancel,
-      ← S.reindexState_idealExpState_blocks aux, norm_reindexState_sub_eq] at h
+    erw [S.swapped_pauli_overlap_alice, sub_sub_cancel,
+      ← S.reindexState_idealExpState_blocks, norm_reindexState_sub_eq] at h
     convert h using 1
-    · apply Finset.sum_congr rfl
-      intro label _
+    · congr 1 with label
       congr 1
       exact (WinImplications.norm_applyOperatorToState_reindexState e _ _).symm
     · rfl
   · have h := pauli_distance_on_ideal_right_le (S.swappedPauliMeas w .bob W) W aux haux
-      (reindexState e theta) htheta
+      _ htheta
     dsimp only at h
-    erw [S.swapped_pauli_overlap_bob w W, sub_sub_cancel,
-      ← S.reindexState_idealExpState_blocks aux, norm_reindexState_sub_eq] at h
+    erw [S.swapped_pauli_overlap_bob, sub_sub_cancel,
+      ← S.reindexState_idealExpState_blocks, norm_reindexState_sub_eq] at h
     convert h using 1
-    · apply Finset.sum_congr rfl
-      intro label _
+    · congr 1 with label
       congr 1
       exact (WinImplications.norm_applyOperatorToState_reindexState e _ _).symm
     · rfl

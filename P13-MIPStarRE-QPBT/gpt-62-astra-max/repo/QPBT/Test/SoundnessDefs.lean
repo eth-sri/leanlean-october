@@ -52,33 +52,25 @@ theorem deltaQld_mono {P : AdmissibleParams} {a a' b b' ε : ℝ}
     (ha0 : 1 ≤ a) (ha : a ≤ a') (hb : b' ≤ b) (hb' : 0 < b')
     (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) :
     deltaQld a b ε P.m P.d P.q ≤ deltaQld a' b' ε P.m P.d P.q := by
-  have hmd : (1 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) :=
-    Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
-  have hmd0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := by linarith
-  have hq : (1 : ℝ) ≤ (P.q : ℝ) := by
+  have hmd0 : 0 ≤ ((P.m * P.d : ℕ) : ℝ) := by linarith
+  have hq : 1 ≤ (P.q : ℝ) := by
     obtain ⟨k, -, hk⟩ := P.hq
     rw [hk]
     exact_mod_cast Nat.one_le_pow _ _ (by norm_num)
-  unfold deltaQld
-  simp only [Real.rpow_eq_pow]
-  have h1 : ((P.m * P.d : ℕ) : ℝ) ^ a ≤ ((P.m * P.d : ℕ) : ℝ) ^ a' :=
-    Real.rpow_le_rpow_of_exponent_le hmd ha
-  have h2 : ε ^ b ≤ ε ^ b' := Real.rpow_le_rpow_of_exponent_ge' hε0 hε1 hb'.le hb
-  have h3 : (P.q : ℝ) ^ (-b) ≤ (P.q : ℝ) ^ (-b') :=
+  have h1 :=
+    Real.rpow_le_rpow_of_exponent_le (Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)) ha
+  have h3 :=
     Real.rpow_le_rpow_of_exponent_le hq (neg_le_neg hb)
-  have h4 : (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) ≤
-      (2 : ℝ) ^ (-(b' * ((P.m * P.d : ℕ) : ℝ))) :=
-    Real.rpow_le_rpow_of_exponent_le (by norm_num)
-      (neg_le_neg (mul_le_mul_of_nonneg_right hb hmd0))
-  have hsum : 0 ≤ ε ^ b + (P.q : ℝ) ^ (-b) +
-      (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) := by
+  have hsum : 0 ≤ ε ^ b + P.q ^ (-b) +
+      2 ^ (-(b * (P.m * P.d : ℕ))) := by
     have := Real.rpow_nonneg hε0 b
     have := Real.rpow_nonneg (Nat.cast_nonneg P.q) (-b)
     have := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2)
-      (-(b * ((P.m * P.d : ℕ) : ℝ)))
+      (-(b * (P.m * P.d : ℕ)))
     linarith
   exact mul_le_mul (mul_le_mul ha h1 (Real.rpow_nonneg hmd0 a) (by linarith))
-    (add_le_add (add_le_add h2 h3) h4) hsum
+    (add_le_add (add_le_add (Real.rpow_le_rpow_of_exponent_ge' hε0 hε1 hb'.le hb) h3) (Real.rpow_le_rpow_of_exponent_le (by norm_num)
+        (neg_le_neg (mul_le_mul_of_nonneg_right hb hmd0)))) hsum
     (mul_nonneg (by linarith) (Real.rpow_nonneg hmd0 a'))
 
 /-- The ideal auxiliary state `aux ⊗ EPR_q^{⊗M}` in the shuffled register
@@ -183,24 +175,25 @@ structure PauliSoundnessWitness (P : AdmissibleParams)
 attribute [instance] PauliSoundnessWitness.ιAFintype PauliSoundnessWitness.ιBFintype
   PauliSoundnessWitness.ιADecidableEq PauliSoundnessWitness.ιBDecidableEq
 
+variable (P : AdmissibleParams) (S : Strategy (pauliBasisTest P)) (w : PauliSoundnessWitness P S)
+  (W : PauliKind)
+
+variable {P S} in
 /-- The A-side operator distance for the completed Pauli family obtained by
 folding every wrong-form answer into outcome zero. This Lean-only quantity is
 used internally by the extraction and Naimark transfer; the source-facing
 distance is `rawPauliOperatorDistanceA`. -/
-noncomputable def pauliOperatorDistanceA
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) (W : PauliKind) : ℝ :=
+noncomputable def pauliOperatorDistanceA : ℝ :=
   ∑ u : PauliRegister P,
       ‖applyOperatorToState (liftedAEffect S w.φA
         (((S.A (pauliQuestion P W)).postprocess pauliAnswerOrZero).effect u) -
       pauliProjOnA'' P W u) (idealState P w.aux)‖ ^ 2
 
+variable {P S} in
 /-- The symmetric B-side operator distance for the completed Pauli family.
 This is internal support for the extraction proof; the source-facing distance
 is `rawPauliOperatorDistanceB`. -/
-noncomputable def pauliOperatorDistanceB
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) (W : PauliKind) : ℝ :=
+noncomputable def pauliOperatorDistanceB : ℝ :=
   ∑ u : PauliRegister P,
       ‖applyOperatorToState (liftedBEffect S w.φB
         (((S.B (pauliQuestion P W)).postprocess pauliAnswerOrZero).effect u) -
@@ -211,9 +204,7 @@ raw effect of the prescribed answer `.pauliOutcome u`, exactly as in
 `thm:pauli`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1438-1443`.
 The sum is the finite realization of blueprint `def:povm-distance`. -/
-noncomputable def rawPauliOperatorDistanceA
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) (W : PauliKind) : ℝ :=
+noncomputable def rawPauliOperatorDistanceA : ℝ :=
   ∑ u : PauliRegister P,
       ‖applyOperatorToState (liftedAEffect S w.φA
         ((S.A (pauliQuestion P W)).effect (.pauliOutcome u)) -
@@ -223,9 +214,7 @@ noncomputable def rawPauliOperatorDistanceA
 answer effect from `thm:pauli`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1438-1443`.
 -/
-noncomputable def rawPauliOperatorDistanceB
-    (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P S) (W : PauliKind) : ℝ :=
+noncomputable def rawPauliOperatorDistanceB : ℝ :=
   ∑ u : PauliRegister P,
       ‖applyOperatorToState (liftedBEffect S w.φB
         ((S.B (pauliQuestion P W)).effect (.pauliOutcome u)) -

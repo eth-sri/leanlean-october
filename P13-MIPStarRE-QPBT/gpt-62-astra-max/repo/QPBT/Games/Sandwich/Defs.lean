@@ -1,6 +1,5 @@
 module
 
-public import QPBT.Games.Defs
 public import QPBT.Games.DistanceTheorems
 public import QPBT.Games.ErrorFunctions
 
@@ -60,68 +59,73 @@ The operator families compared in `lem:pasting` are placed on one factor of a
 bipartite space. The two constructions below present such a placed family as a
 measurement, so that the consistency calculus applies to it verbatim. -/
 
+section
+
+variable {α ιA ιB : Type*} [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 /-- An alias of `DistanceCalculus.leftPlacedMeasurement`, whose effects are the
 left tensor placements of the effects of `M`. Formalization support for `lem:pasting`, blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-noncomputable def Measurement.leftPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+noncomputable def Measurement.leftPlacement
     (M : Measurement α ιA) : Measurement α (ιA × ιB) :=
   DistanceCalculus.leftPlacedMeasurement M
 
 /-- An alias of `DistanceCalculus.rightPlacedMeasurement`, whose effects are the
 right tensor placements of the effects of `M`. Formalization support for `lem:pasting`, blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-noncomputable def Measurement.rightPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+noncomputable def Measurement.rightPlacement
     (M : Measurement α ιB) : Measurement α (ιA × ιB) :=
   DistanceCalculus.rightPlacedMeasurement M
 
 /-- The effects of the left placement. -/
-@[simp] theorem Measurement.leftPlacement_effect {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+@[simp] theorem Measurement.leftPlacement_effect
     (M : Measurement α ιA) (a : α) :
     (Measurement.leftPlacement (ιB := ιB) M).effect a = heteroKron (M.effect a) 1 := rfl
 
 /-- The effects of the right placement. -/
-@[simp] theorem Measurement.rightPlacement_effect {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+@[simp] theorem Measurement.rightPlacement_effect
     (M : Measurement α ιB) (a : α) :
     (Measurement.rightPlacement (ιA := ιA) M).effect a = heteroKron 1 (M.effect a) := rfl
 
 /-- The left placement of a projective measurement is projective.
 Formalization support for `lem:pasting`, blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-theorem Measurement.isProjective_leftPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem Measurement.isProjective_leftPlacement
     (M : Measurement α ιA) (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     MIPStarRE.QPBT.Measurement.IsProjective (Measurement.leftPlacement (ιB := ιB) M) := by
   intro a
   constructor
-  · show heteroKron (M.effect a) 1 * heteroKron (M.effect a) 1 =
+  · show _ =
       heteroKron (M.effect a) 1
-    rw [heteroKron_mul, (hM a).isIdempotentElem.eq, mul_one]
-  · show (heteroKron (M.effect a) (1 : Op ιB))ᴴ = heteroKron (M.effect a) 1
+    simp [heteroKron_mul, (hM a).isIdempotentElem.eq]
+  · show (heteroKron (M.effect a) 1)ᴴ = heteroKron (M.effect a) 1
     unfold heteroKron Matrix.kronecker
-    rw [Matrix.conjTranspose_kronecker, measurement_effect_hermitian M a,
+    rw [Matrix.conjTranspose_kronecker, measurement_effect_hermitian,
       Matrix.conjTranspose_one]
 
 /-- The right placement of a projective measurement is projective. This is the
 right-factor mirror of the preceding lemma and the second of the four
 properties of the placement collected in the formalization-support node
 `lem:pasting-tensor-placement`, blueprint `ch12_qpbt_games.tex:1063-1071`. -/
-theorem Measurement.isProjective_rightPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : Measurement α ιB) (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
+theorem Measurement.isProjective_rightPlacement
+    {M : Measurement α ιB} (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     MIPStarRE.QPBT.Measurement.IsProjective (Measurement.rightPlacement (ιA := ιA) M) := by
   intro a
   constructor
-  · show heteroKron (1 : Op ιA) (M.effect a) * heteroKron 1 (M.effect a) =
+  · show _ =
       heteroKron 1 (M.effect a)
-    rw [heteroKron_mul, (hM a).isIdempotentElem.eq, mul_one]
-  · show (heteroKron (1 : Op ιA) (M.effect a))ᴴ = heteroKron 1 (M.effect a)
+    simp [heteroKron_mul, (hM a).isIdempotentElem.eq]
+  · show (heteroKron 1 (M.effect a))ᴴ = heteroKron 1 (M.effect a)
     unfold heteroKron Matrix.kronecker
-    rw [Matrix.conjTranspose_kronecker, measurement_effect_hermitian M a,
+    rw [Matrix.conjTranspose_kronecker, measurement_effect_hermitian,
       Matrix.conjTranspose_one]
+
+end
+
+section
+
+variable {α β ιA ιB : Type*} [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β] [Fintype ιA]
+  [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
 
 /-- Postprocessing commutes with the left tensor placement. This is one of the
 four properties of the placement collected in the formalization-support node
@@ -129,9 +133,7 @@ four properties of the placement collected in the formalization-support node
 records the compatibility of the placement of `lem:pasting` with the outcome
 coarse-grainings its statement applies, and is stated for the left factor
 alongside its right-factor mirror below. -/
-theorem Measurement.leftPlacement_postprocess {α β ιA ιB : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem Measurement.leftPlacement_postprocess
     (M : Measurement α ιA) (f : α → β) (b : β) :
     (Measurement.leftPlacement (ιB := ιB) (M.postprocess f)).effect b =
       ((Measurement.leftPlacement (ιB := ιB) M).postprocess f).effect b := by
@@ -143,9 +145,7 @@ theorem Measurement.leftPlacement_postprocess {α β ιA ιB : Type*}
 right-factor mirror of the preceding compatibility, the fourth of the four
 properties of the placement collected in the formalization-support node
 `lem:pasting-tensor-placement`, blueprint `ch12_qpbt_games.tex:1063-1071`. -/
-theorem Measurement.rightPlacement_postprocess {α β ιA ιB : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem Measurement.rightPlacement_postprocess
     (M : Measurement α ιB) (f : α → β) (b : β) :
     (Measurement.rightPlacement (ιA := ιA) (M.postprocess f)).effect b =
       ((Measurement.rightPlacement (ιA := ιA) M).postprocess f).effect b := by
@@ -153,28 +153,27 @@ theorem Measurement.rightPlacement_postprocess {α β ιA ιB : Type*}
   simp only [Measurement.rightPlacement_effect, Measurement.postprocess_effect,
     heteroKron_finset_sum_right]
 
+end
+
+section
+
+variable {α β ι : Type*} [Fintype α] [Fintype β] [Fintype ι] [DecidableEq ι] (e : β ≃ α)
+  (M : Measurement α ι)
+
 /-- The measurement obtained by relabelling the outcome set along a bijection.
 Formalization support for `lem:pasting`, blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-noncomputable def Measurement.congrAlphabet {α β ι : Type*} [Fintype α]
-    [Fintype β] [Fintype ι] [DecidableEq ι] (e : β ≃ α) (M : Measurement α ι) :
+noncomputable def Measurement.congrAlphabet :
     Measurement β ι :=
   Measurement.ofSumEqOne (fun b => M.effect (e b)) (fun b => M.pos (e b))
     ((e.sum_comp M.effect).trans M.sum_eq_one)
 
 /-- The effects of a relabelled measurement. -/
-@[simp] theorem Measurement.congrAlphabet_effect {α β ι : Type*} [Fintype α]
-    [Fintype β] [Fintype ι] [DecidableEq ι] (e : β ≃ α) (M : Measurement α ι)
+@[simp] theorem Measurement.congrAlphabet_effect
     (b : β) :
     (Measurement.congrAlphabet e M).effect b = M.effect (e b) := rfl
 
-/-- Relabelling the outcome set preserves projectivity. Formalization support
-for `lem:pasting`, blueprint `ch12_qpbt_games.tex:960-990`. -/
-theorem Measurement.isProjective_congrAlphabet {α β ι : Type*} [Fintype α]
-    [Fintype β] [Fintype ι] [DecidableEq ι] (e : β ≃ α) (M : Measurement α ι)
-    (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
-    MIPStarRE.QPBT.Measurement.IsProjective (Measurement.congrAlphabet e M) :=
-  fun b => hM (e b)
+end
 
 /-- Postprocessing a relabelled measurement is the postprocessing of the
 original measurement along the transported map. Formalization support for

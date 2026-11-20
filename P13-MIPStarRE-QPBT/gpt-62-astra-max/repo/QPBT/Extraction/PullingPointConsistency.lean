@@ -33,11 +33,13 @@ open MIPStarRE.Quantum DistanceCalculus
 
 noncomputable section
 
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
+  (w : GlobalPairWitness S deltaG)
+
 /-- Evaluation of the difference measurement is a convolution with the ideal
 Pauli point projectors. No encoding hypothesis on `g` is needed. -/
-theorem pullingMeas_eval_effect {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+theorem pullingMeas_eval_effect
+    (side : PlayerSide) (W : PauliKind) (u : PauliPoint P)
     (a : PauliScalar P) :
     ((pullingMeas w side W).postprocess (fun g => evalPoly g u)).effect a =
       ∑ g : Poly P, heteroKron ((w.marginalPoly side W).effect g)
@@ -48,7 +50,7 @@ theorem pullingMeas_eval_effect {P : AdmissibleParams} {epsilon deltaG : ℝ}
         evalPoly outcome.1 u - dotProduct outcome.2 (indicatorVec u) := by
     change MvPolynomial.eval u (outcome.1.1 - lowDegreeEncoding outcome.2) = _
     rw [MvPolynomial.eval_sub]
-    exact congrArg (evalPoly outcome.1 u - ·) (lowDegreeEnc_eq_dotProduct outcome.2 u)
+    exact congrArg _ (lowDegreeEnc_eq_dotProduct outcome.2 u)
   simp only [Measurement.postprocess_effect, Finset.sum_filter, heval,
     tensorMeasurement, Measurement.ofSumEqOne, pauliRegisterMeas]
   rw [Fintype.sum_prod_type]
@@ -56,8 +58,7 @@ theorem pullingMeas_eval_effect {P : AdmissibleParams} {epsilon deltaG : ℝ}
   simp_rw [heteroKron_finset_sum_right, Finset.sum_filter]
   apply Finset.sum_congr rfl
   intro g _
-  apply Finset.sum_congr rfl
-  intro h _
+  congr 1 with h
   have hlabel : evalPoly g u - dotProduct h (indicatorVec u) = a ↔
       dotProduct h (indicatorVec u) = evalPoly g u - a := by
     constructor <;> intro heq <;> linear_combination -heq
@@ -65,39 +66,35 @@ theorem pullingMeas_eval_effect {P : AdmissibleParams} {epsilon deltaG : ℝ}
 
 /-- Alice's evaluated difference measurement has precisely the overlap with
 Bob's point measurement in the Alice point-consistency estimate of the witness. -/
-theorem sum_pullingMeas_eval_mul_pointMeas {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem sum_pullingMeas_eval_mul_pointMeas
+    (W : PauliKind) (u : PauliPoint P) :
     (∑ a : PauliScalar P, S.placeSide .alice
       (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a) *
         S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) =
       ∑ g : Poly P, S.place .AA' ((w.marginalPoly .alice W).effect g) *
         S.place .BA'' ((S.pointMeasExp .bob W u).effect (evalPoly g u)) := by
-  simp_rw [pullingMeas_eval_effect (S := S) w .alice W u]
+  simp_rw [pullingMeas_eval_effect w .alice W u]
   simp only [S.placeSide_alice_finset_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro g _
+  congr 1 with g
   simp only [S.placeSide_alice_tensor_mul_placePlayer_bob]
-  rw [← Finset.mul_sum, ← S.place_finset_sum, S.pointMeasExp_effect_eq_sum_sub .bob W u]
+  rw [← Finset.mul_sum, ← S.place_finset_sum, S.pointMeasExp_effect_eq_sum_sub]
 
 /-- The reverse-player overlap uses the witness's Bob point-consistency relation, with
 the original `BB'` and `AB''` placements retained. -/
-theorem sum_pointMeas_mul_pullingMeas_eval {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem sum_pointMeas_mul_pullingMeas_eval
+    (W : PauliKind) (u : PauliPoint P) :
     (∑ a : PauliScalar P, S.placePlayer .alice ((S.pointMeas .alice W u).effect a) *
       S.placeSide .bob
         (((pullingMeas w .bob W).postprocess (fun g => evalPoly g u)).effect a)) =
       ∑ g : Poly P, S.place .BB' ((w.marginalPoly .bob W).effect g) *
         S.place .AB'' ((S.pointMeasExp .alice W u).effect (evalPoly g u)) := by
-  simp_rw [pullingMeas_eval_effect (S := S) w .bob W u]
+  simp_rw [pullingMeas_eval_effect w .bob W u]
   simp only [S.placeSide_bob_finset_sum, Finset.mul_sum]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro g _
+  congr 1 with g
   simp only [S.placePlayer_alice_mul_placeSide_bob_tensor]
-  rw [← Finset.mul_sum, ← S.place_finset_sum, S.pointMeasExp_effect_eq_sum_sub .alice W u]
+  rw [← Finset.mul_sum, ← S.place_finset_sum, S.pointMeasExp_effect_eq_sum_sub]
 
 end
 

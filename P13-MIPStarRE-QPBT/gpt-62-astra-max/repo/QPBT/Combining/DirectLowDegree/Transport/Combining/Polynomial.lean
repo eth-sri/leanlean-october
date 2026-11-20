@@ -56,150 +56,173 @@ noncomputable section
 
 /-! ## The coordinates of the combined dimension -/
 
+section
+
+variable (m k : ℕ)
+
 /-- The point coordinates of the combined dimension `m + k`.  The `m` point
 coordinates come first, so that zeroing a prefix of a direction of the combined
 space restricts to zeroing the corresponding prefix of its point part. -/
-def combinedPointVar (m k : ℕ) (j : Fin m) : Fin (m + k) :=
+def combinedPointVar (j : Fin m) : Fin (m + k) :=
   finSumFinEquiv (Sum.inl j)
 
 /-- The combining coordinates of the combined dimension `m + k`.  Coordinate
 `combinedCoefficientVar m k r` carries the scalar `α_r` multiplying the `r`-th
 component of a polynomial tuple. -/
-def combinedCoefficientVar (m k : ℕ) (r : Fin k) : Fin (m + k) :=
+def combinedCoefficientVar (r : Fin k) : Fin (m + k) :=
   finSumFinEquiv (Sum.inr r)
 
-theorem combinedPointVar_injective (m k : ℕ) :
+theorem combinedPointVar_injective :
     Function.Injective (combinedPointVar m k) := by
   intro j j' h
   simpa using finSumFinEquiv.injective h
 
-theorem combinedCoefficientVar_injective (m k : ℕ) :
+theorem combinedCoefficientVar_injective :
     Function.Injective (combinedCoefficientVar m k) := by
   intro r r' h
   simpa using finSumFinEquiv.injective h
 
 /-- The two coordinate blocks of the combined dimension are disjoint. -/
-theorem combinedCoefficientVar_ne_combinedPointVar (m k : ℕ) (r : Fin k) (j : Fin m) :
+theorem combinedCoefficientVar_ne_combinedPointVar (r : Fin k) (j : Fin m) :
     combinedCoefficientVar m k r ≠ combinedPointVar m k j := by
   intro h
   have := finSumFinEquiv.injective h
   simp at this
 
-theorem combinedCoefficientVar_notMem_range (m k : ℕ) (r : Fin k) :
+theorem combinedCoefficientVar_notMem_range (r : Fin k) :
     combinedCoefficientVar m k r ∉ Set.range (combinedPointVar m k) := by
   rintro ⟨j, hj⟩
-  exact combinedCoefficientVar_ne_combinedPointVar m k r j hj.symm
+  solve_by_elim [combinedCoefficientVar_ne_combinedPointVar]
+
+end
+
+section
+
+variable {K : Type*}
+
+section
+
+variable {m k : ℕ}
 
 /-- The point part of a point of the combined space. -/
-def combinedPointPart {K : Type*} {m k : ℕ} (z : Fin (m + k) → K) : Fin m → K :=
+def combinedPointPart (z : Fin (m + k) → K) : Fin m → K :=
   fun j => z (combinedPointVar m k j)
 
 /-- The combining part of a point of the combined space. -/
-def combinedCoefficientPart {K : Type*} {m k : ℕ} (z : Fin (m + k) → K) : Fin k → K :=
+def combinedCoefficientPart (z : Fin (m + k) → K) : Fin k → K :=
   fun r => z (combinedCoefficientVar m k r)
 
+section
+
+variable (u : Fin m → K) (α : Fin k → K)
+
 /-- The point of the combined space with the given point and combining parts. -/
-def combinedPoint {K : Type*} {m k : ℕ} (u : Fin m → K) (α : Fin k → K) :
+def combinedPoint :
     Fin (m + k) → K :=
   fun i => Sum.elim u α (finSumFinEquiv.symm i)
 
-@[simp] theorem combinedPointPart_combinedPoint {K : Type*} {m k : ℕ}
-    (u : Fin m → K) (α : Fin k → K) :
+@[simp] theorem combinedPointPart_combinedPoint :
     combinedPointPart (combinedPoint u α) = u := by
   funext j
   simp [combinedPointPart, combinedPoint, combinedPointVar]
 
-@[simp] theorem combinedCoefficientPart_combinedPoint {K : Type*} {m k : ℕ}
-    (u : Fin m → K) (α : Fin k → K) :
+@[simp] theorem combinedCoefficientPart_combinedPoint :
     combinedCoefficientPart (combinedPoint u α) = α := by
   funext r
   simp [combinedCoefficientPart, combinedPoint, combinedCoefficientVar]
 
+end
+
+end
+
 /-! ## The combining map -/
+
+section
+
+variable [CommSemiring K] {m k : ℕ} (g : Fin k → MvPolynomial (Fin m) K)
 
 /-- The combining map of the reduction: the tuple `g` is sent to the polynomial
 `(u, α) ↦ ∑_{r < k} α_r g_r(u)` in `m + k` variables.
 
 Source `references/neexp-paper/05_quantum_preliminaries.tex:1425-1435`. -/
-def combinePolyTuple {K : Type*} [CommSemiring K] {m k : ℕ}
-    (g : Fin k → MvPolynomial (Fin m) K) : MvPolynomial (Fin (m + k)) K :=
+def combinePolyTuple : MvPolynomial (Fin (m + k)) K :=
   ∑ r : Fin k, MvPolynomial.X (combinedCoefficientVar m k r) *
     MvPolynomial.rename (combinedPointVar m k) (g r)
 
 /-- Evaluation of a combined polynomial is the displayed combining formula. -/
-theorem combinePolyTuple_eval {K : Type*} [CommSemiring K] {m k : ℕ}
-    (g : Fin k → MvPolynomial (Fin m) K) (z : Fin (m + k) → K) :
+theorem combinePolyTuple_eval (z : Fin (m + k) → K) :
     MvPolynomial.eval z (combinePolyTuple g) =
       ∑ r : Fin k, combinedCoefficientPart z r *
         MvPolynomial.eval (combinedPointPart z) (g r) := by
-  simp only [combinePolyTuple, map_sum, map_mul, MvPolynomial.eval_X,
-    MvPolynomial.eval_rename, combinedCoefficientPart]
+  simp [combinePolyTuple, MvPolynomial.eval_X, MvPolynomial.eval_rename, combinedCoefficientPart]
   rfl
 
-/-- Evaluation of a combined polynomial at a point given by its two blocks. -/
-theorem combinePolyTuple_eval_combinedPoint {K : Type*} [CommSemiring K] {m k : ℕ}
-    (g : Fin k → MvPolynomial (Fin m) K) (u : Fin m → K) (α : Fin k → K) :
-    MvPolynomial.eval (combinedPoint u α) (combinePolyTuple g) =
-      ∑ r : Fin k, α r * MvPolynomial.eval u (g r) := by
-  rw [combinePolyTuple_eval, combinedPointPart_combinedPoint,
-    combinedCoefficientPart_combinedPoint]
+end
+
+end
 
 /-! ## Recovering the components -/
+
+section
+
+variable (K : Type*) [CommSemiring K] (m k : ℕ)
 
 /-- The substitution sending each point coordinate to its own variable and the
 combining coordinates to the `r`-th standard basis vector.  Applied to a
 combined polynomial it returns the `r`-th component of the tuple. -/
-def combinedSubstitution (K : Type*) [CommSemiring K] (m k : ℕ) (r : Fin k) :
+def combinedSubstitution (r : Fin k) :
     Fin (m + k) → MvPolynomial (Fin m) K :=
   fun i => Sum.elim (fun j : Fin m => MvPolynomial.X j)
     (fun s : Fin k => if s = r then 1 else 0) (finSumFinEquiv.symm i)
 
-@[simp] theorem combinedSubstitution_point (K : Type*) [CommSemiring K] (m k : ℕ)
-    (r : Fin k) (j : Fin m) :
-    combinedSubstitution K m k r (combinedPointVar m k j) = MvPolynomial.X j := by
-  simp [combinedSubstitution, combinedPointVar]
-
-@[simp] theorem combinedSubstitution_coefficient (K : Type*) [CommSemiring K] (m k : ℕ)
+@[simp] theorem combinedSubstitution_coefficient
     (r s : Fin k) :
     combinedSubstitution K m k r (combinedCoefficientVar m k s) =
       if s = r then 1 else 0 := by
   simp [combinedSubstitution, combinedCoefficientVar]
 
+end
+
+section
+
+variable {K : Type*} [CommSemiring K] {m k : ℕ}
+
 /-- The `r`-th component of a polynomial in the combined variables: substitute
 the `r`-th standard basis vector for the combining variables. -/
-def splitCombinedPoly {K : Type*} [CommSemiring K] {m k : ℕ}
+def splitCombinedPoly
     (p : MvPolynomial (Fin (m + k)) K) (r : Fin k) : MvPolynomial (Fin m) K :=
   MvPolynomial.aeval (combinedSubstitution K m k r) p
 
 /-- The components of a combined polynomial are the polynomials it combines. -/
-theorem splitCombinedPoly_combinePolyTuple {K : Type*} [CommSemiring K] {m k : ℕ}
+theorem splitCombinedPoly_combinePolyTuple
     (g : Fin k → MvPolynomial (Fin m) K) (r : Fin k) :
     splitCombinedPoly (combinePolyTuple g) r = g r := by
   classical
   have hcomp : (combinedSubstitution K m k r) ∘ (combinedPointVar m k) =
-      (MvPolynomial.X : Fin m → MvPolynomial (Fin m) K) := by
+      MvPolynomial.X := by
     funext j
-    exact combinedSubstitution_point K m k r j
+    simp [combinedSubstitution, combinedPointVar]
   have hterm : ∀ s : Fin k,
       MvPolynomial.aeval (combinedSubstitution K m k r)
           (MvPolynomial.X (combinedCoefficientVar m k s) *
             MvPolynomial.rename (combinedPointVar m k) (g s)) =
         (if s = r then 1 else 0) * g s := by
     intro s
-    rw [map_mul, MvPolynomial.aeval_X, combinedSubstitution_coefficient,
-      MvPolynomial.aeval_rename, hcomp, MvPolynomial.aeval_X_left_apply]
+    simp [MvPolynomial.aeval_X, (show combinedSubstitution K m k r (combinedCoefficientVar m k s) = if s = r then 1 else 0 by simp [combinedSubstitution, combinedCoefficientVar]), MvPolynomial.aeval_rename, hcomp, MvPolynomial.aeval_X_left_apply]
   rw [splitCombinedPoly, combinePolyTuple, map_sum]
   simp only [hterm, ite_mul, one_mul, zero_mul]
   simp
 
 /-- The combining map is injective: the components of a combined polynomial are
 determined by it. -/
-theorem combinePolyTuple_injective {K : Type*} [CommSemiring K] {m k : ℕ} :
+theorem combinePolyTuple_injective :
     Function.Injective (combinePolyTuple (K := K) (m := m) (k := k)) := by
   intro g g' h
   funext r
   rw [← splitCombinedPoly_combinePolyTuple g r, h,
     splitCombinedPoly_combinePolyTuple]
+
+end
 
 /-! ## The individual-degree bound -/
 
@@ -209,20 +232,17 @@ individual degree.  This is the converse direction of
 theorem mem_polyFunc_of_degreeOf_le {m d : ℕ} {K : Type*} [CommSemiring K]
     {p : MvPolynomial (Fin m) K} (h : ∀ i, p.degreeOf i ≤ d) :
     p ∈ polyFunc m K d := by
-  rw [MvPolynomial.mem_restrictDegree]
   exact fun s hs i => MvPolynomial.degreeOf_le_iff.mp (h i) s hs
 
 private theorem degreeOf_X_le_one {τ K : Type*} [CommSemiring K] (c i : τ) :
     (MvPolynomial.X c : MvPolynomial τ K).degreeOf i ≤ 1 := by
   rw [MvPolynomial.degreeOf_le_iff]
   intro s hs
-  have hs' : s ∈ ({Finsupp.single c 1} : Finset (τ →₀ ℕ)) :=
+  have hs' :=
     MvPolynomial.support_monomial_subset hs
-  rw [Finset.mem_singleton] at hs'
+  simp at hs'
   subst hs'
-  by_cases h : c = i
-  · simp [h]
-  · simp [h]
+  by_cases h : c = i <;> simp [h]
 
 private theorem degreeOf_rename_le {σ τ K : Type*} [CommSemiring K]
     {f : σ → τ} (hf : Function.Injective f) {p : MvPolynomial σ K} {d : ℕ}
@@ -269,12 +289,11 @@ theorem combinePolyTuple_mem_polyFunc {K : Type*} [CommSemiring K] {m k d : ℕ}
   by_cases hi : i ∈ Set.range (combinedPointVar m k)
   · have hne : i ≠ combinedCoefficientVar m k r := by
       rintro rfl
-      exact combinedCoefficientVar_notMem_range m k r hi
-    rw [MvPolynomial.degreeOf_X_of_ne hne, zero_add]
+      solve_by_elim [combinedCoefficientVar_notMem_range]
+    simp [MvPolynomial.degreeOf_X_of_ne hne]
     exact degreeOf_rename_le (combinedPointVar_injective m k)
-      (fun j => degreeOf_le_of_mem_polyFunc (hg r) j) i
-  · rw [degreeOf_rename_eq_zero_of_notMem_range (combinedPointVar_injective m k) _ hi,
-      add_zero]
+      (degreeOf_le_of_mem_polyFunc (hg r)) i
+  · simp [degreeOf_rename_eq_zero_of_notMem_range (combinedPointVar_injective m k) _ hi]
     exact le_trans (degreeOf_X_le_one _ _) hd
 
 end

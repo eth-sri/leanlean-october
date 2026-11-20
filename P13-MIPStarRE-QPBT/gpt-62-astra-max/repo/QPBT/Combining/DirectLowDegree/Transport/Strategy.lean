@@ -35,11 +35,15 @@ noncomputable section
 
 /-! ## From a direct strategy to an LDT strategy -/
 
+section
+
+variable (D : DirectLdParams) {G : Game} {alpha : Type*} (S : Strategy G) (r : Fin D.k)
+  {iota : Type*} [Fintype alpha] [Fintype iota] [DecidableEq iota]
+  (M : MIPStarRE.Quantum.Measurement alpha iota)
+
 /-- Regard a matrix-valued projective measurement as a projective measurement
 of the low individual degree test. -/
 noncomputable def matrixMeasurementToLDTProjMeas
-    {alpha iota : Type*} [Fintype alpha] [Fintype iota] [DecidableEq iota]
-    (M : MIPStarRE.Quantum.Measurement alpha iota)
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     MIPStarRE.LDT.ProjMeas alpha iota where
   toMeasurement := {
@@ -55,8 +59,6 @@ noncomputable def matrixMeasurementToLDTProjMeas
   proj a := (hM a).isIdempotentElem.eq
 
 @[simp] theorem matrixMeasurementToLDTProjMeas_outcome
-    {alpha iota : Type*} [Fintype alpha] [Fintype iota] [DecidableEq iota]
-    (M : MIPStarRE.Quantum.Measurement alpha iota)
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) (a : alpha) :
     (matrixMeasurementToLDTProjMeas M hM).outcome a = M.effect a :=
   rfl
@@ -64,8 +66,6 @@ noncomputable def matrixMeasurementToLDTProjMeas
 /-- Point measurements obtained by querying the direct strategy and reading
 one simultaneous coordinate. -/
 noncomputable def directCoordinatePointMeasurement
-    (D : DirectLdParams) (r : Fin D.k)
-    {iota : Type*} [Fintype iota] [DecidableEq iota]
     (M : DirectLdQuestion D →
       MIPStarRE.Quantum.Measurement (DirectLdAnswer D) iota)
     (hM : ∀ q, MIPStarRE.QPBT.Measurement.IsProjective (M q)) :
@@ -74,15 +74,13 @@ noncomputable def directCoordinatePointMeasurement
   letI := D.toLDTFieldModel
   intro u
   exact ProjMeas.postprocess
-    (matrixMeasurementToLDTProjMeas (M (directPointQuestionOf D u))
-      (hM (directPointQuestionOf D u)))
-    (directPointAnswerReadout D r)
+    (matrixMeasurementToLDTProjMeas (M (directPointQuestionOf u))
+      (hM (directPointQuestionOf u)))
+    (directPointAnswerReadout r)
 
 /-- Axis-line measurements obtained by querying the canonical direct line and
 rebasing one coordinate polynomial to the LDT line parametrization. -/
 noncomputable def directCoordinateAxisMeasurement
-    (D : DirectLdParams) (r : Fin D.k)
-    {iota : Type*} [Fintype iota] [DecidableEq iota]
     (M : DirectLdQuestion D →
       MIPStarRE.Quantum.Measurement (DirectLdAnswer D) iota)
     (hM : ∀ q, MIPStarRE.QPBT.Measurement.IsProjective (M q)) :
@@ -99,8 +97,6 @@ noncomputable def directCoordinateAxisMeasurement
 /-- Diagonal-line measurements obtained by querying the canonical direct line
 and rebasing one coordinate polynomial to the LDT line parametrization. -/
 noncomputable def directCoordinateDiagonalMeasurement
-    (D : DirectLdParams) (r : Fin D.k)
-    {iota : Type*} [Fintype iota] [DecidableEq iota]
     (M : DirectLdQuestion D →
       MIPStarRE.Quantum.Measurement (DirectLdAnswer D) iota)
     (hM : ∀ q, MIPStarRE.QPBT.Measurement.IsProjective (M q)) :
@@ -110,15 +106,13 @@ noncomputable def directCoordinateDiagonalMeasurement
   letI := D.toLDTFieldModel
   intro line
   exact ProjMeas.postprocess
-    (matrixMeasurementToLDTProjMeas (M (directDiagonalQuestionOf D line))
-      (hM (directDiagonalQuestionOf D line)))
+    (matrixMeasurementToLDTProjMeas (M (directDiagonalQuestionOf line))
+      (hM (directDiagonalQuestionOf line)))
     (directDiagonalAnswerReadout D r line)
 
 /-- The coordinate axis-line family is independent of the chosen affine
 parametrization of an LDT line. -/
 theorem directCoordinateAxisMeasurement_reparam
-    (D : DirectLdParams) (r : Fin D.k)
-    {iota : Type*} [Fintype iota] [DecidableEq iota]
     (M : DirectLdQuestion D →
       MIPStarRE.Quantum.Measurement (DirectLdAnswer D) iota)
     (hM : ∀ q, MIPStarRE.QPBT.Measurement.IsProjective (M q)) :
@@ -128,8 +122,7 @@ theorem directCoordinateAxisMeasurement_reparam
   letI := D.toLDTFieldModel
   classical
   intro line t f
-  simp only [directCoordinateAxisMeasurement, ProjMeas.postprocess,
-    SubMeas.postprocess_outcome, matrixMeasurementToLDTProjMeas_outcome]
+  simp [directCoordinateAxisMeasurement]
   rw [directAxisQuestionOf_rebase]
   have hfiber :
       Finset.univ.filter (fun answer =>
@@ -138,7 +131,7 @@ theorem directCoordinateAxisMeasurement_reparam
         Finset.univ.filter (fun answer =>
           directAxisAnswerReadout D r line answer = f) := by
     ext answer
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    simp
     rw [directAxisAnswerReadout_rebase]
     exact (AxisLinePolynomial.reparamAtEquiv t).injective.eq_iff
   rw [hfiber]
@@ -146,8 +139,6 @@ theorem directCoordinateAxisMeasurement_reparam
 /-- The coordinate diagonal-line family is independent of the chosen affine
 parametrization, including the zero-direction convention. -/
 theorem directCoordinateDiagonalMeasurement_reparam
-    (D : DirectLdParams) (r : Fin D.k)
-    {iota : Type*} [Fintype iota] [DecidableEq iota]
     (M : DirectLdQuestion D →
       MIPStarRE.Quantum.Measurement (DirectLdAnswer D) iota)
     (hM : ∀ q, MIPStarRE.QPBT.Measurement.IsProjective (M q)) :
@@ -157,8 +148,7 @@ theorem directCoordinateDiagonalMeasurement_reparam
   letI := D.toLDTFieldModel
   classical
   intro line t f
-  simp only [directCoordinateDiagonalMeasurement, ProjMeas.postprocess,
-    SubMeas.postprocess_outcome, matrixMeasurementToLDTProjMeas_outcome]
+  simp [directCoordinateDiagonalMeasurement]
   rw [directDiagonalQuestionOf_rebase]
   have hfiber :
       Finset.univ.filter (fun answer =>
@@ -167,23 +157,22 @@ theorem directCoordinateDiagonalMeasurement_reparam
         Finset.univ.filter (fun answer =>
           directDiagonalAnswerReadout D r line answer = f) := by
     ext answer
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    simp
     rw [directDiagonalAnswerReadout_rebase]
     exact (DiagonalLinePolynomial.reparamAtEquiv t).injective.eq_iff
   rw [hfiber]
 
-private theorem strategy_carrier_nonempty {G : Game} (S : Strategy G) :
+private theorem strategy_carrier_nonempty :
     Nonempty (S.ιA × S.ιB) := by
   by_contra h
   rw [not_nonempty_iff] at h
   letI := h
   have hzero : S.ψ = 0 := Subsingleton.elim _ _
   have hnorm := S.ψ_norm
-  rw [hzero, norm_zero] at hnorm
-  exact zero_ne_one hnorm
+  simp_all
 
 /-- The pure LDT state represented by a game's unit strategy vector. -/
-noncomputable def strategyPureState {G : Game} (S : Strategy G)
+noncomputable def strategyPureState
     [Nonempty (S.ιA × S.ιB)] : PureState (S.ιA × S.ιB) where
   vector := S.ψ
   unit := by
@@ -192,108 +181,70 @@ noncomputable def strategyPureState {G : Game} (S : Strategy G)
     norm_num
 
 /-- The density-matrix state represented by a game's unit strategy vector. -/
-noncomputable def strategyQuantumState {G : Game} (S : Strategy G) :
+noncomputable def strategyQuantumState :
     QuantumState (S.ιA × S.ιB) := by
   letI : Nonempty (S.ιA × S.ιB) := by
     exact strategy_carrier_nonempty S
   exact PureState.toQuantumState (strategyPureState S)
 
 /-- The density-matrix state associated with a game strategy is normalized. -/
-theorem strategyQuantumState_isNormalized {G : Game} (S : Strategy G) :
+theorem strategyQuantumState_isNormalized :
     (strategyQuantumState S).IsNormalized := by
-  letI : Nonempty (S.ιA × S.ιB) := strategy_carrier_nonempty S
-  simpa [strategyQuantumState] using
-    PureState.toQuantumState_isNormalized (strategyPureState S)
+  solve_by_elim [strategy_carrier_nonempty, PureState.toQuantumState_isNormalized]
+
+end
+
+section
+
+variable {alpha beta iotaA iotaB : Type*} [Fintype iotaA] [DecidableEq iotaA] [Fintype iotaB]
+  [DecidableEq iotaB] (psi : EuclideanSpace ℂ (iotaA × iotaB)) (A A₁ A₂ : Op iotaA)
+  (B₁ B B₂ : Op iotaB)
 
 /-- The complex Born amplitude of a vector and two local effects. -/
-private noncomputable def vectorBornAmplitude
-    {iotaA iotaB : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB))
-    (A : Op iotaA) (B : Op iotaB) : ℂ :=
+private noncomputable def vectorBornAmplitude : ℂ :=
   inner ℂ psi (applyOperatorToState (heteroKron A B) psi)
 
 /-- The real Born quadratic form of a vector and two local effects. -/
-private noncomputable def vectorBornWeight
-    {iotaA iotaB : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB))
-    (A : Op iotaA) (B : Op iotaB) : ℝ :=
+private noncomputable def vectorBornWeight : ℝ :=
   (vectorBornAmplitude psi A B).re
 
-private theorem vectorBornAmplitude_add_left
-    {iotaA iotaB : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB))
-    (A₁ A₂ : Op iotaA) (B : Op iotaB) :
+private theorem vectorBornAmplitude_add_left :
     vectorBornAmplitude psi (A₁ + A₂) B =
       vectorBornAmplitude psi A₁ B + vectorBornAmplitude psi A₂ B := by
   unfold vectorBornAmplitude applyOperatorToState heteroKron Matrix.kronecker
   rw [Matrix.add_kronecker]
   simp
 
-private theorem vectorBornAmplitude_add_right
-    {iotaA iotaB : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB))
-    (A : Op iotaA) (B₁ B₂ : Op iotaB) :
+private theorem vectorBornAmplitude_add_right :
     vectorBornAmplitude psi A (B₁ + B₂) =
       vectorBornAmplitude psi A B₁ + vectorBornAmplitude psi A B₂ := by
   unfold vectorBornAmplitude applyOperatorToState heteroKron Matrix.kronecker
   rw [Matrix.kronecker_add]
   simp
 
-private theorem vectorBornAmplitude_zero_left
-    {iotaA iotaB : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB)) (B : Op iotaB) :
+private theorem vectorBornAmplitude_zero_left :
     vectorBornAmplitude psi 0 B = 0 := by
   unfold vectorBornAmplitude applyOperatorToState heteroKron Matrix.kronecker
-  rw [Matrix.zero_kronecker]
   simp
 
-private theorem vectorBornAmplitude_zero_right
-    {iotaA iotaB : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB)) (A : Op iotaA) :
+private theorem vectorBornAmplitude_zero_right :
     vectorBornAmplitude psi A 0 = 0 := by
   unfold vectorBornAmplitude applyOperatorToState heteroKron Matrix.kronecker
-  rw [Matrix.kronecker_zero]
   simp
 
-private theorem vectorBornWeight_add_left
-    {iotaA iotaB : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB))
-    (A₁ A₂ : Op iotaA) (B : Op iotaB) :
+private theorem vectorBornWeight_add_left :
     vectorBornWeight psi (A₁ + A₂) B =
       vectorBornWeight psi A₁ B + vectorBornWeight psi A₂ B := by
   unfold vectorBornWeight
-  rw [vectorBornAmplitude_add_left, Complex.add_re]
+  simp [vectorBornAmplitude_add_left]
 
-private theorem vectorBornWeight_add_right
-    {iotaA iotaB : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB))
-    (A : Op iotaA) (B₁ B₂ : Op iotaB) :
+private theorem vectorBornWeight_add_right :
     vectorBornWeight psi A (B₁ + B₂) =
       vectorBornWeight psi A B₁ + vectorBornWeight psi A B₂ := by
   unfold vectorBornWeight
-  rw [vectorBornAmplitude_add_right, Complex.add_re]
+  simp [vectorBornAmplitude_add_right]
 
 private theorem vectorBornWeight_finset_sum_left
-    {alpha iotaA iotaB : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB))
     (s : Finset alpha) (A : alpha → Op iotaA) (B : Op iotaB) :
     vectorBornWeight psi (∑ a ∈ s, A a) B =
       ∑ a ∈ s, vectorBornWeight psi (A a) B := by
@@ -302,15 +253,9 @@ private theorem vectorBornWeight_finset_sum_left
   | empty =>
       simp [vectorBornWeight, vectorBornAmplitude_zero_left]
   | @insert a s ha ih =>
-      rw [Finset.sum_insert ha, Finset.sum_insert ha,
-        vectorBornWeight_add_left, ih]
+      simp [Finset.sum_insert ha, vectorBornWeight_add_left, ih]
 
-private theorem vectorBornWeight_finset_sum_right
-    {beta iotaA iotaB : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB))
-    (A : Op iotaA) (s : Finset beta) (B : beta → Op iotaB) :
+private theorem vectorBornWeight_finset_sum_right (s : Finset beta) (B : beta → Op iotaB) :
     vectorBornWeight psi A (∑ b ∈ s, B b) =
       ∑ b ∈ s, vectorBornWeight psi A (B b) := by
   classical
@@ -318,22 +263,23 @@ private theorem vectorBornWeight_finset_sum_right
   | empty =>
       simp [vectorBornWeight, vectorBornAmplitude_zero_right]
   | @insert b s hb ih =>
-      rw [Finset.sum_insert hb, Finset.sum_insert hb,
-        vectorBornWeight_add_right, ih]
+      simp [Finset.sum_insert hb, vectorBornWeight_add_right, ih]
+
+end
+
+variable (D : DirectLdParams) {G : Game} (S : Strategy G) (L : LdParams)
+  (A : Fin (L.q / L.m) → Op S.ιA) (B : Fin (L.q / L.m) → Op S.ιB)
 
 /-- Expectations in the density state associated with a strategy agree with
 the strategy's vector Born quadratic form. -/
-private theorem strategyQuantumState_ev_eq_vectorBornWeight
-    {G : Game} (S : Strategy G) (A : Op S.ιA) (B : Op S.ιB) :
+private theorem strategyQuantumState_ev_eq_vectorBornWeight (A : Op S.ιA) (B : Op S.ιB) :
     ev (strategyQuantumState S) (opTensor A B) =
       vectorBornWeight S.ψ A B := by
-  letI : Nonempty (S.ιA × S.ιB) := strategy_carrier_nonempty S
+  letI := strategy_carrier_nonempty S
   rw [show strategyQuantumState S =
       PureState.toQuantumState (strategyPureState S) by
         simp [strategyQuantumState],
     PureState.ev_eq_re_inner]
-  unfold vectorBornWeight vectorBornAmplitude applyOperatorToState heteroKron opTensor
-  simp_rw [EuclideanSpace.inner_eq_star_dotProduct]
   change (star S.ψ ⬝ᵥ
       (Matrix.kronecker A B *ᵥ S.ψ)).re =
     ((Matrix.kronecker A B *ᵥ S.ψ) ⬝ᵥ star S.ψ).re
@@ -341,8 +287,7 @@ private theorem strategyQuantumState_ev_eq_vectorBornWeight
 
 /-- Postprocessing both local measurements gives the exact double sum of the
 original Born weights over the two answer fibers. -/
-theorem directPostprocessBornWeight
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+theorem directPostprocessBornWeight (S : Strategy (directLdGame D))
     (hS : S.IsProjective)
     {alpha beta : Type*} [Fintype alpha] [DecidableEq alpha]
     [Fintype beta] [DecidableEq beta]
@@ -360,26 +305,21 @@ theorem directPostprocessBornWeight
         ∑ directB ∈ Finset.univ.filter (fun answer => readB answer = b),
           outcomeWeight S x y directA directB := by
   rw [strategyQuantumState_ev_eq_vectorBornWeight]
-  simp only [ProjMeas.postprocess, SubMeas.postprocess_outcome,
-    matrixMeasurementToLDTProjMeas_outcome]
+  simp
   rw [vectorBornWeight_finset_sum_left]
-  apply Finset.sum_congr rfl
-  intro directA _
+  congr 1 with directA
   rw [vectorBornWeight_finset_sum_right]
   rfl
 
 /-- Correlated residue registers turn two block-diagonal effects into the
 uniform average of their matching source-block Born weights. -/
-private theorem seedFiberBlockBornAmplitude
-    {G : Game} (S : Strategy G) (L : LdParams)
-    (A : Fin (L.q / L.m) → Op S.ιA)
-    (B : Fin (L.q / L.m) → Op S.ιB) :
+private theorem seedFiberBlockBornAmplitude :
     vectorBornAmplitude (seedFiberLiftedState S L)
         (Matrix.blockDiagonal A) (Matrix.blockDiagonal B) =
       (Fintype.card (Fin (L.q / L.m)) : ℂ)⁻¹ *
         ∑ residue, vectorBornAmplitude S.ψ (A residue) (B residue) := by
   classical
-  letI : Nonempty (Fin (L.q / L.m)) :=
+  letI :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
   unfold vectorBornAmplitude applyOperatorToState heteroKron Matrix.kronecker
   simp_rw [EuclideanSpace.inner_eq_star_dotProduct]
@@ -392,33 +332,28 @@ private theorem seedFiberBlockBornAmplitude
   simp_rw [mul_assoc, ← Finset.mul_sum]
   ring_nf
   simp_rw [mul_assoc, ← Finset.mul_sum]
-  rw [Finset.sum_comm]
-  rw [← mul_assoc]
+  rw [Finset.sum_comm, ← mul_assoc]
   congr 1
-  exact inv_sqrt_natCast_mul_self (L.q / L.m)
+  apply inv_sqrt_natCast_mul_self
 
 /-- Correlated residue registers give the uniform average of the source-block
 Born weights. -/
-private theorem seedFiberBlockBornWeight
-    {G : Game} (S : Strategy G) (L : LdParams)
-    (A : Fin (L.q / L.m) → Op S.ιA)
-    (B : Fin (L.q / L.m) → Op S.ιB) :
+private theorem seedFiberBlockBornWeight :
     vectorBornWeight (seedFiberLiftedState S L)
         (Matrix.blockDiagonal A) (Matrix.blockDiagonal B) =
       (Fintype.card (Fin (L.q / L.m)) : ℝ)⁻¹ *
         ∑ residue, vectorBornWeight S.ψ (A residue) (B residue) := by
   unfold vectorBornWeight
   rw [seedFiberBlockBornAmplitude]
-  simp [Complex.mul_re, Complex.inv_re, Complex.inv_im]
+  simp
 
 /-- The Born weight of the direct strategy obtained by dilating a seed-indexed
 strategy with a correlated residue register is the uniform average of the
 original seed-dependent Born weights over that residue. -/
-theorem ldStrategyToDirect_bornWeight
-    (L : LdParams) (S : Strategy (ldGame L))
+theorem ldStrategyToDirect_bornWeight (S : Strategy (ldGame L))
     (x y : DirectLdQuestion L.toDirectLdParams)
     (a b : DirectLdAnswer L.toDirectLdParams) :
-    outcomeWeight (ldStrategyToDirect L S) x y a b =
+    outcomeWeight (ldStrategyToDirect S) x y a b =
       (Fintype.card (Fin (L.q / L.m)) : ℝ)⁻¹ *
         ∑ residue,
           outcomeWeight S
@@ -427,18 +362,16 @@ theorem ldStrategyToDirect_bornWeight
             ((ldDirectAnswerEquiv L).symm a)
             ((ldDirectAnswerEquiv L).symm b) := by
   change vectorBornWeight (seedFiberLiftedState S L)
-      (Matrix.blockDiagonal fun residue =>
-        (S.A (seededLdQuestion L x residue)).effect
-          ((ldDirectAnswerEquiv L).symm a))
+      _
       (Matrix.blockDiagonal fun residue =>
         (S.B (seededLdQuestion L y residue)).effect
           ((ldDirectAnswerEquiv L).symm b)) = _
-  exact seedFiberBlockBornWeight S L _ _
+  apply seedFiberBlockBornWeight
 
+variable {D} in
 /-- Read coordinate `r` of a projective direct-game strategy as a two-space
 projective strategy for the low individual degree test. -/
-noncomputable def directCoordinateProjStrat
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+noncomputable def directCoordinateProjStrat (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     ProjStrat D.toLDTParameters S.ιA S.ιB := by

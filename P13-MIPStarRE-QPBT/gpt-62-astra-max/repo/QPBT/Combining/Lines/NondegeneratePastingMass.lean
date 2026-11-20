@@ -37,18 +37,18 @@ theorem nondegenerateLinePastingMass_bounds (L : LdParams) :
     1 / 2 ≤ nondegenerateLinePastingMass L ∧
       nondegenerateLinePastingMass L ≤ 1 := by
   classical
-  let indicator := fun sample : LineDesc L × (Fin L.m → ScalarQ L) =>
+  let indicator := fun sample : LineDesc L × (LdPoint L) =>
     if sample.1.direction ≠ 0 then (1 : ℝ) else 0
   have hmass : nondegenerateLinePastingMass L =
       avgOver (linePointDist L) indicator := by
     unfold nondegenerateLinePastingMass
-    rw [Distribution.sum_filter_weight_eq_avgOver, SandwichProduct.avgOver_distribution_prod]
-    change avgOver (linePointDist L) (fun sample =>
+    rw [Distribution.sum_filter_weight_eq_avgOver, avgOver_prod]
+    change avgOver _ (fun sample =>
       avgOver (linePointDist L) (fun _ => indicator sample)) = _
     simp_rw [avgOver_const_of_isProbability _ (linePointDist_isProbability L)]
   have haxis : avgOver (aLinePointDist L) indicator = 1 := by
     have hindicator : indicator = fun sample =>
-        1 - if sample.1.direction = 0 then (1 : ℝ) else 0 := by
+        1 - if sample.1.direction = 0 then 1 else 0 := by
       funext sample
       by_cases hzero : sample.1.direction = 0 <;> simp [indicator, hzero]
     rw [hindicator, avgOver_sub,
@@ -58,18 +58,13 @@ theorem nondegenerateLinePastingMass_bounds (L : LdParams) :
   have hdiag : 0 ≤ avgOver (dLinePointDist L) indicator :=
     avgOver_nonneg _ _ fun sample => by
       by_cases hzero : sample.1.direction = 0 <;> simp [indicator, hzero]
-  have hlower : 1 / 2 ≤ avgOver (linePointDist L) indicator := by
-    rw [linePointDist, avgOver_mix, haxis]
-    norm_num
-    linarith
   rw [hmass]
-  refine ⟨hlower, ?_⟩
-  calc
-    avgOver (linePointDist L) indicator ≤
-      avgOver (linePointDist L) (fun _ => 1) :=
-      avgOver_mono _ _ _ fun sample => by
-        by_cases hzero : sample.1.direction = 0 <;> simp [indicator, hzero]
-    _ = 1 := avgOver_const_of_isProbability _ (linePointDist_isProbability L) 1
+  refine ⟨(by
+    simp [linePointDist, avgOver_mix]
+    linarith), ?_⟩
+  rw [← avgOver_const_of_isProbability _ (linePointDist_isProbability L) 1]
+  exact avgOver_mono _ _ _ fun sample => by
+    by_cases hzero : sample.1.direction = 0 <;> simp [indicator, hzero]
 
 end
 

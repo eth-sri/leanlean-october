@@ -44,31 +44,33 @@ noncomputable section
 
 /-! ## The linear form of a tuple of scalars -/
 
+section
+
+variable {K : Type*} [CommSemiring K] {k : ℕ} (c α : Fin k → K)
+
 /-- The linear form `α ↦ ∑_{r < k} c_r α_r` in the combining variables. -/
-def combiningLinearForm {K : Type*} [CommSemiring K] {k : ℕ} (c : Fin k → K) :
+def combiningLinearForm :
     MvPolynomial (Fin k) K :=
   ∑ r : Fin k, MvPolynomial.C (c r) * MvPolynomial.X r
 
-@[simp] theorem combiningLinearForm_eval {K : Type*} [CommSemiring K] {k : ℕ}
-    (c α : Fin k → K) :
+@[simp] theorem combiningLinearForm_eval :
     MvPolynomial.eval α (combiningLinearForm c) = ∑ r : Fin k, c r * α r := by
   simp [combiningLinearForm]
 
 /-- A linear form has total degree at most one. -/
-theorem combiningLinearForm_totalDegree_le_one {K : Type*} [CommSemiring K]
+theorem combiningLinearForm_totalDegree_le_one
     [Nontrivial K] {k : ℕ} (c : Fin k → K) :
     (combiningLinearForm c).totalDegree ≤ 1 := by
   refine le_trans (MvPolynomial.totalDegree_finsetSum _ _) (Finset.sup_le fun r _ => ?_)
   refine le_trans (MvPolynomial.totalDegree_mul _ _) ?_
-  simp [MvPolynomial.totalDegree_C, MvPolynomial.totalDegree_X]
+  simp
 
 /-- The coefficient of the variable `α_r` in a linear form is `c r`. -/
-theorem combiningLinearForm_coeff {K : Type*} [CommSemiring K] {k : ℕ}
-    (c : Fin k → K) (r : Fin k) :
+theorem combiningLinearForm_coeff (r : Fin k) :
     (combiningLinearForm c).coeff (Finsupp.single r 1) = c r := by
   classical
   rw [combiningLinearForm, MvPolynomial.coeff_sum, Finset.sum_eq_single r]
-  · simp [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X]
+  · simp
   · intro s _ hs
     rw [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X, if_neg, mul_zero]
     intro hEq
@@ -77,23 +79,17 @@ theorem combiningLinearForm_coeff {K : Type*} [CommSemiring K] {k : ℕ}
     exact absurd (Finset.mem_univ r) h
 
 /-- A linear form determines its coefficients. -/
-theorem combiningLinearForm_injective {K : Type*} [CommSemiring K] {k : ℕ} :
+theorem combiningLinearForm_injective :
     Function.Injective (combiningLinearForm (K := K) (k := k)) := by
   intro c c' h
   funext r
   rw [← combiningLinearForm_coeff c r, h, combiningLinearForm_coeff]
 
-/-- Two linear forms with distinct coefficient tuples agree at a uniformly
-sampled point with probability at most `1/q`.  This is the Schwartz--Zippel
-bound at total degree one. -/
-theorem combiningLinearForm_agreementProbability_le {K : Type*} [Field K] [Fintype K]
-    [DecidableEq K] {k : ℕ} (c b : Fin k → K) (hne : c ≠ b) :
-    polynomialAgreementProbability k K (combiningLinearForm c) (combiningLinearForm b) ≤
-      1 / Fintype.card K := by
-  have hpoly : combiningLinearForm c ≠ combiningLinearForm b := fun h =>
-    hne (combiningLinearForm_injective h)
-  simpa using schwartzZippel_totalDegree (d := 1) hpoly
-    (combiningLinearForm_totalDegree_le_one c) (combiningLinearForm_totalDegree_le_one b)
+end
+
+section
+
+variable {m : ℕ} {K : Type*} [Field K] [Fintype K] [DecidableEq K]
 
 /-! ## The averaged form -/
 
@@ -104,29 +100,17 @@ This is the general form of the computation carried out inline in the proof of
 `polynomialAgreement_avg_le_mdq`, which is stated for the point space of the
 low individual degree test; the combining variables of the reduction are not a
 point space of that test, so the general form is needed here. -/
-theorem polynomialAgreement_avg_eq_agreementProbability {m : ℕ} {K : Type*} [Field K]
-    [Fintype K] [DecidableEq K] (g h : MvPolynomial (Fin m) K) :
+theorem polynomialAgreement_avg_eq_agreementProbability (g h : MvPolynomial (Fin m) K) :
     avgOver (uniformDistribution (Fin m → K))
         (fun u => if MvPolynomial.eval u g = MvPolynomial.eval u h then (1 : Error) else 0) =
       (polynomialAgreementProbability m K g h : Error) := by
   classical
-  calc
-    avgOver (uniformDistribution (Fin m → K))
-        (fun u => if MvPolynomial.eval u g = MvPolynomial.eval u h then (1 : Error) else 0)
-      = ∑ u : Fin m → K,
-          if MvPolynomial.eval u g = MvPolynomial.eval u h then
-            (Fintype.card K ^ m : Error)⁻¹ else 0 := by
-        simp [avgOver, uniformDistribution]
-    _ = ∑ u ∈ Finset.univ.filter (fun u : Fin m → K =>
-          MvPolynomial.eval u g = MvPolynomial.eval u h),
-          (Fintype.card K ^ m : Error)⁻¹ := by
-        rw [← Finset.sum_filter]
-    _ = (((Finset.univ.filter fun u : Fin m → K =>
-          MvPolynomial.eval u g = MvPolynomial.eval u h).card : ℕ) : Error) *
-          (Fintype.card K ^ m : Error)⁻¹ := by
-        simp
-    _ = (polynomialAgreementProbability m K g h : Error) := by
-        simp [polynomialAgreementProbability, div_eq_mul_inv]
+  simp [avgOver, uniformDistribution]
+  rw [← Finset.sum_filter]
+  simp
+  simp [polynomialAgreementProbability, div_eq_mul_inv]
+
+end
 
 /-- The collision estimate of the recovery step, in the averaged form used by
 the consistency calculus of the directly indexed game: if the tuple of values
@@ -139,24 +123,19 @@ theorem directCombiningCollision_avg_le (D : DirectLdParams)
           (1 : Error) else 0) ≤
       (1 : Error) / D.q := by
   classical
-  have hagree := combiningLinearForm_agreementProbability_le c b hne
   calc
-    avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
-        (fun α => if ∑ r : Fin D.k, c r * α r = ∑ r : Fin D.k, b r * α r then
-          (1 : Error) else 0)
-      = avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
-          (fun α => if MvPolynomial.eval α (combiningLinearForm c) =
-            MvPolynomial.eval α (combiningLinearForm b) then (1 : Error) else 0) := by
-        apply avgOver_congr
-        intro α
-        rw [combiningLinearForm_eval, combiningLinearForm_eval]
-    _ = (polynomialAgreementProbability D.k (DirectScalarQ D)
+    _
+      = _ := by
+        simp
+    _ = (polynomialAgreementProbability D.k _
           (combiningLinearForm c) (combiningLinearForm b) : Error) :=
         polynomialAgreement_avg_eq_agreementProbability _ _
     _ ≤ ((1 / Fintype.card (DirectScalarQ D) : ℚ≥0) : Error) := by
-        exact_mod_cast hagree
-    _ = (1 : Error) / D.q := by
-        rw [card_directScalarQ]
+        exact_mod_cast ((by
+                          simpa using schwartzZippel_totalDegree (fun h =>
+                            hne (combiningLinearForm_injective h))
+                            (combiningLinearForm_totalDegree_le_one c) (combiningLinearForm_totalDegree_le_one b)))
+    _ = _ := by
         simp
 
 end

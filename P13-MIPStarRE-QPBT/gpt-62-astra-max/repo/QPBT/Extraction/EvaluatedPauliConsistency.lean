@@ -1,7 +1,6 @@
 module
 
 public import QPBT.Extraction.SuppliedPointConsistency
-public import QPBT.Extraction.BlockMeasurement
 public import QPBT.Extraction.PullingDefect
 
 /-!
@@ -49,11 +48,11 @@ theorem consistencyDefect_measurement_symm {X α I : Type*}
   · simp only [if_neg hab, if_neg (Ne.symm hab), consistency_term_eq_stateQForm]
     have hstar : ((A x).effect a * (B x).effect b)ᴴ =
         (B x).effect b * (A x).effect a := by
-      simp only [Matrix.conjTranspose_mul, measurement_effect_hermitian]
+      simp [measurement_effect_hermitian]
     rw [← hstar]
     unfold stateQForm applyOperatorToState
     rw [Matrix.toEuclideanLin_conjTranspose_eq_adjoint, LinearMap.adjoint_inner_right]
-    exact inner_re_symm (𝕜 := ℂ) _ _
+    apply inner_re_symm (𝕜 := ℂ)
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 800000 in
@@ -69,69 +68,62 @@ theorem evaluated_pauli_tilde_consistency_of_global_pair_witness_explicit :
     ∀ (P : AdmissibleParams) (epsilon deltaG : ℝ),
       0 ≤ epsilon → epsilon ≤ 1 → 0 ≤ deltaG →
       ∀ (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG) (W : PauliKind),
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (uniformDistribution (PauliPoint P))
           (fun u a => S.placePlayer .alice ((S.pauliEvalMeas .alice W u).effect a))
           (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat ≤
         deltaConstructPaulis (2 + 4 * Real.sqrt 172)
           epsilon deltaG P.m P.d P.q ∧
-      consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
+      consistencyDefect (uniformDistribution (PauliPoint P))
           (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
           (fun u a => S.placePlayer .bob ((S.pauliEvalMeas .bob W u).effect a)) S.psiHat ≤
         deltaConstructPaulis (2 + 4 * Real.sqrt 172)
           epsilon deltaG P.m P.d P.q := by
   intro P epsilon deltaG he he1 hd S w W
-  let mu := uniformDistribution (Fin P.m → PauliScalar P)
+  let mu := uniformDistribution (PauliPoint P)
   let PA := fun u => S.placedMeasurement .AA' (leftPlacedMeasurement (S.pointMeas .alice W u))
   let PB := fun u => S.placedMeasurement .BB' (leftPlacedMeasurement (S.pointMeas .bob W u))
   let QA := fun u => S.placedMeasurement .AA'
     (leftPlacedMeasurement (S.pauliEvalMeas .alice W u))
   let QB := fun u => S.placedMeasurement .BB'
     (leftPlacedMeasurement (S.pauliEvalMeas .bob W u))
-  let T := fun (side : PlayerSide) (u : Fin P.m → PauliScalar P) =>
+  let T := fun (side : PlayerSide) (u : PauliPoint P) =>
     S.blockMeasurement side (Measurement.ofSumEqOne
-      (tildeM w side W (indicatorVec u))
+      _
       (fun a => (tildeM_isProj w side W (indicatorVec u) a).nonneg)
-      (sum_tildeM_eq_one w side W (indicatorVec u)))
-  have hpointsCard : consistencyDefect mu (fun u a => (PA u).effect a)
-      (fun u a => (PB u).effect a) S.psiHat ≤
+      (sum_tildeM_eq_one w side W _))
+  let defect :=
+    consistencyDefect mu (fun u a => (PA u).effect a)
+    (fun u a => (PB u).effect a) S.psiHat
+  have hpointsCard : defect ≤
         (Fintype.card PauliEdge : ℝ) * epsilon := by
     change consistencyDefect mu (fun u a => S.placePlayer .alice _)
       (fun u a => S.placePlayer .bob _) S.psiHat ≤ _
     rw [S.consistencyDefect_placePlayers]
-    exact point_self_consistency_le S W
-  have hpoints : consistencyDefect mu (fun u a => (PA u).effect a)
-      (fun u a => (PB u).effect a) S.psiHat ≤ 86 * epsilon := by
+    apply point_self_consistency_le
+  have hpoints : defect ≤ 86 * epsilon := by
     simpa only [pauli_edge_card, Nat.cast_ofNat] using hpointsCard
   have hforward : consistencyDefect mu (fun u a => (PA u).effect a)
       (fun u a => (QB u).effect a) S.psiHat ≤ 86 * epsilon := by
     change consistencyDefect mu (fun u a => S.placePlayer .alice _)
       (fun u a => S.placePlayer .bob _) S.psiHat ≤ _
     rw [S.consistencyDefect_placePlayers]
-    exact WinImplications.win_pauli_basis_cons_explicit P epsilon S he W
+    apply WinImplications.win_pauli_basis_cons_explicit <;> assumption
   have hreverse : consistencyDefect mu (fun u a => (QA u).effect a)
       (fun u a => (PB u).effect a) S.psiHat ≤ 86 * epsilon := by
     change consistencyDefect mu (fun u a => S.placePlayer .alice _)
       (fun u a => S.placePlayer .bob _) S.psiHat ≤ _
     rw [S.consistencyDefect_placePlayers]
-    exact WinImplications.win_pauli_basis_cons_interchanged_explicit P epsilon S he W
+    apply WinImplications.win_pauli_basis_cons_interchanged_explicit <;> assumption
   have hleft : consistencyDefect mu (fun u a => (T .alice u).effect a)
       (fun u a => (PB u).effect a) S.psiHat ≤
         deltaConstructPaulis (2 + 2 * Real.sqrt 172)
           epsilon deltaG P.m P.d P.q := by
-    change consistencyDefect mu
-      (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
-      (fun u a => S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) S.psiHat ≤ _
-    exact tilde_m_consistent_point_meas'_of_global_pair_witness_explicit
-      P epsilon deltaG he he1 hd S w W
+    apply tilde_m_consistent_point_meas'_of_global_pair_witness_explicit <;> assumption
   have hright : consistencyDefect mu (fun u a => (PA u).effect a)
       (fun u a => (T .bob u).effect a) S.psiHat ≤
         deltaConstructPaulis (2 + 2 * Real.sqrt 172)
           epsilon deltaG P.m P.d P.q := by
-    change consistencyDefect mu
-      (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
-      (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat ≤ _
-    exact tilde_m_consistent_point_meas_of_global_pair_witness_explicit
-      P epsilon deltaG he he1 hd S w W
+    apply tilde_m_consistent_point_meas_of_global_pair_witness_explicit <;> assumption
   have hscalar :
       deltaConstructPaulis (2 + 2 * Real.sqrt 172)
           epsilon deltaG P.m P.d P.q +
@@ -152,7 +144,7 @@ theorem evaluated_pauli_tilde_consistency_of_global_pair_witness_explicit :
     · rw [consistencyDefect_measurement_symm]; exact hright
     · rw [consistencyDefect_measurement_symm]; exact hpoints
     · rw [consistencyDefect_measurement_symm]; exact hreverse
-  · exact (consistencyDefect_trans_le mu (T .alice) PB PA QB S.psiHat _ _ _
+  · exact (consistencyDefect_trans_le mu _ PB PA QB S.psiHat _ _ _
       (uniformDistribution_isProbability _) S.psiHat_norm hleft hpoints hforward).trans hscalar
 
 end
