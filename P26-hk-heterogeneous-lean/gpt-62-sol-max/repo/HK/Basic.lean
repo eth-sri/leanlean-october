@@ -2,184 +2,203 @@ module
 
 public import HK.Defs
 
-/-!
-# Generic lemmas about the models
-
-The mean form of a step, the sign and size of the rates' powers, convergence of a geometric closed form
-`L + a(t) v`, the two ways an alternating agent defeats a fixed state and pseudo-stability, the mean form of
-`A(y) z`, neighbourhoods from digraphs, and the facts about `sbiRate = (1 − √5)/8`.
--/
-
 @[expose] public section
 
 namespace HK
 
 open Filter Topology
 
-/-- One step, coordinatewise: the average of the out-neighbours' opinions. -/
-theorem step_apply (m : Model) {n : ℕ} (r y : Fin n → ℝ) (i : Fin n) :
-    step m r y i = (∑ j ∈ neighbors m r y i, y j) / (neighbors m r y i).card := by
-  simp only [step, adjMatrix, Matrix.mulVec, dotProduct, Matrix.of_apply, ite_mul, zero_mul]
-  rw [Finset.sum_ite_mem, Finset.univ_inter, Finset.sum_div]
-  exact Finset.sum_congr rfl (fun j _ => by ring)
+variable {n : ℕ} {m : Model} {r x y L v : Fin n → ℝ} {X Y : ℕ → Fin n → ℝ}
+  {q : ℝ} {N : Fin n → Finset (Fin n)} {T : ℕ → Fin n → Finset (Fin n)}
 
-/-- The sign and size of `(-1/6)^t` by parity. -/
-theorem pow_even {t : ℕ} (ht : Even t) : 0 < (-1 / 6 : ℝ) ^ t ∧ (-1 / 6 : ℝ) ^ t ≤ 1 := by
-  rw [neg_div, ht.neg_pow]
-  exact ⟨pow_pos (by norm_num) t, pow_le_one₀ (by norm_num) (by norm_num)⟩
+noncomputable def average (N : Fin n → Finset (Fin n)) (x : Fin n → ℝ) (i : Fin n) : ℝ :=
+  (∑ j ∈ N i, x j) / (N i).card
 
-theorem pow_odd {t : ℕ} (ht : Odd t) : -1 / 6 ≤ (-1 / 6 : ℝ) ^ t ∧ (-1 / 6 : ℝ) ^ t < 0 := by
-  rw [neg_div, ht.neg_pow]
-  have hle : (1 / 6 : ℝ) ^ t ≤ 1 / 6 :=
-    pow_le_of_le_one (by norm_num) (by norm_num) (by rintro rfl; simp at ht)
-  have hpos : 0 < (1 / 6 : ℝ) ^ t := pow_pos (by norm_num) t
-  constructor <;> linarith
+theorem adj_mulVec (z : Fin n → ℝ) : (adjMatrix m r y).mulVec z = average (neighbors m r y) z := by
+  funext i
+  simp [adjMatrix, Matrix.mulVec, dotProduct, Finset.sum_ite_mem, average, div_eq_mul_inv,
+    Finset.sum_mul, mul_comm]
 
-/-- `λ = (1 − φ)/4`. -/
+theorem traj_succ (t : ℕ) : traj m r x (t + 1) = step m r (traj m r x t) :=
+  Function.iterate_succ_apply' ..
+
+theorem traj_of_average (hN : ∀ t, neighbors m r (Y t) = T t)
+    (hs : ∀ t, average (T t) (Y t) = Y (t + 1)) (h0 : Y 0 = x) (t : ℕ) : traj m r x t = Y t := by
+  induction t with
+  | zero => exact h0.symm
+  | succ t ih => rw [traj_succ, ih, step, adj_mulVec, hN, hs]
+
+/-- The opinion profile with offset `u` along the direction `v` from `L`. -/
+scoped notation "profile" L:max u:max v:max => (fun i => L i + u * v i)
+
+/-- Evaluate a concrete vector equality, including the finite sums in an averaging step. -/
+syntax "check_rows" Lean.Parser.Tactic.simpArgs : tactic
+macro_rules
+  | `(tactic| check_rows [$ds,*]) =>
+    `(tactic| ((try split_ifs) <;> (funext i; fin_cases i <;>
+      norm_num [average, Finset.sum_insert, $ds,*] <;>
+      ring_nf <;> norm_num [Real.sq_sqrt, Real.goldenRatio_sq] <;> ring_nf)))
+
+/-- A certificate for an affine orbit in a single, contracting negative mode.
+The default row checks use the example data in the local simp set. -/
+structure ModeOrbit (m : Model) (r x L v : Fin n → ℝ) (q : ℝ)
+    (T : ℕ → Fin n → Finset (Fin n)) : Prop where
+  rate : -1 < q ∧ q < 0 := by norm_num
+  initial : L + v = x := by check_rows []
+  table (t : ℕ) : neighbors m r (L + q ^ t • v) = T t
+  mode (t : ℕ) (u : ℝ) : average (T t) (L + u • v) = L + (q * u) • v := by intro _ _; check_rows []
+
+/-- If the frozen matrix acts like the actual update on a tail, both orbits have the same limit. -/
+theorem fvct_of_tail (t : ℕ) (hc : Tendsto X atTop (𝓝 L))
+    (hs : ∀ k ≥ t, (adjMatrix m r (X t)).mulVec (X k) = X (k + 1)) : fvct m r (X t) = L := by
+  have h (k : ℕ) : (adjMatrix m r (X t) ^ k).mulVec (X t) = X (k + t) := by
+    induction k with
+    | zero => simp
+    | succ k ih => rw [pow_succ', ← Matrix.mulVec_mulVec, ih, hs _ (by omega), Nat.succ_add]
+  exact ((hc.comp (tendsto_add_atTop_nat t)).congr fun k => (h k).symm).limUnder_eq
+
+theorem digraph_eq_iff : proximityDigraph m r y = proximityDigraph m r x ↔
+    neighbors m r y = neighbors m r x := by
+  simp [proximityDigraph, funext_iff, Finset.ext_iff]
+
+theorem digraph_constant (hN : ∀ t, neighbors m r (traj m r x t) = N) (t : ℕ) :
+    proximityDigraph m r (traj m r x t) = proximityDigraph m r x :=
+  digraph_eq_iff.mpr ((hN t).trans (hN 0).symm)
+
+theorem neg_pow_bounds {a : ℝ} (hlo : -1 ≤ a) (ha : a ≤ q) (hq : q ≤ 0) (t : ℕ) :
+    a ≤ q ^ t ∧ q ^ t ≤ 1 := by
+  induction t with
+  | zero => simp; linarith
+  | succ t ih =>
+    have := hlo.trans ih.1
+    have := hlo.trans ha
+    rw [pow_succ]
+    and_intros <;> nlinarith [ih.2]
+
 theorem sbiRate_eq : sbiRate = (1 - Real.goldenRatio) / 4 := by
   unfold sbiRate Real.goldenRatio
   ring
 
-/-- The sign and size of `λ^t / 2` by parity. -/
-theorem sbiRate_pow_even {t : ℕ} (ht : Even t) :
-    0 < sbiRate ^ t / 2 ∧ sbiRate ^ t / 2 ≤ 1 / 2 := by
-  have hφ1 := Real.one_lt_goldenRatio
-  have hφ2 := Real.goldenRatio_lt_two
-  have h : sbiRate = -((Real.goldenRatio - 1) / 4) := by rw [sbiRate_eq]; ring
-  rw [h, ht.neg_pow]
-  have h0 : 0 < ((Real.goldenRatio - 1) / 4) ^ t := pow_pos (by linarith) t
-  have h1 : ((Real.goldenRatio - 1) / 4) ^ t ≤ 1 := pow_le_one₀ (by linarith) (by linarith)
-  constructor <;> linarith
-
-theorem sbiRate_pow_odd {t : ℕ} (ht : Odd t) :
-    (1 - Real.goldenRatio) / 8 ≤ sbiRate ^ t / 2 ∧ sbiRate ^ t / 2 < 0 := by
-  have hφ1 := Real.one_lt_goldenRatio
-  have hφ2 := Real.goldenRatio_lt_two
-  have h : sbiRate = -((Real.goldenRatio - 1) / 4) := by rw [sbiRate_eq]; ring
-  rw [h, ht.neg_pow]
-  have h0 : 0 < ((Real.goldenRatio - 1) / 4) ^ t := pow_pos (by linarith) t
-  have h1 : ((Real.goldenRatio - 1) / 4) ^ t ≤ (Real.goldenRatio - 1) / 4 :=
-    pow_le_of_le_one (by linarith) (by linarith) (by rintro rfl; simp at ht)
-  constructor <;> linarith
-
-theorem pow_bounds (t : ℕ) : -1 / 6 ≤ (-1 / 6 : ℝ) ^ t ∧ (-1 / 6 : ℝ) ^ t ≤ 1 := by
-  rcases Nat.even_or_odd t with ht | ht
-  · obtain ⟨h0, h1⟩ := pow_even ht
-    constructor <;> linarith
-  · obtain ⟨h0, h1⟩ := pow_odd ht
-    constructor <;> linarith
-
-theorem sbiRate_pow_bounds (t : ℕ) :
-    (1 - Real.goldenRatio) / 4 ≤ sbiRate ^ t ∧ sbiRate ^ t ≤ 1 := by
-  have hφ1 := Real.one_lt_goldenRatio
-  rcases Nat.even_or_odd t with ht | ht
-  · obtain ⟨h0, h1⟩ := sbiRate_pow_even ht
-    constructor <;> linarith
-  · obtain ⟨h0, h1⟩ := sbiRate_pow_odd ht
-    constructor <;> linarith
-
-theorem tendsto_of_closed_form {n : ℕ} (x : ℕ → Fin n → ℝ) (lim v : Fin n → ℝ) (a : ℕ → ℝ)
-    (ha : Tendsto a atTop (𝓝 0)) (hx : ∀ t, x t = fun i => lim i + a t * v i) :
-    Tendsto x atTop (𝓝 lim) := by
-  rw [tendsto_pi_nhds]
-  intro i
-  have := (ha.mul_const (v i)).const_add (lim i)
-  simpa [hx] using this
-
-theorem not_monotone_side (l a b c : ℝ) (hab : a * b < 0) :
-    ¬ ((l + a * c < l + b * c ∧ l + b * c < l) ∨ (l + a * c > l + b * c ∧ l + b * c > l)) := by
-  rintro (⟨h1, h2⟩ | ⟨h1, h2⟩) <;> nlinarith [sq_nonneg c, sq_nonneg (b * c)]
-
-theorem not_pseudoStable_of_closed_form {n : ℕ} (x : ℕ → Fin n → ℝ) (lim v : Fin n → ℝ)
-    (a : ℕ → ℝ) (ha : Tendsto a atTop (𝓝 0)) (hx : ∀ t, x t = fun i => lim i + a t * v i)
-    (hab : ∀ t, a t * a (t + 1) < 0) (xinf : Fin n → ℝ) (τ : ℕ) :
-    ¬ PseudoStableAfter x xinf τ := by
-  rintro ⟨hlim, F, C, -, ⟨i, hi⟩, -, -, h⟩
-  have hx' : xinf = lim := tendsto_nhds_unique hlim (tendsto_of_closed_form x lim v a ha hx)
-  subst hx'
-  have hc := (h τ le_rfl).2 i hi
-  rw [hx, hx] at hc
-  exact not_monotone_side _ _ _ _ (hab τ) hc
-
-theorem not_fixedFrom_of_closed_form {n : ℕ} (x : ℕ → Fin n → ℝ) (lim v : Fin n → ℝ)
-    (a : ℕ → ℝ) (hx : ∀ t, x t = fun i => lim i + a t * v i)
-    (hab : ∀ t, a t * a (t + 1) < 0) (i : Fin n) (hv : v i ≠ 0) (τ : ℕ) :
-    ¬ FixedFrom x τ := by
-  intro h
-  have h1 := congrFun (h (τ + 1) (Nat.le_succ τ)) i
-  rw [hx, hx] at h1
-  have h2 : a (τ + 1) = a τ := mul_right_cancel₀ hv (by simpa using h1)
-  have h3 := hab τ
-  rw [h2] at h3
-  nlinarith [sq_nonneg (a τ)]
-
-/-- `a t · a (t+1) < 0` for `a t = q^t · c` with `q < 0`, `c ≠ 0`. -/
-theorem alternating (q c : ℝ) (hq : q < 0) (hc : c ≠ 0) (t : ℕ) :
-    q ^ t * c * (q ^ (t + 1) * c) < 0 := by
-  have h : q ^ t * c * (q ^ (t + 1) * c) = q * (q ^ t * c) ^ 2 := by ring
-  rw [h]
-  have : 0 < (q ^ t * c) ^ 2 := by
-    have : q ^ t * c ≠ 0 := mul_ne_zero (pow_ne_zero _ hq.ne) hc
-    positivity
-  nlinarith
-
-/-- Each coordinate of a pseudo-stable trajectory sits at its limit, or stays strictly below it, or
-stays strictly above it, from `τ` on. -/
-theorem pseudoStableAfter_coordinate_side {n : ℕ} (x : ℕ → Fin n → ℝ)
-    (L : Fin n → ℝ) (τ : ℕ) (hps : PseudoStableAfter x L τ) (i : Fin n) :
-    (∀ t, τ ≤ t → x t i = L i) ∨
-    (∀ t, τ ≤ t → x t i < L i) ∨ (∀ t, τ ≤ t → L i < x t i) := by
-  obtain ⟨-, F, C, -, -, -, hFC, h⟩ := hps
-  have himem : i ∈ F ∨ i ∈ C := by
-    rw [← Finset.mem_union, hFC]
-    exact Finset.mem_univ i
-  rcases himem with hi | hi
-  · exact Or.inl (fun t ht => (h t ht).1 i hi)
-  · rcases (h τ le_rfl).2 i hi with hbelow | habove
-    · right; left
-      have hs : ∀ s, x (τ + s) i < L i := by
-        intro s
-        induction s with
-        | zero => simpa using lt_trans hbelow.1 hbelow.2
-        | succ s ih =>
-          rcases (h (τ + s) (by omega)).2 i hi with hb | ha
-          · simpa [Nat.add_assoc] using hb.2
-          · exfalso; linarith [ha.1, ha.2]
-      intro t ht
-      have he : τ + (t - τ) = t := by omega
-      simpa only [he] using hs (t - τ)
-    · right; right
-      have hs : ∀ s, L i < x (τ + s) i := by
-        intro s
-        induction s with
-        | zero => simpa using lt_trans habove.2 habove.1
-        | succ s ih =>
-          rcases (h (τ + s) (by omega)).2 i hi with hb | ha
-          · exfalso; linarith [hb.1, hb.2]
-          · simpa [Nat.add_assoc] using ha.2
-      intro t ht
-      have he : τ + (t - τ) = t := by omega
-      simpa only [he] using hs (t - τ)
-
 theorem sbiRate_neg : sbiRate < 0 := by
-  rw [sbiRate_eq]; linarith [Real.one_lt_goldenRatio]
+  rw [sbiRate_eq]
+  linarith [Real.one_lt_goldenRatio]
 
-theorem sbiRate_abs_lt_one : |sbiRate| < 1 := by
-  rw [sbiRate_eq, abs_lt]
-  constructor <;> linarith [Real.one_lt_goldenRatio, Real.goldenRatio_lt_two]
+theorem sbiRate_abs_lt_quarter : |sbiRate| < 1 / 4 := by
+  rw [abs_of_neg sbiRate_neg, sbiRate_eq]
+  linarith [Real.goldenRatio_lt_two]
 
-theorem adj_mulVec (m : Model) {n : ℕ} (r y z : Fin n → ℝ) (i : Fin n) :
-    (adjMatrix m r y).mulVec z i = (∑ j ∈ neighbors m r y i, z j) / (neighbors m r y i).card := by
-  simp only [adjMatrix, Matrix.mulVec, dotProduct, Matrix.of_apply, ite_mul, zero_mul]
-  rw [Finset.sum_ite_mem, Finset.univ_inter, Finset.sum_div]
-  exact Finset.sum_congr rfl (fun j _ => by ring)
+theorem sbiRate_decay : -1 < sbiRate ∧ sbiRate < 0 :=
+  ⟨by linarith [neg_le_abs sbiRate, sbiRate_abs_lt_quarter], sbiRate_neg⟩
 
-theorem neighbors_eq_of_digraph_eq (m : Model) {n : ℕ} (r y z : Fin n → ℝ)
-    (hd : proximityDigraph m r y = proximityDigraph m r z) : neighbors m r y = neighbors m r z := by
-  funext i
-  ext j
-  have := congrFun (congrFun (congrArg Digraph.Adj hd) i) j
-  simp only [proximityDigraph] at this
-  exact Iff.of_eq this
+theorem sbiRate_pow_bounds (t : ℕ) : -1 / 4 ≤ sbiRate ^ t ∧ sbiRate ^ t ≤ 1 :=
+  neg_pow_bounds (by norm_num) (by linarith [neg_le_abs sbiRate, sbiRate_abs_lt_quarter]) sbiRate_neg.le t
+
+theorem sixth_pow_bounds (t : ℕ) : -1 / 6 ≤ (-1 / 6 : ℝ) ^ t ∧ (-1 / 6 : ℝ) ^ t ≤ 1 :=
+  neg_pow_bounds (by norm_num) le_rfl (by norm_num) t
+
+/-- Absolute domination of the bases gives strict order at positive exponents. -/
+theorem pow_lt_of_abs_lt {p : ℝ} (hq : |q| < p) {t : ℕ} (ht : 1 ≤ t) : q ^ t < p ^ t :=
+  (le_abs_self _).trans_lt (by rw [abs_pow]; exact pow_lt_pow_left₀ hq (abs_nonneg _) (by omega))
+
+def NeverStable (X : ℕ → Fin n → ℝ) : Prop :=
+  (∀ τ, ¬ FixedFrom X τ) ∧ ∀ L τ, ¬ PseudoStableAfter X L τ
+
+/-- A coordinate visiting both sides arbitrarily late rules out both forms of stabilization. -/
+theorem neverStable_of_crossing {i : Fin n} (hc : Tendsto X atTop (𝓝 L))
+    (ho : ∀ τ, (∃ k ≥ τ, X k i < L i) ∧ ∃ l ≥ τ, L i < X l i) : NeverStable X := by
+  constructor
+  · intro τ hf
+    specialize ho τ
+    grind [FixedFrom]
+  · intro L' τ hp
+    have e := tendsto_nhds_unique hp.1 hc
+    subst L'
+    obtain ⟨-, F, C, -, -, -, hFC, h⟩ := hp
+    obtain ⟨⟨k, hk, hlt⟩, ⟨l, hl, hgt⟩⟩ := ho τ
+    have hi : i ∈ F ∨ i ∈ C := by rw [← Finset.mem_union, hFC]; simp
+    rcases hi with hi | hi
+    · linarith [(h k hk).1 i hi]
+    have side (t) (ht : τ ≤ t) : X τ i < L i ↔ X t i < L i := by
+      induction t, ht using Nat.le_induction with
+      | base => rfl
+      | succ t ht ih =>
+        have := (h t ht).2 i hi
+        grind
+    exact lt_asymm ((side l hl).mp ((side k hk).mpr hlt)) hgt
+
+theorem abs_lt_one_of_rate (h : -1 < q ∧ q < 0) : |q| < 1 := by grind [abs_lt]
+
+section
+
+variable (h : ModeOrbit m r x L v q T)
+include h
+
+theorem ModeOrbit.form (t : ℕ) : traj m r x t = L + q ^ t • v :=
+  traj_of_average h.table (fun t => by rw [h.mode t, pow_succ']) (by simpa using h.initial) t
+
+theorem ModeOrbit.neighborhoods (t : ℕ) : neighbors m r (traj m r x t) = T t := by
+  rw [h.form, h.table]
+
+theorem ModeOrbit.tendsto : Tendsto (traj m r x) atTop (𝓝 L) := by
+  rw [funext h.form]
+  simpa using ((tendsto_pow_atTop_nhds_zero_of_abs_lt_one (abs_lt_one_of_rate h.rate)).smul_const v).const_add L
+
+theorem ModeOrbit.frozenLimit (t : ℕ) : fvct m r (traj m r x t) = L :=
+  fvct_of_tail t h.tendsto fun k _ => by
+    rw [h.form k, adj_mulVec, h.neighborhoods t, h.mode t, h.form (k + 1), pow_succ']
+
+theorem ModeOrbit.facts (i : Fin n) (hi : v i ≠ 0) :
+    Tendsto (traj m r x) atTop (𝓝 L) ∧ NeverStable (traj m r x) := by
+  refine ⟨h.tendsto, neverStable_of_crossing (i := i) h.tendsto fun τ => ?_⟩
+  have hn := mul_ne_zero (pow_ne_zero τ h.rate.2.ne) hi
+  have hneg := mul_neg_of_neg_of_pos h.rate.2 (sq_pos_of_ne_zero hn)
+  have hflip : (q ^ τ * v i) * (q ^ (τ + 1) * v i) < 0 := by
+    rw [pow_succ']; nlinarith only [hneg]
+  simp only [h.form, Pi.add_apply, Pi.smul_apply, smul_eq_mul, lt_add_iff_pos_right]
+  have := mul_neg_iff.mp hflip
+  have := Nat.le_succ τ
+  grind
+
+theorem ModeOrbit.factor (t : ℕ) (i : Fin n) (hi : v i ≠ 0) : perStepFactor m r (traj m r x) i t = q := by
+  rw [perStepFactor, h.frozenLimit]
+  simp [h.form, pow_succ]
+  field_simp [pow_ne_zero _ h.rate.2.ne]
+
+theorem ModeOrbit.factor_not_tendsto (i : Fin n) (hi : v i ≠ 0) (ρ : ℝ) (hρ : 0 ≤ ρ) :
+    ¬ Tendsto (fun t => perStepFactor m r (traj m r x) i t) atTop (𝓝 ρ) := by
+  simpa only [h.factor _ i hi, tendsto_const_nhds_iff] using (h.rate.2.trans_le hρ).ne
+
+end
+
+theorem refute22 (hr : ∀ i, 0 < r i)
+    (h : ∀ τ, ∃ t ≥ τ, proximityDigraph m r (traj m r x t) ≠ proximityDigraph m r (traj m r x τ)) :
+    ¬ Conjecture22ForAgents m n := by
+  intro H
+  obtain ⟨τ, H⟩ := H r x hr
+  specialize h τ
+  grind
+
+theorem refute23 (hr : ∀ i, 0 < r i) (h : NeverStable (traj m r x)) : ¬ Conjecture23ForAgents m n := by
+  intro H
+  have := H r x hr
+  grind [NeverStable]
+
+theorem refute64 (hr : ∀ i, 0 < r i)
+    (hG : ∀ t, proximityDigraph m r (traj m r x t) = proximityDigraph m r x)
+    (h : NeverStable (traj m r x)) : ¬ Theorem64ivForAgents m n := by
+  intro H
+  have := H r x hr 0 (fun t _ => hG t)
+  grind [NeverStable]
+
+/-- Verify each pair of indices in a concrete neighbourhood table. Use nonlinear arithmetic
+for the remaining comparisons when an offset involves a product of two bounded quantities. -/
+syntax "check_neighbors" Lean.Parser.Tactic.simpArgs : tactic
+macro_rules
+  | `(tactic| check_neighbors [$ds,*]) =>
+    `(tactic| (
+      simp [funext_iff, Finset.ext_iff, Fin.forall_fin_succ, neighbors, Model.bound, abs_le, $ds,*]
+      and_intros <;> first
+        | grind
+        | (intros; nlinarith)))
 
 end HK

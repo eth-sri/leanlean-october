@@ -3,14 +3,11 @@ module
 public import HK.Basic
 
 /-!
-# Five SBC agents with a constant digraph and oscillating convergence (this development)
+# Five SBC agents with oscillating convergence
 
-`x(0) = (0, 7, 12 − √2, 19, 24)`, `r = (3, 9, 9, 9, 3)`;
-`x(t) = (0, 6, 12, 18, 24) + ((1 − √2)/3)ᵗ (0, 1, −√2, 1, 0)`. The neighbourhood table
-`{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}` is the same at every `t`, yet agents 1, 2, 3 alternate sides
-of their limits. Hence Theorem 6.4(iv) and Conjecture 2.3 fail already with five SBC agents. The
-identities used: `√2² = 2`; `3λ − 1 = −√2`; `λ√2 = (√2 − 2)/3`; the rate lies in `(−1/6, 0)`
-(`1.4 < √2 < 1.5`), so `λ ≤ λᵗ ≤ 1` for every `t` and one table serves both parities.
+The fixed table and the negative mode are shared by the entire family. Its member at amplitude 1
+is the original five-agent example, while amplitudes tending to 0 give arbitrarily small spreads
+between the confidence bounds.
 -/
 
 @[expose] public section
@@ -19,195 +16,91 @@ namespace HK
 
 open Filter Topology
 
-theorem sbc5_r_pos : ∀ i, 0 < sbc5_r i := by
-  intro i
-  fin_cases i <;> simp [sbc5_r]
+local notation "N" => ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}]
+local notation "R[" δ "]" => sbc5Family_r δ
+local notation "Y[" δ "]" => traj Model.sbc R[δ] (sbc5Family_x0 δ)
 
-theorem sbc_sqrt_two_sq : Real.sqrt 2 ^ 2 = 2 := Real.sq_sqrt (by norm_num)
+private theorem root_bound : Real.sqrt 2 < 3 / 2 := by norm_num [Real.sqrt_lt']
 
-theorem sbc_sqrt_two_bounds : 1.4 < Real.sqrt 2 ∧ Real.sqrt 2 < 1.5 := by
-  constructor
-  · exact (Real.lt_sqrt (by norm_num)).2 (by norm_num)
-  · exact (Real.sqrt_lt' (by norm_num)).2 (by norm_num)
-
-theorem sbc5Rate_neg : sbc5Rate < 0 := by
-  obtain ⟨h1, -⟩ := sbc_sqrt_two_bounds
+private theorem rate_bounds : -1 < sbc5Rate ∧ sbc5Rate < 0 := by
+  have hlo : 1 < Real.sqrt 2 := by norm_num [Real.lt_sqrt]
   unfold sbc5Rate
-  linarith
+  constructor <;> linarith [root_bound]
 
-theorem abs_sbc5Rate_lt_one : |sbc5Rate| < 1 := by
-  obtain ⟨h1, h2⟩ := sbc_sqrt_two_bounds
-  unfold sbc5Rate
-  rw [abs_lt]
-  constructor <;> linarith
+attribute [local simp] sbc5Family_r sbc5_lim sbc5_v sbc5Rate sbc5Family_x0 in
+private theorem orbit {δ : ℝ} (hδ : 0 < δ) (hδ' : δ ≤ 1) :
+    ModeOrbit .sbc R[δ] (sbc5Family_x0 δ) sbc5_lim (δ • sbc5_v) sbc5Rate (fun _ => N) where
+  rate := rate_bounds
+  table t := by
+    have hu : |sbc5Rate ^ t * δ| ≤ δ := by
+      rw [abs_mul, abs_pow, abs_of_pos hδ]
+      exact mul_le_of_le_one_left hδ.le (pow_le_one₀ (abs_nonneg _) (abs_lt_one_of_rate rate_bounds).le)
+    obtain ⟨_, _⟩ := abs_le.mp hu
+    have := Real.sqrt_nonneg 2
+    have := root_bound
+    simp only [← mul_smul]
+    check_neighbors [-sbc5Rate]
 
-theorem sbc_rate_gt : -1 / 6 < sbc5Rate := by
-  obtain ⟨-, h2⟩ := sbc_sqrt_two_bounds
-  unfold sbc5Rate
-  linarith
+theorem sbc5Family_closed_form (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1) (t : ℕ) :
+    Y[δ] t = profile sbc5_lim (sbc5Rate ^ t * δ) sbc5_v := by
+  change _ = sbc5_lim + (sbc5Rate ^ t * δ) • sbc5_v
+  rw [mul_smul]
+  exact (orbit hδ0 hδ1).form t
 
-/-- `λ ≤ λᵗ ≤ 1` for every `t`. -/
-theorem sbc_pow_bounds (t : ℕ) : sbc5Rate ≤ sbc5Rate ^ t ∧ sbc5Rate ^ t ≤ 1 := by
-  obtain ⟨h1, h2⟩ := sbc_sqrt_two_bounds
-  have h : sbc5Rate = -((Real.sqrt 2 - 1) / 3) := by unfold sbc5Rate; ring
-  rw [h]
-  have hc0 : 0 < (Real.sqrt 2 - 1) / 3 := by linarith
-  have hc1 : (Real.sqrt 2 - 1) / 3 ≤ 1 := by linarith
-  rcases Nat.even_or_odd t with ht | ht
-  · rw [ht.neg_pow]
-    have h0 : 0 < ((Real.sqrt 2 - 1) / 3) ^ t := pow_pos hc0 t
-    have h1 : ((Real.sqrt 2 - 1) / 3) ^ t ≤ 1 := pow_le_one₀ hc0.le hc1
-    constructor <;> linarith
-  · rw [ht.neg_pow]
-    have h0 : 0 < ((Real.sqrt 2 - 1) / 3) ^ t := pow_pos hc0 t
-    have h1 : ((Real.sqrt 2 - 1) / 3) ^ t ≤ (Real.sqrt 2 - 1) / 3 :=
-      pow_le_of_le_one hc0.le hc1 (by rintro rfl; simp at ht)
-    constructor <;> linarith
+theorem sbc5Family_neighbors (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1) (t : ℕ) :
+    neighbors .sbc R[δ] (Y[δ] t) = N :=
+  (orbit hδ0 hδ1).neighborhoods t
 
-/-- The five-agent table for every offset `λ ≤ u ≤ 1`. -/
-theorem sbc_table (u : ℝ) (hu0 : sbc5Rate ≤ u) (hu1 : u ≤ 1) :
-    neighbors .sbc sbc5_r (fun i => sbc5_lim i + u * sbc5_v i) =
-      ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] := by
-  obtain ⟨hs1, hs2⟩ := sbc_sqrt_two_bounds
-  have hr := sbc_rate_gt
-  have hs0 : 0 ≤ Real.sqrt 2 := Real.sqrt_nonneg 2
-  have hp0 : -1 / 2 ≤ u * Real.sqrt 2 := by nlinarith
-  have hp1 : u * Real.sqrt 2 ≤ 3 / 2 := by nlinarith
-  funext i
-  ext j
-  fin_cases i <;> fin_cases j <;>
-    simp [neighbors, Model.bound, sbc5_r, sbc5_lim, sbc5_v, abs_le] <;>
-    (try constructor) <;> (try intro) <;> linarith
+/-- The pairwise bounds say that the ratio between the largest and smallest is less than `1+ε`. -/
+theorem sbc5_near_homogeneous (ε : ℝ) (hε : 0 < ε) :
+    ∃ r x₀ : Fin 5 → ℝ,
+      (∀ i, 0 < r i) ∧ (∀ i j, r i < (1 + ε) * r j) ∧ r 0 < r 1 ∧
+      (∀ t, proximityDigraph .sbc r (traj .sbc r x₀ t) = proximityDigraph .sbc r x₀) ∧
+      Tendsto (traj .sbc r x₀) atTop (𝓝 sbc5_lim) ∧
+      (∀ τ, ¬ FixedFrom (traj .sbc r x₀) τ) ∧
+      (∀ xinf τ, ¬ PseudoStableAfter (traj .sbc r x₀) xinf τ) := by
+  let δ : ℝ := min (1 / 2) (ε / 4)
+  have hδ : 0 < δ := lt_min (by norm_num) (by positivity)
+  have hδhalf : δ ≤ 1 / 2 := min_le_left ..
+  have hδε : δ ≤ ε / 4 := min_le_right ..
+  have hδ1 : δ ≤ 1 := by linarith
+  have h := orbit hδ hδ1
+  refine ⟨R[δ], sbc5Family_x0 δ, ?_, ?_, ?_, digraph_constant h.neighborhoods,
+    h.facts 1 (by simpa [Pi.smul_apply, sbc5_v] using hδ.ne')⟩
+  all_goals
+    norm_num [Fin.forall_fin_succ, sbc5Family_r]
+    and_intros <;> nlinarith [mul_le_mul_of_nonneg_left hδhalf hε.le]
 
-theorem sbc_step (u : ℝ) (hu0 : sbc5Rate ≤ u) (hu1 : u ≤ 1) :
-    step .sbc sbc5_r (fun i => sbc5_lim i + u * sbc5_v i) =
-      fun i => sbc5_lim i + (sbc5Rate * u) * sbc5_v i := by
-  have h2 := sbc_sqrt_two_sq
-  funext i
-  rw [step_apply, sbc_table u hu0 hu1]
-  fin_cases i
-  · simp [sbc5_lim, sbc5_v]
-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]; ring
-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]; linear_combination (-u / 3) * h2
-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]; ring
-  · simp [sbc5_lim, sbc5_v]
+local notation "X" => traj Model.sbc sbc5_r sbc5_x0
 
-theorem sbc5_closed_form_internal (t : ℕ) :
-    traj .sbc sbc5_r sbc5_x0 t = fun i => sbc5_lim i + sbc5Rate ^ t * sbc5_v i := by
-  induction t with
-  | zero =>
-    funext i
-    fin_cases i <;> simp [traj, sbc5_x0, sbc5_lim, sbc5_v] <;> ring
-  | succ t ih =>
-    have h : traj .sbc sbc5_r sbc5_x0 (t + 1) = step .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) := by
-      simp only [traj]
-      exact Function.iterate_succ_apply' _ _ _
-    obtain ⟨h0, h1⟩ := sbc_pow_bounds t
-    rw [h, ih, sbc_step _ h0 h1]
-    funext i; rw [pow_succ]; ring
+private theorem base_orbit : ModeOrbit .sbc sbc5_r sbc5_x0 sbc5_lim sbc5_v sbc5Rate (fun _ => N) := by
+  have base_r : R[1] = sbc5_r := by check_rows [sbc5Family_r, sbc5_r]
+  have base_x : sbc5Family_x0 1 = sbc5_x0 := by check_rows [sbc5Family_x0, sbc5_x0, sbc5_lim, sbc5_v]
+  simpa only [base_r, base_x, one_smul] using orbit (δ := 1) (by norm_num) le_rfl
 
-theorem sbc5_neighbors_internal (t : ℕ) :
-    neighbors .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) =
-      ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] := by
-  obtain ⟨h0, h1⟩ := sbc_pow_bounds t
-  rw [sbc5_closed_form_internal, sbc_table _ h0 h1]
+theorem sbc5_closed_form (t : ℕ) : X t = profile sbc5_lim (sbc5Rate ^ t) sbc5_v := base_orbit.form t
 
-theorem sbc_closed_form' (t : ℕ) :
-    traj .sbc sbc5_r sbc5_x0 t = fun i => sbc5_lim i + sbc5Rate ^ t * 1 * sbc5_v i := by
-  rw [sbc5_closed_form_internal]; funext i; ring
-
-theorem sbc_rate_tendsto : Tendsto (fun t : ℕ => sbc5Rate ^ t * 1) atTop (𝓝 0) := by
-  simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one abs_sbc5Rate_lt_one
-
-theorem sbc5_tendsto : Tendsto (traj .sbc sbc5_r sbc5_x0) atTop (𝓝 sbc5_lim) :=
-  tendsto_of_closed_form _ _ sbc5_v _ sbc_rate_tendsto sbc_closed_form'
+theorem sbc5_neighbors (t : ℕ) : neighbors .sbc sbc5_r (X t) = N := base_orbit.neighborhoods t
 
 theorem sbc5_digraph_constant (t : ℕ) :
-    proximityDigraph .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) =
-      proximityDigraph .sbc sbc5_r sbc5_x0 := by
-  have h0 : traj .sbc sbc5_r sbc5_x0 0 = sbc5_x0 := rfl
-  have := sbc5_neighbors_internal 0
-  rw [h0] at this
-  simp only [proximityDigraph, sbc5_neighbors_internal, this]
+    proximityDigraph .sbc sbc5_r (X t) = proximityDigraph .sbc sbc5_r sbc5_x0 :=
+  digraph_constant sbc5_neighbors t
 
-theorem sbc5_not_fixedFrom (τ : ℕ) : ¬ FixedFrom (traj .sbc sbc5_r sbc5_x0) τ :=
-  not_fixedFrom_of_closed_form _ _ sbc5_v _ sbc_closed_form'
-    (alternating _ _ sbc5Rate_neg one_ne_zero) 1 (by simp [sbc5_v]) τ
+theorem sbc5_facts : Tendsto X atTop (𝓝 sbc5_lim) ∧ NeverStable X :=
+  base_orbit.facts 1 (by simp [sbc5_v])
 
-theorem sbc5_not_pseudoStableAfter (xinf : Fin 5 → ℝ) (τ : ℕ) :
-    ¬ PseudoStableAfter (traj .sbc sbc5_r sbc5_x0) xinf τ :=
-  not_pseudoStable_of_closed_form _ _ sbc5_v _ sbc_rate_tendsto sbc_closed_form'
-    (alternating _ _ sbc5Rate_neg one_ne_zero) xinf τ
+private theorem r_pos : ∀ i, 0 < sbc5_r i := by norm_num [Fin.forall_fin_succ, sbc5_r]
 
-theorem not_conjecture23_sbc_five_internal : ¬ Conjecture23ForAgents .sbc 5 := by
-  intro h
-  obtain ⟨τ, hf | ⟨xinf, hps⟩⟩ := h sbc5_r sbc5_x0 sbc5_r_pos
-  · exact sbc5_not_fixedFrom τ hf
-  · exact sbc5_not_pseudoStableAfter xinf τ hps
+theorem not_conjecture23_sbc_five : ¬ Conjecture23ForAgents .sbc 5 := refute23 r_pos sbc5_facts.2
 
-theorem not_theorem64iv_sbc_five_internal : ¬ Theorem64ivForAgents .sbc 5 := by
-  intro h
-  obtain ⟨t₂, -, hf | ⟨xinf, hps⟩⟩ := h sbc5_r sbc5_x0 sbc5_r_pos 0
-    (fun t _ => by simp only [proximityDigraph, sbc5_neighbors_internal])
-  · exact sbc5_not_fixedFrom t₂ hf
-  · exact sbc5_not_pseudoStableAfter xinf t₂ hps
+theorem not_theorem64iv_sbc_five : ¬ Theorem64ivForAgents .sbc 5 :=
+  refute64 r_pos sbc5_digraph_constant sbc5_facts.2
 
-theorem sbc_adj_lim (t : ℕ) :
-    (adjMatrix .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t)).mulVec sbc5_lim = sbc5_lim := by
-  funext i
-  rw [adj_mulVec, sbc5_neighbors_internal]
-  fin_cases i <;> simp [Finset.sum_insert, sbc5_lim] <;> norm_num
+theorem sbc5_fvct (t : ℕ) : fvct .sbc sbc5_r (X t) = sbc5_lim := base_orbit.frozenLimit t
 
-theorem sbc_adj_v (t : ℕ) :
-    (adjMatrix .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t)).mulVec sbc5_v = sbc5Rate • sbc5_v := by
-  have h2 := sbc_sqrt_two_sq
-  funext i
-  rw [adj_mulVec, sbc5_neighbors_internal]
-  fin_cases i
-  · simp [sbc5_v]
-  · simp [Finset.sum_insert, sbc5_v, sbc5Rate]; ring
-  · simp [Finset.sum_insert, sbc5_v, sbc5Rate]; linear_combination (-1 / 3 : ℝ) * h2
-  · simp [Finset.sum_insert, sbc5_v, sbc5Rate]; ring
-  · simp [sbc5_v]
-
-theorem sbc_adj_pow (t k : ℕ) (c : ℝ) :
-    (adjMatrix .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) ^ k).mulVec (sbc5_lim + c • sbc5_v) =
-      sbc5_lim + (sbc5Rate ^ k * c) • sbc5_v := by
-  induction k with
-  | zero => simp
-  | succ k ih =>
-    rw [pow_succ', ← Matrix.mulVec_mulVec, ih, Matrix.mulVec_add, Matrix.mulVec_smul,
-      sbc_adj_lim, sbc_adj_v, smul_smul, pow_succ]
-    congr 2
-    ring
-
-/-- The final value at constant topology along the trajectory is the limit at every `t`. -/
-theorem sbc5_fvct_internal (t : ℕ) : fvct .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) = sbc5_lim := by
-  have hx : traj .sbc sbc5_r sbc5_x0 t = sbc5_lim + (sbc5Rate ^ t) • sbc5_v := by
-    rw [sbc5_closed_form_internal]; funext i; simp
-  have h1 : Tendsto (fun k : ℕ => sbc5_lim + (sbc5Rate ^ k * sbc5Rate ^ t) • sbc5_v)
-      atTop (𝓝 sbc5_lim) := by
-    have h0 := ((tendsto_pow_atTop_nhds_zero_of_abs_lt_one abs_sbc5Rate_lt_one).mul_const
-      (sbc5Rate ^ t)).smul_const sbc5_v
-    have h2 := h0.const_add sbc5_lim
-    rwa [zero_mul, zero_smul, add_zero] at h2
-  have hA := sbc_adj_pow t
-  unfold fvct
-  set A := adjMatrix .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) with hAdef
-  have hf : (fun k : ℕ => (A ^ k).mulVec (traj .sbc sbc5_r sbc5_x0 t)) =
-      fun k => sbc5_lim + (sbc5Rate ^ k * sbc5Rate ^ t) • sbc5_v := by
-    funext k; rw [hx, hA]
-  rw [hf]
-  exact h1.limUnder_eq
-
-/-- The per-step convergence factor of agents 1, 2, 3 is `λ` at every `t`. -/
-theorem sbc5_perStepFactor_internal (t : ℕ) (i : Fin 5) (hi : i ∈ ({1, 2, 3} : Finset (Fin 5))) :
-    perStepFactor .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0) i t = sbc5Rate := by
-  have hv : sbc5_v i ≠ 0 := by
-    fin_cases i <;> simp_all [sbc5_v]
-  have hp : sbc5Rate ^ t ≠ 0 := pow_ne_zero _ sbc5Rate_neg.ne
-  rw [perStepFactor, sbc5_fvct_internal, sbc5_closed_form_internal, sbc5_closed_form_internal]
-  simp only [add_sub_cancel_left, pow_succ]
-  field_simp
+theorem sbc5_perStepFactor (t : ℕ) (i : Fin 5) (hi : i ∈ ({1, 2, 3} : Finset (Fin 5))) :
+    perStepFactor .sbc sbc5_r X i t = sbc5Rate :=
+  base_orbit.factor t i (by
+    fin_cases i <;> simp_all [sbc5_v])
 
 end HK
