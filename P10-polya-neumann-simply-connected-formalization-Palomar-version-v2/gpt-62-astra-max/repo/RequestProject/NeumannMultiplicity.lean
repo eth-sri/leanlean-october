@@ -35,42 +35,41 @@ lemma exists_orthonormal_seq_mem {H : Type*} [NormedAddCommGroup H] [InnerProduc
   have pick : ∀ n (v : Fin n → H), ∃ u ∈ S n, ‖u‖ = 1 ∧ ∀ i, ⟪v i, u⟫_ℂ = 0 := by
     intro n v
     let f : S n →ₗ[ℂ] (Fin n → ℂ) :=
-      { toFun := fun u i => ⟪v i, (u : H)⟫_ℂ
+      { toFun := fun u i => ⟪v i, u⟫_ℂ
         map_add' := fun x y => by
           ext i
           exact inner_add_right _ _ _
         map_smul' := fun c x => by
           ext i
           exact inner_smul_right _ _ _ }
-    haveI : FiniteDimensional ℂ (S n) := Module.finite_of_finrank_pos (by rw [hS]; omega)
-    have hker : LinearMap.ker f ≠ ⊥ := LinearMap.ker_ne_bot_of_finrank_lt (by simp [hS n])
+    haveI : FiniteDimensional ℂ (S n) := Module.finite_of_finrank_pos (by simp [hS])
+    have hker : LinearMap.ker f ≠ ⊥ := LinearMap.ker_ne_bot_of_finrank_lt (by simp [*])
     obtain ⟨w, hw, hw0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hker
-    have hw0' : (w : H) ≠ 0 := fun h => hw0 (Subtype.ext h)
-    refine ⟨(‖(w : H)‖⁻¹ : ℂ) • (w : H), (S n).smul_mem _ w.2, ?_, fun i => ?_⟩
+    
+    refine ⟨(‖(w : H)‖⁻¹ : ℂ) • w, (S n).smul_mem _ w.2, ?_, fun i => ?_⟩
     · rw [norm_smul, norm_inv, Complex.norm_real, Real.norm_of_nonneg (norm_nonneg _),
-        inv_mul_cancel₀ (norm_ne_zero_iff.mpr hw0')]
-    · have := congrFun (LinearMap.mem_ker.mp hw) i
+        inv_mul_cancel₀ (norm_ne_zero_iff.mpr (fun h => hw0 (Subtype.ext h)))]
+    · have := congrFun ((by assumption)) i
       simp only [f, LinearMap.coe_mk, AddHom.coe_mk, Pi.zero_apply] at this
-      rw [inner_smul_right, this, mul_zero]
+      simp [inner_smul_right, this]
   choose p hpS hp1 hpo using pick
-  let T : (n : ℕ) → Fin n → H := fun n =>
+  let T  := fun n =>
     Nat.rec (motive := fun n => Fin n → H) Fin.elim0 (fun n t => Fin.snoc t (p n t)) n
   have hT : ∀ n, T (n + 1) = Fin.snoc (T n) (p n (T n)) := fun n => rfl
-  let u : ℕ → H := fun n => p n (T n)
+  let u  := fun n => p n (T n)
   have hTu : ∀ n (i : Fin n), T n i = u i := by
     intro n
     induction n with
-    | zero => intro i; exact i.elim0
+    | zero => simp
     | succ n ih =>
       intro i
       rw [hT]
       refine Fin.lastCases ?_ (fun j => ?_) i
       · simp [u]
-      · simp [ih j]
+      · simp [*]
   refine ⟨u, ⟨fun n => hp1 n _, fun i j hij => ?_⟩, fun n => hpS n _⟩
   rcases lt_or_gt_of_ne hij with h | h
-  · have := hpo j (T j) ⟨i, h⟩
-    rwa [hTu] at this
+  · grind [hpo j (T j) ⟨i, h⟩]
   · have := hpo i (T i) ⟨j, h⟩
     rw [hTu] at this
     rw [← inner_conj_symm, this, map_zero]
@@ -84,23 +83,22 @@ lemma exists_grad_of_rayleigh_lt {Ω : Set ℂ} (hΩ : IsOpen Ω) {u : L2 Ω} (h
     rw [← ENNReal.coe_one]; congr 1; exact Subtype.ext hu
   unfold rayleigh at h
   rw [hn, one_pow, div_one] at h
-  have hne : neumannEnergy Ω u ≠ ⊤ := (h.trans_le le_top).ne
+  have hne  := (h.trans_le le_top).ne
   have hH : ∃ g, IsWeakGradient Ω u g := by
     by_contra hno
     push_neg at hno
     apply hne
-    unfold neumannEnergy
     exact iInf₂_eq_top.mpr fun g hg => absurd hg (hno g)
   obtain ⟨g, hg⟩ := hH
   refine ⟨g, hg, fun i => ?_⟩
   rw [neumannEnergy_eq_of_isWeakGradient hΩ hg] at h
-  have hi : (‖g i‖₊ : ENNReal) ^ 2 ≤ E :=
-    (Finset.single_le_sum (f := fun j => (‖g j‖₊ : ENNReal) ^ 2) (fun _ _ => zero_le)
+  have hi  :=
+    (Finset.single_le_sum  ((by norm_num))
       (Finset.mem_univ i)).trans h.le
-  have hi' : ‖g i‖ ^ 2 ≤ E.toReal := by
-    have := ENNReal.toReal_mono hE hi
-    simpa [ENNReal.toReal_pow] using this
-  exact Real.le_sqrt_of_sq_le hi'
+  
+  apply Real.le_sqrt_of_sq_le
+  have := ENNReal.toReal_mono hE hi
+  exact this
 
 /-- **Discreteness of the Neumann spectrum.** On a bounded Lipschitz domain only finitely many
 min–max values lie below any finite level. -/
@@ -116,17 +114,16 @@ theorem finite_setOf_neumannEigenvalue_lt {Ω : Set ℂ} (hb : Bornology.IsBound
       ∀ u ∈ S, u ≠ 0 → rayleigh Ω u < E := by
     intro n
     have h := hall n
-    unfold neumannEigenvalue at h
+    
     obtain ⟨S, h1⟩ := iInf_lt_iff.mp h
     obtain ⟨hS, h2⟩ := iInf_lt_iff.mp h1
     refine ⟨S, hS, fun u hu hu0 => lt_of_le_of_lt ?_ h2⟩
     exact le_iSup₂_of_le u hu (le_iSup (fun _ : u ≠ 0 => rayleigh Ω u) hu0)
   choose S hSd hSr using hS
   obtain ⟨u, hu, huS⟩ := exists_orthonormal_seq_mem S hSd
-  have hgrad : ∀ n, ∃ g, IsWeakGradient Ω (u n) g ∧ ∀ i, ‖g i‖ ≤ Real.sqrt E.toReal :=
-    fun n => exists_grad_of_rayleigh_lt hL.1.1 (hu.1 n) hE
-      (hSr n _ (huS n) (hu.ne_zero n))
-  choose g hg hgb using hgrad
+  
+  choose g hg hgb using (fun n => exists_grad_of_rayleigh_lt hL.1.1 (hu.1 n) hE
+    (hSr n _ (huS n) (hu.ne_zero n)))
   obtain ⟨φ, hφ, v, hv⟩ := rellich_compact hb hL u g hg (max 1 (Real.sqrt E.toReal))
     (fun n => (hu.1 n).le.trans (le_max_left _ _)) (fun n i => (hgb n i).trans (le_max_right _ _))
   have hcauchy := hv.cauchySeq
@@ -134,7 +131,7 @@ theorem finite_setOf_neumannEigenvalue_lt {Ω : Set ℂ} (hb : Bornology.IsBound
   obtain ⟨N, hN⟩ := hcauchy 1 one_pos
   have h1 := hN (N + 1) (by omega) N le_rfl
   rw [dist_eq_norm] at h1
-  simp only [Function.comp] at h1
+  simp at h1
   have hne : φ (N + 1) ≠ φ N := hφ.injective.ne (by omega)
   have h2 : ‖u (φ (N + 1)) - u (φ N)‖ ^ 2 = 2 := by
     rw [@norm_sub_sq ℂ, hu.1, hu.1, hu.2 hne]; simp; norm_num
@@ -149,7 +146,7 @@ lemma rayleigh_eq_ofReal {Ω : Set ℂ} (hΩ : IsOpen Ω) {u : L2 Ω} (hu : u �
   unfold rayleigh
   rw [neumannEnergy_eq_of_isWeakGradient hΩ hg, hsq u, ENNReal.ofReal_div_of_pos
     (by positivity), ENNReal.ofReal_sum_of_nonneg (fun _ _ => by positivity)]
-  simp only [hsq]
+  simp [hsq]
 
 /-- **Multiplicity.** On a bounded Lipschitz domain, the dimension of the Neumann eigenspace at
 `E ≥ 0` is at most the number of indices `j` with `μ_j(Ω) = E`. -/
@@ -158,13 +155,13 @@ theorem finrank_neumannEigenspace_le {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
     (Module.finrank ℂ (neumannEigenspace Ω E) : ℕ∞) ≤
       {j : ℕ | neumannEigenvalue Ω j = ENNReal.ofReal E}.encard := by
   classical
-  have hΩ : IsOpen Ω := hL.1.1
+  have hΩ  := hL.1.1
   set Eig := neumannEigenspace Ω E with hEig
-  haveI : FiniteDimensional ℂ Eig := finiteDimensional_neumannEigenspace hb hL E
+  haveI  := finiteDimensional_neumannEigenspace hb hL E
   set d := Module.finrank ℂ Eig with hd
   set T := {j : ℕ | neumannEigenvalue Ω j < ENNReal.ofReal E} with hTdef
   have hT : T.Finite := finite_setOf_neumannEigenvalue_lt hb hL ENNReal.ofReal_ne_top
-  have hex : ∃ j, j ∉ T := hT.exists_notMem
+  have hex  := hT.exists_notMem
   set n₀ := Nat.find hex with hn₀
   have hlt : ∀ j < n₀, j ∈ T := fun j hj => by
     have := Nat.find_min hex hj
@@ -177,7 +174,7 @@ theorem finrank_neumannEigenspace_le {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
   have heig : ∀ w ∈ Eig, ∃ g, IsWeakGradient Ω w g ∧ ∀ v h, IsWeakGradient Ω v h →
       ∑ i, ⟪h i, g i⟫_ℂ = (E : ℂ) * ⟪v, w⟫_ℂ := fun w hw => hw
   have heig_norm : ∀ w g, IsWeakGradient Ω w g → (∀ v h, IsWeakGradient Ω v h →
-      ∑ i, ⟪h i, g i⟫_ℂ = (E : ℂ) * ⟪v, w⟫_ℂ) → ∑ i, ‖g i‖ ^ 2 = E * ‖w‖ ^ 2 := by
+      ∑ i, ⟪h i, g i⟫_ℂ = E * ⟪v, w⟫_ℂ) → ∑ i, ‖g i‖ ^ 2 = E * ‖w‖ ^ 2 := by
     intro w g hg hw
     have h := hw w g hg
     simp only [inner_self_eq_norm_sq_to_K] at h
@@ -186,14 +183,14 @@ theorem finrank_neumannEigenspace_le {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
   have hS₁ : ∃ S₁ : Submodule ℂ (L2 Ω), FiniteDimensional ℂ S₁ ∧ Module.finrank ℂ S₁ = n₀ ∧
       ∀ v ∈ S₁, v ≠ 0 → rayleigh Ω v < ENNReal.ofReal E := by
     rcases Nat.eq_zero_or_pos n₀ with h0 | hpos
-    · exact ⟨⊥, inferInstance, by rw [h0]; simp,
-        fun v hv hv0 => absurd ((Submodule.mem_bot ℂ).mp hv) hv0⟩
+    · exact ⟨⊥, inferInstance, by simp [h0],
+        (by simp)⟩
     · have h := hlt (n₀ - 1) (by omega)
-      simp only [hTdef, Set.mem_setOf_eq] at h
-      unfold neumannEigenvalue at h
+      simp [hTdef] at h
+      
       obtain ⟨S, h1⟩ := iInf_lt_iff.mp h
       obtain ⟨hS, h2⟩ := iInf_lt_iff.mp h1
-      refine ⟨S, Module.finite_of_finrank_pos (by omega), by rw [hS]; omega,
+      refine ⟨S, Module.finite_of_finrank_pos (by omega), by omega,
         fun u hu hu0 => lt_of_le_of_lt ?_ h2⟩
       exact le_iSup₂_of_le u hu (le_iSup (fun _ : u ≠ 0 => rayleigh Ω u) hu0)
   obtain ⟨S₁, hS₁f, hS₁d, hS₁r⟩ := hS₁
@@ -203,7 +200,7 @@ theorem finrank_neumannEigenspace_le {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
     intro v hv
     by_cases hv0 : v = 0
     · subst hv0
-      exact ⟨0, isWeakGradient_zero, by simp, fun h => absurd rfl h⟩
+      exact ⟨0, isWeakGradient_zero, by simp, absurd rfl⟩
     have hr := hS₁r v hv hv0
     have hne : neumannEnergy Ω v ≠ ⊤ := by
       intro htop
@@ -214,29 +211,28 @@ theorem finrank_neumannEigenspace_le {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
       by_contra hno
       push_neg at hno
       apply hne
-      unfold neumannEnergy
       exact iInf₂_eq_top.mpr fun g hg => absurd hg (hno g)
     obtain ⟨h, hh⟩ := hH
     rw [rayleigh_eq_ofReal hΩ hv0 hh, ENNReal.ofReal_lt_ofReal_iff_of_nonneg (by positivity),
-      div_lt_iff₀ (by positivity [norm_pos_iff.mpr hv0])] at hr
+      div_lt_iff₀ (by positivity)] at hr
     exact ⟨h, hh, hr.le, fun _ => hr⟩
   -- the energy on `S₁ + Eig`
   have hsum : ∀ v ∈ S₁, ∀ w ∈ Eig, v + w ≠ 0 → rayleigh Ω (v + w) ≤ ENNReal.ofReal E := by
     intro v hv w hw hvw
     obtain ⟨h, hh, hhE, -⟩ := hgradS v hv
     obtain ⟨g, hg, hgE⟩ := heig w hw
-    have hgn := heig_norm w g hg hgE
+    
     have hcross := hgE v h hh
     rw [rayleigh_eq_ofReal hΩ hvw (hh.add hg), ENNReal.ofReal_le_ofReal_iff hE,
-      div_le_iff₀ (by positivity [norm_pos_iff.mpr hvw])]
+      div_le_iff₀ (by positivity)]
     have hexp : ∀ i, ‖h i + g i‖ ^ 2 = ‖h i‖ ^ 2 + 2 * (⟪h i, g i⟫_ℂ).re + ‖g i‖ ^ 2 :=
       fun i => @norm_add_sq ℂ _ _ _ _ _ _
     have hvw2 : ‖v + w‖ ^ 2 = ‖v‖ ^ 2 + 2 * (⟪v, w⟫_ℂ).re + ‖w‖ ^ 2 := @norm_add_sq ℂ _ _ _ _ _ _
     have hre : ∑ i, (⟪h i, g i⟫_ℂ).re = E * (⟪v, w⟫_ℂ).re := by
       have := congrArg Complex.re hcross
       rw [Complex.re_sum] at this
-      rw [this]; simp
-    simp only [Pi.add_apply, hexp, Finset.sum_add_distrib, ← Finset.mul_sum, hre, hgn, hvw2]
+      simp [this]
+    simp only [Pi.add_apply, hexp, Finset.sum_add_distrib, ← Finset.mul_sum, hre, (heig_norm w g hg hgE), hvw2]
     nlinarith
   -- `S₁` and `Eig` are independent
   have hdisj : S₁ ⊓ Eig = ⊥ := by
@@ -255,11 +251,11 @@ theorem finrank_neumannEigenspace_le {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
     rw [hdisj, finrank_bot, add_zero, hS₁d] at this
     exact this
   rcases Nat.eq_zero_or_pos d with hd0 | hdpos
-  · rw [hd0]; simp
+  · simp [hd0]
   -- `μ_{n₀ + d - 1} ≤ E`
   have htop : neumannEigenvalue Ω (n₀ + d - 1) ≤ ENNReal.ofReal E := by
-    unfold neumannEigenvalue
-    refine (iInf₂_le S (by rw [hSd]; omega)).trans ?_
+    
+    refine (iInf₂_le S (by omega)).trans ?_
     refine iSup₂_le fun u hu => iSup_le fun hu0 => ?_
     obtain ⟨v, hv, w, hw, rfl⟩ := Submodule.mem_sup.mp hu
     exact hsum v hv w hw hu0

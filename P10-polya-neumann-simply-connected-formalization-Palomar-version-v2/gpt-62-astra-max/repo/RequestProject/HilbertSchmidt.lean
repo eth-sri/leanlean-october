@@ -25,19 +25,25 @@ variable {𝕜 : Type*} [RCLike 𝕜] {ι : Type*}
   {H : Type*} [NormedAddCommGroup H] [InnerProductSpace 𝕜 H]
   {K : Type*} [NormedAddCommGroup K] [InnerProductSpace 𝕜 K]
 
+section
+
+variable (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K) (s : Set ι)
+    (hT : Summable fun i => ‖T (b i)‖ ^ 2) (x : H)
+include T b
+
 /-- Expansion of `T x` along a Hilbert basis. -/
-lemma hasSum_apply_hilbertBasis (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K) (x : H) :
+lemma hasSum_apply_hilbertBasis :
     HasSum (fun i => ⟪b i, x⟫_𝕜 • T (b i)) (T x) := by
   have := (b.hasSum_repr x).mapL T
   simpa [b.repr_apply_apply] using this
 
+include hT in
 /-- Cauchy–Schwarz bound for the part of the expansion of `T x` over a set `s` of indices. -/
-lemma norm_tsum_subtype_le (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K) (s : Set ι)
-    (hT : Summable fun i => ‖T (b i)‖ ^ 2) (x : H) :
+lemma norm_tsum_subtype_le :
     ‖∑' i : s, ⟪b i, x⟫_𝕜 • T (b i)‖ ≤ Real.sqrt (∑' i : s, ‖T (b i)‖ ^ 2) * ‖x‖ := by
   set f : s → ℝ := fun i => ‖⟪b i, x⟫_𝕜‖
   set g : s → ℝ := fun i => ‖T (b i)‖
-  have hbessel : Summable fun i : ι => ‖⟪b i, x⟫_𝕜‖ ^ 2 :=
+  have hbessel  :=
     b.orthonormal.inner_products_summable x
   have hf2 : Summable fun i : s => f i ^ (2 : ℝ) := by
     simpa [f, Real.rpow_two, Function.comp_def] using hbessel.subtype (· ∈ s)
@@ -45,8 +51,7 @@ lemma norm_tsum_subtype_le (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K) (s 
     simpa [g, Real.rpow_two, Function.comp_def] using hT.subtype (· ∈ s)
   have hfg := Real.summable_mul_of_Lp_Lq_of_nonneg Real.HolderConjugate.two_two
     (fun i => norm_nonneg _) (fun i => norm_nonneg _) hf2 hg2
-  have hle := Real.inner_le_Lp_mul_Lq_tsum_of_nonneg Real.HolderConjugate.two_two
-    (fun i => norm_nonneg _) (fun i => norm_nonneg _) hf2 hg2
+  
   have hsumf : ∑' i : s, f i ^ (2 : ℝ) ≤ ‖x‖ ^ 2 := by
     have h1 : ∑' i : s, f i ^ (2 : ℝ) ≤ ∑' i : ι, ‖⟪b i, x⟫_𝕜‖ ^ 2 := by
       simp only [f, Real.rpow_two]
@@ -54,54 +59,62 @@ lemma norm_tsum_subtype_le (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K) (s 
     exact h1.trans (b.orthonormal.tsum_inner_products_le x)
   have hnorm : Summable fun i : s => ‖⟪b i, x⟫_𝕜 • T (b i)‖ := by
     simpa [norm_smul, f, g] using hfg
-  calc ‖∑' i : s, ⟪b i, x⟫_𝕜 • T (b i)‖ ≤ ∑' i : s, ‖⟪b i, x⟫_𝕜 • T (b i)‖ :=
+  calc _ ≤ _ :=
         norm_tsum_le_tsum_norm hnorm
     _ = ∑' i : s, f i * g i := by simp [norm_smul, f, g]
-    _ ≤ (∑' i : s, f i ^ (2 : ℝ)) ^ (1 / (2 : ℝ)) * (∑' i : s, g i ^ (2 : ℝ)) ^ (1 / (2 : ℝ)) :=
-        hle
+    _ ≤ _ :=
+        (Real.inner_le_Lp_mul_Lq_tsum_of_nonneg Real.HolderConjugate.two_two
+          (fun i => norm_nonneg _) (fun i => norm_nonneg _) hf2 hg2)
     _ ≤ (‖x‖ ^ 2) ^ (1 / (2 : ℝ)) * (∑' i : s, g i ^ (2 : ℝ)) ^ (1 / (2 : ℝ)) := by
         gcongr
-    _ = Real.sqrt (∑' i : s, ‖T (b i)‖ ^ 2) * ‖x‖ := by
+    _ = _ := by
         rw [← Real.sqrt_eq_rpow, ← Real.sqrt_eq_rpow, Real.sqrt_sq (norm_nonneg x), mul_comm]
         simp [g]
 
+include hT in
 /-- **Hilbert–Schmidt bound.** `‖T‖ ≤ (∑ᵢ ‖T bᵢ‖²)^{1/2}` for a Hilbert basis `(bᵢ)`. -/
-theorem norm_le_sqrt_tsum_norm_sq (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K)
-    (hT : Summable fun i => ‖T (b i)‖ ^ 2) :
+theorem norm_le_sqrt_tsum_norm_sq :
     ‖T‖ ≤ Real.sqrt (∑' i, ‖T (b i)‖ ^ 2) := by
   refine T.opNorm_le_bound (Real.sqrt_nonneg _) fun x => ?_
   have h := norm_tsum_subtype_le b T Set.univ hT x
   have e1 : ∑' i : (Set.univ : Set ι), ⟪b i, x⟫_𝕜 • T (b i) = T x := by
     rw [tsum_univ (f := fun i => ⟪b i, x⟫_𝕜 • T (b i))]
     exact (hasSum_apply_hilbertBasis b T x).tsum_eq
-  have e2 : ∑' i : (Set.univ : Set ι), ‖T (b i)‖ ^ 2 = ∑' i, ‖T (b i)‖ ^ 2 :=
+  have e2  :=
     tsum_univ (f := fun i => ‖T (b i)‖ ^ 2)
   rwa [e1, e2] at h
 
 /-- The finite-rank truncation `x ↦ ∑_{i ∈ F} ⟨bᵢ, x⟩ T bᵢ`. -/
-def hsTrunc (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K) (F : Finset ι) : H →L[𝕜] K :=
+def hsTrunc (F : Finset ι) : H →L[𝕜] K :=
   ∑ i ∈ F, (innerSL 𝕜 (b i)).smulRight (T (b i))
 
-lemma hsTrunc_apply (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K) (F : Finset ι) (x : H) :
-    hsTrunc b T F x = ∑ i ∈ F, ⟪b i, x⟫_𝕜 • T (b i) := by
-  simp [hsTrunc, ContinuousLinearMap.sum_apply]
+end
 
-lemma isCompactOperator_hsTrunc (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K) (F : Finset ι) :
+section
+
+variable (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K) (F : Finset ι)
+
+lemma hsTrunc_apply (x : H) :
+    hsTrunc b T F x = ∑ i ∈ F, ⟪b i, x⟫_𝕜 • T (b i) := by
+  simp [hsTrunc]
+
+lemma isCompactOperator_hsTrunc :
     IsCompactOperator (hsTrunc b T F) := by
   classical
   unfold hsTrunc
   induction F using Finset.induction_on with
-  | empty => simpa using (isCompactOperator_zero : IsCompactOperator (0 : H → K))
+  | empty => exact isCompactOperator_zero
   | insert j F hj ih =>
     rw [Finset.sum_insert hj]
-    refine IsCompactOperator.add (f := ⇑((innerSL 𝕜 (b j)).smulRight (T (b j)))) ?_ ih
+    refine IsCompactOperator.add  ?_ ih
     have hle : LinearMap.range (((innerSL 𝕜 (b j)).smulRight (T (b j)) : H →L[𝕜] K) :
         H →ₗ[𝕜] K) ≤ 𝕜 ∙ T (b j) := by
       rintro _ ⟨x, rfl⟩
       exact Submodule.mem_span_singleton.mpr ⟨_, rfl⟩
-    haveI : FiniteDimensional 𝕜 (LinearMap.range (((innerSL 𝕜 (b j)).smulRight (T (b j)) :
-        H →L[𝕜] K) : H →ₗ[𝕜] K)) := Submodule.finiteDimensional_of_le hle
+    haveI  := Submodule.finiteDimensional_of_le hle
     exact isCompactOperator_of_finiteDimensional_range _
+
+end
 
 lemma norm_sub_hsTrunc_le (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K)
     (hT : Summable fun i => ‖T (b i)‖ ^ 2) (F : Finset ι) :
@@ -112,7 +125,7 @@ lemma norm_sub_hsTrunc_le (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K)
   rw [hs.tsum_eq] at hsplit
   have : (T - hsTrunc b T F) x = ∑' i : {i // i ∉ F}, ⟪b i, x⟫_𝕜 • T (b i) := by
     rw [ContinuousLinearMap.sub_apply, hsTrunc_apply, ← hsplit]
-    simp only [add_sub_cancel_left]
+    simp
     rfl
   rw [this]
   exact norm_tsum_subtype_le b T {i | i ∉ F} hT x
@@ -121,7 +134,7 @@ lemma norm_sub_hsTrunc_le (b : HilbertBasis ι 𝕜 H) (T : H →L[𝕜] K)
 `(bᵢ)` of `H`, then `T` is a compact operator. -/
 theorem isCompactOperator_of_summable_norm_sq [CompleteSpace K] (b : HilbertBasis ι 𝕜 H)
     (T : H →L[𝕜] K) (hT : Summable fun i => ‖T (b i)‖ ^ 2) : IsCompactOperator T := by
-  have hlim : Tendsto (fun F : Finset ι => hsTrunc b T F) atTop (𝓝 T) := by
+  have hlim : Tendsto (hsTrunc b T) atTop (𝓝 T) := by
     rw [tendsto_iff_norm_sub_tendsto_zero]
     have h0 := tendsto_tsum_compl_atTop_zero (fun i => ‖T (b i)‖ ^ 2)
     have h1 : Tendsto (fun F : Finset ι => Real.sqrt (∑' i : {i // i ∉ F}, ‖T (b i)‖ ^ 2))
@@ -130,8 +143,7 @@ theorem isCompactOperator_of_summable_norm_sq [CompleteSpace K] (b : HilbertBasi
     refine squeeze_zero (fun F => norm_nonneg _) (fun F => ?_) h1
     rw [norm_sub_rev]
     exact norm_sub_hsTrunc_le b T hT F
-  have hmem : ∀ F, hsTrunc b T F ∈ {f : H →L[𝕜] K | IsCompactOperator f} :=
-    fun F => isCompactOperator_hsTrunc b T F
-  exact isClosed_setOf_isCompactOperator.mem_of_tendsto hlim (Eventually.of_forall hmem)
+  
+  exact isClosed_setOf_isCompactOperator.mem_of_tendsto hlim (Eventually.of_forall (isCompactOperator_hsTrunc b T))
 
 end PolyaNeumann

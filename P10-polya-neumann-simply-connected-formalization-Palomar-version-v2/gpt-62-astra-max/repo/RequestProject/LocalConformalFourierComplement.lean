@@ -1,7 +1,11 @@
 module
 
-public import RequestProject.LocalConformalFixedComplement
+public import RequestProject.DiskCoordinates
+
+public import RequestProject.LocalConformalVekuaTransport
+public import RequestProject.LocalConformalHardySubspace
 public import RequestProject.PositiveFourierBasis
+public import RequestProject.PlanarNotation
 
 /-!
 # A genuine finite Fourier complement for the physical conormal chart
@@ -17,6 +21,8 @@ finite rank alone would not imply that property.
 set_option autoImplicit false
 
 noncomputable section
+
+open scoped ContDiff
 
 namespace PolyaNeumann
 
@@ -42,14 +48,11 @@ theorem normalizedConormal_fixed_fourier_complement
             (H₀).orthogonalProjection +
             (Submodule.subtypeL H₀ᗮ + ∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) ∘L
               H₀ᗮ.orthogonalProjection)) U := by
-  have hJ : Continuous fun E : ℝ =>
-      (normalizedConormal hb ha hg (E : ℂ)).comp (H₀).subtypeL :=
-    ((continuous_normalizedConormal hb ha hg).comp Complex.continuous_ofReal).clm_comp
-      continuous_const
+  
   have heq : (normalizedConormal hb ha hg E₀).comp (H₀).subtypeL ∘L
       (H₀).orthogonalProjection + Submodule.subtypeL H₀ᗮ ∘L H₀ᗮ.orthogonalProjection -
-        (1 : L2Z →L[ℂ] L2Z) =
-      (normalizedConormal hb ha hg E₀ - (1 : L2Z →L[ℂ] L2Z)) ∘L
+        1 =
+      (normalizedConormal hb ha hg E₀ - 1) ∘L
         ((H₀).subtypeL ∘L (H₀).orthogonalProjection) := by
     ext1 x
     have hx := (H₀).starProjection_add_starProjection_orthogonal x
@@ -59,8 +62,7 @@ theorem normalizedConormal_fixed_fourier_complement
     rw [← sub_eq_zero]
     have horth : (H₀ᗮ.orthogonalProjection x : L2Z) =
         x - ((H₀).orthogonalProjection x : L2Z) := by
-      rw [eq_sub_iff_add_eq, add_comm]
-      exact hx
+      simp
     rw [horth]
     abel
   have hcpt : IsCompactOperator ((normalizedConormal hb ha hg E₀).comp (H₀).subtypeL ∘L
@@ -69,52 +71,34 @@ theorem normalizedConormal_fixed_fourier_complement
     rw [heq]
     exact (isCompactOperator_normalizedConormal_sub_one hb ha hg E₀).comp_clm _
   obtain ⟨d, u, v, hu, hv, U, hU, hunit, hcont⟩ :=
-    exists_fixed_complement_basis H₀ hJ hcpt hinj stdBasisZ positiveFourierHilbertBasis
+    exists_fixed_complement_basis H₀ (((continuous_normalizedConormal hb ha hg).comp Complex.continuous_ofReal).clm_comp
+      continuous_const) hcpt hinj stdBasisZ positiveFourierHilbertBasis
   exact ⟨d, u, v,
     (fun r => finite_support_of_mem_span_positiveFourierHilbertBasis (hu r)),
     (fun r => finite_support_of_mem_span_stdBasisZ (hv r)), U, hU, hunit, hcont⟩
 
 section PhysicalCoordinates
 
-variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (Metric.ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' Metric.ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' Metric.ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (Metric.ball (0 : ℂ) 1))
-    (hinj : InjOn F (Metric.ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ Metric.ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ Metric.ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
-    (e : OpenPartialHomeomorph ℂ ℂ) (he : (e : ℂ → ℂ) = F)
-    (hsource : Metric.closedBall (0 : ℂ) 1 ⊆ e.source)
-    (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target)
-
-local notation "hβF" => localConformalVelocityCircle_isWL1_half hR F hFs
-local notation "haF" => localConformalHardyPrimitiveMultiplier_isWL1 hR F hFs
-local notation "hgF" => localConformalCenteredCircle_isWL1_half hR F hFs
-local notation "NF" => normalizedConormal hβF haF hgF
-
-include hb hL hhol hinj hC hK e he hsource hes in
-theorem exists_localConformal_fixed_fourier_complement_of_cutC_ne_zero
-    {E₀ : ℝ} (hE₀ : 0 ≤ E₀) {W : ℝ → Ell2 →L[ℂ] Ell2}
-    (hW : IsTransport (physicalCircleTrace F) E₀ W)
-    (hcut : cutC (W (2 * Real.pi)) (basisVec 0) ≠ 0) :
+theorem exists_localConformal_fixed_fourier_complement_of_cutC_ne_zero (Φ : DiskCoordinates) {E₀ : ℝ}
+    (hE₀ : 0 ≤ E₀) {W : TransportPath} (hW : IsTransport Φ.boundary E₀ W)
+    (hcut : cutVector W ≠ 0) :
     ∃ (d : ℕ) (u : Fin d → H₀ᗮ) (v : Fin d → L2Z),
       (∀ r, (Function.support ((u r : L2Z) : ℤ → ℂ)).Finite) ∧
       (∀ r, (Function.support (v r : ℤ → ℂ)).Finite) ∧
       ∃ U ∈ 𝓝 E₀,
-        (∀ E ∈ U, IsUnit ((NF (E : ℂ)).comp (H₀).subtypeL ∘L
+        (∀ E ∈ U, IsUnit ((Φ.conormal (E : ℂ)).comp (H₀).subtypeL ∘L
           (H₀).orthogonalProjection +
           (Submodule.subtypeL H₀ᗮ + ∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) ∘L
             H₀ᗮ.orthogonalProjection)) ∧
-        ContinuousOn (fun E : ℝ => Ring.inverse ((NF (E : ℂ)).comp (H₀).subtypeL ∘L
+        ContinuousOn (fun E : ℝ => Ring.inverse ((Φ.conormal (E : ℂ)).comp (H₀).subtypeL ∘L
           (H₀).orthogonalProjection +
           (Submodule.subtypeL H₀ᗮ + ∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) ∘L
             H₀ᗮ.orthogonalProjection)) U := by
-  apply normalizedConormal_fixed_fourier_complement hβF haF hgF
+  apply normalizedConormal_fixed_fourier_complement (localConformalVelocityCircle_isWL1_half Φ) (localConformalHardyPrimitiveMultiplier_isWL1 Φ) (localConformalCenteredCircle_isWL1_half Φ)
   intro b d hbd
   apply Subtype.ext
   exact (localConformalVekuaConormal_injective_on_nonpositive_of_cutC_ne_zero
-    hR F hFs hb hL hhol hinj hC hK e he hsource hes E₀ hE₀ hW hcut)
+    Φ E₀ hE₀ hW hcut)
     b.property d.property hbd
 
 end PhysicalCoordinates

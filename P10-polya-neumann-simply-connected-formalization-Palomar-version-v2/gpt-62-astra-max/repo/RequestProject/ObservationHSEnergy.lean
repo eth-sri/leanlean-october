@@ -1,7 +1,10 @@
 module
 
+public import RequestProject.CircleAnalysisNotation
+
 public import RequestProject.ObservationHS
 public import RequestProject.CorrectedKernelCont
+public import RequestProject.PlanarNotation
 
 /-!
 # Lemma 6.3: continuity in the energy of the projected observation in Hilbert–Schmidt norm
@@ -44,42 +47,40 @@ variable {ι : Type*} {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ 
 `‖r(θ)‖ ≤ B` on `[0, 2π]` and `(vⱼ)` is orthonormal, the Fourier coefficients `cⱼ(n)` of
 `θ ↦ ⟨r(θ), vⱼ⟩` satisfy `∑ⱼ ∑ₙ |cⱼ(n)|² ≤ B²`. -/
 theorem tsum_sq_fourierCoeff_rows_le (hv : Orthonormal ℂ v) (hr : Continuous r) {B : ℝ}
-    (hB : ∀ θ ∈ Icc 0 (2 * π), ‖r θ‖ ≤ B) :
-    Summable (fun p : ι × ℤ => ‖fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v p.1⟫_ℂ) p.2‖ ^ 2) ∧
-    ∑' p : ι × ℤ, ‖fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v p.1⟫_ℂ) p.2‖ ^ 2 ≤ B ^ 2 := by
-  have hcont : ∀ j, Continuous fun θ => ⟪r θ, v j⟫_ℂ := fun j => hr.inner continuous_const
-  have hrow : ∀ j, HasSum (fun n => ‖fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v j⟫_ℂ) n‖ ^ 2)
-      ((2 * π)⁻¹ * ∫ θ in (0 : ℝ)..(2 * π), ‖⟪r θ, v j⟫_ℂ‖ ^ 2) := fun j =>
+    (hB : ∀ θ ∈ angleInterval, ‖r θ‖ ≤ B) :
+    Summable (fun p : ι × ℤ => ‖angleCoeff (fun θ => ⟪r θ, v p.1⟫_ℂ) p.2‖ ^ 2) ∧
+    ∑' p : ι × ℤ, ‖angleCoeff (fun θ => ⟪r θ, v p.1⟫_ℂ) p.2‖ ^ 2 ≤ B ^ 2 := by
+  have hcont : ∀ j, Continuous fun θ => ⟪r θ, v j⟫_ℂ := (by fun_prop)
+  have hrow  := fun j =>
     hasSum_sq_fourierCoeffOn_of_continuous (hcont j)
   have hfin : ∀ J : Finset ι,
-      ∑ j ∈ J, (2 * π)⁻¹ * ∫ θ in (0 : ℝ)..(2 * π), ‖⟪r θ, v j⟫_ℂ‖ ^ 2 ≤ B ^ 2 := by
+      ∑ j ∈ J, anglePeriod⁻¹ * ∫ θ in 0..anglePeriod, ‖⟪r θ, v j⟫_ℂ‖ ^ 2 ≤ B ^ 2 := by
     intro J
     rw [← Finset.mul_sum, ← intervalIntegral.integral_finsetSum
       (f := fun j θ => ‖⟪r θ, v j⟫_ℂ‖ ^ 2) fun j _ =>
       (((hcont j).norm.pow 2 : Continuous fun θ => ‖⟪r θ, v j⟫_ℂ‖ ^ 2)).intervalIntegrable _ _]
-    have hint : ∫ θ in (0 : ℝ)..(2 * π), ∑ j ∈ J, ‖⟪r θ, v j⟫_ℂ‖ ^ 2 ≤
-        ∫ θ in (0 : ℝ)..(2 * π), B ^ 2 := by
+    have hint : ∫ θ in 0..anglePeriod, ∑ j ∈ J, ‖⟪r θ, v j⟫_ℂ‖ ^ 2 ≤
+        ∫ θ in 0..anglePeriod, B ^ 2 := by
       refine intervalIntegral.integral_mono_on two_pi_pos.le ?_ intervalIntegrable_const
         fun θ hθ => ?_
       · exact (continuous_finset_sum _ fun j _ => (hcont j).norm.pow 2).intervalIntegrable _ _
-      · calc ∑ j ∈ J, ‖⟪r θ, v j⟫_ℂ‖ ^ 2 = ∑ j ∈ J, ‖⟪v j, r θ⟫_ℂ‖ ^ 2 :=
+      · calc _ = ∑ j ∈ J, ‖⟪v j, r θ⟫_ℂ‖ ^ 2 :=
               Finset.sum_congr rfl fun j _ => by rw [norm_inner_symm]
-          _ ≤ ‖r θ‖ ^ 2 := hv.sum_inner_products_le (r θ)
-          _ ≤ B ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (hB θ hθ) 2
+          _ ≤ _ := hv.sum_inner_products_le (r θ)
+          _ ≤ _ := (by bound)
     rw [intervalIntegral.integral_const, smul_eq_mul, sub_zero] at hint
-    have hpi : 0 < 2 * π := two_pi_pos
-    calc (2 * π)⁻¹ * ∫ θ in (0 : ℝ)..(2 * π), ∑ j ∈ J, ‖⟪r θ, v j⟫_ℂ‖ ^ 2
-        ≤ (2 * π)⁻¹ * (2 * π * B ^ 2) := by gcongr
-      _ = B ^ 2 := by field_simp
-  have hnn : 0 ≤ fun p : ι × ℤ =>
-      ‖fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v p.1⟫_ℂ) p.2‖ ^ 2 := fun p => by positivity
+    
+    calc _
+        ≤ anglePeriod⁻¹ * (anglePeriod * B ^ 2) := by gcongr
+      _ = _ := by field_simp
+  
   have hsumm_rows : Summable fun j : ι =>
-      (2 * π)⁻¹ * ∫ θ in (0 : ℝ)..(2 * π), ‖⟪r θ, v j⟫_ℂ‖ ^ 2 := by
+      anglePeriod⁻¹ * ∫ θ in 0..anglePeriod, ‖⟪r θ, v j⟫_ℂ‖ ^ 2 := by
     refine summable_of_sum_le (c := B ^ 2) (fun j => ?_) hfin
     exact (hrow j).nonneg fun n => by positivity
   have hS : Summable (fun p : ι × ℤ =>
       ‖fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v p.1⟫_ℂ) p.2‖ ^ 2) := by
-    rw [summable_prod_of_nonneg hnn]
+    rw [summable_prod_of_nonneg (fun p => by positivity)]
     refine ⟨fun j => (hrow j).summable, ?_⟩
     simp only [fun j => (hrow j).tsum_eq]
     exact hsumm_rows
@@ -90,14 +91,20 @@ theorem tsum_sq_fourierCoeff_rows_le (hv : Orthonormal ℂ v) (hr : Continuous r
 
 end BesselRows
 
-variable {γ : ℝ → ℂ} {K : NNReal} {Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2}
+variable {γ : ℝ → ℂ} {K : NNReal} {Ws : ℝ → TransportPath}
 
+section
+
+variable (hK : LipschitzWith K γ) (hWs : ∀ E, IsTransport γ E (Ws E)) (E₀ : ℝ)
+    (hc : cutVector (Ws E₀) ≠ 0)
+
+include hK in
 /-- Increments of the difference of two transports: if `‖W'(s) - W(s)‖ ≤ d` on `[0, L]`, then
 `‖(W' - W)(θ₁) - (W' - W)(θ₂)‖ ≤ (|√E' - √E| κ K + √E κ K d) |θ₁ - θ₂|`. -/
-lemma norm_transport_diff_sub_le (hK : LipschitzWith K γ) {E E' : ℝ}
-    {W W' : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) (hW' : IsTransport γ E' W') {d : ℝ}
-    (hd : ∀ s ∈ Icc 0 (2 * π), ‖W' s - W s‖ ≤ d) {θ₁ θ₂ : ℝ}
-    (h₁ : θ₁ ∈ Icc 0 (2 * π)) (h₂ : θ₂ ∈ Icc 0 (2 * π)) :
+lemma norm_transport_diff_sub_le {E E' : ℝ}
+    {W W' : TransportPath} (hW : IsTransport γ E W) (hW' : IsTransport γ E' W') {d : ℝ}
+    (hd : ∀ s ∈ angleInterval, ‖W' s - W s‖ ≤ d) {θ₁ θ₂ : ℝ}
+    (h₁ : θ₁ ∈ angleInterval) (h₂ : θ₂ ∈ angleInterval) :
     ‖(W' θ₁ - W θ₁) - (W' θ₂ - W θ₂)‖ ≤
       (|Real.sqrt E' - Real.sqrt E| * shiftConst * K + Real.sqrt E * shiftConst * K * d) *
         |θ₁ - θ₂| := by
@@ -116,7 +123,7 @@ lemma norm_transport_diff_sub_le (hK : LipschitzWith K γ) {E E' : ℝ}
     intervalIntegral.integral_interval_sub_left b1 b2,
     ← intervalIntegral.integral_sub (b2.symm.trans b1) (a2.symm.trans a1)]
   refine intervalIntegral.norm_integral_le_of_norm_le_const fun t ht => ?_
-  have ht' : t ∈ Icc 0 (2 * π) := by
+  have ht' : t ∈ angleInterval := by
     have := uIoc_subset_uIcc ht
     rw [mem_uIcc] at this
     rcases this with h | h
@@ -125,36 +132,36 @@ lemma norm_transport_diff_sub_le (hK : LipschitzWith K γ) {E E' : ℝ}
   have e2 : transportCoeff γ E' t * W' t - transportCoeff γ E t * W t =
       (transportCoeff γ E' t - transportCoeff γ E t) * W' t +
         transportCoeff γ E t * (W' t - W t) := by
-    rw [sub_mul, mul_sub]; abel
+    simp [sub_mul, mul_sub]
   rw [e2]
-  have hCC : ‖transportCoeff γ E' t - transportCoeff γ E t‖ ≤
-      |Real.sqrt E' - Real.sqrt E| * shiftConst * K := by
-    rw [transportCoeff_eq_coeffOf, transportCoeff_eq_coeffOf]
-    refine (norm_coeffOf_sub_coeffOf_le E' E _).trans ?_
-    have := norm_deriv_le_of_lipschitz hK (x₀ := t)
-    gcongr
-  have hW1 := norm_transport_le_one hK hW' ht'
-  have hCt := norm_transportCoeff_le_const hK E t
-  have hdt := hd t ht'
+  
+  
+  
+  
   refine (norm_add_le _ _).trans ?_
   refine add_le_add ((norm_mul_le _ _).trans ?_) ((norm_mul_le _ _).trans ?_)
   · calc _ ≤ (|Real.sqrt E' - Real.sqrt E| * shiftConst * K) * 1 :=
-          mul_le_mul hCC hW1 (norm_nonneg _) (by positivity)
+          mul_le_mul (by
+            rw [transportCoeff_eq_coeffOf, transportCoeff_eq_coeffOf]
+            refine (norm_coeffOf_sub_coeffOf_le E' E _).trans ?_
+            have := norm_deriv_le_of_lipschitz hK (x₀ := t)
+            gcongr) (norm_transport_le_one hK hW' ht') (norm_nonneg _) (by positivity)
       _ = _ := mul_one _
-  · exact mul_le_mul hCt hdt (norm_nonneg _) (by positivity)
+  · exact mul_le_mul (norm_transportCoeff_le_const hK E t) (hd t ht') (norm_nonneg _) (by positivity)
 
+include hK in
 /-- Lipschitz bound for the difference of two projected observation rows. -/
-lemma norm_projObsRow_diff_sub_le (hK : LipschitzWith K γ) {E E' : ℝ}
-    {W W' : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) (hW' : IsTransport γ E' W') {d : ℝ}
-    (hd : ∀ s ∈ Icc 0 (2 * π), ‖W' s - W s‖ ≤ d) {θ₁ θ₂ : ℝ}
-    (h₁ : θ₁ ∈ Icc 0 (2 * π)) (h₂ : θ₂ ∈ Icc 0 (2 * π)) :
+lemma norm_projObsRow_diff_sub_le {E E' : ℝ}
+    {W W' : TransportPath} (hW : IsTransport γ E W) (hW' : IsTransport γ E' W') {d : ℝ}
+    (hd : ∀ s ∈ angleInterval, ‖W' s - W s‖ ≤ d) {θ₁ θ₂ : ℝ}
+    (h₁ : θ₁ ∈ angleInterval) (h₂ : θ₂ ∈ angleInterval) :
     ‖(projObsRow W' θ₁ - projObsRow W θ₁) - (projObsRow W' θ₂ - projObsRow W θ₂)‖ ≤
       (|Real.sqrt E' - Real.sqrt E| * shiftConst * K + Real.sqrt E * shiftConst * K * d +
-        ‖cutProj (cutC (W' (2 * π)) (basisVec 0)) - cutProj (cutC (W (2 * π)) (basisVec 0))‖ *
+        ‖cutProj (cutVector W') - cutProj (cutVector W)‖ *
           (Real.sqrt E * shiftConst * K)) * |θ₁ - θ₂| := by
-  set P' := cutProj (cutC (W' (2 * π)) (basisVec 0))
-  set P := cutProj (cutC (W (2 * π)) (basisVec 0))
-  have hadj : ∀ X : Ell2 →L[ℂ] Ell2, ‖ContinuousLinearMap.adjoint X (basisVec 0)‖ ≤ ‖X‖ := by
+  set P' := cutProj (cutVector W')
+  set P := cutProj (cutVector W)
+  have hadj : ∀ X : ShiftOp, ‖ContinuousLinearMap.adjoint X (basisVec 0)‖ ≤ ‖X‖ := by
     intro X
     refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
     rw [LinearIsometryEquiv.norm_map, norm_basisVec_zero, mul_one]
@@ -164,7 +171,7 @@ lemma norm_projObsRow_diff_sub_le (hK : LipschitzWith K γ) {E E' : ℝ}
     simp only [projObsRow, P, P', map_sub, ContinuousLinearMap.sub_apply]
     abel
   rw [e]
-  have t1 := (norm_cutProj_apply_le (cutC (W' (2 * π)) (basisVec 0))
+  have t1 := (norm_cutProj_apply_le (cutVector W')
     (ContinuousLinearMap.adjoint ((W' θ₁ - W θ₁) - (W' θ₂ - W θ₂)) (basisVec 0))).trans
     ((hadj _).trans (norm_transport_diff_sub_le hK hW hW' hd h₁ h₂))
   have t2 : ‖(P' - P) (ContinuousLinearMap.adjoint (W θ₁ - W θ₂) (basisVec 0))‖ ≤
@@ -173,19 +180,18 @@ lemma norm_projObsRow_diff_sub_le (hK : LipschitzWith K γ) {E E' : ℝ}
       (mul_le_mul_of_nonneg_left ((hadj _).trans (norm_transport_sub_le_lip hK hW h₁ h₂))
         (norm_nonneg _))
   refine (norm_add_le _ _).trans ?_
-  calc _ ≤ (|Real.sqrt E' - Real.sqrt E| * shiftConst * K + Real.sqrt E * shiftConst * K * d) *
-        |θ₁ - θ₂| + ‖P' - P‖ * (Real.sqrt E * shiftConst * K * |θ₁ - θ₂|) := add_le_add t1 t2
-    _ = _ := by ring
+  linarith
 
+include hK in
 /-- Pointwise bound for the difference of two projected observation rows. -/
-lemma norm_projObsRow_diff_le (hK : LipschitzWith K γ) {E : ℝ}
-    {W W' : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) {d : ℝ}
-    (hd : ∀ s ∈ Icc 0 (2 * π), ‖W' s - W s‖ ≤ d) {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * π)) :
+lemma norm_projObsRow_diff_le {E : ℝ}
+    {W W' : TransportPath} (hW : IsTransport γ E W) {d : ℝ}
+    (hd : ∀ s ∈ angleInterval, ‖W' s - W s‖ ≤ d) {θ : ℝ} (hθ : θ ∈ angleInterval) :
     ‖projObsRow W' θ - projObsRow W θ‖ ≤
-      d + ‖cutProj (cutC (W' (2 * π)) (basisVec 0)) - cutProj (cutC (W (2 * π)) (basisVec 0))‖ := by
-  set P' := cutProj (cutC (W' (2 * π)) (basisVec 0))
-  set P := cutProj (cutC (W (2 * π)) (basisVec 0))
-  have hadj : ∀ X : Ell2 →L[ℂ] Ell2, ‖ContinuousLinearMap.adjoint X (basisVec 0)‖ ≤ ‖X‖ := by
+      d + ‖cutProj (cutVector W') - cutProj (cutVector W)‖ := by
+  set P' := cutProj (cutVector W')
+  set P := cutProj (cutVector W)
+  have hadj : ∀ X : ShiftOp, ‖ContinuousLinearMap.adjoint X (basisVec 0)‖ ≤ ‖X‖ := by
     intro X
     refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
     rw [LinearIsometryEquiv.norm_map, norm_basisVec_zero, mul_one]
@@ -195,7 +201,7 @@ lemma norm_projObsRow_diff_le (hK : LipschitzWith K γ) {E : ℝ}
     simp only [projObsRow, P, P', map_sub, ContinuousLinearMap.sub_apply]
     abel
   rw [e]
-  have t1 := (norm_cutProj_apply_le (cutC (W' (2 * π)) (basisVec 0))
+  have t1 := (norm_cutProj_apply_le (cutVector W')
     (ContinuousLinearMap.adjoint (W' θ - W θ) (basisVec 0))).trans ((hadj _).trans (hd θ hθ))
   have t2 : ‖(P' - P) (ContinuousLinearMap.adjoint (W θ) (basisVec 0))‖ ≤ ‖P' - P‖ * 1 :=
     (ContinuousLinearMap.le_opNorm _ _).trans
@@ -204,43 +210,33 @@ lemma norm_projObsRow_diff_le (hK : LipschitzWith K γ) {E : ℝ}
   rw [mul_one] at t2
   exact (norm_add_le _ _).trans (add_le_add t1 t2)
 
+include hK hWs hc in
 /-- Continuity of the projection `Π^c_E` in the energy at `E₀` when `c_{E₀} ≠ 0`. -/
-theorem tendsto_cutProj_energy (hK : LipschitzWith K γ) (hWs : ∀ E, IsTransport γ E (Ws E))
-    (E₀ : ℝ) (hc : cutC (Ws E₀ (2 * π)) (basisVec 0) ≠ 0) :
-    Tendsto (fun E => cutProj (cutC (Ws E (2 * π)) (basisVec 0))) (𝓝 E₀)
-      (𝓝 (cutProj (cutC (Ws E₀ (2 * π)) (basisVec 0)))) := by
-  have h2π : (2 * π) ∈ Icc 0 (2 * π) := ⟨by positivity, le_rfl⟩
-  have hV := tendsto_transport_energy hK hWs E₀ h2π
-  have hVa : Tendsto (fun E => ContinuousLinearMap.adjoint (Ws E (2 * π)) (basisVec 0)) (𝓝 E₀)
-      (𝓝 (ContinuousLinearMap.adjoint (Ws E₀ (2 * π)) (basisVec 0))) :=
-    ((continuous_eval_const (basisVec 0)).tendsto _).comp
-      (((ContinuousLinearMap.adjoint (𝕜 := ℂ) (E := Ell2) (F := Ell2)).continuous.tendsto _).comp
-        hV)
-  have hC : Tendsto (fun E => cutC (Ws E (2 * π)) (basisVec 0)) (𝓝 E₀)
-      (𝓝 (cutC (Ws E₀ (2 * π)) (basisVec 0))) := by
-    unfold cutC; exact hVa.sub tendsto_const_nhds
-  have hn : Tendsto (fun E => ((‖cutC (Ws E (2 * π)) (basisVec 0)‖ ^ 2 : ℝ) : ℂ)) (𝓝 E₀)
-      (𝓝 ((‖cutC (Ws E₀ (2 * π)) (basisVec 0)‖ ^ 2 : ℝ) : ℂ)) :=
+theorem tendsto_cutProj_energy :
+    Tendsto (fun E => cutProj (cutVector (Ws E))) (𝓝 E₀)
+      (𝓝 (cutProj (cutVector (Ws E₀)))) := by
+  have hC := tendsto_cutVector_energy hK hWs E₀
+  have hn  :=
     (Complex.continuous_ofReal.tendsto _).comp (hC.norm.pow 2)
-  have h0 : ((‖cutC (Ws E₀ (2 * π)) (basisVec 0)‖ ^ 2 : ℝ) : ℂ) ≠ 0 := by
-    have := norm_pos_iff.mpr hc
-    exact_mod_cast (by positivity : (0 : ℝ) < ‖cutC (Ws E₀ (2 * π)) (basisVec 0)‖ ^ 2).ne'
-  unfold cutProj
+  have h0 : ((‖cutVector (Ws E₀)‖ ^ 2 : ℝ) : ℂ) ≠ 0 := by
+    exact_mod_cast (by positivity : (0 : ℝ) < ‖cutVector (Ws E₀)‖ ^ 2).ne'
+  
   exact tendsto_const_nhds.sub ((hn.inv₀ h0).smul (tendsto_rankOne hC hC))
 
 /-- The difference of projected observation rows at energies `E` and `E₀`. -/
-def projObsRowDiff (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2) (E₀ E : ℝ) : ℝ → Ell2 :=
+def projObsRowDiff (Ws : ℝ → TransportPath) (E₀ E : ℝ) : ℝ → Ell2 :=
   fun θ => projObsRow (Ws E) θ - projObsRow (Ws E₀) θ
 
+include hWs in
 /-- Fourier coefficients of the difference of projected observations are those of the
 periodized row difference paired with the vector. -/
-lemma fourierCoeffOn_observation_diff (hWs : ∀ E, IsTransport γ E (Ws E)) (E₀ E : ℝ)
+lemma fourierCoeffOn_observation_diff (E : ℝ)
     (x : Ell2) (n : ℤ) :
-    fourierCoeffOn two_pi_pos
-      (fun θ => observation (Ws E) (cutProj (cutC (Ws E (2 * π)) (basisVec 0)) x) θ -
-        observation (Ws E₀) (cutProj (cutC (Ws E₀ (2 * π)) (basisVec 0)) x) θ) n =
-      fourierCoeffOn two_pi_pos (fun θ => ⟪periodize (projObsRowDiff Ws E₀ E) θ, x⟫_ℂ) n := by
-  have hend : projObsRowDiff Ws E₀ E (2 * π) = projObsRowDiff Ws E₀ E 0 := by
+    angleCoeff
+      (fun θ => observation (Ws E) (cutProj (cutVector (Ws E)) x) θ -
+        observation (Ws E₀) (cutProj (cutVector (Ws E₀)) x) θ) n =
+      angleCoeff (fun θ => ⟪periodize (projObsRowDiff Ws E₀ E) θ, x⟫_ℂ) n := by
+  have hend : projObsRowDiff Ws E₀ E anglePeriod = projObsRowDiff Ws E₀ E 0 := by
     simp only [projObsRowDiff, projObsRow_endpoint (hWs E), projObsRow_endpoint (hWs E₀)]
   rw [fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral]
   congr 1
@@ -248,18 +244,18 @@ lemma fourierCoeffOn_observation_diff (hWs : ∀ E, IsTransport γ E (Ws E)) (E�
   rw [Set.uIcc_of_le two_pi_pos.le] at hθ
   simp only [observation_cutProj_eq, periodize_eqOn_Icc hend hθ, projObsRowDiff, inner_sub_left]
 
+include hK hWs hc in
 /-- The row difference has a Lipschitz periodization and a sup bound, both with constants
 tending to `0` as `E → E₀`. -/
-lemma projObsRowDiff_data (hK : LipschitzWith K γ) (hWs : ∀ E, IsTransport γ E (Ws E))
-    (E₀ : ℝ) (hc : cutC (Ws E₀ (2 * π)) (basisVec 0) ≠ 0) :
+lemma projObsRowDiff_data :
     ∃ Lf Bf : ℝ → ℝ, Tendsto Lf (𝓝 E₀) (𝓝 0) ∧ Tendsto Bf (𝓝 E₀) (𝓝 0) ∧
       ∀ E, LipschitzWith (Lf E).toNNReal (periodize (projObsRowDiff Ws E₀ E)) ∧
-        ∀ θ ∈ Icc 0 (2 * π), ‖projObsRowDiff Ws E₀ E θ‖ ≤ Bf E := by
-  obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn (s := Icc 0 (2 * π))
-    (f := fun θ => γ θ - γ 0) (hK.continuous.sub continuous_const).continuousOn
+        ∀ θ ∈ angleInterval, ‖projObsRowDiff Ws E₀ E θ‖ ≤ Bf E := by
+  obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn 
+     (hK.continuous.sub continuous_const).continuousOn
   set pf : ℝ → ℝ := fun E =>
-    ‖cutProj (cutC (Ws E (2 * π)) (basisVec 0)) - cutProj (cutC (Ws E₀ (2 * π)) (basisVec 0))‖
-  have hp : Tendsto pf (𝓝 E₀) (𝓝 0) :=
+    ‖cutProj (cutVector (Ws E)) - cutProj (cutVector (Ws E₀))‖
+  have hp  :=
     tendsto_iff_norm_sub_tendsto_zero.mp (tendsto_cutProj_energy hK hWs E₀ hc)
   have hD := tendsto_transportDist K R E₀
   have hsq : Tendsto (fun E => |Real.sqrt E - Real.sqrt E₀|) (𝓝 E₀) (𝓝 0) := by
@@ -271,56 +267,57 @@ lemma projObsRowDiff_data (hK : LipschitzWith K γ) (hWs : ∀ E, IsTransport γ
   · have := ((hsq.mul_const shiftConst).mul_const (K : ℝ)).add
       ((hD.const_mul (Real.sqrt E₀ * shiftConst * K)).add
         (hp.mul_const (Real.sqrt E₀ * shiftConst * K)))
-    simpa only [zero_mul, mul_zero, add_zero, add_assoc] using this
-  · simpa only [add_zero] using hD.add hp
-  · have hd : ∀ s ∈ Icc 0 (2 * π), ‖Ws E s - Ws E₀ s‖ ≤ transportDist K R E₀ E :=
-      fun s hs => norm_transport_sub_le hK hR (hWs E₀) (hWs E) hs
-    have hend : projObsRowDiff Ws E₀ E (2 * π) = projObsRowDiff Ws E₀ E 0 := by
-      simp only [projObsRowDiff, projObsRow_endpoint (hWs E), projObsRow_endpoint (hWs E₀)]
-    refine lipschitzWith_periodize (fun x hx y hy => ?_) hend
-    refine (norm_projObsRow_diff_sub_le hK (hWs E₀) (hWs E) hd hx hy).trans ?_
+    simpa [add_assoc] using this
+  · simpa using hD.add hp
+  · 
+    
+    refine lipschitzWith_periodize (fun x hx y hy => ?_) (by
+      simp only [projObsRowDiff, projObsRow_endpoint (hWs E), projObsRow_endpoint (hWs E₀)])
+    refine (norm_projObsRow_diff_sub_le hK (hWs E₀) (hWs E) (fun s hs => norm_transport_sub_le hK hR (hWs E₀) (hWs E) hs) hx hy).trans ?_
     exact mul_le_mul_of_nonneg_right (Real.le_coe_toNNReal _) (abs_nonneg _)
   · intro θ hθ
     exact norm_projObsRow_diff_le hK (hWs E₀)
       (fun s hs => norm_transport_sub_le hK hR (hWs E₀) (hWs E) hs) hθ
 
+include hK hWs hc in
 /-- **Lemma 6.3 (continuity in `E`, `H¹` part).** If `c_{E₀} ≠ 0`, then for every orthonormal
 family `(vⱼ)` of `ℓ²`, `∑ⱼ ∑ₙ n² |cⱼ^E(n) - cⱼ^{E₀}(n)|² → 0` as `E → E₀`, where `cⱼ^E(n)` are
 the Fourier coefficients on `[0, L]` of `O_E Π^c_E vⱼ`. -/
-theorem tendsto_projected_observation_H1_energy (hK : LipschitzWith K γ)
-    (hWs : ∀ E, IsTransport γ E (Ws E)) (E₀ : ℝ) (hc : cutC (Ws E₀ (2 * π)) (basisVec 0) ≠ 0)
+theorem tendsto_projected_observation_H1_energy
     {ι : Type*} {v : ι → Ell2} (hv : Orthonormal ℂ v) :
-    Tendsto (fun E => ∑' p : ι × ℤ, ((p.2 : ℝ)) ^ 2 * ‖fourierCoeffOn two_pi_pos
-      (fun θ => observation (Ws E) (cutProj (cutC (Ws E (2 * π)) (basisVec 0)) (v p.1)) θ -
-        observation (Ws E₀) (cutProj (cutC (Ws E₀ (2 * π)) (basisVec 0)) (v p.1)) θ) p.2‖ ^ 2)
+    Tendsto (fun E => ∑' p : ι × ℤ, ((p.2 : ℝ)) ^ 2 * ‖angleCoeff
+      (fun θ => observation (Ws E) (cutProj (cutVector (Ws E)) (v p.1)) θ -
+        observation (Ws E₀) (cutProj (cutVector (Ws E₀)) (v p.1)) θ) p.2‖ ^ 2)
       (𝓝 E₀) (𝓝 0) := by
   obtain ⟨Lf, Bf, hL, -, hdat⟩ := projObsRowDiff_data hK hWs E₀ hc
-  simp only [fourierCoeffOn_observation_diff hWs]
-  have hlim : Tendsto (fun E => π ^ 2 * ((Lf E).toNNReal : ℝ) ^ 2 / 4) (𝓝 E₀) (𝓝 0) := by
+  simp [fourierCoeffOn_observation_diff hWs]
+  have hlim : Tendsto (fun E => π ^ 2 * (Lf E).toNNReal ^ 2 / 4) (𝓝 E₀) (𝓝 0) := by
     have h1 : Tendsto (fun E => ((Lf E).toNNReal : ℝ)) (𝓝 E₀) (𝓝 0) := by
       have := (continuous_real_toNNReal.tendsto 0).comp hL
       simpa [Function.comp_def] using (NNReal.continuous_coe.tendsto _).comp this
     simpa using ((h1.pow 2).const_mul (π ^ 2)).div_const 4
-  refine squeeze_zero (fun E => tsum_nonneg fun p => by positivity) (fun E => ?_) hlim
+  refine squeeze_zero (fun E => (by positivity)) (fun E => ?_) hlim
   exact tsum_sq_mul_fourierCoeff_le hv (hdat E).1 (periodic_periodize _)
 
+include hK hWs hc in
 /-- **Lemma 6.3 (continuity in `E`, `L²` part).** If `c_{E₀} ≠ 0`, then for every orthonormal
 family `(vⱼ)` of `ℓ²`, `∑ⱼ ∑ₙ |cⱼ^E(n) - cⱼ^{E₀}(n)|² → 0` as `E → E₀`. -/
-theorem tendsto_projected_observation_L2_energy (hK : LipschitzWith K γ)
-    (hWs : ∀ E, IsTransport γ E (Ws E)) (E₀ : ℝ) (hc : cutC (Ws E₀ (2 * π)) (basisVec 0) ≠ 0)
+theorem tendsto_projected_observation_L2_energy
     {ι : Type*} {v : ι → Ell2} (hv : Orthonormal ℂ v) :
-    Tendsto (fun E => ∑' p : ι × ℤ, ‖fourierCoeffOn two_pi_pos
-      (fun θ => observation (Ws E) (cutProj (cutC (Ws E (2 * π)) (basisVec 0)) (v p.1)) θ -
-        observation (Ws E₀) (cutProj (cutC (Ws E₀ (2 * π)) (basisVec 0)) (v p.1)) θ) p.2‖ ^ 2)
+    Tendsto (fun E => ∑' p : ι × ℤ, ‖angleCoeff
+      (fun θ => observation (Ws E) (cutProj (cutVector (Ws E)) (v p.1)) θ -
+        observation (Ws E₀) (cutProj (cutVector (Ws E₀)) (v p.1)) θ) p.2‖ ^ 2)
       (𝓝 E₀) (𝓝 0) := by
   obtain ⟨Lf, Bf, -, hB, hdat⟩ := projObsRowDiff_data hK hWs E₀ hc
-  simp only [fourierCoeffOn_observation_diff hWs]
-  refine squeeze_zero (fun E => tsum_nonneg fun p => by positivity) (fun E => ?_)
+  simp [fourierCoeffOn_observation_diff hWs]
+  refine squeeze_zero (fun E => (by positivity)) (fun E => ?_)
     (by simpa using hB.pow 2)
-  have hend : projObsRowDiff Ws E₀ E (2 * π) = projObsRowDiff Ws E₀ E 0 := by
-    simp only [projObsRowDiff, projObsRow_endpoint (hWs E), projObsRow_endpoint (hWs E₀)]
+  
   refine (tsum_sq_fourierCoeff_rows_le hv (hdat E).1.continuous (fun θ hθ => ?_)).2
-  rw [periodize_eqOn_Icc hend hθ]
-  exact (hdat E).2 θ hθ
+  rw [periodize_eqOn_Icc (by
+    simp only [projObsRowDiff, projObsRow_endpoint (hWs E), projObsRow_endpoint (hWs E₀)]) hθ]
+  simp [*]
+
+end
 
 end PolyaNeumann

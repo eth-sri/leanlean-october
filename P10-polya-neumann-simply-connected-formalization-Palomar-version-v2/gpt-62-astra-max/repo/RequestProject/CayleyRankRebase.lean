@@ -4,6 +4,7 @@ public import Mathlib.Analysis.InnerProductSpace.Adjoint
 public import Mathlib.Analysis.InnerProductSpace.Orthonormal
 public import RequestProject.CutPhase
 public import RequestProject.BasePoint
+public import RequestProject.PlanarNotation
 
 /-!
 # Cayley rank bounds under unitary conjugation and change of base point
@@ -41,17 +42,16 @@ theorem cayleyRankBound_iff_of_intertwining (e : H ≃ₗᵢ[ℂ] G)
     intro k
     apply e.injective
     calc
-      e (U (e.symm (v k))) = V (v k) := by
+      _ = V (v k) := by
         simpa only [LinearIsometryEquiv.apply_symm_apply] using
           (hUV (e.symm (v k))).symm
-      _ = Complex.exp (t k * Complex.I) • v k := hEig k
-      _ = e (Complex.exp (t k * Complex.I) • e.symm (v k)) := by
-        simp only [LinearIsometryEquiv.map_smul, LinearIsometryEquiv.apply_symm_apply]
+      _ = _ := hEig k
+      _ = _ := by
+        simp
   · intro hV n v t hv ht hEig hA
     refine hV n (fun k => e (v k)) t
       (hv.comp_linearIsometryEquiv e) ht ?_ hA
-    intro k
-    rw [hUV, hEig k, LinearIsometryEquiv.map_smul]
+    simp [*]
 
 end Intertwining
 
@@ -64,8 +64,8 @@ theorem cayleyRankBound_unitary_conj_iff (U Q : H →L[ℂ] H)
     (hQ : Q ∈ unitary (H →L[ℂ] H)) (A : ℝ) (m : ℕ) :
     CayleyRankBound U A m ↔
       CayleyRankBound (Q * U * ContinuousLinearMap.adjoint Q) A m := by
-  let u : unitary (H →L[ℂ] H) := ⟨Q, hQ⟩
-  let e : H ≃ₗᵢ[ℂ] H := Unitary.linearIsometryEquiv u
+  
+  let e  := Unitary.linearIsometryEquiv (⟨Q, hQ⟩)
   refine cayleyRankBound_iff_of_intertwining e U
     (Q * U * ContinuousLinearMap.adjoint Q) ?_ A m
   intro x
@@ -83,24 +83,24 @@ end Unitary
 /-- A cyclic change of the parameter's starting point preserves the Cayley rank
 bound of the boundary monodromy, with the same threshold and rank. -/
 theorem cayleyRankBound_monodromy_basepoint_iff {γ : ℝ → ℂ} {K : NNReal}
-    (hK : LipschitzWith K γ) (hper : Function.Periodic γ (2 * π)) {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    {t : ℝ} (ht : t ∈ Icc 0 (2 * π)) {W' : ℝ → Ell2 →L[ℂ] Ell2}
+    (hK : LipschitzWith K γ) (hper : Function.Periodic γ anglePeriod) {E : ℝ}
+    {W : TransportPath} (hW : IsTransport γ E W)
+    {t : ℝ} (ht : t ∈ angleInterval) {W' : TransportPath}
     (hW' : IsTransport (fun θ => γ (θ + t)) E W') (A : ℝ) (m : ℕ) :
     CayleyRankBound (monodromy W) A m ↔ CayleyRankBound (monodromy W') A m := by
-  have hu : W t ∈ unitary (Ell2 →L[ℂ] Ell2) := by
-    obtain ⟨h1, h2⟩ := volterra_unitary (transportCoeff_aestronglyMeasurable γ E)
-      (transportCoeff_norm_le γ E hK) (transportCoeff_star γ E) hW.1 hW.2 t ht
-    exact Unitary.mem_iff.mpr ⟨h1, h2⟩
+  
   rw [monodromy_basepoint hK hper hW ht hW']
-  exact cayleyRankBound_unitary_conj_iff (monodromy W) (W t) hu A m
+  refine cayleyRankBound_unitary_conj_iff (monodromy W) (W t) ?_ A m
+  obtain ⟨h1, h2⟩ := volterra_unitary (transportCoeff_aestronglyMeasurable γ E)
+    (transportCoeff_norm_le γ E hK) (transportCoeff_star γ E) hW.1 hW.2 t ht
+  solve_by_elim
 
 /-- Transfer a Cayley rank estimate established at a chosen starting point back
 to the original parameterization. -/
 theorem cayleyRankBound_of_rebased_transport {γ : ℝ → ℂ} {K : NNReal}
-    (hK : LipschitzWith K γ) (hper : Function.Periodic γ (2 * π)) {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    {t : ℝ} (ht : t ∈ Icc 0 (2 * π)) {W' : ℝ → Ell2 →L[ℂ] Ell2}
+    (hK : LipschitzWith K γ) (hper : Function.Periodic γ anglePeriod) {E : ℝ}
+    {W : TransportPath} (hW : IsTransport γ E W)
+    {t : ℝ} (ht : t ∈ angleInterval) {W' : TransportPath}
     (hW' : IsTransport (fun θ => γ (θ + t)) E W') {A : ℝ} {m : ℕ}
     (h : CayleyRankBound (monodromy W') A m) :
     CayleyRankBound (monodromy W) A m :=

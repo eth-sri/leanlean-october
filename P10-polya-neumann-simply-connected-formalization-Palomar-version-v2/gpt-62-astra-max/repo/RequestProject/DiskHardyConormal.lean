@@ -1,8 +1,14 @@
 module
 
+public import RequestProject.CircleAnalysisNotation
+
+public import RequestProject.DiskCoordinates
+
 public import RequestProject.LocalConformalHardyExtension
 public import RequestProject.LocalConformalGradient
 public import RequestProject.ConormalNormalization
+public import RequestProject.MatrixHSSymmetry
+public import RequestProject.PlanarNotation
 
 /-!
 # Actual Hardy energy and the normalized principal conormal operator
@@ -18,15 +24,16 @@ set_option autoImplicit false
 
 noncomputable section
 
+open scoped ContDiff
+
 namespace PolyaNeumann
 
 open Set Metric
 open scoped Real InnerProductSpace ComplexConjugate
 
-private theorem conormal_inner_single (x : L2Z) (n : ℤ) :
-    ⟪x, stdBasisZ n⟫_ℂ = conj (x n) := by
-  rw [stdBasisZ_apply, lp.inner_single_right]
-  simp [RCLike.inner_apply]
+section
+
+variable (m : ℕ) (b : L2Z) (w : NeumannH1 unitDisk) (Ω : Set ℂ)
 
 theorem normalizedConormalPrincipal_single (n : ℤ) :
     normalizedConormalPrincipal (stdBasisZ n) =
@@ -40,34 +47,31 @@ theorem normalizedConormalPrincipal_single (n : ℤ) :
     simp
   · simp [hkn]
 
-private theorem conormal_scale_cancel (m : ℕ) (t : ℝ) (a : ℂ)
-    (ht : t ^ 2 = 2 * π * ((m + 1 : ℕ) : ℝ)) :
+private theorem conormal_scale_cancel (t : ℝ) (a : ℂ)
+    (ht : t ^ 2 = anglePeriod * ((m + 1 : ℕ) : ℝ)) :
     ((t : ℂ) * (((m : ℝ) / (1 + (m : ℝ)) : ℝ) : ℂ)) * conj ((t : ℂ) * a) =
-      (2 * π : ℂ) * (m : ℂ) * conj a := by
-  have hm : (1 + (m : ℝ)) ≠ 0 := by positivity
-  have hr : t ^ 2 * ((m : ℝ) / (1 + (m : ℝ))) = 2 * π * (m : ℝ) := by
+      (anglePeriod : ℂ) * (m : ℂ) * conj a := by
+  have hm : (1 + m) ≠ 0 := by positivity
+  have hr : t ^ 2 * ((m : ℝ) / (1 + (m : ℝ))) = anglePeriod * (m : ℝ) := by
     rw [ht]
     push_cast
     field_simp [hm]
     ring
   calc
-    _ = ((t ^ 2 * ((m : ℝ) / (1 + (m : ℝ))) : ℝ) : ℂ) * conj a := by
-      simp only [map_mul, Complex.conj_ofReal]
-      push_cast
-      ring
-    _ = _ := by rw [hr]; push_cast; ring
+    _ = ((t ^ 2 * (m / (1 + m)) : ℝ) : ℂ) * conj a := by
+      simp <;> ring
+    _ = _ := by simp [hr]
 
-private theorem conormal_halfTrace_neg (w : NeumannH1 (ball (0 : ℂ) 1)) (m : ℕ) :
+private theorem conormal_halfTrace_neg (m : ℕ) :
     diskHalfTrace w (-(m : ℤ)) = (diskHardyTraceScale m : ℂ) *
-      fourierCoeffOn Real.two_pi_pos (diskH1Trace w : ℝ → ℂ) (-(m : ℤ)) := by
+      angleCoeff (diskH1Trace w : ℝ → ℂ) (-(m : ℤ)) := by
   rw [diskHalfTrace_apply, boundaryFourier_apply]
   simp only [diskHardyTraceScale, sobWeight, Complex.ofReal_mul]
   ring
 
-theorem diskAntiholomorphicH1Test_principal_conormal (m : ℕ)
-    (w : NeumannH1 (ball (0 : ℂ) 1)) :
-    (∑ i : Fin 2, ⟪h1Gradient (ball (0 : ℂ) 1) i w,
-      h1Gradient (ball (0 : ℂ) 1) i (diskAntiholomorphicH1Test m)⟫_ℂ) =
+theorem diskAntiholomorphicH1Test_principal_conormal :
+    (∑ i : Fin 2, ⟪h1Gradient unitDisk i w,
+      h1Gradient unitDisk i (diskAntiholomorphicH1Test m)⟫_ℂ) =
       ⟪diskHalfTrace w, normalizedConormalPrincipal
         (diskHalfTrace (diskAntiholomorphicH1Test m))⟫_ℂ := by
   have hg := congrArg conj (disk_gradient_form_antiholomorphicTest m w)
@@ -75,78 +79,60 @@ theorem diskAntiholomorphicH1Test_principal_conormal (m : ℕ)
     Complex.conj_natCast, map_ofNat] at hg
   rw [hg, diskHalfTrace_antiholomorphicTest, map_smul,
     normalizedConormalPrincipal_single, smul_smul, inner_smul_right,
-    conormal_inner_single, conormal_halfTrace_neg]
+    matrix_inner_std_right, conormal_halfTrace_neg]
   have ha : |-(m : ℝ)| = (m : ℝ) := by
-    rw [abs_neg]
-    exact abs_of_nonneg (Nat.cast_nonneg m : (0 : ℝ) ≤ (m : ℝ))
+    simp
   simp only [Int.cast_neg, Int.cast_natCast]
   rw [ha]
   have hs : (Real.sqrt (sobWeight (-(m : ℤ))) : ℂ) *
-      (Real.sqrt (2 * π) : ℂ) = (diskHardyTraceScale m : ℂ) := by
-    simp only [diskHardyTraceScale, Complex.ofReal_mul]
+      fourierScale = (diskHardyTraceScale m : ℂ) := by
+    simp [diskHardyTraceScale, Complex.ofReal_mul]
   rw [hs, conormal_scale_cancel m _ _ (diskHardyTraceScale_sq m)]
 
-def h1GradientPairRight (Ω : Set ℂ) (w : NeumannH1 Ω) : NeumannH1 Ω →L[ℂ] ℂ :=
+def h1GradientPairRight (w : NeumannH1 Ω) : NeumannH1 Ω →L[ℂ] ℂ :=
   (innerSL ℂ (h1GradientVector Ω w)).comp (h1GradientVector Ω)
 
-theorem h1GradientPairRight_apply (Ω : Set ℂ) (w u : NeumannH1 Ω) :
+theorem h1GradientPairRight_apply (w u : NeumannH1 Ω) :
     h1GradientPairRight Ω w u =
-      ∑ i : Fin 2, ⟪h1Gradient Ω i w, h1Gradient Ω i u⟫_ℂ := by
-  change ⟪h1GradientVector Ω w, h1GradientVector Ω u⟫_ℂ = _
-  simp only [PiLp.inner_apply, h1GradientVector_apply]
+      ∑ i : Fin 2, ⟪h1Gradient Ω i w, h1Gradient Ω i u⟫_ℂ := rfl
 
-theorem diskHardyExtension_principal_conormal (b : L2Z)
-    (w : NeumannH1 (ball (0 : ℂ) 1)) :
-    (∑ i : Fin 2, ⟪h1Gradient (ball (0 : ℂ) 1) i w,
-      h1Gradient (ball (0 : ℂ) 1) i (diskHardyExtension b)⟫_ℂ) =
+theorem diskHardyExtension_principal_conormal :
+    (∑ i : Fin 2, ⟪h1Gradient unitDisk i w,
+      h1Gradient unitDisk i (diskHardyExtension b)⟫_ℂ) =
       ⟪diskHalfTrace w, normalizedConormalPrincipal ((1 - posProj) b)⟫_ℂ := by
-  let A := h1GradientPairRight (ball (0 : ℂ) 1) w
+  let A := h1GradientPairRight unitDisk w
   let B := (innerSL ℂ (diskHalfTrace w)).comp
     (normalizedConormalPrincipal.comp diskHalfTrace)
   have hm (m : ℕ) : A (diskAntiholomorphicH1Test m) =
       B (diskAntiholomorphicH1Test m) := by
-    change h1GradientPairRight (ball (0 : ℂ) 1) w _ =
-      ⟪diskHalfTrace w, normalizedConormalPrincipal (diskHalfTrace _)⟫_ℂ
-    rw [h1GradientPairRight_apply]
     exact diskAntiholomorphicH1Test_principal_conormal m w
   have hA := A.hasSum (diskHardyExtension_hasSum b)
-  have hB := B.hasSum (diskHardyExtension_hasSum b)
+  
   have he : (fun m : ℕ => A ((b (-(m : ℤ)) / (diskHardyTraceScale m : ℂ)) •
         diskAntiholomorphicH1Test m)) =
       (fun m : ℕ => B ((b (-(m : ℤ)) / (diskHardyTraceScale m : ℂ)) •
         diskAntiholomorphicH1Test m)) := by
-    funext m
     simp only [map_smul, hm]
   rw [he] at hA
-  have h := hA.unique hB
-  change h1GradientPairRight (ball (0 : ℂ) 1) w (diskHardyExtension b) =
+  have h := hA.unique (B.hasSum (diskHardyExtension_hasSum b))
+  change h1GradientPairRight unitDisk w (diskHardyExtension b) =
     ⟪diskHalfTrace w, normalizedConormalPrincipal (diskHalfTrace (diskHardyExtension b))⟫_ℂ at h
-  simpa only [h1GradientPairRight_apply, diskHalfTrace_diskHardyExtension] using h
+  simpa [h1GradientPairRight_apply, diskHalfTrace_diskHardyExtension] using h
+
+end
 
 section PhysicalCoordinate
 
-variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
-    (e : OpenPartialHomeomorph ℂ ℂ) (he : (e : ℂ → ℂ) = F)
-    (hsource : closedBall (0 : ℂ) 1 ⊆ e.source)
-    (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target)
-
-theorem localConformalHardyH1Extension_principal_conormal (b : L2Z)
-    (w : NeumannH1 (F '' ball (0 : ℂ) 1)) :
-    (∑ i : Fin 2, ⟪h1Gradient (F '' ball (0 : ℂ) 1) i w,
-      h1Gradient (F '' ball (0 : ℂ) 1) i
-        (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b)⟫_ℂ) =
-      ⟪localConformalDiskHalfTrace hR F hFs hL w,
+theorem localConformalHardyH1Extension_principal_conormal (Φ : DiskCoordinates) (b : L2Z)
+    (w : NeumannH1 Φ.domain) :
+    (∑ i : Fin 2, ⟪h1Gradient Φ.domain i w,
+      h1Gradient Φ.domain i
+        (Φ.hardyH1Extension b)⟫_ℂ) =
+      ⟪Φ.pulledBackHalfTrace Φ.lipschitzDomain w,
         normalizedConormalPrincipal ((1 - posProj) b)⟫_ℂ := by
-  rw [← localConformalH1Pullback_gradient_inner hR F hFs hb hL hhol hinj hC,
+  rw [← localConformalH1Pullback_gradient_inner Φ,
     localConformalH1Pullback_hardyExtension]
-  exact diskHardyExtension_principal_conormal b (localConformalH1Pullback hR F hFs hL w)
+  exact diskHardyExtension_principal_conormal b (Φ.h1Pullback Φ.lipschitzDomain w)
 
 end PhysicalCoordinate
 

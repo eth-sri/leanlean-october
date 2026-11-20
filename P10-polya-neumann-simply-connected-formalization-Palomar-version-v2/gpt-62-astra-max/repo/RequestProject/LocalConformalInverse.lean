@@ -1,8 +1,11 @@
 module
 
+public import RequestProject.DiskCoordinates
+
 public import Mathlib.Analysis.Calculus.Deriv.Inverse
 public import RequestProject.LocalSmoothInverse
 public import RequestProject.LocalConformalPullback
+public import RequestProject.PlanarNotation
 
 /-!
 # The actual inverse of given closed-disk conformal coordinates
@@ -21,65 +24,64 @@ set_option autoImplicit false
 
 noncomputable section
 
+open scoped ContDiff
+
 namespace PolyaNeumann
 
 open Set Metric
 open scoped Topology
 
-theorem localConformal_fderiv_closedDisk {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) (v : ℂ) :
-    fderiv ℝ F z v = fderiv ℝ F z 1 * v := by
-  have hc := hFs.continuousOn_fderiv_of_isOpen isOpen_ball (by simp)
-  have heq : EqOn (fun w => fderiv ℝ F w v)
-      (fun w => fderiv ℝ F w 1 * v) (ball (0 : ℂ) 1) := by
-    intro w hw
-    have hfd (a : ℂ) : fderiv ℝ F w a = deriv F w * a := by
-      rw [(hhol.differentiableAt (isOpen_ball.mem_nhds hw)).fderiv_restrictScalars ℝ]
-      change fderiv ℂ F w a = _
-      exact fderiv_eq_deriv_mul
-    dsimp only
-    rw [hfd v, hfd 1, mul_one]
-  exact heq.of_subset_closure
-    ((hc.clm_apply continuousOn_const).mono (closedBall_subset_ball hR))
-    (((hc.clm_apply continuousOn_const).mul continuousOn_const).mono
-      (closedBall_subset_ball hR)) ball_subset_closedBall
-    (by simpa only [closure_ball (0 : ℂ) (by norm_num : (1 : ℝ) ≠ 0)] using
-      (subset_rfl : closedBall (0 : ℂ) 1 ⊆ closedBall (0 : ℂ) 1)) hz
+section
 
-theorem exists_localConformalInverse {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (closedBall (0 : ℂ) 1))
-    (hnz : ∀ z ∈ closedBall (0 : ℂ) 1, fderiv ℝ F z 1 ≠ 0) :
-    ∃ e : OpenPartialHomeomorph ℂ ℂ, (e : ℂ → ℂ) = F ∧
-      closedBall (0 : ℂ) 1 ⊆ e.source ∧ e.source ⊆ ball (0 : ℂ) R ∧
-      ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target := by
+variable (Φ : SmoothDiskMap) (hhol : DifferentiableOn ℂ Φ.map unitDisk)
+include hhol
+
+theorem localConformal_fderiv_closedDisk {z : ℂ} (hz : z ∈ closedDisk) (v : ℂ) :
+    fderiv ℝ Φ.map z v = fderiv ℝ Φ.map z 1 * v := by
+  have hc := Φ.smooth.continuousOn_fderiv_of_isOpen isOpen_ball (by simp)
+  have heq : EqOn (fun w => fderiv ℝ Φ.map w v)
+      (fun w => fderiv ℝ Φ.map w 1 * v) unitDisk := by
+    intro w hw
+    have hfd (a : ℂ) : fderiv ℝ Φ.map w a = deriv Φ.map w * a := by
+      rw [(hhol.differentiableAt (isOpen_ball.mem_nhds hw)).fderiv_restrictScalars ℝ]
+      exact fderiv_eq_deriv_mul
+    simp [*]
+  exact heq.of_subset_closure
+    ((hc.clm_apply continuousOn_const).mono (closedBall_subset_ball Φ.one_lt_radius))
+    (((hc.clm_apply continuousOn_const).mul continuousOn_const).mono
+      (closedBall_subset_ball Φ.one_lt_radius)) ball_subset_closedBall
+    (by simpa only [closure_ball (0 : ℂ) (by norm_num : (1 : ℝ) ≠ 0)] using
+      (subset_rfl : closedDisk ⊆ closedDisk)) hz
+
+theorem exists_localConformalInverse (hinj : InjOn Φ.map closedDisk)
+    (hnz : ∀ z ∈ closedDisk, fderiv ℝ Φ.map z 1 ≠ 0) :
+    ∃ e : OpenPartialHomeomorph ℂ ℂ, (e : ℂ → ℂ) = Φ.map ∧
+      closedDisk ⊆ e.source ∧ e.source ⊆ ball (0 : ℂ) Φ.radius ∧
+      ContDiffOn ℝ ∞ e.symm e.target := by
   apply exists_localSmoothInverse_of_compact_differential
-    (isCompact_closedBall (0 : ℂ) 1) isOpen_ball (closedBall_subset_ball hR)
-    F hFs hinj
+    (isCompact_closedBall (0 : ℂ) 1) isOpen_ball (closedBall_subset_ball Φ.one_lt_radius)
+    Φ.map Φ.smooth hinj
   intro z hz
-  let D : ℂ ≃L[ℝ] ℂ :=
+  let D  :=
     ContinuousLinearEquiv.equivOfInverse
-      ((ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (fderiv ℝ F z 1)).restrictScalars ℝ)
-      ((ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (fderiv ℝ F z 1)⁻¹).restrictScalars ℝ)
+      ((ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (fderiv ℝ Φ.map z 1)).restrictScalars ℝ)
+      ((ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (fderiv ℝ Φ.map z 1)⁻¹).restrictScalars ℝ)
       (fun x => by
-        change (x * fderiv ℝ F z 1) * (fderiv ℝ F z 1)⁻¹ = x
-        rw [mul_assoc, mul_inv_cancel₀ (hnz z hz), mul_one])
+        simp [*])
       (fun x => by
-        change (x * (fderiv ℝ F z 1)⁻¹) * fderiv ℝ F z 1 = x
-        rw [mul_assoc, inv_mul_cancel₀ (hnz z hz), mul_one])
-  have hDeq : (D : ℂ →L[ℝ] ℂ) = fderiv ℝ F z := by
+        simp [*])
+  have hDeq : (D : ℂ →L[ℝ] ℂ) = fderiv ℝ Φ.map z := by
     apply ContinuousLinearMap.ext
     intro v
-    change v * fderiv ℝ F z 1 = fderiv ℝ F z v
-    rw [localConformal_fderiv_closedDisk hR F hFs hhol hz v]
+    
+    rw [localConformal_fderiv_closedDisk Φ hhol hz v]
     exact mul_comm _ _
   refine ⟨D, ?_⟩
   rw [hDeq]
-  have hsd := hFs.contDiffAt (isOpen_ball.mem_nhds (closedBall_subset_ball hR hz))
+  have hsd := Φ.smooth.contDiffAt (isOpen_ball.mem_nhds (closedBall_subset_ball Φ.one_lt_radius hz))
   exact (hsd.differentiableAt (by simp)).hasFDerivAt
+
+end
 
 end PolyaNeumann
 

@@ -18,6 +18,9 @@ public import Mathlib.Analysis.InnerProductSpace.Dual
 public import Mathlib.MeasureTheory.Measure.SeparableMeasure
 public import Mathlib.Topology.ContinuousMap.Bounded.ArzelaAscoli
 public import Mathlib.Analysis.Normed.Operator.Compact
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+public import Mathlib.Order.CompletePartialOrder
 public import Mathlib.Tactic
 
 /-!
@@ -42,15 +45,22 @@ open MeasureTheory
 
 noncomputable section
 
-namespace PolyaNeumann
+open scoped ContDiff
+
+namespace PalomarPolyaNeumann
+
+section
+
+variable (Ω : Set ℂ)
+include Ω
 
 /-- A domain: a nonempty connected open subset of `ℝ² = ℂ`. -/
-def IsDomain (Ω : Set ℂ) : Prop := IsOpen Ω ∧ IsConnected Ω
+def IsDomain : Prop := IsOpen Ω ∧ IsConnected Ω
 
 /-- A Lipschitz domain: a domain whose boundary is locally, after a rigid change of
 coordinates `w ↦ c * (w - p)` (`‖c‖ = 1`), the graph of a Lipschitz function `f`, with the
 domain lying on one side (above the graph). -/
-def IsLipschitzDomain (Ω : Set ℂ) : Prop :=
+def IsLipschitzDomain : Prop :=
   IsDomain Ω ∧
   ∀ p ∈ frontier Ω, ∃ (c : ℂ) (r h : ℝ) (K : NNReal) (f : ℝ → ℝ),
     ‖c‖ = 1 ∧ 0 < r ∧ 0 < h ∧ LipschitzWith K f ∧ f 0 = 0 ∧
@@ -59,44 +69,62 @@ def IsLipschitzDomain (Ω : Set ℂ) : Prop :=
       (w ∈ Ω ↔ f (c * (w - p)).re < (c * (w - p)).im)
 
 /-- `L²(Ω)` (complex valued, with respect to two-dimensional Lebesgue measure on `Ω`). -/
-abbrev L2 (Ω : Set ℂ) := Lp ℂ 2 (volume.restrict Ω)
+abbrev L2 := Lp ℂ 2 (volume.restrict Ω)
+
+end
 
 /-- The coordinate directions `e_x = 1`, `e_y = i` of `ℝ² = ℂ`. -/
 def coordDir : Fin 2 → ℂ := ![1, Complex.I]
 
-/-- Smooth compactly supported test functions on `Ω` (`C_c^∞(Ω)`). -/
-def TestFunction (Ω : Set ℂ) (φ : ℂ → ℂ) : Prop :=
-  ContDiff ℝ (⊤ : ℕ∞) φ ∧ HasCompactSupport φ ∧ tsupport φ ⊆ Ω
+section
 
+variable (Ω : Set ℂ) (u : L2 Ω)
+include Ω
+
+/-- Smooth compactly supported test functions on `Ω` (`C_c^∞(Ω)`). -/
+def TestFunction (φ : ℂ → ℂ) : Prop :=
+  ContDiff ℝ ∞ φ ∧ HasCompactSupport φ ∧ tsupport φ ⊆ Ω
+
+include u in
 /-- `g` is the weak gradient of `u` on `Ω`: `∫_Ω u ∂_i φ = - ∫_Ω g_i φ` for every
 test function `φ` and `i ∈ {x, y}`. -/
-def IsWeakGradient (Ω : Set ℂ) (u : L2 Ω) (g : Fin 2 → L2 Ω) : Prop :=
+def IsWeakGradient (g : Fin 2 → L2 Ω) : Prop :=
   ∀ φ : ℂ → ℂ, TestFunction Ω φ → ∀ i : Fin 2,
     ∫ w in Ω, u w * fderiv ℝ φ w (coordDir i) = - ∫ w in Ω, g i w * φ w
 
 /-- The Sobolev space `H¹(Ω)`, as a subset of `L²(Ω)`. -/
-def H1 (Ω : Set ℂ) : Set (L2 Ω) := {u | ∃ g, IsWeakGradient Ω u g}
+def H1 : Set (L2 Ω) := {u | ∃ g, IsWeakGradient Ω u g}
 
+include u in
 /-- The Neumann form `q_Ω[u,u] = ∫_Ω |∇u|²`, with value `⊤` if `u ∉ H¹(Ω)`. -/
-def neumannEnergy (Ω : Set ℂ) (u : L2 Ω) : ENNReal :=
+def neumannEnergy : ENNReal :=
   ⨅ (g : Fin 2 → L2 Ω) (_ : IsWeakGradient Ω u g), ∑ i, (‖g i‖₊ : ENNReal) ^ 2
 
+include u in
 /-- The Rayleigh quotient `q_Ω[u,u] / ‖u‖²`. -/
-def rayleigh (Ω : Set ℂ) (u : L2 Ω) : ENNReal :=
+def rayleigh : ENNReal :=
   neumannEnergy Ω u / (‖u‖₊ : ENNReal) ^ 2
 
 /-- The Neumann eigenvalues `μ_j(Ω)`, `j ≥ 0`, counted with multiplicity, given by the
 min–max formula
 `μ_j = inf_{S ⊂ H¹, dim S = j+1} sup_{0 ≠ u ∈ S} q_Ω[u,u] / ‖u‖²`.
 (Subspaces not contained in `H¹(Ω)` have supremum `⊤` and so do not contribute.) -/
-def neumannEigenvalue (Ω : Set ℂ) (j : ℕ) : ENNReal :=
+def neumannEigenvalue (j : ℕ) : ENNReal :=
   ⨅ (S : Submodule ℂ (L2 Ω)) (_ : Module.finrank ℂ S = j + 1),
     ⨆ (u : L2 Ω) (_ : u ∈ S) (_ : u ≠ 0), rayleigh Ω u
 
 /-- The strict counting function `N_N(E) = #{j ∈ ℕ₀ : μ_j(Ω) < E}`. -/
-def neumannCount (Ω : Set ℂ) (E : ENNReal) : ℕ∞ :=
+def neumannCount (E : ENNReal) : ℕ∞ :=
   {j : ℕ | neumannEigenvalue Ω j < E}.encard
 
+end
+
+end PalomarPolyaNeumann
+
+namespace PolyaNeumann
+export PalomarPolyaNeumann
+  (IsDomain IsLipschitzDomain L2 coordDir TestFunction IsWeakGradient H1 
+   neumannEnergy rayleigh neumannEigenvalue neumannCount)
 end PolyaNeumann
 
 end

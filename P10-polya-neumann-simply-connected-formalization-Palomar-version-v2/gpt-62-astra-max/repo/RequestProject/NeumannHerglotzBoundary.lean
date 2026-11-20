@@ -1,8 +1,11 @@
 module
 
+public import RequestProject.CircleAnalysisNotation
+
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
 public import Mathlib.Topology.DenseEmbedding
 public import RequestProject.NeumannBoundaryResolvent
+public import RequestProject.PlanarNotation
 
 /-!
 # The genuine Herglotz wave as Neumann boundary data
@@ -18,6 +21,8 @@ near the closure of the domain.
 
 noncomputable section
 
+open scoped ContDiff
+
 namespace PolyaNeumann
 
 open MeasureTheory Set Filter Topology Metric
@@ -26,8 +31,8 @@ open scoped Real InnerProductSpace ComplexConjugate
 /-- Closing the derivative formula under differentiation proves genuine
 smoothness of every Herglotz coefficient. -/
 theorem contDiff_herglotzCoeff_infty {a : ℝ → ℂ}
-    (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ) (m : ℤ) :
-    ContDiff ℝ (⊤ : ℕ∞) (herglotzCoeff k a m) := by
+    (ha : IntervalIntegrable a volume 0 anglePeriod) (k : ℝ) (m : ℤ) :
+    ContDiff ℝ ∞ (herglotzCoeff k a m) := by
   have hn : ∀ n : ℕ, ∀ m : ℤ, ContDiff ℝ n (herglotzCoeff k a m) := by
     intro n
     induction n with
@@ -36,7 +41,7 @@ theorem contDiff_herglotzCoeff_infty {a : ℝ → ℂ}
         exact contDiff_zero.2 (continuous_herglotzCoeff ha k m)
     | succ n ih =>
         intro m
-        rw [show ((n + 1 : ℕ) : WithTop ℕ∞) = (n : WithTop ℕ∞) + 1 by simp,
+        rw [show ((n + 1 : ℕ) : WithTop ℕ∞) = n + 1 by simp,
           contDiff_succ_iff_fderiv]
         refine ⟨differentiable_herglotzCoeff ha k m, by simp, ?_⟩
         have hfd : fderiv ℝ (herglotzCoeff k a m) = fun z =>
@@ -46,28 +51,24 @@ theorem contDiff_herglotzCoeff_infty {a : ℝ → ℂ}
           funext z
           ext1 w
           rw [fderiv_herglotzCoeff_apply ha]
-          simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-            ContinuousLinearMap.id_apply, ContinuousLinearEquiv.coe_coe,
-            Complex.conjCLE_apply, smul_eq_mul]
-          ring
+          simp [smul_eq_mul] <;> ring
         rw [hfd]
         exact ((contDiff_const.mul (ih (m + 1))).smul_const _).add
           ((contDiff_const.mul (ih (m - 1))).smul_const _)
-  exact contDiff_infty.2 (fun n => hn n m)
+  exact contDiff_infty.mpr fun n => hn n m
 
 lemma herglotzCoeff_memLp_domain {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) (m : ℤ) :
     MemLp (herglotzCoeff k a m) 2 (volume.restrict Ω) :=
   memLp_of_continuous_bounded hb (continuous_herglotzCoeff ha.intervalIntegrable k m)
-    (fun z => norm_herglotzCoeff_le k m z)
+    (norm_herglotzCoeff_le k m)
 
 lemma herglotzCoeff_memLp_deriv_domain {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) (m : ℤ) (i : Fin 2) :
     MemLp (fun z => fderiv ℝ (herglotzCoeff k a m) z (coordDir i)) 2 (volume.restrict Ω) := by
-  have hc : Continuous (fun z => fderiv ℝ (herglotzCoeff k a m) z (coordDir i)) :=
-    ((contDiff_herglotzCoeff ha.intervalIntegrable k m).continuous_fderiv (by simp)).clm_apply
-      continuous_const
-  apply memLp_of_continuous_bounded hb hc
+  
+  apply memLp_of_continuous_bounded hb (((contDiff_herglotzCoeff ha.intervalIntegrable k m).continuous_fderiv (by simp)).clm_apply
+    continuous_const)
   intro z
   exact (ContinuousLinearMap.le_opNorm _ _).trans
     (mul_le_mul_of_nonneg_right (norm_fderiv_herglotzCoeff_le ha.intervalIntegrable k m z)
@@ -94,7 +95,7 @@ def herglotzWaveH1 {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
 
 lemma herglotzConormal_memLp_boundary {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
-    MemLp (herglotzConormal k a γ) 2 (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
+    MemLp (herglotzConormal k a γ) 2 angleMeasure := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
   obtain ⟨hgm, B, hgB⟩ := herglotzConormal_bounded ha.intervalIntegrable k hK
   exact MemLp.of_bound hgm.restrict B (Eventually.of_forall hgB)
@@ -108,7 +109,7 @@ def herglotzConormalL2 {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBoundaryParam 
 theorem herglotzConormalL2_ae {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
     {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
     (herglotzConormalL2 hγ ha k : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * π))] herglotzConormal k a γ :=
+      =ᵐ[angleMeasure] herglotzConormal k a γ :=
   (herglotzConormal_memLp_boundary hγ ha k).coeFn_toLp
 
 /-- A smooth compactly supported representative equal to the actual wave
@@ -117,15 +118,15 @@ theorem exists_smoothTraceTest_herglotz {Ω : Set ℂ} (hb : Bornology.IsBounded
     (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
     {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
     ∃ f : smoothTraceTests, smoothTraceH1 Ω f = herglotzWaveH1 hb ha k ∧
-      ∀ θ ∈ Icc (0 : ℝ) (2 * π), f (γ θ) = herglotzCoeff k a 0 (γ θ) := by
-  obtain ⟨R, hR0, hR⟩ : ∃ R : ℝ, 0 < R ∧ closure Ω ⊆ ball (0 : ℂ) R := by
-    obtain ⟨R, hR⟩ := hb.closure.subset_ball (0 : ℂ)
+      ∀ θ ∈ angleInterval, f (γ θ) = herglotzCoeff k a 0 (γ θ) := by
+  obtain ⟨R, hR0, hR⟩ : ∃ R : ℝ, 0 < R ∧ closure Ω ⊆ ball 0 R := by
+    obtain ⟨R, hR⟩ := hb.closure.subset_ball 0
     exact ⟨max R 1, by positivity, hR.trans (ball_subset_ball (le_max_left _ _))⟩
   obtain ⟨χ, hχs, hχc, hχ1⟩ := exists_cutoff_one_on_ball R hR0
-  let f : smoothTraceTests := ⟨fun z => (χ z : ℂ) * herglotzCoeff k a 0 z,
+  let f : smoothTraceTests := ⟨fun z => (χ z) * herglotzCoeff k a 0 z,
     ⟨(Complex.ofRealCLM.contDiff.comp hχs).mul
       (contDiff_herglotzCoeff_infty ha.intervalIntegrable k 0),
-      (hχc.comp_left (g := fun x : ℝ => (x : ℂ)) Complex.ofReal_zero).mul_right,
+      (hχc.comp_left  Complex.ofReal_zero).mul_right,
       subset_univ _⟩⟩
   have hf : ∀ z ∈ closure Ω, f z = herglotzCoeff k a 0 z := by
     intro z hz
@@ -140,22 +141,22 @@ theorem exists_smoothTraceTest_herglotz {Ω : Set ℂ} (hb : Bornology.IsBounded
     exact hf _ (frontier_subset_closure (hγ.image ▸ mem_image_of_mem γ hθ))
 
 private lemma mixedHerglotzGreen_pointwise {a : ℝ → ℂ}
-    (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ) (f : smoothTraceTests) (z : ℂ) :
+    (ha : IntervalIntegrable a volume 0 anglePeriod) (k : ℝ) (f : smoothTraceTests) (z : ℂ) :
     -(Complex.I * k) *
       (dbar (fun x => conj (f x) * herglotzCoeff k a 1 x) z +
         conj (dbar (fun x => f x * conj (herglotzCoeff k a (-1) x)) z)) =
       (∑ i : Fin 2, conj (fderiv ℝ (f : ℂ → ℂ) z (coordDir i)) *
         fderiv ℝ (herglotzCoeff k a 0) z (coordDir i)) -
           ((k ^ 2 : ℝ) : ℂ) * (conj (f z) * herglotzCoeff k a 0 z) := by
-  have hf : DifferentiableAt ℝ (f : ℂ → ℂ) z := f.property.1.differentiable (by simp) z
-  have h1 := differentiable_herglotzCoeff ha k 1 z
+  have hf  := f.property.1.differentiable (by simp) z
+  
   have hm := differentiable_herglotzCoeff ha k (-1) z
   have hcf : DifferentiableAt ℝ (fun x => conj (f x)) z :=
     Complex.conjCLE.toContinuousLinearMap.differentiableAt.comp z hf
   have hcm : DifferentiableAt ℝ (fun x => conj (herglotzCoeff k a (-1) x)) z :=
     Complex.conjCLE.toContinuousLinearMap.differentiableAt.comp z hm
   unfold dbar
-  simp only [fderiv_fun_mul hcf h1, fderiv_fun_mul hf hcm,
+  simp only [fderiv_fun_mul hcf (differentiable_herglotzCoeff ha k 1 z), fderiv_fun_mul hf hcm,
     ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
     fderiv_conj_apply hf, fderiv_conj_apply hm, fderiv_herglotzCoeff_apply ha,
     Fin.sum_univ_two, coordDir, Matrix.cons_val_zero, Matrix.cons_val_one]
@@ -172,7 +173,7 @@ function. This is derived from the actual complex boundary Green formula. -/
 theorem integral_test_mul_herglotzConormal {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
     {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) (f : smoothTraceTests) :
-    ∫ θ in (0 : ℝ)..(2 * π), conj (f (γ θ)) * herglotzConormal k a γ θ =
+    ∫ₚ θ, conj (f (γ θ)) * herglotzConormal k a γ θ =
       ∫ z in Ω, ((∑ i : Fin 2, conj (fderiv ℝ (f : ℂ → ℂ) z (coordDir i)) *
         fderiv ℝ (herglotzCoeff k a 0) z (coordDir i)) -
           ((k ^ 2 : ℝ) : ℂ) * (conj (f z) * herglotzCoeff k a 0 z)) := by
@@ -182,68 +183,65 @@ theorem integral_test_mul_herglotzConormal {Ω : Set ℂ} (hb : Bornology.IsBoun
   obtain ⟨B, hB⟩ := f.property.2.1.exists_bound_of_continuous f.property.1.continuous
   obtain ⟨K1, hK1⟩ := lipschitzWith_herglotzCoeff ha.intervalIntegrable k 1
   obtain ⟨Km, hKm⟩ := lipschitzWith_herglotzCoeff ha.intervalIntegrable k (-1)
-  let A := (2 * π)⁻¹ * ∫ φ in (0 : ℝ)..(2 * π), ‖a φ‖
-  have hA : ∀ m z, ‖herglotzCoeff k a m z‖ ≤ A := fun m z => norm_herglotzCoeff_le k m z
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB 0)
-  have hcfB : ∀ z, ‖conj (f z)‖ ≤ B := fun z => by rw [Complex.norm_conj]; exact hB z
+  let A := anglePeriod⁻¹ * ∫ₚ φ, ‖a φ‖
+  have hA : ∀ m z, ‖herglotzCoeff k a m z‖ ≤ A := norm_herglotzCoeff_le k
+  have hB0  := (norm_nonneg _).trans (hB 0)
+  have hcfB : ∀ z, ‖conj (f z)‖ ≤ B := fun z => by simp [*]
   have hcmB : ∀ z, ‖conj (herglotzCoeff k a (-1) z)‖ ≤ A := fun z => by
-    rw [Complex.norm_conj]
-    exact hA (-1) z
+    simp [*]
   obtain ⟨KP, hKP⟩ := lipschitzWith_mul_of_bounded
     (Complex.isometry_conj.lipschitz.comp hKf) hK1 hcfB (hA 1)
   obtain ⟨KQ, hKQ⟩ := lipschitzWith_mul_of_bounded hKf
     (Complex.isometry_conj.lipschitz.comp hKm) hB hcmB
-  let P : ℂ → ℂ := fun z => conj (f z) * herglotzCoeff k a 1 z
-  let Q : ℂ → ℂ := fun z => f z * conj (herglotzCoeff k a (-1) z)
-  have hPB : ∀ z, ‖P z‖ ≤ B * A := fun z => by
+  let P  := fun z => conj (f z) * herglotzCoeff k a 1 z
+  let Q  := fun z => f z * conj (herglotzCoeff k a (-1) z)
+  
+  
+  have gP := integral_boundary_eq_dbar_of_bounded hb hL hγ hKP (fun z => by
     rw [norm_mul]
-    exact mul_le_mul (hcfB z) (hA 1 z) (norm_nonneg _) hB0
-  have hQB : ∀ z, ‖Q z‖ ≤ B * A := fun z => by
+    exact mul_le_mul (hcfB z) (hA 1 z) (norm_nonneg _) hB0)
+  have gQ := integral_boundary_eq_dbar_of_bounded hb hL hγ hKQ (fun z => by
     rw [norm_mul]
-    exact mul_le_mul (hB z) (hcmB z) (norm_nonneg _) hB0
-  have gP := integral_boundary_eq_dbar_of_bounded hb hL hγ hKP hPB
-  have gQ := integral_boundary_eq_dbar_of_bounded hb hL hγ hKQ hQB
+    exact mul_le_mul (hB z) (hcmB z) (norm_nonneg _) hB0)
   have hiP := intervalIntegrable_comp_mul_deriv hKγ hKP.continuous
   have hiQ := intervalIntegrable_comp_mul_deriv hKγ hKQ.continuous
-  change IntervalIntegrable (fun θ => P (γ θ) * deriv γ θ) volume 0 (2 * π) at hiP
-  change IntervalIntegrable (fun θ => Q (γ θ) * deriv γ θ) volume 0 (2 * π) at hiQ
-  change (∫ θ in (0 : ℝ)..(2 * π), P (γ θ) * deriv γ θ) =
+  change IntervalIntegrable (fun θ => P (γ θ) * deriv γ θ) volume 0 anglePeriod at hiP
+  change IntervalIntegrable (fun θ => Q (γ θ) * deriv γ θ) volume 0 anglePeriod at hiQ
+  change (∫ₚ θ, P (γ θ) * deriv γ θ) =
     2 * Complex.I * ∫ z in Ω, dbar P z at gP
-  change (∫ θ in (0 : ℝ)..(2 * π), Q (γ θ) * deriv γ θ) =
+  change (∫ₚ θ, Q (γ θ) * deriv γ θ) =
     2 * Complex.I * ∫ z in Ω, dbar Q z at gQ
-  have hiQc : IntervalIntegrable (fun θ => conj (Q (γ θ) * deriv γ θ)) volume 0 (2 * π) := by
-    rw [intervalIntegrable_iff] at hiQ ⊢
-    exact hiQ.norm.mono' (Complex.continuous_conj.comp_aestronglyMeasurable
-      hiQ.aestronglyMeasurable) (Eventually.of_forall fun θ => by simp [Q])
+  
   have hpt : ∀ θ, conj (f (γ θ)) * herglotzConormal k a γ θ =
-      (k / 2 : ℂ) * (conj (Q (γ θ) * deriv γ θ) - P (γ θ) * deriv γ θ) := by
+      (k / 2) * (conj (Q (γ θ) * deriv γ θ) - P (γ θ) * deriv γ θ) := by
     intro θ
     rw [herglotzConormal_eq ha.intervalIntegrable]
     simp only [P, Q, map_mul, Complex.conj_conj]
     ring
-  have hconj : ∫ θ in (0 : ℝ)..(2 * π), conj (Q (γ θ) * deriv γ θ) =
-      conj (∫ θ in (0 : ℝ)..(2 * π), Q (γ θ) * deriv γ θ) := by
+  have hconj : ∫ₚ θ, conj (Q (γ θ) * deriv γ θ) =
+      conj (∫ₚ θ, Q (γ θ) * deriv γ θ) := by
     rw [intervalIntegral.integral_of_le (by positivity), intervalIntegral.integral_of_le
       (by positivity), integral_conj]
-  have hPd : IntegrableOn (dbar P) Ω :=
-    Measure.integrableOn_of_bounded (M := (KP : ℝ)) hb.measure_lt_top.ne
-      (measurable_dbar P).aestronglyMeasurable (Eventually.of_forall (norm_dbar_le hKP))
+  
   have hQd : IntegrableOn (dbar Q) Ω :=
-    Measure.integrableOn_of_bounded (M := (KQ : ℝ)) hb.measure_lt_top.ne
+    Measure.integrableOn_of_bounded  hb.measure_lt_top.ne
       (measurable_dbar Q).aestronglyMeasurable (Eventually.of_forall (norm_dbar_le hKQ))
-  have hQc : IntegrableOn (fun z => conj (dbar Q z)) Ω :=
-    hQd.norm.mono' (Complex.continuous_conj.comp_aestronglyMeasurable
-      hQd.aestronglyMeasurable) (Eventually.of_forall fun z => by simp)
+  
   calc
-    _ = -(Complex.I * k) * ((∫ z in Ω, dbar P z) + ∫ z in Ω, conj (dbar Q z)) := by
+    _ = -(Complex.I * k) * ((∫ z in Ω, dbar P z) + ∫ z in Ω, conj _) := by
       simp_rw [hpt]
-      rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_sub hiQc hiP,
+      rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_sub (by
+        rw [intervalIntegrable_iff] at hiQ ⊢
+        exact hiQ.norm.mono' (Complex.continuous_conj.comp_aestronglyMeasurable
+          hiQ.aestronglyMeasurable) (Eventually.of_forall fun θ => by simp)) hiP,
         hconj, gQ, gP]
       simp only [map_mul, map_ofNat, Complex.conj_I]
       rw [← integral_conj]
       ring
-    _ = ∫ z in Ω, -(Complex.I * k) * (dbar P z + conj (dbar Q z)) := by
-      rw [integral_const_mul, integral_add hPd hQc]
+    _ = ∫ z in Ω, -(Complex.I * k) * (dbar P z + conj _) := by
+      rw [integral_const_mul, integral_add (Measure.integrableOn_of_bounded  hb.measure_lt_top.ne
+        (measurable_dbar P).aestronglyMeasurable (Eventually.of_forall (norm_dbar_le hKP))) (hQd.norm.mono' (Complex.continuous_conj.comp_aestronglyMeasurable
+        hQd.aestronglyMeasurable) (Eventually.of_forall fun z => by simp))]
     _ = _ := by
       refine setIntegral_congr_fun hL.1.1.measurableSet fun z _ => ?_
       exact mixedHerglotzGreen_pointwise ha.intervalIntegrable k f z
@@ -259,7 +257,7 @@ private lemma inner_toLp_pair {α : Type*} [MeasurableSpace α] {μ : Measure α
 private lemma integrable_conj_mul_of_memLp {α : Type*} [MeasurableSpace α]
     {μ : Measure α} {f g : α → ℂ} (hf : MemLp f 2 μ) (hg : MemLp g 2 μ) :
     Integrable (fun x => conj (f x) * g x) μ := by
-  apply (L2.integrable_inner (𝕜 := ℂ) (hf.toLp f) (hg.toLp g)).congr
+  apply (L2.integrable_inner  (hf.toLp f) (hg.toLp g)).congr
   filter_upwards [hf.coeFn_toLp, hg.coeFn_toLp] with x hfx hgx
   simp only [RCLike.inner_apply', hfx, hgx]
 
@@ -269,21 +267,19 @@ theorem herglotzWaveH1_green_smooth {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
     {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) (f : smoothTraceTests) :
     ⟪smoothTraceH1 Ω f, h1HelmholtzForm Ω (k ^ 2) (herglotzWaveH1 hb ha k)⟫_ℂ =
-      ⟪h1BoundaryTrace hb hL hγ (smoothTraceH1 Ω f), herglotzConormalL2 hγ ha k⟫_ℂ := by
-  have hi : ∀ i : Fin 2, IntegrableOn
-      (fun z => conj (fderiv ℝ (f : ℂ → ℂ) z (coordDir i)) *
-        fderiv ℝ (herglotzCoeff k a 0) z (coordDir i)) Ω := fun i =>
+      ⟪h1BoundaryTrace hL hγ (smoothTraceH1 Ω f), herglotzConormalL2 hγ ha k⟫_ℂ := by
+  have hi  := fun i =>
     integrable_conj_mul_of_memLp ((f.property.dirD (coordDir i)).memLp' 2)
       (herglotzCoeff_memLp_deriv_domain hb ha k 0 i)
-  have hm : IntegrableOn (fun z => conj (f z) * herglotzCoeff k a 0 z) Ω :=
+  have hm  :=
     integrable_conj_mul_of_memLp (f.property.memLp' 2)
       (herglotzCoeff_memLp_domain hb ha k 0)
-  rw [h1HelmholtzForm_inner, h1BoundaryTrace_inner_smooth]
+  rw [h1HelmholtzForm_inner, h1BoundaryTrace_inner_smooth hb]
   simp only [h1Value_smoothTraceH1, h1Gradient_smoothTraceH1,
     h1Value_herglotzWaveH1, h1Gradient_herglotzWaveH1, inner_toLp_pair]
-  have hboundary : (∫ θ in Ioc (0 : ℝ) (2 * π),
+  have hboundary : (∫ θ in angleIoc,
       conj (f (γ θ)) * (herglotzConormalL2 hγ ha k : ℝ → ℂ) θ) =
-      ∫ θ in (0 : ℝ)..(2 * π), conj (f (γ θ)) * herglotzConormal k a γ θ := by
+      ∫ₚ θ, conj (f (γ θ)) * herglotzConormal k a γ θ := by
     rw [intervalIntegral.integral_of_le (by positivity)]
     apply integral_congr_ae
     filter_upwards [herglotzConormalL2_ae hγ ha k] with θ hθ
@@ -292,8 +288,9 @@ theorem herglotzWaveH1_green_smooth {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   simp only [Fin.sum_univ_two] at hi ⊢
   symm
   refine (integral_sub ((hi 0).add (hi 1))
-    (hm.const_mul ((k ^ 2 : ℝ) : ℂ))).trans ?_
-  exact congrArg₂ (fun x y : ℂ => x - y)
+    ((integrable_conj_mul_of_memLp (f.property.memLp' 2)
+      (herglotzCoeff_memLp_domain hb ha k 0)).const_mul _)).trans ?_
+  exact congrArg₂ _
     (integral_add (hi 0) (hi 1))
     (integral_const_mul ((k ^ 2 : ℝ) : ℂ) (fun z => conj (f z) * herglotzCoeff k a 0 z))
 

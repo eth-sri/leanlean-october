@@ -20,8 +20,12 @@ namespace PolyaNeumann
 open Set Topology
 open scoped InnerProductSpace
 
+section
+
+variable (Ω : Set ℂ) (E : ℝ)
+
 /-- Inclusion sends the actual form kernel to the weak eigenspace. -/
-def h1ResonantInclusion (Ω : Set ℂ) (E : ℝ) :
+def h1ResonantInclusion :
     h1ResonantSpace Ω E →ₗ[ℂ] neumannEigenspace Ω E where
   toFun u := ⟨h1Value Ω u,
     h1HelmholtzForm_kernel_mem Ω E u u.property⟩
@@ -36,7 +40,7 @@ theorem h1ResonantInclusion_injective {Ω : Set ℂ} (hΩ : IsOpen Ω) (E : ℝ)
   exact congrArg Subtype.val huv
 
 /-- Every genuine weak eigenfunction has an H¹ lift in the form kernel. -/
-theorem h1ResonantInclusion_surjective (Ω : Set ℂ) (E : ℝ) :
+theorem h1ResonantInclusion_surjective :
     Function.Surjective (h1ResonantInclusion Ω E) := by
   intro u
   obtain ⟨g, hg, hw⟩ := u.property
@@ -48,6 +52,8 @@ theorem h1ResonantInclusion_surjective (Ω : Set ℂ) (E : ℝ) :
     exact sub_eq_zero.mpr (hw (h1Value Ω v) (fun i => h1Gradient Ω i v)
       (h1Value_weakGradient Ω v))
   exact ⟨⟨h1Vector hg, hzero⟩, Subtype.ext rfl⟩
+
+end
 
 def h1ResonantEquiv {Ω : Set ℂ} (hΩ : IsOpen Ω) (E : ℝ) :
     h1ResonantSpace Ω E ≃ₗ[ℂ] neumannEigenspace Ω E :=

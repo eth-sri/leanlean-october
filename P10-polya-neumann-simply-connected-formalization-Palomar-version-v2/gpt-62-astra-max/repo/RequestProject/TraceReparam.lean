@@ -1,9 +1,12 @@
 module
 
+public import RequestProject.CircleAnalysisNotation
+
 public import Mathlib.Analysis.Calculus.ContDiff.Deriv
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 public import Mathlib.Tactic
 public import RequestProject.TraceH1
+public import RequestProject.PlanarNotation
 
 /-!
 # The H¹ trace in a nonconstant-speed boundary parameter
@@ -35,9 +38,9 @@ structure IsC1TraceReparam (τ : ℝ → ℝ) (c : ℝ) : Prop where
   lipschitz : ∃ K : NNReal, LipschitzWith K τ
   contDiff : ContDiff ℝ 1 τ
   zero : τ 0 = 0
-  endpoint : τ (2 * π) = 2 * π
+  endpoint : τ anglePeriod = anglePeriod
   lower_pos : 0 < c
-  lower_ae : ∀ᵐ θ ∂volume.restrict (Icc (0 : ℝ) (2 * π)), c ≤ deriv τ θ
+  lower_ae : ∀ᵐ θ ∂volume.restrict angleInterval, c ≤ deriv τ θ
 
 lemma IsC1TraceReparam.continuous {τ : ℝ → ℝ} {c : ℝ}
     (hτ : IsC1TraceReparam τ c) : Continuous τ := by
@@ -45,7 +48,7 @@ lemma IsC1TraceReparam.continuous {τ : ℝ → ℝ} {c : ℝ}
   exact hK.continuous
 
 lemma IsC1TraceReparam.mapsTo {τ : ℝ → ℝ} {c : ℝ}
-    (hτ : IsC1TraceReparam τ c) : MapsTo τ (Icc 0 (2 * π)) (Icc 0 (2 * π)) := by
+    (hτ : IsC1TraceReparam τ c) : MapsTo τ angleInterval angleInterval := by
   intro θ hθ
   exact ⟨hτ.zero ▸ hτ.monotone hθ.1, hτ.endpoint ▸ hτ.monotone hθ.2⟩
 
@@ -53,28 +56,28 @@ lemma IsC1TraceReparam.mapsTo {τ : ℝ → ℝ} {c : ℝ}
 composition by `τ`; the factor is precisely the reciprocal lower Jacobian. -/
 theorem integral_sq_comp_traceReparam_le {τ : ℝ → ℝ} {c : ℝ}
     (hτ : IsC1TraceReparam τ c) {q : ℝ → ℂ} (hq : Continuous q) :
-    (∫ θ in (0 : ℝ)..(2 * π), ‖q (τ θ)‖ ^ 2) ≤
-      (1 / c) * ∫ s in (0 : ℝ)..(2 * π), ‖q s‖ ^ 2 := by
-  have hQ : Continuous (fun s => ‖q s‖ ^ 2) := hq.norm.pow 2
-  have hQt : Continuous (fun θ => ‖q (τ θ)‖ ^ 2) := hQ.comp hτ.continuous
-  have hd : Continuous (deriv τ) := hτ.contDiff.continuous_deriv_one
-  have hJ : (∫ θ in (0 : ℝ)..(2 * π), ‖q (τ θ)‖ ^ 2 * deriv τ θ) =
-      ∫ s in (0 : ℝ)..(2 * π), ‖q s‖ ^ 2 := by
-    have h := intervalIntegral.integral_comp_mul_deriv (a := (0 : ℝ)) (b := 2 * π)
+    (∫ₚ θ, ‖q (τ θ)‖ ^ 2) ≤
+      (1 / c) * ∫ₚ s, ‖q s‖ ^ 2 := by
+  have hQ  := hq.norm.pow 2
+  have hQt  := hQ.comp hτ.continuous
+  have hd  := hτ.contDiff.continuous_deriv_one
+  have hJ : (∫ₚ θ, ‖q (τ θ)‖ ^ 2 * deriv τ θ) =
+      ∫ₚ s, ‖q s‖ ^ 2 := by
+    have h := intervalIntegral.integral_comp_mul_deriv (a := (0 : ℝ)) (b := anglePeriod)
       (fun θ _ => (hτ.contDiff.differentiable_one θ).hasDerivAt)
       hd.continuousOn hQ
-    simpa only [Function.comp_apply, hτ.zero, hτ.endpoint] using h
-  have hle : c * (∫ θ in (0 : ℝ)..(2 * π), ‖q (τ θ)‖ ^ 2) ≤
-      ∫ θ in (0 : ℝ)..(2 * π), ‖q (τ θ)‖ ^ 2 * deriv τ θ := by
+    simpa [hτ.zero, hτ.endpoint] using h
+  have hle : c * (∫ₚ θ, ‖q (τ θ)‖ ^ 2) ≤
+      ∫ₚ θ, ‖q (τ θ)‖ ^ 2 * deriv τ θ := by
     rw [← intervalIntegral.integral_const_mul]
-    refine intervalIntegral.integral_mono_ae_restrict (by positivity : (0 : ℝ) ≤ 2 * π)
+    refine intervalIntegral.integral_mono_ae_restrict (by positivity : 0 ≤ anglePeriod)
       ((continuous_const.mul hQt).intervalIntegrable _ _)
       ((hQt.mul hd).intervalIntegrable _ _) ?_
     filter_upwards [hτ.lower_ae] with θ hθ
-    simpa only [mul_comm] using mul_le_mul_of_nonneg_left hθ (sq_nonneg ‖q (τ θ)‖)
+    nlinarith
   rw [hJ] at hle
   calc
-    _ ≤ (∫ s in (0 : ℝ)..(2 * π), ‖q s‖ ^ 2) / c :=
+    _ ≤ (∫ₚ s, ‖q s‖ ^ 2) / c :=
       (le_div_iff₀ hτ.lower_pos).mpr (by simpa only [mul_comm] using hle)
     _ = _ := by ring
 
@@ -84,7 +87,7 @@ theorem trace_sq_le_reparam {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {β : ℝ → ℂ} (hβ : IsBoundaryParam Ω β)
     {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ f : smoothTraceTests,
-      (∫ θ in (0 : ℝ)..(2 * π), ‖f (β (τ θ))‖ ^ 2) ≤
+      (∫ₚ θ, ‖f (β (τ θ))‖ ^ 2) ≤
         (C / c) * ((∫ z in Ω, ‖f z‖ ^ 2) + ∫ z in Ω, gradSq (f : ℂ → ℂ) z) := by
   obtain ⟨C, hC, hbound⟩ := trace_sq_le hb hL hβ
   obtain ⟨Kβ, hKβ⟩ := hβ.lipschitz
@@ -92,19 +95,18 @@ theorem trace_sq_le_reparam {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   obtain ⟨Kf, hKf⟩ := ContDiff.lipschitzWith_of_hasCompactSupport
     f.property.2.1 f.property.1 (by simp)
   obtain ⟨B, hB⟩ := f.property.2.1.exists_bound_of_continuous f.property.1.continuous
-  have hs := hbound (f : ℂ → ℂ) Kf hKf B hB
+  have hs := hbound f Kf hKf B hB
   calc
-    _ ≤ (1 / c) * ∫ s in (0 : ℝ)..(2 * π), ‖f (β s)‖ ^ 2 :=
+    _ ≤ _ :=
       integral_sq_comp_traceReparam_le hτ (f.property.1.continuous.comp hKβ.continuous)
-    _ ≤ (1 / c) * (C * ((∫ z in Ω, ‖f z‖ ^ 2) +
-        ∫ z in Ω, gradSq (f : ℂ → ℂ) z)) :=
+    _ ≤ _ :=
       mul_le_mul_of_nonneg_left hs (one_div_nonneg.mpr hτ.lower_pos.le)
     _ = _ := by ring
 
 lemma smoothReparamBoundary_memLp {Ω : Set ℂ} {β : ℝ → ℂ}
     (hβ : IsBoundaryParam Ω β) {τ : ℝ → ℝ} {c : ℝ}
     (hτ : IsC1TraceReparam τ c) (f : smoothTraceTests) :
-    MemLp (fun θ => f (β (τ θ))) 2 (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
+    MemLp (fun θ => f (β (τ θ))) 2 angleMeasure := by
   obtain ⟨Kβ, hKβ⟩ := hβ.lipschitz
   obtain ⟨B, hB⟩ := f.property.2.1.exists_bound_of_continuous f.property.1.continuous
   exact MemLp.of_bound
@@ -122,20 +124,20 @@ def smoothReparamBoundaryLin {Ω : Set ℂ} {β : ℝ → ℂ} (hβ : IsBoundary
   map_smul' a f := MemLp.toLp_const_smul a (smoothReparamBoundary_memLp hβ hτ f)
 
 private lemma norm_sq_traceReparam_toLp {f : ℝ → ℂ}
-    (hf : MemLp f 2 (volume.restrict (Ioc (0 : ℝ) (2 * π)))) :
-    ‖hf.toLp f‖ ^ 2 = ∫ θ in (0 : ℝ)..(2 * π), ‖f θ‖ ^ 2 := by
+    (hf : MemLp f 2 angleMeasure) :
+    ‖hf.toLp f‖ ^ 2 = ∫ₚ θ, ‖f θ‖ ^ 2 := by
   let u := hf.toLp f
   have h := congrArg RCLike.re (L2.inner_def (𝕜 := ℂ) u u)
   rw [inner_self_eq_norm_sq, ← integral_re (L2.integrable_inner u u)] at h
   simp_rw [inner_self_eq_norm_sq] at h
-  rw [intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ 2 * π), h]
+  rw [intervalIntegral.integral_of_le (by positivity : 0 ≤ anglePeriod), h]
   exact integral_congr_ae (hf.coeFn_toLp.fun_comp (fun z : ℂ => ‖z‖ ^ 2))
 
 theorem norm_sq_smoothReparamBoundary {Ω : Set ℂ} {β : ℝ → ℂ}
     (hβ : IsBoundaryParam Ω β) {τ : ℝ → ℝ} {c : ℝ}
     (hτ : IsC1TraceReparam τ c) (f : smoothTraceTests) :
     ‖smoothReparamBoundaryLin hβ hτ f‖ ^ 2 =
-      ∫ θ in (0 : ℝ)..(2 * π), ‖f (β (τ θ))‖ ^ 2 :=
+      ∫ₚ θ, ‖f (β (τ θ))‖ ^ 2 :=
   norm_sq_traceReparam_toLp (smoothReparamBoundary_memLp hβ hτ f)
 
 theorem exists_bound_smoothReparamBoundary {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
@@ -144,7 +146,7 @@ theorem exists_bound_smoothReparamBoundary {Ω : Set ℂ} (hb : Bornology.IsBoun
     ∃ C : ℝ, 0 ≤ C ∧ ∀ f : smoothTraceTests,
       ‖smoothReparamBoundaryLin hβ hτ f‖ ≤ C * ‖smoothTraceH1Lin hL.1.1 f‖ := by
   obtain ⟨C, hC, hbound⟩ := trace_sq_le_reparam hb hL hβ hτ
-  have hCc : 0 ≤ C / c := div_nonneg hC hτ.lower_pos.le
+  have hCc  := div_nonneg hC hτ.lower_pos.le
   refine ⟨Real.sqrt (C / c), Real.sqrt_nonneg _, fun f => ?_⟩
   have hs := hbound f
   rw [← norm_sq_smoothReparamBoundary hβ hτ f, ← norm_sq_smoothTraceH1 Ω f] at hs
@@ -175,7 +177,7 @@ theorem h1ReparamBoundaryTrace_smooth_ae {Ω : Set ℂ} (hb : Bornology.IsBounde
     (hL : IsLipschitzDomain Ω) {β : ℝ → ℂ} (hβ : IsBoundaryParam Ω β)
     {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c) (f : smoothTraceTests) :
     (h1ReparamBoundaryTrace hL hβ hτ (smoothTraceH1 Ω f) : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * π))] fun θ => f (β (τ θ)) := by
+      =ᵐ[angleMeasure] fun θ => f (β (τ θ)) := by
   rw [h1ReparamBoundaryTrace_smooth hb hL hβ hτ f]
   exact (smoothReparamBoundary_memLp hβ hτ f).coeFn_toLp
 
@@ -190,8 +192,7 @@ theorem h1ReparamBoundaryTrace_unique {Ω : Set ℂ} (hb : Bornology.IsBounded �
   obtain ⟨C, _, hC⟩ := exists_bound_smoothReparamBoundary hb hL hβ hτ
   apply LinearMap.extendOfNorm_unique (denseRange_smoothTraceH1Lin hb hL) C hC T
   apply LinearMap.ext
-  intro f
-  exact hT f
+  assumption
 
 end PolyaNeumann
 

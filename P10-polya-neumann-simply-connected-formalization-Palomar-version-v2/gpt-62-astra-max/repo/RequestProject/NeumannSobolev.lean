@@ -21,16 +21,21 @@ noncomputable section
 
 namespace PolyaNeumann
 
-/-- Value and both weak derivatives, with the Hilbert sum norm. -/
-abbrev H1Jet (Ω : Set ℂ) := PiLp 2 (fun _ : Fin 3 => L2 Ω)
+section
 
-def h1JetSubmodule (Ω : Set ℂ) : Submodule ℂ (H1Jet Ω) where
+variable (Ω : Set ℂ)
+include Ω
+
+/-- Value and both weak derivatives, with the Hilbert sum norm. -/
+abbrev H1Jet := PiLp 2 (fun _ : Fin 3 => L2 Ω)
+
+def h1JetSubmodule : Submodule ℂ (H1Jet Ω) where
   carrier := {x | IsWeakGradient Ω (x 0) (fun i => x i.succ)}
   zero_mem' := isWeakGradient_zero
   add_mem' := fun hx hy => hx.add hy
   smul_mem' := fun c _ hx => hx.smul c
 
-theorem isClosed_h1JetSubmodule (Ω : Set ℂ) :
+theorem isClosed_h1JetSubmodule :
     IsClosed (h1JetSubmodule Ω : Set (H1Jet Ω)) := by
   refine IsSeqClosed.isClosed fun x X hx hX => ?_
   exact isWeakGradient_of_tendsto hx
@@ -38,18 +43,24 @@ theorem isClosed_h1JetSubmodule (Ω : Set ℂ) :
     (fun i => ((PiLp.continuous_apply 2 (fun _ : Fin 3 => L2 Ω) i.succ).tendsto X).comp hX)
 
 /-- The genuine H¹ space, retaining the weak gradient as part of its data. -/
-abbrev NeumannH1 (Ω : Set ℂ) := h1JetSubmodule Ω
+abbrev NeumannH1 := h1JetSubmodule Ω
+
+end
 
 instance (Ω : Set ℂ) : CompleteSpace (NeumannH1 Ω) :=
   (isClosed_h1JetSubmodule Ω).completeSpace_coe
 
-def h1Value (Ω : Set ℂ) : NeumannH1 Ω →L[ℂ] L2 Ω :=
+section
+
+variable (Ω : Set ℂ) (u : NeumannH1 Ω)
+
+def h1Value : NeumannH1 Ω →L[ℂ] L2 Ω :=
   (PiLp.proj 2 (fun _ : Fin 3 => L2 Ω) 0).comp (h1JetSubmodule Ω).subtypeL
 
-def h1Gradient (Ω : Set ℂ) (i : Fin 2) : NeumannH1 Ω →L[ℂ] L2 Ω :=
+def h1Gradient (i : Fin 2) : NeumannH1 Ω →L[ℂ] L2 Ω :=
   (PiLp.proj 2 (fun _ : Fin 3 => L2 Ω) i.succ).comp (h1JetSubmodule Ω).subtypeL
 
-theorem h1Value_weakGradient (Ω : Set ℂ) (u : NeumannH1 Ω) :
+theorem h1Value_weakGradient :
     IsWeakGradient Ω (h1Value Ω u) (fun i => h1Gradient Ω i u) := u.property
 
 def h1Vector {Ω : Set ℂ} {u : L2 Ω} {g : Fin 2 → L2 Ω}
@@ -62,7 +73,7 @@ def h1Vector {Ω : Set ℂ} {u : L2 Ω} {g : Fin 2 → L2 Ω}
 @[simp] theorem h1Gradient_h1Vector {Ω : Set ℂ} {u : L2 Ω} {g : Fin 2 → L2 Ω}
     (hg : IsWeakGradient Ω u g) (i : Fin 2) : h1Gradient Ω i (h1Vector hg) = g i := rfl
 
-theorem h1Value_range (Ω : Set ℂ) : Set.range (h1Value Ω) = H1 Ω := by
+theorem h1Value_range : Set.range (h1Value Ω) = H1 Ω := by
   ext u
   constructor
   · rintro ⟨v, rfl⟩
@@ -73,49 +84,47 @@ theorem h1Value_range (Ω : Set ℂ) : Set.range (h1Value Ω) = H1 Ω := by
 theorem h1Value_injective {Ω : Set ℂ} (hΩ : IsOpen Ω) :
     Function.Injective (h1Value Ω) := by
   intro u v huv
-  have hgrad := (h1Value_weakGradient Ω u).unique hΩ
-    (huv.symm ▸ h1Value_weakGradient Ω v)
+  
   apply Subtype.ext
   apply PiLp.ext
   intro i
   refine Fin.cases ?_ (fun j => ?_) i
   · exact huv
-  · exact congrFun hgrad j
+  · exact congrFun ((h1Value_weakGradient Ω u).unique hΩ
+    (huv.symm ▸ h1Value_weakGradient Ω v)) j
 
-theorem h1_inner (Ω : Set ℂ) (u v : NeumannH1 Ω) :
+theorem h1_inner (v : NeumannH1 Ω) :
     ⟪u, v⟫_ℂ = ⟪h1Value Ω u, h1Value Ω v⟫_ℂ +
-      ∑ i, ⟪h1Gradient Ω i u, h1Gradient Ω i v⟫_ℂ := by
-  change ⟪(u : H1Jet Ω), (v : H1Jet Ω)⟫_ℂ = _
-  rw [PiLp.inner_apply, Fin.sum_univ_succ]
-  rfl
+      ∑ i, ⟪h1Gradient Ω i u, h1Gradient Ω i v⟫_ℂ := rfl
 
-theorem h1_norm_sq (Ω : Set ℂ) (u : NeumannH1 Ω) :
+theorem h1_norm_sq :
     ‖u‖ ^ 2 = ‖h1Value Ω u‖ ^ 2 + ∑ i, ‖h1Gradient Ω i u‖ ^ 2 := by
   have h := h1_inner Ω u u
   simp only [inner_self_eq_norm_sq_to_K] at h
   exact Complex.ofReal_injective (by push_cast; exact h)
 
+end
+
 /-- H¹ test vectors separate L², proved using actual smooth test functions. -/
 theorem eq_zero_of_inner_h1 {Ω : Set ℂ} (hΩ : IsOpen Ω) (f : L2 Ω)
     (hf : ∀ u : NeumannH1 Ω, ⟪h1Value Ω u, f⟫_ℂ = 0) : f = 0 := by
-  have hloc := locallyIntegrable_indicator_L2 hΩ.measurableSet f
-  have h0 := hΩ.ae_eq_zero_of_integral_contDiff_smul_eq_zero (hloc.locallyIntegrableOn Ω)
+  
+  have h0 := hΩ.ae_eq_zero_of_integral_contDiff_smul_eq_zero ((locallyIntegrable_indicator_L2 hΩ.measurableSet f).locallyIntegrableOn Ω)
     (fun ψ hψ hψc hψs => by
-      let φ : ℂ → ℂ := fun w => (ψ w : ℂ)
+      let φ  := fun w => (ψ w : ℂ)
       have hφ : TestFunction Ω φ :=
         ⟨Complex.ofRealCLM.contDiff.comp hψ, hψc.comp_left Complex.ofReal_zero,
           (tsupport_comp_subset Complex.ofReal_zero ψ).trans hψs⟩
-      let g : Fin 2 → L2 Ω := fun i => (hφ.memLp_fderiv (coordDir i)).toLp _
-      have hg : IsWeakGradient Ω (hφ.memLp.toLp φ) g :=
-        isWeakGradient_of_smooth hφ.1 hφ.memLp (fun i => hφ.memLp_fderiv _)
-      have h := hf (h1Vector hg)
+      
+      
+      have h := hf (h1Vector (isWeakGradient_of_smooth hφ.1 hφ.memLp (fun i => hφ.memLp_fderiv _)))
       rw [h1Value_h1Vector, L2.inner_def] at h
       have heq : ∫ w in Ω, (ψ w) • (f : ℂ → ℂ) w = 0 := by
         rw [← h]
         apply integral_congr_ae
         filter_upwards [hφ.memLp.coeFn_toLp] with w hw
-        simp [hw, φ, RCLike.inner_apply, Complex.real_smul, mul_comm]
-      have e : ∀ w, ψ w • Ω.indicator (fun z => (f : ℂ → ℂ) z) w =
+        simp [hw, φ, Complex.real_smul, mul_comm]
+      have e : ∀ w, ψ w • Ω.indicator ((f : ℂ → ℂ)) w =
           Ω.indicator (fun w => ψ w • (f : ℂ → ℂ) w) w := by
         intro w
         by_cases hw : w ∈ Ω <;> simp [hw]
@@ -133,7 +142,6 @@ theorem h1Value_denseRange {Ω : Set ℂ} (hΩ : IsOpen Ω) : DenseRange (h1Valu
   rw [Submodule.dense_iff_topologicalClosure_eq_top, Submodule.topologicalClosure_eq_top_iff]
   apply eq_bot_iff.mpr
   intro f hf
-  rw [Submodule.mem_bot]
   exact eq_zero_of_inner_h1 hΩ f (fun u =>
     ((h1Value Ω).range.mem_orthogonal f).mp hf _ ⟨u, rfl⟩)
 
@@ -150,9 +158,8 @@ theorem totallyBounded_of_subsequence {X : Type*} [UniformSpace X] (s : Set X)
       ∀ n m, m < n → u m ∉ UniformSpace.ball (u n) V := by
     simp only [Set.not_subset, Set.mem_iUnion₂, not_exists, exists_prop] at H
     have := seq_of_forall_finite_exists H
-    simp only [forall_and, forall_mem_image, not_and] at this
-    obtain ⟨u, hu1, hu2⟩ := this
-    exact ⟨u, hu1, fun n m hmn h => hu2 n (Set.mem_Iio.mpr hmn) h⟩
+    simp [forall_and, forall_mem_image, not_and] at this
+    assumption
   refine ⟨u, u_in, fun φ hφ v huφ => ?_⟩
   obtain ⟨N, hN⟩ : ∃ N, ∀ p q, p ≥ N → q ≥ N → (u (φ p), u (φ q)) ∈ V :=
     huφ.cauchySeq.mem_entourage V_in
@@ -163,7 +170,7 @@ theorem totallyBounded_of_subsequence {X : Type*} [UniformSpace X] (s : Set X)
 theorem h1Value_isCompactOperator {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) : IsCompactOperator (h1Value Ω) := by
   classical
-  let S : Set (L2 Ω) := h1Value Ω '' Metric.closedBall (0 : NeumannH1 Ω) 1
+  let S  := h1Value Ω '' Metric.closedBall 0 1
   have hS : TotallyBounded S := by
     apply totallyBounded_of_subsequence
     intro u hu
@@ -176,7 +183,7 @@ theorem h1Value_isCompactOperator {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     have huC (n : ℕ) : ‖u n‖ ≤ 1 := by
       rw [← hveq n]
       exact (PiLp.norm_apply_le (v n : H1Jet Ω) 0).trans (hvnorm n)
-    have hgC (n : ℕ) (i : Fin 2) : ‖h1Gradient Ω i (v n)‖ ≤ 1 :=
+    have hgC (n : ℕ) (i : Fin 2)  :=
       (PiLp.norm_apply_le (v n : H1Jet Ω) i.succ).trans (hvnorm n)
     exact rellich_compact hb hL u (fun n i => h1Gradient Ω i (v n)) hweak 1 huC hgC
   apply (isCompactOperator_iff_isCompact_closure_image_closedBall

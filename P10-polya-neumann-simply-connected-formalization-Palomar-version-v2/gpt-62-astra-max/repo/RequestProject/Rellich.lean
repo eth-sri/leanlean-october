@@ -44,7 +44,7 @@ lemma tendsto_integral_mul {Ω : Set ℂ} {ψ : ℂ → ℂ}
     rw [L2.inner_def]
     refine integral_congr_ae ?_
     filter_upwards [hψ.coeFn_toLp] with w hw
-    simp only [Ψ, hw, RCLike.inner_apply, Complex.conj_conj]
+    simp [Ψ, hw]
   simp_rw [key]
   exact (continuous_const.inner continuous_id).continuousAt.tendsto.comp hf
 
@@ -58,20 +58,19 @@ lemma isWeakGradient_of_tendsto {Ω : Set ℂ} {u : ℕ → L2 Ω} {g : ℕ → 
       MemLp (fun w => (starRingEnd ℂ) (ψ w)) 2 (volume.restrict Ω) := fun ψ hc hs =>
     ((Complex.continuous_conj.comp hc).memLp_of_hasCompactSupport
       (hs.comp_left (map_zero _))).restrict Ω
-  have hd : Continuous fun w => fderiv ℝ φ w (coordDir i) :=
-    (hφ.1.continuous_fderiv (by simp)).clm_apply continuous_const
-  have hds : HasCompactSupport fun w => fderiv ℝ φ w (coordDir i) :=
+  
+  have hds  :=
     (hφ.2.1.fderiv ℝ).comp_left (g := fun T : ℂ →L[ℝ] ℂ => T (coordDir i)) rfl
-  have h1 := tendsto_integral_mul (hmem _ hd hds) hu
-  have h2 := (tendsto_integral_mul (hmem _ hφ.1.continuous hφ.2.1) (hG i)).neg
+  have h1 := tendsto_integral_mul (hmem _ ((hφ.1.continuous_fderiv (by simp)).clm_apply continuous_const) hds) hu
+  
   refine tendsto_nhds_unique h1 ?_
-  exact h2.congr fun n => (hg n φ hφ i).symm
+  exact ((tendsto_integral_mul (hmem _ hφ.1.continuous hφ.2.1) (hG i)).neg).congr fun n => (hg n φ hφ i).symm
 
 /-- Weak gradients scale: if `∇u = g` then `∇(c u) = c g`. -/
 lemma isWeakGradient_smul {Ω : Set ℂ} {u : L2 Ω} {g : Fin 2 → L2 Ω}
     (hg : IsWeakGradient Ω u g) (c : ℂ) : IsWeakGradient Ω (c • u) (c • g) := by
   intro φ hφ i
-  have h := hg φ hφ i
+  
   have e1 : ∫ w in Ω, (c • u : L2 Ω) w * fderiv ℝ φ w (coordDir i) =
       c * ∫ w in Ω, u w * fderiv ℝ φ w (coordDir i) := by
     rw [← integral_const_mul]
@@ -82,8 +81,8 @@ lemma isWeakGradient_smul {Ω : Set ℂ} {u : L2 Ω} {g : Fin 2 → L2 Ω}
     rw [← integral_const_mul]
     refine integral_congr_ae ?_
     filter_upwards [Lp.coeFn_smul c (g i)] with w hw
-    simp [Pi.smul_apply, hw, mul_assoc]
-  rw [e1, e2, h, mul_neg]
+    simp [hw, mul_assoc]
+  rw [e1, e2, (hg φ hφ i), mul_neg]
 
 end PolyaNeumann
 

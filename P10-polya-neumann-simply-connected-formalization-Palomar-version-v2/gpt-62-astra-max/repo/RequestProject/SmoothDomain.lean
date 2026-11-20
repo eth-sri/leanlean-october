@@ -16,6 +16,8 @@ open MeasureTheory Filter Topology
 
 noncomputable section
 
+open scoped ContDiff
+
 namespace PolyaNeumann
 
 /-- A smooth domain: a domain whose boundary is locally, after a rigid change of
@@ -24,7 +26,7 @@ to be globally Lipschitz), with the domain on one side. -/
 def IsSmoothDomain (Ω : Set ℂ) : Prop :=
   IsDomain Ω ∧
   ∀ p ∈ frontier Ω, ∃ (c : ℂ) (r h : ℝ) (K : NNReal) (f : ℝ → ℝ),
-    ‖c‖ = 1 ∧ 0 < r ∧ 0 < h ∧ ContDiff ℝ (⊤ : ℕ∞) f ∧ LipschitzWith K f ∧ f 0 = 0 ∧
+    ‖c‖ = 1 ∧ 0 < r ∧ 0 < h ∧ ContDiff ℝ ∞ f ∧ LipschitzWith K f ∧ f 0 = 0 ∧
     (∀ x : ℝ, |x| < r → |f x| < h) ∧
     ∀ w : ℂ, |(c * (w - p)).re| < r → |(c * (w - p)).im| < h →
       (w ∈ Ω ↔ f (c * (w - p)).re < (c * (w - p)).im)

@@ -41,7 +41,6 @@ theorem finiteFourierChart_correction_sobolev {d : ℕ}
   rw [ContinuousLinearMap.sum_apply]
   apply Submodule.sum_mem
   intro r _
-  rw [InnerProductSpace.rankOne_apply]
   exact (fourierSobolevSubmodule s).smul_mem _
     (isSobolevSeq_of_finite_fourier_support s (hv r))
 

@@ -21,17 +21,24 @@ noncomputable section
 
 namespace PolyaNeumann
 
-/-- The signed distance to the boundary, positive inside: `dist(z, Ωᶜ) - dist(z, Ω)`. -/
-def signedDist (Ω : Set ℂ) (z : ℂ) : ℝ := infDist z Ωᶜ - infDist z Ω
+section
 
-lemma lipschitzWith_signedDist (Ω : Set ℂ) : LipschitzWith 2 (signedDist Ω) := by
+variable (Ω : Set ℂ)
+include Ω
+
+/-- The signed distance to the boundary, positive inside: `dist(z, Ωᶜ) - dist(z, Ω)`. -/
+def signedDist (z : ℂ) : ℝ := infDist z Ωᶜ - infDist z Ω
+
+lemma lipschitzWith_signedDist : LipschitzWith 2 (signedDist Ω) := by
   have h := (lipschitz_infDist_pt (Ωᶜ)).sub (lipschitz_infDist_pt Ω)
   have : ((1 : NNReal) + 1) = 2 := by norm_num
   rw [this] at h
   exact h
 
-lemma continuous_signedDist (Ω : Set ℂ) : Continuous (signedDist Ω) :=
+lemma continuous_signedDist : Continuous (signedDist Ω) :=
   (lipschitzWith_signedDist Ω).continuous
+
+end
 
 lemma signedDist_of_mem {Ω : Set ℂ} {z : ℂ} (hz : z ∈ Ω) : signedDist Ω z = infDist z Ωᶜ := by
   simp [signedDist, infDist_zero_of_mem hz]
@@ -54,15 +61,15 @@ lemma signedDist_pos_iff {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempt
 
 lemma signedDist_eq_zero_of_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {z : ℂ}
     (hz : z ∈ frontier Ω) : signedDist Ω z = 0 := by
-  have hz' : z ∉ Ω := fun h => (hΩo.frontier_eq ▸ hz).2 (hΩo.interior_eq.symm ▸ h)
-  rw [signedDist_of_notMem hz', ← infDist_closure,
+  
+  rw [signedDist_of_notMem (fun h => (hΩo.frontier_eq ▸ hz).2 (hΩo.interior_eq.symm ▸ h)), ← infDist_closure,
     infDist_zero_of_mem (frontier_subset_closure hz), neg_zero]
 
 /-- `|d_Ω(z)| ≤ |z - p|` for a boundary point `p` (both distances are dominated). -/
 lemma infDist_compl_le_of_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {p z : ℂ}
     (hp : p ∈ frontier Ω) : infDist z Ωᶜ ≤ ‖z - p‖ := by
-  have hp' : p ∈ Ωᶜ := fun h => (hΩo.frontier_eq ▸ hp).2 (hΩo.interior_eq.symm ▸ h)
-  rw [← dist_eq_norm]; exact infDist_le_dist_of_mem hp'
+  
+  rw [← dist_eq_norm]; exact infDist_le_dist_of_mem (fun h => (hΩo.frontier_eq ▸ hp).2 (hΩo.interior_eq.symm ▸ h))
 
 lemma infDist_le_of_frontier {Ω : Set ℂ} {p z : ℂ} (hp : p ∈ frontier Ω) :
     infDist z Ω ≤ ‖z - p‖ := by
@@ -76,15 +83,13 @@ lemma chart_shift_mem {Ω : Set ℂ} {p c : ℂ} {r h : ℝ} {K : NNReal} {f : �
     (hs : ‖s - δ * (conj c * Complex.I)‖ ≤ δ / (2 * (K + 1))) : q + s ∈ Ω := by
   obtain ⟨hc, hr, hh, hf, -, -, hΩ⟩ := hch
   have hn := norm_mul_sub hc q p
-  have hX : |(c * (q - p)).re| < r / 2 :=
-    lt_of_le_of_lt (Complex.abs_re_le_norm _) (by rw [hn]; linarith [min_le_left r h])
-  have hY : |(c * (q - p)).im| < h / 2 :=
-    lt_of_le_of_lt (Complex.abs_im_le_norm _) (by rw [hn]; linarith [min_le_right r h])
+  
+  
   have hz : -s ∈ closedBall (-(starRingEnd ℂ c) * Complex.I * δ) (δ / (2 * (K + 1))) := by
     rw [mem_closedBall, dist_eq_norm]
     have : -s - -(starRingEnd ℂ c) * Complex.I * δ = -(s - δ * (conj c * Complex.I)) := by ring
     rw [this, norm_neg]; exact hs
-  have := chart_segment hc hf hΩ hδ hδr hδh hq hX hY hz (s := 1) ⟨zero_le_one, le_rfl⟩
+  have := chart_segment hc hf hΩ hδ hδr hδh hq (lt_of_le_of_lt (Complex.abs_re_le_norm _) (by linarith [min_le_left r h])) (lt_of_le_of_lt (Complex.abs_im_le_norm _) (by linarith [min_le_right r h])) hz (s := 1) ⟨zero_le_one, le_rfl⟩
   simpa using this
 
 /-- Inside the domain: the signed distance increases along the inward direction. -/
@@ -95,14 +100,13 @@ lemma signedDist_add_le_of_chart_mem {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩu : �
     signedDist Ω z + t / (2 * (K + 1)) ≤ signedDist Ω (z + t * (conj c * Complex.I)) := by
   set n : ℂ := conj c * Complex.I
   set κ : ℝ := 1 / (2 * (K + 1)) with hκ
-  have hK0 : (0 : ℝ) ≤ K := K.2
-  have hκ0 : 0 < κ := by positivity
-  have hκ1 : κ ≤ 1 / 2 := by
-    rw [hκ]; apply div_le_div_of_nonneg_left <;> nlinarith
+  
+  
+  
   set e := infDist z Ωᶜ with he
   have he0 : 0 < e := (hΩo.isClosed_compl.notMem_iff_infDist_pos hΩu).mp (fun h => h hzΩ)
   have hep : e ≤ ‖z - p‖ := infDist_compl_le_of_frontier hΩo hp
-  have htdiv : t / (2 * (K + 1)) = κ * t := by rw [hκ]; ring
+  have htdiv : t / (2 * (K + 1)) = κ * t := by ring
   rw [htdiv]
   -- the ball `B(z + t n, e + κ t)` lies in `Ω`
   have hball : ball (z + t * n) (e + κ * t) ⊆ Ω := by
@@ -126,11 +130,8 @@ lemma signedDist_add_le_of_chart_mem {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩu : �
       have : q = q' := by
         simp only [q', u, Complex.ofReal_zero, zero_mul, add_zero, mul_zero] at *
         rw [div_self he0.ne']; simp
-      rw [this]; exact hq'Ω
-    have hq'p : ‖q' - p‖ < min r h / 2 := by
-      have : ‖q' - p‖ ≤ ‖q' - z‖ + ‖z - p‖ := by
-        rw [← dist_eq_norm, ← dist_eq_norm, ← dist_eq_norm]; exact dist_triangle _ _ _
-      linarith
+      simp [*]
+    
     have hs : ‖(q - q') - t * n‖ ≤ t / (2 * (K + 1)) := by
       have hqq : q - q' - t * n = ((κ * t / (e + κ * t) : ℝ) : ℂ) * u := by
         simp only [q', u]
@@ -138,11 +139,14 @@ lemma signedDist_add_le_of_chart_mem {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩu : �
         rw [this]; push_cast; ring
       rw [hqq, norm_mul, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (by positivity), htdiv, div_mul_eq_mul_div, div_le_iff₀ hpos]
-      exact mul_le_mul_of_nonneg_left hq.le (by positivity)
-    have := chart_shift_mem hch htp htr hth hq'Ω hq'p hs
+      gcongr
+    have := chart_shift_mem hch htp htr hth hq'Ω (by
+      have : ‖q' - p‖ ≤ ‖q' - z‖ + ‖z - p‖ := by
+        rw [← dist_eq_norm, ← dist_eq_norm, ← dist_eq_norm]; exact dist_triangle _ _ _
+      linarith) hs
     simpa using this
-  have hcen : z + t * n ∈ Ω := hball (mem_ball_self (by positivity))
-  rw [signedDist_of_mem hzΩ, signedDist_of_mem hcen]
+  
+  rw [signedDist_of_mem hzΩ, signedDist_of_mem (hball (mem_ball_self (by positivity)))]
   rw [le_infDist hΩu]
   intro y hy
   by_contra hlt
@@ -161,11 +165,11 @@ lemma signedDist_add_le_of_chart_notMem {Ω : Set ℂ} (hΩne : Ω.Nonempty)
   have hn1 : ‖n‖ = 1 := by
     simp [n, hch.1]
   set κ : ℝ := 1 / (2 * (K + 1)) with hκ
-  have hK0 : (0 : ℝ) ≤ K := K.2
-  have hκ0 : 0 < κ := by positivity
+  
+  
   have hκ1 : κ ≤ 1 / 2 := by
     rw [hκ]; apply div_le_div_of_nonneg_left <;> nlinarith
-  have htdiv : t / (2 * (K + 1)) = κ * t := by rw [hκ]; ring
+  have htdiv : t / (2 * (K + 1)) = κ * t := by ring
   rw [htdiv, signedDist_of_notMem hzΩ, signedDist_of_notMem hwΩ]
   rcases ht0.eq_or_lt with rfl | htp
   · simp
@@ -187,7 +191,7 @@ lemma signedDist_add_le_of_chart_notMem {Ω : Set ℂ} (hΩne : Ω.Nonempty)
     set q' := w + ((e / (e + κ * t) : ℝ) : ℂ) * u
     have hq'w : dist q' w < e ∨ e = 0 := by
       rcases he0.eq_or_lt with h0 | h0
-      · exact Or.inr h0.symm
+      · simp [*]
       left
       rw [dist_eq_norm]
       simp only [q', add_sub_cancel_left, norm_mul, Complex.norm_real, Real.norm_eq_abs,
@@ -200,7 +204,7 @@ lemma signedDist_add_le_of_chart_notMem {Ω : Set ℂ} (hΩne : Ω.Nonempty)
         have := infDist_le_dist_of_mem (x := w) hm
         rw [dist_comm] at this; linarith
       · have : q' = w := by simp [q', h1]
-        rw [this]; exact hwΩ
+        simp [*]
     have hqp : ‖q - p‖ < min r h / 2 := by
       have : ‖q - p‖ ≤ ‖q - z‖ + ‖z - p‖ := by
         rw [← dist_eq_norm, ← dist_eq_norm, ← dist_eq_norm]; exact dist_triangle _ _ _
@@ -213,11 +217,11 @@ lemma signedDist_add_le_of_chart_notMem {Ω : Set ℂ} (hΩne : Ω.Nonempty)
         rw [this]; push_cast; ring
       rw [hqq, norm_neg, norm_mul, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (by positivity), htdiv, div_mul_eq_mul_div, div_le_iff₀ hpos]
-      exact mul_le_mul_of_nonneg_left hq.le (by positivity)
-    have htr' : t ≤ r := by linarith [min_le_left r h]
-    have hth' : t ≤ h / 3 := by linarith [min_le_right r h]
-    have := chart_shift_mem hch htp htr' hth' hqΩ hqp hs
-    simp only [add_sub_cancel] at this
+      gcongr
+    
+    
+    have := chart_shift_mem hch htp (by linarith [min_le_left r h]) (by linarith [min_le_right r h]) hqΩ hqp hs
+    simp at this
     exact hq'Ω this
   have : e + κ * t ≤ infDist z Ω := by
     rw [le_infDist hΩne]
@@ -237,18 +241,17 @@ theorem signedDist_add_le_of_chart {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩne : Ω
     signedDist Ω z + t / (2 * (K + 1)) ≤ signedDist Ω (z + t * (conj c * Complex.I)) := by
   set n : ℂ := conj c * Complex.I
   have hn1 : ‖n‖ = 1 := by simp [n, hch.1]
-  have hr := hch.2.1
-  have hh := hch.2.2.1
-  have hmin : 0 < min r h := lt_min hr hh
-  have hK0 : (0 : ℝ) ≤ K := K.2
+  
+  
+  
+  
   have hpt : ∀ s : ℝ, 0 ≤ s → ‖z + s * n - p‖ ≤ ‖z - p‖ + s := fun s hs => by
     have : z + s * n - p = (z - p) + s * n := by ring
     rw [this]
     refine (norm_add_le _ _).trans ?_
     rw [norm_mul, hn1, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hs, mul_one]
   by_cases hzΩ : z ∈ Ω
-  · exact signedDist_add_le_of_chart_mem hΩo hΩu hch hp hzΩ (by linarith) ht0
-      (by linarith [min_le_left r h]) (by linarith [min_le_right r h])
+  · grind [signedDist_add_le_of_chart_mem]
   by_cases hwΩ : z + t * n ∈ Ω
   swap
   · exact signedDist_add_le_of_chart_notMem hΩne hch hp hzΩ hwΩ hz ht0 htr
@@ -257,13 +260,13 @@ theorem signedDist_add_le_of_chart {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩne : Ω
   have hSc : IsClosed S := by
     refine isClosed_Icc.inter ?_
     exact hΩo.isClosed_compl.preimage (by fun_prop)
-  have hS0 : (0 : ℝ) ∈ S := ⟨⟨le_rfl, ht0⟩, by simpa using hzΩ⟩
+  
   have hSb : BddAbove S := ⟨t, fun s hs => hs.1.2⟩
   set t₁ := sSup S
-  have ht₁S : t₁ ∈ S := hSc.csSup_mem ⟨0, hS0⟩ hSb
-  have ht₁0 : 0 ≤ t₁ := ht₁S.1.1
-  have ht₁t : t₁ ≤ t := ht₁S.1.2
-  have hlt : t₁ < t := lt_of_le_of_ne ht₁t (fun h => ht₁S.2 (h ▸ hwΩ))
+  have ht₁S  := hSc.csSup_mem ⟨0, (⟨⟨le_rfl, ht0⟩, by simpa using hzΩ⟩)⟩ hSb
+  have ht₁0  := ht₁S.1.1
+  have ht₁t  := ht₁S.1.2
+  have hlt  := lt_of_le_of_ne ht₁t (fun h => ht₁S.2 (h ▸ hwΩ))
   -- outside part
   have h1 : signedDist Ω z + t₁ / (2 * (K + 1)) ≤ signedDist Ω (z + t₁ * n) :=
     signedDist_add_le_of_chart_notMem hΩne hch hp hzΩ ht₁S.2 hz ht₁0 (by linarith)
@@ -273,14 +276,13 @@ theorem signedDist_add_le_of_chart {Ω : Set ℂ} (hΩo : IsOpen Ω) (hΩne : Ω
     intro s hs
     have hsΩ : z + s * n ∈ Ω := by
       by_contra hc'
-      exact absurd (le_csSup hSb ⟨⟨by linarith [hs.1], hs.2⟩, hc'⟩) (not_le.mpr hs.1)
+      exact absurd (le_csSup hSb (by grind)) (not_le.mpr hs.1)
     have hm := signedDist_add_le_of_chart_mem hΩo hΩu hch hp hsΩ
       (by have := hpt s (by linarith [hs.1]); linarith [hs.2]) (t := t - s) (by linarith [hs.2])
-      (by linarith [min_le_left r h, hs.1]) (by linarith [min_le_right r h, hs.1])
+      (by grind) (by grind)
     have heq : z + s * n + ((t - s : ℝ) : ℂ) * n = z + t * n := by push_cast; ring
     rw [heq] at hm
-    have := signedDist_pos_of_mem hΩo hΩu hsΩ
-    linarith
+    linarith [signedDist_pos_of_mem hΩo hΩu hsΩ]
   have h2' : (t - t₁) / (2 * (K + 1)) ≤ signedDist Ω (z + t * n) := by
     have hcont : ContinuousWithinAt (fun s : ℝ => (t - s) / (2 * (K + 1))) (Ioc t₁ t) t₁ :=
       (by fun_prop : Continuous fun s : ℝ => (t - s) / (2 * (K + 1))).continuousWithinAt

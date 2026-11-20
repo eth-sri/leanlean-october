@@ -1,8 +1,12 @@
 module
 
+public import RequestProject.DiskCoordinates
+
 public import RequestProject.NormalizedPeriodicBoundary
-public import RequestProject.LocalConformalHerglotzDensity
-public import RequestProject.TraceReparamReverse
+public import RequestProject.LocalConformalRegularObservation
+public import RequestProject.Reconstruction
+public import RequestProject.TraceReparam
+public import RequestProject.PlanarNotation
 
 /-!
 The true normalized Neumann pole in a basis indexed by the multiplicity
@@ -17,6 +21,8 @@ This module is part of the verified dependency chain.
 set_option autoImplicit false
 
 noncomputable section
+
+open scoped ContDiff
 
 namespace PolyaNeumann
 
@@ -41,7 +47,7 @@ specified by the original variational Neumann spectrum. -/
 def originalNeumannResonanceH1Basis {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {E : ℝ} (hE : 0 ≤ E) :
     OrthonormalBasis (Fin (originalNeumannMultiplicity Ω E)) ℂ (h1ResonantSpace Ω E) := by
-  letI : FiniteDimensional ℂ (h1ResonantSpace Ω E) := finiteDimensional_h1ResonantSpace hb hL E
+  letI  := finiteDimensional_h1ResonantSpace hb hL E
   exact (stdOrthonormalBasis ℂ (h1ResonantSpace Ω E)).reindex
     (finCongr (originalNeumannMultiplicity_eq_finrank hb hL hE).symm)
 
@@ -76,20 +82,6 @@ theorem normalizedNeumannResidue_eq_original_basis {Ω : Set ℂ}
     normalizedNeumannResidue_eq_sum_rankOne Q hE (originalNeumannResonanceH1Basis hb hL hE)
 
 section ActualCoordinates
-
-variable {R C : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam (F '' ball (0 : ℂ) 1) γ)
-    {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c)
-    (hcoord : ∀ θ, F (circleMap 0 1 θ) = γ (τ θ))
-
-local notation "ΩF" => F '' ball (0 : ℂ) 1
-local notation "QF" => localConformalDiskHalfTrace hR F hFs hL
 
 end ActualCoordinates
 

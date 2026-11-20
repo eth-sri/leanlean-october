@@ -65,7 +65,7 @@ every scalar `c` (in the paper `c = -2/(E - E₀)`) and every operator `T`,
 theorem inner_pole_add_eq_of_orthogonal {m : ℕ} (η : Fin m → W) (c : ℂ) (T : W →L[ℂ] W)
     (z : W) (hz : ∀ j, ⟪η j, z⟫_ℂ = 0) :
     ⟪z, (c • ∑ j, rankOne ℂ (η j) (η j) + T) z⟫_ℂ = ⟪z, T z⟫_ℂ := by
-  simp [rankOne_apply, hz]
+  simp [hz]
 
 end Pole
 
@@ -80,26 +80,25 @@ for some `z ∈ H₀ᗮ`, `a ∈ H₀`, then `z = 0` (and `a = 0`). -/
 theorem chart_range_inter_eq_zero (J₀ : H₀ →L[ℂ] H) (R : H₀ᗮ →L[ℂ] H)
     (hinj : Function.Injective (J₀ ∘L H₀.orthogonalProjection + R ∘L H₀ᗮ.orthogonalProjection))
     (a : H₀) (z : H₀ᗮ) (h : R z = J₀ a) : z = 0 ∧ a = 0 := by
-  set x : H := (z : H) - (a : H) with hx
-  have hz0 : H₀.orthogonalProjection (z : H) = 0 :=
-    (Submodule.orthogonalProjection_eq_zero_iff).2 z.2
-  have ha0 : H₀ᗮ.orthogonalProjection (a : H) = 0 :=
-    (Submodule.orthogonalProjection_eq_zero_iff (K := H₀ᗮ)).2
+  set x : H := z - a with hx
+  have hz0  :=
+    Submodule.orthogonalProjection_eq_zero_iff.2 z.2
+  have ha0  :=
+    Submodule.orthogonalProjection_eq_zero_iff.2
       (Submodule.le_orthogonal_orthogonal H₀ a.2)
-  have haa : H₀.orthogonalProjection (a : H) = a :=
+  have haa  :=
     Submodule.orthogonalProjection_mem_subspace_eq_self a
-  have hzz : H₀ᗮ.orthogonalProjection (z : H) = z :=
+  have hzz  :=
     Submodule.orthogonalProjection_mem_subspace_eq_self z
   have hP0 : H₀.orthogonalProjection x = -a := by
-    rw [hx, map_sub, hz0, haa, zero_sub]
+    simp [hx]
   have hP1 : H₀ᗮ.orthogonalProjection x = z := by
-    rw [hx, map_sub, ha0, hzz, sub_zero]
+    simp [hx]
   have hBx : (J₀ ∘L H₀.orthogonalProjection + R ∘L H₀ᗮ.orthogonalProjection) x = 0 := by
-    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply, hP0, hP1,
-      map_neg, h, neg_add_cancel]
-  have hx0 : x = 0 := hinj (hBx.trans (map_zero _).symm)
-  have hz : z = 0 := by rw [← hP1, hx0, map_zero]
-  refine ⟨hz, ?_⟩
+    simp [hP0, hP1, h, neg_add_cancel]
+  have hx0  := hinj (hBx.trans (map_zero _).symm)
+  
+  refine ⟨(by rw [← hP1, hx0, map_zero]), ?_⟩
   have := hP0
   rw [hx0, map_zero] at this
   exact neg_eq_zero.1 this.symm
@@ -134,21 +133,19 @@ theorem reduced_lower_bound_subspace (Z : Submodule ℂ W) [CompleteSpace Z] (α
   have hPzι : Pz ∘L ι = ContinuousLinearMap.id ℂ Z := by
     ext1 z
     exact Submodule.orthogonalProjection_mem_subspace_eq_self z
-  have hR'c : ContinuousAt R' E₀ :=
-    continuousAt_const.clm_comp (hR.clm_comp continuousAt_const)
-  have hS'c : ContinuousAt S' E₀ := hS.clm_comp continuousAt_const
-  have hR'0 : R' E₀ = (α : ℂ) • ContinuousLinearMap.id ℂ Z + Pz ∘L C ∘L ι := by
-    simp only [hR', hR₀, ContinuousLinearMap.add_comp, ContinuousLinearMap.comp_add,
-      ContinuousLinearMap.smul_comp, ContinuousLinearMap.comp_smul,
-      ContinuousLinearMap.id_comp, hPzι]
-  have hC' : IsCompactOperator (Pz ∘L C ∘L ι) :=
-    (hC.comp_clm ι).clm_comp Pz
+  
+  
+  
+  
   have hinj' : Function.Injective (S' E₀) := by
     intro z₁ z₂ h12
-    have h0 : S E₀ ((z₁ : W) - z₂) = 0 := by
-      rw [map_sub, sub_eq_zero]; exact h12
-    exact Subtype.ext (sub_eq_zero.1 (hinj _ (Z.sub_mem z₁.2 z₂.2) h0))
-  obtain ⟨A₀, hA₀, hev⟩ := reduced_lower_bound α hα (Pz ∘L C ∘L ι) hC' R' S' E₀ hR'c hS'c hR'0 hinj'
+    
+    refine Subtype.ext (sub_eq_zero.1 (hinj _ (Z.sub_mem z₁.2 z₂.2) ?_))
+    rw [map_sub, sub_eq_zero]; exact h12
+  obtain ⟨A₀, hA₀, hev⟩ := reduced_lower_bound α hα (Pz ∘L C ∘L ι) ((hC.comp_clm ι).clm_comp Pz) R' S' E₀ (continuousAt_const.clm_comp (hR.clm_comp continuousAt_const)) (hS.clm_comp continuousAt_const) (by
+    simp only [hR', hR₀, ContinuousLinearMap.add_comp, ContinuousLinearMap.comp_add,
+      ContinuousLinearMap.smul_comp, ContinuousLinearMap.comp_smul,
+      ContinuousLinearMap.id_comp, hPzι]) hinj'
   refine ⟨A₀, hA₀, ?_⟩
   filter_upwards [hev] with E hE z hz
   have := hE ⟨z, hz⟩

@@ -56,8 +56,8 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
       induction hu using Submodule.span_induction with
       | mem x hx => obtain ⟨j, rfl⟩ := hx; exact h j
       | zero => simp
-      | add x y _ _ hx hy => rw [inner_add_left, hx, hy, add_zero]
-      | smul c x _ hx => rw [inner_smul_left, hx, mul_zero]
+      | add x y _ _ hx hy => simp [inner_add_left, hx, hy]
+      | smul c x _ hx => simp [inner_smul_left, hx]
   obtain ⟨A₀, hA₀, hev⟩ := reduced_lower_bound_subspace Z α hα C hC
     (fun E => adjoint R ∘L Preg E ∘L R) (fun E => S E ∘L R) E₀
     (continuousAt_const.clm_comp (hPreg.clm_comp continuousAt_const))
@@ -82,15 +82,15 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
   have hSy : S E y = S E (R z) := by
     have := congrArg (fun T => T a) (hnullS E hEU)
     simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.zero_apply] at this
-    rw [hyx, map_add, this, zero_add]
+    simp [hyx, this]
   have hPJa : P E (J E a) = 0 := by
     have := congrArg (fun T => T a) (hnullP E hEU)
-    simpa using this
+    exact this
   have hPy : ⟪y, P E y⟫_ℂ = ⟪R z, P E (R z)⟫_ℂ := by
     rw [hyx, map_add, hPJa, zero_add, inner_add_left]
     have : ⟪J E a, P E (R z)⟫_ℂ = 0 := by
       rw [← (hsa E hEU).adjoint_eq, adjoint_inner_right, hPJa, inner_zero_left]
-    rw [this, zero_add]
+    simp [this]
   have hwR : ∀ j, ⟪w j, R z⟫_ℂ = 0 := by
     intro j
     rw [← adjoint_inner_left]
@@ -98,9 +98,9 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
   have hpz : ⟪R z, P E (R z)⟫_ℂ = ⟪z, (adjoint R ∘L Preg E ∘L R) z⟫_ℂ := by
     rw [hpole E hEU, inner_pole_add_eq_of_orthogonal w _ _ _ hwR,
       ContinuousLinearMap.comp_apply, ContinuousLinearMap.comp_apply, adjoint_inner_right]
-  have hb := hE z ((hmemZ z).2 hzj)
+  
   rw [hPy, hpz, hSy]
-  exact hb
+  exact hE z ((hmemZ z).2 hzj)
 
 end PolyaNeumann
 

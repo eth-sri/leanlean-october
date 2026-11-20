@@ -1,8 +1,11 @@
 module
 
+public import RequestProject.CircleAnalysisNotation
+
 public import RequestProject.Shift
 public import RequestProject.Defs
 public import RequestProject.Picard
+public import RequestProject.PlanarNotation
 
 /-!
 # Boundary transport and its monodromy (Sections 4 and 10 of the paper)
@@ -32,43 +35,50 @@ through Green's formula: the signed area integral `∫₀^L Im(conj(γ) γ') dθ
 orientation). -/
 structure IsBoundaryParam (Ω : Set ℂ) (γ : ℝ → ℂ) : Prop where
   lipschitz : ∃ K, LipschitzWith K γ
-  periodic : Function.Periodic γ (2 * π)
-  injOn : Set.InjOn γ (Set.Ico 0 (2 * π))
-  image : γ '' Set.Icc 0 (2 * π) = frontier Ω
+  periodic : Function.Periodic γ anglePeriod
+  injOn : Set.InjOn γ angleIco
+  image : γ '' angleInterval = frontier Ω
   const_speed : ∃ c : ℝ, 0 < c ∧ ∀ᵐ θ, ‖deriv γ θ‖ = c
-  area : ∫ θ in (0 : ℝ)..(2 * π), (conj (γ θ) * deriv γ θ).im = 2 * (volume Ω).toReal
+  area : ∫ₚ θ, (conj (γ θ) * deriv γ θ).im = 2 * (volume Ω).toReal
 
+section
+
+variable (γ : ℝ → ℂ) (E : ℝ) (W : TransportPath)
+
+include E γ in
 /-- The transport coefficient
 `C_E(θ) = -(i √E / 2) (γ'(θ) S_N^* + conj(γ'(θ)) S_N)`. -/
-def transportCoeff (γ : ℝ → ℂ) (E : ℝ) (θ : ℝ) : Ell2 →L[ℂ] Ell2 :=
+def transportCoeff (θ : ℝ) : ShiftOp :=
   (-(Complex.I * (Real.sqrt E : ℂ)) / 2) •
     (deriv γ θ • ContinuousLinearMap.adjoint shiftN + conj (deriv γ θ) • shiftN)
 
+include E W γ in
 /-- `W` is a transport for `γ` at energy `E`: it is continuous on `[0, L]` and solves
 `W(θ) = I + ∫₀^θ C_E(s) W(s) ds` there. -/
-def IsTransport (γ : ℝ → ℂ) (E : ℝ) (W : ℝ → Ell2 →L[ℂ] Ell2) : Prop :=
-  ContinuousOn W (Set.Icc 0 (2 * π)) ∧
-  ∀ θ ∈ Set.Icc 0 (2 * π), W θ = 1 + ∫ s in (0 : ℝ)..θ, transportCoeff γ E s * W s
+def IsTransport : Prop :=
+  ContinuousOn W angleInterval ∧
+  ∀ θ ∈ angleInterval, W θ = 1 + ∫ s in (0 : ℝ)..θ, transportCoeff γ E s * W s
 
+include W in
 /-- The monodromy `U_E = W_E(L)^*`. -/
-def monodromy (W : ℝ → Ell2 →L[ℂ] Ell2) : Ell2 →L[ℂ] Ell2 :=
-  ContinuousLinearMap.adjoint (W (2 * π))
+def monodromy : ShiftOp :=
+  ContinuousLinearMap.adjoint (W anglePeriod)
 
 /-- `‖U - I‖ > 0` as soon as `U ≠ I`. -/
-lemma norm_sub_one_pos {U : Ell2 →L[ℂ] Ell2} (h : U ≠ 1) : 0 < ‖U - 1‖ :=
+lemma norm_sub_one_pos {U : ShiftOp} (h : U ≠ 1) : 0 < ‖U - 1‖ :=
   norm_pos_iff.mpr (sub_ne_zero.mpr h)
 
-lemma transportCoeff_aestronglyMeasurable (γ : ℝ → ℂ) (E : ℝ) :
+lemma transportCoeff_aestronglyMeasurable :
     AEStronglyMeasurable (transportCoeff γ E) volume := by
-  have hg : Continuous fun z : ℂ => (-(Complex.I * (Real.sqrt E : ℂ)) / 2) •
+  have hg : Continuous fun z : ℂ => (-(Complex.I * (Real.sqrt E)) / 2) •
       (z • ContinuousLinearMap.adjoint shiftN + conj z • shiftN) := by
-    have : Continuous fun z : ℂ => conj z := Complex.continuous_conj
+    have  := Complex.continuous_conj
     fun_prop
-  exact hg.comp_aestronglyMeasurable (measurable_deriv γ).aestronglyMeasurable
+  exact hg.comp_aestronglyMeasurable (by fun_prop)
 
-lemma transportCoeff_norm_le (γ : ℝ → ℂ) (E : ℝ) {K : NNReal} (hK : LipschitzWith K γ)
+lemma transportCoeff_norm_le {K : NNReal} (hK : LipschitzWith K γ)
     (θ : ℝ) : ‖transportCoeff γ E θ‖ ≤ ‖(-(Complex.I * (Real.sqrt E : ℂ)) / 2)‖ *
-      (K * ‖(ContinuousLinearMap.adjoint shiftN : Ell2 →L[ℂ] Ell2)‖ + K * ‖shiftN‖) := by
+      (K * ‖(ContinuousLinearMap.adjoint shiftN : ShiftOp)‖ + K * ‖shiftN‖) := by
   have hd : ‖deriv γ θ‖ ≤ K := norm_deriv_le_of_lipschitz hK
   unfold transportCoeff
   rw [norm_smul]
@@ -78,17 +88,19 @@ lemma transportCoeff_norm_le (γ : ℝ → ℂ) (E : ℝ) {K : NNReal} (hK : Lip
   · rw [norm_smul, Complex.norm_conj]; gcongr
 
 /-- Lemma 10.2 (existence): for a Lipschitz curve the transport equation has a solution. -/
-theorem transport_exists_of_lipschitz (γ : ℝ → ℂ) {K : NNReal} (hK : LipschitzWith K γ)
-    (E : ℝ) : ∃ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W :=
+theorem transport_exists_of_lipschitz {K : NNReal} (hK : LipschitzWith K γ)
+    (E : ℝ) : ∃ W : TransportPath, IsTransport γ E W :=
   exists_volterra_solution (transportCoeff_aestronglyMeasurable γ E)
-    (transportCoeff_norm_le γ E hK) (2 * π)
+    (transportCoeff_norm_le γ E hK) anglePeriod
 
 /-- Lemma 10.2 (uniqueness): the transport is unique on `[0, L]`. -/
-theorem transport_unique_of_lipschitz (γ : ℝ → ℂ) {K : NNReal} (hK : LipschitzWith K γ)
-    (E : ℝ) {W W' : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    (hW' : IsTransport γ E W') : Set.EqOn W W' (Set.Icc 0 (2 * π)) :=
+theorem transport_unique_of_lipschitz {K : NNReal} (hK : LipschitzWith K γ)
+    (E : ℝ) {W W' : TransportPath} (hW : IsTransport γ E W)
+    (hW' : IsTransport γ E W') : Set.EqOn W W' angleInterval :=
   volterra_unique (transportCoeff_aestronglyMeasurable γ E) (transportCoeff_norm_le γ E hK)
-    (2 * π) hW.1 hW'.1 hW.2 hW'.2
+    anglePeriod hW.1 hW'.1 hW.2 hW'.2
+
+end
 
 end PolyaNeumann
 

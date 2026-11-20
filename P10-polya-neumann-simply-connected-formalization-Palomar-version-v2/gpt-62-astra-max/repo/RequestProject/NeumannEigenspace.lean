@@ -48,7 +48,7 @@ lemma norm_grad_le_of_mem_neumannEigenspace {Ω : Set ℂ} {E : ℝ} {u : L2 Ω}
     (hu : ∀ v h, IsWeakGradient Ω v h → ∑ i, inner ℂ (h i) (g i) = (E : ℂ) * inner ℂ v u)
     (i : Fin 2) : ‖g i‖ ≤ Real.sqrt |E| * ‖u‖ := by
   have h := hu u g hg
-  simp only [inner_self_eq_norm_sq_to_K, Fin.sum_univ_two] at h
+  simp at h
   have h' : ‖g 0‖ ^ 2 + ‖g 1‖ ^ 2 = E * ‖u‖ ^ 2 :=
     Complex.ofReal_injective (by push_cast; exact h)
   have hsq : ‖g i‖ ^ 2 ≤ (Real.sqrt |E| * ‖u‖) ^ 2 := by
@@ -64,22 +64,21 @@ theorem finiteDimensional_neumannEigenspace {Ω : Set ℂ} (hb : Bornology.IsBou
     (hL : IsLipschitzDomain Ω) (E : ℝ) : FiniteDimensional ℂ (neumannEigenspace Ω E) := by
   by_contra hfin
   obtain ⟨R, f, hR, hfR, hsep⟩ := exists_seq_norm_le_one_le_norm_sub hfin
-  have hmem : ∀ n, ∃ g, IsWeakGradient Ω (f n : L2 Ω) g ∧ ∀ v h, IsWeakGradient Ω v h →
-      ∑ i, inner ℂ (h i) (g i) = (E : ℂ) * inner ℂ v (f n : L2 Ω) := fun n => (f n).2
-  choose g hg hgE using hmem
-  have hu : ∀ n, ‖(f n : L2 Ω)‖ ≤ max R (Real.sqrt |E| * R) := fun n =>
-    le_max_of_le_left (hfR n)
-  have hgC : ∀ n i, ‖g n i‖ ≤ max R (Real.sqrt |E| * R) := fun n i =>
+  
+  choose g hg hgE using (fun n => (f n).2)
+  
+  
+  obtain ⟨φ, hφ, v, hv⟩ := rellich_compact hb hL (fun n => (f n)) g hg _ (fun n =>
+    le_max_of_le_left (hfR n)) (fun n i =>
     le_max_of_le_right ((norm_grad_le_of_mem_neumannEigenspace (hg n) (hgE n) i).trans
-      (mul_le_mul_of_nonneg_left (hfR n) (Real.sqrt_nonneg _)))
-  obtain ⟨φ, hφ, v, hv⟩ := rellich_compact hb hL (fun n => (f n : L2 Ω)) g hg _ hu hgC
+      (mul_le_mul_of_nonneg_left (hfR n) (Real.sqrt_nonneg _))))
   have hcauchy := hv.cauchySeq
   rw [Metric.cauchySeq_iff] at hcauchy
   obtain ⟨N, hN⟩ := hcauchy 1 one_pos
   have h1 := hN (N + 1) (by omega) N le_rfl
   have h2 := hsep (hφ.injective.ne (by omega : N + 1 ≠ N))
   rw [dist_eq_norm] at h1
-  simp only [Function.comp] at h1
+  simp at h1
   have h1' : ‖f (φ (N + 1)) - f (φ N)‖ < 1 := h1
   linarith
 

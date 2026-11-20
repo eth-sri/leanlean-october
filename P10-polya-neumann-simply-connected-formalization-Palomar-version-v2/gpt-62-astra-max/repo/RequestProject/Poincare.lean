@@ -25,7 +25,7 @@ namespace PolyaNeumann
 lemma tendsto_integral_of_tendsto {Ω : Set ℂ} [IsFiniteMeasure (volume.restrict Ω)]
     {f : ℕ → L2 Ω} {F : L2 Ω} (hf : Tendsto f atTop (𝓝 F)) :
     Tendsto (fun n => ∫ w in Ω, f n w) atTop (𝓝 (∫ w in Ω, F w)) := by
-  have h := tendsto_integral_mul (ψ := fun _ => (1 : ℂ)) (by simpa using memLp_const (1 : ℂ)) hf
+  have h := tendsto_integral_mul (ψ := fun _ => (1 : ℂ)) (by simpa using memLp_const 1) hf
   simpa using h
 
 /-- **Poincaré–Wirtinger inequality** (part of External theorem E2 of the paper): on a bounded
@@ -49,18 +49,18 @@ theorem poincare_wirtinger {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     intro n h
     have := hlt n
     rw [h, norm_zero] at this
-    have : 0 ≤ ((n : ℝ) + 1) * ∑ i, ‖g n i‖ ^ 2 := by positivity
+    have : 0 ≤ (n + 1) * ∑ i, ‖g n i‖ ^ 2 := by positivity
     linarith
-  have hpos : ∀ n, 0 < ‖u n‖ := fun n => norm_pos_iff.mpr (hune n)
+  have hpos  := fun n => norm_pos_iff.mpr (hune n)
   -- normalize
   set v : ℕ → L2 Ω := fun n => ((‖u n‖⁻¹ : ℝ) : ℂ) • u n with hv
   set h : ℕ → Fin 2 → L2 Ω := fun n => ((‖u n‖⁻¹ : ℝ) : ℂ) • g n with hh
   have hvg : ∀ n, IsWeakGradient Ω (v n) (h n) := fun n => isWeakGradient_smul (hg n) _
   have hvnorm : ∀ n, ‖v n‖ = 1 := by
     intro n
-    simp only [hv, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_inv, abs_norm]
-    exact inv_mul_cancel₀ (hpos n).ne'
-  have hhsum : ∀ n, ∑ i, ‖h n i‖ ^ 2 < 1 / ((n : ℝ) + 1) := by
+    simp [hv, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_inv, abs_norm]
+    simp [*]
+  have hhsum : ∀ n, ∑ i, ‖h n i‖ ^ 2 < 1 / (n + 1) := by
     intro n
     have e : ∑ i, ‖h n i‖ ^ 2 = (∑ i, ‖g n i‖ ^ 2) / ‖u n‖ ^ 2 := by
       simp only [hh, Pi.smul_apply, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_inv,
@@ -69,7 +69,7 @@ theorem poincare_wirtinger {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     have hp := hpos n
     rw [e, div_lt_div_iff₀ (by positivity) (by positivity)]
     linarith [hlt n]
-  have hhle : ∀ n i, ‖h n i‖ ^ 2 ≤ 1 / ((n : ℝ) + 1) := by
+  have hhle : ∀ n i, ‖h n i‖ ^ 2 ≤ 1 / (n + 1) := by
     intro n i
     have := Finset.single_le_sum (f := fun i => ‖h n i‖ ^ 2) (fun i _ => by positivity)
       (Finset.mem_univ i)
@@ -91,28 +91,26 @@ theorem poincare_wirtinger {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
       intro n
       simp only [Function.comp_apply, hv]
       rw [integral_congr_ae (Lp.coeFn_smul _ (u (φ n)))]
-      simp only [Pi.smul_apply, smul_eq_mul]
-      rw [integral_const_mul, hmean, mul_zero]
+      simp [smul_eq_mul, integral_const_mul, hmean]
     simp only [h2, tendsto_const_nhds_iff] at h1
     exact h1.symm
   have hhlim : ∀ i, Tendsto (fun n => h (φ n) i) atTop (𝓝 ((0 : Fin 2 → L2 Ω) i)) := by
     intro i
     rw [Pi.zero_apply, tendsto_zero_iff_norm_tendsto_zero]
     have hsq : Tendsto (fun n => ‖h (φ n) i‖ ^ 2) atTop (𝓝 0) := by
-      have hlim : Tendsto (fun n : ℕ => 1 / ((φ n : ℝ) + 1)) atTop (𝓝 0) := by
-        have := (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)).comp hφ.tendsto_atTop
-        simpa [Function.comp_def] using this
-      exact squeeze_zero (fun n => by positivity) (fun n => hhle (φ n) i) hlim
+      
+      apply squeeze_zero (fun n => by positivity) (fun n => hhle (φ n) i)
+      have := (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)).comp hφ.tendsto_atTop
+      exact this
     have := (Real.continuous_sqrt.tendsto 0).comp hsq
-    simpa [Function.comp_def, Real.sqrt_sq (norm_nonneg _)] using this
-  have hVg : IsWeakGradient Ω V 0 :=
-    isWeakGradient_of_tendsto (fun n => hvg (φ n)) hV hhlim
+    simpa [Function.comp_def] using this
+  
   -- so the limit is constant, hence zero
-  obtain ⟨c, hc⟩ := ae_const_of_weakGradient_zero hL.1 V hVg
+  obtain ⟨c, hc⟩ := ae_const_of_weakGradient_zero hL.1 V (isWeakGradient_of_tendsto (fun n => hvg (φ n)) hV hhlim)
   have hint : ∫ w in Ω, V w = c * (volume Ω).toReal := by
     rw [integral_congr_ae hc]
     simp [Measure.real, mul_comm]
-  have hvol : 0 < (volume Ω).toReal :=
+  have hvol  :=
     ENNReal.toReal_pos (hL.1.1.measure_pos volume hL.1.2.nonempty).ne' hb.measure_lt_top.ne
   have hc0 : c = 0 := by
     rw [hVmean] at hint
@@ -123,12 +121,16 @@ theorem poincare_wirtinger {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   have hV0 : V = 0 := by
     rw [Lp.eq_zero_iff_ae_eq_zero]
     filter_upwards [hc] with w hw
-    simp [hw, hc0]
+    simp [*]
   rw [hV0, norm_zero] at hVnorm
   exact zero_ne_one hVnorm
 
+section
+
+variable (Ω : Set ℂ) [IsFiniteMeasure (volume.restrict Ω)]
+
 /-- The integral `u ↦ ∫_Ω u` as a linear functional on `L²(Ω)` for `|Ω| < ∞`. -/
-def meanFunctional (Ω : Set ℂ) [IsFiniteMeasure (volume.restrict Ω)] : L2 Ω →ₗ[ℂ] ℂ where
+def meanFunctional : L2 Ω →ₗ[ℂ] ℂ where
   toFun u := ∫ w in Ω, u w
   map_add' u v := by
     have hu := (Lp.memLp u).integrable one_le_two
@@ -140,7 +142,7 @@ def meanFunctional (Ω : Set ℂ) [IsFiniteMeasure (volume.restrict Ω)] : L2 Ω
     exact integral_smul c _
 
 /-- Every two-dimensional subspace of `L²(Ω)` contains a nonzero function of mean zero. -/
-lemma exists_mean_zero (Ω : Set ℂ) [IsFiniteMeasure (volume.restrict Ω)]
+lemma exists_mean_zero
     (S : Submodule ℂ (L2 Ω)) (hS : Module.finrank ℂ S = 2) :
     ∃ u ∈ S, u ≠ 0 ∧ ∫ w in Ω, u w = 0 := by
   haveI : Module.Finite ℂ S := Module.finite_of_finrank_pos (by omega)
@@ -148,14 +150,15 @@ lemma exists_mean_zero (Ω : Set ℂ) [IsFiniteMeasure (volume.restrict Ω)]
   have h1 := LinearMap.finrank_range_add_finrank_ker ℓ
   have h2 : Module.finrank ℂ (LinearMap.range ℓ) ≤ 1 := by
     simpa using Submodule.finrank_le (LinearMap.range ℓ)
-  have h3 : 0 < Module.finrank ℂ (LinearMap.ker ℓ) := by omega
+  
   obtain ⟨x, hx⟩ :=
-    (Module.finrank_pos_iff_exists_ne_zero (R := ℂ) (M := LinearMap.ker ℓ)).mp (by exact h3)
-  refine ⟨((x : S) : L2 Ω), (x : S).2, ?_, ?_⟩
-  · exact fun h => hx (Subtype.ext (Subtype.ext h))
+    (Module.finrank_pos_iff_exists_ne_zero (R := ℂ) (M := LinearMap.ker ℓ)).mp ((by omega))
+  refine ⟨(x : L2 Ω), (x : S).2, ?_, ?_⟩
+  · simp [*]
   · have := x.2
-    rw [LinearMap.mem_ker] at this
     exact this
+
+end
 
 /-- Under a Poincaré inequality with constant `C`, the Rayleigh quotient of a nonzero
 mean-zero function is at least `1 / C`. -/
@@ -164,21 +167,20 @@ lemma rayleigh_ge_of_poincare {Ω : Set ℂ} {C : ℝ} (hC : 0 < C)
       ∫ w in Ω, u w = 0 → ‖u‖ ^ 2 ≤ C * ∑ i, ‖g i‖ ^ 2)
     (u : L2 Ω) (hu : u ≠ 0) (h0 : ∫ w in Ω, u w = 0) :
     ENNReal.ofReal C⁻¹ ≤ rayleigh Ω u := by
-  have hn : (‖u‖₊ : ENNReal) ^ 2 ≠ 0 := by simpa using hu
-  have hn' : (‖u‖₊ : ENNReal) ^ 2 ≠ ⊤ := by simp
-  rw [rayleigh, ENNReal.le_div_iff_mul_le (Or.inl hn) (Or.inl hn')]
+  
+  
+  rw [rayleigh, ENNReal.le_div_iff_mul_le (Or.inl (by simpa using hu)) (Or.inl (by simp))]
   refine le_iInf₂ fun g hg => ?_
-  have hreal := hP u g hg h0
+  
   have e1 : (‖u‖₊ : ENNReal) ^ 2 = ENNReal.ofReal (‖u‖ ^ 2) := by
-    rw [ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm_eq_enorm, enorm_eq_nnnorm]
+    simp [ofReal_norm_eq_enorm, enorm_eq_nnnorm]
   have e2 : ∑ i, (‖g i‖₊ : ENNReal) ^ 2 = ENNReal.ofReal (∑ i, ‖g i‖ ^ 2) := by
     rw [ENNReal.ofReal_sum_of_nonneg (fun i _ => by positivity)]
-    refine Finset.sum_congr rfl fun i _ => ?_
-    rw [ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm_eq_enorm, enorm_eq_nnnorm]
+    simp [ofReal_norm_eq_enorm, enorm_eq_nnnorm]
   rw [e1, e2, ← ENNReal.ofReal_mul (by positivity)]
   apply ENNReal.ofReal_le_ofReal
   rw [inv_mul_le_iff₀ hC]
-  exact hreal
+  exact hP u g hg h0
 
 /-- `μ_1(Ω) ≥ 1 / C` under a Poincaré inequality with constant `C`. -/
 lemma neumannEigenvalue_one_ge_of_poincare {Ω : Set ℂ} [IsFiniteMeasure (volume.restrict Ω)]
@@ -186,7 +188,7 @@ lemma neumannEigenvalue_one_ge_of_poincare {Ω : Set ℂ} [IsFiniteMeasure (volu
     (hP : ∀ (u : L2 Ω) (g : Fin 2 → L2 Ω), IsWeakGradient Ω u g →
       ∫ w in Ω, u w = 0 → ‖u‖ ^ 2 ≤ C * ∑ i, ‖g i‖ ^ 2) :
     ENNReal.ofReal C⁻¹ ≤ neumannEigenvalue Ω 1 := by
-  unfold neumannEigenvalue
+  
   refine le_iInf₂ fun S hS => ?_
   obtain ⟨u, huS, hu0, hmean⟩ := exists_mean_zero Ω S hS
   exact (rayleigh_ge_of_poincare hC hP u hu0 hmean).trans
@@ -199,9 +201,9 @@ theorem neumannEigenvalue_pos {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   haveI : IsFiniteMeasure (volume.restrict Ω) := isFiniteMeasure_restrict.mpr
     hb.measure_lt_top.ne
   obtain ⟨C, hC, hP⟩ := poincare_wirtinger hb hL
-  have h1 := neumannEigenvalue_one_ge_of_poincare hC hP
-  have h2 := neumannEigenvalue_monotone Ω hj
-  exact lt_of_lt_of_le (ENNReal.ofReal_pos.mpr (inv_pos.mpr hC)) (h1.trans h2)
+  
+  
+  exact lt_of_lt_of_le ((by positivity)) ((neumannEigenvalue_one_ge_of_poincare hC hP).trans (neumannEigenvalue_monotone Ω hj))
 
 end PolyaNeumann
 

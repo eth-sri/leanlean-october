@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.NeumannRegularSelfAdjoint
+public import RequestProject.NeumannNormalizedBoundary
 public import RequestProject.MatrixHSSymmetry
 public import RequestProject.NormalizedPeriodicRegular
 
@@ -29,12 +29,12 @@ theorem principalNormalized_isSelfAdjoint : IsSelfAdjoint principalNormalized :=
   · exact Complex.conj_ofReal _
 
 theorem correctedRemainderMatrix_zero_hermitian
-    {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
+    {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : TransportPath}
     (hK : LipschitzWith K γ) (hW : IsTransport γ E W) (m n : ℤ) :
     correctedRemainderMatrix W 0 0 (m,n) =
       conj (correctedRemainderMatrix W 0 0 (n,m)) := by
   have hc := correctedKernelCoeff_conj_symm hK hW (-n) m
-  simp only [neg_neg] at hc
+  simp at hc
   simp only [correctedRemainderMatrix]
   rw [hc]
   simp only [map_mul, Complex.conj_ofReal]

@@ -1,10 +1,13 @@
 module
 
+public import RequestProject.DiskCoordinates
+
 public import RequestProject.LocalConformalVekuaSeries
 public import RequestProject.NeumannH1FirstOrderGreen
 public import RequestProject.DiskHardyConormal
 public import RequestProject.LocalConformalBoundaryLoad
 public import Mathlib.Tactic.Module
+public import RequestProject.PlanarNotation
 
 /-!
 # The actual physical conormal of the Vekua remainder
@@ -27,6 +30,8 @@ set_option autoImplicit false
 
 noncomputable section
 
+open scoped ContDiff
+
 namespace PolyaNeumann
 
 open MeasureTheory Set Metric Filter
@@ -36,10 +41,10 @@ private theorem conormal_coeff_succ_bound (E : ℂ) (j : ℕ) :
     ‖physicalVekuaCoeff E (j + 1)‖ ≤ ‖-E / 4‖ * ‖physicalVekuaCoeff E j‖ := by
   have h := congrArg norm (physicalVekuaCoeff_succ E j)
   simp only [norm_mul, Complex.norm_natCast] at h
-  have hj : (1 : ℝ) ≤ ((j + 1 : ℕ) : ℝ) := by exact_mod_cast (by omega : 1 ≤ j + 1)
+  
   calc
-    _ ≤ ‖physicalVekuaCoeff E (j + 1)‖ * ((j + 1 : ℕ) : ℝ) :=
-      le_mul_of_one_le_right (norm_nonneg _) hj
+    _ ≤ _ :=
+      le_mul_of_one_le_right (norm_nonneg _) (by simp)
     _ = _ := h
 
 section BoundedSeries
@@ -48,94 +53,98 @@ variable {X H : Type*}
     [NormedAddCommGroup X] [NormedSpace ℂ X]
     [NormedAddCommGroup H] [NormedSpace ℂ H] [CompleteSpace H]
 
+section
+
+variable (M : H →L[ℂ] H) (U : X →L[ℂ] H) (J : X →L[ℂ] X) (E : ℂ) (j : ℕ) (b : X)
+include E J M U
+
+include j in
 /-- The second genuine H¹ gradient term. There is one additional affine
 power and one fewer primitive than in the corresponding Vekua term. -/
-def boundedPhysicalVekuaGradientBTerm (M : H →L[ℂ] H) (U : X →L[ℂ] H)
-    (J : X →L[ℂ] X) (E : ℂ) (j : ℕ) : X →L[ℂ] H :=
+def boundedPhysicalVekuaGradientBTerm : X →L[ℂ] H :=
   physicalVekuaCoeff E (j + 1) • (M.comp ((M ^ j).comp (U.comp (J ^ j))))
 
 omit [CompleteSpace H] in
-theorem boundedPhysicalVekuaGradientBTerm_apply (M : H →L[ℂ] H) (U : X →L[ℂ] H)
-    (J : X →L[ℂ] X) (E : ℂ) (j : ℕ) (b : X) :
+theorem boundedPhysicalVekuaGradientBTerm_apply :
     boundedPhysicalVekuaGradientBTerm M U J E j b =
       physicalVekuaCoeff E (j + 1) • (M ^ (j + 1)) (U ((J ^ j) b)) := by
   change physicalVekuaCoeff E (j + 1) • M ((M ^ j) (U ((J ^ j) b))) = _
-  rw [pow_succ', ContinuousLinearMap.mul_apply]
+  simp [pow_succ']
 
 omit [CompleteSpace H] in
-theorem norm_boundedPhysicalVekuaGradientBTerm_le (M : H →L[ℂ] H)
-    (U : X →L[ℂ] H) (J : X →L[ℂ] X) (E : ℂ) (j : ℕ) :
+theorem norm_boundedPhysicalVekuaGradientBTerm_le :
     ‖boundedPhysicalVekuaGradientBTerm M U J E j‖ ≤
       (‖-E / 4‖ * ‖M‖) * ‖boundedPhysicalVekuaTerm M U J E j‖ := by
-  let T : X →L[ℂ] H := (M ^ j).comp (U.comp (J ^ j))
+  let T  := (M ^ j).comp (U.comp (J ^ j))
   change ‖physicalVekuaCoeff E (j + 1) • M.comp T‖ ≤
     (‖-E / 4‖ * ‖M‖) * ‖physicalVekuaCoeff E j • T‖
   rw [norm_smul, norm_smul]
   calc
-    _ ≤ (‖-E / 4‖ * ‖physicalVekuaCoeff E j‖) * (‖M‖ * ‖T‖) :=
+    _ ≤ _ :=
       mul_le_mul (conormal_coeff_succ_bound E j) (M.opNorm_comp_le T)
-        (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
+        (norm_nonneg _) ((by positivity))
     _ = _ := by ring
 
 omit [CompleteSpace H] in
-theorem summable_norm_boundedPhysicalVekuaGradientBTerm (M : H →L[ℂ] H)
-    (U : X →L[ℂ] H) (J : X →L[ℂ] X) (E : ℂ) :
+theorem summable_norm_boundedPhysicalVekuaGradientBTerm :
     Summable (fun j : ℕ => ‖boundedPhysicalVekuaGradientBTerm M U J E j‖) :=
-  Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
+  Summable.of_nonneg_of_le ((by norm_num))
     (norm_boundedPhysicalVekuaGradientBTerm_le M U J E)
     ((summable_norm_boundedPhysicalVekuaTerm M U J E).mul_left (‖-E / 4‖ * ‖M‖))
 
 /-- A convergent operator series in actual H¹ in physical applications. -/
-def boundedPhysicalVekuaGradientB (M : H →L[ℂ] H) (U : X →L[ℂ] H)
-    (J : X →L[ℂ] X) (E : ℂ) : X →L[ℂ] H :=
+def boundedPhysicalVekuaGradientB : X →L[ℂ] H :=
   ∑' j : ℕ, boundedPhysicalVekuaGradientBTerm M U J E j
 
-theorem boundedPhysicalVekuaGradientB_hasSum (M : H →L[ℂ] H) (U : X →L[ℂ] H)
-    (J : X →L[ℂ] X) (E : ℂ) :
-    HasSum (fun j : ℕ => boundedPhysicalVekuaGradientBTerm M U J E j)
+theorem boundedPhysicalVekuaGradientB_hasSum :
+    HasSum (boundedPhysicalVekuaGradientBTerm M U J E)
       (boundedPhysicalVekuaGradientB M U J E) :=
   (summable_norm_boundedPhysicalVekuaGradientBTerm M U J E).of_norm.hasSum
 
-theorem boundedPhysicalVekuaGradientB_hasSum_apply (M : H →L[ℂ] H)
-    (U : X →L[ℂ] H) (J : X →L[ℂ] X) (E : ℂ) (b : X) :
+theorem boundedPhysicalVekuaGradientB_hasSum_apply :
     HasSum (fun j : ℕ => physicalVekuaCoeff E (j + 1) •
       (M ^ (j + 1)) (U ((J ^ j) b))) (boundedPhysicalVekuaGradientB M U J E b) := by
   simpa only [ContinuousLinearMap.apply_apply, boundedPhysicalVekuaGradientBTerm_apply] using
     (ContinuousLinearMap.apply ℂ H b).hasSum (boundedPhysicalVekuaGradientB_hasSum M U J E)
 
+end
+
 end BoundedSeries
 
-private theorem conormal_gradient_x_wirtinger (Ω : Set ℂ) (u : NeumannH1 Ω) :
+section
+
+variable (Ω : Set ℂ) (u : NeumannH1 Ω)
+
+private theorem conormal_gradient_x_wirtinger :
     h1Gradient Ω 0 u = h1WirtingerD Ω u + h1WirtingerDbar Ω u := by
   rw [h1WirtingerD_apply, h1WirtingerDbar_apply]
   module
 
-private theorem conormal_gradient_y_wirtinger (Ω : Set ℂ) (u : NeumannH1 Ω) :
+private theorem conormal_gradient_y_wirtinger :
     h1Gradient Ω 1 u = Complex.I • (h1WirtingerD Ω u - h1WirtingerDbar Ω u) := by
   rw [h1WirtingerD_apply, h1WirtingerDbar_apply]
   simp only [smul_sub, smul_add, smul_smul]
   match_scalars <;> ring_nf
-  all_goals simp only [Complex.I_sq, neg_neg]
+  simp
 
-private theorem conormal_divergence_wirtinger (Ω : Set ℂ) (A B : NeumannH1 Ω) :
+private theorem conormal_divergence_wirtinger (A B : NeumannH1 Ω) :
     h1GradientDivergence Ω (A + B) (Complex.I • (A - B)) =
       (2 : ℂ) • (h1WirtingerDbar Ω A + h1WirtingerD Ω B) := by
   change h1Gradient Ω 0 (A + B) + h1Gradient Ω 1 (Complex.I • (A - B)) = _
   rw [map_add, map_smul, map_sub, h1WirtingerDbar_apply, h1WirtingerD_apply]
   module
 
+end
+
 private theorem conormal_affine_Dbar_value {Ω : Set ℂ}
     (hb : Bornology.IsBounded Ω) (p : ℂ) (u v : NeumannH1 Ω) (j : ℕ)
     (hprim : h1WirtingerDbar Ω u = h1Value Ω v) :
     h1WirtingerDbar Ω ((neumannH1AffineMultiplier hb p ^ j) u) =
       h1Value Ω ((neumannH1AffineMultiplier hb p ^ j) v) := by
-  let L : L2 Ω →L[ℂ] L2 Ω :=
-    neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p)
-  have hD : h1WirtingerDbar Ω ((neumannH1AffineMultiplier hb p ^ j) u) =
-      (L ^ j) (h1WirtingerDbar Ω u) := h1WirtingerDbar_affine_pow hb p u j
-  have hV : h1Value Ω ((neumannH1AffineMultiplier hb p ^ j) v) =
-      (L ^ j) (h1Value Ω v) := h1Value_neumannH1AffineMultiplier_pow hb p v j
-  exact hD.trans ((congrArg (fun w : L2 Ω => (L ^ j) w) hprim).trans hV.symm)
+  
+  
+  
+  exact (h1WirtingerDbar_affine_pow hb p u j).trans ((congrArg (((neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p)) ^ j)) hprim).trans (h1Value_neumannH1AffineMultiplier_pow hb p v j).symm)
 
 private theorem conormal_affine_gradient_x {Ω : Set ℂ}
     (hb : Bornology.IsBounded Ω) (p : ℂ) (u v : NeumannH1 Ω) (j : ℕ)
@@ -144,16 +153,14 @@ private theorem conormal_affine_gradient_x {Ω : Set ℂ}
     h1Gradient Ω 0 ((neumannH1AffineMultiplier hb p ^ (j + 1)) u) =
       h1Value Ω (((j + 1 : ℕ) : ℂ) • ((neumannH1AffineMultiplier hb p ^ j) u) +
         (neumannH1AffineMultiplier hb p ^ (j + 1)) v) := by
-  have hx := h1WirtingerD_affine_pow_of_antiholomorphic hb p u hCR j
-  have hy := conormal_affine_Dbar_value hb p u v (j + 1) hprim
+  
+  
   calc
-    _ = h1WirtingerD Ω ((neumannH1AffineMultiplier hb p ^ (j + 1)) u) +
-        h1WirtingerDbar Ω ((neumannH1AffineMultiplier hb p ^ (j + 1)) u) :=
+    _ = _ :=
       conormal_gradient_x_wirtinger Ω _
-    _ = ((j + 1 : ℕ) : ℂ) • h1Value Ω ((neumannH1AffineMultiplier hb p ^ j) u) +
-        h1Value Ω ((neumannH1AffineMultiplier hb p ^ (j + 1)) v) :=
-      congrArg₂ (fun x y : L2 Ω => x + y) hx hy
-    _ = _ := by rw [map_add, map_smul]
+    _ = _ :=
+      congrArg₂ (fun x y : L2 Ω => x + y) (h1WirtingerD_affine_pow_of_antiholomorphic hb p u hCR j) (conormal_affine_Dbar_value hb p u v (j + 1) hprim)
+    _ = _ := rfl
 
 private theorem conormal_affine_gradient_y {Ω : Set ℂ}
     (hb : Bornology.IsBounded Ω) (p : ℂ) (u v : NeumannH1 Ω) (j : ℕ)
@@ -163,30 +170,25 @@ private theorem conormal_affine_gradient_y {Ω : Set ℂ}
       h1Value Ω (Complex.I •
         (((j + 1 : ℕ) : ℂ) • ((neumannH1AffineMultiplier hb p ^ j) u) -
           (neumannH1AffineMultiplier hb p ^ (j + 1)) v)) := by
-  have hx := h1WirtingerD_affine_pow_of_antiholomorphic hb p u hCR j
-  have hy := conormal_affine_Dbar_value hb p u v (j + 1) hprim
+  
+  
   calc
-    _ = Complex.I •
-        (h1WirtingerD Ω ((neumannH1AffineMultiplier hb p ^ (j + 1)) u) -
-          h1WirtingerDbar Ω ((neumannH1AffineMultiplier hb p ^ (j + 1)) u)) :=
+    _ = _ :=
       conormal_gradient_y_wirtinger Ω _
-    _ = Complex.I •
-        (((j + 1 : ℕ) : ℂ) • h1Value Ω ((neumannH1AffineMultiplier hb p ^ j) u) -
-          h1Value Ω ((neumannH1AffineMultiplier hb p ^ (j + 1)) v)) :=
+    _ = _ :=
       congrArg (fun z : L2 Ω => Complex.I • z)
-        (congrArg₂ (fun x y : L2 Ω => x - y) hx hy)
-    _ = _ := by rw [map_smul, map_sub, map_smul]
+        (congrArg₂ (fun x y : L2 Ω => x - y) (h1WirtingerD_affine_pow_of_antiholomorphic hb p u hCR j) (conormal_affine_Dbar_value hb p u v (j + 1) hprim))
+    _ = _ := rfl
 
 private theorem conormal_scaled_map_add {H Y : Type*}
     [NormedAddCommGroup H] [NormedSpace ℂ H]
     [NormedAddCommGroup Y] [NormedSpace ℂ Y]
     (G V : H →L[ℂ] Y) (c a : ℂ) (r x y : H)
     (he : G r = V (a • x + y)) :
-    G (c • r) = V ((c * a) • x + c • y) := by
-  calc
-    _ = c • G r := map_smul G c r
-    _ = c • V (a • x + y) := congrArg (fun z : Y => c • z) he
-    _ = V (c • (a • x + y)) := (map_smul V c _).symm
+    G (c • r) = V ((c * a) • x + c • y) := calc
+    _ = _ := map_smul G c r
+    _ = _ := congrArg (fun z : Y => c • z) he
+    _ = _ := (map_smul V c _).symm
     _ = _ := by rw [smul_add, smul_smul]
 
 private theorem conormal_scaled_map_sub {H Y : Type*}
@@ -194,11 +196,10 @@ private theorem conormal_scaled_map_sub {H Y : Type*}
     [NormedAddCommGroup Y] [NormedSpace ℂ Y]
     (G V : H →L[ℂ] Y) (c a d : ℂ) (r x y : H)
     (he : G r = V (d • (a • x - y))) :
-    G (c • r) = V (d • ((c * a) • x - c • y)) := by
-  calc
-    _ = c • G r := map_smul G c r
-    _ = c • V (d • (a • x - y)) := congrArg (fun z : Y => c • z) he
-    _ = V (c • (d • (a • x - y))) := (map_smul V c _).symm
+    G (c • r) = V (d • ((c * a) • x - c • y)) := calc
+    _ = _ := map_smul G c r
+    _ = _ := congrArg (fun z : Y => c • z) he
+    _ = _ := (map_smul V c _).symm
     _ = _ := by
       congr 1
       module
@@ -227,213 +228,164 @@ private theorem conormal_map_series_sub {H Y : Type*}
 
 section PhysicalCoordinates
 
-variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
-    (e : OpenPartialHomeomorph ℂ ℂ) (he : (e : ℂ → ℂ) = F)
-    (hsource : closedBall (0 : ℂ) 1 ⊆ e.source)
-    (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target)
+section
 
-local notation "ΩF" => F '' ball (0 : ℂ) 1
-local notation "UF" => localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes
-local notation "JF" => localConformalHardyPrimitive hR F hFs
-local notation "MF" => neumannH1AffineMultiplier hb
-local notation "VF" => localConformalVekuaH1 hR F hFs hb hL hhol hinj hC hK e he hsource hes
+variable (Φ : DiskCoordinates) (p E : ℂ) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
+    (j : ℕ)
 
-def localConformalVekuaRemainder (p E : ℂ) : L2Z →L[ℂ] NeumannH1 ΩF :=
-  VF p E - UF
+include E p in
+def DiskCoordinates.vekuaRemainder : L2Z →L[ℂ] NeumannH1 Φ.domain :=
+  Φ.vekuaH1 p E - Φ.hardyH1Extension
 
-def localConformalVekuaGradientA (p E : ℂ) : L2Z →L[ℂ] NeumannH1 ΩF :=
-  (-E / 4) • ((VF p E).comp JF)
+include E p in
+def DiskCoordinates.vekuaGradientA : L2Z →L[ℂ] NeumannH1 Φ.domain :=
+  (-E / 4) • ((Φ.vekuaH1 p E).comp Φ.hardyPrimitive)
 
-def localConformalVekuaGradientB (p E : ℂ) : L2Z →L[ℂ] NeumannH1 ΩF :=
-  boundedPhysicalVekuaGradientB (MF p) UF JF E
+include E p in
+def DiskCoordinates.vekuaGradientB : L2Z →L[ℂ] NeumannH1 Φ.domain :=
+  boundedPhysicalVekuaGradientB ((neumannH1AffineMultiplier Φ.bounded) p) Φ.hardyH1Extension Φ.hardyPrimitive E
 
-local notation "RF" => localConformalVekuaRemainder hR F hFs hb hL hhol hinj hC hK e he hsource hes
-local notation "AF" => localConformalVekuaGradientA hR F hFs hb hL hhol hinj hC hK e he hsource hes
-local notation "BF" => localConformalVekuaGradientB hR F hFs hb hL hhol hinj hC hK e he hsource hes
+theorem localConformalVekuaRemainder_apply :
+    Φ.vekuaRemainder p E b = Φ.vekuaH1 p E b - Φ.hardyH1Extension b := rfl
 
-theorem localConformalVekuaRemainder_apply (p E : ℂ) (b : L2Z) :
-    RF p E b = VF p E b - UF b := rfl
+theorem localConformalVekuaGradientA_apply :
+    Φ.vekuaGradientA p E b = (-E / 4) • Φ.vekuaH1 p E (Φ.hardyPrimitive b) := rfl
 
-theorem localConformalVekuaGradientA_apply (p E : ℂ) (b : L2Z) :
-    AF p E b = (-E / 4) • VF p E (JF b) := rfl
-
-theorem localConformalVekuaRemainder_hasSum (p E : ℂ) (b : L2Z) :
+theorem localConformalVekuaRemainder_hasSum :
     HasSum (fun j : ℕ => physicalVekuaCoeff E (j + 1) •
-      ((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b))) (RF p E b) := by
-  have hs := localConformalVekuaH1_hasSum hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes p E b
+      (((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b))) (Φ.vekuaRemainder p E b) := by
+  have hs := localConformalVekuaH1_hasSum Φ p E b
   simpa only [Finset.sum_range_one, physicalVekuaCoeff_zero, pow_zero,
     ContinuousLinearMap.one_apply, one_smul, localConformalVekuaRemainder_apply] using
       (hasSum_nat_add_iff' 1).2 hs
 
-theorem localConformalVekuaGradientA_hasSum (p E : ℂ) (b : L2Z) :
+theorem localConformalVekuaGradientA_hasSum :
     HasSum (fun j : ℕ => (physicalVekuaCoeff E (j + 1) * ((j + 1 : ℕ) : ℂ)) •
-      ((MF p) ^ j) (UF ((JF ^ (j + 1)) b))) (AF p E b) := by
-  have hs := (localConformalVekuaH1_hasSum hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes p E (JF b)).const_smul (-E / 4)
+      (((neumannH1AffineMultiplier Φ.bounded) p) ^ j) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b))) (Φ.vekuaGradientA p E b) := by
+  have hs := (localConformalVekuaH1_hasSum Φ p E (Φ.hardyPrimitive b)).const_smul (-E / 4)
   simpa only [localConformalVekuaGradientA_apply, physicalVekuaCoeff_succ,
     pow_succ, ContinuousLinearMap.mul_apply, smul_smul] using hs
 
-theorem localConformalVekuaGradientB_hasSum (p E : ℂ) (b : L2Z) :
+theorem localConformalVekuaGradientB_hasSum :
     HasSum (fun j : ℕ => physicalVekuaCoeff E (j + 1) •
-      ((MF p) ^ (j + 1)) (UF ((JF ^ j) b))) (BF p E b) :=
-  boundedPhysicalVekuaGradientB_hasSum_apply (MF p) UF JF E b
+      (((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b))) (Φ.vekuaGradientB p E b) :=
+  boundedPhysicalVekuaGradientB_hasSum_apply ((neumannH1AffineMultiplier Φ.bounded) p) Φ.hardyH1Extension Φ.hardyPrimitive E b
 
-private theorem conormal_primitive_Dbar (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) (j : ℕ) :
-    h1WirtingerDbar ΩF (UF ((JF ^ (j + 1)) b)) = h1Value ΩF (UF ((JF ^ j) b)) := by
+include hbn in
+private theorem conormal_primitive_Dbar :
+    h1WirtingerDbar Φ.domain (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)) = h1Value Φ.domain (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b)) := by
   rw [pow_succ', ContinuousLinearMap.mul_apply]
-  exact localConformalHardyH1Extension_wirtingerDbar_primitive hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes _ (localConformalHardyPrimitive_pow_nonpositive hR F hFs hhol b hbn j)
+  exact localConformalHardyH1Extension_wirtingerDbar_primitive Φ _ (localConformalHardyPrimitive_pow_nonpositive Φ Φ.holomorphic b hbn j)
 
-private theorem conormal_term_gradient_x (p : ℂ) (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) (j : ℕ) :
-    h1Gradient ΩF 0 (((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b))) =
-      h1Value ΩF (((j + 1 : ℕ) : ℂ) • ((MF p) ^ j) (UF ((JF ^ (j + 1)) b)) +
-        ((MF p) ^ (j + 1)) (UF ((JF ^ j) b))) := by
-  exact conormal_affine_gradient_x hb p
-    (UF ((JF ^ (j + 1)) b)) (UF ((JF ^ j) b)) j
-    (localConformalHardyH1Extension_cauchyRiemann hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes _)
-    (conormal_primitive_Dbar hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes b hbn j)
+include hbn in
+private theorem conormal_term_gradient_x :
+    h1Gradient Φ.domain 0 ((((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b))) =
+      h1Value Φ.domain (((j + 1 : ℕ) : ℂ) • (((neumannH1AffineMultiplier Φ.bounded) p) ^ j) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)) +
+        (((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b))) := conormal_affine_gradient_x Φ.bounded p
+    (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b)) j
+    (localConformalHardyH1Extension_cauchyRiemann Φ _)
+    (conormal_primitive_Dbar Φ b hbn j)
 
-private theorem conormal_term_gradient_y (p : ℂ) (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) (j : ℕ) :
-    h1Gradient ΩF 1 (((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b))) =
-      h1Value ΩF (Complex.I •
-        (((j + 1 : ℕ) : ℂ) • ((MF p) ^ j) (UF ((JF ^ (j + 1)) b)) -
-          ((MF p) ^ (j + 1)) (UF ((JF ^ j) b)))) := by
-  exact conormal_affine_gradient_y hb p
-    (UF ((JF ^ (j + 1)) b)) (UF ((JF ^ j) b)) j
-    (localConformalHardyH1Extension_cauchyRiemann hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes _)
-    (conormal_primitive_Dbar hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes b hbn j)
+include hbn in
+private theorem conormal_term_gradient_y :
+    h1Gradient Φ.domain 1 ((((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b))) =
+      h1Value Φ.domain (Complex.I •
+        (((j + 1 : ℕ) : ℂ) • (((neumannH1AffineMultiplier Φ.bounded) p) ^ j) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)) -
+          (((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b)))) := conormal_affine_gradient_y Φ.bounded p
+    (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b)) j
+    (localConformalHardyH1Extension_cauchyRiemann Φ _)
+    (conormal_primitive_Dbar Φ b hbn j)
 
+include hbn in
 /-- The actual x gradient of the remainder has an H¹ representative. -/
-theorem localConformalVekuaRemainder_gradient_x (p E : ℂ) (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) :
-    h1Gradient ΩF 0 (RF p E b) = h1Value ΩF (AF p E b + BF p E b) := by
-  have heq (j : ℕ) : h1Gradient ΩF 0
-      (physicalVekuaCoeff E (j + 1) • ((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b))) =
-      h1Value ΩF
-        ((physicalVekuaCoeff E (j + 1) * ((j + 1 : ℕ) : ℂ)) •
-          ((MF p) ^ j) (UF ((JF ^ (j + 1)) b)) +
-          physicalVekuaCoeff E (j + 1) • ((MF p) ^ (j + 1)) (UF ((JF ^ j) b))) := by
-    exact conormal_scaled_map_add (h1Gradient ΩF 0) (h1Value ΩF)
+theorem localConformalVekuaRemainder_gradient_x :
+    h1Gradient Φ.domain 0 (Φ.vekuaRemainder p E b) = h1Value Φ.domain (Φ.vekuaGradientA p E b + Φ.vekuaGradientB p E b) := by
+  have heq (j : ℕ) := conormal_scaled_map_add (h1Gradient Φ.domain 0) (h1Value Φ.domain)
       (physicalVekuaCoeff E (j + 1)) ((j + 1 : ℕ) : ℂ)
-      (((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b)))
-      (((MF p) ^ j) (UF ((JF ^ (j + 1)) b)))
-      (((MF p) ^ (j + 1)) (UF ((JF ^ j) b)))
-      (conormal_term_gradient_x hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes p b hbn j)
-  exact conormal_map_series_add (h1Gradient ΩF 0) (h1Value ΩF)
+      ((((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)))
+      ((((neumannH1AffineMultiplier Φ.bounded) p) ^ j) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)))
+      ((((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b)))
+      (conormal_term_gradient_x Φ p b hbn j)
+  exact conormal_map_series_add (h1Gradient Φ.domain 0) (h1Value Φ.domain)
     (fun j => physicalVekuaCoeff E (j + 1) •
-      ((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b)))
+      (((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)))
     (fun j => (physicalVekuaCoeff E (j + 1) * ((j + 1 : ℕ) : ℂ)) •
-      ((MF p) ^ j) (UF ((JF ^ (j + 1)) b)))
+      (((neumannH1AffineMultiplier Φ.bounded) p) ^ j) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)))
     (fun j => physicalVekuaCoeff E (j + 1) •
-      ((MF p) ^ (j + 1)) (UF ((JF ^ j) b)))
-    (RF p E b) (AF p E b) (BF p E b)
-    (localConformalVekuaRemainder_hasSum hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes p E b)
-    (localConformalVekuaGradientA_hasSum hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes p E b)
-    (localConformalVekuaGradientB_hasSum hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes p E b) heq
+      (((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b)))
+    (Φ.vekuaRemainder p E b) (Φ.vekuaGradientA p E b) (Φ.vekuaGradientB p E b)
+    (localConformalVekuaRemainder_hasSum Φ p E b)
+    (localConformalVekuaGradientA_hasSum Φ p E b)
+    (localConformalVekuaGradientB_hasSum Φ p E b) heq
 
+include hbn in
 /-- The actual y gradient has the genuine antiholomorphic primitive sign. -/
-theorem localConformalVekuaRemainder_gradient_y (p E : ℂ) (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) :
-    h1Gradient ΩF 1 (RF p E b) = h1Value ΩF (Complex.I • (AF p E b - BF p E b)) := by
-  have heq (j : ℕ) : h1Gradient ΩF 1
-      (physicalVekuaCoeff E (j + 1) • ((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b))) =
-      h1Value ΩF (Complex.I •
-        ((physicalVekuaCoeff E (j + 1) * ((j + 1 : ℕ) : ℂ)) •
-          ((MF p) ^ j) (UF ((JF ^ (j + 1)) b)) -
-          physicalVekuaCoeff E (j + 1) • ((MF p) ^ (j + 1)) (UF ((JF ^ j) b)))) := by
-    exact conormal_scaled_map_sub (h1Gradient ΩF 1) (h1Value ΩF)
+theorem localConformalVekuaRemainder_gradient_y :
+    h1Gradient Φ.domain 1 (Φ.vekuaRemainder p E b) = h1Value Φ.domain (Complex.I • (Φ.vekuaGradientA p E b - Φ.vekuaGradientB p E b)) := by
+  have heq (j : ℕ) := conormal_scaled_map_sub (h1Gradient Φ.domain 1) (h1Value Φ.domain)
       (physicalVekuaCoeff E (j + 1)) ((j + 1 : ℕ) : ℂ) Complex.I
-      (((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b)))
-      (((MF p) ^ j) (UF ((JF ^ (j + 1)) b)))
-      (((MF p) ^ (j + 1)) (UF ((JF ^ j) b)))
-      (conormal_term_gradient_y hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes p b hbn j)
-  exact conormal_map_series_sub (h1Gradient ΩF 1) (h1Value ΩF) Complex.I
+      ((((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)))
+      ((((neumannH1AffineMultiplier Φ.bounded) p) ^ j) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)))
+      ((((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b)))
+      (conormal_term_gradient_y Φ p b hbn j)
+  exact conormal_map_series_sub (h1Gradient Φ.domain 1) (h1Value Φ.domain) Complex.I
     (fun j => physicalVekuaCoeff E (j + 1) •
-      ((MF p) ^ (j + 1)) (UF ((JF ^ (j + 1)) b)))
+      (((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)))
     (fun j => (physicalVekuaCoeff E (j + 1) * ((j + 1 : ℕ) : ℂ)) •
-      ((MF p) ^ j) (UF ((JF ^ (j + 1)) b)))
+      (((neumannH1AffineMultiplier Φ.bounded) p) ^ j) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ (j + 1)) b)))
     (fun j => physicalVekuaCoeff E (j + 1) •
-      ((MF p) ^ (j + 1)) (UF ((JF ^ j) b)))
-    (RF p E b) (AF p E b) (BF p E b)
-    (localConformalVekuaRemainder_hasSum hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes p E b)
-    (localConformalVekuaGradientA_hasSum hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes p E b)
-    (localConformalVekuaGradientB_hasSum hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes p E b) heq
+      (((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b)))
+    (Φ.vekuaRemainder p E b) (Φ.vekuaGradientA p E b) (Φ.vekuaGradientB p E b)
+    (localConformalVekuaRemainder_hasSum Φ p E b)
+    (localConformalVekuaGradientA_hasSum Φ p E b)
+    (localConformalVekuaGradientB_hasSum Φ p E b) heq
 
-theorem localConformalVekuaGradientA_Dbar (p E : ℂ) (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) :
-    h1WirtingerDbar ΩF (AF p E b) = (-E / 4) • h1Value ΩF (VF p E b) := by
+include hbn in
+theorem localConformalVekuaGradientA_Dbar :
+    h1WirtingerDbar Φ.domain (Φ.vekuaGradientA p E b) = (-E / 4) • h1Value Φ.domain (Φ.vekuaH1 p E b) := by
   rw [localConformalVekuaGradientA_apply, map_smul,
-    localConformalVekuaH1_wirtingerDbar_primitive hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes p E b hbn]
+    localConformalVekuaH1_wirtingerDbar_primitive Φ p E b hbn]
 
-theorem localConformalVekuaGradientB_D (p E : ℂ) (b : L2Z) :
-    h1WirtingerD ΩF (BF p E b) = (-E / 4) • h1Value ΩF (VF p E b) := by
-  have hl := (h1WirtingerD ΩF).hasSum
-    (localConformalVekuaGradientB_hasSum hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes p E b)
-  have hr := ((h1Value ΩF).hasSum
-    (localConformalVekuaH1_hasSum hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes p E b)).const_smul (-E / 4)
-  have heq (j : ℕ) : h1WirtingerD ΩF
-      (physicalVekuaCoeff E (j + 1) • ((MF p) ^ (j + 1)) (UF ((JF ^ j) b))) =
-      (-E / 4) • h1Value ΩF (physicalVekuaCoeff E j • ((MF p) ^ j) (UF ((JF ^ j) b))) := by
-    rw [map_smul, h1WirtingerD_affine_pow_of_antiholomorphic hb p _
-      (localConformalHardyH1Extension_cauchyRiemann hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes _) j, smul_smul, physicalVekuaCoeff_succ, map_smul, smul_smul]
-  have hl' : HasSum (fun j : ℕ => (-E / 4) • h1Value ΩF
-      (physicalVekuaCoeff E j • ((MF p) ^ j) (UF ((JF ^ j) b))))
-      (h1WirtingerD ΩF (BF p E b)) := by simpa only [heq] using hl
+theorem localConformalVekuaGradientB_D :
+    h1WirtingerD Φ.domain (Φ.vekuaGradientB p E b) = (-E / 4) • h1Value Φ.domain (Φ.vekuaH1 p E b) := by
+  have hl := (h1WirtingerD Φ.domain).hasSum
+    (localConformalVekuaGradientB_hasSum Φ p E b)
+  have hr := ((h1Value Φ.domain).hasSum
+    (localConformalVekuaH1_hasSum Φ p E b)).const_smul (-E / 4)
+  have heq (j : ℕ) : h1WirtingerD Φ.domain
+      (physicalVekuaCoeff E (j + 1) • (((neumannH1AffineMultiplier Φ.bounded) p) ^ (j + 1)) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b))) =
+      (-E / 4) • h1Value Φ.domain (physicalVekuaCoeff E j • (((neumannH1AffineMultiplier Φ.bounded) p) ^ j) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b))) := by
+    rw [map_smul, h1WirtingerD_affine_pow_of_antiholomorphic Φ.bounded p _
+      (localConformalHardyH1Extension_cauchyRiemann Φ _) j, smul_smul, physicalVekuaCoeff_succ, map_smul, smul_smul]
+  have hl' : HasSum (fun j : ℕ => (-E / 4) • h1Value Φ.domain
+      (physicalVekuaCoeff E j • (((neumannH1AffineMultiplier Φ.bounded) p) ^ j) (Φ.hardyH1Extension ((Φ.hardyPrimitive ^ j) b))))
+      (h1WirtingerD Φ.domain (Φ.vekuaGradientB p E b)) := by simpa only [heq] using hl
   exact hl'.unique hr
 
+include hbn in
 /-- The divergence is an equality of actual L² elements, derived from
 the completed H¹ series and true first-order derivatives. -/
-theorem localConformalVekuaRemainder_divergence (p E : ℂ) (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) :
-    h1GradientDivergence ΩF (AF p E b + BF p E b)
-      (Complex.I • (AF p E b - BF p E b)) = (-E) • h1Value ΩF (VF p E b) := by
+theorem localConformalVekuaRemainder_divergence :
+    h1GradientDivergence Φ.domain (Φ.vekuaGradientA p E b + Φ.vekuaGradientB p E b)
+      (Complex.I • (Φ.vekuaGradientA p E b - Φ.vekuaGradientB p E b)) = (-E) • h1Value Φ.domain (Φ.vekuaH1 p E b) := by
   rw [conormal_divergence_wirtinger,
-    localConformalVekuaGradientA_Dbar hR F hFs hb hL hhol hinj hC hK e he hsource hes p E b hbn,
-    localConformalVekuaGradientB_D hR F hFs hb hL hhol hinj hC hK e he hsource hes p E b]
+    localConformalVekuaGradientA_Dbar Φ p E b hbn,
+    localConformalVekuaGradientB_D Φ p E b]
   module
-
-variable {γ : ℝ → ℂ} (hγ : IsBoundaryParam (F '' ball (0 : ℂ) 1) γ)
 
 /-- The actual ordinary-parameter L² remainder flux, built from the two
 proved H¹ gradient representatives and actual weak trace multipliers. -/
-def localConformalVekuaConormalRemainder (p E : ℂ) : L2Z →L[ℂ] BoundaryL2 :=
+def DiskCoordinates.vekuaConormalRemainder {γ : ℝ → ℂ}
+    (hγ : IsBoundaryParam Φ.domain γ) (p E : ℂ) : L2Z →L[ℂ] BoundaryL2 :=
   (h1BoundaryNormalXMultiplier hγ).comp
-      ((h1BoundaryTrace hb hL hγ).comp (AF p E + BF p E)) +
+      ((h1BoundaryTrace Φ.lipschitzDomain hγ).comp (Φ.vekuaGradientA p E + Φ.vekuaGradientB p E)) +
     (h1BoundaryNormalYMultiplier hγ).comp
-      ((h1BoundaryTrace hb hL hγ).comp (Complex.I • (AF p E - BF p E)))
+      ((h1BoundaryTrace Φ.lipschitzDomain hγ).comp (Complex.I • (Φ.vekuaGradientA p E - Φ.vekuaGradientB p E)))
 
-local notation "CF" => localConformalVekuaConormalRemainder hR F hFs hb hL hhol hinj hC hK e he hsource hes hγ
-
-theorem localConformalVekuaConormalRemainder_apply (p E : ℂ) (b : L2Z) :
-    CF p E b = h1GradientConormalDensity hb hL hγ
-      (AF p E b + BF p E b) (Complex.I • (AF p E b - BF p E b)) := rfl
+theorem localConformalVekuaConormalRemainder_apply {γ : ℝ → ℂ}
+    (hγ : IsBoundaryParam Φ.domain γ) (p E : ℂ) (b : L2Z) :
+    (Φ.vekuaConormalRemainder hγ) p E b = h1GradientConormalDensity Φ.bounded Φ.lipschitzDomain hγ
+      (Φ.vekuaGradientA p E b + Φ.vekuaGradientB p E b) (Complex.I • (Φ.vekuaGradientA p E b - Φ.vekuaGradientB p E b)) := rfl
 
 private theorem conormal_phase_identity (z A B : ℂ) :
     (z.im : ℂ) * (A + B) + (-(z.re) : ℂ) * (Complex.I * (A - B)) =
@@ -442,92 +394,82 @@ private theorem conormal_phase_identity (z A B : ℂ) :
 
 /-- The actual flux has the expected two complex-velocity terms. This
 uses the genuine constant-speed physical boundary parameter γ. -/
-theorem localConformalVekuaConormalRemainder_ae (p E : ℂ) (b : L2Z) :
-    (CF p E b : ℝ → ℂ) =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * Real.pi))]
-      fun θ => -Complex.I * deriv γ θ * h1BoundaryTrace hb hL hγ (AF p E b) θ +
-        Complex.I * conj (deriv γ θ) * h1BoundaryTrace hb hL hγ (BF p E b) θ := by
+theorem localConformalVekuaConormalRemainder_ae {γ : ℝ → ℂ}
+    (hγ : IsBoundaryParam Φ.domain γ) (p E : ℂ) (b : L2Z) :
+    ((Φ.vekuaConormalRemainder hγ) p E b : ℝ → ℂ) =ᵐ[angleMeasure]
+      fun θ => -Complex.I * deriv γ θ * h1BoundaryTrace Φ.lipschitzDomain hγ (Φ.vekuaGradientA p E b) θ +
+        Complex.I * conj (deriv γ θ) * h1BoundaryTrace Φ.lipschitzDomain hγ (Φ.vekuaGradientB p E b) θ := by
   rw [localConformalVekuaConormalRemainder_apply]
-  have hd := h1GradientConormalDensity_ae hb hL hγ
-    (AF p E b + BF p E b) (Complex.I • (AF p E b - BF p E b))
+  have hd := h1GradientConormalDensity_ae Φ.bounded Φ.lipschitzDomain hγ
+    (Φ.vekuaGradientA p E b + Φ.vekuaGradientB p E b) (Complex.I • (Φ.vekuaGradientA p E b - Φ.vekuaGradientB p E b))
   rw [map_add, map_smul, map_sub] at hd
   filter_upwards [hd,
-    Lp.coeFn_add (h1BoundaryTrace hb hL hγ (AF p E b))
-      (h1BoundaryTrace hb hL hγ (BF p E b)),
-    Lp.coeFn_smul Complex.I (h1BoundaryTrace hb hL hγ (AF p E b) -
-      h1BoundaryTrace hb hL hγ (BF p E b)),
-    Lp.coeFn_sub (h1BoundaryTrace hb hL hγ (AF p E b))
-      (h1BoundaryTrace hb hL hγ (BF p E b))] with θ hθ ha hi hs
-  change h1GradientConormalDensity hb hL hγ
-      (AF p E b + BF p E b) (Complex.I • (AF p E b - BF p E b)) θ =
-    -Complex.I * deriv γ θ * h1BoundaryTrace hb hL hγ (AF p E b) θ +
-      Complex.I * conj (deriv γ θ) * h1BoundaryTrace hb hL hγ (BF p E b) θ
+    Lp.coeFn_add (h1BoundaryTrace Φ.lipschitzDomain hγ (Φ.vekuaGradientA p E b))
+      (h1BoundaryTrace Φ.lipschitzDomain hγ (Φ.vekuaGradientB p E b)),
+    Lp.coeFn_smul Complex.I (h1BoundaryTrace Φ.lipschitzDomain hγ (Φ.vekuaGradientA p E b) -
+      h1BoundaryTrace Φ.lipschitzDomain hγ (Φ.vekuaGradientB p E b)),
+    Lp.coeFn_sub (h1BoundaryTrace Φ.lipschitzDomain hγ (Φ.vekuaGradientA p E b))
+      (h1BoundaryTrace Φ.lipschitzDomain hγ (Φ.vekuaGradientB p E b))] with θ hθ ha hi hs
+  
   rw [hθ, ha, hi]
   simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, hs, Pi.sub_apply]
   exact conormal_phase_identity _ _ _
 
 /-- The physical weak Helmholtz form equals the genuine Hardy principal
 energy plus the true L² flux of the completed remainder. -/
-theorem localConformalVekuaH1_weak_form (p E : ℂ) (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) (w : NeumannH1 ΩF) :
-    (∑ i : Fin 2, ⟪h1Gradient ΩF i w, h1Gradient ΩF i (VF p E b)⟫_ℂ) -
-        E * ⟪h1Value ΩF w, h1Value ΩF (VF p E b)⟫_ℂ =
-      ⟪localConformalDiskHalfTrace hR F hFs hL w,
+theorem localConformalVekuaH1_weak_form {γ : ℝ → ℂ}
+    (hγ : IsBoundaryParam Φ.domain γ) (p E : ℂ) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
+    (w : NeumannH1 Φ.domain) :
+    (∑ i : Fin 2, ⟪h1Gradient Φ.domain i w, h1Gradient Φ.domain i (Φ.vekuaH1 p E b)⟫_ℂ) -
+        E * ⟪h1Value Φ.domain w, h1Value Φ.domain (Φ.vekuaH1 p E b)⟫_ℂ =
+      ⟪Φ.pulledBackHalfTrace Φ.lipschitzDomain w,
         normalizedConormalPrincipal ((1 - posProj) b)⟫_ℂ +
-      ⟪h1BoundaryTrace hb hL hγ w, CF p E b⟫_ℂ := by
-  have h : (∑ i : Fin 2, ⟪h1Gradient ΩF i w, h1Gradient ΩF i (RF p E b)⟫_ℂ) +
-      ⟪h1Value ΩF w, h1GradientDivergence ΩF
-        (AF p E b + BF p E b) (Complex.I • (AF p E b - BF p E b))⟫_ℂ =
-      ⟪h1BoundaryTrace hb hL hγ w, h1GradientConormalDensity hb hL hγ
-        (AF p E b + BF p E b) (Complex.I • (AF p E b - BF p E b))⟫_ℂ :=
-    h1_conormal_green hb hL hγ (RF p E b)
-      (AF p E b + BF p E b) (Complex.I • (AF p E b - BF p E b))
-      (localConformalVekuaRemainder_gradient_x hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes p E b hbn)
-      (localConformalVekuaRemainder_gradient_y hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes p E b hbn) w
-  rw [localConformalVekuaRemainder_divergence hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes p E b hbn, inner_smul_right,
-    ← localConformalVekuaConormalRemainder_apply hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes hγ p E b] at h
-  have hp := localConformalHardyH1Extension_principal_conormal hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes b w
-  have hgrad : (∑ i : Fin 2, ⟪h1Gradient ΩF i w, h1Gradient ΩF i (RF p E b)⟫_ℂ) =
-      (∑ i : Fin 2, ⟪h1Gradient ΩF i w, h1Gradient ΩF i (VF p E b)⟫_ℂ) -
-        ∑ i : Fin 2, ⟪h1Gradient ΩF i w, h1Gradient ΩF i (UF b)⟫_ℂ := by
+      ⟪h1BoundaryTrace Φ.lipschitzDomain hγ w, (Φ.vekuaConormalRemainder hγ) p E b⟫_ℂ := by
+  have h  :=
+    h1_conormal_green Φ.bounded Φ.lipschitzDomain hγ (Φ.vekuaRemainder p E b)
+      (Φ.vekuaGradientA p E b + Φ.vekuaGradientB p E b) (Complex.I • (Φ.vekuaGradientA p E b - Φ.vekuaGradientB p E b))
+      (localConformalVekuaRemainder_gradient_x Φ p E b hbn)
+      (localConformalVekuaRemainder_gradient_y Φ p E b hbn) w
+  rw [localConformalVekuaRemainder_divergence Φ p E b hbn, inner_smul_right,
+    ← localConformalVekuaConormalRemainder_apply Φ hγ p E b] at h
+  have hp := localConformalHardyH1Extension_principal_conormal Φ b w
+  have hgrad : (∑ i : Fin 2, ⟪h1Gradient Φ.domain i w, h1Gradient Φ.domain i (Φ.vekuaRemainder p E b)⟫_ℂ) =
+      (∑ i : Fin 2, ⟪h1Gradient Φ.domain i w, h1Gradient Φ.domain i (Φ.vekuaH1 p E b)⟫_ℂ) -
+        ∑ i : Fin 2, ⟪h1Gradient Φ.domain i w, h1Gradient Φ.domain i (Φ.hardyH1Extension b)⟫_ℂ := by
     simp only [localConformalVekuaRemainder_apply, map_sub, inner_sub_right,
       Finset.sum_sub_distrib]
   rw [← hp]
   calc
-    _ = ((∑ i : Fin 2, ⟪h1Gradient ΩF i w, h1Gradient ΩF i (RF p E b)⟫_ℂ) +
-          (-E) * ⟪h1Value ΩF w, h1Value ΩF (VF p E b)⟫_ℂ) +
-          ∑ i : Fin 2, ⟪h1Gradient ΩF i w, h1Gradient ΩF i (UF b)⟫_ℂ := by
+    _ = ((∑ i : Fin 2, ⟪h1Gradient Φ.domain i w, h1Gradient Φ.domain i (Φ.vekuaRemainder p E b)⟫_ℂ) +
+          (-E) * ⟪h1Value Φ.domain w, h1Value Φ.domain (Φ.vekuaH1 p E b)⟫_ℂ) +
+          ∑ i : Fin 2, ⟪h1Gradient Φ.domain i w, h1Gradient Φ.domain i (Φ.hardyH1Extension b)⟫_ℂ := by
       rw [hgrad]
       ring
     _ = _ := by rw [h]; ring
 
-variable {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c)
-    (hcoord : ∀ θ, F (circleMap 0 1 θ) = γ (τ θ))
-
 /-- The normalized physical flux keeps the arclength Jacobian `τ′` in
 its actual transformed L² representative. No constant-speed premise is
 made about F on the circle. -/
-def localConformalVekuaNormalizedConormalRemainder (p E : ℂ) (b : L2Z) : L2Z :=
-  localConformalBoundaryLoad hτ (CF p E b)
+def DiskCoordinates.vekuaNormalizedConormalRemainder {γ : ℝ → ℂ}
+    (hγ : IsBoundaryParam Φ.domain γ) {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c) (p E : ℂ)
+    (b : L2Z) : L2Z :=
+  localConformalBoundaryLoad hτ ((Φ.vekuaConormalRemainder hγ) p E b)
 
-include hcoord in
 /-- The exact normalized weak equation for the actual Vekua vector. -/
-theorem localConformalVekuaH1_normalized_weak_form (p E : ℂ) (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) (w : NeumannH1 ΩF) :
-    (∑ i : Fin 2, ⟪h1Gradient ΩF i w, h1Gradient ΩF i (VF p E b)⟫_ℂ) -
-        E * ⟪h1Value ΩF w, h1Value ΩF (VF p E b)⟫_ℂ =
-      ⟪localConformalDiskHalfTrace hR F hFs hL w,
+theorem localConformalVekuaH1_normalized_weak_form {γ : ℝ → ℂ}
+    (hγ : IsBoundaryParam Φ.domain γ) {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c)
+    (hcoord : ∀ θ, Φ.map (unitCirclePt θ) = γ (τ θ)) (p E : ℂ) (b : L2Z)
+    (hbn : IsNonpositiveFourierSupport b) (w : NeumannH1 Φ.domain) :
+    (∑ i : Fin 2, ⟪h1Gradient Φ.domain i w, h1Gradient Φ.domain i (Φ.vekuaH1 p E b)⟫_ℂ) -
+        E * ⟪h1Value Φ.domain w, h1Value Φ.domain (Φ.vekuaH1 p E b)⟫_ℂ =
+      ⟪Φ.pulledBackHalfTrace Φ.lipschitzDomain w,
         normalizedConormalPrincipal ((1 - posProj) b) +
-        localConformalVekuaNormalizedConormalRemainder hR F hFs hb hL hhol hinj hC hK
-          e he hsource hes hγ hτ p E b⟫_ℂ := by
-  rw [localConformalVekuaH1_weak_form hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes hγ p E b hbn w, inner_add_right]
-  rw [localConformalVekuaNormalizedConormalRemainder,
-    localConformalBoundaryLoad_inner hR F hFs hb hL hhol hinj hC hγ hτ hcoord]
+        Φ.vekuaNormalizedConormalRemainder hγ hτ p E b⟫_ℂ := by
+  rw [localConformalVekuaH1_weak_form Φ hγ p E b hbn w, inner_add_right]
+  rw [DiskCoordinates.vekuaNormalizedConormalRemainder,
+    localConformalBoundaryLoad_inner Φ hγ hτ hcoord]
+
+end
 
 end PhysicalCoordinates
 

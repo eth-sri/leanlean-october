@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.Driven
+public import RequestProject.PlanarNotation
 
 /-!
 # The correction at the boundary origin (Definition 6.2, Lemma 6.3 and the jump in Lemma 6.4)
@@ -32,35 +33,44 @@ open scoped InnerProductSpace ComplexConjugate
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
+section
+
+variable (V : H →L[ℂ] H) (c e₀ d : H)
+
+include V e₀ in
 /-- `c = (V^* - I) e₀`. -/
-def cutC (V : H →L[ℂ] H) (e₀ : H) : H := adjoint V e₀ - e₀
+def cutC : H := adjoint V e₀ - e₀
 
+/-- Vacuum displacement of the transport over a full period. -/
+abbrev cutVector (W : TransportPath) := cutC (W anglePeriod) (basisVec 0)
+
+include V e₀ in
 /-- `s = (I + V^*) e₀`. -/
-def cutS (V : H →L[ℂ] H) (e₀ : H) : H := e₀ + adjoint V e₀
+def cutS : H := e₀ + adjoint V e₀
 
+include c in
 /-- `Π^c = I - c ⟨c, ·⟩ / ‖c‖²`. -/
-def cutProj (c : H) : H →L[ℂ] H := 1 - ((‖c‖ ^ 2 : ℝ) : ℂ)⁻¹ • rankOne ℂ c c
+def cutProj : H →L[ℂ] H := 1 - ((‖c‖ ^ 2 : ℝ) : ℂ)⁻¹ • rankOne ℂ c c
 
+include c d in
 /-- `B = (d ⟨c, ·⟩ + c ⟨d, ·⟩) / ‖c‖² - ⟨c, d⟩ / ‖c‖⁴ · c ⟨c, ·⟩` (equation (6.1)). -/
-def cutB (c d : H) : H →L[ℂ] H :=
+def cutB : H →L[ℂ] H :=
   ((‖c‖ ^ 2 : ℝ) : ℂ)⁻¹ • (rankOne ℂ d c + rankOne ℂ c d) -
     (⟪c, d⟫_ℂ / ((‖c‖ ^ 4 : ℝ) : ℂ)) • rankOne ℂ c c
 
 omit [CompleteSpace H] in
-lemma cutB_apply (c d x : H) :
+lemma cutB_apply (x : H) :
     cutB c d x = ((‖c‖ ^ 2 : ℝ) : ℂ)⁻¹ • (⟪c, x⟫_ℂ • d + ⟪d, x⟫_ℂ • c) -
       (⟪c, d⟫_ℂ / ((‖c‖ ^ 4 : ℝ) : ℂ) * ⟪c, x⟫_ℂ) • c := by
-  simp [cutB, rankOne_apply, smul_smul]
+  simp [cutB, smul_smul]
 
 omit [CompleteSpace H] in
 /-- **Lemma 6.3.** `Π^c` is the orthogonal projection onto `c^⊥`. -/
-theorem cutProj_eq_starProjection (c : H) : cutProj c = (ℂ ∙ c)ᗮ.starProjection := by
+theorem cutProj_eq_starProjection : cutProj c = (ℂ ∙ c)ᗮ.starProjection := by
   ext x
-  rw [Submodule.starProjection_orthogonal']
-  simp only [cutProj, ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-    ContinuousLinearMap.smul_apply, rankOne_apply, Submodule.starProjection_singleton, smul_smul]
-  rw [div_eq_inv_mul]
-  rfl
+  simp [cutProj, Submodule.starProjection_singleton, smul_smul, div_eq_inv_mul]
+
+end
 
 /-- **Lemma 6.3.** `B` is self-adjoint as soon as `⟨c, d⟩` is real. -/
 theorem cutB_isSelfAdjoint {c d : H} (hcd : ⟪d, c⟫_ℂ = ⟪c, d⟫_ℂ) : IsSelfAdjoint (cutB c d) := by
@@ -88,14 +98,14 @@ theorem cutB_apply_self {c d : H} (hc : c ≠ 0) (hcd : ⟪d, c⟫_ℂ = ⟪c, d
 /-- **Lemma 6.3.** For unitary `V`, `⟨c, d⟩ = -2 Im ⟨e₀, V e₀⟩` with `d = i s`. -/
 theorem inner_cutC_cutD {V : H →L[ℂ] H} (hV : V ∈ unitary (H →L[ℂ] H)) (e₀ : H) :
     ⟪cutC V e₀, Complex.I • cutS V e₀⟫_ℂ = ((-2 * (⟪e₀, V e₀⟫_ℂ).im : ℝ) : ℂ) := by
-  have hVV : V * star V = 1 := Unitary.mul_star_self_of_mem hV
+  have hVV  := Unitary.mul_star_self_of_mem hV
   rw [ContinuousLinearMap.star_eq_adjoint] at hVV
-  have h1 : ⟪adjoint V e₀, e₀⟫_ℂ = ⟪e₀, V e₀⟫_ℂ := adjoint_inner_left V e₀ e₀
+  
   have h2 : ⟪e₀, adjoint V e₀⟫_ℂ = conj ⟪e₀, V e₀⟫_ℂ := by
     rw [adjoint_inner_right, inner_conj_symm]
   have h3 : ⟪adjoint V e₀, adjoint V e₀⟫_ℂ = ⟪e₀, e₀⟫_ℂ := by
     rw [adjoint_inner_left, ← ContinuousLinearMap.mul_apply, hVV, ContinuousLinearMap.one_apply]
-  simp only [cutC, cutS, inner_sub_left, inner_smul_right, inner_add_right, h1, h2, h3]
+  simp only [cutC, cutS, inner_sub_left, inner_smul_right, inner_add_right, (adjoint_inner_left V e₀ e₀), h2, h3]
   generalize ⟪e₀, V e₀⟫_ℂ = w
   apply Complex.ext
   · simp; ring
@@ -121,20 +131,20 @@ theorem inner_cutC_cutB {V : H →L[ℂ] H} (hV : V ∈ unitary (H →L[ℂ] H))
   obtain ⟨hsa, hBc⟩ := cutB_transport hV e₀ hc
   rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric] at hsa
   have := hsa (cutC V e₀) x
-  simp only [ContinuousLinearMap.coe_coe] at this
+  simp at this
   rw [← this, hBc, inner_smul_left, Complex.conj_I]
 
 /-! ### Specialization to the boundary transport -/
 
 /-- **Lemma 6.4 (observation jump).** For a transport `W` (so `W(0) = I`, `W(L) = V_E`),
 `(O_E v)(L) - (O_E v)(0) = ⟨c_E, v⟩` with `c_E = (V_E^* - I) e₀`. -/
-theorem observation_jump {γ : ℝ → ℂ} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
+theorem observation_jump {γ : ℝ → ℂ} {E : ℝ} {W : TransportPath}
     (hW : IsTransport γ E W) (v : Ell2) :
-    observation W v (2 * Real.pi) - observation W v 0 =
-      ⟪cutC (W (2 * Real.pi)) (basisVec 0), v⟫_ℂ := by
-  have h0 : W 0 = 1 := by
+    observation W v anglePeriod - observation W v 0 =
+      ⟪cutC (W anglePeriod) (basisVec 0), v⟫_ℂ := by
+  
+  simp [observation, cutC, inner_sub_left, adjoint_inner_left, (by
     have := hW.2 0 ⟨le_rfl, by positivity⟩
-    simpa using this
-  simp [observation, cutC, inner_sub_left, adjoint_inner_left, h0]
+    simpa using this)]
 
 end PolyaNeumann

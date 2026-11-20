@@ -69,10 +69,10 @@ lemma le_comp_add_sum {ι : Type*} (φ : ℂ → ℝ) (F : Finset ι) (w : ι �
       φ (z + (t : ℂ) * ∑ i ∈ G, (w i : ℂ) * v i) := by
     intro G
     induction G using Finset.induction_on with
-    | empty => intro _; simp
+    | empty => simp
     | insert a G ha ih =>
       intro hGF
-      have haF : a ∈ F := hGF (Finset.mem_insert_self a G)
+      have haF  := hGF (Finset.mem_insert_self a G)
       have hG : G ⊆ F := fun x hx => hGF (Finset.mem_insert_of_mem hx)
       have ih' := ih hG
       rw [Finset.sum_insert ha, Finset.sum_insert ha]
@@ -85,22 +85,29 @@ lemma le_comp_add_sum {ι : Type*} (φ : ℂ → ℝ) (F : Finset ι) (w : ι �
         refine mul_le_mul_of_nonneg_left ?_ ht
         refine (norm_sum_le _ _).trans ?_
         simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-        calc ∑ i ∈ G, |w i| * ‖v i‖ = ∑ i ∈ G, w i * ‖v i‖ :=
+        calc _ = ∑ i ∈ G, w i * ‖v i‖ :=
               Finset.sum_congr rfl fun i hi => by rw [abs_of_nonneg (hw i (hG hi))]
-          _ ≤ ∑ j ∈ F, w j * ‖v j‖ := Finset.sum_le_sum_of_subset_of_nonneg hG
+          _ ≤ _ := Finset.sum_le_sum_of_subset_of_nonneg hG
               fun i hi _ => mul_nonneg (hw i hi) (norm_nonneg _)
       have hs := hstep a haF hpos y hy
       have heq : y + ((t * w a : ℝ) : ℂ) * v a =
           z + (t : ℂ) * ((w a : ℂ) * v a + ∑ i ∈ G, (w i : ℂ) * v i) := by
-        simp only [y]; push_cast; ring
+        simp [y] <;> ring
       rw [heq] at hs
       nlinarith
-  exact key F (Finset.Subset.refl F)
+  simp [*]
+
+section
+
+variable (p : ℂ) (s : ℝ) (z : ℂ)
+include p s z
 
 /-- The Lipschitz bump `max(0, 1 - ‖z - p‖/s)`. -/
-def tentBump (p : ℂ) (s : ℝ) (z : ℂ) : ℝ := max 0 (1 - ‖z - p‖ / s)
+def tentBump : ℝ := max 0 (1 - ‖z - p‖ / s)
 
-lemma tentBump_nonneg (p : ℂ) (s : ℝ) (z : ℂ) : 0 ≤ tentBump p s z := le_max_left _ _
+lemma tentBump_nonneg : 0 ≤ tentBump p s z := le_max_left _ _
+
+end
 
 lemma tentBump_le_one {p : ℂ} {s : ℝ} (hs : 0 < s) (z : ℂ) : tentBump p s z ≤ 1 :=
   max_le zero_le_one (by have : 0 ≤ ‖z - p‖ / s := by positivity
@@ -108,7 +115,7 @@ lemma tentBump_le_one {p : ℂ} {s : ℝ} (hs : 0 < s) (z : ℂ) : tentBump p s 
 
 lemma norm_sub_lt_of_tentBump_pos {p : ℂ} {s : ℝ} (hs : 0 < s) {z : ℂ}
     (h : 0 < tentBump p s z) : ‖z - p‖ < s := by
-  unfold tentBump at h
+  
   rcases lt_max_iff.mp h with h | h
   · exact absurd h (lt_irrefl 0)
   · have : ‖z - p‖ / s < 1 := by linarith
@@ -116,14 +123,14 @@ lemma norm_sub_lt_of_tentBump_pos {p : ℂ} {s : ℝ} (hs : 0 < s) {z : ℂ}
 
 lemma half_lt_tentBump {p : ℂ} {s : ℝ} (hs : 0 < s) {z : ℂ} (h : ‖z - p‖ < s / 2) :
     1 / 2 < tentBump p s z := by
-  unfold tentBump
+  
   refine lt_max_of_lt_right ?_
   have : ‖z - p‖ / s < 1 / 2 := by rw [div_lt_iff₀ hs]; linarith
   linarith
 
 lemma abs_tentBump_sub_le {p : ℂ} {s : ℝ} (hs : 0 < s) (z y : ℂ) :
     |tentBump p s z - tentBump p s y| ≤ (1 / s) * ‖z - y‖ := by
-  unfold tentBump
+  
   refine (abs_max_sub_max_le_max _ _ _ _).trans (max_le (by simp; positivity) ?_)
   have h1 : |(1 - ‖z - p‖ / s) - (1 - ‖y - p‖ / s)| = |‖y - p‖ - ‖z - p‖| / s := by
     rw [show (1 - ‖z - p‖ / s) - (1 - ‖y - p‖ / s) = (‖y - p‖ - ‖z - p‖) / s by ring,
@@ -147,7 +154,7 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   obtain ⟨ρ, H, K, hρ, hH, -, hch⟩ := exists_uniform_charts hb hL
   choose! c f hcf using hch
   set R : ℝ := min ρ H / 10 with hR
-  have hR0 : 0 < R := by positivity
+  
   obtain ⟨T, hTsub, hTfin, hTcov⟩ :=
     finite_cover_balls_of_compact (frontier_isCompact hb) (show 0 < R / 16 by positivity)
   set F := hTfin.toFinset
@@ -156,7 +163,7 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   have hn1 : ∀ p ∈ F, ‖n p‖ = 1 := fun p hp => by
     simp [n, (hcf p (hFsub p hp)).1]
   set ψ : ℂ → ℂ → ℝ := fun p z => tentBump p (R / 2) z
-  set X : ℂ → ℂ := fun z => ∑ p ∈ F, (ψ p z : ℂ) * n p
+  set X : ℂ → ℂ := fun z => ∑ p ∈ F, (ψ p z) * n p
   set m : ℝ := (F.card : ℝ)
   have hm0 : 0 ≤ m := Nat.cast_nonneg _
   have hR2 : 0 < R / 2 := by positivity
@@ -164,7 +171,7 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   have hXb : ∀ z, ‖X z‖ ≤ m := by
     intro z
     refine (norm_sum_le _ _).trans ?_
-    calc ∑ p ∈ F, ‖(ψ p z : ℂ) * n p‖ ≤ ∑ p ∈ F, (1 : ℝ) := Finset.sum_le_sum fun p hp => by
+    calc _ ≤ ∑ p ∈ F, 1 := Finset.sum_le_sum fun p hp => by
           rw [norm_mul, hn1 p hp, mul_one, Complex.norm_real, Real.norm_eq_abs,
             abs_of_nonneg (tentBump_nonneg _ _ _)]
           exact tentBump_le_one hR2 z
@@ -179,17 +186,17 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
       push_cast; ring
     rw [this]
     refine (norm_sum_le _ _).trans ?_
-    calc ∑ p ∈ F, ‖((ψ p z - ψ p y : ℝ) : ℂ) * n p‖
+    calc _
         ≤ ∑ p ∈ F, (1 / (R / 2)) * ‖z - y‖ := Finset.sum_le_sum fun p hp => by
           rw [norm_mul, hn1 p hp, mul_one, Complex.norm_real, Real.norm_eq_abs]
           exact abs_tentBump_sub_le hR2 z y
-      _ = m * (1 / (R / 2)) * ‖z - y‖ := by simp [m]; ring
+      _ = _ := by simp [m]; ring
   set κ : ℝ := 1 / (2 * (K + 1))
-  have hK0 : (0 : ℝ) ≤ K := K.2
+  
   have hκ0 : 0 < κ := by positivity
   set τ : ℝ := R / (2 * m + 2)
-  have hτ0 : 0 < τ := by positivity
-  refine ⟨X, _, m, R / 16, τ, κ / 2, hXl, hXb, by positivity, hτ0, by positivity, ?_⟩
+  
+  refine ⟨X, _, m, R / 16, τ, κ / 2, hXl, hXb, by positivity, (by positivity), by positivity, ?_⟩
   intro z hz t ht0 htτ
   obtain ⟨q, hq, hzq⟩ := exists_frontier_near_of_abs_signedDist_lt hΩne hΩu hz
   obtain ⟨p₀, hp₀T, hqp₀⟩ := mem_iUnion₂.mp (hTcov hq)
@@ -205,7 +212,7 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     linarith
   have hτm : t * m ≤ R / 2 := by
     have : τ * m ≤ R / 2 := by
-      simp only [τ]
+      simp [τ]
       rw [div_mul_eq_mul_div, div_le_iff₀ (by positivity)]
       nlinarith
     nlinarith
@@ -225,20 +232,19 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
       have hyp : ‖y - p‖ < min ρ H / 10 := by
         have : ‖y - p‖ ≤ ‖y - z‖ + ‖z - p‖ := by
           rw [← dist_eq_norm, ← dist_eq_norm, ← dist_eq_norm]; exact dist_triangle _ _ _
-        rw [← hR]; linarith
+        linarith
       have htw0 : 0 ≤ t * ψ p z := mul_nonneg ht0 (tentBump_nonneg _ _ _)
       have htw : t * ψ p z ≤ min ρ H / 10 := by
         have h1 : t * ψ p z ≤ t := mul_le_of_le_one_right ht0 (tentBump_le_one hR2 z)
         have h2 : τ ≤ R := by
           simp only [τ]; rw [div_le_iff₀ (by positivity)]; nlinarith
-        rw [← hR]; linarith
+        linarith
       have := signedDist_add_le_of_chart hΩo hΩne hΩu (hcf p (hFsub p hp)) (hFsub p hp) hyp
         htw0 htw
       convert this using 2
-      simp only [κ]; ring)
+      ring)
   have : κ / 2 * t ≤ κ * t * ∑ p ∈ F, ψ p z := by
     nlinarith [mul_nonneg (mul_nonneg hκ0.le ht0) (sub_nonneg.mpr hsum)]
-  simp only [X] at hchain ⊢
   linarith
 
 end PolyaNeumann

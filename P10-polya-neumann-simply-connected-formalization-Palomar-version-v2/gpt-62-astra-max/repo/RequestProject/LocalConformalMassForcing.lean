@@ -1,8 +1,11 @@
 module
 
+public import RequestProject.DiskCoordinates
+
 public import RequestProject.LocalConformalMass
 public import RequestProject.LpBoundedMultiplierReal
 public import RequestProject.DiskMassForcing
+public import RequestProject.PlanarNotation
 
 /-!
 # The physical mass forcing in conformal coordinates
@@ -18,6 +21,8 @@ set_option autoImplicit false
 
 noncomputable section
 
+open scoped ContDiff
+
 namespace PolyaNeumann
 
 open MeasureTheory Set Metric Filter
@@ -25,48 +30,42 @@ open scoped ComplexConjugate InnerProductSpace
 
 section
 
-variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) {C K : ℝ}
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
+section
 
-def localConformalMassForcing :
-    NeumannH1 (F '' ball (0 : ℂ) 1) →L[ℂ] L2 (ball (0 : ℂ) 1) :=
-  (lpBoundedMultiplier (localConformalMassDensity F)
-    (localConformalMassDensity_aemeasurable hR F hFs)
-    (localConformalMassDensity_ae_bound F hK)).comp
-      (localConformalMassPullback hR F hFs hL hK)
+variable (Φ : SmoothDiskMap) (hL : IsLipschitzDomain Φ.domain)
 
-include hb hhol hinj hC in
-theorem localConformal_mass_pairing
-    (v u : NeumannH1 (F '' ball (0 : ℂ) 1)) :
-    ⟪h1Value (F '' ball (0 : ℂ) 1) v, h1Value (F '' ball (0 : ℂ) 1) u⟫_ℂ =
-      ⟪h1Value (ball (0 : ℂ) 1) (localConformalH1Pullback hR F hFs hL v),
-        localConformalMassForcing hR F hFs hL hK u⟫_ℂ := by
-  rw [← localConformalMassPullback_inner hR F hFs hb hL hhol hinj hC hK v u]
-  change ⟪lpBoundedMultiplier (localConformalMassDensity F)
-      (localConformalMassDensity_aemeasurable hR F hFs)
-      (localConformalMassDensity_ae_bound F hK)
-      (h1Value (ball (0 : ℂ) 1) (localConformalH1Pullback hR F hFs hL v)),
-      localConformalMassPullback hR F hFs hL hK u⟫_ℂ = _
-  exact inner_lpBoundedMultiplier_real (localConformalMassDensity F)
-    (localConformalMassDensity_aemeasurable hR F hFs)
-    (localConformalMassDensity_ae_bound F hK)
+include hL in
+def SmoothDiskMap.massForcing {K : ℝ} (hK : ∀ z ∈ unitDisk, ‖fderiv ℝ Φ.map z 1‖ ≤ K) :
+    NeumannH1 Φ.domain →L[ℂ] L2 unitDisk :=
+  (lpBoundedMultiplier (localConformalMassDensity Φ.map)
+    (localConformalMassDensity_aemeasurable Φ)
+    (localConformalMassDensity_ae_bound Φ.map hK)).comp
+      (Φ.massPullback hL hK)
+
+theorem localConformal_mass_pairing (Φ : ControlledDiskMap)
+    (v u : NeumannH1 Φ.domain) :
+    ⟪h1Value Φ.domain v, h1Value Φ.domain u⟫_ℂ =
+      ⟪h1Value unitDisk (Φ.h1Pullback Φ.lipschitzDomain v),
+        Φ.massForcing Φ.lipschitzDomain Φ.deriv_upper u⟫_ℂ := by
+  rw [← localConformalMassPullback_inner Φ v u]
+  
+  exact inner_lpBoundedMultiplier_real (localConformalMassDensity Φ.map)
+    (localConformalMassDensity_aemeasurable Φ)
+    (localConformalMassDensity_ae_bound Φ.map Φ.deriv_upper)
     (Eventually.of_forall fun z => Complex.conj_ofReal _) _ _
 
-def localConformalMassFourierH1 :
-    NeumannH1 (F '' ball (0 : ℂ) 1) →L[ℂ] L2Z :=
-  diskMassForcingH1.comp (localConformalMassForcing hR F hFs hL hK)
+include hL in
+def SmoothDiskMap.massFourierH1 {K : ℝ} (hK : ∀ z ∈ unitDisk, ‖fderiv ℝ Φ.map z 1‖ ≤ K) :
+    NeumannH1 Φ.domain →L[ℂ] L2Z :=
+  diskMassForcingH1.comp (Φ.massForcing hL hK)
 
-@[simp] theorem localConformalMassFourierH1_apply
-    (u : NeumannH1 (F '' ball (0 : ℂ) 1)) (n : ℤ) :
-    localConformalMassFourierH1 hR F hFs hL hK u n =
+@[simp] theorem localConformalMassFourierH1_apply {K : ℝ} (hK : ∀ z ∈ unitDisk, ‖fderiv ℝ Φ.map z 1‖ ≤ K)
+    (u : NeumannH1 Φ.domain) (n : ℤ) :
+    Φ.massFourierH1 hL hK u n =
       (sobWeight n : ℂ) *
-        diskMassForcingCoeff (localConformalMassForcing hR F hFs hL hK u) n := rfl
+        diskMassForcingCoeff (Φ.massForcing hL hK u) n := rfl
+
+end
 
 end
 

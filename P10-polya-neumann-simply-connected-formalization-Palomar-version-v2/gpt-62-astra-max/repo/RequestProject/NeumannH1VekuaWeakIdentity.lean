@@ -26,19 +26,23 @@ namespace PolyaNeumann
 open MeasureTheory Set
 open scoped ComplexConjugate InnerProductSpace
 
+section
+
+variable (Ω : Set ℂ) (u : NeumannH1 Ω)
+
 /-- The genuine weak derivative `(∂x - i∂y)/2`. -/
-def h1WirtingerD (Ω : Set ℂ) : NeumannH1 Ω →L[ℂ] L2 Ω :=
+def h1WirtingerD : NeumannH1 Ω →L[ℂ] L2 Ω :=
   (1 / 2 : ℂ) • (h1Gradient Ω 0 - Complex.I • h1Gradient Ω 1)
 
 /-- The genuine weak derivative `(∂x + i∂y)/2`. -/
-def h1WirtingerDbar (Ω : Set ℂ) : NeumannH1 Ω →L[ℂ] L2 Ω :=
+def h1WirtingerDbar : NeumannH1 Ω →L[ℂ] L2 Ω :=
   (1 / 2 : ℂ) • (h1Gradient Ω 0 + Complex.I • h1Gradient Ω 1)
 
-theorem h1WirtingerD_apply (Ω : Set ℂ) (u : NeumannH1 Ω) :
+theorem h1WirtingerD_apply :
     h1WirtingerD Ω u =
       (1 / 2 : ℂ) • (h1Gradient Ω 0 u - Complex.I • h1Gradient Ω 1 u) := rfl
 
-theorem h1WirtingerDbar_apply (Ω : Set ℂ) (u : NeumannH1 Ω) :
+theorem h1WirtingerDbar_apply :
     h1WirtingerDbar Ω u =
       (1 / 2 : ℂ) • (h1Gradient Ω 0 u + Complex.I • h1Gradient Ω 1 u) := rfl
 
@@ -48,18 +52,20 @@ theorem h1WirtingerD_eq_zero_of_antiholomorphic {Ω : Set ℂ} (u : NeumannH1 Ω
   rw [h1WirtingerD_apply, hu, sub_self, smul_zero]
 
 /-- A computation barrier for the completed H¹ Cauchy--Riemann equation. -/
-theorem h1WirtingerD_eq_zero_of_cauchyRiemann (Ω : Set ℂ) (u : NeumannH1 Ω)
+theorem h1WirtingerD_eq_zero_of_cauchyRiemann
     (hu : h1Gradient Ω 0 u = Complex.I • h1Gradient Ω 1 u) :
     h1WirtingerD Ω u = 0 := h1WirtingerD_eq_zero_of_antiholomorphic u hu
 
 /-- A genuine antiholomorphic primitive has the stated conjugate derivative. -/
-theorem h1WirtingerDbar_eq_value_of_components (Ω : Set ℂ) (u v : NeumannH1 Ω)
+theorem h1WirtingerDbar_eq_value_of_components (v : NeumannH1 Ω)
     (hx : h1Gradient Ω 0 u = h1Value Ω v)
     (hy : h1Gradient Ω 1 u = -Complex.I • h1Value Ω v) :
     h1WirtingerDbar Ω u = h1Value Ω v := by
   rw [h1WirtingerDbar_apply, hx, hy]
   simp only [smul_smul, mul_neg, Complex.I_mul_I, neg_neg, one_smul]
   module
+
+end
 
 /-- The affine H¹ product rule for the actual first Wirtinger derivative. -/
 theorem h1WirtingerD_neumannH1AffineMultiplier {Ω : Set ℂ}
@@ -93,7 +99,7 @@ theorem h1Value_neumannH1AffineMultiplier_pow {Ω : Set ℂ}
       (neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p) ^ j)
         (h1Value Ω u) := by
   induction j with
-  | zero => simp only [pow_zero, ContinuousLinearMap.one_apply]
+  | zero => rfl
   | succ j ih =>
     calc
       _ = neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p)
@@ -107,7 +113,7 @@ theorem h1WirtingerDbar_affine_pow {Ω : Set ℂ}
       (neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p) ^ j)
         (h1WirtingerDbar Ω u) := by
   induction j with
-  | zero => simp only [pow_zero, ContinuousLinearMap.one_apply]
+  | zero => rfl
   | succ j ih =>
     calc
       _ = neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p)
@@ -120,7 +126,7 @@ private theorem vekua_nat_succ_smul {V : Type*} [AddCommGroup V] [Module ℂ V]
     (j : ℕ) (x : V) :
     ((j + 1 : ℕ) : ℂ) • x + x = ((j + 1 + 1 : ℕ) : ℂ) • x := by
   have hc : ((j + 1 + 1 : ℕ) : ℂ) = ((j + 1 : ℕ) : ℂ) + 1 := by
-    simp only [Nat.cast_add, Nat.cast_one]
+    simp
   rw [hc, add_smul, one_smul]
 
 private theorem vekua_affine_successor {V : Type*} [NormedAddCommGroup V]
@@ -139,14 +145,9 @@ theorem h1WirtingerD_affine_pow_of_antiholomorphic {Ω : Set ℂ}
   have hzero := h1WirtingerD_eq_zero_of_antiholomorphic u hu
   induction j with
   | zero =>
-    simp only [zero_add, pow_one, pow_zero, ContinuousLinearMap.one_apply,
-      h1WirtingerD_neumannH1AffineMultiplier, hzero, map_zero, zero_add,
-      Nat.cast_one, one_smul]
+    simp [pow_one, pow_zero, h1WirtingerD_neumannH1AffineMultiplier, hzero, one_smul]
   | succ j ih =>
-    have hval : neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p)
-        (h1Value Ω ((neumannH1AffineMultiplier hb p ^ j) u)) =
-        h1Value Ω ((neumannH1AffineMultiplier hb p ^ (j + 1)) u) := by
-      rw [pow_succ', ContinuousLinearMap.mul_apply, h1Value_neumannH1AffineMultiplier]
+    
     calc
       _ = neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p)
           (h1WirtingerD Ω ((neumannH1AffineMultiplier hb p ^ (j + 1)) u)) +
@@ -158,6 +159,7 @@ theorem h1WirtingerD_affine_pow_of_antiholomorphic {Ω : Set ℂ}
         exact vekua_affine_successor (V := L2 Ω)
           (neumannAffineL2Multiplier p (neumannH1AffineBound_spec hb p)) j
           (h1Value Ω ((neumannH1AffineMultiplier hb p ^ j) u))
-          (h1Value Ω ((neumannH1AffineMultiplier hb p ^ (j + 1)) u)) hval
+          (h1Value Ω ((neumannH1AffineMultiplier hb p ^ (j + 1)) u)) (by
+            rw [pow_succ', ContinuousLinearMap.mul_apply, h1Value_neumannH1AffineMultiplier])
 
 end PolyaNeumann

@@ -1,7 +1,10 @@
 module
 
+public import RequestProject.CircleAnalysisNotation
+
 public import RequestProject.ObservationHSEnergy
 public import RequestProject.HilbertSchmidt
+public import RequestProject.PlanarNotation
 
 /-!
 # Lemma 6.3: the dual of the projected observation on `X = H^{-1/2}(𝕋)`
@@ -58,7 +61,11 @@ lemma hasSum_norm_inner_sq_hilbertBasis {ι : Type*} (b : HilbertBasis ι ℂ H)
 variable (ρ : ℤ → H) (hρ : Summable fun n => ‖ρ n‖ ^ 2)
 include hρ
 
-lemma memℓp_rowAnalysis (v : H) : Memℓp (fun n => ⟪ρ n, v⟫_ℂ) 2 := by
+section
+
+variable (v : H) (n : ℤ)
+
+lemma memℓp_rowAnalysis : Memℓp (fun n => ⟪ρ n, v⟫_ℂ) 2 := by
   refine memℓp_two_iff_summable.mpr ?_
   refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_) (hρ.mul_right (‖v‖ ^ 2))
   rw [← mul_pow]
@@ -75,12 +82,12 @@ def rowAnalysisLin : H →ₗ[ℂ] L2Z where
     ext n
     exact inner_smul_right (ρ n) v c
 
-lemma rowAnalysisLin_apply (v : H) (n : ℤ) :
+lemma rowAnalysisLin_apply :
     (rowAnalysisLin ρ hρ v : ℤ → ℂ) n = ⟪ρ n, v⟫_ℂ := rfl
 
-lemma norm_rowAnalysisLin_le (v : H) :
+lemma norm_rowAnalysisLin_le :
     ‖rowAnalysisLin ρ hρ v‖ ≤ Real.sqrt (∑' n, ‖ρ n‖ ^ 2) * ‖v‖ := by
-  have hS : 0 ≤ ∑' n, ‖ρ n‖ ^ 2 := tsum_nonneg fun _ => by positivity
+  
   have h2 : ‖rowAnalysisLin ρ hρ v‖ ^ 2 ≤ (∑' n, ‖ρ n‖ ^ 2) * ‖v‖ ^ 2 := by
     rw [norm_sq_L2Z, ← tsum_mul_right]
     refine (summable_norm_sq_L2Z _).tsum_le_tsum (fun n => ?_) (hρ.mul_right _)
@@ -88,14 +95,16 @@ lemma norm_rowAnalysisLin_le (v : H) :
     gcongr
     exact norm_inner_le_norm _ _
   have := Real.sqrt_le_sqrt h2
-  rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_mul hS, Real.sqrt_sq (norm_nonneg _)] at this
+  rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_mul (tsum_nonneg fun _ => by positivity), Real.sqrt_sq (norm_nonneg _)] at this
 
 /-- The analysis operator `v ↦ (⟨ρₙ, v⟩)ₙ : H → ℓ²(ℤ)`. -/
 def rowAnalysis : H →L[ℂ] L2Z :=
   (rowAnalysisLin ρ hρ).mkContinuous _ (norm_rowAnalysisLin_le ρ hρ)
 
-lemma rowAnalysis_apply (v : H) (n : ℤ) :
+lemma rowAnalysis_apply :
     (rowAnalysis ρ hρ v : ℤ → ℂ) n = ⟪ρ n, v⟫_ℂ := rfl
+
+end
 
 variable [CompleteSpace H]
 
@@ -105,25 +114,21 @@ def rowSynth : L2Z →L[ℂ] H := ContinuousLinearMap.adjoint (rowAnalysis ρ h�
 /-- `⟨v, ∑ₙ fₙ ρₙ⟩ = ∑ₙ ⟨v, ρₙ⟩ fₙ`. -/
 lemma inner_rowSynth (v : H) (f : L2Z) :
     ⟪v, rowSynth ρ hρ f⟫_ℂ = ∑' n, ⟪v, ρ n⟫_ℂ * f n := by
-  rw [rowSynth, ContinuousLinearMap.adjoint_inner_right, lp.inner_eq_tsum]
-  refine tsum_congr fun n => ?_
-  rw [rowAnalysis_apply, ← inner_conj_symm v (ρ n)]
-  simp [mul_comm]
+  simp [rowSynth, ContinuousLinearMap.adjoint_inner_right, lp.inner_eq_tsum, rowAnalysis_apply, mul_comm]
 
 /-- The synthesis operator sends the `n`-th standard basis vector to `ρₙ`. -/
 lemma rowSynth_stdBasisZ (n : ℤ) : rowSynth ρ hρ (stdBasisZ n) = ρ n := by
   refine ext_inner_left ℂ fun v => ?_
   rw [inner_rowSynth, stdBasisZ_apply, tsum_eq_single n]
-  · simp [lp.single_apply]
+  · simp
   · intro k hk
-    simp [lp.single_apply, hk]
+    simp [hk]
 
 /-- `‖∑ₙ fₙ ρₙ - ∑ₙ fₙ σₙ‖ ≤ (∑ₙ ‖ρₙ - σₙ‖²)^{1/2} ‖f‖`. -/
 theorem norm_rowSynth_sub_le (σ : ℤ → H) (hσ : Summable fun n => ‖σ n‖ ^ 2) :
     ‖rowSynth ρ hρ - rowSynth σ hσ‖ ≤ Real.sqrt (∑' n, ‖ρ n - σ n‖ ^ 2) := by
   have hcol : ∀ n, (rowSynth ρ hρ - rowSynth σ hσ) (stdBasisZ n) = ρ n - σ n := by
-    intro n
-    rw [ContinuousLinearMap.sub_apply, rowSynth_stdBasisZ, rowSynth_stdBasisZ]
+    simp [rowSynth_stdBasisZ]
   have hs : Summable fun n => ‖ρ n - σ n‖ ^ 2 := by
     refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
       ((hρ.add hσ).mul_left 2)
@@ -153,29 +158,24 @@ theorem summable_weight_norm_sq_of_basis
         ∑' p : ι × ℤ, ((p.2 : ℝ)) ^ 2 * ‖⟪R p.2, b p.1⟫_ℂ‖ ^ 2 +
           2 * ∑' p : ι × ℤ, ‖⟪R p.2, b p.1⟫_ℂ‖ ^ 2 := by
   set g : ι × ℤ → ℝ := fun p => (1 + |(p.2 : ℝ)|) * ‖⟪R p.2, b p.1⟫_ℂ‖ ^ 2 with hg
-  have hle : ∀ p : ι × ℤ, g p ≤ ((p.2 : ℝ)) ^ 2 * ‖⟪R p.2, b p.1⟫_ℂ‖ ^ 2 +
+  have hle : ∀ p : ι × ℤ, g p ≤ (p.2) ^ 2 * ‖⟪R p.2, b p.1⟫_ℂ‖ ^ 2 +
       2 * ‖⟪R p.2, b p.1⟫_ℂ‖ ^ 2 := by
     intro p
     have hw : 1 + |(p.2 : ℝ)| ≤ (p.2 : ℝ) ^ 2 + 2 := by
       nlinarith [sq_abs (p.2 : ℝ), sq_nonneg (|(p.2 : ℝ)| - 1)]
-    have := mul_le_mul_of_nonneg_right hw (sq_nonneg ‖⟪R p.2, b p.1⟫_ℂ‖)
-    simp only [hg]
-    linarith
-  have hf : Summable fun p : ι × ℤ => ((p.2 : ℝ)) ^ 2 * ‖⟪R p.2, b p.1⟫_ℂ‖ ^ 2 +
-      2 * ‖⟪R p.2, b p.1⟫_ℂ‖ ^ 2 := h1.add (h2.mul_left 2)
-  have hg0 : ∀ p, 0 ≤ g p := fun p => by simp only [hg]; positivity
-  have hgs : Summable g := Summable.of_nonneg_of_le hg0 hle hf
+    nlinarith
+  have hf  := h1.add (h2.mul_left 2)
+  
+  have hgs  := Summable.of_nonneg_of_le (fun p => by positivity) hle hf
   have hgs' : Summable fun q : ℤ × ι => g q.swap :=
     (Equiv.prodComm ℤ ι).summable_iff.mpr hgs
   have hrow : ∀ n : ℤ, HasSum (fun j => g (n, j).swap) ((1 + |(n : ℝ)|) * ‖R n‖ ^ 2) := by
     intro n
     have hp := (hasSum_norm_inner_sq_hilbertBasis b (R n)).mul_left (1 + |(n : ℝ)|)
     refine hp.congr_fun fun j => ?_
-    simp only [hg, Prod.swap_prod_mk]
-    rw [norm_inner_symm]
-  have hsum : Summable fun n : ℤ => (1 + |(n : ℝ)|) * ‖R n‖ ^ 2 :=
-    hgs'.prod.congr fun n => (hrow n).tsum_eq
-  refine ⟨hsum, ?_⟩
+    simp [hg, norm_inner_symm]
+  
+  refine ⟨(hgs'.prod.congr fun n => (hrow n).tsum_eq), ?_⟩
   have htp : ∑' n : ℤ, (1 + |(n : ℝ)|) * ‖R n‖ ^ 2 = ∑' p, g p := by
     rw [← (Equiv.prodComm ℤ ι).tsum_eq g]
     change _ = ∑' q : ℤ × ι, g q.swap
@@ -190,22 +190,22 @@ end WeightedParseval
 
 /-- Fourier coefficients on `[0, 2π]` only depend on the values on `[0, 2π]`. -/
 lemma fourierCoeffOn_congr_Icc {F : Type*} [NormedAddCommGroup F] [NormedSpace ℂ F]
-    {f g : ℝ → F} (h : EqOn f g (Icc 0 (2 * π))) (n : ℤ) :
-    fourierCoeffOn two_pi_pos f n = fourierCoeffOn two_pi_pos g n := by
+    {f g : ℝ → F} (h : EqOn f g angleInterval) (n : ℤ) :
+    angleCoeff f n = angleCoeff g n := by
   rw [fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral]
   congr 1
   refine intervalIntegral.integral_congr fun θ hθ => ?_
   rw [uIcc_of_le two_pi_pos.le] at hθ
-  simp only [h hθ]
+  simp [h hθ]
 
 /-- Fourier coefficients on `[0, 2π]` are additive for functions continuous on `[0, 2π]`. -/
 lemma fourierCoeffOn_sub_of_continuousOn {F : Type*} [NormedAddCommGroup F] [NormedSpace ℂ F]
-    [CompleteSpace F] {f g : ℝ → F} (hf : ContinuousOn f (Icc 0 (2 * π)))
-    (hg : ContinuousOn g (Icc 0 (2 * π))) (n : ℤ) :
-    fourierCoeffOn two_pi_pos (fun θ => f θ - g θ) n =
-      fourierCoeffOn two_pi_pos f n - fourierCoeffOn two_pi_pos g n := by
-  have hc : ContinuousOn (fun x : ℝ => fourier (-n) (x : AddCircle (2 * π - 0)))
-      (uIcc 0 (2 * π)) :=
+    [CompleteSpace F] {f g : ℝ → F} (hf : ContinuousOn f angleInterval)
+    (hg : ContinuousOn g angleInterval) (n : ℤ) :
+    angleCoeff (fun θ => f θ - g θ) n =
+      angleCoeff f n - angleCoeff g n := by
+  have hc : ContinuousOn (fun x : ℝ => fourier (-n) (x : AddCircle (anglePeriod - 0)))
+      (uIcc 0 anglePeriod) :=
     ((map_continuous (fourier (-n))).comp continuous_quotient_mk').continuousOn
   rw [uIcc_of_le two_pi_pos.le] at hc
   rw [fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral,
@@ -219,18 +219,18 @@ lemma fourierCoeffOn_sub_of_continuousOn {F : Type*} [NormedAddCommGroup F] [Nor
     exact hc.smul hg
 
 /-- Pairing a vector Fourier coefficient with a vector: `⟨r̂(-n), v⟩ = (⟨r(·), v⟩)^(n)`. -/
-lemma inner_fourierCoeffOn_neg {r : ℝ → Ell2} (hr : ContinuousOn r (Icc 0 (2 * π))) (v : Ell2)
+lemma inner_fourierCoeffOn_neg {r : ℝ → Ell2} (hr : ContinuousOn r angleInterval) (v : Ell2)
     (n : ℤ) :
-    ⟪fourierCoeffOn two_pi_pos r (-n), v⟫_ℂ =
-      fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v⟫_ℂ) n := by
+    ⟪angleCoeff r (-n), v⟫_ℂ =
+      angleCoeff (fun θ => ⟪r θ, v⟫_ℂ) n := by
   rw [fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral, neg_neg,
     RCLike.real_smul_eq_coe_smul (K := ℂ)]
   rw [← Complex.coe_smul, inner_smul_left]
   have hint : IntervalIntegrable
-      (fun x : ℝ => fourier n (x : AddCircle (2 * π - 0)) • r x) volume 0 (2 * π) := by
+      (fun x : ℝ => fourier n (x : AddCircle (anglePeriod - 0)) • r x) volume 0 anglePeriod := by
     refine ContinuousOn.intervalIntegrable ?_
     rw [uIcc_of_le two_pi_pos.le]
-    exact ((map_continuous (fourier n)).comp continuous_quotient_mk').continuousOn.smul hr
+    fun_prop
   have h := ContinuousLinearMap.intervalIntegral_comp_comm (innerSL ℂ v) hint
   simp only [innerSL_apply_apply] at h
   rw [← inner_conj_symm]
@@ -238,34 +238,42 @@ lemma inner_fourierCoeffOn_neg {r : ℝ → Ell2} (hr : ContinuousOn r (Icc 0 (2
   rw [intervalIntegral.integral_of_le two_pi_pos.le,
     intervalIntegral.integral_of_le two_pi_pos.le, ← integral_conj]
   simp only [inner_smul_right, map_mul, inner_conj_symm, ← fourier_neg]
-  simp [smul_eq_mul, Complex.real_smul]
+  simp
   exact Or.inl (map_ofNat (starRingEnd ℂ) 2)
 
 section Concrete
 
-variable {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
+variable {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : TransportPath}
 
 /-- The standard Hilbert basis of `ℓ²(ℕ₀)`. -/
 def stdBasisN : HilbertBasis ℕ ℂ Ell2 := HilbertBasis.ofRepr (LinearIsometryEquiv.refl ℂ Ell2)
 
-lemma periodize_projObsRow_eqOn (hW : IsTransport γ E W) :
-    EqOn (periodize (projObsRow W)) (projObsRow W) (Icc 0 (2 * π)) :=
+section
+
+variable (hK : LipschitzWith K γ) (hW : IsTransport γ E W) (v : Ell2) (n : ℤ)
+
+include hW in
+lemma periodize_projObsRow_eqOn :
+    EqOn (periodize (projObsRow W)) (projObsRow W) angleInterval :=
   fun _ hθ => periodize_eqOn_Icc (projObsRow_endpoint hW) hθ
 
-lemma lipschitzWith_periodize_projObsRow (hK : LipschitzWith K γ) (hW : IsTransport γ E W) :
+include hK hW in
+lemma lipschitzWith_periodize_projObsRow :
     LipschitzWith ⟨Real.sqrt E * shiftConst * K, by have := shiftConst_nonneg; positivity⟩
       (periodize (projObsRow W)) :=
   lipschitzWith_periodize (fun _ hx _ hy => norm_projObsRow_sub_le hK hW hx hy)
     (projObsRow_endpoint hW)
 
-lemma continuousOn_projObsRow (hK : LipschitzWith K γ) (hW : IsTransport γ E W) :
-    ContinuousOn (projObsRow W) (Icc 0 (2 * π)) :=
+include hK hW in
+lemma continuousOn_projObsRow :
+    ContinuousOn (projObsRow W) angleInterval :=
   (lipschitzWith_periodize_projObsRow hK hW).continuous.continuousOn.congr
     (periodize_projObsRow_eqOn hW).symm
 
-lemma norm_projObsRow_le (hK : LipschitzWith K γ) (hW : IsTransport γ E W) {θ : ℝ}
-    (hθ : θ ∈ Icc 0 (2 * π)) : ‖projObsRow W θ‖ ≤ 1 := by
-  unfold projObsRow
+include hK hW in
+lemma norm_projObsRow_le {θ : ℝ}
+    (hθ : θ ∈ angleInterval) : ‖projObsRow W θ‖ ≤ 1 := by
+  
   refine (norm_cutProj_apply_le _ _).trans ?_
   refine ((ContinuousLinearMap.adjoint (W θ)).le_opNorm _).trans ?_
   rw [LinearIsometryEquiv.norm_map, show ‖basisVec 0‖ = 1 by simp [basisVec], mul_one]
@@ -273,36 +281,37 @@ lemma norm_projObsRow_le (hK : LipschitzWith K γ) (hW : IsTransport γ E W) {θ
 
 /-- The vector Fourier coefficient `r̂_E(-n)` of the projected observation row
 `r_E(θ) = Π^c_E W_E(θ)^* e₀`; it represents the `n`-th Fourier coefficient of `O_E Π^c_E`. -/
-def projObsCoeffVec (W : ℝ → Ell2 →L[ℂ] Ell2) (n : ℤ) : Ell2 :=
-  fourierCoeffOn two_pi_pos (projObsRow W) (-n)
+def projObsCoeffVec (W : TransportPath) (n : ℤ) : Ell2 :=
+  angleCoeff (projObsRow W) (-n)
 
+include hK hW in
 /-- `⟨r̂_E(-n), v⟩ = (O_E Π^c_E v)^(n)`. -/
-lemma inner_projObsCoeffVec (hK : LipschitzWith K γ) (hW : IsTransport γ E W) (v : Ell2)
-    (n : ℤ) :
-    ⟪projObsCoeffVec W n, v⟫_ℂ = fourierCoeffOn two_pi_pos
-      (fun θ => observation W (cutProj (cutC (W (2 * π)) (basisVec 0)) v) θ) n := by
+lemma inner_projObsCoeffVec :
+    ⟪projObsCoeffVec W n, v⟫_ℂ = angleCoeff
+      (fun θ => observation W (cutProj (cutVector W) v) θ) n := by
   rw [projObsCoeffVec, inner_fourierCoeffOn_neg (continuousOn_projObsRow hK hW)]
-  simp only [observation_cutProj_eq]
+  simp [observation_cutProj_eq]
 
-lemma inner_projObsCoeffVec_periodize (hK : LipschitzWith K γ) (hW : IsTransport γ E W)
-    (v : Ell2) (n : ℤ) :
+include hK hW in
+lemma inner_projObsCoeffVec_periodize :
     ⟪projObsCoeffVec W n, v⟫_ℂ =
-      fourierCoeffOn two_pi_pos (fun θ => ⟪periodize (projObsRow W) θ, v⟫_ℂ) n := by
+      angleCoeff (fun θ => ⟪periodize (projObsRow W) θ, v⟫_ℂ) n := by
   rw [projObsCoeffVec, inner_fourierCoeffOn_neg (continuousOn_projObsRow hK hW)]
   exact fourierCoeffOn_congr_Icc (fun θ hθ => by
-    simp only [periodize_projObsRow_eqOn hW hθ]) n
+    simp [periodize_projObsRow_eqOn hW hθ]) n
 
 /-- The normalized rows `ρₙ = λₙ^{1/2} r̂_E(-n)`, `λₙ = 1 + |n|`. -/
-def normProjObsRow (W : ℝ → Ell2 →L[ℂ] Ell2) (n : ℤ) : Ell2 :=
+def normProjObsRow (W : TransportPath) (n : ℤ) : Ell2 :=
   (Real.sqrt (1 + |(n : ℝ)|) : ℂ) • projObsCoeffVec W n
 
-lemma norm_normProjObsRow_sq (W : ℝ → Ell2 →L[ℂ] Ell2) (n : ℤ) :
+lemma norm_normProjObsRow_sq (W : TransportPath) (n : ℤ) :
     ‖normProjObsRow W n‖ ^ 2 = (1 + |(n : ℝ)|) * ‖projObsCoeffVec W n‖ ^ 2 := by
   rw [normProjObsRow, norm_smul, mul_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs,
     Real.sq_sqrt (by positivity)]
 
+include hK hW in
 /-- The coefficients `⟨r̂_E(-n), eⱼ⟩` satisfy the `H¹` and `L²` Hilbert–Schmidt bounds. -/
-lemma summable_inner_projObsCoeffVec (hK : LipschitzWith K γ) (hW : IsTransport γ E W) :
+lemma summable_inner_projObsCoeffVec :
     (Summable fun p : ℕ × ℤ =>
       ((p.2 : ℝ)) ^ 2 * ‖⟪projObsCoeffVec W p.2, stdBasisN p.1⟫_ℂ‖ ^ 2) ∧
     (Summable fun p : ℕ × ℤ => ‖⟪projObsCoeffVec W p.2, stdBasisN p.1⟫_ℂ‖ ^ 2) := by
@@ -315,8 +324,9 @@ lemma summable_inner_projObsCoeffVec (hK : LipschitzWith K γ) (hW : IsTransport
     rw [periodize_projObsRow_eqOn hW hθ]
     exact norm_projObsRow_le hK hW hθ
 
+include hK hW in
 /-- The normalized rows are square summable: `O_E Π^c_E : ℓ² → H^{1/2}(𝕋)` is Hilbert–Schmidt. -/
-theorem summable_normProjObsRow (hK : LipschitzWith K γ) (hW : IsTransport γ E W) :
+theorem summable_normProjObsRow :
     Summable fun n => ‖normProjObsRow W n‖ ^ 2 := by
   simp_rw [norm_normProjObsRow_sq]
   exact (summable_weight_norm_sq_of_basis stdBasisN (projObsCoeffVec W)
@@ -327,12 +337,14 @@ open Classical in
 extension of `T_E^♯ = Π^c_E O_E^*` to `X = H^{-1/2}(𝕋)` read in normalized Fourier coordinates:
 `f ↦ ∑ₙ fₙ λₙ^{1/2} r̂_E(-n)`. (It is set to `0` if the rows are not square summable, which
 does not happen for transports of Lipschitz curves.) -/
-def projObsDual (W : ℝ → Ell2 →L[ℂ] Ell2) : L2Z →L[ℂ] Ell2 :=
+def projObsDual (W : TransportPath) : L2Z →L[ℂ] Ell2 :=
   if h : Summable fun n => ‖normProjObsRow W n‖ ^ 2 then rowSynth (normProjObsRow W) h else 0
 
-lemma projObsDual_eq (hK : LipschitzWith K γ) (hW : IsTransport γ E W) :
+lemma projObsDual_eq :
     projObsDual W = rowSynth (normProjObsRow W) (summable_normProjObsRow hK hW) := by
   rw [projObsDual, dif_pos (summable_normProjObsRow hK hW)]
+
+end
 
 end Concrete
 
@@ -342,7 +354,7 @@ end Concrete
 lemma summable_mul_norm_sub_sq {α : Type*} {w : α → ℝ} (hw : ∀ p, 0 ≤ w p) {a b : α → ℂ}
     (ha : Summable fun p => w p * ‖a p‖ ^ 2) (hb : Summable fun p => w p * ‖b p‖ ^ 2) :
     Summable fun p => w p * ‖a p - b p‖ ^ 2 := by
-  refine Summable.of_nonneg_of_le (fun p => mul_nonneg (hw p) (sq_nonneg _)) (fun p => ?_)
+  refine Summable.of_nonneg_of_le ((by bound)) (fun p => ?_)
     ((ha.add hb).mul_left 2)
   have h1 := norm_sub_le (a p) (b p)
   have h2 : ‖a p - b p‖ ^ 2 ≤ 2 * ‖a p‖ ^ 2 + 2 * ‖b p‖ ^ 2 := by
@@ -351,33 +363,36 @@ lemma summable_mul_norm_sub_sq {α : Type*} {w : α → ℝ} (hw : ∀ p, 0 ≤ 
 
 section Energy
 
-variable {γ : ℝ → ℂ} {K : NNReal} {Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2}
+variable {γ : ℝ → ℂ} {K : NNReal} {Ws : ℝ → TransportPath}
 
-lemma inner_projObsCoeffVec_sub (hK : LipschitzWith K γ) (hWs : ∀ E, IsTransport γ E (Ws E))
-    (E₀ E : ℝ) (v : Ell2) (n : ℤ) :
-    ⟪projObsCoeffVec (Ws E) n - projObsCoeffVec (Ws E₀) n, v⟫_ℂ = fourierCoeffOn two_pi_pos
-      (fun θ => observation (Ws E) (cutProj (cutC (Ws E (2 * π)) (basisVec 0)) v) θ -
-        observation (Ws E₀) (cutProj (cutC (Ws E₀ (2 * π)) (basisVec 0)) v) θ) n := by
+section
+
+variable (hK : LipschitzWith K γ) (hWs : ∀ E, IsTransport γ E (Ws E)) (E₀ : ℝ)
+include hK hWs
+
+lemma inner_projObsCoeffVec_sub (E : ℝ) (v : Ell2) (n : ℤ) :
+    ⟪projObsCoeffVec (Ws E) n - projObsCoeffVec (Ws E₀) n, v⟫_ℂ = angleCoeff
+      (fun θ => observation (Ws E) (cutProj (cutVector (Ws E)) v) θ -
+        observation (Ws E₀) (cutProj (cutVector (Ws E₀)) v) θ) n := by
   have hcont : ∀ E', ContinuousOn
-      (fun θ => observation (Ws E') (cutProj (cutC (Ws E' (2 * π)) (basisVec 0)) v) θ)
-      (Icc 0 (2 * π)) := by
+      (fun θ => observation (Ws E') (cutProj (cutVector (Ws E')) v) θ)
+      angleInterval := by
     intro E'
-    simp only [observation_cutProj_eq]
+    simp [observation_cutProj_eq]
     exact (continuousOn_projObsRow hK (hWs E')).inner continuousOn_const
   rw [inner_sub_left, inner_projObsCoeffVec hK (hWs E), inner_projObsCoeffVec hK (hWs E₀),
     fourierCoeffOn_sub_of_continuousOn (hcont E) (hcont E₀)]
 
 /-- **Lemma 6.3 (continuity of the extended adjoint).** If `c_{E₀} ≠ 0`, then
 `E ↦ T_E^♯ Λ^{1/2}` is continuous at `E₀` in operator norm. -/
-theorem tendsto_projObsDual_energy (hK : LipschitzWith K γ)
-    (hWs : ∀ E, IsTransport γ E (Ws E)) (E₀ : ℝ) (hc : cutC (Ws E₀ (2 * π)) (basisVec 0) ≠ 0) :
+theorem tendsto_projObsDual_energy (hc : cutVector (Ws E₀) ≠ 0) :
     Tendsto (fun E => projObsDual (Ws E)) (𝓝 E₀) (𝓝 (projObsDual (Ws E₀))) := by
   rw [tendsto_iff_norm_sub_tendsto_zero]
-  have hA := tendsto_projected_observation_H1_energy hK hWs E₀ hc stdBasisN.orthonormal
-  have hB := tendsto_projected_observation_L2_energy hK hWs E₀ hc stdBasisN.orthonormal
-  have hlim := ((hA.add (hB.const_mul 2)).sqrt)
+  
+  
+  have hlim := (((tendsto_projected_observation_H1_energy hK hWs E₀ hc stdBasisN.orthonormal).add ((tendsto_projected_observation_L2_energy hK hWs E₀ hc stdBasisN.orthonormal).const_mul 2)).sqrt)
   rw [mul_zero, add_zero, Real.sqrt_zero] at hlim
-  refine squeeze_zero (fun E => norm_nonneg _) (fun E => ?_) hlim
+  refine squeeze_zero ((by norm_num)) (fun E => ?_) hlim
   rw [projObsDual_eq hK (hWs E), projObsDual_eq hK (hWs E₀)]
   refine (norm_rowSynth_sub_le _ _ _ _).trans (Real.sqrt_le_sqrt ?_)
   have hdiff : ∀ n : ℤ, ‖normProjObsRow (Ws E) n - normProjObsRow (Ws E₀) n‖ ^ 2 =
@@ -386,16 +401,18 @@ theorem tendsto_projObsDual_energy (hK : LipschitzWith K γ)
     rw [normProjObsRow, normProjObsRow, ← smul_sub, norm_smul, mul_pow, Complex.norm_real,
       Real.norm_eq_abs, sq_abs, Real.sq_sqrt (by positivity)]
   simp_rw [hdiff]
-  have h1 := summable_mul_norm_sub_sq (fun p : ℕ × ℤ => sq_nonneg ((p.2 : ℤ) : ℝ))
+  have h1 := summable_mul_norm_sub_sq (fun p : ℕ × ℤ => (by positivity))
     (summable_inner_projObsCoeffVec hK (hWs E)).1 (summable_inner_projObsCoeffVec hK (hWs E₀)).1
-  have h2 := summable_mul_norm_sub_sq (w := fun _ : ℕ × ℤ => (1 : ℝ)) (fun _ => zero_le_one)
+  have h2 := summable_mul_norm_sub_sq  (fun _ => zero_le_one)
     (by simpa using (summable_inner_projObsCoeffVec hK (hWs E)).2)
     (by simpa using (summable_inner_projObsCoeffVec hK (hWs E₀)).2)
-  simp only [one_mul, ← inner_sub_left] at h1 h2
+  simp [← inner_sub_left] at h1 h2
   have key := (summable_weight_norm_sq_of_basis stdBasisN
     (fun n => projObsCoeffVec (Ws E) n - projObsCoeffVec (Ws E₀) n) h1 h2).2
-  simp only [inner_projObsCoeffVec_sub hK hWs] at key
+  simp [inner_projObsCoeffVec_sub hK hWs] at key
   exact key
+
+end
 
 end Energy
 
@@ -403,21 +420,7 @@ end Energy
 
 section Identification
 
-variable {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
-
-/-- The normalized coefficients `2π λₙ^{-1/2} ĝ(n)` of a continuous function form an `ℓ²(ℤ)`
-sequence. -/
-lemma memℓp_normalizedCoeff {g : ℝ → ℂ} (hg : Continuous g) :
-    Memℓp (fun n : ℤ => ((2 * π / Real.sqrt (1 + |(n : ℝ)|) : ℝ) : ℂ) *
-      fourierCoeffOn two_pi_pos g n) 2 := by
-  refine memℓp_two_iff_summable.mpr ?_
-  refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
-    ((hasSum_sq_fourierCoeffOn_of_continuous hg).summable.mul_left ((2 * π) ^ 2))
-  rw [norm_mul, mul_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs]
-  gcongr
-  have h1 : 1 ≤ Real.sqrt (1 + |(n : ℝ)|) := by
-    rw [Real.one_le_sqrt]; linarith [abs_nonneg (n : ℝ)]
-  exact div_le_self (by positivity) h1
+variable {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : TransportPath}
 
 end Identification
 
@@ -425,7 +428,7 @@ end Identification
 
 section Reduced
 
-variable {γ : ℝ → ℂ} {K : NNReal} {Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2}
+variable {γ : ℝ → ℂ} {K : NNReal} {Ws : ℝ → TransportPath}
 
 end Reduced
 

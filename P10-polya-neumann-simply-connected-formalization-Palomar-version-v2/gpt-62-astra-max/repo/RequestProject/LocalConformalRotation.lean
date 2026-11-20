@@ -1,11 +1,14 @@
 module
 
+public import RequestProject.DiskCoordinates
+
 public import RequestProject.LocalConformalArcReparam
 public import RequestProject.BoundaryOrigin
 public import RequestProject.BoundaryParamShift
 public import Mathlib.Analysis.Complex.Isometry
 public import Mathlib.Topology.OpenPartialHomeomorph.Composition
 public import Mathlib.MeasureTheory.Measure.OpenPos
+public import RequestProject.PlanarNotation
 
 /-!
 Rotation of the actual supplied conformal coordinates. Multiplication by
@@ -21,122 +24,129 @@ This module is part of the verified dependency chain.
 @[expose] public section
 set_option autoImplicit false
 noncomputable section
+open scoped ContDiff
+
 namespace PolyaNeumann
 
 open Set Metric MeasureTheory Filter
 open scoped Topology
 
+section
+
+variable (F : ℂ → ℂ) (t : ℝ) (z : ℂ) (r : ℝ)
+include t
+
 /-- The real linear isometry that rotates the actual complex plane. -/
-def localConformalRotationLIE (t : ℝ) : ℂ ≃ₗᵢ[ℝ] ℂ :=
+def localConformalRotationLIE : ℂ ≃ₗᵢ[ℝ] ℂ :=
   rotation (Circle.exp t)
 
+include z in
 /-- The actual rotation, with its coefficient visible for complex calculus. -/
-def localConformalRotation (t : ℝ) (z : ℂ) : ℂ := circleMap 0 1 t * z
+def localConformalRotation : ℂ := unitCirclePt t * z
 
-@[simp] theorem localConformalRotationLIE_apply (t : ℝ) (z : ℂ) :
+@[simp] theorem localConformalRotationLIE_apply :
     localConformalRotationLIE t z = localConformalRotation t z := by
   simp [localConformalRotationLIE, rotation_apply, Circle.coe_exp,
     localConformalRotation, circleMap_zero]
 
-theorem localConformalRotationLIE_coe (t : ℝ) :
+theorem localConformalRotationLIE_coe :
     (localConformalRotationLIE t : ℂ → ℂ) = localConformalRotation t :=
   funext (localConformalRotationLIE_apply t)
 
-@[simp] theorem localConformalRotation_zero (t : ℝ) :
-    localConformalRotation t 0 = 0 := by
-  simp [localConformalRotation]
-
-@[simp] theorem localConformalRotation_norm (t : ℝ) (z : ℂ) :
+@[simp] theorem localConformalRotation_norm :
     ‖localConformalRotation t z‖ = ‖z‖ := by
   simp [localConformalRotation]
 
-@[simp] theorem localConformalRotation_mem_ball (t : ℝ) (z : ℂ) (r : ℝ) :
+@[simp] theorem localConformalRotation_mem_ball :
     localConformalRotation t z ∈ ball (0 : ℂ) r ↔ z ∈ ball (0 : ℂ) r := by
-  simp only [mem_ball, dist_zero_right, localConformalRotation_norm]
+  simp
 
-@[simp] theorem localConformalRotation_mem_closedBall (t : ℝ) (z : ℂ) (r : ℝ) :
+@[simp] theorem localConformalRotation_mem_closedBall :
     localConformalRotation t z ∈ closedBall (0 : ℂ) r ↔
       z ∈ closedBall (0 : ℂ) r := by
-  simp only [mem_closedBall, dist_zero_right, localConformalRotation_norm]
+  simp
 
-@[simp] theorem localConformalRotation_mem_sphere (t : ℝ) (z : ℂ) (r : ℝ) :
-    localConformalRotation t z ∈ sphere (0 : ℂ) r ↔ z ∈ sphere (0 : ℂ) r := by
-  simp only [mem_sphere, dist_zero_right, localConformalRotation_norm]
-
-@[simp] theorem localConformalRotation_neg_left (t : ℝ) (z : ℂ) :
+@[simp] theorem localConformalRotation_neg_left :
     localConformalRotation (-t) (localConformalRotation t z) = z := by
   unfold localConformalRotation
   rw [← mul_assoc, circleMap_zero_mul, one_mul, neg_add_cancel]
   simp [circleMap]
 
-@[simp] theorem localConformalRotation_neg_right (t : ℝ) (z : ℂ) :
+@[simp] theorem localConformalRotation_neg_right :
     localConformalRotation t (localConformalRotation (-t) z) = z := by
   unfold localConformalRotation
   rw [← mul_assoc, circleMap_zero_mul, one_mul, add_neg_cancel]
   simp [circleMap]
 
-theorem localConformalRotation_injective (t : ℝ) :
+theorem localConformalRotation_injective :
     Function.Injective (localConformalRotation t) :=
   Function.LeftInverse.injective (localConformalRotation_neg_left t)
 
-theorem localConformalRotation_contDiff (t : ℝ) {n : WithTop ℕ∞} :
+theorem localConformalRotation_contDiff {n : WithTop ℕ∞} :
     ContDiff ℝ n (localConformalRotation t) := by
   rw [← localConformalRotationLIE_coe]
-  exact (localConformalRotationLIE t).contDiff
+  fun_prop
 
-theorem localConformalRotation_hasFDerivAt (t : ℝ) (z : ℂ) :
+theorem localConformalRotation_hasFDerivAt :
     HasFDerivAt (localConformalRotation t)
       (localConformalRotationLIE t : ℂ →L[ℝ] ℂ) z := by
   have h : HasFDerivAt (localConformalRotationLIE t)
       (localConformalRotationLIE t : ℂ →L[ℝ] ℂ) z :=
-    (localConformalRotationLIE t : ℂ →L[ℝ] ℂ).hasFDerivAt
+    (localConformalRotationLIE t).hasFDerivAt
   rw [localConformalRotationLIE_coe] at h
   exact h
 
-theorem localConformalRotation_hasDerivAt (t : ℝ) (z : ℂ) :
-    HasDerivAt (localConformalRotation t) (circleMap 0 1 t) z :=
-  hasDerivAt_const_mul (circleMap 0 1 t)
+theorem localConformalRotation_hasDerivAt :
+    HasDerivAt (localConformalRotation t) (unitCirclePt t) z :=
+  hasDerivAt_const_mul (unitCirclePt t)
 
-theorem localConformalRotation_image_ball (t : ℝ) (r : ℝ) :
+theorem localConformalRotation_image_ball :
     localConformalRotation t '' ball (0 : ℂ) r = ball (0 : ℂ) r := by
   apply Subset.antisymm
   · rintro _ ⟨z, hz, rfl⟩
-    exact (localConformalRotation_mem_ball t z r).mpr hz
+    aesop
   · intro z hz
     exact ⟨localConformalRotation (-t) z,
       (localConformalRotation_mem_ball (-t) z r).mpr hz,
       localConformalRotation_neg_right t z⟩
 
-theorem localConformalRotation_image_closedBall (t : ℝ) (r : ℝ) :
+theorem localConformalRotation_image_closedBall :
     localConformalRotation t '' closedBall (0 : ℂ) r = closedBall (0 : ℂ) r := by
   apply Subset.antisymm
   · rintro _ ⟨z, hz, rfl⟩
-    exact (localConformalRotation_mem_closedBall t z r).mpr hz
+    aesop
   · intro z hz
     exact ⟨localConformalRotation (-t) z,
       (localConformalRotation_mem_closedBall (-t) z r).mpr hz,
       localConformalRotation_neg_right t z⟩
 
+include F in
 /-- Rotation of the given coordinate map, with no replacement of its image. -/
-def localConformalRotate (F : ℂ → ℂ) (t : ℝ) : ℂ → ℂ :=
+def localConformalRotate : ℂ → ℂ :=
   F ∘ localConformalRotation t
 
-@[simp] theorem localConformalRotate_apply (F : ℂ → ℂ) (t : ℝ) (z : ℂ) :
-    localConformalRotate F t z = F (circleMap 0 1 t * z) := rfl
+@[simp] theorem localConformalRotate_apply :
+    localConformalRotate F t z = F (unitCirclePt t * z) := rfl
 
-theorem localConformalRotate_image_ball (F : ℂ → ℂ) (t r : ℝ) :
-    localConformalRotate F t '' ball (0 : ℂ) r = F '' ball (0 : ℂ) r := by
-  calc
-    _ = F '' (localConformalRotation t '' ball (0 : ℂ) r) :=
+theorem localConformalRotate_image_ball :
+    localConformalRotate F t '' ball (0 : ℂ) r = F '' ball (0 : ℂ) r := calc
+    _ = _ :=
       (image_image F (localConformalRotation t) _).symm
     _ = _ := by rw [localConformalRotation_image_ball]
 
-theorem localConformalRotate_image_closedBall (F : ℂ → ℂ) (t r : ℝ) :
-    localConformalRotate F t '' closedBall (0 : ℂ) r = F '' closedBall (0 : ℂ) r := by
-  calc
-    _ = F '' (localConformalRotation t '' closedBall (0 : ℂ) r) :=
+theorem localConformalRotate_image_closedBall :
+    localConformalRotate F t '' closedBall (0 : ℂ) r = F '' closedBall (0 : ℂ) r := calc
+    _ = _ :=
       (image_image F (localConformalRotation t) _).symm
     _ = _ := by rw [localConformalRotation_image_closedBall]
+
+end
+
+section
+
+variable (Φ : SmoothDiskMap) (F : ℂ → ℂ) (e : OpenPartialHomeomorph ℂ ℂ) (τ : ℝ → ℝ)
+    (hhol : DifferentiableOn ℂ Φ.map unitDisk) (hsource : closedDisk ⊆ e.source)
+    (hes : ContDiffOn ℝ ∞ e.symm e.target) (t θ : ℝ)
 
 theorem localConformalRotate_contDiffOn {F : ℂ → ℂ} {r : ℝ}
     {n : WithTop ℕ∞} (hF : ContDiffOn ℝ n F (ball (0 : ℂ) r)) (t : ℝ) :
@@ -161,8 +171,7 @@ theorem localConformalRotate_injOn_closedBall {F : ℂ → ℂ} {r : ℝ}
 theorem localConformalRotate_hasDerivAt {F : ℂ → ℂ} (t : ℝ) {z : ℂ}
     (hF : DifferentiableAt ℂ F (localConformalRotation t z)) :
     HasDerivAt (localConformalRotate F t)
-      (deriv F (localConformalRotation t z) * circleMap 0 1 t) z := by
-  exact hF.hasDerivAt.comp z (localConformalRotation_hasDerivAt t z)
+      (deriv F (localConformalRotation t z) * unitCirclePt t) z := hF.hasDerivAt.comp z (localConformalRotation_hasDerivAt t z)
 
 theorem localConformalRotate_deriv_norm {F : ℂ → ℂ} {r : ℝ}
     (hF : DifferentiableOn ℂ F (ball (0 : ℂ) r)) (t : ℝ)
@@ -174,12 +183,12 @@ theorem localConformalRotate_deriv_norm {F : ℂ → ℂ} {r : ℝ}
   simp
 
 theorem localConformalRotate_lower_deriv_bound {F : ℂ → ℂ} {C : ℝ}
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2) (t : ℝ) :
-    ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv (localConformalRotate F t) z‖ ^ 2 := by
+    (hhol : DifferentiableOn ℂ F unitDisk)
+    (hC : ∀ z ∈ unitDisk, 1 ≤ C * ‖deriv F z‖ ^ 2) (t : ℝ) :
+    ∀ z ∈ unitDisk, 1 ≤ C * ‖deriv (localConformalRotate F t) z‖ ^ 2 := by
   intro z hz
   rw [localConformalRotate_deriv_norm hhol t hz]
-  exact hC _ ((localConformalRotation_mem_ball t z 1).mpr hz)
+  aesop
 
 theorem localConformalRotate_fderiv {F : ℂ → ℂ} (t : ℝ) {z : ℂ}
     (hF : DifferentiableAt ℝ F (localConformalRotation t z)) (v : ℂ) :
@@ -187,84 +196,70 @@ theorem localConformalRotate_fderiv {F : ℂ → ℂ} (t : ℝ) {z : ℂ}
       fderiv ℝ F (localConformalRotation t z) (localConformalRotation t v) := by
   change fderiv ℝ (F ∘ localConformalRotation t) z v = _
   rw [(hF.hasFDerivAt.comp z (localConformalRotation_hasFDerivAt t z)).fderiv]
-  simp only [ContinuousLinearMap.comp_apply]
-  change fderiv ℝ F (localConformalRotation t z) (localConformalRotationLIE t v) = _
-  rw [localConformalRotationLIE_apply]
+  simp
 
-theorem localConformalRotate_closedDifferential_norm {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) (t : ℝ)
-    {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
-    ‖fderiv ℝ (localConformalRotate F t) z 1‖ =
-      ‖fderiv ℝ F (localConformalRotation t z) 1‖ := by
+include hhol in
+theorem localConformalRotate_closedDifferential_norm {z : ℂ} (hz : z ∈ closedDisk) :
+    ‖fderiv ℝ (localConformalRotate Φ.map t) z 1‖ =
+      ‖fderiv ℝ Φ.map (localConformalRotation t z) 1‖ := by
   have hzt := (localConformalRotation_mem_closedBall t z 1).mpr hz
   rw [localConformalRotate_fderiv t
-    ((hFs.contDiffAt (isOpen_ball.mem_nhds (closedBall_subset_ball hR hzt))).differentiableAt
+    ((Φ.smooth.contDiffAt (isOpen_ball.mem_nhds (closedBall_subset_ball Φ.one_lt_radius hzt))).differentiableAt
       (by simp)),
-    localConformal_fderiv_closedDisk hR F hFs hhol hzt]
-  simp [localConformalRotation]
+    localConformal_fderiv_closedDisk Φ hhol hzt]
+  simp
 
-theorem localConformalRotate_upper_differential_bound {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) {K : ℝ}
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K) (t : ℝ) :
-    ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ (localConformalRotate F t) z 1‖ ≤ K := by
+include hhol in
+theorem localConformalRotate_upper_differential_bound {K : ℝ}
+    (hK : ∀ z ∈ unitDisk, ‖fderiv ℝ Φ.map z 1‖ ≤ K) (t : ℝ) :
+    ∀ z ∈ unitDisk, ‖fderiv ℝ (localConformalRotate Φ.map t) z 1‖ ≤ K := by
   intro z hz
-  rw [localConformalRotate_closedDifferential_norm hR F hFs hhol t
+  rw [localConformalRotate_closedDifferential_norm Φ hhol t
     (ball_subset_closedBall hz)]
-  exact hK _ ((localConformalRotation_mem_ball t z 1).mpr hz)
+  aesop
 
 /-- The actual new boundary origin is the old point at parameter `t`. -/
-theorem physicalCircleTrace_localConformalRotate (F : ℂ → ℂ) (t θ : ℝ) :
+theorem physicalCircleTrace_localConformalRotate :
     physicalCircleTrace (localConformalRotate F t) θ = physicalCircleTrace F (θ + t) := by
-  simp only [physicalCircleTrace, localConformalRotate_apply, circleMap_zero_mul,
-    one_mul, add_comm t θ]
+  simp [physicalCircleTrace, circleMap_zero_mul, add_comm t θ]
 
 theorem physicalCircleTrace_localConformalRotate_lipschitz
     {F : ℂ → ℂ} {K : NNReal} (hΓ : LipschitzWith K (physicalCircleTrace F)) (t : ℝ) :
     LipschitzWith K (physicalCircleTrace (localConformalRotate F t)) := by
   apply LipschitzWith.of_dist_le_mul
   intro x y
-  simpa [physicalCircleTrace_localConformalRotate, Real.dist_eq] using
+  simpa [physicalCircleTrace_localConformalRotate] using
     hΓ.dist_le_mul (x + t) (y + t)
 
-@[simp] theorem physicalCircleTrace_localConformalRotate_zero (F : ℂ → ℂ) (t : ℝ) :
-    physicalCircleTrace (localConformalRotate F t) 0 = physicalCircleTrace F t := by
-  rw [physicalCircleTrace_localConformalRotate, zero_add]
-
-@[simp] theorem localConformalRotationLIE_symm (t : ℝ) :
+@[simp] theorem localConformalRotationLIE_symm :
     (localConformalRotationLIE t).symm = localConformalRotationLIE (-t) := by
   simp [localConformalRotationLIE, rotation_symm]
 
+include e t in
 /-- Precomposition of the supplied actual local homeomorphism by rotation. -/
-def localConformalRotatePartialHomeomorph (e : OpenPartialHomeomorph ℂ ℂ) (t : ℝ) :
+def localConformalRotatePartialHomeomorph :
     OpenPartialHomeomorph ℂ ℂ :=
   (localConformalRotationLIE t).toHomeomorph.transOpenPartialHomeomorph e
 
-@[simp] theorem localConformalRotatePartialHomeomorph_apply
-    (e : OpenPartialHomeomorph ℂ ℂ) (t : ℝ) (z : ℂ) :
+@[simp] theorem localConformalRotatePartialHomeomorph_apply (z : ℂ) :
     localConformalRotatePartialHomeomorph e t z = e (localConformalRotation t z) := by
   change e (localConformalRotationLIE t z) = _
   rw [localConformalRotationLIE_apply]
 
-@[simp] theorem localConformalRotatePartialHomeomorph_symm_apply
-    (e : OpenPartialHomeomorph ℂ ℂ) (t : ℝ) (w : ℂ) :
+@[simp] theorem localConformalRotatePartialHomeomorph_symm_apply (w : ℂ) :
     (localConformalRotatePartialHomeomorph e t).symm w =
       localConformalRotation (-t) (e.symm w) := by
   change (localConformalRotationLIE t).symm (e.symm w) = _
   rw [localConformalRotationLIE_symm, localConformalRotationLIE_apply]
 
-theorem localConformalRotatePartialHomeomorph_source
-    (e : OpenPartialHomeomorph ℂ ℂ) (t : ℝ) :
+theorem localConformalRotatePartialHomeomorph_source :
     (localConformalRotatePartialHomeomorph e t).source =
       localConformalRotation t ⁻¹' e.source := by
   ext z
   change localConformalRotationLIE t z ∈ e.source ↔ _
-  rw [localConformalRotationLIE_apply]
-  rfl
+  simp
 
-@[simp] theorem localConformalRotatePartialHomeomorph_target
-    (e : OpenPartialHomeomorph ℂ ℂ) (t : ℝ) :
+@[simp] theorem localConformalRotatePartialHomeomorph_target :
     (localConformalRotatePartialHomeomorph e t).target = e.target := rfl
 
 theorem localConformalRotatePartialHomeomorph_coe {F : ℂ → ℂ}
@@ -274,71 +269,37 @@ theorem localConformalRotatePartialHomeomorph_coe {F : ℂ → ℂ}
   rw [localConformalRotatePartialHomeomorph_apply, he]
   rfl
 
-theorem localConformalRotatePartialHomeomorph_closedDisk_source
-    (e : OpenPartialHomeomorph ℂ ℂ)
-    (hsource : closedBall (0 : ℂ) 1 ⊆ e.source) (t : ℝ) :
-    closedBall (0 : ℂ) 1 ⊆ (localConformalRotatePartialHomeomorph e t).source := by
+include hsource in
+theorem localConformalRotatePartialHomeomorph_closedDisk_source :
+    closedDisk ⊆ (localConformalRotatePartialHomeomorph e t).source := by
   rw [localConformalRotatePartialHomeomorph_source]
   intro z hz
-  exact hsource ((localConformalRotation_mem_closedBall t z 1).mpr hz)
+  aesop
 
-theorem localConformalRotatePartialHomeomorph_smoothInverse
-    (e : OpenPartialHomeomorph ℂ ℂ)
-    (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target) (t : ℝ) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (localConformalRotatePartialHomeomorph e t).symm
+include hes in
+theorem localConformalRotatePartialHomeomorph_smoothInverse :
+    ContDiffOn ℝ ∞ (localConformalRotatePartialHomeomorph e t).symm
       (localConformalRotatePartialHomeomorph e t).target := by
-  have hfun : ((localConformalRotatePartialHomeomorph e t).symm : ℂ → ℂ) =
-      localConformalRotation (-t) ∘ e.symm :=
-    funext (localConformalRotatePartialHomeomorph_symm_apply e t)
-  rw [localConformalRotatePartialHomeomorph_target, hfun]
+  
+  rw [localConformalRotatePartialHomeomorph_target, (funext (localConformalRotatePartialHomeomorph_symm_apply e t))]
   exact (localConformalRotation_contDiff (-t)).comp_contDiffOn hes
 
-/-- The smooth inverse forces the actual closed-disk real differential to
-be nonzero, including at the boundary. -/
-theorem localConformalRotation_closedDifferential_ne_zero_of_inverse
-    {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (e : OpenPartialHomeomorph ℂ ℂ) (he : (e : ℂ → ℂ) = F)
-    (hsource : closedBall (0 : ℂ) 1 ⊆ e.source)
-    (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target) :
-    ∀ z ∈ closedBall (0 : ℂ) 1, fderiv ℝ F z 1 ≠ 0 := by
-  intro z hz
-  have hzs := hsource hz
-  have hzt : F z ∈ e.target := by
-    rw [← he]
-    exact e.mapsTo hzs
-  have hdF := ((hFs.contDiffAt (isOpen_ball.mem_nhds (closedBall_subset_ball hR hz))).differentiableAt
-    (by simp)).hasFDerivAt
-  have hdG := ((hes.contDiffAt (e.open_target.mem_nhds hzt)).differentiableAt
-    (by simp)).hasFDerivAt
-  have hcomp := hdG.comp z hdF
-  have hid : HasFDerivAt (fun x : ℂ => x)
-      ((fderiv ℝ e.symm (F z)).comp (fderiv ℝ F z)) z := by
-    apply hcomp.congr_of_eventuallyEq
-    filter_upwards [e.open_source.mem_nhds hzs] with x hx
-    rw [← he]
-    exact (e.left_inv hx).symm
-  have hlin := hid.unique (hasFDerivAt_id z)
-  have hval := congrArg (fun A : ℂ →L[ℝ] ℂ => A 1) hlin
-  change fderiv ℝ e.symm (F z) (fderiv ℝ F z 1) = (1 : ℂ) at hval
-  intro hzero
-  rw [hzero, map_zero] at hval
-  exact zero_ne_one hval
-
+include t θ τ in
 /-- Rebase the genuine parameter lift at the selected conformal origin. -/
-def localConformalRotateTraceReparam (τ : ℝ → ℝ) (t : ℝ) (θ : ℝ) : ℝ :=
+def localConformalRotateTraceReparam : ℝ :=
   τ (θ + t) - τ t
 
-@[simp] theorem localConformalRotateTraceReparam_zero (τ : ℝ → ℝ) (t : ℝ) :
+@[simp] theorem localConformalRotateTraceReparam_zero :
     localConformalRotateTraceReparam τ t 0 = 0 := by
   simp [localConformalRotateTraceReparam]
+
+end
 
 theorem localConformalRotateTraceReparam_hasDerivAt {τ : ℝ → ℝ} {c : ℝ}
     (hτ : IsC1TraceReparam τ c) (t θ : ℝ) :
     HasDerivAt (localConformalRotateTraceReparam τ t) (deriv τ (θ + t)) θ := by
   show HasDerivAt (fun θ => τ (θ + t) - τ t) _ θ
-  simpa only [mul_one, Function.comp_def, id] using
-    (((hτ.contDiff.differentiable_one (θ + t)).hasDerivAt.comp θ
+  simpa using (((hτ.contDiff.differentiable_one (θ + t)).hasDerivAt.comp θ
       ((hasDerivAt_id θ).add_const t)).sub_const (τ t))
 
 theorem localConformalRotateTraceReparam_deriv {τ : ℝ → ℝ} {c : ℝ}
@@ -350,42 +311,38 @@ theorem localConformalRotateTraceReparam_deriv {τ : ℝ → ℝ} {c : ℝ}
 interval to a true pointwise bound on that interval. -/
 theorem IsC1TraceReparam.lower_pointwise {τ : ℝ → ℝ} {c : ℝ}
     (hτ : IsC1TraceReparam τ c) :
-    ∀ θ ∈ Icc (0 : ℝ) (2 * Real.pi), c ≤ deriv τ θ := by
+    ∀ θ ∈ angleInterval, c ≤ deriv τ θ := by
   have heq : EqOn (fun θ => max c (deriv τ θ)) (deriv τ)
-      (Icc (0 : ℝ) (2 * Real.pi)) := by
+      angleInterval := by
     apply Measure.eqOn_of_ae_eq
       (hτ.lower_ae.mono (fun θ hθ => max_eq_right hθ))
       (continuous_const.max hτ.contDiff.continuous_deriv_one).continuousOn
       hτ.contDiff.continuous_deriv_one.continuousOn
-    simpa only [closure_interior_Icc (ne_of_lt Real.two_pi_pos)] using
-      (subset_rfl : Icc (0 : ℝ) (2 * Real.pi) ⊆ Icc (0 : ℝ) (2 * Real.pi))
-  intro θ hθ
-  rw [← heq hθ]
-  exact le_max_left _ _
+    simpa using (subset_rfl : angleInterval ⊆ angleInterval)
+  grind
 
 theorem IsC1TraceReparam.deriv_periodic_of_add_period {τ : ℝ → ℝ} {c : ℝ}
     (hτ : IsC1TraceReparam τ c)
-    (hper : ∀ θ, τ (θ + 2 * Real.pi) = τ θ + 2 * Real.pi) :
-    Function.Periodic (deriv τ) (2 * Real.pi) := by
+    (hper : ∀ θ, τ (θ + anglePeriod) = τ θ + anglePeriod) :
+    Function.Periodic (deriv τ) anglePeriod := by
   intro θ
-  have hd : HasDerivAt (fun x => τ (x + 2 * Real.pi))
-      (deriv τ (θ + 2 * Real.pi)) θ := by
+  have hd : HasDerivAt (fun x => τ (x + anglePeriod))
+      (deriv τ (θ + anglePeriod)) θ := by
     simpa only [mul_one, Function.comp_def, id] using
-      (hτ.contDiff.differentiable_one (θ + 2 * Real.pi)).hasDerivAt.comp θ
-        ((hasDerivAt_id θ).add_const (2 * Real.pi))
-  have heq : (fun x => τ (x + 2 * Real.pi)) = fun x => τ x + 2 * Real.pi :=
-    funext hper
-  rw [heq] at hd
-  exact hd.unique ((hτ.contDiff.differentiable_one θ).hasDerivAt.add_const (2 * Real.pi))
+      (hτ.contDiff.differentiable_one (θ + anglePeriod)).hasDerivAt.comp θ
+        ((hasDerivAt_id θ).add_const anglePeriod)
+  
+  rw [(funext hper)] at hd
+  exact hd.unique ((hτ.contDiff.differentiable_one θ).hasDerivAt.add_const anglePeriod)
 
 /-- The period increment transports the original lower bound to the whole
 real line, rather than introducing a new global Jacobian premise. -/
 theorem IsC1TraceReparam.lower_global_of_add_period {τ : ℝ → ℝ} {c : ℝ}
     (hτ : IsC1TraceReparam τ c)
-    (hper : ∀ θ, τ (θ + 2 * Real.pi) = τ θ + 2 * Real.pi) (θ : ℝ) :
+    (hper : ∀ θ, τ (θ + anglePeriod) = τ θ + anglePeriod) (θ : ℝ) :
     c ≤ deriv τ θ := by
   let θ' := toIcoMod Real.two_pi_pos 0 θ
-  have hθ' : θ' ∈ Ico 0 (2 * Real.pi) := by
+  have hθ' : θ' ∈ angleIco := by
     simpa only [zero_add, θ'] using toIcoMod_mem_Ico Real.two_pi_pos 0 θ
   have heq : deriv τ θ' = deriv τ θ := by
     dsimp only [θ']
@@ -395,21 +352,20 @@ theorem IsC1TraceReparam.lower_global_of_add_period {τ : ℝ → ℝ} {c : ℝ}
 
 theorem localConformalRotateTraceReparam_isC1 {τ : ℝ → ℝ} {c : ℝ}
     (hτ : IsC1TraceReparam τ c)
-    (hper : ∀ θ, τ (θ + 2 * Real.pi) = τ θ + 2 * Real.pi) (t : ℝ) :
+    (hper : ∀ θ, τ (θ + anglePeriod) = τ θ + anglePeriod) (t : ℝ) :
     IsC1TraceReparam (localConformalRotateTraceReparam τ t) c := by
   obtain ⟨K, hK⟩ := hτ.lipschitz
   refine ⟨?_, ⟨K, ?_⟩, ?_, localConformalRotateTraceReparam_zero τ t, ?_,
     hτ.lower_pos, ?_⟩
   · intro x y hxy
-    change τ (x + t) - τ t ≤ τ (y + t) - τ t
-    exact sub_le_sub_right (hτ.monotone (add_le_add hxy (le_refl t))) (τ t)
+    exact sub_le_sub_right (hτ.monotone ((by bound))) (τ t)
   · apply LipschitzWith.of_dist_le_mul
     intro x y
-    simpa [localConformalRotateTraceReparam, Real.dist_eq] using
+    simpa [localConformalRotateTraceReparam] using
       hK.dist_le_mul (x + t) (y + t)
   · exact (hτ.contDiff.comp (contDiff_id.add contDiff_const)).sub contDiff_const
-  · dsimp only [localConformalRotateTraceReparam]
-    rw [add_comm (2 * Real.pi) t, hper]
+  · dsimp [localConformalRotateTraceReparam]
+    rw [add_comm anglePeriod t, hper]
     ring
   · apply Eventually.of_forall
     intro θ
@@ -417,11 +373,11 @@ theorem localConformalRotateTraceReparam_isC1 {τ : ℝ → ℝ} {c : ℝ}
     exact hτ.lower_global_of_add_period hper (θ + t)
 
 theorem localConformalRotateTraceReparam_add_period {τ : ℝ → ℝ}
-    (hper : ∀ θ, τ (θ + 2 * Real.pi) = τ θ + 2 * Real.pi) (t θ : ℝ) :
-    localConformalRotateTraceReparam τ t (θ + 2 * Real.pi) =
-      localConformalRotateTraceReparam τ t θ + 2 * Real.pi := by
-  dsimp only [localConformalRotateTraceReparam]
-  rw [show θ + 2 * Real.pi + t = (θ + t) + 2 * Real.pi by ring, hper]
+    (hper : ∀ θ, τ (θ + anglePeriod) = τ θ + anglePeriod) (t θ : ℝ) :
+    localConformalRotateTraceReparam τ t (θ + anglePeriod) =
+      localConformalRotateTraceReparam τ t θ + anglePeriod := by
+  dsimp [localConformalRotateTraceReparam]
+  rw [show θ + anglePeriod + t = (θ + t) + anglePeriod by ring, hper]
   ring
 
 end PolyaNeumann

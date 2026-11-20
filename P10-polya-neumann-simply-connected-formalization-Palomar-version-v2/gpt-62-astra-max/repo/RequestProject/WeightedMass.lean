@@ -37,8 +37,15 @@ lemma integrable_weight_inner {ρ : ℂ → ℝ} {C : ℝ}
   (L2.integrable_inner u v).bdd_mul (Complex.continuous_ofReal.comp_aestronglyMeasurable hρm)
     (hρb.mono fun w hw => by simpa [Complex.norm_real] using hw)
 
+section
+
+variable (ρ : ℕ → ℂ → ℝ) (C : ℝ) (hρm : ∀ n, AEStronglyMeasurable (ρ n) (volume.restrict Ω))
+    (hρb : ∀ n, ∀ᵐ w ∂(volume.restrict Ω), |ρ n w| ≤ C)
+    (hρt : ∀ᵐ w ∂(volume.restrict Ω), Tendsto (fun n => ρ n w) atTop (𝓝 1))
+    (S : Submodule ℂ (L2 Ω))
+
 /-- The weighted sesquilinear form `(u, v) ↦ ∫_Ω ρ ⟨u, v⟩` on a submodule of `L²(Ω)`. -/
-def weightedSesq (S : Submodule ℂ (L2 Ω)) {ρ : ℂ → ℝ} {C : ℝ}
+def weightedSesq {ρ : ℂ → ℝ} {C : ℝ}
     (hρm : AEStronglyMeasurable ρ (volume.restrict Ω))
     (hρb : ∀ᵐ w ∂(volume.restrict Ω), |ρ w| ≤ C) : S →ₗ⋆[ℂ] S →ₗ[ℂ] ℂ :=
   LinearMap.mk₂'ₛₗ (starRingEnd ℂ) (RingHom.id ℂ)
@@ -55,7 +62,6 @@ def weightedSesq (S : Submodule ℂ (L2 Ω)) {ρ : ℂ → ℝ} {C : ℝ}
       refine integral_congr_ae ?_
       filter_upwards [Lp.coeFn_smul c (u : L2 Ω)] with w hw
       rw [Submodule.coe_smul, hw, Pi.smul_apply, inner_smul_left]
-      simp only [starRingEnd_apply]
       ring)
     (fun u v₁ v₂ => by
       rw [← integral_add (integrable_weight_inner hρm hρb _ _)
@@ -67,33 +73,26 @@ def weightedSesq (S : Submodule ℂ (L2 Ω)) {ρ : ℂ → ℝ} {C : ℝ}
       rw [smul_eq_mul, ← integral_const_mul]
       refine integral_congr_ae ?_
       filter_upwards [Lp.coeFn_smul c (v : L2 Ω)] with w hw
-      rw [Submodule.coe_smul, hw, Pi.smul_apply, inner_smul_right, RingHom.id_apply]
-      ring)
+      simp [Submodule.coe_smul, hw, inner_smul_right] <;> ring)
 
-lemma weightedSesq_apply (S : Submodule ℂ (L2 Ω)) {ρ : ℂ → ℝ} {C : ℝ}
+lemma weightedSesq_apply {ρ : ℂ → ℝ} {C : ℝ}
     (hρm : AEStronglyMeasurable ρ (volume.restrict Ω))
     (hρb : ∀ᵐ w ∂(volume.restrict Ω), |ρ w| ≤ C) (u v : S) :
     weightedSesq S hρm hρb u v = ∫ w in Ω, (ρ w : ℂ) *
       inner ℂ (((u : L2 Ω) : ℂ → ℂ) w) (((v : L2 Ω) : ℂ → ℂ) w) := rfl
 
-lemma weightedSesq_self (S : Submodule ℂ (L2 Ω)) {ρ : ℂ → ℝ} {C : ℝ}
+lemma weightedSesq_self {ρ : ℂ → ℝ} {C : ℝ}
     (hρm : AEStronglyMeasurable ρ (volume.restrict Ω))
     (hρb : ∀ᵐ w ∂(volume.restrict Ω), |ρ w| ≤ C) (u : S) :
     weightedSesq S hρm hρb u u = (weightedMass Ω ρ u : ℂ) := by
   rw [weightedSesq_apply, weightedMass, ← integral_complex_ofReal]
-  refine integral_congr_ae (Eventually.of_forall fun w => ?_)
-  simp only [inner_self_eq_norm_sq_to_K]
-  rw [Complex.ofReal_mul, Complex.ofReal_pow]
-  rfl
+  simp
 
+include hρb hρm hρt in
 /-- Mass part of Lemma 10.11: for weights `ρ_n` on `Ω`, uniformly bounded and converging to `1`
 almost everywhere, `∫_Ω ρ_n |u|² → 1` uniformly on the unit sphere of every finite-dimensional
 subspace of `L²(Ω)`. -/
-theorem tendstoUniformlyOn_weightedMass (ρ : ℕ → ℂ → ℝ) (C : ℝ)
-    (hρm : ∀ n, AEStronglyMeasurable (ρ n) (volume.restrict Ω))
-    (hρb : ∀ n, ∀ᵐ w ∂(volume.restrict Ω), |ρ n w| ≤ C)
-    (hρt : ∀ᵐ w ∂(volume.restrict Ω), Tendsto (fun n => ρ n w) atTop (𝓝 1))
-    (S : Submodule ℂ (L2 Ω)) (hS : FiniteDimensional ℂ S) :
+theorem tendstoUniformlyOn_weightedMass (hS : FiniteDimensional ℂ S) :
     TendstoUniformlyOn (fun n u => weightedMass Ω (ρ n) u) (fun _ => 1) atTop
       ((S : Set (L2 Ω)) ∩ Metric.sphere 0 1) := by
   set b := Module.finBasis ℂ S
@@ -102,34 +101,34 @@ theorem tendstoUniformlyOn_weightedMass (ρ : ℕ → ℂ → ℝ) (C : ℝ)
   have hentries : ∀ r s, Tendsto (fun n => Bn n (b r) (b s)) atTop (𝓝 (B (b r) (b s))) := by
     intro r s
     have hB : B (b r) (b s) = ∫ w in Ω, inner ℂ (((b r : S) : L2 Ω) w) (((b s : S) : L2 Ω) w) := by
-      simp only [B, innerₛₗ_apply_apply, Submodule.coe_inner, L2.inner_def]
+      rfl
     rw [hB]
     refine tendsto_integral_of_dominated_convergence
-      (fun w => C * ‖inner ℂ (((b r : S) : L2 Ω) w) (((b s : S) : L2 Ω) w)‖)
+      (fun w => C * ‖inner ℂ (((b r) : L2 Ω) w) (((b s) : L2 Ω) w)‖)
       (fun n => (integrable_weight_inner (hρm n) (hρb n) _ _).aestronglyMeasurable)
       ((L2.integrable_inner _ _).norm.const_mul C) (fun n => ?_) ?_
     · filter_upwards [hρb n] with w hw
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-      exact mul_le_mul_of_nonneg_right hw (norm_nonneg _)
+      gcongr
     · filter_upwards [hρt] with w hw
       have := ((Complex.continuous_ofReal.tendsto 1).comp hw).mul_const
-        (inner ℂ (((b r : S) : L2 Ω) w) (((b s : S) : L2 Ω) w))
+        (inner ℂ (((b r) : L2 Ω) w) (((b s) : L2 Ω) w))
       simpa using this
   have hK : Bornology.IsBounded {u : S | ‖u‖ = 1} :=
     (Metric.isBounded_closedBall (x := (0 : S)) (r := 1)).subset fun u hu => by
       simp only [Set.mem_setOf_eq] at hu
       simp [hu]
   have hU := tendstoUniformlyOn_sesq_of_basis b Bn B hentries hK
-  have hU' := Complex.uniformContinuous_re.comp_tendstoUniformlyOn hU
+  
   intro t ht
-  filter_upwards [hU' t ht] with n hn
+  filter_upwards [(Complex.uniformContinuous_re.comp_tendstoUniformlyOn hU) t ht] with n hn
   rintro u ⟨huS, hu1⟩
   have h1 := hn ⟨u, huS⟩ (by simpa using hu1)
-  simp only [Function.comp_apply, Bn, weightedSesq_self, Complex.ofReal_re, B,
-    innerₛₗ_apply_apply, inner_self_eq_norm_sq_to_K] at h1
-  have hnorm : ‖(⟨u, huS⟩ : S)‖ = 1 := by simpa using hu1
-  rw [hnorm] at h1
-  simpa using h1
+  simp [Bn, weightedSesq_self, Complex.ofReal_re, B, inner_self_eq_norm_sq_to_K] at h1
+  
+  simpa [(by simpa using hu1)] using h1
+
+end
 
 end PolyaNeumann
 

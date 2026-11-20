@@ -1,5 +1,8 @@
 module
 
+public import Mathlib.MeasureTheory.Integral.Indicator
+public import RequestProject.CircleAnalysisNotation
+
 public import RequestProject.SmoothDomain
 public import RequestProject.Transport
 public import RequestProject.LipschitzChange
@@ -8,6 +11,7 @@ public import RequestProject.GreenWinding
 public import RequestProject.ExteriorConnected
 public import RequestProject.WeightedMass
 public import RequestProject.BZMap
+public import RequestProject.PlanarNotation
 
 /-!
 # The Ball–Zarnescu approximation (External theorem BZ and Section 10)
@@ -25,7 +29,7 @@ public import RequestProject.BZMap
 @[expose] public section
 
 open scoped Real ComplexConjugate
-open MeasureTheory Filter Topology
+open MeasureTheory Filter Topology Set
 
 noncomputable section
 
@@ -41,11 +45,8 @@ structure BallZarnescuApprox (Ω : Set ℂ) where
   /-- The homeomorphisms `f_n`. -/
   map : ℕ → ℂ ≃ₜ ℂ
   smooth : ∀ n, IsSmoothDomain (map n '' Ω)
-  subset : ∀ n, map n '' Ω ⊆ Ω
   /-- A common bi-Lipschitz constant. -/
   lip : NNReal
-  lipschitz : ∀ n, LipschitzOnWith lip (map n) (closure Ω)
-  lipschitz_symm : ∀ n, LipschitzOnWith lip (map n).symm (closure (map n '' Ω))
   /-- The boundary collars `C_n`. -/
   collar : ℕ → Set ℂ
   collar_closed : ∀ n, IsClosed (collar n)
@@ -58,6 +59,33 @@ structure BallZarnescuApprox (Ω : Set ℂ) where
   /-- The maps and their inverses are globally `lip`-Lipschitz. -/
   lipschitzWith : ∀ n, LipschitzWith lip (map n)
   lipschitzWith_symm : ∀ n, LipschitzWith lip (map n).symm
+
+namespace BallZarnescuApprox
+
+variable {Ω : Set ℂ} (A : BallZarnescuApprox Ω)
+
+lemma subset (n : ℕ) : A.map n '' Ω ⊆ Ω := (image_mono subset_closure).trans (A.closure_subset n)
+
+/-- Every interior point is eventually fixed, and the approximations lie in `Ω`. -/
+lemma area_tendsto (hb : Bornology.IsBounded Ω) (hΩ : IsOpen Ω) :
+    Tendsto (fun n => volume (A.map n '' Ω)) atTop (𝓝 (volume Ω)) := by
+  refine tendsto_measure_of_tendsto_indicator atTop (fun n => ((A.map n).isOpenMap _ hΩ).measurableSet)
+    hΩ.measurableSet hb.measure_lt_top.ne (.of_forall A.subset) fun x => ?_
+  by_cases hx : x ∈ Ω
+  · filter_upwards [A.collar_shrink x hx] with n hn
+    exact ⟨fun _ => hx, fun _ => ⟨x, hx, A.eq_self n x hn⟩⟩
+  · exact .of_forall fun n => ⟨fun h => A.subset n h, fun h => (hx h).elim⟩
+
+lemma fderiv_eq_id {n x} (h : x ∉ A.collar n) : fderiv ℝ (A.map n) x = ContinuousLinearMap.id ℝ ℂ := by
+  have he : (A.map n : ℂ → ℂ) =ᶠ[𝓝 x] id :=
+    Filter.mem_of_superset ((A.collar_closed n).isOpen_compl.mem_nhds h) (A.eq_self n)
+  rw [he.fderiv_eq, fderiv_id]
+
+lemma curve_tendsto {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) :
+    TendstoUniformlyOn (fun n => A.map n ∘ γ) γ atTop angleInterval :=
+  (A.tendsto.comp γ).mono fun _ hθ => frontier_subset_closure (hγ.image ▸ mem_image_of_mem γ hθ)
+
+end BallZarnescuApprox
 
 /-- External theorem BZ (Ball–Zarnescu, inner approximation case of Theorem 5.1(ii) and
 Remark 5.3), along the sequence `ε_n = ε₀/(n+2)`: a bounded Lipschitz domain admits the
@@ -78,43 +106,32 @@ theorem exists_ballZarnescu {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
       abs_of_pos (by positivity)] at this
     linarith [le_abs_self R]
   obtain ⟨S⟩ := exists_bzSetting hb hL hL.1.2.nonempty hΩu
-  set T : ℕ → ℝ := fun n => S.T₀ * (1 / ((n : ℝ) + 1))
+  set T : ℕ → ℝ := fun n => S.T₀ * (1 / (n + 1))
   have hTpos : ∀ n, 0 < T n := fun n => by have := S.T₀_pos; positivity
   have hTle : ∀ n, T n ≤ S.T₀ := fun n => by
     have := S.T₀_pos
-    have : 1 / ((n : ℝ) + 1) ≤ 1 := by
-      rw [div_le_one (by positivity)]; linarith [(n.cast_nonneg : (0 : ℝ) ≤ n)]
-    simp only [T]; nlinarith
+    bound
   have hTlim : Tendsto T atTop (𝓝 0) := by
-    have h := (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)).const_mul S.T₀
-    rwa [mul_zero] at h
+    grind [(tendsto_one_div_add_atTop_nhds_zero_nat ).const_mul S.T₀]
   choose D hD using fun n => exists_bzLevelData S (hTpos n) (hTle n)
   have hM := S.M_pos
   refine ⟨{
     map := fun n => (D n).homeo
     smooth := fun n => (D n).isSmoothDomain_image hL.1 hΩu
-    subset := fun n => by
-      rintro _ ⟨x, hx, rfl⟩
-      exact (D n).f_mem hL.1.1 hΩu hx
     lip := Real.toNNReal (max S.K₁ S.K₂)
-    lipschitz := fun n => ((D n).lipschitzWith_f.weaken
-      (Real.toNNReal_le_toNNReal (le_max_left _ _))).lipschitzOnWith
-    lipschitz_symm := fun n => ((D n).lipschitzWith_g.weaken
-      (Real.toNNReal_le_toNNReal (le_max_right _ _))).lipschitzOnWith
     collar := fun n => {x | |signedDist Ω x| ≤ 2 * S.M * T n}
     collar_closed := fun n =>
       isClosed_le (continuous_signedDist Ω).abs continuous_const
     eq_self := fun n x hx => by
-      have hx' : 2 * S.M * (D n).T < |signedDist Ω x| := by
-        rw [hD n]; exact not_le.mp hx
-      exact (D n).f_eq_self hx'
+      
+      apply (D n).f_eq_self
+      rw [hD n]; exact not_le.mp hx
     collar_shrink := fun x hx => by
-      have hd : 0 < signedDist Ω x := (signedDist_pos_iff hL.1.1 hΩu).mpr hx
+      have hd  := (signedDist_pos_iff hL.1.1 hΩu).mpr hx
       have h1 : Tendsto (fun n => 2 * S.M * T n) atTop (𝓝 0) := by
-        have h := hTlim.const_mul (2 * S.M)
-        rwa [mul_zero] at h
+        grind [hTlim.const_mul (2 * S.M)]
       filter_upwards [h1.eventually (gt_mem_nhds hd)] with n hn
-      simp only [not_le, abs_of_pos hd]
+      simp [not_le, abs_of_pos hd]
       exact hn
     tendsto := by
       rw [Metric.tendstoUniformlyOn_iff]
@@ -130,11 +147,11 @@ theorem exists_ballZarnescu {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
       rintro _ ⟨x, hx, rfl⟩
       exact (D n).f_mem_of_mem_closure hL.1.1 hΩu hx
     lip_pos := by
-      have : (0 : ℝ) < S.K₁ := by
+      have : 0 < S.K₁ := by
         unfold BZSetting.K₁
         have := S.La_nonneg; have := S.Lb_nonneg
         positivity
-      exact Real.toNNReal_pos.mpr (lt_of_lt_of_le this (le_max_left _ _))
+      positivity
     lipschitzWith := fun n => (D n).lipschitzWith_f.weaken
       (Real.toNNReal_le_toNNReal (le_max_left _ _))
     lipschitzWith_symm := fun n => (D n).lipschitzWith_g.weaken
@@ -149,54 +166,44 @@ theorem eventually_boundaryParam_ballZarnescu {Ω : Set ℂ} (hb : Bornology.IsB
     (A : BallZarnescuApprox Ω) :
     ∀ᶠ n in atTop, ∃ γ' : ℝ → ℂ, IsBoundaryParam (A.map n '' Ω) γ' ∧
       ∃ τ : ℝ → ℝ, Monotone τ ∧ (∃ Kτ, LipschitzWith Kτ τ) ∧ τ 0 = 0 ∧
-        τ (2 * π) = 2 * π ∧ γ' ∘ τ = A.map n ∘ γ := by
+        τ anglePeriod = anglePeriod ∧ γ' ∘ τ = A.map n ∘ γ := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
-  have hfr : ∀ θ, γ θ ∈ closure Ω := by
-    intro θ
-    have h1 : γ θ ∈ γ '' Set.Icc 0 (0 + 2 * π) := by
-      rw [hγ.periodic.image_Icc Real.two_pi_pos]; exact Set.mem_range_self θ
-    rw [zero_add, hγ.image] at h1
-    exact frontier_subset_closure h1
-  have hαL : ∀ n, LipschitzWith (A.lip * Kγ) (A.map n ∘ γ) := fun n =>
-    lipschitzOnWith_univ.mp ((A.lipschitz n).comp (hKγ.lipschitzOnWith (s := Set.univ))
-      fun θ _ => hfr θ)
-  have hαp : ∀ n, Function.Periodic (A.map n ∘ γ) (2 * π) := fun n θ => by
-    simp only [Function.comp, hγ.periodic θ]
-  have hαinj : ∀ n, Set.InjOn (A.map n ∘ γ) (Set.Ico 0 (2 * π)) := fun n =>
+  have hαL := fun n => (A.lipschitzWith n).comp hKγ
+  have hαp : ∀ n, Function.Periodic (A.map n ∘ γ) anglePeriod := fun n θ => by
+    simp [hγ.periodic θ]
+  have hαinj  := fun n =>
     (A.map n).injective.comp_injOn hγ.injOn
-  have hαim : ∀ n, (A.map n ∘ γ) '' Set.Icc 0 (2 * π) = frontier (A.map n '' Ω) := fun n => by
+  have hαim : ∀ n, (A.map n ∘ γ) '' angleInterval = frontier (A.map n '' Ω) := fun n => by
     rw [Set.image_comp, hγ.image, Homeomorph.image_frontier]
-  have htend : TendstoUniformlyOn (fun n => A.map n ∘ γ) γ atTop (Set.Icc 0 (2 * π)) :=
-    (A.tendsto.comp γ).mono (fun θ _ => hfr θ : Set.Icc 0 (2 * π) ⊆ γ ⁻¹' closure Ω)
-  have hconv := tendsto_integral_signedAreaDensity (K := max (A.lip * Kγ) Kγ)
+  have htend := A.curve_tendsto hγ
+  have hconv := tendsto_integral_signedAreaDensity 
     (fun n => (hαL n).weaken (le_max_left _ _)) (hKγ.weaken (le_max_right _ _)) hαp
     hγ.periodic htend
-  have harea0 : ∫ θ in (0 : ℝ)..(2 * π), signedAreaDensity γ θ = 2 * (volume Ω).toReal :=
+  have harea0 : ∫ₚ θ, signedAreaDensity γ θ = 2 * (volume Ω).toReal :=
     hγ.area
   rw [harea0] at hconv
-  have hpos : 0 < 2 * (volume Ω).toReal := by
+  
+  filter_upwards [hconv.eventually (Ioi_mem_nhds (by
     have := ENNReal.toReal_pos (hL.1.1.measure_pos volume hL.1.2.nonempty).ne'
       hb.measure_lt_top.ne
-    positivity
-  filter_upwards [hconv.eventually (Ioi_mem_nhds hpos)] with n hn
-  have hLn : IsLipschitzDomain (A.map n '' Ω) := (A.smooth n).isLipschitzDomain
-  have hbn : Bornology.IsBounded (A.map n '' Ω) := hb.subset (A.subset n)
-  have hext : IsConnected (closure (A.map n '' Ω))ᶜ :=
-    isConnected_compl_closure_of_frontier hbn hLn (by
-      rw [← hαim n]; exact isPreconnected_Icc.image _ (hαL n).continuous.continuousOn)
+    positivity))] with n hn
+  have hLn  := (A.smooth n).isLipschitzDomain
+  have hbn  := hb.subset (A.subset n)
+  
   obtain ⟨σ, hσ, hin, hout⟩ :=
-    windingNumber_pm_one_of_jordan hbn hLn (hαL n) (hαp n) (hαinj n) (hαim n) hext
+    windingNumber_pm_one_of_jordan hbn hLn (hαL n) (hαp n) (hαinj n) (hαim n) (isConnected_compl_closure_of_frontier hbn hLn (by
+      rw [← hαim n]; exact isPreconnected_Icc.image _ (hαL n).continuous.continuousOn))
   have harea := integral_signedAreaDensity_of_winding hLn.1.1 hbn (hαL n) (hαim n) σ hin hout
   obtain ⟨γ1, ⟨K1, hK1⟩, hper1, hinj1, him1, hspeed, harea1, τ, hτm, hτL, hτ0, hτ2, hτc⟩ :=
     exists_constSpeed_reparam (hαL n) (hαp n) (hαinj n)
   refine ⟨γ1, ⟨⟨K1, hK1⟩, hper1, hinj1, him1.trans (hαim n), hspeed, ?_⟩,
     τ, hτm, hτL, hτ0, hτ2, hτc⟩
-  show ∫ θ in (0 : ℝ)..(2 * π), signedAreaDensity γ1 θ = _
+  show ∫ₚ θ, signedAreaDensity γ1 θ = _
   rw [harea1, harea]
-  have hn' : 0 < ∫ θ in (0 : ℝ)..(2 * π), signedAreaDensity (A.map n ∘ γ) θ := hn
+  
   rcases hσ with rfl | rfl
   · ring
-  · rw [harea] at hn'
+  · rw [harea] at hn
     have : 0 ≤ (volume (A.map n '' Ω)).toReal := ENNReal.toReal_nonneg
     linarith
 

@@ -3,6 +3,7 @@ module
 public import RequestProject.TraceH1
 public import RequestProject.SmoothDiskCutoff
 public import Mathlib.Tactic.Ring
+public import RequestProject.PlanarNotation
 
 /-!
 # Actual smooth pullback tests in local disk coordinates
@@ -17,13 +18,15 @@ values and chain differential.
 
 noncomputable section
 
+open scoped ContDiff
+
 namespace PolyaNeumann
 
 open Set Metric
 
 /-- A global smooth test representing composition in a disk neighbourhood. -/
 def smoothDiskCompositionLin {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) :
+    (hF : ContDiffOn ℝ ∞ F (ball (0 : ℂ) R)) :
     smoothTraceTests →ₗ[ℂ] smoothTraceTests where
   toFun f := ⟨smoothDiskCutoff R hR ((f : ℂ → ℂ) ∘ F),
     smoothDiskCutoff_testFunction hR (f.property.1.comp_contDiffOn hF)⟩
@@ -42,18 +45,18 @@ def smoothDiskCompositionLin {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
     ring
 
 theorem smoothDiskCompositionLin_eq_closedDisk {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (f : smoothTraceTests) {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
+    (F : ℂ → ℂ) (hF : ContDiffOn ℝ ∞ F (ball (0 : ℂ) R))
+    (f : smoothTraceTests) {z : ℂ} (hz : z ∈ closedDisk) :
     smoothDiskCompositionLin hR F hF f z = f (F z) :=
-  smoothDiskCutoff_eq_closedDisk hR ((f : ℂ → ℂ) ∘ F) hz
+  smoothDiskCutoff_eq_closedDisk hR (f ∘ F) hz
 
 theorem fderiv_smoothDiskCompositionLin {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (f : smoothTraceTests) {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
+    (F : ℂ → ℂ) (hF : ContDiffOn ℝ ∞ F (ball (0 : ℂ) R))
+    (f : smoothTraceTests) {z : ℂ} (hz : z ∈ closedDisk) :
     fderiv ℝ (smoothDiskCompositionLin hR F hF f : ℂ → ℂ) z =
       (fderiv ℝ (f : ℂ → ℂ) (F z)).comp (fderiv ℝ F z) := by
   change fderiv ℝ (smoothDiskCutoff R hR ((f : ℂ → ℂ) ∘ F)) z = _
-  rw [fderiv_smoothDiskCutoff_eq hR ((f : ℂ → ℂ) ∘ F) hz]
+  rw [fderiv_smoothDiskCutoff_eq hR (f ∘ F) hz]
   exact fderiv_comp z (f.property.1.differentiable (by simp) (F z))
     ((hF.contDiffAt (isOpen_ball.mem_nhds (closedBall_subset_ball hR hz))).differentiableAt
       (by simp))

@@ -29,7 +29,7 @@ variable (η : ContDiffBump (0 : ℂ))
 lemma integrable_normed_mul {A : ℂ → ℝ} (hA : Continuous A) :
     Integrable (fun t => η.normed volume t * A t) volume :=
   (η.continuous_normed.mul hA).integrable_of_hasCompactSupport
-    (η.hasCompactSupport_normed.mul_right)
+    η.hasCompactSupport_normed.mul_right
 
 lemma integral_normed_mul_le {A B : ℂ → ℝ} (hA : Continuous A) (hB : Continuous B)
     (h : ∀ t : ℂ, ‖t‖ < η.rOut → A t ≤ B t) :
@@ -45,9 +45,9 @@ lemma integral_normed_mul_le {A B : ℂ → ℝ} (hA : Continuous A) (hB : Conti
 lemma integral_normed_mul_add_const {A : ℂ → ℝ} (hA : Continuous A) (c : ℝ) :
     ∫ t, η.normed volume t * (A t + c) = (∫ t, η.normed volume t * A t) + c := by
   have h1 : ∫ t, η.normed volume t * c = c := by
-    rw [integral_mul_const, η.integral_normed, one_mul]
+    simp [integral_mul_const, η.integral_normed]
   simp_rw [mul_add]
-  rw [integral_add (f := fun t => η.normed volume t * A t)
+  rw [integral_add 
     (g := fun t => η.normed volume t * c) (integrable_normed_mul η hA)
     ((η.continuous_normed.mul continuous_const).integrable_of_hasCompactSupport
       η.hasCompactSupport_normed.mul_right), h1]
@@ -65,14 +65,14 @@ theorem exists_smooth_transversal {d : ℂ → ℝ} (hd : LipschitzWith 2 d) {X 
   have hdc := hd.continuous
   set ρ : ℂ → ℝ := fun x => ∫ t, η.normed volume t * d (x - t)
   have hρeq : ρ = η.normed volume ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] d := by
-    funext x; simp [ρ, convolution_def]
+    rfl
   have hcont : ∀ x : ℂ, Continuous fun t : ℂ => d (x - t) := fun x => by fun_prop
   refine ⟨ρ, ?_, ?_, ?_, ?_⟩
   · rw [hρeq]
     exact η.hasCompactSupport_normed.contDiff_convolution_left _ η.contDiff_normed
       (hdc.locallyIntegrable)
-  · have hle : ∀ x y, ρ x ≤ ρ y + 2 * dist x y := fun x y => by
-      have := integral_normed_mul_le η (A := fun t => d (x - t))
+  · have hle  := fun x y => by
+      have := integral_normed_mul_le η 
         (B := fun t => d (y - t) + 2 * dist x y) (hcont x) ((hcont y).add continuous_const)
         (fun t _ => by
           have h1 := hd.dist_le_mul (x - t) (y - t)
@@ -81,8 +81,7 @@ theorem exists_smooth_transversal {d : ℂ → ℝ} (hd : LipschitzWith 2 d) {X 
           push_cast at this ⊢
           linarith)
       rwa [integral_normed_mul_add_const η (hcont y)] at this
-    refine LipschitzWith.of_le_add_mul 2 fun x y => ?_
-    push_cast; exact hle x y
+    exact LipschitzWith.of_le_add_mul 2 hle
   · intro x
     have hup := integral_normed_mul_le η (hcont x) (continuous_const (y := d x + 2 * δ))
       (fun t ht => by
@@ -90,7 +89,6 @@ theorem exists_smooth_transversal {d : ℂ → ℝ} (hd : LipschitzWith 2 d) {X 
         rw [Real.dist_eq, dist_eq_norm, show x - t - x = -t by ring, norm_neg] at h1
         have := (le_abs_self _).trans h1
         push_cast at this
-        rw [hηr] at ht
         nlinarith)
     have hlo := integral_normed_mul_le η (continuous_const (y := d x - 2 * δ)) (hcont x)
       (fun t ht => by
@@ -98,17 +96,16 @@ theorem exists_smooth_transversal {d : ℂ → ℝ} (hd : LipschitzWith 2 d) {X 
         rw [Real.dist_eq, dist_eq_norm, show x - t - x = -t by ring, norm_neg] at h1
         have := (neg_abs_le _).trans' (neg_le_neg h1)
         push_cast at this
-        rw [hηr] at ht
         nlinarith)
     have e1 : ∫ t, η.normed volume t * (d x + 2 * δ) = d x + 2 * δ := by
-      rw [integral_mul_const, η.integral_normed, one_mul]
+      simp [integral_mul_const, η.integral_normed]
     have e2 : ∫ t, η.normed volume t * (d x - 2 * δ) = d x - 2 * δ := by
-      rw [integral_mul_const, η.integral_normed, one_mul]
+      simp [integral_mul_const, η.integral_normed]
     rw [e1] at hup; rw [e2] at hlo
-    rw [abs_le]; constructor <;> simp only [ρ] <;> linarith
+    rw [abs_le]; grind
   · intro z hz s hs0 hsτ
     have := integral_normed_mul_le η (A := fun t => d (z - t) + (κ - 2 * LX * δ) * s)
-      (B := fun t => d (z + s * X z - t)) ((hcont z).add continuous_const) (hcont (z + s * X z))
+       ((by fun_prop)) (hcont (z + s * X z))
       (fun t ht => by
         rw [hηr] at ht
         have hU := hz t ht
@@ -121,13 +118,12 @@ theorem exists_smooth_transversal {d : ℂ → ℝ} (hd : LipschitzWith 2 d) {X 
           rw [← dist_eq_norm]
           refine (hX.dist_le_mul _ _).trans ?_
           rw [dist_eq_norm, show z - (z - t) = t by ring]
-          exact mul_le_mul_of_nonneg_left ht.le LX.2
+          nlinarith
         have h4 := (neg_abs_le _).trans' (neg_le_neg h2)
-        have h5 : s * ‖X z - X (z - t)‖ ≤ s * (LX * δ) := mul_le_mul_of_nonneg_left h3 hs0
+        
         push_cast at h4 ⊢
         nlinarith)
     rw [integral_normed_mul_add_const η (hcont z)] at this
-    simp only [ρ]
     convert this using 2
 
 end PolyaNeumann

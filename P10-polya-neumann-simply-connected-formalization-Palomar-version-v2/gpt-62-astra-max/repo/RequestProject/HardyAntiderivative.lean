@@ -39,9 +39,9 @@ theorem seqConv_eq_zero_of_strictNegative_nonpositive {a h : ℤ → ℂ}
     (ha : IsStrictNegativeFourierSupport a)
     (hh : IsNonpositiveFourierSupport h) {n : ℤ} (hn : 0 ≤ n) :
     seqConv a h n = 0 := by
-  unfold seqConv
+  
   calc
-    (∑' k, a k * h (n - k)) = ∑' _ : ℤ, (0 : ℂ) := by
+    _ = ∑' _ : ℤ, (0 : ℂ) := by
       apply tsum_congr
       intro k
       by_cases hk : 0 ≤ k

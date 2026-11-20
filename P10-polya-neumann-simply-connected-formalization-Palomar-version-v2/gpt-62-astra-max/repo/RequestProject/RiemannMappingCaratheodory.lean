@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.CircleAnalysisNotation
+
 public import RequestProject.RiemannMappingCapWinding
 public import Mathlib.Topology.ExtendFrom
 public import Mathlib.Analysis.Complex.CauchyIntegral
@@ -8,6 +10,8 @@ public import Mathlib.Analysis.Analytic.IsolatedZeros
 public import Mathlib.Analysis.SpecialFunctions.Complex.Arg
 public import Mathlib.Topology.Order.IntermediateValue
 public import Mathlib.Topology.Homeomorph.Lemmas
+public import RequestProject.LocalConformalBoundaryGeometry
+public import RequestProject.PlanarNotation
 
 /-!
 # The actual continuous closed-disk Riemann-map extension
@@ -32,161 +36,132 @@ namespace PolyaNeumann
 open Set Metric Filter MeasureTheory Complex
 open scoped Topology ComplexConjugate
 
+section
+
+variable (F : ℂ → ℂ) (hF : DifferentiableOn ℂ F unitDisk)
+
+include F in
 /-- The actual full-approach extension of the interior conformal map.
 Its continuity on the closed disk is proved below from the physical
 domain hypotheses. Values outside the closed disk are immaterial. -/
-def riemannMappingClosedExtension (F : ℂ → ℂ) : ℂ → ℂ :=
-  extendFrom (ball (0 : ℂ) 1) F
+def riemannMappingClosedExtension : ℂ → ℂ :=
+  extendFrom unitDisk F
 
+include hF in
 /-- The true extension retains every value of the supplied interior map. -/
-theorem riemannMappingClosedExtension_eqOn (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) :
-    EqOn (riemannMappingClosedExtension F) F (ball (0 : ℂ) 1) := by
+theorem riemannMappingClosedExtension_eqOn :
+    EqOn (riemannMappingClosedExtension F) F unitDisk := by
   intro z hz
   exact extendFrom_extends hF.continuousOn z hz
 
 /-- The full boundary limit supplies convergence at every closed-disk
 point; interior points use the actual holomorphic map's continuity. -/
 theorem riemannMapping_exists_limit_closedDisk
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω)
-    {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
-    ∃ p : ℂ, Tendsto F (𝓝[ball (0 : ℂ) 1] z) (𝓝 p) := by
-  have hn : ‖z‖ ≤ 1 := mem_closedBall_zero_iff.mp hz
+    {Ω : Set ℂ} {F : ℂ → ℂ} (hΦ : LipschitzUniformization Ω F)
+    {z : ℂ} (hz : z ∈ closedDisk) :
+    ∃ p : ℂ, Tendsto F (𝓝[unitDisk] z) (𝓝 p) := by
+  have hn  := mem_closedBall_zero_iff.mp hz
   rcases eq_or_lt_of_le hn with hn | hn
-  · obtain ⟨p, hp, _⟩ := riemannMapping_exists_unique_boundary_limit hb hL hsc F hF hinj himage hn
+  · obtain ⟨p, hp, _⟩ := riemannMapping_exists_unique_boundary_limit hΦ hn
     exact ⟨p, hp.2⟩
-  · exact ⟨F z, hF.continuousOn z (mem_ball_zero_iff.mpr hn)⟩
+  · exact ⟨F z, hΦ.holomorphic.continuousOn z (mem_ball_zero_iff.mpr hn)⟩
 
 /-- The actual closed-disk extension is continuous at boundary points
 with respect to all closed-disk approaches, not only interior rays. -/
 theorem riemannMappingClosedExtension_continuousOn
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω) :
-    ContinuousOn (riemannMappingClosedExtension F) (closedBall (0 : ℂ) 1) := by
+    {Ω : Set ℂ} {F : ℂ → ℂ} (hΦ : LipschitzUniformization Ω F) :
+    ContinuousOn (riemannMappingClosedExtension F) closedDisk := by
   apply continuousOn_extendFrom
-  · rw [closure_ball (0 : ℂ) (one_ne_zero : (1 : ℝ) ≠ 0)]
-  · intro z hz
-    exact riemannMapping_exists_limit_closedDisk hb hL hsc F hF hinj himage hz
+  · rw [closure_ball 0 one_ne_zero]
+  · grind [riemannMapping_exists_limit_closedDisk]
 
 /-- Every actual boundary value is in the physical frontier. This
 uses the previously constructed full limit, including its interior
 inverse exclusion of an interior image limit. -/
 theorem riemannMappingClosedExtension_mem_frontier
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω)
+    {Ω : Set ℂ} {F : ℂ → ℂ} (hΦ : LipschitzUniformization Ω F)
     {ζ : ℂ} (hζ : ‖ζ‖ = 1) : riemannMappingClosedExtension F ζ ∈ frontier Ω := by
-  obtain ⟨p, hp, _⟩ := riemannMapping_exists_unique_boundary_limit hb hL hsc F hF hinj himage hζ
-  have hζcl : ζ ∈ closure (ball (0 : ℂ) 1) := by
-    rw [closure_ball (0 : ℂ) (one_ne_zero : (1 : ℝ) ≠ 0), mem_closedBall_zero_iff, hζ]
+  obtain ⟨p, hp, _⟩ := riemannMapping_exists_unique_boundary_limit hΦ hζ
+  have hζcl : ζ ∈ closure unitDisk := by
+    rw [closure_ball 0 one_ne_zero, mem_closedBall_zero_iff, hζ]
   have he : riemannMappingClosedExtension F ζ = p := extendFrom_eq hζcl hp.2
-  exact he.symm ▸ hp.1
+  simp [*]
 
+include hF in
 /-- The extension has exactly the original open-disk physical image. -/
-theorem riemannMappingClosedExtension_open_image (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) :
-    riemannMappingClosedExtension F '' ball (0 : ℂ) 1 = F '' ball (0 : ℂ) 1 :=
+theorem riemannMappingClosedExtension_open_image :
+    riemannMappingClosedExtension F '' unitDisk = F '' unitDisk :=
   (riemannMappingClosedExtension_eqOn F hF).image_eq
 
-private theorem closedDisk_image_eq_closure_of_continuousOn (G : ℂ → ℂ)
-    (hG : ContinuousOn G (closedBall (0 : ℂ) 1)) :
-    G '' closedBall (0 : ℂ) 1 = closure (G '' ball (0 : ℂ) 1) := by
-  have hcl : closure (ball (0 : ℂ) 1) = closedBall (0 : ℂ) 1 :=
-    closure_ball (0 : ℂ) (one_ne_zero : (1 : ℝ) ≠ 0)
-  have hGc : ContinuousOn G (closure (ball (0 : ℂ) 1)) := by
-    simpa only [hcl] using hG
-  apply Subset.antisymm
-  · simpa only [hcl] using hGc.image_closure
-  · apply closure_minimal
-    · rintro w ⟨z, hz, rfl⟩
-      exact ⟨z, ball_subset_closedBall hz, rfl⟩
-    · exact ((isCompact_closedBall (0 : ℂ) 1).image_of_continuousOn hG).isClosed
+end
 
 /-- The compact closed-disk image is exactly the closure of the actual
 physical domain, obtained without boundary injectivity. -/
 theorem riemannMappingClosedExtension_closed_image
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω) :
-    riemannMappingClosedExtension F '' closedBall (0 : ℂ) 1 = closure Ω := by
-  rw [closedDisk_image_eq_closure_of_continuousOn _
-    (riemannMappingClosedExtension_continuousOn hb hL hsc F hF hinj himage),
-    riemannMappingClosedExtension_open_image F hF, himage]
+    {Ω : Set ℂ} {F : ℂ → ℂ} (hΦ : LipschitzUniformization Ω F) :
+    riemannMappingClosedExtension F '' closedDisk = closure Ω := by
+  rw [unitDisk_closed_image_eq_closure _
+    (riemannMappingClosedExtension_continuousOn hΦ),
+    riemannMappingClosedExtension_open_image F hΦ.holomorphic, hΦ.image]
 
 /-- The extension maps the actual unit circle onto the entire physical
 frontier. Surjectivity follows from the compact image identity; an
 interior source point cannot map to a frontier point. -/
 theorem riemannMappingClosedExtension_sphere_image
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω) :
-    riemannMappingClosedExtension F '' sphere (0 : ℂ) 1 = frontier Ω := by
+    {Ω : Set ℂ} {F : ℂ → ℂ} (hΦ : LipschitzUniformization Ω F) :
+    riemannMappingClosedExtension F '' diskSphere = frontier Ω := by
   apply Subset.antisymm
   · rintro w ⟨ζ, hζ, rfl⟩
-    exact riemannMappingClosedExtension_mem_frontier hb hL hsc F hF hinj himage
+    exact riemannMappingClosedExtension_mem_frontier hΦ
       (by simpa only [mem_sphere, dist_zero_right] using hζ)
   · intro w hw
     have hwcl := frontier_subset_closure hw
-    rw [← riemannMappingClosedExtension_closed_image hb hL hsc F hF hinj himage] at hwcl
+    rw [← riemannMappingClosedExtension_closed_image hΦ] at hwcl
     obtain ⟨z, hz, he⟩ := hwcl
     refine ⟨z, ?_, he⟩
-    have hn : ‖z‖ ≤ 1 := mem_closedBall_zero_iff.mp hz
+    have hn  := mem_closedBall_zero_iff.mp hz
     rcases eq_or_lt_of_le hn with hn | hn
-    · simpa only [mem_sphere, dist_zero_right] using hn
-    · have hzD : z ∈ ball (0 : ℂ) 1 := mem_ball_zero_iff.mpr hn
+    · simpa using hn
+    · have hzD  := mem_ball_zero_iff.mpr hn
       have hwΩ : w ∈ Ω := by
-        rw [← himage]
-        exact ⟨z, hzD, (riemannMappingClosedExtension_eqOn F hF hzD).symm.trans he⟩
-      rw [hL.1.1.frontier_eq] at hw
+        rw [← hΦ.image]
+        exact ⟨z, hzD, (riemannMappingClosedExtension_eqOn F hΦ.holomorphic hzD).symm.trans he⟩
+      rw [hΦ.lipschitz.1.1.frontier_eq] at hw
       exact False.elim (hw.2 hwΩ)
 
 /-- On the closed disk the actual interior image points have exactly
 the original interior source points as preimages. -/
 theorem riemannMappingClosedExtension_mem_domain_iff
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω)
-    {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
-    riemannMappingClosedExtension F z ∈ Ω ↔ z ∈ ball (0 : ℂ) 1 := by
+    {Ω : Set ℂ} {F : ℂ → ℂ} (hΦ : LipschitzUniformization Ω F)
+    {z : ℂ} (hz : z ∈ closedDisk) :
+    riemannMappingClosedExtension F z ∈ Ω ↔ z ∈ unitDisk := by
   constructor
   · intro hzin
-    have hn : ‖z‖ ≤ 1 := mem_closedBall_zero_iff.mp hz
+    have hn  := mem_closedBall_zero_iff.mp hz
     rcases eq_or_lt_of_le hn with hn | hn
-    · have hfront := riemannMappingClosedExtension_mem_frontier hb hL hsc F hF hinj himage hn
-      rw [hL.1.1.frontier_eq] at hfront
+    · have hfront := riemannMappingClosedExtension_mem_frontier hΦ hn
+      rw [hΦ.lipschitz.1.1.frontier_eq] at hfront
       exact False.elim (hfront.2 hzin)
     · exact mem_ball_zero_iff.mpr hn
   · intro hzD
-    rw [riemannMappingClosedExtension_eqOn F hF hzD, ← himage]
+    rw [riemannMappingClosedExtension_eqOn F hΦ.holomorphic hzD, ← hΦ.image]
     exact mem_image_of_mem F hzD
 
 /-- The extension is injective whenever one of its source points is
 interior. The only remaining injectivity question concerns two distinct
 points of the unit circle. -/
 theorem riemannMappingClosedExtension_eq_of_eq_of_mem_disk
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω)
-    {z w : ℂ} (hz : z ∈ ball (0 : ℂ) 1) (hw : w ∈ closedBall (0 : ℂ) 1)
+    {Ω : Set ℂ} {F : ℂ → ℂ} (hΦ : LipschitzUniformization Ω F)
+    {z w : ℂ} (hz : z ∈ unitDisk) (hw : w ∈ closedDisk)
     (he : riemannMappingClosedExtension F z = riemannMappingClosedExtension F w) : z = w := by
-  have hzΩ : riemannMappingClosedExtension F z ∈ Ω :=
-    (riemannMappingClosedExtension_mem_domain_iff hb hL hsc F hF hinj himage
+  have hzΩ  :=
+    (riemannMappingClosedExtension_mem_domain_iff hΦ
       (ball_subset_closedBall hz)).mpr hz
-  have hwD : w ∈ ball (0 : ℂ) 1 :=
-    (riemannMappingClosedExtension_mem_domain_iff hb hL hsc F hF hinj himage hw).mp (he ▸ hzΩ)
-  exact hinj hz hwD (by
-    rw [riemannMappingClosedExtension_eqOn F hF hz,
-      riemannMappingClosedExtension_eqOn F hF hwD] at he
+  have hwD  :=
+    (riemannMappingClosedExtension_mem_domain_iff hΦ hw).mp (he ▸ hzΩ)
+  exact hΦ.injective hz hwD (by
+    rw [riemannMappingClosedExtension_eqOn F hΦ.holomorphic hz,
+      riemannMappingClosedExtension_eqOn F hΦ.holomorphic hwD] at he
     exact he)
 
 /-- A physical frontier fiber of the actual continuous extension is
@@ -195,31 +170,28 @@ inverse image lies in any prescribed neighborhood of the fiber; the
 true connected graph region cannot split between disjoint neighborhoods.
 No monotonicity or connected-fiber premise is assumed. -/
 theorem riemannMappingClosedExtension_boundary_fiber_connected
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω)
+    {Ω : Set ℂ} {F : ℂ → ℂ} (hΦ : LipschitzUniformization Ω F)
     {p : ℂ} (hp : p ∈ frontier Ω) :
-    IsConnected (closedBall (0 : ℂ) 1 ∩ riemannMappingClosedExtension F ⁻¹' {p}) := by
+    IsConnected (closedDisk ∩ riemannMappingClosedExtension F ⁻¹' {p}) := by
   let G := riemannMappingClosedExtension F
-  let A := closedBall (0 : ℂ) 1 ∩ G ⁻¹' {p}
-  have hGc : ContinuousOn G (closedBall (0 : ℂ) 1) :=
-    riemannMappingClosedExtension_continuousOn hb hL hsc F hF hinj himage
-  have hEq : EqOn G F (ball (0 : ℂ) 1) := riemannMappingClosedExtension_eqOn F hF
+  let A := closedDisk ∩ G ⁻¹' {p}
+  have hGc  :=
+    riemannMappingClosedExtension_continuousOn hΦ
+  have hEq : EqOn G F unitDisk := riemannMappingClosedExtension_eqOn F hΦ.holomorphic
   have hAc : IsClosed A := hGc.preimage_isClosed_of_isClosed isClosed_closedBall isClosed_singleton
-  have hAk : IsCompact A :=
+  have hAk  :=
     (isCompact_closedBall (0 : ℂ) 1).of_isClosed_subset hAc inter_subset_left
   have hAne : A.Nonempty := by
-    have hpim : p ∈ G '' sphere (0 : ℂ) 1 := by
-      rw [riemannMappingClosedExtension_sphere_image hb hL hsc F hF hinj himage]
+    have hpim : p ∈ G '' diskSphere := by
+      rw [riemannMappingClosedExtension_sphere_image hΦ]
       exact hp
     obtain ⟨ζ, hζ, he⟩ := hpim
     exact ⟨ζ, sphere_subset_closedBall hζ, he⟩
   refine ⟨hAne, ?_⟩
   apply isPreconnected_iff_subset_of_disjoint_closed.mpr
   intro u v hu hv hAuv hAdisj
-  have hKu : IsCompact (A ∩ u) := hAk.inter_right hu
-  have hKv : IsCompact (A ∩ v) := hAk.inter_right hv
+  have hKu  := hAk.inter_right hu
+  have hKv  := hAk.inter_right hv
   have hKdisj : Disjoint (A ∩ u) (A ∩ v) := by
     apply Set.disjoint_left.mpr
     intro z hzu hzv
@@ -229,28 +201,23 @@ theorem riemannMappingClosedExtension_boundary_fiber_connected
   obtain ⟨U, V, hUo, hVo, hKuU, hKvV, hUV⟩ :=
     SeparatedNhds.of_isCompact_isCompact hKu hKv hKdisj
   have hAUV : A ⊆ U ∪ V := by
-    intro z hz
-    rcases hAuv hz with hzu | hzv
-    · exact Or.inl (hKuU ⟨hz, hzu⟩)
-    · exact Or.inr (hKvV ⟨hz, hzv⟩)
-  let T := closedBall (0 : ℂ) 1 \ (U ∪ V)
-  have hTk : IsCompact T := (isCompact_closedBall (0 : ℂ) 1).diff (hUo.union hVo)
-  have hGTk : IsCompact (G '' T) := hTk.image_of_continuousOn (hGc.mono diff_subset)
+    grind
+  let T := closedDisk \ (U ∪ V)
+  have hTk  := (isCompact_closedBall (0 : ℂ) 1).diff (hUo.union hVo)
+  have hGTk  := hTk.image_of_continuousOn (hGc.mono diff_subset)
   have hpnot : p ∉ G '' T := by
-    rintro ⟨z, hz, he⟩
-    exact hz.2 (hAUV ⟨hz.1, he⟩)
+    grind
   obtain ⟨d, hd, hdball⟩ := Metric.isOpen_iff.mp hGTk.isClosed.isOpen_compl p hpnot
-  obtain ⟨c, r, h, KC, f, hch, hBball⟩ := exists_small_chart hL hp hd
+  obtain ⟨c, r, h, KC, f, hch, hBball⟩ := exists_small_chart hΦ.lipschitz hp hd
   let B := chartBox p c r h
-  have hBo : IsOpen B := isOpen_chartBox p c r h
-  have hpB : p ∈ B := hch.center_mem_box
-  obtain ⟨J, hJ, hJm, hJF, hFJ⟩ := RiemannInterior.exists_holomorphic_inverse isOpen_ball
-    (convex_ball (0 : ℂ) 1).isPreconnected hF hinj
-  rw [himage] at hJ hJm hFJ
+  have hBo  := isOpen_chartBox p c r h
+  have hpB  := hch.center_mem_box
+  obtain ⟨J, hJ, hJm, hJF, hFJ⟩ := RiemannInterior.exists_holomorphic_inverse isOpen_ball hΦ.holomorphic hΦ.injective
+  rw [hΦ.image] at hJ hJm hFJ
   let S := J '' (Ω ∩ B)
-  have hSc : IsPreconnected S := (isPreconnected_chart_inter hch).image J
+  have hSc  := (isPreconnected_chart_inter hch).image J
     (hJ.continuousOn.mono inter_subset_left)
-  have hSclosedDisk : S ⊆ closedBall (0 : ℂ) 1 := by
+  have hSclosedDisk : S ⊆ closedDisk := by
     rintro z ⟨w, hw, rfl⟩
     exact ball_subset_closedBall (hJm hw.1)
   have hSG : MapsTo G S B := by
@@ -264,31 +231,30 @@ theorem riemannMappingClosedExtension_boundary_fiber_connected
     exact hdball (hBball (hSG hz)) hzim
   have hAcl : A ⊆ closure S := by
     intro ζ hζ
-    have hζcl : ζ ∈ closure (ball (0 : ℂ) 1) := by
+    have hζcl : ζ ∈ closure unitDisk := by
       rw [closure_ball (0 : ℂ) (one_ne_zero : (1 : ℝ) ≠ 0)]
       exact hζ.1
-    letI : NeBot (𝓝[ball (0 : ℂ) 1] ζ) := mem_closure_iff_nhdsWithin_neBot.mp hζcl
-    have hlim : Tendsto F (𝓝[ball (0 : ℂ) 1] ζ) (𝓝 p) := by
-      have ht := tendsto_extendFrom (riemannMapping_exists_limit_closedDisk hb hL hsc F hF hinj
-        himage hζ.1)
-      change Tendsto F (𝓝[ball (0 : ℂ) 1] ζ) (𝓝 (G ζ)) at ht
+    letI  := mem_closure_iff_nhdsWithin_neBot.mp hζcl
+    have hlim : Tendsto F (𝓝[unitDisk] ζ) (𝓝 p) := by
+      have ht := tendsto_extendFrom (riemannMapping_exists_limit_closedDisk hΦ hζ.1)
+      change Tendsto F (𝓝[unitDisk] ζ) (𝓝 (G ζ)) at ht
       rw [show G ζ = p from hζ.2] at ht
       exact ht
     have heB := hlim.eventually (hBo.mem_nhds hpB)
-    have heS : ∀ᶠ z in 𝓝[ball (0 : ℂ) 1] ζ, z ∈ S := by
+    have heS : ∀ᶠ z in 𝓝[unitDisk] ζ, z ∈ S := by
       filter_upwards [self_mem_nhdsWithin, heB] with z hz hzB
-      exact ⟨F z, ⟨himage ▸ mem_image_of_mem F hz, hzB⟩, hJF z hz⟩
+      exact ⟨F z, ⟨hΦ.image ▸ mem_image_of_mem F hz, hzB⟩, hJF z hz⟩
     exact mem_closure_of_tendsto
       ((tendsto_id : Tendsto (fun z : ℂ => z) (𝓝 ζ) (𝓝 ζ)).mono_left nhdsWithin_le_nhds) heS
   rcases hSc.subset_or_subset hUo hVo hUV hSUV with hSU | hSV
   · left
-    have hcl : closure S ⊆ Vᶜ := closure_minimal (hSU.trans hUV.subset_compl_right) hVo.isClosed_compl
+    have hcl  := closure_minimal (hSU.trans hUV.subset_compl_right) hVo.isClosed_compl
     intro z hz
     rcases hAuv hz with hzu | hzv
     · exact hzu
     · exact False.elim (hcl (hAcl hz) (hKvV ⟨hz, hzv⟩))
   · right
-    have hcl : closure S ⊆ Uᶜ := closure_minimal (hSV.trans hUV.symm.subset_compl_right) hUo.isClosed_compl
+    have hcl  := closure_minimal (hSV.trans hUV.symm.subset_compl_right) hUo.isClosed_compl
     intro z hz
     rcases hAuv hz with hzu | hzv
     · exact False.elim (hcl (hAcl hz) (hKuU ⟨hz, hzu⟩))
@@ -296,85 +262,79 @@ theorem riemannMappingClosedExtension_boundary_fiber_connected
 
 private theorem circleDensityCauchy_differentiableOn_of_zero_near
     (g : ℝ → ℂ) (hg : Continuous g) {ζ : ℂ} {d : ℝ} (hd : 0 < d)
-    (hzero : ∀ θ ∈ Icc (0 : ℝ) (2 * Real.pi),
-      ‖circleMap 0 1 θ - ζ‖ < d → g θ = 0) :
+    (hzero : ∀ θ ∈ angleInterval,
+      ‖unitCirclePt θ - ζ‖ < d → g θ = 0) :
     DifferentiableOn ℂ (fun w : ℂ =>
-      ∫ θ in (0 : ℝ)..(2 * Real.pi), g θ / (circleMap 0 1 θ - w))
+      ∫ₚ θ, g θ / (unitCirclePt θ - w))
       (ball ζ (d / 2)) := by
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn
-    (s := Icc (0 : ℝ) (2 * Real.pi)) hg.continuousOn
-  have hM0 : 0 ≤ M := (norm_nonneg (g 0)).trans (hM 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
-  have hsep (θ : ℝ) (_hθ : θ ∈ Icc (0 : ℝ) (2 * Real.pi))
-      (hfar : d ≤ ‖circleMap 0 1 θ - ζ‖) (w : ℂ) (hw : w ∈ ball ζ (d / 2)) :
-      d / 2 ≤ ‖circleMap 0 1 θ - w‖ := by
+     hg.continuousOn
+  have hM0  := (norm_nonneg (g 0)).trans (hM 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
+  have hsep (θ : ℝ) (_hθ : θ ∈ angleInterval)
+      (hfar : d ≤ ‖unitCirclePt θ - ζ‖) (w : ℂ) (hw : w ∈ ball ζ (d / 2)) :
+      d / 2 ≤ ‖unitCirclePt θ - w‖ := by
     have hw' : ‖w - ζ‖ < d / 2 := by simpa only [mem_ball, dist_eq_norm] using hw
-    have htri : ‖circleMap 0 1 θ - ζ‖ ≤ ‖circleMap 0 1 θ - w‖ + ‖w - ζ‖ := by
+    have htri : ‖unitCirclePt θ - ζ‖ ≤ ‖unitCirclePt θ - w‖ + ‖w - ζ‖ := by
       calc
-        _ = ‖(circleMap 0 1 θ - w) + (w - ζ)‖ := by congr 1; ring
+        _ = ‖(unitCirclePt θ - w) + (w - ζ)‖ := by congr 1; ring
         _ ≤ _ := norm_add_le _ _
     linarith
-  have hquot (θ : ℝ) (hθ : θ ∈ Icc (0 : ℝ) (2 * Real.pi))
+  have hquot (θ : ℝ) (hθ : θ ∈ angleInterval)
       (w : ℂ) (hw : w ∈ ball ζ (d / 2)) :
-      ‖g θ / (circleMap 0 1 θ - w)‖ ≤ M / (d / 2) := by
-    by_cases hn : ‖circleMap 0 1 θ - ζ‖ < d
+      ‖g θ / (unitCirclePt θ - w)‖ ≤ M / (d / 2) := by
+    by_cases hn : ‖unitCirclePt θ - ζ‖ < d
     · rw [hzero θ hθ hn, zero_div, norm_zero]
-      exact div_nonneg hM0 (half_pos hd).le
+      positivity
     · rw [norm_div]
-      exact div_le_div₀ hM0 (hM θ hθ) (half_pos hd)
-        (hsep θ hθ (le_of_not_gt hn) w hw)
-  have hderivBound (θ : ℝ) (hθ : θ ∈ Icc (0 : ℝ) (2 * Real.pi))
+      bound
+  have hderivBound (θ : ℝ) (hθ : θ ∈ angleInterval)
       (w : ℂ) (hw : w ∈ ball ζ (d / 2)) :
-      ‖g θ / (circleMap 0 1 θ - w) ^ 2‖ ≤ M / (d / 2) ^ 2 := by
-    by_cases hn : ‖circleMap 0 1 θ - ζ‖ < d
+      ‖g θ / (unitCirclePt θ - w) ^ 2‖ ≤ M / (d / 2) ^ 2 := by
+    by_cases hn : ‖unitCirclePt θ - ζ‖ < d
     · rw [hzero θ hθ hn, zero_div, norm_zero]
-      exact div_nonneg hM0 (sq_nonneg _)
+      positivity
     · rw [norm_div, norm_pow]
-      exact div_le_div₀ hM0 (hM θ hθ) (sq_pos_of_pos (half_pos hd))
-        ((sq_le_sq₀ (half_pos hd).le (norm_nonneg _)).mpr
-          (hsep θ hθ (le_of_not_gt hn) w hw))
+      bound
   intro w₀ hw₀
   have hmeas (w : ℂ) : AEStronglyMeasurable
-      (fun θ : ℝ => g θ / (circleMap 0 1 θ - w))
-      (volume.restrict (Ioc (0 : ℝ) (2 * Real.pi))) :=
+      (fun θ : ℝ => g θ / (unitCirclePt θ - w))
+      angleMeasure :=
     (hg.measurable.div ((measurable_circleMap 0 1).sub measurable_const)).aestronglyMeasurable
-  have hFi : Integrable (fun θ : ℝ => g θ / (circleMap 0 1 θ - w₀))
-      (volume.restrict (Ioc (0 : ℝ) (2 * Real.pi))) := by
-    apply (integrable_const (M / (d / 2))).mono' (hmeas w₀)
-    filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
-    exact hquot θ ⟨hθ.1.le, hθ.2⟩ w₀ hw₀
-  have hb : ∀ᵐ θ ∂volume.restrict (Ioc (0 : ℝ) (2 * Real.pi)),
+  
+  
+  have hdif : ∀ᵐ θ ∂angleMeasure,
       ∀ w ∈ ball ζ (d / 2),
-        ‖g θ / (circleMap 0 1 θ - w) ^ 2‖ ≤ M / (d / 2) ^ 2 := by
-    filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
-    exact hderivBound θ ⟨hθ.1.le, hθ.2⟩
-  have hdif : ∀ᵐ θ ∂volume.restrict (Ioc (0 : ℝ) (2 * Real.pi)),
-      ∀ w ∈ ball ζ (d / 2),
-        HasDerivAt (fun v : ℂ => g θ / (circleMap 0 1 θ - v))
-          (g θ / (circleMap 0 1 θ - w) ^ 2) w := by
+        HasDerivAt (fun v : ℂ => g θ / (unitCirclePt θ - v))
+          (g θ / (unitCirclePt θ - w) ^ 2) w := by
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
     intro w hw
-    have hθ' : θ ∈ Icc (0 : ℝ) (2 * Real.pi) := ⟨hθ.1.le, hθ.2⟩
-    by_cases hn : ‖circleMap 0 1 θ - ζ‖ < d
-    · simp only [hzero θ hθ' hn, zero_div]
+    have hθ' : θ ∈ angleInterval := (by grind)
+    by_cases hn : ‖unitCirclePt θ - ζ‖ < d
+    · simp [hzero θ hθ' hn, zero_div]
       exact hasDerivAt_const w 0
-    · have hne : circleMap 0 1 θ - w ≠ 0 := norm_pos_iff.mp
-        (lt_of_lt_of_le (half_pos hd) (hsep θ hθ' (le_of_not_gt hn) w hw))
+    · 
       have h := (hasDerivAt_const w (g θ)).div
-          ((hasDerivAt_const w (circleMap 0 1 θ)).sub (hasDerivAt_id w)) hne
-      simp only [Pi.div_apply, zero_mul, mul_neg, mul_one, zero_sub, neg_neg] at h
+          ((hasDerivAt_const w (unitCirclePt θ)).sub (hasDerivAt_id w)) (norm_pos_iff.mp
+            (lt_of_lt_of_le (half_pos hd) (hsep θ hθ' (le_of_not_gt hn) w hw)))
+      simp at h
       exact h
   have hdiff := hasDerivAt_integral_of_dominated_loc_of_deriv_le
-    (μ := volume.restrict (Ioc (0 : ℝ) (2 * Real.pi)))
-    (F := fun w θ => g θ / (circleMap 0 1 θ - w))
-    (F' := fun w θ => g θ / (circleMap 0 1 θ - w) ^ 2)
-    (bound := fun _ : ℝ => M / (d / 2) ^ 2)
-    (isOpen_ball.mem_nhds hw₀) (Eventually.of_forall hmeas) hFi
+    
+    
+    
+    
+    (isOpen_ball.mem_nhds hw₀) (Eventually.of_forall hmeas) (by
+      apply (integrable_const (M / (d / 2))).mono' (hmeas w₀)
+      filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
+      exact hquot θ ⟨hθ.1.le, hθ.2⟩ w₀ hw₀)
     (hg.measurable.div
       (((measurable_circleMap 0 1).sub measurable_const).pow_const 2)).aestronglyMeasurable
-    hb (integrable_const _) hdif
+    (by
+      filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
+      exact hderivBound θ ⟨hθ.1.le, hθ.2⟩) (integrable_const _) hdif
   have ht : HasDerivAt (fun w : ℂ =>
-      ∫ θ in (0 : ℝ)..(2 * Real.pi), g θ / (circleMap 0 1 θ - w))
-      (∫ θ in (0 : ℝ)..(2 * Real.pi), g θ / (circleMap 0 1 θ - w₀) ^ 2) w₀ := by
+      ∫ₚ θ, g θ / (unitCirclePt θ - w))
+      (∫ₚ θ, g θ / (unitCirclePt θ - w₀) ^ 2) w₀ := by
     simpa only [intervalIntegral.integral_of_le Real.two_pi_pos.le] using hdiff.2
   exact ht.differentiableAt.differentiableWithinAt
 
@@ -384,88 +344,79 @@ vanishes, then uses its exterior zero values and the analytic identity
 principle. No reflection theorem or boundary differentiability is a
 premise. -/
 theorem diffContOnCl_eq_zero_of_circle_patch
-    (G : ℂ → ℂ) (hG : DiffContOnCl ℂ G (ball (0 : ℂ) 1))
+    (G : ℂ → ℂ) (hG : DiffContOnCl ℂ G unitDisk)
     {ζ : ℂ} (hζ : ‖ζ‖ = 1) {d : ℝ} (hd : 0 < d)
-    (hzero : ∀ z ∈ sphere (0 : ℂ) 1, ‖z - ζ‖ < d → G z = 0) :
-    EqOn G 0 (ball (0 : ℂ) 1) := by
-  let C : ℂ → ℂ := fun w => circleIntegral (fun z => (z - w)⁻¹ * G z) 0 1
-  let g : ℝ → ℂ := fun θ => deriv (circleMap 0 1) θ * G (circleMap 0 1 θ)
-  have hγc : Continuous (circleMap (0 : ℂ) 1) := continuous_circleMap 0 1
-  have hgc : Continuous g :=
-    ((contDiff_circleMap 0 1 : ContDiff ℝ 1 (circleMap (0 : ℂ) 1)).continuous_deriv_one).mul
-      (hG.continuousOn_ball.comp_continuous hγc fun θ =>
-        sphere_subset_closedBall (circleMap_mem_sphere 0 zero_le_one θ))
+    (hzero : ∀ z ∈ diskSphere, ‖z - ζ‖ < d → G z = 0) :
+    EqOn G 0 unitDisk := by
+  let C  := fun w => circleIntegral (fun z => (z - w)⁻¹ * G z) 0 1
+  let g  := fun θ => deriv unitCirclePt θ * G (unitCirclePt θ)
+  
+  have hgc  :=
+    ((contDiff_circleMap 0 1).continuous_deriv_one).mul
+      (hG.continuousOn_ball.comp_continuous (continuous_circleMap 0 1) (by norm_num))
   have hCint : C = fun w : ℂ =>
-      ∫ θ in (0 : ℝ)..(2 * Real.pi), g θ / (circleMap 0 1 θ - w) := by
+      ∫ₚ θ, g θ / (unitCirclePt θ - w) := by
     funext w
-    dsimp [C, g, circleIntegral]
+    dsimp [g]
     apply intervalIntegral.integral_congr
     intro θ _
-    simp only [div_eq_mul_inv]
     ring
   have hCd : DifferentiableOn ℂ C (ball ζ (d / 2)) := by
     rw [hCint]
     apply circleDensityCauchy_differentiableOn_of_zero_near g hgc hd
     intro θ _hθ hn
     dsimp [g]
-    rw [hzero _ (circleMap_mem_sphere 0 zero_le_one θ) hn, mul_zero]
-  have hCinside (w : ℂ) (hw : w ∈ ball (0 : ℂ) 1) :
-      C w = (2 * Real.pi * I : ℂ) * G w := by
-    simpa only [C, smul_eq_mul] using hG.circleIntegral_sub_inv_smul hw
+    simp [*]
+  have hCinside (w : ℂ) (hw : w ∈ unitDisk) := hG.circleIntegral_sub_inv_smul hw
   have hCoutside (w : ℂ) (hw : 1 < ‖w‖) : C w = 0 := by
-    have hne : ∀ z ∈ closure (ball (0 : ℂ) 1), z - w ≠ 0 := by
+    
+    
+    have hquot := ((((differentiable_id : Differentiable ℂ (fun z : ℂ => z)).sub_const w).diffContOnCl).inv (by
       intro z hz hzw
-      have hzn : ‖z‖ ≤ 1 := mem_closedBall_zero_iff.mp (closure_ball_subset_closedBall hz)
-      have he : z = w := sub_eq_zero.mp hzw
-      exact (not_le_of_gt hw) (he ▸ hzn)
-    have hsub : DiffContOnCl ℂ (fun z : ℂ => z - w) (ball (0 : ℂ) 1) :=
-      ((differentiable_id : Differentiable ℂ (fun z : ℂ => z)).sub_const w).diffContOnCl
-    have hquot := (hsub.inv hne).smul hG
-    simpa only [C, Pi.inv_apply, smul_eq_mul] using hquot.circleIntegral_eq_zero zero_le_one
-  let e := min (d / 4) (1 / 2 : ℝ)
-  have he : 0 < e := lt_min (by linarith) (by norm_num)
+      have hzn  := mem_closedBall_zero_iff.mp (closure_ball_subset_closedBall hz)
+      have he  := sub_eq_zero.mp hzw
+      exact (not_le_of_gt hw) (he ▸ hzn))).smul hG
+    exact hquot.circleIntegral_eq_zero zero_le_one
+  let e := min (d / 4) halfOrder
+  have he : 0 < e := (by positivity)
   have hehalf : e < d / 2 := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-  have heone : e < 1 := lt_of_le_of_lt (min_le_right _ _) (by norm_num)
-  let wout : ℂ := (1 + e) • ζ
+  have heone : e < 1 := (by bound)
+  let wout  := (1 + e) • ζ
   have hwoutn : ‖wout‖ = 1 + e := by
     simp only [wout, norm_smul, Real.norm_eq_abs, hζ, mul_one, abs_of_pos (by linarith : 0 < 1 + e)]
   have hwout : wout ∈ ball ζ (d / 2) := by
     rw [mem_ball, dist_eq_norm]
     have heq : wout - ζ = e • ζ := by
       change (1 + e) • ζ - ζ = e • ζ
-      rw [add_smul, one_smul]
-      abel
+      simp [add_smul]
     rw [heq, norm_smul, hζ, mul_one, Real.norm_eq_abs, abs_of_pos he]
     exact hehalf
   have hCevent : C =ᶠ[𝓝 wout] 0 := by
     have ho : IsOpen {w : ℂ | 1 < ‖w‖} := isOpen_lt continuous_const continuous_norm
-    filter_upwards [ho.mem_nhds (by change 1 < ‖wout‖; rw [hwoutn]; linarith)] with w hw
+    filter_upwards [ho.mem_nhds (by simp [*])] with w hw
     exact hCoutside w hw
-  have hCzero : EqOn C 0 (ball ζ (d / 2)) :=
-    hCd.analyticOnNhd isOpen_ball |>.eqOn_zero_of_preconnected_of_eventuallyEq_zero
-      (convex_ball ζ (d / 2)).isPreconnected hwout hCevent
-  let win : ℂ := (1 - e) • ζ
+  
+  let win  := (1 - e) • ζ
   have hwinn : ‖win‖ = 1 - e := by
     simp only [win, norm_smul, Real.norm_eq_abs, hζ, mul_one, abs_of_pos (sub_pos.mpr heone)]
-  have hwinD : win ∈ ball (0 : ℂ) 1 := by
-    rw [mem_ball_zero_iff, hwinn]
-    linarith
+  have hwinD : win ∈ unitDisk := by
+    simp [*]
   have hwinB : win ∈ ball ζ (d / 2) := by
     rw [mem_ball, dist_eq_norm]
     have heq : win - ζ = (-e) • ζ := by
       change (1 - e) • ζ - ζ = (-e) • ζ
-      rw [sub_smul, one_smul, neg_smul]
-      abel
+      simp [sub_smul]
     rw [heq, norm_smul, hζ, mul_one, Real.norm_eq_abs, abs_neg, abs_of_pos he]
     exact hehalf
-  have hcne : (2 * Real.pi * I : ℂ) ≠ 0 := by
-    exact mul_ne_zero (mul_ne_zero (by norm_num) (ofReal_ne_zero.mpr Real.pi_ne_zero)) I_ne_zero
+  
   have hGevent : G =ᶠ[𝓝 win] 0 := by
     filter_upwards [isOpen_ball.mem_nhds hwinD, isOpen_ball.mem_nhds hwinB] with w hwD hwB
-    have hz : (2 * Real.pi * I : ℂ) * G w = 0 := (hCinside w hwD).symm.trans (hCzero hwB)
-    exact (mul_eq_zero.mp hz).resolve_left hcne
+    have hz  := (hCinside w hwD).symm.trans ((hCd.analyticOnNhd isOpen_ball |>.eqOn_zero_of_preconnected_of_eventuallyEq_zero
+      (convex_ball ζ (d / 2)).isPreconnected hwout hCevent) hwB)
+    exact (mul_eq_zero.mp hz).resolve_left (by
+      simp)
   exact hG.differentiableOn.analyticOnNhd isOpen_ball
-    |>.eqOn_zero_of_preconnected_of_eventuallyEq_zero (convex_ball (0 : ℂ) 1).isPreconnected
+    |>.eqOn_zero_of_preconnected_of_eventuallyEq_zero (convex_ball 0 1).isPreconnected
       hwinD hGevent
 
 private theorem unitCircle_mem_slitPlane_of_ne_neg_one {z : ℂ}
@@ -481,72 +432,56 @@ private theorem unitCircle_mem_slitPlane_of_ne_neg_one {z : ℂ}
       intro hr
       apply hne
       apply Complex.ext
-      · simpa only [neg_re, one_re] using hr
-      · simpa only [neg_im, one_im, neg_zero] using him
-    have hor : z.re = 1 ∨ z.re = -1 :=
-      mul_self_eq_mul_self_iff.mp (by simpa only [one_mul] using hsq)
-    rw [hor.resolve_right hrne]
-    exact zero_lt_one
+      · exact hr
+      · simpa using him
+    grind [mul_self_eq_mul_self_iff.mp, zero_lt_one]
   · exact Or.inr him
 
 /-- Any nontrivial connected proper subset of the actual unit circle
 contains a relatively open circle patch. The argument cut is chosen at
 an actual circle point outside the set; no circle-arc premise is used. -/
 theorem exists_circle_patch_subset_of_preconnected
-    {A : Set ℂ} (hA : IsPreconnected A) (hAs : A ⊆ sphere (0 : ℂ) 1)
+    {A : Set ℂ} (hA : IsPreconnected A) (hAs : A ⊆ diskSphere)
     {η : ℂ} (hη : ‖η‖ = 1) (hηA : η ∉ A)
     {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ A) (hz₂ : z₂ ∈ A) (h12 : z₁ ≠ z₂) :
     ∃ ζ : ℂ, ‖ζ‖ = 1 ∧ ∃ d : ℝ, 0 < d ∧
-      ∀ z ∈ sphere (0 : ℂ) 1, ‖z - ζ‖ < d → z ∈ A := by
-  let u : ℂ → ℂ := fun z => -conj η * z
+      ∀ z ∈ diskSphere, ‖z - ζ‖ < d → z ∈ A := by
+  let u  := fun z => -conj η * z
   have hucont : Continuous u := continuous_const.mul continuous_id
   have hηconj : η * conj η = 1 := by
-    rw [mul_conj, normSq_eq_norm_sq, hη]
-    norm_num
+    simp [mul_conj, normSq_eq_norm_sq, hη]
   have huinv (z : ℂ) : (-η) * u z = z := by
-    dsimp [u]
-    calc
-      (-η) * (-conj η * z) = (η * conj η) * z := by ring
-      _ = z := by rw [hηconj, one_mul]
-  have hunorm {z : ℂ} (hz : z ∈ sphere (0 : ℂ) 1) : ‖u z‖ = 1 := by
-    have hzn : ‖z‖ = 1 := by simpa only [mem_sphere, dist_zero_right] using hz
-    simp only [u, norm_mul, norm_neg, norm_conj, hη, hzn, one_mul]
+    grind
+  have hunorm {z : ℂ} (hz : z ∈ diskSphere) : ‖u z‖ = 1 := by
+    aesop
   have huslit (z : ℂ) (hz : z ∈ A) : u z ∈ slitPlane := by
-    apply unitCircle_mem_slitPlane_of_ne_neg_one (hunorm (hAs hz))
-    intro he
-    have hze : z = η := by
-      calc
-        z = (-η) * u z := (huinv z).symm
-        _ = η := by rw [he]; ring
-    exact hηA (hze ▸ hz)
-  let f : ℂ → ℝ := fun z => arg (u z)
-  have hfcont : ContinuousOn f A := by
+    grind [unitCircle_mem_slitPlane_of_ne_neg_one]
+  let f  := fun z => arg (u z)
+  
+  have hfconn  := hA.image f (by
     intro z hz
-    exact ((continuousAt_arg (huslit z hz)).comp hucont.continuousAt).continuousWithinAt
-  have hfconn : IsPreconnected (f '' A) := hA.image f hfcont
-  have hf_inj {z w : ℂ} (hz : z ∈ sphere (0 : ℂ) 1)
-      (hw : w ∈ sphere (0 : ℂ) 1) (he : f z = f w) : z = w := by
-    have hue : u z = u w := ext_norm_arg_iff.mpr
-      ⟨(hunorm hz).trans (hunorm hw).symm, he⟩
-    exact (huinv z).symm.trans ((congrArg (fun v : ℂ => (-η) * v) hue).trans (huinv w))
-  have hargne : f z₁ ≠ f z₂ := fun he => h12 (hf_inj (hAs hz₁) (hAs hz₂) he)
+    exact ((continuousAt_arg (huslit z hz)).comp hucont.continuousAt).continuousWithinAt)
+  have hf_inj {z w : ℂ} (hz : z ∈ diskSphere)
+      (hw : w ∈ diskSphere) (he : f z = f w) : z = w := by
+    grind [ext_norm_arg_iff.mpr]
+  
   have hbuild (a b : ℝ) (hab : a < b) (ha : a ∈ f '' A) (hb : b ∈ f '' A) :
       ∃ ζ : ℂ, ‖ζ‖ = 1 ∧ ∃ d : ℝ, 0 < d ∧
-        ∀ z ∈ sphere (0 : ℂ) 1, ‖z - ζ‖ < d → z ∈ A := by
+        ∀ z ∈ diskSphere, ‖z - ζ‖ < d → z ∈ A := by
     have hm : (a + b) / 2 ∈ f '' A := hfconn.Icc_subset ha hb ⟨by linarith, by linarith⟩
     obtain ⟨ζ, hζA, hζm⟩ := hm
-    have hζs : ζ ∈ sphere (0 : ℂ) 1 := hAs hζA
-    have hfζ : ContinuousAt f ζ := (continuousAt_arg (huslit ζ hζA)).comp hucont.continuousAt
-    have hmI : f ζ ∈ Ioo a b := by rw [hζm]; constructor <;> linarith
-    obtain ⟨d, hd, hdb⟩ := Metric.mem_nhds_iff.mp (hfζ (isOpen_Ioo.mem_nhds hmI))
+    have hζs  := hAs hζA
+    
+    have hmI : f ζ ∈ Ioo a b := by constructor <;> linarith
+    obtain ⟨d, hd, hdb⟩ := Metric.mem_nhds_iff.mp (((continuousAt_arg (huslit ζ hζA)).comp hucont.continuousAt) (isOpen_Ioo.mem_nhds hmI))
     refine ⟨ζ, by simpa only [mem_sphere, dist_zero_right] using hζs, d, hd, ?_⟩
     intro z hzs hzn
-    have hfz : f z ∈ Ioo a b := hdb (by simpa only [mem_ball, dist_eq_norm] using hzn)
-    have hfzim : f z ∈ f '' A := hfconn.Icc_subset ha hb ⟨hfz.1.le, hfz.2.le⟩
-    obtain ⟨w, hwA, hwe⟩ := hfzim
-    have hzw : z = w := hf_inj hzs (hAs hwA) hwe.symm
-    exact hzw.symm ▸ hwA
-  rcases lt_or_gt_of_ne hargne with hlt | hgt
+    have hfz  := hdb (by simpa only [mem_ball, dist_eq_norm] using hzn)
+    
+    obtain ⟨w, hwA, hwe⟩ := (hfconn.Icc_subset ha hb ⟨hfz.1.le, hfz.2.le⟩)
+    have hzw  := hf_inj hzs (hAs hwA) hwe.symm
+    simp [*]
+  rcases lt_or_gt_of_ne (fun he => h12 (hf_inj (hAs hz₁) (hAs hz₂) he)) with hlt | hgt
   · exact hbuild (f z₁) (f z₂) hlt (mem_image_of_mem f hz₁) (mem_image_of_mem f hz₂)
   · exact hbuild (f z₂) (f z₁) hgt (mem_image_of_mem f hz₂) (mem_image_of_mem f hz₁)
 
@@ -554,59 +489,55 @@ theorem exists_circle_patch_subset_of_preconnected
 entire closed disk. Connected frontier fibers cannot contain a circle
 arc, by the actual Cauchy continuation uniqueness proved above. -/
 theorem riemannMappingClosedExtension_injOn
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω) :
-    InjOn (riemannMappingClosedExtension F) (closedBall (0 : ℂ) 1) := by
+    {Ω : Set ℂ} {F : ℂ → ℂ} (hΦ : LipschitzUniformization Ω F) :
+    InjOn (riemannMappingClosedExtension F) closedDisk := by
   let G := riemannMappingClosedExtension F
-  have hGc : ContinuousOn G (closedBall (0 : ℂ) 1) :=
-    riemannMappingClosedExtension_continuousOn hb hL hsc F hF hinj himage
-  have hEq : EqOn G F (ball (0 : ℂ) 1) := riemannMappingClosedExtension_eqOn F hF
-  have hGhol : DifferentiableOn ℂ G (ball (0 : ℂ) 1) := hF.congr (fun z hz => hEq hz)
-  have hzeroD : (0 : ℂ) ∈ ball (0 : ℂ) 1 := mem_ball_self zero_lt_one
-  have hhalfD : (1 / 2 : ℂ) ∈ ball (0 : ℂ) 1 := by
-    rw [mem_ball_zero_iff]
+  have hGc  :=
+    riemannMappingClosedExtension_continuousOn hΦ
+  have hEq  := riemannMappingClosedExtension_eqOn F hΦ.holomorphic
+  have hGhol  := hΦ.holomorphic.congr (fun z hz => hEq hz)
+  have hzeroD : (0 : ℂ) ∈ unitDisk := mem_ball_self zero_lt_one
+  have hhalfD : (1 / 2 : ℂ) ∈ unitDisk := by
     norm_num
-  have hnonconst (p : ℂ) : ¬ EqOn G (fun _ => p) (ball (0 : ℂ) 1) := by
+  have hnonconst (p : ℂ) : ¬ EqOn G (fun _ => p) unitDisk := by
     intro he
-    have hval : F 0 = F (1 / 2) :=
+    have hval  :=
       (hEq hzeroD).symm.trans ((he hzeroD).trans ((he hhalfD).symm.trans (hEq hhalfD)))
-    have hbad := hinj hzeroD hhalfD hval
+    have hbad := hΦ.injective hzeroD hhalfD hval
     norm_num at hbad
   intro z hz w hw he
-  by_cases hzD : z ∈ ball (0 : ℂ) 1
-  · exact riemannMappingClosedExtension_eq_of_eq_of_mem_disk hb hL hsc F hF hinj himage hzD hw he
-  by_cases hwD : w ∈ ball (0 : ℂ) 1
-  · exact (riemannMappingClosedExtension_eq_of_eq_of_mem_disk hb hL hsc F hF hinj himage hwD hz he.symm).symm
-  have hzn : ‖z‖ = 1 := le_antisymm (mem_closedBall_zero_iff.mp hz)
+  by_cases hzD : z ∈ unitDisk
+  · exact riemannMappingClosedExtension_eq_of_eq_of_mem_disk hΦ hzD hw he
+  by_cases hwD : w ∈ unitDisk
+  · exact (riemannMappingClosedExtension_eq_of_eq_of_mem_disk hΦ hwD hz he.symm).symm
+  have hzn  := le_antisymm (mem_closedBall_zero_iff.mp hz)
     (le_of_not_gt fun hn => hzD (mem_ball_zero_iff.mpr hn))
   by_contra hzw
   let p := G z
-  let A := closedBall (0 : ℂ) 1 ∩ G ⁻¹' {p}
-  have hp : p ∈ frontier Ω := riemannMappingClosedExtension_mem_frontier hb hL hsc F hF hinj himage hzn
-  have hAconn : IsConnected A :=
-    riemannMappingClosedExtension_boundary_fiber_connected hb hL hsc F hF hinj himage hp
+  let A := closedDisk ∩ G ⁻¹' {p}
+  have hp  := riemannMappingClosedExtension_mem_frontier hΦ hzn
+  have hAconn  :=
+    riemannMappingClosedExtension_boundary_fiber_connected hΦ hp
   have hzA : z ∈ A := ⟨hz, rfl⟩
   have hwA : w ∈ A := ⟨hw, he.symm⟩
-  have hAs : A ⊆ sphere (0 : ℂ) 1 := by
+  have hAs : A ⊆ diskSphere := by
     intro v hv
-    have hvn : ‖v‖ ≤ 1 := mem_closedBall_zero_iff.mp hv.1
-    have hvD : v ∉ ball (0 : ℂ) 1 := by
+    have hvn  := mem_closedBall_zero_iff.mp hv.1
+    have hvD : v ∉ unitDisk := by
       intro hvD
       have hpin : p ∈ Ω := by
         rw [← hv.2]
-        exact (riemannMappingClosedExtension_mem_domain_iff hb hL hsc F hF hinj himage hv.1).mpr hvD
-      rw [hL.1.1.frontier_eq] at hp
+        exact (riemannMappingClosedExtension_mem_domain_iff hΦ hv.1).mpr hvD
+      rw [hΦ.lipschitz.1.1.frontier_eq] at hp
       exact hp.2 hpin
-    have hvone : ‖v‖ = 1 := le_antisymm hvn (le_of_not_gt fun hn => hvD (mem_ball_zero_iff.mpr hn))
-    simpa only [mem_sphere, dist_zero_right] using hvone
+    have hvone  := le_antisymm hvn (le_of_not_gt fun hn => hvD (mem_ball_zero_iff.mpr hn))
+    simpa using hvone
   have hηex : ∃ η : ℂ, ‖η‖ = 1 ∧ η ∉ A := by
     by_contra hno
     push_neg at hno
-    have hGp : DiffContOnCl ℂ (fun v => G v - p) (ball (0 : ℂ) 1) :=
+    have hGp  :=
       (DiffContOnCl.mk_ball hGhol hGc).sub_const p
-    have hzero : EqOn (fun v => G v - p) 0 (ball (0 : ℂ) 1) :=
+    have hzero  :=
       diffContOnCl_eq_zero_of_circle_patch (fun v => G v - p) hGp
         (by norm_num : ‖(1 : ℂ)‖ = 1) zero_lt_one (by
           intro v hvs _
@@ -616,9 +547,9 @@ theorem riemannMappingClosedExtension_injOn
   obtain ⟨η, hη, hηA⟩ := hηex
   obtain ⟨ζ, hζ, d, hd, hpatch⟩ :=
     exists_circle_patch_subset_of_preconnected hAconn.2 hAs hη hηA hzA hwA hzw
-  have hGp : DiffContOnCl ℂ (fun v => G v - p) (ball (0 : ℂ) 1) :=
+  have hGp  :=
     (DiffContOnCl.mk_ball hGhol hGc).sub_const p
-  have hzero : EqOn (fun v => G v - p) 0 (ball (0 : ℂ) 1) :=
+  have hzero  :=
     diffContOnCl_eq_zero_of_circle_patch (fun v => G v - p) hGp hζ hd
       (fun v hvs hvn => sub_eq_zero.mpr (hpatch v hvs hvn).2)
   exact hnonconst p (fun v hv => sub_eq_zero.mp (hzero hv))
@@ -627,20 +558,17 @@ theorem riemannMappingClosedExtension_injOn
 physical closure. Its values are exactly those of the constructed
 extension, including every original interior value. -/
 theorem exists_riemannMapping_closedDisk_homeomorph
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) (F : ℂ → ℂ)
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω) :
-    ∃ e : closedBall (0 : ℂ) 1 ≃ₜ closure Ω,
-      ∀ z : closedBall (0 : ℂ) 1, (e z : ℂ) = riemannMappingClosedExtension F z := by
+    {Ω : Set ℂ} {F : ℂ → ℂ} (hΦ : LipschitzUniformization Ω F) :
+    ∃ e : closedDisk ≃ₜ closure Ω,
+      ∀ z : closedDisk, (e z : ℂ) = riemannMappingClosedExtension F z := by
   let G := riemannMappingClosedExtension F
-  have hGc : ContinuousOn G (closedBall (0 : ℂ) 1) :=
-    riemannMappingClosedExtension_continuousOn hb hL hsc F hF hinj himage
-  have hGinj : InjOn G (closedBall (0 : ℂ) 1) :=
-    riemannMappingClosedExtension_injOn hb hL hsc F hF hinj himage
-  have hGim : G '' closedBall (0 : ℂ) 1 = closure Ω :=
-    riemannMappingClosedExtension_closed_image hb hL hsc F hF hinj himage
-  let f : closedBall (0 : ℂ) 1 → closure Ω := fun z =>
+  have hGc  :=
+    riemannMappingClosedExtension_continuousOn hΦ
+  have hGinj  :=
+    riemannMappingClosedExtension_injOn hΦ
+  have hGim  :=
+    riemannMappingClosedExtension_closed_image hΦ
+  let f : closedDisk → closure Ω := fun z =>
     ⟨G z, hGim ▸ mem_image_of_mem G z.property⟩
   have hfc : Continuous f := hGc.restrict.subtype_mk _
   have hfb : Function.Bijective f := by
@@ -649,12 +577,12 @@ theorem exists_riemannMapping_closedDisk_homeomorph
       apply Subtype.ext
       exact hGinj z.property w.property (congrArg Subtype.val he)
     · intro w
-      have hw : (w : ℂ) ∈ G '' closedBall (0 : ℂ) 1 := hGim.symm ▸ w.property
+      have hw : (w : ℂ) ∈ G '' closedDisk := hGim.symm ▸ w.property
       obtain ⟨z, hz, hze⟩ := hw
       exact ⟨⟨z, hz⟩, Subtype.ext hze⟩
-  letI : CompactSpace (closedBall (0 : ℂ) 1) :=
+  letI  :=
     isCompact_iff_compactSpace.mp (isCompact_closedBall (0 : ℂ) 1)
-  let e : closedBall (0 : ℂ) 1 ≃ closure Ω := Equiv.ofBijective f hfb
+  let e  := Equiv.ofBijective f hfb
   have hec : Continuous e := hfc
   exact ⟨hec.homeoOfEquivCompactToT2, fun _ => rfl⟩
 

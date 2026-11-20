@@ -43,52 +43,32 @@ theorem dirichlet_normal_dirD_mul {a b : ℂ → ℂ} {z : ℂ}
     dirD (fun w => a w * b w) v z = dirD a v z * b z + a z * dirD b v z := by
   change fderiv ℝ (fun w => a w * b w) z v = _
   rw [fderiv_fun_mul ha hb]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp
   change a z * dirD b v z + b z * dirD a v z = _
   ring
 
+section
+
+variable (f : ℝ → ℝ) (z : ℂ)
+
+include f z in
 /-- The actual graph curvature coefficient in complex scalar form. -/
-def dirichletGraphCurvature (f : ℝ → ℝ) (z : ℂ) : ℂ :=
+def dirichletGraphCurvature : ℂ :=
   ((deriv (deriv f) z.re : ℝ) : ℂ)
 
 theorem dirD_dirichletGraphSlope_one {f : ℝ → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : ℂ) :
+    (hf : ContDiff ℝ ∞ f) (z : ℂ) :
     dirD (dirichletGraphSlope f) 1 z = dirichletGraphCurvature f z := by
-  have hd := ((contDiff_infty_iff_deriv.mp hf).2.differentiable (by simp)) z.re
+  
   have hs := Complex.ofRealCLM.hasFDerivAt.comp z
-    (hd.hasDerivAt.comp_hasFDerivAt z Complex.reCLM.hasFDerivAt)
+    ((((contDiff_infty_iff_deriv.mp hf).2.differentiable (by simp)) z.re).hasDerivAt.comp_hasFDerivAt z Complex.reCLM.hasFDerivAt)
   change fderiv ℝ (Complex.ofRealCLM ∘ (deriv f ∘ Complex.re)) z 1 = _
   rw [hs.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
-    Complex.reCLM_apply, Complex.one_re, smul_eq_mul, mul_one,
-    Complex.ofRealCLM_apply, dirichletGraphCurvature]
-
-/-- Mixed derivative symmetry is derived at each genuine smooth interior
-point; it is not an assumed weak second-derivative identity. -/
-theorem dirichlet_normal_dirD_comm {U : Set ℂ} (hU : IsOpen U) {u : ℂ → ℂ}
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) {z : ℂ} (hz : z ∈ U) (v w : ℂ) :
-    dirD (dirD u v) w z = dirD (dirD u w) v z := by
-  have hs := hu.contDiffAt (hU.mem_nhds hz)
-  have hd : DifferentiableAt ℝ (fderiv ℝ u) z :=
-    (hs.fderiv_right (m := (⊤ : ℕ∞)) le_rfl).differentiableAt (by simp)
-  have hv : fderiv ℝ (dirD u v) z w = fderiv ℝ (fderiv ℝ u) z w v := by
-    change fderiv ℝ (fun x => fderiv ℝ u x v) z w = _
-    rw [fderiv_clm_apply hd (differentiableAt_const v)]
-    simp
-  have hw : fderiv ℝ (dirD u w) z v = fderiv ℝ (fderiv ℝ u) z v w := by
-    change fderiv ℝ (fun x => fderiv ℝ u x w) z v = _
-    rw [fderiv_clm_apply hd (differentiableAt_const w)]
-    simp
-  change fderiv ℝ (dirD u v) z w = fderiv ℝ (dirD u w) z v
-  rw [hv, hw]
-  exact (hs.isSymmSndFDerivAt (by
-    simpa only [minSmoothness_of_isRCLikeNormedField] using
-      (show (2 : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞) from
-        WithTop.coe_le_coe.mpr le_top))).eq w v
+  simp [dirichletGraphCurvature]
 
 theorem dirichletFlattenedDivergence_normal_expansion {U : Set ℂ} (hU : IsOpen U)
-    {f : ℝ → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) {u : ℂ → ℂ}
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) {z : ℂ} (hz : z ∈ U) :
+    {f : ℝ → ℝ} (hf : ContDiff ℝ ∞ f) {u : ℂ → ℂ}
+    (hu : ContDiffOn ℝ ∞ u U) {z : ℂ} (hz : z ∈ U) :
     dirichletFlattenedDivergence f u z =
       dirD (dirD u 1) 1 z - dirichletGraphCurvature f z * dirD u Complex.I z -
         2 * dirichletGraphSlope f z * dirD (dirD u 1) Complex.I z +
@@ -96,21 +76,20 @@ theorem dirichletFlattenedDivergence_normal_expansion {U : Set ℂ} (hU : IsOpen
   let d := dirichletGraphSlope f
   let x := dirD u 1
   let y := dirD u Complex.I
-  have hd : DifferentiableAt ℝ d z :=
+  have hd  :=
     (dirichletGraphSlope_contDiff hf).differentiable (by simp) z
-  have hx : DifferentiableAt ℝ x z :=
+  have hx  :=
     ((dirichlet_contDiffOn_dirD hU hu 1).differentiableOn (by simp)).differentiableAt
       (hU.mem_nhds hz)
-  have hy : DifferentiableAt ℝ y z :=
+  have hy  :=
     ((dirichlet_contDiffOn_dirD hU hu Complex.I).differentiableOn (by simp)).differentiableAt
       (hU.mem_nhds hz)
-  have hdx : dirD d 1 z = dirichletGraphCurvature f z := dirD_dirichletGraphSlope_one hf z
-  have hdy : dirD d Complex.I z = 0 := dirD_dirichletGraphSlope_I hf z
-  have haI : dirD (fun w => (1 : ℂ) + d w ^ 2) Complex.I z = 0 := by
+  
+  have hdy  := dirD_dirichletGraphSlope_I hf z
+  have haI : dirD (fun w => 1 + d w ^ 2) Complex.I z = 0 := by
     have heq : (fun w => (1 : ℂ) + d w ^ 2) = fun w => 1 + d w * d w := by
-      funext w
-      rw [pow_two]
-    rw [heq, dirichlet_normal_dirD_add (a := fun _ => (1 : ℂ))
+      simp [pow_two]
+    rw [heq, dirichlet_normal_dirD_add 
       (b := fun w => d w * d w) (differentiableAt_const 1) (hd.mul hd),
       dirichlet_normal_dirD_mul (a := d) (b := d) hd hd, hdy]
     simp [dirD]
@@ -118,7 +97,7 @@ theorem dirichletFlattenedDivergence_normal_expansion {U : Set ℂ} (hU : IsOpen
       dirD x 1 z - (dirichletGraphCurvature f z * y z + d z * dirD y 1 z) := by
     change dirD (fun w => x w - d w * y w) 1 z = _
     rw [dirichlet_normal_dirD_sub (a := x) (b := fun w => d w * y w)
-      hx (hd.mul hy), dirichlet_normal_dirD_mul (a := d) (b := y) hd hy, hdx]
+      hx (hd.mul hy), dirichlet_normal_dirD_mul (a := d) (b := y) hd hy, (dirD_dirichletGraphSlope_one hf z)]
   have hflux₁ : dirD (dirichletFlattenedFlux f u 1) Complex.I z =
       -d z * dirD x Complex.I z + (1 + d z ^ 2) * dirD y Complex.I z := by
     have heq : dirichletFlattenedFlux f u 1 =
@@ -128,36 +107,35 @@ theorem dirichletFlattenedDivergence_normal_expansion {U : Set ℂ} (hU : IsOpen
       ring
     rw [heq, dirichlet_normal_dirD_sub
       (a := fun w => (1 + d w ^ 2) * y w) (b := fun w => d w * x w)
-      (((differentiableAt_const (1 : ℂ)).add (hd.pow 2)).mul hy) (hd.mul hx),
-      dirichlet_normal_dirD_mul (a := fun w => 1 + d w ^ 2) (b := y)
-        ((differentiableAt_const 1).add (hd.pow 2)) hy,
+      ((by fun_prop)) (hd.mul hx),
+      dirichlet_normal_dirD_mul  (b := y)
+        ((by fun_prop)) hy,
       dirichlet_normal_dirD_mul (a := d) (b := x) hd hx, haI, hdy]
     ring
   rw [dirichletFlattenedDivergence, hflux₀, hflux₁]
-  change dirD (dirD u 1) 1 z -
-      (dirichletGraphCurvature f z * dirD u Complex.I z +
-        dirichletGraphSlope f z * dirD (dirD u Complex.I) 1 z) +
-      (-dirichletGraphSlope f z * dirD (dirD u 1) Complex.I z +
-        (1 + dirichletGraphSlope f z ^ 2) * dirD (dirD u Complex.I) Complex.I z) = _
-  rw [dirichlet_normal_dirD_comm hU hu hz Complex.I 1]
+  
+  rw [dirichlet_dirD_comm hU hu hz Complex.I 1]
   ring
 
+include f z in
 /-- The reciprocal actual normal coefficient, with a genuine global bound. -/
-def dirichletNormalCoefficientInverse (f : ℝ → ℝ) (z : ℂ) : ℂ :=
+def dirichletNormalCoefficientInverse : ℂ :=
   Complex.ofReal ((1 + (deriv f z.re) ^ 2 : ℝ)⁻¹)
 
-theorem dirichletNormalCoefficientInverse_mul (f : ℝ → ℝ) (z : ℂ) :
+theorem dirichletNormalCoefficientInverse_mul :
     dirichletNormalCoefficientInverse f z * (1 + dirichletGraphSlope f z ^ 2) = 1 := by
-  have hpos : (1 + (deriv f z.re) ^ 2 : ℝ) ≠ 0 := by positivity
+  
   have heq : (1 + dirichletGraphSlope f z ^ 2 : ℂ) =
       ((1 + (deriv f z.re) ^ 2 : ℝ) : ℂ) := by
     simp [dirichletGraphSlope]
   rw [heq, dirichletNormalCoefficientInverse, ← Complex.ofReal_mul,
-    inv_mul_cancel₀ hpos, Complex.ofReal_one]
+    inv_mul_cancel₀ (by positivity), Complex.ofReal_one]
+
+end
 
 theorem dirichlet_normal_derivative_recovery {U : Set ℂ} (hU : IsOpen U)
-    {f : ℝ → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) {u G : ℂ → ℂ}
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+    {f : ℝ → ℝ} (hf : ContDiff ℝ ∞ f) {u G : ℂ → ℂ}
+    (hu : ContDiffOn ℝ ∞ u U)
     (hstrong : ∀ z ∈ U, dirichletFlattenedDivergence f u z = -G z)
     {z : ℂ} (hz : z ∈ U) :
     dirD (dirD u Complex.I) Complex.I z = dirichletNormalCoefficientInverse f z *
@@ -175,8 +153,8 @@ theorem dirichlet_normal_derivative_recovery {U : Set ℂ} (hU : IsOpen U)
 section NormalData
 
 variable {U : Set ℂ} (hU : IsOpen U)
-    {f : ℝ → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) {u G : ℂ → ℂ}
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+    {f : ℝ → ℝ} (hf : ContDiff ℝ ∞ f) {u G : ℂ → ℂ}
+    (hu : ContDiffOn ℝ ∞ u U)
     (hstrong : ∀ z ∈ U, dirichletFlattenedDivergence f u z = -G z)
     (hG : MemLp G 2 (volume.restrict U))
     (hDy : MemLp (dirD u Complex.I) 2 (volume.restrict U))
