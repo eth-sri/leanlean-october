@@ -1,0 +1,4 @@
+module
+public import GuthMaynard.NativeSource.GuthMaynard.GammaVerticalDecay
+public import GuthMaynard.NativeSource.GuthMaynard.TypeIIZeros
+public import GuthMaynard.NativeSource.GuthMaynard.ZetaBounds

@@ -1,0 +1,4 @@
+module
+public import DedekindZetaZeroFree.Eisenstein.Residues.ScalarGermUniqueness
+public import DedekindZetaZeroFree.Eisenstein.Continuation.ChamberRationalInvariance
+public import DedekindZetaZeroFree.Eisenstein.Induction.Genuineness

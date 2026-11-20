@@ -1,0 +1,26 @@
+module
+
+public import OAI.NumberTheory.DirichletL.Moments.FirstWholeKernel
+
+set_option linter.privateModule false
+
+@[expose] public section
+
+namespace OAI
+
+noncomputable section
+open scoped BigOperators Classical SchwartzMap
+
+namespace SevenEighths.CenteredMomentFirstWholeAssembly
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve EisensteinSchwartzPoisson
+open CenteredMomentFirstFrequency CenteredMomentFirstColumns CenteredMomentGaussEnergy
+open CenteredMomentFirstAssembly CenteredMomentCommonSupport CenteredMomentFirstReduced
+open CenteredMomentPrimitive CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstWholeKernel
+open CenteredMomentChildAssembly CenteredMomentMobiusRegroup RayFourExpansion
+local notation "O" => ActualEisensteinCubic.O
+
+end SevenEighths.CenteredMomentFirstWholeAssembly
+
+end
+
+end OAI

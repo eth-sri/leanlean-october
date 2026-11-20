@@ -1,0 +1,3 @@
+module
+public import RationalMomentDuality
+public import Mathlib.Analysis.MeanInequalitiesPow
