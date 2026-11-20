@@ -15,16 +15,51 @@ open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+/-- The two second derivatives differ only in the phase of their quadratic denominator. -/
+noncomputable abbrev fusionSecondDenom (mixed : Bool) (u : ℂ) : ℂ :=
+  if mixed then ((‖u‖ ^ 2 : ℝ) : ℂ) else u ^ 2
+
+noncomputable abbrev fusionSecondKernel (mixed : Bool) (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) : ℂ :=
+  (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / fusionSecondDenom mixed (x - z)
+
+theorem norm_fusionSecondDenom (mixed : Bool) (u : ℂ) : ‖fusionSecondDenom mixed u‖ = ‖u‖ ^ 2 := by
+  cases mixed <;> simp [fusionSecondDenom, norm_pow]
+
+theorem fusion_gammaHalfKernel_nonneg (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) :
+    0 ≤ gammaHalfKernel γ α₁ α₂ α₃ z x := by
+  unfold gammaHalfKernel normPlus
+  positivity
+
+theorem norm_fusionSecondKernel (mixed : Bool) (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) :
+    ‖fusionSecondKernel mixed γ α₁ α₂ α₃ z x‖ = gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 := by
+  rw [fusionSecondKernel, norm_div, norm_fusionSecondDenom, Complex.norm_real,
+    Real.norm_of_nonneg (fusion_gammaHalfKernel_nonneg ..)]
+
 /-- The absolute pure derivative kernel is the mixed kernel. -/
 theorem fusion_secondKernel_norm (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) :
     ‖(gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2‖ =
-      gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 := by
-  have hk : 0 ≤ gammaHalfKernel γ α₁ α₂ α₃ z x := by
-    unfold gammaHalfKernel
-    exact div_nonneg (mul_nonneg (Real.rpow_nonneg (norm_nonneg _) _)
-      (Real.rpow_nonneg (by unfold normPlus; positivity) _))
-      (mul_nonneg (Real.rpow_nonneg (norm_nonneg _) _) (Real.rpow_nonneg (norm_nonneg _) _))
-  rw [norm_div, Complex.norm_real, Real.norm_of_nonneg hk, norm_pow]
+      gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 :=
+  norm_fusionSecondKernel false γ α₁ α₂ α₃ z x
+
+section
+variable (mixed : Bool) (γ α₁ α₂ α₃ : ℝ)
+
+theorem measurable_fusionSecondKernel :
+    Measurable (fun q : ℂ × ℂ => fusionSecondKernel mixed γ α₁ α₂ α₃ q.1 q.2) := by
+  have h := (Complex.measurable_ofReal.comp (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃))
+  have hsub := measurable_snd.sub (measurable_fst : Measurable (Prod.fst : ℂ × ℂ → ℂ))
+  unfold fusionSecondKernel fusionSecondDenom
+  cases mixed
+  · exact h.div (hsub.pow_const 2)
+  · exact h.div (Complex.measurable_ofReal.comp (hsub.norm.pow_const 2))
+
+theorem measurable_fusionSecondKernel_at (z : ℂ) :
+    Measurable (fusionSecondKernel mixed γ α₁ α₂ α₃ z) := by
+  have h : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
+  have hm := (measurable_fusionSecondKernel mixed γ α₁ α₂ α₃).comp h
+  simpa only [Function.comp_def] using hm
+
+end
 
 /-- On the half-unit chart the insertion at one is a bounded factor. -/
 theorem fusion_localSecondKernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
@@ -55,17 +90,15 @@ theorem fusion_localSecondKernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
   rw [he, mul_comm ((2 : ℝ) ^ |γ * α₂|)]
   exact mul_le_mul_of_nonneg_left ht (by unfold planarMixedKernel; positivity)
 
-/-- The cutoff pure derivative kernel is absolutely integrable against the reference measure. -/
-theorem fusion_localSecondKernel_integrable (γ α₁ α₂ α₃ : ℝ)
+/-- The cutoff derivative kernel is absolutely integrable against the reference measure. -/
+theorem fusion_localSecondKernel_integrable (mixed : Bool) (γ α₁ α₂ α₃ : ℝ)
     (hk : 0 < γ ^ 2 / 2) (hβ : γ ^ 2 / 2 < γ * α₁) (hβ2 : γ * α₁ < 2)
     (z : ℂ) (hz : z ≠ 0) :
     Integrable ((Metric.ball (0 : ℂ) (1 / 2)).indicator
-      (fun x : ℂ => (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2)) gmcReferenceMeasure := by
+      (fusionSecondKernel mixed γ α₁ α₂ α₃ z)) gmcReferenceMeasure := by
   let B := Metric.ball (0 : ℂ) (1 / 2)
-  let f := fun x : ℂ => (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2
-  have hf : Measurable f := (Complex.measurable_ofReal.comp
-    ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
-      (measurable_const.prodMk measurable_id))).div ((measurable_id.sub_const z).pow_const 2)
+  let f := fusionSecondKernel mixed γ α₁ α₂ α₃ z
+  have hf := measurable_fusionSecondKernel_at mixed γ α₁ α₂ α₃ z
   have hmix := (planar_mixed_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 z hz).1
   have hdom : Integrable (fun x => (2 : ℝ) ^ |γ * α₂| *
       planarMixedKernel (γ ^ 2 / 2) (γ * α₁) z x) volume := hmix.const_mul _
@@ -73,7 +106,7 @@ theorem fusion_localSecondKernel_integrable (γ α₁ α₂ α₃ : ℝ)
     apply hdom.mono' (hf.indicator Metric.isOpen_ball.measurableSet).aestronglyMeasurable
     filter_upwards [Measure.ae_ne volume (0 : ℂ), Measure.ae_ne volume z] with x hx0 hxz
     by_cases hx : x ∈ B
-    · rw [Set.indicator_of_mem hx, fusion_secondKernel_norm]
+    · rw [Set.indicator_of_mem hx, norm_fusionSecondKernel]
       exact fusion_localSecondKernel_bound γ α₁ α₂ α₃ z x
         (by simpa only [B, Metric.mem_ball, dist_zero_right] using hx) hx0 hxz
     · rw [Set.indicator_of_notMem hx, norm_zero]

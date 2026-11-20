@@ -57,11 +57,14 @@ theorem gaussianReal_scaled_lower_tail_toReal (v : ℝ≥0) (hv : 0 < v) (γ u :
   rw [heq] at h
   exact ENNReal.toReal_le_of_le_ofReal (Real.exp_pos _).le h
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ)
+include hX
+
 /-- The subdisk Laplace transform is a Gaussian average of the reference transform at the
 coarser cutoff `r - log 4`. -/
 theorem cutoffLaplace_invSubdisk_scaling
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (a : ℂ) (ha : ‖a‖ = 1 / 16) (r : ℝ) (hr : Real.log 4 + 1 ≤ r) (y : ℝ) :
     cutoffLaplace P Xc γ r (Metric.ball a (1 / 4 * (1 / 8))) y =
@@ -70,14 +73,12 @@ theorem cutoffLaplace_invSubdisk_scaling
         ∂gaussianReal 0 ⟨-Real.log (1 / 4),
           neg_nonneg.mpr (Real.log_nonpos (by norm_num) (by norm_num))⟩ := by
   have hlog : Real.log (1 / 4 : ℝ) = -Real.log 4 := by
-    rw [one_div, Real.log_inv]
-  have hr' : 1 ≤ r - Real.log 4 := by linarith
+    simp
   have hexp : Real.exp (-(r - Real.log 4)) ≤ 1 / 2 := by
     have h1 : Real.exp (-(r - Real.log 4)) ≤ Real.exp (-1) := Real.exp_le_exp.mpr (by linarith)
     have h2 : Real.exp (-1) ≤ 1 / 2 := by
       have := Real.add_one_le_exp (1 : ℝ)
-      rw [Real.exp_neg]
-      rw [inv_le_comm₀ (Real.exp_pos 1) (by norm_num)]
+      rw [Real.exp_neg, inv_le_comm₀ (Real.exp_pos 1) (by norm_num)]
       linarith
     linarith
   have hexp2 : Real.exp (-r) ≤ 1 / 2 := by
@@ -97,7 +98,7 @@ theorem cutoffLaplace_invSubdisk_scaling
     rw [hcut]
     have hnorm : ‖a + (1 / 4 : ℝ) • x.1‖ ≤ 1 / 16 + 1 / 4 * (1 / 8) := by
       calc ‖a + (1 / 4 : ℝ) • x.1‖ ≤ ‖a‖ + ‖(1 / 4 : ℝ) • x.1‖ := norm_add_le _ _
-        _ = ‖a‖ + 1 / 4 * ‖x.1‖ := by rw [norm_smul, Real.norm_eq_abs]; norm_num
+        _ = ‖a‖ + 1 / 4 * ‖x.1‖ := by simp
         _ ≤ 1 / 16 + 1 / 4 * (1 / 8) := by rw [ha]; linarith
     linarith
   have h := cutoffLaplace_affine_ball_scaling P X hX γ Xc hXc (a := a) (c := 1 / 4)
@@ -109,9 +110,7 @@ theorem cutoffLaplace_invSubdisk_scaling
 
 /-- The quadratic recursion step: the two-branch inequality at cutoff `r` bounds the reference
 Laplace transform by a Gaussian error and the square of the transform at cutoff `r - log 4`. -/
-theorem cutoffLaplace_recursion_step
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ)
+theorem cutoffLaplace_recursion_step (hγ : 0 < γ)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (C : ℝ≥0) (hC : 0 < C)
     (r : ℝ) (hr : Real.log 4 + 1 ≤ r)
     (h2B : ∀ x : ℝ, cutoffLaplace P Xc γ r (Metric.ball 0 (1 / 8)) x ≤
@@ -161,18 +160,16 @@ theorem cutoffLaplace_recursion_step
         ∫ w, L' (x + a + γ * ξ + γ * w) ∂gaussianReal 0 v₂ :=
       integral_congr_ae (ae_of_all _ fun w => congrArg L' (harg w))
     rw [hsub _ norm_invSubCenterLeft, hsub _ norm_invSubCenterRight, hint, sq]
-  have hmain : cutoffLaplace P Xc γ r (Metric.ball 0 (1 / 8)) x ≤
-      ∫ ξ, (∫ w, L' (x + a + γ * ξ + γ * w) ∂gaussianReal 0 v₂) ^ 2 ∂gaussianReal 0 C :=
-    (h2B x).trans_eq (integral_congr_ae (ae_of_all _ hprod))
+  have hmain := (h2B x).trans_eq (integral_congr_ae (ae_of_all _ hprod))
   have hsplit := gaussianSplit_two_branch L' hanti hnn hle1 γ C v₂ x a (x / 8) ε hε
   have htail₁ := gaussianReal_scaled_lower_tail_toReal C hC γ (x / 8) hγ (by positivity)
   have hv₂val : ((v₂ : ℝ≥0) : ℝ) = Real.log 4 := by
     rw [hv₂]
     change -Real.log (1 / 4) = Real.log 4
-    rw [one_div, Real.log_inv, neg_neg]
+    simp
   have hv₂pos : 0 < v₂ := by
     rw [← NNReal.coe_pos, hv₂val]
-    exact Real.log_pos (by norm_num)
+    positivity
   have htail₂ := gaussianReal_scaled_lower_tail_toReal v₂ hv₂pos γ (x / 8) hγ (by positivity)
   rw [hv₂val] at htail₂
   have hT₁ : Real.exp (-(x / 8) ^ 2 / (2 * γ ^ 2 * C)) = Real.exp (-x ^ 2 / (128 * γ ^ 2 * C)) := by
@@ -191,7 +188,6 @@ theorem cutoffLaplace_recursion_step
     exact pow_le_pow_left₀ hP₂nn htail₂ 2
   have harg' : x + a - 2 * (x / 8) =
       3 / 4 * x + (2 * Real.log (1 / 4) + γ ^ 2 / 2 * Real.log (1 / 4) - γ ^ 2 * C / 2) := by
-    rw [ha, hc₁]
     ring
   rw [harg'] at hsplit
   have hcoef : 0 ≤ 1 + 1 / ε := by positivity
@@ -202,5 +198,7 @@ theorem cutoffLaplace_recursion_step
         rw [hT₁] at htail₁
         have := mul_le_mul_of_nonneg_left hsq₂ hcoef
         linarith
+
+end
 
 end DOZZ.Proofs

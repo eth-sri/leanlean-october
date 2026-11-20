@@ -42,12 +42,10 @@ theorem reflected_first_order_radial_error_bound
   have hD : 0 < D := Real.exp_pos _
   refine ⟨C, mul_pos hD hC₀, ?_⟩
   let l := nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}
-  have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have ht (s : ℝ) (hs : 0 < s) : Tendsto (fun z : ℂ => ‖z‖ ^ s) l (nhds 0) := by
-    simpa only [Function.comp_def, Real.zero_rpow hs.ne'] using
-      ((Real.continuous_rpow_const hs.le).tendsto (0 : ℝ)).comp hn
-  filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one),
+  have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) :=
+    (tendsto_norm_zero (E := ℂ)).mono_left nhdsWithin_le_nhds
+  have ht (s : ℝ) (hs : 0 < s) := hn.rpow_const_nhds_zero hs
+  filter_upwards [hn.eventually_lt_const zero_lt_one,
     (ht (1 - ξ) (sub_pos.mpr hξ₁)).eventually (gt_mem_nhds hε₀),
     (ht ξ hξ).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
     self_mem_nhdsWithin] with z hz hzε hzξ hz0

@@ -4,11 +4,13 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import DOZZ.GMC.Annulus.PositiveBase
+public import DOZZ.GMC.Annulus.ClippedDyadic
 public import DOZZ.GMC.Annulus.CutoffScale
 public import DOZZ.GMC.Annulus.BallCover
 public import DOZZ.GMC.Moments.WeightedCutoffPositiveSubunit
 public import DOZZ.GMC.Moments.WeightedLpFiniteSum
+public import DOZZ.MeasureTheory.PowerSums
+public import DOZZ.GMC.Moments.PositiveExponent
 
 /-! Local finite-cutoff ball moments through the first positive-moment induction step. -/
 
@@ -26,10 +28,10 @@ theorem ennreal_lintegral_rpow_const_mul_root_eq
     (hfmom : (∫⁻ ω, ENNReal.rpow (f ω) p ∂P) < ⊤) :
     (∫⁻ ω, ENNReal.rpow (c * f ω) p ∂P) ^ (1 / p) =
       c * (∫⁻ ω, ENNReal.rpow (f ω) p ∂P) ^ (1 / p) := by
-  have hp0 : 0 ≤ p := hp.le
+  have hp0  := hp.le
   have hpowMeas : AEMeasurable (fun ω => ENNReal.rpow (f ω) p) P :=
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hf
-  have hcPow : c ^ p < ⊤ :=
+  have hcPow  :=
     lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg hp0 hc.ne)
   have hfactor :
       (∫⁻ ω, ENNReal.rpow (c * f ω) p ∂P) =
@@ -38,136 +40,67 @@ theorem ennreal_lintegral_rpow_const_mul_root_eq
       _ = ∫⁻ ω, c ^ p * ENNReal.rpow (f ω) p ∂P := by
         apply lintegral_congr
         intro ω
-        exact ENNReal.mul_rpow_of_nonneg c (f ω) hp0
+        apply ENNReal.mul_rpow_of_nonneg <;> assumption
       _ = _ := lintegral_const_mul'' _ hpowMeas
   have hroot : (c ^ p) ^ (1 / p) = c := by
-    rw [← ENNReal.rpow_mul]
-    rw [show p * (1 / p) = 1 by field_simp [ne_of_gt hp]]
+    rw [← ENNReal.rpow_mul, show p * (1 / p) = 1 by field_simp [ne_of_gt hp]]
     exact ENNReal.rpow_one c
   rw [hfactor, ENNReal.mul_rpow_of_ne_top hcPow.ne hfmom.ne, hroot]
-
-private theorem ennreal_ofReal_rpow_of_pos_upto_two {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal = (ENNReal.ofReal x).toReal ^ p :=
-      (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal :=
-      (ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)).symm
 
 /-- Extracting a positive real scale from an `ENNReal` moment root. -/
 theorem ennreal_root_mul_ofReal_rpow_eq
     (C : ℝ≥0∞) (hC : C < ⊤) (a xi p : ℝ) (ha : 0 < a) (hp : 0 < p) :
     (C * ENNReal.ofReal (a ^ xi)) ^ (1 / p) =
       C ^ (1 / p) * ENNReal.ofReal (a ^ (xi / p)) := by
-  have hreal : 0 < a ^ xi := Real.rpow_pos_of_pos ha xi
+  have hreal  := Real.rpow_pos_of_pos ha xi
   calc
     _ = C ^ (1 / p) * ENNReal.rpow (ENNReal.ofReal (a ^ xi)) (1 / p) :=
       ENNReal.mul_rpow_of_ne_top hC.ne ENNReal.ofReal_ne_top _
     _ = C ^ (1 / p) * ENNReal.ofReal ((a ^ xi) ^ (1 / p)) := by
-      rw [ennreal_ofReal_rpow_of_pos_upto_two hreal]
+      rw [ennreal_ofReal_rpow_of_pos hreal]
     _ = C ^ (1 / p) * ENNReal.ofReal (a ^ (xi / p)) := by
       congr 2
       rw [← Real.rpow_mul ha.le]
       congr 1
       field_simp [ne_of_gt hp]
 
-private theorem weighted_cutoff_rpow_exponent_relation (γ α p : ℝ)
-    (hγ : 0 < γ) (hp : 0 < p) :
-    -γ * α + (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p =
-      weightedCutoffMomentScaleExponent γ α p / p := by
-  dsimp [weightedCutoffMomentScaleExponent, Q]
-  field_simp [ne_of_gt hγ, ne_of_gt hp]
+private theorem weighted_cutoff_scaled_rpow (γ α p δ A : ℝ)
+    (hγ : 0 < γ) (hp : 0 < p) (hδ : 0 < δ) (hA : 0 ≤ A) :
+    δ ^ (-γ * α) * (A * δ) ^ (gmcScaleExponent γ p / p) =
+      A ^ (gmcScaleExponent γ p / p) * δ ^ (weightedCutoffMomentScaleExponent γ α p / p) := by
+  rw [Real.mul_rpow hA hδ.le, mul_left_comm, ← Real.rpow_add hδ]
+  congr 2
+  rw [gmcScaleExponent_eq_Q γ p hγ.ne']
+  unfold weightedCutoffMomentScaleExponent
+  field_simp
   ring
 
 theorem weighted_cutoff_core_rpow_identity
     (γ α p δ : ℝ) (hγ : 0 < γ) (hp : 0 < p) (hδ : 0 < δ) :
-    δ ^ (-γ * α) * (δ / (1 / 8 : ℝ)) ^
-      ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) =
-      ((1 / 8 : ℝ)⁻¹) ^
-        ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
+    δ ^ (-γ * α) * (δ / (1 / 8 : ℝ)) ^ (gmcScaleExponent γ p / p) =
+      ((1 / 8 : ℝ)⁻¹) ^ (gmcScaleExponent γ p / p) *
         δ ^ (weightedCutoffMomentScaleExponent γ α p / p) := by
-  have hδbase : 0 ≤ δ := hδ.le
-  have hrecip : 0 ≤ (1 / 8 : ℝ)⁻¹ := by positivity
-  rw [show δ / (1 / 8 : ℝ) = δ * (1 / 8 : ℝ)⁻¹ by field_simp]
-  rw [Real.mul_rpow hδbase hrecip]
-  calc
-    _ = (δ ^ (-γ * α) * δ ^
-          ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p)) *
-          ((1 / 8 : ℝ)⁻¹) ^
-            ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) := by ac_rfl
-    _ = δ ^ (-γ * α +
-          (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
-          ((1 / 8 : ℝ)⁻¹) ^
-            ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) := by
-      rw [← Real.rpow_add hδ]
-    _ = _ := by
-      rw [weighted_cutoff_rpow_exponent_relation γ α p hγ hp]
-      ring
+  rw [div_eq_inv_mul δ]
+  exact weighted_cutoff_scaled_rpow γ α p δ _ hγ hp hδ (by positivity)
 
 theorem weighted_cutoff_shell_rpow_identity
     (γ α p R : ℝ) (hγ : 0 < γ) (hp : 0 < p) (hR : 0 < R) (n : ℕ) :
     (cutoffDyadicBallRadius R (n + 1)) ^ (-γ * α) *
-      (cutoffDyadicBallRadius R n / (1 / 8 : ℝ)) ^
-        ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) =
-      (2 / (1 / 8 : ℝ)) ^
-          ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
+      (cutoffDyadicBallRadius R n / (1 / 8 : ℝ)) ^ (gmcScaleExponent γ p / p) =
+      (2 / (1 / 8 : ℝ)) ^ (gmcScaleExponent γ p / p) *
         R ^ (weightedCutoffMomentScaleExponent γ α p / p) *
           ((1 / 2 : ℝ) ^ (weightedCutoffMomentScaleExponent γ α p / p)) ^ (n + 1) := by
-  let ρ : ℝ := cutoffDyadicBallRadius R (n + 1)
+  let ρ := cutoffDyadicBallRadius R (n + 1)
   have hρ : 0 < ρ := by dsimp [ρ, cutoffDyadicBallRadius]; positivity
-  have hstep : cutoffDyadicBallRadius R n = 2 * ρ := by
+  have hratio : cutoffDyadicBallRadius R n / (1 / 8 : ℝ) = (2 / (1 / 8 : ℝ)) * ρ := by
     dsimp [ρ, cutoffDyadicBallRadius]
     rw [pow_succ]
     field_simp
-  have hratio : cutoffDyadicBallRadius R n / (1 / 8 : ℝ) =
-      (2 / (1 / 8 : ℝ)) * ρ := by
-    rw [hstep]
-    field_simp
-  have hrel := weighted_cutoff_rpow_exponent_relation γ α p hγ hp
   have hrad : ρ = R * (1 / 2 : ℝ) ^ (n + 1) := by
-    dsimp [ρ, cutoffDyadicBallRadius]
-    rw [show (1 / 2 : ℝ) = (2 : ℝ)⁻¹ by norm_num, inv_pow]
-    field_simp
-  calc
-    _ = ρ ^ (-γ * α) *
-        ((2 / (1 / 8 : ℝ)) ^
-          ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
-          ρ ^ ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p)) := by
-      rw [show cutoffDyadicBallRadius R (n + 1) = ρ by rfl, hratio,
-        Real.mul_rpow (by positivity) hρ.le]
-    _ = (2 / (1 / 8 : ℝ)) ^
-          ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
-        ρ ^ (weightedCutoffMomentScaleExponent γ α p / p) := by
-      calc
-        _ = (2 / (1 / 8 : ℝ)) ^
-            ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
-            (ρ ^ (-γ * α) * ρ ^
-              ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p)) := by ac_rfl
-        _ = (2 / (1 / 8 : ℝ)) ^
-            ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
-            ρ ^ (-γ * α +
-              (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) := by
-          rw [← Real.rpow_add hρ]
-        _ = _ := by rw [hrel]
-    _ = (2 / (1 / 8 : ℝ)) ^
-          ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
-        (R ^ (weightedCutoffMomentScaleExponent γ α p / p) *
-          ((1 / 2 : ℝ) ^ (weightedCutoffMomentScaleExponent γ α p / p)) ^ (n + 1)) := by
-      rw [hrad, Real.mul_rpow hR.le (by positivity)]
-      have hhalf : 0 ≤ (1 / 2 : ℝ) := by norm_num
-      rw [← Real.rpow_natCast_mul hhalf (n + 1)
-          (weightedCutoffMomentScaleExponent γ α p / p)]
-      rw [show ((n + 1 : ℕ) : ℝ) *
-          (weightedCutoffMomentScaleExponent γ α p / p) =
-          (weightedCutoffMomentScaleExponent γ α p / p) * (n + 1 : ℕ) by ring,
-        Real.rpow_mul_natCast hhalf]
-    _ = _ := by ring
+    simp [ρ, cutoffDyadicBallRadius, div_eq_mul_inv, inv_pow]
+  rw [hratio, weighted_cutoff_scaled_rpow γ α p ρ _ hγ hp hρ (by positivity), hrad,
+    Real.mul_rpow hR.le (by positivity), ← Real.rpow_natCast_mul (by positivity), mul_comm (↑(n + 1) : ℝ),
+    Real.rpow_mul_natCast (by positivity), mul_assoc]
 
 /-- For `p ≥ 1`, the positive-charge cutoff moment is bounded by the finite sum of the `Lᵖ`
 sizes of its core and dyadic shell masses. This is the form used with the first induction-step
@@ -190,16 +123,16 @@ theorem cutoffWeightedGmcBallMoment_positive_lp_shell_bound
           regularizedGMC P Xc γ (Real.log (1 / δ)) ω
             (Metric.ball z (cutoffDyadicBallRadius R n))) ^ p ∂P) ^ (1 / p) := by
   classical
-  let core : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (δ ^ (-γ * α)) *
+  let core  := fun ω => ENNReal.ofReal (δ ^ (-γ * α)) *
     regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z δ)
-  let shell : ℕ → Ω → ℝ≥0∞ := fun n ω => cutoffDyadicBallWeight γ α R N n *
+  let shell  := fun n ω => cutoffDyadicBallWeight γ α R N n *
     regularizedGMC P Xc γ (Real.log (1 / δ)) ω
       (Metric.ball z (cutoffDyadicBallRadius R n))
-  let term : Option ℕ → Ω → ℝ≥0∞ := fun i ω =>
+  let term  := fun i ω =>
     match i with
     | none => core ω
     | some n => shell n ω
-  let indices : Finset (Option ℕ) :=
+  let indices  :=
     insert none ((Finset.range (N + 1)).image some)
   have hcoreMeas : AEMeasurable core P := by
     dsimp [core]
@@ -225,15 +158,13 @@ theorem cutoffWeightedGmcBallMoment_positive_lp_shell_bound
     · apply Finset.sum_congr rfl
       intro n hn
       have hnle : n ≤ N := by
-        have : n < N + 1 := Finset.mem_range.mp hn
+        have  := Finset.mem_range.mp hn
         omega
       simp [shell, cutoffDyadicBallWeight, hnle]
     · intro n hn
       have hnrange : ¬ n < N + 1 := by
         intro hnlt
         exact hn (Finset.mem_range.mpr hnlt)
-      have hnlt : N < n := by
-        omega
       have hnle : ¬ n ≤ N := by omega
       simp [hnle]
   have hdecomp (ω : Ω) :
@@ -246,7 +177,7 @@ theorem cutoffWeightedGmcBallMoment_positive_lp_shell_bound
       (regularizedGMC P Xc γ (Real.log (1 / δ)) ω) γ α z R δ N
       hγ hα hR hδ hNlo
     rw [htsum ω] at h
-    simpa [core, shell, cutoffDyadicBallWeight] using h
+    assumption
   have hsum : ∀ ω, ∑ i ∈ indices, term i ω =
       core ω + ∑ n ∈ Finset.range (N + 1), shell n ω := by
     intro ω
@@ -260,7 +191,7 @@ theorem cutoffWeightedGmcBallMoment_positive_lp_shell_bound
     _ ≤ (∫⁻ ω, ENNReal.rpow (∑ i ∈ indices, term i ω) p ∂P) ^ (1 / p) := by
       apply ENNReal.rpow_le_rpow
       · exact lintegral_mono hpoint
-      · exact one_div_nonneg.mpr (le_trans zero_le_one hp)
+      positivity
     _ ≤ ∑ i ∈ indices, (∫⁻ ω, ENNReal.rpow (term i ω) p ∂P) ^ (1 / p) :=
       ennreal_lintegral_rpow_finset_sum_root_le indices term p hp htermMeas
     _ = _ := by
@@ -271,9 +202,9 @@ annular exponent margin. -/
 noncomputable def cutoffWeightedPositiveScaleRootBoundConstant
     (A : ℝ≥0∞) (γ p ε : ℝ) : ℝ≥0∞ :=
   A * (ENNReal.ofReal (((1 / 8 : ℝ)⁻¹) ^
-      ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p)) +
+      ((gmcScaleExponent γ p) / p)) +
     ENNReal.ofReal ((2 / (1 / 8 : ℝ)) ^
-      ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p)) *
+      ((gmcScaleExponent γ p) / p)) *
       ENNReal.ofReal ((1 / 2 : ℝ) ^ ε) *
       (1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ ε))⁻¹)
 

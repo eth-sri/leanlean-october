@@ -15,10 +15,12 @@ open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+include hX
+
 /-- Spatial integration of the Wick root density is integration against the cutoff chaos. -/
 theorem regularizedGMC_root_sample_lintegral
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ r : ℝ) (Ψ : ℂ × Ω → ℝ≥0∞) (hΨ : Measurable Ψ) :
     (∫⁻ ω, ∫⁻ u, Ψ (u, ω) ∂regularizedGMC P Xc γ r ω ∂P) =
@@ -30,21 +32,11 @@ theorem regularizedGMC_root_sample_lintegral
   let w : ℂ × Ω → ℝ≥0∞ := fun q => ENNReal.ofReal
     (Real.exp (γ * Xc q.2 q.1 r - γ ^ 2 / 2 * V q.1))
   have hV : Measurable V := by
-    have hg : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
-      ((hXc.1 r).comp measurable_swap).pow_const 2
-    exact hg.stronglyMeasurable.integral_prod_right.measurable
+    exact (((hXc.1 r).comp measurable_swap).pow_const 2).stronglyMeasurable.integral_prod_right.measurable
   have hn : Measurable (fun u : ℂ => normPlus u) :=
     measurable_const.max measurable_norm
   have hb : Measurable b := by
-    dsimp [b]
-    apply ENNReal.measurable_ofReal.comp
-    have heq : (fun u : ℂ => normPlus u ^ (-4 : ℝ)) =
-        fun u => Real.exp ((-4 : ℝ) * Real.log (normPlus u)) := by
-      funext u
-      rw [Real.rpow_def_of_pos (by unfold normPlus; positivity), mul_comm]
-    rw [heq]
-    exact Real.measurable_exp.comp
-      (measurable_const.mul (Real.measurable_log.comp hn))
+    fun_prop
   have hw : Measurable w := by
     have hx : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r) :=
       (hXc.1 r).comp measurable_swap
@@ -92,8 +84,6 @@ theorem regularizedGMC_root_sample_lintegral
 
 /-- The integrated finite-circle root identity with the limiting chaos as its mark. -/
 theorem regularizedGMC_integrated_rooted_limiting_mark_identity
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hMmeas : Measurable M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ)
@@ -116,5 +106,7 @@ theorem regularizedGMC_integrated_rooted_limiting_mark_identity
   intro u
   exact gmc_joint_single_circle_tilt P X hX γ hγ hγ2 M hM Xc hXc u r (H u)
     (hH.comp (measurable_const.prodMk measurable_id))
+
+end
 
 end DOZZ.Proofs

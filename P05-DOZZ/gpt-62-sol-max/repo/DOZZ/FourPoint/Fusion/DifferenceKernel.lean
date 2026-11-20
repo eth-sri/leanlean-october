@@ -12,13 +12,16 @@ open MeasureTheory Set
 namespace DOZZ.Proofs
 noncomputable def fusionDifferenceKernel (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) : ℝ :=
   gammaHalfKernel γ α₁ α₂ α₃ z x - gammaHalfKernel γ α₁ α₂ α₃ 0 x
+section
+variable (γ α₁ α₂ α₃ : ℝ)
+
 /-- The difference kernel is jointly measurable. -/
-theorem fusionDifferenceKernel_measurable (γ α₁ α₂ α₃ : ℝ) :
+theorem fusionDifferenceKernel_measurable :
     Measurable (fun q : ℂ × ℂ => fusionDifferenceKernel γ α₁ α₂ α₃ q.1 q.2) :=
   (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).sub
     ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (measurable_const.prodMk measurable_snd))
 /-- In the local chart the difference has exactly the first-subtracted planar kernel. -/
-theorem fusion_difference_kernel_local (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
+theorem fusion_difference_kernel_local (z x : ℂ)
     (hx : ‖x‖ < 1 / 2) :
     fusionDifferenceKernel γ α₁ α₂ α₃ z x =
       planarDifferenceKernel (γ ^ 2 / 2) (γ * α₁) z x * ‖x - 1‖ ^ (-γ * α₂) := by
@@ -31,7 +34,7 @@ theorem fusion_difference_kernel_local (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
   rw [hn, Real.one_rpow, mul_one, mul_one, sub_zero, neg_mul γ α₂, Real.rpow_neg h1.le]
   ring
 /-- Local scaling of the signed difference preserves its sign. -/
-theorem fusion_difference_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
+theorem fusion_difference_kernel_scaled (y z : ℂ)
     (hz : z ≠ 0) (hlocal : ‖y * z‖ < 1 / 2) :
     fusionDifferenceKernel γ α₁ α₂ α₃ z (y * z) =
       ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) *
@@ -47,7 +50,7 @@ theorem fusion_difference_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
     ring
   rw [he, mul_assoc]
 /-- The local signed difference is absolutely integrable against the reference measure. -/
-theorem fusion_difference_local_integrable (γ α₁ α₂ α₃ : ℝ)
+theorem fusion_difference_local_integrable
     (hk : 0 < γ ^ 2 / 2) (hβ : γ ^ 2 / 2 + 1 < γ * α₁) (hβ2 : γ * α₁ < 2)
     (z : ℂ) (_hz : z ≠ 0) :
     Integrable ((Metric.ball (0 : ℂ) (1 / 2)).indicator
@@ -79,4 +82,6 @@ theorem fusion_difference_local_integrable (γ α₁ α₂ α₃ : ℝ)
       have hx' : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
       linarith)]
   exact (integrable_indicator_iff Metric.isOpen_ball.measurableSet).mp hv
+
+end
 end DOZZ.Proofs

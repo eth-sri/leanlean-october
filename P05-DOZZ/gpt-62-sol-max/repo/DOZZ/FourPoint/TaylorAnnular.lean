@@ -6,7 +6,7 @@ module
 
 public import DOZZ.FourPoint.TaylorOneRootIdentity
 public import DOZZ.FourPoint.TaylorAnnularKernel
-public import DOZZ.FourPoint.TaylorRadialTail
+public import DOZZ.FourPoint.TaylorRadialBall
 
 /-! The supplied-GMC annular contribution with the literal κ-2 radial gain. -/
 
@@ -56,10 +56,10 @@ theorem twoRooted_annular_bound
       (hρ.trans_le hxr) (by linarith only [hz, hxr])
   have hkernel : (∫⁻ x in B, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2)) ≤
       ENNReal.ofReal k * (∫⁻ x : ℂ in (Metric.ball 0 ρ)ᶜ, ENNReal.ofReal (‖x‖ ^ a)) := by
-    calc
-      _ ≤ ∫⁻ x in B, ENNReal.ofReal k * ENNReal.ofReal (‖x‖ ^ a) := setLIntegral_mono' hB hpoint
-      _ = ENNReal.ofReal k * ∫⁻ x in B, ENNReal.ofReal (‖x‖ ^ a) := lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-      _ ≤ _ := mul_le_mul' le_rfl (lintegral_mono_set (fun x hx => hx.2))
+    exact Trans.trans
+      (Trans.trans (setLIntegral_mono' hB hpoint)
+        (lintegral_const_mul' (ENNReal.ofReal k) (fun x => ENNReal.ofReal (‖x‖ ^ a)) ENNReal.ofReal_ne_top))
+      (mul_le_mul' le_rfl (lintegral_mono_set fun x hx => hx.right))
   calc
     _ ≤ ENNReal.ofReal C₀ * (ENNReal.ofReal k * (∫⁻ x : ℂ in (Metric.ball 0 ρ)ᶜ, ENNReal.ofReal (‖x‖ ^ a))) :=
       (hsp z hz4 B hB hunit).trans (mul_le_mul' le_rfl hkernel)

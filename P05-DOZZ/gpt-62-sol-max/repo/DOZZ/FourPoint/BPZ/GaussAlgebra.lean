@@ -27,9 +27,7 @@ namespace DOZZ.Proofs
 /-- Clearing the common denominator in a three-term combination. -/
 theorem bpz_gauss_div_combo {d W2 X W1 Y T : ℂ} (hd : d ≠ 0)
     (h : d * W2 + X * W1 - Y * T = 0) : W2 + X / d * W1 - Y / d * T = 0 := by
-  have e : W2 + X / d * W1 - Y / d * T = (d * W2 + X * W1 - Y * T) / d := by
-    field_simp
-  rw [e, h, zero_div]
+  grind
 
 /-- The quadratic relation `χ Q = χ² + 1` for both degenerate values of `χ`. -/
 theorem bpz_gauss_chi_relation {γ χ : ℝ} (hγ : γ ≠ 0) (hχ : χ = γ / 2 ∨ χ = 2 / γ) :
@@ -94,8 +92,8 @@ theorem bpz_gauss_of_ward {γ χ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (hχ : 
         ((gaussParameterB γ χ α₁ α₂ α₃ : ℝ) : ℂ) + 1)) / (z * (1 - z)) * W1 -
       ((gaussParameterA γ χ α₁ α₂ α₃ : ℝ) : ℂ) * ((gaussParameterB γ χ α₁ α₂ α₃ : ℝ) : ℂ) /
         (z * (1 - z)) * (T : ℂ) = 0 := by
-  have hγ0 : γ ≠ 0 := hγ.ne'
-  have hd : z * (1 - z) ≠ 0 := mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))
+  have hγ0  := hγ.ne'
+  have hd  := mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))
   have hQ := bpz_gauss_chi_relation hγ0 hχ
   have hC := congrArg (fun x : ℝ => (x : ℂ)) (bpz_gauss_C_eq (α₁ := α₁) hQ)
   have hAB := congrArg (fun x : ℝ => (x : ℂ)) (bpz_gauss_sum_eq (α₁ := α₁) (α₂ := α₂)

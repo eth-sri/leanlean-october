@@ -35,10 +35,13 @@ open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
+  (γ μ χ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
+include Ω hγ hγ₂
+
 /-- The BPZ equation, for a measurable GMC measure. -/
-theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2)
+theorem bpz_gauss_of_measurable
     (hχ : χ = γ / 2 ∨ χ = 2 / γ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 2 * Q γ + χ < α₁ + α₂ + α₃)
@@ -98,9 +101,7 @@ theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
 /-- **The BPZ equation** (proof of `DOZZ.degenerateFourPoint_BPZ`): for either degenerate
 insertion, the reduced function `T` satisfies the Wirtinger form of the Gauss equation with the
 parameters of [KRV, (defabcfirst)]. -/
-theorem degenerateFourPoint_BPZ {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
+theorem degenerateFourPoint_BPZ (hμ : 0 < μ)
     (hχ : χ = γ / 2 ∨ χ = 2 / γ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 2 * Q γ + χ < α₁ + α₂ + α₃)
@@ -118,5 +119,7 @@ theorem degenerateFourPoint_BPZ {Ω : Type*} [MeasurableSpace Ω]
     funext fun z => bpz_fourPointT_congr P hMN μ (-χ) z
   rw [hT]
   exact bpz_gauss_of_measurable P X N γ μ χ α₁ α₂ α₃ hγ hγ₂ hχ hα₁ hα₂ hα₃ hs hX hN hNm
+
+end
 
 end DOZZ.Proofs

@@ -8,6 +8,7 @@ public import DOZZ.Statements.Correlations.BridgeMultiplicity
 public import DOZZ.Correlations.Analytic.MixedCoulombHolomorphic
 public import DOZZ.GMC.Construction.CircleAverageJointVersion
 public import DOZZ.GMC.Moments.RhoCoulomb
+public import DOZZ.Correlations.Analytic.UnitVolumeExtension
 
 /-! Proof of `DOZZ.unitVolumeStructureConstant_holomorphic_near_extended_domain` in the
 canonical three-point frame. -/
@@ -46,23 +47,16 @@ theorem unitVolumeStructureConstant_holomorphic_near_extended_domain
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
-    ∃ V : Set (Fin 3 → ℂ), IsOpen V ∧
-      (∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V) ∧
-      ∃ f : (Fin 3 → ℂ) → ℂ, DifferentiableOn ℂ f V ∧
-        ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-          f (complexifyNCharges α) =
-            (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ) := by
+    ∃ V f, IsUnitVolumeExtension P M γ V f := by
   obtain ⟨Xc, hc⟩ := exists_equatorGFF_circle_average_witness X hX
   have hz : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j he
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp
   obtain ⟨V, hV, hmem, f, hf, hreal⟩ := mixed_coulomb_holomorphic
     P X hX γ hγ hγ2 M hM Xc hc (![0, 1] : Fin 2 → ℂ) hz
-  refine ⟨V, hV, ?_, (fun β => (2 / γ : ℂ) * f β), ?_, ?_⟩
+  refine ⟨V, fun β => (2 / γ : ℂ) * f β, ⟨hV, ?_, hf.const_mul _, ?_⟩⟩
   · intro α hα
     obtain ⟨ha, hp, hpi⟩ := structure_extended_moment_domain γ α hα
     exact hmem α ha hp hpi
-  · exact hf.const_mul _
   · intro α hα
     obtain ⟨ha, hp, hpi⟩ := structure_extended_moment_domain γ α hα
     have he := hreal α ha hp hpi

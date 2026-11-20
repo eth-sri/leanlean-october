@@ -36,8 +36,7 @@ theorem independent_product_law
   have hid₂ : IdentDistrib (S ∘ Prod.snd) (S ∘ Prod.snd) (P.prod P) (R.prod P) :=
     ⟨h₃.aemeasurable,h₄.aemeasurable,h₃.map_eq.trans h₄.map_eq.symm⟩
   have hid := hid₁.prodMk hid₂ (indepFun_prod₀ hf hS) (indepFun_prod₀ hg hS)
-  have hm : Measurable (fun q : ℝ≥0∞ × ℝ≥0∞ => q.2*q.1) := measurable_snd.mul measurable_fst
-  exact (hid.comp hm).map_eq
+  exact (hid.comp (measurable_snd.mul measurable_fst)).map_eq
 
 
 end DOZZ.Proofs

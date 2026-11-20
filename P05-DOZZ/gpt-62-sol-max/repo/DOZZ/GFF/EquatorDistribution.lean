@@ -112,41 +112,6 @@ theorem equatorPartitionCLM_apply (n : ℕ) (f : TestFn) :
   ext z
   simp [equatorPartitionCLM, TestFunction.bilinLeftCLM_apply]
 
-theorem exists_nat_equatorPartition_tail_zero (f : TestFn) :
-    ∃ N : ℕ, ∀ n ≥ N + 1, equatorPartitionCLM n f = 0 := by
-  obtain ⟨R, hR, hball⟩ :=
-    f.hasCompactSupport.isBounded.subset_ball_lt (0 : ℝ) (0 : ℂ)
-  obtain ⟨N, hN⟩ : ∃ N : ℕ, R + 1 < N := exists_nat_gt (R + 1)
-  refine ⟨N, fun n hn => ?_⟩
-  have hnN : N ≤ n := by omega
-  have hnReal : (N : ℝ) ≤ (n : ℝ) := by exact_mod_cast hnN
-  have hprevNat : N ≤ n - 1 := by omega
-  have hprevReal : (N : ℝ) ≤ ((n - 1 : ℕ) : ℝ) := by exact_mod_cast hprevNat
-  ext z
-  rw [equatorPartitionCLM_apply]
-  by_cases hz : z ∈ tsupport f
-  · have hzball : z ∈ ball (0 : ℂ) R := hball hz
-    have hnorm : ‖z‖ < R := by simpa [mem_ball, dist_eq_norm] using hzball
-    have hbase : z ∈ closedBall (0 : ℂ) ((N : ℝ) + 2) := by
-      have hnormle : ‖z‖ ≤ (N : ℝ) + 2 := by linarith
-      simpa [mem_closedBall, dist_eq_norm] using hnormle
-    have hcur : equatorGlobalCutoff n z = 1 := by
-      apply equatorGlobalCutoff_eq_one n
-      exact closedBall_subset_closedBall (by linarith) hbase
-    have hprev : equatorGlobalCutoff (n - 1) z = 1 := by
-      apply equatorGlobalCutoff_eq_one (n - 1)
-      exact closedBall_subset_closedBall (by linarith) hbase
-    change f z * equatorPartitionFunction n z = 0
-    rw [equatorPartitionFunction, ite_eq_right (by omega : n ≠ 0)]
-    change f z * (equatorGlobalCutoff n z -
-      equatorGlobalCutoff (n - 1) z) = 0
-    rw [hcur, hprev]
-    simp
-  · have hfz : f z = 0 := by
-      by_contra hne
-      exact hz (Function.mem_support.mpr hne |> subset_tsupport f)
-    simp [hfz]
-
 theorem exists_nat_equatorPartition_zero_on_compact
     (K : TopologicalSpace.Compacts ℂ) :
     ∃ N : ℕ, ∀ n ≥ N + 1, ∀ z ∈ (K : Set ℂ),
@@ -173,6 +138,16 @@ theorem exists_nat_equatorPartition_zero_on_compact
   rw [equatorPartitionFunction, ite_eq_right (by omega : n ≠ 0), Pi.sub_apply, hcur, hprev]
   simp
 
+theorem exists_nat_equatorPartition_tail_zero (f : TestFn) :
+    ∃ N : ℕ, ∀ n ≥ N + 1, equatorPartitionCLM n f = 0 := by
+  obtain ⟨N, hN⟩ := exists_nat_equatorPartition_zero_on_compact ⟨tsupport f, f.hasCompactSupport⟩
+  refine ⟨N, fun n hn => ?_⟩
+  ext z
+  rw [equatorPartitionCLM_apply]
+  by_cases hz : z ∈ tsupport f
+  · simp [hN n hn z hz]
+  · simp [image_eq_zero_of_notMem_tsupport hz]
+
 /-- The local continuous distribution selected for a sample in the full-measure event. -/
 noncomputable def equatorLocalChartCLM (R : ℕ)
     (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
@@ -186,13 +161,6 @@ noncomputable def equatorDistributionTerm (n : ℕ)
     (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
     (hω : equatorHaarCommonGood ω) : TestFn →L[ℝ] ℝ :=
   (equatorLocalChartCLM (n + 5) ω hω).comp (equatorPartitionCLM n)
-
-@[simp]
-theorem equatorDistributionTerm_apply (n : ℕ)
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
-    (hω : equatorHaarCommonGood ω) (f : TestFn) :
-    equatorDistributionTerm n ω hω f =
-      equatorLocalChartCLM (n + 5) ω hω (equatorPartitionCLM n f) := rfl
 
 /-- A local Fourier evaluation of the zero test is zero. -/
 @[simp]

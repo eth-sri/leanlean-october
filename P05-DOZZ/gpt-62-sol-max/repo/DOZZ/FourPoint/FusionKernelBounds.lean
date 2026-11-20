@@ -19,8 +19,8 @@ namespace DOZZ.Proofs
 theorem rpow_distance_comparison (x r m p L : ℝ)
     (hr : 0 < r) (hm : 1 ≤ m) (hl : r / m ≤ x) (hu : x ≤ m * r)
     (hpl : -L ≤ p) (hpu : p ≤ L) : x ^ p ≤ m ^ L * r ^ p := by
-  have hmpos : 0 < m := zero_lt_one.trans_le hm
-  have hx : 0 < x := (div_pos hr hmpos).trans_le hl
+  have hmpos  := zero_lt_one.trans_le hm
+  have hx  := (div_pos hr hmpos).trans_le hl
   by_cases hp : 0 ≤ p
   · calc
       x ^ p ≤ (m * r) ^ p := Real.rpow_le_rpow hx.le hu hp

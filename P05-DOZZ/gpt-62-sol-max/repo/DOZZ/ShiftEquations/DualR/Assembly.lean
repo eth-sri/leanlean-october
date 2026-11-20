@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
+import DOZZ.ShiftEquations.Gluing.ReflectedClosed
+import DOZZ.ShiftEquations.Inversion.Reduction
 public import DOZZ.ShiftEquations.DualR.Generic
 public import DOZZ.ShiftEquations.DualR.AnalyticR
 public import DOZZ.Statements.FourPoint.DualCrossingL
@@ -11,15 +13,10 @@ import DOZZ.ShiftEquations.Residual.Joint
 import DOZZ.ShiftEquations.Gluing.Meromorphy
 import DOZZ.ShiftEquations.Shift.ShiftGluing
 import DOZZ.Brownian.Reflection.RtheorAnalytic
+public import DOZZ.ShiftEquations.Representatives
 
 /-!
 # The dual shift of the reflection coefficient, from its inputs
-
-`reflectionR_dual_shift_unknown_constant_of_deps` proves the conclusion of
-`DOZZ.reflectionR_dual_shift_unknown_constant` from the conclusions of
-`DOZZ.reflectionR_first_shift_meromorphic`, `DOZZ.reflectionBarR_holomorphic_representation`,
-`DOZZ.structureConstant_reflected_shift_and_gluing`, `DOZZ.reflectionR_inversion_meromorphic` and
-`DOZZ.dual_crossing_seed_two`, at the given field, chaos, coupling and cosmological constant.
 
 Route ([KRV, §10.5]): the dual shift holds at generic real points just below `γ/2`
 (`dualShift_eventually`), hence by the identity theorem near every point of the strip of the
@@ -34,102 +31,28 @@ open MeasureTheory Filter Topology Set
 
 namespace DOZZ.Proofs
 
-/-- **`DOZZ.reflectionR_dual_shift_unknown_constant` from its inputs.** -/
-theorem reflectionR_dual_shift_unknown_constant_of_deps
+/-- The dual shift of the reflection coefficient, with a nonzero constant determined by `R(γ)`. -/
+theorem reflectionR_dual_shift_unknown_constant
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ μ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hFirstShift : ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ R : ℂ → ℂ,
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) =
-                  (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              ∀ᶠ z in codiscrete ℂ,
-                R (z - γ / 2) =
-                  -(μ * Real.pi : ℂ) * R z /
-                    (lFun (-((γ : ℂ) ^ 2) / 4) *
-                      lFun ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4) *
-                      lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)))
-    (hBarRRepresentation : ∀ I : Set ℝ, IsCompact I → (∀ α ∈ I, γ / 2 < α ∧ α < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ (∀ α ∈ I, IsReflectionData P γ α (B α) Z) ∧
-          ∃ V : Set ℂ, IsOpen V ∧ (∀ α ∈ I, (α : ℂ) ∈ V) ∧
-            ∃ f : ℂ → ℂ, DifferentiableOn ℂ f V ∧
-              (∀ α ∈ I, f (α : ℂ) = (unitVolumeStructureConstant P M γ α γ α : ℂ)) ∧
-              DifferentiableOn ℂ (fun z => rbarCoefficient γ z * f z) V ∧
-              (∀ α ∈ I, rbarCoefficient γ (α : ℂ) * f (α : ℂ) =
-                (reflectionBarR P γ α (B α) Z : ℂ)))
-    (hShiftGluing : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
-      (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ, C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
-    (hInversion : ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ R : ℂ → ℂ,
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) =
-                  (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              ∀ᶠ z in codiscrete ℂ, R z * R (2 * Q γ - z) = 1)
-    (hSeed : ∀ α ε α' : ℝ, α < Q γ → ε < Q γ → α' < Q γ → 2 * Q γ + 2 / γ < α + ε + α' →
-      ∃ Bε Bα : Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ ε Bε Z ∧
-          IsReflectionData P γ α Bα Z ∧
-          reflectionR P γ μ ε Bε Z * structureConstant P M γ μ (2 * Q γ - ε - 2 / γ) α α' =
-            dualCrossingL γ ε α α' * reflectionR P γ μ α Bα Z *
-              structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α') :
-    ∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ R : ℂ → ℂ,
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) =
-                  (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              ∃ cγ : ℂ, cγ ≠ 0 ∧
-                cγ = ((γ : ℂ) ^ 2 / 4) * (μ * Real.pi : ℂ) * R γ ∧
-                ∀ᶠ z in codiscrete ℂ,
-                  R z = -cγ * R (z + 2 / γ) /
-                    (lFun (-4 / (γ : ℂ) ^ 2) * lFun (2 * z / γ) *
-                      lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * z / γ)) := by
-  obtain ⟨B, Z, hproj, hBd, h, hh, R, hRm, hRv, hshift⟩ := hFirstShift
-  obtain ⟨B₅, Z₅, -, hB₅, h₅, hh₅, R₅, hR₅m, hR₅v, hinv⟩ := hInversion
+    (hSeed : HasDualCrossing P X M γ μ) :
+    HasDualReflectionShift P X M γ μ := by
+  have hShiftGluing := fun η hη =>
+    structureConstant_reflected_shift_and_gluing P X M γ μ η hγ hγ2 hμ hη hX hM
+  obtain ⟨B, Z, hproj, hBd, h, hh, R, hRm, hRv, hshift⟩ :=
+    reflectionR_first_shift_meromorphic P X M γ μ hγ hγ2 hμ hX hM
+  obtain ⟨B₅, Z₅, -, hB₅, h₅, hh₅, R₅, hR₅m, hR₅v, hinv⟩ :=
+    reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing P X M γ μ hγ hγ2 hμ hX hM hShiftGluing
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+  have hγh := half_gamma_lt_two_div hγ hγ2
   have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
-  have hRγ := analyticAt_reflection_gamma P X M hγ hγ2 hμ hγirr hBarRRepresentation hh hRm hBd hRv
+  have hRγ := analyticAt_reflection_gamma P X M hγ hγ2 hμ hγirr hX hM hh hRm hBd hRv
   have hev := dualShift_eventually P X M hγ hγ2 hγirr hμ hX hM hSeed hShiftGluing hh hRm hBd hRv hshift
     hRγ hh₅ hR₅m hB₅ hR₅v hinv
   set cγ : ℂ := (γ : ℂ) ^ 2 / 4 * (μ * Real.pi : ℂ) * R γ with hcγ
-  set D : ℂ → ℂ := fun z => lFun (-4 / (γ : ℂ) ^ 2) * lFun (2 * z / γ) *
-    lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * z / γ) with hD
+  set D : ℂ → ℂ := fun z => reflectionDualShiftDenom γ z with hD
   set G : ℂ → ℂ := fun z => -cγ * R (z + ((2 / γ : ℝ) : ℂ)) / D z with hG
   have hGm : MeromorphicOn G (horizontalStrip h) := by
     intro z hz

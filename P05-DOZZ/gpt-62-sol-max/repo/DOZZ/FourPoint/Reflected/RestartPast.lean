@@ -81,22 +81,18 @@ theorem reflected_radial_future_indep_full_past_lateral
   have hplus := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
   have hpair : IndepFun (fun ω => (F (A ω), H (A ω)))
       (fun ω => radialNegativeHalf (A ω)) P := by
-    have hm : Measurable (fun p => (brownianShiftPath T p, stopBrownianPath p T)) :=
-      (continuous_brownianShiftPath.measurable.comp
+    exact (radialHalves_indepFun P A hhalves).comp₀ hplus hminus ((continuous_brownianShiftPath.measurable.comp
         (measurable_const.prodMk measurable_id)).prodMk
-      (continuous_stopBrownianPath.measurable.comp (measurable_const.prodMk measurable_id))
-    exact (radialHalves_indepFun P A hhalves).comp₀ hplus hminus hm.aemeasurable
+      (continuous_stopBrownianPath.measurable.comp (measurable_const.prodMk measurable_id))).aemeasurable
       measurable_id.aemeasurable
   have hfp := reflected_radial_future_indep_stopped_past P A hA hB T
   have hfull := reflected_independence_regroup P
     (fun ω => F (A ω)) (fun ω => H (A ω)) (fun ω => radialNegativeHalf (A ω))
     (hF.comp_aemeasurable hA) (hH.comp_aemeasurable hA) hminus hfp hpair
-  have hfullN : IndepFun (fun ω => (F (A ω), (H (A ω), radialNegativeHalf (A ω)))) N P :=
-    hi.comp₀ hA hN (hF.prodMk (hH.prodMk continuous_radialNegativeHalf.measurable)).aemeasurable
-      measurable_id.aemeasurable
   exact reflected_independence_regroup P (fun ω => F (A ω))
     (fun ω => (H (A ω), radialNegativeHalf (A ω))) N
     (hF.comp_aemeasurable hA)
-    ((hH.comp_aemeasurable hA).prodMk hminus) hN hfull hfullN
+    ((hH.comp_aemeasurable hA).prodMk hminus) hN hfull (hi.comp₀ hA hN (hF.prodMk (hH.prodMk continuous_radialNegativeHalf.measurable)).aemeasurable
+      measurable_id.aemeasurable)
 
 end DOZZ.Proofs

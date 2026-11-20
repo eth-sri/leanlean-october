@@ -15,14 +15,14 @@ namespace DOZZ.Proofs
 theorem dual_inner_kernel_factor_spatial_tendsto (R a h : ℝ) :
     Tendsto (fun z : ℂ => (1+R)^(2 : ℝ)*
       (1-Real.exp (-h)*‖z‖)⁻¹^a) (𝓝[≠] (0 : ℂ)) (𝓝 ((1+R)^(2 : ℝ))) := by
-  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 (0 : ℝ)) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 (0 : ℝ)) :=
+    (tendsto_norm_zero (E := ℂ)).mono_left nhdsWithin_le_nhds
   have hbase := (tendsto_const_nhds.sub (hn.const_mul (Real.exp (-h)))).inv₀
     (by norm_num : (1 : ℝ)-Real.exp (-h)*0 ≠ 0)
   have hp := (Real.continuousAt_rpow_const 1 a (Or.inl one_ne_zero)).tendsto
   have hb : Tendsto (fun z : ℂ => (1-Real.exp (-h)*‖z‖)⁻¹) (𝓝[≠] (0 : ℂ)) (𝓝 (1 : ℝ)) := by
     simpa only [mul_zero, sub_zero, inv_one] using hbase
-  simpa only [Real.one_rpow, mul_one, Function.comp_def] using (hp.comp hb).const_mul ((1+R)^(2 : ℝ))
+  simpa using (hp.comp hb).const_mul ((1+R)^(2 : ℝ))
 
 /-- After the spatial limit, both relative kernel factors approach one as the buffer grows. -/
 theorem dual_inner_kernel_factor_buffer_tendsto (s : ℝ) :
@@ -44,8 +44,7 @@ theorem dual_inner_kernel_relative_error_spatial_tendsto (γ α h : ℝ) :
         |(1+Real.exp (-h))^(2 : ℝ)-1|)) := by
   have hlo := dual_inner_kernel_factor_spatial_tendsto (-Real.exp (-h)) (-|γ*α|) h
   have hhi := dual_inner_kernel_factor_spatial_tendsto (Real.exp (-h)) |γ*α| h
-  simpa only [sub_eq_add_neg] using
-    ((hlo.sub (tendsto_const_nhds (x := (1 : ℝ)))).abs).max ((hhi.sub (tendsto_const_nhds (x := (1 : ℝ)))).abs)
+  exact ((hlo.sub (tendsto_const_nhds (x := (1 : ℝ)))).abs).max ((hhi.sub (tendsto_const_nhds (x := (1 : ℝ)))).abs)
 
 /-- The fixed-buffer relative error tends to zero after the spatial limit. -/
 theorem dual_inner_kernel_relative_error_buffer_tendsto :

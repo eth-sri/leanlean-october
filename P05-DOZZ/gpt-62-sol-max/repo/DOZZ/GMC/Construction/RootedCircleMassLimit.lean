@@ -16,22 +16,6 @@ open scoped Distributions ENNReal
 
 namespace DOZZ.Proofs
 
-/-- Exact intensity rules out an atom at every fixed deterministic root. -/
-theorem gmc_atomless_at_root_of_isGMCOf
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (u : ℂ) :
-    ∀ᵐ ω ∂P, M ω {u} = 0 := by
-  have hmeas := gmc_set_mass_aemeasurable_of_isGMCOf
-    P X hX γ hγ hγ2 M hM {u} (measurableSet_singleton u)
-  have href : gmcReferenceMeasure {u} = 0 := by
-    exact (withDensity_absolutelyContinuous volume
-      (fun x : ℂ => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)))) (measure_singleton u)
-  exact (lintegral_eq_zero_iff' hmeas).mp
-    ((equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM {u}
-      (measurableSet_singleton u)).trans href)
-
 /-- Finiteness of the point insertion and absence of a root atom give convergence of every
 measurable-set mass of the circle insertion. The chaos measure itself is fixed throughout. -/
 theorem circleRootedMeasure_mass_tendsto

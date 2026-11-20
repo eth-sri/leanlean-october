@@ -66,34 +66,25 @@ theorem re_cutoffExponent (z : ℂ) (X : ℝ) (m : ℕ) :
 theorem re_one_sub_div (z : ℂ) (γ : ℝ) : (1 - z / γ).re = 1 - z.re / γ := by
   simp [Complex.div_ofReal_re]
 
-/-- **The pointwise bound** of the cutoff integrand. -/
-theorem norm_cutoffIntegrand_le (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) {γ : ℝ} (η : ℝ)
-    (m n : ℕ) (z : ℂ) (ω : Ω) (hL : 0 < localMassReal M γ η ω)
-    (hLB : localMassReal M γ η ω ≤ baseMassReal M γ η n ω) :
-    ‖cutoffIntegrand Xc M γ η m n z ω‖ ≤
-      Real.exp (m * z.im ^ 2 / 2) * ‖1 - z / γ‖ *
-        (Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
-          ((baseMassReal M γ η n ω - localMassReal M γ η ω) *
-            (baseMassReal M γ η n ω ^ (-z.re / γ) + localMassReal M γ η ω ^ (-z.re / γ)))) := by
-  set B := baseMassReal M γ η n ω
-  set L := localMassReal M γ η ω
-  have hpow := norm_ofReal_cpow_sub_ofReal_cpow_le hL hLB (1 - z / γ)
-  rw [re_one_sub_div] at hpow
-  have he : 1 - z.re / γ - 1 = -z.re / γ := by ring
-  rw [he] at hpow
-  have hexp : ‖Complex.exp (z * (Xc ω 0 m : ℂ) - (m : ℂ) * z ^ 2 / 2)‖ =
-      Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) := by
-    rw [Complex.norm_exp, re_cutoffExponent, ← Real.exp_add]
-    congr 1
-    ring
-  unfold cutoffIntegrand
-  rw [norm_mul, hexp]
-  calc Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
-        ‖(B : ℂ) ^ (1 - z / γ) - (L : ℂ) ^ (1 - z / γ)‖
-      ≤ Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
-          (‖1 - z / γ‖ * (B - L) * (B ^ (-z.re / γ) + L ^ (-z.re / γ))) :=
-        mul_le_mul_of_nonneg_left hpow (by positivity)
-    _ = _ := by ring
+/-- The real envelope for the difference of the two powers under the Gaussian tilt. -/
+noncomputable abbrev tiltedPowerGap (γ : ℝ) (m : ℕ) (a X B L : ℝ) : ℝ :=
+  Real.exp (a * X - m * a ^ 2 / 2) * ((B - L) * (B ^ (-a / γ) + L ^ (-a / γ)))
+
+/-- The same estimate applies to the local mass subtraction and to successive cutoff increments. -/
+theorem norm_tilted_cpow_sub_le {γ B L : ℝ} (m : ℕ) (z : ℂ) (X : ℝ)
+    (hL : 0 < L) (hLB : L ≤ B) :
+    ‖Complex.exp (z * (X : ℂ) - (m : ℂ) * z ^ 2 / 2) *
+      ((B : ℂ) ^ (1 - z / γ) - (L : ℂ) ^ (1 - z / γ))‖ ≤
+      Real.exp (m * z.im ^ 2 / 2) * ‖1 - z / γ‖ * tiltedPowerGap γ m z.re X B L := by
+  have h := norm_ofReal_cpow_sub_ofReal_cpow_le hL hLB (1 - z / γ)
+  rw [re_one_sub_div, show 1 - z.re / γ - 1 = -z.re / γ by ring] at h
+  rw [norm_mul, Complex.norm_exp, re_cutoffExponent,
+    show z.re * X - m * (z.re ^ 2 - z.im ^ 2) / 2 =
+      m * z.im ^ 2 / 2 + (z.re * X - m * z.re ^ 2 / 2) by ring, Real.exp_add]
+  unfold tiltedPowerGap
+  convert mul_le_mul_of_nonneg_left h (by positivity :
+    0 ≤ Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * X - m * z.re ^ 2 / 2)) using 1
+  ring
 
 /-- Two-endpoint domination of the `a`-dependent factor. -/
 theorem cutoffWeight_le_endpoints {γ X B L a a₁ a₂ : ℝ} (hB : 0 < B) (hL : 0 < L)
@@ -126,7 +117,8 @@ theorem norm_cutoffIntegrand_le_endpoints (Xc : Ω → ℂ → ℝ → ℝ) (M :
   set L := localMassReal M γ η ω
   have hB : 0 < B := hL.trans_le hLB
   have hBL : 0 ≤ B - L := sub_nonneg.2 hLB
-  refine (norm_cutoffIntegrand_le Xc M η m n z ω hL hLB).trans ?_
+  unfold cutoffIntegrand
+  refine (norm_tilted_cpow_sub_le m z (Xc ω 0 m) hL hLB).trans ?_
   have him : Real.exp (m * z.im ^ 2 / 2) ≤ Real.exp (m * b₀ ^ 2 / 2) := by
     apply Real.exp_le_exp.2
     have : z.im ^ 2 ≤ b₀ ^ 2 := by

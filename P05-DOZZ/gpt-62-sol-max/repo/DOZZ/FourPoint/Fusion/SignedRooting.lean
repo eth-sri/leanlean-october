@@ -16,10 +16,13 @@ open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX hγ hγ2 hM
+
 /-- Rooted expectations of measurable functionals are measurable in the insertion point. -/
-theorem fusion_rooted_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_rooted_expectation_measurable
     (G : Measure ℂ → ℝ≥0∞) (hG : Measurable G) :
     Measurable (fun u => ∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) := by
   let _ : IsProbabilityMeasure P := hX.1
@@ -35,9 +38,7 @@ theorem fusion_rooted_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
 
 /-- Finite absolute rooted integrals allow the nonnegative identity to be read as a real identity.
 Both sides are integrable; no first moment of the Coulomb mass is required. -/
-theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_rooted_nonnegative_integral
     (f : ℂ → ℝ) (hf : Measurable f) (hf0 : ∀ u, 0 ≤ f u)
     (G : Measure ℂ → ℝ≥0∞) (hG : Measurable G)
     (hb : (∫⁻ u, ENNReal.ofReal (f u) *
@@ -52,7 +53,7 @@ theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
   let R := fun u => ENNReal.ofReal (f u) *
     (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P)
   have hL : AEMeasurable L P := by
-    have hM' := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
+    have hM' := equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM
     exact ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hf)).comp_aemeasurable hM').mul
       (hG.comp_aemeasurable hM')
   have hR : Measurable R := (ENNReal.measurable_ofReal.comp hf).mul
@@ -86,19 +87,18 @@ theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
   have hLi := integrable_toReal_of_lintegral_ne_top hL hLb.ne
   have hRi := integrable_toReal_of_lintegral_ne_top hR.aemeasurable hb.ne
   refine ⟨hLi.congr (ae_of_all _ heL), hRi.congr (ae_of_all _ heR), ?_⟩
-  calc
-    _ = ∫ ω, (L ω).toReal ∂P := integral_congr_ae (ae_of_all _ fun ω => (heL ω).symm)
-    _ = (∫⁻ ω, L ω ∂P).toReal := integral_toReal hL (ae_lt_top' hL hLb.ne)
-    _ = (∫⁻ u, R u ∂gmcReferenceMeasure).toReal := congrArg ENNReal.toReal hid
-    _ = ∫ u, (R u).toReal ∂gmcReferenceMeasure :=
-      (integral_toReal hR.aemeasurable (ae_lt_top hR hb.ne)).symm
-    _ = _ := integral_congr_ae (ae_of_all _ heR)
+  exact Trans.trans
+    (Trans.trans
+      (Trans.trans
+        (Trans.trans (integral_congr_ae (ae_of_all P fun ω => Eq.symm (heL ω)))
+          (integral_toReal hL (ae_lt_top' hL (LT.lt.ne hLb))))
+        (congrArg ENNReal.toReal hid))
+      (Eq.symm (integral_toReal (Measurable.aemeasurable hR) (ae_lt_top hR (LT.lt.ne hb)))))
+    (integral_congr_ae (ae_of_all gmcReferenceMeasure heR))
 
 /-- The signed rooted formula follows by separately integrating the positive and negative parts.
 The sole analytic condition is the finite absolute rooted integral. -/
-theorem fusion_rooted_real_integral {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_rooted_real_integral
     (f : ℂ → ℝ) (hf : Measurable f)
     (hfi : ∀ᵐ ω ∂P, Integrable f (M ω))
     (G : Measure ℂ → ℝ≥0∞) (hG : Measurable G)
@@ -158,5 +158,7 @@ theorem fusion_rooted_real_integral {Ω : Type*} [MeasurableSpace Ω]
       (∫ u, fn u * (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P).toReal
         ∂gmcReferenceMeasure) := by rw [hep, hen]
     _ = _ := by rw [← integral_sub hRp hRn, heR]
+
+end
 
 end DOZZ.Proofs

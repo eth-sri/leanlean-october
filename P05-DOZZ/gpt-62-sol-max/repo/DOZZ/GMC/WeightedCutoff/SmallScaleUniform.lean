@@ -2,6 +2,7 @@ module
 
 public import DOZZ.GMC.WeightedCutoff.ReferenceUniform
 public import DOZZ.GMC.Moments.WeightedCutoffAllOrders
+public import DOZZ.GMC.Moments.PositiveExponent
 
 /-! # Exact small-ball scale bounds uniform in the coupling and moment order -/
 
@@ -25,22 +26,21 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
       ‖z‖ + 2 * R ≤ 1 →
       ((∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)) ^ p ∂P) ^
         (1 / p) ≤ A * ENNReal.ofReal ((R / (1 / 8 : ℝ)) ^
-          ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p))) ∧
+          ((gmcScaleExponent γ p) / p))) ∧
       (∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)) ^ p ∂P) < ⊤ := by
-  let _ := hX.1
   obtain ⟨Cref, hCref, hRef⟩ := regularizedGMC_reference_positive_moment_compact_gamma_all_cutoffs
     P X hX Xc hXc Γ hΓ hΓpos q hq hcrit
   let R₀ : ℝ := 1 / 8
-  let Csmall : ℝ≥0∞ := 1 + Cref
-  let A : ℝ≥0∞ := Csmall
-  have hCsmall : Csmall < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hCref⟩
+  let Csmall  := 1 + Cref
+  let A  := Csmall
+  have hCsmall  := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hCref⟩
   have hCsmallOne : 1 ≤ Csmall := le_add_of_nonneg_right (by positivity)
   have hCsmallA : Csmall ≤ A := le_rfl
   refine ⟨A, hCsmall, ?_⟩
   intro γ hγ p hp hpq z R δ hR hRsmall hδ hδR hchart
-  have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
-  let beta : ℝ := (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p
-  let t : ℝ := Real.log (1 / δ)
+  have hp0  := lt_of_lt_of_le zero_lt_one hp
+  let beta  := (gmcScaleExponent γ p) / p
+  let t  := Real.log (1 / δ)
   have hR₀pos : 0 < R₀ := by norm_num [R₀]
   have hR₀one : R₀ < 1 := by norm_num [R₀]
   have hδeq : Real.exp (-t) = δ := by
@@ -54,31 +54,24 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
       _ = R₀ := by field_simp [ne_of_gt hR]
   have hbase : R₀ + Real.exp (-t) * (R₀ / R) ≤ 1 := by
     rw [hδeq]
-    calc
-      R₀ + δ * (R₀ / R) ≤ R₀ + R₀ := by
-        simpa [add_comm] using add_le_add_left hratio R₀
-      _ ≤ 1 := by norm_num [R₀]
+    linarith
   have htarget : ‖z‖ + R + Real.exp (-t) ≤ 1 := by
-    rw [hδeq]
-    linarith [hchart, hδR]
+    linarith
   have htbase : 0 ≤ t + Real.log (R / R₀) := by
     have hquot : 1 ≤ R / (δ * R₀) := by
       apply (le_div_iff₀ (mul_pos hδ hR₀pos)).2
-      have hδR₀ : δ * R₀ ≤ R * R₀ :=
+      have hδR₀  :=
         mul_le_mul_of_nonneg_right hδR (le_of_lt hR₀pos)
-      have hR₀le : R * R₀ ≤ R := by nlinarith [hRsmall]
-      simpa using hδR₀.trans hR₀le
-    have hlog : 0 ≤ Real.log (R / (δ * R₀)) := Real.log_nonneg hquot
+      simpa using hδR₀.trans (by nlinarith [hRsmall])
+    have hlog  := Real.log_nonneg hquot
     have hlogmul : Real.log (R / (δ * R₀)) = t + Real.log (R / R₀) := by
       have hmul : (1 / δ) * (R / R₀) = R / (δ * R₀) := by
         field_simp [ne_of_gt hδ, ne_of_gt hR₀pos]
       rw [← hmul, Real.log_mul (by positivity) (by positivity)]
-    rw [← hlogmul]
-    exact hlog
-  let massQ : Ω → ℝ≥0∞ := fun ω =>
+    rwa [← hlogmul]
+  let massQ  := fun ω =>
     regularizedGMC P Xc γ (t + Real.log (R / R₀)) ω (Metric.ball 0 R₀)
-  have hmassQ : AEMeasurable massQ P := by
-    exact regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
+  have hmassQ := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
       (t + Real.log (R / R₀)) (Metric.ball 0 R₀) Metric.isOpen_ball.measurableSet
   have hqbound := hRef γ hγ (t + Real.log (R / R₀)) htbase
   have hRefp : (∫⁻ ω, ENNReal.rpow (massQ ω) p ∂P) ≤ Csmall := by
@@ -95,30 +88,30 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
         rw [hX.1.measure_univ]
       _ ≤ Csmall := by
         dsimp [Csmall]
-        simpa [add_comm, gmcMassMoment, R₀] using add_le_add_left hqbound 1
+        simpa
   have hRefpMass : gmcMassMoment P
       (regularizedGMC P Xc γ (t + Real.log (R / R₀))) (Metric.ball 0 R₀) p ≤ Csmall := by
-    simpa [gmcMassMoment, massQ] using hRefp
+    assumption
   have hscale := regularizedGMC_local_ball_moment_scale P X hX γ Xc hXc z
     (s := R) (R := R₀) (t := t) hR hRsmall hR₀pos hR₀one
     (by linarith [hchart]) hbase htarget p
   have hmoment : (∫⁻ ω, ENNReal.rpow
       (regularizedGMC P Xc γ t ω (Metric.ball z R)) p ∂P) ≤
         Csmall * ENNReal.ofReal ((R / R₀) ^
-          (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) := by
+          (gmcScaleExponent γ p)) := by
     change gmcMassMoment P (regularizedGMC P Xc γ t) (Metric.ball z R) p ≤ _
     rw [hscale]
     calc
       _ = gmcMassMoment P
           (regularizedGMC P Xc γ (t + Real.log (R / R₀)))
           (Metric.ball 0 R₀) p * ENNReal.ofReal
-            ((R / R₀) ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) := by ac_rfl
+            ((R / R₀) ^ (gmcScaleExponent γ p)) := by ac_rfl
       _ ≤ Csmall * ENNReal.ofReal
-          ((R / R₀) ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) :=
+          ((R / R₀) ^ (gmcScaleExponent γ p)) :=
         mul_le_mul' hRefpMass le_rfl
   have hmomentTop := hmoment.trans_lt (ENNReal.mul_lt_top hCsmall ENNReal.ofReal_lt_top)
   have hrootConst := ennreal_root_mul_ofReal_rpow_eq Csmall hCsmall
-    (R / R₀) (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) p
+    (R / R₀) (gmcScaleExponent γ p) p
     (div_pos hR hR₀pos) hp0
   have hCroot : Csmall ^ (1 / p) ≤ Csmall := by
     calc
@@ -132,17 +125,13 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
         Csmall * ENNReal.ofReal ((R / R₀) ^ beta) := by
     calc
       _ ≤ (Csmall * ENNReal.ofReal ((R / R₀) ^
-          (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2))) ^ (1 / p) :=
+          (gmcScaleExponent γ p))) ^ (1 / p) :=
         ENNReal.rpow_le_rpow hmoment (one_div_nonneg.mpr hp0.le)
       _ = Csmall ^ (1 / p) * ENNReal.ofReal ((R / R₀) ^ beta) := by
         rw [hrootConst]
       _ ≤ Csmall * ENNReal.ofReal ((R / R₀) ^ beta) :=
         mul_le_mul_of_nonneg_right hCroot (by positivity)
   refine ⟨?_, hmomentTop⟩
-  calc
-    _ ≤ Csmall * ENNReal.ofReal ((R / R₀) ^ beta) := hroot
-    _ ≤ A * ENNReal.ofReal ((R / R₀) ^ beta) :=
-      mul_le_mul_of_nonneg_right hCsmallA (by positivity)
-    _ = _ := by rfl
+  assumption
 
 end DOZZ.Proofs

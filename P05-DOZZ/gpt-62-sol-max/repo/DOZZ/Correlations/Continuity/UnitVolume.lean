@@ -86,8 +86,6 @@ theorem unitVolumeNPoint_jointly_continuous_parameters
     simp only [Function.comp_apply, J, hp, hMeq q hq]
   have hc : ContinuousOn (fun q : ℝ × (Fin (3 + n) → ℝ) => 2 / q.1) K :=
     continuousOn_const.div continuous_fst.continuousOn (fun q hq => (hKdom q hq).1.ne')
-  have hf : Continuous (fun q : ℝ × (Fin (3 + n) → ℝ) => nPointCoulombPrefactor q.2 z) :=
-    (continuity_finite_prefactor z hz).comp continuous_snd
-  exact (hc.mul hf.continuousOn).mul hm'
+  exact (hc.mul ((continuity_finite_prefactor z hz).comp continuous_snd).continuousOn).mul hm'
 
 end DOZZ.Proofs

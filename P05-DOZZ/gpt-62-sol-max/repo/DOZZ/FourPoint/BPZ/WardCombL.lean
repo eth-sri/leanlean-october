@@ -73,14 +73,17 @@ theorem bpzWCL_le_g (z x : ℂ) :
   have h := bpz_rpow_neg_two_nonneg (norm_nonneg (x - z))
   exact le_mul_of_one_le_left (bpzSoftWeight_nonneg 0 z x) (by linarith)
 
+section
+variable {k : ℝ} (hk : 0 ≤ k) (x z : ℂ)
+include hk
+
 /-- `|k / (z - x)| ≤ (1 + |x - z|^{-2}) k`. -/
-theorem bpzWCL_norm_div_le {k : ℝ} (hk : 0 ≤ k) (x z : ℂ) :
+theorem bpzWCL_norm_div_le :
     ‖(k : ℂ) / (z - x)‖ ≤ (1 + ‖x - z‖ ^ (-2 : ℝ)) * k := by
   have h0 := bpz_rpow_neg_two_nonneg (norm_nonneg (x - z))
   rcases eq_or_ne x z with rfl | hxz
-  · refine le_trans (le_of_eq ?_) (mul_nonneg (by linarith) hk)
-    rw [sub_self, div_zero, norm_zero]
-  · have ht : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  simpa
+  · have ht  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
     rw [norm_div, Complex.norm_real, Real.norm_of_nonneg hk, norm_sub_rev z x,
       bpz_rpow_neg_two ht.le]
     have h1 : ‖x - z‖⁻¹ ≤ 1 + (‖x - z‖ ^ 2)⁻¹ := by
@@ -90,18 +93,19 @@ theorem bpzWCL_norm_div_le {k : ℝ} (hk : 0 ≤ k) (x z : ℂ) :
       _ ≤ (1 + (‖x - z‖ ^ 2)⁻¹) * k := mul_le_mul_of_nonneg_right h1 hk
 
 /-- `|k / (z - x)²| ≤ (1 + |x - z|^{-2}) k`. -/
-theorem bpzWCL_norm_div_sq_le {k : ℝ} (hk : 0 ≤ k) (x z : ℂ) :
+theorem bpzWCL_norm_div_sq_le :
     ‖(k : ℂ) / (z - x) ^ 2‖ ≤ (1 + ‖x - z‖ ^ (-2 : ℝ)) * k := by
   have h0 := bpz_rpow_neg_two_nonneg (norm_nonneg (x - z))
   rcases eq_or_ne x z with rfl | hxz
-  · refine le_trans (le_of_eq ?_) (mul_nonneg (by linarith) hk)
-    rw [sub_self, zero_pow two_ne_zero, div_zero, norm_zero]
-  · have ht : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  simpa
+  · have ht  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
     rw [norm_div, norm_pow, Complex.norm_real, Real.norm_of_nonneg hk, norm_sub_rev z x,
       bpz_rpow_neg_two ht.le]
     calc k / ‖x - z‖ ^ 2 = (‖x - z‖ ^ 2)⁻¹ * k := by rw [div_eq_inv_mul]
       _ ≤ (1 + (‖x - z‖ ^ 2)⁻¹) * k :=
-          mul_le_mul_of_nonneg_right (by linarith [inv_nonneg.mpr (sq_nonneg ‖x - z‖)]) hk
+          mul_le_mul_of_nonneg_right (by linarith) hk
+
+end
 
 /-! ### The pointwise identity -/
 
@@ -146,9 +150,13 @@ theorem bpzWCL_F_measurable (z : ℂ) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
     Measurable (bpzWCL_F γ χ α₁ α₂ α₃ z ℓ v) :=
   (measurable_fderiv_apply_const ℝ _ v).mul (bpz_measurable_normPlus.pow_const _)
 
+section
+variable {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1)
+include hz0 hz1
+
 /-- The integrand is integrable against any measure for which `g` is integrable and which charges
 only the regular region. -/
-theorem bpzWCL_F_integrable {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) {m : Measure ℂ}
+theorem bpzWCL_F_integrable {m : Measure ℂ}
     (hg : Integrable (bpzWCL_g γ χ α₁ α₂ α₃ z) m) (hreg : ∀ᵐ x ∂m, x ∈ bpzRegular z)
     (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) : Integrable (bpzWCL_F γ χ α₁ α₂ α₃ z ℓ v) m := by
   obtain ⟨A, -, hA⟩ := bpzWCL_F_bound (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃)
@@ -159,7 +167,7 @@ theorem bpzWCL_F_integrable {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) {m : Measu
   exact hA x hx
 
 /-- A bound for the integral of the integrand, uniform in the measure. -/
-theorem bpzWCL_norm_integral_F_le {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpzWCL_norm_integral_F_le (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ m : Measure ℂ, Integrable (bpzWCL_g γ χ α₁ α₂ α₃ z) m →
       (∀ᵐ x ∂m, x ∈ bpzRegular z) →
         ‖∫ x, bpzWCL_F γ χ α₁ α₂ α₃ z ℓ v x ∂m‖ ≤ A * ∫ x, bpzWCL_g γ χ α₁ α₂ α₃ z x ∂m := by
@@ -172,29 +180,34 @@ theorem bpzWCL_norm_integral_F_le {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ
   rw [Real.norm_eq_abs]
   exact hA x hx
 
+end
+
+section
+variable {z : ℂ} {m : Measure ℂ} (hg : Integrable (bpzWCL_g γ χ α₁ α₂ α₃ z) m)
+include hg
+
 /-- Integrability of `k` from integrability of `g`. -/
-theorem bpzWCL_integrable_k {z : ℂ} {m : Measure ℂ}
-    (hg : Integrable (bpzWCL_g γ χ α₁ α₂ α₃ z) m) :
+theorem bpzWCL_integrable_k :
     Integrable (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z) m :=
   hg.mono' (measurable_bpzSoftWeight 0 z).aestronglyMeasurable (Eventually.of_forall fun x => by
     rw [Real.norm_of_nonneg (bpzSoftWeight_nonneg 0 z x)]
     exact bpzWCL_le_g z x)
 
 /-- Integrability of `k(x) / (z - x)` from integrability of `g`. -/
-theorem bpzWCL_integrable_div {z : ℂ} {m : Measure ℂ}
-    (hg : Integrable (bpzWCL_g γ χ α₁ α₂ α₃ z) m) :
+theorem bpzWCL_integrable_div :
     Integrable (fun x => ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / (z - x)) m :=
   hg.mono' (((Complex.measurable_ofReal.comp (measurable_bpzSoftWeight 0 z)).div
     (measurable_const.sub measurable_id)).aestronglyMeasurable)
     (Eventually.of_forall fun x => bpzWCL_norm_div_le (bpzSoftWeight_nonneg 0 z x) x z)
 
 /-- Integrability of `k(x) / (z - x)²` from integrability of `g`. -/
-theorem bpzWCL_integrable_div_sq {z : ℂ} {m : Measure ℂ}
-    (hg : Integrable (bpzWCL_g γ χ α₁ α₂ α₃ z) m) :
+theorem bpzWCL_integrable_div_sq :
     Integrable (fun x => ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / (z - x) ^ 2) m :=
   hg.mono' (((Complex.measurable_ofReal.comp (measurable_bpzSoftWeight 0 z)).div
     ((measurable_const.sub measurable_id).pow_const 2)).aestronglyMeasurable)
     (Eventually.of_forall fun x => bpzWCL_norm_div_sq_le (bpzSoftWeight_nonneg 0 z x) x z)
+
+end
 
 /-! ### The inner integral -/
 
@@ -249,8 +262,11 @@ def bpzWCL_Good (γ χ α₁ α₂ α₃ : ℝ) (z : ℂ) (m : Measure ℂ) : Pr
 noncomputable def bpzWCL_dom (γ χ α₁ α₂ α₃ : ℝ) (z : ℂ) (e : ℝ) (m : Measure ℂ) : ℝ :=
   (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂m) ^ e * ∫ x, bpzWCL_g γ χ α₁ α₂ α₃ z x ∂m
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+
 /-- Almost every sample is good, and the dominating function is integrable. -/
-theorem bpzWCL_good {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+theorem bpzWCL_good (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {q : ℝ} (hq1 : 1 ≤ q) {z : ℂ} (hz0 : z ≠ 0)
@@ -270,14 +286,20 @@ theorem bpzWCL_good {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω �
 /-! ### Integrability of the `ω`-integrands -/
 
 /-- The four-point mass is a measurable function of the sample. -/
-theorem bpzWCL_measurable_I {Ω : Type*} [MeasurableSpace Ω] {M : Ω → Measure ℂ}
+theorem bpzWCL_measurable_I {M : Ω → Measure ℂ}
     (hMm : Measurable M) (z : ℂ) :
     Measurable fun ω => ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω :=
   (measurable_integral_measure (measurable_bpzSoftWeight 0 z)).comp hMm
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : Ω → Measure ℂ} (hMm : Measurable M)
+  {z : ℂ}
+include Ω hMm
+
 /-- The outer integrands built from the real `x`-integrals are integrable. -/
-theorem bpzWCL_outer_F {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : Ω → Measure ℂ}
-    (hMm : Measurable M) {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) {e : ℝ}
+theorem bpzWCL_outer_F (hz0 : z ≠ 0) (hz1 : z ≠ 1) {e : ℝ}
     (hgood : ∀ᵐ ω ∂P, bpzWCL_Good γ χ α₁ α₂ α₃ z (M ω))
     (hdom : Integrable (fun ω => bpzWCL_dom γ χ α₁ α₂ α₃ z e (M ω)) P)
     (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
@@ -291,7 +313,7 @@ theorem bpzWCL_outer_F {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : �
     (((bpzWCL_measurable_I hMm z).pow_const e).mul hFm).aestronglyMeasurable ?_
   filter_upwards [hgood] with ω hω
   obtain ⟨hg, hpos, hreg⟩ := hω
-  have h0 : 0 ≤ (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ e := Real.rpow_nonneg hpos.le e
+  have h0  := Real.rpow_nonneg hpos.le e
   rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg h0, ← Real.norm_eq_abs]
   unfold bpzWCL_dom
   calc (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ e *
@@ -303,26 +325,24 @@ theorem bpzWCL_outer_F {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : �
         ∫ x, bpzWCL_g γ χ α₁ α₂ α₃ z x ∂M ω) := by ring
 
 /-- The outer integrands built from a complex `x`-integral dominated by `g` are integrable. -/
-theorem bpzWCL_outer_complex {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {M : Ω → Measure ℂ} (hMm : Measurable M) {z : ℂ} {e : ℝ} {f : ℂ → ℂ} (hf : Measurable f)
+theorem bpzWCL_outer_complex {e : ℝ} {f : ℂ → ℂ} (hf : Measurable f)
     (hfg : ∀ x, ‖f x‖ ≤ bpzWCL_g γ χ α₁ α₂ α₃ z x)
     (hgood : ∀ᵐ ω ∂P, bpzWCL_Good γ χ α₁ α₂ α₃ z (M ω))
     (hdom : Integrable (fun ω => bpzWCL_dom γ χ α₁ α₂ α₃ z e (M ω)) P) :
     Integrable (fun ω => (((∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ e : ℝ) : ℂ) *
       ∫ x, f x ∂M ω) P := by
-  have hfm : StronglyMeasurable fun ω => ∫ x, f x ∂M ω :=
+  have hfm  :=
     (bpz_stronglyMeasurable_integral_measure hf.stronglyMeasurable).comp_measurable hMm
   refine hdom.mono' ((Complex.measurable_ofReal.comp
     ((bpzWCL_measurable_I hMm z).pow_const e)).aestronglyMeasurable.mul hfm.aestronglyMeasurable) ?_
   filter_upwards [hgood] with ω hω
   obtain ⟨hg, hpos, -⟩ := hω
-  have h0 : 0 ≤ (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ e := Real.rpow_nonneg hpos.le e
+  have h0  := Real.rpow_nonneg hpos.le e
   rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg h0]
   exact mul_le_mul_of_nonneg_left (norm_integral_le_of_norm_le hg (Eventually.of_forall hfg)) h0
 
 /-- The power `I^r` of the four-point mass is integrable if `I^{r-1} ∫ g` is. -/
-theorem bpzWCL_outer_pow {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : Ω → Measure ℂ}
-    (hMm : Measurable M) {z : ℂ} {r : ℝ}
+theorem bpzWCL_outer_pow {r : ℝ}
     (hgood : ∀ᵐ ω ∂P, bpzWCL_Good γ χ α₁ α₂ α₃ z (M ω))
     (hdom : Integrable (fun ω => bpzWCL_dom γ χ α₁ α₂ α₃ z (r - 1) (M ω)) P) :
     Integrable (fun ω => (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ r) P := by
@@ -331,14 +351,12 @@ theorem bpzWCL_outer_pow {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M :
   obtain ⟨hg, hpos, -⟩ := hω
   have hk := bpzWCL_integrable_k hg
   rw [Real.norm_of_nonneg (Real.rpow_nonneg hpos.le r)]
-  unfold bpzWCL_dom
-  calc (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ r
-      = (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (r - 1) *
-        ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω := (bpzRpow_pred_mul hpos r).symm
-    _ ≤ (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (r - 1) *
-        ∫ x, bpzWCL_g γ χ α₁ α₂ α₃ z x ∂M ω :=
-        mul_le_mul_of_nonneg_left (integral_mono hk hg (fun x => bpzWCL_le_g z x))
-          (Real.rpow_nonneg hpos.le _)
+  exact id
+    (Trans.trans (Eq.symm (bpzRpow_pred_mul hpos r))
+      (mul_le_mul_of_nonneg_left (integral_mono hk hg fun x => bpzWCL_le_g z x)
+        (Real.rpow_nonneg (LT.lt.le hpos) (r - 1))))
+
+end
 
 /-! ### The pathwise identity and the main theorem -/
 
@@ -410,9 +428,7 @@ theorem bpz_wardLHS_combination {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
     (bpzWardLHS P M γ χ α₁ α₂ α₃ s z Complex.imCLM 1)
     (bpzWardLHS P M γ χ α₁ α₂ α₃ s z Complex.reCLM Complex.I)
     (bpzWardLHS P M γ χ α₁ α₂ α₃ s z Complex.imCLM Complex.I) = _
-  rw [hLHS, hLHS, hLHS, hLHS, bpzWCL_integral_comb (hF _ _) (hF _ _) (hF _ _) (hF _ _)]
-  rw [integral_congr_ae (hgood.mono fun ω hω => bpzWCL_pathwise hz0 hz1 s hω)]
-  rw [bpzWCL_integral_three _ _ _ hJ hE hD, integral_complex_ofReal]
+  rw [hLHS, hLHS, hLHS, hLHS, bpzWCL_integral_comb (hF _ _) (hF _ _) (hF _ _) (hF _ _), integral_congr_ae (hgood.mono fun ω hω => bpzWCL_pathwise hz0 hz1 s hω), bpzWCL_integral_three _ _ _ hJ hE hD, integral_complex_ofReal]
   rfl
 
 end DOZZ.Proofs

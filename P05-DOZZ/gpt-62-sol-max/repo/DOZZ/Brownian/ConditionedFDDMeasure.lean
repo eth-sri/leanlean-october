@@ -30,29 +30,10 @@ namespace DOZZ.Proofs
 def conditionedCoordinateNegEquiv (ι : Type*) [Fintype ι] : (ι → ℝ) ≃ᵐ (ι → ℝ) :=
   MeasurableEquiv.piCongrRight fun _ => MeasurableEquiv.neg ℝ
 
-@[simp]
-theorem conditionedCoordinateNegEquiv_apply (ι : Type*) [Fintype ι]
-    (x : ι → ℝ) (i : ι) :
-    conditionedCoordinateNegEquiv ι x i = -x i := rfl
-
 /-- Coordinatewise reflection preserves finite-dimensional Lebesgue measure. -/
 theorem map_conditionedCoordinateNegEquiv_volume (ι : Type*) [Fintype ι] :
-    (volume : Measure (ι → ℝ)).map (conditionedCoordinateNegEquiv ι) = volume := by
-  let : SigmaFinite ((volume : Measure ℝ).map Neg.neg) := by
-    rw [Measure.map_neg_eq_self]
-    infer_instance
-  have hpi :
-      (Measure.pi (fun _ : ι => (volume : Measure ℝ))).map
-          (fun x i => -x i) = Measure.pi (fun _ : ι => (volume : Measure ℝ)) := by
-    rw [Measure.pi_map_pi (f := fun _ => Neg.neg) (fun _ => measurable_neg.aemeasurable)]
-    simp only [Measure.map_neg_eq_self]
-  calc
-    (volume : Measure (ι → ℝ)).map (conditionedCoordinateNegEquiv ι) =
-        (Measure.pi (fun _ : ι => (volume : Measure ℝ))).map (fun x i => -x i) := by
-          rw [volume_pi]
-          rfl
-    _ = Measure.pi (fun _ : ι => (volume : Measure ℝ)) := hpi
-    _ = volume := by rw [volume_pi]
+    (volume : Measure (ι → ℝ)).map (conditionedCoordinateNegEquiv ι) = volume :=
+  (volume_preserving_pi (fun _ : ι => Measure.measurePreserving_neg (volume : Measure ℝ))).map_eq
 
 /-- Transport a density through a measure-preserving measurable equivalence. -/
 theorem map_withDensity_of_measurePreserving_equiv
@@ -60,20 +41,11 @@ theorem map_withDensity_of_measurePreserving_equiv
     (e : α ≃ᵐ β) (μ : Measure α) (ν : Measure β)
     (hμ : MeasurePreserving e μ ν) (f : α → ℝ≥0∞) (hf : Measurable f) :
     (μ.withDensity f).map e = ν.withDensity (f ∘ e.symm) := by
-  refine Measure.ext fun s hs => ?_
-  rw [Measure.map_apply e.measurable hs,
-    withDensity_apply f (hs.preimage e.measurable),
-    withDensity_apply (f ∘ e.symm) hs]
-  calc
-    ∫⁻ x in e ⁻¹' s, f x ∂μ =
-        ∫⁻ x in e ⁻¹' s, f (e.symm (e x)) ∂μ := by
-          apply setLIntegral_congr_fun
-          · exact hs.preimage e.measurable
-          · intro x hx
-            simp
-    _ = ∫⁻ x in s, f (e.symm x) ∂ν := by
-          conv_rhs => rw [← hμ.map_eq]
-          exact (setLIntegral_map hs (hf.comp e.symm.measurable) e.measurable).symm
+  ext s hs
+  rw [Measure.map_apply e.measurable hs, withDensity_apply _ (hs.preimage e.measurable),
+    withDensity_apply _ hs, ← hμ.map_eq,
+    setLIntegral_map hs (hf.comp e.symm.measurable) e.measurable]
+  simp
 
 /-- Reindex a finite vector into its past and future coordinate blocks. -/
 noncomputable def conditionedFiniteVectorSplitEquiv (m n : ℕ) :
@@ -122,8 +94,7 @@ theorem map_withDensity_conditionedFiniteVectorSplit
   have hvol := measurePreserving_conditionedFiniteVectorSplitEquiv m n
   have hdensity : Measurable (fun z : Fin (m + n) → ℝ =>
       f (e z).1 * g (e z).1 (e z).2) := by
-    exact (hf.comp measurable_fst).mul
-      (hg.comp (measurable_fst.prodMk measurable_snd)) |>.comp e.measurable
+    fun_prop
   rw [map_withDensity_of_measurePreserving_equiv e volume volume hvol _ hdensity]
   have hcomp :
       ((volume : Measure (Fin m → ℝ)).withDensity f) ⊗ₘ
@@ -140,72 +111,25 @@ theorem map_withDensity_conditionedFiniteVectorSplit
   funext z
   simp [e]
 
-private theorem measurable_negativeConditionedTransitionDensity_pair
-    (ν dt : ℝ) :
-    Measurable (fun z : ℝ × ℝ => negativeConditionedTransitionDensity ν dt z.1 z.2) := by
-  classical
-  by_cases hν : 0 ≤ ν
-  · by_cases hdt : 0 < dt
-    · have hset : MeasurableSet {z : ℝ × ℝ | 0 < -z.1 ∧ 0 < -z.2} := by
-        exact (measurableSet_lt measurable_const measurable_fst.neg).inter
-          (measurableSet_lt measurable_const measurable_snd.neg)
-      have hform : Measurable (fun z : ℝ × ℝ =>
-          Real.exp (ν * (-z.2 - -z.1) - ν ^ 2 * dt / 2) *
-            (brownianHeatDensity dt (-z.2 - -z.1) -
-              brownianHeatDensity dt (-z.2 + -z.1)) *
-            conditionedH ν (-z.2) / conditionedH ν (-z.1)) := by
-        by_cases hν0 : ν = 0
-        · simp [brownianHeatDensity, hdt, conditionedH, hν0]
-          fun_prop
-        · simp [brownianHeatDensity, hdt, conditionedH, hν0]
-          fun_prop
-      let : DecidablePred (fun z : ℝ × ℝ => 0 < -z.1 ∧ 0 < -z.2) :=
-        fun z => Classical.propDecidable _
-      simpa [negativeConditionedTransitionDensity, conditionedPositiveTransitionDensity,
-        hν, hdt] using
-        @Measurable.ite (ℝ × ℝ) ℝ _ _ _ _
-          (fun z : ℝ × ℝ => 0 < -z.1 ∧ 0 < -z.2) this hset hform measurable_const
-    · simp [negativeConditionedTransitionDensity, conditionedPositiveTransitionDensity, hν, hdt]
-  · simp [negativeConditionedTransitionDensity, conditionedPositiveTransitionDensity, hν]
+/-- Joint measurability of the explicit positive Doob transition density. -/
+@[fun_prop]
+theorem measurable_conditionedPositiveTransitionDensity_pair (ν dt : ℝ) :
+    Measurable (fun z : ℝ × ℝ => conditionedPositiveTransitionDensity ν dt z.1 z.2) := by
+  by_cases hν : 0 ≤ ν <;> by_cases ht : 0 < dt <;>
+    simp only [conditionedPositiveTransitionDensity, hν, ht, true_and, false_and, ite_false]
+  all_goals try exact measurable_const
+  refine Measurable.ite ((measurableSet_lt measurable_const measurable_fst).inter
+    (measurableSet_lt measurable_const measurable_snd)) ?_ measurable_const
+  by_cases hν0 : ν = 0 <;> simp only [brownianHeatDensity, conditionedH, ht, hν0, ite_true, ite_false] <;> fun_prop
 
+@[fun_prop]
 theorem measurable_conditionedPositiveEntranceDensity_arg
     (ν t : ℝ) : Measurable (fun y : ℝ => conditionedPositiveEntranceDensity ν t y) := by
-  classical
-  by_cases hν : 0 ≤ ν
-  · by_cases ht : 0 < t
-    · have hset : MeasurableSet {y : ℝ | 0 < y} :=
-        measurableSet_lt measurable_const measurable_id
-      have hform : Measurable (fun y : ℝ =>
-          if ν = 0 then
-            Real.sqrt (2 / Real.pi) * y ^ 2 / t ^ (3 / 2 : ℝ) *
-              Real.exp (-y ^ 2 / (2 * t))
-          else Real.sqrt (2 / Real.pi) * t ^ (-(3 / 2 : ℝ)) *
-              (y * Real.sinh (ν * y) / ν) *
-              Real.exp (-y ^ 2 / (2 * t) - ν ^ 2 * t / 2)) := by
-        by_cases hν0 : ν = 0
-        · simp [hν0]
-          fun_prop
-        · simp [hν0]
-          fun_prop
-      let : DecidablePred (fun y : ℝ => 0 < y) := fun y => Classical.propDecidable _
-      simpa [conditionedPositiveEntranceDensity, hν, ht] using
-        @Measurable.ite ℝ ℝ _ _ _ _ (fun y : ℝ => 0 < y) this hset hform measurable_const
-    · simp [conditionedPositiveEntranceDensity, hν, ht]
-  · simp [conditionedPositiveEntranceDensity, hν]
-
-/-- Joint measurability of the explicit positive Doob transition density in start and endpoint. -/
-theorem measurable_conditionedPositiveTransitionDensity_pair
-    (ν dt : ℝ) :
-    Measurable (fun z : ℝ × ℝ => conditionedPositiveTransitionDensity ν dt z.1 z.2) := by
-  have hneg := measurable_negativeConditionedTransitionDensity_pair ν dt
-  have hreflect : Measurable (fun z : ℝ × ℝ => (-z.1, -z.2)) :=
-    measurable_fst.neg.prodMk measurable_snd.neg
-  have hfun : (fun z : ℝ × ℝ => conditionedPositiveTransitionDensity ν dt z.1 z.2) =
-      (fun z => negativeConditionedTransitionDensity ν dt (-z.1) (-z.2)) := by
-    funext z
-    simp [negativeConditionedTransitionDensity]
-  rw [hfun]
-  exact hneg.comp hreflect
+  by_cases hν : 0 ≤ ν <;> by_cases ht : 0 < t <;>
+    simp only [conditionedPositiveEntranceDensity, hν, ht, true_and, false_and, ite_false]
+  all_goals try exact measurable_const
+  refine Measurable.ite (measurableSet_lt measurable_const measurable_id) ?_ measurable_const
+  by_cases hν0 : ν = 0 <;> simp only [hν0, ite_true, ite_false] <;> fun_prop
 
 /-- The entrance density is nonnegative everywhere for nonnegative drift and positive time. -/
 theorem conditionedPositiveEntranceDensity_nonneg
@@ -227,58 +151,34 @@ private theorem conditionedPositiveEntranceDensity_nonneg_any
     0 ≤ conditionedPositiveEntranceDensity ν t y := by
   by_cases ht : 0 < t
   · exact conditionedPositiveEntranceDensity_nonneg hν ht y
-  · have ht' : t ≤ 0 := le_of_not_gt ht
-    simp [conditionedPositiveEntranceDensity, hν, not_lt.mpr ht']
+  · simp [conditionedPositiveEntranceDensity, ht]
 
 private theorem conditionedPositiveTransitionDensity_nonneg_any
     {ν t x : ℝ} (hν : 0 ≤ ν) (y : ℝ) :
     0 ≤ conditionedPositiveTransitionDensity ν t x y := by
-  by_cases ht : 0 < t
-  · by_cases hx : 0 < x
-    · exact conditionedPositiveTransitionDensity_nonneg hν ht hx y
-    · have hx' : x ≤ 0 := le_of_not_gt hx
-      simp [conditionedPositiveTransitionDensity, hν, ht, not_lt.mpr hx']
-  · have ht' : t ≤ 0 := le_of_not_gt ht
-    simp [conditionedPositiveTransitionDensity, hν, not_lt.mpr ht']
+  by_cases ht : 0 < t <;> by_cases hx : 0 < x <;>
+    first | exact conditionedPositiveTransitionDensity_nonneg hν ht hx y
+          | simp [conditionedPositiveTransitionDensity, hν, ht, hx]
 
-/-- A finite transition chain has nonnegative density when its observation times are strictly
-increasing after the starting time. -/
+/-- A positive transition chain has a nonnegative density. -/
 theorem conditionedPositiveTimeChainDensity_nonneg
-    {ν t₀ x₀ : ℝ} (hν : 0 ≤ ν) (times values : List ℝ)
-    (hlen : times.length = values.length) :
+    {ν t₀ x₀ : ℝ} (hν : 0 ≤ ν) (times values : List ℝ) :
     0 ≤ conditionedPositiveTimeChainDensity ν t₀ x₀ times values := by
   induction times generalizing t₀ x₀ values with
-  | nil =>
-      cases values <;> simp [conditionedPositiveTimeChainDensity]
+  | nil => cases values <;> simp [conditionedPositiveTimeChainDensity]
   | cons t ts ih =>
       cases values with
-      | nil => simp at hlen
-      | cons x xs =>
-          have htailLen : ts.length = xs.length := by simpa using hlen
-          have hstep : 0 ≤ conditionedPositiveTransitionDensity ν (t - t₀) x₀ x := by
-            exact conditionedPositiveTransitionDensity_nonneg_any hν x
-          have htail := ih (t₀ := t) (x₀ := x) xs htailLen
-          simpa [conditionedPositiveTimeChainDensity] using mul_nonneg hstep htail
+      | nil => simp [conditionedPositiveTimeChainDensity]
+      | cons x xs => exact mul_nonneg (conditionedPositiveTransitionDensity_nonneg_any hν x) (ih xs)
 
-/-- The positive entrance finite-dimensional density is pointwise nonnegative at positive,
-strictly increasing observation times. -/
+/-- The positive entrance finite-dimensional density is pointwise nonnegative. -/
 theorem conditionedPositiveFDDDensity_nonneg
-    {ν : ℝ} (hν : 0 ≤ ν) (times values : List ℝ)
-    (hlen : times.length = values.length) :
+    {ν : ℝ} (hν : 0 ≤ ν) (times values : List ℝ) :
     0 ≤ conditionedPositiveFDDDensity ν times values := by
-  cases times with
-  | nil =>
-      cases values <;> simp [conditionedPositiveFDDDensity]
-  | cons t ts =>
-      cases values with
-      | nil => simp at hlen
-      | cons x xs =>
-          have htailLen : ts.length = xs.length := by simpa using hlen
-          have hentrance : 0 ≤ conditionedPositiveEntranceDensity ν t x :=
-            conditionedPositiveEntranceDensity_nonneg_any hν x
-          have hchain : 0 ≤ conditionedPositiveTimeChainDensity ν t x ts xs := by
-            exact conditionedPositiveTimeChainDensity_nonneg hν ts xs htailLen
-          simpa [conditionedPositiveFDDDensity] using mul_nonneg hentrance hchain
+  cases times <;> cases values <;> simp only [conditionedPositiveFDDDensity]
+  all_goals first | exact zero_le_one | exact le_rfl
+                  | exact mul_nonneg (conditionedPositiveEntranceDensity_nonneg_any hν _)
+                      (conditionedPositiveTimeChainDensity_nonneg hν _ _)
 
 /-- The entrance FDD density splits at the final coordinate of any nonempty finite past block.
 This form is convenient when the FDD is reindexed as a past vector and a future vector. -/
@@ -289,89 +189,18 @@ theorem conditionedPositiveFDDDensity_append_split
         (x₀ :: (pastValues ++ futureValues)) =
       conditionedPositiveFDDDensity ν (t₀ :: pastTimes) (x₀ :: pastValues) *
         conditionedPositiveTimeChainDensity ν
-          (conditionedPositiveLastTime t₀ pastTimes)
-          (conditionedPositiveLastState x₀ pastValues) futureTimes futureValues := by
-  rw [conditionedPositiveFDDDensity_split ν t₀ x₀ pastTimes pastValues
-    futureTimes futureValues hpast,
-    conditionedPositiveFDDDensity_cons]
+          (conditionedLast t₀ pastTimes)
+          (conditionedLast x₀ pastValues) futureTimes futureValues := by
+  simp only [conditionedPositiveFDDDensity, conditionedPositiveTimeChainDensity_append _ _ _ _ _ _ _ hpast,
+    mul_assoc]
 
-theorem conditionedPositiveLastTime_ofFn_tail {k : ℕ} (f : Fin (k + 1) → ℝ) :
-    conditionedPositiveLastTime (f 0) (List.ofFn fun i : Fin k => f i.succ) =
-      f (Fin.last k) := by
+theorem conditionedLast_ofFn_tail {k : ℕ} (f : Fin (k + 1) → ℝ) :
+    conditionedLast (f 0) (List.ofFn fun i : Fin k => f i.succ) = f (Fin.last k) := by
   induction k with
-  | zero => simp [conditionedPositiveLastTime]
+  | zero => rfl
   | succ k ih =>
-      rw [List.ofFn_succ, conditionedPositiveLastTime]
+      rw [List.ofFn_succ, conditionedLast, List.getLastD_cons, ← conditionedLast]
       simpa [Fin.last] using ih (fun i : Fin (k + 1) => f i.succ)
-
-theorem conditionedPositiveLastState_ofFn_tail {k : ℕ} (f : Fin (k + 1) → ℝ) :
-    conditionedPositiveLastState (f 0) (List.ofFn fun i : Fin k => f i.succ) =
-      f (Fin.last k) := by
-  induction k with
-  | zero => simp [conditionedPositiveLastState]
-  | succ k ih =>
-      rw [List.ofFn_succ, conditionedPositiveLastState]
-      simpa [Fin.last] using ih (fun i : Fin (k + 1) => f i.succ)
-
-private theorem measurable_negativeConditionedTransitionChainDensity_ofFn
-    (ν : ℝ) : ∀ (n : ℕ) (t₀ : ℝ) (times : Fin n → ℝ),
-      Measurable (fun z : ℝ × (Fin n → ℝ) =>
-          negativeConditionedTransitionChainDensity ν t₀ z.1
-          (List.ofFn times) (List.ofFn z.2)) := by
-  intro n
-  induction n with
-  | zero =>
-      intro t₀ times
-      simp [negativeConditionedTransitionChainDensity]
-  | succ n ih =>
-      intro t₀ times
-      have hstep : Measurable (fun z : ℝ × (Fin (n + 1) → ℝ) =>
-          negativeConditionedTransitionDensity ν (times 0 - t₀) z.1 (z.2 0)) := by
-        exact (measurable_negativeConditionedTransitionDensity_pair ν
-          (times 0 - t₀)).comp
-            (measurable_fst.prodMk ((measurable_pi_apply 0).comp measurable_snd))
-      have hinput : Measurable (fun z : ℝ × (Fin (n + 1) → ℝ) =>
-          (z.2 0, fun i : Fin n => z.2 i.succ)) := by
-        exact (measurable_pi_apply 0).comp measurable_snd |>.prodMk
-          (measurable_pi_iff.mpr fun i =>
-            (measurable_pi_apply i.succ).comp measurable_snd)
-      simp only [List.ofFn_succ, negativeConditionedTransitionChainDensity]
-      exact hstep.mul ((ih (times 0) (fun i => times i.succ)).comp hinput)
-
-private theorem measurable_negativeConditionedFDDDensity_ofFn
-    (ν : ℝ) : ∀ (n : ℕ) (times : Fin n → ℝ),
-      Measurable (fun x : Fin n → ℝ =>
-        negativeConditionedFDDDensity ν (List.ofFn times) (List.ofFn x)) := by
-  intro n
-  induction n with
-  | zero =>
-      intro times
-      simp [negativeConditionedFDDDensity]
-  | succ n ih =>
-      intro times
-      have hinput : Measurable (fun x : Fin (n + 1) → ℝ =>
-          (x 0, fun i : Fin n => x i.succ)) := by
-        exact (measurable_pi_apply 0).prodMk
-          (measurable_pi_iff.mpr fun i => measurable_pi_apply i.succ)
-      have hentrance : Measurable (fun x : Fin (n + 1) → ℝ =>
-          conditionedPositiveEntranceDensity ν (times 0) (-(x 0))) := by
-        exact (measurable_conditionedPositiveEntranceDensity_arg ν (times 0)).comp
-          (measurable_pi_apply 0).neg
-      have hchain : Measurable (fun x : Fin (n + 1) → ℝ =>
-          negativeConditionedTransitionChainDensity ν (times 0) (x 0)
-            (List.ofFn fun i : Fin n => times i.succ)
-            (List.ofFn fun i : Fin n => x i.succ)) := by
-        exact (measurable_negativeConditionedTransitionChainDensity_ofFn ν n
-          (times 0) (fun i : Fin n => times i.succ)).comp hinput
-      simp only [List.ofFn_succ, negativeConditionedFDDDensity]
-      change Measurable
-        ((fun x : Fin (n + 1) → ℝ =>
-            conditionedPositiveEntranceDensity ν (times 0) (-(x 0))) *
-          (fun x : Fin (n + 1) → ℝ =>
-            negativeConditionedTransitionChainDensity ν (times 0) (x 0)
-              (List.ofFn fun i : Fin n => times i.succ)
-              (List.ofFn fun i : Fin n => x i.succ)))
-      exact hentrance.mul hchain
 
 /-- The explicit positive entrance FDD density on a finite vector, in the `max 0` convention of
 `DOZZ.IsNegativeConditionedBrownianLaw`. -/
@@ -394,59 +223,47 @@ private theorem measurable_conditionedPositiveTimeChainDensity_ofFn
           (List.ofFn times) (List.ofFn z.2)) := by
   intro n
   induction n with
-  | zero =>
-      intro t₀ times
-      simp [conditionedPositiveTimeChainDensity]
+  | zero => intro t₀ times; simp [conditionedPositiveTimeChainDensity]
   | succ n ih =>
       intro t₀ times
-      have hstep : Measurable (fun z : ℝ × (Fin (n + 1) → ℝ) =>
-          conditionedPositiveTransitionDensity ν (times 0 - t₀) z.1 (z.2 0)) := by
-        exact (measurable_conditionedPositiveTransitionDensity_pair ν
-          (times 0 - t₀)).comp
-            (measurable_fst.prodMk ((measurable_pi_apply 0).comp measurable_snd))
-      have hinput : Measurable (fun z : ℝ × (Fin (n + 1) → ℝ) =>
-          (z.2 0, fun i : Fin n => z.2 i.succ)) := by
-        exact (measurable_pi_apply 0).comp measurable_snd |>.prodMk
-          (measurable_pi_iff.mpr fun i =>
-            (measurable_pi_apply i.succ).comp measurable_snd)
       simp only [List.ofFn_succ, conditionedPositiveTimeChainDensity]
-      exact hstep.mul ((ih (times 0) (fun i : Fin n => times i.succ)).comp hinput)
+      have hhead : Measurable (fun z : ℝ × (Fin (n + 1) → ℝ) => z.2 0) :=
+        (measurable_pi_apply 0).comp measurable_snd
+      have htail : Measurable (fun z : ℝ × (Fin (n + 1) → ℝ) => fun i : Fin n => z.2 i.succ) :=
+        measurable_pi_iff.mpr fun i => (measurable_pi_apply i.succ).comp measurable_snd
+      exact ((measurable_conditionedPositiveTransitionDensity_pair ν (times 0 - t₀)).comp
+        (measurable_fst.prodMk hhead)).mul
+          ((ih (times 0) (fun i => times i.succ)).comp (hhead.prodMk htail))
 
 theorem measurable_conditionedPositiveFDDVectorDensity (ν : ℝ) {n : ℕ}
-    (times : Fin n → ℝ) :
-    Measurable (conditionedPositiveFDDVectorDensity ν times) := by
-  have hneg : Measurable (fun x : Fin n → ℝ =>
-      negativeConditionedFDDDensity ν (List.ofFn times)
-        (List.ofFn fun i => -x i)) := by
-    exact (measurable_negativeConditionedFDDDensity_ofFn ν n times).comp
-      (measurable_pi_iff.mpr fun i => (measurable_pi_apply i).neg)
-  have hEq : (fun x : Fin n → ℝ =>
-      conditionedPositiveFDDDensity ν (List.ofFn times) (List.ofFn x)) =
-      fun x => negativeConditionedFDDDensity ν (List.ofFn times)
-        (List.ofFn fun i => -x i) := by
-    funext x
-    have hvals : List.ofFn (fun i : Fin n => -x i) =
-        (List.ofFn fun i : Fin n => x i).map Neg.neg := by
-      simp [Function.comp_def]
-    calc
-      conditionedPositiveFDDDensity ν (List.ofFn times) (List.ofFn x) =
-          negativeConditionedFDDDensity ν (List.ofFn times)
-            ((List.ofFn fun i : Fin n => x i).map Neg.neg) :=
-        (negativeConditionedFDDDensity_reflect ν (List.ofFn times)
-          (List.ofFn fun i : Fin n => x i)).symm
-      _ = negativeConditionedFDDDensity ν (List.ofFn times)
-          (List.ofFn fun i : Fin n => -x i) := by rw [← hvals]
+    (times : Fin n → ℝ) : Measurable (conditionedPositiveFDDVectorDensity ν times) := by
   change Measurable (fun x : Fin n → ℝ => ENNReal.ofReal (max 0
     (conditionedPositiveFDDDensity ν (List.ofFn times) (List.ofFn x))))
-  have hfun : (fun x : Fin n → ℝ => ENNReal.ofReal (max 0
-      (conditionedPositiveFDDDensity ν (List.ofFn times) (List.ofFn x)))) =
-    (fun x => ENNReal.ofReal (max 0
-        (negativeConditionedFDDDensity ν (List.ofFn times)
-        (List.ofFn fun i => -x i)))) := by
-    funext x
-    exact congrArg (fun z : ℝ => ENNReal.ofReal (max 0 z)) (congrFun hEq x)
-  rw [hfun]
-  exact ENNReal.measurable_ofReal.comp (Measurable.max measurable_const hneg)
+  cases n with
+  | zero => simp [conditionedPositiveFDDDensity]
+  | succ n =>
+      simp only [List.ofFn_succ, conditionedPositiveFDDDensity]
+      have hc := measurable_conditionedPositiveTimeChainDensity_ofFn ν n (times 0) (fun i => times i.succ)
+      have hp : Measurable (fun x : Fin (n + 1) → ℝ => (x 0, fun i : Fin n => x i.succ)) :=
+        (measurable_pi_apply 0).prodMk (measurable_pi_iff.mpr fun i => measurable_pi_apply i.succ)
+      exact (Measurable.max measurable_const
+        (((measurable_conditionedPositiveEntranceDensity_arg ν (times 0)).comp (measurable_pi_apply 0)).mul
+          (hc.comp hp))).ennreal_ofReal
+
+private theorem negativeConditionedFDDDensity_reflect_ofFn (ν : ℝ) {n : ℕ} (t x : Fin n → ℝ) :
+    negativeConditionedFDDDensity ν (List.ofFn t) (List.ofFn fun i => -x i) =
+      conditionedPositiveFDDDensity ν (List.ofFn t) (List.ofFn x) := by
+  simpa only [List.map_ofFn, Function.comp_def] using
+    negativeConditionedFDDDensity_reflect ν (List.ofFn t) (List.ofFn x)
+
+private theorem measurable_negativeConditionedFDDVectorDensity (ν : ℝ) {n : ℕ} (t : Fin n → ℝ) :
+    Measurable (fun x : Fin n → ℝ => ENNReal.ofReal (max 0
+      (negativeConditionedFDDDensity ν (List.ofFn t) (List.ofFn x)))) := by
+  have h := (measurable_conditionedPositiveFDDVectorDensity ν t).comp
+    (show Measurable (fun x : Fin n → ℝ => fun i => -x i) from
+      measurable_pi_iff.mpr fun i => (measurable_pi_apply i).neg)
+  simpa only [Function.comp_def, conditionedPositiveFDDVectorDensity,
+    ← negativeConditionedFDDDensity_reflect_ofFn, neg_neg] using h
 
 theorem measurable_conditionedPositiveFutureVectorDensity (ν : ℝ) {k n : ℕ}
     (times : Fin (k + 1) → ℝ) (futureTimes : Fin n → ℝ) :
@@ -496,27 +313,12 @@ theorem negativeConditionedLaw_positiveFDD
         (P.map (fun p i => p (times i))).map neg := by
     rw [Measure.map_map neg.measurable heval]
     rfl
-  have hdensity : Measurable (fun x : Fin n → ℝ =>
-      ENNReal.ofReal (max 0 (negativeConditionedFDDDensity ν
-        (List.ofFn fun i => (times i : ℝ)) (List.ofFn fun i => x i)))) := by
-    exact ENNReal.measurable_ofReal.comp (Measurable.max measurable_const
-      (measurable_negativeConditionedFDDDensity_ofFn ν n
-        (fun i => (times i : ℝ))))
-  rw [hmap, hfd]
-  rw [map_withDensity_of_measurePreserving_equiv neg volume volume hvol _ hdensity]
+  rw [hmap, hfd, map_withDensity_of_measurePreserving_equiv neg volume volume hvol _
+    (measurable_negativeConditionedFDDVectorDensity ν (fun i => (times i : ℝ)))]
   congr 1
   funext x
-  simp only [Function.comp_apply]
-  have hvals : List.ofFn (fun i => neg.symm x i) =
-      (List.ofFn fun i => x i).map Neg.neg := by
-    calc
-      List.ofFn (fun i => neg.symm x i) = List.ofFn (fun i => -x i) := by
-        change List.ofFn (fun i => -x i) = List.ofFn (fun i => -x i)
-        rfl
-      _ = (List.ofFn fun i => x i).map Neg.neg := by
-        rw [List.map_ofFn]
-        rfl
-  rw [hvals, negativeConditionedFDDDensity_reflect]
+  exact congrArg (fun r : ℝ => ENNReal.ofReal (max 0 r))
+    (negativeConditionedFDDDensity_reflect_ofFn ν (fun i => (times i : ℝ)) x)
 
 /-- At every strictly increasing finite observation grid, splitting immediately after the final
 past coordinate turns the path FDD into the past density followed by the explicit future
@@ -566,8 +368,7 @@ theorem negativeConditionedLaw_finitePastFuture_compProd
     exact measurable_conditionedPositiveFDDVectorDensity ν
       (fun i => (pastTimes i : ℝ))
   have hg : Measurable (Function.uncurry g) := by
-    exact measurable_conditionedPositiveFutureVectorDensity ν
-      (fun i => (pastTimes i : ℝ)) (fun i => (futureTimes i : ℝ))
+    apply measurable_conditionedPositiveFutureVectorDensity
   have hgtop : ∀ x y, g x y ≠ ∞ := by
     intro x y
     exact ENNReal.ofReal_ne_top
@@ -628,11 +429,11 @@ theorem negativeConditionedLaw_finitePastFuture_compProd
       (List.ofFn fun i : Fin k => (pastTimes i.succ : ℝ))
       (List.ofFn fun i : Fin k => x i.succ)
       (List.ofFn fun i : Fin n => (futureTimes i : ℝ)) (List.ofFn y) htailLen
-    have hlastTime := conditionedPositiveLastTime_ofFn_tail
+    have hlastTime := conditionedLast_ofFn_tail
       (fun i : Fin (k + 1) => (pastTimes i : ℝ))
-    have hlastState := conditionedPositiveLastState_ofFn_tail x
+    have hlastState := conditionedLast_ofFn_tail x
     have hpastNonneg := conditionedPositiveFDDDensity_nonneg hP.1
-      (List.ofFn fun i : Fin (k + 1) => (pastTimes i : ℝ)) (List.ofFn x) (by simp)
+      (List.ofFn fun i : Fin (k + 1) => (pastTimes i : ℝ)) (List.ofFn x)
     have hpastNonneg' : 0 ≤ conditionedPositiveFDDDensity ν
         ((pastTimes 0 : ℝ) :: List.ofFn (fun i : Fin k => (pastTimes i.succ : ℝ)))
         (x 0 :: List.ofFn (fun i : Fin k => x i.succ)) := by
@@ -643,7 +444,7 @@ theorem negativeConditionedLaw_finitePastFuture_compProd
         (List.ofFn fun i : Fin n => (futureTimes i : ℝ)) (List.ofFn y) := by
       exact conditionedPositiveTimeChainDensity_nonneg (t₀ := pastTimes (Fin.last k))
         (x₀ := x (Fin.last k)) hP.1
-        (List.ofFn fun i : Fin n => (futureTimes i : ℝ)) (List.ofFn y) (by simp)
+        (List.ofFn fun i : Fin n => (futureTimes i : ℝ)) (List.ofFn y)
     change ENNReal.ofReal (max 0 (conditionedPositiveFDDDensity ν
         (List.ofFn fun i : Fin ((k + 1) + n) => (totalTimes i : ℝ))
         (List.ofFn (Fin.append x y)))) =
@@ -661,12 +462,7 @@ theorem negativeConditionedLaw_finitePastFuture_compProd
         ENNReal.ofReal (max 0 (conditionedPositiveTimeChainDensity ν
           (pastTimes (Fin.last k) : ℝ) (x (Fin.last k))
           (List.ofFn fun i : Fin n => (futureTimes i : ℝ)) (List.ofFn y)))
-    rw [hTimesTotal, hValuesTotal, hPastListTimes, hPastListValues,
-      List.cons_append, List.cons_append]
-    rw [hsplit, hlastTime, hlastState]
-    rw [max_eq_right (mul_nonneg hpastNonneg' hfutureNonneg),
-      max_eq_right hpastNonneg', max_eq_right hfutureNonneg,
-      ENNReal.ofReal_mul hpastNonneg']
+    rw [hTimesTotal, hValuesTotal, hPastListTimes, hPastListValues, List.cons_append, List.cons_append, hsplit, hlastTime, hlastState, max_eq_right (mul_nonneg hpastNonneg' hfutureNonneg), max_eq_right hpastNonneg', max_eq_right hfutureNonneg, ENNReal.ofReal_mul hpastNonneg']
   calc
     P.map (fun p => (evalPast p, evalFuture p)) = (P.map evalTotal).map e := by
       rw [hmapPair, Measure.map_map e.measurable hevalTotal]
@@ -716,14 +512,7 @@ theorem negativeConditionedLaw_twoTime_positiveFDD
     (conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1 *
       conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2))
   have hg : Measurable g := by
-    have hentrance : Measurable (fun z : ℝ × ℝ =>
-        conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1) :=
-      (measurable_conditionedPositiveEntranceDensity_arg ν (t₀ : ℝ)).comp measurable_fst
-    have htransition : Measurable (fun z : ℝ × ℝ =>
-        conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2) :=
-      measurable_conditionedPositiveTransitionDensity_pair ν (dt : ℝ)
-    exact ENNReal.measurable_ofReal.comp
-      (Measurable.max measurable_const (hentrance.mul htransition))
+    fun_prop
   have hdensity : (fun x : Fin 2 → ℝ => g (e x)) = d := by
     funext x
     have he : e x = (x 0, x 1) := rfl
@@ -746,8 +535,7 @@ theorem negativeConditionedLaw_twoTime_positiveFDD
   calc
     P.map (fun p => (-(p t₀), -(p (t₀ + dt)))) =
         (P.map (fun p i => -(p (times i)))).map e := by
-          rw [Measure.map_map e.measurable heval]
-          rw [hcomp]
+          rw [Measure.map_map e.measurable heval, hcomp]
     _ = ((volume : Measure (Fin 2 → ℝ)).withDensity d).map e := by
           rw [hfd]
     _ = (volume : Measure (ℝ × ℝ)).withDensity (d ∘ e.symm) := by

@@ -9,6 +9,7 @@ public import DOZZ.FourPoint.Fusion.RootedMass
 public import DOZZ.FourPoint.Fusion.MovingRootFiniteness
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
+public import DOZZ.FourPoint.Fusion.MovingMass
 
 /-! # Domination away from the colliding roots -/
 
@@ -49,8 +50,11 @@ theorem fusion_exterior_power_bound (a b c k : ℝ) (ha : 0 < a) (hb : 0 < b)
           rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2), ← Real.rpow_add ha]
         _ = _ := by congr 2 <;> ring
 
+section
+variable (γ α₁ α₂ α₃ : ℝ)
+
 /-- Moving rooted kernels are dominated by the limiting kernel outside a fixed disk. -/
-theorem fusion_rootedKernel_exterior_bound (γ α₁ α₂ α₃ : ℝ) (z u x : ℂ)
+theorem fusion_rootedKernel_exterior_bound (z u x : ℂ)
     (hx : x ≠ 0) (hz : ‖z‖ ≤ ‖x‖) (hu : ‖u‖ ≤ ‖x‖ / 2) (hu1 : ‖u‖ ≤ 1) :
     gammaHalfKernel γ α₁ α₂ α₃ z x * Real.exp (γ ^ 2 * gffKernel u x) ≤
       (2 : ℝ) ^ (3 * (γ ^ 2 / 2)) *
@@ -89,71 +93,37 @@ theorem fusion_rootedKernel_exterior_bound (γ α₁ α₂ α₃ : ℝ) (z u x :
   unfold normPlus at h
   convert h using 1 <;> ring
 
-/-- Outside a fixed disk, the moving rooted mass converges for every measure whose limiting
-rooted kernel is integrable. -/
-theorem fusion_rootedKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y : ℂ) (μ : Measure ℂ)
-    (δ : ℝ) (hδ : 0 < δ)
-    (hfin : (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x *
-      Real.exp (γ ^ 2 * gffKernel 0 x)) ∂μ) < ⊤) :
-    Tendsto (fun z : ℂ => ∫⁻ x in {x : ℂ | δ ≤ ‖x‖},
-        ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x *
-          Real.exp (γ ^ 2 * gffKernel (y * z) x)) ∂μ) (nhds 0)
-      (nhds (∫⁻ x in {x : ℂ | δ ≤ ‖x‖},
-        ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x *
-          Real.exp (γ ^ 2 * gffKernel 0 x)) ∂μ)) := by
-  let F : ℂ → ℂ → ℝ≥0∞ := fun z x => ENNReal.ofReal
-    (gammaHalfKernel γ α₁ α₂ α₃ z x * Real.exp (γ ^ 2 * gffKernel (y * z) x))
+theorem fusionRootedKernel_exterior_le (w u x : ℂ)
+    (hx : x ≠ 0) (hw : ‖w‖ ≤ ‖x‖) (hu : ‖u‖ ≤ ‖x‖ / 2) (hu1 : ‖u‖ ≤ 1) :
+    fusionRootedKernel γ α₁ α₂ α₃ w u x ≤
+      ENNReal.ofReal ((2 : ℝ) ^ (3 * (γ ^ 2 / 2))) * fusionRootedKernel γ α₁ α₂ α₃ 0 0 x := by
+  have h := ENNReal.ofReal_le_ofReal (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ w u x hx hw hu hu1)
+  rwa [ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at h
+
+/-- Dominated convergence outside a fixed disk, with two independently moving insertions. -/
+theorem fusion_rootedKernel_exterior_tendsto (μ : Measure ℂ)
+    (δ : ℝ) (hδ : 0 < δ) {w u : ℂ → ℂ}
+    (hw : Tendsto w (nhds 0) (nhds 0)) (hu : Tendsto u (nhds 0) (nhds 0))
+    (hfin : fusionRootedMass γ α₁ α₂ α₃ 0 0 μ < ⊤) :
+    Tendsto (fun z => fusionRootedGoodMass γ α₁ α₂ α₃ (w z) (u z) δ μ) (nhds 0)
+      (nhds (fusionRootedGoodMass γ α₁ α₂ α₃ 0 0 δ μ)) := by
+  let F := fusionRootedKernel γ α₁ α₂ α₃
   let C : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (3 * (γ ^ 2 / 2)))
-  have hm : ∀ z, Measurable (F z) := by
-    intro z
-    apply ENNReal.measurable_ofReal.comp
-    apply Measurable.mul
-    · exact (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (f := fun x : ℂ => (z, x))
-        (measurable_const.prodMk measurable_id)
-    · exact (measurable_const.mul (measurable_pointRootPotential.comp
-        (measurable_const.prodMk measurable_id))).exp
-  have hzlim : Tendsto (fun z : ℂ => ‖z‖) (nhds 0) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.continuousAt (x := (0 : ℂ))).tendsto
-  have hulim : Tendsto (fun z : ℂ => ‖y * z‖) (nhds 0) (nhds 0) := by
-    have hc : Continuous (fun z : ℂ => ‖y * z‖) := by fun_prop
-    simpa only [mul_zero, norm_zero] using (hc.continuousAt (x := (0 : ℂ))).tendsto
-  have hev : ∀ᶠ z : ℂ in nhds 0, ‖z‖ < δ ∧ ‖y * z‖ < δ / 2 ∧ ‖y * z‖ < 1 :=
-    (hzlim.eventually_lt_const hδ).and
-      ((hulim.eventually_lt_const (half_pos hδ)).and (hulim.eventually_lt_const zero_lt_one))
-  apply tendsto_lintegral_filter_of_dominated_convergence (fun x => C * F 0 x)
-  · exact Eventually.of_forall hm
-  · filter_upwards [hev] with z hz
+  have hwlim : Tendsto (fun z => ‖w z‖) (nhds 0) (nhds 0) := by simpa only [norm_zero] using hw.norm
+  have hulim : Tendsto (fun z => ‖u z‖) (nhds 0) (nhds 0) := by simpa only [norm_zero] using hu.norm
+  apply tendsto_lintegral_filter_of_dominated_convergence (fun x => C * F 0 0 x)
+  · exact Eventually.of_forall fun z => fusionRootedKernel_measurable γ α₁ α₂ α₃ (w z) (u z)
+  · filter_upwards [hwlim.eventually_lt_const hδ, hulim.eventually_lt_const (half_pos hδ),
+      hulim.eventually_lt_const zero_lt_one] with z hz huδ hu1
     filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
-    have h := ENNReal.ofReal_le_ofReal (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ z (y * z) x
-      hx0 (hz.1.le.trans hx) (by linarith [hz.2.1]) hz.2.2.le)
-    rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at h
-    simpa only [C, F, mul_zero] using h
-  · rw [lintegral_const_mul _ (hm 0)]
-    dsimp only [C, F]
-    simp only [mul_zero]
+    exact fusionRootedKernel_exterior_le γ α₁ α₂ α₃ (w z) (u z) x
+      (norm_ne_zero_iff.mp (hδ.trans_le hx).ne') (hz.le.trans hx) (by linarith) hu1.le
+  · rw [lintegral_const_mul _ (fusionRootedKernel_measurable γ α₁ α₂ α₃ 0 0)]
     exact (ENNReal.mul_lt_top ENNReal.ofReal_lt_top
       (lt_of_le_of_lt (setLIntegral_le_lintegral _ _) hfin)).ne
   · filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
-    exact ENNReal.continuous_ofReal.continuousAt.tendsto.comp
-      (fusion_rootedKernel_tendsto γ α₁ α₂ α₃ y x hx0)
+    exact fusion_rootedKernel_tendsto γ α₁ α₂ α₃ x (norm_ne_zero_iff.mp (hδ.trans_le hx).ne') hw hu
 
-/-- The exterior part of the moving rooted GMC mass converges almost surely. -/
-theorem fusion_movingRoot_exterior_real_tendsto_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (y : ℂ) (δ : ℝ) (hδ : 0 < δ) :
-    ∀ᵐ ω ∂P, Tendsto (fun z : ℂ =>
-      (∫⁻ x in {x : ℂ | δ ≤ ‖x‖}, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x *
-        Real.exp (γ ^ 2 * gffKernel (y * z) x)) ∂M ω).toReal) (nhds 0)
-      (nhds (∫⁻ x in {x : ℂ | δ ≤ ‖x‖}, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x *
-        Real.exp (γ ^ 2 * gffKernel 0 x)) ∂M ω).toReal) := by
-  filter_upwards [fusion_limitingRootedKernel_finite_ae P X hX γ hγ hγ2 M hM
-    α₁ α₂ α₃ hα₁ hα₂ hα₃] with ω hω
-  have hfin := lt_of_le_of_lt (setLIntegral_le_lintegral {x : ℂ | δ ≤ ‖x‖} _) hω
-  exact (ENNReal.tendsto_toReal hfin.ne).comp
-    (fusion_rootedKernel_exterior_tendsto γ α₁ α₂ α₃ y (M ω) δ hδ hω)
+end
 
 end DOZZ.Proofs

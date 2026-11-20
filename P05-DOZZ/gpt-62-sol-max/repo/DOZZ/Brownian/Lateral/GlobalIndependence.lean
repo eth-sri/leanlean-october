@@ -7,6 +7,8 @@ module
 public import DOZZ.Brownian.Lateral.LocalWickIdentification
 public import Mathlib.Analysis.SpecificLimits.Basic
 public import DOZZ.Statements.Brownian.IsSourceLateralProjection
+public import DOZZ.GMC.MeasurableIntegrals
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 
 /-!
 # Independence of the full lateral measure
@@ -33,17 +35,6 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
-
-/-- Restriction to a fixed measurable set is measurable on the space of measures. -/
-theorem measurable_measure_restrict {E : Type*} [MeasurableSpace E]
-    (S : Set E) (hS : MeasurableSet S) :
-    Measurable (fun μ : Measure E => μ.restrict S) := by
-  apply Measure.measurable_of_measurable_coe
-  intro T hT
-  have heq : (fun μ : Measure E => μ.restrict S T) = fun μ => μ (T ∩ S) :=
-    funext (fun μ => Measure.restrict_apply hT)
-  rw [heq]
-  exact Measure.measurable_coe (hT.inter hS)
 
 /-- An increasing measurable chart exhaustion preserves independence of an entire
 random measure, provided the measure is supported on the exhausted region. -/
@@ -195,16 +186,14 @@ entire radial path, by the local measure identification. -/
 theorem originRadialRemovedGMC_restrict_indep
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (ρ γ : ℝ) (hρ : 0 < ρ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     IndepFun (originRadialPath Xc) (fun ω =>
       ((M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))).restrict
         (originLateralChart ρ)) P := by
   obtain ⟨N, _, hi, heq⟩ := exists_originLateralChartGMC_radial_removed_identity
-    P X Xc hX hc hm hcont ρ γ hρ hγ hγ2 M hM
+    P X Xc hX hcircle ρ γ hρ hγ hγ2 M hM
   exact hi.congr (ae_of_all P (fun _ => rfl)) heq
 
 /-- Chart independence assembles to independence of the full actual plane measure,
@@ -212,16 +201,14 @@ using its exact zero mass at the excluded origin. -/
 theorem originRadialRemovedGMC_indep
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     IndepFun (originRadialPath Xc)
       (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))) P := by
   let : IsProbabilityMeasure P := hX.1
   let A := originRadialPath Xc
-  have hA : AEMeasurable A P := originRadialPath_aemeasurable P X Xc hc hcont
+  have hA : AEMeasurable A P := originRadialPath_aemeasurable P X Xc hcircle.isCircleAverage hcircle.continuous_ae
   obtain ⟨N, hNm, hN0, hNF⟩ := originRadialRemovedGMC_measurable_version P γ A hA M
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM) hM.1
   have hUmono : Monotone (fun n => originLateralChart (originLateralChartRadius n)) :=
@@ -234,7 +221,7 @@ theorem originRadialRemovedGMC_indep
       rw [originLateralChart_exhaustion]
       exact hN0 ω
     · intro n
-      have hlocal := originRadialRemovedGMC_restrict_indep P X Xc hX hc hm hcont
+      have hlocal := originRadialRemovedGMC_restrict_indep P X Xc hX hcircle
         (originLateralChartRadius n) γ (originLateralChartRadius_pos n) hγ hγ2 M hM
       apply hlocal.congr hA.ae_eq_mk
       filter_upwards [hNF] with ω hω
@@ -246,14 +233,12 @@ theorem originRadialRemovedGMC_indep
 theorem lateralProjectedGMC_indep
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     IndepFun (originRadialPath Xc)
       (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) P := by
-  have hi := originRadialRemovedGMC_indep P X Xc hX hc hm hcont γ hγ hγ2 M hM
+  have hi := originRadialRemovedGMC_indep P X Xc hX hcircle γ hγ hγ2 M hM
   have hlog : Measurable (fun x : ℂ => -Real.log ‖x‖) :=
     measurable_neg.comp (Real.measurable_log.comp measurable_norm)
   exact hi.comp measurable_id (Measure.measurable_map _ hlog)
@@ -268,19 +253,11 @@ theorem originRadialRemovedGMC_eq_of_chart_restrictions (μ ν : Measure ℂ)
   have hμ0 : μ.restrict ({0} : Set ℂ)ᶜ = μ := by
     apply Measure.restrict_eq_self_of_ae_mem
     rw [ae_iff]
-    have hset : {x : ℂ | x ∉ ({0} : Set ℂ)ᶜ} = {0} := by
-      ext x
-      simp only [mem_ofPred_eq, mem_compl_iff, not_not]
-    rw [hset]
-    exact hμ
+    simpa
   have hν0 : ν.restrict ({0} : Set ℂ)ᶜ = ν := by
     apply Measure.restrict_eq_self_of_ae_mem
     rw [ae_iff]
-    have hset : {x : ℂ | x ∉ ({0} : Set ℂ)ᶜ} = {0} := by
-      ext x
-      simp only [mem_ofPred_eq, mem_compl_iff, not_not]
-    rw [hset]
-    exact hν
+    simpa
   have heq : μ.restrict (⋃ n, originLateralChart (originLateralChartRadius n)) =
       ν.restrict (⋃ n, originLateralChart (originLateralChartRadius n)) :=
     Measure.restrict_iUnion_congr.mpr hchart
@@ -297,27 +274,25 @@ theorem equatorGFF_exists_sourceLateralProjection
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     ∃ Xc : Ω → ℂ → ℝ → ℝ,
-      IsCircleAverage P X Xc ∧
-      Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2) ∧
-      (∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) ∧
+      IsContinuousCircleAverage P X Xc ∧
       IsSourceLateralProjection P X γ M
         (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) ∧
       (∀ᵐ ω ∂P, ∀ a b : ℝ,
         lateralProjectedGMC γ (originRadialPath Xc ω) (M ω) (Icc a b) < ⊤) := by
   obtain ⟨Xc0, hc0, _⟩ := hM.2
-  obtain ⟨Xc, hc, hm, hcont, _⟩ := exists_continuous_circleAverage P X Xc0 hX hc0
+  obtain ⟨Xc, hcircle, _⟩ := exists_continuous_circleAverage P X Xc0 hX hc0
   let A := originRadialPath Xc
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
-  have hB := originRadialPath_isBrownian P X Xc hX hc hcont
+  have hA := originRadialPath_aemeasurable P X Xc hcircle.isCircleAverage hcircle.continuous_ae
+  have hB := originRadialPath_isBrownian P X Xc hX hcircle.isCircleAverage hcircle.continuous_ae
   have hZ := lateralProjectedGMC_aemeasurable P γ A hA M
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM) hM.1
-  have hi := lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ2 M hM
-  refine ⟨Xc, hc, hm, hcont, ?_, ae_lateralProjectedGMC_interval_ne_top P γ A M hM.1⟩
-  refine ⟨hX, hM, A, ⟨Xc, hc, ?_⟩, hA,
-    originRadialPath_zero_ae P X Xc hc hcont, hB.1, hB.2,
-    originRadialPath_halves_indep P X Xc hX hc hcont, hZ, hi, ae_of_all P (fun _ => rfl)⟩
+  have hi := lateralProjectedGMC_indep P X Xc hX hcircle γ hγ hγ2 M hM
+  refine ⟨Xc, hcircle, ?_, ae_lateralProjectedGMC_interval_ne_top P γ A M hM.1⟩
+  refine ⟨hX, hM, A, ⟨Xc, hcircle.isCircleAverage, ?_⟩, hA,
+    originRadialPath_zero_ae P X Xc hcircle.isCircleAverage hcircle.continuous_ae, hB.1, hB.2,
+    originRadialPath_halves_indep P X Xc hX hcircle.isCircleAverage hcircle.continuous_ae, hZ, hi, ae_of_all P (fun _ => rfl)⟩
   intro s
-  exact (originRadialPath_eval_ae hcont).mono (fun ω hω => hω s)
+  exact (originRadialPath_eval_ae hcircle.continuous_ae).mono (fun ω hω => hω s)
 
 
 

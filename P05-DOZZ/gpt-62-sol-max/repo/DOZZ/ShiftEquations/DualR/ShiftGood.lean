@@ -33,10 +33,14 @@ def ShiftCoeffGood (γ : ℝ) (z b c : ℂ) : Prop :=
     AnalyticAt ℂ Complex.Gamma (1 - (γ : ℂ) / 2 / 2 * ((z + b + c) - 2 * b - (γ : ℂ) / 2))
 
 
+section
+variable {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ} (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t)
+  (h₃ : AnalyticAt ℂ f₃ t)
+include h₁ h₂ h₃
+
 /-- **The γ/2 shift coefficient is analytic along analytic charge curves** where
 `ShiftCoeffGood` holds. -/
-theorem analyticAt_shiftCoeffA_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ}
-    (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t)
+theorem analyticAt_shiftCoeffA_comp
     (hg : ShiftCoeffGood γ (f₁ t) (f₂ t) (f₃ t)) :
     AnalyticAt ℂ (fun s => shiftCoeffA γ ((γ : ℂ) / 2) (f₁ s) (f₂ s) (f₃ s)) t := by
   obtain ⟨g₁, g₂, g₃, g₄, g₅, g₆⟩ := hg
@@ -75,17 +79,13 @@ theorem analyticAt_shiftCoeffA_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t
       (f := fun s => (γ : ℂ) / 2 / 2 * ((f₁ s + f₂ s + f₃ s) - 2 * f₃ s - (γ : ℂ) / 2))
       (analyticAt_const.mul ((((h₁.add h₂).add h₃).sub (analyticAt_const.mul h₃)).sub
         analyticAt_const)) g₅
-  have a₆ : AnalyticAt ℂ (fun s => (lFun ((γ : ℂ) / 2 / 2 *
-      ((f₁ s + f₂ s + f₃ s) - 2 * f₂ s - (γ : ℂ) / 2)))⁻¹) t :=
-    analyticAt_inv_lFun_comp
+  exact (((((analyticAt_const.mul a₁).mul a₂).mul a₃).mul a₄).mul a₅).mul (analyticAt_inv_lFun_comp
       (f := fun s => (γ : ℂ) / 2 / 2 * ((f₁ s + f₂ s + f₃ s) - 2 * f₂ s - (γ : ℂ) / 2))
       (analyticAt_const.mul ((((h₁.add h₂).add h₃).sub (analyticAt_const.mul h₂)).sub
-        analyticAt_const)) g₆
-  exact (((((analyticAt_const.mul a₁).mul a₂).mul a₃).mul a₄).mul a₅).mul a₆
+        analyticAt_const)) g₆)
 
 /-- **The γ/2 shift coefficient is meromorphic along analytic charge curves.** -/
-theorem meromorphicAt_shiftCoeffA_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ}
-    (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t) :
+theorem meromorphicAt_shiftCoeffA_comp :
     MeromorphicAt (fun s => shiftCoeffA γ ((γ : ℂ) / 2) (f₁ s) (f₂ s) (f₃ s)) t := by
   unfold shiftCoeffA
   refine (((((meromorphicAt_lFun_comp' analyticAt_const).fun_mul
@@ -99,6 +99,8 @@ theorem meromorphicAt_shiftCoeffA_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ}
       (analyticAt_const.mul h₃)).sub analyticAt_const)))).fun_mul
     (meromorphicAt_lFun_comp' (analyticAt_const.mul ((((h₁.add h₂).add h₃).sub
       (analyticAt_const.mul h₂)).sub analyticAt_const)))))
+
+end
 
 /-- **`ShiftCoeffGood` at real charges from positivity** of the six real arguments. -/
 theorem shiftCoeffGood_ofReal {γ z b c : ℝ} (h₁ : 0 < γ / 2 * z)

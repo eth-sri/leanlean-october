@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.GFFStructure.DirichletCompletion
+public import DOZZ.GFFStructure.PoissonCollarLimit
 /-!
 # Global Dirichlet covariance and independence
 
@@ -23,8 +24,11 @@ theorem diskTestRestrictionL2_sub (c : ℂ) (ρ : ℝ) (f g : TestFn) :
     diskTestRestrictionL2 c ρ (f-g) = diskTestRestrictionL2 c ρ f-diskTestRestrictionL2 c ρ g :=
   (diskTestRestrictionLinearMap c ρ).map_sub f g
 
+section
+variable (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
+
 /-- Green pairing is linear under subtraction of the first test. -/
-theorem diskGreenCovariance_sub_left (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g h : TestFn) :
+theorem diskGreenCovariance_sub_left (f g h : TestFn) :
     diskGreenCovariance c ρ hρ (f-g) h =
       diskGreenCovariance c ρ hρ f h-diskGreenCovariance c ρ hρ g h := by
   rw [sub_eq_add_neg,diskGreenCovariance_add_left,← neg_one_smul ℝ g,
@@ -32,7 +36,7 @@ theorem diskGreenCovariance_sub_left (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g h 
   ring
 
 /-- The Green energy bound in norms of actual disk restrictions. -/
-theorem abs_diskGreenCovariance_le_restriction_norms (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn) :
+theorem abs_diskGreenCovariance_le_restriction_norms (f g : TestFn) :
     |diskGreenCovariance c ρ hρ f g| ≤
       (diskGreenCompletionConstant c ρ hρ)^2*‖diskTestRestrictionL2 c ρ f‖*‖diskTestRestrictionL2 c ρ g‖ := by
   have h := abs_diskGreenCovariance_le_diskL2 c ρ hρ f g
@@ -47,11 +51,10 @@ theorem abs_diskGreenCovariance_le_restriction_norms (c : ℂ) (ρ : ℝ) (hρ :
         ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))))^(1/2 : ℝ) := by
     apply Real.sq_sqrt
     exact Real.rpow_nonneg (integral_nonneg (fun _ => sq_nonneg _)) _
-  rw [hK,mul_assoc]
-  exact h
+  rwa [hK, mul_assoc]
 
 /-- Literal Green pairings converge under L² convergence of one disk restriction. -/
-theorem tendsto_diskGreenCovariance_of_restriction_left (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
+theorem tendsto_diskGreenCovariance_of_restriction_left
     (f : ℕ → TestFn) (g h : TestFn)
     (hf : Tendsto (fun n => diskTestRestrictionL2 c ρ (f n)) atTop
       (𝓝 (diskTestRestrictionL2 c ρ g))) :
@@ -66,10 +69,15 @@ theorem tendsto_diskGreenCovariance_of_restriction_left (c : ℂ) (ρ : ℝ) (h�
   rw [Real.norm_eq_abs,← diskGreenCovariance_sub_left]
   simpa only [diskTestRestrictionL2_sub] using abs_diskGreenCovariance_le_restriction_norms c ρ hρ (f n-g) h
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ)
+  (hρ : 0 < ρ) (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P)
+include Ω
+
 /-- A completed map retains every global mixed Green covariance from its dense interior tests. -/
-theorem completed_disk_map_test_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
-    (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P)
+theorem completed_disk_map_test_covariance
     (W : Lp ℝ 2 P) (g : TestFn)
     (hT : ∀ f : TestFn, tsupport f ⊆ ball c ρ →
       covariance (T (diskTestRestrictionL2 c ρ f)) W P = diskGreenCovariance c ρ hρ f g)
@@ -82,9 +90,7 @@ theorem completed_disk_map_test_covariance {Ω : Type*} [MeasurableSpace Ω]
   exact tendsto_nhds_unique hleft (hright.congr (fun n => (hT (a n) (ha n)).symm))
 
 /-- Green covariance between completed restrictions extends from the dense interior pairs. -/
-theorem completed_disk_map_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
-    (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P)
+theorem completed_disk_map_covariance
     (hT : ∀ f g : TestFn, tsupport f ⊆ ball c ρ → tsupport g ⊆ ball c ρ →
       covariance (T (diskTestRestrictionL2 c ρ f)) (T (diskTestRestrictionL2 c ρ g)) P =
         diskGreenCovariance c ρ hρ f g)
@@ -94,49 +100,35 @@ theorem completed_disk_map_covariance {Ω : Type*} [MeasurableSpace Ω]
       covariance (T (diskTestRestrictionL2 c ρ f)) (T (diskTestRestrictionL2 c ρ g)) P =
         diskGreenCovariance c ρ hρ f g := by
     intro f g hg
-    exact completed_disk_map_test_covariance P c ρ hρ T (T (diskTestRestrictionL2 c ρ g)) g
-      (fun a ha => hT a g ha hg) f
+    apply completed_disk_map_test_covariance <;> solve_by_elim
   rw [covariance_comm, diskGreenCovariance_symm c ρ hρ f g]
   exact completed_disk_map_test_covariance P c ρ hρ T (T (diskTestRestrictionL2 c ρ f)) f
     (fun a ha => by rw [covariance_comm,diskGreenCovariance_symm]; exact hfirst f a ha) g
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ)
+  (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+  (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+  (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) (hcov : HasPoissonCovariance P c R ρ V)
+  (hlim : IsPoissonCollarLimit P X Xc c R ρ ε hR hρ hε V)
+include Ω ε hR hρ hε hpin hmean hcov hlim
+
 /-- The actual completed field has the exact Green covariance with every global pinned test. -/
-theorem dirichletCompletedL2Map_test_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletCompletedL2Map_test_covariance
     (f g : TestFn) : covariance (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU (diskTestRestrictionL2 c ρ f))
       (exteriorPinnedTestL2 P X Xc hX hc R (by linarith) g) P = diskGreenCovariance c ρ hρ f g := by
   let _ := hX.1
   apply completed_disk_map_test_covariance P c ρ hρ (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU) (exteriorPinnedTestL2 P X Xc hX hc R (by linarith) g) g _ f
   intro a ha
   rw [dirichletCompletedL2Map_apply_interior P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim a ha]
-  exact dirichletResidualL2_test_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hlim a g ha
+  apply dirichletResidualL2_test_covariance <;> assumption
 
 /-- The actual globally restricted Dirichlet family has the literal Green covariance
 `DOZZ.diskGreenCovariance`. -/
-theorem dirichletCompletedL2Map_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletCompletedL2Map_covariance
     (f g : TestFn) : covariance (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU (diskTestRestrictionL2 c ρ f))
       (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU (diskTestRestrictionL2 c ρ g)) P = diskGreenCovariance c ρ hρ f g := by
   let _ := hX.1
@@ -144,29 +136,19 @@ theorem dirichletCompletedL2Map_covariance {Ω : Type*} [MeasurableSpace Ω]
   intro a b ha hb
   rw [dirichletCompletedL2Map_apply_interior P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim a ha,
     dirichletCompletedL2Map_apply_interior P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim b hb]
-  exact dirichletResidualL2_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim a b ha hb
+  apply dirichletResidualL2_covariance <;> assumption
 
 /-- Every actual completed disk variable is centered. -/
-theorem dirichletCompletedL2Map_integral_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletCompletedL2Map_integral_zero
     (u : Lp ℝ 2 (volume.restrict (ball c ρ))) :
     (∫ ω, dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU u ω ∂P) = 0 := by
   let _ := hX.1
   apply integral_completed_disk_map_eq_zero P c ρ hρ (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU) _ u
   intro f hf
   rw [dirichletCompletedL2Map_apply_interior P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f hf]
-  exact dirichletResidualL2_integral_zero P X Xc hX hc c R ρ (by linarith) V hV hmean hU f hf
+  apply dirichletResidualL2_integral_zero <;> assumption
+
+end
 
 /-- Exterior test restrictions have zero Green covariance with every global test. -/
 theorem diskGreenCovariance_eq_zero_of_exterior (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
@@ -186,15 +168,11 @@ theorem dirichletCompletedL2Map_exterior_covariance_zero {Ω : Type*} [Measurabl
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+    (hcov : HasPoissonCovariance P c R ρ V)
+    (hlim : IsPoissonCollarLimit P X Xc c R ρ ε hR hρ hε V)
     (f g : TestFn) (hg : tsupport g ⊆ (closedBall c ρ)ᶜ) :
     covariance (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU (diskTestRestrictionL2 c ρ f)) (exteriorPinnedTestL2 P X Xc hX hc R (by linarith) g) P = 0 := by
   rw [dirichletCompletedL2Map_test_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim]
-  exact diskGreenCovariance_eq_zero_of_exterior c ρ hρ f g hg
+  apply diskGreenCovariance_eq_zero_of_exterior <;> assumption
 
 end DOZZ.Proofs

@@ -41,7 +41,7 @@ theorem dual_copied_joint_law_finite
   have he : ∀ᵐ ω : Ω × Λ ∂P.prod R, (Y ω.1,J ω.2).2 ≠ ⊤ :=
     measurePreserving_snd.quasiMeasurePreserving.ae hfinite
   have hm := (ae_map_iff hr hset).mpr he
-  rw [dual_independent_copy_map_law P R Y J hY hJ, ← hLaw] at hm
+  rw [map_prod_of_aemeasurable P R Y J hY hJ, ← hLaw] at hm
   exact (ae_map_iff hs hset).mp hm
 
 end DOZZ.Proofs

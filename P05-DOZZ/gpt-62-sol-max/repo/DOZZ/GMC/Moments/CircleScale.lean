@@ -22,7 +22,7 @@ measure. Logarithmic radius is shifted by the inverse dilation. -/
 theorem circleMeasure_scale {c : ℝ} (hc : 0 < c) (x : ℂ) (s : ℝ) :
     circleMeasure (c * x) (s - Real.log c) =
       Measure.map (fun z : ℂ => c * z) (circleMeasure x s) := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 (2 * Real.pi))
+  let μ  := volume.restrict (Ioc 0 (2 * Real.pi))
   let scale : ℂ → ℂ := fun z => c * z
   have hrad : Real.exp (-(s - Real.log c)) = c * Real.exp (-s) := by
     calc
@@ -57,21 +57,16 @@ theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) 
         ⟨Real.exp (-(s - Real.log c)), Real.exp_pos _⟩ =
       Real.log c + circleLogPotential ‖x - y‖₊
         ⟨Real.exp (-r), Real.exp_pos _⟩ ⟨Real.exp (-s), Real.exp_pos _⟩ := by
-  let f : ℂ → ℝ := fun w => Real.log (max (Real.exp (-(s - Real.log c))) ‖w - c * y‖)
-  let g : ℂ → ℝ := fun w => Real.log (max (Real.exp (-s)) ‖w - y‖)
+  let f  := fun w => Real.log (max (Real.exp (-(s - Real.log c))) ‖w - c * y‖)
+  let g  := fun w => Real.log (max (Real.exp (-s)) ‖w - y‖)
   have hfcont : Continuous f := by
     dsimp [f]
-    have hdist : Continuous (fun w : ℂ => ‖w - c * y‖) := by fun_prop
-    exact (continuous_const.max hdist).log
+    exact (continuous_const.max (by fun_prop)).log
       (fun _ => ne_of_gt ((Real.exp_pos _).trans_le (le_max_left _ _)))
   have hgcont : Continuous g := by
     dsimp [g]
-    have hdist : Continuous (fun w : ℂ => ‖w - y‖) := by fun_prop
-    exact (continuous_const.max hdist).log
+    exact (continuous_const.max (by fun_prop)).log
       (fun _ => ne_of_gt ((Real.exp_pos _).trans_le (le_max_left _ _)))
-  have hfint : Integrable f (circleMeasure (c * x) (r - Real.log c)) :=
-    integrable_circleMeasure_of_circleIntegrable _ _ hfcont.measurable
-      hfcont.continuousOn.circleIntegrable'
   have hgint : Integrable g (circleMeasure x r) :=
     integrable_circleMeasure_of_circleIntegrable _ _ hgcont.measurable
       hgcont.continuousOn.circleIntegrable'
@@ -96,7 +91,7 @@ theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) 
         ⟨Real.exp (-(s - Real.log c)), Real.exp_pos _⟩ =
       ∫ w, f w ∂circleMeasure (c * x) (r - Real.log c) := by
         symm
-        exact integral_logmax_circleMeasure_eq_closed _ _ _ (Real.exp_pos _)
+        apply integral_logmax_circleMeasure_eq_closed <;> assumption
     _ = ∫ z, f (c * z) ∂circleMeasure x r := by
         rw [circleMeasure_scale hc x r]
         exact integral_map hscale.aemeasurable hfcont.measurable.aestronglyMeasurable
@@ -140,12 +135,7 @@ theorem circleAverage_covariance_affine_scale
       (r - Real.log c) (s - Real.log c),
     circleAverage_covariance P X Xc hX hc x y r s]
   have hdiff : (a + c * x) - (a + c * y) = c * x - c * y := by ring
-  rw [hdiff]
-  rw [circleLogPotential_scale hscale x y r s]
-  rw [circleLogPotential_pin_eq_zero_of_inside hax,
-    circleLogPotential_pin_eq_zero_of_inside hay,
-    circleLogPotential_pin_eq_zero_of_inside hx,
-    circleLogPotential_pin_eq_zero_of_inside hy]
+  rw [hdiff, circleLogPotential_scale hscale x y r s, circleLogPotential_pin_eq_zero_of_inside hax, circleLogPotential_pin_eq_zero_of_inside hay, circleLogPotential_pin_eq_zero_of_inside hx, circleLogPotential_pin_eq_zero_of_inside hy]
   ring
 
 /-- Affine form of `circleAverage_scaled_fdd_law`, used for exact scaling of masses in disks
@@ -182,11 +172,10 @@ theorem circleAverage_affine_scaled_fdd_law
         (id : ℝ → ℝ) hA hW
   have hcircleMean := (circleAverage_isGaussianProcess P X Xc hX hc).2
   have hTmean (i : ι) : (∫ ω, T ω i ∂P) = 0 := by
-    exact hcircleMean (a + c * z i) (r i - Real.log c)
-  have hAmean (i : ι) : (∫ ω, A i ω ∂P) = 0 := by
-    exact hcircleMean (z i) (r i)
+    apply hcircleMean <;> assumption
+  have hAmean (i : ι) := hcircleMean (z i) (r i)
   have hBmean (i : ι) : (∫ p, B p i ∂(P.prod G)) = 0 := by
-    exact coord_mean (P.prod G) B hB i
+    apply coord_mean <;> assumption
   have htargetCov (i j : ι) :
       gaussianCovariance P (fun ω => T ω i) (fun ω => T ω j) =
         covariance (fun ω => T ω i) (fun ω => T ω j) P := by
@@ -253,25 +242,19 @@ theorem circleAverage_affine_scaled_fdd_law
     rw [covariance_add_left hAiProd hWProd (hAjProd.add hWProd),
       covariance_add_right hAiProd hAjProd hWProd,
       covariance_add_right hWProd hAjProd hWProd]
-    rw [hcross₁, hcross₂, hNoiseCov, ← hBaseCov]
-    ring
+    linarith
   have hcov (i j : ι) :
       gaussianCovariance P (fun ω => T ω i) (fun ω => T ω j) =
         gaussianCovariance (P.prod G) (fun p => B p i) (fun p => B p j) := by
-    calc
-      gaussianCovariance P (fun ω => T ω i) (fun ω => T ω j) =
-          covariance (fun ω => T ω i) (fun ω => T ω j) P := htargetCov i j
-      _ = covariance (A i) (A j) P - Real.log c := by
-          exact circleAverage_covariance_affine_scale P X Xc hX hc hscale
-            (z i) (z j) (r i) (r j) (hbase i) (hbase j) (hscaled i) (hscaled j)
-      _ = covariance (A i) (A j) P + (v : ℝ) := by
-          have hv : (v : ℝ) = -Real.log c := rfl
-          rw [hv]
-          ring
-      _ = covariance (fun p => B p i) (fun p => B p j) (P.prod G) :=
-          (hproductCov i j).symm
-      _ = gaussianCovariance (P.prod G) (fun p => B p i) (fun p => B p j) :=
-          (hshiftCov i j).symm
-  exact map_eq_of_centeredJointlyGaussian_of_covariance_eq P (P.prod G) T B hT hB hcov
+    exact Trans.trans
+      (Trans.trans
+        (Trans.trans
+          (Trans.trans (htargetCov i j)
+            (circleAverage_covariance_affine_scale P X Xc hX hc hscale (z i) (z j) (r i) (r j) (hbase i) (hbase j)
+              (hscaled i) (hscaled j)))
+          (Eq.refl (cov[A i, A j; P] - Real.log c)))
+        (Eq.symm (hproductCov i j)))
+      (Eq.symm (hshiftCov i j))
+  apply map_eq_of_centeredJointlyGaussian_of_covariance_eq <;> assumption
 
 end DOZZ.Proofs

@@ -27,13 +27,14 @@ theorem annular_kernel_le (γ α A ρ : ℝ) (hγ : 0 < γ)
     _ ≤ ρ^(-γ*A) := Real.rpow_le_rpow_of_exponent_ge hρ (hρ1)
       (by simpa only [neg_mul] using neg_le_neg (mul_le_mul_of_nonneg_left hαA hγ.le))
 
-theorem annular_remainder_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (K : Set ℂ) (hK : IsCompact K) (ρ A b R : ℝ)
-    (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hb : 0 ≤ b)
-    (hR : 0 < R) (hRbulk : R < 4/γ^2) :
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (K : Set ℂ)
+  (hK : IsCompact K) (ρ A b R : ℝ) (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hb : 0 ≤ b) (hR : 0 < R)
+  (hRbulk : R < 4/γ^2)
+include Ω P X hX hγ hγ2 M hM hK hρ hρ1 hb hR hRbulk
+
+theorem annular_remainder_moment_uniform :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ z ∈ K, ∀ α r : ℝ,
       0 ≤ α → α ≤ A → 0 < r → r ≤ R →
       ∀ F : ℂ → ℝ, (∀ x, 0 ≤ F x ∧ F x ≤ b) →
@@ -83,13 +84,7 @@ theorem annular_remainder_moment_uniform
     _ ≤ k^R*(1+ENNReal.ofReal D) := mul_le_mul'
       (ENNReal.rpow_le_rpow_of_exponent_le hk1 hrR) hmass
 
-theorem annular_remainder_moment_uniform_models
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (K : Set ℂ) (hK : IsCompact K) (ρ A b R : ℝ)
-    (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hb : 0 ≤ b)
-    (hR : 0 < R) (hRbulk : R < 4/γ^2) :
+theorem annular_remainder_moment_uniform_models :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ (P' : Measure Ω) (X' : Ω → Distr) (N : Ω → Measure ℂ),
       IsEquatorGFF P' X' → IsGMCOf P' X' γ N →
       ∀ z ∈ K, ∀ α r : ℝ, 0 ≤ α → α ≤ A → 0 < r → r ≤ R →
@@ -115,6 +110,8 @@ theorem annular_remainder_moment_uniform_models
     (hm.comp measurable_snd)
   rw [← hl]
   exact hbound z hzk α r hα hαA hr hrR F hF
+
+end
 
 
 end DOZZ.Proofs

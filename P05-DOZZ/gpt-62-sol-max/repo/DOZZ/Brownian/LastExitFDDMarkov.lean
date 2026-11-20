@@ -34,7 +34,7 @@ noncomputable def conditionedPositiveTimeChainDensity (ν t₀ x₀ : ℝ) :
       conditionedPositiveTransitionDensity ν (t - t₀) x₀ x *
         conditionedPositiveTimeChainDensity ν t x ts xs
   | _, _ => 0
-termination_by times _ => times.length
+termination_by structural times _ => times
 
 /-- The positive-coordinate form of the entrance finite-dimensional density. -/
 noncomputable def conditionedPositiveFDDDensity (ν : ℝ) : List ℝ → List ℝ → ℝ
@@ -51,18 +51,10 @@ theorem negativeConditionedTransitionChainDensity_reflect
     negativeConditionedTransitionChainDensity ν t (-x) times (values.map fun y => -y) =
       conditionedPositiveTimeChainDensity ν t x times values := by
   induction times generalizing t x values with
-  | nil =>
-      cases values <;>
-        simp [negativeConditionedTransitionChainDensity,
-          conditionedPositiveTimeChainDensity]
+  | nil => cases values <;> simp [negativeConditionedTransitionChainDensity, conditionedPositiveTimeChainDensity]
   | cons s ss ih =>
-      cases values with
-      | nil =>
-          simp [negativeConditionedTransitionChainDensity,
-            conditionedPositiveTimeChainDensity]
-      | cons y ys =>
-          simp [negativeConditionedTransitionChainDensity,
-            conditionedPositiveTimeChainDensity, negativeConditionedTransitionDensity, ih]
+      cases values <;> simp [negativeConditionedTransitionChainDensity,
+        conditionedPositiveTimeChainDensity, negativeConditionedTransitionDensity, ih]
 
 /-- The negative entrance density, after reflecting its coordinates, is the explicit
 positive entrance density and transition chain. -/
@@ -70,38 +62,12 @@ theorem negativeConditionedFDDDensity_reflect
     (ν : ℝ) (times values : List ℝ) :
     negativeConditionedFDDDensity ν times (values.map fun y => -y) =
       conditionedPositiveFDDDensity ν times values := by
-  cases times with
-  | nil =>
-      cases values <;>
-        simp [negativeConditionedFDDDensity, conditionedPositiveFDDDensity]
-  | cons t ts =>
-      cases values with
-      | nil =>
-          simp [negativeConditionedFDDDensity, conditionedPositiveFDDDensity]
-      | cons x xs =>
-          simp only [negativeConditionedFDDDensity, conditionedPositiveFDDDensity,
-            List.map_cons]
-          rw [negativeConditionedTransitionChainDensity_reflect]
-          simp
+  cases times <;> cases values <;>
+    simp [negativeConditionedFDDDensity, conditionedPositiveFDDDensity,
+      negativeConditionedTransitionChainDensity_reflect]
 
-/-- The positive finite-dimensional density factors at its first observation into the entrance
-density and the successive transition densities. -/
-theorem conditionedPositiveFDDDensity_cons
-    (ν t : ℝ) (x : ℝ) (times values : List ℝ) :
-    conditionedPositiveFDDDensity ν (t :: times) (x :: values) =
-      conditionedPositiveEntranceDensity ν t x *
-        conditionedPositiveTimeChainDensity ν t x times values := by
-  rfl
-
-/-- The final observation time after appending a finite ordered history to a starting time. -/
-def conditionedPositiveLastTime (t₀ : ℝ) : List ℝ → ℝ
-  | [] => t₀
-  | t :: ts => conditionedPositiveLastTime t ts
-
-/-- The final state after appending a finite state history to a starting state. -/
-def conditionedPositiveLastState (x₀ : ℝ) : List ℝ → ℝ
-  | [] => x₀
-  | x :: xs => conditionedPositiveLastState x xs
+/-- The last element of a finite history, with the starting observation as fallback. -/
+def conditionedLast (x₀ : ℝ) (xs : List ℝ) : ℝ := xs.getLastD x₀
 
 /-- The absolute-time transition density factors at the final state of a finite past list. -/
 theorem conditionedPositiveTimeChainDensity_append
@@ -111,40 +77,17 @@ theorem conditionedPositiveTimeChainDensity_append
         (pastTimes ++ futureTimes) (pastValues ++ futureValues) =
       conditionedPositiveTimeChainDensity ν t₀ x₀ pastTimes pastValues *
         conditionedPositiveTimeChainDensity ν
-          (conditionedPositiveLastTime t₀ pastTimes)
-          (conditionedPositiveLastState x₀ pastValues) futureTimes futureValues := by
+          (conditionedLast t₀ pastTimes)
+          (conditionedLast x₀ pastValues) futureTimes futureValues := by
   induction pastTimes generalizing t₀ x₀ pastValues with
-  | nil =>
-      cases pastValues with
-      | nil => simp [conditionedPositiveTimeChainDensity,
-          conditionedPositiveLastTime, conditionedPositiveLastState]
-      | cons x xs => simp at hpast
+  | nil => cases pastValues <;> simp_all [conditionedPositiveTimeChainDensity, conditionedLast]
   | cons t ts ih =>
       cases pastValues with
       | nil => simp at hpast
       | cons x xs =>
-          have htail : ts.length = xs.length := by simpa using hpast
-          simp only [List.cons_append, conditionedPositiveTimeChainDensity,
-            conditionedPositiveLastTime, conditionedPositiveLastState]
-          rw [ih t x xs htail]
-          ring
-
-/-- The explicit entrance FDD density splits at the state reached after any finite ordered past.
-The right factor is exactly the finite transition density started at that deterministic state. -/
-theorem conditionedPositiveFDDDensity_split
-    (ν t₀ x₀ : ℝ) (pastTimes pastValues futureTimes futureValues : List ℝ)
-    (hpast : pastTimes.length = pastValues.length) :
-    conditionedPositiveFDDDensity ν (t₀ :: (pastTimes ++ futureTimes))
-        (x₀ :: (pastValues ++ futureValues)) =
-      (conditionedPositiveEntranceDensity ν t₀ x₀ *
-        conditionedPositiveTimeChainDensity ν t₀ x₀ pastTimes pastValues) *
-        conditionedPositiveTimeChainDensity ν
-          (conditionedPositiveLastTime t₀ pastTimes)
-          (conditionedPositiveLastState x₀ pastValues) futureTimes futureValues := by
-  rw [conditionedPositiveFDDDensity_cons,
-    conditionedPositiveTimeChainDensity_append ν t₀ x₀ pastTimes pastValues
-      futureTimes futureValues hpast]
-  ring
+          simp only [List.cons_append, conditionedPositiveTimeChainDensity, conditionedLast, List.getLastD_cons]
+          rw [ih t x xs (by simpa using hpast), mul_assoc]
+          rfl
 
 /-- A continuous path stays in the closed half-line `[c,∞)` after `t` exactly when it does so at
 all rational times after `t`. For strict avoidance of the boundary, a separate no-tangency result
@@ -156,37 +99,25 @@ theorem continuous_path_ge_iff_rational_ge
         c ≤ p ⟨(q : ℝ), le_trans ht hq.le⟩ := by
   constructor
   · intro h q hq
-    exact h ⟨(q : ℝ), le_trans ht hq.le⟩ hq
+    apply h <;> assumption
   · intro h s hts
     by_contra hnot
-    have hbad : p s < c := lt_of_not_ge hnot
-    let F : ℝ → ℝ := fun x => p ⟨max x 0, le_max_right _ _⟩
+    have hbad  := lt_of_not_ge hnot
+    let F  := fun x => p ⟨max x 0, le_max_right _ _⟩
     have hmax : Continuous (fun x : ℝ => max x 0) :=
       continuous_max.comp (continuous_id.prodMk continuous_const)
-    have hsub : Continuous (fun x : ℝ =>
-        (⟨max x 0, le_max_right _ _⟩ : ℝ≥0)) :=
-      hmax.subtype_mk (fun x => le_max_right x 0)
-    have hF : Continuous F := p.continuous.comp hsub
+    have hsub := hmax.subtype_mk (fun x => le_max_right x 0)
+    have hF  := p.continuous.comp hsub
     have hsnonneg : (0 : ℝ) ≤ (s : ℝ) := by exact_mod_cast s.2
     have hFs : F (s : ℝ) = p s := by
       change p ⟨max (s : ℝ) 0, le_max_right _ _⟩ = p s
       congr 1
       exact Subtype.ext (max_eq_left hsnonneg)
-    let U : Set ℝ := {x | t < x ∧ F x < c}
-    have hUopen : IsOpen U := by
-      exact isOpen_Ioi.inter (isOpen_Iio.preimage hF)
+    let U  := {x | t < x ∧ F x < c}
+    have hUopen : IsOpen U := isOpen_Ioi.inter (isOpen_Iio.preimage hF)
     have hUnonempty : U.Nonempty := ⟨s, hts, by simpa [hFs] using hbad⟩
     obtain ⟨q, hqU⟩ := Rat.denseRange_cast.exists_mem_open hUopen hUnonempty
-    have hqU' : t < (q : ℝ) ∧ F (q : ℝ) < c := hqU
-    have hq0 : (0 : ℝ) ≤ (q : ℝ) := le_trans ht (le_of_lt hqU'.1)
-    have hqF : F (q : ℝ) = p ⟨(q : ℝ), hq0⟩ := by
-      change p ⟨max (q : ℝ) 0, le_max_right _ _⟩ = p ⟨(q : ℝ), hq0⟩
-      congr 1
-      exact Subtype.ext (max_eq_left hq0)
-    have hqbound := h q hqU'.1
-    have hqbelow : p ⟨(q : ℝ), hq0⟩ < c := by
-      simpa only [hqF] using hqU'.2
-    exact (not_lt_of_ge hqbound) hqbelow
+    grind
 
 end DOZZ.Proofs
 

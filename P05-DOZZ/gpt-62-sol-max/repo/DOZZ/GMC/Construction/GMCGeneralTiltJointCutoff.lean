@@ -53,9 +53,8 @@ theorem equatorGFF_tilted_test_regularizedGMC_cutoff_lintegral
   have hProfileShiftAE := continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
     P X hX Xc hXc γ r 1 Z hZmeas hZae covCircle hcovCont
   have hDensity : AEMeasurable density P := by
-    have hlog : AEMeasurable (fun ω => L ω - gaussianVariance P L / 2) P := by
-      exact hL.1.aemeasurable.sub measurable_const.aemeasurable
-    exact (Real.measurable_exp.comp_aemeasurable hlog).ennreal_ofReal
+    exact (Real.measurable_exp.comp_aemeasurable (by
+      exact hL.1.aemeasurable.sub measurable_const.aemeasurable)).ennreal_ofReal
   have hfieldMeas : Measurable field := by
     rw [measurable_pi_iff]
     exact fun f => (hX.2 f).1

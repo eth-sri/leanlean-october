@@ -26,11 +26,14 @@ namespace DOZZ.Proofs
 
 variable {γ χ α₁ α₂ α₃ : ℝ}
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX hγ hγ2 hM
+
 /-- Almost surely the singular weight `(1 + |x − z|^{-2}) k` is integrable and the four-point mass
 is positive and finite. -/
-theorem bpz_singular_integrable_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
+theorem bpz_singular_integrable_ae (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     {q : ℝ} (hq1 : 1 ≤ q) {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     ∀ᵐ ω ∂P, Integrable (fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) *
         bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x) (M ω) ∧
@@ -60,9 +63,7 @@ theorem bpz_singular_integrable_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measur
   exact lt_irrefl _ h1
 
 /-- The dominating function `I^{-q} ∫ (1 + |x − z|^{-2}) k dM` is integrable. -/
-theorem bpz_singular_dom_integrable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
+theorem bpz_singular_dom_integrable (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {q : ℝ} (hq1 : 1 ≤ q) {z : ℂ} (hz0 : z ≠ 0)
     (hz1 : z ≠ 1) :
     Integrable (fun ω => (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-q) *
@@ -70,11 +71,9 @@ theorem bpz_singular_dom_integrable {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   have hkm := measurable_bpzSoftWeight (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z
   have hgm : Measurable fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x :=
     (measurable_const.add ((measurable_id.sub measurable_const).norm.pow_const _)).mul hkm
-  have hIm : Measurable fun ω => ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω :=
+  have hIm  :=
     (measurable_integral_measure hkm).comp hMm
-  have hGm : Measurable fun ω => ∫ x, (1 + ‖x - z‖ ^ (-2 : ℝ)) *
-      bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω :=
-    (measurable_integral_measure hgm).comp hMm
+  have hGm := (measurable_integral_measure hgm).comp hMm
   refine ⟨((hIm.pow_const _).mul hGm).aestronglyMeasurable, ?_⟩
   have hfin := bpz_singular_moment_lt_top (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M hM
     hχ hq1 hz0 hz1
@@ -85,25 +84,17 @@ theorem bpz_singular_dom_integrable {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   · refine lintegral_congr_ae ?_
     filter_upwards [bpz_singular_integrable_ae (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M
       hM hχ hα₁ hα₂ hα₃ hq1 hz0 hz1] with ω ⟨hg, hpos, hfin'⟩
-    have hk : Integrable (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z) (M ω) :=
-      hg.mono' hkm.aestronglyMeasurable (Eventually.of_forall fun x => by
-        rw [Real.norm_eq_abs, abs_of_nonneg (bpzSoftWeight_nonneg 0 z x)]
-        have hW := bpzSoftWeight_nonneg (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z x
-        have : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := by positivity
-        linarith only [mul_nonneg this hW])
     have hI : ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω =
         (bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z).toReal := by
       rw [integral_eq_lintegral_of_nonneg_ae (Eventually.of_forall fun x =>
         bpzSoftWeight_nonneg 0 z x) hkm.aestronglyMeasurable]
       rfl
-    have hIpos : 0 < (bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z).toReal := ENNReal.toReal_pos hpos.ne' hfin'.ne
+    have hIpos  := ENNReal.toReal_pos hpos.ne' hfin'.ne
     rw [hI, ENNReal.ofReal_mul (Real.rpow_nonneg hIpos.le _), ← ENNReal.ofReal_rpow_of_pos hIpos,
       ENNReal.ofReal_toReal hfin'.ne, ofReal_integral_eq_lintegral_ofReal hg
         (Eventually.of_forall fun x => mul_nonneg (by positivity) (bpzSoftWeight_nonneg 0 z x))]
 
-theorem bpz_ae_regular {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (z : ℂ) :
+theorem bpz_ae_regular (z : ℂ) :
     ∀ᵐ ω ∂P, ∀ᵐ x ∂M ω, x ∈ bpzRegular z := by
   filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1,
@@ -114,9 +105,7 @@ theorem bpz_ae_regular {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : �
   exact ⟨a, b, c⟩
 
 /-- The right side of the Ward identity converges along the test functions. -/
-theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
+theorem bpz_ward_rhs_tendsto (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {q : ℝ} (hq1 : 1 ≤ q)
     {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) {φ : ℂ → ℝ} {φn : ℕ → ℂ → ℝ}
     (hφnm : ∀ n, Measurable (φn n)) (hφm : Measurable φ)
@@ -130,7 +119,7 @@ theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
       (𝓝 (∫ ω, q * ((∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-q - 1) *
         (γ ^ 2 * ∫ x, ∫ y, (φ x - φ y) * (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x *
           bpzSoftWeight γ χ α₁ α₂ α₃ 0 z y) * bpzKern v (x - y) / 2 ∂M ω ∂M ω)) ∂P)) := by
-  have : IsProbabilityMeasure P := hX.1
+  have  := hX.1
   set k : ℂ → ℝ := bpzSoftWeight γ χ α₁ α₂ α₃ 0 z with hkdef
   set g : ℂ → ℝ := fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x with hgdef
   have hkm : Measurable k := measurable_bpzSoftWeight 0 z
@@ -260,9 +249,7 @@ theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     exact ((hω.const_mul (γ ^ 2)).const_mul _).const_mul q
 
 /-- **Extension of the four-point Ward identity to limits of test functions.** -/
-theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
+theorem bpz_fourPoint_ward_extend (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hs : 0 ≤ fourPointSExp γ (-χ) α₁ α₂ α₃)
     {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) {φ : ℂ → ℝ} {φn : ℕ → ℂ → ℝ}
     (hφn : ∀ n, ContDiff ℝ 1 (φn n)) (hφnc : ∀ n, HasCompactSupport (φn n))
@@ -282,7 +269,6 @@ theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure
           (-(fourPointSExp γ (-χ) α₁ α₂ α₃ + 1) - 1) *
         (γ ^ 2 * ∫ x, ∫ y, (φ x - φ y) * (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x *
           bpzSoftWeight γ χ α₁ α₂ α₃ 0 z y) * bpzKern v (x - y) / 2 ∂M ω ∂M ω)) ∂P := by
-  have : IsProbabilityMeasure P := hX.1
   set q : ℝ := fourPointSExp γ (-χ) α₁ α₂ α₃ + 1 with hqdef
   have hq1 : 1 ≤ q := by linarith
   set k : ℂ → ℝ := bpzSoftWeight γ χ α₁ α₂ α₃ 0 z with hkdef
@@ -292,9 +278,6 @@ theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure
   have hkm : Measurable k := measurable_bpzSoftWeight 0 z
   have hk0 : ∀ x, 0 ≤ k x := bpzSoftWeight_nonneg 0 z
   have hkkt : ∀ x, k x = kt x * ex x := fun x => bpzSoftWeight_zero_eq z x
-  have hgm : Measurable g :=
-    (measurable_const.add ((measurable_id.sub measurable_const).norm.pow_const _)).mul hkm
-  have hg0 : ∀ x, 0 ≤ g x := fun x => mul_nonneg (by positivity) (hk0 x)
   have hA0 : 0 ≤ A := by
     have := hb3 0 (‖z‖ + 2 : ℝ) ?_ (‖z‖ + 2 : ℝ) ?_
     · simp only [sub_self, zero_mul, abs_zero] at this
@@ -327,7 +310,7 @@ theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure
     have : (fun y => φn n y * kt y) =ᶠ[𝓝 x] fun y => φ y * kt y := by
       filter_upwards [hn] with y hy; rw [hy]
     rw [this.fderiv_eq]
-  have hval : ∀ x ∈ bpzRegular z, ∀ᶠ n in atTop, φn n x = φ x := fun x hx =>
+  have hval  := fun x hx =>
     (hloc x hx).mono fun n hn => hn.eq_of_nhds
   -- left side
   have hL : Tendsto (fun n => ∫ ω, (∫ x, k x ∂M ω) ^ (-q) *
@@ -373,5 +356,7 @@ theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure
   have hR := bpz_ward_rhs_tendsto (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M hM hMm hχ
     hα₁ hα₂ hα₃ hq1 hz0 hz1 (fun n => (hφn n).continuous.measurable) hφm hval v hA0 hb3
   exact tendsto_nhds_unique (hL.congr fun n => hW n) hR
+
+end
 
 end DOZZ.Proofs

@@ -46,8 +46,7 @@ theorem logRegularizationReference_inversionChart_map :
       (Set.subset_univ _)]
     simp [logRegularizationReference, gmcReferenceMeasure]
   rw [hRef]
-  simpa [complexInvOpenPartialHomeomorph] using
-    gmcReferenceMeasure_restrict_inversionChart_map.symm
+  exact gmcReferenceMeasure_restrict_inversionChart_map.symm
 
 /-- The finite-cutoff logarithmic chaos test mass transports exactly under inversion, with the
 target test pulled back by the inverse chart map. -/
@@ -72,10 +71,8 @@ theorem regularizedLogChaosTestMass_inversion_coordinate_change
             (fun ω ε x => Y ω ε (complexInvOpenPartialHomeomorph x)) γ r ω f := by
   let Yinv : Ω → ℝ → ℂ → ℝ := fun ω ε x => Y ω ε (complexInvOpenPartialHomeomorph x)
   have hYinv : IsAdmissibleLogRegularization P inversionChart
-      (fun x => normPlus x ^ (-4 : ℝ)) 1 Yinv := by
-    simpa [Yinv, complexInvOpenPartialHomeomorph] using
-      isAdmissibleLogRegularization_complexInv P
-        (fun x => normPlus x ^ (-4 : ℝ)) 1 Y hY
+      (fun x => normPlus x ^ (-4 : ℝ)) 1 Yinv :=
+    isAdmissibleLogRegularization_complexInv P _ 1 Y hY
   obtain ⟨g, hgCompact, hgSupport, hgOn, hgOff, hmass⟩ :=
     regularizedLogChaosTestMass_coordinate_change P inversionChart inversionChart
       (fun x => normPlus x ^ (-4 : ℝ)) (fun x => normPlus x ^ (-4 : ℝ)) 1 1
@@ -85,11 +82,6 @@ theorem regularizedLogChaosTestMass_inversion_coordinate_change
         intro ω ε y hy
         rfl)
       γ f hfCompact hfSupport
-  refine ⟨g, hgCompact, hgSupport, ?_, hgOff, ?_⟩
-  · intro x hx
-    simpa [complexInvOpenPartialHomeomorph] using hgOn x hx
-  · intro r ω
-    simpa [Yinv, complexInvOpenPartialHomeomorph] using (hmass r ω).symm
-
+  exact ⟨g, hgCompact, hgSupport, hgOn, hgOff, fun r ω => (hmass r ω).symm⟩
 
 end DOZZ.Proofs

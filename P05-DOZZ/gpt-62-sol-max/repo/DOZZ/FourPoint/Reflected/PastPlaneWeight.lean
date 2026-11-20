@@ -26,11 +26,8 @@ theorem reflected_pastPlaneWeight_measurable (γ : ℝ) :
     (measurable_fst.fst.prodMk (continuous_real_toNNReal.measurable.comp hl.neg))
   have hn := continuous_eval.measurable.comp
     (measurable_fst.snd.prodMk (continuous_real_toNNReal.measurable.comp hl))
-  have he : Measurable (fun p : (BrownianPath × BrownianPath) × ℂ =>
-      if 0 ≤ -Real.log ‖p.2‖ then p.1.1 (Real.toNNReal (-Real.log ‖p.2‖))
-      else p.1.2 (Real.toNNReal (Real.log ‖p.2‖))) := Measurable.ite (measurableSet_le (measurable_const (a := (0 : ℝ))) hl.neg) hp hn
   exact Measurable.ite (measurableSet_eq_fun (measurable_norm.comp measurable_snd) measurable_const)
-    measurable_const ((he.const_mul γ).sub
+    measurable_const (((Measurable.ite (measurableSet_le (measurable_const (a := (0 : ℝ))) hl.neg) hp hn).const_mul γ).sub
       ((continuous_abs.measurable.comp hl).const_mul (γ*Q γ))).exp
 
 /-- Before the restart time, the stopped positive half and the complete negative half retain

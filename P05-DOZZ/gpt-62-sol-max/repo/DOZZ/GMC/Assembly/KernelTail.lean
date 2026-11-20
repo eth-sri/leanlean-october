@@ -33,7 +33,7 @@ theorem isCompatibleAdmissibleRegularizations_self
   · intro n q hq
     have h := hY.gaussian n (fun i => (q i).2)
       (fun i => ⟨(hq i).1, (hq i).2.trans (min_le_left _ _)⟩)
-    simpa only [ite_self] using h
+    simpa
   · intro K hK hKU
     obtain ⟨C, hC, hcov⟩ := hY.covarianceBound K hK hKU
     exact ⟨C, hC, fun ε δ hε hεc hδ hδc x hx y hy => hcov ε δ hε hεc hδ hδc x hx y hy⟩
@@ -89,12 +89,12 @@ theorem admissible_separated_double_root_tail_uniform
   have hCv' : Cv ≤ C := le_max_left _ _
   have hCm' : Cm ≤ C := le_trans (le_max_left _ _) (le_max_right _ _)
   have hCc' : Cc ≤ C := le_trans (le_max_right _ _) (le_max_right _ _)
-  have hC0 : 0 ≤ C := le_trans hCv hCv'
-  have hεcut : ε ≤ ε₀ := hεk.trans hkcut
-  have hkpos : 0 < (k : ℝ) := lt_of_le_of_lt hC0 hkC
+  have hC0  := le_trans hCv hCv'
+  have hεcut  := hεk.trans hkcut
+  have hkpos  := lt_of_le_of_lt hC0 hkC
   let q : Fin 3 → ℝ × ℂ := fun i =>
     if i = 0 then (Real.exp (-(k : ℝ)), x) else if i = 1 then (ε, x) else (δ, y)
-  let V : Ω → Fin 3 → ℝ := fun ω i => Y ω (q i).1 (q i).2
+  let V  := fun ω i => Y ω (q i).1 (q i).2
   have hV : IsCenteredJointlyGaussian P V := by
     apply hY.gaussian 3 q
     intro i
@@ -117,11 +117,10 @@ theorem admissible_separated_double_root_tail_uniform
     linarith
   have hlogmax (u v : ℝ) (hu : 0 < u) (hv : 0 < v) :
       Real.log (1 / max ‖x - y‖ (max u v)) ≤ L := by
-    have hρpos : 0 < max ‖x - y‖ (max u v) := lt_of_lt_of_le hxy (le_max_left _ _)
-    have harg : 1 / max ‖x - y‖ (max u v) ≤ 1 / ‖x - y‖ :=
-      one_div_le_one_div_of_le hxy (le_max_left _ _)
-    have _ := hu; have _ := hv
-    exact (Real.log_le_log (one_div_pos.mpr hρpos) harg).trans hL
+    exact LE.le.trans
+      (Real.log_le_log (one_div_pos.mpr (lt_of_lt_of_le hxy (le_max_left ‖x - y‖ (max u v))))
+        (one_div_le_one_div_of_le hxy (le_max_left ‖x - y‖ (max u v))))
+      hL
   have hcov02 : gaussianCovariance P (fun ω => V ω 0) (fun ω => V ω 2) ≤ L + C := by
     rw [hV0, hV2]
     have h := (abs_le.mp ((hcov (Real.exp (-(k : ℝ))) δ (Real.exp_pos _) hkcut hδ hδcut
@@ -134,7 +133,7 @@ theorem admissible_separated_double_root_tail_uniform
     have hl := hlogmax ε δ hε hδ
     linarith
   -- the two-root tilt identity and the tilted Gaussian tail
-  let B : Ω → ℝ≥0∞ := fun ω =>
+  let B  := fun ω =>
     Set.indicator {ω | a * (k : ℝ) < V ω 0} (fun _ => (1 : ℝ≥0∞)) ω
   have hident := finite_gaussian_two_root_wick_tilt_integral_identity P V 1 2
     (by decide) g B
@@ -150,13 +149,12 @@ theorem admissible_separated_double_root_tail_uniform
     rw [hmean]
     have h1 := mul_le_mul_of_nonneg_left hcov01 hg.le
     have h2 := mul_le_mul_of_nonneg_left hcov02 hg.le
-    have hLabs : L ≤ |L| := le_abs_self L
-    have h3 : g * L ≤ g * |L| := mul_le_mul_of_nonneg_left hLabs hg.le
+    have hLabs  := le_abs_self L
+    have h3  := mul_le_mul_of_nonneg_left hLabs hg.le
     linarith only [h1, h2, h3]
   have hgapStrict : (∑ j : Fin 3, gaussianCovariance P (fun ω => V ω 0)
       (fun ω => V ω j) * tilt j) < a * (k : ℝ) := by
     have hpos : 0 < (a - g) * (k : ℝ) / 2 := by
-      have := sub_pos.mpr hga
       positivity
     linarith only [hmUpper, hgap, hpos]
   have hvpos : 0 < gaussianVariance P (fun ω => V ω 0) := by
@@ -218,10 +216,12 @@ def omittedBarrierEvent {Ω : Type*} (Y : Ω → ℝ → ℂ → ℝ) (a : ℝ) 
     (x : ℂ) : Set Ω :=
   {ω | ∃ k : ℕ, m < k ∧ (k : ℝ) ≤ r ∧ a * (k : ℝ) < Y ω (Real.exp (-(k : ℝ))) x}
 
+section
+variable {Ω : Type*} (Y : Ω → ℝ → ℂ → ℝ) (a : ℝ) (k₀ m : ℕ)
+
 /-- The growing barrier through level `r` holds whenever the level-`m` barrier holds and no
 omitted barrier between `m` and `r` fails. -/
-theorem mem_admissibleGrowingBarrierSet_of_not_omitted
-    {Ω : Type*} (Y : Ω → ℝ → ℂ → ℝ) (a : ℝ) (k₀ m : ℕ) (r : ℝ) (ω : Ω) (x : ℂ)
+theorem mem_admissibleGrowingBarrierSet_of_not_omitted (r : ℝ) (ω : Ω) (x : ℂ)
     (hm : (ω, x) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
     (hno : ω ∉ omittedBarrierEvent Y a m r x) :
     (ω, x) ∈ admissibleGrowingBarrierSet Y a k₀ r := by
@@ -232,8 +232,7 @@ theorem mem_admissibleGrowingBarrierSet_of_not_omitted
     exact hno ⟨k, Nat.lt_of_not_le hkm, hkr, lt_of_not_ge hbad⟩
 
 /-- Pointwise comparison of barrier indicators at two roots. -/
-theorem barrier_indicator_pair_le
-    {Ω : Type*} (Y : Ω → ℝ → ℂ → ℝ) (a : ℝ) (k₀ m : ℕ) (r s : ℝ) (ω : Ω) (x y : ℂ) :
+theorem barrier_indicator_pair_le (r s : ℝ) (ω : Ω) (x y : ℂ) :
     Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ)) (fun _ => (1 : ℝ≥0∞)) (ω, x) *
         Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
           (fun _ => (1 : ℝ≥0∞)) (ω, y) ≤
@@ -258,12 +257,15 @@ theorem barrier_indicator_pair_le
     · simp [Set.indicator_of_notMem hmy]
   · simp [Set.indicator_of_notMem hmx]
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
+  (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+include Ω P U dens ε₀ hY
+
 /-- The Wick weight is measurable in the sample at each fixed point. -/
-theorem admissibleLogWickWeight_measurable_sample
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (g ε : ℝ) (x : ℂ) :
+theorem admissibleLogWickWeight_measurable_sample (g ε : ℝ) (x : ℂ) :
     Measurable (fun ω => admissibleLogWickWeight P Y g ε x ω) := by
   have hfield : Measurable (fun ω => Y ω ε x) :=
     (hY.measurableAtScale ε).comp (measurable_id.prodMk measurable_const)
@@ -271,36 +273,26 @@ theorem admissibleLogWickWeight_measurable_sample
   fun_prop
 
 /-- The coarse field at a fixed point is measurable in the sample. -/
-theorem admissible_field_measurable_sample
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (ε : ℝ) (x : ℂ) :
+theorem admissible_field_measurable_sample (ε : ℝ) (x : ℂ) :
     Measurable (fun ω => Y ω ε x) :=
   (hY.measurableAtScale ε).comp (measurable_id.prodMk measurable_const)
 
 /-- Countable union bound for the omitted barriers at one root. -/
 theorem lintegral_wick_pair_omitted_le_tsum
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (w : Ω → ℝ≥0∞) (hw : Measurable w) (a : ℝ) (m : ℕ) (r : ℝ) (x : ℂ) :
     ∫⁻ ω, w ω * Set.indicator (omittedBarrierEvent Y a m r x) (fun _ => (1 : ℝ≥0∞)) ω ∂P ≤
       ∑' k : ℕ, Set.indicator {k : ℕ | m < k ∧ (k : ℝ) ≤ r}
         (fun k => ∫⁻ ω, w ω * Set.indicator
           {ω | a * (k : ℝ) < Y ω (Real.exp (-(k : ℝ))) x} (fun _ => (1 : ℝ≥0∞)) ω ∂P) k := by
   classical
-  let bad : ℕ → Ω → Prop := fun k ω =>
+  let bad  := fun k ω =>
     m < k ∧ (k : ℝ) ≤ r ∧ a * (k : ℝ) < Y ω (Real.exp (-(k : ℝ))) x
   have hset (k : ℕ) : MeasurableSet {ω | bad k ω} := by
     have hlt : MeasurableSet {ω | a * (k : ℝ) < Y ω (Real.exp (-(k : ℝ))) x} :=
       measurableSet_lt measurable_const
         (admissible_field_measurable_sample P U dens ε₀ Y hY _ x)
     by_cases hk : m < k ∧ (k : ℝ) ≤ r
-    · have hEq : {ω | bad k ω} = {ω | a * (k : ℝ) < Y ω (Real.exp (-(k : ℝ))) x} := by
-        ext ω; simp [bad, hk]
-      rw [hEq]; exact hlt
+    grind
     · have hEq : {ω | bad k ω} = ∅ :=
         Set.eq_empty_of_forall_notMem fun ω h => hk ⟨h.1, h.2.1⟩
       rw [hEq]; exact MeasurableSet.empty
@@ -309,7 +301,7 @@ theorem lintegral_wick_pair_omitted_le_tsum
     (hw.mul (measurable_const.indicator (hset k))).aemeasurable
   have hbound := lintegral_mul_indicator_exists_le_tsum P w bad hmeas
   have hevent : {ω | ∃ k, bad k ω} = omittedBarrierEvent Y a m r x := by
-    ext ω; simp [bad, omittedBarrierEvent]
+    rfl
   rw [hevent] at hbound
   refine hbound.trans (le_of_eq (tsum_congr fun k => ?_))
   by_cases hk : m < k ∧ (k : ℝ) ≤ r
@@ -320,6 +312,8 @@ theorem lintegral_wick_pair_omitted_le_tsum
       Set.eq_empty_of_forall_notMem fun ω h => hk ⟨h.1, h.2.1⟩
     rw [hEq, Set.indicator_of_notMem (show k ∉ {k : ℕ | m < k ∧ (k : ℝ) ≤ r} from hk)]
     simp
+
+end
 
 /-- Reindex a tail sum supported strictly above `m`. -/
 theorem tsum_indicator_gt_le_tsum_nat_add (m : ℕ) (T f : ℕ → ℝ≥0∞) (S : Set ℕ)
@@ -373,11 +367,11 @@ theorem finiteBarrierPairKernel_le_growing_add_tail
   obtain ⟨C, hC, htail⟩ := admissible_separated_double_root_tail_uniform P U dens ε₀ Y hY K hK hKU
   refine ⟨C, hC, ?_⟩
   intro k₀ m hmC hmcut r s hmr hms x hx y hy L hxy hL g a hg hga hgap
-  let Wx : Ω → ℝ≥0∞ := fun ω => admissibleLogWickWeight P Y g (Real.exp (-r)) x ω
-  let Wy : Ω → ℝ≥0∞ := fun ω => admissibleLogWickWeight P Y g (Real.exp (-s)) y ω
+  let Wx  := fun ω => admissibleLogWickWeight P Y g (Real.exp (-r)) x ω
+  let Wy  := fun ω => admissibleLogWickWeight P Y g (Real.exp (-s)) y ω
   have hWx : Measurable Wx := admissibleLogWickWeight_measurable_sample P U dens ε₀ Y hY g _ x
   have hWy : Measurable Wy := admissibleLogWickWeight_measurable_sample P U dens ε₀ Y hY g _ y
-  let c : ℝ≥0∞ := ENNReal.ofReal (Real.exp (g ^ 2 * (L + C)))
+  let c  := ENNReal.ofReal (Real.exp (g ^ 2 * (L + C)))
   let f : ℕ → ℝ≥0∞ := fun k => ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * (k : ℝ) / 16)))
   -- monotonicity of the scale conditions above `m`
   have hscale (k : ℕ) (hk : m < k) :
@@ -385,7 +379,7 @@ theorem finiteBarrierPairKernel_le_growing_add_tail
         g * (|L| + 2 * C) ≤ (a - g) * (k : ℝ) / 2 := by
     have hkm : (m : ℝ) ≤ k := by exact_mod_cast hk.le
     refine ⟨lt_of_lt_of_le hmC hkm, le_trans (Real.exp_le_exp.mpr (by linarith)) hmcut, ?_⟩
-    have hag : 0 ≤ a - g := (sub_pos.mpr hga).le
+    have hag  := (sub_pos.mpr hga).le
     linarith only [hgap, mul_le_mul_of_nonneg_left hkm hag]
   have hlogyx : Real.log (1 / ‖y - x‖) ≤ L := by rwa [norm_sub_rev]
   have hxy' : 0 < ‖y - x‖ := by rwa [norm_sub_rev]
@@ -404,8 +398,7 @@ theorem finiteBarrierPairKernel_le_growing_add_tail
         have hrk : Real.exp (-r) ≤ Real.exp (-(k : ℝ)) := Real.exp_le_exp.mpr (by linarith [hk.2])
         have hscut : Real.exp (-s) ≤ ε₀ :=
           le_trans (Real.exp_le_exp.mpr (by linarith)) hmcut
-        exact htail k hkC hkcut x hx y hy L hxy hL (Real.exp (-r)) (Real.exp (-s))
-          (Real.exp_pos _) hrk (Real.exp_pos _) hscut g a hg hga hkgap)
+        apply htail <;> (first | assumption | positivity | fun_prop))
     refine hT.trans (le_of_eq ?_)
     rw [ENNReal.tsum_mul_left]
   have hsecond : ∫⁻ ω, Wx ω * Wy ω *
@@ -433,7 +426,6 @@ theorem finiteBarrierPairKernel_le_growing_add_tail
                 (fun _ => (1 : ℝ≥0∞)) ω ∂P := by
               apply lintegral_congr
               intro ω
-              simp only [Wx, Wy]
               ring
           _ ≤ _ := h)
     refine hT.trans (le_of_eq ?_)
@@ -524,7 +516,6 @@ theorem finiteBarrierPairKernel_le_growing_add_tail
           c * ∑' j : ℕ, f (j + (m + 1)) + c * ∑' j : ℕ, f (j + (m + 1)) := by
       gcongr
     _ = _ := by
-      simp only [c, f]
       ring
 
 end DOZZ.Assembly

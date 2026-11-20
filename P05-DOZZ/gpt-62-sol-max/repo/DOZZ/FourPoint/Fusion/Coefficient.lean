@@ -53,10 +53,7 @@ theorem fusion_shifted_normalization (γ μ p A E : ℝ) (hμ : 0 < μ) (hp : p 
     rw [← Real.rpow_add hμ]
     congr 1
     ring
-  calc
-    _ = -A * (2 / γ * Real.Gamma p * p * E) * μ ^ (-p) := by ring
-    _ = -A * (2 / γ * Real.Gamma p * p * E) * (μ * μ ^ (-(p + 1))) := by rw [hm]
-    _ = _ := by ring
+  grind
 
 
 /-- The normalization in the four-point moment gives exactly the shifted structure constant. -/

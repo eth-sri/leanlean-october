@@ -28,7 +28,7 @@ theorem radialAngularFactor_pos {a r : ℝ} (ha : 0 ≤ a) (hr : 0 < r) :
     0 < radialAngularFactor a r := by
   by_cases h0 : a = 0
   · rw [h0, radialAngularFactor_zero]; exact zero_lt_one
-  · have hap : 0 < a := lt_of_le_of_ne ha (Ne.symm h0)
+  · have hap  := lt_of_le_of_ne ha (Ne.symm h0)
     rw [radialAngularFactor_of_ne_zero a r h0 hr.ne']
     exact div_pos (Real.sinh_pos_iff.mpr (mul_pos hap hr)) (mul_pos hap hr)
 
@@ -42,7 +42,7 @@ theorem conditionedPositiveEntranceDensity_radial_tilt {a t : ℝ}
     simp only [zero_pow (by decide : 2 ≠ 0), neg_zero, zero_mul, zero_div,
       Real.exp_zero, radialAngularFactor_zero, mul_one]
   · by_cases hr : 0 < r
-    · have hap : 0 < a := lt_of_le_of_ne ha (Ne.symm h0)
+    · have hap  := lt_of_le_of_ne ha (Ne.symm h0)
       rw [entranceDensity_eq_radialGaussian hap ht hr,
         entranceDensity_zero_eq_radialGaussian ht hr,
         radialAngularFactor_of_ne_zero a r h0 hr.ne',
@@ -117,7 +117,7 @@ theorem conditionedPositiveFDDDensity_radial_tilt : ∀ (n : ℕ) (a : ℝ)
         (hmono.comp Fin.strictMono_castSucc)
       dsimp only [Fin.init] at hpast
       rw [hpast]
-      have hcancel : radialAngularFactor a (x (Fin.last n).castSucc) ≠ 0 :=
+      have hcancel  :=
         (radialAngularFactor_pos ha hx).ne'
       have hexp : Real.exp (-a ^ 2 * times (Fin.last n).castSucc / 2) *
           Real.exp (-a ^ 2 * (times (Fin.last (n + 1)) - times (Fin.last n).castSucc) / 2) =
@@ -145,8 +145,8 @@ theorem conditionedPositiveFDDVectorDensity_radial_tilt (n : ℕ) (a : ℝ)
     conditionedPositiveFDDVectorDensity a times x =
       conditionedPositiveFDDVectorDensity 0 times x *
         radialTerminalLikelihood a (times (Fin.last n)) (x (Fin.last n)) := by
-  have hna := conditionedPositiveFDDDensity_nonneg ha (List.ofFn times) (List.ofFn x) (by simp)
-  have hn0 := conditionedPositiveFDDDensity_nonneg (le_refl 0) (List.ofFn times) (List.ofFn x) (by simp)
+  have hna := conditionedPositiveFDDDensity_nonneg ha (List.ofFn times) (List.ofFn x)
+  have hn0 := conditionedPositiveFDDDensity_nonneg (le_refl 0) (List.ofFn times) (List.ofFn x)
   simp only [conditionedPositiveFDDVectorDensity, max_eq_right hna, max_eq_right hn0]
   rw [conditionedPositiveFDDDensity_radial_tilt n a times x ha hpos hmono,
     ENNReal.ofReal_mul hn0]
@@ -154,7 +154,7 @@ theorem conditionedPositiveFDDVectorDensity_radial_tilt (n : ℕ) (a : ℝ)
   · rw [ENNReal.ofReal_mul (Real.exp_pos _).le]
     rfl
   · rw [conditionedPositiveFDDDensity_last_nonpos 0 n times x (le_of_not_gt hx)]
-    simp only [ENNReal.ofReal_zero, zero_mul]
+    simp
 
 /-- Finite-dimensional measures are determined by all products of measurable nonnegative tests. -/
 theorem finiteRealVector_measure_eq_of_product_tests (n : ℕ)
@@ -164,15 +164,13 @@ theorem finiteRealVector_measure_eq_of_product_tests (n : ℕ)
   let C := fun _ : Fin n => {S : Set ℝ | MeasurableSet S}
   have hspan : ∀ i, IsCountablySpanning (C i) := fun _ =>
     ⟨fun _ => univ, (fun _ => by change MeasurableSet (univ : Set ℝ); exact MeasurableSet.univ),
-      by ext x; simp only [mem_iUnion, mem_univ, exists_const]⟩
-  have hgen : (inferInstance : MeasurableSpace (Fin n → ℝ)) =
-      MeasurableSpace.generateFrom (univ.pi '' univ.pi C) :=
-    (generateFrom_eq_pi (fun _ => MeasurableSpace.generateFrom_measurableSet) hspan).symm
+      by ext x; simp⟩
+  have hgen := (generateFrom_eq_pi (fun _ => MeasurableSpace.generateFrom_measurableSet) hspan).symm
   have huniv := h (fun _ _ => 1) (fun _ => measurable_const)
   simp only [Finset.prod_const_one, lintegral_one] at huniv
   apply ext_of_generate_finite _ hgen (IsPiSystem.pi fun _ => MeasurableSpace.isPiSystem_measurableSet) ?_ huniv
   rintro S ⟨s, hs, rfl⟩
-  have hms : ∀ i, MeasurableSet (s i) := mem_univ_pi.mp hs
+  have hms  := mem_univ_pi.mp hs
   have htest := h (fun i => (s i).indicator (fun _ => 1))
     (fun i => measurable_const.indicator (hms i))
   have hind (x : Fin n → ℝ) : (∏ i, (s i).indicator (fun _ => (1 : ℝ≥0∞)) (x i)) =
@@ -187,9 +185,13 @@ theorem finiteRealVector_measure_eq_of_product_tests (n : ℕ)
   have hmS : MeasurableSet (univ.pi s) := MeasurableSet.pi (to_countable _) (fun i _ => hms i)
   simpa only [lintegral_indicator hmS, setLIntegral_one] using htest
 
+section
+variable (n : ℕ) (a : ℝ) (ha : 0 ≤ a) (times : Fin (n + 1) → ℝ≥0) (hpos : ∀ i, 0 < times i)
+  (hmono : StrictMono times)
+include n ha hpos hmono
+
 /-- Every full actual radial skeleton has the literal positive density at every drift. -/
-theorem rogersPitman_radial_fdd_positive (n : ℕ) (a : ℝ) (ha : 0 ≤ a)
-    (times : Fin (n + 1) → ℝ≥0) (hpos : ∀ i, 0 < times i) (hmono : StrictMono times) :
+theorem rogersPitman_radial_fdd_positive :
     wienerTripleMeasure.map (fun V i => ‖rogersPitmanVectorAt a V (times i)‖) =
       radialSkeletonDensityMeasure a (fun i => (times i : ℝ)) := by
   have hm : Measurable (fun V : BrownianTriple => fun i => ‖rogersPitmanVectorAt a V (times i)‖) :=
@@ -222,20 +224,18 @@ theorem rogersPitman_radial_fdd_positive (n : ℕ) (a : ℝ) (ha : 0 ≤ a)
   ac_rfl
 
 /-- The whole positive Rogers--Pitman path law has every exact finite-dimensional density. -/
-theorem rogersPitmanWienerMeasure_fdd (n : ℕ) (a : ℝ) (ha : 0 ≤ a)
-    (times : Fin (n + 1) → ℝ≥0) (hpos : ∀ i, 0 < times i) (hmono : StrictMono times) :
+theorem rogersPitmanWienerMeasure_fdd :
     (rogersPitmanWienerMeasure a).map (fun p i => p (times i)) =
       radialSkeletonDensityMeasure a (fun i => (times i : ℝ)) := by
   have hm : Measurable (fun p : BrownianPath => fun i => p (times i)) :=
     measurable_pi_iff.mpr fun i => ContinuousMap.measurable_eval _
   rw [rogersPitmanWienerMeasure, rogersPitmanEntranceMeasure,
     Measure.map_map hm (measurable_rogersPitmanPath a)]
-  exact rogersPitman_radial_fdd_positive n a ha times hpos hmono
+  apply rogersPitman_radial_fdd_positive <;> assumption
 
 /-- Reflection identifies the entire actual negative Rogers--Pitman skeleton with the density
 `DOZZ.negativeConditionedFDDDensity`. -/
-theorem rogersPitman_radial_fdd_identification (n : ℕ) (a : ℝ) (ha : 0 ≤ a)
-    (times : Fin (n + 1) → ℝ≥0) (hpos : ∀ i, 0 < times i) (hmono : StrictMono times) :
+theorem rogersPitman_radial_fdd_identification :
     wienerTripleMeasure.map (fun V i => -‖rogersPitmanVectorAt a V (times i)‖) =
       (volume : Measure (Fin (n + 1) → ℝ)).withDensity (fun x => ENNReal.ofReal (max 0
         (negativeConditionedFDDDensity a (List.ofFn fun i => (times i : ℝ)) (List.ofFn x)))) := by
@@ -248,8 +248,7 @@ theorem rogersPitman_radial_fdd_identification (n : ℕ) (a : ℝ) (ha : 0 ≤ a
   exact h
 
 /-- Every negative radial candidate has the literal finite observation law. -/
-theorem negativeRogersPitmanWienerMeasure_fdd (n : ℕ) (a : ℝ) (ha : 0 ≤ a)
-    (times : Fin (n + 1) → ℝ≥0) (hpos : ∀ i, 0 < times i) (hmono : StrictMono times) :
+theorem negativeRogersPitmanWienerMeasure_fdd :
     (negativeRogersPitmanWienerMeasure a).map (fun p i => p (times i)) =
       (volume : Measure (Fin (n + 1) → ℝ)).withDensity (fun x => ENNReal.ofReal (max 0
         (negativeConditionedFDDDensity a (List.ofFn fun i => (times i : ℝ)) (List.ofFn x)))) := by
@@ -257,35 +256,41 @@ theorem negativeRogersPitmanWienerMeasure_fdd (n : ℕ) (a : ℝ) (ha : 0 ≤ a)
     measurable_pi_iff.mpr fun i => ContinuousMap.measurable_eval _
   rw [negativeRogersPitmanWienerMeasure, negativeRogersPitmanEntranceMeasure,
     Measure.map_map hm (measurable_negativeRogersPitmanPath a)]
-  exact rogersPitman_radial_fdd_identification n a ha times hpos hmono
+  apply rogersPitman_radial_fdd_identification <;> assumption
+
+end
+
+section
+variable (a : ℝ) (ha : 0 ≤ a)
+include ha
 
 /-- Unconditional realization of the full negative conditioned law at every nonnegative drift. -/
-theorem negativeRogersPitmanWienerMeasure_isConditioned (a : ℝ) (ha : 0 ≤ a) :
+theorem negativeRogersPitmanWienerMeasure_isConditioned :
     IsNegativeConditionedBrownianLaw a (negativeRogersPitmanWienerMeasure a) := by
   refine ⟨ha, inferInstance, negativeRogersPitmanWienerMeasure_zero_ae a, ?_⟩
   intro n hn times hpos hmono
   cases n with
   | zero => omega
-  | succ n => exact negativeRogersPitmanWienerMeasure_fdd n a ha times (fun i => hpos i) hmono
+  | succ n => apply negativeRogersPitmanWienerMeasure_fdd <;> assumption
 
 /-- The actual GFF-derived Wiener construction supplies conditioned entrance existence for every drift. -/
-theorem exists_negativeConditionedBrownianLaw_of_wiener (a : ℝ) (ha : 0 ≤ a) :
+theorem exists_negativeConditionedBrownianLaw_of_wiener :
     ∃ Q : Measure BrownianPath, IsNegativeConditionedBrownianLaw a Q :=
   ⟨negativeRogersPitmanWienerMeasure a, negativeRogersPitmanWienerMeasure_isConditioned a ha⟩
+
+end
 
 /-- Every conditioned entrance law agrees with the concrete unconditional Wiener realization.
 This identifies the whole continuous-path law, including all measurable future events. -/
 theorem negativeConditionedBrownianLaw_eq_wiener (a : ℝ) {Q : Measure BrownianPath}
-    (hQ : IsNegativeConditionedBrownianLaw a Q) : Q = negativeRogersPitmanWienerMeasure a := by
-  exact isNegativeConditionedBrownianLaw_eq a hQ
+    (hQ : IsNegativeConditionedBrownianLaw a Q) : Q = negativeRogersPitmanWienerMeasure a := isNegativeConditionedBrownianLaw_eq a hQ
     (negativeRogersPitmanWienerMeasure_isConditioned a hQ.1)
 
 /-- The concrete Wiener realization and whole-path FDD uniqueness give the entrance existence
 statement `DOZZ.negativeConditionedBrownianLaw_exists` at every nonnegative drift, including
 zero. -/
 theorem negativeConditionedBrownianLaw_exists (ν : ℝ) (hν : 0 ≤ ν) :
-    ∃! P : Measure BrownianPath, IsNegativeConditionedBrownianLaw ν P := by
-  exact existsUnique_negativeConditionedBrownianLaw_of_exists ν
+    ∃! P : Measure BrownianPath, IsNegativeConditionedBrownianLaw ν P := existsUnique_negativeConditionedBrownianLaw_of_exists ν
     (exists_negativeConditionedBrownianLaw_of_wiener ν hν)
 
 end DOZZ.Proofs

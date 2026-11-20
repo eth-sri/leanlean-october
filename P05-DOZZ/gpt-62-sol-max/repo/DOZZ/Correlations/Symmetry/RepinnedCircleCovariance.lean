@@ -52,8 +52,7 @@ theorem repinned_circle_normalization_covariance
     isCircleAverage_covariance P X hX Xc hXc]
   have he (z : ℂ) : (∫ w, gffKernel z w ∂circleMeasure 1 0) =
       symmetryReflectionPotential (1 - z) + symmetryReflectionKappa := by
-    simpa only [show (1 : ℂ) - (1 - z) = z from symmetryReflection_involutive z] using
-      reflection_source_circle_potential (1 - z)
+    simpa using reflection_source_circle_potential (1 - z)
   simp_rw [he]
   have hd : Integrable (fun z => symmetryReflectionPotential (1 - z))
       (circleMeasure (1 - x) r) :=
@@ -61,9 +60,7 @@ theorem repinned_circle_normalization_covariance
       (symmetryReflectionPotential_continuous.comp (continuous_const.sub continuous_id)).measurable
       (symmetryReflectionPotential_continuous.comp
         (continuous_const.sub continuous_id)).continuousOn.circleIntegrable'
-  rw [integral_add hd (integrable_const _), integral_const, probReal_univ, one_smul,
-    symmetryReflection_circle_integral _ symmetryReflectionPotential_continuous.measurable]
-  rw [show (1 : ℂ) - (1 - x) = x from symmetryReflection_involutive x]
+  rw [integral_add hd (integrable_const _), integral_const, probReal_univ, one_smul, symmetryReflection_circle_integral _ symmetryReflectionPotential_continuous.measurable, show (1 : ℂ) - (1 - x) = x from symmetryReflection_involutive x]
   ring
 
 end DOZZ.Proofs

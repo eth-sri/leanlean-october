@@ -79,8 +79,8 @@ theorem isMarkovKernel_conditionedPositiveTransitionKernelOnReal
   refine ⟨fun x => ?_⟩
   by_cases hx : 0 < x
   · rw [conditionedPositiveTransitionKernelOnReal_apply_of_pos hx]
-    exact isProbabilityMeasure_conditionedPositiveTransitionMeasure ν dt x hν hdt hx
-  · have hx' : x ≤ 0 := le_of_not_gt hx
+    apply isProbabilityMeasure_conditionedPositiveTransitionMeasure <;> assumption
+  · have hx'  := le_of_not_gt hx
     rw [conditionedPositiveTransitionKernelOnReal_apply_of_nonpos hx']
     exact isProbabilityMeasure_conditionedPositiveEntranceMeasure ν 1 hν (by norm_num)
 
@@ -141,7 +141,7 @@ theorem negativeConditionedLaw_twoTime_compProd
             (μ := (volume : Measure ℝ))
             (κ := Kernel.const ℝ (volume : Measure ℝ)) hentrance htransition,
             Measure.compProd_const]
-      _ = _ := by rw [← Measure.volume_eq_prod ℝ ℝ]
+      _ = _ := by rfl
   have hcomp : conditionedPositiveEntranceMeasure ν (t₀ : ℝ) ⊗ₘ
       conditionedPositiveTransitionKernelOnReal ν (dt : ℝ) =
         (volume : Measure (ℝ × ℝ)).withDensity (fun z =>
@@ -149,8 +149,7 @@ theorem negativeConditionedLaw_twoTime_compProd
             (if 0 < z.1 then
               ENNReal.ofReal (conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2)
             else ENNReal.ofReal (conditionedPositiveEntranceDensity ν 1 z.2))) := by
-    rw [conditionedPositiveEntranceMeasure, conditionedPositiveTransitionKernelOnReal,
-      hcompAux, ← Measure.volume_eq_prod ℝ ℝ]
+    assumption
   rw [negativeConditionedLaw_twoTime_positiveFDD hP t₀ dt ht₀ hdt]
   rw [hcomp]
   congr 1

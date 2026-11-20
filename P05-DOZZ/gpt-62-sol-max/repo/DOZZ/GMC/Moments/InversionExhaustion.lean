@@ -73,14 +73,14 @@ theorem gmcInversionCutoff_tendsto (x : ℂ) (hx : x ≠ 0) :
     filter_upwards [(tendsto_natCast_atTop_atTop :
       Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop).eventually
         (eventually_ge_atTop ‖x‖)] with n hn
-    exact hn.trans (by linarith)
+    linarith
   apply Tendsto.congr' _ tendsto_const_nhds
   filter_upwards [hb, ht.eventually (gt_mem_nhds (norm_pos_iff.mpr hx))] with n hn hm
-  have hb1 : b n x = 1 := (b n).one_of_mem_closedBall (by
-    simpa only [mem_closedBall, dist_zero_right, b] using hn)
-  have hc0 : c n x = 0 := image_eq_zero_of_notMem_tsupport (by
+  have hb1  := (b n).one_of_mem_closedBall (by
+    simpa)
+  have hc0  := image_eq_zero_of_notMem_tsupport (by
     rw [(c n).tsupport_eq]
-    simpa only [mem_closedBall, dist_zero_right, not_le, c] using hm)
+    simpa)
   change 1 = b n x * (1 - c n x)
   rw [hb1, hc0]
   norm_num
@@ -99,7 +99,7 @@ theorem inversion_cutoff_integral_tendsto (μ : Measure ℂ) [IsFiniteMeasure μ
     Tendsto (fun n => ∫ x, f x * gmcInversionCutoff n x ∂μ) atTop (𝓝 (∫ x, f x ∂μ)) := by
   have hne : ∀ᵐ x ∂μ, x ≠ 0 := by
     rw [ae_iff]
-    simpa only [not_not, ofPred_eq_eq_singleton] using hzero
+    simpa
   apply tendsto_integral_of_dominated_convergence (bound := fun _ : ℂ => ‖f‖)
   · intro n
     exact (f.continuous.mul (gmcInversionCutoff n).continuous).aestronglyMeasurable

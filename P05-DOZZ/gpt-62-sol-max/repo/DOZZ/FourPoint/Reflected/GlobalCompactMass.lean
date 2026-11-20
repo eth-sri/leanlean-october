@@ -11,14 +11,17 @@ open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-theorem reflected_global_reinsertionWeight_nonneg (γ : ℝ) (a : TwoSidedPath) (x : ℂ) :
+section
+variable (γ : ℝ) (a : TwoSidedPath)
+
+theorem reflected_global_reinsertionWeight_nonneg (x : ℂ) :
     0 ≤ reflected_global_reinsertionWeight γ a x := by
   unfold reflected_global_reinsertionWeight
   split_ifs
   · exact le_rfl
   · exact (Real.exp_pos _).le
 
-theorem reflected_global_reinsertionWeight_continuousOn (γ : ℝ) (a : TwoSidedPath) :
+theorem reflected_global_reinsertionWeight_continuousOn :
     ContinuousOn (reflected_global_reinsertionWeight γ a) ({0} : Set ℂ)ᶜ := by
   intro x hx
   have hx0 : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr (by simpa using hx)
@@ -35,7 +38,7 @@ theorem reflected_global_reinsertionWeight_continuousOn (γ : ℝ) (a : TwoSided
   · simp only [reflected_global_reinsertionWeight, ite_eq_right hx0]
 
 /-- A nonnegative compact real radial test is exactly the extended-real lateral mass. -/
-theorem reflected_global_compact_test_ofReal (γ : ℝ) (a : TwoSidedPath)
+theorem reflected_global_compact_test_ofReal
     (μ : Measure ℂ) (K : Set ℂ) (hK : IsCompact K) (hK0 : K ⊆ ({0} : Set ℂ)ᶜ)
     (hμ : μ K < ⊤) (f : BoundedContinuousFunction ℂ ℝ) (hf : ∀ x, 0 ≤ f x)
     (hfK : tsupport (f : ℂ → ℝ) ⊆ K) :
@@ -53,5 +56,7 @@ theorem reflected_global_compact_test_ofReal (γ : ℝ) (a : TwoSidedPath)
   have he := reflected_compact_test_integral_ofReal μ K hK hμ g hgn (hgs.trans hfK)
   simp_rw [hg] at he
   exact he.trans (lintegral_congr fun x => ENNReal.ofReal_mul (hf x))
+
+end
 
 end DOZZ.Proofs

@@ -15,6 +15,9 @@ open scoped Distributions ENNReal NNReal
 
 namespace DOZZ
 
+/-- The coupling, finite root locations and charges, and the charge at infinity. -/
+abbrev CoulombParameters (N : ℕ) := ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ)
+
 /-- Coulomb weighted mass with `N` distinct finite roots and one optional root at infinity.
 At a finite root, the displayed `ENNReal.ofReal` convention gives value `0` for a positive
 charge exponent and `⊤` for a negative one, opposite the extended singular weight; these values

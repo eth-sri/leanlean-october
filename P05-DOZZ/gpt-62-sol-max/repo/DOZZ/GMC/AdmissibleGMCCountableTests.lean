@@ -9,6 +9,7 @@ public import Mathlib.Topology.ContinuousMap.CompactlySupported
 public import Mathlib.Topology.ContinuousMap.Compact
 public import Mathlib.Topology.Compactness.SigmaCompact
 public import Mathlib.Analysis.Complex.Basic
+public import DOZZ.GMC.OpenChartCompacts
 
 /-! Countable locally dense compactly supported test families on an open chart. -/
 
@@ -36,51 +37,8 @@ theorem exists_countable_dense_admissible_tests
         (∀ n (g : C(ℂ, ℝ)), HasCompactSupport g → tsupport g ⊆ K n →
           ∀ δ : ℝ, 0 < δ → ∃ m, ∀ x, ‖f (n, m) x - g x‖ < δ) := by
   classical
-  let : LocallyCompactSpace (↥U) := hU.locallyCompactSpace
-  let : SigmaCompactSpace (↥U) := inferInstance
-  let E : CompactExhaustion (↥U) := CompactExhaustion.choice (↥U)
-  let K : ℕ → Set ℂ := fun n => Subtype.val '' E n
-  have hKcompact (n : ℕ) : IsCompact (K n) := by
-    dsimp [K]
-    exact (E.isCompact n).image continuous_subtype_val
-  have hKU (n : ℕ) : K n ⊆ U := by
-    rintro x ⟨y, hy, rfl⟩
-    exact y.property
-  have hKmono (n : ℕ) : K n ⊆ K (n + 1) := by
-    exact Set.image_mono (E.subset_succ n)
-  have hKcover : (⋃ n, K n) = U := by
-    ext x
-    constructor
-    · intro hx
-      rcases mem_iUnion.mp hx with ⟨n, hx⟩
-      rcases hx with ⟨y, hy, rfl⟩
-      exact y.property
-    · intro hx
-      obtain ⟨n, hn⟩ := E.exists_mem ⟨x, hx⟩
-      apply mem_iUnion.mpr
-      refine ⟨n, ?_⟩
-      exact ⟨⟨x, hx⟩, hn, rfl⟩
-  have hKcofinal (L : Set ℂ) (hL : IsCompact L) (hLU : L ⊆ U) :
-      ∃ n, L ⊆ K n := by
-    let j : L → ↥U := fun x => ⟨x.1, hLU x.2⟩
-    have hj : Continuous j := by fun_prop
-    let S : Set (↥U) := {y | (y : ℂ) ∈ L}
-    have hS : Set.range j = S := by
-      ext y
-      constructor
-      · rintro ⟨x, rfl⟩
-        exact x.2
-      · intro hy
-        refine ⟨⟨y.1, hy⟩, ?_⟩
-        exact Subtype.ext rfl
-    have hSc : IsCompact S := by
-      rw [← hS]
-      let : CompactSpace L := isCompact_iff_compactSpace.mp hL
-      exact isCompact_range hj
-    obtain ⟨n, hn⟩ := E.exists_superset_of_isCompact hSc
-    refine ⟨n, ?_⟩
-    intro x hx
-    refine ⟨⟨x, hLU hx⟩, hn (show (⟨x, hLU hx⟩ : ↥U) ∈ S from hx), rfl⟩
+  let K := chartCompacts U hU
+  obtain ⟨hKcompact, hKU, hKmono, hKcover, hKcofinal⟩ := chartCompacts_spec U hU
   let S : ℕ → Set C(ℂ, ℝ) := fun n =>
     {g | HasCompactSupport g ∧ tsupport g ⊆ K n}
   let R : (n : ℕ) → Set C(↑(K n), ℝ) := fun n =>
@@ -109,8 +67,7 @@ theorem exists_countable_dense_admissible_tests
   let source : (n m : ℕ) → ↥(S n) :=
     fun n m => Classical.choose (Set.mem_range.mp (seq n m).property)
   have hsource (n m : ℕ) :
-      source n m |>.1.restrict (K n) = (seq n m).1 := by
-    exact Classical.choose_spec (Set.mem_range.mp (seq n m).property)
+      source n m |>.1.restrict (K n) = (seq n m).1 := Classical.choose_spec (Set.mem_range.mp (seq n m).property)
   let test : ℕ × ℕ → BoundedContinuousFunction ℂ ℝ := fun nm =>
     ((⟨(source nm.1 nm.2).1, (source nm.1 nm.2).property.1⟩ :
       C_c(ℂ, ℝ)).toBoundedContinuousFunction)
@@ -167,10 +124,8 @@ theorem exists_countable_dense_admissible_tests
         image_eq_zero_of_notMem_tsupport
           (fun hx' => hx ((source n m).property.2 hx'))
       simpa [hgzero, hsourcezero] using hδ
-  refine ⟨K, hKcompact, hKU, hKmono, hKcover, hKcofinal, test, ?_, ?_⟩
-  · intro n m
-    exact htestSupport n m
-  · intro n g hg hgs δ hδ
-    exact hdense n g hg hgs δ hδ
+  refine ⟨K, hKcompact, hKU, fun n => hKmono n.le_succ, hKcover, hKcofinal, test, ?_, ?_⟩
+  assumption
+  assumption
 
 end DOZZ.Proofs

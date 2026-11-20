@@ -13,9 +13,12 @@ public import DOZZ.FourPoint.Fusion.ComplexScaling
 open MeasureTheory
 namespace DOZZ.Proofs
 
+section
+variable (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (hz : z ≠ 0)
+include hz
+
 /-- The local real kernel has scaling degree `γ²/2 - γ*α₁`. -/
-theorem fusion_gammaHalfKernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
-    (hz : z ≠ 0) (hlocal : ‖y * z‖ < 1 / 2) :
+theorem fusion_gammaHalfKernel_scaled (hlocal : ‖y * z‖ < 1 / 2) :
     gammaHalfKernel γ α₁ α₂ α₃ z (y * z) =
       ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) *
         (‖y - 1‖ ^ (γ ^ 2 / 2) / ‖y‖ ^ (γ * α₁)) *
@@ -36,8 +39,7 @@ theorem fusion_gammaHalfKernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
   ring
 
 /-- The pure derivative contributes the phase `z⁻²` in addition to its real scaling degree. -/
-theorem fusion_localR1_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
-    (hz : z ≠ 0) (hlocal : ‖y * z‖ < 1 / 2) :
+theorem fusion_localR1_kernel_scaled (hlocal : ‖y * z‖ < 1 / 2) :
     (gammaHalfKernel γ α₁ α₂ α₃ z (y * z) : ℂ) / (y * z - z) ^ 2 =
       (‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) : ℝ) / z ^ 2 *
         planarWirtingerKernel (γ ^ 2 / 2) (γ * α₁) 1 y *
@@ -52,8 +54,7 @@ theorem fusion_localR1_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
   ring
 
 /-- The mixed derivative has the same absolute scaling, without a complex phase. -/
-theorem fusion_localR2_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
-    (hz : z ≠ 0) (hy0 : y ≠ 0) (hy1 : y ≠ 1) (hlocal : ‖y * z‖ < 1 / 2) :
+theorem fusion_localR2_kernel_scaled (hy0 : y ≠ 0) (hy1 : y ≠ 1) (hlocal : ‖y * z‖ < 1 / 2) :
     (gammaHalfKernel γ α₁ α₂ α₃ z (y * z) : ℂ) / (‖y * z - z‖ ^ 2 : ℝ) =
       ((‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) / ‖z‖ ^ (2 : ℕ) : ℝ) : ℂ) *
         (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℝ) *
@@ -65,5 +66,36 @@ theorem fusion_localR2_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
     Complex.norm_real, Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)] at h
   have hc := congrArg Complex.ofReal h
   simpa only [Complex.ofReal_div, Complex.ofReal_mul, planarMixedKernel] using hc
+
+end
+
+/-- The same planar rescaling, with or without the phase of the pure derivative. -/
+noncomputable abbrev fusionPlanarSecond (mixed : Bool) (k β : ℝ) (w : ℂ) : ℂ → ℂ :=
+  fun y => if mixed then (planarMixedKernel k β w y : ℂ) else planarWirtingerKernel k β w y
+
+section
+variable (mixed : Bool)
+
+theorem fusionPlanarSecond_integrable {k β : ℝ} (hk : 0 < k)
+    (hβ : k < β) (hβ2 : β < 2) : Integrable (fusionPlanarSecond mixed k β 1) volume := by
+  cases mixed
+  · exact (planar_wirtinger_integral k β hk hβ hβ2 1 (by norm_num)).1
+  · exact (planar_mixed_integral k β hk hβ hβ2 1 (by norm_num)).1.ofReal
+
+theorem fusionPlanarSecond_measurable (k β : ℝ) :
+    Measurable (fusionPlanarSecond mixed k β 1) := by
+  cases mixed <;> unfold fusionPlanarSecond planarWirtingerKernel planarMixedKernel <;> simp <;> fun_prop
+
+theorem fusion_localSecond_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
+    (hz : z ≠ 0) (hy₀ : y ≠ 0) (hy₁ : y ≠ 1) (hy : ‖y * z‖ < 1 / 2) :
+    fusionSecondKernel mixed γ α₁ α₂ α₃ z (y * z) =
+      (‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) : ℝ) / fusionSecondDenom mixed z *
+        fusionPlanarSecond mixed (γ ^ 2 / 2) (γ * α₁) 1 y * (‖y * z - 1‖ ^ (-γ * α₂) : ℝ) := by
+  cases mixed
+  · exact fusion_localR1_kernel_scaled γ α₁ α₂ α₃ y z hz hy
+  · simpa only [fusionSecondKernel, fusionSecondDenom, fusionPlanarSecond, ite_true, Complex.ofReal_div] using
+      fusion_localR2_kernel_scaled γ α₁ α₂ α₃ y z hz hy₀ hy₁ hy
+
+end
 
 end DOZZ.Proofs

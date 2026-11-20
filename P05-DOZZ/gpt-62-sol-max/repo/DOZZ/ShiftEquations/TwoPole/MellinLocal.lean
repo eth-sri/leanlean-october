@@ -32,19 +32,21 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ}
+  (hW : TwoPoleWindow γ η δ)
+include Ω X hX hγ hγ2 hM δ hW
+
 /-- The local mass is almost surely positive and finite. -/
-theorem ae_localMassReal_pos {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ) :
+theorem ae_localMassReal_pos :
     ∀ᵐ ω ∂P, 0 < localMassReal M γ η ω ∧
       poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) < ⊤ := by
   filter_upwards [ae_cutoffGood P X hX γ hγ hγ2 M hM hW] with ω hω
   exact ⟨hω.localMassReal_pos, hω.localMass_lt_top⟩
 
 /-- The local mass has negative real moments of all orders. -/
-theorem integrable_localMassReal_rpow_neg {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
+theorem integrable_localMassReal_rpow_neg
     {q : ℝ} (hq : 0 < q) : Integrable (fun ω => localMassReal M γ η ω ^ (-q)) P := by
   have hη := (window_eta_pos hW).le
   have hηγ := window_eta_le_two_div hγ hγ2 hW
@@ -59,14 +61,15 @@ theorem integrable_localMassReal_rpow_neg {Ω : Type*} [MeasurableSpace Ω] (P :
   filter_upwards [ae_localMassReal_pos P X hX γ hγ hγ2 M hM hW] with ω hω
   rw [← ENNReal.ofReal_rpow_of_pos hω.1, localMassReal, ENNReal.ofReal_toReal hω.2.ne]
 
+end
+
 /-- The tail coefficient of a pole is positive. -/
 theorem oneInsertionTailCoefficient_pos {γ α R F : ℝ} {z : ℂ} (hz : z ≠ 0) (hF : 0 < F)
     (hR : 0 < R) : 0 < oneInsertionTailCoefficient γ α z F R := by
-  unfold oneInsertionTailCoefficient
-  have h1 : 0 < Real.rpow ‖z‖ (-4 * α * (Q γ - α)) :=
-    Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) _
-  have h2 : 0 < Real.rpow F (reflectionExponent γ α) := Real.rpow_pos_of_pos hF _
-  positivity
+  exact id
+    (have h1 := Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) (-4 * α * (Q γ - α));
+    have h2 := Real.rpow_pos_of_pos hF (reflectionExponent γ α);
+    mul_pos (mul_pos h1 h2) hR)
 
 /-- **The Mellin transform of the local mass**, from its two-insertion tail expansion. -/
 theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)

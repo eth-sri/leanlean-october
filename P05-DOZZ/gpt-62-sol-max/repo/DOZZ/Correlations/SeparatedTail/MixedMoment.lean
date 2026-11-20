@@ -67,12 +67,4 @@ theorem separatedTail_mixed_moment_le_uniform
       (ENNReal.rpow_le_rpow hBE (div_nonneg zero_le_one hpq.pos.le))
       (ENNReal.rpow_le_rpow (mul_le_mul' hB2 hB3) (div_nonneg zero_le_one hpq.symm.pos.le)))
 
-/-- The uniform constant in the preceding estimate is finite. -/
-theorem separatedTail_mixed_moment_constant_lt_top
-    (BE B2 B3 : ℝ≥0∞) (hBE : BE < ⊤) (hB2 : B2 < ⊤) (hB3 : B3 < ⊤)
-    (p q : ℝ) (hpq : p.HolderConjugate q) :
-    BE ^ (1 / p) * (B2 * B3) ^ (1 / q) < ⊤ :=
-  ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg (div_nonneg zero_le_one hpq.pos.le) hBE.ne)
-    (ENNReal.rpow_lt_top_of_nonneg (div_nonneg zero_le_one hpq.symm.pos.le) (ENNReal.mul_lt_top hB2 hB3).ne)
-
 end DOZZ.Proofs

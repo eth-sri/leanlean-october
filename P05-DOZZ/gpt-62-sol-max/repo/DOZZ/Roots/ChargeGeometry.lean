@@ -8,8 +8,12 @@ public import DOZZ.Upsilon.ZeroStructure
 /-! # The extended charge domain and the finite DOZZ denominator -/
 @[expose] public section
 namespace DOZZ.Proofs
+section
+variable {γ a b c : ℝ} (hγ : 0 < γ)
+include hγ
+
 /-- The extended moment bounds imply the three strict triangle inequalities. -/
-theorem roots_extended_triangle {γ a b c : ℝ} (hγ : 0 < γ)
+theorem roots_extended_triangle
     (h : ExtendedSeiberg3 γ a b c) : a < b + c ∧ b < a + c ∧ c < a + b := by
   have h1 := lt_of_lt_of_le h.2.2.2 ((min_le_right _ _).trans (min_le_left _ _))
   have h2 := lt_of_lt_of_le h.2.2.2 ((min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _)))
@@ -23,12 +27,12 @@ theorem roots_extended_triangle {γ a b c : ℝ} (hγ : 0 < γ)
   have h3' := (div_lt_div_iff_of_pos_right hγ).mp h3
   exact ⟨by linarith only [h1'], by linarith only [h2'], by linarith only [h3']⟩
 /-- All three charges in the extended three-point domain are positive. -/
-theorem roots_extended_positive {γ a b c : ℝ} (hγ : 0 < γ)
+theorem roots_extended_positive
     (h : ExtendedSeiberg3 γ a b c) : 0 < a ∧ 0 < b ∧ 0 < c := by
   obtain ⟨h1, h2, h3⟩ := roots_extended_triangle hγ h
-  exact ⟨by linarith only [h2, h3], by linarith only [h1, h3], by linarith only [h1, h2]⟩
+  grind
 /-- The zero-mode Upsilon factor is nonzero at every pole-free extended triple. -/
-theorem roots_upsilon_zeroMode_ne_zero {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem roots_upsilon_zeroMode_ne_zero (hγ2 : γ < 2)
     {U : ℂ → ℂ} (hU : IsUpsilon γ U) (h : ExtendedSeiberg3 γ a b c)
     (hs : ∀ n : ℕ, sExp γ a b c ≠ -(n : ℝ)) :
     U (((a + b + c - 2 * Q γ) / 2 : ℝ) : ℂ) ≠ 0 := by
@@ -39,13 +43,9 @@ theorem roots_upsilon_zeroMode_ne_zero {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : �
     rw [he] at hb
     have hb' := (div_lt_iff₀ hγ).mp hb
     have he' : (4 / γ ^ 2) * γ = 4 / γ := by field_simp
-    rw [he'] at hb'
-    have he'' : 4 / γ = 2 * (2 / γ) := by ring
-    rw [he''] at hb'
-    dsimp only [w]
-    linarith only [hb']
+    grind
   have hwQ : w < Q γ := by
-    have hQ : 0 < Q γ := by unfold Q; positivity
+    have hQ := Q_pos hγ
     dsimp only [w]
     linarith only [h.1, h.2.1, h.2.2.1, hQ]
   intro hz
@@ -65,8 +65,10 @@ theorem roots_upsilon_zeroMode_ne_zero {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : �
     apply (div_eq_iff hγ.ne').mpr
     dsimp only [w] at he
     linarith only [he]
-  · have he : w = Q γ + (m : ℝ) * (γ / 2) + (n : ℝ) * (2 / γ) := Complex.ofReal_inj.mp hn
+  · have he  := Complex.ofReal_inj.mp hn
     have hm0 : 0 ≤ (m : ℝ) * (γ / 2) := by positivity
     have hn0 : 0 ≤ (n : ℝ) * (2 / γ) := by positivity
     linarith only [hwQ, he, hm0, hn0]
+
+end
 end DOZZ.Proofs

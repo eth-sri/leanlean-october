@@ -34,13 +34,13 @@ theorem admissible_coarse_barrier_tail_rate
         ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * (k : ℝ) / 16))) := by
   obtain ⟨Cv, hCv, hvar⟩ := hY.coarseVarianceBound K hK hKU
   obtain ⟨Cm, hCm, hmix⟩ := hY.coarseMixedBound K hK hKU
-  let C : ℝ := max Cv Cm
-  have hCnonneg : 0 ≤ C := by dsimp [C]; exact le_trans hCv (le_max_left Cv Cm)
+  let C  := max Cv Cm
+  have hCnonneg : 0 ≤ C := by positivity
   refine ⟨C, hCnonneg, ?_⟩
   intro k hkcut hCk x hx ε hε hεk g a hg hga hgap
   let p : Fin 2 → ℝ × ℂ := fun i =>
     if i = 0 then (Real.exp (-(k : ℝ)), x) else (ε, x)
-  let Z : Ω → Fin 2 → ℝ := fun ω i => Y ω (p i).1 (p i).2
+  let Z  := fun ω i => Y ω (p i).1 (p i).2
   have hZ : IsCenteredJointlyGaussian P Z := by
     apply hY.gaussian 2 p
     intro i
@@ -49,20 +49,17 @@ theorem admissible_coarse_barrier_tail_rate
     · simp [p, hε, le_trans hεk hkcut]
   have hvarZ : |gaussianVariance P (fun ω => Z ω 0) - (k : ℝ)| ≤ C := by
     have h := hvar k hkcut x hx
-    have h' : |gaussianVariance P (fun ω => Z ω 0) - (k : ℝ)| ≤ max Cv Cm := by
-      simpa [Z, p] using h.trans (le_max_left Cv Cm)
-    simpa [C] using h'
+    simpa [C] using (by
+      simpa [Z, p] using h.trans (le_max_left Cv Cm))
   have hcovZ : |gaussianCovariance P (fun ω => Z ω 0)
       (fun ω => Z ω 1) - (k : ℝ)| ≤ C := by
     have h := hmix k hkcut ε hε hεk x hx
-    have h' : |gaussianCovariance P (fun ω => Z ω 0)
-        (fun ω => Z ω 1) - (k : ℝ)| ≤ max Cv Cm := by
-      simpa [Z, p] using h.trans (le_max_right Cv Cm)
-    simpa [C] using h'
-  have hk : 0 < (k : ℝ) := lt_of_le_of_lt hCnonneg hCk
+    simpa [C] using (by
+      simpa [Z, p] using h.trans (le_max_right Cv Cm))
+  have hk  := lt_of_le_of_lt hCnonneg hCk
   have hbound := finite_gaussian_tilt_coarse_barrier_tail_rate P Z hZ
     1 0 (k : ℝ) g a C hg hga hk
     hCk hvarZ hcovZ hgap
-  simpa [Z, p] using hbound
+  assumption
 
 end DOZZ.Proofs

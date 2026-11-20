@@ -32,21 +32,17 @@ theorem cdfGeneralizedQuantile_le_iff
     cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u ≤ x ↔
       u ≤ ProbabilityTheory.cdf μ x := by
   let F := ProbabilityTheory.cdf μ
-  let S : Set ℝ := {y | u ≤ F y}
+  let S  := {y | u ≤ F y}
   have hnonempty : S.Nonempty := by
-    have hev : ∀ᶠ y : ℝ in atTop, u < F y :=
-      (ProbabilityTheory.tendsto_cdf_atTop μ).eventually (Ioi_mem_nhds hu1)
-    obtain ⟨y, hy⟩ := Filter.eventually_atTop.1 hev
-    exact ⟨y, le_of_lt (hy y le_rfl)⟩
+    exact Exists.casesOn (eventually_atTop.mp (Tendsto.eventually (tendsto_cdf_atTop μ) (Ioi_mem_nhds hu1))) fun y hy =>
+      Exists.intro y (le_of_lt (hy y le_rfl))
   have hbounded : BddBelow S := by
-    have hev : ∀ᶠ y : ℝ in atBot, F y < u :=
+    have hev  :=
       (ProbabilityTheory.tendsto_cdf_atBot μ).eventually (Iio_mem_nhds hu)
     obtain ⟨a, ha⟩ := Filter.eventually_atBot.1 hev
     refine ⟨a, ?_⟩
     intro y hy
-    change u ≤ F y at hy
-    by_contra hnot
-    exact (not_lt_of_ge hy) (ha y (le_of_lt (lt_of_not_ge hnot)))
+    grind
   change sInf S ≤ x ↔ u ≤ F x
   constructor
   · intro hqx
@@ -61,7 +57,7 @@ theorem cdfGeneralizedQuantile_le_iff
       intro n
       simp only [Set.mem_Ici]
       exact le_add_of_nonneg_right (by positivity)
-    have hFright : Tendsto F (𝓝[Set.Ici x] x) (𝓝 (F x)) :=
+    have hFright  :=
       F.right_continuous x |>.tendsto
     have hFseq : Tendsto (fun n : ℕ => F (x + 1 / ((n : ℝ) + 1))) atTop
         (𝓝 (F x)) := by
@@ -70,21 +66,19 @@ theorem cdfGeneralizedQuantile_le_iff
     have hvalues : ∀ n : ℕ, u ≤ F (x + 1 / ((n : ℝ) + 1)) := by
       intro n
       by_contra hnot
-      have hlt : F (x + 1 / ((n : ℝ) + 1)) < u := lt_of_not_ge hnot
+      have hlt  := lt_of_not_ge hnot
       have hbelow : x + 1 / ((n : ℝ) + 1) ≤ sInf S := by
         apply le_csInf hnonempty
         intro y hy
         change u ≤ F y at hy
         by_contra hxy
-        have hyx : y ≤ x + 1 / ((n : ℝ) + 1) := le_of_lt (lt_of_not_ge hxy)
+        have hyx  := le_of_lt (lt_of_not_ge hxy)
         have hmono := ProbabilityTheory.monotone_cdf μ hyx
         exact (not_lt_of_ge hy) (lt_of_le_of_lt hmono hlt)
       have he : 0 < 1 / ((n : ℝ) + 1) := by positivity
       linarith
     have hclosed : IsClosed (Set.Ici u) := isClosed_Ici
-    have hlimit : F x ∈ Set.Ici u :=
-      hclosed.mem_of_tendsto hFseq (Filter.Eventually.of_forall hvalues)
-    exact hlimit
+    exact hclosed.mem_of_tendsto hFseq (Filter.Eventually.of_forall hvalues)
   · intro hux
     exact csInf_le hbounded hux
 
@@ -102,11 +96,9 @@ theorem cdfGeneralizedQuantile_map_uniformOpenUnit
     (μ : Measure ℝ) [IsProbabilityMeasure μ] :
     (uniformOpenUnit).map (fun u => cdfGeneralizedQuantile
       (ProbabilityTheory.cdf μ) u) = μ := by
-  let Q : ℝ → ℝ := fun u => cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u
+  let Q  := fun u => cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u
   have hQ : AEMeasurable Q uniformOpenUnit := by
     simpa [Q, uniformOpenUnit] using aemeasurable_cdfGeneralizedQuantile_Ioo μ
-  let : IsProbabilityMeasure (uniformOpenUnit.map Q) :=
-    (Measure.isProbabilityMeasure_map_iff hQ).2 inferInstance
   apply Measure.ext_of_Iic
   intro x
   have hset : (Q ⁻¹' Set.Iic x) ∩ Set.Ioo 0 1 =
@@ -114,16 +106,11 @@ theorem cdfGeneralizedQuantile_map_uniformOpenUnit
     ext u
     constructor
     · intro hu
-      have hq : Q u ≤ x := hu.1
-      have hu01 : u ∈ Set.Ioo 0 1 := hu.2
-      have hux : u ≤ ProbabilityTheory.cdf μ x :=
-        (cdfGeneralizedQuantile_le_iff μ hu01.1 hu01.2).mp hq
-      exact ⟨⟨hu01.1, hux⟩, hu01.2⟩
-    · intro hu
-      have hu01 : u ∈ Set.Ioo 0 1 := ⟨hu.1.1, hu.2⟩
-      have hq : Q u ≤ x :=
-        (cdfGeneralizedQuantile_le_iff μ hu01.1 hu01.2).mpr hu.1.2
-      exact ⟨hq, hu01⟩
+      exact ⟨⟨hu.right.left, (cdfGeneralizedQuantile_le_iff μ hu.right.left hu.right.right).mp hu.left⟩, hu.right.right⟩
+    · exact fun hu =>
+        have hu01 := ⟨hu.left.left, hu.right⟩;
+        have hq := (cdfGeneralizedQuantile_le_iff μ hu01.left hu01.right).mpr hu.left.right;
+        ⟨hq, hu01⟩
   calc
     (uniformOpenUnit.map Q) (Set.Iic x) =
         uniformOpenUnit (Q ⁻¹' Set.Iic x) :=
@@ -139,25 +126,14 @@ theorem cdfGeneralizedQuantile_map_uniformOpenUnit
           exact lt_of_le_of_lt hy.2 hF
         rw [Set.inter_eq_left.mpr hsub, Real.volume_Ioc]
         simp
-      · have hFone : ProbabilityTheory.cdf μ x = 1 :=
+      · have hFone  :=
           le_antisymm (ProbabilityTheory.cdf_le_one μ x) (le_of_not_gt hF)
         rw [hFone]
         have hset' : Set.Ioc (0 : ℝ) 1 ∩ Set.Iio 1 =
             Set.Ioc 0 1 \ {1} := by
-          ext y
-          simp only [Set.mem_inter_iff, Set.mem_Ioc, Set.mem_Iio,
-            Set.mem_sdiff, Set.mem_singleton_iff]
-          constructor
-          · rintro ⟨⟨hpos, hle⟩, hlt⟩
-            exact ⟨⟨hpos, hle⟩, by intro heq; subst y; linarith⟩
-          · rintro ⟨⟨hpos, hle⟩, hne⟩
-            have hlt : y < 1 := by
-              by_contra hnot
-              exact hne (le_antisymm hle (le_of_not_gt hnot))
-            exact ⟨⟨hpos, hle⟩, hlt⟩
+          grind
         rw [hset', measure_sdiff_null']
-        · rw [Real.volume_Ioc]
-          simp
+        simp
         · simp [Set.mem_Ioc]
     _ = μ (Set.Iic x) := ProbabilityTheory.ofReal_cdf μ x
 
@@ -167,10 +143,9 @@ theorem conditionedPositiveEntranceQuantile_map_uniformOpenUnit
     (uniformOpenUnit).map (fun u => cdfGeneralizedQuantile
       (ProbabilityTheory.cdf (conditionedPositiveEntranceMeasure ν t)) u) =
         conditionedPositiveEntranceMeasure ν t := by
-  let : IsProbabilityMeasure (conditionedPositiveEntranceMeasure ν t) :=
+  let  :=
     isProbabilityMeasure_conditionedPositiveEntranceMeasure ν t hν ht
-  exact cdfGeneralizedQuantile_map_uniformOpenUnit
-    (conditionedPositiveEntranceMeasure ν t)
+  apply cdfGeneralizedQuantile_map_uniformOpenUnit <;> assumption
 
 /-- The transition-kernel quantile sampler pushes uniform levels to the explicit conditioned
 transition law. -/
@@ -178,12 +153,9 @@ theorem conditionedPositiveTransitionQuantile_map_uniformOpenUnit
     {ν t x : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (hx : 0 < x) :
     (uniformOpenUnit).map (conditionedTransitionQuantile ν t x) =
       conditionedPositiveTransitionMeasure ν t x := by
-  let : IsProbabilityMeasure (conditionedPositiveTransitionMeasure ν t x) :=
+  let  :=
     isProbabilityMeasure_conditionedPositiveTransitionMeasure ν t x hν ht hx
-  change (uniformOpenUnit).map (fun u => cdfGeneralizedQuantile
-    (ProbabilityTheory.cdf (conditionedPositiveTransitionMeasure ν t x)) u) = _
-  exact cdfGeneralizedQuantile_map_uniformOpenUnit
-    (conditionedPositiveTransitionMeasure ν t x)
+  apply cdfGeneralizedQuantile_map_uniformOpenUnit
 
 end DOZZ.Proofs
 

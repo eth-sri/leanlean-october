@@ -24,12 +24,6 @@ The matching lower bound required by the maximum-tail estimate remains separate.
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
-/-- A Brownian increment after a deterministic time is independent of the value at that time. -/
-theorem brownian_increment_indep_value {Ω : Type*} [MeasurableSpace Ω]
-    {P : Measure Ω} {B : ℝ≥0 → Ω → ℝ} (hB : IsPreBrownianReal B P) (s d : ℝ≥0) :
-    IndepFun (fun ω => B (s+d) ω-B s ω) (B s) P := by
-  exact (hB.indepFun_shift s).comp (measurable_pi_apply d)
-    (measurable_pi_apply (⟨s,le_rfl⟩ : Iic s))
 
 /-- Every linear combination of a Brownian value and a later independent increment has its Gaussian law. -/
 theorem brownian_twoTime_linear_hasLaw {Ω : Type*} [MeasurableSpace Ω]
@@ -39,7 +33,8 @@ theorem brownian_twoTime_linear_hasLaw {Ω : Type*} [MeasurableSpace Ω]
       (gaussianReal 0 (NNReal.mk (a^2) (sq_nonneg _)*s+NNReal.mk (b^2) (sq_nonneg _)*d)) P := by
   have hi : IndepFun (fun ω => a*B s ω) (fun ω => b*(B (s+d) ω-B s ω)) P := by
     simpa only [Function.comp_def] using
-      (brownian_increment_indep_value hB s d).symm.comp
+      (((hB.indepFun_shift s).comp (measurable_pi_apply d)
+        (measurable_pi_apply (⟨s,le_rfl⟩ : Iic s)))).symm.comp
         (φ := fun x : ℝ => a*x) (ψ := fun x : ℝ => b*x) (by fun_prop) (by fun_prop)
   have hx := gaussianReal_const_mul (hB.hasLaw_eval s) a
   have hy := gaussianReal_const_mul ((hB.shift s).hasLaw_eval d) b
@@ -73,9 +68,9 @@ theorem brownian_exp_event_bound {Ω : Type*} [MeasurableSpace Ω]
     {P : Measure Ω} [IsFiniteMeasure P] {X : Ω → ℝ} (hX : Integrable (fun ω => Real.exp (X ω)) P)
     (A : Set Ω) (c : ℝ) (hA : ∀ ω ∈ A, c ≤ X ω) :
     P A ≤ ENNReal.ofReal (Real.exp (-c)*(∫ ω, Real.exp (X ω) ∂P)) := by
-  have hs : A ⊆ {ω | c ≤ X ω} := hA
+  have hs  := hA
   have htail := measure_ge_le_exp_mul_mgf (μ := P) (X := X) (t := 1) c (by norm_num)
-    (by simpa only [one_mul] using hX)
+    (by simpa)
   calc
     P A ≤ P {ω | c ≤ X ω} := measure_mono hs
     _ = ENNReal.ofReal (P.real {ω | c ≤ X ω}) := (ENNReal.ofReal_toReal (measure_ne_top _ _)).symm
@@ -107,7 +102,7 @@ theorem brownian_weighted_twoTime_exp_integrable {Ω : Type*} [MeasurableSpace �
     congr 1
     ring
   rw [he]
-  exact brownian_twoTime_exp_integrable hB s (r-s) (a+b) b
+  apply brownian_twoTime_exp_integrable <;> assumption
 
 /-- Endpoint Chernoff bound for any event with a weighted two-time upper constraint. -/
 theorem brownian_weighted_twoTime_event_bound {Ω : Type*} [MeasurableSpace Ω]
@@ -143,8 +138,7 @@ theorem continuous_brownianDriftPath :
     Continuous (fun z : ℝ × BrownianPath => brownianDriftPath z.1 z.2) := by
   apply ContinuousMap.continuous_of_continuous_uncurry
   change Continuous (fun z : (ℝ × BrownianPath) × ℝ≥0 => z.1.2 z.2+z.1.1*(z.2 : ℝ))
-  exact (continuous_eval.comp (continuous_fst.snd.prodMk continuous_snd)).add
-    (continuous_fst.fst.mul (NNReal.continuous_coe.comp continuous_snd))
+  fun_prop
 
 /-- Deterministic drift translation preserves measurability in each raw history sigma algebra. -/
 theorem measurable_brownianDriftPath_history (δ : ℝ) (s : ℝ≥0) :
@@ -184,14 +178,14 @@ theorem brownianPath_negativeDrift_cappedHit_le (P : Measure BrownianPath)
     P {p | cappedBrownianFirstPassage x T (brownianDriftPath (-ν) p) < T} ≤
       ENNReal.ofReal (Real.exp (-2*ν*x)) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
-  let τ : BrownianPath → ℝ≥0 :=
+  let τ  :=
     fun p => cappedBrownianFirstPassage x T (brownianDriftPath (-ν) p)
   have hτ := cappedBrownianDriftFirstPassage_isStoppingTime (-ν) x T
   have hτT : ∀ p, τ p ≤ T := fun p => cappedBrownianFirstPassage_le x T _
   have he := brownian_exponential_bounded_optional_stopping hB
     (fun t => ContinuousMap.measurable_eval t) (2*ν) T τ hτ hτT
   have hi := integrable_of_integral_eq_one he
-  let A : Set BrownianPath := {p | τ p < T ∧ p 0 = 0}
+  let A  := {p | τ p < T ∧ p 0 = 0}
   have hc : ∀ p ∈ A, 2*ν*x ≤ (2*ν)*p (τ p)-(2*ν)^2*((τ p : ℝ))/2 := by
     intro p hp
     have h0 : brownianDriftPath (-ν) p 0 < x := by
@@ -210,9 +204,7 @@ theorem brownianPath_negativeDrift_cappedHit_le (P : Measure BrownianPath)
     apply propext
     simp only [A,mem_ofPred_eq,hp,and_true]
   rw [measure_congr hA]
-  convert hb using 1
-  congr 2
-  ring
+  simpa
 /-! ## Exhaustion to the entire-time maximum -/
 
 /-- A strict crossing at any earlier time forces the capped first hit before the terminal horizon. -/
@@ -221,8 +213,8 @@ theorem cappedBrownianFirstPassage_lt_of_strict_crossing (x : ℝ) (T : ℝ≥0)
     cappedBrownianFirstPassage x T p < T := by
   obtain ⟨v,hv,hpv⟩ := intermediate_value_Icc (a := (0 : ℝ≥0)) (b := u)
     (f := fun t : ℝ≥0 => p t) zero_le p.continuous.continuousOn ⟨h0.le,hx.le⟩
-  have hvu : v < u := lt_of_le_of_ne hv.2 (by intro he; exact hx.ne (he ▸ hpv).symm)
-  have hτv : cappedBrownianFirstPassage x T p ≤ v :=
+  have hvu  := lt_of_le_of_ne hv.2 (by intro he; exact hx.ne (he ▸ hpv).symm)
+  have hτv  :=
     csInf_le (s := {t : ℝ≥0 | t ≤ T ∧ x ≤ p t} ∪ {T}) (OrderBot.bddBelow _)
       (Or.inl ⟨hv.2.trans hu,hpv ▸ le_rfl⟩)
   exact (hτv.trans_lt hvu).trans_le hu
@@ -238,10 +230,10 @@ theorem brownianPath_negativeDrift_finiteMaximum_le (P : Measure BrownianPath)
     rintro ⟨u,hu,hxu⟩
     have h0 : brownianDriftPath (-ν) p 0 < x := by
       change p 0+(-ν)*(0 : ℝ) < x
-      simpa only [mul_zero,add_zero,hp] using hx
+      linarith
     apply cappedBrownianFirstPassage_lt_of_strict_crossing x T (brownianDriftPath (-ν) p) h0 u hu
     change x < p u+(-ν)*(u : ℝ)
-    simpa only [sub_eq_add_neg,neg_mul] using hxu
+    linarith
   exact (measure_mono_ae hsub).trans
     (brownianPath_negativeDrift_cappedHit_le P hB ν x hx T)
 

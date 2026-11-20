@@ -97,14 +97,16 @@ theorem bpz_ae_ne_of_measure_singleton {m : Measure ℂ} {z : ℂ} (hz : m {z} =
 /-- The meromorphic integrand is measurable. -/
 theorem bpz_measurable_div_root_pow (a : ℝ) {w : ℂ → ℝ} (hw : Measurable w) (z : ℂ) (n : ℕ) :
     Measurable (fun x : ℂ => ((Complex.normSq (x - z) ^ a * w x : ℝ) : ℂ) / (z - x) ^ n) := by
-  have h1 : Measurable (fun x : ℂ => Complex.normSq (x - z) ^ a * w x) :=
-    ((Complex.continuous_normSq.measurable.comp (measurable_id.sub_const z)).pow_const a).mul hw
-  exact (Complex.measurable_ofReal.comp h1).div ((measurable_const.sub measurable_id).pow_const n)
+  exact (Complex.measurable_ofReal.comp (((Complex.continuous_normSq.measurable.comp (measurable_id.sub_const z)).pow_const a).mul hw)).div ((measurable_const.sub measurable_id).pow_const n)
+
+section
+variable {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ}
+  (hz : m {z} = 0)
+include hw hw0 hz
 
 /-- For a measure without an atom at the root `z`, the meromorphic integrand
 `|x − z|^{2a} w(x) / (z − x)` is integrable as soon as `w(x) |x − z|^{2a−1}` is. -/
-theorem bpz_integrable_div_root {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x)
-    {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem bpz_integrable_div_root
     (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
     Integrable (fun x => ((Complex.normSq (x - z) ^ a * w x : ℝ) : ℂ) / (z - x)) m := by
   refine Integrable.mono' hint ?_ ?_
@@ -115,8 +117,7 @@ theorem bpz_integrable_div_root {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) 
 
 /-- For a measure without an atom at the root `z`, the meromorphic integrand
 `|x − z|^{2a} w(x) / (z − x)²` is integrable as soon as `w(x) |x − z|^{2a−2}` is. -/
-theorem bpz_integrable_div_root_sq {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w)
-    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem bpz_integrable_div_root_sq
     (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
     Integrable (fun x => ((Complex.normSq (x - z) ^ a * w x : ℝ) : ℂ) / (z - x) ^ 2) m := by
   refine Integrable.mono' hint ?_ ?_
@@ -125,12 +126,18 @@ theorem bpz_integrable_div_root_sq {a : ℝ} {w : ℂ → ℝ} (hw : Measurable 
     have h := bpz_norm_div_root_pow a 2 (hw0 x) hx
     simpa using h.le
 
+end
+
 /-! ### Integrability of the derivative integrands at `ε = 0` -/
+
+section
+variable {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x)
+  {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+include ha ha1 hw hw0 hz
 
 /-- For `0 < a ≤ 1` and a measure without an atom at the root `z`, the first-derivative integrand
 at `ε = 0` is integrable as soon as `w(x) |x − z|^{2a−1}` is. -/
-theorem bpz_integrable_softDeriv_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem bpz_integrable_softDeriv_zero
     (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
     Integrable (fun x => w x • bpzSoftDeriv a 0 x z) m := by
   refine Integrable.mono' (hint.const_mul (2 * a))
@@ -144,8 +151,7 @@ theorem bpz_integrable_softDeriv_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w 
 /-- For `0 < a ≤ 1` and a measure without an atom at the root `z`, the second-derivative
 integrand at `ε = 0` is integrable as soon as `w(x) |x − z|^{2a−2}` is. (Its statement involves
 the local instance shortcuts for the space of bilinear forms.) -/
-theorem bpz_integrable_softDeriv2_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem bpz_integrable_softDeriv2_zero
     (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
     Integrable (fun x => w x • bpzSoftDeriv2 a 0 x z) m := by
   refine Integrable.mono' (hint.const_mul (4 * a * (1 - a) + 2 * a))
@@ -161,8 +167,7 @@ theorem bpz_integrable_softDeriv2_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w
 
 /-- At `ε = 0` the Wirtinger combination of the first derivative mass is the meromorphic integral
 `a ∫ |x − z|^{2a} w(x) / (z − x) dm(x)`. -/
-theorem bpzWirtL_softMassDeriv_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem bpzWirtL_softMassDeriv_zero
     (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
     bpzWirtL (bpzSoftMassDeriv a 0 w m z) =
       (a : ℂ) * ∫ x, ((Complex.normSq (x - z) ^ a * w x : ℝ) : ℂ) / (z - x) ∂m := by
@@ -177,8 +182,7 @@ theorem bpzWirtL_softMassDeriv_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : 
 
 /-- At `ε = 0` the second Wirtinger combination of the second derivative mass is the meromorphic
 integral `a (a − 1) ∫ |x − z|^{2a} w(x) / (z − x)² dm(x)`. -/
-theorem bpzWirt2L_softMassDeriv2_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem bpzWirt2L_softMassDeriv2_zero
     (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
     bpzWirt2L (bpzSoftMassDeriv2 a 0 w m z) =
       ((a * (a - 1) : ℝ) : ℂ) *
@@ -193,5 +197,7 @@ theorem bpzWirt2L_softMassDeriv2_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w 
   rw [map_smul, Complex.real_smul, bpzWirt2L_apply, hsym]
   push_cast at hw2 ⊢
   linear_combination (w x : ℂ) * hw2
+
+end
 
 end DOZZ.Proofs

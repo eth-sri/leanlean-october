@@ -29,9 +29,8 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
 
   have hu₀ : 0 < γ ^ 2 / 4 := by positivity
   have hγlt : γ ^ 2 < 4 := by nlinarith [mul_pos (sub_pos.mpr hγ2) (by linarith : 0 < 2 + γ)]
-  have hu₁ : γ ^ 2 / 4 < 1 := by nlinarith
 
-  have hgammaNum : 0 < Real.Gamma (γ ^ 2 / 4) :=
+  have hgammaNum  :=
     Real.Gamma_pos_of_pos hu₀
   have hgammaDen : 0 < Real.Gamma (1 - γ ^ 2 / 4) :=
     Real.Gamma_pos_of_pos (by linarith)
@@ -48,20 +47,20 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
       convert Complex.Gamma_ofReal (1 - γ ^ 2 / 4) using 1
       simp
     rw [Complex.Gamma_ofReal, hden]
-    exact (Complex.ofReal_div _ _).symm
+    simp
   have hlpos : 0 < (lFun ((γ : ℂ) ^ 2 / 4)).re := by
     rw [hlFun]
     simp only [Complex.ofReal_re]
     exact div_pos hgammaNum hgammaDen
   have hbase : 0 < dozzBase γ μ := by
     rw [dozzBase]
-    exact mul_pos (mul_pos Real.pi_pos hμ) hlpos
+    positivity
 
   let B : ℂ := (dozzBase γ μ : ℝ)
-  let d : ℂ → ℂ := fun α => (Q γ : ℂ) - α
-  let x₁ : ℂ → ℂ := fun α => (γ : ℂ) * d α / 2
-  let x₂ : ℂ → ℂ := fun α => 2 * d α / (γ : ℂ)
-  let e : ℂ → ℂ := fun α => 2 * d α / (γ : ℂ)
+  let d  := fun α => (Q γ : ℂ) - α
+  let x₁  := fun α => (γ : ℂ) * d α / 2
+  let x₂  := fun α => 2 * d α / (γ : ℂ)
+  let e  := fun α => 2 * d α / (γ : ℂ)
 
   have hd : Tendsto d (𝓝[≠] (Q γ : ℂ)) (𝓝[≠] (0 : ℂ)) := by
     rw [tendsto_nhdsWithin_iff]
@@ -71,11 +70,7 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
         fun_prop
       simpa [d] using hcont.tendsto.mono_left nhdsWithin_le_nhds
     · filter_upwards [self_mem_nhdsWithin] with α hα
-      simp only [mem_compl_iff, mem_singleton_iff] at hα
-      have hq : (Q γ : ℂ) ≠ α := Ne.symm hα
-      change d α ≠ 0
-      dsimp [d]
-      exact sub_ne_zero.mpr hq
+      grind
 
   have hscale : ∀ c : ℂ, c ≠ 0 →
       Tendsto (fun α => c * d α) (𝓝[≠] (Q γ : ℂ)) (𝓝[≠] (0 : ℂ)) := by
@@ -85,24 +80,17 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
     · have hd₀ := tendsto_nhds_of_tendsto_nhdsWithin hd
       simpa using Tendsto.const_mul c hd₀
     · filter_upwards [self_mem_nhdsWithin] with α hα
-      simp only [mem_compl_iff, mem_singleton_iff] at hα
-      have hq : (Q γ : ℂ) ≠ α := Ne.symm hα
-      have hdne : d α ≠ 0 := by
-        dsimp [d]
-        exact sub_ne_zero.mpr hq
-      exact mul_ne_zero hc hdne
+      grind
 
   have hx₁ : Tendsto x₁ (𝓝[≠] (Q γ : ℂ)) (𝓝[≠] (0 : ℂ)) := by
     have hc : ((γ : ℂ) / 2) ≠ 0 := div_ne_zero hγne (by norm_num)
     convert hscale ((γ : ℂ) / 2) hc using 1
     ext α
-    simp [x₁, d]
     ring
   have hx₂ : Tendsto x₂ (𝓝[≠] (Q γ : ℂ)) (𝓝[≠] (0 : ℂ)) := by
     have hc : (2 : ℂ) / (γ : ℂ) ≠ 0 := div_ne_zero (by norm_num) hγne
     convert hscale ((2 : ℂ) / (γ : ℂ)) hc using 1
     ext α
-    simp [x₂, d]
     ring
 
   have hsmall : ∀ᶠ x : ℂ in 𝓝[≠] (0 : ℂ), ‖x‖ < 1 := by
@@ -118,23 +106,15 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
       have harg : Tendsto (fun x : ℂ => 1 - x) (𝓝[≠] (0 : ℂ)) (𝓝 (1 : ℂ)) := by
         have hcont : ContinuousAt (fun x : ℂ => 1 - x) 0 := by fun_prop
         simpa using hcont.tendsto.mono_left nhdsWithin_le_nhds
-      have h := Complex.continuousAt_Gamma_one.tendsto.comp harg
-      simpa only [Complex.Gamma_one] using (show Tendsto (fun x : ℂ => Complex.Gamma (1 - x))
-        (𝓝[≠] (0 : ℂ)) (𝓝 (Complex.Gamma 1)) from by
-          convert h using 1
-          ext x
-          rfl)
+      exact Eq.mp (congrArg (Tendsto (fun x => Gamma (1 - x)) (𝓝[≠] 0)) (congrArg 𝓝 Gamma_one))
+        (Tendsto.comp (ContinuousAt.tendsto continuousAt_Gamma_one) harg)
     have hplus : Tendsto (fun x : ℂ => Complex.Gamma (1 + x))
         (𝓝[≠] (0 : ℂ)) (𝓝 (1 : ℂ)) := by
       have harg : Tendsto (fun x : ℂ => 1 + x) (𝓝[≠] (0 : ℂ)) (𝓝 (1 : ℂ)) := by
         have hcont : ContinuousAt (fun x : ℂ => 1 + x) 0 := by fun_prop
         simpa using hcont.tendsto.mono_left nhdsWithin_le_nhds
-      have h := Complex.continuousAt_Gamma_one.tendsto.comp harg
-      simpa only [Complex.Gamma_one] using (show Tendsto (fun x : ℂ => Complex.Gamma (1 + x))
-        (𝓝[≠] (0 : ℂ)) (𝓝 (Complex.Gamma 1)) from by
-          convert h using 1
-          ext x
-          rfl)
+      exact Eq.mp (congrArg (Tendsto (fun x => Gamma (1 + x)) (𝓝[≠] 0)) (congrArg 𝓝 Gamma_one))
+        (Tendsto.comp (ContinuousAt.tendsto continuousAt_Gamma_one) harg)
     have hquot : Tendsto
         (fun x : ℂ => Complex.Gamma (1 - x) / Complex.Gamma (1 + x))
         (𝓝[≠] (0 : ℂ)) (𝓝 (1 : ℂ)) := by
@@ -147,7 +127,7 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
       filter_upwards [hsmall, self_mem_nhdsWithin] with x hxsmall hxmem
       have hx0 : x ≠ 0 := by simpa using hxmem
       have hxre : -1 < x.re := by
-        have habs : |x.re| < 1 := lt_of_le_of_lt (Complex.abs_re_le_norm x) hxsmall
+        have habs  := lt_of_le_of_lt (Complex.abs_re_le_norm x) hxsmall
         exact (abs_lt.mp habs).1
       have hG : Complex.Gamma (1 + x) ≠ 0 := by
         apply Complex.Gamma_ne_zero_of_re_pos
@@ -166,16 +146,11 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
         simpa [mul_comm] using hrecPos.symm
       rw [hneg, hpos]
       field_simp [hx0, hG]
-    have hquotNeg : Tendsto
-        (fun x : ℂ => -(Complex.Gamma (1 - x) / Complex.Gamma (1 + x)))
-        (𝓝[≠] (0 : ℂ)) (𝓝 (-1)) := by
-      simpa using hquot.neg
-    exact (tendsto_congr' hlocal).mpr hquotNeg
+    exact (tendsto_congr' hlocal).mpr (by
+      simpa using hquot.neg)
 
-  have hR₁ : Tendsto (fun α => Complex.Gamma (-x₁ α) / Complex.Gamma (x₁ α))
-      (𝓝[≠] (Q γ : ℂ)) (𝓝 (-1)) := hGammaRatio.comp hx₁
-  have hR₂ : Tendsto (fun α => Complex.Gamma (-x₂ α) / Complex.Gamma (x₂ α))
-      (𝓝[≠] (Q γ : ℂ)) (𝓝 (-1)) := hGammaRatio.comp hx₂
+  have hR₁ := hGammaRatio.comp hx₁
+  have hR₂ := hGammaRatio.comp hx₂
 
   have he : Tendsto e (𝓝[≠] (Q γ : ℂ)) (𝓝 (0 : ℂ)) := by
     have hd₀ := tendsto_nhds_of_tendsto_nhdsWithin hd
@@ -187,15 +162,14 @@ theorem reflectionDOZZ_tendsto_Q (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ 
       (𝓝[≠] (Q γ : ℂ)) (𝓝 (1 : ℂ)) := by
     have hB : B ∈ Complex.slitPlane := by
       dsimp [B]
-      exact Complex.ofReal_mem_slitPlane.2 hbase
+      simpa
     have h := tendsto_const_nhds.cpow he hB
     simpa [B] using h
 
   have hformula : reflectionDOZZ γ μ = fun α =>
       -(B ^ e α) * (Complex.Gamma (-x₁ α) / Complex.Gamma (x₁ α)) *
         (Complex.Gamma (-x₂ α) / Complex.Gamma (x₂ α)) := by
-    funext α
-    simp [reflectionDOZZ, B, e, d, x₁, x₂]
+    rfl
   rw [hformula]
   have hfinal := (hpow.neg).mul hR₁ |>.mul hR₂
   simpa using hfinal

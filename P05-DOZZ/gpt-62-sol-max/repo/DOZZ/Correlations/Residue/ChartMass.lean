@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import DOZZ.Correlations.Residue.AffineMoment
+public import DOZZ.ShiftEquations.Mobius.AffineMomentInf
 public import DOZZ.Correlations.Symmetry.InversionSwap
 
 /-! The literal canonical rho is the two-finite-root Coulomb mass in the residue chart. -/
@@ -14,8 +14,11 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable (γ a b c : ℝ)
+
 /-- The two conventions for values at the roots agree away from those roots. -/
-theorem residue_rho_coulombWeight (γ a b c : ℝ) (x : ℂ) (hx0 : x ≠ 0) (hx1 : x ≠ 1) :
+theorem residue_rho_coulombWeight (x : ℂ) (hx0 : x ≠ 0) (hx1 : x ≠ 1) :
     ENNReal.ofReal (normPlus x ^ (γ * (a + b + c)) /
       (‖x‖ ^ (γ * a) * ‖x - 1‖ ^ (γ * b))) =
       coulombWeight γ ![a, b] ![0, 1] c x := by
@@ -38,7 +41,7 @@ theorem residue_rho_coulombWeight (γ a b c : ℝ) (x : ℂ) (hx0 : x ≠ 0) (hx
 
 /-- Atomlessness removes the difference between the conventions of `DOZZ.rho` and
 `DOZZ.coulombMass` at 0, 1. -/
-theorem residue_rho_eq_coulombMass (γ a b c : ℝ) (μ : Measure ℂ)
+theorem residue_rho_eq_coulombMass (μ : Measure ℂ)
     (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
     rho γ μ a b c = coulombMass γ μ ![a, b] ![0, 1] c := by
   unfold rho
@@ -49,10 +52,12 @@ theorem residue_rho_eq_coulombMass (γ a b c : ℝ) (μ : Measure ℂ)
   exact residue_rho_coulombWeight γ a b c x hx0 hx1
 
 /-- The canonical three-point exponent includes the infinity charge. -/
-theorem residueTotalSExp_two (γ a b c : ℝ) :
-    residueTotalSExp γ ![a, b] c = sExp γ a b c := by
-  unfold residueTotalSExp sExp
+theorem infSExp_two :
+    infSExp γ ![a, b] c = sExp γ a b c := by
+  unfold infSExp sExp
   simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one]
+
+end
 
 /-- Move the two finite insertions from 0,1 to 3,7. Both are outside the equator and their
 separation is four, so the exact local-tail domains hold. -/
@@ -65,16 +70,16 @@ theorem residue_unitVolume_finite_chart
         (∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![a, b] ![3, 7] c)
           (-sExp γ a b c) ∂P).toReal := by
   have ha : (4 : ℂ) ≠ 0 := by norm_num
-  have hchart := residue_coulombMass_affine_moment P X hX γ hγ hγ2 M hM
+  have hchart := coulombMass_affine_moment_inf P X hX γ hγ hγ2 M hM
     ![a, b] ![0, 1] c 4 3 ha
   have hroots : (fun k : Fin 2 => (4 : ℂ) * (![0, 1] k) + 3) = ![3, 7] := by
     ext k; fin_cases k <;> norm_num
-  rw [hroots, residueTotalSExp_two] at hchart
+  rw [hroots, infSExp_two] at hchart
   simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one] at hchart
   norm_num only [Complex.norm_ofNat] at hchart
   have hatoms : ∀ᵐ ω ∂P, M ω {0} = 0 ∧ M ω {1} = 0 :=
-    (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 0).and
-      (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 1)
+    (gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0).and
+      (gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1)
   have hrho : (∫⁻ ω, ENNReal.rpow (rho γ (M ω) a b c) (-sExp γ a b c) ∂P) =
       ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![a, b] ![0, 1] c) (-sExp γ a b c) ∂P := by
     apply lintegral_congr_ae
@@ -84,8 +89,7 @@ theorem residue_unitVolume_finite_chart
   rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 4) _),
     ← hrho] at hr
   unfold unitVolumeStructureConstant
-  rw [hr]
-  rw [Real.rpow_neg (by norm_num : (0 : ℝ) ≤ 4)]
+  rw [hr, Real.rpow_neg (by norm_num : (0 : ℝ) ≤ 4)]
   have hfac : (4 : ℝ) ^ (γ * (a + b - c) * sExp γ a b c / 2) ≠ 0 :=
     (Real.rpow_pos_of_pos (by norm_num) _).ne'
   field_simp [hfac]

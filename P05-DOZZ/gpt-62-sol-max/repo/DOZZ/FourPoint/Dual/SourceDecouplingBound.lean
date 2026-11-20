@@ -6,6 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.LateralComparisonError
 public import DOZZ.FourPoint.Dual.SpatialGuard
 import Mathlib.Tactic
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 /-! A signed quantitative decoupling bound for the actual separated dual masses. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set
@@ -32,33 +33,52 @@ noncomputable def dualCopiedSeparatedInverseMoment {Ω : Type*} [MeasurableSpace
       J (reflected_outerRegion r) v.1 v.2.2)^(-q)
       ∂(P.map (originRadialPath Xc)).prod (P.prod P)
 
+/-- Almost-sure equality of the lateral plane carriers preserves the full copied observable. -/
+theorem dual_copied_inverse_moment_congr
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+    (Xc : Ω → ℂ → ℝ → ℝ) (hAr : AEMeasurable (originRadialPath Xc) P)
+    (N₁ N₂ : Ω → Measure ℂ) (he : N₁ =ᵐ[P] N₂)
+    (γ α₁ α₂ α₃ q : ℝ) (z : ℂ) (s r : ℝ) :
+    dualCopiedSeparatedInverseMoment P Xc N₁ γ α₁ α₂ α₃ q z s r =
+      dualCopiedSeparatedInverseMoment P Xc N₂ γ α₁ α₂ α₃ q z s r := by
+  let _ : IsProbabilityMeasure (P.map (originRadialPath Xc)) :=
+    (Measure.isProbabilityMeasure_map_iff hAr).mpr inferInstance
+  have hpair : ∀ᵐ v : Ω × Ω ∂P.prod P, N₁ v.1 = N₂ v.1 ∧ N₁ v.2 = N₂ v.2 := by
+    filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae he,
+      measurePreserving_snd.quasiMeasurePreserving.ae he] with v h₁ h₂
+    exact ⟨h₁,h₂⟩
+  have hwhole := (measurePreserving_snd (μ := P.map (originRadialPath Xc))
+    (ν := P.prod P)).quasiMeasurePreserving.ae hpair
+  unfold dualCopiedSeparatedInverseMoment
+  apply lintegral_congr_ae
+  filter_upwards [hwhole] with v hv
+  rw [hv.1,hv.2]
+
 /-- The actual signed decoupling error is uniformly at most a constant times the relative
 radius. Finiteness of both expectations follows from the supplied GMC's fixed disk moments. -/
 theorem dual_source_decoupling_bound
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun v : Ω × (ℂ × ℝ) => Xc v.1 v.2.1 v.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun v : ℂ × ℝ => Xc ω v.1 v.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (N : Ω → Measure ℂ) (hN : N =ᵐ[P] (fun ω =>
+      (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
     (α₁ α₂ α₃ q : ℝ) (hq : 0 < q) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, ‖z‖ ≤ 1 → ∀ s r : ℝ,
       0 < s → 0 < r → r ≤ 1 → s/r ≤ 1/2 →
       (3*γ^2/2*(q^2+q))*(s/r) ≤ 1 →
-      ∃ N : Ω → Measure ℂ, Measurable N ∧ IndepFun (originRadialPath Xc) N P ∧
-        (∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤) ∧
-        N =ᵐ[P] (fun ω => (M ω).withDensity
-          (lateralRadialWeight γ (originRadialPath Xc ω))) ∧
-        |(dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z s r).toReal-
-          (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ q z s r).toReal| ≤ C*(s/r) := by
+      |(dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z s r).toReal-
+        (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ q z s r).toReal| ≤ C*(s/r) := by
+  let _ : IsProbabilityMeasure P := hX.1
   obtain ⟨C₀, hC₀, hguard⟩ := dual_spatial_guard_inverse_uniform P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ q hq.le
   let d := 3*γ^2/2*(q^2+q)
   have hd : 0 < d := by dsimp only [d]; positivity
   refine ⟨(2*Real.exp 1*C₀)*d, by positivity, ?_⟩
   intro z hz s r hs hr hr1 hsep ht1
-  obtain ⟨N, hN, hi, hfin, heq, hcmp⟩ := dual_source_separated_regions_comparison
-    P X Xc hX hc hm hcont γ hγ hγ₂ M hM α₁ α₂ α₃ z hz s r hs hr hr1 hsep q hq
-  refine ⟨N, hN, hi, hfin, heq, ?_⟩
+  obtain ⟨N', _, _, _, heq, hcmp⟩ := dual_source_separated_regions_comparison
+    P X Xc hX hcircle γ hγ hγ₂ M hM α₁ α₂ α₃ z hz s r hs hr hr1 hsep q hq
+  rw [← dual_copied_inverse_moment_congr P Xc
+    (originRadialPath_aemeasurable P X Xc hcircle.isCircleAverage hcircle.continuous_ae) N' N (heq.trans hN.symm) γ α₁ α₂ α₃ q z s r]
   have hD := (reflected_separated_region_geometry s r hs hr hr1 hsep).2.2.2.2.2.2.2.2
   have ha : dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z s r ≤ ENNReal.ofReal C₀ := by
     apply le_trans (lintegral_mono ?_) (hguard z hz)
@@ -78,7 +98,7 @@ theorem dual_source_decoupling_bound
   rw [hex] at hcmp
   have hb := dual_lateral_comparison_real_bound
     (dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z s r)
-    (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ q z s r)
+    (dualCopiedSeparatedInverseMoment P Xc N' γ α₁ α₂ α₃ q z s r)
     (d*(s/r)) C₀ (mul_nonneg hd.le (div_pos hs hr).le) ht1 hC₀.le ha hcmp.1 hcmp.2
   convert hb using 1
   ring

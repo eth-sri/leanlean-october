@@ -9,6 +9,7 @@ public import DOZZ.GMC.Moments.CircleScale
 public import DOZZ.GMC.FieldGaussianCommonScalar
 public import DOZZ.GMC.FieldChaosConcavePower
 public import DOZZ.GMC.FieldChaosConvexPower
+public import DOZZ.GMC.CircleWickDensity
 
 /-! # Exact scaling of cutoff chaos outside the unit disk
 
@@ -52,19 +53,21 @@ theorem circleLogPotential_pin_scale_of_outside {c : ℝ} (hc : 1 ≤ c) {x : �
       rw [normPlus, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc0]
       exact max_eq_right (by nlinarith)
     rw [hncz, hnz, Real.log_mul hc0.ne' (by linarith)]
-  have hint : Integrable (fun z => Real.log (normPlus z)) (circleMeasure x r) :=
+  have hint  :=
     integrable_circleMeasure_of_circleIntegrable x r hlogc.measurable
       hlogc.continuousOn.circleIntegrable'
   have := circleMeasure_isProbability x r
   rw [integral_congr_ae hae, integral_add (integrable_const _) hint, integral_const,
     probReal_univ, one_smul]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include Ω X hX hXc
+
 /-- Outside the unit disk a common dilation by `c ≥ 1`, with the cutoffs shifted by `log c`,
 adds `log c` to the covariance of two circle averages. -/
-theorem circleField_covariance_exterior_scale
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {c : ℝ} (hc : 1 ≤ c) (x y : ℂ)
+theorem circleField_covariance_exterior_scale {c : ℝ} (hc : 1 ≤ c) (x y : ℂ)
     (r s : ℝ) (hx : 1 + Real.exp (-r) ≤ ‖x‖) (hy : 1 + Real.exp (-s) ≤ ‖y‖) :
     ∫ ω, Xc ω ((c : ℂ) * x) (r - Real.log c) * Xc ω ((c : ℂ) * y) (s - Real.log c) ∂P =
       ∫ ω, Xc ω x r * Xc ω y s ∂P + Real.log c := by
@@ -84,14 +87,13 @@ theorem circleField_covariance_exterior_scale
   ring
 
 /-- Circle averages at dilated points form a centered Gaussian field. -/
-theorem circleAverage_scale_isCenteredGaussianField
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ) (c : ℂ) :
+theorem circleAverage_scale_isCenteredGaussianField (r : ℝ) (c : ℂ) :
     IsCenteredGaussianField P (fun ω y => Xc ω (c * y) r) :=
   ⟨(hXc.1 r).comp (measurable_fst.prodMk (measurable_snd.const_mul c)),
     fun _ y => circleAverage_finite_family_jointly_gaussian P X hX Xc hXc
       (fun i => (c * y i, r))⟩
+
+end
 
 /-- Integrals over a planar dilation: `∫ f = c² ∫ f (c ·)`. -/
 theorem lintegral_eq_sq_mul_lintegral_comp_dilation {c : ℝ} (hc : 0 < c) (f : ℂ → ℝ≥0∞)
@@ -100,20 +102,21 @@ theorem lintegral_eq_sq_mul_lintegral_comp_dilation {c : ℝ} (hc : 0 < c) (f : 
   have hmap := Measure.map_addHaar_smul (volume : Measure ℂ) hc.ne'
   rw [Complex.finrank_real_complex] at hmap
   have hcomp : (fun x : ℂ => f ((c : ℂ) * x)) = fun x => f (c • x) := by
-    funext x
-    rw [Complex.real_smul]
+    rfl
   have hlin : ∫⁻ x, f ((c : ℂ) * x) = ENNReal.ofReal (|(c ^ 2)⁻¹|) * ∫⁻ y, f y := by
     rw [hcomp, ← lintegral_map hf (measurable_const_smul c), hmap, lintegral_smul_measure,
       smul_eq_mul]
   rw [hlin, ← mul_assoc, ← ENNReal.ofReal_mul (by positivity), abs_of_pos (by positivity),
     mul_inv_cancel₀ (by positivity), ENNReal.ofReal_one, one_mul]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include Ω X hX hXc
+
 /-- An exterior dilated cutoff mass is a scaled continuum Wick mass of the dilated circle
 field. -/
-theorem cutoff_dilated_mass_eq_fieldChaosMass
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) {c : ℝ} (hc : 1 ≤ c)
+theorem cutoff_dilated_mass_eq_fieldChaosMass (γ r : ℝ) {c : ℝ} (hc : 1 ≤ c)
     (A : Set ℂ) (hA : MeasurableSet A) (hA1 : ∀ x ∈ A, 1 ≤ ‖x‖) (w : ℂ → ℝ≥0)
     (hw : Measurable w) (ω : Ω) :
     (∫⁻ y in {y : ℂ | (c : ℂ)⁻¹ * y ∈ A}, (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)
@@ -127,16 +130,7 @@ theorem cutoff_dilated_mass_eq_fieldChaosMass
   set E : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal
     (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) * normPlus x ^ (-4 : ℝ))
     with hE
-  have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
-    have hf : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
-      ((hXc.1 r).comp measurable_swap).pow_const 2
-    exact hf.stronglyMeasurable.integral_prod_right.measurable
-  have hX1 : Measurable (fun x : ℂ => Xc ω x r) :=
-    (hXc.1 r).comp (measurable_const.prodMk measurable_id)
-  have hEm : Measurable E := by
-    rw [hE]
-    exact ENNReal.measurable_ofReal.comp ((Real.measurable_exp.comp
-      ((hX1.const_mul γ).sub (hV.const_mul _))).mul (measurable_normPlus.pow_const _))
+  have hEm : Measurable E := measurable_regularizedGMC_density P Xc γ r (hXc.1 r) ω
   set S : Set ℂ := {y : ℂ | (c : ℂ)⁻¹ * y ∈ A} with hS
   have hSm : MeasurableSet S := (measurable_const_mul _) hA
   have hwS : Measurable (fun y : ℂ => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)) :=
@@ -154,12 +148,9 @@ theorem cutoff_dilated_mass_eq_fieldChaosMass
     ENNReal.measurable_ofReal.comp (measurable_normPlus.pow_const _)
   set W : ℂ → ℝ≥0∞ := fun x => (w x : ℝ≥0∞) * ENNReal.ofReal (Real.exp (γ * Xc ω ((c : ℂ) * x) r -
     γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P)) with hW
-  have hVc : Measurable (fun x : ℂ => ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P) :=
-    hV.comp (measurable_const_mul _)
-  have hWm : Measurable W := by
-    rw [hW]
-    exact hw.coe_nnreal_ennreal.mul (ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-      (((hX1.comp (measurable_const_mul _)).const_mul γ).sub (hVc.const_mul _))))
+  have hWm : Measurable W := hw.coe_nnreal_ennreal.mul
+    ((measurable_gmcCircleWickDensity_joint P Xc γ r (hXc.1 r)).comp
+      (measurable_const.prodMk (measurable_const_mul (c : ℂ))))
   have hrhs : fieldChaosMass P (fun ω x => Xc ω ((c : ℂ) * x) r) (gmcReferenceMeasure.restrict A)
       w γ ω = ∫⁻ x, A.indicator (fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) * W x) x := by
     rw [fieldChaosMass, gmcReferenceMeasure, restrict_withDensity hA,
@@ -211,28 +202,24 @@ theorem cutoff_dilated_mass_eq_fieldChaosMass
 /-- Exact scaling of exterior cutoff moments: dilating a set outside the disk of radius two by
 `c ≥ 1` multiplies every moment by `c ^ (-2p) e^{γ² log c (p² - p) / 2}` and shifts the cutoff
 by `log c`. -/
-theorem cutoff_exterior_scale_moment_eq
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) {r : ℝ} (hr : 0 ≤ r)
+theorem cutoff_exterior_scale_moment_eq (γ : ℝ) {r : ℝ} (hr : 0 ≤ r)
     {c : ℝ} (hc : 1 ≤ c) (A : Set ℂ) (hA : MeasurableSet A) (hA2 : ∀ x ∈ A, 2 ≤ ‖x‖)
     (w : ℂ → ℝ≥0) (hw : Measurable w) (hwb : ∃ b : ℝ≥0, ∀ x, w x ≤ b) (p : ℝ) :
     ∫⁻ ω, (∫⁻ y in {y : ℂ | (c : ℂ)⁻¹ * y ∈ A}, (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)
         ∂regularizedGMC P Xc γ r ω) ^ p ∂P =
       ENNReal.ofReal (c ^ (-2 * p) * Real.exp (γ ^ 2 * Real.log c / 2 * (p ^ 2 - p))) *
         ∫⁻ ω, (∫⁻ x in A, (w x : ℝ≥0∞) ∂regularizedGMC P Xc γ (r + Real.log c) ω) ^ p ∂P := by
-  let _ : IsProbabilityMeasure P := hX.1
   have hc0 : 0 < c := by linarith
-  have hlogc : 0 ≤ Real.log c := Real.log_nonneg hc
+  have hlogc  := Real.log_nonneg hc
   have : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   set ν : Measure ℂ := gmcReferenceMeasure.restrict A with hν
   set G : Measure ℝ := gaussianReal 0 1 with hG
   set Φ : Ω → ℂ → ℝ := fun ω x => Xc ω ((c : ℂ) * x) r with hΦ
   set Ψ : Ω → ℂ → ℝ := fun ω x => Xc ω x (r + Real.log c) with hΨ
   set Ψ' : Ω × ℝ → ℂ → ℝ := fun ω x => Ψ ω.1 x + Real.sqrt (Real.log c) * ω.2 with hΨ'
-  have hΦg : IsCenteredGaussianField P Φ :=
+  have hΦg  :=
     circleAverage_scale_isCenteredGaussianField P X hX Xc hXc r c
-  have hΨg : IsCenteredGaussianField P Ψ :=
+  have hΨg  :=
     circleAverage_isCenteredGaussianField P X hX Xc hXc (r + Real.log c)
   have hΨ'g : IsCenteredGaussianField (P.prod G) Ψ' :=
     independent_common_scalar_add_isCenteredGaussianField P Ψ hΨg _
@@ -286,13 +273,9 @@ theorem cutoff_exterior_scale_moment_eq
     (Real.sqrt (Real.log c)) p
   rw [Real.sq_sqrt hlogc] at hfac
   -- the cutoff masses as chaos masses
-  have hlhs : ∀ ω, (∫⁻ y in {y : ℂ | (c : ℂ)⁻¹ * y ∈ A}, (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)
-      ∂regularizedGMC P Xc γ r ω) = ENNReal.ofReal (c ^ (-2 : ℝ)) * fieldChaosMass P Φ ν w γ ω :=
-    fun ω => cutoff_dilated_mass_eq_fieldChaosMass P X hX Xc hXc γ r hc A hA
+  have hlhs := fun ω => cutoff_dilated_mass_eq_fieldChaosMass P X hX Xc hXc γ r hc A hA
       (fun x hx => le_trans one_le_two (hA2 x hx)) w hw ω
-  have hrhs : ∀ ω, (∫⁻ x in A, (w x : ℝ≥0∞) ∂regularizedGMC P Xc γ (r + Real.log c) ω) =
-      fieldChaosMass P Ψ ν w γ ω :=
-    fun ω => regularizedGMC_weighted_eq_fieldChaosMass P X hX Xc hXc γ (r + Real.log c) A hA w hw
+  have hrhs := fun ω => regularizedGMC_weighted_eq_fieldChaosMass P X hX Xc hXc γ (r + Real.log c) A hA w hw
       ω
   have hc2 : ENNReal.ofReal (c ^ (-2 : ℝ)) ≠ 0 :=
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos hc0 _)).ne'
@@ -301,5 +284,7 @@ theorem cutoff_exterior_scale_moment_eq
     lintegral_const_mul' _ _ (ENNReal.rpow_ne_top_of_ne_zero hc2 ENNReal.ofReal_ne_top), hmom,
     hfac, ← mul_assoc, ENNReal.ofReal_rpow_of_pos (Real.rpow_pos_of_pos hc0 _),
     ← Real.rpow_mul hc0.le, ← ENNReal.ofReal_mul (Real.rpow_nonneg hc0.le _)]
+
+end
 
 end DOZZ.Proofs

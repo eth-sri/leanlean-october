@@ -27,8 +27,11 @@ open MeasureTheory Filter Topology Set Metric
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+
 /-- Under the same local domination every section is integrable. -/
-theorem integrable_of_locally_dominated {Ω : Type*} [MeasurableSpace Ω]
+theorem integrable_of_locally_dominated
     (P : Measure Ω) {U : Set ℂ} (f : ℂ → Ω → ℂ)
     (hmeas : ∀ z ∈ U, AEStronglyMeasurable (f z) P)
     (hdom : ∀ z ∈ U, ∃ r > 0, closedBall z r ⊆ U ∧ ∃ g : Ω → ℝ, Integrable g P ∧
@@ -42,7 +45,7 @@ theorem integrable_of_locally_dominated {Ω : Type*} [MeasurableSpace Ω]
 /-- The `z`-derivative at `z₀` of a family which is measurable in `ω` for `z` near `z₀`, and
 almost surely differentiable at `z₀`, is almost everywhere strongly measurable: it is the limit
 of the difference quotients along the sequence `z₀ + r / (2 (n + 1))`. -/
-theorem aestronglyMeasurable_deriv_of_ae_differentiableAt {Ω : Type*} [MeasurableSpace Ω]
+theorem aestronglyMeasurable_deriv_of_ae_differentiableAt
     {P : Measure Ω} {f : ℂ → Ω → ℂ} {z₀ : ℂ} {r : ℝ} (hr : 0 < r)
     (hmeas : ∀ z ∈ ball z₀ r, AEStronglyMeasurable (f z) P)
     (hdiff : ∀ᵐ ω ∂P, DifferentiableAt ℂ (fun z => f z ω) z₀) :
@@ -72,7 +75,7 @@ theorem aestronglyMeasurable_deriv_of_ae_differentiableAt {Ω : Type*} [Measurab
 /-- **Holomorphy of a parametric integral** under local uniform domination: if almost every
 section `z ↦ f z ω` is holomorphic on the open set `U` and `‖f‖` is dominated near each point of
 `U` by an integrable function, then `z ↦ ∫ f z ω ∂P` is holomorphic on `U`. -/
-theorem differentiableOn_integral_of_locally_dominated {Ω : Type*} [MeasurableSpace Ω]
+theorem differentiableOn_integral_of_locally_dominated
     (P : Measure Ω) {U : Set ℂ} (hU : IsOpen U) (f : ℂ → Ω → ℂ)
     (hmeas : ∀ z ∈ U, AEStronglyMeasurable (f z) P)
     (hdiff : ∀ᵐ ω ∂P, DifferentiableOn ℂ (fun z => f z ω) U)
@@ -106,6 +109,8 @@ theorem differentiableOn_integral_of_locally_dominated {Ω : Type*} [MeasurableS
     (integrable_of_locally_dominated P f hmeas hdom z₀ hz₀)
     (F' := fun z ω => deriv (fun w => f w ω) z) hF'_meas hderiv_bound (hg.div_const _) hderiv_diff
   exact key.2.differentiableAt.differentiableWithinAt
+
+end
 
 end DOZZ.Proofs
 

@@ -33,16 +33,12 @@ theorem retained_uniform_disk_lower {N : ℕ} (μ : Measure ℂ)
   have hi : |γ * αinf| ≤ γ * A := by
     rw [abs_mul, abs_of_pos hγ]
     exact mul_le_mul_of_nonneg_left hinf hγ.le
-  have hc : ENNReal.ofReal ((2 : ℝ) ^ (-(N * (γ * A)))) *
-      ENNReal.ofReal ((R + 2) ^ (-(γ * A))) ≤
-      ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
-        ENNReal.ofReal ((R + 2) ^ (-|γ * αinf|)) := by
+  exact (mul_le_mul' (by
     apply mul_le_mul'
     · exact ENNReal.ofReal_le_ofReal
         (Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith))
     · exact ENNReal.ofReal_le_ofReal
-        (Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith))
-  exact (mul_le_mul' hc le_rfl).trans
+        (Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith))) le_rfl).trans
     (retained_coulomb_mass_ge_exterior_ball μ γ α z αinf O R hR hz hO)
 
 end DOZZ.Proofs

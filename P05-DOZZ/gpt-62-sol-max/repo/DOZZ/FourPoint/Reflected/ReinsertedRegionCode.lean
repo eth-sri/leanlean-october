@@ -3,8 +3,9 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
-public import DOZZ.FourPoint.Reflected.PlaneMassCode
+public import DOZZ.FourPoint.Reflected.ChartMassMeasurable
 public import DOZZ.FourPoint.Reflected.GlobalReinsertion
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! Joint mass codes identify the copied spatial observable under product-law regrouping. -/
 @[expose] public section
 open MeasureTheory Set
@@ -18,18 +19,32 @@ noncomputable def reflectedReinsertedRegionMassCode (γ : ℝ) (U : Set ℂ) (K 
 
 theorem reflected_reinsertedRegionMassCode_measurable (γ : ℝ) (U : Set ℂ) (hU : MeasurableSet U)
     (K : ℂ → ℝ≥0∞) (hK : Measurable K) : Measurable (reflectedReinsertedRegionMassCode γ U K) := by
+  unfold reflectedReinsertedRegionMassCode
   apply reflected_puncturedMassCode_measurable
   exact Measurable.ite (hU.preimage measurable_snd)
     ((hK.comp measurable_snd).mul (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal) measurable_const
 
 theorem reflected_reinsertedRegionMassCode_eq (γ : ℝ) (U : Set ℂ) (hU : MeasurableSet U)
     (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) (K : ℂ → ℝ≥0∞) (a : TwoSidedPath) (μ : Measure ℂ)
-    (hfin : ∀ K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → μ K < ⊤) :
+    (hfin : FiniteOnChart ({0} : Set ℂ)ᶜ μ) :
     reflectedReinsertedRegionMassCode γ U K (a,μ) =
       ∫⁻ x in U, K x*ENNReal.ofReal (reflected_global_reinsertionWeight γ a x) ∂μ := by
   rw [reflectedReinsertedRegionMassCode,reflected_puncturedMassCode_eq _ _ _ hfin]
   dsimp only [Prod.fst,Prod.snd]
   rw [setLIntegral_indicator hU,inter_eq_left.mpr hU0]
+
+/-- The reinserted mass of a measurable punctured region is jointly measurable in the
+path and the sample of the lateral measure. -/
+theorem reflected_reinserted_region_measurable {Ω : Type*} [MeasurableSpace Ω]
+    {N : Ω → Measure ℂ} (hN : Measurable N) (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
+    (γ : ℝ) {U : Set ℂ} (hU : MeasurableSet U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ)
+    {K : ℂ → ℝ≥0∞} (hK : Measurable K) :
+    Measurable (fun p : TwoSidedPath × Ω => ∫⁻ x in U,
+      K x * ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x) ∂N p.2) := by
+  convert (reflected_reinsertedRegionMassCode_measurable γ U hU K hK).comp
+    (measurable_fst.prodMk (hN.comp measurable_snd)) using 1
+  funext p
+  exact (reflected_reinsertedRegionMassCode_eq γ U hU hU0 K p.1 _ (hfin p.2)).symm
 
 /-- Exact removal and reinsertion recover any measurable regional mass away from the origin. -/
 theorem reflected_reinserted_region_eq (γ : ℝ) (a : TwoSidedPath) (μ : Measure ℂ)

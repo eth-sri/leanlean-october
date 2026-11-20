@@ -5,7 +5,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.FieldChaosConstantTrick
-public import DOZZ.GMC.FieldChaosConstantTrickConcave
 
 /-! Finite-cutoff Kahane comparison for every positive moment in the separated joint-tail
 estimate. -/

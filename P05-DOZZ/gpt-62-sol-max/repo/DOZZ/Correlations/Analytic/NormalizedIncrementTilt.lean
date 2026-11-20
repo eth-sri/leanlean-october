@@ -53,7 +53,7 @@ theorem normalized_vertex_increment_tilt_norm
   let A := γ * ∑ i, a i.castSucc * equatorCircleMean (z i) r
   let D := (normalizedVertexPolynomial P Xc γ z r β).re + gaussianVariance P L / 2
   let H (μ : Measure ℂ) := ENNReal.ofReal ‖((μ O₁).toReal : ℂ) ^ p - ((μ O₀).toReal : ℂ) ^ p‖
-  have hH : Measurable H := measurable_complex_mass_difference O₁ O₀ h₁ h₀ p
+  have hH  := measurable_complex_mass_difference O₁ O₀ h₁ h₀ p
   have he (ω : Ω) :
       ENNReal.ofReal ‖Complex.exp (normalizedVertexPolynomial P Xc γ z r β +
         ∑ i, β i * (Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i) : ℂ)) *
@@ -65,9 +65,7 @@ theorem normalized_vertex_increment_tilt_norm
           (mixedVertexTimes N r i) : ℂ)).re =
         D + (L ω - gaussianVariance P L / 2) := by
       dsimp only [D, L, a]
-      simp only [Complex.add_re, Complex.re_sum, Complex.mul_re, Complex.ofReal_re,
-        Complex.ofReal_im, mul_zero, sub_zero]
-      ring
+      simp
     rw [norm_mul, Complex.norm_exp, hexp, Real.exp_add,
       ENNReal.ofReal_mul (mul_nonneg (Real.exp_nonneg _) (Real.exp_nonneg _)),
       ENNReal.ofReal_mul (Real.exp_nonneg _)]
@@ -87,13 +85,8 @@ theorem normalized_vertex_increment_tilt_norm
         ‖((∫⁻ x in O₁, coulombWeight γ (fun i => a i.castSucc) z (a (Fin.last N)) x ∂μ).toReal : ℂ) ^ p -
           ((∫⁻ x in O₀, coulombWeight γ (fun i => a i.castSucc) z (a (Fin.last N)) x ∂μ).toReal : ℂ) ^ p‖ := by
     dsimp only [H]
-    rw [mixed_tilted_retained_measure_eq μ γ a z r hr O₁ h₁ hO₁,
-      mixed_tilted_retained_measure_eq μ γ a z r hr O₀ h₀ hO₀,
-      ENNReal.toReal_mul, ENNReal.toReal_mul,
-      ENNReal.toReal_ofReal (Real.exp_nonneg _)]
-    rw [cpow_scaled_difference_norm (Real.exp A) _ _ (Real.exp_pos A)
-      ENNReal.toReal_nonneg ENNReal.toReal_nonneg p, ← Real.exp_mul,
-      ENNReal.ofReal_mul (Real.exp_nonneg _)]
+    rw [mixed_tilted_retained_measure_eq μ γ a z r hr O₁ h₁ hO₁, mixed_tilted_retained_measure_eq μ γ a z r hr O₀ h₀ hO₀, ENNReal.toReal_mul, ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.exp_nonneg _), cpow_scaled_difference_norm (Real.exp A) _ _ (Real.exp_pos A)
+          ENNReal.toReal_nonneg ENNReal.toReal_nonneg p, ← Real.exp_mul, ENNReal.ofReal_mul (Real.exp_nonneg _)]
   simp_rw [hs]
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, ← mul_assoc,
     ← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]

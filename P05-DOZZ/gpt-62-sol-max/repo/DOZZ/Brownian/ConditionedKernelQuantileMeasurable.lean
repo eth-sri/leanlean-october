@@ -29,41 +29,36 @@ private theorem cdfGeneralizedQuantile_lt_iff_exists_rat
     cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u < a ↔
       ∃ q : ℚ, (q : ℝ) < a ∧ u ≤ ProbabilityTheory.cdf μ q := by
   let F := ProbabilityTheory.cdf μ
-  let S : Set ℝ := {y | u ≤ F y}
+  let S  := {y | u ≤ F y}
   have hnonempty : S.Nonempty := by
-    have hev : ∀ᶠ y : ℝ in atTop, u < F y :=
-      (ProbabilityTheory.tendsto_cdf_atTop μ).eventually (Ioi_mem_nhds hu1)
-    obtain ⟨y, hy⟩ := Filter.eventually_atTop.1 hev
-    exact ⟨y, le_of_lt (hy y le_rfl)⟩
+    exact Exists.casesOn (eventually_atTop.mp (Tendsto.eventually (tendsto_cdf_atTop μ) (Ioi_mem_nhds hu1))) fun y hy =>
+      Exists.intro y (le_of_lt (hy y le_rfl))
   have hbounded : BddBelow S := by
-    have hev : ∀ᶠ y : ℝ in atBot, F y < u :=
+    have hev  :=
       (ProbabilityTheory.tendsto_cdf_atBot μ).eventually (Iio_mem_nhds hu)
     obtain ⟨b, hb⟩ := Filter.eventually_atBot.1 hev
     refine ⟨b, ?_⟩
     intro y hy
-    change u ≤ F y at hy
-    by_contra hnot
-    exact (not_lt_of_ge hy) (hb y (le_of_lt (lt_of_not_ge hnot)))
+    grind
   change sInf S < a ↔ _
   constructor
   · intro hqa
     obtain ⟨q, hqlo, hqhi⟩ := exists_rat_btwn hqa
-    have hqF : u ≤ F q := by
+    exact ⟨q, hqhi, (by
       by_contra hnot
-      have hlt : F q < u := lt_of_not_ge hnot
+      have hlt  := lt_of_not_ge hnot
       have hqLower : (q : ℝ) ≤ sInf S := by
         apply le_csInf hnonempty
         intro y hy
         change u ≤ F y at hy
         by_contra hyq
-        have hyq' : y ≤ (q : ℝ) := le_of_lt (lt_of_not_ge hyq)
+        have hyq'  := le_of_lt (lt_of_not_ge hyq)
         have hmono := ProbabilityTheory.monotone_cdf μ hyq'
         exact (not_lt_of_ge hy) (lt_of_le_of_lt hmono hlt)
-      linarith
-    exact ⟨q, hqhi, hqF⟩
+      linarith)⟩
   · rintro ⟨q, hqa, hqF⟩
-    have hqmem : (q : ℝ) ∈ S := hqF
-    have hq : sInf S ≤ (q : ℝ) := csInf_le hbounded hqmem
+    have hqmem  := hqF
+    have hq  := csInf_le hbounded hqmem
     exact hq.trans_lt hqa
 
 private theorem measurable_conditionedTransitionCDF_start
@@ -96,29 +91,19 @@ theorem measurable_conditionedTransitionQuantileOn
         ⋃ q : {q : ℚ // (q : ℝ) < a}, E q.1 := by
     ext z
     simp only [Set.mem_preimage, Set.mem_Iio, Set.mem_iUnion, E]
-    let : IsProbabilityMeasure
-        (conditionedPositiveTransitionMeasure ν t z.1.1) :=
-      isProbabilityMeasure_conditionedPositiveTransitionMeasure ν t z.1.1
+    let := isProbabilityMeasure_conditionedPositiveTransitionMeasure ν t z.1.1
         hν ht z.1.2
     exact (cdfGeneralizedQuantile_lt_iff_exists_rat
       (conditionedPositiveTransitionMeasure ν t z.1.1)
       z.2.2.1 z.2.2.2).trans (by
         simp only [Set.mem_ofPred_eq]
-        constructor
-        · rintro ⟨q, hqa, hqF⟩
-          exact ⟨⟨q, hqa⟩, hqF⟩
-        · rintro ⟨q, hqF⟩
-          exact ⟨q.1, q.2, hqF⟩)
+        simp_all)
   rw [hpre]
   apply MeasurableSet.iUnion
   intro q
   have hCDF := measurable_conditionedTransitionCDF_start hν ht q.1
-  have hpair : Measurable (fun z : Set.Ioi (0 : ℝ) × Set.Ioo (0 : ℝ) 1 =>
-      (z.2.1, ProbabilityTheory.cdf
-        (conditionedPositiveTransitionMeasure ν t z.1.1) q.1)) := by
-    exact (measurable_subtype_coe.comp measurable_snd).prodMk
-      (hCDF.comp measurable_fst)
-  exact (measurableSet_le measurable_fst measurable_snd).preimage hpair
+  exact (measurableSet_le measurable_fst measurable_snd).preimage ((measurable_subtype_coe.comp measurable_snd).prodMk
+      (hCDF.comp measurable_fst))
 
 end DOZZ.Proofs
 

@@ -176,7 +176,11 @@ noncomputable def crossingMultiplierReal (γ ε a : ℝ) : ℝ :=
     lR (γ / 4 * (ε - γ / 2)) * (lR (1 - γ / 2 * (Q γ - a)))⁻¹ *
     (lR (-(γ ^ 2) / 4) * lR (γ * ε / 2))⁻¹
 
-theorem crossA_ofReal {γ : ℝ} (hγ : 0 < γ) (ε a : ℝ) :
+section
+variable {γ : ℝ} (hγ : 0 < γ) (ε a : ℝ)
+include hγ
+
+theorem crossA_ofReal :
     crossA γ ε (a : ℂ) = ((γ ^ 2 / 4 * ((2 * a + ε - γ / 2 - 2 * Q γ) / γ) : ℝ) : ℂ) := by
   unfold crossA
   have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
@@ -186,7 +190,7 @@ theorem crossA_ofReal {γ : ℝ} (hγ : 0 < γ) (ε a : ℝ) :
   ring
 
 /-- **The analytic multiplier at a real charge is the real closed form.** -/
-theorem crossingMultiplierDiag_ofReal {γ : ℝ} (hγ : 0 < γ) (ε a : ℝ) :
+theorem crossingMultiplierDiag_ofReal :
     crossingMultiplierDiag γ ε (a : ℂ) = (crossingMultiplierReal γ ε a : ℂ) := by
   unfold crossingMultiplierDiag crossingMultiplierReal crossC
   rw [crossA_ofReal hγ, show (1 : ℂ) - (γ / 2 : ℂ) * (Q γ - (a : ℂ)) =
@@ -201,6 +205,8 @@ theorem crossingMultiplierDiag_ofReal {γ : ℝ} (hγ : 0 < γ) (ε a : ℝ) :
     Complex.Gamma_ofReal, Complex.Gamma_ofReal]
   push_cast
   ring
+
+end
 
 /-- **On the crossing region the unit multiplier is the analytic one.** -/
 theorem gammaHalfUnitCrossingMultiplier_eq_diag {γ μ ε a : ℝ} (hγ : 0 < γ) (hμ : 0 < μ)
@@ -264,20 +270,18 @@ theorem differentiableOn_crossingMultiplierDiag {γ ε : ℝ} (hγ : 0 < γ) (h�
   have hGA : DifferentiableAt ℂ (fun w : ℂ => Complex.Gamma (crossA γ ε w + 1)) z :=
     (Complex.differentiableAt_Gamma _ (ne_neg_nat_of_re_pos hApos)).comp z hA
   have hG1A : DifferentiableAt ℂ (fun w : ℂ => (Complex.Gamma (1 - crossA γ ε w))⁻¹) z := by
-    have h : DifferentiableAt ℂ (fun w : ℂ => 1 - crossA γ ε w) z := by
+    exact (Complex.differentiable_one_div_Gamma _).comp z (by
       unfold crossA
-      fun_prop
-    exact (Complex.differentiable_one_div_Gamma _).comp z h
+      fun_prop)
   have hlC : DifferentiableAt ℂ (fun w : ℂ => (lFun (crossC γ w))⁻¹) z := by
     simp_rw [lFun_inv]
     have h1 : DifferentiableAt ℂ (fun w : ℂ => 1 - crossC γ w) z := by
       unfold crossC
       fun_prop
-    have h2 : DifferentiableAt ℂ (fun w : ℂ => crossC γ w) z := by
-      unfold crossC
-      fun_prop
     exact ((Complex.differentiableAt_Gamma _ (ne_neg_nat_of_re_pos hCpos)).comp z h1).mul
-      ((Complex.differentiable_one_div_Gamma _).comp z h2)
+      ((Complex.differentiable_one_div_Gamma _).comp z (by
+      unfold crossC
+      fun_prop))
   show DifferentiableAt ℂ (fun w => crossingMultiplierDiag γ ε w) z
   unfold crossingMultiplierDiag
   exact ((((differentiableAt_const _).mul hGA).mul hG1A).mul (differentiableAt_const _)).mul

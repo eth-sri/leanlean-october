@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.SharpMoments.SeibergMoment
+public import DOZZ.MeasureTheory.PowerSums
 
 /-! # Explicit moment bounds for the Coulomb mass
 
@@ -21,110 +22,6 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- A nonnegative power of a sum of two terms is at most `2 ^ t` times the sum of the powers. -/
-theorem ennreal_add_rpow_le_two_rpow_mul (a b : ℝ≥0∞) {t : ℝ} (ht : 0 ≤ t) :
-    (a + b) ^ t ≤ 2 ^ t * (a ^ t + b ^ t) := by
-  have hmax : a + b ≤ 2 * max a b := by
-    rw [two_mul]
-    exact add_le_add (le_max_left a b) (le_max_right a b)
-  calc (a + b) ^ t ≤ (2 * max a b) ^ t := ENNReal.rpow_le_rpow hmax ht
-    _ = 2 ^ t * max a b ^ t := ENNReal.mul_rpow_of_nonneg _ _ ht
-    _ ≤ 2 ^ t * (a ^ t + b ^ t) := by
-        gcongr
-        rcases le_total a b with hab | hab
-        · rw [max_eq_right hab]
-          exact le_add_left le_rfl
-        · rw [max_eq_left hab]
-          exact le_add_right le_rfl
-
-/-- Positive moments of the Coulomb mass are bounded by explicit multiples of the moments of its
-pieces. -/
-theorem coulombMass_moment_le_pieces
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    {N : ℕ} (z : Fin N → ℂ) (α : Fin N → ℝ) (αinf : ℝ) {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1)
-    (hsep : ∀ j k, j ≠ k → 2 * δ ≤ ‖z j - z k‖) {Rr : ℝ} (hRr1 : 1 ≤ Rr)
-    (hzRr : ∀ j, 2 * ‖z j‖ ≤ Rr) (t : ℝ) (ht : 0 < t) :
-    ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ∂P ≤
-      2 ^ t * (2 ^ t * ((N : ℝ≥0∞) ^ t *
-          ∑ k, ENNReal.ofReal (((2 + 2 * ∑ j, ‖z j‖) / δ) ^
-            (∑ j, |γ * α j| + |γ * αinf|)) ^ t * weightedGmcBallMoment P M γ (α k) (z k) δ t +
-        ENNReal.ofReal (((1 + Rr + ∑ j, ‖z j‖) / δ) ^ (∑ j, |γ * α j| + |γ * αinf|)) ^ t *
-          gmcMassMoment P M (Metric.closedBall 0 Rr) t) +
-        ENNReal.ofReal ((2 : ℝ) ^ (∑ j, |γ * α j|)) ^ t *
-          weightedGmcBallMoment P M γ αinf 0 (1 / Rr) t) := by
-  let _ : IsProbabilityMeasure P := hX.1
-  have hRr0 : 0 < Rr := by linarith
-  set cR : ℝ≥0∞ := ENNReal.ofReal (((2 + 2 * ∑ j, ‖z j‖) / δ) ^
-    (∑ j, |γ * α j| + |γ * αinf|)) with hcR
-  set cB : ℝ≥0∞ := ENNReal.ofReal (((1 + Rr + ∑ j, ‖z j‖) / δ) ^
-    (∑ j, |γ * α j| + |γ * αinf|)) with hcB
-  set cE : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (∑ j, |γ * α j|)) with hcE
-  set W : Fin N → Ω → ℝ≥0∞ := fun k ω => weightedGmcBallMass γ (M ω) (α k) (z k) δ with hW
-  set MB : Ω → ℝ≥0∞ := fun ω => M ω (Metric.closedBall 0 Rr) with hMB
-  set V : Ω → ℝ≥0∞ := fun ω => ∫⁻ x in {x : ℂ | Rr < ‖x‖},
-    ENNReal.rpow (ENNReal.ofReal ‖x‖) (γ * αinf) ∂M ω with hV
-  have hWm : ∀ k, AEMeasurable (W k) P := fun k =>
-    gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α k) (z k) δ
-  have hMBm : AEMeasurable MB P :=
-    gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
-      Metric.isClosed_closedBall.measurableSet
-  have hg : Measurable fun x : ℂ => ENNReal.rpow (ENNReal.ofReal ‖x‖) (γ * αinf) :=
-    (ENNReal.continuous_rpow_const (y := γ * αinf)).measurable.comp
-      (ENNReal.measurable_ofReal.comp measurable_norm)
-  have hVm : AEMeasurable V P :=
-    gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _ hg _
-      (measurableSet_lt measurable_const measurable_norm)
-  have hcard : ((Finset.univ : Finset (Fin N)).card : ℝ≥0∞) = N := by
-    rw [Finset.card_univ, Fintype.card_fin]
-  -- the pointwise bound
-  have hatoms : ∀ᵐ ω ∂P, ∀ k, M ω {z k} = 0 :=
-    ae_all_iff.mpr fun k => gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z k)
-  have hpt : ∀ᵐ ω ∂P, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ≤
-      2 ^ t * (2 ^ t * ((N : ℝ≥0∞) ^ t * ∑ k, cR ^ t * W k ω ^ t + cB ^ t * MB ω ^ t) +
-        cE ^ t * V ω ^ t) := by
-    filter_upwards [hatoms] with ω hω
-    have hdec := coulombMass_le_pieces (M ω) γ α z αinf hδ hδ1 hsep hω hRr1 hzRr
-    calc ENNReal.rpow (coulombMass γ (M ω) α z αinf) t
-        ≤ ((∑ k, cR * W k ω + cB * MB ω) + cE * V ω) ^ t := ENNReal.rpow_le_rpow hdec ht.le
-      _ ≤ 2 ^ t * ((∑ k, cR * W k ω + cB * MB ω) ^ t + (cE * V ω) ^ t) :=
-          ennreal_add_rpow_le_two_rpow_mul _ _ ht.le
-      _ ≤ 2 ^ t * (2 ^ t * ((∑ k, cR * W k ω) ^ t + (cB * MB ω) ^ t) + (cE * V ω) ^ t) := by
-          gcongr
-          exact ennreal_add_rpow_le_two_rpow_mul _ _ ht.le
-      _ ≤ 2 ^ t * (2 ^ t * ((N : ℝ≥0∞) ^ t * ∑ k, (cR * W k ω) ^ t + (cB * MB ω) ^ t) +
-            (cE * V ω) ^ t) := by
-          gcongr
-          rw [← hcard]
-          exact ennreal_finset_sum_rpow_le_card_rpow_sum_of_pos _ _ ht
-      _ = _ := by
-          simp only [ENNReal.mul_rpow_of_nonneg _ _ ht.le]
-  -- integrate the bound
-  have hS : AEMeasurable (fun ω => ∑ k, cR ^ t * W k ω ^ t) P :=
-    Finset.aemeasurable_fun_sum _ fun k _ => aemeasurable_const.mul ((hWm k).pow_const t)
-  have hA : AEMeasurable (fun ω => (N : ℝ≥0∞) ^ t * ∑ k, cR ^ t * W k ω ^ t) P :=
-    aemeasurable_const.mul hS
-  have hAB : AEMeasurable (fun ω => (N : ℝ≥0∞) ^ t * ∑ k, cR ^ t * W k ω ^ t +
-      cB ^ t * MB ω ^ t) P := hA.add (aemeasurable_const.mul (hMBm.pow_const t))
-  have hLAB : AEMeasurable (fun ω => 2 ^ t * ((N : ℝ≥0∞) ^ t * ∑ k, cR ^ t * W k ω ^ t +
-      cB ^ t * MB ω ^ t)) P := aemeasurable_const.mul hAB
-  have hall : AEMeasurable (fun ω => 2 ^ t * ((N : ℝ≥0∞) ^ t * ∑ k, cR ^ t * W k ω ^ t +
-      cB ^ t * MB ω ^ t) + cE ^ t * V ω ^ t) P :=
-    hLAB.add (aemeasurable_const.mul (hVm.pow_const t))
-  have hWk : ∀ k ∈ (Finset.univ : Finset (Fin N)),
-      AEMeasurable (fun ω => cR ^ t * W k ω ^ t) P := fun k _ =>
-    aemeasurable_const.mul ((hWm k).pow_const t)
-  refine (lintegral_mono_ae hpt).trans ?_
-  rw [lintegral_const_mul'' _ hall, lintegral_add_left' hLAB, lintegral_const_mul'' _ hAB,
-    lintegral_add_left' hA, lintegral_const_mul'' _ hS, lintegral_finsetSum' _ hWk,
-    lintegral_const_mul'' _ (hMBm.pow_const t), lintegral_const_mul'' _ (hVm.pow_const t)]
-  gcongr with k hk
-  · rw [lintegral_const_mul'' _ ((hWm k).pow_const t)]
-    rfl
-  · rfl
-  · exact gmc_exterior_moment_le_weighted P X hX γ hγ hγ2 M hM αinf hRr0 t ht.le
-
 /-- Nonpositive moments of the Coulomb mass, uniformly over exterior radii, charges and orders in
 compact ranges. -/
 theorem coulombMass_moment_uniform_nonpos
@@ -135,11 +32,11 @@ theorem coulombMass_moment_uniform_nonpos
     ∃ K : ℝ≥0∞, K < ⊤ ∧ ∀ (z : Fin N → ℂ) (α : Fin N → ℝ) (αinf t : ℝ),
       (∀ j, 2 * ‖z j‖ ≤ Rr) → (∀ j, |α j| ≤ A) → |αinf| ≤ A → tmin ≤ t → t ≤ 0 →
       ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ∂P ≤ K := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   set cmin : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (-(N * (γ * A)))) *
     ENNReal.ofReal ((Rr + 2) ^ (-(γ * A))) with hcmin
   set B : Set ℂ := Metric.ball (((Rr + 1 : ℝ)) : ℂ) (1 / 8) with hB
-  have hBm : AEMeasurable (fun ω => M ω B) P :=
+  have hBm  :=
     gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM B Metric.isOpen_ball.measurableSet
   have hc0 : cmin ≠ 0 := mul_ne_zero
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
@@ -179,7 +76,7 @@ theorem coulombMass_moment_uniform_nonpos
       calc (2 : ℝ) ^ (-(N * (γ * A))) * (Rr + 2) ^ (-(γ * A)) ≤ 1 * 1 :=
             mul_le_mul h1 h2 (Real.rpow_nonneg (by linarith) _) zero_le_one
         _ = 1 := one_mul 1
-    have hlow : ∀ ω, cmin * M ω B ≤ coulombMass γ (M ω) α z αinf := fun ω =>
+    have hlow  := fun ω =>
       (mul_le_mul' hcle le_rfl).trans (coulombMass_ge_exterior_ball (M ω) γ α z αinf hRr1 hzRr)
     calc ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ∂P
         ≤ ∫⁻ ω, cmin ^ tmin * (1 + M ω B ^ tmin) ∂P := by

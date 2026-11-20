@@ -25,68 +25,66 @@ namespace DOZZ.Proofs
 
 theorem reflectionExponent_pole_neg {γ : ℝ} (hγ : 0 < γ) (η : ℝ) :
     reflectionExponent γ (2 / γ - η) = 1 + 2 * η / γ := by
-  rw [reflectionExponent, Q]
-  field_simp
-  ring
+  simpa only [sub_eq_add_neg, mul_neg, neg_div, neg_neg, sub_neg_eq_add] using reflectionExponent_pole hγ (-η)
 
-/-- The tail coefficient at `2` is `2^{-4p₂} R̄`. -/
-theorem tailCoefficient_two {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
-    oneInsertionTailCoefficient γ (2 / γ + η) 2 (poleFactorTwo γ η 2) R =
+private theorem pole_tail_coefficient {γ η : ℝ} (hγ : 0 < γ) {z : ℂ} (hz : ‖z‖ = 2) (R : ℝ) :
+    oneInsertionTailCoefficient γ (2 / γ + η) z (2 ^ (2 * γ * η)) R =
       2 ^ (-(4 * (1 - 2 * η / γ))) * R := by
   unfold oneInsertionTailCoefficient
-  rw [poleFactorTwo_two hγ, reflectionExponent_pole hγ η]
-  have h2 : ‖(2 : ℂ)‖ = 2 := by simp
-  rw [h2, Real.rpow_eq_pow, Real.rpow_eq_pow, ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2),
-    ← Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
+  rw [hz, reflectionExponent_pole hγ η, Real.rpow_eq_pow, Real.rpow_eq_pow,
+    ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2), ← Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
   congr 2
   rw [Q]
   field_simp
   ring
+
+private theorem pole_residue_normalization {γ : ℝ} (hγ : 0 < γ) (p R : ℝ) :
+    γ * (2 ^ (-(4 * p)) * R) * (2 / γ * 2 ^ (4 * p) * p) = 2 * p * R := by
+  calc
+    _ = ((2 : ℝ) ^ (-(4 * p)) * 2 ^ (4 * p)) * ((γ * (2 / γ)) * p * R) := by ring
+    _ = _ := by
+      rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2), neg_add_cancel, Real.rpow_zero, one_mul]
+      field_simp
+
+
+section
+variable {γ : ℝ} (hγ : 0 < γ) (η R : ℝ)
+include hγ
+
+/-- The tail coefficient at `2` is `2^{-4p₂} R̄`. -/
+theorem tailCoefficient_two :
+    oneInsertionTailCoefficient γ (2 / γ + η) 2 (poleFactorTwo γ η 2) R =
+      2 ^ (-(4 * (1 - 2 * η / γ))) * R := by
+  rw [poleFactorTwo_two hγ]
+  exact pole_tail_coefficient (η := η) hγ (by simp) R
 
 /-- The tail coefficient at `-2` is `2^{-4p₃} R̄`. -/
-theorem tailCoefficient_negTwo {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
+theorem tailCoefficient_negTwo :
     oneInsertionTailCoefficient γ (2 / γ - η) (-2) (poleFactorNegTwo γ η (-2)) R =
       2 ^ (-(4 * (1 + 2 * η / γ))) * R := by
-  unfold oneInsertionTailCoefficient
-  rw [poleFactorNegTwo_negTwo hγ, reflectionExponent_pole_neg hγ η]
-  have h2 : ‖(-2 : ℂ)‖ = 2 := by simp
-  rw [h2, Real.rpow_eq_pow, Real.rpow_eq_pow, ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2),
-    ← Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
-  congr 2
-  rw [Q]
-  field_simp
-  ring
+  rw [poleFactorNegTwo_negTwo hγ]
+  simpa only [sub_eq_add_neg, mul_neg, neg_div, neg_neg, sub_neg_eq_add] using
+    pole_tail_coefficient (η := -η) hγ (z := -2) (by simp) R
 
 /-- The first residue: `γ c₂ (2/γ) 2^{4p₂} p₂ = (4/γ)(Q - α₂) R̄`. -/
-theorem firstResidue_eq {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
+theorem firstResidue_eq :
     γ * (2 ^ (-(4 * (1 - 2 * η / γ))) * R) *
         (2 / γ * 2 ^ (4 * (1 - 2 * η / γ)) * (1 - 2 * η / γ)) =
       4 / γ * (Q γ - (2 / γ + η)) * R := by
-  have h : (2 : ℝ) ^ (-(4 * (1 - 2 * η / γ))) * 2 ^ (4 * (1 - 2 * η / γ)) = 1 := by
-    rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2), neg_add_cancel, Real.rpow_zero]
-  have hA0 : (2 : ℝ) ^ (-(4 * (1 - 2 * η / γ))) ≠ 0 := by positivity
-  generalize (2 : ℝ) ^ (-(4 * (1 - 2 * η / γ))) = A at h hA0 ⊢
-  generalize (2 : ℝ) ^ (4 * (1 - 2 * η / γ)) = B at h ⊢
-  have hB : B = A⁻¹ := eq_inv_of_mul_eq_one_right h
-  subst hB
-  rw [Q]
+  rw [pole_residue_normalization hγ, Q]
   field_simp
   ring
 
 /-- The second residue: `γ c₃ (2/γ) 2^{4p₃} p₃ = (4/γ)(Q - (Q - η) + γ/2) R̄`. -/
-theorem secondResidue_eq {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
+theorem secondResidue_eq :
     γ * (2 ^ (-(4 * (1 + 2 * η / γ))) * R) *
         (2 / γ * 2 ^ (4 * (1 + 2 * η / γ)) * (1 + 2 * η / γ)) =
       4 / γ * (Q γ - (Q γ - η) + γ / 2) * R := by
-  have h : (2 : ℝ) ^ (-(4 * (1 + 2 * η / γ))) * 2 ^ (4 * (1 + 2 * η / γ)) = 1 := by
-    rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2), neg_add_cancel, Real.rpow_zero]
-  have hA0 : (2 : ℝ) ^ (-(4 * (1 + 2 * η / γ))) ≠ 0 := by positivity
-  generalize (2 : ℝ) ^ (-(4 * (1 + 2 * η / γ))) = A at h hA0 ⊢
-  generalize (2 : ℝ) ^ (4 * (1 + 2 * η / γ)) = B at h ⊢
-  have hB : B = A⁻¹ := eq_inv_of_mul_eq_one_right h
-  subst hB
+  rw [pole_residue_normalization hγ]
   field_simp
   ring
+
+end
 
 end DOZZ.Proofs
 

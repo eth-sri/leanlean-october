@@ -18,11 +18,13 @@ open scoped NNReal ENNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle)
+include Ω X hX hc hz
+
 /-- The local circle/pin covariance consists of the pin variance and its smooth correction. -/
-theorem offCenter_circle_pin_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
+theorem offCenter_circle_pin_covariance :
     covariance (fun ω => Xc ω (z + p.val.1) p.val.2) (fun ω => Xc ω z 0) P =
       Real.log ‖z + p.val.1‖ + Real.log ‖z‖ := by
   have hp := circle_pin_exterior (z + p.val.1) p.val.2
@@ -39,10 +41,7 @@ theorem offCenter_circle_pin_covariance
   ring
 
 /-- The unshifted local circle variance retains the exact exterior normalization. -/
-theorem offCenter_circle_self_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
+theorem offCenter_circle_self_covariance :
     covariance (fun ω => Xc ω (z + p.val.1) p.val.2)
       (fun ω => Xc ω (z + p.val.1) p.val.2) P =
         p.val.2 + 2 * Real.log ‖z + p.val.1‖ := by
@@ -52,6 +51,8 @@ theorem offCenter_circle_self_covariance
   simp only [sub_self, nnnorm_zero, circleLogPotential_zero, max_self, Real.log_exp,
     neg_neg, hp]
   ring
+
+end
 
 /-- Pointwise regression coefficient of the residual local field on the equator pin. -/
 noncomputable def localPinCoefficient (z x : ℂ) : ℝ :=
@@ -83,9 +84,7 @@ theorem offCenter_circle_pin_copy_law
   let Z : Option localCircle → Ω → ℝ := fun j ω => Xc ω (k j).1 (k j).2
   have hZ : IsGaussianProcess Z P := (circleAverage_isGaussianProcess P X Xc hX hc).1.comp_right k
   have hZm : Measurable (fun ω j => Z j ω) := by
-    apply measurable_pi_iff.mpr
-    intro j
-    exact hm.comp (measurable_id.prodMk measurable_const)
+    fun_prop
   have hvar : covariance (Z none) (Z none) P = 2 * Real.log ‖z‖ :=
     offCenter_origin_variance X Xc hX hc z hz
   have he := gaussian_pin_copy_law P Z hZ hZm (2 * Real.log ‖z‖)

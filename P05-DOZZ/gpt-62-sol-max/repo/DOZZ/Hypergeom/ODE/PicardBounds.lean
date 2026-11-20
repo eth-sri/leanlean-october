@@ -69,7 +69,7 @@ theorem holomorphicPicardIterates_norm_le (c : ℂ) (r M : ℝ)
         have hOp := (H w).le_opNorm ((holomorphicPicardIterates c r H hH y n).1 w)
         have hHnorm : ‖H w‖ ≤ M := hHbound w hw
         have hpow : (M * (t * d)) ^ n = t ^ n * (M * d) ^ n := by
-          rw [show M * (t * d) = t * (M * d) by ring, mul_pow]
+          ring
         dsimp [integrand, C, d]
         rw [norm_smul]
         calc

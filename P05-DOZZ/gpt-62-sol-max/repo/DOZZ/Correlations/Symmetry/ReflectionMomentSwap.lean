@@ -11,12 +11,14 @@ open MeasureTheory Filter
 open scoped Distributions Topology ENNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
+  (γ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+include Ω X hγ hγ2 hX hM
+
 /-- Reflection exchanges the first two charges through correlated re-pinning and Gaussian tilt.
 The identity holds for extended nonnegative moments, without a finiteness premise. -/
-theorem rho_moment_swap12
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
+theorem rho_moment_swap12 :
     (∫⁻ ω, rho γ (M ω) a b c ^ (-sExp γ a b c) ∂P) =
       ∫⁻ ω, rho γ (M ω) b a c ^ (-sExp γ a b c) ∂P := by
   obtain ⟨Xc, hXc, _⟩ := hM.2
@@ -32,10 +34,9 @@ theorem rho_moment_swap12
   have hN : IsGMCOf P Y γ N := isGMCOf_symmetryRepinnedChaos P X hX Xc hXc γ M hM
   have hZ : IsCircleAverage P Y Z := isCircleAverage_symmetryRepinned P X hX Xc hXc
   have hL : IsGaussianL2Limit P Y (fun ω => t * L ω) :=
-    IsGaussianL2Limit_const_mul_symmetry P Y L
-      (reflection_normalization_in_repinned_closure P X hX Xc hXc) t
+    IsGaussianL2Limit.const_mul (reflection_normalization_in_repinned_closure P X hX Xc hXc) t
   have hV : gaussianVariance P (fun ω => t * L ω) / 2 = A := by
-    rw [symmetry_gaussianVariance_mul, reflection_normalization_variance P X hX Xc hXc]
+    rw [gaussianVariance_const_mul, reflection_normalization_variance P X hX Xc hXc]
     dsimp [t, A]
     ring
   let H := fun (_ : TestFn → ℝ) (μ : Measure ℂ) => symmetryCorrectedRho γ a b c μ ^ (-s)
@@ -84,17 +85,15 @@ theorem rho_moment_swap12
   rw [lintegral_const_mul' _ _ hEt, lintegral_const_mul' _ _ hEt,
     ← mul_assoc, ← mul_assoc, ENNReal.inv_mul_cancel hE0 hEt, one_mul, one_mul] at hcancel
   have hRmeas : Measurable (fun μ : Measure ℂ => rho γ μ b a c ^ (-s)) := by
-    simpa only [ENNReal.rpow_eq_pow, Function.comp_def] using
-      ENNReal.continuous_rpow_const.measurable.comp (rho_measure_measurable γ b a c)
+    exact ENNReal.continuous_rpow_const.measurable.comp (rho_measure_measurable γ b a c)
   exact hcancel.trans (DOZZ.equatorGFF_GMC_law_transport P Y hY P X hX γ hγ hγ2 N hN M hM
     (fun _ μ => rho γ μ b a c ^ (-s)) (hRmeas.comp measurable_snd))
 
-theorem unitVolumeStructureConstant_swap12
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
+theorem unitVolumeStructureConstant_swap12 :
     unitVolumeStructureConstant P M γ a b c = unitVolumeStructureConstant P M γ b a c := by
   have hs : sExp γ b a c = sExp γ a b c := by unfold sExp; ring
   unfold unitVolumeStructureConstant
   rw [hs, rho_moment_swap12 P X M γ a b c hγ hγ2 hX hM]
+
+end
 end DOZZ.Proofs

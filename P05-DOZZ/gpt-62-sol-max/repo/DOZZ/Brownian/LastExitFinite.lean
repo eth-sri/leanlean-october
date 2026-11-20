@@ -29,13 +29,14 @@ namespace DOZZ.Proofs
 def negativeLevelHitAfter (t : ℝ≥0) (c : ℝ) : Set BrownianPath :=
   {p | ∃ u : ℝ≥0, t < u ∧ p u = -c}
 
+section
+variable {ν : ℝ} {P B : Measure BrownianPath} [SFinite B] (hP : IsNegativeConditionedBrownianLaw ν P)
+  (hB : IsBrownianReal (fun t p => p t) B) (hν : 0 < ν)
+include ν B hP hB hν
+
 /-- The probability of a future visit is bounded by the probability that strict rational
 avoidance fails. -/
-theorem negativeLevelHitAfter_realMeasure_le_complementAvoidance
-    {ν : ℝ} {P B : Measure BrownianPath} [SFinite B]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (hν : 0 < ν) (t : ℝ≥0) (ht : 0 < (t : ℝ))
+theorem negativeLevelHitAfter_realMeasure_le_complementAvoidance (t : ℝ≥0) (ht : 0 < (t : ℝ))
     (c : ℝ≥0) (hc : 0 < (c : ℝ)) :
     P.real (negativeLevelHitAfter t (c : ℝ)) ≤
       1 - P.real (conditionedPositiveFutureRationalAvoidance t c) := by
@@ -76,11 +77,7 @@ theorem negativeLevelHitAfter_realMeasure_le_complementAvoidance
       rw [hTouchReal, add_zero, measureReal_compl havoid, probReal_univ]
 
 /-- Visits after large deterministic times have probability tending to zero. -/
-theorem negativeLevelHitAfter_nat_realMeasure_tendsto_zero
-    {ν : ℝ} {P B : Measure BrownianPath} [SFinite B]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (hν : 0 < ν) (c : ℝ≥0) (hc : 0 < (c : ℝ)) :
+theorem negativeLevelHitAfter_nat_realMeasure_tendsto_zero (c : ℝ≥0) (hc : 0 < (c : ℝ)) :
     Tendsto (fun n : ℕ =>
       P.real (negativeLevelHitAfter ((n + 1 : ℕ) : ℝ≥0) (c : ℝ))) atTop (𝓝 0) := by
   have htime : Tendsto (fun n : ℕ => ((n + 1 : ℕ) : ℝ≥0)) atTop atTop :=
@@ -110,11 +107,7 @@ theorem negativeLevelHitAfter_nat_realMeasure_tendsto_zero
 
 /-- For every positive barrier, the conditioned path hits the level and has no visits arbitrarily
 late, almost surely. These are exactly the path hypotheses required by the dyadic last-exit limit. -/
-theorem ae_negativeConditionedLevelHitSet_nonempty_bddAbove
-    {ν : ℝ} {P B : Measure BrownianPath} [SFinite B]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (hν : 0 < ν) (c : ℝ≥0) (hc : 0 < (c : ℝ)) :
+theorem ae_negativeConditionedLevelHitSet_nonempty_bddAbove (c : ℝ≥0) (hc : 0 < (c : ℝ)) :
     ∀ᵐ p ∂P,
       ({u : ℝ≥0 | p u = -(c : ℝ)}).Nonempty ∧
         BddAbove {u : ℝ≥0 | p u = -(c : ℝ)} := by
@@ -144,9 +137,8 @@ theorem ae_negativeConditionedLevelHitSet_nonempty_bddAbove
     · by_cases hlow : p ∈ low n
       · exact Or.inl hlow
       · have hhigh : (c : ℝ) < -(p ((n + 1 : ℕ) : ℝ≥0)) := by
-          have hnot : ¬ -(p ((n + 1 : ℕ) : ℝ≥0)) ≤ (c : ℝ) := by
-            simpa [low] using hlow
-          exact lt_of_not_ge hnot
+          exact lt_of_not_ge (by
+            simpa [low] using hlow)
         let f : ℝ≥0 → ℝ := fun u => -p u
         have hf0 : f 0 ≤ (c : ℝ) := by
           change -(p 0) ≤ (c : ℝ)
@@ -156,10 +148,9 @@ theorem ae_negativeConditionedLevelHitSet_nonempty_bddAbove
         obtain ⟨u, hu, hfu⟩ := intermediate_value_Icc
           (a := (0 : ℝ≥0)) (b := ((n + 1 : ℕ) : ℝ≥0)) (f := f) zero_le
           (p.continuous.neg.continuousOn) ⟨hf0, hfT⟩
-        have hhit : p u = -(c : ℝ) := by
+        exact False.elim (hpempty ⟨u, (by
           have hneg := congrArg (fun x : ℝ => -x) hfu
-          simpa [f] using hneg
-        exact False.elim (hpempty ⟨u, hhit⟩)
+          simpa [f] using hneg)⟩)
     · exact Or.inr hp0
   have hemptyBound (n : ℕ) : P.real emptyHit ≤ P.real (low n) := by
     calc
@@ -184,8 +175,7 @@ theorem ae_negativeConditionedLevelHitSet_nonempty_bddAbove
   have hunboundedBound (n : ℕ) :
       P.real unboundedHit ≤
         P.real (negativeLevelHitAfter ((n + 1 : ℕ) : ℝ≥0) (c : ℝ)) := by
-    have hsubset : unboundedHit ⊆
-        negativeLevelHitAfter ((n + 1 : ℕ) : ℝ≥0) (c : ℝ) := by
+    exact measureReal_mono (by
       intro p hp
       by_contra hnot
       have hfree : ¬ ∃ u : ℝ≥0, ((n + 1 : ℕ) : ℝ≥0) < u ∧
@@ -193,8 +183,7 @@ theorem ae_negativeConditionedLevelHitSet_nonempty_bddAbove
         simpa [negativeLevelHitAfter] using hnot
       have hbdd : BddAbove {u : ℝ≥0 | p u = -(c : ℝ)} :=
         (brownianPath_levelHits_bddAbove_iff p (c : ℝ)).2 ⟨n + 1, hfree⟩
-      exact hp hbdd
-    exact measureReal_mono hsubset (measure_ne_top _ _)
+      exact hp hbdd) (measure_ne_top _ _)
   have hunboundedLimit : Tendsto (fun n : ℕ => P.real unboundedHit) atTop (𝓝 0) :=
     tendsto_of_tendsto_of_tendsto_of_le_of_le'
       (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 0))
@@ -212,9 +201,10 @@ theorem ae_negativeConditionedLevelHitSet_nonempty_bddAbove
   filter_upwards [hemptyAE, hunboundedAE] with p hpempty hpbdd
   have hnonempty : ({u : ℝ≥0 | p u = -(c : ℝ)}).Nonempty := by
     simpa [emptyHit] using hpempty
-  have hbounded : BddAbove {u : ℝ≥0 | p u = -(c : ℝ)} := by
-    simpa [unboundedHit] using hpbdd
-  exact ⟨hnonempty, hbounded⟩
+  exact ⟨hnonempty, (by
+    simpa [unboundedHit] using hpbdd)⟩
+
+end
 
 end DOZZ.Proofs
 

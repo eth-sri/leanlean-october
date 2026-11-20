@@ -5,17 +5,20 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.CopiedCarrierRegroup
 public import DOZZ.FourPoint.Reflected.ReinsertedRegionCode
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! Exact regrouping of the literal reinserted inner and exterior masses. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-theorem reflected_copied_reinserted_regions_regroup
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (A : Ω → TwoSidedPath) (N : Ω → Measure ℂ)
-    (hA : AEMeasurable A P) (hN : Measurable N) (hi : IndepFun A N P)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+  (A : Ω → TwoSidedPath) (N : Ω → Measure ℂ) (hA : AEMeasurable A P) (hN : Measurable N)
+include Ω hA hN
+
+theorem reflected_copied_reinserted_regions_regroup (hi : IndepFun A N P)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (γ : ℝ) (U V : Set ℂ) (hU : MeasurableSet U) (hV : MeasurableSet V)
     (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) (hV0 : V ⊆ ({0} : Set ℂ)ᶜ)
     (K : ℂ → ℝ≥0∞) (hK : Measurable K)
@@ -41,9 +44,7 @@ theorem reflected_copied_reinserted_regions_regroup
   exact he
 
 theorem reflected_copied_region_mass_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (A : Ω → TwoSidedPath) (N : Ω → Measure ℂ) (hA : AEMeasurable A P) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (γ : ℝ) (U : Set ℂ) (hU : MeasurableSet U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ)
     (K : ℂ → ℝ≥0∞) (hK : Measurable K) :
     AEMeasurable (fun ω : Ω × Ω => ∫⁻ x in U,
@@ -54,5 +55,7 @@ theorem reflected_copied_region_mass_aemeasurable
   apply hm.congr
   exact Filter.Eventually.of_forall fun ω =>
     reflected_reinsertedRegionMassCode_eq γ U hU hU0 K (A ω.1) (N ω.2) (hfin ω.2)
+
+end
 
 end DOZZ.Proofs

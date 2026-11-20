@@ -21,14 +21,14 @@ open scoped NNReal Topology
 
 namespace DOZZ.Proofs
 
+section
+variable {ν : ℝ} {P B : Measure BrownianPath} [SFinite B] (hP : IsNegativeConditionedBrownianLaw ν P)
+  (hB : IsBrownianReal (fun t p => p t) B) (hν : 0 < ν)
+include ν B hP hB hν
+
 /-- The rational future survival event has probability equal to the mean deterministic-time
 avoidance factor. -/
-theorem conditionedPositiveFutureRationalAvoidance_realMeasure_eq_integral_factor
-    {ν : ℝ} {P B : Measure BrownianPath}
-    [SFinite B]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (hν : 0 < ν) (t : ℝ≥0) (ht : 0 < (t : ℝ))
+theorem conditionedPositiveFutureRationalAvoidance_realMeasure_eq_integral_factor (t : ℝ≥0) (ht : 0 < (t : ℝ))
     (c : ℝ≥0) (hc : 0 < (c : ℝ)) :
     P.real (conditionedPositiveFutureRationalAvoidance t c) =
       ∫ p, lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt t p) ∂P := by
@@ -52,10 +52,7 @@ theorem conditionedPositiveFutureRationalAvoidance_realMeasure_eq_integral_facto
           (conditionedPositiveFutureRationalEvals t p)) = fun _ => (1 : ℝ) := by
       funext p
       simp [lastExitShiftedFutureTest]
-    rw [htest]
-    calc
-      _ = ∫ p, E.indicator (1 : BrownianPath → ℝ) p ∂P := by congr 1
-      _ = P.real E := integral_indicator_one hE
+    simp [*]
   have hmass (p : BrownianPath) :
       lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt t p) *
         (brownianUpperConditionedReferenceFutureKernel B ν hν
@@ -94,11 +91,7 @@ theorem conditionedPositiveFutureRationalAvoidance_realMeasure_eq_integral_facto
   rw [← hleft, hfactorization, hright]
 
 /-- The rational future survival probability tends to one at large deterministic times. -/
-theorem conditionedPositiveFutureRationalAvoidance_realMeasure_tendsto_one_atTop
-    {ν : ℝ} {P B : Measure BrownianPath} [SFinite B]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (hν : 0 < ν) (c : ℝ≥0) (hc : 0 < (c : ℝ)) :
+theorem conditionedPositiveFutureRationalAvoidance_realMeasure_tendsto_one_atTop (c : ℝ≥0) (hc : 0 < (c : ℝ)) :
     Tendsto (fun t : ℝ≥0 =>
       P.real (conditionedPositiveFutureRationalAvoidance t c)) atTop (𝓝 1) := by
   have hlimit := tendsto_integral_lastExitAvoidanceFactor_atTop hP hν (c : ℝ) hc
@@ -107,6 +100,8 @@ theorem conditionedPositiveFutureRationalAvoidance_realMeasure_tendsto_one_atTop
   simpa [conditionedPositiveStateAt] using
     (conditionedPositiveFutureRationalAvoidance_realMeasure_eq_integral_factor
       hP hB hν t (by exact_mod_cast ht) c hc).symm
+
+end
 
 end DOZZ.Proofs
 

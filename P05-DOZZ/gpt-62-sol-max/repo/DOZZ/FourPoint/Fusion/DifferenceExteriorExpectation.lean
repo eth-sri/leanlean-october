@@ -61,7 +61,7 @@ theorem fusion_difference_exterior_expectation_bound {Ω : Type*} [MeasurableSpa
       _ = (I ω ^ (-p - 1)).toReal * ‖∫ x in B, f x ∂M ω‖ := by
         rw [norm_mul, Real.norm_eq_abs, abs_of_nonneg ENNReal.toReal_nonneg]
       _ ≤ (I ω ^ (-p - 1)).toReal * (∫⁻ x in B, ENNReal.ofReal |f x| ∂M ω).toReal := by
-        exact mul_le_mul_of_nonneg_left (by simpa only [Real.norm_eq_abs] using norm_integral_le_lintegral_norm (μ := (M ω).restrict B) f) ENNReal.toReal_nonneg
+        exact mul_le_mul_of_nonneg_left (by apply norm_integral_le_lintegral_norm) ENNReal.toReal_nonneg
       _ ≤ _ := by simpa only [mul_comm] using hbound
   refine ⟨hmaj.mono' hm hd, ?_⟩
   calc

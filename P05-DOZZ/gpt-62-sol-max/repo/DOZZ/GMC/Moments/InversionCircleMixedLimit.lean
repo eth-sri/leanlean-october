@@ -17,18 +17,19 @@ open scoped Topology Distributions ENNReal
 
 namespace DOZZ.Proofs
 
-/-- The coupled transformed circle has the exact inverse point/source-circle covariance. -/
-theorem inversionCircle_source_covariance
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (x : ℂ) (r : ℝ) (hsmall : 2 * Real.exp (-r) < ‖x‖)
-    (Z : Ω → ℝ) (hZ : MemLp Z 2 P)
-    (f : ℕ → TestFn) (hf : ∀ n, tsupport (f n : ℂ → ℝ) ⊆ inversionChart)
-    (hgap : Tendsto (fun n => circleEnergyGap x r (f n)) atTop (𝓝 0))
-    (hlim : Tendsto (fun n => eLpNorm (fun ω =>
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (x : ℂ) (r : ℝ)
+  (hsmall : 2 * Real.exp (-r) < ‖x‖) (Z : Ω → ℝ) (hZ : MemLp Z 2 P) (f : ℕ → TestFn)
+  (hf : ∀ n, tsupport (f n : ℂ → ℝ) ⊆ inversionChart)
+  (hgap : Tendsto (fun n => circleEnergyGap x r (f n)) atTop (𝓝 0))
+  (hlim : Tendsto (fun n => eLpNorm (fun ω =>
       X ω (inversionTest (f n) (hf n)) - Z ω) 2 P) atTop (𝓝 0))
-    (y : ℂ) (s : ℝ) :
+  (y : ℂ) (s : ℝ)
+include Ω X hX hXc hsmall hZ f hf hgap hlim
+
+/-- The coupled transformed circle has the exact inverse point/source-circle covariance. -/
+theorem inversionCircle_source_covariance :
     covariance (fun ω => Xc ω y s) Z P =
       ∫ u, CirclePotential.innerPot y s u⁻¹ ∂circleMeasure x r := by
   let : IsProbabilityMeasure P := hX.1
@@ -71,17 +72,7 @@ theorem inversionCircle_source_covariance
 
 /-- The same mixed identity in the second-moment and angular-average form used by the
 admissible-regularization compatibility bounds. -/
-theorem inversionCircle_source_gaussianCovariance
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (x : ℂ) (r : ℝ) (hsmall : 2 * Real.exp (-r) < ‖x‖)
-    (Z : Ω → ℝ) (hZ : MemLp Z 2 P)
-    (f : ℕ → TestFn) (hf : ∀ n, tsupport (f n : ℂ → ℝ) ⊆ inversionChart)
-    (hgap : Tendsto (fun n => circleEnergyGap x r (f n)) atTop (𝓝 0))
-    (hlim : Tendsto (fun n => eLpNorm (fun ω =>
-      X ω (inversionTest (f n) (hf n)) - Z ω) 2 P) atTop (𝓝 0))
-    (y : ℂ) (s : ℝ) :
+theorem inversionCircle_source_gaussianCovariance :
     gaussianCovariance P (fun ω => Xc ω y s) Z =
       Real.circleAverage (fun u => CirclePotential.innerPot y s u⁻¹) x (Real.exp (-r)) := by
   let : IsProbabilityMeasure P := hX.1
@@ -97,5 +88,7 @@ theorem inversionCircle_source_gaussianCovariance
     simp only [gaussianCovariance, covariance, hmeanZ, hmeanXc, sub_zero]
   rw [he, hc, integral_circleMeasure_eq_circleAverage]
   exact (CirclePotential.continuous_innerPot y s).measurable.comp measurable_inv
+
+end
 
 end DOZZ.Proofs

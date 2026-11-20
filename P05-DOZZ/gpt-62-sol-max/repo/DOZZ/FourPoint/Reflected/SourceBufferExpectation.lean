@@ -65,12 +65,12 @@ theorem reflected_source_buffer_inverse_error
     intro i
     fin_cases i
     · change -γ/2 < Q γ
-      have hQ : 0 < Q γ := by unfold Q; positivity
+      have hQ := Q_pos hγ
       linarith only [hγ,hQ]
     · exact hα₁
     · exact hα₂
   have hFf : ∀ᵐ ω ∂P, F ω ≠ ⊤ :=
-    (reflected_coulombMass_ae_finite P X hX γ hγ hγ₂ M hM ![z,0,1] hinj
+    (coulombMass_ae_lt_top P X hX γ hγ hγ₂ M hM ![z,0,1] hinj
       ![-γ/2,α₁,α₂] α₃ hcharges hα₃).mono fun _ hω => hω.ne
   obtain ⟨C,_,hC⟩ := reflected_outerMass_inverse_moment_uniform P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ p hp.le
   have hInv : (∫⁻ ω, O ω^(-p) ∂P) < ⊤ :=

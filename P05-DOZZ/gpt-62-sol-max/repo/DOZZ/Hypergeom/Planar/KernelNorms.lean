@@ -21,8 +21,7 @@ theorem norm_planarWirtingerKernel_eq (k β : ℝ) (z u : ℂ) (hu : u ≠ 0)
       ‖u - z‖ ^ (k - 2) / ‖u‖ ^ β := by
   rw [DOZZ.planarWirtingerKernel, norm_div, Complex.norm_real, norm_mul,
     Complex.norm_pow]
-  have hdiff : 0 < ‖u - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr huz)
-  have hu' : 0 < ‖u‖ := norm_pos_iff.mpr hu
+  have hdiff  := norm_pos_iff.mpr (sub_ne_zero.mpr huz)
   rw [Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _), Complex.norm_real,
     Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _),
     show ‖z - u‖ = ‖u - z‖ by rw [← norm_neg, neg_sub],

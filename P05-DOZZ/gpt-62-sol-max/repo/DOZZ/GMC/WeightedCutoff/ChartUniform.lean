@@ -33,8 +33,8 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_chart
     simp [hTe]
   obtain ⟨q, hq, hqcrit, hqorders⟩ := exists_weighted_cutoff_order_cap Γ hΓ hΓn hΓ2 T hT hTn
     (fun γ hγ t ht => lt_of_lt_of_le (hTadm γ hγ t ht).2 (min_le_left _ _))
-  let Ts : Set (ℝ × ℝ) := T ∩ {t | t.2 ≤ 1}
-  let Tp : Set (ℝ × ℝ) := T ∩ {t | 1 ≤ t.2}
+  let Ts  := T ∩ {t | t.2 ≤ 1}
+  let Tp  := T ∩ {t | 1 ≤ t.2}
   have hTs : IsCompact Ts := hT.inter_right (isClosed_Iic.preimage continuous_snd)
   have hTp : IsCompact Tp := hT.inter_right (isClosed_Ici.preimage continuous_snd)
   have hsadm : ∀ γ ∈ Γ, ∀ t ∈ Ts, 0 < t.2 ∧ t.2 ≤ 1 ∧
@@ -52,8 +52,8 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_chart
   obtain ⟨Cn, hCn, hnonpos⟩ := cutoffWeightedGmcBallMoment_nonpos_compact_gamma_chart
     P X hX Xc hXc Γ hΓ (fun γ hγ => (hΓ2 hγ).1) Tp hTp (fun t ht => ht.2)
     q hq hqcrit (fun t ht => hqorders t ht.1)
-  let C : ℝ≥0∞ := max Cs (max Cp Cn)
-  have hC : C < ⊤ := max_lt_iff.mpr ⟨hCs, max_lt_iff.mpr ⟨hCp, hCn⟩⟩
+  let C  := max Cs (max Cp Cn)
+  have hC  := max_lt_iff.mpr ⟨hCs, max_lt_iff.mpr ⟨hCp, hCn⟩⟩
   have hsC : Cs ≤ C := le_max_left _ _
   have hpC : Cp ≤ C := (le_max_left _ _).trans (le_max_right _ _)
   have hnC : Cn ≤ C := (le_max_right _ _).trans (le_max_right _ _)

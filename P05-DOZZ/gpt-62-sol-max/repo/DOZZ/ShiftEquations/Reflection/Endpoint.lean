@@ -27,8 +27,11 @@ open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- The unit-volume reflection moment tends to one as `α ↑ Q`. -/
-theorem reflectionBarR_tendsto_one_Q {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem reflectionBarR_tendsto_one_Q
     (γ : ℝ) (hγ : 0 < γ)
     (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hData : ∀ α, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) :
@@ -64,13 +67,15 @@ theorem reflectionBarR_tendsto_one_Q {Ω : Type*} [MeasurableSpace Ω] (P : Meas
 
 /-- **The endpoint conjunct of `reflection_endpoint_and_gamma_continuity`**: along any physical
 witness family, `R̄ → 1` and `R → -1` as `α ↑ Q`. -/
-theorem reflection_endpoint_limits {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem reflection_endpoint_limits
     (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hData : ∀ α, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) :
     Tendsto (fun α : ℝ => reflectionBarR P γ α (B α) Z) (𝓝[<] (Q γ)) (𝓝 1) ∧
       Tendsto (fun α : ℝ => reflectionR P γ μ α (B α) Z) (𝓝[<] (Q γ)) (𝓝 (-1)) :=
   ⟨reflectionBarR_tendsto_one_Q P γ hγ B Z hData, reflectionR_tendsto_Q P γ μ hγ hγ2 hμ B Z hData⟩
+
+end
 
 end DOZZ.Proofs
 

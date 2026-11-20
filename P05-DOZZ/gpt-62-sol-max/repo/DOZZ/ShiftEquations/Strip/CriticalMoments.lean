@@ -14,25 +14,32 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} (M : Ω → Measure ℂ) (γ a : ℝ)
+
 /-- The constant-weight singular mass is the weighted GMC ball mass. -/
-theorem lastone_origin_weighted {Ω : Type*} (M : Ω → Measure ℂ) (γ a : ℝ) (ω : Ω) :
+theorem lastone_origin_weighted (ω : Ω) :
     localSingularMass M (fun _ => 1) 0 γ a ω = weightedGmcBallMass γ (M ω) a 0 1 := by
   simp only [localSingularMass, ENNReal.ofReal_one, one_mul, weightedGmcBallMass,
     ← lintegral_indicator Metric.isOpen_ball.measurableSet, Set.indicator]
 
 /-- A nonnegative insertion increases the unit ball mass. -/
-theorem lastone_origin_ball_le {Ω : Type*} (M : Ω → Measure ℂ) (γ a : ℝ)
+theorem lastone_origin_ball_le
     (hγ : 0 ≤ γ) (ha : 0 ≤ a) (ω : Ω) :
     M ω (Metric.ball 0 1) ≤ localSingularMass M (fun _ => 1) 0 γ a ω := by
   rw [lastone_origin_weighted]
   have h := weightedGmcBallMass_mono_charge (M ω) hγ (0 : ℂ) (ρ := 1) le_rfl ha
   simpa only [weightedGmcBallMass, mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, lintegral_one, Measure.restrict_apply_univ] using h
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ : ℝ)
+  (hγ : 0 < γ) (hγ2 : γ < 2) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+include Ω X hγ hγ2 hX hM
+
 /-- Every inverse moment of the critical mass is bounded by a fixed ball inverse moment. -/
-theorem lastone_origin_inverse_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (v : ℝ) (hv : 0 < v) :
+theorem lastone_origin_inverse_bound (v : ℝ) (hv : 0 < v) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ a : ℝ, 0 ≤ a →
       ∫⁻ ω, localSingularMass M (fun _ => 1) 0 γ a ω ^ (-v) ∂P ≤ C := by
   let C := gmcMassMoment P M (Metric.ball 0 (1 / 8)) (-v)
@@ -49,10 +56,7 @@ theorem lastone_origin_inverse_bound
     (hball.trans (lastone_origin_ball_le M γ a hγ.le ha ω)) hv.le)
 
 /-- The moment at the varying critical order is finite for all sufficiently small positive drifts. -/
-theorem lastone_origin_moment_finite
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
+theorem lastone_origin_moment_finite :
     ∀ᶠ ν : ℝ in 𝓝[>] 0,
       ∫⁻ ω, localSingularMass M (fun _ => 1) 0 γ (Q γ - ν) ω ^ (ν / γ) ∂P < ⊤ := by
   have hbulk : 0 < 4 / γ ^ 2 := by positivity
@@ -66,6 +70,8 @@ theorem lastone_origin_moment_finite
       have : 0 < ν / γ := div_pos hν0 hγ
       nlinarith [show 2 / γ * ν = 2 * (ν / γ) by ring]))
   simpa only [weightedGmcBallMoment, lastone_origin_weighted, ENNReal.rpow_eq_pow] using hfin
+
+end
 
 /-- Multiplying by a fixed positive finite mass factor leaves a small-power limit unchanged. -/
 theorem lastone_scale_smallPower_limit

@@ -61,7 +61,7 @@ theorem translated_canonical_singular_mass_polar
       ∫⁻ t, (if 0 < t then ENNReal.ofReal
         (Real.exp (γ * (A ω t - (Q γ - α) * t))) else 0)
           ∂lateralProjectedGMC γ (A ω) (N ω) := by
-  filter_upwards [gmc_atomless_at_root_of_isGMCOf P (translatedField X Xc z)
+  filter_upwards [gmc_singleton_mass_eq_zero_ae P (translatedField X Xc z)
     (translated_field_isEquatorGFF P X Xc hX hc z) γ hγ hγ2 N hN 0] with ω hω
   exact origin_singular_mass_polar γ α (A ω) (N ω) hω
 

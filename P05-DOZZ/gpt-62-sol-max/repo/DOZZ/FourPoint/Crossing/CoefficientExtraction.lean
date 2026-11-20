@@ -7,6 +7,8 @@ module
 public import DOZZ.FourPoint.Crossing.ConnectionDet
 public import DOZZ.FourPoint.Crossing.ConnectionRatio
 import Mathlib.Tactic
+public import DOZZ.FourPoint.Crossing.DiagonalUniqueness
+public import DOZZ.Hypergeom.ConnectionDiagonalCoefficients
 
 /-! # Crossing from the two diagonal coefficients
 
@@ -21,37 +23,22 @@ namespace DOZZ.Proofs
 /-- The zero-channel first coefficient is the exact l-ratio times the
 one-channel second coefficient. -/
 theorem crossing_diagonal_coefficient_extraction (a b c d₀ d₁ E : ℝ)
-    (ha : 0 < a) (ha1 : a < 1) (hb : 0 < b) (hb1 : b < 1)
-    (hc : 0 < c) (hc1 : c < 1)
+    (ha : 0 < a) (hab : a < b) (hbc : b < c) (hc1 : c < 1)
     (hδ : 0 < c - a - b) (hδ1 : c - a - b < 1)
-    (hcn : ∀ n : ℤ, c ≠ (n : ℝ))
-    (hδn : ∀ n : ℤ, c - a - b ≠ (n : ℝ))
-    (hcross :
-      let u := Real.Gamma c * Real.Gamma (c - a - b) *
-        (Real.Gamma (c - a))⁻¹ * (Real.Gamma (c - b))⁻¹
-      let v := Real.Gamma c * Real.Gamma (a + b - c) *
-        (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹
-      let w := Real.Gamma (2 - c) * Real.Gamma (c - a - b) *
-        (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹
-      let x := Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
-        (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹
-      d₀ * u * v + d₁ * w * x = 0)
-    (hE : E =
-      d₀ * (Real.Gamma c * Real.Gamma (a + b - c) *
-        (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹) ^ 2 +
-      d₁ * (Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
-        (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹) ^ 2) :
+    (hcross : d₀ * gaussConnectionReal₁₁ a b c * gaussConnectionReal₁₂ a b c +
+      d₁ * gaussConnectionReal₂₁ a b c * gaussConnectionReal₂₂ a b c = 0)
+    (hE : E = d₀ * gaussConnectionReal₁₂ a b c ^ 2 + d₁ * gaussConnectionReal₂₂ a b c ^ 2) :
     d₀ = (lR a * lR b / (lR c * lR (a + b - c))) * E := by
-  let u := Real.Gamma c * Real.Gamma (c - a - b) *
-    (Real.Gamma (c - a))⁻¹ * (Real.Gamma (c - b))⁻¹
-  let v := Real.Gamma c * Real.Gamma (a + b - c) *
-    (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹
-  let w := Real.Gamma (2 - c) * Real.Gamma (c - a - b) *
-    (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹
-  let x := Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
-    (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹
+  let u := gaussConnectionReal₁₁ a b c
+  let v := gaussConnectionReal₁₂ a b c
+  let w := gaussConnectionReal₂₁ a b c
+  let x := gaussConnectionReal₂₂ a b c
+  have hb := ha.trans hab
+  have hc := hb.trans hbc
+  have ha1 := hab.trans (hbc.trans hc1)
+  have hb1 := hbc.trans hc1
   have hw : w ≠ 0 := by
-    dsimp [w]
+    dsimp [w, gaussConnectionReal₂₁]
     exact mul_ne_zero (mul_ne_zero (mul_ne_zero
       (Real.Gamma_pos_of_pos (by linarith only [hc1])).ne'
       (Real.Gamma_pos_of_pos hδ).ne')
@@ -61,21 +48,52 @@ theorem crossing_diagonal_coefficient_extraction (a b c d₀ d₁ E : ℝ)
     (real_ne_neg_nat_of_frac (k := -1) (by push_cast; linarith only [hδ1])
       (by push_cast; linarith only [hδ]))
   have hv : v ≠ 0 := by
-    dsimp [v]
+    dsimp [v, gaussConnectionReal₁₂]
     exact mul_ne_zero (mul_ne_zero (mul_ne_zero (Real.Gamma_pos_of_pos hc).ne' hΓneg)
       (inv_ne_zero (Real.Gamma_pos_of_pos ha).ne'))
       (inv_ne_zero (Real.Gamma_pos_of_pos hb).ne')
-  have hdet : u * x - v * w = (c - 1) / (c - a - b) :=
-    crossing_connection_det_real a b c hcn hδn
+  have hdet  :=
+    crossing_connection_det_real a b c (unit_interval_ne_int hc hc1) (unit_interval_ne_int hδ hδ1)
   have hdet0 : u * x - v * w ≠ 0 := by
     rw [hdet]
     exact div_ne_zero (by linarith only [hc1]) hδ.ne'
   have hex := dual_connection_first_seed_scalar d₀ d₁ u v w x hcross hw hv hdet0
-  change E = d₀ * v ^ 2 + d₁ * x ^ 2 at hE
   rw [← hE, hdet] at hex
   have hratio := crossing_connection_first_ratio a b c ha ha1 hb hb1 hc hc1 hδ hδ1
-  change -w / (v * ((c - 1) / (c - a - b))) = _ at hratio
   rw [hratio] at hex
   exact hex
+
+/-- Compare two diagonal expressions for a reduced four-point function. -/
+theorem crossing_diagonal_transfer {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    (hH : IsGaussHypergeometricFamily H) (a b c d e₀ e₁ : ℝ) {T : ℂ → ℝ}
+    (hc : ∀ n : ℤ, c ≠ (n : ℝ)) (hδ : ∀ n : ℤ, c - a - b ≠ (n : ℝ))
+    (hK : gaussK₂ a b c ≠ 0)
+    (hzero : ∀ z ∈ gaussCutPlane, T z = d * (‖gaussFMinus H a b c z‖ ^ 2 +
+      gaussCoefficientRatio a b c * ‖gaussFPlus H a b c z‖ ^ 2))
+    (hone : ∀ z ∈ gaussCutPlane, T z = e₀ * ‖gaussGMinus H a b c z‖ ^ 2 +
+      e₁ * ‖gaussGPlus H a b c z‖ ^ 2) :
+    let d₁ := d * gaussCoefficientRatio a b c
+    let u := gaussConnectionReal₁₁ a b c
+    let v := gaussConnectionReal₁₂ a b c
+    let w := gaussConnectionReal₂₁ a b c
+    let x := gaussConnectionReal₂₂ a b c
+    d * u * v + d₁ * w * x = 0 ∧
+      e₀ = d * u ^ 2 + d₁ * w ^ 2 ∧ e₁ = d * v ^ 2 + d₁ * x ^ 2 := by
+  intro d₁ u v w x
+  have hratio := gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK
+  have hconstraint : gaussK₁ a b c * d + gaussK₂ a b c * d₁ = 0 := by
+    dsimp [d₁]
+    linear_combination d * hratio
+  have hcross : d * u * v + d₁ * w * x = 0 := by
+    dsimp only [u, v, w, x]
+    rw [gaussConnectionReal_cross, hconstraint, mul_zero]
+  have htransfer := gauss_diagonal_one_basis_of_constraint hH a b c d d₁ hc hδ hconstraint
+  have h := crossing_one_channel_coefficients_unique hH a b c e₀ e₁
+    (d * u ^ 2 + d₁ * w ^ 2) (d * v ^ 2 + d₁ * x ^ 2) hδ (fun z hz => by
+    dsimp only [u, v, w, x]
+    rw [← hone z hz, ← htransfer z hz, hzero z hz]
+    dsimp [d₁]
+    ring)
+  exact ⟨hcross, h.1, h.2⟩
 
 end DOZZ.Proofs

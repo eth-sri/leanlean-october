@@ -49,8 +49,7 @@ theorem reflected_pareto_increment_integral (p a A b : ℝ) (ha : 0 < a)
       field_simp
     have hpw : x ^ (a + 1) * (x * v) ^ (-a - 1) = v ^ (-a - 1) := by
       rw [Real.mul_rpow hx.le hvp.le, ← mul_assoc, ← Real.rpow_add hx]
-      have he : (a + 1) + (-a - 1) = 0 := by ring
-      rw [he, Real.rpow_zero, one_mul]
+      simp
     dsimp only [g]
     rw [hsum, Real.mul_rpow hA.le (by positivity : 0 ≤ 1 + x * v)]
     calc

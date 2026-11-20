@@ -6,7 +6,7 @@ module
 
 public import DOZZ.GMC.SharpMoments.CircleField
 public import DOZZ.GMC.FieldChaosConstantTrick
-public import DOZZ.GMC.FieldChaosConstantTrickConcave
+public import DOZZ.GMC.CircleWickDensity
 
 /-! # Transfer of cutoff moments between locations
 
@@ -76,16 +76,7 @@ theorem translated_cutoff_mass_eq_fieldChaosMass
   set E : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal
     (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) * normPlus x ^ (-4 : ℝ))
     with hE
-  have hEm : Measurable E := by
-    have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
-      have hf : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
-        ((hXc.1 r).comp measurable_swap).pow_const 2
-      exact hf.stronglyMeasurable.integral_prod_right.measurable
-    have hX1 : Measurable (fun x : ℂ => Xc ω x r) :=
-      (hXc.1 r).comp (measurable_const.prodMk measurable_id)
-    rw [hE]
-    exact ENNReal.measurable_ofReal.comp ((Real.measurable_exp.comp
-      ((hX1.const_mul γ).sub (hV.const_mul _))).mul (measurable_normPlus.pow_const _))
+  have hEm : Measurable E := measurable_regularizedGMC_density P Xc γ r (hXc.1 r) ω
   have hball : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
   have hball0 : MeasurableSet (Metric.ball (0 : ℂ) ρ) := Metric.isOpen_ball.measurableSet
   have hwz : Measurable (fun x : ℂ => (w (x - z) : ℝ≥0∞)) :=
@@ -96,14 +87,13 @@ theorem translated_cutoff_mass_eq_fieldChaosMass
     rw [regularizedGMC, restrict_withDensity hball, lintegral_withDensity_eq_lintegral_mul _ hEm hwz,
       ← lintegral_indicator hball]
     have hfun : (E * fun x => (w (x - z) : ℝ≥0∞)) = fun x => (w (x - z) : ℝ≥0∞) * E x := by
-      funext x
-      exact mul_comm (E x) (w (x - z) : ℝ≥0∞)
+      apply mul_comm
     rw [hfun]
   rw [hlhs, ← lintegral_add_right_eq_self _ z, fieldChaosMass, ← lintegral_indicator hball0]
   apply lintegral_congr
   intro y
   have hmem : y + z ∈ Metric.ball z ρ ↔ y ∈ Metric.ball (0 : ℂ) ρ := by
-    simp only [Metric.mem_ball, dist_eq_norm, add_sub_cancel_right, sub_zero]
+    simp
   by_cases hy : y ∈ Metric.ball (0 : ℂ) ρ
   · rw [Set.indicator_of_mem (hmem.mpr hy), Set.indicator_of_mem hy]
     simp only [hE, add_sub_cancel_right, translatedWeight, ENNReal.coe_mul]
@@ -131,7 +121,7 @@ theorem ennreal_rpow_antitone_of_nonpos {u v : ℝ≥0∞} (huv : u ≤ v) {z : 
 `a ^ |p|`. -/
 theorem ennreal_rpow_le_of_two_sided (a x y : ℝ≥0∞) (ha : 1 ≤ a) (hat : a ≠ ⊤)
     (h1 : x ≤ a * y) (h2 : y ≤ a * x) (p : ℝ) : x ^ p ≤ a ^ |p| * y ^ p := by
-  have ha0 : a ≠ 0 := (lt_of_lt_of_le zero_lt_one ha).ne'
+  have ha0  := (lt_of_lt_of_le zero_lt_one ha).ne'
   rcases le_or_gt 0 p with hp | hp
   · rw [abs_of_nonneg hp, ← ennreal_mul_rpow_of_ne_zero_ne_top a y ha0 hat p]
     exact ENNReal.rpow_le_rpow h1 hp
@@ -185,8 +175,8 @@ theorem translatedWeight_le_mul (w : ℂ → ℝ≥0) (z z₀ y : ℂ) {R : ℝ}
     (translatedWeight w z y : ℝ≥0∞) ≤ ENNReal.ofReal ((1 + R) ^ 4) * translatedWeight w z₀ y := by
   unfold translatedWeight
   have hn : 1 ≤ normPlus (y + z₀) := one_le_normPlus _
-  have hnR : normPlus (y + z₀) ≤ 1 + R := normPlus_le_one_add _ hR hy
-  have hpos : 0 < normPlus (y + z₀) := lt_of_lt_of_le zero_lt_one hn
+  have hnR  := normPlus_le_one_add _ hR hy
+  have hpos  := lt_of_lt_of_le zero_lt_one hn
   have hlow : 1 ≤ (1 + R) ^ 4 * normPlus (y + z₀) ^ (-4 : ℝ) := by
     rw [Real.rpow_neg hpos.le, show (4 : ℝ) = ((4 : ℕ) : ℝ) by norm_num, Real.rpow_natCast,
       ← div_eq_mul_inv, le_div_iff₀ (by positivity), one_mul]
@@ -214,10 +204,8 @@ theorem cutoff_translate_moment_le
           |p ^ 2 - p|)) * ENNReal.ofReal ((1 + R) ^ 4) ^ |p| *
         ∫⁻ ω, (∫⁻ x in Metric.ball z₀ ρ, (w (x - z₀) : ℝ≥0∞)
           ∂regularizedGMC P Xc γ r ω) ^ p ∂P := by
-  let _ := hX.1
   set C : ℝ := 2 * (Real.log 3 + 2 * Real.log (1 + R)) with hCdef
   have hC : 0 ≤ C := by
-    have h3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
     have hR1 : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
     rw [hCdef]
     positivity
@@ -227,18 +215,14 @@ theorem cutoff_translate_moment_le
     exact isFiniteMeasure_restrict.mpr measure_ball_lt_top.ne
   set Φ : Ω → ℂ → ℝ := fun ω y => Xc ω (y + z) r with hΦdef
   set Ψ : Ω → ℂ → ℝ := fun ω y => Xc ω (y + z₀) r with hΨdef
-  have hΦ : IsCenteredGaussianField P Φ :=
+  have hΦ  :=
     circleAverage_translate_isCenteredGaussianField P X hX Xc hXc r z
-  have hΨ : IsCenteredGaussianField P Ψ :=
+  have hΨ  :=
     circleAverage_translate_isCenteredGaussianField P X hX Xc hXc r z₀
-  have hmz : ∀ ω, (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
-      fieldChaosMass P Φ ν (translatedWeight w z) γ ω :=
-    fun ω => translated_cutoff_mass_eq_fieldChaosMass P X hX Xc hXc γ r z ρ w hw ω
-  have hmz₀ : ∀ ω, (∫⁻ x in Metric.ball z₀ ρ, (w (x - z₀) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
-      fieldChaosMass P Ψ ν (translatedWeight w z₀) γ ω :=
-    fun ω => translated_cutoff_mass_eq_fieldChaosMass P X hX Xc hXc γ r z₀ ρ w hw ω
+  have hmz := fun ω => translated_cutoff_mass_eq_fieldChaosMass P X hX Xc hXc γ r z ρ w hw ω
+  have hmz₀ := fun ω => translated_cutoff_mass_eq_fieldChaosMass P X hX Xc hXc γ r z₀ ρ w hw ω
   simp only [hmz, hmz₀]
-  have hh : Measurable (translatedWeight w z) := measurable_translatedWeight w hw z
+  have hh  := measurable_translatedWeight w hw z
   have hhb : ∃ c' : ℝ≥0, ∀ y, translatedWeight w z y ≤ c' :=
     ⟨c, fun y => translatedWeight_le w c hwc z y⟩
   -- points of the reference ball stay in the chart after either translation
@@ -275,16 +259,14 @@ theorem cutoff_translate_moment_le
       have habs : |p ^ 2 - p| = p ^ 2 - p := by
         apply abs_of_nonneg
         rcases hp with hp | hp <;> nlinarith
-      rw [habs]
-      exact hk
+      rwa [habs]
     · push Not at hp
       have hk := (kahane_field_constant_trick_concave P P Φ Ψ hΦ hΨ ν (translatedWeight w z) hh
         hhb γ C p hC ⟨hp.1, hp.2⟩ hcov hdiag).2
       have habs : |p ^ 2 - p| = p - p ^ 2 := by
         rw [abs_of_neg (by nlinarith)]
         ring
-      rw [habs]
-      exact hk
+      rwa [habs]
   -- the weight change from `z` to `z₀`
   have hcmp1 : ∀ ω, fieldChaosMass P Ψ ν (translatedWeight w z) γ ω ≤
       ENNReal.ofReal ((1 + R) ^ 4) * fieldChaosMass P Ψ ν (translatedWeight w z₀) γ ω := by

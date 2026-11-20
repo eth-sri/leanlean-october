@@ -114,44 +114,53 @@ theorem measurable_poleTotalMass (γ η a : ℝ) :
 
 private theorem norm_two_aux : ‖(2 : ℂ)‖ = 2 := by simp
 
-private theorem mem_ball_two_iff {x : ℂ} {r : ℝ} :
+section
+variable {x : ℂ} {r : ℝ}
+
+private theorem mem_ball_two_iff :
     x ∈ Metric.ball (2 : ℂ) r ↔ ‖x - 2‖ < r := by
   rw [Metric.mem_ball, dist_eq_norm]
 
-private theorem mem_ball_neg_two_iff {x : ℂ} {r : ℝ} :
+private theorem mem_ball_neg_two_iff :
     x ∈ Metric.ball (-2 : ℂ) r ↔ ‖x + 2‖ < r := by
   rw [Metric.mem_ball, dist_eq_norm, sub_neg_eq_add]
 
-private theorem two_le_norm_add_norm_sub (x : ℂ) : 2 ≤ ‖x‖ + ‖x - 2‖ := by
+end
+
+section
+variable (x : ℂ)
+
+private theorem two_le_norm_add_norm_sub : 2 ≤ ‖x‖ + ‖x - 2‖ := by
   have h := norm_sub_le x (x - 2)
   rwa [sub_sub_cancel, norm_two_aux] at h
 
-private theorem two_le_norm_add_norm_add (x : ℂ) : 2 ≤ ‖x‖ + ‖x + 2‖ := by
+private theorem two_le_norm_add_norm_add : 2 ≤ ‖x‖ + ‖x + 2‖ := by
   have h := norm_sub_le (x + 2) x
   rwa [add_sub_cancel_left, norm_two_aux, add_comm] at h
 
-private theorem four_le_norm_add_add_norm_sub (x : ℂ) : 4 ≤ ‖x + 2‖ + ‖x - 2‖ := by
+private theorem four_le_norm_add_add_norm_sub : 4 ≤ ‖x + 2‖ + ‖x - 2‖ := by
   have h := norm_sub_le (x + 2) (x - 2)
   have e : x + 2 - (x - 2) = 4 := by ring
   have h4 : ‖(4 : ℂ)‖ = 4 := by simp
   rwa [e, h4] at h
 
-private theorem norm_le_norm_sub_add (x : ℂ) : ‖x‖ ≤ ‖x - 2‖ + 2 := by
+private theorem norm_le_norm_sub_add : ‖x‖ ≤ ‖x - 2‖ + 2 := by
   have h := norm_add_le (x - 2) 2
   rwa [sub_add_cancel, norm_two_aux] at h
 
-private theorem norm_le_norm_add_add (x : ℂ) : ‖x‖ ≤ ‖x + 2‖ + 2 := by
+private theorem norm_le_norm_add_add : ‖x‖ ≤ ‖x + 2‖ + 2 := by
   have h := norm_sub_le (x + 2) 2
   rwa [add_sub_cancel_right, norm_two_aux] at h
 
-private theorem norm_add_le_norm_sub_add (x : ℂ) : ‖x + 2‖ ≤ ‖x - 2‖ + 4 := by
+private theorem norm_add_le_norm_sub_add : ‖x + 2‖ ≤ ‖x - 2‖ + 4 := by
   have h := norm_add_le (x - 2) 4
   have e : x - 2 + 4 = x + 2 := by ring
   have h4 : ‖(4 : ℂ)‖ = 4 := by simp
   rwa [e, h4] at h
 
+end
+
 private theorem exp_neg_natCast_le_one (n : ℕ) : Real.exp (-(n : ℝ)) ≤ 1 := by
-  rw [Real.exp_le_one_iff]
   simp
 
 private theorem norm_pos_of_mem_cutoffRegion {n : ℕ} {x : ℂ} (hx : x ∈ cutoffRegion n) :
@@ -169,9 +178,7 @@ theorem poleBalls_subset_cutoffRegion (n : ℕ) : poleBalls ⊆ cutoffRegion n :
 theorem cutoffRegion_mono : Monotone cutoffRegion := by
   intro n m hnm x hx
   have h : Real.exp (-(m : ℝ)) ≤ Real.exp (-(n : ℝ)) := by
-    apply Real.exp_le_exp.mpr
-    have : (n : ℝ) ≤ m := by exact_mod_cast hnm
-    linarith
+    simpa
   exact h.trans hx
 
 theorem iUnion_cutoffRegion : ⋃ n, cutoffRegion n = {0}ᶜ := by
@@ -181,7 +188,7 @@ theorem iUnion_cutoffRegion : ⋃ n, cutoffRegion n = {0}ᶜ := by
   · rintro ⟨n, hn⟩ hx0
     exact (norm_pos_iff.mp (norm_pos_of_mem_cutoffRegion hn)) hx0
   · intro hx0
-    have hpos : 0 < ‖x‖ := norm_pos_iff.mpr hx0
+    have hpos  := norm_pos_iff.mpr hx0
     obtain ⟨n, hn⟩ := exists_nat_ge (-Real.log ‖x‖)
     refine ⟨n, ?_⟩
     change Real.exp (-(n : ℝ)) ≤ ‖x‖
@@ -237,7 +244,10 @@ theorem poleTotalMass_eq (γ η a : ℝ) (μ : Measure ℂ) :
 
 /-! ### Monotonicity, splitting and the limit -/
 
-theorem cutoffTiltedMass_eq_localMass_add (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ) :
+section
+variable (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ)
+
+theorem cutoffTiltedMass_eq_localMass_add :
     cutoffTiltedMass γ η a n μ = poleLocalMass γ (2 / γ + η) (2 / γ - η) μ +
       ∫⁻ x in cutoffRegion n \ poleBalls, zeroTilt γ a x * poleWeight γ η x ∂μ := by
   have hcongr : ∫⁻ x in poleBalls, poleWeight γ η x ∂μ =
@@ -249,12 +259,12 @@ theorem cutoffTiltedMass_eq_localMass_add (γ η a : ℝ) (n : ℕ) (μ : Measur
     Set.union_sdiff_cancel (poleBalls_subset_cutoffRegion n)]
   rfl
 
-theorem localMass_le_cutoffTiltedMass (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ) :
+theorem localMass_le_cutoffTiltedMass :
     poleLocalMass γ (2 / γ + η) (2 / γ - η) μ ≤ cutoffTiltedMass γ η a n μ := by
   rw [cutoffTiltedMass_eq_localMass_add]
   exact le_self_add
 
-theorem cutoffTiltedMass_succ (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ) :
+theorem cutoffTiltedMass_succ :
     cutoffTiltedMass γ η a (n + 1) μ = cutoffTiltedMass γ η a n μ +
       ∫⁻ x in cutoffRegion (n + 1) \ cutoffRegion n, zeroTilt γ a x * poleWeight γ η x ∂μ := by
   unfold cutoffTiltedMass
@@ -262,16 +272,21 @@ theorem cutoffTiltedMass_succ (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ) :
     ((measurableSet_cutoffRegion (n + 1)).diff (measurableSet_cutoffRegion n))
     Set.disjoint_sdiff_right, Set.union_sdiff_cancel (cutoffRegion_mono (Nat.le_succ n))]
 
-theorem monotone_cutoffTiltedMass (γ η a : ℝ) (μ : Measure ℂ) :
+end
+
+section
+variable (γ η a : ℝ)
+
+theorem monotone_cutoffTiltedMass (μ : Measure ℂ) :
     Monotone fun n => cutoffTiltedMass γ η a n μ :=
   fun _ _ hnm => lintegral_mono_set (cutoffRegion_mono hnm)
 
-theorem cutoffTiltedMass_le_totalMass (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ) :
+theorem cutoffTiltedMass_le_totalMass (n : ℕ) (μ : Measure ℂ) :
     cutoffTiltedMass γ η a n μ ≤ poleTotalMass γ a (2 / γ + η) (2 / γ - η) μ := by
   rw [poleTotalMass_eq]
   exact setLIntegral_le_lintegral _ _
 
-theorem tendsto_cutoffTiltedMass (γ η a : ℝ) (μ : Measure ℂ) (h0 : μ {0} = 0) :
+theorem tendsto_cutoffTiltedMass (μ : Measure ℂ) (h0 : μ {0} = 0) :
     Tendsto (fun n => cutoffTiltedMass γ η a n μ) atTop
       (𝓝 (poleTotalMass γ a (2 / γ + η) (2 / γ - η) μ)) := by
   have hFm : Measurable fun x => zeroTilt γ a x * poleWeight γ η x :=
@@ -292,21 +307,22 @@ theorem tendsto_cutoffTiltedMass (γ η a : ℝ) (μ : Measure ℂ) (h0 : μ {0}
     filter_upwards [hae] with x hx
     obtain ⟨N, hN⟩ : ∃ N, x ∈ cutoffRegion N := by
       have : x ∈ ⋃ n, cutoffRegion n := by
-        rw [iUnion_cutoffRegion]
-        exact hx
+        rwa [iUnion_cutoffRegion]
       simpa using this
     refine le_antisymm (le_iSup_of_le N ?_) (iSup_le fun n => Set.indicator_le_self' ?_ x)
     · rw [Set.indicator_of_mem hN]
-    · exact fun _ _ => zero_le
+    simp
   rw [hsup]
   exact tendsto_atTop_iSup (monotone_cutoffTiltedMass γ η a μ)
+
+end
 
 /-! ### The circle tilt -/
 
 theorem circleTiltDensity_eq_zeroTilt (γ a : ℝ) {n m : ℕ} (hnm : n ≤ m) {x : ℂ}
     (hx : x ∈ cutoffRegion n) : circleTiltDensity γ a m x = zeroTilt γ a x := by
-  have hmn : Real.exp (-(m : ℝ)) ≤ ‖x‖ := cutoffRegion_mono hnm hx
-  have hpos : 0 < ‖x‖ := norm_pos_of_mem_cutoffRegion hx
+  have hmn  := cutoffRegion_mono hnm hx
+  have hpos  := norm_pos_of_mem_cutoffRegion hx
   have hnp : 0 < normPlus x := lt_of_lt_of_le one_pos (le_max_left _ _)
   unfold circleTiltDensity zeroTilt
   rw [max_eq_right hmn, ← ENNReal.ofReal_div_of_pos hpos, ENNReal.rpow_eq_pow,
@@ -317,7 +333,7 @@ theorem circleTiltDensity_eq_zeroTilt (γ a : ℝ) {n m : ℕ} (hnm : n ≤ m) {
 
 theorem circleTiltDensity_of_one_le_norm (γ a : ℝ) (m : ℕ) {x : ℂ} (hx : 1 ≤ ‖x‖) :
     circleTiltDensity γ a m x = 1 := by
-  have h1 : Real.exp (-(m : ℝ)) ≤ ‖x‖ := (exp_neg_natCast_le_one m).trans hx
+  have h1  := (exp_neg_natCast_le_one m).trans hx
   unfold circleTiltDensity
   rw [max_eq_right h1, show normPlus x = ‖x‖ from max_eq_right hx]
   simp
@@ -364,19 +380,28 @@ private theorem le_ratio {c t u : ℝ} (hu : 0 < u) (h : c * u ≤ t) :
   rw [← ENNReal.ofReal_div_of_pos hu]
   exact ENNReal.ofReal_le_ofReal ((le_div_iff₀ hu).mpr h)
 
-private theorem exponent_add {γ η : ℝ} (hγ : 0 < γ) : γ * (2 / γ + η) = 2 + γ * η := by
+section
+variable {γ η : ℝ} (hγ : 0 < γ)
+include hγ
+
+private theorem exponent_add : γ * (2 / γ + η) = 2 + γ * η := by
   field_simp
 
-private theorem exponent_sub {γ η : ℝ} (hγ : 0 < γ) : γ * (2 / γ - η) = 2 - γ * η := by
+private theorem exponent_sub : γ * (2 / γ - η) = 2 - γ * η := by
   field_simp
 
-private theorem mul_le_two {γ η : ℝ} (hγ : 0 < γ) (hηγ : η ≤ 2 / γ) : γ * η ≤ 2 := by
+private theorem mul_le_two (hηγ : η ≤ 2 / γ) : γ * η ≤ 2 := by
   calc γ * η ≤ γ * (2 / γ) := mul_le_mul_of_nonneg_left hηγ hγ.le
     _ = 2 := by field_simp
 
+end
+
+section
+variable {γ η : ℝ} (hγ : 0 < γ) (hη : 0 ≤ η) (hηγ : η ≤ 2 / γ) {x : ℂ}
+include hγ hη hηγ
+
 /-- Off the two balls the pole weight is at most `3^{γα₂} 3^{γα₃} = 81`. -/
-theorem poleWeight_le_of_notMem_poleBalls {γ η : ℝ} (hγ : 0 < γ) (hη : 0 ≤ η)
-    (hηγ : η ≤ 2 / γ) {x : ℂ} (hx : x ∉ poleBalls) : poleWeight γ η x ≤ 81 := by
+theorem poleWeight_le_of_notMem_poleBalls (hx : x ∉ poleBalls) : poleWeight γ η x ≤ 81 := by
   have h1 : 1 ≤ ‖x - 2‖ := by
     by_contra h
     exact hx (Or.inl (mem_ball_two_iff.mpr (not_le.mp h)))
@@ -384,7 +409,7 @@ theorem poleWeight_le_of_notMem_poleBalls {γ η : ℝ} (hγ : 0 < γ) (hη : 0 
     by_contra h
     exact hx (Or.inr (mem_ball_neg_two_iff.mpr (not_le.mp h)))
   have hγη := mul_le_two hγ hηγ
-  have hγη0 : 0 ≤ γ * η := mul_nonneg hγ.le hη
+  have hγη0  := mul_nonneg hγ.le hη
   have hr1 : ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x - 2‖ ≤ 3 :=
     ratio_le_three (by linarith) (max_le (by linarith) (by linarith [norm_le_norm_sub_add x]))
   have hr2 : ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x + 2‖ ≤ 3 :=
@@ -397,21 +422,18 @@ theorem poleWeight_le_of_notMem_poleBalls {γ η : ℝ} (hγ : 0 < γ) (hη : 0 
     _ = (3 : ℝ≥0∞) ^ ((2 + γ * η) + (2 - γ * η)) :=
         (ENNReal.rpow_add _ _ (by norm_num) (by norm_num)).symm
     _ = 81 := by
-      rw [show (2 + γ * η) + (2 - γ * η) = ((4 : ℕ) : ℝ) by push_cast; ring,
-        ENNReal.rpow_natCast]
       norm_num
 
 /-- On `B(2, 1/2)` the pole weight is at least `3^{-2}`. -/
-theorem poleWeight_ge_of_mem_ball_two {γ η : ℝ} (hγ : 0 < γ) (hη : 0 ≤ η)
-    (hηγ : η ≤ 2 / γ) {x : ℂ} (hx : x ∈ Metric.ball (2 : ℂ) (1 / 2)) :
+theorem poleWeight_ge_of_mem_ball_two (hx : x ∈ Metric.ball (2 : ℂ) (1 / 2)) :
     (1 / 9 : ℝ≥0∞) ≤ poleWeight γ η x := by
-  have hx1 : ‖x - 2‖ < 1 / 2 := mem_ball_two_iff.mp hx
+  have hx1  := mem_ball_two_iff.mp hx
   have h3 : 3 / 2 ≤ ‖x‖ := by linarith [two_le_norm_add_norm_sub x]
   have hnp : normPlus x = ‖x‖ := max_eq_right (by linarith)
   have hu : 0 < ‖x + 2‖ := by linarith [four_le_norm_add_add_norm_sub x]
   have hup : ‖x + 2‖ ≤ 9 / 2 := by linarith [norm_add_le_norm_sub_add x]
   have hγη := mul_le_two hγ hηγ
-  have hγη0 : 0 ≤ γ * η := mul_nonneg hγ.le hη
+  have hγη0  := mul_nonneg hγ.le hη
   have hr1 : 1 ≤ ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x - 2‖ :=
     one_le_ratio (by rw [hnp]; linarith) (by rw [hnp]; linarith)
   have hr2 : ENNReal.ofReal (1 / 3) ≤ ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x + 2‖ :=
@@ -428,8 +450,14 @@ theorem poleWeight_ge_of_mem_ball_two {γ η : ℝ} (hγ : 0 < γ) (hη : 0 ≤ 
         ((ENNReal.rpow_le_rpow_of_exponent_ge (ENNReal.ofReal_le_one.mpr (by norm_num))
           (by linarith)).trans (ENNReal.rpow_le_rpow hr2 (by linarith)))
 
+end
+
+section
+variable {γ a : ℝ} (hγ : 0 < γ)
+include hγ
+
 /-- A nonpositive zero charge gives a tilt at most `1`. -/
-theorem zeroTilt_le_one {γ a : ℝ} (hγ : 0 < γ) (ha : a ≤ 0) (x : ℂ) : zeroTilt γ a x ≤ 1 := by
+theorem zeroTilt_le_one (ha : a ≤ 0) (x : ℂ) : zeroTilt γ a x ≤ 1 := by
   have hr : 1 ≤ ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x‖ :=
     one_le_ratio (lt_of_lt_of_le one_pos (le_max_left _ _)) (le_max_right _ _)
   have hz : γ * a ≤ 0 := by nlinarith
@@ -440,11 +468,11 @@ theorem zeroTilt_le_one {γ a : ℝ} (hγ : 0 < γ) (ha : a ≤ 0) (x : ℂ) : z
   · rw [h, ENNReal.rpow_zero]
 
 /-- On `C_n` a nonnegative zero charge gives a tilt at most `e^{γ a n}`. -/
-theorem zeroTilt_le_of_mem_cutoffRegion {γ a : ℝ} (hγ : 0 < γ) (ha : 0 ≤ a) {n : ℕ} {x : ℂ}
+theorem zeroTilt_le_of_mem_cutoffRegion (ha : 0 ≤ a) {n : ℕ} {x : ℂ}
     (hx : x ∈ cutoffRegion n) : zeroTilt γ a x ≤ ENNReal.ofReal (Real.exp (γ * a * n)) := by
-  have hxn : Real.exp (-(n : ℝ)) ≤ ‖x‖ := hx
-  have hpos : 0 < ‖x‖ := norm_pos_of_mem_cutoffRegion hx
-  have hn1 : 1 ≤ Real.exp n := Real.one_le_exp (Nat.cast_nonneg n)
+  have hxn  := hx
+  have hpos  := norm_pos_of_mem_cutoffRegion hx
+  have hn1  := Real.one_le_exp (Nat.cast_nonneg n)
   have hratio : ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x‖ ≤
       ENNReal.ofReal (Real.exp n) := by
     rw [← ENNReal.ofReal_div_of_pos hpos]
@@ -460,6 +488,8 @@ theorem zeroTilt_le_of_mem_cutoffRegion {γ a : ℝ} (hγ : 0 < γ) (ha : 0 ≤ 
     _ = ENNReal.ofReal (Real.exp (γ * a * n)) := by
       rw [← Real.exp_mul]
       ring_nf
+
+end
 
 /-- Inside the unit disk the zero tilt is the weighted-ball weight `|x|^{-γa}`. -/
 theorem zeroTilt_of_norm_lt_one (γ a : ℝ) {x : ℂ} (hx : ‖x‖ < 1) :

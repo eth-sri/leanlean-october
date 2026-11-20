@@ -45,10 +45,8 @@ theorem weighted_ball_coulomb_mixed_bound
     fin_cases i
     · change ‖z‖ ≤ 1
       linarith only [hz]
-    · change ‖(0 : ℂ)‖ ≤ 1
-      norm_num
-    · change ‖(1 : ℂ)‖ ≤ 1
-      norm_num
+    · simp
+    · simp
   have hW := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α₁ 0 ρ
   have hI := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃
   have h := ENNReal.lintegral_mul_le_Lp_mul_Lq P hHolder (hW.pow_const s) (hI.pow_const (-p - s))
@@ -67,7 +65,6 @@ theorem weighted_ball_coulomb_mixed_bound
         Real.mul_rpow hCA.le (Real.rpow_nonneg hρ.le _), ← Real.rpow_mul hρ.le]
       congr 1
       dsimp only [C]
-      rw [show E * (1 / q) = E / q by ring]
       ring
 
 end DOZZ.Proofs

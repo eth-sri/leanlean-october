@@ -36,25 +36,25 @@ theorem kahane_field_normalized_affine_max
       ∫ ω, affineMax a b (∫ x, fieldWickDensity PY Ψ h γ ω x
         ∂(ν.normalize : Measure S)) ∂PY := by
   classical
-  have : IsProbabilityMeasure PX := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
-  have : IsProbabilityMeasure PY := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have  := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have  := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   let ρ : Measure S := ν.normalize
   let Q := Measure.infinitePi (fun _ : ℕ => ρ)
   let fX := fieldWickDensity PX Φ h γ
   let fY := fieldWickDensity PY Ψ h γ
-  let mX : ΩX → ℝ := fun ω => ∫ x, fX ω x ∂ρ
-  let mY : ΩY → ℝ := fun ω => ∫ x, fY ω x ∂ρ
+  let mX  := fun ω => ∫ x, fX ω x ∂ρ
+  let mY  := fun ω => ∫ x, fY ω x ∂ρ
   let avgX : ℕ → ΩX × (ℕ → S) → ℝ :=
     fun n p => (n : ℝ)⁻¹ * ∑ i : Fin n, fX p.1 (p.2 i.val)
   let avgY : ℕ → ΩY × (ℕ → S) → ℝ :=
     fun n p => (n : ℝ)⁻¹ * ∑ i : Fin n, fY p.1 (p.2 i.val)
   have hfX := (fieldWickDensity_integrable_mean PX Φ hΦ ν h hh hhb γ).1
   have hfY := (fieldWickDensity_integrable_mean PY Ψ hΨ ν h hh hhb γ).1
-  have hmX : Integrable mX PX := hfX.integral_prod_left
-  have hmY : Integrable mY PY := hfY.integral_prod_left
-  have havgX (n : ℕ) : Integrable (avgX n) (PX.prod Q) :=
+  have hmX  := hfX.integral_prod_left
+  have hmY  := hfY.integral_prod_left
+  have havgX (n : ℕ)  :=
     spatial_empirical_average_integrable PX ρ fX hfX n
-  have havgY (n : ℕ) : Integrable (avgY n) (PY.prod Q) :=
+  have havgY (n : ℕ)  :=
     spatial_empirical_average_integrable PY ρ fY hfY n
   have hIX (n : ℕ) := affineMax_comp_integrable (PX.prod Q) (avgX n) (havgX n) a b
   have hIY (n : ℕ) := affineMax_comp_integrable (PY.prod Q) (avgY n) (havgY n) a b
@@ -100,11 +100,11 @@ theorem kahane_field_normalized_affine_max
   have hprodX : (∫ p : ΩX × (ℕ → S), affineMax a b (mX p.1) ∂(PX.prod Q)) =
       ∫ ω, affineMax a b (mX ω) ∂PX := by
     rw [integral_prod _ ((affineMax_comp_integrable PX mX hmX a b).comp_fst Q)]
-    simp only [integral_const, probReal_univ, one_smul]
+    simp
   have hprodY : (∫ p : ΩY × (ℕ → S), affineMax a b (mY p.1) ∂(PY.prod Q)) =
       ∫ ω, affineMax a b (mY ω) ∂PY := by
     rw [integral_prod _ ((affineMax_comp_integrable PY mY hmY a b).comp_fst Q)]
-    simp only [integral_const, probReal_univ, one_smul]
+    simp
   rwa [hprodX, hprodY] at hlimit
 
 end DOZZ.Proofs

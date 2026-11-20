@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
+public import DOZZ.GMC.FiniteChaosMellin
 public import Mathlib.MeasureTheory.Constructions.Pi
 public import Mathlib.MeasureTheory.Integral.Prod
 
@@ -11,7 +12,7 @@ public import Mathlib.MeasureTheory.Integral.Prod
 
 @[expose] public section
 
-open MeasureTheory
+open MeasureTheory Filter Set
 open scoped ENNReal
 
 namespace DOZZ.Proofs
@@ -28,8 +29,8 @@ private theorem lintegral_fin_pi_prod
       let μTail : Fin n → Measure α := fun i => μ i.succ
       let fTail : Fin n → α → ℝ≥0∞ := fun i => f i.succ
       let e := MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => α) 0
-      have hμTail (i : Fin n) : SigmaFinite (μTail i) := hμ i.succ
-      have hfTail (i : Fin n) : Measurable (fTail i) := hf i.succ
+      have hμTail (i : Fin n)  := hμ i.succ
+      have hfTail (i : Fin n)  := hf i.succ
       have htarget : Measurable (fun x : Fin (n + 1) → α => ∏ i, f i (x i)) := by
         fun_prop
       have hpair : Measurable (fun z : α × (Fin n → α) =>
@@ -54,8 +55,7 @@ private theorem lintegral_fin_pi_prod
               apply lintegral_congr_ae
               exact ae_of_all _ hform
         _ = ∫⁻ x, ∫⁻ y,
-              f 0 x * ∏ i : Fin n, f i.succ (y i) ∂Measure.pi μTail ∂μ 0 := by
-              exact lintegral_prod
+              f 0 x * ∏ i : Fin n, f i.succ (y i) ∂Measure.pi μTail ∂μ 0 := lintegral_prod
                 (fun z : α × (Fin n → α) => f 0 z.1 * ∏ i : Fin n, f i.succ (z.2 i))
                 hpair.aemeasurable
         _ = ∫⁻ x, f 0 x * (∏ i : Fin n, ∫⁻ y, f i.succ y ∂μ i.succ) ∂μ 0 := by
@@ -81,11 +81,11 @@ theorem lintegral_pi_prod
     ∫⁻ x : κ → α, ∏ i, f i (x i) ∂Measure.pi μ =
       ∏ i, ∫⁻ y, f i y ∂μ i := by
   classical
-  let e : Fin (Fintype.card κ) ≃ κ := (Fintype.equivFin κ).symm
-  let μ' : Fin (Fintype.card κ) → Measure α := fun i => μ (e i)
-  let f' : Fin (Fintype.card κ) → α → ℝ≥0∞ := fun i => f (e i)
-  have hμ' (i : Fin (Fintype.card κ)) : SigmaFinite (μ' i) := hμ (e i)
-  have hf' (i : Fin (Fintype.card κ)) : Measurable (f' i) := hf (e i)
+  let e  := (Fintype.equivFin κ).symm
+  let μ'  := fun i => μ (e i)
+  let f'  := fun i => f (e i)
+  have hμ' (i : Fin (Fintype.card κ))  := hμ (e i)
+  have hf' (i : Fin (Fintype.card κ))  := hf (e i)
   have htarget : Measurable (fun x : κ → α => ∏ i, f i (x i)) := by fun_prop
   let pe := MeasurableEquiv.piCongrLeft (fun _ : κ => α) e
   have hstep := (measurePreserving_piCongrLeft (α := fun _ : κ => α) μ e).lintegral_comp htarget
@@ -110,8 +110,41 @@ theorem lintegral_pi_prod
           exact ae_of_all _ hprod
     _ = ∏ i : Fin (Fintype.card κ), ∫⁻ y, f (e i) y ∂μ (e i) :=
           lintegral_fin_pi_prod μ' f' hμ' hf'
-    _ = ∏ i : κ, ∫⁻ y, f i y ∂μ i := by
-          exact Equiv.prod_comp e (fun i => ∫⁻ y, f i y ∂μ i)
+    _ = ∏ i : κ, ∫⁻ y, f i y ∂μ i := Equiv.prod_comp e (fun i => ∫⁻ y, f i y ∂μ i)
+
+/-- Product Mellin transform of the joint Laplace transform. The formula only requires finite
+masses almost everywhere; zero masses need no separate treatment. -/
+theorem lintegral_prod_rpow_neg_eq_jointLaplace
+    {Ω κ : Type*} [MeasurableSpace Ω] [Fintype κ] (P : Measure Ω) [SFinite P]
+    (m : κ → Ω → ℝ≥0∞) (hm : ∀ k, Measurable (m k))
+    (hfin : ∀ k, ∀ᵐ ω ∂P, m k ω ≠ ∞) (q : κ → ℝ) (hq : ∀ k, 0 < q k) :
+    ∫⁻ ω, ∏ k, m k ω ^ (-q k) ∂P =
+      ∫⁻ t, (∏ k, ENNReal.ofReal (1 / Real.Gamma (q k)) * ENNReal.ofReal (t k ^ (q k - 1))) *
+        (∫⁻ ω, ENNReal.ofReal (Real.exp (-∑ k, t k * (m k ω).toReal)) ∂P)
+          ∂Measure.pi (fun _ : κ => volume.restrict (Ioi (0 : ℝ))) := by
+  classical
+  let ν := volume.restrict (Ioi (0 : ℝ))
+  let K (k : κ) (t : ℝ) := ENNReal.ofReal (1 / Real.Gamma (q k)) * ENNReal.ofReal (t ^ (q k - 1))
+  let f (ω : Ω) (k : κ) (t : ℝ) := K k t * ENNReal.ofReal (Real.exp (-(t * (m k ω).toReal)))
+  change _ = ∫⁻ t, (∏ k, K k (t k)) * _ ∂Measure.pi (fun _ : κ => ν)
+  calc
+    _ = ∫⁻ ω, ∫⁻ t, ∏ k, f ω k (t k) ∂Measure.pi (fun _ : κ => ν) ∂P := by
+      apply lintegral_congr_ae
+      filter_upwards [ae_all_iff.mpr hfin] with ω hω
+      rw [lintegral_pi_prod _ (f ω) (fun _ => inferInstance) (by intro; unfold f K; fun_prop)]
+      exact Finset.prod_congr rfl fun k _ => rpow_neg_eq_mellin (hω k) (hq k)
+    _ = ∫⁻ t, ∫⁻ ω, ∏ k, f ω k (t k) ∂P ∂Measure.pi (fun _ : κ => ν) :=
+      lintegral_lintegral_swap (by unfold Function.uncurry f K; fun_prop)
+    _ = _ := by
+      apply lintegral_congr
+      intro t
+      rw [← lintegral_const_mul _ (by fun_prop)]
+      apply lintegral_congr
+      intro ω
+      simp only [f, Finset.prod_mul_distrib]
+      congr 1
+      rw [← ENNReal.ofReal_prod_of_nonneg (fun _ _ => Real.exp_nonneg _), ← Real.exp_sum,
+        Finset.sum_neg_distrib]
 
 
 end DOZZ.Proofs

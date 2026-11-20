@@ -9,6 +9,7 @@ public import DOZZ.GMC.Moments.RhoCoulomb
 public import DOZZ.FourPoint.Fusion.MassPositiveFinite
 public import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
 public import DOZZ.FourPoint.TaylorFixedDisk
+public import DOZZ.GMC.MeasurableIntegrals
 /-! # The unrooted positive KRV mass segment -/
 @[expose] public section
 open MeasureTheory Set Filter
@@ -22,16 +23,18 @@ theorem fusionUnrootedSegment_measurable (γ α₁ α₂ α₃ t s : ℝ) (z : �
     Measurable (fun μ : Measure ℂ => fusionUnrootedSegment γ α₁ α₂ α₃ t z μ ^ s) :=
   (((fusion_measurable_coulombMass γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).const_mul _).add
     ((fusion_measurable_coulombMass γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃).const_mul _)).pow_const s
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX hγ hγ2 hM
+
 /-- The coincident zero-insertion mass is positive and finite almost surely. -/
-theorem fusion_zeroMass_pos_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_zeroMass_pos_finite_ae
     (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
     ∀ᵐ ω ∂P, coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ ≠ 0 ∧
       coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ ≠ ⊤ := by
   have hi : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j hij
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp
   have ha : ∀ j : Fin 2, (![α₁ - γ / 2, α₂] : Fin 2 → ℝ) j < Q γ := by
     intro j
     fin_cases j
@@ -48,9 +51,7 @@ theorem fusion_zeroMass_pos_finite_ae {Ω : Type*} [MeasurableSpace Ω]
   rw [hmass, he]
   exact hω
 /-- All nonpositive segment moments are uniformly bounded over the time interval and unit roots. -/
-theorem fusionUnrootedSegment_inverse_uniform {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionUnrootedSegment_inverse_uniform
     (α₁ α₂ α₃ p : ℝ) (hp : 0 ≤ p) :
     ∃ C : ℝ, 0 < C ∧ ∀ t ∈ Icc (0 : ℝ) 1, ∀ z : ℂ, ‖z‖ ≤ 1 →
       (∫⁻ ω, fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p) ∂P) ≤ ENNReal.ofReal C := by
@@ -71,4 +72,15 @@ theorem fusionUnrootedSegment_inverse_uniform {Ω : Type*} [MeasurableSpace Ω]
     _ = _ := lintegral_add_left' ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _).pow_const _) _
     _ ≤ ENNReal.ofReal C + ENNReal.ofReal C := add_le_add (hb _ hzv) (hb _ h0v)
     _ = _ := (ENNReal.ofReal_add hC.le hC.le).symm
+
+end
+/-- The segment is jointly measurable in the interpolation time and the input measure. -/
+theorem fusionUnrootedSegment_joint_measurable (γ α₁ α₂ α₃ : ℝ) (z : ℂ) :
+    Measurable (fun q : ℝ × FiniteMeasure ℂ => fusionUnrootedSegment γ α₁ α₂ α₃ q.1 z q.2.toMeasure) := by
+  have hm := measurable_subtype_coe.comp (measurable_snd : Measurable (Prod.snd : ℝ × FiniteMeasure ℂ → _))
+  exact ((ENNReal.measurable_ofReal.comp measurable_fst).mul
+    ((fusion_measurable_coulombMass γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).comp hm)).add
+    ((ENNReal.measurable_ofReal.comp (measurable_const.sub measurable_fst)).mul
+      ((fusion_measurable_coulombMass γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃).comp hm))
+
 end DOZZ.Proofs

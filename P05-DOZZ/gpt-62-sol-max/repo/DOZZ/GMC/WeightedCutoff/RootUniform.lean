@@ -1,6 +1,7 @@
 module
 
 public import DOZZ.GMC.WeightedCutoff.LargeScaleUniform
+public import DOZZ.GMC.Moments.PositiveExponent
 
 /-! # Uniform root estimates through the whole finite chart -/
 
@@ -22,30 +23,29 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_chart
       ‖z‖ + 2 * R ≤ 1 →
       ((∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)) ^ p ∂P) ^
         (1 / p) ≤ A * ENNReal.ofReal ((R / (1 / 8 : ℝ)) ^
-          ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p))) ∧
+          ((gmcScaleExponent γ p) / p))) ∧
       (∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)) ^ p ∂P) < ⊤ := by
-  let _ := hX.1
   obtain ⟨Asmall, hAsmall, hsmall⟩ := regularizedGMC_openBall_root_bound_compact_gamma_small_chart
     P X hX Xc hXc Γ hΓ hΓpos q hq hcrit
   obtain ⟨D, hD, hlarge⟩ := regularizedGMC_openBall_moment_compact_gamma_large_chart
     P X hX Xc hXc Γ hΓ hΓpos q hq hcrit
-  let B : ℝ≥0∞ := 1 + D
-  have hB : B < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hD⟩
+  let B  := 1 + D
+  have hB  := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hD⟩
   have hBone : 1 ≤ B := le_add_of_nonneg_right (by positivity)
-  let A : ℝ≥0∞ := Asmall + B
-  have hA : A < ⊤ := ENNReal.add_lt_top.mpr ⟨hAsmall, hB⟩
+  let A  := Asmall + B
+  have hA  := ENNReal.add_lt_top.mpr ⟨hAsmall, hB⟩
   refine ⟨A, hA, ?_⟩
   intro γ hγ p hp hpq z R δ hR hRhalf hδ hδR hchart
-  have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
+  have hp0  := lt_of_lt_of_le zero_lt_one hp
   by_cases hRsmall : R ≤ 1 / 8
   · obtain ⟨hs, htop⟩ := hsmall γ hγ p hp hpq z R δ hR hRsmall hδ hδR hchart
     refine ⟨hs.trans ?_, htop⟩
     apply mul_le_mul_left
     exact le_add_of_nonneg_right (by positivity)
-  have hRlo : 1 / 8 ≤ R := le_of_not_ge hRsmall
-  let f : Ω → ℝ≥0∞ := fun ω =>
+  have hRlo  := le_of_not_ge hRsmall
+  let f  := fun ω =>
     regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)
-  have hf : AEMeasurable f P := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
+  have hf  := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
     (Real.log (1 / δ)) (Metric.ball z R) Metric.isOpen_ball.measurableSet
   have hqbound := hlarge γ hγ z R δ hRlo hRhalf hδ hδR hchart
   have hmoment : (∫⁻ ω, f ω ^ p ∂P) ≤ B := by
@@ -65,11 +65,9 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_chart
   have hcritp : γ ^ 2 * p < 4 := by
     have hcritq := (lt_div_iff₀ (sq_pos_of_pos hγpos)).mp (hcrit γ hγ)
     nlinarith [mul_le_mul_of_nonneg_left hpq (sq_nonneg γ)]
-  have hxi : 0 < 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 := by
-    have hfac : 0 < 2 + γ ^ 2 / 2 - γ ^ 2 * p / 2 := by nlinarith
-    nlinarith [mul_pos hp0 hfac]
+  have hxi := gmcScaleExponent_pos hp0 hcritp
   have hscale : 1 ≤ ENNReal.ofReal ((R / (1 / 8 : ℝ)) ^
-      ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p)) := by
+      ((gmcScaleExponent γ p) / p)) := by
     rw [← ENNReal.ofReal_one]
     apply ENNReal.ofReal_le_ofReal
     apply Real.one_le_rpow (by linarith : 1 ≤ R / (1 / 8 : ℝ))

@@ -28,7 +28,7 @@ theorem twoRooted_region_cover
   let A : Fin 4 → Ω → ℝ≥0∞ := fun i ω => ∫⁻ x in B i, f x ∂M ω
   let I : Ω → ℝ≥0∞ := fun ω => (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃) ^ (-p - 2)
   have hf : Measurable f := gammaHalf_absolute_kernel_measurable γ α₁ α₂ α₃ z
-  have hMm := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
+  have hMm := equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM
   have hA (i : Fin 4) : AEMeasurable (A i) P := by
     have hm := Measure.measurable_lintegral (hf.indicator (hB i))
     have hh := hm.comp_aemeasurable hMm

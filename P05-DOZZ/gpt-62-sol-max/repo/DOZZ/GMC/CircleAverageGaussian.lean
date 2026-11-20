@@ -27,9 +27,9 @@ theorem circleAverage_finite_family_jointly_gaussian
   obtain ⟨hProcess, hMean⟩ := circleAverage_isGaussianProcess P X Xc hX hXc
   refine ⟨hX.1, ?_, ?_⟩
   · intro i
-    exact hProcess.aemeasurable (p i)
+    exact hProcess.aemeasurable ..
   · intro a
-    let S : Ω → ℝ := fun ω => ∑ i, a i * Xc ω (p i).1 (p i).2
+    let S  := fun ω => ∑ i, a i * Xc ω (p i).1 (p i).2
     have hWeighted : IsGaussianProcess
         (fun i => fun ω => a i * Xc ω (p i).1 (p i).2) P := by
       have hParam : IsGaussianProcess

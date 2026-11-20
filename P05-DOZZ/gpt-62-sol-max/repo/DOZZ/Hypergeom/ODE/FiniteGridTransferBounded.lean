@@ -13,10 +13,13 @@ finite rectangle. -/
 
 namespace DOZZ.Proofs
 
-theorem finiteGridVertical_after_horizontal_edge_of_bounded_squares
-    {E : Type*} (N : ℕ) (right up : ℕ → ℕ → E → E)
-    (hsquare : ∀ i < N, ∀ j < N, ∀ y,
+section
+variable {E : Type*} (N : ℕ) (right up : ℕ → ℕ → E → E)
+  (hsquare : ∀ i < N, ∀ j < N, ∀ y,
       up (i + 1) j (right i j y) = right i (j + 1) (up i j y))
+include hsquare
+
+theorem finiteGridVertical_after_horizontal_edge_of_bounded_squares
     (i j m : ℕ) (hi : i < N) (hm : j + m ≤ N) (y : E) :
     finiteGridVertical up (i + 1) j m (right i j y) =
       right i (j + m) (finiteGridVertical up i j m y) := by
@@ -29,9 +32,6 @@ theorem finiteGridVertical_after_horizontal_edge_of_bounded_squares
       exact hsquare i hi (j + m) hrow _
 
 theorem finiteGrid_rectangle_transfer_of_bounded_squares
-    {E : Type*} (N : ℕ) (right up : ℕ → ℕ → E → E)
-    (hsquare : ∀ i < N, ∀ j < N, ∀ y,
-      up (i + 1) j (right i j y) = right i (j + 1) (up i j y))
     (i j n m : ℕ) (hi : i + n ≤ N) (hj : j + m ≤ N) (y : E) :
     finiteGridVertical up (i + n) j m (finiteGridHorizontal right i j n y) =
       finiteGridHorizontal right i (j + m) n (finiteGridVertical up i j m y) := by
@@ -41,10 +41,10 @@ theorem finiteGrid_rectangle_transfer_of_bounded_squares
       have hcol : i + n < N := by omega
       simp only [finiteGridHorizontal]
       have hindex : i + (n + 1) = (i + n) + 1 := by omega
-      rw [hindex]
-      rw [finiteGridVertical_after_horizontal_edge_of_bounded_squares
-        N right up hsquare (i + n) j m hcol hj _]
-      rw [ih (by omega)]
+      rw [hindex, finiteGridVertical_after_horizontal_edge_of_bounded_squares
+              N right up hsquare (i + n) j m hcol hj _, ih (by omega)]
+
+end
 
 theorem finiteGridVertical_eq_self_of_bounded_edges
     {E : Type*} (N c : ℕ) (up : ℕ → ℕ → E → E)

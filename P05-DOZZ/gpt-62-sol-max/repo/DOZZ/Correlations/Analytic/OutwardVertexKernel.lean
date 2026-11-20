@@ -17,7 +17,7 @@ theorem outward_equator_mean (r : ℝ) (hr : 0 ≤ r) :
     equatorCircleMean 0 (-r) = r := by
   unfold equatorCircleMean
   rw [integral_log_normPlus_circleMeasure_origin_eq_max]
-  simp only [neg_neg, max_eq_right hr]
+  simpa
 
 /-- Within the outward circle, its averaged Green kernel is exactly the infinity-root weight. -/
 theorem outward_vertex_potential (x : ℂ) (r : ℝ) (hr : 0 ≤ r)

@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GFFStructure.DirichletCircleVersion
+public import DOZZ.GFFStructure.PoissonCollarLimit
 
 /-!
 # Exterior-pinned finite Markov assembly
@@ -29,9 +30,12 @@ theorem norm_diskGreen_numerator_comm (c z w : ℂ) (ρ : ℝ) :
     ring
   rw [he,norm_star]
 
+section
+variable (c x w : ℂ) (ρ r : ℝ) (hρ : 0 < ρ) (hx : ‖x-c‖+Real.exp (-r) < ρ) (hw : w ∈ ball c ρ)
+include hρ hx hw
+
 /-- The regular logarithm has its harmonic mean value on every strict interior circle. -/
-theorem integral_diskGreen_regular_circle (c x w : ℂ) (ρ r : ℝ) (hρ : 0 < ρ)
-    (hx : ‖x-c‖+Real.exp (-r) < ρ) (hw : w ∈ ball c ρ) :
+theorem integral_diskGreen_regular_circle :
     (∫ z, Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖ ∂circleMeasure x r) =
       Real.log ‖(ρ : ℂ)^2-(x-c)*star (w-c)‖ := by
   rw [integral_circleMeasure_eq_circleAverage x r _ (by fun_prop)]
@@ -39,13 +43,14 @@ theorem integral_diskGreen_regular_circle (c x w : ℂ) (ρ r : ℝ) (hρ : 0 < 
     ((interior_circle_closedBall_subset c x ρ r hx).trans ball_subset_closedBall)).circleAverage_eq
 
 /-- The regular logarithm is integrable on any strict interior circle. -/
-theorem integrable_diskGreen_regular_circle (c x w : ℂ) (ρ r : ℝ) (hρ : 0 < ρ)
-    (hx : ‖x-c‖+Real.exp (-r) < ρ) (hw : w ∈ ball c ρ) :
+theorem integrable_diskGreen_regular_circle :
     Integrable (fun z : ℂ => Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) (circleMeasure x r) := by
   apply integrable_circleMeasure_of_circleIntegrable x r (by fun_prop)
-  have hs : sphere x |Real.exp (-r)| ⊆ closedBall c ρ :=
+  have hs  :=
     (sphere_subset_closedBall.trans (interior_circle_closedBall_subset c x ρ r hx)).trans ball_subset_closedBall
   exact ((harmonicOnNhd_diskGreen_regular c w ρ hρ hw).continuousOn.mono hs).circleIntegrable'
+
+end
 
 /-- Interior circle measures stay inside the original disk. -/
 theorem ae_mem_ball_of_interior_circle (c x : ℂ) (ρ r : ℝ)
@@ -89,7 +94,7 @@ theorem integral_integral_diskGreenKernel (c x y : ℂ) (ρ r s : ℝ) (hρ : 0 
       fun v => Real.log ‖(ρ : ℂ)^2-(v-c)*star (y-c)‖-Real.log ρ-
         Real.log (max (Real.exp (-s)) ‖y-v‖) := by
     filter_upwards [ae_mem_ball_of_interior_circle c x ρ r hx] with v hv
-    exact integral_diskGreenKernel_circle c y v ρ s hρ hy hv
+    apply integral_diskGreenKernel_circle <;> assumption
   have hi := integrable_diskGreen_regular_circle c x y ρ r hρ hx hys
   have hlog : Continuous (fun v : ℂ => Real.log (max (Real.exp (-s)) ‖y-v‖)) :=
     (continuous_const.max (continuous_const.sub continuous_id).norm).log
@@ -111,10 +116,13 @@ theorem interior_circle_norm_le_pin (c x : ℂ) (R ρ r : ℝ)
     _ ≤ ‖z-c‖+‖c‖ := norm_add_le _ _
     _ ≤ R := by linarith [mem_ball_iff_norm.mp hz]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+include Ω X Xc hX
+
 /-- The covariance with the exterior pin is precisely the regular equator term. -/
-theorem circleAverage_pin_covariance_interior {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+theorem circleAverage_pin_covariance_interior
     (c x : ℂ) (R ρ r : ℝ) (hR : 1 < R) (hpin : ‖c‖+ρ ≤ R)
     (hx : ‖x-c‖+Real.exp (-r) < ρ) :
     covariance (circleAverageL2 hc (x,r)) (circleAverageL2 hc (0,-Real.log R)) P =
@@ -127,9 +135,7 @@ theorem circleAverage_pin_covariance_interior {Ω : Type*} [MeasurableSpace Ω]
   ring
 
 /-- The actual pinned circle covariance cancels both equator regular terms. -/
-theorem pinnedCircleL2_covariance_interior {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+theorem pinnedCircleL2_covariance_interior
     (c x y : ℂ) (R ρ r s : ℝ) (hR : 1 < R) (hpin : ‖c‖+ρ ≤ R)
     (hx : ‖x-c‖+Real.exp (-r) < ρ) (hy : ‖y-c‖+Real.exp (-s) < ρ) :
     covariance (⇑(circleAverageL2 hc (x,r)-circleAverageL2 hc (0,-Real.log R)))
@@ -147,10 +153,12 @@ theorem pinnedCircleL2_covariance_interior {Ω : Type*} [MeasurableSpace Ω]
       circleAverage_covariance_self X Xc hX hc,circleSelfEnergy_exterior_origin R hR]
   have hxpin := circleAverage_pin_covariance_interior P X Xc hX hc c x R ρ r hR hpin hx
   have hypin := circleAverage_pin_covariance_interior P X Xc hX hc c y R ρ s hR hpin hy
-  have hpiny : covariance (circleAverageL2 hc (0,-Real.log R)) (circleAverageL2 hc (y,s)) P = _ :=
+  have hpiny  :=
     (covariance_comm _ _).trans hypin
   rw [covariance_L2_sub_left,covariance_L2_sub_right,covariance_L2_sub_right,hxx,hxpin,hpiny,hpp]
   ring
+
+end
 
 /-- Orthogonal residuals subtract only the regular harmonic covariance. -/
 theorem covariance_L2_orthogonal_residuals {Ω : Type*} [MeasurableSpace Ω]
@@ -164,21 +172,18 @@ theorem covariance_L2_orthogonal_residuals {Ω : Type*} [MeasurableSpace Ω]
   rw [covariance_L2_sub_right,covariance_L2_sub_left,hUB,hAV]
   ring
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ)
+  (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+  (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
+  (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) (hcov : HasPoissonCovariance P c R ρ V)
+  (hlim : IsPoissonCollarLimit P X Xc c R ρ ε hR hρ hε V)
+  (hVm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
+include Ω hX ε hR hε hpin hmean hU hcov hlim hVm
+
 /-- The actual Dirichlet circle residual has the exact double-circle Green covariance. -/
-theorem dirichletCircleResidualL2_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    (hVm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
+theorem dirichletCircleResidualL2_covariance
     (hVh : ∀ᵐ ω ∂P, InnerProductSpace.HarmonicOnNhd (V ω) (ball c ρ))
     (x y : ℂ) (r s : ℝ)
     (hx : ‖x-c‖+Real.exp (-r) < ρ) (hy : ‖y-c‖+Real.exp (-s) < ρ) :
@@ -205,20 +210,7 @@ theorem dirichletCircleResidualL2_covariance {Ω : Type*} [MeasurableSpace Ω]
 
 /-- The actual raw distribution sigma algebra supports every Dirichlet circle clause of
 `DOZZ.exists_exteriorPinned_markov_uniform`. -/
-theorem exists_dirichletDistribution_circle_green {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    (hVm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
+theorem exists_dirichletDistribution_circle_green
     (hVh : ∀ᵐ ω ∂P, InnerProductSpace.HarmonicOnNhd (V ω) (ball c ρ) ∧ ContinuousOn (V ω) (ball c ρ)) :
     ∃ Dc : Ω → ℂ → ℝ → ℝ,
       Measurable[(MeasurableSpace.comap
@@ -239,14 +231,14 @@ theorem exists_dirichletDistribution_circle_green {Ω : Type*} [MeasurableSpace 
   exact dirichletCircleResidualL2_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin
     V hV hmean hU hcov hlim hVm (hVh.mono (fun ω hω => hω.1)) x y r s hx hy
 
+end
+
 /-- The actual harmonic L² family is continuous on its open disk. -/
 theorem continuousOn_poissonFamilyL2_of_covariance {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (R ρ : ℝ) (hρ : 0 < ρ)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) :
+    (hcov : HasPoissonCovariance P c R ρ V) :
     ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ) := by
   classical
   rw [continuousOn_iff_continuous_domRestrict]
@@ -256,7 +248,7 @@ theorem continuousOn_poissonFamilyL2_of_covariance {Ω : Type*} [MeasurableSpace
     (fun z w => hcov z.1 w.1 z.2 w.2) using 1
   funext z
   change (if hz : z.1 ∈ ball c ρ then (hV z.1 hz).toLp (fun ω => V ω z.1) else 0) = _
-  simp only [dite_eq_left z.2]
+  simp
 
 /-- Supported versions assemble the jointly Gaussian complement and mutually independent blocks. -/
 theorem finiteMarkovComplement_gaussian_independence {Ω I : Type*} [MeasurableSpace Ω] {n : ℕ}
@@ -280,9 +272,9 @@ theorem finiteMarkovComplement_gaussian_independence {Ω I : Type*} [MeasurableS
   have hU : ∀ j f, U j f =ᵐ[P] ⇑(finiteMarkovTestL2Family P Y T j f) := by
     intro j f
     cases j with
-    | none => exact finiteMarkovComplement_apply_ae_eq P X Xc hX hc R hR D T hD f
+    | none => apply finiteMarkovComplement_apply_ae_eq <;> assumption
     | some i => exact hD i f
-  exact ⟨finiteMarkovVersion_block_isGaussianProcess P Y T U hG hU none,
+  exact ⟨((finiteMarkovVersion_isGaussianProcess P Y T U hG hU).comp_right (fun f => ⟨none,f⟩)),
     finiteMarkovVersion_iIndepFun P Y T U hG hU hself hcross⟩
 
 /-- Flattened Dirichlet process independence gives the literal nested finite family. -/
@@ -374,11 +366,12 @@ theorem exists_exteriorPinned_markov_uniform
           ∫ v, ∫ w, diskGreenKernel (c i) ρ hρ v w ∂circleMeasure y s ∂circleMeasure x r) := by
   classical
   refine ⟨exteriorPinnedHarmonicMomentBound R ρ a,
-    fun l _ => exteriorPinnedHarmonicMomentBound_pos R ρ a l hρ haρ,?_⟩
+    fun l _ => (harmonicMomentBound_pos _ _ _ _ _ (harmonicMomentRadius_bounds ρ a hρ haρ).1
+      (harmonicMomentRadius_bounds ρ a hρ haρ).2.1),?_⟩
   intro Ω _ P X Xc hX hc c hmargin hsep
   let _ := hX.1
-  let ε : ℝ := δ/4
-  have hε : 0 < ε := by dsimp only [ε]; positivity
+  let ε  := δ/4
+  have hε : 0 < ε := by positivity
   have hεδ2 : ε < δ/2 := by dsimp only [ε]; linarith
   have hεδ : ε < δ := by linarith
   have hRp : 0 < R := by linarith
@@ -391,36 +384,36 @@ theorem exists_exteriorPinned_markov_uniform
   have hHilim i z hz := (hHi i z hz).2.2
   have hUc i := continuousOn_poissonFamilyL2_of_covariance P (c i) R ρ hρ
     (Hi i) (hHimem i) (hHimean i) (hHicov i)
-  let T (i : Fin n) (f : TestFn) : Lp ℝ 2 P :=
+  let T (i : Fin n) (f : TestFn)  :=
     dirichletCompletedL2Map P X Xc hX hc (c i) R ρ hRp (Hi i) (hHimem i) (hUc i)
       (diskTestRestrictionL2 (c i) ρ f)
-  let D (i : Fin n) : Ω → Distr :=
+  let D (i : Fin n)  :=
     dirichletDistribution P X Xc hX hc (c i) R ρ hRp (Hi i) (hHimem i) (hUc i)
-  let H : Ω → Distr := finiteMarkovComplement X Xc R hRp D
-  have hDversion i f : (fun ω => D i ω f) =ᵐ[P] ⇑(T i f) :=
+  let H  := finiteMarkovComplement X Xc R hRp D
+  have hDversion i f  :=
     dirichletDistribution_apply_ae_eq P X Xc hX hc (c i) R ρ hRp (Hi i) (hHimem i) (hUc i) f
-  have hDm i f : Measurable (fun ω => D i ω f) :=
-    measurable_dirichletDistribution_apply P X Xc hX hc (c i) R ρ hRp (Hi i) (hHimem i) (hUc i) f
-  have hDmem i f : MemLp (fun ω => D i ω f) 2 P :=
+  have hDm i f  :=
+    (measurable_completedDiskDistribution_apply P (c i) ρ (dirichletCompletedL2Map P X Xc hX hc (c i) R ρ hRp (Hi i) (hHimem i) (hUc i)) f)
+  have hDmem i f  :=
     dirichletDistribution_apply_memLp P X Xc hX hc (c i) R ρ hRp (Hi i) (hHimem i) (hUc i) f
-  have hDmean i f : (∫ ω, D i ω f ∂P) = 0 :=
+  have hDmean i f  :=
     dirichletDistribution_apply_integral_zero P X Xc hX hc (c i) R ρ ε hR hρ hε (hpin i)
       (Hi i) (hHimem i) (hHimean i) (hUc i) (hHicov i) (hHilim i) f
-  have hDcov i f g : covariance (fun ω => D i ω f) (fun ω => D i ω g) P = diskGreenCovariance (c i) ρ hρ f g :=
+  have hDcov i f g  :=
     dirichletDistribution_covariance P X Xc hX hc (c i) R ρ ε hR hρ hε (hpin i)
       (Hi i) (hHimem i) (hHimean i) (hUc i) (hHicov i) (hHilim i) f g
-  have hDG i : IsGaussianProcess (fun f : TestFn => fun ω => D i ω f) P :=
+  have hDG i  :=
     dirichletDistribution_isGaussianProcess P X Xc hX hc (c i) R ρ ε hR hρ hε (hpin i)
       (Hi i) (hHimem i) (hHimean i) (hUc i) (hHicov i) (hHilim i)
   have hTspan i f : T i f ∈ gaussianHilbertSpan (gffStructureL2Family X Xc hX hc) :=
-    dirichletCompletedL2Map_mem_original_gaussianHilbertSpan P X Xc hX hc (c i) R ρ ε hR hρ hε (hpin i)
-      (Hi i) (hHimem i) (hHimean i) (hUc i) (hHicov i) (hHilim i) _
+    (poissonTestFamilyL2_gaussianHilbertSpan_le_original P X Xc hX hc (c i) R ρ ε (by linarith) hρ hε (Hi i) (hHimem i) (hHilim i)
+      (dirichletCompletedL2Map_mem_gaussianHilbertSpan P X Xc hX hc (c i) R ρ ε hR hρ hε (hpin i) (Hi i) (hHimem i) (hHimean i) (hUc i) (hHicov i) (hHilim i) _))
   have hself i f g : covariance (T i f) (exteriorPinnedTestL2 P X Xc hX hc R hRp g) P = covariance (T i f) (T i g) P := by
     rw [dirichletCompletedL2Map_test_covariance P X Xc hX hc (c i) R ρ ε hR hρ hε (hpin i)
         (Hi i) (hHimem i) (hHimean i) (hUc i) (hHicov i) (hHilim i),
       dirichletCompletedL2Map_covariance P X Xc hX hc (c i) R ρ ε hR hρ hε (hpin i)
         (Hi i) (hHimem i) (hHimean i) (hUc i) (hHicov i) (hHilim i)]
-  have hcross i j (hij : i ≠ j) f g : covariance (T i f) (T j g) P = 0 :=
+  have hcross i j (hij : i ≠ j) f g  :=
     dirichletCompletedL2Map_separated_covariance_zero P X Xc hX hc (c i) R ρ ε hR hρ hε (hpin i)
       (Hi i) (hHimem i) (hHimean i) (hUc i) (hHicov i) (hHilim i)
       (c j) (hpin j) δ hδ hεδ (hsep i j hij)
@@ -443,11 +436,9 @@ theorem exists_exteriorPinned_markov_uniform
       (fun g => exteriorPinnedTestL2_mem_original_gaussianHilbertSpan P X Xc hX hc R hRp g.1)
       (fun i f ω => D i ω f) (fun g ω => exteriorPinnedEvaluation X Xc R hRp ω g.1)
       hDversion (fun g => (exteriorPinnedTestL2_ae_eq P X Xc hX hc R hRp g.1).symm) hDYzero
-  have hDext i : ∀ᵐ ω ∂P, ∀ f : TestFn, tsupport f ⊆ (closedBall (c i) ρ)ᶜ → D i ω f = 0 :=
-    ae_dirichletDistribution_exterior_tests_zero P X Xc hX hc (c i) R ρ hRp (Hi i) (hHimem i) (hUc i)
-  have hlocal i : ∀ᵐ ω ∂P, ∀ f : TestFn, tsupport f ⊆ ball (c i) ρ →
-      exteriorPinnedEvaluation X Xc R hRp ω f-D i ω f = ∫ z : ℂ, f z*Hi i ω z :=
-    ae_dirichletDistribution_interior_harmonic_agreement P X Xc hX hc (c i) R ρ ε hR hρ hε (hpin i)
+  have hDext i  :=
+    (ae_completedDiskDistribution_exterior_tests_zero P (c i) ρ (dirichletCompletedL2Map P X Xc hX hc (c i) R ρ hRp (Hi i) (hHimem i) (hUc i)))
+  have hlocal i := ae_dirichletDistribution_interior_harmonic_agreement P X Xc hX hc (c i) R ρ ε hR hρ hε (hpin i)
       (Hi i) (hHimem i) (hHimean i) (hUc i) (hHicov i) (hHilim i) (hHim i)
       ((hHih i).mono (fun ω hω => hω.2.continuousOn))
   have hHlocal := ae_finiteMarkovComplement_harmonic_agreement P X Xc R hRp c ρ D Hi
@@ -456,7 +447,7 @@ theorem exists_exteriorPinned_markov_uniform
     (Hi i) (hHimem i) (hHimean i) (hUc i) (hHicov i) (hHilim i) (hHim i)
     ((hHih i).mono (fun ω hω => ⟨hω.1,hω.2.continuousOn⟩))
   choose Dc hDcm hDcG hDc hDccov using hcircle
-  let p (i : Fin n) (z : ℂ) (k : ℕ) : TestFn :=
+  let p (i : Fin n) (z : ℂ) (k : ℕ)  :=
     if hz : z ∈ ball (c i) ρ then canonicalPoissonCollarTest (c i) z ρ ε hρ hε hz k else 0
   have hp i z (hz : z ∈ ball (c i) ρ) k : p i z k = canonicalPoissonCollarTest (c i) z ρ ε hρ hε hz k := by
     simp only [p,dite_eq_left hz]

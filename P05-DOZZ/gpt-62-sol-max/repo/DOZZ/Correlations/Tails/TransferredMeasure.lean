@@ -62,8 +62,11 @@ theorem transferred_measure_finite (μ : Measure ℂ) [IsFiniteMeasure μ]
   change IsFiniteMeasure (((μ.restrict (Metric.ball z 1)).withDensity d).map (fun w => w-z))
   infer_instance
 
+section
+variable (μ : Measure ℂ) (z : ℂ) (γ N : ℝ)
+
 /-- The transferred measure assigns no mass outside the unit chart. -/
-theorem transferred_measure_carried (μ : Measure ℂ) (z : ℂ) (γ N : ℝ) :
+theorem transferred_measure_carried :
     transferredMeasure μ z γ N (Metric.ball 0 1)ᶜ = 0 := by
   have htrans : Measurable (fun w : ℂ => w-z) := by fun_prop
   rw [transferredMeasure, Measure.map_apply htrans
@@ -71,12 +74,10 @@ theorem transferred_measure_carried (μ : Measure ℂ) (z : ℂ) (γ N : ℝ) :
   have hpre : (fun w : ℂ => w-z) ⁻¹' (Metric.ball 0 1)ᶜ = (Metric.ball z 1)ᶜ := by
     ext w
     simp only [mem_preimage, mem_compl_iff, Metric.mem_ball, dist_eq_norm, sub_zero]
-  rw [hpre, withDensity_apply _ Metric.isOpen_ball.measurableSet.compl,
-    Measure.restrict_restrict Metric.isOpen_ball.measurableSet.compl]
-  simp only [compl_inter_self, Measure.restrict_empty, lintegral_zero_measure]
+  simp [hpre, withDensity_apply _ Metric.isOpen_ball.measurableSet.compl, Measure.restrict_restrict Metric.isOpen_ball.measurableSet.compl, compl_inter_self, Measure.restrict_empty, lintegral_zero_measure]
 
 /-- Every compact test integral of the transferred measure has the exact source-GMC formula. -/
-theorem transferred_measure_test_integral (μ : Measure ℂ) (z : ℂ) (γ N : ℝ)
+theorem transferred_measure_test_integral
     (f g : BoundedContinuousFunction ℂ ℝ)
     (hfU : tsupport (f : ℂ → ℝ) ⊆ Metric.ball 0 1)
     (hg : ∀ w, g w = f (w-z) * Real.exp ((γ ^ 2 + 4) * Real.log (normPlus w))) :
@@ -106,6 +107,8 @@ theorem transferred_measure_test_integral (μ : Measure ℂ) (z : ℂ) (γ N : �
     have hh := hfU h
     simpa only [Metric.mem_ball, dist_eq_norm, sub_zero] using hh))
   rw [hfw, zero_mul]
+
+end
 
 
 end DOZZ.Proofs

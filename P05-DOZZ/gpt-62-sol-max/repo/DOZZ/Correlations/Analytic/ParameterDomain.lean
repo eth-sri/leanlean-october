@@ -18,18 +18,19 @@ theorem continuousAt_Q {γ : ℝ} (hγ : γ ≠ 0) : ContinuousAt Q γ := by
   exact ((continuousAt_const.div continuousAt_id hγ).add
     (continuousAt_id.div_const 2))
 
+section
+variable {N : ℕ} (q : ℝ × (Fin N → ℝ))
+
 /-- The finite-insertion zero-mode exponent varies jointly continuously away from zero. -/
-theorem continuousAt_nPointSExp {N : ℕ} (q : ℝ × (Fin N → ℝ)) (hq : q.1 ≠ 0) :
+theorem continuousAt_nPointSExp (hq : q.1 ≠ 0) :
     ContinuousAt (fun p : ℝ × (Fin N → ℝ) => nPointSExp p.1 p.2) q := by
   unfold nPointSExp
-  have hs : ContinuousAt (fun p : ℝ × (Fin N → ℝ) => ∑ i, p.2 i) q := by
-    exact (continuous_finsetSum _ (fun i _ => (continuous_apply i).comp
-      continuous_snd)).continuousAt
-  exact (hs.sub (continuousAt_const.mul
+  exact (((continuous_finsetSum _ (fun i _ => (continuous_apply i).comp
+      continuous_snd)).continuousAt).sub (continuousAt_const.mul
     ((continuousAt_Q hq).comp continuousAt_fst))).div continuousAt_fst hq
 
 /-- All strict admissibility inequalities persist on a joint parameter neighborhood. -/
-theorem extendedSeibergN_mem_nhds {N : ℕ} (q : ℝ × (Fin N → ℝ))
+theorem extendedSeibergN_mem_nhds
     (hq : 0 < q.1) (hq2 : q.1 < 2) (ha : ExtendedSeibergN q.1 q.2) :
     {p : ℝ × (Fin N → ℝ) | 0 < p.1 ∧ p.1 < 2 ∧ ExtendedSeibergN p.1 p.2} ∈ 𝓝 q := by
   have hQ := (continuousAt_Q hq.ne').comp continuousAt_fst
@@ -52,5 +53,7 @@ theorem extendedSeibergN_mem_nhds {N : ℕ} (q : ℝ × (Fin N → ℝ))
     continuousAt_fst.eventually_lt continuousAt_const hq2,
     hroot, hs.eventually_lt hb ha.2.1, hinsert] with p hp hp2 hr hbulk hins
   exact ⟨hp, hp2, hr, hbulk, hins⟩
+
+end
 
 end DOZZ.Proofs

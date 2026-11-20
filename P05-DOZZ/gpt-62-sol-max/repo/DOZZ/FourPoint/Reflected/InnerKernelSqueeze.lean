@@ -80,12 +80,12 @@ theorem reflected_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (z x : 
 /-- The extra factor from the root at one vanishes in the first, insertion-point limit. -/
 theorem reflected_inner_root_factor_limit (R e : ℝ) :
     Tendsto (fun z : ℂ => (1 - R * ‖z‖)⁻¹ ^ e) (𝓝 0) (𝓝 1) := by
-  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝 0) (𝓝 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ))
+  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝 0) (𝓝 0) :=
+    tendsto_norm_zero
   have hb : Tendsto (fun z : ℂ => 1 - R * ‖z‖) (𝓝 0) (𝓝 1) := by
     simpa only [mul_zero, sub_zero] using tendsto_const_nhds.sub (hn.const_mul R)
   have hi := hb.inv₀ (by norm_num : (1 : ℝ) ≠ 0)
-  simpa only [inv_one, Real.one_rpow] using hi.rpow_const (p := e) (Or.inl (by norm_num))
+  simpa using hi.rpow_const (p := e) (Or.inl (by norm_num))
 
 /-- Both scalar bounds approach one in the final large-buffer limit. -/
 theorem reflected_inner_scalar_squeeze_limit (γ : ℝ) :
@@ -96,8 +96,7 @@ theorem reflected_inner_scalar_squeeze_limit (γ : ℝ) :
     simpa only [sub_zero] using tendsto_const_nhds.sub he
   have hp : Tendsto (fun h : ℝ => 1 + Real.exp (-h)) atTop (𝓝 1) := by
     simpa only [add_zero] using tendsto_const_nhds.add he
-  simpa only [Real.one_rpow] using
-    (hm.rpow_const (p := γ ^ 2 / 2) (Or.inl (by norm_num))).prodMk_nhds
-      (hp.rpow_const (p := γ ^ 2 / 2) (Or.inl (by norm_num)))
+  simpa using (hm.rpow_const (p := γ ^ 2 / 2) (Or.inl (by norm_num))).prodMk_nhds
+        (hp.rpow_const (p := γ ^ 2 / 2) (Or.inl (by norm_num)))
 
 end DOZZ.Proofs

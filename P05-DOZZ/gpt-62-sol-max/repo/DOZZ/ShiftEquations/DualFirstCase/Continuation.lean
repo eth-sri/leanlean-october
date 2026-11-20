@@ -48,10 +48,9 @@ theorem dualFirstCase_meromorphic_reflect {F : ℂ → ℂ} {H : ℝ}
     (hF : MeromorphicOn F (horizontalStrip H)) (t : ℝ) :
     MeromorphicOn (fun z => F ((t : ℂ) - z)) (horizontalStrip H) := by
   intro z hz
-  have hz' : (t : ℂ) - z ∈ horizontalStrip H := by
+  exact (hF _ (by
     simpa only [horizontalStrip, mem_ofPred_eq, Complex.sub_im, Complex.ofReal_im,
-      zero_sub, abs_neg] using hz
-  exact (hF _ hz').comp_analyticAt (g := fun w : ℂ => (t : ℂ) - w) (analyticAt_const.sub analyticAt_id)
+      zero_sub, abs_neg] using hz)).comp_analyticAt (g := fun w : ℂ => (t : ℂ) - w) (analyticAt_const.sub analyticAt_id)
 /-- One common pair supports physical values, reflection identification, gluing and the dual
 shift after shrinking the strip and assigning zero to the structure constant outside it. -/
 theorem dualFirstCase_common_representative (F R D A : ℂ → ℂ)
@@ -78,10 +77,10 @@ theorem dualFirstCase_common_representative (F R D A : ℂ → ℂ)
   have hsub : horizontalStrip (H / 2) ⊆ horizontalStrip H :=
     fun _ hz => hz.trans (half_lt_self hH)
   have hclosure : closure (horizontalStrip (H / 2)) ⊆ horizontalStrip H := by
-    have hc : IsClosed {z : ℂ | |z.im| ≤ H / 2} :=
-      isClosed_le Complex.continuous_im.abs continuous_const
-    have hcl := closure_minimal (fun z hz => (show |z.im| < H / 2 from hz).le) hc
-    exact fun z hz => (hcl hz).trans_lt (half_lt_self hH)
+    exact fun z hz =>
+      LE.le.trans_lt
+        (closure_minimal (fun z hz => LT.lt.le hz) (isClosed_le (Continuous.abs Complex.continuous_im) continuous_const) hz)
+        (half_lt_self hH)
   have hRDg := codiscreteWithin_restrict_closure (isOpen_horizontalStrip H) hclosure hRD
   have hglueg := codiscreteWithin_restrict_closure (isOpen_horizontalStrip H) hclosure hglue
   have hC : MeromorphicOn C (horizontalStrip (H / 2)) :=
@@ -119,7 +118,6 @@ theorem dualFirstCase_transfer_global_shift (F C A : ℂ → ℂ) (h b : ℝ)
   have hm : z - (b : ℂ) ∈ horizontalStrip h ↔ z ∈ horizontalStrip h := by
     simpa only [sub_eq_add_neg, Complex.ofReal_neg] using add_real_mem_horizontalStrip h z (-b)
   by_cases hin : z ∈ horizontalStrip h
-  · rw [hCF (hp.mpr hin), hCF (hm.mpr hin)]
-    exact hz
+  · rwa [hCF (hp.mpr hin), hCF (hm.mpr hin)]
   · rw [hCzero _ (hp.not.mpr hin), hCzero _ (hm.not.mpr hin), mul_zero]
 end DOZZ.Proofs

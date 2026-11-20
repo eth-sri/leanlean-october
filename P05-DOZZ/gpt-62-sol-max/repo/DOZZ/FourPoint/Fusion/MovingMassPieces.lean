@@ -16,39 +16,17 @@ open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
-theorem fusionMovingBadMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) :
-    AEMeasurable (fun ω => fusionMovingBadMass γ α₁ α₂ α₃ y z δ (M ω)) P :=
-  gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
-    (fusionMovingKernel_measurable _ _ _ _ _ _) _ Metric.isOpen_ball.measurableSet
-
-theorem fusionMovingGoodMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) :
-    AEMeasurable (fun ω => fusionMovingGoodMass γ α₁ α₂ α₃ y z δ (M ω)) P :=
-  gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
-    (fusionMovingKernel_measurable _ _ _ _ _ _) _
-    (measurableSet_le measurable_const measurable_norm)
-
 /-- Exterior domination holds before taking expectations. -/
-theorem fusionMovingGoodMass_le (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) (hδ : 0 < δ)
-    (hz : ‖z‖ ≤ δ) (hu : ‖y * z‖ ≤ δ / 2) (hu1 : ‖y * z‖ ≤ 1) (μ : Measure ℂ) :
-    fusionMovingGoodMass γ α₁ α₂ α₃ y z δ μ ≤
-      ENNReal.ofReal ((2 : ℝ) ^ (3 * (γ ^ 2 / 2))) *
-        fusionMovingGoodMass γ α₁ α₂ α₃ y 0 δ μ := by
-  unfold fusionMovingGoodMass
-  rw [← lintegral_const_mul _ (fusionMovingKernel_measurable γ α₁ α₂ α₃ y 0)]
+theorem fusionRootedGoodMass_le (γ α₁ α₂ α₃ : ℝ) (w u : ℂ) (δ : ℝ) (hδ : 0 < δ)
+    (hw : ‖w‖ ≤ δ) (hu : ‖u‖ ≤ δ / 2) (hu1 : ‖u‖ ≤ 1) (μ : Measure ℂ) :
+    fusionRootedGoodMass γ α₁ α₂ α₃ w u δ μ ≤
+      ENNReal.ofReal ((2 : ℝ) ^ (3 * (γ ^ 2 / 2))) * fusionRootedGoodMass γ α₁ α₂ α₃ 0 0 δ μ := by
+  unfold fusionRootedGoodMass
+  rw [← lintegral_const_mul _ (fusionRootedKernel_measurable γ α₁ α₂ α₃ 0 0)]
   apply lintegral_mono_ae
   filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-  have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
-  have h := ENNReal.ofReal_le_ofReal
-    (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ z (y * z) x hx0 (hz.trans hx)
-      (by linarith) hu1)
-  rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at h
-  simpa only [fusionMovingKernel, mul_zero] using h
+  exact fusionRootedKernel_exterior_le γ α₁ α₂ α₃ w u x
+    (norm_ne_zero_iff.mp (hδ.trans_le hx).ne') (hw.trans hx) (by linarith) hu1
 
 /-- A finite positive moment implies almost-sure finiteness of an extended mass. -/
 theorem fusion_mass_finite_of_moment {Ω : Type*} [MeasurableSpace Ω]

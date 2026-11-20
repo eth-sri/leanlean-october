@@ -31,7 +31,7 @@ theorem ae_circleRootedCoordinatePath_tendsto
       atTop (𝓝 (gmcTiltCoordinatePath
         (fun f => X ω f + γ * gffRootCovariance u f)
         (gmcRootedMeasure γ u (M ω)))) := by
-  filter_upwards [hRoot, gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM u]
+  filter_upwards [hRoot, gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM u]
     with ω hfinite hAtom
   let _ := hfinite
   apply tendsto_pi_nhds.mpr
@@ -44,13 +44,12 @@ theorem ae_circleRootedCoordinatePath_tendsto
       (((circleCross_tendsto_gffRootCovariance u f).comp
         (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop)).const_mul γ)
   | inr j =>
-    have hA : MeasurableSet (gmcTiltCoordinateSet j) := by
-      cases j with
-      | none => exact MeasurableSet.univ
-      | some j => exact gmcLowerBox_measurableSet j
     exact (ENNReal.continuousAt_toReal
       (measure_ne_top (gmcRootedMeasure γ u (M ω)) (gmcTiltCoordinateSet j))).tendsto.comp
-        (circleRootedMeasure_mass_tendsto γ u (M ω) hAtom hfinite _ hA)
+        (circleRootedMeasure_mass_tendsto γ u (M ω) hAtom hfinite _ (by
+      cases j with
+      | none => exact MeasurableSet.univ
+      | some j => exact gmcLowerBox_measurableSet j))
 
 
 end DOZZ.Proofs

@@ -15,16 +15,18 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- A finite positive moment excludes infinite mass and gives real-power integrability. -/
-theorem residue_real_moment_of_extended_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Y : Ω → ℝ≥0∞)
+theorem residue_real_moment_of_extended_bound (Y : Ω → ℝ≥0∞)
     (hY : AEMeasurable Y P) (r : ℝ) (hr : 0 < r)
     (hfinite : (∫⁻ ω, ENNReal.rpow (Y ω) r ∂P) ≠ ⊤) :
     (∀ᵐ ω ∂P, Y ω ≠ ⊤) ∧ Integrable (fun ω => (Y ω).toReal ^ r) P ∧
       (∫ ω, (Y ω).toReal ^ r ∂P) = (∫⁻ ω, ENNReal.rpow (Y ω) r ∂P).toReal := by
-  have hpow : AEMeasurable (fun ω => Y ω ^ r) P := hY.pow_const r
-  have hf : ∀ᵐ ω ∂P, Y ω ^ r < ⊤ := ae_lt_top' hpow hfinite
-  have hmass : ∀ᵐ ω ∂P, Y ω ≠ ⊤ := hf.mono fun ω hω =>
+  have hpow  := hY.pow_const r
+  have hf  := ae_lt_top' hpow hfinite
+  have hmass  := hf.mono fun ω hω =>
     (ENNReal.rpow_eq_top_iff_of_pos hr).not.mp hω.ne
   refine ⟨hmass, ?_, ?_⟩
   · have hh := integrable_toReal_of_lintegral_ne_top hpow hfinite
@@ -32,17 +34,15 @@ theorem residue_real_moment_of_extended_bound
   · simpa only [ENNReal.rpow_eq_pow, ENNReal.toReal_rpow] using integral_toReal hpow hf
 
 /-- Finite masses permit conversion between their literal extended moment and real moment. -/
-theorem residue_integral_toReal_rpow
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Y : Ω → ℝ≥0∞)
+theorem residue_integral_toReal_rpow (Y : Ω → ℝ≥0∞)
     (hY : AEMeasurable Y P) (hfinite : ∀ᵐ ω ∂P, Y ω ≠ ⊤)
     (q : ℝ) (hq : 0 ≤ q) :
     (∫ ω, (Y ω).toReal ^ q ∂P) = (∫⁻ ω, ENNReal.rpow (Y ω) q ∂P).toReal := by
-  have hf : ∀ᵐ ω ∂P, Y ω ^ q < ⊤ := hfinite.mono fun ω hω => ENNReal.rpow_lt_top_of_nonneg hq hω
+  have hf  := hfinite.mono fun ω hω => ENNReal.rpow_lt_top_of_nonneg hq hω
   simpa only [ENNReal.rpow_eq_pow, ENNReal.toReal_rpow] using integral_toReal (hY.pow_const q) hf
 
 /-- Tail-derived integrability inside the convergent moment strip. -/
-theorem residue_real_power_integrable_of_extended_tail
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+theorem residue_real_power_integrable_of_extended_tail [IsProbabilityMeasure P]
     (Y : Ω → ℝ≥0∞) (hY : AEMeasurable Y P)
     (c β η C q : ℝ) (hβ : 0 < β) (hη : 0 < η) (hC : 0 ≤ C)
     (hq : 0 < q) (hqβ : q < β)
@@ -56,5 +56,7 @@ theorem residue_real_power_integrable_of_extended_tail
   intro t ht
   rw [residue_realUpperTail_toReal P Y hY hf t (by linarith only [ht])]
   exact htail t ht
+
+end
 
 end DOZZ.Proofs

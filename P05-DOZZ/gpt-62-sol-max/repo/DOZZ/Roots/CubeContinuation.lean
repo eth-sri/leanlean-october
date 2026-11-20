@@ -40,15 +40,14 @@ theorem roots_unitVolume_of_cube {Ω : Type*} [MeasurableSpace Ω]
   have hqsp : ∀ n : ℕ, sExp γ q q q ≠ -(n : ℝ) := fun n hn =>
     (not_lt_of_ge (neg_nonpos.mpr (Nat.cast_nonneg n))) (hn ▸ hqs)
   have hA : Differentiable ℂ A := by
-    apply differentiable_pi.mpr
-    intro i
-    exact (differentiable_const _).add (differentiable_id.mul_const _)
+    fun_prop
   have hAr (t : ℝ) : A (t : ℂ) = complexifyNCharges (fun i => q + t * (α i - q)) := by
     ext i
     simp only [A, complexifyNCharges]
     push_cast
     ring
-  obtain ⟨V, hVo, hVα, f, hfd, hfv⟩ := unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
+  obtain ⟨V, f, hVo, hVα, hfd, hfv⟩ :=
+    unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   let W := A ⁻¹' V
   have hWo : IsOpen W := hVo.preimage hA.continuous
   have hWpath : ∀ t ∈ Icc (0 : ℝ) 1, (t : ℂ) ∈ W := by

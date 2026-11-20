@@ -59,12 +59,11 @@ def PathSolutionChart.affineReparam
       ‖(a + c * s) - (a + c * u)‖ = ‖c * (s - u)‖ := by congr 1; ring
       _ = ‖c‖ * ‖s - u‖ := norm_mul _ _
       _ = c * dist s u := by rw [Real.norm_eq_abs, abs_of_pos hc, dist_eq_norm]
-  have hdist' : dist (a + c * s) (a + c * u) < δ := by
+  exact hagree (a + c * s) (hparam s hs) (by
     rw [hdistScale]
     calc
       c * dist s u < c * (δ / c) := mul_lt_mul_of_pos_left hdist hc
-      _ = δ := by field_simp
-  exact hagree (a + c * s) (hparam s hs) hdist'
+      _ = δ := by field_simp)
 
 /-- Two continuous lifts that are locally represented by holomorphic solutions and agree at the
 initial point agree throughout the path. The proof shows their equality locus is clopen in the
@@ -81,15 +80,12 @@ theorem continuous_path_solution_lifts_unique
   let u : I → E := fun t => F t
   let v : I → E := fun t => G t
   have hu : Continuous u := by
-    change Continuous (fun t : I => F t.1)
     exact hFcont.domRestrict
   have hv : Continuous v := by
-    change Continuous (fun t : I => G t.1)
     exact hGcont.domRestrict
   let S : Set I := {t | u t = v t}
   have hclosed : IsClosed S := by
-    change IsClosed {t : I | u t = v t}
-    exact isClosed_eq hu hv
+    apply isClosed_eq <;> assumption
   have hopen : IsOpen S := by
     apply Metric.isOpen_iff.mpr
     intro t ht

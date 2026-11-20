@@ -42,16 +42,6 @@ theorem frequently_eq_of_real_interval (a R : ℝ) (hR : 0 < R) (f g : ℂ → �
     exact hδ.ne'
   · simpa only [add_sub_cancel_left, abs_of_pos hδ] using hδR
 
-/-- Scalar holomorphic identity from the real diameter of a disk. -/
-theorem eqOn_ball_of_real_interval (a R : ℝ) (hR : 0 < R) (f g : ℂ → ℂ)
-    (hf : DifferentiableOn ℂ f (Metric.ball (a : ℂ) R))
-    (hg : DifferentiableOn ℂ g (Metric.ball (a : ℂ) R))
-    (heq : ∀ x : ℝ, |x - a| < R → f (x : ℂ) = g (x : ℂ)) :
-    EqOn f g (Metric.ball (a : ℂ) R) :=
-  (hf.analyticOnNhd Metric.isOpen_ball).eqOn_of_preconnected_of_frequently_eq
-    (hg.analyticOnNhd Metric.isOpen_ball) (convex_ball _ _).isPreconnected
-    (Metric.mem_ball_self hR) (frequently_eq_of_real_interval a R hR f g heq)
-
 /-- A complex line parameterization is a real affine map as well. -/
 noncomputable def complexLineAffine {N : ℕ} (a b : Fin N → ℂ) : ℂ →ᵃ[ℝ] (Fin N → ℂ) :=
   ((ContinuousLinearMap.toSpanSingleton ℂ (b - a)).restrictScalars ℝ).toLinearMap.toAffineMap +
@@ -61,76 +51,6 @@ noncomputable def complexLineAffine {N : ℕ} (a b : Fin N → ℂ) : ℂ →ᵃ
 @[simp] theorem complexLineAffine_apply {N : ℕ} (a b : Fin N → ℂ) (t : ℂ) :
     complexLineAffine a b t = a + t • (b - a) := by
   simp [complexLineAffine, add_comm]
-
-/-- Complex-line restriction is differentiable in its scalar complex parameter.
-
-Although the affine structure used for convexity is real, the same formula
-is complex differentiable. The two scalar roles are kept explicit here.
--/
-theorem differentiable_complexLineAffine {N : ℕ} (a b : Fin N → ℂ) :
-    Differentiable ℂ (complexLineAffine a b) := by
-  have heq : (complexLineAffine a b : ℂ → (Fin N → ℂ)) =
-      fun t => a + t • (b - a) := by
-    funext t
-    exact complexLineAffine_apply a b t
-  rw [heq]
-  exact (differentiable_const a).add (differentiable_id.smul_const (b - a))
-
-/-- Neighborhood equality propagates throughout a complex ball by scalar lines. -/
-theorem eqOn_ball_of_eventuallyEq {N : ℕ} (a : Fin N → ℂ) (R : ℝ)
-    (f g : (Fin N → ℂ) → ℂ)
-    (hf : DifferentiableOn ℂ f (Metric.ball a R))
-    (hg : DifferentiableOn ℂ g (Metric.ball a R))
-    (b : Fin N → ℂ) (hb : b ∈ Metric.ball a R) (heq : f =ᶠ[𝓝 b] g) :
-    EqOn f g (Metric.ball a R) := by
-  intro z hz
-  let L : ℂ → (Fin N → ℂ) := fun t => b + t • (z - b)
-  let V := L ⁻¹' Metric.ball a R
-  have hL : Differentiable ℂ L := by
-    have heq : L = (complexLineAffine b z : ℂ → (Fin N → ℂ)) := by
-      funext t
-      exact (complexLineAffine_apply b z t).symm
-    rw [heq]
-    exact differentiable_complexLineAffine b z
-  have hV : IsOpen V := Metric.isOpen_ball.preimage hL.continuous
-  have hconv : Convex ℝ V := by
-    have hVeq : V = complexLineAffine b z ⁻¹' Metric.ball a R := by
-      ext t
-      simp [V, L]
-    rw [hVeq]
-    exact (convex_ball a R).affine_preimage (complexLineAffine b z)
-  have hzero : (0 : ℂ) ∈ V := by simpa [V, L] using hb
-  have hone : (1 : ℂ) ∈ V := by simpa [V, L] using hz
-  have hfl : DifferentiableOn ℂ (f ∘ L) V :=
-    hf.comp hL.differentiableOn (fun _ ht => ht)
-  have hgl : DifferentiableOn ℂ (g ∘ L) V :=
-    hg.comp hL.differentiableOn (fun _ ht => ht)
-  have hfg : f ∘ L =ᶠ[𝓝 (0 : ℂ)] g ∘ L := by
-    apply heq.comp_tendsto
-    simpa [L] using hL.continuous.continuousAt.tendsto (x := (0 : ℂ))
-  have hid := (hfl.analyticOnNhd hV).eqOn_of_preconnected_of_eventuallyEq
-    (hgl.analyticOnNhd hV) hconv.isPreconnected hzero hfg hone
-  simpa [Function.comp_def, L] using hid
-
-/-- Scalar-line propagation gives identity on any open preconnected domain. -/
-theorem eqOn_of_preconnected_of_eventuallyEq {N : ℕ} (U : Set (Fin N → ℂ))
-    (hU : IsOpen U) (hconn : IsPreconnected U) (f g : (Fin N → ℂ) → ℂ)
-    (hf : DifferentiableOn ℂ f U) (hg : DifferentiableOn ℂ g U)
-    (a : Fin N → ℂ) (ha : a ∈ U) (heq : f =ᶠ[𝓝 a] g) : EqOn f g U := by
-  let Z := {z | f =ᶠ[𝓝 z] g}
-  have hZ : IsOpen Z := isOpen_setOfPred_eventually_nhds
-  have hseed : (U ∩ Z).Nonempty := ⟨a, ha, heq⟩
-  have hclosed : closure Z ∩ U ⊆ Z := by
-    intro z hz
-    obtain ⟨R, hR, hRU⟩ := Metric.mem_nhds_iff.mp (hU.mem_nhds hz.2)
-    obtain ⟨b, hbZ, hbdist⟩ := Metric.mem_closure_iff.mp hz.1 R hR
-    have hb : b ∈ Metric.ball z R := by
-      simpa only [Metric.mem_ball, dist_comm] using hbdist
-    have hid := eqOn_ball_of_eventuallyEq z R f g (hf.mono hRU) (hg.mono hRU) b hb hbZ
-    exact Filter.eventually_of_mem (Metric.ball_mem_nhds z hR) fun w hw => hid hw
-  have hsubset := hconn.subset_of_closure_inter_subset hZ hseed hclosed
-  intro z hz
-  exact (hsubset hz).eq_of_nhds
 
 /-- Coordinates in `S` are complex; the other coordinates stay real. -/
 def mixedCoordinates {N : ℕ} (S : Finset (Fin N)) (z : Fin N → ℂ) (x : Fin N → ℝ) :
@@ -202,12 +122,7 @@ theorem eqOn_polydisc_of_real_box {N : ℕ} (a : Fin N → ℝ) (R : Fin N → �
     intro S
     induction S using Finset.induction_on with
     | empty =>
-        intro x hx
-        have hempty : mixedCoordinates ∅ z x = fun i => (x i : ℂ) := by
-          funext i
-          simp only [mixedCoordinates, Finset.notMem_empty, ite_false]
-        rw [hempty]
-        exact heq x hx
+        exact heq
     | @insert i S hi hS =>
         intro x hx
         let y := mixedCoordinates S z x
@@ -232,8 +147,9 @@ theorem eqOn_polydisc_of_real_box {N : ℕ} (a : Fin N → ℝ) (R : Fin N → �
           have hid := hS (Function.update x i w) hx'
           rw [mixedCoordinates_update S z x i hi w] at hid
           exact hid
-        have hid := eqOn_ball_of_real_interval (a i) (R i) (hR i)
-          (f ∘ Function.update y i) (g ∘ Function.update y i) hfl hgl hreal
+        have hid := (hfl.analyticOnNhd Metric.isOpen_ball).eqOn_of_preconnected_of_frequently_eq
+          (hgl.analyticOnNhd Metric.isOpen_ball) (convex_ball _ _).isPreconnected
+          (Metric.mem_ball_self (hR i)) (frequently_eq_of_real_interval (a i) (R i) (hR i) (f ∘ Function.update y i) (g ∘ Function.update y i) hreal)
           (show z i ∈ Metric.ball (a i : ℂ) (R i) by
             simpa only [Metric.mem_ball, dist_eq_norm] using hz i)
         rw [mixedCoordinates_insert]
@@ -278,11 +194,11 @@ theorem exists_closed_polydisc_subset_open {N : ℕ} (U : Set (Fin N → ℂ))
     ∃ R : Fin N → ℝ, (∀ i, 0 < R i) ∧
       Set.pi Set.univ (fun i => Metric.closedBall (a i) (R i)) ⊆ U ∧
       complexPolydisc a R ⊆ U := by
-  obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp (hU.mem_nhds ha)
-  let R : Fin N → ℝ := fun _ => ε / 2
-  have hR : ∀ i, 0 < R i := fun _ => half_pos hε
-  have hclosed : Set.pi Set.univ (fun i => Metric.closedBall (a i) (R i)) ⊆ U :=
-    (closed_pi_subset_ball a R ε hε (fun _ => half_lt_self hε)).trans hball
-  exact ⟨R, hR, hclosed, (complexPolydisc_subset_closed_pi a R).trans hclosed⟩
+  exact Exists.casesOn (Metric.mem_nhds_iff.mp (IsOpen.mem_nhds hU ha)) fun ε h =>
+    And.casesOn h fun hε hball =>
+      let R := fun x => ε / 2;
+      have hR := fun x => half_pos hε;
+      have hclosed := LE.le.trans (closed_pi_subset_ball a R ε hε fun x => half_lt_self hε) hball;
+      Exists.intro R ⟨hR, ⟨hclosed, LE.le.trans (complexPolydisc_subset_closed_pi a R) hclosed⟩⟩
 
 end DOZZ.Proofs

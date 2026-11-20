@@ -7,16 +7,14 @@ public import DOZZ.FourPoint.Dual.WilliamsCutLimit
 public import DOZZ.FourPoint.Dual.SourceRestartWilliams
 public import DOZZ.FourPoint.Dual.JointLawExpectation
 public import DOZZ.FourPoint.Dual.FullMaximumLimit
-public import DOZZ.FourPoint.Dual.FixedCutMaximumLimit
 public import DOZZ.FourPoint.Dual.SourceWilliamsSandwich
 public import DOZZ.FourPoint.Dual.CutSqueezeLimit
-public import DOZZ.FourPoint.Dual.SourceParetoLimit
-public import DOZZ.FourPoint.Dual.SourceParetoIncrement
 public import DOZZ.FourPoint.Dual.SourceMaximumPareto
 public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
 public import DOZZ.FourPoint.Reflected.RestartedWilliams
 public import DOZZ.FourPoint.Dual.RadialFirstOrder
 import Mathlib.Tactic
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 /-! The actual translated restarted polar mass has the same-witness dual leading coefficient. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
@@ -29,9 +27,7 @@ theorem dual_source_restarted_polar_increment_tendsto
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hcircle : IsContinuousCircleAverage P X Xc)
     (α₁ α₂ α₃ ξ h : ℝ) (hα₁ : α₁ < Q γ) (hreflect : Q γ-α₁ < γ/2)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hh : 0 ≤ h)
     (hs : 2*Q γ+2/γ < α₁+α₂+α₃)
@@ -59,16 +55,16 @@ theorem dual_source_restarted_polar_increment_tendsto
   let ν := Q γ-α₁
   let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
   let A := originRadialPath Xc
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
+  have hA := originRadialPath_aemeasurable P X Xc hcircle.isCircleAverage hcircle.continuous_ae
   have hZ := hData.2.1
   let R := (brownianMaximumReferenceLaw ν).prod P
   let _ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
-  have ht := dual_source_williams_cut_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
+  have ht := dual_source_williams_cut_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hcircle.isCircleAverage
     α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack hξ hξ1 B Z hData
   apply ht.congr'
-  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 ‖(0 : ℂ)‖) :=
-    (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))]
+  have hn := (tendsto_norm_zero (E := ℂ)).mono_left
+    (nhdsWithin_le_nhds (s := {(0 : ℂ)}ᶜ))
+  filter_upwards [self_mem_nhdsWithin, hn.eventually_lt_const zero_lt_one]
     with z hz0 hz
   have hn0 : 0 < ‖z‖ := norm_pos_iff.mpr hz0
   have htime : 0 ≤ -Real.log ‖z‖+h := by
@@ -88,12 +84,9 @@ theorem dual_source_restarted_polar_increment_tendsto
   have hDm : AEMeasurable D P :=
     (continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)).comp_aemeasurable hA
-  have hDZ : IndepFun D Z P := hiZ.comp₀ hA hZ.2.2.2.1
-    (continuous_brownianShiftPath.measurable.comp
-      (measurable_const.prodMk continuous_radialPositiveHalf.measurable)).aemeasurable measurable_id.aemeasurable
   let Y := fun ω => (dual_radial_scale γ ν h Xc z ω,
     (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)
-  have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
+  have hcoord := (hcircle.isCircleAverage.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hβ : AEMeasurable (dual_radial_scale γ ν h Xc z) P :=
     ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hYm : AEMeasurable Y P := hβ.prodMk
@@ -103,13 +96,13 @@ theorem dual_source_restarted_polar_increment_tendsto
     (if 0 < t then ENNReal.ofReal (Real.exp (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0)
       ∂(Z ω.2).map (fun s => s-(T : ℝ))
   have hVm : AEMeasurable V (P.prod P) :=
-    dual_translated_polar_mass_aemeasurable P D hDm γ ν Z hZ hDZ T
+    reflected_translated_polar_aemeasurable P P D hDm Z hZ.2.2.2.1 hZ.2.2.2.2.1 γ ν T
   let J := fun q : ℝ × Ω => ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B Z q.2
   have hJm : AEMeasurable J R :=
     (measurable_fst.aemeasurable.const_mul γ).exp.ennreal_ofReal.mul
       (actual_cut_mass_joint_aemeasurable P _ γ B Z
         (aemeasurable_of_twoSidedConditioned hData.1) hZ.2.2.2.1 hZ.2.2.2.2.1)
-  have hLaw := dual_source_restart_outer_williams_law P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+  have hLaw := dual_source_restart_outer_williams_law P X Xc hX hcircle γ hγ hγ₂ M hM
     h α₁ α₂ α₃ ξ hα₁ z hz0 hstrict T hT hr Z hZ hiZ B Z hData
   let G : (ℝ × ℝ) × ℝ≥0∞ → ℝ := fun v => (v.1.2+v.1.1*v.2.toReal)^(-p)-v.1.2^(-p)
   have hG : Measurable G := by unfold G; fun_prop

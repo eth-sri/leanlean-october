@@ -14,6 +14,7 @@ import DOZZ.ShiftEquations.Residual.Calibration
 import DOZZ.ShiftEquations.Rbar.Continuation
 import DOZZ.ShiftEquations.Shift.Reflection
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
+public import DOZZ.DOZZAlgebra.ReflectionShiftForm
 
 /-!
 # The limits in the proof of the `2/γ` shift equation
@@ -48,11 +49,11 @@ theorem analyticAt_of_meromorphicAt_of_tendsto_ofReal {f : ℂ → ℂ} {x₀ : 
     have hcob := (tendsto_cobounded_of_meromorphicOrderAt_neg (not_le.mp hneg)).comp hreal
     exact not_tendsto_atTop_of_tendsto_nhds h.norm (tendsto_norm_atTop_iff_cobounded.mpr hcob)
   obtain ⟨g, hg, hfg⟩ := hf.meromorphicOrderAt_nonneg_iff.mp hord
-  have hfg' : ∀ᶠ x : ℝ in 𝓝[≠] x₀, f x = g x := hreal.eventually hfg
+  have hfg'  := hreal.eventually hfg
   have hglim : Tendsto (fun x : ℝ => g (x : ℂ)) (𝓝[≠] x₀) (𝓝 (g x₀)) :=
     ((hg.continuousAt.tendsto.comp Complex.continuous_ofReal.continuousAt.tendsto).mono_left
       nhdsWithin_le_nhds)
-  have heq : f x₀ = g x₀ := tendsto_nhds_unique (h.congr' hfg') hglim
+  have heq  := tendsto_nhds_unique (h.congr' hfg') hglim
   exact hg.congr (eventuallyEq_nhds_of_eventuallyEq_nhdsNE hfg.symm heq.symm)
 
 /-- **The zero-mode limit**: `η C(a, b + η, c) → 2` when `a + b + c = 2Q` and all charges are
@@ -63,7 +64,7 @@ theorem tendsto_mul_structureConstant_chargeZero {Ω : Type*} [MeasurableSpace �
     (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ) :
     Tendsto (fun η : ℝ => η * structureConstant P M γ μ a (b + η) c) (𝓝[>] 0) (𝓝 2) := by
   have : IsProbabilityMeasure P := hX.1
-  obtain ⟨V₃, hV₃, hV₃mem, f₃, hf₃, hf₃eq⟩ :=
+  obtain ⟨V₃, f₃, hV₃, hV₃mem, hf₃, hf₃eq⟩ :=
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   have h4 : 0 < 4 / γ := by positivity
   have hES0 : ExtendedSeiberg3 γ a b c :=
@@ -79,8 +80,7 @@ theorem tendsto_mul_structureConstant_chargeZero {Ω : Type*} [MeasurableSpace �
     unitVolumeStructureConstant_zeroMode P M hγ0
   have hcurve : Continuous fun η : ℝ => complexifyNCharges ![a, b + η, c] := by
     unfold complexifyNCharges
-    refine continuous_pi fun i => ?_
-    fin_cases i <;> simp <;> fun_prop
+    fun_prop
   have hmem0 : complexifyNCharges ![a, b + 0, c] ∈ V₃ := by
     rw [add_zero]
     exact hV₃mem ![a, b, c] hES0
@@ -106,8 +106,6 @@ theorem tendsto_mul_structureConstant_chargeZero {Ω : Type*} [MeasurableSpace �
   have hΓ : Tendsto (fun η : ℝ => Real.Gamma (η / γ + 1)) (𝓝 0) (𝓝 1) := by
     have hc : ContinuousAt Real.Gamma 1 :=
       (Real.differentiableAt_Gamma (fun m => by
-        have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-        intro h
         linarith)).continuousAt
     have h := hc.tendsto.comp (show Tendsto (fun η : ℝ => η / γ + 1) (𝓝 0) (𝓝 1) by
       have : Continuous fun η : ℝ => η / γ + 1 := by fun_prop
@@ -128,28 +126,20 @@ theorem tendsto_mul_structureConstant_chargeZero {Ω : Type*} [MeasurableSpace �
 
 /-- `Γ(2) = 1`. -/
 theorem complex_Gamma_two : Complex.Gamma 2 = 1 := by
-  have h := Complex.Gamma_nat_eq_factorial 1
-  simp at h
-  rw [show (2 : ℂ) = 1 + 1 by norm_num]
-  exact h
+  simp
 
 /-- **The pole of `R` at `γ/2`**, from the first reflection shift
 (`DOZZ.reflectionR_first_shift_meromorphic`): `η R(γ/2 + η) → 2μπ R(γ)/(γ l(-γ²/4) l(γ²/4))`. -/
 theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) {R : ℂ → ℂ}
     (hRγ : AnalyticAt ℂ R (γ : ℂ))
-    (hshift : ∀ᶠ z in codiscrete ℂ,
-      R (z - γ / 2) = -(μ * Real.pi : ℂ) * R z /
-        (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4) *
-          lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2))) :
+    (hshift : ReflectionFirstShift γ μ R) :
     Tendsto (fun η : ℝ => (η : ℂ) * R ((γ / 2 + η : ℝ) : ℂ)) (𝓝[>] 0)
       (𝓝 (2 * (μ * Real.pi : ℂ) * R γ /
         ((γ : ℂ) * (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4))))) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hγc  := Complex.ofReal_ne_zero.mpr hγ.ne'
   -- the shift at `z = γ + η`
   have hev : ∀ᶠ η : ℝ in 𝓝[≠] 0, R (((γ + η : ℝ) : ℂ) - γ / 2) = -(μ * Real.pi : ℂ) *
-      R ((γ + η : ℝ) : ℂ) / (lFun (-((γ : ℂ) ^ 2) / 4) *
-        lFun ((γ : ℂ) * ((γ + η : ℝ) : ℂ) / 2 - (γ : ℂ) ^ 2 / 4) *
-          lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * ((γ + η : ℝ) : ℂ) / 2)) := by
+      R ((γ + η : ℝ) : ℂ) / (reflectionFirstShiftDenom γ ((γ + η : ℝ) : ℂ)) := by
     have ht : Tendsto (fun η : ℝ => ((γ + η : ℝ) : ℂ)) (𝓝[≠] 0) (𝓝[≠] (γ : ℂ)) := by
       refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ ?_ ?_
       · have hc : Continuous fun η : ℝ => ((γ + η : ℝ) : ℂ) := by fun_prop
@@ -157,20 +147,17 @@ theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
         simp only [add_zero] at h0
         exact h0.mono_left nhdsWithin_le_nhds
       · refine eventually_nhdsWithin_of_forall fun η (hη : η ≠ 0) => ?_
-        simp only [mem_compl_iff, mem_singleton_iff, Complex.ofReal_inj]
-        intro h
-        apply hη
-        linarith
+        simpa
     exact ht.eventually ((eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hshift) γ)
   -- the factor `η / l(2 - γη/2)`
   have hlim₁ : Tendsto (fun η : ℝ => (η : ℂ) * (lFun (2 - (γ : ℂ) * η / 2))⁻¹) (𝓝[>] 0)
       (𝓝 (-(2 / (γ : ℂ)))) := by
     have hG1 : ContinuousAt Complex.Gamma 1 := by
       have h := (analyticAt_Gamma_ofReal_pos (by norm_num : (0 : ℝ) < 1)).continuousAt
-      rwa [Complex.ofReal_one] at h
+      assumption
     have hG2 : ContinuousAt Complex.Gamma 2 := by
       have h := (analyticAt_Gamma_ofReal_pos (by norm_num : (0 : ℝ) < 2)).continuousAt
-      rwa [Complex.ofReal_ofNat] at h
+      assumption
     have hA : Tendsto (fun η : ℝ => Complex.Gamma ((γ : ℂ) * η / 2 + 1)) (𝓝 0) (𝓝 1) := by
       have hc : Continuous fun η : ℝ => (γ : ℂ) * η / 2 + 1 := by fun_prop
       have h0 := hc.tendsto 0
@@ -201,7 +188,7 @@ theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     have hv1 : v - 1 ≠ 0 := by
       intro h
       have hre : (γ * η / 2 : ℝ) = 1 := by
-        have : v = 1 := sub_eq_zero.mp h
+        have  := sub_eq_zero.mp h
         rw [hv] at this
         exact_mod_cast this
       have : γ * η / 2 < 1 := by
@@ -256,16 +243,14 @@ theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
   rw [show -(μ * Real.pi : ℂ) * R γ * (-(2 / (γ : ℂ))) * (lFun (-((γ : ℂ) ^ 2) / 4))⁻¹ *
       (lFun ((γ : ℂ) ^ 2 / 4))⁻¹ = 2 * (μ * Real.pi : ℂ) * R γ /
         ((γ : ℂ) * (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4))) by
-    simp only [div_eq_mul_inv, mul_inv]
     ring] at hmain
   refine hmain.congr' ?_
   filter_upwards [nhdsWithin_mono _ (fun x (hx : (0 : ℝ) < x) => hx.ne') hev] with η hη
-  rw [show ((γ / 2 + η : ℝ) : ℂ) = ((γ + η : ℝ) : ℂ) - γ / 2 by push_cast; ring, hη,
+  rw [show ((γ / 2 + η : ℝ) : ℂ) = ((γ + η : ℝ) : ℂ) - γ / 2 by push_cast; ring, hη, reflectionFirstShiftDenom,
     show (γ : ℂ) * ((γ + η : ℝ) : ℂ) / 2 - (γ : ℂ) ^ 2 / 4 = (γ : ℂ) ^ 2 / 4 + (γ : ℂ) * η / 2 by
       push_cast; ring,
     show 2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * ((γ + η : ℝ) : ℂ) / 2 = 2 - (γ : ℂ) * η / 2 by
       push_cast; ring]
-  simp only [div_eq_mul_inv, mul_inv]
   ring
 
 /-- **The zero of the dual crossing coefficient at `α = γ/2`**:
@@ -275,10 +260,10 @@ theorem tendsto_dualLC_div {γ θ : ℝ} (hγ : 0 < γ) (hθ₁ : 0 < θ) :
         dualLC γ ((γ / 2 - θ : ℝ) : ℂ) ((γ / 2 + η : ℝ) : ℂ) ((2 / γ + θ : ℝ) : ℂ) / η) (𝓝[>] 0)
       (𝓝 (-(1 / (γ : ℂ)) * lFun (dualArg₁ γ ((γ / 2 - θ : ℝ) : ℂ)) * lFun (1 + 4 / (γ : ℂ) ^ 2) *
         (lFun (1 - 2 * θ / γ))⁻¹)) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hγc  := Complex.ofReal_ne_zero.mpr hγ.ne'
   have hG1 : ContinuousAt Complex.Gamma 1 := by
     have h := (analyticAt_Gamma_ofReal_pos (by norm_num : (0 : ℝ) < 1)).continuousAt
-    rwa [Complex.ofReal_one] at h
+    assumption
   -- the factors as functions of `η`
   have hA₂ : Tendsto (fun η : ℝ => lFun (1 + 4 / (γ : ℂ) ^ 2 - 2 * η / γ)) (𝓝 0)
       (𝓝 (lFun (1 + 4 / (γ : ℂ) ^ 2))) := by
@@ -317,7 +302,7 @@ theorem tendsto_dualLC_div {γ θ : ℝ} (hγ : 0 < γ) (hθ₁ : 0 < θ) :
     have hc : Continuous fun η : ℝ => (1 : ℂ) - η / γ := by fun_prop
     have h0 := hc.tendsto 0
     simp only [Complex.ofReal_zero, zero_div, sub_zero] at h0
-    have h := (hG1.tendsto.comp h0).inv₀ (by rw [Complex.Gamma_one]; exact one_ne_zero)
+    have h := (hG1.tendsto.comp h0).inv₀ (by simp)
     rwa [Complex.Gamma_one, inv_one] at h
   have hlim : Tendsto (fun η : ℝ => lFun (dualArg₁ γ ((γ / 2 - θ : ℝ) : ℂ)) *
       lFun (1 + 4 / (γ : ℂ) ^ 2 - 2 * η / γ) * (lFun (1 - (2 * θ + η) / γ))⁻¹ *
@@ -332,7 +317,7 @@ theorem tendsto_dualLC_div {γ θ : ℝ} (hγ : 0 < γ) (hθ₁ : 0 < θ) :
   refine (hlim.mono_left nhdsWithin_le_nhds).congr' ?_
   filter_upwards [self_mem_nhdsWithin] with η (hη : 0 < η)
   set u : ℂ := (η : ℂ) / γ with hu
-  have hu0 : u ≠ 0 := div_ne_zero (Complex.ofReal_ne_zero.mpr hη.ne') hγc
+  have hu0  := div_ne_zero (Complex.ofReal_ne_zero.mpr hη.ne') hγc
   have h₂ : dualArg₂ γ ((γ / 2 + η : ℝ) : ℂ) = 1 + 4 / (γ : ℂ) ^ 2 - 2 * η / γ := by
     unfold dualArg₂
     push_cast
@@ -360,7 +345,7 @@ theorem tendsto_dualLC_div {γ θ : ℝ} (hγ : 0 < γ) (hθ₁ : 0 < θ) :
   rw [h₂, h₃, h₄]
   simp only [div_eq_mul_inv, mul_inv]
   rw [hl₄, hΓu, hu]
-  have hηc : (η : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hη.ne'
+  have hηc  := Complex.ofReal_ne_zero.mpr hη.ne'
   field_simp
 
 end DOZZ.Proofs

@@ -78,9 +78,9 @@ theorem gammaHalfMass_eq_coulombMass_ae
     (α₁ α₂ α₃ : ℝ) (z : ℂ) :
     ∀ᵐ ω ∂P, (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω) =
       coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ := by
-  filter_upwards [gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM z,
-    gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
-    gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 1] with ω hz h0 h1
+  filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
+    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
+    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hz h0 h1
   exact gammaHalfMass_eq_coulombMass γ α₁ α₂ α₃ z (M ω) hz h0 h1
 
 end DOZZ.Proofs

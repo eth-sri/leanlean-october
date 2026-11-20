@@ -7,11 +7,7 @@ module
 public import DOZZ.FourPoint.BPZ.UnreflectedD
 public import DOZZ.FourPoint.Diagonal.Assembly
 
-/-! # The unreflected `γ/2` formula
-
-Proof of `DOZZ.gammaHalf_full_unreflected_formula`: the conditional theorem
-`bpz_gammaHalf_full_unreflected_formula_of_diag` applied to the diagonal classification at
-`χ = γ/2`. -/
+/-! The unreflected formula follows from the diagonal classification and the first shift. -/
 
 @[expose] public section
 
@@ -40,14 +36,16 @@ theorem gammaHalf_full_unreflected_formula {Ω : Type*} [MeasurableSpace Ω]
           (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) *
             structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
               ‖gaussFPlus H a b c z‖ ^ 2 := by
-  exact bpz_gammaHalf_full_unreflected_formula_of_diag hH P X M γ μ α₁ α₂ α₃ hγ hγ₂ hμ hαlo
-    hαhi hα₂ hα₃ hs hX hM fun M' γ' t h0 h2 hM' hlo hhi h₂ h₃ hs' =>
-      degenerateFourPoint_diagonal_classification hH P X M' γ' μ (γ' / 2) t α₂ α₃ h0 h2 hμ
-        (Or.inl rfl)
-        (by
-          have hQ : Q γ' = 2 / γ' + γ' / 2 := rfl
-          have : (0 : ℝ) < γ' / 2 := by positivity
-          rw [hQ]; linarith)
-        h₂ h₃ hs' hX hM'
+  have hdiag (M' : Ω → Measure ℂ) (γ' t : ℝ) (h0 : 0 < γ') (h2 : γ' < 2)
+      (hM' : IsGMCOf P X γ' M') (_ : γ' / 2 < t) (hhi : t < 2 / γ') (h₂ : α₂ < Q γ')
+      (h₃ : α₃ < Q γ') (hs' : 2 * Q γ' + γ' / 2 < t + α₂ + α₃) :
+      HasGammaHalfDiagonal H P M' γ' μ t α₂ α₃ :=
+    degenerateFourPoint_diagonal_classification hH P X M' γ' μ (γ' / 2) t α₂ α₃ h0 h2 hμ
+      (Or.inl rfl) (by unfold Q; linarith) h₂ h₃ hs' hX hM'
+  have hshift := bpz_shift_all hH P X M γ μ α₁ α₂ α₃ hγ hγ₂ hμ hαlo hαhi hα₂ hα₃ hs hX hM hdiag
+  intro a b c z hz
+  rw [neg_div, hdiag M γ α₁ hγ hγ₂ hM hαlo hαhi hα₂ hα₃ hs z hz]
+  change gaussCoefficientRatio a b c * _ = _ at hshift
+  linear_combination ‖gaussFPlus H a b c z‖ ^ 2 * hshift
 
 end DOZZ.Proofs

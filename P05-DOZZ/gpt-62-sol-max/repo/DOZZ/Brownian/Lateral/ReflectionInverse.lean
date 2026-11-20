@@ -36,11 +36,11 @@ theorem twoSidedReflectionMass_aemeasurable_of_lateral
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZ : IsLateralGMCOf P γ Z) :
     AEMeasurable (fun ω => twoSidedReflectionMass γ B Z ω) P := by
-  have hp : AEMeasurable (fun ω => (B ω, Z ω)) P := hB.prodMk hZ.2.2.2.1
+  have hp  := hB.prodMk hZ.2.2.2.1
   have hl : ∀ᵐ ω ∂P, LocallyFiniteOnTranslationWindows (Z ω) := by
     filter_upwards [hZ.2.2.2.2.1] with ω hω
     intro n
-    exact hω (-(n : ℝ)) n
+    apply hω <;> assumption
   have hm := aemeasurable_reflectionMassInput_map_of_locallyFinite P γ
     (fun ω => (B ω, Z ω)) hp hl
   exact hm.comp_aemeasurable hp
@@ -50,8 +50,7 @@ theorem twoSidedReflectionMass_rpow_aemeasurable_of_lateral
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ q : ℝ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZ : IsLateralGMCOf P γ Z) :
-    AEMeasurable (fun ω => (twoSidedReflectionMass γ B Z ω) ^ q) P := by
-  exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
+    AEMeasurable (fun ω => (twoSidedReflectionMass γ B Z ω) ^ q) P := ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
     (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z hB hZ)
 
 /-- A finite strictly negative moment implies almost sure positive reflection mass. -/
@@ -84,18 +83,6 @@ theorem twoSidedReflectionMass_finite_ae_of_positive_moment
   rw [hz, ENNReal.top_rpow_of_pos hq] at hω
   exact lt_irrefl _ hω
 
-/-- Two enclosing moment bounds control every intervening reflection moment. -/
-theorem twoSidedReflectionMass_moment_le_endpoints
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ l u q : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (hB : AEMeasurable B P) (hZ : IsLateralGMCOf P γ Z)
-    (hl : l ≤ q) (hu : q ≤ u) :
-    (∫⁻ ω, (twoSidedReflectionMass γ B Z ω) ^ q ∂P) ≤
-      (∫⁻ ω, (twoSidedReflectionMass γ B Z ω) ^ l ∂P) +
-        (∫⁻ ω, (twoSidedReflectionMass γ B Z ω) ^ u ∂P) := by
-  exact lintegral_rpow_le_endpoint_sum P _
-    (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z hB hZ) hl hu
-
 /-- The two conditioned-process clauses already imply AE measurability of the whole path pair. -/
 theorem conditionedPair_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (B : Ω → BrownianPath × BrownianPath) (ν : ℝ)
@@ -121,8 +108,8 @@ theorem twoSidedReflectionMass_uniform_moments_of_endpoints
   refine ⟨Cl + Cu, ENNReal.add_lt_top.mpr ⟨hCl, hCu⟩, ?_⟩
   intro γ hγ ν hν q hq
   have hd := hData γ hγ ν hν
-  exact (twoSidedReflectionMass_moment_le_endpoints P γ l u q (B ν) (Z γ)
-    (conditionedPair_aemeasurable P (B ν) ν hd.1) hd.2.1 (hl q hq) (hu q hq)).trans
+  exact ((lintegral_rpow_le_endpoint_sum P _
+    (twoSidedReflectionMass_aemeasurable_of_lateral P γ (B ν) (Z γ) (conditionedPair_aemeasurable P (B ν) ν hd.1) hd.2.1) (hl q hq) (hu q hq))).trans
     (add_le_add (hLower γ hγ ν hν) (hUpper γ hγ ν hν))
 
 end DOZZ.Proofs

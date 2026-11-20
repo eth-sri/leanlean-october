@@ -61,7 +61,7 @@ theorem bpz_analyticAt_unitVolumeStructureConstant {Ω : Type*} [MeasurableSpace
     (hγ : 0 < γ) (hγ2 : γ < 2) (hM : IsGMCOf P X γ M) {α₁ α₂ α₃ : ℝ}
     (h : ExtendedSeiberg3 γ α₁ α₂ α₃) :
     AnalyticAt ℝ (fun t => unitVolumeStructureConstant P M γ t α₂ α₃) α₁ := by
-  obtain ⟨V, hVo, hVmem, f, hf, hfeq⟩ :=
+  obtain ⟨V, f, hVo, hVmem, hf, hfeq⟩ :=
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   set e : ℂ → (Fin 3 → ℂ) := fun τ => ![τ, (α₂ : ℂ), (α₃ : ℂ)] with he_def
   have he : ∀ t : ℝ, e (t : ℂ) = complexifyNCharges ![t, α₂, α₃] := fun t =>

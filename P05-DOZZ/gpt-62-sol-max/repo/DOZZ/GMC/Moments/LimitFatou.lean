@@ -27,9 +27,8 @@ theorem lintegral_ennreal_rpow_le_of_tendstoInMeasure
       ENNReal.rpow (ENNReal.ofReal (max (f n ω) 0)) p ∂P ≤ C) :
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (g ω)) p ∂P ≤ C := by
   obtain ⟨ns, hns, hsub⟩ := hfg.exists_seq_tendsto_ae
-  let ψ : ℝ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal (max x 0)) p
-  have hψ : Continuous ψ := by
-    exact ENNReal.continuous_rpow_const.comp
+  let ψ  := fun x => ENNReal.rpow (ENNReal.ofReal (max x 0)) p
+  have hψ : Continuous ψ := ENNReal.continuous_rpow_const.comp
       (ENNReal.continuous_ofReal.comp
         (continuous_max.comp (continuous_id.prodMk continuous_const)))
   have hlim : ∀ᵐ ω ∂P,
@@ -39,19 +38,13 @@ theorem lintegral_ennreal_rpow_le_of_tendstoInMeasure
   have htarget : ∀ᵐ ω ∂P, ψ (g ω) = ENNReal.rpow (ENNReal.ofReal (g ω)) p := by
     filter_upwards [hgbound] with ω hω
     simp [ψ]
-  have hEq : (fun ω => ENNReal.rpow (ENNReal.ofReal (g ω)) p) =ᵐ[P]
-      (fun ω => Filter.liminf (fun i => ψ (f (ns i) ω)) atTop) := by
-    filter_upwards [hlim, htarget] with ω hlimω htargetω
-    exact (hlimω.trans htargetω).symm
-  calc
-    ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (g ω)) p ∂P
-        = ∫⁻ ω, Filter.liminf (fun i => ψ (f (ns i) ω)) atTop ∂P := by
-            exact lintegral_congr_ae hEq
-    _ ≤ Filter.liminf (fun i => ∫⁻ ω, ψ (f (ns i) ω) ∂P) atTop :=
-      lintegral_liminf_le' (fun i => hfmeas (ns i))
-    _ ≤ Filter.limsup (fun i => ∫⁻ ω, ψ (f (ns i) ω) ∂P) atTop :=
-      Filter.liminf_le_limsup
-    _ ≤ C := Filter.limsup_le_of_le (by isBoundedDefault)
-      (Filter.Eventually.of_forall fun i => hbound (ns i))
+  exact Trans.trans
+    (Trans.trans
+      (Trans.trans
+        (lintegral_congr_ae
+          (mp_mem htarget (mp_mem hlim (univ_mem' (id fun ω hlimω htargetω => Eq.symm (Eq.trans hlimω htargetω))))))
+        (lintegral_liminf_le' fun i => hfmeas (ns i)))
+      (liminf_le_limsup isBounded_le_of_top isBounded_ge_of_bot))
+    (limsup_le_of_le isCobounded_le_of_bot (Eventually.of_forall fun i => hbound (ns i)))
 
 end DOZZ.Proofs

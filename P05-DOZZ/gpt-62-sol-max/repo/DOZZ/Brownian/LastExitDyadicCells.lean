@@ -27,8 +27,11 @@ namespace DOZZ.Proofs
 def dyadicLastExitCell (n k : ℕ) : Set ℝ≥0 :=
   {L | Nat.floor ((L : ℝ) * (2 : ℝ) ^ n) = k}
 
+section
+variable (n k : ℕ) (L : ℝ≥0)
+
 /-- The floor-indexed definition is exactly the usual left-closed, right-open dyadic interval. -/
-theorem mem_dyadicLastExitCell_iff_interval (n k : ℕ) (L : ℝ≥0) :
+theorem mem_dyadicLastExitCell_iff_interval :
     L ∈ dyadicLastExitCell n k ↔
       ((k : ℝ) / (2 : ℝ) ^ n) ≤ (L : ℝ) ∧
         (L : ℝ) < ((k + 1 : ℕ) : ℝ) / (2 : ℝ) ^ n := by
@@ -39,11 +42,9 @@ theorem mem_dyadicLastExitCell_iff_interval (n k : ℕ) (L : ℝ≥0) :
   constructor
   · rintro ⟨hlo, hhi⟩
     constructor
-    · rw [div_le_iff₀ ha]
-      exact hlo
+    · rwa [div_le_iff₀ ha]
     · rw [lt_div_iff₀ ha]
-      push_cast at hhi ⊢
-      exact hhi
+      simpa
   · rintro ⟨hlo, hhi⟩
     constructor
     · rw [div_le_iff₀ ha] at hlo
@@ -57,13 +58,14 @@ theorem mem_dyadicLastExitCell_iff_interval (n k : ℕ) (L : ℝ≥0) :
 
 
 /-- On a fixed dyadic cell the random last-exit ceiling is one deterministic mesh endpoint. -/
-theorem dyadicLastExitCeilingTime_eq_of_mem_cell
-    (n k : ℕ) (L : ℝ≥0) (hL : L ∈ dyadicLastExitCell n k) :
+theorem dyadicLastExitCeilingTime_eq_of_mem_cell (hL : L ∈ dyadicLastExitCell n k) :
     dyadicLastExitCeilingTime n L =
       ⟨((k + 1 : ℕ) : ℝ) / (2 : ℝ) ^ n, by positivity⟩ := by
   apply Subtype.ext
   simp only [dyadicLastExitCeilingTime, dyadicLastExitCell, Set.mem_ofPred_eq] at hL ⊢
   rw [hL]
+
+end
 
 /-- A last-exit dyadic cell is determined by deterministic-time visit information: the path
 visits the level at or after the left endpoint, and has no visit at or after the right endpoint.
@@ -75,23 +77,22 @@ theorem negativeLastExitTime_mem_Ico_iff_deterministic_visits
     negativeLastExitTime p c ∈ Set.Ico a b ↔
       (∃ u : ℝ≥0, a ≤ u ∧ p u = -c) ∧
         ∀ u : ℝ≥0, b ≤ u → p u ≠ -c := by
-  let A : Set ℝ≥0 := {u | p u = -c}
-  have hlast : p (negativeLastExitTime p c) = -c :=
+  have hlast  :=
     negativeLastExitTime_mem_of_nonempty_bddAbove p c hnonempty hbounded
   constructor
   · intro h
-    have hleft : a ≤ negativeLastExitTime p c := h.1
-    have hright : negativeLastExitTime p c < b := h.2
+    have hleft  := h.1
+    have hright  := h.2
     refine ⟨⟨negativeLastExitTime p c, hleft, hlast⟩, ?_⟩
     intro u hu hhit
-    have huL : u ≤ negativeLastExitTime p c := le_csSup hbounded hhit
+    have huL  := le_csSup hbounded hhit
     exact (not_le_of_gt hright) (le_trans hu huL)
   · rintro ⟨⟨u, hau, hhit⟩, havoid⟩
     constructor
     · exact hau.trans (le_csSup hbounded hhit)
     · by_contra hnot
-      have hbL : b ≤ negativeLastExitTime p c := le_of_not_gt hnot
-      exact havoid (negativeLastExitTime p c) hbL hlast
+      have hbL  := le_of_not_gt hnot
+      apply havoid <;> assumption
 
 end DOZZ.Proofs
 

@@ -32,9 +32,7 @@ theorem reflected_reinserted_lateral_projection (γ : ℝ) (A : TwoSidedPath)
         (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ A x)) := by
     rw [← withDensity_mul N hW hL, ← withDensity_mul N hL hW]
     congr 1
-    funext x
-    exact mul_comm (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
-      (lateralRadialWeight γ A x)
+    apply mul_comm
   change ((N.withDensity (fun x => ENNReal.ofReal
     (reflected_global_reinsertionWeight γ A x))).withDensity
       (lateralRadialWeight γ A)).map _ = _
@@ -64,10 +62,12 @@ theorem reflected_copied_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
   rw [setLIntegral_withDensity_eq_setLIntegral_mul N hW hf hU] at hi
   simpa only [Pi.mul_apply, mul_comm] using hi
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- The actual removed plane carrier projects to the source lateral GMC on one common
 full-measure event; its plane origin has zero mass on that event. -/
-theorem reflected_removed_carrier_projection
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ)
+theorem reflected_removed_carrier_projection (γ : ℝ)
     (A : Ω → TwoSidedPath) (M N : Ω → Measure ℂ)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω)))) :
     ∀ᵐ ω ∂P, N ω {0} = 0 ∧
@@ -87,8 +87,7 @@ theorem reflected_removed_carrier_projection
 
 /-- Independently reinserted inner masses restart against the translated actual source lateral
 measure, uniformly over the copied radial path and deterministic restart time. -/
-theorem reflected_copied_inner_source_restart
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ α : ℝ)
+theorem reflected_copied_inner_source_restart (γ α : ℝ)
     (A : Ω → TwoSidedPath) (M N : Ω → Measure ℂ)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω)))) :
     ∀ᵐ ω ∂P, ∀ a : TwoSidedPath, ∀ T : ℝ≥0,
@@ -103,5 +102,7 @@ theorem reflected_copied_inner_source_restart
   filter_upwards [reflected_removed_carrier_projection P γ A M N heq] with ω hω a T
   rw [reflected_copied_inner_radial_polar γ α a (N ω) hω.1 T, hω.2]
   exact reflected_inner_polar_restart γ (Q γ - α) a _ T
+
+end
 
 end DOZZ.Proofs

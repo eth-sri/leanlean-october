@@ -42,10 +42,10 @@ theorem oneInsertion_tail_uniform
     linarith only [hpos]
   have hZ : IsLateralGMCOf P γ Z := (hData (γ/2) hhalf).2.1
   obtain ⟨Xc,hc,_⟩ := hM.2
-  obtain ⟨Y,hY,hmY,hcontY,_⟩ := exists_continuous_circleAverage P X Xc hX hc
+  obtain ⟨Y,hcircle,_⟩ := exists_continuous_circleAverage P X Xc hX hc
   refine ⟨B,Z,hsource,fun α hαk => hData α (hα α hαk).2,?_⟩
   intro η hη hceil
-  simpa only [Real.rpow_eq_pow] using oneInsertion_estimate_uniform P X Y hX hY hmY hcontY
+  simpa only [Real.rpow_eq_pow] using oneInsertion_estimate_uniform P X Y hX hcircle
     M γ hγ hγ2 hM Kz hKz hz Kα hKα hα Family radius supBound derivBound lowerBound hFamily
     B Z hZ (fun α hαk => hData α (hα α hαk).2) η hη hceil
 

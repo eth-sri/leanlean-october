@@ -33,8 +33,7 @@ theorem weightedGmcBallMass_mono_charge (μ : Measure ℂ) {γ : ℝ} (hγ : 0 �
   intro x hx
   rw [Metric.mem_ball, dist_eq_norm] at hx
   have hx1 : ENNReal.ofReal ‖x - z‖ ≤ 1 := ENNReal.ofReal_le_one.mpr (hx.le.trans hρ1)
-  rw [ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow]
-  exact ENNReal.rpow_le_rpow_of_exponent_ge hx1 hexp
+  apply ENNReal.rpow_le_rpow_of_exponent_ge <;> assumption
 
 /-- A positive power is at most one plus any larger power. The name carries the prefix because
 `DOZZ.Proofs.ennreal_rpow_le_one_add_rpow` is already declared in
@@ -55,9 +54,8 @@ theorem weightedGrid_moment_le_one_add {Ω : Type*} [MeasurableSpace Ω] (P : Me
   calc ∫⁻ ω, ENNReal.rpow (weightedGmcBallMass γ (M ω) α z ρ) t ∂P
       ≤ ∫⁻ ω, (1 + ENNReal.rpow (weightedGmcBallMass γ (M ω) α' z ρ) t') ∂P := by
         refine lintegral_mono fun ω => ?_
-        rw [ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow]
-        exact (ENNReal.rpow_le_rpow (weightedGmcBallMass_mono_charge (M ω) hγ z hρ1 hαα')
-          ht.le).trans (weightedGrid_ennreal_rpow_le_one_add_rpow _ ht htt')
+        simpa [ENNReal.rpow_eq_pow] using (ENNReal.rpow_le_rpow (weightedGmcBallMass_mono_charge (M ω) hγ z hρ1 hαα')
+                  ht.le).trans (weightedGrid_ennreal_rpow_le_one_add_rpow _ ht htt')
     _ = 1 + ∫⁻ ω, ENNReal.rpow (weightedGmcBallMass γ (M ω) α' z ρ) t' ∂P := by
         rw [lintegral_add_left measurable_const, lintegral_const, measure_univ, mul_one]
 
@@ -126,9 +124,11 @@ noncomputable def weightedGrid_term {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   if 0 < weightedGrid_order γ g b then
     weightedGmcBallMoment P M γ b 0 ρ (weightedGrid_order γ g b) else 0
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- Every grid summand is finite. -/
-theorem weightedGrid_term_lt_top {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+theorem weightedGrid_term_lt_top (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     {ρ : ℝ} (hρ : 0 < ρ) {g : ℝ} (hg : 0 < g) (b : ℝ) :
     weightedGrid_term P M γ ρ g b < ⊤ := by
@@ -140,7 +140,7 @@ theorem weightedGrid_term_lt_top {Ω : Type*} [MeasurableSpace Ω]
 
 /-- A center moment is at most one plus the grid summand at any charge within `g * γ / 8` above
 it. -/
-theorem weightedGrid_moment_le_term {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem weightedGrid_moment_le_term
     [IsProbabilityMeasure P] (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) {ρ : ℝ} (hρ1 : ρ ≤ 1)
     {g : ℝ} (hg : 0 < g) {α a' t : ℝ} (hαa : α ≤ a') (ha' : a' < α + g * γ / 8) (ht : 0 < t)
     (hbulk : t + g ≤ 4 / γ ^ 2) (hins : t + g ≤ 2 / γ * (Q γ - α)) :
@@ -153,9 +153,7 @@ theorem weightedGrid_moment_le_term {Ω : Type*} [MeasurableSpace Ω] (P : Measu
 
 /-- Uniform bound for weighted local moments at the chart center over charges `|α| ≤ A` and
 positive orders with a fixed slack `g` below both thresholds. -/
-theorem weightedGmcBallMoment_uniform_center
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+theorem weightedGmcBallMoment_uniform_center (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (ρ : ℝ) (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (A g : ℝ) (hg : 0 < g) :
     ∃ K : ℝ≥0∞, K < ⊤ ∧ ∀ α t : ℝ, |α| ≤ A → 0 < t → t + g ≤ 4 / γ ^ 2 →
@@ -176,5 +174,7 @@ theorem weightedGmcBallMoment_uniform_center
       _ ≤ _ := add_le_add le_rfl (Finset.single_le_sum
           (f := fun n : ℤ => weightedGrid_term P M γ ρ g ((n : ℝ) * (g * γ / 8)))
           (fun _ _ => zero_le) hmem)
+
+end
 
 end DOZZ.Proofs

@@ -74,16 +74,12 @@ theorem dual_deleted_disk_rooted_littleO {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨C, hC, hb⟩ := dual_deleted_disk_rooted_bound P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ q hq hβ
   have hn : Tendsto (fun z : ℂ => ‖z‖)
-      (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hc : Tendsto (fun z : ℂ => ‖z‖ ^ (1 - ξ))
-      (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
-    have he := sub_pos.mpr hξ₁
-    simpa only [Function.comp_def, Real.zero_rpow he.ne'] using
-      ((Real.continuous_rpow_const he.le).tendsto (0 : ℝ)).comp hn
+      (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) :=
+    (tendsto_norm_zero (E := ℂ)).mono_left nhdsWithin_le_nhds
+  have hc := hn.rpow_const_nhds_zero (sub_pos.mpr hξ₁)
   have hh : ∀ᶠ z : ℂ in nhdsWithin 0 {z : ℂ | z ≠ 0},
       ‖(F z : ℂ)‖ ≤ C * ‖z‖ ^ ((1 - ξ) * (4 - γ * α₁)) := by
-    filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one),
+    filter_upwards [hn.eventually_lt_const zero_lt_one,
       hc.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
       self_mem_nhdsWithin] with z hz hzcut hz0
     have hbz := hb z ξ (‖z‖ ^ (1 - ξ)) hz.le (by linarith only [hzcut])

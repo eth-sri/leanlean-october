@@ -27,15 +27,11 @@ theorem upsilonLog_center (γ : ℝ) :
 /-- Every entire continuation has the normalization `Υ(Q/2) = 1`. -/
 theorem IsUpsilon.center {γ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUpsilon γ U) :
     U (Q γ / 2) = 1 := by
-  have hQ : 0 < Q γ := by
-    unfold Q
-    positivity
+  have hQ := Q_pos hγ
   have hleft : 0 < (Q γ / 2 : ℂ).re := by
-    simp only [Complex.div_ofNat_re, Complex.ofReal_re]
-    positivity
+    simpa
   have hright : (Q γ / 2 : ℂ).re < Q γ := by
-    simp only [Complex.div_ofNat_re, Complex.ofReal_re]
-    linarith
+    simpa
   rw [hU.2 _ hleft hright, upsilonLog_center, Complex.exp_zero]
 
 /-- Literal reflection of the logarithmic integral across the strip midpoint. -/

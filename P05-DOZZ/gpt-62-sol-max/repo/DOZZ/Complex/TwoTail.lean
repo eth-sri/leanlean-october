@@ -23,15 +23,18 @@ open scoped Real
 
 namespace DOZZ.Proofs
 
+section
+variable (g : ℝ → ℂ)
+
 /-- A measurable globally bounded kernel is locally integrable. -/
-theorem locallyIntegrableOn_of_bound (g : ℝ → ℂ) (hg : AEStronglyMeasurable g volume)
+theorem locallyIntegrableOn_of_bound (hg : AEStronglyMeasurable g volume)
     (C : ℝ) (hC : 0 ≤ C) (hb : ∀ t, ‖g t‖ ≤ C) :
     LocallyIntegrableOn g (Ioi 0) := by
   apply (locallyIntegrableOn_const (c := C) (s := Ioi 0)).mono hg
   exact Eventually.of_forall fun t => (hb t).trans_eq (Real.norm_of_nonneg hC).symm
 
 /-- Vanishing below one gives every power bound at the lower endpoint. -/
-theorem isBigO_at_zero_of_eq_zero (g : ℝ → ℂ) (hg : ∀ t, t ≤ 1 → g t = 0) (b : ℝ) :
+theorem isBigO_at_zero_of_eq_zero (hg : ∀ t, t ≤ 1 → g t = 0) (b : ℝ) :
     g =O[𝓝[>] 0] (fun t : ℝ => t ^ (-b)) := by
   apply IsBigO.of_bound 0
   filter_upwards [((eventually_lt_nhds (show (0 : ℝ) < 1 by norm_num)).filter_mono
@@ -39,22 +42,28 @@ theorem isBigO_at_zero_of_eq_zero (g : ℝ → ℂ) (hg : ∀ t, t ≤ 1 → g t
   rw [hg t ht.le, norm_zero, zero_mul]
 
 /-- Vanishing above one gives every power bound at the upper endpoint. -/
-theorem isBigO_at_top_of_eq_zero (g : ℝ → ℂ) (hg : ∀ t, 1 < t → g t = 0) (a : ℝ) :
+theorem isBigO_at_top_of_eq_zero (hg : ∀ t, 1 < t → g t = 0) (a : ℝ) :
     g =O[atTop] (fun t : ℝ => t ^ (-a)) := by
   apply IsBigO.of_bound 0
   filter_upwards [eventually_gt_atTop (1 : ℝ)] with t ht
   rw [hg t ht, norm_zero, zero_mul]
 
 /-- A power bound above one supplies the corresponding upper Mellin endpoint. -/
-theorem isBigO_at_top_of_power_bound (g : ℝ → ℂ) (C β : ℝ)
+theorem isBigO_at_top_of_power_bound (C β : ℝ)
     (hb : ∀ t, 1 ≤ t → ‖g t‖ ≤ C * t ^ (-β)) :
     g =O[atTop] (fun t : ℝ => t ^ (-β)) := by
   apply IsBigO.of_bound C
   filter_upwards [eventually_ge_atTop (1 : ℝ)] with t ht
   exact (hb t ht).trans_eq (by rw [Real.norm_of_nonneg (Real.rpow_nonneg (by linarith) _)])
 
+end
+
+section
+variable (g : ℝ → ℂ) (hg : AEStronglyMeasurable g volume)
+include hg
+
 /-- Upper-tail Mellin convergence and holomorphy on the entire left half-plane. -/
-theorem mellin_upper_kernel (g : ℝ → ℂ) (hg : AEStronglyMeasurable g volume)
+theorem mellin_upper_kernel
     (C β : ℝ) (hC : 0 ≤ C) (hbound : ∀ t, ‖g t‖ ≤ C)
     (hzero : ∀ t, t ≤ 1 → g t = 0)
     (hpower : ∀ t, 1 ≤ t → ‖g t‖ ≤ C * t ^ (-β)) :
@@ -71,7 +80,7 @@ theorem mellin_upper_kernel (g : ℝ → ℂ) (hg : AEStronglyMeasurable g volum
       (isBigO_at_zero_of_eq_zero g hzero (s.re - 1)) (by linarith)).differentiableWithinAt
 
 /-- Lower-tail Mellin convergence and holomorphy to the right of a lower endpoint. -/
-theorem mellin_lower_kernel (g : ℝ → ℂ) (hg : AEStronglyMeasurable g volume)
+theorem mellin_lower_kernel
     (C b : ℝ) (hC : 0 ≤ C) (hbound : ∀ t, ‖g t‖ ≤ C)
     (hzero : ∀ t, 1 < t → g t = 0)
     (hpower : g =O[𝓝[>] 0] (fun t : ℝ => t ^ (-b))) :
@@ -87,7 +96,7 @@ theorem mellin_lower_kernel (g : ℝ → ℂ) (hg : AEStronglyMeasurable g volum
       (isBigO_at_top_of_eq_zero g hzero (s.re + 1)) (by linarith) hpower hs).differentiableWithinAt
 
 /-- A globally bounded lower kernel has lower endpoint zero. -/
-theorem mellin_bounded_lower_kernel (g : ℝ → ℂ) (hg : AEStronglyMeasurable g volume)
+theorem mellin_bounded_lower_kernel
     (C : ℝ) (hC : 0 ≤ C) (hbound : ∀ t, ‖g t‖ ≤ C)
     (hzero : ∀ t, 1 < t → g t = 0) :
     (∀ s : ℂ, 0 < s.re → MellinConvergent g s) ∧
@@ -96,9 +105,14 @@ theorem mellin_bounded_lower_kernel (g : ℝ → ℂ) (hg : AEStronglyMeasurable
   apply IsBigO.of_bound C
   exact Eventually.of_forall fun t => by simpa only [neg_zero, Real.rpow_zero, norm_one, mul_one] using hbound t
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Y : Ω → ℝ) (hpos : ∀ᵐ ω ∂P, 0 < Y ω)
+include Ω hpos
+
 /-- Positive real powers are exponential moments of the logarithm. -/
-theorem integrable_exp_log_of_power {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Y : Ω → ℝ) (hpos : ∀ᵐ ω ∂P, 0 < Y ω) (p : ℝ)
+theorem integrable_exp_log_of_power (p : ℝ)
     (hp : Integrable (fun ω => Y ω ^ p) P) :
     Integrable (fun ω => Real.exp (p * Real.log (Y ω))) P := by
   apply hp.congr
@@ -106,21 +120,21 @@ theorem integrable_exp_log_of_power {Ω : Type*} [MeasurableSpace Ω]
   rw [Real.rpow_def_of_pos hω, mul_comm]
 
 /-- A positive variable has its complex moment equal to the logarithm's complex MGF. -/
-theorem integral_cpow_eq_complexMGF {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Y : Ω → ℝ) (hpos : ∀ᵐ ω ∂P, 0 < Y ω) (s : ℂ) :
+theorem integral_cpow_eq_complexMGF (s : ℂ) :
     (∫ ω, (Y ω : ℂ) ^ s ∂P) = complexMGF (fun ω => Real.log (Y ω)) P s := by
   apply integral_congr_ae
   filter_upwards [hpos] with ω hω
   rw [cpow_def_of_ne_zero (ofReal_ne_zero.mpr hω.ne'), ← ofReal_log hω.le, mul_comm]
 
 /-- The open interval of real integrable powers lies inside the logarithmic MGF domain. -/
-theorem subset_interior_integrableExpSet_log {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Y : Ω → ℝ) (hpos : ∀ᵐ ω ∂P, 0 < Y ω)
+theorem subset_interior_integrableExpSet_log
     (S : Set ℝ) (hS : IsOpen S) (hmom : ∀ p ∈ S, Integrable (fun ω => Y ω ^ p) P) :
     S ⊆ interior (integrableExpSet (fun ω => Real.log (Y ω)) P) := by
   rw [hS.subset_interior_iff]
   intro p hp
   exact integrable_exp_log_of_power P Y hpos p (hmom p hp)
+
+end
 
 /-- Ordinary complex moments of a positive variable on any open real exponent domain. -/
 theorem complexMoments_of_positive_real_powers {Ω : Type*} [MeasurableSpace Ω]
@@ -150,20 +164,16 @@ noncomputable def upperTailErrorKernel (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ 
 noncomputable def upperTailPowerKernel (c β : ℝ) : ℝ → ℂ :=
   (Ioi 1).indicator (fun t => ((c * t ^ (-β) : ℝ) : ℂ))
 
+section
+variable (T : ℝ → ℝ)
+
 /-- The lower-tail kernel is measurable. -/
-theorem measurable_lowerTailKernel (T : ℝ → ℝ) (hT : Measurable T) :
+theorem measurable_lowerTailKernel (hT : Measurable T) :
     Measurable (lowerTailKernel T) :=
   (Complex.continuous_ofReal.measurable.comp hT).indicator measurableSet_Ioc
 
-/-- The subtracted upper-tail kernel is measurable. -/
-theorem measurable_upperTailErrorKernel (T : ℝ → ℝ) (hT : Measurable T)
-    (c₁ c₂ β₁ β₂ : ℝ) : Measurable (upperTailErrorKernel T c₁ c₂ β₁ β₂) :=
-  (Complex.continuous_ofReal.measurable.comp
-    ((hT.sub ((measurable_id.pow_const (-β₁)).const_mul c₁)).sub
-      ((measurable_id.pow_const (-β₂)).const_mul c₂))).indicator measurableSet_Ioi
-
 /-- A probability tail bounds the lower-tail kernel by one. -/
-theorem norm_lowerTailKernel_le (T : ℝ → ℝ) (hT : ∀ t, 0 ≤ T t ∧ T t ≤ 1) (t : ℝ) :
+theorem norm_lowerTailKernel_le (hT : ∀ t, 0 ≤ T t ∧ T t ≤ 1) (t : ℝ) :
     ‖lowerTailKernel T t‖ ≤ 1 := by
   by_cases ht : t ∈ Ioc (0 : ℝ) 1
   · rw [lowerTailKernel, indicator_of_mem ht, norm_real, Real.norm_of_nonneg (hT t).1]
@@ -172,7 +182,7 @@ theorem norm_lowerTailKernel_le (T : ℝ → ℝ) (hT : ∀ t, 0 ≤ T t ∧ T t
     exact zero_le_one
 
 /-- The lower-tail transform converges and is holomorphic for positive real part. -/
-theorem mellin_lowerTailKernel (T : ℝ → ℝ) (hT : Measurable T)
+theorem mellin_lowerTailKernel (hT : Measurable T)
     (hb : ∀ t, 0 ≤ T t ∧ T t ≤ 1) :
     (∀ s : ℂ, 0 < s.re → MellinConvergent (lowerTailKernel T) s) ∧
       DifferentiableOn ℂ (mellin (lowerTailKernel T)) {s | 0 < s.re} := by
@@ -183,7 +193,7 @@ theorem mellin_lowerTailKernel (T : ℝ → ℝ) (hT : Measurable T)
   exact indicator_of_notMem (show t ∉ Ioc (0 : ℝ) 1 from fun h => (not_le.mpr ht) h.2) _
 
 /-- The subtracted upper-tail kernel retains the stated faster power bound. -/
-theorem norm_upperTailErrorKernel_le_power (T : ℝ → ℝ) (c₁ c₂ c₃ β₁ β₂ β₃ : ℝ)
+theorem norm_upperTailErrorKernel_le_power (c₁ c₂ c₃ β₁ β₂ β₃ : ℝ)
     (hc₃ : 0 ≤ c₃)
     (htail : ∀ t : ℝ, 1 ≤ t → |T t - c₁ * t ^ (-β₁) - c₂ * t ^ (-β₂)| ≤ c₃ * t ^ (-β₃))
     (t : ℝ) (ht : 1 ≤ t) :
@@ -192,10 +202,10 @@ theorem norm_upperTailErrorKernel_le_power (T : ℝ → ℝ) (c₁ c₂ c₃ β�
   · rw [upperTailErrorKernel, indicator_of_mem h, norm_real, Real.norm_eq_abs]
     exact htail t ht
   · rw [upperTailErrorKernel, indicator_of_notMem h, norm_zero]
-    exact mul_nonneg hc₃ (Real.rpow_nonneg (by linarith) _)
+    positivity
 
 /-- Positive decay makes the upper error globally bounded. -/
-theorem norm_upperTailErrorKernel_le (T : ℝ → ℝ) (c₁ c₂ c₃ β₁ β₂ β₃ : ℝ)
+theorem norm_upperTailErrorKernel_le (c₁ c₂ c₃ β₁ β₂ β₃ : ℝ)
     (hc₃ : 0 ≤ c₃) (hβ₃ : 0 ≤ β₃)
     (htail : ∀ t : ℝ, 1 ≤ t → |T t - c₁ * t ^ (-β₁) - c₂ * t ^ (-β₂)| ≤ c₃ * t ^ (-β₃))
     (t : ℝ) : ‖upperTailErrorKernel T c₁ c₂ β₁ β₂ t‖ ≤ c₃ := by
@@ -203,23 +213,24 @@ theorem norm_upperTailErrorKernel_le (T : ℝ → ℝ) (c₁ c₂ c₃ β₁ β�
   · exact (norm_upperTailErrorKernel_le_power T c₁ c₂ c₃ β₁ β₂ β₃ hc₃ htail t ht.le).trans
       ((mul_le_mul_of_nonneg_left (Real.rpow_le_one_of_one_le_of_nonpos ht.le (neg_nonpos.mpr hβ₃))
         hc₃).trans_eq (mul_one _))
-  · rw [upperTailErrorKernel, indicator_of_notMem (show t ∉ Ioi (1 : ℝ) from ht), norm_zero]
-    exact hc₃
+  · rwa [upperTailErrorKernel, indicator_of_notMem (show t ∉ Ioi (1 : ℝ) from ht), norm_zero]
 
 /-- The upper error transform converges and is holomorphic to the left of the third exponent. -/
-theorem mellin_upperTailErrorKernel (T : ℝ → ℝ) (hT : Measurable T)
+theorem mellin_upperTailErrorKernel (hT : Measurable T)
     (c₁ c₂ c₃ β₁ β₂ β₃ : ℝ) (hc₃ : 0 ≤ c₃) (hβ₃ : 0 ≤ β₃)
     (htail : ∀ t : ℝ, 1 ≤ t → |T t - c₁ * t ^ (-β₁) - c₂ * t ^ (-β₂)| ≤ c₃ * t ^ (-β₃)) :
     (∀ s : ℂ, s.re < β₃ → MellinConvergent (upperTailErrorKernel T c₁ c₂ β₁ β₂) s) ∧
       DifferentiableOn ℂ (mellin (upperTailErrorKernel T c₁ c₂ β₁ β₂)) {s | s.re < β₃} := by
-  apply mellin_upper_kernel _ (measurable_upperTailErrorKernel T hT c₁ c₂ β₁ β₂).aestronglyMeasurable
+  apply mellin_upper_kernel _ (((Complex.continuous_ofReal.measurable.comp
+    ((hT.sub ((measurable_id.pow_const (-β₁)).const_mul c₁)).sub
+    ((measurable_id.pow_const (-β₂)).const_mul c₂))).indicator measurableSet_Ioi)).aestronglyMeasurable
     c₃ β₃ hc₃ (norm_upperTailErrorKernel_le T c₁ c₂ c₃ β₁ β₂ β₃ hc₃ hβ₃ htail)
   · intro t ht
     exact indicator_of_notMem (show t ∉ Ioi (1 : ℝ) from not_lt.mpr ht) _
-  · exact norm_upperTailErrorKernel_le_power T c₁ c₂ c₃ β₁ β₂ β₃ hc₃ htail
+  · apply norm_upperTailErrorKernel_le_power <;> assumption
 
 /-- Two powers and a faster error imply a single upper power bound. -/
-theorem tail_le_first_power (T : ℝ → ℝ) (c₁ c₂ c₃ β₁ β₂ β₃ : ℝ)
+theorem tail_le_first_power (c₁ c₂ c₃ β₁ β₂ β₃ : ℝ)
     (_hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂) (hc₃ : 0 ≤ c₃)
     (hβ₁₂ : β₁ ≤ β₂) (hβ₂₃ : β₂ ≤ β₃)
     (htail : ∀ t : ℝ, 1 ≤ t → |T t - c₁ * t ^ (-β₁) - c₂ * t ^ (-β₂)| ≤ c₃ * t ^ (-β₃))
@@ -232,7 +243,7 @@ theorem tail_le_first_power (T : ℝ → ℝ) (c₁ c₂ c₃ β₁ β₂ β₃ 
   nlinarith
 
 /-- The full tail's Mellin transform converges in the original positive moment strip. -/
-theorem mellin_full_tail (T : ℝ → ℝ) (hT : Measurable T)
+theorem mellin_full_tail (hT : Measurable T)
     (hb : ∀ t, 0 ≤ T t ∧ T t ≤ 1) (C β : ℝ)
     (htop : ∀ t, 1 ≤ t → T t ≤ C * t ^ (-β)) (s : ℂ)
     (hs : 0 < s.re ∧ s.re < β) : MellinConvergent (fun t => (T t : ℂ)) s := by
@@ -249,19 +260,19 @@ theorem mellin_full_tail (T : ℝ → ℝ) (hT : Measurable T)
       simpa only [neg_zero, Real.rpow_zero, norm_one, one_mul] using hbound t
   · exact hs.1
 
+end
+
 /-- The leading upper power has its elementary rational Mellin transform. -/
 theorem hasMellin_upperTailPowerKernel (c β : ℝ) (s : ℂ) (hs : s.re < β) :
     HasMellin (upperTailPowerKernel c β) s ((c : ℂ) / ((β : ℂ) - s)) := by
-  let a : ℂ := s - 1 - (β : ℂ)
+  let a  := s - 1 - (β : ℂ)
   have ha : a.re < -1 := by dsimp [a]; linarith
   have heq : (fun t : ℝ => (t : ℂ) ^ (s - 1) • upperTailPowerKernel c β t) =
       (Ioi (1 : ℝ)).indicator (fun t => (c : ℂ) * (t : ℂ) ^ a) := by
     funext t
     by_cases ht : t ∈ Ioi (1 : ℝ)
-    · have htpos : 0 < t := lt_trans zero_lt_one ht
-      rw [upperTailPowerKernel, indicator_of_mem ht, indicator_of_mem ht,
-        ofReal_mul, ofReal_cpow htpos.le, ofReal_neg, smul_eq_mul]
-      rw [mul_left_comm, ← cpow_add _ _ (ofReal_ne_zero.mpr htpos.ne')]
+    · have htpos  := lt_trans zero_lt_one ht
+      rw [upperTailPowerKernel, indicator_of_mem ht, indicator_of_mem ht, ofReal_mul, ofReal_cpow htpos.le, ofReal_neg, smul_eq_mul, mul_left_comm, ← cpow_add _ _ (ofReal_ne_zero.mpr htpos.ne')]
       rfl
     · rw [upperTailPowerKernel, indicator_of_notMem ht, indicator_of_notMem ht, smul_zero]
   have hsub : Ioi (1 : ℝ) ⊆ Ioi 0 := fun _ ht => lt_trans zero_lt_one ht
@@ -277,8 +288,11 @@ theorem hasMellin_upperTailPowerKernel (c β : ℝ) (s : ℂ) (hs : s.re < β) :
     rw [he, div_neg, neg_div, neg_neg]
     ring
 
+section
+variable (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ)
+
 /-- A tail is the sum of its lower part, upper error, and leading powers on the integration domain. -/
-theorem tail_kernel_decomposition (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ) :
+theorem tail_kernel_decomposition :
     EqOn (fun t => (T t : ℂ))
       (fun t => (lowerTailKernel T t + upperTailErrorKernel T c₁ c₂ β₁ β₂ t) +
         (upperTailPowerKernel c₁ β₁ t + upperTailPowerKernel c₂ β₂ t)) (Ioi 0) := by
@@ -290,7 +304,7 @@ theorem tail_kernel_decomposition (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ
       indicator_of_mem (show t ∈ Ioc (0 : ℝ) 1 from ⟨ht, h⟩),
       indicator_of_notMem (show t ∉ Ioi (1 : ℝ) from not_lt.mpr h)]
     simp only [add_zero]
-  · have h1 : 1 < t := lt_of_not_ge h
+  · have h1  := lt_of_not_ge h
     simp only [lowerTailKernel, upperTailErrorKernel, upperTailPowerKernel,
       indicator_of_notMem (show t ∉ Ioc (0 : ℝ) 1 from fun h => (not_le.mpr h1) h.2),
       indicator_of_mem (show t ∈ Ioi (1 : ℝ) from h1)]
@@ -298,7 +312,7 @@ theorem tail_kernel_decomposition (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ
     ring
 
 /-- The full Mellin transform is the rational subtraction plus the two remainder transforms. -/
-theorem mellin_tail_decomposition (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ) (s : ℂ)
+theorem mellin_tail_decomposition (s : ℂ)
     (h₁ : s.re < β₁) (h₂ : s.re < β₂)
     (hl : MellinConvergent (lowerTailKernel T) s)
     (he : MellinConvergent (upperTailErrorKernel T c₁ c₂ β₁ β₂) s) :
@@ -319,6 +333,8 @@ theorem mellin_tail_decomposition (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ
   rw [hfull, hall.2, hr.2, hp.2, hp₁.2, hp₂.2, twoTailRational]
   ring
 
+end
+
 /-- Mellin convergence of a nonnegative real tail gives its real weighted integrability. -/
 theorem integrable_real_tail_of_mellin (T : ℝ → ℝ) (hT : Measurable T)
     (hn : ∀ t, 0 ≤ T t) (p : ℝ) (hm : MellinConvergent (fun t => (T t : ℂ)) (p : ℂ)) :
@@ -327,8 +343,7 @@ theorem integrable_real_tail_of_mellin (T : ℝ → ℝ) (hT : Measurable T)
     ((Complex.continuous_ofReal.measurable.comp hT).aestronglyMeasurable.restrict)).mp hm
   apply h.congr
   filter_upwards with t
-  change t ^ (p - 1) * ‖(T t : ℂ)‖ = T t * t ^ (p - 1)
-  rw [norm_real, Real.norm_of_nonneg (hn t), mul_comm]
+  simp [norm_real, Real.norm_of_nonneg (hn t), mul_comm]
 
 /-- The real moment layer cake expressed as a complex Mellin identity. -/
 theorem complexMoment_real_eq_mellin_tail {Ω : Type*} [MeasurableSpace Ω]
@@ -343,16 +358,14 @@ theorem complexMoment_real_eq_mellin_tail {Ω : Type*} [MeasurableSpace Ω]
     (fun t => (realUpperTail_bounds P Y hY t).1) p hm
   have hreal := integral_rpow_eq_tail_of_integrable P Y hY hpos p hp ht
   refine ⟨hreal.1, ?_⟩
-  have hcpow : (fun ω => (Y ω : ℂ) ^ (p : ℂ)) =ᵐ[P] (fun ω => ((Y ω ^ p : ℝ) : ℂ)) :=
+  have hcpow  :=
     hpos.mono fun ω hω => (ofReal_cpow hω p).symm
   rw [integral_congr_ae hcpow, integral_complex_ofReal, hreal.2, ofReal_mul]
   congr 1
   rw [mellin, ← integral_complex_ofReal]
   apply setIntegral_congr_fun measurableSet_Ioi
   intro t ht
-  change ((realUpperTail P Y hY t * t ^ (p - 1) : ℝ) : ℂ) =
-    (t : ℂ) ^ ((p : ℂ) - 1) * (realUpperTail P Y hY t : ℂ)
-  rw [ofReal_mul, ofReal_cpow ht.le, ofReal_sub, ofReal_one, mul_comm]
+  simp [ofReal_mul, ofReal_cpow ht.le, ofReal_sub, ofReal_one, mul_comm]
 
 /-- The positive-strip remainder after upper-tail subtraction. -/
 noncomputable def twoTailRemainder (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ) (s : ℂ) : ℂ :=
@@ -386,20 +399,23 @@ theorem meromorphicOn_twoTailRational_add (c₁ c₂ β₁ β₂ : ℝ) (r : ℂ
     fun s _ => meromorphic_twoTailRational c₁ c₂ β₁ β₂ s
   exact hrat.add ((hr.analyticOnNhd hU).meromorphicOn)
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (Y : Ω → ℝ)
+  (hY : AEMeasurable Y P)
+include Ω
+
 /-- The complementary probability tail is nonnegative and bounded by one. -/
-theorem lowerProbability_bounds {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (Y : Ω → ℝ) (hY : AEMeasurable Y P) (t : ℝ) :
+theorem lowerProbability_bounds (t : ℝ) :
     0 ≤ 1 - realUpperTail P Y hY t ∧ 1 - realUpperTail P Y hY t ≤ 1 := by
   have h := realUpperTail_bounds P Y hY t
   constructor <;> linarith
 
 /-- The complement of the strict upper event is the lower probability used here. -/
-theorem lowerProbability_eq_integral_indicator {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (Y : Ω → ℝ) (hY : AEMeasurable Y P) (t : ℝ) :
+theorem lowerProbability_eq_integral_indicator (t : ℝ) :
     1 - realUpperTail P Y hY t = ∫ ω, {ω | Y ω ≤ t}.indicator (fun _ => (1 : ℝ)) ω ∂P := by
   have hu : NullMeasurableSet {ω | t < Y ω} P := hY.nullMeasurableSet_preimage measurableSet_Ioi
   have hl : NullMeasurableSet {ω | Y ω ≤ t} P := hY.nullMeasurableSet_preimage measurableSet_Iic
-  have heq : {ω | Y ω ≤ t} = {ω | t < Y ω}ᶜ := by ext ω; simp only [mem_ofPred_eq, mem_compl_iff, not_lt]
+  have heq : {ω | Y ω ≤ t} = {ω | t < Y ω}ᶜ := by ext ω; simp
   rw [integral_indicator₀ hl, integral_const]
   simp only [smul_eq_mul, mul_one, Measure.real, Measure.restrict_apply_univ]
   have h := probReal_compl_eq_one_sub₀ hu
@@ -407,8 +423,7 @@ theorem lowerProbability_eq_integral_indicator {Ω : Type*} [MeasurableSpace Ω]
   exact h.symm
 
 /-- Markov's lower-tail bound from one inverse moment; no independence or density is used. -/
-theorem lowerProbability_le_inverseMoment {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (Y : Ω → ℝ) (hY : AEMeasurable Y P)
+theorem lowerProbability_le_inverseMoment
     (hpos : ∀ᵐ ω ∂P, 0 < Y ω) (q : ℝ) (hq : 0 < q)
     (hint : Integrable (fun ω => Y ω ^ (-q)) P) (t : ℝ) (ht : 0 < t) :
     1 - realUpperTail P Y hY t ≤ (∫ ω, Y ω ^ (-q) ∂P) * t ^ q := by
@@ -425,15 +440,14 @@ theorem lowerProbability_le_inverseMoment {Ω : Type*} [MeasurableSpace Ω]
       have heq : t ^ q * t ^ (-q) = 1 := by rw [← Real.rpow_add ht, add_neg_cancel, Real.rpow_zero]
       exact heq ▸ hp
     · rw [indicator_of_notMem (show ω ∉ {ω | Y ω ≤ t} from h)]
-      exact mul_nonneg (Real.rpow_pos_of_pos ht q).le (Real.rpow_pos_of_pos hω (-q)).le
+      positivity
   rw [lowerProbability_eq_integral_indicator P Y hY t]
   have h := integral_mono_ae hconst (hint.const_mul (t ^ q)) hbound
   rw [integral_const_mul, mul_comm] at h
   exact h
 
 /-- Inverse moments give an entire Mellin transform for the lower-probability kernel. -/
-theorem differentiable_mellin_lowerProbability {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (Y : Ω → ℝ) (hY : AEMeasurable Y P)
+theorem differentiable_mellin_lowerProbability
     (hpos : ∀ᵐ ω ∂P, 0 < Y ω)
     (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => Y ω ^ (-q)) P) :
     (∀ s : ℂ, MellinConvergent (lowerTailKernel (fun t => 1 - realUpperTail P Y hY t)) s) ∧
@@ -461,15 +475,17 @@ theorem differentiable_mellin_lowerProbability {Ω : Type*} [MeasurableSpace Ω]
       rw [neg_neg, Real.norm_of_nonneg (Real.rpow_pos_of_pos ht q).le]
       by_cases h : t ∈ Ioc (0 : ℝ) 1
       · rw [lowerTailKernel, indicator_of_mem h, norm_real, Real.norm_of_nonneg (hb t).1]
-        exact lowerProbability_le_inverseMoment P Y hY hpos q hq hint t ht
+        apply lowerProbability_le_inverseMoment <;> assumption
       · rw [lowerTailKernel, indicator_of_notMem h, norm_zero]
-        exact mul_nonneg hC (Real.rpow_pos_of_pos ht q).le
+        positivity
     have hloc := locallyIntegrableOn_of_bound (lowerTailKernel T)
       (measurable_lowerTailKernel T hT).aestronglyMeasurable 1 zero_le_one hglob
     have htop := isBigO_at_top_of_eq_zero (lowerTailKernel T) hzero (s.re + 1)
     exact ⟨mellinConvergent_of_isBigO_rpow hloc htop (by linarith) hpower hs,
       mellin_differentiableAt_of_isBigO_rpow hloc htop (by linarith) hpower hs⟩
   exact ⟨fun s => (hlocal s).1, fun s => (hlocal s).2⟩
+
+end
 
 /-- Lower tail and lower probability sum to the elementary unit interval kernel. -/
 theorem lowerTailKernel_add_complement (T : ℝ → ℝ) :
@@ -494,7 +510,7 @@ theorem lowerTail_mellin_complement (T : ℝ → ℝ) (hT : Measurable T)
     ((mellin_lowerTailKernel (fun t => 1 - T t) (measurable_const.sub hT) hq).1 s hs)
   rw [lowerTailKernel_add_complement T] at hsum
   have hunit := hasMellin_one_Ioc hs
-  have heq : mellin (lowerTailKernel T) s + mellin (lowerTailKernel (fun t => 1 - T t)) s = 1 / s :=
+  have heq  :=
     hsum.2.symm.trans hunit.2
   have hne : s ≠ 0 := fun h => (ne_of_gt hs) (congrArg Complex.re h)
   rw [heq, mul_one_div_cancel hne]
@@ -531,12 +547,14 @@ theorem eqOn_realPart_lt_of_positive_real (β : ℝ) (hβ : 0 < β) (f g : ℂ �
   have h := abs_lt.mp hp
   apply heq p <;> linarith
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (Y : Ω → ℝ)
+  (hY : AEMeasurable Y P) (hpos : ∀ᵐ ω ∂P, 0 < Y ω)
+  (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => Y ω ^ (-q)) P) (c₁ c₂ c₃ β₁ β₂ β₃ : ℝ)
+include Ω hpos hinv
+
 /-- All inverse moments extend real power integrability throughout the ordinary left half-plane. -/
-theorem integrable_real_power_of_two_tail_inverse {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (Y : Ω → ℝ) (hY : AEMeasurable Y P)
-    (hpos : ∀ᵐ ω ∂P, 0 < Y ω)
-    (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => Y ω ^ (-q)) P)
-    (c₁ c₂ c₃ β₁ β₂ β₃ : ℝ) (hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂) (hc₃ : 0 ≤ c₃)
+theorem integrable_real_power_of_two_tail_inverse (hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂) (hc₃ : 0 ≤ c₃)
     (hβ₁₂ : β₁ ≤ β₂) (hβ₂₃ : β₂ ≤ β₃)
     (htail : ∀ t : ℝ, 1 ≤ t →
       |realUpperTail P Y hY t - c₁ * t ^ (-β₁) - c₂ * t ^ (-β₂)| ≤ c₃ * t ^ (-β₃))
@@ -546,19 +564,14 @@ theorem integrable_real_power_of_two_tail_inverse {Ω : Type*} [MeasurableSpace 
   · by_cases hzero : p = 0
     · simp only [hzero, Real.rpow_zero]
       exact integrable_const 1
-    · have hposp : 0 < p := lt_of_le_of_ne (le_of_not_gt h) (Ne.symm hzero)
-      have htop := tail_le_first_power (realUpperTail P Y hY) c₁ c₂ c₃ β₁ β₂ β₃
-        hc₁ hc₂ hc₃ hβ₁₂ hβ₂₃ htail
-      exact (complexMoment_real_eq_mellin_tail P Y hY (hpos.mono fun _ h => h.le) p hposp
-        (mellin_full_tail (realUpperTail P Y hY) (measurable_realUpperTail P Y hY)
-          (realUpperTail_bounds P Y hY) (c₁ + c₂ + c₃) β₁ htop (p : ℂ) ⟨hposp, hp⟩)).1
+    · have hposp  := lt_of_le_of_ne (le_of_not_gt h) (Ne.symm hzero)
+      exact (complexMoment_real_eq_mellin_tail P Y hY (Eventually.mono hpos fun x h => LT.lt.le h) p hposp
+          (mellin_full_tail (realUpperTail P Y hY) (measurable_realUpperTail P Y hY) (realUpperTail_bounds P Y hY)
+            (c₁ + c₂ + c₃) β₁ (tail_le_first_power (realUpperTail P Y hY) c₁ c₂ c₃ β₁ β₂ β₃ hc₁ hc₂ hc₃ hβ₁₂ hβ₂₃ htail) ↑p
+            ⟨hposp, hp⟩)).left
 
 /-- The inverse-tail remainder is holomorphic on the full continuation half-plane. -/
-theorem differentiableOn_inverseTailRemainder {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (Y : Ω → ℝ) (hY : AEMeasurable Y P)
-    (hpos : ∀ᵐ ω ∂P, 0 < Y ω)
-    (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => Y ω ^ (-q)) P)
-    (c₁ c₂ c₃ β₁ β₂ β₃ : ℝ) (hc₃ : 0 ≤ c₃) (hβ₃ : 0 ≤ β₃)
+theorem differentiableOn_inverseTailRemainder (hc₃ : 0 ≤ c₃) (hβ₃ : 0 ≤ β₃)
     (htail : ∀ t : ℝ, 1 ≤ t →
       |realUpperTail P Y hY t - c₁ * t ^ (-β₁) - c₂ * t ^ (-β₂)| ≤ c₃ * t ^ (-β₃)) :
     DifferentiableOn ℂ (inverseTailRemainder (realUpperTail P Y hY) c₁ c₂ β₁ β₂)
@@ -569,6 +582,8 @@ theorem differentiableOn_inverseTailRemainder {Ω : Type*} [MeasurableSpace Ω]
     c₁ c₂ c₃ β₁ β₂ β₃ hc₃ hβ₃ htail).2
   exact ((differentiableOn_const (1 : ℂ)).sub (differentiableOn_id.mul hl)).add
     (differentiableOn_id.mul hu)
+
+end
 
 /-- The lower-tail correction has its exact value at exponent zero. -/
 theorem inverseTailRemainder_zero (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ) :
@@ -601,14 +616,14 @@ theorem complexMoment_two_tail_residues_of_inverse_moments
   let T := realUpperTail P Y hY
   have hT := measurable_realUpperTail P Y hY
   have hb := realUpperTail_bounds P Y hY
-  have hβ₃ : 0 < β₃ := hβ₁.trans (hβ₁₂.trans hβ₂₃)
+  have hβ₃  := hβ₁.trans (hβ₁₂.trans hβ₂₃)
   have htop := tail_le_first_power T c₁ c₂ c₃ β₁ β₂ β₃ hc₁.le hc₂.le hc₃.le hβ₁₂.le hβ₂₃.le htail
-  have hmoment : ∀ p ∈ Iio β₁, Integrable (fun ω => Y ω ^ p) P :=
+  have hmoment  :=
     integrable_real_power_of_two_tail_inverse P Y hY hpos hinv c₁ c₂ c₃ β₁ β₂ β₃
       hc₁.le hc₂.le hc₃.le hβ₁₂.le hβ₂₃.le htail
   have hord := complexMoments_of_positive_real_powers P Y hY hpos (Iio β₁) isOpen_Iio hmoment
   let r := inverseTailRemainder T c₁ c₂ β₁ β₂
-  have hr : DifferentiableOn ℂ r {s : ℂ | s.re < β₃} :=
+  have hr  :=
     differentiableOn_inverseTailRemainder P Y hY hpos hinv c₁ c₂ c₃ β₁ β₂ β₃ hc₃.le hβ₃.le htail
   have hsub : {s : ℂ | s.re < β₁} ⊆ {s : ℂ | s.re < β₃} :=
     fun _ hs => hs.trans (hβ₁₂.trans hβ₂₃)

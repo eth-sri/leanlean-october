@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import DOZZ.FourPoint.Fusion.ScaledSpatialConvergence
+public import DOZZ.FourPoint.Fusion.ScaledFactor
+public import DOZZ.FourPoint.Fusion.InterpolatedTimeConvergence
 public import DOZZ.FourPoint.TaylorTimeIntegration
 
 /-! # Dominated time integration of the scaled rooted spatial observable -/
@@ -46,62 +47,14 @@ theorem fusionScaledTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       (nhds 0) (nhds ((1 / ((e + 1) * (e + 2)) : ℝ) *
         ((∫ y : ℂ, K y) *
           ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ)))) := by
-  obtain ⟨B, hB, hb⟩ := fusionScaledFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
-  let D := (∫ y : ℂ, ‖K y‖) * B
-  have hD : 0 ≤ D := mul_nonneg (integral_nonneg fun _ => norm_nonneg _) hB
-  have hspacebound : ∀ w : ℂ, ‖w‖ ≤ 1 →
-      ‖∫ y : ℂ, K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y w : ℂ)‖ ≤ D := by
-    intro w hw
-    calc
-      _ ≤ ∫ y : ℂ, ‖K y‖ * B := norm_integral_le_of_norm_le (hK.norm.mul_const B)
-        (ae_of_all _ fun y => by
-          rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-          exact mul_le_mul_of_nonneg_left (hb y w hw) (norm_nonneg _))
-      _ = D := integral_mul_const _ _
-  have hsm := fusionScaledIntegral_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s K hKm
-  have hsl := fusionScaledIntegral_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃
-    hα hα₁ hα₂ hα₃ s hs K hK
-  have hmeas : ∀ᶠ z : ℂ in nhds 0, AEStronglyMeasurable
-      (fun t : ℝ => ((1 - t) * t ^ e : ℝ) *
-        (∫ y : ℂ, K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y ((t : ℂ) * z) : ℂ)))
-      (volume.restrict (Icc 0 1)) := by
-    apply Eventually.of_forall
-    intro z
-    have ht : Measurable (fun t : ℝ => ((1 - t) * t ^ e : ℝ)) :=
-      (measurable_const.sub measurable_id).mul (measurable_id.pow_const e)
-    exact ((Complex.measurable_ofReal.comp ht).mul
-      (hsm.comp (Complex.measurable_ofReal.mul_const z))).aestronglyMeasurable
-  have hdom : ∀ᶠ z : ℂ in nhds 0, ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1),
-      ‖((1 - t) * t ^ e : ℝ) *
-        (∫ y : ℂ, K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y ((t : ℂ) * z) : ℂ))‖ ≤ t ^ e * D := by
-    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 :=
-      ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun _ h => h.le
-    filter_upwards [hz] with z hz
-    filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
-    have htz : ‖(t : ℂ) * z‖ ≤ 1 := by
+  obtain ⟨hi, heq⟩ := fusion_time_weight_integral e he
+  have h := fusionSpaceTimeIntegral_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα hα₁ hα₂ hα₃ s hs K hKm hK
+    (fun _ => 1) measurable_const (fun _ _ => by simp) (fun t z => (t : ℂ) * z)
+    (fun z => Complex.measurable_ofReal.mul_const z)
+    (fun t ht z hz => by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
-      calc
-        t * ‖z‖ ≤ 1 * ‖z‖ := mul_le_mul_of_nonneg_right ht.2 (norm_nonneg _)
-        _ ≤ 1 := by simpa only [one_mul] using hz
-    rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_nonneg (mul_nonneg (sub_nonneg.mpr ht.2) (Real.rpow_nonneg ht.1 _))]
-    have hweight : (1 - t) * t ^ e ≤ t ^ e := by
-      exact mul_le_of_le_one_left (Real.rpow_nonneg ht.1 _) (by linarith only [ht.1])
-    exact mul_le_mul hweight (hspacebound _ htz) (norm_nonneg _) (Real.rpow_nonneg ht.1 _)
-  have hlim : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1), Tendsto
-      (fun z : ℂ => ((1 - t) * t ^ e : ℝ) *
-        (∫ y : ℂ, K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y ((t : ℂ) * z) : ℂ)))
-      (nhds 0) (nhds (((1 - t) * t ^ e : ℝ) *
-        ((∫ y : ℂ, K y) *
-          ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ)))) := by
-    apply ae_of_all
-    intro t
-    have ht : Tendsto (fun z : ℂ => (t : ℂ) * z) (nhds 0) (nhds 0) := by
-      have hc : Continuous (fun z : ℂ => (t : ℂ) * z) := continuous_const.mul continuous_id
-      simpa only [mul_zero] using hc.tendsto (0 : ℂ)
-    exact tendsto_const_nhds.mul (hsl.comp ht)
-  have h := tendsto_integral_filter_of_dominated_convergence (fun t : ℝ => t ^ e * D)
-    hmeas hdom ((time_rpow_integral e he).1.mul_const D) hlim
-  simpa only [integral_mul_const, integral_complex_ofReal, (fusion_time_weight_integral e he).2] using h
+      exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hz)
+    (fun t _ => by simpa using (show Continuous (fun z : ℂ => (t : ℂ) * z) from by fun_prop).tendsto 0) _ hi
+  simpa only [fusionInterpolatedFactor_one, heq] using h
 
 end DOZZ.Proofs

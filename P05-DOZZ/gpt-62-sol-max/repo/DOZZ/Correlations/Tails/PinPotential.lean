@@ -18,8 +18,8 @@ theorem abs_log_sub_le {a b : ℝ} (ha : 1 ≤ a) (hb : 1 ≤ b) :
     |Real.log a - Real.log b| ≤ |a - b| := by
   have bound {u v : ℝ} (hu : 1 ≤ u) (hv : 1 ≤ v) :
       Real.log u - Real.log v ≤ |u - v| := by
-    have hup : 0 < u := lt_of_lt_of_le zero_lt_one hu
-    have hvp : 0 < v := lt_of_lt_of_le zero_lt_one hv
+    have hup  := lt_of_lt_of_le zero_lt_one hu
+    have hvp  := lt_of_lt_of_le zero_lt_one hv
     calc
       Real.log u - Real.log v = Real.log (u / v) :=
         (Real.log_div hup.ne' hvp.ne').symm

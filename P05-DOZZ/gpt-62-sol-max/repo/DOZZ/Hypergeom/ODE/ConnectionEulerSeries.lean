@@ -18,8 +18,11 @@ namespace DOZZ.Proofs
 
 open Set MeasureTheory
 
+section
+variable (x : ℝ) (n : ℕ)
+
 /-- Evaluating the rising factorial commutes with the real-to-complex cast. -/
-theorem ofReal_ascPochhammer_eval (x : ℝ) (n : ℕ) :
+theorem ofReal_ascPochhammer_eval :
     Complex.ofReal ((ascPochhammer ℝ n).eval x) =
       (ascPochhammer ℂ n).eval (x : ℂ) := by
   calc
@@ -32,7 +35,7 @@ theorem ofReal_ascPochhammer_eval (x : ℝ) (n : ℕ) :
       rw [ascPochhammer_map]
 
 /-- Gamma's natural shift formula, stated over positive real arguments. -/
-theorem realGamma_add_nat_div_Gamma_eq (x : ℝ) (n : ℕ) (hx : 0 < x) :
+theorem realGamma_add_nat_div_Gamma_eq (hx : 0 < x) :
     Real.Gamma (x + n) / Real.Gamma x = (ascPochhammer ℝ n).eval x := by
   have hcx : ∀ k : ℕ, (x : ℂ) ≠ -(k : ℂ) := by
     intro k hk
@@ -44,6 +47,8 @@ theorem realGamma_add_nat_div_Gamma_eq (x : ℝ) (n : ℕ) (hx : 0 < x) :
     ← ofReal_ascPochhammer_eval x n] at h
   apply Complex.ofReal_injective
   simpa only [Complex.ofReal_div] using h
+
+end
 
 /-- Scaling the beta moment with its Euler normalization gives the ratio of rising factorials. -/
 theorem realEulerBetaMoment_scaled (b c : ℝ) (n : ℕ)
@@ -63,10 +68,10 @@ theorem realEulerBetaMoment_scaled (b c : ℝ) (n : ℕ)
     simpa only [show b + (n : ℝ) + (c - b) = c + n by ring] using hbeta
   have hshiftB := realGamma_add_nat_div_Gamma_eq b n hb
   have hshiftC := realGamma_add_nat_div_Gamma_eq c n hc
-  have hΓb : 0 < Real.Gamma b := Real.Gamma_pos_of_pos hb
-  have hΓq : 0 < Real.Gamma (c - b) := Real.Gamma_pos_of_pos hcb
+  have hΓb  := Real.Gamma_pos_of_pos hb
+  have hΓq  := Real.Gamma_pos_of_pos hcb
   have hΓc : 0 < Real.Gamma c := Real.Gamma_pos_of_pos hc
-  have hΓbn : 0 < Real.Gamma (b + n) := Real.Gamma_pos_of_pos hbn
+  have hΓbn  := Real.Gamma_pos_of_pos hbn
   have hΓcn : 0 < Real.Gamma (c + n) := Real.Gamma_pos_of_pos hcn
   have hPochC : 0 < (ascPochhammer ℝ n).eval c := by
     rw [← hshiftC]
@@ -91,7 +96,7 @@ theorem realAscPochhammer_eval_pos {x : ℝ} (hx : 0 < x) (n : ℕ) :
   | zero => simp
   | succ n ih =>
       rw [ascPochhammer_succ_eval]
-      exact mul_pos ih (by positivity)
+      positivity
 
 /-- The real form of Mathlib's ordinary Gauss-series coefficient. -/
 noncomputable def realOrdinaryHypergeometricCoefficient (a b c : ℝ) (n : ℕ) : ℝ :=
@@ -113,47 +118,34 @@ noncomputable def realGaussEulerBinomialTerm (a b c x : ℝ) (n : ℕ) (t : ℝ)
   Ring.choose (a + n - 1) n * (x * t) ^ n *
     t ^ (b - 1) * (1 - t) ^ (c - b - 1)
 
+section
+variable (a b c x : ℝ) (n : ℕ)
+
 /-- Each integrated binomial term equals the corresponding normalized ordinary Gauss-series term. -/
-theorem realGaussEulerBinomialTerm_integral (a b c x : ℝ) (n : ℕ)
+theorem realGaussEulerBinomialTerm_integral
     (ha : 0 < a) (hb : 0 < b) (hcb : 0 < c - b) (hx : 0 < x) :
     (Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))) *
         (∫ t : ℝ in Ioc 0 1, realGaussEulerBinomialTerm a b c x n t) =
       realOrdinaryHypergeometricCoefficient a b c n * x ^ n := by
   let s : Set ℝ := Ioc 0 1
   let w : ℝ → ℝ := fun t => t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)
-  let C : ℝ := Ring.choose (a + n - 1) n * x ^ n
-  have hchoose : 0 < Ring.choose (a + n - 1) n := by
-    rw [realBinomialCoefficient_eq_ascPochhammer]
-    exact div_pos (realAscPochhammer_eval_pos ha n) (by positivity)
+  let C  := Ring.choose (a + n - 1) n * x ^ n
   have hweight : IntegrableOn w s := by
-    simpa [w, s] using
-      (realEulerBetaWeight_integrable (b + n) (c - b) (by positivity) hcb)
+    apply realEulerBetaWeight_integrable <;> positivity
   have hpowEq :
       realGaussEulerBinomialTerm a b c x n =ᵐ[volume.restrict s]
         fun t => C * w t := by
     filter_upwards [ae_restrict_mem (by simp [s]),
       ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with t ht ht0
-    have htpos : 0 < t := ht.1
-    have hpow : (x * t) ^ n = x ^ n * t ^ n := mul_pow x t n
-    have hrpowNat : t ^ n = t ^ (n : ℝ) := (Real.rpow_natCast t n).symm
+    have htpos  := ht.1
+    have hpow  := mul_pow x t n
+    have hrpowNat  := (Real.rpow_natCast t n).symm
     have hrpowAdd : t ^ (b - 1) * t ^ (n : ℝ) = t ^ (b + n - 1) := by
       rw [← Real.rpow_add htpos]
       congr 1
       ring
     dsimp [realGaussEulerBinomialTerm, C, w]
-    calc
-      Ring.choose (a + n - 1) n * (x * t) ^ n *
-          t ^ (b - 1) * (1 - t) ^ (c - b - 1) =
-          Ring.choose (a + n - 1) n * x ^ n *
-            ((t ^ (b - 1) * t ^ (n : ℝ)) * (1 - t) ^ (c - b - 1)) := by
-              rw [hpow, hrpowNat]
-              ring
-      _ = Ring.choose (a + n - 1) n * x ^ n *
-            (t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)) := by rw [hrpowAdd]
-  have hterm_int : IntegrableOn
-      (realGaussEulerBinomialTerm a b c x n) s := by
-    have hC : IntegrableOn (fun t => C * w t) s := hweight.const_mul C
-    exact hC.congr_fun_ae hpowEq.symm
+    grind
   have hterm_integral :
       (∫ t : ℝ in s, realGaussEulerBinomialTerm a b c x n t) =
         C * (∫ t : ℝ in s, w t) := by
@@ -161,7 +153,7 @@ theorem realGaussEulerBinomialTerm_integral (a b c x : ℝ) (n : ℕ)
       _ = ∫ t : ℝ in s, C * w t := integral_congr_ae hpowEq
       _ = C * (∫ t : ℝ in s, w t) := integral_const_mul _ _
   have hscaled := realEulerBetaMoment_scaled b c n hb hcb
-  have hPochC : (ascPochhammer ℝ n).eval c ≠ 0 :=
+  have hPochC  :=
     (realAscPochhammer_eval_pos (by linarith : 0 < c) n).ne'
   rw [hterm_integral]
   dsimp [C]
@@ -178,15 +170,14 @@ theorem realGaussEulerBinomialTerm_integral (a b c x : ℝ) (n : ℕ)
           field_simp [hPochC]
 
 /-- Every real Euler binomial term is integrable against the beta density. -/
-theorem realGaussEulerBinomialTerm_integrableOn (a b c x : ℝ) (n : ℕ)
+theorem realGaussEulerBinomialTerm_integrableOn
     (hb : 0 < b) (hcb : 0 < c - b) :
     IntegrableOn (realGaussEulerBinomialTerm a b c x n) (Ioc 0 1) := by
   let s : Set ℝ := Ioc 0 1
   let w : ℝ → ℝ := fun t => t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)
   let C : ℝ := Ring.choose (a + n - 1) n * x ^ n
   have hweight : IntegrableOn w s := by
-    simpa [w, s] using
-      (realEulerBetaWeight_integrable (b + n) (c - b) (by positivity) hcb)
+    apply realEulerBetaWeight_integrable <;> positivity
   have hpowEq :
       realGaussEulerBinomialTerm a b c x n =ᵐ[volume.restrict s]
         fun t => C * w t := by
@@ -213,18 +204,18 @@ theorem realGaussEulerBinomialTerm_integrableOn (a b c x : ℝ) (n : ℕ)
   exact hCw.congr_fun_ae hpowEq.symm
 
 /-- Under positive parameters, each real Euler binomial term is nonnegative on the beta interval. -/
-theorem realGaussEulerBinomialTerm_nonneg (a b c x : ℝ) (n : ℕ) (t : ℝ)
+theorem realGaussEulerBinomialTerm_nonneg (t : ℝ)
     (ha : 0 < a) (hx : 0 < x) (ht : t ∈ Ioc 0 1) :
     0 ≤ realGaussEulerBinomialTerm a b c x n t := by
   have hchoose : 0 ≤ Ring.choose (a + n - 1) n := by
     rw [realBinomialCoefficient_eq_ascPochhammer]
     exact le_of_lt (div_pos (realAscPochhammer_eval_pos ha n) (by positivity))
-  have hxt : 0 ≤ x * t := mul_nonneg hx.le ht.1.le
+  have hxt  := mul_nonneg hx.le ht.1.le
   have htPow : 0 ≤ t ^ (b - 1) := Real.rpow_nonneg ht.1.le _
-  have h1t : 0 ≤ 1 - t := sub_nonneg.mpr ht.2
-  have h1tPow : 0 ≤ (1 - t) ^ (c - b - 1) := Real.rpow_nonneg h1t _
-  dsimp [realGaussEulerBinomialTerm]
-  exact mul_nonneg (mul_nonneg (mul_nonneg hchoose (pow_nonneg hxt _)) htPow) h1tPow
+  have h1t  := sub_nonneg.mpr ht.2
+  apply mul_nonneg <;> positivity
+
+end
 
 /-- Pointwise, the real Euler kernel is the integral of the binomial expansion against its beta
 weight. -/
@@ -232,13 +223,12 @@ theorem realGaussEulerBinomialTerm_hasSum (a b c x t : ℝ)
     (hx : 0 < x) (hx1 : x < 1) (ht : t ∈ Ioc 0 1) :
     HasSum (fun n => realGaussEulerBinomialTerm a b c x n t)
       (t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) := by
-  have ht0 : 0 < t := ht.1
-  have ht1 : t ≤ 1 := ht.2
-  have hu0 : 0 ≤ x * t := mul_nonneg hx.le ht0.le
+  have ht0  := ht.1
+  have ht1  := ht.2
+  have hu0  := mul_nonneg hx.le ht0.le
   have hu1 : x * t < 1 := by nlinarith [mul_le_mul_of_nonneg_left ht1 hx.le]
   have huNorm : ‖x * t‖ < 1 := by
-    rw [Real.norm_eq_abs, abs_of_nonneg hu0]
-    exact hu1
+    rwa [Real.norm_eq_abs, abs_of_nonneg hu0]
   have huBall : (x * t : ℝ) ∈ Metric.eball (0 : ℝ) 1 := by
     have hnn : ‖(x * t : ℝ)‖₊ < 1 := by exact_mod_cast huNorm
     simpa [Metric.mem_eball, edist_eq_enorm_sub, enorm_eq_nnnorm, dist_zero_right] using
@@ -252,7 +242,7 @@ theorem realGaussEulerBinomialTerm_hasSum (a b c x t : ℝ)
     · funext (n : ℕ)
       simp [smul_eq_mul]; ring
     · simp
-  let W : ℝ := t ^ (b - 1) * (1 - t) ^ (c - b - 1)
+  let W  := t ^ (b - 1) * (1 - t) ^ (c - b - 1)
   have hweighted := hbin'.mul_left W
   have hterms : HasSum (fun n => realGaussEulerBinomialTerm a b c x n t)
       (W * (1 / (1 - x * t) ^ a)) := by
@@ -283,14 +273,14 @@ theorem ofReal_realOrdinaryHypergeometricCoefficient (a b c : ℝ) (n : ℕ) :
 theorem realOrdinaryHypergeometricTerm_summable (a b c x : ℝ)
     (hc : 0 < c) (hx : 0 < x) (hx1 : x < 1) :
     Summable (fun n : ℕ => realOrdinaryHypergeometricCoefficient a b c n * x ^ n) := by
-  let P : FormalMultilinearSeries ℂ ℂ ℂ :=
+  let P  :=
     ordinaryHypergeometricSeries ℂ (a : ℂ) (b : ℂ) (c : ℂ)
   have hcC : ∀ n : ℕ, (c : ℂ) ≠ -(n : ℂ) := by
     intro n hn
     have hreal : c = -(n : ℝ) := by exact_mod_cast hn
     linarith
   have hrad : (1 : ENNReal) ≤ P.radius := by
-    exact ordinaryHypergeometricSeries_one_le_radius (a : ℂ) (b : ℂ) (c : ℂ) hcC
+    apply ordinaryHypergeometricSeries_one_le_radius <;> assumption
   have hxnorm : ‖(x : ℂ)‖ < 1 := by
     calc
       ‖(x : ℂ)‖ = |x| := Complex.norm_real x
@@ -327,13 +317,11 @@ theorem realGaussEulerIntegral_eq_tsum (a b c x : ℝ)
         (∫ t : ℝ in Ioc 0 1,
           t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) =
       ∑' n : ℕ, realOrdinaryHypergeometricCoefficient a b c n * x ^ n := by
-  let N : ℝ := Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))
-  let F : ℕ → ℝ → ℝ := fun n t => N * realGaussEulerBinomialTerm a b c x n t
+  let N  := Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))
+  let F  := fun n t => N * realGaussEulerBinomialTerm a b c x n t
   have hc : 0 < c := by linarith
   have hN : 0 < N := by
-    dsimp [N]
-    exact div_pos (Real.Gamma_pos_of_pos hc)
-      (mul_pos (Real.Gamma_pos_of_pos hb) (Real.Gamma_pos_of_pos hcb))
+    positivity
   have hcoeff := realOrdinaryHypergeometricTerm_summable a b c x hc hx hx1
   have hFint : ∀ n : ℕ, IntegrableOn (F n) (Ioc 0 1) := by
     intro n
@@ -353,11 +341,10 @@ theorem realGaussEulerIntegral_eq_tsum (a b c x : ℝ)
         (realGaussEulerBinomialTerm_nonneg a b c x n t ha hx ht)
     have hnorm : (fun t : ℝ => ‖F n t‖) =ᵐ[volume.restrict (Ioc 0 1)] F n := by
       filter_upwards [hnonneg] with t ht
-      rw [Real.norm_eq_abs, abs_of_nonneg ht]
+      simpa
     rw [integral_congr_ae hnorm]
     exact hFval n
-  have hFsum : Summable fun n : ℕ => ∫ t : ℝ in Ioc 0 1, ‖F n t‖ := by
-    exact hcoeff.congr fun n => (hFnorm n).symm
+  have hFsum := hcoeff.congr fun n => (hFnorm n).symm
   have hpoint : ∀ᵐ t ∂volume.restrict (Ioc 0 1),
       (∑' n : ℕ, F n t) =
         N * (t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) := by
@@ -386,8 +373,7 @@ theorem realGaussEulerIntegral_eq_family
         (∫ t : ℝ in Ioc 0 1,
           t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) =
       H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) := by
-  let N : ℝ := Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))
-  have hc : 0 < c := by linarith
+  let N  := Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))
   have hcC : ∀ n : ℕ, (c : ℂ) ≠ -(n : ℂ) := by
     intro n hn
     have hreal : c = -(n : ℝ) := by exact_mod_cast hn

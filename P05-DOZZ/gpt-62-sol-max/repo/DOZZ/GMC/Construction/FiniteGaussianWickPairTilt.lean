@@ -37,7 +37,7 @@ theorem finite_gaussian_wick_pair_tilt
         DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω p) + γ *
         DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω q)) ∂P) := by
   classical
-  let a : ι → ℝ := fun i => (if i = p then γ else 0) + (if i = q then γ else 0)
+  let a  := fun i => (if i = p then γ else 0) + (if i = q then γ else 0)
   have hselect (g : ι → ℝ) (r : ι) :
       (∑ i, (if i = r then γ else 0) * g i) = γ * g r := by
     classical
@@ -47,9 +47,8 @@ theorem finite_gaussian_wick_pair_tilt
       _ = (∑ i, (if i = p then γ else 0) * g i) +
           ∑ i, (if i = q then γ else 0) * g i := by
             simp only [a, add_mul, Finset.sum_add_distrib]
-      _ = _ := by rw [hselect g p, hselect g q]
-  have hlinear (ω : Ω) :
-      (∑ i, a i * Z ω i) = γ * Z ω p + γ * Z ω q := hsum (fun i => Z ω i)
+      _ = _ := by simp
+  have hlinear (ω : Ω) := hsum (fun i => Z ω i)
   have hrow (i : ι) :
       (∑ j, DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j) =
         γ * DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω p) +
@@ -62,8 +61,7 @@ theorem finite_gaussian_wick_pair_tilt
               rw [← Finset.sum_add_distrib]
               apply Finset.sum_congr rfl
               intro j hj
-              simp only [a]
-              ring
+              linarith
       _ = _ := by
         rw [hselect, hselect]
   have hdouble : (∑ i, ∑ j, a i *
@@ -81,8 +79,6 @@ theorem finite_gaussian_wick_pair_tilt
             calc
               _ = ∑ j, a i * (DOZZ.gaussianCovariance P
                     (fun ω => Z ω i) (fun ω => Z ω j) * a j) := by
-                    apply Finset.sum_congr rfl
-                    intro j hj
                     ring
               _ = a i * ∑ j, DOZZ.gaussianCovariance P
                     (fun ω => Z ω i) (fun ω => Z ω j) * a j := by
@@ -129,7 +125,7 @@ theorem finite_gaussian_wick_pair_tilt
     congr 1
     ring
   have htilt := DOZZ.Proofs.finite_gaussian_tilt P Z hZ a F hF
-  let c : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 / 2 *
+  let c  := ENNReal.ofReal (Real.exp (γ ^ 2 / 2 *
     (DOZZ.gaussianCovariance P (fun ω => Z ω p) (fun ω => Z ω q) +
       DOZZ.gaussianCovariance P (fun ω => Z ω q) (fun ω => Z ω p))))
   calc

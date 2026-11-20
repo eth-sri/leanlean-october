@@ -12,6 +12,7 @@ import DOZZ.DOZZAlgebra.FormulaShiftBinv
 import DOZZ.DOZZAlgebra.GenericLocus
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.Brownian.Reflection.RtheorIdentification
+public import DOZZ.ShiftEquations.Representatives
 
 /-!
 # The DOZZ quotient is a removable doubly periodic factor
@@ -45,9 +46,7 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
     (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ) (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ)
     (hU : IsUpsilon γ U)
     (C : ℂ → ℂ) (hC : MeromorphicOn C (horizontalStrip h))
-    (hfirst : ∀ᶠ z in codiscrete ℂ,
-      C (z + γ / 2) =
-        -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) * C (z - γ / 2))
+    (hfirst : StructureFirstShift γ μ α₂ α₃ C)
     (hdual : ∀ᶠ z in codiscrete ℂ,
       C (z + 2 / γ) =
         -(1 / (Real.pi * dualMu γ μ)) *
@@ -151,9 +150,7 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
       simpa using hz'
     have h2 : z + 4 / (γ : ℂ) ∈ horizontalStrip h := by
       change |(z + 4 / (γ : ℂ)).im| < h
-      rw [show (4 / (γ : ℂ)) = ((4 / γ : ℝ) : ℂ) by push_cast; ring, Complex.add_im,
-        Complex.ofReal_im, add_zero]
-      exact hz'
+      simpa
     exact ⟨(ite_eq_left h1).trans (ite_eq_left hz).symm,
       (ite_eq_left h2).trans (ite_eq_left hz).symm⟩
 

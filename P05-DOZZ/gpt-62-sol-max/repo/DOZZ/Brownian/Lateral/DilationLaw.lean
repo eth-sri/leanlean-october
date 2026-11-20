@@ -20,9 +20,12 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable (c : ℝ) (hc : 0 < c)
+include hc
+
 /-- Exact dilation change of variables for the full flat lateral planar reference. -/
-theorem lintegral_flatLateralReference_dilation
-    (c : ℝ) (hc : 0 < c) (f : ℂ → ℝ≥0∞) (hf : Measurable f) :
+theorem lintegral_flatLateralReference_dilation (f : ℂ → ℝ≥0∞) (hf : Measurable f) :
     (∫⁻ x, f (c * x) ∂(volume : Measure ℂ).withDensity
       (fun x => ENNReal.ofReal (originLateralPlaneDensity x))) =
     ∫⁻ x, f x ∂(volume : Measure ℂ).withDensity
@@ -68,7 +71,7 @@ theorem lintegral_flatLateralReference_dilation
         mul_inv_cancel₀ (pow_ne_zero 2 hc.ne'), ENNReal.ofReal_one, one_mul]
 
 /-- The flat planar reference is a measure-preserving dilation measure. -/
-theorem flatLateralReference_dilation (c : ℝ) (hc : 0 < c) :
+theorem flatLateralReference_dilation :
     ((volume : Measure ℂ).withDensity
       (fun x => ENNReal.ofReal (originLateralPlaneDensity x))).map (fun x : ℂ => c * x) =
       (volume : Measure ℂ).withDensity
@@ -85,8 +88,14 @@ theorem flatLateralReference_dilation (c : ℝ) (hc : 0 < c) :
   rw [← he] at h
   simpa only [lintegral_indicator_one hS] using h
 
+end
+
+section
+variable (ρ c : ℝ) (hc : 0 < c)
+include hc
+
 /-- Chart restriction commutes with dilation of the flat reference measure. -/
-theorem originLateralReference_dilation (ρ c : ℝ) (hc : 0 < c) :
+theorem originLateralReference_dilation :
     (logRegularizationReference (originLateralChart ρ) originLateralPlaneDensity).map
       (fun x : ℂ => (c : ℂ) * x) =
     logRegularizationReference (originLateralChart (c * ρ)) originLateralPlaneDensity := by
@@ -107,16 +116,20 @@ theorem originLateralReference_dilation (ρ c : ℝ) (hc : 0 < c) :
     _ = _ := by rw [flatLateralReference_dilation c hc]
 
 /-- The reference transport is a measure-preserving map between the two charts. -/
-theorem originLateralReference_measurePreserving_dilation (ρ c : ℝ) (hc : 0 < c) :
+theorem originLateralReference_measurePreserving_dilation :
     MeasurePreserving (fun x : ℂ => (c : ℂ) * x)
       (logRegularizationReference (originLateralChart ρ) originLateralPlaneDensity)
       (logRegularizationReference (originLateralChart (c * ρ)) originLateralPlaneDensity) :=
   ⟨by fun_prop, originLateralReference_dilation ρ c hc⟩
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- Extending a chart cutoff by zero preserves the dilation finite-dimensional law on the
 whole plane. This permits spatial-law transfer against a finite compact reference. -/
 theorem originLateralCircleRegularization_dilation_zeroed_fdd_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
@@ -170,7 +183,6 @@ theorem originLateralCircleRegularization_dilation_zeroed_fdd_law
 /-- Transport of the actual cutoff integral, with the exact scaled cutoff radius and
 reference Jacobian. It does not assert equality of source and transformed samples. -/
 theorem originLateralCutoff_dilation_integral
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (Xc : Ω → ℂ → ℝ → ℝ) (ρ c : ℝ) (hc : 0 < c) (γ r : ℝ)
     (ω : Ω) (f : BoundedContinuousFunction ℂ ℝ) :
     regularizedLogChaosTestMass P (originLateralChart (c * ρ)) originLateralPlaneDensity
@@ -195,13 +207,17 @@ theorem originLateralCutoff_dilation_integral
         originLateralCircleRegularization Xc (c * ρ) η (c * Real.exp (-r)) x)))).symm
   simpa only [gaussianVariance, gaussianCovariance, pow_two] using h
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+  (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+include Ω X hX hc hm
+
 /-- Every finite compact test vector of the actual lateral Wick cutoffs has the exact
 spatial dilation law, with the transformed cutoff radius kept explicit. -/
 theorem originLateralCutoff_dilation_test_vector_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ c : ℝ) (hρ : 0 < ρ) (hcpos : 0 < c) (γ r : ℝ)
     (hr : Real.exp (-r) ≤ min ρ 1)
     (hrc : c * Real.exp (-r) ≤ min (c * ρ) 1)
@@ -240,11 +256,10 @@ theorem originLateralCutoff_dilation_test_vector_law
       (min ρ 1) Y hY ε
   let W : Ω → ℂ → ℝ := fun ω x => K.indicator (fun x => Y ω ε x) x
   let W' : Ω → ℂ → ℝ := fun ω x => K.indicator (fun x => Z ω (c * ε) (c * x)) x
-  have hW : Measurable (fun p : Ω × ℂ => W p.1 p.2) := by
-    exact (hY.measurableAtScale ε).indicator (hKmeas.preimage measurable_snd)
+  have hW : Measurable (fun p : Ω × ℂ => W p.1 p.2) := (hY.measurableAtScale ε).indicator (hKmeas.preimage measurable_snd)
   have harg : Measurable (fun p : Ω × ℂ => (p.1, (c : ℂ) * p.2)) :=
     measurable_fst.prodMk (measurable_const.mul measurable_snd)
-  have hZs : Measurable (fun p : Ω × ℂ => Z p.1 (c * ε) (c * p.2)) :=
+  have hZs  :=
     (hZ.measurableAtScale (c * ε)).comp harg
   have hW' : Measurable (fun p : Ω × ℂ => W' p.1 p.2) :=
     hZs.indicator (hKmeas.preimage measurable_snd)
@@ -302,9 +317,7 @@ theorem originLateralCutoff_dilation_test_vector_law
       simpa only [gaussianVariance, gaussianCovariance, pow_two] using hvx
     simp only [z, W', indicator_of_mem hx, variance]
     rw [hvraw]
-  have hfdd (n : ℕ) (xs : Fin n → ℂ) : P.map (fun ω i => W ω (xs i)) =
-      P.map (fun ω i => W' ω (xs i)) :=
-    (originLateralCircleRegularization_dilation_zeroed_fdd_law P X Xc hX hc hm
+  have hfdd (n : ℕ) (xs : Fin n → ℂ) := (originLateralCircleRegularization_dilation_zeroed_fdd_law P X Xc hX hc hm
       ρ c ε hρ hcpos (Real.exp_pos _) (hr.trans (min_le_left _ _)) K hKU n xs).symm
   have hlaw := spatialIntegral_vector_law_of_fdd_finite νf W W' z hW hW' hz hiW hiW' hfdd
   have hleft ω j : (∫ x, z j x (W ω x) ∂ν) =
@@ -336,14 +349,13 @@ theorem originLateralCutoff_dilation_test_vector_law
   simp_rw [hleft, hright] at hlaw
   exact hlaw.symm
 
+section
+variable (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+include hcont
+
 /-- Compact tests of the actual radial-removed measure are limits of its actual lateral Wick
 cutoffs. The local independent chaos is used only through its proved identification. -/
 theorem originRadialRemovedGMC_test_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (ρ γ : ℝ) (hρ : 0 < ρ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
@@ -353,7 +365,7 @@ theorem originRadialRemovedGMC_test_limit
         (originLateralCircleRegularization Xc ρ) γ r ω f) atTop
       (fun ω => ∫ x, f x ∂(M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))) := by
   obtain ⟨N, hN, _, hid⟩ := exists_originLateralChartGMC_radial_removed_identity
-    P X Xc hX hc hm hcont ρ γ hρ hγ hγ2 M hM
+    P X Xc hX ⟨hc, hm, hcont⟩ ρ γ hρ hγ hγ2 M hM
   apply TendstoInMeasure.congr_right _ (hN.2.2.2 f hfc hfU)
   filter_upwards [hid] with ω hω
   rw [hω, ← integral_indicator (isOpen_originLateralChart ρ).measurableSet]
@@ -367,11 +379,6 @@ theorem originRadialRemovedGMC_test_limit
 /-- The exact dilation law of every finite compact test vector passes to the actual
 radial-removed GMC on the original probability space. -/
 theorem originRadialRemovedGMC_dilation_test_vector_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (ρ c γ : ℝ) (hρ : 0 < ρ) (hcpos : 0 < c) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ originLateralChart ρ)
@@ -426,12 +433,15 @@ theorem originRadialRemovedGMC_dilation_test_vector_law
       ((hlimS j).aestronglyMeasurable (fun n => (hmS _ j).aestronglyMeasurable)).aemeasurable
   · intro n
     have hb := (hL (L + n) (Nat.le_add_right L n)).le
-    have hbc : c * Real.exp (-t n) ≤ min (c * ρ) 1 := by
-      simpa only [t, mul_comm] using
-        (le_div_iff₀ hcpos).mp (hb.trans (min_le_right _ _))
     exact originLateralCutoff_dilation_test_vector_law P X Xc hX hc hm
-      ρ c hρ hcpos γ (t n) (hb.trans (min_le_left _ _)) hbc K hK hKU f hzero
+      ρ c hρ hcpos γ (t n) (hb.trans (min_le_left _ _)) (by
+      simpa only [t, mul_comm] using
+        (le_div_iff₀ hcpos).mp (hb.trans (min_le_right _ _))) K hK hKU f hzero
   · exact hlimT
   · exact hlimS
+
+end
+
+end
 
 end DOZZ.Proofs

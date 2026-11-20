@@ -6,6 +6,7 @@ module
 
 public import DOZZ.FourPoint.ReflectedOuter.InverseDifference
 import Mathlib.Tactic
+public import DOZZ.FourPoint.ReflectedOuter.KernelPerturbation
 
 /-! # Relative inverse-power comparison for positive finite ENNReal masses -/
 
@@ -18,12 +19,12 @@ namespace DOZZ.Proofs
 bounds. This lemma is applied only where the supplied masses are finite and positive. -/
 theorem reflected_ennreal_inverse_relative_comparison (p d : ℝ) (hp : 0 < p) (hd : 0 ≤ d)
     (S T : ℝ≥0∞) (hS : S ≠ 0) (hSt : S ≠ ⊤)
-    (hl : ENNReal.ofReal (1 / 4 : ℝ) * S ≤ T)
-    (hu : T ≤ S + ENNReal.ofReal d * S) (hv : S ≤ T + ENNReal.ofReal d * S) :
+    (h : RelativeMassBound d S T) :
     T ^ (-p) ≤ S ^ (-p) +
       ENNReal.ofReal (p * (1 / 4 : ℝ) ^ (-(p + 1)) * d) * S ^ (-p) ∧
     S ^ (-p) ≤ T ^ (-p) +
       ENNReal.ofReal (p * (1 / 4 : ℝ) ^ (-(p + 1)) * d) * S ^ (-p) := by
+  obtain ⟨hl, hu, hv⟩ := h
   let L : ℝ := p * (1 / 4 : ℝ) ^ (-(p + 1)) * d
   have hL : 0 ≤ L := by dsimp only [L]; positivity
   have hT : T ≠ 0 := ne_zero_of_lt ((ENNReal.mul_pos
@@ -60,5 +61,30 @@ theorem reflected_ennreal_inverse_relative_comparison (p d : ℝ) (hp : 0 < p) (
       ← ENNReal.toReal_rpow, ← ENNReal.toReal_rpow]
     have h := (neg_le_abs (T.toReal ^ (-p) - S.toReal ^ (-p))).trans hh
     linarith only [h]
+
+/-- Integrate a relative inverse-power error; only the base moment enters the constant. -/
+theorem relative_inverse_lintegral_bound {Ω : Type*} [MeasurableSpace Ω]
+    (P : Measure Ω) (S T : Ω → ℝ≥0∞) (p d C : ℝ) (hp : 0 < p) (hd : 0 ≤ d) (hC : 0 ≤ C)
+    (hSm : AEMeasurable S P) (hTm : AEMeasurable T P)
+    (hS : (∫⁻ ω, S ω ^ (-p) ∂P) ≤ ENNReal.ofReal C)
+    (hT : (∫⁻ ω, T ω ^ (-p) ∂P) ≠ ∞)
+    (h : ∀ᵐ ω ∂P, S ω ≠ 0 ∧ S ω ≠ ∞ ∧ RelativeMassBound d (S ω) (T ω)) :
+    |(∫⁻ ω, T ω ^ (-p) ∂P).toReal - (∫⁻ ω, S ω ^ (-p) ∂P).toReal| ≤
+      (p * (1 / 4 : ℝ) ^ (-(p + 1)) * d) * C := by
+  let A := p * (1 / 4 : ℝ) ^ (-(p + 1)) * d
+  have hA : 0 ≤ A := by dsimp [A]; positivity
+  let R := fun ω => ENNReal.ofReal A * S ω ^ (-p)
+  have hR : (∫⁻ ω, R ω ∂P) ≤ ENNReal.ofReal (A * C) := by
+    dsimp only [R]
+    rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, ENNReal.ofReal_mul hA]
+    exact mul_le_mul' le_rfl hS
+  have hcomp := h.mono fun ω hw =>
+    reflected_ennreal_inverse_relative_comparison p d hp hd (S ω) (T ω) hw.1 hw.2.1 hw.2.2
+  have hbound := reflected_lintegral_toReal_difference_bound P (fun ω => T ω ^ (-p))
+    (fun ω => S ω ^ (-p)) R (hTm.pow_const _) (hSm.pow_const _) hT
+    (ne_top_of_le_ne_top ENNReal.ofReal_ne_top hS) (ne_top_of_le_ne_top ENNReal.ofReal_ne_top hR)
+    (hcomp.mono fun _ hw => hw.1) (hcomp.mono fun _ hw => hw.2)
+  exact hbound.trans ((ENNReal.toReal_mono ENNReal.ofReal_ne_top hR).trans_eq
+    (ENNReal.toReal_ofReal (mul_nonneg hA hC)))
 
 end DOZZ.Proofs

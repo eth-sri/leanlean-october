@@ -7,6 +7,7 @@ module
 public import DOZZ.Statements.ShiftEquations.TwoPoleWindow
 public import DOZZ.ShiftEquations.Inversion.Gluing
 import DOZZ.ShiftEquations.Inversion.Nonzero
+public import DOZZ.ShiftEquations.Representatives
 
 /-! The inversion `DOZZ.reflectionR_inversion_meromorphic` from the literal conclusion of
 `DOZZ.structureConstant_reflected_shift_and_gluing`. Double gluing gives inversion in the
@@ -30,38 +31,15 @@ theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
     (hShiftGluing : ∀ η : ℝ, 0 < η ∧ Q γ - 2 * η > γ →
       ∀ α₂ α₃ : ℝ, Q γ - η < α₂ ∧ α₂ < Q γ →
         Q γ - η < α₃ ∧ α₃ < Q γ →
-∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) =
-                  (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) =
-                  (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2))) :
+HasGluedRepresentatives P X M γ μ η α₂ α₃) :
     ∃ B : ℝ → Ω → BrownianPath ×
         BrownianPath,
       ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
+          IsReflectionFamily P γ B Z ∧
             ∃ h : ℝ, 0 < h ∧ ∃ R : ℂ → ℂ,
               MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) =
-                  (reflectionR P γ μ α (B α) Z : ℂ)) ∧
+              RepresentsReflection P γ μ B Z R ∧
               ∀ᶠ z in codiscrete ℂ, R z * R (2 * Q γ - z) = 1 := by
   have hhalf : γ / 2 < 2 / γ := (lt_div_iff₀ hγ).mpr (by nlinarith)
   have hγQ : γ < Q γ := by unfold Q; linarith
@@ -91,9 +69,7 @@ theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
     apply Eventually.of_forall
     intro z hzim hlo hhi
     have hzreal : z = (z.re : ℂ) := by
-      apply Complex.ext
-      · exact (Complex.ofReal_re _).symm
-      · exact hzim.trans (Complex.ofReal_im _).symm
+      apply Complex.ext <;> solve_by_elim
     rw [hzreal]
     exact hFr z.re hlo hhi
   obtain ⟨R, hRm, hRr, hRi⟩ := exists_physical_inversion_representative F

@@ -16,9 +16,11 @@ open scoped Topology Distributions ENNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
+
 /-- Admissibility restricts to any open subchart with the same density and cutoff ceiling. -/
-theorem isAdmissibleLogRegularization_on_subchart
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U V : Set ℂ}
+theorem isAdmissibleLogRegularization_on_subchart {U V : Set ℂ}
     {dens : ℂ → ℝ} {ε₀ : ℝ} {Y : Ω → ℝ → ℂ → ℝ}
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (hV : IsOpen V) (hVU : V ⊆ U) :
     IsAdmissibleLogRegularization P V dens ε₀ Y := by
@@ -42,7 +44,6 @@ theorem isAdmissibleLogRegularization_on_subchart
 /-- On any bounded open annular chart the transformed local field has an actual admissible
 regularization compatible with the pulled source-circle regularization. -/
 theorem exists_equatorGFF_inversion_admissible_pair
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
     (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (U : Set ℂ) (hUopen : IsOpen U) {m R : ℝ} (hm : 0 < m) (hR : 0 ≤ R)
@@ -83,7 +84,8 @@ theorem exists_equatorGFF_inversion_admissible_pair
     isAdmissibleLogRegularization_on_subchart hYinv hUopen hUsub,
     isAdmissibleLogRegularization_smaller_cutoff P U _ 1 (min (m / 2) 1) _ hZadm
       (lt_min (by positivity) one_pos) (min_le_right _ _), ?_⟩
-  exact inversionCircle_compatible_of_coupled_limits X hX Xc hXc f hf Z hgap hmem hlim
-    hcovZ U hm hR hU
+  apply inversionCircle_compatible_of_coupled_limits <;> assumption
+
+end
 
 end DOZZ.Proofs

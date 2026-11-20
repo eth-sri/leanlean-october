@@ -75,10 +75,9 @@ theorem reflected_lateral_compact_chaos_comparison
     have hxo := houter x hxK hx
     have hyi := hinner y hyK hy
     have hrel : ‖y‖ ≤ R*‖x‖ := hyi.trans (mul_le_mul_of_nonneg_left hxo hR0)
-    have hdist : (1-R)*r ≤ ‖x-y‖ := by
+    exact hb _ _ (Real.exp_pos _) (hcut a) (Real.exp_pos _) (hcut a) x hxK y hyK (by
       have hh := norm_sub_norm_le x y
-      linarith only [hxo, hyi, hh]
-    exact hb _ _ (Real.exp_pos _) (hcut a) (Real.exp_pos _) (hcut a) x hxK y hyK hdist hrel
+      linarith only [hxo, hyi, hh]) hrel
   have hbill : 0 ≤ 2*R+η := by linarith
   have hcross (a : ℝ) : ∀ᵐ xy ∂ν.prod ν, ¬(xy.1 ∈ A ↔ xy.2 ∈ A) →
       |gaussianCovariance P (fun ω => Φ a ω xy.1) (fun ω => Φ a ω xy.2)| ≤

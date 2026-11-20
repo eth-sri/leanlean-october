@@ -3,7 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
-public import DOZZ.FourPoint.Reflected.CopiedWilliamsLaw
+public import DOZZ.FourPoint.Reflected.TranslatedPolarMeasurable
 public import DOZZ.Brownian.LateralTranslation
 import Mathlib.Tactic
 /-! Replacing only the independent inner lateral copy preserves the correlated outer past. -/
@@ -12,11 +12,12 @@ open MeasureTheory ProbabilityTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω ζ : Type*} [MeasurableSpace Ω] [MeasurableSpace ζ] (P : Measure Ω)
+
 /-- A change of lateral version with identical measure law leaves the copied polar observable
 and its entire outer-past mark unchanged. -/
-theorem reflected_copied_polar_law_congr
-    {Ω ζ : Type*} [MeasurableSpace Ω] [MeasurableSpace ζ]
-    (P : Measure Ω) [IsProbabilityMeasure P] (γ ν : ℝ)
+theorem reflected_copied_polar_law_congr [IsProbabilityMeasure P] (γ ν : ℝ)
     (Y : Ω → ζ) (D : Ω → BrownianPath) (Z Z' : Ω → Measure ℝ)
     (hY : AEMeasurable Y P) (hD : AEMeasurable D P)
     (hZ : AEMeasurable Z P) (hZ' : AEMeasurable Z' P)
@@ -52,14 +53,12 @@ theorem reflected_copied_polar_law_congr
     rw [Measure.map_congr he]
     change (P.prod P).map (H ∘ fun ω : Ω × Ω => ((Y ω.1,D ω.1),W ω.2)) = _
     rw [← AEMeasurable.map_map_of_aemeasurable hH.aemeasurable hpack,
-      reflected_map_prod_ae P (fun ω => (Y ω,D ω)) W (hY.prodMk hD) hW]
+      map_prod_of_aemeasurable P P (fun ω => (Y ω,D ω)) W (hY.prodMk hD) hW]
   rw [hp Z' hZ' hfin', hp Z hZ hfin, hlaw]
 
 /-- Deterministic translation of the independent inner lateral copy leaves the Williams law
 and its correlated outer-past mark unchanged. -/
-theorem reflected_copied_translated_williams_joint_law
-    {Ω ζ : Type*} [MeasurableSpace Ω] [MeasurableSpace ζ]
-    (P : Measure Ω) (D : Ω → BrownianPath) (hD : AEMeasurable D P)
+theorem reflected_copied_translated_williams_joint_law (D : Ω → BrownianPath) (hD : AEMeasurable D P)
     (hB : IsBrownianReal (fun t p => p t) (P.map D))
     (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
     (hDZ : IndepFun D Z P) (Y : Ω → ζ) (hY : AEMeasurable Y P)
@@ -78,16 +77,11 @@ theorem reflected_copied_translated_williams_joint_law
     (fun _ => -(T : ℝ)) measurable_const
   have hZT : AEMeasurable ZT P := by simpa only [sub_eq_add_neg, ZT] using ht.1
   have hlaw : P.map ZT = P.map Z := by simpa only [sub_eq_add_neg, ZT] using ht.2.1
-  have hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, ZT ω (Icc a b) < ⊤ := by
-    filter_upwards [hZ.2.2.2.2.1] with ω hω a b
-    have he : (fun s : ℝ => s - (T : ℝ)) ⁻¹' Icc a b = Icc (a+T) (b+T) := by
-      ext s
-      simp only [mem_preimage, mem_Icc, le_sub_iff_add_le, sub_le_iff_le_add]
-    change (Z ω).map (fun s => s - (T : ℝ)) (Icc a b) < ⊤
-    rw [Measure.map_apply (show Measurable (fun s : ℝ => s - (T : ℝ)) from measurable_id.sub_const _) measurableSet_Icc, he]
-    exact hω _ _
+  have hfin := ae_map_sub_const_lt_top_Icc P Z (T : ℝ) hZ.2.2.2.2.1
   exact (reflected_copied_polar_law_congr P γ ν Y D Z ZT hY hD hZ.2.2.2.1 hZT
     hZ.2.2.2.2.1 hfin hlaw).trans
       (reflected_copied_williams_joint_law P D hD hB γ Z hZ hDZ Y hY hYD ν hν Qν hQν)
+
+end
 
 end DOZZ.Proofs

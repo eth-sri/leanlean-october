@@ -27,14 +27,13 @@ private theorem conditionedPositiveZeroDriftCDF_le_power
     {t c : ℝ} (ht : 0 < t) (hc : 0 < c) :
     ProbabilityTheory.cdf (conditionedPositiveEntranceMeasure 0 t) c ≤
       Real.sqrt (2 / Real.pi) * c ^ 3 / t ^ (3 / 2 : ℝ) := by
-  let f : ℝ → ℝ := conditionedPositiveEntranceDensity 0 t
-  let S : Set ℝ := Set.Ioc 0 c
-  let K : ℝ := Real.sqrt (2 / Real.pi) * c ^ 2 / t ^ (3 / 2 : ℝ)
-  let g : ℝ → ℝ := S.indicator (fun _ => K)
+  let f  := conditionedPositiveEntranceDensity 0 t
+  let S  := Set.Ioc 0 c
+  let K  := Real.sqrt (2 / Real.pi) * c ^ 2 / t ^ (3 / 2 : ℝ)
+  let g  := S.indicator (fun _ => K)
   have hf : Integrable f (volume : Measure ℝ) :=
     integrable_conditionedPositiveEntranceDensity (by norm_num) ht
-  have hK : Integrable g (volume : Measure ℝ) := by
-    exact (integrable_indicator_iff measurableSet_Ioc).2
+  have hK : Integrable g (volume : Measure ℝ) := (integrable_indicator_iff measurableSet_Ioc).2
       (integrableOn_const (measure_Ioc_lt_top.ne))
   have hfg : ∀ y ∈ Set.Iic c, f y ≤ g y := by
     intro y hy
@@ -44,7 +43,7 @@ private theorem conditionedPositiveZeroDriftCDF_le_power
       have hgy : g y = 0 := by
         simp [g, S, Set.indicator_of_notMem, hy0]
       rw [hfy, hgy]
-    · have hypos : 0 < y := lt_of_not_ge hy0
+    · have hypos  := lt_of_not_ge hy0
       have hyS : y ∈ S := ⟨hypos, hy⟩
       have hdensity : f y =
           Real.sqrt (2 / Real.pi) * y ^ 2 / t ^ (3 / 2 : ℝ) *
@@ -56,26 +55,19 @@ private theorem conditionedPositiveZeroDriftCDF_le_power
         · exact neg_nonpos.mpr (sq_nonneg y)
         · positivity
       have hySq : y ^ 2 ≤ c ^ 2 := by
-        have hprod : 0 ≤ (c - y) * (c + y) :=
+        have hprod  :=
           mul_nonneg (sub_nonneg.mpr hy)
             (add_nonneg (le_of_lt hc) (le_of_lt hypos))
         nlinarith [hprod]
       have hsqrt : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
-      have hcoeff : 0 ≤ Real.sqrt (2 / Real.pi) * c ^ 2 :=
+      have hcoeff  :=
         mul_nonneg hsqrt (sq_nonneg c)
       have hnum : Real.sqrt (2 / Real.pi) * y ^ 2 * Real.exp (-y ^ 2 / (2 * t)) ≤
           Real.sqrt (2 / Real.pi) * c ^ 2 := by
-        calc
-          _ ≤ Real.sqrt (2 / Real.pi) * c ^ 2 * Real.exp (-y ^ 2 / (2 * t)) := by
-            exact mul_le_mul_of_nonneg_right
-              (mul_le_mul_of_nonneg_left hySq hsqrt) (Real.exp_nonneg _)
-          _ ≤ Real.sqrt (2 / Real.pi) * c ^ 2 := by
-            calc
-              _ ≤ (Real.sqrt (2 / Real.pi) * c ^ 2) * 1 :=
-                mul_le_mul_of_nonneg_left hexp hcoeff
-              _ = _ := mul_one _
+        exact Trans.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hySq hsqrt) (Real.exp_nonneg (-y ^ 2 / (2 * t))))
+          (Trans.trans (mul_le_mul_of_nonneg_left hexp hcoeff) (mul_one (√(2 / Real.pi) * c ^ 2)))
       have hden : 0 < t ^ (3 / 2 : ℝ) := by positivity
-      have hbound : f y ≤ K := by
+      simpa [g, Set.indicator_of_mem hyS] using (by
         rw [hdensity]
         dsimp [K]
         calc
@@ -86,8 +78,7 @@ private theorem conditionedPositiveZeroDriftCDF_le_power
           _ ≤ (Real.sqrt (2 / Real.pi) * c ^ 2) *
               (t ^ (3 / 2 : ℝ))⁻¹ :=
             mul_le_mul_of_nonneg_right hnum (inv_nonneg.mpr hden.le)
-          _ = Real.sqrt (2 / Real.pi) * c ^ 2 / t ^ (3 / 2 : ℝ) := by ring
-      simpa [g, Set.indicator_of_mem hyS] using hbound
+          _ = Real.sqrt (2 / Real.pi) * c ^ 2 / t ^ (3 / 2 : ℝ) := by ring)
   have hmono := setIntegral_mono_on hf.integrableOn hK.integrableOn
     measurableSet_Iic hfg
   have hsubset : S ⊆ Set.Iic c := by
@@ -101,12 +92,7 @@ private theorem conditionedPositiveZeroDriftCDF_le_power
     rw [Real.volume_real_Ioc_of_le hc.le]
     ring
   rw [conditionedPositiveEntranceMeasure_cdf_eq_integral (by norm_num) ht]
-  calc
-    (∫ y in Set.Iic c, f y) ≤ ∫ y in Set.Iic c, g y := hmono
-    _ = K * c := hupper
-    _ = Real.sqrt (2 / Real.pi) * c ^ 3 / t ^ (3 / 2 : ℝ) := by
-      dsimp [K]
-      ring
+  grind
 
 /-- The lower tail of the entrance state tends to zero at large deterministic times. -/
 theorem conditionedPositiveEntranceMeasure_cdf_tendsto_zero_atTop
@@ -118,8 +104,7 @@ theorem conditionedPositiveEntranceMeasure_cdf_tendsto_zero_atTop
     simpa only [mul_zero] using
       (tendsto_rpow_neg_atTop (by norm_num : 0 < (3 / 2 : ℝ))).const_mul
         (Real.sqrt (2 / Real.pi) * c ^ 3)
-  have hupper : Tendsto (fun t : ℝ =>
-      Real.sqrt (2 / Real.pi) * c ^ 3 * t ^ (-(3 / 2 : ℝ))) atTop (𝓝 0) := hzero
+  have hupper := hzero
   have hνbound : ∀ᶠ t : ℝ in atTop,
       0 ≤ ProbabilityTheory.cdf (conditionedPositiveEntranceMeasure ν t) c ∧
       ProbabilityTheory.cdf (conditionedPositiveEntranceMeasure ν t) c ≤
@@ -130,11 +115,9 @@ theorem conditionedPositiveEntranceMeasure_cdf_tendsto_zero_atTop
     have hzeroCdf := conditionedPositiveZeroDriftCDF_le_power ht hc
     have hνCdf : ProbabilityTheory.cdf (conditionedPositiveEntranceMeasure ν t) c ≤
         ProbabilityTheory.cdf (conditionedPositiveEntranceMeasure 0 t) c := by
-      rw [conditionedPositiveEntranceMeasure_cdf_eq_integral
-            (ν := ν) (t := t) (z := c) hν.le ht,
-        conditionedPositiveEntranceMeasure_cdf_eq_integral
-            (ν := 0) (t := t) (z := c) (by norm_num) ht]
-      exact hνcdf
+      rwa [conditionedPositiveEntranceMeasure_cdf_eq_integral
+                  (ν := ν) (t := t) (z := c) hν.le ht, conditionedPositiveEntranceMeasure_cdf_eq_integral
+                  (ν := 0) (t := t) (z := c) (by norm_num) ht]
     constructor
     · exact ProbabilityTheory.cdf_nonneg _ _
     · calc
@@ -158,8 +141,7 @@ theorem conditionedPositiveStateAt_measureReal_Iic_tendsto_zero_atTop
     Tendsto (fun t : ℝ≥0 => P.real {p | -(p t) ≤ c})
       atTop (𝓝 0) := by
   have hcdf := conditionedPositiveEntranceMeasure_cdf_tendsto_zero_atTop hν hc
-  have hcoe : Tendsto (fun t : ℝ≥0 => (t : ℝ)) atTop atTop := by
-    exact NNReal.tendsto_coe_atTop.mpr
+  have hcoe := NNReal.tendsto_coe_atTop.mpr
       (tendsto_id : Tendsto (fun t : ℝ≥0 => t) atTop atTop)
   have hcomp := hcdf.comp hcoe
   apply hcomp.congr'

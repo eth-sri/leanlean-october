@@ -71,11 +71,7 @@ theorem rooted_joint_coordinate_law
   change Measure.map leftPath (P.withDensity (fun ω => M ω (A ∩ B))) D =
     Measure.map (fun q : ℂ × Ω => (q.1, rightPath q))
       ((gmcReferenceMeasure.restrict B).prod P) (A ×ˢ D)
-  rw [heval]
-  rw [Measure.map_apply hr hD,
-    Measure.map_apply (measurable_fst.prodMk hr) (hA.prod hD)]
-  rw [← Measure.restrict_restrict hA, Measure.restrict_prod_eq_prod_univ,
-    Measure.restrict_apply (hr hD)]
+  rw [heval, Measure.map_apply hr hD, Measure.map_apply (measurable_fst.prodMk hr) (hA.prod hD), ← Measure.restrict_restrict hA, Measure.restrict_prod_eq_prod_univ, Measure.restrict_apply (hr hD)]
   congr 1
   ext q
   simp only [Set.mem_inter_iff, Set.mem_preimage, Set.mem_prod, Set.mem_univ, and_true]

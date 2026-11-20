@@ -19,14 +19,15 @@ open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
 
+section
+variable {μ η : Measure StoppedBrownianPath} [IsFiniteMeasure μ] [IsFiniteMeasure η]
+  (h : SameStoppedPreterminalLaws μ η) (hμpos : ∀ᵐ z ∂μ, 0 < z.1) (hηpos : ∀ᵐ z ∂η, 0 < z.1)
+  (hμzero : ∀ᵐ z ∂μ, -(z.2 0) = 0) (hηzero : ∀ᵐ z ∂η, -(z.2 0) = 0) (c : ℝ)
+  (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c) (hηend : ∀ᵐ z ∂η, ∀ t, z.1 ≤ t → -(z.2 t) = c)
+include h hμpos hηpos hμzero hηzero c hμend hηend
+
 /-- Adding the almost-sure initial value recovers cylinders at arbitrary nonnegative times. -/
 theorem SameStoppedPreterminalLaws.cylinder_eq
-    {μ η : Measure StoppedBrownianPath} [IsFiniteMeasure μ] [IsFiniteMeasure η]
-    (h : SameStoppedPreterminalLaws μ η)
-    (hμpos : ∀ᵐ z ∂μ, 0 < z.1) (hηpos : ∀ᵐ z ∂η, 0 < z.1)
-    (hμzero : ∀ᵐ z ∂μ, -(z.2 0) = 0) (hηzero : ∀ᵐ z ∂η, -(z.2 0) = 0)
-    (c : ℝ) (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c)
-    (hηend : ∀ᵐ z ∂η, ∀ t, z.1 ≤ t → -(z.2 t) = c)
     (U : Set ℝ) (hU : MeasurableSet U) (I : Finset ℝ≥0)
     (S : ℝ≥0 → Set ℝ) (hS : ∀ t, MeasurableSet (S t)) :
     μ (stoppedPathCylinder U I S) = η (stoppedPathCylinder U I S) := by
@@ -52,7 +53,7 @@ theorem SameStoppedPreterminalLaws.cylinder_eq
             rwa [hzero]
           · exact hJ t (Finset.mem_erase.mpr ⟨ht0, ht⟩)
       rw [measure_congr (hevent μ hμzero), measure_congr (hevent η hηzero)]
-      exact h.positive_cylinder_eq hμpos hηpos c hμend hηend U hU J hJpos S hS
+      apply h.positive_cylinder_eq <;> assumption
     · have hzero (M : Measure StoppedBrownianPath) (hz : ∀ᵐ z ∂M, -(z.2 0) = 0) :
           M (stoppedPathCylinder U I S) = 0 := by
         apply measure_eq_zero_iff_ae_notMem.mpr
@@ -67,13 +68,7 @@ theorem SameStoppedPreterminalLaws.cylinder_eq
 
 /-- The complete stopped continuous path measure is determined by the actual preterminal
 marked laws, its positive lifetime, its initial value, and its fixed terminal value. -/
-theorem SameStoppedPreterminalLaws.measure_eq
-    {μ η : Measure StoppedBrownianPath} [IsFiniteMeasure μ] [IsFiniteMeasure η]
-    (h : SameStoppedPreterminalLaws μ η)
-    (hμpos : ∀ᵐ z ∂μ, 0 < z.1) (hηpos : ∀ᵐ z ∂η, 0 < z.1)
-    (hμzero : ∀ᵐ z ∂μ, -(z.2 0) = 0) (hηzero : ∀ᵐ z ∂η, -(z.2 0) = 0)
-    (c : ℝ) (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c)
-    (hηend : ∀ᵐ z ∂η, ∀ t, z.1 ≤ t → -(z.2 t) = c) : μ = η := by
+theorem SameStoppedPreterminalLaws.measure_eq : μ = η := by
   classical
   let f : StoppedBrownianPath → ℝ × (ℝ≥0 → ℝ) := fun z =>
     ((z.1 : ℝ), fun t => -(z.2 t))
@@ -103,11 +98,7 @@ theorem SameStoppedPreterminalLaws.measure_eq
         have hmW : MeasurableSet ((I : Set ℝ≥0).pi S) :=
           MeasurableSet.pi (Finset.countable_toSet _) (fun t _ => hmS t)
         rw [hslice _ _ hmW, hslice _ _ hmW]
-        have hpre : f ⁻¹' (U ×ˢ (I : Set ℝ≥0).pi S) = stoppedPathCylinder U I S := by
-          ext z
-          simp [f, stoppedPathCylinder, mem_pi]
-        rw [hpre]
-        exact h.cylinder_eq hμpos hηpos hμzero hηzero c hμend hηend U hU I S hmS
+        apply h.cylinder_eq <;> assumption
       · rw [hslice _ univ MeasurableSet.univ, hslice _ univ MeasurableSet.univ]
         have hpre : f ⁻¹' (U ×ˢ univ) = {z : StoppedBrownianPath | (z.1 : ℝ) ∈ U} := by
           ext z
@@ -131,6 +122,8 @@ theorem SameStoppedPreterminalLaws.measure_eq
     simp only [mem_preimage, mem_prod, f, U, V, Real.toNNReal_coe, neg_neg]
   have heq := congrArg (fun M : Measure (ℝ × (ℝ≥0 → ℝ)) => M (U ×ˢ V)) hprocess
   rwa [Measure.map_apply hf (hU.prod hV), Measure.map_apply hf (hU.prod hV), hpre] at heq
+
+end
 
 end DOZZ.Proofs
 end

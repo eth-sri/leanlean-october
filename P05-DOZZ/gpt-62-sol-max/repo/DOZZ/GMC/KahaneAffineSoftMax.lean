@@ -47,8 +47,11 @@ theorem affineSoftMaxSum_pos {ι : Type*} [Fintype ι] [Nonempty ι]
   classical
   exact Finset.sum_pos (fun i _ => Real.exp_pos _) Finset.univ_nonempty
 
-theorem affineSoftMaxSum_hasDerivAt {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) :
+section
+variable {ι : Type*} [Fintype ι] (a b : ι → ℝ) (β x : ℝ)
+include ι
+
+theorem affineSoftMaxSum_hasDerivAt :
     HasDerivAt (affineSoftMaxSum a b β) (β * affineSoftMaxSlopeSum a b β x) x := by
   classical
   have h := HasDerivAt.fun_sum (u := Finset.univ) (fun i _ =>
@@ -62,8 +65,7 @@ theorem affineSoftMaxSum_hasDerivAt {ι : Type*} [Fintype ι]
     intro i hi
     ring
 
-theorem affineSoftMaxSlopeSum_hasDerivAt {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) :
+theorem affineSoftMaxSlopeSum_hasDerivAt :
     HasDerivAt (affineSoftMaxSlopeSum a b β)
       (β * affineSoftMaxSlopeSquareSum a b β x) x := by
   classical
@@ -78,8 +80,13 @@ theorem affineSoftMaxSlopeSum_hasDerivAt {ι : Type*} [Fintype ι]
     intro i hi
     ring
 
-theorem affineSoftMax_hasDerivAt {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) (β x : ℝ) (hβ : β ≠ 0) :
+end
+
+section
+variable {ι : Type*} [Fintype ι] [Nonempty ι] (a b : ι → ℝ)
+include ι
+
+theorem affineSoftMax_hasDerivAt (β x : ℝ) (hβ : β ≠ 0) :
     HasDerivAt (affineSoftMax a b β) (affineSoftMaxDeriv a b β x) x := by
   have hS := affineSoftMaxSum_hasDerivAt a b β x
   have hpos := affineSoftMaxSum_pos a b β x
@@ -89,8 +96,7 @@ theorem affineSoftMax_hasDerivAt {ι : Type*} [Fintype ι] [Nonempty ι]
   · dsimp [affineSoftMaxDeriv]
     field_simp
 
-theorem affineSoftMaxDeriv_hasDerivAt {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) (β x : ℝ) :
+theorem affineSoftMaxDeriv_hasDerivAt (β x : ℝ) :
     HasDerivAt (affineSoftMaxDeriv a b β) (affineSoftMaxSecondDeriv a b β x) x := by
   have hS := affineSoftMaxSum_hasDerivAt a b β x
   have hSlope := affineSoftMaxSlopeSum_hasDerivAt a b β x
@@ -102,13 +108,12 @@ theorem affineSoftMaxDeriv_hasDerivAt {ι : Type*} [Fintype ι] [Nonempty ι]
     ring
 
 /-- Smooth affine maxima have globally bounded derivatives and nonnegative second derivative. -/
-theorem affineSoftMax_derivative_bounds {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) (β : ℝ) (hβ : 0 ≤ β) :
+theorem affineSoftMax_derivative_bounds (β : ℝ) (hβ : 0 ≤ β) :
     ∃ B₁ B₂ : ℝ, (∀ x, ‖affineSoftMaxDeriv a b β x‖ ≤ B₁) ∧
       (∀ x, ‖affineSoftMaxSecondDeriv a b β x‖ ≤ B₂) ∧
         ∀ x, 0 ≤ affineSoftMaxSecondDeriv a b β x := by
   classical
-  let B : ℝ := 1 + ∑ i, |a i|
+  let B  := 1 + ∑ i, |a i|
   have hB : 0 ≤ B := by dsimp [B]; positivity
   have ha (i : ι) : |a i| ≤ B := by
     have h := Finset.single_le_sum (f := fun i => |a i|)
@@ -130,5 +135,7 @@ theorem affineSoftMax_derivative_bounds {ι : Type*} [Fintype ι] [Nonempty ι]
     dsimp [affineSoftMaxSecondDeriv]
     rw [mul_div_assoc]
     exact mul_le_mul_of_nonneg_left (hb x).2.2 hβ
+
+end
 
 end DOZZ.Proofs

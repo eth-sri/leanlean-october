@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.ConditionalCompactLimit
 public import Mathlib.Topology.UrysohnsLemma
+public import DOZZ.GMC.OpenChartCompacts
 /-! Genuine compact test cutoffs exhausting an open spatial region. -/
 @[expose] public section
 open MeasureTheory Set Filter Topology
@@ -21,13 +22,8 @@ theorem reflected_open_compact_cutoffs (U : Set ℂ) (hU : IsOpen U)
       (∀ n x, f n x ∈ Icc 0 1) ∧
       (∀ x ∈ U, ∀ᶠ n in atTop, f n x = 1) ∧
       (∀ n x, x ∉ U → f n x = 0) := by
-  let _ : LocallyCompactSpace U := hU.locallyCompactSpace
-  let E := CompactExhaustion.choice U
-  let K : ℕ → Set ℂ := fun n => Subtype.val '' E n
-  have hK (n : ℕ) : IsCompact (K n) := (E.isCompact n).image continuous_subtype_val
-  have hKU (n : ℕ) : K n ⊆ U := by
-    rintro x ⟨y, _, rfl⟩
-    exact y.property
+  let K := chartCompacts U hU
+  obtain ⟨hK, hKU, hKm, hKe, -⟩ := chartCompacts_spec U hU
   have hex (n : ℕ) := exists_continuousMap_one_of_isCompact_subset_isOpen ((hK n).union hD) hU
     (union_subset (hKU n) hDU)
   choose g hgK hgc hgU hgb using hex
@@ -38,9 +34,9 @@ theorem reflected_open_compact_cutoffs (U : Set ℂ) (hU : IsOpen U)
         by linarith [(hgb n x).2, (hgb n y).1]⟩)
   refine ⟨f, fun n x hx => hgK n (Or.inr hx), hgc, hgU, hgb, ?_, ?_⟩
   · intro x hx
-    obtain ⟨n, hn⟩ := E.exists_mem ⟨x, hx⟩
+    obtain ⟨n, hn⟩ := mem_iUnion.mp (hKe.symm ▸ hx)
     filter_upwards [eventually_ge_atTop n] with m hm
-    exact hgK m (Or.inl ⟨⟨x, hx⟩, E.subset hm hn, rfl⟩)
+    exact hgK m (Or.inl (hKm hm hn))
   · intro n x hx
     exact image_eq_zero_of_notMem_tsupport (fun hs => hx (hgU n hs))
 
@@ -104,11 +100,7 @@ theorem reflected_open_weighted_mass_approximation (U : Set ℂ) (hU : IsOpen U)
           (𝓝 (U.indicator (fun x => ENNReal.ofReal (w x)) x))).congr' ?_
         filter_upwards [hfone x hx] with n hn
         rw [hg n x, hn, one_mul, indicator_of_mem hx]
-      · have hz : ∀ n, ENNReal.ofReal (g n x) = 0 := by
-          intro n
-          rw [hg n x, hfzero n x hx, zero_mul, ENNReal.ofReal_zero]
-        simp only [hz, indicator_of_notMem hx]
-        exact tendsto_const_nhds
+      simp [*]
     refine tendsto_of_le_liminf_of_limsup_le ?_ ?_
     · calc
         _ = ∫⁻ x, liminf (fun n => ENNReal.ofReal (g n x)) atTop ∂μ :=

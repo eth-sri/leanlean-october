@@ -5,6 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Dual.PastObservable
 import Mathlib.Tactic
+public import DOZZ.MeasureTheory.FiniteOnChart
+public import DOZZ.FourPoint.Reflected.ReinsertedRegionCode
 /-! Joint-law transport of exterior mass under independent radial reinsertion. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set
@@ -17,7 +19,7 @@ theorem dual_copied_radial_weighted_mass_joint_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (A : Ω → TwoSidedPath) (hA : AEMeasurable A P)
     (M N : Ω → Measure ℂ) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (γ : ℝ) (f : ℂ → ℝ≥0∞) (hf : Measurable f)
     (hmass : AEMeasurable (fun ω => ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) P)
     (hwhole : ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
@@ -30,9 +32,8 @@ theorem dual_copied_radial_weighted_mass_joint_law
         f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω.1) x) ∂N ω.2)) := by
   let F := fun p : TwoSidedPath × Ω => ∫⁻ x in ({0} : Set ℂ)ᶜ,
     f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x) ∂N p.2
-  have hFm : Measurable F := reflected_chart_parameter_mass_measurable
-    ({0} : Set ℂ)ᶜ isClosed_singleton.isOpen_compl N hN hfin _
-      ((hf.comp measurable_snd).mul (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal)
+  have hFm : Measurable F := reflected_reinserted_region_measurable hN hfin γ
+    (measurableSet_singleton (0 : ℂ)).compl (Subset.rfl) hf
   have hAc : AEMeasurable (fun ω : Ω × Ω => A ω.1) (P.prod P) := hA.comp_fst
   have hpack : AEMeasurable (fun ω : Ω × Ω => (A ω.1, F (A ω.1,ω.2))) (P.prod P) :=
     hAc.prodMk (hFm.comp_aemeasurable (hAc.prodMk measurable_snd.aemeasurable))

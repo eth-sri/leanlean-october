@@ -9,6 +9,7 @@ import DOZZ.GMC.Construction.CircleCutoffTestMass
 import DOZZ.GMC.Construction.FatouInMeasure
 import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 import Mathlib.MeasureTheory.Function.LpSpace.Basic
+public import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
 
 /-! Expected test-mass bounds for admissible versions of circle cutoffs. -/
 
@@ -32,78 +33,24 @@ theorem admissibleCircleVersion_expected_test_le
     (hf : ∀ x, 0 ≤ f x) (hfc : HasCompactSupport (f : ℂ → ℝ)) :
     ∫⁻ ω, ENNReal.ofReal (∫ x, f x ∂M ω) ∂P ≤
       ∫⁻ x, ENNReal.ofReal (f x) ∂gmcReferenceMeasure := by
-  classical
-  rcases hM with ⟨_, _, _, hMlim⟩
-  let φ : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (f x)
-  have hφ : Measurable φ := ENNReal.measurable_ofReal.comp f.continuous.measurable
-  let F : ℝ → Ω → ℝ := fun r ω =>
-    (∫⁻ x, φ x ∂regularizedGMC P Xc γ r ω).toReal
-  let G : Ω → ℝ := fun ω => ∫ x, f x ∂M ω
-  have hFmeas : ∀ r, Measurable (F r) := by
-    intro r
-    change Measurable (fun ω =>
-      (∫⁻ x, φ x ∂regularizedGMC P Xc γ r ω).toReal)
-    exact ENNReal.measurable_toReal.comp
-      ((Measure.measurable_lintegral hφ).comp
-        (regularizedGMC_measurable P X hX Xc hXc γ r))
-  have hIntegral : ∀ r, ∀ᵐ ω ∂P,
-      F r ω = ∫ x, f x ∂regularizedGMC P Xc γ r ω := by
-    intro r
-    filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hfinite
-    let μ : Measure ℂ := regularizedGMC P Xc γ r ω
-    let _ := hfinite
-    have hbound : ∀ᵐ x ∂μ, ‖f x‖ ≤ ‖f‖ := ae_of_all _ f.norm_coe_le_norm
-    have hmem : MemLp (fun x => f x) (1 : ℝ≥0∞) μ :=
-      MemLp.of_bound f.continuous.measurable.aestronglyMeasurable ‖f‖ hbound
-    have hint : Integrable (fun x => f x) μ :=
-      hmem.integrable (by norm_num : (1 : ℝ≥0∞) ≤ 1)
-    have hnonneg : 0 ≤ᵐ[μ] fun x => f x := ae_of_all _ hf
-    have hlin := ofReal_integral_eq_lintegral_ofReal hint hnonneg
-    change (∫⁻ x, φ x ∂μ).toReal = ∫ x, f x ∂μ
-    calc
-      (∫⁻ x, φ x ∂μ).toReal = ENNReal.toReal (ENNReal.ofReal (∫ x, f x ∂μ)) := by
-        rw [← hlin]
-      _ = ∫ x, f x ∂μ := ENNReal.toReal_ofReal (integral_nonneg_of_ae hnonneg)
-  have hTbase : TendstoInMeasure P
-      (fun r ω => regularizedLogChaosTestMass P Set.univ
-        (fun x => normPlus x ^ (-4 : ℝ))
-        (fun ω ε x => Xc ω x (Real.log (1 / ε))) γ r ω f) atTop G := by
-    exact hMlim f hfc (Set.subset_univ _)
-  have hcut : ∀ r : ℝ,
-      (fun ω => regularizedLogChaosTestMass P Set.univ
-        (fun x => normPlus x ^ (-4 : ℝ))
-        (fun ω ε x => Xc ω x (Real.log (1 / ε))) γ r ω f) =ᵐ[P] F r := by
-    intro r
-    filter_upwards [hIntegral r] with ω hω
-    rw [circleCutoff_testMass_eq_regularizedGMC P X hX Xc hXc γ r ω f, ← hω]
-  have hT : TendstoInMeasure P F atTop G := by
-    apply TendstoInMeasure.congr hcut (Filter.Eventually.of_forall fun _ => rfl) hTbase
-  have hOfRealIntegral : ∀ r : ℝ, ∀ᵐ ω ∂P,
-      ENNReal.ofReal (∫ x, f x ∂regularizedGMC P Xc γ r ω) =
-        ∫⁻ x, φ x ∂regularizedGMC P Xc γ r ω := by
-    intro r
-    filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hfinite
-    let μ : Measure ℂ := regularizedGMC P Xc γ r ω
-    let _ := hfinite
-    have hbound : ∀ᵐ x ∂μ, ‖f x‖ ≤ ‖f‖ := ae_of_all _ f.norm_coe_le_norm
-    have hmem : MemLp (fun x => f x) (1 : ℝ≥0∞) μ :=
-      MemLp.of_bound f.continuous.measurable.aestronglyMeasurable ‖f‖ hbound
-    have hint : Integrable (fun x => f x) μ :=
-      hmem.integrable (by norm_num : (1 : ℝ≥0∞) ≤ 1)
-    exact ofReal_integral_eq_lintegral_ofReal hint (ae_of_all _ hf)
-  have hbound (r : ℝ) : ∫⁻ ω, ENNReal.ofReal (F r ω) ∂P ≤
-      ∫⁻ x, φ x ∂gmcReferenceMeasure := by
-    calc
-      ∫⁻ ω, ENNReal.ofReal (F r ω) ∂P =
-          ∫⁻ ω, ∫⁻ x, φ x ∂regularizedGMC P Xc γ r ω ∂P := by
-            apply lintegral_congr_ae
-            filter_upwards [hIntegral r, hOfRealIntegral r] with ω hω hlin
-            rw [hω]
-            exact hlin
-      _ ≤ ∫⁻ x, φ x ∂gmcReferenceMeasure := by
-        exact le_of_eq
-          (regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r φ hφ)
-  simpa [G, φ] using lintegral_ofReal_limit_le_of_tendstoInMeasure
-    P F G (∫⁻ x, φ x ∂gmcReferenceMeasure) hFmeas hT hbound
+  let φ := fun x => ENNReal.ofReal (f x)
+  let μ := fun r ω => regularizedGMC P Xc γ r ω
+  let F := fun r ω => (∫⁻ x, φ x ∂μ r ω).toReal
+  have hm : Measurable φ := ENNReal.measurable_ofReal.comp f.continuous.measurable
+  have hmeas (r) : Measurable (F r) := ENNReal.measurable_toReal.comp
+    ((Measure.measurable_lintegral hm).comp (regularizedGMC_measurable P X hX Xc hXc γ r))
+  have hconv (r) : ∀ᵐ ω ∂P, ENNReal.ofReal (∫ x, f x ∂μ r ω) = ∫⁻ x, φ x ∂μ r ω := by
+    filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hω
+    letI := hω
+    exact ofReal_integral_eq_lintegral_ofReal (f.integrable _) (ae_of_all _ hf)
+  have hT := TendstoInMeasure.congr (fun r => (hconv r).mono fun ω h => by
+    change regularizedLogChaosTestMass P Set.univ (fun x => normPlus x ^ (-4 : ℝ))
+      (fun ω ε x => Xc ω x (Real.log (1 / ε))) γ r ω f = F r ω
+    rw [circleCutoff_testMass_eq_regularizedGMC P X hX Xc hXc γ r ω f]
+    exact (ENNReal.toReal_ofReal (integral_nonneg hf)).symm.trans (congrArg ENNReal.toReal h))
+    (ae_of_all _ fun _ => rfl) (hM.2.2.2 f hfc (Set.subset_univ _))
+  refine lintegral_ofReal_limit_le_of_tendstoInMeasure P F _ _ hmeas hT fun r => ?_
+  exact (lintegral_mono fun ω => ENNReal.ofReal_toReal_le).trans
+    (regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r φ hm).le
 
 end DOZZ.Proofs

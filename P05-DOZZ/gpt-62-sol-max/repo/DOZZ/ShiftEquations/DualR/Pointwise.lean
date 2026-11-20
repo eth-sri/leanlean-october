@@ -7,6 +7,7 @@ module
 public import DOZZ.ShiftEquations.DualR.DualL
 import DOZZ.DOZZAlgebra.GenericLocus
 import DOZZ.ShiftEquations.Reflection.RbarContinuity
+public import DOZZ.DOZZAlgebra.ReflectionShiftForm
 
 /-!
 # The dual shift of `R` at one point
@@ -60,8 +61,7 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
     (hg₁ : ∀ n : ℕ, dualArg₁ γ ((γ / 2 - θ : ℝ) : ℂ) ≠ -(n : ℂ)) :
     R ((γ / 2 - θ : ℝ) : ℂ) =
       -((γ : ℂ) ^ 2 / 4 * (μ * Real.pi : ℂ) * R γ) * R (((γ / 2 - θ : ℝ) : ℂ) + 2 / γ) /
-        (lFun (-4 / (γ : ℂ) ^ 2) * lFun (2 * ((γ / 2 - θ : ℝ) : ℂ) / γ) *
-          lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * ((γ / 2 - θ : ℝ) : ℂ) / γ)) := by
+        (reflectionDualShiftDenom γ ((γ / 2 - θ : ℝ) : ℂ)) := by
   have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   set ε : ℂ := ((γ / 2 - θ : ℝ) : ℂ) with hε
@@ -145,7 +145,7 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
   have hR : R ε = R ε * R ((Q γ + θ : ℝ) : ℂ) * R ((Q γ - θ : ℝ) : ℂ) := by
     rw [mul_assoc, hinv, mul_one]
   rw [hR, show R ε * R ((Q γ + θ : ℝ) : ℂ) = (R ε * R ((Q γ + θ : ℝ) : ℂ) * 2) / 2 by ring, hprod,
-    hshift, ← hB]
+    hshift, reflectionDualShiftDenom, ← hX, ← hY, ← hB]
   have hA : lFun (1 + 4 / (γ : ℂ) ^ 2) = X⁻¹ := eq_inv_of_mul_eq_one_right hXA
   have hl₁ : lFun (dualArg₁ γ ε) = Y⁻¹ := eq_inv_of_mul_eq_one_left hl₁Y
   rw [hA, hl₁, hPQ, hB]

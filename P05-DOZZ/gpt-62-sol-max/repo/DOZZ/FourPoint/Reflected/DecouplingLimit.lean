@@ -28,15 +28,15 @@ theorem reflected_kahane_decoupling_limit
     (hXconv : TendstoInMeasure P
       (fun r ω => (fieldChaosMass P (Φ r) ν h γ ω).toReal) atTop ZX)
     (hYconv : TendstoInMeasure (P.prod P)
-      (fun r ω => (fieldChaosMass (P.prod P) (reflected_decoupled_field (Φ r) A)
+      (fun r ω => (fieldChaosMass (P.prod P) (independent_piece_field (Φ r) A)
         ν h γ ω).toReal) atTop ZY) :
     let m := ENNReal.ofReal (Real.exp (γ ^ 2 * c ^ 2 / 2 * (q ^ 2 + q)))
     (∫⁻ ω, ENNReal.ofReal (ZX ω) ^ (-q) ∂P) ≤
       m * (∫⁻ ω, ENNReal.ofReal (ZY ω) ^ (-q) ∂P.prod P) ∧
     (∫⁻ ω, ENNReal.ofReal (ZY ω) ^ (-q) ∂P.prod P) ≤
       m * (∫⁻ ω, ENNReal.ofReal (ZX ω) ^ (-q) ∂P) := by
-  let Ψ := fun r => reflected_decoupled_field (Φ r) A
-  have hΨ (r : ℝ) := reflected_decoupled_field_gaussian P (Φ r) (hΦ r) A hA
+  let Ψ := fun r => independent_piece_field (Φ r) A
+  have hΨ (r : ℝ) := independent_piece_field_gaussian P (Φ r) (hΦ r) A hA
   have hsand (r : ℝ) (x y : S)
       (hb : ¬(x ∈ A ↔ y ∈ A) →
         |gaussianCovariance P (fun ω => Φ r ω x) (fun ω => Φ r ω y)| ≤ c ^ 2) :
@@ -44,7 +44,7 @@ theorem reflected_kahane_decoupling_limit
         gaussianCovariance (P.prod P) (fun ω => Ψ r ω x) (fun ω => Ψ r ω y) + c^2 ∧
       gaussianCovariance (P.prod P) (fun ω => Ψ r ω x) (fun ω => Ψ r ω y) ≤
         gaussianCovariance P (fun ω => Φ r ω x) (fun ω => Φ r ω y) + c^2 := by
-    rw [reflected_decoupled_field_covariance P (Φ r) (hΦ r) A x y]
+    rw [independent_piece_field_covariance P (Φ r) (hΦ r) A x y]
     by_cases he : x ∈ A ↔ y ∈ A
     · rw [ite_eq_left he]
       exact ⟨le_add_of_nonneg_right (sq_nonneg c), le_add_of_nonneg_right (sq_nonneg c)⟩

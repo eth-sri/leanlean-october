@@ -17,18 +17,13 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- The positive unit block is retained in the full reflection mass. -/
-theorem lastone_initialUnitBlockMass_le
-    {Ω : Type*} (γ : ℝ) (B : Ω → BrownianPath × BrownianPath)
-    (Z : Ω → Measure ℝ) (ω : Ω) :
-    initialUnitBlockMass γ (B ω).1 (Z ω) ≤ twoSidedReflectionMass γ B Z ω := by
-  exact (initialUnitBlockMass_le_cutMass γ 0 B Z ω).trans
-    (twoSidedReflectionCutMass_le_mass γ 0 B Z ω)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ ν₀ : ℝ) (hγ : 0 < γ)
+include hγ
 
 /-- The initial conditioned unit block has small-power expectation tending to one, uniformly
 through the zero-drift endpoint. This is the lower bound used after Williams disintegration. -/
 theorem lastone_positiveDrift_uniform_moments
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ ν₀ : ℝ) (hγ : 0 < γ)
     (Z : Ω → Measure ℝ) (B : ℝ → Ω → BrownianPath × BrownianPath)
     (hB : ∀ ν : ℝ, 0 < ν → ν ≤ ν₀ → IsTwoSidedConditionedBrownianProcess P (B ν) ν)
     (hZ : IsLateralGMCOf P γ Z)
@@ -45,19 +40,16 @@ theorem lastone_positiveDrift_uniform_moments
   refine ⟨⟨1 / 2, by norm_num, C, hC, fun ν hν hν₀' =>
     hCb ν hν₀' (B ν) (hB ν hν hν₀') (hInd ν hν hν₀')⟩, ?_⟩
   intro v hv
-  obtain ⟨Cv, hCv, hCvb⟩ := initialUnitBlockMass_inverse_moment_le P γ ν₀ v hγ hv Z
-    hZ.2.2.2.1 hZ.2.2.2.2.1
+  obtain ⟨Cv, hCv, hCvb⟩ := initialUnitBlockMass_inverse_moment_le P γ ν₀ v hγ.le hv
   refine ⟨Cv * ∫⁻ ω, Z ω (Icc 0 1) ^ (-v) ∂P,
     ENNReal.mul_lt_top hCv (lateralGMC_unit_inverse_moment_lt_top P γ Z hZ v hv), ?_⟩
   intro ν hν hν₀'
-  exact hCvb ν hν₀' (fun ω => (B ν ω).1) (hB ν hν hν₀').1
+  exact hCvb γ hγ.le le_rfl Z hZ.2.2.2.1 (hZ.2.2.2.2.1.mono fun _ h => h 0 1) ν hν₀' (fun ω => (B ν ω).1) (hB ν hν hν₀').1
     ((hInd ν hν hν₀').comp measurable_fst measurable_id)
 
 /-- The initial unit-block critical moment requires only the positive-drift family, so it
 applies directly to the supplied-space source witness. -/
-theorem lastone_initialUnitBlock_smallPower_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (γ ν₀ : ℝ) (hγ : 0 < γ) (hν₀ : 0 < ν₀)
+theorem lastone_initialUnitBlock_smallPower_limit (hν₀ : 0 < ν₀)
     (Z : Ω → Measure ℝ) (B : ℝ → Ω → BrownianPath × BrownianPath)
     (hB : ∀ ν : ℝ, 0 < ν → ν ≤ ν₀ → IsTwoSidedConditionedBrownianProcess P (B ν) ν)
     (hZ : IsLateralGMCOf P γ Z)
@@ -78,7 +70,8 @@ theorem lastone_initialUnitBlock_smallPower_limit
   have hJU (ν : ℝ) (hν : 0 < ν) (hν₀' : ν ≤ ν₀) :
       ∫⁻ ω, J ν ω ^ u ∂P ≤ Cu := by
     exact (lintegral_mono fun ω => ENNReal.rpow_le_rpow
-      (lastone_initialUnitBlockMass_le γ (B ν) Z ω) hu.le).trans (hUb ν hν hν₀')
+      (((initialUnitBlockMass_le_cutMass γ 0 (B ν) Z ω).trans
+        (twoSidedReflectionCutMass_le_mass γ 0 (B ν) Z ω))) hu.le).trans (hUb ν hν hν₀')
   have hJV (ν : ℝ) (hν : 0 < ν) (hν₀' : ν ≤ ν₀) :
       ∫⁻ ω, J ν ω ^ (-1 : ℝ) ∂P ≤ Cv := hVb ν hν hν₀'
   have hIoo : ∀ᶠ ν in 𝓝[>] (0 : ℝ), ν ∈ Ioo 0 ν₀ := Ioo_mem_nhdsGT hν₀
@@ -108,5 +101,7 @@ theorem lastone_initialUnitBlock_smallPower_limit
       exact lt_irrefl _ hU
   · exact hIoo.mono fun ν hν => hJU ν hν.1 hν.2.le
   · exact hIoo.mono fun ν hν => hJV ν hν.1 hν.2.le
+
+end
 
 end DOZZ.Proofs

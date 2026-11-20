@@ -29,16 +29,13 @@ theorem betaIntegral_ofReal (x y : ℝ) :
           ((t ^ (x - 1) * (1 - t) ^ (y - 1) : ℝ) : ℂ) := by
       apply integral_congr_ae
       filter_upwards [ae_restrict_mem measurableSet_Ioc] with t ht
-      have ht0 : 0 ≤ t := le_of_lt ht.1
+      have ht0  := le_of_lt ht.1
       have ht1 : 0 ≤ 1 - t := by linarith [ht.2]
-      rw [show (x : ℂ) - 1 = ((x - 1 : ℝ) : ℂ) by push_cast; ring]
-      rw [show (y : ℂ) - 1 = ((y - 1 : ℝ) : ℂ) by push_cast; ring]
-      rw [show (1 : ℂ) - (t : ℝ) = ((1 - t : ℝ) : ℂ) by push_cast; ring]
-      rw [← Complex.ofReal_cpow ht0, ← Complex.ofReal_cpow ht1]
-      exact (Complex.ofReal_mul _ _).symm
+      rw [show (x : ℂ) - 1 = ((x - 1 : ℝ) : ℂ) by push_cast; ring, show (y : ℂ) - 1 = ((y - 1 : ℝ) : ℂ) by push_cast; ring, show (1 : ℂ) - (t : ℝ) = ((1 - t : ℝ) : ℂ) by push_cast; ring, ← Complex.ofReal_cpow ht0, ← Complex.ofReal_cpow ht1]
+      simp
     _ = _ := integral_ofReal
 
-private theorem beta_change_variables (x y : ℝ) :
+theorem beta_change_variables (x y : ℝ) :
     (∫ v : ℝ in Ioi 0, v ^ (x - 1) * (1 + v) ^ (-(x + y))) =
       ∫ t : ℝ in Ioc 0 1, t ^ (x - 1) * (1 - t) ^ (y - 1) := by
   let f : ℝ → ℝ := fun v => v / (1 + v)
@@ -59,11 +56,11 @@ private theorem beta_change_variables (x y : ℝ) :
       ring
   have hInj : InjOn f (Ioi (0 : ℝ)) := by
     intro v hv w hw h
-    have hvpos : 0 < v := mem_Ioi.mp hv
-    have hwpos : 0 < w := mem_Ioi.mp hw
+    have hvpos  := mem_Ioi.mp hv
+    have hwpos  := mem_Ioi.mp hw
     have hv' : 1 + v ≠ 0 := by linarith
     have hw' : 1 + w ≠ 0 := by linarith
-    have hcross : v * (1 + w) = w * (1 + v) :=
+    have hcross  :=
       (div_eq_div_iff hv' hw').mp (by simpa [f] using h)
     nlinarith [hcross]
   have hderiv : ∀ v ∈ Ioi (0 : ℝ),
@@ -79,9 +76,7 @@ private theorem beta_change_variables (x y : ℝ) :
     have hfun : HasDerivAt (fun t : ℝ => t / (1 + t)) ((1 + v) ^ 2)⁻¹ v := by
       convert hdiv using 1
       · rfl
-      · field_simp
-        simp only [id_eq]
-        ring
+      · simp
     simpa only [f] using hfun.hasDerivWithinAt
   have hchange := MeasureTheory.integral_image_eq_integral_abs_deriv_smul
     (s := Ioi (0 : ℝ)) (f := f) (f' := fun v => ((1 + v) ^ 2)⁻¹)
@@ -104,15 +99,10 @@ private theorem beta_change_variables (x y : ℝ) :
               dsimp [f]
               field_simp
               ring
-            rw [hcomp, abs_of_pos (by positivity)]
-            rw [← Real.rpow_natCast (1 + v) 2]
-            rw [Real.div_rpow hv0.le hd.le, Real.div_rpow zero_le_one hd.le]
-            rw [Real.one_rpow]
-            rw [Real.rpow_neg hd.le]
+            rw [hcomp, abs_of_pos (by positivity), ← Real.rpow_natCast (1 + v) 2, Real.div_rpow hv0.le hd.le, Real.div_rpow zero_le_one hd.le, Real.one_rpow, Real.rpow_neg hd.le]
             have hpowers : (1 + v) ^ (2 : ℝ) * (1 + v) ^ (x - 1) * (1 + v) ^ (y - 1) =
                 (1 + v) ^ (x + y) := by
-              rw [← Real.rpow_add hd]
-              rw [← Real.rpow_add hd]
+              rw [← Real.rpow_add hd, ← Real.rpow_add hd]
               congr 1
               ring
             field_simp [ne_of_gt (Real.rpow_pos_of_pos hd (x - 1)),
@@ -146,18 +136,20 @@ private theorem one_sub_rpow_abs_le (p : ℝ) (hp : 0 < p) {v : ℝ}
     exact (mul_le_of_le_one_right (by positivity) hpow)
   have hmv := Convex.norm_image_sub_le_of_norm_deriv_le
     hdiff hderiv (convex_Icc (0 : ℝ) 1) (left_mem_Icc.mpr (by norm_num))
-    (by exact ⟨le_of_lt hv.1, hv.2⟩)
+    (⟨le_of_lt hv.1, hv.2⟩)
   simpa [Real.norm_eq_abs, abs_of_pos hv.1] using hmv
 
-private theorem beta_negative_power_integrable (p a : ℝ) (hp : 0 < p)
-    (ha : 1 < a) (ha₂ : a < 2) :
+section
+variable (p a : ℝ) (hp : 0 < p) (ha : 1 < a) (ha₂ : a < 2)
+include hp ha ha₂
+
+private theorem beta_negative_power_integrable :
     IntegrableOn (fun v : ℝ => ((1 + v) ^ (-p) - 1) * v ^ (-a)) (Ioi 0) := by
   have hnearPow : IntegrableOn (fun v : ℝ => v ^ (1 - a)) (Ioc 0 1) := by
     rw [integrableOn_congr_set_ae Ioo_ae_eq_Ioc.symm]
     exact (intervalIntegral.integrableOn_Ioo_rpow_iff zero_lt_one).2 (by linarith)
   have hnearDom : IntegrableOn (fun v : ℝ => p * v ^ (1 - a)) (Ioc 0 1) := by
-    change Integrable (fun v : ℝ => p * v ^ (1 - a)) (volume.restrict (Ioc 0 1))
-    exact hnearPow.integrable.const_mul p
+    apply hnearPow.integrable.const_mul
   have hnear : IntegrableOn
       (fun v : ℝ => ((1 + v) ^ (-p) - 1) * v ^ (-a)) (Ioc 0 1) := by
     apply hnearDom.integrable.mono' (Measurable.aestronglyMeasurable
@@ -165,7 +157,7 @@ private theorem beta_negative_power_integrable (p a : ℝ) (hp : 0 < p)
         (((measurable_const.add measurable_id).pow_const (-p)).sub measurable_const).mul
           (measurable_id.pow_const (-a))))
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with v hv
-    have hv' : v ∈ Ioc (0 : ℝ) 1 := hv
+    have hv'  := hv
     have hbound := one_sub_rpow_abs_le p hp hv'
     have hpow : 0 < v ^ (-a) := Real.rpow_pos_of_pos hv'.1 _
     have hpowmul : v * v ^ (-a) = v ^ (1 - a) := by
@@ -189,7 +181,7 @@ private theorem beta_negative_power_integrable (p a : ℝ) (hp : 0 < p)
         (((measurable_const.add measurable_id).pow_const (-p)).sub measurable_const).mul
           (measurable_id.pow_const (-a))))
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
-    have hvpos : 0 < v := lt_trans zero_lt_one hv
+    have hvpos  := lt_trans zero_lt_one hv
     have hbase : 0 ≤ (1 + v) ^ (-p) := Real.rpow_nonneg (by linarith [hv]) _
     have hle : (1 + v) ^ (-p) ≤ 1 :=
       Real.rpow_le_one_of_one_le_of_nonpos (by linarith [hv]) (by linarith)
@@ -205,19 +197,16 @@ private theorem beta_negative_power_integrable (p a : ℝ) (hp : 0 < p)
   rw [← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
   exact ⟨hnear, htail⟩
 
-private theorem beta_ibp_derivative_integrable (p a : ℝ) (hp : 0 < p)
-    (ha : 1 < a) (ha₂ : a < 2) :
+private theorem beta_ibp_derivative_integrable :
     IntegrableOn
       (fun v : ℝ => (-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a)))
       (Ioi 0) := by
-  let c : ℝ := p / (a - 1)
-  have hc : 0 < c := div_pos hp (by linarith)
+  let c  := p / (a - 1)
   have hnearPow : IntegrableOn (fun v : ℝ => v ^ (1 - a)) (Ioc 0 1) := by
     rw [integrableOn_congr_set_ae Ioo_ae_eq_Ioc.symm]
     exact (intervalIntegral.integrableOn_Ioo_rpow_iff zero_lt_one).2 (by linarith)
   have hnearDom : IntegrableOn (fun v : ℝ => c * v ^ (1 - a)) (Ioc 0 1) := by
-    change Integrable (fun v : ℝ => c * v ^ (1 - a)) (volume.restrict (Ioc 0 1))
-    exact hnearPow.integrable.const_mul c
+    apply hnearPow.integrable.const_mul
   have hnear : IntegrableOn
       (fun v : ℝ => (-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a)))
       (Ioc 0 1) := by
@@ -226,7 +215,7 @@ private theorem beta_ibp_derivative_integrable (p a : ℝ) (hp : 0 < p)
         (measurable_const.mul ((measurable_const.add measurable_id).pow_const (-p - 1))).mul
           ((measurable_id.pow_const (1 - a)).div_const (1 - a))))
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with v hv
-    have hv' : v ∈ Ioc (0 : ℝ) 1 := hv
+    have hv'  := hv
     have hpow : 0 < v ^ (1 - a) := Real.rpow_pos_of_pos hv'.1 _
     have hfactor : 0 < (1 + v) ^ (-p - 1) ∧ (1 + v) ^ (-p - 1) ≤ 1 := by
       constructor
@@ -255,8 +244,7 @@ private theorem beta_ibp_derivative_integrable (p a : ℝ) (hp : 0 < p)
     apply integrableOn_Ioi_rpow_of_lt (c := 1) _ zero_lt_one
     linarith
   have htailDom : IntegrableOn (fun v : ℝ => c * v ^ (-p - a)) (Ioi 1) := by
-    change Integrable (fun v : ℝ => c * v ^ (-p - a)) (volume.restrict (Ioi 1))
-    exact htailPow.integrable.const_mul c
+    apply htailPow.integrable.const_mul
   have htail : IntegrableOn
       (fun v : ℝ => (-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a)))
       (Ioi 1) := by
@@ -265,7 +253,7 @@ private theorem beta_ibp_derivative_integrable (p a : ℝ) (hp : 0 < p)
         (measurable_const.mul ((measurable_const.add measurable_id).pow_const (-p - 1))).mul
           ((measurable_id.pow_const (1 - a)).div_const (1 - a))))
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
-    have hvpos : 0 < v := lt_trans zero_lt_one hv
+    have hvpos  := lt_trans zero_lt_one hv
     have hq : 0 < v ^ (1 - a) := Real.rpow_pos_of_pos hvpos _
     have hpow :
         0 < (1 + v) ^ (-p - 1) ∧ (1 + v) ^ (-p - 1) ≤ v ^ (-p - 1) := by
@@ -300,24 +288,27 @@ private theorem beta_ibp_derivative_integrable (p a : ℝ) (hp : 0 < p)
   rw [← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
   exact ⟨hnear, htail⟩
 
+end
+
 private theorem beta_primitive_abs (a x : ℝ) (ha : 1 < a) (hx : 0 < x) :
     |x ^ (1 - a) / (1 - a)| = (1 / (a - 1)) * x ^ (1 - a) := by
   rw [abs_div, abs_of_pos (Real.rpow_pos_of_pos hx _),
     abs_of_neg (by linarith : 1 - a < 0)]
-  rw [show -(1 - a) = a - 1 by ring]
   ring
 
-private theorem beta_product_tends_zero (p a : ℝ) (hp : 0 < p)
-    (ha : 1 < a) (ha₂ : a < 2) :
+section
+variable (p a : ℝ) (hp : 0 < p) (ha : 1 < a) (ha₂ : a < 2)
+include hp ha ha₂
+
+private theorem beta_product_tends_zero :
     Tendsto (fun x : ℝ => ((1 + x) ^ (-p) - 1) * (x ^ (1 - a) / (1 - a)))
       (𝓝[>] 0) (𝓝 0) ∧
     Tendsto (fun x : ℝ => ((1 + x) ^ (-p) - 1) * (x ^ (1 - a) / (1 - a)))
       atTop (𝓝 0) := by
   let g : ℝ → ℝ := fun x => (1 + x) ^ (-p) - 1
-  let G : ℝ → ℝ := fun x => x ^ (1 - a) / (1 - a)
-  let c : ℝ := p / (a - 1)
-  let d : ℝ := 1 / (a - 1)
-  have hc : 0 < c := div_pos hp (by linarith)
+  let G  := fun x => x ^ (1 - a) / (1 - a)
+  let c  := p / (a - 1)
+  let d  := 1 / (a - 1)
   have hd : 0 < d := by positivity
   have hpowNear : Tendsto (fun x : ℝ => x ^ (2 - a)) (𝓝[>] 0) (𝓝 0) := by
     have hcont := Real.continuousAt_rpow_const 0 (2 - a) (Or.inr (by linarith))
@@ -340,7 +331,7 @@ private theorem beta_product_tends_zero (p a : ℝ) (hp : 0 < p)
         _ = x ^ (1 + (1 - a)) := by rw [← Real.rpow_add hx]
         _ = x ^ (2 - a) := by congr 1; ring
     have hnorm : ‖g x * G x‖ = |g x| * |G x| := by
-      simp [Real.norm_eq_abs]
+      simp
     rw [hnorm, hG]
     calc
       |g x| * (d * x ^ (1 - a)) ≤ (p * x) * (d * x ^ (1 - a)) :=
@@ -359,14 +350,11 @@ private theorem beta_product_tends_zero (p a : ℝ) (hp : 0 < p)
     have hbounds : ∀ᶠ x in 𝓝[>] (0 : ℝ),
         -(c * x ^ (2 - a)) ≤ g x * G x ∧ g x * G x ≤ c * x ^ (2 - a) := by
       filter_upwards [hnearBound] with x hx
-      have habs : |g x * G x| ≤ c * x ^ (2 - a) := by
-        simpa [Real.norm_eq_abs] using hx
-      exact abs_le.mp habs
+      apply abs_le.mp <;> assumption
     exact Filter.Tendsto.squeeze' hbot htop
       (hbounds.mono fun _ h => h.1) (hbounds.mono fun _ h => h.2)
   have htailBound : ∀ᶠ x in atTop, ‖g x * G x‖ ≤ d * x ^ (1 - a) := by
     filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
-    have hxpos : 1 < x := hx
     have hbase : 0 ≤ (1 + x) ^ (-p) := Real.rpow_nonneg (by linarith) _
     have hle : (1 + x) ^ (-p) ≤ 1 :=
       Real.rpow_le_one_of_one_le_of_nonpos (by linarith) (by linarith)
@@ -388,18 +376,15 @@ private theorem beta_product_tends_zero (p a : ℝ) (hp : 0 < p)
     have hbounds : ∀ᶠ x in atTop,
         -(d * x ^ (1 - a)) ≤ g x * G x ∧ g x * G x ≤ d * x ^ (1 - a) := by
       filter_upwards [htailBound] with x hx
-      have habs : |g x * G x| ≤ d * x ^ (1 - a) := by
-        simpa [Real.norm_eq_abs] using hx
-      exact abs_le.mp habs
+      apply abs_le.mp <;> assumption
     exact Filter.Tendsto.squeeze' hbot htop
       (hbounds.mono fun _ h => h.1) (hbounds.mono fun _ h => h.2)
   constructor
-  · simpa [g, G] using hnearSqueeze
-  · simpa [g, G] using htailSqueeze
+  assumption
+  · assumption
 
 /-- The signed negative-power integral from the one-dimensional identity of [KRV, Lemma 12.6]. -/
-theorem beta_negative_power_integral (p a : ℝ) (hp : 0 < p) (ha : 1 < a)
-    (ha₂ : a < 2) :
+theorem beta_negative_power_integral :
     IntegrableOn (fun v : ℝ => ((1 + v) ^ (-p) - 1) * v ^ (-a)) (Ioi 0) ∧
       (∫ v : ℝ in Ioi 0, ((1 + v) ^ (-p) - 1) * v ^ (-a)) =
         Real.Gamma (1 - a) * Real.Gamma (p + a - 1) / Real.Gamma p := by
@@ -427,7 +412,7 @@ theorem beta_negative_power_integral (p a : ℝ) (hp : 0 < p) (ha : 1 < a)
     convert hpow using 1
     simpa [Gp] using hderiv.symm
   have hleft : IntegrableOn (g * Gp) (Ioi 0) := by
-    simpa [g, Gp, Pi.mul_def] using hintegrable
+    assumption
   have hright : IntegrableOn (gp * G) (Ioi 0) := by
     simpa [gp, G, Pi.mul_def] using beta_ibp_derivative_integrable p a hp ha ha₂
   have hlimits := beta_product_tends_zero p a hp ha ha₂
@@ -456,10 +441,7 @@ theorem beta_negative_power_integral (p a : ℝ) (hp : 0 < p) (ha : 1 < a)
       Complex.Gamma_ofReal,
       show (2 - a) + (p + a - 1) = p + 1 by ring] at hbetaC'
     simpa [Complex.ofReal_mul, Complex.ofReal_div] using hbetaC'
-  have hJ :
-      (∫ v : ℝ in Ioi 0, v ^ (1 - a) * (1 + v) ^ (-(p + 1))) =
-        Real.Gamma (2 - a) * Real.Gamma (p + a - 1) / Real.Gamma (p + 1) :=
-    hbetaSub.trans hbetaR
+  have hJ := hbetaSub.trans hbetaR
   have hparts :
       (∫ v : ℝ in Ioi 0, g v * Gp v) =
         -(((-p) / (1 - a)) *
@@ -488,6 +470,8 @@ theorem beta_negative_power_integral (p a : ℝ) (hp : 0 < p) (ha : 1 < a)
       Real.Gamma_add_one (by linarith : 1 - a ≠ 0), Real.Gamma_add_one hp.ne']
     field_simp [hp.ne', ne_of_gt (Real.Gamma_pos_of_pos hp), (by linarith : 1 - a ≠ 0)]
   rw [hfactor] at hparts
-  simpa [g, Gp] using hparts
+  assumption
+
+end
 
 end DOZZ.Proofs

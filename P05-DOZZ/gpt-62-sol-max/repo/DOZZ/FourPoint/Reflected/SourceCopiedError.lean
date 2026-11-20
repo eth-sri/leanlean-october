@@ -5,6 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.SourceBufferRate
 public import DOZZ.FourPoint.Reflected.Decorrelation
+public import DOZZ.GFFStructure.ContinuousCircleAverage
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! The actual error from the full source moment to the copied moment combines the buffer and
 decorrelation rates. -/
 @[expose] public section
@@ -14,18 +16,11 @@ namespace DOZZ.Proofs
 
 theorem reflected_source_full_copied_littleO
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
-    (hwhole : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
-      ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
-      (∫⁻ ω, G (originRadialPath Xc ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
-      ∫⁻ ω, G (originRadialPath Xc ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
-        f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ
-          (originRadialPath Xc ω.1) x) ∂N ω.2) ∂P.prod P)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
+    (hwhole : RadialReinsertionLaw P (originRadialPath Xc) γ M N)
     (hNa : ∀ ρ : ℝ, 0 < ρ → IsAdmissibleGMCVersion P (originLateralChart ρ)
       originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ
       (fun ω => (N ω).restrict (originLateralChart ρ)))
@@ -41,7 +36,7 @@ theorem reflected_source_full_copied_littleO
   let p := (α₁+α₂+α₃-γ/2-2*Q γ)/γ
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   obtain ⟨_,_,herror⟩ := reflected_source_decorrelation_error_on_carrier
-    P X Xc hX hc hm hcont γ hγ hγ₂ M hM N hN hfin hwhole hNa
+    P X Xc hX hcircle γ hγ hγ₂ M hM N hN hfin hwhole hNa
     α₁ α₂ α₃ p ξ (γ*(Q γ-α₁)) hp hξ hξ1 hnear
   have hb := reflected_source_buffer_inverse_littleO P X M γ α₁ α₂ α₃ ξ h
     hγ hγ₂ hα₁ hα₂ hα₃ hreflect hs hξ hξ1 hnear hfreeze hh hX hM

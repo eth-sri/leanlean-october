@@ -47,12 +47,10 @@ theorem exists_physical_inversion_representative
       ∀ᶠ z in codiscrete ℂ, R z * R ((q : ℂ) - z) = 1 := by
   classical
   have hclosure : closure (horizontalStrip h) ⊆ horizontalStrip H := by
-    have hc : IsClosed {z : ℂ | |z.im| ≤ h} :=
-      isClosed_le Complex.continuous_im.abs continuous_const
-    have hcl := closure_minimal
-      (show horizontalStrip h ⊆ {z : ℂ | |z.im| ≤ h} from
-        fun z hz => (show |z.im| < h from hz).le) hc
-    exact fun z hz => (hcl hz).trans_lt hhH
+    exact fun z hz =>
+      LE.le.trans_lt
+        (closure_minimal (fun z hz => LT.lt.le hz) (isClosed_le (Continuous.abs Complex.continuous_im) continuous_const) hz)
+        hhH
   let R₀ : ℂ → ℂ := fun z => if z ∈ horizontalStrip h then F z else 1
   let R : ℂ → ℂ := fun z =>
     if z.im = 0 ∧ lo < z.re ∧ z.re < hi then v z.re else R₀ z

@@ -42,7 +42,7 @@ theorem admissibleCutoffIntegral_L1_continuous_finite_reference
   have hjoint (γ : ℝ) : Measurable (fun q : ℂ × Ω => ENNReal.ofReal
       |Real.exp (γ * Y q.2 ε q.1 - γ ^ 2 / 2 * ∫ ω', Y ω' ε q.1 ^ 2 ∂P) -
         Real.exp (γ₀ * Y q.2 ε q.1 - γ₀ ^ 2 / 2 * ∫ ω', Y ω' ε q.1 ^ 2 ∂P)|) := by
-    have h1 : Measurable (fun q : ℂ × Ω => Y q.2 ε q.1) := hfield.comp measurable_swap
+    have h1  := hfield.comp measurable_swap
     have h2 : Measurable (fun q : ℂ × Ω => ∫ ω', Y ω' ε q.1 ^ 2 ∂P) := hv.comp measurable_fst
     fun_prop
   have hDmeas (γ : ℝ) : Measurable (D γ) := (hjoint γ).lintegral_prod_right'
@@ -143,7 +143,7 @@ theorem regularizedGMC_testFamily_L1_continuous
     Tendsto (fun q => ∫⁻ ω, ENNReal.ofReal
       |∫ x, f q x ∂regularizedGMC P Xc (γ q) r ω -
         ∫ x, f q₀ x ∂regularizedGMC P Xc (γ q₀) r ω| ∂P) (𝓝 q₀) (𝓝 0) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hν : logRegularizationReference Set.univ circleDensity Set.univ ≠ ⊤ := by
     rw [logRegularizationReference_univ_circleDensity]
     exact gmcReferenceMeasure_univ_ne_top
@@ -194,26 +194,32 @@ noncomputable def continuityCutoffTest {N : ℕ} (partition : GMCChartPartition)
     (r : ℝ) (c : ContinuityCoulombParameter N) (x : ℂ) : ℝ :=
   continuityFiniteCutoffTest partition r c x + continuityInfinityCutoffTest partition r c x⁻¹
 
-theorem continuityCutoffTest_nonneg {N : ℕ} (partition : GMCChartPartition)
-    (r : ℝ) (c : ContinuityCoulombParameter N) (x : ℂ) :
+section
+variable {N : ℕ} (partition : GMCChartPartition) (r : ℝ) (c : ContinuityCoulombParameter N)
+include N
+
+theorem continuityCutoffTest_nonneg (x : ℂ) :
     0 ≤ continuityCutoffTest partition r c x :=
   add_nonneg (continuityFiniteCutoffTest_nonneg _ _ _ _)
     (continuityInfinityCutoffTest_nonneg _ _ _ _)
 
-theorem continuityCutoffTest_measurable {N : ℕ} (partition : GMCChartPartition)
-    (r : ℝ) (c : ContinuityCoulombParameter N) : Measurable (continuityCutoffTest partition r c) :=
+theorem continuityCutoffTest_measurable : Measurable (continuityCutoffTest partition r c) :=
   ((continuityFiniteCutoffTest_continuous partition r).comp
     (continuous_const.prodMk continuous_id)).measurable.add
     (((continuityInfinityCutoffTest_continuous partition r).comp
       (continuous_const.prodMk continuous_id)).measurable.comp measurable_inv)
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {N : ℕ} (P : Measure Ω) (X : Ω → Distr)
+  (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+  (partition : GMCChartPartition) (r : ℝ)
+include Ω X hX hXc
+
 /-- The real part of the cutoff mass `DOZZ.regularizedCoulombMass` is exactly the integral of its
 bounded single-chart real test. This identity also respects the integral totalizations. -/
-theorem regularizedCoulombMass_real_eq_integral_test
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (partition : GMCChartPartition) (r : ℝ) (c : ContinuityCoulombParameter N) (ω : Ω) :
+theorem regularizedCoulombMass_real_eq_integral_test (c : ContinuityCoulombParameter N) (ω : Ω) :
     (regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω).toReal =
       ∫ x, continuityCutoffTest partition r c x ∂regularizedGMC P Xc c.1 r ω := by
   rw [regularizedCoulombMass_eq_lintegral P X hX Xc hXc]
@@ -227,11 +233,7 @@ theorem regularizedCoulombMass_real_eq_integral_test
 
 /-- At a fixed cutoff, the actual chartwise Coulomb mass is continuous in all
 couplings, roots and charges in `L¹(P)` on every compact parameter set. -/
-theorem regularizedCoulombMass_L1_continuous_on_compact
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (partition : GMCChartPartition) (r : ℝ) (hr : 0 ≤ r)
+theorem regularizedCoulombMass_L1_continuous_on_compact (hr : 0 ≤ r)
     (S : Set (ContinuityCoulombParameter N)) (hS : IsCompact S) (c₀ : S) :
     Tendsto (fun c : S => ∫⁻ ω, ENNReal.ofReal
       |(regularizedCoulombMass P Xc c.val.1 partition c.val.2.2.1 c.val.2.1 c.val.2.2.2 r ω).toReal -
@@ -255,11 +257,7 @@ theorem regularizedCoulombMass_L1_continuous_on_compact
   simpa only [regularizedCoulombMass_real_eq_integral_test P X hX Xc hXc] using h
 
 /-- The actual extended cutoff mass is measurable for every fixed parameter. -/
-theorem continuity_regularizedCoulombMass_measurable
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (partition : GMCChartPartition) (r : ℝ) (c : ContinuityCoulombParameter N) :
+theorem continuity_regularizedCoulombMass_measurable (c : ContinuityCoulombParameter N) :
     Measurable (fun ω => regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω) := by
   have h := (Measure.measurable_lintegral
     (measurable_coulombCutoffWeight partition c.1 c.2.2.1 c.2.1 c.2.2.2 r)).comp
@@ -267,18 +265,14 @@ theorem continuity_regularizedCoulombMass_measurable
   simpa only [Function.comp_def, regularizedCoulombMass_eq_lintegral P X hX Xc hXc] using h
 
 /-- The bounded chart tests make the actual cutoff mass finite almost surely. -/
-theorem continuity_regularizedCoulombMass_finite_ae
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (partition : GMCChartPartition) (r : ℝ) (c : ContinuityCoulombParameter N) :
+theorem continuity_regularizedCoulombMass_finite_ae (c : ContinuityCoulombParameter N) :
     ∀ᵐ ω ∂P, regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω ≠ ⊤ := by
   obtain ⟨L, _hL0, hL⟩ := continuityCutoffTests_uniform_bound partition r {c} isCompact_singleton
   have hb (x : ℂ) : continuityCutoffTest partition r c x ≤ 2 * L :=
     (le_abs_self _).trans ((abs_add_le _ _).trans (by
       linarith [(hL c rfl x).1, (hL c rfl x⁻¹).2]))
   filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc c.1 r] with ω hω
-  let _ : IsFiniteMeasure (regularizedGMC P Xc c.1 r ω) := hω
+  let _  := hω
   rw [regularizedCoulombMass_eq_lintegral P X hX Xc hXc]
   refine ne_top_of_le_ne_top (ENNReal.mul_ne_top (ENNReal.ofReal_ne_top (r := 2 * L))
     (measure_ne_top (regularizedGMC P Xc c.1 r ω) Set.univ)) ?_
@@ -287,5 +281,7 @@ theorem continuity_regularizedCoulombMass_finite_ae
         rw [coulombCutoffWeight_eq_ofReal_continuityCutoffTest]
         exact ENNReal.ofReal_le_ofReal (hb x)
     _ = _ := lintegral_const _
+
+end
 
 end DOZZ.Proofs

@@ -58,19 +58,22 @@ theorem haarPacket_child_father_refine_pointwise {d : Nat} (j : ℤ)
 def dyadicBox {d : Nat} (j : ℤ) (cell : Fin d → ℤ) : Set (Vec d) :=
   Set.pi Set.univ fun r => dyadicInterval j (cell r)
 
-theorem measurableSet_dyadicBox {d : Nat} (j : ℤ) (cell : Fin d → ℤ) :
+section
+variable {d : Nat} (j : ℤ) (cell : Fin d → ℤ)
+include d j cell
+
+theorem measurableSet_dyadicBox :
     MeasurableSet (dyadicBox j cell) := by
   unfold dyadicBox
   exact MeasurableSet.pi Set.countable_univ fun r _ => measurableSet_dyadicInterval j (cell r)
 
-theorem volume_dyadicBox_ne_top {d : Nat} (j : ℤ) (cell : Fin d → ℤ) :
+theorem volume_dyadicBox_ne_top :
     volume (dyadicBox j cell) ≠ ∞ := by
   unfold dyadicBox dyadicInterval
   rw [Real.volume_pi_Ico]
   exact ENNReal.prod_ne_top fun r _ => ENNReal.ofReal_ne_top
 
-theorem haarPacket_father_eq_indicator_dyadicBox {d : Nat}
-    (j : ℤ) (cell : Fin d → ℤ) (x : Vec d) :
+theorem haarPacket_father_eq_indicator_dyadicBox (x : Vec d) :
     haarPacket { scale := j, cell := cell, signature := fun _ => false } x =
       (∏ _r : Fin d, haarScaleFactor j) *
         Set.indicator (dyadicBox j cell) (fun _ : Vec d => (1 : ℝ)) x := by
@@ -82,7 +85,7 @@ theorem haarPacket_father_eq_indicator_dyadicBox {d : Nat}
             Set.indicator (dyadicInterval j (cell r)) (fun _ : ℝ => (1 : ℝ)) (x r) := by
           refine Finset.prod_congr rfl ?_
           intro r _hr
-          exact haar1D_father_eq_indicator_dyadicInterval j (cell r) (x r)
+          apply haar1D_father_eq_indicator_dyadicInterval <;> assumption
     _ = (∏ _r : Fin d, haarScaleFactor j) *
         ∏ r : Fin d,
           Set.indicator (dyadicInterval j (cell r)) (fun _ : ℝ => (1 : ℝ)) (x r) := by
@@ -102,13 +105,19 @@ theorem haarPacket_father_eq_indicator_dyadicBox {d : Nat}
           rw [honeReal, honeVec, dyadicBox]
           simpa only [Finset.coe_univ] using h.symm
 
+end
+
+section
+variable {d : Nat} (idx : HaarIndex d)
+include d
+
 @[fun_prop]
-theorem measurable_haarPacket {d : Nat} (idx : HaarIndex d) :
+theorem measurable_haarPacket :
     Measurable (haarPacket idx) := by
   unfold haarPacket
   fun_prop
 
-theorem haarPacket_sq {d : Nat} (idx : HaarIndex d) (x : Vec d) :
+theorem haarPacket_sq (x : Vec d) :
     haarPacket idx x ^ (2 : Nat) =
       ∏ r : Fin d, haar1D idx.scale (idx.cell r) (idx.signature r) (x r) ^ (2 : Nat) := by
   unfold haarPacket
@@ -117,7 +126,7 @@ theorem haarPacket_sq {d : Nat} (idx : HaarIndex d) (x : Vec d) :
   intro r _hr
   rw [pow_two]
 
-theorem integrable_haarPacket_sq {d : Nat} (idx : HaarIndex d) :
+theorem integrable_haarPacket_sq :
     Integrable (fun x : Vec d => haarPacket idx x ^ (2 : Nat))
       (volume : Measure (Vec d)) := by
   have hprod :
@@ -134,11 +143,13 @@ theorem integrable_haarPacket_sq {d : Nat} (idx : HaarIndex d) :
   intro x
   exact (haarPacket_sq idx x).symm
 
-theorem memLp_haarPacket {d : Nat} (idx : HaarIndex d) :
+theorem memLp_haarPacket :
     MemLp (haarPacket idx) 2 (volume : Measure (Vec d)) := by
   rw [memLp_two_iff_integrable_sq]
   · exact integrable_haarPacket_sq idx
   · exact (measurable_haarPacket idx).aestronglyMeasurable
+
+end
 
 /-- The tensor-product Haar packet as an `L²(R^d)` vector. -/
 @[expose]
@@ -165,10 +176,7 @@ private theorem coeFn_finset_sum_lp_real {α ι : Type*} [MeasurableSpace α]
       simpa using hx
   | insert i s hi ih =>
       filter_upwards [Lp.coeFn_add (f i) (∑ j ∈ s, f j), ih] with x hadd hsum
-      rw [Finset.sum_insert hi]
-      rw [Finset.sum_insert hi]
-      rw [hadd, Pi.add_apply]
-      rw [hsum]
+      rw [Finset.sum_insert hi, Finset.sum_insert hi, hadd, Pi.add_apply, hsum]
 
 theorem haarPacketLp_child_father_refine {d : Nat} (j : ℤ)
     (cell : Fin d → ℤ) (side : Fin d → Bool) :
@@ -207,9 +215,12 @@ theorem haarPacketLp_child_father_refine {d : Nat} (j : ℤ)
       haarChildCoefficient side signature * (haarPacketLp (parent signature)) x
   unfold haarPacketLp
   simp_rw [hparent]
-  exact haarPacket_child_father_refine_pointwise j cell side x
+  exact haarPacket_child_father_refine_pointwise ..
 
-theorem haarPacket_mul_product {d : Nat} (idx₁ idx₂ : HaarIndex d) (x : Vec d) :
+section
+variable {d : Nat} (idx₁ idx₂ : HaarIndex d)
+
+theorem haarPacket_mul_product (x : Vec d) :
     haarPacket idx₁ x * haarPacket idx₂ x =
       ∏ r : Fin d,
         haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) (x r) *
@@ -217,120 +228,53 @@ theorem haarPacket_mul_product {d : Nat} (idx₁ idx₂ : HaarIndex d) (x : Vec 
   unfold haarPacket
   rw [← Finset.prod_mul_distrib]
 
-theorem integral_haarPacket_mul_product {d : Nat} (idx₁ idx₂ : HaarIndex d) :
+theorem integral_haarPacket_mul_product :
     ∫ x : Vec d, haarPacket idx₁ x * haarPacket idx₂ x ∂volume =
       ∏ r : Fin d,
         ∫ y : ℝ,
           haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) y *
             haar1D idx₂.scale (idx₂.cell r) (idx₂.signature r) y ∂volume := by
-  calc
-    ∫ x : Vec d, haarPacket idx₁ x * haarPacket idx₂ x ∂volume =
-        ∫ x : Vec d,
-          ∏ r : Fin d,
-            haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) (x r) *
-              haar1D idx₂.scale (idx₂.cell r) (idx₂.signature r) (x r) ∂volume := by
-          refine integral_congr_ae (ae_of_all _ ?_)
-          intro x
-          exact haarPacket_mul_product idx₁ idx₂ x
-    _ = ∏ r : Fin d,
-        ∫ y : ℝ,
-          haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) y *
-            haar1D idx₂.scale (idx₂.cell r) (idx₂.signature r) y ∂volume := by
-          change ∫ x : (Fin d → ℝ),
-              ∏ r : Fin d,
-                (fun y : ℝ =>
-                  haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) y *
-                    haar1D idx₂.scale (idx₂.cell r) (idx₂.signature r) y) (x r)
-              =
-            ∏ r : Fin d,
-              ∫ y : ℝ,
-                (fun y : ℝ =>
-                  haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) y *
-                    haar1D idx₂.scale (idx₂.cell r) (idx₂.signature r) y) y
-          exact MeasureTheory.integral_fintype_prod_volume_eq_prod
-            (𝕜 := ℝ) (ι := Fin d) (E := fun _ => ℝ)
-            (fun r y =>
-              haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) y *
-                haar1D idx₂.scale (idx₂.cell r) (idx₂.signature r) y)
+  simp only [haarPacket_mul_product]
+  exact MeasureTheory.integral_fintype_prod_volume_eq_prod
+    (𝕜 := ℝ) (ι := Fin d) (E := fun _ => ℝ)
+    (fun r y => haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) y *
+      haar1D idx₂.scale (idx₂.cell r) (idx₂.signature r) y)
 
-theorem integral_haarPacket_mul_finer_of_signature_true_nat_succ {d : Nat}
-    (idx₁ idx₂ : HaarIndex d) (n : ℕ)
-    (hscale : idx₂.scale = idx₁.scale + ((n + 1 : ℕ) : ℤ))
-    {r : Fin d} (hsig : idx₂.signature r = true) :
+end
+
+section
+variable {d : Nat} (idx₁ idx₂ : HaarIndex d) (n : ℕ)
+  (hscale : idx₂.scale = idx₁.scale + ((n + 1 : ℕ) : ℤ)) {r : Fin d} (hsig : idx₂.signature r = true)
+include d n hscale r hsig
+
+theorem integral_haarPacket_mul_finer_of_signature_true_nat_succ :
     ∫ x : Vec d, haarPacket idx₁ x * haarPacket idx₂ x ∂volume = 0 := by
   rw [integral_haarPacket_mul_product idx₁ idx₂]
   apply Finset.prod_eq_zero (Finset.mem_univ r)
   rw [hscale, hsig]
-  exact integral_haar1D_mul_finer_mother_nat_succ idx₁.scale
-    (idx₁.cell r) (idx₂.cell r) (idx₁.signature r) n
+  apply integral_haar1D_mul_finer_mother_nat_succ <;> assumption
 
-theorem inner_haarPacketLp_finer_of_signature_true_nat_succ {d : Nat}
-    (idx₁ idx₂ : HaarIndex d) (n : ℕ)
-    (hscale : idx₂.scale = idx₁.scale + ((n + 1 : ℕ) : ℤ))
-    {r : Fin d} (hsig : idx₂.signature r = true) :
+theorem inner_haarPacketLp_finer_of_signature_true_nat_succ :
     ⟪haarPacketLp idx₁, haarPacketLp idx₂⟫_ℝ = 0 := by
   rw [inner_haarPacketLp_eq_integral]
-  exact integral_haarPacket_mul_finer_of_signature_true_nat_succ idx₁ idx₂ n hscale hsig
+  apply integral_haarPacket_mul_finer_of_signature_true_nat_succ <;> assumption
 
-theorem haarPacket_mul_same_scale {d : Nat} (idx₁ idx₂ : HaarIndex d)
-    (hscale : idx₁.scale = idx₂.scale) (x : Vec d) :
-    haarPacket idx₁ x * haarPacket idx₂ x =
-      ∏ r : Fin d,
-        haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) (x r) *
-          haar1D idx₁.scale (idx₂.cell r) (idx₂.signature r) (x r) := by
-  unfold haarPacket
-  rw [← Finset.prod_mul_distrib]
-  refine Finset.prod_congr rfl ?_
-  intro r _hr
-  rw [← hscale]
+end
 
-theorem integral_haarPacket_mul_same_scale {d : Nat} (idx₁ idx₂ : HaarIndex d)
-    (hscale : idx₁.scale = idx₂.scale) :
+section
+variable {d : Nat} (idx₁ idx₂ : HaarIndex d) (hscale : idx₁.scale = idx₂.scale)
+include d hscale
+
+theorem integral_haarPacket_mul_same_scale :
     ∫ x : Vec d, haarPacket idx₁ x * haarPacket idx₂ x ∂volume =
       ∏ r : Fin d,
         (if idx₁.cell r = idx₂.cell r then
           if idx₁.signature r = idx₂.signature r then (1 : ℝ) else 0
         else 0) := by
-  calc
-    ∫ x : Vec d, haarPacket idx₁ x * haarPacket idx₂ x ∂volume =
-        ∫ x : Vec d,
-          ∏ r : Fin d,
-            haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) (x r) *
-              haar1D idx₁.scale (idx₂.cell r) (idx₂.signature r) (x r) ∂volume := by
-          refine integral_congr_ae (ae_of_all _ ?_)
-          intro x
-          exact haarPacket_mul_same_scale idx₁ idx₂ hscale x
-    _ = ∏ r : Fin d,
-        ∫ y : ℝ,
-          haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) y *
-            haar1D idx₁.scale (idx₂.cell r) (idx₂.signature r) y ∂volume := by
-          change ∫ x : (Fin d → ℝ),
-              ∏ r : Fin d,
-                (fun y : ℝ =>
-                  haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) y *
-                    haar1D idx₁.scale (idx₂.cell r) (idx₂.signature r) y) (x r)
-              =
-            ∏ r : Fin d,
-              ∫ y : ℝ,
-                (fun y : ℝ =>
-                  haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) y *
-                    haar1D idx₁.scale (idx₂.cell r) (idx₂.signature r) y) y
-          exact MeasureTheory.integral_fintype_prod_volume_eq_prod
-            (𝕜 := ℝ) (ι := Fin d) (E := fun _ => ℝ)
-            (fun r y =>
-              haar1D idx₁.scale (idx₁.cell r) (idx₁.signature r) y *
-                haar1D idx₁.scale (idx₂.cell r) (idx₂.signature r) y)
-    _ = ∏ r : Fin d,
-        (if idx₁.cell r = idx₂.cell r then
-          if idx₁.signature r = idx₂.signature r then (1 : ℝ) else 0
-        else 0) := by
-          congr 1
-          ext r
-          exact integral_haar1D_mul_haar1D_same_scale idx₁.scale
-            (idx₁.cell r) (idx₂.cell r) (idx₁.signature r) (idx₂.signature r)
+  rw [integral_haarPacket_mul_product idx₁ idx₂, ← hscale]
+  simp only [integral_haar1D_mul_haar1D_same_scale]
 
-theorem prod_haarPacket_same_scale_inner_eq_ite {d : Nat} (idx₁ idx₂ : HaarIndex d)
-    (hscale : idx₁.scale = idx₂.scale) :
+theorem prod_haarPacket_same_scale_inner_eq_ite :
     (∏ r : Fin d,
         (if idx₁.cell r = idx₂.cell r then
           if idx₁.signature r = idx₂.signature r then (1 : ℝ) else 0
@@ -344,8 +288,8 @@ theorem prod_haarPacket_same_scale_inner_eq_ite {d : Nat} (idx₁ idx₂ : HaarI
       by_contra hnot
       push Not at hnot
       apply hidx
-      have hcell : idx₁.cell = idx₂.cell := funext fun r => (hnot r).1
-      have hsig : idx₁.signature = idx₂.signature := funext fun r => (hnot r).2
+      have hcell  := funext fun r => (hnot r).1
+      have hsig  := funext fun r => (hnot r).2
       cases idx₁
       cases idx₂
       simp at hscale hcell hsig ⊢
@@ -358,66 +302,39 @@ theorem prod_haarPacket_same_scale_inner_eq_ite {d : Nat} (idx₁ idx₂ : HaarI
       apply Finset.prod_eq_zero (Finset.mem_univ r)
       simp [hrsig]
 
-theorem integral_haarPacket_mul_same_scale_ite {d : Nat} (idx₁ idx₂ : HaarIndex d)
-    (hscale : idx₁.scale = idx₂.scale) :
+theorem integral_haarPacket_mul_same_scale_ite :
     ∫ x : Vec d, haarPacket idx₁ x * haarPacket idx₂ x ∂volume =
       if idx₁ = idx₂ then 1 else 0 := by
   rw [integral_haarPacket_mul_same_scale idx₁ idx₂ hscale]
   exact prod_haarPacket_same_scale_inner_eq_ite idx₁ idx₂ hscale
 
 /-- Same-scale tensor Haar `L²` inner products reduce to equality of full packet indices. -/
-theorem inner_haarPacketLp_same_scale {d : Nat} (idx₁ idx₂ : HaarIndex d)
-    (hscale : idx₁.scale = idx₂.scale) :
+theorem inner_haarPacketLp_same_scale :
     ⟪haarPacketLp idx₁, haarPacketLp idx₂⟫_ℝ =
       if idx₁ = idx₂ then 1 else 0 := by
-  rw [haarPacketLp, haarPacketLp, MeasureTheory.L2.inner_def]
-  calc
-    ∫ x : Vec d,
-        inner (𝕜 := ℝ)
-          ((memLp_haarPacket idx₁).toLp (haarPacket idx₁) x)
-          ((memLp_haarPacket idx₂).toLp (haarPacket idx₂) x)
-        ∂volume =
-        ∫ x : Vec d, haarPacket idx₁ x * haarPacket idx₂ x ∂volume := by
-          refine integral_congr_ae ?_
-          filter_upwards [(memLp_haarPacket idx₁).coeFn_toLp,
-            (memLp_haarPacket idx₂).coeFn_toLp] with x hx₁ hx₂
-          simp [hx₁, hx₂, mul_comm]
-    _ = if idx₁ = idx₂ then 1 else 0 :=
-      integral_haarPacket_mul_same_scale_ite idx₁ idx₂ hscale
+  rw [inner_haarPacketLp_eq_integral]
+  exact integral_haarPacket_mul_same_scale_ite idx₁ idx₂ hscale
+
+end
 
 /-- The corrected tensor-product Haar wavelet packet. -/
 @[expose]
 noncomputable def haarWaveletPacket {d : Nat} (idx : HaarWaveletIndex d) : Vec d → ℝ :=
   haarPacket idx.toHaarIndex
 
-@[fun_prop]
-theorem measurable_haarWaveletPacket {d : Nat} (idx : HaarWaveletIndex d) :
-    Measurable (haarWaveletPacket idx) :=
-  measurable_haarPacket idx.toHaarIndex
+section
+variable {d : Nat}
 
-theorem exists_true_of_ne_false_signature {d : Nat} {signature : Fin d → Bool}
+theorem exists_true_of_ne_false_signature {signature : Fin d → Bool}
     (h : signature ≠ fun _ => false) :
     ∃ r : Fin d, signature r = true := by
-  by_contra hnot
-  push Not at hnot
-  apply h
-  funext r
-  cases hsig : signature r
-  · rfl
-  · exact False.elim (hnot r hsig)
+  grind
 
-theorem integral_haarWaveletPacket_mul_finer_nat_succ {d : Nat}
-    (idx₁ idx₂ : HaarWaveletIndex d) (n : ℕ)
-    (hscale : idx₂.scale = idx₁.scale + ((n + 1 : ℕ) : ℤ)) :
-    ∫ x : Vec d, haarWaveletPacket idx₁ x * haarWaveletPacket idx₂ x ∂volume = 0 := by
-  rcases exists_true_of_ne_false_signature idx₂.signature.property with ⟨r, hsig⟩
-  exact integral_haarPacket_mul_finer_of_signature_true_nat_succ
-    idx₁.toHaarIndex idx₂.toHaarIndex n hscale hsig
-
-theorem memLp_haarWaveletPacket {d : Nat} (idx : HaarWaveletIndex d) :
+theorem memLp_haarWaveletPacket (idx : HaarWaveletIndex d) :
     MemLp (haarWaveletPacket idx) 2 (volume : Measure (Vec d)) := by
-  change MemLp (haarPacket idx.toHaarIndex) 2 (volume : Measure (Vec d))
-  exact memLp_haarPacket idx.toHaarIndex
+  apply memLp_haarPacket
+
+end
 
 /-- The corrected tensor-product Haar wavelet packet as an `L²(R^d)` vector. -/
 @[expose]
@@ -429,93 +346,64 @@ theorem haarWaveletPacketLp_eq_haarPacketLp {d : Nat} (idx : HaarWaveletIndex d)
     haarWaveletPacketLp idx = haarPacketLp idx.toHaarIndex :=
   rfl
 
-theorem inner_haarWaveletPacketLp_same_scale {d : Nat} (idx₁ idx₂ : HaarWaveletIndex d)
+section
+variable {d : Nat} (idx₁ idx₂ : HaarWaveletIndex d)
+include d
+
+theorem inner_haarWaveletPacketLp_same_scale
     (hscale : idx₁.scale = idx₂.scale) :
     ⟪haarWaveletPacketLp idx₁, haarWaveletPacketLp idx₂⟫_ℝ =
       if idx₁ = idx₂ then 1 else 0 := by
-  rw [haarWaveletPacketLp, haarWaveletPacketLp, MeasureTheory.L2.inner_def]
-  calc
-    ∫ x : Vec d,
-        inner (𝕜 := ℝ)
-          ((memLp_haarWaveletPacket idx₁).toLp (haarWaveletPacket idx₁) x)
-          ((memLp_haarWaveletPacket idx₂).toLp (haarWaveletPacket idx₂) x)
-        ∂volume =
-        ∫ x : Vec d, haarWaveletPacket idx₁ x * haarWaveletPacket idx₂ x ∂volume := by
-          refine integral_congr_ae ?_
-          filter_upwards [(memLp_haarWaveletPacket idx₁).coeFn_toLp,
-            (memLp_haarWaveletPacket idx₂).coeFn_toLp] with x hx₁ hx₂
-          simp [hx₁, hx₂, mul_comm]
-    _ = if idx₁ = idx₂ then 1 else 0 := by
-          change ∫ x : Vec d, haarPacket idx₁.toHaarIndex x * haarPacket idx₂.toHaarIndex x
-              ∂volume = if idx₁ = idx₂ then 1 else 0
-          rw [integral_haarPacket_mul_same_scale_ite idx₁.toHaarIndex idx₂.toHaarIndex hscale]
-          by_cases hidx : idx₁ = idx₂
-          · simp [hidx]
-          · have hraw : idx₁.toHaarIndex ≠ idx₂.toHaarIndex := by
-              intro hraw
-              exact hidx (HaarWaveletIndex.toHaarIndex_injective hraw)
-            simp [hidx, hraw]
+  rw [haarWaveletPacketLp_eq_haarPacketLp, haarWaveletPacketLp_eq_haarPacketLp,
+    inner_haarPacketLp_same_scale _ _ hscale]
+  simp only [HaarWaveletIndex.toHaarIndex_injective.eq_iff]
 
-theorem inner_haarWaveletPacketLp_finer_nat_succ {d : Nat}
-    (idx₁ idx₂ : HaarWaveletIndex d) (n : ℕ)
+theorem inner_haarWaveletPacketLp_finer_nat_succ (n : ℕ)
     (hscale : idx₂.scale = idx₁.scale + ((n + 1 : ℕ) : ℤ)) :
     ⟪haarWaveletPacketLp idx₁, haarWaveletPacketLp idx₂⟫_ℝ = 0 := by
-  rw [haarWaveletPacketLp, haarWaveletPacketLp, MeasureTheory.L2.inner_def]
-  calc
-    ∫ x : Vec d,
-        inner (𝕜 := ℝ)
-          ((memLp_haarWaveletPacket idx₁).toLp (haarWaveletPacket idx₁) x)
-          ((memLp_haarWaveletPacket idx₂).toLp (haarWaveletPacket idx₂) x)
-        ∂volume =
-        ∫ x : Vec d, haarWaveletPacket idx₁ x * haarWaveletPacket idx₂ x ∂volume := by
-          refine integral_congr_ae ?_
-          filter_upwards [(memLp_haarWaveletPacket idx₁).coeFn_toLp,
-            (memLp_haarWaveletPacket idx₂).coeFn_toLp] with x hx₁ hx₂
-          simp [hx₁, hx₂, mul_comm]
-    _ = 0 := integral_haarWaveletPacket_mul_finer_nat_succ idx₁ idx₂ n hscale
+  obtain ⟨r, hr⟩ := exists_true_of_ne_false_signature idx₂.signature.property
+  rw [haarWaveletPacketLp_eq_haarPacketLp, haarWaveletPacketLp_eq_haarPacketLp]
+  exact inner_haarPacketLp_finer_of_signature_true_nat_succ _ _ n hscale hr
 
-theorem inner_haarWaveletPacketLp_finer_nat_succ_symm {d : Nat}
-    (idx₁ idx₂ : HaarWaveletIndex d) (n : ℕ)
+theorem inner_haarWaveletPacketLp_finer_nat_succ_symm (n : ℕ)
     (hscale : idx₁.scale = idx₂.scale + ((n + 1 : ℕ) : ℤ)) :
     ⟪haarWaveletPacketLp idx₁, haarWaveletPacketLp idx₂⟫_ℝ = 0 := by
   rw [← inner_conj_symm]
   simp [inner_haarWaveletPacketLp_finer_nat_succ idx₂ idx₁ n hscale]
 
+end
+
 theorem exists_nat_succ_scale_gap {j₁ j₂ : ℤ} (h : j₁ < j₂) :
     ∃ n : ℕ, j₂ = j₁ + ((n + 1 : ℕ) : ℤ) := by
-  let m : ℕ := (j₂ - j₁).toNat
-  have hm_cast : (m : ℤ) = j₂ - j₁ := by
-    exact Int.toNat_sub_of_le (show j₁ ≤ j₂ from le_of_lt h)
+  let m  := (j₂ - j₁).toNat
+  have hm_cast := Int.toNat_sub_of_le (show j₁ ≤ j₂ from le_of_lt h)
   have hm_pos : 0 < m := by
-    have hdiff_pos : 0 < j₂ - j₁ := sub_pos.mpr h
-    have hdiff_cast_pos : 0 < (m : ℤ) := by
-      simpa [hm_cast] using hdiff_pos
-    exact_mod_cast hdiff_cast_pos
+    linarith
   obtain ⟨n, hn⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt hm_pos)
-  refine ⟨n, ?_⟩
-  have hm_eq : m = n + 1 := by omega
-  have hgap : (j₂ - j₁ : ℤ) = ((n + 1 : ℕ) : ℤ) := by
-    rw [← hm_cast, hm_eq]
-  omega
+  grind
 
-theorem inner_haarWaveletPacketLp_of_scale_lt {d : Nat}
-    (idx₁ idx₂ : HaarWaveletIndex d) (hscale : idx₁.scale < idx₂.scale) :
+section
+variable {d : Nat} (idx₁ idx₂ : HaarWaveletIndex d)
+include d
+
+theorem inner_haarWaveletPacketLp_of_scale_lt (hscale : idx₁.scale < idx₂.scale) :
     ⟪haarWaveletPacketLp idx₁, haarWaveletPacketLp idx₂⟫_ℝ = 0 := by
   obtain ⟨n, hn⟩ := exists_nat_succ_scale_gap hscale
   exact inner_haarWaveletPacketLp_finer_nat_succ idx₁ idx₂ n hn
 
-theorem inner_haarWaveletPacketLp_of_scale_gt {d : Nat}
-    (idx₁ idx₂ : HaarWaveletIndex d) (hscale : idx₂.scale < idx₁.scale) :
+theorem inner_haarWaveletPacketLp_of_scale_gt (hscale : idx₂.scale < idx₁.scale) :
     ⟪haarWaveletPacketLp idx₁, haarWaveletPacketLp idx₂⟫_ℝ = 0 := by
   obtain ⟨n, hn⟩ := exists_nat_succ_scale_gap hscale
   exact inner_haarWaveletPacketLp_finer_nat_succ_symm idx₁ idx₂ n hn
+
+end
 
 theorem inner_haarWaveletPacketLp (d : Nat) (idx₁ idx₂ : HaarWaveletIndex d) :
     ⟪haarWaveletPacketLp idx₁, haarWaveletPacketLp idx₂⟫_ℝ =
       if idx₁ = idx₂ then 1 else 0 := by
   by_cases hscale_eq : idx₁.scale = idx₂.scale
   · rw [inner_haarWaveletPacketLp_same_scale idx₁ idx₂ hscale_eq]
-  · have hlt_or_gt : idx₁.scale < idx₂.scale ∨ idx₂.scale < idx₁.scale :=
+  · have hlt_or_gt  :=
       lt_or_gt_of_ne hscale_eq
     rw [ite_eq_right]
     · rcases hlt_or_gt with hlt | hgt

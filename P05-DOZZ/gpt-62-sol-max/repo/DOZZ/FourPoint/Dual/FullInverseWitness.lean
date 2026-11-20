@@ -40,19 +40,19 @@ theorem dual_source_full_inverse_fusion_witness {Ω : Type*} [MeasurableSpace Ω
           (𝓝 ((a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
             (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃^(-(p+a)) ∂P).toReal*
             (∫⁻ ω, twoSidedReflectionMass γ (B α₁) Z ω^a ∂P).toReal)) := by
-  obtain ⟨Xc, B, hc, hm, hcont, hSource, hZ, hB⟩ :=
+  obtain ⟨Xc, B, hcircle, hSource, hZ, hB⟩ :=
     reflected_regular_source_reflection_family P X hX γ hγ hγ₂ M hM
   let Z := fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)
   have hData : IsReflectionData P γ α₁ (B α₁) Z := hB α₁ hαhi
   have hiZ : IndepFun (originRadialPath Xc) Z P :=
-    lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+    lateralProjectedGMC_indep P X Xc hX hcircle γ hγ hγ₂ M hM
   obtain ⟨hν, hreflect, hκ, hκ1, houter, hα2, hαup, hβ, hν2, hfirst⟩ :=
     dual_window_margins γ α₁ η ξ hγ hγ₂ hη hη₂ hξ₂ hαlo hαhi hslack₁ hslack₂
   have hshift := (dual_window_reflected_triple γ α₁ α₂ α₃ η hγ hγ₂ hη₂ hαlo
     hαhi hα₂ hα₃ hs).1
   have hfirst' : (4/γ)*(Q γ-α₁) < 2+γ*(Q γ-α₁)-γ^2/2 := by linarith only [hfirst]
   refine ⟨B, Z, hSource, hData, ?_⟩
-  exact dual_source_full_inverse_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc hm hcont
+  exact dual_source_full_inverse_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hcircle
     α₁ α₂ α₃ ξ hαhi hreflect hα₂ hα₃ hs hshift hfirst' hξ hξ₂
     (sub_pos.mp hβ) hslack₁ houter (B α₁) Z hData hiZ (Filter.Eventually.of_forall (fun _ => rfl))
 

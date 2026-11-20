@@ -54,12 +54,11 @@ theorem inversion_mixed_log_bound_on_annulus
     have ht := norm_sub_le u (u - x)
     rw [sub_sub_cancel, hux] at ht
     linarith only [ht, hxlo, hεm]
-  have huhi : ‖u‖ ≤ R + 1 := by
+  exact ⟨norm_pos_iff.mp (hm.trans_le hulo),
+    inversion_log_norm_bound_on_annulus hm hR hulo (by
     have ht := norm_add_le x (u - x)
     rw [add_sub_cancel, hux] at ht
-    linarith only [ht, hxhi, hε1]
-  exact ⟨norm_pos_iff.mp (hm.trans_le hulo),
-    inversion_log_norm_bound_on_annulus hm hR hulo huhi⟩
+    linarith only [ht, hxhi, hε1])⟩
 
 /-- The same annular bound controls a fine transformed circle against the source coarse
 barrier at the same target center. -/
@@ -89,8 +88,7 @@ theorem inversion_mixed_offDiagonal_point_error_le
       Real.exp (-s) + Real.exp (-r) := by
   have hmixed := inversion_circleAverage_mixed_offDiagonal_le hy (Real.exp_pos (-r))
     hsmall s hsep
-  have hpoint : |circleAverage (fun u => gffKernel u y) x (Real.exp (-r)) -
-      gffKernel x y| ≤ Real.exp (-r) := by
+  exact (abs_sub_le _ _ _).trans (add_le_add hmixed (by
     have hcircle : circleAverage (fun u => gffKernel u y) x (Real.exp (-r)) =
         gffKernel x y + (regAvg x r - Real.log (normPlus x)) := by
       rw [← integral_circleMeasure_eq_circleAverage (x := x) (r := r)
@@ -102,7 +100,6 @@ theorem inversion_mixed_offDiagonal_point_error_le
       ring
     rw [hcircle]
     simpa only [add_sub_cancel_left, regAvg] using
-      abs_circleAverage_log_normPlus_sub_le x (Real.exp_pos (-r))
-  exact (abs_sub_le _ _ _).trans (add_le_add hmixed hpoint)
+      abs_circleAverage_log_normPlus_sub_le x (Real.exp_pos (-r))))
 
 end DOZZ.Proofs

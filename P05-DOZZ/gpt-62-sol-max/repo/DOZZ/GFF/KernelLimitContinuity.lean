@@ -31,8 +31,8 @@ theorem integral_sq_localTest_le_seminorm (K : TopologicalSpace.Compacts ℂ)
     (∫ z in ball (0 : ℂ) R, ‖f z‖ ^ 2) ≤
       (volume (ball (0 : ℂ) R)).toReal * ‖(f : ℂ →ᵇ ℝ)‖ ^ 2 := by
   let B : Set ℂ := ball 0 R
-  let μ : Measure ℂ := (volume : Measure ℂ).restrict B
-  let C : ℝ := ‖(f : ℂ →ᵇ ℝ)‖
+  let μ  := (volume : Measure ℂ).restrict B
+  let C  := ‖(f : ℂ →ᵇ ℝ)‖
   have hfinite : volume B < ⊤ := by
     dsimp [B]
     exact measure_ball_lt_top
@@ -50,9 +50,7 @@ theorem integral_sq_localTest_le_seminorm (K : TopologicalSpace.Compacts ℂ)
     · simp [hC]
     · exact (integrable_const_iff_isFiniteMeasure hC).2
         (MeasureTheory.isFiniteMeasure_restrict.mpr hfinite.ne)
-  have hmono :
-      (∫ z in B, ‖f z‖ ^ 2) ≤ ∫ z in B, C ^ 2 :=
-    integral_mono_ae hfint hconst (ae_of_all _ hpoint)
+  have hmono := integral_mono_ae hfint hconst (ae_of_all _ hpoint)
   calc
     (∫ z in ball (0 : ℂ) R, ‖f z‖ ^ 2) = ∫ z in B, ‖f z‖ ^ 2 := by rfl
     _ ≤ ∫ z in B, C ^ 2 := hmono
@@ -68,13 +66,11 @@ noncomputable def equatorKernelLimitMapCLM :
     TestFn →L[ℝ] GaussianFields.ScaleSpaceWhiteNoiseHilbert 2 := by
   classical
   refine TestFunction.mkCLM ℝ equatorKernelLimitMap ?_ ?_ ?_
-  · intro f g
-    exact equatorKernelLimitMap.map_add f g
-  · intro c f
-    exact equatorKernelLimitMap.map_smul c f
+  simp
+  simp
   · intro K hK
     obtain ⟨R, hRpos, hKR⟩ := K.isCompact.isBounded.subset_ball_lt 0 (0 : ℂ)
-    let A : GFFLocalTest K → GaussianFields.ScaleSpaceWhiteNoiseHilbert 2 := fun f =>
+    let A  := fun f =>
       equatorKernelLimitMap (TestFunction.ofSupportedIn hK f)
     have hAadd : ∀ f g, A (f + g) = A f + A g := by
       intro f g
@@ -86,8 +82,7 @@ noncomputable def equatorKernelLimitMapCLM :
         ext z
         rfl
       rw [hsum]
-      exact equatorKernelLimitMap.map_add
-        (TestFunction.ofSupportedIn hK f) (TestFunction.ofSupportedIn hK g)
+      simp
     have hAsmul : ∀ (c : ℝ) (f : GFFLocalTest K), A (c • f) = c • A f := by
       intro c f
       change equatorKernelLimitMap (TestFunction.ofSupportedIn hK (c • f)) =
@@ -97,18 +92,17 @@ noncomputable def equatorKernelLimitMapCLM :
         ext z
         rfl
       rw [hsmul]
-      exact equatorKernelLimitMap.map_smul c (TestFunction.ofSupportedIn hK f)
+      simp
     have hbound : ∃ (s : Finset ℕ) (C : ℝ), 0 ≤ C ∧ ∀ f,
         ‖A f‖ ≤ C * ((s.sup fun j =>
           ContDiffMapSupportedIn.seminorm ℝ ℂ ℝ (↑(⊤ : ENat)) K j) f) := by
-      let Q : ℝ := (∫ p : ℂ × ℂ in ball (0 : ℂ) R ×ˢ ball (0 : ℂ) R,
+      let Q  := (∫ p : ℂ × ℂ in ball (0 : ℂ) R ×ˢ ball (0 : ℂ) R,
         ‖gffKernel p.1 p.2‖ ^ 2) ^ (1 / 2 : ℝ)
-      let V : ℝ := (volume (ball (0 : ℂ) R)).toReal
-      let C : ℝ := Real.sqrt (Q * V)
+      let V  := (volume (ball (0 : ℂ) R)).toReal
+      let C  := Real.sqrt (Q * V)
       have hC : 0 ≤ C := by positivity
       refine ⟨{0}, C, hC, fun f => ?_⟩
-      have hsupp : Function.support (TestFunction.ofSupportedIn hK f) ⊆ ball (0 : ℂ) R := by
-        exact (subset_closure.trans (f.tsupport_subset.trans hKR))
+      have hsupp := (subset_closure.trans (f.tsupport_subset.trans hKR))
       have hsq := norm_sq_equatorKernelLimitMap_le_localL2 R
         (TestFunction.ofSupportedIn hK f) hsupp
       have hL2 := integral_sq_localTest_le_seminorm K f R
@@ -121,12 +115,7 @@ noncomputable def equatorKernelLimitMapCLM :
         dsimp [C]
         have hV : 0 ≤ V := by dsimp [V]; positivity
         rw [Real.sq_sqrt (mul_nonneg hQ hV)]
-      have hseminorm : ‖(f : ℂ →ᵇ ℝ)‖ =
-          ContDiffMapSupportedIn.seminorm ℝ ℂ ℝ (↑(⊤ : ENat)) K 0 f :=
-        ContDiffMapSupportedIn.norm_toBoundedContinuousFunction ℝ f
-      have hnonnegSemi : 0 ≤
-          ContDiffMapSupportedIn.seminorm ℝ ℂ ℝ (↑(⊤ : ENat)) K 0 f :=
-        by rw [← hseminorm]; positivity
+      have hseminorm := ContDiffMapSupportedIn.norm_toBoundedContinuousFunction ℝ f
       have htarget : ‖A f‖ ≤ C *
           ContDiffMapSupportedIn.seminorm ℝ ℂ ℝ (↑(⊤ : ENat)) K 0 f := by
         have hprod : 0 ≤ C * ‖(f : ℂ →ᵇ ℝ)‖ := mul_nonneg hC (norm_nonneg _)
@@ -136,14 +125,9 @@ noncomputable def equatorKernelLimitMapCLM :
             _ = (Q * V) * ‖(f : ℂ →ᵇ ℝ)‖ ^ 2 := by ring
             _ = (C * ‖(f : ℂ →ᵇ ℝ)‖) ^ 2 := by rw [← hCsq]; ring
         have hnormle := (sq_le_sq₀ (norm_nonneg _) hprod).1 hsqprod
-        rw [← hseminorm]
-        exact hnormle
+        rwa [← hseminorm]
       simpa using htarget
     exact (ContDiffMapSupportedIn.mkCLMtoNormedSpace ℝ A hAadd hAsmul hbound).continuous
-
-@[simp]
-theorem equatorKernelLimitMapCLM_apply (f : TestFn) :
-    equatorKernelLimitMapCLM f = equatorKernelLimitMap f := rfl
 
 end DOZZ
 

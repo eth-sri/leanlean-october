@@ -7,6 +7,7 @@ public import DOZZ.FourPoint.Dual.SourcePastIndependence
 public import DOZZ.FourPoint.Reflected.CopiedPolarTransport
 public import DOZZ.Correlations.Tails.WilliamsSourceInputLaw
 import Mathlib.Tactic
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 /-! Exact source joint Williams law, including the translated inner lateral copy. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory
@@ -18,9 +19,7 @@ polar-mass Williams law, on the same supplied reflection witness. Future indepen
 and the lateral translation are proved by the source restart and stationarity theorems. -/
 theorem dual_source_restart_outer_williams_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (h α₁ α₂ α₃ ξ : ℝ) (hα₁ : α₁ < Q γ) (z : ℂ) (hz0 : z ≠ 0)
     (hz : ‖z‖ < ‖z‖^(1-ξ)) (T : ℝ≥0) (hT : (T : ℝ) = -Real.log ‖z‖+h)
@@ -41,8 +40,8 @@ theorem dual_source_restart_outer_williams_law
         (((brownianMaximumReferenceLaw ν).prod P).map (fun q =>
           ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B Z₀ q.2)) := by
   let A := originRadialPath Xc
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
-  have hB := (originRadialPath_isBrownian P X Xc hX hc hcont).1
+  have hA := originRadialPath_aemeasurable P X Xc hcircle.isCircleAverage hcircle.continuous_ae
+  have hB := (originRadialPath_isBrownian P X Xc hX hcircle.isCircleAverage hcircle.continuous_ae).1
   let D := fun ω => brownianShiftPath T (radialPositiveHalf (A ω))
   have hs : Measurable (fun a => brownianShiftPath T (radialPositiveHalf a)) :=
     continuous_brownianShiftPath.measurable.comp
@@ -52,12 +51,12 @@ theorem dual_source_restart_outer_williams_law
     rw [reflected_restarted_radial_path_law P A hA hB T]
     exact radialPositiveHalf_map_isBrownian P A hA hB
   have hDZ := hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
-  have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
+  have hcoord := (hcircle.isCircleAverage.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hβ : AEMeasurable (dual_radial_scale γ (Q γ-α₁) h Xc z) P := by
     exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hYm := hβ.prodMk (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal)
-  have hYD := (dual_source_future_indep_outer_restart P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+  have hYD := (dual_source_future_indep_outer_restart P X Xc hX hcircle γ hγ hγ₂ M hM
     (Q γ-α₁) h α₁ α₂ α₃ ξ z hz0 hz T hT hr).symm
   let Qν := P.map (fun ω => (B ω).1)
   have hQν : IsNegativeConditionedBrownianLaw (Q γ-α₁) Qν := hData.1.1.2

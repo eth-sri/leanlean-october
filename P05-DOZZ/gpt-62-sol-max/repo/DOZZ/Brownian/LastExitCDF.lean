@@ -53,37 +53,30 @@ theorem negativeLastExitTime_le_ae_eq_futureAvoidance
     exact hnt (conditionedPositiveFutureAvoidance_hit_implies_touch t c p havoid
       ⟨u, htu, hpu⟩)
 
+section
+variable {ν : ℝ} {P B : Measure BrownianPath} [IsFiniteMeasure P] [SFinite B]
+  (hP : IsNegativeConditionedBrownianLaw ν P) (hB : IsBrownianReal (fun t p => p t) B) (hν : 0 < ν)
+  (t c : ℝ≥0) (ht : 0 < (t : ℝ)) (hc : 0 < (c : ℝ))
+include B hP hB hν ht hc
+
 /-- Conditional last-exit distribution given the entire history at a deterministic time. -/
-theorem conditionedPositiveHistory_condExp_lastExit_le
-    {ν : ℝ} {P B : Measure BrownianPath} [IsFiniteMeasure P] [SFinite B]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (hν : 0 < ν) (t c : ℝ≥0)
-    (ht : 0 < (t : ℝ)) (hc : 0 < (c : ℝ)) :
+theorem conditionedPositiveHistory_condExp_lastExit_le :
     P[({p : BrownianPath | negativeLastExitTime p (c : ℝ) ≤ t}).indicator
       (fun _ => (1 : ℝ)) | conditionedPositiveNaturalFiltration t] =ᵐ[P]
       fun p => lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt t p) := by
   have hsets := negativeLastExitTime_le_ae_eq_futureAvoidance hP hB hν t c ht hc
-  have hind : ({p : BrownianPath | negativeLastExitTime p (c : ℝ) ≤ t}).indicator
-      (fun _ => (1 : ℝ)) =ᵐ[P]
-      (conditionedPositiveFutureRationalAvoidance t c).indicator (fun _ => (1 : ℝ)) := by
+  exact (condExp_congr_ae (by
     filter_upwards [hsets] with p hp
     by_cases hL : negativeLastExitTime p (c : ℝ) ≤ t
-    · have ha : p ∈ conditionedPositiveFutureRationalAvoidance t c := hp ▸ hL
+    · have ha  := hp ▸ hL
       simp [hL, ha]
-    · have ha : p ∉ conditionedPositiveFutureRationalAvoidance t c := hp ▸ hL
-      simp [hL, ha]
-  exact (condExp_congr_ae hind).trans
+    · have ha  := hp ▸ hL
+      simp [hL, ha])).trans
     (conditionedPositiveHistory_condExp_rationalFuture_avoidance_probability
       hP B hB t ht hν c hc)
 
 /-- The last-exit CDF factors against every event in the deterministic-time history. -/
 theorem conditionedPositiveHistory_lastExit_le_setIntegral
-    {ν : ℝ} {P B : Measure BrownianPath} [IsFiniteMeasure P] [SFinite B]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (hν : 0 < ν) (t c : ℝ≥0)
-    (ht : 0 < (t : ℝ)) (hc : 0 < (c : ℝ))
     (A : Set BrownianPath)
     (hA : MeasurableSet[conditionedPositiveNaturalFiltration t] A) :
     (∫ p in A, ({p : BrownianPath | negativeLastExitTime p (c : ℝ) ≤ t}).indicator
@@ -94,17 +87,13 @@ theorem conditionedPositiveHistory_lastExit_le_setIntegral
     exact (measurable_conditionedPositiveProcessValue s).comap_le
   have hτ : Measurable (fun p : BrownianPath => negativeLastExitTime p (c : ℝ)) :=
     measurable_negativeLastExitTime_joint.comp (measurable_const.prodMk measurable_id)
-  have hE : MeasurableSet {p : BrownianPath | negativeLastExitTime p (c : ℝ) ≤ t} :=
-    measurableSet_le hτ measurable_const
-  have hf : Integrable (({p : BrownianPath | negativeLastExitTime p (c : ℝ) ≤ t}).indicator
-      (fun _ => (1 : ℝ))) P := (integrable_const (1 : ℝ)).indicator hE
-  calc
-    _ = ∫ p in A, P[({p : BrownianPath | negativeLastExitTime p (c : ℝ) ≤ t}).indicator
-        (fun _ => (1 : ℝ)) | conditionedPositiveNaturalFiltration t] p ∂P :=
-      (setIntegral_condExp hm hf hA).symm
-    _ = _ := setIntegral_congr_ae (hm A hA)
-      ((conditionedPositiveHistory_condExp_lastExit_le hP hB hν t c ht hc).mono
-        fun p hp _ => hp)
+  exact Trans.trans
+    (Eq.symm
+      (setIntegral_condExp hm (Integrable.indicator (integrable_const 1) (measurableSet_le hτ measurable_const)) hA))
+    (setIntegral_congr_ae (hm A hA)
+      (Filter.Eventually.mono (conditionedPositiveHistory_condExp_lastExit_le hP hB hν t c ht hc) fun p hp x => hp))
+
+end
 
 end DOZZ.Proofs
 

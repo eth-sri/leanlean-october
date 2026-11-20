@@ -20,24 +20,25 @@ namespace DOZZ.Proofs
 noncomputable def initialAffineMax (a b : ℕ → ℝ) (n : ℕ) (x : ℝ) : ℝ :=
   affineMax (fun i : Fin (n + 1) => a i.val) (fun i : Fin (n + 1) => b i.val) x
 
-theorem initialAffineMax_mono (a b : ℕ → ℝ) (x : ℝ) :
+section
+variable (a b : ℕ → ℝ)
+
+theorem initialAffineMax_mono (x : ℝ) :
     Monotone (fun n => initialAffineMax a b n x) := by
   classical
   intro n m hnm
   unfold initialAffineMax affineMax
   refine Finset.sup'_le Finset.univ_nonempty _ ?_
   intro i hi
-  let j : Fin (m + 1) := ⟨i.val, by omega⟩
   exact affineMax_le (fun i : Fin (m + 1) => a i.val)
-    (fun i : Fin (m + 1) => b i.val) x j
+    (fun i : Fin (m + 1) => b i.val) x (⟨i.val, by omega⟩)
 
-theorem initialAffineMax_zero_le (a b : ℕ → ℝ) (n : ℕ) (x : ℝ) :
+theorem initialAffineMax_zero_le (n : ℕ) (x : ℝ) :
     a 0 * x + b 0 ≤ initialAffineMax a b n x :=
   affineMax_le (fun i : Fin (n + 1) => a i.val)
     (fun i : Fin (n + 1) => b i.val) x 0
 
-theorem initialAffineMax_tendsto
-    (a b : ℕ → ℝ) (x z : ℝ) (hle : ∀ n, a n * x + b n ≤ z)
+theorem initialAffineMax_tendsto (x z : ℝ) (hle : ∀ n, a n * x + b n ≤ z)
     (hsup : (⨆ n, a n * x + b n) = z) :
     Tendsto (fun n => initialAffineMax a b n x) atTop (𝓝 z) := by
   classical
@@ -46,16 +47,17 @@ theorem initialAffineMax_tendsto
     exact Finset.sup'_le Finset.univ_nonempty _ (fun i _ => hle i.val)
   have hbdd : BddAbove (range (fun n => initialAffineMax a b n x)) :=
     ⟨z, fun y ⟨n, hn⟩ => hn ▸ hHle n⟩
-  have hHeq : (⨆ n, initialAffineMax a b n x) = z := by
+  simpa only [(by
     apply le_antisymm (ciSup_le hHle)
     rw [← hsup]
     apply ciSup_le
     intro n
-    have hn : a n * x + b n ≤ initialAffineMax a b n x :=
+    have hn  :=
       affineMax_le (fun i : Fin (n + 1) => a i.val)
         (fun i : Fin (n + 1) => b i.val) x ⟨n, by omega⟩
-    exact hn.trans (le_ciSup hbdd n)
-  simpa only [hHeq] using tendsto_atTop_ciSup (initialAffineMax_mono a b x) hbdd
+    exact hn.trans (le_ciSup hbdd n))] using tendsto_atTop_ciSup (initialAffineMax_mono a b x) hbdd
+
+end
 
 /-- On positive integrable masses of equal mean, affine-maximum order implies comparison and
 integrability for every convex test whose expectation on the larger side is integrable. -/

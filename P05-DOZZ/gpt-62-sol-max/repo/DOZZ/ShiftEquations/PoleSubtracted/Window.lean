@@ -27,14 +27,24 @@ theorem reflectionExponent_pole {γ : ℝ} (hγ : 0 < γ) (η : ℝ) :
   field_simp
   ring
 
-theorem window_eta_pos {γ η δ : ℝ} (hW : TwoPoleWindow γ η δ) : 0 < η := hW.1
+section
+variable {γ η δ : ℝ} (hW : TwoPoleWindow γ η δ)
+include γ η δ hW
 
-theorem window_delta_pos {γ η δ : ℝ} (hW : TwoPoleWindow γ η δ) : 0 < δ := hW.2.2.1
+theorem window_eta_pos : 0 < η := hW.1
 
-theorem window_eta_lt_quarter {γ η δ : ℝ} (hW : TwoPoleWindow γ η δ) : η < γ / 4 :=
+theorem window_delta_pos : 0 < δ := hW.2.2.1
+
+theorem window_eta_lt_quarter : η < γ / 4 :=
   lt_of_lt_of_le hW.2.1 ((min_le_right _ _).trans (min_le_left _ _))
 
-theorem window_eta_le_two_div {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+end
+
+section
+variable {γ η δ : ℝ} (hγ : 0 < γ)
+include hγ
+
+theorem window_eta_le_two_div (hγ2 : γ < 2)
     (hW : TwoPoleWindow γ η δ) : η ≤ 2 / γ := by
   have h := window_eta_lt_quarter hW
   have : γ / 4 ≤ 2 / γ := by
@@ -43,7 +53,7 @@ theorem window_eta_le_two_div {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
   linarith
 
 /-- The pole threshold `p = 1 - 2η/γ` is positive on the window. -/
-theorem window_threshold_pos {γ η δ : ℝ} (hγ : 0 < γ) (hW : TwoPoleWindow γ η δ) :
+theorem window_threshold_pos (hW : TwoPoleWindow γ η δ) :
     0 < 1 - 2 * η / γ := by
   have h := window_eta_lt_quarter hW
   have : 2 * η / γ < 1 / 2 := by
@@ -52,7 +62,7 @@ theorem window_threshold_pos {γ η δ : ℝ} (hγ : 0 < γ) (hW : TwoPoleWindow
   linarith
 
 /-- **The window leaves Hölder room**: `(2η + δ)/γ < (1 - 2η/γ)(1 - γ²/4)`. -/
-theorem window_holder_room {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem window_holder_room (hγ2 : γ < 2)
     (hW : TwoPoleWindow γ η δ) :
     (2 * η + δ) / γ < (1 - 2 * η / γ) * (1 - γ ^ 2 / 4) := by
   have hp0 := window_threshold_pos hγ hW
@@ -100,6 +110,8 @@ theorem window_holder_room {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     rw [div_le_one (by linarith)]
     linarith
   linarith
+
+end
 
 end DOZZ.Proofs
 

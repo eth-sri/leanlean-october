@@ -83,8 +83,7 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
     (hsupp : Function.support g ⊆ ball (0 : ℂ) (L / 2)) :
     (∫ z : ℂ, g z ^ 2) = L ^ 2 *
       ∫ t : GFFUnitTorus2, g (torusBoxPoint L t) ^ 2 := by
-  let H : ℂ → ℝ := fun z => g z ^ 2
-  let Hpi : (Fin 2 → ℝ) → ℝ := fun x =>
+  let Hpi  := fun x =>
     g (L • Complex.measurableEquivPi.symm x) ^ 2
   have hsuppPi : Function.support Hpi ⊆ centeredUnitBox := by
     intro x hx
@@ -92,18 +91,10 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
     change ¬ ∀ i, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1) at hxbox
     push Not at hxbox
     obtain ⟨i, hi⟩ := hxbox
-    let z : ℂ := L • Complex.measurableEquivPi.symm x
+    let z  := L • Complex.measurableEquivPi.symm x
     have hcoord : L / 2 ≤ ‖z‖ := by
       have hi' : x i ≤ -1 / 2 ∨ 1 / 2 < x i := by
-        by_cases hlo : x i ≤ -1 / 2
-        · exact Or.inl hlo
-        · have hlow : -1 / 2 < x i := lt_of_not_ge hlo
-          have hnotUpper : ¬ x i ≤ (-1 / 2 : ℝ) + 1 := by
-            intro hu
-            exact hi ⟨hlow, hu⟩
-          have heq : (-1 / 2 : ℝ) + 1 = 1 / 2 := by norm_num
-          rw [heq] at hnotUpper
-          exact Or.inr (lt_of_not_ge hnotUpper)
+        grind
       have hcoordAbs : L / 2 ≤ |z.re| ∨ L / 2 ≤ |z.im| := by
         fin_cases i
         · have hi0 : x 0 ≤ -1 / 2 ∨ 1 / 2 < x 0 := by simpa using hi'
@@ -132,14 +123,14 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
       · exact h.trans (Complex.abs_re_le_norm z)
       · exact h.trans (Complex.abs_im_le_norm z)
     have hnot : z ∉ ball (0 : ℂ) (L / 2) := by
-      simpa [z, mem_ball, dist_eq_norm] using hcoord
+      simpa
     have hg_ne : g (L • Complex.measurableEquivPi.symm x) ≠ 0 := by
       intro hgzero
       apply hx
       change g (L • Complex.measurableEquivPi.symm x) ^ 2 = 0
       rw [hgzero]
       norm_num
-    have hmem : z ∈ ball (0 : ℂ) (L / 2) := hsupp hg_ne
+    have hmem  := hsupp hg_ne
     exact hnot hmem
   have hscaled : (∫ z : ℂ, g (L • z) ^ 2) =
       (L ^ 2)⁻¹ * ∫ z : ℂ, g z ^ 2 := by
@@ -155,7 +146,7 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
         filter_upwards [] with z
         change g (L • z) ^ 2 =
           g (L • Complex.measurableEquivPi.symm (Complex.measurableEquivPi z)) ^ 2
-        rw [Complex.measurableEquivPi.symm_apply_apply]
+        simp
       _ = ∫ x : Fin 2 → ℝ, Hpi x :=
         (Complex.volume_preserving_equiv_pi).integral_comp' Hpi
   have hbox : (∫ x : Fin 2 → ℝ, Hpi x) = ∫ x in centeredUnitBox, Hpi x :=
@@ -170,13 +161,13 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
       (∫ t : GFFUnitTorus2, g (torusBoxPoint L t) ^ 2) =
           ∫ (x : Fin 2 → ℝ) in centeredUnitBox,
             g (torusBoxPoint L (fun i => (x i : UnitAddCircle))) ^ 2 := by
-        simpa [centeredUnitBox] using hpre
+        assumption
       _ = ∫ x in centeredUnitBox, Hpi x := by
         apply integral_congr_ae
         filter_upwards [ae_restrict_mem measurableSet_centeredUnitBox] with x hx
         have hx' : x ∈ {x : Fin 2 → ℝ |
             ∀ i, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)} := by
-          simpa [centeredUnitBox] using hx
+          assumption
         have hpoint := torusBoxPoint_rep L ⟨x, hx'⟩
         simp [Hpi, hpoint]
   calc

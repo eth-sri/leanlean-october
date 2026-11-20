@@ -82,10 +82,8 @@ theorem measure_eq_of_prod_Ioc_above {α : Type*} [MeasurableSpace α]
     apply measure_eq_of_Ioc_above μA ηA s hsμ hsη
     intro a b ha hab
     rw [hslice _ measurableSet_Ioc, hslice _ measurableSet_Ioc]
-    exact h A hA a b ha hab
-  have hh := congrArg (fun M : Measure ℝ => M B) heq
-  rw [hslice B hB, hslice B hB] at hh
-  exact hh
+    apply h <;> assumption
+  grind
 
 end DOZZ.Proofs
 end

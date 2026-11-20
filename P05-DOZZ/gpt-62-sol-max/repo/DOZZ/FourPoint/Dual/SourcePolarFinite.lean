@@ -6,6 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.SourceRestartWilliams
 public import DOZZ.FourPoint.Dual.PolarFinitenessTransport
 import Mathlib.Tactic
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 /-! The actual source restarted polar integral is finite by its proved Williams joint law. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set
@@ -16,9 +17,7 @@ namespace DOZZ.Proofs
 real representative, follows from the supplied source chaos and reflection witness. -/
 theorem dual_source_restarted_polar_finite_ae
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (h α₁ α₂ α₃ ξ : ℝ) (hα₁ : α₁ < Q γ) (z : ℂ) (hz0 : z ≠ 0)
     (hz : ‖z‖ < ‖z‖^(1-ξ)) (T : ℝ≥0) (hT : (T : ℝ) = -Real.log ‖z‖+h)
@@ -35,7 +34,7 @@ theorem dual_source_restarted_polar_finite_ae
   let _ : IsProbabilityMeasure P := hX.1
   let ν := Q γ-α₁
   let A := originRadialPath Xc
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
+  have hA := originRadialPath_aemeasurable P X Xc hcircle.isCircleAverage hcircle.continuous_ae
   let R := (brownianMaximumReferenceLaw ν).prod P
   let _ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
   let D := fun ω => brownianShiftPath T (radialPositiveHalf (A ω))
@@ -43,10 +42,9 @@ theorem dual_source_restarted_polar_finite_ae
     continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
   have hDm : AEMeasurable D P := hs.comp_aemeasurable hA
-  have hDZ : IndepFun D Z P := hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
   let Y := fun ω => (dual_radial_scale γ ν h Xc z ω,
     (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)
-  have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
+  have hcoord := (hcircle.isCircleAverage.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hβ : AEMeasurable (dual_radial_scale γ ν h Xc z) P :=
     ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hYm : AEMeasurable Y P := hβ.prodMk
@@ -56,13 +54,13 @@ theorem dual_source_restarted_polar_finite_ae
     (if 0 < t then ENNReal.ofReal (Real.exp (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0)
       ∂(Z ω.2).map (fun s => s-(T : ℝ))
   have hVm : AEMeasurable V (P.prod P) :=
-    dual_translated_polar_mass_aemeasurable P D hDm γ ν Z hZ hDZ T
+    reflected_translated_polar_aemeasurable P P D hDm Z hZ.2.2.2.1 hZ.2.2.2.2.1 γ ν T
   let J := fun q : ℝ × Ω => ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B Z₀ q.2
   have hJm : AEMeasurable J R :=
     (measurable_fst.aemeasurable.const_mul γ).exp.ennreal_ofReal.mul
       (actual_cut_mass_joint_aemeasurable P _ γ B Z₀
         (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1.2.2.2.1 hData.2.1.2.2.2.2.1)
-  have hLaw := dual_source_restart_outer_williams_law P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+  have hLaw := dual_source_restart_outer_williams_law P X Xc hX hcircle γ hγ hγ₂ M hM
     h α₁ α₂ α₃ ξ hα₁ z hz0 hz T hT hr Z hZ hiZ B Z₀ hData
   exact dual_copied_joint_law_finite P R Y hYm V hVm J hJm hLaw
     (dual_williams_cut_mass_finite_ae P γ α₁ hγ hγ₂ hα₁ B Z₀ hData)

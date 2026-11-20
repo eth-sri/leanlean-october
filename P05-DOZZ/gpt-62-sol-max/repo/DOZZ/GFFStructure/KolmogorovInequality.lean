@@ -68,7 +68,7 @@ lemma measure_add_ge_le_add_measure_ge_half {Ω : Type*} {_ : MeasurableSpace Ω
   · simp only [hx, top_le_iff, ENNReal.add_eq_top]
     rw [ENNReal.top_div_of_ne_top (by finiteness)]
     simp only [top_le_iff]
-    exact measure_union_le {ω | f ω = ∞} {ω | g ω = ∞}
+    apply measure_union_le <;> assumption
   convert measure_add_ge_le_add_measure_ge ENNReal.half_le_self using 2
   rw [ENNReal.sub_half hx]
 
@@ -121,7 +121,7 @@ lemma lintegral_div_edist_le_sum_integral_edist_le (hT : Metric.ediam U < ∞)
   · simp [(h ⟨s, hs⟩ ⟨t, ht⟩) <| nonpos_iff_eq_zero.mp (le_of_not_gt hst),
       ENNReal.zero_rpow_of_pos hX.p_pos]
   obtain ⟨k, lb, ub⟩ : ∃ k, (η k ≤ edist s t) ∧ (edist s t ≤ 2 * η k) := by
-    have hη_dist : ∃ k, η k ≤ edist s t :=
+    have hη_dist  :=
       (Filter.Eventually.exists (Filter.Tendsto.eventually_le_const hst hη_lim))
     refine ⟨Nat.find hη_dist, Nat.find_spec hη_dist, ?_⟩
     match hk : Nat.find hη_dist with
@@ -235,15 +235,16 @@ lemma constL_lt_top
   refine (Asymptotics.IsEquivalent.add_const_of_norm_tendsto_atTop .refl ?_).symm
   exact Tendsto.comp tendsto_norm_atTop_atTop (tendsto_natCast_atTop_iff.mpr tendsto_id)
 
-lemma finite_kolmogorov_chentsov
-    (hT : HasBoundedCoveringNumber U c d)
-    (hX : IsAEKolmogorovProcess X P p q M)
-    (hd_pos : 0 < d) (hdq_lt : d < q)
-    (hβ_pos : 0 < β) (T' : Set T) [hT' : Finite T'] (hT'U : T' ⊆ U) :
+section
+variable (hT : HasBoundedCoveringNumber U c d) (hX : IsAEKolmogorovProcess X P p q M) (hd_pos : 0 < d)
+  (hdq_lt : d < q) (hβ_pos : 0 < β) (T' : Set T)
+include hT hX hd_pos hdq_lt hβ_pos
+
+lemma finite_kolmogorov_chentsov [hT' : Finite T'] (hT'U : T' ⊆ U) :
     ∫⁻ ω, ⨆ (s : T') (t : T'), edist (X s ω) (X t ω) ^ p / edist s t ^ (β * p) ∂P
       ≤ M * constL c d p q β := by
-  have h_diam : Metric.ediam U < ∞ := hT.ediam_lt_top
-  have hq_pos : 0 < q := lt_trans hd_pos hdq_lt
+  have h_diam  := hT.ediam_lt_top
+  have hq_pos  := lt_trans hd_pos hdq_lt
   simp only [constL, ← ENNReal.tsum_mul_left, ge_iff_le] at *
   by_cases h_ae : ∀ᵐ (ω : Ω) ∂P, ∀ (s t : T'), edist (X s ω) (X t ω) = 0
   · convert zero_le
@@ -269,7 +270,7 @@ lemma finite_kolmogorov_chentsov
     apply hX.edist_eq_zero
     refine le_antisymm ?_ zero_le
     exact le_trans (Metric.edist_le_ediam_of_mem (hT'U s.2) (hT'U t.2)) h_ae
-  have h_diam_real : 0 < (Metric.ediam U).toReal :=
+  have h_diam_real  :=
     ENNReal.toReal_pos_iff.mpr ⟨h_diam_zero, h_diam⟩
   apply le_trans
     (lintegral_div_edist_le_sum_integral_edist_le h_diam hX hβ_pos hT'U)
@@ -317,9 +318,7 @@ lemma finite_kolmogorov_chentsov
         ring_nf
     _ ≤ M * 2 ^ (2 * p + 5 * q + 1) * c * (c ^ d⁻¹ + 1) ^ (q - d)
         * 2 ^ (↑k * (↑β * p - (q - d))) := by
-      have h_le : (Metric.ediam U + 1) ^ (q - d) ≤ (c ^ d⁻¹ + 1) ^ (q - d) :=
-        ENNReal.rpow_le_rpow (add_le_add_left (hT.ediam_le hd_pos) 1) (by linarith)
-      exact mul_le_mul' (mul_le_mul' le_rfl h_le) le_rfl
+      exact mul_le_mul' (mul_le_mul' le_rfl (ENNReal.rpow_le_rpow (add_le_add_left (hT.ediam_le hd_pos) 1) (by linarith))) le_rfl
     _ = _ := by ring
   by_cases hc_zero : c.toReal = 0
   · simp only [ENNReal.toReal_mul, hc_zero, mul_zero, zero_mul, ENNReal.toNNReal_mul,
@@ -349,7 +348,7 @@ lemma finite_kolmogorov_chentsov
       rw [← ENNReal.toNNReal_one]
       gcongr
       · finiteness
-      · exact CanonicallyOrderedAdd.le_add_self 1 (Metric.ediam U)
+      simp
   _ = Real.logb 2 (c.toReal * (2^ d * 4 ^ d * (2 ^ k * 2⁻¹) ^ d)) := by ring_nf
   _ = Real.logb 2 (c.toReal * 2 ^ ((k + 2) * d)) := by
     congr
@@ -360,13 +359,9 @@ lemma finite_kolmogorov_chentsov
     norm_num
   _ ≤ Real.logb 2 c.toReal + (k + 2) * d := by
     rw [Real.logb_mul (by positivity) (by positivity)]
-    gcongr
-    rw [Real.logb_rpow (by simp) (by simp)]
+    simp
 
-theorem countable_kolmogorov_chentsov (hT : HasBoundedCoveringNumber U c d)
-    (hX : IsAEKolmogorovProcess X P p q M)
-    (hd_pos : 0 < d) (hdq_lt : d < q) (hβ_pos : 0 < β)
-    (T' : Set T) [hT' : Countable T'] (hT'U : T' ⊆ U) :
+theorem countable_kolmogorov_chentsov [hT' : Countable T'] (hT'U : T' ⊆ U) :
     ∫⁻ ω, ⨆ (s : T') (t : T'), edist (X s ω) (X t ω) ^ p / edist s t ^ (β * p) ∂P
       ≤ M * constL c d p q β := by
   let K := (Set.Countable.finiteExhaustion hT')
@@ -384,6 +379,8 @@ theorem countable_kolmogorov_chentsov (hT : HasBoundedCoveringNumber U c d)
     intro _ _ h
     simp only [iSup_subtype, ← biSup_prod']
     exact iSup_le_iSup_of_subset (Set.prod_mono (K.mono h) (K.mono h))
+
+end
 
 lemma IsKolmogorovProcess.ae_iSup_rpow_edist_div_lt_top
     (hT : HasBoundedCoveringNumber U c d)

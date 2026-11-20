@@ -47,10 +47,12 @@ theorem map_brownianPostMaximumPath_eq (P : Measure BrownianPath)
     ((hM.prodMk hPre).prodMk hPost), Measure.map_snd_prod, measure_univ, one_smul] at hj
   exact hj
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+
 /-- **The reflection witness** (Williams form). A source lateral projection with its lateral law
 carries reflection data for every charge below `Q`, all with the same lateral measure. -/
-theorem exists_reflectionData_family {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (γ : ℝ) (M : Ω → Measure ℂ) (Z : Ω → Measure ℝ)
+theorem exists_reflectionData_family (γ : ℝ) (M : Ω → Measure ℂ) (Z : Ω → Measure ℝ)
     (hSLP : IsSourceLateralProjection P X γ M Z) (hZ : IsLateralGMCOf P γ Z) :
     ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
       ∀ α : ℝ, α < Q γ → IsReflectionData P γ α (B α) Z := by
@@ -71,9 +73,7 @@ theorem exists_reflectionData_family {Ω : Type*} [MeasurableSpace Ω] (P : Meas
     · obtain ⟨Qν, hQν, -⟩ := negativeConditionedBrownianLaw_exists ν hν.le
       have hae := aemeasurable_brownianPostMaximumPath _ hLp ν hν
       refine ⟨hae.mk _, hae.measurable_mk, fun _ => ?_⟩
-      rw [Measure.map_congr hae.ae_eq_mk.symm,
-        map_brownianPostMaximumPath_eq _ hLp ν hν Qν hQν]
-      exact hQν
+      rwa [Measure.map_congr hae.ae_eq_mk.symm, map_brownianPostMaximumPath_eq _ hLp ν hν Qν hQν]
     · exact ⟨id, measurable_id, fun h => absurd h hν⟩
   choose g hgm hg using key
   refine ⟨fun α ω => (g (Q γ - α) (radialPositiveHalf (A ω)),
@@ -90,22 +90,23 @@ theorem exists_reflectionData_family {Ω : Type*} [MeasurableSpace Ω] (P : Meas
     rw [← AEMeasurable.map_map_of_aemeasurable (hgm _).aemeasurable hWn, hpn]
     exact hg _ hν
   · exact (radialHalves_indepFun P A hInd).comp (hgm _) (hgm _)
-  · have hΦ : Measurable (fun a : TwoSidedPath =>
-        (g (Q γ - α) (radialPositiveHalf a), g (Q γ - α) (radialNegativeHalf a))) :=
-      ((hgm _).comp continuous_radialPositiveHalf.measurable).prodMk
-        ((hgm _).comp continuous_radialNegativeHalf.measurable)
-    exact (hAL.comp hΦ measurable_id).congr (ae_of_all _ fun _ => rfl)
-      (hZeq.mono fun _ h => h.symm)
+  · exact IndepFun.congr
+      (IndepFun.comp hAL
+        (Measurable.prodMk (Measurable.comp (hgm (Q γ - α)) (Continuous.measurable continuous_radialPositiveHalf))
+          (Measurable.comp (hgm (Q γ - α)) (Continuous.measurable continuous_radialNegativeHalf)))
+        measurable_id)
+      (ae_of_all P fun x => rfl) (Filter.Eventually.mono hZeq fun x h => Eq.symm h)
 
 /-- Reflection data at one physical charge extend to a witness family for every charge below
 `Q`, with the same lateral measure. -/
-theorem exists_reflectionData_family_of_isReflectionData {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (γ α₀ : ℝ) (M : Ω → Measure ℂ) (Z : Ω → Measure ℝ)
+theorem exists_reflectionData_family_of_isReflectionData (γ α₀ : ℝ) (M : Ω → Measure ℂ) (Z : Ω → Measure ℝ)
     (B₀ : Ω → BrownianPath × BrownianPath)
     (hSLP : IsSourceLateralProjection P X γ M Z) (hData : IsReflectionData P γ α₀ B₀ Z) :
     ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
       ∀ α : ℝ, α < Q γ → IsReflectionData P γ α (B α) Z :=
   exists_reflectionData_family P X γ M Z hSLP hData.2.1
+
+end
 
 end DOZZ.Proofs
 

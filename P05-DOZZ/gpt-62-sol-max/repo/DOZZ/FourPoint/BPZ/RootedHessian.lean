@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.BPZ.WirtingerMoment
 public import DOZZ.FourPoint.Fusion.SpatialFunctions
 public import DOZZ.Statements.FourPoint.GammaHalfRootKernelZ
 public import DOZZ.Statements.FourPoint.GammaHalfRootKernelBar
+public import DOZZ.Statements.FourPoint.GammaHalfTwoRootedP1
 
 /-! # The `(1, 1)` entry of the expected second moment field of the degenerate mass
 
@@ -46,8 +47,8 @@ theorem bpzRH_softDeriv_one (a w : ℝ) {x z : ℂ} (hxz : x ≠ z) :
     ((w * bpzSoftDeriv a 0 x z 1 : ℝ) : ℂ) =
       -(a : ℂ) * (((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) / (x - z) +
         ((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) / conj (x - z)) := by
-  have hv : x - z ≠ 0 := sub_ne_zero.mpr hxz
-  have hN : 0 < Complex.normSq (x - z) := Complex.normSq_pos.mpr hv
+  have hv  := sub_ne_zero.mpr hxz
+  have hN  := Complex.normSq_pos.mpr hv
   rw [bpzSoftDeriv_apply]
   simp only [Complex.one_re, Complex.one_im, mul_one, mul_zero, add_zero, ne_eq,
     OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow]
@@ -68,8 +69,8 @@ theorem bpzRH_softDeriv2_one_one (a w : ℝ) {x z : ℂ} (hxz : x ≠ z) :
         ((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) / conj (x - z) ^ 2) +
       ((2 * a ^ 2 : ℝ) : ℂ) * (((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) /
         ((‖x - z‖ ^ 2 : ℝ) : ℂ)) := by
-  have hv : x - z ≠ 0 := sub_ne_zero.mpr hxz
-  have hN : 0 < Complex.normSq (x - z) := Complex.normSq_pos.mpr hv
+  have hv  := sub_ne_zero.mpr hxz
+  have hN  := Complex.normSq_pos.mpr hv
   rw [bpzSoftDeriv2_apply]
   simp only [Complex.one_re, Complex.one_im, mul_one, mul_zero, add_zero, ne_eq,
     OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow]
@@ -91,37 +92,49 @@ theorem bpzRH_integrable_conj {α : Type*} [MeasurableSpace α] {μ : Measure α
   hf.norm.mono' (Complex.continuous_conj.comp_aestronglyMeasurable hf.aestronglyMeasurable)
     (Eventually.of_forall fun x => (RCLike.norm_conj (f x)).le)
 
-/-- Linearity of the expectation for the six-term combination: `c₁ g₁ + c₂ g₂ + conj (c₁ g₁) +
-c₄ g₄ + c₅ g₅ + conj (c₄ g₄)` for integrable `g₁, g₂, g₄, g₅`. -/
-theorem bpzRH_integral_six {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {g1 g2 g4 g5 : Ω → ℂ}
-    (h1 : Integrable g1 P) (h2 : Integrable g2 P) (h4 : Integrable g4 P) (h5 : Integrable g5 P)
-    (c1 c2 c4 c5 : ℂ) :
-    ∫ ω, (c1 * g1 ω + c2 * g2 ω + star (c1 * g1 ω) + c4 * g4 ω + c5 * g5 ω +
-        star (c4 * g4 ω)) ∂P =
-      c1 * ∫ ω, g1 ω ∂P + c2 * ∫ ω, g2 ω ∂P + star (c1 * ∫ ω, g1 ω ∂P) +
-        c4 * ∫ ω, g4 ω ∂P + c5 * ∫ ω, g5 ω ∂P + star (c4 * ∫ ω, g4 ω ∂P) := by
-  have i1 := h1.const_mul c1
-  have i2 := h2.const_mul c2
-  have i4 := h4.const_mul c4
-  have i5 := h5.const_mul c5
-  have j1 : Integrable (fun ω => star (c1 * g1 ω)) P := bpzRH_integrable_conj i1
-  have j4 : Integrable (fun ω => star (c4 * g4 ω)) P := bpzRH_integrable_conj i4
-  have s2 : Integrable (fun ω => c1 * g1 ω + c2 * g2 ω) P := i1.add i2
-  have s3 : Integrable (fun ω => c1 * g1 ω + c2 * g2 ω + star (c1 * g1 ω)) P := s2.add j1
-  have s4 : Integrable (fun ω => c1 * g1 ω + c2 * g2 ω + star (c1 * g1 ω) + c4 * g4 ω) P :=
-    s3.add i4
-  have s5 : Integrable (fun ω => c1 * g1 ω + c2 * g2 ω + star (c1 * g1 ω) + c4 * g4 ω +
-      c5 * g5 ω) P := s4.add i5
-  rw [integral_add s5 j4, integral_add s4 i5, integral_add s3 i4, integral_add s2 j1,
-    integral_add i1 i2, integral_const_mul, integral_const_mul, integral_const_mul,
-    integral_const_mul]
-  have e1 : ∫ ω, star (c1 * g1 ω) ∂P = star (c1 * ∫ ω, g1 ω ∂P) := by
-    rw [← integral_const_mul]
-    exact integral_conj
-  have e4 : ∫ ω, star (c4 * g4 ω) ∂P = star (c4 * ∫ ω, g4 ω ∂P) := by
-    rw [← integral_const_mul]
-    exact integral_conj
-  rw [e1, e4]
+/-- The meromorphic terms of the Hessian, grouped with their conjugates. -/
+noncomputable def bpzHessianCombination (a s : ℝ) (A B C D : ℂ) : ℂ :=
+  let c₁ : ℂ := (-s * a * (a - 1) : ℝ)
+  let c₂ : ℂ := (-2 * s * a ^ 2 : ℝ)
+  let c₄ : ℂ := (s * (s + 1) * a ^ 2 : ℝ)
+  let c₅ : ℂ := (2 * s * (s + 1) * a ^ 2 : ℝ)
+  c₁ * A + c₂ * B + star (c₁ * A) + c₄ * C + c₅ * D + star (c₄ * C)
+
+/-- Simultaneously scaling the inputs by a real weight scales the Hessian by that weight. -/
+theorem bpzHessianCombination_mul (a s r : ℝ) (A B C D : ℂ) :
+    (r : ℂ) * bpzHessianCombination a s A B C D =
+      bpzHessianCombination a s (r * A) (r * B) (r * C) (r * D) := by
+  simp only [bpzHessianCombination, Complex.star_def, map_mul, Complex.conj_ofReal]
+  ring
+
+/-- The Hessian combination commutes with expectation. -/
+theorem integral_bpzHessianCombination {Ω : Type*} [MeasurableSpace Ω]
+    {P : Measure Ω} {A B C D : Ω → ℂ}
+    (hA : Integrable A P) (hB : Integrable B P) (hC : Integrable C P) (hD : Integrable D P)
+    (a s : ℝ) :
+    ∫ ω, bpzHessianCombination a s (A ω) (B ω) (C ω) (D ω) ∂P =
+      bpzHessianCombination a s (∫ ω, A ω ∂P) (∫ ω, B ω ∂P)
+        (∫ ω, C ω ∂P) (∫ ω, D ω ∂P) := by
+  dsimp only [bpzHessianCombination]
+  generalize ((-s * a * (a - 1) : ℝ) : ℂ) = c₁
+  generalize ((-2 * s * a ^ 2 : ℝ) : ℂ) = c₂
+  generalize ((s * (s + 1) * a ^ 2 : ℝ) : ℂ) = c₄
+  generalize ((2 * s * (s + 1) * a ^ 2 : ℝ) : ℂ) = c₅
+  have i₁ := hA.const_mul c₁
+  have i₂ := hB.const_mul c₂
+  have i₄ := hC.const_mul c₄
+  have i₅ := hD.const_mul c₅
+  have j₁ := bpzRH_integrable_conj i₁
+  have j₄ := bpzRH_integrable_conj i₄
+  have e₁₂ := integral_add i₁ i₂
+  have e₃ := integral_add (i₁.add i₂) j₁
+  have e₄ := integral_add ((i₁.add i₂).add j₁) i₄
+  have e₅ := integral_add (((i₁.add i₂).add j₁).add i₄) i₅
+  have e₆ := integral_add ((((i₁.add i₂).add j₁).add i₄).add i₅) j₄
+  simp only [Pi.add_apply] at e₃ e₄ e₅ e₆
+  simp only [Complex.star_def]
+  rw [e₆, e₅, e₄, e₃, e₁₂, integral_conj, integral_conj]
+  simp only [integral_const_mul]
 
 /-! ### The pathwise six-term identity -/
 
@@ -142,28 +155,25 @@ theorem bpzRH_integrable_div1 (H : BPZWMData a w k m z) :
 theorem bpzRH_integrable_div1_conj (H : BPZWMData a w k m z) :
     Integrable (fun x => ((k x : ℝ) : ℂ) / conj (x - z)) m :=
   (bpzRH_integrable_conj (bpzRH_integrable_div1 H)).congr (Eventually.of_forall fun x => by
-    simp [map_div₀, Complex.conj_ofReal])
+    simp)
 
 /-- `k / (x - z)^2` is integrable. -/
 theorem bpzRH_integrable_div2 (H : BPZWMData a w k m z) :
     Integrable (fun x => ((k x : ℝ) : ℂ) / (x - z) ^ 2) m := by
   have h := bpz_integrable_div_root_sq H.hw H.hw0 H.hz (bpzWM_integrable_w2 H)
   simp only [bpzWM_normSq_eq H] at h
-  refine h.congr (Eventually.of_forall fun x => ?_)
-  show ((k x : ℝ) : ℂ) / (z - x) ^ 2 = ((k x : ℝ) : ℂ) / (x - z) ^ 2
-  rw [← neg_sub x z, neg_sq]
+  grind
 
 /-- `k / conj (x - z)^2` is integrable. -/
 theorem bpzRH_integrable_div2_conj (H : BPZWMData a w k m z) :
     Integrable (fun x => ((k x : ℝ) : ℂ) / conj (x - z) ^ 2) m :=
   (bpzRH_integrable_conj (bpzRH_integrable_div2 H)).congr (Eventually.of_forall fun x => by
-    simp [map_div₀, Complex.conj_ofReal])
+    simp)
 
 /-- The modulus of the mixed kernel `k / |x - z|²` is that of `k / (x - z)^2`. -/
 theorem bpzRH_norm_mixed (x z : ℂ) (k : ℝ) :
     ‖(k : ℂ) / ((‖x - z‖ ^ 2 : ℝ) : ℂ)‖ = ‖(k : ℂ) / (x - z) ^ 2‖ := by
-  rw [norm_div, norm_div, norm_pow, Complex.norm_real (‖x - z‖ ^ 2),
-    Real.norm_of_nonneg (sq_nonneg _)]
+  simp
 
 /-- `k / |x - z|²` is integrable. -/
 theorem bpzRH_integrable_mixed (H : BPZWMData a w k m z) :
@@ -180,7 +190,7 @@ theorem bpzRH_massDeriv_apply (H : BPZWMData a w k m z) (h : ℂ) :
   have hI := bpz_integrable_softDeriv_zero H.ha H.ha1 H.hw H.hw0 H.hz (bpzWM_integrable_w1 H)
   unfold bpzSoftMassDeriv
   rw [ContinuousLinearMap.integral_apply hI h]
-  simp only [smul_apply, smul_eq_mul]
+  rfl
 
 /-- The second derivative mass at `ε = 0` evaluated in two directions. -/
 theorem bpzRH_massDeriv2_apply (H : BPZWMData a w k m z) (h l : ℂ) :
@@ -189,28 +199,19 @@ theorem bpzRH_massDeriv2_apply (H : BPZWMData a w k m z) (h l : ℂ) :
   unfold bpzSoftMassDeriv2
   rw [ContinuousLinearMap.integral_apply hI h,
     ContinuousLinearMap.integral_apply (hI.apply_continuousLinearMap h) l]
-  simp only [smul_apply, smul_eq_mul]
+  rfl
 
-/-- `k / conj (x - z)` integrates to the conjugate of `∫ k / (x - z)`. -/
-theorem bpzRH_integral_div1_conj (k : ℂ → ℝ) (m : Measure ℂ) (z : ℂ) :
-    ∫ x, ((k x : ℝ) : ℂ) / conj (x - z) ∂m = conj (∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m) := by
+private theorem integral_div_pow_conj (k : ℂ → ℝ) (m : Measure ℂ) (z : ℂ) (n : ℕ) :
+    ∫ x, (k x : ℂ) / conj (x - z) ^ n ∂m = conj (∫ x, (k x : ℂ) / (x - z) ^ n ∂m) := by
   rw [← integral_conj]
-  refine integral_congr_ae (Eventually.of_forall fun x => ?_)
-  simp [map_div₀, Complex.conj_ofReal]
-
-/-- `k / conj (x - z)^2` integrates to the conjugate of `∫ k / (x - z)^2`. -/
-theorem bpzRH_integral_div2_conj (k : ℂ → ℝ) (m : Measure ℂ) (z : ℂ) :
-    ∫ x, ((k x : ℝ) : ℂ) / conj (x - z) ^ 2 ∂m =
-      conj (∫ x, ((k x : ℝ) : ℂ) / (x - z) ^ 2 ∂m) := by
-  rw [← integral_conj]
-  refine integral_congr_ae (Eventually.of_forall fun x => ?_)
-  simp [map_div₀, Complex.conj_ofReal]
+  simp only [map_div₀, map_pow, Complex.conj_ofReal]
 
 /-- The first derivative mass in the direction `1` is `-a (Z + conj Z)`, `Z = ∫ k/(x - z)`. -/
 theorem bpzRH_deriv_one_cast (H : BPZWMData a w k m z) :
     ((bpzSoftMassDeriv a 0 w m z 1 : ℝ) : ℂ) = -(a : ℂ) *
       ((∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m) + conj (∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m)) := by
-  rw [bpzRH_massDeriv_apply H, ← integral_complex_ofReal, ← bpzRH_integral_div1_conj,
+  rw [bpzRH_massDeriv_apply H, ← integral_complex_ofReal, ← (by simpa only [pow_one] using integral_div_pow_conj k m z 1 :
+      (∫ x, (k x : ℂ) / conj (x - z) ∂m) = conj (∫ x, (k x : ℂ) / (x - z) ∂m)),
     ← integral_add (bpzRH_integrable_div1 H) (bpzRH_integrable_div1_conj H),
     ← integral_const_mul]
   refine integral_congr_ae ?_
@@ -224,7 +225,7 @@ theorem bpzRH_deriv2_one_one_cast (H : BPZWMData a w k m z) :
       ((a * (a - 1) : ℝ) : ℂ) * ((∫ x, ((k x : ℝ) : ℂ) / (x - z) ^ 2 ∂m) +
         conj (∫ x, ((k x : ℝ) : ℂ) / (x - z) ^ 2 ∂m)) +
       ((2 * a ^ 2 : ℝ) : ℂ) * ∫ x, ((k x : ℝ) : ℂ) / ((‖x - z‖ ^ 2 : ℝ) : ℂ) ∂m := by
-  rw [bpzRH_massDeriv2_apply H, ← integral_complex_ofReal, ← bpzRH_integral_div2_conj,
+  rw [bpzRH_massDeriv2_apply H, ← integral_complex_ofReal, ← integral_div_pow_conj,
     ← integral_add (bpzRH_integrable_div2 H) (bpzRH_integrable_div2_conj H),
     ← integral_const_mul, ← integral_const_mul, ← integral_add]
   · refine integral_congr_ae ?_
@@ -239,26 +240,17 @@ theorem bpzRH_momField2_apply (a s : ℝ) (w : ℂ → ℝ) (m : Measure ℂ) (z
       s * (s + 1) * bpzSoftMassReal a 0 w m z ^ (-s - 2) *
           (bpzSoftMassDeriv a 0 w m z 1 * bpzSoftMassDeriv a 0 w m z 1) +
         -s * bpzSoftMassReal a 0 w m z ^ (-s - 1) * bpzSoftMassDeriv2 a 0 w m z 1 1 := by
-  simp only [bpzMomField2, add_apply, smul_apply, ContinuousLinearMap.smulRight_apply,
-    smul_eq_mul]
+  rfl
 
-/-- **The pathwise six-term identity.** For `ε = 0` and a measure without atom at the root, the
-`(1, 1)` entry of the second moment field is the six-term expression in the meromorphic
-integrals `Z = ∫ k/(x - z)`, `A = ∫ k/(x - z)²`, `B = ∫ k/|x - z|²` and the mass `I = ∫ k`. -/
+/-- The Hessian identity before averaging over the field. -/
 theorem bpzRH_momField2_six (H : BPZWMData a w k m z) (s : ℝ) :
-    ((bpzMomField2 a s 0 w w m z 1 1 : ℝ) : ℂ) =
-      ((-s * a * (a - 1) : ℝ) : ℂ) * ((((∫ x, k x ∂m) ^ (-s - 1) : ℝ) : ℂ) *
-          ∫ x, ((k x : ℝ) : ℂ) / (x - z) ^ 2 ∂m) +
-      ((-2 * s * a ^ 2 : ℝ) : ℂ) * ((((∫ x, k x ∂m) ^ (-s - 1) : ℝ) : ℂ) *
-          ∫ x, ((k x : ℝ) : ℂ) / ((‖x - z‖ ^ 2 : ℝ) : ℂ) ∂m) +
-      star (((-s * a * (a - 1) : ℝ) : ℂ) * ((((∫ x, k x ∂m) ^ (-s - 1) : ℝ) : ℂ) *
-          ∫ x, ((k x : ℝ) : ℂ) / (x - z) ^ 2 ∂m)) +
-      ((s * (s + 1) * a ^ 2 : ℝ) : ℂ) * ((((∫ x, k x ∂m) ^ (-s - 2) : ℝ) : ℂ) *
-          (∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m) ^ 2) +
-      ((2 * s * (s + 1) * a ^ 2 : ℝ) : ℂ) * ((((∫ x, k x ∂m) ^ (-s - 2) : ℝ) : ℂ) *
-          (∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m) * conj (∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m)) +
-      star (((s * (s + 1) * a ^ 2 : ℝ) : ℂ) * ((((∫ x, k x ∂m) ^ (-s - 2) : ℝ) : ℂ) *
-          (∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m) ^ 2)) := by
+    let I := ∫ x, k x ∂m
+    let Z := ∫ x, (k x : ℂ) / (x - z) ∂m
+    (bpzMomField2 a s 0 w w m z 1 1 : ℂ) = bpzHessianCombination a s
+      ((I ^ (-s - 1) : ℝ) * ∫ x, (k x : ℂ) / (x - z) ^ 2 ∂m)
+      ((I ^ (-s - 1) : ℝ) * ∫ x, (k x : ℂ) / ((‖x - z‖ ^ 2 : ℝ) : ℂ) ∂m)
+      ((I ^ (-s - 2) : ℝ) * Z ^ 2) ((I ^ (-s - 2) : ℝ) * Z * conj Z) := by
+  dsimp only [bpzHessianCombination]
   rw [bpzRH_momField2_apply, bpzWM_softMassReal_eq H]
   have hD := bpzRH_deriv_one_cast H
   have hD2 := bpzRH_deriv2_one_one_cast H
@@ -306,8 +298,8 @@ variable {γ α₁ α₂ α₃ : ℝ}
 /-- Off `{0, 1}` the degenerate weight at `χ = γ/2` is the kernel `gammaHalfKernel`. -/
 theorem bpzRH_softWeight_eq_kernel (u : ℂ) {x : ℂ} (hx0 : x ≠ 0) (hx1 : x ≠ 1) :
     bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x = gammaHalfKernel γ α₁ α₂ α₃ u x := by
-  have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h1 : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have h0  := norm_pos_iff.mpr hx0
+  have h1  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   rw [bpzSoftWeight_zero]
   unfold bpzBaseWeight gammaHalfKernel
   rw [Real.rpow_neg h0.le, Real.rpow_neg h1.le, show γ * (γ / 2) = γ ^ 2 / 2 by ring]
@@ -361,7 +353,7 @@ theorem bpzRH_bar_eq_conj {Ω : Type*} (M : Ω → Measure ℂ) (γ α₁ α₂ 
   unfold gammaHalfRootKernelBar gammaHalfRootKernelZ
   rw [← integral_conj]
   refine integral_congr_ae (Eventually.of_forall fun x => ?_)
-  simp [map_div₀, Complex.conj_ofReal]
+  simp
 
 /-! ### Integrability of the six terms -/
 
@@ -390,9 +382,7 @@ theorem bpzRH_measurable_Jmixed {Ω : Type*} [MeasurableSpace Ω] {M : Ω → Me
 theorem bpzRH_integral_div_neg (k : ℂ → ℝ) (m : Measure ℂ) (z : ℂ) :
     ∫ x, ((k x : ℝ) : ℂ) / (z - x) ∂m = -∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m := by
   rw [← integral_neg]
-  refine integral_congr_ae (Eventually.of_forall fun x => ?_)
-  show ((k x : ℝ) : ℂ) / (z - x) = -(((k x : ℝ) : ℂ) / (x - z))
-  rw [← neg_sub x z, div_neg]
+  grind
 
 /-- `I^{-s-2} (∫ k/(x - z))²` is integrable. -/
 theorem bpzRH_integrable_T2 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -420,7 +410,7 @@ theorem bpzRH_integrable_T5 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
         conj (∫ x, ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / (x - z) ∂M ω)) P := by
   have hT2 := bpzRH_integrable_T2 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1
   have hkm := measurable_bpzSoftWeight (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z
-  have hIm : Measurable fun ω => ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω :=
+  have hIm  :=
     (measurable_integral_measure hkm).comp hMm
   have hZ := bpzRH_measurable_Z hMm hkm z
   refine hT2.norm.mono' ?_ (Eventually.of_forall fun ω => ?_)
@@ -441,7 +431,7 @@ theorem bpzRH_integrable_Tmixed {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   have hdom := bpz_singular_dom_integrable (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M hM
     hMm hχ hα₁ hα₂ hα₃ (q := s + 1) (by linarith) hz0 hz1
   have hkm := measurable_bpzSoftWeight (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z
-  have hIm : Measurable fun ω => ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω :=
+  have hIm  :=
     (measurable_integral_measure hkm).comp hMm
   refine Integrable.mono' hdom ?_ ?_
   · exact ((Complex.measurable_ofReal.comp (hIm.pow_const _)).mul
@@ -467,6 +457,13 @@ end Integrability
 
 /-! ### The expected `(1, 1)` entry -/
 
+/-- The Hessian computed from the four rooted expectations. -/
+noncomputable def bpzRootedHessian {Ω : Type*} [MeasurableSpace Ω]
+    (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p : ℝ) (z : ℂ) : ℂ :=
+  bpzHessianCombination (γ ^ 2 / 4) p
+    (fusionPureSpatial P M γ α₁ α₂ α₃ p Set.univ z) (fusionMixedSpatial P M γ α₁ α₂ α₃ p Set.univ z)
+    (gammaHalfTwoRootedSpatial false P M γ α₁ α₂ α₃ p z) (gammaHalfTwoRootedSpatial true P M γ α₁ α₂ α₃ p z)
+
 /-- **The `(1, 1)` entry of the expected second moment field.** For the degenerate charge
 `χ = γ/2` (so `a = γ²/4`) the `(1, 1)` entry of the expectation of the second moment field
 `s(s+1) I^{-s-2} DI ⊗ DI - s I^{-s-1} D²I` of the softened mass at `ε = 0` is the six-term
@@ -480,30 +477,15 @@ theorem bpz_momField2_one_one_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
     (hu0 : u ≠ 0) (hu1 : u ≠ 1) :
     (((∫ ω, bpzMomField2 (γ * (γ / 2) / 2) p 0 (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃)
         (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃) (M ω) u ∂P) 1 1 : ℝ) : ℂ) =
-      ((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) *
-          fusionPureSpatial P M γ α₁ α₂ α₃ p Set.univ u +
-        ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) * fusionMixedSpatial P M γ α₁ α₂ α₃ p Set.univ u +
-        star (((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) *
-          fusionPureSpatial P M γ α₁ α₂ α₃ p Set.univ u) +
-        ((p * (p + 1) * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) *
-          (∫ ω, ((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-            (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u ^ 2 ∂P) +
-        ((2 * p * (p + 1) * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) *
-          (∫ ω, ((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-            (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u *
-              gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω u ∂P) +
-        star (((p * (p + 1) * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) *
-          (∫ ω, ((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-            (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u ^ 2 ∂P)) := by
+      bpzRootedHessian P M γ α₁ α₂ α₃ p u := by
   have hχ : 0 < γ / 2 := by positivity
   have ha1 : γ * (γ / 2) / 2 ≤ 1 := by
-    have h : γ * γ ≤ 2 * 2 := mul_le_mul hγ2.le hγ2.le hγ.le (by norm_num)
+    have h  := mul_le_mul hγ2.le hγ2.le hγ.le (by norm_num)
     linarith
   have hγ4 : γ ^ 2 / 4 = γ * (γ / 2) / 2 := by ring
   have hnoat := gmc_noAtoms_ae P X hX γ hγ hγ2 M hM hMm
   have hgood := bpzWM_good_ae P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hu0 hu1
-  have hint := (bpz_wirt2L_momField2_zero P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hp hu0
-    hu1).1
+  have hint := bpzWM_integrable_momField2 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hp hu0 hu1
   have hL : ((∫ ω, bpzMomField2 (γ * (γ / 2) / 2) p 0 (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃)
         (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃) (M ω) u ∂P) 1 1 : ℝ) =
       ∫ ω, bpzMomField2 (γ * (γ / 2) / 2) p 0 (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃)
@@ -515,85 +497,45 @@ theorem bpz_momField2_one_one_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
   have h2c := bpzRH_integrable_Tmixed P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hp hu0 hu1
   have h4c := bpzRH_integrable_T2 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hp hu0 hu1
   have h5c := bpzRH_integrable_T5 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hp hu0 hu1
-  have e1 : ∀ ω, (∀ x, M ω {x} = 0) →
-      ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
-        (∫ x in Set.univ, (gammaHalfKernel γ α₁ α₂ α₃ u x : ℂ) / (x - u) ^ 2 ∂M ω) =
-      (((∫ x, bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x ∂M ω) ^ (-p - 1) : ℝ) : ℂ) *
-        ∫ x, ((bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x : ℝ) : ℂ) / (x - u) ^ 2 ∂M ω := by
-    intro ω hω
-    rw [bpzRH_coulombMass_rpow_toReal (hω u) (hω 0) (hω 1), Measure.restrict_univ,
-      bpzRH_integral_kernel_eq (hω 0) (hω 1) u (fun x => (x - u) ^ 2)]
-  have e2 : ∀ ω, (∀ x, M ω {x} = 0) →
-      ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
-        (∫ x in Set.univ, (gammaHalfKernel γ α₁ α₂ α₃ u x : ℂ) / (‖x - u‖ ^ 2 : ℝ) ∂M ω) =
-      (((∫ x, bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x ∂M ω) ^ (-p - 1) : ℝ) : ℂ) *
-        ∫ x, ((bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x : ℝ) : ℂ) / ((‖x - u‖ ^ 2 : ℝ) : ℂ) ∂M ω := by
-    intro ω hω
-    rw [bpzRH_coulombMass_rpow_toReal (hω u) (hω 0) (hω 1), Measure.restrict_univ,
-      bpzRH_integral_kernel_eq (hω 0) (hω 1) u (fun x => ((‖x - u‖ ^ 2 : ℝ) : ℂ))]
-  have e4 : ∀ ω, (∀ x, M ω {x} = 0) →
-      ((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-          (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u ^ 2 =
-      (((∫ x, bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x ∂M ω) ^ (-p - 2) : ℝ) : ℂ) *
-        (∫ x, ((bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x : ℝ) : ℂ) / (x - u) ∂M ω) ^ 2 := by
-    intro ω hω
-    rw [bpzRH_Z_eq (hω 0) (hω 1)]
-    exact congrArg (fun r : ℝ => (r : ℂ) * _)
-      (bpzRH_coulombMass_rpow_toReal (hω u) (hω 0) (hω 1) (-p - 2))
-  have e5 : ∀ ω, (∀ x, M ω {x} = 0) →
-      ((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-          (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u *
-        gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω u =
-      (((∫ x, bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x ∂M ω) ^ (-p - 2) : ℝ) : ℂ) *
-        (∫ x, ((bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x : ℝ) : ℂ) / (x - u) ∂M ω) *
-        conj (∫ x, ((bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x : ℝ) : ℂ) / (x - u) ∂M ω) := by
-    intro ω hω
-    rw [bpzRH_bar_eq_conj, bpzRH_Z_eq (hω 0) (hω 1)]
-    exact congrArg (fun r : ℝ => (r : ℂ) * _ * _)
-      (bpzRH_coulombMass_rpow_toReal (hω u) (hω 0) (hω 1) (-p - 2))
-  have h1 : Integrable (fun ω =>
-      ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
-        (∫ x in Set.univ, (gammaHalfKernel γ α₁ α₂ α₃ u x : ℂ) / (x - u) ^ 2 ∂M ω)) P :=
-    h1c.congr (hnoat.mono fun ω hω => (e1 ω hω).symm)
-  have h2 : Integrable (fun ω =>
-      ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
-        (∫ x in Set.univ, (gammaHalfKernel γ α₁ α₂ α₃ u x : ℂ) / (‖x - u‖ ^ 2 : ℝ) ∂M ω)) P :=
-    h2c.congr (hnoat.mono fun ω hω => (e2 ω hω).symm)
-  have h4 : Integrable (fun ω =>
-      ((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-          (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u ^ 2) P :=
-    h4c.congr (hnoat.mono fun ω hω => (e4 ω hω).symm)
-  have h5 : Integrable (fun ω =>
-      ((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-          (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u *
-        gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω u) P :=
-    h5c.congr (hnoat.mono fun ω hω => (e5 ω hω).symm)
-  have hae : ∀ᵐ ω ∂P, ((bpzMomField2 (γ * (γ / 2) / 2) p 0
-        (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃) (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃) (M ω) u 1 1 :
-        ℝ) : ℂ) =
-      ((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) *
-          (((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
-            (∫ x in Set.univ, (gammaHalfKernel γ α₁ α₂ α₃ u x : ℂ) / (x - u) ^ 2 ∂M ω)) +
-        ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) *
-          (((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
-            (∫ x in Set.univ, (gammaHalfKernel γ α₁ α₂ α₃ u x : ℂ) / (‖x - u‖ ^ 2 : ℝ) ∂M ω)) +
-        star (((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) *
-          (((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
-            (∫ x in Set.univ, (gammaHalfKernel γ α₁ α₂ α₃ u x : ℂ) / (x - u) ^ 2 ∂M ω))) +
-        ((p * (p + 1) * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) *
-          (((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-            (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u ^ 2) +
-        ((2 * p * (p + 1) * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) *
-          (((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-            (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u *
-              gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω u) +
-        star (((p * (p + 1) * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) *
-          (((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-            (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u ^ 2)) := by
-    filter_upwards [hnoat, hgood] with ω hω ⟨H, hI⟩
-    rw [bpzRH_momField2_six H p, e1 ω hω, e2 ω hω, e4 ω hω, e5 ω hω, hγ4]
-  unfold fusionPureSpatial fusionMixedSpatial
-  rw [integral_congr_ae hae]
-  exact bpzRH_integral_six h1 h2 h4 h5 _ _ _ _
+  let I (e : ℝ) (ω : Ω) := ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃ ^ e).toReal : ℂ)
+  let J (d : ℂ → ℂ) (ω : Ω) := ∫ x, (gammaHalfKernel γ α₁ α₂ α₃ u x : ℂ) / d x ∂M ω
+  let k := bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u
+  let A (ω : Ω) := I (-p - 1) ω * J (fun x => (x - u) ^ 2) ω
+  let B (ω : Ω) := I (-p - 1) ω * J (fun x => (‖x - u‖ ^ 2 : ℝ)) ω
+  let Z := fun ω => gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u
+  let C (ω : Ω) := I (-p - 2) ω * Z ω ^ 2
+  let D (ω : Ω) := I (-p - 2) ω * Z ω * gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω u
+  let W (e : ℝ) (ω : Ω) := (((∫ x, k x ∂M ω) ^ e : ℝ) : ℂ)
+  let V (d : ℂ → ℂ) (ω : Ω) := ∫ x, (k x : ℂ) / d x ∂M ω
+  have hI (ω : Ω) (hω : ∀ x, M ω {x} = 0) (e : ℝ) : I e ω = W e ω :=
+    congrArg Complex.ofReal (bpzRH_coulombMass_rpow_toReal (hω u) (hω 0) (hω 1) e)
+  have hJ (ω : Ω) (hω : ∀ x, M ω {x} = 0) (d : ℂ → ℂ) : J d ω = V d ω :=
+    bpzRH_integral_kernel_eq (hω 0) (hω 1) u d
+  have e₁ : A =ᵐ[P] fun ω => W (-p - 1) ω * V (fun x => (x - u) ^ 2) ω :=
+    hnoat.mono fun ω hω => congrArg₂ (· * ·) (hI ω hω _) (hJ ω hω _)
+  have e₂ : B =ᵐ[P] fun ω => W (-p - 1) ω * V (fun x => (‖x - u‖ ^ 2 : ℝ)) ω :=
+    hnoat.mono fun ω hω => congrArg₂ (· * ·) (hI ω hω _) (hJ ω hω _)
+  have e₄ : C =ᵐ[P] fun ω => W (-p - 2) ω * V (fun x => x - u) ω ^ 2 := by
+    filter_upwards [hnoat] with ω hω
+    change I (-p - 2) ω * Z ω ^ 2 = _
+    rw [hI ω hω, show Z ω = V (fun x => x - u) ω from bpzRH_Z_eq (hω 0) (hω 1)]
+  have e₅ : D =ᵐ[P] fun ω => W (-p - 2) ω * V (fun x => x - u) ω * conj (V (fun x => x - u) ω) := by
+    filter_upwards [hnoat] with ω hω
+    change I (-p - 2) ω * Z ω * gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω u = _
+    rw [hI ω hω, bpzRH_bar_eq_conj]
+    simp only [Z, bpzRH_Z_eq (hω 0) (hω 1), V, k]
+  have h1 : Integrable A P := h1c.congr e₁.symm
+  have h2 : Integrable B P := h2c.congr e₂.symm
+  have h4 : Integrable C P := h4c.congr e₄.symm
+  have h5 : Integrable D P := h5c.congr e₅.symm
+  have hae : (fun ω => (bpzMomField2 (γ * (γ / 2) / 2) p 0
+      (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃) (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃) (M ω) u 1 1 : ℂ)) =ᵐ[P]
+      fun ω => bpzHessianCombination (γ ^ 2 / 4) p (A ω) (B ω) (C ω) (D ω) := by
+    filter_upwards [hgood, e₁, e₂, e₄, e₅] with ω ⟨H, _⟩ h₁ h₂ h₄ h₅
+    rw [h₁, h₂, h₄, h₅, hγ4]
+    exact bpzRH_momField2_six H p
+  rw [integral_congr_ae hae, integral_bpzHessianCombination h1 h2 h4 h5]
+  simp only [A, B, C, D, J, I, Z, bpzRootedHessian, gammaHalfTwoRootedSpatial, fusionPureSpatial, fusionMixedSpatial, fusionSecondSpatial, fusionSecondKernel,
+    fusionSecondDenom, Bool.false_eq_true, ↓reduceIte, Measure.restrict_univ]
 
 end DOZZ.Proofs

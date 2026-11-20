@@ -108,7 +108,7 @@ theorem bpz_rooted_bound
           ∫⁻ x, f x ∂gmcReferenceMeasure := by
   set F : Measure ℂ → ℝ≥0∞ := fun m => bpzMass γ χ α₁ α₂ α₃ ε m z ^ (-q) with hF
   have hFm : Measurable F :=
-    (ENNReal.continuous_rpow_const.measurable).comp (measurable_bpzMass_measure ε z)
+    (ENNReal.continuous_rpow_const.measurable).comp ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp (measurable_bpzSoftWeight ε z))))
   have hH : Measurable (fun p : ℂ × ((TestFn → ℝ) × Measure ℂ) => f p.1 * F p.2.2) :=
     (hf.comp measurable_fst).mul (hFm.comp (measurable_snd.comp measurable_snd))
   have hid := equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM

@@ -44,8 +44,7 @@ theorem exists_equatorGFF_inversion_circle_family
     apply isGaussianProcess_of_eLpNorm_sub
       (fun n p ω => X ω (inversionTest (f p n) (hf p n))) Y
     · intro n
-      exact equatorGFF_test_family_isGaussianProcess X hX
-        (fun p => inversionTest (f p n) (hf p n))
+      apply equatorGFF_test_family_isGaussianProcess <;> assumption
     · exact hYmem
     · exact hYlim
   have hmean p : (∫ ω, Y p ω ∂P) = 0 :=

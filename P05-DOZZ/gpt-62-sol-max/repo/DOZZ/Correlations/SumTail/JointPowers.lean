@@ -19,7 +19,7 @@ theorem sumtail_joint_half_sqrt_power (T p q ε β θ x : ℝ)
   have hx0 : 0 < x := by linarith only [hx]
   have hx1 : 1 ≤ x := by linarith only [hx]
   have hp := sumtail_rpow_half_bound T (x/2) x (p-ε) hT
-    (by linarith only [hpT,hε]) hx0 le_rfl (by linarith only [hx0])
+    (by linarith) hx0 le_rfl (by linarith only [hx0])
   have he : -(p-ε) = -p+ε := by ring
   rw [he] at hp
   calc
@@ -30,13 +30,13 @@ theorem sumtail_joint_half_sqrt_power (T p q ε β θ x : ℝ)
       congr 2
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le hx1 (by linarith only [hβ,hεθ])) (by positivity)
+      (Real.rpow_le_rpow_of_exponent_le hx1 (by linarith)) (by positivity)
 
 theorem sumtail_joint_equal_power (p q ε β θ x : ℝ) (hq : 0 ≤ q)
     (hεθ : 2*ε ≤ θ) (hβ : β ≤ p+q/2) (hx : 1 ≤ x) :
     x^(-p+ε)*x^(-q+ε) ≤ x^(-β+θ) := by
   rw [← Real.rpow_add (by linarith only [hx] : 0 < x)]
-  exact Real.rpow_le_rpow_of_exponent_le hx (by linarith only [hβ,hεθ,hq])
+  exact Real.rpow_le_rpow_of_exponent_le hx (by linarith)
 
 /-- A bounded error on the initial interval is absorbed without changing the ceiling. -/
 theorem sumtail_small_power_absorption (T β θ x : ℝ) (hT : 0 ≤ T)
@@ -45,9 +45,9 @@ theorem sumtail_small_power_absorption (T β θ x : ℝ) (hT : 0 ≤ T)
   have h4 : 0 < (4:ℝ)^T := Real.rpow_pos_of_pos (by norm_num) _
   have hr : (4:ℝ)^(-T) ≤ x^(-β+θ) := calc
     _ ≤ x^(-T) := Real.rpow_le_rpow_of_nonpos (by linarith only [hx]) hx4 (by linarith only [hT])
-    _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hx (by linarith only [hβ,hθ])
+    _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hx (by linarith)
   calc
-    _ = (4:ℝ)^T*4^(-T) := by rw [← Real.rpow_add (by norm_num)]; simp only [add_neg_cancel,Real.rpow_zero]
+    _ = (4:ℝ)^T*4^(-T) := by rw [← Real.rpow_add (by norm_num)]; simp
     _ ≤ _ := mul_le_mul_of_nonneg_left hr h4.le
 
 end DOZZ.Proofs

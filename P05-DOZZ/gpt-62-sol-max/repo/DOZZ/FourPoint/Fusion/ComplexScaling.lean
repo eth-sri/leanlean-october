@@ -21,16 +21,16 @@ theorem fusion_integral_mul_complex (F : ℂ → ℂ) (z : ℂ) (hz : z ≠ 0) :
     (∫ x : ℂ, F x) = (‖z‖ ^ 2 : ℝ) * (∫ y : ℂ, F (y * z)) := by
   let r := ‖z‖
   let ξ := z / (r : ℂ)
-  have hr : 0 < r := norm_pos_iff.mpr hz
+  have hr  := norm_pos_iff.mpr hz
   have hξ : ‖ξ‖ = 1 := by
     dsimp only [ξ, r]
-    rw [norm_div, Complex.norm_real, Real.norm_of_nonneg (norm_nonneg _), div_self hr.ne']
+    simpa
   have hξr : ξ * (r : ℂ) = z := by
     dsimp only [ξ]
     exact div_mul_cancel₀ _ (Complex.ofReal_ne_zero.mpr hr.ne')
   let c : Circle := ⟨ξ, by
     change dist ξ 0 = 1
-    simpa only [dist_zero_right] using hξ⟩
+    simpa⟩
   let g := fun u : ℂ => F (ξ * u)
   have hrot : (∫ u : ℂ, g u) = ∫ x : ℂ, F x := by
     simpa only [g, rotation_apply] using

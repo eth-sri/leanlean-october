@@ -14,7 +14,7 @@ namespace DOZZ.Proofs
 theorem isCompact_nnreal_Iic (s : ℝ≥0) : IsCompact (Iic s) := by
   have he : Iic s = Icc (0 : ℝ≥0) s := by
     ext u
-    exact ⟨fun h => ⟨zero_le,h⟩,fun h => h.2⟩
+    simp
   rw [he]
   exact isCompact_Icc
 
@@ -24,10 +24,7 @@ theorem brownianPath_Iic_bddAbove (p : BrownianPath) (s : ℝ≥0) :
   have h := ((isCompact_nnreal_Iic s).image p.continuous).bddAbove
   have he : range (fun u : Iic s => p u) = p '' Iic s := by
     ext y
-    simp only [mem_range,mem_image,SetCoe.exists]
-    constructor
-    · rintro ⟨u,hu,h⟩; exact ⟨u,hu,h⟩
-    · rintro ⟨u,hu,h⟩; exact ⟨u,hu,h⟩
+    simp
   rwa [he]
 
 /-- The compact running maximum depends measurably only on the raw history. -/
@@ -72,18 +69,21 @@ theorem measurableSet_brownianPath_crossing (s : ℝ≥0) (β : ℝ) :
 noncomputable def cappedBrownianFirstPassage (β : ℝ) (T : ℝ≥0) (p : BrownianPath) : ℝ≥0 :=
   sInf ({u : ℝ≥0 | u ≤ T ∧ β ≤ p u} ∪ {T})
 
+section
+variable (β : ℝ) (T : ℝ≥0) (p : BrownianPath)
+
 /-- The capped hit is bounded by its terminal horizon. -/
-theorem cappedBrownianFirstPassage_le (β : ℝ) (T : ℝ≥0) (p : BrownianPath) :
+theorem cappedBrownianFirstPassage_le :
     cappedBrownianFirstPassage β T p ≤ T :=
   csInf_le (OrderBot.bddBelow _) (Or.inr (mem_singleton T))
 
 /-- The capped first passage belongs to the compact hitting set or is the terminal horizon. -/
-theorem cappedBrownianFirstPassage_mem (β : ℝ) (T : ℝ≥0) (p : BrownianPath) :
+theorem cappedBrownianFirstPassage_mem :
     (cappedBrownianFirstPassage β T p ≤ T ∧ β ≤ p (cappedBrownianFirstPassage β T p)) ∨
       cappedBrownianFirstPassage β T p = T := by
-  have hclosed : IsClosed ({u : ℝ≥0 | u ≤ T ∧ β ≤ p u} ∪ {T}) :=
-    (isClosed_Iic.inter (isClosed_le continuous_const p.continuous)).union isClosed_singleton
-  exact hclosed.csInf_mem ⟨T,Or.inr (mem_singleton T)⟩ (OrderBot.bddBelow _)
+  exact ((isClosed_Iic.inter (isClosed_le continuous_const p.continuous)).union isClosed_singleton).csInf_mem ⟨T,Or.inr (mem_singleton T)⟩ (OrderBot.bddBelow _)
+
+end
 
 /-- Capped hitting sublevels are exactly compact crossing events before the horizon. -/
 theorem cappedBrownianFirstPassage_le_iff (β : ℝ) (T s : ℝ≥0) (p : BrownianPath) :
@@ -97,8 +97,11 @@ theorem cappedBrownianFirstPassage_le_iff (β : ℝ) (T s : ℝ≥0) (p : Browni
     · exact (cappedBrownianFirstPassage_le β T p).trans hT
     · exact (csInf_le (s := {u : ℝ≥0 | u ≤ T ∧ β ≤ p u} ∪ {T}) (OrderBot.bddBelow _) (Or.inl ⟨huT,hβ⟩)).trans hus
 
+section
+variable (β : ℝ) (T : ℝ≥0)
+
 /-- Capped first passage is a stopping time of the raw natural Brownian filtration. -/
-theorem cappedBrownianFirstPassage_isStoppingTime (β : ℝ) (T : ℝ≥0) :
+theorem cappedBrownianFirstPassage_isStoppingTime :
     IsStoppingTime (brownianRawFiltration (fun t (p : BrownianPath) => p t)
       (fun t => ContinuousMap.measurable_eval t))
       (fun p => (cappedBrownianFirstPassage β T p : WithTop ℝ≥0)) := by
@@ -116,32 +119,38 @@ theorem cappedBrownianFirstPassage_isStoppingTime (β : ℝ) (T : ℝ≥0) :
   split_ifs
   · exact MeasurableSet.univ
   · exact measurableSet_brownianPath_crossing s β
+section
+variable (p : BrownianPath) (h0 : p 0 < β)
+include h0
+
 /-- Before the cap, a path starting strictly below the barrier hits it without overshoot. -/
-theorem cappedBrownianFirstPassage_value (β : ℝ) (T : ℝ≥0) (p : BrownianPath)
-    (h0 : p 0 < β) (hτ : cappedBrownianFirstPassage β T p < T) :
+theorem cappedBrownianFirstPassage_value (hτ : cappedBrownianFirstPassage β T p < T) :
     p (cappedBrownianFirstPassage β T p) = β := by
   let τ := cappedBrownianFirstPassage β T p
-  have hτT : τ ≤ T := cappedBrownianFirstPassage_le β T p
+  have hτT  := cappedBrownianFirstPassage_le β T p
   have hβ : β ≤ p τ := by
     rcases cappedBrownianFirstPassage_mem β T p with h | h
     · exact h.2
     · exact (hτ.ne h).elim
   obtain ⟨u,hu,hpu⟩ := intermediate_value_Icc (a := (0 : ℝ≥0)) (b := τ)
     (f := fun v : ℝ≥0 => p v) zero_le p.continuous.continuousOn ⟨h0.le,hβ⟩
-  have hτu : τ ≤ u := csInf_le (s := {u : ℝ≥0 | u ≤ T ∧ β ≤ p u} ∪ {T})
+  have hτu  := csInf_le (s := {u : ℝ≥0 | u ≤ T ∧ β ≤ p u} ∪ {T})
     (OrderBot.bddBelow _) (Or.inl ⟨hu.2.trans hτT,hpu ▸ le_rfl⟩)
-  have he : u = τ := le_antisymm hu.2 hτu
+  have he  := le_antisymm hu.2 hτu
   simpa only [he] using hpu
 
 /-- A strict terminal crossing forces the capped hit strictly before the cap. -/
-theorem cappedBrownianFirstPassage_lt_of_terminal (β : ℝ) (T : ℝ≥0)
-    (p : BrownianPath) (h0 : p 0 < β) (hT : β < p T) :
+theorem cappedBrownianFirstPassage_lt_of_terminal (hT : β < p T) :
     cappedBrownianFirstPassage β T p < T := by
   obtain ⟨u,hu,hpu⟩ := intermediate_value_Icc (a := (0 : ℝ≥0)) (b := T)
     (f := fun v : ℝ≥0 => p v) zero_le p.continuous.continuousOn ⟨h0.le,hT.le⟩
-  have huT : u < T := lt_of_le_of_ne hu.2 (by intro he; exact hT.ne (he ▸ hpu).symm)
+  have huT  := lt_of_le_of_ne hu.2 (by intro he; exact hT.ne (he ▸ hpu).symm)
   exact lt_of_le_of_lt (csInf_le (s := {u : ℝ≥0 | u ≤ T ∧ β ≤ p u} ∪ {T})
     (OrderBot.bddBelow _) (Or.inl ⟨hu.2,hpu ▸ le_rfl⟩)) huT
+
+end
+
+end
 
 /-- The finite stopping time itself is measurable for its stopped sigma algebra. -/
 theorem measurable_finite_stoppingTime_stopped {Ω : Type*} [mΩ : MeasurableSpace Ω]
@@ -164,14 +173,16 @@ theorem brownianPath_bounded_restart_indep (P : Measure BrownianPath)
   exact brownian_bounded_stopped_process_indep hB (fun t => ContinuousMap.measurable_eval t)
     measurable_brownianPath_evaluation τ hτ T hτT
 
-/-- A stopping-time observable and the full continuous future path are independent. -/
-theorem brownianPath_bounded_restart_indepFun {E : Type*} [MeasurableSpace E]
-    (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (τ : BrownianPath → ℝ≥0)
-    (hτ : IsStoppingTime (brownianRawFiltration (fun (t : ℝ≥0) (p : BrownianPath) => p t)
+section
+variable {E : Type*} [MeasurableSpace E] (P : Measure BrownianPath)
+  (hB : IsBrownianReal (fun t p => p t) P) (τ : BrownianPath → ℝ≥0)
+  (hτ : IsStoppingTime (brownianRawFiltration (fun (t : ℝ≥0) (p : BrownianPath) => p t)
       (fun t => ContinuousMap.measurable_eval t)) (fun p => (τ p : WithTop ℝ≥0)))
-    (T : ℝ≥0) (hτT : ∀ p, τ p ≤ T) (X : BrownianPath → E)
-    (hX : Measurable[hτ.measurableSpace] X) :
+  (T : ℝ≥0) (hτT : ∀ p, τ p ≤ T) (X : BrownianPath → E) (hX : Measurable[hτ.measurableSpace] X)
+include E hB hτ T hτT hX
+
+/-- A stopping-time observable and the full continuous future path are independent. -/
+theorem brownianPath_bounded_restart_indepFun :
     IndepFun X (fun p => brownianShiftPath (τ p) p) P := by
   apply (Indep_iff _ _ P).mpr
   intro A S hA hS
@@ -179,13 +190,7 @@ theorem brownianPath_bounded_restart_indepFun {E : Type*} [MeasurableSpace E]
     A S (hX.comap_le A hA) hS
 
 /-- The joint law of a stopped observable and the future path factors into its actual marginal laws. -/
-theorem brownianPath_bounded_restart_joint_map {E : Type*} [MeasurableSpace E]
-    (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (τ : BrownianPath → ℝ≥0)
-    (hτ : IsStoppingTime (brownianRawFiltration (fun (t : ℝ≥0) (p : BrownianPath) => p t)
-      (fun t => ContinuousMap.measurable_eval t)) (fun p => (τ p : WithTop ℝ≥0)))
-    (T : ℝ≥0) (hτT : ∀ p, τ p ≤ T) (X : BrownianPath → E)
-    (hX : Measurable[hτ.measurableSpace] X) :
+theorem brownianPath_bounded_restart_joint_map :
     P.map (fun p => (X p,brownianShiftPath (τ p) p)) = (P.map X).prod P := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   have hmτ := measurable_finite_brownian_stoppingTime _ τ hτ
@@ -194,6 +199,22 @@ theorem brownianPath_bounded_restart_joint_map {E : Type*} [MeasurableSpace E]
   rw [(brownianPath_bounded_restart_indepFun P hB τ hτ T hτT X hX).map_prod_eq_prod_map_map
     (hX.mono hτ.measurableSpace_le le_rfl).aemeasurable hmV.aemeasurable,
     brownianPath_bounded_restart_map P hB τ hτ T hτT]
+
+/-- Integrate a stopped-history/future test using the independent Brownian restart. -/
+theorem brownianPath_bounded_restart_lintegral
+    (G : E × BrownianPath → ℝ≥0∞) (hG : Measurable G) :
+    (∫⁻ p, G (X p,brownianShiftPath (τ p) p) ∂P) =
+      ∫⁻ p, ∫⁻ q, G (X p,q) ∂P ∂P := by
+  let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
+  have hmX := hX.mono hτ.measurableSpace_le le_rfl
+  have hmV : Measurable (fun p => brownianShiftPath (τ p) p) := continuous_brownianShiftPath.measurable.comp
+    ((measurable_finite_brownian_stoppingTime _ τ hτ).prodMk measurable_id)
+  rw [← lintegral_map hG (hmX.prodMk hmV),
+    brownianPath_bounded_restart_joint_map P hB τ hτ T hτT X hX,
+    lintegral_prod G hG.aemeasurable,
+    lintegral_map (Measurable.lintegral_prod_right (f := fun x q => G (x,q)) hG) hmX]
+
+end
 /-- Centered Brownian motion is symmetric as an actual continuous-path law. -/
 theorem brownianPath_neg_map (P : Measure BrownianPath)
     (hB : IsBrownianReal (fun t p => p t) P) : P.map (fun p => -p) = P := by
@@ -223,16 +244,19 @@ theorem brownianPath_bounded_restart_joint_neg {E : Type*} [MeasurableSpace E]
   have hn : P.map (fun p => -brownianShiftPath (τ p) p) = P := by
     have he := (Measure.map_map (μ := P) measurable_neg hmV).symm
     rw [brownianPath_bounded_restart_map P hB τ hτ T hτT,brownianPath_neg_map P hB] at he
-    simpa only [Function.comp_def] using he
+    assumption
   have he := (brownianPath_bounded_restart_indepFun P hB τ hτ T hτT X hX).neg_right.map_prod_eq_prod_map_map
     (hX.mono hτ.measurableSpace_le le_rfl).aemeasurable hmV.neg.aemeasurable
   simp only [Pi.neg_apply,Pi.neg_def] at he
   rw [hn] at he
   exact (brownianPath_bounded_restart_joint_map P hB τ hτ T hτT X hX).trans he.symm
 
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
+include hB
+
 /-- Evaluating a future path at the random remaining horizon preserves its sign symmetry. -/
-theorem brownianPath_bounded_restart_remaining_sign (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (τ : BrownianPath → ℝ≥0)
+theorem brownianPath_bounded_restart_remaining_sign (τ : BrownianPath → ℝ≥0)
     (hτ : IsStoppingTime (brownianRawFiltration (fun (t : ℝ≥0) (p : BrownianPath) => p t)
       (fun t => ContinuousMap.measurable_eval t)) (fun p => (τ p : WithTop ℝ≥0)))
     (T : ℝ≥0) (hτT : ∀ p, τ p ≤ T) :
@@ -254,8 +278,7 @@ theorem brownianPath_bounded_restart_remaining_sign (P : Measure BrownianPath)
   simpa only [S,preimage,mem_ofPred_eq,ContinuousMap.neg_apply,neg_pos] using he
 
 /-- Reflection at the first hit exchanges strict terminal positions above and below the barrier. -/
-theorem brownianPath_firstHit_terminal_reflection (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β) (T : ℝ≥0) :
+theorem brownianPath_firstHit_terminal_reflection (β : ℝ) (hβ : 0 < β) (T : ℝ≥0) :
     P {p | β < p T} =
       P {p | cappedBrownianFirstPassage β T p < T ∧ p T < β} := by
   let τ := cappedBrownianFirstPassage β T
@@ -264,7 +287,7 @@ theorem brownianPath_firstHit_terminal_reflection (P : Measure BrownianPath)
   have hupper : {p : BrownianPath | τ p < T ∧ 0 < brownianShiftPath (τ p) p (T-τ p)}
       =ᵐ[P] {p | β < p T} := by
     filter_upwards [hB.eval_zero_ae_eq_zero] with p hp
-    have h0 : p 0 < β := hp ▸ hβ
+    have h0  := hp ▸ hβ
     have hv (hτ : τ p < T) : brownianShiftPath (τ p) p (T-τ p) = p T-β := by
       dsimp [brownianShiftPath]
       rw [add_tsub_cancel_of_le (cappedBrownianFirstPassage_le β T p),
@@ -273,11 +296,11 @@ theorem brownianPath_firstHit_terminal_reflection (P : Measure BrownianPath)
     constructor
     · rintro ⟨hτ,hv'⟩; rwa [hv hτ,sub_pos] at hv'
     · intro h; have hτ := cappedBrownianFirstPassage_lt_of_terminal β T p h0 h
-      exact ⟨hτ,by rw [hv hτ,sub_pos]; exact h⟩
+      exact ⟨hτ,by rwa [hv hτ, sub_pos]⟩
   have hlower : {p : BrownianPath | τ p < T ∧ brownianShiftPath (τ p) p (T-τ p) < 0}
       =ᵐ[P] {p | τ p < T ∧ p T < β} := by
     filter_upwards [hB.eval_zero_ae_eq_zero] with p hp
-    have h0 : p 0 < β := hp ▸ hβ
+    have h0  := hp ▸ hβ
     by_cases hτ : τ p < T
     · apply propext
       dsimp [brownianShiftPath]
@@ -286,8 +309,7 @@ theorem brownianPath_firstHit_terminal_reflection (P : Measure BrownianPath)
     · simp only [hτ,false_and]
   exact (measure_congr hupper).symm.trans (hs.trans (measure_congr hlower))
 /-- A nondegenerate Brownian time marginal has no atom at any barrier. -/
-theorem brownianPath_terminal_ne_ae (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (T : ℝ≥0) (hT : T ≠ 0) (β : ℝ) :
+theorem brownianPath_terminal_ne_ae (T : ℝ≥0) (hT : T ≠ 0) (β : ℝ) :
     ∀ᵐ p ∂P, p T ≠ β := by
   let _ := nullSingletonClass_gaussianReal (μ := (0 : ℝ)) hT
   have he : P {p | p T = β} = 0 := by
@@ -295,12 +317,17 @@ theorem brownianPath_terminal_ne_ae (P : Measure BrownianPath)
       (show MeasurableSet {x : ℝ | x = β} from measurableSet_singleton β)
     exact he.trans (measure_singleton β)
   apply ae_iff.mpr
-  simpa only [not_not] using he
+  simpa
+
+end
+
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
+  (T : ℝ≥0) (hT : T ≠ 0)
+include hB hβ hT
 
 /-- The capped first-hit event has twice the upper Gaussian terminal tail. -/
-theorem brownianPath_firstHit_probability (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
-    (T : ℝ≥0) (hT : T ≠ 0) :
+theorem brownianPath_firstHit_probability :
     P {p | cappedBrownianFirstPassage β T p < T} = 2*P {p | β < p T} := by
   let τ := cappedBrownianFirstPassage β T
   have hmτ := measurable_finite_brownian_stoppingTime _ τ
@@ -327,36 +354,34 @@ theorem brownianPath_firstHit_probability (P : Measure BrownianPath)
     ← brownianPath_firstHit_terminal_reflection P hB β hβ T,two_mul]
 
 /-- Crossing by the terminal horizon differs from crossing before it only on an endpoint atom. -/
-theorem brownianPath_crossing_ae_firstHit (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
-    (T : ℝ≥0) (hT : T ≠ 0) :
+theorem brownianPath_crossing_ae_firstHit :
     {p : BrownianPath | ∃ u ≤ T, β ≤ p u} =ᵐ[P]
       {p | cappedBrownianFirstPassage β T p < T} := by
   filter_upwards [hB.eval_zero_ae_eq_zero,brownianPath_terminal_ne_ae P hB T hT β] with p hp hn
   apply propext
   constructor
   · rintro ⟨u,hu,hβu⟩
-    have hτu : cappedBrownianFirstPassage β T p ≤ u :=
+    have hτu  :=
       csInf_le (s := {u : ℝ≥0 | u ≤ T ∧ β ≤ p u} ∪ {T}) (OrderBot.bddBelow _)
         (Or.inl ⟨hu,hβu⟩)
     by_cases hτT : cappedBrownianFirstPassage β T p < T
     · exact hτT
-    · have he : cappedBrownianFirstPassage β T p = T :=
+    · have he  :=
         le_antisymm (cappedBrownianFirstPassage_le β T p) (le_of_not_gt hτT)
-      have huT : u = T := le_antisymm hu (he ▸ hτu)
-      have hbT : β < p T := lt_of_le_of_ne (huT ▸ hβu) hn.symm
+      have huT  := le_antisymm hu (he ▸ hτu)
+      have hbT  := lt_of_le_of_ne (huT ▸ hβu) hn.symm
       exact cappedBrownianFirstPassage_lt_of_terminal β T p (hp ▸ hβ) hbT
   · intro hτ
     refine ⟨_,(cappedBrownianFirstPassage_le β T p),?_⟩
     exact (cappedBrownianFirstPassage_value β T p (hp ▸ hβ) hτ).ge
 
 /-- The reflection principle for the running maximum of the canonical continuous Brownian path. -/
-theorem brownianPath_runningMaximum_reflection (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
-    (T : ℝ≥0) (hT : T ≠ 0) :
+theorem brownianPath_runningMaximum_reflection :
     P {p | ∃ u ≤ T, β ≤ p u} = 2*P {p | β < p T} := by
   rw [measure_congr (brownianPath_crossing_ae_firstHit P hB β hβ T hT)]
-  exact brownianPath_firstHit_probability P hB β hβ T hT
+  apply brownianPath_firstHit_probability <;> assumption
+
+end
 /-- The barrier event is the closed sublevel of the compact running maximum. -/
 theorem brownianPath_barrier_iff_runningMaximum (p : BrownianPath) (T : ℝ≥0) (β : ℝ) :
     (∀ u : ℝ≥0, u ≤ T → p u ≤ β) ↔ (⨆ u : Iic T, p u) ≤ β := by

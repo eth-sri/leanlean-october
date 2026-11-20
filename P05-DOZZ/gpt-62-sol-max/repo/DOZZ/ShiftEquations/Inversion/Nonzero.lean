@@ -21,11 +21,13 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
+include Ω
+
 /-- The unit-volume three-point value is positive when all charges are below `Q`
 and the zero-mode exponent is positive. -/
-theorem unitVolume_pos_of_positive_sExp
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem unitVolume_pos_of_positive_sExp (γ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ)
     (hs : 0 < sExp γ a b c) :
@@ -42,8 +44,7 @@ theorem unitVolume_pos_of_positive_sExp
         (mul_pos (by positivity) (sub_pos.mpr hc))))
   obtain ⟨t, ht, htT⟩ := exists_between hT
   have hz : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j hij
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp
   have htf : ∫⁻ ω, Z ω ^ t ∂P < ⊤ := by
     apply coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM
       ![0, 1] hz ![a, b] c t ht (htT.trans_le (min_le_left _ _))
@@ -91,9 +92,7 @@ theorem unitVolume_pos_of_positive_sExp
 
 /-- Positivity of the full physical three-point constant, including the moment
 normalization, for a positive zero-mode exponent. -/
-theorem structureConstant_pos
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem structureConstant_pos (γ μ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hμ : 0 < μ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ)
     (hs : 0 < sExp γ a b c) :
@@ -101,5 +100,7 @@ theorem structureConstant_pos
   rw [residue_structureConstant_eq_unitVolume]
   exact mul_pos (mul_pos (Real.rpow_pos_of_pos hμ _) (Real.Gamma_pos_of_pos hs))
     (unitVolume_pos_of_positive_sExp P X M γ a b c hγ hγ2 hX hM ha hb hc hs)
+
+end
 
 end DOZZ.Proofs

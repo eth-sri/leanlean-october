@@ -34,12 +34,12 @@ theorem dual_full_kernel_finite_ae
       linarith only [hinv,hhalf]
     · exact hα₁
     · exact hα₂
-  have hfull := reflected_coulombMass_ae_finite P X hX γ hγ hγ₂ M hM
+  have hfull := coulombMass_ae_lt_top P X hX γ hγ hγ₂ M hM
     ![z,0,1] hinj ![-2/γ,α₁,α₂] α₃ hcharges hα₃
   filter_upwards [hfull,
-    gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM z,
-    gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
-    gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω hf hz h0 h1
+    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM z,
+    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM 0,
+    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM 1] with ω hf hz h0 h1
   rw [dual_kernel_integral_eq_coulombMass γ α₁ α₂ α₃ hγ.ne' z (M ω) hz h0 h1]
   exact hf
 

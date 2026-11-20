@@ -37,7 +37,7 @@ theorem exists_equatorGFF_circle_L2_family
           Tendsto (fun n => eLpNorm (fun ω => X ω (f p n) - Y p ω) 2 P)
             atTop (𝓝 0)) ∧
         IsGaussianProcess (fun p ω => Y p ω) P := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hlim (p : ℂ × ℝ) :=
     exists_equatorGFF_circle_test_L2_limit_with_cross X hX p.1 p.2
   choose f W hgap hcross hW using hlim
@@ -50,10 +50,8 @@ theorem exists_equatorGFF_circle_L2_family
   · apply isGaussianProcess_of_eLpNorm_sub
       (fun n p ω => X ω (f p n)) Y
     · intro n
-      exact equatorGFF_test_family_isGaussianProcess X hX (fun p => f p n)
-    · intro p
-      exact hYmem p
-    · intro p
-      exact hYlim p
+      apply equatorGFF_test_family_isGaussianProcess <;> assumption
+    assumption
+    assumption
 
 end DOZZ.Proofs

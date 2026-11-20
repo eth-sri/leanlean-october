@@ -21,15 +21,18 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {N : ℕ}
+
 /-- Distinct roots are uniformly separated: some radius `δ ∈ (0, 1/8]` has `2δ` below every
 distance between distinct roots. -/
-theorem exists_root_separation {N : ℕ} (z : Fin N → ℂ) (hz : Function.Injective z) :
+theorem exists_root_separation (z : Fin N → ℂ) (hz : Function.Injective z) :
     ∃ δ : ℝ, 0 < δ ∧ δ ≤ 1 / 8 ∧ ∀ j k, j ≠ k → 2 * δ ≤ ‖z j - z k‖ := by
   have h : ∀ j k : Fin N, ∀ᶠ δ in 𝓝[>] (0 : ℝ), j ≠ k → 2 * δ ≤ ‖z j - z k‖ := by
     intro j k
     by_cases hjk : j = k
     · exact Eventually.of_forall fun _ h => absurd hjk h
-    · have hpos : 0 < ‖z j - z k‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (hz.ne hjk))
+    · have hpos  := norm_pos_iff.mpr (sub_ne_zero.mpr (hz.ne hjk))
       filter_upwards [Ioo_mem_nhdsGT (half_pos hpos)] with δ hδ _
       linarith [hδ.2]
   have hall : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ∀ j k, j ≠ k → 2 * δ ≤ ‖z j - z k‖ := by
@@ -42,7 +45,7 @@ theorem exists_root_separation {N : ℕ} (z : Fin N → ℂ) (hz : Function.Inje
 
 /-- With no atom at the root, the Coulomb mass of a small root disk is at most a constant times
 the weighted local mass at the root. -/
-theorem coulomb_root_piece_le {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
+theorem coulomb_root_piece_le (μ : Measure ℂ) (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
     (αinf : ℝ) (k : Fin N) {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1)
     (hsep : ∀ j, j ≠ k → 2 * δ ≤ ‖z j - z k‖) (hatom : μ {z k} = 0) :
     ∫⁻ x in Metric.ball (z k) δ, coulombWeight γ α z αinf x ∂μ ≤
@@ -58,9 +61,9 @@ theorem coulomb_root_piece_le {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin 
   rw [← lintegral_const_mul _ hw]
   apply lintegral_mono_ae
   filter_upwards [hne, ae_restrict_mem hB] with x hxk hx
-  exact coulombWeight_le_root γ α z αinf k hδ hδ1 hsep hx hxk
+  apply coulombWeight_le_root <;> assumption
 
-theorem measurableSet_coulombBulk {N : ℕ} (z : Fin N → ℂ) (δ Rr : ℝ) :
+theorem measurableSet_coulombBulk (z : Fin N → ℂ) (δ Rr : ℝ) :
     MeasurableSet {y : ℂ | ‖y‖ ≤ Rr ∧ ∀ k, δ ≤ ‖y - z k‖} := by
   have h : {y : ℂ | ‖y‖ ≤ Rr ∧ ∀ k, δ ≤ ‖y - z k‖} =
       {y : ℂ | ‖y‖ ≤ Rr} ∩ ⋂ k, {y : ℂ | δ ≤ ‖y - z k‖} := by
@@ -72,7 +75,7 @@ theorem measurableSet_coulombBulk {N : ℕ} (z : Fin N → ℂ) (δ Rr : ℝ) :
       (measurable_id.sub_const _).norm)
 
 /-- The exterior radius used in the decomposition. -/
-theorem coulomb_exterior_radius_bounds {N : ℕ} (z : Fin N → ℂ) :
+theorem coulomb_exterior_radius_bounds (z : Fin N → ℂ) :
     1 ≤ 1 + 2 * ∑ j, ‖z j‖ ∧ ∀ j, 2 * ‖z j‖ ≤ 1 + 2 * ∑ j, ‖z j‖ := by
   have hsum : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun j _ => norm_nonneg _
   refine ⟨by linarith, fun j => ?_⟩
@@ -80,10 +83,15 @@ theorem coulomb_exterior_radius_bounds {N : ℕ} (z : Fin N → ℂ) :
     (Finset.mem_univ j)
   linarith
 
+end
+
+section
+variable {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ)
+include N
+
 /-- For a measure without atoms at the roots, the Coulomb mass is bounded by its root, bulk and
 exterior pieces. -/
-theorem coulombMass_le_pieces {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (αinf : ℝ) {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1)
+theorem coulombMass_le_pieces {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1)
     (hsep : ∀ j k, j ≠ k → 2 * δ ≤ ‖z j - z k‖) (hatom : ∀ k, μ {z k} = 0)
     {Rr : ℝ} (hRr1 : 1 ≤ Rr) (hzRr : ∀ j, 2 * ‖z j‖ ≤ Rr) :
     coulombMass γ μ α z αinf ≤
@@ -119,7 +127,7 @@ theorem coulombMass_le_pieces {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin 
         simp only [lintegral_indicator (hBm _)]
     _ ≤ _ := by
         gcongr with k hk
-        · exact coulomb_root_piece_le μ γ α z αinf k hδ hδ1 (fun j hj => hsep j k hj) (hatom k)
+        apply coulomb_root_piece_le <;> solve_by_elim
         · rw [← lintegral_indicator_const Metric.isClosed_closedBall.measurableSet]
           apply lintegral_mono
           intro x
@@ -136,13 +144,12 @@ theorem coulombMass_le_pieces {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin 
           intro x
           by_cases hx : x ∈ E
           · rw [Set.indicator_of_mem hx, Set.indicator_of_mem hx]
-            exact coulombWeight_le_exterior γ α z αinf hRr1 hzRr hx
+            apply coulombWeight_le_exterior <;> assumption
           · rw [Set.indicator_of_notMem hx, Set.indicator_of_notMem hx]
 
 /-- A fixed exterior disk bounds the Coulomb mass from below by a positive multiple of its
 mass. -/
-theorem coulombMass_ge_exterior_ball {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin N → ℝ)
-    (z : Fin N → ℂ) (αinf : ℝ) {Rr : ℝ} (hRr1 : 1 ≤ Rr) (hzRr : ∀ j, 2 * ‖z j‖ ≤ Rr) :
+theorem coulombMass_ge_exterior_ball {Rr : ℝ} (hRr1 : 1 ≤ Rr) (hzRr : ∀ j, 2 * ‖z j‖ ≤ Rr) :
     ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) * ENNReal.ofReal ((Rr + 2) ^ (-|γ * αinf|)) *
         μ (Metric.ball (((Rr + 1 : ℝ)) : ℂ) (1 / 8)) ≤
       coulombMass γ μ α z αinf := by
@@ -174,5 +181,7 @@ theorem coulombMass_ge_exterior_ball {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α
         calc (Rr + 2)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by linarith)
           _ ≤ ‖x‖ := by linarith
     _ ≤ ∫⁻ x, coulombWeight γ α z αinf x ∂μ := setLIntegral_le_lintegral _ _
+
+end
 
 end DOZZ.Proofs

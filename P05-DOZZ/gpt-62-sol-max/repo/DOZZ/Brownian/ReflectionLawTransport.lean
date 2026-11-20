@@ -42,15 +42,14 @@ theorem reflectionBarR_eq_of_joint_input_law
         ENNReal.rpow (twoSidedReflectionMassInput γ z) (reflectionExponent γ α))
       (P.map (fun ω => (B ω, Z ω)))) :
     reflectionBarR P γ α B Z = reflectionBarR P' γ α B' Z' := by
-  let pair : Ω → (BrownianPath × BrownianPath) × Measure ℝ :=
+  let pair  :=
     fun ω => (B ω, Z ω)
-  let pair' : Ω' → (BrownianPath × BrownianPath) × Measure ℝ :=
+  let pair'  :=
     fun ω => (B' ω, Z' ω)
-  let f : (BrownianPath × BrownianPath) × Measure ℝ → ℝ≥0∞ := fun z =>
+  let f  := fun z =>
     ENNReal.rpow (twoSidedReflectionMassInput γ z) (reflectionExponent γ α)
   have hMassMoment' : AEMeasurable f (P'.map pair') := by
-    rw [← hLaw]
-    exact hMassMoment
+    rwa [← hLaw]
   have hmoment :
       (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ B Z ω)
         (reflectionExponent γ α) ∂P) =

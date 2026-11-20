@@ -23,73 +23,36 @@ namespace DOZZ.Proofs
 noncomputable def conditionedKernelScore (a y : ℝ) : ℝ :=
   a * Real.cosh (a * y) / Real.sinh (a * y)
 
+/-- The derivative of the hyperbolic cotangent away from zero. -/
+theorem hasDerivAt_cosh_div_sinh {u : ℝ} (hu : u ≠ 0) :
+    HasDerivAt (fun x => Real.cosh x / Real.sinh x) (-1 / Real.sinh u ^ 2) u := by
+  convert (Real.hasDerivAt_cosh u).div (Real.hasDerivAt_sinh u) (Real.sinh_ne_zero.mpr hu)
+    using 1
+  congr 1
+  nlinarith [Real.cosh_sq_sub_sinh_sq u]
+
 /-- Derivative of the hyperbolic score in the state variable. -/
 theorem hasDerivAt_conditionedKernelScore_state
     {a y : ℝ} (ha : 0 < a) (hy : 0 < y) :
   HasDerivAt (conditionedKernelScore a)
       (-a ^ 2 / Real.sinh (a * y) ^ 2) y := by
-  have harg : HasDerivAt (fun z : ℝ => a * z) a y :=
-    by simpa only [id_eq, mul_one] using (hasDerivAt_id y).const_mul a
-  have hcosh := (Real.hasDerivAt_cosh (a * y)).comp y harg
-  have hsinh := (Real.hasDerivAt_sinh (a * y)).comp y harg
-  have hcosh' : HasDerivAt (fun z : ℝ => Real.cosh (a * z))
-      (Real.sinh (a * y) * a) y := by
-    convert hcosh using 1
-    · funext z
-      rfl
-  have hnum : HasDerivAt (fun z : ℝ => a * Real.cosh (a * z))
-      (a * (Real.sinh (a * y) * a)) y := by
-    exact hcosh'.const_mul a
-  have hsinh_pos : 0 < Real.sinh (a * y) :=
-    Real.sinh_pos_iff.mpr (mul_pos ha hy)
-  have hquot := hnum.div hsinh hsinh_pos.ne'
-  have hquot' : HasDerivAt (fun z : ℝ =>
-      a * Real.cosh (a * z) / Real.sinh (a * z))
-      ((a * (Real.sinh (a * y) * a) * Real.sinh (a * y) -
-          a * Real.cosh (a * y) * (Real.cosh (a * y) * a)) /
-        Real.sinh (a * y) ^ 2) y := by
-    convert hquot using 1
-    · funext z
-      rfl
-    · rfl
-  have htrig : Real.sinh (a * y) ^ 2 - Real.cosh (a * y) ^ 2 = -1 := by
-    nlinarith [Real.cosh_sq_sub_sinh_sq (a * y)]
-  have hderiv :
-      (a * (Real.sinh (a * y) * a) * Real.sinh (a * y) -
-          a * Real.cosh (a * y) * (Real.cosh (a * y) * a)) /
-        Real.sinh (a * y) ^ 2 =
-      -a ^ 2 / Real.sinh (a * y) ^ 2 := by
-    calc
-      (a * (Real.sinh (a * y) * a) * Real.sinh (a * y) -
-          a * Real.cosh (a * y) * (Real.cosh (a * y) * a)) /
-        Real.sinh (a * y) ^ 2 =
-          a ^ 2 * (Real.sinh (a * y) ^ 2 - Real.cosh (a * y) ^ 2) /
-            Real.sinh (a * y) ^ 2 := by ring
-      _ = -a ^ 2 / Real.sinh (a * y) ^ 2 := by rw [htrig]; ring
-  change HasDerivAt (fun z : ℝ =>
-    a * Real.cosh (a * z) / Real.sinh (a * z))
-      (-a ^ 2 / Real.sinh (a * y) ^ 2) y
-  convert hquot' using 1
-  exact hderiv.symm
+  have h : HasDerivAt (fun z => a * z) a y := by
+    simpa using (hasDerivAt_id y).const_mul a
+  convert ((hasDerivAt_cosh_div_sinh (mul_ne_zero ha.ne' hy.ne')).comp y h).const_mul a using 1
+  · ext x
+    simp [conditionedKernelScore, mul_div_assoc]
+  · ring
 
 /-- For a positive kernel parameter, its hyperbolic score strictly decreases with the state. -/
 theorem conditionedKernelScore_strictAntiOn_state {a : ℝ} (ha : 0 < a) :
     StrictAntiOn (conditionedKernelScore a) (Set.Ioi 0) := by
-  apply strictAntiOn_of_deriv_neg (convex_Ioi 0)
-  · have hnum : Continuous (fun y : ℝ => a * Real.cosh (a * y)) := by
-      fun_prop
-    have hden : Continuous (fun y : ℝ => Real.sinh (a * y)) := by
-      fun_prop
-    apply hnum.continuousOn.div hden.continuousOn
-    intro y hy
-    exact (Real.sinh_pos_iff.mpr (mul_pos ha hy)).ne'
-  · intro y hy
-    have hy' : 0 < y := by simpa using hy
-    rw [(hasDerivAt_conditionedKernelScore_state ha hy').deriv]
-    have hden : 0 < Real.sinh (a * y) :=
-      Real.sinh_pos_iff.mpr (mul_pos ha hy')
-    exact div_neg_of_neg_of_pos (neg_neg_of_pos (sq_pos_of_pos ha))
-      (sq_pos_of_pos hden)
+  have hd (y : ℝ) (hy : y ∈ Set.Ioi 0) := hasDerivAt_conditionedKernelScore_state ha hy
+  refine strictAntiOn_of_deriv_neg (convex_Ioi 0) (fun y hy => (hd y hy).continuousAt.continuousWithinAt) ?_
+  intro y hy
+  have hy' := interior_subset hy
+  rw [(hd y hy').deriv]
+  exact div_neg_of_neg_of_pos (neg_lt_zero.mpr (sq_pos_of_pos ha))
+    (sq_pos_of_pos (Real.sinh_pos_iff.mpr (mul_pos ha hy')))
 
 end DOZZ.Proofs
 

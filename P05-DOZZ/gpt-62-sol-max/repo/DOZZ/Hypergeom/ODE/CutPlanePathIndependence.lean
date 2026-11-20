@@ -22,32 +22,21 @@ endpoint projection outside `[0,1]`. -/
 noncomputable def subtypePathFunction {U : Set ℂ} {x y : U} (p : Path x y) : ℝ → ℂ :=
   fun t => (p (Set.projIcc 0 1 zero_le_one t) : ℂ)
 
+section
+variable {U : Set ℂ} {x y : U} (p : Path x y)
+include U x y
+
 /-- The real-parameter projection of a subtype path is continuous. -/
-theorem subtypePathFunction_continuous {U : Set ℂ} {x y : U} (p : Path x y) :
+theorem subtypePathFunction_continuous :
     Continuous (subtypePathFunction p) := by
-  change Continuous (fun t => (p (Set.projIcc 0 1 zero_le_one t) : ℂ))
-  exact continuous_subtype_val.comp (p.continuous.comp continuous_projIcc)
+  apply continuous_subtype_val.comp <;> fun_prop
 
 /-- Every projected value of a subtype path remains in its subtype. -/
-theorem subtypePathFunction_mem
-    {U : Set ℂ} {x y : U} (p : Path x y) (t : ℝ) :
+theorem subtypePathFunction_mem (t : ℝ) :
     subtypePathFunction p t ∈ U :=
   (p (Set.projIcc 0 1 zero_le_one t)).property
 
-/-- The real-parameter form of a path in the subtype `gaussCutPlane`, extended by endpoint
-projection outside `[0,1]`. -/
-noncomputable def gaussCutPlanePathFunction {x y : gaussCutPlane} (p : Path x y) : ℝ → ℂ :=
-  subtypePathFunction p
-
-/-- A cut-plane path, viewed as a real-parameter complex-valued map, is continuous. -/
-theorem gaussCutPlanePathFunction_continuous {x y : gaussCutPlane} (p : Path x y) :
-    Continuous (gaussCutPlanePathFunction p) := by
-  exact subtypePathFunction_continuous p
-
-/-- Every value of the endpoint-projected real path remains in the cut plane. -/
-theorem gaussCutPlanePathFunction_mem {x y : gaussCutPlane} (p : Path x y) (t : ℝ) :
-    gaussCutPlanePathFunction p t ∈ gaussCutPlane := by
-  exact subtypePathFunction_mem p t
+end
 
 /-- Any two finite-chain lifts of the same initial Gauss state along paths with common endpoints
 in a simply connected subtype of the regular plane have the same terminal value. -/
@@ -86,18 +75,5 @@ theorem subtype_path_lifts_endpoint_eq_of_simplyConnected
     (gaussSystemOperator_differentiableOn a b c)
     (fun z hz => hU (himage z hz))
     x₀ x₁ hleft hright initial A' B'
-
-/-- Any two finite-chain lifts of the same initial Gauss state along paths with common endpoints
-in the principal cut plane have the same terminal value. -/
-theorem gauss_cut_plane_path_lifts_endpoint_eq
-    (a b c : ℂ) {x₀ x₁ : gaussCutPlane} (p q : Path x₀ x₁)
-    (initial : ℂ × ℂ)
-    (A : PathContinuationLift (gaussCutPlanePathFunction p)
-      (gaussSystemOperator a b c) initial)
-    (B : PathContinuationLift (gaussCutPlanePathFunction q)
-      (gaussSystemOperator a b c) initial) :
-    A.value 1 = B.value 1 := by
-  exact subtype_path_lifts_endpoint_eq_of_simplyConnected gaussCutPlane_subset_regularPlane
-    a b c p q initial A B
 
 end DOZZ.Proofs

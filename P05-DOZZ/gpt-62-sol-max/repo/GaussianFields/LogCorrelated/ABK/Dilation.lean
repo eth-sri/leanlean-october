@@ -41,13 +41,16 @@ noncomputable def abkScaledCutoffSelfConvolution {d : Nat} (ζ : ABKCutoff d)
     (r : ℝ) (x : Vec d) : ℝ :=
   ∫ y : Vec d, abkScaledCutoff ζ r y * abkScaledCutoff ζ r (x - y)
 
+section
+variable {d : Nat} (ζ : ABKCutoff d)
+
 /-- The scaled cutoff self-convolution obeys the exact ABK dilation law
 `(ζ_r * ζ_r)(x) = r^d (ζ * ζ)(x/r)` for positive `r`. -/
-theorem abkScaledCutoffSelfConvolution_eq_pow_mul {d : Nat} (ζ : ABKCutoff d)
+theorem abkScaledCutoffSelfConvolution_eq_pow_mul
     {r : ℝ} (hr : 0 < r) (x : Vec d) :
     abkScaledCutoffSelfConvolution ζ r x =
       r ^ d * abkCutoffSelfConvolution ζ (r⁻¹ • x) := by
-  let F : Vec d → ℝ := fun u => ζ u * ζ (r⁻¹ • x - u)
+  let F  := fun u => ζ u * ζ (r⁻¹ • x - u)
   have hscale := integral_comp_inv_smul_vec (d := d) F hr.le
   unfold abkScaledCutoffSelfConvolution abkCutoffSelfConvolution abkScaledCutoff
   rw [← hscale]
@@ -60,30 +63,23 @@ theorem abkScaledCutoffSelfConvolution_eq_pow_mul {d : Nat} (ζ : ABKCutoff d)
   simp [F, hsub]
 
 /-- The scaled cutoff is even, inherited from radiality of the ABK cutoff. -/
-theorem abkScaledCutoff_neg {d : Nat} (ζ : ABKCutoff d) (r : ℝ) (x : Vec d) :
+theorem abkScaledCutoff_neg (r : ℝ) (x : Vec d) :
     abkScaledCutoff ζ r (-x) = abkScaledCutoff ζ r x := by
   unfold abkScaledCutoff
   have hsmul : r⁻¹ • (-x) = -(r⁻¹ • x) := by
-    ext i
-    simp only [Pi.smul_apply, Pi.neg_apply, smul_eq_mul]
-    ring
+    simp
   exact ζ.radial _ _ (by rw [hsmul, euclideanNorm_neg])
 
 /-- The overlap of two translated scaled cutoffs is the scaled cutoff self-convolution at the
 separation vector. -/
-theorem integral_abkScaledCutoff_mul_abkScaledCutoff_sub_eq_selfConvolution {d : Nat}
-    (ζ : ABKCutoff d) (r : ℝ) (x z : Vec d) :
+theorem integral_abkScaledCutoff_mul_abkScaledCutoff_sub_eq_selfConvolution (r : ℝ) (x z : Vec d) :
     (∫ y : Vec d,
         abkScaledCutoff ζ r (x - y) * abkScaledCutoff ζ r (z - y)
         ∂(volume : Measure (Vec d))) =
       abkScaledCutoffSelfConvolution ζ r (x - z) := by
-  let F : Vec d → ℝ := fun u =>
+  let F  := fun u =>
     abkScaledCutoff ζ r u * abkScaledCutoff ζ r (z - x + u)
-  have hneg :
-      (∫ y : Vec d, F (-y) ∂(volume : Measure (Vec d))) =
-        ∫ y : Vec d, F y ∂(volume : Measure (Vec d)) := by
-    exact
-      (Measure.measurePreserving_neg (volume : Measure (Vec d))).integral_comp
+  have hneg := (Measure.measurePreserving_neg (volume : Measure (Vec d))).integral_comp
         (Homeomorph.neg (Vec d)).measurableEmbedding F
   have htrans :
       (∫ y : Vec d, F (x - y) ∂(volume : Measure (Vec d))) =
@@ -97,14 +93,7 @@ theorem integral_abkScaledCutoff_mul_abkScaledCutoff_sub_eq_selfConvolution {d :
         abkScaledCutoff ζ r (x - y) * abkScaledCutoff ζ r (z - y)
         ∂(volume : Measure (Vec d)))
         = ∫ y : Vec d, F (x - y) ∂(volume : Measure (Vec d)) := by
-            refine integral_congr_ae ?_
-            filter_upwards with y
-            dsimp [F]
-            have harg : z - x + (x - y) = z - y := by
-              ext i
-              simp only [Pi.add_apply, Pi.sub_apply]
-              ring
-            rw [harg]
+            aesop
     _ = ∫ y : Vec d, F y ∂(volume : Measure (Vec d)) := by
           rw [htrans, hneg]
     _ = abkScaledCutoffSelfConvolution ζ r (x - z) := by
@@ -117,6 +106,8 @@ theorem integral_abkScaledCutoff_mul_abkScaledCutoff_sub_eq_selfConvolution {d :
             simp only [Pi.add_apply, Pi.sub_apply, Pi.neg_apply]
             ring
           rw [harg, abkScaledCutoff_neg]
+
+end
 
 end GaussianFields
 

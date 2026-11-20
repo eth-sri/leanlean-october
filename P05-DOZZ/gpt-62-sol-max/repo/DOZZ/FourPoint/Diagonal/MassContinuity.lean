@@ -16,10 +16,13 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+section
+variable (γ χ a b c : ℝ) (hγχ : 0 ≤ γ * χ)
+include hγχ
+
 /-- In the half-unit disk, a fixed softened kernel dominates the unsoftened
 negative insertion. Its reference point is separated from both fixed roots. -/
-theorem diagonal_bpz_weight_bound
-    (γ χ a b c : ℝ) (hγχ : 0 ≤ γ * χ) (z x : ℂ) (hz : ‖z‖ ≤ 1 / 2) :
+theorem diagonal_bpz_weight_bound (z x : ℂ) (hz : ‖z‖ ≤ 1 / 2) :
     ENNReal.ofReal (bpzSoftWeight γ χ a b c 0 z x) ≤
       ENNReal.ofReal (4 ^ |γ * χ / 2|) *
         ENNReal.ofReal (bpzSoftWeight γ χ a b c 1 (1 / 2) x) := by
@@ -47,8 +50,7 @@ theorem diagonal_bpz_weight_bound
 
 /-- A finite softened reference mass gives continuity of the unsoftened mass at
 zero, including the coincident insertion. -/
-theorem diagonal_bpzMass_continuousAt_zero
-    (γ χ a b c : ℝ) (hγχ : 0 ≤ γ * χ) (m : Measure ℂ)
+theorem diagonal_bpzMass_continuousAt_zero (m : Measure ℂ)
     (hfinite : bpzMass γ χ a b c 1 m (1 / 2) < ⊤) :
     ContinuousAt (fun z : ℂ => bpzMass γ χ a b c 0 m z) 0 := by
   let bound : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (4 ^ |γ * χ / 2|) *
@@ -70,10 +72,11 @@ theorem diagonal_bpzMass_continuousAt_zero
     intro x
     have hbase : Continuous (fun z : ℂ => Complex.normSq (x - z) + (0 : ℝ) ^ 2) := by
       fun_prop
-    have hcont : Continuous (fun z : ℂ => bpzSoftWeight γ χ a b c 0 z x) := by
+    exact (ENNReal.continuous_ofReal.comp (by
       unfold bpzSoftWeight
       exact (hbase.rpow_const (fun _ => Or.inr (div_nonneg hγχ (by norm_num)))).mul
-        continuous_const
-    exact (ENNReal.continuous_ofReal.comp hcont).continuousAt.tendsto
+        continuous_const)).continuousAt.tendsto
+
+end
 
 end DOZZ.Proofs

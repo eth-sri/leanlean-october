@@ -21,10 +21,12 @@ open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- If nonnegative observables converge in expected absolute difference to a limit, their
 extended expectations converge to the same value as the approximants' constant expectation. -/
 theorem lintegral_ofReal_eq_of_tendsto_l1
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (F : ℝ → Ω → ℝ) (G : Ω → ℝ) (c : ℝ≥0∞)
     (hFmeas : ∀ r, AEMeasurable (F r) P) (hGmeas : AEMeasurable G P)
     (hFnonneg : ∀ r ω, 0 ≤ F r ω) (hGnonneg : ∀ ω, 0 ≤ G ω)
@@ -32,17 +34,15 @@ theorem lintegral_ofReal_eq_of_tendsto_l1
     (hL1 : Tendsto (fun r => ∫⁻ ω, ENNReal.ofReal |F r ω - G ω| ∂P)
       atTop (𝓝 0)) :
     ∫⁻ ω, ENNReal.ofReal (G ω) ∂P = c := by
-  let err : ℝ → ℝ≥0∞ := fun r => ∫⁻ ω, ENNReal.ofReal |F r ω - G ω| ∂P
+  let err  := fun r => ∫⁻ ω, ENNReal.ofReal |F r ω - G ω| ∂P
   have herr : Tendsto err atTop (𝓝 0) := by
     simpa [err] using hL1
   have hsplitF (r : ℝ) :
       ∫⁻ ω, ENNReal.ofReal (F r ω) + ENNReal.ofReal |F r ω - G ω| ∂P =
-        (∫⁻ ω, ENNReal.ofReal (F r ω) ∂P) + err r := by
-    exact lintegral_add_left' (ENNReal.measurable_ofReal.comp_aemeasurable (hFmeas r)) _
+        (∫⁻ ω, ENNReal.ofReal (F r ω) ∂P) + err r := lintegral_add_left' (ENNReal.measurable_ofReal.comp_aemeasurable (hFmeas r)) _
   have hsplitG (r : ℝ) :
       ∫⁻ ω, ENNReal.ofReal (G ω) + ENNReal.ofReal |F r ω - G ω| ∂P =
-        (∫⁻ ω, ENNReal.ofReal (G ω) ∂P) + err r := by
-    exact lintegral_add_left' (ENNReal.measurable_ofReal.comp_aemeasurable hGmeas) _
+        (∫⁻ ω, ENNReal.ofReal (G ω) ∂P) + err r := lintegral_add_left' (ENNReal.measurable_ofReal.comp_aemeasurable hGmeas) _
   have hmeanG_le (r : ℝ) :
       ∫⁻ ω, ENNReal.ofReal (G ω) ∂P ≤ c + err r := by
     have hpoint (ω : Ω) : ENNReal.ofReal (G ω) ≤
@@ -73,12 +73,7 @@ theorem lintegral_ofReal_eq_of_tendsto_l1
         ENNReal.ofReal (F r ω) ≤ ENNReal.ofReal (G ω + |F r ω - G ω|) :=
           ENNReal.ofReal_le_ofReal hreal
         _ = _ := ENNReal.ofReal_add (hGnonneg ω) (abs_nonneg _)
-    calc
-      c = ∫⁻ ω, ENNReal.ofReal (F r ω) ∂P := (hmean r).symm
-      _ ≤ ∫⁻ ω, ENNReal.ofReal (G ω) + ENNReal.ofReal |F r ω - G ω| ∂P :=
-        lintegral_mono hpoint
-      _ = (∫⁻ ω, ENNReal.ofReal (G ω) ∂P) + err r := by
-        exact hsplitG r
+    exact Trans.trans (Trans.trans (Eq.symm (hmean r)) (lintegral_mono hpoint)) (hsplitG r)
   have hsumG : Tendsto (fun r : ℝ => c + err r) atTop (𝓝 c) := by
     simpa using Tendsto.add (tendsto_const_nhds (x := c)) herr
   have hsumMean : Tendsto (fun r : ℝ =>
@@ -86,16 +81,14 @@ theorem lintegral_ofReal_eq_of_tendsto_l1
         (𝓝 (∫⁻ ω, ENNReal.ofReal (G ω) ∂P)) := by
     simpa using Tendsto.add (tendsto_const_nhds
       (x := ∫⁻ ω, ENNReal.ofReal (G ω) ∂P)) herr
-  have hle1 : ∫⁻ ω, ENNReal.ofReal (G ω) ∂P ≤ c :=
+  have hle1  :=
     le_of_tendsto_of_tendsto' tendsto_const_nhds hsumG hmeanG_le
-  have hle2 : c ≤ ∫⁻ ω, ENNReal.ofReal (G ω) ∂P :=
+  have hle2  :=
     le_of_tendsto_of_tendsto' tendsto_const_nhds hsumMean hmean_le
   exact le_antisymm hle1 hle2
 
 /-- Exact intensity on any measurable set follows from L¹ convergence of its cutoff mass. -/
-theorem equatorGFF_GMC_lintegral_mass_eq_reference_of_l1
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+theorem equatorGFF_GMC_lintegral_mass_eq_reference_of_l1 (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
@@ -104,16 +97,15 @@ theorem equatorGFF_GMC_lintegral_mass_eq_reference_of_l1
       ENNReal.ofReal |(regularizedGMC P Xc γ r ω A).toReal - (M ω A).toReal| ∂P)
       atTop (𝓝 0)) :
     ∫⁻ ω, M ω A ∂P = gmcReferenceMeasure A := by
-  let F : ℝ → Ω → ℝ := fun r ω => (regularizedGMC P Xc γ r ω A).toReal
-  let G : Ω → ℝ := fun ω => (M ω A).toReal
+  let F  := fun r ω => (regularizedGMC P Xc γ r ω A).toReal
+  let G  := fun ω => (M ω A).toReal
   have hFmeas : ∀ r, AEMeasurable (F r) P := by
     intro r
-    have hcut : Measurable (fun ω => regularizedGMC P Xc γ r ω A) :=
+    have hcut  :=
       (Measure.measurable_coe hA).comp
         (regularizedGMC_measurable P X hX Xc hXc γ r)
     exact ENNReal.measurable_toReal.comp_aemeasurable hcut.aemeasurable
-  have hGmeas : AEMeasurable G P := by
-    exact ENNReal.measurable_toReal.comp_aemeasurable
+  have hGmeas := ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_set_mass_aemeasurable_of_isGMCOf
         P X hX γ hγ hγ2 M hM A hA)
   have hFnonneg : ∀ r ω, 0 ≤ F r ω := by
@@ -129,8 +121,7 @@ theorem equatorGFF_GMC_lintegral_mass_eq_reference_of_l1
         ENNReal.ofReal ((regularizedGMC P Xc γ r ω A).toReal) =
           regularizedGMC P Xc γ r ω A := by
       filter_upwards [hfinite] with ω hω
-      exact ENNReal.ofReal_toReal
-        (@MeasureTheory.measure_ne_top ℂ _ (regularizedGMC P Xc γ r ω) hω A)
+      simp
     calc
       ∫⁻ ω, ENNReal.ofReal (F r ω) ∂P =
           ∫⁻ ω, regularizedGMC P Xc γ r ω A ∂P := by
@@ -151,13 +142,15 @@ theorem equatorGFF_GMC_lintegral_mass_eq_reference_of_l1
   rw [hmass] at h
   exact h
 
+end
+
 /-- The reference measure has positive mass already on the unit disk. -/
 theorem gmcReferenceMeasure_unitBall_pos :
     0 < gmcReferenceMeasure (Metric.ball (0 : ℂ) 1) := by
-  let B : Set ℂ := Metric.ball (0 : ℂ) 1
+  let B  := Metric.ball (0 : ℂ) 1
   have hB : MeasurableSet B := Metric.isOpen_ball.measurableSet
   have hvolume : 0 < volume B := Metric.measure_ball_pos volume 0 (by norm_num)
-  have hle : volume B ≤ gmcReferenceMeasure B := by
+  exact lt_of_lt_of_le hvolume (by
     rw [gmcReferenceMeasure, withDensity_apply _ hB]
     calc
       volume B = ∫⁻ x in B, (1 : ℝ≥0∞) ∂volume := by simp
@@ -170,17 +163,18 @@ theorem gmcReferenceMeasure_unitBall_pos :
               simpa [B, Metric.mem_ball, dist_eq_norm] using hx
             have hplus : normPlus x = 1 := by
               simp [normPlus, max_eq_left hxnorm.le]
-            simp [hplus])
-  exact lt_of_lt_of_le hvolume hle
+            simp [hplus]))
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- Exact expected intensity on all measurable sets rules out the zero GMC. -/
-theorem equatorGFF_GMC_nontrivial_of_intensity
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
+theorem equatorGFF_GMC_nontrivial_of_intensity (M : Ω → Measure ℂ)
     (hIntensity : ∀ A : Set ℂ, MeasurableSet A →
       ∫⁻ ω, M ω A ∂P = gmcReferenceMeasure A) :
     ¬ ∀ᵐ ω ∂P, M ω = 0 := by
   intro hzero
-  let B : Set ℂ := Metric.ball (0 : ℂ) 1
+  let B  := Metric.ball (0 : ℂ) 1
   have hB : MeasurableSet B := Metric.isOpen_ball.measurableSet
   have hmassZero : ∀ᵐ ω ∂P, M ω B = 0 := by
     filter_upwards [hzero] with ω hω
@@ -191,16 +185,13 @@ theorem equatorGFF_GMC_nontrivial_of_intensity
       ∫⁻ ω, M ω B ∂P = ∫⁻ ω, (0 : ℝ≥0∞) ∂P :=
         lintegral_congr_ae hmassZero
       _ = 0 := by simp
-  have hreference : gmcReferenceMeasure B = 0 := by
+  exact (gmcReferenceMeasure_unitBall_pos).ne' (by
     rw [← hmass]
-    exact (hIntensity B hB).symm
-  exact (gmcReferenceMeasure_unitBall_pos).ne' hreference
+    exact (hIntensity B hB).symm)
 
 /-- Exact intensity on every measurable set follows once the cutoff set masses converge in L¹
 on bounded sets. The unbounded case is monotone exhaustion by closed balls. -/
-theorem equatorGFF_GMC_intensity_of_bounded_mass_l1
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+theorem equatorGFF_GMC_intensity_of_bounded_mass_l1 (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
@@ -213,7 +204,7 @@ theorem equatorGFF_GMC_intensity_of_bounded_mass_l1
     ∫⁻ ω, M ω A ∂P = gmcReferenceMeasure A := by
   obtain ⟨N, hNmeas, _hNfinite, hMN⟩ :=
     equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
-  let ν : Measure ℂ := (P.map N).join
+  let ν  := (P.map N).join
   have hνEval (B : Set ℂ) (hB : MeasurableSet B) :
       ν B = ∫⁻ ω, M ω B ∂P := by
     dsimp [ν]
@@ -222,20 +213,18 @@ theorem equatorGFF_GMC_intensity_of_bounded_mass_l1
     apply lintegral_congr_ae
     filter_upwards [hMN] with ω hω
     rw [hω]
-  let B : ℕ → Set ℂ := fun n => A ∩ Metric.closedBall 0 ((n + 1 : ℕ) : ℝ)
+  let B  := fun n => A ∩ Metric.closedBall 0 ((n + 1 : ℕ) : ℝ)
   have hBmeas (n : ℕ) : MeasurableSet (B n) :=
     hA.inter Metric.isClosed_closedBall.measurableSet
   have hBsubset (n : ℕ) : B n ⊆ Metric.closedBall 0 ((n + 1 : ℕ) : ℝ) :=
     Set.inter_subset_right
   have hBintensity (n : ℕ) : ν (B n) = gmcReferenceMeasure (B n) := by
     rw [hνEval (B n) (hBmeas n)]
-    exact equatorGFF_GMC_lintegral_mass_eq_reference_of_l1
-      P X hX Xc hXc γ hγ hγ2 M hM (B n) (hBmeas n)
-        (hL1 (B n) (hBmeas n) ((n + 1 : ℕ) : ℝ) (hBsubset n))
+    apply equatorGFF_GMC_lintegral_mass_eq_reference_of_l1 <;> solve_by_elim
   have hBmono : Monotone B := by
     intro i j hij
     apply Set.inter_subset_inter_right
-    exact Metric.closedBall_subset_closedBall (by exact_mod_cast Nat.add_le_add_right hij 1)
+    exact Metric.closedBall_subset_closedBall (by simpa)
   have hBunion : (⋃ n, B n) = A := by
     ext x
     constructor
@@ -251,16 +240,17 @@ theorem equatorGFF_GMC_intensity_of_bounded_mass_l1
       exact hn.le.trans (by norm_num)
   have hνlim : Tendsto (fun n : ℕ => ν (B n)) atTop (𝓝 (ν A)) := by
     rw [← hBunion]
-    exact tendsto_measure_iUnion_atTop (μ := ν) hBmono
+    apply tendsto_measure_iUnion_atTop <;> assumption
   have hrefLim : Tendsto (fun n : ℕ => gmcReferenceMeasure (B n)) atTop
       (𝓝 (gmcReferenceMeasure A)) := by
     rw [← hBunion]
-    exact tendsto_measure_iUnion_atTop (μ := gmcReferenceMeasure) hBmono
-  have hSeqEq : (fun n : ℕ => ν (B n)) = fun n => gmcReferenceMeasure (B n) :=
+    apply tendsto_measure_iUnion_atTop <;> assumption
+  have hSeqEq  :=
     funext hBintensity
-  have hνA : ν A = gmcReferenceMeasure A :=
+  have hνA  :=
     tendsto_nhds_unique hνlim (hSeqEq ▸ hrefLim)
-  rw [← hνEval A hA]
-  exact hνA
+  rwa [← hνEval A hA]
+
+end
 
 end DOZZ.Proofs

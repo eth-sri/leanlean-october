@@ -30,8 +30,7 @@ theorem reflected_rpow_near_one (b t : ℝ) (hb : 0 ≤ b) (hb₂ : b ≤ 2)
     have hpow : s ^ (b - 1) ≤ 2 := by
       have hbound := coulombWeight_rpow_le (L := 2) (by norm_num)
         (by norm_num; exact hs.1) hs.2 (b - 1)
-      exact hbound.trans (by simpa only [Real.rpow_one] using
-        Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2) he)
+      exact hbound.trans (by simpa using Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2) he)
     rw [(hd s hs).deriv, Real.norm_eq_abs, abs_mul, abs_of_nonneg hb,
       abs_of_pos (Real.rpow_pos_of_pos hsp _)]
     nlinarith only [hb, hb₂, hpow]
@@ -49,55 +48,77 @@ theorem reflected_kernel_distance_ratio (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
   rw [sub_zero, Real.div_rpow (norm_nonneg _) hx.le]
   field_simp
 
-/-- On a separated retained region, moving the root gives a relative first-order error. -/
-theorem reflected_kernel_relative_difference (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
-    (hγ₂ : γ < 2) (z x : ℂ) (hx : 0 < ‖x‖) (hz : ‖z‖ ≤ ‖x‖ / 2) :
-    |gammaHalfKernel γ α₁ α₂ α₃ z x - gammaHalfKernel γ α₁ α₂ α₃ 0 x| ≤
-      (4 * (‖z‖ / ‖x‖)) * gammaHalfKernel γ α₁ α₂ α₃ 0 x := by
-  let b : ℝ := γ ^ 2 / 2
-  let t : ℝ := ‖x - z‖ / ‖x‖
-  have hb : 0 ≤ b := by dsimp only [b]; positivity
-  have hb₂ : b ≤ 2 := by dsimp only [b]; nlinarith only [hγ, hγ₂]
-  have ht : 1 / 2 ≤ t := by
-    apply (le_div_iff₀ hx).mpr
-    have hh := norm_sub_norm_le x z
-    linarith only [hh, hz, hx]
-  have ht₂ : t ≤ 2 := by
-    apply (div_le_iff₀ hx).mpr
-    have hh := norm_sub_le x z
-    linarith only [hh, hz, hx]
+/-- Lower and first-order bounds for the ratio of the shifted and unshifted radial powers. -/
+private theorem radial_ratio_bounds (b : ℝ) (hb : 0 ≤ b) (hb₂ : b ≤ 2)
+    (x z : ℂ) (hx : 0 < ‖x‖) (hz : ‖z‖ ≤ ‖x‖ / 2) :
+    (1 / 4 : ℝ) ≤ (‖x - z‖ / ‖x‖) ^ b ∧
+      |(‖x - z‖ / ‖x‖) ^ b - 1| ≤ 4 * (‖z‖ / ‖x‖) := by
+  let t := ‖x - z‖ / ‖x‖
+  have hlo : 1 / 2 ≤ t := (le_div_iff₀ hx).mpr (by linarith [norm_sub_norm_le x z])
+  have hhi : t ≤ 2 := (div_le_iff₀ hx).mpr (by linarith [norm_sub_le x z])
   have htd : |t - 1| ≤ ‖z‖ / ‖x‖ := by
-    have hn := abs_norm_sub_norm_le (x - z) x
-    rw [sub_sub_cancel_left, norm_neg] at hn
     dsimp only [t]
     rw [div_sub_one hx.ne', abs_div, abs_of_pos hx]
-    exact div_le_div_of_nonneg_right hn hx.le
-  have hK : 0 ≤ gammaHalfKernel γ α₁ α₂ α₃ 0 x := by unfold gammaHalfKernel normPlus; positivity
-  rw [reflected_kernel_distance_ratio γ α₁ α₂ α₃ z x hx]
-  have he : t ^ b * gammaHalfKernel γ α₁ α₂ α₃ 0 x - gammaHalfKernel γ α₁ α₂ α₃ 0 x =
-      (t ^ b - 1) * gammaHalfKernel γ α₁ α₂ α₃ 0 x := by ring
-  change |t ^ b * _ - _| ≤ _
-  rw [he, abs_mul, abs_of_nonneg hK]
-  exact mul_le_mul_of_nonneg_right
-    ((reflected_rpow_near_one b t hb hb₂ ht ht₂).trans (mul_le_mul_of_nonneg_left htd (by norm_num))) hK
+    apply div_le_div_of_nonneg_right _ hx.le
+    simpa only [sub_sub_cancel_left, norm_neg] using abs_norm_sub_norm_le (x - z) x
+  refine ⟨?_, (reflected_rpow_near_one b t hb hb₂ hlo hhi).trans
+    (mul_le_mul_of_nonneg_left htd (by norm_num))⟩
+  calc
+    _ = (1 / 2 : ℝ) ^ (2 : ℝ) := by norm_num
+    _ ≤ (1 / 2 : ℝ) ^ b := Real.rpow_le_rpow_of_exponent_ge (by norm_num) (by norm_num) hb₂
+    _ ≤ _ := Real.rpow_le_rpow (by norm_num) hlo hb
 
-/-- The moving retained kernel stays above one quarter of the zero kernel. -/
-theorem reflected_kernel_relative_lower (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
-    (hγ₂ : γ < 2) (z x : ℂ) (hx : 0 < ‖x‖) (hz : ‖z‖ ≤ ‖x‖ / 2) :
-    gammaHalfKernel γ α₁ α₂ α₃ 0 x / 4 ≤ gammaHalfKernel γ α₁ α₂ α₃ z x := by
-  have hb : 0 ≤ γ ^ 2 / 2 := by positivity
-  have hb₂ : γ ^ 2 / 2 ≤ 2 := by nlinarith only [hγ, hγ₂]
-  have hd : 1 / 2 ≤ ‖x - z‖ / ‖x‖ := by
-    apply (le_div_iff₀ hx).mpr
-    have hh := norm_sub_norm_le x z
-    linarith only [hh, hz, hx]
-  have hl : (1 / 4 : ℝ) ≤ (‖x - z‖ / ‖x‖) ^ (γ ^ 2 / 2) := by
-    calc
-      _ = (1 / 2 : ℝ) ^ (2 : ℝ) := by norm_num
-      _ ≤ (1 / 2 : ℝ) ^ (γ ^ 2 / 2) := Real.rpow_le_rpow_of_exponent_ge (by norm_num) (by norm_num) hb₂
-      _ ≤ _ := Real.rpow_le_rpow (by norm_num) hd hb
-  rw [reflected_kernel_distance_ratio γ α₁ α₂ α₃ z x hx]
-  simpa only [div_eq_mul_inv, mul_comm, one_mul] using mul_le_mul_of_nonneg_right hl
-    (show 0 ≤ gammaHalfKernel γ α₁ α₂ α₃ 0 x by unfold gammaHalfKernel normPlus; positivity)
+/-- A moving mass is close to its base mass with additive error `d * S`, and is
+bounded below by a quarter of the base mass. -/
+structure RelativeMassBound (d : ℝ) (S T : ℝ≥0∞) : Prop where
+  lower : ENNReal.ofReal (1 / 4 : ℝ) * S ≤ T
+  upper : T ≤ S + ENNReal.ofReal d * S
+  reverse : S ≤ T + ENNReal.ofReal d * S
+
+/-- A common distance-ratio estimate for the exterior moving kernels. -/
+theorem exterior_kernel_relative_mass (b : ℝ) (hb : 0 ≤ b) (hb₂ : b ≤ 2)
+    (z : ℂ) (r : ℝ) (hr : 0 < r) (hz : ‖z‖ ≤ r / 2) (μ : Measure ℂ)
+    (F G : ℂ → ℝ) (hF : Measurable F) (hG : Measurable G) (hF₀ : ∀ x, 0 ≤ F x)
+    (hmove : ∀ x, 0 < ‖x‖ → G x = (‖x - z‖ / ‖x‖) ^ b * F x) :
+    RelativeMassBound (4 * (‖z‖ / r))
+      (∫⁻ x in {x : ℂ | r ≤ ‖x‖}, ENNReal.ofReal (F x) ∂μ)
+      (∫⁻ x in {x : ℂ | r ≤ ‖x‖}, ENNReal.ofReal (G x) ∂μ) := by
+  let d := 4 * (‖z‖ / r)
+  let D : Set ℂ := {x | r ≤ ‖x‖}
+  let K₀ := fun x => ENNReal.ofReal (F x)
+  let K := fun x => ENNReal.ofReal (G x)
+  have hd : 0 ≤ d := by dsimp [d]; positivity
+  have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
+  have hK₀ : Measurable K₀ := ENNReal.measurable_ofReal.comp hF
+  have hK : Measurable K := ENNReal.measurable_ofReal.comp hG
+  have hp (x : ℂ) (hx : x ∈ D) : RelativeMassBound d (K₀ x) (K x) := by
+    have hx' : 0 < ‖x‖ := hr.trans_le hx
+    obtain ⟨hl, he⟩ := radial_ratio_bounds b hb hb₂ x z hx'
+      (hz.trans (div_le_div_of_nonneg_right hx (by norm_num)))
+    have hmul := hmove x hx'
+    have hl' := mul_le_mul_of_nonneg_right hl (hF₀ x)
+    have hG₀ : 0 ≤ G x := by
+      rw [hmul]
+      exact mul_nonneg (Real.rpow_nonneg (div_nonneg (norm_nonneg _) hx'.le) _) (hF₀ x)
+    have hε : |G x - F x| ≤ d * F x := by
+      rw [hmul, ← sub_one_mul, abs_mul, abs_of_nonneg (hF₀ x)]
+      exact mul_le_mul_of_nonneg_right (he.trans
+        (mul_le_mul_of_nonneg_left (div_le_div_of_nonneg_left (norm_nonneg _) hr hx) (by norm_num))) (hF₀ x)
+    obtain ⟨hlow, hhigh⟩ := abs_le.mp hε
+    constructor <;> dsimp only [K, K₀]
+    · rw [← ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 1 / 4), hmul]
+      exact ENNReal.ofReal_le_ofReal hl'
+    · rw [← ENNReal.ofReal_mul hd, ← ENNReal.ofReal_add (hF₀ x) (mul_nonneg hd (hF₀ x))]
+      exact ENNReal.ofReal_le_ofReal (by linarith)
+    · rw [← ENNReal.ofReal_mul hd, ← ENNReal.ofReal_add hG₀ (mul_nonneg hd (hF₀ x))]
+      exact ENNReal.ofReal_le_ofReal (by linarith)
+  change RelativeMassBound d (∫⁻ x in D, K₀ x ∂μ) (∫⁻ x in D, K x ∂μ)
+  constructor
+  · rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
+    exact setLIntegral_mono' hD fun x hx => (hp x hx).lower
+  · rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, ← lintegral_add_left hK₀]
+    exact setLIntegral_mono' hD fun x hx => (hp x hx).upper
+  · rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, ← lintegral_add_left hK]
+    exact setLIntegral_mono' hD fun x hx => (hp x hx).reverse
 
 end DOZZ.Proofs

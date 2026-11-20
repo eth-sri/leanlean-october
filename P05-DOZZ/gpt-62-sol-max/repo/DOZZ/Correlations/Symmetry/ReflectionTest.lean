@@ -36,7 +36,7 @@ theorem norm_iteratedFDeriv_symmetryReflection (f : ℂ → ℝ) (i : ℕ) (x : 
       iteratedFDerivWithin_comp_add_left (𝕜 := ℝ) (f := f) (s := univ) i (1 : ℂ) (-x)
   simp only [LinearIsometryEquiv.coe_neg] at hn
   rw [ht] at hn
-  simpa only [Function.comp_def, LinearIsometryEquiv.coe_neg, sub_eq_add_neg] using hn
+  assumption
 
 /-- Pullback on a fixed compact support, with its derivative seminorm bounds. -/
 noncomputable def symmetryReflectionSupportedCLM (K : Compacts ℂ) :

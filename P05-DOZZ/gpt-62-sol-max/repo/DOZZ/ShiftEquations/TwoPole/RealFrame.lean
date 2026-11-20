@@ -88,11 +88,14 @@ theorem extendedSeiberg3_pole {γ η δ x : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
       have : 0 < 2 * η / γ := by positivity
       linarith
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ x : ℝ}
+  (hW : TwoPoleWindow γ η δ) (hx₁ : 2 * η < x) (hx₂ : x < 1 / γ)
+include Ω X hX hγ hγ2 hM δ hW hx₁ hx₂
+
 /-- The total moment at a real charge of the expansion is finite. -/
-theorem lintegral_totalMass_rpow_lt_top_pole {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ x : ℝ} (hW : TwoPoleWindow γ η δ)
-    (hx₁ : 2 * η < x) (hx₂ : x < 1 / γ) :
+theorem lintegral_totalMass_rpow_lt_top_pole :
     ∫⁻ ω, poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) ^ (1 - x / γ) ∂P < ⊤ := by
   have hES := extendedSeiberg3_pole hγ hγ2 hW hx₁ hx₂
   have hrho := (equatorGFF_extendedSeiberg_rho_moment P X hX γ hγ hγ2 M hM x (2 / γ + η)
@@ -107,10 +110,7 @@ theorem lintegral_totalMass_rpow_lt_top_pole {Ω : Type*} [MeasurableSpace Ω] (
 
 /-- **The real identity**: the pole-subtracted observable plus the local moment is the total
 moment. -/
-theorem observable_add_localMoment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ x : ℝ} (hW : TwoPoleWindow γ η δ)
-    (hx₁ : 2 * η < x) (hx₂ : x < 1 / γ)
+theorem observable_add_localMoment
     (hLint : Integrable (fun ω => localMassReal M γ η ω ^ (1 - x / γ)) P) :
     poleSubtractedObservable P M γ η x + ∫ ω, localMassReal M γ η ω ^ (1 - x / γ) ∂P =
       (∫⁻ ω, poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) ^ (1 - x / γ) ∂P).toReal := by
@@ -148,6 +148,8 @@ theorem observable_add_localMoment {Ω : Type*} [MeasurableSpace Ω] (P : Measur
   rw [hobs, integral_sub hTint hLint, sub_add_cancel,
     integral_eq_lintegral_of_nonneg_ae hTnn hTmeas.aestronglyMeasurable,
     lintegral_congr_ae hTofReal]
+
+end
 
 end DOZZ.Proofs
 

@@ -43,10 +43,14 @@ theorem hasDerivAt_brownianStandardHeatTail (z : ℝ) :
     rfl
   · simp
 
+section
+variable {t : ℝ} (ht : 0 < t)
+include ht
+
 /-- Scaling the Gaussian density by its standard deviation. -/
-theorem brownianHeatDensity_standard_scale {t : ℝ} (ht : 0 < t) (z : ℝ) :
+theorem brownianHeatDensity_standard_scale (z : ℝ) :
     brownianHeatDensity 1 (z / Real.sqrt t) / Real.sqrt t = brownianHeatDensity t z := by
-  have hs : Real.sqrt t ≠ 0 := (Real.sqrt_pos.2 ht).ne'
+  have hs  := (Real.sqrt_pos.2 ht).ne'
   have he : -(z / Real.sqrt t)^2 / (2 * 1) = -z^2 / (2*t) := by
     rw [div_pow, Real.sq_sqrt ht.le]
     field_simp
@@ -58,7 +62,7 @@ theorem brownianHeatDensity_standard_scale {t : ℝ} (ht : 0 < t) (z : ℝ) :
     Real.sqrt_mul (by positivity : 0 ≤ 2*Real.pi)]
 
 /-- The heat tail is the actual half-line integral of the explicit density. -/
-theorem brownianHeatTail_eq_integral {t : ℝ} (ht : 0 < t) (z : ℝ) :
+theorem brownianHeatTail_eq_integral (z : ℝ) :
     brownianHeatTail t z = ∫ y in Ioi z, brownianHeatDensity t y := by
   have hhalf (u : ℝ) (hu : 0 < u) :
       (∫ y in Ioi (0 : ℝ), brownianHeatDensity u y) = (1/2 : ℝ) := by
@@ -68,9 +72,7 @@ theorem brownianHeatTail_eq_integral {t : ℝ} (ht : 0 < t) (z : ℝ) :
   have hscale : (∫ y in (0 : ℝ)..z, brownianHeatDensity t y) =
       ∫ y in (0 : ℝ)..(z / Real.sqrt t), brownianHeatDensity 1 y := by
     simp_rw [← brownianHeatDensity_standard_scale ht]
-    rw [intervalIntegral.integral_div, intervalIntegral.integral_comp_div _
-      (Real.sqrt_pos.2 ht).ne']
-    simp [smul_eq_mul, (Real.sqrt_pos.2 ht).ne']
+    simp [intervalIntegral.integral_div, smul_eq_mul, (Real.sqrt_pos.2 ht).ne']
   have hi := intervalIntegral.integral_Ioi_sub_Ioi'
     (a := (0 : ℝ)) (b := z)
     (integrable_brownianHeatDensity ht).integrableOn
@@ -79,21 +81,8 @@ theorem brownianHeatTail_eq_integral {t : ℝ} (ht : 0 < t) (z : ℝ) :
   rw [hhalf 1 (by norm_num), ← hscale, ← hi, hhalf t ht]
   ring
 
-/-- A translated heat density is integrable on the full real line. -/
-theorem integrable_brownianHeatDensity_sub_const {t : ℝ} (ht : 0 < t) (a : ℝ) :
-    Integrable (fun y : ℝ => brownianHeatDensity t (y-a)) (volume : Measure ℝ) := by
-  have he : MeasurableEmbedding (fun y : ℝ => y + -a) :=
-    (Homeomorph.addRight (-a)).isClosedEmbedding.measurableEmbedding
-  have hm : (volume : Measure ℝ).map (fun y : ℝ => y + -a) = volume :=
-    Measure.IsAddRightInvariant.map_add_right_eq_self (-a)
-  have hi : Integrable (brownianHeatDensity t)
-      ((volume : Measure ℝ).map (fun y : ℝ => y + -a)) := by
-    rw [hm]
-    exact integrable_brownianHeatDensity ht
-  simpa only [sub_eq_add_neg, Function.comp_def] using he.integrable_map_iff.mp hi
-
 /-- Translation of a Gaussian half-line integral is its shifted upper tail. -/
-theorem integral_brownianHeatDensity_sub_const_Ioi {t : ℝ} (ht : 0 < t) (a c : ℝ) :
+theorem integral_brownianHeatDensity_sub_const_Ioi (a c : ℝ) :
     (∫ y in Ioi c, brownianHeatDensity t (y-a)) = brownianHeatTail t (c-a) := by
   have he : MeasurableEmbedding (fun y : ℝ => y + -a) :=
     (Homeomorph.addRight (-a)).isClosedEmbedding.measurableEmbedding
@@ -102,19 +91,19 @@ theorem integral_brownianHeatDensity_sub_const_Ioi {t : ℝ} (ht : 0 < t) (a c :
   have h := he.setIntegral_map (μ := (volume : Measure ℝ))
     (brownianHeatDensity t) (Ioi (c-a))
   have hp : (fun y : ℝ => y + -a) ⁻¹' Ioi (c-a) = Ioi c := by
-    ext y
-    simp only [mem_preimage, mem_Ioi]
-    constructor <;> intro h <;> linarith
+    simp
   rw [hm, hp] at h
   rw [brownianHeatTail_eq_integral ht]
   simpa only [sub_eq_add_neg] using h.symm
+
+end
 
 /-- Time differentiation of a Gaussian tail with an affine moving boundary. -/
 theorem hasDerivAt_brownianHeatTail_affine (a b t : ℝ) (ht : 0 < t) :
     HasDerivAt (fun u => brownianHeatTail u (a + b*u))
       (brownianHeatDensity t (a+b*t) * (a/(2*t)-b/2)) t := by
   have hs := Real.hasDerivAt_sqrt ht.ne'
-  have hs0 : Real.sqrt t ≠ 0 := (Real.sqrt_pos.2 ht).ne'
+  have hs0  := (Real.sqrt_pos.2 ht).ne'
   have hn : HasDerivAt (fun u : ℝ => a+b*u) b t := by
     convert (hasDerivAt_id t).const_mul b |>.const_add a using 1 <;> simp
   have hq := hn.div hs hs0

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+import DOZZ.FourPoint.Dual.FullFusion
 
 public import DOZZ.Statements.FourPoint.FourPointT
 public import DOZZ.Statements.Defs.StructureConstant
@@ -17,7 +18,7 @@ public import DOZZ.Statements.Hypergeom.GaussParameterA
 public import DOZZ.Statements.Hypergeom.GaussParameterB
 public import DOZZ.Statements.Hypergeom.GaussParameterC
 public import DOZZ.Statements.Hypergeom.IsGaussHypergeometricFamily
-import DOZZ.ShiftEquations.Mobius.AffineMomentInf
+public import DOZZ.FourPoint.Crossing.Reflection
 import DOZZ.ShiftEquations.Gluing.DiagonalUnique
 import DOZZ.FourPoint.Diagonal.Assembly
 import DOZZ.FourPoint.Dual.Parameters
@@ -32,7 +33,7 @@ Two ingredients of the dual crossing seeds.
 * **Crossing symmetry.** The reduced four-point function with the dual degenerate charge `-2/γ` is
   symmetric under `z ↦ 1 - z` with the two finite charges exchanged. This is the affine moment
   identity with a charge at infinity, exactly as for the half charge
-  (`gammaHalf_fourPoint_reflection`).
+  (`fourPointT_reflection`).
 * **The reflection identity near `Q`.** By the diagonal classification at `χ = 2/γ`, the four-point
   function is `C(α₁ - 2/γ, α₂, α₃) (|F₋|² + r |F₊|²)` with `r` the ratio of [KRV, (Fundrelation)].
   When `α₁` is close to `Q`, the dual fusion (`dual_full_fusion_and_asymptotic`, second conjunct)
@@ -54,54 +55,6 @@ universe u
 namespace DOZZ.Proofs
 
 /-! ### Crossing symmetry of the dual four-point function -/
-
-/-- Swapping the last two finite roots also swaps their charges. -/
-theorem seeds_mass_swap_last (γ κ a b c : ℝ) (ν : Measure ℂ) (w : ℂ) :
-    coulombMass γ ν ![κ, a, b] ![w, 1, 0] c =
-      coulombMass γ ν ![κ, b, a] ![w, 0, 1] c := by
-  unfold coulombMass
-  apply lintegral_congr
-  intro x
-  simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
-    Fin.prod_univ_zero, mul_one]
-  rw [mul_comm (ENNReal.rpow _ (γ * a)) (ENNReal.rpow _ (γ * b))]
-
-/-- **Crossing symmetry at the dual charge.** The reduced four-point function with degenerate
-charge `-2/γ` is symmetric under `z ↦ 1 - z` with the charges at zero and one exchanged,
-throughout its carrier. -/
-theorem dual_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ a b c : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (z : ℂ) :
-    fourPointT P M γ μ (-(2 / γ)) a b c z =
-      fourPointT P M γ μ (-(2 / γ)) b a c (1 - z) := by
-  have he : infSExp γ ![-(2 / γ), a, b] c = fourPointSExp γ (-(2 / γ)) a b c := by
-    unfold infSExp fourPointSExp
-    simp only [Fin.sum_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
-      Fin.sum_univ_zero, add_zero]
-    congr 1
-    ring
-  have hm := coulombMass_affine_moment_inf P X hX γ hγ hγ2 M hM
-    ![-(2 / γ), a, b] ![z, 0, 1] c (-1) 1 (by norm_num)
-  have hz : (fun k : Fin 3 => (-1 : ℂ) * (![z, 0, 1] : Fin 3 → ℂ) k + 1) =
-      ![1 - z, 1, 0] := by
-    funext k
-    fin_cases k
-    · change (-1 : ℂ) * z + 1 = 1 - z
-      ring
-    · simp
-    · simp
-  rw [hz, he] at hm
-  simp only [norm_neg, norm_one, Real.one_rpow, ENNReal.ofReal_one, one_mul] at hm
-  simp_rw [seeds_mass_swap_last] at hm
-  have hs : fourPointSExp γ (-(2 / γ)) b a c = fourPointSExp γ (-(2 / γ)) a b c := by
-    unfold fourPointSExp
-    congr 1
-    ring
-  unfold fourPointT
-  rw [hs]
-  congr 2
-  simpa only [ENNReal.rpow_eq_pow] using hm.symm
 
 /-! ### The near-`Q` window of the dual fusion -/
 
@@ -172,8 +125,7 @@ theorem seeds_ne_int_of_mem_Ioo {c : ℝ} (h0 : 0 < c) (h1 : c < 1) :
 
 /-- **The dual reflection identity near `Q`.** For `α₁` within `dualSeedWindow γ` of `Q`, the second
 diagonal coefficient of the classified dual four-point function is the reflection coefficient times
-the reflected structure constant, for every witness of `R(α₁)`. The input `hFusion` is the complete
-statement of `dual_full_fusion_and_asymptotic` at universe `u`. -/
+the reflected structure constant, for every witness of `R(α₁)`. -/
 theorem dual_reflection_identity_near_Q
     {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
     (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
@@ -181,51 +133,14 @@ theorem dual_reflection_identity_near_Q
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hs : 2 * Q γ + 2 / γ < α₁ + α₂ + α₃)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (hB : IsReflectionData P γ α₁ B Z)
-    (hFusion : ∀ {Ω : Type u} [MeasurableSpace Ω]
-      {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-      (_hH : IsGaussHypergeometricFamily H)
-      (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-      (γ μ α₁ α₂ α₃ η ξ : ℝ)
-      (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ)
-      (_hη : 0 < η) (_hη₂ : η < γ / 2) (_hξ : 0 < ξ) (_hξ₂ : ξ < 1)
-      (_hαlo : Q γ - η < α₁) (_hαhi : α₁ < Q γ)
-      (_hα₂ : α₂ < Q γ) (_hα₃ : α₃ < Q γ)
-      (_hs : 2 * Q γ + 2 / γ < α₁ + α₂ + α₃)
-      (_hslack₁ : (4 / γ) * (Q γ - α₁) < ξ)
-      (_hslack₂ : (4 / γ) * (Q γ - α₁) <
-        (1 - ξ) * (4 - γ * α₁ - 2 * γ * η))
-      (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M),
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
-        ∃ Z : Ω → Measure ℝ,
-          IsSourceLateralProjection P X γ M Z ∧
-          IsReflectionData P γ α₁ (B α₁) Z ∧
-          let a := gaussParameterA γ (2 / γ) α₁ α₂ α₃
-          let b := gaussParameterB γ (2 / γ) α₁ α₂ α₃
-          let c := gaussParameterC γ (2 / γ) α₁
-          let κ := (4 / γ) * (Q γ - α₁)
-          (∃ r : ℂ → ℝ,
-            (∀ z, fourPointT P M γ μ (-2 / γ) α₁ α₂ α₃ z =
-              structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ +
-                reflectionR P γ μ α₁ (B α₁) Z *
-                  structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃ *
-                    (‖z‖ ^ κ : ℝ) + r z) ∧
-              Tendsto (fun z => r z / ‖z‖ ^ κ)
-                (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0)) ∧
-            (∀ z ∈ gaussCutPlane,
-              fourPointT P M γ μ (-2 / γ) α₁ α₂ α₃ z =
-                structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ *
-                    ‖gaussFMinus H a b c z‖ ^ 2 +
-                  reflectionR P γ μ α₁ (B α₁) Z *
-                    structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃ *
-                      ‖gaussFPlus H a b c z‖ ^ 2)) :
+    (hB : IsReflectionData P γ α₁ B Z) :
     structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ *
         gaussCoefficientRatio (gaussParameterA γ (2 / γ) α₁ α₂ α₃)
           (gaussParameterB γ (2 / γ) α₁ α₂ α₃) (gaussParameterC γ (2 / γ) α₁) =
       reflectionR P γ μ α₁ B Z * structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃ := by
   obtain ⟨H, hH⟩ := gauss_hypergeometric_exists
   obtain ⟨hη0, hη1, hηlo, hslack₁, hslack₂⟩ := dual_fusion_window hγ hγ2 hα₁ hnear
-  obtain ⟨B', Z', -, hB', hrest⟩ := hFusion hH P M X γ μ α₁ α₂ α₃ (2 * (Q γ - α₁)) (1 / 2)
+  obtain ⟨B', Z', -, hB', hrest⟩ := dual_full_fusion_and_asymptotic hH P M X γ μ α₁ α₂ α₃ (2 * (Q γ - α₁)) (1 / 2)
     hγ hγ2 hμ hη0 hη1 (by norm_num) (by norm_num) hηlo hα₁ hα₂ hα₃ hs hslack₁ hslack₂ hX hM
   have hformula := hrest.2
   have hclass := degenerateFourPoint_diagonal_classification hH P X M γ μ (2 / γ) α₁ α₂ α₃

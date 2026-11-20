@@ -9,6 +9,7 @@ public import DOZZ.FourPoint.Dual.BufferRelativeLimit
 public import DOZZ.FourPoint.Dual.KernelFactors
 public import DOZZ.FourPoint.Dual.OuterLittleO
 import Mathlib.Tactic
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 /-! The actual full dual inverse expectation has the same-witness stochastic fusion coefficient. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
@@ -21,9 +22,7 @@ theorem dual_source_full_inverse_increment_tendsto
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hcircle : IsContinuousCircleAverage P X Xc)
     (α₁ α₂ α₃ ξ : ℝ) (hα₁ : α₁ < Q γ) (hreflect : Q γ-α₁ < γ/2)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 2*Q γ+2/γ < α₁+α₂+α₃)
@@ -53,26 +52,24 @@ theorem dual_source_full_inverse_increment_tendsto
   let κ := (4/γ)*ν
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have hαshift : α₁-2/γ < Q γ := by linarith only [hα₁, div_pos (by norm_num : (0 : ℝ) < 2) hγ]
-  let W := fun h : ℝ => dual_full_copied_path_law_carrier P X Xc hX hc hm hcont γ hγ hγ₂ M hM
-    α₁ α₂ α₃ p h ξ κ hp hα₁ hα₂ hα₃ hβ hspatial hξ hξ1 hκξ
-  let N := fun h => Classical.choose (W h)
-  have hN (h : ℝ) := Classical.choose_spec (W h)
+  obtain ⟨N, hNm, _, hNfin, hNeq, hlaw⟩ := dual_source_copied_outer_joint_law
+    P X Xc hX hcircle γ hγ hγ₂ M hM
   let A := originRadialPath Xc
   let T := fun h (z : ℂ) => Real.toNNReal (-Real.log ‖z‖+h)
-  let O := fun h z (v : Ω × Ω) => ∫⁻ x in reflected_outerRegion (‖z‖^(1-ξ)),
+  let O := fun z (v : Ω × Ω) => ∫⁻ x in reflected_outerRegion (‖z‖^(1-ξ)),
     ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)*
-      ENNReal.ofReal (reflected_global_reinsertionWeight γ (A v.1) x) ∂N h v.2
+      ENNReal.ofReal (reflected_global_reinsertionWeight γ (A v.1) x) ∂N v.2
   let D := fun h z => ∫ v : (Ω × Ω) × Ω,
-    ((O h z v.1).toReal+dualPathRadialScale γ ν h z (A v.1.1)*
+    ((O z v.1).toReal+dualPathRadialScale γ ν h z (A v.1.1)*
       (∫⁻ t, (if 0 < t then ENNReal.ofReal (Real.exp (γ*
         (brownianShiftPath (T h z) (radialPositiveHalf (A v.1.1)) (Real.toNNReal t)-ν*t))) else 0)
-          ∂(Z v.2).map (fun s => s-(T h z : ℝ))).toReal)^(-p)-(O h z v.1).toReal^(-p)
+          ∂(Z v.2).map (fun s => s-(T h z : ℝ))).toReal)^(-p)-(O z v.1).toReal^(-p)
       ∂(P.prod P).prod P
   let full := fun z : ℂ => (∫⁻ ω, (∫⁻ x,
     ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω)^(-p) ∂P).toReal
   let outer := fun z : ℂ => (∫⁻ ω, dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-p) ∂P).toReal
   let zero := (∫⁻ ω, coulombMass γ (M ω) ![-2/γ,α₁,α₂] ![0,0,1] α₃^(-p) ∂P).toReal
-  let copied := fun h z => (dualCopiedSeparatedInverseMoment P Xc (N h) γ α₁ α₂ α₃ p z
+  let copied := fun h z => (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ p z
     (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ))).toReal
   let f := fun z : ℂ => (full z-zero)/‖z‖^κ
   let g := fun h z => D h z/‖z‖^κ
@@ -85,14 +82,25 @@ theorem dual_source_full_inverse_increment_tendsto
     (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃^(-(p+a)) ∂P).toReal*
     (∫⁻ ω, twoSidedReflectionMass γ B Z ω^a ∂P).toReal
   have hg (h : ℝ) (hh : 0 < h) : Tendsto (g h) (𝓝[≠] (0 : ℂ)) (𝓝 L) :=
-    dual_source_copied_polar_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc hm hcont
-      (N h) (hN h).1 (hN h).2.2.1 (hN h).2.2.2.2.1 α₁ α₂ α₃ ξ h
+    dual_source_copied_polar_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hcircle
+      N hNm hNfin hlaw α₁ α₂ α₃ ξ h
       hα₁ hreflect hα₂ hα₃ hh.le hs hshifted hslack hξ hξ1 B Z hData hiZ
   have htOuter : Tendsto (fun z : ℂ => (outer z-zero)/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) :=
     dual_outer_inverse_moment_littleO P X M γ α₁ α₂ α₃ p ξ κ hγ hγ₂ hp
       hαshift hα₂ hα₃ hβ hξ hξ1 hκξ hspatial hX hM
   have hd (h : ℝ) (_hh : 0 < h) : Tendsto (d h) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [abs_zero, zero_add] using ((hN h).2.2.2.2.2.abs).add htOuter.abs
+    have ha := dual_full_separated_inverse_littleO P X hX γ hγ hγ₂ M hM
+      α₁ α₂ α₃ p ξ κ h hp hα₁ hα₂ hα₃ hβ hξ hξ1 hspatial
+    have hb := dual_source_decoupling_littleO P X Xc hX hcircle γ hγ hγ₂ M hM
+      N hNeq α₁ α₂ α₃ p h ξ κ hp hξ hξ1 hκξ
+    have ht : Tendsto (fun z => (full z - copied h z)/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
+      have hsum := ha.add hb
+      rw [zero_add] at hsum
+      apply hsum.congr
+      intro z
+      dsimp only [full, copied, Pi.add_apply]
+      ring
+    simpa only [abs_zero, zero_add] using ht.abs.add htOuter.abs
   have he (h : ℝ) (_hh : 0 < h) : Tendsto (e h) (𝓝[≠] (0 : ℂ)) (𝓝 (C h)) :=
     dual_inner_kernel_relative_error_spatial_tendsto γ α₂ h
   apply dual_buffer_relative_squeeze_tendsto (𝓝[≠] (0 : ℂ)) f g d e C L hg hd he
@@ -122,10 +130,10 @@ theorem dual_source_full_inverse_increment_tendsto
   have hr : Real.exp (-(T h z : ℝ)) ≤ ‖z‖^(1-ξ) := by
     rw [hηEq]
     exact (mul_le_of_le_one_left hzpos.le hR.le).trans hstrict.le
-  have hb := dual_source_copied_kernel_inverse_bound P X Xc hX hc hm hcont γ hγ hγ₂ M hM
-    (N h) (hN h).1 (hN h).2.2.1 (hN h).2.2.2.1 Z hData.2.1 heZ
+  have hb := dual_source_copied_kernel_inverse_bound P X Xc hX hcircle γ hγ hγ₂ M hM
+    N hNm hNfin hNeq Z hData.2.1 heZ
     α₁ α₂ α₃ ξ h p hp hh hα₁ hα₂ hα₃ hξ hξ1 z hz0 hz1 hz.le hstrict
-    (T h z) hT hη hr hiZ B Z hData ((hN h).2.2.2.2.1 α₁ α₂ α₃ ξ z hstrict)
+    (T h z) hT hη hr hiZ B Z hData (hlaw α₁ α₂ α₃ ξ z hstrict)
   dsimp only at hb
   rw [hηEq] at hb
   have hκpos : 0 < ‖z‖^κ := Real.rpow_pos_of_pos hzpos _

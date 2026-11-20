@@ -45,35 +45,30 @@ theorem unpinned_source_test_identity
     (hg : ∀ w, g w = f (w-z) * Real.exp ((γ ^ 2 + 4) * Real.log (normPlus w))) :
     (fun ω => ∫ x, f x ∂N ω) =ᵐ[P]
       fun ω => Real.exp (-γ * Xc ω z 0) * ∫ w, g w ∂M ω := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hT : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop := tendsto_natCast_atTop_atTop
-  have heps : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 (0 : ℝ)) :=
+  have heps  :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp hT
   obtain ⟨L, hL⟩ := eventually_atTop.mp
     (heps.eventually (gt_mem_nhds (show 0 < 1-ρ by linarith)))
-  let t : ℕ → ℝ := fun n => ((L+n : ℕ) : ℝ)
+  let t  := fun n => ((L+n : ℕ) : ℝ)
   have ht : Tendsto t atTop atTop := by
     simpa only [t, Nat.add_comm, Function.comp_def] using hT.comp (tendsto_add_atTop_nat L)
   have hb n : ρ + Real.exp (-t n) ≤ 1 := by
     have h := hL (L+n) (Nat.le_add_right L n)
     change Real.exp (-t n) < 1-ρ at h
     linarith
-  let A : ℕ → Ω → ℝ := fun n ω => ∫ w, g w ∂regularizedGMC P Xc γ (t n) ω
-  let W : Ω → ℝ := fun ω => Real.exp (-γ * Xc ω z 0)
+  let A  := fun n ω => ∫ w, g w ∂regularizedGMC P Xc γ (t n) ω
+  let W  := fun ω => Real.exp (-γ * Xc ω z 0)
   have hA n : AEStronglyMeasurable (A n) P :=
     (DOZZ.Assembly.regularizedGMC_integral_measurable P X hX Xc hc γ (t n)
       g g.continuous.measurable).aestronglyMeasurable
-  have hW : AEStronglyMeasurable W P := by
-    exact (((hc.1 0).comp (measurable_id.prodMk measurable_const)).const_mul (-γ)).exp.aestronglyMeasurable
-  have hAlim : TendstoInMeasure P A atTop (fun ω => ∫ w, g w ∂M ω) :=
+  have hW : AEStronglyMeasurable W P := (((hc.1 0).comp (measurable_id.prodMk measurable_const)).const_mul (-γ)).exp.aestronglyMeasurable
+  have hAlim  :=
     (DOZZ.Assembly.isGMCOf_tendstoInMeasure P X hX Xc hc γ M hM g).comp ht
-  have hScaled := tendstoInMeasure_mul_left A (fun ω => ∫ w, g w ∂M ω) W hA hW hAlim
+  have hScaled := tendstoInMeasure_mul_random hW.aemeasurable hAlim
   have hNlim := (hN.2.2.2 f hfc hfU).comp ht
-  have hEq n : (fun ω => W ω * A n ω) =ᵐ[P]
-      fun ω => regularizedLogChaosTestMass P (Metric.ball 0 1)
-        (fun x => normPlus x ^ (-4 : ℝ))
-        (fun ω ε x => Xc ω (z+x) (Real.log (1/ε)) - Xc ω z 0) γ (t n) ω f := by
-    exact ae_of_all P fun ω =>
+  have hEq n := ae_of_all P fun ω =>
       (unpinned_cutoff_test_identity P X Xc hX hc z hz γ (t n) ρ (hb n) f g hf hg ω).symm
   exact tendstoInMeasure_ae_unique hNlim (hScaled.congr_left hEq)
 
@@ -96,6 +91,5 @@ theorem unpinned_source_compact_test
   obtain ⟨g, hgc, hg⟩ := transferred_compact_test z γ f hfc
   exact ⟨g, hgc, hg, unpinned_source_test_identity P X Xc hX hc z hz γ M hM N hN
     ρ hρ f g hfc hfU hf hg⟩
-
 
 end DOZZ.Proofs

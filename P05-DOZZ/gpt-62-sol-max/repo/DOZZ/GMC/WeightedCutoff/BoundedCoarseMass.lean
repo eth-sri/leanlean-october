@@ -44,9 +44,8 @@ theorem regularizedGMC_bounded_ball_moment_coarse_uniform_gamma
     field_simp
   have hvar : ∀ x ∈ Metric.ball (0 : ℂ) B, gaussianVariance P (fun ω => Xc ω x r) ≤ V := by
     intro x hx
-    have hx' : ‖x‖ ≤ B := le_of_lt (by simpa using hx)
     exact gmcCircle_variance_le_bounded_radius P X hX Xc hXc B r₀ (Real.log 8) r
-      hB hr₀.le hrT (by rw [hcut]; exact hδr) x hx'
+      hB hr₀.le hrT (by rw [hcut]; exact hδr) x (le_of_lt (by simpa using hx))
   have h := regularizedGMC_moment_upper_of_variance_bound P X hX Xc hXc γ r q V hq.le
     (Metric.ball 0 B) Metric.isOpen_ball.measurableSet hvar
   have hexp : γ ^ 2 * (q ^ 2 - q) / 2 * V ≤ 4 * (q ^ 2 - q) / 2 * V := by

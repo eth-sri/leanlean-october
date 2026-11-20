@@ -126,22 +126,17 @@ theorem exists_continuous_lift_from_disk_chain
         have hprevDomain : Icc (0 : ℝ) (τ (m + 1)) ∩ closure (Iic (τ m)) ⊆
             Icc (0 : ℝ) (τ m) := by
           intro t ht
-          have ht' : t ≤ τ m := by simpa [closure_Iic] using ht.2
-          exact ⟨ht.1.1, ht'⟩
+          exact ⟨ht.1.1, (by simpa [closure_Iic] using ht.2)⟩
         have hnewDomain : Icc (0 : ℝ) (τ (m + 1)) ∩ closure (Iic (τ m))ᶜ ⊆
             Icc (τ m) (τ (m + 1)) := by
           intro t ht
-          have htLower : τ m ≤ t := by simpa [closure_Ioi] using ht.2
-          exact ⟨htLower, ht.1.2⟩
+          exact ⟨(by simpa [closure_Ioi] using ht.2), ht.1.2⟩
         have hnewCont : ContinuousOn g
             (Icc (0 : ℝ) (τ (m + 1)) ∩ closure (Iic (τ m))ᶜ) :=
           hGcont.mono hnewDomain
         have hcont : ContinuousOn (P (m + 1))
             (Icc (0 : ℝ) (τ (m + 1))) := by
-          have hpiece : ContinuousOn ((Iic (τ m)).piecewise (P m) g)
-              (Icc (0 : ℝ) (τ (m + 1))) :=
-            (hprevCont.mono hprevDomain).piecewise hboundary hnewCont
-          simpa [P, finiteChainPathLift, g, τ] using hpiece
+          simpa [P, finiteChainPathLift, g, τ] using ((hprevCont.mono hprevDomain).piecewise hboundary hnewCont)
         constructor
         · exact hcont
         · intro i hi t ht
@@ -151,10 +146,7 @@ theorem exists_continuous_lift_from_disk_chain
             have hprev := hprevFormula i him t ht
             have htmem : t ∈ Iic (τ m) := htOld
             have hpiece : P (m + 1) t = P m t := by
-              change (Iic (τ m)).piecewise (P m)
-                (fun t => (D m).solution (γ t)) t = P m t
-              exact Set.piecewise_eq_of_mem (s := Iic (τ m)) (f := P m)
-                (g := fun t => (D m).solution (γ t)) htmem
+              apply Set.piecewise_eq_of_mem <;> assumption
             rw [hpiece]
             exact hprev
           · have hiEq : i = m := by omega
@@ -163,21 +155,14 @@ theorem exists_continuous_lift_from_disk_chain
             by_cases heq : t = τ m
             · subst t
               have hpiece : P (m + 1) (τ m) = P m (τ m) := by
-                change (Iic (τ m)).piecewise (P m)
-                  (fun t => (D m).solution (γ t)) (τ m) = P m (τ m)
-                exact Set.piecewise_eq_of_mem (s := Iic (τ m)) (f := P m)
-                  (g := fun t => (D m).solution (γ t))
-                  (show τ m ∈ Iic (τ m) from le_rfl)
+                apply Set.piecewise_eq_of_mem <;> assumption
               rw [hpiece]
               exact hjoinm
             · have htNot : t ∉ Iic (τ m) := by
                 simp only [mem_Iic]
                 exact not_le.mpr (lt_of_le_of_ne htLower (Ne.symm heq))
               have hpiece : P (m + 1) t = g t := by
-                change (Iic (τ m)).piecewise (P m)
-                  (fun t => (D m).solution (γ t)) t = (D m).solution (γ t)
-                exact Set.piecewise_eq_of_notMem (s := Iic (τ m)) (f := P m)
-                  (g := fun t => (D m).solution (γ t)) htNot
+                apply Set.piecewise_eq_of_notMem <;> assumption
               rw [hpiece]
   have ⟨hcont, hformula⟩ := hstage N le_rfl
   have hτN : τ N = 1 := by

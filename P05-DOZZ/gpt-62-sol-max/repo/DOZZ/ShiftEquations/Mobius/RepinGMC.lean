@@ -12,6 +12,7 @@ import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 import DOZZ.GMC.CompatibleAdmissibleGMCUnique
 import DOZZ.GMC.CircleAverageCutoffIntensity
 import DOZZ.GMC.Construction.ReferenceMeasureFinite
+public import DOZZ.GMC.ConvergenceInMeasure
 
 /-!
 # The repinned chaos is the GMC of the repinned field
@@ -30,59 +31,6 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- Multiplying a family converging in measure by a fixed real random variable preserves the
-convergence. -/
-theorem tendstoInMeasure_const_mul {Ω ι : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    [IsFiniteMeasure P] {l : Filter ι} (E : Ω → ℝ) (hE : Measurable E) {F : ι → Ω → ℝ}
-    {G : Ω → ℝ} (hF : TendstoInMeasure P F l G) :
-    TendstoInMeasure P (fun i ω => E ω * F i ω) l (fun ω => E ω * G ω) := by
-  rw [tendstoInMeasure_iff_norm] at hF ⊢
-  intro ε hε
-  rw [ENNReal.tendsto_nhds_zero]
-  intro δ hδ
-  let T : ℕ → Set Ω := fun n => {ω | (n : ℝ) < |E ω|}
-  have hTmeas (n : ℕ) : MeasurableSet (T n) :=
-    measurableSet_lt measurable_const (continuous_abs.measurable.comp hE)
-  have hTanti : Antitone T := fun n m hnm ω hω =>
-    lt_of_le_of_lt (by exact_mod_cast hnm) (show (m : ℝ) < |E ω| from hω)
-  have hTinter : (⋂ n, T n) = ∅ := by
-    ext ω
-    simp only [mem_iInter, mem_empty_iff_false, iff_false, not_forall]
-    obtain ⟨n, hn⟩ := exists_nat_gt (|E ω|)
-    exact ⟨n, fun h => (lt_asymm hn) h⟩
-  have hTlimit : Tendsto (fun n => P (T n)) atTop (𝓝 0) := by
-    have h := tendsto_measure_iInter_atTop (μ := P) (s := T)
-      (fun n => (hTmeas n).nullMeasurableSet) hTanti ⟨0, measure_ne_top P _⟩
-    rwa [hTinter, measure_empty] at h
-  obtain ⟨N, hN⟩ := (ENNReal.tendsto_atTop_zero.mp hTlimit) (δ / 2)
-    (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)
-  let K : ℝ := (N : ℝ) + 1
-  have hK : 0 < K := by positivity
-  have hKtail : P {ω | K < |E ω|} ≤ δ / 2 := by
-    refine le_trans (measure_mono fun ω (hω : K < |E ω|) => ?_) (hN N le_rfl)
-    show (N : ℝ) < |E ω|
-    linarith
-  have hbase := hF (ε / K) (div_pos hε hK)
-  filter_upwards [(ENNReal.tendsto_nhds_zero.mp hbase) (δ / 2)
-    (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)] with i hi
-  have hsubset : {ω | ε ≤ ‖E ω * F i ω - E ω * G ω‖} ⊆
-      {ω | K < |E ω|} ∪ {ω | ε / K ≤ ‖F i ω - G ω‖} := by
-    intro ω hω
-    by_contra hnot
-    simp only [mem_union, mem_ofPred_eq, not_or, not_lt, not_le] at hnot
-    have : ‖E ω * F i ω - E ω * G ω‖ < ε := by
-      rw [← mul_sub, norm_mul, Real.norm_eq_abs]
-      calc |E ω| * ‖F i ω - G ω‖ ≤ K * ‖F i ω - G ω‖ :=
-            mul_le_mul_of_nonneg_right hnot.1 (norm_nonneg _)
-        _ < K * (ε / K) := mul_lt_mul_of_pos_left hnot.2 hK
-        _ = ε := by field_simp
-    exact (not_le.mpr this) hω
-  calc P {ω | ε ≤ ‖E ω * F i ω - E ω * G ω‖}
-      ≤ P ({ω | K < |E ω|} ∪ {ω | ε / K ≤ ‖F i ω - G ω‖}) := measure_mono hsubset
-    _ ≤ P {ω | K < |E ω|} + P {ω | ε / K ≤ ‖F i ω - G ω‖} := measure_union_le _ _
-    _ ≤ δ / 2 + δ / 2 := add_le_add hKtail hi
-    _ = δ := ENNReal.add_halves δ
-
 /-- **Error term.** Two families of uniformly close bounded continuous weights have regularized
 chaos integrals that are close in probability, uniformly in the cutoff. -/
 theorem tendstoInMeasure_regularizedGMC_integral_sub {Ω : Type*} [MeasurableSpace Ω]
@@ -93,16 +41,15 @@ theorem tendstoInMeasure_regularizedGMC_integral_sub {Ω : Type*} [MeasurableSpa
     (huni : ∀ ε > 0, ∀ᶠ r in atTop, ∀ x, |u r x - v x| ≤ ε) (s : ℝ → ℝ) :
     TendstoInMeasure P (fun r ω => ∫ x, u r x ∂regularizedGMC P Xc γ (s r) ω -
       ∫ x, v x ∂regularizedGMC P Xc γ (s r) ω) atTop (fun _ => 0) := by
-  have _ := hX.1
   set R : ℝ≥0∞ := gmcReferenceMeasure univ with hRdef
-  have hRfin : R ≠ ⊤ := gmcReferenceMeasure_univ_ne_top
+  have hRfin  := gmcReferenceMeasure_univ_ne_top
   rw [tendstoInMeasure_iff_norm]
   intro ε hε
   rw [ENNReal.tendsto_nhds_zero]
   intro τ hτ
   by_cases hτtop : τ = ⊤
   · exact Eventually.of_forall fun r => hτtop ▸ le_top
-  have hτr : 0 < τ.toReal := ENNReal.toReal_pos hτ.ne' hτtop
+  have hτr  := ENNReal.toReal_pos hτ.ne' hτtop
   set η : ℝ := ε * (τ.toReal / (R.toReal + 1)) with hηdef
   have hη : 0 < η := by positivity
   have hητ : R * ENNReal.ofReal (η / ε) ≤ τ := by
@@ -113,12 +60,12 @@ theorem tendstoInMeasure_regularizedGMC_integral_sub {Ω : Type*} [MeasurableSpa
       _ ≤ ENNReal.ofReal τ.toReal := by
           apply ENNReal.ofReal_le_ofReal
           rw [← mul_div_assoc, div_le_iff₀ (by positivity)]
-          nlinarith [ENNReal.toReal_nonneg (a := R)]
+          linarith
       _ = τ := ENNReal.ofReal_toReal hτtop
   filter_upwards [huni η hη] with r hr
   set μ : Ω → Measure ℂ := fun ω => regularizedGMC P Xc γ (s r) ω with hμ
   have hfin := regularizedGMC_finite_ae P X hX Xc hXc γ (s r)
-  have hmass : Measurable fun ω => μ ω univ :=
+  have hmass  :=
     (Measure.measurable_coe MeasurableSet.univ).comp
       (regularizedGMC_measurable P X hX Xc hXc γ (s r))
   have hsub : {ω | ε ≤ ‖(∫ x, u r x ∂μ ω - ∫ x, v x ∂μ ω) - 0‖} ⊆
@@ -173,14 +120,18 @@ theorem circleMeasure_eq_map_add (x : ℂ) (s : ℝ) :
   simp only [one_mul, mul_zero, zero_add, norm_one, Real.log_one, sub_zero] at h
   exact h.symm
 
-theorem integrable_repinPotential_circle (a b : ℂ) (ha : a ≠ 0) (x : ℂ) (s : ℝ) :
+section
+variable (a b : ℂ) (ha : a ≠ 0)
+include ha
+
+theorem integrable_repinPotential_circle (x : ℂ) (s : ℝ) :
     Integrable (repinPotential a b) (circleMeasure x s) := by
   have _ := circleMeasure_isProbability x s
   obtain ⟨B, hB⟩ := exists_abs_repinPotential_le a b ha
   exact Integrable.of_bound (continuous_repinPotential a b ha).aestronglyMeasurable B
     (ae_of_all _ fun u => by rw [Real.norm_eq_abs]; exact hB u)
 
-theorem abs_repinPotentialAvg_le (a b : ℂ) (ha : a ≠ 0) {B : ℝ}
+theorem abs_repinPotentialAvg_le {B : ℝ}
     (hB : ∀ x, |repinPotential a b x| ≤ B) (s : ℝ) (x : ℂ) :
     |repinPotentialAvg a b s x| ≤ B := by
   have _ := circleMeasure_isProbability x s
@@ -192,7 +143,7 @@ theorem abs_repinPotentialAvg_le (a b : ℂ) (ha : a ≠ 0) {B : ℝ}
           fun u => hB u
     _ = B := by simp
 
-theorem continuous_repinPotentialAvg (a b : ℂ) (ha : a ≠ 0) (s : ℝ) :
+theorem continuous_repinPotentialAvg (s : ℝ) :
     Continuous (repinPotentialAvg a b s) := by
   have _ := circleMeasure_isProbability 0 s
   have hc := continuous_repinPotential a b ha
@@ -214,11 +165,11 @@ theorem continuous_repinPotentialAvg (a b : ℂ) (ha : a ≠ 0) (s : ℝ) :
     _ ≤ ∫ _u, (‖a‖⁻¹ + 1) * ‖x - x'‖ ∂circleMeasure 0 s := by
         refine integral_mono ((hint x).sub (hint x')).abs (integrable_const _) fun u => ?_
         have := abs_repinPotential_sub_le a b ha (u + x) (u + x')
-        rwa [show u + x - (u + x') = x - x' by ring] at this
-    _ = (‖a‖⁻¹ + 1) * ‖x - x'‖ := by rw [integral_const, probReal_univ, one_smul]
+        simpa
+    _ = (‖a‖⁻¹ + 1) * ‖x - x'‖ := by simp
 
 /-- The exponential tilt weights converge uniformly. -/
-theorem eventually_abs_exp_repinPotentialAvg_sub_le (a b : ℂ) (ha : a ≠ 0) (γ : ℝ) :
+theorem eventually_abs_exp_repinPotentialAvg_sub_le (γ : ℝ) :
     ∀ ε > 0, ∀ᶠ s in atTop, ∀ x, |Real.exp (γ ^ 2 * repinPotentialAvg a b s x) -
       Real.exp (γ ^ 2 * repinPotential a b x)| ≤ ε := by
   intro ε hε
@@ -243,7 +194,7 @@ theorem eventually_abs_exp_repinPotentialAvg_sub_le (a b : ℂ) (ha : a ≠ 0) (
       _ ≤ κ * (1 / κ) := mul_le_mul_of_nonneg_left (min_le_left _ _) hκpos.le
       _ = 1 := by field_simp
   have hexp := Real.abs_exp_sub_one_le hsmall
-  have hcB : Real.exp (γ ^ 2 * repinPotential a b x) ≤ A :=
+  have hcB  :=
     Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_left ((le_abs_self _).trans (hB x)) (sq_nonneg γ))
   rw [show γ ^ 2 * repinPotentialAvg a b s x =
       γ ^ 2 * repinPotential a b x + γ ^ 2 * (repinPotentialAvg a b s x - repinPotential a b x)
@@ -261,6 +212,8 @@ theorem eventually_abs_exp_repinPotentialAvg_sub_le (a b : ℂ) (ha : a ≠ 0) (
           (mul_le_mul_of_nonneg_left (min_le_right _ _) hκpos.le) two_pos.le) hA0.le
     _ = ε := by field_simp
 
+end
+
 /-- A constant family converges in measure to its constant. -/
 theorem tendstoInMeasure_zero_const {Ω ι : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (l : Filter ι) : TendstoInMeasure P (fun (_ : ι) (_ : Ω) => (0 : ℝ)) l (fun _ => 0) := by
@@ -269,8 +222,7 @@ theorem tendstoInMeasure_zero_const {Ω ι : Type*} [MeasurableSpace Ω] (P : Me
   simp only [sub_self, norm_zero]
   have : {x : Ω | ε ≤ 0} = ∅ := by
     ext x
-    simp only [mem_ofPred_eq, mem_empty_iff_false, iff_false, not_le]
-    exact hε
+    simpa
   simp only [this, measure_empty]
   exact tendsto_const_nhds
 
@@ -365,7 +317,7 @@ theorem isGMCOf_repinChaos {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X
     _ _ hu_bd hv_bd huni (fun r => r - Real.log ‖a‖)
   have h2' := tendstoInMeasure_sub P _ _ _ _ (tendstoInMeasure_zero_const P atTop) h2
   have h3 := tendstoInMeasure_sub P _ _ _ _ h1 h2'
-  have h4 := tendstoInMeasure_const_mul E hEmeas h3
+  have h4 := tendstoInMeasure_mul_random hEmeas.aemeasurable h3
   refine (h4.congr_left fun r => ae_of_all _ fun ω => ?_).congr_right (ae_of_all _ fun ω => ?_)
   · rw [hid r ω]
     ring

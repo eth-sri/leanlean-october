@@ -27,8 +27,11 @@ theorem reflected_convex_inverse_power (p : ℝ) (hp : 0 ≤ p) :
     exact mul_nonneg (mul_nonneg_of_nonpos_of_nonpos (neg_nonpos.mpr hp) (by linarith))
       (Real.rpow_nonneg (by rw [interior_Ioi] at hx; exact hx.le) _)
 
-theorem reflected_inverse_increment_scale_small (p A t c : ℝ)
-    (hp : 0 ≤ p) (hA : 0 < A) (ht : 0 ≤ t) (hc : 0 ≤ c) (hc1 : c ≤ 1) :
+section
+variable (p A t c : ℝ) (hp : 0 ≤ p) (hA : 0 < A) (ht : 0 ≤ t)
+include hp hA ht
+
+theorem reflected_inverse_increment_scale_small (hc : 0 ≤ c) (hc1 : c ≤ 1) :
     (A+t)^(-p)-A^(-p) ≤ (A+c*t)^(-p)-A^(-p) ∧
     (A+c*t)^(-p)-A^(-p) ≤ c*((A+t)^(-p)-A^(-p)) := by
   have hj := (reflected_convex_inverse_power p hp).2 hA
@@ -41,8 +44,7 @@ theorem reflected_inverse_increment_scale_small (p A t c : ℝ)
     (add_le_add_right (mul_le_of_le_one_left ht hc1) A) (neg_nonpos.mpr hp)) _,?_⟩
   linarith only [hj]
 
-theorem reflected_inverse_increment_scale_large (p A t c : ℝ)
-    (hp : 0 ≤ p) (hA : 0 < A) (ht : 0 ≤ t) (hc : 1 ≤ c) :
+theorem reflected_inverse_increment_scale_large (hc : 1 ≤ c) :
     c*((A+t)^(-p)-A^(-p)) ≤ (A+c*t)^(-p)-A^(-p) ∧
     (A+c*t)^(-p)-A^(-p) ≤ (A+t)^(-p)-A^(-p) := by
   have hc0 : 0 < c := lt_of_lt_of_le zero_lt_one hc
@@ -53,8 +55,7 @@ theorem reflected_inverse_increment_scale_large (p A t c : ℝ)
   have hh := mul_le_mul_of_nonneg_left hb.2 hc0.le
   simpa only [mul_inv_cancel_left₀ hc0.ne'] using hh
 
-theorem reflected_inverse_increment_scaled (p A t c : ℝ)
-    (hp : 0 ≤ p) (hA : 0 < A) (ht : 0 ≤ t) (hc : 0 < c) :
+theorem reflected_inverse_increment_scaled (hc : 0 < c) :
     max 1 c*((A+t)^(-p)-A^(-p)) ≤ (A+c*t)^(-p)-A^(-p) ∧
     (A+c*t)^(-p)-A^(-p) ≤ min 1 c*((A+t)^(-p)-A^(-p)) := by
   by_cases hc1 : c ≤ 1
@@ -63,5 +64,7 @@ theorem reflected_inverse_increment_scaled (p A t c : ℝ)
   · have h1c := le_of_lt (lt_of_not_ge hc1)
     simpa only [max_eq_right h1c,min_eq_left h1c,one_mul] using
       reflected_inverse_increment_scale_large p A t c hp hA ht h1c
+
+end
 
 end DOZZ.Proofs

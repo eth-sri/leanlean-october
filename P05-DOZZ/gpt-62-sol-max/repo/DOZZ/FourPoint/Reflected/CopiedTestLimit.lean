@@ -29,7 +29,7 @@ theorem reflected_admissible_copied_test_limit
     (hΦ : ∀ r : ℝ, IsCenteredGaussianField P (fun ω x => Y ω (Real.exp (-max r R₀)) x)) :
     TendstoInMeasure (P.prod P)
       (fun r ω => (fieldChaosMass (P.prod P)
-        (reflected_decoupled_field (fun ω x => Y ω (Real.exp (-max r R₀)) x) A)
+        (independent_piece_field (fun ω x => Y ω (Real.exp (-max r R₀)) x) A)
         ((logRegularizationReference U dens).restrict K)
         (fun x => (f₀ x + f₁ x).toNNReal) γ ω).toReal) atTop
       (fun ω : Ω × Ω => (∫ x, f₀ x ∂N ω.1) + ∫ x, f₁ x ∂N ω.2) := by
@@ -45,11 +45,11 @@ theorem reflected_admissible_copied_test_limit
   have h1 (x : ℂ) (hx : x ∈ A) : f₁ x = 0 :=
     image_eq_zero_of_notMem_tsupport (fun h => hf₁A h hx)
   have he (r : ℝ) (ω : Ω × Ω) :
-      fieldChaosMass (P.prod P) (reflected_decoupled_field (Φ r) A) ν
+      fieldChaosMass (P.prod P) (independent_piece_field (Φ r) A) ν
         (fun x => (f₀ x + f₁ x).toNNReal) γ ω =
       fieldChaosMass P (Φ r) ν (fun x => (f₀ x).toNNReal) γ ω.1 +
         fieldChaosMass P (Φ r) ν (fun x => (f₁ x).toNNReal) γ ω.2 := by
-    rw [reflected_decoupled_field_mass P (Φ r) (hΦ r) A hA]
+    rw [independent_piece_field_mass P (Φ r) (hΦ r) A hA]
     congr 1
     · unfold fieldChaosMass
       rw [← lintegral_indicator hA]
@@ -83,7 +83,7 @@ theorem reflected_admissible_copied_test_limit
     centeredGaussianField_fieldChaosMass_ne_top_ae P (Φ r) (hΦ r) ⟨ν, inferInstance⟩
       (fun x => (f x).toNNReal) f.continuous.measurable.real_toNNReal
       ⟨‖f‖.toNNReal, fun x => Real.toNNReal_mono (by
-        simpa only [Real.norm_eq_abs] using (le_abs_self (f x)).trans (f.norm_coe_le_norm x))⟩ γ
+        exact (le_abs_self (f x)).trans (f.norm_coe_le_norm x))⟩ γ
   have hfin₀ : ∀ᵐ ω : Ω × Ω ∂P.prod P,
       fieldChaosMass P (Φ r) ν (fun x => (f₀ x).toNNReal) γ ω.1 ≠ ⊤ :=
     measurePreserving_fst.quasiMeasurePreserving.ae (hfinite f₀)

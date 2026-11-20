@@ -32,12 +32,7 @@ noncomputable def unitBoxSecondDerivativeCLM (L : ℝ) (v : ℂ) :
 
 theorem lineDerivCLM_eq_directionalDerivativeTest (f : TestFn) (v : ℂ) :
     TestFunction.lineDerivCLM ℝ v f = directionalDerivativeTest f v := by
-  ext z
-  rw [TestFunction.lineDerivCLM_apply_of_le (by simp : (⊤ : ENat) + 1 ≤ ⊤)]
-  rw [directionalDerivativeTest_apply]
-  have hd : DifferentiableAt ℝ (f : ℂ → ℝ) z :=
-    (f.contDiff.differentiable (by simp)).differentiableAt
-  exact hd.lineDeriv_eq_fderiv
+  solve_by_elim (maxDepth := 3)
 
 theorem unitBoxSecondDerivativeCLM_apply (L : ℝ) (v : ℂ) (f : TestFn) :
     unitBoxSecondDerivativeCLM L v f =
@@ -142,8 +137,7 @@ theorem torusH2WeightedFourierCoeffCLM_apply (L R : ℝ) (hL : 0 < L)
         (torusRawFourierCoeffCLM L (unitBoxSecondDerivativeCLM L 1 f)) k -
       (4 * Real.pi ^ 2)⁻¹ •
         (torusRawFourierCoeffCLM L (unitBoxSecondDerivativeCLM L Complex.I f)) k = _
-  rw [hcoeff0, hD0, hD1]
-  rw [hscalar_mul 0, hscalar_mul 1]
+  rw [hcoeff0, hD0, hD1, hscalar_mul 0, hscalar_mul 1]
   simp [c₀, torusSobolevWeight, sub_eq_add_neg, add_smul]
 
 end DOZZ

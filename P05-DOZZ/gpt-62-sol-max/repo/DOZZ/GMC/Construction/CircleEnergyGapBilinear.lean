@@ -21,8 +21,11 @@ open scoped Topology
 
 namespace DOZZ.Proofs
 
+section
+variable (x : ℂ) (r a : ℝ)
+
 /-- Expanding the gap after adding a scalar multiple of a test. -/
-theorem circleEnergyGap_add_smul (x : ℂ) (r a : ℝ) (f g : TestFn) :
+theorem circleEnergyGap_add_smul (f g : TestFn) :
     circleEnergyGap x r (f + a • g) = circleEnergyGap x r f +
       2 * a * (gffCov f g - circleCross x r g) + a ^ 2 * gffCov g g := by
   rw [circleEnergyGap, circleEnergyGap, gffCov_add_self, gffCov_smul_self,
@@ -34,25 +37,22 @@ theorem circleEnergyGap_add_smul (x : ℂ) (r a : ℝ) (f g : TestFn) :
   ring
 
 /-- The mixed energy error is controlled after any positive scalar rescaling. -/
-theorem circleEnergyGap_mixed_error_bound (x : ℂ) (r a : ℝ) (ha : 0 < a)
+theorem circleEnergyGap_mixed_error_bound (ha : 0 < a)
     (f g : TestFn) :
     2 * a * |gffCov f g - circleCross x r g| ≤
       circleEnergyGap x r f + a ^ 2 * gffCov g g := by
   have hplus := circleEnergyGap_nonneg x r (f + a • g)
   have hminus := circleEnergyGap_nonneg x r (f + (-a) • g)
   rw [circleEnergyGap_add_smul] at hplus hminus
-  have hA : 0 ≤ circleEnergyGap x r f + a ^ 2 * gffCov g g := by
-    have hgap := circleEnergyGap_nonneg x r f
-    have henergy : 0 ≤ gffCov g g := DOZZ.gffCov_self_nonneg g
-    positivity
   have hlower : -(circleEnergyGap x r f + a ^ 2 * gffCov g g) ≤
       2 * a * (gffCov f g - circleCross x r g) := by nlinarith
   have hupper : 2 * a * (gffCov f g - circleCross x r g) ≤
       circleEnergyGap x r f + a ^ 2 * gffCov g g := by nlinarith
-  have habs : |2 * a * (gffCov f g - circleCross x r g)| ≤
-      circleEnergyGap x r f + a ^ 2 * gffCov g g := abs_le.mpr ⟨hlower, hupper⟩
+  have habs := abs_le.mpr ⟨hlower, hupper⟩
   rw [abs_mul, abs_of_pos (by positivity)] at habs
   nlinarith
+
+end
 
 /-- Approximation in vanishing circle gap forces mixed test energies to the circle pairing. -/
 theorem tendsto_gffCov_test_circleCross_of_gap
@@ -89,10 +89,9 @@ theorem tendsto_gffCov_test_circleCross_of_gap
   filter_upwards [hbounded, hgapSmall] with n hnE hnq
   have hbound := circleEnergyGap_mixed_error_bound x r a ha (f n) (g n)
   have hqnon := circleEnergyGap_nonneg x r (f n)
-  have hEnon : 0 ≤ gffCov (g n) (g n) := DOZZ.gffCov_self_nonneg (g n)
+  have hEnon  := DOZZ.gffCov_self_nonneg (g n)
   have hD : |gffCov (f n) (g n) - circleCross x r (g n)| < ε := by
-    have hmul : 2 * a * |gffCov (f n) (g n) - circleCross x r (g n)| ≤
-        circleEnergyGap x r (f n) + a ^ 2 * gffCov (g n) (g n) := hbound
+    have hmul := hbound
     have hnE' : gffCov (g n) (g n) ≤ A := by simpa [A] using hnE.le
     have ha2 : a ^ 2 * gffCov (g n) (g n) ≤ a ^ 2 * A :=
       mul_le_mul_of_nonneg_left hnE' (sq_nonneg a)
@@ -102,6 +101,6 @@ theorem tendsto_gffCov_test_circleCross_of_gap
       field_simp
       nlinarith [hε, hA]
     nlinarith [hnq, ha2, hpos, hmain]
-  simpa [Real.dist_eq] using hD
+  simpa
 
 end DOZZ.Proofs

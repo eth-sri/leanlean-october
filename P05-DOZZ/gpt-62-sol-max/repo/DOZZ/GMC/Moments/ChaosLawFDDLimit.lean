@@ -7,6 +7,7 @@ module
 public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 public import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
 public import DOZZ.GMC.Moments.ChaosLawFDD
+public import DOZZ.GMC.ConvergenceInMeasure
 
 /-! Passage from cutoff chaos laws to laws of arbitrary limits in measure. -/
 
@@ -36,11 +37,11 @@ theorem map_eq_of_seq_map_eq_of_tendstoInMeasure
       (∫ ω, φ (fLimit ω) ∂P) = ∫ ω, φ (gLimit ω) ∂P' := by
     intro φ
     obtain ⟨ns, hns, hfae⟩ := hfconv.exists_seq_tendsto_ae
-    have hgsub : TendstoInMeasure P' (fun n => g (ns n)) atTop gLimit :=
+    have hgsub  :=
       hgconv.comp hns.tendsto_atTop
     obtain ⟨ms, hms, hgae⟩ := hgsub.exists_seq_tendsto_ae
-    let fs : ℕ → Ω → E := fun n => f (ns (ms n))
-    let gs : ℕ → Ω' → E := fun n => g (ns (ms n))
+    let fs  := fun n => f (ns (ms n))
+    let gs  := fun n => g (ns (ms n))
     have hfs : ∀ n, AEMeasurable (fs n) P := fun n => hf _
     have hgs : ∀ n, AEMeasurable (gs n) P' := fun n => hg _
     have hmaps : ∀ n, Measure.map (fs n) P = Measure.map (gs n) P' := by
@@ -49,59 +50,18 @@ theorem map_eq_of_seq_map_eq_of_tendstoInMeasure
     have hfseq : ∀ᵐ ω ∂P, Tendsto (fun n => fs n ω) atTop (𝓝 (fLimit ω)) := by
       filter_upwards [hfae] with ω hω
       have hcomp := hω.comp hms.tendsto_atTop
-      change Tendsto (fun n => f (ns (ms n)) ω) atTop (𝓝 (fLimit ω)) at hcomp
-      exact hcomp
-    have hgseq : ∀ᵐ ω ∂P', Tendsto (fun n => gs n ω) atTop (𝓝 (gLimit ω)) := by
-      filter_upwards [hgae] with ω hω
-      change Tendsto (fun n => g (ns (ms n)) ω) atTop (𝓝 (gLimit ω)) at hω
-      exact hω
-    exact integral_bcf_eq_of_map_eq_of_ae_tendsto fs gs fLimit gLimit
-      hfs hgs hmaps hfseq hgseq φ
+      assumption
+    apply integral_bcf_eq_of_map_eq_of_ae_tendsto <;> assumption
   apply ext_of_forall_integral_eq_of_IsFiniteMeasure
-  intro φ
-  calc
-    (∫ x, φ x ∂Measure.map fLimit P) = ∫ ω, φ (fLimit ω) ∂P :=
-      integral_map hflimit φ.continuous.measurable.aestronglyMeasurable
-    _ = ∫ ω, φ (gLimit ω) ∂P' := htest φ
-    _ = ∫ x, φ x ∂Measure.map gLimit P' :=
-      (integral_map hglimit φ.continuous.measurable.aestronglyMeasurable).symm
-
-/-- Coordinatewise convergence in measure implies convergence in measure for a finite real vector.
-The sup norm event is contained in the finite union of its coordinate events. -/
-theorem tendstoInMeasure_pi_finite
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (μ : Measure Ω) (f : ℕ → Ω → ι → ℝ) (g : Ω → ι → ℝ)
-    (hcoord : ∀ i, TendstoInMeasure μ (fun n ω => f n ω i) atTop (fun ω => g ω i)) :
-    TendstoInMeasure μ f atTop g := by
-  rw [tendstoInMeasure_iff_norm]
-  intro ε hε
-  have hsubset (n : ℕ) : {ω | ε ≤ ‖f n ω - g ω‖} ⊆
-      ⋃ i, {ω | ε ≤ ‖f n ω i - g ω i‖} := by
-    intro ω hω
-    change ε ≤ ‖f n ω - g ω‖ at hω
-    by_contra hnot
-    have hcoord : ∀ i, ‖(f n ω - g ω) i‖ < ε := by
-      intro i
-      apply lt_of_not_ge
-      intro h
-      exact hnot (Set.mem_iUnion.2 ⟨i, by simpa using h⟩)
-    have hnorm : ‖f n ω - g ω‖ < ε :=
-      (pi_norm_lt_iff hε).2 (by simpa only [Pi.sub_apply] using hcoord)
-    exact (not_le_of_gt hnorm) hω
-  have hsum : Tendsto (fun n => ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖})
-      atTop (𝓝 0) := by
-    have hsum' : Tendsto (fun n => ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖})
-        atTop (𝓝 (∑ i : ι, (0 : ℝ≥0∞))) := by
-      exact tendsto_finsetSum
-        (f := fun i n => μ {ω | ε ≤ ‖f n ω i - g ω i‖}) (x := atTop)
-        (a := fun _ => (0 : ℝ≥0∞)) Finset.univ
-        (by intro i hi; exact (tendstoInMeasure_iff_norm.mp (hcoord i)) ε hε)
-    simpa using hsum'
-  have hle (n : ℕ) : μ {ω | ε ≤ ‖f n ω - g ω‖} ≤
-      ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖} := by
-    exact (measure_mono (hsubset n)).trans (measure_iUnion_fintype_le μ _)
-  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hsum
-    (fun _ => zero_le) hle
+  exact fun φ =>
+    Trans.trans
+      (Trans.trans
+        (integral_map hflimit
+          (Measurable.aestronglyMeasurable (Continuous.measurable (BoundedContinuousFunction.continuous φ))))
+        (htest φ))
+      (Eq.symm
+        (integral_map hglimit
+          (Measurable.aestronglyMeasurable (Continuous.measurable (BoundedContinuousFunction.continuous φ)))))
 
 /-- Finite-cutoff equality of all test-vector laws passes to arbitrary chaos limits specified by
 test-integral convergence in measure. This is the limit transfer needed for `IsGMCOf`; it does not
@@ -120,12 +80,54 @@ theorem gmc_limit_test_vector_law
       (fun ω => limitX ω j))
     (hconvY : ∀ j, TendstoInMeasure P' (fun n ω => cutoffY n ω j) atTop
       (fun ω => limitY ω j)) :
-    Measure.map limitX P = Measure.map limitY P' := by
-  exact map_eq_of_seq_map_eq_of_tendstoInMeasure cutoffX cutoffY limitX limitY
+    Measure.map limitX P = Measure.map limitY P' := map_eq_of_seq_map_eq_of_tendstoInMeasure cutoffX cutoffY limitX limitY
     hcutoffX hcutoffY hlimitX hlimitY hcutoffLaw
     (tendstoInMeasure_pi_finite P cutoffX limitX hconvX)
     (tendstoInMeasure_pi_finite P' cutoffY limitY hconvY)
 
+/-- Appending a fixed random coordinate preserves convergence in measure exactly. -/
+theorem tendstoInMeasure_pair_with_fixed
+    {Ω E F : Type*} [MeasurableSpace Ω] [NormedAddCommGroup E] [NormedAddCommGroup F]
+    (P : Measure Ω) (V : Ω → E) (f : ℕ → Ω → F) (g : Ω → F)
+    (h : TendstoInMeasure P f atTop g) :
+    TendstoInMeasure P (fun n ω => (V ω, f n ω)) atTop (fun ω => (V ω, g ω)) := by
+  rw [tendstoInMeasure_iff_norm] at h ⊢
+  simpa only [Prod.norm_def, Prod.fst_sub, Prod.snd_sub, sub_self, norm_zero,
+    max_eq_right (norm_nonneg _)] using h
 
+section
+variable {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
+
+/-- Passing finite chaos test laws to the limit preserves their coupling to fixed
+auxiliary coordinates on each probability space. -/
+theorem gmc_limit_joint_test_vector_law
+    {P : Measure Ω} {P' : Measure Ω'} [IsFiniteMeasure P] [IsFiniteMeasure P']
+    {E κ : Type*} [NormedAddCommGroup E] [SecondCountableTopology E] [MeasurableSpace E] [BorelSpace E]
+    [Fintype κ] (V : Ω → E) (V' : Ω' → E)
+    (hV : AEMeasurable V P) (hV' : AEMeasurable V' P')
+    (cutoffX : ℕ → Ω → κ → ℝ) (cutoffY : ℕ → Ω' → κ → ℝ)
+    (limitX : Ω → κ → ℝ) (limitY : Ω' → κ → ℝ)
+    (hcutoffX : ∀ n, AEMeasurable (cutoffX n) P)
+    (hcutoffY : ∀ n, AEMeasurable (cutoffY n) P')
+    (hlimitX : AEMeasurable limitX P) (hlimitY : AEMeasurable limitY P')
+    (hlaw : ∀ n, P.map (fun ω => (V ω, cutoffX n ω)) =
+      P'.map (fun ω => (V' ω, cutoffY n ω)))
+    (hconvX : ∀ j, TendstoInMeasure P (fun n ω => cutoffX n ω j) atTop (fun ω => limitX ω j))
+    (hconvY : ∀ j, TendstoInMeasure P' (fun n ω => cutoffY n ω j) atTop (fun ω => limitY ω j)) :
+    P.map (fun ω => (V ω, limitX ω)) = P'.map (fun ω => (V' ω, limitY ω)) := by
+  apply map_eq_of_seq_map_eq_of_tendstoInMeasure
+    (fun n ω => (V ω, cutoffX n ω)) (fun n ω => (V' ω, cutoffY n ω))
+    (fun ω => (V ω, limitX ω)) (fun ω => (V' ω, limitY ω))
+  · exact fun n => hV.prodMk (hcutoffX n)
+  · exact fun n => hV'.prodMk (hcutoffY n)
+  · exact hV.prodMk hlimitX
+  · exact hV'.prodMk hlimitY
+  · exact hlaw
+  · exact tendstoInMeasure_pair_with_fixed P V cutoffX limitX
+      (tendstoInMeasure_pi_finite P cutoffX limitX hconvX)
+  · exact tendstoInMeasure_pair_with_fixed P' V' cutoffY limitY
+      (tendstoInMeasure_pi_finite P' cutoffY limitY hconvY)
+
+end
 
 end DOZZ.Proofs

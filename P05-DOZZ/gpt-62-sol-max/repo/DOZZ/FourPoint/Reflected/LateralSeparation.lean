@@ -71,8 +71,7 @@ theorem reflected_lateral_cross_bound_relative (w v : ℂ) (ρ : ℝ)
       ‖v‖ ≤ ρ * ‖w‖ := hsep
       _ ≤ (1 / 2) * ‖w‖ := mul_le_mul_of_nonneg_right hρ hwpos.le
       _ = ‖w‖ / 2 := by ring
-  have hratio : ‖v‖ / ‖w‖ ≤ ρ := (div_le_iff₀ hwpos).mpr hsep
   exact (reflected_lateral_cross_bound w v hw hv hhalf).trans
-    (mul_le_mul_of_nonneg_left hratio (by norm_num))
+    (mul_le_mul_of_nonneg_left ((div_le_iff₀ hwpos).mpr hsep) (by norm_num))
 
 end DOZZ.Proofs

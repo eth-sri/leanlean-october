@@ -15,8 +15,11 @@ open scoped Distributions
 
 namespace DOZZ.Proofs
 
+section
+variable (x : ℂ) (r : ℝ)
+
 /-- Planar null changes do not affect the circle energy gap. -/
-theorem densityCircleGap_congr_ae (x : ℂ) (r : ℝ) {f g : ℂ → ℝ}
+theorem densityCircleGap_congr_ae {f g : ℂ → ℝ}
     (h : f =ᵐ[volume] g) : densityCircleGap x r f = densityCircleGap x r g := by
   have hfst := (Measure.quasiMeasurePreserving_fst (μ := (volume : Measure ℂ)) (ν := (volume : Measure ℂ))).ae_eq_comp h
   have hsnd := (Measure.quasiMeasurePreserving_snd (μ := (volume : Measure ℂ)) (ν := (volume : Measure ℂ))).ae_eq_comp h
@@ -33,7 +36,7 @@ theorem densityCircleGap_congr_ae (x : ℂ) (r : ℝ) {f g : ℂ → ℝ}
   simp only [densityCircleGap, he, hc]
 
 /-- A smooth test can be punctured near zero with arbitrarily small circle-energy error. -/
-theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
+theorem exists_inversionChart_testFn_gap_approx (f : TestFn)
     {R : ℝ} (hR : 0 < R) (hs : tsupport (f : ℂ → ℝ) ⊆ closedBall (0 : ℂ) R) :
     ∃ q : ℕ → TestFn,
       (∀ n, tsupport (q n : ℂ → ℝ) ⊆ inversionChart) ∧
@@ -58,8 +61,8 @@ theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
     apply hout
     simp only [hz0, mem_ball, dist_self]; positivity
   obtain ⟨M, hM⟩ := f.hasCompactSupport.exists_bound_of_continuous f.continuous
-  have hM0 : 0 ≤ M := (norm_nonneg (f 0)).trans (hM 0)
-  let g : ℂ → ℝ := fun z => if z = 0 then 0 else f z
+  have hM0  := (norm_nonneg (f 0)).trans (hM 0)
+  let g  := fun z => if z = 0 then 0 else f z
   have hlim : ∀ z, Tendsto (fun n => q n z) atTop (𝓝 (g z)) := by
     intro z
     by_cases hz : z = 0
@@ -78,9 +81,9 @@ theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
       have hev := ht.eventually (gt_mem_nhds (norm_pos_iff.mpr hz))
       apply Tendsto.congr' _ tendsto_const_nhds
       filter_upwards [hev] with n hn
-      have hb0 : b n z = 0 := image_eq_zero_of_notMem_tsupport (by
+      have hb0  := image_eq_zero_of_notMem_tsupport (by
         rw [(b n).tsupport_eq]
-        simpa only [mem_closedBall, dist_zero_right, not_le, b] using hn)
+        simpa)
       simp [q, g, hz, hb0]
   have hg : g =ᵐ[volume] (f : ℂ → ℝ) := by
     filter_upwards [(volume : Measure ℂ).ae_ne 0] with z hz
@@ -100,7 +103,7 @@ theorem exists_inversionChart_testFn_gap_approx (x : ℂ) (r : ℝ) (f : TestFn)
 
 /-- Every circle, including a circle meeting zero, admits chart-supported smooth tests
 with vanishing circle energy gap. -/
-theorem exists_testFn_circleEnergyGap_punctured (x : ℂ) (r : ℝ) :
+theorem exists_testFn_circleEnergyGap_punctured :
     ∃ f : ℕ → TestFn,
       (∀ n, tsupport (f n : ℂ → ℝ) ⊆ inversionChart) ∧
       Tendsto (fun n => circleEnergyGap x r (f n)) atTop (𝓝 0) := by
@@ -131,5 +134,7 @@ theorem exists_testFn_circleEnergyGap_punctured (x : ℂ) (r : ℝ) :
     have h := (abs_lt.mp (hm n)).2
     simp only [one_div] at h
     linarith
+
+end
 
 end DOZZ.Proofs

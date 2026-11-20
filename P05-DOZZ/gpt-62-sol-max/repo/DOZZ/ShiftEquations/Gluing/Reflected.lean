@@ -20,6 +20,7 @@ import DOZZ.ShiftEquations.Rbar.Multiplier
 import DOZZ.ShiftEquations.Shift.FirstShift
 import DOZZ.Hypergeom.ODE.SlitPlaneGluing
 import DOZZ.Brownian.Reflection.WitnessIndependence
+public import DOZZ.ShiftEquations.Representatives
 
 /-!
 # The reflected shift and gluing from the first shifts and the two γ/2 diagonal formulas
@@ -86,7 +87,7 @@ theorem reflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Measur
                     ‖gaussFPlus H a b c z‖ ^ 2)
     {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
     {B : ℝ → Ω → BrownianPath × BrownianPath} {Z : Ω → Measure ℝ}
-    (hRD : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z)
+    (hRD : IsReflectionFamily P γ B Z)
     {α₁ : ℝ} (h1 : Q γ - γ / 16 < α₁) (h2 : α₁ < Q γ)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
     reflectionR P γ μ α₁ (B α₁) Z * structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ =

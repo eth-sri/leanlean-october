@@ -33,18 +33,21 @@ noncomputable def wienerTripleStop (s : ℝ≥0) (V : BrownianTriple) : Brownian
 noncomputable def wienerTripleShift (s : ℝ≥0) (V : BrownianTriple) : BrownianTriple :=
   fun i => brownianShiftPath s (V i)
 
-theorem measurable_wienerTripleStop (s : ℝ≥0) : Measurable (wienerTripleStop s) := by
+section
+variable (s : ℝ≥0)
+
+theorem measurable_wienerTripleStop : Measurable (wienerTripleStop s) := by
   apply measurable_pi_iff.mpr
   intro i
   exact (continuous_stopBrownianPath.measurable.comp (measurable_const.prodMk (measurable_pi_apply i)))
 
-theorem measurable_wienerTripleShift (s : ℝ≥0) : Measurable (wienerTripleShift s) := by
+theorem measurable_wienerTripleShift : Measurable (wienerTripleShift s) := by
   apply measurable_pi_iff.mpr
   intro i
   exact continuous_brownianShiftPath.measurable.comp (measurable_const.prodMk (measurable_pi_apply i))
 
 /-- The actual stopped past and full future of the Wiener triple have product law. -/
-theorem wienerTriple_deterministic_restart_joint_map (s : ℝ≥0) :
+theorem wienerTriple_deterministic_restart_joint_map :
     wienerTripleMeasure.map (fun V => (wienerTripleStop s V, wienerTripleShift s V)) =
       (wienerTripleMeasure.map (wienerTripleStop s)).prod wienerTripleMeasure := by
   let Q := wienerPathMeasure.map (fun p => stopBrownianPath p s)
@@ -84,7 +87,7 @@ theorem wienerTriple_deterministic_restart_joint_map (s : ℝ≥0) :
     _ = _ := by rw [hstop]; rfl
 
 /-- Every jointly measurable stopped-past/full-future test has the actual independent product integral. -/
-theorem wienerTriple_deterministic_restart_lintegral (s : ℝ≥0)
+theorem wienerTriple_deterministic_restart_lintegral
     (F : BrownianTriple × BrownianTriple → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ V, F (wienerTripleStop s V, wienerTripleShift s V) ∂wienerTripleMeasure) =
       ∫⁻ V, ∫⁻ U, F (wienerTripleStop s V, U) ∂wienerTripleMeasure ∂wienerTripleMeasure := by
@@ -93,6 +96,8 @@ theorem wienerTriple_deterministic_restart_lintegral (s : ℝ≥0)
     lintegral_map (show Measurable (fun x : BrownianTriple => ∫⁻ y, F (x, y) ∂wienerTripleMeasure) from
       Measurable.lintegral_prod_right (show Measurable (Function.uncurry (fun x y => F (x, y))) from hF))
       (measurable_wienerTripleStop s)]
+
+end
 
 /-- Centered vector evaluation of the actual coordinate paths. -/
 noncomputable def wienerVectorEval (t : ℝ≥0) (V : BrownianTriple) : EuclideanSpace ℝ (Fin 3) :=
@@ -144,8 +149,12 @@ theorem wienerVector_deterministic_markov_lintegral (s dt : ℝ≥0)
       hG.comp (measurable_const.prodMk (measurable_const.add measurable_id)))
       (measurable_wienerVectorEval dt)]
 
+section
+variable (s : ℝ≥0) (hs : 0 < s)
+include hs
+
 /-- A positive-time Gaussian vector is nonzero almost surely under the actual Wiener source. -/
-theorem wienerVectorEval_ne_zero_ae (s : ℝ≥0) (hs : 0 < s) :
+theorem wienerVectorEval_ne_zero_ae :
     ∀ᵐ V ∂wienerTripleMeasure, wienerVectorEval s V ≠ 0 := by
   apply (ae_map_iff (measurable_wienerVectorEval s).aemeasurable
     (measurableSet_singleton (0 : EuclideanSpace ℝ (Fin 3))).compl).mp
@@ -156,7 +165,7 @@ theorem wienerVectorEval_ne_zero_ae (s : ℝ≥0) (hs : 0 < s) :
   exact withDensity_absolutelyContinuous _ _ (measure_singleton _)
 
 /-- Radial deterministic-time Markov identity with arbitrary measurable tests of the entire stopped past. -/
-theorem wienerRadial_deterministic_markov_lintegral (s : ℝ≥0) (hs : 0 < s)
+theorem wienerRadial_deterministic_markov_lintegral
     (dt : ℝ≥0) (ht : 0 < dt) (G : BrownianTriple × ℝ → ℝ≥0∞) (hG : Measurable G) :
     (∫⁻ V, G (wienerTripleStop s V, ‖wienerVectorEval (s + dt) V‖) ∂wienerTripleMeasure) =
       ∫⁻ V, ∫⁻ y, G (wienerTripleStop s V, y) *
@@ -169,6 +178,8 @@ theorem wienerRadial_deterministic_markov_lintegral (s : ℝ≥0) (hs : 0 < s)
   filter_upwards [wienerVectorEval_ne_zero_ae s hs] with V hV
   exact lintegral_radialGaussian_transition (wienerVectorEval s V) hV dt ht
     (fun y => G (wienerTripleStop s V, y)) (hG.comp (measurable_const.prodMk measurable_id))
+
+end
 
 /-- Finite radial observations of the actual Wiener triple. -/
 noncomputable def wienerRadialSamples {n : ℕ} (times : Fin n → ℝ≥0) (V : BrownianTriple) : Fin n → ℝ :=
@@ -187,16 +198,19 @@ theorem wienerVectorEval_stop_of_le (s t : ℝ≥0) (ht : t ≤ s) (V : Brownian
   change V i (min t s) = V i t
   rw [min_eq_left ht]
 
+section
+variable {n : ℕ} (times : Fin n → ℝ≥0) (s : ℝ≥0)
+include n
+
 /-- Finite radial histories before a deterministic time are unchanged by stopping. -/
-theorem wienerRadialSamples_stop {n : ℕ} (times : Fin n → ℝ≥0) (s : ℝ≥0)
+theorem wienerRadialSamples_stop
     (ht : ∀ i, times i ≤ s) (V : BrownianTriple) :
     wienerRadialSamples times (wienerTripleStop s V) = wienerRadialSamples times V := by
   funext i
   exact congrArg norm (wienerVectorEval_stop_of_le s (times i) (ht i) V)
 
 /-- The exact radial Markov identity for every finite actual history before the current time. -/
-theorem wienerRadial_samples_markov_lintegral {n : ℕ} (times : Fin n → ℝ≥0)
-    (s : ℝ≥0) (hs : 0 < s) (htimes : ∀ i, times i ≤ s) (dt : ℝ≥0) (ht : 0 < dt)
+theorem wienerRadial_samples_markov_lintegral (hs : 0 < s) (htimes : ∀ i, times i ≤ s) (dt : ℝ≥0) (ht : 0 < dt)
     (F : (Fin n → ℝ) × ℝ → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ V, F (wienerRadialSamples times V, ‖wienerVectorEval (s + dt) V‖) ∂wienerTripleMeasure) =
       ∫⁻ V, ∫⁻ y, F (wienerRadialSamples times V, y) *
@@ -206,6 +220,8 @@ theorem wienerRadial_samples_markov_lintegral {n : ℕ} (times : Fin n → ℝ�
     hF.comp (((measurable_wienerRadialSamples times).comp measurable_fst).prodMk measurable_snd)
   have h := wienerRadial_deterministic_markov_lintegral s hs dt ht _ hG
   simpa only [wienerRadialSamples_stop times s htimes] using h
+
+end
 
 /-- Initial radial value has the exact Maxwell entrance measure. -/
 theorem wienerRadialEval_map (t : ℝ≥0) (ht : 0 < t) :

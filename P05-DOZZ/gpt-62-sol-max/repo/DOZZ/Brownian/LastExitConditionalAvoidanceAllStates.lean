@@ -27,14 +27,13 @@ private theorem conditionedPositiveFutureAvoidance_implies_state_ge
     (hp : p ∈ conditionedPositiveFutureRationalAvoidance t c) :
     (c : ℝ) ≤ conditionedPositiveStateAt t p := by
   by_contra hnot
-  have hxc : conditionedPositiveStateAt t p < (c : ℝ) := lt_of_not_ge hnot
-  let F : ℝ → ℝ := fun s => conditionedPositiveFuturePath t p
+  have hxc  := lt_of_not_ge hnot
+  let F  := fun s => conditionedPositiveFuturePath t p
     ⟨max s 0, le_max_right s 0⟩
   have htime : Continuous (fun s : ℝ =>
-      (⟨max s 0, le_max_right s 0⟩ : ℝ≥0)) := by
-    exact (continuous_max.comp (continuous_id.prodMk continuous_const)).subtype_mk
+      (⟨max s 0, le_max_right s 0⟩ : ℝ≥0)) := (continuous_max.comp (continuous_id.prodMk continuous_const)).subtype_mk
       (fun s => le_max_right s 0)
-  have hF : Continuous F := (conditionedPositiveFuturePath t p).continuous.comp htime
+  have hF  := (conditionedPositiveFuturePath t p).continuous.comp htime
   have hFzero : F 0 = conditionedPositiveStateAt t p := by
     have hs0 : (⟨max (0 : ℝ) 0, le_max_right 0 0⟩ : ℝ≥0) = 0 := by
       apply Subtype.ext
@@ -44,19 +43,16 @@ private theorem conditionedPositiveFutureAvoidance_implies_state_ge
     exact congrArg (fun s : ℝ≥0 => -(p s)) (add_zero t)
   have hopen : IsOpen (F ⁻¹' Set.Iio (c : ℝ)) := isOpen_Iio.preimage hF
   have hmem : (0 : ℝ) ∈ F ⁻¹' Set.Iio (c : ℝ) := by
-    rw [Set.mem_preimage, hFzero]
-    exact hxc
+    rwa [Set.mem_preimage, hFzero]
   obtain ⟨δ, hδ, hball⟩ := Metric.mem_nhds_iff.mp (hopen.mem_nhds hmem)
   obtain ⟨q, hq0, hqδ⟩ := exists_rat_btwn (show (0 : ℝ) < δ by positivity)
   have hdist : dist (q : ℝ) 0 < δ := by
     change ‖(q : ℝ) - 0‖ < δ
-    rw [sub_zero, Real.norm_eq_abs, abs_of_pos hq0]
-    exact hqδ
-  have hFq : F (q : ℝ) < (c : ℝ) :=
+    rwa [sub_zero, Real.norm_eq_abs, abs_of_pos hq0]
+  have hFq  :=
     hball (Metric.mem_ball.mpr hdist)
   have heval : conditionedPositiveFutureRationalEvals t p q = F (q : ℝ) := by
-    simp [F, conditionedPositiveFutureRationalEvals,
-      conditionedPositiveFuturePath, max_eq_left hq0.le]
+    rfl
   have hpall : ∀ r : ℚ, 0 < (r : ℝ) → (c : ℝ) <
       conditionedPositiveFutureRationalEvals t p r := by
     intro r hr
@@ -136,8 +132,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_bel
     apply Filter.Eventually.of_forall
     intro p
     by_cases hp : p ∈ avoid
-    · have hpE : p ∈ E := by
-        exact conditionedPositiveFutureAvoidance_implies_state_ge t c p hp
+    · have hpE : p ∈ E := conditionedPositiveFutureAvoidance_implies_state_ge t c p hp
       change avoid.indicator (fun q => test (eval q)) p ≤
         E.indicator (fun _ => (1 : ℝ)) p
       by_cases hq : shiftedEval p ∈ C
@@ -160,8 +155,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_bel
   have hgCEae : P[g | conditionedPositiveNaturalFiltration t] =ᵐ[P] g := by
     filter_upwards [] with p
     exact congrFun hgCE p
-  have hcondLe : P[f | conditionedPositiveNaturalFiltration t] ≤ᵐ[P] g := by
-    exact hcondMono.trans_eq hgCEae
+  have hcondLe := hcondMono.trans_eq hgCEae
   have hfNonneg : 0 ≤ᵐ[P] f := by
     apply Filter.Eventually.of_forall
     intro p
@@ -171,8 +165,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_bel
         · simp [test, lastExitShiftedFutureTest, shiftedEval, shift, eval, hq]
         · simp [test, lastExitShiftedFutureTest, shiftedEval, shift, eval, hq]
       change 0 ≤ avoid.indicator (fun q => test (eval q)) p
-      rw [Set.indicator_of_mem hp]
-      exact htest0
+      rwa [Set.indicator_of_mem hp]
     · change 0 ≤ avoid.indicator (fun q => test (eval q)) p
       simp [Set.indicator_of_notMem hp]
   have hcondNonneg := condExp_nonneg (m := conditionedPositiveNaturalFiltration t)
@@ -182,20 +175,20 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift_on_bel
   have hpE : p ∉ E := by
     simp [E, not_le.mpr hbelow]
   have hg0 : g p = 0 := by simp [g, E, hpE]
-  have hle0 : P[f | conditionedPositiveNaturalFiltration t] p ≤ 0 := by
-    simpa [hg0] using hle
-  exact le_antisymm hle0 hnonneg
+  exact le_antisymm (by
+    simpa [hg0] using hle) hnonneg
+
+section
+variable {ν : ℝ} {P : Measure BrownianPath} [IsFiniteMeasure P]
+  (hP : IsNegativeConditionedBrownianLaw ν P) (B : Measure BrownianPath) [SFinite B]
+  (hB : IsBrownianReal (fun t p => p t) B) (t : ℝ≥0) (ht : 0 < (t : ℝ)) (hν : 0 < ν) (c : ℝ≥0)
+  (hc : 0 < (c : ℝ))
+include hP B hB ht hν hc
 
 /-- Full a.e. deterministic-time avoidance identity for arbitrary measurable events of the
 recentered rational future. The endpoint equality branch is null because the one-time entrance
 density is atomless. -/
 theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift
-    {ν : ℝ} {P : Measure BrownianPath} [IsFiniteMeasure P]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (B : Measure BrownianPath) [SFinite B]
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (t : ℝ≥0) (ht : 0 < (t : ℝ)) (hν : 0 < ν)
-    (c : ℝ≥0) (hc : 0 < (c : ℝ))
     (C : Set (ℚ → ℝ)) (hC : MeasurableSet C) :
     ∀ᵐ p ∂P,
       P[(conditionedPositiveFutureRationalAvoidance t c).indicator
@@ -213,21 +206,15 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift
   filter_upwards [hneq, habove, hbelow] with p hpneq hpabove hpbelow
   by_cases hcx : (c : ℝ) < conditionedPositiveStateAt t p
   · exact hpabove hcx
-  · have hle : conditionedPositiveStateAt t p ≤ (c : ℝ) := le_of_not_gt hcx
-    have hlt : conditionedPositiveStateAt t p < (c : ℝ) := lt_of_le_of_ne hle hpneq
+  · have hle  := le_of_not_gt hcx
+    have hlt  := lt_of_le_of_ne hle hpneq
     rw [hpbelow hlt]
     simp [lastExitAvoidanceFactor, hcx]
 
 /-- The conditional probability of avoiding the level after a deterministic time is exactly the
 Doob harmonic ratio from the current state. This is the empty-test case of the full rational-future
 identity. -/
-theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_probability
-    {ν : ℝ} {P : Measure BrownianPath} [IsFiniteMeasure P]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (B : Measure BrownianPath) [SFinite B]
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (t : ℝ≥0) (ht : 0 < (t : ℝ)) (hν : 0 < ν)
-    (c : ℝ≥0) (hc : 0 < (c : ℝ)) :
+theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_probability :
     ∀ᵐ p ∂P,
       P[(conditionedPositiveFutureRationalAvoidance t c).indicator
         (fun _ => (1 : ℝ)) | conditionedPositiveNaturalFiltration t] p =
@@ -239,10 +226,8 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_probability
         (brownianUpperConditionedReferenceFutureKernel B ν hν (x - c)).real
           Set.univ = lastExitAvoidanceFactor ν (c : ℝ) x := by
     by_cases hcx : (c : ℝ) < x
-    · have hx : 0 < x - (c : ℝ) := sub_pos.mpr hcx
-      have : IsProbabilityMeasure
-          (brownianBelowConditionedLaw B ν (x - (c : ℝ))) :=
-        isProbabilityMeasure_brownianBelowConditionedLaw B hB ν (x - (c : ℝ)) hν hx
+    · have hx  := sub_pos.mpr hcx
+      have := isProbabilityMeasure_brownianBelowConditionedLaw B hB ν (x - (c : ℝ)) hν hx
       have : IsProbabilityMeasure
           (brownianUpperConditionedReferenceFutureKernel B ν hν (x - (c : ℝ))) := by
         rw [brownianUpperConditionedReferenceFutureKernel_apply_conditioned
@@ -257,6 +242,8 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance_probability
     · simp [lastExitAvoidanceFactor, hcx]
   filter_upwards [hshift] with p hp
   simpa [lastExitShiftedFutureTest, hmass] using hp
+
+end
 
 end DOZZ.Proofs
 

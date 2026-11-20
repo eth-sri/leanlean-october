@@ -26,12 +26,14 @@ noncomputable def kahaneInterpolatedMass
     (γ * (Real.sqrt t * X ω.1 i + Real.sqrt (1 - t) * Y ω.2 i) -
       γ ^ 2 / 2 * (t * vX i + (1 - t) * vY i))
 
+section
+variable {ΩX ΩY ι : Type*} [Fintype ι] (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ) (vX vY a : ι → ℝ) (γ t : ℝ)
+  (ω : ΩX × ΩY)
+include ΩX ΩY ι
+
 /-- At an interior interpolation time, the derivative of the finite chaos mass is the sum of the
 coordinate derivatives, including the derivative of the Wick variance normalization. -/
 theorem kahaneInterpolatedMass_hasDerivAt
-    {ΩX ΩY ι : Type*} [Fintype ι]
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (vX vY a : ι → ℝ) (γ t : ℝ) (ω : ΩX × ΩY)
     (ht : 0 < t) (ht1 : t < 1) :
     HasDerivAt (fun s => kahaneInterpolatedMass X Y vX vY a γ s ω)
       (∑ i, a i * Real.exp
@@ -66,10 +68,7 @@ theorem kahaneInterpolatedMass_hasDerivAt
           Y ω.2 i / (2 * Real.sqrt (1 - t))) t := by
       convert (hA.const_mul (X ω.1 i)).add (hB.const_mul (Y ω.2 i)) using 1
       · ext s
-        change Real.sqrt s * X ω.1 i + Real.sqrt (1 - s) * Y ω.2 i =
-          X ω.1 i * Real.sqrt s + Y ω.2 i * Real.sqrt (1 - s)
-        rw [mul_comm (Real.sqrt s) (X ω.1 i),
-          mul_comm (Real.sqrt (1 - s)) (Y ω.2 i)]
+        simp [mul_comm (Real.sqrt s) (X ω.1 i), mul_comm (Real.sqrt (1 - s)) (Y ω.2 i)]
       · ring
     have hvar : HasDerivAt (fun s => s * vX i + (1 - s) * vY i)
         (vX i - vY i) t := by
@@ -98,9 +97,6 @@ theorem kahaneInterpolatedMass_hasDerivAt
 
 /-- Applying a differentiable scalar test to the interpolated finite chaos mass. -/
 theorem kahaneInterpolatedTest_hasDerivAt
-    {ΩX ΩY ι : Type*} [Fintype ι]
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (vX vY a : ι → ℝ) (γ t : ℝ) (ω : ΩX × ΩY)
     (F F' : ℝ → ℝ) (hF : ∀ x, HasDerivAt F (F' x) x)
     (ht : 0 < t) (ht1 : t < 1) :
     HasDerivAt (fun s => F (kahaneInterpolatedMass X Y vX vY a γ s ω))
@@ -113,6 +109,8 @@ theorem kahaneInterpolatedTest_hasDerivAt
             γ ^ 2 / 2 * (vX i - vY i))) t := by
   have hmass := kahaneInterpolatedMass_hasDerivAt X Y vX vY a γ t ω ht ht1
   exact (hF (kahaneInterpolatedMass X Y vX vY a γ t ω)).comp t hmass
+
+end
 
 /-- One Wick weight and the full finite chaos sum as deterministic functions of a field vector. -/
 noncomputable def finiteChaosVectorWeight {ι : Type*}

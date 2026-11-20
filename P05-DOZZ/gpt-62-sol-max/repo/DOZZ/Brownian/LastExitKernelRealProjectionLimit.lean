@@ -45,18 +45,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_real_projection_tendsto_en
   have hC : MeasurableSet C := hA.preimage hproject
   let ts : Fin n → ℝ≥0 := fun i => Real.toNNReal (offsets i)
   let ds : Fin n → ℝ≥0 := brownianFirstHitElapsed n ts
-  have hts0 : ∀ i, 0 < ts i := by
-    intro i
-    exact Real.toNNReal_pos.mpr (hoff i)
-  have htsmono : StrictMono ts := by
-    intro i j hij
-    rw [← NNReal.coe_lt_coe,
-      Real.coe_toNNReal _ (hoff i).le,
-      Real.coe_toNNReal _ (hoff j).le]
-    exact_mod_cast hmono hij
-  have hds : ∀ i, 0 < ds i := by
-    intro i
-    exact brownianFirstHitElapsed_pos n ts hts0 htsmono i
+  have hds := brownianFirstHitElapsed_positiveOffsets hoff hmono
   let M : Measure (Fin n → ℝ) := volume.withDensity
     (brownianEntranceFinitePDF ν n ds)
   have hMprob : IsProbabilityMeasure M := by
@@ -79,7 +68,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_real_projection_tendsto_en
     simp [ys, hk']
   have hyslim : Tendsto ys atTop (𝓝 0) := hxlim.congr' hysEq.symm
   have hkernel := brownianUpperConditionedReferenceFutureKernel_finite_projection_tendsto_entrance
-    B hB Q ν 1 hν hQ (by norm_num) n offsets hoff hmono ys hyspos hyslim A hA
+    B hB Q ν hν hQ n offsets hoff hmono ys hyspos hyslim A hA
   have hreal := (ENNReal.continuousAt_toReal hMfinite).tendsto.comp hkernel
   have hfun : (fun k =>
       (brownianUpperConditionedReferenceFutureKernel B ν hν (ys k)).real C) =
@@ -98,10 +87,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_real_projection_tendsto_en
     have hk' : 0 < xs k := hk
     simp [ys, hk']
   have hseq := hreal'.congr' hxy.symm
-  change Tendsto
-    (fun k => (brownianUpperConditionedReferenceFutureKernel B ν hν (xs k)).real C)
-    atTop (𝓝 (M A).toReal)
-  exact hseq
+  assumption
 
 end DOZZ.Proofs
 

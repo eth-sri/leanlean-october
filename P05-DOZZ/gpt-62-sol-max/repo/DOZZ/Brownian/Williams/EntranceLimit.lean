@@ -55,8 +55,7 @@ private theorem heat_start_derivative (t y : ℝ) (ht : 0 < t) :
 private theorem harmonic_start_derivative (ν : ℝ) (hν : 0 < ν) :
     HasDerivAt (conditionedH ν) (2*ν) 0 := by
   have harg : HasDerivAt (fun x : ℝ => Real.exp (-2*ν*x)) (-2*ν) 0 := by
-    simpa only [id_eq,mul_zero,Real.exp_zero,mul_one,one_mul] using
-      ((hasDerivAt_id (0 : ℝ)).const_mul (-2*ν)).exp
+    simpa using ((hasDerivAt_id (0 : ℝ)).const_mul (-2*ν)).exp
   have hh := (hasDerivAt_const (0 : ℝ) 1).sub harg
   convert hh using 1
   · funext x
@@ -77,7 +76,7 @@ theorem conditionedPositiveTransitionDensity_tendsto_entrance (ν t y : ℝ)
     have hexp : Tendsto (fun x : ℝ => Real.exp (ν*(y-x)-ν^2*t/2)) (𝓝[>] 0)
         (𝓝 (Real.exp (ν*y-ν^2*t/2))) := by
       have hc : Continuous (fun x : ℝ => Real.exp (ν*(y-x)-ν^2*t/2)) := by fun_prop
-      simpa only [sub_zero] using (hc.continuousAt (x := (0 : ℝ))).tendsto.mono_left nhdsWithin_le_nhds
+      simpa using (hc.continuousAt (x := (0 : ℝ))).tendsto.mono_left nhdsWithin_le_nhds
     have hprod := (hexp.mul hquot).mul_const (conditionedH ν y)
     have he : (fun x : ℝ => conditionedPositiveTransitionDensity ν t x y) =ᶠ[𝓝[>] 0]
         (fun x => Real.exp (ν*(y-x)-ν^2*t/2)*
@@ -105,7 +104,7 @@ theorem conditionedPositiveTransitionDensity_tendsto_entrance (ν t y : ℝ)
 
 
 /-- Probability densities converging pointwise transport uniformly bounded moving tests. -/
-private theorem density_test_limit {E : Type*} [MeasurableSpace E] (μ : Measure E)
+theorem tendsto_lintegral_probabilityDensity_varying_test {E : Type*} [MeasurableSpace E] (μ : Measure E)
     (f : ℕ → E → ℝ≥0∞) (g : E → ℝ≥0∞) (hf : ∀ n, Measurable (f n)) (hg : Measurable g)
     (hfm : ∀ n, (∫⁻ x, f n x ∂μ) = 1) (hgm : (∫⁻ x, g x ∂μ) = 1)
     (hfg : ∀ x, Tendsto (fun n => f n x) atTop (𝓝 (g x)))
@@ -118,7 +117,7 @@ private theorem density_test_limit {E : Type*} [MeasurableSpace E] (μ : Measure
   have hAm (n : ℕ) : (∫⁻ x, A n x ∂μ) ≠ ∞ := ne_top_of_le_ne_top
     (hgm ▸ ENNReal.one_ne_top) (lintegral_mono (fun x => min_le_right _ _))
   have hAlim (x : E) : Tendsto (fun n => A n x) atTop (𝓝 (g x)) := by
-    simpa only [min_self] using (hfg x).min (tendsto_const_nhds (x := g x))
+    simpa using (hfg x).min (tendsto_const_nhds (x := g x))
   have hJ : Tendsto (fun n => ∫⁻ x, A n x ∂μ) atTop (𝓝 1) := by
     rw [← hgm]
     exact tendsto_lintegral_of_dominated_convergence g hA
@@ -156,14 +155,8 @@ private theorem density_test_limit {E : Type*} [MeasurableSpace E] (μ : Measure
         have hm : Measurable (fun x => f n x-A n x) := (hf n).sub (hA n)
         rw [lintegral_const_mul K hm,lintegral_sub (hA n) (hAm n)
           (ae_of_all _ (fun x => min_le_left _ _)),hfm n]
-  have hI : (∫⁻ x, g x*ψ x ∂μ) ≤ K := by
-    calc
-      _ ≤ ∫⁻ x, K*g x ∂μ := lintegral_mono (fun x => (mul_le_mul' le_rfl (hψbound x)).trans_eq (mul_comm _ _))
-      _ = K := by rw [lintegral_const_mul K hg,hgm,mul_one]
-  have hTop : Tendsto (fun n => (∫⁻ x, A n x*φ n x ∂μ)+K*(1-∫⁻ x, A n x ∂μ)) atTop
-      (𝓝 (∫⁻ x, g x*ψ x ∂μ)) := by
-    simpa only [add_zero] using hT.add hres
-  exact tendsto_of_tendsto_of_tendsto_of_le_of_le hT hTop
+  exact tendsto_of_tendsto_of_tendsto_of_le_of_le hT (by
+    simpa only [add_zero] using hT.add hres)
     (fun n => lintegral_mono (fun x => mul_le_mul' (min_le_left _ _) le_rfl)) hupper
 
 private theorem transition_nonneg (ν : ℝ) (t : ℝ≥0) (x y : ℝ) (hν : 0 < ν) (ht : 0 < t) :
@@ -198,8 +191,11 @@ noncomputable def brownianEntranceFinitePDF (ν : ℝ) :
   | n+1, ds, ys => ENNReal.ofReal (conditionedPositiveEntranceDensity ν (ds 0) (ys 0))*
       brownianDoobFinitePDF ν n (Fin.tail ds) (ys 0) (Fin.tail ys)
 
-private theorem doob_chain_eq (ν : ℝ) (hν : 0 < ν) (n : ℕ) (ds : Fin n → ℝ≥0)
-    (hds : ∀ i, 0 < ds i) (t x : ℝ) (ys : Fin n → ℝ) :
+section
+variable (ν : ℝ) (hν : 0 < ν) (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i)
+include hν hds
+
+private theorem doob_chain_eq (t x : ℝ) (ys : Fin n → ℝ) :
     ENNReal.ofReal (conditionedPositiveTimeChainDensity ν t x
       (List.ofFn fun i => t+(brownianFirstHitTimes n ds i : ℝ)) (List.ofFn ys)) =
         brownianDoobFinitePDF ν n ds x ys := by
@@ -218,8 +214,7 @@ private theorem doob_chain_eq (ν : ℝ) (hν : 0 < ν) (n : ℕ) (ds : Fin n �
     rfl
 
 /-- The entrance factor followed by the elapsed-schedule Doob transition product. -/
-theorem brownianEntranceFinitePDF_eq_conditionedPositiveFDDDensity (ν : ℝ) (hν : 0 < ν) (n : ℕ)
-    (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) (ys : Fin n → ℝ) :
+theorem brownianEntranceFinitePDF_eq_conditionedPositiveFDDDensity (ys : Fin n → ℝ) :
     brownianEntranceFinitePDF ν n ds ys = ENNReal.ofReal (conditionedPositiveFDDDensity ν
       (List.ofFn fun i => (brownianFirstHitTimes n ds i : ℝ)) (List.ofFn ys)) := by
   cases n with
@@ -237,6 +232,8 @@ theorem brownianEntranceFinitePDF_eq_conditionedPositiveFDDDensity (ν : ℝ) (h
     rw [ENNReal.ofReal_mul (entrance_nonneg ν (ds 0) (ys 0) hν (hds 0)),
       doob_chain_eq ν hν n (Fin.tail ds) (fun i => hds i.succ) (ds 0) (ys 0) (Fin.tail ys)]
 
+end
+
 /-- Every finite Doob product is finite, including states outside its support. -/
 theorem brownianDoobFinitePDF_ne_top (ν : ℝ) (n : ℕ) (ds : Fin n → ℝ≥0) (x : ℝ)
     (ys : Fin n → ℝ) : brownianDoobFinitePDF ν n ds x ys ≠ ∞ := by
@@ -246,9 +243,12 @@ theorem brownianDoobFinitePDF_ne_top (ν : ℝ) (n : ℕ) (ds : Fin n → ℝ≥
       exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top
         (ih (Fin.tail ds) (ys 0) (Fin.tail ys))
 
+section
+variable (ν : ℝ) (hν : 0 < ν) (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i)
+include hν hds
+
 /-- Only the first transition changes when the initial state tends to zero. -/
-theorem brownianDoobFinitePDF_tendsto_entrance (ν : ℝ) (hν : 0 < ν) (n : ℕ)
-    (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) (ys : Fin n → ℝ) :
+theorem brownianDoobFinitePDF_tendsto_entrance (ys : Fin n → ℝ) :
     Tendsto (fun x => brownianDoobFinitePDF ν n ds x ys) (𝓝[>] 0)
       (𝓝 (brownianEntranceFinitePDF ν n ds ys)) := by
   cases n with
@@ -259,19 +259,16 @@ theorem brownianDoobFinitePDF_tendsto_entrance (ν : ℝ) (hν : 0 < ν) (n : �
         (Or.inr (brownianDoobFinitePDF_ne_top ν n (Fin.tail ds) (ys 0) (Fin.tail ys)))
 
 /-- Entrance products are measurable limits of the actual positive-start densities. -/
-theorem measurable_brownianEntranceFinitePDF (ν : ℝ) (hν : 0 < ν) (n : ℕ)
-    (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) :
+theorem measurable_brownianEntranceFinitePDF :
     Measurable (brownianEntranceFinitePDF ν n ds) := by
   let xs : ℕ → ℝ := fun k => 1/((k : ℝ)+1)
   have hxs (k : ℕ) : 0 < xs k := one_div_pos.mpr (by positivity)
-  have hxlim : Tendsto xs atTop (𝓝[>] 0) := tendsto_nhdsWithin_iff.mpr
-    ⟨tendsto_one_div_add_atTop_nhds_zero_nat,Filter.Eventually.of_forall hxs⟩
   exact measurable_of_tendsto_metrizable
     (fun k => measurable_brownianDoobFinitePDF ν hν n ds hds (xs k) (hxs k))
-    (tendsto_pi_nhds.mpr (fun ys => (brownianDoobFinitePDF_tendsto_entrance ν hν n ds hds ys).comp hxlim))
+    (tendsto_pi_nhds.mpr (fun ys => (brownianDoobFinitePDF_tendsto_entrance ν hν n ds hds ys).comp (tendsto_nhdsWithin_iff.mpr
+    ⟨tendsto_one_div_add_atTop_nhds_zero_nat,Filter.Eventually.of_forall hxs⟩)))
 
-private theorem negative_pdf_eq (ν : ℝ) (hν : 0 < ν) (n : ℕ)
-    (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) (ys : Fin n → ℝ) :
+private theorem negative_pdf_eq (ys : Fin n → ℝ) :
     ENNReal.ofReal (max 0 (negativeConditionedFDDDensity ν
       (List.ofFn fun i => (brownianFirstHitTimes n ds i : ℝ)) (List.ofFn ys))) =
         brownianEntranceFinitePDF ν n ds (-ys) := by
@@ -284,10 +281,15 @@ private theorem negative_pdf_eq (ν : ℝ) (hν : 0 < ν) (n : ℕ)
   rw [he,negativeConditionedFDDDensity_reflect,ENNReal.ofReal_max,ENNReal.ofReal_zero,
     max_eq_right (show (0 : ℝ≥0∞) ≤ _ from bot_le)]
 
+end
+
+section
+variable (Q : Measure BrownianPath) (ν : ℝ) (hν : 0 < ν) (hQ : IsNegativeConditionedBrownianLaw ν Q)
+  (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i)
+include Q hν hQ hds
+
 /-- The given entrance law has precisely the reflected positive-coordinate density. -/
-theorem negativeConditionedLaw_finite_positive_lintegral (Q : Measure BrownianPath)
-    (ν : ℝ) (hν : 0 < ν) (hQ : IsNegativeConditionedBrownianLaw ν Q) (n : ℕ)
-    (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) (F : (Fin n → ℝ) → ℝ≥0∞) (hF : Measurable F) :
+theorem negativeConditionedLaw_finite_positive_lintegral (F : (Fin n → ℝ) → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ q, F (fun i => -q (brownianFirstHitTimes n ds i)) ∂Q) =
       ∫⁻ ys, brownianEntranceFinitePDF ν n ds ys*F ys := by
   let _ := hQ.2.1
@@ -315,13 +317,12 @@ theorem negativeConditionedLaw_finite_positive_lintegral (Q : Measure BrownianPa
     simp only [he,brownianEntranceFinitePDF,one_mul,lintegral_const,measure_univ,hv,mul_one]
 
 /-- The finite entrance density has mass one, as a consequence of the given path law. -/
-theorem lintegral_brownianEntranceFinitePDF_one (Q : Measure BrownianPath)
-    (ν : ℝ) (hν : 0 < ν) (hQ : IsNegativeConditionedBrownianLaw ν Q) (n : ℕ)
-    (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) :
+theorem lintegral_brownianEntranceFinitePDF_one :
     (∫⁻ ys, brownianEntranceFinitePDF ν n ds ys) = 1 := by
   let _ := hQ.2.1
-  simpa only [mul_one,lintegral_one,measure_univ] using
-    (negativeConditionedLaw_finite_positive_lintegral Q ν hν hQ n ds hds (fun _ => 1) measurable_const).symm
+  simpa using (negativeConditionedLaw_finite_positive_lintegral Q ν hν hQ n ds hds (fun _ => 1) measurable_const).symm
+
+end
 
 /-- Actual upper conditioning tends to the given entrance law on bounded continuous cylinders. -/
 theorem brownianBelowConditionedLaw_tendsto_entrance_cylinder (P : Measure BrownianPath)
@@ -347,8 +348,8 @@ theorem brownianBelowConditionedLaw_tendsto_entrance_cylinder (P : Measure Brown
     apply hF.continuousAt.tendsto.comp
     apply tendsto_pi_nhds.mpr
     intro i
-    simpa only [zero_sub,Pi.neg_apply] using hxlim.sub (tendsto_const_nhds (x := ys i))
-  have hlim := density_test_limit volume fn g
+    simpa using hxlim.sub (tendsto_const_nhds (x := ys i))
+  have hlim := tendsto_lintegral_probabilityDensity_varying_test volume fn g
     (fun k => measurable_brownianDoobFinitePDF ν hν n ds hds (xs k) (hxs k))
     (measurable_brownianEntranceFinitePDF ν hν n ds hds)
     (fun k => lintegral_brownianDoobFinitePDF_one P hB ν hν n ds hds (xs k) (hxs k))

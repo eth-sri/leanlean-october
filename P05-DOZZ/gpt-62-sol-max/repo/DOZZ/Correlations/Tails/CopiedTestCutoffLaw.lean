@@ -24,8 +24,7 @@ theorem copied_wick_weight_factor
       (γ*(Nbar+U+c*(Nbar-N))-γ^2/2*(r+2*L)) =
       Real.exp (γ*Nbar-γ^2*v) * (g * Real.exp (γ*c*(Nbar-N))) *
         Real.exp (γ*U-γ^2/2*r) := by
-  rw [mul_assoc, ← Real.exp_add]
-  rw [mul_comm (Real.exp (γ*Nbar-γ^2*v)), mul_assoc, mul_assoc, ← Real.exp_add, ← Real.exp_add]
+  rw [mul_assoc, ← Real.exp_add, mul_comm (Real.exp (γ*Nbar-γ^2*v)), mul_assoc, mul_assoc, ← Real.exp_add, ← Real.exp_add]
   congr 1
   ring_nf
 
@@ -83,8 +82,7 @@ theorem copied_test_cutoff_law
     exact max_eq_right (by linarith : 1 ≤ ‖z+x‖)
   have hsrc (ω : Ω) : Real.exp (-γ^2*Real.log ‖z‖) * ∫ y, G y ∂regularizedGMC P Xc γ r ω =
       ∫ x, w x * Real.exp (γ*Xc ω (z+x) r-γ^2/2*(r+2*Real.log ‖z+x‖)) ∂volume := by
-    rw [regularized_integral_volume P X Xc hX hc γ r ω G, ← integral_const_mul]
-    rw [← integral_add_left_eq_self (μ := volume) _ z]
+    rw [regularized_integral_volume P X Xc hX hc γ r ω G, ← integral_const_mul, ← integral_add_left_eq_self (μ := volume) _ z]
     apply integral_congr_ae
     exact ae_of_all _ fun x => by
       dsimp only

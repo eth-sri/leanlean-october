@@ -18,10 +18,12 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- The origin singular mass has the Williams-model law on the original conditioned-copy
 carrier, with only an independent exponential maximum added. -/
 theorem lastone_origin_williams_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (γ ν : ℝ) (hν : 0 < ν) (M : Ω → Measure ℂ) (A : Ω → TwoSidedPath)
     (hA : AEMeasurable A P) (hBp : IsBrownianReal (fun t ω => A ω (t : ℝ)) P)
     (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z) (hAZ : IndepFun A Z P)
@@ -74,8 +76,7 @@ theorem lastone_origin_williams_law
 
 /-- The genuine local equator GMC singular mass has critical small-power expectation `2`.
 The source lateral projection and conditioned family are realized on the supplied space. -/
-theorem lastone_origin_smallPower_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+theorem lastone_origin_smallPower_limit (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     Tendsto (fun ν : ℝ =>
@@ -90,7 +91,7 @@ theorem lastone_origin_smallPower_limit
   obtain ⟨Bc, hBc⟩ := exists_reflectionData_family P X γ M Z hsource hZ
   let B : ℝ → Ω → BrownianPath × BrownianPath := fun ν => Bc (Q γ - ν)
   have hB (ν : ℝ) (hν : 0 < ν) : IsTwoSidedConditionedBrownianProcess P (B ν) ν := by
-    simpa only [B, sub_sub_cancel] using (hBc (Q γ - ν) (by linarith)).1
+    simpa using (hBc (Q γ - ν) (by linarith)).1
   have hInd (ν : ℝ) (hν : 0 < ν) : IndepFun (B ν) Z P :=
     (hBc (Q γ - ν) (by linarith)).2.2
   have hlim := lastone_williamsModel_smallPower_limit P γ hγ hγ2 Z B hB hZ hInd
@@ -100,7 +101,7 @@ theorem lastone_origin_smallPower_limit
   have hm := localSingularMass_aemeasurable P X hX γ hγ hγ2 M hM
     (fun _ => 1) measurable_const 0 (Q γ - ν)
   have hlaw := lastone_origin_williams_law P γ ν hνpos M A hA hBp Z hZ hAZ
-    (ae_of_all P fun _ => rfl) (equatorGFF_GMC_origin_null_ae P X hX γ hγ hγ2 M hM)
+    (ae_of_all P fun _ => rfl) (gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0)
     (B ν) (hB ν hνpos) (hInd ν hνpos)
   have hBm := (aemeasurable_of_twoSidedConditioned (hB ν hνpos)).comp_quasiMeasurePreserving
     (Measure.quasiMeasurePreserving_snd (μ := brownianMaximumReferenceLaw ν) (ν := P))
@@ -117,5 +118,7 @@ theorem lastone_origin_smallPower_limit
     ENNReal.continuous_rpow_const.measurable
   congr 1
   rw [← lintegral_map' hp.aemeasurable hWm, ← hlaw, lintegral_map' hp.aemeasurable hm]
+
+end
 
 end DOZZ.Proofs

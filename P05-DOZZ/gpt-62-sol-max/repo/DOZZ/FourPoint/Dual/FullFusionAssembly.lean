@@ -9,6 +9,7 @@ public import DOZZ.FourPoint.Dual.PhysicalFusionCoefficient
 public import DOZZ.Statements.FourPoint.FourPointTZeroEqStructureConstant
 import DOZZ.FourPoint.Reflected.Normalization
 import Mathlib.Tactic
+public import DOZZ.FourPoint.Reflected.Remainder
 
 /-! # Dual fusion normalization and classification assembly
 
@@ -136,20 +137,9 @@ let κ := (4 / γ) * (Q γ - α₁)
       change (fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z-C₀)/‖z‖^κ-D =
         ((fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z-C₀)-D*‖z‖^κ)/‖z‖^κ
       simp only [sub_div, mul_div_cancel_right₀ _ hn]
-  · have hcast : Tendsto (fun t : ℝ => (t : ℂ))
-        (𝓝[>] (0 : ℝ)) (𝓝[≠] (0 : ℂ)) := by
-      apply tendsto_nhdsWithin_iff.mpr
-      refine ⟨Complex.continuous_ofReal.continuousAt.tendsto.mono_left nhdsWithin_le_nhds, ?_⟩
-      filter_upwards [self_mem_nhdsWithin] with t ht
-      simpa only [mem_compl_iff, mem_singleton_iff, Complex.ofReal_ne_zero] using ne_of_gt ht
-    have hray : Tendsto (fun t : ℝ =>
-        (fourPointT P M γ μ (-(2/γ)) α₁ α₂ α₃ (t : ℂ)-C₀)/t^κ)
-        (𝓝[>] (0 : ℝ)) (𝓝 D) := by
-      apply (hfull.comp hcast).congr'
-      filter_upwards [self_mem_nhdsWithin] with t ht
-      simp only [Function.comp_def, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht, neg_div]
+  · have hray := radial_limit_along_reals hfull
     have hclass := dual_physical_fusion_coefficient hH P X M γ μ α₁ α₂ α₃ D
-      hγ hγ₂ hμ hαhi hα₂ hα₃ hs (hslack₁.trans hξ₂) hX hM hray
+      hγ hγ₂ hμ hαhi hα₂ hα₃ hs (hslack₁.trans hξ₂) hX hM (by simpa only [neg_div] using hray)
     simpa only [neg_div] using hclass.2
 
 end DOZZ.Proofs

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.GMC.FieldChaosConvexOrder
 
 public import DOZZ.GMC.SharpMoments.InverseUniform
 public import DOZZ.GMC.SharpMoments.GluedFieldGaussian
@@ -28,23 +29,16 @@ namespace DOZZ.Proofs
 /-- The covariance bound across the two subdisks. -/
 noncomputable def invSepConst : ℝ≥0 :=
   ⟨Real.log 16 + (Real.log 3 + 2 * Real.log (1 + 1 / 8)), by
-    have h1 : 0 ≤ Real.log 16 := Real.log_nonneg (by norm_num)
-    have h2 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
-    have h3 : 0 ≤ Real.log (1 + 1 / 8) := Real.log_nonneg (by norm_num)
-    linarith⟩
+    positivity⟩
 
 theorem invSepConst_pos : 0 < invSepConst := by
   rw [← NNReal.coe_pos]
   change 0 < Real.log 16 + (Real.log 3 + 2 * Real.log (1 + 1 / 8))
-  have h1 : 0 < Real.log 16 := Real.log_pos (by norm_num)
-  have h2 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
-  have h3 : 0 ≤ Real.log (1 + 1 / 8) := Real.log_nonneg (by norm_num)
-  linarith
+  positivity
 
 theorem norm_le_of_mem_invSub {b x : ℂ} (hb : ‖b‖ = 1 / 16)
     (hx : x ∈ Metric.ball b (1 / 4 * (1 / 8))) : ‖x‖ ≤ 1 / 8 := by
   rw [Metric.mem_ball, dist_eq_norm] at hx
-  have := norm_le_norm_add_norm_sub' x b
   calc ‖x‖ ≤ ‖b‖ + ‖x - b‖ := by
         have h := norm_add_le b (x - b)
         rwa [add_sub_cancel] at h
@@ -58,7 +52,6 @@ theorem invSub_sep {x y : ℂ} (hx : x ∈ Metric.ball invSubCenterLeft (1 / 4 *
       Real.norm_eq_abs]
     norm_num
   have h := norm_sub_le_norm_sub_add_norm_sub invSubCenterLeft x y
-  have h' := norm_sub_le_norm_sub_add_norm_sub x y invSubCenterRight
   have hxl : ‖invSubCenterLeft - x‖ = ‖x - invSubCenterLeft‖ := norm_sub_rev _ _
   have hlr := norm_sub_le_norm_sub_add_norm_sub invSubCenterLeft y invSubCenterRight
   linarith
@@ -100,12 +93,14 @@ theorem norm_lt_of_mem_invSub {b x : ℂ} (hb : ‖b‖ = 1 / 16)
         rwa [add_sub_cancel] at h
     _ < 1 / 8 := by rw [hb]; linarith
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include Ω X hX hXc
+
 /-- The two-branch inequality at every cutoff: Kahane's Laplace comparison with two independent
 copies of the circle field on the subdisks and a common scalar of variance `invSepConst`. -/
-theorem cutoffLaplace_twoBranch
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) (hr : 0 ≤ r) (x : ℝ) :
+theorem cutoffLaplace_twoBranch (γ r : ℝ) (hr : 0 ≤ r) (x : ℝ) :
     cutoffLaplace P Xc γ r (Metric.ball 0 (1 / 8)) x ≤
       ∫ ξ, cutoffLaplace P Xc γ r (Metric.ball invSubCenterLeft (1 / 4 * (1 / 8)))
           (x + γ * ξ - γ ^ 2 * invSepConst / 2) *
@@ -192,48 +187,29 @@ theorem cutoffLaplace_twoBranch
     filter_upwards [ae_restrict_mem (hU.prod hU)] with xy hxy
     exact hxy
   have hmemU1 : ∀ᵐ z ∂(ν : Measure ℂ), z ∈ U := by
-    change ∀ᵐ z ∂νM, z ∈ U
-    rw [hνM]
-    exact ae_restrict_mem hU
+    apply ae_restrict_mem <;> assumption
   have hcov : ∀ᵐ xy ∂(ν : Measure ℂ).prod ν,
       gaussianCovariance P (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
         gaussianCovariance PY (fun ω => gluedField Φ D₁ ω xy.1)
           (fun ω => gluedField Φ D₁ ω xy.2) := by
     filter_upwards [hmemU] with xy ⟨hx, hy⟩
-    have hC0 : (0 : ℝ) ≤ C := C.2
     unfold gaussianCovariance
-    by_cases hx1 : xy.1 ∈ D₁ <;> by_cases hy1 : xy.2 ∈ D₁
-    · rw [gluedField_covariance_of_mem_of_mem P Φ hΦ D₁ C hx1 hy1]
-      linarith
-    · have hy2 : xy.2 ∈ D₂ := hy.resolve_left hy1
-      rw [gluedField_covariance_of_mem_of_notMem P Φ hΦ D₁ C hx1 hy1]
-      exact circleField_covariance_le_invSepConst P X hX Xc hXc r hr hx1 hy2
-    · have hx2 : xy.1 ∈ D₂ := hx.resolve_left hx1
-      have hcomm : ∫ q, gluedField Φ D₁ q xy.1 * gluedField Φ D₁ q xy.2 ∂PY =
-          ∫ q, gluedField Φ D₁ q xy.2 * gluedField Φ D₁ q xy.1 ∂PY := by
-        congr 1
-        funext q
-        exact mul_comm _ _
-      rw [hcomm, gluedField_covariance_of_mem_of_notMem P Φ hΦ D₁ C hy1 hx1]
-      have h := circleField_covariance_le_invSepConst P X hX Xc hXc r hr hy1 hx2
-      have hcomm' : ∫ ω, Φ ω xy.1 * Φ ω xy.2 ∂P = ∫ ω, Φ ω xy.2 * Φ ω xy.1 ∂P := by
-        congr 1
-        funext ω
-        exact mul_comm _ _
-      rw [hcomm']
-      exact h
-    · rw [gluedField_covariance_of_notMem_of_notMem P Φ hΦ D₁ C hx1 hy1]
-      linarith
+    rw [gluedField_covariance P Φ hΦ D₁ hD₁ C xy.1 xy.2]
+    split_ifs with h
+    · exact le_add_of_nonneg_right C.2
+    · rw [zero_add]
+      by_cases h₁ : xy.1 ∈ D₁
+      · exact circleField_covariance_le_invSepConst P X hX Xc hXc r hr h₁
+          (hy.resolve_left fun h₂ => h (iff_of_true h₁ h₂))
+      · have h₂ : xy.2 ∈ D₁ := by tauto
+        simpa only [mul_comm] using
+          circleField_covariance_le_invSepConst P X hX Xc hXc r hr h₂ (hx.resolve_left h₁)
   have hdiag : ∀ᵐ z ∂(ν : Measure ℂ),
       gaussianVariance P (fun ω => Φ ω z) ≤ gaussianVariance PY (fun ω => gluedField Φ D₁ ω z) := by
     filter_upwards [] with z
-    have hC0 : (0 : ℝ) ≤ C := C.2
-    unfold gaussianVariance gaussianCovariance
-    by_cases hz : z ∈ D₁
-    · rw [gluedField_covariance_of_mem_of_mem P Φ hΦ D₁ C hz hz]
-      linarith
-    · rw [gluedField_covariance_of_notMem_of_notMem P Φ hΦ D₁ C hz hz]
-      linarith
+    simp only [PY, gaussianVariance, gaussianCovariance, ← pow_two,
+      gluedField_variance P Φ hΦ D₁ hD₁ C]
+    exact le_add_of_nonneg_right C.2
   have hK := kahane_field_laplace_of_nonzero_finite_measure_eq P PY Φ (gluedField Φ D₁) hΦ hΨ
     ν hν (fun _ => 1) measurable_const ⟨1, fun _ => le_rfl⟩ γ (Real.exp x)
     (Real.exp_pos x).le hcov hdiag
@@ -252,8 +228,8 @@ theorem cutoffLaplace_twoBranch
   set S : ℝ → ℝ := fun ξ => Real.exp (x + γ * ξ - γ ^ 2 * C / 2) with hS
   set m₁ : Ω → ℝ := fun ω => (regularizedGMC P Xc γ r ω D₁).toReal with hm₁
   set m₂ : Ω → ℝ := fun ω => (regularizedGMC P Xc γ r ω D₂).toReal with hm₂
-  have hm₁meas : Measurable m₁ := measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ r D₁ hD₁
-  have hm₂meas : Measurable m₂ := measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ r D₂ hD₂
+  have hm₁meas  := measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ r D₁ hD₁
+  have hm₂meas  := measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ r D₂ hD₂
   have hSmeas : Measurable S := by
     rw [hS]
     fun_prop
@@ -274,9 +250,7 @@ theorem cutoffLaplace_twoBranch
     have h1 : ∀ᵐ q ∂PY, IsFiniteMeasure (regularizedGMC P Xc γ r q.1) :=
       (Measure.quasiMeasurePreserving_fst).ae hfin
     have h2 : ∀ᵐ q ∂PY, IsFiniteMeasure (regularizedGMC P Xc γ r q.2.1) := by
-      have h2' : ∀ᵐ p ∂P.prod (gaussianReal 0 C), IsFiniteMeasure (regularizedGMC P Xc γ r p.1) :=
-        (Measure.quasiMeasurePreserving_fst).ae hfin
-      exact (Measure.quasiMeasurePreserving_snd).ae h2'
+      exact (Measure.quasiMeasurePreserving_snd).ae ((Measure.quasiMeasurePreserving_fst).ae hfin)
     filter_upwards [h1, h2] with q hq1 hq2
     exact ⟨hq1, hq2⟩
   have hRightPoint : ∀ᵐ q ∂PY,
@@ -325,23 +299,19 @@ theorem cutoffLaplace_twoBranch
       hprod]
     rfl
   rw [hLeft, hRight] at hK
-  have hRnn : 0 ≤ ∫ ξ, cutoffLaplace P Xc γ r D₁ (x + γ * ξ - γ ^ 2 * C / 2) *
-      cutoffLaplace P Xc γ r D₂ (x + γ * ξ - γ ^ 2 * C / 2) ∂gaussianReal 0 C :=
-    integral_nonneg fun ξ => mul_nonneg (cutoffLaplace_nonneg P Xc γ r D₁ _)
-      (cutoffLaplace_nonneg P Xc γ r D₂ _)
-  exact hstep1.trans ((ENNReal.ofReal_le_ofReal_iff hRnn).mp hK)
+  exact hstep1.trans ((ENNReal.ofReal_le_ofReal_iff (integral_nonneg fun ξ => mul_nonneg (cutoffLaplace_nonneg P Xc γ r D₁ _)
+      (cutoffLaplace_nonneg P Xc γ r D₂ _))).mp hK)
 
 /-- Every inverse moment of the cutoff mass of the reference disk is bounded uniformly in the
 cutoff. -/
-theorem regularizedGMC_reference_inverse_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem regularizedGMC_reference_inverse_moment_uniform (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (q : ℝ) (hq : 0 < q) :
     ∃ K : ℝ, ∀ r : ℝ, 0 ≤ r →
       ∫⁻ ω, (regularizedGMC P Xc γ r ω (Metric.ball 0 (1 / 8))) ^ (-q) ∂P ≤ ENNReal.ofReal K :=
   regularizedGMC_reference_inverse_moment_uniform_of_twoBranch P X hX Xc hXc γ hγ hγ2
     invSepConst invSepConst_pos (fun r hr x => cutoffLaplace_twoBranch P X hX Xc hXc γ r
       (by linarith [Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 4)]) x) q hq
+
+end
 
 end DOZZ.Proofs

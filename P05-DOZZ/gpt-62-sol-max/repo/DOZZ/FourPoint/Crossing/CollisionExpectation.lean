@@ -20,10 +20,13 @@ open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX hγ hγ2 hM
+
 /-- All inverse orders are uniformly bounded as the negative insertion moves. -/
-theorem crossing_collision_inverse_uniform {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem crossing_collision_inverse_uniform
     (a b c s : ℝ) (hs : s ≤ 0) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ z : ℂ, ‖z‖ ≤ 1 →
       (∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, a, b] ![z, 0, 1] c ^ s ∂P) ≤ C := by
@@ -35,8 +38,7 @@ theorem crossing_collision_inverse_uniform {Ω : Type*} [MeasurableSpace Ω]
   apply hbound ![z, 0, 1] ![-γ / 2, a, b] c s
   · intro j
     fin_cases j
-    · change 2 * ‖z‖ ≤ 2
-      linarith only [hz]
+    simpa
     · norm_num
     · norm_num
   · intro j
@@ -57,23 +59,21 @@ theorem crossing_collision_inverse_uniform {Ω : Type*} [MeasurableSpace Ω]
   · exact hs
 
 /-- Inverse moments converge at the collision along every sequence in the unit disk. -/
-theorem crossing_collision_inverse_expectation_seq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem crossing_collision_inverse_expectation_seq
     (a b c : ℝ) (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ)
     (z : ℕ → ℂ) (hz : Tendsto z atTop (𝓝 0)) (hz1 : ∀ n, ‖z n‖ ≤ 1)
     (s : ℝ) (hs : s < 0) :
     Tendsto (fun n => ∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, a, b] ![z n, 0, 1] c ^ s ∂P)
       atTop (𝓝 (∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, a, b] ![0, 0, 1] c ^ s ∂P)) := by
-  let _ : IsProbabilityMeasure P := hX.1
-  let f : ℕ → Ω → ℝ≥0∞ := fun n ω => coulombMass γ (M ω) ![-γ / 2, a, b] ![z n, 0, 1] c
-  let g : Ω → ℝ≥0∞ := fun ω => coulombMass γ (M ω) ![-γ / 2, a, b] ![0, 0, 1] c
+  let _  := hX.1
+  let f  := fun n ω => coulombMass γ (M ω) ![-γ / 2, a, b] ![z n, 0, 1] c
+  let g  := fun ω => coulombMass γ (M ω) ![-γ / 2, a, b] ![0, 0, 1] c
   have hf : ∀ n, AEMeasurable (f n) P := fun n =>
     gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _
   have hg : AEMeasurable g P := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _
-  have hgfin : ∀ᵐ ω ∂P, g ω ≠ ⊤ :=
+  have hgfin  :=
     crossing_collision_mass_finite_ae P X hX γ hγ hγ2 M hM a b c ha hb hc 0 (by simp)
-  have hfin : ∀ n, ∀ᵐ ω ∂P, f n ω ≠ ⊤ := fun n =>
+  have hfin  := fun n =>
     crossing_collision_mass_finite_ae P X hX γ hγ hγ2 M hM a b c ha hb hc (z n) (hz1 n)
   have hlim := crossing_collision_mass_ae P X hX γ hγ hγ2 M hM a b c ha hb hc z hz hz1
   have hreal : ∀ᵐ ω ∂P, Tendsto (fun n => (f n ω).toReal) atTop (𝓝 ((g ω).toReal)) := by
@@ -88,9 +88,7 @@ theorem crossing_collision_inverse_expectation_seq {Ω : Type*} [MeasurableSpace
 
 /-- Removing the unit-disk restriction by taking a sequence tail gives the full
 collision limit of the inverse expectation. -/
-theorem crossing_collision_inverse_expectation {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem crossing_collision_inverse_expectation
     (a b c : ℝ) (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ) (s : ℝ) (hs : s < 0) :
     Tendsto (fun z => ∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, a, b] ![z, 0, 1] c ^ s ∂P)
       (𝓝 0) (𝓝 (∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, a, b] ![0, 0, 1] c ^ s ∂P)) := by
@@ -105,5 +103,7 @@ theorem crossing_collision_inverse_expectation {Ω : Type*} [MeasurableSpace Ω]
   exact crossing_collision_inverse_expectation_seq P X hX γ hγ hγ2 M hM a b c ha hb hc
     (fun n => z (n + N)) (hz.comp (tendsto_add_atTop_nat N))
     (fun n => hN _ (Nat.le_add_left N n)) s hs
+
+end
 
 end DOZZ.Proofs

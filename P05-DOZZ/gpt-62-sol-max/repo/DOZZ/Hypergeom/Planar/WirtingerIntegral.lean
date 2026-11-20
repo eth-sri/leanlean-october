@@ -28,25 +28,12 @@ private theorem continuousAt_realGamma_of_pos (x : ℝ) (hx : 0 < x) :
   have hnoPole : ∀ m : ℕ, (x : ℂ) ≠ -(m : ℂ) := by
     intro m hm
     have hxEq : x = -(m : ℝ) := by exact_mod_cast hm
-    have hm0 : 0 ≤ (m : ℝ) := Nat.cast_nonneg m
     linarith
-  have hGamma : ContinuousAt (fun y : ℝ => Complex.Gamma (y : ℂ)) x :=
+  have hGamma  :=
     (Complex.continuousAt_Gamma (x : ℂ) hnoPole).comp
       Complex.continuous_ofReal.continuousAt
   have hReal := Complex.continuous_re.continuousAt.comp hGamma
-  have hEq : (fun y : ℝ => Complex.re (Complex.Gamma (y : ℂ))) = Real.Gamma := by
-    funext y
-    rw [Complex.Gamma_ofReal]
-    simp
-  rw [← hEq]
-  exact hReal
-
-private noncomputable def planarRieszCoefficientReal (k β : ℝ) : ℝ :=
-  ((k / 2) ^ 2 / ((2 + k - β) / 2) ^ 2) * Real.pi *
-    (Real.Gamma (1 - β / 2) * Real.Gamma (k / 2) *
-      Real.Gamma ((β - k) / 2) /
-        (Real.Gamma (β / 2) * Real.Gamma (1 - k / 2) *
-          Real.Gamma (1 + (k - β) / 2)))
+  assumption
 
 private noncomputable def planarWirtingerTargetReal (k β : ℝ) : ℝ :=
   ((2 + k - β) / 2) * ((2 + k - β) / 2 - 1) *
@@ -61,8 +48,6 @@ private theorem planarWirtingerKernel_reflection (k β : ℝ) (u : ℂ) :
     rw [hsub, norm_star]
   rw [hnum]
   simp
-
-private theorem half_cancel (x : ℝ) : x * (1 / 2) + x * (-1 / 2) = 0 := by ring
 
 private theorem planarRealSecondDifferenceLimit_decompose (k β : ℝ) (u : ℂ)
     (hu0 : u ≠ 0) (hu1 : u ≠ 1) :
@@ -141,8 +126,7 @@ private theorem planarRealSecondDifferenceLimit_decompose (k β : ℝ) (u : ℂ)
   have hpowAdd : s ^ (k - 4) * s ^ (2 : ℕ) = s ^ (k - 2) := by
     calc
       s ^ (k - 4) * s ^ (2 : ℕ) = s ^ (k - 4) * s ^ (2 : ℝ) := by
-        exact congrArg (fun x : ℝ => s ^ (k - 4) * x)
-          (Real.rpow_natCast s 2).symm
+        simp
       _ = s ^ ((k - 4) + 2) := (Real.rpow_add hs (k - 4) 2).symm
       _ = s ^ (k - 2) := by congr 1; ring
   rw [planarRealSecondDifferenceLimit, hW, hRe, hM, hpow₁, hpow₂]
@@ -151,22 +135,15 @@ private theorem planarRealSecondDifferenceLimit_decompose (k β : ℝ) (u : ℂ)
   have hpowAddNF : s ^ (-4 + k) * s ^ (2 : ℝ) = s ^ (-2 + k) := by
     simpa [sub_eq_add_neg, add_comm] using hpowAdd
   simp_rw [← hpowAddNF]
-  let R : ℝ := ‖u‖ ^ (-β)
-  let S : ℝ := s ^ (-4 + k)
+  let R  := ‖u‖ ^ (-β)
+  let S  := s ^ (-4 + k)
   have hR : R = ‖u‖ ^ (-β) := rfl
   have hS : S = s ^ (-4 + k) := rfl
   simp_rw [← hR, ← hS]
   ring_nf
   have hpair : R * k ^ 2 * S * s ^ (2 : ℝ) * (1 / 2) +
       R * k ^ 2 * S * s ^ 2 * (-1 / 2) = 0 := by
-    have hs2 : s ^ (2 : ℝ) = s ^ (2 : ℕ) := Real.rpow_natCast s 2
-    calc
-      _ = R * k ^ 2 * S * s ^ (2 : ℝ) * (1 / 2) +
-          R * k ^ 2 * S * s ^ (2 : ℝ) * (-1 / 2) := by
-            exact congrArg
-              (fun x : ℝ => R * k ^ 2 * S * s ^ (2 : ℝ) * (1 / 2) +
-                R * k ^ 2 * S * x * (-1 / 2)) hs2.symm
-      _ = 0 := half_cancel _
+    norm_num
   conv_rhs =>
     rw [add_assoc]
     arg 2
@@ -218,7 +195,7 @@ private theorem planarWirtinger_integral_at_one_from_parent (k β : ℝ)
     calc
       _ = ∫ u : ℂ, star (W u) := integral_congr_ae (Filter.Eventually.of_forall hreflection)
       _ = _ := by simpa only [starRingEnd_apply] using (integral_conj (f := W))
-  have hWself : star (∫ u : ℂ, W u) = ∫ u : ℂ, W u := hstar.symm.trans hcomp
+  have hWself  := hstar.symm.trans hcomp
   have hWreal : (∫ u : ℂ, W u) = (X : ℂ) := by
     calc
       _ = (((∫ u : ℂ, W u).re : ℝ) : ℂ) := (Complex.conj_eq_iff_re.mp hWself).symm
@@ -245,7 +222,7 @@ private theorem planarWirtinger_integral_at_one_from_parent (k β : ℝ)
     have hcoeff : ((α : ℂ) / 2) ^ 2 = Complex.ofReal ((α / 2) ^ 2) := by
       push_cast
       ring
-    have hbalanceReal : α * (α - 1) * A = 2 * (p * X + q ^ 2 * m) :=
+    have hbalanceReal  :=
       Complex.ofReal_injective hbalance
     have hsolve : p * X = α * (α - 1) / 2 * A - q ^ 2 * m := by
       linear_combination (-1 / 2 : ℝ) * hbalanceReal
@@ -255,7 +232,7 @@ private theorem planarWirtinger_integral_at_one_from_parent (k β : ℝ)
       _ = Complex.ofReal (α * (α - 1) / 2 * A) - Complex.ofReal (q ^ 2 * m) :=
         Complex.ofReal_sub _ _
       _ = Complex.ofReal (α * (α - 1) / 2) * (A : ℂ) - Complex.ofReal (q ^ 2 * m) := by
-        rw [Complex.ofReal_mul]
+        simp
       _ = Complex.ofReal (α * (α - 1) / 2) * DOZZ.planarGaussConstant k β -
           ((α : ℂ) / 2) ^ 2 * DOZZ.planarGaussConstant k β := by rw [hA, hMvalue]
       _ = Complex.ofReal (α * (α - 1) / 2) * DOZZ.planarGaussConstant k β -
@@ -265,9 +242,7 @@ private theorem planarWirtinger_integral_at_one_from_parent (k β : ℝ)
         rw [Complex.ofReal_sub]
         ring
       _ = _ := by
-        have hcoef : α * (α - 1) / 2 - (α / 2) ^ 2 =
-            (α / 2) * (α / 2 - 1) := by ring
-        rw [hcoef]
+        ring
   rw [hWreal]
   simpa [p, q, α] using htarget
 
@@ -278,48 +253,42 @@ private theorem planarWirtinger_integral_at_one_value (k β : ℝ)
       ((2 + k - β) / 2) * ((2 + k - β) / 2 - 1) *
         DOZZ.planarGaussConstant k β := by
   rcases lt_or_gt_of_ne hβne with hTaylor | hDifference
-  · let A : ℝ := ∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u
+  · let A  := ∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u
     have hA : (A : ℂ) = DOZZ.planarGaussConstant k β := by
       simpa [A, norm_one, Real.one_rpow, integral_complex_ofReal] using
         ((planar_taylor_integral k β hk hβ hβ₂ hTaylor) 1).2
     have hsecond := planarTaylor_real_second_derivative_relation k β hk hβ hβ₂ hTaylor
-    exact planarWirtinger_integral_at_one_from_parent k β hk hβ hβ₂ A hA
-      (by simpa [A] using hsecond)
-  · let A : ℝ := ∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u
+    apply planarWirtinger_integral_at_one_from_parent <;> assumption
+  · let A  := ∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u
     have hA : (A : ℂ) = DOZZ.planarGaussConstant k β := by
       simpa [A, norm_one, Real.one_rpow, integral_complex_ofReal] using
         ((planar_difference_integral k β hk hDifference hβ₂) 1).2
     have hsecond := planarDifference_real_second_derivative_relation k β hk
       (by linarith [hβ]) hβ₂ hDifference
-    exact planarWirtinger_integral_at_one_from_parent k β hk hβ hβ₂ A hA
-      (by simpa [A] using hsecond)
+    apply planarWirtinger_integral_at_one_from_parent <;> assumption
 
 private theorem planarWirtinger_integral_tendsto_parameter (k β : ℝ)
     (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2) :
     Tendsto (fun b : ℝ => ∫ u : ℂ, DOZZ.planarWirtingerKernel k b 1 u)
       (𝓝 β) (𝓝 (∫ u : ℂ, DOZZ.planarWirtingerKernel k β 1 u)) := by
-  let δ : ℝ := min ((β - k) / 2) ((2 - β) / 2)
-  let βlo : ℝ := β - δ
-  let βhi : ℝ := β + δ
+  let δ  := min ((β - k) / 2) ((2 - β) / 2)
+  let βlo  := β - δ
+  let βhi  := β + δ
   let B : ℂ → ℝ := fun u =>
     ‖u‖ ^ (-βlo) * ‖u - 1‖ ^ (k - 2) +
       ‖u‖ ^ (-βhi) * ‖u - 1‖ ^ (k - 2)
   have hδ : 0 < δ := by dsimp [δ]; positivity
   have hklo : k < βlo := by
-    dsimp [βlo, δ]
-    have hmin : min ((β - k) / 2) ((2 - β) / 2) ≤ (β - k) / 2 := min_le_left _ _
-    linarith
+    grind
   have hhi₂ : βhi < 2 := by
-    dsimp [βhi, δ]
-    have hmin : min ((β - k) / 2) ((2 - β) / 2) ≤ (2 - β) / 2 := min_le_right _ _
-    linarith
+    grind
   have hβlo : βlo < β := by dsimp [βlo]; linarith
   have hβhi : β < βhi := by dsimp [βhi]; linarith
   have hparam : ∀ᶠ b : ℝ in 𝓝 β, βlo < b ∧ b < βhi := by
     filter_upwards [Ioo_mem_nhds hβlo hβhi] with b hb
     exact ⟨hb.1, hb.2⟩
   have hlowInt := positive_riesz_convolution_integrable k βlo hk hklo
-    (by linarith [hβlo, hhi₂])
+    (by linarith)
     (1 : ℂ) (by norm_num)
   have hhighInt := positive_riesz_convolution_integrable k βhi hk
     (by linarith [hβ, hβhi]) hhi₂
@@ -330,7 +299,7 @@ private theorem planarWirtinger_integral_tendsto_parameter (k β : ℝ)
   have hmeas : ∀ᶠ b : ℝ in 𝓝 β,
       AEStronglyMeasurable (DOZZ.planarWirtingerKernel k b 1) volume := by
     filter_upwards [hparam] with b hb
-    have hi : Integrable (DOZZ.planarWirtingerKernel k b 1) volume :=
+    have hi  :=
       (integrable_planarWirtingerKernel_iff k b hk 1 (by norm_num)).2
         ⟨by linarith [hb.1], by linarith [hb.2]⟩
     exact hi.aestronglyMeasurable
@@ -338,7 +307,7 @@ private theorem planarWirtinger_integral_tendsto_parameter (k β : ℝ)
       ‖DOZZ.planarWirtingerKernel k b 1 u‖ ≤ B u := by
     filter_upwards [hparam] with b hb
     filter_upwards [Measure.ae_ne volume (0 : ℂ), Measure.ae_ne volume 1] with u hu0 hu1
-    have hrpos : 0 < ‖u‖ := norm_pos_iff.mpr hu0
+    have hrpos  := norm_pos_iff.mpr hu0
     have hnorm := norm_planarWirtingerKernel_eq k b 1 u hu0 hu1
     have hnorm' : ‖DOZZ.planarWirtingerKernel k b 1 u‖ =
         ‖u‖ ^ (-b) * ‖u - 1‖ ^ (k - 2) := by
@@ -356,7 +325,7 @@ private theorem planarWirtinger_integral_tendsto_parameter (k β : ℝ)
           dsimp [B]
           exact le_add_of_nonneg_left (mul_nonneg
             (Real.rpow_nonneg (norm_nonneg u) _) hsnonneg)
-    · have hrge : 1 ≤ ‖u‖ := le_of_not_ge hrle
+    · have hrge  := le_of_not_ge hrle
       have hpow : ‖u‖ ^ (-b) ≤ ‖u‖ ^ (-βlo) :=
         Real.rpow_le_rpow_of_exponent_le hrge (by linarith [hb.1])
       have hsnonneg : 0 ≤ ‖u - 1‖ ^ (k - 2) := Real.rpow_nonneg (norm_nonneg _) _
@@ -373,9 +342,7 @@ private theorem planarWirtinger_integral_tendsto_parameter (k β : ℝ)
     filter_upwards [Measure.ae_ne volume (0 : ℂ), Measure.ae_ne volume 1] with u hu0 hu1
     have hpow : Tendsto (fun b : ℝ => ‖u‖ ^ b) (𝓝 β) (𝓝 (‖u‖ ^ β)) :=
       (Real.continuousAt_const_rpow (norm_ne_zero_iff.mpr hu0)).tendsto
-    have hpowC : Tendsto (fun b : ℝ => ((‖u‖ ^ b : ℝ) : ℂ))
-        (𝓝 β) (𝓝 ((‖u‖ ^ β : ℝ) : ℂ)) :=
-      Complex.continuous_ofReal.continuousAt.tendsto.comp hpow
+    have hpowC := Complex.continuous_ofReal.continuousAt.tendsto.comp hpow
     have hdenom : Tendsto (fun b : ℝ => (1 - u) ^ 2 * ((‖u‖ ^ b : ℝ) : ℂ))
         (𝓝 β) (𝓝 ((1 - u) ^ 2 * ((‖u‖ ^ β : ℝ) : ℂ))) :=
       tendsto_const_nhds.mul hpowC
@@ -385,106 +352,35 @@ private theorem planarWirtinger_integral_tendsto_parameter (k β : ℝ)
     let N : ℂ := (‖u - 1‖ ^ k : ℝ)
     have hkernel : Tendsto
         (fun b : ℝ => N / ((1 - u) ^ 2 * ((‖u‖ ^ b : ℝ) : ℂ)))
-        (𝓝 β) (𝓝 (N / ((1 - u) ^ 2 * ((‖u‖ ^ β : ℝ) : ℂ)))) := by
-      exact tendsto_const_nhds.div hdenom hdenom0
-    simpa [N, DOZZ.planarWirtingerKernel] using hkernel
+        (𝓝 β) (𝓝 (N / ((1 - u) ^ 2 * ((‖u‖ ^ β : ℝ) : ℂ)))) := tendsto_const_nhds.div hdenom hdenom0
+    assumption
   exact MeasureTheory.tendsto_integral_filter_of_dominated_convergence B
     hmeas hbound hBInt hlim
 
 private theorem planarWirtingerTargetReal_continuousAt (k : ℝ) (hk : 0 < k)
     (hk1 : k < 1) :
     ContinuousAt (planarWirtingerTargetReal k) (k + 1) := by
-  let qA : ℝ → ℝ := fun b => (2 + k - b) / 2
-  let N : ℝ → ℝ := fun b =>
-    Real.Gamma (1 - b / 2) * Real.Gamma (k / 2) * Real.Gamma ((b - k) / 2)
-  let D : ℝ → ℝ := fun b =>
-    Real.Gamma (b / 2) * Real.Gamma (1 - k / 2) * Real.Gamma (1 + (k - b) / 2)
-  have hqA : ContinuousAt qA (k + 1) := by
-    dsimp [qA]
-    fun_prop
-  have hqA0 : qA (k + 1) ≠ 0 := by
-    have hval : qA (k + 1) = (1 : ℝ) / 2 := by dsimp [qA]; ring
-    rw [hval]
-    norm_num
-  have harg1 : ContinuousAt (fun b : ℝ => 1 - b / 2) (k + 1) := by fun_prop
-  have harg2 : ContinuousAt (fun b : ℝ => b / 2) (k + 1) := by fun_prop
-  have harg3 : ContinuousAt (fun b : ℝ => (b - k) / 2) (k + 1) := by fun_prop
-  have harg6 : ContinuousAt (fun b : ℝ => 1 + (k - b) / 2) (k + 1) := by fun_prop
-  have hΓ1 : ContinuousAt (fun b : ℝ => Real.Gamma (1 - b / 2)) (k + 1) := by
-    have hp : 0 < 1 - (k + 1) / 2 := by linarith
-    have hcomp := (continuousAt_realGamma_of_pos _ hp).comp_of_eq harg1 (by ring)
-    change ContinuousAt (Real.Gamma ∘ fun b : ℝ => 1 - b / 2) (k + 1)
-    exact hcomp
-  have hΓ2 : ContinuousAt (fun b : ℝ => Real.Gamma (b / 2)) (k + 1) := by
-    have hp : 0 < (k + 1) / 2 := by linarith
-    have hcomp := (continuousAt_realGamma_of_pos _ hp).comp_of_eq harg2 (by ring)
-    change ContinuousAt (Real.Gamma ∘ fun b : ℝ => b / 2) (k + 1)
-    exact hcomp
-  have hΓ3 : ContinuousAt (fun b : ℝ => Real.Gamma ((b - k) / 2)) (k + 1) := by
-    have hp : 0 < ((k + 1) - k) / 2 := by norm_num
-    have hcomp := (continuousAt_realGamma_of_pos _ hp).comp_of_eq harg3 (by ring)
-    change ContinuousAt (Real.Gamma ∘ fun b : ℝ => (b - k) / 2) (k + 1)
-    exact hcomp
-  have hΓ6 : ContinuousAt (fun b : ℝ => Real.Gamma (1 + (k - b) / 2)) (k + 1) := by
-    have hp : 0 < 1 + (k - (k + 1)) / 2 := by norm_num
-    have hcomp := (continuousAt_realGamma_of_pos _ hp).comp_of_eq harg6 (by ring)
-    change ContinuousAt (Real.Gamma ∘ fun b : ℝ => 1 + (k - b) / 2) (k + 1)
-    exact hcomp
-  have hN : ContinuousAt N (k + 1) := by
-    dsimp [N]
-    exact hΓ1.mul continuousAt_const |>.mul hΓ3
-  have hD : ContinuousAt D (k + 1) := by
-    dsimp [D]
-    exact hΓ2.mul continuousAt_const |>.mul hΓ6
-  have hDpos : 0 < D (k + 1) := by
-    dsimp [D]
-    have hp2 : 0 < (k + 1) / 2 := by linarith
-    have hp5 : 0 < 1 - k / 2 := by linarith
-    have hp6 : 0 < 1 + (k - (k + 1)) / 2 := by norm_num
-    exact mul_pos (mul_pos (Real.Gamma_pos_of_pos hp2) (Real.Gamma_pos_of_pos hp5))
-      (Real.Gamma_pos_of_pos hp6)
-  have hbase : ContinuousAt (fun b : ℝ => Real.pi * (N b / D b)) (k + 1) :=
-    continuousAt_const.mul (hN.div hD hDpos.ne')
-  have hfactor : ContinuousAt (fun b : ℝ => (k / 2) ^ 2 / (qA b) ^ 2) (k + 1) :=
-    continuousAt_const.div (hqA.pow 2) (pow_ne_zero 2 hqA0)
-  have hcoeff : ContinuousAt (fun b : ℝ => qA b * (qA b - 1)) (k + 1) :=
-    hqA.mul (hqA.sub continuousAt_const)
-  have htarget : ContinuousAt (fun b : ℝ =>
-      qA b * (qA b - 1) * ((k / 2) ^ 2 / (qA b) ^ 2 * (Real.pi * (N b / D b))))
-      (k + 1) := hcoeff.mul (hfactor.mul hbase)
-  have hfun : (fun b : ℝ => planarWirtingerTargetReal k b) =
-      (fun b => qA b * (qA b - 1) *
-        ((k / 2) ^ 2 / (qA b) ^ 2 * (Real.pi * (N b / D b)))) := by
-    funext b
-    simp only [planarWirtingerTargetReal, planarRieszCoefficientReal, qA, N, D]
-    ring
-  simpa only [hfun] using htarget
+  have hΓ {f : ℝ → ℝ} (hf : ContinuousAt f (k + 1)) (hpos : 0 < f (k + 1)) :
+      ContinuousAt (fun b => Real.Gamma (f b)) (k + 1) :=
+    (continuousAt_realGamma_of_pos _ hpos).comp' hf
+  unfold planarWirtingerTargetReal planarRieszCoefficientReal planarRieszConstant
+  refine ContinuousAt.mul (by fun_prop) (ContinuousAt.mul (by
+    fun_prop (disch := norm_num <;> linarith)) (continuousAt_const.mul (ContinuousAt.div ?_ ?_ ?_)))
+  · exact ((hΓ (by fun_prop) (by linarith)).mul continuousAt_const).mul
+      (hΓ (by fun_prop) (by linarith))
+  · exact ((hΓ (by fun_prop) (by linarith)).mul continuousAt_const).mul
+      (hΓ (by fun_prop) (by linarith))
+  · exact (mul_pos (mul_pos (Real.Gamma_pos_of_pos (by linarith)) (Real.Gamma_pos_of_pos (by linarith)))
+      (Real.Gamma_pos_of_pos (by linarith))).ne'
 
 private theorem planarWirtingerTargetReal_eq (k β : ℝ) (hk : 0 < k)
     (hβ : k < β) (hβ₂ : β < 2) :
     ((2 + k - β) / 2) * ((2 + k - β) / 2 - 1) *
         DOZZ.planarGaussConstant k β =
       (planarWirtingerTargetReal k β : ℂ) := by
-  have hGauss : (planarRieszCoefficientReal k β : ℂ) =
-      DOZZ.planarGaussConstant k β := by
-    simpa [planarRieszCoefficientReal] using
-      positive_riesz_coefficient_eq_planarGaussConstant k β hk hβ hβ₂
-  let a : ℝ := (2 + k - β) / 2
-  have hcast : ((2 + (k : ℂ) - (β : ℂ)) / 2) *
-      ((2 + (k : ℂ) - (β : ℂ)) / 2 - 1) =
-        Complex.ofReal (a * (a - 1)) := by
-    dsimp [a]
-    push_cast
-    ring
-  calc
-    _ = Complex.ofReal (a * (a - 1)) * DOZZ.planarGaussConstant k β := by rw [hcast]
-    _ = Complex.ofReal (a * (a - 1)) *
-        Complex.ofReal (planarRieszCoefficientReal k β) := by rw [← hGauss]
-    _ = Complex.ofReal (a * (a - 1) * planarRieszCoefficientReal k β) :=
-      (Complex.ofReal_mul _ _).symm
-    _ = Complex.ofReal (planarWirtingerTargetReal k β) := by
-      apply congrArg Complex.ofReal
-      dsimp [a, planarWirtingerTargetReal, planarRieszCoefficientReal]
+  rw [← positive_riesz_coefficient_eq_planarGaussConstant k β hk hβ hβ₂, planarWirtingerTargetReal]
+  push_cast
+  rfl
 
 private theorem planarWirtinger_integral_at_one_value_all (k β : ℝ)
     (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2) :
@@ -493,17 +389,17 @@ private theorem planarWirtinger_integral_at_one_value_all (k β : ℝ)
       ((2 + k - β) / 2) * ((2 + k - β) / 2 - 1) *
         DOZZ.planarGaussConstant k β := by
   by_cases hβne : β ≠ k + 1
-  · exact planarWirtinger_integral_at_one_value k β hk hβ hβ₂ hβne
+  · apply planarWirtinger_integral_at_one_value <;> assumption
   · have hβeq : β = k + 1 := by
       by_contra h
       exact hβne h
     subst β
     have hk1 : k < 1 := by linarith
-    let l : Filter ℝ := 𝓝[≠] (k + 1)
-    let L : ℝ → ℂ := fun b =>
+    let l  := 𝓝[≠] (k + 1)
+    let L  := fun b =>
       ((k / 2) * (k / 2 - 1) : ℝ) *
         (∫ u : ℂ, DOZZ.planarWirtingerKernel k b 1 u)
-    let R : ℝ → ℂ := fun b => (planarWirtingerTargetReal k b : ℂ)
+    let R  := fun b => (planarWirtingerTargetReal k b : ℂ)
     have hDCT := planarWirtinger_integral_tendsto_parameter k (k + 1) hk
       (by linarith) (by linarith)
     have hleftFull : Tendsto L (𝓝 (k + 1))
@@ -515,8 +411,7 @@ private theorem planarWirtinger_integral_at_one_value_all (k β : ℝ)
       simpa [L] using h
     have hleft : Tendsto L l (𝓝 (L (k + 1))) := hleftFull.mono_left nhdsWithin_le_nhds
     have hTcont := planarWirtingerTargetReal_continuousAt k hk hk1
-    have hrightFull : Tendsto R (𝓝 (k + 1)) (𝓝 (R (k + 1))) := by
-      exact Complex.continuous_ofReal.continuousAt.tendsto.comp hTcont.tendsto
+    have hrightFull := Complex.continuous_ofReal.continuousAt.tendsto.comp hTcont.tendsto
     have hright : Tendsto R l (𝓝 (R (k + 1))) := hrightFull.mono_left nhdsWithin_le_nhds
     have hinterval : ∀ᶠ b : ℝ in l, k < b ∧ b < 2 := by
       have hlow : ∀ᶠ b : ℝ in l, k < b :=
@@ -531,7 +426,7 @@ private theorem planarWirtinger_integral_at_one_value_all (k β : ℝ)
         (by simpa using hbe)
       have htarget := planarWirtingerTargetReal_eq k b hk hb.1 hb.2
       simpa [L, R] using hvalue.trans htarget
-    have hlim : L (k + 1) = R (k + 1) :=
+    have hlim  :=
       tendsto_nhds_unique (hleft.congr' heq) hright
     have hlim' : ((k : ℂ) / 2) * ((k : ℂ) / 2 - 1) *
         (∫ u : ℂ, DOZZ.planarWirtingerKernel k (k + 1) 1 u) =
@@ -589,8 +484,7 @@ private theorem planarWirtingerKernel_rotated_scale (k β : ℝ) (hk : 0 < k)
         Real.mul_rpow hr.le (norm_nonneg v)
       have hrpow : r ^ k = r ^ (k - β - 2) * (r ^ β * r ^ 2) := by
         calc
-          r ^ k = r ^ ((k - β - 2) + (β + 2)) := by
-            exact congrArg (fun x : ℝ => r ^ x) (by ring)
+          r ^ k = r ^ ((k - β - 2) + (β + 2)) := congrArg (fun x : ℝ => r ^ x) (by ring)
           _ = r ^ (k - β - 2) * r ^ (β + 2) := Real.rpow_add hr _ _
           _ = r ^ (k - β - 2) * (r ^ β * r ^ 2) := by
             rw [Real.rpow_add hr β 2]
@@ -600,10 +494,10 @@ private theorem planarWirtingerKernel_rotated_scale (k β : ℝ) (hk : 0 < k)
         hnormDiff, hnormV, hden, hnumPow, hdenPow]
       have hnormvpos : 0 < ‖v‖ ^ β :=
         Real.rpow_pos_of_pos (norm_pos_iff.mpr hv0) β
-      have hnormdiffpos : 0 < ‖v - 1‖ ^ k :=
+      have hnormdiffpos  :=
         Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr hv1)) k
-      have hxi2 : ξ ^ 2 ≠ 0 := pow_ne_zero 2 hξ0
-      have hr2 : r ^ 2 ≠ 0 := pow_ne_zero 2 hr.ne'
+      have hxi2  := pow_ne_zero 2 hξ0
+      have hr2  := pow_ne_zero 2 hr.ne'
       have hrβ : r ^ β ≠ 0 := (Real.rpow_pos_of_pos hr β).ne'
       have hcv : (1 - v) ^ 2 ≠ 0 := pow_ne_zero 2 (sub_ne_zero.mpr (Ne.symm hv1))
       field_simp [hxi2, hr2, hrβ, hnormvpos.ne', hcv, hnormdiffpos.ne']
@@ -617,7 +511,7 @@ private theorem planarWirtingerKernel_integral_scale (k β : ℝ) (hk : 0 < k)
     (∫ u : ℂ, DOZZ.planarWirtingerKernel k β z u) =
       (ξ ^ 2)⁻¹ * (r ^ (k - β) : ℝ) *
         (∫ u : ℂ, DOZZ.planarWirtingerKernel k β 1 u) := by
-  let g : ℂ → ℂ := fun u => DOZZ.planarWirtingerKernel k β z (ξ * u)
+  let g  := fun u => DOZZ.planarWirtingerKernel k β z (ξ * u)
   have hrotation : (∫ u : ℂ, g u) =
       (∫ u : ℂ, DOZZ.planarWirtingerKernel k β z u) := by
     change (∫ u : ℂ, DOZZ.planarWirtingerKernel k β z (ξ * u)) = _
@@ -634,7 +528,7 @@ private theorem planarWirtingerKernel_integral_scale (k β : ℝ) (hk : 0 < k)
       (ξ ^ 2)⁻¹ * (r ^ (k - β - 2) : ℝ) *
         DOZZ.planarWirtingerKernel k β 1 u := by
     funext u
-    exact planarWirtingerKernel_rotated_scale k β hk hβ ξ z hξ r hr hz u
+    apply planarWirtingerKernel_rotated_scale <;> assumption
   rw [hpoint, integral_const_mul] at hscaling
   rw [hrotation] at hscaling
   have hmul := congrArg (fun x : ℂ => (r ^ 2 : ℝ) * x) hscaling
@@ -658,18 +552,16 @@ private theorem planarWirtingerKernel_integral_scale (k β : ℝ) (hk : 0 < k)
       _ = (ξ ^ 2)⁻¹ * ((r ^ 2 : ℝ) * (r ^ (k - β - 2) : ℝ)) *
           (∫ u : ℂ, DOZZ.planarWirtingerKernel k β 1 u) := by ring
       _ = _ := by rw [hrpowC]
-  have hr2 : ((r ^ 2 : ℝ) : ℂ) ≠ 0 := by exact_mod_cast (pow_ne_zero 2 hr.ne')
   have hright : ((r ^ 2 : ℝ) : ℂ) *
       ((((r ^ 2 : ℝ)⁻¹ : ℝ) : ℂ) *
         (∫ u : ℂ, DOZZ.planarWirtingerKernel k β z u)) =
       (∫ u : ℂ, DOZZ.planarWirtingerKernel k β z u) := by
     calc
       _ = (((r ^ 2 : ℝ) : ℂ) * (((r ^ 2 : ℝ)⁻¹ : ℝ) : ℂ)) *
-          (∫ u : ℂ, DOZZ.planarWirtingerKernel k β z u) := by
-            exact (mul_assoc _ _ _).symm
+          (∫ u : ℂ, DOZZ.planarWirtingerKernel k β z u) := (mul_assoc _ _ _).symm
       _ = (((r ^ 2 : ℝ) * (r ^ 2 : ℝ)⁻¹ : ℝ) : ℂ) *
           (∫ u : ℂ, DOZZ.planarWirtingerKernel k β z u) := by
-            rw [← Complex.ofReal_mul]
+            simp
       _ = _ := by
         rw [mul_inv_cancel₀ (pow_ne_zero 2 hr.ne')]
         simp
@@ -692,18 +584,17 @@ theorem planar_wirtinger_integral (k β : ℝ) (hk : 0 < k)
   intro z hz
   constructor
   · exact (integrable_planarWirtingerKernel_iff k β hk z hz).2 ⟨hβ, hβ₂⟩
-  · let r : ℝ := ‖z‖
-    let ξ : ℂ := z / (r : ℂ)
-    have hr : 0 < r := by dsimp [r]; exact norm_pos_iff.mpr hz
+  · let r  := ‖z‖
+    let ξ  := z / (r : ℂ)
+    have hr : 0 < r := by positivity
     have hrC : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
     have hξ : ‖ξ‖ = 1 := by
       dsimp [ξ]
       rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
       dsimp [r]
-      exact div_self (norm_ne_zero_iff.mpr hz)
+      simpa
     have hξ0 : ξ ≠ 0 := by
-      intro h
-      simp [h] at hξ
+      positivity
     have hξr : ξ * (r : ℂ) = z := by
       dsimp [ξ]
       field_simp [hrC]
@@ -715,17 +606,14 @@ theorem planar_wirtinger_integral (k β : ℝ) (hk : 0 < k)
       calc
         r ^ (2 + k - β) = r ^ (2 + (k - β)) := by congr 1; ring
         _ = r ^ (2 : ℝ) * r ^ (k - β) := Real.rpow_add hr 2 (k - β)
-    have hrpowC : (r ^ (2 + k - β) : ℝ) =
-        (r ^ 2 : ℝ) * r ^ (k - β) := by
-      exact hrpow
+    have hrpowC := hrpow
     have hfactor : (ξ ^ 2)⁻¹ * (r ^ (k - β) : ℝ) =
         (r ^ (2 + k - β) : ℝ) / z ^ 2 := by
       rw [hrpowC, hzsq]
-      have hξ2 : ξ ^ 2 ≠ 0 := pow_ne_zero 2 hξ0
-      have hr2 : (r : ℂ) ^ 2 ≠ 0 := pow_ne_zero 2 hrC
+      have hξ2  := pow_ne_zero 2 hξ0
+      have hr2  := pow_ne_zero 2 hrC
       field_simp [hξ2, hr2]
-      rw [← Complex.ofReal_pow]
-      rw [← Complex.ofReal_mul]
+      rw [← Complex.ofReal_pow, ← Complex.ofReal_mul]
     have hscale := planarWirtingerKernel_integral_scale k β hk hβ
       ξ z hξ r hr hξr
     have hbase := planarWirtinger_integral_at_one_value_all k β hk hβ hβ₂

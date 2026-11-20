@@ -145,12 +145,11 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
     ε hε hmargin Aroot hAroot
     (fun z R δ hR hRhalf hδ hδR hlocal =>
       hballRoot γ hγmem t.2 hadm.1 hpq' z R δ hR hRhalf hδ hδR hlocal)
-  have hCpow : cutoffWeightedPositiveScaleRootBoundConstant Aroot γ t.2 ε ^ t.2 ≤ C := by
+  exact (hmain.2 z R hR hRhi hchart δ hδ hδR).trans
+    (mul_le_mul_of_nonneg_right (by
     calc
       _ ≤ B ^ t.2 := ENNReal.rpow_le_rpow hK (le_of_lt hp0)
       _ ≤ B ^ q := ENNReal.rpow_le_rpow_of_exponent_le hBone hpq'
-      _ = C := by rfl
-  exact (hmain.2 z R hR hRhi hchart δ hδ hδR).trans
-    (mul_le_mul_of_nonneg_right hCpow (by positivity))
+      _ = C := by rfl) (by positivity))
 
 end DOZZ.Proofs

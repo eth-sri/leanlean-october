@@ -20,4 +20,25 @@ noncomputable def gaussianVariance {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (Z : Ω → ℝ) : ℝ :=
   gaussianCovariance P Z Z
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
+theorem gaussianCovariance_const_mul_right
+    (Y Z : Ω → ℝ) (c : ℝ) :
+    gaussianCovariance P Y (fun ω => c * Z ω) = c * gaussianCovariance P Y Z := by
+  simp only [gaussianCovariance, ← integral_const_mul]
+  congr 1
+  ext ω
+  ring
+
+theorem gaussianVariance_const_mul
+    (Z : Ω → ℝ) (c : ℝ) :
+    gaussianVariance P (fun ω => c * Z ω) = c ^ 2 * gaussianVariance P Z := by
+  simp only [gaussianVariance, gaussianCovariance, ← integral_const_mul]
+  congr 1
+  ext ω
+  ring
+
+end
+
 end DOZZ

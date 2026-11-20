@@ -6,7 +6,9 @@ module
 
 public import DOZZ.GMC.CircleAverage
 public import DOZZ.GMC.Moments.InversionAdmissibleVersion
-public import DOZZ.GMC.Moments.InversionAtomless
+public import DOZZ.GMC.Construction.GMCIntensityAdapter
+public import DOZZ.GMC.Moments.ExactScaleBallMoment
+public import DOZZ.GMC.Moments.SubunitSet
 public import DOZZ.GMC.Moments.InversionCoordinate
 
 /-! Transport of arbitrary limiting GMC versions through the punctured inversion chart. -/
@@ -45,9 +47,8 @@ theorem isGMCOf_inversion_chart_transport
   have hY : IsAdmissibleLogRegularization P U dens 1 Y :=
     isCircleAverage_admissible P X hX Xc hXc U isOpen_compl_singleton
   have hYinv : IsAdmissibleLogRegularization P U dens 1
-      (fun ω ε x => Y ω ε (φ x)) := by
-    simpa [Y, φ, U, dens, complexInvOpenPartialHomeomorph] using
-      isAdmissibleLogRegularization_complexInv P dens 1 Y hY
+      (fun ω ε x => Y ω ε (φ x)) :=
+    isAdmissibleLogRegularization_complexInv P dens 1 Y hY
   obtain ⟨Mchart, hMchart, hMchartFinite, hMrestrict⟩ :=
     isGMCOf_restrict_admissible_version P X hX γ hγ hγ2 M hM Xc hXc U
       isOpen_compl_singleton
@@ -74,10 +75,9 @@ theorem isGMCOf_inversion_chart_transport
       intro x hx
       by_contra hxU
       have hx0 : x ≠ 0 := by simpa [U, inversionChart] using hxU
-      have hφx : φ x ≠ 0 := by
+      exact hx (by simpa [U, inversionChart] using (by
         change x⁻¹ ≠ 0
-        exact inv_ne_zero hx0
-      exact hx (by simpa [U, inversionChart] using hφx)
+        exact inv_ne_zero hx0))
     apply le_antisymm
     · calc
         N ω Uᶜ = (Mchart ω) (φ ⁻¹' Uᶜ) := by
@@ -87,9 +87,7 @@ theorem isGMCOf_inversion_chart_transport
         _ = 0 := hMchart.2.1 ω
     · exact zero_le
   have hNcompact : ∀ ω K, IsCompact K → K ⊆ U → N ω K < ⊤ := by
-    intro ω K hK hKU
-    exact lt_of_le_of_lt (measure_mono (Set.subset_univ K))
-      (hNfinite ω).measure_univ_lt_top
+    simp
   have hNlimit (f : BoundedContinuousFunction ℂ ℝ)
       (hfcompact : HasCompactSupport (f : ℂ → ℝ))
       (hfU : tsupport (f : ℂ → ℝ) ⊆ U) :
@@ -119,29 +117,23 @@ theorem isGMCOf_inversion_chart_transport
           fun ω => regularizedLogChaosTestMass P U dens
             (fun ω ε x => Y ω ε (φ x)) γ r ω f :=
       ae_of_all P (fun ω => hmass r ω)
-    have hright : (fun ω => ∫ x, g x ∂Mchart ω) =ᵐ[P]
-        fun ω => ∫ x, f x ∂N ω := ae_of_all P (fun ω => (hMapTest _).symm)
-    exact TendstoInMeasure.congr hleft hright hMlim
+    exact TendstoInMeasure.congr hleft (ae_of_all P (fun ω => (hMapTest _).symm)) hMlim
   have hN : IsAdmissibleGMCVersion P U dens
       (fun ω ε x => Y ω ε (φ x)) γ N :=
     ⟨hNmeas, hNsupport, hNcompact, hNlimit⟩
-  have hAtom := gmc_atomless_at_zero_of_isGMCOf P X hX γ hγ hγ2 M hM
+  have hAtom := gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0
   have hfull : ∀ᵐ ω ∂P, (M ω).map (fun x : ℂ => x⁻¹) = N ω := by
     filter_upwards [hAtom, hMrestrict] with ω hωAtom hωrestrict
     have hUae : ∀ᵐ x ∂M ω, x ∈ U := by
       rw [ae_iff]
       simpa [U, inversionChart] using hωAtom
-    have hMself : (M ω).restrict U = M ω :=
-      Measure.restrict_eq_self_of_ae_mem hUae
-    calc
-      (M ω).map (fun x : ℂ => x⁻¹) = ((M ω).restrict U).map (fun x : ℂ => x⁻¹) :=
-        congrArg (fun μ : Measure ℂ => μ.map (fun x : ℂ => x⁻¹)) hMself.symm
-      _ = ((M ω).restrict U).map φ := by
-        rfl
-      _ = N ω := congrArg (fun μ : Measure ℂ => μ.map φ) hωrestrict
+    exact Trans.trans
+      (Trans.trans (congrArg (fun μ => Measure.map (fun x => x⁻¹) μ) (Eq.symm (Measure.restrict_eq_self_of_ae_mem hUae)))
+        (Eq.refl (Measure.map (fun x => x⁻¹) ((M ω).restrict U))))
+      (congrArg (fun μ => Measure.map φ μ) hωrestrict)
   refine ⟨N, ?_, ?_⟩
   · simpa [Y, φ, U, dens] using hN
   · filter_upwards [hfull] with ω hω
-    simpa [φ, complexInvOpenPartialHomeomorph] using hω
+    exact hω
 
 end DOZZ.Proofs

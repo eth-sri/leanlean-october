@@ -9,6 +9,7 @@ public import DOZZ.FourPoint.BPZ.Rooting
 public import DOZZ.GMC.SharpMoments.TiltCutoff
 public import DOZZ.GMC.Construction.GMCVertexTiltInputs
 public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+public import DOZZ.GMC.CircleWickDensity
 
 /-! # Rooting a joint functional of the cutoff and limit chaos
 
@@ -35,14 +36,6 @@ noncomputable def bpzCutRootDensity (γ r : ℝ) (x y : ℂ) : ℝ≥0∞ :=
 noncomputable def bpzLimRootDensity (γ r : ℝ) (x y : ℂ) : ℝ≥0∞ :=
   ENNReal.ofReal (Real.exp (γ ^ 2 * (bpzTruncLog r (x - y) + bpzPin r x +
     Real.log (normPlus y))))
-
-theorem bpz_gaussianCovariance_const_mul_right (P : Measure Ω) (Y Z : Ω → ℝ) (c : ℝ) :
-    gaussianCovariance P Y (fun ω => c * Z ω) = c * gaussianCovariance P Y Z := by
-  unfold gaussianCovariance
-  rw [← integral_const_mul]
-  congr 1
-  funext ω
-  ring
 
 /-- The circle-average tilt of a joint functional of the cutoff and limit chaos. -/
 theorem bpz_cutoff_root_tilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
@@ -82,7 +75,7 @@ theorem bpz_cutoff_root_tilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquator
   intro ω
   congr 2
   · funext y
-    rw [bpzCutRootDensity, bpz_gaussianCovariance_const_mul_right,
+    rw [bpzCutRootDensity, gaussianCovariance_const_mul_right,
       bpz_circle_covariance P X hX Xc hXc y x r, ← bpzLam_neg r (y - x), neg_sub]
     congr 2
     ring
@@ -97,10 +90,8 @@ theorem bpz_cutoff_root_tilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquator
 /-- The pointwise variance of the circle-average field is measurable. -/
 theorem measurable_bpz_circle_variance (P : Measure Ω) [SFinite P] (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : ∀ r : ℝ, Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r)) (r : ℝ) :
-    Measurable (fun x : ℂ => ∫ ω, Xc ω x r ^ 2 ∂P) := by
-  have h : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) :=
-    ((hXc r).comp measurable_swap).pow_const 2
-  exact (StronglyMeasurable.integral_prod_right' (ν := P) h.stronglyMeasurable).measurable
+    Measurable (fun x : ℂ => ∫ ω, Xc ω x r ^ 2 ∂P) :=
+  measurable_secondMoment P (hXc r)
 
 /-- Integrating a joint functional against the cutoff chaos roots it at the integration point.
 Only joint measurability along the two random measures and measurability in the measures at each
@@ -159,38 +150,8 @@ theorem bpz_measurable_lintegral_finite_family {α β : Type*} [MeasurableSpace 
     [MeasurableSpace β] (m : α → Measure ℂ) (hm : Measurable m)
     (hfin : ∀ a, IsFiniteMeasure (m a)) (g : β → ℂ → ℝ≥0∞)
     (hg : Measurable (Function.uncurry g)) :
-    Measurable (fun p : α × β => ∫⁻ y, g p.2 y ∂m p.1) := by
-  set c : α → ℝ≥0∞ := fun a => m a Set.univ + 1 with hc
-  have hcm : Measurable c :=
-    (Measure.measurable_coe MeasurableSet.univ |>.comp hm).add measurable_const
-  have hc0 : ∀ a, c a ≠ 0 := fun a => by simp [hc]
-  have hctop : ∀ a, c a ≠ ⊤ := fun a => by
-    simp only [hc, ne_eq, ENNReal.add_eq_top, ENNReal.one_ne_top, or_false]
-    exact measure_ne_top _ _
-  have hnm : Measurable (fun p : α × β => (c p.1)⁻¹ • m p.1) := by
-    refine Measure.measurable_of_measurable_coe _ fun s hs => ?_
-    simp only [Measure.smul_apply, smul_eq_mul]
-    exact ((hcm.comp measurable_fst).inv).mul
-      ((Measure.measurable_coe hs).comp (hm.comp measurable_fst))
-  let κ : ProbabilityTheory.Kernel (α × β) ℂ := ⟨fun p => (c p.1)⁻¹ • m p.1, hnm⟩
-  have hκfin : ProbabilityTheory.IsFiniteKernel κ := by
-    refine ⟨⟨1, ENNReal.one_lt_top, fun p => ?_⟩⟩
-    change ((c p.1)⁻¹ • m p.1) Set.univ ≤ 1
-    rw [Measure.smul_apply, smul_eq_mul]
-    calc (c p.1)⁻¹ * m p.1 Set.univ ≤ (c p.1)⁻¹ * c p.1 := by
-          gcongr
-          simp [hc]
-      _ = 1 := ENNReal.inv_mul_cancel (hc0 _) (hctop _)
-  have hint : Measurable fun p : α × β => ∫⁻ y, g p.2 y ∂κ p :=
-    Measurable.lintegral_kernel_prod_right (κ := κ) (f := fun p y => g p.2 y)
-      (hg.comp (measurable_fst.snd.prodMk measurable_snd))
-  have heq : (fun p : α × β => ∫⁻ y, g p.2 y ∂m p.1) =
-      fun p => c p.1 * ∫⁻ y, g p.2 y ∂κ p := by
-    funext p
-    change _ = c p.1 * ∫⁻ y, g p.2 y ∂((c p.1)⁻¹ • m p.1)
-    rw [lintegral_smul_measure, smul_eq_mul, ← mul_assoc,
-      ENNReal.mul_inv_cancel (hc0 _) (hctop _), one_mul]
-  rw [heq]
-  exact (hcm.comp measurable_fst).mul hint
+    Measurable (fun p : α × β => ∫⁻ y, g p.2 y ∂m p.1) :=
+  measurable_lintegral_finite_family (fun p : α × β => m p.1) (hm.comp measurable_fst)
+    (fun p => hfin p.1) _ (hg.comp (measurable_fst.snd.prodMk measurable_snd))
 
 end DOZZ.Proofs

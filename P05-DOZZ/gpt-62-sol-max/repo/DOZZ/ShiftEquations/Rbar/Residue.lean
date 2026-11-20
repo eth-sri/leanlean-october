@@ -210,10 +210,9 @@ theorem differentiableOn_rbarCoefficient {γ : ℝ} (hγ : 0 < γ) :
     have h2 : DifferentiableAt ℂ (fun w : ℂ => crossC γ w) z := by
       unfold crossC
       fun_prop
-    have hCpos : 0 < (1 - crossC γ z).re := by
+    exact ((Complex.differentiableAt_Gamma _ (ne_neg_nat_of_re_pos (by
       rw [one_sub_crossC_re]
-      exact mul_pos (by positivity) (by linarith [hz.2])
-    exact ((Complex.differentiableAt_Gamma _ (ne_neg_nat_of_re_pos hCpos)).comp z h1).mul
+      exact mul_pos (by positivity) (by linarith [hz.2])))).comp z h1).mul
       ((Complex.differentiable_one_div_Gamma _).comp z h2)
   have hfun : rbarCoefficient γ = fun u : ℂ => 2 * (Real.pi : ℂ) / γ *
       lFun ((γ : ℂ) / 2 * u - (γ : ℂ) ^ 2 / 4 - 1) * (lFun (crossC γ u))⁻¹ *

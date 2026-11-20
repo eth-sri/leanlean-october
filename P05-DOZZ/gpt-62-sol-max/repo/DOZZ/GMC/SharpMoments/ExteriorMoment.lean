@@ -22,49 +22,19 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- A quantitative moment bound for a series with geometrically decaying moments. -/
-theorem lintegral_tsum_rpow_le_of_geometric
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (f : ℕ → Ω → ℝ≥0∞) (hf : ∀ n, AEMeasurable (f n) P) {t : ℝ} (ht : 0 < t)
-    {K q : ℝ≥0∞} (hbound : ∀ n, ∫⁻ ω, f n ω ^ t ∂P ≤ K * q ^ n) :
-    ∫⁻ ω, (∑' n, f n ω) ^ t ∂P ≤ K * ((1 - q ^ (1 / max 1 t)) ^ (max 1 t))⁻¹ := by
-  rcases le_or_gt t 1 with ht1 | ht1
-  · have hm : max 1 t = 1 := max_eq_left ht1
-    rw [hm, div_one, ENNReal.rpow_one, ENNReal.rpow_one]
-    calc ∫⁻ ω, (∑' n, f n ω) ^ t ∂P ≤ ∫⁻ ω, ∑' n, f n ω ^ t ∂P :=
-          lintegral_mono fun ω => ennreal_rpow_tsum_le_tsum_rpow _ ht ht1
-      _ = ∑' n, ∫⁻ ω, f n ω ^ t ∂P := lintegral_tsum fun n => (hf n).pow_const t
-      _ ≤ ∑' n : ℕ, K * q ^ n := ENNReal.tsum_le_tsum hbound
-      _ = K * (1 - q)⁻¹ := by rw [ENNReal.tsum_mul_left, ENNReal.tsum_geometric]
-  · have hm : max 1 t = t := max_eq_right ht1.le
-    rw [hm]
-    have hinv : 0 < 1 / t := one_div_pos.2 ht
-    have hroot (n : ℕ) :
-        (∫⁻ ω, f n ω ^ t ∂P) ^ (1 / t) ≤ K ^ (1 / t) * (q ^ (1 / t)) ^ n :=
-      calc (∫⁻ ω, f n ω ^ t ∂P) ^ (1 / t) ≤ (K * q ^ n) ^ (1 / t) :=
-            ENNReal.rpow_le_rpow (hbound n) hinv.le
-        _ = K ^ (1 / t) * (q ^ n) ^ (1 / t) := ENNReal.mul_rpow_of_nonneg _ _ hinv.le
-        _ = K ^ (1 / t) * (q ^ (1 / t)) ^ n := by rw [weightedDyadicSum_pow_rpow_comm]
-    calc ∫⁻ ω, (∑' n, f n ω) ^ t ∂P ≤ (∑' n, (∫⁻ ω, f n ω ^ t ∂P) ^ (1 / t)) ^ t :=
-          ennreal_lintegral_rpow_tsum_le_of_roots_summable f t ht1.le hf
-      _ ≤ (∑' n : ℕ, K ^ (1 / t) * (q ^ (1 / t)) ^ n) ^ t :=
-          ENNReal.rpow_le_rpow (ENNReal.tsum_le_tsum hroot) ht.le
-      _ = (K ^ (1 / t) * (1 - q ^ (1 / t))⁻¹) ^ t := by
-          rw [ENNReal.tsum_mul_left, ENNReal.tsum_geometric]
-      _ = K * ((1 - q ^ (1 / t)) ^ t)⁻¹ := by
-          rw [ENNReal.mul_rpow_of_nonneg _ _ ht.le, ← ENNReal.rpow_mul,
-            one_div_mul_cancel ht.ne', ENNReal.rpow_one, ENNReal.inv_rpow]
-
 /-- The dyadic exterior annuli `2ⁿ R₀ ≤ |x| < 2ⁿ⁺¹ R₀`. -/
 def exteriorAnnulus (R0 : ℝ) (n : ℕ) : Set ℂ :=
   {x : ℂ | 2 ^ n * R0 ≤ ‖x‖ ∧ ‖x‖ < 2 ^ (n + 1) * R0}
 
-theorem measurableSet_exteriorAnnulus (R0 : ℝ) (n : ℕ) :
+section
+variable (R0 : ℝ) (n : ℕ)
+
+theorem measurableSet_exteriorAnnulus :
     MeasurableSet (exteriorAnnulus R0 n) :=
   (measurableSet_le measurable_const measurable_norm).inter
     (measurableSet_lt measurable_norm measurable_const)
 
-theorem exteriorAnnulus_eq_preimage (R0 : ℝ) (n : ℕ) :
+theorem exteriorAnnulus_eq_preimage :
     exteriorAnnulus R0 n =
       {y : ℂ | ((((2 : ℝ) ^ n : ℝ)) : ℂ)⁻¹ * y ∈ exteriorAnnulus R0 0} := by
   ext y
@@ -78,7 +48,13 @@ theorem exteriorAnnulus_eq_preimage (R0 : ℝ) (n : ℕ) :
   have hpow : (2 : ℝ) ^ (n + 1) * R0 = 2 * R0 * 2 ^ n := by ring
   rw [hpow, mul_comm (2 ^ n) R0]
 
-theorem exteriorAnnulus_disjoint (R0 : ℝ) (hR0 : 0 < R0) :
+end
+
+section
+variable (R0 : ℝ) (hR0 : 0 < R0)
+include hR0
+
+theorem exteriorAnnulus_disjoint :
     Pairwise (Function.onFun Disjoint (exteriorAnnulus R0)) := by
   intro m n hmn
   rw [Function.onFun, Set.disjoint_left]
@@ -93,7 +69,7 @@ theorem exteriorAnnulus_disjoint (R0 : ℝ) (hR0 : 0 < R0) :
     have := hxm.1
     nlinarith
 
-theorem iUnion_exteriorAnnulus (R0 : ℝ) (hR0 : 0 < R0) :
+theorem iUnion_exteriorAnnulus :
     (⋃ n, exteriorAnnulus R0 n) = {x : ℂ | R0 ≤ ‖x‖} := by
   ext x
   simp only [Set.mem_iUnion, Set.mem_ofPred_eq]
@@ -107,6 +83,8 @@ theorem iUnion_exteriorAnnulus (R0 : ℝ) (hR0 : 0 < R0) :
     refine ⟨n, ?_, ?_⟩
     · rwa [le_div_iff₀ hR0] at hn1
     · rwa [div_lt_iff₀ hR0] at hn2
+
+end
 
 /-- The annulus coefficient: the weight bound and the exterior scaling factor combine into a
 geometric factor. -/
@@ -130,8 +108,7 @@ theorem exteriorMoment_coeff_eq {R0 : ℝ} (hR0 : 0 < R0) (β t γ : ℝ) (n : �
       ← Real.rpow_mul (by norm_num)]
     congr 1
     ring
-  rw [hsplit, ← Real.rpow_mul (by positivity), Real.mul_rpow h2R.le h2n.le, hexp, hhalf]
-  rw [mul_assoc, ← Real.rpow_add h2n, ← Real.rpow_add h2n]
+  rw [hsplit, ← Real.rpow_mul (by positivity), Real.mul_rpow h2R.le h2n.le, hexp, hhalf, mul_assoc, ← Real.rpow_add h2n, ← Real.rpow_add h2n]
   congr 2
   ring
 
@@ -149,13 +126,12 @@ theorem cutoff_exterior_power_moment_le
       ENNReal.ofReal ((2 * R0) ^ (β * t)) * K0 *
         ((1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ (2 * t + γ ^ 2 * t / 2 - γ ^ 2 * t ^ 2 / 2 - β * t)) ^
           (1 / max 1 t)) ^ (max 1 t))⁻¹ := by
-  let _ : IsProbabilityMeasure P := hX.1
   have hR0pos : 0 < R0 := by linarith
   set ζ : ℝ := 2 * t + γ ^ 2 * t / 2 - γ ^ 2 * t ^ 2 / 2 - β * t with hζ
   set A : ℕ → Set ℂ := exteriorAnnulus R0 with hA
   set f : ℕ → Ω → ℝ≥0∞ := fun n ω =>
     ENNReal.ofReal ((2 ^ (n + 1) * R0) ^ β) * regularizedGMC P Xc γ r ω (A n) with hf
-  have hAm : ∀ n, MeasurableSet (A n) := measurableSet_exteriorAnnulus R0
+  have hAm  := measurableSet_exteriorAnnulus R0
   have hfm : ∀ n, AEMeasurable (f n) P := fun n =>
     aemeasurable_const.mul (((Measure.measurable_coe (hAm n)).comp
       (regularizedGMC_measurable P X hX Xc hXc γ r)).aemeasurable)
@@ -202,15 +178,9 @@ theorem cutoff_exterior_power_moment_le
           gcongr
           exact hK0 _ (by have := Real.log_nonneg hc; linarith)
       _ = (ENNReal.ofReal ((2 * R0) ^ (β * t)) * K0) * ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ) ^ n := by
-          rw [ENNReal.ofReal_rpow_of_nonneg (by positivity) ht.le, ← mul_assoc,
-            ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_pow (by positivity),
-            exteriorMoment_coeff_eq hR0pos β t γ n]
-          rw [ENNReal.ofReal_mul (by positivity)]
+          rw [ENNReal.ofReal_rpow_of_nonneg (by positivity) ht.le, ← mul_assoc, ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_pow (by positivity), exteriorMoment_coeff_eq hR0pos β t γ n, ENNReal.ofReal_mul (by positivity)]
           ring
-  calc ∫⁻ ω, (∫⁻ x in {x : ℂ | R0 ≤ ‖x‖}, ENNReal.ofReal (‖x‖ ^ β)
-        ∂regularizedGMC P Xc γ r ω) ^ t ∂P
-      ≤ ∫⁻ ω, (∑' n, f n ω) ^ t ∂P :=
-        lintegral_mono fun ω => ENNReal.rpow_le_rpow (hpt ω) ht.le
-    _ ≤ _ := lintegral_tsum_rpow_le_of_geometric f hfm ht hmom
+  exact Trans.trans (lintegral_mono fun ω => ENNReal.rpow_le_rpow (hpt ω) (LT.lt.le ht))
+    (lintegral_tsum_rpow_le_of_geometric f hfm ht hmom)
 
 end DOZZ.Proofs

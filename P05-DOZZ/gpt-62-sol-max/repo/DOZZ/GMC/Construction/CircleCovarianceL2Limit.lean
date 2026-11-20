@@ -19,30 +19,28 @@ open scoped Distributions Topology
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+include hX
+
 private theorem gaussianL2Limit_mean_zero
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) :
     (∫ ω, L ω ∂P) = 0 := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨hLmem, f, hLapprox⟩ := hL
   have hcomm : ∀ n,
       eLpNorm (fun ω => X ω (f n) - L ω) 2 P =
         eLpNorm (fun ω => L ω - X ω (f n)) 2 P := by
     intro n
-    exact eLpNorm_sub_comm _ _ _ _
-  have happrox : Tendsto
-      (fun n => eLpNorm (fun ω => X ω (f n) - L ω) 2 P) atTop (𝓝 0) := by
-    simpa only [hcomm] using hLapprox
+    exact eLpNorm_sub_comm ..
   exact integral_eq_zero_of_eLpNorm_sub
     (fun n => equatorGFF_test_memLp X hX (f n)) hLmem
-    (fun n => equatorGFF_test_integral X hX (f n)) happrox
+    (fun n => equatorGFF_test_integral X hX (f n)) (by
+    simpa only [hcomm] using hLapprox)
 
 /-- For each fixed circle radius, covariance against any Gaussian `L²` limit is a continuous
 function of the center. -/
 theorem continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) (r : ℝ) :
     Continuous (fun x => gaussianCovariance P (fun ω => Xc ω x r) L) := by
@@ -74,5 +72,7 @@ theorem continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
   have hcircle : Continuous (fun x : ℂ => circleAverageL2 hXc (x, r)) :=
     (continuous_circleAverageL2 P X Xc hX hXc).comp hparam
   simpa only [hpair] using hcircle.inner continuous_const
+
+end
 
 end DOZZ.Proofs

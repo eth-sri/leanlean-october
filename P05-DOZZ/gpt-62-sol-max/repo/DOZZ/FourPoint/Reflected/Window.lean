@@ -16,11 +16,4 @@ public section
 
 namespace DOZZ.Proofs
 
-/-- The reflected charge changes the zero-mode order by the reflection exponent. -/
-theorem reflected_zero_mode_order (γ α₁ α₂ α₃ : ℝ) :
-    ((2 * Q γ - α₁ - γ / 2) + α₂ + α₃ - 2 * Q γ) / γ =
-      (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ +
-        2 * (Q γ - α₁) / γ := by
-  ring
-
 end DOZZ.Proofs

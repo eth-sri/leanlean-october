@@ -11,9 +11,13 @@ import Mathlib.Tactic
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (γ ν : ℝ) (hγ : 0 < γ)
+  (hν : 0 < ν)
+include P hB hγ hν
+
 /-- The exponential of the Williams reference maximum has the exact Pareto law. -/
-theorem dual_reference_maximum_exp_pareto_law (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (γ ν : ℝ) (hγ : 0 < γ) (hν : 0 < ν) :
+theorem dual_reference_maximum_exp_pareto_law :
     (brownianMaximumReferenceLaw ν).map (fun m => Real.exp (γ*m)) =
       paretoMeasure 1 (2*ν/γ) := by
   rw [← brownianPath_globalMaximum_map P hB ν hν,
@@ -23,14 +27,15 @@ theorem dual_reference_maximum_exp_pareto_law (P : Measure BrownianPath)
 
 /-- Transporting the signed scalar increment retains its genuine real integral, including
 Lean's total integral convention when its parameters are not integrable. -/
-theorem dual_reference_maximum_increment (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (γ ν : ℝ) (hγ : 0 < γ) (hν : 0 < ν)
+theorem dual_reference_maximum_increment
     (p A b S : ℝ) :
     (∫ m, ((A+b*S*Real.exp (γ*m))^(-p)-A^(-p)) ∂brownianMaximumReferenceLaw ν) =
       ∫ w, ((A+b*S*w)^(-p)-A^(-p)) ∂paretoMeasure 1 (2*ν/γ) := by
   have hf : Measurable (fun w : ℝ => (A+b*S*w)^(-p)-A^(-p)) := by fun_prop
   rw [← dual_reference_maximum_exp_pareto_law P hB γ ν hγ hν,
     integral_map (by fun_prop) hf.aestronglyMeasurable]
+
+end
 
 /-- Fubini transports the independent maximum in the full signed product expectation.
 The two integrability bills are explicit so no total-integral fallback enters the passage. -/

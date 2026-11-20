@@ -14,15 +14,16 @@ open MeasureTheory ProbabilityTheory Filter Topology Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hXc : IsCircleAverage P X Xc) (z2 z3 : ℂ) (α2 α3 : ℝ) (hα2 : 0 ≤ α2) (hα3 : 0 ≤ α3) (a2 a3 : ℝ)
+  (ha2 : 0 ≤ a2) (ha3 : 0 ≤ a3)
+include Ω X hX hγ hγ2 hM hXc hα2 hα3 ha2 ha3
+
 /-- Fixed softening permits the ordinary bounded-test GMC convergence. At small cutoffs,
 the softened weights are dominated by the literal cutoff singular weights. -/
-theorem separatedTail_softened_mixed_moment_le_of_cutoff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (z2 z3 : ℂ) (α2 α3 : ℝ) (hα2 : 0 ≤ α2) (hα3 : 0 ≤ α3)
-    (a2 a3 : ℝ) (ha2 : 0 ≤ a2) (ha3 : 0 ≤ a3) (C : ℝ≥0∞)
+theorem separatedTail_softened_mixed_moment_le_of_cutoff (C : ℝ≥0∞)
     (hbound : ∀ δ : ℝ, 0 < δ → δ < 1/4 →
       (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ α2 z2 1 δ ω ^ a2 *
         cutoffWeightedGmcBallMass P Xc γ α3 z3 1 δ ω ^ a3 ∂P) ≤ C)
@@ -56,12 +57,6 @@ theorem separatedTail_softened_mixed_moment_le_of_cutoff
 marginal moments come from the GMC moment range
 `DOZZ.equatorGFF_GMC_weighted_local_moment_range`; no limiting independence is asserted. -/
 theorem separatedTail_singular_mixed_moment_le_of_cutoff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (z2 z3 : ℂ) (α2 α3 : ℝ) (hα2 : 0 ≤ α2) (hα3 : 0 ≤ α3)
-    (a2 a3 : ℝ) (ha2 : 0 ≤ a2) (ha3 : 0 ≤ a3)
     (hf2 : ∀ᵐ ω ∂P, weightedGmcBallMass γ (M ω) α2 z2 1 ≠ ⊤)
     (hf3 : ∀ᵐ ω ∂P, weightedGmcBallMass γ (M ω) α3 z3 1 ≠ ⊤)
     (C : ℝ≥0∞)
@@ -90,13 +85,16 @@ theorem separatedTail_singular_mixed_moment_le_of_cutoff
     have ht3 := (limitWeightedFatou_mass_tendsto (M ω) γ α3 hγ hα3 z3 1 hs hsanti hs0).ennrpow_const a3
     exact ENNReal.Tendsto.mul ht2 (Or.inr (ENNReal.rpow_ne_top_of_nonneg ha3 h3)) ht3
       (Or.inr (ENNReal.rpow_ne_top_of_nonneg ha2 h2))
-  calc
-    _ = ∫⁻ ω, liminf (fun n => f n ω) atTop ∂P :=
-      lintegral_congr_ae (hlim.mono fun ω hω => hω.liminf_eq.symm)
-    _ ≤ liminf (fun n => ∫⁻ ω, f n ω ∂P) atTop := lintegral_liminf_le' hm
-    _ ≤ limsup (fun n => ∫⁻ ω, f n ω ∂P) atTop := liminf_le_limsup
-    _ ≤ C := limsup_le_of_le (by isBoundedDefault) (Eventually.of_forall fun n =>
-      separatedTail_softened_mixed_moment_le_of_cutoff P X hX γ hγ hγ2 M hM Xc hXc z2 z3 α2 α3
-        hα2 hα3 a2 a3 ha2 ha3 C hbound (s n) (hs n))
+  exact Trans.trans
+    (Trans.trans
+      (Trans.trans (lintegral_congr_ae (Eventually.mono hlim fun ω hω => Eq.symm (Tendsto.liminf_eq hω)))
+        (lintegral_liminf_le' hm))
+      (liminf_le_limsup isBounded_le_of_top isBounded_ge_of_bot))
+    (limsup_le_of_le isCobounded_le_of_bot
+      (Eventually.of_forall fun n =>
+        separatedTail_softened_mixed_moment_le_of_cutoff P X hX γ hγ hγ2 M hM Xc hXc z2 z3 α2 α3 hα2 hα3 a2 a3 ha2 ha3 C
+          hbound (s n) (hs n)))
+
+end
 
 end DOZZ.Proofs

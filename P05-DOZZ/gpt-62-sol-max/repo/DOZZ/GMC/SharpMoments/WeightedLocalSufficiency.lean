@@ -7,6 +7,7 @@ module
 public import DOZZ.GMC.SharpMoments.WeightedLocalBasic
 public import DOZZ.GMC.SharpMoments.WeightedDyadicSum
 public import DOZZ.GMC.SharpMoments.BallScaling
+public import DOZZ.GMC.Moments.PositiveExponent
 
 /-! # Finiteness of weighted local moments in the sharp range
 
@@ -22,12 +23,14 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX γ hγ hγ2 hM
+
 /-- Integrals of a fixed measurable function over a fixed measurable set against an `IsGMCOf`
 version are a.e. measurable. -/
 theorem gmc_setLIntegral_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (f : ℂ → ℝ≥0∞) (hf : Measurable f) (s : Set ℂ) (hs : MeasurableSet s) :
     AEMeasurable (fun ω => ∫⁻ x in s, f x ∂M ω) P := by
   obtain ⟨N, hN, _, hMN⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
@@ -39,9 +42,6 @@ theorem gmc_setLIntegral_aemeasurable
 
 /-- Weighted local masses of an `IsGMCOf` version are a.e. measurable. -/
 theorem gmc_weighted_mass_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α : ℝ) (z : ℂ) (r : ℝ) :
     AEMeasurable (fun ω => weightedGmcBallMass γ (M ω) α z r) P :=
   gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM
@@ -50,40 +50,30 @@ theorem gmc_weighted_mass_aemeasurable
       (ENNReal.measurable_ofReal.comp (measurable_id.sub_const z).norm)) _
     Metric.isOpen_ball.measurableSet
 
-/-- The exponent of the sharp ball bound minus the insertion loss is the weighted exponent. -/
-theorem sharpBallExponent_sub_insertion (γ α p : ℝ) (hγ : 0 < γ) :
-    2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 - γ * α * p =
-      γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2 := by
-  rw [Q]
-  field_simp
-  ring
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α : ℝ)
+include Ω X hX hγ hγ2 hM
 
 /-- Weighted local moments with a positive charge are finite in the sharp range on disks of
 radius at most `1/8`. -/
-theorem weightedGmcBallMoment_lt_top_of_pos_charge_small
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α : ℝ) (hα : 0 < α) (z : ℂ) (r : ℝ) (hr : 0 < r) (hr8 : r ≤ 1 / 8) (p : ℝ) (hp : 0 < p)
+theorem weightedGmcBallMoment_lt_top_of_pos_charge_small (hα : 0 < α) (z : ℂ) (r : ℝ) (hr : 0 < r) (hr8 : r ≤ 1 / 8) (p : ℝ) (hp : 0 < p)
     (hpRange : p < min (4 / γ ^ 2) (2 / γ * (Q γ - α))) :
     weightedGmcBallMoment P M γ α z r p < ⊤ := by
   let _ : IsProbabilityMeasure P := hX.1
   obtain ⟨C, -, hC⟩ := gmc_ball_moment_sharp_upper_center P X hX γ hγ hγ2 M hM z p
     (lt_min_iff.mp hpRange).1
-  have he : 0 < 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 - γ * α * p := by
-    rw [sharpBallExponent_sub_insertion γ α p hγ]
-    exact weightedGmcMomentExponent_pos_of_sharp_range hγ hp hpRange
   exact weightedGmcBallMoment_lt_top_of_ball_upper P M
     (fun s hs => gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM s hs)
-    γ α p _ C r z hγ hα hp hr (hr8.trans (by norm_num)) he
+    γ α p _ C r z hγ hα hp hr (hr8.trans (by norm_num)) (by
+    rw [sharpBallExponent_sub_insertion γ α p hγ]
+    exact weightedGmcMomentExponent_pos_of_sharp_range hγ hp hpRange)
     (fun ρ hρ hρr => hC ρ hρ (hρr.trans hr8))
 
 /-- Weighted local moments are finite in the sharp range at every center and radius. -/
-theorem weightedGmcBallMoment_lt_top_of_sharp_range
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α : ℝ) (z : ℂ) (r : ℝ) (hr : 0 < r) (p : ℝ) (hp : 0 < p)
+theorem weightedGmcBallMoment_lt_top_of_sharp_range (z : ℂ) (r : ℝ) (hr : 0 < r) (p : ℝ) (hp : 0 < p)
     (hpRange : p < min (4 / γ ^ 2) (2 / γ * (Q γ - α))) :
     weightedGmcBallMoment P M γ α z r p < ⊤ := by
   let _ : IsProbabilityMeasure P := hX.1
@@ -131,5 +121,7 @@ theorem weightedGmcBallMoment_lt_top_of_sharp_range
         rfl
     _ < ⊤ := ENNReal.mul_lt_top hLtop.lt_top (ENNReal.add_lt_top.mpr
         ⟨hinner, ENNReal.mul_lt_top hctop.lt_top houter⟩)
+
+end
 
 end DOZZ.Proofs

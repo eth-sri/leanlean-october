@@ -14,10 +14,12 @@ open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- A finite random measure has strictly positive nonpositive moments, even if some masses
 vanish (at negative orders their extended powers are infinite). -/
-theorem gmc_finite_measure_nonpositive_moment_pos
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+theorem gmc_finite_measure_nonpositive_moment_pos [IsProbabilityMeasure P]
     (M : Ω → Measure ℂ) (hfin : ∀ ω, IsFiniteMeasure (M ω))
     (A : Set ℂ) (hmeas : AEMeasurable (fun ω => M ω A) P) (p : ℝ) (hp : p ≤ 0) :
     0 < gmcMassMoment P M A p := by
@@ -33,9 +35,7 @@ theorem gmc_finite_measure_nonpositive_moment_pos
 
 /-- Two-sided ball-mass scaling with one constant uniform on compact center sets. See
 [KRV, (momentscaling)]. -/
-theorem equatorGFF_GMC_ball_moment_bound
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+theorem equatorGFF_GMC_ball_moment_bound (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (p : ℝ) (hp : p < 4 / γ ^ 2) (K : Set ℂ) (hK : IsCompact K) :
     ∃ C : ℝ, 0 < C ∧ ∀ z ∈ K, ∀ ε : ℝ, 0 < ε → ε ≤ 1 →
@@ -98,7 +98,10 @@ theorem equatorGFF_GMC_ball_moment_bound
     (fun z : K => fun r => gmcMassMoment P M (Metric.ball z.val r) p)
     (gmcScaleExponent γ p) (1/8) (by norm_num) C₀ hC₀
     (fun z r hr hr8 => hsmall z.val z.property r hr hr8) l u hl hu hcoarse
-  exact ⟨C, hC, fun z hz r hr hr1 => hbound ⟨z, hz⟩ r hr hr1⟩
+  refine ⟨C, hC, fun z hz r hr hr1 => ?_⟩
+  simpa only [gmcScaleExponent_eq_Q γ p hγ.ne', Real.rpow_eq_pow] using hbound ⟨z, hz⟩ r hr hr1
+
+end
 
 end DOZZ.Proofs
 end

@@ -7,6 +7,7 @@ module
 public import DOZZ.Correlations.Tails.TransferredCompactTest
 public import DOZZ.GMC.Assembly.CircleIntensity
 public import DOZZ.GMC.Annulus.PositiveRoot
+public import DOZZ.GMC.CircleWickDensity
 
 /-! Identify the unpinned translated cutoff with a deterministic test of the actual cutoff GMC. -/
 
@@ -26,20 +27,7 @@ theorem regularized_integral_volume
       ∫ x, f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) *
         normPlus x ^ (-4 : ℝ) ∂volume := by
   let : IsProbabilityMeasure P := hX.1
-  have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
-    have h : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
-      ((hc.1 r).comp measurable_swap).pow_const 2
-    exact h.stronglyMeasurable.integral_prod_right.measurable
-  have hD : Measurable (fun x : ℂ => ENNReal.ofReal
-      (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) *
-        normPlus x ^ (-4 : ℝ))) := by
-    have hC : Measurable (fun x : ℂ => Xc ω x r) :=
-      (hc.1 r).comp (measurable_const.prodMk measurable_id)
-    have hN : Measurable (fun x : ℂ => normPlus x ^ (-4 : ℝ)) := by
-      unfold normPlus
-      fun_prop
-    exact ENNReal.measurable_ofReal.comp
-      (((hC.const_mul γ).sub (hV.const_mul _)).exp.mul hN)
+  have hD := measurable_regularizedGMC_density P Xc γ r (hc.1 r) ω
   rw [regularizedGMC, integral_withDensity_eq_integral_toReal_smul hD
     (ae_of_all _ fun x => ENNReal.ofReal_lt_top)]
   apply integral_congr_ae
@@ -70,21 +58,17 @@ theorem unpinned_cutoff_test_identity
       (fun x hx => (by simpa only [Metric.mem_ball, dist_zero_right] using hx : ‖x‖ < 1).le)
   have hlog : Real.log (1 / Real.exp (-r)) = r := by
     rw [one_div, Real.log_inv, Real.log_exp, neg_neg]
-  rw [regularizedLogChaosTestMass, hRef, hlog,
-    regularized_integral_volume P X Xc hX hc γ r ω g]
-  rw [← integral_add_left_eq_self (μ := volume)
-    (fun w : ℂ => g w * Real.exp (γ * Xc ω w r - γ ^ 2 / 2 * ∫ ω', Xc ω' w r ^ 2 ∂P) *
-      normPlus w ^ (-4 : ℝ)) z]
-  rw [← integral_const_mul]
-  rw [integral_restrict_eq_integral_of_zero_on_compl volume (Metric.ball 0 1)
-    Metric.isOpen_ball.measurableSet _ (by
-      intro x hx
-      have hf0 : f x = 0 := by
-        by_contra h
-        have hnorm := hf x h
-        have hlt : ‖x‖ < 1 := by linarith [Real.exp_pos (-r)]
-        exact hx (by simpa only [Metric.mem_ball, dist_zero_right] using hlt)
-      simp only [hf0, zero_mul])]
+  rw [regularizedLogChaosTestMass, hRef, hlog, regularized_integral_volume P X Xc hX hc γ r ω g, ← integral_add_left_eq_self (μ := volume)
+      (fun w : ℂ => g w * Real.exp (γ * Xc ω w r - γ ^ 2 / 2 * ∫ ω', Xc ω' w r ^ 2 ∂P) *
+        normPlus w ^ (-4 : ℝ)) z, ← integral_const_mul, integral_restrict_eq_integral_of_zero_on_compl volume (Metric.ball 0 1)
+      Metric.isOpen_ball.measurableSet _ (by
+        intro x hx
+        have hf0 : f x = 0 := by
+          by_contra h
+          have hnorm := hf x h
+          have hlt : ‖x‖ < 1 := by linarith [Real.exp_pos (-r)]
+          exact hx (by simpa only [Metric.mem_ball, dist_zero_right] using hlt)
+        simp only [hf0, zero_mul])]
   apply integral_congr_ae
   filter_upwards [] with x
   rw [hg (z+x), add_sub_cancel_left]

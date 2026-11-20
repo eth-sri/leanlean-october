@@ -43,7 +43,6 @@ theorem tendsto_measureReal_dyadicLastExitEndpointExcess_ge
     {p | δ ≤ dyadicLastExitEndpointExcess n c p}
   have hstateJoint : Measurable (fun z : ℝ≥0 × BrownianPath =>
       conditionedPositiveStateAt z.1 z.2) := by
-    change Measurable (fun z : ℝ≥0 × BrownianPath => -(z.2 z.1))
     exact measurable_brownianPath_evaluation.neg
   have hY (n : ℕ) : Measurable (dyadicLastExitEndpointExcess n c) := by
     change Measurable (fun p => conditionedPositiveStateAt

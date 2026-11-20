@@ -33,9 +33,12 @@ theorem dual_inverse_increment_concave (p A : ℝ) (hp : 0 < p) (hA : 0 < A) :
     (fun t ht => (hd t ht).continuousAt.continuousWithinAt)
     (fun t ht => (hd t (interior_subset ht)).differentiableAt.differentiableWithinAt)
 
+section
+variable (p A t θ : ℝ) (hp : 0 < p) (hA : 0 < A) (ht : 0 ≤ t) (hθ : 0 ≤ θ)
+include hp hA ht hθ
+
 /-- Concavity controls every contraction of the added mass without using a first moment. -/
-theorem dual_inverse_increment_scale_lower (p A t θ : ℝ) (hp : 0 < p) (hA : 0 < A)
-    (ht : 0 ≤ t) (hθ : 0 ≤ θ) (hθ1 : θ ≤ 1) :
+theorem dual_inverse_increment_scale_lower (hθ1 : θ ≤ 1) :
     θ*(A^(-p)-(A+t)^(-p)) ≤ A^(-p)-(A+θ*t)^(-p) := by
   have hh := (dual_inverse_increment_concave p A hp hA).2
     (show (0 : ℝ) ∈ Ici 0 from le_rfl) (show t ∈ Ici 0 from ht)
@@ -44,8 +47,7 @@ theorem dual_inverse_increment_scale_lower (p A t θ : ℝ) (hp : 0 < p) (hA : 0
 
 /-- A relative kernel factor changes the signed inverse increment by at most the same
 relative factor times the unscaled loss. This avoids using the divergent inner first moment. -/
-theorem dual_negative_increment_relative_scale (p A t θ : ℝ) (hp : 0 < p)
-    (hA : 0 < A) (ht : 0 ≤ t) (hθ : 0 ≤ θ) :
+theorem dual_negative_increment_relative_scale :
     |((A+θ*t)^(-p)-A^(-p))-((A+t)^(-p)-A^(-p))| ≤
       |θ-1| *(A^(-p)-(A+t)^(-p)) := by
   have hpos : 0 ≤ A^(-p)-(A+t)^(-p) := sub_nonneg.mpr
@@ -71,6 +73,8 @@ theorem dual_negative_increment_relative_scale (p A t θ : ℝ) (hp : 0 < p)
     rw [abs_of_nonpos (by linarith only [hm]), abs_of_nonneg (by linarith only [hθpos, hθ1])]
     nlinarith only [hscaled]
 
+end
+
 /-- The literal inner-kernel squeeze gives a relative error in the signed increment,
 controlled by the unscaled inverse-power loss. -/
 theorem dual_negative_increment_kernel_squeeze (p A t u θlo θhi : ℝ)
@@ -82,11 +86,9 @@ theorem dual_negative_increment_kernel_squeeze (p A t u θlo θhi : ℝ)
   have hLoss : 0 ≤ A^(-p)-(A+t)^(-p) := sub_nonneg.mpr
     (Real.rpow_le_rpow_of_nonpos hA (by linarith only [ht]) (neg_nonpos.mpr hp.le))
   have hLower : (A+θhi*t)^(-p)-A^(-p) ≤ (A+u)^(-p)-A^(-p) := by
-    simpa only [one_mul] using
-      dual_negative_increment_antitone p A 1 u (θhi*t) hp.le hA zero_le_one hu0 hv
+    simpa using dual_negative_increment_antitone p A 1 u (θhi*t) hp.le hA zero_le_one hu0 hv
   have hUpper : (A+u)^(-p)-A^(-p) ≤ (A+θlo*t)^(-p)-A^(-p) := by
-    simpa only [one_mul] using
-      dual_negative_increment_antitone p A 1 (θlo*t) u hp.le hA zero_le_one (mul_nonneg hlo ht) hu
+    simpa using dual_negative_increment_antitone p A 1 (θlo*t) u hp.le hA zero_le_one (mul_nonneg hlo ht) hu
   have hLo := (dual_negative_increment_relative_scale p A t θlo hp hA ht hlo).trans
     (mul_le_mul_of_nonneg_right (le_max_left |θlo-1| |θhi-1|) hLoss)
   have hHi := (dual_negative_increment_relative_scale p A t θhi hp hA ht hhi).trans

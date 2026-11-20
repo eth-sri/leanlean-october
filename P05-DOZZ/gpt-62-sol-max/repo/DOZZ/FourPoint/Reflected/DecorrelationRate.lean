@@ -7,6 +7,8 @@ public import DOZZ.FourPoint.Reflected.DecorrelationError
 public import DOZZ.FourPoint.Reflected.Remainder
 public import DOZZ.FourPoint.ReflectedOuter.Rates
 import Mathlib.Tactic
+public import DOZZ.GFFStructure.ContinuousCircleAverage
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! The actual signed decorrelation error is negligible at the reflected fusion power. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
@@ -31,18 +33,11 @@ are both finite. The only analytic hypotheses on this carrier are its proved ful
 admissible circle-chart realizations; no decorrelation or limiting bound is assumed. -/
 theorem reflected_source_decorrelation_error_on_carrier
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
-    (hwhole : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
-      ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
-      (∫⁻ ω, G (originRadialPath Xc ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
-      ∫⁻ ω, G (originRadialPath Xc ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
-        f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ
-          (originRadialPath Xc ω.1) x) ∂N ω.2) ∂P.prod P)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
+    (hwhole : RadialReinsertionLaw P (originRadialPath Xc) γ M N)
     (hNa : ∀ ρ : ℝ, 0 < ρ → IsAdmissibleGMCVersion P (originLateralChart ρ)
       originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ
       (fun ω => (N ω).restrict (originLateralChart ρ)))
@@ -62,7 +57,7 @@ theorem reflected_source_decorrelation_error_on_carrier
          (reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z
           (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)) q).toReal : ℂ)) := by
   obtain ⟨C₀,hC₀,hbound⟩ := reflected_source_separated_moment_error
-    P X Xc hX hc hm hcont γ hγ hγ₂ M hM N hN hfin hwhole hNa α₁ α₂ α₃ q hq
+    P X Xc hX hcircle γ hγ hγ₂ M hM N hN hfin hwhole hNa α₁ α₂ α₃ q hq
   let A : ℝ := γ^2*3/2*(q^2+q)
   have hA : 0 < A := by dsimp only [A]; positivity
   let C : ℝ := 2*Real.exp 1*A*C₀
@@ -85,7 +80,7 @@ theorem reflected_source_decorrelation_error_on_carrier
         (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)) q
       original ≠ ⊤ ∧ copied ≠ ⊤ ∧ |original.toReal-copied.toReal| ≤ C*‖z‖^ξ := by
     filter_upwards [reflected_outer_cutoff_geometry ξ 1 hξ hξ1 zero_lt_one,
-      hn.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1/2)), hsmall,
+      hn.eventually_lt_const (by norm_num : (0 : ℝ) < 1/2), hsmall,
       self_mem_nhdsWithin] with z hz hp hsmallz hz0
     have hnz : 0 < ‖z‖ := norm_pos_iff.mpr hz0
     let r : ℝ := ‖z‖^(1-ξ)
@@ -102,7 +97,7 @@ theorem reflected_source_decorrelation_error_on_carrier
       exact mul_le_of_le_one_left (Real.rpow_nonneg hnz.le _) (Real.exp_le_one_iff.mpr (neg_nonpos.mpr hh))
     have hsep : s/r ≤ 1/2 := hratio.trans hp.le
     have hzsep : ‖z‖ < ‖z‖^(1-ξ) := by linarith only [hz.1,hz.2.2.2.1]
-    obtain ⟨ho,hc,herr⟩ := hbound z ξ s hz.2.2.1 hzsep hz.1 hz.2.1 hs hsep
+    obtain ⟨ho,hcircle.isCircleAverage,herr⟩ := hbound z ξ s hz.2.2.1 hzsep hz.1 hz.2.1 hs hsep
     let t : ℝ := A*(s/r)
     have ht0 : 0 ≤ t := mul_nonneg hA.le (div_pos hs hz.1).le
     have ht : t ≤ A*‖z‖^ξ := mul_le_mul_of_nonneg_left hratio hA.le
@@ -111,7 +106,7 @@ theorem reflected_source_decorrelation_error_on_carrier
       dsimp only [t,A,r]
       ring
     rw [heq] at herr
-    refine ⟨ho,hc,herr.trans ?_⟩
+    refine ⟨ho,hcircle.isCircleAverage,herr.trans ?_⟩
     calc
       (Real.exp t-1)*Real.exp t*C₀ ≤ (2*Real.exp 1*t)*C₀ :=
         mul_le_mul_of_nonneg_right (reflected_comparison_exponential_error_bound t ht0 ht1) hC₀.le

@@ -86,4 +86,61 @@ theorem reflected_real_inverse_relative_bound (p d S T : ℝ) (hp : 0 < p)
         _ = (p * d) * ((S / 4) ^ (-p - 1) * S) := by ring
         _ = _ := by rw [he]; ring
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
+/-- Bound the inverse-moment error after discarding a region by its weighted deleted mass. -/
+theorem inverse_lintegral_split_bound (S F I : Ω → ℝ≥0∞) (p C : ℝ) (hp : 0 < p) (hC : 0 ≤ C)
+    (hS : AEMeasurable S P) (hF : AEMeasurable F P)
+    (hSt : (∫⁻ ω, S ω ^ (-p) ∂P) ≠ ∞)
+    (hI : (∫⁻ ω, I ω * S ω ^ (-(p + 1)) ∂P) ≤ ENNReal.ofReal C)
+    (h : ∀ᵐ ω ∂P, S ω ≠ 0 ∧ F ω ≠ ∞ ∧ F ω = S ω + I ω) :
+    |(∫⁻ ω, S ω ^ (-p) ∂P).toReal - (∫⁻ ω, F ω ^ (-p) ∂P).toReal| ≤ p * C := by
+  let R := fun ω => ENNReal.ofReal p * (I ω * S ω ^ (-(p + 1)))
+  have hle : ∀ᵐ ω ∂P, F ω ^ (-p) ≤ S ω ^ (-p) := h.mono fun ω ⟨_, _, hw⟩ =>
+    ennreal_rpow_antitone_of_nonpos (le_self_add.trans_eq hw.symm) (neg_nonpos.mpr hp.le)
+  have hcomp : ∀ᵐ ω ∂P, S ω ^ (-p) ≤ F ω ^ (-p) + R ω := by
+    filter_upwards [h] with ω ⟨hs, hf, he⟩
+    rw [he, ENNReal.add_ne_top] at hf
+    rw [he]
+    simpa only [R, mul_assoc] using reflected_ennreal_inverse_add_bound p hp (S ω) (I ω) hs hf.1 hf.2
+  have hb : (∫⁻ ω, R ω ∂P) ≤ ENNReal.ofReal (p * C) := by
+    dsimp only [R]
+    rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, ENNReal.ofReal_mul hp.le]
+    exact mul_le_mul' le_rfl hI
+  exact (reflected_lintegral_toReal_difference_bound P _ _ R (hS.pow_const _) (hF.pow_const _)
+    hSt (ne_top_of_le_ne_top hSt (lintegral_mono_ae hle)) (ne_top_of_le_ne_top ENNReal.ofReal_ne_top hb)
+    hcomp (hle.mono fun _ hw => hw.trans le_self_add)).trans
+    ((ENNReal.toReal_mono ENNReal.ofReal_ne_top hb).trans_eq (ENNReal.toReal_ofReal (mul_nonneg hp.le hC)))
+
+/-- A kernel representation of the full zero mass gives the same deleted-region estimate
+for either choice of degenerate insertion. -/
+theorem retainedZero_deleted_moment_le (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (β α₁ α₂ α₃ r p C : ℝ) (hr : r ≤ 1) (hp : 0 < p) (hC : 0 ≤ C)
+    (hα₁ : α₁ + β < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
+    (K : ℂ → ℝ≥0∞)
+    (hK : ∀ ν : Measure ℂ, ν {0} = 0 → ν {1} = 0 →
+      coulombMass γ ν ![β, α₁, α₂] ![0, 0, 1] α₃ = ∫⁻ x, K x ∂ν)
+    (hd : (∫⁻ ω, (∫⁻ x in Metric.ball 0 r, K x ∂M ω) *
+      retainedZeroMass γ β α₁ α₂ α₃ r (M ω) ^ (-(p + 1)) ∂P) ≤ ENNReal.ofReal C) :
+    |(∫⁻ ω, retainedZeroMass γ β α₁ α₂ α₃ r (M ω) ^ (-p) ∂P).toReal -
+      (∫⁻ ω, coulombMass γ (M ω) ![β, α₁, α₂] ![0, 0, 1] α₃ ^ (-p) ∂P).toReal| ≤ p * C := by
+  obtain ⟨_, _, hb⟩ := retainedZeroMass_inverse_moment_uniform
+    P X hX γ hγ hγ₂ M hM β α₁ α₂ α₃ p hp.le
+  apply inverse_lintegral_split_bound P _ _ _ p C hp hC
+    ((retainedZeroMass_measurable ..).comp_aemeasurable
+      (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM))
+    (gmc_coulombMass_aemeasurable P X hX γ hγ hγ₂ M hM ..)
+    (ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hb r hr)) hd
+  filter_upwards [retainedZeroMass_ae_positive_finite P X hX γ hγ hγ₂ M hM
+    β α₁ α₂ α₃ r hr hα₁ hα₂ hα₃, gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM 0,
+    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM 1] with ω hpf h0 h1
+  refine ⟨hpf.1.ne', hpf.2.ne, ?_⟩
+  simp only [Function.comp_apply]
+  rw [retainedZeroMass_eq_setLIntegral γ β α₁ α₂ α₃ r (M ω) h0 h1 K hK,
+    hK (M ω) h0 h1, lintegral_exterior_add_ball]
+
+end
+
 end DOZZ.Proofs

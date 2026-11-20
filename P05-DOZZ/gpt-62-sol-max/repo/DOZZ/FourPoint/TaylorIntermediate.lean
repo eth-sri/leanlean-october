@@ -54,25 +54,25 @@ theorem twoRooted_intermediate_physical_bound
               (γ * (Q γ - α₁) * (q * s) - γ ^ 2 * (q * s) ^ 2 / 2) / q)) := by
   obtain ⟨Cmix, hCmix, hmixed⟩ := weighted_ball_coulomb_mixed_bound P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ p s q hα₁ hp hs hq hrange
-  let E : ℝ := γ * (Q γ - α₁) * (q * s) - γ ^ 2 * (q * s) ^ 2 / 2
-  let T : ℝ := (2 : ℝ) ^ (|γ * α₂| * s + (γ ^ 2 / 2) * s)
-  let C : ℝ := T * Cmix
-  have hT : 0 < T := by dsimp only [T]; positivity
-  have hC : 0 < C := mul_pos hT hCmix
+  let E  := γ * (Q γ - α₁) * (q * s) - γ ^ 2 * (q * s) ^ 2 / 2
+  let T  := (2 : ℝ) ^ (|γ * α₂| * s + (γ ^ 2 / 2) * s)
+  let C  := T * Cmix
+  have hT : 0 < T := by positivity
+  have hC  := mul_pos hT hCmix
   refine ⟨C, hC, ?_⟩
   intro ρ hρ hρ4 z hz d hd
   have hρ2 : ρ ≤ 1 / 2 := hρ4.trans (by norm_num)
-  let S : Set ℂ := Metric.ball 0 ρ \ Metric.ball z d
-  let L : Ω → ℝ≥0∞ := fun ω => ∫⁻ x in S, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω
-  let I : Ω → ℝ≥0∞ := fun ω => coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃
-  let W : Ω → ℝ≥0∞ := fun ω => weightedGmcBallMass γ (M ω) α₁ 0 ρ
-  let w : ℝ := (2 : ℝ) ^ |γ * α₂| * (2 * ρ) ^ (γ ^ 2 / 2)
-  have hw : 0 < w := by dsimp only [w]; positivity
+  let S  := Metric.ball 0 ρ \ Metric.ball z d
+  let L  := fun ω => ∫⁻ x in S, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω
+  let I  := fun ω => coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃
+  let W  := fun ω => weightedGmcBallMass γ (M ω) α₁ 0 ρ
+  let w  := (2 : ℝ) ^ |γ * α₂| * (2 * ρ) ^ (γ ^ 2 / 2)
+  have hw : 0 < w := by positivity
   have hpoint : ∀ᵐ ω ∂P,
       (gammaHalfRootMajorantOn M γ α₁ α₂ α₃ ω z S) ^ 2 * I ω ^ (-p - 2) ≤
         ENNReal.ofReal ((d⁻¹) ^ 2 * w ^ s) * (W ω ^ s * I ω ^ (-p - s)) := by
     filter_upwards [gammaHalfMass_eq_coulombMass_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ z,
-      gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 0] with ω hmass h0
+      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0] with ω hmass h0
     have hA := intermediate_numerator_bound M γ α₁ α₂ α₃ ω z ρ d hd
     have hLI : L ω ≤ I ω := by
       dsimp only [I]
@@ -81,7 +81,7 @@ theorem twoRooted_intermediate_physical_bound
     have hLW : L ω ≤ ENNReal.ofReal w * W ω :=
       (lintegral_mono_set Set.sdiff_subset).trans
         (gammaHalf_local_mass_bound γ α₁ α₂ α₃ z ρ hρ hρ2 hz (M ω) h0)
-    exact intermediate_scalar_bound _ (L ω) (I ω) (W ω) d w p s hd hw hp hs hs2 hA hLI hLW
+    apply intermediate_scalar_bound <;> assumption
   have hconst : 0 ≤ (d⁻¹) ^ 2 * w ^ s := mul_nonneg (sq_nonneg _) (Real.rpow_nonneg hw.le _)
   have hbound := (lintegral_mono_ae hpoint).trans_eq
     (lintegral_const_mul' _ _ ENNReal.ofReal_ne_top)
@@ -98,7 +98,6 @@ theorem twoRooted_intermediate_physical_bound
       rw [← ENNReal.ofReal_mul hconst, hwscale]
       congr 1
       rw [Real.rpow_add hρ]
-      dsimp only [C]
       ring
 
 end DOZZ.Proofs

@@ -23,8 +23,7 @@ theorem roots_extended_linear_bounds {γ a b c : ℝ} (hγ : 0 < γ)
   rw [he] at hb
   have hb' := (div_lt_iff₀ hγ).mp hb
   have he' : (4 / γ ^ 2) * γ = 4 / γ := by field_simp
-  rw [he'] at hb'
-  exact ⟨hb', by linarith only [h1], by linarith only [h2], by linarith only [h3]⟩
+  grind
 /-- Every real segment joining extended triples remains in the strict extended domain. -/
 theorem roots_extendedSeiberg3_segment {γ a b c d e f : ℝ} (hγ : 0 < γ)
     (ha : ExtendedSeiberg3 γ a b c) (hb : ExtendedSeiberg3 γ d e f)
@@ -54,8 +53,8 @@ theorem roots_extendedSeiberg3_segment {γ a b c d e f : ℝ} (hγ : 0 < γ)
 theorem roots_extended_cube {γ η a b c : ℝ} (hγ : 0 < γ) (hη : 3 * η < Q γ)
     (ha : Q γ - η < a) (haQ : a < Q γ) (hb : Q γ - η < b) (hbQ : b < Q γ)
     (hc : Q γ - η < c) (hcQ : c < Q γ) : ExtendedSeiberg3 γ a b c := by
-  have hs : 2 * Q γ < a + b + c := by linarith only [hη, ha, hb, hc]
+  have hs : 2 * Q γ < a + b + c := by linarith
   have h4 : 0 < 4 / γ := by positivity
   exact extendedSeiberg3_of_lt hγ haQ hbQ hcQ (by linarith only [hs, h4])
-    (by linarith only [hs, haQ]) (by linarith only [hs, hbQ]) (by linarith only [hs, hcQ])
+    (by linarith) (by linarith) (by linarith)
 end DOZZ.Proofs

@@ -24,7 +24,7 @@ theorem regularized_compact_mass_moment_uniform
     (hqc : q < 4 / γ^2) (hR : 0 ≤ R) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ n : ℕ,
       (∫⁻ ω, (regularizedGMC P Xc γ n ω (Metric.closedBall 0 R)) ^ q ∂P) ≤ C := by
-  have hQ : 0 < Q γ := by unfold Q; positivity
+  have hQ := Q_pos hγ
   have heq : 2 / γ * (Q γ - 0) = 4 / γ^2 + 1 := by
     unfold Q
     field_simp

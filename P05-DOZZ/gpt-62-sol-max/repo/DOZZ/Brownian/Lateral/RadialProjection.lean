@@ -38,18 +38,18 @@ noncomputable def originRadialPath {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ
     (ω : Ω) : TwoSidedPath :=
   ContinuousMap.mkD (fun s => Xc ω 0 s) 0
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
+
 /-- One common continuity event identifies the packed path at every real radius. -/
-theorem originRadialPath_eval_ae {Ω : Type*} [MeasurableSpace Ω]
-    {P : Measure Ω} {Xc : Ω → ℂ → ℝ → ℝ}
+theorem originRadialPath_eval_ae {Xc : Ω → ℂ → ℝ → ℝ}
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
     ∀ᵐ ω ∂P, ∀ s : ℝ, originRadialPath Xc ω s = Xc ω 0 s := by
   filter_upwards [hcont] with ω hω s
-  apply ContinuousMap.mkD_apply_of_continuous
-  exact hω.comp (continuous_const.prodMk continuous_id)
+  apply ContinuousMap.mkD_apply_of_continuous <;> fun_prop
 
 /-- Dense real evaluations detect almost-everywhere measurability of full radial paths. -/
-theorem aemeasurable_twoSidedPath_of_eval {Ω : Type*} [MeasurableSpace Ω]
-    {P : Measure Ω} {A : Ω → TwoSidedPath}
+theorem aemeasurable_twoSidedPath_of_eval {A : Ω → TwoSidedPath}
     (hA : ∀ s, AEMeasurable (fun ω => A ω s) P) : AEMeasurable A P := by
   obtain ⟨D, hDc, hDd⟩ := TopologicalSpace.exists_countable_dense ℝ
   let _ := hDc.to_subtype
@@ -63,11 +63,15 @@ theorem aemeasurable_twoSidedPath_of_eval {Ω : Type*} [MeasurableSpace Ω]
   apply (hmE.measurableEmbedding hinj).aemeasurable_comp_iff.mp
   exact AEMeasurable.of_eval (fun t => hA t.1)
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hc : IsCircleAverage P X Xc) (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+include Ω X hc hcont
+
 /-- The packed origin path is measurable up to a null set under the circle-average witness. -/
-theorem originRadialPath_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+theorem originRadialPath_aemeasurable :
     AEMeasurable (originRadialPath Xc) P := by
   apply aemeasurable_twoSidedPath_of_eval
   intro s
@@ -75,20 +79,22 @@ theorem originRadialPath_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
     ((originRadialPath_eval_ae hcont).mono (fun ω hω => (hω s).symm))
 
 /-- The radial path starts at the equator pin on the same probability space. -/
-theorem originRadialPath_zero_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+theorem originRadialPath_zero_ae :
     ∀ᵐ ω ∂P, originRadialPath Xc ω 0 = 0 := by
   filter_upwards [originRadialPath_eval_ae hcont,
     circleAverage_equator_ae_eq_zero X Xc hc] with ω hω hzero
   exact (hω 0).trans hzero
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+  (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+include Ω X hX hc hcont
+
 /-- Both halves of the packed path have the Brownian path law. -/
-theorem originRadialPath_isBrownian {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+theorem originRadialPath_isBrownian :
     IsBrownianReal (fun t ω => originRadialPath Xc ω (t : ℝ)) P ∧
       IsBrownianReal (fun t ω => originRadialPath Xc ω (-(t : ℝ))) P := by
   have hpre := circleAverage_origin_preBrownian P X Xc hX hc
@@ -101,10 +107,7 @@ theorem originRadialPath_isBrownian {Ω : Type*} [MeasurableSpace Ω]
       (originRadialPath Xc ω).continuous.comp NNReal.continuous_coe.neg)
 
 /-- The two full half-path coordinate families are independent. -/
-theorem originRadialPath_halves_indep {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
+theorem originRadialPath_halves_indep :
     IndepFun (fun ω => fun t : ℝ≥0 => originRadialPath Xc ω (t : ℝ))
       (fun ω => fun t : ℝ≥0 => originRadialPath Xc ω (-(t : ℝ))) P := by
   apply (circleAverage_origin_preBrownian P X Xc hX hc).2.2.1.congr
@@ -112,6 +115,8 @@ theorem originRadialPath_halves_indep {Ω : Type*} [MeasurableSpace Ω]
     exact funext (fun t => (hω t).symm)
   · filter_upwards [originRadialPath_eval_ae hcont] with ω hω
     exact funext (fun t => (hω (-(t : ℝ))).symm)
+
+end
 
 /-- The radial Wick weight, including its zero value at the origin. -/
 noncomputable def lateralRadialWeight (γ : ℝ) (A : TwoSidedPath) (x : ℂ) : ℝ≥0∞ :=
@@ -129,19 +134,11 @@ theorem measurable_lateralRadialWeight :
   · exact measurable_const
   · have hev : Measurable (fun p : (ℝ × TwoSidedPath) × ℂ =>
         p.1.2 (-Real.log ‖p.2‖)) := by
-      exact continuous_eval.measurable.comp
-        ((measurable_snd.comp measurable_fst).prodMk
-          (measurable_neg.comp (Real.measurable_log.comp
-            (measurable_norm.comp measurable_snd))))
+      fun_prop
     have hQ : Measurable (fun γ : ℝ => Q γ) := by
       unfold Q
       fun_prop
-    have hγ : Measurable (fun p : (ℝ × TwoSidedPath) × ℂ => p.1.1) :=
-      measurable_fst.comp measurable_fst
-    have hlog : Measurable (fun p : (ℝ × TwoSidedPath) × ℂ => |Real.log ‖p.2‖|) :=
-      continuous_abs.measurable.comp (Real.measurable_log.comp (measurable_norm.comp measurable_snd))
-    exact Real.measurable_exp.comp ((hγ.neg.mul hev).add
-      ((hγ.mul (hQ.comp hγ)).mul hlog))
+    apply Real.measurable_exp.comp <;> fun_prop
 
 /-- Polar projection is jointly measurable on finite plane measures. -/
 theorem measurable_lateralProjectedGMC_finite :
@@ -151,26 +148,15 @@ theorem measurable_lateralProjectedGMC_finite :
   intro S hS
   let ρ : ℂ → ℝ := fun x => -Real.log ‖x‖
   have hρ : Measurable ρ := measurable_neg.comp (Real.measurable_log.comp measurable_norm)
-  have hpre : MeasurableSet (ρ ⁻¹' S) := hS.preimage hρ
-  have hi : Measurable (fun p : (ℝ × TwoSidedPath) × ℂ =>
-      (ρ ⁻¹' S).indicator (fun x => lateralRadialWeight p.1.1 p.1.2 x) p.2) := by
-    exact measurable_lateralRadialWeight.indicator
+  have hpre  := hS.preimage hρ
+  have hi := measurable_lateralRadialWeight.indicator
       (hpre.preimage measurable_snd)
   have hm := measurable_lintegral_finiteMeasure_parameter hi
   convert hm using 1
   funext p
   unfold lateralProjectedGMC
-  rw [Measure.map_apply hρ hS, withDensity_apply _ hpre]
-  rw [← lintegral_indicator hpre]
+  rw [Measure.map_apply hρ hS, withDensity_apply _ hpre, ← lintegral_indicator hpre]
   rfl
-
-/-- An arbitrary GMC version is almost-everywhere measurable as a measure. -/
-theorem equatorGFF_GMC_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) : AEMeasurable M P := by
-  obtain ⟨N, hNm, _, hMN⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
-  exact hNm.aemeasurable.congr (hMN.mono (fun _ hω => hω.symm))
 
 /-- Removing the radial Wick factor preserves measure-valued AE measurability. -/
 theorem lateralProjectedGMC_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
@@ -180,47 +166,53 @@ theorem lateralProjectedGMC_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
     AEMeasurable (fun ω => lateralProjectedGMC γ (A ω) (M ω)) P := by
   let N : Ω → FiniteMeasure ℂ := fun ω => ⟨M ω, hMf ω⟩
   have hN : AEMeasurable N P := by
-    exact @AEMeasurable.subtype_mk Ω (Measure ℂ) _ _ M P hMm
-      {μ | IsFiniteMeasure μ} hMf
-  have hγa : AEMeasurable (fun _ : Ω => γ) P := aemeasurable_const
-  have hpair : AEMeasurable (fun ω => (γ, A ω)) P := hγa.prodMk hA
-  have hp : AEMeasurable (fun ω => ((γ, A ω), N ω)) P := hpair.prodMk hN
-  have hr := measurable_lateralProjectedGMC_finite.comp_aemeasurable hp
-  change AEMeasurable (fun ω => lateralProjectedGMC γ (A ω) (M ω)) P at hr
-  exact hr
+    apply AEMeasurable.subtype_mk <;> assumption
+  exact have hγa := aemeasurable_const;
+  have hpair := AEMeasurable.prodMk hγa hA;
+  have hp := AEMeasurable.prodMk hpair hN;
+  have hr := Measurable.comp_aemeasurable measurable_lateralProjectedGMC_finite hp;
+  hr
+
+section
+variable (γ : ℝ) (A : TwoSidedPath)
 
 /-- The polar projection assigns no mass to the plane origin, before taking its pushforward. -/
-theorem lateralRadialWeight_zero (γ : ℝ) (A : TwoSidedPath) :
+theorem lateralRadialWeight_zero :
     lateralRadialWeight γ A (0 : ℂ) = 0 := by
   simp [lateralRadialWeight]
 
 /-- Reinserting the radial factor cancels the removal weight exactly. -/
-theorem lateralRadialWeight_cancel (γ : ℝ) (A : TwoSidedPath) (x : ℂ) :
+theorem lateralRadialWeight_cancel (x : ℂ) :
     lateralRadialWeight γ A x *
       ENNReal.ofReal (Real.exp (γ * A (-Real.log ‖x‖) - γ * Q γ * |Real.log ‖x‖|)) =
         if x = 0 then 0 else 1 := by
   by_cases hx : x = 0
   · simp [hx, lateralRadialWeight]
-  · have hnorm : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx
+  · have hnorm  := norm_ne_zero_iff.mpr hx
     simp only [lateralRadialWeight, hnorm, hx, reduceIte]
     rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
     have he : -γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖| +
         (γ * A (-Real.log ‖x‖) - γ * Q γ * |Real.log ‖x‖|) = 0 := by ring
     rw [he, Real.exp_zero, ENNReal.ofReal_one]
 
+end
+
 /-- The forward radial Wick factor on the full cylinder. -/
 noncomputable def lateralForwardWeight (γ : ℝ) (A : TwoSidedPath) (s : ℝ) : ℝ≥0∞ :=
   ENNReal.ofReal (Real.exp (γ * A s - γ * Q γ * |s|))
 
+section
+variable (γ : ℝ) (A : TwoSidedPath)
+
 /-- The forward factor is measurable for every continuous radial path. -/
-theorem measurable_lateralForwardWeight (γ : ℝ) (A : TwoSidedPath) :
+theorem measurable_lateralForwardWeight :
     Measurable (lateralForwardWeight γ A) := by
   unfold lateralForwardWeight
   fun_prop
 
 /-- The projected chaos recovers every nonnegative radial test of the original plane chaos,
 with its possible atom at the origin removed. No lateral-law assertion is used in this identity. -/
-theorem lateralProjectedGMC_reinsert_lintegral (γ : ℝ) (A : TwoSidedPath)
+theorem lateralProjectedGMC_reinsert_lintegral
     (M : Measure ℂ) (f : ℝ → ℝ≥0∞) (hf : Measurable f) :
     (∫⁻ s, lateralForwardWeight γ A s * f s ∂lateralProjectedGMC γ A M) =
       ∫⁻ x, if x = 0 then 0 else f (-Real.log ‖x‖) ∂M := by
@@ -237,6 +229,8 @@ theorem lateralProjectedGMC_reinsert_lintegral (γ : ℝ) (A : TwoSidedPath)
     simp only [lateralForwardWeight, abs_neg]
   rw [hforward, lateralRadialWeight_cancel]
   split_ifs <;> simp
+
+end
 
 /-- The charge coefficient is exactly the polar Jacobian plus the radial Wick variance. -/
 theorem gamma_mul_Q_eq (γ : ℝ) (hγ : γ ≠ 0) : γ * Q γ = 2 + γ ^ 2 / 2 := by

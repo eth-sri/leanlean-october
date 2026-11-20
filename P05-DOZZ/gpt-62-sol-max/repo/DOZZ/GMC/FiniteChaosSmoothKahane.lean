@@ -56,17 +56,15 @@ theorem kahaneSumVectorScore_directional_hasDerivAt
       (∑ k, d k * kahaneSumVectorScoreDerivative a v γ t F' F''
         (fun k => z k + s * d k) i k) s := by
   classical
-  let x : ι → ℝ := kahaneSumVectorField t z
-  let d' : ι → ℝ := fun j =>
+  let x  := kahaneSumVectorField t z
+  let d'  := fun j =>
     Real.sqrt t * d (Sum.inl j) + Real.sqrt (1 - t) * d (Sum.inr j)
   have hpath : (fun r => kahaneSumVectorField t (fun k => z k + r * d k)) =
       fun r j => x j + r * d' j := by
     funext r j
     simp [x, d', kahaneSumVectorField]
     ring
-  have hpath_at (r : ℝ) : kahaneSumVectorField t (fun k => z k + r * d k) =
-      fun j => x j + r * d' j := by
-    exact congrFun hpath r
+  have hpath_at (r : ℝ) := congrFun hpath r
   have hbase := finiteChaosVectorTestWeight_directional_hasDerivAt
     a v γ F' F'' hF' x d' i s
   have hsum : (∑ k, d k * kahaneSumVectorScoreDerivative a v γ t F' F''
@@ -97,7 +95,7 @@ theorem kahaneSumVectorScore_directional_hasDerivAt
         (fun j => x j + r * d' j) i)
       (∑ j, d' j * finiteChaosVectorTestScoreDerivative a v γ F' F''
         (fun j => x j + s * d' j) i j) s := by
-    simpa [finiteChaosVectorTestScore, finiteChaosVectorTestScoreDerivative] using hbase
+    assumption
   convert hbase' using 1
   · funext r
     change finiteChaosVectorTestScore a v γ F'

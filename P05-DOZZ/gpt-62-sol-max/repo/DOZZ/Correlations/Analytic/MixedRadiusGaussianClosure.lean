@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.Construction.GMCVertexTiltInputs
+public import DOZZ.MeasureTheory.LpLimits
 
 /-! Gaussian closure for inward and outward vertices at different circle radii. -/
 
@@ -27,16 +28,8 @@ theorem gaussianL2Limit_add {Ω : Type*} [MeasurableSpace Ω]
     rw [map_add]
     simp only [Pi.add_apply]
     ring
-  have hb n := eLpNorm_add_le (μ := P) (p := (2 : ℝ≥0∞))
-    (f := fun ω => L ω - X ω (f n)) (g := fun ω => K ω - X ω (g n)) (by norm_num)
-  have ht := hf.add hg
-  simp only [zero_add] at ht
-  apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds ht
-    (fun _ => zero_le)
-  intro n
-  change eLpNorm (fun ω => L ω + K ω - X ω (f n + g n)) 2 P ≤ _
-  rw [he]
-  exact hb n
+  simp only [he]
+  exact tendsto_eLpNorm_add_zero (by norm_num) hf hg
 
 /-- Any finite sum of Gaussian closure variables remains in that closure. -/
 theorem isGaussianL2Limit_finset_sum {Ω I : Type*} [MeasurableSpace Ω]

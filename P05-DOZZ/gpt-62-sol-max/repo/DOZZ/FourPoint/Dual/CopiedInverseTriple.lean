@@ -6,6 +6,8 @@ module
 public import DOZZ.FourPoint.Dual.CopyOrdering
 public import DOZZ.FourPoint.Dual.SourceDecouplingBound
 import Mathlib.Tactic
+public import DOZZ.MeasureTheory.FiniteOnChart
+public import DOZZ.FourPoint.Reflected.ReinsertedRegionCode
 /-! The literal copied inverse expectation in source radial/outer/inner coordinates. -/
 @[expose] public section
 open MeasureTheory Set
@@ -18,7 +20,7 @@ theorem dual_copied_inverse_moment_triple
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (Xc : Ω → ℂ → ℝ → ℝ) (hA : AEMeasurable (originRadialPath Xc) P)
     (N : Ω → Measure ℂ) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (γ α₁ α₂ α₃ p s r : ℝ) (z : ℂ) :
     dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ p z s r =
       ∫⁻ v : (Ω × Ω) × Ω,
@@ -32,32 +34,15 @@ theorem dual_copied_inverse_moment_triple
   let J := fun U (a : TwoSidedPath) ω => ∫⁻ x in U,
     ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)*
       ENNReal.ofReal (reflected_global_reinsertionWeight γ a x) ∂N ω
-  have hm (U : Set ℂ) (hU : IsOpen U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) :
-      Measurable (fun v : TwoSidedPath × Ω => J U v.1 v.2) :=
-    reflected_chart_parameter_mass_measurable U hU N hN
-      (fun ω K hK hKU => hfin ω K hK (hKU.trans hU0))
-      (fun v : TwoSidedPath × ℂ => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z v.2)*
-        ENNReal.ofReal (reflected_global_reinsertionWeight γ v.1 v.2))
-      (((dual_kernel_measurable γ α₁ α₂ α₃ z).comp measurable_snd).ennreal_ofReal.mul
-        (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal)
-  have hi : Measurable (fun v : TwoSidedPath × Ω => J (reflected_innerRegion s) v.1 v.2) := by
-    apply hm _ ((isOpen_lt continuous_const continuous_norm).inter
-      (isOpen_lt continuous_norm continuous_const))
-    intro x hx hx0
-    have he : x = 0 := mem_singleton_iff.mp hx0
-    have hxpos : 0 < ‖x‖ := hx.1
-    simp only [he, norm_zero, lt_self_iff_false] at hxpos
-  have ho : Measurable (fun v : TwoSidedPath × Ω => J (reflected_outerRegion r) v.1 v.2) := by
-    apply hm _ ((isOpen_lt continuous_const continuous_norm).inter
-      (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl)
-    intro x hx hx0
-    have he : x = 0 := mem_singleton_iff.mp hx0
-    exact hx.2 (by simp [he])
+  have hm {W : Set ℂ} (hW : IsOpen W) (hW0 : W ⊆ ({0} : Set ℂ)ᶜ) :
+      Measurable (fun v : TwoSidedPath × Ω => J W v.1 v.2) :=
+    reflected_reinserted_region_measurable hN hfin γ hW.measurableSet hW0
+      (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
+  have hi := hm (reflected_innerRegion_open s) (reflected_innerRegion_punctured _)
+  have ho := hm (reflected_outerRegion_open (r)) (reflected_outerRegion_punctured _)
   let F : TwoSidedPath × (Ω × Ω) → ℝ≥0∞ := fun v =>
     (J (reflected_innerRegion s) v.1 v.2.1+J (reflected_outerRegion r) v.1 v.2.2)^(-p)
-  have hF : Measurable F :=
-    ((hi.comp (measurable_fst.prodMk (measurable_fst.comp measurable_snd))).add
-      (ho.comp (measurable_fst.prodMk (measurable_snd.comp measurable_snd)))).pow_const (-p)
-  exact dual_radial_copy_lintegral_regroup P (originRadialPath Xc) hA F hF
+  exact dual_radial_copy_lintegral_regroup P (originRadialPath Xc) hA F (((hi.comp (measurable_fst.prodMk (measurable_fst.comp measurable_snd))).add
+      (ho.comp (measurable_fst.prodMk (measurable_snd.comp measurable_snd)))).pow_const (-p))
 
 end DOZZ.Proofs

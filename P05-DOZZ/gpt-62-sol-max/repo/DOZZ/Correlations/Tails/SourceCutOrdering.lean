@@ -22,7 +22,7 @@ theorem source_last_exit_mono_prod_ae
     ∀ᵐ q : ℝ × Ω ∂(brownianMaximumReferenceLaw ν).prod P,
       c ≤ q.1 → negativeLastExitTime (D q.2) c ≤ negativeLastExitTime (D q.2) q.1 := by
   let μ := brownianMaximumReferenceLaw ν
-  let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
+  let  := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   have hDL : HasLaw D (P.map D) P := ⟨hD.1,rfl⟩
   have h₁ : HasLaw (fun q : ℝ × Ω => q.1) μ (μ.prod P) := measurePreserving_fst.hasLaw
   have h₂ := hDL.comp (measurePreserving_snd (μ := μ) (ν := P)).hasLaw

@@ -31,15 +31,12 @@ def torusSobolevWeight (k : Fin 2 → ℤ) : ℝ :=
 private noncomputable def intOneDimWeight (n : ℤ) : ℝ := 1 / (1 + |(n : ℝ)|) ^ 2
 
 private theorem summable_intOneDimWeight : Summable intOneDimWeight := by
-  have hshift : Summable (fun n : ℤ => 1 / |(n : ℝ) + 1 / 2| ^ (2 : ℝ)) :=
+  have hshift  :=
     (Real.summable_one_div_int_add_rpow (1 / 2) 2).mpr (by norm_num)
   apply Summable.of_nonneg_of_le (fun n => by unfold intOneDimWeight; positivity)
     (fun n => ?_) hshift
   have hbound : |(n : ℝ) + 1 / 2| ≤ 1 + |(n : ℝ)| := by
-    calc
-      |(n : ℝ) + 1 / 2| ≤ |(n : ℝ)| + |(1 / 2 : ℝ)| := abs_add_le _ _
-      _ = |(n : ℝ)| + 1 / 2 := by norm_num
-      _ ≤ 1 + |(n : ℝ)| := by linarith
+    grind
   have hpos : 0 < |(n : ℝ) + 1 / 2| := by
     apply abs_pos.mpr
     intro hn
@@ -67,8 +64,7 @@ private theorem pair_weight_le_product (m n : ℤ) :
   let prodDen := (1 + |(m : ℝ)|) * (1 + |(n : ℝ)|)
   have hdenHalf : 0 < prodDen / 2 := by positivity
   have hhalf : prodDen / 2 ≤
-      1 + (m : ℝ) ^ 2 + (n : ℝ) ^ 2 := by
-    exact (div_le_iff₀ (by norm_num : (0 : ℝ) < 2)).2 (by nlinarith [hcore])
+      1 + (m : ℝ) ^ 2 + (n : ℝ) ^ 2 := (div_le_iff₀ (by norm_num : (0 : ℝ) < 2)).2 (by nlinarith [hcore])
   have hinv : (1 + (m : ℝ) ^ 2 + (n : ℝ) ^ 2)⁻¹ ≤
       (2 / prodDen) := by
     have h := (inv_le_inv₀ hden hdenHalf).2 hhalf
@@ -85,13 +81,11 @@ private theorem pair_weight_le_product (m n : ℤ) :
 
 private theorem summable_pair_weight_inv_sq :
     Summable (fun p : ℤ × ℤ => (1 + (p.1 : ℝ) ^ 2 + (p.2 : ℝ) ^ 2)⁻¹ ^ 2) := by
-  have hq : Summable intOneDimWeight := summable_intOneDimWeight
+  have hq  := summable_intOneDimWeight
   have hweight_nonneg (n : ℤ) : 0 ≤ intOneDimWeight n := by
     unfold intOneDimWeight
     positivity
-  have hprod : Summable
-      (fun p : ℤ × ℤ => intOneDimWeight p.1 * intOneDimWeight p.2) :=
-    hq.mul_of_nonneg hq hweight_nonneg hweight_nonneg
+  have hprod := hq.mul_of_nonneg hq hweight_nonneg hweight_nonneg
   refine Summable.of_nonneg_of_le
     (f := fun p : ℤ × ℤ => 4 * (intOneDimWeight p.1 * intOneDimWeight p.2))
     (g := fun p : ℤ × ℤ => (1 + (p.1 : ℝ) ^ 2 + (p.2 : ℝ) ^ 2)⁻¹ ^ 2)
@@ -99,10 +93,7 @@ private theorem summable_pair_weight_inv_sq :
   · have h := pair_weight_le_product p.1 p.2
     have hnonneg : 0 ≤ (1 + (p.1 : ℝ) ^ 2 + (p.2 : ℝ) ^ 2)⁻¹ := by positivity
     have hqnonneg : 0 ≤ 2 * (1 + |(p.1 : ℝ)|)⁻¹ * (1 + |(p.2 : ℝ)|)⁻¹ := by positivity
-    have hsquare :
-        (1 + (p.1 : ℝ) ^ 2 + (p.2 : ℝ) ^ 2)⁻¹ ^ 2 ≤
-          (2 * (1 + |(p.1 : ℝ)|)⁻¹ * (1 + |(p.2 : ℝ)|)⁻¹) ^ 2 :=
-      (sq_le_sq₀ hnonneg hqnonneg).mpr h
+    have hsquare := (sq_le_sq₀ hnonneg hqnonneg).mpr h
     calc
       (1 + (p.1 : ℝ) ^ 2 + (p.2 : ℝ) ^ 2)⁻¹ ^ 2 ≤
           (2 * (1 + |(p.1 : ℝ)|)⁻¹ * (1 + |(p.2 : ℝ)|)⁻¹) ^ 2 := hsquare
@@ -128,9 +119,7 @@ theorem summable_torusSobolevWeight_inv_sq :
     Summable (fun k : Fin 2 → ℤ => (torusSobolevWeight k)⁻¹ ^ 2) := by
   have hpair := summable_pair_weight_inv_sq
   have hpi := finTwoIntEquiv.summable_iff.mpr hpair
-  refine hpi.congr ?_
-  intro k
-  simp [Function.comp_apply, torusSobolevWeight, finTwoIntEquiv]
+  assumption
 
 end DOZZ
 

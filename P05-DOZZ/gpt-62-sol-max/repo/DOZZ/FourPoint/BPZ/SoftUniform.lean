@@ -45,7 +45,7 @@ theorem bpzSoft_norm_sq_le_base (ε : ℝ) (x z : ℂ) :
 softening, by the unsoftened power `‖x − z‖^{2a−2}`. -/
 theorem bpzSoft_rpow_pred_le_norm_rpow {a ε : ℝ} (ha1 : a ≤ 1) {x z : ℂ} (hxz : x ≠ z) :
     (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1) ≤ ‖x - z‖ ^ (2 * a - 2) := by
-  have hu : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have hu  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   have h1 : (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1) ≤ (‖x - z‖ ^ 2) ^ (a - 1) :=
     Real.rpow_le_rpow_of_nonpos (by positivity) (bpzSoft_norm_sq_le_base ε x z) (by linarith)
   have h2 : (‖x - z‖ ^ 2) ^ (a - 1) = ‖x - z‖ ^ (2 * a - 2) := by
@@ -56,12 +56,15 @@ theorem bpzSoft_rpow_pred_le_norm_rpow {a ε : ℝ} (ha1 : a ≤ 1) {x z : ℂ} 
   rw [← h2]
   exact h1
 
+section
+variable {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {x z : ℂ} (hxz : x ≠ z)
+include ha ha1 hxz
+
 /-- The first derivative of the softened factor is bounded, uniformly in the softening, by
 `2a ‖x − z‖^{2a−1}`. -/
-theorem norm_bpzSoftDeriv_le_uniform {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {x z : ℂ}
-    (hxz : x ≠ z) :
+theorem norm_bpzSoftDeriv_le_uniform :
     ‖bpzSoftDeriv a ε x z‖ ≤ 2 * a * ‖x - z‖ ^ (2 * a - 1) := by
-  have hu : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have hu  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   refine (norm_bpzSoftDeriv_le a ε x z).trans ?_
   rw [abs_of_pos ha]
   have h := bpzSoft_rpow_pred_le_norm_rpow (ε := ε) ha1 hxz
@@ -75,11 +78,10 @@ theorem norm_bpzSoftDeriv_le_uniform {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {
 
 /-- The second derivative of the softened factor is bounded, uniformly in the softening, by
 `(4a(1−a) + 2a) ‖x − z‖^{2a−2}`. -/
-theorem norm_bpzSoftDeriv2_le_uniform {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {x z : ℂ}
-    (hxz : x ≠ z) :
+theorem norm_bpzSoftDeriv2_le_uniform :
     ‖bpzSoftDeriv2 a ε x z‖ ≤ (4 * a * (1 - a) + 2 * a) * ‖x - z‖ ^ (2 * a - 2) := by
-  have hu : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
-  have hN : 0 < Complex.normSq (x - z) + ε ^ 2 :=
+  have hu  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have hN  :=
     lt_of_lt_of_le (by positivity) (bpzSoft_norm_sq_le_base ε x z)
   refine (norm_bpzSoftDeriv2_le a ε x z hN).trans ?_
   have habs : |a * (a - 1)| = a * (1 - a) := by
@@ -88,23 +90,27 @@ theorem norm_bpzSoftDeriv2_le_uniform {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) 
   rw [habs, abs_of_pos ha]
   have h := bpzSoft_rpow_pred_le_norm_rpow (ε := ε) ha1 hxz
   have hc : 0 ≤ 4 * (a * (1 - a)) + 2 * a := by
-    have : 0 ≤ a * (1 - a) := mul_nonneg ha.le (by linarith)
     positivity
   calc (4 * (a * (1 - a)) + 2 * a) * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1)
       ≤ (4 * (a * (1 - a)) + 2 * a) * ‖x - z‖ ^ (2 * a - 2) :=
         mul_le_mul_of_nonneg_left h hc
     _ = (4 * a * (1 - a) + 2 * a) * ‖x - z‖ ^ (2 * a - 2) := by ring
 
+end
+
+section
+variable {a ε r : ℝ} (ha : 0 < a)
+include ha
+
 /-- Away from the root the first derivative is bounded by the softened weight itself. -/
-theorem norm_bpzSoftDeriv_le_far {a ε r : ℝ} (ha : 0 < a) (hr : 0 < r) {x z : ℂ}
+theorem norm_bpzSoftDeriv_le_far (hr : 0 < r) {x z : ℂ}
     (hxz : r ≤ ‖x - z‖) :
     ‖bpzSoftDeriv a ε x z‖ ≤ 2 * a / r * (Complex.normSq (x - z) + ε ^ 2) ^ a := by
-  have hu0 : 0 < ‖x - z‖ := lt_of_lt_of_le hr hxz
-  have hNu : ‖x - z‖ ^ 2 ≤ Complex.normSq (x - z) + ε ^ 2 := bpzSoft_norm_sq_le_base ε x z
-  have hN0 : 0 < Complex.normSq (x - z) + ε ^ 2 := lt_of_lt_of_le (by positivity) hNu
+  have hu0  := lt_of_lt_of_le hr hxz
+  have hNu  := bpzSoft_norm_sq_le_base ε x z
+  have hN0  := lt_of_lt_of_le (by positivity) hNu
   refine (norm_bpzSoftDeriv_le a ε x z).trans ?_
   rw [abs_of_pos ha, Real.rpow_sub_one hN0.ne']
-  have hNa : 0 ≤ (Complex.normSq (x - z) + ε ^ 2) ^ a := Real.rpow_nonneg hN0.le a
   have key : ‖x - z‖ / (Complex.normSq (x - z) + ε ^ 2) ≤ 1 / r := by
     rw [div_le_div_iff₀ hN0 hr]
     nlinarith [mul_le_mul_of_nonneg_left hxz hu0.le]
@@ -116,25 +122,21 @@ theorem norm_bpzSoftDeriv_le_far {a ε r : ℝ} (ha : 0 < a) (hr : 0 < r) {x z :
     _ = 2 * a / r * (Complex.normSq (x - z) + ε ^ 2) ^ a := by ring
 
 /-- Away from the root the second derivative is bounded by the softened weight itself. -/
-theorem norm_bpzSoftDeriv2_le_far {a ε r : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hr : 0 < r) {x z : ℂ}
+theorem norm_bpzSoftDeriv2_le_far (ha1 : a ≤ 1) (hr : 0 < r) {x z : ℂ}
     (hxz : r ≤ ‖x - z‖) :
     ‖bpzSoftDeriv2 a ε x z‖ ≤
       (4 * a * (1 - a) + 2 * a) / r ^ 2 * (Complex.normSq (x - z) + ε ^ 2) ^ a := by
-  have hu0 : 0 < ‖x - z‖ := lt_of_lt_of_le hr hxz
-  have hNu : ‖x - z‖ ^ 2 ≤ Complex.normSq (x - z) + ε ^ 2 := bpzSoft_norm_sq_le_base ε x z
-  have hN0 : 0 < Complex.normSq (x - z) + ε ^ 2 := lt_of_lt_of_le (by positivity) hNu
+  have hu0  := lt_of_lt_of_le hr hxz
+  have hNu  := bpzSoft_norm_sq_le_base ε x z
+  have hN0  := lt_of_lt_of_le (by positivity) hNu
   refine (norm_bpzSoftDeriv2_le a ε x z hN0).trans ?_
   have habs : |a * (a - 1)| = a * (1 - a) := by
     rw [abs_of_nonpos (mul_nonpos_of_nonneg_of_nonpos ha.le (by linarith))]
     ring
   rw [habs, abs_of_pos ha, Real.rpow_sub_one hN0.ne']
-  have hc : 0 ≤ 4 * (a * (1 - a)) + 2 * a := by
-    have : 0 ≤ a * (1 - a) := mul_nonneg ha.le (by linarith)
-    positivity
-  have hNa : 0 ≤ (Complex.normSq (x - z) + ε ^ 2) ^ a := Real.rpow_nonneg hN0.le a
-  have hr2 : r ^ 2 ≤ Complex.normSq (x - z) + ε ^ 2 :=
+  have hr2  :=
     le_trans (pow_le_pow_left₀ hr.le hxz 2) hNu
-  have key : 1 / (Complex.normSq (x - z) + ε ^ 2) ≤ 1 / r ^ 2 :=
+  have key  :=
     one_div_le_one_div_of_le (by positivity) hr2
   calc (4 * (a * (1 - a)) + 2 * a) *
         ((Complex.normSq (x - z) + ε ^ 2) ^ a / (Complex.normSq (x - z) + ε ^ 2))
@@ -144,14 +146,20 @@ theorem norm_bpzSoftDeriv2_le_far {a ε r : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (h
         gcongr
     _ = (4 * a * (1 - a) + 2 * a) / r ^ 2 * (Complex.normSq (x - z) + ε ^ 2) ^ a := by ring
 
+end
+
 
 /-! ### The planar integral of a power near its singularity -/
 
+section
+variable {p R : ℝ} (hp : -2 < p) (hR : 0 < R)
+include hp hR
+
 /-- The radial integral `∫₀^R r^{p+1} dr = R^{p+2}/(p+2)` for `p > −2`, as a lower integral. -/
-theorem bpz_lintegral_Ioo_rpow {p R : ℝ} (hp : -2 < p) (hR : 0 < R) :
+theorem bpz_lintegral_Ioo_rpow :
     ∫⁻ r in Ioo 0 R, ENNReal.ofReal (r ^ (p + 1)) = ENNReal.ofReal (R ^ (p + 2) / (p + 2)) := by
   have hp1 : -1 < p + 1 := by linarith
-  have hint : IntegrableOn (fun r : ℝ => r ^ (p + 1)) (Ioc 0 R) volume :=
+  have hint  :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le hR.le).mp
       (intervalIntegral.intervalIntegrable_rpow' hp1)
   have hnn : 0 ≤ᵐ[volume.restrict (Ioo 0 R)] fun r : ℝ => r ^ (p + 1) :=
@@ -163,7 +171,7 @@ theorem bpz_lintegral_Ioo_rpow {p R : ℝ} (hp : -2 < p) (hR : 0 < R) :
     Real.zero_rpow (by linarith : p + 2 ≠ 0), sub_zero]
 
 /-- The planar integral of `‖x‖^p` over the disk `B(0,R)`, computed in polar coordinates. -/
-theorem bpz_lintegral_ball_zero_rpow {p R : ℝ} (hp : -2 < p) (hR : 0 < R) :
+theorem bpz_lintegral_ball_zero_rpow :
     ∫⁻ x, (Metric.ball (0 : ℂ) R).indicator (fun y => ENNReal.ofReal (‖y‖ ^ p)) x =
       ENNReal.ofReal (2 * Real.pi * R ^ (p + 2) / (p + 2)) := by
   set F : ℂ → ℝ≥0∞ := (Metric.ball (0 : ℂ) R).indicator (fun y => ENNReal.ofReal (‖y‖ ^ p))
@@ -174,19 +182,17 @@ theorem bpz_lintegral_ball_zero_rpow {p R : ℝ} (hp : -2 < p) (hR : 0 < R) :
   have hpt : ∀ q ∈ Complex.polarCoord.target,
       ENNReal.ofReal q.1 • F (Complex.polarCoord.symm q) = g q.1 := by
     intro q hq
-    have hq1 : 0 < q.1 := hq.1
+    have hq1  := hq.1
     have hnorm : ‖Complex.polarCoord.symm q‖ = q.1 := by
       rw [Complex.norm_polarCoord_symm, abs_of_pos hq1]
     by_cases hqR : q.1 < R
     · have hmem : Complex.polarCoord.symm q ∈ Metric.ball (0 : ℂ) R := by
-        rw [mem_ball_zero_iff, hnorm]
-        exact hqR
+        rwa [mem_ball_zero_iff, hnorm]
       have hmemI : q.1 ∈ Ioo 0 R := ⟨hq1, hqR⟩
       rw [hF, indicator_of_mem hmem, hg, indicator_of_mem hmemI, hnorm, smul_eq_mul,
         ← ENNReal.ofReal_mul hq1.le, mul_comm, ← Real.rpow_add_one hq1.ne']
     · have hmem : Complex.polarCoord.symm q ∉ Metric.ball (0 : ℂ) R := by
-        rw [mem_ball_zero_iff, hnorm]
-        exact hqR
+        rwa [mem_ball_zero_iff, hnorm]
       rw [hF, indicator_of_notMem hmem, hg,
         indicator_of_notMem (fun h : q.1 ∈ Ioo 0 R => hqR h.2)]
       simp
@@ -218,7 +224,7 @@ theorem bpz_lintegral_ball_zero_rpow {p R : ℝ} (hp : -2 < p) (hR : 0 < R) :
 
 /-- For `p > −2`, the planar integral of `‖x − c‖^p` over the disk `B(c, R)` is
 `2π R^{p+2}/(p+2)`. -/
-theorem bpz_lintegral_ball_rpow_eq {p R : ℝ} (hp : -2 < p) (hR : 0 < R) (c : ℂ) :
+theorem bpz_lintegral_ball_rpow_eq (c : ℂ) :
     ∫⁻ x in Metric.ball c R, ENNReal.ofReal (‖x - c‖ ^ p) =
       ENNReal.ofReal (2 * Real.pi * R ^ (p + 2) / (p + 2)) := by
   set F : ℂ → ℝ≥0∞ := (Metric.ball (0 : ℂ) R).indicator (fun y => ENNReal.ofReal (‖y‖ ^ p))
@@ -239,10 +245,12 @@ theorem bpz_lintegral_ball_rpow_eq {p R : ℝ} (hp : -2 < p) (hR : 0 < R) (c : �
   exact bpz_lintegral_ball_zero_rpow hp hR
 
 /-- For `p > −2`, `∫⁻_{B(c, R)} ‖x − c‖^p ≤ 2π R^{p+2}/(p+2)` (Lebesgue measure on `ℂ`). -/
-theorem bpz_lintegral_ball_rpow_le {p R : ℝ} (hp : -2 < p) (hR : 0 < R) (c : ℂ) :
+theorem bpz_lintegral_ball_rpow_le (c : ℂ) :
     ∫⁻ x in Metric.ball c R, ENNReal.ofReal (‖x - c‖ ^ p) ≤
       ENNReal.ofReal (2 * Real.pi * R ^ (p + 2) / (p + 2)) :=
   (bpz_lintegral_ball_rpow_eq hp hR c).le
+
+end
 
 /-! ### The near-root rooted estimate -/
 

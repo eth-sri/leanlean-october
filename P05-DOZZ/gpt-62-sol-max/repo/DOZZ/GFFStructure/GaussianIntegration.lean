@@ -93,9 +93,12 @@ theorem integral_mem_gaussianHilbertSpan {A : Type*} [MeasurableSpace A]
     (∫ a, F a ∂μ) ∈ gaussianHilbertSpan Z :=
   integral_mem_closedSubmodule μ _ (Submodule.isClosed_topologicalClosure _) F hF hmem
 
+section
+variable {A : Type*} [MeasurableSpace A] (μ : Measure A) (F : A → Lp ℝ 2 P) (hF : Integrable F μ)
+include A hF
+
 /-- Means of L² Bochner integrals commute with integration over the deterministic parameter. -/
-theorem integral_mean_L2_integral {A : Type*} [MeasurableSpace A]
-    (μ : Measure A) (F : A → Lp ℝ 2 P) (hF : Integrable F μ) :
+theorem integral_mean_L2_integral :
     (∫ ω, (∫ a, F a ∂μ) ω ∂P) = ∫ a, ∫ ω, F a ω ∂P ∂μ := by
   simp_rw [integral_eq_inner_one]
   let V := Lp.const 2 P (1 : ℝ)
@@ -105,16 +108,14 @@ theorem integral_mean_L2_integral {A : Type*} [MeasurableSpace A]
   simpa only [real_inner_comm V] using hi
 
 /-- Centering passes from the deterministic parameter family to its L² integral. -/
-theorem integral_mean_L2_integral_eq_zero {A : Type*} [MeasurableSpace A]
-    (μ : Measure A) (F : A → Lp ℝ 2 P) (hF : Integrable F μ)
+theorem integral_mean_L2_integral_eq_zero
     (hzero : ∀ᵐ a ∂μ, (∫ ω, F a ω ∂P) = 0) :
     (∫ ω, (∫ a, F a ∂μ) ω ∂P) = 0 := by
   rw [integral_mean_L2_integral μ F hF]
   exact integral_eq_zero_of_ae hzero
 
 /-- Covariance passes through a centered L² integral. -/
-theorem covariance_L2_integral_left {A : Type*} [MeasurableSpace A]
-    (μ : Measure A) (F : A → Lp ℝ 2 P) (hF : Integrable F μ) (V : Lp ℝ 2 P)
+theorem covariance_L2_integral_left (V : Lp ℝ 2 P)
     (hzero : ∀ a, (∫ ω, F a ω ∂P) = 0) :
     covariance (⇑(∫ a, F a ∂μ)) V P = ∫ a, covariance (F a) V P ∂μ := by
   rw [covariance_L2_eq, integral_mean_L2_integral_eq_zero μ F hF
@@ -124,13 +125,15 @@ theorem covariance_L2_integral_left {A : Type*} [MeasurableSpace A]
   change inner ℝ V (∫ a, F a ∂μ) = ∫ a, inner ℝ V (F a) ∂μ at hi
   simpa only [real_inner_comm V] using hi
 
+end
+
 /-- Closed Hilbert subspaces contain Bochner integrals for arbitrary measures. -/
 theorem integral_mem_closedHilbertSubmodule {A E : Type*} [MeasurableSpace A]
     [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
     (μ : Measure A) (K : Submodule ℝ E) (hK : IsClosed (K : Set E))
     (F : A → E) (hF : Integrable F μ) (hmem : ∀ᵐ a ∂μ, F a ∈ K) :
     (∫ a, F a ∂μ) ∈ K := by
-  let _ : CompleteSpace K := hK.completeSpace_coe
+  let _  := hK.completeSpace_coe
   have hae : (fun a => K.starProjection (F a)) =ᵐ[μ] F := by
     filter_upwards [hmem] with a ha
     exact Submodule.starProjection_eq_self_iff.mpr ha
@@ -185,12 +188,15 @@ theorem integral_norm_L2_le (U : Lp ℝ 2 P) : (∫ ω, ‖U ω‖ ∂P) ≤ ‖
     ← eLpNorm_one_eq_lintegral_enorm (Lp.aestronglyMeasurable U), Lp.norm_def]
   exact ENNReal.toReal_mono (Lp.memLp U).ne_top h
 
+section
+variable {A : Type*} [MeasurableSpace A] (μ : Measure A) [SFinite μ] (F : A → Lp ℝ 2 P)
+  (hF : Integrable F μ) (f : A → Ω → ℝ) (hm : AEStronglyMeasurable (Function.uncurry f) (μ.prod P))
+  (heq : ∀ a, (⇑(F a)) =ᵐ[P] f a)
+include A F hF hm heq
+
 /-- A jointly measurable representative of an integrable L²-valued family is product
 integrable. This proves the Fubini premise rather than assuming it. -/
-theorem integrable_L2_representative_prod {A : Type*} [MeasurableSpace A]
-    (μ : Measure A) [SFinite μ] (F : A → Lp ℝ 2 P) (hF : Integrable F μ)
-    (f : A → Ω → ℝ) (hm : AEStronglyMeasurable (Function.uncurry f) (μ.prod P))
-    (heq : ∀ a, (⇑(F a)) =ᵐ[P] f a) : Integrable (Function.uncurry f) (μ.prod P) := by
+theorem integrable_L2_representative_prod : Integrable (Function.uncurry f) (μ.prod P) := by
   apply (integrable_prod_iff hm).mpr
   refine ⟨Eventually.of_forall (fun a => ((Lp.memLp (F a)).integrable (by norm_num)).congr (heq a)), ?_⟩
   apply hF.norm.mono' hm.norm.integral_prod_right'
@@ -203,10 +209,7 @@ theorem integrable_L2_representative_prod {A : Type*} [MeasurableSpace A]
 
 /-- The representative of the L² Bochner integral agrees almost surely with integration of
 any jointly measurable coordinate representatives. -/
-theorem L2_integral_ae_eq_integral {A : Type*} [MeasurableSpace A]
-    (μ : Measure A) [SFinite μ] (F : A → Lp ℝ 2 P) (hF : Integrable F μ)
-    (f : A → Ω → ℝ) (hm : AEStronglyMeasurable (Function.uncurry f) (μ.prod P))
-    (heq : ∀ a, (⇑(F a)) =ᵐ[P] f a) :
+theorem L2_integral_ae_eq_integral :
     (⇑(∫ a, F a ∂μ)) =ᵐ[P] fun ω => ∫ a, f a ω ∂μ := by
   have hi := integrable_L2_representative_prod μ F hF f hm heq
   apply Integrable.ae_eq_of_forall_setIntegral_eq _ _
@@ -221,8 +224,8 @@ theorem L2_integral_ae_eq_integral {A : Type*} [MeasurableSpace A]
     rw [L2.inner_indicatorConstLp_one hs hPs.ne]
     exact integral_congr_ae (ae_restrict_of_ae (heq a))
   simp_rw [hsection]
-  have his : Integrable (Function.uncurry f) (μ.prod (P.restrict s)) :=
-    hi.mono_measure (Measure.prod_mono le_rfl Measure.restrict_le_self)
-  exact integral_integral_swap his
+  exact integral_integral_swap (hi.mono_measure (Measure.prod_mono le_rfl Measure.restrict_le_self))
+
+end
 
 end DOZZ.Proofs

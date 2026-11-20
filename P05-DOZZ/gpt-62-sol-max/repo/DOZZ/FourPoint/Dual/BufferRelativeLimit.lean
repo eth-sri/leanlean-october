@@ -36,8 +36,7 @@ theorem dual_buffer_relative_squeeze_tendsto {A : Type*} (l : Filter A)
     have ht := (hg h hh).sub ((hd h hh).add ((he h hh).mul (hg h hh).neg))
     filter_upwards [ht.eventually (lt_mem_nhds hc), hb h hh] with x hx hbound
     have hlow := (abs_le.mp hbound).1
-    have hf : g h x-(d h x+e h x*(-g h x)) ≤ f x := by linarith only [hlow]
-    exact hx.trans_le hf
+    exact hx.trans_le (by linarith only [hlow])
   · intro b hb'
     obtain ⟨h, hh, hc⟩ := ((eventually_gt_atTop (0 : ℝ)).and
       (hUpper.eventually (gt_mem_nhds hb'))).exists

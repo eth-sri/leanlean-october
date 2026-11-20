@@ -66,15 +66,12 @@ theorem localized_copied_singular_law
       rw [hgeq, hn]
       unfold copiedMultiplier
       simp only [mul_assoc]
-      rw [← Real.exp_add]
-      rw [mul_comm (Real.exp (-γ^2*Real.log ‖z‖)), mul_assoc]
+      rw [← Real.exp_add, mul_comm (Real.exp (-γ^2*Real.log ‖z‖)), mul_assoc]
       simp only [mul_assoc, ← Real.exp_add]
       congr 2
       ring_nf
   have hAm : AEMeasurable A P := by
-    have hk : Measurable (fun y => ENNReal.ofReal (χ (y-z)*F y) *
-        (ENNReal.ofReal ‖y-z‖)^(-β)) := by fun_prop
-    exact (Measure.measurable_lintegral hk).comp_aemeasurable
+    exact (Measure.measurable_lintegral (by fun_prop)).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM)
   have hpin : Measurable (fun ω => Xc ω z 0) :=
     (hc.1 0).comp (measurable_id.prodMk measurable_const)

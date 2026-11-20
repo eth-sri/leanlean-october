@@ -32,16 +32,16 @@ theorem brownian_firstHit_reversal_law
       AEMeasurable (negativeConditionedLastExitSegment c) Qν ∧
       P.map (reversedPositiveFirstHitSegment ν c) =
         Qν.map (negativeConditionedLastExitSegment c) := by
-  let : IsProbabilityMeasure P := (hP.hasLaw_eval 0).isProbabilityMeasure
-  let : IsProbabilityMeasure Qν := hQν.2.1
+  let  := (hP.hasLaw_eval 0).isProbabilityMeasure
+  let  := hQν.2.1
   refine ⟨(measurable_reversedPositiveFirstHitSegment ν c).aemeasurable,
     (measurable_negativeConditionedLastExitSegment c).aemeasurable, ?_⟩
   let X := reversedPositiveFirstHitSegment ν c
   let Y := negativeConditionedLastExitSegment c
   let μ := P.map X
   let η := Qν.map Y
-  have hX : Measurable X := measurable_reversedPositiveFirstHitSegment ν c
-  have hY : Measurable Y := measurable_negativeConditionedLastExitSegment c
+  have hX  := measurable_reversedPositiveFirstHitSegment ν c
+  have hY  := measurable_negativeConditionedLastExitSegment c
   have hmark : SameStoppedPreterminalLaws μ η := by
     intro n ss hss hs0
     rw [Measure.restrict_map hX (measurableSet_lt measurable_const measurable_fst),
@@ -76,10 +76,10 @@ theorem brownian_firstHit_reversal_law
         rw [min_eq_left ((hss.monotone (Fin.le_last i)).trans hp.le)]
       · rfl
     rw [Measure.map_congr heY]
-    exact brownian_firstHit_reversal_finite_marked_law ν c hν hc P hP Qν hQν n ss hss hs0
+    apply brownian_firstHit_reversal_finite_marked_law <;> assumption
   have hfirst := brownianPath_positiveDrift_firstHit_ae P hP ν c hν hc
   let cN := Real.toNNReal c
-  have hcN : 0 < (cN : ℝ) := by simpa only [cN, Real.coe_toNNReal _ hc.le] using hc
+  have hcN : 0 < (cN : ℝ) := by positivity
   have hgood := ae_negativeConditionedLevelHitSet_nonempty_bddAbove hQν hP hν cN hcN
   simp only [cN, Real.coe_toNNReal _ hc.le] at hgood
   have hlast : ∀ᵐ p ∂Qν, p (negativeLastExitTime p c) = -c ∧ 0 < negativeLastExitTime p c := by
@@ -154,7 +154,7 @@ theorem brownian_firstHit_reversal_law
     change negativeLastExitTime p c ≤ t at ht
     change -(p (min t (negativeLastExitTime p c))) = c
     rw [min_eq_right ht, hp.1, neg_neg]
-  exact hmark.measure_eq hμpos hηpos hμzero hηzero c hμend hηend
+  apply hmark.measure_eq <;> assumption
 
 end DOZZ.Proofs
 end

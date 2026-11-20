@@ -11,10 +11,13 @@ open MeasureTheory ProbabilityTheory
 open scoped Distributions
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include Ω hX hXc
+
 /-- The reflected and re-pinned test variable has precisely the original covariance diagonal. -/
 theorem reflection_repinned_variance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (f : TestFn) :
     variance (fun ω => symmetryRepinnedField X (fun ω' => Xc ω' 1 0) ω f) P = gffCov f f := by
   let : IsProbabilityMeasure P := hX.1
@@ -35,7 +38,7 @@ theorem reflection_repinned_variance
     have he : covariance A L P = gaussianCovariance P A L := by
       simp only [covariance, hAmean, hLmean, sub_zero, gaussianCovariance]
     rw [he]
-    exact reflection_test_normalization_covariance P X hX Xc hXc f
+    apply reflection_test_normalization_covariance <;> assumption
   have hi : Integrable (fun x : ℂ => f x) volume :=
     f.continuous.integrable_of_hasCompactSupport f.hasCompactSupport
   have hd : Integrable (fun x : ℂ => f x * symmetryReflectionPotential x) volume :=
@@ -53,19 +56,13 @@ theorem reflection_repinned_variance
     dsimp [A, L, m, testMass]
     ring
   change variance (fun ω => symmetryRepinnedField X L ω f) P = _
-  rw [heY]
-  rw [variance_fun_sub hA hm, equatorGFF_test_variance X hX,
-    covariance_const_mul_right, variance_const_mul, hvarL, hcov, hsplit,
-    gffCov_symmetryReflectionTest]
+  rw [heY, variance_fun_sub hA hm, equatorGFF_test_variance X hX, covariance_const_mul_right, variance_const_mul, hvarL, hcov, hsplit, gffCov_symmetryReflectionTest]
   dsimp [m]
   ring
 
 /-- Correlated affine re-pinning produces a genuine equator GFF on the same probability space. -/
-theorem isEquatorGFF_symmetryRepinnedField
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) :
+theorem isEquatorGFF_symmetryRepinnedField :
     IsEquatorGFF P (symmetryRepinnedField X (fun ω => Xc ω 1 0)) := by
-  let : IsProbabilityMeasure P := hX.1
   have hLm : Measurable (fun ω => Xc ω 1 0) :=
     (hXc.1 0).comp (measurable_id.prodMk measurable_const)
   refine ⟨hX.1, fun f => ?_⟩
@@ -96,4 +93,6 @@ theorem isEquatorGFF_symmetryRepinnedField
   have hh := hlaw.variance_eq
   rw [variance_id_gaussianReal, reflection_repinned_variance P X hX Xc hXc f] at hh
   exact hh.symm
+
+end
 end DOZZ.Proofs

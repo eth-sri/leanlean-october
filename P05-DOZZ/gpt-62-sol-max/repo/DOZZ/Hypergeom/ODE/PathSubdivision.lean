@@ -68,11 +68,10 @@ theorem exists_path_subdivision {γ : ℝ → ℂ}
         (((i + 1 : ℕ) : ℝ) / (N : ℝ)) - (i : ℝ) / (N : ℝ) = 1 / (N : ℝ) := by
       rw [Nat.cast_add, Nat.cast_one]
       ring
-    have htime' : dist t ((i : ℝ) / (N : ℝ)) < δ := by
-      rw [hstepGap] at hinterval
-      exact hinterval.trans_lt hgap
     simpa [dist_comm] using
-      hclose _ ⟨hi0, hi1⟩ t ht01 (by simpa [dist_comm] using htime')
+      hclose _ ⟨hi0, hi1⟩ t ht01 (by simpa [dist_comm] using (by
+      rw [hstepGap] at hinterval
+      exact hinterval.trans_lt hgap))
 
 /-- Every parameter lies in a member of a fixed equal subdivision. The selected index is the
 right-hand interval at an interior subdivision point, leaving only the terminal point in the
@@ -145,9 +144,8 @@ theorem exists_equal_subdivision_interval (N : ℕ) (hN : 0 < N)
   · have hqEq : q = N := by omega
     have hxEq : x = (N : ℝ) := le_antisymm hxupper (by
       simpa [q, hqEq] using hqle)
-    have htEq : t = 1 := by
+    exact Or.inr (by
       dsimp [x] at hxEq
-      nlinarith [hNreal]
-    exact Or.inr htEq
+      nlinarith [hNreal])
 
 end DOZZ.Proofs

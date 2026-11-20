@@ -54,7 +54,11 @@ variable [MeasurableSpace E] [BorelSpace E]
 
 end Measurability
 
-lemma IsAEKolmogorovProcess.lintegral_sup_rpow_edist_eq_zero' (hX : IsAEKolmogorovProcess X P p q M)
+section
+variable (hX : IsAEKolmogorovProcess X P p q M)
+include hX
+
+lemma IsAEKolmogorovProcess.lintegral_sup_rpow_edist_eq_zero'
     {J : Set T} (hJ : J.Countable) {δ : ℝ≥0∞}
     (h : ∀ (s : J) (t : { t : J // edist s t ≤ δ }), edist s t = 0) :
     ∫⁻ ω, ⨆ (s : J) (t : { t : J // edist s t ≤ δ }), edist (X s ω) (X t ω) ^ p ∂P = 0 := by
@@ -67,7 +71,7 @@ lemma IsAEKolmogorovProcess.lintegral_sup_rpow_edist_eq_zero' (hX : IsAEKolmogor
   simp_rw [ae_all_iff]
   exact fun s t ↦ hX.edist_eq_zero (h s t)
 
-lemma lintegral_sup_rpow_edist_le_card_mul_rpow (hX : IsAEKolmogorovProcess X P p q M)
+lemma lintegral_sup_rpow_edist_le_card_mul_rpow
     {ε : ℝ≥0∞} (C : Finset (T × T)) (hC : ∀ u ∈ C, edist u.1 u.2 ≤ ε) :
     ∫⁻ ω, ⨆ u : C, edist (X u.1.1 ω) (X u.1.2 ω) ^ p ∂P
       ≤ #C * M * ε ^ q := calc
@@ -83,8 +87,7 @@ lemma lintegral_sup_rpow_edist_le_card_mul_rpow (hX : IsAEKolmogorovProcess X P 
     · apply hC; assumption
   _ = #C * M * ε ^ q := by simp [mul_assoc]
 
-lemma lintegral_sup_rpow_edist_le_card_mul_rpow_of_dist_le
-    (hX : IsAEKolmogorovProcess X P p q M) {J : Finset T} {a c : ℝ≥0∞} {n : ℕ}
+lemma lintegral_sup_rpow_edist_le_card_mul_rpow_of_dist_le {J : Finset T} {a c : ℝ≥0∞} {n : ℕ}
     (hJ_card : #J ≤ a ^ n) :
     ∫⁻ ω, ⨆ (s : J) (t : { t : J // edist s t ≤ c }), edist (X s ω) (X t ω) ^ p ∂P
       ≤ 2 ^ p * a * #J * M * (c * n) ^ q := by
@@ -111,6 +114,8 @@ lemma lintegral_sup_rpow_edist_le_card_mul_rpow_of_dist_le
   · simp only [← mul_assoc]
     rw [mul_assoc _ a, mul_comm _ c]
     gcongr
+
+end
 
 section FirstTerm
 
@@ -159,12 +164,11 @@ lemma lintegral_sup_rpow_edist_cover_rescale (hX : IsAEKolmogorovProcess X P p q
         * (16 * δ * Nat.log2 (coveringNumber (δ/4) J).toNat) ^ q
         * coveringNumber (δ/4) J := by
   refine (Set.eq_empty_or_nonempty J).elim (fun hJe => ?_) (fun hJ' => ?_)
-  · have hCk : C k = ∅ :=
+  · have hCk  :=
       Finset.coe_eq_empty.mp (Set.subset_empty_iff.mp (hJe ▸ hC_subset k))
     have : IsEmpty (C k) := ⟨fun x => by simpa [hCk] using x.2⟩
     simp
-  have h4ε₀ : 0 < ε₀ * 4 := lt_of_lt_of_le hδ_pos hδ_le
-  have hε₀ : 0 < ε₀ := pos_of_mul_pos_left h4ε₀ (by norm_num)
+  have h4ε₀  := lt_of_lt_of_le hδ_pos hδ_le
   simp only [iSup_sigma']
   have hf (p : (s : { s // s ∈ C k }) × { t : { t // t ∈ C k } // edist s t ≤ δ }) :
       edist (chainingSequence C p.1 k m) (chainingSequence C p.2 k m) ≤ ε₀ * 8 * 2⁻¹ ^ m := by
@@ -214,14 +218,14 @@ lemma lintegral_sup_rpow_edist_succ (hX : IsAEKolmogorovProcess X P p q M)
         edist (X (chainingSequence C t k j) ω) (X (chainingSequence C t k (j + 1)) ω) ^ p ∂P
       ≤ #(C (j + 1)) * M * ε j ^ q := by
   refine (Set.eq_empty_or_nonempty J).elim (fun hJe => ?_) (fun hJ => ?_)
-  · have hCk : C k = ∅ :=
+  · have hCk  :=
       Finset.coe_eq_empty.mp (Set.subset_empty_iff.mp (hJe ▸ hC_subset k))
     have : IsEmpty (C k) := ⟨fun x => by simpa [hCk] using x.2⟩
     simp
   -- Define the set `C'`, which is called `C` in the informal source
   let f₀ : { x : T // x ∈ C (j + 1) } → T × T := fun x => (chainingSequence C x (j + 1) j, x.1)
   have hf₀ : Function.Injective f₀ := fun x y h => Subtype.ext (congrArg Prod.snd h)
-  let C' : Finset (T × T) := (C (j + 1)).attach.map ⟨f₀, hf₀⟩
+  let C'  := (C (j + 1)).attach.map ⟨f₀, hf₀⟩
   have hC' : #C' = #(C (j + 1)) := by simp [C']
   -- First step: reindex from a `C k`-indexed supremum to a `C'`-indexed supremum
   let f (ω : Ω) : { x : T × T // x ∈ C' } → ℝ≥0∞ :=
@@ -241,7 +245,11 @@ lemma lintegral_sup_rpow_edist_succ (hX : IsAEKolmogorovProcess X P p q M)
   simp only [Function.Embedding.coeFn_mk, f₀]
   exact edist_chainingSequence_add_one_self hC hC_subset u.2
 
-lemma lintegral_sup_rpow_edist_le_sum_rpow (hp : 1 ≤ p) (hX : IsAEKolmogorovProcess X P p q M)
+section
+variable (hp : 1 ≤ p) (hX : IsAEKolmogorovProcess X P p q M)
+include hp hX
+
+lemma lintegral_sup_rpow_edist_le_sum_rpow
     (hm : m ≤ k) :
     ∫⁻ ω, ⨆ (t : C k), edist (X t ω) (X (chainingSequence C t k m) ω) ^ p ∂P
       ≤ (∑ i ∈ Finset.range (k - m), (∫⁻ ω, ⨆ (t : C k),
@@ -260,7 +268,7 @@ lemma lintegral_sup_rpow_edist_le_sum_rpow (hp : 1 ≤ p) (hX : IsAEKolmogorovPr
   gcongr
   exact edist_chainingSequence_le_sum_edist (X · ω) hm
 
-lemma lintegral_sup_rpow_edist_le_sum (hp : 1 ≤ p) (hX : IsAEKolmogorovProcess X P p q M)
+lemma lintegral_sup_rpow_edist_le_sum
     (hC : ∀ n, IsCover (ε n) J (C n)) (hC_subset : ∀ n, (C n : Set T) ⊆ J) (hm : m ≤ k) :
     ∫⁻ ω, ⨆ (t : C k), edist (X t ω) (X (chainingSequence C t k m) ω) ^ p ∂P
       ≤ M * (∑ i ∈ Finset.range (k - m), #(C (m + i + 1)) ^ (1 / p)
@@ -288,8 +296,7 @@ lemma lintegral_sup_rpow_edist_le_sum (hp : 1 ≤ p) (hX : IsAEKolmogorovProcess
     field_simp
     simp
 
-lemma lintegral_sup_rpow_edist_le_of_minimal_cover (hp : 1 ≤ p)
-    (hX : IsAEKolmogorovProcess X P p q M)
+lemma lintegral_sup_rpow_edist_le_of_minimal_cover
     (hε : ∀ n, ε n ≤ Metric.ediam J)
     (hC : ∀ n, IsCover (ε n) J (C n)) (hC_subset : ∀ n, (C n : Set T) ⊆ J)
     (hC_card : ∀ n, #(C n) = coveringNumber (ε n) J)
@@ -323,8 +330,7 @@ lemma lintegral_sup_rpow_edist_le_of_minimal_cover (hp : 1 ≤ p)
     congr with i
     rw [ENNReal.inv_rpow, neg_div, ENNReal.rpow_neg]
 
-lemma lintegral_sup_rpow_edist_le_of_minimal_cover_two (hp : 1 ≤ p)
-    (hX : IsAEKolmogorovProcess X P p q M) {ε₀ : ℝ≥0} (hε : ε₀ ≤ Metric.ediam J)
+lemma lintegral_sup_rpow_edist_le_of_minimal_cover_two {ε₀ : ℝ≥0} (hε : ε₀ ≤ Metric.ediam J)
     (hC : ∀ n, IsCover (ε₀ * 2⁻¹ ^ n) J (C n)) (hC_subset : ∀ n, (C n : Set T) ⊆ J)
     (hC_card : ∀ n, #(C n) = coveringNumber (ε₀ * 2⁻¹ ^ n) J)
     {c₁ : ℝ≥0∞} {d : ℝ} (hdq : d < q)
@@ -383,7 +389,7 @@ lemma lintegral_sup_rpow_edist_le_of_minimal_cover_two (hp : 1 ≤ p)
   calc (∑ i ∈ Finset.range (k - m), ((2⁻¹ : ℝ≥0∞) ^ ((q - d) / p)) ^ i) ^ p
     _ ≤ (∑' (i : ℕ), ((2⁻¹ : ℝ≥0∞) ^ ((q - d) / p)) ^ i) ^ p :=
           by gcongr; apply ENNReal.sum_le_tsum
-    _ = ((1 - (2⁻¹ ^ ((q - d) / p)))⁻¹) ^ p := by congr 1; apply ENNReal.tsum_geometric _
+    _ = ((1 - (2⁻¹ ^ ((q - d) / p)))⁻¹) ^ p := by simp
     _ ≤ 2 ^ (q - d) * (2 ^ ((q - d) / p) - 1) ^ (-p) := ?_
   rw [← neg_one_mul p, ENNReal.rpow_mul, ← ENNReal.rpow_inv_rpow (y := p) (by bound) (2 ^ (q - d))]
   rw [← ENNReal.mul_rpow_of_nonneg _ _ (by bound)]
@@ -397,8 +403,13 @@ lemma lintegral_sup_rpow_edist_le_of_minimal_cover_two (hp : 1 ≤ p)
   rw [← zpow_neg_one, ← zpow_neg_one, ← ENNReal.rpow_intCast_mul]
   simp [← ENNReal.rpow_intCast]
 
-lemma lintegral_sup_rpow_edist_le_sum_rpow_of_le_one (hp : p ≤ 1)
-    (hX : IsAEKolmogorovProcess X P p q M) (hm : m ≤ k) :
+end
+
+section
+variable (hp : p ≤ 1) (hX : IsAEKolmogorovProcess X P p q M)
+include hp hX
+
+lemma lintegral_sup_rpow_edist_le_sum_rpow_of_le_one (hm : m ≤ k) :
     ∫⁻ ω, ⨆ (t : C k), edist (X t ω) (X (chainingSequence C t k m) ω) ^ p ∂P
       ≤ ∑ i ∈ Finset.range (k - m), ∫⁻ ω, ⨆ (t : C k),
         edist (X (chainingSequence C t k (m + i)) ω)
@@ -412,8 +423,7 @@ lemma lintegral_sup_rpow_edist_le_sum_rpow_of_le_one (hp : p ≤ 1)
   · exact hX.p_pos.le
   · exact edist_chainingSequence_le_sum_edist (X · ω) hm
 
-lemma lintegral_sup_rpow_edist_le_sum_of_le_one (hp : p ≤ 1)
-    (hX : IsAEKolmogorovProcess X P p q M)
+lemma lintegral_sup_rpow_edist_le_sum_of_le_one
     (hC : ∀ n, IsCover (ε n) J (C n)) (hC_subset : ∀ n, (C n : Set T) ⊆ J) (hm : m ≤ k) :
     ∫⁻ ω, ⨆ (t : C k), edist (X t ω) (X (chainingSequence C t k m) ω) ^ p ∂P
       ≤ M * ∑ i ∈ Finset.range (k - m), #(C (m + i + 1)) * (ε (m + i) : ℝ≥0∞) ^ q := by
@@ -424,8 +434,7 @@ lemma lintegral_sup_rpow_edist_le_sum_of_le_one (hp : p ≤ 1)
   simp only [Finset.mem_range] at hi
   omega
 
-lemma lintegral_sup_rpow_edist_le_of_minimal_cover_of_le_one (hp : p ≤ 1)
-    (hX : IsAEKolmogorovProcess X P p q M)
+lemma lintegral_sup_rpow_edist_le_of_minimal_cover_of_le_one
     (hε : ∀ n, ε n ≤ Metric.ediam J)
     (hC : ∀ n, IsCover (ε n) J (C n)) (hC_subset : ∀ n, (C n : Set T) ⊆ J)
     (hC_card : ∀ n, #(C n) = coveringNumber (ε n) J)
@@ -444,8 +453,7 @@ lemma lintegral_sup_rpow_edist_le_of_minimal_cover_of_le_one (hp : p ≤ 1)
     exact hC_card _
   · rw [ENNReal.inv_rpow, ENNReal.rpow_neg]
 
-lemma lintegral_sup_rpow_edist_le_of_minimal_cover_two_of_le_one (hp : p ≤ 1)
-    (hX : IsAEKolmogorovProcess X P p q M) {ε₀ : ℝ≥0} (hε : ε₀ ≤ Metric.ediam J)
+lemma lintegral_sup_rpow_edist_le_of_minimal_cover_two_of_le_one {ε₀ : ℝ≥0} (hε : ε₀ ≤ Metric.ediam J)
     (hC : ∀ n, IsCover (ε₀ * 2⁻¹ ^ n) J (C n)) (hC_subset : ∀ n, (C n : Set T) ⊆ J)
     (hC_card : ∀ n, #(C n) = coveringNumber (ε₀ * 2⁻¹ ^ n) J)
     {c₁ : ℝ≥0∞} {d : ℝ} (hdq : d < q)
@@ -453,8 +461,8 @@ lemma lintegral_sup_rpow_edist_le_of_minimal_cover_two_of_le_one (hp : p ≤ 1)
     (hm : m ≤ k) :
     ∫⁻ ω, ⨆ (t : C k), edist (X t ω) (X (chainingSequence C t k m) ω) ^ p ∂P
       ≤ 2 ^ d * M * c₁ * (2 * (ε₀ : ℝ≥0∞) * 2⁻¹ ^ m) ^ (q - d) / (2 ^ (q - d) - 1) := by
-  have h_diam_lt_top : Metric.ediam J < ∞ := h_cov.ediam_lt_top
-  have hε' : ε₀ ≠ ∞ := (hε.trans_lt h_diam_lt_top).ne
+  have h_diam_lt_top  := h_cov.ediam_lt_top
+  have hε'  := (hε.trans_lt h_diam_lt_top).ne
   refine (lintegral_sup_rpow_edist_le_of_minimal_cover_of_le_one hp hX ?_ hC hC_subset
     hC_card h_cov hm).trans ?_
   · intro n
@@ -511,6 +519,8 @@ lemma lintegral_sup_rpow_edist_le_of_minimal_cover_two_of_le_one (hp : p ≤ 1)
     _ = 2 ^ (q - d) * (2 ^ (q - d) - 1)⁻¹ := by
       rw [ENNReal.mul_inv (.inr (by finiteness)) (.inl (by simp)), ENNReal.inv_rpow, inv_inv]
 
+end
+
 noncomputable
 def Cp (d p q : ℝ) : ℝ≥0∞ :=
   max (1 / ((2 ^ ((q - d) / p)) - 1) ^ p) (1 / (2 ^ (q - d) - 1))
@@ -524,7 +534,6 @@ lemma second_term_bound {C : ℕ → Finset T} {k m : ℕ}
     (hm : m ≤ k) :
     ∫⁻ ω, ⨆ (t : C k), edist (X t ω) (X (chainingSequence C t k m) ω) ^ p ∂P
       ≤ 2 ^ d * M * c₁ * (2 * ε₀ * 2⁻¹ ^ m) ^ (q - d) * Cp d p q := by
-  have h_diam_lt_top : Metric.ediam J < ∞ := h_cov.ediam_lt_top
   rw [Cp, mul_max, mul_one_div, mul_one_div]
   rcases le_total p 1 with hX.p_pos | hX.p_pos
   · exact (lintegral_sup_rpow_edist_le_of_minimal_cover_two_of_le_one hX.p_pos hX hε

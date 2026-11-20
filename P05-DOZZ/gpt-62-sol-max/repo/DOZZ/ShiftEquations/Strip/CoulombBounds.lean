@@ -26,8 +26,11 @@ theorem lastone_root_factor_unit (γ a : ℝ) (x : ℂ) (hx : ‖x‖ < 1) (hx0 
   congr 1
   ring
 
+section
+variable (γ a b c : ℝ)
+
 /-- On the unit disk the remaining finite insertion gives a fixed lower bound. -/
-theorem lastone_coulombWeight_lower (γ a b c : ℝ) (hγb : 0 ≤ γ * b)
+theorem lastone_coulombWeight_lower (hγb : 0 ≤ γ * b)
     (x : ℂ) (hx : ‖x‖ < 1) (hx0 : x ≠ 0) :
     ENNReal.ofReal (1 / 2 : ℝ) ^ (γ * b) *
       ENNReal.rpow (ENNReal.ofReal ‖x‖) (-γ * a) ≤
@@ -52,7 +55,7 @@ theorem lastone_coulombWeight_lower (γ a b c : ℝ) (hγb : 0 ≤ γ * b)
     (ENNReal.rpow (ENNReal.ofReal ‖x‖) (-γ * a))
 
 /-- On the half disk the second finite insertion gives a fixed upper bound. -/
-theorem lastone_coulombWeight_local_upper (γ a b c : ℝ) (hγa : 0 < γ * a)
+theorem lastone_coulombWeight_local_upper (hγa : 0 < γ * a)
     (hγb : 0 ≤ γ * b) (x : ℂ) (hx : ‖x‖ < 1 / 2) :
     coulombWeight γ ![a, b] ![0, 1] c x ≤
       (2 : ℝ≥0∞) ^ (γ * b) * ENNReal.rpow (ENNReal.ofReal ‖x‖) (-γ * a) := by
@@ -81,7 +84,7 @@ theorem lastone_coulombWeight_local_upper (γ a b c : ℝ) (hγa : 0 < γ * a)
     (ENNReal.rpow (ENNReal.ofReal ‖x‖) (-γ * a))
 
 /-- Outside the half disk the critical insertion may be removed entirely. -/
-theorem lastone_coulombWeight_exterior_upper (γ a b c : ℝ)
+theorem lastone_coulombWeight_exterior_upper
     (hγa : 0 ≤ γ * a) (haQ : γ * a ≤ γ * Q γ)
     (x : ℂ) (hx : 1 / 2 ≤ ‖x‖) :
     coulombWeight γ ![a, b] ![0, 1] c x ≤
@@ -101,7 +104,7 @@ theorem lastone_coulombWeight_exterior_upper (γ a b c : ℝ)
 
 /-- The Coulomb mass lies between a multiple of the origin mass and that mass plus a
 fixed one-root subcritical mass. Only the origin's zero atom is required. -/
-theorem lastone_coulombMass_bounds (γ a b c : ℝ) (hγa : 0 < γ * a)
+theorem lastone_coulombMass_bounds (hγa : 0 < γ * a)
     (hγb : 0 ≤ γ * b) (haQ : γ * a ≤ γ * Q γ) (M : Measure ℂ) (hM0 : M {0} = 0) :
     ENNReal.ofReal (1 / 2 : ℝ) ^ (γ * b) *
         localSingularMass (fun _ : Unit => M) (fun _ => 1) 0 γ a () ≤
@@ -149,5 +152,7 @@ theorem lastone_coulombMass_bounds (γ a b c : ℝ) (hγa : 0 < γ * a)
       exact (lastone_coulombWeight_local_upper γ a b c hγa hγb x hx).trans (le_add_right le_rfl)
     · exact (lastone_coulombWeight_exterior_upper γ a b c hγa.le haQ x (le_of_not_gt hx)).trans
         (le_add_left le_rfl)
+
+end
 
 end DOZZ.Proofs

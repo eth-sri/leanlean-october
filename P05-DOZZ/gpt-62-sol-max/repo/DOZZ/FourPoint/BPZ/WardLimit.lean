@@ -50,9 +50,9 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
       ∫ ω, q * ((∫ y, ρ y * k₂ y ∂M ω + ∫ y, (1 - ρ y) * k₂ y ∂M ω) ^ (-q - 1) *
         (γ ^ 2 * ((∫ x, ∫ y, bpzSymKer φ ρ k₂ (bpzKern v) x y ∂M ω ∂M ω) +
           ∫ x, bpzMixTest φ ρ k₂ k₂ (bpzKern v) (M ω) x ∂M ω))) ∂P := by
-  have : IsProbabilityMeasure P := hp.hX.1
+  have  := hp.hX.1
   have hμ := bpzWeakConv_gmc P X hp.hX hd.γ_pos hp.γ2 M hp.hM hp.hMm Xc hp.hXc
-  have hq0 : 0 ≤ q := le_trans zero_le_one hd.q_ge
+  have hq0  := le_trans zero_le_one hd.q_ge
   set μ : ℕ → Ω → Measure ℂ := fun n => bpzCutChaos P Xc γ n with hμdef
   set k₁ : ℕ → ℂ → ℝ := fun n => bpzWardCutWeight γ q n kt with hk₁
   -- the random variables
@@ -78,27 +78,22 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
     (ContinuousLinearMap.apply ℝ ℝ v).continuous.measurable.comp (measurable_bpzLamDeriv n)
   have hTm : ∀ n : ℕ, Measurable fun w => bpzTruncLogDeriv n w v := fun n =>
     (ContinuousLinearMap.apply ℝ ℝ v).continuous.measurable.comp (measurable_bpzTruncLogDeriv n)
-  have hSm : ∀ n, Measurable (S n) := fun n =>
+  have hSm  := fun n =>
     bpz_measurable_double_integral (hμ.meas n) (hμ.fin n) (hμ.meas n) (hμ.fin n) _
       (measurable_bpzSymKer hd.phi_cont.measurable hd.ρ_meas (hd.measurable_cutWeight n) (hLm n))
   have hMxm : ∀ n, Measurable (Mx n) := fun n =>
     BPZWeakConv.measurable_integral_random (hμ.meas n) (hμ.fin n)
       (hd.measurable_mixTest_joint hp (hd.measurable_cutWeight n) (hTm n))
   -- convergences
-  have hAconv : TendstoInMeasure P A atTop (fun ω => ∫ y, ρ y * k₂ y ∂M ω) := hd.conv_cut hp
-  have hIconv : TendstoInMeasure P (fun n ω => A n ω + I₂ ω) atTop
-      (fun ω => ∫ y, ρ y * k₂ y ∂M ω + I₂ ω) :=
-    bpz_tendstoInMeasure_add (fun n => (hAm n).aestronglyMeasurable)
+  have hAconv  := hd.conv_cut hp
+  have hIconv := bpz_tendstoInMeasure_add (fun n => (hAm n).aestronglyMeasurable)
       (fun _ => hI₂m.aestronglyMeasurable) hAconv
       (tendstoInMeasure_of_tendsto_ae (fun _ => hI₂m.aestronglyMeasurable)
         (Eventually.of_forall fun _ => tendsto_const_nhds))
   have hLconv := hd.conv_left hp v
   have hSconv := hd.conv_sym hp v
   have hMxconv := hd.conv_mix hp v
-  have hSMconv : TendstoInMeasure P (fun n ω => S n ω + Mx n ω) atTop
-      (fun ω => (∫ x, ∫ y, bpzSymKer φ ρ k₂ (bpzKern v) x y ∂M ω ∂M ω) +
-        ∫ x, bpzMixTest φ ρ k₂ k₂ (bpzKern v) (M ω) x ∂M ω) :=
-    bpz_tendstoInMeasure_add (fun n => (hSm n).aestronglyMeasurable)
+  have hSMconv := bpz_tendstoInMeasure_add (fun n => (hSm n).aestronglyMeasurable)
       (fun n => (hMxm n).aestronglyMeasurable) hSconv hMxconv
   -- positivity of the limit mass
   obtain ⟨c, hc, hlow⟩ := hd.far_mass_lower hp
@@ -130,9 +125,9 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
   obtain ⟨CM, hCM0, hCM⟩ := hd.abs_mixInt_le v
   set Cd : ℝ := CL + q * γ ^ 2 * (CS + CM) with hCd
   set Bd : Ω → ℝ := fun ω => Cd * (c * (M ω D).toReal) ^ (-(q - 1)) with hBd
-  have hmD : Measurable fun ω => (M ω D).toReal :=
+  have hmD  :=
     ((Measure.measurable_coe hd.D_meas).comp hp.hMm).ennreal_toReal
-  have hBdint : Integrable Bd P :=
+  have hBdint  :=
     (bpzWard_integrable_rpow_neg hp hd.D_meas (hmD.const_mul c).aestronglyMeasurable hc
       (Eventually.of_forall fun _ => le_rfl) (p := q - 1) (by linarith [hd.q_ge])).const_mul Cd
   have hgood : ∀ᵐ ω ∂P, ∀ n : ℕ, 0 < c * (M ω D).toReal ∧
@@ -143,12 +138,11 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
     intro I Y hY hYI
     rw [show -(q - 1) = 1 - q by ring]
     exact Real.rpow_le_rpow_of_nonpos hY hYI (by linarith [hd.q_ge])
-  have hI₂le : ∀ ω, I₂ ω ≤ A 0 ω + I₂ ω := fun ω => by linarith [hA0 0 ω]
   have hZb : ∀ n : ℕ, ∀ᵐ ω ∂P, |(A n ω + I₂ ω) ^ (-q) * Lw n ω| ≤ Bd ω := by
     intro n
     filter_upwards [hgood] with ω hω
     obtain ⟨hY, hYI, -⟩ := hω n
-    have hI : 0 < A n ω + I₂ ω := lt_of_lt_of_le hY hYI
+    have hI  := lt_of_lt_of_le hY hYI
     have := hμ.fin n ω
     have hL := hCL n (μ n ω)
     rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hI.le _)]
@@ -173,7 +167,7 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
     intro n
     filter_upwards [hgood] with ω hω
     obtain ⟨hY, hYI, hint⟩ := hω n
-    have hI : 0 < A n ω + I₂ ω := lt_of_lt_of_le hY hYI
+    have hI  := lt_of_lt_of_le hY hYI
     have := hμ.fin n ω
     have hI₂0 : 0 ≤ I₂ ω := integral_nonneg fun y =>
       mul_nonneg (by linarith [hd.ρ_le_one y]) (hd.k₂_nonneg y)
@@ -181,7 +175,7 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
     have h2 : I₂ ω ≤ A n ω + I₂ ω := by linarith [hA0 n ω]
     have hSb := hCS n (μ n ω)
     have hMb := hCM n (μ n ω) (M ω) hint
-    have hSM : |S n ω + Mx n ω| ≤ CS * (A n ω * A n ω) + CM * (A n ω * I₂ ω) :=
+    have hSM  :=
       (abs_add_le _ _).trans (add_le_add hSb hMb)
     have hIp : 0 ≤ (A n ω + I₂ ω) ^ (-q - 1) := Real.rpow_nonneg hI.le _
     rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg hq0, abs_of_nonneg hIp,
@@ -207,11 +201,10 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
       ∫ ω, q * ((A n ω + I₂ ω) ^ (-q - 1) * (γ ^ 2 * (S n ω + Mx n ω))) ∂P := by
     filter_upwards [hd.eventually_wardData] with n hn
     exact hd.cutoff_identity_sym hp v hn
-  exact bpz_integral_eq_of_tendstoInMeasure
-    (fun n => (((hAm n).add hI₂m).pow_const _ |>.mul (hLwm n)).aestronglyMeasurable)
-    (fun n => (measurable_const.mul ((((hAm n).add hI₂m).pow_const _).mul
-      (measurable_const.mul ((hSm n).add (hMxm n))))).aestronglyMeasurable)
-    hZconv hWconv hBdint hZb hWb heq
+  exact tendsto_nhds_unique (bpz_tendsto_integral_of_tendstoInMeasure (fun n => (((hAm n).add hI₂m).pow_const _ |>.mul (hLwm n)).aestronglyMeasurable) hZconv hBdint hZb)
+    ((bpz_tendsto_integral_of_tendstoInMeasure (fun n => (measurable_const.mul ((((hAm n).add hI₂m).pow_const _).mul
+    (measurable_const.mul ((hSm n).add (hMxm n))))).aestronglyMeasurable) hWconv hBdint hWb).congr'
+    (heq.mono fun _ hn => hn.symm))
 
 end BPZLimitData
 

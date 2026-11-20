@@ -3,9 +3,10 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
-public import DOZZ.FourPoint.Reflected.PlaneMassCode
+public import DOZZ.FourPoint.Reflected.ChartMassMeasurable
 public import DOZZ.FourPoint.Reflected.PastPlaneWeight
 public import DOZZ.FourPoint.Reflected.SeparatedRegions
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! A measurable retained outer mass on the complete stopped-past carrier. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set
@@ -20,6 +21,7 @@ noncomputable def reflectedPastOuterMassCode (γ α₁ α₂ α₃ r : ℝ) (z :
 
 theorem reflected_pastOuterMassCode_measurable (γ α₁ α₂ α₃ r : ℝ) (z : ℂ) :
     Measurable (reflectedPastOuterMassCode γ α₁ α₂ α₃ r z) := by
+  unfold reflectedPastOuterMassCode
   apply reflected_puncturedMassCode_measurable
   have hU : MeasurableSet (reflected_outerRegion r) :=
     (measurableSet_lt measurable_const measurable_norm).inter (measurableSet_insert.mpr (measurableSet_singleton (1 : ℂ)) : MeasurableSet ({0,1} : Set ℂ)).compl
@@ -31,7 +33,7 @@ theorem reflected_pastOuterMassCode_measurable (γ α₁ α₂ α₃ r : ℝ) (z
 unchanged, including the complete exterior half of the radial path. -/
 theorem reflected_pastOuterMassCode_eq (γ α₁ α₂ α₃ r : ℝ) (z : ℂ) (a : TwoSidedPath)
     (T : ℝ≥0) (μ : Measure ℂ) (hr : 0 < r) (hT : Real.exp (-(T : ℝ)) ≤ r)
-    (hfin : ∀ K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → μ K < ⊤) :
+    (hfin : FiniteOnChart ({0} : Set ℂ)ᶜ μ) :
     reflectedPastOuterMassCode γ α₁ α₂ α₃ r z
       ((stopBrownianPath (radialPositiveHalf a) T,radialNegativeHalf a),μ) =
       ∫⁻ x in reflected_outerRegion r, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)*

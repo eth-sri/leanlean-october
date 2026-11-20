@@ -17,9 +17,7 @@ The reflection witnesses for all `γ` come from the lateral decomposition and th
 post-maximum witness family; the endpoint limits are `reflection_endpoint_limits`; the joint
 continuity of `C̄` is `continuousOn_unitVolumeStructureConstant` (from
 `DOZZ.unitVolumeNPoint_jointly_continuous_parameters`); the joint continuity of `R̄` and `R` follows
-from the representation `R̄ = coefficient · C̄(α, γ, α)`, which enters as the hypothesis `hBarRRepresentation` (the
-conclusion of `DOZZ.reflectionBarR_holomorphic_representation` at the given field, for every `γ` and
-chaos).
+from the representation `R̄ = coefficient · C̄(α, γ, α)`, proved by `reflectionBarR_holomorphic_representation`.
 -/
 
 @[expose] public section
@@ -30,21 +28,11 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- **Endpoint limits and continuity in `γ` from the `R̄` representation.** -/
-theorem reflection_endpoint_and_gamma_continuity_of_representation
+theorem reflection_endpoint_and_gamma_continuity
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (M : ℝ → Ω → Measure ℂ) (hX : IsEquatorGFF P X)
     (μ : ℝ) (hμ : 0 < μ)
-    (hM : ∀ γ, 0 < γ → γ < 2 → IsGMCOf P X γ (M γ))
-    (hBarRRepresentation : ∀ (γ : ℝ) (Mγ : Ω → Measure ℂ) (_ : 0 < γ) (_ : γ < 2) (_ : IsGMCOf P X γ Mγ)
-      (I : Set ℝ) (_ : IsCompact I) (_ : ∀ α ∈ I, γ / 2 < α ∧ α < Q γ),
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ Mγ Z ∧ (∀ α ∈ I, IsReflectionData P γ α (B α) Z) ∧
-          ∃ V : Set ℂ, IsOpen V ∧ (∀ α ∈ I, (α : ℂ) ∈ V) ∧
-            ∃ f : ℂ → ℂ, DifferentiableOn ℂ f V ∧
-              (∀ α ∈ I, f (α : ℂ) = (unitVolumeStructureConstant P Mγ γ α γ α : ℂ)) ∧
-              DifferentiableOn ℂ (fun z => rbarCoefficient γ z * f z) V ∧
-              ∀ α ∈ I, rbarCoefficient γ (α : ℂ) * f (α : ℂ) =
-                (reflectionBarR P γ α (B α) Z : ℂ)) :
+    (hM : ∀ γ, 0 < γ → γ < 2 → IsGMCOf P X γ (M γ)) :
     ∃ B : ℝ → ℝ → Ω →
         BrownianPath × BrownianPath,
       ∃ Z : ℝ → Ω → Measure ℝ,
@@ -90,7 +78,7 @@ theorem reflection_endpoint_and_gamma_continuity_of_representation
     fun γ h1 h2 α ha1 ha2 => (hBZ γ h1 h2).2 α ha1 ha2
   refine ⟨fun γ => (BZ γ).1, fun γ => (BZ γ).2, fun γ h1 h2 => hBZ γ h1 h2,
     fun γ h1 h2 => reflection_endpoint_limits P γ μ h1 h2 hμ _ _ (hData γ h1 h2),
-    fun K hK hKdom => continuousOn_reflection_of_representation P X M hX hM hBarRRepresentation μ hμ
+    fun K hK hKdom => continuousOn_reflection_of_representation P X M hX hM μ hμ
       (fun γ => (BZ γ).1) (fun γ => (BZ γ).2) hData K hK hKdom,
     fun K hK hKdom => continuousOn_unitVolumeStructureConstant P X M hX hM K hK hKdom⟩
 

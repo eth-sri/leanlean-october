@@ -41,22 +41,22 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
                 ((‖z‖ ^ κ : ℝ) : ℂ)) + r z)) ∧
             IsComplexLittleOAtZero κ r := by
   let _ : IsProbabilityMeasure P := hX.1
-  obtain ⟨Xc,B,hc,hm,hcont,hSource,hL,hB⟩ := reflected_regular_source_reflection_family
+  obtain ⟨Xc,B,hcircle,hSource,hL,hB⟩ := reflected_regular_source_reflection_family
     P X hX γ hγ hγ₂ M hM
   let Z := fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)
   have hData : IsReflectionData P γ α₁ (B α₁) Z := hB α₁ hα₁
   obtain ⟨N,hN,hi,hfin,heq,hNa,hwhole⟩ := reflected_copied_radial_plane_observable
-    P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+    P X Xc hX hcircle γ hγ hγ₂ M hM
   let B₀ := P.map (fun ω => radialPositiveHalf (originRadialPath Xc ω))
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
+  have hA := originRadialPath_aemeasurable P X Xc hcircle.isCircleAverage hcircle.continuous_ae
   have hB₀ : IsBrownianReal (fun t p => p t) B₀ := radialPositiveHalf_map_isBrownian
-    P (originRadialPath Xc) hA (originRadialPath_isBrownian P X Xc hX hc hcont).1
+    P (originRadialPath Xc) hA (originRadialPath_isBrownian P X Xc hX hcircle.isCircleAverage hcircle.continuous_ae).1
   let p := (α₁+α₂+α₃-γ/2-2*Q γ)/γ
   let κ := γ*(Q γ-α₁)
   let a := 2*(Q γ-α₁)/γ
   let C := 1/2*μ^p*γ*(Real.Gamma p)⁻¹*reflectionR P γ μ α₁ (B α₁) Z*
     structureConstant P M γ μ (2*Q γ-α₁-γ/2) α₂ α₃
-  have ht := reflected_source_inner_increment_tendsto P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+  have ht := reflected_source_inner_increment_tendsto P X Xc hX hcircle γ hγ hγ₂ M hM
     N hN hi heq hfin hwhole hNa α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ hreflect hs hξ hξ₂
     (hnear.trans_le (min_le_right 1 ξ)) hfreeze (B α₁) hL hData B₀ hB₀
   have hcoef : (a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*

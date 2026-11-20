@@ -55,8 +55,7 @@ private theorem harmonic_band_ratio_limit (ν : ℝ) (hν : 0 < ν) :
     Tendsto (fun ε => conditionedH ν ε/ε) (𝓝[>] (0 : ℝ)) (𝓝 (2*ν)) := by
   have hd : HasDerivAt (conditionedH ν) (2*ν) 0 := by
     have harg : HasDerivAt (fun x : ℝ => Real.exp (-2*ν*x)) (-2*ν) 0 := by
-      simpa only [id_eq,mul_zero,Real.exp_zero,mul_one,one_mul] using
-        ((hasDerivAt_id (0 : ℝ)).const_mul (-2*ν)).exp
+      simpa using ((hasDerivAt_id (0 : ℝ)).const_mul (-2*ν)).exp
     convert (hasDerivAt_const (0 : ℝ) 1).sub harg using 1
     · funext x
       simp only [conditionedH,ite_eq_right hν.ne',Pi.sub_apply]
@@ -124,11 +123,11 @@ private theorem aemeasurable_averageTest (P : Measure BrownianPath)
     AEMeasurable (brownianWilliamsAverageTest ν ε F G) (μ.prod P) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   have hm := (aemeasurable_driftedBrownianMaximum P hB ν hν).comp_snd (μ := μ)
-  have hl : AEMeasurable (fun z : ℝ × BrownianPath => driftedBrownianMaximum ν z.2-ε*z.1) (μ.prod P) :=
-    hm.sub (measurable_const.mul measurable_fst).aemeasurable
-  exact ((measurable_levelTest ν F G hF hG).comp_aemeasurable
-    (hl.prodMk measurable_snd.aemeasurable)).indicator₀
-      (nullMeasurableSet_lt aemeasurable_const hl)
+  exact have hl := AEMeasurable.sub hm (Measurable.aemeasurable (Measurable.mul measurable_const measurable_fst));
+  AEMeasurable.indicator₀
+    (Measurable.comp_aemeasurable (measurable_levelTest ν F G hF hG)
+      (AEMeasurable.prodMk hl (Measurable.aemeasurable measurable_snd)))
+    (nullMeasurableSet_lt aemeasurable_const hl)
 
 private theorem band_affine_path (ν ε : ℝ) (hε : 0 < ε)
     (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (G : BrownianPath → ℝ≥0∞)
@@ -155,10 +154,13 @@ private theorem band_affine_path (ν ε : ℝ) (hε : 0 < ε)
     by_cases hp : 0 < driftedBrownianMaximum ν p-ε*u <;> simp only [hu,hp,and_self,and_false,
       false_and,ite_true,ite_false]
 
-private theorem band_integral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν ε : ℝ) (hν : 0 < ν) (hε : 0 < ε)
-    (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (G : BrownianPath → ℝ≥0∞)
-    (hF : Measurable F) (hG : Measurable G) :
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (ν ε : ℝ) (hν : 0 < ν)
+  (hε : 0 < ε) (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (G : BrownianPath → ℝ≥0∞) (hF : Measurable F)
+  (hG : Measurable G)
+include hB hν hε hF hG
+
+private theorem band_integral :
     (∫⁻ m, ∫⁻ p, brownianWilliamsBandTest ν ε F G (m,p) ∂P) =
       ENNReal.ofReal (conditionedH ν ε)*(∫⁻ q, G q ∂brownianBelowConditionedLaw P ν ε)*
         (∫⁻ m in Ioi (0 : ℝ), ENNReal.ofReal (Real.exp (-2*ν*m))*
@@ -196,10 +198,7 @@ private theorem band_integral (P : Measure BrownianPath)
   simp_rw [he]
   rw [lintegral_indicator measurableSet_Ioi,lintegral_const_mul _ hv]
 
-private theorem average_integral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν ε : ℝ) (hν : 0 < ν) (hε : 0 < ε)
-    (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (G : BrownianPath → ℝ≥0∞)
-    (hF : Measurable F) (hG : Measurable G) :
+private theorem average_integral :
     (∫⁻ u in Ico (0 : ℝ) 1, ∫⁻ p, brownianWilliamsAverageTest ν ε F G (u,p) ∂P) =
       (ENNReal.ofReal ε)⁻¹*ENNReal.ofReal (conditionedH ν ε)*
         (∫⁻ q, G q ∂brownianBelowConditionedLaw P ν ε)*
@@ -220,8 +219,13 @@ private theorem average_integral (P : Measure BrownianPath)
       rw [← mul_assoc,ENNReal.inv_mul_cancel (ne_of_gt (ENNReal.ofReal_pos.mpr hε)) ENNReal.ofReal_ne_top,one_mul]
     _ = _ := by rw [← he]; ring
 
-private theorem maximum_positive_ae (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν) :
+end
+
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν)
+include hB hν
+
+private theorem maximum_positive_ae :
     ∀ᵐ p ∂P, 0 < driftedBrownianMaximum ν p := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   have hm := aemeasurable_driftedBrownianMaximum P hB ν hν
@@ -233,8 +237,7 @@ private theorem maximum_positive_ae (P : Measure BrownianPath)
   simp only [mul_zero,Real.exp_zero,ENNReal.ofReal_one]
 
 /-- The complete actual thin-band average converges to the maximum split. -/
-theorem brownianPath_williams_bandAverage_limit (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν)
+theorem brownianPath_williams_bandAverage_limit
     (xs : ℕ → ℝ) (hxs : ∀ k, 0 < xs k) (hxlim : Tendsto xs atTop (𝓝 0))
     (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (hF : Continuous F)
     (G : BrownianPath → ℝ≥0∞) (hG : Continuous G)
@@ -299,6 +302,8 @@ theorem brownianPath_williams_bandAverage_limit (P : Measure BrownianPath)
     simp only [lintegral_const,hμ,mul_one]
   simpa only [hout,htout] using hd
 
+end
+
 private theorem maximum_reference_lintegral (ν : ℝ) (hν : 0 < ν)
     (H : ℝ → ℝ≥0∞) (hH : Measurable H) :
     (∫⁻ m, H m ∂brownianMaximumReferenceLaw ν) =
@@ -315,19 +320,20 @@ private theorem maximum_reference_lintegral (ν : ℝ) (hν : 0 < ν)
     · rw [ite_eq_left hm,ENNReal.ofReal_mul (by positivity : 0 ≤ 2*ν),
         Set.indicator_of_mem (show m ∈ Ioi (0 : ℝ) from hm)]
       ring
-    · simp only [hm,ite_false,ENNReal.ofReal_zero,zero_mul,
-        Set.indicator_of_notMem (show m ∉ Ioi (0 : ℝ) from hm)]
+    simp [*]
   change (∫⁻ m, ENNReal.ofReal (if 0 < m then 2*ν*Real.exp (-2*ν*m) else 0)*H m) = _
   rw [he,lintegral_indicator measurableSet_Ioi]
   have hprod : Measurable (fun m : ℝ => ENNReal.ofReal (Real.exp (-2*ν*m))*H m) := by fun_prop
   rw [lintegral_const_mul _ hprod]
 
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν)
+  (Q : Measure BrownianPath) (hQ : IsNegativeConditionedBrownianLaw ν Q)
+  (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (hF : Continuous F) (n : ℕ)
+include hB hν hQ hF
+
 /-- The source factorization holds for bounded continuous prefix and finite future tests. -/
-theorem brownianPath_williams_continuous_cylinder_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν)
-    (Q : Measure BrownianPath) (hQ : IsNegativeConditionedBrownianLaw ν Q)
-    (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (hF : Continuous F)
-    (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i)
+theorem brownianPath_williams_continuous_cylinder_lintegral (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i)
     (φ : (Fin n → ℝ) → ℝ≥0∞) (hφ : Continuous φ)
     (KF KG : ℝ≥0∞) (hKF : KF ≠ ∞) (hKG : KG ≠ ∞)
     (hFb : ∀ z, F z ≤ KF) (hGb : ∀ ys, φ ys ≤ KG) :
@@ -338,20 +344,20 @@ theorem brownianPath_williams_continuous_cylinder_lintegral (P : Measure Brownia
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   let _ := hQ.2.1
   let _ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
-  let K : ℝ → ℝ≥0∞ := fun m => ∫⁻ p, F (m,positiveDriftFirstHitSegment ν m p) ∂P
+  let K  := fun m => ∫⁻ p, F (m,positiveDriftFirstHitSegment ν m p) ∂P
   have hK : Measurable K :=
     (hF.measurable.comp (measurable_fst.prodMk (measurable_positiveDriftFirstHitSegment_joint ν))).lintegral_prod_right'
   have hKbound (m : ℝ) : K m ≤ KF := by
     calc
       _ ≤ ∫⁻ p : BrownianPath, KF ∂P := lintegral_mono (fun p => hFb _)
-      _ = KF := by rw [lintegral_const,measure_univ,mul_one]
-  let L : ℝ≥0∞ := ∫⁻ m in Ioi (0 : ℝ), ENNReal.ofReal (Real.exp (-2*ν*m))*K m
-  have href : (∫⁻ m, K m ∂brownianMaximumReferenceLaw ν) = ENNReal.ofReal (2*ν)*L :=
+      _ = KF := by simp
+  let L  := ∫⁻ m in Ioi (0 : ℝ), ENNReal.ofReal (Real.exp (-2*ν*m))*K m
+  have href  :=
     maximum_reference_lintegral ν hν K hK
   have htwo : ENNReal.ofReal (2*ν) ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr (by positivity))
   have hL : L ≠ ∞ := by
     have hrf : (∫⁻ m, K m ∂brownianMaximumReferenceLaw ν) ≠ ∞ :=
-      ne_top_of_le_ne_top hKF ((lintegral_mono hKbound).trans_eq (by rw [lintegral_const,measure_univ,mul_one]))
+      ne_top_of_le_ne_top hKF ((lintegral_mono hKbound).trans_eq (by simp))
     have he : L = (ENNReal.ofReal (2*ν))⁻¹*(∫⁻ m, K m ∂brownianMaximumReferenceLaw ν) := by
       rw [href,← mul_assoc,ENNReal.inv_mul_cancel htwo ENNReal.ofReal_ne_top,one_mul]
     rw [he]
@@ -366,8 +372,8 @@ theorem brownianPath_williams_continuous_cylinder_lintegral (P : Measure Brownia
   have hJ := brownianBelowConditionedLaw_tendsto_entrance_cylinder P hB ν hν Q hQ xs hxs hxlim
     n ds hds φ hφ KG hKG hGb
   have hJfin : (∫⁻ q, G q ∂Q) ≠ ∞ := ne_top_of_le_ne_top hKG
-    ((lintegral_mono (fun q => hGb _)).trans_eq (by rw [lintegral_const,measure_univ,mul_one]))
-  have hwithin : Tendsto xs atTop (𝓝[>] 0) := tendsto_nhdsWithin_iff.mpr
+    ((lintegral_mono (fun q => hGb _)).trans_eq (by simp))
+  have hwithin  := tendsto_nhdsWithin_iff.mpr
     ⟨hxlim,Filter.Eventually.of_forall hxs⟩
   have hr : Tendsto (fun k => (ENNReal.ofReal (xs k))⁻¹*ENNReal.ofReal (conditionedH ν (xs k)))
       atTop (𝓝 (ENNReal.ofReal (2*ν))) := by
@@ -389,11 +395,7 @@ theorem brownianPath_williams_continuous_cylinder_lintegral (P : Measure Brownia
     _ = _ := by rw [href]; ring
 
 /-- Factorization also holds on every strictly ordered positive absolute schedule. -/
-theorem brownianPath_williams_continuous_ordered_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν)
-    (Q : Measure BrownianPath) (hQ : IsNegativeConditionedBrownianLaw ν Q)
-    (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (hF : Continuous F)
-    (n : ℕ) (ts : Fin (n+1) → ℝ≥0) (ht0 : ∀ i, 0 < ts i) (hts : StrictMono ts)
+theorem brownianPath_williams_continuous_ordered_lintegral (ts : Fin (n+1) → ℝ≥0) (ht0 : ∀ i, 0 < ts i) (hts : StrictMono ts)
     (φ : (Fin (n+1) → ℝ) → ℝ≥0∞) (hφ : Continuous φ)
     (KF KG : ℝ≥0∞) (hKF : KF ≠ ∞) (hKG : KG ≠ ∞)
     (hFb : ∀ z, F z ≤ KF) (hGb : ∀ ys, φ ys ≤ KG) :
@@ -405,5 +407,7 @@ theorem brownianPath_williams_continuous_ordered_lintegral (P : Measure Brownian
     (n+1) (brownianFirstHitElapsed (n+1) ts)
     (brownianFirstHitElapsed_pos (n+1) ts ht0 hts) φ hφ KF KG hKF hKG hFb hGb
   simpa only [brownianFirstHitTimes_elapsed n ts hts.monotone] using hh
+
+end
 
 end DOZZ.Proofs

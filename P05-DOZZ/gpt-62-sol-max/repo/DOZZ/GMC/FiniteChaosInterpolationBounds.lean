@@ -4,7 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import DOZZ.GMC.FiniteChaosSmoothConvex
+public import DOZZ.GMC.FiniteChaosSmoothKahaneComparison
+public import DOZZ.GMC.FiniteChaosTestGrowth
+public import DOZZ.GMC.FiniteGaussianExponentialIntegrability
 
 /-! Uniform pointwise envelopes for finite-chaos interpolation. -/
 
@@ -29,8 +31,7 @@ theorem kahaneInterpolatedField_abs_le
     _ = Real.sqrt t * |x| + Real.sqrt (1 - t) * |y| := by
       rw [abs_mul, abs_mul, abs_of_nonneg (Real.sqrt_nonneg _),
         abs_of_nonneg (Real.sqrt_nonneg _)]
-    _ ≤ |x| + |y| := by
-      exact add_le_add
+    _ ≤ |x| + |y| := add_le_add
         (by simpa using mul_le_mul_of_nonneg_right hs (abs_nonneg x))
         (by simpa using mul_le_mul_of_nonneg_right hs' (abs_nonneg y))
 
@@ -45,7 +46,7 @@ theorem kahaneInterpolatedWick_le_absExp
   classical
   have hv : 0 ≤ t * vX i + (1 - t) * vY i :=
     add_nonneg (mul_nonneg ht.1 (hvX i)) (mul_nonneg (by linarith [ht.2]) (hvY i))
-  have hcoord : |x i| + |y i| ≤ ∑ j, (|x j| + |y j|) :=
+  have hcoord  :=
     Finset.single_le_sum (f := fun j => |x j| + |y j|)
       (fun j _ => add_nonneg (abs_nonneg _) (abs_nonneg _))
       (Finset.mem_univ i)
@@ -104,11 +105,11 @@ theorem kahaneInterpolatedScore_abs_le
     rw [abs_div, abs_of_pos hst']
     exact div_le_div_of_nonneg_left (abs_nonneg _) hsε
       (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt ht') (by norm_num))
-  have hcoord : |x i| + |y i| ≤ ∑ j, (|x j| + |y j|) :=
+  have hcoord  :=
     Finset.single_le_sum (f := fun j => |x j| + |y j|)
       (fun j _ => add_nonneg (abs_nonneg _) (abs_nonneg _))
       (Finset.mem_univ i)
-  have hv : |vX i - vY i| ≤ ∑ j, |vX j - vY j| :=
+  have hv  :=
     Finset.single_le_sum (f := fun j => |vX j - vY j|) (fun j _ => abs_nonneg _) (Finset.mem_univ i)
   calc
     _ ≤ |γ * (x i / (2 * Real.sqrt t) - y i / (2 * Real.sqrt (1 - t)))| +
@@ -139,7 +140,7 @@ theorem kahaneInterpolatedTestDerivative_norm_le_absExp
     {ΩX ΩY ι : Type*} [Fintype ι]
     (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ) (vX vY a : ι → ℝ)
     (hvX : ∀ i, 0 ≤ vX i) (hvY : ∀ i, 0 ≤ vY i) (ha : ∀ i, 0 ≤ a i)
-    (γ ε t B : ℝ) (F' : ℝ → ℝ) (hB : 0 ≤ B) (hF' : ∀ x, ‖F' x‖ ≤ B)
+    (γ ε t B : ℝ) (F' : ℝ → ℝ) (hB : 0 ≤ B) (hF' : ∀ x, 0 ≤ x → ‖F' x‖ ≤ B)
     (hε : 0 < ε) (ht : ε ≤ t) (ht' : ε ≤ 1 - t) (ω : ΩX × ΩY) :
     ‖kahaneInterpolatedTestDerivative X Y vX vY a γ F' t ω‖ ≤
       B * (∑ i, a i) * Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|)) *
@@ -150,11 +151,13 @@ theorem kahaneInterpolatedTestDerivative_norm_le_absExp
   let D := |γ| / (2 * Real.sqrt ε) * (∑ i, (|X ω.1 i| + |Y ω.2 i|)) +
     γ ^ 2 / 2 * ∑ i, |vX i - vY i|
   have htI : t ∈ Icc (0 : ℝ) 1 := ⟨hε.le.trans ht, by linarith⟩
+  have hm : 0 ≤ kahaneInterpolatedMass X Y vX vY a γ t ω :=
+    Finset.sum_nonneg fun i _ => mul_nonneg (ha i) (Real.exp_nonneg _)
   unfold kahaneInterpolatedTestDerivative
   rw [norm_mul]
   calc
     _ ≤ B * ∑ i, ‖a i * Real.exp _ * _‖ :=
-      mul_le_mul (hF' _) (norm_sum_le _ _) (norm_nonneg _) hB
+      mul_le_mul (hF' _ hm) (norm_sum_le _ _) (norm_nonneg _) hB
     _ ≤ B * ∑ i, a i * E * D := by
       apply mul_le_mul_of_nonneg_left _ hB
       apply Finset.sum_le_sum

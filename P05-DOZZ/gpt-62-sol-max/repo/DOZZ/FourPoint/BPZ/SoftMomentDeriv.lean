@@ -47,15 +47,21 @@ attribute [local instance low] bpzNormedAddCommGroupBilin bpzNormedSpaceBilin
 
 /-! ### Real-power algebra -/
 
+section
+variable {J : ℝ} (hJ : 0 < J) (r : ℝ)
+include hJ
+
 /-- `J^(r-1) * J = J^r` for `J > 0`. -/
-theorem bpzRpow_pred_mul {J : ℝ} (hJ : 0 < J) (r : ℝ) : J ^ (r - 1) * J = J ^ r := by
+theorem bpzRpow_pred_mul : J ^ (r - 1) * J = J ^ r := by
   rw [Real.rpow_sub_one hJ.ne', div_mul_cancel₀ _ hJ.ne']
 
 /-- `J^(r-2) * (J * J) = J^r` for `J > 0`. -/
-theorem bpzRpow_sub_two_mul_mul {J : ℝ} (hJ : 0 < J) (r : ℝ) : J ^ (r - 2) * (J * J) = J ^ r := by
+theorem bpzRpow_sub_two_mul_mul : J ^ (r - 2) * (J * J) = J ^ r := by
   have h1 := bpzRpow_pred_mul hJ (r - 1)
   rw [show r - 1 - 1 = r - 2 by ring] at h1
   rw [← mul_assoc, h1, bpzRpow_pred_mul hJ r]
+
+end
 
 /-- The negative power is antitone: `J^(-s) ≤ Y^(-s)` for `0 < Y ≤ J` and `0 ≤ s`. -/
 theorem bpzRpow_neg_le {s J Y : ℝ} (hs : 0 ≤ s) (hY : 0 < Y) (hYJ : Y ≤ J) :
@@ -63,12 +69,6 @@ theorem bpzRpow_neg_le {s J Y : ℝ} (hs : 0 ≤ s) (hY : 0 < Y) (hYJ : Y ≤ J)
   Real.rpow_le_rpow_of_nonpos hY hYJ (by linarith)
 
 /-! ### Pointwise calculus -/
-
-/-- Chain rule for the negative power of a positive differentiable function. -/
-theorem hasFDerivAt_bpzRpow_neg {J : ℂ → ℝ} {J' : ℂ →L[ℝ] ℝ} {z : ℂ} (s : ℝ)
-    (hJ : HasFDerivAt J J' z) (hpos : 0 < J z) :
-    HasFDerivAt (fun y => J y ^ (-s)) ((-s * J z ^ (-s - 1)) • J') z :=
-  hJ.rpow_const (Or.inl hpos.ne')
 
 /-- The derivative of the vector field `y ↦ (−s J(y)^(−s−1)) • DJ(y)`, where `J` is a positive
 differentiable function with derivative `DJ`, and `DJ` is differentiable with derivative `DDJ`. -/
@@ -96,7 +96,7 @@ theorem hasFDerivAt_bpzMomentField {J : ℂ → ℝ} {DJ : ℂ → ℂ →L[ℝ]
 theorem norm_bpzMomentField_le {s J Y A : ℝ} {D : ℂ →L[ℝ] ℝ} (hs : 0 ≤ s) (hY : 0 < Y)
     (hYJ : Y ≤ J) (hA : 0 ≤ A) (hD : ‖D‖ ≤ A * J) :
     ‖(-s * J ^ (-s - 1)) • D‖ ≤ s * A * Y ^ (-s) := by
-  have hJ : 0 < J := hY.trans_le hYJ
+  have hJ  := hY.trans_le hYJ
   have h1 : 0 ≤ J ^ (-s - 1) := Real.rpow_nonneg hJ.le _
   rw [norm_smul, Real.norm_eq_abs, abs_mul, abs_neg, abs_of_nonneg hs, abs_of_nonneg h1]
   calc s * J ^ (-s - 1) * ‖D‖ ≤ s * J ^ (-s - 1) * (A * J) :=
@@ -112,13 +112,13 @@ theorem norm_bpzMomentField2_le {s J Y A B : ℝ} {D : ℂ →L[ℝ] ℝ} {DD : 
     (hD : ‖D‖ ≤ A * J) (hDD : ‖DD‖ ≤ B * J) :
     ‖(s * (s + 1) * J ^ (-s - 2)) • D.smulRight D + (-s * J ^ (-s - 1)) • DD‖ ≤
       (s * (s + 1) * A ^ 2 + s * B) * Y ^ (-s) := by
-  have hJ : 0 < J := hY.trans_le hYJ
+  have hJ  := hY.trans_le hYJ
   have h1 : 0 ≤ J ^ (-s - 1) := Real.rpow_nonneg hJ.le _
   have h2 : 0 ≤ J ^ (-s - 2) := Real.rpow_nonneg hJ.le _
   have hk : 0 ≤ s * (s + 1) * J ^ (-s - 2) := mul_nonneg (mul_nonneg hs (by linarith)) h2
   have hT1 : ‖(s * (s + 1) * J ^ (-s - 2)) • D.smulRight D‖ ≤ s * (s + 1) * A ^ 2 * J ^ (-s) := by
     rw [norm_smul, Real.norm_of_nonneg hk, ContinuousLinearMap.norm_smulRight_apply]
-    have hDD2 : ‖D‖ * ‖D‖ ≤ (A * J) * (A * J) :=
+    have hDD2  :=
       mul_le_mul hD hD (norm_nonneg _) (mul_nonneg hA hJ.le)
     calc s * (s + 1) * J ^ (-s - 2) * (‖D‖ * ‖D‖)
         ≤ s * (s + 1) * J ^ (-s - 2) * ((A * J) * (A * J)) := mul_le_mul_of_nonneg_left hDD2 hk
@@ -150,21 +150,21 @@ and the first-moment vector field are differentiable at `z` wherever the mass is
 derivatives obtained from `bpzSoftMassDeriv` and `bpzSoftMassDeriv2`; their norms are bounded by
 constants times `Y^(−s)` for every lower bound `0 < Y ≤ I(z)`. -/
 
+section
+variable {a ε : ℝ} (s : ℝ) (hε : 0 < ε) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x)
+  {μ : Measure ℂ} {z : ℂ} (hint : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) μ)
+  (hpos : 0 < bpzSoftMassReal a ε w μ z)
+include hε hw hw0 hint hpos
+
 /-- The negative power of the softened mass is differentiable where the mass is positive. -/
-theorem hasFDerivAt_bpzSoftMassPow {a ε : ℝ} (s : ℝ) (hε : 0 < ε) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {μ : Measure ℂ} {z : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) μ)
-    (hpos : 0 < bpzSoftMassReal a ε w μ z) :
+theorem hasFDerivAt_bpzSoftMassPow :
     HasFDerivAt (fun y => bpzSoftMassReal a ε w μ y ^ (-s))
       ((-s * bpzSoftMassReal a ε w μ z ^ (-s - 1)) • bpzSoftMassDeriv a ε w μ z) z :=
-  hasFDerivAt_bpzRpow_neg s (hasFDerivAt_bpzSoftMassReal hε hw hw0 hint) hpos
+  ((hasFDerivAt_bpzSoftMassReal hε hw hw0 hint).rpow_const (Or.inl hpos.ne'))
 
 /-- The first-moment vector field `y ↦ (−s I(y)^(−s−1)) • DI(y)` of the softened mass is
 differentiable where the mass is positive. -/
-theorem hasFDerivAt_bpzSoftMassField {a ε : ℝ} (s : ℝ) (hε : 0 < ε) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {μ : Measure ℂ} {z : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) μ)
-    (hpos : 0 < bpzSoftMassReal a ε w μ z) :
+theorem hasFDerivAt_bpzSoftMassField :
     HasFDerivAt
       (fun y => (-s * bpzSoftMassReal a ε w μ y ^ (-s - 1)) • bpzSoftMassDeriv a ε w μ y)
       ((s * (s + 1) * bpzSoftMassReal a ε w μ z ^ (-s - 2)) •
@@ -173,21 +173,23 @@ theorem hasFDerivAt_bpzSoftMassField {a ε : ℝ} (s : ℝ) (hε : 0 < ε) {w : 
   hasFDerivAt_bpzMomentField s (hasFDerivAt_bpzSoftMassReal hε hw hw0 hint)
     (hasFDerivAt_bpzSoftMassDeriv hε hw hw0 hint) hpos
 
+end
+
+section
+variable {a ε s : ℝ} (hε : 0 < ε) (hs : 0 ≤ s) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x)
+  {μ : Measure ℂ} {z : ℂ} (hint : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) μ)
+  {Y : ℝ} (hY : 0 < Y) (hYI : Y ≤ bpzSoftMassReal a ε w μ z)
+include hε hs hw hw0 hint hY hYI
+
 /-- Domination of the first-moment vector field by `s (2|a|/ε) Y^(−s)`. -/
-theorem norm_bpzSoftMassField_le {a ε s : ℝ} (hε : 0 < ε) (hs : 0 ≤ s) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {μ : Measure ℂ} {z : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) μ)
-    {Y : ℝ} (hY : 0 < Y) (hYI : Y ≤ bpzSoftMassReal a ε w μ z) :
+theorem norm_bpzSoftMassField_le :
     ‖(-s * bpzSoftMassReal a ε w μ z ^ (-s - 1)) • bpzSoftMassDeriv a ε w μ z‖ ≤
       s * (2 * |a| / ε) * Y ^ (-s) :=
   norm_bpzMomentField_le hs hY hYI (by positivity) (norm_bpzSoftMassDeriv_le hε hw hw0 hint)
 
 /-- Domination of the derivative of the first-moment vector field by
 `(s (s+1) (2|a|/ε)² + s (4|a(a−1)| + 2|a|)/ε²) Y^(−s)`. -/
-theorem norm_bpzSoftMassField2_le {a ε s : ℝ} (hε : 0 < ε) (hs : 0 ≤ s) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {μ : Measure ℂ} {z : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) μ)
-    {Y : ℝ} (hY : 0 < Y) (hYI : Y ≤ bpzSoftMassReal a ε w μ z) :
+theorem norm_bpzSoftMassField2_le :
     ‖(s * (s + 1) * bpzSoftMassReal a ε w μ z ^ (-s - 2)) •
           (bpzSoftMassDeriv a ε w μ z).smulRight (bpzSoftMassDeriv a ε w μ z) +
         (-s * bpzSoftMassReal a ε w μ z ^ (-s - 1)) • bpzSoftMassDeriv2 a ε w μ z‖ ≤
@@ -196,11 +198,16 @@ theorem norm_bpzSoftMassField2_le {a ε s : ℝ} (hε : 0 < ε) (hs : 0 ≤ s) {
   norm_bpzMomentField2_le hs hY hYI (by positivity) (norm_bpzSoftMassDeriv_le hε hw hw0 hint)
     (norm_bpzSoftMassDeriv2_le hε hw hw0 hint)
 
+end
+
 /-! ### Random mass: measurability and integrability -/
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} (m : Ω → Measure ℂ) {a ε s : ℝ}
+include Ω
+
 /-- The negative power of the random mass is integrable, being dominated by `Y^(−s)`. -/
-theorem integrable_bpzSoftMassPow {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (m : Ω → Measure ℂ) {a ε s : ℝ} (hs : 0 < s) {w : ℂ → ℝ} {z₀ : ℂ}
+theorem integrable_bpzSoftMassPow (hs : 0 < s) {w : ℂ → ℝ} {z₀ : ℂ}
     (hmeasI : AEStronglyMeasurable (fun ω => bpzSoftMassReal a ε w (m ω) z₀) P)
     {Y : Ω → ℝ} (hYpos : ∀ᵐ ω ∂P, 0 < Y ω)
     (hlow : ∀ᵐ ω ∂P, ∀ z ∈ Metric.ball z₀ 1, Y ω ≤ bpzSoftMassReal a ε w (m ω) z)
@@ -214,8 +221,7 @@ theorem integrable_bpzSoftMassPow {Ω : Type*} [MeasurableSpace Ω] {P : Measure
 
 /-- The first-moment vector field of the random mass is integrable, being dominated by
 `s (2|a|/ε) Y^(−s)`. -/
-theorem integrable_bpzSoftMomentField {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (m : Ω → Measure ℂ) {a ε s : ℝ} (hε : 0 < ε) (hs : 0 < s) {w : ℂ → ℝ} (hw : Measurable w)
+theorem integrable_bpzSoftMomentField (hε : 0 < ε) (hs : 0 < s) {w : ℂ → ℝ} (hw : Measurable w)
     (hw0 : ∀ x, 0 ≤ w x) {z₀ : ℂ}
     (hmeasI : AEStronglyMeasurable (fun ω => bpzSoftMassReal a ε w (m ω) z₀) P)
     (hmeasD : AEStronglyMeasurable (fun ω => bpzSoftMassDeriv a ε w (m ω) z₀) P)
@@ -232,8 +238,7 @@ theorem integrable_bpzSoftMomentField {Ω : Type*} [MeasurableSpace Ω] {P : Mea
     exact norm_bpzSoftMassField_le hε hs.le hw hw0 hω hY (hl z₀ (Metric.mem_ball_self one_pos))
 
 /-- Measurability of the integrand of the derivative of the first-moment vector field. -/
-theorem aestronglyMeasurable_bpzSoftMomentField2 {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (m : Ω → Measure ℂ) {a ε s : ℝ} {w : ℂ → ℝ} {z₀ : ℂ}
+theorem aestronglyMeasurable_bpzSoftMomentField2 {w : ℂ → ℝ} {z₀ : ℂ}
     (hmeasI : AEStronglyMeasurable (fun ω => bpzSoftMassReal a ε w (m ω) z₀) P)
     (hmeasD : AEStronglyMeasurable (fun ω => bpzSoftMassDeriv a ε w (m ω) z₀) P)
     (hmeasD2 : AEStronglyMeasurable (fun ω => bpzSoftMassDeriv2 a ε w (m ω) z₀) P) :
@@ -244,22 +249,26 @@ theorem aestronglyMeasurable_bpzSoftMomentField2 {Ω : Type*} [MeasurableSpace �
   have hS : AEStronglyMeasurable (fun ω =>
       (bpzSoftMassDeriv a ε w (m ω) z₀).smulRight (bpzSoftMassDeriv a ε w (m ω) z₀)) P :=
     (ContinuousLinearMap.smulRightL ℝ ℂ (ℂ →L[ℝ] ℝ)).aestronglyMeasurable_comp₂ hmeasD hmeasD
-  have h2 : AEStronglyMeasurable (fun ω => s * (s + 1) * bpzSoftMassReal a ε w (m ω) z₀ ^ (-s - 2))
-      P := ((hmeasI.aemeasurable.pow_const (-s - 2)).const_mul (s * (s + 1))).aestronglyMeasurable
-  have h1 : AEStronglyMeasurable (fun ω => -s * bpzSoftMassReal a ε w (m ω) z₀ ^ (-s - 1)) P :=
+  have h2 := ((hmeasI.aemeasurable.pow_const (-s - 2)).const_mul (s * (s + 1))).aestronglyMeasurable
+  have h1  :=
     ((hmeasI.aemeasurable.pow_const (-s - 1)).const_mul (-s)).aestronglyMeasurable
   exact (h2.smul hS).add (h1.smul hmeasD2)
 
+end
+
 /-! ### Differentiation under the integral sign -/
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} (m : Ω → Measure ℂ) {a ε s : ℝ} (hε : 0 < ε)
+  (hs : 0 < s) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {z₀ : ℂ}
+  (hmeasI : ∀ z, AEStronglyMeasurable (fun ω => bpzSoftMassReal a ε w (m ω) z) P)
+include hε hs hw hw0 hmeasI
 
 /-- **Differentiation of the negative moment of the random softened mass.** If almost surely
 `I(ω, z) ≥ Y(ω) > 0` for `z` in the unit ball about `z₀`, with `Y^(−s)` integrable, then
 `z ↦ ∫ I(ω, z)^(−s) dP(ω)` is differentiable at `z₀`, with derivative
 `∫ (−s I(ω, z₀)^(−s−1)) • DI(ω, z₀) dP(ω)`. -/
-theorem hasFDerivAt_bpzSoftMoment {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (m : Ω → Measure ℂ) {a ε s : ℝ} (hε : 0 < ε) (hs : 0 < s) {w : ℂ → ℝ} (hw : Measurable w)
-    (hw0 : ∀ x, 0 ≤ w x) {z₀ : ℂ}
-    (hmeasI : ∀ z, AEStronglyMeasurable (fun ω => bpzSoftMassReal a ε w (m ω) z) P)
+theorem hasFDerivAt_bpzSoftMoment
     (hmeasD : AEStronglyMeasurable (fun ω => bpzSoftMassDeriv a ε w (m ω) z₀) P)
     (hint : ∀ᵐ ω ∂P, Integrable (fun x => (Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) (m ω))
     {Y : Ω → ℝ} (hYpos : ∀ᵐ ω ∂P, 0 < Y ω)
@@ -292,10 +301,7 @@ theorem hasFDerivAt_bpzSoftMoment {Ω : Type*} [MeasurableSpace Ω] {P : Measure
 derivative
 `∫ (s (s+1) I(ω, z₀)^(−s−2)) • (DI(ω, z₀) ⊗ DI(ω, z₀)) + (−s I(ω, z₀)^(−s−1)) • D²I(ω, z₀) dP(ω)`
 where `(DI.smulRight DI) h = (DI h) • DI`. -/
-theorem hasFDerivAt_bpzSoftMomentDeriv {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (m : Ω → Measure ℂ) {a ε s : ℝ} (hε : 0 < ε) (hs : 0 < s) {w : ℂ → ℝ} (hw : Measurable w)
-    (hw0 : ∀ x, 0 ≤ w x) {z₀ : ℂ}
-    (hmeasI : ∀ z, AEStronglyMeasurable (fun ω => bpzSoftMassReal a ε w (m ω) z) P)
+theorem hasFDerivAt_bpzSoftMomentDeriv
     (hmeasD : ∀ z ∈ Metric.ball z₀ 1,
       AEStronglyMeasurable (fun ω => bpzSoftMassDeriv a ε w (m ω) z) P)
     (hmeasD2 : AEStronglyMeasurable (fun ω => bpzSoftMassDeriv2 a ε w (m ω) z₀) P)
@@ -332,6 +338,8 @@ theorem hasFDerivAt_bpzSoftMomentDeriv {Ω : Type*} [MeasurableSpace Ω] {P : Me
   · filter_upwards [hint, hYpos, hlow] with ω hω hY hl z hz
     exact hasFDerivAt_bpzSoftMassField s hε hw hw0 (integrable_bpzSoftMass_of hε hw hw0 hω z)
       (hY.trans_le (hl z hz))
+
+end
 
 /-! ### The derivatives evaluated on vectors -/
 

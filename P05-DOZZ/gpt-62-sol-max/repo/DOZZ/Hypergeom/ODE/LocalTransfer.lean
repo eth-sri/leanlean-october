@@ -26,9 +26,11 @@ noncomputable def localPicardTransfer
     (D : LocalHolomorphicODEData r M H c) (y : E) (z : ℂ) : E :=
   holomorphicPicardSolution c r H D.differentiable y z
 
-theorem localPicardTransfer_comp_eq
-    (r M : ℝ) (hr : 0 < r) (hM : 0 ≤ M)
-    (H : ℂ → E →L[ℂ] E) {c d e : ℂ}
+section
+variable (r M : ℝ) (hr : 0 < r) (hM : 0 ≤ M) (H : ℂ → E →L[ℂ] E)
+include hr hM
+
+theorem localPicardTransfer_comp_eq {c d e : ℂ}
     (Dc : LocalHolomorphicODEData r M H c)
     (Dd : LocalHolomorphicODEData r M H d)
     (hdc : dist d c < r / 4) (hec : dist e c < r / 4) (y : E) :
@@ -66,9 +68,7 @@ theorem localPicardTransfer_comp_eq
     (Metric.mem_ball_self (by linarith)) he hstart
   simpa [F, G] using hEq.symm
 
-theorem localPicardTransfer_square_commutes
-    (r M : ℝ) (hr : 0 < r) (hM : 0 ≤ M)
-    (H : ℂ → E →L[ℂ] E) {c cRight cUp cDiag : ℂ}
+theorem localPicardTransfer_square_commutes {c cRight cUp cDiag : ℂ}
     (Dc : LocalHolomorphicODEData r M H c)
     (DRight : LocalHolomorphicODEData r M H cRight)
     (DUp : LocalHolomorphicODEData r M H cUp)
@@ -79,13 +79,9 @@ theorem localPicardTransfer_square_commutes
         (localPicardTransfer r M H Dc y cRight) cDiag =
       localPicardTransfer r M H DUp
         (localPicardTransfer r M H Dc y cUp) cDiag := by
-  calc
-    localPicardTransfer r M H DRight
-        (localPicardTransfer r M H Dc y cRight) cDiag =
-        localPicardTransfer r M H Dc y cDiag :=
-          localPicardTransfer_comp_eq r M hr hM H Dc DRight hRight hDiag y
-    _ = localPicardTransfer r M H DUp
-        (localPicardTransfer r M H Dc y cUp) cDiag :=
-          (localPicardTransfer_comp_eq r M hr hM H Dc DUp hUp hDiag y).symm
+  exact Trans.trans (localPicardTransfer_comp_eq r M hr hM H Dc DRight hRight hDiag y)
+    (Eq.symm (localPicardTransfer_comp_eq r M hr hM H Dc DUp hUp hDiag y))
+
+end
 
 end DOZZ.Proofs

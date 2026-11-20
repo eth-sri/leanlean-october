@@ -6,6 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.RetainedZeroRootedInverse
 public import DOZZ.FourPoint.Dual.DeletedDisk
 import Mathlib.Tactic
+public import DOZZ.FourPoint.TaylorOneRootIdentity
 /-! # The deleted-disk bound weighted by the retained zero mass -/
 public section
 open MeasureTheory Set
@@ -28,26 +29,11 @@ theorem dual_retainedZero_deleted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨C₂, hC₂, hs⟩ := dual_deleted_disk_spatial_bound γ α₁ α₂ α₃ hβ
   refine ⟨C₁ * C₂, mul_pos hC₁ hC₂, ?_⟩
   intro r hr hr₁
-  let f : ℂ → ℝ≥0∞ := (Metric.ball (0 : ℂ) r).indicator
-    (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x))
-  have hf : Measurable f := (ENNReal.measurable_ofReal.comp
-    (dual_kernel_measurable γ α₁ α₂ α₃ 0)).indicator measurableSet_ball
-  have he (ν : Measure ℂ) : (∫⁻ x, f x ∂ν) =
-      ∫⁻ x in Metric.ball (0 : ℂ) r, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x) ∂ν :=
-    lintegral_indicator measurableSet_ball _
-  have hroot := dual_retainedZero_rooted_identity P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ r q f hf
-  simp_rw [lintegral_mul_const _ hf, he] at hroot
-  rw [hroot]
-  calc
-    _ ≤ ∫⁻ u, f u * ENNReal.ofReal C₁ ∂gmcReferenceMeasure := by
-      apply lintegral_mono
-      intro u
-      dsimp only
-      rw [lintegral_const_mul' _ _ (by by_cases hu : u ∈ Metric.ball (0 : ℂ) r <;> simp [f, hu])]
-      exact mul_le_mul' le_rfl (hb u r (by linarith only [hr₁]))
-    _ = (∫⁻ u, f u ∂gmcReferenceMeasure) * ENNReal.ofReal C₁ := lintegral_mul_const _ hf
-    _ ≤ ENNReal.ofReal (C₂ * r ^ (4 - γ * α₁)) * ENNReal.ofReal C₁ :=
-      mul_le_mul' (by rw [he]; exact hs r hr hr₁) le_rfl
-    _ = _ := by rw [← ENNReal.ofReal_mul (by positivity)]; congr 1; ring
+  have hG := (retainedZeroMass_measurable γ (-2 / γ) α₁ α₂ α₃ r).pow_const (-q)
+  refine (rooted_set_weight_le P X hX γ hγ hγ₂ M hM measurableSet_ball
+    (dual_kernel_measurable γ α₁ α₂ α₃ 0) hG
+    (C := ENNReal.ofReal C₁) (fun u _ => hb u r (by linarith))).trans ?_
+  exact (mul_le_mul' le_rfl (hs r hr hr₁)).trans_eq (by
+    rw [← ENNReal.ofReal_mul hC₁.le, mul_assoc])
 
 end DOZZ.Proofs

@@ -42,9 +42,7 @@ theorem residue_coulombWeight_two_split (γ a b c : ℝ) (z w x : ℂ) :
     coulombWeight γ ![a, b] ![z, w] c x =
       ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z‖)) (γ * a) *
         coulombWeight γ ![b] ![w] c x := by
-  unfold coulombWeight
-  simp only [Fin.prod_univ_two, Fin.prod_univ_one, Matrix.cons_val_zero, Matrix.cons_val_one]
-  exact mul_assoc _ _ _
+  apply mul_assoc
 
 /-- The whole complement of the critical ball is dominated by the subcritical one-root
 Coulomb mass. This includes the second insertion and the background at infinity. -/

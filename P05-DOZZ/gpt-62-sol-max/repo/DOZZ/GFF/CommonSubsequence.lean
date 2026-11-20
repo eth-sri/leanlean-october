@@ -37,8 +37,8 @@ private noncomputable def gffSubsequenceStageZero {Ω : Type*} [MeasurableSpace 
       GFFSubsequenceStage μ F g 0 := by
   classical
   let hseq := (hF 0).exists_seq_tendsto_ae
-  let ψ : ℕ → ℕ := Classical.choose hseq
-  have hψ : StrictMono ψ := (Classical.choose_spec hseq).1
+  let ψ  := Classical.choose hseq
+  have hψ  := (Classical.choose_spec hseq).1
   have hψae := (Classical.choose_spec hseq).2
   exact ⟨id, strictMono_id, fun i hi => by omega, ψ, hψ, hψae⟩
 
@@ -48,12 +48,12 @@ private noncomputable def gffSubsequenceStageSucc {Ω : Type*} [MeasurableSpace 
     (m : ℕ) (d : GFFSubsequenceStage μ F g m) :
       GFFSubsequenceStage μ F g (m + 1) := by
   classical
-  let φ : ℕ → ℕ := d.seq ∘ d.next
-  have hφ : StrictMono φ := d.strict.comp d.next_strict
+  let φ  := d.seq ∘ d.next
+  have hφ  := d.strict.comp d.next_strict
   let hnew := (hF (m + 1)).comp hφ.tendsto_atTop
   let hseq := hnew.exists_seq_tendsto_ae
-  let ψ : ℕ → ℕ := Classical.choose hseq
-  have hψ : StrictMono ψ := (Classical.choose_spec hseq).1
+  let ψ  := Classical.choose hseq
+  have hψ  := (Classical.choose_spec hseq).1
   have hψae := (Classical.choose_spec hseq).2
   refine ⟨φ, hφ, ?_, ψ, hψ, hψae⟩
   intro i hi
@@ -72,29 +72,28 @@ private noncomputable def gffSubsequenceStages {Ω : Type*} [MeasurableSpace Ω]
   refine Nat.rec ?_ ?_
   · exact gffSubsequenceStageZero μ F g hF
   · intro m d
-    exact gffSubsequenceStageSucc μ F g hF m d
+    apply gffSubsequenceStageSucc <;> assumption
 
-private theorem gffSubsequenceStages_succ {Ω : Type*} [MeasurableSpace Ω]
-    (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
-    (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i)) (m : ℕ) :
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
+  (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i))
+include Ω
+
+private theorem gffSubsequenceStages_succ (m : ℕ) :
       (gffSubsequenceStages μ F g hF (m + 1)).seq =
         (gffSubsequenceStages μ F g hF m).seq ∘
           (gffSubsequenceStages μ F g hF m).next := by
   rfl
 
-private theorem gffSubsequenceStages_range_mono {Ω : Type*} [MeasurableSpace Ω]
-    (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
-    (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i)) (m : ℕ) :
+private theorem gffSubsequenceStages_range_mono (m : ℕ) :
       Set.range (gffSubsequenceStages μ F g hF (m + 1)).seq ⊆
         Set.range (gffSubsequenceStages μ F g hF m).seq := by
   intro x hx
   rcases hx with ⟨n, rfl⟩
   rw [gffSubsequenceStages_succ]
-  exact ⟨(gffSubsequenceStages μ F g hF m).next n, rfl⟩
+  simp
 
-private theorem gffSubsequenceStages_range_le {Ω : Type*} [MeasurableSpace Ω]
-    (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
-    (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i)) :
+private theorem gffSubsequenceStages_range_le :
     ∀ i m, i ≤ m →
       Set.range (gffSubsequenceStages μ F g hF m).seq ⊆
         Set.range (gffSubsequenceStages μ F g hF i).seq := by
@@ -111,13 +110,14 @@ private theorem gffSubsequenceStages_range_le {Ω : Type*} [MeasurableSpace Ω]
         subst i
         exact Set.Subset.rfl
 
+end
+
 private theorem strictMono_nat_le_self {ψ : ℕ → ℕ} (hψ : StrictMono ψ) (n : ℕ) :
     n ≤ ψ n := by
   induction n with
   | zero => exact Nat.zero_le _
   | succ n ih =>
-      have hs : ψ n < ψ (n + 1) := hψ (by omega)
-      exact Nat.succ_le_of_lt (lt_of_le_of_lt ih hs)
+      exact Nat.succ_le_of_lt (lt_of_le_of_lt ih (hψ (by omega)))
 
 /-- From countably many scalar convergences in measure, extract one increasing subsequence along
 which every coordinate converges almost everywhere. The diagonal sequence uses nested subsequences,
@@ -171,8 +171,7 @@ theorem exists_common_subseq_tendsto_ae {Ω : Type*} [MeasurableSpace Ω]
       filter_upwards [hidx_eq] with n hn
       rw [hn]
     exact hcomp.congr' hEq
-  have hae : ∀ᵐ ω ∂μ, ∀ i, Tendsto (fun n => F (diag n) i ω) atTop
-      (𝓝 (g i ω)) := ae_all_iff.mpr hconv
+  have hae := ae_all_iff.mpr hconv
   exact ⟨diag, hdiag, hae⟩
 
 end DOZZ

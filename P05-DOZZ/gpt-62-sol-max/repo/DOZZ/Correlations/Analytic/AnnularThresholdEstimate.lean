@@ -41,9 +41,7 @@ theorem annular_threshold_estimate
     rw [he, lintegral_indicator_const hS]
     exact one_mul _
   have hmark : P S ≤ (∫⁻ ω, Y ω ^ m ∂P) / u ^ m := by
-    have hs : S ⊆ {ω | u ^ m ≤ Y ω ^ m} :=
-      fun ω hω => ENNReal.rpow_le_rpow hω hm.le
-    exact (measure_mono hs).trans (meas_ge_le_lintegral_div
+    exact (measure_mono (fun ω hω => ENNReal.rpow_le_rpow hω hm.le)).trans (meas_ge_le_lintegral_div
       (hY.aemeasurable.pow_const m) ((ENNReal.rpow_pos (pos_iff_ne_zero.mpr hu) hu').ne')
       (ENNReal.rpow_ne_top_of_nonneg hm.le hu'))
   have hbound : ∀ᵐ ω ∂P, F ω ≤ u * D ω + B ω * I ω := by
@@ -61,8 +59,7 @@ theorem annular_threshold_estimate
       rw [lintegral_add_right' (fun ω => u * D ω) hbi,
         lintegral_const_mul' _ _ hu']
     _ ≤ u * (∫⁻ ω, D ω ∂P) +
-        (∫⁻ ω, B ω ^ q ∂P) ^ (1 / q) * (P S) ^ (1 / (q / (q - 1))) := by
-      exact add_le_add_right (by
+        (∫⁻ ω, B ω ^ q ∂P) ^ (1 / q) * (P S) ^ (1 / (q / (q - 1))) := add_le_add_right (by
         simpa only [hIp] using lintegral_mul_le_holder hB hI.aemeasurable hq) _
     _ ≤ _ := add_le_add_right
       (mul_le_mul_right (ENNReal.rpow_le_rpow hmark

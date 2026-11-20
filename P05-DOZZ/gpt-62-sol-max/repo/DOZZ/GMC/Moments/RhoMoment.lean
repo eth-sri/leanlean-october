@@ -26,6 +26,5 @@ theorem equatorGFF_extendedSeiberg_rho_moment
   obtain ⟨hz, ha, hai, _he, hb, hi, hii⟩ :=
     extendedSeiberg3_coulomb_parameters γ α₁ α₂ α₃ hα
   rw [rho_moment_eq_coulomb_moment P X hX γ hγ hγ2 M hM α₁ α₂ α₃]
-  exact equatorGFF_extendedSeiberg_moment P X hX γ hγ hγ2 M hM
-    ![0, 1] hz ![α₁, α₂] α₃ ha hai hb hi hii
+  apply equatorGFF_extendedSeiberg_moment <;> assumption
 end DOZZ.Proofs

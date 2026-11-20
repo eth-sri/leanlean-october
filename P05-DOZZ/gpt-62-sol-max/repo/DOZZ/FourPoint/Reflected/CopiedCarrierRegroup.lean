@@ -11,23 +11,6 @@ open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-theorem reflected_map_two_measures_prod_ae
-    {Ω Λ α β : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ]
-    [MeasurableSpace α] [MeasurableSpace β]
-    (P : Measure Ω) (R : Measure Λ) [IsProbabilityMeasure P] [IsProbabilityMeasure R]
-    (F : Ω → α) (G : Λ → β) (hF : AEMeasurable F P) (hG : AEMeasurable G R) :
-    (P.prod R).map (fun ω : Ω × Λ => (F ω.1,G ω.2)) = (P.map F).prod (R.map G) := by
-  have hf : ∀ᵐ ω : Ω × Λ ∂P.prod R, F ω.1 = hF.mk F ω.1 :=
-    measurePreserving_fst.quasiMeasurePreserving.ae hF.ae_eq_mk
-  have hg : ∀ᵐ ω : Ω × Λ ∂P.prod R, G ω.2 = hG.mk G ω.2 :=
-    measurePreserving_snd.quasiMeasurePreserving.ae hG.ae_eq_mk
-  have he : (fun ω : Ω × Λ => (F ω.1,G ω.2)) =ᵐ[P.prod R]
-      Prod.map (hF.mk F) (hG.mk G) := by
-    filter_upwards [hf,hg] with ω hω hω'
-    exact Prod.ext hω hω'
-  rw [Measure.map_congr he,← Measure.map_prod_map P R hF.measurable_mk hG.measurable_mk,
-    ← Measure.map_congr hF.ae_eq_mk,← Measure.map_congr hG.ae_eq_mk]
-
 theorem reflected_copied_carrier_regroup
     {Ω α β : Type*} [MeasurableSpace Ω] [MeasurableSpace α] [MeasurableSpace β]
     (P : Measure Ω) [IsProbabilityMeasure P] (A : Ω → α) (N : Ω → β)

@@ -28,10 +28,14 @@ namespace DOZZ.Proofs
 
 /-! ### Monotone convergence with convergent integrals -/
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {φ : ℕ → Ω → ℝ} {f : Ω → ℝ} {e : ℝ}
+  (hint : ∀ n, Integrable (φ n) P)
+include Ω hint
+
 /-- If integrable `φ_n` increase a.e. to `f` and `∫ φ_n → e`, then `f` is integrable with
 integral `e`. -/
-theorem integrable_integral_eq_of_monotone {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {φ : ℕ → Ω → ℝ} {f : Ω → ℝ} {e : ℝ} (hint : ∀ n, Integrable (φ n) P)
+theorem integrable_integral_eq_of_monotone
     (hmono : ∀ᵐ ω ∂P, Monotone fun n => φ n ω)
     (hlim : ∀ᵐ ω ∂P, Tendsto (fun n => φ n ω) atTop (𝓝 (f ω)))
     (hE : Tendsto (fun n => ∫ ω, φ n ω ∂P) atTop (𝓝 e)) :
@@ -83,8 +87,7 @@ theorem integrable_integral_eq_of_monotone {Ω : Type*} [MeasurableSpace Ω] {P 
   linarith
 
 /-- The antitone version. -/
-theorem integrable_integral_eq_of_antitone {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {φ : ℕ → Ω → ℝ} {f : Ω → ℝ} {e : ℝ} (hint : ∀ n, Integrable (φ n) P)
+theorem integrable_integral_eq_of_antitone
     (hanti : ∀ᵐ ω ∂P, Antitone fun n => φ n ω)
     (hlim : ∀ᵐ ω ∂P, Tendsto (fun n => φ n ω) atTop (𝓝 (f ω)))
     (hE : Tendsto (fun n => ∫ ω, φ n ω ∂P) atTop (𝓝 e)) :
@@ -98,6 +101,8 @@ theorem integrable_integral_eq_of_antitone {Ω : Type*} [MeasurableSpace Ω] {P 
   have := h.2
   rw [integral_neg] at this
   linarith
+
+end
 
 /-! ### Finiteness of the total mass at charge `a < Q` -/
 
@@ -119,10 +124,13 @@ theorem totalMass_le_weighted_add {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 
     · have hy1 : 1 ≤ ‖y‖ := by simpa using hy
       rw [zeroTilt_of_one_le_norm γ a hy1, zeroTilt_zero]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX hγ hγ2 hM
+
 /-- The total mass at a charge `a < Q` is almost surely finite. -/
-theorem ae_totalMass_lt_top_of_lt {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
+theorem ae_totalMass_lt_top_of_lt {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
     {a : ℝ} (ha : a < Q γ) :
     ∀ᵐ ω ∂P, poleTotalMass γ a (2 / γ + η) (2 / γ - η) (M ω) < ⊤ := by
   have hη := (window_eta_pos hW).le
@@ -155,9 +163,7 @@ theorem ae_totalMass_lt_top_of_lt {Ω : Type*} [MeasurableSpace Ω] (P : Measure
 /-! ### Identification of the real limit -/
 
 /-- **The real limit of the cutoff family is the pole-subtracted observable.** -/
-theorem cutoff_real_limit_eq_observable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ)
+theorem cutoff_real_limit_eq_observable (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : IsCircleAverage P X Xc) {η δ : ℝ} (hW : TwoPoleWindow γ η δ) {x : ℝ}
     (hx₁ : -2 * η - δ < x) (hx₂ : x < 1 / γ) {e : ℂ}
     (hlim : Tendsto (fun n : ℕ => poleSubtractedCutoff P Xc M γ η n (x : ℂ)) atTop (𝓝 e)) :
@@ -197,9 +203,7 @@ theorem cutoff_real_limit_eq_observable {Ω : Type*} [MeasurableSpace Ω] (P : M
         poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) :=
       (localMass_le_cutoffTiltedMass γ η x 0 (M ω)).trans
         (cutoffTiltedMass_le_totalMass γ η x 0 (M ω))
-    have hpos : 0 < (poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω)).toReal :=
-      ENNReal.toReal_pos (hω.1.trans_le hLT).ne' hT.ne
-    exact (h2.rpow_const (Or.inl hpos.ne')).sub_const _
+    exact (h2.rpow_const (Or.inl (ENNReal.toReal_pos (hω.1.trans_le hLT).ne' hT.ne).ne')).sub_const _
   have hint : ∀ n, Integrable (fun ω => (cutoffTiltedMass γ η x n (M ω)).toReal ^ w -
       (poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω)).toReal ^ w) P :=
     fun n => integrable_tiltedCutoff P X hX γ hγ hγ2 M hM Xc hXc hW n hx₁
@@ -224,6 +228,8 @@ theorem cutoff_real_limit_eq_observable {Ω : Type*} [MeasurableSpace Ω] (P : M
   apply Complex.ext
   · rw [Complex.ofReal_re, poleSubtractedObservable, ← hval]
   · rw [Complex.ofReal_im, him]
+
+end
 
 end DOZZ.Proofs
 

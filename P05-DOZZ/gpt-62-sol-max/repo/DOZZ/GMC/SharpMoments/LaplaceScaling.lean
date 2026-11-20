@@ -42,8 +42,7 @@ theorem cutoffLaplace_affine_ball_scaling
     neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
   let _ : IsProbabilityMeasure P := hX.1
   have hG : IsProbabilityMeasure G := by
-    simpa [G] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
-      ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)
+    apply ProbabilityTheory.instIsProbabilityMeasureGaussianReal
   let _ : IsProbabilityMeasure G := hG
   let _ : IsProbabilityMeasure (P.prod G) := inferInstance
   let scaleFactor : ℝ → ℝ := fun w =>
@@ -51,9 +50,9 @@ theorem cutoffLaplace_affine_ball_scaling
   have hscale : Measurable scaleFactor := by
     dsimp [scaleFactor]
     fun_prop
-  let t : Ω → Fin 1 → ℝ := fun ω _ =>
+  let t : Ω → ℝ := fun ω =>
     (regularizedGMC P Xc γ (r - Real.log c) ω (Metric.ball a (c * R))).toReal
-  let s : Ω × ℝ → Fin 1 → ℝ := fun q _ =>
+  let s : Ω × ℝ → ℝ := fun q =>
     scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal
   have hLaw := regularizedGMC_affine_openBall_mass_law_CutoffScale P X hX γ Xc hXc
     (a := a) (c := c) (R := R) hc hc1 hR hRsmall hTsmall hsourceCut htargetCut
@@ -61,15 +60,11 @@ theorem cutoffLaplace_affine_ball_scaling
   have hball : MeasurableSet (Metric.ball a (c * R)) := Metric.isOpen_ball.measurableSet
   have hball0 : MeasurableSet (Metric.ball (0 : ℂ) R) := Metric.isOpen_ball.measurableSet
   have htm : Measurable t := by
-    rw [measurable_pi_iff]
-    intro _
     exact measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ _ _ hball
   have hsm : Measurable s := by
-    rw [measurable_pi_iff]
-    intro _
     exact (hscale.comp measurable_snd).mul
       ((measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ r _ hball0).comp measurable_fst)
-  let ψ : (Fin 1 → ℝ) → ℝ := fun v => Real.exp (-(Real.exp y) * v 0)
+  let ψ : ℝ → ℝ := fun v => Real.exp (-(Real.exp y) * v)
   have hψ : Measurable ψ := by
     dsimp [ψ]
     fun_prop
@@ -105,10 +100,9 @@ theorem cutoffLaplace_affine_ball_scaling
       Real.exp (y + 2 * Real.log c + γ ^ 2 / 2 * Real.log c + γ * w) := by
     dsimp [scaleFactor]
     rw [show c ^ 2 = Real.exp (2 * Real.log c) by
-      rw [show (2 : ℝ) * Real.log c = Real.log c + Real.log c by ring, Real.exp_add,
-        Real.exp_log hc]
-      ring]
-    rw [← Real.exp_add, ← Real.exp_add]
+          rw [show (2 : ℝ) * Real.log c = Real.log c + Real.log c by ring, Real.exp_add,
+            Real.exp_log hc]
+          ring, ← Real.exp_add, ← Real.exp_add]
     congr 1
     ring
   rw [← hexp]

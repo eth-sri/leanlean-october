@@ -7,6 +7,7 @@ public import DOZZ.FourPoint.Reflected.KernelInverseExpectation
 public import DOZZ.FourPoint.Reflected.ReinsertedInnerSqueeze
 public import DOZZ.FourPoint.Reflected.CopiedSourceMoment
 public import DOZZ.FourPoint.Reflected.SourceOuterMoments
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! The actual copied spatial kernel has the integrated radial Williams squeeze. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set
@@ -20,7 +21,7 @@ theorem reflected_source_copied_kernel_inverse_squeeze
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N) (hi : IndepFun (originRadialPath Xc) N P)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (α₁ α₂ α₃ ξ p R : ℝ) (hp : 0 < p)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (z : ℂ) (hz0 : z ≠ 0) (hz1 : z ≠ 1) (hzn : ‖z‖ ≤ 1)

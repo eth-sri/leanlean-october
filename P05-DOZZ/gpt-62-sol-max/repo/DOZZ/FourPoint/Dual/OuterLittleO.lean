@@ -31,16 +31,14 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨C₂, _, hdel⟩ := dual_retainedZero_deleted_moment_bound
     P X M γ α₁ α₂ α₃ p hγ hγ₂ hp hα₁ hα₂ hα₃ hβ hX hM
   let l := nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}
-  have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hpow (s : ℝ) (hs : 0 < s) : Tendsto (fun z : ℂ => ‖z‖ ^ s) l (nhds 0) := by
-    simpa only [Function.comp_def, Real.zero_rpow hs.ne'] using
-      ((Real.continuous_rpow_const hs.le).tendsto (0 : ℝ)).comp hn
+  have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) :=
+    (tendsto_norm_zero (E := ℂ)).mono_left nhdsWithin_le_nhds
+  have hpow (s : ℝ) (hs : 0 < s) := hn.rpow_const_nhds_zero hs
   have hbound : ∀ᶠ z : ℂ in l,
       |dualOuterMoment P M γ α₁ α₂ α₃ p z ξ -
         (∫⁻ ω, coulombMass γ (M ω) ![-2 / γ, α₁, α₂] ![0, 0, 1] α₃ ^ (-p) ∂P).toReal| ≤
           C₁ * ‖z‖ ^ ξ + C₂ * ‖z‖ ^ ((1 - ξ) * (4 - γ * α₁)) := by
-    filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one),
+    filter_upwards [hn.eventually_lt_const zero_lt_one,
       (hpow (1 - ξ) (sub_pos.mpr hξ₁)).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
       (hpow ξ hξ).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
       self_mem_nhdsWithin] with z hz hcut hsmall hz0

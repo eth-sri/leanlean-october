@@ -44,16 +44,12 @@ theorem copied_error_mass_aemeasurable
     measurable_snd (Metric.isOpen_ball.measurableSet)
   have hm := gmc_parameter_lintegral_aemeasurable (P.prod P) _ hY' γ hγ hγ2
     (N ∘ Prod.fst) hN' θ hθ.aemeasurable _ (hk.indicator hd)
-  have hmass : AEMeasurable (fun q : Ω × Ω =>
-      ∫⁻ x in Metric.ball (0 : ℂ) ρ, ENNReal.ofReal
-        |copiedMultiplier z γ (Xc q.1 z 0) (Xc q.2 z 0) F x-
-          F z*Real.exp (-4*Real.log ‖z‖)| * (ENNReal.ofReal ‖x‖)^(-γ*α) ∂N q.1) (P.prod P) := by
+  exact ((((hpin.comp measurable_snd).const_mul γ).sub_const _).exp.ennreal_ofReal).aemeasurable.mul (by
     convert hm using 1
     funext q
     change (∫⁻ x in Metric.ball (0 : ℂ) ρ, k (θ q,x) ∂N q.1) = _
     rw [← lintegral_indicator Metric.isOpen_ball.measurableSet]
-    rfl
-  exact ((((hpin.comp measurable_snd).const_mul γ).sub_const _).exp.ennreal_ofReal).aemeasurable.mul hmass
+    rfl)
 
 
 end DOZZ.Proofs

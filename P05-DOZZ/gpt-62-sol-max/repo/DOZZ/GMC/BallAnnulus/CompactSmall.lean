@@ -38,11 +38,8 @@ theorem gmc_compact_small_ball_twoSided_bound
   have hTpos : 0 < T := by
     dsimp [T]
     apply ENNReal.mul_pos
-    · exact (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
-    · intro hz
-      rcases ENNReal.rpow_eq_zero_iff.mp hz with h | h
-      · exact (ENNReal.ofReal_pos.mpr (by positivity)).ne' h.1
-      · exact ENNReal.ofReal_ne_top h.1
+    · positivity
+    · positivity
   let t := T.toReal
   have ht : 0 < t := ENNReal.toReal_pos hTpos.ne' hTtop
   have hT : T = ENNReal.ofReal t := (ENNReal.ofReal_toReal hTtop).symm
@@ -68,8 +65,6 @@ theorem gmc_compact_small_ball_twoSided_bound
       ENNReal.ofReal ((t*C)⁻¹ * r ^ gmcScaleExponent γ p) =
           ENNReal.ofReal t⁻¹ * ENNReal.ofReal (C⁻¹ * r ^ gmcScaleExponent γ p) := by
             rw [← ENNReal.ofReal_mul (inv_pos.mpr ht).le]
-            congr 1
-            rw [mul_inv_rev]
             ring
       _ ≤ ENNReal.ofReal t⁻¹ * (ENNReal.ofReal t * gmcMassMoment P M (Metric.ball z r) p) :=
         mul_le_mul_of_nonneg_left (href.1.trans h0z) (by positivity)

@@ -25,7 +25,7 @@ and infinite extended-mass values. -/
 theorem fusion_linear_inverse_mass_bound (A I C : ℝ≥0∞) (p : ℝ) (hp : 0 ≤ p)
     (hA : A ≤ C * I) : A * I ^ (-p - 1) ≤ C * I ^ (-p) := by
   by_cases hI0 : I = 0
-  · have hA0 : A = 0 := le_zero_iff.mp (by simpa only [hI0, mul_zero] using hA)
+  · have hA0  := le_zero_iff.mp (by simpa only [hI0, mul_zero] using hA)
     simp only [hA0, zero_mul]
     exact zero_le
   by_cases hIt : I = ⊤

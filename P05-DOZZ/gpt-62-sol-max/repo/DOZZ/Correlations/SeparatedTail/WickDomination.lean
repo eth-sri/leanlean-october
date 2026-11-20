@@ -16,11 +16,12 @@ open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S] (P : Measure Ω)
+
 /-- Spatial almost-everywhere circle splits can be placed on a common sample event.
 This is a Fubini step, not a pointwise assertion on all spatial points. -/
-theorem separatedTail_circle_split_ae_sample
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) [SFinite P] (ν : Measure S) [SFinite ν]
+theorem separatedTail_circle_split_ae_sample [SFinite P] (ν : Measure S) [SFinite ν]
     (Φ Ψ H : Ω → S → ℝ) (L : Ω → ℝ)
     (hΦ : Measurable (fun q : Ω × S => Φ q.1 q.2))
     (hΨ : Measurable (fun q : Ω × S => Ψ q.1 q.2))
@@ -34,9 +35,7 @@ theorem separatedTail_circle_split_ae_sample
 
 /-- The Wick ratio for the full and Dirichlet fields is dominated by the correlated
 harmonic/restoration envelope and the deterministic covariance correction. -/
-theorem separatedTail_fieldChaosMass_le_of_circle_split
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (ν : Measure S) [SFinite ν]
+theorem separatedTail_fieldChaosMass_le_of_circle_split (ν : Measure S) [SFinite ν]
     (Φ Ψ H : Ω → S → ℝ) (L : Ω → ℝ) (E : Ω → ℝ≥0∞)
     (w : S → ℝ≥0) (hw : Measurable w)
     (hfield : IsCenteredGaussianField P Φ) (γ C : ℝ)
@@ -82,5 +81,7 @@ theorem separatedTail_fieldChaosMass_le_of_circle_split
           (Real.exp (γ*Φ ω x-γ^2/2*(∫ ω', Φ ω' x^2 ∂P)))) := hw.coe_nnreal_ennreal.mul
         (((hsp.const_mul γ).sub (hvInt.const_mul (γ^2/2))).exp.ennreal_ofReal)
       rw [lintegral_const_mul'' _ hm.aemeasurable]
+
+end
 
 end DOZZ.Proofs

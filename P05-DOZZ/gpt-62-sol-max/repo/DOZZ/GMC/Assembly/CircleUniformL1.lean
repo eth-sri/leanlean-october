@@ -128,8 +128,7 @@ theorem equatorGFF_GMC_uniform_L1
     (Measure.measurable_lintegral hhf).comp hNmeas
   have hA : ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |f x - h x| ∂regularizedGMC P Xc γ r ω ∂P ≤
       ((δ / 2 : ℝ≥0) : ℝ≥0∞) := by
-    rw [regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r _ hfh]
-    exact happrox
+    rwa [regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r _ hfh]
   have hC : ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |h x - f x| ∂N ω ∂P ≤ ((δ / 2 : ℝ≥0) : ℝ≥0∞) := by
     calc ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |h x - f x| ∂N ω ∂P =
           ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |h x - f x| ∂Mfam γ ω ∂P := by
@@ -176,14 +175,14 @@ namespace DOZZ.Assembly
 
 open DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (U : Set ℂ)
+  (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+  (ε : ℝ) (hε : 0 < ε) (hεcut : ε ≤ ε₀) (x : ℂ)
+include Ω U dens ε₀ hY hε hεcut
+
 /-- The Gaussian exponential moments of one admissible coordinate are finite. -/
-theorem admissible_lintegral_exp_mul_ne_top
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (ε : ℝ) (hε : 0 < ε) (hεcut : ε ≤ ε₀)
-    (x : ℂ) (t : ℝ) :
+theorem admissible_lintegral_exp_mul_ne_top (t : ℝ) :
     ∫⁻ ω, ENNReal.ofReal (Real.exp (t * Y ω ε x)) ∂P ≠ ⊤ := by
   have hone := lintegral_admissibleLogWickWeight P U dens ε₀ Y hY t ε hε hεcut x
   have heq : (fun ω => ENNReal.ofReal (Real.exp (t * Y ω ε x))) = fun ω =>
@@ -199,13 +198,7 @@ theorem admissible_lintegral_exp_mul_ne_top
   exact ENNReal.ofReal_ne_top
 
 /-- The Wick weight at one point is continuous in the charge in `L¹(P)`. -/
-theorem admissible_wick_weight_L1_continuous
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (ε : ℝ) (hε : 0 < ε) (hεcut : ε ≤ ε₀)
-    (x : ℂ) (γ₀ : ℝ) :
+theorem admissible_wick_weight_L1_continuous (γ₀ : ℝ) :
     Tendsto (fun γ => ∫⁻ ω, ENNReal.ofReal
         |Real.exp (γ * Y ω ε x - γ ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P) -
           Real.exp (γ₀ * Y ω ε x - γ₀ ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P)| ∂P)
@@ -236,9 +229,7 @@ theorem admissible_wick_weight_L1_continuous
   rw [show (𝓝 (0 : ℝ≥0∞)) = 𝓝 (∫⁻ _ : Ω, (0 : ℝ≥0∞) ∂P) by rw [lintegral_zero]]
   apply tendsto_lintegral_filter_of_dominated_convergence (f := fun _ => 0) bound
   · filter_upwards [] with γ
-    exact ENNReal.measurable_ofReal.comp (continuous_abs.measurable.comp
-      ((Real.measurable_exp.comp ((hZ.const_mul γ).sub_const _)).sub
-        (Real.measurable_exp.comp ((hZ.const_mul γ₀).sub_const _))))
+    fun_prop
   · have hball : ∀ᶠ γ in 𝓝 γ₀, |γ| ≤ c := by
       filter_upwards [Metric.ball_mem_nhds γ₀ one_pos] with γ hγ
       rw [Metric.mem_ball, Real.dist_eq] at hγ
@@ -280,6 +271,8 @@ theorem admissible_wick_weight_L1_continuous
       ENNReal.continuous_ofReal.comp (by fun_prop)
     have h := hcont.tendsto γ₀
     simpa using h
+
+end
 
 end DOZZ.Assembly
 

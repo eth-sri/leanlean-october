@@ -42,7 +42,6 @@ theorem dual_negative_increment_integrable
   filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae hA,
     measurePreserving_fst.quasiMeasurePreserving.ae hb,
     measurePreserving_snd.quasiMeasurePreserving.ae hS] with v hAv hbv hSv
-  simpa only [Real.norm_eq_abs] using
-    dual_negative_increment_abs_le p (A v.1) (b v.1*S v.2) hp hAv (mul_nonneg hbv hSv)
+  apply dual_negative_increment_abs_le <;> positivity
 
 end DOZZ.Proofs

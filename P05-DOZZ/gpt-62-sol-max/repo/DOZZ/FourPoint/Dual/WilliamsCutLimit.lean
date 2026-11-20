@@ -4,11 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.FourPoint.Dual.FullMaximumLimit
-public import DOZZ.FourPoint.Dual.FixedCutMaximumLimit
 public import DOZZ.FourPoint.Dual.SourceWilliamsSandwich
 public import DOZZ.FourPoint.Dual.CutSqueezeLimit
-public import DOZZ.FourPoint.Dual.SourceParetoLimit
-public import DOZZ.FourPoint.Dual.SourceParetoIncrement
 public import DOZZ.FourPoint.Dual.SourceMaximumPareto
 public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
 public import DOZZ.FourPoint.Reflected.RestartedWilliams
@@ -75,21 +72,25 @@ theorem dual_source_williams_cut_increment_tendsto
   have h4 : 1 < 4/γ^2 := by
     rw [lt_div_iff₀ (sq_pos_of_pos hγ)]
     nlinarith only [hγ, hγ₂]
+  have hBm := conditionedPair_aemeasurable P B ν hData.1
+  have hmax := dual_source_maximum_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
+    α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack hξ hξ1 B Z hData
   have hfull : Tendsto (fun z => Dfull z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 L) :=
-    dual_source_full_maximum_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
-      α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack hξ hξ1 B Z hData
+    hmax (twoSidedReflectionMass γ B Z)
+      (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z hBm hData.2.1) (fun _ => le_rfl)
   have hcut (c : ℝ) : Tendsto (fun z => Dc c z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (Cc c)) :=
-    dual_source_cut_maximum_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
-      α₁ α₂ α₃ ξ h c hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack hξ hξ1 B Z hData
+    hmax (twoSidedReflectionCutMass γ c B Z)
+      (twoSidedReflectionCutMass_aemeasurable P γ c B Z hBm hData.2.1.2.2.2.1 hData.2.1.2.2.2.2.1)
+      (twoSidedReflectionCutMass_le_mass γ c B Z)
   have hCoeff : Tendsto Cc atTop (𝓝 L) :=
     (dual_reflection_cut_moment_tendsto P γ α₁ a hγ hγ₂ B Z hα₁ hData ha (ha1.trans h4)).const_mul C
-  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 ‖(0 : ℂ)‖) :=
-    (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+  have hn := (tendsto_norm_zero (E := ℂ)).mono_left
+    (nhdsWithin_le_nhds (s := {(0 : ℂ)}ᶜ))
   have hF : Tendsto (fun z => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     have ht := dual_radial_first_order_littleO P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ (p+1) h κ hh hξ hξ1 (by linarith only [hp]) hslack
     apply ht.congr'
-    filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))]
+    filter_upwards [self_mem_nhdsWithin, hn.eventually_lt_const zero_lt_one]
       with z hz0 hz
     have he := (dual_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
       ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ1 (by linarith only [hp]) z hz0 hz.le).2
@@ -111,7 +112,7 @@ theorem dual_source_williams_cut_increment_tendsto
     (fun c z => Dc c z/‖z‖^κ) (fun c z => Err c z/‖z‖^κ) Cc L hfull
     (fun c => by simpa only [add_zero] using (hcut c).add (hErr c)) hCoeff
   intro c
-  filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))]
+  filter_upwards [self_mem_nhdsWithin, hn.eventually_lt_const zero_lt_one]
     with z hz0 hz
   have hz1 : z ≠ 1 := by intro he; simp [he] at hz
   have hb := dual_source_williams_expectation_sandwich P X hX γ hγ hγ₂ M hM Xc hc

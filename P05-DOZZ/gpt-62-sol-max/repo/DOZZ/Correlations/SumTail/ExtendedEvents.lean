@@ -14,8 +14,10 @@ open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-theorem sumtail_localMass_ae_finite
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
+theorem sumtail_localMass_ae_finite (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (F : ℂ → ℝ) (z : ℂ) (α S : ℝ) (hα : γ/2 < α ∧ α < Q γ)
@@ -30,8 +32,7 @@ theorem sumtail_localMass_ae_finite
     (separatedTail_localSingularMass_le M F z γ α (ENNReal.ofReal S) ENNReal.ofReal_ne_top
       (fun x => ENNReal.ofReal_le_ofReal ((le_abs_self _).trans (hF x))) ω)
 
-theorem sumtail_extended_event_eq_real
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (W : Ω → ℝ≥0∞)
+theorem sumtail_extended_event_eq_real (W : Ω → ℝ≥0∞)
     (hf : ∀ᵐ ω ∂P, W ω ≠ ⊤) (x : ℝ) (hx : 0 ≤ x) :
     P.real {ω | ENNReal.ofReal x < W ω} = P.real {ω | x < (W ω).toReal} := by
   apply congrArg ENNReal.toReal
@@ -39,9 +40,14 @@ theorem sumtail_extended_event_eq_real
   filter_upwards [hf] with ω hω
   exact propext (ENNReal.ofReal_lt_iff_lt_toReal hx hω)
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (W2 W3 : Ω → ℝ≥0∞) (hf2 : ∀ᵐ ω ∂P, W2 ω ≠ ⊤)
+  (hf3 : ∀ᵐ ω ∂P, W3 ω ≠ ⊤)
+include Ω hf2 hf3
+
 theorem sumtail_extended_joint_eq_real
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (W2 W3 : Ω → ℝ≥0∞)
-    (hf2 : ∀ᵐ ω ∂P, W2 ω ≠ ⊤) (hf3 : ∀ᵐ ω ∂P, W3 ω ≠ ⊤)
     (u v : ℝ) (hu : 0 ≤ u) (hv : 0 ≤ v) :
     P.real {ω | ENNReal.ofReal u < W2 ω ∧ ENNReal.ofReal v < W3 ω} =
       P.real {ω | u < (W2 ω).toReal ∧ v < (W3 ω).toReal} := by
@@ -52,8 +58,6 @@ theorem sumtail_extended_joint_eq_real
     (ENNReal.ofReal_lt_iff_lt_toReal hv h3))
 
 theorem sumtail_extended_sum_eq_real
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (W2 W3 : Ω → ℝ≥0∞)
-    (hf2 : ∀ᵐ ω ∂P, W2 ω ≠ ⊤) (hf3 : ∀ᵐ ω ∂P, W3 ω ≠ ⊤)
     (x : ℝ) (hx : 0 ≤ x) :
     P.real {ω | ENNReal.ofReal x < W2 ω+W3 ω} =
       P.real {ω | x < (W2 ω).toReal+(W3 ω).toReal} := by
@@ -65,5 +69,7 @@ theorem sumtail_extended_sum_eq_real
   apply measure_congr
   filter_upwards [hf2,hf3] with ω h2 h3
   rw [ENNReal.toReal_add h2 h3]
+
+end
 
 end DOZZ.Proofs

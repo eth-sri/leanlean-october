@@ -23,7 +23,7 @@ theorem complexLog_eq_log_neg_add_pi_I {z : ℂ} (hz : 0 < z.im) :
   · simp only [Complex.log_im, Complex.add_im, Complex.mul_im, Complex.ofReal_im,
       Complex.I_re, Complex.I_im, zero_mul, mul_one]
     rw [Complex.arg_neg_eq_arg_sub_pi_of_im_pos hz]
-    norm_num [Complex.ofReal_re]
+    simp
 
 /-- In the lower half-plane, the principal logarithm of `z` is the logarithm of `-z` minus
 `π i`. -/
@@ -34,7 +34,7 @@ theorem complexLog_eq_log_neg_sub_pi_I {z : ℂ} (hz : z.im < 0) :
   · simp only [Complex.log_im, Complex.sub_im, Complex.mul_im, Complex.ofReal_im,
       Complex.I_re, Complex.I_im, zero_mul, mul_one]
     rw [Complex.arg_neg_eq_arg_add_pi_of_im_neg hz]
-    norm_num [Complex.ofReal_re]
+    simp
 
 /-- The principal power changes by its positive-side monodromy factor in the upper half-plane. -/
 theorem complexCpow_eq_exp_log_neg_phase_upper {z r : ℂ} (hz : 0 < z.im) :

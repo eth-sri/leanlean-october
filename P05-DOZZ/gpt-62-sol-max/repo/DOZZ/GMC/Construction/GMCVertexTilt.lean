@@ -36,6 +36,6 @@ theorem equatorGFF_GMC_vertex_tilt
           (γ * ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r)))) ∂P := by
   apply equatorGFF_GMC_vertex_tilt_of_general_tilt P X hX γ hγ hγ2 M hM Xc hXc α z r H hH
   intro hγ' hγ2' hM' hH' L hL c hc
-  exact equatorGFF_GMC_tilt P X hX γ hγ' hγ2' M hM' Xc hXc L hL c hc H hH'
+  apply equatorGFF_GMC_tilt <;> assumption
 
 end DOZZ.Proofs

@@ -36,9 +36,7 @@ theorem dyadicCellWindow_mono {d m n : Nat} (hmn : m ≤ n) :
     dyadicCellWindow d m ⊆ dyadicCellWindow d n := by
   intro cell hcell
   rw [mem_dyadicCellWindow] at hcell ⊢
-  intro r
-  have hmn_int : (m : ℤ) ≤ (n : ℤ) := by exact_mod_cast hmn
-  exact ⟨le_trans (neg_le_neg hmn_int) (hcell r).1, le_trans (hcell r).2 hmn_int⟩
+  grind
 
 /-- The finite union of scale-zero dyadic boxes in a coordinate radius `n`. -/
 @[expose]
@@ -57,18 +55,14 @@ def dyadicWindowCellFinsetAtScale (d m N : Nat) : Finset (Fin d → ℤ) :=
 theorem dyadicBoxWindow_eq_finsetUnion_atScale (d m N : Nat) :
     dyadicBoxWindow d m =
       dyadicBoxFinsetUnion (d := d) (N : ℤ) (dyadicWindowCellFinsetAtScale d m N) := by
-  rw [dyadicBoxWindow_eq_finsetUnion]
-  simpa [dyadicWindowCellFinsetAtScale] using
-    dyadicBoxFinsetUnion_refine_nat (d := d) (n := 0) (N := N) (Nat.zero_le N)
-      (dyadicCellWindow d m)
+  apply dyadicBoxFinsetUnion_refine_nat <;> positivity
 
 theorem dyadicBox_inter_dyadicBoxWindow_eq_finsetUnion {d : Nat}
     (j m : Nat) (cell : Fin d → ℤ) :
     dyadicBox (j : ℤ) cell ∩ dyadicBoxWindow d m =
       dyadicBoxFinsetUnion (d := d) (j : ℤ)
         ({cell} ∩ dyadicWindowCellFinsetAtScale d m j) := by
-  rw [dyadicBoxFinsetUnion_inter]
-  rw [dyadicBoxFinsetUnion_singleton, dyadicBoxWindow_eq_finsetUnion_atScale]
+  rw [dyadicBoxFinsetUnion_inter, dyadicBoxFinsetUnion_singleton, dyadicBoxWindow_eq_finsetUnion_atScale]
 
 /-- Every dyadic-algebra set becomes a finite union of same-scale dyadic boxes after restriction to
 a finite dyadic window. -/
@@ -83,7 +77,7 @@ theorem nonnegativeDyadicBoxAlgebra_inter_window_eq_finsetUnion {d : Nat}
   | base t ht =>
       rcases ht with ⟨p, rfl⟩
       refine ⟨p.1, {p.2} ∩ dyadicWindowCellFinsetAtScale d m p.1, ?_⟩
-      exact dyadicBox_inter_dyadicBoxWindow_eq_finsetUnion p.1 m p.2
+      apply dyadicBox_inter_dyadicBoxWindow_eq_finsetUnion <;> assumption
   | empty =>
       refine ⟨0, ∅, ?_⟩
       simp [dyadicBoxFinsetUnion_empty]
@@ -93,9 +87,7 @@ theorem nonnegativeDyadicBoxAlgebra_inter_window_eq_finsetUnion {d : Nat}
       calc
         tᶜ ∩ dyadicBoxWindow d m =
             dyadicBoxWindow d m \ (t ∩ dyadicBoxWindow d m) := by
-              ext x
-              by_cases hxt : x ∈ t <;> by_cases hxW : x ∈ dyadicBoxWindow d m <;>
-                simp [hxt, hxW]
+              grind
         _ = dyadicBoxFinsetUnion (d := d) (n : ℤ) (dyadicWindowCellFinsetAtScale d m n) \
             dyadicBoxFinsetUnion (d := d) (n : ℤ) cells := by
               rw [hcells, dyadicBoxWindow_eq_finsetUnion_atScale]
@@ -105,35 +97,20 @@ theorem nonnegativeDyadicBoxAlgebra_inter_window_eq_finsetUnion {d : Nat}
   | union t u _ _ iht ihu =>
       rcases iht with ⟨nt, cellsT, hcellsT⟩
       rcases ihu with ⟨nu, cellsU, hcellsU⟩
-      let N : Nat := max nt nu
-      let cellsT' : Finset (Fin d → ℤ) :=
+      let N  := max nt nu
+      let cellsT'  :=
         cellsT.biUnion (dyadicDescendantCellFinset (N - nt))
-      let cellsU' : Finset (Fin d → ℤ) :=
+      let cellsU'  :=
         cellsU.biUnion (dyadicDescendantCellFinset (N - nu))
       refine ⟨N, cellsT' ∪ cellsU', ?_⟩
-      have hTref :
-          dyadicBoxFinsetUnion (d := d) (nt : ℤ) cellsT =
-            dyadicBoxFinsetUnion (d := d) (N : ℤ) cellsT' := by
-        exact dyadicBoxFinsetUnion_refine_nat (d := d) (n := nt) (N := N)
+      have hTref := dyadicBoxFinsetUnion_refine_nat (d := d) (n := nt) (N := N)
           (Nat.le_max_left nt nu) cellsT
-      have hUref :
-          dyadicBoxFinsetUnion (d := d) (nu : ℤ) cellsU =
-            dyadicBoxFinsetUnion (d := d) (N : ℤ) cellsU' := by
-        exact dyadicBoxFinsetUnion_refine_nat (d := d) (n := nu) (N := N)
+      have hUref := dyadicBoxFinsetUnion_refine_nat (d := d) (n := nu) (N := N)
           (Nat.le_max_right nt nu) cellsU
       calc
         (t ∪ u) ∩ dyadicBoxWindow d m =
             (t ∩ dyadicBoxWindow d m) ∪ (u ∩ dyadicBoxWindow d m) := by
-              ext x
-              constructor
-              · intro hx
-                rcases hx.1 with hxt | hxu
-                · exact Or.inl ⟨hxt, hx.2⟩
-                · exact Or.inr ⟨hxu, hx.2⟩
-              · intro hx
-                rcases hx with hx | hx
-                · exact ⟨Or.inl hx.1, hx.2⟩
-                · exact ⟨Or.inr hx.1, hx.2⟩
+              grind
         _ = dyadicBoxFinsetUnion (d := d) (nt : ℤ) cellsT ∪
             dyadicBoxFinsetUnion (d := d) (nu : ℤ) cellsU := by
               rw [hcellsT, hcellsU]
@@ -182,22 +159,17 @@ theorem iUnion_dyadicBoxWindow_eq_univ (d : Nat) :
     (⋃ n : ℕ, dyadicBoxWindow d n) = Set.univ := by
   refine Set.eq_univ_iff_forall.2 ?_
   intro x
-  let cell : Fin d → ℤ := fun r => ⌊x r⌋
-  let n : ℕ := ∑ r : Fin d, Int.natAbs (cell r)
+  let cell  := fun r => ⌊x r⌋
+  let n  := ∑ r : Fin d, Int.natAbs (cell r)
   refine Set.mem_iUnion.2 ⟨n, ?_⟩
   unfold dyadicBoxWindow
   refine Set.mem_iUnion.2 ⟨cell, ?_⟩
   refine Set.mem_iUnion.2 ⟨?_, ?_⟩
   · rw [mem_dyadicCellWindow]
     intro r
-    have hnat : Int.natAbs (cell r) ≤ n := by
-      exact Finset.single_le_sum (fun i _hi => Nat.zero_le (Int.natAbs (cell i)))
+    have hnat := Finset.single_le_sum (fun i _hi => Nat.zero_le (Int.natAbs (cell i)))
         (Finset.mem_univ r)
-    have habs : |cell r| ≤ (n : ℤ) := by
-      have hcast : ((Int.natAbs (cell r) : ℕ) : ℤ) ≤ (n : ℤ) := by
-        exact_mod_cast hnat
-      simpa [Int.natCast_natAbs] using hcast
-    exact abs_le.1 habs
+    grind
   · intro r _hr
     simpa [cell, dyadicPower] using mem_dyadicInterval_floor 0 (x r)
 
@@ -222,7 +194,7 @@ theorem tendsto_measure_diff_dyadicBoxWindow {d : Nat}
       (fun n : ℕ => (volume : Measure (Vec d)) (s \ dyadicBoxWindow d n))
       atTop (𝓝 0) := by
   let μ : Measure (Vec d) := volume
-  let tail : ℕ → Set (Vec d) := fun n => s \ dyadicBoxWindow d n
+  let tail  := fun n => s \ dyadicBoxWindow d n
   have htail_null : ∀ n, NullMeasurableSet (tail n) μ := by
     intro n
     exact (hs.diff (measurableSet_dyadicBoxWindow d n)).nullMeasurableSet
@@ -270,20 +242,16 @@ theorem measureDense_nonnegativeDyadicBoxFinsetUnionFamily (d : Nat) :
     rcases (measureDense_nonnegativeDyadicBoxAlgebra d).fin_meas_approx
         hs hμs (ε / 2) hε_half with
       ⟨t, ht_alg, hμt, hst⟩
-    have ht_meas : MeasurableSet t :=
+    have ht_meas  :=
       (measureDense_nonnegativeDyadicBoxAlgebra d).measurable t ht_alg
     have htail_tendsto := tendsto_measure_diff_dyadicBoxWindow
       (d := d) ht_meas hμt
-    have htarget_pos : (0 : ℝ≥0∞) < ENNReal.ofReal (ε / 2) :=
+    have htarget_pos  :=
       ENNReal.ofReal_pos.2 hε_half
-    have htail_eventually :
-        ∀ᶠ n in atTop,
-          (volume : Measure (Vec d)) (t \ dyadicBoxWindow d n) <
-            ENNReal.ofReal (ε / 2) :=
-      htail_tendsto.eventually (Iio_mem_nhds htarget_pos)
+    have htail_eventually := htail_tendsto.eventually (Iio_mem_nhds htarget_pos)
     rcases eventually_atTop.1 htail_eventually with ⟨N, hN⟩
-    let u : Set (Vec d) := t ∩ dyadicBoxWindow d N
-    have hu_mem : u ∈ nonnegativeDyadicBoxFinsetUnionFamily d :=
+    let u  := t ∩ dyadicBoxWindow d N
+    have hu_mem  :=
       nonnegativeDyadicBoxAlgebra_inter_window_mem_finsetUnionFamily
         (d := d) ht_alg N
     refine ⟨u, hu_mem, ?_⟩
@@ -296,8 +264,7 @@ theorem measureDense_nonnegativeDyadicBoxFinsetUnionFamily (d : Nat) :
           (volume : Measure (Vec d)) (s ∆ t) +
             (volume : Measure (Vec d)) (t ∆ u) :=
         measure_symmDiff_le s t u
-      _ < ENNReal.ofReal (ε / 2) + ENNReal.ofReal (ε / 2) := by
-        exact ENNReal.add_lt_add hst (by simpa [htu] using hN N le_rfl)
+      _ < ENNReal.ofReal (ε / 2) + ENNReal.ofReal (ε / 2) := ENNReal.add_lt_add hst (by simpa [htu] using hN N le_rfl)
       _ = ENNReal.ofReal ε := by
         rw [← ENNReal.ofReal_add (by linarith) (by linarith)]
         congr 1
@@ -310,15 +277,12 @@ theorem indicatorConstLp_mem_haarBasisSubmodule_topologicalClosure
     (hμs : (volume : Measure (Vec d)) s ≠ ∞) :
     indicatorConstLp 2 hs hμs (1 : ℝ) ∈
       (haarBasisSubmodule d).topologicalClosure := by
-  let 𝒟 : Set (Lp ℝ 2 (volume : Measure (Vec d))) :=
+  let 𝒟  :=
     {indicatorConstLp 2
       ((measureDense_nonnegativeDyadicBoxFinsetUnionFamily d).measurable t ht) hμt (1 : ℝ) |
         (t : Set (Vec d)) (ht : t ∈ nonnegativeDyadicBoxFinsetUnionFamily d)
           (hμt : (volume : Measure (Vec d)) t ≠ ∞)}
-  have h_dense :
-      indicatorConstLp 2 hs hμs (1 : ℝ) ∈ closure 𝒟 := by
-    exact
-      (measureDense_nonnegativeDyadicBoxFinsetUnionFamily d).indicatorConstLp_subset_closure
+  have h_dense := (measureDense_nonnegativeDyadicBoxFinsetUnionFamily d).indicatorConstLp_subset_closure
         (p := (2 : ℝ≥0∞)) (c := (1 : ℝ)) ⟨s, hs, hμs, rfl⟩
   have h𝒟_subset :
       𝒟 ⊆ ((haarBasisSubmodule d).topologicalClosure :
@@ -372,9 +336,8 @@ theorem haarBasisSubmodule_topologicalClosure_eq_top_of_indicatorConstLp
       (p := (2 : ℝ≥0∞)) (motive := fun f => f ∈ M)
       (by norm_num : (2 : ℝ≥0∞) ≠ ∞) ?_ ?_ hclosed
     · intro c s hs hμs_lt
-      have hμs : (volume : Measure (Vec d)) s ≠ ∞ := ne_of_lt hμs_lt
-      rw [Lp.simpleFunc.coe_indicatorConst]
-      rw [← smul_indicatorConstLp_one hs hμs c]
+      have hμs  := ne_of_lt hμs_lt
+      rw [Lp.simpleFunc.coe_indicatorConst, ← smul_indicatorConstLp_one hs hμs c]
       exact M.smul_mem c (hindicator hs hμs)
     · intro f g _hf _hg _hdisjoint hf_mem hg_mem
       exact M.add_mem hf_mem hg_mem
@@ -393,11 +356,6 @@ noncomputable def haarHilbertBasis (d : Nat) :
   HilbertBasis.mk (orthonormal_haarBasisLp d) (by
     change ⊤ ≤ (haarBasisSubmodule d).topologicalClosure
     rw [haarBasisSubmodule_topologicalClosure_eq_top d])
-
-theorem coe_haarHilbertBasis (d : Nat) :
-    ⇑(haarHilbertBasis d) =
-      (haarBasisLp : HaarBasisIndex d → Lp ℝ 2 (volume : Measure (Vec d))) :=
-  HilbertBasis.coe_mk _ _
 
 end GaussianFields
 

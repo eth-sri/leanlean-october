@@ -6,7 +6,7 @@ module
 
 public import DOZZ.ShiftEquations.Mobius.AffineMoment
 import DOZZ.GMC.EquatorGFFChaosTransportLaw
-import DOZZ.GMC.Construction.GMCGeneralTiltLimit
+public import DOZZ.ShiftEquations.Mobius.RepinTilt
 import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-!
@@ -55,10 +55,7 @@ private theorem rpow_normPlus_affine (a b : ℂ) (y : ℂ) (e : ℝ) :
       ring
     rw [h, Real.exp_log (by positivity)]
     field_simp
-  simp only [ENNReal.rpow_eq_pow]
-  rw [hnorm, ENNReal.ofReal_mul (Real.exp_pos _).le,
-    ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top,
-    ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), ← Real.exp_mul, mul_comm e]
+  simp [ENNReal.rpow_eq_pow, hnorm, ENNReal.ofReal_mul (Real.exp_pos _).le, ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top, ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), ← Real.exp_mul, mul_comm e]
 
 /-- **The Coulomb weight with a charge at infinity through an affine map**, off the roots. -/
 theorem coulombWeight_affine_inf {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ)
@@ -112,8 +109,8 @@ theorem coulombWeight_repin_identity_inf {N : ℕ} (γ : ℝ) (hγ : 0 < γ) (α
   set y := affineInv a b x with hydef
   have hxy : x = a * y + b := (affine_affineInv a b ha x).symm
   have hyz : ∀ k, y ≠ z k := fun k h => hx k (by rw [hxy, h])
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hγne : γ ≠ 0 := hγ.ne'
+  have hapos  := norm_pos_iff.mpr ha
+  have hγne  := hγ.ne'
   have hexp : γ ^ 2 * (1 + infSExp γ α αinf) + 4 = γ * ((∑ k, α k) + αinf) := by
     unfold infSExp Q
     field_simp
@@ -136,25 +133,18 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
         (-infSExp γ α αinf) ∂P =
       ENNReal.ofReal (‖a‖ ^ (γ * ((∑ k, α k) - αinf) * infSExp γ α αinf / 2)) *
         ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) (-infSExp γ α αinf) ∂P := by
-  have _ := hX.1
   obtain ⟨hMfin, Xc, hXc, hconv⟩ := id hM
   set s := infSExp γ α αinf with hs
   set S := ∑ k, α k with hS
   set L : Ω → ℝ := fun ω => Xc ω b (-Real.log ‖a‖) with hLdef
   set VL : ℝ := ∫ ω, L ω ^ 2 ∂P with hVLdef
   set κ := repinKappa a b with hκ
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hLmeas : Measurable L :=
-    (hXc.1 (-Real.log ‖a‖)).comp (measurable_id.prodMk measurable_const)
-  have hVL : VL = 2 * κ := by
-    have h := isCircleAverage_covariance P X hX Xc hXc b b (-Real.log ‖a‖) (-Real.log ‖a‖)
-    rw [repin_selfEnergy a b ha] at h
-    rw [hVLdef, ← h]
-    simp only [gaussianCovariance, pow_two]
-    rfl
+  have hapos  := norm_pos_iff.mpr ha
+  have hV : gaussianVariance P L = VL := by simp only [gaussianVariance, gaussianCovariance, hVLdef, pow_two]
+  have hVL : VL = 2 * κ := (hV.symm.trans (gaussianVariance_repinCircle P X hX Xc hXc a b ha))
   set J : Measure ℂ → ℝ≥0∞ := fun μ => ∫⁻ x, coulombWeight γ α z αinf (affineInv a b x) *
     ENNReal.ofReal (Real.exp (γ ^ 2 * repinPotential a b x) * repinWeight a b x) ∂μ with hJ
-  have hcw : Measurable fun x => coulombWeight γ α z αinf (affineInv a b x) :=
+  have hcw  :=
     (measurable_coulombWeight γ α z αinf).comp (continuous_affineInv a b).measurable
   have hc := continuous_repinPotential a b ha
   have hw := continuous_repinWeight a b ha
@@ -174,75 +164,28 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
       ENNReal.ofReal (Real.exp (s * (γ ^ 2 / 2 * VL))) *
         (ENNReal.ofReal (Real.exp (γ * s * L ω)) * ENNReal.rpow (J (M ω)) (-s)) := by
     intro ω
-    rw [lintegral_coulombWeight_repinChaos_inf M L a b ha γ VL ω α z αinf]
-    rw [ENNReal.rpow_eq_pow, inversionMoment_mul_rpow
-      (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne' ENNReal.ofReal_ne_top,
-      ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), ← Real.exp_mul, ← mul_assoc,
-      ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add, ENNReal.rpow_eq_pow]
+    rw [lintegral_coulombWeight_repinChaos_inf M L a b ha γ VL ω α z αinf, ENNReal.rpow_eq_pow, inversionMoment_mul_rpow
+          (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne' ENNReal.ofReal_ne_top, ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), ← Real.exp_mul, ← mul_assoc, ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add, ENNReal.rpow_eq_pow]
     congr 3
     ring
-  -- Step 3: the Cameron–Martin tilt by `γ s L`
-  set L2 : Ω → ℝ := fun ω => γ * s * L ω with hL2def
-  have hL2 : IsGaussianL2Limit P X L2 :=
-    IsGaussianL2Limit.const_mul (isCircleAverage_isGaussianL2Limit P X hX Xc hXc b
-      (-Real.log ‖a‖)) (γ * s)
-  have hVar2 : gaussianVariance P L2 = (γ * s) ^ 2 * VL := by
-    simp only [gaussianVariance, gaussianCovariance, hL2def, hVLdef]
-    rw [← integral_const_mul]
-    congr 1
-    funext ω
-    ring
-  obtain ⟨B, hB⟩ := exists_abs_repinPotential_le a b ha
-  set c2 : BoundedContinuousFunction ℂ ℝ := BoundedContinuousFunction.ofNormedAddCommGroup
-    (fun x => γ * s * repinPotential a b x) (continuous_const.mul hc) (|γ * s| * B)
-    (fun x => by
-      rw [Real.norm_eq_abs, abs_mul]
-      exact mul_le_mul_of_nonneg_left (hB x) (abs_nonneg _)) with hc2def
-  have hc2x : ∀ x, c2 x = γ * s * repinPotential a b x := fun x => rfl
-  have hK : ∀ r x, gaussianCovariance P (fun ω => Xc ω x r) L2 =
-      γ * s * repinPotentialAvg a b r x := by
-    intro r x
-    have h := isCircleAverage_covariance P X hX Xc hXc x b r (-Real.log ‖a‖)
-    simp only [gaussianCovariance] at h ⊢
-    rw [show repinPotentialAvg a b r x =
-        ∫ u, ∫ v, gffKernel u v ∂circleMeasure b (-Real.log ‖a‖) ∂circleMeasure x r from rfl,
-      ← h, ← integral_const_mul]
-    congr 1
-    funext ω
-    simp only [hL2def]
-    ring
-  have hc2 : TendstoUniformly (fun (r : ℝ) (x : ℂ) =>
-      gaussianCovariance P (fun ω => Xc ω x r) L2) c2 atTop := by
-    simp_rw [hK]
-    have hu := tendstoUniformly_repinPotential a b ha
-    rw [Metric.tendstoUniformly_iff] at hu ⊢
-    intro ε hε
-    have hpos : 0 < |γ * s| + 1 := by positivity
-    filter_upwards [hu (ε / (|γ * s| + 1)) (div_pos hε hpos)] with r hr x
-    have h1 := hr x
-    rw [Real.dist_eq] at h1 ⊢
-    rw [hc2x, ← mul_sub, abs_mul]
-    calc |γ * s| * |repinPotential a b x - repinPotentialAvg a b r x|
-        ≤ |γ * s| * (ε / (|γ * s| + 1)) := mul_le_mul_of_nonneg_left h1.le (abs_nonneg _)
-      _ < ε := by
-          rw [mul_div_assoc', div_lt_iff₀ hpos]
-          nlinarith [abs_nonneg (γ * s)]
-  have hH : Measurable fun q : (TestFn → ℝ) × Measure ℂ => ENNReal.rpow (J q.2) (-s) := by
-    simp only [ENNReal.rpow_eq_pow]
-    exact (hJmeas.comp measurable_snd).pow_const _
-  have htilt := equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L2 hL2 c2 hc2
-    (fun _ μ => ENNReal.rpow (J μ) (-s)) hH
+  -- The repinning circle tilt removes the Gaussian factor.
+  have htilt := lintegral_repin_circle_tilt P X hX γ hγ hγ2 M hM Xc hXc a b ha (γ * s)
+    (fun μ => ENNReal.rpow (J μ) (-s))
+    (by simpa only [ENNReal.rpow_eq_pow] using hJmeas.pow_const (-s))
+  change (∫⁻ ω, ENNReal.ofReal (Real.exp (γ * s * L ω - (γ * s) ^ 2 * gaussianVariance P L / 2)) *
+      ENNReal.rpow (J (M ω)) (-s) ∂P) = _ at htilt
+  rw [hV] at htilt
   -- Step 4: the tilted reweighted mass is a constant multiple of the Coulomb mass at `ψ z`
   set K : ℝ := ‖a‖ ^ (γ * (S - αinf) / 2) * Real.exp (γ ^ 2 * (1 + s) * κ) with hKdef
   have hKpos : 0 < K := by positivity
-  have h4 : ∀ᵐ ω ∂P, J ((M ω).withDensity fun x => ENNReal.ofReal (Real.exp (γ * c2 x))) =
+  have h4 : ∀ᵐ ω ∂P, J ((M ω).withDensity fun x => ENNReal.ofReal (Real.exp (γ * (γ * s * repinPotential a b x)))) =
       ENNReal.ofReal K * coulombMass γ (M ω) α (fun k => a * z k + b) αinf := by
     have hatoms : ∀ᵐ ω ∂P, ∀ k, M ω {a * z k + b} = 0 :=
-      ae_all_iff.2 fun k => gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM _
+      ae_all_iff.2 fun k => gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM _
     filter_upwards [hatoms] with ω hω
-    have hD : Measurable fun x => ENNReal.ofReal (Real.exp (γ * c2 x)) :=
+    have hD : Measurable fun x => ENNReal.ofReal (Real.exp (γ * (γ * s * repinPotential a b x))) :=
       ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-        (measurable_const.mul c2.continuous.measurable))
+        (measurable_const.mul (measurable_const.mul (continuous_repinPotential a b ha).measurable)))
     have hI : Measurable fun x => coulombWeight γ α z αinf (affineInv a b x) *
         ENNReal.ofReal (Real.exp (γ ^ 2 * repinPotential a b x) * repinWeight a b x) :=
       hcw.mul (ENNReal.measurable_ofReal.comp (by fun_prop))
@@ -250,22 +193,21 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     rw [lintegral_withDensity_eq_lintegral_mul _ hD hI,
       coulombMass_eq_lintegral_coulombWeight, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_congr_ae
-    have hnull : M ω (⋃ k, {a * z k + b}) = 0 := measure_iUnion_null hω
+    have hnull  := measure_iUnion_null hω
     filter_upwards [measure_eq_zero_iff_ae_notMem.1 hnull] with x hx
-    have hxk : ∀ k, x ≠ a * z k + b := fun k h => hx (Set.mem_iUnion.2 ⟨k, h⟩)
+    have hxk  := fun k h => hx (Set.mem_iUnion.2 ⟨k, h⟩)
     rw [hKdef, ← coulombWeight_repin_identity_inf γ hγ α z αinf a b ha hxk]
-    simp only [Pi.mul_apply, hc2x]
+    simp only [Pi.mul_apply]
     rw [mul_left_comm, ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← mul_assoc, ← Real.exp_add]
     congr 4
     ring
   -- Step 5: collect the constants
   have hfac : ∀ ω, ENNReal.ofReal (Real.exp (γ * s * L ω)) =
       ENNReal.ofReal (Real.exp ((γ * s) ^ 2 * VL / 2)) *
-        ENNReal.ofReal (Real.exp (L2 ω - gaussianVariance P L2 / 2)) := by
+        ENNReal.ofReal (Real.exp (γ * s * L ω - (γ * s) ^ 2 * VL / 2)) := by
     intro ω
-    rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add, hVar2]
+    rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
     congr 2
-    simp only [hL2def]
     ring
   have hmain : ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) (-s) ∂P =
       ENNReal.ofReal (Real.exp (s * (γ ^ 2 / 2 * VL))) *
@@ -280,7 +222,7 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
           simp_rw [h2]
       _ = ENNReal.ofReal (Real.exp (s * (γ ^ 2 / 2 * VL))) *
             (ENNReal.ofReal (Real.exp ((γ * s) ^ 2 * VL / 2)) *
-              ∫⁻ ω, ENNReal.ofReal (Real.exp (L2 ω - gaussianVariance P L2 / 2)) *
+              ∫⁻ ω, ENNReal.ofReal (Real.exp (γ * s * L ω - (γ * s) ^ 2 * VL / 2)) *
                 ENNReal.rpow (J (M ω)) (-s) ∂P) := by
           rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
           congr 1

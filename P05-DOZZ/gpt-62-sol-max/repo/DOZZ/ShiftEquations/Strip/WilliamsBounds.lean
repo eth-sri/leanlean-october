@@ -16,9 +16,11 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- On an independent maximum/mass carrier the critical small-power moment factors exactly. -/
-theorem lastone_height_product_moment
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [SFinite P]
+theorem lastone_height_product_moment [SFinite P]
     (γ ν : ℝ) (hγ : 0 < γ) (hν : 0 < ν)
     (f : Ω → ℝ≥0∞) (hf : AEMeasurable f P) :
     (∫⁻ z : ℝ × Ω,
@@ -47,8 +49,7 @@ theorem lastone_height_product_moment
 
 /-- On the Williams model, the critical moment is between twice the initial-block moment
 and twice the full reflection-mass moment. The cutoff may depend on the maximum. -/
-theorem lastone_williamsModel_moment_bounds
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+theorem lastone_williamsModel_moment_bounds [IsProbabilityMeasure P]
     (γ ν : ℝ) (hγ : 0 < γ) (hν : 0 < ν)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hBm : AEMeasurable B P) (hZm : AEMeasurable Z P)
@@ -80,7 +81,7 @@ theorem lastone_williamsModel_moment_bounds
         (((z.1, negativeConditionedLastExitSegment z.1 (B z.2).2), (B z.2).1), Z z.2) =
         ENNReal.ofReal (Real.exp (γ * z.1)) * twoSidedReflectionCutMass γ z.1 B Z z.2 := by
     filter_upwards [hsnd.ae hfin] with z hz
-    exact williamsMassFunctional_lastExit γ z.1 (B z.2).1 (B z.2).2 (Z z.2) hz
+    apply williamsMassFunctional_lastExit <;> assumption
   constructor
   · rw [← lastone_height_product_moment P γ ν hγ hν _ hJm]
     apply lintegral_mono_ae
@@ -94,5 +95,7 @@ theorem lastone_williamsModel_moment_bounds
     rw [hz]
     exact ENNReal.rpow_le_rpow
       (mul_le_mul' le_rfl (twoSidedReflectionCutMass_le_mass γ z.1 B Z z.2)) (div_pos hν hγ).le
+
+end
 
 end DOZZ.Proofs

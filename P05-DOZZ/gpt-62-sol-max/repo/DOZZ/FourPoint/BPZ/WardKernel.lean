@@ -62,7 +62,7 @@ theorem bpzLam_eq_interval (r : ℝ) (w : ℂ) :
 /-- Translating the averaging circle translates the argument. -/
 theorem bpz_integral_circleMeasure_sub (x u : ℂ) (r : ℝ) (f : ℂ → ℝ) (hf : Measurable f) :
     (∫ a, f (a - u) ∂circleMeasure x r) = ∫ a, f a ∂circleMeasure (x - u) r := by
-  have hfu : Measurable fun a : ℂ => f (a - u) := hf.comp (measurable_id.sub_const u)
+  have hfu  := hf.comp (measurable_id.sub_const u)
   rw [bpz_integral_circleMeasure_eq x r (fun a => f (a - u)) hfu,
     bpz_integral_circleMeasure_eq (x - u) r f hf]
   congr 2
@@ -71,8 +71,11 @@ theorem bpz_integral_circleMeasure_sub (x u : ℂ) (r : ℝ) (f : ℂ → ℝ) (
   simp only [circleMap]
   ring
 
+section
+variable (r : ℝ)
+
 /-- The kernel `Λ_r` is even. -/
-theorem bpzLam_neg (r : ℝ) (w : ℂ) : bpzLam r (-w) = bpzLam r w := by
+theorem bpzLam_neg (w : ℂ) : bpzLam r (-w) = bpzLam r w := by
   rw [bpzLam_eq_interval, bpzLam_eq_interval]
   congr 1
   set g : ℝ → ℝ := fun θ => bpzTruncLog r (w + Real.exp (-r) * Complex.exp (θ * Complex.I))
@@ -95,18 +98,16 @@ theorem bpzLam_neg (r : ℝ) (w : ℂ) : bpzLam r (-w) = bpzLam r w := by
   simp_rw [hshift]
   rw [intervalIntegral.integral_comp_add_right g π]
   have h := hper.intervalIntegral_add_eq π 0
-  simp only [zero_add] at h
-  rw [show π + 2 * π = π + 2 * π by rfl] at h
-  rw [show (0 : ℝ) + π = π by ring, show 2 * π + π = π + 2 * π by ring, h]
+  simp [show (0 : ℝ) + π = π by ring, show 2 * π + π = π + 2 * π by ring, h]
 
-theorem bpzTruncLog_le (r : ℝ) (v : ℂ) : bpzTruncLog r v ≤ r := by
+theorem bpzTruncLog_le (v : ℂ) : bpzTruncLog r v ≤ r := by
   unfold bpzTruncLog
   have h := Real.log_le_log (Real.exp_pos (-r)) (le_max_left (Real.exp (-r)) ‖v‖)
   rw [Real.log_exp] at h
   linarith
 
 /-- The truncated potential is `e^r`-Lipschitz. -/
-theorem abs_bpzTruncLog_sub_le (r : ℝ) (v v' : ℂ) :
+theorem abs_bpzTruncLog_sub_le (v v' : ℂ) :
     |bpzTruncLog r v - bpzTruncLog r v'| ≤ Real.exp r * ‖v - v'‖ := by
   unfold bpzTruncLog
   have hρ : 0 < Real.exp (-r) := Real.exp_pos _
@@ -121,6 +122,8 @@ theorem abs_bpzTruncLog_sub_le (r : ℝ) (v v' : ℂ) :
     _ ≤ ‖v - v'‖ / Real.exp (-r) := by gcongr
     _ = Real.exp r * ‖v - v'‖ := by
         rw [Real.exp_neg, div_inv_eq_mul, mul_comm]
+
+end
 
 /-- The truncated potential is integrable on every circle. -/
 theorem integrable_bpzTruncLog_comp (x u : ℂ) (r : ℝ) :
@@ -219,15 +222,12 @@ noncomputable def bpzTruncLogDeriv (r : ℝ) (v : ℂ) : ℂ →L[ℝ] ℝ :=
 
 theorem hasFDerivAt_neg_log_norm {v : ℂ} (hv : v ≠ 0) :
     HasFDerivAt (fun x : ℂ => -Real.log ‖x‖) ((-(‖v‖ ^ 2)⁻¹) • innerSL ℝ v) v := by
-  have hsq : HasFDerivAt (fun x : ℂ => ‖x‖ ^ 2) (2 • innerSL ℝ v) v :=
+  have hsq  :=
     (hasStrictFDerivAt_norm_sq v).hasFDerivAt
   have hne : ‖v‖ ^ 2 ≠ 0 := by positivity
   have hlog := (hsq.log hne).const_mul (-(1 / 2 : ℝ))
   have hfun : (fun x : ℂ => -(1 / 2 : ℝ) * Real.log (‖x‖ ^ 2)) = fun x => -Real.log ‖x‖ := by
-    funext x
-    rw [Real.log_pow]
-    push_cast
-    ring
+    simp
   rw [hfun] at hlog
   convert hlog using 1
   ext h
@@ -239,7 +239,7 @@ theorem hasFDerivAt_bpzTruncLog (r : ℝ) {v : ℂ} (hv : ‖v‖ ≠ Real.exp (
     HasFDerivAt (bpzTruncLog r) (bpzTruncLogDeriv r v) v := by
   rcases lt_or_gt_of_ne hv with hlt | hgt
   · have hev : bpzTruncLog r =ᶠ[𝓝 v] fun _ => -Real.log (Real.exp (-r)) := by
-      have : ∀ᶠ x in 𝓝 v, ‖x‖ < Real.exp (-r) :=
+      have  :=
         (continuous_norm.tendsto v).eventually (gt_mem_nhds hlt)
       filter_upwards [this] with x hx
       simp only [bpzTruncLog, max_eq_left hx.le]
@@ -250,7 +250,7 @@ theorem hasFDerivAt_bpzTruncLog (r : ℝ) {v : ℂ} (hv : ‖v‖ ≠ Real.exp (
   · have hv0 : v ≠ 0 := by
       intro h; rw [h, norm_zero] at hgt; exact absurd hgt (not_lt.mpr (Real.exp_pos _).le)
     have hev : bpzTruncLog r =ᶠ[𝓝 v] fun x => -Real.log ‖x‖ := by
-      have : ∀ᶠ x in 𝓝 v, Real.exp (-r) < ‖x‖ :=
+      have  :=
         (continuous_norm.tendsto v).eventually (lt_mem_nhds hgt)
       filter_upwards [this] with x hx
       simp only [bpzTruncLog, max_eq_right hx.le]
@@ -264,7 +264,7 @@ theorem norm_bpzTruncLogDeriv_le (r : ℝ) (v : ℂ) :
       (Real.exp (-r) < ‖v‖ → ‖bpzTruncLogDeriv r v‖ ≤ ‖v‖⁻¹) := by
   unfold bpzTruncLogDeriv
   split_ifs with h
-  · have hv : 0 < ‖v‖ := lt_trans (Real.exp_pos _) h
+  · have hv  := lt_trans (Real.exp_pos _) h
     have hnorm : ‖(-(‖v‖ ^ 2)⁻¹) • innerSL ℝ v‖ = ‖v‖⁻¹ := by
       rw [norm_smul, innerSL_apply_norm, norm_neg, norm_inv, norm_pow, Real.norm_eq_abs,
         abs_of_pos hv]
@@ -305,7 +305,7 @@ theorem countable_bpz_truncation_hits (ρ : ℝ) {w : ℂ} (hw : w ≠ 0) :
     have hsub : S ⊆ Set.range (fun k : ℤ => θ₀ + 2 * k * π) ∪
         Set.range (fun k : ℤ => 2 * Complex.arg w - θ₀ + 2 * k * π) := by
       intro θ hθ
-      have hθ' : ‖w + ρ * Complex.exp (θ * Complex.I)‖ = ρ := hθ
+      have hθ'  := hθ
       have h1 := hkey θ
       have h2 := hkey θ₀
       rw [hθ'] at h1
@@ -334,7 +334,10 @@ private theorem continuous_bpz_circle_param (w : ℂ) (ρ : ℝ) :
   continuous_const.add (continuous_const.mul (Complex.continuous_exp.comp
     (Complex.continuous_ofReal.mul continuous_const)))
 
-theorem hasFDerivAt_bpzLam (r : ℝ) {w : ℂ} (hw : w ≠ 0) :
+section
+variable (r : ℝ) {w : ℂ}
+
+theorem hasFDerivAt_bpzLam (hw : w ≠ 0) :
     HasFDerivAt (bpzLam r) (bpzLamDeriv r w) w := by
   set ρ : ℝ := Real.exp (-r) with hρ
   have hfun : bpzLam r = fun x => (2 * π)⁻¹ *
@@ -346,7 +349,7 @@ theorem hasFDerivAt_bpzLam (r : ℝ) {w : ℂ} (hw : w ≠ 0) :
     have h0 : (volume : Measure ℝ) {θ : ℝ | ‖w + ρ * Complex.exp ((θ : ℂ) * Complex.I)‖ = ρ}
         = 0 := (countable_bpz_truncation_hits ρ hw).measure_zero _
     refine ae_iff.mpr ?_
-    simpa only [ne_eq, not_not] using h0
+    simpa
   have hmain := intervalIntegral.hasFDerivAt_integral_of_dominated_loc_of_lip
     (μ := volume) (a := 0) (b := 2 * π) (s := Set.univ) (x₀ := w)
     (F := fun x θ => bpzTruncLog r (x + ρ * Complex.exp (θ * Complex.I)))
@@ -370,7 +373,7 @@ theorem hasFDerivAt_bpzLam (r : ℝ) {w : ℂ} (hw : w ≠ 0) :
   rw [hfun]
   exact hmain.2.const_mul _
 
-theorem norm_bpzLamDeriv_le (r : ℝ) {w : ℂ} (hw : w ≠ 0) : ‖bpzLamDeriv r w‖ ≤ 2 / ‖w‖ := by
+theorem norm_bpzLamDeriv_le (hw : w ≠ 0) : ‖bpzLamDeriv r w‖ ≤ 2 / ‖w‖ := by
   set ρ : ℝ := Real.exp (-r) with hρdef
   have hρ : 0 < ρ := Real.exp_pos _
   have hwn : 0 < ‖w‖ := norm_pos_iff.mpr hw
@@ -409,17 +412,18 @@ theorem norm_bpzLamDeriv_le (r : ℝ) {w : ℂ} (hw : w ≠ 0) : ‖bpzLamDeriv 
     _ = 2 / ‖w‖ := by field_simp
 
 /-- Away from the diagonal the derivative is that of `-log |w|`. -/
-theorem bpzLamDeriv_eq_of_far (r : ℝ) {w : ℂ} (hw : 2 * Real.exp (-r) < ‖w‖) :
+theorem bpzLamDeriv_eq_of_far (hw : 2 * Real.exp (-r) < ‖w‖) :
     bpzLamDeriv r w = (-(‖w‖ ^ 2)⁻¹) • innerSL ℝ w := by
   have hw0 : w ≠ 0 := by
     intro h; rw [h, norm_zero] at hw; linarith [Real.exp_pos (-r)]
-  have hev : bpzLam r =ᶠ[𝓝 w] fun x => -Real.log ‖x‖ := by
-    have : ∀ᶠ x in 𝓝 w, 2 * Real.exp (-r) < ‖x‖ :=
+  exact (hasFDerivAt_bpzLam r hw0).unique
+    ((hasFDerivAt_neg_log_norm hw0).congr_of_eventuallyEq (by
+    have  :=
       (continuous_norm.tendsto w).eventually (lt_mem_nhds hw)
     filter_upwards [this] with x hx
-    exact bpzLam_eq_neg_log r hx.le
-  exact (hasFDerivAt_bpzLam r hw0).unique
-    ((hasFDerivAt_neg_log_norm hw0).congr_of_eventuallyEq hev)
+    exact bpzLam_eq_neg_log r hx.le))
+
+end
 
 theorem abs_log_normPlus_sub_le' (a b : ℂ) :
     |Real.log (normPlus a) - Real.log (normPlus b)| ≤ ‖a - b‖ := by

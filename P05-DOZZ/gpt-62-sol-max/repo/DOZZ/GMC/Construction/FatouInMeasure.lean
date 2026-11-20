@@ -26,8 +26,8 @@ theorem lintegral_ofReal_limit_le_of_tendstoInMeasure
     (hbound : ∀ r, ∫⁻ ω, ENNReal.ofReal (F r ω) ∂P ≤ C) :
     ∫⁻ ω, ENNReal.ofReal (G ω) ∂P ≤ C := by
   obtain ⟨ns, hns, hae⟩ := hT.exists_seq_tendsto_ae'
-  let Q : ℕ → Ω → ℝ≥0∞ := fun n ω => ENNReal.ofReal (F (ns n) ω)
-  have hQmeas : ∀ n, Measurable (Q n) := fun n =>
+  let Q  := fun n ω => ENNReal.ofReal (F (ns n) ω)
+  have hQmeas  := fun n =>
     ENNReal.measurable_ofReal.comp (hFmeas (ns n))
   have hQlim : ∀ᵐ ω ∂P, Tendsto (fun n => Q n ω) atTop (𝓝 (ENNReal.ofReal (G ω))) := by
     filter_upwards [hae] with ω hω
@@ -38,8 +38,7 @@ theorem lintegral_ofReal_limit_le_of_tendstoInMeasure
     exact hω.liminf_eq
   calc
     ∫⁻ ω, ENNReal.ofReal (G ω) ∂P =
-        ∫⁻ ω, liminf (fun n => Q n ω) atTop ∂P := by
-          exact lintegral_congr_ae hliminf.symm
+        ∫⁻ ω, liminf (fun n => Q n ω) atTop ∂P := lintegral_congr_ae hliminf.symm
     _ ≤ liminf (fun n => ∫⁻ ω, Q n ω ∂P) atTop := lintegral_liminf_le hQmeas
     _ ≤ C := liminf_le_of_frequently_le' <| Frequently.of_forall fun n => by
       simpa [Q] using hbound (ns n)

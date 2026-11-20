@@ -7,6 +7,7 @@ public import DOZZ.FourPoint.Reflected.CopiedRegionRegroup
 public import DOZZ.FourPoint.Reflected.DecorrelationError
 public import DOZZ.FourPoint.Reflected.SpatialBoundary
 import Mathlib.Tactic
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! The copied separated moment retains the literal source outer mass. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set
@@ -20,7 +21,7 @@ theorem reflected_copied_separatedMoment_source
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N) (hi : IndepFun (originRadialPath Xc) N P)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (α₁ α₂ α₃ ξ s q : ℝ) (z : ℂ)
     (hr : 0 < ‖z‖^(1-ξ)) (hz : ‖z‖ < ‖z‖^(1-ξ)) :
     reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z s (‖z‖^(1-ξ)) q =

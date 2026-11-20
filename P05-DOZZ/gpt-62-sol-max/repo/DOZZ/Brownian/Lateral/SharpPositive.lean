@@ -36,10 +36,12 @@ theorem lateral_shifted_annulus_subset_reference_ball (a b : ℝ) :
   simpa only [he] using lateralLogAnnulus_subset_ball
     (a + (Real.log 8 - a)) (b + (Real.log 8 - a))
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- Every nonnegative subcritical moment of the moved source annulus is finite. This is an
 actual consequence of the proved reference induction, not a source-moment premise. -/
 theorem sourceLateral_shifted_annulus_nonnegative_moment_finite
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (γ : ℝ) (M : Ω → Measure ℂ) (Z : Ω → Measure ℝ)
     (hS : IsSourceLateralProjection P X γ M Z) (hγ : 0 < γ)
     (a b q : ℝ) (hq : 0 ≤ q) (hcrit : q < 4 / γ ^ 2) :
@@ -54,7 +56,6 @@ theorem sourceLateral_shifted_annulus_nonnegative_moment_finite
 /-- The full pointwise positive subcritical range holds for every given lateral chaos.
 Translation and radial independence remove all source-ball and annular moment premises. -/
 theorem lateralGMC_interval_nonnegative_moment_finite
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
     (a b q : ℝ) (hq : 0 ≤ q) (hcrit : q < 4 / γ ^ 2) :
     (∫⁻ ω, (Z ω (Ioc a b)) ^ q ∂P) < ⊤ := by
@@ -63,5 +64,7 @@ theorem lateralGMC_interval_nonnegative_moment_finite
   exact sourceLateral_interval_moment_finite_of_annular P X γ M Z hS hZ.2.2.2.1
     (a + (Real.log 8 - a)) (b + (Real.log 8 - a)) q
     (sourceLateral_shifted_annulus_nonnegative_moment_finite P X γ M Z hS hZ.1 a b q hq hcrit)
+
+end
 
 end DOZZ.Proofs

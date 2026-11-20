@@ -32,10 +32,10 @@ theorem map_prod_graph_apply_rect
     (A : Set X) (B : Set Y) (hA : MeasurableSet A) (hB : MeasurableSet B) :
     (μ.prod η).map (fun z => (z.1, f z)) (A ×ˢ B) =
       ∫⁻ x in A, K x B ∂μ := by
-  let F : X × U → X × Y := fun z => (z.1, f z)
-  have hF : Measurable F := measurable_fst.prodMk hf
-  have hRect : MeasurableSet (A ×ˢ B) := hA.prod hB
-  have hPre : MeasurableSet (F ⁻¹' (A ×ˢ B)) := hRect.preimage hF
+  let F  := fun z => (z.1, f z)
+  have hF  := measurable_fst.prodMk hf
+  have hRect  := hA.prod hB
+  have hPre  := hRect.preimage hF
   rw [Measure.map_apply hF hRect, Measure.prod_apply hPre]
   rw [← lintegral_indicator hA]
   apply lintegral_congr
@@ -47,8 +47,7 @@ theorem map_prod_graph_apply_rect
         (fun u => f (x, u)) ⁻¹' B := by
       ext u
       simp [F, hx]
-    rw [hset, Set.indicator_of_mem hx]
-    rw [← Measure.map_apply hfx hB, hK x]
+    rw [hset, Set.indicator_of_mem hx, ← Measure.map_apply hfx hB, hK x]
   · have hset : Prod.mk x ⁻¹' (F ⁻¹' (A ×ˢ B)) = ∅ := by
       ext u
       simp [F, hx]
@@ -63,9 +62,9 @@ theorem conditionedPositiveTransitionQuantile_map_uniformSubtype
       (fun u => conditionedTransitionQuantile ν t x.1 u.1) =
         conditionedPositiveTransitionMeasure ν t x.1 := by
   let μ := conditionedPositiveTransitionMeasure ν t x.1
-  let q : ℝ → ℝ := fun u =>
+  let q  := fun u =>
     cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u
-  let : IsProbabilityMeasure μ :=
+  let  :=
     isProbabilityMeasure_conditionedPositiveTransitionMeasure ν t x.1 hν ht x.2
   have hqUniform : AEMeasurable q uniformOpenUnit := by
     simpa [q, uniformOpenUnit] using
@@ -75,8 +74,7 @@ theorem conditionedPositiveTransitionQuantile_map_uniformSubtype
     rw [MeasurableSet.map_coe_volume measurableSet_Ioo, uniformOpenUnit]
   have hqMap : AEMeasurable q
       ((volume : Measure (Set.Ioo (0 : ℝ) 1)).map Subtype.val) := by
-    rw [hcoe]
-    exact hqUniform
+    rwa [hcoe]
   have hval : AEMeasurable (Subtype.val : Set.Ioo (0 : ℝ) 1 → ℝ)
       (volume : Measure (Set.Ioo (0 : ℝ) 1)) := measurable_subtype_coe.aemeasurable
   calc

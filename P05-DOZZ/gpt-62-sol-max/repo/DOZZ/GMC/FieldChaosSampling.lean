@@ -21,20 +21,20 @@ noncomputable def fieldWickDensity {Ω S : Type*} [MeasurableSpace Ω]
   (h x : ℝ) * Real.exp (γ * Φ ω x - γ ^ 2 / 2 *
     DOZZ.gaussianVariance P (fun ω => Φ ω x))
 
+section
+variable {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
+
 /-- The spatial Wick density is jointly measurable. -/
 theorem fieldWickDensity_measurable
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
     (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (h : S → ℝ≥0) (hh : Measurable h) (γ : ℝ) :
-    Measurable (fun p : Ω × S => fieldWickDensity P Φ h γ p.1 p.2) := by
-  exact ((measurable_coe_nnreal_real.comp hh).comp measurable_snd).mul
+    Measurable (fun p : Ω × S => fieldWickDensity P Φ h γ p.1 p.2) := ((measurable_coe_nnreal_real.comp hh).comp measurable_snd).mul
     (Real.measurable_exp.comp ((measurable_const.mul hΦ.1).sub
       (measurable_const.mul
         ((centeredGaussianField_variance_measurable P Φ hΦ).comp measurable_snd))))
 
 /-- Wick normalization gives joint integrability and the exact spatial mean. -/
-theorem fieldWickDensity_integrable_mean
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S] [Nonempty S]
+theorem fieldWickDensity_integrable_mean [Nonempty S]
     (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (ν : FiniteMeasure S) (h : S → ℝ≥0) (hh : Measurable h)
     (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ) :
@@ -42,7 +42,7 @@ theorem fieldWickDensity_integrable_mean
       (P.prod (ν.normalize : Measure S)) ∧
     (∫ p : Ω × S, fieldWickDensity P Φ h γ p.1 p.2
       ∂(P.prod (ν.normalize : Measure S))) = ∫ x, (h x : ℝ) ∂(ν.normalize : Measure S) := by
-  have : IsProbabilityMeasure P := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have  := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   have hpoint (x : S) : Integrable (fun ω => fieldWickDensity P Φ h γ ω x) P ∧
       (∫ ω, fieldWickDensity P Φ h γ ω x ∂P) = (h x : ℝ) := by
     have hw := wick_exponential_integrable_expectation P
@@ -64,5 +64,45 @@ theorem fieldWickDensity_integrable_mean
   refine ⟨hint, ?_⟩
   rw [integral_prod_symm _ hint]
   simp_rw [(hpoint _).2]
+
+end
+
+
+section
+variable {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S] [Nonempty S]
+  (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
+  (ν : FiniteMeasure S) (h : S → ℝ≥0) (hh : Measurable h)
+  (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ)
+include hΦ hh hhb
+
+/-- The real-valued mass is the normalized spatial integral scaled by the reference mass. -/
+theorem fieldChaosMass_toReal_ae_eq :
+    (fun ω => (fieldChaosMass P Φ ν h γ ω).toReal) =ᵐ[P]
+      fun ω => (ν.mass : ℝ) * ∫ x, fieldWickDensity P Φ h γ ω x ∂(ν.normalize : Measure S) := by
+  filter_upwards [centeredGaussianField_ae_integrable_weighted_wick P Φ hΦ ν h hh hhb γ] with ω hω
+  rw [fieldChaosMass_eq_ofReal_normalized_integral P Φ ν h γ ω hω, ENNReal.toReal_ofReal
+    (mul_nonneg (NNReal.coe_nonneg _) (integral_nonneg fun _ =>
+      mul_nonneg (NNReal.coe_nonneg _) (Real.exp_nonneg _)))] <;> rfl
+
+/-- Wick normalization makes the first moment independent of the Gaussian field. -/
+theorem fieldChaosMass_toReal_integrable_mean :
+    Integrable (fun ω => (fieldChaosMass P Φ ν h γ ω).toReal) P ∧
+    (∫ ω, (fieldChaosMass P Φ ν h γ ω).toReal ∂P) =
+      (ν.mass : ℝ) * ∫ x, (h x : ℝ) ∂(ν.normalize : Measure S) := by
+  let := (hΦ.2 0 Fin.elim0).1
+  have hI := fieldWickDensity_integrable_mean P Φ hΦ ν h hh hhb γ
+  have he := fieldChaosMass_toReal_ae_eq P Φ hΦ ν h hh hhb γ
+  refine ⟨(hI.1.integral_prod_left.const_mul _).congr he.symm, ?_⟩
+  rw [integral_congr_ae he, integral_const_mul, ← integral_prod _ hI.1, hI.2]
+
+/-- For nonnegative powers, the moment can be taken on either the finite masses or their reals. -/
+theorem fieldChaosMass_rpow_lintegral (p : ℝ) (hp : 0 ≤ p) :
+    (∫⁻ ω, ENNReal.ofReal ((fieldChaosMass P Φ ν h γ ω).toReal ^ p) ∂P) =
+      ∫⁻ ω, fieldChaosMass P Φ ν h γ ω ^ p ∂P := by
+  apply lintegral_congr_ae
+  filter_upwards [centeredGaussianField_fieldChaosMass_ne_top_ae P Φ hΦ ν h hh hhb γ] with ω hω
+  rw [← ENNReal.ofReal_rpow_of_nonneg ENNReal.toReal_nonneg hp, ENNReal.ofReal_toReal hω]
+
+end
 
 end DOZZ.Proofs

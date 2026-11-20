@@ -48,7 +48,7 @@ theorem stoppedReflectionMassCode_eq (γ : ℝ) (τ : ℝ≥0)
     (B : BrownianPath × BrownianPath) (Z : Measure ℝ)
     (hfin : ∀ a b : ℝ, Z (Icc a b) < ⊤) :
     stoppedReflectionMassCode γ ((τ,B),Z) = stoppedReflectionMass γ τ B Z := by
-  have hshell (n : ℕ) : Z (translationShell n) < ⊤ :=
+  have hshell (n : ℕ)  :=
     lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hfin _ _)
   exact (lintegral_eq_tsum_finiteRestrictionOnSet_translationShell
     (fun s => stoppedReflectionIntegrand γ ((τ,B),s)) Z hshell).symm

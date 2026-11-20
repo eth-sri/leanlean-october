@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.Dual.RootedInverse
 public import DOZZ.Statements.GMC.EquatorGFFRootedGMCIdentity
 import DOZZ.GMC.SharpMoments.SeibergWeight
 import Mathlib.Tactic
+import DOZZ.FourPoint.Fusion.RetainedInverseMass
 
 /-! # Rooting the actual dual retained inverse mass
 
@@ -22,20 +23,16 @@ namespace DOZZ.Proofs
 
 /-- The actual retained dual mass is a measurable functional of its supplied measure. -/
 theorem dual_outerMass_measure_measurable (γ α₁ α₂ α₃ ξ : ℝ) (z : ℂ) :
-    Measurable (fun μ : Measure ℂ => dualOuterMass γ α₁ α₂ α₃ μ z ξ) := by
-  let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
-  have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
-  have hf := (measurable_coulombWeight γ ![-2 / γ, α₁, α₂] ![z, 0, 1] α₃).indicator hD
-  have hm := Measure.measurable_lintegral hf
-  convert hm using 1
-  funext μ
-  unfold dualOuterMass
-  rw [coulombMass_eq_lintegral_coulombWeight, lintegral_indicator hD]
+    Measurable (fun μ : Measure ℂ => dualOuterMass γ α₁ α₂ α₃ μ z ξ) :=
+  fusionOuterMass_measurable γ (-2 / γ) α₁ α₂ α₃ ξ z
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX hγ hγ₂ hM
 
 /-- The rooted formula for every nonnegative deterministic spatial weight and inverse order. -/
-theorem dual_outerMass_rooted_weight_identity {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem dual_outerMass_rooted_weight_identity
     (α₁ α₂ α₃ ξ q : ℝ) (z : ℂ) (f : ℂ → ℝ≥0∞) (hf : Measurable f) :
     (∫⁻ ω, ∫⁻ u, f u * (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ) ^ (-q) ∂M ω ∂P) =
       ∫⁻ u, ∫⁻ ω, f u *
@@ -48,9 +45,7 @@ theorem dual_outerMass_rooted_weight_identity {Ω : Type*} [MeasurableSpace Ω]
       (measurable_snd.comp measurable_snd)).pow_const (-q))
 
 /-- The actual weighted inverse moment is bounded by a deterministic spatial integral. -/
-theorem dual_outerMass_rooted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem dual_outerMass_rooted_weight_bound
     (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q) :
     ∃ C : ℝ, 0 < C ∧ ∀ (z : ℂ) (ξ : ℝ), ‖z‖ ≤ 1 → ‖z‖ ^ (1 - ξ) ≤ 1 →
       ∀ f : ℂ → ℝ, Measurable f →
@@ -73,5 +68,7 @@ theorem dual_outerMass_rooted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
     _ = _ := by
       have he := lintegral_mul_const (μ := gmcReferenceMeasure) (ENNReal.ofReal C) (ENNReal.measurable_ofReal.comp hf)
       simpa only [Function.comp_def, mul_comm] using he
+
+end
 
 end DOZZ.Proofs

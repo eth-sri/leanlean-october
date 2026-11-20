@@ -104,10 +104,8 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_int
                   abkSpatialConvolution ζ φ r y
                 ∂(volume : Measure (Vec d))) := by
               rw [integral_const_mul]
-    rw [hinner]
-    rw [integral_abkSpatialConvolution_mul_abkSpatialConvolution_eq_selfConvolution_integral
-      ζ ψ φ hr]
-    rw [abkNormalization_sq ζ (abkNormalizationRadicand_nonneg ζ), ite_eq_left hr]
+    rw [hinner, integral_abkSpatialConvolution_mul_abkSpatialConvolution_eq_selfConvolution_integral
+          ζ ψ φ hr, abkNormalization_sq ζ (abkNormalizationRadicand_nonneg ζ), ite_eq_left hr]
   · have hinner_zero :
         (∫ y : Vec d,
             abkLogKernelProd (abkNormalization ζ) ζ ψ (r, y) *

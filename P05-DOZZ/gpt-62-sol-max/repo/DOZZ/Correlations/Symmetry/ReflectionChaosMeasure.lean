@@ -50,7 +50,7 @@ theorem symmetryRepinnedChaos_integral {Ω : Type*} (γ : ℝ) (M : Ω → Measu
   rw [symmetryRepinnedChaos, integral_smul_measure,
     ENNReal.toReal_ofReal (Real.exp_pos _).le, smul_eq_mul,
     symmetry_reflection_weighted_integral _ _ f
-      (fun x => by rw [symmetryReflectionLimitWeight_apply]; exact (Real.exp_pos _).le)]
+      (fun x => by rw [symmetryReflectionLimitWeight_apply]; positivity)]
 
 theorem regularizedGMC_symmetryRepinned_integral
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -76,5 +76,5 @@ theorem regularizedGMC_symmetryRepinned_integral
   rw [he, withDensity_smul _ hW, integral_smul_measure,
     ENNReal.toReal_ofReal (Real.exp_pos _).le, smul_eq_mul,
     symmetry_reflection_weighted_integral _ _ f
-      (fun x => by rw [symmetryReflectionCutoffWeight_apply]; exact (Real.exp_pos _).le)]
+      (fun x => by rw [symmetryReflectionCutoffWeight_apply]; positivity)]
 end DOZZ.Proofs

@@ -22,8 +22,8 @@ theorem inversion_innerPot_lipschitz_on_norm_lower_bound
     (hu : m ≤ ‖u‖) (hx : m ≤ ‖x‖) :
     |innerPot y s u⁻¹ - innerPot y s x⁻¹| ≤
       ((Real.exp s + 1) / m ^ 2) * ‖u - x‖ := by
-  have hu0 : u ≠ 0 := norm_pos_iff.mp (hm.trans_le hu)
-  have hx0 : x ≠ 0 := norm_pos_iff.mp (hm.trans_le hx)
+  have hu0  := norm_pos_iff.mp (hm.trans_le hu)
+  have hx0  := norm_pos_iff.mp (hm.trans_le hx)
   have hlog := abs_log_max_sub_le u⁻¹ x⁻¹ y (Real.exp_pos (-s))
   have hpin := abs_log_normPlus_sub_le u⁻¹ x⁻¹
   have he : innerPot y s u⁻¹ - innerPot y s x⁻¹ =
@@ -76,9 +76,8 @@ theorem inversion_circleAverage_fixed_source_error_le
   apply abs_circleAverage_sub_le hi
   intro u hu
   have ht := inversion_innerPot_lipschitz_on_norm_lower_bound y s hm (hnorm u hu) hx
-  have hux : ‖u - x‖ = ε := by
-    simpa only [mem_sphere_iff_norm, abs_of_pos hε] using hu
-  simpa only [hux] using ht
+  simpa only [(by
+    simpa only [mem_sphere_iff_norm, abs_of_pos hε] using hu)] using ht
 
 /-- The transformed fine-circle/source-coarse covariance and the pulled-source covariance
 have the same fixed-coarse limit, with error linear in the fine cutoff. -/
@@ -112,13 +111,12 @@ theorem inversion_mixed_fixed_coarse_uniform (s : ℝ) {m η : ℝ}
   have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨min m (η / (2 * C)), lt_min hm (by positivity), ?_⟩
   intro ε hε hεδ x hx y
-  have hεm : ε ≤ m := hεδ.trans (min_le_left _ _)
-  have hεη : ε ≤ η / (2 * C) := hεδ.trans (min_le_right _ _)
+  have hεm  := hεδ.trans (min_le_left _ _)
+  have hεη  := hεδ.trans (min_le_right _ _)
   have hexp : Real.exp (-Real.log (1 / ε)) = ε := by
     rw [one_div, Real.log_inv, neg_neg, Real.exp_log hε]
   have hsmall : m + Real.exp (-Real.log (1 / ε)) ≤ ‖x‖ := by
-    rw [hexp]
-    linarith only [hεm, hx]
+    linarith
   have ht := inversion_mixed_fixed_coarse_difference_le y s (Real.log (1 / ε)) hm hsmall
   rw [hexp] at ht
   have hbound : C * ε ≤ η / 2 := by

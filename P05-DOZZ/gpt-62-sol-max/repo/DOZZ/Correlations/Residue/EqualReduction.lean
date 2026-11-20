@@ -41,11 +41,6 @@ theorem residue_unit_equal_of_twoInsertion_estimate
   obtain ⟨C, hC, hCb⟩ := htail θ hθ
   obtain ⟨dR, ρ, hdR, hρ, K, hK, hKb⟩ := residue_equal_complement_moment_uniform
     P X M γ α hγ hγ2 hX hM hα hαQ
-  let d₀ := min dT (min dR (γ * p))
-  have hd₀ : 0 < d₀ := lt_min hdT (lt_min hdR (mul_pos hγ hp))
-  have hdT' : d₀ ≤ dT := min_le_left _ _
-  have hdR' : d₀ ≤ dR := (min_le_right _ _).trans (min_le_left _ _)
-  have hdβ : d₀ ≤ γ * p := (min_le_right _ _).trans (min_le_right _ _)
   let A : ℝ → Ω → ℝ≥0∞ := fun ε ω =>
     localSingularMass M (residueLocalWeight γ (2 * α + ε) α 7) 3 γ α ω +
     localSingularMass M (residueLocalWeight γ (2 * α + ε) α 3) 7 γ α ω
@@ -67,50 +62,30 @@ theorem residue_unit_equal_of_twoInsertion_estimate
         simp only [Fin.forall_fin_two, Matrix.cons_val_zero, Matrix.cons_val_one, mem_inter_iff, mem_compl_iff, mem_ofPred_eq]
       rw [hs]
       exact Metric.isOpen_ball.measurableSet.compl.inter Metric.isOpen_ball.measurableSet.compl
-    have hf : Measurable (fun x : ℂ => if ∀ k : Fin 2, x ∉ Metric.ball (![3, 7] k) 1 then
-        coulombWeight γ ![α, α] ![3, 7] ε x else 0) :=
-      Measurable.ite hset (measurable_coulombWeight _ _ _ _) measurable_const
-    exact (Measure.measurable_lintegral hf).comp_aemeasurable
+    exact (Measure.measurable_lintegral (Measurable.ite hset (measurable_coulombWeight _ _ _ _) measurable_const)).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM)
-  have hlimA := residue_twoInsertion_equal_local_moment P X M γ α Rbar d₀
-    hγ hγ2 hα hαQ hX hM hd₀ (by
-      intro θ hθ
-      obtain ⟨C, hC, hh⟩ := htail θ hθ
-      exact ⟨C, hC, fun ε hε hεd => hh ε hε (hεd.trans_le hdT')⟩)
-  have hq (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : 0 < p - ε / γ ∧ p - ε / γ < p := by
-    have hh : ε / γ < p := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hεd.trans_le hdβ)
-    exact ⟨sub_pos.mpr hh, sub_lt_self _ (div_pos hε hγ)⟩
-  have htail' (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) (t : ℝ) (ht : 1 ≤ t) :
-      |(P {ω | ENNReal.ofReal t < A ε ω}).toReal - c ε * t ^ (-p)| ≤ C * t ^ (-p - θ) := by
-    have hh := hCb ε hε (hεd.trans_le hdT') t ht
-    rw [hexp, ← add_mul] at hh
-    exact hh
-  have hAfin (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : ∀ᵐ ω ∂P, A ε ω ≠ ⊤ :=
-    residue_ae_finite_of_tail P (A ε) (c ε) p θ C hp hθ (htail' ε hε hεd)
-  have hiA (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) :
-      Integrable (fun ω => (A ε ω).toReal ^ (p - ε / γ)) P :=
-    residue_real_power_integrable_of_extended_tail P (A ε) (hA ε) (c ε)
-      p θ C (p - ε / γ) hp hθ hC (hq ε hε hεd).1 (hq ε hε hεd).2 (htail' ε hε hεd)
-  have hsum := residue_extended_addition_preserves_limit P A R p γ d₀ (p + ρ)
-    (2 * γ * p * (4 : ℝ) ^ (-(γ * α * p)) * Rbar) K hp hγ hd₀ hdβ
-    (lt_add_of_pos_right _ hρ) hK (fun ε _ _ => hA ε) (fun ε _ _ => hR ε)
-    hAfin hiA (fun ε hε hεd => hKb ε hε (hεd.trans_le hdR')) hlimA
   have hatoms : ∀ᵐ ω ∂P, M ω {3} = 0 ∧ M ω {7} = 0 :=
-    (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 3).and
-      (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 7)
+    (gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 3).and
+      (gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 7)
   have hdecomp (ε : ℝ) : ∀ᵐ ω ∂P,
       coulombMass γ (M ω) ![α, α] ![3, 7] ε = A ε ω + R ε ω := by
     filter_upwards [hatoms] with ω hω
     exact residue_equal_mass_decomposition M ω γ α ε hω.1 hω.2
-  have hh : Tendsto (fun ε : ℝ => ε *
-      (∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![α, α] ![3, 7] ε) (p - ε / γ) ∂P).toReal)
-      (𝓝[>] 0) (𝓝 (2 * γ * p * (4 : ℝ) ^ (-(γ * α * p)) * Rbar)) := by
-    apply hsum.congr'
-    filter_upwards [] with ε
-    congr 2
-    exact lintegral_congr_ae ((hdecomp ε).mono fun ω hω => congrArg (fun v : ℝ≥0∞ => ENNReal.rpow v (p - ε / γ)) hω.symm)
+  have hc₁ := residue_chart_tail_coefficient_limit γ α α Rbar hγ.ne' 3 7 (by norm_num) (by norm_num) (by norm_num)
+  have hc₂ := residue_chart_tail_coefficient_limit γ α α Rbar hγ.ne' 7 3 (by norm_num) (by norm_num) (by norm_num)
+  have hn₁ : ‖(3 : ℂ) - 7‖ = 4 := by norm_num
+  have hn₂ : ‖(7 : ℂ) - 3‖ = 4 := by norm_num
+  have hc := hc₁.add hc₂
+  rw [hn₁, hn₂] at hc
+  have hh := residue_chart_limit_of_tail_and_complement P A R
+    (fun ε ω => coulombMass γ (M ω) ![α, α] ![3, 7] ε) c _ p γ θ C dT dR (p + ρ) K
+    hp hγ hθ hC hdT hdR (lt_add_of_pos_right _ hρ) hK hA hR hdecomp hc
+    (fun ε he₀ he t ht => by simpa only [← add_mul, hexp] using hCb ε he₀ he t ht) hKb
+  have hm : γ * p * ((4 : ℝ) ^ (-(γ * α * p)) * Rbar + (4 : ℝ) ^ (-(γ * α * p)) * Rbar) =
+      2 * γ * p * (4 : ℝ) ^ (-(γ * α * p)) * Rbar := by ring
+  rw [hm] at hh
   have hunit := residue_unit_limit_from_chart_limit P X M γ α α 2 Rbar hγ hγ2 hX hM
-    (by simpa only [sub_self, zero_add] using hh)
+    (by simpa only [p, ENNReal.rpow_eq_pow, sub_self, zero_add] using hh)
   simpa only [sub_self, zero_add, show (2 : ℝ) * 2 = 4 by norm_num] using hunit
 
 end DOZZ.Proofs

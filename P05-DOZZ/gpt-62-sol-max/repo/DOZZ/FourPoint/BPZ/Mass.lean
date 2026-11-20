@@ -31,10 +31,6 @@ noncomputable def bpzMass (γ χ α₁ α₂ α₃ ε : ℝ) (m : Measure ℂ) (
 
 variable {γ χ α₁ α₂ α₃ : ℝ}
 
-theorem measurable_bpzMass_measure (ε : ℝ) (z : ℂ) :
-    Measurable (fun m : Measure ℂ => bpzMass γ χ α₁ α₂ α₃ ε m z) :=
-  Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp (measurable_bpzSoftWeight ε z))
-
 /-- The far disk used for lower bounds of the mass, for `z` in the closed ball of radius `R`. -/
 noncomputable def bpzFarBall (R : ℝ) : Set ℂ := Metric.ball (((R + 4 : ℝ)) : ℂ) (1 / 2)
 
@@ -109,11 +105,6 @@ theorem bpzSoftWeight_ge_on_farBall (R : ℝ) (hR : 0 ≤ R) :
     (by rw [hnp]; linarith : normPlus x ≤ L) (γ * (α₁ + α₂ + α₃ - χ))
   unfold bpzSoftWeight bpzBaseWeight
   have p0 : 0 ≤ L ^ (-|γ * χ / 2|) := by positivity
-  have p1 : 0 ≤ L ^ (-|-(γ * α₁)|) := by positivity
-  have p2 : 0 ≤ L ^ (-|-(γ * α₂)|) := by positivity
-  have p3 : 0 ≤ L ^ (-|γ * (α₁ + α₂ + α₃ - χ)|) := by positivity
-  have q1 : 0 ≤ ‖x‖ ^ (-(γ * α₁)) := Real.rpow_nonneg (norm_nonneg _) _
-  have q2 : 0 ≤ ‖x - 1‖ ^ (-(γ * α₂)) := Real.rpow_nonneg (norm_nonneg _) _
   gcongr
 
 /-- The mass is at least a fixed positive multiple of the chaos mass of the far disk. -/
@@ -317,11 +308,7 @@ theorem bpz_injective_three {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     | (exfalso; revert hij; simp [hz0, hz1, eq_comm])
 
 theorem bpz_injective_two : Function.Injective ![(0 : ℂ), 1] := by
-  intro i j hij
-  fin_cases i <;> fin_cases j
-  all_goals first
-    | rfl
-    | (exfalso; revert hij; simp)
+  simp
 
 /-- A positive order below six positive bounds. -/
 theorem bpz_exists_pos_lt_six {a b c d e f : ℝ} (ha : 0 < a) (hb : 0 < b) (hc : 0 < c)
@@ -329,12 +316,12 @@ theorem bpz_exists_pos_lt_six {a b c d e f : ℝ} (ha : 0 < a) (hb : 0 < b) (hc 
     ∃ t : ℝ, 0 < t ∧ t < a ∧ t < b ∧ t < c ∧ t < d ∧ t < e ∧ t < f := by
   refine ⟨min a (min b (min c (min d (min e f)))) / 2, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · have : 0 < min a (min b (min c (min d (min e f)))) := by
-      simp only [lt_min_iff]; exact ⟨ha, hb, hc, hd, he, hf⟩
+      positivity
     linarith
   all_goals
     have h0 : 0 < min a (min b (min c (min d (min e f)))) := by
-      simp only [lt_min_iff]; exact ⟨ha, hb, hc, hd, he, hf⟩
-  · have := min_le_left a (min b (min c (min d (min e f)))); linarith
+      positivity
+  grind
   · have := (min_le_right a _).trans (min_le_left b (min c (min d (min e f)))); linarith
   · have := (min_le_right a _).trans ((min_le_right b _).trans
       (min_le_left c (min d (min e f)))); linarith
@@ -352,7 +339,7 @@ theorem bpzMass_lt_top_ae
     (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (ε : ℝ) (z : ℂ) (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     ∀ᵐ ω ∂P, bpzMass γ χ α₁ α₂ α₃ ε (M ω) z < ⊤ := by
-  have hQ : 0 < Q γ := by unfold Q; positivity
+  have hQ := Q_pos hγ
   have hg : 0 < 2 / γ := by positivity
   obtain ⟨t, htpos, ht1, ht2, ht3, ht4, ht5, ht6⟩ := bpz_exists_pos_lt_six
     (by positivity : (0 : ℝ) < 4 / γ ^ 2)

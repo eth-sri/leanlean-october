@@ -5,6 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.ChartMassMeasurable
 public import DOZZ.FourPoint.Reflected.ConditionalCompactLimit
+public import DOZZ.GFFStructure.ContinuousCircleAverage
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! One actual measurable lateral carrier on the entire punctured plane. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
@@ -41,17 +43,15 @@ theorem reflected_removed_mass_compact_finite (γ : ℝ) (A : TwoSidedPath)
 GMC and is locally finite on the entire punctured plane, on every sample. -/
 theorem reflected_global_lateral_carrier
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     ∃ N : Ω → Measure ℂ, Measurable N ∧
       IndepFun (originRadialPath Xc) N P ∧
-      (∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤) ∧
+      (∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω)) ∧
       N =ᵐ[P] (fun ω => (M ω).withDensity
         (lateralRadialWeight γ (originRadialPath Xc ω))) := by
   let A := originRadialPath Xc
-  have hA : AEMeasurable A P := originRadialPath_aemeasurable P X Xc hc hcont
+  have hA : AEMeasurable A P := originRadialPath_aemeasurable P X Xc hcircle.isCircleAverage hcircle.continuous_ae
   obtain ⟨M', hM', hMf, hMeq⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ₂ M hM
   let MF : Ω → FiniteMeasure ℂ := fun ω => ⟨M' ω, hMf ω⟩
   have hMF : Measurable MF := Measurable.subtype_mk hM'
@@ -71,12 +71,11 @@ theorem reflected_global_lateral_carrier
   refine Exists.intro N ?_
   apply And.intro hN
   apply And.intro
-  · exact (originRadialRemovedGMC_indep P X Xc hX hc hm hcont γ hγ hγ₂ M hM).congr
+  · exact (originRadialRemovedGMC_indep P X Xc hX hcircle γ hγ hγ₂ M hM).congr
       (ae_of_all P fun _ => rfl) heq.symm
   · apply And.intro
     · intro ω K hK hK0
-      let _ := hMf ω
-      exact reflected_removed_mass_compact_finite γ (hA.mk A ω) (M' ω) K hK hK0
+      apply reflected_removed_mass_compact_finite <;> assumption
     · exact heq
 
 end DOZZ.Proofs

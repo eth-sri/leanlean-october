@@ -51,15 +51,7 @@ theorem measurableSet_brownianPositiveRationalTouchZero :
         {y : ℚ → ℝ | y r < 1 / ((n : ℝ) + 1)} else ∅ := by
     ext y
     simp only [mem_ofPred_eq, mem_iUnion]
-    constructor
-    · rintro ⟨r, hr, hy⟩
-      exact ⟨r, by simpa only [hr, dite_true, mem_ofPred_eq] using
-        (show y r < 1 / ((n : ℝ) + 1) from hy)⟩
-    · rintro ⟨r, hr⟩
-      by_cases hq : 0 < (r : ℝ)
-      · simp only [hq, dite_true, mem_ofPred_eq] at hr
-        exact ⟨r, hq, by simpa only [one_div] using hr⟩
-      · simp [hq] at hr
+    simp
   have hnear : MeasurableSet
       {y : ℚ → ℝ | ∀ n : ℕ, ∃ r : ℚ,
         0 < (r : ℝ) ∧ y r < 1 / ((n : ℝ) + 1)} := by
@@ -76,11 +68,7 @@ theorem measurableSet_brownianPositiveRationalTouchZero :
         · simp only [hr, dite_true]
           exact measurableSet_lt (measurable_pi_apply r) measurable_const
         · simp [hr]
-  change MeasurableSet
-    ({y : ℚ → ℝ | ∀ r : ℚ, 0 < (r : ℝ) → 0 < y r} ∩
-      {y : ℚ → ℝ | ∀ n : ℕ, ∃ r : ℚ,
-        0 < (r : ℝ) ∧ y r < 1 / ((n : ℝ) + 1)})
-  exact hpos.inter hnear
+  apply hpos.inter <;> assumption
 
 private theorem rational_strict_upper_bound_path
     (q : BrownianPath) {a : ℝ}
@@ -90,17 +78,14 @@ private theorem rational_strict_upper_bound_path
   have hgt : a < q t := lt_of_not_ge hnot
   let F : ℝ → ℝ := fun s => q ⟨max s 0, le_max_right s 0⟩
   have hF : Continuous F := by
-    apply q.continuous.comp
-    exact (continuous_max.comp (continuous_id.prodMk continuous_const)).subtype_mk
-      (fun s => le_max_right s 0)
+    fun_prop
   have hF_eval (s : ℝ) (hs : 0 ≤ s) : F s = q ⟨s, hs⟩ := by
     change q ⟨max s 0, le_max_right s 0⟩ = q ⟨s, hs⟩
     congr 1
     exact Subtype.ext (max_eq_left hs)
   have hopen : IsOpen (F ⁻¹' Set.Ioi a) := isOpen_Ioi.preimage hF
   have htmem : (t : ℝ) ∈ F ⁻¹' Set.Ioi a := by
-    rw [Set.mem_preimage, hF_eval (t : ℝ) t.property]
-    exact hgt
+    rwa [Set.mem_preimage, hF_eval (t : ℝ) t.property]
   by_cases htpos : 0 < (t : ℝ)
   · let U : Set ℝ := Set.Ioi 0 ∩ F ⁻¹' Set.Ioi a
     have hU : IsOpen U := isOpen_Ioi.inter hopen
@@ -186,19 +171,17 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
       exact csSup_le (Set.range_nonempty _) (by
         rintro z ⟨t, rfl⟩
         exact hweak t)
-    have hge : a ≤ driftedBrownianMaximum ν p := by
+    exact le_antisymm hle (by
       by_contra hnot
       have hMa : sSup (Set.range (fun t : ℝ≥0 => D p t)) < a := by
-        rw [← hsup]
-        exact lt_of_not_ge hnot
+        linarith
       let gap : ℝ := a - sSup (Set.range (fun t : ℝ≥0 => D p t))
       have hgap : 0 < gap := by dsimp [gap]; linarith
       obtain ⟨n, hn⟩ := exists_nat_gt (1 / gap)
       have hn1 : 0 < (n : ℝ) + 1 := by positivity
       have hinv : 1 / ((n : ℝ) + 1) < gap := by
         apply (div_lt_iff₀ hn1).2
-        have hncast : (1 / gap : ℝ) < (n : ℝ) + 1 := by
-          exact lt_trans hn (by norm_num)
+        have hncast : (1 / gap : ℝ) < (n : ℝ) + 1 := lt_trans hn (by norm_num)
         calc
           1 = (1 / gap) * gap := by field_simp [ne_of_gt hgap]
           _ < ((n : ℝ) + 1) * gap := mul_lt_mul_of_pos_right hncast hgap
@@ -208,14 +191,12 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
         simp [eval, brownianUpperConditionedPositiveRationalEvals,
           brownianUpperConditionedPositivePath, max_eq_left hr.le]
       have hDnear : a - 1 / ((n : ℝ) + 1) < D p ⟨(r : ℝ), hr.le⟩ := by
-        rw [hEval] at hnear
         linarith
       have hDs : D p ⟨(r : ℝ), hr.le⟩ ≤
           sSup (Set.range (fun t : ℝ≥0 => D p t)) :=
         le_csSup hbound (Set.mem_range_self (⟨(r : ℝ), hr.le⟩ : ℝ≥0))
       dsimp [gap] at hinv
-      linarith
-    exact le_antisymm hle hge
+      linarith)
   have hraw : B (D ⁻¹' A) = 0 := measure_mono_null hsubset hmaxzero
   have hlaw : brownianBelowConditionedLaw B ν a A = 0 := by
     rw [brownianBelowConditionedLaw, Measure.smul_apply, smul_eq_mul,
@@ -224,15 +205,10 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
       measure_mono_null Set.inter_subset_left hraw
     rw [hsmall]
     simp
-  have hkernel : brownianUpperConditionedReferenceFutureKernel B ν hν a
-      brownianPositiveRationalTouchZero = 0 := by
-    have hC : MeasurableSet brownianPositiveRationalTouchZero :=
-      measurableSet_brownianPositiveRationalTouchZero
-    rw [brownianUpperConditionedReferenceFutureKernel_apply_conditioned
-      B ν a hν ha]
-    rw [Measure.map_apply hEval hC]
-    exact hlaw
-  exact hkernel
+  have hC  :=
+    measurableSet_brownianPositiveRationalTouchZero
+  rwa [brownianUpperConditionedReferenceFutureKernel_apply_conditioned
+        B ν a hν ha, Measure.map_apply hEval hC]
 
 end DOZZ.Proofs
 

@@ -45,9 +45,7 @@ theorem admissibleCutoffIntegral_nonnegative_intensity
     intro x
     rw [ENNReal.ofReal_mul (hf0 x), ofReal_exp_eq_admissibleLogWickWeight]
   rw [lintegral_congr_ae heq]
-  have hF : Measurable (fun p : Ω × ℂ => ENNReal.ofReal (f p.2) *
-      admissibleLogWickWeight P Y γ (Real.exp (-r)) p.2 p.1) :=
-    (ENNReal.measurable_ofReal.comp (f.continuous.measurable.comp measurable_snd)).mul
+  have hF := (ENNReal.measurable_ofReal.comp (f.continuous.measurable.comp measurable_snd)).mul
       (admissibleLogWickWeight_measurable_joint P U dens ε₀ Y hY γ (Real.exp (-r)))
   rw [lintegral_lintegral_swap hF.aemeasurable]
   apply lintegral_congr
@@ -56,15 +54,16 @@ theorem admissibleCutoffIntegral_nonnegative_intensity
     γ (Real.exp (-r)) x), lintegral_admissibleLogWickWeight P U dens ε₀ Y hY γ
     (Real.exp (-r)) (Real.exp_pos _) hr x, mul_one]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (U : Set ℂ)
+  (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (N : Ω → Measure ℂ) (hN : IsAdmissibleGMCVersion P U dens Y γ N)
+  (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
+  (hfU : tsupport (f : ℂ → ℝ) ⊆ U)
+include Ω ε₀ Y hY γ hγ hγ2 hN hfc hfU
+
 /-- Every actual admissible version is the L¹ limit of its compact cutoff tests. -/
-theorem admissibleGMCVersion_test_L1
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (N : Ω → Measure ℂ)
-    (hN : IsAdmissibleGMCVersion P U dens Y γ N)
-    (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
-    (hfU : tsupport (f : ℂ → ℝ) ⊆ U) :
+theorem admissibleGMCVersion_test_L1 :
     Tendsto (fun r => ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ r f ω -
       ∫ x, f x ∂N ω| ∂P) atTop (𝓝 0) := by
   apply ENNReal.tendsto_nhds_zero.mpr
@@ -79,14 +78,7 @@ theorem admissibleGMCVersion_test_L1
 
 /-- Compact nonnegative tests of the actual admissible limit retain the exact Wick
 mean; convergence in probability is upgraded using the proved L¹ theorem. -/
-theorem admissibleGMCVersion_test_intensity
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (N : Ω → Measure ℂ)
-    (hN : IsAdmissibleGMCVersion P U dens Y γ N)
-    (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
-    (hfU : tsupport (f : ℂ → ℝ) ⊆ U) (hf0 : ∀ x, 0 ≤ f x) :
+theorem admissibleGMCVersion_test_intensity (hf0 : ∀ x, 0 ≤ f x) :
     ∫⁻ ω, ENNReal.ofReal (∫ x, f x ∂N ω) ∂P =
       ∫⁻ x, ENNReal.ofReal (f x) ∂logRegularizationReference U dens := by
   let R : ℝ := -Real.log ε₀
@@ -94,7 +86,7 @@ theorem admissibleGMCVersion_test_intensity
     calc Real.exp (-r) ≤ Real.exp (-R) := Real.exp_le_exp.mpr (neg_le_neg hr)
       _ = ε₀ := by simp only [R, neg_neg, Real.exp_log hY.cutoffPositive]
   let F : ℝ → Ω → ℝ := fun r => admissibleCutoffIntegral P U dens Y γ (max r R) f
-  have htop : Tendsto (fun r : ℝ => max r R) atTop atTop :=
+  have htop  :=
     tendsto_atTop_mono (fun r => le_max_left r R) tendsto_id
   apply lintegral_ofReal_eq_of_tendsto_l1 P F (fun ω => ∫ x, f x ∂N ω)
   · intro r
@@ -114,6 +106,8 @@ theorem admissibleGMCVersion_test_intensity
       (hR _ (le_max_right _ _)) f hfc hfU hf0
   · exact (admissibleGMCVersion_test_L1 P U dens ε₀ Y hY γ hγ hγ2 N hN f hfc hfU).comp htop
 
+end
+
 /-- A bounded continuous compact test is integrable whenever its support has finite
 measure. No global finiteness of the chart measure is required. -/
 theorem integrable_compact_test_of_chart (μ : Measure ℂ)
@@ -131,14 +125,15 @@ theorem integrable_compact_test_of_chart (μ : Measure ℂ)
   rw [← heq]
   exact hi.integrable_indicator hK
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (U : Set ℂ)
+  (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (N : Ω → Measure ℂ) (hN : IsAdmissibleGMCVersion P U dens Y γ N)
+include Ω dens ε₀ Y hY γ hγ hγ2 hN
+
 /-- Integrating a nonnegative compact test against the expected random measure equals
 its deterministic reference integral. -/
 theorem admissibleGMCVersion_expected_test_lintegral
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (N : Ω → Measure ℂ)
-    (hN : IsAdmissibleGMCVersion P U dens Y γ N)
     (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
     (hfU : tsupport (f : ℂ → ℝ) ⊆ U) (hf0 : ∀ x, 0 ≤ f x) :
     ∫⁻ x, ENNReal.ofReal (f x) ∂P.bind N =
@@ -154,15 +149,10 @@ theorem admissibleGMCVersion_expected_test_lintegral
       (integrable_compact_test_of_chart _ f (hN.2.2.1 ω _ hfc hfU))
       (ae_of_all _ hf0)).symm
   rw [lintegral_congr_ae heq]
-  exact admissibleGMCVersion_test_intensity P U dens ε₀ Y hY γ hγ hγ2 N hN f hfc hfU hf0
+  apply admissibleGMCVersion_test_intensity <;> assumption
 
 /-- The expected admissible chaos is finite on every compact subset of its chart. -/
 theorem admissibleGMCVersion_expected_compact_lt_top
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (N : Ω → Measure ℂ)
-    (hN : IsAdmissibleGMCVersion P U dens Y γ N)
     (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U) : P.bind N K < ⊤ := by
   obtain ⟨g, hg1, hgc, hgU, hg01⟩ :=
     exists_continuousMap_one_of_isCompact_subset_isOpen hK hY.openChart hKU
@@ -185,23 +175,17 @@ theorem admissibleGMCVersion_expected_compact_lt_top
       simp only [Pi.one_apply, ENNReal.ofReal_one, le_refl]
     · rw [indicator_of_notMem hx]
       exact zero_le
-  have href : (∫⁻ x, ENNReal.ofReal (f x) ∂logRegularizationReference U dens) < ⊤ := by
+  exact hlow.trans_lt (heq.symm ▸ (by
     let μ := logRegularizationReference U dens
     have hfin := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY
       (tsupport (f : ℂ → ℝ)) hfc hgU
     have hi := integrable_compact_test_of_chart μ f hfin.lt_top
     rw [← ofReal_integral_eq_lintegral_ofReal hi (ae_of_all _ hf0)]
-    exact ENNReal.ofReal_lt_top
-  exact hlow.trans_lt (heq.symm ▸ href)
+    exact ENNReal.ofReal_lt_top))
 
 /-- The expected measure has the same signed compact-test integrals as the reference
 measure, by positive and negative parts and local finiteness. -/
 theorem admissibleGMCVersion_expected_signed_test
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (N : Ω → Measure ℂ)
-    (hN : IsAdmissibleGMCVersion P U dens Y γ N)
     (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
     (hfU : tsupport (f : ℂ → ℝ) ⊆ U) :
     (∫ x, f x ∂P.bind N) = ∫ x, f x ∂logRegularizationReference U dens := by
@@ -225,7 +209,7 @@ theorem admissibleGMCVersion_expected_signed_test
       gp hpc (hs.trans hgU) (fun x => le_max_right _ _)
     have heval (x : ℂ) : ENNReal.ofReal (gp x) = ENNReal.ofReal (g x) := by
       change ENNReal.ofReal (max (g x) 0) = ENNReal.ofReal (g x)
-      simp only [ENNReal.ofReal_max, ENNReal.ofReal_zero, max_eq_left (zero_le : (0 : ℝ≥0∞) ≤ ENNReal.ofReal (g x))]
+      norm_num
     simpa only [heval] using heq
   have hi := integrable_compact_test_of_chart (P.bind N) f
     (admissibleGMCVersion_expected_compact_lt_top P U dens ε₀ Y hY γ hγ hγ2 N hN
@@ -235,22 +219,15 @@ theorem admissibleGMCVersion_expected_signed_test
       (tsupport (f : ℂ → ℝ)) hfc hfU).lt_top
   rw [integral_eq_lintegral_pos_part_sub_lintegral_neg_part hi,
     integral_eq_lintegral_pos_part_sub_lintegral_neg_part hr, hpos f hfc hfU]
-  have hnfc : HasCompactSupport ((-f : BoundedContinuousFunction ℂ ℝ) : ℂ → ℝ) := by
-    exact hfc.neg
-  have hnU : tsupport ((-f : BoundedContinuousFunction ℂ ℝ) : ℂ → ℝ) ⊆ U := by
-    simpa only [BoundedContinuousFunction.coe_neg, tsupport_neg] using hfU
+  have hnfc := hfc.neg
   exact congrArg (fun x : ℝ≥0∞ =>
       (∫⁻ x, ENNReal.ofReal (f x) ∂logRegularizationReference U dens).toReal - x.toReal)
-    (hpos (-f) hnfc hnU)
+    (hpos (-f) hnfc (by
+    simpa only [BoundedContinuousFunction.coe_neg, tsupport_neg] using hfU))
 
 /-- The expected admissible chaos measure is exactly its reference measure. This is
 an equality of measures, rather than merely an upper intensity bound. -/
-theorem admissibleGMCVersion_expected_measure
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (N : Ω → Measure ℂ)
-    (hN : IsAdmissibleGMCVersion P U dens Y γ N) :
+theorem admissibleGMCVersion_expected_measure :
     P.bind N = logRegularizationReference U dens := by
   obtain ⟨K, hKc, hKU, _, _, hKcofinal, f, hf, hdense⟩ :=
     exists_countable_dense_admissible_tests U hY.openChart
@@ -270,14 +247,18 @@ theorem admissibleGMCVersion_expected_measure
     rw [Measure.restrict_apply hY.openChart.measurableSet.compl]
     simp only [compl_inter_self, measure_empty]
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+  (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+  (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+include hX hc hm hcont
+
 /-- The expected actual removed measure on each chart is the flat-cylinder plane
 reference measure on that chart. -/
 theorem originRadialRemovedGMC_chart_intensity
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (ρ γ : ℝ) (hρ : 0 < ρ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     (P.bind (fun ω => (M ω).withDensity
@@ -289,7 +270,7 @@ theorem originRadialRemovedGMC_chart_intensity
     (originRadialPath Xc) (originRadialPath_aemeasurable P X Xc hc hcont) M
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM) hM.1
   obtain ⟨N, hN, _, heq⟩ := exists_originLateralChartGMC_radial_removed_identity
-    P X Xc hX hc hm hcont ρ γ hρ hγ hγ2 M hM
+    P X Xc hX ⟨hc, hm, hcont⟩ ρ γ hρ hγ hγ2 M hM
   have hmean := admissibleGMCVersion_expected_measure P (originLateralChart ρ)
     originLateralPlaneDensity (min ρ 1) (originLateralCircleRegularization Xc ρ)
     (originLateralCircleRegularization_admissible P X Xc hX hc hm ρ hρ)
@@ -304,16 +285,13 @@ theorem originRadialRemovedGMC_chart_intensity
   filter_upwards [heq] with ω hω
   rw [hω, Measure.restrict_apply hS]
 
+section
+variable (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hγ hγ2 hM
+
 /-- The entire expected removed plane measure has density `norm(x)^(-2)`.
 The origin causes no atom in either measure; the countable charts determine both. -/
-theorem originRadialRemovedGMC_expected_measure
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
+theorem originRadialRemovedGMC_expected_measure :
     P.bind (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))) =
       (volume : Measure ℂ).withDensity (fun x => ENNReal.ofReal (originLateralPlaneDensity x)) := by
   let F := fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))
@@ -333,14 +311,7 @@ theorem originRadialRemovedGMC_expected_measure
 
 /-- The expected actual polar projection is the logarithmic-radius image of the flat
 plane reference measure. This uses measure equality before the polar integral. -/
-theorem lateralProjectedGMC_expected_measure
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
+theorem lateralProjectedGMC_expected_measure :
     P.bind (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) =
       ((volume : Measure ℂ).withDensity (fun x => ENNReal.ofReal
         (originLateralPlaneDensity x))).map (fun x => -Real.log ‖x‖) := by
@@ -359,11 +330,18 @@ theorem lateralProjectedGMC_expected_measure
   intro ω
   exact Measure.map_apply hlog hS
 
+end
+
+end
 
 
+
+
+section
+variable (F : ℝ → ℝ≥0∞)
 
 /-- Complex polar coordinates for a general nonnegative radial test. -/
-theorem lintegral_complex_norm (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
+theorem lintegral_complex_norm (hF : Measurable F) :
     (∫⁻ z : ℂ, F ‖z‖) = ENNReal.ofReal (2 * Real.pi) *
       ∫⁻ r in Ioi (0 : ℝ), ENNReal.ofReal r * F r := by
   have heq (r : ℝ) (hr : 0 ≤ r) : cylindricalRadius 0 r = r := by
@@ -380,7 +358,7 @@ theorem lintegral_complex_norm (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
 
 /-- The substitution `r = exp(-s)` converts the radial density `1/r` into Lebesgue
 measure on the whole logarithmic cylinder, with both signs of `s` included. -/
-theorem lintegral_logRadius_jacobian (F : ℝ → ℝ≥0∞) :
+theorem lintegral_logRadius_jacobian :
     (∫⁻ r in Ioi (0 : ℝ), ENNReal.ofReal (r⁻¹) * F (-Real.log r)) = ∫⁻ s : ℝ, F s := by
   have himage : (fun s : ℝ => Real.exp (-s)) '' univ = Ioi (0 : ℝ) := by
     ext r
@@ -408,8 +386,7 @@ theorem lintegral_logRadius_jacobian (F : ℝ → ℝ≥0∞) :
 
 /-- The radial density of the removed chaos gives exactly the flat cylinder
 reference, including the angular factor `2π`. -/
-theorem lintegral_flatLateralReference_logRadius
-    (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
+theorem lintegral_flatLateralReference_logRadius (hF : Measurable F) :
     (∫⁻ x, F (-Real.log ‖x‖) ∂(volume : Measure ℂ).withDensity
       (fun x => ENNReal.ofReal (originLateralPlaneDensity x))) =
         ENNReal.ofReal (2 * Real.pi) * ∫⁻ s : ℝ, F s := by
@@ -421,8 +398,7 @@ theorem lintegral_flatLateralReference_logRadius
   rw [lintegral_withDensity_eq_lintegral_mul _ hd hf]
   let G : ℝ → ℝ≥0∞ := fun r => ENNReal.ofReal (r ^ (-2 : ℝ)) * F (-Real.log r)
   have hG : Measurable G := by
-    exact ENNReal.measurable_ofReal.comp (measurable_id.pow_const (-2 : ℝ)) |>.mul
-      (hF.comp (measurable_neg.comp Real.measurable_log))
+    fun_prop
   change (∫⁻ x : ℂ, G ‖x‖) = _
   rw [lintegral_complex_norm G hG]
   have heq : (∫⁻ r in Ioi (0 : ℝ), ENNReal.ofReal r * G r) =
@@ -435,6 +411,8 @@ theorem lintegral_flatLateralReference_logRadius
       field_simp
     rw [← mul_assoc, ← ENNReal.ofReal_mul hr.le, halg]
   rw [heq, lintegral_logRadius_jacobian]
+
+end
 
 /-- The logarithmic-radius image of the planar reference is exactly `2π` times
 Lebesgue measure, as a full equality of measures. -/
@@ -456,15 +434,16 @@ theorem flatLateralReference_logRadius :
   rw [← hmap] at h
   simpa only [lintegral_indicator_one hS, Measure.smul_apply, smul_eq_mul] using h
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+  (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+  (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+  (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX hc hm hcont hγ hγ2 hM
+
 /-- Exact expected measure of the actual projected chaos on the entire cylinder. -/
-theorem lateralProjectedGMC_expected_flat_measure
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
+theorem lateralProjectedGMC_expected_flat_measure :
     P.bind (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) =
       ENNReal.ofReal (2 * Real.pi) • (volume : Measure ℝ) := by
   rw [lateralProjectedGMC_expected_measure P X Xc hX hc hm hcont γ hγ hγ2 M hM,
@@ -474,13 +453,6 @@ theorem lateralProjectedGMC_expected_flat_measure
 predicate `DOZZ.IsLateralGMCOf`. This is proved before stationarity or any moment
 theorem is used. -/
 theorem lateralProjectedGMC_interval_intensity
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (a b : ℝ) :
     ∫⁻ ω, lateralProjectedGMC γ (originRadialPath Xc ω) (M ω) (Ioc a b) ∂P =
       ENNReal.ofReal (2 * Real.pi * (b - a)) := by
@@ -491,5 +463,7 @@ theorem lateralProjectedGMC_interval_intensity
     lateralProjectedGMC_expected_flat_measure P X Xc hX hc hm hcont γ hγ hγ2 M hM,
     Measure.smul_apply, smul_eq_mul, Real.volume_Ioc,
     ← ENNReal.ofReal_mul (mul_pos (by norm_num) Real.pi_pos).le]
+
+end
 
 end DOZZ.Proofs

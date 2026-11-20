@@ -18,10 +18,8 @@ theorem reflected_global_reinsertionWeight_measurable (γ : ℝ) :
     Measurable (fun p : TwoSidedPath × ℂ => reflected_global_reinsertionWeight γ p.1 p.2) := by
   have hl : Measurable (fun p : TwoSidedPath × ℂ => Real.log ‖p.2‖) :=
     Real.measurable_log.comp (measurable_norm.comp measurable_snd)
-  have he : Measurable (fun p : TwoSidedPath × ℂ => p.1 (-Real.log ‖p.2‖)) :=
-    continuous_eval.measurable.comp (measurable_fst.prodMk hl.neg)
   exact Measurable.ite (measurableSet_eq_fun (measurable_norm.comp measurable_snd) measurable_const)
-    measurable_const (Real.measurable_exp.comp ((measurable_const.mul he).sub
+    measurable_const (Real.measurable_exp.comp ((measurable_const.mul (continuous_eval.measurable.comp (measurable_fst.prodMk hl.neg))).sub
       (measurable_const.mul (continuous_abs.measurable.comp hl))))
 
 theorem reflected_global_reinsertionWeight_chart (ρ γ : ℝ) (hρ : 0 < ρ)
@@ -60,5 +58,13 @@ theorem reflected_global_reinsertion_measure (γ : ℝ) (A : TwoSidedPath) (μ :
     ENNReal.ofReal (reflected_global_reinsertionWeight γ A x)) = _
   rw [he]
   exact withDensity_indicator_one (measurableSet_singleton (0 : ℂ)).compl
+
+/-- The joint radial-path and weighted-mass law is unchanged by independent reinsertion. -/
+abbrev RadialReinsertionLaw {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+    (A : Ω → TwoSidedPath) (γ : ℝ) (M N : Ω → Measure ℂ) : Prop :=
+  ∀ (f : ℂ → ℝ≥0∞), Measurable f → ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
+    (∫⁻ ω, G (A ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
+    ∫⁻ ω : Ω × Ω, G (A ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
+      f x * ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω.1) x) ∂N ω.2) ∂P.prod P
 
 end DOZZ.Proofs

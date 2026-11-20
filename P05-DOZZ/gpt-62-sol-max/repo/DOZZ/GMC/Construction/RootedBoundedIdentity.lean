@@ -33,17 +33,16 @@ theorem rooted_GMC_identity_on_bounded_set
       ∫⁻ u in B, ∫⁻ ω, H u (fun f => X ω f + γ * gffRootCovariance u f)
         (gmcRootedMeasure γ u (M ω)) ∂P ∂gmcReferenceMeasure := by
   let _ := hX.1
-  let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   obtain ⟨K, hK, hfactor⟩ := rooted_observable_factors_through_coordinates H hH
-  let leftPath : Ω → gmcTiltCoordinateIndex → ℝ := fun ω =>
+  let leftPath  := fun ω =>
     gmcTiltCoordinatePath (fun f => X ω f) (M ω)
   let rightPath : ℂ × Ω → gmcTiltCoordinateIndex → ℝ := fun q =>
     gmcTiltCoordinatePath (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
       (gmcRootedMeasure γ q.1 (M q.2))
   let family := fun ω => Measure.map (fun u => (u, leftPath ω)) ((M ω).restrict B)
-  have hl : Measurable leftPath := measurable_gmcTiltCoordinatePath.comp
+  have hl  := measurable_gmcTiltCoordinatePath.comp
     ((measurable_pi_iff.mpr fun f => (hX.2 f).1).prodMk hMmeas)
-  have hr : Measurable rightPath := measurable_pointRootedCoordinatePath P X hX γ M hMmeas hM.1
+  have hr  := measurable_pointRootedCoordinatePath P X hX γ M hMmeas hM.1
   have hres : Measurable (fun ω => (M ω).restrict B) := by
     apply Measure.measurable_of_measurable_coe
     intro A hA
@@ -52,7 +51,7 @@ theorem rooted_GMC_identity_on_bounded_set
   have hfin (ω : Ω) : IsFiniteMeasure ((M ω).restrict B) := by
     let _ := hM.1 ω
     infer_instance
-  have hfamily : Measurable family := measurable_markedMeasure_family _ hres hfin leftPath hl
+  have hfamily  := measurable_markedMeasure_family _ hres hfin leftPath hl
   have hjoint := rooted_joint_coordinate_law P X hX γ hγ hγ2 M hM hMmeas
     Xc hXc B hB R hBR hRoot
   calc

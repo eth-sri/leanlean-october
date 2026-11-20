@@ -45,11 +45,11 @@ theorem reflected_buffer_weight_bound {Ω : Type*} [MeasurableSpace Ω]
       ENNReal.ofReal c*((∫⁻ x in Metric.ball (0 : ℂ) r,
           ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x) ∂M ω)*
         reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω)^(-q)) := by
-    filter_upwards [gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
-      gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω h0 h1
+    filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM 0,
+      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM 1] with ω h0 h1
     have hi := reflected_buffer_mass_upper γ α₁ α₂ α₃ R r hR z (M ω) U hU hball hsep
     have ht := ennreal_rpow_antitone_of_nonpos
-      (reflected_outerMass_relative_comparison γ α₁ α₂ α₃ ξ hγ hγ₂ z (M ω) hr hz h0 h1).1
+      (reflected_outerMass_relative_comparison γ α₁ α₂ α₃ ξ hγ hγ₂ z (M ω) hr hz h0 h1).lower
         (neg_nonpos.mpr hq.le)
     rw [ennreal_mul_rpow_of_ne_zero_ne_top _ _ (by norm_num : ENNReal.ofReal (1/4 : ℝ) ≠ 0)
       ENNReal.ofReal_ne_top, ENNReal.ofReal_rpow_of_pos (by norm_num : (0 : ℝ) < 1/4)] at ht

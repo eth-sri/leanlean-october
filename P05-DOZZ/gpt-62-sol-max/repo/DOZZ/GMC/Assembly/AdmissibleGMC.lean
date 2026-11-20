@@ -80,13 +80,13 @@ theorem tendsto_lintegral_abs_sub_realizationMeasure (f : ℂ → ℝ) (hf : Con
   have hfL : ∀ x, |f x| ≤ Lf := fun x => by rw [← Real.norm_eq_abs]; exact hLf x
   have hfK : ∀ x ∉ tsupport f, f x = 0 := fun x hx => image_eq_zero_of_notMem_tsupport hx
   have hgood := ae_mem_realizationGoodSet P U dens ε₀ Y hY T γ R hR e c hc hcut
-  have hFm (r : ℝ) : Measurable (admissibleCutoffIntegral P U dens Y γ r f) :=
+  have hFm (r : ℝ)  :=
     admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r f hf.measurable
   rw [ENNReal.tendsto_nhds_zero]
   intro ε hε
   by_cases hεtop : ε = ⊤
   · exact Eventually.of_forall fun _ => hεtop ▸ le_top
-  have hεr : 0 < ε.toReal := ENNReal.toReal_pos hε.ne' hεtop
+  have hεr  := ENNReal.toReal_pos hε.ne' hεtop
   obtain ⟨R₀, hR₀⟩ := admissibleCutoffIntegral_L1_uniform_cauchy P U dens ε₀ Y hY (tsupport f) hfc
     hfU {γ} isCompact_singleton (Set.singleton_subset_iff.mpr ⟨hγ, hγ2⟩) Lf ε.toReal hεr
   filter_upwards [eventually_ge_atTop R₀] with r hr
@@ -160,17 +160,16 @@ theorem admissibleLogRegularization_GMC_exists
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) :
     ∃ M : Ω → Measure ℂ, IsAdmissibleGMCVersion P U dens Y γ M := by
-  have : IsProbabilityMeasure P := admissibleLogRegularization_isProbabilityMeasure P U dens ε₀ Y hY
-  have hU : IsOpen U := hY.openChart
+  have  := admissibleLogRegularization_isProbabilityMeasure P U dens ε₀ Y hY
+  have hU  := hY.openChart
   obtain ⟨T⟩ := exists_chartTestSystem U hU
   obtain ⟨R, hR⟩ := exists_test_cauchy_thresholds P U dens ε₀ Y hY T γ hγ hγ2
   obtain ⟨e, he⟩ := exists_surjective_nat ChartTestSystem.Index
-  have hcut : Real.exp (-|Real.log ε₀|) ≤ ε₀ := by
+  exact ⟨_, realizationMeasure_isAdmissibleGMCVersion P U hU dens ε₀ Y hY T γ hγ hγ2 R hR e he
+    |Real.log ε₀| (abs_nonneg _) (by
     calc Real.exp (-|Real.log ε₀|) ≤ Real.exp (Real.log ε₀) :=
           Real.exp_le_exp.mpr (by linarith [neg_abs_le (Real.log ε₀)])
-      _ = ε₀ := Real.exp_log hY.cutoffPositive
-  exact ⟨_, realizationMeasure_isAdmissibleGMCVersion P U hU dens ε₀ Y hY T γ hγ hγ2 R hR e he
-    |Real.log ε₀| (abs_nonneg _) hcut⟩
+      _ = ε₀ := Real.exp_log hY.cutoffPositive)⟩
 
 end DOZZ.Proofs
 
@@ -230,7 +229,7 @@ noncomputable def interleavedRegularization {Ω : Type*} (Y Z : Ω → ℝ → �
   fun ω ε x => if secondScale ε then Z ω ε x else Y ω ε x
 
 theorem log_one_div_exp_neg (r : ℝ) : Real.log (1 / Real.exp (-r)) = r := by
-  rw [one_div, Real.log_inv, Real.log_exp, neg_neg]
+  simp
 
 theorem not_secondScale_exp_neg_nat (k : ℕ) : ¬ secondScale (Real.exp (-(k : ℝ))) := by
   rintro ⟨-, h⟩
@@ -251,21 +250,29 @@ theorem secondScale_exp_neg_odd_half (j : ℕ) :
     have h2' : (2 : ℤ) * ((k : ℤ) - 2 * j) = 3 := by exact_mod_cast h2
     omega
 
-theorem interleaved_of_not_secondScale {Ω : Type*} (Y Z : Ω → ℝ → ℂ → ℝ) (ε : ℝ)
+section
+variable {Ω : Type*} (Y Z : Ω → ℝ → ℂ → ℝ)
+
+theorem interleaved_of_not_secondScale (ε : ℝ)
     (h : ¬ secondScale ε) (ω : Ω) (x : ℂ) :
     interleavedRegularization Y Z ω ε x = Y ω ε x := by
   simp [interleavedRegularization, h]
 
-theorem interleaved_of_secondScale {Ω : Type*} (Y Z : Ω → ℝ → ℂ → ℝ) (ε : ℝ)
+theorem interleaved_of_secondScale (ε : ℝ)
     (h : secondScale ε) (ω : Ω) (x : ℂ) :
     interleavedRegularization Y Z ω ε x = Z ω ε x := by
   simp [interleavedRegularization, h]
 
-theorem interleaved_exp_neg_nat {Ω : Type*} (Y Z : Ω → ℝ → ℂ → ℝ) (k : ℕ) (ω : Ω) (x : ℂ) :
+theorem interleaved_exp_neg_nat (k : ℕ) (ω : Ω) (x : ℂ) :
     interleavedRegularization Y Z ω (Real.exp (-(k : ℝ))) x = Y ω (Real.exp (-(k : ℝ))) x :=
   interleaved_of_not_secondScale Y Z _ (not_secondScale_exp_neg_nat k) ω x
 
-theorem gaussianCovariance_comm {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
+theorem gaussianCovariance_comm
     (A B : Ω → ℝ) : gaussianCovariance P A B = gaussianCovariance P B A := by
   unfold gaussianCovariance
   congr 1
@@ -273,9 +280,7 @@ theorem gaussianCovariance_comm {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   ring
 
 /-- The interleaving of two compatible admissible regularizations is admissible. -/
-theorem interleavedRegularization_admissible
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
+theorem interleavedRegularization_admissible (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
     (Y Z : Ω → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (hZ : IsAdmissibleLogRegularization P U dens ε₁ Z)
@@ -327,9 +332,7 @@ theorem interleavedRegularization_admissible
     by_cases hsε : secondScale ε <;> by_cases hsδ : secondScale δ
     · simp only [W, interleavedRegularization, hsε, hsδ, ite_true]
       exact (hZ' ε δ hε hεZ hδ hδZ x hx y hy).trans hCZ'
-    · simp only [W, interleavedRegularization, hsε, hsδ, ite_true, ite_false]
-      rw [gaussianCovariance_comm, norm_sub_rev, max_comm ε δ]
-      exact (hX' δ ε hδ hδY hε hεZ y hy x hx).trans hCX'
+    · simpa only [W, interleavedRegularization, hsε, hsδ, ite_true, ite_false, gaussianCovariance_comm, norm_sub_rev, max_comm ε δ] using (hX' δ ε hδ hδY hε hεZ y hy x hx).trans hCX'
     · simp only [W, interleavedRegularization, hsε, hsδ, ite_true, ite_false]
       exact (hX' ε δ hε hεY hδ hδZ x hx y hy).trans hCX'
     · simp only [W, interleavedRegularization, hsε, hsδ, ite_false]
@@ -345,11 +348,9 @@ theorem interleavedRegularization_admissible
     refine ⟨max CY CX, le_max_of_le_left hCY, fun k hk ε hε hεk x hx => ?_⟩
     simp only [hnat]
     by_cases hs : secondScale ε
-    · simp only [W, interleavedRegularization, hs, ite_true]
-      exact (hX' k (hk.trans (min_le_left _ _)) ε hε
-        (le_min (hεk.trans (hk.trans (min_le_right _ _))) hεk) x hx).trans (le_max_right _ _)
-    · simp only [W, interleavedRegularization, hs, ite_false]
-      exact (hY' k (hk.trans (min_le_left _ _)) ε hε hεk x hx).trans (le_max_left _ _)
+    · simpa [W, interleavedRegularization, hs, ite_true] using (hX' k (hk.trans (min_le_left _ _)) ε hε
+              (le_min (hεk.trans (hk.trans (min_le_right _ _))) hεk) x hx).trans (le_max_right _ _)
+    · simpa [W, interleavedRegularization, hs, ite_false] using (hY' k (hk.trans (min_le_left _ _)) ε hε hεk x hx).trans (le_max_left _ _)
   · obtain ⟨H, hH, hlim⟩ := hY.offDiagonalLimit
     refine ⟨H, hH, fun K hK hKU s hs η hη => ?_⟩
     obtain ⟨δ₁, hδ₁, h₁⟩ := hlim K hK hKU s hs (η / 2) (half_pos hη)
@@ -420,6 +421,8 @@ theorem interleavedRegularization_admissible
     · simp only [W, interleavedRegularization, hs, ite_false]
       exact hYk.trans (by linarith)
 
+end
+
 end DOZZ.Assembly
 
 /-! ### Uniqueness for compatible regularizations
@@ -439,21 +442,25 @@ namespace DOZZ.Assembly
 
 open DOZZ.Proofs
 
-theorem admissibleCutoffIntegral_interleaved_nat {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (Y Z : Ω → ℝ → ℂ → ℝ) (γ : ℝ) (k : ℕ)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ)
+  (Y Z : Ω → ℝ → ℂ → ℝ) (γ : ℝ)
+
+theorem admissibleCutoffIntegral_interleaved_nat (k : ℕ)
     (f : ℂ → ℝ) (ω : Ω) :
     admissibleCutoffIntegral P U dens (interleavedRegularization Y Z) γ (k : ℝ) f ω =
       admissibleCutoffIntegral P U dens Y γ (k : ℝ) f ω := by
   unfold admissibleCutoffIntegral
   simp only [interleaved_exp_neg_nat]
 
-theorem admissibleCutoffIntegral_interleaved_odd_half {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (Y Z : Ω → ℝ → ℂ → ℝ) (γ : ℝ) (j : ℕ)
+theorem admissibleCutoffIntegral_interleaved_odd_half (j : ℕ)
     (f : ℂ → ℝ) (ω : Ω) :
     admissibleCutoffIntegral P U dens (interleavedRegularization Y Z) γ (2 * (j : ℝ) + 3 / 2) f ω =
       admissibleCutoffIntegral P U dens Z γ (2 * (j : ℝ) + 3 / 2) f ω := by
   unfold admissibleCutoffIntegral
   simp only [interleaved_of_secondScale Y Z _ (secondScale_exp_neg_odd_half j)]
+
+end
 
 /-- An admissible GMC version is the `L¹` limit of the cutoff integrals of every continuous test
 with compact support in the chart. -/
@@ -498,8 +505,8 @@ theorem admissibleLogRegularization_GMC_unique_ae
     (hM : IsAdmissibleGMCVersion P U dens Y γ M)
     (hN : IsAdmissibleGMCVersion P U dens Z γ N) :
     ∀ᵐ ω ∂P, M ω = N ω := by
-  have : IsProbabilityMeasure P := admissibleLogRegularization_isProbabilityMeasure P U dens ε₀ Y hY
-  have hU : IsOpen U := hY.openChart
+  have  := admissibleLogRegularization_isProbabilityMeasure P U dens ε₀ Y hY
+  have hU  := hY.openChart
   have hW := interleavedRegularization_admissible P U dens ε₀ ε₁ Y Z hY hZ hYZ
   -- equality of the two limits on every compact test
   have htest : ∀ f : BoundedContinuousFunction ℂ ℝ, HasCompactSupport (f : ℂ → ℝ) →
@@ -510,11 +517,11 @@ theorem admissibleLogRegularization_GMC_unique_ae
       rw [← Real.norm_eq_abs]; exact f.norm_coe_le_norm x
     have hfK : ∀ x ∉ tsupport (f : ℂ → ℝ), f x = 0 := fun x hx =>
       image_eq_zero_of_notMem_tsupport hx
-    have hMf : AEStronglyMeasurable (fun ω => ∫ x, f x ∂M ω) P :=
+    have hMf  :=
       (hM.2.2.2 f hfc hfU).aestronglyMeasurable fun r =>
         (admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r f
           f.continuous.measurable).aestronglyMeasurable
-    have hNf : AEStronglyMeasurable (fun ω => ∫ x, f x ∂N ω) P :=
+    have hNf  :=
       (hN.2.2.2 f hfc hfU).aestronglyMeasurable fun r =>
         (admissibleCutoffIntegral_measurable P U dens ε₁ Z hZ γ r f
           f.continuous.measurable).aestronglyMeasurable
@@ -537,15 +544,13 @@ theorem admissibleLogRegularization_GMC_unique_ae
       set s : ℝ := 2 * (j : ℝ) + 3 / 2 with hsdef
       have hjr : max RY (max RZ RW) ≤ r := by
         rw [hrdef]; push_cast
-        have : (0 : ℝ) ≤ j := Nat.cast_nonneg j
         linarith
       have hjs : max RY (max RZ RW) ≤ s := by
-        have : (0 : ℝ) ≤ j := Nat.cast_nonneg j
         linarith
-      have hRYr : RY ≤ r := (le_max_left _ _).trans hjr
-      have hRZs : RZ ≤ s := ((le_max_left _ _).trans (le_max_right _ _)).trans hjs
-      have hRWr : RW ≤ r := ((le_max_right _ _).trans (le_max_right _ _)).trans hjr
-      have hRWs : RW ≤ s := ((le_max_right _ _).trans (le_max_right _ _)).trans hjs
+      have hRYr  := (le_max_left _ _).trans hjr
+      have hRZs  := ((le_max_left _ _).trans (le_max_right _ _)).trans hjs
+      have hRWr  := ((le_max_right _ _).trans (le_max_right _ _)).trans hjr
+      have hRWs  := ((le_max_right _ _).trans (le_max_right _ _)).trans hjs
       have hYmeas := admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r f
         f.continuous.measurable
       have hZmeas := admissibleCutoffIntegral_measurable P U dens ε₁ Z hZ γ s f
@@ -556,8 +561,7 @@ theorem admissibleLogRegularization_GMC_unique_ae
         simp only [hrdef, admissibleCutoffIntegral_interleaved_nat, hsdef,
           admissibleCutoffIntegral_interleaved_odd_half] at h
         exact h
-      have hend : ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Z γ s f ω -
-          ∫ x, f x ∂N ω| ∂P ≤ ENNReal.ofReal ε := hRZ s hRZs
+      have hend := hRZ s hRZs
       have hstart : ∫⁻ ω, ENNReal.ofReal |∫ x, f x ∂M ω -
           admissibleCutoffIntegral P U dens Y γ r f ω| ∂P ≤ ENNReal.ofReal ε := by
         have h := hRY r hRYr
@@ -576,21 +580,19 @@ theorem admissibleLogRegularization_GMC_unique_ae
             exact (lintegral_ofReal_abs_sub_le_add P _ _ _ hYmeas.aemeasurable
               hZmeas.aemeasurable).trans (add_le_add hmid hend)
         _ = (δ : ℝ≥0∞) := by
-            rw [← ENNReal.ofReal_add hε.le hε.le, ← ENNReal.ofReal_add hε.le (by positivity),
-              hεdef]
-            rw [show (δ : ℝ) / 3 + ((δ : ℝ) / 3 + (δ : ℝ) / 3) = (δ : ℝ) by ring]
+            rw [← ENNReal.ofReal_add hε.le hε.le, ← ENNReal.ofReal_add hε.le (by positivity), hεdef, show (δ : ℝ) / 3 + ((δ : ℝ) / 3 + (δ : ℝ) / 3) = (δ : ℝ) by ring]
             exact ENNReal.ofReal_coe_nnreal
     have hae := (lintegral_eq_zero_iff' (ENNReal.measurable_ofReal.comp_aemeasurable
       (continuous_abs.measurable.comp_aemeasurable (hMf.aemeasurable.sub hNf.aemeasurable)))).mp
       hzero
     filter_upwards [hae] with ω hω
     have h := ENNReal.ofReal_eq_zero.mp hω
-    have h' : |∫ x, f x ∂M ω - ∫ x, f x ∂N ω| = 0 := le_antisymm h (abs_nonneg _)
+    have h'  := le_antisymm h (abs_nonneg _)
     exact sub_eq_zero.mp (abs_eq_zero.mp h')
   -- countable determination
   obtain ⟨K, hKc, hKU, -, -, hcof, f, hf, hdense⟩ :=
     DOZZ.Proofs.exists_countable_dense_admissible_tests U hU
-  have hall : ∀ᵐ ω ∂P, ∀ nm : ℕ × ℕ, ∫ x, f nm x ∂M ω = ∫ x, f nm x ∂N ω :=
+  have hall  :=
     ae_all_iff.mpr fun nm => htest (f nm) (hf nm.1 nm.2).1 (hf nm.1 nm.2).2.2
   filter_upwards [hall] with ω hω
   exact DOZZ.Proofs.admissible_countable_tests_determine_chart_measures U hU (M ω) (N ω)

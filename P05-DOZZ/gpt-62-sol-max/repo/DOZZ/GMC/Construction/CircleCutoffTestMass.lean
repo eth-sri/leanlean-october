@@ -43,8 +43,7 @@ theorem circleCutoff_testMass_eq_regularizedGMC
       change Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2)
       rw [hEq]
       exact hbase.mul hbase
-    change Measurable (fun x => ∫ ω', q x ω' ∂P)
-    exact hq.stronglyMeasurable.integral_prod_right.measurable
+    apply hq.stronglyMeasurable.integral_prod_right.measurable
   have hweightMeas : Measurable (fun x : ℂ => normPlus x ^ (-4 : ℝ)) := by
     unfold normPlus
     fun_prop
@@ -79,8 +78,7 @@ theorem circleCutoff_testMass_eq_regularizedGMC
         (fun ω ε x => Xc ω x (Real.log (1 / ε))) γ r ω f =
         ∫ x, (e₀ x).toReal * (f x * Real.exp
           (γ * Xc ω x r - γ ^ 2 / 2 * V x)) ∂volume := by
-    rw [regularizedLogChaosTestMass, logRegularizationReference, Measure.restrict_univ]
-    rw [integral_withDensity_eq_integral_toReal_smul he₀ he₀top]
+    rw [regularizedLogChaosTestMass, logRegularizationReference, Measure.restrict_univ, integral_withDensity_eq_integral_toReal_smul he₀ he₀top]
     apply integral_congr_ae
     filter_upwards [] with x
     rw [hlog]
@@ -88,11 +86,8 @@ theorem circleCutoff_testMass_eq_regularizedGMC
   have hright :
       (∫ x, f x ∂regularizedGMC P Xc γ r ω) =
         ∫ x, (e₁ x).toReal * f x ∂volume := by
-    rw [regularizedGMC]
-    rw [integral_withDensity_eq_integral_toReal_smul he₁ he₁top]
-    apply integral_congr_ae
-    filter_upwards [] with x
-    simp only [e₁, d₁, ENNReal.toReal_ofReal (hd₁nonneg x), smul_eq_mul]
+    rw [regularizedGMC, integral_withDensity_eq_integral_toReal_smul he₁ he₁top]
+    rfl
   calc
     _ = ∫ x, (e₀ x).toReal * (f x * Real.exp
           (γ * Xc ω x r - γ ^ 2 / 2 * V x)) ∂volume := hleft

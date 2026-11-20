@@ -33,8 +33,7 @@ theorem fusionInterpolatedIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       (fun y => K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)) volume := by
     apply Eventually.of_forall
     intro z
-    exact hK.aestronglyMeasurable.mul
-      ((Complex.measurable_ofReal.comp (hmeas.comp (measurable_const.prodMk (measurable_id.prodMk measurable_const)))).aestronglyMeasurable)
+    apply hK.aestronglyMeasurable.mul <;> fun_prop
   have hdom : ∀ᶠ z : ℂ in nhds 0, ∀ᵐ y : ℂ ∂volume,
       ‖K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)‖ ≤ ‖K y‖ * B := by
     have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := by

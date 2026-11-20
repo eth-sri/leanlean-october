@@ -53,12 +53,12 @@ theorem lateralGMC_compact_moment_endpoints_across_one
     intro γ hγ q hqm
     have hγp := (hZ γ hγ).1
     have hγhi := (hZ γ hγ).2.1
-    have hs : 0 < γ ^ 2 := sq_pos_of_pos hγp
+    have hs  := sq_pos_of_pos hγp
     rcases hqm with hqm | hqm
     · exact hq γ hγ q hqm
-    · have hq01 : q = 0 ∨ q = 1 := by simpa only [mem_insert_iff, mem_singleton_iff] using hqm
+    · have hq01 : q = 0 ∨ q = 1 := by assumption
       rcases hq01 with rfl | rfl
-      · exact div_pos (by norm_num) hs
+      simpa
       · apply (lt_div_iff₀ hs).mpr
         nlinarith
   obtain ⟨l, u, δ, hδ, hend, hmargin⟩ := lateralGMC_compact_moment_endpoints

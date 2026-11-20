@@ -67,50 +67,11 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
     ext p
     constructor
     · rintro ⟨u, hau, hub, hval⟩
-      let u' : K := ⟨(u : ℝ), by
-        constructor
-        · exact_mod_cast hau
-        · exact_mod_cast hub⟩
-      have hτu : τ u' = u := by
-        apply Subtype.ext
-        rfl
-      refine ⟨u', ?_⟩
-      change conditionedPositiveStateAt (τ u') p = c
-      rw [hτu]
-      exact hval
+      exact Exists.intro ⟨↑u, ⟨cast (Eq.symm NNReal.coe_le_coe._simp_1) hau, cast (Eq.symm NNReal.coe_le_coe._simp_1) hub⟩⟩ hval
     · rintro ⟨u, hval⟩
-      refine ⟨τ u, ?_, ?_, ?_⟩
-      · apply NNReal.coe_le_coe.mp
-        exact u.2.1
-      · apply NNReal.coe_le_coe.mp
-        exact u.2.2
-      · change conditionedPositiveStateAt (τ u) p = c at hval
-        exact hval
+      exact Exists.intro (τ u) ⟨NNReal.coe_le_coe.mp u.property.left, ⟨NNReal.coe_le_coe.mp u.property.right, hval⟩⟩
   rw [hpre]
   exact hHclosed.measurableSet.preimage hsegment
-
-/-- The deterministic-time past/future factorization applies to a compact-interval barrier hit.
-The future avoidance and rational-future test are both taken strictly after the deterministic
-right endpoint. -/
-theorem conditionedPositiveHistory_intervalHit_avoidance_shift_setIntegral
-    {ν : ℝ} {P : Measure BrownianPath} [IsFiniteMeasure P]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (B : Measure BrownianPath) [SFinite B]
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (a b : ℝ≥0) (hb : 0 < (b : ℝ)) (hν : 0 < ν)
-    (c : ℝ≥0) (hc : 0 < (c : ℝ))
-    (C : Set (ℚ → ℝ)) (hC : MeasurableSet C) :
-    (∫ p in conditionedPositiveHistoryHitsOnInterval a b c,
-      (conditionedPositiveFutureRationalAvoidance b c).indicator
-        (fun p => lastExitShiftedFutureTest (c : ℝ) C
-          (conditionedPositiveFutureRationalEvals b p)) p ∂P) =
-      (∫ p in conditionedPositiveHistoryHitsOnInterval a b c,
-        lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt b p) *
-          (brownianUpperConditionedReferenceFutureKernel B ν hν
-            (conditionedPositiveStateAt b p - c)).real C ∂P) := by
-  exact conditionedPositiveHistory_avoidance_shift_setIntegral
-    hP B hB b hb hν c hc C hC (conditionedPositiveHistoryHitsOnInterval a b c)
-    (measurableSet_conditionedPositiveHistoryHitsOnInterval a b c)
 
 end DOZZ.Proofs
 

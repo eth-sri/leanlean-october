@@ -28,17 +28,13 @@ theorem realEulerBetaWeight_integrable (p q : ℝ) (hp : 0 < p) (hq : 0 < q) :
   have hcomplex : IntervalIntegrable
       (fun t : ℝ => (t : ℂ) ^ ((p : ℂ) - 1) * (1 - (t : ℂ)) ^ ((q : ℂ) - 1))
       volume 0 1 := by
-    apply Complex.betaIntegral_convergent
-    · simp [Complex.ofReal_re]; linarith
-    · simp [Complex.ofReal_re]; linarith
+    apply Complex.betaIntegral_convergent <;> assumption
   have hcomplex' : IntegrableOn
       (fun t : ℝ => (t : ℂ) ^ ((p : ℂ) - 1) * (1 - (t : ℂ)) ^ ((q : ℂ) - 1))
       (Ioc 0 1) :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le (μ := volume)
       (a := (0 : ℝ)) (b := 1) (by norm_num)).mp hcomplex
-  have hcast : IntegrableOn
-      (fun t : ℝ => (t ^ (p - 1) * (1 - t) ^ (q - 1) : ℝ) : ℝ → ℂ)
-      (Ioc 0 1) := by
+  exact (IntegrableOn.iff_ofReal).mpr (by
     apply hcomplex'.congr_fun
     · intro t ht
       have ht0 : 0 ≤ t := le_of_lt ht.1
@@ -53,8 +49,7 @@ theorem realEulerBetaWeight_integrable (p q : ℝ) (hp : 0 < p) (hq : 0 < q) :
           show (1 : ℂ) - (t : ℝ) = ((1 - t : ℝ) : ℂ) by push_cast; ring,
           ← Complex.ofReal_cpow ht1]
       rw [hp', hq', Complex.ofReal_mul]
-    · exact measurableSet_Ioc
-  exact (IntegrableOn.iff_ofReal).mpr hcast
+    · exact measurableSet_Ioc)
 
 /-- The Euler kernel converges to the beta density at `z=1` from below, whenever the endpoint
 exponents are integrable. This is the dominated-convergence step in Gauss's endpoint formula. -/
@@ -124,17 +119,13 @@ theorem realGaussEulerKernelIntegral_tendsto_one (a b c : ℝ)
       have hid : Tendsto (fun x : ℝ => x) F (𝓝 (1 : ℝ)) := by
         dsimp [F]
         exact tendsto_id.mono_left nhdsWithin_le_nhds
-      have hmul : Tendsto (fun x : ℝ => x * t) F (𝓝 (1 * t)) :=
-        hid.mul_const t
-      simpa using tendsto_const_nhds.sub hmul
+      simpa using tendsto_const_nhds.sub (hid.mul_const t)
     have hpow : Tendsto (fun x : ℝ => (1 - x * t) ^ (-a)) F
         (𝓝 ((1 - t) ^ (-a))) := by
       have hcont : ContinuousAt (fun p : ℝ × ℝ => p.1 ^ p.2) (1 - t, -a) :=
         Real.continuousAt_rpow (1 - t, -a)
           (Or.inl (ne_of_gt (by linarith : 0 < 1 - t)))
-      have hp : Tendsto (fun x : ℝ => (1 - x * t, -a)) F (𝓝 (1 - t, -a)) :=
-        hbase.prodMk_nhds tendsto_const_nhds
-      simpa [Function.comp_def] using hcont.tendsto.comp hp
+      simpa [Function.comp_def] using hcont.tendsto.comp (hbase.prodMk_nhds tendsto_const_nhds)
     have hconst : Tendsto (fun _ : ℝ => t ^ (b - 1) * (1 - t) ^ (c - b - 1))
         F (𝓝 (t ^ (b - 1) * (1 - t) ^ (c - b - 1))) := tendsto_const_nhds
     have hmul := hconst.mul hpow

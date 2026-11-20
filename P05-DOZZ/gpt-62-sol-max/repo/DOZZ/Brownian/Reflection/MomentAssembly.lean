@@ -24,8 +24,11 @@ open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- A lateral GMC is almost surely nonzero: its unit-block mass has finite inverse moments. -/
-theorem lateralGMC_ne_zero_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ)
+theorem lateralGMC_ne_zero_ae (γ : ℝ)
     (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z) : ∀ᵐ ω ∂P, Z ω ≠ 0 := by
   have hm : AEMeasurable (fun ω => Z ω (Icc 0 1)) P :=
     (Measure.measurable_coe measurableSet_Icc).comp_aemeasurable hZ.2.2.2.1
@@ -36,8 +39,7 @@ theorem lateralGMC_ne_zero_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- The last-cut estimate for the two-sided reflection integral; it does not assume that the
 discarded and retained masses are independent. -/
-theorem reflectionMass_lastCut_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ)
+theorem reflectionMass_lastCut_bound (γ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (Kν Kp : Set ℝ)
     (hKν : IsCompact Kν) (hKp : IsCompact Kp)
     (B : ℝ → Ω → BrownianPath × BrownianPath)
@@ -53,15 +55,13 @@ theorem reflectionMass_lastCut_bound
           (∫⁻ ω, ENNReal.rpow (twoSidedReflectionCutMass γ c (B ν) Z ω) p ∂P).toReal ∧
         (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) Z ω) p ∂P).toReal -
           (∫⁻ ω, ENNReal.rpow (twoSidedReflectionCutMass γ c (B ν) Z ω) p ∂P).toReal ≤
-            C * Real.exp (-γ * c) := by
-  exact reflectionMass_lastCut_bound_of_inverse P γ hγ hγ2 Kν Kp hKν hKp B hB Z hZ hInd hp
+            C * Real.exp (-γ * c) := reflectionMass_lastCut_bound_of_inverse P γ hγ hγ2 Kν Kp hKν hKp B hB Z hZ hInd hp
     (fun v hv => lateralGMC_unit_inverse_moment_lt_top P γ Z hZ v hv)
 
 /-- The law-level Brownian/GMC input to [KRV, Lemma 10.6], with small power `ν/γ`. The local
 epsilon domain and zero-mode evaluation are handled in `structureConstant_lastone_limit`;
 this declaration states only the conditioned integral limit. -/
-theorem lastone_brownian_smallPower_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ)
+theorem lastone_brownian_smallPower_limit (γ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (Z : Ω → Measure ℝ)
     (B : ℝ → Ω → BrownianPath × BrownianPath)
     (hB : ∀ ν : ℝ, 0 < ν → IsTwoSidedConditionedBrownianProcess P (B ν) ν)
@@ -70,27 +70,23 @@ theorem lastone_brownian_smallPower_limit
     Tendsto (fun ν : ℝ =>
       (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) Z ω) (ν / γ) ∂P).toReal)
       (𝓝[>] 0) (𝓝 1) := by
-  have _consumed := hγ2
   exact lastone_brownian_smallPower_limit_of_ne_zero P γ hγ Z B hB hZ hInd
     (lateralGMC_ne_zero_ae P γ Z hZ)
 
 /-- The consequence of `reflectionMoment_zeroDrift_tendsto_one` for the full reflection
 coefficient: `R(α)→−1` as `α↑Q`. -/
-theorem reflectionR_tendsto_Q
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ μ : ℝ)
+theorem reflectionR_tendsto_Q (γ μ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hData : ∀ α, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) :
     Tendsto (fun α : ℝ => reflectionR P γ μ α (B α) Z)
       (𝓝[<] (Q γ)) (𝓝 (-1)) := by
-  have _consumed := hγ2
   have hQ : γ / 2 < Q γ := by
     unfold Q
-    have h2 : 0 < 2 / γ := div_pos two_pos hγ
-    linarith
-  have hZ : IsLateralGMCOf P γ Z :=
-    (hData ((γ / 2 + Q γ) / 2) (by linarith) (by linarith)).2.1
-  exact reflectionR_tendsto_Q_of_ne_zero P γ μ hγ hμ B Z hData (lateralGMC_ne_zero_ae P γ Z hZ)
+    simpa
+  exact reflectionR_tendsto_Q_of_ne_zero P γ μ hγ hμ B Z hData (lateralGMC_ne_zero_ae P γ Z ((hData ((γ / 2 + Q γ) / 2) (by linarith) (by linarith)).2.1))
+
+end
 
 end DOZZ.Proofs
 

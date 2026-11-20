@@ -28,18 +28,19 @@ theorem dual_normalized_norm_sq_littleO (F : ℂ → ℂ)
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
   have hs := (hF.restrictScalars ℝ).norm_sq ℂ
   obtain ⟨C, hC⟩ := hs.isBigO_sub.bound
-  have hb : ∀ᶠ z : ℂ in nhdsWithin 0 {z : ℂ | z ≠ 0},
-      ‖((‖F z‖ ^ 2 - 1 : ℝ) : ℂ)‖ ≤ C * ‖z‖ ^ (1 : ℝ) := by
+  exact (isComplexLittleOAtZero_ofReal_iff κ (fun z => ‖F z‖ ^ 2 - 1)).mp
+    (isComplexLittleOAtZero_of_norm_le_power hκ (by
     have he := hC.filter_mono (nhdsWithin_le_nhds (s := {z : ℂ | z ≠ 0}))
     simpa only [hzero, norm_one, one_pow, sub_zero, Complex.norm_real,
-      Real.norm_eq_abs, Real.rpow_one] using he
-  exact (isComplexLittleOAtZero_ofReal_iff κ (fun z => ‖F z‖ ^ 2 - 1)).mp
-    (isComplexLittleOAtZero_of_norm_le_power hκ hb)
+      Real.norm_eq_abs, Real.rpow_one] using he))
+
+section
+variable {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
+  (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+include hH hc
 
 /-- The characterized principal Gauss continuation is differentiable and normalized at zero. -/
-theorem dual_gauss_regular_origin {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+theorem dual_gauss_regular_origin :
     DifferentiableAt ℂ (H a b c) 0 ∧ H a b c 0 = 1 := by
   have hchar := hH a b c hc
   have hopen : IsOpen {z : ℂ | z.re < 1} := isOpen_lt Complex.continuous_re continuous_const
@@ -51,13 +52,13 @@ theorem dual_gauss_regular_origin {H : ℂ → ℂ → ℂ → ℂ → ℂ}
   simpa only [ordinaryHypergeometric_zero] using hchar.2 0 (by norm_num)
 
 /-- The actual first Gauss basis has its required sublinear squared-norm remainder. -/
-theorem dual_gauss_norm_sq_littleO {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) (κ : ℝ) (hκ : κ < 1) :
+theorem dual_gauss_norm_sq_littleO (κ : ℝ) (hκ : κ < 1) :
     Tendsto (fun z : ℂ => (‖gaussFMinus H a b c z‖ ^ 2 - 1) / ‖z‖ ^ κ)
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
   obtain ⟨hd, hz⟩ := dual_gauss_regular_origin hH a b c hc
   exact dual_normalized_norm_sq_littleO (H a b c) hd hz κ hκ
+
+end
 
 /-- The second Gauss basis has normalized squared norm tending to one on the positive ray. -/
 theorem dual_gauss_plus_norm_sq_ratio {H : ℂ → ℂ → ℂ → ℂ → ℂ}

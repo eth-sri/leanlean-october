@@ -61,29 +61,28 @@ def brownianFirstHitHorizon : (n : ℕ) → (Fin n → ℝ≥0) → ℝ≥0
 def brownianFirstHitSamples (n : ℕ) (ds : Fin n → ℝ≥0) (a c : ℝ) (p : BrownianPath) : Fin n → ℝ :=
   fun i => c-(p (brownianFirstHitTimes n ds i)+a*(brownianFirstHitTimes n ds i : ℝ))
 
+section
+variable (n : ℕ)
+
 /-- Joint measurability of the actual finite sample tuple in the starting level and path. -/
-theorem measurable_brownianFirstHitSamples (n : ℕ) (ds : Fin n → ℝ≥0) (a : ℝ) :
+theorem measurable_brownianFirstHitSamples (ds : Fin n → ℝ≥0) (a : ℝ) :
     Measurable (fun z : ℝ × BrownianPath => brownianFirstHitSamples n ds a z.1 z.2) := by
   apply measurable_pi_iff.mpr
   intro i
   exact measurable_fst.sub (((ContinuousMap.measurable_eval _).comp measurable_snd).add measurable_const)
 
 /-- Inserting a scalar at the beginning of a finite real tuple is jointly measurable. -/
-theorem measurable_fin_cons_real (n : ℕ) :
+theorem measurable_fin_cons_real :
     Measurable (fun z : ℝ × (Fin n → ℝ) => Fin.cons (α := fun _ : Fin (n+1) => ℝ) z.1 z.2) := by
-  apply measurable_pi_iff.mpr
-  intro i
-  refine Fin.cases ?_ (fun j => ?_) i
-  · exact measurable_fst
-  · exact (measurable_pi_apply j).comp measurable_snd
+  fun_prop
 
 /-- The actual deterministic sample tuple splits into the first remaining level and shifted future samples. -/
-theorem brownianFirstHitSamples_cons (n : ℕ) (ds : Fin (n+1) → ℝ≥0) (a c : ℝ) (p : BrownianPath) :
+theorem brownianFirstHitSamples_cons (ds : Fin (n+1) → ℝ≥0) (a c : ℝ) (p : BrownianPath) :
     brownianFirstHitSamples (n+1) ds a c p = Fin.cons (c-(p (ds 0)+a*(ds 0 : ℝ)))
       (brownianFirstHitSamples n (Fin.tail ds) a (c-(p (ds 0)+a*(ds 0 : ℝ))) (brownianShiftPath (ds 0) p)) := by
   funext i
   refine Fin.cases ?_ (fun j => ?_) i
-  · simp only [brownianFirstHitSamples,brownianFirstHitTimes,Fin.cons_zero]
+  rfl
   · simp only [brownianFirstHitSamples,brownianFirstHitTimes,Fin.cons_succ]
     change c-(p (ds 0+brownianFirstHitTimes n (Fin.tail ds) j)+
       a*((ds 0+brownianFirstHitTimes n (Fin.tail ds) j : ℝ≥0) : ℝ)) =
@@ -91,6 +90,8 @@ theorem brownianFirstHitSamples_cons (n : ℕ) (ds : Fin (n+1) → ℝ≥0) (a c
         a*(brownianFirstHitTimes n (Fin.tail ds) j : ℝ))
     push_cast
     ring_nf
+
+end
 
 /-- The killed/hitting iterated integral for a finite deterministic sample tuple and its absolute lifetime. -/
 noncomputable def brownianFirstHitFiniteIntegral (a : ℝ) :
@@ -120,23 +121,24 @@ theorem brownianPath_firstHit_state_future_lintegral (P : Measure BrownianPath)
     _ = _ := brownianPath_upperKilled_remaining_lintegral P hB a c hc s hs
       (fun y => ∫⁻ q, J (y,q) ∂P) (Measurable.lintegral_prod_right (f := fun y q => J (y,q)) hJ)
 
+section
+variable (n : ℕ)
+
 /-- The actual finite sample tuple and first-hit lifetime are jointly measurable in level and path. -/
-theorem measurable_brownianFirstHitObservation (n : ℕ) (ds : Fin n → ℝ≥0) (a : ℝ) :
+theorem measurable_brownianFirstHitObservation (ds : Fin n → ℝ≥0) (a : ℝ) :
     Measurable (fun z : ℝ × BrownianPath =>
       (brownianFirstHitSamples n ds a z.1 z.2,(firstPassageTime (driftedBrownianPath a z.2) z.1 : ℝ))) :=
   (measurable_brownianFirstHitSamples n ds a).prodMk
     (NNReal.continuous_coe.measurable.comp (measurable_firstPassageTime_drift_joint a))
 
 /-- Prepending a sampled state and translating the lifetime clock is jointly measurable. -/
-theorem measurable_brownianFirstHit_prepend (n : ℕ) (s : ℝ≥0) :
+theorem measurable_brownianFirstHit_prepend (s : ℝ≥0) :
     Measurable (fun z : ℝ × ((Fin n → ℝ) × ℝ) =>
       (Fin.cons (α := fun _ : Fin (n+1) => ℝ) z.1 z.2.1,(s : ℝ)+z.2.2)) := by
-  exact ((measurable_fin_cons_real n).comp
-    (measurable_fst.prodMk (measurable_fst.comp measurable_snd))).prodMk
-    (measurable_const.add (measurable_snd.comp measurable_snd))
+  fun_prop
 
 /-- Finite future observations retained only before their last horizon form a jointly measurable test. -/
-theorem measurable_brownianFirstHit_future_test (n : ℕ) (ds : Fin n → ℝ≥0) (a : ℝ) (s : ℝ≥0)
+theorem measurable_brownianFirstHit_future_test (ds : Fin n → ℝ≥0) (a : ℝ) (s : ℝ≥0)
     (H : ((Fin (n+1) → ℝ) × ℝ) → ℝ≥0∞) (hH : Measurable H) :
     Measurable (fun z : ℝ × BrownianPath =>
       if brownianFirstHitHorizon n ds < firstPassageTime (driftedBrownianPath a z.2) z.1 then
@@ -148,9 +150,14 @@ theorem measurable_brownianFirstHit_future_test (n : ℕ) (ds : Fin n → ℝ≥
       (measurable_fst.prodMk (measurable_brownianFirstHitObservation n ds a))
   · exact measurable_const
 
+end
+
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a)
+include hB ha
+
 /-- The finite marked observation test at the whole horizon splits almost surely into the pre-hit first-step event and the actual future marked test. -/
-theorem brownianFirstHit_observation_split_ae (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a)
+theorem brownianFirstHit_observation_split_ae
     (n : ℕ) (ds : Fin (n+1) → ℝ≥0) (H : ((Fin (n+1) → ℝ) × ℝ) → ℝ≥0∞) :
     (fun p => if brownianFirstHitHorizon (n+1) ds < firstPassageTime (driftedBrownianPath a p) c then
       H (brownianFirstHitSamples (n+1) ds a c p,(firstPassageTime (driftedBrownianPath a p) c : ℝ)) else 0) =ᵐ[P]
@@ -175,20 +182,17 @@ theorem brownianFirstHit_observation_split_ae (P : Measure BrownianPath)
     simp only [hc,NNReal.coe_add]
   · have hg : ¬ brownianFirstHitHorizon (n+1) ds < firstPassageTime (driftedBrownianPath a p) c := by
       intro hg
-      have hh : ds 0 ≤ brownianFirstHitHorizon (n+1) ds := le_add_of_nonneg_right (show 0 ≤ brownianFirstHitHorizon n (Fin.tail ds) from zero_le)
-      exact hpre (hh.trans_lt hg)
+      exact hpre ((le_add_of_nonneg_right (show 0 ≤ brownianFirstHitHorizon n (Fin.tail ds) from zero_le)).trans_lt hg)
     simp only [ite_eq_right hpre,ite_eq_right hg]
 
 /-- Every actual finite pre-hit sample tuple together with the absolute first-hit lifetime has the full iterated killed/hitting density law. -/
-theorem brownianPath_firstHit_finite_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
+theorem brownianPath_firstHit_finite_lintegral (hc : 0 < c)
     (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i)
     (H : ((Fin n → ℝ) × ℝ) → ℝ≥0∞) (hH : Measurable H) :
     (∫⁻ p in {p : BrownianPath | brownianFirstHitHorizon n ds < firstPassageTime (driftedBrownianPath a p) c},
       H (brownianFirstHitSamples n ds a c p,(firstPassageTime (driftedBrownianPath a p) c : ℝ)) ∂P) =
       brownianFirstHitFiniteIntegral a n ds c H := by
   classical
-  let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   induction n generalizing c with
   | zero =>
       have he : {p : BrownianPath | brownianFirstHitHorizon 0 ds < firstPassageTime (driftedBrownianPath a p) c} =ᵐ[P] univ := by
@@ -208,7 +212,7 @@ theorem brownianPath_firstHit_finite_lintegral (P : Measure BrownianPath)
         if brownianFirstHitHorizon n (Fin.tail ds) < firstPassageTime (driftedBrownianPath a z.2) z.1 then
           H (Fin.cons z.1 (brownianFirstHitSamples n (Fin.tail ds) a z.1 z.2),
             (ds 0 : ℝ)+(firstPassageTime (driftedBrownianPath a z.2) z.1 : ℝ)) else 0
-      have hJ : Measurable J := measurable_brownianFirstHit_future_test n (Fin.tail ds) a (ds 0) H hH
+      have hJ  := measurable_brownianFirstHit_future_test n (Fin.tail ds) a (ds 0) H hH
       have hmτ : Measurable (fun p : BrownianPath => firstPassageTime (driftedBrownianPath a p) c) :=
         (measurable_firstPassageTime c).comp
           (continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk measurable_id))
@@ -237,14 +241,15 @@ theorem brownianPath_firstHit_finite_lintegral (P : Measure BrownianPath)
             {q : BrownianPath | brownianFirstHitHorizon n (Fin.tail ds) < firstPassageTime (driftedBrownianPath a q) y}.indicator
               (fun q => H (Fin.cons y (brownianFirstHitSamples n (Fin.tail ds) a y q),
                 (ds 0 : ℝ)+(firstPassageTime (driftedBrownianPath a q) y : ℝ))) := by
-          funext q
-          simp only [J,Set.indicator_apply,mem_ofPred_eq]
+          rfl
         rw [he,lintegral_indicator (measurableSet_lt measurable_const hqt)]
         exact ih y hy (Fin.tail ds) (fun i => hds i.succ)
           (fun z => H (Fin.cons y z.1,(ds 0 : ℝ)+z.2))
           ((hH.comp (measurable_brownianFirstHit_prepend n (ds 0))).comp
             (measurable_const.prodMk measurable_id))
       · simp only [brownianKilledTransitionPDF,hy,and_false,ite_false,ENNReal.ofReal_zero,zero_mul]
+
+end
 
 /-- Positive elapsed times give positive deterministic observation times. -/
 theorem brownianFirstHitTimes_pos (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) (i : Fin n) :
@@ -264,8 +269,11 @@ theorem brownianFirstHitTimes_last (n : ℕ) (ds : Fin (n+1) → ℝ≥0) :
       change ds 0+brownianFirstHitTimes (n+1) (Fin.tail ds) (Fin.last n) = ds 0+brownianFirstHitHorizon (n+1) (Fin.tail ds)
       rw [ih]
 
+section
+variable (n : ℕ) (ds : Fin n → ℝ≥0)
+
 /-- The finite absolute observation times are strictly ordered when all elapsed times are positive. -/
-theorem strictMono_brownianFirstHitTimes (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) :
+theorem strictMono_brownianFirstHitTimes (hds : ∀ i, 0 < ds i) :
     StrictMono (brownianFirstHitTimes n ds) := by
   induction n with
   | zero => intro i; exact Fin.elim0 i
@@ -277,12 +285,14 @@ theorem strictMono_brownianFirstHitTimes (n : ℕ) (ds : Fin n → ℝ≥0) (hds
         have hp := brownianFirstHitTimes_pos n (Fin.tail ds) (fun j => hds j.succ) i
         exact lt_add_of_pos_right _ hp
       · intro i j hij
-        simpa only [add_comm] using add_lt_add_right (ih (Fin.tail ds) (fun k => hds k.succ) hij) (ds 0)
+        apply add_lt_add_right <;> solve_by_elim
 
 /-- The literal finite sample/lifetime map is measurable on the original continuous-path carrier. -/
-theorem measurable_brownianFirstHitObservation_fixed (n : ℕ) (ds : Fin n → ℝ≥0) (a c : ℝ) :
+theorem measurable_brownianFirstHitObservation_fixed (a c : ℝ) :
     Measurable (fun p : BrownianPath =>
       (brownianFirstHitSamples n ds a c p,(firstPassageTime (driftedBrownianPath a p) c : ℝ))) :=
   (measurable_brownianFirstHitObservation n ds a).comp (measurable_const.prodMk measurable_id)
+
+end
 
 end DOZZ.Proofs

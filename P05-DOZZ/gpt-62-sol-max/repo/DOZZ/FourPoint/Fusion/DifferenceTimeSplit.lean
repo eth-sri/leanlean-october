@@ -8,19 +8,21 @@ public import DOZZ.FourPoint.Fusion.DifferenceSpatialSplit
 @[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ)
+  (hlo : γ / 2 + 1 / γ < α₁) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p)
+  (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4)
+include Ω P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hα₁ hα₂ hα₃ p hp z hz hz4
+
 /-- The local signed expectation has an integrable time majorant after scaling. -/
-theorem fusion_localDifference_time_integrable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hlo : γ / 2 + 1 / γ < α₁) (hα₁ : α₁ < 2 / γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p)
-    (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4) :
+theorem fusion_localDifference_time_integrable :
     IntegrableOn (fun t : ℝ => ∫ ω,
       (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p - 1)).toReal *
         (∫ x in Metric.ball (0 : ℂ) (1 / 2), fusionDifferenceKernel γ α₁ α₂ α₃ z x ∂M ω) ∂P) (Icc 0 1) volume := by
   let K := planarDifferenceKernel (γ ^ 2 / 2) (γ * α₁) 1
   obtain ⟨hk, hβ, hβ2, _, _⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
-  have hK : Integrable K volume := (planar_difference_integral _ _ hk hβ hβ2 1).1
+  have hK  := (planar_difference_integral _ _ hk hβ hβ2 1).1
   obtain ⟨B, _, hb⟩ := fusionInterpolatedFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) (by linarith)
   have hf : Measurable (fusionDifferenceKernel γ α₁ α₂ α₃ z) := by
     have hm : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
@@ -40,12 +42,7 @@ theorem fusion_localDifference_time_integrable {Ω : Type*} [MeasurableSpace Ω]
     simpa only [Real.norm_eq_abs] using
       mul_le_mul_of_nonneg_left (hb t ht y z (by linarith)) (norm_nonneg (K y))
 /-- The full signed time integral splits into its local and exterior parts. -/
-theorem fusion_difference_time_split {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hlo : γ / 2 + 1 / γ < α₁) (hα₁ : α₁ < 2 / γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p)
-    (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4) :
+theorem fusion_difference_time_split :
     let I := fun t ω => (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p - 1)).toReal
     let f := fusionDifferenceKernel γ α₁ α₂ α₃ z
     (∫ t in Icc (0 : ℝ) 1, ∫ ω, I t ω * (∫ x, f x ∂M ω) ∂P) =
@@ -69,6 +66,8 @@ theorem fusion_difference_time_split {Ω : Type*} [MeasurableSpace Ω]
       (∫ ω, I t ω * (∫ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ, f x ∂M ω) ∂P)) := by
         apply integral_congr_ae
         filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
-        exact fusion_difference_spatial_expectation_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hα₁ hα₂ hα₃ p hp t ht z hz hz4
+        apply fusion_difference_spatial_expectation_split <;> assumption
     _ = _ := integral_add hiL hiR
+
+end
 end DOZZ.Proofs

@@ -15,13 +15,14 @@ open scoped Distributions ENNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω hX hγ hγ2 hM
+
 /-- For a measurable GMC version, point-insertion finiteness for reference-almost every root
 is the only remaining input to the full rooted identity. -/
-theorem rooted_GMC_identity_of_ae_root_finite_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMmeas : Measurable M)
+theorem rooted_GMC_identity_of_ae_root_finite_measurable (hMmeas : Measurable M)
     (hRoot : ∀ᵐ u ∂gmcReferenceMeasure,
       ∀ᵐ ω ∂P, IsFiniteMeasure (gmcRootedMeasure γ u (M ω)))
     (H : ℂ → (TestFn → ℝ) → Measure ℂ → ℝ≥0∞)
@@ -34,8 +35,8 @@ theorem rooted_GMC_identity_of_ae_root_finite_measurable
   have hB (n : ℕ) : MeasurableSet (B n) := measurableSet_closedBall
   have hmono : Monotone B := fun i j hij => Metric.closedBall_subset_closedBall (by exact_mod_cast hij)
   have hcover : ⋃ n, B n = Set.univ := Metric.iUnion_closedBall_nat _
-  have hfield : Measurable (fun ω f => X ω f) := measurable_pi_iff.mpr fun f => (hX.2 f).1
-  have hobs : Measurable (fun q : Ω × ℂ => H q.2 (fun f => X q.1 f) (M q.1)) :=
+  have hfield  := measurable_pi_iff.mpr fun f => (hX.2 f).1
+  have hobs  :=
     hH.comp (measurable_snd.prodMk
       ((hfield.comp measurable_fst).prodMk (hMmeas.comp measurable_fst)))
   have hmeas (n : ℕ) : Measurable (fun ω => ∫⁻ u in B n, H u (fun f => X ω f) (M ω) ∂M ω) := by
@@ -72,10 +73,6 @@ theorem rooted_GMC_identity_of_ae_root_finite_measurable
 /-- For every GMC version, the whole-plane rooted identity is reduced to point-insertion
 finiteness for reference-almost every root. No measurability assumption on the version remains. -/
 theorem rooted_GMC_identity_of_ae_root_finite
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M)
     (hRoot : ∀ᵐ u ∂gmcReferenceMeasure,
       ∀ᵐ ω ∂P, IsFiniteMeasure (gmcRootedMeasure γ u (M ω)))
     (H : ℂ → (TestFn → ℝ) → Measure ℂ → ℝ≥0∞)
@@ -109,5 +106,7 @@ theorem rooted_GMC_identity_of_ae_root_finite
       apply lintegral_congr_ae
       filter_upwards [hMN] with ω hω
       rw [hω]
+
+end
 
 end DOZZ.Proofs

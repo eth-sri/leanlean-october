@@ -6,6 +6,7 @@ module
 
 public import DOZZ.GMC.Moments.WeightedDyadic
 import Mathlib.MeasureTheory.Measure.GiryMonad
+public import DOZZ.MeasureTheory.PowerSums
 
 /-! Weighted local moment finiteness on the subunit range inside the exact logarithmic chart. -/
 
@@ -18,20 +19,6 @@ namespace DOZZ.Proofs
 
 /-! The rest of this module uses the a.e. measurable version supplied by the GMC predicate
 `DOZZ.IsGMCOf`, so weighted moment integrals can be split without changing the chosen version. -/
-
-private theorem ennreal_ofReal_rpow_of_pos_local {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal = (ENNReal.ofReal x).toReal ^ p :=
-      (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal := by
-      rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
 
 /-- Localizing a negative-power insertion to a smaller disk leaves only a bounded weight on
 the remainder. -/
@@ -59,15 +46,14 @@ theorem weightedGmcBallMass_le_inner_add_total
     · by_cases hxρ : x ∈ D
       · simp [inner, outer, hx, hxρ]
       · have hdist : ρ ≤ ‖x - z‖ := by
-          have hxρ' : ¬ ‖x - z‖ < ρ := by
-            simpa [D, Metric.mem_ball, dist_eq_norm] using hxρ
-          exact le_of_not_gt hxρ'
+          exact le_of_not_gt (by
+            simpa [D, Metric.mem_ball, dist_eq_norm] using hxρ)
         have hrad : 0 < ‖x - z‖ := lt_of_lt_of_le hρ hdist
         have hpow : ‖x - z‖ ^ (-γ * α) ≤ ρ ^ (-γ * α) :=
           Real.rpow_le_rpow_of_nonpos hρ hdist hq.le
         have hweight : density x ≤ ENNReal.ofReal (ρ ^ (-γ * α)) := by
           change ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * α) ≤ _
-          rw [ennreal_ofReal_rpow_of_pos_local hrad]
+          rw [ennreal_ofReal_rpow_of_pos hrad]
           exact ENNReal.ofReal_le_ofReal hpow
         simpa [inner, outer, hx, hxρ] using hweight
     · simp [inner, outer, hx]

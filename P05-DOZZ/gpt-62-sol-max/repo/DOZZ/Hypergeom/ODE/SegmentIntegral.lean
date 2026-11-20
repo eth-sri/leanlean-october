@@ -48,8 +48,7 @@ theorem normalizedDiskPrimitive_sub_center_eq_segmentIntegral
     have hfcomp : ContinuousOn (fun t => f (g t)) (uIcc (0 : ℝ) 1) :=
       hf.continuousOn.comp hg fun t ht => hseg (by
         simpa [uIcc_of_le zero_le_one] using ht)
-    change ContinuousOn (fun t => (z - c) • f (g t)) (uIcc (0 : ℝ) 1)
-    exact continuousOn_const.smul hfcomp
+    apply continuousOn_const.smul <;> assumption
   have hint : IntervalIntegrable f' volume 0 1 := hfg.intervalIntegrable
   have heq := intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hint
   have hF0 : F 0 = y := by

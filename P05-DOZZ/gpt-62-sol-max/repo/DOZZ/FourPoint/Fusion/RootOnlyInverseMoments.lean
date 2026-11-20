@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import DOZZ.FourPoint.Fusion.RootOnlyConvergence
+public import DOZZ.FourPoint.Fusion.MovingMassConvergence
 public import DOZZ.FourPoint.Fusion.RootedLowerBound
 import DOZZ.GMC.SharpMoments.MomentConvergence
 

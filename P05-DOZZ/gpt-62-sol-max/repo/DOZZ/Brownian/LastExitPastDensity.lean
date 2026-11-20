@@ -81,7 +81,7 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
     · rintro ⟨⟨hA,hLv⟩, hnot⟩
       exact ⟨hA, lt_of_not_ge (fun hLu => hnot ⟨hA,hLu⟩), hLv⟩
   have hsub : E u ⊆ E v := fun p hp => ⟨hp.1, hp.2.trans huv⟩
-  have hv : ss (Fin.last k) < v := hu.trans_le huv
+  have hv  := hu.trans_le huv
   calc
     _ = P.real (E v) - P.real (E u) := by
       rw [hdiff, measureReal_sdiff hsub (hE u) (measure_ne_top _ _)]

@@ -61,8 +61,11 @@ noncomputable def gaussSlitScalarState (a b c : ℂ) (z : ℂ) : ℂ :=
       else if hz : z ∈ gaussNegativeCutPlane then gaussNegativeCutPlaneScalarState a b c z
       else ordinaryHypergeometric (𝔸 := ℂ) a b c z
 
+section
+variable (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+include hc
+
 private theorem gaussSlitScalarState_eq_negative_on_negativeCut
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
     {z : ℂ} (hz : z ∈ gaussNegativeCutPlane) :
     gaussSlitScalarState a b c z = gaussNegativeCutPlaneScalarState a b c z := by
   classical
@@ -74,35 +77,17 @@ private theorem gaussSlitScalarState_eq_negative_on_negativeCut
 
 /-- On the open unit disk, the glued value is the ordinary Gauss series. -/
 theorem gaussSlitScalarState_eq_ordinary_on_unitDisk
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
     {z : ℂ} (hznorm : ‖z‖ < 1) :
     gaussSlitScalarState a b c z = ordinaryHypergeometric (𝔸 := ℂ) a b c z := by
-  classical
-  have hzslit : z ∈ gaussSlitPlane := by
-    change z.im ≠ 0 ∨ z.re < 1
-    by_cases him : z.im ≠ 0
-    · exact Or.inl him
-    · right
-      have hre : |z.re| ≤ ‖z‖ := Complex.abs_re_le_norm z
-      have : z.re ≤ |z.re| := le_abs_self _
-      linarith
-  rcases gaussSlitPlane_subset_cut_union_negative_or_zero hzslit with hcut | hrest
-  · rw [gaussSlitScalarState, dite_eq_left hcut]
-    exact gaussCutPlaneScalarState_eq_ordinary_on_unitDisk a b c hc hcut hznorm
-  · rcases hrest with hnegative | hzero
-    · by_cases hcut : z ∈ gaussCutPlane
-      · rw [gaussSlitScalarState, dite_eq_left hcut]
-        exact gaussCutPlaneScalarState_eq_ordinary_on_unitDisk a b c hc hcut hznorm
-      · rw [gaussSlitScalarState, dite_eq_right hcut, dite_eq_left hnegative]
-        exact gaussNegativeCutPlaneScalarState_eq_ordinary_on_unitDisk
-          a b c hc hnegative hznorm
-    · have hz0 : z = 0 := Set.mem_singleton_iff.mp hzero
-      subst z
-      simp [gaussSlitScalarState, gaussCutPlane, gaussNegativeCutPlane]
+  unfold gaussSlitScalarState
+  split
+  · exact gaussCutPlaneScalarState_eq_ordinary_on_unitDisk a b c hc ‹_› hznorm
+  · split
+    · exact gaussNegativeCutPlaneScalarState_eq_ordinary_on_unitDisk a b c hc ‹_› hznorm
+    · rfl
 
 /-- The glued scalar function is holomorphic on the slit plane. -/
-theorem gaussSlitScalarState_differentiableOn
-    (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+theorem gaussSlitScalarState_differentiableOn :
     DifferentiableOn ℂ (gaussSlitScalarState a b c) gaussSlitPlane := by
   classical
   intro z hz
@@ -110,34 +95,28 @@ theorem gaussSlitScalarState_differentiableOn
   · have hstateAt : DifferentiableAt ℂ (gaussCutPlaneScalarState a b c) z :=
       (gaussCutPlaneScalarState_differentiableOn a b c).differentiableAt
         (gaussCutPlane_isOpen.mem_nhds hcut)
-    have hnear : gaussSlitScalarState a b c =ᶠ[𝓝 z]
-        gaussCutPlaneScalarState a b c := by
+    exact (hstateAt.congr_of_eventuallyEq (by
       filter_upwards [gaussCutPlane_isOpen.mem_nhds hcut] with w hw
-      simp [gaussSlitScalarState, hw]
-    exact (hstateAt.congr_of_eventuallyEq hnear).differentiableWithinAt
+      simp [gaussSlitScalarState, hw])).differentiableWithinAt
   · rcases hrest with hnegative | hzero
     · have hstateAt : DifferentiableAt ℂ (gaussNegativeCutPlaneScalarState a b c) z :=
         (gaussNegativeCutPlaneScalarState_differentiableOn a b c).differentiableAt
           (gaussNegativeCutPlane_isOpen.mem_nhds hnegative)
-      have hnear : gaussSlitScalarState a b c =ᶠ[𝓝 z]
-          gaussNegativeCutPlaneScalarState a b c := by
+      exact (hstateAt.congr_of_eventuallyEq (by
         filter_upwards [gaussNegativeCutPlane_isOpen.mem_nhds hnegative] with w hw
-        exact gaussSlitScalarState_eq_negative_on_negativeCut a b c hc hw
-      exact (hstateAt.congr_of_eventuallyEq hnear).differentiableWithinAt
+        exact gaussSlitScalarState_eq_negative_on_negativeCut a b c hc hw)).differentiableWithinAt
     · have hz0 : z = 0 := Set.mem_singleton_iff.mp hzero
       subst z
       have hseriesAt : DifferentiableAt ℂ (ordinaryHypergeometric (𝔸 := ℂ) a b c) 0 := by
-        have ha : AnalyticAt ℂ (ordinaryHypergeometric (𝔸 := ℂ) a b c) 0 :=
-          ordinaryHypergeometric_analyticOnNhd_unitDisk a b c hc 0
-            (by simp [Metric.mem_ball])
-        exact ha.differentiableAt
-      have hnear : gaussSlitScalarState a b c =ᶠ[𝓝 (0 : ℂ)]
-          ordinaryHypergeometric (𝔸 := ℂ) a b c := by
+        exact (ordinaryHypergeometric_analyticOnNhd_unitDisk a b c hc 0
+            (by simp [Metric.mem_ball])).differentiableAt
+      exact (hseriesAt.congr_of_eventuallyEq (by
         filter_upwards [Metric.ball_mem_nhds (0 : ℂ) (by norm_num : (0 : ℝ) < 1)]
           with w hw
         apply gaussSlitScalarState_eq_ordinary_on_unitDisk a b c hc
-        simpa [Metric.mem_ball, dist_zero_right] using hw
-      exact (hseriesAt.congr_of_eventuallyEq hnear).differentiableWithinAt
+        simpa [Metric.mem_ball, dist_zero_right] using hw)).differentiableWithinAt
+
+end
 
 /-- The ordinary-series germ extends to the principal slit plane for every admissible `c`. -/
 theorem gauss_hypergeometric_exists :

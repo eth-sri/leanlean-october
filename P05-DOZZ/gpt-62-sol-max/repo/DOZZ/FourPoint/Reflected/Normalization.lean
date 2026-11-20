@@ -55,10 +55,38 @@ theorem reflected_prefactor_cancel (γ μ p R C : ℝ) (hγ : 0 < γ)
         (Real.Gamma p * (Real.Gamma p)⁻¹) * R * C := by ring
     _ = R * C := by rw [hpow, div_self hγ.ne', mul_inv_cancel₀ hΓ]; ring
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
+  (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
+include Ω P M B Z
+
+/-- Cancellation of the zero-mode and cosmological factors is independent of the shift. -/
+theorem fusion_inner_coefficient_eq (γ μ χ α₁ α₂ α₃ : ℝ) (hγ : γ ≠ 0) (hμ : 0 < μ) :
+    let p := (α₁ + α₂ + α₃ - χ - 2 * Q γ) / γ
+    let a := reflectionExponent γ α₁
+    (a * Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p) *
+      reflectionBarR P γ α₁ B Z *
+      (∫⁻ ω, rho γ (M ω) (2 * Q γ - α₁ - χ) α₂ α₃ ^ (-(p + a)) ∂P).toReal =
+    1 / 2 * μ ^ p * γ * (Real.Gamma p)⁻¹ * reflectionR P γ μ α₁ B Z *
+      structureConstant P M γ μ (2 * Q γ - α₁ - χ) α₂ α₃ := by
+  dsimp only
+  set p := (α₁ + α₂ + α₃ - χ - 2 * Q γ) / γ
+  set a := reflectionExponent γ α₁
+  have horder : sExp γ (2 * Q γ - α₁ - χ) α₂ α₃ = p + a := by
+    simp only [sExp, p, a, reflectionExponent]
+    ring
+  rw [structureConstant, horder, reflectionR, ← show a = reflectionExponent γ α₁ from rfl]
+  have hpow : μ ^ p * μ ^ a * μ ^ (-(p + a)) = 1 := by
+    rw [← Real.rpow_add hμ, ← Real.rpow_add hμ, add_neg_cancel, Real.rpow_zero]
+  let c := (∫⁻ ω, rho γ (M ω) (2 * Q γ - α₁ - χ) α₂ α₃ ^ (-(p + a)) ∂P).toReal
+  calc
+    _ = (a * Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p * reflectionBarR P γ α₁ B Z * c) *
+        ((μ ^ p * μ ^ a * μ ^ (-(p + a))) * (γ * γ⁻¹)) := by
+      rw [hpow, mul_inv_cancel₀ hγ, one_mul, mul_one]
+    _ = _ := by dsimp only [c]; ring
+
 /-- The independent-maximum coefficient is exactly the inner-limit coefficient. -/
-theorem reflected_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (B : Ω → BrownianPath × BrownianPath)
-    (Z : Ω → Measure ℝ) (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hμ : 0 < μ)
+theorem reflected_inner_coefficient_eq (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hμ : 0 < μ)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
     let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
     let a := reflectionExponent γ α₁
@@ -66,36 +94,9 @@ theorem reflected_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
       reflectionBarR P γ α₁ B Z *
       (∫⁻ ω, rho γ (M ω) (2 * Q γ - α₁ - γ / 2) α₂ α₃ ^ (-(p + a)) ∂P).toReal =
     1 / 2 * μ ^ p * γ * (Real.Gamma p)⁻¹ * reflectionR P γ μ α₁ B Z *
-      structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ := by
-  dsimp only
-  let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
-  let a := reflectionExponent γ α₁
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
-  have horder : sExp γ (2 * Q γ - α₁ - γ / 2) α₂ α₃ = p + a := by
-    unfold sExp
-    exact reflected_zero_mode_order γ α₁ α₂ α₃
-  change (a * Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p) *
-    reflectionBarR P γ α₁ B Z *
-    (∫⁻ ω, rho γ (M ω) (2 * Q γ - α₁ - γ / 2) α₂ α₃ ^ (-(p + a)) ∂P).toReal =
-    1 / 2 * μ ^ p * γ * (Real.Gamma p)⁻¹ * reflectionR P γ μ α₁ B Z *
-      structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃
-  unfold reflectionR structureConstant
-  rw [horder]
-  change (a * Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p) *
-    reflectionBarR P γ α₁ B Z *
-    (∫⁻ ω, rho γ (M ω) (2 * Q γ - α₁ - γ / 2) α₂ α₃ ^ (-(p + a)) ∂P).toReal =
-    1 / 2 * μ ^ p * γ * (Real.Gamma p)⁻¹ *
-      (μ ^ a * Real.Gamma (-a) * a * reflectionBarR P γ α₁ B Z) *
-      (2 * μ ^ (-(p + a)) / γ * Real.Gamma (p + a) *
-        (∫⁻ ω, rho γ (M ω) (2 * Q γ - α₁ - γ / 2) α₂ α₃ ^ (-(p + a)) ∂P).toReal)
-  have hpow : μ ^ p * μ ^ a * μ ^ (-(p + a)) = 1 := by
-    rw [← Real.rpow_add hμ, ← Real.rpow_add hμ, add_neg_cancel, Real.rpow_zero]
-  have hΓ : Real.Gamma p ≠ 0 := (Real.Gamma_pos_of_pos hp).ne'
-  have hγne : γ ≠ 0 := hγ.ne'
-  field_simp
-  linear_combination -(a * Real.Gamma (-a) * Real.Gamma (p + a) *
-    reflectionBarR P γ α₁ B Z *
-    (∫⁻ ω, rho γ (M ω) ((2 * (2 * Q γ - α₁) - γ) / 2) α₂ α₃ ^
-      (-(p + a)) ∂P).toReal) * hpow
+      structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ :=
+  fusion_inner_coefficient_eq P M B Z γ μ (γ / 2) α₁ α₂ α₃ hγ.ne' hμ
+
+end
 
 end DOZZ.Proofs

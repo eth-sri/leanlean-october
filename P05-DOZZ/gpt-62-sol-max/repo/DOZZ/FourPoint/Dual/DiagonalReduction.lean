@@ -7,6 +7,7 @@ module
 public import DOZZ.FourPoint.Dual.BasisAsymptotic
 public import DOZZ.FourPoint.Dual.Parameters
 import Mathlib.Tactic
+public import DOZZ.FourPoint.Reflected.Remainder
 
 /-! # Coefficient extraction from a diagonal Gauss conclusion
 
@@ -42,14 +43,7 @@ theorem dual_diagonal_ray_limit {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     norm_num at he
     have : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
     linarith
-  have hcast : Tendsto (fun t : ℝ => (t : ℂ))
-      (nhdsWithin 0 (Ioi 0)) (nhdsWithin 0 {z : ℂ | z ≠ 0}) := by
-    apply tendsto_nhdsWithin_iff.mpr
-    refine ⟨Complex.continuous_ofReal.continuousAt.tendsto.comp
-      (tendsto_id.mono_left nhdsWithin_le_nhds), ?_⟩
-    filter_upwards [self_mem_nhdsWithin] with t ht
-    simpa only [Complex.ofReal_ne_zero] using ne_of_gt ht
-  have hm := (dual_gauss_norm_sq_littleO hH a b c hn (2 * (1 - c)) hκ).comp hcast
+  have hm := (dual_gauss_norm_sq_littleO hH a b c hn (2 * (1 - c)) hκ).comp tendsto_ofReal_nhdsGT_zero
   have hp := dual_gauss_plus_norm_sq_ratio hH a b c hn₂
   have hsum := (hm.const_mul C).add (hp.const_mul (C * d))
   simp only [mul_zero, mul_one, zero_add] at hsum

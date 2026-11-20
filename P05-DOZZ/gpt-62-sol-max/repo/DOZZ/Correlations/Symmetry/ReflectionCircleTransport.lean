@@ -19,14 +19,10 @@ theorem symmetryReflection_circle_integral (f : ℂ → ℝ) (hf : Measurable f)
     Real.circleAverage (fun z => f (1 - z)) x (Real.exp (-r)) =
         Real.circleAverage (fun z => f (-Real.exp (-r) * z + (1 - x))) 0 1 := by
       rw [Real.circleAverage_eq_circleAverage_zero_one]
-      congr 1
-      funext z
-      congr 1
       ring
     _ = Real.circleAverage f (1 - x) (-Real.exp (-r)) :=
-      by simpa only [Complex.ofReal_neg] using
-        (Real.circleAverage_eq_circleAverage_zero_one (f := f) (c := 1 - x)
-          (R := -Real.exp (-r))).symm
+      by simpa using (Real.circleAverage_eq_circleAverage_zero_one (f := f) (c := 1 - x)
+                   (R := -Real.exp (-r))).symm
     _ = Real.circleAverage f (1 - x) (Real.exp (-r)) := Real.circleAverage_neg_radius
 
 /-- The reflection potential's circle mean is the difference of the two pinning means. -/
@@ -37,9 +33,7 @@ theorem symmetryReflection_circle_potential (x : ℂ) (r : ℝ) :
   have hmeas := continuous_log_normPlus.measurable
   have hcont : Continuous (fun z : ℂ => Real.log (normPlus (1 - z))) :=
     continuous_log_normPlus.comp (continuous_const.sub continuous_id)
-  have hleft : Integrable (fun z : ℂ => Real.log (normPlus (1 - z)))
-      (circleMeasure x r) := by
-    exact integrable_circleMeasure_of_circleIntegrable x r hcont.measurable
+  have hleft := integrable_circleMeasure_of_circleIntegrable x r hcont.measurable
       hcont.continuousOn.circleIntegrable'
   change (∫ z, Real.log (normPlus (1 - z)) - Real.log (normPlus z)
     ∂circleMeasure x r) = _

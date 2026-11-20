@@ -30,9 +30,9 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
   let D := Real.exp ((γ ^ 2 / 2 - γ * (Q γ - α₁)) * h)
   refine ⟨D * C₀, mul_pos (Real.exp_pos _) hC₀, ?_⟩
   have hn : Tendsto (fun z : ℂ => ‖z‖)
-      (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
+      (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) :=
+    (tendsto_norm_zero (E := ℂ)).mono_left nhdsWithin_le_nhds
+  filter_upwards [hn.eventually_lt_const zero_lt_one, self_mem_nhdsWithin] with z hz hz0
   have hp : 0 < ‖z‖ := norm_pos_iff.mpr hz0
   have hm : 0 ≤ -Real.log ‖z‖ + h := by
     have hl := Real.log_nonpos hp.le hz.le
@@ -64,7 +64,7 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
   calc
     _ ≤ ENNReal.ofReal (D * ‖z‖ ^ (2 + γ * (Q γ - α₁) - γ ^ 2 / 2)) * ENNReal.ofReal C₀ :=
       mul_le_mul' le_rfl (hb z ξ hz.le
-        (by simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz.le (sub_nonneg.mpr hξ₁.le)))
+        (by simpa using Real.rpow_le_rpow (norm_nonneg z) hz.le (sub_nonneg.mpr hξ₁.le)))
     _ = _ := by
       rw [← ENNReal.ofReal_mul hs]
       congr 1

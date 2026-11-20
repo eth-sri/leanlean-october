@@ -24,45 +24,6 @@ namespace DOZZ.Proofs
 
 variable {Ω : Type*} [MeasurableSpace Ω]
 
-theorem cutoffIntegrand_succ_sub (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) (γ η : ℝ)
-    (m n : ℕ) (z : ℂ) (ω : Ω) :
-    cutoffIntegrand Xc M γ η m (n + 1) z ω - cutoffIntegrand Xc M γ η m n z ω =
-      Complex.exp (z * (Xc ω 0 m : ℂ) - (m : ℂ) * z ^ 2 / 2) *
-        ((baseMassReal M γ η (n + 1) ω : ℂ) ^ (1 - z / γ) -
-          (baseMassReal M γ η n ω : ℂ) ^ (1 - z / γ)) := by
-  unfold cutoffIntegrand
-  ring
-
-/-- The pointwise bound of the increment integrand. -/
-theorem norm_cutoffIntegrand_succ_sub_le (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) (γ η : ℝ)
-    (m n : ℕ) (z : ℂ) (ω : Ω) (hB : 0 < baseMassReal M γ η n ω)
-    (hBB : baseMassReal M γ η n ω ≤ baseMassReal M γ η (n + 1) ω) :
-    ‖cutoffIntegrand Xc M γ η m (n + 1) z ω - cutoffIntegrand Xc M γ η m n z ω‖ ≤
-      Real.exp (m * z.im ^ 2 / 2) * ‖1 - z / γ‖ *
-        (Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
-          ((baseMassReal M γ η (n + 1) ω - baseMassReal M γ η n ω) *
-            (baseMassReal M γ η (n + 1) ω ^ (-z.re / γ) +
-              baseMassReal M γ η n ω ^ (-z.re / γ)))) := by
-  rw [cutoffIntegrand_succ_sub]
-  set B' := baseMassReal M γ η (n + 1) ω
-  set B := baseMassReal M γ η n ω
-  have hpow := norm_ofReal_cpow_sub_ofReal_cpow_le hB hBB (1 - z / γ)
-  rw [re_one_sub_div] at hpow
-  have he : 1 - z.re / γ - 1 = -z.re / γ := by ring
-  rw [he] at hpow
-  have hexp : ‖Complex.exp (z * (Xc ω 0 m : ℂ) - (m : ℂ) * z ^ 2 / 2)‖ =
-      Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) := by
-    rw [Complex.norm_exp, re_cutoffExponent, ← Real.exp_add]
-    congr 1
-    ring
-  rw [norm_mul, hexp]
-  calc Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
-        ‖(B' : ℂ) ^ (1 - z / γ) - (B : ℂ) ^ (1 - z / γ)‖
-      ≤ Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
-          (‖1 - z / γ‖ * (B' - B) * (B' ^ (-z.re / γ) + B ^ (-z.re / γ))) :=
-        mul_le_mul_of_nonneg_left hpow (by positivity)
-    _ = _ := by ring
-
 /-- The increment functional `(T_{0,n+1} - T_{0,n})(T_{0,n+1}^s + T_{0,n}^s)` in real form. -/
 noncomputable def incrementFunctional (γ η s : ℝ) (n : ℕ) (μ : Measure ℂ) : ℝ≥0∞ :=
   ENNReal.ofReal (((cutoffTiltedMass γ η 0 (n + 1) μ).toReal -
@@ -76,6 +37,11 @@ theorem measurable_incrementFunctional (γ η s : ℝ) (n : ℕ) :
   exact ENNReal.measurable_ofReal.comp
     ((hT'.sub hT).mul ((hT'.pow_const s).add (hT.pow_const s)))
 
+noncomputable abbrev tiltedIncrement (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ)
+    (γ η a : ℝ) (n : ℕ) (ω : Ω) : ℝ :=
+  tiltedPowerGap γ (n + 1) a (Xc ω 0 ((n + 1 : ℕ) : ℝ))
+    (baseMassReal M γ η (n + 1) ω) (baseMassReal M γ η n ω)
+
 /-- **The tilted increment bound**: uniformly for `a` in a compact range,
 `E[e^{a X_{n+1} - (n+1) a²/2}(B_{n+1} - B_n)(B_{n+1}^{-a/γ} + B_n^{-a/γ})] ≤ C e^{-κ n}`. -/
 theorem exists_integral_cutoffIncrement_le (P : Measure Ω) (X : Ω → Distr)
@@ -83,50 +49,31 @@ theorem exists_integral_cutoffIncrement_le (P : Measure Ω) (X : Ω → Distr)
     (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {η δ : ℝ}
     (hW : TwoPoleWindow γ η δ) {a₁ a₂ : ℝ} (ha₁ : -2 * η - δ < a₁) (ha₂ : a₂ < 1 / γ) :
     ∃ C κ : ℝ, 0 ≤ C ∧ 0 < κ ∧ ∀ a ∈ Icc a₁ a₂, ∀ n : ℕ,
-      Integrable (fun ω => Real.exp (a * Xc ω 0 ((n + 1 : ℕ) : ℝ) -
-        ((n + 1 : ℕ) : ℝ) * a ^ 2 / 2) *
-          ((baseMassReal M γ η (n + 1) ω - baseMassReal M γ η n ω) *
-            (baseMassReal M γ η (n + 1) ω ^ (-a / γ) + baseMassReal M γ η n ω ^ (-a / γ)))) P ∧
-      ∫ ω, Real.exp (a * Xc ω 0 ((n + 1 : ℕ) : ℝ) - ((n + 1 : ℕ) : ℝ) * a ^ 2 / 2) *
-        ((baseMassReal M γ η (n + 1) ω - baseMassReal M γ η n ω) *
-          (baseMassReal M γ η (n + 1) ω ^ (-a / γ) + baseMassReal M γ η n ω ^ (-a / γ))) ∂P ≤
-        C * Real.exp (-κ * n) := by
+      Integrable (tiltedIncrement Xc M γ η a n) P ∧
+      ∫ ω, tiltedIncrement Xc M γ η a n ω ∂P ≤ C * Real.exp (-κ * n) := by
   obtain ⟨C, κ, hC, hκ, hbound⟩ :=
     exists_lintegral_cutoffIncrement_le P X hX γ hγ hγ2 M hM hW ha₁ ha₂
   refine ⟨C, κ, hC, hκ, fun a ha n => ?_⟩
   have hgood := ae_cutoffGood P X hX γ hγ hγ2 M hM hW
-  have hnonneg : 0 ≤ᵐ[P] fun ω => Real.exp (a * Xc ω 0 ((n + 1 : ℕ) : ℝ) -
-      ((n + 1 : ℕ) : ℝ) * a ^ 2 / 2) *
-      ((baseMassReal M γ η (n + 1) ω - baseMassReal M γ η n ω) *
-        (baseMassReal M γ η (n + 1) ω ^ (-a / γ) + baseMassReal M γ η n ω ^ (-a / γ))) := by
+  have hnonneg : 0 ≤ᵐ[P] tiltedIncrement Xc M γ η a n := by
     filter_upwards [hgood] with ω hω
-    have hB := hω.localMassReal_pos.trans_le (hω.localMassReal_le hγ n)
-    have hB' := hB.trans_le (hω.baseMassReal_le_succ hγ n)
+    have hb := hω.localMassReal_pos.trans_le (hω.localMassReal_le hγ n)
+    have hb' := hb.trans_le (hω.baseMassReal_le_succ hγ n)
     exact mul_nonneg (Real.exp_pos _).le
-      (mul_nonneg (sub_nonneg.2 (hω.baseMassReal_le_succ hγ n)) (by positivity))
-  have hfac : ∀ ω, ENNReal.ofReal (Real.exp (a * Xc ω 0 ((n + 1 : ℕ) : ℝ) -
-      ((n + 1 : ℕ) : ℝ) * a ^ 2 / 2) *
-      ((baseMassReal M γ η (n + 1) ω - baseMassReal M γ η n ω) *
-        (baseMassReal M γ η (n + 1) ω ^ (-a / γ) + baseMassReal M γ η n ω ^ (-a / γ)))) =
+      (mul_nonneg (sub_nonneg.mpr (hω.baseMassReal_le_succ hγ n)) (by positivity))
+  have hfac (ω : Ω) : ENNReal.ofReal (tiltedIncrement Xc M γ η a n ω) =
       ENNReal.ofReal (Real.exp (a * Xc ω 0 ((n + 1 : ℕ) : ℝ) - ((n + 1 : ℕ) : ℝ) * a ^ 2 / 2)) *
         incrementFunctional γ η (-a / γ) n (M ω) := by
-    intro ω
-    rw [incrementFunctional, ← baseMassReal_eq, ← baseMassReal_eq,
+    rw [tiltedIncrement, tiltedPowerGap, incrementFunctional, ← baseMassReal_eq, ← baseMassReal_eq,
       ENNReal.ofReal_mul (Real.exp_pos _).le]
-  have hmeas : AEStronglyMeasurable (fun ω => Real.exp (a * Xc ω 0 ((n + 1 : ℕ) : ℝ) -
-      ((n + 1 : ℕ) : ℝ) * a ^ 2 / 2) *
-      ((baseMassReal M γ η (n + 1) ω - baseMassReal M γ η n ω) *
-        (baseMassReal M γ η (n + 1) ω ^ (-a / γ) + baseMassReal M γ η n ω ^ (-a / γ)))) P := by
+  have hmeas : AEStronglyMeasurable (tiltedIncrement Xc M γ η a n) P := by
     have hB := aemeasurable_baseMassReal P X hX γ hγ hγ2 M hM η n
     have hB' := aemeasurable_baseMassReal P X hX γ hγ hγ2 M hM η (n + 1)
     have hXm : AEMeasurable (fun ω => Xc ω 0 ((n + 1 : ℕ) : ℝ)) P :=
       (measurable_circleAverage_origin hXc (n + 1)).aemeasurable
     exact ((Real.measurable_exp.comp_aemeasurable ((hXm.const_mul a).sub aemeasurable_const)).mul
       ((hB'.sub hB).mul ((hB'.pow_const _).add (hB.pow_const _)))).aestronglyMeasurable
-  have hlin : ∫⁻ ω, ENNReal.ofReal (Real.exp (a * Xc ω 0 ((n + 1 : ℕ) : ℝ) -
-      ((n + 1 : ℕ) : ℝ) * a ^ 2 / 2) *
-      ((baseMassReal M γ η (n + 1) ω - baseMassReal M γ η n ω) *
-        (baseMassReal M γ η (n + 1) ω ^ (-a / γ) + baseMassReal M γ η n ω ^ (-a / γ)))) ∂P ≤
+  have hlin : ∫⁻ ω, ENNReal.ofReal (tiltedIncrement Xc M γ η a n ω) ∂P ≤
       ENNReal.ofReal (C * Real.exp (-κ * n)) := by
     simp_rw [hfac]
     rw [lintegral_circleTilt P X hX γ hγ hγ2 M hM Xc hXc a (n + 1) _
@@ -175,30 +122,16 @@ theorem exists_cutoff_cauchy_bound (P : Measure Ω) (X : Ω → Distr) (hX : IsE
   obtain ⟨hgi, hgle⟩ := hint z.re hz n
   unfold cutoffFamily
   rw [← integral_sub hi1 hi2]
+  let A := Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) * ‖1 - z / γ‖
   have hbound : ∀ᵐ ω ∂P, ‖cutoffIntegrand Xc M γ η (n + 1) (n + 1) z ω -
-      cutoffIntegrand Xc M γ η (n + 1) n z ω‖ ≤
-      Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) * ‖1 - z / γ‖ *
-        (Real.exp (z.re * Xc ω 0 ((n + 1 : ℕ) : ℝ) - ((n + 1 : ℕ) : ℝ) * z.re ^ 2 / 2) *
-          ((baseMassReal M γ η (n + 1) ω - baseMassReal M γ η n ω) *
-            (baseMassReal M γ η (n + 1) ω ^ (-z.re / γ) +
-              baseMassReal M γ η n ω ^ (-z.re / γ)))) := by
+      cutoffIntegrand Xc M γ η (n + 1) n z ω‖ ≤ A * tiltedIncrement Xc M γ η z.re n ω := by
     filter_upwards [hgood] with ω hω
-    exact norm_cutoffIntegrand_succ_sub_le Xc M γ η (n + 1) n z ω
+    simp only [cutoffIntegrand, ← mul_sub, sub_sub_sub_cancel_right]
+    exact norm_tilted_cpow_sub_le (n + 1) z _
       (hω.localMassReal_pos.trans_le (hω.localMassReal_le hγ n)) (hω.baseMassReal_le_succ hγ n)
-  calc ‖∫ ω, (cutoffIntegrand Xc M γ η (n + 1) (n + 1) z ω -
-        cutoffIntegrand Xc M γ η (n + 1) n z ω) ∂P‖
-      ≤ ∫ ω, Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) * ‖1 - z / γ‖ *
-          (Real.exp (z.re * Xc ω 0 ((n + 1 : ℕ) : ℝ) - ((n + 1 : ℕ) : ℝ) * z.re ^ 2 / 2) *
-            ((baseMassReal M γ η (n + 1) ω - baseMassReal M γ η n ω) *
-              (baseMassReal M γ η (n + 1) ω ^ (-z.re / γ) +
-                baseMassReal M γ η n ω ^ (-z.re / γ)))) ∂P :=
-        norm_integral_le_of_norm_le (hgi.const_mul _) hbound
-    _ = Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) * ‖1 - z / γ‖ *
-          ∫ ω, Real.exp (z.re * Xc ω 0 ((n + 1 : ℕ) : ℝ) - ((n + 1 : ℕ) : ℝ) * z.re ^ 2 / 2) *
-            ((baseMassReal M γ η (n + 1) ω - baseMassReal M γ η n ω) *
-              (baseMassReal M γ η (n + 1) ω ^ (-z.re / γ) +
-                baseMassReal M γ η n ω ^ (-z.re / γ))) ∂P := integral_const_mul _ _
-    _ ≤ _ := mul_le_mul_of_nonneg_left hgle (by positivity)
+  refine (norm_integral_le_of_norm_le (hgi.const_mul A) hbound).trans ?_
+  rw [integral_const_mul]
+  exact mul_le_mul_of_nonneg_left hgle (by dsimp [A]; positivity)
 
 end DOZZ.Proofs
 

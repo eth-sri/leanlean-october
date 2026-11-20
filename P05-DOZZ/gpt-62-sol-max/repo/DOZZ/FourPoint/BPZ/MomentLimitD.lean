@@ -26,6 +26,62 @@ attribute [local instance low] bpzNormedAddCommGroupBilin bpzNormedSpaceBilin
 
 variable {γ χ α₁ α₂ α₃ : ℝ}
 
+/-- A field and its cutoff share a uniform local power error in L¹, and the cutoff is
+controlled by the same integrable majorant at every nearby root and softening. -/
+def BPZCutoffEstimate {Ω E : Type*} [MeasurableSpace Ω] [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (P : Measure Ω) (z₀ : ℂ) (F : ℝ → ℂ → Ω → E) (G : ℝ → ℝ → ℂ → Ω → E)
+    (Y : Ω → ℝ) : Prop :=
+  ∃ r₀ > 0, ∃ K e : ℝ, 0 < e ∧ ∃ A : ℝ → ℝ,
+    ∀ r : ℝ, 0 < r → r ≤ r₀ → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
+      ∀ z : ℂ, ‖z - z₀‖ ≤ min 1 (r / 2) →
+        Integrable (F ε z) P ∧ Integrable (G r ε z) P ∧
+        (∫ ω, ‖F ε z ω - G r ε z ω‖ ∂P) ≤ K * (2 * r) ^ e ∧
+        ∀ᵐ ω ∂P, ‖G r ε z ω‖ ≤ A r * Y ω
+
+section
+variable {Ω E : Type*} [MeasurableSpace Ω] [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {P : Measure Ω} {z₀ : ℂ} {F : ℝ → ℂ → Ω → E} {G : ℝ → ℝ → ℂ → Ω → E} {Y : Ω → ℝ}
+
+theorem BPZCutoffEstimate.tendsto (h : BPZCutoffEstimate P z₀ F G Y)
+    {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1)
+    {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀))
+    (hG : ∀ r : ℝ, 0 < r → Tendsto (fun n => ∫ ω, G r (εs n) (zs n) ω ∂P) atTop
+      (𝓝 (∫ ω, G r 0 z₀ ω ∂P))) :
+    Tendsto (fun n => ∫ ω, F (εs n) (zs n) ω ∂P) atTop (𝓝 (∫ ω, F 0 z₀ ω ∂P)) := by
+  obtain ⟨r₀, hr₀, K, e, he, _, hbound⟩ := h
+  refine bpz_tendsto_integral_of_approx fun η hη => ?_
+  obtain ⟨r, hr, hrr, hrη⟩ := bpz_exists_small_radius (K := K) he hr₀ hη
+  have hnear := (tendsto_iff_norm_sub_tendsto_zero.mp hz).eventually
+    (ge_mem_nhds (lt_min one_pos (half_pos hr)))
+  have hb ε hε₀ hε₁ z hzr := hbound r hr hrr ε hε₀ hε₁ z hzr
+  refine ⟨fun n => G r (εs n) (zs n), G r 0 z₀, hG r hr,
+    hnear.mono (fun n hn => ?_), ?_⟩
+  · obtain ⟨hF, hG, hFG, _⟩ := hb _ (hε0 n) (hε1 n) _ hn
+    exact ⟨hF, hG, hFG.trans hrη⟩
+  · obtain ⟨hF, hG, hFG, _⟩ := hb 0 le_rfl zero_le_one z₀ (by simp; positivity)
+    exact ⟨hF, hG, hFG.trans hrη⟩
+
+theorem BPZCutoffEstimate.uniform [CompleteSpace E] (h : BPZCutoffEstimate P z₀ F G Y)
+    (hY : Integrable Y P) :
+    ∃ ρ > 0, ∃ K : ℝ, ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 → ∀ z : ℂ, ‖z - z₀‖ < ρ →
+      ‖∫ ω, F ε z ω ∂P‖ ≤ K := by
+  obtain ⟨r, hr, K, e, _, A, hbound⟩ := h
+  refine ⟨min 1 (r / 2), lt_min one_pos (half_pos hr), K * (2 * r) ^ e + A r * ∫ ω, Y ω ∂P,
+    fun ε hε₀ hε₁ z hz => ?_⟩
+  obtain ⟨hF, hG, hFG, hA⟩ := hbound r hr le_rfl ε hε₀ hε₁ z hz.le
+  have hd : Integrable (fun ω => ‖F ε z ω - G r ε z ω‖) P := (hF.sub hG).norm
+  have hAr := hY.const_mul (A r)
+  refine (norm_integral_le_integral_norm _).trans ((integral_mono_ae hF.norm (hd.add hAr) ?_).trans ?_)
+  · filter_upwards [hA] with ω hw
+    change ‖F ε z ω‖ ≤ ‖F ε z ω - G r ε z ω‖ + A r * Y ω
+    simpa using (norm_add_le (F ε z ω - G r ε z ω) (G r ε z ω)).trans
+          (add_le_add_right hw _)
+  · change (∫ ω, ‖F ε z ω - G r ε z ω‖ + A r * Y ω ∂P) ≤ _
+    rw [integral_add hd hAr, integral_const_mul]
+    exact add_le_add hFG le_rfl
+
+end
+
 /-- The almost sure data at a regular root `z₀`, with an integrable lower bound `Y` of the mass
 at all roots within distance `1` of `z₀`. -/
 theorem bpz_moment_setup {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -34,13 +90,7 @@ theorem bpz_moment_setup {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X :
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z₀ : ℂ}
     (hz0 : z₀ ≠ 0) (hz1 : z₀ ≠ 1) :
     ∃ Y : Ω → ℝ, Integrable (fun ω => Y ω ^ (-s)) P ∧
-      ∀ᵐ ω ∂P, (∀ x, M ω {x} = 0) ∧ 0 < Y ω ∧ Integrable (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) ∧
-        Integrable (fun x => Complex.normSq (x - z₀) ^ (γ * χ / 2) *
-          bpzBaseWeight γ χ α₁ α₂ α₃ x) (M ω) ∧
-        ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
-          Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ (γ * χ / 2) *
-            bpzBaseWeight γ χ α₁ α₂ α₃ x) (M ω) ∧
-          Y ω ≤ bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z := by
+      ∀ᵐ ω ∂P, BPZMomentData (γ * χ / 2) (bpzBaseWeight γ χ α₁ α₂ α₃) z₀ (M ω) (Y ω) := by
   have ha : 0 < γ * χ / 2 := by positivity
   obtain ⟨Y, -, hYpos, hYint, hYle⟩ := bpz_farBall_lower (χ := χ) (α₁ := α₁) (α₂ := α₂)
     (α₃ := α₃) P X hX hγ hγ2 M hM hMm (R := ‖z₀‖ + 1) (by positivity) hs
@@ -55,95 +105,8 @@ theorem bpz_moment_setup {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X :
   have := norm_le_norm_add_norm_sub' z z₀
   linarith
 
-/-- Bounds at a fixed softening and root for the first moment field and its far part. -/
-theorem bpz_momField1_bounds {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z₀ : ℂ}
-    (hz0 : z₀ ≠ 0) (hz1 : z₀ ≠ 1) {Y : Ω → ℝ} (hYint : Integrable (fun ω => Y ω ^ (-s)) P)
-    (hG : ∀ᵐ ω ∂P, (∀ x, M ω {x} = 0) ∧ 0 < Y ω ∧
-        ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
-          Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ (γ * χ / 2) *
-            bpzBaseWeight γ χ α₁ α₂ α₃ x) (M ω) ∧
-          Y ω ≤ bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z) :
-    ∃ r₀ : ℝ, 0 < r₀ ∧ ∃ C : ℝ, 0 ≤ C ∧ ∀ r : ℝ, 0 < r → r ≤ r₀ → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
-      ∀ z : ℂ, ‖z - z₀‖ ≤ min 1 (r / 2) →
-        Integrable (fun ω => bpzMomField1 (γ * χ / 2) s ε (bpzBaseWeight γ χ α₁ α₂ α₃)
-          (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z) P ∧
-        Integrable (fun ω => bpzMomField1 (γ * χ / 2) s ε (bpzBaseWeight γ χ α₁ α₂ α₃)
-          (fun x => if r ≤ ‖x - z₀‖ then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0) (M ω) z) P ∧
-        ∫ ω, ‖bpzMomField1 (γ * χ / 2) s ε (bpzBaseWeight γ χ α₁ α₂ α₃)
-            (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z -
-          bpzMomField1 (γ * χ / 2) s ε (bpzBaseWeight γ χ α₁ α₂ α₃)
-            (fun x => if r ≤ ‖x - z₀‖ then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0) (M ω) z‖ ∂P ≤
-          s * (2 * (γ * χ / 2)) * (C * (2 * Real.pi * (2 * r) ^ (2 * (γ * χ / 2) - 1 + 2) /
-            (2 * (γ * χ / 2) - 1 + 2))) ∧
-        ∀ᵐ ω ∂P, ‖bpzMomField1 (γ * χ / 2) s ε (bpzBaseWeight γ χ α₁ α₂ α₃)
-            (fun x => if r ≤ ‖x - z₀‖ then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0) (M ω) z‖ ≤
-          s * (4 * (γ * χ / 2) / r) * Y ω ^ (-s) := by
-  have ha : 0 < γ * χ / 2 := by positivity
-  obtain ⟨r₀, hr₀, C, hC0, hC⟩ := bpz_near_real_bound P X hX hγ hγ2 M hM hMm hχ hα₁ hα₂ hα₃
-    hs hz0 hz1
-  refine ⟨r₀, hr₀, C, hC0, fun r hr hrr ε hε0 hε1 z hz => ?_⟩
-  have hz1' : ‖z - z₀‖ ≤ 1 := hz.trans (min_le_left _ _)
-  have hz2' : ‖z - z₀‖ ≤ r / 2 := hz.trans (min_le_right _ _)
-  obtain ⟨hBint, hB, hnear⟩ := hC r hr hrr z hz2' ε hε0 hε1 (2 * (γ * χ / 2) - 1)
-    (by linarith)
-  refine bpz_momField1_near hMm ha ha1 hs measurable_bpzBaseWeight bpzBaseWeight_nonneg hr hz2'
-    hYint ?_ hnear hBint hB
-  filter_upwards [hG] with ω h
-  exact ⟨h.1 z, h.2.1, (h.2.2 z hz1' ε hε0 hε1).2, (h.2.2 z hz1' ε hε0 hε1).1⟩
-
-/-- Bounds at a fixed softening and root for the second moment field and its far part. -/
-theorem bpz_momField2_bounds {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z₀ : ℂ}
-    (hz0 : z₀ ≠ 0) (hz1 : z₀ ≠ 1) {Y : Ω → ℝ} (hYint : Integrable (fun ω => Y ω ^ (-s)) P)
-    (hG : ∀ᵐ ω ∂P, (∀ x, M ω {x} = 0) ∧ 0 < Y ω ∧
-        ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
-          Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ (γ * χ / 2) *
-            bpzBaseWeight γ χ α₁ α₂ α₃ x) (M ω) ∧
-          Y ω ≤ bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z) :
-    ∃ r₀ : ℝ, 0 < r₀ ∧ ∃ C : ℝ, 0 ≤ C ∧ ∀ r : ℝ, 0 < r → r ≤ r₀ → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
-      ∀ z : ℂ, ‖z - z₀‖ ≤ min 1 (r / 2) →
-        Integrable (fun ω => bpzMomField2 (γ * χ / 2) s ε (bpzBaseWeight γ χ α₁ α₂ α₃)
-          (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z) P ∧
-        Integrable (fun ω => bpzMomField2 (γ * χ / 2) s ε (bpzBaseWeight γ χ α₁ α₂ α₃)
-          (fun x => if r ≤ ‖x - z₀‖ then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0) (M ω) z) P ∧
-        ∫ ω, ‖bpzMomField2 (γ * χ / 2) s ε (bpzBaseWeight γ χ α₁ α₂ α₃)
-            (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z -
-          bpzMomField2 (γ * χ / 2) s ε (bpzBaseWeight γ χ α₁ α₂ α₃)
-            (fun x => if r ≤ ‖x - z₀‖ then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0) (M ω) z‖ ∂P ≤
-          (4 * (γ * χ / 2) ^ 2 * s * (s + 1) +
-              s * (4 * (γ * χ / 2) * (1 - γ * χ / 2) + 2 * (γ * χ / 2))) *
-            (C * (2 * Real.pi * (2 * r) ^ (2 * (γ * χ / 2) - 2 + 2) /
-              (2 * (γ * χ / 2) - 2 + 2))) +
-          16 * (γ * χ / 2) ^ 2 * s * (s + 1) / r *
-            (C * (2 * Real.pi * (2 * r) ^ (2 * (γ * χ / 2) - 1 + 2) /
-              (2 * (γ * χ / 2) - 1 + 2))) ∧
-        ∀ᵐ ω ∂P, ‖bpzMomField2 (γ * χ / 2) s ε (bpzBaseWeight γ χ α₁ α₂ α₃)
-            (fun x => if r ≤ ‖x - z₀‖ then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0) (M ω) z‖ ≤
-          (s * (s + 1) * (4 * (γ * χ / 2) / r) ^ 2 +
-            s * (4 * (4 * (γ * χ / 2) * (1 - γ * χ / 2) + 2 * (γ * χ / 2)) / r ^ 2)) *
-            Y ω ^ (-s) := by
-  have ha : 0 < γ * χ / 2 := by positivity
-  obtain ⟨r₀, hr₀, C, hC0, hC⟩ := bpz_near_real_bound P X hX hγ hγ2 M hM hMm hχ hα₁ hα₂ hα₃
-    hs hz0 hz1
-  refine ⟨r₀, hr₀, C, hC0, fun r hr hrr ε hε0 hε1 z hz => ?_⟩
-  have hz1' : ‖z - z₀‖ ≤ 1 := hz.trans (min_le_left _ _)
-  have hz2' : ‖z - z₀‖ ≤ r / 2 := hz.trans (min_le_right _ _)
-  obtain ⟨hB1int, hB1, hnear1⟩ := hC r hr hrr z hz2' ε hε0 hε1 (2 * (γ * χ / 2) - 1)
-    (by linarith)
-  obtain ⟨hB2int, hB2, hnear2⟩ := hC r hr hrr z hz2' ε hε0 hε1 (2 * (γ * χ / 2) - 2)
-    (by linarith)
-  refine bpz_momField2_near hMm ha ha1 hs measurable_bpzBaseWeight bpzBaseWeight_nonneg hr hz2'
-    hYint ?_ hnear1 hnear2 hB1int hB1 hB2int hB2
-  filter_upwards [hG] with ω h
-  exact ⟨h.1 z, h.2.1, (h.2.2 z hz1' ε hε0 hε1).2, (h.2.2 z hz1' ε hε0 hε1).1⟩
-
 /-- Rewriting the second-field bound as a multiple of `(2r)^{2a}`. -/
-theorem bpz_mom2_bound_eq {a s C r K₂ : ℝ} (hr : 0 < r) :
+private theorem bpz_mom2_bound_eq {a s C r K₂ : ℝ} (hr : 0 < r) :
     (4 * a ^ 2 * s * (s + 1) + s * K₂) * (C * (2 * Real.pi * (2 * r) ^ (2 * a - 2 + 2) /
         (2 * a - 2 + 2))) +
       16 * a ^ 2 * s * (s + 1) / r * (C * (2 * Real.pi * (2 * r) ^ (2 * a - 1 + 2) /
@@ -158,128 +121,82 @@ theorem bpz_mom2_bound_eq {a s C r K₂ : ℝ} (hr : 0 < r) :
   field_simp
   ring
 
-/-- Convergence of the zeroth moment along `(εₙ, zₙ) → (0, z₀)`. -/
-theorem bpz_tendsto_mom0_gmc {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z₀ : ℂ}
-    (hz0 : z₀ ≠ 0) (hz1 : z₀ ≠ 1) {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1)
-    (hε : Tendsto εs atTop (𝓝 0)) {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) :
-    Tendsto (fun n => ∫ ω, bpzSoftMassReal (γ * χ / 2) (εs n) (bpzBaseWeight γ χ α₁ α₂ α₃)
-        (M ω) (zs n) ^ (-s) ∂P) atTop
-      (𝓝 (∫ ω, bpzSoftMassReal (γ * χ / 2) 0 (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z₀ ^ (-s) ∂P)) := by
-  have ha : 0 < γ * χ / 2 := by positivity
-  obtain ⟨Y, hYint, hG⟩ := bpz_moment_setup P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1
-  refine bpz_tendsto_mom0 hMm ha ha1 hs measurable_bpzBaseWeight bpzBaseWeight_nonneg hYint ?_
-    hε0 hε1 hε hz
-  filter_upwards [hG] with ω h
-  exact ⟨h.2.1, h.2.2.1, h.2.2.2.1, fun z hz ε h0 h1 => (h.2.2.2.2 z hz ε h0 h1).2⟩
+    (hz0 : z₀ ≠ 0) (hz1 : z₀ ≠ 1)
 
-/-- Convergence of the first moment field along `(εₙ, zₙ) → (0, z₀)`. -/
-theorem bpz_tendsto_momField1_gmc {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z₀ : ℂ}
-    (hz0 : z₀ ≠ 0) (hz1 : z₀ ≠ 1) {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1)
-    (hε : Tendsto εs atTop (𝓝 0)) {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) :
-    Tendsto (fun n => ∫ ω, bpzMomField1 (γ * χ / 2) s (εs n) (bpzBaseWeight γ χ α₁ α₂ α₃)
-        (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) (zs n) ∂P) atTop
-      (𝓝 (∫ ω, bpzMomField1 (γ * χ / 2) s 0 (bpzBaseWeight γ χ α₁ α₂ α₃)
-        (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z₀ ∂P)) := by
-  have ha : 0 < γ * χ / 2 := by positivity
-  obtain ⟨Y, hYint, hG⟩ := bpz_moment_setup P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1
-  have hG' : ∀ᵐ ω ∂P, (∀ x, M ω {x} = 0) ∧ 0 < Y ω ∧
-      ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
-        Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ (γ * χ / 2) *
-          bpzBaseWeight γ χ α₁ α₂ α₃ x) (M ω) ∧
-        Y ω ≤ bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z :=
-    hG.mono fun ω h => ⟨h.1, h.2.1, h.2.2.2.2⟩
-  have hgood : ∀ᵐ ω ∂P, 0 < Y ω ∧ Integrable (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) ∧
-      Integrable (fun x => Complex.normSq (x - z₀) ^ (γ * χ / 2) *
-        bpzBaseWeight γ χ α₁ α₂ α₃ x) (M ω) ∧
-      ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
-        Y ω ≤ bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z :=
-    hG.mono fun ω h => ⟨h.2.1, h.2.2.1, h.2.2.2.1, fun z hz ε h0 h1 => (h.2.2.2.2 z hz ε h0 h1).2⟩
-  obtain ⟨r₀, hr₀, C, hC0, hQ⟩ := bpz_momField1_bounds P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂
-    hα₃ hs hz0 hz1 hYint hG'
-  refine bpz_tendsto_integral_of_approx fun η hη => ?_
-  obtain ⟨r, hr, hrr, hrη⟩ := bpz_exists_small_radius
-    (K := s * (2 * (γ * χ / 2)) * (C * (2 * Real.pi) / (2 * (γ * χ / 2) - 1 + 2)))
-    (p := 2 * (γ * χ / 2) - 1 + 2) (by linarith) hr₀ hη
-  have hbound : s * (2 * (γ * χ / 2)) * (C * (2 * Real.pi * (2 * r) ^ (2 * (γ * χ / 2) - 1 + 2) /
-      (2 * (γ * χ / 2) - 1 + 2))) ≤ η := by
-    refine le_of_eq_of_le ?_ hrη
-    ring
-  have hev : ∀ᶠ n in atTop, ‖zs n - z₀‖ ≤ min 1 (r / 2) :=
-    (tendsto_iff_norm_sub_tendsto_zero.mp hz).eventually
-      (ge_mem_nhds (lt_min one_pos (half_pos hr)))
-  refine ⟨fun n ω => bpzMomField1 (γ * χ / 2) s (εs n) (bpzBaseWeight γ χ α₁ α₂ α₃)
-      (fun x => if r ≤ ‖x - z₀‖ then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0) (M ω) (zs n),
-    fun ω => bpzMomField1 (γ * χ / 2) s 0 (bpzBaseWeight γ χ α₁ α₂ α₃)
-      (fun x => if r ≤ ‖x - z₀‖ then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0) (M ω) z₀,
-    bpz_tendsto_momField1_far hMm ha ha1 hs measurable_bpzBaseWeight bpzBaseWeight_nonneg hr
-      hYint hgood hε0 hε1 hε hz, ?_, ?_⟩
-  · filter_upwards [hev] with n hn
-    obtain ⟨h1, h2, h3, -⟩ := hQ r hr hrr (εs n) (hε0 n) (hε1 n) (zs n) hn
-    exact ⟨h1, h2, h3.trans hbound⟩
-  · have h0 : ‖z₀ - z₀‖ ≤ min 1 (r / 2) := by
-      rw [sub_self, norm_zero]
-      exact le_min zero_le_one (by positivity)
-    obtain ⟨h1, h2, h3, -⟩ := hQ r hr hrr 0 le_rfl zero_le_one z₀ h0
-    exact ⟨h1, h2, h3.trans hbound⟩
+include X hX hγ hγ2 hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1
 
-/-- Convergence of the second moment field along `(εₙ, zₙ) → (0, z₀)`. -/
-theorem bpz_tendsto_momField2_gmc {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z₀ : ℂ}
-    (hz0 : z₀ ≠ 0) (hz1 : z₀ ≠ 1) {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1)
-    (hε : Tendsto εs atTop (𝓝 0)) {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) :
-    Tendsto (fun n => ∫ ω, bpzMomField2 (γ * χ / 2) s (εs n) (bpzBaseWeight γ χ α₁ α₂ α₃)
-        (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) (zs n) ∂P) atTop
-      (𝓝 (∫ ω, bpzMomField2 (γ * χ / 2) s 0 (bpzBaseWeight γ χ α₁ α₂ α₃)
-        (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z₀ ∂P)) := by
-  have ha : 0 < γ * χ / 2 := by positivity
+local notation "a" => (γ * χ / 2)
+local notation "w₀" => bpzBaseWeight γ χ α₁ α₂ α₃
+
+/-- The rooted estimates supply cutoffs for both differentiated moment fields. -/
+theorem bpz_momField_cutoff {Y : Ω → ℝ} (hYint : Integrable (fun ω => Y ω ^ (-s)) P)
+    (hG : ∀ᵐ ω ∂P, BPZMomentData a w₀ z₀ (M ω) (Y ω)) :
+    BPZCutoffEstimate P z₀ (fun ε z ω => bpzMomField1 a s ε w₀ w₀ (M ω) z)
+      (fun r ε z ω => bpzMomField1 a s ε w₀ (fun x => if r ≤ ‖x - z₀‖ then w₀ x else 0) (M ω) z)
+      (fun ω => Y ω ^ (-s)) ∧
+    BPZCutoffEstimate P z₀ (fun ε z ω => bpzMomField2 a s ε w₀ w₀ (M ω) z)
+      (fun r ε z ω => bpzMomField2 a s ε w₀ (fun x => if r ≤ ‖x - z₀‖ then w₀ x else 0) (M ω) z)
+      (fun ω => Y ω ^ (-s)) := by
+  have ha : 0 < a := by positivity
+  obtain ⟨r₀, hr₀, C, _, hC⟩ := bpz_near_real_bound P X hX hγ hγ2 M hM hMm hχ hα₁ hα₂ hα₃
+    hs hz0 hz1
+  have hgood r ε z (hz : ‖z - z₀‖ ≤ min 1 (r / 2)) hε₀ hε₁ := hG.mono fun ω h =>
+    And.intro (h.atomless z) (And.intro h.pos (h.near z (hz.trans (min_le_left ..)) ε hε₀ hε₁).symm)
+  constructor
+  · refine ⟨r₀, hr₀, s * (2 * a) * (C * (2 * Real.pi) / (2 * a - 1 + 2)), 2 * a - 1 + 2,
+      by linarith, fun r => s * (4 * a / r), fun r hr hrr ε he₀ he₁ z hz => ?_⟩
+    have hzr := hz.trans (min_le_right ..)
+    obtain ⟨hBi, hB, hnear⟩ := hC r hr hrr z hzr ε he₀ he₁ (2 * a - 1) (by linarith)
+    obtain ⟨h₁, h₂, h₃, h₄⟩ := bpz_momField1_near hMm ha ha1 hs measurable_bpzBaseWeight
+      bpzBaseWeight_nonneg hr hzr hYint (hgood r ε z hz he₀ he₁) hnear hBi hB
+    exact ⟨h₁, h₂, h₃.trans_eq (by ring), h₄⟩
+  · let b := 4 * a * (1 - a) + 2 * a
+    refine ⟨r₀, hr₀, (4 * a ^ 2 * s * (s + 1) + s * b) * (C * (2 * Real.pi) / (2 * a - 2 + 2)) +
+      32 * a ^ 2 * s * (s + 1) * (C * (2 * Real.pi) / (2 * a - 1 + 2)), 2 * a - 2 + 2,
+      by linarith, fun r => s * (s + 1) * (4 * a / r) ^ 2 + s * (4 * b / r ^ 2),
+      fun r hr hrr ε he₀ he₁ z hz => ?_⟩
+    have hzr := hz.trans (min_le_right ..)
+    obtain ⟨hB₁i, hB₁, hnear₁⟩ := hC r hr hrr z hzr ε he₀ he₁ (2 * a - 1) (by linarith)
+    obtain ⟨hB₂i, hB₂, hnear₂⟩ := hC r hr hrr z hzr ε he₀ he₁ (2 * a - 2) (by linarith)
+    obtain ⟨h₁, h₂, h₃, h₄⟩ := bpz_momField2_near hMm ha ha1 hs measurable_bpzBaseWeight
+      bpzBaseWeight_nonneg hr hzr hYint (hgood r ε z hz he₀ he₁) hnear₁ hnear₂ hB₁i hB₁ hB₂i hB₂
+    exact ⟨h₁, h₂, h₃.trans_eq (bpz_mom2_bound_eq hr), h₄⟩
+
+variable {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1)
+    (hε : Tendsto εs atTop (𝓝 0)) {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀))
+include hε0 hε1 hε hz
+
+/-- Convergence of the zeroth moment along `(εₙ, zₙ) → (0, z₀)`. -/
+theorem bpz_tendsto_mom0_gmc :
+    Tendsto (fun n => ∫ ω, bpzSoftMassReal a (εs n) w₀ (M ω) (zs n) ^ (-s) ∂P) atTop
+      (𝓝 (∫ ω, bpzSoftMassReal a 0 w₀ (M ω) z₀ ^ (-s) ∂P)) := by
   obtain ⟨Y, hYint, hG⟩ := bpz_moment_setup P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1
-  have hG' : ∀ᵐ ω ∂P, (∀ x, M ω {x} = 0) ∧ 0 < Y ω ∧
-      ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
-        Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ (γ * χ / 2) *
-          bpzBaseWeight γ χ α₁ α₂ α₃ x) (M ω) ∧
-        Y ω ≤ bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z :=
-    hG.mono fun ω h => ⟨h.1, h.2.1, h.2.2.2.2⟩
-  have hgood : ∀ᵐ ω ∂P, 0 < Y ω ∧ Integrable (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) ∧
-      Integrable (fun x => Complex.normSq (x - z₀) ^ (γ * χ / 2) *
-        bpzBaseWeight γ χ α₁ α₂ α₃ x) (M ω) ∧
-      ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
-        Y ω ≤ bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z :=
-    hG.mono fun ω h => ⟨h.2.1, h.2.2.1, h.2.2.2.1, fun z hz ε h0 h1 => (h.2.2.2.2 z hz ε h0 h1).2⟩
-  obtain ⟨r₀, hr₀, C, hC0, hQ⟩ := bpz_momField2_bounds P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂
-    hα₃ hs hz0 hz1 hYint hG'
-  refine bpz_tendsto_integral_of_approx fun η hη => ?_
-  obtain ⟨r, hr, hrr, hrη⟩ := bpz_exists_small_radius
-    (K := (4 * (γ * χ / 2) ^ 2 * s * (s + 1) +
-        s * (4 * (γ * χ / 2) * (1 - γ * χ / 2) + 2 * (γ * χ / 2))) *
-          (C * (2 * Real.pi) / (2 * (γ * χ / 2) - 2 + 2)) +
-      32 * (γ * χ / 2) ^ 2 * s * (s + 1) * (C * (2 * Real.pi) / (2 * (γ * χ / 2) - 1 + 2)))
-    (p := 2 * (γ * χ / 2) - 2 + 2) (by linarith) hr₀ hη
-  have hbound := (bpz_mom2_bound_eq (a := γ * χ / 2) (s := s) (C := C)
-    (K₂ := 4 * (γ * χ / 2) * (1 - γ * χ / 2) + 2 * (γ * χ / 2)) hr).le.trans hrη
-  have hev : ∀ᶠ n in atTop, ‖zs n - z₀‖ ≤ min 1 (r / 2) :=
-    (tendsto_iff_norm_sub_tendsto_zero.mp hz).eventually
-      (ge_mem_nhds (lt_min one_pos (half_pos hr)))
-  refine ⟨fun n ω => bpzMomField2 (γ * χ / 2) s (εs n) (bpzBaseWeight γ χ α₁ α₂ α₃)
-      (fun x => if r ≤ ‖x - z₀‖ then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0) (M ω) (zs n),
-    fun ω => bpzMomField2 (γ * χ / 2) s 0 (bpzBaseWeight γ χ α₁ α₂ α₃)
-      (fun x => if r ≤ ‖x - z₀‖ then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0) (M ω) z₀,
-    bpz_tendsto_momField2_far hMm ha ha1 hs measurable_bpzBaseWeight bpzBaseWeight_nonneg hr
-      hYint hgood hε0 hε1 hε hz, ?_, ?_⟩
-  · filter_upwards [hev] with n hn
-    obtain ⟨h1, h2, h3, -⟩ := hQ r hr hrr (εs n) (hε0 n) (hε1 n) (zs n) hn
-    exact ⟨h1, h2, h3.trans hbound⟩
-  · have h0 : ‖z₀ - z₀‖ ≤ min 1 (r / 2) := by
-      rw [sub_self, norm_zero]
-      exact le_min zero_le_one (by positivity)
-    obtain ⟨h1, h2, h3, -⟩ := hQ r hr hrr 0 le_rfl zero_le_one z₀ h0
-    exact ⟨h1, h2, h3.trans hbound⟩
+  exact bpz_tendsto_mom0 hMm (by positivity) ha1 hs measurable_bpzBaseWeight bpzBaseWeight_nonneg
+    hYint hG hε0 hε1 hε hz
+
+/-- Convergence of the first differentiated moment along `(εₙ, zₙ) → (0, z₀)`. -/
+theorem bpz_tendsto_momField1_gmc :
+    Tendsto (fun n => ∫ ω, bpzMomField1 a s (εs n) w₀ w₀ (M ω) (zs n) ∂P) atTop
+      (𝓝 (∫ ω, bpzMomField1 a s 0 w₀ w₀ (M ω) z₀ ∂P)) := by
+  obtain ⟨Y, hYint, hG⟩ := bpz_moment_setup P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1
+  exact (bpz_momField_cutoff P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1 hYint hG).1.tendsto
+    hε0 hε1 hz fun r hr => bpz_tendsto_momField1_far hMm (by positivity) ha1 hs measurable_bpzBaseWeight
+      bpzBaseWeight_nonneg hr hYint hG hε0 hε1 hε hz
+
+/-- Convergence of the second differentiated moment along `(εₙ, zₙ) → (0, z₀)`. -/
+theorem bpz_tendsto_momField2_gmc :
+    Tendsto (fun n => ∫ ω, bpzMomField2 a s (εs n) w₀ w₀ (M ω) (zs n) ∂P) atTop
+      (𝓝 (∫ ω, bpzMomField2 a s 0 w₀ w₀ (M ω) z₀ ∂P)) := by
+  obtain ⟨Y, hYint, hG⟩ := bpz_moment_setup P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1
+  exact (bpz_momField_cutoff P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1 hYint hG).2.tendsto
+    hε0 hε1 hz fun r hr => bpz_tendsto_momField2_far hMm (by positivity) ha1 hs measurable_bpzBaseWeight
+      bpzBaseWeight_nonneg hr hYint hG hε0 hε1 hε hz
+
+end
 
 end DOZZ.Proofs

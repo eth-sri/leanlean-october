@@ -60,15 +60,7 @@ by the structure constant or by the reflection coefficient. -/
 theorem dualFirstCase_scalar_shift (P A K D R B Cm Cp : ℂ) (hD : D ≠ 0) (hK : K ≠ 0)
     (hc : P * A = D) (hs : Cm = P * (-K * R / D) * B) (hg : Cp = R * B) :
     Cp = -(1 / K) * A * Cm := by
-  have hm : D * Cm = -K * P * Cp := by
-    rw [hg]
-    field_simp [hD] at hs
-    linear_combination hs
-  apply mul_left_cancel₀ hD
-  calc
-    D * Cp = -(1 / K) * A * (-K * P * Cp) := by rw [← hc]; field_simp [hK]
-    _ = -(1 / K) * A * (D * Cm) := by rw [hm]
-    _ = D * (-(1 / K) * A * Cm) := by ring
+  grind (splits := 0)
 /-- Every nonconstant affine l-factor is nonzero away from a locally finite set. -/
 theorem dualFirstCase_affine_lFun (c d : ℂ) (hc : c ≠ 0) :
     ∀ᶠ z in codiscrete ℂ, lFun (c * z + d) ≠ 0 := eventually_affine_lFun_ne_zero hc

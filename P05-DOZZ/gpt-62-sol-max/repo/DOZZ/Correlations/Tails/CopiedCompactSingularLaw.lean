@@ -34,16 +34,16 @@ theorem copied_compact_singular_law
     (P.prod P).map (fun q => ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) *
       ∫⁻ x, ENNReal.ofReal (g x) * (ENNReal.ofReal ‖x‖)^(-β) * ENNReal.ofReal
         (Real.exp (γ*localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0))) ∂N q.1) := by
-  let : IsProbabilityMeasure P := hX.1
-  let : MetricSpace ℝ≥0∞ := TopologicalSpace.metrizableSpaceMetric ℝ≥0∞
+  let  := hX.1
+  let  := TopologicalSpace.metrizableSpaceMetric ℝ≥0∞
   let gn := singularCompactTest g hgc β
-  have hgn0 (n : ℕ) (x : ℂ) : 0 ≤ gn n x :=
+  have hgn0 (n : ℕ) (x : ℂ)  :=
     singular_compact_test_nonneg g hgc hg0 β n x
   have hgnc (n : ℕ) : HasCompactSupport (gn n : ℂ → ℝ) :=
     hgc.mul_right
-  have hgns (n : ℕ) : tsupport (gn n : ℂ → ℝ) ⊆ Metric.ball 0 1 :=
+  have hgns (n : ℕ)  :=
     (singular_compact_test_support g hgc β n).trans hgs
-  let w : ℂ → ℝ≥0∞ := fun y =>
+  let w  := fun y =>
     ENNReal.ofReal (Real.exp ((γ^2+4)*Real.log (normPlus y)))
   have hw : Measurable w := by unfold w normPlus; fun_prop
   let θ : Ω × Ω → ℝ := fun q => Xc q.2 z 0-Xc q.1 z 0
@@ -58,8 +58,8 @@ theorem copied_compact_singular_law
     ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖))
   have hS : Measurable S := ENNReal.measurable_ofReal.comp
     ((((hc.1 0).comp (measurable_snd.prodMk measurable_const)).const_mul γ).sub_const _ |>.exp)
-  let A : ℕ → Ω → ℝ≥0∞ := fun n ω => C * ∫⁻ y, ENNReal.ofReal (gn n (y-z)) * w y ∂M ω
-  let B : ℕ → Ω × Ω → ℝ≥0∞ := fun n q => S q * ∫⁻ x, ENNReal.ofReal (gn n x) * v (θ q,x) ∂N q.1
+  let A  := fun n ω => C * ∫⁻ y, ENNReal.ofReal (gn n (y-z)) * w y ∂M ω
+  let B  := fun n q => S q * ∫⁻ x, ENNReal.ofReal (gn n x) * v (θ q,x) ∂N q.1
   let Alim := fun ω => C * ∫⁻ y,
     ENNReal.ofReal (g (y-z)) * (ENNReal.ofReal ‖y-z‖)^(-β) * w y ∂M ω
   let Blim := fun q : Ω × Ω => S q * ∫⁻ x,
@@ -74,7 +74,7 @@ theorem copied_compact_singular_law
   have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY
   have hN' := isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst _ hY γ _ hN
   have hBm (n : ℕ) : AEMeasurable (B n) (P.prod P) := by
-    have hk : Measurable (fun p : ℝ × ℂ => ENNReal.ofReal (gn n p.2) * v p) :=
+    have hk  :=
       (ENNReal.measurable_ofReal.comp ((gn n).continuous.measurable.comp measurable_snd)).mul hv
     exact hS.aemeasurable.mul (gmc_parameter_lintegral_aemeasurable
       (P.prod P) _ hY' γ hγ hγ2 (N ∘ Prod.fst) hN' θ hθ.aemeasurable _ hk)

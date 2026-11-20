@@ -38,12 +38,10 @@ theorem lastone_zeroMode_limit (γ μ : ℝ) (hγ : 0 < γ) (hμ : 0 < μ) :
   have hΓcont : ContinuousAt Real.Gamma (1 : ℝ) := by
     apply (Real.differentiableAt_Gamma _).continuousAt
     intro n
-    have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
     linarith
   have hΓ : Tendsto (fun δ : ℝ => Real.Gamma (-δ / γ + 1)) (𝓝[>] 0) (𝓝 1) := by
-    have ha : Tendsto (fun δ : ℝ => -δ / γ + 1) (𝓝[>] 0) (𝓝 1) := by
-      simpa only [neg_zero, zero_add, neg_div] using hd.neg.add_const 1
-    simpa only [Function.comp_def, Real.Gamma_one] using hΓcont.tendsto.comp ha
+    simpa only [Function.comp_def, Real.Gamma_one] using hΓcont.tendsto.comp (by
+      simpa only [neg_zero, zero_add, neg_div] using hd.neg.add_const 1)
   have hlim : Tendsto (fun δ : ℝ => -2 * μ ^ (δ / γ) * Real.Gamma (-δ / γ + 1))
       (𝓝[>] 0) (𝓝 (-2)) := by
     simpa using (hμpow.const_mul (-2)).mul hΓ

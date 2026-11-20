@@ -49,14 +49,17 @@ theorem measurable_bpzLamDeriv (r : ℝ) : Measurable (bpzLamDeriv r) := by
   rw [heq]
   exact hint.measurable.const_smul ((2 * Real.pi)⁻¹ : ℝ)
 
-theorem continuous_bpzCutRootKernel_snd (γ r : ℝ) (x : ℂ) :
+section
+variable (γ r : ℝ)
+
+theorem continuous_bpzCutRootKernel_snd (x : ℂ) :
     Continuous (bpzCutRootKernel γ r x) := by
   unfold bpzCutRootKernel
   exact Real.continuous_exp.comp (continuous_const.mul
     (((continuous_bpzLam r).comp (continuous_const.sub continuous_id)).add
       (continuous_bpzPin r)))
 
-theorem continuous_bpzLimRootKernel_snd (γ r : ℝ) (x : ℂ) :
+theorem continuous_bpzLimRootKernel_snd (x : ℂ) :
     Continuous (bpzLimRootKernel γ r x) := by
   unfold bpzLimRootKernel
   refine Real.continuous_exp.comp (continuous_const.mul
@@ -64,14 +67,15 @@ theorem continuous_bpzLimRootKernel_snd (γ r : ℝ) (x : ℂ) :
   exact Real.continuousOn_log.comp_continuous bpz_continuous_normPlus
     fun y => (bpz_normPlus_pos y).ne'
 
-theorem bpzCutRootKernel_le (γ r : ℝ) (x y : ℂ) :
+theorem bpzCutRootKernel_le (x y : ℂ) :
     bpzCutRootKernel γ r x y ≤ Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y) := by
   unfold bpzCutRootKernel
   rw [← Real.exp_add]
   apply Real.exp_le_exp.mpr
   have := bpzLam_le r (x - y)
-  have hγ := sq_nonneg γ
   nlinarith
+
+end
 
 /-- The cutoff part of the rooted mixed mass is differentiable at a non-atom. -/
 theorem hasFDerivAt_bpz_cut_part {γ r : ℝ} {ρ k₁ : ℂ → ℝ} {m₁ : Measure ℂ} {x₀ : ℂ}
@@ -83,8 +87,8 @@ theorem hasFDerivAt_bpz_cut_part {γ r : ℝ} {ρ k₁ : ℂ → ℝ} {m₁ : Me
       x₀ := by
   set C : ℝ := γ ^ 2 * Real.exp (γ ^ 2 * r) * Real.exp r with hC
   have hC0 : 0 ≤ C := by positivity
-  have hw : ∀ y, 0 ≤ ρ y * k₁ y := fun y => mul_nonneg (hρ0 y) (hk₁0 y)
-  have hmeasF : ∀ x, Measurable fun y => ρ y * k₁ y * bpzCutRootKernel γ r x y :=
+  have hw  := fun y => mul_nonneg (hρ0 y) (hk₁0 y)
+  have hmeasF  :=
     fun x => (hρm.mul hk₁).mul (continuous_bpzCutRootKernel_snd γ r x).measurable
   have hmeasF' : Measurable fun y =>
       (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) • bpzLamDeriv r (x₀ - y) :=
@@ -109,9 +113,7 @@ theorem hasFDerivAt_bpz_cut_part {γ r : ℝ} {ρ k₁ : ℂ → ℝ} {m₁ : Me
     hmeasF'.aestronglyMeasurable
     (Eventually.of_forall fun y => by
       refine LipschitzOnWith.of_dist_le_mul fun x _ x' _ => ?_
-      rw [Real.dist_eq, dist_eq_norm, Real.coe_nnabs,
-        abs_of_nonneg (mul_nonneg (mul_nonneg (hw y) (Real.exp_pos _).le) hC0)]
-      rw [← mul_sub, abs_mul, abs_of_nonneg (hw y)]
+      rw [Real.dist_eq, dist_eq_norm, Real.coe_nnabs, abs_of_nonneg (mul_nonneg (mul_nonneg (hw y) (Real.exp_pos _).le) hC0), ← mul_sub, abs_mul, abs_of_nonneg (hw y)]
       calc ρ y * k₁ y * |bpzCutRootKernel γ r x y - bpzCutRootKernel γ r x' y|
           ≤ ρ y * k₁ y * (γ ^ 2 * Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y) *
             Real.exp r * ‖x - x'‖) :=
@@ -135,8 +137,6 @@ theorem hasFDerivAt_bpz_lim_part {γ r δ : ℝ} {ρ k₂ : ℂ → ℝ} {m₂ :
         bpzTruncLogDeriv r (x₀ - y) ∂m₂) x₀ := by
   set R : ℝ := ‖x₀‖ + δ with hR
   set B : ℝ := (1 + (1 + R) / δ) ^ (γ ^ 2) with hB
-  have hR0 : 0 ≤ R := by positivity
-  have hB0 : 0 ≤ B := Real.rpow_nonneg (by positivity) _
   have hw : ∀ y, 0 ≤ (1 - ρ y) * k₂ y := fun y => mul_nonneg (by linarith [hρ1 y]) (hk₂0 y)
   have hball : ∀ x ∈ Metric.ball x₀ δ, ∀ y, ρ y < 1 → ‖x‖ ≤ R ∧ δ ≤ ‖x - y‖ := by
     intro x hx y hy
@@ -174,9 +174,7 @@ theorem hasFDerivAt_bpz_lim_part {γ r δ : ℝ} {ρ k₂ : ℂ → ℝ} {m₂ :
     hmeasF'.aestronglyMeasurable
     (Eventually.of_forall fun y => by
       refine LipschitzOnWith.of_dist_le_mul fun x hx x' hx' => ?_
-      rw [Real.dist_eq, dist_eq_norm, Real.coe_nnabs,
-        abs_of_nonneg (mul_nonneg (hw y) (by positivity))]
-      rw [← mul_sub, abs_mul, abs_of_nonneg (hw y)]
+      rw [Real.dist_eq, dist_eq_norm, Real.coe_nnabs, abs_of_nonneg (mul_nonneg (hw y) (by positivity)), ← mul_sub, abs_mul, abs_of_nonneg (hw y)]
       rcases lt_or_eq_of_le (hρ1 y) with hy | hy
       · obtain ⟨hxR, hxy⟩ := hball x hx y hy
         obtain ⟨hx'R, hx'y⟩ := hball x' hx' y hy

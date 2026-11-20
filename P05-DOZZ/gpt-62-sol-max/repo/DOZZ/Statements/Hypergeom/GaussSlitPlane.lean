@@ -21,4 +21,9 @@ namespace DOZZ
 /-- The principal continuation domain ℂ \ [1,∞), see [KRV, (Fpmdef)]. -/
 def gaussSlitPlane : Set ℂ := {z | z.im ≠ 0 ∨ z.re < 1}
 
+theorem gaussSlitPlane_isOpen : IsOpen gaussSlitPlane := by
+  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z : ℂ | z.re < 1})
+  exact (isOpen_ne.preimage Complex.continuous_im).union
+    (isOpen_Iio.preimage Complex.continuous_re)
+
 end DOZZ

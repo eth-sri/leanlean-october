@@ -61,11 +61,10 @@ theorem exists_chartTestSystem (U : Set ℂ) (hU : IsOpen U) : Nonempty (ChartTe
       (Metric.isOpen_thickening (δ := δ) (E := K n)).isClosed_compl
       (disjoint_compl_right_iff_subset.mpr (Metric.self_subset_thickening hδ (K n)))
     refine ⟨χ, hχ1, hχc, hχI, ?_⟩
-    have hsupp : Function.support χ ⊆ Metric.thickening δ (K n) := by
+    exact (closure_mono (by
       intro x hx
       by_contra hxt
-      exact hx (hχ0 hxt)
-    exact (closure_mono hsupp).trans
+      exact hx (hχ0 hxt))).trans
       ((Metric.closure_thickening_subset_cthickening δ (K n)).trans hδU)
   choose χ hχ1 hχc hχI hχU using hmass
   exact ⟨{
@@ -123,26 +122,31 @@ def chart (T : ChartTestSystem U) : Index → Set ℂ
   | .inl i => T.K i.1
   | .inr n => tsupport (T.mass n : ℂ → ℝ)
 
-theorem chart_compact (T : ChartTestSystem U) (i : Index) : IsCompact (T.chart i) := by
+section
+variable (T : ChartTestSystem U) (i : Index)
+
+theorem chart_compact : IsCompact (T.chart i) := by
   cases i with
   | inl i => exact T.compact i.1
   | inr n => exact T.mass_compact n
 
-theorem chart_subset (T : ChartTestSystem U) (i : Index) : T.chart i ⊆ U := by
+theorem chart_subset : T.chart i ⊆ U := by
   cases i with
   | inl i => exact T.subset i.1
   | inr n => exact T.mass_support n
 
-theorem allTest_eq_zero (T : ChartTestSystem U) (i : Index) (x : ℂ) (hx : x ∉ T.chart i) :
+theorem allTest_eq_zero (x : ℂ) (hx : x ∉ T.chart i) :
     T.allTest i x = 0 := by
   cases i with
   | inl i => exact image_eq_zero_of_notMem_tsupport (fun h => hx (T.test_support i h))
   | inr n => exact image_eq_zero_of_notMem_tsupport hx
 
-theorem abs_allTest_le (T : ChartTestSystem U) (i : Index) (x : ℂ) :
+theorem abs_allTest_le (x : ℂ) :
     |T.allTest i x| ≤ ‖T.allTest i‖ := by
   rw [← Real.norm_eq_abs]
   exact (T.allTest i).norm_coe_le_norm x
+
+end
 
 theorem K_subset_tsupport_mass (T : ChartTestSystem U) (n : ℕ) :
     T.K n ⊆ tsupport (T.mass n : ℂ → ℝ) := by
@@ -180,41 +184,38 @@ noncomputable def fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
     (e : ℕ → ChartTestSystem.Index) (c : ℝ) (j : ℕ) : ℝ :=
   c + j + ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k|
 
-theorem le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index)
-    (c : ℝ) (hc : 0 ≤ c) (i k j : ℕ) (hik : i ≤ k) (hkj : k ≤ j) :
+section
+variable (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index) (c : ℝ)
+
+theorem le_fastCutoff (hc : 0 ≤ c) (i k j : ℕ) (hik : i ≤ k) (hkj : k ≤ j) :
     R (e i) k ≤ fastCutoff R e c j := by
   unfold fastCutoff
-  have hinner : |R (e i) k| ≤ ∑ i' ∈ Finset.range (k + 1), |R (e i') k| :=
+  have hinner  :=
     Finset.single_le_sum (f := fun i' => |R (e i') k|) (fun _ _ => abs_nonneg _)
       (Finset.mem_range.mpr (show i < k + 1 by omega))
-  have houter : ∑ i' ∈ Finset.range (k + 1), |R (e i') k| ≤
-      ∑ k' ∈ Finset.range (j + 1), ∑ i' ∈ Finset.range (k' + 1), |R (e i') k'| :=
-    Finset.single_le_sum (f := fun k' => ∑ i' ∈ Finset.range (k' + 1), |R (e i') k'|)
+  have houter := Finset.single_le_sum (f := fun k' => ∑ i' ∈ Finset.range (k' + 1), |R (e i') k'|)
       (fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _)
       (Finset.mem_range.mpr (show k < j + 1 by omega))
-  have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
   linarith [le_abs_self (R (e i) k)]
 
-theorem const_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
-    (e : ℕ → ChartTestSystem.Index) (c : ℝ) (j : ℕ) : c ≤ fastCutoff R e c j := by
+theorem const_le_fastCutoff (j : ℕ) : c ≤ fastCutoff R e c j := by
   unfold fastCutoff
   have h1 : (0 : ℝ) ≤ ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k| :=
     Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
-  have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
   linarith
 
-theorem nat_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
-    (e : ℕ → ChartTestSystem.Index) (c : ℝ) (hc : 0 ≤ c) (j : ℕ) :
+theorem nat_le_fastCutoff (hc : 0 ≤ c) (j : ℕ) :
     (j : ℝ) ≤ fastCutoff R e c j := by
   unfold fastCutoff
   have h1 : (0 : ℝ) ≤ ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k| :=
     Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
   linarith
 
-theorem tendsto_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
-    (e : ℕ → ChartTestSystem.Index) (c : ℝ) (hc : 0 ≤ c) :
+theorem tendsto_fastCutoff (hc : 0 ≤ c) :
     Tendsto (fastCutoff R e c) atTop atTop :=
   tendsto_atTop_mono (nat_le_fastCutoff R e c hc) tendsto_natCast_atTop_atTop
+
+end
 
 /-- Each test of a chart system has cutoff `L¹` Cauchy thresholds at every geometric accuracy. -/
 theorem exists_test_cauchy_thresholds
@@ -329,7 +330,7 @@ theorem ae_tendsto_allTest_fastCutoff
         simpa using hj)])]
     exact ENNReal.sum_ne_top.mpr fun j _ => by
       by_cases hj : j < i
-      · rw [Set.indicator_of_mem (show j ∈ {j : ℕ | j < i} from hj)]; exact hBfin
+      · rwa [Set.indicator_of_mem (show j ∈ {j : ℕ | j < i} from hj)]
       · rw [Set.indicator_of_notMem (show j ∉ {j : ℕ | j < i} from hj)]; exact ENNReal.zero_ne_top
 
 /-- Samples along which every test converges on the fast sequence and every unit chart mass is
@@ -343,13 +344,13 @@ def realizationGoodSet {Ω : Type*} [MeasurableSpace Ω]
     ∀ (j : ℕ) (i : ChartTestSystem.Index),
       chartUnitMass P U dens (T.chart i) Y γ (fastCutoff R e c j) ω ≠ ⊤}
 
-theorem realizationGoodSet_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ)
-    (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index) (c : ℝ) :
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (U : Set ℂ)
+  (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+  (T : ChartTestSystem U) (γ : ℝ) (R : ChartTestSystem.Index → ℕ → ℝ)
+include Ω ε₀ hY
+
+theorem realizationGoodSet_measurable (e : ℕ → ChartTestSystem.Index) (c : ℝ) :
     MeasurableSet (realizationGoodSet P U dens Y T γ R e c) := by
   have h1 : MeasurableSet {ω | ∀ i : ℕ, ∃ L : ℝ, Tendsto (fun j => admissibleCutoffIntegral P U
       dens Y γ (fastCutoff R e c j) (T.allTest (e i)) ω) atTop (𝓝 L)} := by
@@ -376,12 +377,6 @@ theorem realizationGoodSet_measurable
   exact h1.inter h2
 
 theorem ae_mem_realizationGoodSet
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ)
-    (R : ChartTestSystem.Index → ℕ → ℝ)
     (hR : ∀ i k r s, R i k ≤ r → R i k ≤ s →
       ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ r (T.allTest i) ω -
         admissibleCutoffIntegral P U dens Y γ s (T.allTest i) ω| ∂P <
@@ -399,6 +394,8 @@ theorem ae_mem_realizationGoodSet
       (T.chart_subset i) γ _
       (le_trans (Real.exp_le_exp.mpr (by linarith [const_le_fastCutoff R e c j])) hcut)
   filter_upwards [h1, h2] with ω hω₁ hω₂ using ⟨hω₁, hω₂⟩
+
+end
 
 end DOZZ.Assembly
 
@@ -418,14 +415,15 @@ namespace DOZZ.Assembly
 
 open DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (U : Set ℂ)
+  (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+  (T : ChartTestSystem U)
+include ε₀ hY
+
 /-- On the good set, a continuous test supported in an exhausting compact differs from a nearby
 dense test by at most `δ` times the mass-control cutoff integral. -/
-theorem abs_admissibleCutoffIntegral_sub_le_mass
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ r : ℝ)
+theorem abs_admissibleCutoffIntegral_sub_le_mass (γ r : ℝ)
     (ω : Ω) (n : ℕ)
     (hω : chartUnitMass P U dens (T.chart (.inr n)) Y γ r ω ≠ ⊤)
     (g h : ℂ → ℝ) (hg : Measurable g) (hh : Measurable h) (Lg Lh : ℝ)
@@ -481,12 +479,7 @@ theorem abs_admissibleCutoffIntegral_sub_le_mass
 
 /-- On the good set, every continuous test with compact support in the chart converges along the
 fast cutoff sequence. -/
-theorem exists_tendsto_fastCutoff_of_mem_goodSet
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ)
+theorem exists_tendsto_fastCutoff_of_mem_goodSet (γ : ℝ)
     (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index)
     (he : Function.Surjective e) (c : ℝ) (ω : Ω)
     (hω : ω ∈ realizationGoodSet P U dens Y T γ R e c)
@@ -563,5 +556,7 @@ theorem exists_tendsto_fastCutoff_of_mem_goodSet
         have := hvab
         linarith
     _ = ε := by ring
+
+end
 
 end DOZZ.Assembly

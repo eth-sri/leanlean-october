@@ -6,6 +6,8 @@ module
 
 public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import DOZZ.GMC.ConvergenceInMeasure
+public import DOZZ.GMC.ConvergenceApproximation
 
 /-! # Convergence in probability toolkit
 
@@ -43,13 +45,11 @@ theorem bpz_tendstoInMeasure_map₂ {f g : ℕ → Ω → ℝ} {f₀ g₀ : Ω �
   filter_upwards [hfae, hgae, hΦ] with ω hfω hgω hΦω
   exact hΦω.tendsto.comp ((hfω.comp hns''.tendsto_atTop).prodMk_nhds hgω)
 
-
 theorem bpz_tendstoInMeasure_add {f g : ℕ → Ω → ℝ} {f₀ g₀ : Ω → ℝ}
     (hf : ∀ n, AEStronglyMeasurable (f n) P) (hg : ∀ n, AEStronglyMeasurable (g n) P)
     (hfc : TendstoInMeasure P f atTop f₀) (hgc : TendstoInMeasure P g atTop g₀) :
     TendstoInMeasure P (fun n ω => f n ω + g n ω) atTop (fun ω => f₀ ω + g₀ ω) :=
-  bpz_tendstoInMeasure_map₂ hf hg hfc hgc (fun x y => x + y) measurable_add
-    (Eventually.of_forall fun _ => continuous_add.continuousAt)
+  tendstoInMeasure_add P _ _ _ _ hfc hgc
 
 theorem bpz_tendstoInMeasure_mul {f g : ℕ → Ω → ℝ} {f₀ g₀ : Ω → ℝ}
     (hf : ∀ n, AEStronglyMeasurable (f n) P) (hg : ∀ n, AEStronglyMeasurable (g n) P)
@@ -92,66 +92,33 @@ theorem bpz_tendstoInMeasure_of_approx {Z : ℕ → Ω → ℝ} {Z₀ : Ω → �
       (∀ᶠ n in atTop, P {ω | ε ≤ |Z n ω - A n ω|} ≤ ENNReal.ofReal ε) ∧
       P {ω | ε ≤ |Z₀ ω - A₀ ω|} ≤ ENNReal.ofReal ε) :
     TendstoInMeasure P Z atTop Z₀ := by
-  rw [tendstoInMeasure_iff_norm]
-  intro ε hε
-  rw [ENNReal.tendsto_nhds_zero]
-  intro δ hδ
-  obtain ⟨r, -, hr0, hrδ⟩ := ENNReal.lt_iff_exists_real_btwn.1 hδ
-  have hr : 0 < r := ENNReal.ofReal_pos.1 hr0
-  have hε' : 0 < min (ε / 3) (r / 3) := lt_min (by positivity) (by positivity)
-  obtain ⟨A, A₀, hA, hZA, hZA₀⟩ := h _ hε'
-  have hAc := ENNReal.tendsto_nhds_zero.1 ((tendstoInMeasure_iff_norm.1 hA) _ hε') _
-    (ENNReal.ofReal_pos.2 hε')
-  filter_upwards [hZA, hAc] with n hn1 hn2
-  have hsub : {ω | ε ≤ ‖Z n ω - Z₀ ω‖} ⊆
-      ({ω | min (ε / 3) (r / 3) ≤ |Z n ω - A n ω|} ∪
-        {ω | min (ε / 3) (r / 3) ≤ ‖A n ω - A₀ ω‖}) ∪
-        {ω | min (ε / 3) (r / 3) ≤ |Z₀ ω - A₀ ω|} := by
-    intro ω hω
-    by_contra hcon
-    simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le, Real.norm_eq_abs] at hcon hω
-    obtain ⟨⟨h1, h2⟩, h3⟩ := hcon
-    rw [abs_sub_comm] at h3
-    have htri : |Z n ω - Z₀ ω| ≤ |Z n ω - A n ω| + |A n ω - A₀ ω| + |A₀ ω - Z₀ ω| := by
-      calc |Z n ω - Z₀ ω| = |(Z n ω - A n ω) + (A n ω - A₀ ω) + (A₀ ω - Z₀ ω)| := by
-            congr 1; ring
-        _ ≤ |(Z n ω - A n ω) + (A n ω - A₀ ω)| + |A₀ ω - Z₀ ω| := abs_add_le _ _
-        _ ≤ |Z n ω - A n ω| + |A n ω - A₀ ω| + |A₀ ω - Z₀ ω| := by
-            gcongr; exact abs_add_le _ _
-    have hm1 : min (ε / 3) (r / 3) ≤ ε / 3 := min_le_left _ _
-    linarith
-  have hm : min (ε / 3) (r / 3) + min (ε / 3) (r / 3) + min (ε / 3) (r / 3) ≤ r := by
-    have := min_le_right (ε / 3) (r / 3)
-    linarith
-  calc P {ω | ε ≤ ‖Z n ω - Z₀ ω‖}
-      ≤ P (({ω | min (ε / 3) (r / 3) ≤ |Z n ω - A n ω|} ∪
-        {ω | min (ε / 3) (r / 3) ≤ ‖A n ω - A₀ ω‖}) ∪
-        {ω | min (ε / 3) (r / 3) ≤ |Z₀ ω - A₀ ω|}) := measure_mono hsub
-    _ ≤ (P {ω | min (ε / 3) (r / 3) ≤ |Z n ω - A n ω|} +
-          P {ω | min (ε / 3) (r / 3) ≤ ‖A n ω - A₀ ω‖}) +
-          P {ω | min (ε / 3) (r / 3) ≤ |Z₀ ω - A₀ ω|} :=
-        (measure_union_le _ _).trans (add_le_add_left (measure_union_le _ _) _)
-    _ ≤ (ENNReal.ofReal (min (ε / 3) (r / 3)) + ENNReal.ofReal (min (ε / 3) (r / 3))) +
-          ENNReal.ofReal (min (ε / 3) (r / 3)) := by gcongr
-    _ = ENNReal.ofReal (min (ε / 3) (r / 3) + min (ε / 3) (r / 3) + min (ε / 3) (r / 3)) := by
-        rw [ENNReal.ofReal_add (add_nonneg hε'.le hε'.le) hε'.le,
-          ENNReal.ofReal_add hε'.le hε'.le]
-    _ ≤ ENNReal.ofReal r := ENNReal.ofReal_le_ofReal hm
-    _ ≤ δ := hrδ.le
+  apply tendstoInMeasure_of_probApprox
+  intro ε hε δ hδ
+  obtain ⟨r, -, hr, hrδ⟩ := ENNReal.lt_iff_exists_real_btwn.1 hδ
+  let t := min ε r
+  have ht : 0 < t := lt_min hε (ENNReal.ofReal_pos.1 hr)
+  obtain ⟨A, B, hAB, hA, hB⟩ := h t ht
+  have hδ' : ENNReal.ofReal t ≤ δ := (ENNReal.ofReal_le_ofReal (min_le_right _ _)).trans hrδ.le
+  refine ⟨A, B, hAB, hA.mono fun n hn => (measure_mono ?_).trans (hn.trans hδ'),
+    (measure_mono ?_).trans (hB.trans hδ')⟩
+  · intro ω hω
+    exact (min_le_left _ _).trans (by simpa only [Set.mem_ofPred_eq, Real.dist_eq] using hω)
+  · intro ω hω
+    exact (min_le_left _ _).trans (by simpa only [Set.mem_ofPred_eq, Real.dist_eq, abs_sub_comm] using hω)
 
 /-- An error dominated by a sequence converging in measure is eventually small in probability
 when the limit is small in probability. -/
 theorem bpz_eventually_measure_le_of_le_tendstoInMeasure {E B : ℕ → Ω → ℝ} {B₀ : Ω → ℝ}
-    (hB : TendstoInMeasure P B atTop B₀) (hEB : ∀ n, ∀ᵐ ω ∂P, |E n ω| ≤ B n ω) {ε : ℝ}
+    (hB : TendstoInMeasure P B atTop B₀) (hEB : ∀ᶠ n in atTop, ∀ᵐ ω ∂P, |E n ω| ≤ B n ω) {ε : ℝ}
     (hε : 0 < ε) (hB₀ : P {ω | ε / 2 ≤ B₀ ω} < ENNReal.ofReal ε) :
     ∀ᶠ n in atTop, P {ω | ε ≤ |E n ω|} ≤ ENNReal.ofReal ε := by
-  have hg : 0 < ENNReal.ofReal ε - P {ω | ε / 2 ≤ B₀ ω} := tsub_pos_of_lt hB₀
+  have hg  := tsub_pos_of_lt hB₀
   have hBc := ENNReal.tendsto_nhds_zero.1 ((tendstoInMeasure_iff_norm.1 hB) (ε / 2) (half_pos hε))
     _ hg
-  filter_upwards [hBc] with n hn
+  filter_upwards [hBc, hEB] with n hn hEn
   have hsub : {ω | ε ≤ |E n ω|} ≤ᵐ[P]
       ({ω | ε / 2 ≤ B₀ ω} ∪ {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖} : Set Ω) := by
-    filter_upwards [hEB n] with ω hω hεω
+    filter_upwards [hEn] with ω hω hεω
     by_contra hcon
     simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le, Real.norm_eq_abs] at hcon
     obtain ⟨h1, h2⟩ := hcon
@@ -163,6 +130,33 @@ theorem bpz_eventually_measure_le_of_le_tendstoInMeasure {E B : ℕ → Ω → �
     _ ≤ P {ω | ε / 2 ≤ B₀ ω} + (ENNReal.ofReal ε - P {ω | ε / 2 ≤ B₀ ω}) := by gcongr
     _ = ENNReal.ofReal ε := add_tsub_cancel_of_le hB₀.le
 
+/-- Approximation by convergent sequences with convergent error bounds. It suffices that
+  the limiting bounds tend to zero almost surely as the approximation is refined. -/
+theorem bpz_tendstoInMeasure_of_dominated_approx [IsFiniteMeasure P]
+    {F : ℕ → Ω → ℝ} {F₀ : Ω → ℝ} {A B : ℕ → ℕ → Ω → ℝ} {A₀ B₀ : ℕ → Ω → ℝ}
+    (hA : ∀ k, TendstoInMeasure P (A k) atTop (A₀ k))
+    (hB : ∀ k, TendstoInMeasure P (B k) atTop (B₀ k))
+    (hm : ∀ k, AEStronglyMeasurable (B₀ k) P)
+    (hsmall : ∀ᵐ ω ∂P, Tendsto (fun k => B₀ k ω) atTop (𝓝 0))
+    (hE : ∀ k, ∀ᶠ n in atTop, ∀ᵐ ω ∂P, |F n ω - A k n ω| ≤ B k n ω)
+    (hE₀ : ∀ k, ∀ᵐ ω ∂P, |F₀ ω - A₀ k ω| ≤ B₀ k ω) : TendstoInMeasure P F atTop F₀ := by
+  refine bpz_tendstoInMeasure_of_approx fun ε hε => ?_
+  obtain ⟨k, hk⟩ := (ENNReal.tendsto_nhds_zero.mp
+    ((tendstoInMeasure_iff_norm.mp (tendstoInMeasure_of_tendsto_ae hm hsmall)) (ε / 2) (half_pos hε))
+      (ENNReal.ofReal (ε / 2)) (ENNReal.ofReal_pos.mpr (half_pos hε))).exists
+  have hkabs : P {ω | ε / 2 ≤ |B₀ k ω|} ≤ ENNReal.ofReal (ε / 2) := by
+    simpa only [Real.norm_eq_abs, sub_zero] using hk
+  have hsubset : {ω | ε / 2 ≤ B₀ k ω} ⊆ {ω | ε / 2 ≤ |B₀ k ω|} :=
+    fun ω h => (show ε / 2 ≤ B₀ k ω from h).trans (le_abs_self (B₀ k ω))
+  have hk' := (measure_mono hsubset : P {ω | ε / 2 ≤ B₀ k ω} ≤ _).trans hkabs
+  have ht : ENNReal.ofReal (ε / 2) < ENNReal.ofReal ε :=
+    (ENNReal.ofReal_lt_ofReal_iff hε).mpr (half_lt_self hε)
+  refine ⟨A k, A₀ k, hA k, bpz_eventually_measure_le_of_le_tendstoInMeasure (hB k) (hE k) hε
+    (hk'.trans_lt ht), ?_⟩
+  refine (measure_mono_ae ?_).trans (hk'.trans ht.le)
+  filter_upwards [hE₀ k] with ω hω h
+  exact (half_lt_self hε).le.trans (le_trans h hω)
+
 /-- Dominated convergence for convergence in measure. -/
 theorem bpz_tendsto_integral_of_tendstoInMeasure {Z : ℕ → Ω → ℝ} {Z₀ : Ω → ℝ} {W : Ω → ℝ}
     (hZm : ∀ n, AEStronglyMeasurable (Z n) P) (hc : TendstoInMeasure P Z atTop Z₀)
@@ -172,18 +166,5 @@ theorem bpz_tendsto_integral_of_tendstoInMeasure {Z : ℕ → Ω → ℝ} {Z₀ 
   obtain ⟨ms, -, hae⟩ := (hc.comp hns).exists_seq_tendsto_ae
   exact ⟨ms, tendsto_integral_of_dominated_convergence W (fun k => hZm (ns (ms k))) hW
     (fun k => by simpa only [Real.norm_eq_abs] using hb (ns (ms k))) hae⟩
-
-/-- Two sequences with equal expectations and dominated, in-measure convergent integrands have
-limits with equal expectations. -/
-theorem bpz_integral_eq_of_tendstoInMeasure {Z W : ℕ → Ω → ℝ} {Z₀ W₀ : Ω → ℝ} {B : Ω → ℝ}
-    (hZm : ∀ n, AEStronglyMeasurable (Z n) P) (hWm : ∀ n, AEStronglyMeasurable (W n) P)
-    (hZ : TendstoInMeasure P Z atTop Z₀) (hW : TendstoInMeasure P W atTop W₀)
-    (hB : Integrable B P) (hZb : ∀ n, ∀ᵐ ω ∂P, |Z n ω| ≤ B ω)
-    (hWb : ∀ n, ∀ᵐ ω ∂P, |W n ω| ≤ B ω)
-    (heq : ∀ᶠ n in atTop, ∫ ω, Z n ω ∂P = ∫ ω, W n ω ∂P) :
-    ∫ ω, Z₀ ω ∂P = ∫ ω, W₀ ω ∂P :=
-  tendsto_nhds_unique (bpz_tendsto_integral_of_tendstoInMeasure hZm hZ hB hZb)
-    ((bpz_tendsto_integral_of_tendstoInMeasure hWm hW hB hWb).congr'
-      (heq.mono fun _ hn => hn.symm))
 
 end DOZZ.Proofs

@@ -145,7 +145,7 @@ lemma chainingSequenceReverse_mem (hC : ∀ i, IsCover (ε i) A (C i)) (hA : A.N
     (hxA : x ∈ C k) :
     chainingSequenceReverse C x k n ∈ C (k - n) := by
   induction n with
-  | zero => simp [chainingSequenceReverse_zero, hxA]
+  | zero => assumption
   | succ n ih =>
     simp only [chainingSequenceReverse_add_one]
     refine nearestPt_mem ?_
@@ -183,26 +183,30 @@ lemma chainingSequence_chainingSequence (n : ℕ) (hn : n ≤ k) (m : ℕ) (hm :
     rw [chainingSequence_of_lt (by omega), chainingSequence_of_lt (n := m) (by omega)]
     congr 1
     simp only [← ih (m + 1) (by omega)]
-    congr 1
-    · congr 1
-      ring
     ring
 
-lemma edist_chainingSequence_add_one (hC : ∀ i, IsCover (ε i) A (C i))
-    (hCA : ∀ i, (C i : Set E) ⊆ A) (hxA : x ∈ C k) (n : ℕ) (hn : n < k) :
+section
+variable (hC : ∀ i, IsCover (ε i) A (C i)) (hCA : ∀ i, (C i : Set E) ⊆ A)
+include hC hCA
+
+lemma edist_chainingSequence_add_one (hxA : x ∈ C k) (n : ℕ) (hn : n < k) :
     edist (chainingSequence C x k (n + 1)) (chainingSequence C x k n) ≤ ε n := by
   rw [chainingSequence_of_lt hn]
   apply edist_nearestPt_of_isCover (hC n)
   exact hCA (n + 1) (chainingSequence_mem hC ⟨x, hCA k hxA⟩ hxA _ (by omega))
 
-lemma edist_chainingSequence_add_one_self (hC : ∀ i, IsCover (ε i) A (C i))
-    (hCA : ∀ i, (C i : Set E) ⊆ A) (hxA : x ∈ C (k + 1)) :
+lemma edist_chainingSequence_add_one_self (hxA : x ∈ C (k + 1)) :
     edist (chainingSequence C x (k + 1) k) x ≤ ε k := by
   rw [edist_comm]
   simpa using edist_chainingSequence_add_one hC hCA hxA k (by omega)
 
-lemma edist_chainingSequence_le_sum_edist {T : Type*} [PseudoEMetricSpace T] (f : E → T)
-    {m : ℕ} (hm : m ≤ k) :
+end
+
+section
+variable {T : Type*} [PseudoEMetricSpace T] (f : E → T) {m : ℕ} (hm : m ≤ k)
+include T hm
+
+lemma edist_chainingSequence_le_sum_edist :
     edist (f x) (f (chainingSequence C x k m)) ≤
       ∑ i ∈ Finset.range (k - m),
         edist (f (chainingSequence C x k (m + i))) (f (chainingSequence C x k (m + i + 1))) := by
@@ -211,8 +215,7 @@ lemma edist_chainingSequence_le_sum_edist {T : Type*} [PseudoEMetricSpace T] (f 
     (fun i => f (chainingSequence C x k (m+i))) (k-m)
   simpa only [Nat.add_zero, Nat.add_sub_of_le hm, chainingSequence_of_eq, Nat.add_assoc] using h
 
-lemma edist_chainingSequence_le_sum_edist' {T : Type*} [PseudoEMetricSpace T] (f : E → T)
-    {m : ℕ} (hm : m ≤ k) :
+lemma edist_chainingSequence_le_sum_edist' :
     edist (f (chainingSequence C x k m)) (f x) ≤
       ∑ i ∈ Finset.range (k - m),
         edist (f (chainingSequence C x k (m + i + 1))) (f (chainingSequence C x k (m + i))) := by
@@ -220,8 +223,13 @@ lemma edist_chainingSequence_le_sum_edist' {T : Type*} [PseudoEMetricSpace T] (f
   convert edist_chainingSequence_le_sum_edist f hm using 2
   rw [edist_comm]
 
-lemma edist_chainingSequence_le_sum (hC : ∀ i, IsCover (ε i) A (C i)) (hCA : ∀ i, (C i : Set E) ⊆ A)
-    (hxA : x ∈ C k) (m : ℕ) (hm : m ≤ k) :
+end
+
+section
+variable (hC : ∀ i, IsCover (ε i) A (C i)) (hCA : ∀ i, (C i : Set E) ⊆ A) (hxA : x ∈ C k)
+include hC hCA hxA
+
+lemma edist_chainingSequence_le_sum (m : ℕ) (hm : m ≤ k) :
     edist (chainingSequence C x k m) x ≤ ∑ i ∈ Finset.range (k - m), (ε (m + i) : ℝ≥0∞) := by
   refine le_trans ?_ (Finset.sum_le_sum
     (fun i hi => edist_chainingSequence_add_one hC hCA hxA (m + i) ?_))
@@ -229,8 +237,7 @@ lemma edist_chainingSequence_le_sum (hC : ∀ i, IsCover (ε i) A (C i)) (hCA : 
   · simp only [Finset.mem_range] at hi
     omega
 
-lemma edist_chainingSequence_le (hC : ∀ i, IsCover (ε i) A (C i)) (hCA : ∀ i, (C i : Set E) ⊆ A)
-    (hxA : x ∈ C k) (hyA : y ∈ C n) (m : ℕ) (hm : m ≤ k) (hn : m ≤ n) :
+lemma edist_chainingSequence_le (hyA : y ∈ C n) (m : ℕ) (hm : m ≤ k) (hn : m ≤ n) :
     edist (chainingSequence C x k m) (chainingSequence C y n m)
       ≤ edist x y + ∑ i ∈ Finset.range (k - m), (ε (m + i) : ℝ≥0∞)
         + ∑ j ∈ Finset.range (n - m), (ε (m + j) : ℝ≥0∞) := by
@@ -245,6 +252,8 @@ lemma edist_chainingSequence_le (hC : ∀ i, IsCover (ε i) A (C i)) (hCA : ∀ 
   _ ≤ edist x y + ∑ i ∈ Finset.range (k - m), (ε (m + i) : ℝ≥0∞)
           + ∑ j ∈ Finset.range (n - m), (ε (m + j) : ℝ≥0∞) := by
         gcongr <;> (try rw [edist_comm y]) <;> apply edist_chainingSequence_le_sum <;> assumption
+
+end
 
 lemma edist_chainingSequence_pow_two_le {ε₀ : ℝ≥0} (hC : ∀ i, IsCover (ε₀ * 2⁻¹ ^ i) A (C i))
     (hCA : ∀ i, (C i : Set E) ⊆ A) (hxA : x ∈ C k) (hyA : y ∈ C n) (m : ℕ) (hm : m ≤ k)
@@ -261,7 +270,11 @@ lemma edist_chainingSequence_pow_two_le {ε₀ : ℝ≥0} (hC : ∀ i, IsCover (
       ENNReal.coe_inv, ENNReal.coe_pow, ENNReal.coe_ofNat, ENNReal.inv_pow]
     simpa only [inv_eq_one_div] using ENNReal.sum_geometric_two_le _
 
-lemma scale_change {F : Type*} [PseudoEMetricSpace F] (m : ℕ) (X : E → F) (δ : ℝ≥0∞) :
+section
+variable {F : Type*} [PseudoEMetricSpace F] (m : ℕ) (X : E → F) (δ : ℝ≥0∞)
+include F
+
+lemma scale_change :
     ⨆ (s : C k) (t : { t : C k // edist s t ≤ δ }), edist (X s) (X t)
     ≤ (⨆ (s : C k) (t : { t : C k // edist s t ≤ δ }),
         edist (X (chainingSequence C s k m)) (X (chainingSequence C t k m)))
@@ -310,8 +323,7 @@ lemma scale_change {F : Type*} [PseudoEMetricSpace F] (m : ℕ) (X : E → F) (�
     conv_rhs => left; congr; ext s; congr; ext t; rw [edist_comm]
     ring
 
-lemma scale_change_rpow {F : Type*} [PseudoEMetricSpace F] (m : ℕ) (X : E → F)
-    (δ : ℝ≥0∞) (p : ℝ) (hp : 0 ≤ p) :
+lemma scale_change_rpow (p : ℝ) (hp : 0 ≤ p) :
     ⨆ (s : C k) (t : { t : C k // edist s t ≤ δ }), edist (X s) (X t) ^ p
     ≤ 2 ^ p * (⨆ (s : C k) (t : { t : C k // edist s t ≤ δ }),
         edist (X (chainingSequence C s k m)) (X (chainingSequence C t k m)) ^ p)
@@ -323,6 +335,8 @@ lemma scale_change_rpow {F : Type*} [PseudoEMetricSpace F] (m : ℕ) (X : E → 
   refine (ENNReal.add_rpow_le_two_rpow_mul_rpow_add_rpow _ _ hp).trans ?_
   rw [ENNReal.mul_rpow_of_nonneg _ _ hp, mul_add, ← mul_assoc, ← ENNReal.mul_rpow_of_nonneg _ 2 hp,
     (by norm_num : (2 : ℝ≥0∞) * 2 = 4)]
+
+end
 
 end Sequence
 end

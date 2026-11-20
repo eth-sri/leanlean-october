@@ -61,8 +61,7 @@ theorem dual_connection_second_multiplier_base (c δ : ℝ)
     (real_ne_neg_nat_of_frac (k := -1) (by push_cast; linarith only [hδ₁])
       (by push_cast; linarith only [hδ]))
   unfold lR
-  rw [hrecδ, show 1 - (2 - c) = c - 1 by ring]
-  rw [hrecC]
+  rw [hrecδ, show 1 - (2 - c) = c - 1 by ring, hrecC]
   have hcm : c - 1 ≠ 0 := by linarith only [hc₁]
   field_simp [hGc, hGδ, hGcm, hδ.ne', hcm, hGnegδ]
 
@@ -77,10 +76,7 @@ theorem dual_connection_second_multiplier (A B c δ : ℝ)
     ((c - 1) / δ) * (Real.Gamma (2 - c) / Real.Gamma c) *
       (Real.Gamma (-δ) / Real.Gamma δ) * lR (c - A) * lR (c - B) =
         lR (-δ) * lR (2 - c) / (lR (1 - c + B) * lR (1 - c + A)) := by
-  rw [dual_connection_second_multiplier_base c δ hc hc₁ hδ hδ₁]
-  rw [show 1 - c + B = 1 - (c - B) by ring,
-    show 1 - c + A = 1 - (c - A) by ring,
-    dual_lR_one_sub_eq_inv, dual_lR_one_sub_eq_inv]
+  rw [dual_connection_second_multiplier_base c δ hc hc₁ hδ hδ₁, show 1 - c + B = 1 - (c - B) by ring, show 1 - c + A = 1 - (c - A) by ring, dual_lR_one_sub_eq_inv, dual_lR_one_sub_eq_inv]
   simp only [div_eq_mul_inv, mul_inv, inv_inv]
   ring
 

@@ -50,15 +50,14 @@ theorem measurable_brownianPathRationalEvals :
     Measurable brownianPathRationalEvals := by
   apply measurable_pi_iff.mpr
   intro r
-  exact ContinuousMap.measurable_eval
-    (⟨max (r : ℝ) 0, le_max_right _ _⟩ : ℝ≥0)
+  apply ContinuousMap.measurable_eval <;> assumption
 
 private theorem rational_strict_below_implies_weak_all_times
     (q : BrownianPath) {a : ℝ} (ha : 0 < a) (hq0 : q 0 = 0)
     (hq : ∀ r : ℚ, ∀ hr : 0 < (r : ℝ), q ⟨(r : ℝ), hr.le⟩ < a)
     (t : ℝ≥0) : q t ≤ a := by
   by_contra hnot
-  have hgt : a < q t := lt_of_not_ge hnot
+  have hgt  := lt_of_not_ge hnot
   have htpos : 0 < (t : ℝ) := by
     by_contra h
     have ht0 : t = 0 := by
@@ -67,31 +66,27 @@ private theorem rational_strict_below_implies_weak_all_times
     subst t
     simp [hq0] at hgt
     linarith
-  let F : ℝ → ℝ := fun r => q ⟨max r 0, le_max_right r 0⟩
+  let F  := fun r => q ⟨max r 0, le_max_right r 0⟩
   have hF : Continuous F := by
-    apply q.continuous.comp
-    exact (continuous_max.comp (continuous_id.prodMk continuous_const)).subtype_mk
-      (fun r => le_max_right r 0)
+    fun_prop
   have hF_eval (r : ℝ) (hr : 0 ≤ r) : F r = q ⟨r, hr⟩ := by
     change q ⟨max r 0, le_max_right r 0⟩ = q ⟨r, hr⟩
     congr 1
     exact Subtype.ext (max_eq_left hr)
-  let U : Set ℝ := {r | 0 < r ∧ a < F r}
+  let U  := {r | 0 < r ∧ a < F r}
   have hU : IsOpen U := isOpen_Ioi.inter (isOpen_Ioi.preimage hF)
   have htU : (t : ℝ) ∈ U := by
     change 0 < (t : ℝ) ∧ a < F (t : ℝ)
     refine ⟨htpos, ?_⟩
-    rw [hF_eval (t : ℝ) t.2]
-    exact hgt
+    rwa [hF_eval (t : ℝ) t.2]
   obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open hU ⟨t, htU⟩
   have hr : 0 < (r : ℝ) ∧ a < F (r : ℝ) := by
-    change (r : ℝ) ∈ U at hrU
-    exact hrU
-  have hr0 : 0 ≤ (r : ℝ) := hr.1.le
+    assumption
+  have hr0  := hr.1.le
   have hrat := hq r hr.1
-  have heval : F (r : ℝ) = q ⟨(r : ℝ), hr0⟩ := hF_eval (r : ℝ) hr0
+  have heval  := hF_eval (r : ℝ) hr0
   have hsub : (⟨(r : ℝ), hr0⟩ : ℝ≥0) = ⟨(r : ℝ), hr.1.le⟩ := Subtype.ext rfl
-  have heval' : F (r : ℝ) = q ⟨(r : ℝ), hr.1.le⟩ := heval.trans (congrArg q hsub)
+  have heval'  := heval.trans (congrArg q hsub)
   linarith [hrat, hr.2, heval']
 
 /-- The rational and real-time strict survival events agree under the upper-conditioned reference
@@ -167,12 +162,11 @@ theorem brownianBelowConditionedLaw_rational_below_ae
       exact csSup_le (Set.range_nonempty _) (by
         rintro z ⟨u, rfl⟩
         exact hweak u)
-    have hge : a ≤ driftedBrownianMaximum ν p := by
+    exact hmax (le_antisymm hle (by
       calc
         a = D p t := hEq.symm
         _ ≤ sSup (Set.range (fun u : ℝ≥0 => D p u)) := le_csSup hbound (Set.mem_range_self t)
-        _ = driftedBrownianMaximum ν p := hsup.symm
-    exact hmax (le_antisymm hle hge)
+        _ = driftedBrownianMaximum ν p := hsup.symm))
   have hraw : B (D ⁻¹' (R \ S)) = 0 := by
     have hraw' := ae_iff.mp hrawae
     have hset : {p | ¬ p ∉ D ⁻¹' (R \ S)} = D ⁻¹' (R \ S) := by
@@ -187,22 +181,12 @@ theorem brownianBelowConditionedLaw_rational_below_ae
       measure_mono_null (Set.inter_subset_left) hraw
     rw [hsmall]
     simp
-  have hSR : S ⊆ R := by
-    intro q hq
-    simp only [R, brownianPositiveRationalBelow, Set.mem_iInter]
-    simp only [S, brownianPathStrictlyBelow, Set.mem_ofPred_eq] at hq
-    intro r
-    by_cases hr : 0 < (r : ℝ)
-    · simp only [hr, dite_eq_left, Set.mem_ofPred_eq]
-      exact hq ⟨(r : ℝ), hr.le⟩
-    · simp [hr]
   have hsetNot : {q | ¬ q ∉ R \ S} = R \ S := by
     ext q
     simp
   have hnot : ∀ᵐ q ∂brownianBelowConditionedLaw B ν x, q ∉ R \ S := by
     apply ae_iff.mpr
-    rw [hsetNot]
-    exact hzeroLaw
+    rwa [hsetNot]
   filter_upwards [hnot] with q hq
   constructor
   · intro hR

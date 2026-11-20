@@ -64,8 +64,8 @@ theorem reflected_source_three_region_partition
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω)+
       ∫⁻ x in reflected_outerRegion (‖z‖^(1-ξ)),
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω := by
-  filter_upwards [gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
-    gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1,
+  filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM 0,
+    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM 1,
     reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 (‖z‖^(1-ξ)),
     gammaHalfMass_eq_coulombMass_ae P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ z] with ω h0 h1 hr he
   rw [← he]

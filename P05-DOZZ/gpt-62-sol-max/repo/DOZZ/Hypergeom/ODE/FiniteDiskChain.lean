@@ -68,8 +68,7 @@ theorem exists_finite_holomorphic_disk_chain
       have hnear : dist (centers (i + 1)) (D i).center < r / 2 := by
         rw [hcenter i hprev]
         exact hclose i hi
-      exact extendHolomorphicDiskSolution_agrees r M H hM (D i)
-        (centers (i + 1)) hnear (hH (i + 1) hi1) (hbound (i + 1) hi1) z hz
+      apply extendHolomorphicDiskSolution_agrees <;> assumption
 
 /-- A continuous path with one uniform family of holomorphic coefficient disks and a uniform
 operator bound admits a finite analytic continuation chain from its initial value. -/

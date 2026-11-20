@@ -10,6 +10,7 @@ public import DOZZ.Statements.Hypergeom.GaussFPlus
 public import Mathlib.Analysis.Calculus.ContDiff.Basic
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.Analysis.InnerProductSpace.Calculus
+public import DOZZ.Statements.Hypergeom.GaussCutPlane
 
 /-! # Hypergeometric basis functions near the origin
 
@@ -30,6 +31,9 @@ open Filter Topology
 
 namespace DOZZ.Proofs
 
+theorem bpz_ofReal_mem_gaussCutPlane {u : ℝ} (h0 : 0 < u) (h1 : u < 1) :
+    (u : ℂ) ∈ gaussCutPlane := Or.inr (by simpa only [Complex.ofReal_re] using And.intro h0 h1)
+
 /-- The hypergeometric function is `1` at the origin. -/
 theorem bpzHG_eq_one_at_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
     {a b c : ℂ} (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) : H a b c 0 = 1 := by
@@ -38,9 +42,9 @@ theorem bpzHG_eq_one_at_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsG
 
 /-- The slit plane `ℂ \ [1, ∞)` is open. -/
 theorem bpzHG_isOpen_gaussSlitPlane : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z : ℂ | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
-    (isOpen_Iio.preimage Complex.continuous_re)
+  exact id
+    (IsOpen.union (IsOpen.preimage Complex.continuous_im isOpen_compl_singleton)
+      (IsOpen.preimage Complex.continuous_re isOpen_Iio))
 
 /-- The real interval `(-1, 1)` lies in the slit plane. -/
 theorem bpzHG_mapsTo_ofReal_gaussSlitPlane :
@@ -57,6 +61,17 @@ theorem bpzHG_contDiffOn_normSq {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : 
     (hC.restrict_scalars ℝ).comp Complex.ofRealCLM.contDiff.contDiffOn
       bpzHG_mapsTo_ofReal_gaussSlitPlane
   simpa only [Complex.normSq_eq_norm_sq] using hR.norm_sq ℂ
+
+/-- The smooth parts of the squared basis profiles both equal one at the origin. -/
+theorem bpzHG_normalizedProfile {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
+    {a b : ℂ} {c : ℝ} (hc : 0 < c) :
+    let φ := fun u : ℝ => Complex.normSq (H a b (c : ℂ) (u : ℂ))
+    ContDiffOn ℝ 2 φ (Set.Ioo (-1) 1) ∧ φ 0 = 1 := by
+  have hn (n : ℕ) : (c : ℂ) ≠ -(n : ℂ) := by
+    intro e
+    have e' : c = -(n : ℝ) := by exact_mod_cast e
+    linarith
+  exact ⟨bpzHG_contDiffOn_normSq hH hn, by simp [bpzHG_eq_one_at_zero hH hn]⟩
 
 /-- The norm square of `F₊` at a positive real point. -/
 theorem bpzHG_normSq_gaussFPlus (H : ℂ → ℂ → ℂ → ℂ → ℂ) (a b c : ℝ) {u : ℝ} (hu : 0 < u) :

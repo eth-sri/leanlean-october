@@ -25,10 +25,6 @@ theorem separatedTail_softWeight_measurable (γ α s : ℝ) (c : ℂ) :
     Measurable (separatedTail_softWeight γ α s c) :=
   (limitWeightedFatou_weight_measurable (-γ*α) s).comp (measurable_id.sub_const c)
 
-theorem separatedTail_softWeight_bounded (γ α s : ℝ) (c : ℂ) (he : -γ*α ≤ 0) (hs : 0 < s) :
-    ∃ b : ℝ≥0, ∀ x, separatedTail_softWeight γ α s c x ≤ b :=
-  ⟨(s^(-γ*α)).toNNReal, fun x => limitWeightedFatou_weight_le he hs (x-c)⟩
-
 /-- A Dirichlet circle cutoff moment is bounded by the literal equator cutoff moment.
 The same reference density and softened weight are used on both sides. -/
 theorem separatedTail_dirichlet_cutoff_moment_le
@@ -57,7 +53,7 @@ theorem separatedTail_dirichlet_cutoff_moment_le
     rw [abs_sub_comm]
     exact separatedTail_circle_covariance_discrepancy P X hX Xc hc Dc c R (Real.log (1/δ)) hR hpin
       (by simpa only [hscale] using hDc) x y (mem_ball_iff_norm.mp hx).le
-      (mem_ball_iff_norm.mp hy).le (by simpa only [hscale] using hδ4)
+      (mem_ball_iff_norm.mp hy).le (by linarith)
   have hcov : ∀ᵐ xy ∂(gmcReferenceMeasure.restrict (ball c 1)).prod
       (gmcReferenceMeasure.restrict (ball c 1)),
       |(∫ ω, Dc ω (separatedTail_diskPoint c xy.1) (Real.log (1/δ))*
@@ -78,7 +74,7 @@ theorem separatedTail_dirichlet_cutoff_moment_le
   have hb := separatedTail_fieldChaosMoment_le_of_covariance_discrepancy P P _ _ hfield
     (circleAverage_isCenteredGaussianField P X hX Xc hc _)
     (gmcReferenceMeasure.restrict (ball c 1)) (separatedTail_softWeight γ α δ c)
-    (separatedTail_softWeight_measurable γ α δ c) (separatedTail_softWeight_bounded γ α δ c he hδ)
+    (separatedTail_softWeight_measurable γ α δ c) ((⟨(δ^(-γ*α)).toNNReal, fun x => limitWeightedFatou_weight_le he hδ (x-c)⟩))
     γ (4+2*R) t (by linarith) ht hcov hdiag
   have heq (ω : Ω) : fieldChaosMass P (fun ω x => Xc ω x (Real.log (1/δ)))
       (gmcReferenceMeasure.restrict (ball c 1)) (separatedTail_softWeight γ α δ c) γ ω =

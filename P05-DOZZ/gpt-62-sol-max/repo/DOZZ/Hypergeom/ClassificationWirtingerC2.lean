@@ -23,18 +23,15 @@ once continuously real-differentiable. -/
 theorem differentiableAt_wirtingerZ_of_contDiffAt_two
     {f : ℂ → ℂ} {z : ℂ} (hf : ContDiffAt ℝ 2 f z) :
     DifferentiableAt ℝ (fun w => wirtingerZ f w) z := by
-  have hfd : ContDiffAt ℝ 1 (fderiv ℝ f) z :=
+  have hfd  :=
     hf.fderiv_right (by norm_num : (1 : WithTop ℕ∞) + 1 ≤ 2)
   have h1 : ContDiffAt ℝ 1 (fun w => fderiv ℝ f w 1) z :=
     hfd.clm_apply contDiffAt_const
   have hI : ContDiffAt ℝ 1 (fun w => fderiv ℝ f w Complex.I) z :=
     hfd.clm_apply contDiffAt_const
   have hnum : ContDiffAt ℝ 1
-      (fun w => fderiv ℝ f w 1 - Complex.I * fderiv ℝ f w Complex.I) z := by
-    exact h1.sub (contDiffAt_const.mul hI)
-  have hquot : ContDiffAt ℝ 1
-      (fun w => (fderiv ℝ f w 1 - Complex.I * fderiv ℝ f w Complex.I) / 2) z :=
-    hnum.div_const 2
+      (fun w => fderiv ℝ f w 1 - Complex.I * fderiv ℝ f w Complex.I) z := h1.sub (contDiffAt_const.mul hI)
+  have hquot := hnum.div_const 2
   simpa only [wirtingerZ] using hquot.differentiableAt (by norm_num)
 
 /-- If the `∂z` derivative of a real-differentiable complex-valued function vanishes,
@@ -47,16 +44,16 @@ theorem differentiableAt_star_of_wirtingerZ_eq_zero
   refine ⟨hf.star, ?_⟩
   have hzero' :
       (fderiv ℝ f z 1 - Complex.I * fderiv ℝ f z Complex.I) / 2 = 0 := by
-    simpa only [wirtingerZ] using hzero
+    assumption
   have hrel : fderiv ℝ f z Complex.I = -Complex.I * fderiv ℝ f z 1 := by
     have hmul := congrArg (fun x : ℂ => x * 2) hzero'
     have hsub : fderiv ℝ f z 1 - Complex.I * fderiv ℝ f z Complex.I = 0 := by
       linear_combination hmul
-    have hsub' : fderiv ℝ f z 1 = Complex.I * fderiv ℝ f z Complex.I :=
+    have hsub'  :=
       sub_eq_zero.mp hsub
     calc
       fderiv ℝ f z Complex.I = -(Complex.I * Complex.I) *
-          fderiv ℝ f z Complex.I := by rw [Complex.I_mul_I]; simp
+          fderiv ℝ f z Complex.I := by simp
       _ = -Complex.I * (Complex.I * fderiv ℝ f z Complex.I) := by ring
       _ = -Complex.I * fderiv ℝ f z 1 := by rw [← hsub']
   rw [fderiv_star]
@@ -68,32 +65,8 @@ theorem differentiableAt_star_of_wirtingerZ_eq_zero
 theorem wirtingerZ_sub {f g : ℂ → ℂ} {z : ℂ}
     (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
     wirtingerZ (fun w => f w - g w) z = wirtingerZ f z - wirtingerZ g z := by
-  have hneg := wirtingerZ_mul (differentiableAt_const (-1 : ℂ)) hg
-  have hnegFun : (fun w => (-1 : ℂ) * g w) = fun w => -g w := by
-    funext w
-    ring
-  rw [hnegFun] at hneg
-  have hneg' : wirtingerZ (fun w => -g w) z = -wirtingerZ g z := by
-    simpa [wirtingerZ] using hneg
-  have hnegFun' : (fun w => -g w) = -g := by
-    funext w
-    simp
-  have hadd := wirtingerZ_add hf hg.neg
-  have hneg'' : wirtingerZ (-g) z = -wirtingerZ g z := by
-    rw [← hnegFun']
-    exact hneg'
-  have haddFun : (fun w => f w + (-g) w) = (fun w => f w + -g w) := by
-    funext w
-    simp
-  have hsubFun : (fun w => f w - g w) = fun w => f w + -g w := by
-    funext w
-    ring
-  have hadd' : wirtingerZ (fun w => f w + -g w) z =
-      wirtingerZ f z - wirtingerZ g z := by
-    rw [haddFun, hneg''] at hadd
-    simpa only [sub_eq_add_neg] using hadd
-  rw [hsubFun]
-  exact hadd'
+  simp only [wirtingerZ, fderiv_fun_sub hf hg, ContinuousLinearMap.sub_apply]
+  ring
 
 /-- On a complex-differentiable nonvanishing denominator, the `∂z` derivative of its
 reciprocal is the ordinary reciprocal derivative. -/

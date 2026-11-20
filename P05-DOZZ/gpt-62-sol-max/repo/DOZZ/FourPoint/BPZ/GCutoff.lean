@@ -50,11 +50,17 @@ def bpzReg (z : ℂ) : Set ℂ := {x | x ≠ 0 ∧ x ≠ 1 ∧ x ≠ z}
 
 /-! ### Elementary real inequalities -/
 
-theorem bpz_rpow_neg_two {t : ℝ} (ht : 0 ≤ t) : t ^ (-2 : ℝ) = (t ^ 2)⁻¹ := by
+section
+variable {t : ℝ} (ht : 0 ≤ t)
+include ht
+
+theorem bpz_rpow_neg_two : t ^ (-2 : ℝ) = (t ^ 2)⁻¹ := by
   rw [Real.rpow_neg ht, Real.rpow_two]
 
-theorem bpz_rpow_neg_two_nonneg {t : ℝ} (ht : 0 ≤ t) : 0 ≤ t ^ (-2 : ℝ) :=
+theorem bpz_rpow_neg_two_nonneg : 0 ≤ t ^ (-2 : ℝ) :=
   Real.rpow_nonneg ht _
+
+end
 
 theorem bpz_rpow_neg_two_le_four_mul {t s : ℝ} (ht : 0 < t) (hs : t / 2 ≤ s) :
     s ^ (-2 : ℝ) ≤ 4 * t ^ (-2 : ℝ) := by
@@ -130,7 +136,6 @@ theorem bpz_exists_norm_fderiv_bpzG_le (z : ℂ) :
   have hs : 0 ≤ ‖ξ - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
   linarith [norm_nonneg (z * (z - 1)), mul_nonneg (norm_nonneg (z * (z - 1))) hs]
 
-
 theorem bpz_mul_norm_le (z ξ : ℂ) :
     ‖ξ‖ * ‖ξ - 1‖ ≤ (1 + ‖z‖) * (1 + ‖z - 1‖) * (‖ξ - z‖ ^ 2 + 1) := by
   have hp := bpz_norm_le_add z ξ
@@ -157,37 +162,33 @@ theorem norm_bpzG_le {z ξ : ℂ} (hξ : ξ ≠ z) :
   rw [e]
   exact h
 
-/-- `‖g ξ‖ / ‖ξ‖ = ‖ξ - 1‖ / ‖ξ - z‖` against the singular weight. -/
-theorem bpzG_div_norm_le (z ξ : ℂ) (hξz : ξ ≠ z) (hξ0 : ξ ≠ 0) :
-    ‖bpzG z ξ‖ / ‖ξ‖ ≤ (1 + ‖z - 1‖) * (1 + ‖ξ - z‖ ^ (-2 : ℝ)) := by
-  have ht : 0 < ‖ξ - z‖ := norm_pos_iff.2 (sub_ne_zero.2 hξz)
-  have hp : 0 < ‖ξ‖ := norm_pos_iff.2 hξ0
-  have hb : 0 ≤ ‖z - 1‖ := norm_nonneg _
+private theorem bpz_div_le_weight {a t b : ℝ} (ht : 0 < t) (hb : 0 ≤ b) (ha : a ≤ t + b) :
+    a / t ≤ (1 + b) * (1 + t ^ (-2 : ℝ)) := by
   apply bpz_le_mul_one_add_rpow ht
-  rw [norm_bpzG_eq]
-  have e : ‖ξ‖ * ‖ξ - 1‖ / ‖ξ - z‖ / ‖ξ‖ * ‖ξ - z‖ ^ 2 = ‖ξ - 1‖ * ‖ξ - z‖ := by
-    field_simp
-  rw [e]
-  calc ‖ξ - 1‖ * ‖ξ - z‖ ≤ (‖ξ - z‖ + ‖z - 1‖) * ‖ξ - z‖ :=
-        mul_le_mul_of_nonneg_right (bpz_norm_sub_one_le_add z ξ) ht.le
-    _ ≤ (1 + ‖z - 1‖) * (‖ξ - z‖ ^ 2 + 1) := by
-        linarith [mul_nonneg hb (sq_nonneg (‖ξ - z‖ - 1 / 2))]
+  have he : a / t * t ^ 2 = a * t := by field_simp
+  rw [he]
+  linarith [mul_le_mul_of_nonneg_right ha ht.le, mul_nonneg hb (sq_nonneg (t - 1 / 2))]
+
+section
+variable (z ξ : ℂ) (hξz : ξ ≠ z)
+include hξz
+
+/-- `‖g ξ‖ / ‖ξ‖ = ‖ξ - 1‖ / ‖ξ - z‖` against the singular weight. -/
+theorem bpzG_div_norm_le (hξ0 : ξ ≠ 0) :
+    ‖bpzG z ξ‖ / ‖ξ‖ ≤ (1 + ‖z - 1‖) * (1 + ‖ξ - z‖ ^ (-2 : ℝ)) := by
+  rw [norm_bpzG_eq, mul_div_assoc, mul_div_cancel_left₀ _ (norm_ne_zero_iff.mpr hξ0)]
+  exact bpz_div_le_weight (norm_pos_iff.mpr (sub_ne_zero.mpr hξz)) (norm_nonneg _)
+    (bpz_norm_sub_one_le_add z ξ)
 
 /-- `‖g ξ‖ / ‖ξ - 1‖ = ‖ξ‖ / ‖ξ - z‖` against the singular weight. -/
-theorem bpzG_div_norm_sub_one_le (z ξ : ℂ) (hξz : ξ ≠ z) (hξ1 : ξ ≠ 1) :
+theorem bpzG_div_norm_sub_one_le (hξ1 : ξ ≠ 1) :
     ‖bpzG z ξ‖ / ‖ξ - 1‖ ≤ (1 + ‖z‖) * (1 + ‖ξ - z‖ ^ (-2 : ℝ)) := by
-  have ht : 0 < ‖ξ - z‖ := norm_pos_iff.2 (sub_ne_zero.2 hξz)
-  have hq : 0 < ‖ξ - 1‖ := norm_pos_iff.2 (sub_ne_zero.2 hξ1)
-  have ha : 0 ≤ ‖z‖ := norm_nonneg _
-  apply bpz_le_mul_one_add_rpow ht
-  rw [norm_bpzG_eq]
-  have e : ‖ξ‖ * ‖ξ - 1‖ / ‖ξ - z‖ / ‖ξ - 1‖ * ‖ξ - z‖ ^ 2 = ‖ξ‖ * ‖ξ - z‖ := by
-    field_simp
-  rw [e]
-  calc ‖ξ‖ * ‖ξ - z‖ ≤ (‖ξ - z‖ + ‖z‖) * ‖ξ - z‖ :=
-        mul_le_mul_of_nonneg_right (bpz_norm_le_add z ξ) ht.le
-    _ ≤ (1 + ‖z‖) * (‖ξ - z‖ ^ 2 + 1) := by
-        linarith [mul_nonneg ha (sq_nonneg (‖ξ - z‖ - 1 / 2))]
+  rw [norm_bpzG_eq, mul_comm ‖ξ‖, mul_div_assoc,
+    mul_div_cancel_left₀ _ (norm_ne_zero_iff.mpr (sub_ne_zero.mpr hξ1))]
+  exact bpz_div_le_weight (norm_pos_iff.mpr (sub_ne_zero.mpr hξz)) (norm_nonneg _)
+    (bpz_norm_le_add z ξ)
+
+end
 
 theorem bpz_exists_norm_bpzG_div_le (z : ℂ) :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ ξ : ℂ, ξ ≠ z → ξ ≠ 0 → ξ ≠ 1 →
@@ -205,13 +206,6 @@ theorem bpz_exists_norm_bpzG_div_le (z : ℂ) :
         (1 + ‖z - 1‖) * (1 + ‖ξ - z‖ ^ (-2 : ℝ)) + (1 + ‖z‖) * (1 + ‖ξ - z‖ ^ (-2 : ℝ)) :=
         add_le_add (add_le_add h1 h2) h3
     _ = _ := by ring
-
-/-- Growth of `g` relative to the singular weight. -/
-theorem norm_bpzG_div_le {z : ℂ} (_hz0 : z ≠ 0) (_hz1 : z ≠ 1) :
-    ∃ A : ℝ, 0 ≤ A ∧ ∀ ξ : ℂ, ξ ≠ z → ξ ≠ 0 → ξ ≠ 1 →
-      ‖bpzG z ξ‖ / ‖ξ - z‖ + ‖bpzG z ξ‖ / ‖ξ‖ + ‖bpzG z ξ‖ / ‖ξ - 1‖ ≤
-        A * (1 + ‖ξ - z‖ ^ (-2 : ℝ)) :=
-  bpz_exists_norm_bpzG_div_le z
 
 theorem bpz_exists_norm_bpzG_le (z : ℂ) :
     ∃ K : ℝ, 0 ≤ K ∧
@@ -260,19 +254,30 @@ noncomputable def bpzBumpAt (r : ℝ) (c x : ℂ) : ℝ := bpzPsi (r • (x - c)
 theorem contDiff_bpzBumpAt (r : ℝ) (c : ℂ) : ContDiff ℝ (⊤ : ℕ∞) (bpzBumpAt r c) :=
   contDiff_bpzPsi.comp ((contDiff_id.sub contDiff_const).const_smul r)
 
-theorem bpzBumpAt_nonneg (r : ℝ) (c x : ℂ) : 0 ≤ bpzBumpAt r c x := bpzPsi_nonneg _
+section
+variable (r : ℝ) (c x : ℂ)
 
-theorem bpzBumpAt_le_one (r : ℝ) (c x : ℂ) : bpzBumpAt r c x ≤ 1 := bpzPsi_le_one _
+theorem bpzBumpAt_nonneg : 0 ≤ bpzBumpAt r c x := bpzPsi_nonneg _
 
-theorem bpzBumpAt_eq_one {r : ℝ} {c x : ℂ} (hr : 0 ≤ r) (h : r * ‖x - c‖ ≤ 1) :
+theorem bpzBumpAt_le_one : bpzBumpAt r c x ≤ 1 := bpzPsi_le_one _
+
+end
+
+section
+variable {r : ℝ} {c x : ℂ} (hr : 0 ≤ r)
+include hr
+
+theorem bpzBumpAt_eq_one (h : r * ‖x - c‖ ≤ 1) :
     bpzBumpAt r c x = 1 := by
   apply bpzPsi_eq_one
   rwa [norm_smul, Real.norm_of_nonneg hr]
 
-theorem bpzBumpAt_eq_zero {r : ℝ} {c x : ℂ} (hr : 0 ≤ r) (h : 2 ≤ r * ‖x - c‖) :
+theorem bpzBumpAt_eq_zero (h : 2 ≤ r * ‖x - c‖) :
     bpzBumpAt r c x = 0 := by
   apply bpzPsi_eq_zero
   rwa [norm_smul, Real.norm_of_nonneg hr]
+
+end
 
 theorem hasFDerivAt_bpzBumpAt (r : ℝ) (c x : ℂ) :
     HasFDerivAt (bpzBumpAt r c)
@@ -317,56 +322,90 @@ theorem norm_fderiv_bpzBumpAt_le {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ w, ‖fderi
 noncomputable def bpzCut (m : ℝ) (z x : ℂ) : ℝ :=
   (1 - bpzBumpAt m z x) * (1 - bpzBumpAt m 0 x) * (1 - bpzBumpAt m 1 x) * bpzBumpAt m⁻¹ 0 x
 
+private noncomputable def bpzCutFactors (m : ℝ) (z : ℂ) : Fin 4 → ℂ → ℝ :=
+  ![fun x => 1 - bpzBumpAt m z x, fun x => 1 - bpzBumpAt m 0 x,
+    fun x => 1 - bpzBumpAt m 1 x, bpzBumpAt m⁻¹ 0]
+
+private theorem bpzCut_eq_prod (m : ℝ) (z : ℂ) :
+    bpzCut m z = fun x => ∏ i, bpzCutFactors m z i x := by
+  ext x
+  simp [bpzCut, bpzCutFactors, Fin.prod_univ_succ, mul_assoc]
+
+private theorem bpzCutFactors_mem_Icc (m : ℝ) (z x : ℂ) (i : Fin 4) :
+    bpzCutFactors m z i x ∈ Set.Icc 0 1 := by
+  have h (r : ℝ) (c : ℂ) : 1 - bpzBumpAt r c x ∈ Set.Icc 0 1 :=
+    ⟨sub_nonneg.mpr (bpzBumpAt_le_one r c x),
+      sub_le_self _ (bpzBumpAt_nonneg r c x)⟩
+  fin_cases i <;> simp only [bpzCutFactors, Fin.isValue, Fin.reduceFinMk,
+    Matrix.cons_val, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two]
+  all_goals first | exact h .. | exact ⟨bpzBumpAt_nonneg .., bpzBumpAt_le_one ..⟩
+
+private theorem contDiff_bpzCutFactors (m : ℝ) (z : ℂ) (i : Fin 4) :
+    ContDiff ℝ (⊤ : ℕ∞) (bpzCutFactors m z i) := by
+  have h (r : ℝ) (c : ℂ) : ContDiff ℝ (⊤ : ℕ∞) (fun x => 1 - bpzBumpAt r c x) :=
+    contDiff_const.sub (contDiff_bpzBumpAt r c)
+  fin_cases i <;> first | exact h .. | exact contDiff_bpzBumpAt .. 
+
 /-- The cutoff sequence
 `χ_n(x) = (1 − ψ(m (x − z))) (1 − ψ(m x)) (1 − ψ(m (x − 1))) ψ(x / m)` with `m = n + 1`. -/
 noncomputable def bpzCutoffSeq (z : ℂ) (n : ℕ) : ℂ → ℝ := bpzCut ((n : ℝ) + 1) z
 
 theorem contDiff_bpzCut (m : ℝ) (z : ℂ) : ContDiff ℝ (⊤ : ℕ∞) (bpzCut m z) := by
-  have h : ∀ r c, ContDiff ℝ (⊤ : ℕ∞) fun x => 1 - bpzBumpAt r c x := fun r c =>
-    contDiff_const.sub (contDiff_bpzBumpAt r c)
-  exact (((h m z).mul (h m 0)).mul (h m 1)).mul (contDiff_bpzBumpAt m⁻¹ 0)
+  rw [bpzCut_eq_prod]
+  exact contDiff_prod fun i _ => contDiff_bpzCutFactors m z i
 
-theorem bpzCut_nonneg (m : ℝ) (z x : ℂ) : 0 ≤ bpzCut m z x := by
-  have h : ∀ r c, 0 ≤ 1 - bpzBumpAt r c x := fun r c => sub_nonneg.2 (bpzBumpAt_le_one r c x)
-  exact mul_nonneg (mul_nonneg (mul_nonneg (h _ _) (h _ _)) (h _ _)) (bpzBumpAt_nonneg _ _ _)
+section
+variable (m : ℝ) (z x : ℂ)
 
-theorem bpzCut_le_one (m : ℝ) (z x : ℂ) : bpzCut m z x ≤ 1 := by
-  have h : ∀ r c, 0 ≤ 1 - bpzBumpAt r c x := fun r c => sub_nonneg.2 (bpzBumpAt_le_one r c x)
-  have h' : ∀ r c, 1 - bpzBumpAt r c x ≤ 1 := fun r c => by linarith [bpzBumpAt_nonneg r c x]
-  have h12 : (1 - bpzBumpAt m z x) * (1 - bpzBumpAt m 0 x) ≤ 1 :=
-    (mul_le_of_le_one_left (h _ _) (h' _ _)).trans (h' _ _)
-  have h123 : (1 - bpzBumpAt m z x) * (1 - bpzBumpAt m 0 x) * (1 - bpzBumpAt m 1 x) ≤ 1 :=
-    (mul_le_of_le_one_left (h _ _) h12).trans (h' _ _)
-  exact (mul_le_of_le_one_left (bpzBumpAt_nonneg _ _ _) h123).trans (bpzBumpAt_le_one _ _ _)
+theorem bpzCut_nonneg : 0 ≤ bpzCut m z x := by
+  rw [bpzCut_eq_prod]
+  exact Finset.prod_nonneg fun i _ => (bpzCutFactors_mem_Icc m z x i).1
 
-theorem bpzCut_eq_zero_of_le_z {m : ℝ} (hm : 0 ≤ m) {z x : ℂ} (h : m * ‖x - z‖ ≤ 1) :
+theorem bpzCut_le_one : bpzCut m z x ≤ 1 := by
+  rw [bpzCut_eq_prod]
+  exact Finset.prod_le_one₀ (fun i _ => (bpzCutFactors_mem_Icc m z x i).1)
+    (fun i _ => (bpzCutFactors_mem_Icc m z x i).2)
+
+end
+
+section
+variable {m : ℝ} (hm : 0 ≤ m) {z x : ℂ}
+include hm
+
+theorem bpzCut_eq_zero_of_le_z (h : m * ‖x - z‖ ≤ 1) :
     bpzCut m z x = 0 := by
   simp [bpzCut, bpzBumpAt_eq_one hm h]
 
-theorem bpzCut_eq_zero_of_le_zero {m : ℝ} (hm : 0 ≤ m) {z x : ℂ} (h : m * ‖x‖ ≤ 1) :
+theorem bpzCut_eq_zero_of_le_zero (h : m * ‖x‖ ≤ 1) :
     bpzCut m z x = 0 := by
   have h' : m * ‖x - 0‖ ≤ 1 := by simpa using h
   simp [bpzCut, bpzBumpAt_eq_one hm h']
 
-theorem bpzCut_eq_zero_of_le_one {m : ℝ} (hm : 0 ≤ m) {z x : ℂ} (h : m * ‖x - 1‖ ≤ 1) :
+theorem bpzCut_eq_zero_of_le_one (h : m * ‖x - 1‖ ≤ 1) :
     bpzCut m z x = 0 := by
   simp [bpzCut, bpzBumpAt_eq_one hm h]
 
-theorem bpzCut_eq_zero_of_ge {m : ℝ} (hm : 0 < m) {z x : ℂ} (h : 2 * m ≤ ‖x‖) :
+end
+
+section
+variable {m : ℝ} (hm : 0 < m)
+include hm
+
+theorem bpzCut_eq_zero_of_ge {z x : ℂ} (h : 2 * m ≤ ‖x‖) :
     bpzCut m z x = 0 := by
   have h' : 2 ≤ m⁻¹ * ‖x - 0‖ := by
     rw [sub_zero, inv_mul_eq_div, le_div_iff₀ hm]
     linarith
   simp [bpzCut, bpzBumpAt_eq_zero (inv_nonneg.2 hm.le) h']
 
-theorem bpzCut_eq_one_of_far {m : ℝ} (hm : 0 < m) {z x : ℂ} (h1 : 2 ≤ m * ‖x - z‖)
+theorem bpzCut_eq_one_of_far {z x : ℂ} (h1 : 2 ≤ m * ‖x - z‖)
     (h2 : 2 ≤ m * ‖x‖) (h3 : 2 ≤ m * ‖x - 1‖) (h4 : ‖x‖ ≤ m) : bpzCut m z x = 1 := by
   have e2 : bpzBumpAt m 0 x = 0 := bpzBumpAt_eq_zero hm.le (by simpa using h2)
   have e4 : bpzBumpAt m⁻¹ 0 x = 1 :=
     bpzBumpAt_eq_one (inv_nonneg.2 hm.le) (by rw [sub_zero, inv_mul_le_iff₀ hm]; linarith)
   simp [bpzCut, bpzBumpAt_eq_zero hm.le h1, e2, bpzBumpAt_eq_zero hm.le h3, e4]
 
-theorem bpzCut_support_subset {m : ℝ} (hm : 0 < m) (z : ℂ) :
+theorem bpzCut_support_subset (z : ℂ) :
     Function.support (bpzCut m z) ⊆
       {x | 1 ≤ m * ‖x - z‖ ∧ 1 ≤ m * ‖x‖ ∧ 1 ≤ m * ‖x - 1‖ ∧ ‖x‖ ≤ 2 * m} := by
   intro x hx
@@ -381,6 +420,8 @@ theorem bpzCut_support_subset {m : ℝ} (hm : 0 < m) (z : ℂ) :
   · by_contra h
     exact hx' (bpzCut_eq_zero_of_ge hm (not_le.1 h).le)
 
+end
+
 theorem isClosed_bpzCutSet (m : ℝ) (z : ℂ) :
     IsClosed {x : ℂ | 1 ≤ m * ‖x - z‖ ∧ 1 ≤ m * ‖x‖ ∧ 1 ≤ m * ‖x - 1‖ ∧ ‖x‖ ≤ 2 * m} := by
   have h1 : IsClosed {x : ℂ | 1 ≤ m * ‖x - z‖} := isClosed_le continuous_const (by fun_prop)
@@ -389,12 +430,16 @@ theorem isClosed_bpzCutSet (m : ℝ) (z : ℂ) :
   have h4 : IsClosed {x : ℂ | ‖x‖ ≤ 2 * m} := isClosed_le (by fun_prop) continuous_const
   exact h1.inter (h2.inter (h3.inter h4))
 
-theorem tsupport_bpzCut_subset {m : ℝ} (hm : 0 < m) (z : ℂ) :
+section
+variable {m : ℝ} (hm : 0 < m) (z : ℂ)
+include hm
+
+theorem tsupport_bpzCut_subset :
     tsupport (bpzCut m z) ⊆
       {x | 1 ≤ m * ‖x - z‖ ∧ 1 ≤ m * ‖x‖ ∧ 1 ≤ m * ‖x - 1‖ ∧ ‖x‖ ≤ 2 * m} :=
   closure_minimal (bpzCut_support_subset hm z) (isClosed_bpzCutSet m z)
 
-theorem tsupport_bpzCut_subset_reg {m : ℝ} (hm : 0 < m) (z : ℂ) :
+theorem tsupport_bpzCut_subset_reg :
     tsupport (bpzCut m z) ⊆ bpzReg z := by
   intro x hx
   obtain ⟨h1, h2, h3, -⟩ := tsupport_bpzCut_subset hm z hx
@@ -406,9 +451,11 @@ theorem tsupport_bpzCut_subset_reg {m : ℝ} (hm : 0 < m) (z : ℂ) :
   · rintro rfl
     norm_num at h1
 
-theorem hasCompactSupport_bpzCut {m : ℝ} (hm : 0 < m) (z : ℂ) : HasCompactSupport (bpzCut m z) :=
+theorem hasCompactSupport_bpzCut : HasCompactSupport (bpzCut m z) :=
   (isCompact_closedBall (0 : ℂ) (2 * m)).of_isClosed_subset (isClosed_tsupport _) fun x hx => by
     simpa using (tsupport_bpzCut_subset hm z hx).2.2.2
+
+end
 
 theorem bpzCut_eventuallyEq_one {z x : ℂ} (hx : x ∈ bpzReg z) :
     ∃ R : ℝ, ∀ m : ℝ, R ≤ m → bpzCut m z =ᶠ[𝓝 x] fun _ => 1 := by
@@ -428,42 +475,35 @@ theorem bpzCut_eventuallyEq_one {z x : ℂ} (hx : x ∈ bpzReg z) :
     linarith
   filter_upwards [Metric.ball_mem_nhds x (half_pos hdpos)] with y hy
   have hyx : ‖y - x‖ < d / 2 := by simpa [dist_eq_norm] using hy
-  refine bpzCut_eq_one_of_far hmpos ?_ ?_ ?_ ?_
-  · have := bpz_norm_sub_ge x y z
-    have hle : d / 2 ≤ ‖y - z‖ := by linarith only [this, hyx, hdz]
-    have := mul_le_mul_of_nonneg_left hle hmpos.le
-    linarith only [this, hmd]
-  · have := bpz_norm_sub_ge x y 0
-    simp only [sub_zero] at this
-    have hle : d / 2 ≤ ‖y‖ := by linarith only [this, hyx, hd0]
-    have := mul_le_mul_of_nonneg_left hle hmpos.le
-    linarith only [this, hmd]
-  · have := bpz_norm_sub_ge x y 1
-    have hle : d / 2 ≤ ‖y - 1‖ := by linarith only [this, hyx, hd1]
-    have := mul_le_mul_of_nonneg_left hle hmpos.le
-    linarith only [this, hmd]
-  · have : ‖y‖ ≤ ‖x‖ + ‖y - x‖ := by
-      calc ‖y‖ = ‖x + (y - x)‖ := by rw [add_sub_cancel]
-        _ ≤ ‖x‖ + ‖y - x‖ := norm_add_le _ _
-    linarith
+  have hnear (c : ℂ) (hc : d ≤ ‖x - c‖) : 2 ≤ m * ‖y - c‖ := by
+    have := bpz_norm_sub_ge x y c
+    have hle : d / 2 ≤ ‖y - c‖ := by linarith
+    linarith [mul_le_mul_of_nonneg_left hle hmpos.le]
+  refine bpzCut_eq_one_of_far hmpos (hnear z hdz) (by simpa using hnear 0 (by simpa using hd0))
+    (hnear 1 hd1) ?_
+  linarith [bpz_norm_le_add x y]
 
+section
+variable (z : ℂ) (n : ℕ)
 
 /-- The cutoffs are nonnegative. -/
-theorem bpzCutoffSeq_nonneg (z : ℂ) (n : ℕ) (x : ℂ) : 0 ≤ bpzCutoffSeq z n x :=
+theorem bpzCutoffSeq_nonneg (x : ℂ) : 0 ≤ bpzCutoffSeq z n x :=
   bpzCut_nonneg _ z x
 
 /-- The cutoffs are at most `1`. -/
-theorem bpzCutoffSeq_le_one (z : ℂ) (n : ℕ) (x : ℂ) : bpzCutoffSeq z n x ≤ 1 :=
+theorem bpzCutoffSeq_le_one (x : ℂ) : bpzCutoffSeq z n x ≤ 1 :=
   bpzCut_le_one _ z x
 
 /-- The cutoffs have compact support. -/
-theorem hasCompactSupport_bpzCutoffSeq (z : ℂ) (n : ℕ) : HasCompactSupport (bpzCutoffSeq z n) :=
+theorem hasCompactSupport_bpzCutoffSeq : HasCompactSupport (bpzCutoffSeq z n) :=
   hasCompactSupport_bpzCut (Nat.cast_add_one_pos n) z
 
 /-- The cutoffs are supported in the region away from `0`, `1`, `z`. -/
-theorem tsupport_bpzCutoffSeq_subset (z : ℂ) (n : ℕ) :
+theorem tsupport_bpzCutoffSeq_subset :
     tsupport (bpzCutoffSeq z n) ⊆ bpzReg z :=
   tsupport_bpzCut_subset_reg (Nat.cast_add_one_pos n) z
+
+end
 
 /-- The cutoffs equal `1` near any fixed point of the regular region, for `n` large. -/
 theorem bpzCutoffSeq_eventually_eq_one {z x : ℂ} (hx : x ∈ bpzReg z) :
@@ -477,74 +517,36 @@ theorem bpzCutoffSeq_eventually_eq_one {z x : ℂ} (hx : x ∈ bpzReg z) :
 
 /-! ### Gradient of the cutoff -/
 
-theorem bpz_norm_fderiv_mul_le {f g : ℂ → ℝ} {x : ℂ} (hf : DifferentiableAt ℝ f x)
-    (hg : DifferentiableAt ℝ g x) (hf1 : |f x| ≤ 1) (hg1 : |g x| ≤ 1) :
-    ‖fderiv ℝ (fun y => f y * g y) x‖ ≤ ‖fderiv ℝ f x‖ + ‖fderiv ℝ g x‖ := by
-  rw [(hf.hasFDerivAt.fun_mul hg.hasFDerivAt).fderiv]
-  calc ‖f x • fderiv ℝ g x + g x • fderiv ℝ f x‖
-      ≤ ‖f x • fderiv ℝ g x‖ + ‖g x • fderiv ℝ f x‖ := norm_add_le _ _
-    _ = |f x| * ‖fderiv ℝ g x‖ + |g x| * ‖fderiv ℝ f x‖ := by
-        rw [norm_smul, norm_smul, Real.norm_eq_abs, Real.norm_eq_abs]
-    _ ≤ ‖fderiv ℝ g x‖ + ‖fderiv ℝ f x‖ :=
-        add_le_add (mul_le_of_le_one_left (norm_nonneg _) hf1)
-          (mul_le_of_le_one_left (norm_nonneg _) hg1)
-    _ = ‖fderiv ℝ f x‖ + ‖fderiv ℝ g x‖ := add_comm _ _
-
-theorem bpz_norm_fderiv_one_sub_bumpAt {r : ℝ} {c ξ : ℂ} :
-    ‖fderiv ℝ (fun y => 1 - bpzBumpAt r c y) ξ‖ = ‖fderiv ℝ (bpzBumpAt r c) ξ‖ := by
-  rw [fderiv_const_sub, norm_neg]
-
-theorem bpz_abs_one_sub_bumpAt_le (r : ℝ) (c x : ℂ) : |1 - bpzBumpAt r c x| ≤ 1 := by
-  rw [abs_of_nonneg (sub_nonneg.2 (bpzBumpAt_le_one r c x))]
-  linarith [bpzBumpAt_nonneg r c x]
-
-theorem bpz_abs_bumpAt_le (r : ℝ) (c x : ℂ) : |bpzBumpAt r c x| ≤ 1 := by
-  rw [abs_of_nonneg (bpzBumpAt_nonneg r c x)]
-  exact bpzBumpAt_le_one r c x
+private theorem norm_fderiv_prod_le_of_mem_Icc {ι : Type*} [DecidableEq ι]
+    {s : Finset ι} {f : ι → ℂ → ℝ} {x : ℂ} (hd : ∀ i ∈ s, DifferentiableAt ℝ (f i) x)
+    (hf : ∀ i ∈ s, f i x ∈ Set.Icc 0 1) :
+    ‖fderiv ℝ (fun y => ∏ i ∈ s, f i y) x‖ ≤ ∑ i ∈ s, ‖fderiv ℝ (f i) x‖ := by
+  rw [fderiv_finsetProd hd]
+  refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun i hi => ?_)
+  have h₀ j (hj : j ∈ s.erase i) := (hf j (Finset.mem_of_mem_erase hj)).1
+  rw [norm_smul, Real.norm_of_nonneg (Finset.prod_nonneg h₀)]
+  exact mul_le_of_le_one_left (norm_nonneg _)
+    (Finset.prod_le_one₀ h₀ (fun j hj => (hf j (Finset.mem_of_mem_erase hj)).2))
 
 /-- Gradient bound for the cutoff at a point away from `0`, `1`, `z`. -/
 theorem norm_fderiv_bpzCut_le {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ w, ‖fderiv ℝ bpzPsi w‖ ≤ C)
     {m : ℝ} (hm : 0 < m) {z ξ : ℂ} (hξz : ξ ≠ z) (hξ0 : ξ ≠ 0) (hξ1 : ξ ≠ 1) :
     ‖fderiv ℝ (bpzCut m z) ξ‖ ≤ 2 * C * (1 / ‖ξ - z‖ + 2 / ‖ξ‖ + 1 / ‖ξ - 1‖) := by
-  have hB : ∀ r c, Differentiable ℝ (bpzBumpAt r c) := fun r c =>
-    (contDiff_bpzBumpAt r c).differentiable (by simp)
-  have hF : ∀ r c, DifferentiableAt ℝ (fun y => 1 - bpzBumpAt r c y) ξ := fun r c =>
-    ((hB r c) ξ).const_sub 1
-  have hd12 : DifferentiableAt ℝ
-      (fun y => (1 - bpzBumpAt m z y) * (1 - bpzBumpAt m 0 y)) ξ := (hF m z).mul (hF m 0)
-  have hd123 : DifferentiableAt ℝ
-      (fun y => (1 - bpzBumpAt m z y) * (1 - bpzBumpAt m 0 y) * (1 - bpzBumpAt m 1 y)) ξ :=
-    hd12.mul (hF m 1)
-  have v12 : |(1 - bpzBumpAt m z ξ) * (1 - bpzBumpAt m 0 ξ)| ≤ 1 := by
-    rw [abs_mul]
-    exact (mul_le_of_le_one_left (abs_nonneg _) (bpz_abs_one_sub_bumpAt_le _ _ _)).trans
-      (bpz_abs_one_sub_bumpAt_le _ _ _)
-  have v123 : |(1 - bpzBumpAt m z ξ) * (1 - bpzBumpAt m 0 ξ) * (1 - bpzBumpAt m 1 ξ)| ≤ 1 := by
-    rw [abs_mul]
-    exact (mul_le_of_le_one_left (abs_nonneg _) v12).trans (bpz_abs_one_sub_bumpAt_le _ _ _)
-  have s1 := bpz_norm_fderiv_mul_le hd123 ((hB m⁻¹ 0) ξ) v123 (bpz_abs_bumpAt_le _ _ _)
-  have s2 := bpz_norm_fderiv_mul_le hd12 (hF m 1) v12 (bpz_abs_one_sub_bumpAt_le _ _ _)
-  have s3 := bpz_norm_fderiv_mul_le (hF m z) (hF m 0) (bpz_abs_one_sub_bumpAt_le _ _ _)
-    (bpz_abs_one_sub_bumpAt_le _ _ _)
-  have b1 : ‖fderiv ℝ (fun y => 1 - bpzBumpAt m z y) ξ‖ ≤ 2 * C / ‖ξ - z‖ := by
-    rw [bpz_norm_fderiv_one_sub_bumpAt]
-    exact norm_fderiv_bpzBumpAt_le hC0 hC hm.le hξz
-  have b2 : ‖fderiv ℝ (fun y => 1 - bpzBumpAt m 0 y) ξ‖ ≤ 2 * C / ‖ξ‖ := by
-    rw [bpz_norm_fderiv_one_sub_bumpAt]
-    simpa using norm_fderiv_bpzBumpAt_le hC0 hC hm.le hξ0
-  have b3 : ‖fderiv ℝ (fun y => 1 - bpzBumpAt m 1 y) ξ‖ ≤ 2 * C / ‖ξ - 1‖ := by
-    rw [bpz_norm_fderiv_one_sub_bumpAt]
-    exact norm_fderiv_bpzBumpAt_le hC0 hC hm.le hξ1
-  have b4 : ‖fderiv ℝ (bpzBumpAt m⁻¹ 0) ξ‖ ≤ 2 * C / ‖ξ‖ := by
-    simpa using norm_fderiv_bpzBumpAt_le hC0 hC (inv_nonneg.2 hm.le) hξ0
-  calc ‖fderiv ℝ (bpzCut m z) ξ‖
-      ≤ (((‖fderiv ℝ (fun y => 1 - bpzBumpAt m z y) ξ‖ +
-          ‖fderiv ℝ (fun y => 1 - bpzBumpAt m 0 y) ξ‖) +
-          ‖fderiv ℝ (fun y => 1 - bpzBumpAt m 1 y) ξ‖)) + ‖fderiv ℝ (bpzBumpAt m⁻¹ 0) ξ‖ := by
-        exact s1.trans (add_le_add (s2.trans (add_le_add s3 le_rfl)) le_rfl)
-    _ ≤ 2 * C / ‖ξ - z‖ + 2 * C / ‖ξ‖ + 2 * C / ‖ξ - 1‖ + 2 * C / ‖ξ‖ :=
-        add_le_add (add_le_add (add_le_add b1 b2) b3) b4
-    _ = 2 * C * (1 / ‖ξ - z‖ + 2 / ‖ξ‖ + 1 / ‖ξ - 1‖) := by ring
+  rw [bpzCut_eq_prod]
+  refine (norm_fderiv_prod_le_of_mem_Icc (fun i _ =>
+    (contDiff_bpzCutFactors m z i).contDiffAt.differentiableAt (by simp))
+    (fun i _ => bpzCutFactors_mem_Icc m z ξ i)).trans ?_
+  have h {r : ℝ} {c : ℂ} (hr : 0 ≤ r) (hc : ξ ≠ c) :
+      ‖fderiv ℝ (fun x => 1 - bpzBumpAt r c x) ξ‖ ≤ 2 * C / ‖ξ - c‖ := by
+    rw [fderiv_const_sub, norm_neg]
+    exact norm_fderiv_bpzBumpAt_le hC0 hC hr hc
+  have h₀ := h hm.le hξ0
+  have h₁ := norm_fderiv_bpzBumpAt_le hC0 hC (inv_nonneg.mpr hm.le) hξ0
+  simp only [sub_zero] at h₀ h₁
+  have H := add_le_add (h hm.le hξz) (add_le_add h₀ (add_le_add (h hm.le hξ1) h₁))
+  simp only [Fin.sum_univ_succ, Fin.sum_univ_zero, add_zero, bpzCutFactors,
+    Matrix.cons_val_zero, Matrix.cons_val_succ]
+  exact H.trans_eq (by ring)
 
 /-! ### The truncated function `g χ_n` -/
 
@@ -685,7 +687,7 @@ theorem bpz_norm_bpzG_mul_bpzCut_le (m : ℝ) (z x : ℂ) :
   exact mul_le_of_le_one_right (norm_nonneg _) (bpzCut_le_one m z x)
 
 /-- Uniform difference-quotient bound. -/
-theorem norm_bpzG_mul_cutoff_sub_le {z : ℂ} (_hz0 : z ≠ 0) (_hz1 : z ≠ 1) :
+theorem norm_bpzG_mul_cutoff_sub_le (z : ℂ) :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ (n : ℕ) (x y : ℂ), x ≠ z → y ≠ z →
       ‖bpzG z x * (bpzCutoffSeq z n x : ℂ) - bpzG z y * (bpzCutoffSeq z n y : ℂ)‖ ≤
         A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)) * ‖x - y‖ := by
@@ -694,9 +696,7 @@ theorem norm_bpzG_mul_cutoff_sub_le {z : ℂ} (_hz0 : z ≠ 0) (_hz1 : z ≠ 1) 
   refine ⟨4 * A₂ + 4 * K, by positivity, fun n x y hx hy => ?_⟩
   have hm : (0 : ℝ) < (n : ℝ) + 1 := Nat.cast_add_one_pos n
   have hH := (contDiff_bpzG_mul_bpzCut hm z).differentiable (by simp)
-  have hA : ∀ ξ : ℂ, ξ ≠ z →
-      ‖fderiv ℝ (fun x => bpzG z x * (bpzCut ((n : ℝ) + 1) z x : ℂ)) ξ‖ ≤
-        A₂ * (1 + ‖ξ - z‖ ^ (-2 : ℝ)) := fun ξ hξ => hA₂ _ hm ξ hξ
+  have hA := fun ξ hξ => hA₂ _ hm ξ hξ
   have sx : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
   have sy : 0 ≤ ‖y - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
   have hd : 0 ≤ ‖x - y‖ := norm_nonneg _

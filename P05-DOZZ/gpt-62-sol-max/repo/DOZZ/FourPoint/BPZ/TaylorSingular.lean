@@ -57,9 +57,7 @@ theorem bpz_taylor_singular {g g' g'' : ℝ → ℝ} {t g₀ d₀ : ℝ} (ht : 0
   have htmem : t ∈ Ioc (0 : ℝ) t := ⟨ht, le_rfl⟩
   -- the primitive `u ↦ g u + (t - u) * g' u` tends to `g₀ + t * d₀` at `0⁺`
   have hlim0 : Tendsto (fun u => g u + (t - u) * g' u) (𝓝[>] 0) (𝓝 (g₀ + (t - 0) * d₀)) := by
-    have hw : Tendsto (fun u : ℝ => t - u) (𝓝[>] 0) (𝓝 (t - 0)) :=
-      ((continuous_const.sub continuous_id).tendsto 0).mono_left nhdsWithin_le_nhds
-    exact hg0.add (hw.mul hg'0)
+    exact hg0.add ((((continuous_const.sub continuous_id).tendsto 0).mono_left nhdsWithin_le_nhds).mul hg'0)
   -- and to `g t` at `t⁻`, by continuity of `g` and `g'` at `t`
   have hlimt : Tendsto (fun u => g u + (t - u) * g' u) (𝓝[<] t) (𝓝 (g t)) := by
     have hgc := (hg t htmem).continuousAt

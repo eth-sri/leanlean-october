@@ -22,7 +22,7 @@ theorem affineMax_abs_sub_le
   classical
   let C := ∑ i : κ, |a i|
   have hC : 0 ≤ C := Finset.sum_nonneg fun _ _ => abs_nonneg _
-  have ha (i : κ) : |a i| ≤ C :=
+  have ha (i : κ)  :=
     Finset.single_le_sum (f := fun j => |a j|) (fun _ _ => abs_nonneg _) (Finset.mem_univ i)
   have hbound (x y : ℝ) : affineMax a b x ≤ affineMax a b y + C * |x - y| := by
     apply Finset.sup'_le

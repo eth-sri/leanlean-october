@@ -27,12 +27,12 @@ theorem taylor_small_scales (δ ε : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) (hε : 
       with r h1 h2 h3
     exact ⟨h1, h2, h3⟩
   obtain ⟨R, hR, hsmall⟩ := Metric.eventually_nhds_iff.mp hs
-  let r₀ : ℝ := min (R / 2) (1 / 4)
+  let r₀  := min (R / 2) (1 / 4)
   refine ⟨r₀, lt_min (by positivity) (by norm_num), min_le_right _ _, ?_⟩
   intro r hr hrr
   have hrR : dist r 0 < R := by
     rw [Real.dist_eq, sub_zero, abs_of_pos hr]
-    have hh : r ≤ R / 2 := hrr.trans (min_le_left _ _)
+    have hh  := hrr.trans (min_le_left _ _)
     linarith only [hh, hR]
   obtain ⟨h1, h2, h3⟩ := hsmall hrR
   have hρ : 0 < r ^ (1 - δ) := Real.rpow_pos_of_pos hr _
@@ -53,11 +53,11 @@ theorem taylor_common_gain (γ κ δ ε η d W q : ℝ)
     (hηd : η ≤ δ * d) (hmid : κ - 2 + η ≤ -2 - 2 * ε + (1 - δ) * W / (2 * q)) :
     ∃ η' : ℝ, 0 < η' ∧ η' < 2 - κ ∧ η' ≤ δ * d ∧
       η' ≤ ε * γ ^ 2 / 2 ∧ κ - 2 + η' ≤ -2 - 2 * ε + (1 - δ) * W / (2 * q) := by
-  let η' : ℝ := min η (ε * γ ^ 2 / 4)
+  let η'  := min η (ε * γ ^ 2 / 4)
   have hpos : 0 < ε * γ ^ 2 / 4 := by positivity
   have hl : η' ≤ η := min_le_left _ _
   have hr : η' ≤ ε * γ ^ 2 / 4 := min_le_right _ _
   exact ⟨η', lt_min hη hpos, hl.trans_lt hηκ, hl.trans hηd,
-    by nlinarith only [hr, hpos], by linarith only [hl, hmid]⟩
+    by linarith, by linarith⟩
 
 end DOZZ.Proofs

@@ -17,25 +17,39 @@ namespace DOZZ.Proofs
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
 
-/-- The continuous lift associated with a finite disk chain is locally represented by one of the
-chain's holomorphic solutions, including at subdivision nodes. -/
-theorem disk_chain_lift_has_path_solution_charts
+/-- A finite Picard continuation of the initial value `y` along `γ`, including its local disk data
+and continuous path lift. -/
+structure PathContinuationLift (γ : ℝ → ℂ) (H : ℂ → E →L[ℂ] E) (y : E) where
+  subdivision : ℕ
+  subdivision_pos : 0 < subdivision
+  radius : ℝ
+  coefficient_bound : ℝ
+  radius_pos : 0 < radius
+  coefficient_bound_nonneg : 0 ≤ coefficient_bound
+  disks : ℕ → HolomorphicDiskSolution H radius
+  disks_initial : (disks 0).initial = y
+  centers : ∀ i ≤ subdivision,
+    (disks i).center = γ ((i : ℝ) / (subdivision : ℝ))
+  operator_bound : ∀ i ≤ subdivision, ∀ z ∈ Metric.ball (disks i).center radius,
+    ‖H z‖ ≤ coefficient_bound
+  path_cover : ∀ i < subdivision, ∀ t ∈ Icc ((i : ℝ) / (subdivision : ℝ))
+    (((i + 1 : ℕ) : ℝ) / (subdivision : ℝ)),
+    γ t ∈ Metric.ball (disks i).center (radius / 2)
+  overlap : ∀ i < subdivision, ∀ z ∈ Metric.ball (disks (i + 1)).center (radius / 2),
+    (disks i).solution z = (disks (i + 1)).solution z
+  value : ℝ → E
+  value_continuous : ContinuousOn value (Icc (0 : ℝ) 1)
+  value_initial : value 0 = y
+  local_formula : ∀ i < subdivision, ∀ t ∈ Icc ((i : ℝ) / (subdivision : ℝ))
+    (((i + 1 : ℕ) : ℝ) / (subdivision : ℝ)),
+    value t = (disks i).solution (γ t)
+
+/-- A finite-chain lift is locally represented by a disk solution, including at subdivision nodes. -/
+theorem path_continuation_lift_has_solution_charts
     {γ : ℝ → ℂ} (hγ : ContinuousOn γ (Icc (0 : ℝ) 1))
-    (N : ℕ) (hN : 0 < N) (r M : ℝ) (hr : 0 < r) (hM : 0 ≤ M)
-    (H : ℂ → E →L[ℂ] E)
-    (D : ℕ → HolomorphicDiskSolution H r)
-    (hcenters : ∀ i ≤ N, (D i).center = γ ((i : ℝ) / (N : ℝ)))
-    (hbound : ∀ i ≤ N, ∀ z ∈ Metric.ball (D i).center r, ‖H z‖ ≤ M)
-    (hcover : ∀ i < N, ∀ s ∈ Icc ((i : ℝ) / (N : ℝ))
-      (((i + 1 : ℕ) : ℝ) / (N : ℝ)),
-      γ s ∈ Metric.ball (D i).center (r / 2))
-    (hoverlap : ∀ i < N, ∀ z ∈ Metric.ball (D (i + 1)).center (r / 2),
-      (D i).solution z = (D (i + 1)).solution z)
-    {F : ℝ → E}
-    (hformula : ∀ i < N, ∀ s ∈ Icc ((i : ℝ) / (N : ℝ))
-      (((i + 1 : ℕ) : ℝ) / (N : ℝ)),
-      F s = (D i).solution (γ s)) :
-    ∀ t ∈ Icc (0 : ℝ) 1, Nonempty (PathSolutionChart γ H F t) := by
+    {H : ℂ → E →L[ℂ] E} {y : E} (A : PathContinuationLift γ H y) :
+    ∀ t ∈ Icc (0 : ℝ) 1, Nonempty (PathSolutionChart γ H A.value t) := by
+  obtain ⟨N, hN, r, M, hr, hM, D, _, hcenters, hbound, hcover, hoverlap, F, _, _, hformula⟩ := A
   intro t ht
   obtain ⟨i, hi, hleft, hright, hright'⟩ := exists_equal_subdivision_interval N hN ht
   let τ : ℕ → ℝ := fun j => (j : ℝ) / (N : ℝ)
@@ -57,30 +71,18 @@ theorem disk_chain_lift_has_path_solution_charts
     hcover i hi t ⟨hleft', hright''⟩
   obtain ⟨δγ, hδγ, hγclose⟩ :=
     (Metric.continuousWithinAt_iff.mp (hγ.continuousWithinAt ht)) (r / 2) (by linarith)
+  have hball : Metric.ball (γ t) (r / 2) ⊆ Metric.ball (D i).center r := by
+    refine Metric.ball_subset_ball' ?_
+    have hd := Metric.mem_ball.mp hpointCover
+    linarith
   let localChart : PathSolutionChart γ H F t := {
     radius := r / 2
     radius_pos := by linarith
     bound := M
     bound_nonneg := hM
     solution := (D i).solution
-    coefficient_bound := by
-      intro z hz
-      have hzCenter : z ∈ Metric.ball (D i).center r := by
-        rw [Metric.mem_ball] at hz ⊢
-        calc
-          dist z (D i).center ≤ dist z (γ t) + dist (γ t) (D i).center := dist_triangle _ _ _
-          _ < r / 2 + r / 2 := add_lt_add hz (Metric.mem_ball.mp hpointCover)
-          _ = r := by ring
-      exact hbound i (Nat.le_of_lt hi) z hzCenter
-    derivative := by
-      intro z hz
-      have hzCenter : z ∈ Metric.ball (D i).center r := by
-        rw [Metric.mem_ball] at hz ⊢
-        calc
-          dist z (D i).center ≤ dist z (γ t) + dist (γ t) (D i).center := dist_triangle _ _ _
-          _ < r / 2 + r / 2 := add_lt_add hz (Metric.mem_ball.mp hpointCover)
-          _ = r := by ring
-      exact (D i).derivative z hzCenter
+    coefficient_bound := fun z hz => hbound i hi.le z (hball hz)
+    derivative := fun z hz => (D i).derivative z (hball hz)
     local_agrees := by
       by_cases htl : t = lo
       · subst t

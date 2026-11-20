@@ -25,7 +25,7 @@ theorem fusion_rooted_spatial_integrable {Ω : Type*} [MeasurableSpace Ω]
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤) :
     ∀ᵐ ω ∂P, Integrable f (M ω) := by
   let L := fun ω => (∫⁻ u, ENNReal.ofReal ‖f u‖ ∂M ω) * G (M ω)
-  have hM' := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
+  have hM' := equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM
   have hL : AEMeasurable L P :=
     ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hf.norm)).comp_aemeasurable hM').mul
       (hG.comp_aemeasurable hM')

@@ -43,21 +43,19 @@ theorem equatorHaarCoordinateCLM_apply
     (i : GaussianFields.HaarBasisIndex 3) (f : TestFn) :
     equatorHaarCoordinateCLM i f =
       ⟪equatorHaarBasis i, equatorKernelLimitMap f⟫_ℝ := by
-  change innerSL ℝ (equatorHaarBasis i) (equatorKernelLimitMapCLM f) = _
-  rw [equatorKernelLimitMapCLM_apply]
-  exact innerSL_apply_apply (𝕜 := ℝ) _ _
+  rfl
 
-theorem equatorHaarPartialDistribution_apply
-    (s : Finset (GaussianFields.HaarBasisIndex 3))
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (f : TestFn) :
+section
+variable (s : Finset (GaussianFields.HaarBasisIndex 3))
+  (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (f : TestFn)
+
+theorem equatorHaarPartialDistribution_apply :
     equatorHaarPartialDistribution s ω f =
       ∑ i ∈ s, ω i * ⟪equatorHaarBasis i, equatorKernelLimitMap f⟫_ℝ := by
   simp [equatorHaarPartialDistribution, equatorHaarCoordinateCLM_apply, smul_eq_mul]
 
 /-- The finite sample evaluation is the corresponding concrete Gaussian-coordinate sum. -/
-theorem equatorHaarPartialDistribution_apply_eq_gaussianLinearCombination
-    (s : Finset (GaussianFields.HaarBasisIndex 3))
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (f : TestFn) :
+theorem equatorHaarPartialDistribution_apply_eq_gaussianLinearCombination :
     equatorHaarPartialDistribution s ω f =
       GaussianFields.gaussianLinearCombination s
         (fun i => equatorHaarBasis.repr (equatorKernelLimitMap f) i) ω := by
@@ -67,6 +65,8 @@ theorem equatorHaarPartialDistribution_apply_eq_gaussianLinearCombination
   intro i hi
   rw [equatorHaarBasis.repr_apply_apply]
   simp [GaussianFields.gaussianCoordinate, mul_comm]
+
+end
 
 /-- Every finite Haar partial evaluation is measurable on the product sample space. -/
 theorem measurable_equatorHaarPartialDistribution_apply
@@ -91,14 +91,7 @@ theorem equatorHaarPartialEvaluation_tendsto_Lp (f : TestFn) :
         GaussianFields.gaussianPartialSumLp s
           (equatorHaarBasis.repr (equatorKernelLimitMap f)))
       atTop (𝓝 (equatorFieldL2 f)) := by
-  change Tendsto
-    (fun s : Finset (GaussianFields.HaarBasisIndex 3) =>
-      GaussianFields.gaussianPartialSumLp s
-        (equatorHaarBasis.repr (equatorKernelLimitMap f)))
-    atTop (𝓝 (GaussianFields.gaussianL2Isometry
-      (equatorHaarBasis.repr (equatorKernelLimitMap f))))
-  exact GaussianFields.tendsto_gaussianPartialSumLp
-    (equatorHaarBasis.repr (equatorKernelLimitMap f))
+  apply GaussianFields.tendsto_gaussianPartialSumLp
 
 /-- The concrete Haar evaluations converge in measure to the G4 evaluation. This uniform
 convergence-in-measure statement is the input for the countable common-subsequence extraction. -/
@@ -112,7 +105,7 @@ theorem equatorHaarPartialEvaluation_tendstoInMeasure (f : TestFn) :
   let μ := GaussianFields.gaussianSequenceMeasure
     (GaussianFields.HaarBasisIndex 3)
   let c := equatorHaarBasis.repr (equatorKernelLimitMap f)
-  let F : ℕ → Lp ℝ 2 μ := fun n =>
+  let F  := fun n =>
     GaussianFields.gaussianPartialSumLp
       (GaussianFields.gaussianIndexTruncation
         (GaussianFields.HaarBasisIndex 3) n) c
@@ -126,9 +119,7 @@ theorem equatorHaarPartialEvaluation_tendstoInMeasure (f : TestFn) :
     exact (equatorHaarPartialEvaluation_tendsto_Lp f).comp
       (GaussianFields.tendsto_gaussianIndexTruncation
         (GaussianFields.HaarBasisIndex 3))
-  have hInMeasure : TendstoInMeasure μ (fun n => ⇑(F n)) atTop
-      (GaussianFields.scalarWhiteNoiseL2 3 (equatorKernelLimitMap f)) :=
-    tendstoInMeasure_of_tendsto_Lp (p := (2 : ℝ≥0∞)) hLp
+  have hInMeasure := tendstoInMeasure_of_tendsto_Lp (p := (2 : ℝ≥0∞)) hLp
   have hpartial : ∀ n,
       (fun ω => equatorHaarPartialDistribution
         (GaussianFields.gaussianIndexTruncation

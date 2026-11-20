@@ -35,8 +35,7 @@ theorem fusion_exteriorDifference_normalized_tendsto {Ω : Type*} [MeasurableSpa
   have ho : IsComplexLittleOAtZero κ (fun z => (E z : ℂ)) := by
     apply power_bound_littleO _ κ (1 - κ) C (1 / 4) (by linarith) (by norm_num)
     intro z hz hz4
-    simpa only [Complex.norm_real, Real.norm_eq_abs, Real.rpow_one,
-      show κ + (1 - κ) = (1 : ℝ) by ring] using hE z hz hz4
+    simpa using hE z hz hz4
   have h := Complex.continuous_re.continuousAt.tendsto.comp (fusion_normalized_tendsto_of_littleO κ _ ho)
   simpa only [Function.comp_def, ← Complex.ofReal_div, Complex.ofReal_re, Complex.zero_re] using h
 end DOZZ.Proofs

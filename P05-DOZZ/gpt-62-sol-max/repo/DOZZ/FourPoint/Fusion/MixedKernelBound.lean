@@ -72,8 +72,8 @@ theorem fusion_mixed_power_bound (a b c L k β : ℝ) (ha : 0 < a) (hb : 0 < b)
       _ ≤ _ := mul_le_mul_of_nonneg_left (le_add_of_nonneg_left (Real.rpow_nonneg ha.le _)) hLk
 
 /-- When the root moves as `y*z`, the numerator is bounded by the larger root distance. -/
-theorem fusion_movingRoot_distance_bound (y z x : ℂ) (hy : y ≠ 0) :
-    ‖x - z‖ ≤ (1 + 2 / ‖y‖) * max ‖x‖ ‖x - y * z‖ := by
+theorem fusion_movingRoot_distance_bound (y z w x : ℂ) (hy : y ≠ 0) (hw : ‖w‖ ≤ ‖z‖) :
+    ‖x - w‖ ≤ (1 + 2 / ‖y‖) * max ‖x‖ ‖x - y * z‖ := by
   have hypos : 0 < ‖y‖ := norm_pos_iff.mpr hy
   have ha : ‖x‖ ≤ max ‖x‖ ‖x - y * z‖ := le_max_left _ _
   have hb : ‖x - y * z‖ ≤ max ‖x‖ ‖x - y * z‖ := le_max_right _ _
@@ -85,23 +85,23 @@ theorem fusion_movingRoot_distance_bound (y z x : ℂ) (hy : y ≠ 0) :
     rw [div_mul_eq_mul_div]
     apply (le_div_iff₀ hypos).mpr
     nlinarith only [hu, ha, hb]
-  have h := norm_sub_le x z
-  nlinarith only [ha, hz, h]
+  have h := norm_sub_le x w
+  nlinarith only [ha, hz, hw, h]
 
 /-- The colliding singularities have the fused exponent at either root. -/
 theorem fusion_movingRoot_power_bound (γ α₁ : ℝ) (hγ : 0 < γ)
-    (hα : γ / 2 ≤ α₁) (y z x : ℂ) (hy : y ≠ 0)
+    (hα : γ / 2 ≤ α₁) (y z w x : ℂ) (hy : y ≠ 0) (hw : ‖w‖ ≤ ‖z‖)
     (hx : x ≠ 0) (hxu : x ≠ y * z) :
-    ‖x - z‖ ^ (γ ^ 2 / 2) / (‖x‖ ^ (γ * α₁) * ‖x - y * z‖ ^ (γ ^ 2)) ≤
+    ‖x - w‖ ^ (γ ^ 2 / 2) / (‖x‖ ^ (γ * α₁) * ‖x - y * z‖ ^ (γ ^ 2)) ≤
       (1 + 2 / ‖y‖) ^ (γ ^ 2 / 2) *
         (‖x‖ ^ (-γ * (α₁ + γ / 2)) + ‖x - y * z‖ ^ (-γ * (α₁ + γ / 2))) := by
   have hβ : γ ^ 2 / 2 ≤ γ * α₁ := by
     have h := mul_le_mul_of_nonneg_left hα hγ.le
     nlinarith only [h]
-  have h := fusion_mixed_power_bound ‖x‖ ‖x - y * z‖ ‖x - z‖
+  have h := fusion_mixed_power_bound ‖x‖ ‖x - y * z‖ ‖x - w‖
     (1 + 2 / ‖y‖) (γ ^ 2 / 2) (γ * α₁)
     (norm_pos_iff.mpr hx) (norm_pos_iff.mpr (sub_ne_zero.mpr hxu)) (norm_nonneg _)
-    (by positivity) (by positivity) hβ (fusion_movingRoot_distance_bound y z x hy)
+    (by positivity) (by positivity) hβ (fusion_movingRoot_distance_bound y z w x hy hw)
   have he : 2 * (γ ^ 2 / 2) = γ ^ 2 := by ring
   have he' : -(γ * α₁ + γ ^ 2 / 2) = -γ * (α₁ + γ / 2) := by ring
   simpa only [he, he'] using h

@@ -50,13 +50,16 @@ noncomputable def gaussEquationResidualSeries (a b c : ℂ) :
     c • gaussFirstDerivativeSeries a b c -
     (a * b) • gaussSeriesAtZero a b c
 
-private theorem gaussSeriesCoeff_eq (a b c : ℂ) (n : ℕ) :
+section
+variable (a b c : ℂ)
+
+private theorem gaussSeriesCoeff_eq (n : ℕ) :
     (gaussSeriesAtZero a b c).coeff n = ordinaryHypergeometricCoefficient a b c n := by
   change ordinaryHypergeometricSeries ℂ a b c n (fun _ => (1 : ℂ)) = _
   rw [ordinaryHypergeometricSeries_apply_eq]
   simp [ordinaryHypergeometricCoefficient]
 
-private theorem gaussFirstDerivativeSeries_coeff (a b c : ℂ) (n : ℕ) :
+private theorem gaussFirstDerivativeSeries_coeff (n : ℕ) :
     (gaussFirstDerivativeSeries a b c).coeff n =
       (n + 1 : ℂ) * ordinaryHypergeometricCoefficient a b c (n + 1) := by
   change ((gaussSeriesAtZero a b c).derivSeries.coeff n) 1 = _
@@ -66,13 +69,18 @@ private theorem gaussFirstDerivativeSeries_coeff (a b c : ℂ) (n : ℕ) :
   rw [hp]
   simp only [nsmul_eq_mul, Nat.cast_succ]
 
-private theorem gaussZFirstDerivativeSeries_coeff_zero (a b c : ℂ) :
+private theorem gaussZFirstDerivativeSeries_coeff_zero :
     (gaussZFirstDerivativeSeries a b c).coeff 0 = 0 := by
   change ((gaussSeriesAtZero a b c).derivSeries.unshift 0) 0 (fun _ => (1 : ℂ)) = 0
   simp only [FormalMultilinearSeries.unshift]
   simp
 
-private theorem gaussZFirstDerivativeSeries_coeff_succ (a b c : ℂ) (n : ℕ) :
+end
+
+section
+variable (a b c : ℂ) (n : ℕ)
+
+private theorem gaussZFirstDerivativeSeries_coeff_succ :
     (gaussZFirstDerivativeSeries a b c).coeff (n + 1) =
       (n + 1 : ℂ) * ordinaryHypergeometricCoefficient a b c (n + 1) := by
   change ((gaussSeriesAtZero a b c).derivSeries.coeff n) 1 = _
@@ -82,14 +90,14 @@ private theorem gaussZFirstDerivativeSeries_coeff_succ (a b c : ℂ) (n : ℕ) :
   rw [hp]
   simp only [nsmul_eq_mul, Nat.cast_succ]
 
-private theorem gaussZFirstDerivativeSeries_coeff (a b c : ℂ) (n : ℕ) :
+private theorem gaussZFirstDerivativeSeries_coeff :
     (gaussZFirstDerivativeSeries a b c).coeff n =
       (n : ℂ) * ordinaryHypergeometricCoefficient a b c n := by
   cases n with
   | zero => simp [gaussZFirstDerivativeSeries_coeff_zero]
   | succ n => simpa [Nat.cast_succ] using gaussZFirstDerivativeSeries_coeff_succ a b c n
 
-private theorem gaussOneSubZDerivativeSeries_coeff (a b c : ℂ) (n : ℕ) :
+private theorem gaussOneSubZDerivativeSeries_coeff :
     (gaussOneSubZDerivativeSeries a b c).coeff n =
       ((n + 1 : ℂ) * ordinaryHypergeometricCoefficient a b c (n + 1) -
         (n : ℂ) * ordinaryHypergeometricCoefficient a b c n) := by
@@ -97,7 +105,7 @@ private theorem gaussOneSubZDerivativeSeries_coeff (a b c : ℂ) (n : ℕ) :
     (gaussZFirstDerivativeSeries a b c).coeff n = _
   rw [gaussFirstDerivativeSeries_coeff, gaussZFirstDerivativeSeries_coeff]
 
-private theorem gaussZOneSubZDerivativeDerivativeSeries_coeff (a b c : ℂ) (n : ℕ) :
+private theorem gaussZOneSubZDerivativeDerivativeSeries_coeff :
   (gaussZOneSubZDerivativeDerivativeSeries a b c).coeff n =
       (n : ℂ) * (gaussOneSubZDerivativeSeries a b c).coeff n := by
   cases n with
@@ -112,11 +120,18 @@ private theorem gaussZOneSubZDerivativeDerivativeSeries_coeff (a b c : ℂ) (n :
       rw [FormalMultilinearSeries.derivSeries_coeff_one]
       simp only [nsmul_eq_mul, Nat.cast_succ]
 
-private theorem gaussSeriesCoeff_add' {p q : FormalMultilinearSeries ℂ ℂ ℂ} (n : ℕ) :
+end
+
+section
+variable {p q : FormalMultilinearSeries ℂ ℂ ℂ} (n : ℕ)
+
+private theorem gaussSeriesCoeff_add' :
     (p + q).coeff n = p.coeff n + q.coeff n := rfl
 
-private theorem gaussSeriesCoeff_sub' {p q : FormalMultilinearSeries ℂ ℂ ℂ} (n : ℕ) :
+private theorem gaussSeriesCoeff_sub' :
     (p - q).coeff n = p.coeff n - q.coeff n := rfl
+
+end
 
 private theorem gaussSeriesCoeff_smul' (x : ℂ) (p : FormalMultilinearSeries ℂ ℂ ℂ)
     (n : ℕ) : (x • p).coeff n = x • p.coeff n := rfl
@@ -133,16 +148,18 @@ private theorem gaussEquationResidualSeries_coeff (a b c : ℂ) (n : ℕ) :
   simp only [smul_eq_mul]
   ring
 
-private theorem gaussEquationResidualSeries_eq_zero (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) : gaussEquationResidualSeries a b c = 0 := by
+section
+variable (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+include hc
+
+private theorem gaussEquationResidualSeries_eq_zero : gaussEquationResidualSeries a b c = 0 := by
   apply FormalMultilinearSeries.ext
   intro n
   apply FormalMultilinearSeries.coeff_eq_zero.mp
   rw [gaussEquationResidualSeries_coeff]
-  exact sub_eq_zero.mpr (ordinaryHypergeometricCoefficient_gauss_recurrence a b c n hc)
+  exact sub_eq_zero.mpr (ordinaryHypergeometricCoefficient_gauss_recurrence a b c n (hc n))
 
-private theorem hasFPowerSeriesOnBall_ordinaryHypergeometric (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+private theorem hasFPowerSeriesOnBall_ordinaryHypergeometric :
     HasFPowerSeriesOnBall (ordinaryHypergeometric a b c)
       (gaussSeriesAtZero a b c) 0 1 := by
   let p := gaussSeriesAtZero a b c
@@ -159,29 +176,29 @@ private theorem hasFPowerSeriesOnBall_ordinaryHypergeometric (a b c : ℂ)
 
 /-- The ordinary Gauss series is analytic throughout its open unit disk when its denominator
 parameter avoids nonpositive integers. -/
-theorem ordinaryHypergeometric_analyticOnNhd_unitDisk (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+theorem ordinaryHypergeometric_analyticOnNhd_unitDisk :
     AnalyticOnNhd ℂ (ordinaryHypergeometric a b c) (Metric.ball (0 : ℂ) 1) := by
   intro z hz
   have hzNorm : ‖z‖ < 1 := by
     simpa [Metric.mem_ball, dist_zero_right] using hz
   have hznorm : ‖z‖₊ < 1 := by exact_mod_cast hzNorm
   have hzball : z ∈ Metric.eball (0 : ℂ) 1 := by
-    simpa [Metric.mem_eball, edist_eq_enorm_sub, enorm_eq_nnnorm, dist_zero_right] using
-      (ENNReal.coe_lt_coe.mpr hznorm)
+    apply ENNReal.coe_lt_coe.mpr <;> assumption
   exact (hasFPowerSeriesOnBall_ordinaryHypergeometric a b c hc).analyticAt_of_mem hzball
+
+end
 
 private theorem fderiv_apply_eq_mul_deriv (f : ℂ → ℂ) (z : ℂ) :
     (fderiv ℂ f z) z = z * deriv f z := by
-  calc
-    (fderiv ℂ f z) z = (fderiv ℂ f z) (z • (1 : ℂ)) := by simp
-    _ = z • (fderiv ℂ f z) 1 := by rw [ContinuousLinearMap.map_smul]
-    _ = z * deriv f z := by rw [fderiv_apply_one_eq_deriv]; simp [smul_eq_mul]
+  simpa
+
+section
+variable (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+include hc
 
 /-- On the open unit disk, the ordinary series solves the scalar Gauss equation. This is
 the origin seed for the first-order continuation system; it includes terminating numerator cases. -/
-theorem ordinaryHypergeometric_gaussEquation_on_unitDisk (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+theorem ordinaryHypergeometric_gaussEquation_on_unitDisk :
     ∀ z : ℂ, ‖z‖ < 1 →
       gaussHolomorphicOperator a b c (ordinaryHypergeometric a b c) z = 0 := by
   let f : ℂ → ℂ := ordinaryHypergeometric a b c
@@ -249,8 +266,7 @@ theorem ordinaryHypergeometric_gaussEquation_on_unitDisk (a b c : ℂ)
     have hfun : (fun w : ℂ => w * deriv f w) = (fun w : ℂ => w) * deriv f := by
       funext w
       rfl
-    simpa only [one_mul, id_def] using
-      hprodRaw.congr_of_eventuallyEq (Filter.Eventually.of_forall fun w => congrFun hfun w)
+    simpa using hprodRaw.congr_of_eventuallyEq (Filter.Eventually.of_forall fun w => congrFun hfun w)
   have hgdiff : DifferentiableAt ℂ g z := by
     apply DifferentiableAt.sub hfprimeDiff
       (hprod.differentiableAt)
@@ -269,8 +285,7 @@ theorem ordinaryHypergeometric_gaussEquation_on_unitDisk (a b c : ℂ)
 
 /-- Away from the singular origin, the ordinary-series state `(f, f')` solves the explicit
 first-order Gauss system. -/
-theorem ordinaryHypergeometric_state_solves_gaussSystem (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) {z : ℂ} (hz0 : z ≠ 0) (hz : ‖z‖ < 1) :
+theorem ordinaryHypergeometric_state_solves_gaussSystem {z : ℂ} (hz0 : z ≠ 0) (hz : ‖z‖ < 1) :
     gaussSystemOperator a b c z
         (ordinaryHypergeometric a b c z, deriv (ordinaryHypergeometric a b c) z) =
       (deriv (ordinaryHypergeometric a b c) z,
@@ -284,5 +299,7 @@ theorem ordinaryHypergeometric_state_solves_gaussSystem (a b c : ℂ)
       (ordinaryHypergeometric a b c) hz0 hz1).mp
       (ordinaryHypergeometric_gaussEquation_on_unitDisk a b c hc z hz)
   rw [gaussSystemOperator_apply, hsystem]
+
+end
 
 end DOZZ.Proofs

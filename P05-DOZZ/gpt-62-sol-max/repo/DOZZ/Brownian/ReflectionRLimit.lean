@@ -23,12 +23,14 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ μ : ℝ) (hγ : 0 < γ) (hμ : 0 < μ)
+  (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
+include Ω hγ hμ
+
 /-- If the unit-volume reflection moment tends to one at `Q`, then the full probabilistic
 reflection coefficient tends to `-1`. -/
 theorem reflectionR_tendsto_Q_of_reflectionBarR
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ μ : ℝ)
-    (hγ : 0 < γ) (hμ : 0 < μ)
-    (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hBar : Tendsto
       (fun α : ℝ => reflectionBarR P γ α (B α) Z)
       (𝓝[<] (Q γ)) (𝓝 1)) :
@@ -71,8 +73,7 @@ theorem reflectionR_tendsto_Q_of_reflectionBarR
       simp
     have hre' : Tendsto (fun α : ℝ => Complex.re
         (((-p α : ℝ) : ℂ) * Complex.Gamma ((-p α : ℝ) : ℂ)))
-        (𝓝[<] (Q γ)) (𝓝 1) := by
-      exact hre
+        (𝓝[<] (Q γ)) (𝓝 1) := hre
     rw [hEq] at hre'
     exact hre'
   have hgammaReal : Tendsto
@@ -96,16 +97,12 @@ theorem reflectionR_tendsto_Q_of_reflectionBarR
         reflectionBarR P γ α (B α) Z) := by
     funext α
     simp [reflectionR, p, reflectionExponent, mul_comm, mul_left_comm]
-  rw [hformula]
-  exact hprod
+  rwa [hformula]
 
 /-- The zero-drift moment limit (`DOZZ.reflectionMoment_zeroDrift_tendsto_one`),
 reparameterized by `ν = Q γ - α`, implies the endpoint limit for the full reflection
 coefficient. -/
 theorem reflectionR_tendsto_Q_of_zeroDriftMoment
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ μ : ℝ)
-    (hγ : 0 < γ) (hμ : 0 < μ)
-    (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hMoment : Tendsto
       (fun ν : ℝ =>
         (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ
@@ -120,8 +117,7 @@ theorem reflectionR_tendsto_Q_of_zeroDriftMoment
     · have hcont : ContinuousAt (fun α : ℝ => Q γ - α) (Q γ) := by fun_prop
       simpa using hcont.tendsto.mono_left nhdsWithin_le_nhds
     · filter_upwards [self_mem_nhdsWithin] with α hα
-      have hα' : α < Q γ := by simpa using hα
-      exact sub_pos.mpr hα'
+      simpa
   have hBar : Tendsto
       (fun α : ℝ => reflectionBarR P γ α (B α) Z)
       (𝓝[<] (Q γ)) (𝓝 1) := by
@@ -133,9 +129,10 @@ theorem reflectionR_tendsto_Q_of_zeroDriftMoment
             (2 * (Q γ - α) / γ) ∂P).toReal) := by
       funext α
       simp [reflectionBarR, reflectionExponent]
-    rw [hEq]
-    exact hcomp
-  exact reflectionR_tendsto_Q_of_reflectionBarR P γ μ hγ hμ B Z hBar
+    rwa [hEq]
+  apply reflectionR_tendsto_Q_of_reflectionBarR <;> assumption
+
+end
 
 end DOZZ.Proofs
 

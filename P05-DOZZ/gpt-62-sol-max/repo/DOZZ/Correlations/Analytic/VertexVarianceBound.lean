@@ -22,27 +22,25 @@ theorem vertex_variance_le_card_sum
       Fintype.card I * ∑ i, a i ^ 2 * gaussianVariance P (L i) := by
   classical
   let Z (i : I) (ω : Ω) := a i * L i ω
-  have hZ (i : I) : MemLp (Z i) 2 P := (hm i).const_mul (a i)
-  have hs : MemLp (fun ω => ∑ i, Z i ω) 2 P :=
+  have hZ (i : I)  := (hm i).const_mul (a i)
+  have hs  :=
     memLp_finsetSum Finset.univ (fun i _ => hZ i)
   have hi (i : I) : Integrable (fun ω => Z i ω ^ 2) P := by
     simpa only [sq, Pi.mul_def] using (hZ i).integrable_mul (hZ i)
   have hsi : Integrable (fun ω => (∑ i, Z i ω) ^ 2) P := by
     simpa only [sq, Pi.mul_def] using hs.integrable_mul hs
-  have hsum : Integrable (fun ω => ∑ i, Z i ω ^ 2) P :=
+  have hsum  :=
     integrable_finsetSum Finset.univ (fun i _ => hi i)
   have hb := integral_mono_ae hsi (hsum.const_mul (Fintype.card I : ℝ))
     (Filter.Eventually.of_forall (fun ω => by
-      simpa only [Finset.card_univ] using
-        (sq_sum_le_card_mul_sum_sq (s := Finset.univ) (f := fun i => Z i ω))))
+      exact sq_sum_le_card_mul_sum_sq))
   rw [integral_const_mul, integral_finsetSum Finset.univ (fun i _ => hi i)] at hb
   have he (i : I) : (∫ ω, Z i ω ^ 2 ∂P) = a i ^ 2 * gaussianVariance P (L i) := by
     unfold gaussianVariance gaussianCovariance
     have hpoint : (fun ω => Z i ω ^ 2) =
         (fun ω => a i ^ 2 * (L i ω * L i ω)) := by
       funext ω
-      dsimp only [Z]
-      ring
+      linarith
     rw [hpoint, integral_const_mul]
   simp_rw [he] at hb
   simpa only [gaussianVariance, gaussianCovariance, Z, sq] using hb
@@ -72,21 +70,17 @@ theorem mixed_vertex_variance_growth
         Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i)) ≤
         C * (r + 1) * ∑ i, a i ^ 2 := by
   classical
-  let B : ℝ := 1 + ∑ i, (Real.log (normPlus (z i)) + 1)
+  let B  := 1 + ∑ i, (Real.log (normPlus (z i)) + 1)
   have hB : 1 ≤ B := by
     dsimp only [B]
     exact le_add_of_nonneg_right (Finset.sum_nonneg (fun i _ => by
       linarith [CirclePotential.log_normPlus_nonneg (z i)]))
   have hpin (i : Fin N) (r : ℝ) (hr : 0 ≤ r) : equatorCircleMean (z i) r ≤ B := by
     have he := equator_circle_mean_abs_le (z i) r
-    have he1 : Real.exp (-r) ≤ 1 := Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)
-    have hi : Real.log (normPlus (z i)) + 1 ≤
-        ∑ j, (Real.log (normPlus (z j)) + 1) :=
-      Finset.single_le_sum (f := fun j : Fin N => Real.log (normPlus (z j)) + 1) (fun j _ => by linarith [CirclePotential.log_normPlus_nonneg (z j)])
+    have he1  := Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)
+    have hi := Finset.single_le_sum (f := fun j : Fin N => Real.log (normPlus (z j)) + 1) (fun j _ => by linarith [CirclePotential.log_normPlus_nonneg (z j)])
         (Finset.mem_univ i)
-    have ha := le_abs_self (equatorCircleMean (z i) r - Real.log (normPlus (z i)))
-    dsimp only [B]
-    linarith
+    grind
   refine ⟨(N + 1 : ℕ) * (1 + 2 * B), by positivity, ?_⟩
   intro r hr a
   have hdiag (i : Fin (N + 1)) :

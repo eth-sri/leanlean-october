@@ -47,17 +47,23 @@ private noncomputable local instance bpzMLANormedSpaceDual :
 theorem bpz_ae_ne_of_atom {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0) : ∀ᵐ x ∂m, x ≠ z := by
   rw [ae_iff]; simpa using hz
 
+section
+variable {w : ℂ → ℝ} (hw : Measurable w) (z₀ : ℂ) (r : ℝ)
+include hw
+
 /-- The near weight `1_{|x − z₀| < r} w`. -/
-theorem bpz_measurable_nearPart {w : ℂ → ℝ} (hw : Measurable w) (z₀ : ℂ) (r : ℝ) :
+theorem bpz_measurable_nearPart :
     Measurable (fun x : ℂ => if ‖x - z₀‖ < r then w x else 0) :=
   Measurable.ite (measurableSet_lt (measurable_id.sub measurable_const).norm measurable_const) hw
     measurable_const
 
 /-- The far weight `1_{|x − z₀| ≥ r} w`. -/
-theorem bpz_measurable_farPart {w : ℂ → ℝ} (hw : Measurable w) (z₀ : ℂ) (r : ℝ) :
+theorem bpz_measurable_farPart :
     Measurable (fun x : ℂ => if r ≤ ‖x - z₀‖ then w x else 0) :=
   Measurable.ite (measurableSet_le measurable_const (measurable_id.sub measurable_const).norm) hw
     measurable_const
+
+end
 
 theorem bpz_nearPart_nonneg {w : ℂ → ℝ} (hw0 : ∀ x, 0 ≤ w x) (z₀ : ℂ) (r : ℝ) (x : ℂ) :
     0 ≤ (if ‖x - z₀‖ < r then w x else 0) := by
@@ -68,9 +74,13 @@ theorem bpz_nearPart_nonneg {w : ℂ → ℝ} (hw0 : ∀ x, 0 ≤ w x) (z₀ : �
 
 /-! ### Integrability of the integrands -/
 
+section
+variable {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {v : ℂ → ℝ} (hv : Measurable v) (hv0 : ∀ x, 0 ≤ v x)
+  {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+include ha ha1 hv hv0 hz
+
 /-- Integrability of `v • D_z (|x − z|² + ε²)^a` from that of `v |x − z|^{2a−1}`. -/
-theorem bpz_integrable_smul_softDeriv {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {v : ℂ → ℝ}
-    (hv : Measurable v) (hv0 : ∀ x, 0 ≤ v x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem bpz_integrable_smul_softDeriv
     (hint : Integrable (fun x => v x * ‖x - z‖ ^ (2 * a - 1)) m) :
     Integrable (fun x => v x • bpzSoftDeriv a ε x z) m := by
   refine Integrable.mono' (hint.const_mul (2 * a))
@@ -82,8 +92,7 @@ theorem bpz_integrable_smul_softDeriv {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) 
     _ = 2 * a * (v x * ‖x - z‖ ^ (2 * a - 1)) := by ring
 
 /-- Integrability of `v • D_z² (|x − z|² + ε²)^a` from that of `v |x − z|^{2a−2}`. -/
-theorem bpz_integrable_smul_softDeriv2 {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {v : ℂ → ℝ}
-    (hv : Measurable v) (hv0 : ∀ x, 0 ≤ v x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem bpz_integrable_smul_softDeriv2
     (hint : Integrable (fun x => v x * ‖x - z‖ ^ (2 * a - 2)) m) :
     Integrable (fun x => v x • bpzSoftDeriv2 a ε x z) m := by
   refine Integrable.mono' (hint.const_mul (4 * a * (1 - a) + 2 * a))
@@ -94,6 +103,8 @@ theorem bpz_integrable_smul_softDeriv2 {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1)
         v x * ((4 * a * (1 - a) + 2 * a) * ‖x - z‖ ^ (2 * a - 2)) :=
         mul_le_mul_of_nonneg_left (norm_bpzSoftDeriv2_le_uniform ha ha1 hx) (hv0 x)
     _ = (4 * a * (1 - a) + 2 * a) * (v x * ‖x - z‖ ^ (2 * a - 2)) := by ring
+
+end
 
 /-- Integrability of the far part of the first derivative integrand. -/
 theorem bpz_integrable_far_smul_softDeriv {a ε : ℝ} (ha : 0 < a) {w : ℂ → ℝ}
@@ -110,14 +121,16 @@ theorem bpz_integrable_far_smul_softDeriv {a ε : ℝ} (ha : 0 < a) {w : ℂ →
   have e : 2 * a / (r / 2) = 4 * a / r := by field_simp; ring
   rwa [e] at h
 
+section
+variable {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x)
+  {m : Measure ℂ} {z z₀ : ℂ} {r : ℝ} (hr : 0 < r) (hz : ‖z - z₀‖ ≤ r / 2)
+include ha ha1 hw hw0 hr hz
+
 /-- Integrability of the far part of the second derivative integrand. -/
-theorem bpz_integrable_far_smul_softDeriv2 {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z z₀ : ℂ} {r : ℝ} (hr : 0 < r)
-    (hz : ‖z - z₀‖ ≤ r / 2)
+theorem bpz_integrable_far_smul_softDeriv2
     (hintz : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m) :
     Integrable (fun x => (if r ≤ ‖x - z₀‖ then w x else 0) • bpzSoftDeriv2 a ε x z) m := by
   have hc : 0 ≤ 4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 := by
-    have : 0 ≤ 1 - a := sub_nonneg.mpr ha1
     positivity
   refine Integrable.mono' (hintz.const_mul (4 * (4 * a * (1 - a) + 2 * a) / r ^ 2))
     (bpz_stronglyMeasurable_softDeriv2 a ε z
@@ -133,11 +146,12 @@ theorem bpz_integrable_far_smul_softDeriv2 {a ε : ℝ} (ha : 0 < a) (ha1 : a �
 
 /-! ### The decomposition -/
 
+section
+variable (hzm : m {z} = 0) (hintz : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m)
+include hzm hintz
+
 /-- The first derivative mass is the sum of its near and far parts. -/
-theorem bpzSoftMassDeriv_eq_near_add_far {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z z₀ : ℂ} {r : ℝ} (hr : 0 < r)
-    (hz : ‖z - z₀‖ ≤ r / 2) (hzm : m {z} = 0)
-    (hintz : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m)
+theorem bpzSoftMassDeriv_eq_near_add_far
     (hn : Integrable (fun x => (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a - 1)) m) :
     bpzSoftMassDeriv a ε w m z =
       bpzSoftMassDeriv a ε (fun x => if ‖x - z₀‖ < r then w x else 0) m z +
@@ -156,10 +170,7 @@ theorem bpzSoftMassDeriv_eq_near_add_far {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 
   · rw [ite_eq_right hx, ite_eq_left (not_lt.mp hx), zero_add]
 
 /-- The second derivative mass is the sum of its near and far parts. -/
-theorem bpzSoftMassDeriv2_eq_near_add_far {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z z₀ : ℂ} {r : ℝ} (hr : 0 < r)
-    (hz : ‖z - z₀‖ ≤ r / 2) (hzm : m {z} = 0)
-    (hintz : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m)
+theorem bpzSoftMassDeriv2_eq_near_add_far
     (hn : Integrable (fun x => (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a - 2)) m) :
     bpzSoftMassDeriv2 a ε w m z =
       bpzSoftMassDeriv2 a ε (fun x => if ‖x - z₀‖ < r then w x else 0) m z +
@@ -176,6 +187,10 @@ theorem bpzSoftMassDeriv2_eq_near_add_far {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤
   by_cases hx : ‖x - z₀‖ < r
   · rw [ite_eq_left hx, ite_eq_right (not_le.mpr hx), add_zero]
   · rw [ite_eq_right hx, ite_eq_left (not_lt.mp hx), zero_add]
+
+end
+
+end
 
 /-- The near integral of `|x − z|^{2a}` is at most the softened mass. -/
 theorem bpz_integral_near_le_softMass {a ε : ℝ} (ha : 0 ≤ a) {w : ℂ → ℝ} (hw : Measurable w)
@@ -194,10 +209,8 @@ theorem bpz_integral_near_le_softMass {a ε : ℝ} (ha : 0 ≤ a) {w : ℂ → �
       split_ifs
       · exact le_rfl
       · exact hw0 x
-    calc (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a)
-        ≤ w x * (Complex.normSq (x - z) + ε ^ 2) ^ a :=
-          mul_le_mul h2 h1 (Real.rpow_nonneg (norm_nonneg _) _) (hw0 x)
-      _ = (Complex.normSq (x - z) + ε ^ 2) ^ a * w x := mul_comm _ _
+    exact Trans.trans (mul_le_mul h2 h1 (Real.rpow_nonneg (norm_nonneg (x - z)) (2 * a)) (hw0 x))
+      (mul_comm (w x) ((Complex.normSq (x - z) + ε ^ 2) ^ a))
   have hnn : ∀ x, 0 ≤ (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a) := fun x =>
     mul_nonneg (bpz_nearPart_nonneg hw0 z₀ r x) (Real.rpow_nonneg (norm_nonneg _) _)
   have hint : Integrable (fun x => (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a)) m :=
@@ -245,11 +258,9 @@ theorem bpz_mom2_sub_le {s J u t v A : ℝ} (hs : 0 ≤ s) (hJ : 0 < J)
       ((s * (s + 1) * J ^ (-s - 2)) • Lf.smulRight Lf + (-s * J ^ (-s - 1)) • Bf)‖ ≤
       s * (s + 1) * (J ^ (-s - 1) * t) + 2 * s * (s + 1) * A * (J ^ (-s - 1) * u) +
         s * (J ^ (-s - 1) * v) := by
-  have hu0 : 0 ≤ u := (norm_nonneg _).trans hu
-  have hJ2 : 0 ≤ J ^ (-s - 2) := Real.rpow_nonneg hJ.le _
+  have hu0  := (norm_nonneg _).trans hu
   have hJ1 : 0 ≤ J ^ (-s - 1) := Real.rpow_nonneg hJ.le _
   have hc2 : 0 ≤ s * (s + 1) * J ^ (-s - 2) := by
-    have : 0 ≤ s + 1 := by linarith
     positivity
   have hJJ : J ^ (-s - 2) * J = J ^ (-s - 1) := by
     rw [show -s - 2 = (-s - 1) - 1 by ring]

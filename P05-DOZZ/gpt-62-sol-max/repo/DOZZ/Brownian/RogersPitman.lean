@@ -94,8 +94,7 @@ noncomputable def negativeRogersPitmanPath (μ : ℝ) (V : BrownianTriple) : Bro
   -(rogersPitmanPath μ V)
 
 theorem measurable_negativeRogersPitmanPath (μ : ℝ) :
-    Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := by
-  exact (measurable_rogersPitmanPath μ).neg
+    Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := (measurable_rogersPitmanPath μ).neg
 
 /-- The negative entrance candidate is the pushforward under `-R`. -/
 noncomputable def negativeRogersPitmanEntranceMeasure (μ : ℝ) (W : Measure BrownianPath) :

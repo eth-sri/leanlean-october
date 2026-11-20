@@ -32,13 +32,18 @@ section
 def denseCountable (T : Type*) [TopologicalSpace T] [SecondCountableTopology T] : Set T :=
   (TopologicalSpace.exists_countable_dense T).choose
 
-lemma dense_denseCountable {T : Type*} [TopologicalSpace T] [SecondCountableTopology T] :
+section
+variable {T : Type*} [TopologicalSpace T] [SecondCountableTopology T]
+
+lemma dense_denseCountable :
     Dense (denseCountable T) :=
   (TopologicalSpace.exists_countable_dense T).choose_spec.2
 
-lemma countable_denseCountable {T : Type*} [TopologicalSpace T] [SecondCountableTopology T] :
+lemma countable_denseCountable :
     (denseCountable T).Countable :=
   (TopologicalSpace.exists_countable_dense T).choose_spec.1
+
+end
 
 end
 
@@ -142,13 +147,8 @@ lemma measurable_pair_indicatorProcess {T₁ T₂ : Type*}
   rw [h_eq]
   refine Measurable.ite hA₁ ?_ ?_
   · refine Measurable.ite hA₂ (hX₁₂ s t) ?_
-    change Measurable ((fun x : E ↦ (x, hE.some)) ∘ X₁ s)
-    refine Measurable.comp ?_ (hX₁ _)
     fun_prop
   · refine Measurable.ite hA₂ ?_ measurable_const
-    change Measurable ((fun x : E ↦ (hE.some, x)) ∘ X₂ t)
-    refine Measurable.comp ?_ (hX₂ _)
-    clear hX₁₂
     fun_prop
 
 
@@ -185,7 +185,10 @@ lemma IsLimitOfIndicator.measurable [MeasurableSpace E] [BorelSpace E] {Y X : T 
     · exact Measurable.ite hA (hX t') measurable_const
   · exact Measurable.of_edist_eq_zero (X := fun _ ↦ hE.some) measurable_const (hYUc t htU)
 
-lemma measurable_pair_limUnder_comap {T : Type*} [PseudoEMetricSpace T]
+section
+variable {T : Type*} [PseudoEMetricSpace T]
+
+lemma measurable_pair_limUnder_comap
     {X₁ X₂ : T → Ω → E} {T' : Set T} (hT'_dense : Dense T')
     (hX₁₂ : ∀ i j, Measurable[_, borel (E × E)] fun ω ↦ (X₁ i ω, X₂ j ω))
     (s t : T)
@@ -218,8 +221,7 @@ lemma measurable_pair_limUnder_comap {T : Type*} [PseudoEMetricSpace T]
   refine Measurable.of_edist_eq_zero ?_ h_edist_zero
   exact measurable_limUnder_of_exists_tendsto hf_tendsto (fun i ↦ hX₁₂ i.1 i.2)
 
-lemma measurable_pair_limUnder_indicatorProcess
-    {T : Type*} [PseudoEMetricSpace T] [SecondCountableTopology T]
+lemma measurable_pair_limUnder_indicatorProcess [SecondCountableTopology T]
     [MeasurableSpace E] [BorelSpace E]
     {X X' : T → Ω → E}
     (hX : ∀ t, Measurable (X t)) (hX' : ∀ t, Measurable (X' t))
@@ -247,6 +249,8 @@ lemma measurable_pair_limUnder_indicatorProcess
     · simpa [hω, indicatorProcess] using h_tendsto₂ ω hω
     · simp only [indicatorProcess, hω, ↓reduceIte]
       exact ⟨hE.some, tendsto_const_nhds⟩
+
+end
 
 lemma IsLimitOfIndicator.measurable_pair
     {T : Type*} [PseudoEMetricSpace T] [SecondCountableTopology T]

@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.FourPoint.Reflected.GlobalLateralCarrier
+public import DOZZ.GFFStructure.ContinuousCircleAverage
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! Every local circle chart belongs to the same genuine global lateral carrier. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
@@ -14,26 +16,24 @@ namespace DOZZ.Proofs
 simultaneously; chart radii may therefore tend to zero without changing the underlying carrier. -/
 theorem reflected_global_lateral_admissible
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     ∃ N : Ω → Measure ℂ, Measurable N ∧
       IndepFun (originRadialPath Xc) N P ∧
-      (∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤) ∧
+      (∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω)) ∧
       N =ᵐ[P] (fun ω => (M ω).withDensity
         (lateralRadialWeight γ (originRadialPath Xc ω))) ∧
       ∀ ρ : ℝ, 0 < ρ → IsAdmissibleGMCVersion P (originLateralChart ρ)
         originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ
         (fun ω => (N ω).restrict (originLateralChart ρ)) := by
   obtain ⟨N, hN, hi, hfin, heq⟩ := reflected_global_lateral_carrier
-    P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+    P X Xc hX hcircle γ hγ hγ₂ M hM
   refine ⟨N, hN, hi, hfin, heq, ?_⟩
   intro ρ hρ
   let U := originLateralChart ρ
   have hU : MeasurableSet U := (isOpen_originLateralChart ρ).measurableSet
   obtain ⟨Nc, hNc, _, hcEq⟩ := exists_originLateralChartGMC_radial_removed_identity
-    P X Xc hX hc hm hcont ρ γ hρ hγ hγ₂ M hM
+    P X Xc hX hcircle ρ γ hρ hγ hγ₂ M hM
   have hEq : Nc =ᵐ[P] (fun ω => (N ω).restrict U) := by
     filter_upwards [hcEq, heq] with ω hω hNω
     rw [hω, hNω]
@@ -47,15 +47,12 @@ theorem reflected_global_lateral_admissible
     apply hfin ω K hK
     intro x hx
     have hh : 2*ρ < ‖x‖ := hKU hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖))
-    simpa using hx0
+    simpa using (norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖)))
   · intro f hfc hfU
     have ht := hNc.2.2.2 f hfc hfU
-    have htests : (fun ω => ∫ x, f x ∂Nc ω) =ᵐ[P]
-        fun ω => ∫ x, f x ∂(N ω).restrict U := by
-      filter_upwards [hEq] with ω hω
-      rw [hω]
     exact TendstoInMeasure.congr' (Eventually.of_forall fun _ => ae_of_all P fun _ => rfl)
-      htests ht
+      (by
+      filter_upwards [hEq] with ω hω
+      rw [hω]) ht
 
 end DOZZ.Proofs

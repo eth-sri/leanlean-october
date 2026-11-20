@@ -49,7 +49,7 @@ theorem isNegativeConditionedBrownianLaw_ae_nonpos {ν : ℝ} {Q : Measure Brown
 
 /-- The elementary bound `sinh x ≤ x e^x`. -/
 theorem entranceExp_sinh_le_mul_exp (x : ℝ) : Real.sinh x ≤ x * Real.exp x := by
-  have h1 : 1 - 2 * x ≤ Real.exp (-(2 * x)) := Real.one_sub_le_exp_neg (2 * x)
+  have h1  := Real.one_sub_le_exp_neg (2 * x)
   have h2 : Real.exp (-x) = Real.exp x * Real.exp (-(2 * x)) := by
     rw [← Real.exp_add]
     ring_nf
@@ -105,8 +105,6 @@ theorem conditionedPositiveEntranceDensity_le_gaussian (ν t y : ℝ) (hν : 0 �
 theorem conditionedPositiveEntranceDensity_le_maxwell (ν t y : ℝ) (ht : 0 < t) :
     conditionedPositiveEntranceDensity ν t y ≤
       Real.sqrt (2 / Real.pi) * t ^ (-(3 / 2 : ℝ)) * y ^ 2 := by
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
-  have hT : 0 < t ^ (-(3 / 2 : ℝ)) := Real.rpow_pos_of_pos ht _
   by_cases h : 0 ≤ ν ∧ 0 < y
   · have hg := conditionedPositiveEntranceDensity_le_gaussian ν t y h.1 ht h.2.le
     have hexp : Real.exp (-(y - ν * t) ^ 2 / (2 * t)) ≤ 1 := by
@@ -125,18 +123,18 @@ theorem conditionedPositiveEntranceDensity_le_maxwell (ν t y : ℝ) (ht : 0 < t
     rw [h0]
     positivity
 
+section
+variable {b : ℝ} (hb : 0 < b)
+include hb
+
 /-- The Gamma integral `∫_0^∞ y² e^{-b y} dy = 2 / b³`, as a Bochner integral. -/
-theorem entranceExp_integral_sq_mul_exp_neg {b : ℝ} (hb : 0 < b) :
+theorem entranceExp_integral_sq_mul_exp_neg :
     ∫ y in Ioi (0 : ℝ), y ^ 2 * Real.exp (-(b * y)) = 2 / b ^ 3 := by
   have h := Real.integral_rpow_mul_exp_neg_mul_Ioi (a := 3) (r := b) (by norm_num) hb
   have hΓ : Real.Gamma 3 = 2 := by
-    have := Real.Gamma_nat_eq_factorial 2
-    rw [show ((2 : ℕ) : ℝ) + 1 = 3 by norm_num] at this
-    rw [this]
-    rfl
+    norm_num
   rw [hΓ] at h
   have hpow : (1 / b) ^ (3 : ℝ) = 1 / b ^ 3 := by
-    rw [show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
     simp
   rw [hpow] at h
   rw [show 2 / b ^ 3 = 1 / b ^ 3 * 2 by ring, ← h]
@@ -144,7 +142,7 @@ theorem entranceExp_integral_sq_mul_exp_neg {b : ℝ} (hb : 0 < b) :
   simp only [show (3 : ℝ) - 1 = 2 by norm_num, Real.rpow_two]
 
 /-- The Gamma integral `∫_0^∞ y² e^{-b y} dy = 2 / b³` as a lower integral. -/
-theorem entranceExp_lintegral_sq_mul_exp_neg {b : ℝ} (hb : 0 < b) :
+theorem entranceExp_lintegral_sq_mul_exp_neg :
     (∫⁻ y in Ioi (0 : ℝ), ENNReal.ofReal (y ^ 2 * Real.exp (-(b * y)))) =
       ENNReal.ofReal (2 / b ^ 3) := by
   have hint : IntegrableOn (fun y : ℝ => y ^ 2 * Real.exp (-(b * y))) (Ioi 0) := by
@@ -155,11 +153,16 @@ theorem entranceExp_lintegral_sq_mul_exp_neg {b : ℝ} (hb : 0 < b) :
   rw [← entranceExp_integral_sq_mul_exp_neg hb,
     ← ofReal_integral_eq_lintegral_ofReal hint]
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with y hy
-  exact mul_nonneg (sq_nonneg y) (Real.exp_nonneg _)
+  positivity
+
+end
+
+section
+variable {ν a : ℝ}
 
 /-- The exponential moment of a negative conditioned path is an integral against the entrance
 density over the positive half-line. -/
-theorem entranceExp_lintegral_eq_entrance {ν a : ℝ}
+theorem entranceExp_lintegral_eq_entrance
     {Q : Measure BrownianPath} (hQ : IsNegativeConditionedBrownianLaw ν Q)
     (t : ℝ≥0) (ht : 0 < t) :
     (∫⁻ p, ENNReal.ofReal (Real.exp (a * p t)) ∂Q) =
@@ -176,14 +179,12 @@ theorem entranceExp_lintegral_eq_entrance {ν a : ℝ}
 
 /-- One-time exponential moment of the negative conditioned path: decay `t^{-3/2}`, uniformly in
 the drift. -/
-theorem isNegativeConditionedBrownianLaw_exp_eval_le {ν a : ℝ} (ha : 0 < a)
+theorem isNegativeConditionedBrownianLaw_exp_eval_le (ha : 0 < a)
     {Q : Measure BrownianPath} (hQ : IsNegativeConditionedBrownianLaw ν Q)
     (t : ℝ≥0) (ht : 0 < t) :
     (∫⁻ p, ENNReal.ofReal (Real.exp (a * p t)) ∂Q) ≤
       ENNReal.ofReal (Real.sqrt (2 / Real.pi) * (2 / a ^ 3) * (t : ℝ) ^ (-(3 / 2 : ℝ))) := by
-  have htr : (0 : ℝ) < t := ht
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
-  have hT : 0 < (t : ℝ) ^ (-(3 / 2 : ℝ)) := Real.rpow_pos_of_pos htr _
+  have htr  := ht
   rw [entranceExp_lintegral_eq_entrance hQ t ht]
   calc _ ≤ ∫⁻ y in Ioi (0 : ℝ), ENNReal.ofReal
         (Real.sqrt (2 / Real.pi) * (t : ℝ) ^ (-(3 / 2 : ℝ)) * (y ^ 2 * Real.exp (-(a * y)))) := by
@@ -207,10 +208,10 @@ theorem isNegativeConditionedBrownianLaw_exp_eval_le {ν a : ℝ} (ha : 0 < a)
         ring
 
 /-- The same moment never exceeds one. -/
-theorem isNegativeConditionedBrownianLaw_exp_eval_le_one {ν a : ℝ} (ha : 0 ≤ a)
+theorem isNegativeConditionedBrownianLaw_exp_eval_le_one (ha : 0 ≤ a)
     {Q : Measure BrownianPath} (hQ : IsNegativeConditionedBrownianLaw ν Q) (t : ℝ≥0) :
     (∫⁻ p, ENNReal.ofReal (Real.exp (a * p t)) ∂Q) ≤ 1 := by
-  have : IsProbabilityMeasure Q := hQ.2.1
+  have  := hQ.2.1
   calc (∫⁻ p, ENNReal.ofReal (Real.exp (a * p t)) ∂Q) ≤ ∫⁻ _, 1 ∂Q := by
         refine lintegral_mono_ae ?_
         filter_upwards [isNegativeConditionedBrownianLaw_ae_nonpos hQ] with p hp
@@ -218,23 +219,23 @@ theorem isNegativeConditionedBrownianLaw_exp_eval_le_one {ν a : ℝ} (ha : 0 �
         exact mul_nonpos_of_nonneg_of_nonpos ha (hp t)
     _ = 1 := by simp
 
+end
+
 /-- Below half the drifted position the weighted entrance density is exponentially small. -/
 theorem entranceExp_mul_density_le_of_le_half {ν a t y : ℝ} (hν : 0 ≤ ν) (ha : 0 ≤ a)
     (ht : 1 ≤ t) (hy : 0 < y) (hyM : y ≤ ν * t / 2) :
     Real.exp (-(a * y)) * conditionedPositiveEntranceDensity ν t y ≤
       Real.sqrt (2 / Real.pi) * (ν * t / 2) ^ 2 * Real.exp (-(ν ^ 2 * t / 8)) := by
   have ht0 : 0 < t := by linarith
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
-  have hT0 : 0 ≤ t ^ (-(3 / 2 : ℝ)) := (Real.rpow_pos_of_pos ht0 _).le
   have hg := conditionedPositiveEntranceDensity_le_gaussian ν t y hν ht0 hy.le
   have h1 : Real.exp (-(a * y)) ≤ 1 :=
     Real.exp_le_one_iff.mpr (by have := mul_nonneg ha hy.le; linarith)
   have h2 : t ^ (-(3 / 2 : ℝ)) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos ht (by norm_num)
-  have h3 : y ^ 2 ≤ (ν * t / 2) ^ 2 := pow_le_pow_left₀ hy.le hyM 2
+  have h3  := pow_le_pow_left₀ hy.le hyM 2
   have h4 : Real.exp (-(y - ν * t) ^ 2 / (2 * t)) ≤ Real.exp (-(ν ^ 2 * t / 8)) := by
     apply Real.exp_le_exp.mpr
     have hsq : (ν * t / 2) ^ 2 ≤ (y - ν * t) ^ 2 := by
-      have hnt : 0 ≤ ν * t := mul_nonneg hν ht0.le
+      have hnt  := mul_nonneg hν ht0.le
       have h : ν * t / 2 ≤ ν * t - y := by linarith only [hyM]
       calc (ν * t / 2) ^ 2 ≤ (ν * t - y) ^ 2 := pow_le_pow_left₀ (by linarith only [hnt]) h 2
         _ = (y - ν * t) ^ 2 := by ring
@@ -261,7 +262,6 @@ theorem entranceExp_mul_density_le_of_ge_half {ν a t y : ℝ} (ha : 0 ≤ a)
       Real.sqrt (2 / Real.pi) * Real.exp (-(a * ν * t / 4)) *
         (y ^ 2 * Real.exp (-((a / 2) * y))) := by
   have ht0 : 0 < t := by linarith
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
   have h2 : t ^ (-(3 / 2 : ℝ)) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos ht (by norm_num)
   have hM := conditionedPositiveEntranceDensity_le_maxwell ν t y ht0
   have h1 : Real.exp (-(a * y)) ≤ Real.exp (-(a * ν * t / 4)) * Real.exp (-((a / 2) * y)) := by
@@ -293,7 +293,6 @@ theorem entranceExp_exp_eval_le_split {ν a : ℝ} (hν : 0 < ν) (ha : 0 < a)
   have htpos : 0 < t := by
     have h : (0 : ℝ) < t := by linarith
     exact_mod_cast h
-  have hK : 0 ≤ Real.sqrt (2 / Real.pi) := Real.sqrt_nonneg _
   have hMpos : 0 < ν * (t : ℝ) / 2 := by positivity
   rw [entranceExp_lintegral_eq_entrance hQ t htpos,
     ← Ioc_union_Ioi_eq_Ioi hMpos.le,
@@ -340,8 +339,6 @@ theorem entranceExp_cube_mul_exp_neg_le {ε n : ℝ} (hε : 0 < ε) (hn : 0 ≤ 
     n ^ 3 * Real.exp (-(2 * ε * n)) ≤ 6 / ε ^ 3 * Real.exp (-(ε * n)) := by
   have h := Real.pow_div_factorial_le_exp (ε * n) (by positivity) 3
   have h6 : (ε * n) ^ 3 ≤ 6 * Real.exp (ε * n) := by
-    have hf : ((3 : ℕ).factorial : ℝ) = 6 := by norm_num [Nat.factorial]
-    rw [hf, div_le_iff₀ (by norm_num)] at h
     linarith
   have hsplit : Real.exp (-(2 * ε * n)) = Real.exp (-(ε * n)) * Real.exp (-(ε * n)) := by
     rw [← Real.exp_add]
@@ -371,18 +368,18 @@ theorem entranceExp_split_terms_le {K ν₁ ν₂ ν a n ε ρ : ℝ} (hK : 0 �
         K * Real.exp (-(a * ν * n / 4)) * (16 / a ^ 3) ≤
       K * (|ν₂| / 2) ^ 3 * (6 / ε ^ 3) * Real.exp (-(ε * n)) +
         K * (16 / a ^ 3) * Real.exp (-(ρ * n)) := by
-  have hν0 : 0 < ν := lt_of_lt_of_le hν₁ h1
+  have hν0  := lt_of_lt_of_le hν₁ h1
   have hn0 : 0 ≤ n := by linarith
   have hε0 : 0 < ε := by rw [hε]; positivity
   refine add_le_add ?_ ?_
   · have e1 : ν * n / 2 ≤ |ν₂| * n / 2 := by
-      have h : ν ≤ |ν₂| := h2.trans (le_abs_self ν₂)
+      have h  := h2.trans (le_abs_self ν₂)
       have := mul_le_mul_of_nonneg_right h hn0
       linarith
-    have e2 : (ν * n / 2) ^ 3 ≤ (|ν₂| * n / 2) ^ 3 := pow_le_pow_left₀ (by positivity) e1 3
+    have e2  := pow_le_pow_left₀ (by positivity) e1 3
     have e3 : Real.exp (-(ν ^ 2 * n / 8)) ≤ Real.exp (-(2 * ε * n)) := by
       apply Real.exp_le_exp.mpr
-      have h : ν₁ ^ 2 ≤ ν ^ 2 := pow_le_pow_left₀ hν₁.le h1 2
+      have h  := pow_le_pow_left₀ hν₁.le h1 2
       have := mul_le_mul_of_nonneg_right h hn0
       rw [hε]
       linarith
@@ -421,7 +418,7 @@ theorem isNegativeConditionedBrownianLaw_exp_eval_le_exp {ν₁ ν₂ a : ℝ} (
   refine ⟨1 + K * (|ν₂| / 2) ^ 3 * (6 / ε ^ 3) + K * (16 / a ^ 3), min ε ρ, by positivity,
     lt_min hε0 hρ0, ?_⟩
   intro ν hν₁' hν₂' Q hQ n
-  have hν0 : 0 < ν := lt_of_lt_of_le hν₁ hν₁'
+  have hν0  := lt_of_lt_of_le hν₁ hν₁'
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · refine (isNegativeConditionedBrownianLaw_exp_eval_le_one ha.le hQ _).trans ?_
     rw [ENNReal.one_le_ofReal]
@@ -435,9 +432,9 @@ theorem isNegativeConditionedBrownianLaw_exp_eval_le_exp {ν₁ ν₂ a : ℝ} (
     apply ENNReal.ofReal_le_ofReal
     have hmain := entranceExp_split_terms_le hK hν₁ ha hε hρ hν₁' hν₂' hn1
     have hn0 : (0 : ℝ) ≤ n := by linarith
-    have e1 : Real.exp (-(ε * n)) ≤ Real.exp (-(min ε ρ * n)) :=
+    have e1  :=
       Real.exp_le_exp.mpr (neg_le_neg (mul_le_mul_of_nonneg_right (min_le_left ε ρ) hn0))
-    have e2 : Real.exp (-(ρ * n)) ≤ Real.exp (-(min ε ρ * n)) :=
+    have e2  :=
       Real.exp_le_exp.mpr (neg_le_neg (mul_le_mul_of_nonneg_right (min_le_right ε ρ) hn0))
     have hE : 0 ≤ Real.exp (-(min ε ρ * n)) := Real.exp_nonneg _
     rw [neg_mul]
@@ -451,8 +448,7 @@ theorem isNegativeConditionedBrownianLaw_exp_eval_le_exp {ν₁ ν₂ a : ℝ} (
 theorem abs_apply_le_brownianUnitNorm (p : BrownianPath) {t : ℝ≥0} (ht : t ≤ 1) :
     |p t| ≤ brownianUnitNorm p := by
   have h := (p.restrict (Icc 0 (1 : ℝ≥0))).norm_coe_le_norm ⟨t, zero_le, ht⟩
-  rw [Real.norm_eq_abs] at h
-  exact h
+  assumption
 
 /-- A uniform bound on the absolute path values of the unit window bounds the window norm. -/
 theorem brownianUnitNorm_le_of_forall_abs_le (p : BrownianPath) {M : ℝ} (hM : 0 ≤ M)
@@ -470,29 +466,33 @@ theorem euclideanSpace_norm_le_sum_abs {ι : Type*} [Fintype ι] (x : EuclideanS
     Finset.sum_sq_le_sq_sum_of_nonneg (s := Finset.univ) (f := fun i => |x i|)
       (fun _ _ => abs_nonneg _)
 
+section
+variable (ν : ℝ) (V : BrownianTriple) (n u : ℝ≥0)
+
 /-- The drifted first coordinate increment after time `n` is the shifted coordinate path plus the
 linear drift. -/
-theorem rogersPitmanVectorAt_shift_sub_apply_zero (ν : ℝ) (V : BrownianTriple) (n u : ℝ≥0) :
+theorem rogersPitmanVectorAt_shift_sub_apply_zero :
     (rogersPitmanVectorAt ν V (n + u) - rogersPitmanVectorAt ν V n) 0 =
       brownianShiftPath n (V 0) u + ν * (u : ℝ) := by
   simp [rogersPitmanVectorAt, brownianShiftPath]
   ring
 
 /-- The undrifted coordinate increments after time `n` are the shifted coordinate paths. -/
-theorem rogersPitmanVectorAt_shift_sub_apply_of_ne_zero (ν : ℝ) (V : BrownianTriple)
-    (n u : ℝ≥0) {i : Fin 3} (hi : i ≠ 0) :
+theorem rogersPitmanVectorAt_shift_sub_apply_of_ne_zero {i : Fin 3} (hi : i ≠ 0) :
     (rogersPitmanVectorAt ν V (n + u) - rogersPitmanVectorAt ν V n) i =
       brownianShiftPath n (V i) u := by
   simp [rogersPitmanVectorAt, brownianShiftPath, hi]
 
 /-- The shifted negative radial path has the radial oscillation as its absolute value. -/
-theorem abs_brownianShiftPath_negativeRogersPitmanPath (ν : ℝ) (V : BrownianTriple) (n u : ℝ≥0) :
+theorem abs_brownianShiftPath_negativeRogersPitmanPath :
     |brownianShiftPath n (negativeRogersPitmanPath ν V) u| =
       |‖rogersPitmanVectorAt ν V (n + u)‖ - ‖rogersPitmanVectorAt ν V n‖| := by
   change |-‖rogersPitmanVectorAt ν V (n + u)‖ - -‖rogersPitmanVectorAt ν V n‖| = _
   rw [← abs_neg]
   congr 1
   ring
+
+end
 
 /-- Pathwise, the unit-window oscillation of the negative radial path after time `n` is bounded by
 the drift plus the three coordinate oscillations over the same window. -/
@@ -508,7 +508,7 @@ theorem brownianUnitNorm_shift_negativeRogersPitmanPath_le (ν : ℝ) (hν : 0 �
     rogersPitmanVectorAt_shift_sub_apply_of_ne_zero ν V n u (by decide : (1 : Fin 3) ≠ 0),
     rogersPitmanVectorAt_shift_sub_apply_of_ne_zero ν V n u (by decide : (2 : Fin 3) ≠ 0)]
   have hu' : (u : ℝ) ≤ 1 := by exact_mod_cast hu
-  have hd : ν * (u : ℝ) ≤ ν := mul_le_of_le_one_right hν hu'
+  have hd  := mul_le_of_le_one_right hν hu'
   have h0 := abs_apply_le_brownianUnitNorm (brownianShiftPath n (V 0)) hu
   have h1 := abs_apply_le_brownianUnitNorm (brownianShiftPath n (V 1)) hu
   have h2 := abs_apply_le_brownianUnitNorm (brownianShiftPath n (V 2)) hu
@@ -523,9 +523,13 @@ theorem mul_mul_le_pow_three_add {a b c : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hc
     (add_nonneg (add_nonneg (sq_nonneg (a - b)) (sq_nonneg (b - c))) (sq_nonneg (c - a))),
     mul_nonneg (mul_nonneg ha hb) hc]
 
+section
+variable (θ ν ν₀ : ℝ) (hθ : 0 ≤ θ)
+include hθ
+
 /-- Three-term AM--GM turns the exponential of a drift plus three oscillations into the sum of the
 three triple-order exponentials, without any independence between the oscillations. -/
-theorem exp_mul_add_sum_fin_three_le (θ ν ν₀ : ℝ) (hθ : 0 ≤ θ) (hν : ν ≤ ν₀)
+theorem exp_mul_add_sum_fin_three_le (hν : ν ≤ ν₀)
     (x : Fin 3 → ℝ) :
     Real.exp (θ * (ν + ∑ i, x i)) ≤ Real.exp (θ * ν₀) * ∑ i, Real.exp (3 * θ * x i) := by
   rw [Fin.sum_univ_three, Fin.sum_univ_three]
@@ -547,7 +551,7 @@ theorem exp_mul_add_sum_fin_three_le (θ ν ν₀ : ℝ) (hθ : 0 ≤ θ) (hν :
 
 /-- Pathwise exponential bound for the unit-window oscillation of the negative radial path in terms
 of the three coordinate oscillations at triple order. -/
-theorem ofReal_exp_unitIncrement_negativeRogersPitmanPath_le (θ ν ν₀ : ℝ) (hθ : 0 ≤ θ)
+theorem ofReal_exp_unitIncrement_negativeRogersPitmanPath_le
     (hν : 0 ≤ ν) (hνν₀ : ν ≤ ν₀) (V : BrownianTriple) (n : ℝ≥0) :
     ENNReal.ofReal (Real.exp (θ * brownianUnitNorm
         (brownianShiftPath n (negativeRogersPitmanPath ν V)))) ≤
@@ -558,16 +562,16 @@ theorem ofReal_exp_unitIncrement_negativeRogersPitmanPath_le (θ ν ν₀ : ℝ)
   refine ENNReal.ofReal_le_ofReal ((Real.exp_le_exp.mpr
     (mul_le_mul_of_nonneg_left
       (brownianUnitNorm_shift_negativeRogersPitmanPath_le ν hν V n) hθ)).trans ?_)
-  exact exp_mul_add_sum_fin_three_le θ ν ν₀ hθ hνν₀ _
+  apply exp_mul_add_sum_fin_three_le <;> assumption
+
+end
 
 /-- The shifted unit-window exponential is a measurable function of the path. -/
 theorem measurable_ofReal_exp_mul_brownianUnitNorm_shift (θ : ℝ) (n : ℝ≥0) :
     Measurable (fun p : BrownianPath =>
       ENNReal.ofReal (Real.exp (θ * brownianUnitNorm (brownianShiftPath n p)))) := by
-  have hs : Measurable (brownianShiftPath n) :=
-    continuous_brownianShiftPath.measurable.comp (measurable_const.prodMk measurable_id)
   exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-    (measurable_const.mul (continuous_brownianUnitNorm.measurable.comp hs)))
+    (measurable_const.mul (continuous_brownianUnitNorm.measurable.comp (continuous_brownianShiftPath.measurable.comp (measurable_const.prodMk measurable_id)))))
 
 /-- Each coordinate path of the Wiener triple has the Brownian unit-increment exponential moment
 bound. -/
@@ -620,7 +624,7 @@ theorem isNegativeConditionedBrownianLaw_unitIncrement_exp_le (θ ν₀ : ℝ) (
         gcongr with i
         exact lintegral_wienerTriple_coordinate_unitIncrement_le (3 * θ)
           (mul_nonneg (by norm_num) hθ) n i
-      _ = _ := by simp [Finset.sum_const]
+      _ = _ := by simp
 
 end DOZZ.Proofs
 

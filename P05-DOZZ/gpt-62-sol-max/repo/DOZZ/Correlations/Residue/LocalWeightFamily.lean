@@ -74,10 +74,8 @@ theorem residue_localWeight_uniform_family (γ S α d₀ : ℝ) (hγ : 0 ≤ γ)
   · have hball : Metric.ball z (2 * (1 / 2 : ℝ)) = Metric.ball z 1 := by norm_num
     rw [hball]
     intro x hx
-    have hh : ContDiffAt ℝ 1 (fun y : ℂ => H (ε, y)) x :=
-      (residue_localDensity_contDiffAt γ S α w (ε, x) (hgeo x hx).1 (hgeo x hx).2).comp x
-        (contDiffAt_const.prodMk contDiffAt_id)
-    exact (hh.congr_of_eventuallyEq (heq x hx)).contDiffWithinAt
+    exact (((residue_localDensity_contDiffAt γ S α w (ε, x) (hgeo x hx).1 (hgeo x hx).2).comp x
+        (contDiffAt_const.prodMk contDiffAt_id)).congr_of_eventuallyEq (heq x hx)).contDiffWithinAt
   · intro x hx
     have hxball : x ∈ Metric.ball z 1 :=
       lt_of_le_of_lt (show dist x z ≤ (1 / 2 : ℝ) from hx) (by norm_num : (1 / 2 : ℝ) < 1)

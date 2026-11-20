@@ -27,9 +27,9 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_small_bound
     P X hX Xc hXc Γ hΓ T hT K hK
   obtain ⟨D, hD, hchart⟩ := cutoffWeightedGmcBallMoment_compact_gamma_chart
     P X hX Xc hXc Γ hΓ hΓ2 T hT hTadm
-  let E : ℝ≥0∞ := ENNReal.ofReal A * D
+  let E  := ENNReal.ofReal A * D
   have hE : E < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top hD
-  let C : ℝ := E.toReal + 1
+  let C  := E.toReal + 1
   have hC : 0 < C := by dsimp [C]; positivity
   have hEC : E ≤ ENNReal.ofReal C := by
     rw [← ENNReal.ofReal_toReal hE.ne]

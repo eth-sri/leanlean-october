@@ -21,24 +21,14 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- The expected cutoff mass of a measurable set is its reference mass. -/
-theorem regularizedGMC_lintegral_apply_eq_reference
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
-    (A : Set ℂ) (hA : MeasurableSet A) :
-    ∫⁻ ω, regularizedGMC P Xc γ r ω A ∂P = gmcReferenceMeasure A := by
-  have h := regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r
-    (A.indicator 1) (measurable_one.indicator hA)
-  simp only [lintegral_indicator_one hA] at h
-  exact h
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include Ω X hX hXc
 
 /-- With a uniform `p`-th moment bound, the cutoff mass of a set exceeds half its reference mass
 with probability bounded below uniformly in the cutoff. -/
-theorem regularizedGMC_half_mass_prob_lower
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ p : ℝ) (hp : 1 < p)
+theorem regularizedGMC_half_mass_prob_lower (γ p : ℝ) (hp : 1 < p)
     (A : Set ℂ) (hA : MeasurableSet A) (hA0 : gmcReferenceMeasure A ≠ 0)
     (hAtop : gmcReferenceMeasure A ≠ ⊤) (C : ℝ≥0∞) (hC : C < ⊤) :
     ∃ π₀ : ℝ, 0 < π₀ ∧ ∀ r : ℝ,
@@ -56,23 +46,19 @@ theorem regularizedGMC_half_mass_prob_lower
   · have hZ : AEMeasurable (fun ω => regularizedGMC P Xc γ r ω A) P :=
       ((Measure.measurable_coe hA).comp (regularizedGMC_measurable P X hX Xc hXc γ r)).aemeasurable
     have hmean : ENNReal.ofReal σ ≤ ∫⁻ ω, regularizedGMC P Xc γ r ω A ∂P := by
-      rw [regularizedGMC_lintegral_apply_eq_reference P X hX Xc hXc γ r A hA, hσdef,
+      rw [regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ r A hA, hσdef,
         ENNReal.ofReal_toReal hAtop]
-    have hmom : ∫⁻ ω, regularizedGMC P Xc γ r ω A ^ p ∂P ≤ ENNReal.ofReal K := by
+    exact paley_zygmund_lintegral P (fun ω => regularizedGMC P Xc γ r ω A) hZ p (1 / 2) σ K hp
+      (by norm_num) (by norm_num) hσ hK hmean (by
       calc ∫⁻ ω, regularizedGMC P Xc γ r ω A ^ p ∂P = gmcMassMoment P
             (regularizedGMC P Xc γ r) A p := rfl
         _ ≤ C := hr
         _ = ENNReal.ofReal C.toReal := (ENNReal.ofReal_toReal hC.ne).symm
-        _ ≤ ENNReal.ofReal K := ENNReal.ofReal_le_ofReal (by linarith)
-    exact paley_zygmund_lintegral P (fun ω => regularizedGMC P Xc γ r ω A) hZ p (1 / 2) σ K hp
-      (by norm_num) (by norm_num) hσ hK hmean hmom
+        _ ≤ ENNReal.ofReal K := ENNReal.ofReal_le_ofReal (by linarith))
 
 /-- Uniformly in the cutoff, the Laplace transform of a reference-ball mass stays a fixed amount
 below one up to a doubly exponentially small error. -/
-theorem cutoffLaplace_apriori
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem cutoffLaplace_apriori (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (R : ℝ) (hR : 0 < R) (hRsmall : R ≤ 1 / 8) :
     ∃ π₀ : ℝ, 0 < π₀ ∧ ∀ r : ℝ, 0 ≤ r → ∀ x : ℝ,
       cutoffLaplace P Xc γ r (Metric.ball 0 R) x ≤
@@ -135,5 +121,7 @@ theorem cutoffLaplace_apriori
     _ = 1 - P.real E + Real.exp (-(Real.exp x) * h) := by
         rw [probReal_compl_eq_one_sub hE]
     _ ≤ 1 - π₀ + Real.exp (-(Real.exp x) * h) := by linarith
+
+end
 
 end DOZZ.Proofs

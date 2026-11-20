@@ -16,11 +16,14 @@ namespace DOZZ.Proofs
 
 open Nat Polynomial
 
-/-- The scalar multiplier from the `n`th parameterized Gauss term to its successor. -/
-noncomputable def gaussParameterSeriesRatio
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ) : ℂ :=
-  (((n : ℂ) + p.1) * ((n : ℂ) + p.2.1) * z) /
-    ((n + 1 : ℂ) * ((n : ℂ) + p.2.2))
+noncomputable abbrev gaussParamProjectionA : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
+  ContinuousLinearMap.fst ℂ ℂ (ℂ × ℂ)
+
+noncomputable abbrev gaussParamProjectionB : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
+  (ContinuousLinearMap.fst ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
+
+noncomputable abbrev gaussParamProjectionC : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
+  (ContinuousLinearMap.snd ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
 
 /-- Explicit Fréchet derivative of the successive-term multiplier. -/
 noncomputable def gaussParameterSeriesRatioDeriv
@@ -29,40 +32,38 @@ noncomputable def gaussParameterSeriesRatioDeriv
   let A := (n : ℂ) + p.1
   let B := (n : ℂ) + p.2.1
   let C := (n : ℂ) + p.2.2
-  let eA : (ℂ × ℂ × ℂ) →L[ℂ] ℂ := ContinuousLinearMap.fst ℂ ℂ (ℂ × ℂ)
-  let eB : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
-    (ContinuousLinearMap.fst ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
-  let eC : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
-    (ContinuousLinearMap.snd ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
+
+
+
   let d := z / (n + 1 : ℂ)
-  d • ((A * B) • (-(C⁻¹ ^ 2) • eC) +
-    C⁻¹ • (A • eB + B • eA))
+  d • ((A * B) • (-(C⁻¹ ^ 2) • gaussParamProjectionC) +
+    C⁻¹ • (A • gaussParamProjectionB + B • gaussParamProjectionA))
+
+section
+variable (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ)
 
 theorem gaussParameterSeriesRatio_hasFDerivAt
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ)
     (hc : (n : ℂ) + p.2.2 ≠ 0) :
     HasFDerivAt (fun q : ℂ × ℂ × ℂ => gaussParameterSeriesRatio q z n)
       (gaussParameterSeriesRatioDeriv p z n) p := by
   let A : ℂ × ℂ × ℂ → ℂ := fun q => (n : ℂ) + q.1
   let B : ℂ × ℂ × ℂ → ℂ := fun q => (n : ℂ) + q.2.1
   let C : ℂ × ℂ × ℂ → ℂ := fun q => (n : ℂ) + q.2.2
-  let eA : (ℂ × ℂ × ℂ) →L[ℂ] ℂ := ContinuousLinearMap.fst ℂ ℂ (ℂ × ℂ)
-  let eB : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
-    (ContinuousLinearMap.fst ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
-  let eC : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
-    (ContinuousLinearMap.snd ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
+
+
+
   let d : ℂ := z / (n + 1 : ℂ)
-  have hA : HasFDerivAt A eA p := by
-    simpa [A, eA] using (hasFDerivAt_fst (𝕜 := ℂ) (p := p)).const_add (n : ℂ)
-  have hB : HasFDerivAt B eB p := by
-    simpa [B, eB] using
+  have hA : HasFDerivAt A gaussParamProjectionA p := by
+    simpa [A, gaussParamProjectionA] using (hasFDerivAt_fst (𝕜 := ℂ) (p := p)).const_add (n : ℂ)
+  have hB : HasFDerivAt B gaussParamProjectionB p := by
+    simpa [B, gaussParamProjectionB] using
       (hasFDerivAt_fst (𝕜 := ℂ) (p := p.2)).comp p hasFDerivAt_snd |>.const_add (n : ℂ)
-  have hC : HasFDerivAt C eC p := by
-    simpa [C, eC] using
+  have hC : HasFDerivAt C gaussParamProjectionC p := by
+    simpa [C, gaussParamProjectionC] using
       (hasFDerivAt_snd (𝕜 := ℂ) (p := p.2)).comp p hasFDerivAt_snd |>.const_add (n : ℂ)
   have hCne : C p ≠ 0 := by simpa [C] using hc
   have hCi : HasFDerivAt (fun q => (C q)⁻¹)
-      (-(C p)⁻¹ ^ 2 • eC) p := by
+      (-(C p)⁻¹ ^ 2 • gaussParamProjectionC) p := by
     convert (hasFDerivAt_inv' hCne).comp p hC using 1
     · ext q
       rfl
@@ -83,52 +84,36 @@ theorem gaussParameterSeriesRatio_hasFDerivAt
   convert hscale using 1
   apply ContinuousLinearMap.ext
   intro v
-  simp [gaussParameterSeriesRatioDeriv, A, B, C, d, eA, eB, eC,
+  simp [gaussParameterSeriesRatioDeriv, A, B, C, d, gaussParamProjectionA, gaussParamProjectionB, gaussParamProjectionC,
     ContinuousLinearMap.comp_apply, smul_apply, mul_assoc, mul_left_comm, mul_comm]
 
 /-- On a sufficiently far tail, the derivative of the Gauss term multiplier is uniformly bounded
 on bounded pole-free parameter sets. -/
-theorem gaussParameterSeriesRatioDeriv_norm_le
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ) (R : ℝ)
+theorem gaussParameterSeriesRatioDeriv_norm_le (R : ℝ)
     (hR : 0 ≤ R) (hRn : R < (n : ℝ)) (h3R : 3 * R ≤ (n : ℝ))
     (hA : ‖p.1‖ ≤ R) (hB : ‖p.2.1‖ ≤ R) (hC : ‖p.2.2‖ ≤ R) :
     ‖gaussParameterSeriesRatioDeriv p z n‖ ≤ 8 * ‖z‖ := by
   let A := (n : ℂ) + p.1
   let B := (n : ℂ) + p.2.1
   let C := (n : ℂ) + p.2.2
-  let eA : (ℂ × ℂ × ℂ) →L[ℂ] ℂ := ContinuousLinearMap.fst ℂ ℂ (ℂ × ℂ)
-  let eB : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
-    (ContinuousLinearMap.fst ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
-  let eC : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
-    (ContinuousLinearMap.snd ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
+
+
+
   let x : ℝ := (n : ℝ)
   have hxR : R < x := by simpa [x] using hRn
   have hx0 : 0 < x := lt_of_le_of_lt hR hxR
   have hxmR : 0 < x - R := by linarith
   have hxpR : 0 ≤ x + R := by linarith
-  have hA_norm : ‖A‖ ≤ x + R := by
-    calc
-      ‖(n : ℂ) + p.1‖ ≤ ‖(n : ℂ)‖ + ‖p.1‖ := norm_add_le _ _
-      _ = x + ‖p.1‖ := by simp [x]
-      _ ≤ x + R := by nlinarith [hA]
-  have hB_norm : ‖B‖ ≤ x + R := by
-    calc
-      ‖(n : ℂ) + p.2.1‖ ≤ ‖(n : ℂ)‖ + ‖p.2.1‖ := norm_add_le _ _
-      _ = x + ‖p.2.1‖ := by simp [x]
-      _ ≤ x + R := by nlinarith [hB]
-  have hC_lower : x - R ≤ ‖C‖ := by
-    have htri := norm_sub_norm_le (n : ℂ) ((n : ℂ) + p.2.2)
-    have hn : ‖(n : ℂ)‖ = x := by simp [x]
-    rw [show (n : ℂ) - ((n : ℂ) + p.2.2) = -p.2.2 by abel,
-      norm_neg, hn] at htri
-    linarith
+  have hA_norm : ‖A‖ ≤ x + R := gauss_norm_natCast_add_le n hA
+  have hB_norm : ‖B‖ ≤ x + R := gauss_norm_natCast_add_le n hB
+  have hC_lower : x - R ≤ ‖C‖ := gauss_sub_le_norm_natCast_add n hC
   have hC_inv : ‖C⁻¹‖ ≤ 1 / (x - R) := by
     rw [norm_inv]
     simpa [one_div] using one_div_le_one_div_of_le hxmR hC_lower
-  have heA : ‖eA‖ ≤ 1 := by
+  have heA : ‖gaussParamProjectionA‖ ≤ 1 := by
     exact ContinuousLinearMap.norm_fst_le ℂ ℂ (ℂ × ℂ)
-  have heB : ‖eB‖ ≤ 1 := by
-    dsimp [eB]
+  have heB : ‖gaussParamProjectionB‖ ≤ 1 := by
+    dsimp [gaussParamProjectionB]
     calc
       _ ≤ ‖ContinuousLinearMap.fst ℂ ℂ ℂ‖ *
           ‖ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ)‖ :=
@@ -138,8 +123,8 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
           norm_nonneg (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ)),
           ContinuousLinearMap.norm_fst_le ℂ ℂ ℂ,
           ContinuousLinearMap.norm_snd_le ℂ ℂ (ℂ × ℂ)]
-  have heC : ‖eC‖ ≤ 1 := by
-    dsimp [eC]
+  have heC : ‖gaussParamProjectionC‖ ≤ 1 := by
+    dsimp [gaussParamProjectionC]
     calc
       _ ≤ ‖ContinuousLinearMap.snd ℂ ℂ ℂ‖ *
           ‖ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ)‖ :=
@@ -157,18 +142,18 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
     have hleft : 0 ≤ 2 - (x + R) / (x - R) := by linarith
     have hright : 0 ≤ 2 + (x + R) / (x - R) := by positivity
     nlinarith [mul_nonneg hleft hright]
-  have hfirst : ‖(A * B) • (-(C⁻¹ ^ 2) • eC)‖ ≤ 4 := by
+  have hfirst : ‖(A * B) • (-(C⁻¹ ^ 2) • gaussParamProjectionC)‖ ≤ 4 := by
     have hAB_norm : ‖A * B‖ ≤ (x + R) ^ 2 := by
       calc
         ‖A * B‖ = ‖A‖ * ‖B‖ := norm_mul _ _
         _ ≤ (x + R) * (x + R) := mul_le_mul hA_norm hB_norm
           (norm_nonneg B) hxpR
         _ = (x + R) ^ 2 := by ring
-    have hinner_norm : ‖-(C⁻¹ ^ 2) • eC‖ ≤ (1 / (x - R)) ^ 2 := by
+    have hinner_norm : ‖-(C⁻¹ ^ 2) • gaussParamProjectionC‖ ≤ (1 / (x - R)) ^ 2 := by
       calc
-        ‖-(C⁻¹ ^ 2) • eC‖ ≤ ‖-(C⁻¹ ^ 2)‖ * ‖eC‖ :=
-          norm_smul_le (-(C⁻¹ ^ 2) : ℂ) eC
-        _ = ‖C⁻¹‖ ^ 2 * ‖eC‖ := by simp [norm_pow]
+        ‖-(C⁻¹ ^ 2) • gaussParamProjectionC‖ ≤ ‖-(C⁻¹ ^ 2)‖ * ‖gaussParamProjectionC‖ :=
+          norm_smul_le (-(C⁻¹ ^ 2) : ℂ) gaussParamProjectionC
+        _ = ‖C⁻¹‖ ^ 2 * ‖gaussParamProjectionC‖ := by simp [norm_pow]
         _ ≤ ‖C⁻¹‖ ^ 2 := by
           simpa [mul_one] using mul_le_mul_of_nonneg_left heC (sq_nonneg ‖C⁻¹‖)
         _ ≤ (1 / (x - R)) ^ 2 := by
@@ -176,10 +161,10 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
           have hdennonneg : 0 ≤ 1 / (x - R) := by positivity
           exact (sq_le_sq₀ hnonneg hdennonneg).2 hC_inv
     calc
-      ‖(A * B) • (-(C⁻¹ ^ 2) • eC)‖ ≤
+      ‖(A * B) • (-(C⁻¹ ^ 2) • gaussParamProjectionC)‖ ≤
           ‖A * B‖ * (1 / (x - R)) ^ 2 := by
             calc
-              _ ≤ ‖A * B‖ * ‖-(C⁻¹ ^ 2) • eC‖ := norm_smul_le _ _
+              _ ≤ ‖A * B‖ * ‖-(C⁻¹ ^ 2) • gaussParamProjectionC‖ := norm_smul_le _ _
               _ ≤ ‖A * B‖ * (1 / (x - R)) ^ 2 :=
                 mul_le_mul_of_nonneg_left hinner_norm (norm_nonneg _)
       _ ≤ (x + R) ^ 2 * (1 / (x - R)) ^ 2 := by
@@ -188,24 +173,24 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
             rw [div_pow]
             field_simp
       _ ≤ 4 := hratio_sq
-  have hsecond : ‖C⁻¹ • (A • eB + B • eA)‖ ≤ 4 := by
-    have hAeB : ‖A • eB‖ ≤ x + R := by
+  have hsecond : ‖C⁻¹ • (A • gaussParamProjectionB + B • gaussParamProjectionA)‖ ≤ 4 := by
+    have hAeB : ‖A • gaussParamProjectionB‖ ≤ x + R := by
       calc
-        ‖A • eB‖ ≤ ‖A‖ * ‖eB‖ := norm_smul_le A eB
+        ‖A • gaussParamProjectionB‖ ≤ ‖A‖ * ‖gaussParamProjectionB‖ := norm_smul_le A gaussParamProjectionB
         _ ≤ (x + R) * 1 := mul_le_mul hA_norm heB
-          (norm_nonneg eB) hxpR
+          (norm_nonneg gaussParamProjectionB) hxpR
         _ = x + R := mul_one _
-    have hBeA : ‖B • eA‖ ≤ x + R := by
+    have hBeA : ‖B • gaussParamProjectionA‖ ≤ x + R := by
       calc
-        ‖B • eA‖ ≤ ‖B‖ * ‖eA‖ := norm_smul_le B eA
+        ‖B • gaussParamProjectionA‖ ≤ ‖B‖ * ‖gaussParamProjectionA‖ := norm_smul_le B gaussParamProjectionA
         _ ≤ (x + R) * 1 := mul_le_mul hB_norm heA
-          (norm_nonneg eA) hxpR
+          (norm_nonneg gaussParamProjectionA) hxpR
         _ = x + R := mul_one _
-    have hsum : ‖A • eB‖ + ‖B • eA‖ ≤ 2 * (x + R) := by linarith
+    have hsum : ‖A • gaussParamProjectionB‖ + ‖B • gaussParamProjectionA‖ ≤ 2 * (x + R) := by linarith
     calc
-      ‖C⁻¹ • (A • eB + B • eA)‖ ≤ ‖C⁻¹‖ * ‖A • eB + B • eA‖ :=
-        norm_smul_le C⁻¹ (A • eB + B • eA)
-      _ ≤ ‖C⁻¹‖ * (‖A • eB‖ + ‖B • eA‖) := by
+      ‖C⁻¹ • (A • gaussParamProjectionB + B • gaussParamProjectionA)‖ ≤ ‖C⁻¹‖ * ‖A • gaussParamProjectionB + B • gaussParamProjectionA‖ :=
+        norm_smul_le C⁻¹ (A • gaussParamProjectionB + B • gaussParamProjectionA)
+      _ ≤ ‖C⁻¹‖ * (‖A • gaussParamProjectionB‖ + ‖B • gaussParamProjectionA‖) := by
         gcongr
         exact norm_add_le _ _
       _ ≤ (1 / (x - R)) * (2 * (x + R)) :=
@@ -213,10 +198,10 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
       _ = 2 * ((x + R) / (x - R)) := by ring
       _ ≤ 4 := by linarith
   have hinner :
-      ‖(A * B) • (-(C⁻¹ ^ 2) • eC) + C⁻¹ • (A • eB + B • eA)‖ ≤ 8 := by
+      ‖(A * B) • (-(C⁻¹ ^ 2) • gaussParamProjectionC) + C⁻¹ • (A • gaussParamProjectionB + B • gaussParamProjectionA)‖ ≤ 8 := by
     calc
-      _ ≤ ‖(A * B) • (-(C⁻¹ ^ 2) • eC)‖ +
-          ‖C⁻¹ • (A • eB + B • eA)‖ := norm_add_le _ _
+      _ ≤ ‖(A * B) • (-(C⁻¹ ^ 2) • gaussParamProjectionC)‖ +
+          ‖C⁻¹ • (A • gaussParamProjectionB + B • gaussParamProjectionA)‖ := norm_add_le _ _
       _ ≤ 8 := by linarith [hfirst, hsecond]
   have hd : ‖z / (n + 1 : ℂ)‖ ≤ ‖z‖ := by
     have hdenNat : 1 ≤ n + 1 := by omega
@@ -228,11 +213,11 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
   dsimp [gaussParameterSeriesRatioDeriv]
   calc
     ‖(z / (n + 1 : ℂ)) •
-        ((A * B) • (-(C⁻¹ ^ 2) • eC) + C⁻¹ • (A • eB + B • eA))‖ ≤
+        ((A * B) • (-(C⁻¹ ^ 2) • gaussParamProjectionC) + C⁻¹ • (A • gaussParamProjectionB + B • gaussParamProjectionA))‖ ≤
         ‖z / (n + 1 : ℂ)‖ * 8 := by
           calc
             _ ≤ ‖z / (n + 1 : ℂ)‖ *
-                ‖(A * B) • (-(C⁻¹ ^ 2) • eC) + C⁻¹ • (A • eB + B • eA)‖ :=
+                ‖(A * B) • (-(C⁻¹ ^ 2) • gaussParamProjectionC) + C⁻¹ • (A • gaussParamProjectionB + B • gaussParamProjectionA)‖ :=
                   norm_smul_le _ _
             _ ≤ _ := by gcongr
     _ ≤ ‖z‖ * 8 := by gcongr
@@ -241,32 +226,11 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
 /-- Every fixed ordinary-series term is parameter-differentiable at each point away from the
 denominator poles. -/
 theorem gaussParameterSeriesTerm_differentiableAt
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ)
     (hc : ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) :
     DifferentiableAt ℂ (fun q => gaussParameterSeriesTerm q z n) p := by
-  have hA : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval q.1) p := by
-    fun_prop
-  have hB : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval q.2.1) p := by
-    fun_prop
-  have hC : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval q.2.2) p := by
-    fun_prop
-  have hCne : (ascPochhammer ℂ n).eval p.2.2 ≠ 0 :=
-    ordinaryHypergeometric_pochhammer_denominator_ne_zero n hc
-  have hCinv : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => ((ascPochhammer ℂ n).eval q.2.2)⁻¹) p := hC.inv hCne
-  have hcoeff : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => ordinaryHypergeometricCoefficient q.1 q.2.1 q.2.2 n) p := by
-    change DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => (n !⁻¹ : ℂ) *
-        (ascPochhammer ℂ n).eval q.1 * (ascPochhammer ℂ n).eval q.2.1 *
-          ((ascPochhammer ℂ n).eval q.2.2)⁻¹) p
-    exact (((differentiableAt_const _).mul hA).mul hB).mul hCinv
-  change DifferentiableAt ℂ
-    (fun q : ℂ × ℂ × ℂ =>
-      ordinaryHypergeometricCoefficient q.1 q.2.1 q.2.2 n * z ^ n) p
-  exact hcoeff.mul_const _
+  exact (gaussParameterSeriesTerm_differentiableOn (U := gaussParameterPoleFreeDomain)
+    (fun _ h => h) z n).differentiableAt (gaussParameterPoleFreeDomain_isOpen.mem_nhds hc)
+
+end
 
 end DOZZ.Proofs

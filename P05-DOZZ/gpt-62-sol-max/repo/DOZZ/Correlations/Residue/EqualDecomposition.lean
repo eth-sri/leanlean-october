@@ -25,10 +25,9 @@ theorem residue_equal_mass_decomposition {Ω : Type*} (M : Ω → Measure ℂ) (
   have hloc (z w : ℂ) : Measurable (fun x : ℂ => if x ∈ Metric.ball z 1 then
       ENNReal.ofReal (residueLocalWeight γ (2 * α + ε) α w x) *
         ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * α) else 0) := by
-    have hF : Measurable (residueLocalWeight γ (2 * α + ε) α w) := by
-      unfold residueLocalWeight; fun_prop
     exact Measurable.ite Metric.isOpen_ball.measurableSet
-      ((ENNReal.measurable_ofReal.comp hF).mul
+      ((ENNReal.measurable_ofReal.comp (by
+      unfold residueLocalWeight; fun_prop)).mul
         (ENNReal.continuous_rpow_const.measurable.comp (ENNReal.measurable_ofReal.comp (by fun_prop))))
       measurable_const
   have hdisj : Disjoint (Metric.ball (3 : ℂ) 1) (Metric.ball (7 : ℂ) 1) :=

@@ -28,8 +28,11 @@ attribute [local instance low] bpzNormedAddCommGroupBilin bpzNormedSpaceBilin
 
 variable {γ χ α₁ α₂ α₃ : ℝ}
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+
 /-- An almost sure version of a GMC measure, with finite values, is a GMC measure. -/
-theorem bpz_isGMCOf_congr {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {X : Ω → Distr}
+theorem bpz_isGMCOf_congr {P : Measure Ω} {X : Ω → Distr}
     {M N : Ω → Measure ℂ} (hM : IsGMCOf P X γ M) (hNfin : ∀ ω, IsFiniteMeasure (N ω))
     (hMN : ∀ᵐ ω ∂P, M ω = N ω) : IsGMCOf P X γ N := by
   obtain ⟨-, Xc, hXc, hconv⟩ := hM
@@ -38,7 +41,7 @@ theorem bpz_isGMCOf_congr {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {X 
   rw [h]
 
 /-- The reduced function only depends on the almost sure class of the measure. -/
-theorem bpz_fourPointT_congr {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem bpz_fourPointT_congr (P : Measure Ω)
     {M N : Ω → Measure ℂ} (hMN : ∀ᵐ ω ∂P, M ω = N ω) (μ α₀ : ℝ) (z : ℂ) :
     fourPointT P M γ μ α₀ α₁ α₂ α₃ z = fourPointT P N γ μ α₀ α₁ α₂ α₃ z := by
   unfold fourPointT
@@ -49,10 +52,16 @@ theorem bpz_fourPointT_congr {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     lintegral_congr_ae (hMN.mono fun ω h => by dsimp only; rw [h])
   rw [h]
 
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMm : Measurable M)
+  (hχ : 0 < χ)
+include Ω X hX hγ hγ2 hM hMm hχ
+
 /-- Off `0` and `1`, the reduced function is `K E[I^{-s}]`. -/
-theorem bpz_fourPointT_eq_moment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
+theorem bpz_fourPointT_eq_moment (hα₁ : α₁ < Q γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (μ : ℝ) {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     fourPointT P M γ μ (-χ) α₁ α₂ α₃ z =
       2 * μ ^ (-fourPointSExp γ (-χ) α₁ α₂ α₃) / γ * Real.Gamma (fourPointSExp γ (-χ) α₁ α₂ α₃) *
@@ -81,9 +90,7 @@ theorem bpz_fourPointT_eq_moment {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
 /-- **Regularity of the reduced function.** Off `0` and `1` the reduced function is `C²`, and its
 Wirtinger derivatives are `K` times the Wirtinger functionals of the expectations of the moment
 fields. -/
-theorem bpz_fourPointT_contDiff_wirtinger {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
+theorem bpz_fourPointT_contDiff_wirtinger (ha1 : γ * χ / 2 ≤ 1)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 0 < fourPointSExp γ (-χ) α₁ α₂ α₃) (μ : ℝ) :
     ContDiffOn ℝ 2 (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) {z : ℂ | z ≠ 0 ∧ z ≠ 1} ∧
@@ -126,5 +133,7 @@ theorem bpz_fourPointT_contDiff_wirtinger {Ω : Type*} [MeasurableSpace Ω] (P :
   · rw [bpz_wirtingerZ_wirtingerZ_ofReal hUo hz hTd (hD z hz), bpzWirt2L_apply]
     simp only [smul_apply, smul_eq_mul, Complex.ofReal_mul]
     ring
+
+end
 
 end DOZZ.Proofs

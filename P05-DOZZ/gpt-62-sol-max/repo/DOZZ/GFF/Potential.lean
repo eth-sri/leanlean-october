@@ -46,8 +46,7 @@ theorem integral_circleMeasure_zero_eq_circleAverage (f : ℂ → ℝ) (hf : Mea
   simp only [neg_zero, Real.exp_zero]
   rw [integral_map (measurable_circleMap 0 1).aemeasurable hf.aestronglyMeasurable]
   rw [← intervalIntegral.integral_of_le Real.two_pi_pos.le]
-  have hcoeff : ENNReal.toReal (ENNReal.ofReal ((2 * Real.pi)⁻¹)) = (2 * Real.pi)⁻¹ := by
-    exact ENNReal.toReal_ofReal (by positivity)
+  have hcoeff : ENNReal.toReal (ENNReal.ofReal ((2 * Real.pi)⁻¹)) = (2 * Real.pi)⁻¹ := ENNReal.toReal_ofReal (by positivity)
   rw [hcoeff, Real.circleAverage_def]
 
 /-- A circle-integrable measurable function is integrable against `circleMeasure 0 0`. -/
@@ -69,8 +68,7 @@ theorem integrable_log_norm_sub_circleMeasure (x : ℂ) :
   have hcircle : CircleIntegrable (fun y : ℂ => Real.log ‖x - y‖) 0 1 := by
     simpa [norm_sub_rev] using
       (circleIntegrable_log_norm_sub_const (a := x) (c := 0) (r := 1))
-  have hmeas : Measurable (fun y : ℂ => Real.log ‖x - y‖) := by fun_prop
-  exact integrable_circleMeasure_of_circleIntegrable hmeas hcircle
+  exact integrable_circleMeasure_of_circleIntegrable (by fun_prop) hcircle
 
 /-- The unit-circle logarithmic potential is `log |x|_+`. -/
 theorem integral_log_norm_sub_circleMeasure (x : ℂ) :
@@ -100,15 +98,14 @@ theorem circleIntegrable_log_normPlus :
     have hz_norm : ‖z‖ = 1 := by
       simpa only [abs_one, mem_sphere_iff_norm, sub_zero] using hz
     simp [normPlus, hz_norm]
-  · exact circleIntegrable_const 0 0 1
+  simp
 
 /-- The pinning potential is integrable on the unit circle. -/
 theorem integrable_log_normPlus_circleMeasure :
     Integrable (fun z : ℂ => Real.log (normPlus z)) (circleMeasure 0 0) := by
-  have hm : Measurable (fun z : ℂ => normPlus z) := by
+  exact integrable_circleMeasure_of_circleIntegrable (Real.measurable_log.comp (by
     change Measurable (fun z : ℂ => max 1 ‖z‖)
-    exact measurable_const.max continuous_norm.measurable
-  exact integrable_circleMeasure_of_circleIntegrable (Real.measurable_log.comp hm)
+    exact measurable_const.max continuous_norm.measurable))
     circleIntegrable_log_normPlus
 
 /-- The unit-circle average of the pinned covariance kernel vanishes at every pole. -/
@@ -118,11 +115,9 @@ theorem integral_gffKernel_circleMeasure (x : ℂ) :
   have hconst : Integrable (fun _ : ℂ => Real.log (normPlus x)) (circleMeasure 0 0) :=
     integrable_const _
   have hplus := integrable_log_normPlus_circleMeasure
-  have hprob := circleMeasure_zero_isProbability
   have hconstInt :
       ∫ z : ℂ, Real.log (normPlus x) ∂circleMeasure 0 0 = Real.log (normPlus x) := by
-    rw [integral_const]
-    simp [Measure.real, circleMeasure_zero_isProbability.measure_univ]
+    simp
   have hplusInt :
       ∫ z : ℂ, Real.log (normPlus z) ∂circleMeasure 0 0 = 0 := by
     have hm : Measurable (fun z : ℂ => Real.log (normPlus z)) := by

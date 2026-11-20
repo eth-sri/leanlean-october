@@ -11,9 +11,10 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-theorem regularizedGMC_reference_positive_moment_compact_gamma_all_cutoffs
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
+theorem regularizedGMC_reference_positive_moment_compact_gamma_all_cutoffs (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (Γ : Set ℝ) (hΓ : IsCompact Γ) (hΓpos : ∀ γ ∈ Γ, 0 < γ)
     (p : ℝ) (hp : 1 < p) (hcrit : ∀ γ ∈ Γ, p < 4 / γ ^ 2) :
@@ -65,17 +66,14 @@ theorem regularizedGMC_reference_positive_moment_compact_gamma_all_cutoffs
   exact hcoarseE.trans (le_add_of_nonneg_left (by positivity))
 
 /-- Lower nonnegative moments are bounded by the mass of the probability space plus a higher moment. -/
-theorem lintegral_rpow_le_measure_add_larger_order
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (f : Ω → ℝ≥0∞)
+theorem lintegral_rpow_le_measure_add_larger_order (f : Ω → ℝ≥0∞)
     (hf : AEMeasurable f P) {p q : ℝ} (hp : 0 ≤ p) (hpq : p ≤ q) :
     (∫⁻ ω, ENNReal.rpow (f ω) p ∂P) ≤
       P Set.univ + ∫⁻ ω, ENNReal.rpow (f ω) q ∂P := by
-  have hqmeas : AEMeasurable (fun ω => ENNReal.rpow (f ω) q) P := by
-    exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hf
   have hpoint (ω : Ω) : ENNReal.rpow (f ω) p ≤ 1 + ENNReal.rpow (f ω) q := by
     by_cases hω : f ω ≤ 1
     · exact (ENNReal.rpow_le_one hω hp).trans (le_add_of_nonneg_right (by positivity))
-    · have hω' : 1 ≤ f ω := le_of_not_ge hω
+    · have hω'  := le_of_not_ge hω
       calc
         ENNReal.rpow (f ω) p ≤ ENNReal.rpow (f ω) q :=
           ENNReal.rpow_le_rpow_of_exponent_le hω' hpq
@@ -83,8 +81,8 @@ theorem lintegral_rpow_le_measure_add_larger_order
   calc
     _ ≤ ∫⁻ ω, 1 + ENNReal.rpow (f ω) q ∂P := lintegral_mono hpoint
     _ = P Set.univ + ∫⁻ ω, ENNReal.rpow (f ω) q ∂P := by
-      rw [lintegral_add_left' (aemeasurable_const :
-        AEMeasurable (fun _ : Ω => (1 : ℝ≥0∞)) P), lintegral_const]
       simp
+
+end
 
 end DOZZ.Proofs

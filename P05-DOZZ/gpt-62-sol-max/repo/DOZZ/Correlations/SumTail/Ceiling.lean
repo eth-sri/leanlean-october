@@ -26,16 +26,16 @@ theorem sumtail_one_error_continuousOn (γ : ℝ) (K : Set ℝ) (hγ : 0 < γ)
   obtain ⟨hpa,hpb⟩ := residue_critical_order_bounds γ α hγ (hK α hα).1 (hK α hα).2
   have hmp : 0 < oneInsertionMomentCeiling γ α := by
     unfold oneInsertionMomentCeiling
-    exact lt_min (by positivity) (by positivity)
+    positivity
   change 1+oneInsertionMomentCeiling γ α ≠ 0
-  exact (by linarith only [hmp] : 0 < 1+oneInsertionMomentCeiling γ α).ne'
+  positivity
 
 theorem sumtail_one_error_lt_one (γ α : ℝ) (hγ : 0 < γ)
     (hα : γ/2 < α) (hαQ : α < Q γ) : oneInsertionErrorCeiling γ α < 1 := by
   obtain ⟨hp,hpb⟩ := residue_critical_order_bounds γ α hγ hα hαQ
   have hm : 0 < oneInsertionMomentCeiling γ α := by
     unfold oneInsertionMomentCeiling
-    exact lt_min (by positivity) (by positivity)
+    positivity
   unfold oneInsertionErrorCeiling
   apply (div_lt_one (by linarith only [hm])).mpr
   linarith only [hp]

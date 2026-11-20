@@ -38,19 +38,6 @@ theorem integrable_mul_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
   rw [hq]
   ring
 
-private theorem integrable_mul_brownianHeatDensity_translate {t a : ℝ} (ht : 0 < t) :
-    Integrable (fun y : ℝ => (y + a) * brownianHeatDensity t (y + a))
-      (volume : Measure ℝ) := by
-  have he : MeasurableEmbedding (fun y : ℝ => y + a) :=
-    (Homeomorph.addRight a).isClosedEmbedding.measurableEmbedding
-  have hmap : (volume : Measure ℝ).map (fun y : ℝ => y + a) = volume :=
-    Measure.IsAddRightInvariant.map_add_right_eq_self a
-  have hmapInt : Integrable (fun z : ℝ => z * brownianHeatDensity t z)
-      ((volume : Measure ℝ).map (fun y : ℝ => y + a)) := by
-    rw [hmap]
-    exact integrable_mul_brownianHeatDensity ht
-  exact he.integrable_map_iff.mp hmapInt
-
 private theorem brownianHeatDensity_hasDerivAt {t z : ℝ} (ht : 0 < t) :
     HasDerivAt (brownianHeatDensity t) (-(z / t) * brownianHeatDensity t z) z := by
   have hsqrt : 0 < Real.sqrt (2 * Real.pi * t) := by positivity
@@ -74,25 +61,28 @@ private theorem brownianHeatDensity_hasDerivAt {t z : ℝ} (ht : 0 < t) :
     ring
   · field_simp [ht.ne', hsqrt.ne']
 
-private theorem integrableOn_mul_brownianHeatDensity_translate {t a : ℝ} (ht : 0 < t) :
+section
+variable {t a : ℝ} (ht : 0 < t)
+include ht
+
+private theorem integrableOn_mul_brownianHeatDensity_translate :
     IntegrableOn (fun y : ℝ => (y + a) * brownianHeatDensity t (y + a))
       (Set.Ioi 0) (volume : Measure ℝ) :=
-  (integrable_mul_brownianHeatDensity_translate ht).integrableOn
+  ((integrable_mul_brownianHeatDensity ht).comp_add_right a).integrableOn
 
 /-- A Gaussian first-moment tail is its heat-kernel boundary value. -/
-private theorem integral_brownianHeatDensity_linear_tail {t a : ℝ} (ht : 0 < t) :
+private theorem integral_brownianHeatDensity_linear_tail :
     ∫ y in Set.Ioi 0, (y + a) * brownianHeatDensity t (y + a)
       ∂(volume : Measure ℝ) = t * brownianHeatDensity t a := by
-  let F : ℝ → ℝ := fun y => -t * brownianHeatDensity t (y + a)
+  let F  := fun y => -t * brownianHeatDensity t (y + a)
   have hderiv : ∀ y ∈ Set.Ici 0,
       HasDerivAt F ((y + a) * brownianHeatDensity t (y + a)) y := by
     intro y hy
-    have hshift : HasDerivAt (fun z : ℝ => z + a) 1 y := (hasDerivAt_id y).add_const a
+    have hshift  := (hasDerivAt_id y).add_const a
     have hq := (brownianHeatDensity_hasDerivAt (t := t) (z := y + a) ht).comp y hshift
     have hF := hq.const_mul (-t)
     convert hF using 1
-    · change (fun z : ℝ => -t * brownianHeatDensity t (z + a)) = _
-      rfl
+    rfl
     · field_simp [ht.ne']
   have harg : Tendsto (fun y : ℝ => -((y + a) ^ 2) / (2 * t)) atTop atBot := by
     have hpow : Tendsto (fun y : ℝ => (y + a) ^ 2) atTop atTop := by
@@ -111,7 +101,6 @@ private theorem integral_brownianHeatDensity_linear_tail {t a : ℝ} (ht : 0 < t
     field_simp [ht.ne']
   have hqtendsto : Tendsto (fun y : ℝ => brownianHeatDensity t (y + a)) atTop (𝓝 0) := by
     have hexp := Real.tendsto_exp_atBot.comp harg
-    have hsqrt : 0 < Real.sqrt (2 * Real.pi * t) := by positivity
     simpa [brownianHeatDensity, ht, div_eq_mul_inv, mul_comm] using
       hexp.const_mul ((Real.sqrt (2 * Real.pi * t))⁻¹)
   have hF_tendsto : Tendsto F atTop (𝓝 0) := by
@@ -120,155 +109,34 @@ private theorem integral_brownianHeatDensity_linear_tail {t a : ℝ} (ht : 0 < t
     (integrableOn_mul_brownianHeatDensity_translate ht) hF_tendsto
   simpa [F] using hint
 
-private theorem integrable_brownianHeatDensity_translate_local {t a : ℝ} (ht : 0 < t) :
-    Integrable (fun y : ℝ => brownianHeatDensity t (y + a)) (volume : Measure ℝ) := by
-  have he : MeasurableEmbedding (fun y : ℝ => y + a) :=
-    (Homeomorph.addRight a).isClosedEmbedding.measurableEmbedding
-  have hmap : (volume : Measure ℝ).map (fun y : ℝ => y + a) = volume :=
-    Measure.IsAddRightInvariant.map_add_right_eq_self a
-  have hmapInt : Integrable (brownianHeatDensity t)
-      ((volume : Measure ℝ).map (fun y : ℝ => y + a)) := by
-    rw [hmap]
-    exact integrable_brownianHeatDensity ht
-  exact he.integrable_map_iff.mp hmapInt
-
-private theorem integrableOn_brownianHeatDensity_translate {t a : ℝ} (ht : 0 < t) :
-    IntegrableOn (fun y : ℝ => brownianHeatDensity t (y + a))
-      (Set.Ioi 0) (volume : Measure ℝ) :=
-  (integrable_brownianHeatDensity_translate_local ht).integrableOn
+end
 
 /-- The BES(3) Doob transition density has unit mass on the positive half-line. -/
 theorem conditionedPositiveTransitionDensity_integral_eq_one_zero
     {t x : ℝ} (ht : 0 < t) (hx : 0 < x) :
-    ∫ y in Set.Ioi 0, conditionedPositiveTransitionDensity 0 t x y
-      ∂(volume : Measure ℝ) = 1 := by
-  have hfirst :
-      (∫ y in Set.Ioi 0, y *
-          (brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x))
-          ∂(volume : Measure ℝ)) = x := by
-    have hlin :
-        (∫ y in Set.Ioi 0,
-          ((y - x) * brownianHeatDensity t (y - x) -
-            (y + x) * brownianHeatDensity t (y + x) +
-            x * (brownianHeatDensity t (y - x) + brownianHeatDensity t (y + x)))
-          ∂(volume : Measure ℝ)) = x := by
-      have hleft := integral_brownianHeatDensity_linear_tail (t := t) (a := -x) ht
-      have hright := integral_brownianHeatDensity_linear_tail (t := t) (a := x) ht
-      have hpair := integral_brownianHeatDensity_halfline_pair (t := t) (a := x) ht
-      have hA : IntegrableOn (fun y : ℝ => (y - x) * brownianHeatDensity t (y - x))
-          (Set.Ioi 0) (volume : Measure ℝ) := by
-        simpa only [sub_eq_add_neg] using
-          integrableOn_mul_brownianHeatDensity_translate (t := t) (a := -x) ht
-      have hB := integrableOn_mul_brownianHeatDensity_translate (t := t) (a := x) ht
-      have hqA : IntegrableOn (fun y : ℝ => brownianHeatDensity t (y - x))
-          (Set.Ioi 0) (volume : Measure ℝ) := by
-        simpa only [sub_eq_add_neg] using
-          integrableOn_brownianHeatDensity_translate (t := t) (a := -x) ht
-      have hqB := integrableOn_brownianHeatDensity_translate (t := t) (a := x) ht
-      have hsumInt : IntegrableOn (fun y : ℝ =>
-          brownianHeatDensity t (y - x) + brownianHeatDensity t (y + x))
-          (Set.Ioi 0) (volume : Measure ℝ) := hqA.add hqB
-      have hsumMul : IntegrableOn (fun y : ℝ => x *
-          (brownianHeatDensity t (y - x) + brownianHeatDensity t (y + x)))
-          (Set.Ioi 0) (volume : Measure ℝ) :=
-        hsumInt.integrable.const_mul x
-      have hleft' :
-          ∫ y in Set.Ioi 0, (y - x) * brownianHeatDensity t (y - x)
-            ∂(volume : Measure ℝ) = t * brownianHeatDensity t (-x) := by
-        simpa only [sub_eq_add_neg] using hleft
-      calc
-        _ = ∫ y in Set.Ioi 0,
-              ((y - x) * brownianHeatDensity t (y - x) -
-                (y + x) * brownianHeatDensity t (y + x) +
-                x * (brownianHeatDensity t (y - x) + brownianHeatDensity t (y + x)))
-              ∂(volume : Measure ℝ) := by
-            apply setIntegral_congr_fun measurableSet_Ioi
-            intro y hy
-            ring
-        _ = (∫ y in Set.Ioi 0, (y - x) * brownianHeatDensity t (y - x)
-                ∂(volume : Measure ℝ)) -
-              ∫ y in Set.Ioi 0, (y + x) * brownianHeatDensity t (y + x)
-                ∂(volume : Measure ℝ) +
-              x * (∫ y in Set.Ioi 0,
-                brownianHeatDensity t (y - x) + brownianHeatDensity t (y + x)
-                ∂(volume : Measure ℝ)) := by
-            calc
-              _ = (∫ y in Set.Ioi 0,
-                    (y - x) * brownianHeatDensity t (y - x) -
-                      (y + x) * brownianHeatDensity t (y + x)
-                    ∂(volume : Measure ℝ)) +
-                  ∫ y in Set.Ioi 0,
-                    x * (brownianHeatDensity t (y - x) + brownianHeatDensity t (y + x))
-                    ∂(volume : Measure ℝ) :=
-                  integral_add (hA.sub hB) hsumMul
-              _ = _ := by
-                  rw [integral_sub hA hB, integral_const_mul]
-        _ = t * brownianHeatDensity t (-x) - t * brownianHeatDensity t x + x * 1 := by
-            rw [hleft', hright, integral_add hqA hqB, hpair]
-        _ = x := by
-            have heven : brownianHeatDensity t (-x) = brownianHeatDensity t x := by
-              simp [brownianHeatDensity, ht]
-            rw [heven]
-            ring
-    have hA : IntegrableOn (fun y : ℝ => y *
-        (brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x)))
-        (Set.Ioi 0) (volume : Measure ℝ) := by
-      have hterm : IntegrableOn (fun y : ℝ =>
-          ((y - x) * brownianHeatDensity t (y - x) -
-            (y + x) * brownianHeatDensity t (y + x) +
-            x * (brownianHeatDensity t (y - x) + brownianHeatDensity t (y + x))))
-          (Set.Ioi 0) (volume : Measure ℝ) := by
-        have hsum : IntegrableOn (fun y : ℝ =>
-            brownianHeatDensity t (y - x) + brownianHeatDensity t (y + x))
-            (Set.Ioi 0) (volume : Measure ℝ) := by
-          have hqA : IntegrableOn (fun y : ℝ => brownianHeatDensity t (y - x))
-              (Set.Ioi 0) (volume : Measure ℝ) := by
-            simpa only [sub_eq_add_neg] using
-              integrableOn_brownianHeatDensity_translate (t := t) (a := -x) ht
-          exact hqA.add (integrableOn_brownianHeatDensity_translate (t := t) (a := x) ht)
-        have hsumMul : IntegrableOn (fun y : ℝ => x *
-            (brownianHeatDensity t (y - x) + brownianHeatDensity t (y + x)))
-            (Set.Ioi 0) (volume : Measure ℝ) :=
-          hsum.integrable.const_mul x
-        have hMomA : IntegrableOn (fun y : ℝ => (y - x) * brownianHeatDensity t (y - x))
-            (Set.Ioi 0) (volume : Measure ℝ) := by
-          simpa only [sub_eq_add_neg] using
-            integrableOn_mul_brownianHeatDensity_translate (t := t) (a := -x) ht
-        have hMomB := integrableOn_mul_brownianHeatDensity_translate (t := t) (a := x) ht
-        exact (hMomA.sub hMomB).add hsumMul
-      exact hterm.congr_fun_ae (ae_of_all _ fun y => by ring)
-    calc
-      _ = ∫ y in Set.Ioi 0,
-          ((y - x) * brownianHeatDensity t (y - x) -
-            (y + x) * brownianHeatDensity t (y + x) +
-            x * (brownianHeatDensity t (y - x) + brownianHeatDensity t (y + x)))
-          ∂(volume : Measure ℝ) := by
-            apply setIntegral_congr_fun measurableSet_Ioi
-            intro y hy
-            ring
-      _ = x := hlin
-  have hkernel : ∀ y : ℝ, 0 < y →
+    ∫ y in Set.Ioi 0, conditionedPositiveTransitionDensity 0 t x y = 1 := by
+  have hker (y : ℝ) (hy : y ∈ Set.Ioi 0) :
       conditionedPositiveTransitionDensity 0 t x y =
-        (y / x) * (brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x)) := by
-    intro y hy
-    simp [conditionedPositiveTransitionDensity, conditionedH, ht, hx, hy]
+        ((y + -x) * brownianHeatDensity t (y + -x) -
+          (y + x) * brownianHeatDensity t (y + x) + x * brownianHeatPair t x y) / x := by
+    have hk : (0 : ℝ) ≤ 0 ∧ 0 < t ∧ 0 < x ∧ 0 < y := ⟨le_rfl, ht, hx, hy⟩
+    simp [conditionedPositiveTransitionDensity, hk, conditionedH, brownianHeatPair, sub_eq_add_neg]
     ring
-  have hscale :
-      (∫ y in Set.Ioi 0, (y / x) *
-        (brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x))
-        ∂(volume : Measure ℝ)) = 1 := by
-    rw [show (fun y : ℝ => (y / x) *
-        (brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x))) =
-        fun y => x⁻¹ * (y *
-          (brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x))) by
-          funext y
-          field_simp [hx.ne']]
-    rw [integral_const_mul, hfirst]
-    field_simp [hx.ne']
-  rw [setIntegral_congr_fun measurableSet_Ioi]
-  · exact hscale
-  · intro y hy
-    exact hkernel y hy
+  rw [setIntegral_congr_fun measurableSet_Ioi hker, integral_div]
+  let F (a y : ℝ) := (y + a) * brownianHeatDensity t (y + a)
+  let G (y : ℝ) := x * brownianHeatPair t x y
+  change (∫ y in Set.Ioi 0, ((F (-x) - F x) y + G y)) / x = 1
+  have hF (a : ℝ) : IntegrableOn (F a) (Set.Ioi 0) :=
+    integrableOn_mul_brownianHeatDensity_translate ht
+  have hG : IntegrableOn G (Set.Ioi 0) :=
+    ((integrable_brownianHeatPair ht x).const_mul x).integrableOn
+  rw [integral_add ((hF (-x)).sub (hF x)) hG]
+  simp only [Pi.sub_apply]
+  rw [integral_sub (hF (-x)) (hF x)]
+  dsimp only [F, G]
+  rw [integral_brownianHeatDensity_linear_tail ht, integral_brownianHeatDensity_linear_tail ht,
+    brownianHeatDensity_even, sub_self, zero_add, integral_const_mul,
+    integral_brownianHeatPair ht, mul_one, div_self hx.ne']
 
 end DOZZ.Proofs
 

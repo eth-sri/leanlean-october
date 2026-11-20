@@ -7,6 +7,7 @@ public import DOZZ.GFFStructure.CircleCovariance
 public import Mathlib.Probability.Process.Kolmogorov
 public import DOZZ.GFFStructure.HolderVersions
 public import Mathlib.Analysis.InnerProductSpace.ProdL2
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 /-!
 # Continuous circle-average versions
 
@@ -54,17 +55,19 @@ theorem integral_circle_logmax_sub_le (x y : ℂ) (r s : ℝ) :
     linarith
   have hmean := integral_mono_ae hi (integrable_const (Real.log (b + D))) hpoint
   rw [integral_const, probReal_univ, one_smul] at hmean
-  have hratio : Real.log (b + D) - Real.log b ≤ D / b := by
+  exact (sub_le_sub_right hmean _).trans (by
     have h := Real.log_le_sub_one_of_pos (div_pos (add_pos_of_pos_of_nonneg hb hD) hb)
     rw [Real.log_div (ne_of_gt (add_pos_of_pos_of_nonneg hb hD)) (ne_of_gt hb)] at h
     have he : (b + D) / b - 1 = D / b := by field_simp; ring
-    rwa [he] at h
-  exact (sub_le_sub_right hmean _).trans hratio
+    rwa [he] at h)
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (x y : ℂ) (r s : ℝ)
+include Ω X hX hc
 
 /-- Center/radius increments are independent of the equator pin: only raw log energy remains. -/
-theorem circleAverage_increment_variance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (x y : ℂ) (r s : ℝ) :
+theorem circleAverage_increment_variance :
     variance (fun ω => Xc ω x r - Xc ω y s) P = r + s +
       2 * (∫ z, Real.log (max (Real.exp (-s)) ‖y - z‖) ∂circleMeasure x r) := by
   let _ := hX.1
@@ -79,9 +82,7 @@ theorem circleAverage_increment_variance {Ω : Type*} [MeasurableSpace Ω]
   ring
 
 /-- Quantitative second moment bound for moving both the center and logarithmic radius. -/
-theorem circleAverage_increment_variance_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (x y : ℂ) (r s : ℝ) :
+theorem circleAverage_increment_variance_le :
     variance (fun ω => Xc ω x r - Xc ω y s) P ≤ |r - s| +
       2 * (‖x - y‖ + |Real.exp (-r) - Real.exp (-s)|) / Real.exp (-s) := by
   rw [circleAverage_increment_variance P X Xc hX hc]
@@ -90,6 +91,8 @@ theorem circleAverage_increment_variance_le {Ω : Type*} [MeasurableSpace Ω]
   have hab := le_abs_self (r - s)
   simp only [div_eq_mul_inv] at h ⊢
   linarith
+
+end
 
 /-- The original circle witness as an element of the given probability space's L². -/
 noncomputable def circleAverageL2 {Ω : Type*} [MeasurableSpace Ω]
@@ -104,10 +107,15 @@ theorem circleAverageL2_ae_eq {Ω : Type*} [MeasurableSpace Ω]
     circleAverageL2 hc p =ᵐ[P] fun ω => Xc ω p.1 p.2 :=
   MemLp.coeFn_toLp _
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+
+section
+variable (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+include Xc hX
+
 /-- Centering turns the L² increment norm into the circle increment variance. -/
-theorem circleAverageL2_norm_sub_sq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (p q : ℂ × ℝ) :
+theorem circleAverageL2_norm_sub_sq (p q : ℂ × ℝ) :
     ‖circleAverageL2 hc p - circleAverageL2 hc q‖ ^ 2 =
       variance (fun ω => Xc ω p.1 p.2 - Xc ω q.1 q.2) P := by
   let _ := hX.1
@@ -130,9 +138,7 @@ theorem circleAverageL2_norm_sub_sq {Ω : Type*} [MeasurableSpace Ω]
 
 /-- Circle averages depend continuously on center and radius in L², before construction of
 an almost surely continuous sample version. -/
-theorem continuous_circleAverageL2 {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) :
+theorem continuous_circleAverageL2 :
     Continuous (circleAverageL2 hc) := by
   apply continuous_iff_continuousAt.mpr
   intro p
@@ -155,10 +161,11 @@ theorem continuous_circleAverageL2 {Ω : Type*} [MeasurableSpace Ω]
   have hn := Real.continuous_sqrt.continuousAt.tendsto.comp hs
   simpa only [Function.comp_def, Real.sqrt_sq_eq_abs, abs_norm, Real.sqrt_zero] using hn
 
+end
+
 /-- Coordinatewise modifications preserve the energy-limit clause of `DOZZ.IsCircleAverage` and L²
 membership; the only separate requirement is its literal measurability clause. -/
-theorem isCircleAverage_of_ae_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc Y : Ω → ℂ → ℝ → ℝ)
+theorem isCircleAverage_of_ae_eq (Xc Y : Ω → ℂ → ℝ → ℝ)
     (hc : IsCircleAverage P X Xc)
     (hmeas : ∀ r, Measurable (fun p : Ω × ℂ => Y p.1 p.2 r))
     (heq : ∀ x r, (fun ω => Y ω x r) =ᵐ[P] (fun ω => Xc ω x r)) :
@@ -172,12 +179,13 @@ theorem isCircleAverage_of_ae_eq {Ω : Type*} [MeasurableSpace Ω]
     rw [hω]
   simpa only [hn] using hc.2.2 x r f hf
 
+end
+
 /-- Relative radius error is controlled locally by logarithmic radius error. -/
 theorem exp_neg_relative_error_le {r s : ℝ} (hrs : |r - s| ≤ 1) :
     |Real.exp (-r) - Real.exp (-s)| / Real.exp (-s) ≤ 2 * |r - s| := by
   have he : (Real.exp (-r) - Real.exp (-s)) / Real.exp (-s) = Real.exp (s - r) - 1 := by
-    rw [sub_div, div_self (Real.exp_ne_zero _), ← Real.exp_sub]
-    rw [show -r - -s = s - r by ring]
+    rw [sub_div, div_self (Real.exp_ne_zero _), ← Real.exp_sub, show -r - -s = s - r by ring]
   have h := Real.abs_exp_sub_one_le (x := s - r) (by simpa only [abs_sub_comm] using hrs)
   rw [← he, abs_div, abs_of_pos (Real.exp_pos _)] at h
   simpa only [abs_sub_comm] using h
@@ -239,17 +247,63 @@ theorem hasGaussianLaw_integral_abs_pow_le {Ω : Type*} [MeasurableSpace Ω]
   exact mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (variance_nonneg _ _) hB _)
     (integral_nonneg (fun x => pow_nonneg (abs_nonneg x) _))
 
+/-- An increment-variance bound for a centered Gaussian process gives an eighth-moment
+Kolmogorov bound with four times the distance exponent. -/
+theorem gaussian_isKolmogorovProcess_of_variance_le {T Ω : Type*} [PseudoMetricSpace T]
+    [MeasurableSpace Ω] {P : Measure Ω} {Y : T → Ω → ℝ}
+    (hY : IsGaussianProcess Y P) (hmeas : ∀ t, Measurable (Y t))
+    (hmean : ∀ t, (∫ ω, Y t ω ∂P) = 0) {C : ℝ} (hC : 0 ≤ C) {k : ℕ} (hk : 0 < k)
+    (hvar : ∀ x y, variance (fun ω => Y x ω - Y y ω) P ≤ C * dist x y ^ k) :
+    ∃ M : ℝ≥0, IsKolmogorovProcess Y P 8 (4 * (k : ℝ)) M := by
+  let := hY.isProbabilityMeasure
+  let A := ∫ x : ℝ, |x| ^ 8 ∂gaussianReal 0 1
+  have hA : 0 ≤ C ^ 4 * A := by dsimp [A]; positivity
+  let M : ℝ≥0 := ⟨C ^ 4 * A, hA⟩
+  refine ⟨M, IsKolmogorovProcess.mk_of_secondCountableTopology hmeas ?_ (by norm_num) (by positivity)⟩
+  intro x y
+  let U := fun ω => Y x ω - Y y ω
+  have hG : HasGaussianLaw U P := hY.hasGaussianLaw_fun_sub
+  have hz : (∫ ω, U ω ∂P) = 0 := by
+    simp [U, integral_sub (hY.hasGaussianLaw_eval x).integrable
+      (hY.hasGaussianLaw_eval y).integrable, hmean]
+  have hb := hasGaussianLaw_integral_abs_pow_le U hG hz 4 (hvar x y)
+  change _ ≤ (C * dist x y ^ k) ^ 4 * A at hb
+  rw [mul_pow, ← pow_mul, Nat.mul_comm k, mul_right_comm] at hb
+  have hi : Integrable (fun ω => |U ω| ^ 8) P := by
+    exact (hG.memLp (p := (8 : ℝ≥0∞)) (by norm_num)).integrable_norm_pow'
+  have he : (∫⁻ ω, edist (Y x ω) (Y y ω) ^ (8 : ℝ) ∂P) =
+      ENNReal.ofReal (∫ ω, |U ω| ^ 8 ∂P) := by
+    rw [ofReal_integral_eq_lintegral_ofReal hi (Eventually.of_forall fun ω => by positivity)]
+    exact lintegral_congr fun ω => by
+      rw [edist_dist, Real.dist_eq, ENNReal.rpow_ofNat, ENNReal.ofReal_pow (abs_nonneg _)]
+  rw [he, edist_dist, show 4 * (k : ℝ) = ((4 * k : ℕ) : ℝ) by norm_cast, ENNReal.rpow_natCast,
+    ← ENNReal.ofReal_coe_nnreal (p := M)]
+  change (∫ ω, |U ω| ^ 8 ∂P) ≤ (C ^ 4 * A) * dist x y ^ (4 * k) at hb
+  change _ ≤ ENNReal.ofReal (C ^ 4 * A) * ENNReal.ofReal (dist x y) ^ (4 * k)
+  simpa only [ENNReal.ofReal_mul hA, ENNReal.ofReal_pow dist_nonneg] using ENNReal.ofReal_le_ofReal hb
+
+/-- Local Hölder estimates with a positive exponent imply continuity. -/
+theorem continuous_of_locally_holder {T E : Type*} [PseudoEMetricSpace T] [PseudoEMetricSpace E]
+    {f : T → E} {r : ℝ≥0} (hr : 0 < r)
+    (h : ∀ x, ∃ U ∈ 𝓝 x, ∃ C, HolderOnWith C r f U) : Continuous f :=
+  continuous_iff_continuousAt.mpr fun x => by
+    obtain ⟨U, hU, C, hC⟩ := h x
+    exact (hC.continuousOn hr).continuousAt hU
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+include Ω X Xc hX hc
+
 /-- On a radius strip of width one, the increment variance is uniformly bounded by the
 ambient product distance. The center may range over the whole plane. -/
-theorem circleAverage_increment_variance_le_dist_on_strip {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (S : ℝ)
+theorem circleAverage_increment_variance_le_dist_on_strip (S : ℝ)
     (p q : {p : ℂ × ℝ // p.2 ∈ Icc S (S + 1)}) :
     variance (fun ω => Xc ω p.val.1 p.val.2 - Xc ω q.val.1 q.val.2) P ≤
       (2 * (5 + 2 * Real.exp (S + 1))) * dist p q := by
   have hrs : |p.val.2 - q.val.2| ≤ 1 := by
     apply abs_le.mpr
-    constructor <;> linarith [p.property.1, p.property.2, q.property.1, q.property.2]
+    constructor <;> grind
   have hv := circleAverage_increment_variance_le_on_strip P X Xc hX hc
     p.val.1 q.val.1 p.val.2 q.val.2 (S + 1) q.property.2 hrs
   have hsum : ‖p.val.1 - q.val.1‖ + |p.val.2 - q.val.2| ≤ 2 * dist p q := by
@@ -263,62 +317,24 @@ theorem circleAverage_increment_variance_le_dist_on_strip {Ω : Type*} [Measurab
 /-- Every width-one radius strip satisfies the dimension-three Kolmogorov condition with
 moment exponent eight and distance exponent four. This is a moment estimate, not a sample
 continuity theorem. -/
-theorem circleAverage_isKolmogorovProcess_on_strip {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (S : ℝ) :
+theorem circleAverage_isKolmogorovProcess_on_strip (S : ℝ) :
     ∃ M : ℝ≥0, IsKolmogorovProcess
       (fun p : {p : ℂ × ℝ // p.2 ∈ Icc S (S + 1)} => fun ω => Xc ω p.val.1 p.val.2)
       P 8 4 M := by
-  let _ := hX.1
-  let C := 2 * (5 + 2 * Real.exp (S + 1))
-  let A := ∫ x : ℝ, |x| ^ 8 ∂gaussianReal 0 1
-  have hC : 0 ≤ C := by dsimp [C]; positivity
-  have hA : 0 ≤ A := integral_nonneg (fun x => pow_nonneg (abs_nonneg x) _)
-  let M : ℝ≥0 := ⟨C ^ 4 * A, mul_nonneg (pow_nonneg hC _) hA⟩
-  refine ⟨M, IsKolmogorovProcess.mk_of_secondCountableTopology
-    (fun p => circleAverage_measurable_eval X Xc hc p.val.1 p.val.2) ?_ (by norm_num) (by norm_num)⟩
-  intro p q
-  let U : Ω → ℝ := fun ω => Xc ω p.val.1 p.val.2 - Xc ω q.val.1 q.val.2
-  have hG : HasGaussianLaw U P :=
-    (circleAverage_isGaussianProcess P X Xc hX hc).1.hasGaussianLaw_fun_sub
-      (s := p.val) (t := q.val)
-  have hmean : (∫ ω, U ω ∂P) = 0 := by
-    have hi := integral_sub ((hc.2.1 p.val.1 p.val.2).integrable (by norm_num))
-      ((hc.2.1 q.val.1 q.val.2).integrable (by norm_num))
-    rw [hi, (circleAverage_isGaussianProcess P X Xc hX hc).2,
-      (circleAverage_isGaussianProcess P X Xc hX hc).2, sub_self]
-  have hmoment : (∫ ω, |U ω| ^ 8 ∂P) ≤ (C ^ 4 * A) * dist p q ^ 4 := by
-    have hm := hasGaussianLaw_integral_abs_pow_le U hG hmean 4
-      (circleAverage_increment_variance_le_dist_on_strip P X Xc hX hc S p q)
-    change _ ≤ (C * dist p q) ^ 4 * A at hm
-    exact hm.trans_eq (by ring)
-  have hi : Integrable (fun ω => |U ω| ^ 8) P := by
-    simpa only [Real.norm_eq_abs] using
-      (hG.memLp (p := (8 : ℝ≥0∞)) (by norm_num)).integrable_norm_pow'
-  have hlin := ofReal_integral_eq_lintegral_ofReal hi
-    (Eventually.of_forall (fun ω => pow_nonneg (abs_nonneg (U ω)) 8))
-  have hconv : (∫⁻ ω, edist (Xc ω p.val.1 p.val.2) (Xc ω q.val.1 q.val.2) ^ (8 : ℝ) ∂P) =
-      ENNReal.ofReal (∫ ω, |U ω| ^ 8 ∂P) := by
-    rw [hlin]
-    apply lintegral_congr
-    intro ω
-    rw [edist_dist, Real.dist_eq]
-    simpa only [ENNReal.rpow_ofNat, U] using (ENNReal.ofReal_pow (abs_nonneg (U ω)) 8).symm
-  rw [hconv]
-  have hb := ENNReal.ofReal_le_ofReal hmoment
-  rw [ENNReal.ofReal_mul (mul_nonneg (pow_nonneg hC _) hA),
-    ENNReal.ofReal_pow (dist_nonneg : 0 ≤ dist p q) 4] at hb
-  change _ ≤ ENNReal.ofReal (C ^ 4 * A) * ENNReal.ofReal (dist p q) ^ 4 at hb
-  rw [edist_dist, ENNReal.rpow_ofNat, ← ENNReal.ofReal_coe_nnreal (p := M)]
-  exact hb
+  let r := fun p : {p : ℂ × ℝ // p.2 ∈ Icc S (S + 1)} => p.1
+  obtain ⟨hG, hm⟩ := circleAverage_isGaussianProcess P X Xc hX hc
+  simpa [Function.comp_def, r] using gaussian_isKolmogorovProcess_of_variance_le (hG.comp_right r)
+    (fun p => circleAverage_measurable_eval X Xc hc _ _) (fun p => hm _ _)
+    (C := 2 * (5 + 2 * Real.exp (S + 1))) (by positivity) (k := 1) (by decide) (fun p q => by
+      simpa using circleAverage_increment_variance_le_dist_on_strip P X Xc hX hc S p q)
 
 /-- Every L² circle representative has zero expectation. -/
-theorem circleAverageL2_integral_eq_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (p : ℂ × ℝ) :
+theorem circleAverageL2_integral_eq_zero (p : ℂ × ℝ) :
     (∫ ω, circleAverageL2 hc p ω ∂P) = 0 := by
   rw [integral_congr_ae (circleAverageL2_ae_eq hc p)]
   exact (circleAverage_isGaussianProcess P X Xc hX hc).2 p.1 p.2
+
+end
 
 /-- Once a jointly measurable continuous coordinatewise version has been constructed, it satisfies
 every clause of the conclusion of `DOZZ.exists_continuous_circleAverage`. -/
@@ -328,11 +344,9 @@ theorem continuous_circleAverage_version_spec {Ω : Type*} [MeasurableSpace Ω]
     (hmeas : Measurable (fun p : Ω × (ℂ × ℝ) => Y p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Y ω p.1 p.2))
     (heq : ∀ x r, (fun ω => Y ω x r) =ᵐ[P] (fun ω => Xc ω x r)) :
-    IsCircleAverage P X Y ∧
-      Measurable (fun p : Ω × (ℂ × ℝ) => Y p.1 p.2.1 p.2.2) ∧
-      (∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Y ω p.1 p.2)) ∧
+    IsContinuousCircleAverage P X Y ∧
       (∀ x r, (fun ω => Y ω x r) =ᵐ[P] (fun ω => Xc ω x r)) := by
-  refine ⟨isCircleAverage_of_ae_eq P X Xc Y hc ?_ heq, hmeas, hcont, heq⟩
+  refine ⟨⟨isCircleAverage_of_ae_eq P X Xc Y hc ?_ heq, hmeas, hcont⟩, heq⟩
   intro r
   exact hmeas.comp (measurable_fst.prodMk (measurable_snd.prodMk measurable_const))
 
@@ -368,9 +382,8 @@ theorem IsKolmogorovProcess.comp_one {T U Ω E : Type*} [PseudoEMetricSpace T]
   refine ⟨fun s t => hX.measurablePair (f s) (f t), ?_, hX.p_pos, hX.q_pos⟩
   intro s t
   apply (hX.kolmogorovCondition (f s) (f t)).trans
-  have hdist : edist (f s) (f t) ≤ edist s t := by
-    simpa only [ENNReal.coe_one, one_mul] using hf s t
-  exact mul_le_mul le_rfl (ENNReal.rpow_le_rpow hdist hX.q_pos.le) zero_le zero_le
+  exact mul_le_mul le_rfl (ENNReal.rpow_le_rpow (by
+    simpa only [ENNReal.coe_one, one_mul] using hf s t) hX.q_pos.le) zero_le zero_le
 
 /-- The Hilbert parameter carrier has real dimension three. -/
 theorem finrank_circleParameter : Module.finrank ℝ CircleParameter = 3 := by
@@ -391,12 +404,10 @@ theorem exists_continuous_clamped_circleAverage {Ω : Type*} [MeasurableSpace Ω
   rw [finrank_circleParameter] at hcover
   obtain ⟨Y, hYmeas, hYeq, hYholder⟩ := exists_modification_holder' hcover
     hK.IsAEKolmogorovProcess (fun n => by finiteness) (by norm_num) (by norm_num)
-  have hYcont ω : Continuous (fun p => Y p ω) := by
-    apply continuous_iff_continuousAt.mpr
-    intro p
-    obtain ⟨U, hU, hholder⟩ := hYholder ω p
-    obtain ⟨C, hC⟩ := hholder (1/16) (by norm_num) (by norm_num)
-    exact (hC.continuousOn (by norm_num)).continuousAt hU
+  have hYcont ω : Continuous (fun p => Y p ω) := continuous_of_locally_holder
+    (r := 1/16) (by norm_num) fun p => by
+      obtain ⟨U, hU, hh⟩ := hYholder ω p
+      exact ⟨U, hU, hh _ (by norm_num) (by norm_num)⟩
   refine ⟨fun p => Y (WithLp.toLp 2 p), fun p => hYmeas _,
     fun ω => (hYcont ω).comp (WithLp.prod_continuous_toLp 2 ℂ ℝ), ?_⟩
   intro p
@@ -432,9 +443,7 @@ theorem exists_continuous_circleAverage {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) :
     ∃ Y : Ω → ℂ → ℝ → ℝ,
-      IsCircleAverage P X Y ∧
-      Measurable (fun p : Ω × (ℂ × ℝ) => Y p.1 p.2.1 p.2.2) ∧
-      (∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Y ω p.1 p.2)) ∧
+      IsContinuousCircleAverage P X Y ∧
       (∀ x r, (fun ω => Y ω x r) =ᵐ[P] (fun ω => Xc ω x r)) := by
   have hlocal (k : ℤ) := exists_continuous_clamped_circleAverage P X Xc hX hc ((k : ℝ)/2-1/4)
   choose Z hZmeas hZcont hZeq using hlocal

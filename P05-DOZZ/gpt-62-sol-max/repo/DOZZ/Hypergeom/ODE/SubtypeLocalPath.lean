@@ -74,11 +74,13 @@ theorem subtypeLocalSegmentPath_mem_halfBall
     _ ≤ dist (w : ℂ) (z : ℂ) := hmul
     _ < r / 2 := by simpa [dist_comm] using hw
 
+section
+variable {U : Set ℂ} {x y z : U} (p : Path x y) (q : Path y z) {s : ℝ} (hs : s ∈ Icc (0 : ℝ) 1)
+include U x y z hs
+
 /-- The first half of a concatenated subtype path is its left path after linear
 reparameterization. -/
-theorem subtypePathFunction_trans_left
-    {U : Set ℂ} {x y z : U} (p : Path x y) (q : Path y z)
-    {s : ℝ} (hs : s ∈ Icc (0 : ℝ) 1) :
+theorem subtypePathFunction_trans_left :
     subtypePathFunction (p.trans q) (s / 2) = subtypePathFunction p s := by
   have hs2 : s / 2 ∈ Icc (0 : ℝ) 1 := by constructor <;> nlinarith [hs.1, hs.2]
   have hproj2 := Set.projIcc_of_mem zero_le_one hs2
@@ -98,9 +100,7 @@ theorem subtypePathFunction_trans_left
 
 /-- The second half of a concatenated subtype path is its right path after linear
 reparameterization. -/
-theorem subtypePathFunction_trans_right
-    {U : Set ℂ} {x y z : U} (p : Path x y) (q : Path y z)
-    {s : ℝ} (hs : s ∈ Icc (0 : ℝ) 1) :
+theorem subtypePathFunction_trans_right :
     subtypePathFunction (p.trans q) (1 / 2 + s / 2) = subtypePathFunction q s := by
   have ht : 1 / 2 + s / 2 ∈ Icc (0 : ℝ) 1 := by constructor <;> nlinarith [hs.1, hs.2]
   have hprojT := Set.projIcc_of_mem zero_le_one ht
@@ -121,5 +121,7 @@ theorem subtypePathFunction_trans_right
       apply Subtype.ext
       change 2 * (1 / 2 + s / 2) - 1 = s
       ring
+
+end
 
 end DOZZ.Proofs

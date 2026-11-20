@@ -39,7 +39,8 @@ theorem weightedGmcBallMoment_eq_top_of_insertion
   have hρr : ρ ≤ r := min_le_left _ _
   have h0 := weightedGmcBallMoment_center_eq_top_of_insertion P X hX γ hγ hγ2 M hM α hα p hp he
     ρ hρ (by linarith)
-  have htr := weightedGmcBallMoment_center_le_transfer P X hX γ hγ hγ2 M hM α z ρ hρ hρ8 p hp hp4
+  have htr := weightedGmcBallMoment_le_transfer P X hX γ hγ hγ2 M hM α 0 z ρ (‖z‖ + ρ) hρ hρ8
+    (by positivity) (by simpa using le_add_of_nonneg_left (norm_nonneg z)) le_rfl p hp hp4
   rw [h0] at htr
   have hT : ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + (‖z‖ + ρ)))) /
       2 * |p ^ 2 - p|)) * ENNReal.ofReal ((1 + (‖z‖ + ρ)) ^ 4) ^ |p| ≠ ⊤ :=
@@ -110,7 +111,6 @@ theorem equatorGFF_GMC_weighted_local_moment_range
     · rw [weightedGmcBallMoment_eq_top_of_bulk P X hX γ hγ hγ2 M hM α z r hr p
         (not_lt.mp hp4)] at hfin
       exact lt_irrefl _ hfin
-  · intro hrange
-    exact weightedGmcBallMoment_lt_top_of_sharp_range P X hX γ hγ hγ2 M hM α z r hr p hp hrange
+  · apply weightedGmcBallMoment_lt_top_of_sharp_range <;> assumption
 
 end DOZZ.Proofs

@@ -61,16 +61,20 @@ noncomputable local instance (priority := low) bpzNormedSpaceBilin :
 
 /-! ### Comparison of softened bases at two parameters -/
 
+section
+variable {ε : ℝ} (hε : 0 < ε)
+include hε
+
 /-- The softened base `|x − z|² + ε²` is positive when `ε > 0`. -/
-theorem bpzSoft_base_pos {ε : ℝ} (hε : 0 < ε) (x z : ℂ) :
+theorem bpzSoft_base_pos (x z : ℂ) :
     0 < Complex.normSq (x - z) + ε ^ 2 :=
   add_pos_of_nonneg_of_pos (Complex.normSq_nonneg _) (pow_pos hε 2)
 
 /-- Comparison of the softened bases at two parameters `z, z'`. -/
-theorem bpzSoft_comp_le {ε : ℝ} (hε : 0 < ε) (z z' x : ℂ) :
+theorem bpzSoft_comp_le (z z' x : ℂ) :
     Complex.normSq (x - z') + ε ^ 2 ≤
       2 * (1 + ‖z - z'‖ ^ 2 / ε ^ 2) * (Complex.normSq (x - z) + ε ^ 2) := by
-  have hε2 : 0 < ε ^ 2 := pow_pos hε 2
+  have hε2  := pow_pos hε 2
   have htri : ‖x - z'‖ ≤ ‖x - z‖ + ‖z - z'‖ := by
     calc ‖x - z'‖ = ‖(x - z) + (z - z')‖ := by rw [sub_add_sub_cancel]
       _ ≤ ‖x - z‖ + ‖z - z'‖ := norm_add_le _ _
@@ -86,15 +90,17 @@ theorem bpzSoft_comp_le {ε : ℝ} (hε : 0 < ε) (z z' x : ℂ) :
 
 /-- For `‖z − z'‖ ≤ 1` the softened bases at `z` and `z'` are comparable with the constant
 `2 (1 + 1/ε²)`. -/
-theorem bpzSoft_ratio_le {ε : ℝ} (hε : 0 < ε) {z z' : ℂ} (hzz : ‖z - z'‖ ≤ 1) (x : ℂ) :
+theorem bpzSoft_ratio_le {z z' : ℂ} (hzz : ‖z - z'‖ ≤ 1) (x : ℂ) :
     Complex.normSq (x - z') + ε ^ 2 ≤
       2 * (1 + 1 / ε ^ 2) * (Complex.normSq (x - z) + ε ^ 2) := by
   refine (bpzSoft_comp_le hε z z' x).trans ?_
   refine mul_le_mul_of_nonneg_right ?_ (bpzSoft_base_pos hε x z).le
   have h1 : ‖z - z'‖ ^ 2 ≤ 1 := pow_le_one₀ (norm_nonneg _) hzz
-  have h2 : ‖z - z'‖ ^ 2 / ε ^ 2 ≤ 1 / ε ^ 2 :=
+  have h2  :=
     div_le_div_of_nonneg_right h1 (pow_pos hε 2).le
   linarith
+
+end
 
 /-- A two-sided multiplicative comparison of positive reals gives one for every real power. -/
 theorem bpzSoft_rpow_le_aux {P Q C : ℝ} (hP : 0 < P) (hQ : 0 < Q) (hC : 0 < C)
@@ -106,13 +112,17 @@ theorem bpzSoft_rpow_le_aux {P Q C : ℝ} (hP : 0 < P) (hQ : 0 < Q) (hC : 0 < C)
   · rw [abs_of_nonpos ha]
     have h3 : Q / C ≤ P := by
       rw [div_le_iff₀ hC]
-      linarith [mul_comm C P]
+      linarith
     calc P ^ a ≤ (Q / C) ^ a := Real.rpow_le_rpow_of_nonpos (div_pos hQ hC) h3 ha
       _ = Q ^ a / C ^ a := Real.div_rpow hQ.le hC.le a
       _ = C ^ (-a) * Q ^ a := by rw [Real.rpow_neg hC.le]; ring
 
+section
+variable {ε : ℝ} (hε : 0 < ε) (a : ℝ)
+include hε
+
 /-- Comparison of the `a`-th powers of the softened bases at two parameters `z, z'`. -/
-theorem bpzSoft_rpow_le {ε : ℝ} (hε : 0 < ε) (a : ℝ) (z z' x : ℂ) :
+theorem bpzSoft_rpow_le (z z' x : ℂ) :
     (Complex.normSq (x - z') + ε ^ 2) ^ a ≤
       (2 * (1 + ‖z - z'‖ ^ 2 / ε ^ 2)) ^ |a| * (Complex.normSq (x - z) + ε ^ 2) ^ a := by
   refine bpzSoft_rpow_le_aux (bpzSoft_base_pos hε x z') (bpzSoft_base_pos hε x z)
@@ -121,19 +131,18 @@ theorem bpzSoft_rpow_le {ε : ℝ} (hε : 0 < ε) (a : ℝ) (z z' x : ℂ) :
   rwa [norm_sub_rev z' z] at h
 
 /-- For `‖z − z'‖ ≤ 1`: `N(z')^a ≤ (2 (1 + 1/ε²))^|a| N(z)^a` for every real `a`. -/
-theorem bpzSoft_rpow_le_of_norm_le_one {ε : ℝ} (hε : 0 < ε) (a : ℝ) {z z' : ℂ}
+theorem bpzSoft_rpow_le_of_norm_le_one {z z' : ℂ}
     (hzz : ‖z - z'‖ ≤ 1) (x : ℂ) :
     (Complex.normSq (x - z') + ε ^ 2) ^ a ≤
       (2 * (1 + 1 / ε ^ 2)) ^ |a| * (Complex.normSq (x - z) + ε ^ 2) ^ a := by
   refine bpzSoft_rpow_le_aux (bpzSoft_base_pos hε x z') (bpzSoft_base_pos hε x z)
     (by positivity) (bpzSoft_ratio_le hε hzz x) ?_ a
-  have hzz' : ‖z' - z‖ ≤ 1 := by rwa [norm_sub_rev]
-  exact bpzSoft_ratio_le hε hzz' x
+  exact bpzSoft_ratio_le hε (by rwa [norm_sub_rev]) x
 
 /-! ### Pointwise bounds by `N^a` -/
 
 /-- `N^{a-1} |u| ≤ N^a / ε` for `N = |u|² + ε²`. -/
-theorem bpzSoft_rpow_pred_mul_norm_le {ε : ℝ} (hε : 0 < ε) (a : ℝ) (u : ℂ) :
+theorem bpzSoft_rpow_pred_mul_norm_le (u : ℂ) :
     (Complex.normSq u + ε ^ 2) ^ (a - 1) * ‖u‖ ≤ (Complex.normSq u + ε ^ 2) ^ a / ε := by
   have hN : 0 < Complex.normSq u + ε ^ 2 := add_pos_of_nonneg_of_pos (Complex.normSq_nonneg _)
     (pow_pos hε 2)
@@ -147,7 +156,7 @@ theorem bpzSoft_rpow_pred_mul_norm_le {ε : ℝ} (hε : 0 < ε) (a : ℝ) (u : �
       mul_le_mul_of_nonneg_left hu (Real.rpow_nonneg hN.le a)
 
 /-- `N^{a-1} ≤ N^a / ε²` for `N = |u|² + ε²`. -/
-theorem bpzSoft_rpow_pred_le {ε : ℝ} (hε : 0 < ε) (a : ℝ) (u : ℂ) :
+theorem bpzSoft_rpow_pred_le (u : ℂ) :
     (Complex.normSq u + ε ^ 2) ^ (a - 1) ≤ (Complex.normSq u + ε ^ 2) ^ a / ε ^ 2 := by
   have hN : 0 < Complex.normSq u + ε ^ 2 := add_pos_of_nonneg_of_pos (Complex.normSq_nonneg _)
     (pow_pos hε 2)
@@ -155,8 +164,14 @@ theorem bpzSoft_rpow_pred_le {ε : ℝ} (hε : 0 < ε) (a : ℝ) (u : ℂ) :
   exact div_le_div_of_nonneg_left (Real.rpow_nonneg hN.le a) (pow_pos hε 2)
     (le_add_of_nonneg_left (Complex.normSq_nonneg u))
 
+end
+
+section
+variable (a : ℝ) {ε : ℝ} (hε : 0 < ε) (x z : ℂ)
+include hε
+
 /-- The first derivative is bounded by `(2|a|/ε) N^a`. -/
-theorem bpzSoftDeriv_norm_le_rpow (a : ℝ) {ε : ℝ} (hε : 0 < ε) (x z : ℂ) :
+theorem bpzSoftDeriv_norm_le_rpow :
     ‖bpzSoftDeriv a ε x z‖ ≤ 2 * |a| / ε * (Complex.normSq (x - z) + ε ^ 2) ^ a := by
   refine (norm_bpzSoftDeriv_le a ε x z).trans ?_
   have h := bpzSoft_rpow_pred_mul_norm_le hε a (x - z)
@@ -167,7 +182,7 @@ theorem bpzSoftDeriv_norm_le_rpow (a : ℝ) {ε : ℝ} (hε : 0 < ε) (x z : ℂ
     _ = 2 * |a| / ε * (Complex.normSq (x - z) + ε ^ 2) ^ a := by ring
 
 /-- The second derivative is bounded by `((4|a(a−1)| + 2|a|)/ε²) N^a`. -/
-theorem bpzSoftDeriv2_norm_le_rpow (a : ℝ) {ε : ℝ} (hε : 0 < ε) (x z : ℂ) :
+theorem bpzSoftDeriv2_norm_le_rpow :
     ‖bpzSoftDeriv2 a ε x z‖ ≤
       (4 * |a * (a - 1)| + 2 * |a|) / ε ^ 2 * (Complex.normSq (x - z) + ε ^ 2) ^ a := by
   refine (norm_bpzSoftDeriv2_le a ε x z (bpzSoft_base_pos hε x z)).trans ?_
@@ -176,27 +191,30 @@ theorem bpzSoftDeriv2_norm_le_rpow (a : ℝ) {ε : ℝ} (hε : 0 < ε) (x z : �
         mul_le_mul_of_nonneg_left (bpzSoft_rpow_pred_le hε a (x - z)) (by positivity)
     _ = (4 * |a * (a - 1)| + 2 * |a|) / ε ^ 2 * (Complex.normSq (x - z) + ε ^ 2) ^ a := by ring
 
+end
+
 /-! ### Measurability and continuity in `x` -/
 
 /-- Measurability of the softened power in `x`. -/
 theorem bpzSoft_measurable_rpow (a ε : ℝ) (z : ℂ) :
     Measurable (fun x : ℂ => (Complex.normSq (x - z) + ε ^ 2) ^ a) := by
-  have h : Measurable (fun x : ℂ => Complex.normSq (x - z) + ε ^ 2) := by fun_prop
-  exact h.pow_const a
+  fun_prop
+
+section
+variable (a : ℝ) {ε : ℝ} (hε : 0 < ε) (z : ℂ)
+include hε
 
 /-- Continuity of the first derivative in the integration variable `x`. -/
-theorem bpzSoftDeriv_continuous_left (a : ℝ) {ε : ℝ} (hε : 0 < ε) (z : ℂ) :
+theorem bpzSoftDeriv_continuous_left :
     Continuous (fun x : ℂ => bpzSoftDeriv a ε x z) := by
   have hbase : Continuous (fun x : ℂ => Complex.normSq (x - z) + ε ^ 2) := by fun_prop
   have hc : Continuous
       (fun x : ℂ => -2 * a * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1)) :=
     continuous_const.mul (hbase.rpow_const fun x => Or.inl (bpzSoft_base_pos hε x z).ne')
-  have hL : Continuous (fun x : ℂ => innerSL ℝ (x - z)) :=
-    (innerSL ℝ).continuous.comp (continuous_id.sub continuous_const)
-  exact hc.smul hL
+  exact hc.smul ((innerSL ℝ).continuous.comp (continuous_id.sub continuous_const))
 
 /-- Continuity of the second derivative in the integration variable `x`. -/
-theorem bpzSoftDeriv2_continuous_left (a : ℝ) {ε : ℝ} (hε : 0 < ε) (z : ℂ) :
+theorem bpzSoftDeriv2_continuous_left :
     Continuous (fun x : ℂ => bpzSoftDeriv2 a ε x z) := by
   have hbase : Continuous (fun x : ℂ => Complex.normSq (x - z) + ε ^ 2) := by fun_prop
   have hc2 : Continuous
@@ -207,10 +225,9 @@ theorem bpzSoftDeriv2_continuous_left (a : ℝ) {ε : ℝ} (hε : 0 < ε) (z : �
     continuous_const.mul (hbase.rpow_const fun x => Or.inl (bpzSoft_base_pos hε x z).ne')
   have hL : Continuous (fun x : ℂ => innerSL ℝ (x - z)) :=
     (innerSL ℝ).continuous.comp (continuous_id.sub continuous_const)
-  have hS : Continuous
-      (fun x : ℂ => (innerSL ℝ (x - z)).smulRight (innerSL ℝ (x - z))) :=
-    (ContinuousLinearMap.smulRightL ℝ ℂ (ℂ →L[ℝ] ℝ)).continuous₂.comp₂ hL hL
-  exact (hc2.smul hS).add (hc1.smul continuous_const)
+  exact (hc2.smul ((ContinuousLinearMap.smulRightL ℝ ℂ (ℂ →L[ℝ] ℝ)).continuous₂.comp₂ hL hL)).add (hc1.smul continuous_const)
+
+end
 
 /-! ### Integrability -/
 
@@ -223,14 +240,17 @@ theorem integrable_bpzSoftMass_of {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ} 
   refine Integrable.mono' (hint.const_mul ((2 * (1 + ‖z₀ - z‖ ^ 2 / ε ^ 2)) ^ |a|)) ?_ ?_
   · exact ((bpzSoft_measurable_rpow a ε z).mul hw).aestronglyMeasurable
   · refine Eventually.of_forall fun x => ?_
-    have hnn : 0 ≤ (Complex.normSq (x - z) + ε ^ 2) ^ a * w x :=
+    have hnn  :=
       mul_nonneg (Real.rpow_nonneg (bpzSoft_base_pos hε x z).le a) (hw0 x)
     rw [Real.norm_of_nonneg hnn, ← mul_assoc]
     exact mul_le_mul_of_nonneg_right (bpzSoft_rpow_le hε a z₀ z x) (hw0 x)
 
+section
+variable {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ} (hw0 : ∀ x, 0 ≤ w x)
+include hε hw0
+
 /-- Pointwise bound for the first-derivative integrand at the same point. -/
-theorem bpzSoftDeriv_norm_smul_le_self {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ}
-    (hw0 : ∀ x, 0 ≤ w x) (x z : ℂ) :
+theorem bpzSoftDeriv_norm_smul_le_self (x z : ℂ) :
     ‖w x • bpzSoftDeriv a ε x z‖ ≤
       2 * |a| / ε * ((Complex.normSq (x - z) + ε ^ 2) ^ a * w x) := by
   rw [norm_smul, Real.norm_of_nonneg (hw0 x)]
@@ -240,8 +260,7 @@ theorem bpzSoftDeriv_norm_smul_le_self {a ε : ℝ} (hε : 0 < ε) {w : ℂ → 
     _ = 2 * |a| / ε * ((Complex.normSq (x - z) + ε ^ 2) ^ a * w x) := by ring
 
 /-- Pointwise bound for the second-derivative integrand at the same point. -/
-theorem bpzSoftDeriv2_norm_smul_le_self {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ}
-    (hw0 : ∀ x, 0 ≤ w x) (x z : ℂ) :
+theorem bpzSoftDeriv2_norm_smul_le_self (x z : ℂ) :
     ‖w x • bpzSoftDeriv2 a ε x z‖ ≤
       (4 * |a * (a - 1)| + 2 * |a|) / ε ^ 2 *
         ((Complex.normSq (x - z) + ε ^ 2) ^ a * w x) := by
@@ -253,9 +272,12 @@ theorem bpzSoftDeriv2_norm_smul_le_self {a ε : ℝ} (hε : 0 < ε) {w : ℂ →
     _ = (4 * |a * (a - 1)| + 2 * |a|) / ε ^ 2 *
         ((Complex.normSq (x - z) + ε ^ 2) ^ a * w x) := by ring
 
+section
+variable {z₀ z : ℂ} (hz : ‖z₀ - z‖ ≤ 1) (x : ℂ)
+include hz
+
 /-- Domination of the first-derivative integrand for `‖z₀ − z‖ ≤ 1`. -/
-theorem bpzSoftDeriv_norm_smul_le {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ}
-    (hw0 : ∀ x, 0 ≤ w x) {z₀ z : ℂ} (hz : ‖z₀ - z‖ ≤ 1) (x : ℂ) :
+theorem bpzSoftDeriv_norm_smul_le :
     ‖w x • bpzSoftDeriv a ε x z‖ ≤
       2 * |a| / ε * (2 * (1 + 1 / ε ^ 2)) ^ |a| *
         ((Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) := by
@@ -269,8 +291,7 @@ theorem bpzSoftDeriv_norm_smul_le {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ}
         ((Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) := by ring
 
 /-- Domination of the second-derivative integrand for `‖z₀ − z‖ ≤ 1`. -/
-theorem bpzSoftDeriv2_norm_smul_le {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ}
-    (hw0 : ∀ x, 0 ≤ w x) {z₀ z : ℂ} (hz : ‖z₀ - z‖ ≤ 1) (x : ℂ) :
+theorem bpzSoftDeriv2_norm_smul_le :
     ‖w x • bpzSoftDeriv2 a ε x z‖ ≤
       (4 * |a * (a - 1)| + 2 * |a|) / ε ^ 2 * (2 * (1 + 1 / ε ^ 2)) ^ |a| *
         ((Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) := by
@@ -284,10 +305,17 @@ theorem bpzSoftDeriv2_norm_smul_le {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ}
     _ = (4 * |a * (a - 1)| + 2 * |a|) / ε ^ 2 * (2 * (1 + 1 / ε ^ 2)) ^ |a| *
         ((Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) := by ring
 
+end
+
+end
+
+section
+variable {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ}
+  {z₀ : ℂ} (hint : Integrable (fun x => (Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) m)
+include hε hw hw0 hint
+
 /-- The first-derivative integrand is integrable. -/
-theorem bpzSoftMassDeriv_integrable_integrand {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z₀ : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) m) :
+theorem bpzSoftMassDeriv_integrable_integrand :
     Integrable (fun x => w x • bpzSoftDeriv a ε x z₀) m := by
   refine Integrable.mono' (hint.const_mul (2 * |a| / ε)) ?_
     (Eventually.of_forall fun x => bpzSoftDeriv_norm_smul_le_self hε hw0 x z₀)
@@ -295,9 +323,7 @@ theorem bpzSoftMassDeriv_integrable_integrand {a ε : ℝ} (hε : 0 < ε) {w : �
 
 /-- The second-derivative integrand is integrable. (Private: its statement involves the local
 instance shortcuts above.) -/
-private theorem bpzSoftMassDeriv2_integrable_integrand {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z₀ : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) m) :
+private theorem bpzSoftMassDeriv2_integrable_integrand :
     Integrable (fun x => w x • bpzSoftDeriv2 a ε x z₀) m := by
   refine Integrable.mono' (hint.const_mul ((4 * |a * (a - 1)| + 2 * |a|) / ε ^ 2)) ?_
     (Eventually.of_forall fun x => bpzSoftDeriv2_norm_smul_le_self hε hw0 x z₀)
@@ -306,9 +332,7 @@ private theorem bpzSoftMassDeriv2_integrable_integrand {a ε : ℝ} (hε : 0 < �
 /-! ### Differentiation under the integral sign -/
 
 /-- The softened mass is differentiable, with derivative `bpzSoftMassDeriv`. -/
-theorem hasFDerivAt_bpzSoftMassReal {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ} (hw : Measurable w)
-    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z₀ : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) m) :
+theorem hasFDerivAt_bpzSoftMassReal :
     HasFDerivAt (bpzSoftMassReal a ε w m) (bpzSoftMassDeriv a ε w m z₀) z₀ := by
   refine hasFDerivAt_integral_of_dominated_of_fderiv_le (μ := m)
     (F := fun z x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x)
@@ -327,9 +351,7 @@ theorem hasFDerivAt_bpzSoftMassReal {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ
 
 /-- The first derivative of the softened mass is differentiable, with derivative
 `bpzSoftMassDeriv2`. -/
-theorem hasFDerivAt_bpzSoftMassDeriv {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ} (hw : Measurable w)
-    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z₀ : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) m) :
+theorem hasFDerivAt_bpzSoftMassDeriv :
     HasFDerivAt (bpzSoftMassDeriv a ε w m) (bpzSoftMassDeriv2 a ε w m z₀) z₀ := by
   refine hasFDerivAt_integral_of_dominated_of_fderiv_le (μ := m)
     (F := fun z x => w x • bpzSoftDeriv a ε x z)
@@ -350,9 +372,7 @@ theorem hasFDerivAt_bpzSoftMassDeriv {a ε : ℝ} (hε : 0 < ε) {w : ℂ → �
 /-! ### Bounds on the derivatives of the mass -/
 
 /-- The first derivative of the softened mass is bounded by `(2|a|/ε)` times the mass. -/
-theorem norm_bpzSoftMassDeriv_le {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ} (hw : Measurable w)
-    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z₀ : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) m) :
+theorem norm_bpzSoftMassDeriv_le :
     ‖bpzSoftMassDeriv a ε w m z₀‖ ≤ 2 * |a| / ε * bpzSoftMassReal a ε w m z₀ := by
   have hI := bpzSoftMassDeriv_integrable_integrand hε hw hw0 hint
   have hg := hint.const_mul (2 * |a| / ε)
@@ -365,9 +385,7 @@ theorem norm_bpzSoftMassDeriv_le {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ} (
 
 /-- The second derivative of the softened mass is bounded by `(4|a(a−1)| + 2|a|)/ε²` times the
 mass. -/
-theorem norm_bpzSoftMassDeriv2_le {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ} (hw : Measurable w)
-    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z₀ : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z₀) + ε ^ 2) ^ a * w x) m) :
+theorem norm_bpzSoftMassDeriv2_le :
     ‖bpzSoftMassDeriv2 a ε w m z₀‖ ≤
       (4 * |a * (a - 1)| + 2 * |a|) / ε ^ 2 * bpzSoftMassReal a ε w m z₀ := by
   have hI := bpzSoftMassDeriv2_integrable_integrand hε hw hw0 hint
@@ -380,6 +398,8 @@ theorem norm_bpzSoftMassDeriv2_le {a ε : ℝ} (hε : 0 < ε) {w : ℂ → ℝ} 
         integral_mono hI.norm hg fun x => bpzSoftDeriv2_norm_smul_le_self hε hw0 x z₀
     _ = (4 * |a * (a - 1)| + 2 * |a|) / ε ^ 2 * bpzSoftMassReal a ε w m z₀ :=
         integral_const_mul _ _
+
+end
 
 /-! ### The derivatives in coordinates -/
 

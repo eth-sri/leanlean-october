@@ -19,41 +19,15 @@ namespace DOZZ.Proofs
 
 private theorem measurable_norm_rpow (s : ℝ) :
     Measurable (fun w : ℂ => ‖w‖ ^ s) := by
-  have hrepr : (fun w : ℂ => ‖w‖ ^ s) =
-      fun w => if ‖w‖ = 0 then 0 ^ s else Real.exp (s * Real.log ‖w‖) := by
-    funext w
-    by_cases hw : ‖w‖ = 0
-    · simp [hw]
-    · rw [ite_eq_right hw,
-        Real.rpow_def_of_pos (lt_of_le_of_ne (norm_nonneg w) (Ne.symm hw))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) (by fun_prop)
-  · exact measurable_const
-  · fun_prop
+  fun_prop
 
 private theorem measurable_rpow_of_nonneg {f : ℂ → ℝ} (hf : Measurable f)
     (hfn : ∀ u, 0 ≤ f u) (s : ℝ) : Measurable (fun u => f u ^ s) := by
-  have hrepr : (fun u => f u ^ s) =
-      fun u => if f u = 0 then 0 ^ s else Real.exp (s * Real.log (f u)) := by
-    funext u
-    by_cases hu : f u = 0
-    · simp [hu]
-    · rw [ite_eq_right hu, Real.rpow_def_of_pos (lt_of_le_of_ne (hfn u) (Ne.symm hu))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) hf
-  · exact measurable_const
-  · fun_prop
+  fun_prop
 
 private theorem continuousOn_norm_comp_rpow {s : Set ℂ} (f : ℂ → ℂ)
     (hf : Continuous f) (hs : ∀ u ∈ s, f u ≠ 0) (p : ℝ) :
-    ContinuousOn (fun u => ‖f u‖ ^ p) s := by
-  exact (continuous_norm.comp hf).continuousOn.rpow_const fun u hu =>
+    ContinuousOn (fun u => ‖f u‖ ^ p) s := (continuous_norm.comp hf).continuousOn.rpow_const fun u hu =>
     Or.inl (norm_ne_zero_iff.mpr (hs u hu))
 
 private theorem integrableOn_mul_factor_iff {s : Set ℂ} (hs : MeasurableSet s)
@@ -89,21 +63,22 @@ private theorem exists_rpow_interval_bounds {A B s : ℝ} (hA : 0 < A) (hAB : A 
     intro x hxA hxB
     exact ⟨Real.rpow_le_rpow hA.le hxA hs,
       Real.rpow_le_rpow (le_trans hA.le hxA) hxB hs⟩
-  · have hs' : s ≤ 0 := le_of_lt (lt_of_not_ge hs)
+  · have hs'  := le_of_lt (lt_of_not_ge hs)
     refine ⟨B ^ s, A ^ s, Real.rpow_pos_of_pos (lt_of_lt_of_le hA hAB) s,
       Real.rpow_pos_of_pos hA s, ?_⟩
     intro x hxA hxB
     exact ⟨Real.rpow_le_rpow_of_nonpos (lt_of_lt_of_le hA hxA) hxB hs',
       Real.rpow_le_rpow_of_nonpos hA hxA hs'⟩
 
-private theorem norm_sub_bounds_on_ball_zero {z : ℂ} {R : ℝ}
-    {u : ℂ} (hu : u ∈ ball 0 R) :
+section
+variable {z : ℂ} {R : ℝ} {u : ℂ}
+
+private theorem norm_sub_bounds_on_ball_zero (hu : u ∈ ball 0 R) :
     ‖z‖ - R ≤ ‖u - z‖ ∧ ‖u - z‖ ≤ ‖z‖ + R := by
   have huR : ‖u‖ < R := by simpa [Metric.mem_ball, dist_zero_right] using hu
   have hsum : (z - u) + u = z := by abel
   have htriangle := norm_add_le (z - u) u
   rw [hsum] at htriangle
-  have hrev : ‖z‖ - ‖u‖ ≤ ‖z - u‖ := by linarith
   have heq : ‖z - u‖ = ‖u - z‖ := by rw [← norm_neg, neg_sub]
   constructor
   · rw [← heq]
@@ -113,7 +88,7 @@ private theorem norm_sub_bounds_on_ball_zero {z : ℂ} {R : ℝ}
       _ ≤ ‖u‖ + ‖z‖ := by simpa only [norm_neg] using norm_add_le u (-z)
       _ ≤ ‖z‖ + R := by nlinarith
 
-private theorem norm_center_bounds_on_ball {z : ℂ} {R : ℝ} {u : ℂ}
+private theorem norm_center_bounds_on_ball
     (hu : u ∈ ball z R) : ‖z‖ - R ≤ ‖u‖ ∧ ‖u‖ ≤ ‖z‖ + R := by
   have huR : ‖u - z‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hu
   have hsum : u = z + (u - z) := by abel
@@ -122,7 +97,6 @@ private theorem norm_center_bounds_on_ball {z : ℂ} {R : ℝ} {u : ℂ}
   have htriangle' : ‖u - (u - z)‖ ≤ ‖u‖ + ‖u - z‖ := by
     simpa only [sub_eq_add_neg, norm_neg] using htriangle
   rw [hzrep] at htriangle'
-  have hrev : ‖z‖ - ‖u - z‖ ≤ ‖u‖ := by linarith
   constructor
   · linarith
   · calc
@@ -130,19 +104,14 @@ private theorem norm_center_bounds_on_ball {z : ℂ} {R : ℝ} {u : ℂ}
       _ ≤ ‖z‖ + ‖u - z‖ := norm_add_le _ _
       _ ≤ ‖z‖ + R := by linarith
 
+end
+
 private theorem integrableOn_norm_sub_rpow_ball_iff (b : ℝ) (z : ℂ)
     (R : ℝ) (hR : 0 < R) :
     IntegrableOn (fun u : ℂ => ‖u - z‖ ^ b) (ball z R) volume ↔ -2 < b := by
-  let τ : ℂ → ℂ := fun v => v + z
+  let τ  := fun v => v + z
   have himage : τ '' ball (0 : ℂ) R = ball z R := by
-    ext u
-    constructor
-    · rintro ⟨v, hv, rfl⟩
-      simpa [τ, Metric.mem_ball, dist_eq_norm, add_sub_cancel_right] using hv
-    · intro hu
-      refine ⟨u - z, ?_, ?_⟩
-      · simpa [Metric.mem_ball, dist_eq_norm] using hu
-      · simp [τ]
+    aesop
   have htrans : IntegrableOn (fun u : ℂ => ‖u - z‖ ^ b) (ball z R) volume ↔
       IntegrableOn (fun v : ℂ => ‖v‖ ^ b) (ball 0 R) volume := by
     rw [← himage]
@@ -160,9 +129,9 @@ private theorem norm_sub_ratio_bounds_on_tail {z : ℂ} {R : ℝ}
     apply le_of_not_gt
     intro h
     apply hu
-    simpa [Metric.mem_ball, dist_zero_right] using h
+    simpa
   have hnormz : ‖z‖ ≤ ‖u‖ := by nlinarith
-  have huPos : 0 < ‖u‖ := lt_of_lt_of_le hz hnormz
+  have huPos  := lt_of_lt_of_le hz hnormz
   have hsub : ‖u‖ - ‖z‖ ≤ ‖u - z‖ := by
     have hsum : (u - z) + z = u := by abel
     have htriangle := norm_add_le (u - z) z
@@ -174,23 +143,24 @@ private theorem norm_sub_ratio_bounds_on_tail {z : ℂ} {R : ℝ}
       _ ≤ ‖u‖ + ‖z‖ := by simpa only [norm_neg] using norm_add_le u (-z)
   constructor
   · apply (le_div_iff₀ huPos).2
-    have hzHalf : ‖z‖ ≤ ‖u‖ / 2 := by nlinarith
     nlinarith
   · apply (div_le_iff₀ huPos).2
-    have hzHalf : ‖z‖ ≤ ‖u‖ / 2 := by nlinarith
     nlinarith
 
-private theorem integrableOn_two_point_rpow_tail_iff (a b : ℝ) (z : ℂ)
-    (hz : z ≠ 0) :
+section
+variable (a b : ℝ) (z : ℂ) (hz : z ≠ 0)
+include hz
+
+private theorem integrableOn_two_point_rpow_tail_iff :
     IntegrableOn (fun u : ℂ => ‖u‖ ^ a * ‖u - z‖ ^ b)
       (ball 0 (2 * ‖z‖))ᶜ volume ↔ a + b < -2 := by
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hzpos  := norm_pos_iff.mpr hz
   let R := 2 * ‖z‖
-  let q : ℂ → ℝ := fun u => ‖u - z‖ / ‖u‖
+  let q  := fun u => ‖u - z‖ / ‖u‖
   have hR : 0 < R := by dsimp [R]; positivity
   have hqmeas : Measurable q := by dsimp [q]; fun_prop
   have hqnonneg : ∀ u, 0 ≤ q u := fun u => div_nonneg (norm_nonneg _) (norm_nonneg _)
-  have hqpowmeas : Measurable (fun u => q u ^ b) := measurable_rpow_of_nonneg hqmeas hqnonneg b
+  have hqpowmeas  := measurable_rpow_of_nonneg hqmeas hqnonneg b
   obtain ⟨c, C, hc, hC, hbounds⟩ :=
     exists_rpow_interval_bounds (A := (1 / 2 : ℝ)) (B := (3 / 2 : ℝ)) (s := b)
       (by norm_num) (by norm_num)
@@ -198,7 +168,7 @@ private theorem integrableOn_two_point_rpow_tail_iff (a b : ℝ) (z : ℂ)
       c ≤ q u ^ b ∧ q u ^ b ≤ C := by
     intro u hu
     rcases norm_sub_ratio_bounds_on_tail hzpos (by dsimp [R]; rfl) hu with ⟨hlo, hhi⟩
-    exact hbounds (q u) hlo hhi
+    apply hbounds <;> assumption
   have hEqOn : EqOn
       (fun u : ℂ => ‖u‖ ^ a * ‖u - z‖ ^ b)
       (fun u => ‖u‖ ^ (a + b) * q u ^ b) (ball 0 R)ᶜ := by
@@ -207,8 +177,8 @@ private theorem integrableOn_two_point_rpow_tail_iff (a b : ℝ) (z : ℂ)
       apply le_of_not_gt
       intro h
       apply hu
-      simpa [Metric.mem_ball, dist_zero_right] using h
-    have huPos : 0 < ‖u‖ := lt_of_lt_of_le hzpos (by dsimp [R] at hnorm; nlinarith)
+      simpa
+    have huPos : 0 < ‖u‖ := lt_of_lt_of_le hzpos (by linarith)
     have hratio : ‖u - z‖ ^ b = ‖u‖ ^ b * q u ^ b := by
       have hmul : ‖u‖ * q u = ‖u - z‖ := by
         dsimp [q]
@@ -231,10 +201,9 @@ private theorem integrableOn_two_point_rpow_tail_iff (a b : ℝ) (z : ℂ)
     (fun u hu => (hfactorBounds u hu).1) (fun u hu => (hfactorBounds u hu).2)
   rw [hcongr, hlocal, integrableOn_norm_rpow_ball_compl_iff (a + b) R hR]
 
-theorem integrableOn_two_point_rpow_ball_zero_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0)
+theorem integrableOn_two_point_rpow_ball_zero_iff
     (R : ℝ) (hR : 0 < R) (hRz : R < ‖z‖) :
     IntegrableOn (fun u : ℂ => ‖u‖ ^ a * ‖u - z‖ ^ b) (ball 0 R) volume ↔ -2 < a := by
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hAB : ‖z‖ - R ≤ ‖z‖ + R := by linarith
   obtain ⟨c, C, hc, hC, hbounds⟩ :=
     exists_rpow_interval_bounds (s := b) (sub_pos.mpr hRz) hAB
@@ -242,17 +211,16 @@ theorem integrableOn_two_point_rpow_ball_zero_iff (a b : ℝ) (z : ℂ) (hz : z 
       c ≤ ‖u - z‖ ^ b ∧ ‖u - z‖ ^ b ≤ C := by
     intro u hu
     rcases norm_sub_bounds_on_ball_zero hu with ⟨hlo, hhi⟩
-    exact hbounds ‖u - z‖ hlo hhi
+    apply hbounds <;> assumption
   have hlocal := integrableOn_mul_factor_iff (Metric.isOpen_ball.measurableSet)
     (measurable_norm_rpow a) (by fun_prop)
     (fun u => Real.rpow_nonneg (norm_nonneg u) a) hc
     (fun u hu => (hfactorBounds u hu).1) (fun u hu => (hfactorBounds u hu).2)
   rw [hlocal, integrableOn_norm_rpow_ball_iff a R hR]
 
-theorem integrableOn_two_point_rpow_ball_z_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0)
+theorem integrableOn_two_point_rpow_ball_z_iff
     (R : ℝ) (hR : 0 < R) (hRz : R < ‖z‖) :
     IntegrableOn (fun u : ℂ => ‖u‖ ^ a * ‖u - z‖ ^ b) (ball z R) volume ↔ -2 < b := by
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hAB : ‖z‖ - R ≤ ‖z‖ + R := by linarith
   obtain ⟨c, C, hc, hC, hbounds⟩ :=
     exists_rpow_interval_bounds (s := a) (sub_pos.mpr hRz) hAB
@@ -268,10 +236,10 @@ theorem integrableOn_two_point_rpow_ball_z_iff (a b : ℝ) (z : ℂ) (hz : z ≠
       fun u => ‖u - z‖ ^ b * ‖u‖ ^ a by funext; ring]
   exact hlocal.trans (integrableOn_norm_sub_rpow_ball_iff b z R hR)
 
-theorem integrableOn_two_point_rpow_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0) :
+theorem integrableOn_two_point_rpow_iff :
     Integrable (fun u : ℂ => ‖u‖ ^ a * ‖u - z‖ ^ b) volume ↔
       -2 < a ∧ -2 < b ∧ a + b < -2 := by
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hzpos  := norm_pos_iff.mpr hz
   let δ := ‖z‖ / 3
   let R := 2 * ‖z‖
   let s₀ := ball (0 : ℂ) δ
@@ -280,7 +248,6 @@ theorem integrableOn_two_point_rpow_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0) :
   let st := (ball (0 : ℂ) R)ᶜ
   have hδ : 0 < δ := by dsimp [δ]; positivity
   have hδz : δ < ‖z‖ := by dsimp [δ]; linarith
-  have hR : 0 < R := by dsimp [R]; positivity
   have h0 := integrableOn_two_point_rpow_ball_zero_iff a b z hz δ hδ hδz
   have hzLocal := integrableOn_two_point_rpow_ball_z_iff a b z hz δ hδ hδz
   have htail := integrableOn_two_point_rpow_tail_iff a b z hz
@@ -291,7 +258,7 @@ theorem integrableOn_two_point_rpow_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0) :
     dsimp [sm, s₀, sz]
     exact Metric.isClosed_closedBall.inter <| isClosed_compl_iff.mpr
       (Metric.isOpen_ball.union Metric.isOpen_ball)
-  have hsmcompact : IsCompact sm :=
+  have hsmcompact  :=
     (isCompact_closedBall (0 : ℂ) R).of_isClosed_subset hsmclosed (by
       intro u hu
       exact hu.1)
@@ -299,20 +266,20 @@ theorem integrableOn_two_point_rpow_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0) :
     intro u hu huz
     have hzero : (0 : ℂ) ∈ s₀ := by
       dsimp [s₀]
-      simpa [Metric.mem_ball, dist_zero_right] using hδ
+      simpa
     have : u ∈ s₀ ∪ sz := by simpa [huz] using Or.inl hzero
     exact hu.2 this
   have hsm_avoid_z : ∀ u ∈ sm, u - z ≠ 0 := by
     intro u hu huz
-    have huz' : u = z := sub_eq_zero.mp huz
+    have huz'  := sub_eq_zero.mp huz
     have hcenter : z ∈ sz := by
       dsimp [sz]
-      simpa [Metric.mem_ball, dist_self] using hδ
+      simpa
     have : u ∈ s₀ ∪ sz := by simpa [huz'] using Or.inr hcenter
     exact hu.2 this
-  have hcont₀ : ContinuousOn (fun u : ℂ => ‖u‖ ^ a) sm :=
+  have hcont₀  :=
     continuousOn_norm_comp_rpow (fun u => u) continuous_id hsm_avoid_zero a
-  have hcontz : ContinuousOn (fun u : ℂ => ‖u - z‖ ^ b) sm :=
+  have hcontz  :=
     continuousOn_norm_comp_rpow (fun u => u - z) (continuous_id.sub continuous_const)
       hsm_avoid_z b
   have hmiddle : IntegrableOn (fun u : ℂ => ‖u‖ ^ a * ‖u - z‖ ^ b) sm volume :=
@@ -324,7 +291,7 @@ theorem integrableOn_two_point_rpow_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0) :
     · exact Or.inr (Or.inr (Or.inr htail'))
     · have huBall : u ∈ ball (0 : ℂ) R := by
         by_contra h
-        exact htail' (by simpa [st] using h)
+        apply htail' <;> assumption
       by_cases hu₀ : u ∈ s₀
       · exact Or.inl hu₀
       · by_cases huz' : u ∈ sz
@@ -340,5 +307,7 @@ theorem integrableOn_two_point_rpow_iff (a b : ℝ) (z : ℂ) (hz : z ≠ 0) :
   rw [← integrableOn_univ, hcover, integrableOn_union, integrableOn_union,
     integrableOn_union]
   simp [s₀, sz, st, h0, hzLocal, hmiddle, htailR, and_left_comm, and_comm]
+
+end
 
 end DOZZ.Proofs

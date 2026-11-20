@@ -35,12 +35,7 @@ theorem logRegularizationReference_restrict_of_subset
     (U V : Set ℂ) (dens : ℂ → ℝ)
     (hV : MeasurableSet V) (hVU : V ⊆ U) :
     logRegularizationReference V dens = (logRegularizationReference U dens).restrict V := by
-  rw [logRegularizationReference, logRegularizationReference]
-  calc
-    (volume.restrict V).withDensity (fun x => ENNReal.ofReal (dens x)) =
-        ((volume.restrict U).withDensity (fun x => ENNReal.ofReal (dens x))).restrict V := by
-          rw [MeasureTheory.restrict_withDensity hV,
-            Measure.restrict_restrict_of_subset hVU]
+  simp_all [logRegularizationReference, MeasureTheory.restrict_withDensity hV, Measure.restrict_restrict_of_subset hVU]
 
 /-- A compactly supported continuous test whose topological support lies in `V` vanishes outside
 `V`. -/
@@ -50,9 +45,8 @@ theorem boundedContinuousFunction_eq_zero_off_tsupport_subset
     ∀ x, x ∉ V → f x = 0 := by
   intro x hx
   by_contra hne
-  have hxSupport : x ∈ Function.support (f : ℂ → ℝ) := by
-    simpa [Function.mem_support] using hne
-  exact hx (hfV (subset_tsupport (f : ℂ → ℝ) hxSupport))
+  exact hx (hfV (subset_tsupport (f : ℂ → ℝ) (by
+    assumption)))
 
 /-- Restricting the limiting random measure to a measurable subchart preserves the admissible GMC
 version property. The reference measure and every cutoff test integral restrict in the same way. -/
@@ -66,12 +60,10 @@ theorem admissibleGMCVersion_restrict_of_subset
   rcases hM with ⟨hMMeas, hMSupport, hMCompact, hMLimit⟩
   refine ⟨?_, ?_, ?_, ?_⟩
   · apply Measure.measurable_of_measurable_coe
-    intro s hs
-    have hcoe : (fun ω => (M ω).restrict V s) = fun ω => M ω (s ∩ V) := by
-      funext ω
-      exact Measure.restrict_apply hs
-    rw [hcoe]
-    exact (Measure.measurable_coe (hs.inter hV)).comp hMMeas
+    exact fun s hs =>
+      have hcoe := funext fun ω => Measure.restrict_apply hs;
+      Eq.mpr (id (congrArg (fun _a => Measurable _a) hcoe))
+        (Measurable.comp (Measure.measurable_coe (MeasurableSet.inter hs hV)) hMMeas)
   · intro ω
     rw [Measure.restrict_apply (MeasurableSet.compl hV)]
     simp
@@ -91,9 +83,7 @@ theorem admissibleGMCVersion_restrict_of_subset
         (fun x => f x * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 *
           ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P))
         (fun x hx => by rw [hfzero x hx, zero_mul])
-    have hTarget (ω : Ω) :
-        (∫ x, f x ∂(M ω).restrict V) = ∫ x, f x ∂M ω :=
-      integral_restrict_eq_integral_of_zero_on_compl (M ω) V hV
+    have hTarget (ω : Ω) := integral_restrict_eq_integral_of_zero_on_compl (M ω) V hV
         (fun x => f x) (hfzero)
     have hleft : ∀ r, (fun ω => regularizedLogChaosTestMass P U dens Y γ r ω f) =ᵐ[P]
         fun ω => regularizedLogChaosTestMass P V dens Y γ r ω f := by

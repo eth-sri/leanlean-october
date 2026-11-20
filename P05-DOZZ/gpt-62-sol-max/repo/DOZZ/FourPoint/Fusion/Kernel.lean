@@ -15,8 +15,11 @@ open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable (γ α₁ α₂ α₃ : ℝ)
+
 /-- Off the insertion points, the real fusion kernel is the Coulomb weight. -/
-theorem fusion_gammaHalfKernel_weight (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
+theorem fusion_gammaHalfKernel_weight (z x : ℂ)
     (hxz : x ≠ z) (hx0 : x ≠ 0) (hx1 : x ≠ 1) :
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) =
       coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ x := by
@@ -26,14 +29,9 @@ theorem fusion_gammaHalfKernel_weight (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
   have hz : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
     Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one, sub_zero]
-  rw [coulombWeight_rpow_ofReal (div_pos hp hz),
-    coulombWeight_rpow_ofReal (div_pos hp h0),
-    coulombWeight_rpow_ofReal (div_pos hp h1), coulombWeight_rpow_ofReal hp]
-  rw [← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hp h0).le _),
-    ← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hp hz).le _),
-    ← ENNReal.ofReal_mul (mul_nonneg (Real.rpow_nonneg (div_pos hp hz).le _)
-      (mul_nonneg (Real.rpow_nonneg (div_pos hp h0).le _)
-        (Real.rpow_nonneg (div_pos hp h1).le _)))]
+  rw [coulombWeight_rpow_ofReal (div_pos hp hz), coulombWeight_rpow_ofReal (div_pos hp h0), coulombWeight_rpow_ofReal (div_pos hp h1), coulombWeight_rpow_ofReal hp, ← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hp h0).le _), ← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hp hz).le _), ← ENNReal.ofReal_mul (mul_nonneg (Real.rpow_nonneg (div_pos hp hz).le _)
+        (mul_nonneg (Real.rpow_nonneg (div_pos hp h0).le _)
+          (Real.rpow_nonneg (div_pos hp h1).le _)))]
   congr 1
   unfold gammaHalfKernel
   rw [Real.div_rpow hp.le hz.le, Real.div_rpow hp.le h0.le, Real.div_rpow hp.le h1.le]
@@ -46,7 +44,7 @@ theorem fusion_gammaHalfKernel_weight (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
   ring
 
 /-- The mass in the fusion moment is the integral of the displayed real kernel. -/
-theorem fusion_gammaHalfMass_kernel (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (μ : Measure ℂ)
+theorem fusion_gammaHalfMass_kernel (z : ℂ) (μ : Measure ℂ)
     (hz : μ {z} = 0) (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
     coulombMass γ μ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ =
       ∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
@@ -59,16 +57,23 @@ theorem fusion_gammaHalfMass_kernel (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (μ :
   exact (fusion_gammaHalfKernel_weight γ α₁ α₂ α₃ z x hxz hx0 hx1).symm
 
 /-- The fusion kernel is jointly measurable in the negative insertion and the integration point. -/
-theorem fusion_measurable_gammaHalfKernel (γ α₁ α₂ α₃ : ℝ) :
+theorem fusion_measurable_gammaHalfKernel :
     Measurable (fun q : ℂ × ℂ => gammaHalfKernel γ α₁ α₂ α₃ q.1 q.2) := by
   unfold gammaHalfKernel normPlus
   fun_prop
 
-/-- Away from the limiting root, the moving rooted kernel converges pointwise. -/
-theorem fusion_rootedKernel_tendsto (γ α₁ α₂ α₃ : ℝ) (y x : ℂ) (hx : x ≠ 0) :
-    Filter.Tendsto (fun z : ℂ => gammaHalfKernel γ α₁ α₂ α₃ z x *
-        Real.exp (γ ^ 2 * gffKernel (y * z) x)) (nhds 0)
-      (nhds (gammaHalfKernel γ α₁ α₂ α₃ 0 x * Real.exp (γ ^ 2 * gffKernel 0 x))) := by
+end
+
+/-- The degenerate insertion and the GMC rooting point can move independently. -/
+noncomputable def fusionRootedKernel (γ α₁ α₂ α₃ : ℝ) (w u x : ℂ) : ℝ≥0∞ :=
+  ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ w x * Real.exp (γ ^ 2 * gffKernel u x))
+
+/-- Away from zero, the rooted kernel converges when both insertions approach zero. -/
+theorem fusion_rootedKernel_tendsto {ι : Type*} {l : Filter ι} {w u : ι → ℂ}
+    (γ α₁ α₂ α₃ : ℝ) (x : ℂ) (hx : x ≠ 0)
+    (hw : Filter.Tendsto w l (nhds 0)) (hu : Filter.Tendsto u l (nhds 0)) :
+    Filter.Tendsto (fun i => fusionRootedKernel γ α₁ α₂ α₃ (w i) (u i) x) l
+      (nhds (fusionRootedKernel γ α₁ α₂ α₃ 0 0 x)) := by
   have hk : ContinuousAt (fun z : ℂ => gammaHalfKernel γ α₁ α₂ α₃ z x) 0 := by
     unfold gammaHalfKernel
     apply ContinuousAt.div_const
@@ -77,21 +82,19 @@ theorem fusion_rootedKernel_tendsto (γ α₁ α₂ α₃ : ℝ) (y x : ℂ) (hx
     · fun_prop
     · left
       simpa only [sub_zero] using norm_ne_zero_iff.mpr hx
-  have hg : ContinuousAt (fun z : ℂ => gffKernel (y * z) x) 0 := by
+  have hg : ContinuousAt (fun z : ℂ => gffKernel z x) 0 := by
     unfold gffKernel normPlus
     apply ContinuousAt.add
     · apply ContinuousAt.add
       · apply ContinuousAt.neg
         apply ContinuousAt.log
         · fun_prop
-        · simpa only [mul_zero, zero_sub, norm_neg] using norm_ne_zero_iff.mpr hx
+        · simpa only [zero_sub, norm_neg] using norm_ne_zero_iff.mpr hx
       · apply ContinuousAt.log
         · fun_prop
         · simp
     · exact continuousAt_const
-  have hc : ContinuousAt (fun z : ℂ => Real.exp (γ ^ 2 * gffKernel (y * z) x)) 0 :=
-    Real.continuous_exp.continuousAt.comp
-      ((continuousAt_const : ContinuousAt (fun _ : ℂ => γ ^ 2) 0).mul hg)
-  simpa only [Pi.mul_apply, mul_zero] using hk.tendsto.mul hc.tendsto
+  exact ENNReal.continuous_ofReal.continuousAt.tendsto.comp ((hk.tendsto.comp hw).mul ((Real.continuous_exp.continuousAt.comp
+      ((continuousAt_const : ContinuousAt (fun _ : ℂ => γ ^ 2) 0).mul hg)).tendsto.comp hu))
 
 end DOZZ.Proofs

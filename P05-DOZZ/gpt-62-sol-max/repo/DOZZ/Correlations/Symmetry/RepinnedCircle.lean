@@ -44,21 +44,7 @@ theorem isCircleAverage_symmetryRepinned
     have h := hgap.add (((hm.sub_const 1).const_mul 2).mul (hd.sub_const D))
     simpa only [sub_self, mul_zero, zero_mul, add_zero] using h
   have ha := hXc.2.2 (1 - x) r (fun n => symmetryReflectionTest (f n)) hg
-  have hc : Tendsto (fun n => ‖1 - testMass (f n)‖ₑ) atTop (𝓝 (0 : ℝ≥0∞)) := by
-    have h : Tendsto (fun n => 1 - testMass (f n)) atTop (𝓝 (0 : ℝ)) := by
-      simpa only [sub_self] using
-        (tendsto_const_nhds : Tendsto (fun _ : ℕ => (1 : ℝ)) atTop (𝓝 1)).sub hm
-    simpa only [enorm_zero, Function.comp_def] using
-      (continuous_enorm.tendsto (0 : ℝ)).comp h
-  have hb : Tendsto (fun n => eLpNorm (fun ω => (1 - testMass (f n)) * L ω) 2 P)
-      atTop (𝓝 0) := by
-    have h := ENNReal.Tendsto.mul_const hc (Or.inr hL.eLpNorm_ne_top)
-    simp only [zero_mul] at h
-    have he n : eLpNorm (fun ω => (1 - testMass (f n)) * L ω) 2 P =
-        ‖1 - testMass (f n)‖ₑ * eLpNorm L 2 P := by
-      simpa only [Pi.smul_def, smul_eq_mul] using
-        eLpNorm_const_smul (1 - testMass (f n)) L 2 P
-    simpa only [he] using h
+  have hb := repinning_mass_error_tendsto hL hm
   have he n : (fun ω => Y ω (f n) - Z ω x r) =
       (fun ω => X ω (symmetryReflectionTest (f n)) - Xc ω (1 - x) r) +
         (fun ω => (1 - testMass (f n)) * L ω) := by
@@ -69,18 +55,13 @@ theorem isCircleAverage_symmetryRepinned
     ring
   have hz : Tendsto (fun n => eLpNorm (fun ω => Y ω (f n) - Z ω x r) 2 P)
       atTop (𝓝 0) := by
-    apply tendsto_of_tendsto_of_tendsto_of_le_of_le
-      (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
-      (by simpa only [zero_add] using ha.add hb) (fun _ => bot_le)
-    intro n
-    change eLpNorm (fun ω => Y ω (f n) - Z ω x r) 2 P ≤ _
-    rw [he]
-    exact eLpNorm_add_le (by norm_num)
+    simp only [he]
+    exact tendsto_eLpNorm_add_zero (by norm_num) ha hb
   have hcanon := hYc.2.2 x r f hgap
-  have hzm : TendstoInMeasure P (fun n ω => Y ω (f n)) atTop (fun ω => Z ω x r) :=
+  have hzm  :=
     tendstoInMeasure_of_tendsto_eLpNorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
       (by simpa only [Pi.sub_def] using hz)
-  have hym : TendstoInMeasure P (fun n ω => Y ω (f n)) atTop (fun ω => Yc ω x r) :=
+  have hym  :=
     tendstoInMeasure_of_tendsto_eLpNorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
       (by simpa only [Pi.sub_def] using hcanon)
   exact tendstoInMeasure_ae_unique hzm hym

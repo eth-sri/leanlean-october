@@ -32,9 +32,8 @@ theorem subtype_paths_real_homotopy
     have hproj : Continuous proj := by
       dsimp [proj]
       exact continuous_projIcc
-    have hpair : Continuous (fun z : ℝ × ℝ => (proj z.2, proj z.1)) := by
-      exact (hproj.comp continuous_snd).prodMk (hproj.comp continuous_fst)
-    exact F.continuous.comp hpair
+    exact F.continuous.comp (by
+      exact (hproj.comp continuous_snd).prodMk (hproj.comp continuous_fst))
   refine ⟨Γ, hΓcont.continuousOn, ?_, ?_, ?_, ?_, ?_⟩
   · intro s hs
     have hs' : proj s = ⟨s, hs⟩ := Set.projIcc_of_mem zero_le_one hs

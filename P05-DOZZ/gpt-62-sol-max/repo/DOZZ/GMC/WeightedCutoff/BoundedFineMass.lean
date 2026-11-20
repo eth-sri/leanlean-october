@@ -50,9 +50,8 @@ theorem regularizedGMC_bounded_ball_moment_compact_gamma_fine
   have horigin : (∫⁻ ω, (μ ω (Metric.ball 0 (1 / 8))) ^ q ∂P) ≤ A ^ q := by
     have hr := (hroot γ hγ q hq.le le_rfl 0 (1 / 8) δ (by norm_num)
       (by norm_num) hδ hδsmall (by norm_num)).1
-    have hr' : (∫⁻ ω, (μ ω (Metric.ball 0 (1 / 8))) ^ q ∂P) ^ q⁻¹ ≤ A := by
-      simpa [μ, one_div] using hr
-    exact (ENNReal.rpow_inv_le_iff (by linarith)).mp hr'
+    exact (ENNReal.rpow_inv_le_iff (by linarith)).mp (by
+      simpa [μ, one_div] using hr)
   have hlocal (w : U) : (∫⁻ ω, (f w ω) ^ q ∂P) ≤ H := by
     have h := hmove γ hγ (0, q) (by simp) (w : ℂ) w.property (1 / 8) δ
       (by norm_num) (by norm_num) hδ hδsmall

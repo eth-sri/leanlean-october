@@ -45,9 +45,7 @@ theorem lintegral_radial_profile_heat (t : ℝ≥0) (ht : 0 < t)
           (measurable_radialGaussianVectorDensity t).comp (measurable_id.sub_const z)) hfu]
     rfl
   simp_rw [hinner]
-  have hm : Measurable (fun p : EuclideanSpace ℝ (Fin 3) × EuclideanSpace ℝ (Fin 3) =>
-      (u ‖p.1‖ * radialGaussianVectorDensity t (p.2 - p.1)) * (f ‖p.2‖ * H p.2)) :=
-    ((hu.comp measurable_fst.norm).mul (measurable_radialGaussianVectorDensity_sub t)).mul
+  have hm := ((hu.comp measurable_fst.norm).mul (measurable_radialGaussianVectorDensity_sub t)).mul
       (hfu.comp measurable_snd)
   calc
     _ = ∫⁻ z, ∫⁻ w, (u ‖z‖ * radialGaussianVectorDensity t (w - z)) * (f ‖w‖ * H w) := by
@@ -68,7 +66,7 @@ theorem lintegral_radial_profile_heat (t : ℝ≥0) (ht : 0 < t)
             ((measurable_radialGaussianVectorDensity t).comp (measurable_const.sub measurable_id)))]
       have he : (∫⁻ z, u ‖z‖ * radialGaussianVectorDensity t (w - z)) = radialHeatConvolution t u w := by
         simp_rw [mul_comm (u _)]
-        exact lintegral_radial_heat_density_reverse t ht u hu w
+        apply lintegral_radial_heat_density_reverse <;> assumption
       rw [he]
       ac_rfl
 
@@ -157,9 +155,7 @@ theorem exists_wienerRadial_endpoint_profile : ∀ (n : ℕ)
         ∫⁻ V, (∏ i, fp i ‖wienerVectorEval (past i) V‖) * K (wienerVectorEval s V) ∂wienerTripleMeasure := by
       apply lintegral_congr
       intro V
-      exact lintegral_const_mul _
-        (((hf _).comp (measurable_const.add measurable_id).norm).mul
-          (hH.comp (measurable_const.add measurable_id)))
+      apply lintegral_const_mul <;> fun_prop
     have hpk := hprofile K hK
     change (∫⁻ V, (∏ i, fp i ‖wienerVectorEval (past i) V‖) * K (wienerVectorEval s V) ∂wienerTripleMeasure) = _ at hpk
     rw [hfactor, hpk,
@@ -176,8 +172,7 @@ noncomputable def radialAngularFactor (a r : ℝ) : ℝ :=
   if a * r = 0 then 1 else Real.sinh (a * r) / (a * r)
 
 /-- The angular factor is measurable on its entire real state carrier. -/
-theorem measurable_radialAngularFactor (a : ℝ) : Measurable (radialAngularFactor a) := by
-  exact Measurable.ite (measurableSet_eq_fun (measurable_const.mul measurable_id) measurable_const)
+theorem measurable_radialAngularFactor (a : ℝ) : Measurable (radialAngularFactor a) := Measurable.ite (measurableSet_eq_fun (measurable_const.mul measurable_id) measurable_const)
     measurable_const (((measurable_const.mul measurable_id).sinh).div (measurable_const.mul measurable_id))
 
 /-- At zero tilt every direction has likelihood one. -/
@@ -192,9 +187,9 @@ theorem radialAngularFactor_of_ne_zero (a r : ℝ) (ha : a ≠ 0) (hr : r ≠ 0)
 /-- The angular likelihood is nonnegative at every nonnegative radius. -/
 theorem radialAngularFactor_nonneg (a r : ℝ) (hr : 0 ≤ r) : 0 ≤ radialAngularFactor a r := by
   by_cases har : a * r = 0
-  · simp only [radialAngularFactor, har, ite_true]; exact zero_le_one
-  · have ha : a ≠ 0 := left_ne_zero_of_mul har
-    have hr' : r ≠ 0 := right_ne_zero_of_mul har
+  · simpa only [radialAngularFactor, har, ite_true] using zero_le_one
+  · have ha  := left_ne_zero_of_mul har
+    have hr'  := right_ne_zero_of_mul har
     rw [radialAngularFactor_of_ne_zero a r ha hr', div_mul_eq_div_div]
     exact div_nonneg (sinh_div_nonneg_longitudinal a r ha hr) hr
 
@@ -222,7 +217,7 @@ theorem lintegral_radial_profile_angular (u : ℝ → ℝ≥0∞) (hu : Measurab
     congr 1
     apply setLIntegral_congr_fun measurableSet_Ioi
     intro r hr
-    have hrad : 0 ≤ radialAngularFactor a r := radialAngularFactor_nonneg a r hr.le
+    have hrad  := radialAngularFactor_nonneg a r hr.le
     dsimp only
     rw [mul_assoc, ← ENNReal.ofReal_mul hrad]
     congr 2
@@ -301,18 +296,16 @@ theorem wienerTriple_drift_stopped_lintegral (a : ℝ) (T : ℝ≥0) (hT : T ≠
       e.symm (stopBrownianPath p T, tail) := by
     funext i
     refine Fin.cases ?_ (fun j => ?_) i
-    · simp [e, wienerTripleStop, tail]
-    · simp [e, wienerTripleStop, tail]
+    rfl
+    rfl
   have hdrift (p : BrownianPath) : wienerTripleDrift a (e.symm (p, W)) =
       e.symm (driftedBrownianPath a p, W) := by
     funext i
     refine Fin.cases ?_ (fun j => ?_) i
-    · simp [e, wienerTripleDrift]
-    · simp [e, wienerTripleDrift]
+    rfl
+    rfl
   simp_rw [hdrift, hstop]
-  have hhead (p : BrownianPath) : e.symm (p, W) 0 = p := by simp [e]
-  simp_rw [hhead]
-  exact hscalar
+  assumption
 
 /-- The terminal radial likelihood for the drifted norm skeleton. -/
 noncomputable def radialTerminalLikelihood (a t r : ℝ) : ℝ≥0∞ :=

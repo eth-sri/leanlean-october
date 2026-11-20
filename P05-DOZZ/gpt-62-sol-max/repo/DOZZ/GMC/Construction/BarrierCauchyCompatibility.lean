@@ -51,8 +51,8 @@ theorem compatible_finite_coarse_two_root_shift_tendsto_uniformly
   obtain ⟨coarseKernel, hfixedY⟩ := hY.fixedCoarseLimit
   refine ⟨coarseKernel, ?_⟩
   intro η hη
-  let η' : ℝ := η / (8 * (B + 1))
-  have hη' : 0 < η' := by dsimp [η']; positivity
+  let η'  := η / (8 * (B + 1))
+  have hη' : 0 < η' := by positivity
   have hcovComm : ∀ (f g : Ω → ℝ),
       gaussianCovariance P f g = gaussianCovariance P g f := by
     intro f g
@@ -71,8 +71,8 @@ theorem compatible_finite_coarse_two_root_shift_tendsto_uniformly
       (le_trans (hscale i) (min_le_left _ _)) η' hη'
     obtain ⟨δZ, hδZ, hZlimit⟩ := hFixedCoarse K hK hKU (scale i)
       (hscale i) η' hη'
-    let δi : ℝ := min δY δZ
-    have hδi : 0 < δi := lt_min hδY hδZ
+    let δi  := min δY δZ
+    have hδi  := lt_min hδY hδZ
     refine ⟨δi, hδi, ?_⟩
     intro ε hε hεcut b a ha
     have hεY : ε ≤ min δY ε₀ := by
@@ -136,8 +136,8 @@ theorem compatible_finite_coarse_two_root_shift_tendsto_uniformly
       hrootX (fun a ha => hcenter a ha i)
     obtain ⟨δ₂, hδ₂, hsecond⟩ := hrootCov i rootY (fun a => center a i)
       hrootY (fun a ha => hcenter a ha i)
-    let δi : ℝ := min δ₁ δ₂
-    have hδi : 0 < δi := lt_min hδ₁ hδ₂
+    let δi  := min δ₁ δ₂
+    have hδi  := lt_min hδ₁ hδ₂
     refine ⟨δi, hδi, ?_⟩
     intro ε ε' hε hεcut hε' hε'cut γ hγ a ha
     have hεfirst : ε ≤ min δ₁ (min ε₀ ε₁) := by
@@ -150,24 +150,23 @@ theorem compatible_finite_coarse_two_root_shift_tendsto_uniformly
       · exact hε'cut.trans (min_le_right _ _)
     have hcov₁ := hfirst ε hε hεfirst b₁ a ha
     have hcov₂ := hsecond ε' hε' hε'second b₂ a ha
-    have hγbound : |γ| ≤ B := hΓ γ hγ
-    let c₁ : ℝ := gaussianCovariance P
+    have hγbound  := hΓ γ hγ
+    let c₁  := gaussianCovariance P
       (fun ω => Y ω (Real.exp (-(scale i : ℝ))) (center a i))
       (fun ω => if b₁ then Y ω ε (rootX a) else Z ω ε (rootX a))
-    let c₂ : ℝ := gaussianCovariance P
+    let c₂  := gaussianCovariance P
       (fun ω => Y ω (Real.exp (-(scale i : ℝ))) (center a i))
       (fun ω => if b₂ then Y ω ε' (rootY a) else Z ω ε' (rootY a))
-    let k₁ : ℝ := coarseKernel (scale i) (rootX a) (center a i)
-    let k₂ : ℝ := coarseKernel (scale i) (rootY a) (center a i)
-    have hc₁ : |c₁ - k₁| < 2 * η' := by simpa [c₁, k₁] using hcov₁
-    have hc₂ : |c₂ - k₂| < 2 * η' := by simpa [c₂, k₂] using hcov₂
+    let k₁  := coarseKernel (scale i) (rootX a) (center a i)
+    let k₂  := coarseKernel (scale i) (rootY a) (center a i)
+    have hc₁ : |c₁ - k₁| < 2 * η' := by assumption
+    have hc₂ : |c₂ - k₂| < 2 * η' := by assumption
     have hsumBound :
         |γ * (c₁ - k₁)| + |γ * (c₂ - k₂)| ≤
           4 * B * η' := by
       calc
         _ = |γ| * |c₁ - k₁| + |γ| * |c₂ - k₂| := by rw [abs_mul, abs_mul]
-        _ ≤ |γ| * (2 * η') + |γ| * (2 * η') := by
-              exact add_le_add
+        _ ≤ |γ| * (2 * η') + |γ| * (2 * η') := add_le_add
                 (mul_le_mul_of_nonneg_left hc₁.le (abs_nonneg γ))
                 (mul_le_mul_of_nonneg_left hc₂.le (abs_nonneg γ))
         _ ≤ B * (2 * η') + B * (2 * η') := by
@@ -177,8 +176,7 @@ theorem compatible_finite_coarse_two_root_shift_tendsto_uniformly
       dsimp [η']
       field_simp
     have hsmall : 4 * B * η' < η := by
-      rw [← hηeq]
-      nlinarith [mul_pos hη' (show 0 < B + 2 by linarith)]
+      linarith
     have hsum : |γ * (c₁ - k₁) + γ * (c₂ - k₂)| ≤
         |γ * (c₁ - k₁)| + |γ * (c₂ - k₂)| := abs_add_le _ _
     calc
@@ -190,11 +188,11 @@ theorem compatible_finite_coarse_two_root_shift_tendsto_uniformly
 
   choose δi hδi hshift using hlocal
   obtain ⟨i₀, hmin⟩ := Finite.exists_min (fun i : ι => δi i)
-  let δ : ℝ := δi i₀
-  have hδ : 0 < δ := hδi i₀
+  let δ  := δi i₀
+  have hδ  := hδi i₀
   refine ⟨δ, hδ, ?_⟩
   intro ε ε' hε hεcut hε' hε'cut γ hγ a ha i
-  have hδle : δ ≤ δi i := hmin i
+  have hδle  := hmin i
   have hεcut' : ε ≤ min (δi i) (min ε₀ ε₁) := by
     apply le_min
     · exact (hεcut.trans (min_le_left _ _)).trans hδle
@@ -203,8 +201,7 @@ theorem compatible_finite_coarse_two_root_shift_tendsto_uniformly
     apply le_min
     · exact (hε'cut.trans (min_le_left _ _)).trans hδle
     · exact hε'cut.trans (min_le_right _ _)
-  have h := hshift i ε ε' hε hεcut' hε' hε'cut' γ hγ a ha
-  exact h
+  exact hshift i ε ε' hε hεcut' hε' hε'cut' γ hγ a ha
 
 /-- The finite-barrier rectangle probabilities for any mixed pair of regularization families
 converge uniformly to one common coarse limit. This is the off-diagonal finite-scale convergence
@@ -243,9 +240,9 @@ theorem compatible_finite_coarse_double_root_barrier_probability_tendsto_uniform
                 (fun ω i => Y ω (Real.exp (-(scale i : ℝ))) (center a i)) barrier
                 (fun i => γ * coarseKernel (scale i) (rootX a) (center a i) +
                   γ * coarseKernel (scale i) (rootY a) (center a i)) ω ∂P)| < η := by
-  let q : α → Fin n → ℝ × ℂ := fun a i =>
+  let q  := fun a i =>
     (Real.exp (-(scale i : ℝ)), center a i)
-  let W : α → Ω → Fin n → ℝ := fun a ω i => Y ω (q a i).1 (q a i).2
+  let W  := fun a ω i => Y ω (q a i).1 (q a i).2
   have hW : ∀ a ∈ S, IsCenteredJointlyGaussian P (W a) := by
     intro a ha
     change IsCenteredJointlyGaussian P
@@ -257,12 +254,12 @@ theorem compatible_finite_coarse_double_root_barrier_probability_tendsto_uniform
     P U dens ε₀ ε₁ Y Z hY hZ hYZ K hK hKU S rootX rootY hrootX hrootY
     scale center hcenter hscale b₁ b₂ Γ B hB hΓ
   obtain ⟨coarseKernel, hshift⟩ := hshift
-  let c : ℝ → ℝ → ℝ → α → Fin n → ℝ := fun ε ε' γ a i =>
+  let c  := fun ε ε' γ a i =>
     γ * gaussianCovariance P (fun ω => W a ω i)
         (fun ω => if b₁ then Y ω ε (rootX a) else Z ω ε (rootX a)) +
       γ * gaussianCovariance P (fun ω => W a ω i)
         (fun ω => if b₂ then Y ω ε' (rootY a) else Z ω ε' (rootY a))
-  let d : ℝ → α → Fin n → ℝ := fun γ a i =>
+  let d  := fun γ a i =>
     γ * coarseKernel (scale i) (rootX a) (center a i) +
       γ * coarseKernel (scale i) (rootY a) (center a i)
   have hcoord : ∀ η : ℝ, 0 < η → ∃ δ : ℝ, 0 < δ ∧
@@ -270,46 +267,37 @@ theorem compatible_finite_coarse_double_root_barrier_probability_tendsto_uniform
         ∀ γ ∈ Γ, ∀ a ∈ S, ∀ i, |c ε ε' γ a i - d γ a i| < η := by
     intro η hη
     obtain ⟨δ₀, hδ₀, hshift'⟩ := hshift η hη
-    let δ : ℝ := min δ₀ (min ε₀ ε₁)
-    have hδ : 0 < δ := lt_min hδ₀ (lt_min hY.cutoffPositive hZ.cutoffPositive)
+    let δ  := min δ₀ (min ε₀ ε₁)
+    have hδ  := lt_min hδ₀ (lt_min hY.cutoffPositive hZ.cutoffPositive)
     refine ⟨δ, hδ, ?_⟩
-    intro ε ε' hε hεcut hε' hε'cut γ hγ a ha i
-    have hε'cut' : ε ≤ min δ₀ (min ε₀ ε₁) := by
-      apply le_min
-      · exact hεcut.trans (min_le_left _ _)
-      · exact hεcut.trans (min_le_right _ _)
-    have hε''cut' : ε' ≤ min δ₀ (min ε₀ ε₁) := by
-      apply le_min
-      · exact hε'cut.trans (min_le_left _ _)
-      · exact hε'cut.trans (min_le_right _ _)
-    have h := hshift' ε ε' hε hε'cut' hε' hε''cut' γ hγ a ha i
-    simpa [c, d, W, q] using h
+    assumption
   have hprob := finite_gaussian_rectangle_probability_two_shift_tendsto_uniformly
     P Γ S W hW barrier hv c d hcoord
   refine ⟨coarseKernel, ?_⟩
   intro η hη
   obtain ⟨δ₀, hδ₀, hprob'⟩ := hprob η hη
-  let δ : ℝ := min δ₀ (min ε₀ ε₁)
-  have hδ : 0 < δ := lt_min hδ₀ (lt_min hY.cutoffPositive hZ.cutoffPositive)
+  let δ  := min δ₀ (min ε₀ ε₁)
+  have hδ  := lt_min hδ₀ (lt_min hY.cutoffPositive hZ.cutoffPositive)
   refine ⟨δ, hδ, ?_⟩
   intro ε ε' hε hεcut hε' hε'cut γ hγ a ha
   have hεδ : ε ≤ δ₀ := by
-    have hε' : ε ≤ δ := hεcut.trans (min_le_left δ (min ε₀ ε₁))
+    have hε'  := hεcut.trans (min_le_left δ (min ε₀ ε₁))
     exact hε'.trans (min_le_left δ₀ (min ε₀ ε₁))
   have hε'δ : ε' ≤ δ₀ := by
-    have hε'' : ε' ≤ δ := hε'cut.trans (min_le_left δ (min ε₀ ε₁))
+    have hε''  := hε'cut.trans (min_le_left δ (min ε₀ ε₁))
     exact hε''.trans (min_le_left δ₀ (min ε₀ ε₁))
   have h := hprob' ε ε' hε hεδ hε' hε'δ γ hγ a ha
-  simpa [W, q, c, d] using h
+  assumption
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
+  (Y Z : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+include Ω hY
 
 /-- On a compact separated chart, every mixed Y/Z off-diagonal covariance has the same limit as
 the Y/Y covariance. The two compatibility convergence clauses cover YZ and ZZ directly; the ZY
 case follows by covariance symmetry. -/
 theorem compatible_mixed_off_diagonal_covariance_tendsto_uniformly
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
-    (Y Z : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (_hZ : IsAdmissibleLogRegularization P U dens ε₁ Z)
     (hYZ : IsCompatibleAdmissibleRegularizations P U ε₀ ε₁ Y Z)
     (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
@@ -328,12 +316,12 @@ theorem compatible_mixed_off_diagonal_covariance_tendsto_uniformly
   obtain ⟨H, hH, hYoff⟩ := hY.offDiagonalLimit
   refine ⟨H, hH, ?_⟩
   intro η hη
-  let η' : ℝ := η / 3
-  have hη' : 0 < η' := by dsimp [η']; positivity
+  let η'  := η / 3
+  have hη' : 0 < η' := by positivity
   obtain ⟨δY, hδY, hYclose⟩ := hYoff K hK hKU s hs η' hη'
   obtain ⟨δC, hδC, hCclose⟩ := hOffDiagonal K hK hKU s hs η' hη'
-  let δ : ℝ := min δY δC
-  have hδ : 0 < δ := lt_min hδY hδC
+  let δ  := min δY δC
+  have hδ  := lt_min hδY hδC
   have hcovComm (f g : Ω → ℝ) :
       gaussianCovariance P f g = gaussianCovariance P g f := by
     unfold gaussianCovariance
@@ -357,9 +345,7 @@ theorem compatible_mixed_off_diagonal_covariance_tendsto_uniformly
     apply le_min
     · exact (hε'cut.trans (min_le_left _ _)).trans (min_le_right _ _)
     · exact hε'cut.trans (min_le_right _ _)
-  have hbase : |gaussianCovariance P (fun ω => Y ω ε x) (fun ω => Y ω ε' y) -
-      (Real.log (1 / ‖x - y‖) + H x y)| < η' :=
-    hYclose ε ε' hε hεY hε' hε'Y x hx y hy hxy
+  have hbase := hYclose ε ε' hε hεY hε' hε'Y x hx y hy hxy
   have hcombine {A B L : ℝ} (hAB : |A - B| < η') (hBL : |B - L| < η') :
       |A - L| < η := by
     calc
@@ -369,9 +355,7 @@ theorem compatible_mixed_off_diagonal_covariance_tendsto_uniformly
       _ < η := by dsimp [η']; linarith
   cases b₁ <;> cases b₂
   · have hcomp := hCclose ε ε' hε hεC hε' hε'C x hx y hy hxy
-    have hcomp' : |gaussianCovariance P (fun ω => Z ω ε x) (fun ω => Z ω ε' y) -
-        gaussianCovariance P (fun ω => Y ω ε x) (fun ω => Y ω ε' y)| < η' := hcomp.2
-    exact hcombine hcomp' hbase
+    exact hcombine hcomp.2 hbase
   · have hcomp := hCclose ε' ε hε' hε'C hε hεC y hy x hx
       (by simpa [norm_sub_rev] using hxy)
     have hcomp' : |gaussianCovariance P (fun ω => Z ω ε x) (fun ω => Y ω ε' y) -
@@ -379,18 +363,12 @@ theorem compatible_mixed_off_diagonal_covariance_tendsto_uniformly
       simpa only [hcovComm] using hcomp.1
     exact hcombine hcomp' hbase
   · have hcomp := hCclose ε ε' hε hεC hε' hε'C x hx y hy hxy
-    have hcomp' : |gaussianCovariance P (fun ω => Y ω ε x) (fun ω => Z ω ε' y) -
-        gaussianCovariance P (fun ω => Y ω ε x) (fun ω => Y ω ε' y)| < η' := hcomp.1
-    exact hcombine hcomp' hbase
+    exact hcombine hcomp.1 hbase
   · exact lt_trans hbase (by dsimp [η']; linarith)
 
 /-- The mixed two-root Wick prefactor converges uniformly to the common GMC kernel on compact
 separated spatial sets, for all four choices of Y/Z families and bounded charges. -/
 theorem compatible_mixed_off_diagonal_wick_factor_tendsto_uniformly
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
-    (Y Z : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (hZ : IsAdmissibleLogRegularization P U dens ε₁ Z)
     (hYZ : IsCompatibleAdmissibleRegularizations P U ε₀ ε₁ Y Z)
     (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
@@ -430,14 +408,13 @@ theorem compatible_mixed_off_diagonal_wick_factor_tendsto_uniformly
     intro p hp
     exact Set.mem_prod.mpr ⟨hKU (hSxy p hp).1, hKU (hSxy p hp).2.1⟩
   have hH' : ContinuousOn (fun p : ℂ × ℂ => H p.1 p.2) S := hH.mono hHsub
-  have hlim : ContinuousOn lim S := by exact hlog.add hH'
+  have hlim : ContinuousOn lim S := hlog.add hH'
   have habs : ContinuousOn (fun p => |lim p|) S := hlim.abs
   obtain ⟨R₀, hR₀⟩ := hS.bddAbove_image habs
   let R : ℝ := max 0 R₀
   have hR : 0 ≤ R := le_max_left _ _
   have hlimBound (p : ℂ × ℂ) (hp : p ∈ S) : |lim p| ≤ R := by
-    have hmem : |lim p| ∈ (fun p : ℂ × ℂ => |lim p|) '' S := ⟨p, hp, rfl⟩
-    exact (hR₀ hmem).trans (le_max_right _ _)
+    exact (hR₀ (⟨p, hp, rfl⟩)).trans (le_max_right _ _)
   let D : Set ℝ := Set.Icc (-B) B
   let T : Set ℝ := Set.Icc (-(R + 1)) (R + 1)
   have hD : IsCompact D := isCompact_Icc
@@ -474,9 +451,7 @@ theorem compatible_mixed_off_diagonal_wick_factor_tendsto_uniformly
         (fun ω => if b₂ then Y ω ε' p.2 else Z ω ε' p.2) ∧
       gaussianCovariance P (fun ω => if b₁ then Y ω ε p.1 else Z ω ε p.1)
         (fun ω => if b₂ then Y ω ε' p.2 else Z ω ε' p.2) ≤ R + 1
-    have hcovAbs : |gaussianCovariance P
-        (fun ω => if b₁ then Y ω ε p.1 else Z ω ε p.1)
-        (fun ω => if b₂ then Y ω ε' p.2 else Z ω ε' p.2)| ≤ R + 1 := by
+    exact abs_le.mp (by
       calc
         _ = |(gaussianCovariance P
               (fun ω => if b₁ then Y ω ε p.1 else Z ω ε p.1)
@@ -487,8 +462,7 @@ theorem compatible_mixed_off_diagonal_wick_factor_tendsto_uniformly
               (fun ω => if b₁ then Y ω ε p.1 else Z ω ε p.1)
               (fun ω => if b₂ then Y ω ε' p.2 else Z ω ε' p.2) - lim p| + |lim p| :=
                 abs_add_le _ _
-        _ ≤ R + 1 := by linarith [hlimBound p hp, hcovErr.le, hηcovOne]
-    exact abs_le.mp hcovAbs
+        _ ≤ R + 1 := by linarith [hlimBound p hp, hcovErr.le, hηcovOne])
   have hpairDist : dist (γ, lim p) (γ, gaussianCovariance P
       (fun ω => if b₁ then Y ω ε p.1 else Z ω ε p.1)
       (fun ω => if b₂ then Y ω ε' p.2 else Z ω ε' p.2)) < δE := by
@@ -497,13 +471,15 @@ theorem compatible_mixed_off_diagonal_wick_factor_tendsto_uniformly
         (fun ω => if b₂ then Y ω ε' p.2 else Z ω ε' p.2)) < δE := by
       have h' := lt_of_lt_of_le hcovErr hηcovE
       simpa [Real.dist_eq, abs_sub_comm] using h'
-    simpa [Prod.dist_eq, dist_self, max_eq_right (dist_nonneg)] using hsecond
+    simpa
   have hEclose := hmod (γ, lim p) (Set.mem_prod.mpr ⟨hgammaD, hlimD⟩)
     (γ, gaussianCovariance P
       (fun ω => if b₁ then Y ω ε p.1 else Z ω ε p.1)
       (fun ω => if b₂ then Y ω ε' p.2 else Z ω ε' p.2))
     (Set.mem_prod.mpr ⟨hgammaD, hcovD⟩) hpairDist
   simpa [E, lim, Real.dist_eq, abs_sub_comm] using hEclose
+
+end
 
 
 end DOZZ.Proofs

@@ -26,7 +26,7 @@ theorem centeredJointlyGaussian_of_isGaussianProcess
     IsCenteredJointlyGaussian P (fun ω i => Z i ω) := by
   refine ⟨hZ.isProbabilityMeasure, (fun i => hZ.aemeasurable i), ?_⟩
   intro a
-  let S : Ω → ℝ := fun ω => ∑ i, a i * Z i ω
+  let S  := fun ω => ∑ i, a i * Z i ω
   have hScaled : IsGaussianProcess (fun i => fun ω => a i * Z i ω) P := by
     simpa only [smul_eq_mul] using hZ.smul a
   have hLaw : HasGaussianLaw S P := by
@@ -40,10 +40,13 @@ theorem centeredJointlyGaussian_of_isGaussianProcess
   refine ⟨hLaw.memLp_two, ⟨(Var[S; P]).toNNReal, ?_⟩⟩
   rw [hLaw.map_eq_gaussianReal, hMeanS]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι] (P : Measure Ω) (X : Ω → Distr)
+  (hX : IsEquatorGFF P X)
+include Ω hX
+
 /-- Every finite family of evaluations of an equator GFF is centered jointly Gaussian. -/
-theorem equatorGFF_finite_evaluations_jointly_gaussian
-    {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (f : ι → TestFn) :
+theorem equatorGFF_finite_evaluations_jointly_gaussian (f : ι → TestFn) :
     IsCenteredJointlyGaussian P (fun ω i => X ω (f i)) := by
   exact centeredJointlyGaussian_of_isGaussianProcess P
     (fun i ω => X ω (f i))
@@ -52,9 +55,7 @@ theorem equatorGFF_finite_evaluations_jointly_gaussian
 
 /-- A finite family of GFF evaluations remains jointly Gaussian after adjoining a centered
 `L²` limit of test evaluations. -/
-theorem equatorGFF_finite_evaluations_with_L_jointly_gaussian
-    {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (L : Ω → ℝ)
+theorem equatorGFF_finite_evaluations_with_L_jointly_gaussian (L : Ω → ℝ)
     (hL : IsGaussianL2Limit P X L) (f : ι → TestFn) :
     IsCenteredJointlyGaussian P
       (fun (ω : Ω) (i : Option ι) => match i with
@@ -107,16 +108,16 @@ theorem equatorGFF_finite_evaluations_with_L_jointly_gaussian
           eLpNorm (fun ω => L ω - X ω (fL n)) 2 P := by
       intro n
       exact eLpNorm_sub_comm _ _ _ _
-    have hLapprox' : Tendsto
-        (fun n => eLpNorm (fun ω => X ω (fL n) - L ω) 2 P) atTop (𝓝 0) := by
-      simpa only [hcomm] using hLapprox
     exact integral_eq_zero_of_eLpNorm_sub
       (fun n => equatorGFF_test_memLp X hX (fL n)) hLmem
-      (fun n => equatorGFF_test_integral X hX (fL n)) hLapprox'
+      (fun n => equatorGFF_test_integral X hX (fL n)) (by
+      simpa only [hcomm] using hLapprox)
   simpa only [W] using
     centeredJointlyGaussian_of_isGaussianProcess P W hLimit fun i => by
       cases i with
       | none => exact hMeanL
-      | some j => exact equatorGFF_test_integral X hX (f j)
+      | some j => apply equatorGFF_test_integral <;> assumption
+
+end
 
 end DOZZ.Proofs

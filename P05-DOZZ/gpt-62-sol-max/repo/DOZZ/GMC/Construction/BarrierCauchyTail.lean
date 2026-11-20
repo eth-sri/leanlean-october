@@ -35,31 +35,38 @@ theorem lintegral_mul_indicator_exists_le_tsum
             apply lintegral_mono
             intro ω
             by_cases hbad : ∃ i, bad i ω
-            · obtain ⟨i, hi⟩ := hbad
-              have hterm : w ω * Set.indicator {ω | bad i ω}
-                  (fun _ => (1 : ℝ≥0∞)) ω = w ω := by simp [hi]
-              have hexists : ∃ j, bad j ω := ⟨i, hi⟩
-              calc
-                w ω * Set.indicator {ω | ∃ i, bad i ω}
-                    (fun _ => (1 : ℝ≥0∞)) ω = w ω := by simp [hexists]
-                _ = w ω * Set.indicator {ω | bad i ω}
-                    (fun _ => (1 : ℝ≥0∞)) ω := hterm.symm
-                _ ≤ ∑' j, w ω * Set.indicator {ω | bad j ω}
-                    (fun _ => (1 : ℝ≥0∞)) ω :=
-                      ENNReal.le_tsum
-                        (f := fun j => w ω * Set.indicator {ω | bad j ω}
-                          (fun _ => (1 : ℝ≥0∞)) ω) i
+            exact Exists.casesOn hbad fun i hi =>
+              have hterm :=
+                of_eq_true
+                  (Eq.trans
+                    (congrFun'
+                      (congrArg Eq (Eq.trans (congrArg (HMul.hMul (w ω)) (indicator_of_mem hi fun x => 1)) (mul_one (w ω)))) (w ω))
+                    (eq_self (w ω)));
+              have hexists := Exists.intro i hi;
+              Trans.trans
+                (Trans.trans
+                  (of_eq_true
+                    (Eq.trans
+                      (congrFun'
+                        (congrArg Eq (Eq.trans (congrArg (HMul.hMul (w ω)) (indicator_of_mem hexists fun x => 1)) (mul_one (w ω))))
+                        (w ω))
+                      (eq_self (w ω))))
+                  (Eq.symm hterm))
+                (ENNReal.le_tsum i)
             · simp [hbad]
     _ = ∑' i, ∫⁻ ω, w ω * Set.indicator {ω | bad i ω}
           (fun _ => (1 : ℝ≥0∞)) ω ∂P := by
             rw [lintegral_tsum hbadMeas]
 
+section
+variable (g a : ℝ) (hga : g < a)
+include hga
+
 /-- The mixed double-root barrier rate is summable over the coarse scales whenever the barrier
 slope is strictly above the charge. -/
-theorem summable_compatible_mixed_double_root_barrier_rate
-    (g a : ℝ) (hga : g < a) :
+theorem summable_compatible_mixed_double_root_barrier_rate :
     Summable (fun k : ℕ => Real.exp (-((a - g) ^ 2 * (k : ℝ) / 16))) := by
-  let c : ℝ := (a - g) ^ 2 / 16
+  let c  := (a - g) ^ 2 / 16
   have hc : 0 < c := by dsimp [c]; positivity
   have hfun : (fun k : ℕ => Real.exp (-c * (k : ℝ))) =
       fun k : ℕ => Real.exp (-((a - g) ^ 2 * (k : ℝ) / 16)) := by
@@ -72,14 +79,12 @@ theorem summable_compatible_mixed_double_root_barrier_rate
 
 /-- The integrated cost of all omitted integer barriers tends to zero as the finite truncation
 level grows. -/
-theorem tendsto_compatible_mixed_double_root_barrier_tail_sum
-    (g a : ℝ) (hga : g < a) :
+theorem tendsto_compatible_mixed_double_root_barrier_tail_sum :
     Tendsto
       (fun N : ℕ => ∑' k : ℕ,
         ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * ((k + N : ℕ) : ℝ) / 16))))
       atTop (𝓝 0) := by
-  let c : ℝ := (a - g) ^ 2 / 16
-  have hc : 0 < c := by dsimp [c]; positivity
+  let c  := (a - g) ^ 2 / 16
   have hsummable : Summable (fun k : ℕ => Real.exp (-c * (k : ℝ))) := by
     have h := summable_compatible_mixed_double_root_barrier_rate g a hga
     apply h.congr
@@ -88,8 +93,7 @@ theorem tendsto_compatible_mixed_double_root_barrier_tail_sum
     dsimp [c]
     ring
   let f : ℕ → ℝ≥0∞ := fun k => ENNReal.ofReal (Real.exp (-c * (k : ℝ)))
-  have hfinite : ∑' k, f k ≠ ∞ := by
-    exact hsummable.tsum_ofReal_ne_top
+  have hfinite := hsummable.tsum_ofReal_ne_top
   have htail := ENNReal.tendsto_sum_nat_add f hfinite
   have hfun :
       (fun N : ℕ => ∑' k : ℕ,
@@ -103,7 +107,8 @@ theorem tendsto_compatible_mixed_double_root_barrier_tail_sum
     rw [Nat.cast_add]
     dsimp [c]
     ring_nf
-  rw [hfun]
-  exact htail
+  rwa [hfun]
+
+end
 
 end DOZZ.Proofs

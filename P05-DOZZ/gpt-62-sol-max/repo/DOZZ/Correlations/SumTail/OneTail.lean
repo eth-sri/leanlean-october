@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+import DOZZ.Statements.Correlations.OneInsertionTailUniform
 
 public import DOZZ.Correlations.SumTail.VariableRate
 public import DOZZ.Correlations.SumTail.Ceiling
@@ -19,23 +20,8 @@ namespace DOZZ.Proofs
 /-- Localizing only the charge compact set retains the common physical reflection coefficient. -/
 theorem sumtail_uniform_one_tail_for_common_witness
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ)
-    (hone : ∀
-    (Kz : Set ℂ) (_hKz : IsCompact Kz) (_hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
-    (Kα : Set ℝ) (_hKα : IsCompact Kα)
-    (_hα : ∀ α ∈ Kα, γ / 2 < α ∧ α < Q γ)
-    (Family : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
-    (_hFamily : UniformPositiveC1Family Kz Family radius supBound derivBound lowerBound),
-    ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-      IsSourceLateralProjection P X γ M Z ∧
-        (∀ α ∈ Kα, IsReflectionData P γ α (B α) Z) ∧
-        ∀ η : ℝ, 0 < η → (∀ α ∈ Kα, η < oneInsertionErrorCeiling γ α) →
-          ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z ∈ Kz, ∀ α ∈ Kα, ∀ F ∈ Family z, ∀ x : ℝ, 1 ≤ x →
-              |(P {ω | ENNReal.ofReal x < localSingularMass M F z γ α ω}).toReal -
-                oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z) *
-                  Real.rpow x (-reflectionExponent γ α)| ≤
-                C * Real.rpow x (-reflectionExponent γ α - η) )
+    (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (Kz : Set ℂ) (hKz : IsCompact Kz) (hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
     (Kα : Set ℝ) (hKα : IsCompact Kα) (hα : ∀ α ∈ Kα, γ/2 < α ∧ α < Q γ)
     (Family : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
@@ -56,7 +42,8 @@ theorem sumtail_uniform_one_tail_for_common_witness
       ∃ C : ℝ, 0 ≤ C ∧ ∀ α ∈ L, ∀ s : S, ∀ x : ℝ, 1 ≤ x →
         err α s x ≤ C*x^(-reflectionExponent γ α-η) := by
     intro L hL hLK η hη hηL
-    obtain ⟨B',Z',_hsource,hB',happrox⟩ := hone Kz hKz hz L hL
+    obtain ⟨B',Z',_hsource,hB',happrox⟩ :=
+      DOZZ.oneInsertion_tail_uniform P X M γ hγ hγ2 hX hM Kz hKz hz L hL
       (fun α hαL => hα α (hLK hαL)) Family radius supBound derivBound lowerBound hFamily
     obtain ⟨C,hC,hCb⟩ := happrox η hη hηL
     refine ⟨C,hC,?_⟩

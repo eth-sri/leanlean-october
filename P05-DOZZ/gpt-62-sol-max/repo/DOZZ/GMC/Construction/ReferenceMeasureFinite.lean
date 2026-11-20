@@ -20,15 +20,12 @@ namespace DOZZ.Proofs
 theorem gmcReferenceMeasure_univ_ne_top :
     gmcReferenceMeasure Set.univ ≠ ∞ := by
   let B : Set ℂ := Metric.ball 0 1
-  let f : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))
+  let f  := fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))
   have hB : MeasurableSet B := Metric.isOpen_ball.measurableSet
   have hBallVolume : volume B ≠ ∞ := by
-    have hclosed : volume (Metric.closedBall (0 : ℂ) 1) ≠ ∞ :=
-      (isCompact_closedBall (0 : ℂ) (1 : ℝ)).measure_ne_top
-    apply ne_of_lt
-    exact (measure_mono (show B ⊆ Metric.closedBall (0 : ℂ) 1 from
-      Metric.ball_subset_closedBall)).trans_lt
-      (lt_top_iff_ne_top.mpr hclosed)
+    exact ne_of_lt
+      (LE.le.trans_lt (measure_mono Metric.ball_subset_closedBall)
+        (lt_top_iff_ne_top.mpr (IsCompact.measure_ne_top (isCompact_closedBall 0 1))))
   have htailReal : IntegrableOn (fun x : ℂ => ‖x‖ ^ (-4 : ℝ)) Bᶜ volume := by
     apply (DOZZ.Proofs.integrableOn_norm_rpow_ball_compl_iff (-4) 1 (by norm_num)).2
     norm_num
@@ -59,13 +56,13 @@ theorem gmcReferenceMeasure_univ_ne_top :
         have hxnorm : 1 ≤ ‖x‖ := by
           change ¬ x ∈ Metric.ball (0 : ℂ) 1 at hx
           have hdist : ¬ dist x (0 : ℂ) < 1 := by
-            simpa [Metric.mem_ball] using hx
+            assumption
           rw [dist_zero_right] at hdist
           exact le_of_not_gt hdist
         have hmax : normPlus x = ‖x‖ := by
           simp [normPlus, max_eq_right hxnorm]
         simp [f, hmax])
-  have htailFinite' : (∫⁻ x in Bᶜ, f x ∂volume) ≠ ∞ :=
+  have htailFinite'  :=
     ne_of_lt (lt_of_le_of_lt htailBound (lt_top_iff_ne_top.mpr htailFinite))
   have htotal : (∫⁻ x, f x ∂volume) ≠ ∞ := by
     rw [← lintegral_add_compl f hB]
@@ -73,7 +70,6 @@ theorem gmcReferenceMeasure_univ_ne_top :
       ⟨ne_of_lt (lt_of_le_of_lt hballBound (lt_top_iff_ne_top.mpr hBallVolume)),
         htailFinite'⟩
   change (volume.withDensity f) Set.univ ≠ ∞
-  rw [withDensity_apply _ MeasurableSet.univ]
-  simpa using htotal
+  simpa
 
 end DOZZ.Proofs

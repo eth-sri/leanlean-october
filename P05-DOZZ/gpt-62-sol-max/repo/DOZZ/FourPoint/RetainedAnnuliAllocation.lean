@@ -72,7 +72,6 @@ theorem freezing_retained_lower_bound (γ α ε R w : ℝ) (M : Measure ℂ)
       apply setLIntegral_mono' Metric.isOpen_ball.measurableSet
       intro x hx
       exact ENNReal.ofReal_le_ofReal (hw x hx)
-    _ ≤ freezingAnnulusMassLocal γ α M z ε R := by
-      exact lintegral_mono_set hsub
+    _ ≤ freezingAnnulusMassLocal γ α M z ε R := lintegral_mono_set hsub
 
 end DOZZ.Proofs

@@ -34,19 +34,22 @@ namespace DOZZ.Proofs
 
 /-! ### Power comparisons in `ℝ≥0∞` -/
 
-theorem ennrpow_le_one_add_rpow {x : ℝ≥0∞} {s c : ℝ} (hs : 0 ≤ s) (hsc : s ≤ c) :
+section
+variable {x : ℝ≥0∞} {s c : ℝ}
+
+theorem ennrpow_le_one_add_rpow (hs : 0 ≤ s) (hsc : s ≤ c) :
     x ^ s ≤ 1 + x ^ c := by
   rcases le_or_gt x 1 with hx | hx
   · exact (ENNReal.rpow_le_one hx hs).trans le_self_add
   · exact (ENNReal.rpow_le_rpow_of_exponent_le hx.le hsc).trans le_add_self
 
-theorem ennrpow_le_one_add_rpow_neg {x : ℝ≥0∞} {s c : ℝ} (hs : s ≤ 0) (hcs : -c ≤ s) :
+theorem ennrpow_le_one_add_rpow_neg (hs : s ≤ 0) (hcs : -c ≤ s) :
     x ^ s ≤ 1 + x ^ (-c) := by
-  rcases le_or_gt 1 x with hx | hx
-  · calc x ^ s ≤ x ^ (0 : ℝ) := ENNReal.rpow_le_rpow_of_exponent_le hx hs
-      _ = 1 := ENNReal.rpow_zero
-      _ ≤ 1 + x ^ (-c) := le_self_add
-  · exact (ENNReal.rpow_le_rpow_of_exponent_ge hx.le hcs).trans le_add_self
+  exact Or.casesOn (le_or_gt 1 x)
+    (fun hx => Trans.trans (Trans.trans (ENNReal.rpow_le_rpow_of_exponent_le hx hs) ENNReal.rpow_zero) le_self_add)
+    fun hx => LE.le.trans (ENNReal.rpow_le_rpow_of_exponent_ge (LT.lt.le hx) hcs) le_add_self
+
+end
 
 theorem ennrpow_le_of_le_of_nonpos {x y : ℝ≥0∞} (hxy : x ≤ y) {s : ℝ} (hs : s ≤ 0) :
     y ^ s ≤ x ^ s := by
@@ -65,8 +68,11 @@ theorem one_add_rpow_le {x : ℝ≥0∞} {q : ℝ} (hq : 1 ≤ q) :
 
 /-! ### A Hölder step with decay -/
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+
 /-- Hölder with a decaying `r`-th moment and a fixed finite conjugate moment. -/
-theorem holder_decay {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : ℕ → Ω → ℝ≥0∞}
+theorem holder_decay {P : Measure Ω} {U : ℕ → Ω → ℝ≥0∞}
     {V : Ω → ℝ≥0∞} (hU : ∀ n, AEMeasurable (U n) P) (hV : AEMeasurable V P) {r : ℝ}
     (hr : 1 < r) {C ζ : ℝ}
     (hUr : ∀ n : ℕ, ∫⁻ ω, U n ω ^ r ∂P ≤ ENNReal.ofReal (C * Real.exp (-(n : ℝ) * ζ)))
@@ -103,7 +109,7 @@ theorem holder_decay {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : ℕ
 /-! ### Fixed-cutoff domination -/
 
 /-- **Domination of the cutoff integrand** after the tilt (`interpol2`). -/
-theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem lintegral_cutoffDomination_lt_top (P : Measure Ω)
     (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
     {a : ℝ} (ha : -2 * η - δ < a) (n : ℕ) :
@@ -212,6 +218,8 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
       nlinarith
     have h := lintegral_localMass_rpow_neg_lt_top P X hX γ hγ hγ2 M hM hη hηγ hq
     rwa [neg_neg] at h
+
+end
 
 end DOZZ.Proofs
 

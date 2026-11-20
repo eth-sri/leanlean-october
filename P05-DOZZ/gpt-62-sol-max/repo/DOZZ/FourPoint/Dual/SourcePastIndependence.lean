@@ -6,6 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.PastExteriorIdentity
 public import DOZZ.FourPoint.Dual.PathLikelihood
 import Mathlib.Tactic
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 /-! Source-space future independence of the actual dual exterior and restart likelihood. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory
@@ -16,9 +17,7 @@ namespace DOZZ.Proofs
 past and lateral carrier, so are independent of the future inward Brownian path. -/
 theorem dual_source_future_indep_outer_restart
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (ν h α₁ α₂ α₃ ξ : ℝ) (z : ℂ) (hz0 : z ≠ 0) (hz : ‖z‖ < ‖z‖^(1-ξ))
     (T : ℝ≥0) (hT : (T : ℝ) = -Real.log ‖z‖+h)
@@ -27,22 +26,23 @@ theorem dual_source_future_indep_outer_restart
       (fun ω => (dual_radial_scale γ ν h Xc z ω,
         (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)) P := by
   let A := originRadialPath Xc
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
+  have hA := originRadialPath_aemeasurable P X Xc hcircle.isCircleAverage hcircle.continuous_ae
   obtain ⟨N, hNm, hi, hfin, heq, _, _⟩ := reflected_copied_radial_plane_observable
-    P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+    P X Xc hX hcircle γ hγ hγ₂ M hM
   let NL : Ω → DualLocalPlaneMeasure := fun ω => ⟨N ω, hfin ω⟩
   have hNL : Measurable NL := hNm.subtype_mk
   have hiL : IndepFun A NL P := dual_indepFun_subtype_lift P A N _ hfin hi
-  have hB := (originRadialPath_isBrownian P X Xc hX hc hcont).1
-  have hhalves := originRadialPath_halves_indep P X Xc hX hc hcont
-  have hip := dual_radial_future_indep_restart_exterior P A hA hB hhalves NL hNL.aemeasurable
-    hiL T γ ν α₁ α₂ α₃ z (‖z‖^(1-ξ))
+  have hB := (originRadialPath_isBrownian P X Xc hX hcircle.isCircleAverage hcircle.continuous_ae).1
+  have hhalves := originRadialPath_halves_indep P X Xc hX hcircle.isCircleAverage hcircle.continuous_ae
+  have hip := (reflected_radial_future_indep_full_past_lateral
+    P A hA hB hhalves NL hNL.aemeasurable hiL T).comp measurable_id
+    (dual_past_restart_exterior_measurable γ ν α₁ α₂ α₃ T z (‖z‖^(1-ξ)))
   have hconv : Measurable (fun p : ℝ × ℝ≥0∞ => (p.1,p.2.toReal)) :=
     measurable_fst.prodMk measurable_snd.ennreal_toReal
   have hir := hip.comp measurable_id hconv
   have hpast := dual_source_past_exterior_mass_eq P X hX γ hγ hγ₂ M N hM A hfin heq
     α₁ α₂ α₃ ξ z hz T hr
-  have hβ := dual_source_radial_scale_eq_path_ae P Xc hcont γ ν h z
+  have hβ := dual_source_radial_scale_eq_path_ae P Xc hcircle.continuous_ae γ ν h z
   have he : (fun ω =>
       (dualPastRestartWeight γ ν T z (stopBrownianPath (radialPositiveHalf (A ω)) T,
         radialNegativeHalf (A ω)),

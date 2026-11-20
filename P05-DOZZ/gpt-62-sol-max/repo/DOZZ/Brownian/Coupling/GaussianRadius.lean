@@ -125,9 +125,9 @@ theorem entranceDensity_zero_eq_radialGaussian {t y : ℝ} (ht : 0 < t) (hy : 0 
   simp only [brownianHeatDensity, ht, ite_true]
   ring
 
-/-- Radial tests of the actual product Gaussian have the explicit entrance density at positive drift. -/
-theorem lintegral_three_gaussian_radial_pos (F : ℝ → ℝ≥0∞) (hF : Measurable F)
-    (a : ℝ) (ha : 0 < a) (t : ℝ≥0) (ht : 0 < t) :
+/-- The exact entrance integral for every nonnegative drift, including zero. -/
+theorem lintegral_three_gaussian_radial (F : ℝ → ℝ≥0∞) (hF : Measurable F)
+    (a : ℝ) (ha : 0 ≤ a) (t : ℝ≥0) (ht : 0 < t) :
     (∫⁻ z, F ‖WithLp.toLp 2 z‖ ∂Measure.pi (fun i : Fin 3 =>
       gaussianReal (if i = 0 then a * (t : ℝ) else 0) t)) =
       ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (conditionedPositiveEntranceDensity a t y) := by
@@ -152,67 +152,23 @@ theorem lintegral_three_gaussian_radial_pos (F : ℝ → ℝ≥0∞) (hF : Measu
       dsimp only [G]
       ring
     _ = ENNReal.ofReal (radialGaussianConstant t) * (ENNReal.ofReal (4 * Real.pi) *
-        ∫⁻ y in Ioi (0 : ℝ), G y * ENNReal.ofReal (y * Real.sinh (a * y) / a)) := by
-      rw [lintegral_three_radial_exp G hG a ha.ne']
-    _ = ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (conditionedPositiveEntranceDensity a t y) := by
+        ∫⁻ y in Ioi (0 : ℝ), G y * ENNReal.ofReal (radialTiltWeight a y)) := by
+      rw [lintegral_three_radial_exp_all G hG a]
+    _ = _ := by
       rw [← mul_assoc, ← lintegral_const_mul' _ _ (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)]
       apply setLIntegral_congr_fun measurableSet_Ioi
       intro y hy
-      dsimp only [G]
-      conv_rhs => rw [entranceDensity_eq_radialGaussian ha htr hy]
-      conv_rhs => rw [ENNReal.ofReal_mul (by first | positivity | (unfold radialGaussianConstant; positivity)),
-        ENNReal.ofReal_mul (by first | positivity | (unfold radialGaussianConstant; positivity)),
-        ENNReal.ofReal_mul (by positivity : 0 ≤ 4 * Real.pi)]
+      have hD : conditionedPositiveEntranceDensity a t y = (4 * Real.pi * radialGaussianConstant t) *
+          Real.exp (-y ^ 2 / (2 * (t : ℝ)) - a ^ 2 * (t : ℝ) / 2) * radialTiltWeight a y := by
+        rcases ha.eq_or_lt with rfl | hpos
+        · simpa [radialTiltWeight, pow_two] using entranceDensity_zero_eq_radialGaussian htr hy
+        · simpa only [radialTiltWeight, if_neg hpos.ne', ← mul_div_assoc] using
+            entranceDensity_eq_radialGaussian hpos htr hy
+      have hC : 0 ≤ radialGaussianConstant t := by unfold radialGaussianConstant; positivity
+      simp only [G, hD, ENNReal.ofReal_mul (by positivity : 0 ≤ 4 * Real.pi),
+        ENNReal.ofReal_mul (by positivity : 0 ≤ 4 * Real.pi * radialGaussianConstant t),
+        ENNReal.ofReal_mul (by positivity : 0 ≤ 4 * Real.pi * radialGaussianConstant t * Real.exp _)]
       ring
-
-/-- Maxwell endpoint of the same product-Gaussian radial identity. -/
-theorem lintegral_three_gaussian_radial_zero (F : ℝ → ℝ≥0∞) (hF : Measurable F)
-    (t : ℝ≥0) (ht : 0 < t) :
-    (∫⁻ z, F ‖WithLp.toLp 2 z‖ ∂Measure.pi (fun _ : Fin 3 => gaussianReal 0 t)) =
-      ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (conditionedPositiveEntranceDensity 0 t y) := by
-  have hpdf : Measurable (fun z : Fin 3 → ℝ => ∏ i, gaussianPDF 0 t (z i)) := by
-    exact Finset.measurable_prod Finset.univ (fun i _ =>
-      (measurable_gaussianPDF _ _).comp (measurable_pi_apply i))
-  have hnorm : Measurable (fun z : Fin 3 → ℝ => F ‖WithLp.toLp 2 z‖) :=
-    hF.comp (PiLp.continuous_toLp 2 _).norm.measurable
-  let G := fun y => F y * ENNReal.ofReal (Real.exp (-y ^ 2 / (2 * (t : ℝ))))
-  have hG : Measurable G := hF.mul (by fun_prop)
-  have hproduct (z : Fin 3 → ℝ) : (∏ i, gaussianPDF 0 t (z i)) =
-      ENNReal.ofReal (radialGaussianConstant t) * ENNReal.ofReal (Real.exp (-‖WithLp.toLp 2 z‖ ^ 2 / (2 * (t : ℝ)))) := by
-    simpa using three_gaussianPDF_product 0 t ht.ne' z
-  rw [pi_gaussianReal_withDensity _ t ht.ne',
-    lintegral_withDensity_eq_lintegral_mul volume hpdf hnorm]
-  simp_rw [Pi.mul_apply, hproduct]
-  calc
-    _ = ENNReal.ofReal (radialGaussianConstant t) * ∫⁻ z : Fin 3 → ℝ, G ‖WithLp.toLp 2 z‖ := by
-      rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-      apply lintegral_congr
-      intro z
-      dsimp only [G]
-      ring
-    _ = ENNReal.ofReal (radialGaussianConstant t) * (ENNReal.ofReal (4 * Real.pi) *
-        ∫⁻ y in Ioi (0 : ℝ), G y * ENNReal.ofReal (y ^ 2)) := by
-      rw [lintegral_three_radial_zero G hG]
-    _ = ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (conditionedPositiveEntranceDensity 0 t y) := by
-      rw [← mul_assoc, ← lintegral_const_mul' _ _ (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)]
-      apply setLIntegral_congr_fun measurableSet_Ioi
-      intro y hy
-      dsimp only [G]
-      conv_rhs => rw [entranceDensity_zero_eq_radialGaussian (t := (t : ℝ)) (show 0 < (t : ℝ) from ht) hy]
-      conv_rhs => rw [ENNReal.ofReal_mul (by first | positivity | (unfold radialGaussianConstant; positivity)),
-        ENNReal.ofReal_mul (by first | positivity | (unfold radialGaussianConstant; positivity)),
-        ENNReal.ofReal_mul (by positivity : 0 ≤ 4 * Real.pi)]
-      ring
-
-/-- The exact entrance integral for every nonnegative drift, including zero. -/
-theorem lintegral_three_gaussian_radial (F : ℝ → ℝ≥0∞) (hF : Measurable F)
-    (a : ℝ) (ha : 0 ≤ a) (t : ℝ≥0) (ht : 0 < t) :
-    (∫⁻ z, F ‖WithLp.toLp 2 z‖ ∂Measure.pi (fun i : Fin 3 =>
-      gaussianReal (if i = 0 then a * (t : ℝ) else 0) t)) =
-      ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (conditionedPositiveEntranceDensity a t y) := by
-  rcases ha.eq_or_lt with rfl | hapos
-  · simpa using lintegral_three_gaussian_radial_zero F hF t ht
-  · exact lintegral_three_gaussian_radial_pos F hF a hapos t ht
 
 /-- The entrance density has no mass at nonpositive radii. -/
 theorem entranceDensity_eq_zero_of_nonpositive (a t y : ℝ) (hy : y ≤ 0) :
@@ -254,8 +210,6 @@ theorem negativeRogersPitmanWienerMeasure_eval_eq_entrance (a : ℝ) (ha : 0 ≤
     (t : ℝ≥0) (ht : 0 < t) :
     (negativeRogersPitmanWienerMeasure a).map (fun p => p t) =
       (conditionedPositiveEntranceMeasure a t).map Neg.neg := by
-  have hnorm : Measurable (fun z : Fin 3 → ℝ => ‖WithLp.toLp 2 z‖) :=
-    (PiLp.continuous_toLp 2 _).norm.measurable
   rw [← rogersPitmanWienerMeasure_eval_eq_entrance a ha t ht,
     rogersPitmanWienerMeasure, negativeRogersPitmanWienerMeasure,
     rogersPitmanEntranceMeasure, negativeRogersPitmanEntranceMeasure]

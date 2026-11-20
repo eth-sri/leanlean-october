@@ -20,7 +20,7 @@ open scoped Topology
 private theorem real_open_unit_not_int {x : ℝ} (hx0 : 0 < x) (hx1 : x < 1) :
     ∀ n : ℤ, x ≠ (n : ℝ) := by
   intro n hn
-  have hnreal0 : (0 : ℝ) ≤ (n : ℝ) := by rw [← hn]; exact hx0.le
+  have hnreal0 : (0 : ℝ) ≤ (n : ℝ) := by linarith
   have hnreal1 : (n : ℝ) < 1 := by rw [← hn]; exact hx1
   have hn0 : 0 ≤ n := by exact_mod_cast hnreal0
   have hn1 : n < 1 := by exact_mod_cast hnreal1
@@ -33,7 +33,7 @@ private theorem tendsto_real_positive_cpow_zero (c : ℝ) (hc : c < 1) :
       (nhdsWithin 0 (Ioi 0)) (nhds 0) := by
   rw [tendsto_zero_iff_norm_tendsto_zero]
   let F : Filter ℝ := nhdsWithin 0 (Ioi 0)
-  let e : ℝ := 1 - c
+  let e  := 1 - c
   have he : 0 < e := by dsimp [e]; linarith
   have hreal : Tendsto (fun x : ℝ => x ^ e) F (nhds 0) := by
     have hid : Tendsto (fun x : ℝ => x) F (nhds 0) :=
@@ -47,9 +47,8 @@ private theorem tendsto_real_positive_cpow_zero (c : ℝ) (hc : c < 1) :
     filter_upwards [self_mem_nhdsWithin] with x hx
     have hbase : (x : ℂ) = (x : ℝ) := rfl
     rw [hbase, Complex.norm_cpow_eq_rpow_re_of_pos hx]
-    simp [e, Complex.sub_re]
-  rw [tendsto_congr' hnorm]
-  exact hreal
+    rfl
+  rwa [tendsto_congr' hnorm]
 
 /-- In the strict physical range, continuity at zero fixes the coefficient in
 [KRV, (Fundrelation1)] to `T 0`. -/
@@ -76,16 +75,14 @@ theorem real_gauss_solution_physical_normalization
   let c := gaussParameterC γ χ α₁
   obtain ⟨ha, hab, hbc, hc1, hδ, hδ1, _, hK₂⟩ :=
     gauss_physical_parameter_range γ χ α₁ α₂ α₃ hγ hγ₂ hχ hsum hα₁ hα₂ hα₃
-  have hCpos : 0 < c := by dsimp [c]; linarith [ha, hab, hbc]
-  have hcn : ∀ n : ℤ, c ≠ (n : ℝ) :=
+  have hCpos : 0 < c := by linarith
+  have hcn  :=
     real_open_unit_not_int hCpos hc1
-  have hδn : ∀ n : ℤ, c - a - b ≠ (n : ℝ) := by
-    exact real_open_unit_not_int hδ hδ1
+  have hδn := real_open_unit_not_int hδ hδ1
   obtain ⟨coeff, hcoeff, _⟩ :=
     real_gauss_solution_coefficient_ratio hH a b c hcn hδn hK₂.ne' T hT
   let F : Filter ℝ := nhdsWithin 0 (Ioi 0)
-  have hrealCast : Tendsto (fun x : ℝ => (x : ℂ)) F (nhds 0) := by
-    exact Complex.continuous_ofReal.continuousAt.tendsto.comp
+  have hrealCast : Tendsto (fun x : ℝ => (x : ℂ)) F (nhds 0) := Complex.continuous_ofReal.continuousAt.tendsto.comp
       (tendsto_id.mono_left nhdsWithin_le_nhds)
   have hcN : ∀ n : ℕ, (c : ℂ) ≠ -(n : ℂ) := by
     intro n hn
@@ -95,7 +92,7 @@ theorem real_gauss_solution_physical_normalization
   have hminus : Tendsto
       (fun x : ℝ => gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ)) F (nhds 1) := by
     have h := (gaussFamily_tendsto_one_at_zero hH (a : ℂ) (b : ℂ) (c : ℂ) hcN).comp hrealCast
-    simpa [Function.comp_def, gaussFMinus] using h
+    assumption
   have hcplus : ∀ n : ℕ, (2 - (c : ℂ)) ≠ -(n : ℂ) := by
     intro n hn
     have hnRe : 2 - c = -(n : ℝ) := by
@@ -105,9 +102,8 @@ theorem real_gauss_solution_physical_normalization
     linarith [hc1, hEqR]
   have hseed : Tendsto
       (fun x : ℝ => H ((a : ℂ) - (c : ℂ) + 1)
-        ((b : ℂ) - (c : ℂ) + 1) (2 - (c : ℂ)) (x : ℂ)) F (nhds 1) := by
-    exact (gaussFamily_tendsto_one_at_zero hH _ _ _ hcplus).comp hrealCast
-  have hpower : Tendsto (fun x : ℝ => (x : ℂ) ^ (1 - (c : ℂ))) F (nhds 0) :=
+        ((b : ℂ) - (c : ℂ) + 1) (2 - (c : ℂ)) (x : ℂ)) F (nhds 1) := (gaussFamily_tendsto_one_at_zero hH _ _ _ hcplus).comp hrealCast
+  have hpower  :=
     tendsto_real_positive_cpow_zero c hc1
   have hplus : Tendsto
       (fun x : ℝ => gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ)) F (nhds 0) := by
@@ -134,32 +130,26 @@ theorem real_gauss_solution_physical_normalization
         gaussCoefficientRatio a b c *
           ‖gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ)‖ ^ 2)) F (nhds coeff) := by
     simpa using tendsto_const_nhds.mul hbracket
-  have hTlim : Tendsto (fun x : ℝ => T (x : ℂ)) F (nhds (T 0)) :=
+  have hTlim  :=
     hcont.tendsto.comp hrealCast
   have hcut : ∀ᶠ x : ℝ in F, (x : ℂ) ∈ gaussCutPlane := by
-    have hlt : ∀ᶠ x : ℝ in F, x < 1 := by
-      exact Filter.Eventually.filter_mono nhdsWithin_le_nhds
-        (eventually_lt_nhds (show (0 : ℝ) < 1 by norm_num))
-    filter_upwards [self_mem_nhdsWithin, hlt] with x hx hxlt
-    change (x : ℂ).im ≠ 0 ∨ (0 < (x : ℂ).re ∧ (x : ℂ).re < 1)
-    right
-    simp only [Complex.ofReal_re]
-    exact ⟨hx, hxlt⟩
+    exact mp_mem
+      (Eventually.filter_mono nhdsWithin_le_nhds
+        (eventually_lt_nhds
+          (Mathlib.Meta.NormNum.isNat_lt_true (Mathlib.Meta.NormNum.isNat_ofNat ℝ Nat.cast_zero)
+            (Mathlib.Meta.NormNum.isNat_ofNat ℝ Nat.cast_one) (Eq.refl false))))
+      (mp_mem self_mem_nhdsWithin (univ_mem' (id fun x hx hxlt => id (Or.inr (id ⟨hx, hxlt⟩)))))
   have hEq : (fun x : ℝ => T (x : ℂ)) =ᶠ[F]
       (fun x => coeff * (‖gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ)‖ ^ 2 +
         gaussCoefficientRatio a b c *
           ‖gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ)‖ ^ 2)) := by
     filter_upwards [hcut] with x hx
-    exact hcoeff (x : ℂ) hx
-  have hRHS' : Tendsto
-      (fun x : ℝ => coeff * (‖gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ)‖ ^ 2 +
-        gaussCoefficientRatio a b c *
-          ‖gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ)‖ ^ 2)) F (nhds (T 0)) :=
-    hTlim.congr' hEq
+    apply hcoeff <;> assumption
+  have hRHS' := hTlim.congr' hEq
   have hFne : NeBot F := by
     dsimp [F]
     exact (isGLB_Ioi : IsGLB (Ioi (0 : ℝ)) 0).nhdsWithin_neBot ⟨1, by norm_num⟩
-  have hcoeff0 : coeff = T 0 := tendsto_nhds_unique' hFne hRHS hRHS'
+  have hcoeff0  := tendsto_nhds_unique' hFne hRHS hRHS'
   intro z hz
   change T z = T 0 * (‖gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z‖ ^ 2 +
     gaussCoefficientRatio a b c *

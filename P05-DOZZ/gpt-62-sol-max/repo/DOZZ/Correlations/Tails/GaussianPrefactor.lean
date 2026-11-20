@@ -30,12 +30,10 @@ theorem gaussian_wick_power_moment
       fun ω => (K ^ p * Real.exp (-p * γ ^ 2 * variance U P / 2)) *
         Real.exp ((p * γ) * U ω) := by
     funext ω
-    rw [Real.mul_rpow hK.le (Real.exp_pos _).le, ← Real.exp_mul]
-    rw [show (γ * U ω - γ ^ 2 * variance U P / 2) * p =
-      -p * γ ^ 2 * variance U P / 2 + (p * γ) * U ω by ring, Real.exp_add]
+    rw [Real.mul_rpow hK.le (Real.exp_pos _).le, ← Real.exp_mul, show (γ * U ω - γ ^ 2 * variance U P / 2) * p =
+          -p * γ ^ 2 * variance U P / 2 + (p * γ) * U ω by ring, Real.exp_add]
     ring
-  rw [heq, integral_const_mul, gaussian_centered_mgf P U hU hmean (p * γ)]
-  rw [mul_assoc, ← Real.exp_add]
+  rw [heq, integral_const_mul, gaussian_centered_mgf P U hU hmean (p * γ), mul_assoc, ← Real.exp_add]
   congr 2
   ring
 
@@ -66,10 +64,7 @@ theorem offCenter_prefactor_moment
     mul_pos hFz (Real.rpow_pos_of_pos hn _)
   let p := reflectionExponent γ α
   rw [gaussian_wick_power_moment P N hN hmean γ
-    (Fz * ‖z‖ ^ (-4 : ℝ)) p hK, hvar,
-    Real.mul_rpow hFz.le (Real.rpow_pos_of_pos hn _).le, ← Real.rpow_mul hn.le]
-  rw [Real.rpow_def_of_pos hn, Real.rpow_def_of_pos hn]
-  rw [mul_assoc, ← Real.exp_add]
+      (Fz * ‖z‖ ^ (-4 : ℝ)) p hK, hvar, Real.mul_rpow hFz.le (Real.rpow_pos_of_pos hn _).le, ← Real.rpow_mul hn.le, Real.rpow_def_of_pos hn, Real.rpow_def_of_pos hn, mul_assoc, ← Real.exp_add]
   have he : Real.log ‖z‖ * (-4 * p) + γ ^ 2 * (2 * Real.log ‖z‖) * (p ^ 2 - p) / 2 =
       Real.log ‖z‖ * (-4 * α * (Q γ - α)) := by
     calc

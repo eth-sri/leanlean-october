@@ -10,6 +10,7 @@ import DOZZ.GMC.SharpMoments.SeibergDecomp
 public import DOZZ.GMC.SharpMoments.LocationTransfer
 import DOZZ.GMC.SharpMoments.ArbitraryCenter
 import DOZZ.GMC.SharpMoments.SeibergMoment
+public import DOZZ.FourPoint.TaylorFixedDisk
 
 /-! # A uniform lower bound for the rooted density
 
@@ -57,9 +58,12 @@ theorem fusion_rootDensity_lower (γ : ℝ) (u x : ℂ) :
   have h := mul_le_mul_of_nonneg_left (fusion_gffKernel_lower u x) (sq_nonneg γ)
   nlinarith only [h]
 
+section
+variable {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Measure ℂ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ)
+include N
+
 /-- Rooting uniformly preserves a lower bound for any Coulomb mass. -/
-theorem fusion_rootedCoulombMass_lower {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Measure ℂ)
-    (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) :
+theorem fusion_rootedCoulombMass_lower :
     ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) * coulombMass γ μ α z αinf ≤
       coulombMass γ (gmcRootedMeasure γ u μ) α z αinf := by
   have hd : Measurable (fun x : ℂ =>
@@ -73,78 +77,43 @@ theorem fusion_rootedCoulombMass_lower {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Meas
     ← lintegral_const_mul _ (measurable_coulombWeight _ _ _ _)]
   exact lintegral_mono fun x => mul_le_mul' (fusion_rootDensity_lower γ u x) le_rfl
 
-/-- A fixed disk lower bound is uniform in all roots in the unit disk and in the rooting point. -/
-theorem fusion_rootedMass_disk_lower {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Measure ℂ)
-    (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) (hz : ∀ j, ‖z j‖ ≤ 1) :
-    (ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) *
-      (ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
-        ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)))) *
+/-- A retained region inherits the fixed-disk lower bound after rooting anywhere. -/
+theorem rooted_coulombMass_fixed_disk_lower_restrict (hz : ∀ j, ‖z j‖ ≤ 1)
+    {D : Set ℂ} (hD : MeasurableSet D) (hsub : Metric.ball (3 : ℂ) (1 / 8) ⊆ D) :
+    ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2) * coulombGuardWeight γ α αinf) *
       μ (Metric.ball (3 : ℂ) (1 / 8)) ≤
-      coulombMass γ (gmcRootedMeasure γ u μ) α z αinf := by
-  have hmass := coulombMass_ge_exterior_ball μ γ α z αinf
-    (Rr := 2) (by norm_num) (fun j => by linarith [hz j])
-  have hroot := fusion_rootedCoulombMass_lower γ u μ α z αinf
-  apply le_trans ?_ hroot
-  simpa only [show (2 : ℝ) + 2 = 4 by norm_num,
-    show (((2 : ℝ) + 1 : ℝ) : ℂ) = 3 by norm_num, mul_assoc] using
-    mul_le_mul' (le_refl (ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)))) hmass
+        coulombMass γ ((gmcRootedMeasure γ u μ).restrict D) α z αinf := by
+  have he : (gmcRootedMeasure γ u μ).restrict D = gmcRootedMeasure γ u (μ.restrict D) :=
+    restrict_withDensity hD _
+  rw [he, ENNReal.ofReal_mul (Real.exp_pos _).le, mul_assoc]
+  exact (mul_le_mul' le_rfl (coulombMass_fixed_disk_lower_restrict γ μ α z αinf hz hsub)).trans
+    (fusion_rootedCoulombMass_lower γ u (μ.restrict D) α z αinf)
 
-/-- Every nonpositive power of the rooted mass is dominated by a fixed-disk inverse power. -/
-theorem fusion_rootedMass_inverse_domination {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Measure ℂ)
-    (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) (hz : ∀ j, ‖z j‖ ≤ 1)
-    (s : ℝ) (hs : s ≤ 0) :
-    ENNReal.rpow (coulombMass γ (gmcRootedMeasure γ u μ) α z αinf) s ≤
-      ENNReal.rpow
-        (ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) *
-          (ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
-            ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)))) s *
-        ENNReal.rpow (μ (Metric.ball (3 : ℂ) (1 / 8))) s := by
-  have hc0 : (ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) *
-      (ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
-        ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)))) ≠ 0 := by
-    apply mul_ne_zero
-    · exact (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
-    · apply mul_ne_zero <;> exact (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
-  have hct : (ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) *
-      (ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
-        ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)))) ≠ ⊤ := by
-    exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top
-      (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)
-  have h := ennreal_rpow_antitone_of_nonpos
-    (fusion_rootedMass_disk_lower γ u μ α z αinf hz) hs
-  rwa [ennreal_mul_rpow_of_ne_zero_ne_top _ _ hc0 hct] at h
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {N : ℕ} (α : Fin N → ℝ)
+include Ω X hX hγ hγ2 hM
+
+/-- The same inverse moment constant works for all bounded insertions and every rooting point. -/
+theorem rooted_coulomb_inverse_uniform (αinf q : ℝ) (hq : 0 ≤ q) :
+    ∃ C : ℝ, 0 < C ∧ ∀ (u : ℂ) (z : Fin N → ℂ), (∀ j, ‖z j‖ ≤ 1) →
+      (∫⁻ ω, coulombMass γ (gmcRootedMeasure γ u (M ω)) α z αinf ^ (-q) ∂P) ≤
+        ENNReal.ofReal C := by
+  obtain ⟨C, hC, h⟩ := inverse_fixed_disk_uniform P X hX γ hγ hγ2 M hM _ q
+    (mul_pos (Real.exp_pos (-γ ^ 2 * Real.log 2)) (coulombGuardWeight_pos γ α αinf)) hq
+  refine ⟨C, hC, fun u z hz => h _ fun ω => ?_⟩
+  simpa only [Measure.restrict_univ] using rooted_coulombMass_fixed_disk_lower_restrict
+    γ u (M ω) α z αinf hz MeasurableSet.univ (Set.subset_univ _)
 
 /-- The fixed-disk domination gives a uniform finite inverse moment for all rooting points. -/
-theorem fusion_rootedMass_inverse_moment_uniform {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) {N : ℕ} (α : Fin N → ℝ) (αinf s : ℝ) (hs : s ≤ 0) :
+theorem fusion_rootedMass_inverse_moment_uniform (αinf s : ℝ) (hs : s ≤ 0) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ (u : ℂ) (z : Fin N → ℂ), (∀ j, ‖z j‖ ≤ 1) →
       (∫⁻ ω, ENNReal.rpow (coulombMass γ (gmcRootedMeasure γ u (M ω)) α z αinf) s ∂P) ≤ C := by
-  let c : ℝ≥0∞ := ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) *
-    (ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
-      ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)))
-  have hc0 : c ≠ 0 := by
-    dsimp [c]
-    apply mul_ne_zero
-    · exact (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
-    · apply mul_ne_zero <;> exact (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
-  have hct : c ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top
-    (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)
-  have hBm : AEMeasurable (fun ω => M ω (Metric.ball (3 : ℂ) (1 / 8))) P :=
-    gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
-      Metric.isOpen_ball.measurableSet
-  have hfin := gmc_ball_moment_lt_top_any_center P X hX γ hγ hγ2 M hM
-    3 (1 / 8) (by norm_num) le_rfl s (lt_of_le_of_lt hs (by positivity))
-  refine ⟨ENNReal.rpow c s * gmcMassMoment P M (Metric.ball (3 : ℂ) (1 / 8)) s,
-    ENNReal.mul_lt_top (ENNReal.rpow_ne_top_of_ne_zero hc0 hct).lt_top hfin, ?_⟩
-  intro u z hz
-  calc
-    _ ≤ ∫⁻ ω, ENNReal.rpow c s * ENNReal.rpow (M ω (Metric.ball (3 : ℂ) (1 / 8))) s ∂P :=
-      lintegral_mono fun ω => fusion_rootedMass_inverse_domination γ u (M ω) α z αinf hz s hs
-    _ = _ := by
-      simp only [ENNReal.rpow_eq_pow]
-      rw [lintegral_const_mul'' _ (hBm.pow_const s)]
-      rfl
+  obtain ⟨C, _, h⟩ := rooted_coulomb_inverse_uniform P X hX γ hγ hγ2 M hM α αinf (-s) (neg_nonneg.mpr hs)
+  exact ⟨ENNReal.ofReal C, ENNReal.ofReal_lt_top, by simpa only [neg_neg, ENNReal.rpow_eq_pow] using h⟩
+
+end
 
 end DOZZ.Proofs

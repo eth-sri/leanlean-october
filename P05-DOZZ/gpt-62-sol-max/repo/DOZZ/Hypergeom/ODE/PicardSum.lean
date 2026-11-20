@@ -31,27 +31,30 @@ theorem holomorphicPicardTerm_differentiableOn (c : ℂ) (r : ℝ)
     (n : ℕ) : DifferentiableOn ℂ (holomorphicPicardTerm c r H hH y n) (Metric.ball c r) :=
   (holomorphicPicardIterates c r H hH y n).2
 
-theorem holomorphicPicardTerm_norm_le (c : ℂ) (r M : ℝ)
-    (H : ℂ → E →L[ℂ] E) (hH : DifferentiableOn ℂ H (Metric.ball c r)) (y : E)
-    (hM : 0 ≤ M) (hHbound : ∀ z ∈ Metric.ball c r, ‖H z‖ ≤ M) :
+section
+variable (c : ℂ) (r M : ℝ) (H : ℂ → E →L[ℂ] E) (hH : DifferentiableOn ℂ H (Metric.ball c r)) (y : E)
+  (hM : 0 ≤ M) (hHbound : ∀ z ∈ Metric.ball c r, ‖H z‖ ≤ M)
+include M hM hHbound
+
+theorem holomorphicPicardTerm_norm_le :
     ∀ n : ℕ, ∀ z ∈ Metric.ball c r,
       ‖holomorphicPicardTerm c r H hH y n z‖ ≤
         ‖y‖ * (M * max r 0) ^ n / (n.factorial : ℝ) := by
   intro n z hz
   have hlocal := holomorphicPicardIterates_norm_le c r M H hH y hM hHbound n z hz
-  have hdist0 : ‖z - c‖ ≤ r := by
-    simpa [dist_eq_norm] using (Metric.mem_ball.mp hz).le
-  have hdist : ‖z - c‖ ≤ max r 0 := hdist0.trans (le_max_left r 0)
-  have hpow : (M * ‖z - c‖) ^ n ≤ (M * max r 0) ^ n := by
-    gcongr
-  calc
-    ‖holomorphicPicardTerm c r H hH y n z‖ ≤
-        ‖y‖ * (M * ‖z - c‖) ^ n / (n.factorial : ℝ) := hlocal
-    _ ≤ ‖y‖ * (M * max r 0) ^ n / (n.factorial : ℝ) := by gcongr
+  exact Trans.trans hlocal
+    (div_le_div_of_nonneg_right
+      (mul_le_mul_of_nonneg_left
+        (pow_le_pow_left₀ (mul_nonneg hM (norm_nonneg (z - c)))
+          (mul_le_mul_of_nonneg_left
+            (LE.le.trans (Eq.mp (congrFun' (congrArg LE.le (dist_eq_norm z c)) r) (LT.lt.le (Metric.mem_ball.mp hz)))
+              (le_max_left r 0))
+            hM)
+          n)
+        (norm_nonneg y))
+      (le_of_lt (Nat.cast_pos'.mpr (Nat.factorial_pos n))))
 
-theorem holomorphicPicardSolution_differentiableOn (c : ℂ) (r M : ℝ)
-    (H : ℂ → E →L[ℂ] E) (hH : DifferentiableOn ℂ H (Metric.ball c r)) (y : E)
-    (hM : 0 ≤ M) (hHbound : ∀ z ∈ Metric.ball c r, ‖H z‖ ≤ M) :
+theorem holomorphicPicardSolution_differentiableOn :
     DifferentiableOn ℂ (holomorphicPicardSolution c r H hH y) (Metric.ball c r) := by
   let R : ℝ := max r 0
   let u : ℕ → ℝ := fun n => ‖y‖ * (M * R) ^ n / (n.factorial : ℝ)
@@ -61,12 +64,13 @@ theorem holomorphicPicardSolution_differentiableOn (c : ℂ) (r M : ℝ)
       (Real.summable_pow_div_factorial (M * R)).mul_left ‖y‖
   have hbound : ∀ n z, z ∈ Metric.ball c r →
       ‖holomorphicPicardTerm c r H hH y n z‖ ≤ u n := by
-    intro n z hz
-    simpa [u, R] using holomorphicPicardTerm_norm_le c r M H hH y hM hHbound n z hz
+    apply holomorphicPicardTerm_norm_le <;> assumption
   change DifferentiableOn ℂ (fun z => ∑' n, holomorphicPicardTerm c r H hH y n z)
     (Metric.ball c r)
   exact Complex.differentiableOn_tsum_of_summable_norm hu
     (holomorphicPicardTerm_differentiableOn c r H hH y) Metric.isOpen_ball hbound
+
+end
 
 theorem holomorphicPicardSolution_apply_center (c : ℂ) (r : ℝ)
     (H : ℂ → E →L[ℂ] E) (hH : DifferentiableOn ℂ H (Metric.ball c r)) (y : E) :
@@ -95,8 +99,7 @@ theorem holomorphicPicardSolution_hasDerivAt (c : ℂ) (r M : ℝ)
       (Real.summable_pow_div_factorial (M * R)).mul_left ‖y‖
   have hbound : ∀ n w, w ∈ Metric.ball c r →
       ‖holomorphicPicardTerm c r H hH y n w‖ ≤ u n := by
-    intro n w hw
-    simpa [u, R] using holomorphicPicardTerm_norm_le c r M H hH y hM hHbound n w hw
+    apply holomorphicPicardTerm_norm_le <;> assumption
   have hterms : ∀ n, DifferentiableOn ℂ (holomorphicPicardTerm c r H hH y n)
       (Metric.ball c r) := holomorphicPicardTerm_differentiableOn c r H hH y
   have hderivSum := Complex.hasSum_deriv_of_summable_norm hu hterms
@@ -119,7 +122,6 @@ theorem holomorphicPicardSolution_hasDerivAt (c : ℂ) (r M : ℝ)
         H z (holomorphicPicardSolution c r H hH y z) := by
     calc
       deriv (holomorphicPicardSolution c r H hH y) z = ∑' n, g n := by
-        change deriv (fun w => ∑' n, holomorphicPicardTerm c r H hH y n w) z = _
         exact hderivSum.tsum_eq.symm
       _ = ∑' n, g (n + 1) := hshift.symm
       _ = ∑' n, H z (holomorphicPicardTerm c r H hH y n z) := by

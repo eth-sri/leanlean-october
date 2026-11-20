@@ -31,19 +31,24 @@ local instance : IsProbabilityMeasure (volume : Measure GFFUnitTorus2) := by inf
 noncomputable def torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) : GFFUnitTorus2 → ℂ :=
   fun x => (f (torusBoxPoint L x) : ℂ)
 
-theorem measurable_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
+section
+variable (L : ℝ) (f : ℂ →ᵇ ℝ)
+
+theorem measurable_torusBCFFunction :
     Measurable (torusBCFFunction L f) := by
   unfold torusBCFFunction
   exact (Complex.measurable_ofReal.comp f.continuous.measurable).comp
     (measurable_torusBoxPoint L)
 
-theorem memLp_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
+theorem memLp_torusBCFFunction :
     MemLp (torusBCFFunction L f) 2 (volume : Measure GFFUnitTorus2) := by
   have hbound (x : GFFUnitTorus2) : ‖torusBCFFunction L f x‖ ≤ ‖f‖ := by
     simp only [torusBCFFunction, Complex.norm_real]
     exact f.norm_coe_le_norm (torusBoxPoint L x)
   exact MemLp.of_bound (measurable_torusBCFFunction L f).aestronglyMeasurable
     ‖f‖ (Filter.Eventually.of_forall hbound)
+
+end
 
 /-- Send a bounded real function on the physical plane to its complex-valued torus `L²`
 periodization. -/

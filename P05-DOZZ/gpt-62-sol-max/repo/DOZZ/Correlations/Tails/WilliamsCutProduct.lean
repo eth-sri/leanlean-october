@@ -32,9 +32,7 @@ theorem williams_last_exit_mono_prod_ae (ν c : ℝ) (hν : 0 < ν)
     (P : Measure BrownianPath) (hP : IsNegativeConditionedBrownianLaw ν P) :
     ∀ᵐ q ∂(brownianMaximumReferenceLaw ν).prod P,
       c ≤ q.1 → negativeLastExitTime q.2 c ≤ negativeLastExitTime q.2 q.1 := by
-  let : IsProbabilityMeasure (brownianMaximumReferenceLaw ν) :=
-    isProbabilityMeasure_brownianMaximumReferenceLaw hν
-  let : IsProbabilityMeasure P := hP.2.1
+  let  := hP.2.1
   have hset : MeasurableSet {q : ℝ × BrownianPath |
       c ≤ q.1 → negativeLastExitTime q.2 c ≤ negativeLastExitTime q.2 q.1} := by
     apply MeasurableSet.imp (measurableSet_le measurable_const measurable_fst)

@@ -29,8 +29,12 @@ variable {P : Measure Ω} {X : Ω → Distr} {M : Ω → Measure ℂ} {Xc : Ω �
 
 namespace BPZLimitData
 
+section
+variable (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+include hd
+
 /-- The difference-quotient kernel is bounded by `Lip(φ)|v|/2` times the weights. -/
-theorem abs_diffKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {Lφ : ℝ≥0} (hLφ : LipschitzWith Lφ φ)
+theorem abs_diffKer_le {Lφ : ℝ≥0} (hLφ : LipschitzWith Lφ φ)
     (v x y : ℂ) :
     |(φ x - φ y) * (k₂ x * k₂ y) * bpzKern v (x - y) / 2| ≤
       (Lφ : ℝ) * ‖v‖ / 2 * (k₂ x * k₂ y) := by
@@ -48,7 +52,7 @@ theorem abs_diffKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {Lφ : ℝ≥
     _ = (Lφ : ℝ) * ‖v‖ / 2 * (k₂ x * k₂ y) := by field_simp
 
 /-- Pathwise: the two antisymmetrized limit terms combine into the difference-quotient kernel. -/
-theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m : Measure ℂ}
+theorem sym_add_mix_eq (v : ℂ) {m : Measure ℂ}
     [IsFiniteMeasure m] (hk₂ : Integrable k₂ m) :
     (∫ x, ∫ y, bpzSymKer φ ρ k₂ (bpzKern v) x y ∂m ∂m) +
         ∫ x, bpzMixTest φ ρ k₂ k₂ (bpzKern v) m x ∂m =
@@ -101,7 +105,7 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
   have hGi : Integrable (fun p : ℂ × ℂ => G p.1 p.2) (m.prod m) :=
     (hprod.const_mul ((Lφ : ℝ) * ‖v‖ / 2)).mono' hGm.aestronglyMeasurable
       (Eventually.of_forall fun p => by
-        rw [Real.norm_eq_abs]; exact hd.abs_diffKer_le hLφ v p.1 p.2)
+        apply hd.abs_diffKer_le <;> assumption)
   -- the mixed term as a double integral and its antisymmetrization
   have hmix : ∫ x, bpzMixTest φ ρ k₂ k₂ (bpzKern v) m x ∂m = ∫ x, ∫ y, F x y ∂m ∂m := rfl
   rw [hmix, bpz_integral_integral_symm (F := F) hFi]
@@ -117,7 +121,7 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
   ring
 
 /-- **The Ward identity in the limit, without the auxiliary cutoff.** -/
-theorem ward_limit_clean (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+theorem ward_limit_clean
     (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ) :
     ∫ ω, (∫ x, k₂ x ∂M ω) ^ (-q) *
         ∫ x, fderiv ℝ (fun x => φ x * kt x) x v * normPlus x ^ (4 + γ ^ 2 * q) ∂M ω ∂P =
@@ -153,6 +157,8 @@ theorem ward_limit_clean (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
         filter_upwards [hgood] with ω hω
         have := hp.hM.1 ω
         rw [hω.2, hd.sym_add_mix_eq v hω.1]
+
+end
 
 end BPZLimitData
 

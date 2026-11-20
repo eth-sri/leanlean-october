@@ -43,9 +43,12 @@ theorem brownianUnitNorm_attained (p : BrownianPath) :
   · exact (p.restrict (Icc 0 (1 : ℝ≥0))).norm_coe_le_norm ⟨t, ht⟩
   · exact (ContinuousMap.norm_le _ (abs_nonneg _)).mpr (fun s => hmax s.2)
 
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (r : ℝ) (hr : 0 < r)
+include hB hr
+
 /-- The terminal Gaussian upper tail has its usual optimized Chernoff bound. -/
-theorem brownian_unit_terminal_tail_le (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (r : ℝ) (hr : 0 < r) :
+theorem brownian_unit_terminal_tail_le :
     P {p | r < p 1} ≤ ENNReal.ofReal (Real.exp (-r ^ 2 / 2)) := by
   have hb := brownian_terminal_event_bound hB.toIsPreBrownianReal 1 (-r) (-r ^ 2)
     {p | r < p 1} (fun p hp => by change r < p 1 at hp; nlinarith)
@@ -53,8 +56,7 @@ theorem brownian_unit_terminal_tail_le (P : Measure BrownianPath)
   simpa only [NNReal.coe_one, he] using hb
 
 /-- The corresponding lower Gaussian tail has the same bound. -/
-theorem brownian_unit_negative_terminal_tail_le (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (r : ℝ) (hr : 0 < r) :
+theorem brownian_unit_negative_terminal_tail_le :
     P {p | r < -p 1} ≤ ENNReal.ofReal (Real.exp (-r ^ 2 / 2)) := by
   have hb := brownian_terminal_event_bound hB.neg.toIsPreBrownianReal 1 (-r) (-r ^ 2)
     {p | r < -p 1} (fun p hp => by
@@ -65,8 +67,7 @@ theorem brownian_unit_negative_terminal_tail_le (P : Measure BrownianPath)
   simpa only [NNReal.coe_one, he] using hb
 
 /-- Reflection on both signs bounds the absolute unit-window norm tail by four Gaussian tails. -/
-theorem brownianUnitNorm_tail_le (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (r : ℝ) (hr : 0 < r) :
+theorem brownianUnitNorm_tail_le :
     P {p | r ≤ brownianUnitNorm p} ≤
       4 * ENNReal.ofReal (Real.exp (-r ^ 2 / 2)) := by
   have hs : {p : BrownianPath | r ≤ brownianUnitNorm p} ⊆
@@ -95,6 +96,8 @@ theorem brownianUnitNorm_tail_le (P : Measure BrownianPath)
         (mul_le_mul' le_rfl (brownian_unit_negative_terminal_tail_le P hB r hr))
     _ = _ := by ring
 
+end
+
 /-- The same tail bound also covers the zero integer level with probability normalization. -/
 theorem brownianUnitNorm_nat_tail_le (P : Measure BrownianPath)
     (hB : IsBrownianReal (fun t p => p t) P) (n : ℕ) :
@@ -103,8 +106,7 @@ theorem brownianUnitNorm_nat_tail_le (P : Measure BrownianPath)
   by_cases hn : n = 0
   · subst n
     let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
-    have hb : P {p | (0 : ℝ) ≤ brownianUnitNorm p} ≤ 1 := prob_le_one
-    simpa using hb.trans (by norm_num : (1 : ℝ≥0∞) ≤ 4)
+    simpa using prob_le_one.trans (by norm_num : (1 : ℝ≥0∞) ≤ 4)
   · exact brownianUnitNorm_tail_le P hB n (Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn))
 
 /-- A nonnegative real variable can be bounded by its integer lower-level exponential sum. -/
@@ -112,9 +114,9 @@ theorem ennreal_exp_le_integer_levels (x θ : ℝ) (hx : 0 ≤ x) (hθ : 0 ≤ �
     ENNReal.ofReal (Real.exp (θ * x)) ≤
       ∑' n : ℕ, ENNReal.ofReal (Real.exp (θ * ((n : ℝ) + 1))) *
         ({y : ℝ | (n : ℝ) ≤ y}.indicator (fun _ => (1 : ℝ≥0∞)) x) := by
-  let n : ℕ := Nat.floor x
-  have hn : (n : ℝ) ≤ x := Nat.floor_le hx
-  have hn' : x < (n : ℝ) + 1 := Nat.lt_floor_add_one x
+  let n  := Nat.floor x
+  have hn  := Nat.floor_le hx
+  have hn'  := Nat.lt_floor_add_one x
   calc
     _ ≤ ENNReal.ofReal (Real.exp (θ * ((n : ℝ) + 1))) :=
       ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr
@@ -137,10 +139,9 @@ theorem summable_brownianWindow_exponential_series (θ : ℝ) :
   rw [← Real.exp_add]
   apply Real.exp_le_exp.mpr
   have hx : 0 ≤ ((n + N : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hnN : (N : ℝ) ≤ ((n + N : ℕ) : ℝ) := by exact_mod_cast Nat.le_add_left N n
+  have hnN : (N : ℝ) ≤ ((n + N : ℕ) : ℝ) := by simp
   have hm := mul_le_mul_of_nonneg_right (hN.trans hnN) hx
-  have hnn : (n : ℝ) ≤ ((n + N : ℕ) : ℝ) := by exact_mod_cast Nat.le_add_right n N
-  nlinarith
+  grind
 
 /-- The deterministic series constant for a unit-window exponential moment. -/
 noncomputable def brownianWindowExponentialConstant (θ : ℝ) : ℝ≥0∞ :=
@@ -149,13 +150,15 @@ noncomputable def brownianWindowExponentialConstant (θ : ℝ) : ℝ≥0∞ :=
 
 /-- Every such deterministic constant is finite. -/
 theorem brownianWindowExponentialConstant_lt_top (θ : ℝ) :
-    brownianWindowExponentialConstant θ < ⊤ := by
-  exact ENNReal.mul_lt_top (by norm_num)
+    brownianWindowExponentialConstant θ < ⊤ := ENNReal.mul_lt_top (by norm_num)
     (summable_brownianWindow_exponential_series θ).tsum_ofReal_lt_top
 
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
+include hB
+
 /-- The actual unit-window exponential moment has the explicit finite Gaussian-series bound. -/
-theorem brownianUnitNorm_exponential_moment_le (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (θ : ℝ) (hθ : 0 ≤ θ) :
+theorem brownianUnitNorm_exponential_moment_le (θ : ℝ) (hθ : 0 ≤ θ) :
     (∫⁻ p, ENNReal.ofReal (Real.exp (θ * brownianUnitNorm p)) ∂P) ≤
       brownianWindowExponentialConstant θ := by
   let f : ℕ → BrownianPath → ℝ≥0∞ := fun n p =>
@@ -181,17 +184,13 @@ theorem brownianUnitNorm_exponential_moment_le (P : Measure BrownianPath)
       rw [lintegral_indicator
         (measurableSet_le measurable_const continuous_brownianUnitNorm.measurable),
         setLIntegral_const, one_mul]
-      have he : ENNReal.ofReal (Real.exp (θ * ((n : ℝ) + 1))) *
-          (4 * ENNReal.ofReal (Real.exp (-(n : ℝ) ^ 2 / 2))) =
-          4 * ENNReal.ofReal (Real.exp (θ * ((n : ℝ) + 1) - (n : ℝ) ^ 2 / 2)) := by
+      exact (mul_le_mul' le_rfl (brownianUnitNorm_nat_tail_le P hB n)).trans_eq (by
         rw [← mul_assoc, mul_comm _ (4 : ℝ≥0∞), mul_assoc,
-          ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add, sub_eq_add_neg, neg_div]
-      exact (mul_le_mul' le_rfl (brownianUnitNorm_nat_tail_le P hB n)).trans_eq he
+          ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add, sub_eq_add_neg, neg_div])
     _ = _ := by rw [ENNReal.tsum_mul_left]; rfl
 
 /-- A deterministic restart preserves the full continuous Brownian path law. -/
-theorem brownianPath_deterministic_shift_map (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (s : ℝ≥0) :
+theorem brownianPath_deterministic_shift_map (s : ℝ≥0) :
     P.map (brownianShiftPath s) = P := by
   apply brownianPath_measure_eq_of_process_map_eq
   have hm : Measurable (brownianShiftPath s) :=
@@ -202,13 +201,11 @@ theorem brownianPath_deterministic_shift_map (P : Measure BrownianPath)
     (fun t => ContinuousMap.measurable_eval t) s
 
 /-- The unit-increment exponential estimate is uniform over every deterministic block start. -/
-theorem brownianUnitIncrement_exponential_moment_le (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (s : ℝ≥0) (θ : ℝ) (hθ : 0 ≤ θ) :
+theorem brownianUnitIncrement_exponential_moment_le (s : ℝ≥0) (θ : ℝ) (hθ : 0 ≤ θ) :
     (∫⁻ p, ENNReal.ofReal (Real.exp (θ * brownianUnitNorm (brownianShiftPath s p))) ∂P) ≤
       brownianWindowExponentialConstant θ := by
   have hm : Measurable (fun p : BrownianPath =>
-      ENNReal.ofReal (Real.exp (θ * brownianUnitNorm p))) := by
-    exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
+      ENNReal.ofReal (Real.exp (θ * brownianUnitNorm p))) := ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
       (measurable_const.mul continuous_brownianUnitNorm.measurable))
   have hs : Measurable (brownianShiftPath s) :=
     continuous_brownianShiftPath.measurable.comp (measurable_const.prodMk measurable_id)
@@ -219,5 +216,7 @@ theorem brownianUnitIncrement_exponential_moment_le (P : Measure BrownianPath)
   rw [brownianPath_deterministic_shift_map P hB s] at he
   rw [← he]
   exact brownianUnitNorm_exponential_moment_le P hB θ hθ
+
+end
 
 end DOZZ.Proofs

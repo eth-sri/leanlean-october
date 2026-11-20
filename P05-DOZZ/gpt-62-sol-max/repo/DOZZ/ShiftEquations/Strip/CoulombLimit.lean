@@ -16,12 +16,14 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ ε : ℝ)
+  (hγ : 0 < γ) (hγ2 : γ < 2) (hε : 0 < ε ∧ ε < Q γ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+include Ω X hγ hγ2 hε hX hM
+
 /-- The critical two-root Coulomb moment tends to two. A fixed subcritical one-root mass
 controls the error outside the critical half disk. -/
-theorem lastone_coulomb_smallPower_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ ε : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hε : 0 < ε ∧ ε < Q γ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
+theorem lastone_coulomb_smallPower_limit :
     Tendsto (fun ν : ℝ =>
       (∫⁻ ω, coulombMass γ (M ω) ![Q γ - ν, ε] ![0, 1] (Q γ - ε) ^ (ν / γ) ∂P).toReal)
       (𝓝[>] 0) (𝓝 2) := by
@@ -52,8 +54,7 @@ theorem lastone_coulomb_smallPower_limit
       (![1] : Fin 1 → ℂ) (fun _ _ _ => Subsingleton.elim _ _) ![ε] (Q γ - ε) (2 * q₀)
       (by positivity) (horder.trans_le htb) (fun k => by
         fin_cases k
-        change 2 * q₀ < 2 / γ * (Q γ - ε)
-        exact horder.trans_le htinf) (by
+        apply horder.trans_le <;> assumption) (by
           simpa only [sub_sub_cancel] using horder.trans_le hti)
     simpa only [ENNReal.rpow_eq_pow] using hf
   let R : ℝ → Ω → ℝ≥0∞ := fun ν => localSingularMass M (fun _ => 1) 0 γ (Q γ - ν)
@@ -91,23 +92,18 @@ theorem lastone_coulomb_smallPower_limit
     norm_num
   have hk₂T : k₂ ≠ ⊤ := ENNReal.rpow_ne_top_of_ne_zero (by norm_num) (by norm_num)
   have hk₃T : k₃ ≠ ⊤ := ENNReal.rpow_ne_top_of_ne_zero (by norm_num) (by norm_num)
-  have hbounds : ∀ᶠ ν in 𝓝[>] 0, ∀ᵐ ω ∂P,
-      k₁ * R ν ω ≤ C ν ω ∧ C ν ω ≤ k₂ * R ν ω + k₃ * U ω := by
-    filter_upwards [hsmall] with ν hν
-    filter_upwards [equatorGFF_GMC_origin_null_ae P X hX γ hγ hγ2 M hM] with ω hω
-    exact lastone_coulombMass_bounds γ (Q γ - ν) ε (Q γ - ε)
-      (mul_pos hγ (by linarith)) (mul_nonneg hγ.le hε.1.le)
-      (mul_le_mul_of_nonneg_left (by linarith) hγ.le) (M ω) hω
   exact lastone_mass_comparison_limit P R C U hR hU (𝓝[>] 0) (fun ν => ν / γ)
     he hepos k₁ k₂ k₃ hk₁0 hk₁T hk₂0 hk₂T hk₃T q₀ 2 hq₀ hq₀1 D hD hRi hUp
-    (lastone_origin_moment_finite P X M γ hγ hγ2 hX hM) hbounds
+    (lastone_origin_moment_finite P X M γ hγ hγ2 hX hM) (by
+    filter_upwards [hsmall] with ν hν
+    filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0] with ω hω
+    exact lastone_coulombMass_bounds γ (Q γ - ν) ε (Q γ - ε)
+      (mul_pos hγ (by linarith)) (mul_nonneg hγ.le hε.1.le)
+      (mul_le_mul_of_nonneg_left (by linarith) hγ.le) (M ω) hω)
     (lastone_origin_smallPower_limit P X M γ hγ hγ2 hX hM)
 
 /-- Swapping the finite roots transports the critical Coulomb limit to the rho frame. -/
-theorem lastone_rho_smallPower_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ ε : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hε : 0 < ε ∧ ε < Q γ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
+theorem lastone_rho_smallPower_limit :
     Tendsto (fun ν : ℝ =>
       (∫⁻ ω, rho γ (M ω) ε (Q γ - ν) (Q γ - ε) ^ (ν / γ) ∂P).toReal)
       (𝓝[>] 0) (𝓝 2) := by
@@ -121,5 +117,7 @@ theorem lastone_rho_smallPower_limit
   filter_upwards [gmc_rho_eq_coulombMass_ae P X hX γ hγ hγ2 M hM
     (Q γ - ν) ε (Q γ - ε)] with ω hω
   rw [hω]
+
+end
 
 end DOZZ.Proofs

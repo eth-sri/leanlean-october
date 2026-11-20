@@ -25,37 +25,37 @@ theorem time_rpow_integral (e : ℝ) (he : -1 < e) :
   simpa only [Real.one_rpow, Real.zero_rpow (by linarith only [he] : e + 1 ≠ 0), sub_zero]
     using integral_rpow (a := 0) (b := 1) (Or.inl he)
 
+/-- The bound on the spatial expectation gives a common integrable time majorant. -/
+theorem time_integrand_norm_le_ae (F : ℂ → ℂ) (C e r : ℝ)
+    (hF : ∀ w : ℂ, w ≠ 0 → ‖w‖ ≤ r → ‖F w‖ ≤ C * ‖w‖ ^ e)
+    (z : ℂ) (hz : z ≠ 0) (hzr : ‖z‖ ≤ r) :
+    ∀ᵐ t ∂volume.restrict (Icc (0 : ℝ) 1),
+      ‖(1 - t : ℝ) * F ((t : ℂ) * z)‖ ≤ (C * ‖z‖ ^ e) * t ^ e := by
+  filter_upwards [ae_restrict_mem measurableSet_Icc, ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
+  have htz : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
+    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
+  have htr : ‖(t : ℂ) * z‖ ≤ r := by
+    rw [htz]
+    exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hzr
+  have hfn := hF ((t : ℂ) * z) (mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz) htr
+  rw [htz, Real.mul_rpow ht.1 (norm_nonneg _)] at hfn
+  rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (sub_nonneg.mpr ht.2)]
+  calc
+    (1 - t) * ‖F ((t : ℂ) * z)‖ ≤ ‖F ((t : ℂ) * z)‖ :=
+      mul_le_of_le_one_left (norm_nonneg _) (by linarith only [ht.1])
+    _ ≤ C * (t ^ e * ‖z‖ ^ e) := hfn
+    _ = (C * ‖z‖ ^ e) * t ^ e := by ring
+
 /-- The time integration requires neither continuity nor a value for the integrand at t=0. -/
 theorem time_integral_bound (F : ℂ → ℂ) (C e r : ℝ)
-    (_hC : 0 ≤ C) (he : -1 < e) (_hr : 0 < r)
+    (he : -1 < e)
     (hF : ∀ w : ℂ, w ≠ 0 → ‖w‖ ≤ r → ‖F w‖ ≤ C * ‖w‖ ^ e)
     (z : ℂ) (hz : z ≠ 0) (hzr : ‖z‖ ≤ r) :
     ‖∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) * F ((t : ℂ) * z)‖ ≤
       C * ‖z‖ ^ e / (e + 1) := by
   obtain ⟨hint, hval⟩ := time_rpow_integral e he
-  have hbound : IntegrableOn (fun t : ℝ => (C * ‖z‖ ^ e) * t ^ e) (Icc 0 1) volume :=
-    hint.const_mul _
-  have hae : ∀ᵐ t : ℝ ∂volume, t ≠ 0 := by
-    rw [ae_iff]
-    simpa only [not_not, Set.ofPred_eq_eq_singleton] using (measure_singleton (μ := volume) (0 : ℝ))
-  have hdom : ∀ᵐ t ∂volume.restrict (Icc (0 : ℝ) 1),
-      ‖(1 - t : ℝ) * F ((t : ℂ) * z)‖ ≤ (C * ‖z‖ ^ e) * t ^ e := by
-    filter_upwards [ae_restrict_mem measurableSet_Icc, ae_restrict_of_ae hae] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    have htz : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
-      rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
-    have htr : ‖(t : ℂ) * z‖ ≤ r := by
-      rw [htz]
-      exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hzr
-    have hfn := hF ((t : ℂ) * z) (mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz) htr
-    rw [htz, Real.mul_rpow ht.1 (norm_nonneg _)] at hfn
-    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (sub_nonneg.mpr ht.2)]
-    calc
-      (1 - t) * ‖F ((t : ℂ) * z)‖ ≤ ‖F ((t : ℂ) * z)‖ :=
-        mul_le_of_le_one_left (norm_nonneg _) (by linarith only [ht.1])
-      _ ≤ C * (t ^ e * ‖z‖ ^ e) := hfn
-      _ = (C * ‖z‖ ^ e) * t ^ e := by ring
-  have h := norm_integral_le_of_norm_le hbound hdom
+  have hdom := time_integrand_norm_le_ae F C e r hF z hz hzr
+  have h := norm_integral_le_of_norm_le (hint.const_mul _) hdom
   rw [integral_const_mul, hval] at h
   simpa only [mul_one_div] using h
 

@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Brownian.Lateral.CircleRegularization
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 
 /-!
 # Transporting the local lateral cutoff law
@@ -48,7 +49,7 @@ theorem centeredJointlyGaussian_map_of_ae_eq
   let _ := hZ.1
   refine ⟨(Measure.isProbabilityMeasure_map_iff hπ.aemeasurable).2 inferInstance, fun i => (hW i).aemeasurable, ?_⟩
   intro a
-  have hm : Measurable (fun ξ => ∑ i, a i * W ξ i) :=
+  have hm  :=
     Finset.measurable_sum Finset.univ (fun i _ => (hW i).const_mul (a i))
   have hsum : (fun ω => ∑ i, a i * Z ω i) =ᵐ[P] fun ω => ∑ i, a i * W (π ω) i := by
     filter_upwards [ae_all_iff.2 heq] with ω hω
@@ -58,8 +59,7 @@ theorem centeredJointlyGaussian_map_of_ae_eq
     (MemLp.ae_eq hsum hmem), v, ?_⟩
   rw [Measure.map_map hm hπ]
   change P.map (fun ω => ∑ i, a i * W (π ω) i) = gaussianReal 0 v
-  rw [← Measure.map_congr hsum]
-  exact hlaw
+  rwa [← Measure.map_congr hsum]
 
 /-- Restricting the cutoff ceiling preserves every admissibility clause. -/
 theorem isAdmissibleLogRegularization_smaller_cutoff
@@ -100,10 +100,13 @@ theorem isAdmissibleLogRegularization_smaller_cutoff
     obtain ⟨δ, hδ, hδb⟩ := hb K hK hKU k (hk.trans hε) η hη
     exact ⟨δ, hδ, fun ε hεp hεb => hδb ε hεp (hεb.trans (min_le_min_left δ hε))⟩
 
+section
+variable {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E] (P : Measure Ω) (π : Ω → E)
+  (hπ : Measurable π)
+include hπ
+
 /-- Local mixed second moments are unchanged by reading the field through its image law. -/
 theorem gaussianCovariance_map_of_ae_eq
-    {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
-    (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
     (Y Z : Ω → ℝ) (F G : E → ℝ) (hF : Measurable F) (hG : Measurable G)
     (hY : Y =ᵐ[P] F ∘ π) (hZ : Z =ᵐ[P] G ∘ π) :
     gaussianCovariance (P.map π) F G = gaussianCovariance P Y Z := by
@@ -118,8 +121,6 @@ theorem gaussianCovariance_map_of_ae_eq
 /-- Admissibility passes to an image law when the image field agrees with the original
 field on the local chart and is extended by zero off that chart. -/
 theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
-    {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
-    (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
     (Y : Ω → ℝ → ℂ → ℝ) (F : E → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
@@ -131,10 +132,7 @@ theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
   have hm (ε : ℝ) (x : ℂ) : Measurable (fun ξ => F ξ ε x) :=
     (hF ε).comp (measurable_id.prodMk measurable_const)
   have hcov (ε δ : ℝ) (hεp : 0 < ε) (hεb : ε ≤ ε₀) (hδp : 0 < δ) (hδb : δ ≤ ε₀)
-      (x y : ℂ) (hx : x ∈ U) (hy : y ∈ U) :
-      gaussianCovariance (P.map π) (fun ξ => F ξ ε x) (fun ξ => F ξ δ y) =
-        gaussianCovariance P (fun ω => Y ω ε x) (fun ω => Y ω δ y) :=
-    gaussianCovariance_map_of_ae_eq P π hπ _ _ _ _ (hm ε x) (hm δ y)
+      (x y : ℂ) (hx : x ∈ U) (hy : y ∈ U) := gaussianCovariance_map_of_ae_eq P π hπ _ _ _ _ (hm ε x) (hm δ y)
       (heq ε hεp hεb x hx) (heq δ hδp hδb y hy)
   refine {
     measurableAtScale := hF
@@ -164,7 +162,7 @@ theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
     refine ⟨C, hC, ?_⟩
     intro ε δ hεp hεb hδp hδb x hx y hy
     rw [hcov ε δ hεp hεb hδp hδb x y (hKU hx) (hKU hy)]
-    exact hb ε δ hεp hεb hδp hδb x hx y hy
+    apply hb <;> assumption
   · intro K hK hKU
     obtain ⟨C, hC, hb⟩ := hY.coarseVarianceBound K hK hKU
     refine ⟨C, hC, ?_⟩
@@ -176,7 +174,7 @@ theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
     refine ⟨C, hC, ?_⟩
     intro k hk ε hεp hεb x hx
     rw [hcov _ ε (Real.exp_pos _) hk hεp (hεb.trans hk) x x (hKU hx) (hKU hx)]
-    exact hb k hk ε hεp hεb x hx
+    apply hb <;> assumption
   · obtain ⟨H, hH, hb⟩ := hY.offDiagonalLimit
     refine ⟨H, hH, fun K hK hKU s hs η hη => ?_⟩
     obtain ⟨δ, hδ, hδb⟩ := hb K hK hKU s hs η hη
@@ -184,14 +182,16 @@ theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
     intro ε ε' hεp hεb hε'p hε'b x hx y hy hxy
     rw [hcov ε ε' hεp (hεb.trans (min_le_right _ _)) hε'p
       (hε'b.trans (min_le_right _ _)) x y (hKU hx) (hKU hy)]
-    exact hδb ε ε' hεp hεb hε'p hε'b x hx y hy hxy
+    apply hδb <;> assumption
   · obtain ⟨C, hb⟩ := hY.fixedCoarseLimit
     refine ⟨C, fun K hK hKU k hk η hη => ?_⟩
     obtain ⟨δ, hδ, hδb⟩ := hb K hK hKU k hk η hη
     refine ⟨δ, hδ, ?_⟩
     intro ε hεp hεb x hx y hy
     rw [hcov ε _ hεp (hεb.trans (min_le_right _ _)) (Real.exp_pos _) hk x y (hKU hx) (hKU hy)]
-    exact hδb ε hεp hεb x hx y hy
+    apply hδb <;> assumption
+
+end
 
 /-- A fixed default center is needed only to extend local evaluation to the whole plane;
 the universal regularizer is zero outside the chart. -/
@@ -229,26 +229,27 @@ noncomputable def originLateralUniversalRegularization (ρ : ℝ) (hρ : 0 < ρ)
     f (originLateralChartCenter ρ hρ x,
       (Real.log (1 / ε) - originLateralCutoffBaseTime ρ).toNNReal) else 0
 
+section
+variable (ρ : ℝ) (hρ : 0 < ρ)
+
 /-- Universal evaluation is jointly measurable at every radius. -/
-theorem originLateralUniversalRegularization_measurableAtScale (ρ : ℝ) (hρ : 0 < ρ) (ε : ℝ) :
+theorem originLateralUniversalRegularization_measurableAtScale (ε : ℝ) :
     Measurable (fun q : C(OriginLateralCutoffDomain ρ, ℝ) × ℂ =>
       originLateralUniversalRegularization ρ hρ q.1 ε q.2) := by
   classical
-  have hm : Measurable (fun q : C(OriginLateralCutoffDomain ρ, ℝ) × ℂ =>
-      q.1 (originLateralChartCenter ρ hρ q.2,
-        (Real.log (1 / ε) - originLateralCutoffBaseTime ρ).toNNReal)) :=
-    continuous_eval.measurable.comp
+  exact (continuous_eval.measurable.comp
       (measurable_fst.prodMk ((measurable_originLateralChartCenter ρ hρ).comp
-        measurable_snd |>.prodMk measurable_const))
-  exact hm.ite ((isOpen_originLateralChart ρ).measurableSet.preimage measurable_snd)
+        measurable_snd |>.prodMk measurable_const))).ite ((isOpen_originLateralChart ρ).measurableSet.preimage measurable_snd)
     measurable_const
 
 /-- Off-chart evaluation is exactly zero. -/
-theorem originLateralUniversalRegularization_zero (ρ : ℝ) (hρ : 0 < ρ)
+theorem originLateralUniversalRegularization_zero
     (f : C(OriginLateralCutoffDomain ρ, ℝ)) (ε : ℝ) (x : ℂ)
     (hx : x ∉ originLateralChart ρ) : originLateralUniversalRegularization ρ hρ f ε x = 0 := by
   classical
   simp only [originLateralUniversalRegularization, hx, ite_false]
+
+end
 
 /-- Below the base cutoff the logarithmic time used by universal evaluation is
 nonnegative, and hence is not altered by the `toNNReal` coordinate. -/
@@ -260,10 +261,12 @@ theorem originLateralUniversal_time_nonneg (ρ ε : ℝ) (hε : 0 < ε)
   rw [one_div, Real.log_inv]
   linarith only [h]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- On the common continuity event the universal path evaluation reproduces every
 local circle cutoff below its base ceiling. -/
-theorem originLateralUniversalRegularization_comp_ae
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
+theorem originLateralUniversalRegularization_comp_ae (Xc : Ω → ℂ → ℝ → ℝ)
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (ρ : ℝ) (hρ : 0 < ρ)
     (π : Ω → C(OriginLateralCutoffDomain ρ, ℝ))
@@ -284,11 +287,8 @@ theorem originLateralUniversalRegularization_comp_ae
 /-- The law of the packed local cutoff field carries the same admissible logarithmic
 regularizer. Its chaos can therefore be constructed as a measurable cutoff-path functional. -/
 theorem originLateralUniversalRegularization_admissible
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (ρ : ℝ) (hρ : 0 < ρ)
     (π : Ω → C(OriginLateralCutoffDomain ρ, ℝ)) (hπm : Measurable π)
     (hπ : π =ᵐ[P] originLateralCutoffPath Xc ρ) :
@@ -299,14 +299,16 @@ theorem originLateralUniversalRegularization_admissible
   have hY := isAdmissibleLogRegularization_smaller_cutoff P (originLateralChart ρ)
     originLateralPlaneDensity (min ρ 1) (Real.exp (-originLateralCutoffBaseTime ρ))
     (originLateralCircleRegularization Xc ρ)
-    (originLateralCircleRegularization_admissible P X Xc hX hc hm ρ hρ) (Real.exp_pos _) hceil
+    (originLateralCircleRegularization_admissible P X Xc hX hcircle.isCircleAverage hcircle.measurable ρ hρ) (Real.exp_pos _) hceil
   apply isAdmissibleLogRegularization_map_of_chart_ae_eq P π hπm
     (originLateralChart ρ) originLateralPlaneDensity _ _ _ hY
     (originLateralUniversalRegularization_measurableAtScale ρ hρ)
     (originLateralUniversalRegularization_zero ρ hρ)
   intro ε hε hεb x hx
-  exact (originLateralUniversalRegularization_comp_ae P Xc hcont ρ hρ π hπ).mono
+  exact (originLateralUniversalRegularization_comp_ae P Xc hcircle.continuous_ae ρ hρ π hπ).mono
     (fun ω hω => (hω ε hε hεb x hx).symm)
+
+end
 
 /-- Convergence in probability on an image space pulls back to the original space. The
 outer-measure bound works even before measurable versions of the scalar limit are chosen. -/
@@ -342,9 +344,7 @@ theorem isAdmissibleGMCVersion_map_pullback
     (fun ξ => ∫ x, f x ∂N ξ) (hN.2.2.2 f hfc hfU)
   have hRef : ∀ᵐ x ∂logRegularizationReference U dens, x ∈ U :=
     (withDensity_absolutelyContinuous (volume.restrict U) _).ae_le (ae_restrict_mem hU.measurableSet)
-  have hcoarse : ∀ᶠ r : ℝ in atTop,
-      (fun ω => regularizedLogChaosTestMass (P.map π) U dens F γ r (π ω) f) =ᵐ[P]
-        fun ω => regularizedLogChaosTestMass P U dens Y γ r ω f := by
+  exact TendstoInMeasure.congr' (by
     filter_upwards [eventually_ge_atTop (-Real.log ε₀)] with r hr
     have hcut : Real.exp (-r) ≤ ε₀ := by
       calc Real.exp (-r) ≤ Real.exp (Real.log ε₀) :=
@@ -363,8 +363,7 @@ theorem isAdmissibleGMCVersion_map_pullback
     unfold regularizedLogChaosTestMass
     apply integral_congr_ae
     filter_upwards [hRef] with x hx
-    rw [hv x hx, hω _ (Real.exp_pos _) hcut x hx]
-  exact TendstoInMeasure.congr' hcoarse EventuallyEq.rfl hconv
+    rw [hv x hx, hω _ (Real.exp_pos _) hcut x hx]) EventuallyEq.rfl hconv
 
 
 /-- Convergence in probability for every fixed parameter integrates to convergence on a
@@ -380,12 +379,11 @@ theorem tendstoInMeasure_prod_of_sections
   let B : ℝ → Set (A × E) := fun r => {p | ε ≤ edist (f r p.1 p.2) (g p.1 p.2)}
   have hB (r : ℝ) : MeasurableSet (B r) :=
     measurableSet_le measurable_const ((hf r).edist hg)
-  let H : ℝ → A → ℝ≥0∞ := fun r a => ν (Prod.mk a ⁻¹' B r)
+  let H  := fun r a => ν (Prod.mk a ⁻¹' B r)
   have hHm (r : ℝ) : Measurable (H r) := measurable_measure_prodMk_left (hB r)
-  have hlim : ∀ᵐ a ∂μ, Tendsto (fun r => H r a) atTop (𝓝 0) :=
+  have hlim  :=
     ae_of_all μ (fun a => hconv a ε hε)
-  have hbound : ∀ᶠ r : ℝ in atTop, ∀ᵐ a ∂μ, H r a ≤ 1 := by
-    exact Eventually.of_forall (fun r => ae_of_all μ (fun a =>
+  have hbound : ∀ᶠ r : ℝ in atTop, ∀ᵐ a ∂μ, H r a ≤ 1 := Eventually.of_forall (fun r => ae_of_all μ (fun a =>
       (measure_mono (Set.subset_univ _)).trans_eq (measure_univ : ν univ = 1)))
   have ht := tendsto_lintegral_filter_of_dominated_convergence (fun _ : A => (1 : ℝ≥0∞))
     (Eventually.of_forall hHm) hbound (by simp) hlim

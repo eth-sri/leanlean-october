@@ -26,8 +26,8 @@ theorem copied_multiplier_error_mass_le
       ENNReal.ofReal ((derivBound+supBound*(pinCorrectionEnvelope z γ N Nbar+4))*
         Real.exp (pinCorrectionEnvelope z γ N Nbar+4)) *
           weightedGmcBallMass γ μ (α-1/γ) 0 ρ := by
-  have hd : 0 ≤ derivBound := hFamily.2.2.1
-  have hs : 0 ≤ supBound := hFamily.2.1
+  have hd  := hFamily.2.2.1
+  have hs  := hFamily.2.1
   have hD : 0 ≤ pinCorrectionEnvelope z γ N Nbar := by
     unfold pinCorrectionEnvelope
     exact add_nonneg (mul_nonneg

@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.FourPoint.Reflected.SourceBufferExpectation
-public import DOZZ.FourPoint.Reflected.BufferFinite
+public import DOZZ.FourPoint.Reflected.BufferRate
 /-! The literal full source and separated inverse moments differ by a proved little-o. -/
 @[expose] public section
 open MeasureTheory Set Filter Topology
@@ -27,10 +27,8 @@ theorem reflected_source_buffer_inverse_littleO {Ω : Type*} [MeasurableSpace Ω
   let E := fun z : ℂ => (∫⁻ ω, (∫⁻ x in {x : ℂ | Real.exp (-h)*‖z‖ ≤ ‖x‖ ∧ ‖x‖ < ‖z‖^(1-ξ)},
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω)*
       gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-(p+1)) ∂P).toReal
-  have hE := reflected_spatial_buffer_first_order_littleO P X M γ α₁ α₂ α₃ ξ h
+  obtain ⟨hE, hEf⟩ := reflected_spatial_buffer_first_order P X M γ α₁ α₂ α₃ ξ h
     hγ hγ₂ hα₁ hreflect hs hξ hξ₁ hnear hfreeze hX hM
-  have hEf := reflected_spatial_buffer_first_order_eventually_finite P X M γ α₁ α₂ α₃ ξ h
-    hγ hγ₂ hα₁ hreflect hs hξ hξ₁ hX hM
   have hb : ∀ᶠ z : ℂ in 𝓝[≠] 0,
       |gammaHalfMoment P M γ α₁ α₂ α₃ p z-
         (reflected_source_separatedMoment P M γ α₁ α₂ α₃ z (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)) p).toReal| ≤ p*E z := by

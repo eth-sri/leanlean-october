@@ -19,9 +19,7 @@ theorem mass_interpolation_bound (A I : ℝ≥0∞) (p r : ℝ)
     (hp : 0 ≤ p) (hr : 0 < r) (hr2 : r ≤ 2) (hA : A ≤ I) :
     A ^ 2 * I ^ (-p - 2) ≤ A ^ r * I ^ (-p - r) := by
   by_cases hA0 : A = 0
-  · simp only [hA0, zero_pow (by norm_num : (2 : ℕ) ≠ 0), ENNReal.zero_rpow_of_pos hr,
-      zero_mul]
-    exact le_rfl
+  simp_all
   by_cases hI0 : I = 0
   · exact False.elim (hA0 (le_zero_iff.mp (hI0 ▸ hA)))
   by_cases hItop : I = ⊤

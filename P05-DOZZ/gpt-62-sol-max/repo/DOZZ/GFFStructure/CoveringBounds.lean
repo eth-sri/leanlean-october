@@ -58,7 +58,7 @@ lemma Metric.IsSeparated.disjoint_closedBall {E : Type*} [PseudoEMetricSpace E] 
   calc
   edist x y ≤ edist x z + edist y z := edist_triangle_right x y z
   _ ≤ ε / 2 + ε / 2 := by grw [Metric.mem_closedEBall'.1 hz1, Metric.mem_closedEBall'.1 hz2]
-  _ < edist x y := by rwa [ENNReal.add_halves]
+  _ < edist x y := by simpa
 
 @[simp]
 lemma Metric.nonempty_closedEBall {E : Type*} [PseudoEMetricSpace E] {x : E} {r : ℝ≥0∞} :
@@ -80,12 +80,10 @@ lemma Metric.closedEBall_add_closedEBall {E : Type*} [SeminormedAddCommGroup E] 
 
 end
 section
-lemma zero_mem_parallelepiped {ι E : Type*} [Fintype ι] [AddCommGroup E] [Module ℝ E] {v : ι → E} :
-    0 ∈ parallelepiped v := ⟨0, by simp, by simp⟩
 
 @[simp]
 lemma nonempty_parallelepiped {ι E : Type*} [Fintype ι] [AddCommGroup E] [Module ℝ E] {v : ι → E} :
-    (parallelepiped v).Nonempty := ⟨0, zero_mem_parallelepiped⟩
+    (parallelepiped v).Nonempty := ⟨0, (⟨0, by simp, by simp⟩)⟩
 
 @[simp, nontriviality]
 lemma volume_of_nonempty_of_subsingleton {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
@@ -113,7 +111,7 @@ lemma InnerProductSpace.volume_closedBall_div' {E : Type*} [NormedAddCommGroup E
     volume (Metric.closedEBall x r) / volume (Metric.closedEBall y s) =
       (r / s) ^ (Module.finrank ℝ E) := by
   nontriviality E
-  have hdim : Module.finrank ℝ E ≠ 0 := (Module.finrank_pos (R := ℝ) (M := E)).ne'
+  have hdim  := (Module.finrank_pos (R := ℝ) (M := E)).ne'
   obtain rfl | hr := eq_top_or_lt_top r <;> obtain rfl | hs := eq_top_or_lt_top s
   · simp [hdim]
   · lift s to ℝ≥0 using hs.ne
@@ -277,7 +275,7 @@ lemma coveringNumber_closedBall_le (ε : ℝ≥0) (x : E) (r : ℝ≥0) :
   · simp only [Module.finrank_zero_of_subsingleton, pow_zero]
     norm_cast
     grw [coveringNumber_le_encard_self, Set.encard_le_one_iff]
-    exact fun a b _ _ ↦ Subsingleton.allEq a b
+    simp
   obtain rfl | hr := eq_zero_or_pos r
   · simp
   obtain rfl | hε' := eq_zero_or_pos ε
@@ -304,7 +302,7 @@ lemma HasBoundedCoveringNumber.ediam_le
     rw [Set.nonempty_iff_ne_empty]
     rintro rfl
     simp at h0
-  have hε : ((Metric.ediam A).toNNReal : ℝ≥0∞) = Metric.ediam A :=
+  have hε  :=
     ENNReal.coe_toNNReal h.ediam_lt_top.ne
   have h1 : 1 ≤ c * (Metric.ediam A)⁻¹ ^ d := by
     refine le_trans ?_ (hε ▸ h.coveringNumber_le (Metric.ediam A).toNNReal hε.le)
@@ -336,14 +334,14 @@ theorem hasCoveringExponent_closedBall {E : Type*} [NormedAddCommGroup E]
     [MeasurableSpace E] [BorelSpace E] (x : E) (r : ℝ≥0) (hr : 0 < r) :
     Metric.HasCoveringExponent (Metric.closedEBall x r)
       ((4*r : ℝ≥0∞) ^ (Module.finrank ℝ E)) (Module.finrank ℝ E) := by
-  have hdim : Module.finrank ℝ E ≠ 0 := (Module.finrank_pos (R := ℝ) (M := E)).ne'
+  have hdim  := (Module.finrank_pos (R := ℝ) (M := E)).ne'
   constructor
   · exact lt_of_le_of_lt Metric.ediam_closedEBall_le (by finiteness)
   · intro ε hε
     obtain rfl | hεpos := eq_zero_or_pos ε
     · simp [hdim, hr.ne']
     have hdiam : Metric.ediam (Metric.closedEBall x r) ≤ 2*r := Metric.ediam_closedEBall_le
-    have hεle : (ε : ℝ≥0∞) ≤ 2*r := hε.trans hdiam
+    have hεle  := hε.trans hdiam
     have hrat : (1 : ℝ≥0∞) ≤ 2*r/ε := by
       rw [ENNReal.le_div_iff_mul_le]
       · simpa using hεle
@@ -372,8 +370,7 @@ theorem isCoverWithBoundedCoveringNumber_balls (E : Type*) [NormedAddCommGroup E
     finiteness
   · intro n
     exact_mod_cast Module.finrank_pos (R := ℝ) (M := E)
-  · intro n
-    exact Metric.isOpen_ball
+  simp
   · intro n
     exact (isCompact_closedBall (0 : E) ((n : ℝ)+1)).totallyBounded.subset
       Metric.ball_subset_closedBall
@@ -382,13 +379,9 @@ theorem isCoverWithBoundedCoveringNumber_balls (E : Type*) [NormedAddCommGroup E
     simp only [Metric.closedEBall_coe, NNReal.coe_add, NNReal.coe_natCast, NNReal.coe_one] at hcl
     have hs := Metric.HasCoveringExponent.subset hcl (Metric.ball_subset_closedBall
       (x := (0 : E)) (ε := ((n : ℝ)+1))) (Nat.cast_nonneg (Module.finrank ℝ E))
-    simpa only [Metric.closedEBall_coe, NNReal.coe_add, NNReal.coe_natCast, NNReal.coe_one,
-      ENNReal.rpow_natCast, ENNReal.coe_add, ENNReal.coe_natCast, ENNReal.coe_one] using hs
+    simp_all
   · intro n m hnm
     exact Metric.ball_subset_ball (add_le_add_left (Nat.cast_le.mpr hnm) 1)
-  · intro x _
-    obtain ⟨n, hn⟩ := exists_nat_gt ‖x‖
-    refine Set.mem_iUnion.mpr ⟨n, ?_⟩
-    simpa only [Metric.mem_ball, dist_zero_right] using hn.trans (lt_add_one _)
+  norm_num
 
 end DOZZ.Proofs

@@ -52,8 +52,11 @@ theorem tripleFirst_ofReal (t v w : ℝ) :
   funext i
   fin_cases i <;> simp [tripleFirst, complexifyNCharges]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- **The unit-volume structure constant at the zero mode** is `2/γ`. -/
-theorem unitVolumeStructureConstant_zeroMode {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem unitVolumeStructureConstant_zeroMode
     [IsProbabilityMeasure P] (M : Ω → Measure ℂ) {γ α₁ α₂ α₃ : ℝ}
     (hs : sExp γ α₁ α₂ α₃ = 0) : unitVolumeStructureConstant P M γ α₁ α₂ α₃ = 2 / γ := by
   unfold unitVolumeStructureConstant
@@ -61,7 +64,7 @@ theorem unitVolumeStructureConstant_zeroMode {Ω : Type*} [MeasurableSpace Ω] (
   simp
 
 /-- The structure constant is `μ^{-s} Γ(s) C̄`. -/
-theorem structureConstant_eq_mul_unitVolume {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem structureConstant_eq_mul_unitVolume
     (M : Ω → Measure ℂ) (γ μ α₁ α₂ α₃ : ℝ) :
     structureConstant P M γ μ α₁ α₂ α₃ =
       μ ^ (-sExp γ α₁ α₂ α₃) * Real.Gamma (sExp γ α₁ α₂ α₃) *
@@ -70,7 +73,7 @@ theorem structureConstant_eq_mul_unitVolume {Ω : Type*} [MeasurableSpace Ω] (P
   ring
 
 /-- For `s > 0`, `C̄ = μ^s Γ(s)⁻¹ C` as complex numbers. -/
-theorem unitVolume_eq_normalized {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem unitVolume_eq_normalized
     (M : Ω → Measure ℂ) {γ μ α₁ α₂ α₃ : ℝ} (hμ : 0 < μ) (hs : 0 < sExp γ α₁ α₂ α₃) :
     (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ) =
       ((μ : ℂ) ^ (sExp γ α₁ α₂ α₃ : ℂ) / Complex.Gamma (sExp γ α₁ α₂ α₃)) *
@@ -92,6 +95,8 @@ theorem unitVolume_eq_normalized {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
   rw [hreal, Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_cpow hμ.le,
     Complex.Gamma_ofReal]
 
+end
+
 /-- The slice `(t, α₂, α₃)` lies in the extended domain for `|α₂ - α₃| < t < Q`. -/
 theorem extendedSeiberg3_slice {γ η α₂ α₃ t : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hη : 0 < η ∧ Q γ - 2 * η > γ) (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
@@ -99,9 +104,7 @@ theorem extendedSeiberg3_slice {γ η α₂ α₃ t : ℝ} (hγ : 0 < γ) (hγ2 
     ExtendedSeiberg3 γ t α₂ α₃ := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hQ2 : 2 * Q γ = 4 / γ + γ := by rw [hQ]; ring
-  have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+  have hγh := half_gamma_lt_two_div hγ hγ2
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
   have hm1 := le_max_left (α₂ - α₃) (α₃ - α₂)
   have hm2 := le_max_right (α₂ - α₃) (α₃ - α₂)
@@ -126,7 +129,7 @@ theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hQη : 2 * η < Q γ := by linarith
   -- the holomorphic extension along the line `z ↦ (z, α₂, α₃)`
-  obtain ⟨V₃, hV₃, hV₃mem, f₃, hf₃, hf₃eq⟩ :=
+  obtain ⟨V₃, f₃, hV₃, hV₃mem, hf₃, hf₃eq⟩ :=
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   set L₀ : ℝ := max (α₂ - α₃) (α₃ - α₂) with hL₀
   have hL₀η : L₀ < 2 * η := by

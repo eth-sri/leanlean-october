@@ -13,6 +13,7 @@ import DOZZ.ShiftEquations.Rbar.Multiplier
 import DOZZ.ShiftEquations.Shift.FirstShift
 import DOZZ.Hypergeom.ODE.SlitPlaneGluing
 import DOZZ.Complex.Basic
+public import DOZZ.ShiftEquations.Representatives
 
 /-!
 # The reflected shift and gluing from the two first shifts and the two γ/2 diagonal formulas
@@ -45,24 +46,8 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
     (α₂ α₃ : ℝ)
     (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
     (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ)
-    (hFirstShift : ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-      IsSourceLateralProjection P X γ M Z ∧
-        (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-          ∃ h : ℝ, 0 < h ∧ ∃ R : ℂ → ℂ,
-            MeromorphicOn R {z | |z.im| < h} ∧
-            (∀ α : ℝ, γ / 2 < α → α < Q γ → R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-            ∀ᶠ z in codiscrete ℂ,
-              R (z - γ / 2) =
-                -(μ * Real.pi : ℂ) * R z /
-                  (lFun (-((γ : ℂ) ^ 2) / 4) *
-                    lFun ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4) *
-                    lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)))
-    (hFirstStrip : ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ,
-      MeromorphicOn C {z | |z.im| < h} ∧
-      (∀ α : ℝ, 2 * η < α → α < Q γ → C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-      ∀ᶠ z in codiscrete ℂ,
-        C (z + γ / 2) =
-          -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) * C (z - γ / 2))
+    (hFirstShift : HasFirstReflectionShift P X M γ μ)
+    (hFirstStrip : HasFirstStructureShift P M γ μ η α₂ α₃)
     (hDiagonal : ∀ {H : ℂ → ℂ → ℂ → ℂ → ℂ}, IsGaussHypergeometricFamily H → ∀ α₁ : ℝ,
       α₁ < Q γ → 2 * Q γ + γ / 2 < α₁ + α₂ + α₃ →
       let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
@@ -91,27 +76,7 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
                 reflectionR P γ μ α₁ (B α₁) Z *
                   structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ *
                     ‖gaussFPlus H a b c z‖ ^ 2) :
-    ∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) =
-                  (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) =
-                  (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)) := by
+    HasGluedRepresentatives P X M γ μ η α₂ α₃ := by
   obtain ⟨hη0, hηγ⟩ := hη
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have h2γ : γ / 16 < 2 / γ := by
@@ -129,8 +94,7 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
   -- the reflected shift at real charges near `Q`
   have hreal : ∀ α₁ : ℝ, Q γ - γ / 16 < α₁ → α₁ < Q γ →
       R ((α₁ : ℂ) + γ / 2 - γ / 2) = -(μ * Real.pi : ℂ) * R ((α₁ : ℂ) + γ / 2) /
-        (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2 - (γ : ℂ) ^ 2 / 4) *
-          lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2)) →
+        (reflectionFirstShiftDenom γ ((α₁ : ℂ) + γ / 2)) →
       R ((α₁ : ℂ) + γ / 2) * C (2 * Q γ - (α₁ : ℂ) - γ / 2) =
         -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) α₁ (α₂ : ℂ) (α₃ : ℂ) *
           C ((α₁ : ℂ) - γ / 2) := by
@@ -141,12 +105,10 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
     have hc := gaussParameterC_half_mem hγ hγ2 h1 h2
     have hP1 := gaussCoefficientRatio_mul_eq_shiftCoeffA_half (α₂ := α₂) (α₃ := α₃) hγ
       (ne_of_lt hc.2)
-    have hD : lFun (-((γ : ℂ) ^ 2) / 4) *
-        lFun ((γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2 - (γ : ℂ) ^ 2 / 4) *
-        lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2) =
+    have hD : reflectionFirstShiftDenom γ ((α₁ : ℂ) + γ / 2) =
         lFun (-((γ / 2 : ℝ) : ℂ) ^ 2) * lFun (((γ / 2 : ℝ) : ℂ) * α₁) *
           lFun (2 + ((γ / 2 : ℝ) : ℂ) ^ 2 - ((γ / 2 : ℝ) : ℂ) * α₁) := by
-      rw [show -((γ : ℂ) ^ 2) / 4 = -((γ / 2 : ℝ) : ℂ) ^ 2 by push_cast; ring,
+      rw [reflectionFirstShiftDenom, show -((γ : ℂ) ^ 2) / 4 = -((γ / 2 : ℝ) : ℂ) ^ 2 by push_cast; ring,
         show (γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2 - (γ : ℂ) ^ 2 / 4 = ((γ / 2 : ℝ) : ℂ) * α₁ by
           push_cast; ring,
         show (2 : ℂ) + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2 =
@@ -197,8 +159,7 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
     ((x₀ : ℂ) + γ / 2)
   have hshiftpt : ∀ᶠ t : ℝ in 𝓝[≠] x₀,
       R ((t : ℂ) + γ / 2 - γ / 2) = -(μ * Real.pi : ℂ) * R ((t : ℂ) + γ / 2) /
-        (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) * ((t : ℂ) + γ / 2) / 2 - (γ : ℂ) ^ 2 / 4) *
-          lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * ((t : ℂ) + γ / 2) / 2)) :=
+        (reflectionFirstShiftDenom γ ((t : ℂ) + γ / 2)) :=
     (tendsto_ofReal_nhdsNE_slice x₀).eventually
       (ShiftGluing.eventually_comp_add (z := (x₀ : ℂ)) ((γ : ℂ) / 2) hshiftloc)
   set f : ℂ → ℂ := fun z => R (z + ((γ / 2 : ℝ) : ℂ)) * C (((2 * Q γ - γ / 2 : ℝ) : ℂ) - z)
@@ -245,78 +206,42 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
       show z - ((γ / 2 : ℝ) : ℂ) - γ / 2 = z - γ / 2 - γ / 2 by push_cast; ring,
       show z - ((γ / 2 : ℝ) : ℂ) = z - γ / 2 by push_cast; ring] at hz1
     rw [hz1, hz2]
-  -- packaging with cut-offs
-  have himsub : ∀ (z : ℂ) (t : ℝ), |((t : ℂ) - z).im| = |z.im| := fun z t => by simp [abs_neg]
-  have himadd : ∀ (z : ℂ) (t : ℝ), |(z + (t : ℂ)).im| = |z.im| := fun z t => by simp
+  -- Passing to the thinner strip makes the two local identities codiscrete.
   refine ⟨B, Z, hSLP, hRD, h / 2, half_pos hh, cutoffStrip (h / 2) C, cutoffStrip (h / 2) R,
     meromorphicOn_cutoffStrip hCm' (half_le_self hh.le),
-    meromorphicOn_cutoffStrip hRm' (half_le_self hh.le), fun α h1 h2 => ?_, fun α h1 h2 => ?_,
-    ?_, ?_⟩
-  · rw [cutoffStrip_of_lt (by simpa using half_pos hh)]
-    exact hCval α h1 h2
-  · rw [cutoffStrip_of_lt (by simpa using half_pos hh)]
-    exact hRval α h1 h2
-  · rw [eventually_codiscrete_iff_forall_eventually_nhdsNE]
-    intro x
-    have hzero : ∀ z : ℂ, ¬ |z.im| < h / 2 → cutoffStrip (h / 2) C z =
-        cutoffStrip (h / 2) R z * cutoffStrip (h / 2) C (2 * Q γ - z) := fun z hz => by
-      rw [cutoffStrip_of_not_lt hz, cutoffStrip_of_not_lt hz, zero_mul]
-    by_cases hx : |x.im| < h
-    · filter_upwards [hglue x hx] with z hz
-      by_cases hzk : |z.im| < h / 2
-      · have hz' : |(2 * (Q γ : ℂ) - z).im| < h / 2 := by
-          rw [show (2 * (Q γ : ℂ) - z) = ((2 * Q γ : ℝ) : ℂ) - z by push_cast; ring, himsub]
-          exact hzk
-        rw [cutoffStrip_of_lt hzk, cutoffStrip_of_lt hzk, cutoffStrip_of_lt hz']
-        exact hz
-      · exact hzero z hzk
-    · have hopen : IsOpen {w : ℂ | h / 2 < |w.im|} :=
-        isOpen_lt continuous_const Complex.continuous_im.abs
-      have hxo : h / 2 < |x.im| := by
-        have := not_lt.mp hx
-        linarith
-      filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds hxo)] with z hz
-      exact hzero z (not_lt.mpr (le_of_lt hz))
-  · rw [eventually_codiscrete_iff_forall_eventually_nhdsNE]
-    intro x
-    have hzero : ∀ z : ℂ, ¬ |z.im| < h / 2 →
-        cutoffStrip (h / 2) R (z + γ / 2) * cutoffStrip (h / 2) C (2 * Q γ - z - γ / 2) =
-          -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-            cutoffStrip (h / 2) C (z - γ / 2) := fun z hz => by
-      have e1 : ¬ |(z + γ / 2).im| < h / 2 := by
-        rw [show z + (γ : ℂ) / 2 = z + ((γ / 2 : ℝ) : ℂ) by push_cast; ring, himadd]
-        exact hz
-      have e3 : ¬ |(z - γ / 2).im| < h / 2 := by
-        rw [show z - (γ : ℂ) / 2 = z + ((-(γ / 2) : ℝ) : ℂ) by push_cast; ring, himadd]
-        exact hz
-      rw [cutoffStrip_of_not_lt e1, cutoffStrip_of_not_lt e3, zero_mul, mul_zero]
-    by_cases hx : |x.im| < h
-    · filter_upwards [hEq x hx] with z hz
-      by_cases hzk : |z.im| < h / 2
-      · have e1 : |(z + γ / 2).im| < h / 2 := by
-          rw [show z + (γ : ℂ) / 2 = z + ((γ / 2 : ℝ) : ℂ) by push_cast; ring, himadd]
-          exact hzk
-        have e2 : |(2 * (Q γ : ℂ) - z - γ / 2).im| < h / 2 := by
-          rw [show 2 * (Q γ : ℂ) - z - γ / 2 = ((2 * Q γ - γ / 2 : ℝ) : ℂ) - z by push_cast; ring,
-            himsub]
-          exact hzk
-        have e3 : |(z - γ / 2).im| < h / 2 := by
-          rw [show z - (γ : ℂ) / 2 = z + ((-(γ / 2) : ℝ) : ℂ) by push_cast; ring, himadd]
-          exact hzk
-        rw [cutoffStrip_of_lt e1, cutoffStrip_of_lt e2, cutoffStrip_of_lt e3]
-        simp only [hfdef, hgdef] at hz
-        rw [show z + ((γ / 2 : ℝ) : ℂ) = z + γ / 2 by push_cast; ring,
-          show ((2 * Q γ - γ / 2 : ℝ) : ℂ) - z = 2 * Q γ - z - γ / 2 by push_cast; ring,
-          show z + ((-(γ / 2) : ℝ) : ℂ) = z - γ / 2 by push_cast; ring] at hz
-        exact hz
-      · exact hzero z hzk
-    · have hopen : IsOpen {w : ℂ | h / 2 < |w.im|} :=
-        isOpen_lt continuous_const Complex.continuous_im.abs
-      have hxo : h / 2 < |x.im| := by
-        have := not_lt.mp hx
-        linarith
-      filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds hxo)] with z hz
-      exact hzero z (not_lt.mpr (le_of_lt hz))
+    meromorphicOn_cutoffStrip hRm' (half_le_self hh.le), fun α h1 h2 => ?_, fun α h1 h2 => ?_, ?_, ?_⟩
+  · simpa [cutoffStrip, half_pos hh] using hCval α h1 h2
+  · simpa [cutoffStrip, half_pos hh] using hRval α h1 h2
+  · have hout (z : ℂ) (hz : ¬ |z.im| < h / 2) : cutoffStrip (h / 2) C z =
+        cutoffStrip (h / 2) R z * cutoffStrip (h / 2) C (2 * Q γ - z) := by simp [cutoffStrip, hz]
+    refine codiscrete_of_strip (half_lt_self hh) (fun w hw => ?_) (fun z hz => hout z hz.not_gt)
+    filter_upwards [hglue w hw] with z hz
+    by_cases hz' : |z.im| < h / 2
+    · have hi : |(2 * (Q γ : ℂ) - z).im| = |z.im| := by
+        rw [show 2 * (Q γ : ℂ) = ((2 * Q γ : ℝ) : ℂ) by push_cast; ring]
+        simp [abs_neg]
+      simpa [cutoffStrip, hz', hi] using hz
+    · exact hout z hz'
+  · let s : ℝ := γ / 2
+    have hs : (s : ℂ) = γ / 2 := by push_cast [s]; rfl
+    have hT (z : ℂ) : ((2 * Q γ - γ / 2 : ℝ) : ℂ) - z = 2 * Q γ - z - (s : ℂ) := by
+      rw [hs]; push_cast; ring
+    have hU (z : ℂ) : z + ((-(γ / 2) : ℝ) : ℂ) = z - (s : ℂ) := by
+      rw [hs]; push_cast; ring
+    simp only [ReflectedFirstShift, ← hs]
+    refine codiscrete_of_strip (half_lt_self hh) (fun w hw => ?_) (fun z hz => ?_)
+    · filter_upwards [hEq w hw] with z hz
+      by_cases hk : |z.im| < h / 2
+      · simp only [hfdef, hgdef] at hz
+        rw [hT, hU] at hz
+        have hi : |(2 * (Q γ : ℂ) - z - (s : ℂ)).im| = |z.im| := by
+          rw [show 2 * (Q γ : ℂ) = ((2 * Q γ : ℝ) : ℂ) by push_cast; ring]
+          simp [abs_neg]
+        have hS : ((γ / 2 : ℝ) : ℂ) = (s : ℂ) := rfl
+        simp only [hS, ← hs] at hz
+        simpa [cutoffStrip, hk, hi] using hz
+      · simp [cutoffStrip, hk]
+    · simp [cutoffStrip, hz.not_gt]
 
 end DOZZ.Proofs
 

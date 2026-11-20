@@ -54,8 +54,7 @@ theorem truncated_williams_tail_sandwich
       ENNReal.toReal_mono (measure_ne_top _ _) (measure_mono_ae hinc)
     have hu := measureReal_union_le (μ := μ.prod P) E (univ ×ˢ T)
     have ht : (μ.prod P).real (univ ×ˢ T) = P.real T := by
-      rw [measureReal_prod_prod]
-      simp only [Measure.real_def, measure_univ, ENNReal.toReal_one, one_mul]
+      simp
     rw [ht] at hu
     linarith
 

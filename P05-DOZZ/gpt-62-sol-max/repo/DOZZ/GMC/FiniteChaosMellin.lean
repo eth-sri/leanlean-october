@@ -35,12 +35,7 @@ theorem ofReal_rpow_neg_eq_mellin_lintegral
     ring
   have hc : m ^ (q - 1) ≠ 0 := (Real.rpow_pos_of_pos hm _).ne'
   have hGint : IntegrableOn G (Ioi (0 : ℝ)) volume := by
-    have hconst : IntegrableOn (fun t => m ^ (q - 1) • G t)
-        (Ioi (0 : ℝ)) volume := by
-      exact (integrableOn_congr_fun hEq measurableSet_Ioi).mp hscaled
-    change Integrable (fun t => m ^ (q - 1) • G t)
-      (volume.restrict (Ioi (0 : ℝ))) at hconst
-    exact (integrable_smul_iff hc G).mp hconst
+    exact id (fun hconst => (integrable_smul_iff hc G).mp hconst) ((integrableOn_congr_fun hEq measurableSet_Ioi).mp hscaled)
   have hGnonneg : 0 ≤ᵐ[volume.restrict (Ioi (0 : ℝ))] G := by
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
     exact mul_nonneg (Real.rpow_nonneg (le_of_lt ht) _) (Real.exp_nonneg _)
@@ -69,6 +64,34 @@ theorem ofReal_rpow_neg_eq_mellin_lintegral
           rw [ENNReal.ofReal_mul (by positivity)]
     _ = ENNReal.ofReal (1 / Real.Gamma q) *
         ∫⁻ t in Ioi (0 : ℝ), ENNReal.ofReal (G t) ∂volume := by rw [← hlin]
+
+/-- The normalized Gamma kernel represents a negative power even at zero mass, where the
+integral diverges. -/
+theorem rpow_neg_eq_mellin {a : ℝ≥0∞} (ha : a ≠ ∞) {q : ℝ} (hq : 0 < q) :
+    a ^ (-q) = ∫⁻ t in Ioi (0 : ℝ), ENNReal.ofReal (1 / Real.Gamma q) *
+      ENNReal.ofReal (t ^ (q - 1)) * ENNReal.ofReal (Real.exp (-(t * a.toReal))) ∂volume := by
+  have hkernel : ∀ᵐ t ∂volume.restrict (Ioi (0 : ℝ)),
+      ENNReal.ofReal (t ^ (q - 1)) * ENNReal.ofReal (Real.exp (-(t * a.toReal))) =
+      ENNReal.ofReal (t ^ (q - 1) * Real.exp (-(a.toReal * t))) := by
+    filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
+    rw [mul_comm a.toReal, ENNReal.ofReal_mul (Real.rpow_nonneg (le_of_lt ht) _)]
+  simp_rw [mul_assoc]
+  rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, lintegral_congr_ae hkernel]
+  by_cases ha₀ : a = 0
+  · have hdiv : ∫⁻ t in Ioi (0 : ℝ), ENNReal.ofReal (t ^ (q - 1)) ∂volume = ∞ := by
+      by_contra hfin
+      have hint : IntegrableOn (fun t : ℝ => t ^ (q - 1)) (Ioi 0) :=
+        ⟨by fun_prop, (hasFiniteIntegral_iff_ofReal (ae_restrict_mem measurableSet_Ioi |>.mono
+          fun t ht => Real.rpow_nonneg (le_of_lt ht) _)).2 (lt_top_iff_ne_top.mpr hfin)⟩
+      have hone := (integrableOn_Ioi_comp_rpow_iff' (fun _ : ℝ => (1 : ℝ)) hq.ne').mp
+        (by simpa [smul_eq_mul] using hint)
+      have hfinite := (integrable_const_iff_isFiniteMeasure one_ne_zero).mp hone
+      simpa [Measure.restrict_apply_univ, Real.volume_Ioi] using hfinite.measure_univ_lt_top
+    rw [ha₀, ENNReal.zero_rpow_of_neg (neg_lt_zero.mpr hq)]
+    simp [hdiv, ENNReal.mul_top, Real.Gamma_pos_of_pos hq]
+  · nth_rw 1 [← ENNReal.ofReal_toReal ha]
+    rw [ENNReal.ofReal_rpow_of_pos (ENNReal.toReal_pos ha₀ ha)]
+    exact ofReal_rpow_neg_eq_mellin_lintegral (ENNReal.toReal_pos ha₀ ha) hq
 
 
 end DOZZ.Proofs

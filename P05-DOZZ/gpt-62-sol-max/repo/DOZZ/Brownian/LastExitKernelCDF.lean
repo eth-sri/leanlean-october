@@ -8,6 +8,7 @@ public import DOZZ.Brownian.LastExitGaussianTail
 public import DOZZ.Brownian.LastExitKernel
 public import DOZZ.Brownian.ConditionedKernelNormalization
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+public import DOZZ.Brownian.ConditionedKernelAlgebra
 
 /-!
 # The Gaussian boundary flux in the last-exit distribution
@@ -27,22 +28,6 @@ noncomputable def lastExitGaussianKernelCDF (ν c x t : ℝ) : ℝ :=
     Real.exp (2*ν*(c-x)) * brownianHeatTail t (c-x+ν*t) +
     Real.exp (2*ν*c) * brownianHeatTail t (c+x+ν*t)) / conditionedH ν x
 
-private theorem harmonic_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x) :
-    0 < conditionedH ν x := by
-  rw [conditionedH, ite_eq_right hν.ne']
-  exact sub_pos.mpr (Real.exp_lt_one_iff.2 (by nlinarith))
-
-/-- The two drift directions differ by the exact Gaussian exponential factor. -/
-theorem brownianHeatDensity_opposite_drift (ν z t : ℝ) (ht : 0 < t) :
-    Real.exp (2*ν*z) * brownianHeatDensity t (z+ν*t) =
-      brownianHeatDensity t (z-ν*t) := by
-  have hp := brownianHeatDensity_tilt (t := t) (ν := ν) (z := z) ht
-  have hm := brownianHeatDensity_tilt (t := t) (ν := -ν) (z := z) ht
-  rw [show z-(-ν)*t = z+ν*t by ring] at hm
-  rw [← hm, ← hp, ← mul_assoc, ← Real.exp_add]
-  congr 2
-  ring
-
 /-- The avoidance-weighted Doob transition expands into four ordinary Gaussian densities. -/
 theorem conditionedTransition_avoidance_gaussian_expansion (ν c x t y : ℝ)
     (hν : 0 < ν) (hc : 0 < c) (hx : 0 < x) (ht : 0 < t) (hy : c < y) :
@@ -51,7 +36,7 @@ theorem conditionedTransition_avoidance_gaussian_expansion (ν c x t y : ℝ)
         Real.exp (-2*ν*x) * brownianHeatDensity t (y-(-x+ν*t)) -
         Real.exp (2*ν*(c-x)) * brownianHeatDensity t (y-(x-ν*t)) +
         Real.exp (2*ν*c) * brownianHeatDensity t (y-(-x-ν*t))) / conditionedH ν x := by
-  have hy0 : 0 < y := hc.trans hy
+  have hy0  := hc.trans hy
   have hcancel : conditionedPositiveTransitionDensity ν t x y * lastExitAvoidanceFactor ν c y =
       (Real.exp (ν*(y-x)-ν^2*t/2) *
         (brownianHeatDensity t (y-x)-brownianHeatDensity t (y+x)) *
@@ -61,7 +46,7 @@ theorem conditionedTransition_avoidance_gaussian_expansion (ν c x t y : ℝ)
       ite_eq_left hy]
     rw [show conditionedH ν (y-c) = 1-Real.exp (-2*ν*(y-c)) by
       simp only [conditionedH, ite_eq_right hν.ne']]
-    field_simp [(harmonic_pos hν hy0).ne', (harmonic_pos hν hx).ne']
+    field_simp [(conditionedH_pos hν.le hy0).ne', (conditionedH_pos hν.le hx).ne']
   have htilt1 := brownianHeatDensity_tilt (t := t) (ν := ν) (z := y-x) ht
   have htilt2 : Real.exp (ν*(y-x)-ν^2*t/2) * brownianHeatDensity t (y+x) =
       Real.exp (-2*ν*x) * brownianHeatDensity t (y+x-ν*t) := by
@@ -69,37 +54,34 @@ theorem conditionedTransition_avoidance_gaussian_expansion (ν c x t y : ℝ)
       Real.exp_add, mul_assoc, brownianHeatDensity_tilt ht]
   have hcross1 : brownianHeatDensity t (y-x-ν*t) * Real.exp (-2*ν*(y-c)) =
       Real.exp (2*ν*(c-x)) * brownianHeatDensity t (y-x+ν*t) := by
-    rw [← brownianHeatDensity_opposite_drift ν (y-x) t ht]
-    rw [mul_right_comm, ← Real.exp_add]
+    rw [← brownianHeatDensity_opposite_drift ν (y-x) t ht, mul_right_comm, ← Real.exp_add]
     congr 2
     ring
   have hcross2 : Real.exp (-2*ν*x) * brownianHeatDensity t (y+x-ν*t) *
       Real.exp (-2*ν*(y-c)) = Real.exp (2*ν*c) * brownianHeatDensity t (y+x+ν*t) := by
-    rw [← brownianHeatDensity_opposite_drift ν (y+x) t ht]
-    rw [← mul_assoc, ← Real.exp_add]
-    rw [mul_assoc, mul_comm (brownianHeatDensity t (y+x+ν*t)), ← mul_assoc,
-      ← Real.exp_add]
+    rw [← brownianHeatDensity_opposite_drift ν (y+x) t ht, ← mul_assoc, ← Real.exp_add, mul_assoc, mul_comm (brownianHeatDensity t (y+x+ν*t)), ← mul_assoc, ← Real.exp_add]
     congr 2
     ring
   have hk : Real.exp (ν*(y-x)-ν^2*t/2) *
       (brownianHeatDensity t (y-x)-brownianHeatDensity t (y+x)) =
       brownianHeatDensity t (y-x-ν*t)-Real.exp (-2*ν*x)*brownianHeatDensity t (y+x-ν*t) := by
     rw [mul_sub, htilt1, htilt2]
-  rw [hcancel, hk]
-  rw [show (brownianHeatDensity t (y-x-ν*t)-Real.exp (-2*ν*x)*brownianHeatDensity t (y+x-ν*t)) *
-      (1-Real.exp (-2*ν*(y-c))) =
-      brownianHeatDensity t (y-x-ν*t)-Real.exp (-2*ν*x)*brownianHeatDensity t (y+x-ν*t)-
-      brownianHeatDensity t (y-x-ν*t)*Real.exp (-2*ν*(y-c))+
-      Real.exp (-2*ν*x)*brownianHeatDensity t (y+x-ν*t)*Real.exp (-2*ν*(y-c)) by ring,
-    hcross1, hcross2]
+  rw [hcancel, hk, show (brownianHeatDensity t (y-x-ν*t)-Real.exp (-2*ν*x)*brownianHeatDensity t (y+x-ν*t)) *
+        (1-Real.exp (-2*ν*(y-c))) =
+        brownianHeatDensity t (y-x-ν*t)-Real.exp (-2*ν*x)*brownianHeatDensity t (y+x-ν*t)-
+        brownianHeatDensity t (y-x-ν*t)*Real.exp (-2*ν*(y-c))+
+        Real.exp (-2*ν*x)*brownianHeatDensity t (y+x-ν*t)*Real.exp (-2*ν*(y-c)) by ring, hcross1, hcross2]
   simp only [show y-x-ν*t = y-(x+ν*t) by ring,
     show y+x-ν*t = y-(-x+ν*t) by ring,
     show y-x+ν*t = y-(x-ν*t) by ring,
     show y+x+ν*t = y-(-x-ν*t) by ring]
 
+section
+variable (ν c x t : ℝ) (hν : 0 < ν) (hc : 0 < c) (hx : 0 < x) (ht : 0 < t)
+include hν hc hx ht
+
 /-- The Gaussian primitive is the actual avoidance-weighted transition integral. -/
-theorem integral_conditionedTransition_avoidance_eq_gaussianCDF (ν c x t : ℝ)
-    (hν : 0 < ν) (hc : 0 < c) (hx : 0 < x) (ht : 0 < t) :
+theorem integral_conditionedTransition_avoidance_eq_gaussianCDF :
     (∫ y, conditionedPositiveTransitionDensity ν t x y * lastExitAvoidanceFactor ν c y) =
       lastExitGaussianKernelCDF ν c x t := by
   have h1 := (integrable_brownianHeatDensity_sub_const ht (x+ν*t)).integrableOn (s := Ioi c)
@@ -110,12 +92,10 @@ theorem integral_conditionedTransition_avoidance_eq_gaussianCDF (ν c x t : ℝ)
   have h4 := (integrable_brownianHeatDensity_sub_const ht (-x-ν*t)).integrableOn
     (s := Ioi c) |>.const_mul (Real.exp (2*ν*c))
   have h12 : IntegrableOn (fun y => brownianHeatDensity t (y-(x+ν*t)) -
-      Real.exp (-2*ν*x) * brownianHeatDensity t (y-(-x+ν*t))) (Ioi c) := by
-    exact (h1.sub h2).congr (ae_of_all _ fun _ => rfl)
+      Real.exp (-2*ν*x) * brownianHeatDensity t (y-(-x+ν*t))) (Ioi c) := (h1.sub h2).congr (ae_of_all _ fun _ => rfl)
   have h123 : IntegrableOn (fun y => brownianHeatDensity t (y-(x+ν*t)) -
       Real.exp (-2*ν*x) * brownianHeatDensity t (y-(-x+ν*t)) -
-      Real.exp (2*ν*(c-x)) * brownianHeatDensity t (y-(x-ν*t))) (Ioi c) := by
-    exact (h12.sub h3).congr (ae_of_all _ fun _ => rfl)
+      Real.exp (2*ν*(c-x)) * brownianHeatDensity t (y-(x-ν*t))) (Ioi c) := (h12.sub h3).congr (ae_of_all _ fun _ => rfl)
   rw [← setIntegral_eq_integral_of_forall_compl_eq_zero
     (s := Ioi c) (fun y hy => by
       have hy' : ¬ c < y := hy
@@ -140,8 +120,7 @@ theorem integral_conditionedTransition_avoidance_eq_gaussianCDF (ν c x t : ℝ)
     show c-(-x-ν*t) = c+x+ν*t by ring]
 
 /-- The explicit primitive has precisely the last-exit boundary derivative. -/
-theorem hasDerivAt_lastExitGaussianKernelCDF (ν c x t : ℝ)
-    (hν : 0 < ν) (hc : 0 < c) (hx : 0 < x) (ht : 0 < t) :
+theorem hasDerivAt_lastExitGaussianKernelCDF :
     HasDerivAt (lastExitGaussianKernelCDF ν c x)
       (conditionedPositiveTransitionDensity ν t x c * ν / conditionedH ν c) t := by
   have h1 := hasDerivAt_brownianHeatTail_affine (c-x) (-ν) t ht
@@ -174,9 +153,10 @@ theorem hasDerivAt_lastExitGaussianKernelCDF (ν c x t : ℝ)
     simp only [he1, he2, neg_div, sub_neg_eq_add]
     rw [← mul_assoc (Real.exp (2*ν*(c-x))), hcross1,
       ← mul_assoc (Real.exp (2*ν*c)), hcross2]
-    field_simp [(harmonic_pos hν hx).ne', (harmonic_pos hν hc).ne', ht.ne']
+    field_simp [(conditionedH_pos hν.le hx).ne', (conditionedH_pos hν.le hc).ne', ht.ne']
     ring
 
+end
 
 /-- Integrating the boundary density gives the increment of the avoidance kernel CDF on each
 compact interval of positive elapsed times. -/
@@ -188,7 +168,7 @@ theorem integral_lastExit_boundaryDensity_Ioc (ν c x a b : ℝ)
       (fun u => conditionedPositiveTransitionDensity ν u x c * ν / conditionedH ν c)
       (Icc a b) := by
     intro u hu
-    have hu0 : 0 < u := ha.trans_le hu.1
+    have hu0  := ha.trans_le hu.1
     have he : (fun v => conditionedPositiveTransitionDensity ν v x c * ν / conditionedH ν c) =ᶠ[𝓝 u]
         (fun v => Real.exp (ν*(c-x)-ν^2*v/2) *
           (Real.exp (-(c-x)^2/(2*v))/Real.sqrt (2*Real.pi*v) -
@@ -205,16 +185,14 @@ theorem integral_lastExit_boundaryDensity_Ioc (ν c x a b : ℝ)
           conditionedH ν c / conditionedH ν x * ν / conditionedH ν c) u := by
       fun_prop (disch := positivity)
     exact (hf.congr_of_eventuallyEq he).continuousWithinAt
-  have hi : IntervalIntegrable
-      (fun u => conditionedPositiveTransitionDensity ν u x c * ν / conditionedH ν c)
-      volume a b := hcont.intervalIntegrable_of_Icc hab
-  have hd : ∀ u ∈ uIcc a b, HasDerivAt (lastExitGaussianKernelCDF ν c x)
-      (conditionedPositiveTransitionDensity ν u x c * ν / conditionedH ν c) u := by
-    intro u hu
-    rw [uIcc_of_le hab] at hu
-    exact hasDerivAt_lastExitGaussianKernelCDF ν c x u hν hc hx (ha.trans_le hu.1)
-  have he := intervalIntegral.integral_eq_sub_of_hasDerivAt hd hi
-  rwa [intervalIntegral.integral_of_le hab] at he
+  exact Eq.mp
+    (congrArg (fun _a => _a = lastExitGaussianKernelCDF ν c x b - lastExitGaussianKernelCDF ν c x a)
+      (intervalIntegral.integral_of_le hab))
+    (intervalIntegral.integral_eq_sub_of_hasDerivAt
+      (fun u hu =>
+        hasDerivAt_lastExitGaussianKernelCDF ν c x u hν hc hx
+          (LT.lt.trans_le ha (Eq.mp (congrArg (fun _a => u ∈ _a) (uIcc_of_le hab)) hu).left))
+      (ContinuousOn.intervalIntegrable_of_Icc hab hcont))
 
 /-- The same boundary-density increment in absolute time coordinates after a fixed past time. -/
 theorem integral_lastExit_boundaryDensity_shifted_Ioc (ν c x s a b : ℝ)

@@ -79,7 +79,8 @@ theorem separatedTail_cutoff_mixed_moment_uniform
   have hBE : BE < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top
     (ENNReal.mul_lt_top (by norm_num) ENNReal.ofReal_lt_top)
   refine ⟨BE^(1/p)*(BD*BD)^(1/q),
-    separatedTail_mixed_moment_constant_lt_top BE BD BD hBE hBD hBD p q hpq, ?_⟩
+    (ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg (div_nonneg zero_le_one hpq.pos.le) hBE.ne)
+      (ENNReal.rpow_lt_top_of_nonneg (div_nonneg zero_le_one hpq.symm.pos.le) (ENNReal.mul_lt_top hBD hBD).ne)), ?_⟩
   intro z2 hz2 z3 hz3 α2 hα2mem α3 hα3mem δ hδ hδ4
   let c : Fin 2 → ℂ := ![z2,z3]
   let α : Fin 2 → ℝ := ![α2,α3]

@@ -108,14 +108,15 @@ theorem copied_compact_chaos_law
     hgs.trans Metric.ball_subset_closedBall
   have hBc : TendstoInMeasure (P.prod P) B atTop Blim :=
     tendstoInMeasure_mul_same_space _ _ S hS
-      ((translated_copied_pin_weight_test_limit P X Xc hX hc γ hγ hγ2 z hz N hN
-        g hgc hgs').comp ht)
+      (((copied_pin_weight_test_limit P X Xc hX hc
+        (translatedField X Xc z) (fun ω x r => Xc ω (z+x) r-Xc ω z 0)
+        (translated_field_isEquatorGFF P X Xc hX hc z)
+        (translated_field_circleAverage P X Xc hX hc z) γ hγ hγ2 N hN z hz g hgc hgs')).comp ht)
   have hmaps (n : ℕ) : P.map (A n) = (P.prod P).map (B n) :=
     copied_test_cutoff_law P X Xc hX hc hm z hz γ (t n) ρ' hρ'0 (hmargin n) g G hg0 hgρ' hG
   exact map_eq_of_seq_map_eq_of_tendstoInMeasure A B Alim Blim
     (fun n => (hA n).aemeasurable) (fun n => (hB n).aemeasurable)
       (hAc.aemeasurable (fun n => (hA n).aemeasurable))
       (hBc.aemeasurable (fun n => (hB n).aemeasurable)) hmaps hAc hBc
-
 
 end DOZZ.Proofs

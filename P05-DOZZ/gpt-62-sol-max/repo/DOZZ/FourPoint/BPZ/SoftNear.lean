@@ -74,9 +74,8 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
       apply ENNReal.ofReal_le_ofReal
       unfold bpzNearWeight
       rw [ite_eq_left hx]
-      have hxB : x ∈ Metric.closedBall z₀ r₁ := by
-        rw [Metric.mem_closedBall, dist_eq_norm]; linarith
-      exact mul_le_mul_of_nonneg_right (hCB x hxB) (Real.rpow_nonneg (norm_nonneg _) _)
+      exact mul_le_mul_of_nonneg_right (hCB x (by
+        rw [Metric.mem_closedBall, dist_eq_norm]; linarith)) (Real.rpow_nonneg (norm_nonneg _) _)
     · have h0 : f x = 0 := by
         simp only [hf, bpzNearWeight, hx, ↓reduceIte, zero_mul, ENNReal.ofReal_zero]
       rw [h0]; exact zero_le

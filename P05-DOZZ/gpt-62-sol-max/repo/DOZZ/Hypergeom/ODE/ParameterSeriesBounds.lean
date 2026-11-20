@@ -12,6 +12,33 @@ public import DOZZ.Hypergeom.ODE.ParameterSeriesTerms
 
 namespace DOZZ.Proofs
 
+theorem gauss_norm_natCast_add_le {a : ℂ} {R : ℝ} (n : ℕ) (h : ‖a‖ ≤ R) :
+    ‖(n : ℂ) + a‖ ≤ (n : ℝ) + R := by
+  simpa only [Complex.norm_natCast] using (norm_add_le (n : ℂ) a).trans (add_le_add_right h _)
+
+theorem gauss_sub_le_norm_natCast_add {a : ℂ} {R : ℝ} (n : ℕ) (h : ‖a‖ ≤ R) :
+    (n : ℝ) - R ≤ ‖(n : ℂ) + a‖ := by
+  have h' := norm_sub_norm_le (n : ℂ) ((n : ℂ) + a)
+  simp only [Complex.norm_natCast, sub_add_eq_sub_sub, sub_self, zero_sub, norm_neg] at h'
+  linarith
+
+/-- The scalar term multiplier contracts uniformly once the index dominates a compact parameter
+bound and the point lies strictly inside the unit disk. -/
+theorem gaussParameterSeriesRatio_norm_le
+    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ) (R q : ℝ) (hR : 0 ≤ R) (hRn : R < (n : ℝ))
+    (hA : ‖p.1‖ ≤ R) (hB : ‖p.2.1‖ ≤ R) (hC : ‖p.2.2‖ ≤ R)
+    (hRatio : ‖z‖ * ((n : ℝ) + R) ^ 2 /
+        (((n : ℝ) + 1) * ((n : ℝ) - R)) ≤ q) :
+    ‖gaussParameterSeriesRatio p z n‖ ≤ q := by
+  have ha := gauss_norm_natCast_add_le n hA
+  have hb := gauss_norm_natCast_add_le n hB
+  have hc := gauss_sub_le_norm_natCast_add n hC
+  have hpos : 0 < (n : ℝ) - R := sub_pos.mpr hRn
+  refine le_trans ?_ hRatio
+  simp only [gaussParameterSeriesRatio, norm_div, norm_mul]
+  rw [show ‖(n + 1 : ℂ)‖ = (n : ℝ) + 1 by norm_cast, mul_comm ‖z‖, pow_two]
+  gcongr
+
 /-- Once the denominator index dominates all three parameter norms, successive ordinary-series
 terms contract at a rate controlled by the elementary hypergeometric coefficient ratio. -/
 theorem gaussParameterSeriesTerm_norm_succ_le
@@ -23,76 +50,9 @@ theorem gaussParameterSeriesTerm_norm_succ_le
     (hc : ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) :
     ‖gaussParameterSeriesTerm p z (n + 1)‖ ≤
       q * ‖gaussParameterSeriesTerm p z n‖ := by
-  have hn0 : 0 < (n : ℝ) := lt_of_le_of_lt hR hRn
-  have hnc : (n : ℂ) + p.2.2 ≠ 0 := by
-    intro h
-    have hcEq : p.2.2 = -((n : ℂ)) :=
-      eq_neg_iff_add_eq_zero.mpr (by simpa [add_comm] using h)
-    have hnorm : (n : ℝ) = ‖p.2.2‖ := by
-      rw [hcEq, norm_neg, Complex.norm_natCast]
-    linarith
-  have hn1 : (n + 1 : ℂ) ≠ 0 := by
-    exact_mod_cast Nat.succ_ne_zero n
-  have hden : (n + 1 : ℂ) * ((n : ℂ) + p.2.2) ≠ 0 :=
-    mul_ne_zero hn1 hnc
-  have hsolve : gaussParameterSeriesTerm p z (n + 1) =
-      (((n : ℂ) + p.1) * ((n : ℂ) + p.2.1) * z /
-        ((n + 1 : ℂ) * ((n : ℂ) + p.2.2))) *
-        gaussParameterSeriesTerm p z n := by
-    field_simp [hden]
-    simpa [mul_assoc, mul_left_comm, mul_comm] using
-      gaussParameterSeriesTerm_recurrence p z n hc
-  have hAnorm : ‖(n : ℂ) + p.1‖ ≤ (n : ℝ) + R := by
-    calc
-      ‖(n : ℂ) + p.1‖ ≤ ‖(n : ℂ)‖ + ‖p.1‖ := norm_add_le _ _
-      _ ≤ (n : ℝ) + R := by rw [Complex.norm_natCast]; exact add_le_add (by norm_num) hA
-  have hBnorm : ‖(n : ℂ) + p.2.1‖ ≤ (n : ℝ) + R := by
-    calc
-      ‖(n : ℂ) + p.2.1‖ ≤ ‖(n : ℂ)‖ + ‖p.2.1‖ := norm_add_le _ _
-      _ ≤ (n : ℝ) + R := by rw [Complex.norm_natCast]; exact add_le_add (by norm_num) hB
-  have hCnorm : (n : ℝ) - R ≤ ‖(n : ℂ) + p.2.2‖ := by
-    have htriangle := norm_sub_norm_le (n : ℂ) ((n : ℂ) + p.2.2)
-    have hnormN : ‖(n : ℂ)‖ = (n : ℝ) := by rw [Complex.norm_natCast]
-    rw [show (n : ℂ) - ((n : ℂ) + p.2.2) = -p.2.2 by abel,
-      norm_neg, hnormN] at htriangle
-    linarith
-  have hdenpos : 0 < ((n : ℝ) + 1) * ((n : ℝ) - R) := by
-    exact mul_pos (by linarith) (by linarith)
-  have hnorm :
-      ‖gaussParameterSeriesTerm p z (n + 1)‖ =
-        (‖(n : ℂ) + p.1‖ * ‖(n : ℂ) + p.2.1‖ * ‖z‖ /
-          (((n : ℝ) + 1) * ‖(n : ℂ) + p.2.2‖)) *
-          ‖gaussParameterSeriesTerm p z n‖ := by
-    rw [hsolve]
-    simp only [norm_mul, norm_div]
-    rw [show ‖(n + 1 : ℂ)‖ = (n : ℝ) + 1 by norm_cast]
-  have hdennorm : ((n : ℝ) + 1) * ((n : ℝ) - R) ≤
-      ((n : ℝ) + 1) * ‖(n : ℂ) + p.2.2‖ :=
-    mul_le_mul_of_nonneg_left hCnorm (by positivity)
-  have hnum : ‖(n : ℂ) + p.1‖ * ‖(n : ℂ) + p.2.1‖ * ‖z‖ ≤
-      ‖z‖ * ((n : ℝ) + R) ^ 2 := by
-    calc
-      ‖(n : ℂ) + p.1‖ * ‖(n : ℂ) + p.2.1‖ * ‖z‖ ≤
-          ((n : ℝ) + R) * ((n : ℝ) + R) * ‖z‖ := by gcongr
-      _ = ‖z‖ * ((n : ℝ) + R) ^ 2 := by ring
-  have hratio :
-      (‖(n : ℂ) + p.1‖ * ‖(n : ℂ) + p.2.1‖ * ‖z‖ /
-          (((n : ℝ) + 1) * ‖(n : ℂ) + p.2.2‖)) ≤
-        ‖z‖ * ((n : ℝ) + R) ^ 2 /
-          (((n : ℝ) + 1) * ((n : ℝ) - R)) := by
-    apply div_le_div₀
-      (mul_nonneg (norm_nonneg z) (sq_nonneg ((n : ℝ) + R))) hnum hdenpos hdennorm
-  calc
-    ‖gaussParameterSeriesTerm p z (n + 1)‖ =
-        (‖(n : ℂ) + p.1‖ * ‖(n : ℂ) + p.2.1‖ * ‖z‖ /
-          (((n : ℝ) + 1) * ‖(n : ℂ) + p.2.2‖)) *
-          ‖gaussParameterSeriesTerm p z n‖ := hnorm
-    _ ≤ (‖z‖ * ((n : ℝ) + R) ^ 2 /
-          (((n : ℝ) + 1) * ((n : ℝ) - R))) *
-          ‖gaussParameterSeriesTerm p z n‖ := by
-      exact mul_le_mul_of_nonneg_right hratio (norm_nonneg _)
-    _ ≤ q * ‖gaussParameterSeriesTerm p z n‖ :=
-      mul_le_mul_of_nonneg_right hRatio (norm_nonneg _)
+  rw [gaussParameterSeriesTerm_recurrence p z n (hc n), norm_mul]
+  exact mul_le_mul_of_nonneg_right (gaussParameterSeriesRatio_norm_le p z n R q hR hRn hA hB hC hRatio)
+    (norm_nonneg _)
 
 /-- A uniform tail threshold for the elementary term-ratio bound on a disk strictly inside the
 unit circle. -/
@@ -186,7 +146,6 @@ theorem exists_finite_prefix_uniform_gaussParameterSeriesTerm_bound
   calc
     ‖gaussParameterSeriesTerm p z n‖ ≤ B n := hB n p hp
     _ ≤ ∑ k ∈ Finset.range (N + 1), B k := by
-      exact Finset.single_le_sum (s := Finset.range (N + 1))
-        (fun k hk => hBnonneg k) hnmem
+      apply Finset.single_le_sum <;> solve_by_elim
 
 end DOZZ.Proofs

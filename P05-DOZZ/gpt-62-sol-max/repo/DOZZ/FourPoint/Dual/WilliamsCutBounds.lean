@@ -12,9 +12,11 @@ open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+
 /-- The random last-cut reflection mass is a measurable real observable. -/
 theorem dual_williams_cut_real_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (γ α : ℝ) (hα : α < Q γ) (B : Ω → BrownianPath × BrownianPath)
     (Z : Ω → Measure ℝ) (hData : IsReflectionData P γ α B Z) :
     AEMeasurable (fun q : ℝ × Ω =>
@@ -29,7 +31,6 @@ theorem dual_williams_cut_real_aemeasurable
 reflection mass, on the original reflection witness. All real conversions are justified
 by the finite first moment of the full mass. -/
 theorem dual_williams_cut_real_bounds
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (γ α c : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (hα : α < Q γ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hData : IsReflectionData P γ α B Z) :
@@ -58,5 +59,7 @@ theorem dual_williams_cut_real_bounds
   intro hc
   exact ENNReal.toReal_mono hcutfin
     (reflection_cut_mass_le_of_last_exit_le γ c q.1 B Z q.2 (hq hc))
+
+end
 
 end DOZZ.Proofs

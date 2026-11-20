@@ -46,10 +46,14 @@ theorem gaussParameterC_half_mem_window {γ α₁ : ℝ} (hγ : 0 < γ)
     ring
   constructor <;> linarith
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
+  {γ μ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hX : IsEquatorGFF P X)
+  (hM : IsGMCOf P X γ M)
+include Ω P X M γ μ α₁ α₂ α₃ hγ hγ2 hμ hX hM
+
 /-- **The `|F₊|²` coefficients of the unreflected formula and the classification agree.** -/
-theorem unreflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hμ : 0 < μ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+theorem unreflected_coefficient_real
     (hUnreflectedFormula : ∀ {H : ℂ → ℂ → ℂ → ℂ → ℂ}, IsGaussHypergeometricFamily H →
       let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
       let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
@@ -90,9 +94,7 @@ theorem unreflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Meas
   rw [hK]
 
 /-- **The first structure shift at real points**, from the unreflected formula. -/
-theorem firstShift_real_of_unreflected {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hμ : 0 < μ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+theorem firstShift_real_of_unreflected
     (hUnreflectedFormula : ∀ {H : ℂ → ℂ → ℂ → ℂ → ℂ}, IsGaussHypergeometricFamily H →
       let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
       let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
@@ -184,6 +186,8 @@ theorem firstShift_real_of_unreflected {Ω : Type*} [MeasurableSpace Ω] (P : Me
     field_simp
   rw [hCp, hKc]
   field_simp
+
+end
 
 end DOZZ.Proofs
 

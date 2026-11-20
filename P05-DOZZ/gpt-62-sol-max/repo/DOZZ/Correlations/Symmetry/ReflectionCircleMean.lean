@@ -54,9 +54,7 @@ noncomputable def symmetryCirclePotentialMean (r : ℝ) : BoundedContinuousFunct
         integral_mono hi.norm (integrable_const _) (symmetryReflectionPotential_bound)
       _ = _ := by rw [integral_const, probReal_univ, one_smul]
   exact BoundedContinuousFunction.mkOfBound ⟨F, hF⟩ (2 * Real.log 2) (fun x y => by
-    change dist (F x) (F y) ≤ _
-    rw [Real.dist_eq]
-    exact (abs_sub _ _).trans (by linarith only [hbound x, hbound y]))
+    simpa [Real.dist_eq] using (abs_sub _ _).trans (by linarith only [hbound x, hbound y]))
 
 theorem symmetryCirclePotentialMean_apply (r : ℝ) (x : ℂ) :
     symmetryCirclePotentialMean r x = ∫ z, symmetryReflectionPotential z ∂circleMeasure x r := rfl

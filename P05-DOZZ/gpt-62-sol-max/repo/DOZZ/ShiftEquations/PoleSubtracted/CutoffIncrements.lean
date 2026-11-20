@@ -62,11 +62,8 @@ theorem cutoffIncrement_le {γ η a a₁ a₂ : ℝ} (hγ : 0 < γ) (hη : 0 ≤
   set L := poleLocalMass γ (2 / γ + η) (2 / γ - η) μ
   set B := μ (Metric.ball 0 (Real.exp (-(n : ℝ))))
   have hann : T' - T ≤ ENNReal.ofReal (Real.exp (γ * max a 0 * (n + 1))) * B := by
-    rw [tsub_le_iff_left]
-    calc T' = T + ∫⁻ x in cutoffRegion (n + 1) \ cutoffRegion n,
-          zeroTilt γ a x * poleWeight γ η x ∂μ := cutoffTiltedMass_succ γ η a n μ
-      _ ≤ T + ENNReal.ofReal (Real.exp (γ * max a 0 * (n + 1))) * B :=
-          add_le_add le_rfl (annulusMass_le a hγ hη hηγ n μ)
+    exact Eq.mpr (id (congrArg (fun _a => _a) (propext tsub_le_iff_left)))
+      (Trans.trans (cutoffTiltedMass_succ γ η a n μ) (add_le_add le_rfl (annulusMass_le a hγ hη hηγ n μ)))
   rcases le_or_gt a 0 with ha0 | ha0
   · have hs0 : 0 ≤ -a / γ := div_nonneg (by linarith) hγ.le
     have hsc : -a / γ ≤ max (-a₁ / γ) 0 :=
@@ -85,18 +82,17 @@ theorem cutoffIncrement_le {γ η a a₁ a₂ : ℝ} (hγ : 0 < γ) (hη : 0 ≤
         ≤ B * ((1 + T0 ^ max (-a₁ / γ) 0) + (1 + T0 ^ max (-a₁ / γ) 0)) :=
           mul_le_mul' hann' (add_le_add hT'0 hT0)
       _ = 2 * (B * (1 + T0 ^ max (-a₁ / γ) 0)) := by
-          rw [← two_mul]
           ring
       _ ≤ _ := le_self_add
   · have hs0 : -a / γ ≤ 0 := div_nonpos_of_nonpos_of_nonneg (by linarith) hγ.le
     have hsc : -(max a₂ 0 / γ) ≤ -a / γ := by
       rw [neg_div, neg_le_neg_iff]
       exact div_le_div_of_nonneg_right (le_max_of_le_left ha.2) hγ.le
-    have hLT' : L ≤ T' := localMass_le_cutoffTiltedMass γ η a (n + 1) μ
-    have hLT : L ≤ T := localMass_le_cutoffTiltedMass γ η a n μ
-    have hT'0 : T' ^ (-a / γ) ≤ 1 + L ^ (-(max a₂ 0 / γ)) :=
+    have hLT'  := localMass_le_cutoffTiltedMass γ η a (n + 1) μ
+    have hLT  := localMass_le_cutoffTiltedMass γ η a n μ
+    have hT'0  :=
       (ennrpow_le_of_le_of_nonpos hLT' hs0).trans (ennrpow_le_one_add_rpow_neg hs0 hsc)
-    have hT0 : T ^ (-a / γ) ≤ 1 + L ^ (-(max a₂ 0 / γ)) :=
+    have hT0  :=
       (ennrpow_le_of_le_of_nonpos hLT hs0).trans (ennrpow_le_one_add_rpow_neg hs0 hsc)
     have hexp : ENNReal.ofReal (Real.exp (γ * max a 0 * (n + 1))) ≤
         ENNReal.ofReal (Real.exp (γ * max a₂ 0 * (n + 1))) := by
@@ -112,7 +108,6 @@ theorem cutoffIncrement_le {γ η a a₁ a₂ : ℝ} (hγ : 0 < γ) (hη : 0 ≤
           mul_le_mul' (hann.trans (mul_le_mul_left hexp _)) (add_le_add hT'0 hT0)
       _ = 2 * ENNReal.ofReal (Real.exp (γ * max a₂ 0 * (n + 1))) *
             (B * (1 + L ^ (-(max a₂ 0 / γ)))) := by
-          rw [← two_mul]
           ring
       _ ≤ _ := le_add_self
 
@@ -167,8 +162,7 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
   have hc₁p : c₁ < (1 - 2 * η / γ) * (1 - 1 / (4 / γ ^ 2)) := by
     have hγ4 : 1 / (4 / γ ^ 2) = γ ^ 2 / 4 := by field_simp
     rcases le_or_gt (-a₁ / γ) 0 with h | h
-    · rw [hc₁, max_eq_right h]
-      exact hroom'
+    · rwa [hc₁, max_eq_right h]
     · rw [hc₁, max_eq_left h.le, hγ4]
       refine lt_of_le_of_lt ?_ hroom
       exact div_le_div_of_nonneg_right (by linarith) hγ.le
@@ -176,9 +170,9 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
   have hB : ∀ n : ℕ, AEMeasurable (fun ω => M ω (Metric.ball 0 (Real.exp (-(n : ℝ))))) P :=
     fun n => aemeasurable_measure_functional P X hX γ hγ hγ2 M hM
       (Measure.measurable_coe Metric.isOpen_ball.measurableSet)
-  have hT0 : AEMeasurable (fun ω => poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω)) P :=
+  have hT0  :=
     aemeasurable_measure_functional P X hX γ hγ hγ2 M hM (measurable_poleTotalMass γ η 0)
-  have hL : AEMeasurable (fun ω => poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω)) P :=
+  have hL  :=
     aemeasurable_measure_functional P X hX γ hγ hγ2 M hM (measurable_poleLocalMass γ η)
   have hV1 : AEMeasurable (fun ω =>
       1 + poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ c₁) P :=
@@ -216,7 +210,7 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
   have hV2r : ∫⁻ ω, (1 + poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ (-(b₂ / γ))) ^
       (r₂ / (r₂ - 1)) ∂P < ⊤ := by
     refine lintegral_one_add_rpow_lt_top hq₂ ?_
-    have hs : 0 ≤ b₂ / γ := div_nonneg hb₂0 hγ.le
+    have hs  := div_nonneg hb₂0 hγ.le
     rcases eq_or_lt_of_le hs with h0 | h0
     · rw [← h0, neg_zero, zero_mul]
       simp
@@ -242,15 +236,7 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
     linarith only [h2, hγb₂]
   refine ⟨2 * K₁ + 2 * K₂ * Real.exp (γ * b₂), min κ₁ κ₂, by positivity, lt_min hκ₁0 hκ₂0,
     fun a ha n => ?_⟩
-  have hpt : ∀ ω, (cutoffTiltedMass γ η a (n + 1) (M ω) - cutoffTiltedMass γ η a n (M ω)) *
-        (cutoffTiltedMass γ η a (n + 1) (M ω) ^ (-a / γ) +
-          cutoffTiltedMass γ η a n (M ω) ^ (-a / γ)) ≤
-      2 * (M ω (Metric.ball 0 (Real.exp (-(n : ℝ)))) *
-          (1 + poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ c₁)) +
-        2 * ENNReal.ofReal (Real.exp (γ * b₂ * (n + 1))) *
-          (M ω (Metric.ball 0 (Real.exp (-(n : ℝ)))) *
-            (1 + poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ (-(b₂ / γ)))) :=
-    fun ω => cutoffIncrement_le hγ hη hηγ ha n (M ω)
+  have hpt := fun ω => cutoffIncrement_le hγ hη hηγ ha n (M ω)
   have hA : AEMeasurable (fun ω => 2 * (M ω (Metric.ball 0 (Real.exp (-(n : ℝ)))) *
       (1 + poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ c₁))) P :=
     ((hB n).mul hV1).const_mul _
@@ -276,12 +262,10 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
           ← ENNReal.ofReal_mul (by positivity)]
         congr 2
         · ring
-        · rw [hκ₂, mul_assoc (2 * K₂), ← Real.exp_add]
-          rw [show 2 * Real.exp (γ * b₂ * (n + 1)) *
-              (K₂ * Real.exp (-((γ * Q γ * r₂ - γ ^ 2 * r₂ ^ 2 / 2) / r₂) * n)) =
-              2 * K₂ * (Real.exp (γ * b₂ * (n + 1)) *
-                Real.exp (-((γ * Q γ * r₂ - γ ^ 2 * r₂ ^ 2 / 2) / r₂) * n)) by ring,
-            ← Real.exp_add]
+        · rw [hκ₂, mul_assoc (2 * K₂), ← Real.exp_add, show 2 * Real.exp (γ * b₂ * (n + 1)) *
+                        (K₂ * Real.exp (-((γ * Q γ * r₂ - γ ^ 2 * r₂ ^ 2 / 2) / r₂) * n)) =
+                        2 * K₂ * (Real.exp (γ * b₂ * (n + 1)) *
+                          Real.exp (-((γ * Q γ * r₂ - γ ^ 2 * r₂ ^ 2 / 2) / r₂) * n)) by ring, ← Real.exp_add]
           congr 2
           ring
     _ ≤ ENNReal.ofReal ((2 * K₁ + 2 * K₂ * Real.exp (γ * b₂)) * Real.exp (-min κ₁ κ₂ * n)) :=

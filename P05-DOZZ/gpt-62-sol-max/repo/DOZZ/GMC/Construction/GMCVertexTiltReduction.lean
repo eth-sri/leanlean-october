@@ -46,7 +46,7 @@ theorem equatorGFF_GMC_vertex_tilt_of_general_tilt
         ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp
           (γ * ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r)))) ∂P := by
   classical
-  let L : Ω → ℝ := fun ω => ∑ k, α k * Xc ω (z k) r
+  let L  := fun ω => ∑ k, α k * Xc ω (z k) r
   have hL : IsGaussianL2Limit P X L := by
     simpa only [L] using
       circleAverage_sum_isGaussianL2Limit P X hX Xc hXc α z r
@@ -68,16 +68,11 @@ theorem equatorGFF_GMC_vertex_tilt_of_general_tilt
           (γ * ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r))) := by
     funext x
     rw [hpotential x]
-  have hmeasure (ω : Ω) :
-      (M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x))) =
-        (M ω).withDensity (fun x => ENNReal.ofReal (Real.exp
-          (γ * ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r))) :=
-    congrArg (fun d : ℂ → ℝ≥0∞ => (M ω).withDensity d) hdensity
+  have hmeasure (ω : Ω) := congrArg (fun d : ℂ → ℝ≥0∞ => (M ω).withDensity d) hdensity
   calc
     _ = ∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *
         H (fun f => X ω f) (M ω) ∂P := by
-      apply lintegral_congr_ae
-      exact ae_of_all _ (fun ω => by simp only [L])
+      rfl
     _ = ∫⁻ ω, H (fun f => X ω f + gaussianCovariance P (fun ω => X ω f) L)
           ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) ∂P :=
       hTilt hγ hγ2 hM hH L hL c hcov

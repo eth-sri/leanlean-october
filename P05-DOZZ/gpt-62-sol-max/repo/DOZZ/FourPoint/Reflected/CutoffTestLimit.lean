@@ -64,9 +64,7 @@ theorem reflected_admissible_field_test_limit
     rw [hid, ← hm, ENNReal.toReal_ofReal (integral_nonneg_of_ae hnon)]
     exact (integral_restrict_eq_integral_of_zero_on_compl _ K hK.measurableSet _
       (fun x hx => by rw [hf0 x hx, zero_mul])).symm
-  have ht : Tendsto (fun r : ℝ => max r R₀) atTop atTop :=
-    tendsto_atTop_mono (fun r => le_max_left r R₀) tendsto_id
   exact TendstoInMeasure.congr he (Filter.EventuallyEq.refl _ _)
-    ((hN.2.2.2 f (hK.of_isClosed_subset (isClosed_tsupport _) hfK) (hfK.trans hKU)).comp ht)
+    ((hN.2.2.2 f (hK.of_isClosed_subset (isClosed_tsupport _) hfK) (hfK.trans hKU)).comp (tendsto_atTop_mono (fun r => le_max_left r R₀) tendsto_id))
 
 end DOZZ.Proofs

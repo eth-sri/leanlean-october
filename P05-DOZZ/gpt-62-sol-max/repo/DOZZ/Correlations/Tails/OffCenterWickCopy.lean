@@ -90,12 +90,7 @@ theorem copied_circle_hasLaw
     apply measurable_pi_iff.mpr
     intro i
     unfold copiedCircle
-    have h1 (x : ℂ) (r : ℝ) : Measurable (fun q : Ω × Ω => Xc q.1 x r) :=
-      hm.comp (measurable_fst.prodMk (measurable_const (a := (x, r))))
-    have h2 (x : ℂ) (r : ℝ) : Measurable (fun q : Ω × Ω => Xc q.2 x r) :=
-      hm.comp (measurable_snd.prodMk (measurable_const (a := (x, r))))
-    exact ((h2 z 0).add ((h1 _ _).sub (h1 z 0))).add
-      (((h2 z 0).sub (h1 z 0)).const_mul _)
+    fun_prop
   have he' := congrArg (fun μ => μ.map (fun f : Unit → ℝ => f ())) he
   rw [Measure.map_map (measurable_pi_apply ()) hmS,
     Measure.map_map (measurable_pi_apply ()) hmT] at he'

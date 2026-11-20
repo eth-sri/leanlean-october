@@ -54,8 +54,7 @@ theorem exists_uniform_holomorphic_disks_on_compact
     apply hδW
     apply Metric.mem_cthickening_of_dist_le z (f x) δ S hfxS
     have hdist : dist z (f x) < r := Metric.mem_ball.mp hz
-    have hrδ : r ≤ δ := by dsimp [r]; linarith
-    exact hdist.le.trans hrδ
+    exact hdist.le.trans (by dsimp [r]; linarith)
   have hballU : Metric.ball (f x) r ⊆ U := fun _ hz => (hballW hz).2
   have hballV : Metric.ball (f x) r ⊆ V := fun _ hz => (hballW hz).1
   refine ⟨hH.mono hballU, ?_⟩

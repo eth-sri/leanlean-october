@@ -33,14 +33,13 @@ noncomputable def bpzMixTest (φ ρ k k₂ L : ℂ → ℝ) (m : Measure ℂ) (x
 
 theorem measurable_bpzSymKer {φ ρ k L : ℂ → ℝ} (hφ : Measurable φ) (hρ : Measurable ρ)
     (hk : Measurable k) (hL : Measurable L) : Measurable (Function.uncurry (bpzSymKer φ ρ k L)) := by
-  unfold bpzSymKer
-  have hd : Measurable (fun p : ℂ × ℂ => p.1 - p.2) := measurable_fst.sub measurable_snd
-  exact (((((hφ.comp measurable_fst).mul (hρ.comp measurable_snd)).sub
-    ((hφ.comp measurable_snd).mul (hρ.comp measurable_fst))).mul
-      ((hk.comp measurable_fst).mul (hk.comp measurable_snd))).mul (hL.comp hd)).div_const _
+  fun_prop [bpzSymKer]
+
+section
+variable {m : Measure ℂ}
 
 /-- Antisymmetrization of a double integral. -/
-theorem bpz_integral_integral_symm {m : Measure ℂ} [SFinite m] {F : ℂ → ℂ → ℝ}
+theorem bpz_integral_integral_symm [SFinite m] {F : ℂ → ℂ → ℝ}
     (hF : Integrable (Function.uncurry F) (m.prod m)) :
     ∫ x, ∫ y, F x y ∂m ∂m = ∫ x, ∫ y, (F x y + F y x) / 2 ∂m ∂m := by
   have hF' : Integrable (fun p : ℂ × ℂ => F p.1 p.2) (m.prod m) := hF
@@ -55,14 +54,14 @@ theorem bpz_integral_integral_symm {m : Measure ℂ} [SFinite m] {F : ℂ → �
   rw [hswap]
   ring
 
-theorem bpz_integrable_prod_of_bdd {m : Measure ℂ} [IsFiniteMeasure m] {F : ℂ → ℂ → ℝ}
+theorem bpz_integrable_prod_of_bdd [IsFiniteMeasure m] {F : ℂ → ℂ → ℝ}
     (hF : Measurable (Function.uncurry F)) {C : ℝ} (hC : ∀ x y, |F x y| ≤ C) :
     Integrable (Function.uncurry F) (m.prod m) :=
   Integrable.of_bound hF.aestronglyMeasurable C (Eventually.of_forall fun p => by
     rw [Real.norm_eq_abs]; exact hC p.1 p.2)
 
 /-- The cutoff-region double integral equals the antisymmetrized one. -/
-theorem bpz_integral_symKer {m : Measure ℂ} [IsFiniteMeasure m] {φ ρ k L : ℂ → ℝ}
+theorem bpz_integral_symKer [IsFiniteMeasure m] {φ ρ k L : ℂ → ℝ}
     (hφ : Measurable φ) (hρ : Measurable ρ) (hk : Measurable k) (hL : Measurable L)
     (hodd : ∀ w, L (-w) = -L w) {C : ℝ}
     (hC : ∀ x y, |φ x * k x * (ρ y * k y) * L (x - y)| ≤ C) :
@@ -80,6 +79,8 @@ theorem bpz_integral_symKer {m : Measure ℂ} [IsFiniteMeasure m] {φ ρ k L : �
   unfold bpzSymKer
   rw [show y - x = -(x - y) by ring, hodd]
   ring
+
+end
 
 /-- **Pathwise symmetrization of the right side of the cutoff Ward identity.** -/
 theorem bpz_cutoff_sym_identity {γ r : ℝ} {φ ρ k₁ k₂ : ℂ → ℝ} {m₁ m₂ : Measure ℂ}

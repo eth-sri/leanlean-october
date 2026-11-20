@@ -33,7 +33,7 @@ theorem ennreal_rpow_tendsto_of_exponent_tendsto (x : ℝ≥0∞) (y : ℕ → �
   rcases eq_or_ne x ⊤ with rfl | hxtop
   · simp only [ENNReal.top_rpow_of_pos (hypos _), ENNReal.top_rpow_of_pos hy0]
     exact tendsto_const_nhds
-  have hxpos : 0 < x.toReal := ENNReal.toReal_pos hx0 hxtop
+  have hxpos  := ENNReal.toReal_pos hx0 hxtop
   have hrepr : ∀ t : ℝ, x ^ t = ENNReal.ofReal (x.toReal ^ t) := by
     intro t
     rw [← ENNReal.ofReal_rpow_of_pos hxpos, ENNReal.ofReal_toReal hxtop]
@@ -48,14 +48,16 @@ theorem gmcOpenSquare_subset_ball (ρ : ℝ) :
   have := Complex.norm_le_abs_re_add_abs_im x
   linarith [hx.1, hx.2]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX hγ hγ2 hM
+
 /-- At and above `4/γ²` every disk has infinite moment. -/
 theorem gmc_ball_moment_eq_top_of_critical_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (z : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (p : ℝ) (hp : 4 / γ ^ 2 ≤ p) :
     gmcMassMoment P M (Metric.ball z ρ) p = ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   set pc : ℝ := 4 / γ ^ 2 with hpcdef
   have hpc1 : 1 < pc := by
     rw [hpcdef, lt_div_iff₀ (by positivity)]
@@ -102,7 +104,7 @@ theorem gmc_ball_moment_eq_top_of_critical_le
     intro ω
     exact ENNReal.rpow_le_rpow (measure_mono (gmcOpenSquare_subset_ball ρ')) (by linarith)
   by_contra hne
-  have hA : gmcMassMoment P M (Metric.ball z ρ') pc < ⊤ := lt_top_iff_ne_top.mpr hne
+  have hA  := lt_top_iff_ne_top.mpr hne
   -- subcritical orders increasing to `pc`
   set y : ℕ → ℝ := fun n => pc - (pc - 1) / ((n : ℝ) + 2) with hydef
   have hy1 : ∀ n, 1 ≤ y n := by
@@ -120,11 +122,10 @@ theorem gmc_ball_moment_eq_top_of_critical_le
     rw [hydef]
     linarith
   have hylim : Tendsto y atTop (𝓝 pc) := by
-    have h : Tendsto (fun n : ℕ => (pc - 1) / ((n : ℝ) + 2)) atTop (𝓝 0) := by
-      exact (tendsto_const_nhds (x := pc - 1)).div_atTop
+    have h := (tendsto_const_nhds (x := pc - 1)).div_atTop
         (tendsto_natCast_atTop_atTop.atTop_add (tendsto_const_nhds (x := (2 : ℝ))))
     have := (tendsto_const_nhds (x := pc)).sub h
-    simpa [hydef] using this
+    simpa
   -- uniform transfer constant on `[1, pc]`
   set R : ℝ := ‖z‖ + ρ' with hRdef
   have hR : 0 ≤ R := by positivity
@@ -137,7 +138,7 @@ theorem gmc_ball_moment_eq_top_of_critical_le
     intro n
     have htr := gmc_ball_moment_transfer P X hX γ hγ hγ2 M hM 0 z ρ' R hρ' hρ'8 hR
       (by simp [hRdef]) le_rfl (y n) (hylt n)
-    have hyn0 : 0 ≤ y n := le_trans zero_le_one (hy1 n)
+    have hyn0  := le_trans zero_le_one (hy1 n)
     have hfac : ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 *
         |y n ^ 2 - y n|)) * ENNReal.ofReal ((1 + R) ^ 4) ^ |y n| ≤ Tstar := by
       have habs1 : |y n ^ 2 - y n| ≤ pc ^ 2 + pc := by
@@ -145,7 +146,6 @@ theorem gmc_ball_moment_eq_top_of_critical_le
         linarith only [pow_le_pow_left₀ hyn0 (hylt n).le 2, hyn0, hpc1]
       have habs2 : |y n| ≤ pc := by rw [abs_of_nonneg hyn0]; exact (hylt n).le
       have hC : 0 ≤ γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 := by
-        have h3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
         have h1 : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
         positivity
       have hbase : 1 ≤ ENNReal.ofReal ((1 + R) ^ 4) := by
@@ -157,13 +157,9 @@ theorem gmc_ball_moment_eq_top_of_critical_le
     have hmom : gmcMassMoment P M (Metric.ball z ρ') (y n) ≤
         1 + gmcMassMoment P M (Metric.ball z ρ') pc := by
       have hpoint : ∀ ω, M ω (Metric.ball z ρ') ^ y n ≤ 1 + M ω (Metric.ball z ρ') ^ pc := by
-        intro ω
-        rcases le_or_gt (M ω (Metric.ball z ρ')) 1 with h1 | h1
-        · calc M ω (Metric.ball z ρ') ^ y n ≤ 1 := ENNReal.rpow_le_one h1 hyn0
-            _ ≤ 1 + M ω (Metric.ball z ρ') ^ pc := le_self_add
-        · calc M ω (Metric.ball z ρ') ^ y n ≤ M ω (Metric.ball z ρ') ^ pc :=
-              ENNReal.rpow_le_rpow_of_exponent_le h1.le (hylt n).le
-            _ ≤ 1 + M ω (Metric.ball z ρ') ^ pc := le_add_self
+        exact fun ω =>
+          Or.casesOn (le_or_gt ((M ω) (Metric.ball z ρ')) 1) (fun h1 => Trans.trans (ENNReal.rpow_le_one h1 hyn0) le_self_add)
+            fun h1 => Trans.trans (ENNReal.rpow_le_rpow_of_exponent_le (LT.lt.le h1) (LT.lt.le (hylt n))) le_add_self
       calc gmcMassMoment P M (Metric.ball z ρ') (y n)
           ≤ ∫⁻ ω, (1 + M ω (Metric.ball z ρ') ^ pc) ∂P := lintegral_mono hpoint
         _ = 1 + gmcMassMoment P M (Metric.ball z ρ') pc := by
@@ -200,11 +196,7 @@ theorem gmc_ball_moment_eq_top_of_critical_le
 
 /-- On each bounded nonempty open set the moment is finite exactly for `p < 4/γ²`, including all
 negative `p`; at and above the endpoint it diverges. See [KRV, (condmom)]. -/
-theorem equatorGFF_GMC_moment_range
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (O : Set ℂ)
+theorem equatorGFF_GMC_moment_range (O : Set ℂ)
     (hOopen : IsOpen O) (hObounded : Bornology.IsBounded O) (hOne : O.Nonempty)
     (p : ℝ) :
     (gmcMassMoment P M O p < ⊤) ↔ p < 4 / γ ^ 2 := by
@@ -215,7 +207,7 @@ theorem equatorGFF_GMC_moment_range
     by_contra hge
     push Not at hge
     have htop := gmc_ball_moment_eq_top_of_critical_le P X hX γ hγ hγ2 M hM z ρ₀ hρ₀ p hge
-    have hp0 : 0 ≤ p := le_trans (by positivity) hge
+    have hp0  := le_trans (by positivity) hge
     have hle : gmcMassMoment P M (Metric.ball z ρ₀) p ≤ gmcMassMoment P M O p := by
       apply lintegral_mono
       intro ω
@@ -235,5 +227,7 @@ theorem equatorGFF_GMC_moment_range
       apply lintegral_mono
       intro ω
       exact ennreal_rpow_antitone_of_nonpos (measure_mono hsub) hpneg.le
+
+end
 
 end DOZZ.Proofs

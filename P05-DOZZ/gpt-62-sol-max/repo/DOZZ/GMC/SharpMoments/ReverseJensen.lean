@@ -32,8 +32,8 @@ theorem reverseJensen_measure_univ_le_holder
     ν Set.univ ≤
       (∫⁻ x, f x ∂ν) ^ (q / (q + 1)) * (∫⁻ x, (f x) ^ (-q) ∂ν) ^ (1 / (q + 1)) := by
   have hq1 : 0 < q + 1 := by linarith
-  have ha : 0 ≤ q / (q + 1) := div_nonneg hq.le hq1.le
-  have hb : 0 ≤ 1 / (q + 1) := div_nonneg zero_le_one hq1.le
+  have ha  := div_nonneg hq.le hq1.le
+  have hb  := div_nonneg zero_le_one hq1.le
   have hab : q / (q + 1) + 1 / (q + 1) = 1 := by
     rw [← add_div, div_self hq1.ne']
   have hH := ENNReal.lintegral_mul_norm_pow_le hf (hf.pow_const (-q)) ha hb hab
@@ -44,10 +44,8 @@ theorem reverseJensen_measure_univ_le_holder
       field_simp
       ring
     rw [h, ENNReal.rpow_zero]
-  calc ν Set.univ = ∫⁻ _, (1 : ℝ≥0∞) ∂ν := lintegral_one.symm
-    _ = ∫⁻ x, f x ^ (q / (q + 1)) * (f x ^ (-q)) ^ (1 / (q + 1)) ∂ν :=
-        lintegral_congr_ae (hone.mono fun _ hx => hx.symm)
-    _ ≤ _ := hH
+  exact Trans.trans
+    (Trans.trans (Eq.symm lintegral_one) (lintegral_congr_ae (Filter.Eventually.mono hone fun x hx => Eq.symm hx))) hH
 
 /-- Algebraic rearrangement of the Hölder bound into the reverse Jensen inequality. -/
 theorem reverseJensen_rearrange (N J I : ℝ≥0∞) (q : ℝ) (hq : 0 < q)
@@ -64,9 +62,9 @@ theorem reverseJensen_rearrange (N J I : ℝ≥0∞) (q : ℝ) (hq : 0 < q)
     rw [ENNReal.zero_rpow_of_pos (div_pos hq hq1), zero_mul] at h
     exact hN0 (le_zero_iff.mp h)
   have hNq : N ^ (q + 1) ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr hN0) hNt).ne'
-  have hNqt : N ^ (q + 1) ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hq1.le hNt
+  have hNqt  := ENNReal.rpow_ne_top_of_nonneg hq1.le hNt
   have hJq : J ^ q ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr hJ0) hJt).ne'
-  have hJqt : J ^ q ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hq.le hJt
+  have hJqt  := ENNReal.rpow_ne_top_of_nonneg hq.le hJt
   rw [show -q - 1 = -(q + 1) by ring, ENNReal.rpow_neg, ENNReal.rpow_neg]
   calc (J ^ q)⁻¹ = (N ^ (q + 1))⁻¹ * N ^ (q + 1) * (J ^ q)⁻¹ := by
         rw [ENNReal.inv_mul_cancel hNq hNqt, one_mul]
@@ -80,13 +78,10 @@ theorem ennreal_lintegral_rpow_neg_le
     {S : Type*} [MeasurableSpace S] (ν : Measure S) [IsFiniteMeasure ν] (hν : ν ≠ 0)
     (f : S → ℝ≥0∞) (hf : AEMeasurable f ν) (q : ℝ) (hq : 0 < q) :
     (∫⁻ x, f x ∂ν) ^ (-q) ≤ (ν Set.univ) ^ (-q - 1) * ∫⁻ x, (f x) ^ (-q) ∂ν := by
-  have hN0 : ν Set.univ ≠ 0 := fun h => hν (Measure.measure_univ_eq_zero.mp h)
+  have hN0  := fun h => hν (Measure.measure_univ_eq_zero.mp h)
   have hNt : ν Set.univ ≠ ⊤ := measure_ne_top ν _
   have hc : (ν Set.univ) ^ (-q - 1) ≠ 0 := by
-    rw [Ne, ENNReal.rpow_eq_zero_iff]
-    rintro (⟨h, _⟩ | ⟨h, _⟩)
-    · exact hN0 h
-    · exact hNt h
+    positivity
   by_cases hI : ∫⁻ x, (f x) ^ (-q) ∂ν = ⊤
   · rw [hI, ENNReal.mul_top hc]
     exact le_top
@@ -97,10 +92,9 @@ theorem ennreal_lintegral_rpow_neg_le
     filter_upwards [ae_lt_top' (hf.pow_const (-q)) hI] with x hx hx0
     rw [hx0, ENNReal.zero_rpow_of_neg (by linarith)] at hx
     exact lt_irrefl _ hx
-  have hft : ∀ᵐ x ∂ν, f x ≠ ⊤ := by
-    filter_upwards [ae_lt_top' hf hJ] with x hx using hx.ne
   exact reverseJensen_rearrange _ _ _ q hq hN0 hNt hJ
-    (reverseJensen_measure_univ_le_holder ν f hf q hq hf0 hft)
+    (reverseJensen_measure_univ_le_holder ν f hf q hq hf0 (by
+    filter_upwards [ae_lt_top' hf hJ] with x hx using hx.ne))
 
 /-- The `(-q)`-th power of the cutoff mass of `A` is bounded, pointwise in the sample, by the
 reference mass of `A` to the power `-q - 1` times the reference integral of the `(-q)`-th power
@@ -117,10 +111,7 @@ theorem reverseJensen_mass_rpow_neg_le
   have hfin : IsFiniteMeasure (gmcReferenceMeasure.restrict A) :=
     ⟨by rw [Measure.restrict_apply_univ]; exact hAtop.lt_top⟩
   have hν0 : gmcReferenceMeasure.restrict A ≠ 0 := by
-    intro h
-    apply hA0
-    rw [← Measure.restrict_apply_univ A, h]
-    rfl
+    simpa
   have hW : AEMeasurable (gmcCircleWickDensity P Xc γ r ω)
       (gmcReferenceMeasure.restrict A) :=
     ((measurable_gmcCircleWickDensity P X Xc hXc γ r).comp
@@ -129,17 +120,19 @@ theorem reverseJensen_mass_rpow_neg_le
   have h := ennreal_lintegral_rpow_neg_le (gmcReferenceMeasure.restrict A) hν0 _ hW q hq
   rwa [Measure.restrict_apply_univ] at h
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r q V : ℝ) (hq : 0 < q) (A : Set ℂ)
+  (hA : MeasurableSet A)
+include Ω X hX hXc hq hA
+
 /-- Integrating the Wick density moments over a set on which the circle variance is bounded by
 `V` bounds the double integral of the `(-q)`-th power of the Wick density. -/
-theorem reverseJensen_double_lintegral_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r q V : ℝ) (hq : 0 < q)
-    (A : Set ℂ) (hA : MeasurableSet A) (hAtop : gmcReferenceMeasure A ≠ ⊤)
+theorem reverseJensen_double_lintegral_le (hAtop : gmcReferenceMeasure A ≠ ⊤)
     (hV : ∀ x ∈ A, gaussianVariance P (fun ω => Xc ω x r) ≤ V) :
     ∫⁻ ω, ∫⁻ x in A, (gmcCircleWickDensity P Xc γ r ω x) ^ (-q) ∂gmcReferenceMeasure ∂P ≤
       ENNReal.ofReal (Real.exp (γ ^ 2 * (q ^ 2 + q) / 2 * V)) * gmcReferenceMeasure A := by
-  have hP : IsProbabilityMeasure P := hX.1
+  have hP  := hX.1
   have hfin : IsFiniteMeasure (gmcReferenceMeasure.restrict A) :=
     ⟨by rw [Measure.restrict_apply_univ]; exact hAtop.lt_top⟩
   have hmeas : Measurable (Function.uncurry fun (ω : Ω) (x : ℂ) =>
@@ -161,16 +154,12 @@ theorem reverseJensen_double_lintegral_le
 
 /-- At a fixed cutoff, every inverse moment of the cutoff mass of a set of positive finite
 reference mass is bounded by the reference mass and the largest circle variance on the set. -/
-theorem regularizedGMC_inverse_moment_le_variance
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r q V : ℝ) (hq : 0 < q)
-    (A : Set ℂ) (hA : MeasurableSet A) (hA0 : gmcReferenceMeasure A ≠ 0)
+theorem regularizedGMC_inverse_moment_le_variance (hA0 : gmcReferenceMeasure A ≠ 0)
     (hAtop : gmcReferenceMeasure A ≠ ⊤)
     (hV : ∀ x ∈ A, gaussianVariance P (fun ω => Xc ω x r) ≤ V) :
     ∫⁻ ω, (regularizedGMC P Xc γ r ω A) ^ (-q) ∂P ≤
       (gmcReferenceMeasure A) ^ (-q) * ENNReal.ofReal (Real.exp (γ ^ 2 * (q ^ 2 + q) / 2 * V)) := by
-  have hP : IsProbabilityMeasure P := hX.1
+  have hP  := hX.1
   have hcoef : (gmcReferenceMeasure A) ^ (-q - 1) ≠ ⊤ :=
     ENNReal.rpow_ne_top_of_nonneg' (pos_iff_ne_zero.mpr hA0) hAtop
   have hpow : (gmcReferenceMeasure A) ^ (-q) =
@@ -190,10 +179,12 @@ theorem regularizedGMC_inverse_moment_le_variance
     _ ≤ (gmcReferenceMeasure A) ^ (-q - 1) *
           (ENNReal.ofReal (Real.exp (γ ^ 2 * (q ^ 2 + q) / 2 * V)) * gmcReferenceMeasure A) := by
         gcongr
-        exact reverseJensen_double_lintegral_le P X hX Xc hXc γ r q V hq A hA hAtop hV
+        apply reverseJensen_double_lintegral_le <;> assumption
     _ = (gmcReferenceMeasure A) ^ (-q) *
           ENNReal.ofReal (Real.exp (γ ^ 2 * (q ^ 2 + q) / 2 * V)) := by
         rw [hpow]
         ring
+
+end
 
 end DOZZ.Proofs

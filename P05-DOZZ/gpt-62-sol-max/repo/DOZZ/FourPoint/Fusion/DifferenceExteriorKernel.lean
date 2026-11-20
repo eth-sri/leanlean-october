@@ -8,9 +8,12 @@ public import DOZZ.FourPoint.Fusion.DifferenceExteriorPower
 /-! # Exterior comparison for the signed mass difference -/
 @[expose] public section
 namespace DOZZ.Proofs
+section
+variable (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hz : ‖z‖ ≤ 1 / 4) (hx : 1 / 2 ≤ ‖x‖)
+include hz hx
+
 /-- The signed exterior kernel has a first-order bound by the zero-insertion mass density. -/
-theorem fusion_difference_exterior_kernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
-    (hz : ‖z‖ ≤ 1 / 4) (hx : 1 / 2 ≤ ‖x‖) :
+theorem fusion_difference_exterior_kernel_bound :
     |fusionDifferenceKernel γ α₁ α₂ α₃ z x| ≤
       (2 * (|γ ^ 2 / 2| * max ((1 / 2 : ℝ) ^ (γ ^ 2 / 2 - 1))
         ((3 / 2 : ℝ) ^ (γ ^ 2 / 2 - 1)))) * ‖z‖ * gammaHalfKernel γ α₁ α₂ α₃ 0 x := by
@@ -31,8 +34,7 @@ theorem fusion_difference_exterior_kernel_bound (γ α₁ α₂ α₃ : ℝ) (z 
   rw [he, abs_mul, abs_of_nonneg hF, hk]
   exact (mul_le_mul_of_nonneg_right (fusion_difference_exterior_numerator (γ ^ 2 / 2) z x hz hx) hF).trans_eq (by ring)
 /-- The zero-insertion exterior density is controlled by the moving density. -/
-theorem fusion_gammaHalfKernel_exterior_compare (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
-    (hz : ‖z‖ ≤ 1 / 4) (hx : 1 / 2 ≤ ‖x‖) :
+theorem fusion_gammaHalfKernel_exterior_compare :
     gammaHalfKernel γ α₁ α₂ α₃ 0 x ≤
       (2 : ℝ) ^ (γ ^ 2 / 2) * gammaHalfKernel γ α₁ α₂ α₃ z x := by
   have hn : ‖x‖ ≤ 2 * ‖x - z‖ := by
@@ -47,4 +49,6 @@ theorem fusion_gammaHalfKernel_exterior_compare (γ α₁ α₂ α₃ : ℝ) (z 
   unfold gammaHalfKernel
   simp only [sub_zero]
   convert h using 1 <;> ring
+
+end
 end DOZZ.Proofs

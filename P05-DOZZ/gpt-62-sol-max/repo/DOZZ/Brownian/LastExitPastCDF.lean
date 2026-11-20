@@ -80,16 +80,14 @@ theorem lastExitGaussianKernelCDF_bounds (ν c x dt : ℝ)
     exact hb.2
   have hi := hp.mul_bdd (measurable_lastExitAvoidanceFactor ν c).aestronglyMeasurable hbound
   rw [← integral_conditionedTransition_avoidance_eq_gaussianCDF ν c x dt hν hc hx hdt]
-  constructor
-  · exact integral_nonneg fun y => mul_nonneg
-      (conditionedPositiveTransitionDensity_nonneg hν.le hdt hx y)
-      (lastExitAvoidanceFactor_bounds (x := y) hν hc).1
-  · calc
-      _ ≤ ∫ y, conditionedPositiveTransitionDensity ν dt x y :=
-        integral_mono hi hp (fun y => mul_le_of_le_one_right
-          (conditionedPositiveTransitionDensity_nonneg hν.le hdt hx y)
-          (lastExitAvoidanceFactor_bounds (x := y) hν hc).2)
-      _ = 1 := conditionedPositiveTransitionDensity_integral_eq_one hν.le hdt hx
+  exact ⟨integral_nonneg fun y =>
+      mul_nonneg (conditionedPositiveTransitionDensity_nonneg (LT.lt.le hν) hdt hx y)
+        (lastExitAvoidanceFactor_bounds hν hc).left,
+    Trans.trans
+      (integral_mono hi hp fun y =>
+        mul_le_of_le_one_right (conditionedPositiveTransitionDensity_nonneg (LT.lt.le hν) hdt hx y)
+          (lastExitAvoidanceFactor_bounds hν hc).right)
+      (conditionedPositiveTransitionDensity_integral_eq_one (LT.lt.le hν) hdt hx)⟩
 
 /-- A finite past cylinder and a last-exit CDF event have the explicit final-transition CDF. -/
 theorem negativeConditionedLaw_finitePast_lastExit_CDF
@@ -132,8 +130,7 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
       change Measurable[conditionedPositiveNaturalFiltration u]
         (conditionedPositiveProcessValue (ss i))
       apply Measurable.of_comap_le
-      have hsu : ss i ≤ u := (hmono.monotone (Fin.le_last i)).trans hu.le
-      exact le_iSup_of_le (ss i) (le_iSup_of_le hsu le_rfl)
+      exact le_iSup_of_le (ss i) (le_iSup_of_le ((hmono.monotone (Fin.le_last i)).trans hu.le) le_rfl)
     exact hA.preimage hmeval
   have hE : MeasurableSet E := measurableSet_le
     (measurable_negativeLastExitTime_joint.comp (measurable_const.prodMk measurable_id))

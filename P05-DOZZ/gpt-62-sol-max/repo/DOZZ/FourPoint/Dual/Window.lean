@@ -50,17 +50,15 @@ theorem dual_window_margins (γ α η ξ : ℝ)
     have hbuffer : 0 < (1 - ξ) * (2 * γ * η) :=
       mul_pos (sub_pos.mpr hξ₂) (mul_pos (mul_pos (by norm_num) hγ) hη)
     nlinarith only [hslack₂, hbuffer]
-  have hfirst : (4 / γ) * (Q γ - α) <
-      2 - γ ^ 2 / 2 + γ * (Q γ - α) := by
+  exact ⟨hν, hνb, hκ, hslack₁.trans hξ₂, houter, hαmul, hαmul₂,
+    by linarith only [hαmul₂, hγsq], by linarith only [hνmul, hγsq], (by
     by_contra hn
     have hm := mul_le_mul_of_nonneg_right (le_of_not_gt hn) hγ.le
     have hp : 0 < (4 - γ ^ 2) * (γ / 2 - (Q γ - α)) :=
       mul_pos (sub_pos.mpr hγsq) (sub_pos.mpr hνb)
     have hd : (4 / γ) * γ = 4 := div_mul_cancel₀ 4 hγ.ne'
     rw [mul_right_comm (4 / γ) (Q γ - α) γ, hd] at hm
-    nlinarith only [hp, hm]
-  exact ⟨hν, hνb, hκ, hslack₁.trans hξ₂, houter, hαmul, hαmul₂,
-    by linarith only [hαmul₂, hγsq], by linarith only [hνmul, hγsq], hfirst⟩
+    nlinarith only [hp, hm])⟩
 
 /-- The dual reflected triple is ordinary Seiberg on the explicit near-Q window. -/
 theorem dual_window_reflected_triple (γ α₁ α₂ α₃ η : ℝ)
@@ -71,18 +69,9 @@ theorem dual_window_reflected_triple (γ α₁ α₂ α₃ η : ℝ)
     2 * Q γ - α₁ - 2 / γ < Q γ ∧
       α₂ < Q γ ∧ α₃ < Q γ ∧
       2 * Q γ < (2 * Q γ - α₁ - 2 / γ) + α₂ + α₃ := by
-  have hd : γ / 2 < 2 / γ := by
-    apply (lt_div_iff₀ hγ).2
-    nlinarith only [hγ, hγ₂]
+  have hd := half_gamma_lt_two_div hγ hγ₂
   refine ⟨?_, hα₂, hα₃, ?_⟩
   · linarith only [hαlo, hη₂, hd]
   · linarith only [hs, hαhi]
-
-/-- The dual reflection exponent is twice the maximum-tail exponent. -/
-theorem dual_window_zero_mode_order (γ α₁ α₂ α₃ : ℝ) :
-    ((2 * Q γ - α₁ - 2 / γ) + α₂ + α₃ - 2 * Q γ) / γ =
-      (α₁ + α₂ + α₃ - 2 / γ - 2 * Q γ) / γ +
-        2 * (Q γ - α₁) / γ := by
-  ring
 
 end DOZZ.Proofs

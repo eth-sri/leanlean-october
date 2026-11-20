@@ -28,23 +28,18 @@ theorem gmc_total_mass_subunit_moment_bound
     ∫⁻ ω, ENNReal.rpow (M ω Set.univ) p ∂P ≤ 1 + gmcReferenceMeasure Set.univ := by
   obtain ⟨Xc, hXc, hMlim⟩ := hM.2
   let one : BoundedContinuousFunction ℂ ℝ := 1
-  let cutoff : ℕ → Ω → ℝ := (fun r ω => ∫ x, one x ∂regularizedGMC P Xc γ r ω) ∘ Nat.cast
-  let limit : Ω → ℝ := fun ω => ∫ x, one x ∂M ω
+  let cutoff  := (fun r ω => ∫ x, one x ∂regularizedGMC P Xc γ r ω) ∘ Nat.cast
+  let limit  := fun ω => ∫ x, one x ∂M ω
   have hconvReal := (hMlim one).comp (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop)
   have hconv : TendstoInMeasure P cutoff atTop limit := by
-    simpa [cutoff, limit] using hconvReal
-  have href : gmcReferenceMeasure Set.univ ≠ ∞ := gmcReferenceMeasure_univ_ne_top
-  have hmass (n : ℕ) : AEMeasurable
-      (fun ω => regularizedGMC P Xc γ n ω Set.univ) P :=
-    regularizedGMC_mass_aemeasurable P X hX Xc hXc γ n Set.univ MeasurableSet.univ
-  have hmean (n : ℕ) :
-      ∫⁻ ω, regularizedGMC P Xc γ n ω Set.univ ∂P = gmcReferenceMeasure Set.univ :=
-    regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ n Set.univ MeasurableSet.univ
+    assumption
+  have href  := gmcReferenceMeasure_univ_ne_top
+  have hmass (n : ℕ) := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ n Set.univ MeasurableSet.univ
+  have hmean (n : ℕ) := regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ n Set.univ MeasurableSet.univ
   have hmassFinite (n : ℕ) : ∀ᵐ ω ∂P,
       regularizedGMC P Xc γ n ω Set.univ < ∞ := by
     apply ae_lt_top' (hmass n)
-    rw [hmean n]
-    exact href
+    rwa [hmean n]
   have hcutoffEq (n : ℕ) : ∀ᵐ ω ∂P,
       ENNReal.ofReal (max (cutoff n ω) 0) = regularizedGMC P Xc γ n ω Set.univ := by
     filter_upwards [hmassFinite n] with ω hω
@@ -57,12 +52,9 @@ theorem gmc_total_mass_subunit_moment_bound
     simp [cutoff, one, integral_const, measureReal_def]
   have hpowerMeas (n : ℕ) : AEMeasurable
       (fun ω => ENNReal.rpow (ENNReal.ofReal (max (cutoff n ω) 0)) p) P := by
-    have hψ : Continuous (fun t : ℝ =>
-        ENNReal.rpow (ENNReal.ofReal (max t 0)) p) := by
-      exact ENNReal.continuous_rpow_const.comp
+    exact (ENNReal.continuous_rpow_const.comp
         (ENNReal.continuous_ofReal.comp
-          (continuous_max.comp (continuous_id.prodMk continuous_const)))
-    exact hψ.measurable.comp_aemeasurable (hcutoffMeas n)
+          (continuous_max.comp (continuous_id.prodMk continuous_const)))).measurable.comp_aemeasurable (hcutoffMeas n)
   have hbound (n : ℕ) : ∫⁻ ω,
       ENNReal.rpow (ENNReal.ofReal (max (cutoff n ω) 0)) p ∂P ≤
         1 + gmcReferenceMeasure Set.univ := by
@@ -84,7 +76,7 @@ theorem gmc_total_mass_subunit_moment_bound
   have hfatou := lintegral_ennreal_rpow_le_of_tendstoInMeasure P cutoff limit p
     (1 + gmcReferenceMeasure Set.univ) hconv hpowerMeas hlimitNonneg hbound
   have htarget (ω : Ω) : ENNReal.ofReal (limit ω) = M ω Set.univ := by
-    have hmassTop : M ω Set.univ ≠ ∞ := ne_of_lt (hM.1 ω).measure_univ_lt_top
+    have hmassTop  := ne_of_lt (hM.1 ω).measure_univ_lt_top
     have hlimitEq : limit ω = (M ω Set.univ).toReal := by
       simp [limit, one, integral_const, measureReal_def]
     rw [hlimitEq, ENNReal.ofReal_toReal hmassTop]

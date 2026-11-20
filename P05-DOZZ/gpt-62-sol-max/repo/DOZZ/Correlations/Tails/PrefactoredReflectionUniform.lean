@@ -38,9 +38,7 @@ theorem prefactored_reflection_moment_uniform
   let S := fun ω => ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*
     Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖))
   have hSm : Measurable S := by
-    have hp : Measurable (fun ω => Xc ω z 0) :=
-      (hc.1 0).comp (measurable_id.prodMk measurable_const)
-    exact (((hp.const_mul γ).sub_const _).exp.const_mul _).ennreal_ofReal
+    exact (((((hc.1 0).comp (measurable_id.prodMk measurable_const)).const_mul γ).sub_const _).exp.const_mul _).ennreal_ofReal
   have hJm := twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
     (aemeasurable_of_twoSidedConditioned hB) hZ
   have hJbound := hRef ν hνlo hνhi r hr.le hrR B hB hInd

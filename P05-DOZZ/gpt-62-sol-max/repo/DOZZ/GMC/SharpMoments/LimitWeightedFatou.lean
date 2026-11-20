@@ -27,7 +27,7 @@ namespace DOZZ.Proofs
 /-- Along the integer cutoffs, `Real.exp (-n)` is eventually below any positive threshold. -/
 theorem limitWeightedFatou_exists_nat_exp_neg_le {s : ℝ} (hs : 0 < s) :
     ∃ n₀ : ℕ, ∀ n : ℕ, n₀ ≤ n → Real.exp (-(n : ℝ)) ≤ s := by
-  have h : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 0) :=
+  have h  :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp tendsto_natCast_atTop_atTop
   exact eventually_atTop.mp (h.eventually (ge_mem_nhds hs))
 
@@ -70,7 +70,7 @@ theorem limitWeightedFatou_bounded_weight_moment_le
         ≤ C) :
     ∫⁻ ω, (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂M ω) ^ t ∂P ≤ C := by
   have hB : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
-  have hwm : Measurable fun x : ℂ => (w (x - z) : ℝ≥0∞) :=
+  have hwm  :=
     measurable_coe_nnreal_ennreal.comp (hw.comp (measurable_id.sub_const z))
   refine momentConv_lintegral_rpow_limit_le P
     (fun (n : ℕ) ω => ∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞)
@@ -114,21 +114,13 @@ theorem limitWeightedFatou_softened_moment_le
     ((s ^ (-γ * α)).toNNReal) (fun y => limitWeightedFatou_weight_le he hs y) t C n₀ ?_
   intro n hn
   have hδ : 0 < Real.exp (-(n : ℝ)) := Real.exp_pos _
-  have hδs : Real.exp (-(n : ℝ)) ≤ s := hn₀ n hn
+  have hδs  := hn₀ n hn
   have hlog : Real.log (1 / Real.exp (-(n : ℝ))) = (n : ℝ) := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
+    simp
   refine le_trans (lintegral_mono fun ω => ENNReal.rpow_le_rpow ?_ ht) (hC _ hδ (hδs.trans hsρ))
   unfold cutoffWeightedGmcBallMass
   rw [hlog]
   exact lintegral_mono fun x => limitWeightedFatou_ofReal_rpow_le (norm_nonneg _) hδ hδs he
-
-/-- The softened weighted disk mass decreases as the softening increases when the exponent is
-nonpositive. -/
-theorem limitWeightedFatou_mass_mono (μ : Measure ℂ) (z : ℂ) (ρ e : ℝ) (he : e ≤ 0) {s s' : ℝ}
-    (hs : 0 < s) (hss : s ≤ s') :
-    ∫⁻ x in Metric.ball z ρ, ENNReal.ofReal ((‖x - z‖ + s') ^ e) ∂μ ≤
-      ∫⁻ x in Metric.ball z ρ, ENNReal.ofReal ((‖x - z‖ + s) ^ e) ∂μ :=
-  lintegral_mono fun _ => limitWeightedFatou_ofReal_rpow_le (norm_nonneg _) hs hss he
 
 /-- As the softening vanishes through positive values, the softened distance weight converges
 to the extended power weight, including at the origin. -/
@@ -180,7 +172,7 @@ theorem weightedGmcBallMoment_le_of_cutoff
   have hεle : ∀ m, ε m ≤ ρ := fun m => by
     have h : 1 / ((m : ℝ) + 1) ≤ 1 := by
       rw [div_le_one (by positivity)]
-      linarith [(Nat.cast_nonneg m : (0 : ℝ) ≤ m)]
+      linarith
     simpa only [hεdef, mul_one] using mul_le_mul_of_nonneg_left h hρ.le
   have hεanti : Antitone ε := fun m m' hmm' => by
     have hcast : (m : ℝ) ≤ m' := Nat.cast_le.mpr hmm'
@@ -190,8 +182,7 @@ theorem weightedGmcBallMoment_le_of_cutoff
   have hε0 : Tendsto ε atTop (𝓝 0) := by
     simpa only [hεdef, mul_zero] using
       (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)).const_mul ρ
-  have hFatou : ∀ m : ℕ, ∫⁻ ω, (∫⁻ x in Metric.ball z ρ,
-      ENNReal.ofReal ((‖x - z‖ + ε m) ^ (-γ * α)) ∂M ω) ^ t ∂P ≤ C := fun m =>
+  have hFatou := fun m =>
     limitWeightedFatou_softened_moment_le P X hX γ hγ hγ2 M hM Xc hXc α hα z ρ t ht.le C (ε m)
       (hεpos m) (hεle m) hC
   have hlim : Tendsto (fun m : ℕ => ∫⁻ ω, (∫⁻ x in Metric.ball z ρ,
@@ -201,8 +192,7 @@ theorem weightedGmcBallMoment_le_of_cutoff
       (Eventually.of_forall fun ω m m' hmm' => ?_) (Eventually.of_forall fun ω => ?_)
     · exact (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
         (limitWeightedFatou_ofReal_weight_measurable z _ _) _ hB).pow_const t
-    · exact ENNReal.rpow_le_rpow (limitWeightedFatou_mass_mono (M ω) z ρ _ he (hεpos m')
-        (hεanti hmm')) ht.le
+    · exact ENNReal.rpow_le_rpow ((lintegral_mono fun _ => limitWeightedFatou_ofReal_rpow_le (norm_nonneg _) (hεpos m') (hεanti hmm') he)) ht.le
     · exact (limitWeightedFatou_mass_tendsto (M ω) γ α hγ hα z ρ hεpos hεanti hε0).ennrpow_const t
   exact le_of_tendsto' hlim hFatou
 

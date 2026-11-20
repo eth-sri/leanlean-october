@@ -30,9 +30,11 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+
 /-- **Cauchy bounds on a rectangle** around a point of the interval. -/
-theorem exists_rectangle_cauchy_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem exists_rectangle_cauchy_bound (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : IsCircleAverage P X Xc) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
     (x₀ : Ioo (-2 * η - δ) (1 / γ)) :
@@ -110,7 +112,6 @@ holomorphically to a neighborhood of the entire interval of that lemma. The last
 the compact-uniform Cauchy decay of the limit-chaos analytic approximants; the corrected Markov
 threshold (erratum K4, see docs/ERRATA-AND-DEVIATIONS.md) is part of this assertion. -/
 theorem poleSubtractedObservable_holomorphic
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ η δ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
@@ -216,6 +217,8 @@ theorem poleSubtractedObservable_holomorphic
         apply Real.exp_le_exp.2
         have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
         nlinarith
+
+end
 
 end DOZZ.Proofs
 

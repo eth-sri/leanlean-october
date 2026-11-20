@@ -26,7 +26,7 @@ theorem meas_ge_le_lintegral_rpow_div {Ω : Type*} [MeasurableSpace Ω] {P : Mea
     (ht : 0 < t) :
     P {ω | a ≤ f ω} ≤ (∫⁻ ω, f ω ^ t ∂P) / a ^ t := by
   have hat0 : a ^ t ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr ha) ha').ne'
-  have hat : a ^ t ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg ht.le ha'
+  have hat  := ENNReal.rpow_ne_top_of_nonneg ht.le ha'
   refine le_trans (measure_mono fun ω hω => ?_) (meas_ge_le_lintegral_div (hf.pow_const t) hat0
     hat)
   exact ENNReal.rpow_le_rpow hω ht.le
@@ -54,23 +54,22 @@ theorem le_of_three_le_sum {e x y z w : ℝ} (hxw : e ≤ w) (hw : w ≤ x + y +
   push Not at h
   linarith [h.1, h.2.1, h.2.2]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+
 /-- The probability that two split quantities differ by at least `ε` is controlled by the
 moments of the bad parts and the `L¹` distance of the good parts. -/
-theorem prob_edist_le_of_split {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem prob_edist_le_sum_of_split (P : Measure Ω)
     (Zr Z badr badl goodr goodl : Ω → ℝ≥0∞)
     (hZr : ∀ᵐ ω ∂P, Zr ω = badr ω + goodr ω) (hZ : ∀ᵐ ω ∂P, Z ω = badl ω + goodl ω)
     (hbr : ∀ᵐ ω ∂P, badr ω ≠ ⊤) (hbl : ∀ᵐ ω ∂P, badl ω ≠ ⊤) (hgr : ∀ᵐ ω ∂P, goodr ω ≠ ⊤)
-    (hgl : ∀ᵐ ω ∂P, goodl ω ≠ ⊤) (hbrm : AEMeasurable badr P) (hblm : AEMeasurable badl P)
-    (hgm : AEMeasurable (fun ω => ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|) P)
-    {e : ℝ} (he : 0 < e) {ε : ℝ≥0∞} (hεe : ENNReal.ofReal e ≤ ε) {t : ℝ} (ht : 0 < t) :
+    (hgl : ∀ᵐ ω ∂P, goodl ω ≠ ⊤)
+    {e : ℝ} (he : 0 < e) {ε : ℝ≥0∞} (hεe : ENNReal.ofReal e ≤ ε) :
     P {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤
-      (∫⁻ ω, badr ω ^ t ∂P) / ENNReal.ofReal (e / 3) ^ t +
-        (∫⁻ ω, badl ω ^ t ∂P) / ENNReal.ofReal (e / 3) ^ t +
-          (∫⁻ ω, ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal| ∂P) /
-            ENNReal.ofReal (e / 3) := by
+      P {ω | ENNReal.ofReal (e / 3) ≤ badr ω} +
+      P {ω | ENNReal.ofReal (e / 3) ≤ badl ω} +
+      P {ω | ENNReal.ofReal (e / 3) ≤ ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|} := by
   set a : ℝ≥0∞ := ENNReal.ofReal (e / 3) with ha
-  have ha0 : a ≠ 0 := (ENNReal.ofReal_pos.mpr (by positivity)).ne'
-  have hat : a ≠ ⊤ := ENNReal.ofReal_ne_top
   set B1 : Set Ω := {ω | a ≤ badr ω} with hB1
   set B2 : Set Ω := {ω | a ≤ badl ω} with hB2
   set B3 : Set Ω := {ω | a ≤ ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|} with hB3
@@ -79,7 +78,7 @@ theorem prob_edist_le_of_split {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω
     have hA' : ε ≤ ENNReal.ofReal |(Zr ω).toReal - (Z ω).toReal| := by
       rw [edist_dist, Real.dist_eq] at hA
       exact hA
-    have he' : e ≤ |(Zr ω).toReal - (Z ω).toReal| :=
+    have he'  :=
       (ENNReal.ofReal_le_ofReal_iff (abs_nonneg _)).mp (hεe.trans hA')
     have hsplit := toReal_abs_sub_le_of_split h1 h2 h3 h5 h4 h6
     rcases le_of_three_le_sum he' hsplit with hx | hx | hx
@@ -96,10 +95,35 @@ theorem prob_edist_le_of_split {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω
   calc P {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤ P (B1 ∪ B2 ∪ B3) := measure_mono_ae hle
     _ ≤ P B1 + P B2 + P B3 := (measure_union_le _ _).trans
         (add_le_add_left (measure_union_le _ _) _)
-    _ ≤ _ := by
-        gcongr
-        · exact meas_ge_le_lintegral_rpow_div hbrm ha0 hat ht
-        · exact meas_ge_le_lintegral_rpow_div hblm ha0 hat ht
-        · exact meas_ge_le_lintegral_div hgm ha0 hat
+
+private theorem ae_ne_top_of_lintegral_rpow {P : Measure Ω}
+    {f : Ω → ℝ≥0∞} {t : ℝ} (ht : 0 < t) (hf : AEMeasurable f P)
+    (h : (∫⁻ ω, f ω ^ t ∂P) < ⊤) : ∀ᵐ ω ∂P, f ω ≠ ⊤ := by
+  filter_upwards [ae_lt_top' (hf.pow_const t) h.ne] with ω hω he
+  simp [he, ENNReal.top_rpow_of_pos ht] at hω
+
+/-- The split estimate with moment bounds on each of the three probabilities. -/
+theorem prob_edist_le_of_split (P : Measure Ω)
+    (Zr Z badr badl goodr goodl : Ω → ℝ≥0∞)
+    (hZr : ∀ᵐ ω ∂P, Zr ω = badr ω + goodr ω) (hZ : ∀ᵐ ω ∂P, Z ω = badl ω + goodl ω)
+    (hgr : ∀ᵐ ω ∂P, goodr ω ≠ ⊤)
+    (hgl : ∀ᵐ ω ∂P, goodl ω ≠ ⊤) (hbrm : AEMeasurable badr P) (hblm : AEMeasurable badl P)
+    (hgm : AEMeasurable (fun ω => ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|) P)
+    {e : ℝ} (he : 0 < e) {ε : ℝ≥0∞} (hεe : ENNReal.ofReal e ≤ ε) {t : ℝ} (ht : 0 < t)
+    (hbr : (∫⁻ ω, badr ω ^ t ∂P) < ⊤) (hbl : (∫⁻ ω, badl ω ^ t ∂P) < ⊤) :
+    P {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤
+      (∫⁻ ω, badr ω ^ t ∂P) / ENNReal.ofReal (e / 3) ^ t +
+        (∫⁻ ω, badl ω ^ t ∂P) / ENNReal.ofReal (e / 3) ^ t +
+          (∫⁻ ω, ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal| ∂P) /
+            ENNReal.ofReal (e / 3) := by
+  have ha : ENNReal.ofReal (e / 3) ≠ 0 := (ENNReal.ofReal_pos.mpr (by positivity)).ne'
+  refine (prob_edist_le_sum_of_split P Zr Z badr badl goodr goodl hZr hZ
+    (ae_ne_top_of_lintegral_rpow ht hbrm hbr) (ae_ne_top_of_lintegral_rpow ht hblm hbl) hgr hgl he hεe).trans ?_
+  gcongr
+  · exact meas_ge_le_lintegral_rpow_div hbrm ha ENNReal.ofReal_ne_top ht
+  · exact meas_ge_le_lintegral_rpow_div hblm ha ENNReal.ofReal_ne_top ht
+  · exact meas_ge_le_lintegral_div hgm ha ENNReal.ofReal_ne_top
+
+end
 
 end DOZZ.Proofs

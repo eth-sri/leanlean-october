@@ -50,9 +50,7 @@ theorem aestronglyMeasurable_cutoffIntegrand (P : Measure Ω) (X : Ω → Distr)
     Complex.measurable_ofReal.comp_aemeasurable hXm
   have h : AEMeasurable (fun ω => cutoffIntegrand Xc M γ η m n z ω) P := by
     unfold cutoffIntegrand
-    exact (Complex.measurable_exp.comp_aemeasurable
-      ((hXc'.const_mul z).sub aemeasurable_const)).mul
-      ((hBc.pow_const _).sub (hLc.pow_const _))
+    fun_prop (disch := positivity)
   exact h.aestronglyMeasurable
 
 /-- Local data of a point of the half-plane: a disk, its real range and bounds. -/

@@ -36,9 +36,9 @@ theorem lastExitAvoidanceFactor_tendsto_one_atTop
     ring
   have harg' : Tendsto (fun y : ℝ => -2 * ν * y) atTop atBot :=
     tendsto_id.const_mul_atTop_of_neg hcoef
-  have hexp : Tendsto (fun y : ℝ => Real.exp (-2 * ν * (y - c))) atTop (𝓝 0) :=
+  have hexp  :=
     Real.tendsto_exp_atBot.comp harg
-  have hexp' : Tendsto (fun y : ℝ => Real.exp (-2 * ν * y)) atTop (𝓝 0) :=
+  have hexp'  :=
     Real.tendsto_exp_atBot.comp harg'
   have hnum : Tendsto (fun y : ℝ => 1 - Real.exp (-2 * ν * (y - c))) atTop (𝓝 1) := by
     simpa using tendsto_const_nhds.sub hexp

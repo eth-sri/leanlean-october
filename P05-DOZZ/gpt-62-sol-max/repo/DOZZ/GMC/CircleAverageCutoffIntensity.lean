@@ -48,8 +48,7 @@ theorem regularizedGMC_lintegral_eq_reference
         ring
       rw [hEq]
       exact hbase.mul hbase
-    change Measurable (fun x => ∫ ω, q x ω ∂P)
-    exact hq.stronglyMeasurable.integral_prod_right.measurable
+    apply hq.stronglyMeasurable.integral_prod_right.measurable
   have hfield : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
   have hnormPlus : Measurable (fun x : ℂ => normPlus x) := by
     unfold normPlus

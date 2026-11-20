@@ -32,25 +32,24 @@ theorem williams_split_value (ν : ℝ) (p : BrownianPath) (t : ℝ≥0) :
   · have hs : 0 ≤ (t : ℝ) - (σ : ℝ) := sub_nonneg.mpr (by exact_mod_cast hst)
     have he : σ + (NNReal.mk ((t : ℝ) - (σ : ℝ)) hs) = t := by
       apply NNReal.eq
-      simp only [NNReal.coe_add, NNReal.coe_mk]
-      ring
+      simp
     change twoSidedConditionedValue (fun _ : Unit => williamsSplitPaths ν p) ()
       ((t : ℝ) - (σ : ℝ)) = _
     rw [twoSidedConditionedValue, dite_eq_left hs]
-    change p (σ + (NNReal.mk ((t : ℝ) - (σ : ℝ)) hs)) -
-      ν * ((σ + (NNReal.mk ((t : ℝ) - (σ : ℝ)) hs) : ℝ≥0) : ℝ) -
-        driftedBrownianMaximum ν p = _
-    rw [he]
-  · have hts : t < σ := lt_of_not_ge hst
+    exact id
+      (Eq.mpr
+        (id
+          (congrArg (fun _a => p _a - ν * ↑_a - driftedBrownianMaximum ν p = p t - ν * ↑t - driftedBrownianMaximum ν p) he))
+        (Eq.refl (p t - ν * ↑t - driftedBrownianMaximum ν p)))
+  · have hts  := lt_of_not_ge hst
     have hs : ¬ 0 ≤ (t : ℝ) - (σ : ℝ) := not_le.mpr
       (sub_neg.mpr (by exact_mod_cast hts))
     have hnn : 0 ≤ -((t : ℝ) - (σ : ℝ)) := by
-      exact neg_nonneg.mpr (le_of_lt (sub_neg.mpr (by exact_mod_cast hts)))
+      linarith
     have he : (NNReal.mk (-((t : ℝ) - (σ : ℝ))) hnn) = σ - t := by
       apply NNReal.eq
       rw [NNReal.coe_sub hts.le]
-      simp only [NNReal.coe_mk]
-      ring
+      simp
     change twoSidedConditionedValue (fun _ : Unit => williamsSplitPaths ν p) ()
       ((t : ℝ) - (σ : ℝ)) = _
     rw [twoSidedConditionedValue, dite_eq_right hs]

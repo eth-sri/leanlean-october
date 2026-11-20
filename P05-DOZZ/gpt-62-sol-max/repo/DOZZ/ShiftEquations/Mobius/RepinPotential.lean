@@ -73,8 +73,12 @@ theorem ae_ne_circleMeasure_zero (y : ℂ) : ∀ᵐ u ∂circleMeasure 0 0, u �
   rw [ae_iff]
   simpa only [ne_eq, not_not, Set.ofPred_eq_eq_singleton] using circleMeasure_zero_singleton y
 
+section
+variable (a b : ℂ) (ha : a ≠ 0)
+include ha
+
 /-- The affine defect is integrable on every circle. -/
-theorem integrable_affineDefect_circleMeasure (a b : ℂ) (ha : a ≠ 0) (x : ℂ) (r : ℝ) :
+theorem integrable_affineDefect_circleMeasure (x : ℂ) (r : ℝ) :
     Integrable (affineDefect a b) (circleMeasure x r) := by
   have _ := circleMeasure_isProbability x r
   obtain ⟨C, hC⟩ := exists_abs_affineDefect_le a b ha
@@ -82,7 +86,7 @@ theorem integrable_affineDefect_circleMeasure (a b : ℂ) (ha : a ≠ 0) (x : �
     (ae_of_all _ fun y => by rw [Real.norm_eq_abs]; exact hC y)
 
 /-- **The repinning potential through the affine map** is the defect plus its unit average. -/
-theorem repinPotential_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) :
+theorem repinPotential_affine (y : ℂ) :
     repinPotential a b (a * y + b) = affineDefect a b y + repinKappa a b := by
   have _ := circleMeasure_zero_zero_isProbability
   have hmeas : Measurable (fun u => gffKernel (a * y + b) u) :=
@@ -101,6 +105,8 @@ theorem repinPotential_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) :
     integral_add hG (integrable_const _), integral_gffKernel_circleMeasure_unit, integral_const,
     probReal_univ, one_smul, zero_add]
   rfl
+
+end
 
 /-- The constant part of the repinning potential. -/
 noncomputable def repinConst (a b : ℂ) : ℝ :=
@@ -133,16 +139,19 @@ theorem abs_log_max_sub_log_max_le {m p q : ℝ} (hm : 0 < m) :
       have := abs_max_sub_max_le_abs p q m
       rw [max_comm p m, max_comm q m] at this
       exact (le_abs_self _).trans this
-    calc Real.log (max m p / max m q) ≤ (max m p - max m q) / max m q := h1.trans h2.le
-      _ ≤ |p - q| / max m q := div_le_div_of_nonneg_right h3 ht.le
-      _ ≤ |p - q| / m := div_le_div_of_nonneg_left (abs_nonneg _) hm (le_max_left _ _)
+    exact Trans.trans (Trans.trans (LE.le.trans h1 (Eq.le h2)) (div_le_div_of_nonneg_right h3 (LT.lt.le ht)))
+      (div_le_div_of_nonneg_left (abs_nonneg (p - q)) hm (le_max_left m q))
   rcases le_total (max m q) (max m p) with h | h
   · exact key p q h
   · rw [abs_sub_comm, abs_sub_comm p q]
     exact key q p h
 
+section
+variable (a b : ℂ) (ha : a ≠ 0)
+include ha
+
 /-- The repinning potential is Lipschitz. -/
-theorem abs_repinPotential_sub_le (a b : ℂ) (ha : a ≠ 0) (x x' : ℂ) :
+theorem abs_repinPotential_sub_le (x x' : ℂ) :
     |repinPotential a b x - repinPotential a b x'| ≤ (‖a‖⁻¹ + 1) * ‖x - x'‖ := by
   have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   rw [repinPotential_eq a b ha, repinPotential_eq a b ha]
@@ -166,14 +175,14 @@ theorem abs_repinPotential_sub_le (a b : ℂ) (ha : a ≠ 0) (x x' : ℂ) :
     _ = (‖a‖⁻¹ + 1) * ‖x - x'‖ := by field_simp
 
 /-- The repinning potential is continuous. -/
-theorem continuous_repinPotential (a b : ℂ) (ha : a ≠ 0) : Continuous (repinPotential a b) := by
+theorem continuous_repinPotential : Continuous (repinPotential a b) := by
   have hK : 0 ≤ ‖a‖⁻¹ + 1 := by positivity
   refine (LipschitzWith.of_dist_le_mul (K := ⟨‖a‖⁻¹ + 1, hK⟩) fun x x' => ?_).continuous
   rw [Real.dist_eq, dist_eq_norm]
   exact abs_repinPotential_sub_le a b ha x x'
 
 /-- The repinning potential is bounded. -/
-theorem exists_abs_repinPotential_le (a b : ℂ) (ha : a ≠ 0) :
+theorem exists_abs_repinPotential_le :
     ∃ C : ℝ, ∀ x : ℂ, |repinPotential a b x| ≤ C := by
   have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   set K₁ : ℝ := (1 + ‖b‖) / ‖a‖ + 1 with hK₁
@@ -211,12 +220,11 @@ theorem exists_abs_repinPotential_le (a b : ℂ) (ha : a ≠ 0) :
     have h1 : ‖a‖ ≤ (‖a‖ + ‖b‖ + 1) * normPlus x := by
       have : 1 ≤ normPlus x := le_max_left _ _
       nlinarith [norm_nonneg a, norm_nonneg b]
-    have h2 : ‖b - x‖ ≤ (‖a‖ + ‖b‖ + 1) * normPlus x := by
+    exact max_le h1 (by
       have hx : ‖x‖ ≤ normPlus x := le_max_right _ _
       have h1x : 1 ≤ normPlus x := le_max_left _ _
       have := norm_sub_le b x
-      nlinarith [norm_nonneg a, norm_nonneg b, norm_nonneg x]
-    exact max_le h1 h2
+      nlinarith [norm_nonneg a, norm_nonneg b, norm_nonneg x])
   have hl1 : Real.log N - Real.log A ≤ Real.log K₁ := by
     rw [← Real.log_div hNpos.ne' hApos.ne']
     exact Real.log_le_log (div_pos hNpos hApos) ((div_le_iff₀ hApos).mpr hNA)
@@ -234,6 +242,8 @@ theorem exists_abs_repinPotential_le (a b : ℂ) (ha : a ≠ 0) :
         gcongr
         rw [abs_le]
         constructor <;> linarith
+
+end
 
 /-- Circle averages of a Lipschitz function are uniformly close to it. -/
 theorem abs_integral_circleMeasure_sub_le {g : ℂ → ℝ} {K : ℝ}
@@ -262,8 +272,12 @@ theorem abs_integral_circleMeasure_sub_le {g : ℂ → ℝ} {K : ℝ}
         rwa [hu] at this
     _ = K * Real.exp (-r) := by rw [integral_const, probReal_univ, one_smul]
 
+section
+variable (a b : ℂ) (ha : a ≠ 0)
+include ha
+
 /-- **Uniform convergence** of the circle averages of the repinning potential. -/
-theorem tendstoUniformly_repinPotential (a b : ℂ) (ha : a ≠ 0) :
+theorem tendstoUniformly_repinPotential :
     TendstoUniformly (fun (r : ℝ) (x : ℂ) => ∫ u, repinPotential a b u ∂circleMeasure x r)
       (repinPotential a b) atTop := by
   rw [Metric.tendstoUniformly_iff]
@@ -277,7 +291,7 @@ theorem tendstoUniformly_repinPotential (a b : ℂ) (ha : a ≠ 0) :
 
 
 /-- **The self-energy of the repinning circle** is `2κ`. -/
-theorem repin_selfEnergy (a b : ℂ) (ha : a ≠ 0) :
+theorem repin_selfEnergy :
     ∫ u, ∫ v, gffKernel u v ∂circleMeasure b (-Real.log ‖a‖) ∂circleMeasure b (-Real.log ‖a‖) =
       2 * repinKappa a b := by
   have _ := circleMeasure_zero_zero_isProbability
@@ -289,6 +303,8 @@ theorem repin_selfEnergy (a b : ℂ) (ha : a ≠ 0) :
     integral_const, probReal_univ, one_smul]
   unfold repinKappa
   ring
+
+end
 
 end DOZZ.Proofs
 

@@ -18,15 +18,7 @@ namespace DOZZ.Proofs
 theorem measurable_cpow_nonnegative
     {A : Type*} [MeasurableSpace A] (f : A → ℝ) (hf : Measurable f)
     (hn : ∀ a, 0 ≤ f a) (p : ℂ) : Measurable (fun a => (f a : ℂ) ^ p) := by
-  have he : (fun a => (f a : ℂ) ^ p) = fun a =>
-      if f a = 0 then (if p = 0 then 1 else 0) else Complex.exp ((Real.log (f a) : ℂ) * p) := by
-    funext a
-    rw [Complex.cpow_def, ← Complex.ofReal_log (hn a)]
-    simp only [Complex.ofReal_eq_zero]
-  rw [he]
-  exact Measurable.ite (measurableSet_eq_fun hf measurable_const) measurable_const
-    (Complex.measurable_exp.comp ((Complex.measurable_ofReal.comp
-      (Real.measurable_log.comp hf)).mul_const p))
+  fun_prop
 
 /-- The norm of a difference of complex chaos-mass powers is a measurable functional of the
 measure, so the GMC tilt `DOZZ.equatorGFF_GMC_tilt` can be used after taking absolute values. -/

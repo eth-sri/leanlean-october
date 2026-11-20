@@ -85,16 +85,4 @@ theorem separatedTail_dirichletChaosMass_comap_measurable
     (MeasurableSpace.comap (fun ω => fun f : TestFn => D ω f) MeasurableSpace.pi)
     inferInstance ν inferInstance _ hlog
 
-/-- Measurability in separate raw distribution sigma algebras preserves independence of the
-finite-cutoff Dirichlet masses. -/
-theorem separatedTail_indepFun_of_comap_measurable
-    {Ω A B C E : Type*} [MeasurableSpace Ω] [MeasurableSpace A] [MeasurableSpace B]
-    [MeasurableSpace C] [MeasurableSpace E] (P : Measure Ω)
-    (D2 : Ω → A) (D3 : Ω → B) (W2 : Ω → C) (W3 : Ω → E)
-    (hD : IndepFun D2 D3 P)
-    (hW2 : Measurable[MeasurableSpace.comap D2 inferInstance] W2)
-    (hW3 : Measurable[MeasurableSpace.comap D3 inferInstance] W3) :
-    IndepFun W2 W3 P := by
-  exact indep_of_indep_of_le hD (measurable_iff_comap_le.mp hW2) (measurable_iff_comap_le.mp hW3)
-
 end DOZZ.Proofs

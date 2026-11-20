@@ -11,6 +11,8 @@ public import DOZZ.ShiftEquations.Rbar.Residue
 public import Mathlib.Analysis.Meromorphic.Complex
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.ShiftEquations.Quotient.Divisors
+public import DOZZ.Correlations.Analytic.UnitVolumeExtension
+public import DOZZ.DOZZAlgebra.ReflectionShiftForm
 
 /-!
 # The unit-volume γ/2 shift near `Q`
@@ -31,8 +33,7 @@ namespace DOZZ.Proofs
 /-- The unit-volume γ/2-shift multiplier. -/
 noncomputable def rbarShiftMultiplier (γ : ℝ) (z : ℂ) : ℂ :=
   2 * ((Q γ : ℂ) - z) / γ * Real.pi /
-    (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4) *
-      lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2))
+    reflectionFirstShiftDenom γ z
 
 /-- The real form of the unit-volume shift multiplier. -/
 noncomputable def rbarShiftMultiplierReal (γ a : ℝ) : ℝ :=
@@ -41,7 +42,7 @@ noncomputable def rbarShiftMultiplierReal (γ a : ℝ) : ℝ :=
 
 theorem rbarShiftMultiplier_ofReal (γ a : ℝ) :
     rbarShiftMultiplier γ a = (rbarShiftMultiplierReal γ a : ℂ) := by
-  unfold rbarShiftMultiplier rbarShiftMultiplierReal
+  unfold rbarShiftMultiplier rbarShiftMultiplierReal reflectionFirstShiftDenom
   rw [show -((γ : ℂ) ^ 2) / 4 = ((-(γ ^ 2) / 4 : ℝ) : ℂ) by push_cast; ring,
     show (γ : ℂ) * a / 2 - (γ : ℂ) ^ 2 / 4 = ((γ * a / 2 - γ ^ 2 / 4 : ℝ) : ℂ) by push_cast; ring,
     show 2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * a / 2 = ((2 + γ ^ 2 / 2 - γ * a / 2 : ℝ) : ℂ) by
@@ -71,7 +72,7 @@ theorem rbarShiftMultiplier_eq (γ : ℝ) (z : ℂ) :
         (Complex.Gamma ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4))⁻¹) *
       (Complex.Gamma (1 - (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)) *
         (Complex.Gamma (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2))⁻¹) := by
-  unfold rbarShiftMultiplier
+  unfold rbarShiftMultiplier reflectionFirstShiftDenom
   rw [← lFun_inv, ← lFun_inv, div_eq_mul_inv, mul_inv, mul_inv]
   ring
 
@@ -164,53 +165,12 @@ theorem slice_multiplier_eq {γ η : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hη : 
   field_simp
   ring
 
-/-- **The unit-volume γ/2 shift on the two-pole slice**: `R̄(Q - η - γ/2) = m(Q - η) R̄(Q - η)` for
-every admissible window, from the γ/2 crossing (`gammaHalf_crossing`), the residue bridge, the
-holomorphic extension `unitVolumeStructureConstant_holomorphic_near_extended_domain` and the tail
-estimate `twoInsertion_tail_sum_uniform` (through the two-pole expansion). -/
+/-- The `R̄` shift in an admissible window, from the two-pole expansion and the residue identity. -/
 theorem reflectionBarR_shift_of_window {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
-    (hBridge : ∀ α2 α3 : ℝ, 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ α3 (B α3) Z ∧
-        Tendsto (fun ε : ℝ => ε * unitVolumeStructureConstant P M γ
-            (α3 - α2 + ε) α2 α3) (𝓝[>] 0)
-          (𝓝 (bridgeMultiplicity α2 α3 * reflectionExponent γ α3 *
-            reflectionBarR P γ α3 (B α3) Z)))
-    (hTail : ∀ (K2 K3 : Set ℂ) (_ : IsCompact K2) (_ : IsCompact K3)
-      (_ : ∀ z ∈ K2, 2 ≤ ‖z‖) (_ : ∀ z ∈ K3, 2 ≤ ‖z‖)
-      (_ : ∀ z2 ∈ K2, ∀ z3 ∈ K3, 3 ≤ ‖z2 - z3‖)
-      (A2 A3 : Set ℝ) (_ : IsCompact A2) (_ : IsCompact A3)
-      (_ : ∀ α ∈ A2, γ / 2 < α ∧ α < Q γ)
-      (_ : ∀ α ∈ A3, γ / 2 < α ∧ α < Q γ)
-      (F2s F3s : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
-      (_ : UniformPositiveC1Family K2 F2s radius supBound derivBound lowerBound)
-      (_ : UniformPositiveC1Family K3 F3s radius supBound derivBound lowerBound),
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α, (α ∈ A2 ∨ α ∈ A3) → IsReflectionData P γ α (B α) Z) ∧
-          ∀ θ : ℝ, 0 < θ → ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z2 ∈ K2, ∀ z3 ∈ K3, ∀ α2 ∈ A2, ∀ α3 ∈ A3,
-              ∀ F2 ∈ F2s z2, ∀ F3 ∈ F3s z3, ∀ x : ℝ, 1 ≤ x →
-                |(P {ω | ENNReal.ofReal x <
-                    localSingularMass M F2 z2 γ α2 ω + localSingularMass M F3 z3 γ α3 ω}).toReal -
-                  (oneInsertionTailCoefficient γ α2 z2 (F2 z2) (reflectionBarR P γ α2 (B α2) Z) *
-                      Real.rpow x (-reflectionExponent γ α2) +
-                    oneInsertionTailCoefficient γ α3 z3 (F3 z3) (reflectionBarR P γ α3 (B α3) Z) *
-                      Real.rpow x (-reflectionExponent γ α3))| ≤
-                  C * Real.rpow x (-(twoInsertionTailCeiling γ α2 α3 - θ)))
-    {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
-    (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      complexifyNCharges α ∈ V₃)
-    {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
-    (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
+    {V₃ : Set (Fin 3 → ℂ)} {f₃ : (Fin 3 → ℂ) → ℂ}
+    (hExt : IsUnitVolumeExtension P M γ V₃ f₃)
     {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
     (B₁ : Ω → BrownianPath × BrownianPath) (Z₁ : Ω → Measure ℝ)
     (h₁ : IsReflectionData P γ (Q γ - η - γ / 2) B₁ Z₁)
@@ -223,9 +183,8 @@ theorem reflectionBarR_shift_of_window {Ω : Type*} [MeasurableSpace Ω] (P : Me
   have hη4 : η < γ / 4 := lt_of_lt_of_le hη1 ((min_le_right _ _).trans (min_le_left _ _))
   have hη2γ : η < 1 / (2 * γ) := lt_of_lt_of_le hη1 ((min_le_right _ _).trans (min_le_right _ _))
   obtain ⟨B₄, Z₄, -, -, hRD₄, V, hV, hVx, F, r, -, hr, hFx, hFexp⟩ :=
-    structureConstant_two_pole_expansion_of_tail P X M γ η δ hγ hγ2 hX hM hW hTail
-  have hres := secondResidue_eq_of_bridge P X M hγ hγ2 hX hM hCross hBridge hV₃ hV₃mem hf₃
-    hf₃eq hη hη4 hηγ hη2γ hδ hδ1 hδ2 hV hVx hr hFx hFexp B₂ Z₂ h₂
+    structureConstant_two_pole_expansion P X M γ η δ hγ hγ2 hX hM hW
+  have hres := twoPoleSecondResidue_eq_via_crossing P X M hγ hγ2 hX hM hExt hη hη4 hηγ hη2γ hδ hδ1 hδ2 hV hVx hr hFx hFexp B₂ Z₂ h₂
   have hres' : twoPoleSecondResidue P γ B₄ Z₄ η = 4 * η / γ *
       crossingMultiplier3Real γ (Q γ - η) (-(2 * η)) (2 / γ + η) *
         reflectionBarR P γ (Q γ - η) B₂ Z₂ := by exact_mod_cast hres

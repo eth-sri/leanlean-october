@@ -32,7 +32,6 @@ variable {γ χ α₁ α₂ α₃ : ℝ}
 
 /-! ### Elementary facts -/
 
-
 /-- The test function `ℓ ∘ g` is measurable. -/
 theorem bpzWardG_measurable (z : ℂ) (ℓ : ℂ →L[ℝ] ℝ) : Measurable (fun x => ℓ (bpzG z x)) := by
   have h : Measurable (bpzG z) := by
@@ -40,13 +39,16 @@ theorem bpzWardG_measurable (z : ℂ) (ℓ : ℂ →L[ℝ] ℝ) : Measurable (fu
     fun_prop
   exact ℓ.continuous.measurable.comp h
 
+section
+variable (z : ℂ) (n : ℕ) (ℓ : ℂ →L[ℝ] ℝ)
+
 /-- The truncation `ℓ (g χₙ)` is `C¹`. -/
-theorem bpzWardG_contDiff (z : ℂ) (n : ℕ) (ℓ : ℂ →L[ℝ] ℝ) :
+theorem bpzWardG_contDiff :
     ContDiff ℝ 1 (fun x => ℓ (bpzG z x * (bpzCutoffSeq z n x : ℂ))) :=
   ℓ.contDiff.comp ((contDiff_bpzG_mul_cutoff z n).of_le (by simp))
 
 /-- The support of the truncation lies in the support of the cutoff. -/
-theorem bpzWardG_support_subset (z : ℂ) (n : ℕ) (ℓ : ℂ →L[ℝ] ℝ) :
+theorem bpzWardG_support_subset :
     Function.support (fun x => ℓ (bpzG z x * (bpzCutoffSeq z n x : ℂ))) ⊆
       tsupport (bpzCutoffSeq z n) := by
   intro x hx
@@ -56,15 +58,17 @@ theorem bpzWardG_support_subset (z : ℂ) (n : ℕ) (ℓ : ℂ →L[ℝ] ℝ) :
   simp [h0]
 
 /-- The truncation `ℓ (g χₙ)` has compact support. -/
-theorem bpzWardG_hasCompactSupport (z : ℂ) (n : ℕ) (ℓ : ℂ →L[ℝ] ℝ) :
+theorem bpzWardG_hasCompactSupport :
     HasCompactSupport (fun x => ℓ (bpzG z x * (bpzCutoffSeq z n x : ℂ))) :=
   (hasCompactSupport_bpzCutoffSeq z n).mono' (bpzWardG_support_subset z n ℓ)
 
 /-- The truncation `ℓ (g χₙ)` is supported away from `0`, `1`, `z`. -/
-theorem bpzWardG_tsupport_subset (z : ℂ) (n : ℕ) (ℓ : ℂ →L[ℝ] ℝ) :
+theorem bpzWardG_tsupport_subset :
     tsupport (fun x => ℓ (bpzG z x * (bpzCutoffSeq z n x : ℂ))) ⊆ bpzRegular z :=
   (closure_minimal (bpzWardG_support_subset z n ℓ) (isClosed_tsupport _)).trans
     (tsupport_bpzCutoffSeq_subset z n)
+
+end
 
 /-- Near every regular point the truncations eventually agree with `ℓ ∘ g`. -/
 theorem bpzWardG_eventually_eq (z : ℂ) (ℓ : ℂ →L[ℝ] ℝ) {x : ℂ} (hx : x ∈ bpzRegular z) :
@@ -118,16 +122,15 @@ theorem bpzWardG_abs_fderiv_le {z x : ℂ} (hx : x ∈ bpzRegular z) (ℓ : ℂ 
     exact h1.trans (mul_le_mul_of_nonneg_left hB₁ (by positivity))
   have hℓ1 : |ℓ (F x)| ≤ ‖ℓ‖ * ‖F x‖ := by
     have := ℓ.le_opNorm (F x)
-    rwa [Real.norm_eq_abs] at this
+    assumption
   have hL1 : |L v| ≤ ‖L‖ * ‖v‖ := by
     have := L.le_opNorm v
-    rwa [Real.norm_eq_abs] at this
+    assumption
   have hℓ2 : |ℓ (fderiv ℝ F x v)| ≤ ‖ℓ‖ * (‖fderiv ℝ F x‖ * ‖v‖) := by
     have h1 := ℓ.le_opNorm (fderiv ℝ F x v)
     have h2 := (fderiv ℝ F x).le_opNorm v
     rw [Real.norm_eq_abs] at h1
     exact h1.trans (mul_le_mul_of_nonneg_left h2 (norm_nonneg _))
-  have hLt : ‖L‖ ≤ t * S := hLn
   calc |ℓ (F x) * L v + t * ℓ (fderiv ℝ F x v)|
       ≤ |ℓ (F x) * L v| + |t * ℓ (fderiv ℝ F x v)| := abs_add_le _ _
     _ = |ℓ (F x)| * |L v| + t * |ℓ (fderiv ℝ F x v)| := by
@@ -140,9 +143,13 @@ theorem bpzWardG_abs_fderiv_le {z x : ℂ} (hx : x ∈ bpzRegular z) (ℓ : ℂ 
     _ ≤ ‖ℓ‖ * ‖v‖ * t * (C * B₁) + ‖ℓ‖ * ‖v‖ * t * B₂ := by gcongr
     _ = ‖ℓ‖ * ‖v‖ * (C * B₁ + B₂) * t := by ring
 
+section
+variable {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ)
+include hz0 hz1
+
 /-- A uniform gradient bound for a family `F i` dominated by `g`, with gradients bounded by the
 singular weight. -/
-theorem bpzWardG_exists_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ)
+theorem bpzWardG_exists_fderiv_bound
     {ι : Type*} (F : ι → ℂ → ℂ) {A₁ : ℝ} (hA₁ : 0 ≤ A₁)
     (hdiff : ∀ i, ∀ x ∈ bpzRegular z, DifferentiableAt ℝ (F i) x)
     (hdom : ∀ i x, ‖F i x‖ ≤ ‖bpzG z x‖)
@@ -151,7 +158,7 @@ theorem bpzWardG_exists_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (
     ∃ A : ℝ, 0 ≤ A ∧ ∀ i, ∀ x ∈ bpzRegular z,
       |fderiv ℝ (fun y => ℓ (F i y) * bpzTildeWeight γ χ α₁ α₂ z y) x v| ≤
         A * (1 + ‖x - z‖ ^ (-2 : ℝ)) * bpzTildeWeight γ χ α₁ α₂ z x := by
-  obtain ⟨A₂, hA₂0, hA₂⟩ := norm_bpzG_div_le hz0 hz1
+  obtain ⟨A₂, hA₂0, hA₂⟩ := bpz_exists_norm_bpzG_div_le z
   refine ⟨‖ℓ‖ * ‖v‖ * ((|γ * χ| + |γ * α₁| + |γ * α₂|) * A₂ + A₁), by positivity, ?_⟩
   intro i x hx
   have hd := hdom i x
@@ -162,7 +169,7 @@ theorem bpzWardG_exists_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (
   ring
 
 /-- The truncations `ℓ (g χₙ)` satisfy the gradient bound uniformly in `n`. -/
-theorem bpzWardG_fderiv_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpzWardG_fderiv_bound_trunc :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ n : ℕ, ∀ x ∈ bpzRegular z,
       |fderiv ℝ (fun x => ℓ (bpzG z x * (bpzCutoffSeq z n x : ℂ)) *
           bpzTildeWeight γ χ α₁ α₂ z x) x v| ≤
@@ -177,7 +184,7 @@ theorem bpzWardG_fderiv_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (�
     (fun n x hx => hA₁ n x hx.2.2)
 
 /-- Gradient bound for the Ward test function `ℓ ∘ g` against `k̃`. -/
-theorem bpz_g_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpz_g_fderiv_bound :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ x ∈ bpzRegular z,
       |fderiv ℝ (fun x => ℓ (bpzG z x) * bpzTildeWeight γ χ α₁ α₂ z x) x v| ≤
         A * (1 + ‖x - z‖ ^ (-2 : ℝ)) * bpzTildeWeight γ χ α₁ α₂ z x := by
@@ -193,6 +200,8 @@ theorem bpz_g_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ 
   rw [← hev.fderiv_eq]
   exact hA n x hx
 
+end
+
 /-! ### The kernel bound -/
 
 /-- A Lipschitz-type bound `‖a − b‖ ≤ B ‖x − y‖` gives a bound for the kernel pairing. -/
@@ -201,9 +210,8 @@ theorem bpzWardG_abs_sub_mul_kern_le (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) {a b x 
     |(ℓ a - ℓ b) * bpzKern v (x - y)| ≤ ‖ℓ‖ * ‖v‖ * B := by
   have hnn : 0 ≤ ‖ℓ‖ * ‖v‖ * B := by positivity
   rcases eq_or_ne x y with rfl | hxy
-  · rw [sub_self, bpzKern_zero, mul_zero, abs_zero]
-    exact hnn
-  · have hd : 0 < ‖x - y‖ := norm_pos_iff.2 (sub_ne_zero.2 hxy)
+  · rwa [sub_self, bpzKern_zero, mul_zero, abs_zero]
+  · have hd  := norm_pos_iff.2 (sub_ne_zero.2 hxy)
     have h1 : |ℓ a - ℓ b| ≤ ‖ℓ‖ * (B * ‖x - y‖) := by
       rw [← map_sub]
       calc |ℓ (a - b)| = ‖ℓ (a - b)‖ := (Real.norm_eq_abs _).symm
@@ -215,16 +223,18 @@ theorem bpzWardG_abs_sub_mul_kern_le (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) {a b x 
           mul_le_mul h1 h2 (abs_nonneg _) (by positivity)
       _ = ‖ℓ‖ * ‖v‖ * B := by field_simp
 
+section
+variable {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ)
+include hz0 hz1
+
 /-- The truncations `ℓ (g χₙ)` satisfy the kernel bound uniformly in `n`. -/
-theorem bpzWardG_kern_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpzWardG_kern_bound_trunc :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ n : ℕ, ∀ x ∈ bpzRegular z, ∀ y ∈ bpzRegular z,
       |(ℓ (bpzG z x * (bpzCutoffSeq z n x : ℂ)) - ℓ (bpzG z y * (bpzCutoffSeq z n y : ℂ))) *
           bpzKern v (x - y)| ≤
         A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)) := by
-  obtain ⟨A, hA0, hA⟩ := norm_bpzG_mul_cutoff_sub_le hz0 hz1
+  obtain ⟨A, hA0, hA⟩ := norm_bpzG_mul_cutoff_sub_le z
   refine ⟨‖ℓ‖ * ‖v‖ * A, by positivity, fun n x hx y hy => ?_⟩
-  have hs : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
-  have ht : 0 ≤ ‖y - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
   have h := bpzWardG_abs_sub_mul_kern_le ℓ v (x := x) (y := y)
     (B := A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)))
     (by positivity) (hA n x y hx.2.2 hy.2.2)
@@ -232,7 +242,7 @@ theorem bpzWardG_kern_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ
   ring
 
 /-- Kernel bound for the Ward test function `ℓ ∘ g`. -/
-theorem bpz_g_kern_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpz_g_kern_bound :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ x ∈ bpzRegular z, ∀ y ∈ bpzRegular z,
       |(ℓ (bpzG z x) - ℓ (bpzG z y)) * bpzKern v (x - y)| ≤
         A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)) := by
@@ -242,6 +252,8 @@ theorem bpz_g_kern_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ �
     (bpzWardG_eventually_eq z ℓ hy)).exists
   have h := hA n x hx y hy
   rwa [hnx.eq_of_nhds, hny.eq_of_nhds] at h
+
+end
 
 /-! ### The Ward identity for `ℓ ∘ g` -/
 

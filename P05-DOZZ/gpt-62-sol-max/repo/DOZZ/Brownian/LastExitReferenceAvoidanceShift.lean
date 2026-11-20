@@ -100,13 +100,10 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
   let S : Set BrownianPath := brownianPathStrictlyBelow (x - c)
   have hEval : Measurable E := measurable_brownianReferenceRationalEvalMap x
   have hA : MeasurableSet A := measurableSet_brownianRationalFutureAbove c
-  have hR : MeasurableSet R := hA.preimage hEval
+  have hR  := hA.preimage hEval
   have hS : MeasurableSet S := measurableSet_brownianPath_below (x - c)
   have hH : Measurable H := by
-    apply hG.comp
-    apply measurable_pi_iff.mpr
-    intro r
-    exact (measurable_pi_apply r).sub measurable_const
+    fun_prop
   have hIntegrand : Measurable (A.indicator H) := hH.indicator hA
   have hAvoid : ∀ᵐ q ∂brownianBelowConditionedLaw B ν x, q ∈ R ↔ q ∈ S := by
     have hbase := brownianBelowConditionedLaw_rational_below_ae
@@ -115,8 +112,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
     have hiff : E q ∈ A ↔ q ∈ brownianPositiveRationalBelow (x - c) := by
       simpa [E, A, brownianReferenceRationalEvalMap] using
         brownianReferenceRationalAvoidance_iff_below x c q
-    change (E q ∈ A ↔ q ∈ brownianPathStrictlyBelow (x - c))
-    exact hiff.trans hq
+    apply hiff.trans <;> assumption
   have hMapX := brownianUpperConditionedReferenceFutureKernel_apply_conditioned
     B ν x hν (by linarith : 0 < x)
   have hMapXc := brownianUpperConditionedReferenceFutureKernel_apply_conditioned
@@ -126,8 +122,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
     measurable_brownianUpperConditionedPositiveRationalEvals.comp
       ((measurable_const (a := x - c)).prodMk measurable_id)
   let F : BrownianPath → ℝ≥0∞ := fun q => G (brownianPathRationalEvals q)
-  have hF : Measurable F := by
-    exact hG.comp measurable_brownianPathRationalEvals
+  have hF : Measurable F := hG.comp measurable_brownianPathRationalEvals
   calc
     (∫⁻ y, A.indicator H y ∂
         brownianUpperConditionedReferenceFutureKernel B ν hν x) =
@@ -155,8 +150,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
        ; ring
     _ = ENNReal.ofReal (lastExitAvoidanceFactor ν c x) *
         ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
-            brownianBelowConditionedLaw B ν (x - c) := by
-        exact brownianBelowConditionedLaw_avoidance_shift_integral B hB ν c x
+            brownianBelowConditionedLaw B ν (x - c) := brownianBelowConditionedLaw_avoidance_shift_integral B hB ν c x
           hν hc hcx _ hF
     _ = ENNReal.ofReal (lastExitAvoidanceFactor ν c x) *
       ∫⁻ y, G y ∂brownianUpperConditionedReferenceFutureKernel B ν hν (x - c) := by

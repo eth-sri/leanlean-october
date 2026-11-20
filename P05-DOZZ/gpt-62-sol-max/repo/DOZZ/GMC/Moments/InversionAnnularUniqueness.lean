@@ -61,6 +61,6 @@ theorem isGMCOf_inversion_annular_version
     (fun ω => (A ω).restrict U) N hAU hN
   refine ⟨f, hf, Z, N, hgap, hmem, hlim, hZ, hN, ?_⟩
   filter_upwards [heq, hAeq] with ω hω hωA
-  exact hω.symm.trans (congrArg (fun μ : Measure ℂ => μ.restrict U) hωA.symm)
+  apply hω.symm.trans <;> solve_by_elim
 
 end DOZZ.Proofs

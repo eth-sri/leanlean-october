@@ -8,6 +8,8 @@ public import DOZZ.FourPoint.Reflected.SourceWilliamsKernelSqueeze
 public import DOZZ.FourPoint.Reflected.SourceWilliamsLimit
 public import DOZZ.FourPoint.Reflected.OrderedKernelSqueeze
 public import DOZZ.FourPoint.Reflected.KernelCoefficientLimits
+public import DOZZ.GFFStructure.ContinuousCircleAverage
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! The literal source reflected increment follows by the ordered Williams/kernel squeeze. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
@@ -16,20 +18,13 @@ namespace DOZZ.Proofs
 
 theorem reflected_source_inner_increment_tendsto
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N)
     (hi : IndepFun (originRadialPath Xc) N P)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
-    (hwhole : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
-      ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
-      (∫⁻ ω, G (originRadialPath Xc ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
-      ∫⁻ ω, G (originRadialPath Xc ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
-        f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ
-          (originRadialPath Xc ω.1) x) ∂N ω.2) ∂P.prod P)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
+    (hwhole : RadialReinsertionLaw P (originRadialPath Xc) γ M N)
     (hNa : ∀ ρ : ℝ, 0 < ρ → IsAdmissibleGMCVersion P (originLateralChart ρ)
       originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ
       (fun ω => (N ω).restrict (originLateralChart ρ)))
@@ -77,11 +72,11 @@ theorem reflected_source_inner_increment_tendsto
   let Lhi := fun h : ℝ => min 1 ((1-Real.exp (-h))^(γ^2/2))*L
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have hW (h : ℝ) (hh : 0 < h) : Tendsto (fun z => W h z/‖z‖^κ) (𝓝[≠] 0) (𝓝 L) :=
-    reflected_source_williams_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
+    reflected_source_williams_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hcircle.isCircleAverage
       α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh.le hs hξ hξ1 B Z hData B₀ hB₀
   have hE (h : ℝ) (hh : 0 < h) : Tendsto (fun z => E h z/‖z‖^κ) (𝓝[≠] 0) (𝓝 0) :=
     (isComplexLittleOAtZero_ofReal_iff κ (E h)).mp
-      (reflected_source_full_copied_littleO P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+      (reflected_source_full_copied_littleO P X Xc hX hcircle γ hγ hγ₂ M hM
         N hN hfin hwhole hNa α₁ α₂ α₃ ξ h hα₁ hα₂ hα₃ hreflect hs hξ hξ1 hnear hfreeze hh.le)
   have hg (h : ℝ) (hh : 0 < h) : Tendsto (g h) (𝓝[≠] 0) (𝓝 (Llo h)) := by
     have hc := (reflected_kernel_coefficient_spatial_limits γ α₂ h).1.mono_left (nhdsWithin_le_nhds (s := ({0} : Set ℂ)ᶜ))
@@ -96,7 +91,7 @@ theorem reflected_source_inner_increment_tendsto
     simpa only [Lhi,one_mul] using hdepth.snd_nhds.mul_const L
   have hbound (h : ℝ) (hh : 0 < h) : ∀ᶠ z : ℂ in 𝓝[≠] 0, g h z ≤ f z ∧ f z ≤ k h z := by
     have hQν := hData.1.1.2
-    have hb := reflected_source_williams_kernel_squeeze P X hX Xc hc hm hcont γ hγ hγ₂ M hM
+    have hb := reflected_source_williams_kernel_squeeze P X hX Xc hcircle γ hγ hγ₂ M hM
       N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData _ hQν p hp hα₂ hα₃ hξ hξ1 hh
     filter_upwards [hb] with z hz
     have hlo := div_le_div_of_nonneg_right hz.1 (Real.rpow_nonneg (norm_nonneg z) κ)

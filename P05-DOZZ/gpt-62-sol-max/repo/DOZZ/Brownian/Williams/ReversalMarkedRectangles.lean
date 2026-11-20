@@ -35,7 +35,7 @@ theorem real_withDensity_prod_rectangle {α β : Type*}
       rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
     rw [← he]
     exact measure_ne_top _ _
-  have hi : Integrable f (μ.prod η) :=
+  have hi  :=
     (lintegral_ofReal_ne_top_iff_integrable hf.aestronglyMeasurable
       (ae_of_all _ hn)).mp hmass
   calc
@@ -66,8 +66,8 @@ theorem brownianPath_firstHit_reversedIncreasing_rectangle
         ∂(volume : Measure ℝ)
         ∂(volume : Measure (Fin (n+1) → ℝ)).withDensity
           (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ))) := by
-  let : IsProbabilityMeasure P := (hB.hasLaw_eval 0).isProbabilityMeasure
-  let μ : Measure (Fin (n+1) → ℝ) := volume.withDensity
+  let  := (hB.hasLaw_eval 0).isProbabilityMeasure
+  let μ  := volume.withDensity
     (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))
   have hlaw := brownianPath_firstHit_reversedIncreasing_density_map_unrestricted
     P hB ν c hν hc n ss hss hs0

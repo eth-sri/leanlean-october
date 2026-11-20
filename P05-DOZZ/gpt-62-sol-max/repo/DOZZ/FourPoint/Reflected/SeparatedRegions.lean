@@ -17,6 +17,23 @@ def reflected_innerRegion (s : ℝ) : Set ℂ := {x | 0 < ‖x‖ ∧ ‖x‖ < 
 /-- The exterior excludes the fixed insertion roots. -/
 def reflected_outerRegion (r : ℝ) : Set ℂ := {x | r < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ
 
+theorem reflected_innerRegion_open (s : ℝ) : IsOpen (reflected_innerRegion s) :=
+  (isOpen_lt continuous_const continuous_norm).inter (isOpen_lt continuous_norm continuous_const)
+
+theorem reflected_outerRegion_open (r : ℝ) : IsOpen (reflected_outerRegion r) :=
+  (isOpen_lt continuous_const continuous_norm).inter
+    (isClosed_singleton.union isClosed_singleton).isOpen_compl
+
+theorem reflected_innerRegion_punctured (s : ℝ) :
+    reflected_innerRegion s ⊆ ({0} : Set ℂ)ᶜ :=
+  fun _ hx => norm_pos_iff.mp hx.1
+
+theorem reflected_outerRegion_punctured (r : ℝ) :
+    reflected_outerRegion r ⊆ ({0} : Set ℂ)ᶜ :=
+  by
+  rintro x hx (hx0 : x = 0)
+  exact hx.2 (by simp [hx0])
+
 /-- Every geometric hypothesis of the full comparison holds on these literal regions. -/
 theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < r)
     (hr1 : r ≤ 1) (hsep : s/r ≤ 1/2) :
@@ -32,11 +49,8 @@ theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < 
     have h := (div_le_iff₀ hr).mp hsep
     linarith only [h]
   have hs1 : s < 1 := by linarith only [hsr, hr1]
-  refine ⟨?_, ?_, ?_, inter_subset_right, ?_, ?_, ?_, ?_, ?_⟩
-  · exact (isOpen_lt continuous_const continuous_norm).inter
-      (isOpen_lt continuous_norm continuous_const)
-  · exact (isOpen_lt continuous_const continuous_norm).inter
-      (isClosed_singleton.union isClosed_singleton).isOpen_compl
+  refine ⟨reflected_innerRegion_open _, reflected_outerRegion_open _, ?_, inter_subset_right,
+    ?_, ?_, ?_, ?_, ?_⟩
   · intro x hx
     have hx0 : x ≠ 0 := norm_pos_iff.mp hx.1
     have hx1 : x ≠ 1 := by
@@ -46,10 +60,9 @@ theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < 
       exact (not_lt_of_ge hs1.le) h
     simp [hx0, hx1]
   · intro x hx
-    simpa only [Metric.mem_ball, dist_zero_right] using hx.2.trans_le (by linarith only [hsr, hr])
+    simpa using hx.2.trans_le (by linarith only [hsr, hr])
   · intro x hx hh
-    have hn : ‖x‖ < r := by simpa only [Metric.mem_ball, dist_zero_right] using hh
-    exact (not_lt_of_ge hx.1.le) hn
+    exact (not_lt_of_ge hx.1.le) (by simpa only [Metric.mem_ball, dist_zero_right] using hh)
   · intro x hx
     rw [div_mul_cancel₀ s hr.ne']
     exact hx.2.le

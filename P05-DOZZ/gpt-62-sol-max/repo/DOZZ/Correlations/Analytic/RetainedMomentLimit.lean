@@ -26,7 +26,7 @@ theorem retained_mass_moment_limit
     (hpos : 0 ≤ p → (∫⁻ ω, g ω ^ p ∂P) < ⊤)
     (hneg : p < 0 → (∫⁻ ω, f 0 ω ^ p ∂P) < ⊤) :
     Tendsto (fun n => ∫⁻ ω, f n ω ^ p ∂P) atTop (𝓝 (∫⁻ ω, g ω ^ p ∂P)) := by
-  let bound : Ω → ℝ≥0∞ := fun ω => if 0 ≤ p then g ω ^ p else f 0 ω ^ p
+  let bound  := fun ω => if 0 ≤ p then g ω ^ p else f 0 ω ^ p
   apply tendsto_lintegral_of_dominated_convergence' (F := fun n ω => f n ω ^ p)
     (μ := P) bound
   · exact fun n => (hf n).pow_const p

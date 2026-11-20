@@ -15,7 +15,10 @@ open Polynomial FormalMultilinearSeries
 
 namespace DOZZ.Proofs
 
-private theorem ordinaryHypergeometricCoefficient_derivative_shift (a b c : ℂ) (n : ℕ)
+section
+variable (a b c : ℂ) (n : ℕ)
+
+private theorem ordinaryHypergeometricCoefficient_derivative_shift
     (hc : ∀ k : ℕ, c ≠ -(k : ℂ)) :
     ((n + 1 : ℂ) * ordinaryHypergeometricCoefficient a b c (n + 1)) =
       (a * b / c) * ordinaryHypergeometricCoefficient (a + 1) (b + 1) (c + 1) n := by
@@ -23,10 +26,8 @@ private theorem ordinaryHypergeometricCoefficient_derivative_shift (a b c : ℂ)
   have hcShift : ∀ k : ℕ, c + 1 ≠ -(k : ℂ) := by
     intro k h
     apply hc (k + 1)
-    have h' : c = -((k + 1 : ℕ) : ℂ) := by
-      push_cast at h ⊢
-      linear_combination h
-    exact h'
+    push_cast at h ⊢
+    linear_combination h
   have hcp1 : (ascPochhammer ℂ n).eval (c + 1) ≠ 0 :=
     ordinaryHypergeometric_pochhammer_denominator_ne_zero n hcShift
   have hfact : ((n + 1).factorial : ℂ) = (n + 1 : ℂ) * (n.factorial : ℂ) := by
@@ -36,22 +37,20 @@ private theorem ordinaryHypergeometricCoefficient_derivative_shift (a b c : ℂ)
       (ascPochhammer ℂ (n + 1)).eval x =
         x * (ascPochhammer ℂ n).eval (x + 1) := by
     rw [ascPochhammer_succ_left, Polynomial.eval_mul, Polynomial.eval_X]
-    have heval : ((ascPochhammer ℂ n).comp (X + 1)).eval x =
-        (ascPochhammer ℂ n).eval (x + 1) := by
-      simp
-    exact congrArg (fun y : ℂ => x * y) heval
+    exact congrArg (fun y : ℂ => x * y) (by
+      simp)
   simp only [ordinaryHypergeometricCoefficient]
   rw [hfact, hshift a, hshift b, hshift c]
   field_simp [hc0, hcp1, hfact0]
 
-private theorem ordinaryHypergeometricSeries_coeff' (a b c : ℂ) (n : ℕ) :
+private theorem ordinaryHypergeometricSeries_coeff' :
     (ordinaryHypergeometricSeries ℂ a b c).coeff n =
       ordinaryHypergeometricCoefficient a b c n := by
   change ordinaryHypergeometricSeries ℂ a b c n (fun _ => (1 : ℂ)) = _
   rw [ordinaryHypergeometricSeries_apply_eq]
   simp [ordinaryHypergeometricCoefficient]
 
-private theorem gaussFirstDerivativeSeries_coeff' (a b c : ℂ) (n : ℕ) :
+private theorem gaussFirstDerivativeSeries_coeff' :
     (gaussFirstDerivativeSeries a b c).coeff n =
       (n + 1 : ℂ) * ordinaryHypergeometricCoefficient a b c (n + 1) := by
   change ((gaussSeriesAtZero a b c).derivSeries.coeff n) 1 = _
@@ -63,6 +62,8 @@ private theorem gaussFirstDerivativeSeries_coeff' (a b c : ℂ) (n : ℕ) :
     simp [ordinaryHypergeometricCoefficient]
   rw [hcoeff]
   simp only [nsmul_eq_mul, Nat.cast_succ]
+
+end
 
 private theorem formalSeries_coeff_smul' (x : ℂ) (p : FormalMultilinearSeries ℂ ℂ ℂ)
     (n : ℕ) : (x • p).coeff n = x • p.coeff n := rfl

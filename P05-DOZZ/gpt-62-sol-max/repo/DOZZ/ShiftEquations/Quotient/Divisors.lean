@@ -85,9 +85,12 @@ theorem dozzFormula_base_pos {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ :
     0 < dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) :=
   mul_pos (dozzBase_pos hγ hγ2 hμ) (Real.rpow_pos_of_pos (by positivity) _)
 
+section
+variable {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hU : IsUpsilon γ U)
+include hγ hγ2 hμ hU
+
 /-- The DOZZ formula, as a function of its first charge, is meromorphic on the plane. -/
-theorem meromorphicOn_dozzFormula {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hμ : 0 < μ) (hU : IsUpsilon γ U) (α₂ α₃ : ℂ) :
+theorem meromorphicOn_dozzFormula (α₂ α₃ : ℂ) :
     MeromorphicOn (fun z => dozzFormula γ μ U z α₂ α₃) univ := by
   intro z _
   have hb : (((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ)) : ℂ) ∈ Complex.slitPlane :=
@@ -110,8 +113,7 @@ theorem meromorphicOn_dozzFormula {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ)
 
 /-- The DOZZ formula vanishes only on a codiscrete exceptional set, for fixed charges at which
 Upsilon does not vanish. -/
-theorem eventually_dozzFormula_ne_zero {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hμ : 0 < μ) (hU : IsUpsilon γ U) {α₂ α₃ : ℂ} (h₂ : U α₂ ≠ 0) (h₃ : U α₃ ≠ 0) :
+theorem eventually_dozzFormula_ne_zero {α₂ α₃ : ℂ} (h₂ : U α₂ ≠ 0) (h₃ : U α₃ ≠ 0) :
     ∀ᶠ z in codiscrete ℂ, dozzFormula γ μ U z α₂ α₃ ≠ 0 := by
   have hQ : γ / 2 < Q γ := by
     unfold Q
@@ -140,6 +142,8 @@ theorem eventually_dozzFormula_ne_zero {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 
     (key _ _ (by ring) h0)) h₂) h₃))
     (mul_ne_zero (mul_ne_zero (mul_ne_zero (key _ _ (by ring) h1) (key _ _ (by ring) h2))
       (key _ _ (by ring) h3)) (key _ _ (by ring) h4))
+
+end
 
 end DOZZ.Proofs
 

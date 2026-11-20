@@ -27,7 +27,7 @@ theorem parameter_grid_error (k : ℕ) (t : ℝ) :
   have hhi := Int.lt_floor_add_one (((k : ℝ) + 1) * t)
   have hle : parameterGrid k t ≤ t := by
     dsimp [parameterGrid]
-    exact (div_le_iff₀ hd).mpr (by simpa only [mul_comm] using hlo)
+    exact (div_le_iff₀ hd).mpr (by linarith)
   rw [abs_of_nonneg (sub_nonneg.mpr hle)]
   dsimp [parameterGrid]
   have heq : t - (Int.floor (((k : ℝ) + 1) * t) : ℝ) / ((k : ℝ) + 1) =
@@ -58,12 +58,12 @@ theorem tendstoInMeasure_random_parameter
       ‖g ω (parameterGrid k (θ ω)) - g ω (θ ω)‖ ≤
         ENNReal.ofReal (1 / ((k : ℝ) + 1)) * Llim ω) :
     TendstoInMeasure P (fun n ω => f n ω (θ ω)) atTop (fun ω => g ω (θ ω)) := by
-  let a : ℕ → ℕ → Ω → ℝ := fun k n ω => f n ω (parameterGrid k (θ ω))
-  let b : ℕ → Ω → ℝ := fun k ω => g ω (parameterGrid k (θ ω))
+  let a  := fun k n ω => f n ω (parameterGrid k (θ ω))
+  let b  := fun k ω => g ω (parameterGrid k (θ ω))
   have hab (k : ℕ) : TendstoInMeasure P (a k) atTop (b k) := by
-    let choice : Ω → ℕ := fun ω => Encodable.encode
+    let choice  := fun ω => Encodable.encode
       (Int.floor (((k : ℝ) + 1) * θ ω))
-    let param : ℕ → ℝ := fun i =>
+    let param  := fun i =>
       (((Encodable.decode (α := ℤ) i).getD 0 : ℤ) : ℝ) / ((k : ℝ) + 1)
     have hc : Measurable choice :=
       (measurable_of_countable (Encodable.encode : ℤ → ℕ)).comp

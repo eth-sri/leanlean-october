@@ -38,7 +38,6 @@ theorem fusion_gammaHalfMass_pos_finite_ae {Ω : Type*} [MeasurableSpace Ω]
       unfold Q
       linarith
     · exact hα₂
-  exact coulomb_mass_pos_finite_ae P X hX γ hγ hγ2 M hM ![z, 0, 1] hzinj
-    ![-γ / 2, α₁, α₂] α₃ ha hα₃
+  apply coulomb_mass_pos_finite_ae <;> assumption
 
 end DOZZ.Proofs

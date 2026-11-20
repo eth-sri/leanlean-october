@@ -18,85 +18,12 @@ open Nat Polynomial
 
 namespace DOZZ.Proofs
 
-/-- Parameters away from denominator poles form an open subset of the three-parameter space. -/
-def gaussParameterPoleFreeDomain : Set (ℂ × ℂ × ℂ) :=
-  {p | ∀ n : ℕ, p.2.2 ≠ -(n : ℂ)}
-
-private theorem gaussNegNatCastRange_isClosed :
-    IsClosed (Set.range (fun n : ℕ => -(n : ℂ))) := by
-  have hIso : Isometry (fun n : ℕ => -(n : ℂ)) := by
-    apply Isometry.of_dist_eq
-    intro m n
-    calc
-      dist (-(m : ℂ)) (-(n : ℂ)) = dist (m : ℂ) (n : ℂ) := by simp
-      _ = dist (m : ℤ) (n : ℤ) := by
-        exact Complex.isometry_intCast.dist_eq m n
-      _ = dist m n := by norm_cast
-  exact hIso.isClosedEmbedding.isClosed_range
-
-theorem gaussParameterPoleFreeDomain_isOpen :
-    IsOpen gaussParameterPoleFreeDomain := by
-  have hpre : gaussParameterPoleFreeDomain =
-      (fun p : ℂ × ℂ × ℂ => p.2.2) ⁻¹'
-        (Set.range (fun n : ℕ => -(n : ℂ)))ᶜ := by
-    ext p
-    simp [gaussParameterPoleFreeDomain, eq_comm]
-  rw [hpre]
-  exact gaussNegNatCastRange_isClosed.isOpen_compl.preimage
-    (continuous_snd.comp continuous_snd)
-
-/-- The scalar term multiplier contracts uniformly once the index dominates a compact parameter
-bound and the point lies strictly inside the unit disk. -/
-theorem gaussParameterSeriesRatio_norm_le
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ) (R q : ℝ)
-    (hR : 0 ≤ R) (hRn : R < (n : ℝ))
-    (hA : ‖p.1‖ ≤ R) (hB : ‖p.2.1‖ ≤ R) (hC : ‖p.2.2‖ ≤ R)
-    (hRatio : ‖z‖ * ((n : ℝ) + R) ^ 2 /
-        (((n : ℝ) + 1) * ((n : ℝ) - R)) ≤ q) :
-    ‖gaussParameterSeriesRatio p z n‖ ≤ q := by
-  have hn0 : 0 < (n : ℝ) := lt_of_le_of_lt hR hRn
-  have hAnorm : ‖(n : ℂ) + p.1‖ ≤ (n : ℝ) + R := by
-    calc
-      ‖(n : ℂ) + p.1‖ ≤ ‖(n : ℂ)‖ + ‖p.1‖ := norm_add_le _ _
-      _ = (n : ℝ) + ‖p.1‖ := by simp
-      _ ≤ (n : ℝ) + R := by linarith
-  have hBnorm : ‖(n : ℂ) + p.2.1‖ ≤ (n : ℝ) + R := by
-    calc
-      ‖(n : ℂ) + p.2.1‖ ≤ ‖(n : ℂ)‖ + ‖p.2.1‖ := norm_add_le _ _
-      _ = (n : ℝ) + ‖p.2.1‖ := by simp
-      _ ≤ (n : ℝ) + R := by linarith
-  have hCnorm : (n : ℝ) - R ≤ ‖(n : ℂ) + p.2.2‖ := by
-    have htriangle := norm_sub_norm_le (n : ℂ) ((n : ℂ) + p.2.2)
-    have hnormN : ‖(n : ℂ)‖ = (n : ℝ) := by simp
-    rw [show (n : ℂ) - ((n : ℂ) + p.2.2) = -p.2.2 by abel,
-      norm_neg, hnormN] at htriangle
-    linarith
-  have hdenpos : 0 < ((n : ℝ) + 1) * ((n : ℝ) - R) :=
-    mul_pos (by linarith) (by linarith)
-  have hdennorm : ((n : ℝ) + 1) * ((n : ℝ) - R) ≤
-      ((n : ℝ) + 1) * ‖(n : ℂ) + p.2.2‖ :=
-    mul_le_mul_of_nonneg_left hCnorm (by positivity)
-  have hnum : ‖(n : ℂ) + p.1‖ * ‖(n : ℂ) + p.2.1‖ * ‖z‖ ≤
-      ‖z‖ * ((n : ℝ) + R) ^ 2 := by
-    calc
-      ‖(n : ℂ) + p.1‖ * ‖(n : ℂ) + p.2.1‖ * ‖z‖ ≤
-          ((n : ℝ) + R) * ((n : ℝ) + R) * ‖z‖ := by gcongr
-      _ = ‖z‖ * ((n : ℝ) + R) ^ 2 := by ring
-  have hratioNorm : ‖gaussParameterSeriesRatio p z n‖ =
-      (‖(n : ℂ) + p.1‖ * ‖(n : ℂ) + p.2.1‖ * ‖z‖) /
-        (((n : ℝ) + 1) * ‖(n : ℂ) + p.2.2‖) := by
-    rw [gaussParameterSeriesRatio, norm_div, norm_mul, norm_mul, norm_mul]
-    have hn1 : ‖(n + 1 : ℂ)‖ = (n : ℝ) + 1 := by norm_cast
-    rw [hn1]
-  have hratio := div_le_div₀
-    (mul_nonneg (norm_nonneg z) (sq_nonneg ((n : ℝ) + R))) hnum hdenpos hdennorm
-  rw [hratioNorm]
-  exact hratio.trans hRatio
+section
+variable (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ) (R q : ℝ) (hR : 0 ≤ R) (hRn : R < (n : ℝ))
+include hR hRn
 
 /-- A uniform scalar recurrence for the derivatives of successive parameter-series terms. -/
-theorem gaussParameterSeriesTerm_fderiv_norm_succ_le
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ) (R q : ℝ)
-    (hR : 0 ≤ R) (hRn : R < (n : ℝ)) (h3R : 3 * R ≤ (n : ℝ))
+theorem gaussParameterSeriesTerm_fderiv_norm_succ_le (h3R : 3 * R ≤ (n : ℝ))
     (hA : ‖p.1‖ ≤ R) (hB : ‖p.2.1‖ ≤ R) (hC : ‖p.2.2‖ ≤ R)
     (hRatio : ‖z‖ * ((n : ℝ) + R) ^ 2 /
         (((n : ℝ) + 1) * ((n : ℝ) - R)) ≤ q)
@@ -127,6 +54,8 @@ theorem gaussParameterSeriesTerm_fderiv_norm_succ_le
       exact add_le_add
         (mul_le_mul_of_nonneg_right hratio (norm_nonneg _))
         (mul_le_mul_of_nonneg_right hratioDeriv (norm_nonneg _))
+
+end
 
 /-- On a bounded pole-free parameter set, a finite differentiated prefix and the product recurrence
 give a summable uniform majorant for all parameter derivatives of the ordinary Gauss terms. -/
@@ -261,18 +190,13 @@ theorem gaussParameterSeriesTerm_contDiffOn
   have hpolyA : ContDiff ℂ 1 (fun x : ℂ => (ascPochhammer ℂ n).aeval x) :=
     (ascPochhammer ℂ n).contDiff_aeval (1 : WithTop ℕ∞)
   have hpoly : ContDiff ℂ 1 (fun x : ℂ => (ascPochhammer ℂ n).eval x) := by
-    convert hpolyA using 1
-    funext x
-    simp
+    assumption
   have hA : ContDiffOn ℂ 1
-      (fun p : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval p.1) U := by
-    exact (hpoly.comp contDiff_fst).contDiffOn
+      (fun p : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval p.1) U := (hpoly.comp contDiff_fst).contDiffOn
   have hB : ContDiffOn ℂ 1
-      (fun p : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval p.2.1) U := by
-    exact (hpoly.comp (contDiff_fst.comp contDiff_snd)).contDiffOn
+      (fun p : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval p.2.1) U := (hpoly.comp (contDiff_fst.comp contDiff_snd)).contDiffOn
   have hC : ContDiffOn ℂ 1
-      (fun p : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval p.2.2) U := by
-    exact (hpoly.comp (contDiff_snd.comp contDiff_snd)).contDiffOn
+      (fun p : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval p.2.2) U := (hpoly.comp (contDiff_snd.comp contDiff_snd)).contDiffOn
   have hCinv := hC.inv hden
   change ContDiffOn ℂ 1
     (fun p : ℂ × ℂ × ℂ =>
@@ -281,17 +205,19 @@ theorem gaussParameterSeriesTerm_contDiffOn
           ((ascPochhammer ℂ n).eval p.2.2)⁻¹ * z ^ n) U
   exact (((contDiffOn_const.mul hA).mul hB).mul hCinv).mul contDiffOn_const
 
+section
+variable {K : Set (ℂ × ℂ × ℂ)} (hK : IsCompact K) (hc : ∀ p ∈ K, ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) (z : ℂ)
+include hK hc
+
 /-- Compactness bounds the Fréchet derivatives of every fixed finite prefix of the parameterized
 Gauss series. -/
-theorem exists_finite_prefix_uniform_gaussParameterSeriesTerm_fderiv_bound
-    {K : Set (ℂ × ℂ × ℂ)} (hK : IsCompact K)
-    (hc : ∀ p ∈ K, ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) (z : ℂ) (N : ℕ) :
+theorem exists_finite_prefix_uniform_gaussParameterSeriesTerm_fderiv_bound (N : ℕ) :
     ∃ D : ℝ, 0 ≤ D ∧ ∀ n : ℕ, n ≤ N → ∀ p ∈ K,
       ‖fderiv ℂ (fun p => gaussParameterSeriesTerm p z n) p‖ ≤ D := by
   have hb : ∀ n : ℕ, ∃ B : ℝ, 0 ≤ B ∧ ∀ p ∈ K,
       ‖fderiv ℂ (fun p => gaussParameterSeriesTerm p z n) p‖ ≤ B := by
     intro n
-    let f : ℂ × ℂ × ℂ → ℝ := fun p =>
+    let f  := fun p =>
       ‖fderiv ℂ (fun p => gaussParameterSeriesTerm p z n) p‖
     have hf : ContinuousOn f K := by
       have hdomain : ∀ p ∈ gaussParameterPoleFreeDomain, ∀ k : ℕ,
@@ -299,13 +225,10 @@ theorem exists_finite_prefix_uniform_gaussParameterSeriesTerm_fderiv_bound
         intro p hp k
         exact hp k
       have hKdomain : K ⊆ gaussParameterPoleFreeDomain := by
-        intro p hp k
-        exact hc p hp k
+        assumption
       have hsmooth := gaussParameterSeriesTerm_contDiffOn
         (U := gaussParameterPoleFreeDomain) hdomain z n
-      have hf' : ContinuousOn (fderiv ℂ (fun p => gaussParameterSeriesTerm p z n))
-          gaussParameterPoleFreeDomain :=
-        ContDiffOn.continuousOn_fderiv_of_isOpen hsmooth
+      have hf' := ContDiffOn.continuousOn_fderiv_of_isOpen hsmooth
           gaussParameterPoleFreeDomain_isOpen (by norm_num)
       exact hf'.norm.mono hKdomain
     obtain ⟨B, hB⟩ := bddAbove_def.mp (hK.bddAbove_image hf)
@@ -314,37 +237,30 @@ theorem exists_finite_prefix_uniform_gaussParameterSeriesTerm_fderiv_bound
     have hle := hB (f p) ⟨p, hp, rfl⟩
     exact le_trans hle (le_max_left _ _)
   choose B hBnonneg hB using hb
-  let D : ℝ := ∑ n ∈ Finset.range (N + 1), B n
+  let D  := ∑ n ∈ Finset.range (N + 1), B n
   have hD : 0 ≤ D := by
     dsimp [D]
     exact Finset.sum_nonneg fun k hk => hBnonneg k
   refine ⟨D, hD, ?_⟩
-  intro n hn p hp
-  have hnmem : n ∈ Finset.range (N + 1) :=
-    Finset.mem_range.mpr (Nat.lt_succ_of_le hn)
-  calc
-    ‖fderiv ℂ (fun p => gaussParameterSeriesTerm p z n) p‖ ≤ B n := hB n p hp
-    _ ≤ ∑ k ∈ Finset.range (N + 1), B k := by
-      exact Finset.single_le_sum (s := Finset.range (N + 1))
-        (fun k hk => hBnonneg k) hnmem
+  exact fun n hn p hp =>
+    have hnmem := Finset.mem_range.mpr (lt_succ_of_le hn);
+    Trans.trans (hB n p hp) (Finset.single_le_sum (fun k hk => hBnonneg k) hnmem)
 
 /-- A compact pole-free parameter set admits a summable uniform majorant for the derivatives of
 all ordinary Gauss-series terms, at every point strictly inside the unit disk. -/
-theorem exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound_of_isCompact
-    {K : Set (ℂ × ℂ × ℂ)} (hK : IsCompact K)
-    (hc : ∀ p ∈ K, ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) (z : ℂ) (hz : ‖z‖ < 1) :
+theorem exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound_of_isCompact (hz : ‖z‖ < 1) :
     ∃ u : ℕ → ℝ, Summable u ∧
       ∀ n : ℕ, ∀ p ∈ K,
         ‖fderiv ℂ (fun p => gaussParameterSeriesTerm p z n) p‖ ≤ u n := by
   let f : ℂ × ℂ × ℂ → ℝ := fun p => max ‖p.1‖ (max ‖p.2.1‖ ‖p.2.2‖)
   have hf : Continuous f := by fun_prop
   obtain ⟨B, hB⟩ := bddAbove_def.mp (hK.bddAbove_image hf.continuousOn)
-  let R : ℝ := max B 0
+  let R  := max B 0
   have hR : 0 ≤ R := le_max_right _ _
   have hparams : ∀ p ∈ K,
       ‖p.1‖ ≤ R ∧ ‖p.2.1‖ ≤ R ∧ ‖p.2.2‖ ≤ R := by
     intro p hp
-    have hfp : f p ≤ B := hB (f p) ⟨p, hp, rfl⟩
+    have hfp  := hB (f p) ⟨p, hp, rfl⟩
     refine ⟨?_, ⟨?_, ?_⟩⟩
     · calc
         ‖p.1‖ ≤ f p := le_max_left _ _
@@ -362,14 +278,14 @@ theorem exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound_of_isCompa
         _ ≤ R := le_max_left _ _
   obtain ⟨N₀, hN₀⟩ := exists_nat_uniform_gaussParameterSeries_ratio_bound z hz R hR
   obtain ⟨N₁, hN₁⟩ := exists_nat_gt (3 * R)
-  let N : ℕ := max N₀ N₁
+  let N  := max N₀ N₁
   have hN : ∀ n : ℕ, N ≤ n →
       R < (n : ℝ) ∧ 3 * R ≤ (n : ℝ) ∧
         ‖z‖ * ((n : ℝ) + R) ^ 2 /
           (((n : ℝ) + 1) * ((n : ℝ) - R)) ≤ (1 + ‖z‖) / 2 := by
     intro n hn
-    have hN₀n : N₀ ≤ n := (le_max_left N₀ N₁).trans hn
-    have hN₁n : N₁ ≤ n := (le_max_right N₀ N₁).trans hn
+    have hN₀n  := (le_max_left N₀ N₁).trans hn
+    have hN₁n  := (le_max_right N₀ N₁).trans hn
     rcases hN₀ n hN₀n with ⟨hRn, hRatio⟩
     have h3R : 3 * R ≤ (n : ℝ) :=
       le_of_lt (lt_of_lt_of_le hN₁ (by exact_mod_cast hN₁n))
@@ -381,11 +297,15 @@ theorem exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound_of_isCompa
   exact exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound
     (K := K) N C D R z hC hR hz hparams hc hN hbase hderivBase
 
+end
+
+section
+variable (p : ℂ × ℂ × ℂ) (z : ℂ) (hc : ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) (hz : ‖z‖ < 1)
+include hc hz
+
 /-- The ordinary Gauss parameter series converges absolutely inside the unit disk whenever its
 denominator parameter avoids its poles; terminating numerator parameters have infinite radius. -/
-theorem gaussParameterSeriesTerm_summable
-    (p : ℂ × ℂ × ℂ) (z : ℂ)
-    (hc : ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) (hz : ‖z‖ < 1) :
+theorem gaussParameterSeriesTerm_summable :
     Summable (fun n : ℕ => gaussParameterSeriesTerm p z n) := by
   let S := ordinaryHypergeometricSeries ℂ p.1 p.2.1 p.2.2
   have hrad : (1 : ENNReal) ≤ S.radius := by
@@ -419,51 +339,44 @@ theorem gaussParameterSeriesTerm_summable
           p.1 p.2.1 p.2.2 habc
         dsimp [S]
         rw [hEq]
-  have hzrad : (‖z‖₊ : ENNReal) < S.radius := by
-    exact (ENNReal.coe_lt_coe.mpr hz).trans_le hrad
+  have hzrad : (‖z‖₊ : ENNReal) < S.radius := (ENNReal.coe_lt_coe.mpr hz).trans_le hrad
   have hmem : z ∈ Metric.eball (0 : ℂ) S.radius := by
-    rw [mem_eball_zero_iff]
-    exact hzrad
-  have hseries : Summable (fun n : ℕ => S n fun _ => z) := S.summable hmem
+    simpa
+  have hseries  := S.summable hmem
   have hterms : ∀ n : ℕ, S n (fun _ => z) = gaussParameterSeriesTerm p z n := by
     intro n
     change ordinaryHypergeometricSeries ℂ p.1 p.2.1 p.2.2 n (fun _ => z) = _
     rw [ordinaryHypergeometricSeries_apply_eq]
-    simp [gaussParameterSeriesTerm, smul_eq_mul, mul_assoc]
-  exact hseries.congr fun n => hterms n
+    rfl
+  apply hseries.congr <;> assumption
 
 /-- Inside the unit disk, the ordinary Gauss function is Fréchet differentiable in all three
 parameters at every tuple away from denominator poles. -/
-theorem ordinaryHypergeometric_differentiableAt_params
-    (p : ℂ × ℂ × ℂ) (z : ℂ)
-    (hc : ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) (hz : ‖z‖ < 1) :
+theorem ordinaryHypergeometric_differentiableAt_params :
     DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ =>
       ordinaryHypergeometric q.1 q.2.1 q.2.2 z) p := by
-  have hp : p ∈ gaussParameterPoleFreeDomain := hc
+  have hp  := hc
   obtain ⟨ε, hε, hball⟩ :=
     Metric.isOpen_iff.mp gaussParameterPoleFreeDomain_isOpen p hp
-  let r : ℝ := ε / 2
+  let r  := ε / 2
   have hr : 0 < r := by dsimp [r]; linarith
   have hrε : r < ε := by dsimp [r]; linarith
-  let K : Set (ℂ × ℂ × ℂ) := Metric.closedBall p r
-  have hKcompact : IsCompact K := by
-    exact isCompact_closedBall p r
+  let K  := Metric.closedBall p r
+  have hKcompact := isCompact_closedBall p r
   have hKpole : ∀ q ∈ K, ∀ k : ℕ, q.2.2 ≠ -(k : ℂ) := by
     intro q hq k
-    have hqball : q ∈ Metric.ball p ε := Metric.closedBall_subset_ball hrε hq
-    have hqdomain : q ∈ gaussParameterPoleFreeDomain := hball hqball
+    have hqball  := Metric.closedBall_subset_ball hrε hq
+    have hqdomain  := hball hqball
     exact hqdomain k
   obtain ⟨u, hu, huBound⟩ :=
     exists_summable_uniform_gaussParameterSeriesTerm_fderiv_bound_of_isCompact
       hKcompact hKpole z hz
-  have hpK : p ∈ K := by
-    exact Metric.mem_closedBall_self (le_of_lt hr)
   have hsum0 := gaussParameterSeriesTerm_summable p z hc hz
   have htermsDiff : ∀ n : ℕ, ∀ q ∈ Metric.ball p r,
       HasFDerivAt (fun x => gaussParameterSeriesTerm x z n)
         (fderiv ℂ (fun x => gaussParameterSeriesTerm x z n) q) q := by
     intro n q hq
-    have hqK : q ∈ K := Metric.ball_subset_closedBall hq
+    have hqK  := Metric.ball_subset_closedBall hq
     have hqPole := hKpole q hqK
     exact (gaussParameterSeriesTerm_differentiableAt q z n hqPole).hasFDerivAt
   have htermsBound : ∀ n : ℕ, ∀ q ∈ Metric.ball p r,
@@ -477,8 +390,10 @@ theorem ordinaryHypergeometric_differentiableAt_params
       (fun q : ℂ × ℂ × ℂ => ordinaryHypergeometric q.1 q.2.1 q.2.2 z) =
         (fun q => ∑' n : ℕ, gaussParameterSeriesTerm q z n) := by
     funext q
-    exact gaussParameterSeriesTerm_sum q.1 q.2.1 q.2.2 z
+    apply gaussParameterSeriesTerm_sum <;> assumption
   rw [hsumEq]
   exact hsumDeriv.differentiableAt
+
+end
 
 end DOZZ.Proofs

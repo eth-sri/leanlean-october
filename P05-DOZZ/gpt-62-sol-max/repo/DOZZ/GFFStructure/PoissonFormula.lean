@@ -27,8 +27,7 @@ theorem integral_unitPoissonWeight_mul_eq_circleAverage (c z : ℂ) (ρ : ℝ) (
     (f : ℂ → ℝ) (hf : Measurable f) :
     (∫ u, unitPoissonWeight c ρ z u*f (c+ρ • u) ∂circleMeasure 0 0) =
       Real.circleAverage (poissonKernel c z*f) c ρ := by
-  have hm : Measurable (fun u : ℂ => unitPoissonWeight c ρ z u*f (c+ρ • u)) := by
-    exact (measurable_unitPoissonWeight c z ρ).mul (hf.comp (by fun_prop))
+  have hm : Measurable (fun u : ℂ => unitPoissonWeight c ρ z u*f (c+ρ • u)) := (measurable_unitPoissonWeight c z ρ).mul (hf.comp (by fun_prop))
   rw [integral_circleMeasure_eq_circleAverage 0 0 _ hm]
   simp only [neg_zero, Real.exp_zero]
   rw [Real.circleAverage_def, Real.circleAverage_def]
@@ -36,7 +35,7 @@ theorem integral_unitPoissonWeight_mul_eq_circleAverage (c z : ℂ) (ρ : ℝ) (
   apply intervalIntegral.integral_congr
   intro θ _
   dsimp only [Pi.mul_apply]
-  have hn : ‖circleMap 0 1 θ‖ = 1 := by simp only [norm_circleMap_zero, abs_one]
+  have hn : ‖circleMap 0 1 θ‖ = 1 := by simp
   rw [unitPoissonWeight_eq_poissonKernel c z (circleMap 0 1 θ) ρ hρ hn]
   have he : c+ρ • circleMap 0 1 θ = circleMap c ρ θ := by
     simp only [circleMap, zero_add, Complex.ofReal_one, one_mul, Complex.real_smul]
@@ -55,12 +54,9 @@ theorem integral_unitPoissonWeight_boundary_log (c z v : ℂ) (ρ : ℝ) (hρ : 
     funext u
     congr 2
     abel
-  have he' : (fun u : ℂ => unitPoissonWeight c ρ z u*Real.log ‖ρ • u-ρ • v‖) =
-      (fun u : ℂ => unitPoissonWeight c ρ z u*Real.log ‖(c+ρ • u)-(c+ρ • v)‖) :=
-    congrArg (fun f : ℂ → ℝ => fun u => unitPoissonWeight c ρ z u*f u) he
+  have he' := congrArg (fun f : ℂ → ℝ => fun u => unitPoissonWeight c ρ z u*f u) he
   rw [he', integral_unitPoissonWeight_mul_eq_circleAverage c z ρ hρ
-    (fun u => Real.log ‖u-(c+ρ • v)‖) (by fun_prop)]
-  rw [poissonKernel_eq_re_herglotzRieszKernel]
+      (fun u => Real.log ‖u-(c+ρ • v)‖) (by fun_prop), poissonKernel_eq_re_herglotzRieszKernel]
   exact circleAverage_re_herglotzRieszKernel_mul_log hb hz
 
 /-- With an interior pole, the boundary logarithm reproduces the regular Green numerator. -/
@@ -104,7 +100,7 @@ theorem integral_unitPoissonWeight_interior_log (c z w : ℂ) (ρ : ℝ) (hρ : 
     rw [Pi.mul_apply, norm_mul, Real.norm_eq_abs, abs_of_nonneg (unitPoissonWeight_nonneg c z u ρ hρ hz)]
     exact mul_le_mul (unitPoissonWeight_le c z u ρ ‖z-c‖ hρ
       (mem_ball_iff_norm.mp hz) le_rfl hu') (hM _ hball) (norm_nonneg _)
-      (by dsimp only [K]; positivity)
+      (by positivity)
   simp_rw [mul_sub]
   rw [integral_sub hf ((integrable_unitPoissonWeight c z ρ hρ hz).mul_const _),
     integral_mul_const, integral_unitPoissonWeight c z ρ hρ hz, one_mul]
@@ -112,7 +108,7 @@ theorem integral_unitPoissonWeight_interior_log (c z w : ℂ) (ρ : ℝ) (hρ : 
     (fun v : ℂ => Real.log ‖(ρ : ℂ)^2-(v-c)*star (w-c)‖) (by fun_prop)
   rw [hi]
   exact congrArg (fun t : ℝ => t-Real.log ρ)
-    (circleAverage_poisson_diskGreen_regular c z w ρ hρ hz hw)
+    (((harmonicOnNhd_diskGreen_regular c w ρ hρ hw).circleAverage_poissonKernel_smul hz))
 
 /-- The double Poisson boundary log energy is the literal regular numerator logarithm. -/
 theorem integral_unitPoissonWeight_pair_log (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
@@ -206,8 +202,7 @@ theorem poisson_gaussian_increment_variance {Ω : Type*} [MeasurableSpace Ω]
   change variance (H z-H w) P = _
   rw [← covariance_self hm]
   change covariance (fun ω => H z ω-H w ω) (fun ω => H z ω-H w ω) P = _
-  rw [covariance_fun_sub_fun_sub (hmem z) (hmem w) (hmem z) (hmem w)]
-  rw [covariance_comm (H w) (H z)]
+  rw [covariance_fun_sub_fun_sub (hmem z) (hmem w) (hmem z) (hmem w), covariance_comm (H w) (H z)]
   simp_rw [hcov]
   rw [norm_diskGreen_numerator_self c z.1 ρ hρ z.2,
     norm_diskGreen_numerator_self c w.1 ρ hρ w.2]
@@ -293,46 +288,14 @@ theorem poisson_gaussian_isKolmogorovProcess_on_closedBall
       P 8 8 M := by
   let ι (z : {z : ℂ // z ∈ closedBall c a}) : {z : ℂ // z ∈ ball c ρ} :=
     ⟨z.1,mem_ball_iff_norm.mpr ((mem_closedBall_iff_norm.mp z.2).trans_lt haρ)⟩
-  let C := ρ^2/(ρ^2-a^2)^2
-  let A := ∫ x : ℝ, |x|^8 ∂gaussianReal 0 1
-  have hC : 0 ≤ C := by dsimp only [C]; positivity
-  have hA : 0 ≤ A := integral_nonneg (fun x => pow_nonneg (abs_nonneg x) _)
-  let M : ℝ≥0 := ⟨C^4*A,mul_nonneg (pow_nonneg hC _) hA⟩
-  refine ⟨M,IsKolmogorovProcess.mk_of_secondCountableTopology
-    (fun z => hmeas (ι z)) ?_ (by norm_num) (by norm_num)⟩
-  intro z w
-  let U : Ω → ℝ := fun ω => H (ι z) ω-H (ι w) ω
-  have hU : HasGaussianLaw U P := hG.hasGaussianLaw_fun_sub (s := ι z) (t := ι w)
-  have hzero : (∫ ω, U ω ∂P) = 0 := by
-    rw [integral_sub ((hmem (ι z)).integrable (by norm_num))
-      ((hmem (ι w)).integrable (by norm_num)), hmean, hmean, sub_self]
-  have hv : variance U P ≤ C*dist z w^2 := by
-    simpa only [ι, Subtype.dist_eq, dist_eq_norm, C] using
-      poisson_gaussian_increment_variance_le P c R ρ a hρ ha haρ H hmem hcov (ι z) (ι w)
-        (mem_closedBall_iff_norm.mp z.2) (mem_closedBall_iff_norm.mp w.2)
-  have hm : (∫ ω, |U ω|^8 ∂P) ≤ (C^4*A)*dist z w^8 := by
-    have hh := hasGaussianLaw_integral_abs_pow_le U hU hzero 4 hv
-    change _ ≤ (C*dist z w^2)^4*A at hh
-    exact hh.trans_eq (by ring)
-  have hi : Integrable (fun ω => |U ω|^8) P := by
-    simpa only [Real.norm_eq_abs] using
-      (hU.memLp (p := (8 : ℝ≥0∞)) (by norm_num)).integrable_norm_pow'
-  have hlin := ofReal_integral_eq_lintegral_ofReal hi
-    (Eventually.of_forall (fun ω => pow_nonneg (abs_nonneg (U ω)) 8))
-  have he : (∫⁻ ω, edist (H (ι z) ω) (H (ι w) ω)^(8 : ℝ) ∂P) =
-      ENNReal.ofReal (∫ ω, |U ω|^8 ∂P) := by
-    rw [hlin]
-    apply lintegral_congr
-    intro ω
-    rw [edist_dist, Real.dist_eq]
-    simpa only [ENNReal.rpow_ofNat, U] using (ENNReal.ofReal_pow (abs_nonneg (U ω)) 8).symm
-  rw [he]
-  have hb := ENNReal.ofReal_le_ofReal hm
-  rw [ENNReal.ofReal_mul (mul_nonneg (pow_nonneg hC _) hA),
-    ENNReal.ofReal_pow (dist_nonneg : 0 ≤ dist z w) 8] at hb
-  change _ ≤ ENNReal.ofReal (C^4*A)*ENNReal.ofReal (dist z w)^8 at hb
-  rw [edist_dist, ENNReal.rpow_ofNat, ← ENNReal.ofReal_coe_nnreal (p := M)]
-  exact hb
+  have hK := gaussian_isKolmogorovProcess_of_variance_le (hG.comp_right ι)
+    (fun z => hmeas (ι z)) (fun z => hmean (ι z))
+    (C := ρ ^ 2 / (ρ ^ 2 - a ^ 2) ^ 2) (by positivity) (k := 2) (by decide) (fun z w => by
+      simpa only [ι, Subtype.dist_eq, dist_eq_norm, Function.comp_apply] using
+        poisson_gaussian_increment_variance_le P c R ρ a hρ ha haρ H hmem hcov (ι z) (ι w)
+          (mem_closedBall_iff_norm.mp z.2) (mem_closedBall_iff_norm.mp w.2))
+  norm_num at hK
+  simpa [Function.comp_def] using hK
 
 /-- On every compact inner disk the actual Gaussian Poisson family has a measurable
 continuous modification, constructed from its original coordinates. -/
@@ -364,7 +327,5 @@ theorem exists_continuous_poisson_gaussian_on_closedBall
   refine ⟨Z,hZm,fun ω => ?_,fun z => hZe z (mem_univ z)⟩
   obtain ⟨C,hC⟩ := hZh (1/4) (by norm_num) (by norm_num) ω
   exact continuousOn_univ.mp (hC.continuousOn (by norm_num))
-
-
 
 end DOZZ.Proofs

@@ -28,21 +28,6 @@ theorem fusion_small_moment_order (γ α₁ : ℝ) (hγ : 0 < γ) (hα₁ : α�
     have : 0 < min (1 : ℝ) b := lt_min zero_lt_one hb
     linarith
 
-/-- Inverse expectations converge at zero without a first moment assumption on the mass. -/
-theorem fusionMovingMass_inverse_expectation {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (y : ℂ) (hy : y ≠ 0)
-    (s : ℝ) (hs : s < 0) :
-    Tendsto (fun z => ∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y z (M ω) ^ s ∂P)
-      (nhds 0) (nhds (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y 0 (M ω) ^ s ∂P)) := by
-  obtain ⟨p, hp, hp1, hpRange⟩ := fusion_small_moment_order γ α₁ hγ hα₁
-  apply tendsto_iff_seq_tendsto.mpr
-  intro z hz
-  exact fusionMovingMass_inverse_expectation_seq P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p
-    hα hα₁ hα₂ hα₃ hp hp1 hpRange y hy z hz s hs
-
 /-- The limiting inverse expectation is finite, as needed for `toReal` continuity. -/
 theorem fusionMovingMass_inverse_expectation_finite {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)

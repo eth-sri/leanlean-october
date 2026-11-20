@@ -47,7 +47,7 @@ theorem local_circle_second_moments
     (∫ ω, Xc ω (z+p.val.1) p.val.2 ^ 2 ∂P) =
         p.val.2 + 2 * Real.log ‖z+p.val.1‖ ∧
       (∫ ω, (Xc ω (z+p.val.1) p.val.2 - Xc ω z 0) ^ 2 ∂P) = p.val.2 := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨hG, hm⟩ := circleAverage_isGaussianProcess P X Xc hX hc
   have hmU : (∫ ω, Xc ω (z+p.val.1) p.val.2 - Xc ω z 0 ∂P) = 0 := by
     rw [integral_sub ((hc.2.1 _ _).integrable (by norm_num))

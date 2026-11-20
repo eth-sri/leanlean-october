@@ -30,9 +30,9 @@ theorem two_mass_fatou
     (∫⁻ ω, (ENNReal.ofReal (g₀ ω)) ^ p * (ENNReal.ofReal (g₁ ω)) ^ q ∂P) ≤ C := by
   obtain ⟨s, hs, hsub₀⟩ := hf₀.exists_seq_tendsto_ae
   obtain ⟨t, ht, hsub₁⟩ := (hf₁.comp hs.tendsto_atTop).exists_seq_tendsto_ae
-  let ns : ℕ → ℕ := fun n => s (t n)
-  have hns : Tendsto ns atTop atTop := hs.tendsto_atTop.comp ht.tendsto_atTop
-  let F : ℕ → Ω → ℝ≥0∞ := fun n ω =>
+  let ns  := fun n => s (t n)
+  have hns  := hs.tendsto_atTop.comp ht.tendsto_atTop
+  let F  := fun n ω =>
     (ENNReal.ofReal (f₀ (ns n) ω)) ^ p * (ENNReal.ofReal (f₁ (ns n) ω)) ^ q
   have hlim : ∀ᵐ ω ∂P, liminf (fun n => F n ω) atTop =
       (ENNReal.ofReal (g₀ ω)) ^ p * (ENNReal.ofReal (g₁ ω)) ^ q := by
@@ -43,19 +43,16 @@ theorem two_mass_fatou
     have he₁ : Tendsto (fun n => (ENNReal.ofReal (f₁ (ns n) ω)) ^ q) atTop
         (nhds ((ENNReal.ofReal (g₁ ω)) ^ q)) := ENNReal.continuous_rpow_const.continuousAt.tendsto.comp
       (ENNReal.continuous_ofReal.continuousAt.tendsto.comp h₁)
-    have hn₀ : (ENNReal.ofReal (g₀ ω)) ^ p ≠ ⊤ :=
-      ENNReal.rpow_ne_top_of_ne_zero (ENNReal.ofReal_pos.mpr hg₀).ne' ENNReal.ofReal_ne_top
-    have hn₁ : (ENNReal.ofReal (g₁ ω)) ^ q ≠ ⊤ :=
-      ENNReal.rpow_ne_top_of_ne_zero (ENNReal.ofReal_pos.mpr hg₁).ne' ENNReal.ofReal_ne_top
-    exact (ENNReal.Tendsto.mul he₀ (Or.inr hn₁) he₁ (Or.inr hn₀)).liminf_eq
-  calc
-    _ = ∫⁻ ω, liminf (fun n => F n ω) atTop ∂P :=
-      lintegral_congr_ae (hlim.mono fun _ h => h.symm)
-    _ ≤ liminf (fun n => ∫⁻ ω, F n ω ∂P) atTop :=
-      lintegral_liminf_le' (fun n => hmeas (ns n))
-    _ ≤ liminf (fun n => R (ns n)) atTop :=
-      Filter.liminf_le_liminf (Eventually.of_forall fun n => hbound (ns n))
-    _ = C := (hR.comp hns).liminf_eq
+    exact Tendsto.liminf_eq
+      (ENNReal.Tendsto.mul he₀
+        (Or.inr (ENNReal.rpow_ne_top_of_ne_zero (LT.lt.ne' (ENNReal.ofReal_pos.mpr hg₁)) ENNReal.ofReal_ne_top)) he₁
+        (Or.inr (ENNReal.rpow_ne_top_of_ne_zero (LT.lt.ne' (ENNReal.ofReal_pos.mpr hg₀)) ENNReal.ofReal_ne_top)))
+  exact Trans.trans
+    (Trans.trans
+      (Trans.trans (lintegral_congr_ae (Eventually.mono hlim fun x h => Eq.symm h))
+        (lintegral_liminf_le' fun n => hmeas (ns n)))
+      (liminf_le_liminf (Eventually.of_forall fun n => hbound (ns n)) isBounded_ge_of_bot isCobounded_ge_of_top))
+    (Tendsto.liminf_eq (Tendsto.comp hR hns))
 
 /-- Indicator weights retain exactly the original restricted field mass. -/
 theorem fieldChaosMass_indicator
@@ -75,6 +72,6 @@ theorem fieldChaosMass_indicator
     · simp only [Set.indicator_of_notMem hx, ENNReal.coe_zero, zero_mul]
   rw [he, lintegral_indicator hA, Measure.restrict_restrict hA,
     inter_eq_left.mpr hAU]
-  simp only [ENNReal.coe_one, one_mul]
+  simp
 
 end DOZZ.Proofs

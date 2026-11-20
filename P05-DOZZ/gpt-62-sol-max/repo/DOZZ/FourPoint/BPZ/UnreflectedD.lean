@@ -58,10 +58,9 @@ theorem bpz_planar_args_nonint {γ t : ℝ} (hγ : 0 < γ) (hlo : γ / 2 < t) (h
     have := mul_lt_mul_of_pos_left hlo hγ
     nlinarith
   have hpos : 0 < γ ^ 2 / 4 := by positivity
-  have hγsq : γ ^ 2 < 4 := by nlinarith
   refine ⟨fun n hn => ?_, fun n hn => ?_, fun n hn => ?_⟩
   · have h0 : (0 : ℝ) < n := by rw [← hn]; linarith
-    have h1 : (n : ℝ) < 1 := by rw [← hn]; exact hγt1
+    have h1 : (n : ℝ) < 1 := by rwa [← hn]
     have : (0 : ℤ) < n := by exact_mod_cast h0
     have : n < (1 : ℤ) := by exact_mod_cast h1
     omega
@@ -83,7 +82,6 @@ theorem bpz_continuousAt_shift_coefficients {γ₀ α₁ α₂ α₃ : ℝ} (hγ
     ContinuousAt (fun γ => gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
       (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁)) γ₀ ∧
     ContinuousAt (fun γ => (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) γ₀ := by
-  have _ := hγ2
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10⟩ :=
     bpz_gauss_args_pos hγ hαlo hαhi hα₂ hα₃ hs
   have hQa : AnalyticAt ℝ Q γ₀ := by
@@ -107,7 +105,7 @@ theorem bpz_continuousAt_shift_coefficients {γ₀ α₁ α₂ α₃ : ℝ} (hγ
   obtain ⟨g1, g2, g3⟩ := bpz_planar_args_nonint hγ hαlo hαhi
   have hPGC := bpz_analyticAt_re_planarGaussConstant (k := fun γ => γ ^ 2 / 2)
     (β := fun γ => γ * α₁) (x₀ := γ₀) (by fun_prop) (by fun_prop)
-    (by simpa [mul_div_assoc] using g1) (by simpa using g2) (by simpa [mul_div_assoc] using g3)
+    (by assumption) (by simpa using g2) (by assumption)
   exact hPGC.continuousAt
 
 /-- The shift relation at a fixed `γ`, as a proposition (used only inside proofs). -/
@@ -118,28 +116,13 @@ theorem bpz_shift_all {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hdiag : ∀ (M' : Ω → Measure ℂ) (γ' t : ℝ), 0 < γ' → γ' < 2 → IsGMCOf P X γ' M' →
       γ' / 2 < t → t < 2 / γ' → α₂ < Q γ' → α₃ < Q γ' → 2 * Q γ' + γ' / 2 < t + α₂ + α₃ →
-      ∀ z ∈ gaussCutPlane, fourPointT P M' γ' μ (-(γ' / 2)) t α₂ α₃ z =
-        structureConstant P M' γ' μ (t - γ' / 2) α₂ α₃ *
-          (‖gaussFMinus H (gaussParameterA γ' (γ' / 2) t α₂ α₃)
-              (gaussParameterB γ' (γ' / 2) t α₂ α₃) (gaussParameterC γ' (γ' / 2) t) z‖ ^ 2 +
-            gaussCoefficientRatio (gaussParameterA γ' (γ' / 2) t α₂ α₃)
-                (gaussParameterB γ' (γ' / 2) t α₂ α₃) (gaussParameterC γ' (γ' / 2) t) *
-              ‖gaussFPlus H (gaussParameterA γ' (γ' / 2) t α₂ α₃)
-                (gaussParameterB γ' (γ' / 2) t α₂ α₃) (gaussParameterC γ' (γ' / 2) t) z‖ ^ 2)) :
-    gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-        (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
-          structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ =
-        -μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re *
-          structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ := by
+      HasGammaHalfDiagonal H P M' γ' μ t α₂ α₃) :
+    bpzHalfShiftLeft P M γ μ α₁ α₂ α₃ = bpzHalfShiftRight P M γ μ α₁ α₂ α₃ := by
   -- the non-critical cases
   have hnc : ∀ (M' : Ω → Measure ℂ) (γ' : ℝ), 0 < γ' → γ' < 2 → IsGMCOf P X γ' M' →
       γ' ^ 2 ≠ 2 → γ' / 2 < α₁ → α₁ < 2 / γ' → α₂ < Q γ' → α₃ < Q γ' →
       2 * Q γ' + γ' / 2 < α₁ + α₂ + α₃ →
-      gaussCoefficientRatio (gaussParameterA γ' (γ' / 2) α₁ α₂ α₃)
-          (gaussParameterB γ' (γ' / 2) α₁ α₂ α₃) (gaussParameterC γ' (γ' / 2) α₁) *
-            structureConstant P M' γ' μ (α₁ - γ' / 2) α₂ α₃ =
-          -μ * (planarGaussConstant (γ' ^ 2 / 2) (γ' * α₁)).re *
-            structureConstant P M' γ' μ (α₁ + γ' / 2) α₂ α₃ := by
+      bpzHalfShiftLeft P M' γ' μ α₁ α₂ α₃ = bpzHalfShiftRight P M' γ' μ α₁ α₂ α₃ := by
     intro M' γ' h0 h2 hM' hne hlo hhi h₂ h₃ hs'
     rcases lt_or_gt_of_ne hne with hlt | hgt
     · exact bpz_shift_small_gamma hH P X M' γ' μ α₁ α₂ α₃ h0 hlt hμ hlo hhi h₂ h₃ hs' hX hM'
@@ -164,11 +147,8 @@ theorem bpz_shift_all {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ
   have hMγ : ∀ᵐ ω ∂P, Mfam γ ω = M ω :=
     equatorGFF_GMC_unique_ae P X hX γ (Mfam γ) M (hMfam γ hγmem) hM
   -- the two sides along the family
-  set L : ℝ → ℝ := fun γ' => gaussCoefficientRatio (gaussParameterA γ' (γ' / 2) α₁ α₂ α₃)
-      (gaussParameterB γ' (γ' / 2) α₁ α₂ α₃) (gaussParameterC γ' (γ' / 2) α₁) *
-    structureConstant P (Mfam γ') γ' μ (α₁ - γ' / 2) α₂ α₃ with hL
-  set R : ℝ → ℝ := fun γ' => -μ * (planarGaussConstant (γ' ^ 2 / 2) (γ' * α₁)).re *
-    structureConstant P (Mfam γ') γ' μ (α₁ + γ' / 2) α₂ α₃ with hR
+  set L : ℝ → ℝ := fun γ' => bpzHalfShiftLeft P (Mfam γ') γ' μ α₁ α₂ α₃ with hL
+  set R : ℝ → ℝ := fun γ' => bpzHalfShiftRight P (Mfam γ') γ' μ α₁ α₂ α₃ with hR
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   obtain ⟨hρc, hPc⟩ := bpz_continuousAt_shift_coefficients hγ hγ2 hαlo hαhi hα₂ hα₃ hs
   have hsm : 0 < sExp γ (α₁ - γ / 2) α₂ α₃ := by
@@ -178,11 +158,11 @@ theorem bpz_shift_all {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ
   have hCm := bpz_continuousAt_structureConstant_gamma P X hX Mfam hMfam μ hμ
     (f := fun γ' => α₁ - γ' / 2) (by fun_prop) α₂ α₃ hγmem
     (by rw [hQ]; have : (0 : ℝ) < γ / 2 := by positivity
-        have : α₁ < 2 / γ := hαhi
+        have  := hαhi
         linarith) hα₂ hα₃ hsm
   have hCp := bpz_continuousAt_structureConstant_gamma P X hX Mfam hMfam μ hμ
     (f := fun γ' => α₁ + γ' / 2) (by fun_prop) α₂ α₃ hγmem
-    (by rw [hQ]; have : α₁ < 2 / γ := hαhi; linarith) hα₂ hα₃ hsp
+    (by rw [hQ]; have  := hαhi; linarith) hα₂ hα₃ hsp
   have hLc : ContinuousAt L γ := hρc.mul hCm
   have hRc : ContinuousAt R γ := (continuousAt_const.mul hPc).mul hCp
   -- equality off the critical point
@@ -199,43 +179,6 @@ theorem bpz_shift_all {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ
   have hLR : L γ = R γ := tendsto_nhds_unique
     ((hLc.tendsto.mono_left nhdsWithin_le_nhds).congr' hev)
     (hRc.tendsto.mono_left nhdsWithin_le_nhds)
-  simp only [hL, hR] at hLR
-  rw [bpz_structureConstant_congr P hMγ, bpz_structureConstant_congr P hMγ] at hLR
-  exact hLR
-
-/-- **The unreflected `γ/2` formula, conditional on the diagonal formula.** -/
-theorem bpz_gammaHalf_full_unreflected_formula_of_diag {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H)
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α₁ α₂ α₃ : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
-    (hαlo : γ / 2 < α₁) (hαhi : α₁ < 2 / γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hdiag : ∀ (M' : Ω → Measure ℂ) (γ' t : ℝ), 0 < γ' → γ' < 2 → IsGMCOf P X γ' M' →
-      γ' / 2 < t → t < 2 / γ' → α₂ < Q γ' → α₃ < Q γ' → 2 * Q γ' + γ' / 2 < t + α₂ + α₃ →
-      ∀ z ∈ gaussCutPlane, fourPointT P M' γ' μ (-(γ' / 2)) t α₂ α₃ z =
-        structureConstant P M' γ' μ (t - γ' / 2) α₂ α₃ *
-          (‖gaussFMinus H (gaussParameterA γ' (γ' / 2) t α₂ α₃)
-              (gaussParameterB γ' (γ' / 2) t α₂ α₃) (gaussParameterC γ' (γ' / 2) t) z‖ ^ 2 +
-            gaussCoefficientRatio (gaussParameterA γ' (γ' / 2) t α₂ α₃)
-                (gaussParameterB γ' (γ' / 2) t α₂ α₃) (gaussParameterC γ' (γ' / 2) t) *
-              ‖gaussFPlus H (gaussParameterA γ' (γ' / 2) t α₂ α₃)
-                (gaussParameterB γ' (γ' / 2) t α₂ α₃) (gaussParameterC γ' (γ' / 2) t) z‖ ^ 2)) :
-    let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-    let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-    let c := gaussParameterC γ (γ / 2) α₁
-    ∀ z ∈ gaussCutPlane,
-      fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
-        structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-            ‖gaussFMinus H a b c z‖ ^ 2 +
-          (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) *
-            structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
-              ‖gaussFPlus H a b c z‖ ^ 2 := by
-  intro a b c
-  exact bpz_unreflected_of_shift P M γ μ α₁ α₂ α₃
-    (hdiag M γ α₁ hγ hγ₂ hM hαlo hαhi hα₂ hα₃ hs)
-    (bpz_shift_all hH P X M γ μ α₁ α₂ α₃ hγ hγ₂ hμ hαlo hαhi hα₂ hα₃ hs hX hM hdiag)
+  simpa only [hL, hR, bpzHalfShiftLeft, bpzHalfShiftRight, bpz_structureConstant_congr P hMγ] using hLR
 
 end DOZZ.Proofs

@@ -27,8 +27,8 @@ theorem sumtail_uniform_variable_rate
     ∃ C : ℝ, 0 ≤ C ∧ ∀ a ∈ K, ∀ s : S, ∀ x : ℝ, 1 ≤ x →
       err a s x ≤ C*x^(-p a-e a+d) := by
   classical
-  let _ : CompactSpace K := isCompact_iff_compactSpace.mp hK
-  have hec : Continuous (fun a : K => e a) := continuousOn_iff_continuous_domRestrict.mp he
+  let _  := isCompact_iff_compactSpace.mp hK
+  have hec  := continuousOn_iff_continuous_domRestrict.mp he
   let δ (i : K) := min (d/4) (e i/4)
   have hδ (i : K) : 0 < δ i := lt_min (by positivity) (by have := hepos i i.2; positivity)
   let η (i : K) := e i-2*δ i
@@ -38,10 +38,9 @@ theorem sumtail_uniform_variable_rate
     dsimp [η,δ]
     linarith only [h,hp]
   let V (i : K) : Set K := {a | |e a-e i| ≤ δ i}
-  let L (i : K) : Set A := Subtype.val '' V i
+  let L (i : K)  := Subtype.val '' V i
   have hLc (i : K) : IsCompact (L i) := by
-    have hv : IsClosed (V i) := isClosed_le (hec.sub continuous_const).abs continuous_const
-    exact hv.isCompact.image continuous_subtype_val
+    exact (isClosed_le (hec.sub continuous_const).abs continuous_const).isCompact.image continuous_subtype_val
   have hLs (i : K) : L i ⊆ K := by rintro _ ⟨a,_,rfl⟩; exact a.2
   have hηe (i : K) (a : A) (ha : a ∈ L i) : η i < e a := by
     obtain ⟨b,hb,rfl⟩ := ha
@@ -63,14 +62,14 @@ theorem sumtail_uniform_variable_rate
   obtain ⟨i,hi⟩ := mem_iUnion.mp (hI (mem_univ aa))
   obtain ⟨hiI,hui⟩ := mem_iUnion.mp hi
   change |e aa-e i| < δ i at hui
-  have hva : aa ∈ V i := hui.le
+  have hva  := hui.le
   have hla : a ∈ L i := ⟨aa,hva,rfl⟩
   have hrate : -p a-η i ≤ -p a-e a+d := by
     have hh := (abs_le.mp hui.le).2
     have hhδ := min_le_left (d/4) (e i/4)
     dsimp [η,δ] at *
     linarith only [hh,hhδ,hd]
-  have hCi : C i ≤ ∑ j ∈ I, C j := Finset.single_le_sum (fun j _ => hC j) hiI
+  have hCi  := Finset.single_le_sum (fun j _ => hC j) hiI
   exact (hCb i a hla s x hx).trans (mul_le_mul
     hCi (Real.rpow_le_rpow_of_exponent_le hx hrate)
     (Real.rpow_nonneg (by linarith only [hx]) _) (Finset.sum_nonneg (fun j _ => hC j)))

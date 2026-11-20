@@ -31,18 +31,18 @@ theorem negativeLastExitTime_le_iff_no_future_visit
     (hbounded : BddAbove {u : ℝ≥0 | p u = -c}) :
     negativeLastExitTime p c ≤ t ↔ ∀ u : ℝ≥0, t < u → p u ≠ -c := by
   rw [negativeLastExitTime]
-  let A : Set ℝ≥0 := {u | p u = -c}
+  let A  := {u | p u = -c}
   by_cases hA : A.Nonempty
   · constructor
     · intro hlast u htu hu
-      have hu_le : u ≤ sSup A := le_csSup hbounded hu
+      have hu_le  := le_csSup hbounded hu
       exact (not_lt_of_ge (hu_le.trans hlast)) htu
     · intro havoid
       apply csSup_le hA
       intro u hu
       by_contra hnot
       exact havoid u (lt_of_not_ge hnot) hu
-  · have hAempty : A = ∅ := Set.not_nonempty_iff_eq_empty.mp hA
+  · have hAempty  := Set.not_nonempty_iff_eq_empty.mp hA
     constructor
     · intro _ u _ hu
       exact hA ⟨u, hu⟩
@@ -56,10 +56,9 @@ theorem negativeLastExitTime_mem_of_nonempty_bddAbove
     (hnonempty : ({u : ℝ≥0 | p u = -c}).Nonempty)
     (hbounded : BddAbove {u : ℝ≥0 | p u = -c}) :
     p (negativeLastExitTime p c) = -c := by
-  let A : Set ℝ≥0 := {u | p u = -c}
+  let A  := {u | p u = -c}
   have hclosed : IsClosed A := isClosed_singleton.preimage p.continuous
-  have hmem : sSup A ∈ A := hclosed.csSup_mem hnonempty hbounded
-  exact hmem
+  exact hclosed.csSup_mem hnonempty hbounded
 
 /-- Right endpoint of the dyadic mesh cell strictly containing a nonnegative last-exit time.
 The strict upper endpoint convention avoids any ambiguity when the last exit itself is dyadic. -/
@@ -72,7 +71,7 @@ mesh cell. -/
 theorem dyadicLastExitCeilingTime_bounds (n : ℕ) (L : ℝ≥0) :
     (L : ℝ) < (dyadicLastExitCeilingTime n L : ℝ) ∧
       (dyadicLastExitCeilingTime n L : ℝ) ≤ (L : ℝ) + 1 / (2 : ℝ) ^ n := by
-  let a : ℝ := (2 : ℝ) ^ n
+  let a  := (2 : ℝ) ^ n
   have ha : 0 < a := by positivity
   have hfloor_le : (Nat.floor ((L : ℝ) * a) : ℝ) ≤ (L : ℝ) * a :=
     Nat.floor_le (by positivity)
@@ -82,15 +81,11 @@ theorem dyadicLastExitCeilingTime_bounds (n : ℕ) (L : ℝ≥0) :
   · change (L : ℝ) <
       ((Nat.floor ((L : ℝ) * a) + 1 : ℕ) : ℝ) / a
     push_cast
-    rw [lt_div_iff₀ ha]
-    exact hlt
+    rwa [lt_div_iff₀ ha]
   · change ((Nat.floor ((L : ℝ) * a) + 1 : ℕ) : ℝ) / a ≤
       (L : ℝ) + 1 / a
     rw [div_le_iff₀ ha]
-    push_cast
-    rw [show ((L : ℝ) + 1 / a) * a = (L : ℝ) * a + 1 by
-      field_simp [ha.ne']]
-    linarith
+    grind
 
 /-- The deterministic dyadic ceiling times converge to the given nonnegative time. -/
 theorem dyadicLastExitCeilingTime_coe_tendsto (L : ℝ≥0) :
@@ -99,10 +94,8 @@ theorem dyadicLastExitCeilingTime_coe_tendsto (L : ℝ≥0) :
     simpa only [one_div_pow] using
       (tendsto_pow_atTop_nhds_zero_of_lt_one
         (r := (1 / 2 : ℝ)) (by norm_num) (by norm_num))
-  have hupper : Tendsto (fun n : ℕ => (L : ℝ) + 1 / (2 : ℝ) ^ n)
-      atTop (𝓝 (L : ℝ)) := by
-    simpa using tendsto_const_nhds.add hmesh
-  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hupper
+  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (by
+    simpa using tendsto_const_nhds.add hmesh)
     (fun n => (dyadicLastExitCeilingTime_bounds n L).1.le)
     (fun n => (dyadicLastExitCeilingTime_bounds n L).2)
 
@@ -121,9 +114,7 @@ theorem continuousPath_dyadicLastExitCeiling_eval_tendsto
   have hL : 0 ≤ (L : ℝ) := L.property
   let F : ℝ → ℝ := fun x => p ⟨max x 0, le_max_right x 0⟩
   have hF : Continuous F := by
-    apply p.continuous.comp
-    exact (continuous_max.comp (continuous_id.prodMk continuous_const)).subtype_mk
-      (fun x => le_max_right x 0)
+    fun_prop
   have hFL : F (L : ℝ) = p L := by
     change p ⟨max (L : ℝ) 0, le_max_right _ _⟩ = p L
     congr 1

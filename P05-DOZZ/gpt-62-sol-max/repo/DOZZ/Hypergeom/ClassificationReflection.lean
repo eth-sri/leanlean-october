@@ -19,12 +19,7 @@ namespace DOZZ.Proofs
 private theorem hasFDerivAt_reflection (z : ℂ) :
     HasFDerivAt (𝕜 := ℝ) (fun w : ℂ => 1 - w)
       (-ContinuousLinearMap.id ℝ ℂ) z := by
-  have hcomplex : HasDerivAt (fun w : ℂ => 1 - w) (-1) z := by
-    simpa using (hasDerivAt_id z).const_sub (1 : ℂ)
-  have hreal := hcomplex.hasFDerivAt.restrictScalars ℝ
-  convert hreal using 1
-  ext w
-  simp
+  fun_prop
 
 /-- Pulling a real differentiable map back by `z ↦ 1-z` negates its `∂z` derivative. -/
 theorem wirtingerZ_reflection {f : ℂ → ℂ} {z : ℂ}
@@ -48,11 +43,7 @@ private theorem gaussRegularPlane_reflection (z : ℂ)
   · intro h
     apply hz.2
     exact (sub_eq_zero.mp h).symm
-  · intro h
-    apply hz.1
-    have hzero : z = 0 := by
-      simpa using congrArg (fun w : ℂ => (1 : ℂ) - w) h
-    exact hzero
+  simp_all
 
 /-- The second `∂z` derivative is invariant under reflection on an open domain stable
 under `z ↦ 1-z`. -/
@@ -84,23 +75,11 @@ theorem wirtingerZ_second_reflection
     exact wirtingerZ_reflection
       (((hf (1 - w) (hreflect w hw)).contDiffAt
         (hU.mem_nhds (hreflect w hw))).differentiableAt (by norm_num))
-  have hfirst := wirtingerZ_congr_of_eventuallyEq hleft hright heq
+  have hfirst := wirtingerZ_congr_of_eventuallyEq heq
   have hminus := wirtingerZ_reflection hG
   have hsub := wirtingerZ_sub (differentiableAt_const (0 : ℂ)) hGcomp
   have hzero : wirtingerZ (fun _ : ℂ => (0 : ℂ)) z = 0 := by simp [wirtingerZ]
-  have hcalc : wirtingerZ (fun w => -wirtingerZ f (1 - w)) z =
-      wirtingerZ (fun w => wirtingerZ f w) (1 - z) := by
-    calc
-      _ = wirtingerZ (fun w => (0 : ℂ) - wirtingerZ f (1 - w)) z := by
-        congr 1
-        funext w
-        simp
-      _ = wirtingerZ (fun w => (0 : ℂ)) z -
-          wirtingerZ (fun w => wirtingerZ f (1 - w)) z := hsub
-      _ = wirtingerZ (fun w => wirtingerZ f w) (1 - z) := by
-        rw [hzero, hminus]
-        ring
-  exact hfirst.trans hcalc
+  simp_all
 
 /-- Reflection preserves the real-solution condition `IsRealGaussSolution` after
 changing `c` to `1 + a + b - c`. -/
@@ -118,12 +97,11 @@ theorem realGaussSolution_reflection
       ((hT.1 z hz).contDiffAt (gaussRegularPlane_isOpen.mem_nhds hz)) |>.contDiffWithinAt
   have hUreg : ∀ z ∈ gaussRegularPlane, 1 - z ∈ gaussRegularPlane := hregMap
   have hTref : ContDiffOn ℝ 2 (fun z => T (1 - z)) gaussRegularPlane := by
-    intro z hz
-    have hAt := (hT.1 (1 - z) (hUreg z hz)).contDiffAt
-      (gaussRegularPlane_isOpen.mem_nhds (hUreg z hz))
-    have hmap : ContDiffAt ℝ 2 (fun w : ℂ => (1 : ℂ) - w) z := by fun_prop
-    change ContDiffWithinAt ℝ 2 (fun w => T (1 - w)) gaussRegularPlane z
-    exact (hAt.comp z hmap).contDiffWithinAt
+    exact fun z hz =>
+      have hAt :=
+        ContDiffWithinAt.contDiffAt (hT.left (1 - z) (hUreg z hz)) (IsOpen.mem_nhds gaussRegularPlane_isOpen (hUreg z hz));
+      have hmap := ContDiffAt.sub contDiffAt_const contDiffAt_id;
+      id (ContDiffAt.contDiffWithinAt (ContDiffAt.comp z hAt hmap))
   refine ⟨hTref, ?_⟩
   intro z hz
   have hz' := hUreg z hz

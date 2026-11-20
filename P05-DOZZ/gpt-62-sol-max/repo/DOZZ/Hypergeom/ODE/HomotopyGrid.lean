@@ -128,8 +128,7 @@ theorem exists_homotopy_picard_grid
     apply himage
     simp only [mem_prod]
     exact ⟨hcoord i hi, hcoord j hj⟩
-  · intro i hi j hj s hs t ht
-    exact hgrid i hi j hj s hs t ht
+  · assumption
   · exact localPicard_homotopy_grid_endpoint_eq N r M hr hM H node hdata
       hcells hleftNode hrightNode y
 

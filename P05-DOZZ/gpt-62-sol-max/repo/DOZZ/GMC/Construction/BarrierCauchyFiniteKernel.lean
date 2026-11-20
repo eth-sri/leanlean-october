@@ -121,9 +121,9 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
   let C : ℝ := max 0 R
   have hC : 0 ≤ C := by dsimp [C]; exact le_max_left _ _
   have hlimCovAbs : ∀ p ∈ S, |limCov p| ≤ C := by
-    intro p hp
-    have himg : |limCov p| ∈ (fun q : ℂ × ℂ => |limCov q|) '' S := ⟨p, hp, rfl⟩
-    exact (hR himg).trans (le_max_right _ _)
+    exact fun p hp =>
+      have himg := Exists.intro p ⟨hp, rfl⟩;
+      LE.le.trans (hR himg) (le_max_right 0 R)
   let M : ℝ := Real.exp (B ^ 2 * C)
   have hM : 0 ≤ M := by dsimp [M]; positivity
   have hF : ∀ η : ℝ, 0 < η → ∃ δ : ℝ, 0 < δ ∧ ∀ ε ε' : ℝ,
@@ -173,9 +173,7 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
       apply hY.gaussian n (fun i => (Real.exp (-(scale i : ℝ)), center p i))
       intro i
       exact ⟨Real.exp_pos _, le_trans (hscale i) (min_le_left _ _)⟩
-    simpa [G₀, W] using integral_gaussianRectangleIndicator_abs_le_one P W hW barrier
-      (fun i => γ * coarseKernel (scale i) p.1 (center p i) +
-        γ * coarseKernel (scale i) p.2 (center p i))
+    apply integral_gaussianRectangleIndicator_abs_le_one <;> assumption
   refine ⟨H, hH, coarseKernel, ?_⟩
   intro η hη
   obtain ⟨δ', hδ', hprod'⟩ := tendsto_uniformlyOn_product_of_tendsto_uniformlyOn

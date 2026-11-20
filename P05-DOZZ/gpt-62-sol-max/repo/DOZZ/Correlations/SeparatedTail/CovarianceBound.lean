@@ -17,17 +17,19 @@ open MeasureTheory ProbabilityTheory Metric Set
 namespace DOZZ.Proofs
 
 
+section
+variable (c x y : ℂ) (hx : ‖x-c‖ ≤ 1) (hy : ‖y-c‖ ≤ 1)
+include hx hy
+
 /-- On a unit disk inside the disk of radius `5/4`, the regular Green numerator stays
 uniformly separated from zero, including at the coincident pair. -/
-theorem separatedTail_green_numerator_bounds (c x y : ℂ)
-    (hx : ‖x-c‖ ≤ 1) (hy : ‖y-c‖ ≤ 1) :
+theorem separatedTail_green_numerator_bounds :
     (9/16 : ℝ) ≤ ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ ∧
       ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ ≤ 41/16 := by
   have hprod : ‖(x-c)*star (y-c)‖ ≤ 1 := by
     rw [norm_mul, norm_star]
     nlinarith [norm_nonneg (x-c), norm_nonneg (y-c)]
   have hs : ‖((5/4 : ℝ) : ℂ)^2‖ = (25/16 : ℝ) := by
-    rw [norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by norm_num)]
     norm_num
   have hupper := norm_sub_le (((5/4 : ℝ) : ℂ)^2) ((x-c)*star (y-c))
   have hlower := norm_sub_norm_le (((5/4 : ℝ) : ℂ)^2) ((x-c)*star (y-c))
@@ -35,8 +37,7 @@ theorem separatedTail_green_numerator_bounds (c x y : ℂ)
   constructor <;> linarith
 
 /-- The regular Green logarithm has an absolute bound independent of the disk center. -/
-theorem separatedTail_green_regular_log_abs_le (c x y : ℂ)
-    (hx : ‖x-c‖ ≤ 1) (hy : ‖y-c‖ ≤ 1) :
+theorem separatedTail_green_regular_log_abs_le :
     |Real.log ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖| ≤ 3 := by
   obtain ⟨hl, hu⟩ := separatedTail_green_numerator_bounds c x y hx hy
   have h0 : 0 < ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ := by linarith
@@ -49,6 +50,8 @@ theorem separatedTail_green_regular_log_abs_le (c x y : ℂ)
   rw [abs_le]
   constructor <;> linarith
 
+end
+
 /-- The equator regular circle term is bounded on every bounded chart. -/
 theorem separatedTail_circle_regular_bounds (c x : ℂ) (R r : ℝ)
     (hR : 1 < R) (hpin : ‖c‖+5/4 ≤ R) (hx : ‖x-c‖+Real.exp (-r) < 5/4) :
@@ -59,13 +62,12 @@ theorem separatedTail_circle_regular_bounds (c x : ℂ) (R r : ℝ)
     integrable_circleMeasure_of_circleIntegrable x r continuous_log_normPlus.measurable
       continuous_log_normPlus.continuousOn.circleIntegrable'
   refine ⟨integral_nonneg (fun z => Real.log_nonneg (le_max_left _ _)), ?_⟩
-  have hb : ∀ᵐ z ∂circleMeasure x r, Real.log (normPlus z) ≤ R := by
+  simpa only [integral_const, probReal_univ, one_smul] using
+    integral_mono_ae hi (integrable_const R) (by
     filter_upwards [interior_circle_norm_le_pin c x R (5/4) r hpin hx] with z hz
     have hnorm : normPlus z ≤ R := max_le hR.le hz
     have hp : 0 < normPlus z := zero_lt_one.trans_le (le_max_left _ _)
-    exact (Real.log_le_sub_one_of_pos hp).trans (by linarith)
-  simpa only [integral_const, probReal_univ, one_smul] using
-    integral_mono_ae hi (integrable_const R) hb
+    exact (Real.log_le_sub_one_of_pos hp).trans (by linarith))
 
 /-- The literal finite-cutoff covariance difference cancels the same circle logarithmic
 potential on both sides. This also applies on the diagonal. -/

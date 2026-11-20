@@ -23,22 +23,22 @@ theorem four_div_sq_gt_one {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) : 1 < 4 / �
   rw [one_lt_div (by positivity)]
   nlinarith
 
+section
+variable {γ α : ℝ} (hγ : 0 < γ)
+include hγ
+
 /-- The one-insertion error ceiling is positive below the moment ceiling. -/
-theorem oneInsertionErrorCeiling_pos {γ α : ℝ} (hγ : 0 < γ)
+theorem oneInsertionErrorCeiling_pos
     (hp0 : 0 ≤ reflectionExponent γ α) (hp : reflectionExponent γ α < 4 / γ ^ 2) :
     0 < oneInsertionErrorCeiling γ α := by
   unfold oneInsertionErrorCeiling oneInsertionMomentCeiling
   have h2γ : 0 < 2 / γ ^ 2 := by positivity
   have h1 : reflectionExponent γ α < min (reflectionExponent γ α + 2 / γ ^ 2) (4 / γ ^ 2) :=
     lt_min (by linarith) hp
-  have h2 : 0 < 1 + min (reflectionExponent γ α + 2 / γ ^ 2) (4 / γ ^ 2) := by
-    have : 0 < min (reflectionExponent γ α + 2 / γ ^ 2) (4 / γ ^ 2) :=
-      lt_of_le_of_lt hp0 h1
-    linarith
-  exact div_pos (by linarith) h2
+  apply div_pos <;> positivity
 
 /-- The one-insertion error ceiling is bounded below uniformly for exponents in `[0, 1]`. -/
-theorem oneInsertionErrorCeiling_ge {γ α : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem oneInsertionErrorCeiling_ge (hγ2 : γ < 2)
     (hp0 : 0 ≤ reflectionExponent γ α) (hp : reflectionExponent γ α ≤ 1) :
     min (2 / γ ^ 2) (4 / γ ^ 2 - 1) / (1 + 4 / γ ^ 2) ≤ oneInsertionErrorCeiling γ α := by
   have h4 := four_div_sq_gt_one hγ hγ2
@@ -55,13 +55,13 @@ theorem oneInsertionErrorCeiling_ge {γ α : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
   exact div_le_div₀ (hk0.trans hk) hk (by linarith)
     (by linarith [min_le_right (p + 2 / γ ^ 2) (4 / γ ^ 2)])
 
+end
+
 /-- **Admissible two-pole windows exist for every small `η`.** -/
 theorem exists_twoPoleWindow {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) :
     ∃ η₀ : ℝ, 0 < η₀ ∧ ∀ η : ℝ, 0 < η → η < η₀ → ∃ δ : ℝ, TwoPoleWindow γ η δ := by
   have h4 := four_div_sq_gt_one hγ hγ2
-  have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+  have hγh := half_gamma_lt_two_div hγ hγ2
   have hsq : (2 / γ - γ / 2) * (2 / γ) = 4 / γ ^ 2 - 1 := by
     field_simp
     ring

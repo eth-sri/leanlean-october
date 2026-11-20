@@ -27,14 +27,15 @@ theorem fusionFullOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
   let R2 := fun z : ℂ => ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) * z * star z *
     (∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) * E2 ((t : ℂ) * z))
   have hκ : κ < 2 := (fusion_taylor_parameters γ α₁ hγ hlo hsq hα₁).2.2.2.2.2
-  obtain ⟨C1, hC1, hb1⟩ := fusion_exteriorR1_expectation_bound P X hX γ hγ hγ2 M hM
+  obtain ⟨C1, hC1, hb1⟩ := fusion_exterior_expectation_bound false P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
-  obtain ⟨C2, hC2, hb2⟩ := fusion_exteriorR2_expectation_bound P X hX γ hγ hγ2 M hM
+  obtain ⟨C2, hC2, hb2⟩ := fusion_exterior_expectation_bound true P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
-  have hR1 : IsComplexLittleOAtZero κ R1 := fusion_quadratic_time_error E1 _ κ C1 hC1.le hκ
-    (fun z hz hz4 => (hb1 z hz hz4).2)
-  have hR2 : IsComplexLittleOAtZero κ R2 := fusion_mixed_quadratic_time_error E2 _ κ C2 hC2.le hκ
-    (fun z hz hz4 => (hb2 z hz hz4).2)
+  have hR1 : IsComplexLittleOAtZero κ R1 := fusion_quadratic_time_error E1 _ C1 κ _ hκ
+    (fun z => by rw [norm_mul, norm_pow]) (fun z hz hz4 => (hb1 z hz hz4).2)
+  have hR2 : IsComplexLittleOAtZero κ R2 := fusion_quadratic_time_error E2 _ C2 κ
+    ‖((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ)‖ hκ
+    (fun z => by simp only [norm_mul, norm_star, pow_two, mul_assoc, le_refl]) (fun z hz hz4 => (hb2 z hz hz4).2)
   have h1 := fusion_normalized_tendsto_of_littleO κ R1 hR1
   have h2 := fusion_normalized_tendsto_of_littleO κ R2 hR2
   have hl := fusionLocalOneRooted_normalized_tendsto P X hX γ hγ hγ2 M hM

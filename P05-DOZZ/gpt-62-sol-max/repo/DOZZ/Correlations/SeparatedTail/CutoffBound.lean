@@ -19,7 +19,7 @@ theorem separatedTail_abs_quadratic_le {t T : ℝ} (ht : 0 ≤ t) (htT : t ≤ T
     |t^2-t| ≤ T^2+T := by
   calc
     _ ≤ |t^2|+|t| := abs_sub _ _
-    _ = t^2+t := by rw [abs_of_nonneg (sq_nonneg t), abs_of_nonneg ht]
+    _ = t^2+t := by simpa
     _ ≤ _ := by nlinarith
 
 /-- The finite-cutoff mixed moment bound of the separated joint-tail estimate, with constants
@@ -41,11 +41,10 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
         (2*ENNReal.ofReal (C (2*(γ*T*p))))) ^ (1/p) *
       ((ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2*(T^2+T)))*B) *
         (ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2*(T^2+T)))*B)) ^ (1/q) := by
-  let _ : IsProbabilityMeasure P := hX.1
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   let r := Real.log (1/δ)
   let L := equatorRestorationScalar Xc R (show 0 < R by linarith)
-  let d : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2))
+  let d  := ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2))
   let E (i : Fin 2) (l : ℝ) := separatedTail_harmonicEnvelope (c i) (data.H i) L l
   let D (i : Fin 2) := fieldChaosMass P (fun ω x => data.Dc i ω (separatedTail_diskPoint (c i) x) r)
     (gmcReferenceMeasure.restrict (ball (c i) 1)) (separatedTail_softWeight γ (α i) δ (c i)) γ
@@ -53,32 +52,27 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
   have hscale : Real.exp (-r) = δ := by
     dsimp [r]
     rw [one_div, Real.log_inv, neg_neg, Real.exp_log hδ]
-  have hfield (i : Fin 2) : IsCenteredGaussianField P
-      (fun ω x => data.Dc i ω (separatedTail_diskPoint (c i) x) r) :=
-    separatedTail_dirichletCircle_isCenteredGaussianField P (data.D i) (data.Dc i) (c i)
+  have hfield (i : Fin 2) := separatedTail_dirichletCircle_isCenteredGaussianField P (data.D i) (data.Dc i) (c i)
       (data.measurable_D i) (data.measurable_Dc i) (data.gaussian_Dc i)
       (data.mean_Dc i) r (by rw [hscale]; exact hδ4)
   have hDm (i : Fin 2) : Measurable (D i) := centeredGaussianField_fieldChaosMass_measurable
     P _ (hfield i) _ _ (separatedTail_softWeight_measurable _ _ _ _) γ
-  have hDi : IndepFun (D 0) (D 1) P := separatedTail_indepFun_of_comap_measurable P _ _ _ _
-    data.independent_D
-    (separatedTail_dirichletChaosMass_comap_measurable P (data.D 0) (data.Dc 0) (c 0)
-      (data.measurable_Dc 0) r (hfield 0) _ _ (separatedTail_softWeight_measurable _ _ _ _) γ)
-    (separatedTail_dirichletChaosMass_comap_measurable P (data.D 1) (data.Dc 1) (c 1)
-      (data.measurable_Dc 1) r (hfield 1) _ _ (separatedTail_softWeight_measurable _ _ _ _) γ)
-  have hLm : Measurable L := equatorRestorationScalar_measurable X Xc hc R (by linarith)
-  have hEm (i : Fin 2) (l : ℝ) : AEMeasurable (E i l) P := separatedTail_harmonicEnvelope_aemeasurable
+  have hDi : IndepFun (D 0) (D 1) P := indep_of_indep_of_le data.independent_D (measurable_iff_comap_le.mp (separatedTail_dirichletChaosMass_comap_measurable P (data.D 0) (data.Dc 0) (c 0)
+    (data.measurable_Dc 0) r (hfield 0) _ _ (separatedTail_softWeight_measurable _ _ _ _) γ)) (measurable_iff_comap_le.mp (separatedTail_dirichletChaosMass_comap_measurable P (data.D 1) (data.Dc 1) (c 1)
+    (data.measurable_Dc 1) r (hfield 1) _ _ (separatedTail_softWeight_measurable _ _ _ _) γ))
+  have hLm  := equatorRestorationScalar_measurable X Xc hc R (by linarith)
+  have hEm (i : Fin 2) (l : ℝ)  := separatedTail_harmonicEnvelope_aemeasurable
     P (c i) (data.H i) L (data.measurable_H i) hLm (data.continuous_H i) l
   have hdom (i : Fin 2) : ∀ᵐ ω ∂P, W i ω ≤ d*E i γ ω*D i ω := by
     apply separatedTail_actual_cutoff_mass_le P X hX Xc hc (fun ω x => data.Dc i ω x r)
       (data.H i) L (c i) R δ γ (α i) hR (hpin i) hδ hδ4 hγ (hfield i)
       (data.measurable_H i) hLm
     · intro x hx
-      exact data.split i x r (by rw [hscale]; linarith [mem_ball_iff_norm.mp hx])
+      exact data.split i x r (by linarith [mem_ball_iff_norm.mp hx])
     · intro x y hx hy
-      exact data.covariance_Dc i x y r r (by simpa only [hscale] using hx)
-        (by simpa only [hscale] using hy)
-  let Eall : Ω → ℝ≥0∞ := fun ω => d^(a 0+a 1)* (E 0 (γ*a 0) ω*E 1 (γ*a 1) ω)
+      exact data.covariance_Dc i x y r r (by linarith)
+        (by linarith)
+  let Eall  := fun ω => d^(a 0+a 1)* (E 0 (γ*a 0) ω*E 1 (γ*a 1) ω)
   have hEall : AEMeasurable Eall P := aemeasurable_const.mul
     ((hEm 0 _).mul (hEm 1 _))
   have hproduct : ∀ᵐ ω ∂P, W 0 ω ^ (a 0)*W 1 ω ^ (a 1) ≤
@@ -94,7 +88,7 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
     change (E 1 γ ω)^(a 1) = E 1 (γ*a 1) ω at he1
     rw [he0,he1] at h
     have hd : d^(a 0+a 1) = d^(a 0)*d^(a 1) :=
-      ENNReal.rpow_add _ _ (by dsimp [d]; exact (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne')
+      ENNReal.rpow_add _ _ (by positivity)
         (by dsimp [d]; exact ENNReal.ofReal_ne_top)
     refine h.trans_eq ?_
     dsimp [Eall]
@@ -133,7 +127,7 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
       (by
         intro x y hx hy
         exact data.covariance_Dc i x y r r
-          (by simpa only [hscale] using hx) (by simpa only [hscale] using hy))
+          (by linarith) (by linarith))
     refine h.trans (mul_le_mul' ?_ (hB i))
     apply ENNReal.ofReal_le_ofReal
     apply Real.exp_le_exp.mpr

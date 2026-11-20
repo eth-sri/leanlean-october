@@ -33,22 +33,27 @@ theorem couplingRamp_nonneg (a δ t : ℝ) : 0 ≤ couplingRamp a δ t :=
 
 theorem couplingRamp_le_one (a δ t : ℝ) : couplingRamp a δ t ≤ 1 := min_le_left _ _
 
-theorem couplingRamp_eq_zero {a δ t : ℝ} (hδ : 0 < δ) (ht : t ≤ a) :
+section
+variable {a δ t : ℝ} (hδ : 0 < δ)
+include hδ
+
+theorem couplingRamp_eq_zero (ht : t ≤ a) :
     couplingRamp a δ t = 0 := by
   rw [couplingRamp, max_eq_left (div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr ht) hδ.le)]
   norm_num
 
-theorem couplingRamp_eq_one {a δ t : ℝ} (hδ : 0 < δ) (ht : a + δ ≤ t) :
+theorem couplingRamp_eq_one (ht : a + δ ≤ t) :
     couplingRamp a δ t = 1 := by
-  have hdiv : 1 ≤ (t - a) / δ := (le_div_iff₀ hδ).mpr (by linarith)
-  exact min_eq_left (hdiv.trans (le_max_right _ _))
+  exact min_eq_left (((le_div_iff₀ hδ).mpr (by linarith)).trans (le_max_right _ _))
 
 /-- The ramp's contribution to elapsed time never exceeds the elapsed time itself. -/
-theorem couplingRamp_time_budget {a δ t : ℝ} (hδ : 0 < δ) (hat : a ≤ t) :
+theorem couplingRamp_time_budget (hat : a ≤ t) :
     couplingRamp a δ t * δ ≤ t - a := by
-  have hdiv : 0 ≤ (t - a) / δ := div_nonneg (sub_nonneg.mpr hat) hδ.le
+  have hdiv  := div_nonneg (sub_nonneg.mpr hat) hδ.le
   rw [couplingRamp, max_eq_right hdiv]
   exact (mul_le_mul_of_nonneg_right (min_le_right _ _) hδ.le).trans_eq (div_mul_cancel₀ _ hδ.ne')
+
+end
 
 /-- Regard the ramp as an actual continuous path on nonnegative time. -/
 noncomputable def couplingRampPath (a δ : ℝ) : BrownianPath :=
@@ -80,9 +85,7 @@ theorem measurable_couplingGridInterpolant (δ : ℝ) (n : ℕ) :
         couplingGridInterpolant δ n (Fin.init x) t +
           ((x (Fin.last (n + 1))).1 - (x (Fin.last n).castSucc).1) *
             couplingRamp (((n : ℝ) + 1) * δ) δ (t : ℝ))
-      exact (ih.comp hinit).add (((measurable_subtype_coe.comp
-        (measurable_pi_apply (Fin.last (n + 1)))).sub
-          (measurable_subtype_coe.comp (measurable_pi_apply (Fin.last n).castSucc))).mul_const _)
+      fun_prop
 
 /-- Beyond the terminal grid time, the interpolant is exactly its last sampled value. -/
 theorem couplingGridInterpolant_terminal {δ : ℝ} (hδ : 0 < δ) (n : ℕ)
@@ -108,9 +111,12 @@ theorem couplingGridInterpolant_terminal {δ : ℝ} (hδ : 0 < δ) (n : ℕ)
         ((x (Fin.last (n + 1))).1 - (x (Fin.last n).castSucc).1) = _
       ring
 
+section
+variable {δ : ℝ} (hδ : 0 < δ) (n : ℕ) (x : ConditionedEntranceGridPath (n + 1)) (t : ℝ≥0)
+include hδ
+
 /-- Before a new segment begins, appending it leaves the old interpolation unchanged. -/
-theorem couplingGridInterpolant_before_append {δ : ℝ} (hδ : 0 < δ) (n : ℕ)
-    (x : ConditionedEntranceGridPath (n + 1)) (t : ℝ≥0)
+theorem couplingGridInterpolant_before_append
     (ht : (t : ℝ) ≤ ((n : ℝ) + 1) * δ) :
     couplingGridInterpolant δ (n + 1) x t = couplingGridInterpolant δ n (Fin.init x) t := by
   change couplingGridInterpolant δ n (Fin.init x) t + _ *
@@ -118,8 +124,7 @@ theorem couplingGridInterpolant_before_append {δ : ℝ} (hδ : 0 < δ) (n : ℕ
   rw [couplingRamp_eq_zero hδ ht, mul_zero, add_zero]
 
 /-- On the new segment the interpolant is a convex combination of its two endpoint values. -/
-theorem couplingGridInterpolant_after_append {δ : ℝ} (hδ : 0 < δ) (n : ℕ)
-    (x : ConditionedEntranceGridPath (n + 1)) (t : ℝ≥0)
+theorem couplingGridInterpolant_after_append
     (ht : ((n : ℝ) + 1) * δ ≤ (t : ℝ)) :
     couplingGridInterpolant δ (n + 1) x t =
       (1 - couplingRamp (((n : ℝ) + 1) * δ) δ (t : ℝ)) * (x (Fin.last n).castSucc).1 +
@@ -132,6 +137,8 @@ theorem couplingGridInterpolant_after_append {δ : ℝ} (hδ : 0 < δ) (n : ℕ)
     ((x (Fin.last (n + 1))).1 - (x (Fin.last n).castSucc).1) *
       couplingRamp (((n : ℝ) + 1) * δ) δ (t : ℝ) = _
   ring
+
+end
 
 /-- Grid interpolation preserves the two quantitative drift inequalities at every real time. -/
 theorem couplingGridInterpolant_order {δ d : ℝ} (hδ : 0 < δ) (hd : 0 ≤ d)
@@ -203,7 +210,7 @@ theorem couplingInterpolatedFamily_mem_orderSet {J : Type*}
     (hx : x ∈ coupledEntranceGridOrderSet v δ (fun _ => δ) n) :
     couplingInterpolatedFamily δ n x ∈ negativeEntranceOrderSet (fun j => (v j : ℝ)) := by
   intro j k _ hjk t
-  have hjk' : v j ≤ v k := hjk
+  have hjk'  := hjk
   have hxy : ∀ i : Fin (n + 1), (x j i).1 ≤ (x k i).1 ∧
       (x k i).1 ≤ (x j i).1 + ((v k : ℝ) - (v j : ℝ)) * (((i.val : ℝ) + 1) * δ) := by
     intro i
@@ -221,16 +228,18 @@ noncomputable def couplingInterpolatedGridMeasure {J : Type*}
   (coupledEntranceGridMeasure v δ (fun _ => δ) hδ (fun _ => hδ) n).map
     (couplingInterpolatedFamily δ n)
 
-theorem couplingInterpolatedGridMeasure_isProbabilityMeasure {J : Type*}
-    (v : J → ℝ≥0) (δ : ℝ) (hδ : 0 < δ) (n : ℕ) :
+section
+variable {J : Type*} (v : J → ℝ≥0) (δ : ℝ) (hδ : 0 < δ) (n : ℕ)
+include J
+
+theorem couplingInterpolatedGridMeasure_isProbabilityMeasure :
     IsProbabilityMeasure (couplingInterpolatedGridMeasure v δ hδ n) := by
   let _ := coupledEntranceGridMeasure_isProbabilityMeasure v δ (fun _ => δ) hδ (fun _ => hδ) n
   exact (Measure.isProbabilityMeasure_map_iff
     (measurable_couplingInterpolatedFamily δ n).aemeasurable).mpr inferInstance
 
 /-- Continuous interpolation introduces no error into the full marginal finite-grid law. -/
-theorem couplingInterpolatedGridMeasure_coordinate_map {J : Type*}
-    (v : J → ℝ≥0) (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (j : J) :
+theorem couplingInterpolatedGridMeasure_coordinate_map (j : J) :
     (couplingInterpolatedGridMeasure v δ hδ n).map (fun F => F j) =
     (conditionedPositiveEntranceGridMeasure (v j) δ (fun _ => δ) (NNReal.coe_nonneg (v j))
       hδ (fun _ => hδ) n).map (fun x => -(couplingGridInterpolant δ n x)) := by
@@ -242,6 +251,8 @@ theorem couplingInterpolatedGridMeasure_coordinate_map {J : Type*}
       -(couplingGridInterpolant δ n x)) := (measurable_couplingGridInterpolant δ n).neg
   rw [← Measure.map_map hnegative (measurable_pi_apply j),
     coupledEntranceGridMeasure_coordinate_map]
+
+end
 
 /-- The common all-time order event is preserved by the actual interpolation pushforward. -/
 theorem couplingInterpolatedGridMeasure_order_ae {J : Type*} [Countable J]

@@ -30,8 +30,12 @@ namespace DOZZ.Proofs
 
 /-! ### Domination near the base point -/
 
+section
+variable {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1)
+include ha ha1 hε0 hε1
+
 /-- Domination of the softened weight near the base point. -/
-theorem bpzSoft_rpow_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1)
+theorem bpzSoft_rpow_le_near
     {x z z₀ : ℂ} (hz : ‖z - z₀‖ ≤ 1) :
     (Complex.normSq (x - z) + ε ^ 2) ^ a ≤ 4 * ((Complex.normSq (x - z₀)) ^ a + 1) := by
   have ht0 : 0 ≤ Complex.normSq (x - z₀) := Complex.normSq_nonneg _
@@ -62,8 +66,7 @@ theorem bpzSoft_rpow_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hε0 : 0
     _ ≤ 4 * (Complex.normSq (x - z₀) ^ a + 1) := by linarith
 
 /-- Domination of the softened weight times `w` near the base point. -/
-theorem bpzSoft_rpow_mul_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hε0 : 0 ≤ ε)
-    (hε1 : ε ≤ 1) {w : ℂ → ℝ} (hw0 : ∀ x, 0 ≤ w x) {x z z₀ : ℂ} (hz : ‖z - z₀‖ ≤ 1) :
+theorem bpzSoft_rpow_mul_le_near {w : ℂ → ℝ} (hw0 : ∀ x, 0 ≤ w x) {x z z₀ : ℂ} (hz : ‖z - z₀‖ ≤ 1) :
     (Complex.normSq (x - z) + ε ^ 2) ^ a * w x ≤
       4 * ((Complex.normSq (x - z₀)) ^ a * w x) + 4 * w x :=
   calc (Complex.normSq (x - z) + ε ^ 2) ^ a * w x
@@ -73,8 +76,7 @@ theorem bpzSoft_rpow_mul_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hε0
 
 /-- The softened mass is finite at every root within distance `1` of `z₀`, uniformly in the
 softening `0 ≤ ε ≤ 1`. -/
-theorem bpzSoft_integrable_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hε0 : 0 ≤ ε)
-    (hε1 : ε ≤ 1) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ}
+theorem bpzSoft_integrable_near {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ}
     {z₀ : ℂ} (hint : Integrable (fun x => (Complex.normSq (x - z₀)) ^ a * w x) m)
     (hintw : Integrable w m) {z : ℂ} (hz : ‖z - z₀‖ ≤ 1) :
     Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m := by
@@ -84,7 +86,9 @@ theorem bpzSoft_integrable_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hε0 
   have hnn : 0 ≤ (Complex.normSq (x - z) + ε ^ 2) ^ a * w x :=
     mul_nonneg (Real.rpow_nonneg (bpzSoft_normSq_add_nonneg _ _) a) (hw0 x)
   rw [Real.norm_of_nonneg hnn]
-  exact bpzSoft_rpow_mul_le_near ha ha1 hε0 hε1 hw0 hz
+  apply bpzSoft_rpow_mul_le_near <;> assumption
+
+end
 
 /-- If `x` is at distance at least `r` from `z₀` and the root `z` is within `r / 2` of `z₀`, then
 `x` is at distance at least `r / 2` from `z`. -/
@@ -103,22 +107,29 @@ theorem bpzSoft_base_pos_of_le_norm {r ε : ℝ} (hr : 0 < r) {x z₀ : ℂ} (hx
 
 /-! ### Measurability in the integration variable -/
 
+section
+variable (a ε : ℝ) (z : ℂ) (m : Measure ℂ)
+
 /-- The first derivative of the softened factor is a.e. strongly measurable in `x` (for every
 `ε`, including `ε = 0`). -/
-theorem bpzSoftDeriv_aestronglyMeasurable (a ε : ℝ) (z : ℂ) (m : Measure ℂ) :
-    AEStronglyMeasurable (fun x : ℂ => bpzSoftDeriv a ε x z) m := by
+theorem bpzSoftDeriv_stronglyMeasurable :
+    StronglyMeasurable (fun x : ℂ => bpzSoftDeriv a ε x z) := by
   have hbase : Measurable (fun x : ℂ => Complex.normSq (x - z) + ε ^ 2) := by fun_prop
   have hc : Measurable
       (fun x : ℂ => -2 * a * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1)) :=
     (hbase.pow_const (a - 1)).const_mul _
   have hL : Continuous (fun x : ℂ => innerSL ℝ (x - z)) :=
     (innerSL ℝ).continuous.comp (continuous_id.sub continuous_const)
-  exact hc.aestronglyMeasurable.smul hL.aestronglyMeasurable
+  exact hc.stronglyMeasurable.smul hL.stronglyMeasurable
+
+theorem bpzSoftDeriv_aestronglyMeasurable :
+    AEStronglyMeasurable (fun x : ℂ => bpzSoftDeriv a ε x z) m :=
+  (bpzSoftDeriv_stronglyMeasurable a ε z).aestronglyMeasurable
 
 /-- The second derivative of the softened factor is a.e. strongly measurable in `x` (for every
 `ε`, including `ε = 0`). -/
-theorem bpzSoftDeriv2_aestronglyMeasurable (a ε : ℝ) (z : ℂ) (m : Measure ℂ) :
-    AEStronglyMeasurable (fun x : ℂ => bpzSoftDeriv2 a ε x z) m := by
+theorem bpzSoftDeriv2_stronglyMeasurable :
+    StronglyMeasurable (fun x : ℂ => bpzSoftDeriv2 a ε x z) := by
   have hbase : Measurable (fun x : ℂ => Complex.normSq (x - z) + ε ^ 2) := by fun_prop
   have hc2 : Measurable
       (fun x : ℂ => 4 * a * (a - 1) * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 2)) :=
@@ -131,8 +142,14 @@ theorem bpzSoftDeriv2_aestronglyMeasurable (a ε : ℝ) (z : ℂ) (m : Measure �
   have hS : Continuous
       (fun x : ℂ => (innerSL ℝ (x - z)).smulRight (innerSL ℝ (x - z))) :=
     (ContinuousLinearMap.smulRightL ℝ ℂ (ℂ →L[ℝ] ℝ)).continuous₂.comp₂ hL hL
-  exact (hc2.aestronglyMeasurable.smul hS.aestronglyMeasurable).add
-    (hc1.aestronglyMeasurable.smul aestronglyMeasurable_const)
+  exact (hc2.stronglyMeasurable.smul hS.stronglyMeasurable).add
+    (hc1.stronglyMeasurable.smul stronglyMeasurable_const)
+
+theorem bpzSoftDeriv2_aestronglyMeasurable :
+    AEStronglyMeasurable (fun x : ℂ => bpzSoftDeriv2 a ε x z) m :=
+  (bpzSoftDeriv2_stronglyMeasurable a ε z).aestronglyMeasurable
+
+end
 
 /-! ### The mass is continuous at `ε = 0` -/
 
@@ -144,7 +161,7 @@ theorem bpz_tendsto_softMassReal {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ
     (hε : Tendsto εs atTop (𝓝 0)) {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) :
     Tendsto (fun n => bpzSoftMassReal a (εs n) w m (zs n)) atTop
       (𝓝 (bpzSoftMassReal a 0 w m z₀)) := by
-  have hnear : ∀ᶠ n in atTop, ‖zs n - z₀‖ ≤ 1 :=
+  have hnear  :=
     (tendsto_iff_norm_sub_tendsto_zero.mp hz).eventually (ge_mem_nhds one_pos)
   refine tendsto_integral_filter_of_dominated_convergence
     (fun x => 4 * ((Complex.normSq (x - z₀)) ^ a * w x) + 4 * w x) ?_ ?_
@@ -160,16 +177,17 @@ theorem bpz_tendsto_softMassReal {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ
   · refine Eventually.of_forall fun x => ?_
     have hbase : ContinuousAt
         (fun p : ℝ × ℂ => Complex.normSq (x - p.2) + p.1 ^ 2) (0, z₀) := by fun_prop
-    have hc : ContinuousAt
-        (fun p : ℝ × ℂ => (Complex.normSq (x - p.2) + p.1 ^ 2) ^ a) (0, z₀) :=
-      hbase.rpow_const (Or.inr ha.le)
+    have hc := hbase.rpow_const (Or.inr ha.le)
     exact (hc.tendsto.comp (hε.prodMk_nhds hz)).mul_const (w x)
 
 /-! ### The far parts of the derivative masses -/
 
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+
 /-- Pointwise bound of the far part of a weighted integrand: if `d` is bounded by `K P` whenever
 `‖x − z₀‖ ≥ r`, then `1_{‖x − z₀‖ ≥ r} w(x) • d` is bounded by `K P w(x)`. -/
-theorem bpz_norm_ite_smul_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {w : ℂ → ℝ}
+theorem bpz_norm_ite_smul_le {w : ℂ → ℝ}
     (hw0 : ∀ x, 0 ≤ w x) {r K P : ℝ} (hK : 0 ≤ K) (hP : 0 ≤ P) {x z₀ : ℂ} {d : E}
     (hd : r ≤ ‖x - z₀‖ → ‖d‖ ≤ K * P) :
     ‖(if r ≤ ‖x - z₀‖ then w x else 0) • d‖ ≤ K * (P * w x) := by
@@ -183,7 +201,7 @@ theorem bpz_norm_ite_smul_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
 
 /-- Dominated convergence for the far part of a kernel `D ε x z` which is jointly continuous in
 `(ε, z)` at `(0, z₀)` for `‖x − z₀‖ ≥ r`, and bounded there by `K` times the softened weight. -/
-theorem bpz_tendsto_integral_far {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem bpz_tendsto_integral_far
     {a r K : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hr : 0 < r) (hK : 0 ≤ K) {w : ℂ → ℝ}
     (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z₀ : ℂ}
     (hint : Integrable (fun x => (Complex.normSq (x - z₀)) ^ a * w x) m)
@@ -196,7 +214,7 @@ theorem bpz_tendsto_integral_far {E : Type*} [NormedAddCommGroup E] [NormedSpace
     {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) :
     Tendsto (fun n => ∫ x, (if r ≤ ‖x - z₀‖ then w x else 0) • D (εs n) x (zs n) ∂m) atTop
       (𝓝 (∫ x, (if r ≤ ‖x - z₀‖ then w x else 0) • D 0 x z₀ ∂m)) := by
-  have hnear : ∀ᶠ n in atTop, ‖zs n - z₀‖ ≤ min 1 (r / 2) :=
+  have hnear  :=
     (tendsto_iff_norm_sub_tendsto_zero.mp hz).eventually
       (ge_mem_nhds (lt_min one_pos (half_pos hr)))
   have hmw : Measurable (fun x : ℂ => if r ≤ ‖x - z₀‖ then w x else 0) := by
@@ -227,14 +245,18 @@ theorem bpz_tendsto_integral_far {E : Type*} [NormedAddCommGroup E] [NormedSpace
     · simp only [ite_eq_right hx, zero_smul]
       exact tendsto_const_nhds
 
+end
+
+section
+variable {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x)
+  {m : Measure ℂ} {z₀ : ℂ} (hint : Integrable (fun x => (Complex.normSq (x - z₀)) ^ a * w x) m)
+  (hintw : Integrable w m) {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1)
+  (hε : Tendsto εs atTop (𝓝 0)) {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) {r : ℝ} (hr : 0 < r)
+include ha ha1 hw hw0 hint hintw hε0 hε1 hε hz hr
+
 /-- The far part of the first derivative of the softened mass is continuous at `ε = 0` jointly in
 the root. -/
-theorem bpz_tendsto_softMassDeriv_far {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z₀ : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z₀)) ^ a * w x) m)
-    (hintw : Integrable w m) {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1)
-    (hε : Tendsto εs atTop (𝓝 0)) {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) {r : ℝ}
-    (hr : 0 < r) :
+theorem bpz_tendsto_softMassDeriv_far :
     Tendsto (fun n => bpzSoftMassDeriv a (εs n)
         ((fun x => if r ≤ ‖x - z₀‖ then w x else 0)) m (zs n)) atTop
       (𝓝 (bpzSoftMassDeriv a 0 (fun x => if r ≤ ‖x - z₀‖ then w x else 0) m z₀)) := by
@@ -250,17 +272,11 @@ theorem bpz_tendsto_softMassDeriv_far {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w 
 
 /-- The far part of the second derivative of the softened mass is continuous at `ε = 0` jointly in
 the root. -/
-theorem bpz_tendsto_softMassDeriv2_far {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z₀ : ℂ}
-    (hint : Integrable (fun x => (Complex.normSq (x - z₀)) ^ a * w x) m)
-    (hintw : Integrable w m) {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1)
-    (hε : Tendsto εs atTop (𝓝 0)) {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) {r : ℝ}
-    (hr : 0 < r) :
+theorem bpz_tendsto_softMassDeriv2_far :
     Tendsto (fun n => bpzSoftMassDeriv2 a (εs n)
         ((fun x => if r ≤ ‖x - z₀‖ then w x else 0)) m (zs n)) atTop
       (𝓝 (bpzSoftMassDeriv2 a 0 (fun x => if r ≤ ‖x - z₀‖ then w x else 0) m z₀)) := by
   have hc : 0 ≤ 4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 := by
-    have : 0 ≤ 1 - a := sub_nonneg.mpr ha1
     positivity
   refine bpz_tendsto_integral_far (K := 4 * (4 * a * (1 - a) + 2 * a) / r ^ 2) ha ha1 hr hc hw hw0
     hint hintw (fun ε x z => bpzSoftDeriv2 a ε x z)
@@ -273,6 +289,8 @@ theorem bpz_tendsto_softMassDeriv2_far {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w
     have e : (4 * a * (1 - a) + 2 * a) / (r / 2) ^ 2 =
         4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 := by field_simp; ring
     rwa [e] at h
+
+end
 
 /-! ### Uniform far bounds for the derivative masses -/
 
@@ -290,12 +308,16 @@ theorem bpz_norm_integral_far_le {E : Type*} [NormedAddCommGroup E] [NormedSpace
   exact bpz_norm_ite_smul_le hw0 hK (Real.rpow_nonneg (bpzSoft_normSq_add_nonneg _ _) a)
     (fun hx => hbd x hx)
 
+section
+variable {a ε : ℝ} (ha : 0 < a)
+include ha
+
 /-- Uniform far bound for the first derivative mass, for roots within `r / 2` of `z₀`.
 
 The integrability of the softened weight at `z` cannot be dropped: without it `bpzSoftMassReal`
 is the junk value `0`, while the derivative mass of the far part may be nonzero. For
 `‖z − z₀‖ ≤ 1` and `0 ≤ ε ≤ 1` it follows from `bpzSoft_integrable_near`. -/
-theorem norm_bpzSoftMassDeriv_far_le {a ε : ℝ} (ha : 0 < a) {w : ℂ → ℝ} (hw0 : ∀ x, 0 ≤ w x)
+theorem norm_bpzSoftMassDeriv_far_le {w : ℂ → ℝ} (hw0 : ∀ x, 0 ≤ w x)
     {m : Measure ℂ} {z z₀ : ℂ} {r : ℝ} (hr : 0 < r) (hz : ‖z - z₀‖ ≤ r / 2)
     (hintz : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m) :
     ‖bpzSoftMassDeriv a ε (fun x => if r ≤ ‖x - z₀‖ then w x else 0) m z‖ ≤
@@ -311,14 +333,13 @@ theorem norm_bpzSoftMassDeriv_far_le {a ε : ℝ} (ha : 0 < a) {w : ℂ → ℝ}
 The integrability of the softened weight at `z` cannot be dropped: without it `bpzSoftMassReal`
 is the junk value `0`, while the derivative mass of the far part may be nonzero. For
 `‖z − z₀‖ ≤ 1` and `0 ≤ ε ≤ 1` it follows from `bpzSoft_integrable_near`. -/
-theorem norm_bpzSoftMassDeriv2_far_le {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
+theorem norm_bpzSoftMassDeriv2_far_le (ha1 : a ≤ 1) {w : ℂ → ℝ}
     (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z z₀ : ℂ} {r : ℝ} (hr : 0 < r)
     (hz : ‖z - z₀‖ ≤ r / 2)
     (hintz : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m) :
     ‖bpzSoftMassDeriv2 a ε (fun x => if r ≤ ‖x - z₀‖ then w x else 0) m z‖ ≤
       4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 * bpzSoftMassReal a ε w m z := by
   have hc : 0 ≤ 4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 := by
-    have : 0 ≤ 1 - a := sub_nonneg.mpr ha1
     positivity
   refine bpz_norm_integral_far_le hc hw0 (fun x => bpzSoftDeriv2 a ε x z) (fun x hx => ?_) hintz
   have h := norm_bpzSoftDeriv2_le_far (ε := ε) ha ha1 (half_pos hr)
@@ -326,5 +347,7 @@ theorem norm_bpzSoftMassDeriv2_far_le {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) 
   have e : (4 * a * (1 - a) + 2 * a) / (r / 2) ^ 2 =
       4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 := by field_simp; ring
   rwa [e] at h
+
+end
 
 end DOZZ.Proofs

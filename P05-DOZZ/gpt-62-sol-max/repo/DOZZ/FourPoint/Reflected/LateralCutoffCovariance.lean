@@ -36,13 +36,15 @@ theorem reflected_clamped_point_covariance_eq
     covariance_congr_ae (circleAverageL2_ae_eq hc _) (circleAverageL2_ae_eq hc _)]
   exact origin_circle_radial_covariance X Xc hX hc _ y
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+  (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2)) (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ)
+  (hK : IsCompact K) (hKU : K ⊆ originLateralChart ρ)
+include Ω X hX hc hm hρ hK hKU
+
 /-- Actual finite cutoff covariances tend uniformly to the lateral plane kernel off diagonal. -/
-theorem reflected_lateral_cutoff_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
-    (hKU : K ⊆ originLateralChart ρ) (s η : ℝ) (hs : 0 < s) (hη : 0 < η) :
+theorem reflected_lateral_cutoff_uniform (s η : ℝ) (hs : 0 < s) (hη : 0 < η) :
     ∃ d : ℝ, 0 < d ∧ ∀ ε ε', 0 < ε → ε ≤ min d ρ →
       0 < ε' → ε' ≤ min d ρ → ∀ x ∈ K, ∀ y ∈ K, s ≤ ‖x - y‖ →
       |gaussianCovariance P (fun ω => originLateralCircleRegularization Xc ρ ω ε x)
@@ -89,12 +91,7 @@ theorem reflected_lateral_cutoff_uniform
     (by linarith only [hεη, hε'η])
 
 /-- The actual cutoff cross-covariance bound is the radius ratio plus an arbitrary cutoff error. -/
-theorem reflected_lateral_cutoff_cross_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
-    (hKU : K ⊆ originLateralChart ρ) (R s η : ℝ) (hR : R ≤ 1 / 2)
+theorem reflected_lateral_cutoff_cross_bound (R s η : ℝ) (hR : R ≤ 1 / 2)
     (hs : 0 < s) (hη : 0 < η) :
     ∃ d : ℝ, 0 < d ∧ ∀ ε ε', 0 < ε → ε ≤ min d ρ →
       0 < ε' → ε' ≤ min d ρ → ∀ x ∈ K, ∀ y ∈ K,
@@ -115,5 +112,7 @@ theorem reflected_lateral_cutoff_cross_bound
   simp only [sub_zero] at htri
   simpa only [add_comm] using
     (htri.trans (add_le_add hlimit.le hkernel))
+
+end
 
 end DOZZ.Proofs

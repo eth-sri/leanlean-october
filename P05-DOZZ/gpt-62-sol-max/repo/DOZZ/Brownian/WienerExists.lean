@@ -34,7 +34,7 @@ theorem exists_wienerPathMeasure :
   have hX := isEquatorGFF_equatorGFFDistribution
   let _ := hX.1
   obtain ⟨Xc, hc⟩ := exists_equatorGFF_circle_average_witness equatorGFFDistribution hX
-  obtain ⟨Y, hY, _, hYcont, _⟩ :=
+  obtain ⟨Y, ⟨hY, _, hYcont⟩, _⟩ :=
     exists_continuous_circleAverage P equatorGFFDistribution Xc hX hc
   have hB := (circleAverage_origin_brownian P equatorGFFDistribution Y hX hY hYcont).1
   let B := fun (t : ℝ≥0) ω => Y ω 0 (t : ℝ)
@@ -125,8 +125,11 @@ theorem wienerTriple_eval_hasLaw (t : ℝ≥0) :
     (fun _ p => p t) (fun _ => ContinuousMap.measurable_eval t)
   exact hindep.hasLaw_pi (fun i => (wienerTriple_coordinate_isBrownian i).hasLaw_eval t)
 
+section
+variable (a : ℝ) (t : ℝ≥0)
+
 /-- The drifted Gaussian coordinates at a fixed time remain mutually independent. -/
-theorem wienerTriple_drifted_eval_hasLaw (a : ℝ) (t : ℝ≥0) :
+theorem wienerTriple_drifted_eval_hasLaw :
     HasLaw (fun V : BrownianTriple => fun i : Fin 3 =>
       V i t + (if i = 0 then a * (t : ℝ) else 0))
       (Measure.pi (fun i : Fin 3 => gaussianReal (if i = 0 then a * (t : ℝ) else 0) t))
@@ -143,7 +146,7 @@ theorem wienerTriple_drifted_eval_hasLaw (a : ℝ) (t : ℝ≥0) :
 
 /-- The unconditional radial evaluation has an explicit Gaussian-norm pushforward law.
 Identifying this pushforward with the entrance density is the analytic spherical-integration step. -/
-theorem rogersPitmanWienerMeasure_eval_map (a : ℝ) (t : ℝ≥0) :
+theorem rogersPitmanWienerMeasure_eval_map :
     (rogersPitmanWienerMeasure a).map (fun p => p t) =
       (Measure.pi (fun i : Fin 3 => gaussianReal
         (if i = 0 then a * (t : ℝ) else 0) t)).map
@@ -165,5 +168,7 @@ theorem rogersPitmanWienerMeasure_eval_map (a : ℝ) (t : ℝ≥0) :
       exact Measure.map_map hnorm
         hinput
     _ = _ := by rw [hmap]
+
+end
 
 end DOZZ.Proofs

@@ -10,6 +10,7 @@ public import DOZZ.Statements.Defs.IsUpsilon
 import DOZZ.ShiftEquations.Quotient.RemovablePeriodic
 import DOZZ.Complex.Basic
 import DOZZ.ShiftEquations.Shift.Reflection
+public import DOZZ.ShiftEquations.Representatives
 
 /-!
 # The quotient is constant on each slice
@@ -44,9 +45,8 @@ theorem slice_constant_of_joint {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
     (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ) (hη : 0 < η ∧ Q γ - 2 * η > γ)
     (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ) (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ) (hU : IsUpsilon γ U)
     (hjoint : ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ, MeromorphicOn C (horizontalStrip h) ∧
-      (∀ α : ℝ, 2 * η < α → α < Q γ → C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-      (∀ᶠ z in codiscrete ℂ, C (z + γ / 2) =
-        -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) * C (z - γ / 2)) ∧
+      RepresentsStructureConstant P M γ μ η α₂ α₃ C ∧
+      (StructureFirstShift γ μ α₂ α₃ C) ∧
       ∀ᶠ z in codiscrete ℂ, C (z + 2 / γ) =
         -(1 / (Real.pi * dualMu γ μ)) * shiftCoeffA γ (2 / γ) z (α₂ : ℂ) (α₃ : ℂ) *
           C (z - 2 / γ)) :

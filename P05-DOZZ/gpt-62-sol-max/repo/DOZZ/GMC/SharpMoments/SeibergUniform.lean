@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.SharpMoments.SeibergMomentBound
-public import DOZZ.GMC.SharpMoments.WeightedTwoCenter
+public import DOZZ.GMC.SharpMoments.WeightedCenterTransfer
 public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
 
 /-! # Uniform higher moments of the Coulomb mass on compact parameter sets
@@ -41,7 +41,6 @@ theorem transferConstant_le {γ R t tm : ℝ} (hR : 0 ≤ R) (ht : 0 < t) (htm :
       ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 *
         (tm ^ 2 + tm))) * ENNReal.ofReal ((1 + R) ^ 4) ^ tm := by
   have hc : 0 ≤ γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 := by
-    have h3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
     have h1 : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
     positivity
   have habs : |t ^ 2 - t| ≤ tm ^ 2 + tm := by
@@ -74,7 +73,7 @@ theorem coulombMass_moment_uniform_pos
       (∀ j, |α j| ≤ A) → |αinf| ≤ A → 0 < t → t + g ≤ 4 / γ ^ 2 →
       (∀ k, t + g ≤ 2 / γ * (Q γ - α k)) → t + g ≤ 2 / γ * (Q γ - αinf) →
       ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ∂P ≤ K := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hδ1 : δ ≤ 1 := hδ8.trans (by norm_num)
   have hRr0 : 0 < Rr := by linarith
   have h4 : 0 < 4 / γ ^ 2 := by positivity
@@ -125,13 +124,11 @@ theorem coulombMass_moment_uniform_pos
   have hS0 : 0 ≤ ∑ j, |γ * α j| + |γ * αinf| :=
     add_nonneg (Finset.sum_nonneg fun j _ => abs_nonneg _) (abs_nonneg _)
   have hzsum0 : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun j _ => norm_nonneg _
-  have hδinv : 1 ≤ 1 / δ := by rw [le_div_iff₀ hδ]; linarith
   -- the constants
   have hpow_le : ∀ {x y : ℝ≥0∞}, x ≤ y → 1 ≤ y → x ^ t ≤ y ^ tm := fun hxy hy =>
     (ENNReal.rpow_le_rpow hxy ht.le).trans (ENNReal.rpow_le_rpow_of_exponent_le hy htle)
   have hone_le : ∀ {r : ℝ}, 1 ≤ r → (1 : ℝ≥0∞) ≤ ENNReal.ofReal r := fun hr => by
-    rw [← ENNReal.ofReal_one]
-    exact ENNReal.ofReal_le_ofReal hr
+    simpa
   have hcR : ENNReal.ofReal (((2 + 2 * ∑ j, ‖z j‖) / δ) ^ (∑ j, |γ * α j| + |γ * αinf|)) ^ t ≤
       cRm ^ tm := by
     refine hpow_le (ENNReal.ofReal_le_ofReal (real_rpow_le_rpow_of_le_of_le ?_ ?_ hS0 hS))
@@ -157,7 +154,7 @@ theorem coulombMass_moment_uniform_pos
   -- the root moments
   have hW : ∀ k, weightedGmcBallMoment P M γ (α k) (z k) δ t ≤ Tm * K1 := by
     intro k
-    have hzk : ‖z k‖ ≤ Zs := (Finset.single_le_sum (f := fun j => ‖z j‖)
+    have hzk  := (Finset.single_le_sum (f := fun j => ‖z j‖)
       (fun j _ => norm_nonneg _) (Finset.mem_univ k)).trans hZsum
     refine (weightedGmcBallMoment_le_transfer P X hX γ hγ hγ2 M hM (α k) (z k) 0 δ R hδ hδ8
       (by linarith) (by linarith) (by rw [norm_zero, zero_add]; linarith) t ht htlt4).trans ?_
@@ -165,9 +162,6 @@ theorem coulombMass_moment_uniform_pos
       (hK1b (α k) t (hαA k) ht htb (hti k))
   -- the bulk moment
   have hMB : gmcMassMoment P M (Metric.closedBall 0 Rr) t ≤ MBm := by
-    have hm : AEMeasurable (fun ω => M ω (Metric.closedBall 0 Rr) ^ tm) P :=
-      (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
-        Metric.isClosed_closedBall.measurableSet).pow_const tm
     calc gmcMassMoment P M (Metric.closedBall 0 Rr) t
         ≤ ∫⁻ ω, (1 + M ω (Metric.closedBall 0 Rr) ^ tm) ∂P :=
           lintegral_mono fun ω => weightedGrid_ennreal_rpow_le_one_add_rpow _ ht htle
@@ -180,13 +174,10 @@ theorem coulombMass_moment_uniform_pos
   have h2 : (2 : ℝ≥0∞) ^ t ≤ 2 ^ tm := ENNReal.rpow_le_rpow_of_exponent_le (by norm_num) htle
   have hN : (N : ℝ≥0∞) ^ t ≤ ((N : ℝ≥0∞) + 1) ^ tm :=
     hpow_le le_self_add le_add_self
-  have hsumW : ∑ k, ENNReal.ofReal (((2 + 2 * ∑ j, ‖z j‖) / δ) ^
-      (∑ j, |γ * α j| + |γ * αinf|)) ^ t * weightedGmcBallMoment P M γ (α k) (z k) δ t ≤
-        N * (cRm ^ tm * (Tm * K1)) := by
+  exact mul_le_mul' h2 (add_le_add (mul_le_mul' h2 (add_le_add (mul_le_mul' hN (by
     calc _ ≤ ∑ _k : Fin N, cRm ^ tm * (Tm * K1) :=
           Finset.sum_le_sum fun k _ => mul_le_mul' hcR (hW k)
-      _ = N * (cRm ^ tm * (Tm * K1)) := by simp
-  exact mul_le_mul' h2 (add_le_add (mul_le_mul' h2 (add_le_add (mul_le_mul' hN hsumW)
+      _ = N * (cRm ^ tm * (Tm * K1)) := by simp))
     (mul_le_mul' hcB hMB))) (mul_le_mul' hcE (hK2b αinf t hαinfA ht htb htinf)))
 
 end DOZZ.Proofs

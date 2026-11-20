@@ -7,6 +7,8 @@ public import DOZZ.FourPoint.Reflected.DecorrelationCarrier
 public import DOZZ.FourPoint.Reflected.ComparisonError
 public import DOZZ.FourPoint.Reflected.OuterInverseGuard
 import Mathlib.Tactic
+public import DOZZ.GFFStructure.ContinuousCircleAverage
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! Signed decorrelation error for the literal separated source and copied masses. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
@@ -37,18 +39,11 @@ noncomputable def reflected_copied_separatedMoment {Ω : Type*} [MeasurableSpace
 bound is assumed: the copied moment's finiteness follows from the source comparison. -/
 theorem reflected_source_separated_moment_error
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
-    (hwhole : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
-      ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
-      (∫⁻ ω, G (originRadialPath Xc ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
-      ∫⁻ ω, G (originRadialPath Xc ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
-        f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ
-          (originRadialPath Xc ω.1) x) ∂N ω.2) ∂P.prod P)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
+    (hwhole : RadialReinsertionLaw P (originRadialPath Xc) γ M N)
     (hNa : ∀ ρ : ℝ, 0 < ρ → IsAdmissibleGMCVersion P (originLateralChart ρ)
       originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ
       (fun ω => (N ω).restrict (originLateralChart ρ)))
@@ -69,12 +64,14 @@ theorem reflected_source_separated_moment_error
   let r := ‖z‖^(1-ξ)
   obtain ⟨hU₀,hU₁,hroot₀,hroot₁,hpart₀,hpart₁,hn₀,hn₁,hD⟩ :=
     reflected_separated_region_geometry s r hs hr hr1 hsep
-  have hb := reflected_source_full_lateral_comparison_on_carrier
-    P X Xc hX hc hm hcont γ hγ hγ₂ M hM N hN hfin hwhole hNa
-    α₁ α₂ α₃ z hz (reflected_innerRegion s) (reflected_outerRegion r)
+  have hb := source_full_lateral_comparison_on_carrier
+    P X Xc hX hcircle γ M (gammaHalfKernel γ α₁ α₂ α₃ z)
+    (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z) (gammaHalfKernel_nonneg γ α₁ α₂ α₃ z)
+    (reflected_spatial_kernel_continuousOn γ α₁ α₂ α₃ z) N hN hfin hwhole hNa (reflected_innerRegion s) (reflected_outerRegion r)
     hU₀ hU₁ hroot₀ hroot₁ (Metric.ball 0 r) Metric.isOpen_ball.measurableSet
     hpart₀ hpart₁ (s/r) r (s/r) (div_pos hs hr).le hsep hr (div_pos hs hr)
     hn₀ hn₁ hD q hq
+    (reflected_spatial_guard_inverse_finite P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ q hq.le z hz)
   have he : 2*(s/r)+s/r = 3*(s/r) := by ring
   simp only [he] at hb
   let original := reflected_source_separatedMoment P M γ α₁ α₂ α₃ z s r q

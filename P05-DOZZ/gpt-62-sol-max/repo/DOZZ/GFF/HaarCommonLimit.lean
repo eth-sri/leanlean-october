@@ -52,12 +52,11 @@ noncomputable def equatorHaarCommonEval (f : TestFn)
   limUnder atTop (fun n => equatorHaarCommonPartialEval f n ω)
 
 theorem measurable_equatorHaarCommonPartialEval (f : TestFn) (n : ℕ) :
-    Measurable (equatorHaarCommonPartialEval f n) := by
-  exact measurable_equatorHaarPartialDistribution_apply _ f
+    Measurable (equatorHaarCommonPartialEval f n) := measurable_equatorHaarPartialDistribution_apply _ f
 
 theorem measurable_equatorHaarCommonEval (f : TestFn) :
     Measurable (equatorHaarCommonEval f) := by
-  have hstrong : ∀ n, StronglyMeasurable (equatorHaarCommonPartialEval f n) :=
+  have hstrong  :=
     fun n => (measurable_equatorHaarCommonPartialEval f n).stronglyMeasurable
   exact (StronglyMeasurable.limUnder (l := atTop) hstrong).measurable
 

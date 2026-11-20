@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Correlations.Tails.SourceWilliamsUniformTail
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 
 /-! The uniform Williams estimate for the actual independently prefactored canonical mass. -/
 
@@ -16,9 +17,7 @@ namespace DOZZ.Proofs
 
 theorem canonical_leading_tail_uniform
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (Kz : Set ℂ) (hKz : IsCompact Kz) (hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
     (Kα : Set ℝ) (hKα : IsCompact Kα) (hα : ∀ α ∈ Kα, γ/2 < α ∧ α < Q γ)
@@ -37,22 +36,22 @@ theorem canonical_leading_tail_uniform
           oneInsertionTailCoefficient γ α z f (reflectionBarR P γ α (B α) Z)*
             x^(-reflectionExponent γ α)| ≤ C*x^(-reflectionExponent γ α-η) := by
   let : IsProbabilityMeasure P := hX.1
-  obtain ⟨C,hC,hbound⟩ := source_williams_tail_uniform P X Xc hX hc γ hγ hγ2
+  obtain ⟨C,hC,hbound⟩ := source_williams_tail_uniform P X Xc hX hcircle.isCircleAverage γ hγ hγ2
     Kz hKz hz Kα hKα hα B Z hZ hData b R η a hb hR hRbulk hη ha r hr hpr
   refine ⟨C,hC,?_⟩
   intro z hzk α hαk f hf hfb N hN x hx
   let S : Ω → ℝ≥0∞ := fun ω =>
     ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖))
+  have hzMeas := circleAverage_measurable_eval X Xc hcircle.isCircleAverage z 0
   have hS : Measurable S := by
-    have hpin := (hc.1 0).comp (measurable_id.prodMk (measurable_const : Measurable (fun _ : Ω => z)))
-    exact ((((hpin.const_mul γ).sub_const _).exp).const_mul _).ennreal_ofReal
+    fun_prop
   let μ := brownianMaximumReferenceLaw (Q γ-α)
   let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw
     (sub_pos.mpr (hα α hαk).2)
-  have hLaw := prefactored_canonical_source_williams_law P X Xc hX hc hm hcont
+  have hLaw := prefactored_canonical_source_williams_law P X Xc hX hcircle
     z γ α hγ hγ2 (hα α hαk).2 N hN (B α) Z (hData α hαk) S hS.aemeasurable
   have hMass := localSingularMass_aemeasurable P (translatedField X Xc z)
-    (translated_field_isEquatorGFF P X Xc hX hc z) γ hγ hγ2 N hN
+    (translated_field_isEquatorGFF P X Xc hX hcircle.isCircleAverage z) γ hγ hγ2 N hN
     (fun _ => 1) measurable_const 0 α
   have hLead := (hS.comp measurable_snd).aemeasurable.mul
     (hMass.comp_quasiMeasurePreserving (measurePreserving_fst (μ := P) (ν := P)).quasiMeasurePreserving)

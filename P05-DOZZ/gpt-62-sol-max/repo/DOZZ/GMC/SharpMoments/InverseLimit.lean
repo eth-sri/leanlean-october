@@ -23,12 +23,14 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX γ hγ hγ2 hM
+
 /-- Fatou: a cutoff-uniform bound on an extended moment of a bounded set mass passes to every
 `IsGMCOf` limit, for every real order. -/
 theorem gmcMassMoment_le_of_cutoff_uniform
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ) (hAR : A ⊆ Metric.closedBall (0 : ℂ) R)
     (p : ℝ) (C : ℝ≥0∞)
@@ -49,14 +51,7 @@ theorem gmcMassMoment_le_of_cutoff_uniform
   have hconv : TendstoInMeasure P f atTop g := by
     intro ε hε
     by_cases hεtop : ε = ⊤
-    · have hzero : ∀ n, P {ω | ε ≤ edist (f n ω) (g ω)} = 0 := by
-        intro n
-        rw [hεtop]
-        have hset : {ω | (⊤ : ℝ≥0∞) ≤ edist (f n ω) (g ω)} = ∅ := by
-          ext ω
-          simp [edist_ne_top]
-        rw [hset, measure_empty]
-      simp [hzero]
+    simp [*]
     · have hmarkov : ∀ n, P {ω | ε ≤ edist (f n ω) (g ω)} ≤
           (∫⁻ ω, ENNReal.ofReal |f n ω - g ω| ∂P) / ε := by
         intro n
@@ -68,11 +63,9 @@ theorem gmcMassMoment_le_of_cutoff_uniform
         change ε ≤ edist (f n ω) (g ω) at hω
         change ε ≤ ENNReal.ofReal |f n ω - g ω|
         rwa [edist_dist, Real.dist_eq] at hω
-      have hdiv : Tendsto (fun n : ℕ => (∫⁻ ω, ENNReal.ofReal |f n ω - g ω| ∂P) / ε)
-          atTop (𝓝 0) := by
+      exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (by
         have := ENNReal.Tendsto.div_const hL1nat (Or.inr hε.ne')
-        simpa using this
-      exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hdiv
+        simpa using this)
         (fun _ => zero_le) hmarkov
   have hfin := fun n : ℕ => regularizedGMC_finite_ae P X hX Xc hXc γ (n : ℝ)
   have hfmeasR : ∀ n, AEMeasurable
@@ -97,9 +90,6 @@ theorem gmcMassMoment_le_of_cutoff_uniform
 
 /-- Every inverse moment of the limiting mass of the reference disk is finite. -/
 theorem gmc_reference_inverse_moment_lt_top
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (q : ℝ) (hq : 0 < q) :
     gmcMassMoment P M (Metric.ball 0 (1 / 8)) (-q) < ⊤ := by
   obtain ⟨Xc, hXc, -⟩ := hM.2
@@ -108,5 +98,7 @@ theorem gmc_reference_inverse_moment_lt_top
     (Metric.ball 0 (1 / 8)) Metric.isOpen_ball.measurableSet (1 / 8) Metric.ball_subset_closedBall
     (-q) (ENNReal.ofReal K) hK
   exact h.trans_lt ENNReal.ofReal_lt_top
+
+end
 
 end DOZZ.Proofs

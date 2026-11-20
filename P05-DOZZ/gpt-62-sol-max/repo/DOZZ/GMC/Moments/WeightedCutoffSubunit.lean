@@ -10,6 +10,7 @@ public import DOZZ.Statements.GMC.CutoffWeightedGmcBallMass
 public import DOZZ.GMC.Annulus.CutoffScale
 public import DOZZ.GMC.Moments.CutoffSubunit
 import Mathlib.MeasureTheory.Measure.GiryMonad
+public import DOZZ.GMC.Moments.PositiveExponent
 
 /-! Subunit cutoff estimates for the nonsingular (nonpositive-charge) sector. -/
 
@@ -66,7 +67,7 @@ theorem cutoffWeightedGmcBallMass_le_outer_scale
         simpa [B, Metric.mem_ball, dist_eq_norm] using hx
       have hbase : 0 < ‖x - z‖ + δ := by positivity
       have htop : ‖x - z‖ + δ ≤ 2 * R := by linarith
-      have hpow : (‖x - z‖ + δ) ^ (-γ * α) ≤ (2 * R) ^ (-γ * α) :=
+      have hpow  :=
         Real.rpow_le_rpow (by positivity) htop hk
       simpa [f, g, hx] using ENNReal.ofReal_le_ofReal hpow
     · simp [f, g, hx]
@@ -78,11 +79,13 @@ theorem cutoffWeightedGmcBallMass_le_outer_scale
       dsimp [g, B]
       rw [lintegral_indicator_const Metric.isOpen_ball.measurableSet]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+include hX
+
 /-- For nonpositive insertion charge, any cutoff weighted moment is bounded by an explicit
 outer-scale factor times the corresponding unweighted cutoff ball moment. -/
 theorem cutoffWeightedGmcBallMoment_le_outer_scale_moment
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ α : ℝ) (hγ : 0 < γ) (hα : α ≤ 0) (z : ℂ) (R δ : ℝ)
     (hδ : 0 < δ) (hδR : δ ≤ R) (p : ℝ) (hp : 0 ≤ p) :
@@ -119,8 +122,6 @@ theorem cutoffWeightedGmcBallMoment_le_outer_scale_moment
 /-- The cutoff weighted moment has the expected local scaling for nonpositive charges at every
 subunit positive order, provided the ball stays in the exact logarithmic chart. -/
 theorem cutoffWeightedGmcBallMoment_le_nonpos_subunit_chart
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (_hγ2 : γ < 2)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (α : ℝ) (hα : α ≤ 0) (z : ℂ) (R δ p : ℝ)
@@ -130,7 +131,7 @@ theorem cutoffWeightedGmcBallMoment_le_nonpos_subunit_chart
       (cutoffWeightedGmcBallMass P Xc γ α z R δ ω) p ∂P) ≤
       ENNReal.rpow (ENNReal.ofReal ((2 * R) ^ (-γ * α))) p *
         (ENNReal.ofReal ((2 * R) ^
-          (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) *
+          (gmcScaleExponent γ p)) *
           (1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2)))) := by
   let c : ℝ≥0∞ := ENNReal.ofReal ((2 * R) ^ (-γ * α))
   have hscale := regularizedGMC_openBall_subunit_scale_bound P X hX Xc hXc γ z R δ p
@@ -159,9 +160,11 @@ theorem cutoffWeightedGmcBallMoment_le_nonpos_subunit_chart
           exact ENNReal.mul_rpow_of_nonneg _ _ hp.le
         _ = _ := lintegral_const_mul'' _ hmassMeas
     _ ≤ ENNReal.rpow c p * (ENNReal.ofReal ((2 * R) ^
-          (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) *
+          (gmcScaleExponent γ p)) *
           (1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2)))) := by
       gcongr
     _ = _ := by rfl
+
+end
 
 end DOZZ.Proofs

@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.Correlations.Symmetry.ReflectionCircleMean
 public import DOZZ.GMC.Moments.InversionCutoff
+public import DOZZ.GMC.CircleWickDensity
 @[expose] public section
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal
@@ -34,18 +35,7 @@ theorem regularizedGMC_symmetryRepinned
   let Z := fun ω x r => Xc ω (1 - x) r - Xc ω 1 0
   have hZ := isCircleAverage_symmetryRepinned P X hX Xc hXc
   have hY := isEquatorGFF_symmetryRepinnedField P X hX Xc hXc
-  have hvar : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
-    have hq : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) :=
-      ((hXc.1 r).comp measurable_swap).pow_const 2
-    exact hq.stronglyMeasurable.integral_prod_right.measurable
-  have hnp : Measurable (fun x : ℂ => normPlus x) :=
-    (continuous_const.max continuous_norm).measurable
-  have hd : Measurable (fun x : ℂ => ENNReal.ofReal
-      (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) *
-        normPlus x ^ (-4 : ℝ))) :=
-    ENNReal.measurable_ofReal.comp (((Real.measurable_exp.comp
-      (((hXc.1 r).comp (measurable_const.prodMk measurable_id)).const_mul γ |>.sub
-        (hvar.const_mul (γ ^ 2 / 2)))).mul (hnp.pow_const _)))
+  have hd := measurable_regularizedGMC_density P Xc γ r (hXc.1 r) ω
   have hw : Measurable (fun x => ENNReal.ofReal (Real.exp (-γ * Xc ω 1 0 +
       γ ^ 2 * symmetryCirclePotentialMean r x + 4 * symmetryReflectionPotential x))) :=
     ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp

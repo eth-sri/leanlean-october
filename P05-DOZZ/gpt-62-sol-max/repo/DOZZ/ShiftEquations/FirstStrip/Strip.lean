@@ -17,6 +17,7 @@ import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.ShiftEquations.Reflection.RbarContinuity
 import DOZZ.ShiftEquations.Gluing.Meromorphy
+public import DOZZ.ShiftEquations.Representatives
 
 /-!
 # The first structure shift on a strip, from the unreflected formula
@@ -63,21 +64,12 @@ theorem structureConstant_first_shift_strip_of_unreflected
             (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) *
               structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
                 ‖gaussFPlus H a b c z‖ ^ 2) :
-    ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ,
-      MeromorphicOn C {z | |z.im| < h} ∧
-      (∀ α : ℝ, 2 * η < α → α < Q γ →
-        C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-      ∀ᶠ z in codiscrete ℂ,
-        C (z + γ / 2) =
-          -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-            C (z - γ / 2) := by
-  obtain ⟨V₃, hV₃, hV₃mem, f₃, hf₃, hf₃eq⟩ :=
+    HasFirstStructureShift P M γ μ η α₂ α₃ := by
+  obtain ⟨V₃, f₃, hV₃, hV₃mem, hf₃, hf₃eq⟩ :=
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   obtain ⟨hη0, hηQ⟩ := hη
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le]
+  have hγh := half_gamma_lt_two_div hγ hγ2
   have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
   have hμc : (μ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hμ.ne'
   have hπc : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_pos.ne'

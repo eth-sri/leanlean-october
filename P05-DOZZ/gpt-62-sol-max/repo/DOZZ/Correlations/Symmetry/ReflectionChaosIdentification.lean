@@ -73,7 +73,7 @@ theorem isGMCOf_symmetryRepinnedChaos
       exact mul_nonneg (norm_nonneg _) (hv x))
     (BoundedContinuousFunction.tendsto_iff_tendstoUniformly.mp
       (tendsto_const_nhds.mul hwconv))
-  have hsub := tendstoInMeasure_sub_same_space _ _ _ _ hA hB
+  have hsub := tendstoInMeasure_sub P _ _ _ _ hA hB
   have hsigned : TendstoInMeasure P
       (fun r ω => ∫ x, f (1 - x) * symmetryReflectionCutoffWeight γ r (1 - x)
         ∂regularizedGMC P Xc γ r ω) atTop

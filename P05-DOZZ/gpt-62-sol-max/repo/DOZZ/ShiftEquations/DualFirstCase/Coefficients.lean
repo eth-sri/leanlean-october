@@ -30,8 +30,12 @@ noncomputable def dualFirstCase_crossingProduct (γ : ℝ) (a₂ a₃ z : ℂ) :
 theorem dualFirstCase_lFun_one_sub (z : ℂ) : lFun (1 - z) = (lFun z)⁻¹ := by
   unfold lFun
   rw [sub_sub_cancel, inv_div]
+section
+variable (γ x a₂ a₃ : ℝ) (hγ : γ ≠ 0)
+include hγ
+
 /-- Complexification of the literal real Gauss parameters. -/
-theorem dualFirstCase_parameters (γ x a₂ a₃ : ℝ) (hγ : γ ≠ 0) :
+theorem dualFirstCase_parameters :
     dualFirstCase_A γ a₂ a₃ x = (gaussParameterA γ (2 / γ) x a₂ a₃ : ℂ) ∧
     dualFirstCase_B γ a₂ a₃ x = (gaussParameterB γ (2 / γ) x a₂ a₃ : ℂ) ∧
     dualFirstCase_C γ x = (gaussParameterC γ (2 / γ) x : ℂ) ∧
@@ -47,7 +51,7 @@ theorem dualFirstCase_parameters (γ x a₂ a₃ : ℝ) (hγ : γ ≠ 0) :
   constructor <;> field_simp <;> ring
 /-- The product is exactly the product of the two coefficients `dualCrossingMultiplier` and
 `dualCrossingL` of the dual crossing seeds on the real slice. -/
-theorem dualFirstCase_crossingProduct_ofReal (γ x a₂ a₃ : ℝ) (hγ : γ ≠ 0) :
+theorem dualFirstCase_crossingProduct_ofReal :
     dualFirstCase_crossingProduct γ a₂ a₃ x =
       ((dualCrossingMultiplier γ a₃ x a₂ * dualCrossingL γ a₂ x a₃ : ℝ) : ℂ) := by
   obtain ⟨hA, hB, hc, _hd⟩ := dualFirstCase_parameters γ x a₂ a₃ hγ
@@ -58,9 +62,8 @@ theorem dualFirstCase_crossingProduct_ofReal (γ x a₂ a₃ : ℝ) (hγ : γ �
     field_simp; ring
   unfold dualFirstCase_crossingProduct dualCrossingMultiplier dualCrossingL
   dsimp only
-  rw [hA, hB, hc, hdC]
-  rw [show (gaussParameterC γ (2 / γ) a₂ : ℂ) - 1 =
-    ((gaussParameterC γ (2 / γ) a₂ - 1 : ℝ) : ℂ) by push_cast; rfl]
+  rw [hA, hB, hc, hdC, show (gaussParameterC γ (2 / γ) a₂ : ℂ) - 1 =
+      ((gaussParameterC γ (2 / γ) a₂ - 1 : ℝ) : ℂ) by push_cast; rfl]
   have habc : (gaussParameterA γ (2 / γ) x a₂ a₃ : ℂ) + gaussParameterB γ (2 / γ) x a₂ a₃ =
       (gaussParameterC γ (2 / γ) x : ℂ) + gaussParameterC γ (2 / γ) a₂ - 1 := by exact_mod_cast hab
   rw [show (2 : ℂ) - (gaussParameterC γ (2 / γ) x : ℂ) =
@@ -70,6 +73,8 @@ theorem dualFirstCase_crossingProduct_ofReal (γ x a₂ a₃ : ℝ) (hγ : γ �
   push_cast
   rw [show gaussParameterA γ (2 / γ) x a₂ a₃ + gaussParameterB γ (2 / γ) x a₂ a₃ -
     gaussParameterC γ (2 / γ) x = gaussParameterC γ (2 / γ) a₂ - 1 by linarith only [hab]]
+
+end
 /-- The crossing product is meromorphic on the whole plane. -/
 theorem dualFirstCase_crossingProduct_meromorphic (γ : ℝ) (a₂ a₃ : ℂ) :
     MeromorphicOn (dualFirstCase_crossingProduct γ a₂ a₃) univ := by

@@ -42,31 +42,39 @@ theorem meromorphic_shiftCoeffA (γ : ℝ) (χ α₂ α₃ : ℂ) :
     (f := fun z : ℂ => χ / 2 * ((z + α₂ + α₃) - 2 * α₂ - χ)) (z := x) (by fun_prop)
   exact (((h1.mul h2).mul h3).mul h4).div ((h5.mul h6).mul h7)
 
+section
+variable {h : ℝ} {z : ℂ} (hz : z ∈ horizontalStrip h) (t : ℝ)
+include hz
+
 /-- Real translations preserve horizontal strips. -/
-theorem add_ofReal_mem_horizontalStrip_glue {h : ℝ} {z : ℂ} (hz : z ∈ horizontalStrip h) (t : ℝ) :
+theorem add_ofReal_mem_horizontalStrip_glue :
     z + (t : ℂ) ∈ horizontalStrip h := by
-  have hz' : |z.im| < h := hz
-  change |(z + (t : ℂ)).im| < h
-  simpa using hz'
+  simp_all
 
 /-- Reflections across real points preserve horizontal strips. -/
-theorem ofReal_sub_mem_horizontalStrip_glue {h : ℝ} {z : ℂ} (hz : z ∈ horizontalStrip h) (t : ℝ) :
+theorem ofReal_sub_mem_horizontalStrip_glue :
     (t : ℂ) - z ∈ horizontalStrip h := by
   have hz' : |z.im| < h := hz
   change |((t : ℂ) - z).im| < h
   simpa [abs_neg] using hz'
 
+end
+
+section
+variable {f : ℂ → ℂ} {h : ℝ} (hf : MeromorphicOn f (horizontalStrip h)) (t : ℝ)
+include hf
+
 /-- Meromorphy is preserved by a real translation of the variable. -/
-theorem MeromorphicOn.comp_add_ofReal {f : ℂ → ℂ} {h : ℝ} (hf : MeromorphicOn f (horizontalStrip h))
-    (t : ℝ) : MeromorphicOn (fun z => f (z + t)) (horizontalStrip h) := fun z hz =>
+theorem MeromorphicOn.comp_add_ofReal : MeromorphicOn (fun z => f (z + t)) (horizontalStrip h) := fun z hz =>
   (hf _ (add_ofReal_mem_horizontalStrip_glue hz t)).comp_analyticAt (g := fun w => w + (t : ℂ))
     (by fun_prop)
 
 /-- Meromorphy is preserved by a reflection of the variable across a real point. -/
-theorem MeromorphicOn.comp_ofReal_sub {f : ℂ → ℂ} {h : ℝ} (hf : MeromorphicOn f (horizontalStrip h))
-    (t : ℝ) : MeromorphicOn (fun z => f ((t : ℂ) - z)) (horizontalStrip h) := fun z hz =>
+theorem MeromorphicOn.comp_ofReal_sub : MeromorphicOn (fun z => f ((t : ℂ) - z)) (horizontalStrip h) := fun z hz =>
   (hf _ (ofReal_sub_mem_horizontalStrip_glue hz t)).comp_analyticAt (g := fun w => (t : ℂ) - w)
     (by fun_prop)
+
+end
 
 /-- Horizontal strips are preconnected. -/
 theorem isPreconnected_horizontalStrip (h : ℝ) : IsPreconnected (horizontalStrip h) := by

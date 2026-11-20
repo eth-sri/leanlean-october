@@ -6,6 +6,7 @@ module
 
 public import DOZZ.ShiftEquations.Shift.RbarShift
 public import DOZZ.Statements.Brownian.ReflectionR
+public import DOZZ.DOZZAlgebra.ReflectionShiftForm
 
 /-!
 # From the unit-volume shift to the full shift
@@ -79,8 +80,7 @@ theorem reflectionRFromBar_shift {γ μ : ℝ} (hγ : 0 < γ) (hμ : 0 < μ) {G 
     (hp : reflectionExponentC γ w + 1 ≠ 0) :
     reflectionRFromBar γ μ G (w - γ / 2) =
       -(μ * Real.pi : ℂ) * reflectionRFromBar γ μ G w /
-        (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) * w / 2 - (γ : ℂ) ^ 2 / 4) *
-          lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * w / 2)) := by
+        reflectionFirstShiftDenom γ w := by
   have hμ0 : (μ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hμ.ne'
   have hw : w - (γ : ℂ) / 2 = w - ((γ / 2 : ℝ) : ℂ) := by push_cast; ring
   unfold reflectionRFromBar

@@ -18,7 +18,7 @@ namespace DOZZ.Proofs
 /-- Regularize the inverse radial power while keeping the support of the compact test. -/
 noncomputable def singularCompactTest (f : BoundedContinuousFunction ℂ ℝ)
     (hfc : HasCompactSupport (f : ℂ → ℝ)) (β : ℝ) (n : ℕ) : BoundedContinuousFunction ℂ ℝ := by
-  let F : ℂ → ℝ := fun x => f x * (max ‖x‖ (1 / ((n : ℝ)+1))) ^ (-β)
+  let F  := fun x => f x * (max ‖x‖ (1 / ((n : ℝ)+1))) ^ (-β)
   have hcont : Continuous F := f.continuous.mul
     ((continuous_norm.max continuous_const).rpow_const (fun x => Or.inl (ne_of_gt
       (lt_of_lt_of_le (by positivity : 0 < 1 / ((n : ℝ)+1)) (le_max_right _ _)))))
@@ -31,14 +31,17 @@ theorem singular_compact_test_support (f : BoundedContinuousFunction ℂ ℝ)
     tsupport (singularCompactTest f hfc β n : ℂ → ℝ) ⊆ tsupport (f : ℂ → ℝ) :=
   tsupport_mul_subset_left
 
-theorem singular_compact_test_nonneg (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) (hf : ∀ x, 0 ≤ f x) (β : ℝ) (n : ℕ) (x : ℂ) :
+section
+variable (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ)) (hf : ∀ x, 0 ≤ f x)
+  (β : ℝ)
+include hf
+
+theorem singular_compact_test_nonneg (n : ℕ) (x : ℂ) :
     0 ≤ singularCompactTest f hfc β n x :=
   mul_nonneg (hf x) (Real.rpow_nonneg (by positivity) _)
 
 /-- The compact radial approximants increase, including at the insertion center. -/
-theorem singular_compact_test_mono (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) (hf : ∀ x, 0 ≤ f x) (β : ℝ) (hβ : 0 ≤ β) (x : ℂ) :
+theorem singular_compact_test_mono (hβ : 0 ≤ β) (x : ℂ) :
     Monotone (fun n => singularCompactTest f hfc β n x) := by
   intro n m hnm
   change f x * (max ‖x‖ (1 / ((n : ℝ)+1))) ^ (-β) ≤
@@ -47,12 +50,11 @@ theorem singular_compact_test_mono (f : BoundedContinuousFunction ℂ ℝ)
   apply Real.rpow_le_rpow_of_nonpos
     (lt_of_lt_of_le (by positivity : 0 < 1 / ((m : ℝ)+1)) (le_max_right _ _)) _ (neg_nonpos.mpr hβ)
   exact max_le_max le_rfl (one_div_le_one_div_of_le (by positivity)
-    (by exact_mod_cast Nat.add_le_add_right hnm 1))
+    (by simpa))
 
 /-- The pointwise limit is the literal ENNReal inverse power, with no convention at zero
 silently replacing its infinite value. -/
-theorem singular_compact_test_tendsto (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) (hf : ∀ x, 0 ≤ f x) (β : ℝ) (x : ℂ) :
+theorem singular_compact_test_tendsto (x : ℂ) :
     Tendsto (fun n => ENNReal.ofReal (singularCompactTest f hfc β n x)) atTop
       (𝓝 (ENNReal.ofReal (f x) * (ENNReal.ofReal ‖x‖) ^ (-β))) := by
   have ht : Tendsto (fun n : ℕ => (n : ℝ)+1) atTop atTop :=
@@ -74,5 +76,7 @@ theorem singular_compact_test_tendsto (f : BoundedContinuousFunction ℂ ℝ)
   change ENNReal.ofReal (f x * (max ‖x‖ (1 / ((n : ℝ)+1))) ^ (-β)) = _
   rw [ENNReal.ofReal_mul (hf x), ENNReal.ofReal_rpow_of_pos
     (lt_of_lt_of_le (by positivity : 0 < 1 / ((n : ℝ)+1)) (le_max_right _ _))]
+
+end
 
 end DOZZ.Proofs

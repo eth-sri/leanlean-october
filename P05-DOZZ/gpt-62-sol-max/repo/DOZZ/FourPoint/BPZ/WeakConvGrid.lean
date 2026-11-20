@@ -37,14 +37,14 @@ theorem bpz_integrable_inner {m ν : Measure ℂ} [IsFiniteMeasure m] [IsFiniteM
     (bpz_inner_integral_bdd hC)
 
 theorem bpzNearKernel_abs_le (ρ t : ℝ) (x y : ℂ) : |bpzNearKernel ρ t x y| ≤ 1 := by
-  rw [abs_of_nonneg (bpzNearKernel_nonneg ρ t x y)]; exact bpzNearKernel_le_one ρ t x y
+  rw [abs_of_nonneg (bpzNearKernel_nonneg ρ t x y)]; exact bpzNearKernel_le_one ..
 
 theorem bpzNearDiag_eq (ρ t : ℝ) (μ : Measure ℂ) [IsFiniteMeasure μ] :
     bpzNearDiag ρ t μ = ∫ x, (if ‖x‖ ≤ ρ then μ.real (Metric.ball x t) else 0) ∂μ := by
   unfold bpzNearDiag
   congr 1
   funext x
-  exact integral_bpzNearKernel μ ρ t x
+  exact integral_bpzNearKernel ..
 
 theorem iInter_ball_inv_succ (x : ℂ) :
     ⋂ k : ℕ, Metric.ball x (1 / ((k : ℝ) + 1)) = {x} := by
@@ -53,15 +53,18 @@ theorem iInter_ball_inv_succ (x : ℂ) :
   constructor
   · intro hy
     by_contra hne
-    have hpos : 0 < dist y x := dist_pos.mpr hne
+    have hpos  := dist_pos.mpr hne
     obtain ⟨k, hk⟩ := exists_nat_one_div_lt hpos
     exact absurd (hy k) (not_lt.mpr hk.le)
   · rintro rfl k
     rw [dist_self]
     positivity
 
+section
+variable (μ : Measure ℂ) [IsFiniteMeasure μ]
+
 /-- For a finite measure without atoms the near-diagonal mass vanishes in the limit. -/
-theorem tendsto_bpzNearDiag_zero (μ : Measure ℂ) [IsFiniteMeasure μ] (hμ : ∀ x, μ {x} = 0)
+theorem tendsto_bpzNearDiag_zero (hμ : ∀ x, μ {x} = 0)
     (ρ : ℝ) : Tendsto (fun k : ℕ => bpzNearDiag ρ (1 / ((k : ℝ) + 1)) μ) atTop (𝓝 0) := by
   simp_rw [bpzNearDiag_eq]
   have hlim : ∀ x, Tendsto (fun k : ℕ =>
@@ -77,7 +80,7 @@ theorem tendsto_bpzNearDiag_zero (μ : Measure ℂ) [IsFiniteMeasure μ] (hμ : 
         (fun _ => measurableSet_ball.nullMeasurableSet) hanti ⟨0, measure_ne_top _ _⟩
       rw [iInter_ball_inv_succ, hμ x] at h
       have h' := (ENNReal.tendsto_toReal ENNReal.zero_ne_top).comp h
-      simpa [Function.comp_def, measureReal_def] using h'
+      assumption
     · simp only [hx, ↓reduceIte]
       exact tendsto_const_nhds
   have hint := tendsto_integral_of_dominated_convergence (μ := μ)
@@ -89,7 +92,7 @@ theorem tendsto_bpzNearDiag_zero (μ : Measure ℂ) [IsFiniteMeasure μ] (hμ : 
   · have hm := bpz_measurable_inner (ν := μ) (measurable_bpzNearKernel ρ (1 / ((k : ℝ) + 1)))
     have heq : (fun x => ∫ y, bpzNearKernel ρ (1 / ((k : ℝ) + 1)) x y ∂μ) = fun x =>
         if ‖x‖ ≤ ρ then μ.real (Metric.ball x (1 / ((k : ℝ) + 1))) else 0 := by
-      funext x; exact integral_bpzNearKernel μ ρ _ x
+      funext x; exact integral_bpzNearKernel ..
     rw [heq] at hm
     exact hm.aestronglyMeasurable
   · split_ifs
@@ -98,7 +101,7 @@ theorem tendsto_bpzNearDiag_zero (μ : Measure ℂ) [IsFiniteMeasure μ] (hμ : 
     · simp
 
 /-- The near-diagonal mass is bounded by a grid sum. -/
-theorem bpzNearDiag_le_grid (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : ℝ} (hh : 0 < h) :
+theorem bpzNearDiag_le_grid {ρ t h : ℝ} (hh : 0 < h) :
     bpzNearDiag ρ t μ ≤ ∑ i ∈ bpzGridBox ⌈ρ / h⌉₊, μ.real (bpzGridIdx h ⁻¹' {i}) *
       μ.real (Metric.ball (bpzGridCorner h i) (t + 2 * h)) := by
   rw [← integral_bpzGrid_step h _ (fun i => μ.real (Metric.ball (bpzGridCorner h i) (t + 2 * h))),
@@ -107,11 +110,8 @@ theorem bpzNearDiag_le_grid (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : �
     (integrable_of_bdd_finite (measurable_bpzGrid_step h (bpzGridBox ⌈ρ / h⌉₊)
       (fun i => μ.real (Metric.ball (bpzGridCorner h i) (t + 2 * h)))) (C := μ.real Set.univ) ?_)
     fun x => ?_
-  · have hm := bpz_measurable_inner (ν := μ) (measurable_bpzNearKernel ρ t)
-    have heq : (fun x => ∫ y, bpzNearKernel ρ t x y ∂μ) = fun x =>
-        if ‖x‖ ≤ ρ then μ.real (Metric.ball x t) else 0 := by
-      funext x; exact integral_bpzNearKernel μ ρ t x
-    rwa [heq] at hm
+  · exact Eq.mp (congrArg (fun _a => Measurable _a) (funext fun x => integral_bpzNearKernel μ ρ t x))
+      (bpz_measurable_inner (measurable_bpzNearKernel ρ t))
   · intro x
     split_ifs
     · rw [abs_of_nonneg measureReal_nonneg]; exact measureReal_mono (Set.subset_univ _)
@@ -122,7 +122,7 @@ theorem bpzNearDiag_le_grid (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : �
     · simp
   · dsimp only
     by_cases hx : ‖x‖ ≤ ρ
-    · have hS : bpzGridIdx h x ∈ bpzGridBox ⌈ρ / h⌉₊ := bpzGridIdx_mem_box hh hx
+    · have hS  := bpzGridIdx_mem_box hh hx
       rw [ite_eq_left hx, ite_eq_left hS]
       refine measureReal_mono (fun y hy => ?_)
       rw [Metric.mem_ball] at hy ⊢
@@ -137,7 +137,7 @@ theorem bpzNearDiag_le_grid (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : �
       · exact le_rfl
 
 /-- A grid sum is bounded by the near-diagonal mass at a larger width and radius. -/
-theorem grid_le_bpzNearDiag (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : ℝ} {N : ℕ}
+theorem grid_le_bpzNearDiag {ρ t h : ℝ} {N : ℕ}
     (hh : 0 < h) (hρ : 2 * ((N + 1) * h) ≤ ρ) :
     ∑ i ∈ bpzGridBox N, μ.real (bpzGridIdx h ⁻¹' {i}) *
       μ.real (Metric.ball (bpzGridCorner h i) (t + 2 * h)) ≤ bpzNearDiag ρ (t + 4 * h) μ := by
@@ -151,18 +151,15 @@ theorem grid_le_bpzNearDiag (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : �
     split_ifs
     · rw [abs_of_nonneg measureReal_nonneg]; exact measureReal_mono (Set.subset_univ _)
     · simp
-  · have hm := bpz_measurable_inner (ν := μ) (measurable_bpzNearKernel ρ (t + 4 * h))
-    have heq : (fun x => ∫ y, bpzNearKernel ρ (t + 4 * h) x y ∂μ) = fun x =>
-        if ‖x‖ ≤ ρ then μ.real (Metric.ball x (t + 4 * h)) else 0 := by
-      funext x; exact integral_bpzNearKernel μ ρ _ x
-    rwa [heq] at hm
+  · exact Eq.mp (congrArg (fun _a => Measurable _a) (funext fun x => integral_bpzNearKernel μ ρ (t + 4 * h) x))
+      (bpz_measurable_inner (measurable_bpzNearKernel ρ (t + 4 * h)))
   · intro x
     split_ifs
     · rw [abs_of_nonneg measureReal_nonneg]; exact measureReal_mono (Set.subset_univ _)
     · simp
   · dsimp only
     by_cases hS : bpzGridIdx h x ∈ bpzGridBox N
-    · have hx : ‖x‖ ≤ ρ := (norm_le_of_bpzGridIdx_mem_box hh hS).trans hρ
+    · have hx  := (norm_le_of_bpzGridIdx_mem_box hh hS).trans hρ
       rw [ite_eq_left hS, ite_eq_left hx]
       refine measureReal_mono (fun y hy => ?_)
       rw [Metric.mem_ball] at hy ⊢
@@ -175,13 +172,13 @@ theorem grid_le_bpzNearDiag (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : �
             exact add_lt_add_of_lt_of_le hy this
         _ = t + 4 * h := by ring
     · rw [ite_eq_right hS]
-      split_ifs
-      · exact measureReal_nonneg
-      · exact le_rfl
+      positivity
+
+end
 
 theorem bpzGrid_box_radius {R h : ℝ} (hR : 0 ≤ R) (hh : 0 < h) (hh1 : h ≤ 1 / 4) :
     2 * ((⌈R / h⌉₊ + 1) * h) ≤ 2 * R + 1 := by
-  have hc : (⌈R / h⌉₊ : ℝ) < R / h + 1 := Nat.ceil_lt_add_one (div_nonneg hR hh.le)
+  have hc  := Nat.ceil_lt_add_one (div_nonneg hR hh.le)
   have : ((⌈R / h⌉₊ : ℝ) + 1) * h < (R / h + 2) * h := by
     apply mul_lt_mul_of_pos_right _ hh; linarith
   have h2 : (R / h + 2) * h = R + 2 * h := by field_simp
@@ -201,7 +198,7 @@ theorem bpz_double_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (K H₀ : �
       2 * ε₁ * (m.real (Metric.closedBall 0 (2 * R + 1)) * m.real (Metric.closedBall 0 R)) +
         2 * C * bpzNearDiag (2 * R + 1) η m := by
   set S := bpzGridBox ⌈R / h⌉₊ with hS
-  have hC : 0 ≤ C := (abs_nonneg _).trans (hKb 0 0)
+  have hC  := (abs_nonneg _).trans (hKb 0 0)
   set Kt : ℂ → ℂ → ℝ := fun x y =>
     if bpzGridIdx h x ∈ S then H₀ (bpzGridCorner h (bpzGridIdx h x)) y else 0 with hKt
   have hKtm : Measurable (Function.uncurry Kt) := by
@@ -230,11 +227,12 @@ theorem bpz_double_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (K H₀ : �
     2 * ε₁ * (B₂.indicator 1 x * B.indicator 1 y) + 2 * C * bpzNearKernel (2 * R + 1) η x y
     with hBd
   have hBdm : Measurable (Function.uncurry Bd) := by
-    have h1 : Measurable (fun p : ℂ × ℂ => B₂.indicator (1 : ℂ → ℝ) p.1) :=
-      (measurable_one.indicator measurableSet_closedBall).comp measurable_fst
-    have h2 : Measurable (fun p : ℂ × ℂ => B.indicator (1 : ℂ → ℝ) p.2) :=
-      (measurable_one.indicator measurableSet_closedBall).comp measurable_snd
-    exact ((h1.mul h2).const_mul _).add ((measurable_bpzNearKernel _ _).const_mul _)
+    exact Measurable.add
+      (Measurable.const_mul
+        (Measurable.mul (Measurable.comp (Measurable.indicator measurable_one measurableSet_closedBall) measurable_fst)
+          (Measurable.comp (Measurable.indicator measurable_one measurableSet_closedBall) measurable_snd))
+        (2 * ε₁))
+      (Measurable.const_mul (measurable_bpzNearKernel (2 * R + 1) η) (2 * C))
   have hBdb : ∀ x y, |Bd x y| ≤ 2 * ε₁ + 2 * C := by
     intro x y
     have hi1 : B₂.indicator (1 : ℂ → ℝ) x ≤ 1 := Set.indicator_le_self' (fun _ _ => zero_le_one) x
@@ -254,20 +252,20 @@ theorem bpz_double_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (K H₀ : �
     have hk' := bpzNearKernel_nonneg (2 * R + 1) η x y
     have hBd0 : 0 ≤ Bd x y := by simp only [hBd]; positivity
     by_cases hy : R < ‖y‖
-    · have h1 : K x y = 0 := hKs x y (Or.inr hy)
+    · have h1  := hKs x y (Or.inr hy)
       have h2 : Kt x y = 0 := by
         simp only [hKt]
         split_ifs
         · exact hH₀s _ y (Or.inr hy)
         · rfl
-      rw [h1, h2, sub_zero, abs_zero]; exact hBd0
+      rwa [h1, h2, sub_zero, abs_zero]
     push Not at hy
     by_cases hxS : bpzGridIdx h x ∈ S
-    · have hx2 : ‖x‖ ≤ 2 * R + 1 :=
+    · have hx2  :=
         (norm_le_of_bpzGridIdx_mem_box hh hxS).trans (bpzGrid_box_radius hR hh hh1)
       have hKt' : Kt x y = H₀ (bpzGridCorner h (bpzGridIdx h x)) y := by
-        simp only [hKt]; exact ite_eq_left hxS
-      have hxc : ‖x - bpzGridCorner h (bpzGridIdx h x)‖ ≤ δ :=
+        simpa only [hKt] using ite_eq_left hxS
+      have hxc  :=
         (norm_sub_bpzGridCorner_le hh x).trans hhδ
       have hi1 : B₂.indicator (1 : ℂ → ℝ) x = 1 :=
         Set.indicator_of_mem (by simpa [B₂] using hx2) _
@@ -287,7 +285,7 @@ theorem bpz_double_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (K H₀ : �
       · push Not at hη
         have hk : bpzNearKernel (2 * R + 1) η x y = 1 := by
           unfold bpzNearKernel
-          rw [ite_eq_left ⟨hx2, by rw [dist_eq_norm, norm_sub_rev]; exact hη⟩]
+          rw [ite_eq_left ⟨hx2, by rwa [dist_eq_norm, norm_sub_rev]⟩]
         calc |K x y - H₀ (bpzGridCorner h (bpzGridIdx h x)) y|
             ≤ |K x y| + |H₀ (bpzGridCorner h (bpzGridIdx h x)) y| := abs_sub _ _
           _ ≤ C + C := add_le_add (hKb x y) (hH₀b _ y)
@@ -298,9 +296,9 @@ theorem bpz_double_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (K H₀ : �
         by_contra hcon
         push Not at hcon
         exact hxS (bpzGridIdx_mem_box hh hcon)
-      have h1 : K x y = 0 := hKs x y (Or.inl hx)
-      have h2 : Kt x y = 0 := by simp only [hKt]; exact ite_eq_right hxS
-      rw [h1, h2, sub_zero, abs_zero]; exact hBd0
+      have h1  := hKs x y (Or.inl hx)
+      have h2 : Kt x y = 0 := by simpa only [hKt] using ite_eq_right hxS
+      rwa [h1, h2, sub_zero, abs_zero]
   -- integrate the pointwise bound
   have hIK : Integrable (fun x => ∫ y, K x y ∂m) m := bpz_integrable_inner hKm hKb
   have hIKt : Integrable (fun x => ∫ y, Kt x y ∂m) m := bpz_integrable_inner hKtm hKtb

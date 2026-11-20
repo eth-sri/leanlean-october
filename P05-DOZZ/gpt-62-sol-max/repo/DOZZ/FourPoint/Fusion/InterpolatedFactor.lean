@@ -19,10 +19,13 @@ noncomputable def fusionInterpolatedFactor {Ω : Type*} [MeasurableSpace Ω]
   if ‖y * z‖ < 1 / 2 then ‖y * z - 1‖ ^ (-γ * α₂) *
     (∫⁻ ω, fusionInterpolatedMass γ α₁ α₂ α₃ t y z (M ω) ^ s ∂P).toReal else 0
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX hγ hγ2 hM
+
 /-- Joint measurability includes the interpolation time. -/
-theorem fusionInterpolatedFactor_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionInterpolatedFactor_measurable
     (α₁ α₂ α₃ s : ℝ) :
     Measurable (fun q : ℝ × (ℂ × ℂ) => fusionInterpolatedFactor P M γ α₁ α₂ α₃ s q.1 q.2.1 q.2.2) := by
   have hy : Measurable (fun q : ℝ × (ℂ × ℂ) => q.2.1) := measurable_fst.comp measurable_snd
@@ -34,9 +37,7 @@ theorem fusionInterpolatedFactor_measurable {Ω : Type*} [MeasurableSpace Ω]
   · exact measurable_const
 
 /-- A uniform inverse moment bound also controls the entire remaining scaled factor. -/
-theorem fusionInterpolatedFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionInterpolatedFactor_uniform_bound
     (α₁ α₂ α₃ s : ℝ) (hs : s ≤ 0) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ t ∈ Set.Icc (0 : ℝ) 1, ∀ y z : ℂ, ‖z‖ ≤ 1 →
       |fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z| ≤ B := by
@@ -67,9 +68,7 @@ theorem fusionInterpolatedFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
   · simpa using mul_nonneg hb ENNReal.toReal_nonneg
 
 /-- At each nonzero rescaled root the remaining factor tends to the common inverse expectation. -/
-theorem fusionInterpolatedFactor_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionInterpolatedFactor_tendsto
     (α₁ α₂ α₃ : ℝ) (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) 1) (y : ℂ) (hy : y ≠ 0)
     (s : ℝ) (hs : s < 0) :
@@ -79,18 +78,16 @@ theorem fusionInterpolatedFactor_tendsto {Ω : Type*} [MeasurableSpace Ω]
       (nhds 0) (nhds (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y 0 (M ω) ^ s ∂P)) := by
     apply tendsto_iff_seq_tendsto.mpr
     intro z hz
-    exact fusionInterpolatedMass_inverse_expectation_seq P X hX γ hγ hγ2 M hM α₁ α₂ α₃
-      hα hα₁ hα₂ hα₃ t ht y hy z hz s hs
+    apply fusionInterpolatedMass_inverse_expectation_seq <;> assumption
   have hfin := fusionMovingMass_inverse_expectation_finite P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ s hs.le y
   have he' := (ENNReal.continuousAt_toReal hfin.ne).tendsto.comp he
   have hw : Tendsto (fun z : ℂ => ‖y * z - 1‖ ^ (-γ * α₂)) (nhds 0) (nhds 1) := by
-    have hn : Tendsto (fun z : ℂ => ‖y * z - 1‖) (nhds 0) (nhds 1) := by
+    simpa only [Function.comp_def, Real.one_rpow] using
+      (Real.continuousAt_rpow_const 1 (-γ * α₂) (Or.inl one_ne_zero)).tendsto.comp (by
       have hc : Continuous (fun z : ℂ => y * z - (1 : ℂ)) :=
         (continuous_const.mul continuous_id).sub continuous_const
-      simpa using hc.norm.tendsto (0 : ℂ)
-    simpa only [Function.comp_def, Real.one_rpow] using
-      (Real.continuousAt_rpow_const 1 (-γ * α₂) (Or.inl one_ne_zero)).tendsto.comp hn
+      simpa using hc.norm.tendsto (0 : ℂ))
   have hcut : ∀ᶠ z : ℂ in nhds 0, ‖y * z‖ < 1 / 2 := by
     have hn : Tendsto (fun z : ℂ => ‖y * z‖) (nhds 0) (nhds 0) := by
       simpa using (continuous_const.mul continuous_id).norm.tendsto (0 : ℂ)
@@ -100,5 +97,7 @@ theorem fusionInterpolatedFactor_tendsto {Ω : Type*} [MeasurableSpace Ω]
   apply h.congr'
   filter_upwards [hcut] with z hz
   simp only [fusionInterpolatedFactor, ite_eq_left hz]
+
+end
 
 end DOZZ.Proofs

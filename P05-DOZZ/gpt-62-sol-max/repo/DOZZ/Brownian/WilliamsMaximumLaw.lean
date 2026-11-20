@@ -30,7 +30,7 @@ theorem brownianMaximumReferenceLaw_eq_expMeasure (ν : ℝ) :
   filter_upwards [MeasureTheory.volume.ae_ne (0 : ℝ)] with x hx
   by_cases hxpos : 0 < x
   · simp [ProbabilityTheory.gammaPDF_eq, hxpos.le, hxpos]
-  · have hxneg : x < 0 := lt_of_le_of_ne (le_of_not_gt hxpos) hx
+  · have hxneg  := lt_of_le_of_ne (le_of_not_gt hxpos) hx
     simp [ProbabilityTheory.gammaPDF_eq, not_lt.mpr hxneg.le, not_le_of_gt hxneg]
 
 /-- The Williams reference law is a probability measure whenever the drift is positive. -/

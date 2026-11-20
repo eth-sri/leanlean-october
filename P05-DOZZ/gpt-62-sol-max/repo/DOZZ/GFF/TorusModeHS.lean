@@ -28,91 +28,39 @@ noncomputable def localTorusModeEnergyConstant (R : ℝ) : ℝ :=
       (volume (ball (0 : ℂ) (R + 3))).toReal
 
 
-theorem norm_sq_equatorKernelLimitMap_localTorusCosTest_le (R L : ℝ) (hR : 0 < R)
-    (k : Fin 2 → ℤ) :
-    ‖equatorKernelLimitMap (localTorusCosTest R L hR k)‖ ^ 2 ≤
-      localTorusModeEnergyConstant (R := R) := by
-  have henergy := norm_sq_equatorKernelLimitMap_le_localL2 (R + 3)
-    (localTorusCosTest R L hR k) (localTorusCosTest_support_subset R L hR k)
-  have hL2 := localTorusCosTest_integral_sq_le_volume R L hR k
+private theorem norm_sq_torusTest_le (R : ℝ) (f : TestFn)
+    (hs : Function.support f ⊆ ball (0 : ℂ) (R + 3)) (hf : ∀ z, |f z| ≤ 1) (c : ℝ) :
+    ‖equatorKernelLimitMap (c • f)‖ ^ 2 ≤ c ^ 2 * localTorusModeEnergyConstant R := by
+  rw [map_smul, norm_smul, mul_pow, Real.norm_eq_abs, sq_abs]
+  refine mul_le_mul_of_nonneg_left ((norm_sq_equatorKernelLimitMap_le_localL2 _ _ hs).trans ?_)
+    (sq_nonneg c)
   unfold localTorusModeEnergyConstant
-  have hK : 0 ≤ (∫ p : ℂ × ℂ in ball (0 : ℂ) (R + 3) ×ˢ ball (0 : ℂ) (R + 3),
-      ‖gffKernel p.1 p.2‖ ^ 2) ^ (1 / 2 : ℝ) := by positivity
-  calc
-    ‖equatorKernelLimitMap (localTorusCosTest R L hR k)‖ ^ 2 ≤
-        (∫ p : ℂ × ℂ in ball (0 : ℂ) (R + 3) ×ˢ ball (0 : ℂ) (R + 3),
-          ‖gffKernel p.1 p.2‖ ^ 2) ^ (1 / 2 : ℝ) *
-            (∫ x in ball (0 : ℂ) (R + 3),
-              ‖localTorusCosTest R L hR k x‖ ^ 2) := henergy
-    _ ≤ (∫ p : ℂ × ℂ in ball (0 : ℂ) (R + 3) ×ˢ ball (0 : ℂ) (R + 3),
-          ‖gffKernel p.1 p.2‖ ^ 2) ^ (1 / 2 : ℝ) *
-            (volume (ball (0 : ℂ) (R + 3))).toReal :=
-      mul_le_mul_of_nonneg_left hL2 hK
+  exact mul_le_mul_of_nonneg_left (torusTest_integral_sq_le_volume R f hf) (by positivity)
 
-theorem norm_sq_equatorKernelLimitMap_localTorusSinTest_le (R L : ℝ) (hR : 0 < R)
-    (k : Fin 2 → ℤ) :
-    ‖equatorKernelLimitMap (localTorusSinTest R L hR k)‖ ^ 2 ≤
-      localTorusModeEnergyConstant (R := R) := by
-  have henergy := norm_sq_equatorKernelLimitMap_le_localL2 (R + 3)
-    (localTorusSinTest R L hR k) (localTorusSinTest_support_subset R L hR k)
-  have hL2 := localTorusSinTest_integral_sq_le_volume R L hR k
-  unfold localTorusModeEnergyConstant
-  have hK : 0 ≤ (∫ p : ℂ × ℂ in ball (0 : ℂ) (R + 3) ×ˢ ball (0 : ℂ) (R + 3),
-      ‖gffKernel p.1 p.2‖ ^ 2) ^ (1 / 2 : ℝ) := by positivity
-  calc
-    ‖equatorKernelLimitMap (localTorusSinTest R L hR k)‖ ^ 2 ≤
-        (∫ p : ℂ × ℂ in ball (0 : ℂ) (R + 3) ×ˢ ball (0 : ℂ) (R + 3),
-          ‖gffKernel p.1 p.2‖ ^ 2) ^ (1 / 2 : ℝ) *
-            (∫ x in ball (0 : ℂ) (R + 3),
-              ‖localTorusSinTest R L hR k x‖ ^ 2) := henergy
-    _ ≤ (∫ p : ℂ × ℂ in ball (0 : ℂ) (R + 3) ×ˢ ball (0 : ℂ) (R + 3),
-          ‖gffKernel p.1 p.2‖ ^ 2) ^ (1 / 2 : ℝ) *
-            (volume (ball (0 : ℂ) (R + 3))).toReal :=
-      mul_le_mul_of_nonneg_left hL2 hK
+private theorem summable_localTorusTestHSEnergy (R : ℝ) (f : (Fin 2 → ℤ) → TestFn)
+    (hs : ∀ k, Function.support (f k) ⊆ ball (0 : ℂ) (R + 3)) (hf : ∀ k z, |f k z| ≤ 1) :
+    Summable fun k => ‖equatorKernelLimitMap ((torusSobolevWeight k)⁻¹ • f k)‖ ^ 2 := by
+  apply Summable.of_nonneg_of_le (fun k => sq_nonneg _) _
+    (summable_torusSobolevWeight_inv_sq.mul_right (localTorusModeEnergyConstant R))
+  intro k
+  exact norm_sq_torusTest_le R _ (hs k) (hf k) _
 
-theorem norm_sq_equatorKernelLimitMap_smul_localTorusCosTest_le
-    (R L : ℝ) (hR : 0 < R) (k : Fin 2 → ℤ) (c : ℝ) :
-    ‖equatorKernelLimitMap (c • localTorusCosTest R L hR k)‖ ^ 2 ≤
-      c ^ 2 * localTorusModeEnergyConstant R := by
-  rw [map_smul, norm_smul]
-  calc
-    (|c| * ‖equatorKernelLimitMap (localTorusCosTest R L hR k)‖) ^ 2 =
-        c ^ 2 * ‖equatorKernelLimitMap (localTorusCosTest R L hR k)‖ ^ 2 := by
-      rw [mul_pow, sq_abs]
-    _ ≤ c ^ 2 * localTorusModeEnergyConstant R :=
-      mul_le_mul_of_nonneg_left
-        (norm_sq_equatorKernelLimitMap_localTorusCosTest_le R L hR k) (sq_nonneg c)
+section
+variable (R L : ℝ) (hR : 0 < R)
 
-theorem norm_sq_equatorKernelLimitMap_smul_localTorusSinTest_le
-    (R L : ℝ) (hR : 0 < R) (k : Fin 2 → ℤ) (c : ℝ) :
-    ‖equatorKernelLimitMap (c • localTorusSinTest R L hR k)‖ ^ 2 ≤
-      c ^ 2 * localTorusModeEnergyConstant R := by
-  rw [map_smul, norm_smul]
-  calc
-    (|c| * ‖equatorKernelLimitMap (localTorusSinTest R L hR k)‖) ^ 2 =
-        c ^ 2 * ‖equatorKernelLimitMap (localTorusSinTest R L hR k)‖ ^ 2 := by
-      rw [mul_pow, sq_abs]
-    _ ≤ c ^ 2 * localTorusModeEnergyConstant R :=
-      mul_le_mul_of_nonneg_left
-        (norm_sq_equatorKernelLimitMap_localTorusSinTest_le R L hR k) (sq_nonneg c)
-
-theorem summable_localTorusCosHSEnergy (R L : ℝ) (hR : 0 < R) :
+theorem summable_localTorusCosHSEnergy :
     Summable fun k : Fin 2 → ℤ =>
-      ‖equatorKernelLimitMap
-        ((torusSobolevWeight k)⁻¹ • localTorusCosTest R L hR k)‖ ^ 2 := by
-  refine Summable.of_nonneg_of_le (fun k => sq_nonneg _) (fun k => ?_)
-    (summable_torusSobolevWeight_inv_sq.mul_left (localTorusModeEnergyConstant R))
-  simpa [mul_comm] using norm_sq_equatorKernelLimitMap_smul_localTorusCosTest_le
-    R L hR k (torusSobolevWeight k)⁻¹
+      ‖equatorKernelLimitMap ((torusSobolevWeight k)⁻¹ • localTorusCosTest R L hR k)‖ ^ 2 :=
+  summable_localTorusTestHSEnergy R _ (localTorusCosTest_support_subset R L hR)
+    (localTorusCosTest_abs_le_one R L hR)
 
-theorem summable_localTorusSinHSEnergy (R L : ℝ) (hR : 0 < R) :
+theorem summable_localTorusSinHSEnergy :
     Summable fun k : Fin 2 → ℤ =>
-      ‖equatorKernelLimitMap
-        ((torusSobolevWeight k)⁻¹ • localTorusSinTest R L hR k)‖ ^ 2 := by
-  refine Summable.of_nonneg_of_le (fun k => sq_nonneg _) (fun k => ?_)
-    (summable_torusSobolevWeight_inv_sq.mul_left (localTorusModeEnergyConstant R))
-  simpa [mul_comm] using norm_sq_equatorKernelLimitMap_smul_localTorusSinTest_le
-    R L hR k (torusSobolevWeight k)⁻¹
+      ‖equatorKernelLimitMap ((torusSobolevWeight k)⁻¹ • localTorusSinTest R L hR k)‖ ^ 2 :=
+  summable_localTorusTestHSEnergy R _ (localTorusSinTest_support_subset R L hR)
+    (localTorusSinTest_abs_le_one R L hR)
+
+end
 
 end DOZZ
 

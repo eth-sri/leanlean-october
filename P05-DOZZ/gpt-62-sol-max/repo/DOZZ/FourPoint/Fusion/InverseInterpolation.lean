@@ -17,11 +17,11 @@ theorem fusion_inverse_interpolation (a b p : ℝ) (ha : 0 < a) (hb : 0 < b) :
   have hfpos : ∀ t ∈ Icc (0 : ℝ) 1, 0 < f t := by
     intro t ht
     dsimp only [f]
-    have h1 : 0 ≤ t * b := mul_nonneg ht.1 hb.le
-    have h2 : 0 ≤ (1 - t) * a := mul_nonneg (sub_nonneg.mpr ht.2) ha.le
+    have h1  := mul_nonneg ht.1 hb.le
+    have h2  := mul_nonneg (sub_nonneg.mpr ht.2) ha.le
     by_cases ht0 : t = 0
     · subst t; simpa using ha
-    · have h : 0 < t * b := mul_pos (lt_of_le_of_ne ht.1 (Ne.symm ht0)) hb
+    · have h  := mul_pos (lt_of_le_of_ne ht.1 (Ne.symm ht0)) hb
       linarith
   have hfc : Continuous f := by dsimp only [f]; fun_prop
   have hi : IntervalIntegrable (fun t => -p * (b - a) * f t ^ (-p - 1)) volume 0 1 := by

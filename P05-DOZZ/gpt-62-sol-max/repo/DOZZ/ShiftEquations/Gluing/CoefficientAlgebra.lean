@@ -40,8 +40,12 @@ section Parameters
 
 variable {γ χ z α₂ α₃ : ℝ}
 
+section
+variable (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ)
+include hχ hQ
+
 /-- `c = χ z - χ²`. -/
-theorem gaussRatio_param_c (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_c :
     gaussParameterC γ χ z = χ * z - χ ^ 2 := by
   unfold gaussParameterC
   rw [hQ]
@@ -49,7 +53,7 @@ theorem gaussRatio_param_c (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
   ring
 
 /-- `a = χ/2 · (Σ - χ - 2 Q)`. -/
-theorem gaussRatio_param_a (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_a :
     gaussParameterA γ χ z α₂ α₃ = χ / 2 * ((z + α₂ + α₃) - χ - 2 * Q γ) := by
   unfold gaussParameterA
   rw [hQ]
@@ -57,7 +61,7 @@ theorem gaussRatio_param_a (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
   ring
 
 /-- `b = χ/2 · (Σ - 2 α₃ - χ)`. -/
-theorem gaussRatio_param_b (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_b :
     gaussParameterB γ χ z α₂ α₃ = χ / 2 * ((z + α₂ + α₃) - 2 * α₃ - χ) := by
   unfold gaussParameterB
   rw [hQ]
@@ -65,7 +69,7 @@ theorem gaussRatio_param_b (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
   ring
 
 /-- `a - c + 1 = χ/2 · (Σ - 2 z - χ)`. -/
-theorem gaussRatio_param_a_sub_c (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_a_sub_c :
     gaussParameterA γ χ z α₂ α₃ - gaussParameterC γ χ z + 1 =
       χ / 2 * ((z + α₂ + α₃) - 2 * z - χ) := by
   unfold gaussParameterA gaussParameterC
@@ -74,7 +78,7 @@ theorem gaussRatio_param_a_sub_c (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
   ring
 
 /-- `c - b = χ/2 · (Σ - 2 α₂ - χ)`. -/
-theorem gaussRatio_param_c_sub_b (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_c_sub_b :
     gaussParameterC γ χ z - gaussParameterB γ χ z α₂ α₃ =
       χ / 2 * ((z + α₂ + α₃) - 2 * α₂ - χ) := by
   unfold gaussParameterB gaussParameterC
@@ -83,10 +87,12 @@ theorem gaussRatio_param_c_sub_b (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
   ring
 
 /-- `2 - c = 2 + χ² - χ z`. -/
-theorem gaussRatio_param_two_sub_c (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_two_sub_c :
     2 - gaussParameterC γ χ z = 2 + χ ^ 2 - χ * z := by
   rw [gaussRatio_param_c hχ hQ]
   ring
+
+end
 
 end Parameters
 

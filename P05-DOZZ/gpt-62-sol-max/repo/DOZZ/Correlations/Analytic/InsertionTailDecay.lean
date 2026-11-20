@@ -50,11 +50,8 @@ theorem weighted_mass_charge_gap (μ : Measure ℂ) (γ a δ : ℝ)
         ∫⁻ x in Metric.ball z ρ, ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ)) ∂μ :=
       lintegral_const_mul _ hm
     _ ≤ _ := by
-      have hmono : (∫⁻ x in Metric.ball z ρ, ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ)) ∂μ) ≤
-          ∫⁻ x in Metric.ball z R, ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ)) ∂μ :=
-        lintegral_mono_set (Metric.ball_subset_ball hρR)
       simpa only [ENNReal.rpow_eq_pow] using
-        mul_le_mul (le_refl (ENNReal.ofReal (ρ ^ (γ * δ)))) hmono zero_le zero_le
+        mul_le_mul (le_refl (ENNReal.ofReal (ρ ^ (γ * δ)))) (lintegral_mono_set (Metric.ball_subset_ball hρR)) zero_le zero_le
 
 /-- A single larger-charge moment gives uniform polynomial decay for all smaller charges. -/
 theorem weighted_small_ball_moment_decay

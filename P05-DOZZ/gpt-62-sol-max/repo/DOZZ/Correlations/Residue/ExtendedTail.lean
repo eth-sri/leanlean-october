@@ -14,9 +14,11 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+
 /-- A strictly decaying power-tail estimate excludes infinite insertion mass. -/
 theorem residue_ae_finite_of_tail
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (Y : Ω → ℝ≥0∞) (c β η C : ℝ) (hβ : 0 < β) (hη : 0 < η)
     (htail : ∀ t : ℝ, 1 ≤ t →
       |(P {ω | ENNReal.ofReal t < Y ω}).toReal - c * t ^ (-β)| ≤ C * t ^ (-β - η)) :
@@ -34,17 +36,15 @@ theorem residue_ae_finite_of_tail
     have hmr := ENNReal.toReal_mono (measure_ne_top P _) hm
     have herr := (abs_le.mp (htail t ht)).2
     linarith only [hmr, herr]
-  have hz : (P {ω | Y ω = ⊤}).toReal ≤ 0 :=
+  have hz  :=
     le_of_tendsto_of_tendsto tendsto_const_nhds hb hbound
-  have hmzero : P {ω | Y ω = ⊤} = 0 := by
-    exact (ENNReal.toReal_eq_zero_iff _).mp (le_antisymm hz ENNReal.toReal_nonneg) |>.resolve_right (measure_ne_top P _)
+  have hmzero := (ENNReal.toReal_eq_zero_iff _).mp (le_antisymm hz ENNReal.toReal_nonneg) |>.resolve_right (measure_ne_top P _)
   exact measure_eq_zero_iff_ae_notMem.mp hmzero
 
 /-- Extended masses with the uniform tail remainder have the real moment residue used in the
 three-to-two residue bridge. Almost-sure finiteness is derived from the tail estimate for each
 member of the family. -/
 theorem residue_extended_uniform_tail_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (Y : ℝ → Ω → ℝ≥0∞) (c : ℝ → ℝ) (c₀ β η γ d₀ C : ℝ)
     (hβ : 0 < β) (hη : 0 < η) (hγ : 0 < γ) (hd₀ : 0 < d₀) (hC : 0 ≤ C)
     (hY : ∀ d, 0 < d → d < d₀ → AEMeasurable (Y d) P)
@@ -60,6 +60,8 @@ theorem residue_extended_uniform_tail_limit
   intro d hd hd' t ht
   rw [residue_realUpperTail_toReal P (Y d) (hY d hd hd')
     (residue_ae_finite_of_tail P (Y d) (c d) β η C hβ hη (htail d hd hd')) t (by linarith only [ht])]
-  exact htail d hd hd' t ht
+  apply htail <;> assumption
+
+end
 
 end DOZZ.Proofs

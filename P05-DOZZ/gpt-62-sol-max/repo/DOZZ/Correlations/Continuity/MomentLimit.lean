@@ -68,8 +68,10 @@ theorem continuity_coulomb_higher_moment
         ((1 + η) * continuityCoulombPower c) ∂P ≤ B := by
   let _ : IsProbabilityMeasure P := hX.1
   let partition := continuityChartPartition
-  obtain ⟨hprob, η, hη, B, hB, hbound⟩ := equatorGFF_extendedSeiberg_cutoff_UI P X hX Xc hXc
-    partition M hM S hS hadm
+  have hprob := regularizedCoulombMass_tendstoInProbability_uniform P X hX Xc hXc partition M hM S hS
+    (fun c hc => by obtain ⟨hγ, hγ₂, hz, hα, hinf, _⟩ := hadm c hc; exact ⟨hγ, hγ₂, hz, hα, hinf⟩)
+  obtain ⟨η, hη, B, hB, hbound⟩ := regularizedCoulombMass_higher_moment_uniform P X hX Xc hXc
+    partition S hS hadm
   refine ⟨η, hη, B, hB, fun c hc => ?_⟩
   obtain ⟨hγ, hγ2, hz, hα, hinf, _⟩ := hadm c hc
   have hMc := hM c.1 ⟨hγ, hγ2⟩
@@ -90,8 +92,7 @@ theorem continuity_coulomb_higher_moment
     ((1 + η) * continuityCoulombPower c) B (fun n => hbound c hc n (Nat.cast_nonneg n))
 
 /-- Full joint continuity of the actual normalized Coulomb moment on compact
-strict parameter sets, uniformly dominated by the cutoff estimate
-`DOZZ.equatorGFF_extendedSeiberg_cutoff_UI`. -/
+strict parameter sets, using uniform integrability of the cutoff masses. -/
 theorem continuity_coulomb_moment_on_compact
     {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)

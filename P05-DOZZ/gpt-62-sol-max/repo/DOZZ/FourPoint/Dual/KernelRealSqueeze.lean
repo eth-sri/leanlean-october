@@ -26,10 +26,9 @@ theorem dual_ennreal_kernel_increment_error (I V : ℝ≥0∞) (p A β θlo θhi
   have hl : θlo*(β*V.toReal) ≤ I.toReal := by
     simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal (mul_nonneg hlo hβ), mul_assoc] using
       ENNReal.toReal_mono hI hs.1
-  have hh : I.toReal ≤ θhi*(β*V.toReal) := by
-    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal (mul_nonneg hhi hβ), mul_assoc] using
-      ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hV) hs.2
   exact ⟨hI, dual_negative_increment_kernel_squeeze p A (β*V.toReal) I.toReal θlo θhi
-    hp hA (mul_nonneg hβ ENNReal.toReal_nonneg) hlo hhi hl hh⟩
+    hp hA (mul_nonneg hβ ENNReal.toReal_nonneg) hlo hhi hl (by
+    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal (mul_nonneg hhi hβ), mul_assoc] using
+      ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hV) hs.2)⟩
 
 end DOZZ.Proofs

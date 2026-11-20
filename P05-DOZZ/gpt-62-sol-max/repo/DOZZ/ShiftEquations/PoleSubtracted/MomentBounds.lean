@@ -34,23 +34,28 @@ namespace DOZZ.Proofs
 
 /-! ### Hölder -/
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U V : Ω → ℝ≥0∞} (hU : AEMeasurable U P)
+  (hV : AEMeasurable V P) {r : ℝ} (hr : 1 < r)
+include Ω hU hV hr
+
 /-- Hölder's inequality with conjugate exponents `r` and `r/(r-1)`. -/
-theorem lintegral_mul_le_holder {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {U V : Ω → ℝ≥0∞} (hU : AEMeasurable U P) (hV : AEMeasurable V P) {r : ℝ} (hr : 1 < r) :
+theorem lintegral_mul_le_holder :
     ∫⁻ ω, U ω * V ω ∂P ≤
       (∫⁻ ω, U ω ^ r ∂P) ^ (1 / r) * (∫⁻ ω, V ω ^ (r / (r - 1)) ∂P) ^ (1 / (r / (r - 1))) :=
   ENNReal.lintegral_mul_le_Lp_mul_Lq P ((Real.holderConjugate_iff_eq_conjExponent hr).2 rfl)
     hU hV
 
 /-- Finite moments of conjugate orders give a finite mixed moment. -/
-theorem lintegral_mul_lt_top_of_holder {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {U V : Ω → ℝ≥0∞} (hU : AEMeasurable U P) (hV : AEMeasurable V P) {r : ℝ} (hr : 1 < r)
+theorem lintegral_mul_lt_top_of_holder
     (hUr : ∫⁻ ω, U ω ^ r ∂P < ⊤) (hVr : ∫⁻ ω, V ω ^ (r / (r - 1)) ∂P < ⊤) :
     ∫⁻ ω, U ω * V ω ∂P < ⊤ := by
   refine (lintegral_mul_le_holder hU hV hr).trans_lt (ENNReal.mul_lt_top ?_ ?_)
   · exact ENNReal.rpow_lt_top_of_nonneg (by positivity) hUr.ne
   · have : 0 < r / (r - 1) := div_pos (by linarith) (by linarith)
     exact ENNReal.rpow_lt_top_of_nonneg (by positivity) hVr.ne
+
+end
 
 /-- For `0 ≤ c < p (1 - 1/κ)` and `1 < κ` there is a Hölder exponent `1 < r < κ` with
 `c r/(r-1) < p`. -/
@@ -107,10 +112,17 @@ theorem injective_twoPoles : Function.Injective (![2, -2] : Fin 2 → ℂ) := by
   intro i j h
   fin_cases i <;> fin_cases j <;> first | rfl | norm_num at h
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX γ hγ hγ2 hM
+
+section
+variable {η : ℝ} (hη : 0 ≤ η)
+include hη
+
 /-- The total mass at zero charge has moments of every positive order below `1 - 2η/γ`. -/
-theorem lintegral_totalMass_rpow_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η : ℝ} (hη : 0 ≤ η) {t : ℝ} (ht : 0 < t)
+theorem lintegral_totalMass_rpow_lt_top {t : ℝ} (ht : 0 < t)
     (htp : t < 1 - 2 * η / γ) :
     ∫⁻ ω, poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ t ∂P < ⊤ := by
   have hηγ : 0 ≤ 2 * η / γ := div_nonneg (by linarith) hγ.le
@@ -144,16 +156,14 @@ theorem lintegral_totalMass_rpow_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : M
     ![2 / γ + η, 2 / γ - η] 0 t ht h4 hk hinf
   have hae : ∀ᵐ ω ∂P, poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ t =
       ENNReal.rpow (coulombMass γ (M ω) ![2 / γ + η, 2 / γ - η] ![2, -2] 0) t := by
-    filter_upwards [gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 2,
-      gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM (-2)] with ω h2 h2'
+    filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 2,
+      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (-2)] with ω h2 h2'
     rw [totalMass_zero_eq_coulombMass γ η (M ω) h2 h2', ENNReal.rpow_eq_pow]
   rw [lintegral_congr_ae hae]
   exact h
 
 /-- The local mass has negative moments of all orders. -/
-theorem lintegral_localMass_rpow_neg_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η : ℝ} (hη : 0 ≤ η) (hηγ : η ≤ 2 / γ)
+theorem lintegral_localMass_rpow_neg_lt_top (hηγ : η ≤ 2 / γ)
     {q : ℝ} (hq : 0 < q) :
     ∫⁻ ω, poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ (-q) ∂P < ⊤ := by
   have hball : gmcMassMoment P M (Metric.ball 2 (1 / 2)) (-q) < ⊤ :=
@@ -181,10 +191,10 @@ theorem lintegral_localMass_rpow_neg_lt_top {Ω : Type*} [MeasurableSpace Ω] (P
         rfl
     _ < ⊤ := ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg hq.le (by simp)) hball
 
+end
+
 /-- The mass of `B(0, e^{-n})` has `r`-th moment `O(e^{-n ζ(r)})`. -/
-theorem exists_lintegral_ball_rpow_le {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {r : ℝ} (hr : r < 4 / γ ^ 2) :
+theorem exists_lintegral_ball_rpow_le {r : ℝ} (hr : r < 4 / γ ^ 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ n : ℕ,
       ∫⁻ ω, M ω (Metric.ball 0 (Real.exp (-(n : ℝ)))) ^ r ∂P ≤
         ENNReal.ofReal (C * Real.exp (-(n : ℝ) * (γ * Q γ * r - γ ^ 2 * r ^ 2 / 2))) := by
@@ -201,16 +211,16 @@ theorem exists_lintegral_ball_rpow_le {Ω : Type*} [MeasurableSpace Ω] (P : Mea
 
 /-! ### Almost-sure facts -/
 
-theorem aemeasurable_measure_functional {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {β : Type*} [MeasurableSpace β]
+theorem aemeasurable_measure_functional {β : Type*} [MeasurableSpace β]
     {H : Measure ℂ → β} (hH : Measurable H) : AEMeasurable (fun ω => H (M ω)) P :=
-  hH.comp_aemeasurable (gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM)
+  hH.comp_aemeasurable (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM)
+
+section
+variable {η : ℝ} (hη : 0 ≤ η)
+include hη
 
 /-- The local mass is almost surely positive. -/
-theorem ae_localMass_pos {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η : ℝ} (hη : 0 ≤ η) (hηγ : η ≤ 2 / γ) :
+theorem ae_localMass_pos (hηγ : η ≤ 2 / γ) :
     ∀ᵐ ω ∂P, 0 < poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) := by
   have hint := lintegral_localMass_rpow_neg_lt_top P X hX γ hγ hγ2 M hM hη hηγ one_pos
   have hmeas : AEMeasurable (fun ω =>
@@ -224,9 +234,7 @@ theorem ae_localMass_pos {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   exact lt_irrefl _ hω
 
 /-- The total mass at zero charge is almost surely finite. -/
-theorem ae_totalMass_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η : ℝ} (hη : 0 ≤ η) (hηγ : η < γ / 2) :
+theorem ae_totalMass_lt_top (hηγ : η < γ / 2) :
     ∀ᵐ ω ∂P, poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) < ⊤ := by
   have hp : 0 < 1 - 2 * η / γ := by
     have : 2 * η / γ < 1 := by
@@ -244,6 +252,10 @@ theorem ae_totalMass_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   intro htop
   rw [htop, ENNReal.top_rpow_of_pos (half_pos hp)] at hω
   exact lt_irrefl _ hω
+
+end
+
+end
 
 end DOZZ.Proofs
 

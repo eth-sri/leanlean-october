@@ -25,9 +25,6 @@ noncomputable def symmetryExponentialBCF (f : BoundedContinuousFunction ℂ ℝ)
         exact Real.exp_le_exp.mpr ((le_abs_self _).trans (f.norm_coe_le_norm y))
       exact (abs_sub _ _).trans (by linarith only [hx, hy]))
 
-theorem symmetryExponentialBCF_apply (f : BoundedContinuousFunction ℂ ℝ) (x : ℂ) :
-    symmetryExponentialBCF f x = Real.exp (f x) := rfl
-
 /-- The deterministic finite-cutoff density after reflection and re-pinning. -/
 noncomputable def symmetryReflectionCutoffWeight (γ r : ℝ) : BoundedContinuousFunction ℂ ℝ :=
   symmetryExponentialBCF (γ ^ 2 • symmetryCirclePotentialMean r + (4 : ℝ) • symmetryReflectionPotentialBCF)
@@ -39,8 +36,6 @@ noncomputable def symmetryReflectionLimitWeight (γ : ℝ) : BoundedContinuousFu
 theorem symmetryReflectionCutoffWeight_apply (γ r : ℝ) (x : ℂ) :
     symmetryReflectionCutoffWeight γ r x = Real.exp (γ ^ 2 * symmetryCirclePotentialMean r x +
       4 * symmetryReflectionPotential x) := by
-  simp only [symmetryReflectionCutoffWeight, symmetryExponentialBCF_apply,
-    BoundedContinuousFunction.add_apply, BoundedContinuousFunction.smul_apply, smul_eq_mul]
   rfl
 
 theorem symmetryReflectionLimitWeight_apply (γ : ℝ) (x : ℂ) :
@@ -68,8 +63,7 @@ theorem symmetryReflectionCutoffWeight_uniform (γ : ℝ) :
     rw [Metric.tendstoUniformly_iff]
     intro ε hε
     have he : Tendsto (fun r : ℝ => γ ^ 2 * (2 * Real.exp (-r))) atTop (𝓝 0) := by
-      simpa only [mul_zero, Function.comp_def] using
-        (Real.tendsto_exp_atBot.comp tendsto_neg_atTop_atBot).const_mul 2 |>.const_mul (γ ^ 2)
+      simpa using (Real.tendsto_exp_atBot.comp tendsto_neg_atTop_atBot).const_mul 2 |>.const_mul (γ ^ 2)
     filter_upwards [he.eventually (gt_mem_nhds hε)] with r hr x
     rw [Real.dist_eq]
     have heq : |(γ ^ 2 + 4) * symmetryReflectionPotential x -
@@ -85,8 +79,5 @@ theorem symmetryReflectionCutoffWeight_uniform (γ : ℝ) :
   have he := UniformContinuousOn.comp_tendstoUniformly (s := Icc (-B) B) (g := Real.exp)
     (fun r x => abs_le.mp (hb r x)) (fun x => abs_le.mp (hv x))
     (isCompact_Icc.uniformContinuousOn_of_continuous Real.continuous_exp.continuousOn) h
-  change TendstoUniformly (fun r x => Real.exp (γ ^ 2 * symmetryCirclePotentialMean r x +
-    4 * symmetryReflectionPotential x))
-    (fun x => Real.exp ((γ ^ 2 + 4) * symmetryReflectionPotential x)) atTop
-  exact he
+  assumption
 end DOZZ.Proofs

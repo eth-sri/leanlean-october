@@ -58,9 +58,12 @@ theorem reflected_negative_power_increment (p v : ℝ) (hp : 0 < p) (hv : 0 ≤ 
   simpa only [add_zero, Real.one_rpow, sub_zero, Real.norm_eq_abs, abs_of_nonneg hv]
     using hm
 
+section
+variable (p a ε : ℝ) (hp : 0 < p) (ha : 0 < a) (ha₁ : a < 1) (hε : 0 ≤ ε)
+include hp ha ha₁ hε
+
 /-- The lower-cutoff Pareto error is bounded by its explicit integrable power primitive. -/
-theorem reflected_pareto_lower_cut_bound (p a ε : ℝ) (hp : 0 < p) (ha : 0 < a)
-    (ha₁ : a < 1) (hε : 0 ≤ ε) :
+theorem reflected_pareto_lower_cut_bound :
     |∫ w : ℝ in Ioc 0 ε, ((1 + w) ^ (-p) - 1) * w ^ (-a - 1)| ≤
       p * ε ^ (1 - a) / (1 - a) := by
   have hf := (reflected_pareto_integral p a hp ha ha₁).1.mono_set
@@ -86,9 +89,7 @@ theorem reflected_pareto_lower_cut_bound (p a ε : ℝ) (hp : 0 < p) (ha : 0 < a
             _ = w ^ (-a) := by congr 1; ring
         rw [mul_assoc, he]
   have hint : (∫ w : ℝ in Ioc 0 ε, p * w ^ (-a)) = p * ε ^ (1 - a) / (1 - a) := by
-    rw [integral_const_mul, ← intervalIntegral.integral_of_le hε,
-      integral_rpow (Or.inl (by linarith only [ha₁] : -1 < -a))]
-    rw [show -a + 1 = 1 - a by ring, Real.zero_rpow (by linarith only [ha₁] : 1 - a ≠ 0), sub_zero]
+    rw [integral_const_mul, ← intervalIntegral.integral_of_le hε, integral_rpow (Or.inl (by linarith only [ha₁] : -1 < -a)), show -a + 1 = 1 - a by ring, Real.zero_rpow (by linarith only [ha₁] : 1 - a ≠ 0), sub_zero]
     ring
   calc
     _ = ‖∫ w : ℝ in Ioc 0 ε, ((1 + w) ^ (-p) - 1) * w ^ (-a - 1)‖ :=
@@ -99,8 +100,7 @@ theorem reflected_pareto_lower_cut_bound (p a ε : ℝ) (hp : 0 < p) (ha : 0 < a
     _ = _ := hint
 
 /-- Truncating the Pareto integral at ε changes its full coefficient by an explicit small error. -/
-theorem reflected_pareto_tail_coefficient_bound (p a ε : ℝ) (hp : 0 < p)
-    (ha : 0 < a) (ha₁ : a < 1) (hε : 0 ≤ ε) :
+theorem reflected_pareto_tail_coefficient_bound :
     |(∫ w : ℝ in Ioi ε, ((1 + w) ^ (-p) - 1) * w ^ (-a - 1)) -
       Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p| ≤
         p * ε ^ (1 - a) / (1 - a) := by
@@ -114,6 +114,8 @@ theorem reflected_pareto_tail_coefficient_bound (p a ε : ℝ) (hp : 0 < p)
     ring
   rw [he, abs_neg]
   exact reflected_pareto_lower_cut_bound p a ε hp ha ha₁ hε
+
+end
 
 /-- The Pareto expansion has an explicit first-order error after restoring the mass scale. -/
 theorem reflected_pareto_scaled_error (p a A x : ℝ) (hp : 0 < p) (ha : 0 < a)

@@ -29,12 +29,12 @@ theorem inversionCircle_source_jointly_gaussian
       X ω (inversionTest (f i n) (hf i n)) - Z i ω) 2 P) atTop (𝓝 0)) :
     IsCenteredJointlyGaussian P (fun ω i =>
       if (q i).1 then Xc ω (q i).2.1 (q i).2.2 else Z i ω) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hex i := exists_testFn_circleEnergyGap_tendsto_zero (q i).2.1 (q i).2.2
   choose g _hgs _hga hgap using hex
-  let F : Fin m → ℕ → TestFn := fun i n =>
+  let F  := fun i n =>
     if (q i).1 then g i n else inversionTest (f i n) (hf i n)
-  let V : Fin m → Ω → ℝ := fun i ω =>
+  let V  := fun i ω =>
     if (q i).1 then Xc ω (q i).2.1 (q i).2.2 else Z i ω
   have hv : ∀ i, MemLp (V i) 2 P := by
     intro i
@@ -48,13 +48,12 @@ theorem inversionCircle_source_jointly_gaussian
     split
     · exact hXc.2.2 _ _ (g i) (hgap i)
     · exact hlim i
-  have hp : IsGaussianProcess V P := by
+  exact centeredJointlyGaussian_of_isGaussianProcess P V (by
     apply isGaussianProcess_of_eLpNorm_sub (fun n i ω => X ω (F i n)) V
     · intro n
-      exact equatorGFF_test_family_isGaussianProcess X hX (fun i => F i n)
+      apply equatorGFF_test_family_isGaussianProcess <;> assumption
     · exact hv
-    · exact hl
-  exact centeredJointlyGaussian_of_isGaussianProcess P V hp (fun i =>
+    · exact hl) (fun i =>
     integral_eq_zero_of_eLpNorm_sub
       (fun n => equatorGFF_test_memLp X hX (F i n)) (hv i)
       (fun n => equatorGFF_test_integral X hX (F i n)) (hl i))
@@ -75,8 +74,8 @@ theorem inversionCircle_fdd_law
     (hlim : ∀ i, Tendsto (fun n => eLpNorm (fun ω =>
       X ω (inversionTest (f i n) (hf i n)) - Z i ω) 2 P) atTop (𝓝 0)) :
     P.map (fun ω i => Z i ω) = P'.map (fun ω i => Xc' ω (q i).1 (q i).2) := by
-  let : IsProbabilityMeasure P := hX.1
-  let : IsProbabilityMeasure P' := hX'.1
+  let  := hX.1
+  let  := hX'.1
   apply gmc_limit_test_vector_law
     (fun n ω i => X ω (inversionTest (f i n) (hf i n)))
     (fun n ω i => X' ω (f i n)) (fun ω i => Z i ω)
@@ -88,8 +87,7 @@ theorem inversionCircle_fdd_law
   · exact AEMeasurable.of_eval (fun i => (hmem i).aemeasurable)
   · exact AEMeasurable.of_eval (fun i => (hXc'.2.1 _ _).aemeasurable)
   · intro n
-    exact equatorGFF_inversion_local_test_fdd_law P X hX P' X' hX'
-      (fun i => f i n) (fun i => hf i n)
+    apply equatorGFF_inversion_local_test_fdd_law <;> assumption
   · intro i
     exact tendstoInMeasure_of_tendsto_eLpNorm (by norm_num) (hlim i)
   · intro i

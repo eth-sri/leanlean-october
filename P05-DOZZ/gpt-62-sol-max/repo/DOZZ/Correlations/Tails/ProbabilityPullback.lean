@@ -34,10 +34,12 @@ theorem isEquatorGFF_measurePreserving
   change P'.map ((fun ω => X ω f) ∘ T) = _
   rw [← Measure.map_map hm hT.measurable, hT.map_eq, hl]
 
-theorem isCircleAverage_measurePreserving
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (T : Ω' → Ω) (hT : MeasurePreserving T P' P)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+section
+variable {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω'] (P : Measure Ω) (P' : Measure Ω')
+  (T : Ω' → Ω) (hT : MeasurePreserving T P' P) (X : Ω → Distr)
+include Ω' hT
+
+theorem isCircleAverage_measurePreserving (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) :
     IsCircleAverage P' (X ∘ T) (Xc ∘ T) := by
   refine ⟨fun r => (hc.1 r).comp ((hT.measurable.comp measurable_fst).prodMk measurable_snd),
@@ -49,10 +51,7 @@ theorem isCircleAverage_measurePreserving
       ((hc.1 r).comp (measurable_id.prodMk measurable_const))).aestronglyMeasurable) hT
   simpa only [Function.comp_def, heq] using hc.2.2 x r f hf
 
-theorem regularizedGMC_measurePreserving
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (T : Ω' → Ω) (hT : MeasurePreserving T P' P)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
+theorem regularizedGMC_measurePreserving (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
     (γ r : ℝ) (ω : Ω') :
     regularizedGMC P' (Xc ∘ T) γ r ω = regularizedGMC P Xc γ r (T ω) := by
   have hv (x : ℂ) : (∫ ω', Xc (T ω') x r ^ 2 ∂P') = ∫ ω', Xc ω' x r ^ 2 ∂P :=
@@ -63,10 +62,7 @@ theorem regularizedGMC_measurePreserving
   unfold regularizedGMC
   simp only [Function.comp_def, hv]
 
-theorem isGMCOf_measurePreserving
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (T : Ω' → Ω) (hT : MeasurePreserving T P' P)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
+theorem isGMCOf_measurePreserving (hX : IsEquatorGFF P X) (γ : ℝ)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     IsGMCOf P' (X ∘ T) γ (M ∘ T) := by
   obtain ⟨hf, Xc, hc, hconv⟩ := hM
@@ -76,6 +72,8 @@ theorem isGMCOf_measurePreserving
   change TendstoInMeasure P' (fun r ω => ∫ x, f x ∂regularizedGMC P' (Xc ∘ T) γ r ω)
     atTop (fun ω => ∫ x, f x ∂M (T ω))
   simpa only [regularizedGMC_measurePreserving P P' T hT X Xc hc] using h
+
+end
 
 
 end DOZZ.Proofs

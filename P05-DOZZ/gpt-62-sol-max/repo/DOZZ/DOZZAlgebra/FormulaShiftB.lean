@@ -23,7 +23,117 @@ namespace DOZZ.Proofs
 
 variable {γ : ℝ}
 
-/-- The DOZZ formula shift by `γ/2`, proved directly on a codiscrete finite locus. -/
+
+/-- The charge shift of the DOZZ expression follows from an affine-power Upsilon
+multiplier and one scalar normalization. -/
+theorem dozzFormula_shift_of_upsilon_shift {U : ℂ → ℂ} {μ γ : ℝ} {χ k₀ k₁ K : ℂ}
+    (hγ : 0 < γ) (hU : IsUpsilon γ U) (hχ : χ ≠ 0)
+    (hT : (dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) ≠ 0)
+    (hshift : ∀ z, (∀ n : ℕ, χ * z ≠ -(n : ℂ)) →
+      U (z + χ) = lFun (χ * z) * ((γ / 2 : ℝ) : ℂ) ^ (k₀ + k₁ * z) * U z)
+    (hscalar : ((γ / 2 : ℝ) : ℂ) ^ (k₁ * (Q γ : ℂ)) =
+      (K * lFun (-χ ^ 2)) * ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) ^
+        (2 * χ / (γ : ℂ))) (α₂ α₃ : ℂ) :
+    ∀ᶠ x in codiscrete ℂ, dozzFormula γ μ U (x + χ) α₂ α₃ =
+      K * shiftCoeffA γ χ x α₂ α₃ * dozzFormula γ μ U (x - χ) α₂ α₃ := by
+  let b : ℂ := ((γ / 2 : ℝ) : ℂ)
+  let T : ℂ := ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ)
+  let d₀ := (α₂ + α₃ - χ - 2 * (Q γ : ℂ)) / 2
+  let d₁ := (α₂ + α₃ - χ) / 2
+  let d₂ := (-α₂ + α₃ - χ) / 2
+  let d₃ := (α₂ - α₃ - χ) / 2
+  let v₀ (x : ℂ) := 1 / 2 * x + d₀
+  let v₁ (x : ℂ) := -1 / 2 * x + d₁
+  let v₂ (x : ℂ) := 1 / 2 * x + d₂
+  let v₃ (x : ℂ) := 1 / 2 * x + d₃
+  let e (x : ℂ) := k₀ + k₁ * x
+  let k (x : ℂ) := lFun (χ * x) * b ^ e x
+  have hb : b ≠ 0 := Complex.ofReal_ne_zero.mpr ((show 0 < γ / 2 by positivity).ne')
+  have hTc : T ≠ 0 := Complex.ofReal_ne_zero.mpr hT
+  have hgen (a d : ℂ) (ha : a ≠ 0) : ∀ᶠ x in codiscrete ℂ,
+      U (a * x + d) ≠ 0 ∧ lFun (χ * (a * x + d)) ≠ 0 := by
+    filter_upwards [eventually_upsilon_affine_ne_zero hγ hU (d := d) ha,
+      eventually_affine_lFun_ne_zero (d := χ * d) (mul_ne_zero hχ ha)] with x hUx hLx
+    exact ⟨hUx, by simpa only [mul_add, mul_assoc] using hLx⟩
+  filter_upwards [hgen 1 0 one_ne_zero, hgen 1 (-χ) one_ne_zero,
+    hgen (1 / 2) d₀ (by norm_num), hgen (-1 / 2) d₁ (by norm_num),
+    hgen (1 / 2) d₂ (by norm_num), hgen (1 / 2) d₃ (by norm_num)]
+    with x hx hxm h₀ h₁ h₂ h₃
+  have hs (z : ℂ) (hz : lFun (χ * z) ≠ 0) : U (z + χ) = k z * U z :=
+    hshift z fun n hn => hz (by rw [lFun, hn, Complex.Gamma_neg_nat_eq_zero, zero_div])
+  have hnum : U (x + χ) = k x * k (x - χ) * U (x - χ) := by
+    rw [hs x (by simpa using hx.2)]
+    conv_lhs => rhs; rw [← sub_add_cancel x χ, hs _ (by simpa [sub_eq_add_neg] using hxm.2)]
+    ring
+  have hk (z : ℂ) (hz : lFun (χ * z) ≠ 0) : k z ≠ 0 :=
+    mul_ne_zero hz (Complex.cpow_ne_zero_iff.mpr (Or.inl hb))
+  have hne (z : ℂ) (hz : U z ≠ 0 ∧ lFun (χ * z) ≠ 0) : U (z + χ) ≠ 0 := by
+    rw [hs z hz.2]
+    exact mul_ne_zero (hk z hz.2) hz.1
+  have hden₁ : U (v₀ x + χ) * U (v₁ x) * U (v₂ x + χ) * U (v₃ x + χ) ≠ 0 :=
+    mul_ne_zero (mul_ne_zero (mul_ne_zero (hne _ h₀) h₁.1) (hne _ h₂)) (hne _ h₃)
+  have hden₂ : U (v₀ x) * U (v₁ x + χ) * U (v₂ x) * U (v₃ x) ≠ 0 :=
+    mul_ne_zero (mul_ne_zero (mul_ne_zero h₀.1 (hne _ h₁)) h₂.1) h₃.1
+  let p (y : ℂ) := (2 * (Q γ : ℂ) - (y + α₂ + α₃)) / (γ : ℂ)
+  have hp : p (x + χ) = p (x - χ) - 2 * χ / (γ : ℂ) := by dsimp [p]; ring
+  have hkp (u v w : ℂ) : k u * k v * k w =
+      lFun (χ * u) * lFun (χ * v) * lFun (χ * w) * b ^ (e u + e v + e w) := by
+    rw [Complex.cpow_add _ _ hb, Complex.cpow_add _ _ hb]
+    dsimp [k]
+    ring
+  have hcoef : shiftCoeffA γ χ x α₂ α₃ =
+      lFun (-χ ^ 2) * lFun (χ * x) * lFun (χ * (x - χ)) * lFun (χ * v₁ x) /
+        (lFun (χ * v₀ x) * lFun (χ * v₃ x) * lFun (χ * v₂ x)) := by
+    unfold shiftCoeffA
+    rw [show χ * x - χ ^ 2 = χ * (x - χ) by ring,
+      show χ / 2 * (x + α₂ + α₃ - 2 * x - χ) = χ * v₁ x by dsimp [v₁, d₁]; ring,
+      show χ / 2 * (x + α₂ + α₃ - χ - 2 * Q γ) = χ * v₀ x by dsimp [v₀, d₀]; ring,
+      show χ / 2 * (x + α₂ + α₃ - 2 * α₃ - χ) = χ * v₃ x by dsimp [v₃, d₃]; ring,
+      show χ / 2 * (x + α₂ + α₃ - 2 * α₂ - χ) = χ * v₂ x by dsimp [v₂, d₂]; ring]
+  have he : e x + e (x - χ) + e (v₁ x) =
+      (e (v₀ x) + e (v₂ x) + e (v₃ x)) + k₁ * (Q γ : ℂ) := by
+    ring
+  have hprod : T ^ p (x + χ) * (k x * k (x - χ) * k (v₁ x)) =
+      (K * shiftCoeffA γ χ x α₂ α₃) * T ^ p (x - χ) * (k (v₀ x) * k (v₂ x) * k (v₃ x)) := by
+    rw [hp, Complex.cpow_sub _ _ hTc, hkp, hkp, hcoef, he, Complex.cpow_add _ _ hb]
+    change b ^ (k₁ * (Q γ : ℂ)) = (K * lFun (-χ ^ 2)) * T ^ (2 * χ / (γ : ℂ)) at hscalar
+    rw [hscalar]
+    have hpow : T ^ (2 * χ / (γ : ℂ)) ≠ 0 := Complex.cpow_ne_zero_iff.mpr (Or.inl hTc)
+    have hn₀ : lFun (χ * v₀ x) ≠ 0 := h₀.2
+    have hn₂ : lFun (χ * v₂ x) ≠ 0 := h₂.2
+    have hn₃ : lFun (χ * v₃ x) ≠ 0 := h₃.2
+    generalize T ^ (2 * χ / (γ : ℂ)) = t at hpow ⊢
+    field_simp [hpow, hn₀, hn₂, hn₃]
+  have hF (z : ℂ) : dozzFormula γ μ U z α₂ α₃ = T ^ p z * (deriv U 0 * U z * U α₂ * U α₃) /
+      (U ((z + α₂ + α₃ - 2 * Q γ) / 2) * U ((z + α₂ + α₃) / 2 - z) *
+        U ((z + α₂ + α₃) / 2 - α₂) * U ((z + α₂ + α₃) / 2 - α₃)) := rfl
+  rw [hF, hF,
+    show (x + χ + α₂ + α₃ - 2 * Q γ) / 2 = v₀ x + χ by dsimp [v₀, d₀]; ring,
+    show (x - χ + α₂ + α₃ - 2 * Q γ) / 2 = v₀ x by dsimp [v₀, d₀]; ring,
+    show (x + χ + α₂ + α₃) / 2 - (x + χ) = v₁ x by dsimp [v₁, d₁]; ring,
+    show (x - χ + α₂ + α₃) / 2 - (x - χ) = v₁ x + χ by dsimp [v₁, d₁]; ring,
+    show (x + χ + α₂ + α₃) / 2 - α₂ = v₂ x + χ by dsimp [v₂, d₂]; ring,
+    show (x - χ + α₂ + α₃) / 2 - α₂ = v₂ x by dsimp [v₂, d₂]; ring,
+    show (x + χ + α₂ + α₃) / 2 - α₃ = v₃ x + χ by dsimp [v₃, d₃]; ring,
+    show (x - χ + α₂ + α₃) / 2 - α₃ = v₃ x by dsimp [v₃, d₃]; ring,
+    ← mul_div_assoc, div_eq_div_iff hden₁ hden₂, hnum, hs _ h₀.2, hs _ h₁.2, hs _ h₂.2, hs _ h₃.2]
+  linear_combination (deriv U 0 * U (x - χ) * U α₂ * U α₃ *
+    U (v₀ x) * U (v₁ x) * U (v₂ x) * U (v₃ x)) * hprod
+
+/-- Splitting off the positive real power of `γ/2` in the DOZZ base. -/
+theorem dozzFormula_shift_scalar {γ μ r n : ℝ} {C : ℂ} (hγ : 0 < γ)
+    (hB : 0 < dozzBase γ μ)
+    (h : (dozzBase γ μ : ℂ) ^ (r : ℂ) * C = ((γ / 2 : ℝ) : ℂ) ^ (n : ℂ)) :
+    ((γ / 2 : ℝ) : ℂ) ^ ((n + (2 - γ ^ 2 / 2) * r : ℝ) : ℂ) =
+      C * ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) ^ (r : ℂ) := by
+  have hb : 0 < γ / 2 := by positivity
+  have hbp := Real.rpow_pos_of_pos hb (2 - γ ^ 2 / 2)
+  rw [← Complex.ofReal_cpow (mul_nonneg hB.le hbp.le), Real.mul_rpow hB.le hbp.le,
+    ← Real.rpow_mul hb.le, Complex.ofReal_mul, Complex.ofReal_cpow hB.le, Complex.ofReal_cpow hb.le,
+    Complex.ofReal_add, Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hb.ne'), ← h]
+  ring
+
+/-- The DOZZ formula shift by `γ/2` on its finite generic locus. -/
 theorem dozzFormula_shift_b {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ : 0 < μ)
     (hU : IsUpsilon γ U) (α₂ α₃ : ℂ) :
     ∀ᶠ α₁ in codiscrete ℂ,
@@ -31,402 +141,36 @@ theorem dozzFormula_shift_b {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2) {μ
         -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) α₁ α₂ α₃ *
           dozzFormula γ μ U (α₁ - γ / 2) α₂ α₃ := by
   let b : ℂ := (γ : ℂ) / 2
-  let d₀ : ℂ := (α₂ + α₃ - b - 2 * (Q γ : ℂ)) / 2
-  let d₁ : ℂ := (α₂ + α₃ - b) / 2
-  let d₂ : ℂ := (-α₂ + α₃ - b) / 2
-  let d₃ : ℂ := (α₂ - α₃ - b) / 2
-  let v₀ : ℂ → ℂ := fun α => (1 / 2 : ℂ) * α + d₀
-  let v₁ : ℂ → ℂ := fun α => (-1 / 2 : ℂ) * α + d₁
-  let v₂ : ℂ → ℂ := fun α => (1 / 2 : ℂ) * α + d₂
-  let v₃ : ℂ → ℂ := fun α => (1 / 2 : ℂ) * α + d₃
-  let v₀p : ℂ → ℂ := fun α => (1 / 2 : ℂ) * α + (d₀ + b)
-  let v₁p : ℂ → ℂ := fun α => (-1 / 2 : ℂ) * α + (d₁ + b)
-  let v₂p : ℂ → ℂ := fun α => (1 / 2 : ℂ) * α + (d₂ + b)
-  let v₃p : ℂ → ℂ := fun α => (1 / 2 : ℂ) * α + (d₃ + b)
-  let k : ℂ → ℂ := fun z => lFun (b * z) * b ^ (1 - (γ : ℂ) * z)
-  let T : ℝ := dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2)
-  let Tc : ℂ := (T : ℂ)
-  let q : ℂ := b ^ 2
-  have hbR : 0 < γ / 2 := by positivity
-  have hγc : (γ : ℂ) ≠ 0 := by exact_mod_cast hγ.ne'
-  have hb : b ≠ 0 := by dsimp [b]; exact div_ne_zero hγc (by norm_num)
-  have hbCast : b = ((γ / 2 : ℝ) : ℂ) := by
-    dsimp [b]
-    push_cast
-    ring
-  have hTpos : 0 < T := by
-    dsimp [T]
-    exact mul_pos (dozzBase_pos hγ hγ2 hμ) (Real.rpow_pos_of_pos hbR _)
-  have hTc : Tc ≠ 0 := Complex.ofReal_ne_zero.mpr hTpos.ne'
-  have hqpos : 0 < γ ^ 2 / 4 := by positivity
-  have hqone : γ ^ 2 / 4 < 1 := by nlinarith [mul_pos hγ (sub_pos.mpr hγ2)]
-  have hqeq : q = ((γ ^ 2 / 4 : ℝ) : ℂ) := by
-    dsimp [q, b]
-    push_cast
-    ring
-  have hqne : q ≠ 0 := by
-    rw [hqeq]
-    exact Complex.ofReal_ne_zero.mpr (ne_of_gt hqpos)
-  have hΓq : Complex.Gamma q ≠ 0 := by
-    rw [hqeq, Complex.Gamma_ofReal]
-    exact_mod_cast (Real.Gamma_pos_of_pos hqpos).ne'
-  have hΓ1q : Complex.Gamma (1 - q) ≠ 0 :=
-    Complex.Gamma_ne_zero_of_re_pos (by
-      rw [Complex.sub_re, Complex.one_re, hqeq, Complex.ofReal_re]
-      linarith)
-  have hΓnegq : Complex.Gamma (-q) ≠ 0 := by
-    intro hzero
-    have hrec := Complex.Gamma_add_one (-q) (neg_ne_zero.mpr hqne)
-    have hrec' : Complex.Gamma (1 - q) = (-q) * Complex.Gamma (-q) := by
-      calc
-        Complex.Gamma (1 - q) = Complex.Gamma (-q + 1) := by congr 1; ring
-        _ = (-q) * Complex.Gamma (-q) := hrec
-    rw [hzero, mul_zero] at hrec'
-    exact hΓ1q hrec'
-  have hLprod := lFun_mul_neg hqne hΓq hΓnegq
-  have hBpow : ((γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) =
-      b ^ ((2 - γ ^ 2 / 2 : ℝ) : ℂ) := by
-    rw [Complex.ofReal_cpow (le_of_lt hbR), ← hbCast]
-  have hTcEq : Tc = (dozzBase γ μ : ℂ) *
-      b ^ ((2 - γ ^ 2 / 2 : ℝ) : ℂ) := by
-    dsimp [Tc, T]
-    rw [Complex.ofReal_mul, hBpow]
-  have hsum : ((2 - γ ^ 2 / 2 : ℝ) : ℂ) +
-      ((γ * Q γ : ℝ) : ℂ) = 4 := by
-    have hreal : 2 - γ ^ 2 / 2 + γ * Q γ = 4 := by
-      unfold Q
-      field_simp [hγ.ne']
-      ring
-    exact_mod_cast hreal
-  have hB : (dozzBase γ μ : ℂ) = (Real.pi * μ : ℂ) * lFun q := by
-    have harg : ((γ : ℂ) ^ 2 / 4) = ((γ ^ 2 / 4 : ℝ) : ℂ) := by
-      push_cast
-      ring
-    have hLq : lFun q =
-        ((Real.Gamma (γ ^ 2 / 4) / Real.Gamma (1 - γ ^ 2 / 4) : ℝ) : ℂ) := by
-      rw [hqeq, ← harg]
-      exact lFun_gammaSq_real γ
-    unfold dozzBase
-    rw [lFun_gammaSq_real, hLq]
-    simp only [Complex.ofReal_re]
-    push_cast
-    ring_nf
-  have hpowmul : b ^ ((2 - γ ^ 2 / 2 : ℝ) : ℂ) *
-      b ^ ((γ * Q γ : ℝ) : ℂ) =
-      b ^ (((2 - γ ^ 2 / 2 : ℝ) : ℂ) + ((γ * Q γ : ℝ) : ℂ)) :=
-    (Complex.cpow_add ((2 - γ ^ 2 / 2 : ℝ) : ℂ)
-      ((γ * Q γ : ℝ) : ℂ) hb).symm
-  have hqpow : b ^ (4 : ℂ) = q ^ 2 := by
-    rw [Complex.cpow_ofNat]
-    dsimp [q]
-    ring
-  have hbaseId : Tc * b ^ ((γ * Q γ : ℝ) : ℂ) *
-      (-(lFun (-q)) / (Real.pi * μ)) = 1 := by
+  let K : ℂ := -(1 / (Real.pi * μ))
+  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hb : b ≠ 0 := div_ne_zero hγc (by norm_num)
+  have hβ : (0 : ℝ) < γ / 2 := by positivity
+  have hB := dozzBase_pos hγ hγ2 hμ
+  refine dozzFormula_shift_of_upsilon_shift (χ := b) (k₀ := 1) (k₁ := -(γ : ℂ))
+    (K := K) hγ hU hb (mul_ne_zero hB.ne' (Real.rpow_pos_of_pos hβ _).ne') ?_ ?_ α₂ α₃
+  · intro z hz
+    simpa only [neg_mul, ← sub_eq_add_neg] using IsUpsilon.shift_b hγ hγ2 hU z hz
+  have hq : b ^ 2 = ((γ ^ 2 / 4 : ℝ) : ℂ) := by dsimp [b]; push_cast; ring
+  have hqr : 0 < γ ^ 2 / 4 := by positivity
+  have hq1 : γ ^ 2 / 4 < 1 := by nlinarith
+  have hΓp : Complex.Gamma (b ^ 2) ≠ 0 := by
+    rw [hq]
+    exact Complex.Gamma_ne_zero_of_re_pos (by rwa [Complex.ofReal_re])
+  have hΓm : Complex.Gamma (-b ^ 2) ≠ 0 := by
+    apply Complex.Gamma_ne_zero
+    intro n hn
+    rw [hq, neg_inj] at hn
+    have hn' : γ ^ 2 / 4 = (n : ℝ) := by exact_mod_cast hn
+    cases n <;> simp at hn' <;> linarith
+  have hl := lFun_mul_neg (pow_ne_zero 2 hb) hΓp hΓm
+  have hB' : (dozzBase γ μ : ℂ) = (Real.pi * μ : ℂ) * lFun (b ^ 2) := by
+    simp [dozzBase, hq, ← show (γ : ℂ) ^ 2 / 4 = ((γ ^ 2 / 4 : ℝ) : ℂ) by push_cast; ring, lFun_gammaSq_real]
+  have h := dozzFormula_shift_scalar (r := 1) (n := -4) (C := K * lFun (-b ^ 2)) hγ hB (by
+    rw [Complex.ofReal_one, cpow_one, hB', show (((-4 : ℝ) : ℂ)) = -(4 : ℂ) by norm_num,
+      Complex.cpow_neg, Complex.cpow_ofNat]
     calc
-      _ = (Real.pi * μ : ℂ) * lFun q *
-          (b ^ ((2 - γ ^ 2 / 2 : ℝ) : ℂ) * b ^ ((γ * Q γ : ℝ) : ℂ)) *
-            (-(lFun (-q)) / (Real.pi * μ)) := by
-        rw [hTcEq, hB]
-        ring_nf
-      _ = (Real.pi * μ : ℂ) * lFun q *
-          b ^ (((2 - γ ^ 2 / 2 : ℝ) : ℂ) + ((γ * Q γ : ℝ) : ℂ)) *
-            (-(lFun (-q)) / (Real.pi * μ)) := by
-        rw [hpowmul]
-      _ = (Real.pi * μ : ℂ) * lFun q * b ^ (4 : ℂ) *
-            (-(lFun (-q)) / (Real.pi * μ)) := by rw [hsum]
-      _ = (Real.pi * μ : ℂ) * lFun q * q ^ 2 *
-            (-(lFun (-q)) / (Real.pi * μ)) := by rw [hqpow]
-      _ = -(lFun q * lFun (-q)) * q ^ 2 := by
-        field_simp [hμ.ne', Real.pi_ne_zero]
-      _ = -(-1 / q ^ 2) * q ^ 2 := by rw [hLprod]
-      _ = 1 := by field_simp [hqne]
-
-  let pplus : ℂ → ℂ := fun α =>
-    (2 * (Q γ : ℂ) - (α + b + α₂ + α₃)) / (γ : ℂ)
-  let pminus : ℂ → ℂ := fun α =>
-    (2 * (Q γ : ℂ) - (α - b + α₂ + α₃)) / (γ : ℂ)
-  have hexp : ∀ α : ℂ, pplus α = pminus α - 1 := by
-    intro α
-    dsimp [pplus, pminus, b]
-    field_simp [hγc]
-    ring_nf
-  have hpow : ∀ α : ℂ, Tc ^ pplus α = Tc ^ pminus α / Tc := by
-    intro α
-    rw [hexp α, Complex.cpow_sub _ _ hTc]
-    simp
-  have hαm : ∀ z : ℂ, z - γ / 2 = z - b := by
-    intro z
-    rfl
-
-  let poleA := eventually_affine_ne_neg_nat (c := b) (d := 0) hb
-  let poleAm := eventually_affine_ne_neg_nat (c := b) (d := -b ^ 2) hb
-  let poleV₀ := eventually_affine_ne_neg_nat (c := b / 2) (d := b * d₀) (by
-    exact div_ne_zero hb (by norm_num))
-  let poleV₁ := eventually_affine_ne_neg_nat (c := -b / 2) (d := b * d₁) (by
-    exact div_ne_zero (neg_ne_zero.mpr hb) (by norm_num))
-  let poleV₂ := eventually_affine_ne_neg_nat (c := b / 2) (d := b * d₂) (by
-    exact div_ne_zero hb (by norm_num))
-  let poleV₃ := eventually_affine_ne_neg_nat (c := b / 2) (d := b * d₃) (by
-    exact div_ne_zero hb (by norm_num))
-  let nonzeroV₀ := eventually_upsilon_affine_ne_zero hγ hU (c := (1 / 2 : ℂ))
-    (d := d₀) (by norm_num)
-  let nonzeroV₀p := eventually_upsilon_affine_ne_zero hγ hU (c := (1 / 2 : ℂ))
-    (d := d₀ + b) (by norm_num)
-  let nonzeroV₁ := eventually_upsilon_affine_ne_zero hγ hU (c := (-1 / 2 : ℂ))
-    (d := d₁) (by norm_num)
-  let nonzeroV₁p := eventually_upsilon_affine_ne_zero hγ hU (c := (-1 / 2 : ℂ))
-    (d := d₁ + b) (by norm_num)
-  let nonzeroV₂ := eventually_upsilon_affine_ne_zero hγ hU (c := (1 / 2 : ℂ))
-    (d := d₂) (by norm_num)
-  let nonzeroV₂p := eventually_upsilon_affine_ne_zero hγ hU (c := (1 / 2 : ℂ))
-    (d := d₂ + b) (by norm_num)
-  let nonzeroV₃ := eventually_upsilon_affine_ne_zero hγ hU (c := (1 / 2 : ℂ))
-    (d := d₃) (by norm_num)
-  let nonzeroV₃p := eventually_upsilon_affine_ne_zero hγ hU (c := (1 / 2 : ℂ))
-    (d := d₃ + b) (by norm_num)
-  let lnonzeroV₀ := eventually_affine_lFun_ne_zero (c := b / 2) (d := b * d₀) (by
-    exact div_ne_zero hb (by norm_num))
-  let lnonzeroV₂ := eventually_affine_lFun_ne_zero (c := b / 2) (d := b * d₂) (by
-    exact div_ne_zero hb (by norm_num))
-  let lnonzeroV₃ := eventually_affine_lFun_ne_zero (c := b / 2) (d := b * d₃) (by
-    exact div_ne_zero hb (by norm_num))
-  filter_upwards [poleA, poleAm, poleV₀, poleV₁, poleV₂, poleV₃,
-    nonzeroV₀, nonzeroV₀p, nonzeroV₁, nonzeroV₁p, nonzeroV₂, nonzeroV₂p,
-    nonzeroV₃, nonzeroV₃p, lnonzeroV₀, lnonzeroV₂, lnonzeroV₃]
-    with α hpa hpam hp₀ hp₁ hp₂ hp₃ hu₀ hu₀p hu₁ hu₁p hu₂ hu₂p hu₃ hu₃p hl₀ hl₂ hl₃
-  have hnotA : ∀ n : ℕ, b * α ≠ -(n : ℂ) := by simpa using hpa
-  have hnotAm : ∀ n : ℕ, b * (α - b) ≠ -(n : ℂ) := by
-    intro n hn
-    apply hpam n
-    convert hn using 1
-    ring
-  have hnotV₀ : ∀ n : ℕ, b * v₀ α ≠ -(n : ℂ) := by
-    intro n hn
-    apply hp₀ n
-    convert hn using 1
-    simp [v₀]
-    ring
-  have hnotV₁ : ∀ n : ℕ, b * v₁ α ≠ -(n : ℂ) := by
-    intro n hn
-    apply hp₁ n
-    convert hn using 1
-    simp [v₁]
-    ring
-  have hnotV₂ : ∀ n : ℕ, b * v₂ α ≠ -(n : ℂ) := by
-    intro n hn
-    apply hp₂ n
-    convert hn using 1
-    simp [v₂]
-    ring
-  have hnotV₃ : ∀ n : ℕ, b * v₃ α ≠ -(n : ℂ) := by
-    intro n hn
-    apply hp₃ n
-    convert hn using 1
-    simp [v₃]
-    ring
-  have hsA := IsUpsilon.shift_b hγ hγ2 hU α hnotA
-  have hsAm := IsUpsilon.shift_b hγ hγ2 hU (α - b) hnotAm
-  have hs₀ := IsUpsilon.shift_b hγ hγ2 hU (v₀ α) hnotV₀
-  have hs₁ := IsUpsilon.shift_b hγ hγ2 hU (v₁ α) hnotV₁
-  have hs₂ := IsUpsilon.shift_b hγ hγ2 hU (v₂ α) hnotV₂
-  have hs₃ := IsUpsilon.shift_b hγ hγ2 hU (v₃ α) hnotV₃
-  have hnum : U (α + b) = k α * k (α - b) * U (α - b) := by
-    have hsA' : U (α + b) = k α * U α := by simpa [k] using hsA
-    have hargAm : α - b + ((γ / 2 : ℝ) : ℂ) = α := by
-      rw [hbCast]
-      ring
-    have hsAm' : U α = k (α - b) * U (α - b) := by
-      rw [← hargAm]
-      simpa [k, hbCast] using hsAm
-    rw [hsAm'] at hsA'
-    simpa [mul_assoc] using hsA'
-  have hu₀' : U (v₀ α + b) = k (v₀ α) * U (v₀ α) := by
-    simpa [k] using hs₀
-  have hu₁' : U (v₁ α + b) = k (v₁ α) * U (v₁ α) := by
-    simpa [k] using hs₁
-  have hu₂' : U (v₂ α + b) = k (v₂ α) * U (v₂ α) := by
-    simpa [k] using hs₂
-  have hu₃' : U (v₃ α + b) = k (v₃ α) * U (v₃ α) := by
-    simpa [k] using hs₃
-  have hv₀p : v₀p α = v₀ α + b := by dsimp [v₀p, v₀]; ring
-  have hv₁p : v₁p α = v₁ α + b := by dsimp [v₁p, v₁]; ring
-  have hv₂p : v₂p α = v₂ α + b := by dsimp [v₂p, v₂]; ring
-  have hv₃p : v₃p α = v₃ α + b := by dsimp [v₃p, v₃]; ring
-  have hdenPlus : U (v₀ α + b) * U (v₁ α) * U (v₂ α + b) * U (v₃ α + b) ≠ 0 := by
-    apply mul_ne_zero
-    · apply mul_ne_zero
-      · apply mul_ne_zero
-        · have h₀ : U (v₀ α + b) ≠ 0 := by rw [← hv₀p]; exact hu₀p
-          exact h₀
-        · exact hu₁
-      · have h₂ : U (v₂ α + b) ≠ 0 := by rw [← hv₂p]; exact hu₂p
-        exact h₂
-    · have h₃ : U (v₃ α + b) ≠ 0 := by rw [← hv₃p]; exact hu₃p
-      exact h₃
-  have hdenMinus : U (v₀ α) * U (v₁ α + b) * U (v₂ α) * U (v₃ α) ≠ 0 := by
-    apply mul_ne_zero
-    · apply mul_ne_zero
-      · apply mul_ne_zero
-        · exact hu₀
-        · have h₁ : U (v₁ α + b) ≠ 0 := by rw [← hv₁p]; exact hu₁p
-          exact h₁
-      · exact hu₂
-    · exact hu₃
-  have hUv₀p : U (v₀ α + b) ≠ 0 := by rw [← hv₀p]; exact hu₀p
-  have hUv₁p : U (v₁ α + b) ≠ 0 := by rw [← hv₁p]; exact hu₁p
-  have hUv₂p : U (v₂ α + b) ≠ 0 := by rw [← hv₂p]; exact hu₂p
-  have hUv₃p : U (v₃ α + b) ≠ 0 := by rw [← hv₃p]; exact hu₃p
-  have hargL₀ : b * v₀ α = b / 2 * α + b * d₀ := by dsimp [v₀]; ring
-  have hargL₂ : b * v₂ α = b / 2 * α + b * d₂ := by dsimp [v₂]; ring
-  have hargL₃ : b * v₃ α = b / 2 * α + b * d₃ := by dsimp [v₃]; ring
-  have hL₀ : lFun (b * v₀ α) ≠ 0 := by rw [hargL₀]; exact hl₀
-  have hL₂ : lFun (b * v₂ α) ≠ 0 := by rw [hargL₂]; exact hl₂
-  have hL₃ : lFun (b * v₃ α) ≠ 0 := by rw [hargL₃]; exact hl₃
-
-  have hWplus0 : ((α + γ / 2 + α₂ + α₃ - 2 * Q γ) / 2) = v₀p α := by
-    dsimp [v₀p, d₀, b]
-    ring
-  have hWminus0 : ((α - γ / 2 + α₂ + α₃ - 2 * Q γ) / 2) = v₀ α := by
-    dsimp [v₀, d₀, b]
-    ring
-  have hUplus1 : ((α + γ / 2 + α₂ + α₃) / 2 - (α + γ / 2)) = v₁ α := by
-    dsimp [v₁, d₁, b]
-    ring
-  have hUminus1 : ((α - γ / 2 + α₂ + α₃) / 2 - (α - γ / 2)) = v₁p α := by
-    dsimp [v₁p, d₁, b]
-    ring
-  have hUplus2 : ((α + γ / 2 + α₂ + α₃) / 2 - α₂) = v₂p α := by
-    dsimp [v₂p, d₂, b]
-    ring
-  have hUminus2 : ((α - γ / 2 + α₂ + α₃) / 2 - α₂) = v₂ α := by
-    dsimp [v₂, d₂, b]
-    ring
-  have hUplus3 : ((α + γ / 2 + α₂ + α₃) / 2 - α₃) = v₃p α := by
-    dsimp [v₃p, d₃, b]
-    ring
-  have hUminus3 : ((α - γ / 2 + α₂ + α₃) / 2 - α₃) = v₃ α := by
-    dsimp [v₃, d₃, b]
-    ring
-  have hCoeffArg₁ : b / 2 * ((α + α₂ + α₃) - 2 * α - b) = b * v₁ α := by
-    dsimp [v₁, d₁]
-    ring
-  have hCoeffArg₀ : b / 2 * ((α + α₂ + α₃) - b - 2 * (Q γ : ℂ)) = b * v₀ α := by
-    dsimp [v₀, d₀]
-    ring
-  have hCoeffArg₂ : b / 2 * ((α + α₂ + α₃) - 2 * α₂ - b) = b * v₂ α := by
-    dsimp [v₂, d₂]
-    ring
-  have hCoeffArg₃ : b / 2 * ((α + α₂ + α₃) - 2 * α₃ - b) = b * v₃ α := by
-    dsimp [v₃, d₃]
-    ring
-  have hcoeff : shiftCoeffA γ (γ / 2) α α₂ α₃ =
-      lFun (-q) * lFun (b * α) * lFun (b * (α - b)) * lFun (b * v₁ α) /
-        (lFun (b * v₀ α) * lFun (b * v₃ α) * lFun (b * v₂ α)) := by
-    unfold shiftCoeffA
-    change
-      (lFun (-b ^ 2) * lFun (b * α) * lFun (b * α - b ^ 2) *
-        lFun (b / 2 * ((α + α₂ + α₃) - 2 * α - b))) /
-        (lFun (b / 2 * ((α + α₂ + α₃) - b - 2 * (Q γ : ℂ))) *
-          lFun (b / 2 * ((α + α₂ + α₃) - 2 * α₃ - b)) *
-          lFun (b / 2 * ((α + α₂ + α₃) - 2 * α₂ - b))) = _
-    rw [show -b ^ 2 = -q by dsimp [q]]
-    rw [show b * α - b ^ 2 = b * (α - b) by ring]
-    rw [hCoeffArg₁, hCoeffArg₀, hCoeffArg₃, hCoeffArg₂]
-  have hscalar : Tc ^ pplus α * k α * k (α - b) * k (v₁ α) =
-      -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) α α₂ α₃ *
-        Tc ^ pminus α * k (v₀ α) * k (v₂ α) * k (v₃ α) := by
-    have hpowL : b ^ (1 - (γ : ℂ) * α) *
-        b ^ (1 - (γ : ℂ) * (α - b)) * b ^ (1 - (γ : ℂ) * v₁ α) =
-        b ^ ((1 - (γ : ℂ) * α) + (1 - (γ : ℂ) * (α - b)) +
-          (1 - (γ : ℂ) * v₁ α)) := by
-      rw [← Complex.cpow_add _ _ hb, ← Complex.cpow_add _ _ hb]
-    have hpowR : b ^ (1 - (γ : ℂ) * v₀ α) *
-        b ^ (1 - (γ : ℂ) * v₂ α) * b ^ (1 - (γ : ℂ) * v₃ α) =
-        b ^ ((1 - (γ : ℂ) * v₀ α) + (1 - (γ : ℂ) * v₂ α) +
-          (1 - (γ : ℂ) * v₃ α)) := by
-      rw [← Complex.cpow_add _ _ hb, ← Complex.cpow_add _ _ hb]
-    have hExp : (1 - (γ : ℂ) * α) + (1 - (γ : ℂ) * (α - b)) +
-        (1 - (γ : ℂ) * v₁ α) =
-        ((1 - (γ : ℂ) * v₀ α) + (1 - (γ : ℂ) * v₂ α) +
-          (1 - (γ : ℂ) * v₃ α)) - (γ : ℂ) * (Q γ : ℂ) := by
-      dsimp [v₀, v₁, v₂, v₃,
-        d₀, d₁, d₂, d₃, b]
-      unfold Q
-      field_simp [hγ.ne']
-      ring
-    rw [hpow α, hcoeff]
-    dsimp [k]
-    rw [show Tc ^ pminus α / Tc *
-          (lFun (b * α) * b ^ (1 - (γ : ℂ) * α)) *
-          (lFun (b * (α - b)) * b ^ (1 - (γ : ℂ) * (α - b))) *
-          (lFun (b * v₁ α) * b ^ (1 - (γ : ℂ) * v₁ α)) =
-          (Tc ^ pminus α / Tc) *
-            (lFun (b * α) * lFun (b * (α - b)) * lFun (b * v₁ α)) *
-              (b ^ (1 - (γ : ℂ) * α) * b ^ (1 - (γ : ℂ) * (α - b)) *
-                b ^ (1 - (γ : ℂ) * v₁ α)) by ring]
-    rw [show -(1 / (Real.pi * μ)) *
-          (lFun (-q) * lFun (b * α) * lFun (b * (α - b)) * lFun (b * v₁ α) /
-            (lFun (b * v₀ α) * lFun (b * v₃ α) * lFun (b * v₂ α))) * Tc ^ pminus α *
-          (lFun (b * v₀ α) * b ^ (1 - (γ : ℂ) * v₀ α)) *
-          (lFun (b * v₂ α) * b ^ (1 - (γ : ℂ) * v₂ α)) *
-          (lFun (b * v₃ α) * b ^ (1 - (γ : ℂ) * v₃ α)) =
-          -(1 / (Real.pi * μ)) *
-            (lFun (-q) * lFun (b * α) * lFun (b * (α - b)) * lFun (b * v₁ α) /
-              (lFun (b * v₀ α) * lFun (b * v₃ α) * lFun (b * v₂ α))) * Tc ^ pminus α *
-            (lFun (b * v₀ α) * lFun (b * v₂ α) * lFun (b * v₃ α)) *
-              (b ^ (1 - (γ : ℂ) * v₀ α) * b ^ (1 - (γ : ℂ) * v₂ α) *
-                b ^ (1 - (γ : ℂ) * v₃ α)) by ring]
-    rw [hpowL, hpowR, hExp, Complex.cpow_sub _ _ hb]
-    field_simp [hTc, hL₀, hL₂, hL₃, hμ.ne', Real.pi_ne_zero]
-    have hbaseDiv : (Real.pi * μ : ℂ) /
-        b ^ ((γ * Q γ : ℝ) : ℂ) = -(Tc * lFun (-q)) := by
-      have hh := hbaseId
-      have hpiμ : (Real.pi * μ : ℂ) ≠ 0 :=
-        mul_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
-          (Complex.ofReal_ne_zero.mpr hμ.ne')
-      have hpowne : b ^ ((γ * Q γ : ℝ) : ℂ) ≠ 0 :=
-        Complex.cpow_ne_zero_iff.mpr (Or.inl hb)
-      field_simp [hpiμ, hpowne] at hh ⊢
-      have hh' := congrArg (fun z : ℂ => z * (μ : ℂ)) hh
-      field_simp [hμ.ne'] at hh'
-      simpa [mul_assoc, mul_comm, mul_left_comm] using hh'.symm
-    calc
-      _ = (lFun (b * α) * lFun (b * (α - b)) * lFun (b * v₁ α) *
-          b ^ ((1 - (γ : ℂ) * v₀ α) + (1 - (γ : ℂ) * v₂ α) +
-            (1 - (γ : ℂ) * v₃ α))) *
-          ((Real.pi * μ : ℂ) / b ^ ((γ * Q γ : ℝ) : ℂ)) := by
-        push_cast
-        ring
-      _ = (lFun (b * α) * lFun (b * (α - b)) * lFun (b * v₁ α) *
-          b ^ ((1 - (γ : ℂ) * v₀ α) + (1 - (γ : ℂ) * v₂ α) +
-            (1 - (γ : ℂ) * v₃ α))) * (-(Tc * lFun (-q))) := by rw [hbaseDiv]
-      _ = _ := by ring
-  have hpowplus : Tc ^ pplus α =
-      ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) ^
-        ((2 * Q γ - (α + γ / 2 + α₂ + α₃)) / γ) := by
-    have hbaseT : Tc =
-        ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) := by
-      simp [Tc, T, Complex.ofReal_mul]
-    rw [hbaseT]
-  have hpowminus : Tc ^ pminus α =
-      ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) ^
-        ((2 * Q γ - (α - γ / 2 + α₂ + α₃)) / γ) := by
-    have hbaseT : Tc =
-        ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) := by
-      simp [Tc, T, Complex.ofReal_mul]
-    rw [hbaseT]
-  unfold dozzFormula
-  rw [← hpowplus, ← hpowminus]
-  rw [hWplus0, hWminus0, hUplus1, hUminus1,
-    hUplus2, hUminus2, hUplus3, hUminus3]
-  rw [hv₀p, hv₁p, hv₂p, hv₃p]
-  rw [← mul_div_assoc]
-  rw [div_eq_div_iff hdenPlus hdenMinus]
-  rw [hαm α, hnum, hu₀', hu₁', hu₂', hu₃']
-  linear_combination
-    (deriv U 0 * U (α - b) * U α₂ * U α₃ *
-      U (v₀ α) * U (v₁ α) * U (v₂ α) * U (v₃ α)) * hscalar
+      _ = -(lFun (b ^ 2) * lFun (-b ^ 2)) := by dsimp [K]; field_simp [hμ.ne', Real.pi_ne_zero]
+      _ = _ := by rw [hl, ← pow_mul, Complex.ofReal_div, Complex.ofReal_ofNat, ← neg_div, neg_neg, one_div])
+  convert h using 2 <;> push_cast <;> dsimp [b, Q] <;> push_cast <;> field_simp <;> ring
 
 end DOZZ.Proofs
-
-end

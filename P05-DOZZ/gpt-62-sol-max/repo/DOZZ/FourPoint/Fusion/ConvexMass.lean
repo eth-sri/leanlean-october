@@ -55,7 +55,7 @@ theorem fusion_convexMass_tendstoInMeasure {Ω : Type*} [MeasurableSpace Ω]
   let f := fun n ω => t * (a n ω).toReal + (1 - t) * (b n ω).toReal
   have ham : ∀ n, AEStronglyMeasurable (fun ω => (a n ω).toReal) P :=
     fun n => (ha n).ennreal_toReal.aestronglyMeasurable
-  have hbm : ∀ n, AEStronglyMeasurable (fun ω => (b n ω).toReal) P :=
+  have hbm  :=
     fun n => (hb n).ennreal_toReal.aestronglyMeasurable
   have hfm : ∀ n, AEStronglyMeasurable (f n) P := fun n =>
     ((ham n).const_mul t).add ((hbm n).const_mul (1 - t))
@@ -67,9 +67,7 @@ theorem fusion_convexMass_tendstoInMeasure {Ω : Type*} [MeasurableSpace Ω]
     refine ⟨u ∘ v, hu.comp hv, ?_⟩
     filter_upwards [hua, hvb] with ω hωa hωb
     have h := ((hωa.comp hv.tendsto_atTop).const_mul t).add (hωb.const_mul (1 - t))
-    have he : t * (g ω).toReal + (1 - t) * (g ω).toReal = (g ω).toReal := by ring
-    rw [he] at h
-    exact h
+    grind
   apply TendstoInMeasure.congr_left _ hc
   intro n
   filter_upwards [haf n, hbf n] with ω hωa hωb

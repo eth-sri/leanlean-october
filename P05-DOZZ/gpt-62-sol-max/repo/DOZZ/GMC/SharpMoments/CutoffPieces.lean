@@ -40,10 +40,7 @@ theorem weight_le_pieces {N : ℕ} (G : ℂ → ℝ≥0∞) (z : Fin N → ℂ) 
   · obtain ⟨k, hk⟩ := hroot
     have hxk : x ∈ Metric.ball (z k) ρs := by rwa [Metric.mem_ball, dist_eq_norm]
     refine le_trans ?_ (le_add_right (le_add_right le_rfl))
-    calc G x = (Metric.ball (z k) ρs).indicator G x := (Set.indicator_of_mem hxk G).symm
-      _ ≤ ∑ j, (Metric.ball (z j) ρs).indicator G x :=
-        Finset.single_le_sum (f := fun j => (Metric.ball (z j) ρs).indicator G x)
-          (fun _ _ => zero_le) (Finset.mem_univ k)
+    exact Trans.trans (Eq.symm (Set.indicator_of_mem hxk G)) (Finset.single_le_sum (fun x_1 x_2 => zero_le) (Finset.mem_univ k))
   · push Not at hroot hE
     have hK : x ∈ {y : ℂ | ‖y‖ ≤ R0 ∧ ∀ k, ρs ≤ ‖y - z k‖} := ⟨hE.le, hroot⟩
     rw [Set.indicator_of_mem hK]

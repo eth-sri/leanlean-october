@@ -41,62 +41,14 @@ universe u
 
 namespace DOZZ.Proofs
 
-/-- Swapping the first two charges of a structure constant in the extended Seiberg domain. -/
-theorem structureConstant_swap12 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) {γ μ a b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (h : ExtendedSeiberg3 γ a b c) :
-    structureConstant P M γ μ a b c = structureConstant P M γ μ b a c := by
-  rw [residue_structureConstant_eq_unitVolume, residue_structureConstant_eq_unitVolume,
-    (unitVolumeStructureConstant_symmetric_extended P X M γ a b c hγ hγ2 hX hM h).1,
-    show sExp γ b a c = sExp γ a b c by unfold sExp; ring_nf]
-
-/-- **The first dual crossing seed from the dual fusion statement.** `hFusion` is the
-conclusion of `dual_full_fusion_and_asymptotic`, quantified over all probability spaces of the
-universe of `Ω`. -/
-theorem dual_crossing_seed_one_of_fusion {Ω : Type u} [MeasurableSpace Ω]
+/-- **The first dual crossing seed from the dual fusion statement.** -/
+theorem dual_crossing_seed_one {Ω : Type u} [MeasurableSpace Ω]
     (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
     (γ μ α ε α' : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ)
     (hs : 2 * Q γ + 2 / γ < α + ε + α')
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hFusion : ∀ {Ω : Type u} [MeasurableSpace Ω]
-      {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-      (_hH : IsGaussHypergeometricFamily H)
-      (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-      (γ μ α₁ α₂ α₃ η ξ : ℝ)
-      (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ)
-      (_hη : 0 < η) (_hη₂ : η < γ / 2) (_hξ : 0 < ξ) (_hξ₂ : ξ < 1)
-      (_hαlo : Q γ - η < α₁) (_hαhi : α₁ < Q γ)
-      (_hα₂ : α₂ < Q γ) (_hα₃ : α₃ < Q γ)
-      (_hs : 2 * Q γ + 2 / γ < α₁ + α₂ + α₃)
-      (_hslack₁ : (4 / γ) * (Q γ - α₁) < ξ)
-      (_hslack₂ : (4 / γ) * (Q γ - α₁) <
-        (1 - ξ) * (4 - γ * α₁ - 2 * γ * η))
-      (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M),
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
-        ∃ Z : Ω → Measure ℝ,
-          IsSourceLateralProjection P X γ M Z ∧
-          IsReflectionData P γ α₁ (B α₁) Z ∧
-          let a := gaussParameterA γ (2 / γ) α₁ α₂ α₃
-          let b := gaussParameterB γ (2 / γ) α₁ α₂ α₃
-          let c := gaussParameterC γ (2 / γ) α₁
-          let κ := (4 / γ) * (Q γ - α₁)
-          (∃ r : ℂ → ℝ,
-            (∀ z, fourPointT P M γ μ (-2 / γ) α₁ α₂ α₃ z =
-              structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ +
-                reflectionR P γ μ α₁ (B α₁) Z *
-                  structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃ *
-                    (‖z‖ ^ κ : ℝ) + r z) ∧
-              Tendsto (fun z => r z / ‖z‖ ^ κ)
-                (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0)) ∧
-            (∀ z ∈ gaussCutPlane,
-              fourPointT P M γ μ (-2 / γ) α₁ α₂ α₃ z =
-                structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ *
-                    ‖gaussFMinus H a b c z‖ ^ 2 +
-                  reflectionR P γ μ α₁ (B α₁) Z *
-                    structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃ *
-                      ‖gaussFPlus H a b c z‖ ^ 2)) :
+    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     ∃ Bε : Ω → BrownianPath × BrownianPath,
       ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧
@@ -106,9 +58,7 @@ theorem dual_crossing_seed_one_of_fusion {Ω : Type u} [MeasurableSpace Ω]
             reflectionR P γ μ ε Bε Z *
               structureConstant P M γ μ α (2 * Q γ - ε - 2 / γ) α' := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+  have hγh := half_gamma_lt_two_div hγ hγ₂
   -- the witnesses
   obtain ⟨A, hXcA, hAm, hA0, hBf, hBb, hInd, hLm, hIndL, hLat⟩ :=
     equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ₂ hX hM
@@ -121,7 +71,7 @@ theorem dual_crossing_seed_one_of_fusion {Ω : Type u} [MeasurableSpace Ω]
   have hrefl := dual_reflection_identity_continuation P X M γ μ α α' hγ hγ₂ hμ hα hα' hX hM
     (fun α₁ hα₁ hnear hs₁ B₁ Z₁ hB₁ =>
       dual_reflection_identity_near_Q P X M γ μ α₁ α α' hγ hγ₂ hμ hα₁ hnear hα hα' hs₁ hX hM B₁
-        Z₁ hB₁ hFusion)
+        Z₁ hB₁)
     ε hε (by linarith) (B ε) _ (hB ε hε)
   -- the two-channel identity
   have htwo := dual_first_coefficient_of_classification P X M γ μ α ε α' hγ hγ₂ hμ hα hε hα' hs

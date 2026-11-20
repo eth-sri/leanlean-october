@@ -20,7 +20,7 @@ theorem exp_parameter_increment (b d a t u : ℝ)
   have hδ : |b * (u-t)| ≤ a * |t-u| := by
     rw [abs_mul, abs_sub_comm u t]
     exact mul_le_mul_of_nonneg_right hb (abs_nonneg _)
-  have hδa : |b * (u-t)| ≤ a :=
+  have hδa  :=
     hδ.trans (mul_le_of_le_one_right ha htu)
   have ht : b*t+d ≤ a*|t|+|d| := by
     have hbt : b*t ≤ a*|t| := (le_abs_self _).trans (by

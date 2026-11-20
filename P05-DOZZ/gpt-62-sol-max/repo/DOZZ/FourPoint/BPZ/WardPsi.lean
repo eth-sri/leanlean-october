@@ -92,7 +92,7 @@ theorem integrable_bpz_cut_part (hρm : Measurable ρ) (hk₁ : Measurable k₁)
   refine (hI₁.mul_const (Real.exp (γ ^ 2 * r))).mono'
     ((hρm.mul hk₁).mul (continuous_bpzCutRootKernel_snd γ r x).measurable).aestronglyMeasurable
     (Eventually.of_forall fun y => ?_)
-  have hw : 0 ≤ ρ y * k₁ y := mul_nonneg (hρ0 y) (hk₁0 y)
+  have hw  := mul_nonneg (hρ0 y) (hk₁0 y)
   rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg hw (bpzCutRootKernel_pos γ r x y).le)]
   calc ρ y * k₁ y * bpzCutRootKernel γ r x y
       ≤ ρ y * k₁ y * (Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y)) :=
@@ -146,7 +146,7 @@ theorem bpzRootedMixedReal_ratio (hρm : Measurable ρ) (hk₁ : Measurable k₁
     intro y
     have h := bpz_ratio_lower' hL (bpzCutRootKernel_pos γ r x y) (bpzCutRootKernel_pos γ r x₀ y)
       (bpz_cut_log_le (δ := δ) x x₀ y) hdx
-    have hw : 0 ≤ ρ y * k₁ y := mul_nonneg (hρ0 y) (hk₁0 y)
+    have hw  := mul_nonneg (hρ0 y) (hk₁0 y)
     linarith only [mul_le_mul_of_nonneg_left h hw]
   have hlim_low : ∀ y, Real.exp (-(L * δ)) * ((1 - ρ y) * k₂ y * bpzLimRootKernel γ r x₀ y) ≤
       (1 - ρ y) * k₂ y * bpzLimRootKernel γ r x y := by
@@ -166,7 +166,7 @@ theorem bpzRootedMixedReal_ratio (hρm : Measurable ρ) (hk₁ : Measurable k₁
       (bpzCutRootKernel_pos γ r x' y) (bpzCutRootKernel_pos γ r x₀ y)
       (bpz_cut_log_le (δ := δ) x x₀ y) (bpz_cut_log_le (δ := δ) x' x₀ y)
       (bpz_cut_log_le (δ := δ) x x' y) hdx hdx'
-    have hw : 0 ≤ ρ y * k₁ y := mul_nonneg (hρ0 y) (hk₁0 y)
+    have hw  := mul_nonneg (hρ0 y) (hk₁0 y)
     rw [← mul_sub, abs_mul, abs_of_nonneg hw]
     calc ρ y * k₁ y * |bpzCutRootKernel γ r x y - bpzCutRootKernel γ r x' y|
         ≤ ρ y * k₁ y * (L * Real.exp (L * δ) * bpzCutRootKernel γ r x₀ y * ‖x - x'‖) :=
@@ -234,9 +234,9 @@ theorem bpz_abs_rpow_neg_sub_le {a b q : ℝ} (ha : 0 < a) (hb : 0 < b) (hq : 0 
     fun t ht => Real.hasDerivAt_rpow_const (Or.inl (lt_trans ha ht.1).ne')
   obtain ⟨c, hc, hcd⟩ := exists_hasDerivAt_eq_slope (fun t : ℝ => t ^ (-q))
     (fun t => -q * t ^ (-q - 1)) h hcont hderiv
-  have hc0 : 0 < c := lt_trans ha hc.1
+  have hc0  := lt_trans ha hc.1
   have hdiff : a ^ (-q) - b ^ (-q) = q * c ^ (-q - 1) * (b - a) := by
-    have hba : b - a ≠ 0 := (sub_pos.mpr h).ne'
+    have hba  := (sub_pos.mpr h).ne'
     field_simp at hcd
     linarith
   rw [hdiff, abs_of_nonneg (mul_nonneg (mul_nonneg hq (Real.rpow_nonneg hc0.le _))

@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.WilliamsExpectationSqueeze
 public import DOZZ.FourPoint.Reflected.WilliamsRealCutData
-public import DOZZ.FourPoint.Reflected.SourceParetoWeights
+public import DOZZ.FourPoint.Reflected.SourceRadialMoments
 public import DOZZ.FourPoint.Reflected.ReferenceParetoLaw
 import Mathlib.Tactic
 /-! Signed Williams expectation bounds on the supplied source and reflection carriers. -/
@@ -52,8 +52,11 @@ theorem reflected_source_williams_expectation_squeeze
   let b := reflected_radial_scale γ ν h Xc z
   obtain ⟨hJm,hKm,hjm,hJi,hcuts⟩ := reflected_williams_real_cut_data P μ γ α₁ hγ hγ₂ hα₁
     B Z hData B₀ hB₀ H hH
-  obtain ⟨hAp,-,-⟩ := reflected_source_pareto_weights_integrable P X hX γ hγ hγ₂ M hM
-    Xc hc ν h p α₁ α₂ α₃ ξ (sub_pos.mpr hα₁) hh hp hξ hξ₁ hα₁ hα₂ hα₃ z hz0 hz1 hz
+  have hAp : ∀ᵐ ω ∂P, 0 < A ω :=
+    (reflected_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
+      α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hz
+      (retained_circle_window hz0 hz hh hξ.le hξ₁.le).2.2.2).mono
+      fun _ hw => ENNReal.toReal_pos hw.1.ne' hw.2.ne
   have hInv := (reflected_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
     ν h 0 α₁ α₂ α₃ ξ p hh hξ hξ₁ hp.le z hz0 hz).1
   simp only [Real.rpow_zero,one_mul] at hInv

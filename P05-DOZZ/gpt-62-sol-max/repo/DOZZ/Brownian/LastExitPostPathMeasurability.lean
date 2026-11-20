@@ -22,8 +22,7 @@ namespace DOZZ.Proofs
 
 /-- Shift a continuous path by a nonnegative time and add a fixed level to all its values. -/
 noncomputable def shiftPathAddConstant (c : ℝ) (z : ℝ≥0 × BrownianPath) : BrownianPath :=
-  ⟨fun t => z.2 (z.1 + t) + c, by
-    exact (z.2.continuous.comp (continuous_const.add continuous_id)).add continuous_const⟩
+  ⟨fun t => z.2 (z.1 + t) + c, (z.2.continuous.comp (continuous_const.add continuous_id)).add continuous_const⟩
 
 /-- Joint continuity of shifting a path and adding a fixed level. -/
 theorem continuous_shiftPathAddConstant (c : ℝ) :
@@ -36,19 +35,11 @@ theorem continuous_shiftPathAddConstant (c : ℝ) :
 /-- The last-exit recentering map is measurable for every fixed level. -/
 theorem measurable_negativeConditionedPostLastExitPath (c : ℝ) :
     Measurable (negativeConditionedPostLastExitPath c) := by
-  have hτ : Measurable (fun p : BrownianPath => negativeLastExitTime p c) :=
+  have hτ  :=
     measurable_negativeLastExitTime_joint.comp
       ((measurable_const (a := c)).prodMk measurable_id)
-  have hmap : Measurable (fun p : BrownianPath =>
-      shiftPathAddConstant c (negativeLastExitTime p c, p)) :=
-    (continuous_shiftPathAddConstant c).measurable.comp (hτ.prodMk measurable_id)
-  have heq : (fun p : BrownianPath => shiftPathAddConstant c (negativeLastExitTime p c, p)) =
-      negativeConditionedPostLastExitPath c := by
-    funext p
-    ext t
-    rfl
-  rw [← heq]
-  exact hmap
+  have hmap := (continuous_shiftPathAddConstant c).measurable.comp (hτ.prodMk measurable_id)
+  assumption
 
 /-- In particular, the post-last-exit map `DOZZ.negativeConditionedPostLastExitPath` is
 almost-everywhere measurable under any path measure. -/

@@ -47,10 +47,9 @@ theorem reflected_williams_expectation_squeeze
   have hi (S : Λ → ℝ) (hS : ∀ᵐ v ∂R, 0 ≤ S v) (hSm : AEMeasurable S R) :
       Integrable (D S) (P.prod R) := by
     have hSp := (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving.ae hS
-    have hT : ∀ᵐ v : Ω × Λ ∂P.prod R, 0 ≤ b v.1*Real.exp (γ*m v.2)*S v.2 := by
+    exact reflected_inverse_increment_integrable (P.prod R) p hp _ _ hAp (by
       filter_upwards [hbp,hSp] with v hv hSv
-      exact mul_nonneg (mul_nonneg hv (Real.exp_pos _).le) hSv
-    exact reflected_inverse_increment_integrable (P.prod R) p hp _ _ hAp hT hApm
+      exact mul_nonneg (mul_nonneg hv (Real.exp_pos _).le) hSv) hApm
       ((hbpm.mul hemp).mul (hSm.comp_quasiMeasurePreserving
         (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving)) hInvp
   have hiJ := hi J (hcut.mono fun _ h => h.1.trans h.2.1) hJm

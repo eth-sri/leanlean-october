@@ -9,10 +9,11 @@ open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (γ α a r₀ W B R δ : ℝ)
+  (z : ℂ)
+
 theorem cutoffWeightedGmcBallMass_le_inner_add_outer
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (γ α a r₀ W B R δ : ℝ) (z : ℂ)
     (hR : a ≤ R) (hR₀ : R ≤ r₀) (hδ : 0 < δ) (hδR : δ ≤ R)
     (hz : ‖z‖ + R ≤ B)
     (hW : ∀ s ∈ Set.Icc a (2 * r₀), s ^ (-γ * α) ≤ W) (ω : Ω) :
@@ -53,9 +54,6 @@ theorem cutoffWeightedGmcBallMass_le_inner_add_outer
     _ = _ := by rw [lintegral_indicator Metric.isOpen_ball.measurableSet]; rfl
 
 theorem cutoffWeightedGmcBallMass_le_coarse_weight
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (γ α a r₀ W B R δ : ℝ) (z : ℂ)
     (hR₀ : R ≤ r₀) (hδa : a ≤ δ) (hδR : δ ≤ R) (hz : ‖z‖ + R ≤ B)
     (hW : ∀ s ∈ Set.Icc a (2 * r₀), s ^ (-γ * α) ≤ W) (ω : Ω) :
     cutoffWeightedGmcBallMass P Xc γ α z R δ ω ≤
@@ -77,6 +75,8 @@ theorem cutoffWeightedGmcBallMass_le_coarse_weight
     _ = ENNReal.ofReal W * μ (Metric.ball z R) := by
       rw [lintegral_const, Measure.restrict_apply_univ]
     _ ≤ _ := mul_le_mul_right (measure_mono hball) _
+
+end
 
 theorem ennreal_rpow_add_le_uniform_order_cap (a b : ℝ≥0∞) (p q : ℝ)
     (hp : 0 ≤ p) (hpq : p ≤ q) :

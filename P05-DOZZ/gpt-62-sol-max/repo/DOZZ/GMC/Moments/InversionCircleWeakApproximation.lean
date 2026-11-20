@@ -35,7 +35,7 @@ theorem exists_inversionChart_circle_weak_approximation (x : ℂ) (r : ℝ)
     have ht := Metric.mem_closedBall.mp h
     simp only [hz0, dist_zero_left] at ht
     linarith
-  have hc n : HasCompactSupport (circleAnnularDensity x r n) :=
+  have hc n  :=
     (isCompact_closedBall (0 : ℂ) R).of_isClosed_subset isClosed_closure
       (tsupport_circleAnnularDensity_subset x r n)
   choose a ha hab hag haU using fun n => exists_inversion_test_mask (hc n) (hU n)
@@ -72,10 +72,9 @@ theorem exists_inversionChart_circle_weak_approximation (x : ℂ) (r : ℝ)
       (tendsto_add_atTop_nat 2) using 1
     ext n
     simp [Nat.cast_add]
-  have ht3 : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + 2) ^ 3) atTop (𝓝 (0 : ℝ)) := by
-    simpa only [div_pow, one_pow, zero_pow (by norm_num : 3 ≠ 0)] using ht.pow 3
   exact tendsto_integral_testFn_mul_of_circleAnnular_approx x r f
-    (fun n => 1 / ((n : ℝ) + 2) ^ 3) (fun n => by positivity) ht3
+    (fun n => 1 / ((n : ℝ) + 2) ^ 3) (fun n => by positivity) (by
+    simpa only [div_pow, one_pow, zero_pow (by norm_num : 3 ≠ 0)] using ht.pow 3)
     (R := R + 1) (by positivity)
     (fun n => (subset_tsupport _).trans (hs n))
     (fun n => (support_circleAnnularDensity_subset x r n).trans

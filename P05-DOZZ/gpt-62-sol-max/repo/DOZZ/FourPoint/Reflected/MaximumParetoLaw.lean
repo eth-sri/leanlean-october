@@ -82,10 +82,8 @@ theorem reflected_brownian_maximum_pareto_law
       have hl : P ((fun p => Real.exp (γ * driftedBrownianMaximum ν p)) ⁻¹' Ioi v) = 1 :=
         (measure_congr (he.mono fun p hp => propext ⟨fun _ => mem_univ p, fun _ => hp⟩)).trans
           (measure_univ)
-      have hr : paretoMeasure 1 (2 * ν / γ) (Ioi v) = 1 :=
-        (measure_congr (hy.mono fun y hy => propext ⟨fun _ => mem_univ y, fun _ => hy⟩)).trans
-          (measure_univ)
-      exact hl.trans hr.symm
+      exact hl.trans ((measure_congr (hy.mono fun y hy => propext ⟨fun _ => mem_univ y, fun _ => hy⟩)).trans
+          (measure_univ)).symm
   apply Measure.ext_of_Iic
   intro v
   rw [← compl_Ioi, prob_compl_eq_one_sub measurableSet_Ioi,

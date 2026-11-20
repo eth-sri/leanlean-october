@@ -36,9 +36,9 @@ theorem residue_localWeight_eq (γ S α : ℝ) (z w x : ℂ)
     have hh := norm_add_le (z - x) (x - w)
     rw [sub_add_sub_cancel] at hh
     rwa [norm_sub_rev z x] at hh
-  have hx1 : 1 ≤ ‖x‖ := by linarith only [hz, hd, hzx]
-  have hx10 : ‖x‖ ≤ 10 := by linarith only [hz8, hd, hxx]
-  have hxw1 : 1 ≤ ‖x - w‖ := by linarith only [hzw, hd, hsep]
+  have hx1 : 1 ≤ ‖x‖ := by linarith
+  have hx10 : ‖x‖ ≤ 10 := by linarith
+  have hxw1 : 1 ≤ ‖x - w‖ := by linarith
   unfold residueLocalWeight
   rw [max_eq_right hx1, min_eq_left hx10, max_eq_right hxw1]
 
@@ -46,21 +46,22 @@ theorem residue_localWeight_eq (γ S α : ℝ) (z w x : ℂ)
 theorem residue_localWeight_pos (γ S α : ℝ) (w x : ℂ) :
     0 < residueLocalWeight γ S α w x := by
   have hn : 0 < min (max 1 ‖x‖) (10 : ℝ) := lt_min (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) (by norm_num)
-  have hd : 0 < max (1 : ℝ) ‖x - w‖ := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  exact div_pos (Real.rpow_pos_of_pos hn _) (Real.rpow_pos_of_pos hd _)
+  apply div_pos <;> positivity
 
 /-- Uniform global bound over a bounded nonnegative total-charge interval. -/
 theorem residue_localWeight_le (γ S α Smax : ℝ) (hγ : 0 ≤ γ) (hS : 0 ≤ S)
     (hSmax : S ≤ Smax) (hα : 0 ≤ α) (w x : ℂ) :
     residueLocalWeight γ S α w x ≤ (10 : ℝ) ^ (γ * Smax) := by
   have hn : 0 ≤ min (max 1 ‖x‖) (10 : ℝ) := le_min (by positivity) (by norm_num)
-  have hd : 1 ≤ (max (1 : ℝ) ‖x - w‖) ^ (γ * α) :=
-    Real.one_le_rpow (le_max_left _ _) (mul_nonneg hγ hα)
-  unfold residueLocalWeight
-  calc _ ≤ (min (max 1 ‖x‖) (10 : ℝ)) ^ (γ * S) :=
-      div_le_self (Real.rpow_nonneg hn _) hd
-    _ ≤ (10 : ℝ) ^ (γ * S) := Real.rpow_le_rpow hn (min_le_right _ _) (mul_nonneg hγ hS)
-    _ ≤ _ := Real.rpow_le_rpow_of_exponent_le (by norm_num) (mul_le_mul_of_nonneg_left hSmax hγ)
+  exact id
+    (Trans.trans
+      (Trans.trans
+        (div_le_self (Real.rpow_nonneg hn (γ * S)) (Real.one_le_rpow (le_max_left 1 ‖x - w‖) (mul_nonneg hγ hα)))
+        (Real.rpow_le_rpow hn (min_le_right (max 1 ‖x‖) 10) (mul_nonneg hγ hS)))
+      (Real.rpow_le_rpow_of_exponent_le
+        (Mathlib.Meta.NormNum.isNat_le_true (Mathlib.Meta.NormNum.isNat_ofNat ℝ Nat.cast_one)
+          (Mathlib.Meta.NormNum.isNat_ofNat ℝ (Eq.refl 10)) (Eq.refl true))
+        (mul_le_mul_of_nonneg_left hSmax hγ)))
 
 /-- Jointly smooth untruncated local density, away from zero and the other insertion. -/
 theorem residue_localDensity_contDiffAt (γ S α : ℝ) (w : ℂ) (t : ℝ × ℂ)

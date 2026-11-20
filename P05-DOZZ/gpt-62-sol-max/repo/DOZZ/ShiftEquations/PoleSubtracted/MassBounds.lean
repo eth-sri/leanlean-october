@@ -25,17 +25,23 @@ namespace DOZZ.Proofs
 
 /-! ### Elementary helpers -/
 
-private theorem one_le_norm_sub_two_aux {x : ℂ} (hx : ‖x‖ ≤ 1) : 1 ≤ ‖x - 2‖ := by
+section
+variable {x : ℂ} (hx : ‖x‖ ≤ 1)
+include hx
+
+private theorem one_le_norm_sub_two_aux : 1 ≤ ‖x - 2‖ := by
   have h := norm_sub_le x (x - 2)
   rw [sub_sub_cancel] at h
   have h2 : ‖(2 : ℂ)‖ = 2 := by simp
   linarith
 
-private theorem one_le_norm_add_two_aux {x : ℂ} (hx : ‖x‖ ≤ 1) : 1 ≤ ‖x + 2‖ := by
+private theorem one_le_norm_add_two_aux : 1 ≤ ‖x + 2‖ := by
   have h := norm_sub_le (x + 2) x
   rw [add_sub_cancel_left] at h
   have h2 : ‖(2 : ℂ)‖ = 2 := by simp
   linarith
+
+end
 
 private theorem ofReal_div_le_one_aux {t u : ℝ} (hu : 0 < u) (h : t ≤ u) :
     ENNReal.ofReal t / ENNReal.ofReal u ≤ 1 := by
@@ -68,14 +74,11 @@ private theorem cutoffTiltedMass_le_mul_total_aux {γ η a : ℝ} {c : ℝ≥0�
     (μ : Measure ℂ) (h : ∀ x ∈ cutoffRegion n, zeroTilt γ a x ≤ c) :
     cutoffTiltedMass γ η a n μ ≤
       c * poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) μ := by
-  unfold cutoffTiltedMass
-  calc ∫⁻ x in cutoffRegion n, zeroTilt γ a x * poleWeight γ η x ∂μ
-      ≤ ∫⁻ x in cutoffRegion n, c * poleWeight γ η x ∂μ :=
-        setLIntegral_mono' (measurableSet_cutoffRegion n) fun x hx => mul_le_mul' (h x hx) le_rfl
-    _ = c * ∫⁻ x in cutoffRegion n, poleWeight γ η x ∂μ :=
-        lintegral_const_mul _ (measurable_poleWeight γ η)
-    _ ≤ c * poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) μ :=
-        mul_le_mul' le_rfl (setLIntegral_poleWeight_le_aux γ η _ μ)
+  exact id
+    (Trans.trans
+      (Trans.trans (setLIntegral_mono' (measurableSet_cutoffRegion n) fun x hx => mul_le_mul' (h x hx) le_rfl)
+        (lintegral_const_mul c (measurable_poleWeight γ η)))
+      (mul_le_mul' le_rfl (setLIntegral_poleWeight_le_aux γ η (cutoffRegion n) μ)))
 
 /-- On the closed unit disk the pole weight is at most `1`. -/
 theorem poleWeight_le_one_of_norm_le_one {γ η : ℝ} (hγ : 0 < γ) (hη : 0 ≤ η)
@@ -156,12 +159,10 @@ theorem ball_le_localMass {γ η : ℝ} (hγ : 0 < γ) (hη : 0 ≤ η) (hηγ :
   rw [poleLocalMass_eq]
   have hsub : Metric.ball (2 : ℂ) (1 / 2) ⊆ poleBalls := fun x hx =>
     Or.inl (Metric.ball_subset_ball (by norm_num) hx)
-  calc (1 / 9 : ℝ≥0∞) * μ (Metric.ball 2 (1 / 2))
-      = ∫⁻ _ in Metric.ball (2 : ℂ) (1 / 2), (1 / 9 : ℝ≥0∞) ∂μ := (setLIntegral_const _ _).symm
-    _ ≤ ∫⁻ x in Metric.ball (2 : ℂ) (1 / 2), poleWeight γ η x ∂μ :=
-        setLIntegral_mono (measurable_poleWeight γ η) fun x hx =>
-          poleWeight_ge_of_mem_ball_two hγ hη hηγ hx
-    _ ≤ ∫⁻ x in poleBalls, poleWeight γ η x ∂μ := lintegral_mono_set hsub
+  exact Trans.trans
+    (Trans.trans (Eq.symm (setLIntegral_const (Metric.ball 2 (1 / 2)) (1 / 9)))
+      (setLIntegral_mono (measurable_poleWeight γ η) fun x hx => poleWeight_ge_of_mem_ball_two hγ hη hηγ hx))
+    (lintegral_mono_set hsub)
 
 /-- A nonpositive zero charge does not increase the mass. -/
 theorem cutoffTiltedMass_le_totalMass_zero {γ η a : ℝ} (hγ : 0 < γ) (ha : a ≤ 0) (n : ℕ)
@@ -179,9 +180,12 @@ theorem cutoffTiltedMass_le_exp_mul_totalMass_zero {γ η : ℝ} (a : ℝ) (hγ 
         poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) μ :=
   cutoffTiltedMass_le_mul_total_aux n μ fun _ hx => zeroTilt_le_exp_max hγ hx
 
+section
+variable {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (hηγ : η ≤ 2 / γ) (n : ℕ) (μ : Measure ℂ)
+include hγ hη hηγ
+
 /-- The regular part of the cutoff tilted mass is at most `81 e^{γ a⁺ n} μ(ℂ)`. -/
-theorem regularMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (hηγ : η ≤ 2 / γ) (n : ℕ)
-    (μ : Measure ℂ) :
+theorem regularMass_le :
     ∫⁻ x in cutoffRegion n \ poleBalls, zeroTilt γ a x * poleWeight γ η x ∂μ ≤
       81 * ENNReal.ofReal (Real.exp (γ * max a 0 * n)) * μ univ := by
   have h := setLIntegral_mul_le_aux μ
@@ -193,8 +197,7 @@ theorem regularMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (
   exact mul_le_mul' le_rfl (measure_mono (Set.subset_univ _))
 
 /-- The annular increment is at most `e^{γ a⁺ (n+1)} μ(B(0, e^{-n}))`. -/
-theorem annulusMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (hηγ : η ≤ 2 / γ) (n : ℕ)
-    (μ : Measure ℂ) :
+theorem annulusMass_le :
     ∫⁻ x in cutoffRegion (n + 1) \ cutoffRegion n, zeroTilt γ a x * poleWeight γ η x ∂μ ≤
       ENNReal.ofReal (Real.exp (γ * max a 0 * (n + 1))) *
         μ (Metric.ball 0 (Real.exp (-(n : ℝ)))) := by
@@ -217,6 +220,8 @@ theorem annulusMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (
   have hx2 : ¬ Real.exp (-(n : ℝ)) ≤ ‖x‖ := hx.2
   rw [Metric.mem_ball, dist_zero_right]
   exact not_le.mp hx2
+
+end
 
 end DOZZ.Proofs
 

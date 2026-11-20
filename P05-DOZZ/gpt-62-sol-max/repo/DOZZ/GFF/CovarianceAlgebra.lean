@@ -27,15 +27,18 @@ namespace DOZZ
 noncomputable def testFnVec (f : TestFn) : GaussianFields.Vec 2 → ℝ :=
   fun x => f (complexLinearEquivVecTwo.symm x)
 
-theorem continuous_testFnVec (f : TestFn) : Continuous (testFnVec f) := by
-  exact f.continuous.comp complexLinearEquivVecTwo.symm.continuous
+section
+variable (f : TestFn)
 
-theorem hasCompactSupport_testFnVec (f : TestFn) : HasCompactSupport (testFnVec f) := by
-  exact f.hasCompactSupport.comp_homeomorph complexLinearEquivVecTwo.symm.toHomeomorph
+theorem continuous_testFnVec : Continuous (testFnVec f) := f.continuous.comp complexLinearEquivVecTwo.symm.continuous
 
-theorem integrable_testFnVec (f : TestFn) :
+theorem hasCompactSupport_testFnVec : HasCompactSupport (testFnVec f) := f.hasCompactSupport.comp_homeomorph complexLinearEquivVecTwo.symm.toHomeomorph
+
+theorem integrable_testFnVec :
     Integrable (testFnVec f) (volume : Measure (GaussianFields.Vec 2)) :=
   (continuous_testFnVec f).integrable_of_hasCompactSupport (hasCompactSupport_testFnVec f)
+
+end
 
 /-- The total mass of the Lebesgue density defined by a DOZZ test function. -/
 noncomputable def testMass (f : TestFn) : ℝ := ∫ z : ℂ, f z
@@ -61,7 +64,7 @@ theorem abkStandardCutoff_mass_pos :
   have hzero : GaussianFields.euclideanNorm (0 : GaussianFields.Vec 2) ≤ 1 / 2 := by
     simp [GaussianFields.euclideanNorm, GaussianFields.euclideanNormSq,
       GaussianFields.euclideanDot]
-  have hζ0 : ζ 0 = 1 := ζ.eq_one_of_norm_le_half 0 hzero
+  have hζ0  := ζ.eq_one_of_norm_le_half 0 hzero
   exact integral_pos_of_integrable_nonneg_nonzero ζ.continuous
     (ζ.continuous.integrable_of_hasCompactSupport ζ.hasCompactSupport)
     ζ.nonneg (by rw [hζ0]; norm_num)
@@ -72,28 +75,18 @@ noncomputable def abkUnitMassBump : GaussianFields.Vec 2 → ℝ := fun x =>
   (∫ y : GaussianFields.Vec 2, GaussianFields.abkStandardCutoff 2 y)⁻¹ *
     GaussianFields.abkStandardCutoff 2 x
 
-theorem continuous_abkUnitMassBump : Continuous abkUnitMassBump := by
-  exact continuous_const.mul (GaussianFields.abkStandardCutoff 2).continuous
+theorem continuous_abkUnitMassBump : Continuous abkUnitMassBump := continuous_const.mul (GaussianFields.abkStandardCutoff 2).continuous
 
 theorem hasCompactSupport_abkUnitMassBump : HasCompactSupport abkUnitMassBump := by
   have hfun : abkUnitMassBump =
       (fun _ : GaussianFields.Vec 2 =>
         (∫ y : GaussianFields.Vec 2, GaussianFields.abkStandardCutoff 2 y)⁻¹) •
           (GaussianFields.abkStandardCutoff 2) := by
-    funext x
-    simp [abkUnitMassBump, smul_eq_mul]
+    rfl
   rw [hfun]
   exact (GaussianFields.abkStandardCutoff 2).hasCompactSupport.smul_left
     (f := fun _ : GaussianFields.Vec 2 =>
       (∫ y : GaussianFields.Vec 2, GaussianFields.abkStandardCutoff 2 y)⁻¹)
-
-theorem integrable_abkUnitMassBump :
-    Integrable abkUnitMassBump (volume : Measure (GaussianFields.Vec 2)) :=
-  continuous_abkUnitMassBump.integrable_of_hasCompactSupport hasCompactSupport_abkUnitMassBump
-
-theorem memLp_two_abkUnitMassBump :
-    MemLp abkUnitMassBump 2 (volume : Measure (GaussianFields.Vec 2)) :=
-  continuous_abkUnitMassBump.memLp_of_hasCompactSupport hasCompactSupport_abkUnitMassBump
 
 theorem integral_abkUnitMassBump :
     ∫ x : GaussianFields.Vec 2, abkUnitMassBump x = 1 := by
@@ -103,101 +96,39 @@ theorem integral_abkUnitMassBump :
   rw [integral_const_mul]
   exact inv_mul_cancel₀ (ne_of_gt abkStandardCutoff_mass_pos)
 
-/-- Subtracting the mass of a test function times a fixed mean-zero bump gives an ABK test. -/
-noncomputable def centeredTestFn (f : TestFn) : GaussianFields.MeanZeroTestFunction 2 := by
-  let η := abkUnitMassBump
-  have hηc : HasCompactSupport (fun x : GaussianFields.Vec 2 => testMass f * η x) := by
-    have hfun : (fun x : GaussianFields.Vec 2 => testMass f * η x) =
-        (fun _ : GaussianFields.Vec 2 => testMass f) • η := by
-      funext x
-      simp [smul_eq_mul]
-    rw [hfun]
-    exact hasCompactSupport_abkUnitMassBump.smul_left
-      (f := fun _ : GaussianFields.Vec 2 => testMass f)
-  refine
-    { toFun := fun x => testFnVec f x - testMass f * η x
-      continuous := (continuous_testFnVec f).sub (continuous_abkUnitMassBump.const_mul (testMass f))
-      hasCompactSupport := (hasCompactSupport_testFnVec f).sub hηc
-      integrable := (integrable_testFnVec f).sub
-        (integrable_abkUnitMassBump.const_mul (testMass f))
-      memLp_two :=
-        ((continuous_testFnVec f).memLp_of_hasCompactSupport (hasCompactSupport_testFnVec f)).sub
-          (memLp_two_abkUnitMassBump.const_mul (testMass f))
-      integral_eq_zero := ?_ }
-  dsimp [η]
-  rw [integral_sub (integrable_testFnVec f)
-      (integrable_abkUnitMassBump.const_mul (testMass f)),
-    integral_testFnVec, integral_const_mul, integral_abkUnitMassBump]
-  simp [testMass]
-
-
 /-- Translate the fixed probability bump to a chosen point. -/
 noncomputable def abkUnitMassBumpAt (a : GaussianFields.Vec 2) :
     GaussianFields.Vec 2 → ℝ := fun x => abkUnitMassBump (x - a)
 
-theorem continuous_abkUnitMassBumpAt (a : GaussianFields.Vec 2) :
-    Continuous (abkUnitMassBumpAt a) := by
-  exact continuous_abkUnitMassBump.comp (continuous_id.sub continuous_const)
+section
+variable (a : GaussianFields.Vec 2)
 
-theorem hasCompactSupport_abkUnitMassBumpAt (a : GaussianFields.Vec 2) :
+theorem continuous_abkUnitMassBumpAt :
+    Continuous (abkUnitMassBumpAt a) := continuous_abkUnitMassBump.comp (continuous_id.sub continuous_const)
+
+theorem hasCompactSupport_abkUnitMassBumpAt :
     HasCompactSupport (abkUnitMassBumpAt a) := by
   change HasCompactSupport (fun x : GaussianFields.Vec 2 => abkUnitMassBump (x - a))
   exact hasCompactSupport_abkUnitMassBump.comp_homeomorph (Homeomorph.subRight a)
 
-theorem integrable_abkUnitMassBumpAt (a : GaussianFields.Vec 2) :
+theorem integrable_abkUnitMassBumpAt :
     Integrable (abkUnitMassBumpAt a) (volume : Measure (GaussianFields.Vec 2)) :=
   (continuous_abkUnitMassBumpAt a).integrable_of_hasCompactSupport
     (hasCompactSupport_abkUnitMassBumpAt a)
 
-theorem memLp_two_abkUnitMassBumpAt (a : GaussianFields.Vec 2) :
+theorem memLp_two_abkUnitMassBumpAt :
     MemLp (abkUnitMassBumpAt a) 2 (volume : Measure (GaussianFields.Vec 2)) :=
   (continuous_abkUnitMassBumpAt a).memLp_of_hasCompactSupport
     (hasCompactSupport_abkUnitMassBumpAt a)
 
-theorem integral_abkUnitMassBumpAt (a : GaussianFields.Vec 2) :
+theorem integral_abkUnitMassBumpAt :
     ∫ x : GaussianFields.Vec 2, abkUnitMassBumpAt a x = 1 := by
   calc
     ∫ x : GaussianFields.Vec 2, abkUnitMassBumpAt a x =
-        ∫ x : GaussianFields.Vec 2, abkUnitMassBump x := by
-          exact integral_sub_right_eq_self abkUnitMassBump a
+        ∫ x : GaussianFields.Vec 2, abkUnitMassBump x := integral_sub_right_eq_self abkUnitMassBump a
     _ = 1 := integral_abkUnitMassBump
 
-/-- Center a compactly supported DOZZ density by a probability bump whose support is placed at
-`a`; this gives an ABK mean-zero test without changing the density near its original support. -/
-noncomputable def centeredTestFnAt (f : TestFn) (a : GaussianFields.Vec 2) :
-    GaussianFields.MeanZeroTestFunction 2 := by
-  let η := abkUnitMassBumpAt a
-  have hηc : HasCompactSupport (fun x : GaussianFields.Vec 2 => testMass f * η x) := by
-    have hfun : (fun x : GaussianFields.Vec 2 => testMass f * η x) =
-        (fun _ : GaussianFields.Vec 2 => testMass f) • η := by
-      funext x
-      simp [smul_eq_mul]
-    rw [hfun]
-    exact hasCompactSupport_abkUnitMassBumpAt a |>.smul_left
-      (f := fun _ : GaussianFields.Vec 2 => testMass f)
-  refine
-    { toFun := fun x => testFnVec f x - testMass f * η x
-      continuous := (continuous_testFnVec f).sub
-        ((continuous_abkUnitMassBumpAt a).const_mul (testMass f))
-      hasCompactSupport := (hasCompactSupport_testFnVec f).sub hηc
-      integrable := (integrable_testFnVec f).sub
-        ((integrable_abkUnitMassBumpAt a).const_mul (testMass f))
-      memLp_two :=
-        ((continuous_testFnVec f).memLp_of_hasCompactSupport
-          (hasCompactSupport_testFnVec f)).sub
-          ((memLp_two_abkUnitMassBumpAt a).const_mul (testMass f))
-      integral_eq_zero := ?_ }
-  dsimp [η]
-  rw [integral_sub (integrable_testFnVec f)
-      ((integrable_abkUnitMassBumpAt a).const_mul (testMass f)),
-    integral_testFnVec, integral_const_mul, integral_abkUnitMassBumpAt]
-  simp [testMass]
-
-theorem centeredTestFnAt_eq_testFnVec_of_bump_zero
-    (f : TestFn) (a x : GaussianFields.Vec 2)
-    (hη : abkUnitMassBumpAt a x = 0) :
-    centeredTestFnAt f a x = testFnVec f x := by
-  simp [centeredTestFnAt, hη]
+end
 
 theorem abkUnitMassBump_support_subset_unitBall :
     Function.support abkUnitMassBump ⊆
@@ -216,8 +147,7 @@ theorem abkUnitMassBumpAt_eq_zero_of_norm_le
     abkUnitMassBumpAt a x = 0 := by
   by_contra hne
   have hmem : x - a ∈ Function.support abkUnitMassBump := by
-    change abkUnitMassBump (x - a) ≠ 0
-    simpa [abkUnitMassBumpAt] using hne
+    assumption
   have hshift : GaussianFields.euclideanNorm (x - a) ≤ 1 :=
     abkUnitMassBump_support_subset_unitBall hmem
   have hreverse := GaussianFields.abs_euclideanNorm_sub_euclideanNorm_le a x
@@ -226,21 +156,6 @@ theorem abkUnitMassBumpAt_eq_zero_of_norm_le
   have ha_le := (abs_le.mp hreverse).2
   have : GaussianFields.euclideanNorm a ≤ R + 1 := by linarith
   linarith
-
-theorem exists_ball_testFnVec (f : TestFn) :
-    ∃ R : ℝ, 0 ≤ R ∧
-      Function.support (testFnVec f) ⊆
-        {x : GaussianFields.Vec 2 | GaussianFields.euclideanNorm x ≤ R} := by
-  rcases (hasCompactSupport_testFnVec f).exists_pos_le_norm with ⟨r, hr, hvanish⟩
-  refine ⟨2 * r, by positivity, ?_⟩
-  intro x hx
-  have hnorm : ‖x‖ ≤ r := by
-    by_contra hnot
-    exact hx (hvanish x (le_of_not_ge hnot))
-  calc
-    GaussianFields.euclideanNorm x ≤ (2 : ℝ) * ‖x‖ := by
-      simpa using GaussianFields.euclideanNorm_le_card_mul_norm x
-    _ ≤ 2 * r := mul_le_mul_of_nonneg_left hnorm (by norm_num)
 
 /-- The logarithmic ABK pairing integrand is integrable for compact mean-zero tests. The proof
 passes to the logarithmic kernel from the uniformly dominated centered Riesz slopes. -/
@@ -251,7 +166,7 @@ theorem integrable_abkLogCovarianceKernel_integrand
         ψ p.1 * φ p.2 * GaussianFields.abkLogCovarianceKernel p.1 p.2)
       ((volume : Measure (GaussianFields.Vec 2)).prod
         (volume : Measure (GaussianFields.Vec 2))) := by
-  let μ : Measure (GaussianFields.Vec 2 × GaussianFields.Vec 2) :=
+  let μ  :=
     (volume : Measure (GaussianFields.Vec 2)).prod (volume : Measure (GaussianFields.Vec 2))
   let α : ℕ → ℝ := fun n => ((n : ℝ) + 2)⁻¹
   let slope : ℕ → GaussianFields.Vec 2 × GaussianFields.Vec 2 → ℝ := fun n p =>
@@ -260,8 +175,7 @@ theorem integrable_abkLogCovarianceKernel_integrand
   have hden : Tendsto (fun n : ℕ => (n : ℝ) + 2) atTop atTop :=
     tendsto_atTop_add_const_right atTop 2 tendsto_natCast_atTop_atTop
   have hαzero : Tendsto α atTop (𝓝 (0 : ℝ)) := by
-    change Tendsto (fun n : ℕ => ((n : ℝ) + 2)⁻¹) atTop (𝓝 (0 : ℝ))
-    exact tendsto_inv_atTop_zero.comp hden
+    apply tendsto_inv_atTop_zero.comp <;> assumption
   have hα : Tendsto α atTop (𝓝[>] (0 : ℝ)) := by
     apply tendsto_nhdsWithin_iff.mpr
     refine ⟨hαzero, Filter.Eventually.of_forall ?_⟩
@@ -270,7 +184,6 @@ theorem integrable_abkLogCovarianceKernel_integrand
   have hαpos (n : ℕ) : 0 < α n := inv_pos.mpr (by positivity)
   have hαle (n : ℕ) : α n ≤ 1 / 2 := by
     have hden_le : (2 : ℝ) ≤ (n : ℝ) + 2 := by
-      have hn0 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
       linarith
     dsimp [α]
     calc
@@ -282,32 +195,24 @@ theorem integrable_abkLogCovarianceKernel_integrand
         (𝓝 (ψ p.1 * φ p.2 * GaussianFields.abkLogCovarianceKernel p.1 p.2)) := by
     filter_upwards [GaussianFields.ae_tendsto_abkCenteredRieszSlopeKernel_integrand
       (by norm_num : 0 < 2) ψ φ] with p hp
-    change Tendsto
-      (fun n => ψ p.1 * φ p.2 * GaussianFields.abkCenteredRieszSlopeKernel (α n) p.1 p.2)
-      atTop _
-    exact hp.comp hα
+    apply hp.comp <;> assumption
   have hterms : ∀ n : ℕ, Integrable (slope n) μ := by
     intro n
-    simpa [slope, α] using
-      GaussianFields.integrable_abkCenteredRieszSlopeKernel_integrand_of_pos_le_half
-        (by norm_num : 0 < 2) ψ φ (hαpos n) (hαle n)
+    apply GaussianFields.integrable_abkCenteredRieszSlopeKernel_integrand_of_pos_le_half <;> solve_by_elim
   rcases GaussianFields.exists_integrable_bound_abkCenteredRieszSlopeKernel_integrand
       (by norm_num : 0 < 2) ψ φ with ⟨bound, hbound_int, hbound⟩
   have hbound_seq : ∀ᶠ n : ℕ in atTop,
       ∀ᵐ p ∂μ, ‖slope n p‖ ≤ bound p := by
-    simpa [slope, α] using hbound.filter_mono hα
+    exact Eventually.of_forall fun n => hbound _ (hαpos n) (hαle n)
   have hlintegral_bound : ∀ᶠ n : ℕ in atTop,
       (∫⁻ p, ‖slope n p‖ₑ ∂μ) ≤ ∫⁻ p, ‖bound p‖ₑ ∂μ := by
     filter_upwards [hbound_seq] with n hn
     apply lintegral_mono_ae
     filter_upwards [hn] with p hp
-    have hnonneg : 0 ≤ bound p := le_trans (norm_nonneg _) hp
+    have hnonneg  := le_trans (norm_nonneg _) hp
     simpa only [Real.enorm_eq_ofReal hnonneg, ofReal_norm] using
       ENNReal.ofReal_le_ofReal hp
-  have hlimsup :
-      limsup (fun n : ℕ => ∫⁻ p, ‖slope n p‖ₑ ∂μ) atTop ≤
-        ∫⁻ p, ‖bound p‖ₑ ∂μ := by
-    exact limsup_le_of_le (a := ∫⁻ p, ‖bound p‖ₑ ∂μ) (h := hlintegral_bound)
+  have hlimsup := limsup_le_of_le (a := ∫⁻ p, ‖bound p‖ₑ ∂μ) (h := hlintegral_bound)
   have hliminf_finite :
       liminf (fun n : ℕ => ∫⁻ p, ‖slope n p‖ₑ ∂μ) atTop < (⊤ : ℝ≥0∞) := by
     have hlim :
@@ -329,88 +234,121 @@ theorem integrable_abkLogCovarianceKernel_integrand
         filter_upwards [hlimnorm] with p hp
         exact hp.symm
       _ ≤ _ := lintegral_liminf_le' (fun n => (hterms n).aemeasurable.enorm)
-  have htarget_meas : AEStronglyMeasurable
-      (fun p : GaussianFields.Vec 2 × GaussianFields.Vec 2 =>
-        ψ p.1 * φ p.2 * GaussianFields.abkLogCovarianceKernel p.1 p.2) μ :=
-    aestronglyMeasurable_of_tendsto_ae _ (fun n => (hterms n).aestronglyMeasurable) hconv
-  have htarget_finite :
-      (∫⁻ p, ‖ψ p.1 * φ p.2 * GaussianFields.abkLogCovarianceKernel p.1 p.2‖ₑ ∂μ) <
-        (⊤ : ℝ≥0∞) := lt_of_le_of_lt hfatou hliminf_finite
+  have htarget_meas := aestronglyMeasurable_of_tendsto_ae _ (fun n => (hterms n).aestronglyMeasurable) hconv
+  have htarget_finite := lt_of_le_of_lt hfatou hliminf_finite
   exact ⟨htarget_meas, (hasFiniteIntegral_iff_enorm).2 htarget_finite⟩
 
-/-- The ABK logarithmic kernel is integrable against any two compactly supported DOZZ test
-densities. Each density is centered by a unit-mass bump translated outside its support, so the
-mean-zero integrability theorem applies without altering the product on the support of the
-original pair. -/
-theorem integrable_testFnVec_logKernel_pair (f g : TestFn) :
+/-- A compactly supported function on `Vec 2` is supported in some Euclidean ball. -/
+theorem exists_ball_of_hasCompactSupport {u : GaussianFields.Vec 2 → ℝ}
+    (hu : HasCompactSupport u) :
+    ∃ R : ℝ, 0 ≤ R ∧
+      Function.support u ⊆ {x : GaussianFields.Vec 2 | GaussianFields.euclideanNorm x ≤ R} := by
+  rcases hu.exists_pos_le_norm with ⟨r, hr, hvanish⟩
+  refine ⟨2 * r, by positivity, ?_⟩
+  intro x hx
+  have hnorm : ‖x‖ ≤ r := by
+    by_contra hnot
+    exact hx (hvanish x (le_of_not_ge hnot))
+  calc
+    GaussianFields.euclideanNorm x ≤ (2 : ℝ) * ‖x‖ := by
+      simpa using GaussianFields.euclideanNorm_le_card_mul_norm x
+    _ ≤ 2 * r := mul_le_mul_of_nonneg_left hnorm (by norm_num)
+
+/-- Mean-zero centering of a continuous compactly supported function by a translated unit-mass
+bump. -/
+noncomputable def centeredCompactFunctionAt (u : GaussianFields.Vec 2 → ℝ)
+    (hu : Continuous u) (huc : HasCompactSupport u) (a : GaussianFields.Vec 2) :
+    GaussianFields.MeanZeroTestFunction 2 := by
+  let m  := ∫ x : GaussianFields.Vec 2, u x
+  let η := abkUnitMassBumpAt a
+  have huI : Integrable u (volume : Measure (GaussianFields.Vec 2)) :=
+    hu.integrable_of_hasCompactSupport huc
+  have hηc : HasCompactSupport (fun x : GaussianFields.Vec 2 => m * η x) := by
+    change HasCompactSupport ((fun _ : GaussianFields.Vec 2 => m) • η)
+    exact (hasCompactSupport_abkUnitMassBumpAt a).smul_left
+      (f := fun _ : GaussianFields.Vec 2 => m)
+  refine
+    { toFun := fun x => u x - m * η x
+      continuous := hu.sub ((continuous_abkUnitMassBumpAt a).const_mul m)
+      hasCompactSupport := huc.sub hηc
+      integrable := huI.sub ((integrable_abkUnitMassBumpAt a).const_mul m)
+      memLp_two :=
+        (hu.memLp_of_hasCompactSupport huc).sub
+          ((memLp_two_abkUnitMassBumpAt a).const_mul m)
+      integral_eq_zero := ?_ }
+  dsimp [m, η]
+  rw [integral_sub huI ((integrable_abkUnitMassBumpAt a).const_mul _), integral_const_mul,
+    integral_abkUnitMassBumpAt]
+  simp
+
+/-- On a region disjoint from the translated centering bump, centered data agrees with the
+original compactly supported function. -/
+theorem centeredCompactFunctionAt_eq_of_bump_zero
+    (u : GaussianFields.Vec 2 → ℝ) (hu : Continuous u) (huc : HasCompactSupport u)
+    (a x : GaussianFields.Vec 2) (hη : abkUnitMassBumpAt a x = 0) :
+    centeredCompactFunctionAt u hu huc a x = u x := by
+  simp [centeredCompactFunctionAt, hη]
+
+/-- The logarithmic kernel is integrable against any two continuous compactly supported
+densities. Centering each one outside its support reduces this to the ABK mean-zero theorem. -/
+theorem integrable_compactLogKernelPair (u v : GaussianFields.Vec 2 → ℝ)
+    (hu : Continuous u) (hv : Continuous v)
+    (huc : HasCompactSupport u) (hvc : HasCompactSupport v) :
     Integrable
       (fun p : GaussianFields.Vec 2 × GaussianFields.Vec 2 =>
-        testFnVec f p.1 * testFnVec g p.2 *
-          GaussianFields.abkLogCovarianceKernel p.1 p.2)
+        u p.1 * v p.2 * GaussianFields.abkLogCovarianceKernel p.1 p.2)
       ((volume : Measure (GaussianFields.Vec 2)).prod
         (volume : Measure (GaussianFields.Vec 2))) := by
-  let μ : Measure (GaussianFields.Vec 2 × GaussianFields.Vec 2) :=
-    (volume : Measure (GaussianFields.Vec 2)).prod
-      (volume : Measure (GaussianFields.Vec 2))
-  rcases exists_ball_testFnVec f with ⟨Rf, hRf, hfball⟩
-  rcases exists_ball_testFnVec g with ⟨Rg, hRg, hgball⟩
-  let R := max Rf Rg
-  have hR : 0 ≤ R := le_max_of_le_left hRf
-  have hRfR : Rf ≤ R := le_max_left _ _
-  have hRgR : Rg ≤ R := le_max_right _ _
-  let a : GaussianFields.Vec 2 := GaussianFields.abkRadialPoint 2 (R + 2)
+  rcases exists_ball_of_hasCompactSupport huc with ⟨Ru, hRu, huball⟩
+  rcases exists_ball_of_hasCompactSupport hvc with ⟨Rv, hRv, hvball⟩
+  let R := max Ru Rv
+  have hR : 0 ≤ R := le_max_of_le_left hRu
+  have hRuR : Ru ≤ R := le_max_left _ _
+  have hRvR : Rv ≤ R := le_max_right _ _
+  let a  := GaussianFields.abkRadialPoint 2 (R + 2)
   have ha_norm : GaussianFields.euclideanNorm a = R + 2 := by
     rw [GaussianFields.euclideanNorm_abkRadialPoint (by norm_num : 0 < 2)]
     exact abs_of_nonneg (by linarith)
   have ha : R + 1 < GaussianFields.euclideanNorm a := by
     rw [ha_norm]
     linarith
-  let ψ := centeredTestFnAt f a
-  let φ := centeredTestFnAt g a
+  let ψ := centeredCompactFunctionAt u hu huc a
+  let φ := centeredCompactFunctionAt v hv hvc a
   have hψ := integrable_abkLogCovarianceKernel_integrand ψ φ
   let S : Set (GaussianFields.Vec 2 × GaussianFields.Vec 2) :=
-    {p | testFnVec f p.1 ≠ 0 ∧ testFnVec g p.2 ≠ 0}
-  have hSf : MeasurableSet {x : GaussianFields.Vec 2 | testFnVec f x ≠ 0} :=
-    (MeasurableSet.singleton (0 : ℝ)).compl.preimage
-      (continuous_testFnVec f).measurable
-  have hSg : MeasurableSet {x : GaussianFields.Vec 2 | testFnVec g x ≠ 0} :=
-    (MeasurableSet.singleton (0 : ℝ)).compl.preimage
-      (continuous_testFnVec g).measurable
+    {p | u p.1 ≠ 0 ∧ v p.2 ≠ 0}
+  have huS  :=
+    (MeasurableSet.singleton (0 : ℝ)).compl.preimage hu.measurable
+  have hvS  :=
+    (MeasurableSet.singleton (0 : ℝ)).compl.preimage hv.measurable
   have hS : MeasurableSet S := by
     change MeasurableSet
-      ({x : GaussianFields.Vec 2 | testFnVec f x ≠ 0} ×ˢ
-        {x : GaussianFields.Vec 2 | testFnVec g x ≠ 0})
-    exact hSf.prod hSg
-  have hψeq {x : GaussianFields.Vec 2} (hx : testFnVec f x ≠ 0) :
-      ψ x = testFnVec f x := by
-    have hxmem : x ∈ Function.support (testFnVec f) := by
-      simpa [Function.mem_support] using hx
-    have hxR : GaussianFields.euclideanNorm x ≤ R := (hfball hxmem).trans hRfR
+      ({x : GaussianFields.Vec 2 | u x ≠ 0} ×ˢ {x : GaussianFields.Vec 2 | v x ≠ 0})
+    exact huS.prod hvS
+  have hψeq {x : GaussianFields.Vec 2} (hx : u x ≠ 0) : ψ x = u x := by
+    have hxmem : x ∈ Function.support u := by assumption
+    have hxR  := (huball hxmem).trans hRuR
     dsimp [ψ]
-    exact centeredTestFnAt_eq_testFnVec_of_bump_zero f a x
+    exact centeredCompactFunctionAt_eq_of_bump_zero u hu huc a x
       (abkUnitMassBumpAt_eq_zero_of_norm_le x a hxR ha)
-  have hφeq {y : GaussianFields.Vec 2} (hy : testFnVec g y ≠ 0) :
-      φ y = testFnVec g y := by
-    have hymem : y ∈ Function.support (testFnVec g) := by
-      simpa [Function.mem_support] using hy
-    have hyR : GaussianFields.euclideanNorm y ≤ R := (hgball hymem).trans hRgR
+  have hφeq {y : GaussianFields.Vec 2} (hy : v y ≠ 0) : φ y = v y := by
+    have hymem : y ∈ Function.support v := by assumption
+    have hyR  := (hvball hymem).trans hRvR
     dsimp [φ]
-    exact centeredTestFnAt_eq_testFnVec_of_bump_zero g a y
+    exact centeredCompactFunctionAt_eq_of_bump_zero v hv hvc a y
       (abkUnitMassBumpAt_eq_zero_of_norm_le y a hyR ha)
   have heq :
       (fun p : GaussianFields.Vec 2 × GaussianFields.Vec 2 =>
-        testFnVec f p.1 * testFnVec g p.2 *
-          GaussianFields.abkLogCovarianceKernel p.1 p.2) =
-      S.indicator (fun p =>
-        ψ p.1 * φ p.2 * GaussianFields.abkLogCovarianceKernel p.1 p.2) := by
+        u p.1 * v p.2 * GaussianFields.abkLogCovarianceKernel p.1 p.2) =
+      S.indicator (fun p => ψ p.1 * φ p.2 * GaussianFields.abkLogCovarianceKernel p.1 p.2) := by
     funext p
-    by_cases hfx : testFnVec f p.1 ≠ 0
-    · by_cases hgx : testFnVec g p.2 ≠ 0
-      · simp [S, hfx, hgx, hψeq hfx, hφeq hgx]
-      · have hg0 : testFnVec g p.2 = 0 := by simpa using hgx
-        simp [S, hfx, hg0]
-    · have hf0 : testFnVec f p.1 = 0 := by simpa using hfx
-      simp [S, hf0]
+    by_cases hux : u p.1 ≠ 0
+    · by_cases hvx : v p.2 ≠ 0
+      · simp [S, hux, hvx, hψeq hux, hφeq hvx]
+      · have hv0 : v p.2 = 0 := by simpa using hvx
+        simp [S, hux, hv0]
+    · have hu0 : u p.1 = 0 := by simpa using hux
+      simp [S, hu0]
   rw [heq]
   exact hψ.indicator hS
 
@@ -480,7 +418,7 @@ noncomputable def logNormPlusVec (x : GaussianFields.Vec 2) : ℝ :=
 theorem continuous_logNormPlusVec : Continuous logNormPlusVec := by
   apply (continuous_const.max GaussianFields.continuous_euclideanNorm).log
   intro x
-  exact ne_of_gt (lt_of_lt_of_le (by norm_num) (le_max_left _ _))
+  positivity
 
 /-- Integrability of a test density times the pinning potential. -/
 theorem integrable_testFnVec_mul_logNormPlus (f : TestFn) :
@@ -501,17 +439,21 @@ noncomputable def testFnLogPairing (f g : TestFn) : ℝ :=
 noncomputable def testFnPotential (f : TestFn) : ℝ :=
   ∫ x : GaussianFields.Vec 2, testFnVec f x * logNormPlusVec x
 
+section
+variable (f g : TestFn)
+
 /-- Integrability of the full pinned covariance kernel against compact test densities. -/
-theorem integrable_gffKernelVec_pair (f g : TestFn) :
+theorem integrable_gffKernelVec_pair :
     Integrable
       (fun p : GaussianFields.Vec 2 × GaussianFields.Vec 2 =>
         testFnVec f p.1 * gffKernelVec p.1 p.2 * testFnVec g p.2)
       ((volume : Measure (GaussianFields.Vec 2)).prod
         (volume : Measure (GaussianFields.Vec 2))) := by
-  let μ : Measure (GaussianFields.Vec 2 × GaussianFields.Vec 2) :=
+  let μ  :=
     (volume : Measure (GaussianFields.Vec 2)).prod
       (volume : Measure (GaussianFields.Vec 2))
-  have hlog := integrable_testFnVec_logKernel_pair f g
+  have hlog := integrable_compactLogKernelPair _ _ (continuous_testFnVec f) (continuous_testFnVec g)
+    (hasCompactSupport_testFnVec f) (hasCompactSupport_testFnVec g)
   have hpotx := (integrable_testFnVec_mul_logNormPlus f).mul_prod
     (integrable_testFnVec g)
   have hpoty := (integrable_testFnVec f).mul_prod
@@ -539,17 +481,18 @@ theorem integrable_gffKernelVec_pair (f g : TestFn) :
 
 /-- The `Vec 2` integral of the pinned kernel expands into its logarithmic ABK term and the two
 positive potential terms, with all three product integrands integrable. -/
-theorem integral_gffKernelVec_pair (f g : TestFn) :
+theorem integral_gffKernelVec_pair :
     (∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2,
       testFnVec f p.1 * gffKernelVec p.1 p.2 * testFnVec g p.2
         ∂((volume : Measure (GaussianFields.Vec 2)).prod
           (volume : Measure (GaussianFields.Vec 2)))) =
       testFnLogPairing f g + testFnPotential f * testMass g +
         testMass f * testFnPotential g := by
-  let μ : Measure (GaussianFields.Vec 2 × GaussianFields.Vec 2) :=
+  let μ  :=
     (volume : Measure (GaussianFields.Vec 2)).prod
       (volume : Measure (GaussianFields.Vec 2))
-  have hlog := integrable_testFnVec_logKernel_pair f g
+  have hlog := integrable_compactLogKernelPair _ _ (continuous_testFnVec f) (continuous_testFnVec g)
+    (hasCompactSupport_testFnVec f) (hasCompactSupport_testFnVec g)
   have hpotx := (integrable_testFnVec_mul_logNormPlus f).mul_prod
     (integrable_testFnVec g)
   have hpoty := (integrable_testFnVec f).mul_prod
@@ -562,13 +505,6 @@ theorem integral_gffKernelVec_pair (f g : TestFn) :
       (fun p : GaussianFields.Vec 2 × GaussianFields.Vec 2 =>
         testFnVec f p.1 * (testFnVec g p.2 * logNormPlusVec p.2)) μ := by
     simpa [μ] using hpoty
-  have hsum : Integrable
-      (fun p : GaussianFields.Vec 2 × GaussianFields.Vec 2 =>
-        testFnVec f p.1 * testFnVec g p.2 *
-            GaussianFields.abkLogCovarianceKernel p.1 p.2 +
-          (testFnVec f p.1 * logNormPlusVec p.1) * testFnVec g p.2 +
-          testFnVec f p.1 * (testFnVec g p.2 * logNormPlusVec p.2)) μ :=
-    (hlog.add hpotx').add hpoty'
   have hsplit :
       (∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2,
         testFnVec f p.1 * gffKernelVec p.1 p.2 * testFnVec g p.2 ∂μ) =
@@ -615,12 +551,9 @@ theorem integral_gffKernelVec_pair (f g : TestFn) :
             (testFnVec f p.1 * testFnVec g p.2 *
                 GaussianFields.abkLogCovarianceKernel p.1 p.2 +
               (testFnVec f p.1 * logNormPlusVec p.1) * testFnVec g p.2) +
-                testFnVec f p.1 * (testFnVec g p.2 * logNormPlusVec p.2) ∂μ := by
-          exact (integral_add (hlog.add hpotx') hpoty').symm
+                testFnVec f p.1 * (testFnVec g p.2 * logNormPlusVec p.2) ∂μ := (integral_add (hlog.add hpotx') hpoty').symm
       _ = _ := by
-          apply integral_congr_ae
-          filter_upwards with p
-          ring
+          rfl
   have hpotx_int :
       (∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2,
         (testFnVec f p.1 * logNormPlusVec p.1) * testFnVec g p.2 ∂μ) =
@@ -672,11 +605,11 @@ theorem integral_gffKernelVec_pair (f g : TestFn) :
 /-- The DOZZ covariance is the explicit log-energy expansion of the equator projection
 `f dx - m(f) ν`. The two positive potential terms come from the cross energies, and the circle
 self-energy term vanishes by the unit-circle identities proved in `Potential`. -/
-theorem gffCov_eq_equatorLogEnergy (f g : TestFn) :
+theorem gffCov_eq_equatorLogEnergy :
     gffCov f g = testFnLogPairing f g + testFnPotential f * testMass g +
       testMass f * testFnPotential g := by
-  let μc : Measure (ℂ × ℂ) := (volume : Measure ℂ).prod (volume : Measure ℂ)
-  let μv : Measure (GaussianFields.Vec 2 × GaussianFields.Vec 2) :=
+  let μc  := (volume : Measure ℂ).prod (volume : Measure ℂ)
+  let μv  :=
     (volume : Measure (GaussianFields.Vec 2)).prod
       (volume : Measure (GaussianFields.Vec 2))
   let Fv : GaussianFields.Vec 2 × GaussianFields.Vec 2 → ℝ := fun p =>
@@ -713,6 +646,8 @@ theorem gffCov_eq_equatorLogEnergy (f g : TestFn) :
           testMass f * testFnPotential g := by
       simpa [Fv, μv] using integral_gffKernelVec_pair f g
 
+end
+
 /-- The ABK logarithmic covariance pairing is nonnegative on its diagonal, as it is the
 covariance of the canonical L² Gaussian field. -/
 theorem abkLogCovariancePairing_self_nonneg
@@ -721,7 +656,7 @@ theorem abkLogCovariancePairing_self_nonneg
   let P := GaussianFields.scaleSpaceWhiteNoiseMeasure 2
   let X := GaussianFields.abkLogCorrelatedFieldL2Canonical
     (by norm_num : 0 < 2) (GaussianFields.abkStandardCutoff 2) ψ
-  have hXa : AEMeasurable (fun ω => X ω) P := (Lp.aestronglyMeasurable X).aemeasurable
+  have hXa  := (Lp.aestronglyMeasurable X).aemeasurable
   have hcov : 0 ≤ cov[X, X; P] := by
     rw [covariance_self hXa]
     exact variance_nonneg X P

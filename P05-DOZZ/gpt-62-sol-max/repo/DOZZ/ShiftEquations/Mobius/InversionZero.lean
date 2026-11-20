@@ -25,19 +25,25 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {y : ℂ} (hy : y ≠ 0)
+include hy
+
 /-- The background `|y|_+` under inversion, away from the origin. -/
-private theorem inversionZero_normPlus_inv {y : ℂ} (hy : y ≠ 0) :
+private theorem inversionZero_normPlus_inv :
     normPlus y⁻¹ = normPlus y / ‖y‖ := by
   have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy
   unfold normPlus
   rw [norm_inv, ← max_div_div_right hyn.le, div_self hyn.ne', one_div, max_comm]
 
 /-- The ratio at the root `0` becomes the background `|y|_+`. -/
-private theorem inversionZero_origin_ratio {y : ℂ} (hy : y ≠ 0) :
+private theorem inversionZero_origin_ratio :
     normPlus y⁻¹ / ‖y⁻¹ - 0‖ = normPlus y := by
   have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy
   rw [inversionZero_normPlus_inv hy, sub_zero, norm_inv]
   field_simp
+
+end
 
 /-- The ratio at a nonzero root `w` becomes the ratio at the root `w⁻¹`, divided by `|w|`. -/
 private theorem inversionZero_root_ratio {y w : ℂ} (hy : y ≠ 0) (hw : w ≠ 0) (hyw : y ≠ w⁻¹) :
@@ -84,9 +90,12 @@ theorem coulombWeight_inv_cons {N : ℕ} (γ β₀ βinf : ℝ) (α : Fin N → 
   rw [hprod, inversionZero_origin_ratio hy, inversionZero_normPlus_inv hy, sub_zero]
   ring
 
+section
+variable {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (hz : ∀ k, z k ≠ 0)
+include N hz
+
 /-- The constant of the inversion identity is nonzero. -/
-private theorem inversionZero_const_ne_zero {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (hz : ∀ k, z k ≠ 0) :
+private theorem inversionZero_const_ne_zero :
     (∏ k, ENNReal.rpow (ENNReal.ofReal ‖z k‖) (-(γ * α k))) ≠ 0 := by
   rw [Finset.prod_ne_zero_iff]
   intro k _
@@ -94,11 +103,12 @@ private theorem inversionZero_const_ne_zero {N : ℕ} (γ : ℝ) (α : Fin N →
     ENNReal.ofReal_ne_top).ne'
 
 /-- The constant of the inversion identity is finite. -/
-private theorem inversionZero_const_ne_top {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (hz : ∀ k, z k ≠ 0) :
+private theorem inversionZero_const_ne_top :
     (∏ k, ENNReal.rpow (ENNReal.ofReal ‖z k‖) (-(γ * α k))) ≠ ⊤ :=
   ENNReal.prod_ne_top fun k _ => ENNReal.rpow_ne_top_of_ne_zero
     (ENNReal.ofReal_pos.mpr (norm_pos_iff.mpr (hz k))).ne' ENNReal.ofReal_ne_top
+
+end
 
 /-- The inversion identity integrates against a measure without atoms at `0` and at the inverted
 roots. -/
@@ -139,9 +149,9 @@ theorem coulombMass_inv_moment_cons {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   have hlaw := equatorGFF_GMC_inversion_law P X hX γ hγ hγ2 M hM _ hH
   -- almost surely no atom at the origin or at any inverted root
   have hatoms : ∀ᵐ ω ∂P, M ω {0} = 0 ∧ ∀ k, M ω {(z k)⁻¹} = 0 := by
-    have h0 := gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0
+    have h0 := gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0
     have hk : ∀ᵐ ω ∂P, ∀ k, M ω {(z k)⁻¹} = 0 :=
-      ae_all_iff.2 fun k => gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM (z k)⁻¹
+      ae_all_iff.2 fun k => gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z k)⁻¹
     filter_upwards [h0, hk] with ω h1 h2 using ⟨h1, h2⟩
   calc
     ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) (Fin.cons β₀ α : Fin (N + 1) → ℝ)

@@ -63,8 +63,7 @@ theorem localized_insertion_comparison_data
       (ENNReal.ofReal ‖y-z‖)^(-γ*α)) := by fun_prop
     have h := (Measure.measurable_lintegral hk).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM)
-    change AEMeasurable (fun ω => ∫⁻ y, ENNReal.ofReal (χ (y-z)*F y)*(ENNReal.ofReal ‖y-z‖)^(-γ*α) ∂M ω) P
-    simpa only [Function.comp_def] using h
+    simpa
   have hAm : AEMeasurable (originalAnnular M F z γ α (ρ/4)) P := by
     have hk : Measurable (fun y : ℂ => ENNReal.ofReal (F y)*(ENNReal.ofReal ‖y-z‖)^(-γ*α)) := by fun_prop
     have hd : MeasurableSet (Metric.ball z 1 \ Metric.ball z (ρ/4)) :=
@@ -84,8 +83,7 @@ theorem localized_insertion_comparison_data
         ∫⁻ x, ENNReal.ofReal (χ x*copiedMultiplier z γ (Xc q.1 z 0) (Xc q.2 z 0) F x)*
           (ENNReal.ofReal ‖x‖)^(-γ*α) ∂N q.1)
     simpa only [neg_mul] using hl
-  · intro ω
-    exact original_localized_mass_comparison M z γ α (ρ/4) ρ hρ1 F hFm χ hχ hχzero hone ω
+  · apply original_localized_mass_comparison <;> assumption
   · intro q
     have h := prefactored_copied_localization_comparison (N q.1) z
       (by linarith only [hz] : 0 < ‖z‖) γ α (Xc q.1 z 0) (Xc q.2 z 0) (ρ/4) ρ

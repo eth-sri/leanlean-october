@@ -281,8 +281,12 @@ theorem bpz_wirt_kern_alg (D : ℂ) (k₁ k₂ : ℝ) :
       D * (((k₁ : ℂ) - Complex.I * (k₂ : ℂ)) / 2) := by
   apply Complex.ext <;> simp <;> ring
 
+section
+variable {z x y : ℂ} (hxy : x ≠ y)
+include hxy
+
 /-- The real kernels of `Re g`, `Im g` combine into the difference quotient of `g`. -/
-theorem bpz_g_kern_combination {z x y : ℂ} (hxy : x ≠ y) :
+theorem bpz_g_kern_combination :
     (((((bpzGfun z x).re - (bpzGfun z y).re) * bpzKern 1 (x - y) : ℝ) : ℂ) +
         Complex.I * (((bpzGfun z x).im - (bpzGfun z y).im) * bpzKern 1 (x - y) : ℝ) -
         Complex.I * (((bpzGfun z x).re - (bpzGfun z y).re) * bpzKern Complex.I (x - y) : ℝ) +
@@ -293,7 +297,7 @@ theorem bpz_g_kern_combination {z x y : ℂ} (hxy : x ≠ y) :
   ring
 
 /-- The difference quotient of `g`. -/
-theorem bpz_g_diff_quot {z x y : ℂ} (hxy : x ≠ y) (hx : x ≠ z) (hy : y ≠ z) :
+theorem bpz_g_diff_quot (hx : x ≠ z) (hy : y ≠ z) :
     (bpzGfun z x - bpzGfun z y) / (x - y) = -1 + z * (z - 1) / ((z - x) * (z - y)) := by
   have h1 : x - y ≠ 0 := sub_ne_zero.mpr hxy
   have h2 : z - x ≠ 0 := sub_ne_zero.mpr hx.symm
@@ -301,3 +305,5 @@ theorem bpz_g_diff_quot {z x y : ℂ} (hxy : x ≠ y) (hx : x ≠ z) (hy : y ≠
   unfold bpzGfun
   field_simp
   ring
+
+end

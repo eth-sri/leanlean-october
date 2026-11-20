@@ -36,19 +36,20 @@ noncomputable def crossB3 (γ : ℝ) (a' e a : ℂ) : ℂ :=
 /-- The Gauss parameter `C` of the γ/2 crossing. -/
 noncomputable def crossC3 (γ : ℝ) (a' : ℂ) : ℂ := 1 - (γ / 2 : ℂ) * (Q γ - a')
 
+/-- The two crossing multipliers differ only in their factor at `B`. -/
+noncomputable def crossingMultiplier3With (γ : ℝ) (a' e a b : ℂ) : ℂ :=
+  -(4 * Real.pi / γ ^ 2 : ℂ) * Complex.Gamma (crossA3 γ a' e a + 1) *
+    (Complex.Gamma (1 - crossA3 γ a' e a))⁻¹ * b * (lFun (crossC3 γ a'))⁻¹ *
+    (lFun (-(γ : ℂ) ^ 2 / 4) * lFun ((γ : ℂ) * e / 2))⁻¹
+
 /-- The analytic γ/2-crossing multiplier. -/
 noncomputable def crossingMultiplier3 (γ : ℝ) (a' e a : ℂ) : ℂ :=
-  -(4 * Real.pi / γ ^ 2 : ℂ) * Complex.Gamma (crossA3 γ a' e a + 1) *
-    (Complex.Gamma (1 - crossA3 γ a' e a))⁻¹ * lFun (crossB3 γ a' e a) *
-    (lFun (crossC3 γ a'))⁻¹ * (lFun (-(γ : ℂ) ^ 2 / 4) * lFun ((γ : ℂ) * e / 2))⁻¹
+  crossingMultiplier3With γ a' e a (lFun (crossB3 γ a' e a))
 
 /-- The regularized multiplier `(4/γ) B T`, holomorphic across `B = 0`. -/
 noncomputable def crossingMultiplier3Reg (γ : ℝ) (a' e a : ℂ) : ℂ :=
-  -(4 * Real.pi / γ ^ 2 : ℂ) * Complex.Gamma (crossA3 γ a' e a + 1) *
-    (Complex.Gamma (1 - crossA3 γ a' e a))⁻¹ *
-    (4 / γ * (Complex.Gamma (crossB3 γ a' e a + 1) *
-      (Complex.Gamma (1 - crossB3 γ a' e a))⁻¹)) *
-    (lFun (crossC3 γ a'))⁻¹ * (lFun (-(γ : ℂ) ^ 2 / 4) * lFun ((γ : ℂ) * e / 2))⁻¹
+  crossingMultiplier3With γ a' e a
+    (4 / γ * (Complex.Gamma (crossB3 γ a' e a + 1) * (Complex.Gamma (1 - crossB3 γ a' e a))⁻¹))
 
 /-- The real closed form of the analytic multiplier. -/
 noncomputable def crossingMultiplier3Real (γ α' ε α : ℝ) : ℝ :=
@@ -117,7 +118,7 @@ theorem crossC3_ofReal (γ α' : ℝ) : crossC3 γ α' = ((1 - γ / 2 * (Q γ - 
 /-- **The analytic multiplier at real charges is the real closed form.** -/
 theorem crossingMultiplier3_ofReal {γ : ℝ} (hγ : 0 < γ) (α' ε α : ℝ) :
     crossingMultiplier3 γ α' ε α = (crossingMultiplier3Real γ α' ε α : ℂ) := by
-  unfold crossingMultiplier3 crossingMultiplier3Real
+  unfold crossingMultiplier3 crossingMultiplier3With crossingMultiplier3Real
   rw [crossA3_ofReal hγ, crossB3_ofReal, crossC3_ofReal,
     show (-(γ : ℂ) ^ 2 / 4) = ((-(γ ^ 2) / 4 : ℝ) : ℂ) by push_cast; ring,
     show ((γ : ℂ) * ε / 2) = ((γ * ε / 2 : ℝ) : ℂ) by push_cast; ring,
@@ -130,119 +131,79 @@ theorem crossingMultiplier3_ofReal {γ : ℝ} (hγ : 0 < γ) (α' ε α : ℝ) :
   push_cast
   ring
 
-/-- **On the crossing region the unit multiplier is the analytic one.** -/
-theorem gammaHalfUnitCrossingMultiplier_eq_three {γ μ α' ε α : ℝ} (hγ : 0 < γ) (hμ : 0 < μ)
-    (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ) (hx : 0 < (α + α' + ε - γ / 2 - 2 * Q γ) / γ) :
-    (gammaHalfUnitCrossingMultiplier γ μ α' ε α : ℂ) = crossingMultiplier3 γ α' ε α := by
-  rw [crossingMultiplier3_ofReal hγ, gammaHalfUnitCrossingMultiplier_real hγ hμ hε₁ hε₂ hx]
-
-/-- `l(w) = Γ(w) Γ(1-w)⁻¹`. -/
-theorem lFun_eq_mul_inv (w : ℂ) : lFun w = Complex.Gamma w * (Complex.Gamma (1 - w))⁻¹ := by
-  unfold lFun
-  rw [div_eq_mul_inv]
-
-/-- The analytic multiplier as a product of Gamma factors. -/
-theorem crossingMultiplier3_eq (γ : ℝ) (a' e a : ℂ) :
-    crossingMultiplier3 γ a' e a =
-      -(4 * Real.pi / γ ^ 2 : ℂ) * Complex.Gamma (crossA3 γ a' e a + 1) *
-        (Complex.Gamma (1 - crossA3 γ a' e a))⁻¹ *
-        (Complex.Gamma (crossB3 γ a' e a) * (Complex.Gamma (1 - crossB3 γ a' e a))⁻¹) *
-        (Complex.Gamma (1 - crossC3 γ a') * (Complex.Gamma (crossC3 γ a'))⁻¹) *
-        ((lFun (-(γ : ℂ) ^ 2 / 4))⁻¹ *
-          (Complex.Gamma (1 - (γ : ℂ) * e / 2) * (Complex.Gamma ((γ : ℂ) * e / 2))⁻¹)) := by
-  unfold crossingMultiplier3
-  rw [lFun_eq_mul_inv (crossB3 γ a' e a), lFun_inv, mul_inv, lFun_inv ((γ : ℂ) * e / 2)]
-
-/-- The regularized multiplier as a product of Gamma factors. -/
-theorem crossingMultiplier3Reg_eq (γ : ℝ) (a' e a : ℂ) :
-    crossingMultiplier3Reg γ a' e a =
-      -(4 * Real.pi / γ ^ 2 : ℂ) * Complex.Gamma (crossA3 γ a' e a + 1) *
-        (Complex.Gamma (1 - crossA3 γ a' e a))⁻¹ *
-        (4 / γ * (Complex.Gamma (crossB3 γ a' e a + 1) *
-          (Complex.Gamma (1 - crossB3 γ a' e a))⁻¹)) *
-        (Complex.Gamma (1 - crossC3 γ a') * (Complex.Gamma (crossC3 γ a'))⁻¹) *
-        ((lFun (-(γ : ℂ) ^ 2 / 4))⁻¹ *
-          (Complex.Gamma (1 - (γ : ℂ) * e / 2) * (Complex.Gamma ((γ : ℂ) * e / 2))⁻¹)) := by
-  unfold crossingMultiplier3Reg
-  rw [lFun_inv, mul_inv, lFun_inv ((γ : ℂ) * e / 2)]
-
 /-- Off `B = 0` the regularized multiplier is `(4/γ) B T`. -/
 theorem crossingMultiplier3Reg_eq_mul {γ : ℝ} {a' e a : ℂ} (hB : crossB3 γ a' e a ≠ 0) :
     crossingMultiplier3Reg γ a' e a = 4 / γ * crossB3 γ a' e a * crossingMultiplier3 γ a' e a := by
-  rw [crossingMultiplier3Reg_eq, crossingMultiplier3_eq, Complex.Gamma_add_one _ hB]
+  unfold crossingMultiplier3Reg crossingMultiplier3 crossingMultiplier3With
+  simp only [Complex.Gamma_add_one _ hB, lFun, div_eq_mul_inv]
   ring
 
+section
+variable {φ : ℂ → ℂ} {z : ℂ} (hφ : DifferentiableAt ℂ φ z)
+include hφ
+
 /-- Holomorphy of `Γ ∘ φ` at a point where `Re φ > 0`. -/
-theorem differentiableAt_Gamma_comp {φ : ℂ → ℂ} {z : ℂ} (hφ : DifferentiableAt ℂ φ z)
+theorem differentiableAt_Gamma_comp
     (hre : 0 < (φ z).re) : DifferentiableAt ℂ (fun w => Complex.Gamma (φ w)) z :=
   (Complex.differentiableAt_Gamma _ (ne_neg_nat_of_re_pos hre)).comp z hφ
 
 /-- Holomorphy of `1/Γ ∘ φ`. -/
-theorem differentiableAt_inv_Gamma_comp {φ : ℂ → ℂ} {z : ℂ} (hφ : DifferentiableAt ℂ φ z) :
+theorem differentiableAt_inv_Gamma_comp :
     DifferentiableAt ℂ (fun w => (Complex.Gamma (φ w))⁻¹) z :=
   (Complex.differentiable_one_div_Gamma _).comp z hφ
 
+end
+
+section
+variable {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ → ℂ} {z : ℂ} (h₁ : DifferentiableAt ℂ φ₁ z)
+  (h₂ : DifferentiableAt ℂ φ₂ z) (h₃ : DifferentiableAt ℂ φ₃ z)
+  (hA : 0 < (crossA3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)
+include h₁ h₂ h₃ hA
+
+attribute [local fun_prop] differentiableAt_Gamma_comp differentiableAt_inv_Gamma_comp
+
+private theorem differentiableAt_crossingMultiplier3With {b : ℂ → ℂ}
+    (hC : 0 < (1 - crossC3 γ (φ₁ z)).re) (hE : 0 < (1 - (γ : ℂ) * φ₂ z / 2).re)
+    (hb : DifferentiableAt ℂ b z) :
+    DifferentiableAt ℂ (fun w => crossingMultiplier3With γ (φ₁ w) (φ₂ w) (φ₃ w) (b w)) z := by
+  simp_rw [crossingMultiplier3With, mul_inv, lFun_inv (crossC3 γ _), lFun_inv ((γ : ℂ) * _ / 2)]
+  have hAd : DifferentiableAt ℂ (fun w => crossA3 γ (φ₁ w) (φ₂ w) (φ₃ w)) z := by
+    unfold crossA3
+    fun_prop
+  have hCd : DifferentiableAt ℂ (fun w => crossC3 γ (φ₁ w)) z := by
+    unfold crossC3
+    fun_prop
+  fun_prop (disch := assumption)
+
+
 /-- **The analytic multiplier is holomorphic along holomorphic charge curves** where
 `Re(A+1)`, `Re B`, `Re(1-C)` and `Re(1-γε/2)` are positive. -/
-theorem differentiableAt_crossingMultiplier3 {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ → ℂ} {z : ℂ}
-    (h₁ : DifferentiableAt ℂ φ₁ z) (h₂ : DifferentiableAt ℂ φ₂ z) (h₃ : DifferentiableAt ℂ φ₃ z)
-    (hA : 0 < (crossA3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)
+theorem differentiableAt_crossingMultiplier3
     (hB : 0 < (crossB3 γ (φ₁ z) (φ₂ z) (φ₃ z)).re)
     (hC : 0 < (1 - crossC3 γ (φ₁ z)).re)
     (hE : 0 < (1 - (γ : ℂ) * φ₂ z / 2).re) :
     DifferentiableAt ℂ (fun w => crossingMultiplier3 γ (φ₁ w) (φ₂ w) (φ₃ w)) z := by
-  simp_rw [crossingMultiplier3_eq]
-  have hAd : DifferentiableAt ℂ (fun w => crossA3 γ (φ₁ w) (φ₂ w) (φ₃ w)) z := by
-    unfold crossA3
-    fun_prop
+  apply differentiableAt_crossingMultiplier3With h₁ h₂ h₃ hA hC hE
   have hBd : DifferentiableAt ℂ (fun w => crossB3 γ (φ₁ w) (φ₂ w) (φ₃ w)) z := by
     unfold crossB3
     fun_prop
-  have hCd : DifferentiableAt ℂ (fun w => crossC3 γ (φ₁ w)) z := by
-    unfold crossC3
-    fun_prop
-  have hEd : DifferentiableAt ℂ (fun w => (γ : ℂ) * φ₂ w / 2) z := by fun_prop
-  exact ((((((differentiableAt_const _).mul
-    (differentiableAt_Gamma_comp (hAd.add_const 1) hA)).mul
-    (differentiableAt_inv_Gamma_comp ((differentiableAt_const 1).sub hAd))).mul
-    ((differentiableAt_Gamma_comp hBd hB).mul
-      (differentiableAt_inv_Gamma_comp ((differentiableAt_const 1).sub hBd)))).mul
-    ((differentiableAt_Gamma_comp ((differentiableAt_const 1).sub hCd) hC).mul
-      (differentiableAt_inv_Gamma_comp hCd))).mul
-    ((differentiableAt_const _).mul
-      ((differentiableAt_Gamma_comp ((differentiableAt_const 1).sub hEd) hE).mul
-        (differentiableAt_inv_Gamma_comp hEd))))
+  simp_rw [lFun, div_eq_mul_inv]
+  fun_prop (disch := assumption)
 
 /-- **The regularized multiplier is holomorphic along holomorphic charge curves** where
 `Re(A+1)`, `Re(B+1)`, `Re(1-C)` and `Re(1-γε/2)` are positive. -/
-theorem differentiableAt_crossingMultiplier3Reg {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ → ℂ} {z : ℂ}
-    (h₁ : DifferentiableAt ℂ φ₁ z) (h₂ : DifferentiableAt ℂ φ₂ z) (h₃ : DifferentiableAt ℂ φ₃ z)
-    (hA : 0 < (crossA3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)
+theorem differentiableAt_crossingMultiplier3Reg
     (hB : 0 < (crossB3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)
     (hC : 0 < (1 - crossC3 γ (φ₁ z)).re)
     (hE : 0 < (1 - (γ : ℂ) * φ₂ z / 2).re) :
     DifferentiableAt ℂ (fun w => crossingMultiplier3Reg γ (φ₁ w) (φ₂ w) (φ₃ w)) z := by
-  simp_rw [crossingMultiplier3Reg_eq]
-  have hAd : DifferentiableAt ℂ (fun w => crossA3 γ (φ₁ w) (φ₂ w) (φ₃ w)) z := by
-    unfold crossA3
-    fun_prop
+  apply differentiableAt_crossingMultiplier3With h₁ h₂ h₃ hA hC hE
   have hBd : DifferentiableAt ℂ (fun w => crossB3 γ (φ₁ w) (φ₂ w) (φ₃ w)) z := by
     unfold crossB3
     fun_prop
-  have hCd : DifferentiableAt ℂ (fun w => crossC3 γ (φ₁ w)) z := by
-    unfold crossC3
-    fun_prop
-  have hEd : DifferentiableAt ℂ (fun w => (γ : ℂ) * φ₂ w / 2) z := by fun_prop
-  exact ((((((differentiableAt_const _).mul
-    (differentiableAt_Gamma_comp (hAd.add_const 1) hA)).mul
-    (differentiableAt_inv_Gamma_comp ((differentiableAt_const 1).sub hAd))).mul
-    ((differentiableAt_const _).mul ((differentiableAt_Gamma_comp (hBd.add_const 1) hB).mul
-      (differentiableAt_inv_Gamma_comp ((differentiableAt_const 1).sub hBd))))).mul
-    ((differentiableAt_Gamma_comp ((differentiableAt_const 1).sub hCd) hC).mul
-      (differentiableAt_inv_Gamma_comp hCd))).mul
-    ((differentiableAt_const _).mul
-      ((differentiableAt_Gamma_comp ((differentiableAt_const 1).sub hEd) hE).mul
-        (differentiableAt_inv_Gamma_comp hEd))))
+  fun_prop (disch := assumption)
+
+end
 
 end DOZZ.Proofs
 

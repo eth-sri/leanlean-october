@@ -42,12 +42,11 @@ theorem measurable_gmcTiltCoordinatePath : Measurable
   cases i with
   | inl f => exact (measurable_pi_apply f).comp measurable_fst
   | inr j =>
-      have hset : MeasurableSet (gmcTiltCoordinateSet j) := by
+      exact (ENNReal.measurable_toReal.comp
+        (Measure.measurable_coe (by
         cases j with
         | none => exact MeasurableSet.univ
-        | some j => exact gmcLowerBox_measurableSet j
-      exact (ENNReal.measurable_toReal.comp
-        (Measure.measurable_coe hset)).comp measurable_snd
+        | some j => exact gmcLowerBox_measurableSet j))).comp measurable_snd
 
 theorem measurable_gmcTiltFiniteCoordinatePath (s : Finset gmcTiltCoordinateIndex) :
     Measurable (fun p : (TestFn → ℝ) × Measure ℂ =>
@@ -102,8 +101,7 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
       (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' z r) L))) :=
     ENNReal.measurable_ofReal.comp
       (Real.measurable_exp.comp (measurable_const.mul hcovCont.measurable))
-  have hleft : Measurable leftPath := by
-    exact (measurable_gmcTiltFiniteCoordinatePath s).comp
+  have hleft : Measurable leftPath := (measurable_gmcTiltFiniteCoordinatePath s).comp
       (Measurable.prodMk hfield hregMeas)
   have hregWeighted : Measurable (fun ω =>
       (regularizedGMC P Xc γ r ω).withDensity (fun z => ENNReal.ofReal
@@ -122,8 +120,7 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
       rw [withDensity_apply _ hA, ← lintegral_indicator hA]
     rw [hEval]
     exact (Measure.measurable_lintegral (hweight.indicator hA)).comp hregMeas
-  have hright : Measurable rightPath := by
-    exact (measurable_gmcTiltFiniteCoordinatePath s).comp
+  have hright : Measurable rightPath := (measurable_gmcTiltFiniteCoordinatePath s).comp
       (Measurable.prodMk hfieldShift hregWeighted)
   have hObs : Measurable (fun p : (TestFn → ℝ) × Measure ℂ =>
       gmcTiltFiniteCoordinatePath s p.1 p.2) := measurable_gmcTiltFiniteCoordinatePath s
@@ -162,7 +159,7 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
             apply lintegral_congr_ae
             filter_upwards [] with ω
             by_cases hx : rightPath ω ∈ A <;>
-              simp [Set.indicator, F, rightPath, fieldShift, hx]
+              rfl
   calc
     _ = ∫⁻ ω in leftPath ⁻¹' A, density ω ∂P := by
       rw [Measure.map_apply hleft hA, withDensity_apply density hPreLeft]

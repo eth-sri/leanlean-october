@@ -4,6 +4,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 module
 
 public import DOZZ.GMC.Construction.RootedCircleKernel
+public import DOZZ.GMC.MeasurableIntegrals
 public import Mathlib.Probability.Kernel.MeasurableLIntegral
 
 /-! Joint measurability of inserted measures with a varying root. -/
@@ -14,50 +15,6 @@ open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal
 
 namespace DOZZ.Proofs
-
-/-- Integrating a jointly measurable function against a measurable family of finite measures
-is measurable; the masses of the family need not have a common bound. -/
-theorem measurable_lintegral_finite_family
-    {U E : Type*} [MeasurableSpace U] [MeasurableSpace E]
-    (μ : U → Measure E) (hμ : Measurable μ) (hfinite : ∀ u, IsFiniteMeasure (μ u))
-    (f : U × E → ℝ≥0∞) (hf : Measurable f) :
-    Measurable (fun u => ∫⁻ x, f (u, x) ∂μ u) := by
-  let κ : Kernel U E := ⟨μ, hμ⟩
-  let F : ℕ → SimpleFunc (U × E) ℝ≥0∞ := SimpleFunc.eapprox f
-  have heq : ∀ u x, (⨆ n, F n (u, x)) = f (u, x) :=
-    fun u x => SimpleFunc.iSup_eapprox_apply hf (u, x)
-  simp_rw [← heq]
-  have hi : ∀ u, (∫⁻ x, ⨆ n, F n (u, x) ∂μ u) =
-      ⨆ n, ∫⁻ x, F n (u, x) ∂μ u := by
-    intro u
-    rw [lintegral_iSup]
-    · exact fun n => (F n).measurable.comp measurable_prodMk_left
-    · exact fun i j hij x => SimpleFunc.monotone_eapprox f hij (u, x)
-  simp_rw [hi]
-  refine Measurable.iSup fun n => ?_
-  refine SimpleFunc.induction
-    (motive := fun g => Measurable (fun u => ∫⁻ x, g (u, x) ∂μ u)) ?_ ?_ (F n)
-  · intro c t ht
-    simp only [SimpleFunc.const_zero, SimpleFunc.coe_piecewise, SimpleFunc.coe_const,
-      SimpleFunc.coe_zero, Set.piecewise_eq_indicator]
-    have hind : (fun u => ∫⁻ x, t.indicator (fun _ => c) (u, x) ∂μ u) =
-        fun u => c * μ u (Prod.mk u ⁻¹' t) := by
-      funext u
-      exact lintegral_indicator_const_comp (f := Prod.mk u) measurable_prodMk_left ht c
-    rw [← Function.const_def, hind]
-    exact Measurable.const_mul
-      (Kernel.measurable_kernel_prodMk_left_of_finite (κ := κ) ht hfinite) c
-  · intro g₁ g₂ _ hm₁ hm₂
-    simp only [SimpleFunc.coe_add, Pi.add_apply]
-    have hadd : (fun u => ∫⁻ x, g₁ (u, x) + g₂ (u, x) ∂μ u) =
-        (fun u => ∫⁻ x, g₁ (u, x) ∂μ u) + fun u => ∫⁻ x, g₂ (u, x) ∂μ u := by
-      funext u
-      rw [Pi.add_apply]
-      have hg : Measurable (fun x : E => g₁ (u, x)) :=
-        g₁.measurable.comp measurable_prodMk_left
-      exact lintegral_add_left hg _
-    rw [hadd]
-    exact hm₁.add hm₂
 
 /-- A jointly measurable density preserves measurability of a finite random-measure family,
 even when the inserted measures themselves have infinite mass. -/
@@ -113,10 +70,13 @@ theorem measurable_pointRootPotential :
     (continuous_log_normPlus.measurable.comp measurable_fst)).add
       (continuous_log_normPlus.measurable.comp measurable_snd)
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (M : Ω → Measure ℂ) (hM : Measurable M)
+  (hfinite : ∀ ω, IsFiniteMeasure (M ω))
+include hM hfinite
+
 /-- The singular inserted measure is jointly measurable in root and sample. -/
 theorem measurable_gmcRootedMeasure_family
-    {Ω : Type*} [MeasurableSpace Ω]
-    (M : Ω → Measure ℂ) (hM : Measurable M) (hfinite : ∀ ω, IsFiniteMeasure (M ω))
     (γ : ℝ) : Measurable (fun q : ℂ × Ω => gmcRootedMeasure γ q.1 (M q.2)) := by
   apply measurable_withDensity_finite_family (fun q : ℂ × Ω => M q.2)
     (hM.comp measurable_snd) (fun q => hfinite q.2)
@@ -128,8 +88,6 @@ theorem measurable_gmcRootedMeasure_family
 
 /-- The one-circle inserted measure is jointly measurable in root and sample. -/
 theorem measurable_circleRootedMeasure_family
-    {Ω : Type*} [MeasurableSpace Ω]
-    (M : Ω → Measure ℂ) (hM : Measurable M) (hfinite : ∀ ω, IsFiniteMeasure (M ω))
     (γ r : ℝ) : Measurable (fun q : ℂ × Ω =>
       (M q.2).withDensity (fun x => ENNReal.ofReal
         (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure q.1 r)))) := by
@@ -142,11 +100,13 @@ theorem measurable_circleRootedMeasure_family
       (f := fun q : (ℂ × Ω) × ℂ => (q.1.1, q.2))
       ((measurable_fst.comp measurable_fst).prodMk measurable_snd))))
 
+end
+
 /-- A circle-root covariance with a test is measurable in the root. -/
 theorem measurable_circleCross_center (r : ℝ) (f : TestFn) :
     Measurable (fun u : ℂ => circleCross u r f) := by
-  let k : ℂ → ℝ := fun u => gffRootCovariance u f
-  have hk : Measurable k := (gffRootCovariance_continuous f).measurable
+  let k  := fun u => gffRootCovariance u f
+  have hk  := (gffRootCovariance_continuous f).measurable
   have heq : (fun u : ℂ => circleCross u r f) =
       fun u => Real.circleAverage k u (Real.exp (-r)) := by
     funext u

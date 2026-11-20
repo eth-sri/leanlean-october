@@ -28,7 +28,7 @@ theorem mixed_vertex_tilt_retained_mass
       gaussianVariance P (fun ω' => ∑ i, α i * Xc ω' (z i) (r i)) / 2)) * M ω O ^ p ∂P) =
     ∫⁻ ω, ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp
       (γ * ∑ i, α i * ∫ v, gffKernel x v ∂circleMeasure (z i) (r i)))) O) ^ p ∂P := by
-  let L : Ω → ℝ := fun ω => ∑ i, α i * Xc ω (z i) (r i)
+  let L  := fun ω => ∑ i, α i * Xc ω (z i) (r i)
   have hL := circle_vertices_gaussianL2Limit P X hX Xc hXc α z r
   obtain ⟨c, hc, hcov⟩ := mixed_circle_covariance_uniform P X hX Xc hXc α z r
   let H : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun _ μ => μ O ^ p

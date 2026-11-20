@@ -7,6 +7,8 @@ public import DOZZ.FourPoint.Reflected.SourceRadialSignedExpectation
 public import DOZZ.FourPoint.Reflected.SourceKernelExpectation
 public import DOZZ.Statements.FourPoint.GammaHalfOuterMoment
 public import DOZZ.FourPoint.ReflectedOuter.Rates
+public import DOZZ.GFFStructure.ContinuousCircleAverage
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! The actual source Williams expectation squeezes the literal full inverse-moment difference. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
@@ -15,13 +17,11 @@ namespace DOZZ.Proofs
 
 theorem reflected_source_williams_kernel_squeeze
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N) (hi : IndepFun (originRadialPath Xc) N P)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (α₁ α₂ α₃ ξ h : ℝ) (hα₁ : α₁ < Q γ)
     (B : Ω → BrownianPath × BrownianPath)
     (hL : IsLateralGMCOf P γ (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)))
@@ -65,10 +65,10 @@ theorem reflected_source_williams_kernel_squeeze
   have hTr : Real.exp (-(T : ℝ)) ≤ ‖z‖^(1-ξ) := by
     rw [hη]
     exact (mul_le_of_le_one_left hn.le hR1.le).trans hzr.le
-  have hk := reflected_source_copied_kernel_inverse_squeeze P X hX Xc hc hcont γ hγ hγ₂ M hM
+  have hk := reflected_source_copied_kernel_inverse_squeeze P X hX Xc hcircle.isCircleAverage hcircle.continuous_ae γ hγ hγ₂ M hM
     N hN hi heq hfin α₁ α₂ α₃ ξ p R hp hα₁ hα₂ hα₃ z hz0 hz1 hzn.le hz.1 hzr hr1 T
     hR.le hR1 hη1 hη.le
-  have hw := reflected_source_copied_radial_signed_expectation P X hX Xc hc hm hcont γ hγ hγ₂ M hM
+  have hw := reflected_source_copied_radial_signed_expectation P X hX Xc hcircle γ hγ hγ₂ M hM
     N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData Qν hQν z hz0 T hcoord hz.1 hzr hTr p hp.le
     hα₂ hα₃ hz1 hzn.le hr1
   dsimp only at hk

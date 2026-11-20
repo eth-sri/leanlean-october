@@ -17,19 +17,21 @@ open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (a b c : ℝ)
+  (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ)
+include Ω X hX hγ hγ2 hM ha hb hc
+
 /-- No upper bound of `2/γ` on the first charge is needed for the order-zero
 collision limit. An almost surely finite unshifted three-point mass dominates. -/
-theorem crossing_collision_mass_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (a b c : ℝ) (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ)
+theorem crossing_collision_mass_ae
     (z : ℕ → ℂ) (hz : Tendsto z atTop (𝓝 0)) (hz1 : ∀ n, ‖z n‖ ≤ 1) :
     ∀ᵐ ω ∂P, Tendsto
       (fun n => coulombMass γ (M ω) ![-γ / 2, a, b] ![z n, 0, 1] c)
       atTop (𝓝 (coulombMass γ (M ω) ![-γ / 2, a, b] ![0, 0, 1] c)) := by
   have hi : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j h
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp
   have hq : ∀ j : Fin 2, (![a, b] : Fin 2 → ℝ) j < Q γ := by
     intro j
     fin_cases j
@@ -45,15 +47,11 @@ theorem crossing_collision_mass_ae {Ω : Type*} [MeasurableSpace Ω]
 
 /-- The unrooted collision masses are finite almost surely, including at the
 coincident configuration where generic injective-root lemmas do not apply. -/
-theorem crossing_collision_mass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (a b c : ℝ) (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ)
+theorem crossing_collision_mass_finite_ae
     (z : ℂ) (hz : ‖z‖ ≤ 1) :
     ∀ᵐ ω ∂P, coulombMass γ (M ω) ![-γ / 2, a, b] ![z, 0, 1] c ≠ ⊤ := by
   have hi : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j h
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp
   have hq : ∀ j : Fin 2, (![a, b] : Fin 2 → ℝ) j < Q γ := by
     intro j
     fin_cases j
@@ -64,5 +62,7 @@ theorem crossing_collision_mass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z] with ω hf hatom
   exact (lt_of_le_of_lt (crossing_coulombMass_le (M ω) γ a b c z hz hatom)
     (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hf.2.lt_top)).ne
+
+end
 
 end DOZZ.Proofs

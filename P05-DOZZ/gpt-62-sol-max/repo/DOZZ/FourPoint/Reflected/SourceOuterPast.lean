@@ -6,6 +6,7 @@ module
 public import DOZZ.FourPoint.Reflected.SourcePastOuterMass
 public import DOZZ.FourPoint.Reflected.LeadingRadialMoment
 import Mathlib.Tactic
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! The actual retained outer mass and radial likelihood are independent of the restarted future. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory
@@ -23,7 +24,7 @@ theorem reflected_source_outer_past_indep
     (N : Ω → Measure ℂ) (hN : Measurable N)
     (hi : IndepFun (originRadialPath Xc) N P)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (α₁ α₂ α₃ ν ξ h : ℝ) (z : ℂ) (T : ℝ≥0)
     (hcoord : (T : ℝ) = -Real.log ‖z‖+h)
     (hr : 0 < ‖z‖^(1-ξ)) (hz : ‖z‖ < ‖z‖^(1-ξ))
@@ -46,9 +47,7 @@ theorem reflected_source_outer_past_indep
   have hiΦ := hp.comp measurable_id hΦ
   have ho := reflected_source_outerMass_pastCode_ae P X hX γ hγ hγ₂ M hM A N heq hfin
     α₁ α₂ α₃ ξ z T hr hz hT
-  have he : (fun ω => Φ ((stopBrownianPath (radialPositiveHalf (A ω)) T,
-      radialNegativeHalf (A ω)),N ω)) =ᵐ[P]
-      (fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ,reflected_radial_scale γ ν h Xc z ω)) := by
+  exact hiΦ.congr (ae_of_all P fun _ => rfl) (by
     filter_upwards [ho,originRadialPath_eval_ae hcont] with ω hω hev
     apply Prod.ext hω
     have heT : stopBrownianPath (radialPositiveHalf (A ω)) T T = A ω (T : ℝ) := by
@@ -57,7 +56,6 @@ theorem reflected_source_outer_past_indep
     change Real.exp (γ*(stopBrownianPath (radialPositiveHalf (A ω)) T T)-γ*ν*T-γ^2/2*(-Real.log ‖z‖)) = _
     rw [heT]
     dsimp only [reflected_radial_scale]
-    rw [hev,hcoord]
-  exact hiΦ.congr (ae_of_all P fun _ => rfl) he
+    rw [hev,hcoord])
 
 end DOZZ.Proofs

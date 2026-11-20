@@ -33,12 +33,15 @@ theorem fusion_oneRoot_factor_bound (x : ℂ) (hx : ‖x‖ ≤ 1 / 2) (e : ℝ)
     (y := ‖x - 1‖) (by norm_num; exact hd) hu (-e)
   simpa only [abs_neg] using h
 
+section
+variable (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hα : γ / 2 ≤ α₁)
+include hγ hα
+
 /-- The local rooted kernel is bounded by the sum of the two fused-charge weights. -/
-theorem fusion_rootedKernel_local_bound (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
-    (hα : γ / 2 ≤ α₁) (y z x : ℂ) (hy : y ≠ 0)
+theorem fusion_rootedKernel_local_bound (y z w x : ℂ) (hy : y ≠ 0) (hw : ‖w‖ ≤ ‖z‖)
     (hx : x ≠ 0) (hxu : x ≠ y * z) (hsmall : ‖x‖ ≤ 1 / 2)
     (hu : ‖y * z‖ ≤ 1) :
-    gammaHalfKernel γ α₁ α₂ α₃ z x * Real.exp (γ ^ 2 * gffKernel (y * z) x) ≤
+    gammaHalfKernel γ α₁ α₂ α₃ w x * Real.exp (γ ^ 2 * gffKernel (y * z) x) ≤
       ((2 : ℝ) ^ |γ * α₂| * (1 + 2 / ‖y‖) ^ (γ ^ 2 / 2)) *
         (‖x‖ ^ (-γ * (α₁ + γ / 2)) + ‖x - y * z‖ ^ (-γ * (α₁ + γ / 2))) := by
   have hpx : normPlus x = 1 := max_eq_left (by linarith)
@@ -53,13 +56,13 @@ theorem fusion_rootedKernel_local_bound (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < 
   unfold gammaHalfKernel
   rw [hpx, Real.one_rpow, mul_one, Real.rpow_neg hd.le]
   have hfactor := fusion_oneRoot_factor_bound x hsmall (γ * α₂)
-  have hmix := fusion_movingRoot_power_bound γ α₁ hγ hα y z x hy hx hxu
-  have hnonneg : 0 ≤ ‖x - z‖ ^ (γ ^ 2 / 2) /
+  have hmix := fusion_movingRoot_power_bound γ α₁ hγ hα y z w x hy hw hx hxu
+  have hnonneg : 0 ≤ ‖x - w‖ ^ (γ ^ 2 / 2) /
       (‖x‖ ^ (γ * α₁) * ‖x - y * z‖ ^ (γ ^ 2)) := by positivity
   calc
-    _ = (‖x - z‖ ^ (γ ^ 2 / 2) /
+    _ = (‖x - w‖ ^ (γ ^ 2 / 2) /
         (‖x‖ ^ (γ * α₁) * ‖x - y * z‖ ^ (γ ^ 2))) * (‖x - 1‖ ^ (γ * α₂))⁻¹ := by ring
-    _ ≤ (‖x - z‖ ^ (γ ^ 2 / 2) /
+    _ ≤ (‖x - w‖ ^ (γ ^ 2 / 2) /
         (‖x‖ ^ (γ * α₁) * ‖x - y * z‖ ^ (γ ^ 2))) * (2 : ℝ) ^ |γ * α₂| :=
       mul_le_mul_of_nonneg_left hfactor hnonneg
     _ ≤ ((1 + 2 / ‖y‖) ^ (γ ^ 2 / 2) *
@@ -68,12 +71,11 @@ theorem fusion_rootedKernel_local_bound (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < 
     _ = _ := by ring
 
 /-- The small-disk contribution is bounded by local masses with the fused charge. -/
-theorem fusion_rootedKernel_smallBall_le (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
-    (hα : γ / 2 ≤ α₁) (y z : ℂ) (hy : y ≠ 0) (μ : Measure ℂ)
+theorem fusion_rootedKernel_smallBall_le (y z v₀ : ℂ) (hy : y ≠ 0) (hwz : ‖v₀‖ ≤ ‖z‖) (μ : Measure ℂ)
     (h0 : μ {0} = 0) (hu0 : μ {y * z} = 0)
     (δ : ℝ) (hδ : 0 < δ) (hδhalf : δ ≤ 1 / 2) (huδ : ‖y * z‖ ≤ δ) :
     (∫⁻ x in Metric.ball (0 : ℂ) δ,
-      ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x *
+      ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ v₀ x *
         Real.exp (γ ^ 2 * gffKernel (y * z) x)) ∂μ) ≤
       ENNReal.ofReal ((2 : ℝ) ^ |γ * α₂| * (1 + 2 / ‖y‖) ^ (γ ^ 2 / 2)) *
         (weightedGmcBallMass γ μ (α₁ + γ / 2) 0 δ +
@@ -96,14 +98,14 @@ theorem fusion_rootedKernel_smallBall_le (γ α₁ α₂ α₃ : ℝ) (hγ : 0 <
     rw [ae_iff]
     simpa using hu0
   have hbound : (∫⁻ x in Metric.ball (0 : ℂ) δ,
-      ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x *
+      ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ v₀ x *
         Real.exp (γ ^ 2 * gffKernel (y * z) x)) ∂μ) ≤
       ∫⁻ x in Metric.ball (0 : ℂ) δ, ENNReal.ofReal C * (w x + v x) ∂μ := by
     apply lintegral_mono_ae
     filter_upwards [ha0, hau, ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx0 hxu hx
     have hxδ : ‖x‖ < δ := by simpa [Metric.mem_ball, dist_zero_right] using hx
     have h := ENNReal.ofReal_le_ofReal
-      (fusion_rootedKernel_local_bound γ α₁ α₂ α₃ hγ hα y z x hy hx0 hxu
+      (fusion_rootedKernel_local_bound γ α₁ α₂ α₃ hγ hα y z v₀ x hy hwz hx0 hxu
         (by linarith) (by linarith))
     have he : ENNReal.ofReal (C * (‖x‖ ^ (-γ * (α₁ + γ / 2)) +
         ‖x - y * z‖ ^ (-γ * (α₁ + γ / 2)))) = ENNReal.ofReal C * (w x + v x) := by
@@ -134,5 +136,7 @@ theorem fusion_rootedKernel_smallBall_le (γ α₁ α₂ α₃ : ℝ) (hγ : 0 <
           (∫⁻ x in Metric.ball (y * z) (2 * δ), v x ∂μ)
       apply add_le_add le_rfl
       exact lintegral_mono' (Measure.restrict_mono hsub le_rfl) le_rfl
+
+end
 
 end DOZZ.Proofs

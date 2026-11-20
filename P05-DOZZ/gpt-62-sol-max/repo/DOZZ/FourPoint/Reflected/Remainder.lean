@@ -15,6 +15,23 @@ open Filter Topology
 
 namespace DOZZ.Proofs
 
+/-- Approaching the origin on the positive real axis also approaches it in the punctured plane. -/
+theorem tendsto_ofReal_nhdsGT_zero :
+    Tendsto (fun t : ℝ => (t : ℂ)) (𝓝[>] (0 : ℝ)) (𝓝[≠] (0 : ℂ)) := by
+  refine tendsto_nhdsWithin_iff.mpr ⟨?_, ?_⟩
+  · simpa only [Complex.ofReal_zero] using
+      (Complex.continuous_ofReal.tendsto 0).mono_left nhdsWithin_le_nhds
+  · filter_upwards [self_mem_nhdsWithin] with t (ht : 0 < t)
+    simpa only [Set.mem_compl_iff, Set.mem_singleton_iff, Complex.ofReal_ne_zero] using ht.ne'
+
+/-- A real-valued normalized radial limit restricts to the positive real axis. -/
+theorem radial_limit_along_reals {f : ℂ → ℝ} {κ L : ℝ}
+    (h : Tendsto (fun z => f z / ‖z‖ ^ κ) (𝓝[≠] (0 : ℂ)) (𝓝 L)) :
+    Tendsto (fun t : ℝ => f (t : ℂ) / t ^ κ) (𝓝[>] (0 : ℝ)) (𝓝 L) := by
+  refine (h.comp tendsto_ofReal_nhdsGT_zero).congr' ?_
+  filter_upwards [self_mem_nhdsWithin] with t (ht : 0 < t)
+  simp only [Function.comp_apply, Complex.norm_real, Real.norm_of_nonneg ht.le]
+
 /-- The complex norm convention agrees with a signed real remainder limit. -/
 theorem isComplexLittleOAtZero_ofReal_iff (κ : ℝ) (f : ℂ → ℝ) :
     IsComplexLittleOAtZero κ (fun z => (f z : ℂ)) ↔
@@ -32,31 +49,19 @@ theorem IsComplexLittleOAtZero.add {κ : ℝ} {f g : ℂ → ℂ}
   unfold DOZZ.IsComplexLittleOAtZero at hf hg ⊢
   apply squeeze_zero (fun z => div_nonneg (norm_nonneg _) (Real.rpow_nonneg
     (norm_nonneg _) _))
-  · intro z
-    calc
-      ‖f z + g z‖ / ‖z‖ ^ κ ≤ (‖f z‖ + ‖g z‖) / ‖z‖ ^ κ :=
-        div_le_div_of_nonneg_right (norm_add_le _ _) (Real.rpow_nonneg (norm_nonneg _) _)
-      _ = ‖f z‖ / ‖z‖ ^ κ + ‖g z‖ / ‖z‖ ^ κ := add_div _ _ _
+  · exact fun z =>
+      Trans.trans (div_le_div_of_nonneg_right (norm_add_le (f z) (g z)) (Real.rpow_nonneg (norm_nonneg z) κ))
+        (add_div ‖f z‖ ‖g z‖ (‖z‖ ^ κ))
   · simpa only [add_zero] using hf.add hg
-
-/-- Multiplication by a fixed scalar preserves the little-o convention. -/
-theorem IsComplexLittleOAtZero.const_mul {κ : ℝ} {f : ℂ → ℂ}
-    (hf : DOZZ.IsComplexLittleOAtZero κ f) (c : ℂ) :
-    DOZZ.IsComplexLittleOAtZero κ (fun z => c * f z) := by
-  unfold DOZZ.IsComplexLittleOAtZero at hf ⊢
-  simpa only [norm_mul, mul_div_assoc, mul_zero] using hf.const_mul ‖c‖
 
 /-- A strictly higher power of the radius is negligible at the reflected scale. -/
 theorem reflected_radius_power_ratio_tendsto (κ η : ℝ) (hη : κ < η) :
     Tendsto (fun z : ℂ => ‖z‖ ^ η / ‖z‖ ^ κ)
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
   have he : 0 < η - κ := sub_pos.mpr hη
-  have hpow := ((Real.continuous_rpow_const he.le).comp continuous_norm).tendsto
-    (0 : ℂ)
-  have ht : Tendsto (fun z : ℂ => ‖z‖ ^ (η - κ))
-      (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [Function.comp_def, norm_zero, Real.zero_rpow he.ne'] using hpow.mono_left nhdsWithin_le_nhds
-  apply ht.congr'
+  have hn := (tendsto_norm_zero (E := ℂ)).mono_left
+    (nhdsWithin_le_nhds (s := {(0 : ℂ)}ᶜ))
+  apply (hn.rpow_const_nhds_zero he).congr'
   filter_upwards [self_mem_nhdsWithin] with z hz
   exact Real.rpow_sub (norm_pos_iff.mpr hz) η κ
 

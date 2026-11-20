@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Dual.IncrementIntegrability
 public import DOZZ.FourPoint.Dual.ReferencePareto
-public import DOZZ.FourPoint.Dual.SourceParetoWeights
+public import DOZZ.FourPoint.Dual.SourceRadialMoments
 /-! Exact independent-maximum transport for the actual source outer mass. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory
@@ -45,8 +45,8 @@ theorem dual_source_fixed_maximum_increment_eq_pareto
   let b := dual_radial_scale γ (Q γ-α₁) h Xc z
   let V := fun v : ℝ × Ω => Real.exp (γ*v.1)*S v.2
   have hr : ‖z‖^(1-ξ) ≤ 1 := by
-    simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz
-      (sub_nonneg.mpr hξ1.le)
+    simpa using Real.rpow_le_rpow (norm_nonneg z) hz
+          (sub_nonneg.mpr hξ1.le)
   have hA : ∀ᵐ ω ∂P, 0 < A ω :=
     (dual_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
       α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hz hr).mono

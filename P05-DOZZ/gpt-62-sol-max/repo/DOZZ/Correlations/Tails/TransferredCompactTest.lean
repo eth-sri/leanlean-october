@@ -21,7 +21,7 @@ theorem transferred_compact_test (z : ℂ) (γ : ℝ)
     (f : BoundedContinuousFunction ℂ ℝ) (hf : HasCompactSupport (f : ℂ → ℝ)) :
     ∃ g : BoundedContinuousFunction ℂ ℝ, HasCompactSupport (g : ℂ → ℝ) ∧
       ∀ w, g w = f (w-z) * Real.exp ((γ ^ 2 + 4) * Real.log (normPlus w)) := by
-  let g : ℂ → ℝ := fun w => f (w-z) * Real.exp ((γ ^ 2 + 4) * Real.log (normPlus w))
+  let g  := fun w => f (w-z) * Real.exp ((γ ^ 2 + 4) * Real.log (normPlus w))
   have hc : Continuous g := by
     apply Continuous.mul (f.continuous.comp (continuous_id.sub continuous_const))
     apply Real.continuous_exp.comp
@@ -34,8 +34,7 @@ theorem transferred_compact_test (z : ℂ) (γ : ℝ)
       exact h.ne'
   have hs : HasCompactSupport (fun w => f (w-z)) := by
     have h := hf.comp_homeomorph (Homeomorph.addRight (-z))
-    change HasCompactSupport (fun w => f (w + -z)) at h
-    simpa only [sub_eq_add_neg] using h
+    assumption
   have hg : HasCompactSupport g := hs.mul_right
   let gc : C_c(ℂ, ℝ) := ⟨⟨g, hc⟩, hg⟩
   exact ⟨gc.toBoundedContinuousFunction, gc.hasCompactSupport, fun w => rfl⟩

@@ -13,37 +13,15 @@ open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-/-- Each positive subcritical cut moment has its genuine integrable real representative.
-The full reflection mass supplies finiteness; the cut is not replaced by an independent mass. -/
-theorem dual_reflection_cut_real_moment
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ α q c : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (hα : α < Q γ) (hData : IsReflectionData P γ α B Z)
-    (hq0 : 0 ≤ q) (hq : q < 4/γ^2) :
-    Integrable (fun ω => (twoSidedReflectionCutMass γ c B Z ω).toReal^q) P ∧
-    (∫ ω, (twoSidedReflectionCutMass γ c B Z ω).toReal^q ∂P) =
-      (∫⁻ ω, twoSidedReflectionCutMass γ c B Z ω^q ∂P).toReal := by
-  have hZ := hData.2.1
-  have hm := twoSidedReflectionCutMass_aemeasurable P γ c B Z
-    (conditionedPair_aemeasurable P B (Q γ-α) hData.1) hZ.2.2.2.1 hZ.2.2.2.2.1
-  have hf : (∫⁻ ω, twoSidedReflectionCutMass γ c B Z ω^q ∂P) < ⊤ :=
-    lt_of_le_of_lt (lintegral_mono fun ω => ENNReal.rpow_le_rpow
-      (twoSidedReflectionCutMass_le_mass γ c B Z ω) hq0)
-      (reflected_reflection_mass_moment_lt_top P γ α q B Z hα hData hq)
-  constructor
-  · simpa only [ENNReal.toReal_rpow] using
-      integrable_toReal_of_lintegral_ne_top (hm.pow_const q) hf.ne
-  · simpa only [ENNReal.toReal_rpow] using
-      integral_toReal (hm.pow_const q) (ae_lt_top' (hm.pow_const q) hf.ne)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ α q : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
+  (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (hα : α < Q γ)
+  (hData : IsReflectionData P γ α B Z) (hq0 : 0 < q) (hq : q < 4/γ^2)
+include Ω α hγ hγ₂ hα hData hq0 hq
 
 /-- The same supplied reflection witness gives the exponentially small moment gap between
 the full mass and every nonnegative last-cut level. -/
-theorem dual_reflection_cut_moment_gap
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ α q : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (hα : α < Q γ) (hData : IsReflectionData P γ α B Z)
-    (hq0 : 0 < q) (hq : q < 4/γ^2) :
+theorem dual_reflection_cut_moment_gap :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ c : ℝ, 0 ≤ c →
       0 ≤ (∫⁻ ω, twoSidedReflectionMass γ B Z ω^q ∂P).toReal-
         (∫⁻ ω, twoSidedReflectionCutMass γ c B Z ω^q ∂P).toReal ∧
@@ -62,20 +40,14 @@ theorem dual_reflection_cut_moment_gap
 /-- Sending the last-cut level to infinity recovers the finite full reflection moment of the
 same witness, with the exponential gap supplied by the Brownian estimate
 `DOZZ.reflectionMass_lastCut_bound`. -/
-theorem dual_reflection_cut_moment_tendsto
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ α q : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (hα : α < Q γ) (hData : IsReflectionData P γ α B Z)
-    (hq0 : 0 < q) (hq : q < 4/γ^2) :
+theorem dual_reflection_cut_moment_tendsto :
     Tendsto (fun c : ℝ => (∫⁻ ω, twoSidedReflectionCutMass γ c B Z ω^q ∂P).toReal)
       atTop (𝓝 (∫⁻ ω, twoSidedReflectionMass γ B Z ω^q ∂P).toReal) := by
   obtain ⟨C, _, hb⟩ := dual_reflection_cut_moment_gap P γ α q hγ hγ₂ B Z hα hData hq0 hq
   have hscale : Tendsto (fun c : ℝ => γ*c) atTop atTop :=
     (tendsto_const_mul_atTop_of_pos hγ).mpr tendsto_id
   have he : Tendsto (fun c : ℝ => C*Real.exp (-γ*c)) atTop (𝓝 0) := by
-    simpa only [Function.comp_def, neg_mul, mul_zero] using
-      (Real.tendsto_exp_neg_atTop_nhds_zero.comp hscale).const_mul C
+    simpa using (Real.tendsto_exp_neg_atTop_nhds_zero.comp hscale).const_mul C
   have hgap : Tendsto (fun c : ℝ =>
       (∫⁻ ω, twoSidedReflectionMass γ B Z ω^q ∂P).toReal-
         (∫⁻ ω, twoSidedReflectionCutMass γ c B Z ω^q ∂P).toReal) atTop (𝓝 0) := by
@@ -87,5 +59,7 @@ theorem dual_reflection_cut_moment_tendsto
   have ht := (tendsto_const_nhds (x :=
     (∫⁻ ω, twoSidedReflectionMass γ B Z ω^q ∂P).toReal)).sub hgap
   simpa only [sub_sub_cancel, sub_zero] using ht
+
+end
 
 end DOZZ.Proofs

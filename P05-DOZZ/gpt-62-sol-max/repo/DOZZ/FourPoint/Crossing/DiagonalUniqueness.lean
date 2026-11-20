@@ -60,14 +60,12 @@ theorem crossing_one_channel_coefficients_unique
   have hbases := gauss_local_basis_one hH (a : ℂ) (b : ℂ) (c : ℂ) hδC
   have hmid : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
   have hδ0 : (c : ℂ) - (a : ℂ) - (b : ℂ) ≠ 0 := by simpa using hδC 0
-  have hW : gaussGMinus H a b c (1 / 2 : ℂ) * deriv (gaussGPlus H a b c) (1 / 2 : ℂ) -
-      deriv (gaussGMinus H a b c) (1 / 2 : ℂ) * gaussGPlus H a b c (1 / 2 : ℂ) ≠ 0 := by
+  exact crossing_diagonal_norm_coefficients_unique gaussCutPlane_isOpen
+    (hbases.1.analyticOnNhd gaussCutPlane_isOpen)
+    (hbases.2.1.analyticOnNhd gaussCutPlane_isOpen) A D A' D' hmid (by
     rw [(hbases.2.2.1 (1 / 2 : ℂ) hmid).2.2]
     exact mul_ne_zero (mul_ne_zero (neg_ne_zero.mpr hδ0)
       (Complex.cpow_ne_zero_iff.mpr (Or.inl (by norm_num))))
-      (Complex.cpow_ne_zero_iff.mpr (Or.inl (by norm_num)))
-  exact crossing_diagonal_norm_coefficients_unique gaussCutPlane_isOpen
-    (hbases.1.analyticOnNhd gaussCutPlane_isOpen)
-    (hbases.2.1.analyticOnNhd gaussCutPlane_isOpen) A D A' D' hmid hW he
+      (Complex.cpow_ne_zero_iff.mpr (Or.inl (by norm_num)))) he
 
 end DOZZ.Proofs

@@ -26,7 +26,7 @@ theorem crossing_negative_factor_le (γ : ℝ) (z x : ℂ)
     ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z‖)) (γ * (-γ / 2)) ≤
       ENNReal.ofReal ((1 / 2 : ℝ) ^ (γ * (-γ / 2))) := by
   have hn : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have hd  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   have hb : 1 / 2 ≤ normPlus x / ‖x - z‖ := by
     rw [le_div_iff₀ hd]
     have hh := norm_sub_le x z
@@ -48,8 +48,11 @@ theorem crossing_coulombWeight_le (γ a b c : ℝ) (z x : ℂ)
   rw [mul_assoc, mul_assoc]
   exact mul_le_mul' (crossing_negative_factor_le γ z x hz hxz) le_rfl
 
+section
+variable (ν : Measure ℂ) (γ a b c : ℝ)
+
 /-- Integrating the negative-factor bound gives a finite fixed mass majorant. -/
-theorem crossing_coulombMass_le (ν : Measure ℂ) (γ a b c : ℝ) (z : ℂ)
+theorem crossing_coulombMass_le (z : ℂ)
     (hz : ‖z‖ ≤ 1) (ha : ν {z} = 0) :
     coulombMass γ ν ![-γ / 2, a, b] ![z, 0, 1] c ≤
       ENNReal.ofReal ((1 / 2 : ℝ) ^ (γ * (-γ / 2))) *
@@ -62,7 +65,7 @@ theorem crossing_coulombMass_le (ν : Measure ℂ) (γ a b c : ℝ) (z : ℂ)
 
 /-- For an atomless measure with a finite unshifted mass, the half-charge mass
 converges at the collision along every bounded sequence. -/
-theorem crossing_coulombMass_tendsto_seq (ν : Measure ℂ) (γ a b c : ℝ)
+theorem crossing_coulombMass_tendsto_seq
     (z : ℕ → ℂ) (hz : Tendsto z atTop (𝓝 0)) (hb : ∀ n, ‖z n‖ ≤ 1)
     (h0 : ν {0} = 0) (h1 : ν {1} = 0) (hn : ∀ n, ν {z n} = 0)
     (hfin : coulombMass γ ν ![a, b] ![0, 1] c ≠ ⊤) :
@@ -89,13 +92,13 @@ theorem crossing_coulombMass_tendsto_seq (ν : Measure ℂ) (γ a b c : ℝ)
       apply ENNReal.continuous_ofReal.continuousAt.comp
       apply ContinuousAt.div continuousAt_const
       · fun_prop
-      · simpa only [sub_zero] using norm_ne_zero_iff.mpr hx
+      simpa
     have ht := hf.tendsto.comp hz
     simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
       Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one]
     have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-    have hx0p : 0 < ‖x - 0‖ := by simpa only [sub_zero] using norm_pos_iff.mpr hx
-    have hx1p : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+    have hx0p : 0 < ‖x - 0‖ := by simpa
+    have hx1p  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
     have hr : ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - 0‖)) (γ * a) *
         ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - 1‖)) (γ * b) *
         ENNReal.rpow (ENNReal.ofReal (normPlus x)) (γ * c) ≠ ⊤ := by
@@ -105,5 +108,7 @@ theorem crossing_coulombMass_tendsto_seq (ν : Measure ℂ) (γ a b c : ℝ)
         ENNReal.ofReal_ne_top) ENNReal.ofReal_ne_top
     simp only [mul_assoc] at hr ⊢
     exact ENNReal.Tendsto.mul_const ht (Or.inr hr)
+
+end
 
 end DOZZ.Proofs

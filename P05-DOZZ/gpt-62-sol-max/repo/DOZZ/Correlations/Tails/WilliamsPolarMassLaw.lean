@@ -89,8 +89,7 @@ theorem williams_polar_mass_law
   rw [← AEMeasurable.map_map_of_aemeasurable
     (measurable_williamsMassFunctional γ).aemeasurable hpair]
   have hlaw := williams_shifted_lateral_joint_law P D hD hB γ Z hZ hInd ν hν Qν hQν
-  change P.map (fun ω => (williamsReversedMark ν (D ω),Y ω)) = _ at hlaw
-  rw [hlaw]
+  solve_by_elim (maxDepth := 3)
 
 
 end DOZZ.Proofs

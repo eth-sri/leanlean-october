@@ -29,17 +29,6 @@ noncomputable def exponentialParameterTest
         exact mul_le_mul_of_nonneg_right (by
           simpa only [Real.norm_eq_abs] using c.norm_coe_le_norm x) (abs_nonneg t)))
 
-theorem exponential_parameter_test_support
-    (f c : BoundedContinuousFunction ℂ ℝ) (t : ℝ) :
-    tsupport (exponentialParameterTest f c t : ℂ → ℝ) ⊆ tsupport (f : ℂ → ℝ) :=
-  tsupport_mul_subset_left
-
-theorem exponential_parameter_test_measurable
-    (f c : BoundedContinuousFunction ℂ ℝ) :
-    Measurable (fun p : ℝ × ℂ => exponentialParameterTest f c p.1 p.2) :=
-  (f.continuous.measurable.comp measurable_snd).mul
-    (((c.continuous.measurable.comp measurable_snd).mul measurable_fst).exp)
-
 /-- The parameter derivative is bounded by an exponential of the absolute pin difference. -/
 theorem exponential_parameter_test_lipschitz
     (f c : BoundedContinuousFunction ℂ ℝ) (t u : ℝ) (h : |t-u| ≤ 1) (x : ℂ) :
@@ -52,6 +41,5 @@ theorem exponential_parameter_test_lipschitz
   simp only [add_zero, abs_zero] at hi
   exact (mul_le_mul (by simpa only [Real.norm_eq_abs] using f.norm_coe_le_norm x)
     hi (abs_nonneg _) (norm_nonneg _)).trans_eq (by ring)
-
 
 end DOZZ.Proofs

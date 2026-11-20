@@ -27,11 +27,11 @@ theorem tendsto_iSup_lintegral_abs_sub_of_uniform_l1_cauchy
       ∫⁻ ω, ENNReal.ofReal |F r i ω - G i ω| ∂P) atTop (𝓝 0) := by
   refine ENNReal.tendsto_nhds_zero.2 ?_
   intro δ hδ
-  let η : ℝ≥0∞ := min δ 1
-  have hηpos : 0 < η := lt_min hδ one_pos
+  let η  := min δ 1
+  have hηpos  := lt_min hδ one_pos
   have hηtop : η ≠ ∞ := ne_of_lt (lt_of_le_of_lt (min_le_right _ _) ENNReal.one_lt_top)
-  have hηeq : ENNReal.ofReal η.toReal = η := ENNReal.ofReal_toReal hηtop
-  have hηrealpos : 0 < η.toReal := ENNReal.toReal_pos hηpos.ne' hηtop
+  have hηeq  := ENNReal.ofReal_toReal hηtop
+  have hηrealpos  := ENNReal.toReal_pos hηpos.ne' hηtop
   obtain ⟨R, hR⟩ := hCauchy (η.toReal / 2) (by positivity)
   have hsmall : ENNReal.ofReal (η.toReal / 2) < η := by
     calc
@@ -49,8 +49,7 @@ theorem tendsto_iSup_lintegral_abs_sub_of_uniform_l1_cauchy
         (η.toReal / 2)
       intro s hs
       exact (hR r hr s hs i).le
-    have hsup : (⨆ i, ∫⁻ ω, ENNReal.ofReal |F r i ω - G i ω| ∂P) ≤
-        ENNReal.ofReal (η.toReal / 2) := iSup_le hbound
+    have hsup := iSup_le hbound
     exact lt_of_le_of_lt hsup (lt_of_lt_of_le hsmall (min_le_left _ _))
   filter_upwards [hEventually] with r hr
   exact hr.le

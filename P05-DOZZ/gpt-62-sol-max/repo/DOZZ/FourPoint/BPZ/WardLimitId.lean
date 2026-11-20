@@ -25,8 +25,12 @@ variable {P : Measure Ω} {X : Ω → Distr} {M : Ω → Measure ℂ} {Xc : Ω �
 
 namespace BPZLimitData
 
+section
+variable (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+include hd
+
 /-- Uniform bounds for the cutoff-region weights. -/
-theorem cutWeight_mul_bdd (hd : BPZLimitData γ q δ ρ kt k₂ φ D) :
+theorem cutWeight_mul_bdd :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (n : ℕ) x, |φ x * bpzWardCutWeight γ q n kt x| ≤ C ∧
       |ρ x * bpzWardCutWeight γ q n kt x| ≤ C := by
   obtain ⟨K, hK0, hK⟩ := hd.cutWeight_bound
@@ -45,7 +49,7 @@ theorem cutWeight_mul_bdd (hd : BPZLimitData γ q δ ρ kt k₂ φ D) :
       _ ≤ (B + 1) * K := by nlinarith
 
 /-- The cutoff Ward identity in symmetrized form, with the finite cutoff chaos. -/
-theorem cutoff_identity_sym (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+theorem cutoff_identity_sym
     (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ) {n : ℕ}
     (hn : BPZWardData γ q n δ ρ kt k₂ φ D) :
     ∫ ω, bpzMixedReal ρ (bpzWardCutWeight γ q n kt) k₂ (bpzCutChaos P Xc γ n ω) (M ω) ^ (-q) *
@@ -72,6 +76,8 @@ theorem cutoff_identity_sym (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
         have := hp.hM.1 ω
         rw [← hω, bpz_cutoff_sym_identity hd.phi_cont.measurable hd.ρ_meas
           (hd.measurable_cutWeight n) hd.k₂_meas (fun x => (hC n x).1) (fun x => (hC n x).2) h2 v]
+
+end
 
 end BPZLimitData
 

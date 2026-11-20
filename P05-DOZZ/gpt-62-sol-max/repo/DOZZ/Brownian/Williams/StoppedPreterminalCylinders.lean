@@ -69,7 +69,7 @@ theorem SameStoppedPreterminalLaws.lifetime_event_eq
   have hmono : Monotone E := by
     intro i j hij z hz
     refine ⟨hz.1, lt_of_le_of_lt ?_ hz.2⟩
-    exact one_div_le_one_div_of_le (by positivity) (by exact_mod_cast Nat.add_le_add_right hij 1)
+    exact one_div_le_one_div_of_le (by positivity) (by simpa)
   have hunion (M : Measure StoppedBrownianPath) (hpos : ∀ᵐ z ∂M, 0 < z.1) :
       (⋃ n, E n) =ᵐ[M] {z | (z.1 : ℝ) ∈ U} := by
     filter_upwards [hpos] with z hz
@@ -100,8 +100,7 @@ theorem SameStoppedPreterminalLaws.preterminal_cylinder_eq
     μ (stoppedPathCylinder U I S ∩ {z | I.max' hI < z.1}) =
       η (stoppedPathCylinder U I S ∩ {z | I.max' hI < z.1}) := by
   classical
-  obtain ⟨n, hn⟩ : ∃ n, I.card = n+1 := by
-    exact ⟨I.card-1, by have := Finset.card_pos.mpr hI; omega⟩
+  obtain ⟨n, hn⟩ : ∃ n, I.card = n+1 := ⟨I.card-1, by have := Finset.card_pos.mpr hI; omega⟩
   let e : Fin (n+1) ≃o I := I.orderIsoOfFin hn
   let ss : Fin (n+1) → ℝ≥0 := fun i => (e i).val
   have hlast : ss (Fin.last n) = I.max' hI := by
@@ -169,8 +168,8 @@ theorem SameStoppedPreterminalLaws.positive_cylinder_eq
     by_cases hI : I.Nonempty
     · let t := I.max' hI
       let J := I.erase t
-      have htI : t ∈ I := Finset.max'_mem I hI
-      have hJ : J ⊂ I := Finset.erase_ssubset htI
+      have htI  := Finset.max'_mem I hI
+      have hJ  := Finset.erase_ssubset htI
       have hJpos : ∀ r ∈ J, 0 < r := fun r hr => hpos r (Finset.mem_of_mem_erase hr)
       let E := stoppedPathCylinder U I S
       let F := {z : StoppedBrownianPath | z.1 ≤ t}
@@ -219,7 +218,7 @@ theorem SameStoppedPreterminalLaws.positive_cylinder_eq
       change μ E = η E
       rw [hsplit, measure_union hdisj (hE.inter hF), measure_union hdisj (hE.inter hF),
         hpre, hpost]
-    · have hIempty : I = ∅ := Finset.not_nonempty_iff_eq_empty.mp hI
+    · have hIempty  := Finset.not_nonempty_iff_eq_empty.mp hI
       subst I
       simpa [stoppedPathCylinder] using h.lifetime_event_eq hμpos hηpos U hU
 

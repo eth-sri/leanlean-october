@@ -36,8 +36,7 @@ theorem localized_mass_comparison
     · rw [indicator_of_mem hx]
       exact mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)
     · rw [indicator_of_notMem hx,hχzero x hx,ENNReal.ofReal_zero,zero_mul]
-  · rw [← lintegral_indicator hball,← lintegral_indicator hdiff]
-    rw [← lintegral_add_right _ (hw.indicator hdiff)]
+  · rw [← lintegral_indicator hball, ← lintegral_indicator hdiff, ← lintegral_add_right _ (hw.indicator hdiff)]
     apply lintegral_mono
     intro x
     dsimp only
@@ -88,7 +87,7 @@ theorem copied_mass_comparison
       · have hxρ := Metric.ball_subset_ball hδρ hxδ
         rw [hχone x hxδ,ENNReal.ofReal_one,one_mul,indicator_of_mem hxρ]
         exact (huv x hxρ).2.trans le_self_add
-      · exact le_add_of_le_right (by rw [indicator_of_mem (show x ∈ Metric.ball (0 : ℂ) 1 \ Metric.ball 0 δ from ⟨hx,hxδ⟩)])
+      · exact le_add_of_le_right (by simp [*])
     · rw [indicator_of_notMem hx]
       exact zero_le
 

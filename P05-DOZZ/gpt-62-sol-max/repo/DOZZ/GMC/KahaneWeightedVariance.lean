@@ -49,7 +49,7 @@ theorem weighted_variance_bounds
     apply Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul Finset.univ
       (fun i _ => mul_nonneg (sq_nonneg _) (hw i)) (fun i _ => hw i)
     intro i hi
-    nlinarith only [sq_nonneg (a i * w i)]
+    linarith
   refine ⟨?_, div_nonneg (sub_nonneg.mpr hCS) (sq_nonneg _), ?_⟩
   · rw [abs_div, abs_of_pos hW]
     exact (div_le_iff₀ hW).mpr hfirst

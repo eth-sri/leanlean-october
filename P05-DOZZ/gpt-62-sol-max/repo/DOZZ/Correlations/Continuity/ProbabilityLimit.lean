@@ -53,11 +53,13 @@ theorem uniform_approximation_in_measure_continuous
       (add_le_add ((le_iSup _ q).trans hr.le) hq.le) ((le_iSup _ q₀).trans hr.le)
     _ = δ := ENNReal.add_thirds δ
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+
 /-- The actual singular Coulomb masses vary continuously in probability; the uniform cutoff limit
 (`regularizedCoulombMass_tendstoInProbability_uniform`) is taken on the entire compact
 parameter set. -/
-theorem coulombMass_continuous_in_measure_on_compact
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
+theorem coulombMass_continuous_in_measure_on_compact {N : ℕ}
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (M : ℝ → Ω → Measure ℂ)
@@ -96,8 +98,7 @@ theorem coulombMass_continuous_in_measure_on_compact
 
 /-- Positive finite limits allow both the random base and the real exponent to
 vary. In particular there is no restriction at exponent zero. -/
-theorem continuity_tendstoInMeasure_varying_rpow
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+theorem continuity_tendstoInMeasure_varying_rpow (P : Measure Ω) [IsProbabilityMeasure P]
     (f : ℕ → Ω → ℝ≥0∞) (g : Ω → ℝ≥0∞) (p : ℕ → ℝ) (p₀ : ℝ)
     (hf : ∀ n, AEMeasurable (f n) P)
     (hgfin : ∀ᵐ ω ∂P, g ω ≠ ⊤) (hgpos : ∀ᵐ ω ∂P, g ω ≠ 0)
@@ -105,9 +106,9 @@ theorem continuity_tendstoInMeasure_varying_rpow
       (fun ω => (g ω).toReal)) (hp : Tendsto p atTop (𝓝 p₀)) :
     TendstoInMeasure P (fun n ω => (f n ω ^ p n).toReal) atTop
       (fun ω => (g ω ^ p₀).toReal) := by
-  have hreal : ∀ n, AEStronglyMeasurable (fun ω => (f n ω).toReal) P :=
+  have hreal  :=
     fun n => (hf n).ennreal_toReal.aestronglyMeasurable
-  have hpow : ∀ n, AEStronglyMeasurable (fun ω => (f n ω ^ p n).toReal) P :=
+  have hpow  :=
     fun n => ((hf n).pow_const (p n)).ennreal_toReal.aestronglyMeasurable
   rw [exists_seq_tendstoInMeasure_atTop_iff hpow]
   intro ns hns
@@ -121,38 +122,14 @@ theorem continuity_tendstoInMeasure_varying_rpow
 
 /-- Subcritical root charges give a strictly positive finite actual Coulomb mass
 on one probability-one event, independently of the chosen moment power. -/
-theorem continuity_coulombMass_positive_finite_ae
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
+theorem continuity_coulombMass_positive_finite_ae {N : ℕ}
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (z : Fin N → ℂ) (hz : Function.Injective z) (α : Fin N → ℝ) (αinf : ℝ)
     (hα : ∀ k, α k < Q γ) (hinf : αinf < Q γ) :
-    ∀ᵐ ω ∂P, 0 < coulombMass γ (M ω) α z αinf ∧ coulombMass γ (M ω) α z αinf ≠ ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
-  have hm := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf
-  have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (4 / γ ^ 2) := Ioo_mem_nhdsGT (by positivity)
-  have e2 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (2 / γ * (Q γ - αinf)) :=
-    Ioo_mem_nhdsGT (mul_pos (div_pos two_pos hγ) (sub_pos.mpr hinf))
-  have e3 : ∀ᶠ t in 𝓝[>] (0 : ℝ), ∀ k, t ∈ Ioo 0 (2 / γ * (Q γ - α k)) :=
-    eventually_all.mpr fun k => Ioo_mem_nhdsGT
-      (mul_pos (div_pos two_pos hγ) (sub_pos.mpr (hα k)))
-  obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
-  have htfin := coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf t
-    ht.1.1 ht.1.2 (fun k => (ht.2.2 k).2) ht.2.1.2
-  have hf : ∀ᵐ ω ∂P, coulombMass γ (M ω) α z αinf ≠ ⊤ := by
-    filter_upwards [ae_lt_top' (hm.pow_const t) htfin.ne] with ω hω htop
-    rw [htop, ENNReal.top_rpow_of_pos ht.1.1] at hω
-    exact lt_irrefl _ hω
-  obtain ⟨hR, hzR⟩ := coulomb_exterior_radius_bounds z
-  have hsum : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun _ _ => norm_nonneg _
-  have hc : 0 < ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
-      ENNReal.ofReal ((1 + 2 * ∑ j, ‖z j‖ + 2) ^ (-|γ * αinf|)) :=
-    ENNReal.mul_pos (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
-      (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'
-  have hB := gmc_ball_mass_pos_ae P X hX γ hγ hγ2 M hM
-    (((1 + 2 * ∑ j, ‖z j‖ + 1 : ℝ)) : ℂ) (1 / 8) (by norm_num)
-  filter_upwards [hf, hB] with ω hω hBω
-  exact ⟨lt_of_lt_of_le (ENNReal.mul_pos hc.ne' hBω.ne')
-    (coulombMass_ge_exterior_ball (M ω) γ α z αinf hR hzR), hω⟩
+    ∀ᵐ ω ∂P, 0 < coulombMass γ (M ω) α z αinf ∧ coulombMass γ (M ω) α z αinf ≠ ⊤ := (coulombMass_ae_pos P X hX γ hγ hγ2 M hM α z αinf).and
+      ((coulombMass_ae_lt_top P X hX γ hγ hγ2 M hM z hz α αinf hα hinf).mono fun _ h => h.ne)
+
+end
 
 end DOZZ.Proofs

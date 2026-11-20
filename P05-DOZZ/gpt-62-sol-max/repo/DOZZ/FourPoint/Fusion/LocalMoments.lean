@@ -15,60 +15,6 @@ open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
-/-- The weighted moment comparison holds between any two centers in a bounded chart. -/
-theorem fusion_weightedMoment_location_transfer
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α : ℝ) (z z₀ : ℂ) (ρ R : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8)
-    (hR : 0 ≤ R) (hzR : ‖z‖ + ρ ≤ R) (hz₀R : ‖z₀‖ + ρ ≤ R)
-    (p : ℝ) (hp : 0 < p) (hp4 : p < 4 / γ ^ 2) :
-    weightedGmcBallMoment P M γ α z ρ p ≤
-      (ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 *
-          |p ^ 2 - p|)) * ENNReal.ofReal ((1 + R) ^ 4) ^ |p|) *
-        weightedGmcBallMoment P M γ α z₀ ρ p := by
-  let T : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 +
-      2 * Real.log (1 + R))) / 2 * |p ^ 2 - p|)) *
-      ENNReal.ofReal ((1 + R) ^ 4) ^ |p|
-  have hB : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
-  have hN : ∀ N : ℕ, ∫⁻ ω, (∫⁻ x in Metric.ball z ρ,
-      (insertionTruncWeight γ α N (x - z) : ℝ≥0∞) ∂M ω) ^ p ∂P ≤
-        T * weightedGmcBallMoment P M γ α z₀ ρ p := by
-    intro N
-    refine (gmc_weighted_ball_moment_transfer P X hX γ hγ hγ2 M hM z z₀ ρ R hρ hρ8
-      hR hzR hz₀R (insertionTruncWeight γ α N)
-      (measurable_insertionTruncWeight γ α N) (N : ℝ≥0) (insertionTruncWeight_le γ α N) p hp
-      hp4).trans (mul_le_mul' le_rfl ?_)
-    apply lintegral_mono
-    intro ω
-    refine ENNReal.rpow_le_rpow ?_ hp.le
-    apply lintegral_mono
-    intro x
-    dsimp only
-    rw [coe_insertionTruncWeight]
-    exact insertionTruncWeightE_le_weight γ α N (x - z₀)
-  -- monotone convergence in the truncation height
-  have hmeas : ∀ N : ℕ, AEMeasurable (fun ω => (∫⁻ x in Metric.ball z ρ,
-      (insertionTruncWeight γ α N (x - z) : ℝ≥0∞) ∂M ω) ^ p) P := fun N =>
-    (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
-      (measurable_coe_nnreal_ennreal.comp ((measurable_insertionTruncWeight γ α N).comp
-        (measurable_id.sub_const z))) _ hB).pow_const p
-  have hmono : ∀ᵐ ω ∂P, Monotone fun N : ℕ => (∫⁻ x in Metric.ball z ρ,
-      (insertionTruncWeight γ α N (x - z) : ℝ≥0∞) ∂M ω) ^ p := by
-    refine Eventually.of_forall fun ω m n hmn => ENNReal.rpow_le_rpow ?_ hp.le
-    apply lintegral_mono
-    intro x
-    simp only [coe_insertionTruncWeight]
-    exact insertionTruncWeightE_mono γ α (x - z) hmn
-  have hlim : ∀ᵐ ω ∂P, Tendsto (fun N : ℕ => (∫⁻ x in Metric.ball z ρ,
-      (insertionTruncWeight γ α N (x - z) : ℝ≥0∞) ∂M ω) ^ p) atTop
-        (𝓝 (ENNReal.rpow (weightedGmcBallMass γ (M ω) α z ρ) p)) :=
-    Eventually.of_forall fun ω =>
-      ((ENNReal.continuous_rpow_const (y := p)).tendsto _).comp
-        (insertionTrunc_mass_tendsto γ α (M ω) z ρ)
-  have hconv := lintegral_tendsto_of_tendsto_of_monotone hmeas hmono hlim
-  exact le_of_tendsto' hconv hN
-
 /-- Subcritical weighted moments vanish with a positive power, uniformly in the unit chart. -/
 theorem fusion_weightedMoment_small_uniform
     {Ω : Type*} [MeasurableSpace Ω]
@@ -105,7 +51,7 @@ theorem fusion_weightedMoment_small_uniform
   refine ⟨hξ, D * ENNReal.ofReal ((8 : ℝ) ^ ξ) * B,
     ENNReal.mul_lt_top (ENNReal.mul_lt_top hD ENNReal.ofReal_lt_top) hB, ?_⟩
   intro z hz r hr hr8
-  have hloc := fusion_weightedMoment_location_transfer P X hX γ hγ hγ2 M hM α z 0 r 2
+  have hloc := weightedGmcBallMoment_le_transfer P X hX γ hγ hγ2 M hM α z 0 r 2
     hr hr8 (by norm_num) (by linarith) (by simp; linarith) p hp hp4
   have hscale := gmc_weighted_ball_moment_scale P X hX γ M hM α
     (c := 8 * r) (R := 1 / 8) (by positivity) (by linarith) (by norm_num) (by norm_num) p

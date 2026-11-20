@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.PastOuterMass
 public import DOZZ.FourPoint.Reflected.SpatialBoundary
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! The actual retained GMC mass is a stopped-past observable, shown by radial reinsertion. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set
@@ -19,7 +20,7 @@ theorem reflected_source_outerMass_pastCode_ae
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (A : Ω → TwoSidedPath) (N : Ω → Measure ℂ)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω))))
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (α₁ α₂ α₃ ξ : ℝ) (z : ℂ) (T : ℝ≥0)
     (hr : 0 < ‖z‖^(1-ξ)) (hz : ‖z‖ < ‖z‖^(1-ξ))
     (hT : Real.exp (-(T : ℝ)) ≤ ‖z‖^(1-ξ)) :

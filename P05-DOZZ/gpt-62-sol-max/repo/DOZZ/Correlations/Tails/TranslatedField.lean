@@ -23,17 +23,16 @@ noncomputable def translatedField {Ω : Type*} (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (z : ℂ) : Ω → Distr :=
   repinField X (fun ω => Xc ω z 0) 1 z
 
-theorem translated_field_isEquatorGFF
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) : IsEquatorGFF P (translatedField X Xc z) := by
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+  (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (z : ℂ)
+include Ω hX hc
+
+theorem translated_field_isEquatorGFF : IsEquatorGFF P (translatedField X Xc z) := by
   simpa only [translatedField, norm_one, Real.log_one, neg_zero] using
     isEquatorGFF_repinField P X Xc 1 z hX hc one_ne_zero
 
-theorem translated_field_circleAverage
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) : IsCircleAverage P (translatedField X Xc z)
+theorem translated_field_circleAverage : IsCircleAverage P (translatedField X Xc z)
       (fun ω x r => Xc ω (z+x) r - Xc ω z 0) := by
   have he : repinCircle Xc (fun ω => Xc ω z (-Real.log ‖(1 : ℂ)‖)) 1 z =
       (fun ω x r => Xc ω (z+x) r - Xc ω z 0) := by
@@ -45,10 +44,7 @@ theorem translated_field_circleAverage
 
 /-- Any GMC of the realized translated field has the literal transported source restriction.
 This equality is on one event for all measurable integrands, including singular masses. -/
-theorem translated_source_gmc_restriction
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (hz : 2 ≤ ‖z‖) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem translated_source_gmc_restriction (hz : 2 ≤ ‖z‖) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : IsGMCOf P (translatedField X Xc z) γ N) :
     ∀ᵐ ω ∂P, (N ω).restrict (Metric.ball 0 1) =
@@ -64,10 +60,7 @@ theorem translated_source_gmc_restriction
 
 /-- A genuine translated equator GMC exists on the original probability space and agrees
 with the transported source chaos throughout the unit disk. -/
-theorem translated_source_gmc_exists
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (hz : 2 ≤ ‖z‖) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem translated_source_gmc_exists (hz : 2 ≤ ‖z‖) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     ∃ N : Ω → Measure ℂ, IsGMCOf P (translatedField X Xc z) γ N ∧
       ∀ᵐ ω ∂P, (N ω).restrict (Metric.ball 0 1) =
@@ -76,6 +69,8 @@ theorem translated_source_gmc_exists
     (translatedField X Xc z) (translated_field_isEquatorGFF P X Xc hX hc z)
     γ hγ hγ2
   exact ⟨N, hN, translated_source_gmc_restriction P X Xc hX hc z hz γ hγ hγ2 M hM N hN⟩
+
+end
 
 
 end DOZZ.Proofs

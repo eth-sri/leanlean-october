@@ -8,9 +8,6 @@ public import DOZZ.ShiftEquations.Mobius.RepinGMC
 public import DOZZ.Statements.GMC.CoulombMass
 public import DOZZ.Statements.Correlations.NPointSExp
 public import DOZZ.GMC.SharpMoments.SeibergWeight
-import DOZZ.GMC.EquatorGFFChaosTransportLaw
-import DOZZ.GMC.Construction.GMCGeneralTiltLimit
-import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-!
 # Coulomb moments under affine maps
@@ -85,24 +82,6 @@ theorem affine_affineInv (a b : ℂ) (ha : a ≠ 0) (x : ℂ) : a * affineInv a 
   unfold affineInv
   field_simp
   ring
-
-/-- Gaussian `L²` limits of test evaluations are closed under scaling. -/
-theorem IsGaussianL2Limit.const_mul {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {X : Ω → Distr} {L : Ω → ℝ} (hL : IsGaussianL2Limit P X L) (c : ℝ) :
-    IsGaussianL2Limit P X (fun ω => c * L ω) := by
-  obtain ⟨hLm, f, hf⟩ := hL
-  refine ⟨hLm.const_mul c, fun n => c • f n, ?_⟩
-  have h : ∀ n, (fun ω => c * L ω - X ω (c • f n)) = fun ω => c • (L ω - X ω (f n)) :=
-    fun n => by
-      funext ω
-      rw [map_smul, smul_eq_mul, smul_eq_mul]
-      ring
-  simp_rw [h]
-  have heq : ∀ n, eLpNorm (fun ω => c • (L ω - X ω (f n))) 2 P =
-      ‖c‖ₑ * eLpNorm (fun ω => L ω - X ω (f n)) 2 P := fun n =>
-    eLpNorm_const_smul c (fun ω => L ω - X ω (f n)) 2 P
-  simp_rw [heq]
-  simpa using ENNReal.Tendsto.const_mul hf (Or.inr enorm_ne_top)
 
 end DOZZ.Proofs
 

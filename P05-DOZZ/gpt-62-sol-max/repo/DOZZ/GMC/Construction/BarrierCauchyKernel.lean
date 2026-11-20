@@ -72,8 +72,7 @@ theorem integral_gaussianRectangleIndicator_abs_le_one
     rw [← hEq]
     apply MeasurableSet.iInter
     intro i
-    have hcoord : Measurable (fun z : ι → ℝ => z i + shift i) := by fun_prop
-    exact measurableSet_le hcoord measurable_const
+    apply measurableSet_le <;> fun_prop
   have hZae : AEMeasurable Z P := by
     apply AEMeasurable.of_eval
     intro i
@@ -215,14 +214,11 @@ noncomputable def compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
     (P : Measure Ω)
     (Y Z : Ω → ℝ → ℂ → ℝ) (γ a : ℝ) (k₀ : ℕ)
     (r s : ℝ) (x y : ℂ) (b₁ b₂ : Bool) : ℝ≥0∞ := by
-  classical
-  exact ∫⁻ ω,
-    admissibleLogWickWeight P (if b₁ then Y else Z) γ (Real.exp (-r)) x ω *
-    admissibleLogWickWeight P (if b₂ then Y else Z) γ (Real.exp (-s)) y ω *
-    Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-      (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-    Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-      (fun _ => (1 : ℝ≥0∞)) (ω, y) ∂P
+  exact ∫⁻ (ω : Ω),
+    admissibleLogWickWeight P (if b₁ = true then Y else Z) γ (Real.exp (-r)) x ω *
+          admissibleLogWickWeight P (if b₂ = true then Y else Z) γ (Real.exp (-s)) y ω *
+        (admissibleGrowingBarrierSet Y a k₀ r).indicator (fun x => 1) (ω, x) *
+      (admissibleGrowingBarrierSet Y a k₀ s).indicator (fun x => 1) (ω, y) ∂P
 
 
 /-- The mixed Wick kernel with both growing barriers truncated at the fixed integer level `m`.
@@ -231,14 +227,11 @@ noncomputable def compatibleAdmissibleSelectedFiniteBarrierPairKernel
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (Y Z : Ω → ℝ → ℂ → ℝ) (γ a : ℝ) (k₀ m : ℕ)
     (ε δ : ℝ) (x y : ℂ) (b₁ b₂ : Bool) : ℝ≥0∞ := by
-  classical
-  exact ∫⁻ ω,
-    admissibleLogWickWeight P (if b₁ then Y else Z) γ ε x ω *
-    admissibleLogWickWeight P (if b₂ then Y else Z) γ δ y ω *
-    Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-      (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-    Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-      (fun _ => (1 : ℝ≥0∞)) (ω, y) ∂P
+  exact ∫⁻ (ω : Ω),
+    admissibleLogWickWeight P (if b₁ = true then Y else Z) γ ε x ω *
+          admissibleLogWickWeight P (if b₂ = true then Y else Z) γ δ y ω *
+        (admissibleGrowingBarrierSet Y a k₀ ↑m).indicator (fun x => 1) (ω, x) *
+      (admissibleGrowingBarrierSet Y a k₀ ↑m).indicator (fun x => 1) (ω, y) ∂P
 
 /-- Once both cutoffs include every scale through `m`, the full growing-barrier kernel is
 dominated by its finite-barrier truncation. -/
@@ -287,22 +280,15 @@ theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarri
           (fun _ => (1 : ℝ≥0∞)) (ω, x) *
         Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
           (fun _ => (1 : ℝ≥0∞)) (ω, y) := by
-    calc
-      _ = Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-            (fun _ => (1 : ℝ≥0∞)) (ω, y) *
-          Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-            (fun _ => (1 : ℝ≥0∞)) (ω, x) := mul_comm _ _
-      _ ≤ Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-            (fun _ => (1 : ℝ≥0∞)) (ω, y) *
-          Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-            (fun _ => (1 : ℝ≥0∞)) (ω, x) :=
-          mul_le_mul_of_nonneg_left (hsubset r hmr ω x) (by positivity)
-      _ = _ := mul_comm _ _
-      _ ≤ Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-            (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-          Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-            (fun _ => (1 : ℝ≥0∞)) (ω, y) :=
-          mul_le_mul_of_nonneg_left (hsubset s hms ω y) (by positivity)
+    exact Trans.trans
+      (Trans.trans
+        (Trans.trans
+          (mul_comm ((admissibleGrowingBarrierSet Y a k₀ r).indicator (fun x => 1) (ω, x))
+            ((admissibleGrowingBarrierSet Y a k₀ s).indicator (fun x => 1) (ω, y)))
+          (mul_le_mul_of_nonneg_left (hsubset r hmr ω x) zero_le))
+        (mul_comm ((admissibleGrowingBarrierSet Y a k₀ s).indicator (fun x => 1) (ω, y))
+          ((admissibleGrowingBarrierSet Y a k₀ ↑m).indicator (fun x => 1) (ω, x))))
+      (mul_le_mul_of_nonneg_left (hsubset s hms ω y) zero_le)
   calc
     _ = (Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
           (fun _ => (1 : ℝ≥0∞)) (ω, x) *

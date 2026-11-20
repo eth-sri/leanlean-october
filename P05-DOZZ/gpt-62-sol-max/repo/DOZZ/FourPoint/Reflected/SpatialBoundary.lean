@@ -17,16 +17,9 @@ theorem reflected_gmc_sphere_null
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (c : ℂ) (r : ℝ) :
-    ∀ᵐ ω ∂P, M ω (Metric.sphere c r) = 0 := by
-  have hint := equatorGFF_GMC_intensity P X hX γ hγ hγ₂ M hM
-    (Metric.sphere c r) Metric.isClosed_sphere.measurableSet
-  have href : gmcReferenceMeasure (Metric.sphere c r) = 0 := by
-    unfold gmcReferenceMeasure
-    exact withDensity_absolutelyContinuous _ _ (MeasureTheory.Measure.addHaar_sphere volume c r)
-  rw [href] at hint
-  exact (lintegral_eq_zero_iff'
-    (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ₂ M hM
-      (Metric.sphere c r) Metric.isClosed_sphere.measurableSet)).mp hint
+    ∀ᵐ ω ∂P, M ω (Metric.sphere c r) = 0 :=
+  equatorGFF_GMC_ae_null_of_volume_null P X hX γ hγ hγ₂ M hM _
+    Metric.isClosed_sphere.measurableSet (Measure.addHaar_sphere volume c r)
 
 /-- Closed and open exteriors agree for every nonnegative weight when the circle is null. -/
 theorem reflected_exterior_integral_open (μ : Measure ℂ) (r : ℝ)

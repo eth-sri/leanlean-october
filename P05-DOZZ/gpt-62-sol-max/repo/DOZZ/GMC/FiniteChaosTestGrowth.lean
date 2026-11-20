@@ -15,16 +15,25 @@ open scoped Distributions Topology
 
 namespace DOZZ.Proofs
 
+section
+variable {ι : Type*} [Fintype ι] (a v : ι → ℝ) (γ : ℝ)
+include ι
+
+/-- The finite-chaos mass is nonnegative when all coefficients are nonnegative. -/
+lemma finiteChaosVectorMass_nonneg (ha : ∀ i, 0 ≤ a i) (x : ι → ℝ) :
+    0 ≤ finiteChaosVectorMass a v γ x := by
+  classical
+  unfold finiteChaosVectorMass
+  exact Finset.sum_nonneg fun i hi => mul_nonneg (ha i) (Real.exp_nonneg _)
+
 /-- Every Wick weight in a finite family has a common absolute-exponential envelope. -/
-theorem finiteChaosVectorWeight_absExp_bound
-    {ι : Type*} [Fintype ι]
-    (a v : ι → ℝ) (γ : ℝ) :
+theorem finiteChaosVectorWeight_absExp_bound :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ z i,
       ‖finiteChaosVectorWeight a v γ z i‖ ≤
         B * Real.exp (|γ| * ∑ j, |z j|) := by
   classical
-  let b : ι → ℝ := fun i => |a i| * Real.exp (|γ ^ 2 / 2 * v i|)
-  let B : ℝ := 1 + ∑ i, b i
+  let b  := fun i => |a i| * Real.exp (|γ ^ 2 / 2 * v i|)
+  let B  := 1 + ∑ i, b i
   have hb (i : ι) : 0 ≤ b i := by
     dsimp [b]
     positivity
@@ -51,7 +60,7 @@ theorem finiteChaosVectorWeight_absExp_bound
       simpa using (Finset.single_le_sum (s := Finset.univ)
         (f := fun j : ι => |z j|)
         (fun j hj => abs_nonneg (z j)) (Finset.mem_univ i))
-    have hcoord' : |γ| * |z i| ≤ |γ| * ∑ j, |z j| :=
+    have hcoord'  :=
       mul_le_mul_of_nonneg_left hcoord (abs_nonneg γ)
     have hconst : -(γ ^ 2 / 2 * v i) ≤ |γ ^ 2 / 2 * v i| := neg_le_abs _
     linarith
@@ -66,165 +75,66 @@ theorem finiteChaosVectorWeight_absExp_bound
     _ ≤ B * Real.exp (|γ| * ∑ j, |z j|) :=
       mul_le_mul_of_nonneg_right (hbi i) (Real.exp_nonneg _)
 
+end
+
+/-- The two-weight part of the Hessian of a scalar test of a Wick sum. -/
+noncomputable def finiteChaosVectorPairScore {ι : Type*} [Fintype ι]
+    (a v : ι → ℝ) (γ : ℝ) (F'' : ℝ → ℝ) (z : ι → ℝ) (i j : ι) : ℝ :=
+  finiteChaosVectorWeight a v γ z i * finiteChaosVectorWeight a v γ z j *
+    F'' (finiteChaosVectorMass a v γ z)
+
 /-- Bounded first and second derivatives give an exponential-linear envelope for the score used
 in the Gaussian integration-by-parts formula. -/
 theorem finiteChaosVectorTestScore_exp_growth_bounds
     {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (a v : ι → ℝ) (γ B₁ B₂ : ℝ) (hB₁ : 0 ≤ B₁) (hB₂ : 0 ≤ B₂)
+    (a v : ι → ℝ) (ha : ∀ i, 0 ≤ a i) (γ B₁ B₂ : ℝ) (hB₁ : 0 ≤ B₁) (hB₂ : 0 ≤ B₂)
     (F' F'' : ℝ → ℝ)
-    (hF' : ∀ x, ‖F' x‖ ≤ B₁) (hF'' : ∀ x, ‖F'' x‖ ≤ B₂) :
+    (hF' : ∀ x, 0 ≤ x → ‖F' x‖ ≤ B₁) (hF'' : ∀ x, 0 ≤ x → ‖F'' x‖ ≤ B₂) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ z i j,
       ‖finiteChaosVectorTestScore a v γ F' z i‖ ≤
           M * Real.exp (2 * (|γ| * ∑ k, |z k|)) ∧
       ‖finiteChaosVectorTestScoreDerivative a v γ F' F'' z i j‖ ≤
+          M * Real.exp (2 * (|γ| * ∑ k, |z k|)) ∧
+      ‖finiteChaosVectorPairScore a v γ F'' z i j‖ ≤
           M * Real.exp (2 * (|γ| * ∑ k, |z k|)) := by
-  classical
   obtain ⟨B, hB, hWeight⟩ := finiteChaosVectorWeight_absExp_bound a v γ
-  let u : (ι → ℝ) → ℝ := fun z => |γ| * ∑ k, |z k|
-  let E : (ι → ℝ) → ℝ := fun z => Real.exp (2 * u z)
-  let M : ℝ := B * B₁ + |γ| * (B * B₁ + B ^ 2 * B₂)
-  have hu (z : ι → ℝ) : 0 ≤ u z :=
-    mul_nonneg (abs_nonneg _) (Finset.sum_nonneg fun k hk => abs_nonneg _)
-  have hExp (z : ι → ℝ) : Real.exp (u z) ≤ E z := by
-    apply Real.exp_le_exp.mpr
-    linarith [hu z]
-  have hExpSq (z : ι → ℝ) :
-      Real.exp (u z) * Real.exp (u z) = E z := by
-    rw [← Real.exp_add]
-    congr 1
-    ring
-  refine ⟨M, ?_, ?_⟩
-  · dsimp [M]
-    positivity
-  · intro z i j
-    constructor
-    · rw [finiteChaosVectorTestScore]
-      have hw := hWeight z i
-      calc
-        ‖finiteChaosVectorWeight a v γ z i * F'
-            (finiteChaosVectorMass a v γ z)‖ ≤
-            ‖finiteChaosVectorWeight a v γ z i‖ * B₁ := by
-              rw [norm_mul]
-              exact mul_le_mul_of_nonneg_left (hF' _) (norm_nonneg _)
-        _ ≤ B * Real.exp (u z) * B₁ := by
-              exact mul_le_mul_of_nonneg_right hw hB₁
-        _ ≤ B * B₁ * E z := by
-              calc
-                _ = (B * B₁) * Real.exp (u z) := by ring
-                _ ≤ (B * B₁) * E z :=
-                  mul_le_mul_of_nonneg_left (hExp z) (mul_nonneg hB hB₁)
-        _ ≤ M * E z := by
-              apply mul_le_mul_of_nonneg_right _ (Real.exp_nonneg _)
-              dsimp [M]
-              exact le_add_of_nonneg_right
-                (mul_nonneg (abs_nonneg γ) (by positivity))
-    · rw [finiteChaosVectorTestScoreDerivative]
-      have hw₁ := hWeight z i
-      have hw₂ := hWeight z j
-      have hdiag : ‖if i = j then
-          finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)
-          else 0‖ ≤ B * B₁ * E z := by
-        have hdiag' : ‖finiteChaosVectorWeight a v γ z i *
-            F' (finiteChaosVectorMass a v γ z)‖ ≤ B * B₁ * E z := by
-          calc
-            _ = ‖finiteChaosVectorWeight a v γ z i‖ *
-                ‖F' (finiteChaosVectorMass a v γ z)‖ := norm_mul _ _
-            _ ≤ ‖finiteChaosVectorWeight a v γ z i‖ * B₁ :=
-              mul_le_mul_of_nonneg_left (hF' _) (norm_nonneg _)
-            _ ≤ B * Real.exp (u z) * B₁ :=
-              mul_le_mul_of_nonneg_right hw₁ hB₁
-            _ ≤ B * B₁ * E z := by
-              calc
-                _ = (B * B₁) * Real.exp (u z) := by ring
-                _ ≤ (B * B₁) * E z :=
-                  mul_le_mul_of_nonneg_left (hExp z) (mul_nonneg hB hB₁)
-        by_cases hij : i = j
-        · rw [ite_eq_left hij]
-          exact hdiag'
-        · rw [ite_eq_right hij]
-          simp only [norm_zero]
-          exact mul_nonneg (mul_nonneg hB hB₁) (Real.exp_nonneg _)
-      have hprod :
-          ‖finiteChaosVectorWeight a v γ z i *
-            finiteChaosVectorWeight a v γ z j *
-            F'' (finiteChaosVectorMass a v γ z)‖ ≤ B ^ 2 * B₂ * E z := by
-        calc
-          _ = ‖finiteChaosVectorWeight a v γ z i‖ *
-                ‖finiteChaosVectorWeight a v γ z j‖ *
-                ‖F'' (finiteChaosVectorMass a v γ z)‖ := by
-              rw [norm_mul, norm_mul]
-          _ ≤ (B * Real.exp (u z)) * (B * Real.exp (u z)) * B₂ := by
-            apply mul_le_mul
-              (mul_le_mul hw₁ hw₂ (norm_nonneg _) (by positivity))
-              (hF'' _)
-              (norm_nonneg _)
-              (by positivity)
-          _ = B ^ 2 * B₂ * E z := by
-            calc
-              _ = B ^ 2 * B₂ * (Real.exp (u z) * Real.exp (u z)) := by ring
-              _ = B ^ 2 * B₂ * E z := by rw [hExpSq]
-      have hsum :
-          ‖γ * (if i = j then
-              finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)
-              else 0) +
-            γ * finiteChaosVectorWeight a v γ z i *
-              finiteChaosVectorWeight a v γ z j *
-                F'' (finiteChaosVectorMass a v γ z)‖ ≤
-          |γ| * (B * B₁ + B ^ 2 * B₂) * E z := by
-        have hnormDiag :
-            ‖γ * (if i = j then
-              finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)
-              else 0)‖ = |γ| * ‖if i = j then
-              finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)
-              else 0‖ := by
-          rw [norm_mul, Real.norm_eq_abs]
-        have hnormProd :
-            ‖γ * finiteChaosVectorWeight a v γ z i *
-              finiteChaosVectorWeight a v γ z j *
-              F'' (finiteChaosVectorMass a v γ z)‖ =
-            |γ| * ‖finiteChaosVectorWeight a v γ z i *
-              finiteChaosVectorWeight a v γ z j *
-              F'' (finiteChaosVectorMass a v γ z)‖ := by
-          calc
-            _ = ‖γ * (finiteChaosVectorWeight a v γ z i *
-                finiteChaosVectorWeight a v γ z j *
-                F'' (finiteChaosVectorMass a v γ z))‖ := by congr 1; ring
-            _ = _ := by rw [norm_mul, Real.norm_eq_abs]
-        calc
-          _ ≤ ‖γ * (if i = j then
-                finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)
-                else 0)‖ +
-              ‖γ * finiteChaosVectorWeight a v γ z i *
-                finiteChaosVectorWeight a v γ z j *
-                  F'' (finiteChaosVectorMass a v γ z)‖ := norm_add_le _ _
-          _ = |γ| * ‖if i = j then
-                finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)
-                else 0‖ +
-              |γ| * ‖finiteChaosVectorWeight a v γ z i *
-                finiteChaosVectorWeight a v γ z j *
-                  F'' (finiteChaosVectorMass a v γ z)‖ := by
-                rw [hnormDiag, hnormProd]
-          _ ≤ |γ| * (B * B₁ * E z) + |γ| * (B ^ 2 * B₂ * E z) := by
-            exact add_le_add
-              (mul_le_mul_of_nonneg_left hdiag (abs_nonneg γ))
-              (mul_le_mul_of_nonneg_left hprod (abs_nonneg γ))
-          _ = _ := by ring
-      calc
-        _ = ‖γ * (if i = j then
-              finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)
-              else 0) +
-            γ * finiteChaosVectorWeight a v γ z i *
-              finiteChaosVectorWeight a v γ z j *
-                F'' (finiteChaosVectorMass a v γ z)‖ := rfl
-        _ ≤ |γ| * (B * B₁ + B ^ 2 * B₂) * E z := hsum
-        _ ≤ M * E z := by
-          apply mul_le_mul_of_nonneg_right _ (Real.exp_nonneg _)
-          dsimp [M]
-          calc
-            |γ| * (B * B₁ + B ^ 2 * B₂) ≤
-                |γ| * (B * B₁ + B ^ 2 * B₂) + B * B₁ :=
-              le_add_of_nonneg_right (mul_nonneg hB hB₁)
-            _ = B * B₁ + |γ| * (B * B₁ + B ^ 2 * B₂) := by ring
-
+  let K := B * B₁
+  let L := B ^ 2 * B₂
+  refine ⟨K + L + |γ| * (K + L), by dsimp [K, L]; positivity, fun z i j => ?_⟩
+  let u := |γ| * ∑ k, |z k|
+  let e := Real.exp (2 * u)
+  have hu : 0 ≤ u := by dsimp [u]; positivity
+  have he : Real.exp u ≤ e := Real.exp_le_exp.mpr (by linarith)
+  have hsq : Real.exp u * Real.exp u = e := by rw [← Real.exp_add, ← two_mul]
+  have hm := finiteChaosVectorMass_nonneg a v γ ha z
+  have hf (i : ι) : ‖finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)‖ ≤ K * e := by
+    rw [norm_mul]
+    calc
+      _ ≤ B * Real.exp u * B₁ := mul_le_mul (hWeight z i) (hF' _ hm) (norm_nonneg _) (by positivity)
+      _ = K * Real.exp u := by dsimp [K]; ring
+      _ ≤ K * e := mul_le_mul_of_nonneg_left he (by dsimp [K]; positivity)
+  have hd : ‖if i = j then finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z) else 0‖
+      ≤ K * e := by
+    split_ifs <;> first | exact hf i | simp only [norm_zero]; dsimp [K, e]; positivity
+  have hp : ‖finiteChaosVectorWeight a v γ z i * finiteChaosVectorWeight a v γ z j *
+      F'' (finiteChaosVectorMass a v γ z)‖ ≤ L * e := by
+    rw [norm_mul, norm_mul]
+    calc
+      _ ≤ (B * Real.exp u) * (B * Real.exp u) * B₂ :=
+        mul_le_mul (mul_le_mul (hWeight z i) (hWeight z j) (norm_nonneg _) (by positivity))
+          (hF'' _ hm) (norm_nonneg _) (by positivity)
+      _ = L * e := by rw [← hsq]; dsimp [L]; ring
+  have hKL : 0 ≤ K ∧ 0 ≤ L := by dsimp [K, L]; constructor <;> positivity
+  refine ⟨(hf i).trans (mul_le_mul_of_nonneg_right ?_ (Real.exp_nonneg _)), ?_,
+    hp.trans (mul_le_mul_of_nonneg_right ?_ (Real.exp_nonneg _))⟩
+  · exact (le_add_of_nonneg_right hKL.2).trans (le_add_of_nonneg_right (by positivity))
+  · unfold finiteChaosVectorTestScoreDerivative
+    simp only [mul_assoc, ← mul_add, norm_mul, Real.norm_eq_abs γ]
+    refine (mul_le_mul_of_nonneg_left ((norm_add_le _ _).trans (add_le_add hd
+      (by simpa only [mul_assoc] using hp))) (abs_nonneg γ)).trans ?_
+    change |γ| * (K * e + L * e) ≤ (K + L + |γ| * (K + L)) * e
+    rw [← add_mul, ← mul_assoc]
+    exact mul_le_mul_of_nonneg_right (le_add_of_nonneg_left (add_nonneg hKL.1 hKL.2)) (Real.exp_nonneg _)
+  · exact (le_add_of_nonneg_left hKL.1).trans (le_add_of_nonneg_right (by positivity))
 
 end DOZZ.Proofs

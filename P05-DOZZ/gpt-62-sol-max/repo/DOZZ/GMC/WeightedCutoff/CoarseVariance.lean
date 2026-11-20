@@ -27,7 +27,7 @@ theorem gmcCircle_variance_le_bounded_radius
       calc
         ‖z‖ = ‖(z - x) + x‖ := by congr 1; abel
         _ ≤ ‖z - x‖ + ‖x‖ := norm_add_le _ _
-        _ ≤ U + B := by rw [hz]; exact add_le_add hrU hx
+        _ ≤ U + B := by linarith
     apply Real.log_le_log (by dsimp [normPlus]; positivity)
     dsimp [normPlus]
     exact max_le (by linarith) (by linarith)

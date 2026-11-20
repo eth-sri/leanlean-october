@@ -6,7 +6,6 @@ module
 public import DOZZ.FourPoint.Reflected.SourceWilliamsSqueeze
 public import DOZZ.FourPoint.Reflected.SourceWilliamsParetoIntegral
 public import DOZZ.FourPoint.Reflected.SourceParetoLimit
-public import DOZZ.FourPoint.Reflected.SourceParetoCutLimit
 public import DOZZ.FourPoint.Reflected.CutMoment
 public import DOZZ.FourPoint.Reflected.OrderedCutSqueeze
 import Mathlib.Tactic
@@ -69,31 +68,24 @@ theorem reflected_source_williams_increment_tendsto
   let Lcut := fun H : ℝ => c*Λ*(∫⁻ ω, twoSidedReflectionCutMass γ H B Z ω ^a ∂P).toReal
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have hBm := conditionedPair_aemeasurable P B ν hData.1
-  have hJm := (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z hBm hData.2.1).ennreal_toReal
+  have hJm := (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z hBm hData.2.1)
   have hKm (H : ℝ) := (twoSidedReflectionCutMass_aemeasurable P γ H B Z hBm
-    hData.2.1.2.2.2.1 hData.2.1.2.2.2.2.1).ennreal_toReal
-  have hsmall : ∀ᶠ z : ℂ in 𝓝[≠] (0 : ℂ), z ≠ 0 ∧ z ≠ 1 ∧ ‖z‖ ≤ 1 := by
-    have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 ‖(0 : ℂ)‖) :=
-      (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-    filter_upwards [self_mem_nhdsWithin,hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))]
-      with z hz hzn
-    have hz1 : z ≠ 1 := by intro he; simp [he] at hzn
-    exact ⟨hz,hz1,hzn.le⟩
+    hData.2.1.2.2.2.1 hData.2.1.2.2.2.2.1)
   have hsand (H : ℝ) (hH : 0 < H) : ∀ᶠ z : ℂ in 𝓝[≠] (0 : ℂ),
       G z ≤ W z ∧ W z ≤ K H z+E H z := by
-    filter_upwards [hsmall] with z hz
+    filter_upwards [eventually_punctured_unitBall] with z hz
     have hbnd := (reflected_source_williams_expectation_squeeze P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h p hα₁ hα₂ hα₃ hh hp hξ hξ₁ B Z hData B₀ hB₀
         (Real.toNNReal H) (by simpa only [Real.coe_toNNReal H hH.le] using hH)
-        z hz.1 hz.2.1 hz.2.2).2
+        z hz.1 hz.2.1 hz.2.2.le).2
     have heJ := reflected_source_williams_pareto_integral P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h p hα₁ hα₂ hα₃ hh hp hξ hξ₁ B₀ hB₀
         (fun ω => (twoSidedReflectionMass γ B Z ω).toReal)
-        (ae_of_all P fun _ => ENNReal.toReal_nonneg) hJm z hz.1 hz.2.1 hz.2.2
+        (ae_of_all P fun _ => ENNReal.toReal_nonneg) hJm.ennreal_toReal z hz.1 hz.2.1 hz.2.2.le
     have heK := reflected_source_williams_pareto_integral P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h p hα₁ hα₂ hα₃ hh hp hξ hξ₁ B₀ hB₀
         (fun ω => (twoSidedReflectionCutMass γ H B Z ω).toReal)
-        (ae_of_all P fun _ => ENNReal.toReal_nonneg) (hKm H) z hz.1 hz.2.1 hz.2.2
+        (ae_of_all P fun _ => ENNReal.toReal_nonneg) (hKm H).ennreal_toReal z hz.1 hz.2.1 hz.2.2.le
     simp only [Real.coe_toNNReal H hH.le] at hbnd
     rw [heJ,heK] at hbnd
     exact hbnd
@@ -101,9 +93,11 @@ theorem reflected_source_williams_increment_tendsto
       (𝓝 (c*Λ*reflectionBarR P γ α₁ B Z)) := by
     exact reflected_source_pareto_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
         α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hξ hξ₁ B Z hData
+        (twoSidedReflectionMass γ B Z) hJm (fun _ => le_rfl)
   have hK (H : ℝ) : Tendsto (fun z : ℂ => K H z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (Lcut H)) := by
-    exact reflected_source_pareto_cut_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
-      α₁ α₂ α₃ ξ h H hα₁ hreflect hα₂ hα₃ hh hs hξ hξ₁ B Z hData
+    exact reflected_source_pareto_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
+      α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hξ hξ₁ B Z hData
+        (twoSidedReflectionCutMass γ H B Z) (hKm H) (twoSidedReflectionCutMass_le_mass γ H B Z)
   have hL : Tendsto Lcut atTop (𝓝 (c*Λ*reflectionBarR P γ α₁ B Z)) := by
     exact (reflected_cut_moment_tendsto P γ α₁ B Z hγ hγ₂ hα₁ hreflect hData).const_mul (c*Λ)
   have hF : Tendsto (fun z : ℂ => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) :=

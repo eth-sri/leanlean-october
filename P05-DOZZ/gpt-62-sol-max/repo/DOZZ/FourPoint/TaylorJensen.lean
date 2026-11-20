@@ -31,7 +31,7 @@ theorem jensen_inverse_square_bound (A L J I : ℝ≥0∞) (p : ℝ)
     (hp : 0 ≤ p) (hA : A ^ 2 ≤ J * L) (hL : L ≤ I) :
     A ^ 2 * I ^ (-p - 2) ≤ J * I ^ (-p - 1) := by
   by_cases hI0 : I = 0
-  · have hL0 : L = 0 := le_zero_iff.mp (hI0 ▸ hL)
+  · have hL0  := le_zero_iff.mp (hI0 ▸ hL)
     have hh := mul_le_mul' hA (le_refl (I ^ (-p - 2)))
     simp only [hL0, mul_zero, zero_mul] at hh
     exact hh.trans zero_le

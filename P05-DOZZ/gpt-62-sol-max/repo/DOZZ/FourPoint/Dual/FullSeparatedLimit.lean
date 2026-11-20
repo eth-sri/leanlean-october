@@ -45,21 +45,19 @@ theorem dual_full_separated_inverse_littleO
   simp only [mul_zero] at ht
   rw [tendsto_zero_iff_norm_tendsto_zero]
   apply squeeze_zero' (Eventually.of_forall fun z => norm_nonneg _) ?_ ht
-  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hpow (v : ℝ) (hv : 0 < v) : Tendsto (fun z : ℂ => ‖z‖^v) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [Function.comp_def, Real.zero_rpow hv.ne'] using
-      ((Real.continuous_rpow_const hv.le).tendsto (0 : ℝ)).comp hn
+  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 0) :=
+    (tendsto_norm_zero (E := ℂ)).mono_left nhdsWithin_le_nhds
+  have hpow (v : ℝ) (hv : 0 < v) := hn.rpow_const_nhds_zero hv
   have hratio := (hpow ξ hξ).const_mul (Real.exp (-h))
   simp only [mul_zero] at hratio
   obtain ⟨Cb, _, hbi⟩ := dual_outerMass_inverse_moment_uniform P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ p hp.le
   obtain ⟨Cd, _, hdb⟩ := dual_deleted_disk_rooted_bound P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ (p+1) (by linarith only [hp]) hβ
-  filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds zero_lt_one),
+  filter_upwards [self_mem_nhdsWithin, hn.eventually_lt_const zero_lt_one,
     (hpow (1-ξ) (sub_pos.mpr hξ1)).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1/2)),
     (hpow ξ hξ).eventually (gt_mem_nhds zero_lt_one),
-    hratio.eventually (gt_mem_nhds zero_lt_one)] with z hz0 hz hcut hsmall hsr
+    hratio.eventually_lt_const zero_lt_one] with z hz0 hz hcut hsmall hsr
   have hz1 : z ≠ 1 := by intro he; simp [he] at hz
   have hr : 0 < r z := Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _
   have hs : 0 < s z := mul_pos (Real.exp_pos _) (norm_pos_iff.mpr hz0)
@@ -77,8 +75,8 @@ theorem dual_full_separated_inverse_littleO
     filter_upwards [dual_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
       α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hz.le (by linarith only [hcut]),
       dual_full_kernel_finite_ae P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ z hz0 hz1,
-      gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
-      gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1,
+      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM 0,
+      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ₂ M hM 1,
       reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 (r z)] with ω hb hf h0 h1 hc
     have he := dual_kernel_separated_split γ α₁ α₂ α₃ (s z) (r z) hs hsr' z (M ω) h0 h1 hc
     have hB := dual_outerMass_eq_comparison_region γ α₁ α₂ α₃ ξ hγ.ne' z (M ω) h0 h1 hzsep hc
@@ -86,7 +84,7 @@ theorem dual_full_separated_inverse_littleO
     dsimp only [B,S]
     rw [hB]
     exact le_add_left le_rfl
-  have hmM := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ₂ M hM
+  have hmM := equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM
   have hk := (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hFm : AEMeasurable (F z) P := (Measure.measurable_lintegral hk).comp_aemeasurable hmM
   have hSm : AEMeasurable (S z) P := by

@@ -41,8 +41,7 @@ theorem equatorPartitionCLM_support_subset_localBall (n : ℕ) (f : TestFn) :
   have hstrict : (n : ℝ) + 3 < gffLocalModeRadius (n + 5) - 1 := by
     rw [hrad]
     linarith
-  have hnorm' : ‖z‖ < gffLocalModeRadius (n + 5) - 1 := lt_of_le_of_lt hnorm hstrict
-  simpa [mem_ball, dist_eq_norm] using hnorm'
+  simpa [mem_ball, dist_eq_norm] using (lt_of_le_of_lt hnorm hstrict)
 
 
 theorem exists_nat_equatorPartition_reconstruction_radius (f : TestFn) :
@@ -53,8 +52,7 @@ theorem exists_nat_equatorPartition_reconstruction_radius (f : TestFn) :
   refine ⟨N, fun z hz => ?_⟩
   have hnorm : ‖z‖ < R := by
     simpa [mem_ball, dist_eq_norm] using hball hz
-  have hbound : ‖z‖ ≤ (N : ℝ) + 2 := by linarith
-  simpa [mem_closedBall, dist_eq_norm] using hbound
+  simpa [mem_closedBall, dist_eq_norm] using (by linarith)
 
 theorem sum_equatorPartitionCLM_range_eq_self_of_cutoff_eq_one
     (N : ℕ) (f : TestFn)
@@ -129,8 +127,7 @@ theorem ae_equatorDistributionEval_eq_equatorFieldL2 (f : TestFn) :
     rw [hsumLp']
     exact Lp.coeFn_fun_finsetSum s (fun n => equatorFieldL2 (equatorPartitionCLM n f))
   filter_upwards [ae_equatorHaarCommonGood, hlocalAll, hsumAE] with ω hgood hlocalω hsumω
-  rw [equatorDistributionEval, ite_eq_left hgood]
-  rw [equatorDistributionSeriesEval_eq_partialSum_of_tail_zero ω f N htailN]
+  rw [equatorDistributionEval, ite_eq_left hgood, equatorDistributionSeriesEval_eq_partialSum_of_tail_zero ω f N htailN]
   unfold equatorDistributionPartialSum
   calc
     _ = s.sum fun n => equatorFieldL2 (equatorPartitionCLM n f) ω := by

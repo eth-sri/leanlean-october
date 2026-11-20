@@ -19,10 +19,12 @@ open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+include hX
+
 /-- Equivalent circle-average witnesses give the same regularized random measure a.e. -/
 theorem regularizedGMC_ae_eq_of_circleAverage
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc Yc : Ω → ℂ → ℝ → ℝ)
     (hXc : IsCircleAverage P X Xc) (hYc : IsCircleAverage P X Yc)
     (γ r : ℝ) :
@@ -57,14 +59,10 @@ theorem regularizedGMC_ae_eq_of_circleAverage
     simp only [dX, dY]
     rw [hVariance x, hx]
   filter_upwards [hDensity] with ω hω
-  change volume.withDensity (fun x => dX (ω, x)) =
-    volume.withDensity (fun x => dY (ω, x))
-  exact withDensity_congr_ae hω
+  apply withDensity_congr_ae <;> assumption
 
 /-- Two finite random measures with the circle-average GMC convergence property agree a.e. -/
 theorem equatorGFF_GMC_unique_ae
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (M N : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hN : IsGMCOf P X γ N) :
     ∀ᵐ ω ∂P, M ω = N ω := by
@@ -91,10 +89,7 @@ theorem equatorGFF_GMC_unique_ae
         (fun r ω => ∫ x, f nm x ∂regularizedGMC P Yc γ r ω) atTop
         (fun ω => ∫ x, f nm x ∂M ω) := by
       apply TendstoInMeasure.congr hCutoff (Filter.Eventually.of_forall fun _ => rfl) hLeft
-    have hRight : TendstoInMeasure P
-        (fun r ω => ∫ x, f nm x ∂regularizedGMC P Yc γ r ω) atTop
-        (fun ω => ∫ x, f nm x ∂N ω) := hYN (f nm)
-    exact tendstoInMeasure_ae_unique hLeft' hRight
+    exact tendstoInMeasure_ae_unique hLeft' (hYN (f nm))
   have hAll : ∀ᵐ ω ∂P, ∀ nm : ℕ × ℕ,
       ∫ x, f nm x ∂M ω = ∫ x, f nm x ∂N ω := by
     rw [ae_all_iff]
@@ -114,5 +109,7 @@ theorem equatorGFF_GMC_unique_ae
     exact ⟨(hf n m).1, (hf n m).2.1⟩
   · exact fun n g hg hgs δ hδ => hdense n g hg hgs δ hδ
   · exact fun n m => hω (n, m)
+
+end
 
 end DOZZ.Proofs

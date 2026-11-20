@@ -13,9 +13,11 @@ bridge. -/
 open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- A uniform higher moment gives integrability and a uniform bound for the varying powers. -/
-theorem residue_integral_lower_power_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+theorem residue_integral_lower_power_le [IsProbabilityMeasure P]
     (Y : Ω → ℝ) (hY : AEMeasurable Y P) (hpos : ∀ᵐ ω ∂P, 0 ≤ Y ω)
     (q r : ℝ) (hq : 0 ≤ q) (hqr : q ≤ r)
     (hr : Integrable (fun ω => Y ω ^ r) P) :
@@ -25,8 +27,8 @@ theorem residue_integral_lower_power_le
   have hdom : ∀ᵐ ω ∂P, ‖Y ω ^ q‖ ≤ 1 + Y ω ^ r := by
     filter_upwards [hpos] with ω hω
     rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hω _)]
-    exact residue_rpow_le_one_add (Y ω) q r hω hq hqr
-  have hi : Integrable (fun ω => Y ω ^ q) P :=
+    apply residue_rpow_le_one_add <;> assumption
+  have hi  :=
     hb.mono' (hY.pow_const q).aestronglyMeasurable hdom
   refine ⟨hi, ?_⟩
   calc (∫ ω, Y ω ^ q ∂P) ≤ ∫ ω, 1 + Y ω ^ r ∂P :=
@@ -36,7 +38,6 @@ theorem residue_integral_lower_power_le
 /-- A nonnegative competitor with uniformly bounded moments cannot change the critical
 residue. The adjustable deterministic comparison replaces an independence assumption. -/
 theorem residue_addition_preserves_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (A R : ℝ → Ω → ℝ) (q : ℝ → ℝ) (β d₀ C L : ℝ)
     (hd₀ : 0 < d₀)
     (hA : ∀ d, 0 < d → d < d₀ → AEMeasurable (A d) P)
@@ -68,8 +69,7 @@ theorem residue_addition_preserves_limit
       apply hUi.mono' (((hA d hd hd').add (hR d hd hd')).pow_const (q d)).aestronglyMeasurable
       filter_upwards [hAnn d hd hd', hRnn d hd hd', hdom] with ω ha hr hh
       dsimp only [Pi.add_apply]
-      rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (add_nonneg ha hr) _)]
-      exact hh
+      rwa [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (add_nonneg ha hr) _)]
     constructor
     · apply mul_le_mul_of_nonneg_left _ hd.le
       apply integral_mono_ae (hiA d hd hd') hsumi
@@ -109,5 +109,7 @@ theorem residue_addition_preserves_limit
       exact hu'.eventually (Iio_mem_nhds hδb)
     filter_upwards [hnear, hub] with d hd hh
     exact (hbounds d hd.1 hd.2 δ hδ).2.trans_lt hh
+
+end
 
 end DOZZ.Proofs

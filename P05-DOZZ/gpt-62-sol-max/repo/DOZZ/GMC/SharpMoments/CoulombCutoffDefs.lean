@@ -82,16 +82,9 @@ theorem regularizedCoulombMass_eq_lintegral
     regularizedCoulombMass P Xc γ partition α z αinf r ω =
       ∫⁻ x, coulombCutoffWeight partition γ α z αinf r x ∂regularizedGMC P Xc γ r ω := by
   let _ := hX.1
-  have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
-    have hf : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
-      ((hXc.1 r).comp measurable_swap).pow_const 2
-    exact hf.stronglyMeasurable.integral_prod_right.measurable
-  have hX1 : Measurable (fun x : ℂ => Xc ω x r) :=
-    (hXc.1 r).comp (measurable_const.prodMk measurable_id)
-  have hwick : Measurable (fun x : ℂ => ENNReal.ofReal
-      (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P))) :=
-    ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-      ((hX1.const_mul γ).sub (hV.const_mul _)))
+  have hwick : Measurable (gmcCircleWickDensity P Xc γ r ω) :=
+    (measurable_gmcCircleWickDensity_joint P Xc γ r (hXc.1 r)).comp
+      (measurable_const.prodMk measurable_id)
   have hfin : Measurable fun x : ℂ => (partition.finiteWeight x : ℝ≥0∞) *
       coulombCutoffFiniteWeight γ α z αinf r x :=
     (partition.finiteWeight.continuous.measurable.coe_nnreal_ennreal).mul

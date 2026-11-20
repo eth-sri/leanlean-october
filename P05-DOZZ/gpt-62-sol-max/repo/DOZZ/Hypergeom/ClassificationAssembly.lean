@@ -48,17 +48,16 @@ theorem real_gauss_solution_classification
     apply hc n
     exact_mod_cast hn
   have hzero := gauss_local_basis_zero hH (a : ℂ) (b : ℂ) (c : ℂ) hcC
-  have hF : AnalyticOnNhd ℂ (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
+  have hF  :=
     hzero.1.analyticOnNhd gaussCutPlane_isOpen
-  have hG : AnalyticOnNhd ℂ (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
+  have hG  :=
     hzero.2.1.analyticOnNhd gaussCutPlane_isOpen
   have hmid : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
   have hWr := (hzero.2.2.1 (1 / 2 : ℂ) hmid).2.2
   have h1c : (1 : ℂ) - (c : ℂ) ≠ 0 := by
     intro he
     apply hc 1
-    have hreal : c = (1 : ℝ) := by exact_mod_cast (sub_eq_zero.mp he).symm
-    simpa using hreal
+    simpa using (by exact_mod_cast (sub_eq_zero.mp he).symm)
   have hmid0 : (1 / 2 : ℂ) ≠ 0 := by norm_num
   have hmid1 : 1 - (1 / 2 : ℂ) ≠ 0 := by norm_num
   have hpow0 : (1 / 2 : ℂ) ^ (-(c : ℂ)) ≠ 0 :=
@@ -72,7 +71,7 @@ theorem real_gauss_solution_classification
         deriv (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) (1 / 2 : ℂ) *
           gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) (1 / 2 : ℂ) ≠ 0 := by
     rw [hWr]
-    exact mul_ne_zero (mul_ne_zero h1c hpow0) hpow1
+    positivity
   have hEq : ∀ z ∈ gaussCutPlane,
       hermitianQuadraticTensor (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ))
         (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) (α : ℂ) 0 0 (δ : ℂ) z =

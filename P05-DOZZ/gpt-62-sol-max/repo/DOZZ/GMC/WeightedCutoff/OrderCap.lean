@@ -29,8 +29,7 @@ theorem exists_weighted_cutoff_order_cap
   · intro γ hγ
     have hγpos : 0 < γ := (hΓ2 hγ).1
     have hγg : γ ≤ g := hγmax hγ
-    have hγsq : γ ^ 2 ≤ g ^ 2 := by nlinarith
-    exact hqhi.trans_le (div_le_div_of_nonneg_left (by norm_num) (sq_pos_of_pos hγpos) hγsq)
+    exact hqhi.trans_le (div_le_div_of_nonneg_left (by norm_num) (sq_pos_of_pos hγpos) (by nlinarith))
   · intro t ht
     exact (hpmax ht).trans ((le_max_right _ _).trans hqlo.le)
 

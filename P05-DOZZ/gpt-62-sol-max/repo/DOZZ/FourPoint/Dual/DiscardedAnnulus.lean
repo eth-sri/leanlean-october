@@ -90,13 +90,11 @@ theorem dual_discarded_annulus_rooted_littleO
     div_nonneg ENNReal.toReal_nonneg (Real.rpow_nonneg (norm_nonneg z) κ)) ?_ hmajor
   obtain ⟨C₀, _, hb⟩ := dual_deleted_disk_rooted_bound P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ q hq hβ
-  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hr : Tendsto (fun z : ℂ => ‖z‖^(1-ξ)) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [Function.comp_def, Real.zero_rpow (sub_pos.mpr hξ1).ne'] using
-      ((Real.continuous_rpow_const (sub_nonneg.mpr hξ1.le)).tendsto (0 : ℝ)).comp hn
-  filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds zero_lt_one),
-    hr.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1/2))] with z hz0 hz hcut
+  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 0) :=
+    (tendsto_norm_zero (E := ℂ)).mono_left nhdsWithin_le_nhds
+  have hr := hn.rpow_const_nhds_zero (sub_pos.mpr hξ1)
+  filter_upwards [self_mem_nhdsWithin, hn.eventually_lt_const zero_lt_one,
+    hr.eventually_lt_const (by norm_num : (0 : ℝ) < 1/2)] with z hz0 hz hcut
   have hfin : F z ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top
     (hb z ξ (‖z‖^(1-ξ)) hz.le (by linarith only [hcut])
       (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _) hcut.le)

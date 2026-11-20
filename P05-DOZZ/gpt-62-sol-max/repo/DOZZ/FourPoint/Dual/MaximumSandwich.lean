@@ -30,8 +30,7 @@ theorem dual_negative_increment_sandwich (p A b γ c m J Jc j : ℝ)
       (A+b*Real.exp (γ*m)*Jc)^(-p)-A^(-p) +
         (if m < c then p*A^(-p-1)*b*Real.exp (γ*c)*J else 0) := by
   constructor
-  · exact dual_negative_increment_antitone p A (b*Real.exp (γ*m)) j J
-      hp.le hA (by positivity) hj hjJ
+  apply dual_negative_increment_antitone <;> (first | assumption | positivity | fun_prop)
   · by_cases hm : m < c
     · rw [ite_eq_left hm]
       have hnonpos := dual_negative_increment_antitone p A (b*Real.exp (γ*m)) 0 j

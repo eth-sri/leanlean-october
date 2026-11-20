@@ -96,9 +96,8 @@ theorem lastone_rpow_add_increment_le_moments (a b p q : ℝ)
     have hs2 := sq_nonneg (b ^ q - a ^ (-q))
     rw [← hbSq, ← haSq]
     nlinarith
-  have hcoef : 0 ≤ p / q := (div_pos hp (hp.trans_le hpq)).le
   exact (lastone_rpow_add_increment_le a b p q ha hb hp hpq hq1).trans
-    (by simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hdom hcoef)
+    (by simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hdom ((div_pos hp (hp.trans_le hpq)).le))
 
 /-- Uniform positive and inverse moments force every varying small positive moment to tend
 to one. No convergence of the underlying random variables is required. -/

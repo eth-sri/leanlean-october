@@ -61,7 +61,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
         conditionedPositiveNaturalFiltration t] =ᵐ[P]
       fun p => ∫ y, (conditionedPositiveFutureAvoidanceSequence c).indicator G y ∂
         conditionedPositiveEndpointFutureKernel t P (conditionedPositiveHistory t p) := by
-  let A : Set (ℚ → ℝ) := conditionedPositiveFutureAvoidanceSequence c
+  let A  := conditionedPositiveFutureAvoidanceSequence c
   have hA : MeasurableSet A := by
     have hrepr : ({y : ℚ → ℝ | ∀ q : ℚ, 0 < (q : ℝ) → (c : ℝ) < y q} : Set (ℚ → ℝ)) =
         ⋂ q : ℚ, {y : ℚ → ℝ | 0 < (q : ℝ) → (c : ℝ) < y q} := by
@@ -94,10 +94,8 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
       by_cases hq : 0 < (q : ℝ)
       · simpa [hq] using h q hq
       · simp [hq]
-  have hSeqG : StronglyMeasurable (A.indicator G) := hG.indicator hA
-  have hPathG : Integrable (fun p => (A.indicator G)
-      (conditionedPositiveFutureRationalEvals t p)) P := by
-    exact hGint.indicator (hA.preimage (measurable_conditionedPositiveFutureRationalEvals t))
+  have hSeqG  := hG.indicator hA
+  have hPathG := hGint.indicator (hA.preimage (measurable_conditionedPositiveFutureRationalEvals t))
   have hcond := conditionedPositiveHistory_condExp_rationalFuture hP t ht
     (A.indicator G) hSeqG hPathG
   have hpath : (conditionedPositiveFutureRationalAvoidance t c).indicator
@@ -109,15 +107,11 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
       rw [hpre]
       rfl
     by_cases hp : p ∈ conditionedPositiveFutureRationalAvoidance t c
-    · have hp' : conditionedPositiveFutureRationalEvals t p ∈ A := hmem.mp hp
+    · have hp'  := hmem.mp hp
       simp [hp, hp']
     · have hp' : conditionedPositiveFutureRationalEvals t p ∉ A := fun h => hp (hmem.mpr h)
       simp [hp, hp']
-  rw [hpath]
-  filter_upwards [hcond] with p hp
-  simpa [conditionedPositiveEndpointFutureKernel,
-    Kernel.comp_deterministic_eq_comap, Kernel.comap_apply,
-    conditionedPositiveHistory_current, A, conditionedPositiveFutureAvoidanceSequence] using hp
+  grind
 
 end DOZZ.Proofs
 

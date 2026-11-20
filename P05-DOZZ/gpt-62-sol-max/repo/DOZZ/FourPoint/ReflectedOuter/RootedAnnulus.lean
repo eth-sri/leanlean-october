@@ -35,7 +35,7 @@ theorem reflected_rootDensity_charge_lower (γ : ℝ) (u x : ℂ) (hx : 0 < ‖x
   have hpu : 0 ≤ Real.log (normPlus u) := Real.log_nonneg (le_max_left _ _)
   have hg : Real.log (normPlus x) - Real.log ‖x‖ - Real.log 2 ≤ gffKernel u x := by
     unfold gffKernel
-    linarith only [hl, hpu]
+    linarith
   rw [← ENNReal.ofReal_mul (Real.exp_pos _).le]
   apply ENNReal.ofReal_le_ofReal
   rw [Real.rpow_def_of_pos (div_pos hp hx), Real.log_div hp.ne' hx.ne', ← Real.exp_add]
@@ -52,8 +52,8 @@ theorem reflected_retainedZero_rooted_freezing_lower (γ α₁ α₂ α₃ r : �
         reflectedRetainedZeroMass γ α₁ α₂ α₃ r (gmcRootedMeasure γ u μ) := by
   let E : Set ℂ := {x | r < ‖x‖ ∧ ‖x‖ < 1 / 2}
   let D : Set ℂ := {x | r ≤ ‖x‖}
-  let d : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel u x))
-  let c : ℝ := Real.exp (-γ ^ 2 * Real.log 2) *
+  let d  := fun x => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel u x))
+  let c  := Real.exp (-γ ^ 2 * Real.log 2) *
     ((1 / 2 : ℝ) ^ (γ ^ 2 / 2) * (2 : ℝ) ^ (-|γ * α₂|))
   have hE : MeasurableSet E := (measurableSet_lt measurable_const measurable_norm).inter
     (measurableSet_lt measurable_norm measurable_const)
@@ -64,8 +64,8 @@ theorem reflected_retainedZero_rooted_freezing_lower (γ α₁ α₂ α₃ r : �
   have hpoint (x : ℂ) (hx : x ∈ E) :
       ENNReal.ofReal c * ENNReal.ofReal (‖x‖ ^ (-(γ * (α₁ + γ / 2)))) ≤
         d x * coulombWeight γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ x := by
-    have hn : 0 < ‖x‖ := hr.trans hx.1
-    have hx0 : x ≠ 0 := norm_pos_iff.mp hn
+    have hn  := hr.trans hx.1
+    have hx0  := norm_pos_iff.mp hn
     have hx1 : x ≠ 1 := by
       intro he
       have hh := hx.2
@@ -90,7 +90,7 @@ theorem reflected_retainedZero_rooted_freezing_lower (γ α₁ α₂ α₃ r : �
       _ = (ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) *
           ENNReal.ofReal ((normPlus x / ‖x‖) ^ (γ * γ))) *
             coulombWeight γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ x := by
-        rw [mul_assoc, reflected_coulombWeight_charge_shift γ γ α₁ α₂ α₃ 0 x hx0]
+        rw [mul_assoc, (fusion_coulombWeight_charge_shift γ (-γ / 2) γ α₁ α₂ α₃ 0 x hx0)]
       _ ≤ _ := mul_le_mul' (reflected_rootDensity_charge_lower γ u x hn (hu.trans_lt hx.1)) le_rfl
   have heq : freezingAnnulusMassLocal γ (α₁ + γ / 2) μ 0 r (1 / 2) =
       ∫⁻ x in E, ENNReal.ofReal (‖x‖ ^ (-(γ * (α₁ + γ / 2)))) ∂μ := by
@@ -103,7 +103,7 @@ theorem reflected_retainedZero_rooted_freezing_lower (γ α₁ α₂ α₃ r : �
     _ ≤ ∫⁻ x in D, d x * coulombWeight γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ x ∂μ :=
       lintegral_mono' (Measure.restrict_mono (fun _ hx => hx.1.le) le_rfl) (fun _ => le_rfl)
     _ = _ := by
-      unfold reflectedRetainedZeroMass gmcRootedMeasure
+      unfold reflectedRetainedZeroMass retainedZeroMass gmcRootedMeasure
       rw [restrict_withDensity hD, coulombMass_eq_lintegral_coulombWeight,
         lintegral_withDensity_eq_lintegral_mul _ hd (measurable_coulombWeight _ _ _ _)]
       rfl

@@ -18,9 +18,13 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω I : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Z : Option I → Ω → ℝ)
+  (hZ : IsGaussianProcess Z P)
+include Ω I hZ
+
 /-- Regression on a nondegenerate coordinate preserves joint Gaussianity. -/
-theorem gaussian_regression_process {Ω I : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Z : Option I → Ω → ℝ) (hZ : IsGaussianProcess Z P)
+theorem gaussian_regression_process
     (a : I → ℝ) :
     IsGaussianProcess (fun j : Option I => fun ω =>
       j.elim (Z none ω) (fun i => Z (some i) ω - a i * Z none ω)) P := by
@@ -35,17 +39,16 @@ theorem gaussian_regression_process {Ω I : Type*} [MeasurableSpace Ω]
     | none => ContinuousLinearMap.proj q
     | some i => ContinuousLinearMap.proj p - a i • ContinuousLinearMap.proj q
   refine ⟨S, L, fun ω => ?_⟩
-  cases j <;> simp [L, p, q, Finset.restrict_def]
+  cases j <;> rfl
 
 /-- The regression residual is independent of the pin. No independence of the original
 lateral field and the pin is asserted. -/
-theorem gaussian_regression_indep {Ω I : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Z : Option I → Ω → ℝ) (hZ : IsGaussianProcess Z P)
+theorem gaussian_regression_indep
     (v : ℝ) (hv : v ≠ 0) (hvar : covariance (Z none) (Z none) P = v) :
     IndepFun (Z none)
       (fun ω => fun i => Z (some i) ω -
         covariance (Z (some i)) (Z none) P / v * Z none ω) P := by
-  let : IsProbabilityMeasure P := hZ.isProbabilityMeasure
+  let  := hZ.isProbabilityMeasure
   let a := fun i => covariance (Z (some i)) (Z none) P / v
   have hG := gaussian_regression_process P Z hZ a
   have hJoint : IsGaussianProcess
@@ -64,5 +67,7 @@ theorem gaussian_regression_indep {Ω I : Type*} [MeasurableSpace Ω]
       covariance_const_mul_left, hvar]
     dsimp [a]
     rw [div_mul_cancel₀ _ hv, sub_self]
+
+end
 
 end DOZZ.Proofs

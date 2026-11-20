@@ -6,6 +6,8 @@ module
 public import DOZZ.FourPoint.Reflected.SourceRadialInverseMoment
 public import DOZZ.FourPoint.Reflected.ProductInverseExpectation
 public import DOZZ.FourPoint.Reflected.SourceOuterMoments
+public import DOZZ.GFFStructure.ContinuousCircleAverage
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! The actual copied radial inverse-moment difference is the signed Williams expectation. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set
@@ -14,13 +16,11 @@ namespace DOZZ.Proofs
 
 theorem reflected_source_copied_radial_signed_expectation
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N) (hi : IndepFun (originRadialPath Xc) N P)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (α₁ α₂ α₃ ξ h : ℝ) (hα₁ : α₁ < Q γ)
     (B : Ω → BrownianPath × BrownianPath)
     (hL : IsLateralGMCOf P γ (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)))
@@ -55,7 +55,7 @@ theorem reflected_source_copied_radial_signed_expectation
   have hA : AEMeasurable A P :=
     (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
-  have ht := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
+  have ht := (hcircle.isCircleAverage.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hb : AEMeasurable b P :=
     ((ht.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hcut := reflected_williams_variable_cut_aemeasurable P (brownianMaximumReferenceLaw ν)
@@ -76,7 +76,7 @@ theorem reflected_source_copied_radial_signed_expectation
   have hInvFin : (∫⁻ ω, A ω^(-p) ∂P) < ⊤ :=
     lt_of_le_of_lt (hC z ξ hzn hr1) ENNReal.ofReal_lt_top
   have he := (reflected_product_inverse_increment_expectation P μ A b J hA hb hJ hAf hbf hJf p hp hInvFin).2.2
-  rw [reflected_source_copied_radial_inverse_moment P X hX Xc hc hm hcont γ hγ hγ₂ M hM
+  rw [reflected_source_copied_radial_inverse_moment P X hX Xc hcircle γ hγ hγ₂ M hM
     N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData Qν hQν z hz0 T hcoord hr hz hT p]
   simpa only [A,b,J,Z,ν,μ,ENNReal.toReal_mul,ENNReal.toReal_ofReal (Real.exp_pos _).le,
     mul_assoc] using he

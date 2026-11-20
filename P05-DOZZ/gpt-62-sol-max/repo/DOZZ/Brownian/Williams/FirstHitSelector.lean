@@ -60,15 +60,11 @@ theorem brownian_lintegral_selector_fibers {E : Type*} [MeasurableSpace E]
     (F : E → ℝ≥0∞) :
     (∫⁻ z in A, F z ∂μ) = ∑' j, ∫⁻ z in A ∩ {z | κ z = j}, F z ∂μ := by
   have he : A = ⋃ j : ℕ, A ∩ {z | κ z = j} := by
-    ext z
-    simp only [mem_iUnion,mem_inter_iff,mem_ofPred_eq]
-    exact ⟨fun hz => ⟨κ z,hz,rfl⟩,fun ⟨_,hz,_⟩ => hz⟩
+    aesop
   have hm (j : ℕ) : MeasurableSet (A ∩ {z | κ z = j}) := hA.inter (measurableSet_eq_fun hκ measurable_const)
   have hd : Pairwise (Disjoint on (fun j : ℕ => A ∩ {z | κ z = j})) := by
     intro i j hij
-    apply Set.disjoint_left.mpr
-    rintro z ⟨_,hi⟩ ⟨_,hj⟩
-    exact hij (hi.symm.trans hj)
+    grind
   conv_lhs => rw [he]
   exact lintegral_iUnion hm hd F
 
@@ -89,11 +85,14 @@ theorem measurable_brownianOrderedFirstHitObservation (a c : ℝ) (n : ℕ) (ts 
     exact measurable_const.sub ((ContinuousMap.measurable_eval _).add measurable_const)
   exact hmX.prodMk hmτ
 
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a)
+  (hc : 0 < c) (n : ℕ) (ts : Fin (n+1) → ℝ≥0) (ht0 : ∀ i, 0 < ts i) (hts : StrictMono ts) (S : Set ℝ)
+  (hS : MeasurableSet S) (hafter : ∀ t ∈ S, (ts (Fin.last n) : ℝ) < t)
+include hB ha hc ht0 hts hS hafter
+
 /-- A finite ordered marked law restricted to any lifetime cell beyond its last observation has exactly the corresponding restriction of its full density. -/
-theorem brownianPath_firstHit_ordered_cell_map (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
-    (n : ℕ) (ts : Fin (n+1) → ℝ≥0) (ht0 : ∀ i, 0 < ts i) (hts : StrictMono ts)
-    (S : Set ℝ) (hS : MeasurableSet S) (hafter : ∀ t ∈ S, (ts (Fin.last n) : ℝ) < t) :
+theorem brownianPath_firstHit_ordered_cell_map :
     (P.restrict {p : BrownianPath | (firstPassageTime (driftedBrownianPath a p) c : ℝ) ∈ S}).map
       (brownianOrderedFirstHitObservation a c (n+1) ts) =
       ((volume.prod volume).withDensity (fun z : (Fin (n+1) → ℝ) × ℝ =>
@@ -111,10 +110,7 @@ theorem brownianPath_firstHit_ordered_cell_map (P : Measure BrownianPath)
   rfl
 
 /-- Every nonnegative test of a finite ordered law in a lifetime cell integrates against its exact cell density. -/
-theorem brownianPath_firstHit_ordered_cell_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
-    (n : ℕ) (ts : Fin (n+1) → ℝ≥0) (ht0 : ∀ i, 0 < ts i) (hts : StrictMono ts)
-    (S : Set ℝ) (hS : MeasurableSet S) (hafter : ∀ t ∈ S, (ts (Fin.last n) : ℝ) < t)
+theorem brownianPath_firstHit_ordered_cell_lintegral
     (H : ((Fin (n+1) → ℝ) × ℝ) → ℝ≥0∞) (hH : Measurable H) :
     (∫⁻ p in {p : BrownianPath | (firstPassageTime (driftedBrownianPath a p) c : ℝ) ∈ S},
       H (brownianOrderedFirstHitObservation a c (n+1) ts p) ∂P) =
@@ -131,16 +127,21 @@ theorem brownianPath_firstHit_ordered_cell_lintegral (P : Measure BrownianPath)
       rw [restrict_withDensity (show MeasurableSet {z : (Fin (n+1) → ℝ) × ℝ | z.2 ∈ S} from hS.preimage measurable_snd),
         lintegral_withDensity_eq_lintegral_mul _
           (measurable_brownianFirstHitFinitePDF_fixed a c (n+1) (brownianFirstHitElapsed (n+1) ts)) hH]
-      simp only [Pi.mul_apply]
+      rfl
+
+end
 
 /-- A measurable lifetime selector chooses a finite observation tuple from a countable family. -/
 noncomputable def brownianSelectedFirstHitObservation (a c : ℝ) (n : ℕ)
     (κ : ℝ → ℕ) (ts : ℕ → Fin n → ℝ≥0) (p : BrownianPath) : (Fin n → ℝ) × ℝ :=
   brownianOrderedFirstHitObservation a c n (ts (κ (firstPassageTime (driftedBrownianPath a p) c : ℝ))) p
 
+section
+variable (a c : ℝ) (n : ℕ) (κ : ℝ → ℕ) (hκ : Measurable κ) (ts : ℕ → Fin n → ℝ≥0)
+include hκ
+
 /-- The complete actual observation map selected by its lifetime is measurable. -/
-theorem measurable_brownianSelectedFirstHitObservation (a c : ℝ) (n : ℕ)
-    (κ : ℝ → ℕ) (hκ : Measurable κ) (ts : ℕ → Fin n → ℝ≥0) :
+theorem measurable_brownianSelectedFirstHitObservation :
     Measurable (brownianSelectedFirstHitObservation a c n κ ts) := by
   have hmτ : Measurable (fun p : BrownianPath => (firstPassageTime (driftedBrownianPath a p) c : ℝ)) :=
     NNReal.continuous_coe.measurable.comp ((measurable_firstPassageTime c).comp
@@ -150,8 +151,7 @@ theorem measurable_brownianSelectedFirstHitObservation (a c : ℝ) (n : ℕ)
   exact hm.comp ((hκ.comp hmτ).prodMk measurable_id)
 
 /-- The countably selected complete finite density is a measurable function of states and absolute lifetime. -/
-theorem measurable_brownianSelectedFirstHitPDF (a c : ℝ) (n : ℕ)
-    (κ : ℝ → ℕ) (hκ : Measurable κ) (ts : ℕ → Fin n → ℝ≥0) :
+theorem measurable_brownianSelectedFirstHitPDF :
     Measurable (fun z : (Fin n → ℝ) × ℝ =>
       brownianFirstHitFinitePDF a n (brownianFirstHitElapsed n (ts (κ z.2))) c z.1 z.2) := by
   have hm : Measurable (fun z : ℕ × ((Fin n → ℝ) × ℝ) =>
@@ -159,6 +159,8 @@ theorem measurable_brownianSelectedFirstHitPDF (a c : ℝ) (n : ℕ)
     measurable_from_prod_countable_right (fun j =>
       measurable_brownianFirstHitFinitePDF_fixed a c n (brownianFirstHitElapsed n (ts j)))
   exact hm.comp ((hκ.comp measurable_snd).prodMk measurable_id)
+
+end
 
 /-- Countably selected deterministic observation tuples have their exact selected density law whenever every selected observation precedes the actual lifetime cell. -/
 theorem brownianPath_firstHit_selected_lintegral (P : Measure BrownianPath)
@@ -182,7 +184,7 @@ theorem brownianPath_firstHit_selected_lintegral (P : Measure BrownianPath)
       (hκ.comp measurable_snd)]
   apply tsum_congr
   intro j
-  let S : Set ℝ := A ∩ {t | κ t = j}
+  let S  := A ∩ {t | κ t = j}
   have hS : MeasurableSet S := hA.inter (measurableSet_eq_fun hκ measurable_const)
   have hlast : ∀ t ∈ S, (ts j (Fin.last n) : ℝ) < t := by
     intro t ht
@@ -220,15 +222,18 @@ noncomputable def brownianLifetimeCeiling (m : ℕ) (t : ℝ) : ℝ≥0 :=
 theorem measurable_brownianLifetimeCellIndex (m : ℕ) : Measurable (brownianLifetimeCellIndex m) := by
   exact Nat.measurable_ceil.comp (measurable_real_toNNReal.mul_const _)
 
+section
+variable (m : ℕ) (t : ℝ)
+
 /-- The dyadic lifetime ceiling is at least its nonnegative input time. -/
-theorem brownianLifetimeCeiling_lower (m : ℕ) (t : ℝ) :
+theorem brownianLifetimeCeiling_lower :
     Real.toNNReal t ≤ brownianLifetimeCeiling m t := by
   have hq : 0 < brownianDyadicMesh m := pow_pos (by norm_num : (0 : ℝ≥0) < 2) m
   apply (le_div_iff₀ hq).mpr
   exact_mod_cast Nat.le_ceil (Real.toNNReal t*brownianDyadicMesh m)
 
 /-- The lifetime ceiling differs from its input by at most one dyadic mesh interval. -/
-theorem brownianLifetimeCeiling_upper (m : ℕ) (t : ℝ) :
+theorem brownianLifetimeCeiling_upper :
     brownianLifetimeCeiling m t ≤ Real.toNNReal t+(brownianDyadicMesh m)⁻¹ := by
   have hq : 0 < brownianDyadicMesh m := pow_pos (by norm_num : (0 : ℝ≥0) < 2) m
   apply (div_le_iff₀ hq).mpr
@@ -242,6 +247,8 @@ theorem brownianLifetimeCeiling_upper (m : ℕ) (t : ℝ) :
   rw [add_mul,inv_mul_cancel₀ hq.ne']
   exact hc
 
+end
+
 /-- Dyadic mesh widths tend to zero. -/
 theorem tendsto_brownianLifetimeMesh_zero :
     Tendsto (fun m : ℕ => (brownianDyadicMesh m)⁻¹) atTop (𝓝 0) := by
@@ -254,9 +261,8 @@ theorem tendsto_brownianLifetimeMesh_zero :
 /-- Every dyadic lifetime ceiling converges to the nonnegative input time. -/
 theorem tendsto_brownianLifetimeCeiling (t : ℝ) :
     Tendsto (fun m => brownianLifetimeCeiling m t) atTop (𝓝 (Real.toNNReal t)) := by
-  have hu : Tendsto (fun m => Real.toNNReal t+(brownianDyadicMesh m)⁻¹) atTop (𝓝 (Real.toNNReal t)) := by
-    simpa only [add_zero] using tendsto_const_nhds.add tendsto_brownianLifetimeMesh_zero
-  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hu
+  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (by
+    simpa only [add_zero] using tendsto_const_nhds.add tendsto_brownianLifetimeMesh_zero)
     (fun m => brownianLifetimeCeiling_lower m t) (fun m => brownianLifetimeCeiling_upper m t)
 
 /-- A countable grid horizon is clipped above the localization cutoff. -/
@@ -267,35 +273,33 @@ noncomputable def brownianLifetimeGridHorizon (b : ℝ≥0) (m j : ℕ) : ℝ≥
 theorem brownianLifetimeGridHorizon_selected (b : ℝ≥0) (m : ℕ) (t : ℝ) (hbt : (b : ℝ) < t) :
     brownianLifetimeGridHorizon b m (brownianLifetimeCellIndex m t) = brownianLifetimeCeiling m t := by
   apply max_eq_right
-  have hb : b ≤ Real.toNNReal t := by
-    exact NNReal.coe_le_coe.mp (by rw [Real.coe_toNNReal t (le_of_lt ((NNReal.coe_nonneg b).trans_lt hbt))];exact hbt.le)
-  exact hb.trans (brownianLifetimeCeiling_lower m t)
+  exact (NNReal.coe_le_coe.mp (by rw [Real.coe_toNNReal t (le_of_lt ((NNReal.coe_nonneg b).trans_lt hbt))];exact hbt.le)).trans (brownianLifetimeCeiling_lower m t)
 
 /-- The deterministic forward observation times attached to a reversed-time tuple in a lifetime cell. -/
 noncomputable def brownianReversalGridTimes (n : ℕ) (ss : Fin (n+1) → ℝ≥0) (b : ℝ≥0) (m j : ℕ) : Fin (n+1) → ℝ≥0 :=
   fun i => brownianLifetimeGridHorizon b m j-ss i.rev
 
+section
+variable (n : ℕ) (ss : Fin (n+1) → ℝ≥0) (hss : StrictMono ss) (b : ℝ≥0) (hb : ss (Fin.last n) < b)
+include hss hb
+
 /-- Every clipped-grid forward observation time is positive above the last reversed observation. -/
-theorem brownianReversalGridTimes_pos (n : ℕ) (ss : Fin (n+1) → ℝ≥0)
-    (hss : StrictMono ss) (b : ℝ≥0) (hb : ss (Fin.last n) < b) (m j : ℕ) (i : Fin (n+1)) :
+theorem brownianReversalGridTimes_pos (m j : ℕ) (i : Fin (n+1)) :
     0 < brownianReversalGridTimes n ss b m j i := by
   apply tsub_pos_iff_lt.mpr
   exact ((hss.monotone (Fin.le_last i.rev)).trans_lt hb).trans_le (le_max_left _ _)
 
 /-- The deterministic forward times in every clipped cell are strictly ordered. -/
-theorem strictMono_brownianReversalGridTimes (n : ℕ) (ss : Fin (n+1) → ℝ≥0)
-    (hss : StrictMono ss) (b : ℝ≥0) (hb : ss (Fin.last n) < b) (m j : ℕ) :
+theorem strictMono_brownianReversalGridTimes (m j : ℕ) :
     StrictMono (brownianReversalGridTimes n ss b m j) := by
   intro i k hik
   have hs := hss (Fin.rev_lt_rev.mpr hik)
   have hi : ss i.rev ≤ brownianLifetimeGridHorizon b m j :=
     ((hss.monotone (Fin.le_last i.rev)).trans hb.le).trans (le_max_left _ _)
-  change brownianLifetimeGridHorizon b m j-ss i.rev < brownianLifetimeGridHorizon b m j-ss k.rev
-  exact tsub_lt_tsub_left_of_le hi hs
+  apply tsub_lt_tsub_left_of_le <;> assumption
 
 /-- With a mesh smaller than the first reversed observation time, every selected forward observation lies strictly before its lifetime cell. -/
-theorem brownianReversalGridTimes_last_lt_lifetime (n : ℕ) (ss : Fin (n+1) → ℝ≥0)
-    (hss : StrictMono ss) (b : ℝ≥0) (hb : ss (Fin.last n) < b) (m : ℕ)
+theorem brownianReversalGridTimes_last_lt_lifetime (m : ℕ)
     (hmesh : (brownianDyadicMesh m)⁻¹ < ss 0) (t : ℝ) (hbt : (b : ℝ) < t) :
     (brownianReversalGridTimes n ss b m (brownianLifetimeCellIndex m t) (Fin.last n) : ℝ) < t := by
   have hs0 : ss 0 ≤ brownianLifetimeGridHorizon b m (brownianLifetimeCellIndex m t) :=
@@ -308,6 +312,8 @@ theorem brownianReversalGridTimes_last_lt_lifetime (n : ℕ) (ss : Fin (n+1) →
   change ((brownianLifetimeGridHorizon b m (brownianLifetimeCellIndex m t)-ss (Fin.last n).rev : ℝ≥0) : ℝ) < t
   rw [Fin.rev_last,NNReal.coe_sub hs0,brownianLifetimeGridHorizon_selected b m t hbt]
   linarith
+
+end
 
 /-- The exact dyadic lifetime-cell approximation law follows from countable selection of the actual deterministic finite densities. -/
 theorem brownianPath_firstHit_reversal_grid_lintegral (P : Measure BrownianPath)
@@ -360,10 +366,10 @@ theorem tendsto_brownianSelectedFirstHitObservation_grid (a c : ℝ) (n : ℕ)
         a*(brownianReversalGridTimes n ss b m (brownianLifetimeCellIndex m (τ : ℝ)) i : ℝ))) atTop
       (𝓝 (fun i => c-(p (τ-ss i.rev)+a*((τ-ss i.rev : ℝ≥0) : ℝ)))) := by
     apply tendsto_pi_nhds.mpr
-    intro i
-    have heval := (p.continuous.tendsto (τ-ss i.rev)).comp (ht i)
-    have hreal := (NNReal.continuous_coe.tendsto (τ-ss i.rev)).comp (ht i)
-    exact (tendsto_const_nhds (x := c)).sub (heval.add ((tendsto_const_nhds (x := a)).mul hreal))
+    exact fun i =>
+      have heval := Tendsto.comp (Continuous.tendsto (ContinuousMap.continuous p) (τ - ss i.rev)) (ht i);
+      have hreal := Tendsto.comp (Continuous.tendsto NNReal.continuous_coe (τ - ss i.rev)) (ht i);
+      Tendsto.sub tendsto_const_nhds (Tendsto.add heval (Tendsto.mul tendsto_const_nhds hreal))
   rw [nhds_prod_eq]
   exact hs.prodMk (tendsto_const_nhds (x := (τ : ℝ)))
 

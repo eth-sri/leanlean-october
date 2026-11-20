@@ -22,7 +22,7 @@ theorem symmetryTestIntegralCLM_apply (f : TestFn) :
   rw [symmetryTestIntegralCLM,
     TestFunction.integralAgainstBilinCLM_eq_integral
       ((locallyIntegrable_const (1 : ℝ)).locallyIntegrableOn univ)]
-  simp only [ContinuousLinearMap.mul_apply', mul_one]
+  simp
 
 /-- Actual correlated affine re-pinning on the original probability space. -/
 noncomputable def symmetryRepinnedField

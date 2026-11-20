@@ -49,28 +49,30 @@ theorem continuous_normPlus' : Continuous normPlus := by
   unfold normPlus
   fun_prop
 
-theorem repinWeight_pos (a b : ℂ) (ha : a ≠ 0) (x : ℂ) : 0 < repinWeight a b x := by
+section
+variable (a b : ℂ) (ha : a ≠ 0)
+include ha
+
+theorem repinWeight_pos (x : ℂ) : 0 < repinWeight a b x := by
   unfold repinWeight
   have := normPlus_pos' (affineInv a b x)
   have := normPlus_pos' x
   have : 0 < ‖a‖ := norm_pos_iff.mpr ha
   positivity
 
-theorem continuous_repinWeight (a b : ℂ) (ha : a ≠ 0) : Continuous (repinWeight a b) := by
+theorem continuous_repinWeight : Continuous (repinWeight a b) := by
   unfold repinWeight
   have h1 : Continuous fun x => normPlus (affineInv a b x) ^ (-4 : ℝ) :=
     (continuous_normPlus'.comp (continuous_affineInv a b)).rpow_const
       fun x => Or.inl (normPlus_pos' _).ne'
-  have h2 : Continuous fun x => normPlus x ^ (-4 : ℝ) * ‖a‖ ^ 2 :=
-    (continuous_normPlus'.rpow_const fun x => Or.inl (normPlus_pos' x).ne').mul
-      continuous_const
-  exact h1.div h2 fun x => by
+  exact h1.div ((continuous_normPlus'.rpow_const fun x => Or.inl (normPlus_pos' x).ne').mul
+      continuous_const) fun x => by
     have := normPlus_pos' x
     have : 0 < ‖a‖ := norm_pos_iff.mpr ha
     positivity
 
 /-- The background ratio is bounded. -/
-theorem repinWeight_le (a b : ℂ) (ha : a ≠ 0) (x : ℂ) :
+theorem repinWeight_le (x : ℂ) :
     repinWeight a b x ≤ (‖a‖ + ‖b‖ + 1) ^ (4 : ℝ) / ‖a‖ ^ 2 := by
   have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   have hy := normPlus_pos' (affineInv a b x)
@@ -91,13 +93,18 @@ theorem repinWeight_le (a b : ℂ) (ha : a ≠ 0) (x : ℂ) :
   field_simp
   nlinarith [hy4, hx4, h4, sq_nonneg ‖a‖]
 
+end
+
 /-- The repinned circle-average process `X̂_r(y) = X_{r - log|a|}(ψ y) - L`. -/
 noncomputable def repinCircle {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ) (L : Ω → ℝ) (a b : ℂ) :
     Ω → ℂ → ℝ → ℝ :=
   fun ω y r => Xc ω (a * y + b) (r - Real.log ‖a‖) - L ω
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+
 /-- Second moment of a difference of square-integrable variables. -/
-theorem integral_sub_sq_eq {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U V : Ω → ℝ}
+theorem integral_sub_sq_eq {P : Measure Ω} {U V : Ω → ℝ}
     (hU : MemLp U 2 P) (hV : MemLp V 2 P) :
     ∫ ω, (U ω - V ω) ^ 2 ∂P =
       ∫ ω, U ω ^ 2 ∂P - 2 * ∫ ω, U ω * V ω ∂P + ∫ ω, V ω ^ 2 ∂P := by
@@ -113,15 +120,13 @@ theorem integral_sub_sq_eq {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U
     integral_const_mul]
 
 /-- The variance profile of a jointly measurable process is measurable. -/
-theorem measurable_integral_sq_section {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem measurable_integral_sq_section (P : Measure Ω)
     [SFinite P] (Y : Ω → ℂ → ℝ) (hY : Measurable fun p : Ω × ℂ => Y p.1 p.2) :
     Measurable fun x => ∫ ω, Y ω x ^ 2 ∂P := by
-  have hq : Measurable (fun p : ℂ × Ω => Y p.2 p.1 ^ 2) :=
-    (hY.comp measurable_swap).pow_const 2
-  exact hq.stronglyMeasurable.integral_prod_right.measurable
+  exact ((hY.comp measurable_swap).pow_const 2).stronglyMeasurable.integral_prod_right.measurable
 
 /-- A regularized chaos integral as a Lebesgue integral. -/
-theorem integral_regularizedGMC_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [SFinite P]
+theorem integral_regularizedGMC_eq (P : Measure Ω) [SFinite P]
     (Xc : Ω → ℂ → ℝ → ℝ) (γ r : ℝ) (hmeas : Measurable fun p : Ω × ℂ => Xc p.1 p.2 r)
     (ω : Ω) (f : ℂ → ℝ) :
     ∫ x, f x ∂regularizedGMC P Xc γ r ω =
@@ -139,7 +144,7 @@ theorem integral_regularizedGMC_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     (Real.rpow_nonneg (normPlus_pos' x).le _)), smul_eq_mul]
 
 /-- The repinned circle process is jointly measurable. -/
-theorem measurable_repinCircle {Ω : Type*} [MeasurableSpace Ω] (Xc : Ω → ℂ → ℝ → ℝ)
+theorem measurable_repinCircle (Xc : Ω → ℂ → ℝ → ℝ)
     (L : Ω → ℝ) (hmeas : ∀ r, Measurable fun p : Ω × ℂ => Xc p.1 p.2 r) (hL : Measurable L)
     (a b : ℂ) (r : ℝ) : Measurable fun p : Ω × ℂ => repinCircle Xc L a b p.1 p.2 r :=
   ((hmeas (r - Real.log ‖a‖)).comp (measurable_fst.prodMk
@@ -148,7 +153,7 @@ theorem measurable_repinCircle {Ω : Type*} [MeasurableSpace Ω] (Xc : Ω → �
 /-- **The repinned regularized chaos, sample by sample.** Integrating against the regularized
 chaos of the repinned circle averages is integrating against the regularized chaos of `X` at
 the shifted cutoff, after the change of variables `x = ψ y` and a tilt. -/
-theorem integral_regularizedGMC_repinCircle {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem integral_regularizedGMC_repinCircle (P : Measure Ω)
     [SFinite P] (Xc : Ω → ℂ → ℝ → ℝ) (L : Ω → ℝ)
     (hmeas : ∀ r, Measurable fun p : Ω × ℂ => Xc p.1 p.2 r) (hL : Measurable L)
     (hXc2 : ∀ x r, MemLp (fun ω => Xc ω x r) 2 P) (hL2 : MemLp L 2 P)
@@ -181,15 +186,20 @@ theorem integral_regularizedGMC_repinCircle {Ω : Type*} [MeasurableSpace Ω] (P
         γ ^ 2 * C by ring, Real.exp_add, Real.exp_add]
   field_simp
 
+end
+
 /-- **The repinned chaos** `ψ⁻¹_*(M e^{-γ L - γ² V/2 + γ² c} w)`. -/
 noncomputable def repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω → ℝ) (a b : ℂ) (γ V : ℝ)
     (ω : Ω) : Measure ℂ :=
   ((M ω).withDensity fun x => ENNReal.ofReal (Real.exp (-γ * L ω - γ ^ 2 / 2 * V +
     γ ^ 2 * repinPotential a b x) * repinWeight a b x)).map (affineInv a b)
 
+section
+variable {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω → ℝ) (a b : ℂ) (ha : a ≠ 0) (γ V : ℝ) (ω : Ω)
+include Ω ha
+
 /-- Integrals against the repinned chaos. -/
-theorem integral_repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω → ℝ) (a b : ℂ)
-    (ha : a ≠ 0) (γ V : ℝ) (ω : Ω) {f : ℂ → ℝ} (hf : Continuous f) :
+theorem integral_repinChaos {f : ℂ → ℝ} (hf : Continuous f) :
     ∫ y, f y ∂repinChaos M L a b γ V ω =
       Real.exp (-γ * L ω - γ ^ 2 / 2 * V) *
         ∫ x, f (affineInv a b x) * Real.exp (γ ^ 2 * repinPotential a b x) *
@@ -207,8 +217,7 @@ theorem integral_repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω → �
   ring
 
 /-- The repinned chaos of a finite measure is finite. -/
-theorem isFiniteMeasure_repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω → ℝ) (a b : ℂ)
-    (ha : a ≠ 0) (γ V : ℝ) (ω : Ω) [IsFiniteMeasure (M ω)] :
+theorem isFiniteMeasure_repinChaos [IsFiniteMeasure (M ω)] :
     IsFiniteMeasure (repinChaos M L a b γ V ω) := by
   obtain ⟨C, hC⟩ := exists_abs_repinPotential_le a b ha
   unfold repinChaos
@@ -226,6 +235,8 @@ theorem isFiniteMeasure_repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω
       mul_le_mul_of_nonneg_left ((le_abs_self _).trans (hC x)) (sq_nonneg γ)
     linarith
   infer_instance
+
+end
 
 end DOZZ.Proofs
 

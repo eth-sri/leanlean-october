@@ -40,9 +40,12 @@ noncomputable def affinePushHomeo (a b : ℂ) (ha : a ≠ 0) : ℂ ≃ₜ ℂ wh
   continuous_toFun := by fun_prop
   continuous_invFun := by fun_prop
 
+section
+variable (a b : ℂ)
+
 /-- The affine map `y ↦ a y + b` scales Lebesgue measure on the plane by `‖a‖²`, so the pushforward
 of `volume` is `‖a‖⁻²` times `volume`. -/
-theorem affinePush_map_volume (a b : ℂ) (ha : a ≠ 0) :
+theorem affinePush_map_volume (ha : a ≠ 0) :
     Measure.map (fun y : ℂ => a * y + b) (volume : Measure ℂ) =
       ENNReal.ofReal (‖a‖ ^ 2)⁻¹ • volume := by
   have hdet : LinearMap.det (Algebra.lmul ℝ ℂ a : ℂ →ₗ[ℝ] ℂ) = ‖a‖ ^ 2 := by
@@ -60,7 +63,7 @@ theorem affinePush_map_volume (a b : ℂ) (ha : a ≠ 0) :
     Measure.IsAddRightInvariant.map_add_right_eq_self (μ := volume) b]
 
 /-- Change of variables for the affine map `y ↦ a y + b` on the plane, for every real function. -/
-theorem affinePush_integral_comp (a b : ℂ) (ha : a ≠ 0) (G : ℂ → ℝ) :
+theorem affinePush_integral_comp (ha : a ≠ 0) (G : ℂ → ℝ) :
     ∫ y, G (a * y + b) = (‖a‖ ^ 2)⁻¹ * ∫ x, G x := by
   have h := (affinePushHomeo a b ha).measurableEmbedding.integral_map (μ := volume) G
   have hφ : ⇑(affinePushHomeo a b ha) = fun y => a * y + b := rfl
@@ -70,7 +73,7 @@ theorem affinePush_integral_comp (a b : ℂ) (ha : a ≠ 0) (G : ℂ → ℝ) :
 
 /-- The `i`-th derivative of the pushforward `x ↦ ‖a‖⁻² f ((x - b) / a)` of a smooth function is
 bounded by `‖a‖⁻² ‖a⁻¹‖ ^ i` times the `i`-th derivative of `f` at the pulled-back point. -/
-theorem affinePush_norm_iteratedFDeriv_le (a b : ℂ) {f : ℂ → ℝ} (hf : ContDiff ℝ ∞ f) (i : ℕ)
+theorem affinePush_norm_iteratedFDeriv_le {f : ℂ → ℝ} (hf : ContDiff ℝ ∞ f) (i : ℕ)
     (x : ℂ) :
     ‖iteratedFDeriv ℝ i (fun x => (‖a‖ ^ 2)⁻¹ * f ((x - b) / a)) x‖ ≤
       (‖a‖ ^ 2)⁻¹ * ‖a⁻¹‖ ^ i * ‖iteratedFDeriv ℝ i f ((x - b) / a)‖ := by
@@ -96,6 +99,8 @@ theorem affinePush_norm_iteratedFDeriv_le (a b : ℂ) {f : ℂ → ℝ} (hf : Co
           gcongr
           exact ContinuousLinearMap.opNorm_mul_apply_le ℝ ℂ a⁻¹
     _ = (‖a‖ ^ 2)⁻¹ * ‖a⁻¹‖ ^ i * ‖iteratedFDeriv ℝ i f ((x - b) / a)‖ := by ring
+
+end
 
 /-- The image of a compact set `K` under the affine map `y ↦ a y + b`, as a compact set. -/
 noncomputable def affinePushCompacts (a b : ℂ) (K : Compacts ℂ) : Compacts ℂ :=
@@ -154,8 +159,12 @@ open scoped Classical in
 noncomputable def affinePushTestFn (a b : ℂ) : TestFn →L[ℝ] TestFn :=
   if ha : a = 0 then 0 else affinePushTestFnAux a b ha
 
+section
+variable (a b : ℂ) (ha : a ≠ 0) (f : TestFn)
+include ha
+
 /-- Pointwise formula for the pushforward of a test function by `y ↦ a y + b`, for `a ≠ 0`. -/
-theorem affinePushTestFn_apply (a b : ℂ) (ha : a ≠ 0) (f : TestFn) (x : ℂ) :
+theorem affinePushTestFn_apply (x : ℂ) :
     affinePushTestFn a b f x = (‖a‖ ^ 2)⁻¹ * f ((x - b) / a) := by
   have h : affinePushTestFn a b = affinePushTestFnAux a b ha := dite_eq_right ha
   rw [h]
@@ -163,7 +172,7 @@ theorem affinePushTestFn_apply (a b : ℂ) (ha : a ≠ 0) (f : TestFn) (x : ℂ)
 
 
 /-- Change of variables: pairing the pushforward with `g` is pairing `f` with `g ∘ (a · + b)`. -/
-theorem integral_affinePushTestFn_mul (a b : ℂ) (ha : a ≠ 0) (f : TestFn) (g : ℂ → ℝ) :
+theorem integral_affinePushTestFn_mul (g : ℂ → ℝ) :
     ∫ x, affinePushTestFn a b f x * g x = ∫ y, f y * g (a * y + b) := by
   have hc : (‖a‖ ^ 2)⁻¹ ≠ 0 := by positivity
   have h := affinePush_integral_comp a b ha (fun x => affinePushTestFn a b f x * g x)
@@ -172,6 +181,8 @@ theorem integral_affinePushTestFn_mul (a b : ℂ) (ha : a ≠ 0) (f : TestFn) (g
     rw [affinePushTestFn_apply a b ha, add_sub_cancel_right, mul_div_cancel_left₀ _ ha, mul_assoc]
   simp_rw [hy, integral_const_mul] at h
   exact (mul_left_cancel₀ hc h).symm
+
+end
 
 
 end DOZZ.Proofs

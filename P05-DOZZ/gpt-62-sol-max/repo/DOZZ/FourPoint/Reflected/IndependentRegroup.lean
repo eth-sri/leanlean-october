@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import Mathlib.Probability.Independence.Basic
+public import DOZZ.Probability.IndependentProduct
 /-! Regrouping the independent past and lateral inputs in the reflected comparison. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory
@@ -30,23 +31,6 @@ theorem reflected_independence_regroup
     (P.map (fun ω => ((F ω, H ω), N ω))).map MeasurableEquiv.prodAssoc at he
   rw [he, hpairlaw, hFHlaw, Measure.prodAssoc_prod, hHNlaw]
 
-/-- Independent source copies push forward to the product of their actual marginal laws. -/
-theorem reflected_map_prod_ae
-    {Ω α β : Type*} [MeasurableSpace Ω] [MeasurableSpace α] [MeasurableSpace β]
-    (P : Measure Ω) [IsProbabilityMeasure P] (F : Ω → α) (G : Ω → β)
-    (hF : AEMeasurable F P) (hG : AEMeasurable G P) :
-    (P.prod P).map (fun ω : Ω × Ω => (F ω.1, G ω.2)) = (P.map F).prod (P.map G) := by
-  have hf : ∀ᵐ ω : Ω × Ω ∂P.prod P, F ω.1 = hF.mk F ω.1 :=
-    measurePreserving_fst.quasiMeasurePreserving.ae hF.ae_eq_mk
-  have hg : ∀ᵐ ω : Ω × Ω ∂P.prod P, G ω.2 = hG.mk G ω.2 :=
-    measurePreserving_snd.quasiMeasurePreserving.ae hG.ae_eq_mk
-  have he : (fun ω : Ω × Ω => (F ω.1, G ω.2)) =ᵐ[P.prod P]
-      Prod.map (hF.mk F) (hG.mk G) := by
-    filter_upwards [hf, hg] with ω hω hω'
-    exact Prod.ext hω hω'
-  rw [Measure.map_congr he, ← Measure.map_prod_map P P hF.measurable_mk hG.measurable_mk,
-    ← Measure.map_congr hF.ae_eq_mk, ← Measure.map_congr hG.ae_eq_mk]
-
 /-- A copied inner input retains the joint outer-past law supplied by deterministic restart. -/
 theorem reflected_copied_triple_law
     {Ω α β ζ : Type*} [MeasurableSpace Ω] [MeasurableSpace α]
@@ -62,7 +46,7 @@ theorem reflected_copied_triple_law
       (hZ.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving))
   change ((P.prod P).map (fun ω : Ω × Ω => ((Y ω.1, D ω.1), Z ω.2))).map
     MeasurableEquiv.prodAssoc = (P.prod P).map (fun ω : Ω × Ω => (Y ω.1, (D ω.1, Z ω.2))) at he
-  rw [← he, reflected_map_prod_ae P (fun ω => (Y ω, D ω)) Z (hY.prodMk hD) hZ,
+  rw [← he, map_prod_of_aemeasurable P P (fun ω => (Y ω, D ω)) Z (hY.prodMk hD) hZ,
     (indepFun_iff_map_prod_eq_prod_map_map hY hD).mp hi, Measure.prodAssoc_prod]
 
 end DOZZ.Proofs

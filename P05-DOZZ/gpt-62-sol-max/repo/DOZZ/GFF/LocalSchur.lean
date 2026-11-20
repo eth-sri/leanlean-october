@@ -25,8 +25,8 @@ namespace DOZZ
 /-- The covariance `gffCov` is the product integral against its kernel `gffKernel`. -/
 theorem gffCov_eq_integral_gffKernel (f g : TestFn) :
     gffCov f g = ∫ p : ℂ × ℂ, f p.1 * gffKernel p.1 p.2 * g p.2 := by
-  let μc : Measure (ℂ × ℂ) := (volume : Measure ℂ).prod (volume : Measure ℂ)
-  let μv : Measure (GaussianFields.Vec 2 × GaussianFields.Vec 2) :=
+  let μc  := (volume : Measure ℂ).prod (volume : Measure ℂ)
+  let μv  :=
     (volume : Measure (GaussianFields.Vec 2)).prod
       (volume : Measure (GaussianFields.Vec 2))
   let Fv : GaussianFields.Vec 2 × GaussianFields.Vec 2 → ℝ := fun p =>
@@ -56,20 +56,22 @@ theorem gffCov_eq_integral_gffKernel (f g : TestFn) :
       exact (congrFun hcomp p).symm
     _ = ∫ p : ℂ × ℂ, f p.1 * gffKernel p.1 p.2 * g p.2 ∂μc := rfl
 
+section
+variable {α : Type*} [MeasurableSpace α]
+
 /-- A square-integrable real function belongs to `L²`. -/
-theorem memLp_two_of_integrable_norm_sq {α : Type*} [MeasurableSpace α]
+theorem memLp_two_of_integrable_norm_sq
     {μ : Measure α} {f : α → ℝ} (hf : AEStronglyMeasurable f μ)
-    (hsq : Integrable (fun x => ‖f x‖ ^ 2) μ) : MemLp f 2 μ := by
-  exact (integrable_norm_rpow_iff hf (by norm_num) (by simp)).mp (by simpa using hsq)
+    (hsq : Integrable (fun x => ‖f x‖ ^ 2) μ) : MemLp f 2 μ := (integrable_norm_rpow_iff hf (by norm_num) (by simp)).mp (by simpa using hsq)
 
 /-- Cauchy--Schwarz for a product integral, in the exact `L²` form used by the local kernel
 operator. -/
-theorem abs_integral_mul_le_l2 {α : Type*} [MeasurableSpace α] (μ : Measure α)
+theorem abs_integral_mul_le_l2 (μ : Measure α)
     {K F : α → ℝ} (hK : MemLp K 2 μ) (hF : MemLp F 2 μ) :
     |∫ x, K x * F x ∂μ| ≤
       (∫ x, ‖K x‖ ^ 2 ∂μ) ^ (1 / 2 : ℝ) *
         (∫ x, ‖F x‖ ^ 2 ∂μ) ^ (1 / 2 : ℝ) := by
-  have hconj : (2 : ℝ).HolderConjugate 2 := Real.HolderConjugate.two_two
+  have hconj  := Real.HolderConjugate.two_two
   have hK' : MemLp K (ENNReal.ofReal 2) μ := by simpa using hK
   have hF' : MemLp F (ENNReal.ofReal 2) μ := by simpa using hF
   calc
@@ -77,22 +79,25 @@ theorem abs_integral_mul_le_l2 {α : Type*} [MeasurableSpace α] (μ : Measure �
     _ ≤ ∫ x, ‖K x * F x‖ ∂μ :=
       norm_integral_le_integral_norm (μ := μ) (fun x => K x * F x)
     _ = ∫ x, ‖K x‖ * ‖F x‖ ∂μ := by
-      apply integral_congr_ae
-      filter_upwards with x
-      rw [norm_mul]
+      simp
     _ ≤ _ := by simpa using integral_mul_norm_le_Lp_mul_Lq hconj hK' hF'
 
+end
+
+section
+variable (R : ℝ) (f g : TestFn)
+
 /-- Tensor products of two test functions lie in `L²` on a finite product ball. -/
-theorem memLp_testFnTensor_two_on_ball (R : ℝ) (f g : TestFn) :
+theorem memLp_testFnTensor_two_on_ball :
     MemLp (fun p : ℂ × ℂ => f p.1 * g p.2) 2
       ((volume : Measure ℂ).restrict (ball (0 : ℂ) R) |>.prod
         ((volume : Measure ℂ).restrict (ball (0 : ℂ) R))) := by
   let B : Set ℂ := ball 0 R
-  let μB : Measure ℂ := (volume : Measure ℂ).restrict B
+  let μB  := (volume : Measure ℂ).restrict B
   have hBlt : volume B < ⊤ := by
     dsimp [B]
     exact measure_ball_lt_top
-  have : IsFiniteMeasure μB := (MeasureTheory.isFiniteMeasure_restrict).2 hBlt.ne
+  have  := (MeasureTheory.isFiniteMeasure_restrict).2 hBlt.ne
   have hf4 : MemLp f 4 (volume : Measure ℂ) :=
     f.continuous.memLp_of_hasCompactSupport f.hasCompactSupport
   have hg4 : MemLp g 4 (volume : Measure ℂ) :=
@@ -110,10 +115,10 @@ theorem memLp_testFnTensor_two_on_ball (R : ℝ) (f g : TestFn) :
     change MemLp ((fun p : ℂ × ℂ => f p.1) * (fun p : ℂ × ℂ => g p.2)) 2
       (μB.prod μB)
     exact hfProd.mul hgProd
-  simpa [B, μB] using hF
+  assumption
 
 /-- The square `L²` integral of a tensor product factors over the two coordinates. -/
-theorem integral_sq_testFnTensor_on_ball (R : ℝ) (f g : TestFn) :
+theorem integral_sq_testFnTensor_on_ball :
     ∫ p : ℂ × ℂ, ‖f p.1 * g p.2‖ ^ 2 ∂
         ((volume : Measure ℂ).restrict (ball (0 : ℂ) R) |>.prod
           ((volume : Measure ℂ).restrict (ball (0 : ℂ) R))) =
@@ -130,9 +135,10 @@ theorem integral_sq_testFnTensor_on_ball (R : ℝ) (f g : TestFn) :
       apply integral_congr_ae
       filter_upwards with p
       rw [norm_mul, mul_pow]
-    _ = _ := by
-      exact setIntegral_prod_mul (fun x : ℂ => ‖f x‖ ^ 2)
+    _ = _ := setIntegral_prod_mul (fun x : ℂ => ‖f x‖ ^ 2)
         (fun y : ℂ => ‖g y‖ ^ 2) (ball (0 : ℂ) R) (ball (0 : ℂ) R)
+
+end
 
 /-- The pinned covariance on a compactly supported test is bounded by the local `L²` norm, with
 the Hilbert--Schmidt constant given by the square-integrable kernel on the ball. -/
@@ -143,9 +149,9 @@ theorem abs_gffCov_self_le_localL2 (R : ℝ) (f : TestFn)
         ‖gffKernel p.1 p.2‖ ^ 2) ^ (1 / 2 : ℝ) *
         (∫ x in ball (0 : ℂ) R, ‖f x‖ ^ 2) := by
   let B : Set ℂ := ball 0 R
-  let S : Set (ℂ × ℂ) := B ×ˢ B
-  let μ : Measure (ℂ × ℂ) := (volume : Measure ℂ).prod (volume : Measure ℂ)
-  let μB : Measure (ℂ × ℂ) :=
+  let S  := B ×ˢ B
+  let μ  := (volume : Measure ℂ).prod (volume : Measure ℂ)
+  let μB  :=
     ((volume : Measure ℂ).restrict B).prod ((volume : Measure ℂ).restrict B)
   let K : ℂ × ℂ → ℝ := fun p => gffKernel p.1 p.2
   let F : ℂ × ℂ → ℝ := fun p => f p.1 * f p.2
@@ -163,12 +169,12 @@ theorem abs_gffCov_self_le_localL2 (R : ℝ) (f : TestFn)
         have hzero : f p.2 = 0 := by
           by_contra hne
           apply hsecond
-          exact hsupp (by simpa [Function.mem_support] using hne)
+          apply hsupp <;> assumption
         simp [S, hfirst, hsecond, hzero, H]
       · have hzero : f p.1 = 0 := by
           by_contra hne
           apply hfirst
-          exact hsupp (by simpa [Function.mem_support] using hne)
+          apply hsupp <;> assumption
         simp [S, hfirst, hzero, H]
   have hKsqOn : IntegrableOn (fun p => ‖K p‖ ^ 2) S μ := by
     simpa [K, B, S, μ, Real.norm_eq_abs] using
@@ -176,12 +182,11 @@ theorem abs_gffCov_self_le_localL2 (R : ℝ) (f : TestFn)
   have hKsq : Integrable (fun p => ‖K p‖ ^ 2) μB := by
     change Integrable (fun p => ‖K p‖ ^ 2)
       (((volume : Measure ℂ).restrict B).prod ((volume : Measure ℂ).restrict B))
-    rw [Measure.prod_restrict]
-    exact hKsqOn
+    rwa [Measure.prod_restrict]
   have hKmeas : Measurable K := by
     change Measurable (fun p : ℂ × ℂ => gffKernel p.1 p.2)
     fun_prop [gffKernel, normPlus]
-  have hK : MemLp K 2 μB := memLp_two_of_integrable_norm_sq
+  have hK  := memLp_two_of_integrable_norm_sq
     hKmeas.aestronglyMeasurable hKsq
   have hF : MemLp F 2 μB := by
     simpa [F, B, μB] using memLp_testFnTensor_two_on_ball R f f
@@ -198,19 +203,17 @@ theorem abs_gffCov_self_le_localL2 (R : ℝ) (f : TestFn)
       _ = ∫ p in S, K p * F p ∂μ := by
         apply setIntegral_congr_ae hS
         filter_upwards with p hp
-        simp [H, K, F]
-        ring
+        linarith
       _ = ∫ p, K p * F p ∂μB := by
         rw [← Measure.prod_restrict]
   have hCS := abs_integral_mul_le_l2 μB hK hF
-  let a : ℝ := ∫ x in B, ‖f x‖ ^ 2
+  let a  := ∫ x in B, ‖f x‖ ^ 2
   have ha : 0 ≤ a := by
-    dsimp [a]
-    exact integral_nonneg fun x => sq_nonneg ‖f x‖
+    positivity
   have hroot : (a * a) ^ (1 / 2 : ℝ) = a := by
     rw [← Real.sqrt_eq_rpow, ← sq, Real.sqrt_sq_eq_abs, abs_of_nonneg ha]
   have hfactor' : (∫ p, ‖F p‖ ^ 2 ∂μB) = a * a := by
-    simpa [F, B, μB, a] using hfactor
+    assumption
   calc
     |gffCov f f| = |∫ p, K p * F p ∂μB| := by rw [hcovlocal]
     _ ≤ (∫ p, ‖K p‖ ^ 2 ∂μB) ^ (1 / 2 : ℝ) *

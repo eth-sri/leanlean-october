@@ -6,6 +6,8 @@ module
 public import DOZZ.FourPoint.Reflected.SeparatedRegions
 public import DOZZ.FourPoint.Dual.SourceFullComparison
 import Mathlib.Tactic
+public import DOZZ.GFFStructure.ContinuousCircleAverage
+public import DOZZ.MeasureTheory.FiniteOnChart
 /-! Literal separated inner and outer regions for conditional lateral comparison. -/
 @[expose] public section
 open MeasureTheory ProbabilityTheory Set
@@ -16,15 +18,13 @@ namespace DOZZ.Proofs
 factor tending to one with their relative radius. -/
 theorem dual_source_separated_regions_comparison
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ : ℝ) (z : ℂ) (hz : ‖z‖ ≤ 1)
     (s r : ℝ) (hs : 0 < s) (hr : 0 < r) (hr1 : r ≤ 1) (hsep : s/r ≤ 1/2)
     (q : ℝ) (hq : 0 < q) :
     ∃ N : Ω → Measure ℂ, Measurable N ∧ IndepFun (originRadialPath Xc) N P ∧
-      (∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤) ∧
+      (∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω)) ∧
       N =ᵐ[P] (fun ω => (M ω).withDensity
         (lateralRadialWeight γ (originRadialPath Xc ω))) ∧
       let J := fun (U : Set ℂ) (p : TwoSidedPath × Ω) => ∫⁻ x in U,
@@ -39,7 +39,7 @@ theorem dual_source_separated_regions_comparison
       original ≤ m*copied ∧ copied ≤ m*original := by
   obtain ⟨hU₀, hU₁, hroot₀, hroot₁, hpart₀, hpart₁, hn₀, hn₁, hD⟩ :=
     reflected_separated_region_geometry s r hs hr hr1 hsep
-  have hb := dual_source_full_lateral_comparison P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+  have hb := dual_source_full_lateral_comparison P X Xc hX hcircle γ hγ hγ₂ M hM
     α₁ α₂ α₃ z hz (reflected_innerRegion s) (reflected_outerRegion r)
     hU₀ hU₁ hroot₀ hroot₁ (Metric.ball 0 r) Metric.isOpen_ball.measurableSet hpart₀ hpart₁
     (s/r) r (s/r) (div_pos hs hr).le hsep hr (div_pos hs hr) hn₀ hn₁ hD q hq

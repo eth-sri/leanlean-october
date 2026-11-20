@@ -6,8 +6,10 @@ module
 
 public import DOZZ.FourPoint.Dual.SourcePolarLimit
 public import DOZZ.FourPoint.Dual.SourceCopiedPolarExpectation
-public import DOZZ.FourPoint.Dual.FullPathCarrier
+public import DOZZ.FourPoint.Dual.SourceCopiedOuterLaw
 import Mathlib.Tactic
+public import DOZZ.GFFStructure.ContinuousCircleAverage
+public import DOZZ.MeasureTheory.FiniteOnChart
 
 /-! # The copied exterior/path polar increment limit
 
@@ -25,11 +27,9 @@ theorem dual_source_copied_polar_increment_tendsto
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hcircle : IsContinuousCircleAverage P X Xc)
     (N : Ω → Measure ℂ) (hNm : Measurable N)
-    (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
+    (hfin : ∀ ω, FiniteOnChart ({0} : Set ℂ)ᶜ (N ω))
     (hlaw : ∀ β₁ β₂ β₃ ξ' : ℝ, ∀ z : ℂ, ‖z‖ < ‖z‖^(1-ξ') →
       P.map (fun ω => (originRadialPath Xc ω,dualOuterMass γ β₁ β₂ β₃ (M ω) z ξ')) =
         (P.prod P).map (fun ω : Ω × Ω => (originRadialPath Xc ω.1,
@@ -63,7 +63,7 @@ theorem dual_source_copied_polar_increment_tendsto
         (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃ ^(-(p+a)) ∂P).toReal*
         (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^a ∂P).toReal)) := by
   have ht := dual_source_restarted_polar_increment_tendsto P X hX γ hγ hγ₂ M hM
-    Xc hc hm hcont α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack
+    Xc hcircle α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack
     hξ hξ1 B Z hData hiZ
   apply ht.congr'
   have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 ‖(0 : ℂ)‖) :=
@@ -73,7 +73,7 @@ theorem dual_source_copied_polar_increment_tendsto
   have hstrict : ‖z‖ < ‖z‖^(1-ξ) := by
     simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt
       (norm_pos_iff.mpr hz0) hz (by linarith only [hξ] : 1-ξ < 1)
-  have he := dual_source_copied_polar_increment_eq P X Xc hX hc hcont γ hγ hγ₂ M hM
+  have he := dual_source_copied_polar_increment_eq P X Xc hX hcircle.isCircleAverage hcircle.continuous_ae γ hγ hγ₂ M hM
     N hNm hfin Z hData.2.1 α₁ α₂ α₃ ξ h
     ((α₁+α₂+α₃-2/γ-2*Q γ)/γ) z (Real.toNNReal (-Real.log ‖z‖+h))
     (hlaw α₁ α₂ α₃ ξ z hstrict)

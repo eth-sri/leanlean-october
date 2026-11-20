@@ -36,7 +36,7 @@ theorem admissibleLogWickWeight_measurable_joint
   have hv0 := admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY ε
   have hvar : Measurable (fun q : Ω × ℂ => gaussianVariance P (fun ω => Y ω ε q.2)) :=
     hv0.comp measurable_snd
-  have hfield : Measurable (fun q : Ω × ℂ => Y q.1 ε q.2) := hY.measurableAtScale ε
+  have hfield  := hY.measurableAtScale ε
   unfold admissibleLogWickWeight
   fun_prop
 
@@ -47,12 +47,12 @@ noncomputable def wickEventMass {Ω : Type*} [MeasurableSpace Ω]
   ∫⁻ x, ENNReal.ofReal (f x) * admissibleLogWickWeight P Y g (Real.exp (-r)) x ω *
     Set.indicator E (fun _ => (1 : ℝ≥0∞)) (ω, x) ∂μ
 
-theorem wickEventMass_integrand_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (g r : ℝ) (E : Set (Ω × ℂ))
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (U : Set ℂ)
+  (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+include U dens ε₀ hY
+
+theorem wickEventMass_integrand_measurable (g r : ℝ) (E : Set (Ω × ℂ))
     (hE : MeasurableSet E) (f : ℂ → ℝ) (hf : Measurable f) :
     Measurable (fun q : Ω × ℂ => ENNReal.ofReal (f q.2) *
       admissibleLogWickWeight P Y g (Real.exp (-r)) q.2 q.1 *
@@ -61,24 +61,14 @@ theorem wickEventMass_integrand_measurable
     (admissibleLogWickWeight_measurable_joint P U dens ε₀ Y hY g _)).mul
     (measurable_const.indicator hE)
 
-theorem wickEventMass_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (μ : Measure ℂ) [SFinite μ]
+theorem wickEventMass_measurable (μ : Measure ℂ) [SFinite μ]
     (g r : ℝ) (E : Set (Ω × ℂ)) (hE : MeasurableSet E) (f : ℂ → ℝ) (hf : Measurable f) :
     Measurable (wickEventMass P μ Y g r E f) :=
   (wickEventMass_integrand_measurable P U dens ε₀ Y hY g r E hE f hf).lintegral_prod_right'
 
 /-- Tonelli: the mixed second moment of two event masses is the spatial integral of the
 two-root event kernel. -/
-theorem lintegral_wickEventMass_mul
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (μ : Measure ℂ) [SFinite μ]
+theorem lintegral_wickEventMass_mul (μ : Measure ℂ) [SFinite μ]
     (g r s : ℝ) (E₁ E₂ : Set (Ω × ℂ)) (hE₁ : MeasurableSet E₁) (hE₂ : MeasurableSet E₂)
     (f : ℂ → ℝ) (hf : Measurable f) :
     ∫⁻ ω, wickEventMass P μ Y g r E₁ f ω * wickEventMass P μ Y g s E₂ f ω ∂P =
@@ -131,8 +121,9 @@ theorem lintegral_wickEventMass_mul
           rw [← lintegral_const_mul _ hmeasW]
           apply lintegral_congr
           intro ω
-          simp only [F, G]
           ring
+
+end
 
 /-- The growing-barrier kernel is the two-root event kernel of the growing barrier events. -/
 theorem growingPairKernel_eq_event_kernel
@@ -144,8 +135,7 @@ theorem growingPairKernel_eq_event_kernel
         Set.indicator (admissibleGrowingBarrierSet Y a k₀ r) (fun _ => (1 : ℝ≥0∞)) (ω, p.1) *
         Set.indicator (admissibleGrowingBarrierSet Y a k₀ s) (fun _ => (1 : ℝ≥0∞))
           (ω, p.2) ∂P := by
-  unfold growingPairKernel compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
-  simp only [ite_self]
+  rfl
 
 /-- The squared symmetric difference plus twice the product is at most the sum of squares. -/
 theorem ennDist_sq_add_two_mul_le (a b : ℝ≥0∞) :
@@ -168,9 +158,11 @@ theorem ennDist_sq_add_two_mul_le (a b : ℝ≥0∞) :
     rw [hd]
     exact le_of_eq (by ring)
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- Abstract mean-square bound from comparison of the diagonal and mixed second moments. -/
-theorem lintegral_ennDist_sq_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (A B : Ω → ℝ≥0∞)
+theorem lintegral_ennDist_sq_le (A B : Ω → ℝ≥0∞)
     (hA : Measurable A) (hB : Measurable B)
     (hAB : ∫⁻ ω, A ω * B ω ∂P ≠ ⊤) (D₁ D₂ : ℝ≥0∞)
     (h₁ : ∫⁻ ω, A ω * A ω ∂P ≤ ∫⁻ ω, A ω * B ω ∂P + D₁)
@@ -193,17 +185,16 @@ theorem lintegral_ennDist_sq_le
   exact (ENNReal.add_le_add_iff_right (ENNReal.mul_ne_top (by norm_num) hAB)).mp hsum
 
 /-- Cauchy–Schwarz for a nonnegative random variable on a probability space. -/
-theorem lintegral_le_rpow_lintegral_sq
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+theorem lintegral_le_rpow_lintegral_sq [IsProbabilityMeasure P]
     (X : Ω → ℝ≥0∞) (hX : AEMeasurable X P) :
     ∫⁻ ω, X ω ∂P ≤ (∫⁻ ω, X ω ^ 2 ∂P) ^ (1 / 2 : ℝ) := by
   have h := ENNReal.lintegral_mul_le_Lp_mul_Lq P Real.HolderConjugate.two_two hX
     (aemeasurable_const (b := (1 : ℝ≥0∞)))
   simp only [Pi.mul_apply, mul_one, ENNReal.one_rpow, lintegral_const, measure_univ,
     ENNReal.one_rpow] at h
-  have hsq : ∀ ω, X ω ^ (2 : ℝ) = X ω ^ 2 := fun ω => ENNReal.rpow_two (X ω)
-  simp only [hsq] at h
-  simpa using h
+  simp_all
+
+end
 
 /-- The barrier-good cutoff mass of a test on the compact chart `K`. -/
 noncomputable abbrev goodMass {Ω : Type*} [MeasurableSpace Ω]
@@ -255,7 +246,8 @@ theorem goodMass_L1_uniform_cauchy
   have hmeasJ (t : ℝ) : Measurable (goodMass P U dens K Y g a k₀ t f) :=
     wickEventMass_measurable P U dens ε₀ Y hY _ g t _ (hbarr t) f hf
   have hKer (t t' : ℝ) : Measurable (growingPairKernel P Y g a k₀ t t') :=
-    growingPairKernel_measurable P U dens ε₀ Y hY g a k₀ t t'
+    (compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_measurable P U dens ε₀ ε₀ Y Y hY hY
+      g a k₀ t t' true true)
   have hff : Measurable (fun p : ℂ × ℂ => ENNReal.ofReal (f p.1) * ENNReal.ofReal (f p.2)) :=
     (ENNReal.measurable_ofReal.comp (hf.comp measurable_fst)).mul
       (ENNReal.measurable_ofReal.comp (hf.comp measurable_snd))
@@ -293,10 +285,10 @@ theorem goodMass_L1_uniform_cauchy
               (growingPairKernel P Y g a k₀ t₁ t₂ p) (growingPairKernel P Y g a k₀ t₃ t₄ p) := by
             ring
       _ ≤ _ := by beta_reduce; gcongr; exact hffL p
-  have hR₀r : R₀ ≤ r := le_trans (le_max_left _ _) hr
-  have hR₀s : R₀ ≤ s := le_trans (le_max_left _ _) hs
-  have hR₁r : R₁ ≤ r := le_trans (le_max_right _ _) hr
-  have hR₁s : R₁ ≤ s := le_trans (le_max_right _ _) hs
+  have hR₀r  := le_trans (le_max_left _ _) hr
+  have hR₀s  := le_trans (le_max_left _ _) hs
+  have hR₁r  := le_trans (le_max_right _ _) hr
+  have hR₁s  := le_trans (le_max_right _ _) hs
   have hABfin : ∫⁻ ω, goodMass P U dens K Y g a k₀ r f ω *
       goodMass P U dens K Y g a k₀ s f ω ∂P ≠ ⊤ := by
     rw [hmom r s]
@@ -311,9 +303,6 @@ theorem goodMass_L1_uniform_cauchy
   have h₂ := hcompare s s r s
   rw [← hmom, ← hmom] at h₁
   rw [← hmom, ← hmom] at h₂
-  have hsym : ∫⁻ ω, goodMass P U dens K Y g a k₀ s f ω *
-      goodMass P U dens K Y g a k₀ s f ω ∂P = ∫⁻ ω, goodMass P U dens K Y g a k₀ s f ω *
-      goodMass P U dens K Y g a k₀ s f ω ∂P := rfl
   have hsq := lintegral_ennDist_sq_le P _ _ (hmeasJ r) (hmeasJ s) hABfin _ _ h₁ h₂
   have hD₁ := hR₁ r r r s hR₁r hR₁r hR₁r hR₁s g hg
   have hD₂ := hR₁ s s r s hR₁s hR₁s hR₁r hR₁s g hg
@@ -330,7 +319,6 @@ theorem goodMass_L1_uniform_cauchy
           ring
       _ < ENNReal.ofReal (ε ^ 2) := by
           rw [ENNReal.ofReal_lt_ofReal_iff (by positivity), hε'def]
-          have hden : 0 < 2 * (L ^ 2 + 1) := by positivity
           rw [show L ^ 2 * (2 * (ε ^ 2 / (2 * (L ^ 2 + 1)))) = ε ^ 2 * (L ^ 2 / (L ^ 2 + 1)) by
             field_simp]
           have hfrac : L ^ 2 / (L ^ 2 + 1) < 1 := by
@@ -399,13 +387,8 @@ theorem chartMass_eq_good_add_bad
   apply lintegral_congr
   intro x
   by_cases hx : (ω, x) ∈ admissibleGrowingBarrierSet Y a k₀ r
-  · rw [Set.indicator_of_mem (Set.mem_univ _), Set.indicator_of_mem hx,
-      Set.indicator_of_notMem (show (ω, x) ∉ (admissibleGrowingBarrierSet Y a k₀ r)ᶜ from
-        fun h => h hx)]
-    ring
-  · rw [Set.indicator_of_mem (Set.mem_univ _), Set.indicator_of_notMem hx,
-      Set.indicator_of_mem (show (ω, x) ∈ (admissibleGrowingBarrierSet Y a k₀ r)ᶜ from hx)]
-    ring
+  simp_all
+  simp_all
 
 /-- The symmetric difference is subadditive under addition. -/
 theorem ennDist_add_add_le (a b c d : ℝ≥0∞) :
@@ -437,10 +420,7 @@ theorem tsum_indicator_ge_le_tsum_nat_add (k₀ : ℕ) (T f : ℕ → ℝ≥0∞
       exact hk (Set.indicator_of_notMem h f)
     exact ⟨k - k₀, by show k - k₀ + k₀ = k; omega⟩
   rw [← hinj.tsum_eq hsupp]
-  apply tsum_congr
-  intro j
-  rw [Set.indicator_of_mem (show j + k₀ ∈ {k : ℕ | k₀ ≤ k} from
-    show k₀ ≤ j + k₀ by omega)]
+  simp
 
 /-- One root violates its growing barrier with exponentially small tilted weight, uniformly for
 charges in `[gLo, gHi]` once the barrier starts at a large scale. -/
@@ -459,11 +439,11 @@ theorem wick_root_barrier_violation_le
   obtain ⟨C, hC, htail⟩ := admissible_coarse_barrier_tail_rate P U dens ε₀ Y hY K hK hKU
   refine ⟨C, hC, ?_⟩
   intro gLo gHi a hgLo hga k₀ hk₀cut hk₀C hk₀gap g hg r x hx
-  have hgpos : 0 < g := lt_of_lt_of_le hgLo hg.1
-  have hga' : g < a := lt_of_le_of_lt hg.2 hga
-  let w : Ω → ℝ≥0∞ := fun ω => admissibleLogWickWeight P Y g (Real.exp (-r)) x ω
+  have hgpos  := lt_of_lt_of_le hgLo hg.1
+  have hga'  := lt_of_le_of_lt hg.2 hga
+  let w  := fun ω => admissibleLogWickWeight P Y g (Real.exp (-r)) x ω
   have hw : Measurable w := admissibleLogWickWeight_measurable_sample P U dens ε₀ Y hY g _ x
-  let bad : ℕ → Ω → Prop := fun k ω =>
+  let bad  := fun k ω =>
     k₀ ≤ k ∧ (k : ℝ) ≤ r ∧ a * (k : ℝ) < Y ω (Real.exp (-(k : ℝ))) x
   have hset (k : ℕ) : MeasurableSet {ω | bad k ω} := by
     by_cases hk : k₀ ≤ k ∧ (k : ℝ) ≤ r
@@ -517,10 +497,10 @@ theorem wick_root_barrier_violation_le
         have hk₀k : (k₀ : ℝ) ≤ k := by exact_mod_cast hk.1
         have hkcut : Real.exp (-(k : ℝ)) ≤ ε₀ :=
           le_trans (Real.exp_le_exp.mpr (by linarith)) hk₀cut
-        have hkC : C < (k : ℝ) := lt_of_lt_of_le hk₀C hk₀k
+        have hkC  := lt_of_lt_of_le hk₀C hk₀k
         have hrk : Real.exp (-r) ≤ Real.exp (-(k : ℝ)) := Real.exp_le_exp.mpr (by linarith [hk.2])
         have hgapk : g * C ≤ (a - g) * (k : ℝ) / 2 := by
-          have h1 : g * C ≤ gHi * C := mul_le_mul_of_nonneg_right hg.2 hC
+          have h1  := mul_le_mul_of_nonneg_right hg.2 hC
           have h2 : (a - gHi) * (k₀ : ℝ) ≤ (a - g) * (k : ℝ) := by
             apply mul_le_mul (by linarith [hg.2]) hk₀k (Nat.cast_nonneg _) (by linarith)
           linarith
@@ -528,22 +508,22 @@ theorem wick_root_barrier_violation_le
           hgapk).trans ?_
         apply ENNReal.ofReal_le_ofReal
         apply Real.exp_le_exp.mpr
-        have h1 : 0 ≤ a - gHi := (sub_pos.mpr hga).le
+        have h1  := (sub_pos.mpr hga).le
         have h2 : a - gHi ≤ a - g := by linarith [hg.2]
-        have hsq : (a - gHi) ^ 2 ≤ (a - g) ^ 2 := pow_le_pow_left₀ h1 h2 2
+        have hsq  := pow_le_pow_left₀ h1 h2 2
         have hn : (0 : ℝ) ≤ (k : ℝ) := Nat.cast_nonneg _
         have := mul_le_mul_of_nonneg_right hsq hn
         linarith
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (U : Set ℂ)
+  (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+  (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
+include Ω ε₀ hY hK hKU
+
 /-- The expected bad mass on the chart is at most the test bound times the chart reference mass
 times the omitted-barrier tail, uniformly for charges in `[gLo, gHi]`. -/
-theorem lintegral_badMass_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U) :
+theorem lintegral_badMass_le :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (gLo gHi a : ℝ), 0 < gLo → gHi < a → ∀ k₀ : ℕ,
       Real.exp (-(k₀ : ℝ)) ≤ ε₀ → C < (k₀ : ℝ) → gHi * C ≤ (a - gHi) * (k₀ : ℝ) / 2 →
       ∀ g ∈ Icc gLo gHi, ∀ r : ℝ, ∀ (L : ℝ) (f : ℂ → ℝ), Measurable f → (∀ x, f x ≤ L) →
@@ -554,7 +534,7 @@ theorem lintegral_badMass_le
   refine ⟨C, hC, ?_⟩
   intro gLo gHi a hgLo hga k₀ hk₀cut hk₀C hk₀gap g hg r L f hf hfL
   set τ := ∑' j : ℕ, ENNReal.ofReal (Real.exp (-((a - gHi) ^ 2 * ((j + k₀ : ℕ) : ℝ) / 16)))
-  have hAc : MeasurableSet (admissibleGrowingBarrierSet Y a k₀ r)ᶜ :=
+  have hAc  :=
     (admissibleGrowingBarrierSet_measurable P U dens ε₀ Y hY a k₀ r).compl
   have hF := wickEventMass_integrand_measurable P U dens ε₀ Y hY g r _ hAc f hf
   have hswap := lintegral_lintegral_swap (μ := P)
@@ -581,7 +561,7 @@ theorem lintegral_badMass_le
               Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)ᶜ (fun _ => (1 : ℝ≥0∞))
                 (ω, x) ∂P := by
               rw [← lintegral_const_mul _ hmeasω]
-              apply lintegral_congr; intro ω; ring
+              ring
           _ ≤ ENNReal.ofReal L * τ :=
               mul_le_mul' (ENNReal.ofReal_le_ofReal (hfL x))
                 (hviol gLo gHi a hgLo hga k₀ hk₀cut hk₀C hk₀gap g hg r x hx)
@@ -593,12 +573,6 @@ theorem lintegral_badMass_le
 vanish, uniformly over such tests and charges in a compact interval admitting barrier
 parameters. -/
 theorem chartMass_L1_uniform_cauchy_interval
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
     (gLo gHi a η κ : ℝ) (hgLo : 0 < gLo) (hgLoHi : gLo ≤ gHi) (hga : gHi < a)
     (ha2 : a < 2 * gLo) (hη : 0 < η) (hη1 : η < 1) (hκ : 0 < κ) (hκ2 : κ < 2)
     (hκexp : ∀ g ∈ Icc gLo gHi, g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))) ≤ κ)
@@ -612,7 +586,7 @@ theorem chartMass_L1_uniform_cauchy_interval
   have hσK := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU
   set τ : ℕ → ℝ≥0∞ := fun N => ∑' j : ℕ,
     ENNReal.ofReal (Real.exp (-((a - gHi) ^ 2 * ((j + N : ℕ) : ℝ) / 16))) with hτdef
-  have hτ : Tendsto τ atTop (𝓝 0) := tendsto_compatible_mixed_double_root_barrier_tail_sum gHi a hga
+  have hτ  := tendsto_compatible_mixed_double_root_barrier_tail_sum gHi a hga
   have hcoef : ENNReal.ofReal L * logRegularizationReference U dens K ≠ ⊤ :=
     ENNReal.mul_ne_top ENNReal.ofReal_ne_top hσK
   have hbadlim : Tendsto (fun N => ENNReal.ofReal L * logRegularizationReference U dens K * τ N)
@@ -623,7 +597,7 @@ theorem chartMass_L1_uniform_cauchy_interval
   have hev : ∀ᶠ k₀ : ℕ in atTop, Real.exp (-(k₀ : ℝ)) ≤ ε₀ ∧ Cb < (k₀ : ℝ) ∧
       gHi * Cb ≤ (a - gHi) * (k₀ : ℝ) / 2 ∧ Cv + 1 ≤ (k₀ : ℝ) ∧
       ENNReal.ofReal L * logRegularizationReference U dens K * τ k₀ < ENNReal.ofReal (ε / 3) := by
-    have hpos : 0 < a - gHi := sub_pos.mpr hga
+    have hpos  := sub_pos.mpr hga
     obtain ⟨N, hN⟩ := exists_natural_scale_after_covariance_errors (max Cb Cv + 1) 1 1 1 ε₀
       (by positivity) one_pos one_pos one_pos hY.cutoffPositive
     obtain ⟨N₂, hN₂⟩ := exists_nat_gt (2 * (gHi * Cb) / (a - gHi))
@@ -632,12 +606,12 @@ theorem chartMass_L1_uniform_cauchy_interval
     have hNk : (N : ℝ) ≤ k₀ := by exact_mod_cast hk₀N
     have hN₂k : (N₂ : ℝ) ≤ k₀ := by exact_mod_cast hk₀N₂
     refine ⟨le_trans (Real.exp_le_exp.mpr (by linarith)) hN.1, ?_, ?_, ?_, hk₀bad⟩
-    · have := hN.2.1
+    · 
       have : Cb ≤ max Cb Cv := le_max_left _ _
       linarith
     · have h := (div_lt_iff₀ hpos).mp (lt_of_lt_of_le hN₂ hN₂k)
       linarith
-    · have := hN.2.1
+    · 
       have : Cv ≤ max Cb Cv := le_max_right _ _
       linarith
   obtain ⟨k₀, hk₀cut, hk₀C, hk₀gap, hk₀var, hk₀bad⟩ := hev.exists
@@ -675,10 +649,7 @@ theorem chartMass_L1_uniform_cauchy_interval
           ∫⁻ ω, badMass P U dens K Y g a k₀ s f ω ∂P) := by
         rw [lintegral_add_left (ennDist_measurable (hJm r) (hJm s)), lintegral_add_left (hBm r)]
     _ < ENNReal.ofReal (ε / 3) + (ENNReal.ofReal (ε / 3) + ENNReal.ofReal (ε / 3)) := by
-        have hle : ∫⁻ ω, badMass P U dens K Y g a k₀ r f ω ∂P +
-            ∫⁻ ω, badMass P U dens K Y g a k₀ s f ω ∂P ≤
-            ENNReal.ofReal (ε / 3) + ENNReal.ofReal (ε / 3) :=
-          add_le_add (hbadr.trans hk₀bad.le) (hbads.trans hk₀bad.le)
+        have hle := add_le_add (hbadr.trans hk₀bad.le) (hbads.trans hk₀bad.le)
         exact ENNReal.add_lt_add_of_lt_of_le (ne_top_of_le_ne_top (ENNReal.add_ne_top.mpr
           ⟨ENNReal.ofReal_ne_top, ENNReal.ofReal_ne_top⟩) hle) (hR r s hr hs g hg f hf hf0 hfL) hle
     _ = ENNReal.ofReal ε := by
@@ -686,5 +657,7 @@ theorem chartMass_L1_uniform_cauchy_interval
           ← ENNReal.ofReal_add (by linarith) (by linarith)]
         congr 1
         ring
+
+end
 
 end DOZZ.Assembly

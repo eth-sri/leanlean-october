@@ -22,11 +22,13 @@ open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 
+section
+variable {ν : ℝ} {P : Measure BrownianPath} (hP : IsNegativeConditionedBrownianLaw ν P)
+include ν hP
+
 /-- At a deterministic positive time, the one-time marginal of a negative conditioned path is
 strictly negative almost surely. -/
 theorem ae_negativeConditionedPath_eval_lt_zero
-    {ν : ℝ} {P : Measure BrownianPath}
-    (hP : IsNegativeConditionedBrownianLaw ν P)
     (t : ℝ≥0) (ht : 0 < (t : ℝ)) :
     ∀ᵐ p ∂P, p t < 0 := by
   let times : Fin 1 → ℝ≥0 := fun _ => t
@@ -56,9 +58,7 @@ theorem ae_negativeConditionedPath_eval_lt_zero
       ∫⁻ x in A, ρ x ∂(volume : Measure (Fin 1 → ℝ)) =
           ∫⁻ x in A, (fun _ : Fin 1 → ℝ => (0 : ℝ≥0∞)) x
             ∂(volume : Measure (Fin 1 → ℝ)) := by
-            apply setLIntegral_congr_fun hA
-            intro x hx
-            exact hρzero x hx
+            apply setLIntegral_congr_fun <;> assumption
       _ = 0 := by simp
   have hpre : X ⁻¹' A = {p : BrownianPath | 0 ≤ p t} := by
     ext p
@@ -72,14 +72,12 @@ theorem ae_negativeConditionedPath_eval_lt_zero
       _ = 0 := by rw [hlaw]; exact hRHS
   rw [measure_eq_zero_iff_ae_notMem] at hbad
   filter_upwards [hbad] with p hp
-  exact lt_of_not_ge (by simpa using hp)
+  linarith
 
 /-- A negative conditioned path is nonpositive at every time, almost surely. The proof uses
 strict negativity at each positive rational time and continuity; it allows a possible zero touch at
 an irrational time. -/
-theorem ae_negativeConditionedPath_nonpos_all_times
-    {ν : ℝ} {P : Measure BrownianPath}
-    (hP : IsNegativeConditionedBrownianLaw ν P) :
+theorem ae_negativeConditionedPath_nonpos_all_times :
     ∀ᵐ p ∂P, ∀ t : ℝ≥0, p t ≤ 0 := by
   let PosRat := {q : ℚ // 0 < (q : ℝ)}
   have hrat : ∀ᵐ p ∂P, ∀ q : PosRat,
@@ -93,7 +91,7 @@ theorem ae_negativeConditionedPath_nonpos_all_times
   by_cases ht : t = 0
   · subst t
     simp [hp0]
-  · have htpos : 0 < (t : ℝ) := by exact_mod_cast (pos_iff_ne_zero.mpr ht)
+  · have htpos : 0 < (t : ℝ) := by positivity
     have hpositive : ∀ q : ℚ, ∀ hq : 0 < (q : ℝ),
         0 ≤ (-p) ⟨(q : ℝ), hq.le⟩ := by
       intro q hq
@@ -101,10 +99,11 @@ theorem ae_negativeConditionedPath_nonpos_all_times
       exact neg_nonneg.mpr hq'.le
     have hcont := (continuous_path_ge_iff_rational_ge (-p) 0 0 (by norm_num)).2
       (by
-        intro q hq
-        exact hpositive q hq)
+        assumption)
     have hval := hcont t htpos
     exact neg_nonneg.mp hval
+
+end
 
 end DOZZ.Proofs
 

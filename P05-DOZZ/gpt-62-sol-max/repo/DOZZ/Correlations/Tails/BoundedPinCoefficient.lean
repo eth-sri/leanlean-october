@@ -25,7 +25,7 @@ noncomputable def boundedPinCoefficient (z : ℂ) : BoundedContinuousFunction �
       rw [Real.norm_eq_abs]
       apply abs_le.mpr
       have hb : 0 ≤ b := by dsimp [b]; positivity
-      exact ⟨le_max_left _ _, max_le (by linarith) (min_le_left _ _)⟩)
+      simpa)
 
 /-- On the full closed unit disk this is exactly the local regression coefficient. -/
 theorem bounded_pin_coefficient_eq (z x : ℂ) (hz : 2 ≤ ‖z‖) (hx : ‖x‖ ≤ 1) :
@@ -36,7 +36,7 @@ theorem bounded_pin_coefficient_eq (z x : ℂ) (hz : 2 ≤ ‖z‖) (hx : ‖x�
     simp only [sub_add_cancel_left, norm_neg] at h
     linarith
   have hc := local_pin_coefficient_bound z x hz hx
-  have hcb : |localPinCoefficient z x| ≤ 1 / (2 * Real.log ‖z‖) :=
+  have hcb  :=
     hc.trans (div_le_div_of_nonneg_right hx hv.le)
   have hleft := (abs_le.mp hcb).1
   have hright := (abs_le.mp hcb).2

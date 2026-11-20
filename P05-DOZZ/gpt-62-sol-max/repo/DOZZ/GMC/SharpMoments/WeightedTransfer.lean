@@ -34,30 +34,29 @@ theorem regularizedGMC_integral_l1_tendsto
       |∫ x, f x ∂regularizedGMC P Xc γ r ω - ∫ x, f x ∂M ω| ∂P) atTop (𝓝 0) := by
   classical
   let I : Set ℝ := {γ}
-  let K : Set ℂ := Metric.closedBall (0 : ℂ) R
+  let K  := Metric.closedBall (0 : ℂ) R
   have hExists : ∀ η ∈ Set.Ioo (0 : ℝ) 2, ∃ N : Ω → Measure ℂ, IsGMCOf P X η N := by
     intro η hη
     obtain ⟨_, N, _, hN⟩ := equatorGFF_circle_average_GMC_exists P X hX η hη.1 hη.2
     exact ⟨N, hN⟩
-  let Mfam : ℝ → Ω → Measure ℂ := fun η =>
+  let Mfam  := fun η =>
     if hη : η ∈ Set.Ioo (0 : ℝ) 2 then Classical.choose (hExists η hη) else 0
   have hI : IsCompact I := by simp [I]
   have hI2 : I ⊆ Set.Ioo (0 : ℝ) 2 := by
     intro η hη
-    have hη' : η = γ := by simpa [I] using hη
-    simpa [hη'] using ⟨hγ, hγ2⟩
+    simpa [(by simpa [I] using hη)] using ⟨hγ, hγ2⟩
   have hK : IsCompact K := isCompact_closedBall _ _
   have hMfam : ∀ η ∈ Set.Ioo (0 : ℝ) 2, IsGMCOf P X η (Mfam η) := by
     intro η hη
     simp only [Mfam, dite_eq_left hη]
-    exact Classical.choose_spec (hExists η hη)
-  have hUnique : ∀ᵐ ω ∂P, M ω = Mfam γ ω :=
+    apply Classical.choose_spec <;> assumption
+  have hUnique  :=
     equatorGFF_GMC_unique_ae P X hX γ M (Mfam γ) hM (hMfam γ ⟨hγ, hγ2⟩)
-  let S : ℝ → ℝ≥0∞ := fun r => ⨆ η ∈ I, ⨆ (g : ℂ → ℝ) (_ : Measurable g)
+  let S  := fun r => ⨆ η ∈ I, ⨆ (g : ℂ → ℝ) (_ : Measurable g)
       (_ : ∀ x, |g x| ≤ Lb) (_ : ∀ x ∉ K, g x = 0),
       ∫⁻ ω, ENNReal.ofReal
         |∫ x, g x ∂regularizedGMC P Xc η r ω - ∫ x, g x ∂Mfam η ω| ∂P
-  have hS : Tendsto S atTop (𝓝 0) :=
+  have hS  :=
     equatorGFF_GMC_uniform_L1 P X hX Xc hXc Mfam hMfam I hI hI2 K hK Lb
   have hbound (r : ℝ) :
       ∫⁻ ω, ENNReal.ofReal
@@ -128,16 +127,12 @@ theorem regularizedGMC_weighted_mass_tendstoInMeasure
   have hF : ∀ n : ℕ, AEStronglyMeasurable (fun ω => (∫⁻ x in Metric.ball z ρ,
       (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ n ω).toReal) P := by
     intro n
-    have hm : Measurable fun ω => ∫⁻ x, (Metric.ball z ρ).indicator
-        (fun x => (w (x - z) : ℝ≥0∞)) x ∂regularizedGMC P Xc γ n ω :=
-      (Measure.measurable_lintegral (hwm.indicator hB)).comp
+    have hm := (Measure.measurable_lintegral (hwm.indicator hB)).comp
         (regularizedGMC_measurable P X hX Xc hXc γ n)
     refine (ENNReal.measurable_toReal.comp hm).aestronglyMeasurable.congr
       (Eventually.of_forall fun ω => ?_)
     simp only [Function.comp_apply, lintegral_indicator hB]
-  have hG : AEStronglyMeasurable (fun ω => (∫⁻ x in Metric.ball z ρ,
-      (w (x - z) : ℝ≥0∞) ∂M ω).toReal) P :=
-    (ENNReal.measurable_toReal.comp_aemeasurable
+  have hG := (ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _ hwm _ hB)).aestronglyMeasurable
   refine DOZZ.Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _ hF hG ?_
   have hnat := hL1.comp tendsto_natCast_atTop_atTop
@@ -148,30 +143,29 @@ theorem regularizedGMC_weighted_mass_tendstoInMeasure
 theorem weightedSetLIntegral_le_const_mul (μ : Measure ℂ) (z : ℂ) (ρ : ℝ) (w : ℂ → ℝ≥0)
     (c : ℝ≥0) (hwc : ∀ y, w y ≤ c) :
     ∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂μ ≤ (c : ℝ≥0∞) * μ (Metric.ball z ρ) := by
-  calc ∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂μ
-      ≤ ∫⁻ _x in Metric.ball z ρ, (c : ℝ≥0∞) ∂μ :=
-        lintegral_mono fun x => ENNReal.coe_le_coe.mpr (hwc _)
-    _ = (c : ℝ≥0∞) * μ (Metric.ball z ρ) := setLIntegral_const _ _
+  exact Trans.trans (lintegral_mono fun x => ENNReal.coe_le_coe.mpr (hwc (x - z))) (setLIntegral_const (Metric.ball z ρ) ↑c)
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include Ω X hX hγ hγ2 hM
 
 /-- Moments of every positive subcritical order of a boundedly weighted small-disk mass converge
 along the integer cutoffs. -/
 theorem gmc_weighted_ball_moment_tendsto
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (z : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8) (w : ℂ → ℝ≥0) (hw : Measurable w)
     (c : ℝ≥0) (hwc : ∀ y, w y ≤ c) (p : ℝ) (hp : 0 < p) (hp4 : p < 4 / γ ^ 2) :
     Tendsto (fun n : ℕ => ∫⁻ ω, (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞)
         ∂regularizedGMC P Xc γ n ω) ^ p ∂P) atTop
       (𝓝 (∫⁻ ω, (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂M ω) ^ p ∂P)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hB : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
-  have hwm : Measurable fun x : ℂ => (w (x - z) : ℝ≥0∞) :=
+  have hwm  :=
     measurable_coe_nnreal_ennreal.comp (hw.comp (measurable_id.sub_const z))
   set p' : ℝ := (p + 4 / γ ^ 2) / 2 with hp'
   have hpp' : p < p' := by rw [hp']; linarith
-  have hp'0 : 0 < p' := hp.trans hpp'
+  have hp'0  := hp.trans hpp'
   obtain ⟨K, hK, hKb⟩ := regularizedGMC_ball_moment_uniform_any_center P X hX Xc hXc γ hγ hγ2
     z ρ hρ hρ8 p' (by rw [hp']; linarith)
   have hcK : (c : ℝ≥0∞) ^ p' * K ≠ ⊤ :=
@@ -213,9 +207,6 @@ theorem gmc_weighted_ball_moment_tendsto
 /-- The location transfer of positive subcritical moments of boundedly weighted small-disk
 masses, for `IsGMCOf` limits. -/
 theorem gmc_weighted_ball_moment_transfer
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (z z₀ : ℂ) (ρ R : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8) (hR : 0 ≤ R) (hzR : ‖z‖ + ρ ≤ R)
     (hz₀R : ‖z₀‖ + ρ ≤ R) (w : ℂ → ℝ≥0) (hw : Measurable w) (c : ℝ≥0) (hwc : ∀ y, w y ≤ c)
     (p : ℝ) (hp : 0 < p) (hp4 : p < 4 / γ ^ 2) :
@@ -239,5 +230,7 @@ theorem gmc_weighted_ball_moment_transfer
   have h2 := ENNReal.Tendsto.const_mul (gmc_weighted_ball_moment_tendsto P X hX γ hγ hγ2 M hM Xc
     hXc z₀ ρ hρ hρ8 w hw c hwc p hp hp4) (Or.inr hTtop)
   exact le_of_tendsto_of_tendsto' h1 h2 hcut
+
+end
 
 end DOZZ.Proofs

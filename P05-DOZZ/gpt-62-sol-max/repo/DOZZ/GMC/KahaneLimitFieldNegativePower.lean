@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.GMC.FieldChaosConvexOrder
 
 public import DOZZ.GMC.FieldChaosNegativePower
 public import DOZZ.GMC.KahaneNegativeMellin
@@ -18,16 +19,16 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {ΩX ΩY S : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [MeasurableSpace S]
+  (PX : Measure ΩX) (PY : Measure ΩY) (Φ : ℝ → ΩX → S → ℝ) (Ψ : ℝ → ΩY → S → ℝ)
+  (hΦ : ∀ r, DOZZ.IsCenteredGaussianField PX (Φ r)) (hΨ : ∀ r, DOZZ.IsCenteredGaussianField PY (Ψ r))
+  (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h) (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c)
+include S hΦ hΨ hh hhb
+
 /-- A field-chaos Laplace comparison passes to limits in measure. The two probability spaces use
 a common subsequence, and bounded convergence transfers the cutoff inequalities to the limits. -/
-theorem kahane_limit_field_laplace
-    {ΩX ΩY S : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [MeasurableSpace S]
-    (PX : Measure ΩX) (PY : Measure ΩY)
-    (Φ : ℝ → ΩX → S → ℝ) (Ψ : ℝ → ΩY → S → ℝ)
-    (hΦ : ∀ r, DOZZ.IsCenteredGaussianField PX (Φ r))
-    (hΨ : ∀ r, DOZZ.IsCenteredGaussianField PY (Ψ r))
-    (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ t : ℝ) (ht : 0 ≤ t)
+theorem kahane_limit_field_laplace (γ t : ℝ) (ht : 0 ≤ t)
     (hcov : ∀ r, ∀ᵐ xy ∂ν.prod ν,
       ∫ ω, Φ r ω xy.1 * Φ r ω xy.2 ∂PX ≤ ∫ ω, Ψ r ω xy.1 * Ψ r ω xy.2 ∂PY)
     (hdiag : ∀ r, ∀ᵐ x ∂ν,
@@ -40,26 +41,25 @@ theorem kahane_limit_field_laplace
     ∫⁻ ω, ENNReal.ofReal (Real.exp (-t * ZX ω)) ∂PX ≤
       ∫⁻ ω, ENNReal.ofReal (Real.exp (-t * ZY ω)) ∂PY := by
   classical
-  let fX : ℝ → ΩX → ℝ := fun r ω => (DOZZ.fieldChaosMass PX (Φ r) ν h γ ω).toReal
-  let fY : ℝ → ΩY → ℝ := fun r ω => (DOZZ.fieldChaosMass PY (Ψ r) ν h γ ω).toReal
-  have hXnat : TendstoInMeasure PX (fun n : ℕ => fX n) atTop ZX :=
+  let fX  := fun r ω => (DOZZ.fieldChaosMass PX (Φ r) ν h γ ω).toReal
+  let fY  := fun r ω => (DOZZ.fieldChaosMass PY (Ψ r) ν h γ ω).toReal
+  have hXnat  :=
     hXconv.comp tendsto_natCast_atTop_atTop
   obtain ⟨ns, hns, hXae⟩ := hXnat.exists_seq_tendsto_ae
-  have hYnat : TendstoInMeasure PY (fun n : ℕ => fY n) atTop ZY :=
+  have hYnat  :=
     hYconv.comp tendsto_natCast_atTop_atTop
-  have hYsub : TendstoInMeasure PY (fun n : ℕ => fY (ns n)) atTop ZY :=
+  have hYsub  :=
     hYnat.comp hns.tendsto_atTop
   obtain ⟨ms, hms, hYae⟩ := hYsub.exists_seq_tendsto_ae
   have hXseq : ∀ᵐ ω ∂PX, Tendsto (fun n => fX (ns (ms n)) ω) atTop (𝓝 (ZX ω)) := by
     filter_upwards [hXae] with ω hω
     exact hω.comp hms.tendsto_atTop
   have hYseq : ∀ᵐ ω ∂PY, Tendsto (fun n => fY (ns (ms n)) ω) atTop (𝓝 (ZY ω)) := by
-    filter_upwards [hYae] with ω hω
-    exact hω
+    assumption
   have hzeroX := hΦ 0
   have hzeroY := hΨ 0
-  let : IsProbabilityMeasure PX := hzeroX.2 0 (fun i : Fin 0 => Fin.elim0 i) |>.1
-  let : IsProbabilityMeasure PY := hzeroY.2 0 (fun i : Fin 0 => Fin.elim0 i) |>.1
+  let  := hzeroX.2 0 (fun i : Fin 0 => Fin.elim0 i) |>.1
+  let  := hzeroY.2 0 (fun i : Fin 0 => Fin.elim0 i) |>.1
   let νf : FiniteMeasure S := ⟨ν, inferInstance⟩
   have hLap (r : ℝ) :
       ∫⁻ ω, ENNReal.ofReal (Real.exp (-t * fX r ω)) ∂PX ≤
@@ -71,31 +71,28 @@ theorem kahane_limit_field_laplace
         simp [DOZZ.fieldChaosMass, hνzero]
       simp [fX, fY, hmassX, hmassY]
     · have hS : Nonempty S := by
-        have hUniv : ν Set.univ ≠ 0 := Measure.measure_univ_ne_zero.mpr hνzero
+        have hUniv  := Measure.measure_univ_ne_zero.mpr hνzero
         obtain ⟨x, _⟩ := nonempty_of_measure_ne_zero hUniv
         exact ⟨x⟩
-      let : Nonempty S := hS
+      let  := hS
       have hcov' : ∀ᵐ xy ∂(νf : Measure S).prod νf,
           DOZZ.gaussianCovariance PX (fun ω => Φ r ω xy.1) (fun ω => Φ r ω xy.2) ≤
             DOZZ.gaussianCovariance PY (fun ω => Ψ r ω xy.1) (fun ω => Ψ r ω xy.2) := by
         filter_upwards [hcov r] with xy hxy
-        simpa [DOZZ.gaussianCovariance] using hxy
-      have hdiag' : ∀ᵐ x ∂(νf : Measure S),
-          DOZZ.gaussianVariance PX (fun ω => Φ r ω x) ≤
-            DOZZ.gaussianVariance PY (fun ω => Ψ r ω x) := by
-        filter_upwards [hdiag r] with x hx
-        simpa [DOZZ.gaussianVariance, DOZZ.gaussianCovariance, pow_two] using hx
+        assumption
       simpa [fX, fY, νf] using
         kahane_field_laplace_of_nonzero_finite_measure_eq PX PY (Φ r) (Ψ r)
           (hΦ r) (hΨ r) νf (by
             intro hz
             apply hνzero
             have hcoerce := congrArg (fun μ : FiniteMeasure S => (μ : Measure S)) hz
-            simpa [νf] using hcoerce)
-          h hh hhb γ t ht hcov' hdiag'
-  let FX : ℕ → ΩX → ℝ≥0∞ := fun n ω =>
+            assumption)
+          h hh hhb γ t ht hcov' (by
+        filter_upwards [hdiag r] with x hx
+        simpa [DOZZ.gaussianVariance, DOZZ.gaussianCovariance, pow_two] using hx)
+  let FX  := fun n ω =>
     ENNReal.ofReal (Real.exp (-t * fX (ns (ms n)) ω))
-  let FY : ℕ → ΩY → ℝ≥0∞ := fun n ω =>
+  let FY  := fun n ω =>
     ENNReal.ofReal (Real.exp (-t * fY (ns (ms n)) ω))
   have hFXmeas : ∀ n, Measurable (FX n) := by
     intro n
@@ -127,7 +124,7 @@ theorem kahane_limit_field_laplace
     nlinarith [mul_nonneg ht hm]
   have hfiniteX : ∫⁻ ω : ΩX, (1 : ℝ≥0∞) ∂PX ≠ ∞ := by simp
   have hfiniteY : ∫⁻ ω : ΩY, (1 : ℝ≥0∞) ∂PY ≠ ∞ := by simp
-  let g : ℝ → ℝ≥0∞ := fun x => ENNReal.ofReal (Real.exp (-t * x))
+  let g  := fun x => ENNReal.ofReal (Real.exp (-t * x))
   have hgcont : Continuous g := by
     dsimp [g]
     exact ENNReal.continuous_ofReal.comp <|
@@ -147,19 +144,12 @@ theorem kahane_limit_field_laplace
     simpa [FX, FY, fX, fY] using hLap (ns (ms n))
   have hlimorder := le_of_tendsto_of_tendsto hXint hYint
     (Filter.Eventually.of_forall horder)
-  simpa [g] using hlimorder
+  assumption
 
 /-- Negative-power field comparison passes to limits in measure. The finite-cutoff comparison is
 first transferred to bounded Laplace tests, then Mellin integration recovers the possibly infinite
 negative moments of the limiting masses. -/
-theorem kahane_limit_field_negative_power
-    {ΩX ΩY S : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [MeasurableSpace S]
-    (PX : Measure ΩX) (PY : Measure ΩY)
-    (Φ : ℝ → ΩX → S → ℝ) (Ψ : ℝ → ΩY → S → ℝ)
-    (hΦ : ∀ r, DOZZ.IsCenteredGaussianField PX (Φ r))
-    (hΨ : ∀ r, DOZZ.IsCenteredGaussianField PY (Ψ r))
-    (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ q : ℝ) (hq : 0 < q)
+theorem kahane_limit_field_negative_power (γ q : ℝ) (hq : 0 < q)
     (hcov : ∀ r, ∀ᵐ xy ∂ν.prod ν,
       ∫ ω, Φ r ω xy.1 * Φ r ω xy.2 ∂PX ≤ ∫ ω, Ψ r ω xy.1 * Ψ r ω xy.2 ∂PY)
     (hdiag : ∀ r, ∀ᵐ x ∂ν,
@@ -172,15 +162,15 @@ theorem kahane_limit_field_negative_power
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (ZX ω)) (-q) ∂PX ≤
       ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (ZY ω)) (-q) ∂PY := by
   classical
-  have hPXprob : IsProbabilityMeasure PX :=
+  have hPXprob  :=
     (hΦ 0).2 0 (fun i : Fin 0 => Fin.elim0 i) |>.1
-  have hPYprob : IsProbabilityMeasure PY :=
+  have hPYprob  :=
     (hΨ 0).2 0 (fun i : Fin 0 => Fin.elim0 i) |>.1
-  let : IsProbabilityMeasure PX := hPXprob
-  let : IsProbabilityMeasure PY := hPYprob
-  let fX : ℝ → ΩX → ℝ := fun r ω =>
+  let  := hPXprob
+  let  := hPYprob
+  let fX  := fun r ω =>
     (DOZZ.fieldChaosMass PX (Φ r) ν h γ ω).toReal
-  let fY : ℝ → ΩY → ℝ := fun r ω =>
+  let fY  := fun r ω =>
     (DOZZ.fieldChaosMass PY (Ψ r) ν h γ ω).toReal
   have hfXmeas (r : ℝ) : AEMeasurable (fX r) PX :=
     (centeredGaussianField_fieldChaosMass_measurable PX (Φ r) (hΦ r) ν h hh γ)
@@ -188,22 +178,21 @@ theorem kahane_limit_field_negative_power
   have hfYmeas (r : ℝ) : AEMeasurable (fY r) PY :=
     (centeredGaussianField_fieldChaosMass_measurable PY (Ψ r) (hΨ r) ν h hh γ)
       |>.ennreal_toReal.aemeasurable
-  have hZXae : AEMeasurable ZX PX := hXconv.aemeasurable hfXmeas
-  have hZYae : AEMeasurable ZY PY := hYconv.aemeasurable hfYmeas
-  have hXnat : TendstoInMeasure PX (fun n : ℕ => fX n) atTop ZX :=
+  have hZXae  := hXconv.aemeasurable hfXmeas
+  have hZYae  := hYconv.aemeasurable hfYmeas
+  have hXnat  :=
     hXconv.comp tendsto_natCast_atTop_atTop
   obtain ⟨ns, hns, hXae⟩ := hXnat.exists_seq_tendsto_ae
-  have hYnat : TendstoInMeasure PY (fun n : ℕ => fY n) atTop ZY :=
+  have hYnat  :=
     hYconv.comp tendsto_natCast_atTop_atTop
-  have hYsub : TendstoInMeasure PY (fun n : ℕ => fY (ns n)) atTop ZY :=
+  have hYsub  :=
     hYnat.comp hns.tendsto_atTop
   obtain ⟨ms, hms, hYae⟩ := hYsub.exists_seq_tendsto_ae
   have hXseq : ∀ᵐ ω ∂PX, Tendsto (fun n => fX (ns (ms n)) ω) atTop (𝓝 (ZX ω)) := by
     filter_upwards [hXae] with ω hω
     exact hω.comp hms.tendsto_atTop
   have hYseq : ∀ᵐ ω ∂PY, Tendsto (fun n => fY (ns (ms n)) ω) atTop (𝓝 (ZY ω)) := by
-    filter_upwards [hYae] with ω hω
-    exact hω
+    assumption
   have hZXnonneg : ∀ᵐ ω ∂PX, 0 ≤ ZX ω := by
     filter_upwards [hXseq] with ω hω
     exact isClosed_Ici.mem_of_tendsto hω
@@ -212,14 +201,12 @@ theorem kahane_limit_field_negative_power
     filter_upwards [hYseq] with ω hω
     exact isClosed_Ici.mem_of_tendsto hω
       (Filter.Eventually.of_forall fun n => ENNReal.toReal_nonneg)
-  let mX : ΩX → ℝ := fun ω => max (ZX ω) 0
-  let mY : ΩY → ℝ := fun ω => max (ZY ω) 0
+  let mX  := fun ω => max (ZX ω) 0
+  let mY  := fun ω => max (ZY ω) 0
   have hmX : ∀ ω, 0 ≤ mX ω := fun ω => le_max_right _ _
   have hmY : ∀ ω, 0 ≤ mY ω := fun ω => le_max_right _ _
-  have hmXae : AEMeasurable mX PX := by
-    exact hZXae.max measurable_const.aemeasurable
-  have hmYae : AEMeasurable mY PY := by
-    exact hZYae.max measurable_const.aemeasurable
+  have hmXae : AEMeasurable mX PX := hZXae.max measurable_const.aemeasurable
+  have hmYae : AEMeasurable mY PY := hZYae.max measurable_const.aemeasurable
   have hmXeq : mX =ᵐ[PX] ZX := by
     filter_upwards [hZXnonneg] with ω hω
     simp [mX, max_eq_left hω]
@@ -283,6 +270,8 @@ theorem kahane_limit_field_negative_power
           mul_le_mul_of_nonneg_left hweighted (by positivity)
     _ = ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (ZY ω)) (-q) ∂PY :=
           (hMomentY.trans hMellinY).symm
+
+end
 
 
 end DOZZ.Proofs

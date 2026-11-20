@@ -16,22 +16,27 @@ noncomputable def symmetryCorrectedRho (γ a b c : ℝ) (μ : Measure ℂ) : ℝ
   ∫⁻ x, ENNReal.ofReal (Real.exp (γ ^ 2 * sExp γ a b c * symmetryReflectionPotential x) *
     (normPlus x ^ (γ * (b + a + c)) / (‖x‖ ^ (γ * b) * ‖x - 1‖ ^ (γ * a)))) ∂μ
 
-theorem symmetryCorrectedRho_density_measurable (γ a b c : ℝ) :
+section
+variable (γ a b c : ℝ)
+
+theorem symmetryCorrectedRho_density_measurable :
     Measurable (fun x : ℂ => ENNReal.ofReal
       (Real.exp (γ ^ 2 * sExp γ a b c * symmetryReflectionPotential x) *
         (normPlus x ^ (γ * (b + a + c)) / (‖x‖ ^ (γ * b) * ‖x - 1‖ ^ (γ * a))))) := by
   unfold symmetryReflectionPotential normPlus
   fun_prop
 
-theorem symmetryCorrectedRho_measurable (γ a b c : ℝ) :
+theorem symmetryCorrectedRho_measurable :
     Measurable (symmetryCorrectedRho γ a b c) :=
   Measure.measurable_lintegral (symmetryCorrectedRho_density_measurable γ a b c)
 
-theorem symmetry_reflection_total_exponent (γ a b c : ℝ) (hγ : γ ≠ 0) :
+theorem symmetry_reflection_total_exponent (hγ : γ ≠ 0) :
     γ ^ 2 * sExp γ a b c + (γ ^ 2 + 4) = γ * (a + b + c) := by
   have h1 := symmetry_reflection_charge_exponent γ a b c hγ
   have h2 := symmetry_reflection_wick_exponent γ hγ
   linarith only [h1, h2]
+
+end
 
 /-- Finite positive exponential factors commute with every extended real power. -/
 theorem symmetry_exp_mul_rpow (t p : ℝ) (A : ℝ≥0∞) :
@@ -71,8 +76,7 @@ theorem symmetryCorrectedRho_repinned {Ω : Type*} (γ a b c : ℝ) (hγ : γ �
         γ ^ 2 * sExp γ a b c * symmetryReflectionPotential (1 - x) =
         γ * (a + b + c) * symmetryReflectionPotential (1 - x) := by
       rw [← add_mul, add_comm (γ ^ 2 + 4), symmetry_reflection_total_exponent γ a b c hγ]
-    rw [he, ← rho_reflection_density γ a b c (1 - x)]
-    rw [show (1 : ℂ) - (1 - x) = x from symmetryReflection_involutive x])
+    rw [he, ← rho_reflection_density γ a b c (1 - x), show (1 : ℂ) - (1 - x) = x from symmetryReflection_involutive x])
 
 /-- Spatial Cameron--Martin cancellation leaves only the scalar normalization. -/
 theorem symmetryCorrectedRho_tilt (γ a b c : ℝ) (μ : Measure ℂ) :
@@ -92,8 +96,7 @@ theorem symmetryCorrectedRho_tilt (γ a b c : ℝ) (μ : Measure ℂ) :
   apply lintegral_congr_ae
   exact ae_of_all _ (fun x => by
     dsimp only
-    rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, symmetryTiltPotential_apply]
-    rw [← ENNReal.ofReal_mul (Real.exp_pos _).le]
+    rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, symmetryTiltPotential_apply, ← ENNReal.ofReal_mul (Real.exp_pos _).le]
     congr 1
     rw [← mul_assoc, ← Real.exp_add]
     congr 2

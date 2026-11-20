@@ -22,7 +22,11 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-theorem offcenter_ball_subset (z : ℂ) {r : ℝ} (hr : 0 < r) :
+section
+variable (z : ℂ) {r : ℝ} (hr : 0 < r)
+include hr
+
+theorem offcenter_ball_subset :
     Metric.ball (z + ((r / 2 : ℝ) : ℂ)) (r / 4) ⊆ Metric.ball z r := by
   intro x hx
   rw [Metric.mem_ball, dist_eq_norm] at hx ⊢
@@ -32,7 +36,7 @@ theorem offcenter_ball_subset (z : ℂ) {r : ℝ} (hr : 0 < r) :
     _ ≤ ‖x - (z + ((r / 2 : ℝ) : ℂ))‖ + ‖((r / 2 : ℝ) : ℂ)‖ := norm_add_le _ _
     _ < r := by rw [hc]; linarith
 
-theorem offcenter_dist_bounds (z : ℂ) {r : ℝ} (hr : 0 < r) {x : ℂ}
+theorem offcenter_dist_bounds {x : ℂ}
     (hx : x ∈ Metric.ball (z + ((r / 2 : ℝ) : ℂ)) (r / 4)) :
     r / 4 ≤ ‖x - z‖ ∧ ‖x - z‖ ≤ 3 * r / 4 := by
   rw [Metric.mem_ball, dist_eq_norm] at hx
@@ -46,6 +50,8 @@ theorem offcenter_dist_bounds (z : ℂ) {r : ℝ} (hr : 0 < r) {x : ℂ}
     linarith
   · rw [h1]
     linarith [norm_add_le (x - (z + ((r / 2 : ℝ) : ℂ))) ((r / 2 : ℝ) : ℂ)]
+
+end
 
 /-- The weight of a weighted local mass is bounded below on the off-center subdisk. -/
 theorem weightedGmcBallMass_ge_offcenter (μ : Measure ℂ) (γ α : ℝ) (z : ℂ) {r : ℝ}
@@ -74,12 +80,13 @@ theorem weightedGmcBallMass_ge_offcenter (μ : Measure ℂ) (γ α : ℝ) (z : �
     _ ≤ ∫⁻ x in Metric.ball z r, ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * α) ∂μ :=
         lintegral_mono_set (offcenter_ball_subset z hr)
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α : ℝ)
+include Ω X hX hγ hγ2 hM
+
 /-- At and above `4/γ²` every positive-order weighted local moment diverges. -/
-theorem weightedGmcBallMoment_eq_top_of_bulk
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α : ℝ) (z : ℂ) (r : ℝ) (hr : 0 < r) (p : ℝ) (hp : 4 / γ ^ 2 ≤ p) :
+theorem weightedGmcBallMoment_eq_top_of_bulk (z : ℂ) (r : ℝ) (hr : 0 < r) (p : ℝ) (hp : 4 / γ ^ 2 ≤ p) :
     weightedGmcBallMoment P M γ α z r p = ⊤ := by
   have hp0 : 0 < p := lt_of_lt_of_le (by positivity) hp
   set c : ℝ≥0∞ := min (ENNReal.rpow (ENNReal.ofReal (r / 4)) (-γ * α))
@@ -112,11 +119,7 @@ theorem weightedGmcBallMoment_eq_top_of_bulk
         exact ENNReal.rpow_le_rpow (weightedGmcBallMass_ge_offcenter (M ω) γ α z hr) hp0.le
 
 /-- For nonpositive charges the weighted local moment is finite below `4/γ²`. -/
-theorem weightedGmcBallMoment_lt_top_of_nonpos_charge
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α : ℝ) (hα : α ≤ 0) (z : ℂ) (r : ℝ) (p : ℝ) (hp0 : 0 < p)
+theorem weightedGmcBallMoment_lt_top_of_nonpos_charge (hα : α ≤ 0) (z : ℂ) (r : ℝ) (p : ℝ) (hp0 : 0 < p)
     (hp : p < 4 / γ ^ 2) :
     weightedGmcBallMoment P M γ α z r p < ⊤ := by
   have hs : 0 ≤ -γ * α := by nlinarith
@@ -147,5 +150,7 @@ theorem weightedGmcBallMoment_lt_top_of_nonpos_charge
           hp0.le), lintegral_const_mul'' _ hmeas]
         rfl
     _ < ⊤ := ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg hp0.le hctop) hfin
+
+end
 
 end DOZZ.Proofs

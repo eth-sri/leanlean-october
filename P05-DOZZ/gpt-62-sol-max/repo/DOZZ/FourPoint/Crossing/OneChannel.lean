@@ -58,7 +58,7 @@ theorem gammaHalf_one_channel_of_full_unreflected {Ω : Type*} [MeasurableSpace 
         (gaussParameterB γ (γ / 2) a ε c : ℂ) - (gaussParameterC γ (γ / 2) a : ℂ) := by
     exact_mod_cast hC
   intro z hz
-  rw [gammaHalf_fourPoint_reflection P X M γ μ a ε c hγ hγ2 hX hM z,
+  rw [fourPointT_reflection P X M γ μ (-γ / 2) a ε c hγ hγ2 hX hM z,
     hformula (1 - z) (one_sub_gaussCutPlane_subset_gaussCutPlane hz), hA, hB]
   unfold gaussFMinus gaussFPlus gaussGMinus gaussGPlus
   rw [hCC]

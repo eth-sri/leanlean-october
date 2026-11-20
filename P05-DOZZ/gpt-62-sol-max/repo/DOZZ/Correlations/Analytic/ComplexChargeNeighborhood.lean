@@ -17,8 +17,7 @@ namespace DOZZ.Proofs
 theorem complexMomentPower_continuous {N : ℕ} (γ : ℝ) :
     Continuous (complexMomentPower (N := N) γ) := by
   unfold complexMomentPower
-  exact (continuous_const.add (continuous_const.mul
-    (continuous_finsetSum _ (fun i _ => continuous_apply i)))).neg
+  fun_prop
 
 /-- Strict real scalar margins give a complex polydisc on which all uniform-envelope bounds
 hold simultaneously. -/

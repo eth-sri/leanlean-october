@@ -13,6 +13,7 @@ public import DOZZ.FourPoint.BPZ.RootedRemainder
 public import DOZZ.FourPoint.Fusion.OneRootedTaylor
 public import DOZZ.FourPoint.GammaHalfTwoRootedTaylorIsLittleO
 public import DOZZ.FourPoint.Fusion.Coefficient
+public import DOZZ.FourPoint.Reflected.Remainder
 
 /-! # The shift relation for `2 < γ² < 4`
 
@@ -46,41 +47,25 @@ theorem bpz_structureConstant_congr {Ω : Type*} [MeasurableSpace Ω] (P : Measu
 /-- A complex little-o at zero along the positive reals. -/
 theorem bpz_littleO_along_reals {κ : ℝ} {f : ℂ → ℂ} (hf : IsComplexLittleOAtZero κ f) :
     Tendsto (fun t : ℝ => f (t : ℂ) / ((t ^ κ : ℝ) : ℂ)) (𝓝[>] 0) (𝓝 0) := by
-  have hof : Tendsto (fun t : ℝ => (t : ℂ)) (𝓝[>] 0) (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) := by
-    refine tendsto_nhdsWithin_iff.mpr ⟨?_, ?_⟩
-    · have : Tendsto (fun t : ℝ => (t : ℂ)) (𝓝 0) (𝓝 ((0 : ℝ) : ℂ)) :=
-        Complex.continuous_ofReal.tendsto 0
-      rw [Complex.ofReal_zero] at this
-      exact this.mono_left nhdsWithin_le_nhds
-    · filter_upwards [self_mem_nhdsWithin] with t (ht : 0 < t)
-      exact Complex.ofReal_ne_zero.mpr ht.ne'
-  have h := hf.comp hof
+  have h := hf.comp tendsto_ofReal_nhdsGT_zero
   rw [tendsto_zero_iff_norm_tendsto_zero]
   refine h.congr' ?_
   filter_upwards [self_mem_nhdsWithin] with t (ht : 0 < t)
   simp only [Function.comp, norm_div, Complex.norm_real, Real.norm_of_nonneg ht.le,
     Real.norm_of_nonneg (Real.rpow_nonneg ht.le κ)]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
+  (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+  (hγsq : 2 < γ ^ 2) (hμ : 0 < μ) (hαlo : γ / 2 < α₁) (hαhi : α₁ < 2 / γ) (hα₂ : α₂ < Q γ)
+  (hα₃ : α₃ < Q γ) (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+include Ω hH X hγ hγ2 hγsq hμ hαlo hαhi hα₂ hα₃ hs hX hM
+
 /-- **The shift relation for `2 < γ² < 4`**, for a measurable GMC measure. -/
-theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
-    (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hγsq : 2 < γ ^ 2) (hμ : 0 < μ)
-    (hαlo : γ / 2 < α₁) (hαhi : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+theorem bpz_shift_large_gamma_meas
     (hMm : Measurable M)
-    (hdiag : ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
-      structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-        (‖gaussFMinus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃) (gaussParameterB γ (γ / 2) α₁ α₂ α₃)
-            (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2 +
-          gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
-            ‖gaussFPlus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2)) :
-    gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-        (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
-          structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ =
-        -μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re *
-          structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ := by
+    (hdiag : HasGammaHalfDiagonal H P M γ μ α₁ α₂ α₃) :
+    bpzHalfShiftLeft P M γ μ α₁ α₂ α₃ = bpzHalfShiftRight P M γ μ α₁ α₂ α₃ := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   -- exponents
   set p : ℝ := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ with hp_def
@@ -111,20 +96,15 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
   set φ : ℝ → ℝ := fun u => Complex.normSq (H (a' : ℂ) (b' : ℂ) (c' : ℂ) (u : ℂ)) with hφ
   set ψ : ℝ → ℝ := fun u => Complex.normSq (H ((a' : ℂ) - c' + 1) ((b' : ℂ) - c' + 1)
     (2 - (c' : ℂ)) (u : ℂ)) with hψ
-  have hcφ : ∀ n : ℕ, (c' : ℂ) ≠ -(n : ℂ) := bpz_ne_neg_nat_of_pos hc0
-  have hcψ : ∀ n : ℕ, (2 - (c' : ℂ)) ≠ -(n : ℂ) := by
-    have h := bpz_ne_neg_nat_of_pos (c := 2 - c') (by linarith only [hc1])
-    intro n; push_cast at h; exact h n
-  have hφd : ContDiffOn ℝ 2 φ (Ioo (-1) 1) := bpzHG_contDiffOn_normSq hH hcφ
-  have hψd : ContDiffOn ℝ 2 ψ (Ioo (-1) 1) := bpzHG_contDiffOn_normSq hH hcψ
-  have hφ0 : φ 0 = 1 := by
-    simp only [hφ, Complex.ofReal_zero, bpzHG_eq_one_at_zero hH hcφ, map_one]
-  have hψ0 : ψ 0 = 1 := by
-    simp only [hψ, Complex.ofReal_zero, bpzHG_eq_one_at_zero hH hcψ, map_one]
+  obtain ⟨hφd, hφ0⟩ : ContDiffOn ℝ 2 φ (Set.Ioo (-1) 1) ∧ φ 0 = 1 :=
+    bpzHG_normalizedProfile hH (show 0 < c' from hc0)
+  obtain ⟨hψd, hψ0⟩ : ContDiffOn ℝ 2 ψ (Set.Ioo (-1) 1) ∧ ψ 0 = 1 := by
+    simpa only [hψ, Complex.ofReal_sub, Complex.ofReal_ofNat] using
+      bpzHG_normalizedProfile (a := (a' : ℂ) - c' + 1) (b := (b' : ℂ) - c' + 1)
+        (c := 2 - c') hH (by linarith)
   -- the normalization
   set K : ℝ := 2 * μ ^ (-p) / γ * Real.Gamma p with hK
   have hKpos : 0 < K := by
-    have := Real.Gamma_pos_of_pos hp
     positivity
   set A₀ : ℝ := Cm / K with hA₀
   -- the negative moment and its derivatives
@@ -136,7 +116,7 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
   have ha1 : γ * (γ / 2) / 2 ≤ 1 := by linarith only [hγ4]
   have hα₁Q : α₁ < Q γ := by
     rw [hQ]
-    have : 0 < γ / 2 := hχ
+    have  := hχ
     linarith only [hαhi, this]
   obtain ⟨hd1, hd2⟩ := bpz_hasFDerivAt_moments P X hX hγ hγ2 M hM hMm hχ ha1 hα₁Q hα₂ hα₃ hp
   set F0 : ℂ → ℝ := fun z => ∫ ω, bpzSoftMassReal (γ * (γ / 2) / 2) 0
@@ -153,18 +133,14 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
   -- (f1) the moment is the explicit profile on `(0, 1)`
   have hf1 : ∀ u : ℝ, 0 < u → u < 1 → F0 u = A₀ * (φ u + ρ * (u ^ κ * ψ u)) := by
     intro u hu0 hu1
-    have hz : (u : ℂ) ∈ gaussCutPlane := by
-      show (u : ℂ).im ≠ 0 ∨ (0 < (u : ℂ).re ∧ (u : ℂ).re < 1)
-      right
-      simp only [Complex.ofReal_re]
-      exact ⟨hu0, hu1⟩
+    have hz := bpz_ofReal_mem_gaussCutPlane hu0 hu1
     have h1 := bpz_fourPointT_eq_moment P X hX hγ hγ2 M hM hMm hχ hα₁Q hα₂ hα₃ μ
       (hreg u hu0 hu1).1 (hreg u hu0 hu1).2
     rw [hsp] at h1
     have h2 := hdiag (u : ℂ) hz
     rw [h1, bpzHG_norm_sq_eq_normSq, bpzHG_norm_sq_eq_normSq, bpzHG_normSq_gaussFMinus,
       bpzHG_normSq_gaussFPlus H a' b' c' hu0, h2c] at h2
-    have e : K * F0 u = Cm * (φ u + ρ * (u ^ κ * ψ u)) := h2
+    have e  := h2
     rw [hA₀, div_mul_eq_mul_div, eq_div_iff hKpos.ne', ← e]
     ring
   -- (f2) derivatives of the moment along the reals
@@ -197,7 +173,6 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
     have hev1 : (fun v : ℝ => F1 v 1) =ᶠ[𝓝 u]
         fun v => A₀ * (deriv φ v + ρ * (κ * v ^ (κ - 1) * ψ v + v ^ κ * deriv ψ v)) := by
       filter_upwards [Ioo_mem_nhds hu0 hu1] with v hv using hD1 v hv.1 hv.2
-    have _ := hev
     exact ((hf2 u hu0 hu1).2.congr_of_eventuallyEq hev1.symm).unique
       (bpzEP_hasDerivAt_profile' hφd hψd A₀ ρ κ hu0 hu1)
   -- the asymptotics of the rooted terms
@@ -244,7 +219,7 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
     have e1 : -(p * A) * t ^ κ + (r₁ t).re + (gammaHalfTwoRootedTerm P M γ α₁ α₂ α₃ p t).re =
         A₀ * (φ t + ρ * (t ^ κ * ψ t)) - (A₀ * 1 + A₀ * deriv φ 0 * t) := by
       linarith only [hT', hRre]
-    have htk : 0 < t ^ κ := Real.rpow_pos_of_pos ht0 κ
+    have htk  := Real.rpow_pos_of_pos ht0 κ
     have hR12 : (r₁ t).re + (gammaHalfTwoRootedTerm P M γ α₁ α₂ α₃ p t).re =
         A₀ * (φ t - 1 - deriv φ 0 * t) + (A₀ * ρ * ψ t + p * A) * t ^ κ := by
       linear_combination e1
@@ -276,12 +251,13 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
     exact key t ht.1 ht.2
   have hlim := tendsto_nhds_unique (hlimL.congr' hev) hlimR
   rw [add_zero, mul_zero, sub_zero] at hlim
-  have hA₀ρ : A₀ * ρ = -(p * A) := hlim
+  have hA₀ρ  := hlim
   -- (f7) the rooted coefficient
   have hcoef := fusion_normalized_rootedCoefficient P X hX γ hγ hγ2 M hM μ α₁ α₂ α₃ hμ hs
   have e1 : ρ * Cm = K * (A₀ * ρ) := by
     rw [hA₀]
     field_simp
+  change ρ * Cm = _
   rw [e1, hA₀ρ]
   have e2 : K * -(p * A) = (2 * μ ^ (-p) / γ * Real.Gamma p) * (-p * A) := by
     rw [hK]; ring
@@ -289,30 +265,17 @@ theorem bpz_shift_large_gamma_meas {Ω : Type*} [MeasurableSpace Ω] {H : ℂ �
   exact hcoef
 
 /-- **The shift relation for `2 < γ² < 4`.** -/
-theorem bpz_shift_large_gamma {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
-    (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hγsq : 2 < γ ^ 2) (hμ : 0 < μ)
-    (hαlo : γ / 2 < α₁) (hαhi : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hdiag : ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
-      structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-        (‖gaussFMinus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃) (gaussParameterB γ (γ / 2) α₁ α₂ α₃)
-            (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2 +
-          gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
-            ‖gaussFPlus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-              (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2)) :
-    gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-        (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) *
-          structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ =
-        -μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re *
-          structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ := by
+theorem bpz_shift_large_gamma
+    (hdiag : HasGammaHalfDiagonal H P M γ μ α₁ α₂ α₃) :
+    bpzHalfShiftLeft P M γ μ α₁ α₂ α₃ = bpzHalfShiftRight P M γ μ α₁ α₂ α₃ := by
   obtain ⟨N, hNm, hNfin, hMN⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
-  have hN : IsGMCOf P X γ N := bpz_isGMCOf_congr hM hNfin hMN
-  rw [bpz_structureConstant_congr P hMN, bpz_structureConstant_congr P hMN]
+  have hN  := bpz_isGMCOf_congr hM hNfin hMN
+  simp only [bpzHalfShiftLeft, bpzHalfShiftRight, bpz_structureConstant_congr P hMN]
   refine bpz_shift_large_gamma_meas hH P X N γ μ α₁ α₂ α₃ hγ hγ2 hγsq hμ hαlo hαhi hα₂ hα₃ hs hX
     hN hNm fun z hz => ?_
   rw [← bpz_fourPointT_congr P hMN, ← bpz_structureConstant_congr P hMN]
   exact hdiag z hz
+
+end
 
 end DOZZ.Proofs

@@ -22,9 +22,9 @@ theorem uniform_power_tail_shift
     (hTail : |T (x*y)-c*(x*y)^(-p)| ≤ E*(x*y)^(-p-η)) :
     |T (x*y)-c*x^(-p)| ≤
       (E*2^(P+η)+cmax*P*2^(P+1))*x^(-p-η) := by
-  have hx0 : 0 < x := zero_lt_one.trans_le hx
+  have hx0  := zero_lt_one.trans_le hx
   have hy0 : 0 < y := by linarith only [hy.1]
-  have hP : 0 ≤ P := hp.trans hpP
+  have hP  := hp.trans hpP
   have hpow (q : ℝ) : (x*y)^q = x^q*y^q := Real.mul_rpow hx0.le hy0.le
   have hsmall : x^(-p)*x^(-a) ≤ x^(-p-η) := by
     rw [← Real.rpow_add hx0]

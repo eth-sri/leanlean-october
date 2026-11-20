@@ -36,19 +36,22 @@ namespace DOZZ.Proofs
 noncomputable def brownianUpperKilledPDFReal (β : ℝ) (T : ℝ≥0) : ℝ → ℝ :=
   (Iio β).indicator (fun x => gaussianPDFReal 0 T x-gaussianPDFReal 0 T (2*β-x))
 
+section
+variable (β : ℝ)
+
 /-- The literal reflected density is measurable. -/
-theorem measurable_brownianUpperKilledPDFReal (β : ℝ) (T : ℝ≥0) :
+theorem measurable_brownianUpperKilledPDFReal (T : ℝ≥0) :
     Measurable (brownianUpperKilledPDFReal β T) := by
   unfold brownianUpperKilledPDFReal
   apply Measurable.indicator _ measurableSet_Iio
   fun_prop
 
 /-- The reflected upper-barrier density is nonnegative. -/
-theorem brownianUpperKilledPDFReal_nonneg (β : ℝ) (hβ : 0 < β) (T : ℝ≥0) (hT : T ≠ 0) (x : ℝ) :
+theorem brownianUpperKilledPDFReal_nonneg (hβ : 0 < β) (T : ℝ≥0) (hT : T ≠ 0) (x : ℝ) :
     0 ≤ brownianUpperKilledPDFReal β T x := by
   classical
   by_cases hx : x < β
-  · have ht : 0 < (T : ℝ) := NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr hT)
+  · have ht  := NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr hT)
     have hd := gaussianKernelDifference_nonneg (T : ℝ) (β-x) β ht (sub_nonneg.mpr hx.le) hβ.le
     have hsq : (β-x-β)^2 = x^2 := by ring_nf
     have hr : β-x+β = 2*β-x := by ring_nf
@@ -59,7 +62,7 @@ theorem brownianUpperKilledPDFReal_nonneg (β : ℝ) (hβ : 0 < β) (T : ℝ≥0
   · simp only [brownianUpperKilledPDFReal,Set.indicator_apply,mem_Iio,ite_eq_right hx,le_refl]
 
 /-- The killed density is pointwise dominated by the original Gaussian endpoint density. -/
-theorem brownianUpperKilledPDFReal_le (β : ℝ) (T : ℝ≥0) (x : ℝ) :
+theorem brownianUpperKilledPDFReal_le (T : ℝ≥0) (x : ℝ) :
     brownianUpperKilledPDFReal β T x ≤ gaussianPDFReal 0 T x := by
   classical
   by_cases hx : x < β
@@ -69,12 +72,14 @@ theorem brownianUpperKilledPDFReal_le (β : ℝ) (T : ℝ≥0) (x : ℝ) :
     exact gaussianPDFReal_nonneg _ _ _
 
 /-- The reflected endpoint difference is genuinely Lebesgue-integrable. -/
-theorem integrable_brownianUpperKilledPDFReal (β : ℝ) (hβ : 0 < β) (T : ℝ≥0) (hT : T ≠ 0) :
+theorem integrable_brownianUpperKilledPDFReal (hβ : 0 < β) (T : ℝ≥0) (hT : T ≠ 0) :
     Integrable (brownianUpperKilledPDFReal β T) := by
   apply (integrable_gaussianPDFReal 0 T).mono' (measurable_brownianUpperKilledPDFReal β T).aestronglyMeasurable
   exact ae_of_all _ (fun x => by
     rw [Real.norm_eq_abs,abs_of_nonneg (brownianUpperKilledPDFReal_nonneg β hβ T hT x)]
     exact brownianUpperKilledPDFReal_le β T x)
+
+end
 
 /-- The actual surviving Brownian endpoint measure is the reflected Gaussian density. -/
 theorem brownianPath_barrier_endpoint_map (P : Measure BrownianPath)
@@ -87,26 +92,19 @@ theorem brownianPath_barrier_endpoint_map (P : Measure BrownianPath)
   let A : Set BrownianPath := {p | ∀ u : ℝ≥0, u ≤ T → p u ≤ β}
   apply Measure.ext
   intro S hS
-  let F : ℝ → ℝ := S.indicator (fun _ => (1 : ℝ))
+  let F  := S.indicator (fun _ => (1 : ℝ))
   have hF : Measurable F := measurable_const.indicator hS
   have hiF : Integrable F (gaussianReal 0 T) := (integrable_const (1 : ℝ)).indicator hS
   have hiR : Integrable (fun x => F (2*β-x)) (gaussianReal 0 T) := by
-    have he : (fun x => F (2*β-x)) = ((fun x : ℝ => 2*β-x) ⁻¹' S).indicator (fun _ => (1 : ℝ)) := by
-      funext x
-      simp only [F,Set.indicator_apply,mem_preimage]
-    rw [he]
-    exact (integrable_const (1 : ℝ)).indicator (hS.preimage (measurable_const.sub measurable_id))
+    exact Eq.mpr (id (congrArg (fun _a => Integrable _a (gaussianReal 0 T)) (Eq.refl fun x => F (2 * β - x))))
+      (Integrable.indicator (integrable_const 1)
+        (MeasurableSet.preimage hS (Measurable.sub measurable_const measurable_id)))
   have hk := brownianPath_barrier_killedDensity_integral P hB β hβ T hT F hF hiF hiR
   have hleft : ENNReal.ofReal (∫ p in A, F (p T) ∂P) = (P.restrict A).map (fun p => p T) S := by
     have he : (fun p : BrownianPath => F (p T)) = ((fun p : BrownianPath => p T) ⁻¹' S).indicator (fun _ => (1 : ℝ)) := by
-      funext p
-      simp only [F,Set.indicator_apply,mem_preimage]
+      rfl
     rw [he,setIntegral_indicator (hS.preimage (ContinuousMap.measurable_eval T)),integral_const]
-    simp only [smul_eq_mul,mul_one]
-    rw [Measure.map_apply (ContinuousMap.measurable_eval T) hS,
-      Measure.restrict_apply (hS.preimage (ContinuousMap.measurable_eval T)),inter_comm]
-    rw [Measure.real,Measure.restrict_apply MeasurableSet.univ,univ_inter]
-    exact ENNReal.ofReal_toReal (measure_ne_top _ _)
+    simp [smul_eq_mul, mul_one, Measure.map_apply (ContinuousMap.measurable_eval T) hS, Measure.restrict_apply (hS.preimage (ContinuousMap.measurable_eval T)), inter_comm]
   have hright : (∫ x in Iio β, (gaussianPDFReal 0 T x-gaussianPDFReal 0 T (2*β-x))*F x) =
       ∫ x in S, brownianUpperKilledPDFReal β T x := by
     rw [← integral_indicator measurableSet_Iio,← integral_indicator hS]
@@ -122,10 +120,8 @@ theorem brownianPath_barrier_endpoint_map (P : Measure BrownianPath)
 /-- Drifted barrier events are measurable on the actual continuous-path carrier. -/
 theorem measurableSet_brownianPath_drift_barrier (a β : ℝ) (T : ℝ≥0) :
     MeasurableSet {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u+a*(u : ℝ) ≤ β} := by
-  have hm : Measurable (brownianDriftPath a) :=
-    continuous_brownianDriftPath.measurable.comp (measurable_const.prodMk measurable_id)
   exact ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T _
-    (measurableSet_brownianPath_barrier T β)).preimage hm
+    (measurableSet_brownianPath_barrier T β)).preimage (continuous_brownianDriftPath.measurable.comp (measurable_const.prodMk measurable_id))
 
 /-- Gaussian tilting identifies the surviving drifted endpoint measure with the original surviving tilted measure. -/
 theorem brownianPath_drift_barrier_endpoint_map_eq_tilt (P : Measure BrownianPath)
@@ -135,15 +131,15 @@ theorem brownianPath_drift_barrier_endpoint_map_eq_tilt (P : Measure BrownianPat
       (fun p => p T+a*(T : ℝ)) =
       ((brownianFiniteTilt P a T).restrict {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u ≤ β}).map (fun p => p T) := by
   let A : Set BrownianPath := {p | ∀ u : ℝ≥0, u ≤ T → p u ≤ β}
-  have hA : MeasurableSet A := ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T _
+  have hA  := ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T _
     (measurableSet_brownianPath_barrier T β))
   have hmStop := measurable_stopBrownianPath_fixed T
   have hmDrift : Measurable (driftedBrownianPath a) :=
     continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk measurable_id)
   apply Measure.ext
   intro S hS
-  let E : Set BrownianPath := (fun p : BrownianPath => p T) ⁻¹' S ∩ A
-  have hE : MeasurableSet E := (hS.preimage (ContinuousMap.measurable_eval T)).inter hA
+  let E  := (fun p : BrownianPath => p T) ⁻¹' S ∩ A
+  have hE  := (hS.preimage (ContinuousMap.measurable_eval T)).inter hA
   have hmap := congrArg (fun μ : Measure BrownianPath => μ E)
     (brownianFiniteTilt_stoppedPath_map P hB a T hT)
   rw [Measure.map_apply hmStop hE,
@@ -181,7 +177,7 @@ theorem brownianPath_drift_barrier_endpoint_map (P : Measure BrownianPath)
       (fun p => p T+a*(T : ℝ)) =
       volume.withDensity (fun x => ENNReal.ofReal (brownianUpperKilledPDFReal β T x)*brownianGaussianLikelihood a T x) := by
   let A : Set BrownianPath := {p | ∀ u : ℝ≥0, u ≤ T → p u ≤ β}
-  have hA : MeasurableSet A := ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T _
+  have hA  := ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T _
     (measurableSet_brownianPath_barrier T β))
   rw [brownianPath_drift_barrier_endpoint_map_eq_tilt P hB.toIsPreBrownianReal a β T hT,
     brownianFiniteTilt,restrict_withDensity hA,
@@ -194,24 +190,25 @@ theorem brownianPath_drift_barrier_endpoint_map (P : Measure BrownianPath)
 /-- Reflecting a scalar Lebesgue density around a level composes the density with that reflection. -/
 theorem brownian_scalar_reflection_withDensity (c : ℝ) (w : ℝ → ℝ≥0∞) (hw : Measurable w) :
     (volume.withDensity w).map (fun x => c-x) = volume.withDensity (fun y => w (c-y)) := by
-  let f : ℝ → ℝ := fun x => c-x
+  let f  := fun x => c-x
   have hf : Measurable f := measurable_const.sub measurable_id
   have he : (fun x => w (f (f x))) = w := by
-    funext x
-    have hx : f (f x) = x := by dsimp [f]; ring_nf
-    rw [hx]
+    grind
   have hmap := brownian_map_withDensity_comp volume f hf (fun y => w (f y)) (hw.comp hf)
   rw [he,(volume.measurePreserving_sub_left c).map_eq] at hmap
   exact hmap
 
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (a x : ℝ)
+include hB
+
 /-- Reflecting the surviving upper endpoint measure gives the actual lower-killed drifted endpoint. -/
-theorem brownianPath_lowerKilled_endpoint_map_eq_upper (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a x : ℝ) (T : ℝ≥0) :
+theorem brownianPath_lowerKilled_endpoint_map_eq_upper (T : ℝ≥0) :
     (P.restrict {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → 0 ≤ x+p u+a*(u : ℝ)}).map
       (fun p => x+p T+a*(T : ℝ)) =
       ((P.restrict {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u+(-a)*(u : ℝ) ≤ x}).map
         (fun p => p T+(-a)*(T : ℝ))).map (fun y => x-y) := by
-  have hUp : MeasurableSet {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u+(-a)*(u : ℝ) ≤ x} :=
+  have hUp  :=
     measurableSet_brownianPath_drift_barrier (-a) x T
   have hmUp : Measurable (fun p : BrownianPath => p T+(-a)*(T : ℝ)) :=
     (ContinuousMap.measurable_eval T).add measurable_const
@@ -223,9 +220,7 @@ theorem brownianPath_lowerKilled_endpoint_map_eq_upper (P : Measure BrownianPath
   rw [Measure.map_apply hmLow hS,Measure.restrict_apply (hS.preimage hmLow),
     Measure.map_map hf hmUp,Measure.map_apply (hf.comp hmUp) hS,
     Measure.restrict_apply (hS.preimage (hf.comp hmUp))]
-  have hE : MeasurableSet (((fun y : ℝ => x-y) ∘ (fun p : BrownianPath => p T+(-a)*(T : ℝ))) ⁻¹' S ∩
-      {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u+(-a)*(u : ℝ) ≤ x}) :=
-    (hS.preimage (hf.comp hmUp)).inter hUp
+  have hE := (hS.preimage (hf.comp hmUp)).inter hUp
   conv_rhs => rw [← brownianPath_neg_map P hB]
   rw [Measure.map_apply measurable_neg hE]
   congr 1
@@ -245,8 +240,7 @@ theorem brownianPath_lowerKilled_endpoint_map_eq_upper (P : Measure BrownianPath
   constructor <;> intro h <;> linarith
 
 /-- The lower-killed drifted Brownian endpoint measure is an actual reflected tilted Gaussian density. -/
-theorem brownianPath_lowerKilled_endpoint_map_reflected (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a x : ℝ) (hx : 0 < x)
+theorem brownianPath_lowerKilled_endpoint_map_reflected (hx : 0 < x)
     (T : ℝ≥0) (hT : T ≠ 0) :
     (P.restrict {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → 0 ≤ x+p u+a*(u : ℝ)}).map
       (fun p => x+p T+a*(T : ℝ)) =
@@ -256,6 +250,8 @@ theorem brownianPath_lowerKilled_endpoint_map_reflected (P : Measure BrownianPat
   exact brownian_scalar_reflection_withDensity x _
     (show Measurable (fun y => ENNReal.ofReal (brownianUpperKilledPDFReal x T y)*brownianGaussianLikelihood (-a) T y) from
       (measurable_brownianUpperKilledPDFReal x T).ennreal_ofReal.mul (measurable_brownianGaussianLikelihood (-a) T))
+
+end
 
 /-- The killed transition density on the positive half line, for either sign of the Brownian drift. -/
 noncomputable def brownianKilledTransitionPDF (a : ℝ) (T : ℝ≥0) (x y : ℝ) : ℝ :=
@@ -312,8 +308,11 @@ theorem brownianPath_lowerKilled_endpoint_map (P : Measure BrownianPath)
   congr 1
   funext y
   exact (brownianKilledTransitionPDF_eq_reflected a x hx T y).symm
+section
+variable (a : ℝ) (T : ℝ≥0)
+
 /-- Reversing the drift and exchanging the states transposes the killed Gaussian kernel. -/
-theorem brownianKilledTransitionPDF_transpose (a : ℝ) (T : ℝ≥0) (x y : ℝ) :
+theorem brownianKilledTransitionPDF_transpose (x y : ℝ) :
     brownianKilledTransitionPDF (-a) T y x = brownianKilledTransitionPDF a T x y := by
   classical
   have hc : (0 < y ∧ 0 < x) ↔ (0 < x ∧ 0 < y) := and_comm
@@ -324,7 +323,7 @@ theorem brownianKilledTransitionPDF_transpose (a : ℝ) (T : ℝ≥0) (x y : ℝ
   simp only [hx,brownian_gaussianPDFReal_neg,add_comm x y]
 
 /-- The killed Gaussian transition kernel is nonnegative for positive times. -/
-theorem brownianKilledTransitionPDF_nonneg (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0) (x y : ℝ) :
+theorem brownianKilledTransitionPDF_nonneg (hT : T ≠ 0) (x y : ℝ) :
     0 ≤ brownianKilledTransitionPDF a T x y := by
   classical
   by_cases hx : 0 < x
@@ -340,10 +339,15 @@ theorem brownianKilledTransitionPDF_nonneg (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0
     · simp only [brownianKilledTransitionPDF,hy,and_false,ite_false,le_refl]
   · simp only [brownianKilledTransitionPDF,hx,false_and,ite_false,le_refl]
 
+end
+
+
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
+include hB
 
 /-- Every nonnegative endpoint test of an actually surviving path integrates against the killed transition density. -/
-theorem brownianPath_lowerKilled_endpoint_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a x : ℝ) (hx : 0 < x)
+theorem brownianPath_lowerKilled_endpoint_lintegral (a x : ℝ) (hx : 0 < x)
     (T : ℝ≥0) (hT : T ≠ 0) (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p in {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → 0 ≤ x+p u+a*(u : ℝ)},
       F (x+p T+a*(T : ℝ)) ∂P) =
@@ -359,8 +363,7 @@ theorem brownianPath_lowerKilled_endpoint_lintegral (P : Measure BrownianPath)
       rw [brownianPath_lowerKilled_endpoint_map P hB a x hx T hT]
     _ = _ := lintegral_withDensity_eq_lintegral_mul volume hk hF
 /-- Strict and closed finite-horizon drifted barriers differ only on a null maximum atom. -/
-theorem brownianPath_drift_barrier_ae_strict (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (hβ : 0 < β)
+theorem brownianPath_drift_barrier_ae_strict (a β : ℝ) (hβ : 0 < β)
     (T : ℝ≥0) (hT : T ≠ 0) :
     {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u+a*(u : ℝ) ≤ β} =ᵐ[P]
       {p | ∀ u : ℝ≥0, u ≤ T → p u+a*(u : ℝ) < β} := by
@@ -371,11 +374,13 @@ theorem brownianPath_drift_barrier_ae_strict (P : Measure BrownianPath)
   apply propext
   constructor
   · intro h u hu
-    have hm : (⨆ u : Iic T, driftedBrownianPath a p u) < β :=
+    have hm  :=
       lt_of_le_of_ne ((brownianPath_barrier_iff_runningMaximum _ T β).mp h) hp
     exact (le_ciSup (brownianPath_Iic_bddAbove (driftedBrownianPath a p) T) ⟨u,hu⟩).trans_lt hm
   · intro h u hu
     exact (h u hu).le
+
+end
 
 
 end DOZZ.Proofs

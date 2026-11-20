@@ -28,7 +28,6 @@ theorem parameter_integral_grid_error
   have hgrid := parameter_grid_error k t
   have hstep : 1 / ((k : ℝ) + 1) ≤ 1 := by
     apply (div_le_one (by positivity : 0 < (k : ℝ) + 1)).mpr
-    have hk : 0 ≤ (k : ℝ) := Nat.cast_nonneg k
     linarith
   have hpoint (x : ℂ) : ENNReal.ofReal |F t x - F (parameterGrid k t) x| ≤
       K.indicator (fun _ => ENNReal.ofReal (Lcoef t * (1 / ((k : ℝ) + 1)))) x := by
@@ -75,9 +74,9 @@ theorem tendstoInMeasure_parameter_integral
     (hboundlim : ∫⁻ ω, ENNReal.ofReal (Lcoef (θ ω)) * M ω K ∂P ≤ C) :
     TendstoInMeasure P (fun n ω => ∫ x, F (θ ω) x ∂N n ω)
       atTop (fun ω => ∫ x, F (θ ω) x ∂M ω) := by
-  have hleft n : Measurable (fun p : ℝ × Ω => ∫ x, F p.1 x ∂N n p.2) :=
+  have hleft n  :=
     measurable_compact_parameter_integral F hF K hK hFK (N n) (hN n) (hNfin n)
-  have hright : Measurable (fun p : ℝ × Ω => ∫ x, F p.1 x ∂M p.2) :=
+  have hright  :=
     measurable_compact_parameter_integral F hF K hK hFK M hM hMfin
   have hgrid k : Measurable (fun ω => parameterGrid k (θ ω)) :=
     ((measurable_of_countable (fun i : ℤ => (i : ℝ))).comp

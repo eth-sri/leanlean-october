@@ -37,7 +37,7 @@ theorem williams_ennreal_model_tail_bound
         x^(-(2*ν/γ))*(∫⁻ ω, J ω^(2*ν/γ) ∂P).toReal| ≤
           (D+3*K)*x^(-(2*ν/γ)-η) := by
   let μ := brownianMaximumReferenceLaw ν
-  let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
+  let  := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   have hp : 0 < 2*ν/γ := by positivity
   have hJf : ∀ᵐ ω ∂P, J ω ≠ ⊤ := by
     have hf := ae_lt_top' (hJ.pow_const r) hJr.ne
@@ -46,16 +46,16 @@ theorem williams_ennreal_model_tail_bound
     rw [ht,ENNReal.top_rpow_of_pos hr] at hω
     exact lt_irrefl _ hω
   obtain ⟨f,hfm,hf0,hfe,hfMom⟩ := nonnegative_moment_version P J hJ hJf
-  have hJcf (c : ℝ) : ∀ᵐ ω ∂P, Jc c ω ≠ ⊤ :=
+  have hJcf (c : ℝ)  :=
     hJf.mono fun ω hω => ne_top_of_le_ne_top hω (hJcle c ω)
   choose fc hfcm hfc0 hfce hfcMom using
     fun c : ℝ => nonnegative_moment_version P (Jc c) (hJcm c) (hJcf c)
   have hJcMom (c s : ℝ) (hs : 0 ≤ s) :
       (∫⁻ ω, Jc c ω^s ∂P) ≤ ∫⁻ ω, J ω^s ∂P :=
     lintegral_mono fun ω => ENNReal.rpow_le_rpow (hJcle c ω) hs
-  have hJcp (c : ℝ) : (∫⁻ ω, Jc c ω^(2*ν/γ) ∂P) < ⊤ :=
+  have hJcp (c : ℝ)  :=
     (hJcMom c _ hp.le).trans_lt hJp
-  have hJcr (c : ℝ) : (∫⁻ ω, Jc c ω^r ∂P) < ⊤ :=
+  have hJcr (c : ℝ)  :=
     (hJcMom c r hr.le).trans_lt hJr
   have hfp := hfMom _ hp.le hJp
   have hfr := hfMom r hr.le hJr
@@ -90,7 +90,7 @@ theorem williams_ennreal_model_tail_bound
     (fun c _ => (hfcMom c r hr.le (hJcr c)).1) (fun c _ => hfcK c)
     hupper' hlower' hfgap
   intro x hx
-  have hx0 : 0 ≤ x := zero_le_one.trans hx
+  have hx0  := zero_le_one.trans hx
   have hevent : {q : ℝ × Ω | ENNReal.ofReal x < A q*ENNReal.ofReal (Real.exp (γ*q.1))}
       =ᵐ[μ.prod P] {q | x < (A q).toReal*Real.exp (γ*q.1)} := by
     filter_upwards [hAfinite] with q hq

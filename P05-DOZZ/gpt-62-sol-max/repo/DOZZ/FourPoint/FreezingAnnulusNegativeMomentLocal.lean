@@ -35,9 +35,7 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
   have hap : a < p := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hthreshold)
   have hb : 0 < b := sub_pos.mpr hap
   have hab : a + b = p := by dsimp only [b]; ring
-  have hQ : 0 < Q γ := by
-    unfold Q
-    exact add_pos (div_pos (by norm_num) hγ) (div_pos hγ (by norm_num))
+  have hQ := Q_pos hγ
   have hγα : 0 < γ * α := mul_pos hγ (hQ.trans hα)
   let t : ℝ := min (R / 2) (1 / 8)
   have ht : 0 < t := lt_min (by positivity) (by norm_num)

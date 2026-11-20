@@ -29,13 +29,12 @@ private noncomputable def gmcExpBCF
           γ * f z ≤ |γ * f z| := le_abs_self _
           _ = |γ| * |f z| := abs_mul _ _
           _ ≤ |γ| * K := mul_le_mul_of_nonneg_left (hf z) (abs_nonneg γ)
-      have hexp (z : ℂ) : Real.exp (γ * f z) ≤ Real.exp (|γ| * K) :=
+      have hexp (z : ℂ)  :=
         Real.exp_le_exp.mpr (harg z)
       calc
         |Real.exp (γ * f x) - Real.exp (γ * f y)| ≤
             |Real.exp (γ * f x)| + |Real.exp (γ * f y)| := abs_sub _ _
-        _ ≤ Real.exp (|γ| * K) + Real.exp (|γ| * K) := by
-              exact add_le_add
+        _ ≤ Real.exp (|γ| * K) + Real.exp (|γ| * K) := add_le_add
                 (by rw [abs_of_nonneg (Real.exp_nonneg _)]; exact hexp x)
                 (by rw [abs_of_nonneg (Real.exp_nonneg _)]; exact hexp y)
         _ = 2 * Real.exp (|γ| * K) := by ring⟩
@@ -56,20 +55,18 @@ theorem equatorGFF_circleCovariance_exp_weight_family
       TendstoUniformly (fun r x => u r x) w atTop ∧
       (∀ᶠ r : ℝ in atTop, ∀ x : ℂ,
         u r x = Real.exp (γ * gaussianCovariance P (fun ω => Xc ω x r) L)) := by
-  let cov : ℝ → ℂ → ℝ := fun r x => gaussianCovariance P (fun ω => Xc ω x r) L
+  let cov  := fun r x => gaussianCovariance P (fun ω => Xc ω x r) L
   let covCont (r : ℝ) : C(ℂ, ℝ) :=
     ⟨cov r, continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
       P X hX Xc hXc L hL r⟩
-  have hnear : ∀ᶠ r : ℝ in atTop, ∀ x : ℂ, dist (c x) (cov r x) < 1 := by
-    exact (Metric.tendstoUniformly_iff.mp hc) 1 zero_lt_one
+  have hnear := (Metric.tendstoUniformly_iff.mp hc) 1 zero_lt_one
   obtain ⟨R, hR⟩ := Filter.eventually_atTop.mp hnear
-  let K : ℝ := ‖c‖ + 1
-  have hK : 0 ≤ K := by dsimp [K]; positivity
+  let K  := ‖c‖ + 1
   have hcBound (x : ℂ) : |c x| ≤ K := by
     calc
       |c x| = ‖c x‖ := (Real.norm_eq_abs _).symm
       _ ≤ ‖c‖ := c.norm_coe_le_norm x
-      _ ≤ K := by dsimp [K]; linarith [norm_nonneg c]
+      _ ≤ K := by linarith
   have hcovBound (r : ℝ) (hr : R ≤ r) (x : ℂ) : |cov r x| ≤ K := by
     have hclose := hR r hr x
     have hdiff : |cov r x - c x| < 1 := by
@@ -82,7 +79,7 @@ theorem equatorGFF_circleCovariance_exp_weight_family
           |c x| = ‖c x‖ := (Real.norm_eq_abs _).symm
           _ ≤ ‖c‖ := c.norm_coe_le_norm x)
       _ = K := by dsimp [K]; ring
-  let covBCF (r : ℝ) : BoundedContinuousFunction ℂ ℝ :=
+  let covBCF (r : ℝ)  :=
     if hr : R ≤ r then
       BoundedContinuousFunction.mk (covCont r)
         ⟨2 * K, by
@@ -111,12 +108,12 @@ theorem equatorGFF_circleCovariance_exp_weight_family
           _ = 2 * K := by ring⟩ : BoundedContinuousFunction ℂ ℝ) else c) x = cov r x
     rw [dite_eq_left hr]
     rfl
-  let w : BoundedContinuousFunction ℂ ℝ := gmcExpBCF γ c K hcBound
-  let u : ℝ → BoundedContinuousFunction ℂ ℝ := fun r => gmcExpBCF γ (covBCF r) K
+  let w  := gmcExpBCF γ c K hcBound
+  let u  := fun r => gmcExpBCF γ (covBCF r) K
     (hcovBCF_bound r)
   have hu (r : ℝ) (x : ℂ) : 0 ≤ u r x := Real.exp_nonneg _
   have hw (x : ℂ) : 0 ≤ w x := Real.exp_nonneg _
-  have heventR : ∀ᶠ r : ℝ in atTop, R ≤ r :=
+  have heventR  :=
     Filter.eventually_atTop.2 ⟨R, fun r hr => hr⟩
   have huEq (r : ℝ) (hr : R ≤ r) (x : ℂ) : u r x = Real.exp (γ * cov r x) := by
     change Real.exp (γ * covBCF r x) = Real.exp (γ * cov r x)
@@ -131,7 +128,7 @@ theorem equatorGFF_circleCovariance_exp_weight_family
     rw [Metric.tendstoUniformly_iff]
     intro ε hε
     obtain ⟨δ, hδ, hcontrol⟩ := (Metric.uniformContinuousOn_iff.mp huc) ε hε
-    have hclose : ∀ᶠ r : ℝ in atTop, ∀ x : ℂ, dist (c x) (cov r x) < δ :=
+    have hclose  :=
       (Metric.tendstoUniformly_iff.mp hc) δ hδ
     filter_upwards [hclose, heventR] with r hclose hr x
     rw [hwEq, huEq r hr x]

@@ -100,14 +100,12 @@ theorem re_circleLogTaylorTerm (u t : ℝ) (k : ℕ) :
 theorem hasSum_circleLogCosine {u : ℝ} (hu : |u| < 1) (t : ℝ) :
     HasSum (fun k : ℕ => (-1 : ℝ)^k * u^(k+1) * Real.cos ((k+1 : ℕ)*t) /
       ((k+1 : ℕ) : ℝ)) (Real.log ‖1 + (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I)‖) := by
-  let z : ℂ := (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I)
+  let z  := (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I)
   have hz : ‖z‖ < 1 := by
     simpa only [z, norm_mul, Complex.norm_real, Real.norm_eq_abs,
       Complex.norm_exp_ofReal_mul_I, mul_one] using hu
   have h0 := Complex.hasSum_taylorSeries_log hz
-  have hshift : HasSum (fun k : ℕ => (-1 : ℂ)^(k+1+1) * z^(k+1) /
-      ((k+1 : ℕ) : ℂ)) (Complex.log (1+z)) :=
-    (hasSum_nat_add_iff 1 (f := fun n : ℕ => (-1 : ℂ)^(n+1) * z^n / (n : ℂ))).mpr
+  have hshift := (hasSum_nat_add_iff 1 (f := fun n : ℕ => (-1 : ℂ)^(n+1) * z^n / (n : ℂ))).mpr
       (by simpa only [Finset.sum_range_one, pow_zero,
       Nat.cast_zero, div_zero, add_zero] using h0)
   have h := Complex.hasSum_re hshift
@@ -128,8 +126,12 @@ theorem norm_circleLogCosine_le {u : ℝ} (hu : u ∈ Icc 0 1) (t : ℝ) (k : �
     _ ≤ u^(k+1) := div_le_self hp hn
     _ ≤ u^k := by rw [pow_succ]; exact mul_le_of_le_one_right (pow_nonneg hu.1 _) hu.2
 
+section
+variable {u : ℝ} (hu : u ∈ Ico 0 1) (θ : ℝ)
+include hu
+
 /-- Termwise integration of the logarithmic Fourier expansion in the open disk. -/
-theorem hasSum_integral_circleLogCosine {u : ℝ} (hu : u ∈ Ico 0 1) (θ : ℝ) :
+theorem hasSum_integral_circleLogCosine :
     HasSum (circleLogSeriesTerm u θ)
       (∫ t in 0..θ, Real.log ‖1 + (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I)‖) := by
   have h := intervalIntegral.hasSum_integral_of_dominated_convergence (μ := volume)
@@ -144,9 +146,11 @@ theorem hasSum_integral_circleLogCosine {u : ℝ} (hu : u ∈ Ico 0 1) (θ : ℝ
   simpa only [integral_circleLogCosine] using h
 
 /-- The integrated Fourier series is the logarithmic arc potential for strict radius ratio. -/
-theorem integral_circleLog_eq_tsum {u : ℝ} (hu : u ∈ Ico 0 1) (θ : ℝ) :
+theorem integral_circleLog_eq_tsum :
     (∫ t in 0..θ, Real.log ‖1 + (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I)‖) =
       ∑' k, circleLogSeriesTerm u θ k := (hasSum_integral_circleLogCosine hu θ).tsum_eq.symm
+
+end
 
 /-- The logarithmic arc section has no pole before the antipodal angle, including u = 1. -/
 theorem circleLogSection_ne_zero {u t : ℝ} (hu : u ∈ Icc 0 1) (ht : t ∈ Ico 0 Real.pi) :
@@ -169,9 +173,8 @@ theorem circleLogSection_ne_zero {u t : ℝ} (hu : u ∈ Icc 0 1) (ht : t ∈ Ic
 theorem continuous_circleLogArc {θ : ℝ} (hθ : θ ∈ Ico 0 Real.pi) :
     Continuous (fun u : Icc (0 : ℝ) 1 =>
       ∫ t in 0..θ, Real.log ‖1 + (u.val : ℂ) * Complex.exp ((t : ℂ)*Complex.I)‖) := by
-  let clip : ℝ → ℝ := fun t => max 0 (min θ t)
-  have hclip (t : ℝ) : clip t ∈ Ico 0 Real.pi := by
-    exact ⟨le_max_left _ _, (max_le hθ.1 (min_le_left _ _)).trans_lt hθ.2⟩
+  let clip  := fun t => max 0 (min θ t)
+  have hclip (t : ℝ) : clip t ∈ Ico 0 Real.pi := ⟨le_max_left _ _, (max_le hθ.1 (min_le_left _ _)).trans_lt hθ.2⟩
   have hc : Continuous (fun p : Icc (0 : ℝ) 1 × ℝ =>
       Real.log ‖1 + (p.1.val : ℂ) * Complex.exp ((clip p.2 : ℂ)*Complex.I)‖) := by
     apply Continuous.log (by unfold clip; fun_prop)
@@ -212,8 +215,7 @@ theorem integral_circleLog_eq_tsum_closed {u θ : ℝ} (hu : u ∈ Icc 0 1)
     · intro hv
       exact ⟨⟨v, hv.1, hv.2.le⟩, hv.2, rfl⟩
   apply heq.closure (continuous_circleLogArc hθ) hs (x := ⟨u, hu⟩)
-  rw [closure_subtype, himage, closure_Ico (by norm_num : (0 : ℝ) ≠ 1)]
-  exact hu
+  rwa [closure_subtype, himage, closure_Ico (by norm_num : (0 : ℝ) ≠ 1)]
 
 /-- Squared geometric circle distance in cosine coordinates. -/
 theorem norm_circleLogSection_sq (d a t : ℝ) :
@@ -233,15 +235,19 @@ theorem norm_circleLogSection_swap (d a t : ℝ) :
   have h2 := norm_circleLogSection_sq a d t
   exact (pow_left_inj₀ (norm_nonneg _) (norm_nonneg _) two_ne_zero).1 (by rw [h1, h2]; ring)
 
+section
+variable {d a : ℝ} (hd : 0 < d) (ha : 0 < a)
+include hd ha
+
 /-- The smaller-to-larger radius ratio lies in the closed unit interval. -/
-theorem circleLog_ratio_mem_Icc {d a : ℝ} (hd : 0 < d) (ha : 0 < a) :
+theorem circleLog_ratio_mem_Icc :
     min d a / max d a ∈ Icc (0 : ℝ) 1 := by
   have hc : 0 < max d a := hd.trans_le (le_max_left _ _)
   exact ⟨div_nonneg (le_min hd.le ha.le) hc.le,
     (div_le_one hc).mpr (le_trans (min_le_left _ _) (le_max_left _ _))⟩
 
 /-- Normalize a circle section by the larger of its radius and center distance. -/
-theorem norm_circleLogSection_factor {d a : ℝ} (hd : 0 < d) (ha : 0 < a) (t : ℝ) :
+theorem norm_circleLogSection_factor (t : ℝ) :
     ‖(d : ℂ) + (a : ℂ)*Complex.exp ((t : ℂ)*Complex.I)‖ =
       max d a * ‖1 + ((min d a / max d a : ℝ) : ℂ)*Complex.exp ((t : ℂ)*Complex.I)‖ := by
   have hfactor (c b : ℝ) (hc : 0 < c) :
@@ -258,9 +264,14 @@ theorem norm_circleLogSection_factor {d a : ℝ} (hd : 0 < d) (ha : 0 < a) (t : 
   · rw [max_eq_right h, min_eq_left h, norm_circleLogSection_swap]
     exact hfactor a d ha
 
+end
+
+section
+variable {d a b : ℝ} (hd : 0 < d) (ha : 0 < a) (hb : 0 < b) (hupper : b < d+a) (hlower : |d-a| < b)
+include hd ha hb hupper hlower
+
 /-- Interior intersection produces an arccos argument strictly between minus one and one. -/
-theorem circleLog_intersection_argument {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
-    (hb : 0 < b) (hupper : b < d+a) (hlower : |d-a| < b) :
+theorem circleLog_intersection_argument :
     (b^2-d^2-a^2)/(2*d*a) ∈ Ioo (-1 : ℝ) 1 := by
   have hden : 0 < 2*d*a := by positivity
   constructor
@@ -274,11 +285,12 @@ theorem circleLog_intersection_argument {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
     linarith only [hs]
 
 /-- The angular cutoff of `DOZZ.circleLogPotential` is strictly before the antipodal singularity. -/
-theorem circleLog_intersection_angle {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
-    (hb : 0 < b) (hupper : b < d+a) (hlower : |d-a| < b) :
+theorem circleLog_intersection_angle :
     Real.arccos ((b^2-d^2-a^2)/(2*d*a)) ∈ Ioo (0 : ℝ) Real.pi := by
   have h := circleLog_intersection_argument hd ha hb hupper hlower
   exact ⟨Real.arccos_pos.mpr h.2, Real.arccos_lt_pi.mpr h.1⟩
+
+end
 
 /-- The geometric circle section decreases in angle on the upper semicircle. -/
 theorem antitoneOn_norm_circleLogSection {d a : ℝ} (hd : 0 ≤ d) (ha : 0 ≤ a) :
@@ -289,7 +301,7 @@ theorem antitoneOn_norm_circleLogSection {d a : ℝ} (hd : 0 ≤ d) (ha : 0 ≤ 
   have hm := mul_le_mul_of_nonneg_left hcos (show 0 ≤ 2*d*a by positivity)
   have h1 := norm_circleLogSection_sq d a t
   have h2 := norm_circleLogSection_sq d a s
-  exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).1 (by linarith only [h1, h2, hm])
+  exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).1 (by linarith)
 
 /-- The arccos cutoff is exactly where the circle section crosses the clipping radius. -/
 theorem norm_circleLogSection_cutoff {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
@@ -350,11 +362,11 @@ theorem clipped_circleLog_integral_intersection {d a b : ℝ} (hd : 0 < d) (ha :
   let θ := Real.arccos ((b^2-d^2-a^2)/(2*d*a))
   let f : ℝ → ℝ := fun t => Real.log
     (max b ‖(d : ℂ)+(a : ℂ)*Complex.exp ((t : ℂ)*Complex.I)‖)
-  have hθ : θ ∈ Ioo (0 : ℝ) Real.pi := circleLog_intersection_angle hd ha hb hupper hlower
+  have hθ  := circleLog_intersection_angle hd ha hb hupper hlower
   have hf : Continuous f := by
     apply Continuous.log (by fun_prop)
     intro t
-    exact (hb.trans_le (le_max_left _ _)).ne'
+    positivity
   have hcut := norm_circleLogSection_cutoff hd ha hb hupper hlower
   change ‖(d : ℂ)+(a : ℂ)*Complex.exp ((θ : ℂ)*Complex.I)‖ = b at hcut
   have hmono := antitoneOn_norm_circleLogSection hd.le ha.le
@@ -379,7 +391,7 @@ theorem clipped_circleLog_integral_intersection {d a b : ℝ} (hd : 0 < d) (ha :
         rw [hcut] at hbound
         dsimp only [f]
         rw [max_eq_left hbound]
-      _ = _ := by rw [intervalIntegral.integral_const, smul_eq_mul]
+      _ = _ := by simp
   change (1/Real.pi)*(∫ t in 0..Real.pi, f t) = _
   rw [← intervalIntegral.integral_add_adjacent_intervals (hf.intervalIntegrable 0 θ)
       (hf.intervalIntegrable θ Real.pi), hleft, hright,

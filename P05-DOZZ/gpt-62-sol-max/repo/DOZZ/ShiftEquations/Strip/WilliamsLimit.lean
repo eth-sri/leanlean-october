@@ -60,15 +60,14 @@ theorem lastone_williamsModel_smallPower_limit
       2 * (J ν).toReal ≤ (W ν).toReal ∧ (W ν).toReal ≤ 2 * (I ν).toReal := by
     filter_upwards [hsmall] with ν hν
     have hIfin : I ν < ⊤ := by
-      have hb : I ν ≤ 1 + C := by
+      exact lt_of_le_of_lt (by
         calc
           I ν ≤ ∫⁻ ω, 1 + twoSidedReflectionMass γ (B ν) Z ω ^ u ∂P :=
             lintegral_mono fun ω => ennreal_rpow_le_one_add_rpow _
               (div_pos hν.1 hγ).le hν.2.2
           _ = 1 + ∫⁻ ω, twoSidedReflectionMass γ (B ν) Z ω ^ u ∂P := by
             rw [lintegral_add_left measurable_const, lintegral_const, measure_univ, mul_one]
-          _ ≤ 1 + C := add_le_add le_rfl (hCbound ν hν.1 hν.2.1.le)
-      exact lt_of_le_of_lt hb (ENNReal.add_lt_top.mpr ⟨by norm_num, hC⟩)
+          _ ≤ 1 + C := add_le_add le_rfl (hCbound ν hν.1 hν.2.1.le)) (ENNReal.add_lt_top.mpr ⟨by norm_num, hC⟩)
     have h2Ifin : (2 : ℝ≥0∞) * I ν ≠ ⊤ :=
       (ENNReal.mul_lt_top (by norm_num) hIfin).ne
     have hb := lastone_williamsModel_moment_bounds P γ ν hγ hν.1 (B ν) Z

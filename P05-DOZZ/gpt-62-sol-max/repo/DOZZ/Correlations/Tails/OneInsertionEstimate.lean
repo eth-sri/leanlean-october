@@ -11,6 +11,7 @@ public import DOZZ.Correlations.Tails.TotalCopiedRemainder
 public import DOZZ.Correlations.Tails.TwoSpaceTailSandwich
 public import DOZZ.Correlations.Tails.UniformTailSandwich
 public import DOZZ.Correlations.Tails.ENNRealPowerTail
+public import DOZZ.GFFStructure.ContinuousCircleAverage
 
 /-! The original one-insertion estimate from its localized copied law and bounded remainders. -/
 
@@ -22,9 +23,7 @@ namespace DOZZ.Proofs
 
 theorem oneInsertion_estimate_uniform
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hcircle : IsContinuousCircleAverage P X Xc)
     (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hM : IsGMCOf P X γ M)
     (Kz : Set ℂ) (hKz : IsCompact Kz) (hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
     (Kα : Set ℝ) (hKα : IsCompact Kα) (hα : ∀ α ∈ Kα, γ/2 < α ∧ α < Q γ)
@@ -58,20 +57,20 @@ theorem oneInsertion_estimate_uniform
   have hδ : 0 < ρ/4 := by positivity
   have hδ1 : ρ/4 ≤ 1 := by linarith only [hρR.trans (min_le_right _ _),hρ]
   obtain ⟨χ,hχc,hχ,hχs,hχone⟩ := localization_bump ρ hρ
-  obtain ⟨E,hE,hLead⟩ := canonical_leading_tail_uniform P X Xc hX hc hm hcont
+  obtain ⟨E,hE,hLead⟩ := canonical_leading_tail_uniform P X Xc hX hcircle
     γ hγ hγ2 Kz hKz hz Kα hKα hα B Z hZ hData supBound R η a hFamily.2.1 hR hRbulk
     hη hηa r (fun α hαk => ⟨(hcuts α hαk).1,(hcuts α hαk).2.1⟩)
     (fun α hαk => (hcuts α hαk).2.2.1)
   obtain ⟨D₁,hD₁,hOrig⟩ := annular_remainder_moment_uniform P X hX γ hγ hγ2 M hM
     Kz hKz (ρ/4) A supBound R hδ hδ1 hFamily.2.1 hR hRbulk
-  obtain ⟨D₂,hD₂,hCopy⟩ := total_copied_remainder_uniform P X Xc hX hc γ hγ hγ2 M hM
+  obtain ⟨D₂,hD₂,hCopy⟩ := total_copied_remainder_uniform P X Xc hX hcircle.isCircleAverage γ hγ hγ2 M hM
     Kz hKz hz Family radius supBound derivBound lowerBound hFamily ρ hρ hρR
     A (A+|1/γ|) g R pH qH hg hR hRbulk hpq
   let C := (2+E)*2^(R+η)+E*2^(R+η)+(1+E)*R*2^(R+1)+(D₁.toReal+D₂.toReal)*4^R
   have hC : 0 ≤ C := by dsimp [C]; positivity
   refine ⟨C,hC,?_⟩
   intro z hzk α hαk F hF x hx
-  obtain ⟨N,hN,_⟩ := translated_source_gmc_exists P X Xc hX hc z (hz z hzk)
+  obtain ⟨N,hN,_⟩ := translated_source_gmc_exists P X Xc hX hcircle.isCircleAverage z (hz z hzk)
     γ hγ hγ2 M hM
   obtain ⟨hFm,hFb,hFl,_,_⟩ := hFamily.2.2.2.2 z hzk F hF
   have hFz : 0 < F z := hFamily.2.2.2.1.trans_le hFl
@@ -97,7 +96,7 @@ theorem oneInsertion_estimate_uniform
   change AEMeasurable (copiedRemainder N Xc F z γ α ρ) (P.prod P) ∧
     (∫⁻ q, copiedRemainder N Xc F z γ α ρ q^(r α) ∂P.prod P) ≤ D₂ at hCopyMoment
   obtain ⟨hLaw,hLm,hLcm,hEm,hEcm,hSource,hCopied⟩ :=
-    localized_insertion_comparison_data P X Xc hX hc hm γ hγ hγ2 M hM
+    localized_insertion_comparison_data P X Xc hX hcircle.isCircleAverage hcircle.measurable γ hγ hγ2 M hM
       Kz Family radius supBound derivBound lowerBound hFamily z hzk (hz z hzk) F hF
       N hN α ρ hα0 hρ hρR χ hχc hχ hχs hχone
   let T := fun t : ℝ => (P {ω | ENNReal.ofReal t < localSingularMass M F z γ α ω}).toReal
@@ -112,12 +111,10 @@ theorem oneInsertion_estimate_uniform
   have hT (t : ℝ) (_ : 1 ≤ t) : 0 ≤ T t ∧ T t ≤ 1 := by
     constructor
     · exact ENNReal.toReal_nonneg
-    · change (P {ω | ENNReal.ofReal t < localSingularMass M F z γ α ω}).toReal ≤ 1
-      exact measureReal_le_one
+    exact measureReal_le_one
   have hcc : c ≤ 1+E := by
     have ht := (abs_le.mp (hL 1 le_rfl)).1
     have h1 : L 1 ≤ 1 := by
-      change ((P.prod P) {q | ENNReal.ofReal 1 < canonicalLeading N Xc (F z) z γ α q}).toReal ≤ 1
       exact measureReal_le_one
     simp only [Real.one_rpow,mul_one] at ht
     linarith only [ht,h1]
@@ -126,7 +123,7 @@ theorem oneInsertion_estimate_uniform
       L (t+h)-D₂.toReal*h^(-(r α)) ≤ T t ∧
       T t ≤ L (t-2*h)+(D₁.toReal+D₂.toReal)*h^(-(r α)) := by
     dsimp only
-    have ht1 : 1 ≤ t := (by norm_num : (1 : ℝ) ≤ 2).trans ht
+    have ht1  := (by norm_num : (1 : ℝ) ≤ 2).trans ht
     have hsize := polynomial_shift_size t a ht1 ha0.le
     have hh : 2*(t^(1-a)/4) ≤ t := by linarith only [hsize.2.1,ht]
     have hs := two_space_localization_tail_sandwich P (P.prod P)

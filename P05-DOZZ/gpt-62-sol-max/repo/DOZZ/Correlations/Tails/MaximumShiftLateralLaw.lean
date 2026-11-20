@@ -30,12 +30,10 @@ theorem maximum_shift_lateral_law
         (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))) = P.map Z ∧
       IndepFun D (fun ω => (Z ω).map
         (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))) P := by
-  have ht : AEMeasurable (fun p : BrownianPath =>
-      -(driftedBrownianMaximumTime ν p : ℝ)) (P.map D) :=
-    (NNReal.continuous_coe.measurable.comp_aemeasurable
+  have ht := (NNReal.continuous_coe.measurable.comp_aemeasurable
       (aemeasurable_driftedBrownianMaximumTime (P.map D) hB ν hν)).neg
   let T := ht.mk (fun p : BrownianPath => -(driftedBrownianMaximumTime ν p : ℝ))
-  have hT : Measurable T := ht.measurable_mk
+  have hT  := ht.measurable_mk
   have hshift : (fun ω => (Z ω).map
       (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))) =ᵐ[P]
       (fun ω => (Z ω).map (fun s => s + T (D ω))) := by
