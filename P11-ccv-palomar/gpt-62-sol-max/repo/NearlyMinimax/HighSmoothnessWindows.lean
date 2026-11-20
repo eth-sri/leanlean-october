@@ -26,16 +26,21 @@ def highWindowSeed : ℝ → ℝ := highWindowBump
 theorem highWindowSeed_contDiff : ContDiff ℝ ∞ highWindowSeed :=
   highWindowBump.contDiff
 
-theorem highWindowSeed_nonneg (x : ℝ) : 0 ≤ highWindowSeed x :=
+section
+variable (x : ℝ)
+
+theorem highWindowSeed_nonneg : 0 ≤ highWindowSeed x :=
   highWindowBump.nonneg
 
-theorem highWindowSeed_eq_one (x : ℝ) (hx : |x| ≤ 1 / 2) : highWindowSeed x = 1 := by
+theorem highWindowSeed_eq_one (hx : |x| ≤ 1 / 2) : highWindowSeed x = 1 := by
   apply highWindowBump.one_of_mem_closedBall
   simpa [Metric.mem_closedBall, Real.dist_eq, highWindowBump] using hx
 
-theorem highWindowSeed_eq_zero (x : ℝ) (hx : 3 / 4 ≤ |x|) : highWindowSeed x = 0 := by
+theorem highWindowSeed_eq_zero (hx : 3 / 4 ≤ |x|) : highWindowSeed x = 0 := by
   apply highWindowBump.zero_of_le_dist
   simpa [Real.dist_eq, highWindowBump] using hx
+
+end
 
 /-- Any family of unit-radius integer translates is locally finite. -/
 theorem integerTranslate_locallyFinite (g : ℝ → ℝ)
@@ -48,17 +53,13 @@ theorem integerTranslate_locallyFinite (g : ℝ → ℝ)
   obtain ⟨y, hy, hnear⟩ := hj
   have hdist : |y - j| < 1 := by
     by_contra h
-    exact hy (hg _ (not_lt.mp h))
+    apply hy <;> simp_all
   have hd := abs_lt.mp hdist
   have hfloor := Int.floor_le x
   have hceil := Int.lt_floor_add_one x
   constructor
-  · apply (Int.cast_le (R := ℝ)).mp
-    push_cast
-    linarith [hnear.1, hnear.2]
-  · apply (Int.cast_le (R := ℝ)).mp
-    push_cast
-    linarith [hnear.1, hnear.2]
+  · apply (Int.cast_le (R := ℝ)).mp <;> grind
+  · apply (Int.cast_le (R := ℝ)).mp <;> grind
 
 def highWindowEnergy (x : ℝ) : ℝ := ∑ᶠ j : ℤ, highWindowSeed (x - j) ^ 2
 
@@ -66,8 +67,7 @@ theorem highWindowEnergy_locallyFinite :
     LocallyFinite (fun j : ℤ => support (fun x : ℝ => highWindowSeed (x - j) ^ 2)) := by
   apply integerTranslate_locallyFinite (fun x => highWindowSeed x ^ 2)
   intro x hx
-  rw [highWindowSeed_eq_zero x (by linarith)]
-  norm_num
+  simp [highWindowSeed_eq_zero x (by linarith)]
 
 theorem highWindowEnergy_contDiff : ContDiff ℝ ∞ highWindowEnergy := by
   unfold highWindowEnergy
@@ -77,8 +77,11 @@ theorem highWindowEnergy_contDiff : ContDiff ℝ ∞ highWindowEnergy := by
   apply ContDiff.contMDiff
   exact (highWindowSeed_contDiff.comp (contDiff_id.sub contDiff_const)).pow 2
 
-theorem highWindowEnergy_lower (x : ℝ) : 1 ≤ highWindowEnergy x := by
-  let j : ℤ := ⌊x + 1 / 2⌋
+section
+variable (x : ℝ)
+
+theorem highWindowEnergy_lower : 1 ≤ highWindowEnergy x := by
+  let j := ⌊x + 1 / 2⌋
   have hj0 := Int.floor_le (x + 1 / 2)
   have hj1 := Int.lt_floor_add_one (x + 1 / 2)
   have hclose : |x - j| ≤ 1 / 2 := abs_le.mpr ⟨by dsimp [j]; linarith,
@@ -88,28 +91,24 @@ theorem highWindowEnergy_lower (x : ℝ) : 1 ≤ highWindowEnergy x := by
     (fun z : ℤ => sq_nonneg (highWindowSeed (x - z)))
   simpa [highWindowEnergy, hone] using hle
 
-theorem highWindowEnergy_pos (x : ℝ) : 0 < highWindowEnergy x :=
+theorem highWindowEnergy_pos : 0 < highWindowEnergy x :=
   lt_of_lt_of_le (by norm_num) (highWindowEnergy_lower x)
 
-theorem highWindowEnergy_integer_periodic (x : ℝ) (k : ℤ) :
+theorem highWindowEnergy_integer_periodic (k : ℤ) :
     highWindowEnergy (x + k) = highWindowEnergy x := by
   unfold highWindowEnergy
   calc
     (∑ᶠ j : ℤ, highWindowSeed (x + k - j) ^ 2) =
       ∑ᶠ j : ℤ, highWindowSeed (x - (j - k : ℤ)) ^ 2 := by
-        apply finsum_congr
-        intro j
-        congr 2
-        push_cast
-        ring
+        grind
     _ = _ := finsum_comp (g := fun j : ℤ => highWindowSeed (x - j) ^ 2)
       (fun j : ℤ => j - k) (by
       constructor
-      · intro i j h
-        change i - k = j - k at h
-        simpa only [sub_left_inj] using h
+      · intro i j h <;> simp_all
       · intro j
         exact ⟨j + k, by dsimp; ring⟩)
+
+end
 
 def highWindowProfile (x : ℝ) : ℝ := highWindowSeed x / Real.sqrt (highWindowEnergy x)
 
@@ -118,14 +117,17 @@ theorem highWindowProfile_contDiff : ContDiff ℝ ∞ highWindowProfile := by
     (highWindowEnergy_contDiff.sqrt (fun x => (highWindowEnergy_pos x).ne'))
     (fun x => (Real.sqrt_pos.mpr (highWindowEnergy_pos x)).ne')
 
-theorem highWindowProfile_nonneg (x : ℝ) : 0 ≤ highWindowProfile x :=
+section
+variable (x : ℝ)
+
+theorem highWindowProfile_nonneg : 0 ≤ highWindowProfile x :=
   div_nonneg (highWindowSeed_nonneg x) (Real.sqrt_nonneg _)
 
-theorem highWindowProfile_eq_zero (x : ℝ) (hx : 3 / 4 ≤ |x|) :
+theorem highWindowProfile_eq_zero (hx : 3 / 4 ≤ |x|) :
     highWindowProfile x = 0 := by
   simp [highWindowProfile, highWindowSeed_eq_zero x hx]
 
-theorem highWindowProfile_sq_partition (x : ℝ) :
+theorem highWindowProfile_sq_partition :
     (∑ᶠ j : ℤ, highWindowProfile (x - j) ^ 2) = 1 := by
   have hE := (highWindowEnergy_pos x).ne'
   calc
@@ -141,11 +143,12 @@ theorem highWindowProfile_sq_partition (x : ℝ) :
       (finsum_mul (fun j : ℤ => highWindowSeed (x - j) ^ 2) _).symm
     _ = 1 := mul_inv_cancel₀ hE
 
+end
+
 theorem highWindowProfile_locallyFinite :
     LocallyFinite (fun j : ℤ => support (fun x : ℝ => highWindowProfile (x - j))) := by
   apply integerTranslate_locallyFinite highWindowProfile
-  intro x hx
-  exact highWindowProfile_eq_zero x (by linarith)
+  grind [highWindowProfile_eq_zero]
 
 /-- Tensor profile supported strictly inside the manuscript's chart Q. -/
 def highWindowTensor (d : ℕ) (x : Covariate d) : ℝ :=
@@ -154,7 +157,7 @@ def highWindowTensor (d : ℕ) (x : Covariate d) : ℝ :=
 theorem highWindowTensor_contDiff (d : ℕ) : ContDiff ℝ ∞ (highWindowTensor d) := by
   apply contDiff_prod
   intro i hi
-  exact highWindowProfile_contDiff.comp (contDiff_apply ℝ ℝ i)
+  apply highWindowProfile_contDiff.comp <;> fun_prop
 
 theorem highWindowTensor_support_bound {d : ℕ} {x : Covariate d}
     (hx : highWindowTensor d x ≠ 0) : ∀ i, |x i| < 3 / 4 := by
@@ -184,7 +187,13 @@ theorem highWindowTensor_derivative_bound (d m : ℕ) :
 def highPeriodicWindow (k : ℕ) (j : ZMod k) (x : ℝ) : ℝ :=
   ∑ᶠ z : ℤ, if (z : ZMod k) = j then highWindowProfile ((k : ℝ) * x - z) else 0
 
-theorem highPeriodicWindow_locallyFinite (k : ℕ) (j : ZMod k) :
+section
+variable (k : ℕ)
+
+section
+variable (j : ZMod k)
+
+theorem highPeriodicWindow_locallyFinite :
     LocallyFinite (fun z : ℤ => support (fun x : ℝ =>
       if (z : ZMod k) = j then highWindowProfile ((k : ℝ) * x - z) else 0)) := by
   apply (highWindowProfile_locallyFinite.preimage_continuous
@@ -192,9 +201,9 @@ theorem highPeriodicWindow_locallyFinite (k : ℕ) (j : ZMod k) :
   intro z x hx
   by_cases hz : (z : ZMod k) = j
   · simpa [hz] using hx
-  · simp [hz] at hx
+  simp_all
 
-theorem highPeriodicWindow_contDiff (k : ℕ) (j : ZMod k) :
+theorem highPeriodicWindow_contDiff :
     ContDiff ℝ ∞ (highPeriodicWindow k j) := by
   unfold highPeriodicWindow
   apply ContMDiff.contDiff
@@ -203,12 +212,11 @@ theorem highPeriodicWindow_contDiff (k : ℕ) (j : ZMod k) :
   apply ContDiff.contMDiff
   by_cases hz : (z : ZMod k) = j
   · simp only [if_pos hz]
-    exact highWindowProfile_contDiff.comp
-      ((contDiff_const.mul contDiff_id).sub contDiff_const)
+    apply highWindowProfile_contDiff.comp <;> fun_prop
   · simp only [if_neg hz]
     exact contDiff_const
 
-theorem highPeriodicWindow_nonneg (k : ℕ) (j : ZMod k) (x : ℝ) :
+theorem highPeriodicWindow_nonneg (x : ℝ) :
     0 ≤ highPeriodicWindow k j x := by
   apply finsum_nonneg
   intro z
@@ -216,47 +224,33 @@ theorem highPeriodicWindow_nonneg (k : ℕ) (j : ZMod k) (x : ℝ) :
   · exact highWindowProfile_nonneg _
   · exact le_rfl
 
-theorem highPeriodicWindow_support_subsingleton (k : ℕ) (hk : 2 ≤ k)
+private theorem periodic_term_support (x : ℝ) (z : ℤ)
+    (hz : (if (z : ZMod k) = j then highWindowProfile ((k : ℝ) * x - z) else 0) ≠ 0) :
+    (z : ZMod k) = j ∧ |(k : ℝ) * x - z| < 3 / 4 := by
+  grind [highWindowProfile_eq_zero]
+
+end
+
+private theorem periodic_lift_separation {z q : ℤ}
+    (hj : (z : ZMod k) = (q : ZMod k)) (hq : q ≠ z) :
+    (k : ℝ) ≤ |(q : ℝ) - z| := by
+  exact_mod_cast Int.le_abs_of_dvd (sub_ne_zero.mpr hq)
+    ((ZMod.intCast_eq_intCast_iff_dvd_sub z q k).mp hj)
+
+theorem highPeriodicWindow_support_subsingleton (hk : 2 ≤ k)
     (j : ZMod k) (x : ℝ) :
     (support (fun z : ℤ => if (z : ZMod k) = j then
       highWindowProfile ((k : ℝ) * x - z) else 0)).Subsingleton := by
   intro z hz q hq
-  have hzj : (z : ZMod k) = j := by
-    by_contra h
-    exact hz (by simp [h])
-  have hqj : (q : ZMod k) = j := by
-    by_contra h
-    exact hq (by simp [h])
-  have hzd : |(k : ℝ) * x - z| < 3 / 4 := by
-    by_contra h
-    exact hz (by simp [highWindowProfile_eq_zero _ (not_lt.mp h)])
-  have hqd : |(k : ℝ) * x - q| < 3 / 4 := by
-    by_contra h
-    exact hq (by simp [highWindowProfile_eq_zero _ (not_lt.mp h)])
-  have hdiv : (k : ℤ) ∣ q - z := (ZMod.intCast_eq_intCast_iff_dvd_sub z q k).mp
-    (hzj.trans hqj.symm)
-  obtain ⟨l, hl⟩ := hdiv
-  have hdiff : |(q : ℝ) - z| < 3 / 2 := by
-    have h1 := abs_lt.mp hzd
-    have h2 := abs_lt.mp hqd
-    exact abs_lt.mpr ⟨by linarith, by linarith⟩
-  have hdiffZ : |q - z| < (2 : ℤ) := by
-    apply (Int.cast_lt (R := ℝ)).mp
-    push_cast
-    linarith
-  have hkZ : (2 : ℤ) ≤ k := by exact_mod_cast hk
-  have hl0 : l = 0 := by
-    by_contra h
-    have habsl : (1 : ℤ) ≤ |l| := by
-      have hpos := abs_pos.mpr h
-      omega
-    have hm : (2 : ℤ) ≤ |(k : ℤ) * l| := by
-      rw [abs_mul, abs_of_nonneg (by omega : (0 : ℤ) ≤ k)]
-      nlinarith
-    rw [← hl] at hm
-    omega
-  simp only [hl0, mul_zero] at hl
-  omega
+  obtain ⟨hzj, hzd⟩ := periodic_term_support k j x z hz
+  obtain ⟨hqj, hqd⟩ := periodic_term_support k j x q hq
+  by_contra hn
+  have hs := periodic_lift_separation k (hzj.trans hqj.symm) (Ne.symm hn)
+  have hk' : (2 : ℝ) ≤ k := by exact_mod_cast hk
+  rw [abs_lt] at hzd hqd
+  rcases le_abs.mp hs with h | h <;> linarith
+
+end
 
 theorem finsum_sq_of_subsingleton_support (f : ℤ → ℝ) (hs : (support f).Subsingleton) :
     (∑ᶠ z, f z) ^ 2 = ∑ᶠ z, f z ^ 2 := by
@@ -265,36 +259,32 @@ theorem finsum_sq_of_subsingleton_support (f : ℤ → ℝ) (hs : (support f).Su
     have hzero : ∀ q, q ≠ z → f q = 0 := by
       intro q hq
       by_contra h
-      exact hq (hs h hz)
+      tauto
     rw [finsum_eq_single f z hzero, finsum_eq_single (fun q => f q ^ 2) z
-      (fun q hq => by rw [hzero q hq]; norm_num)]
-  · have hzero : ∀ z, f z = 0 := by simpa using hn
-    simp only [hzero, zero_pow (by decide : (2 : ℕ) ≠ 0), finsum_zero]
+      (fun q hq => by simp_all)]
+  simp_all
 
-theorem highPeriodicWindow_sq_partition (k : ℕ) [NeZero k] (hk : 2 ≤ k) (x : ℝ) :
+section
+variable (k : ℕ)
+
+section
+variable [NeZero k] (hk : 2 ≤ k)
+include hk
+
+theorem highPeriodicWindow_sq_partition (x : ℝ) :
     (∑ j : ZMod k, highPeriodicWindow k j x ^ 2) = 1 := by
   have hs (j : ZMod k) : highPeriodicWindow k j x ^ 2 =
       ∑ᶠ z : ℤ, if (z : ZMod k) = j then highWindowProfile ((k : ℝ) * x - z) ^ 2 else 0 := by
     rw [highPeriodicWindow, finsum_sq_of_subsingleton_support _
       (highPeriodicWindow_support_subsingleton k hk j x)]
-    apply finsum_congr
-    intro z
-    split_ifs <;> simp
+    simp
   simp only [hs]
   rw [sum_finsum_comm]
-  · simp only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
-    exact highWindowProfile_sq_partition _
+  · simpa using highWindowProfile_sq_partition _
   · intro j hj
-    apply (highPeriodicWindow_locallyFinite k j).point_finite x |>.subset
-    intro z hz
-    change (if (z : ZMod k) = j then highWindowProfile ((k : ℝ) * x - z) else 0) ≠ 0
-    change (if (z : ZMod k) = j then highWindowProfile ((k : ℝ) * x - z) ^ 2 else 0) ≠ 0 at hz
-    by_cases hzj : (z : ZMod k) = j
-    · simp only [ite_eq_left hzj] at hz ⊢
-      exact fun h => hz (by rw [h]; norm_num)
-    · exact False.elim (hz (by simp [hzj]))
+    apply (highPeriodicWindow_locallyFinite k j).point_finite x |>.subset <;> simp
 
-theorem highPeriodicWindow_le_one (k : ℕ) [NeZero k] (hk : 2 ≤ k)
+theorem highPeriodicWindow_le_one
     (j : ZMod k) (x : ℝ) : highPeriodicWindow k j x ≤ 1 := by
   have hsq : highPeriodicWindow k j x ^ 2 ≤ 1 := by
     rw [← highPeriodicWindow_sq_partition k hk x]
@@ -302,20 +292,16 @@ theorem highPeriodicWindow_le_one (k : ℕ) [NeZero k] (hk : 2 ≤ k)
       (Finset.mem_univ j)
   nlinarith [highPeriodicWindow_nonneg k j x]
 
-theorem highPeriodicWindow_support_lift (k : ℕ) (j : ZMod k) (x : ℝ)
+end
+
+theorem highPeriodicWindow_support_lift (j : ZMod k) (x : ℝ)
     (hx : highPeriodicWindow k j x ≠ 0) :
     ∃ z : ℤ, (z : ZMod k) = j ∧ |(k : ℝ) * x - z| < 3 / 4 := by
-  have hterm : ∃ z : ℤ, (if (z : ZMod k) = j then
-      highWindowProfile ((k : ℝ) * x - z) else 0) ≠ 0 := by
-    by_contra h
-    push_neg at h
-    exact hx (by simp only [highPeriodicWindow, h, finsum_zero])
-  obtain ⟨z, hz⟩ := hterm
-  refine ⟨z, ?_, ?_⟩
-  · by_contra h
-    exact hz (by simp [h])
-  · by_contra h
-    exact hz (by simp [highWindowProfile_eq_zero _ (not_lt.mp h)])
+  by_contra! h
+  exact hx (finsum_eq_zero_of_forall_eq_zero fun z =>
+    not_not.mp (mt (periodic_term_support k j x z) (fun hz => (h z hz.1).not_gt hz.2)))
+
+end
 
 abbrev HighWindowLabels (d k : ℕ) := Fin d → ZMod k
 
@@ -323,31 +309,43 @@ abbrev HighWindowLabels (d k : ℕ) := Fin d → ZMod k
 def highPeriodicTensor (d k : ℕ) (j : HighWindowLabels d k) (x : Covariate d) : ℝ :=
   ∏ i, highPeriodicWindow k (j i) (x i)
 
-theorem highPeriodicTensor_contDiff (d k : ℕ) (j : HighWindowLabels d k) :
+section
+variable (d k : ℕ)
+
+section
+variable (j : HighWindowLabels d k)
+
+theorem highPeriodicTensor_contDiff :
     ContDiff ℝ ∞ (highPeriodicTensor d k j) := by
   apply contDiff_prod
   intro i hi
   exact (highPeriodicWindow_contDiff k (j i)).comp (contDiff_apply ℝ ℝ i)
 
-theorem highPeriodicTensor_nonneg (d k : ℕ) (j : HighWindowLabels d k) (x : Covariate d) :
+theorem highPeriodicTensor_nonneg (x : Covariate d) :
     0 ≤ highPeriodicTensor d k j x :=
   Finset.prod_nonneg (fun i _ => highPeriodicWindow_nonneg k (j i) (x i))
 
-theorem highPeriodicTensor_le_one (d k : ℕ) [NeZero k] (hk : 2 ≤ k)
+end
+
+section
+variable [NeZero k] (hk : 2 ≤ k)
+include hk
+
+theorem highPeriodicTensor_le_one
     (j : HighWindowLabels d k) (x : Covariate d) : highPeriodicTensor d k j x ≤ 1 := by
   apply Finset.prod_le_one₀
-  · intro i hi
-    exact highPeriodicWindow_nonneg _ _ _
-  · intro i hi
-    exact highPeriodicWindow_le_one _ hk _ _
+  · solve_by_elim [highPeriodicWindow_nonneg]
+  · solve_by_elim [highPeriodicWindow_le_one]
 
-theorem highPeriodicTensor_sq_partition (d k : ℕ) [NeZero k] (hk : 2 ≤ k)
+theorem highPeriodicTensor_sq_partition
     (x : Covariate d) : (∑ j : HighWindowLabels d k, highPeriodicTensor d k j x ^ 2) = 1 := by
   simp only [highPeriodicTensor, ← Finset.prod_pow]
   rw [← Fintype.prod_sum (fun i (j : ZMod k) => highPeriodicWindow k j (x i) ^ 2)]
   simp only [highPeriodicWindow_sq_partition k hk, Finset.prod_const_one]
 
-theorem highPeriodicTensor_support_lift (d k : ℕ) (j : HighWindowLabels d k)
+end
+
+theorem highPeriodicTensor_support_lift (j : HighWindowLabels d k)
     (x : Covariate d) (hx : highPeriodicTensor d k j x ≠ 0) :
     ∃ z : Fin d → ℤ, (∀ i, (z i : ZMod k) = j i) ∧
       ∀ i, |(k : ℝ) * x i - z i| < 3 / 4 := by
@@ -357,6 +355,8 @@ theorem highPeriodicTensor_support_lift (d k : ℕ) (j : HighWindowLabels d k)
   choose z hz using fun i => highPeriodicWindow_support_lift k (j i) (x i) (hcoordinate i)
   exact ⟨z, fun i => (hz i).1, fun i => (hz i).2⟩
 
+end
+
 /-- Around every point, a periodized window agrees with one compact chart
 profile, including points where the window is zero. -/
 theorem highPeriodicWindow_eventuallyEq_single (k : ℕ) [NeZero k] (hk : 4 ≤ k)
@@ -365,76 +365,43 @@ theorem highPeriodicWindow_eventuallyEq_single (k : ℕ) [NeZero k] (hk : 4 ≤ 
       (fun y => highWindowProfile ((k : ℝ) * y - z)) := by
   have hkR : (4 : ℝ) ≤ k := by exact_mod_cast hk
   have hk0 : (0 : ℝ) < k := by linarith
-  let l : ℤ := ⌊x - (j.val : ℝ) / k + 1 / 2⌋
-  let z : ℤ := (j.val : ℤ) + (k : ℤ) * l
-  have hzj : (z : ZMod k) = j := by simp [z, ZMod.natCast_zmod_val]
-  have hfloor := Int.floor_le (x - (j.val : ℝ) / k + 1 / 2)
-  have hceil := Int.lt_floor_add_one (x - (j.val : ℝ) / k + 1 / 2)
-  have hdiv : (k : ℝ) * ((j.val : ℝ) / k) = j.val := by field_simp
+  let t := x - (j.val : ℝ) / k
+  let z : ℤ := (j.val : ℤ) + (k : ℤ) * round t
+  have hzj : (z : ZMod k) = j := by simp [z]
   have hclose : |(k : ℝ) * x - z| ≤ (k : ℝ) / 2 := by
-    dsimp [z]
-    push_cast
-    apply abs_le.mpr
-    dsimp [l]
-    constructor <;> nlinarith [mul_le_mul_of_nonneg_left hfloor hk0.le,
-      mul_lt_mul_of_pos_left hceil hk0]
+    have he : (k : ℝ) * x - z = k * (t - round t) := by
+      dsimp [z, t]
+      push_cast
+      field_simp
+      ring
+    rw [he, abs_mul, abs_of_pos hk0, ← mul_one_div]
+    exact mul_le_mul_of_nonneg_left (abs_sub_round t) hk0.le
   refine ⟨z, hzj, ?_⟩
-  have hradius : 0 < 1 / (4 * (k : ℝ)) := by positivity
-  filter_upwards [Metric.ball_mem_nhds x hradius] with y hy
+  filter_upwards [Metric.ball_mem_nhds x (by positivity : 0 < 1 / (4 * (k : ℝ)))] with y hy
+  have hdist : |y - x| < 1 / (4 * (k : ℝ)) := by simpa only [Metric.mem_ball, Real.dist_eq] using hy
   have hxy : |(k : ℝ) * y - (k : ℝ) * x| < 1 / 4 := by
-    have hdist : |y - x| < 1 / (4 * (k : ℝ)) := by
-      simpa only [Metric.mem_ball, Real.dist_eq] using hy
     rw [← mul_sub, abs_mul, abs_of_pos hk0]
-    have h := mul_lt_mul_of_pos_left hdist hk0
-    have hid : (k : ℝ) * (1 / (4 * (k : ℝ))) = 1 / 4 := by field_simp
-    simpa only [hid] using h
+    linarith [(lt_div_iff₀ (by positivity : 0 < 4 * (k : ℝ))).mp hdist]
   rw [highPeriodicWindow, finsum_eq_single _ z]
-  · simp only [hzj, ite_true]
+  · simp [hzj]
   · intro q hq
-    by_cases hqj : (q : ZMod k) = j
-    · simp only [hqj, ite_true]
-      apply highWindowProfile_eq_zero
-      by_contra hdist
-      have hqclose : |(k : ℝ) * y - q| < 3 / 4 := not_le.mp hdist
-      have hdvd : (k : ℤ) ∣ q - z := (ZMod.intCast_eq_intCast_iff_dvd_sub z q k).mp
-        (hzj.trans hqj.symm)
-      obtain ⟨b, hb⟩ := hdvd
-      have hb0 : b ≠ 0 := by
-        intro hb0
-        simp only [hb0, mul_zero] at hb
-        exact hq (by omega)
-      have habs : (1 : ℤ) ≤ |b| := by
-        have hpos := abs_pos.mpr hb0
-        omega
-      have hsepZ : (k : ℤ) ≤ |q - z| := by
-        rw [hb, abs_mul, abs_of_nonneg (by omega : (0 : ℤ) ≤ k)]
-        nlinarith
-      have hsep : (k : ℝ) ≤ |(q : ℝ) - z| := by exact_mod_cast hsepZ
-      have htri : |(q : ℝ) - z| ≤ |(k : ℝ) * y - q| +
-          |(k : ℝ) * y - (k : ℝ) * x| + |(k : ℝ) * x - z| := by
-        calc
-          _ = |(q - (k : ℝ) * y) + ((k : ℝ) * y - (k : ℝ) * x) +
-              ((k : ℝ) * x - z)| := by congr 1; ring
-          _ ≤ |(q - (k : ℝ) * y) + ((k : ℝ) * y - (k : ℝ) * x)| +
-              |(k : ℝ) * x - z| := abs_add_le _ _
-          _ ≤ |q - (k : ℝ) * y| + |(k : ℝ) * y - (k : ℝ) * x| +
-              |(k : ℝ) * x - z| := by
-                gcongr
-                exact abs_add_le _ _
-          _ = _ := by rw [abs_sub_comm (q : ℝ) ((k : ℝ) * y)]
-      linarith
-    · simp only [hqj, ite_false]
+    by_contra h
+    obtain ⟨hqj, hqd⟩ := periodic_term_support k j y q h
+    have hs := periodic_lift_separation k (hzj.trans hqj.symm) hq
+    rw [abs_le] at hclose
+    rw [abs_lt] at hqd hxy
+    rcases le_abs.mp hs with h' | h' <;> linarith
 
 theorem smooth_affine_iteratedFDeriv_bound {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] (F : E → ℝ) (hF : ContDiff ℝ ∞ F) (k : ℝ) (z x : E)
     (n : ℕ) (B : ℝ) (hB : ∀ y, ‖iteratedFDeriv ℝ n F y‖ ≤ B) :
     ‖iteratedFDeriv ℝ n (fun y => F (k • y - z)) x‖ ≤ B * |k| ^ n := by
-  let g : E →L[ℝ] E := k • ContinuousLinearMap.id ℝ E
-  let G : E → ℝ := fun y => F (y - z)
+  let g := k • ContinuousLinearMap.id ℝ E
+  let G := fun y => F (y - z)
   have hG : ContDiff ℝ n G := (hF.of_le (by simp)).comp
     (contDiff_id.sub contDiff_const)
   have hid := g.iteratedFDerivWithin_comp_right hG.contDiffOn uniqueDiffOn_univ
-    (by simpa using (uniqueDiffOn_univ : UniqueDiffOn ℝ (univ : Set E)))
+    (by simp)
     (x := x) (mem_univ _) (i := n) le_rfl
   simp only [preimage_univ, iteratedFDerivWithin_univ] at hid
   change ‖iteratedFDeriv ℝ n (G ∘ g) x‖ ≤ _
@@ -461,9 +428,7 @@ theorem highWindowTensor_tsupport_bound {d : ℕ} {x : Covariate d}
     intro i
     simpa only [Real.norm_eq_abs] using (highWindowTensor_support_bound hy i).le
   have hnorm := hsub hx
-  rw [Metric.mem_closedBall, dist_zero_right,
-    pi_norm_le_iff_of_nonneg (by norm_num : (0 : ℝ) ≤ 3 / 4)] at hnorm
-  simpa only [Real.norm_eq_abs] using hnorm
+  simp_all [Metric.mem_closedBall, dist_zero_right, pi_norm_le_iff_of_nonneg (by norm_num : (0 : ℝ) ≤ 3 / 4)]
 
 theorem integer_close_three_quarters (t : ℝ) (z : ℤ) (hz : |t - z| ≤ 3 / 4) :
     z = ⌊t⌋ ∨ z = ⌊t⌋ + 1 := by

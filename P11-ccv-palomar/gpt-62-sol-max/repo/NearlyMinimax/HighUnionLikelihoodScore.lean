@@ -26,9 +26,7 @@ lemma highLocalFieldWithout_update (d k D : ℕ) [NeZero k] (η : ℝ)
       highLocalFieldWithout d k D η c j x := by
   unfold highLocalFieldWithout
   apply congrArg (fun v : ℝ => η*v)
-  apply Finset.sum_congr rfl
-  intro l hl
-  rw [Function.update_of_ne (Finset.mem_erase.mp hl).1]
+  apply Finset.sum_congr <;> simp_all
 
 lemma highFrameField_update_coefficientRegression (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k)
     (η : ℝ) (c : HighWindowLabels d k → HighFrameIndex d D → ℝ)
@@ -47,11 +45,11 @@ variable {d k D : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
   (C : ModelConstants d) (R : HighUnionRowData d k D I E)
 
 lemma highUnionSourceState_append_coefficients (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
+    (h : HighUnionHistory d k E)
     (e : HighUnionMark E) :
     (highUnionSourceState C R (historyMarkedAppend
-      (fun i j => j ∈ highNeighborLabels d k i)
-      (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e))).2 =
+      (highNeighbors d k)
+      (highNeighbors_symm d k) j (h,e))).2 =
       Function.update (highUnionSourceState C R h).2 j
         (highUnionResponseReset R e ((highUnionSourceState C R h).2 j)) := by
   rw [highUnionSourceState_append R C j h e]
@@ -59,7 +57,7 @@ lemma highUnionSourceState_append_coefficients (j : HighWindowLabels d k)
 
 lemma highUnionSourceRegression_append (n : ℕ) (hk : 4 ≤ k) (η : ℝ)
     (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
+    (h : HighUnionHistory d k E)
     (e : HighUnionMark E) (x : Fin n → Covariate d) :
     coefficientRegression η
       (fun i => highLocalFieldWithout d k D η (highUnionSourceState C R h).2 j (x i))
@@ -67,40 +65,44 @@ lemma highUnionSourceRegression_append (n : ℕ) (hk : 4 ≤ k) (η : ℝ)
       (fun i => highLocalFrameFeature k j (x i))
       (highUnionResponseReset R e ((highUnionSourceState C R h).2 j)) =
       fun i => highUnionSourceRegression C R η
-        (historyMarkedAppend (fun i j => j ∈ highNeighborLabels d k i)
-          (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) (x i) := by
+        (historyMarkedAppend (highNeighbors d k)
+          (highNeighbors_symm d k) j (h,e)) (x i) := by
   unfold highUnionSourceRegression
   rw [highUnionSourceState_append_coefficients C R j h e]
-  exact highFrameField_update_coefficientRegression d k D n hk η _ j _ x
+  apply highFrameField_update_coefficientRegression <;> assumption
 
 /-- The true local score, evaluated on the actual canonical history and
 its actual appended reset states. -/
 def highUnionSourceLocalScore (n : ℕ) (a V η : ℝ)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
+    (h : HighUnionHistory d k E)
     (x : Fin n → Covariate d) (j : HighWindowLabels d k) (y : Fin n → Fin 3) : ℝ :=
   highFrameMarkedScore d k D n
     (fun _ => highUnionLaw R (highCenterMix C))
     (fun _ => highUnionActivation R (highCenterMix C)) a V η
     (fun i => highUnionSourceDensity C R h (x i))
     (fun l e i => highUnionSourceDensity C R
-      (historyMarkedAppend (fun i j => j ∈ highNeighborLabels d k i)
-        (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) l (h,e)) (x i))
+      (historyMarkedAppend (highNeighbors d k)
+        (highNeighbors_symm d k) l (h,e)) (x i))
     (fun l e => highUnionResponseReset R e ((highUnionSourceState C R h).2 l))
     (highUnionSourceState C R h).2 x j y
 
-lemma highUnionSourceAppendLikelihoodAction_eq_responseAction (n : ℕ) (hk : 4 ≤ k)
-    (a V η : ℝ) (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
+section
+variable (n : ℕ) (hk : 4 ≤ k)
+    (a V η : ℝ)
+include hk
+
+lemma highUnionSourceAppendLikelihoodAction_eq_responseAction (j : HighWindowLabels d k)
+    (h : HighUnionHistory d k E)
     (x : Fin n → Covariate d) (y : Fin n → Fin 3) :
-    highAppendLikelihoodAction (fun i j => j ∈ highNeighborLabels d k i)
-      (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h)
+    highAppendLikelihoodAction (highNeighbors d k)
+      (highNeighbors_symm d k)
       (highUnionLaw R (highCenterMix C)) (highUnionActivation R (highCenterMix C))
       n a V (highUnionSourceDensity C R) (highUnionSourceRegression C R η) j h (x,y) =
     highMarkedResponseAction (highUnionLaw R (highCenterMix C))
       (highUnionActivation R (highCenterMix C)) a V η
       (fun e i => highUnionSourceDensity C R
-        (historyMarkedAppend (fun i j => j ∈ highNeighborLabels d k i)
-          (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) (x i))
+        (historyMarkedAppend (highNeighbors d k)
+          (highNeighbors_symm d k) j (h,e)) (x i))
       (fun e => highUnionResponseReset R e ((highUnionSourceState C R h).2 j))
       (fun i => highLocalFieldWithout d k D η (highUnionSourceState C R h).2 j (x i))
       (fun i => highPeriodicTensor d k j (x i))
@@ -112,17 +114,16 @@ lemma highUnionSourceAppendLikelihoodAction_eq_responseAction (n : ℕ) (hk : 4 
     unfold highRawSampleLikelihood
     rw [Finset.prod_mul_distrib]
     unfold highResponseProduct
-    rw [highUnionSourceRegression_append C R n hk η j h e x]
-    exact (mul_assoc _ _ _).symm
+    simp_all [highUnionSourceRegression_append C R n hk η j h e x] <;> ring
 
 /-- The global append/heat likelihood score is exactly the sum of the
 true local window scores. This uses the actual reset recursion and exact
 squared partition, with no statistical energy premise. -/
-theorem highUnionSourceLikelihoodScore_eq_sum (n : ℕ) (hk : 4 ≤ k) (a V η : ℝ)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
+theorem highUnionSourceLikelihoodScore_eq_sum
+    (h : HighUnionHistory d k E)
     (x : Fin n → Covariate d) (y : Fin n → Fin 3) :
-    highHistoryLikelihoodScore (fun i j => j ∈ highNeighborLabels d k i)
-      (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h)
+    highHistoryLikelihoodScore (highNeighbors d k)
+      (highNeighbors_symm d k)
       (highUnionLaw R (highCenterMix C)) (highUnionActivation R (highCenterMix C))
       n a V η (highUnionSourceDensity C R) (highUnionSourceRegression C R η) h (x,y) =
       ∑ j, highUnionSourceLocalScore C R n a V η h x j y := by
@@ -137,9 +138,9 @@ theorem highUnionSourceLikelihoodScore_eq_sum (n : ℕ) (hk : 4 ≤ k) (a V η :
   rw [Finset.prod_mul_distrib]
   congr 2
   simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro i _
-  ring
+  apply Finset.sum_congr rfl <;> grind
+
+end
 
 end ActualSource
 end NearlyMinimax

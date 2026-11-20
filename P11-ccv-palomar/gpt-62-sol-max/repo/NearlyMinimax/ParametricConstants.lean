@@ -59,7 +59,6 @@ theorem parametricTernaryConstants_exists {d : ℕ} (C : ModelConstants d) :
   have hrhi : r < hi := by dsimp [r, l]; linarith
   have hrt : r < t := lt_of_lt_of_le hrhi (min_le_right _ _)
   have hrU : r ≤ C.varianceUpper := le_trans hrhi.le (min_le_left _ _)
-  have hr : 0 < r := lt_trans hl hlr
   let a := Real.sqrt t
   have ha : 0 < a := Real.sqrt_pos.2 ht
   have ha2 : a ^ 2 = t := Real.sq_sqrt ht.le
@@ -88,17 +87,11 @@ theorem parametricTernaryConstants_exists {d : ℕ} (C : ModelConstants d) :
       apply (div_le_div_iff₀ (by positivity) ha2pos).2
       nlinarith
     fin_cases y
-    · change |3 * (1 / (2 * a ^ 2))| ≤ Cf
-      rw [show 3 * (1 / (2 * a ^ 2)) = 3 / (2 * a ^ 2) by ring,
-        abs_of_pos (div_pos (by norm_num) (by positivity))]
-      exact hsmall
+    · simp [ternaryVarianceDerivative] <;> grind
     · change |3 * (-1 / a ^ 2)| ≤ Cf
       rw [show 3 * (-1 / a ^ 2) = -(3 / a ^ 2) by ring, abs_neg,
         abs_of_pos (div_pos (by norm_num) ha2pos)]
-    · change |3 * (1 / (2 * a ^ 2))| ≤ Cf
-      rw [show 3 * (1 / (2 * a ^ 2)) = 3 / (2 * a ^ 2) by ring,
-        abs_of_pos (div_pos (by norm_num) (by positivity))]
-      exact hsmall
+    · simp [ternaryVarianceDerivative] <;> grind
   let delta := min ((r - l) / 4) (Real.sqrt cf / (2 * Cf))
   have hdelta : 0 < delta := lt_min (div_pos (sub_pos.2 hlr) (by norm_num))
     (div_pos (Real.sqrt_pos.2 hcf) (by positivity))
@@ -119,39 +112,48 @@ namespace ParametricTernaryConstants
 
 variable {d : ℕ} {C : ModelConstants d} (P : ParametricTernaryConstants C)
 
+section
+variable (V : ℝ) (hV : V ∈ Icc P.l P.r)
+include hV
+
 /-- With counting measure normalized to total mass one, the density is three
 times the ternary mass.  The same positive lower guard remains valid. -/
-theorem density_lower (V : ℝ) (hV : V ∈ Icc P.l P.r) (y : Fin 3) :
+theorem density_lower (y : Fin 3) :
     P.cf ≤ 3 * ternaryMass P.a 0 V y := by
   have hmass := P.mass_lower V hV y
   have hcf := P.cf_pos
   linarith
 
-theorem model_variance_bounds (V : ℝ) (hV : V ∈ Icc P.l P.r) :
+theorem model_variance_bounds :
     C.varianceLower ≤ V ∧ V ≤ C.varianceUpper :=
   ⟨le_trans P.lower_le hV.1, le_trans hV.2 P.upper_le⟩
 
-theorem variance_lt_square_of_mem (V : ℝ) (hV : V ∈ Icc P.l P.r) :
-    V < P.a ^ 2 := lt_of_le_of_lt hV.2 P.variance_lt_square
-
-theorem fourth_le_of_mem (V : ℝ) (hV : V ∈ Icc P.l P.r) :
+theorem fourth_le_of_mem :
     P.a ^ 2 * V ≤ C.fourthBound :=
   le_trans (mul_le_mul_of_nonneg_left hV.2 (sq_nonneg _)) P.fourth_le
+
+end
 
 def varianceMinus (n : ℕ) : ℝ := (P.l + P.r) / 2 - P.delta / Real.sqrt n
 
 def variancePlus (n : ℕ) : ℝ := (P.l + P.r) / 2 + P.delta / Real.sqrt n
 
-theorem perturbation_nonneg (n : ℕ) : 0 ≤ P.delta / Real.sqrt n := by
-  exact div_nonneg P.delta_pos.le (Real.sqrt_nonneg _)
+section
+variable (n : ℕ)
 
-theorem perturbation_le (n : ℕ) (hn : 1 ≤ n) :
+theorem perturbation_nonneg : 0 ≤ P.delta / Real.sqrt n := div_nonneg P.delta_pos.le (Real.sqrt_nonneg _)
+
+section
+variable (hn : 1 ≤ n)
+include hn
+
+theorem perturbation_le :
     P.delta / Real.sqrt n ≤ P.delta := by
-  have hs : 1 ≤ Real.sqrt (n : ℝ) := Real.one_le_sqrt.2 (by exact_mod_cast hn)
+  have hs : 1 ≤ Real.sqrt (n : ℝ) := Real.one_le_sqrt.2 (by simp_all)
   have hd := P.delta_pos
   exact div_le_self hd.le hs
 
-theorem varianceMinus_mem (n : ℕ) (hn : 1 ≤ n) :
+theorem varianceMinus_mem :
     P.varianceMinus n ∈ Icc P.l P.r := by
   have hnonneg := P.perturbation_nonneg n
   have hpert := P.perturbation_le n hn
@@ -159,7 +161,7 @@ theorem varianceMinus_mem (n : ℕ) (hn : 1 ≤ n) :
   have hinterval := P.interval
   constructor <;> dsimp [varianceMinus] <;> linarith
 
-theorem variancePlus_mem (n : ℕ) (hn : 1 ≤ n) :
+theorem variancePlus_mem :
     P.variancePlus n ∈ Icc P.l P.r := by
   have hnonneg := P.perturbation_nonneg n
   have hpert := P.perturbation_le n hn
@@ -167,21 +169,25 @@ theorem variancePlus_mem (n : ℕ) (hn : 1 ≤ n) :
   have hinterval := P.interval
   constructor <;> dsimp [variancePlus] <;> linarith
 
-theorem separation (n : ℕ) :
+end
+
+theorem separation :
     P.variancePlus n - P.varianceMinus n = 2 * P.delta / Real.sqrt n := by
   dsimp [varianceMinus, variancePlus]
   ring
 
-theorem separation_pos (n : ℕ) (hn : 1 ≤ n) :
-    0 < P.variancePlus n - P.varianceMinus n := by
-  rw [P.separation]
-  exact div_pos (mul_pos (by norm_num) P.delta_pos)
-    (Real.sqrt_pos.2 (by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hn)))
+section
+variable (hn : 1 ≤ n)
+include hn
 
-theorem score_budget (n : ℕ) (hn : 1 ≤ n) :
+theorem separation_pos :
+    0 < P.variancePlus n - P.varianceMinus n := by
+  simp [ParametricTernaryConstants.separation, ParametricTernaryConstants.delta_pos] <;> grind
+
+theorem score_budget :
     (n : ℝ) * P.Cf ^ 2 * (P.variancePlus n - P.varianceMinus n) ^ 2 /
       (4 * P.cf) ≤ 1 / 4 := by
-  have hnp : 0 < (n : ℝ) := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hn)
+  have hnp : 0 < (n : ℝ) := by positivity
   have hs : 0 < Real.sqrt (n : ℝ) := Real.sqrt_pos.2 hnp
   have hs2 : (Real.sqrt (n : ℝ)) ^ 2 = n := Real.sq_sqrt hnp.le
   rw [P.separation]
@@ -190,13 +196,16 @@ theorem score_budget (n : ℕ) (hn : 1 ≤ n) :
     field_simp [ne_of_gt hs, ne_of_gt P.cf_pos]
     rw [hs2]
     ring
-  rw [heq]
-  exact P.delta_score
+  grind [P.delta_score]
 
-theorem score_budget_reverse (n : ℕ) (hn : 1 ≤ n) :
+theorem score_budget_reverse :
     (n : ℝ) * P.Cf ^ 2 * (P.varianceMinus n - P.variancePlus n) ^ 2 /
       (4 * P.cf) ≤ 1 / 4 := by
   convert P.score_budget n hn using 1 <;> ring
+
+end
+
+end
 
 end ParametricTernaryConstants
 

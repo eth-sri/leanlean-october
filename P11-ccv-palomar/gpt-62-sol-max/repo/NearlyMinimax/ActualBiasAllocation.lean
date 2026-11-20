@@ -54,23 +54,19 @@ theorem eventually_actual_allocation_bias_sum (r q : ℕ) (δ a C H γ β θ τ 
     have he : θ * γ * Real.log S = ((r : ℝ) + 1 / 2) * Real.log S := by rw [hθγ]
     nlinarith
   have hqS : (q : ℝ) ≤ β * S / 4 := by
-    change (q : ℝ) + 2 ≤ β * S / 4 at hdegree
-    linarith
+    grind
   have hz (j : ℕ) : u₀ + (j : ℝ) * δ + S / 2 = allocationLevelPosition δ a C H x j := by
     unfold allocationLevelPosition
-    dsimp [u₀, ell, S]
     ring
   have hbound := floored_raw_allocation_bias_sum_bound (Finset.range (J + 1)) r q
     u₀ δ β θ τ S ell T Kstar (fun j : ℕ => Real.exp (δ * (j : ℝ)))
     hδ hβ.le hθ hτ hS hθβ (Real.exp_pos _) (fun j hj => Real.exp_pos _) (by
       intro j hj
       dsimp [Kstar]
-      rw [Real.log_exp, Real.log_exp]
-      dsimp [u₀, T]
-      ring) hreserve (by
+      simp [Real.log_exp] <;> ring) hreserve (by
       intro j hj
-      exact profile_coordinate_order_admissible q hβ.le (by linarith : 0 < S) hqS)
+      apply profile_coordinate_order_admissible <;> first | assumption | positivity)
   simp_rw [hz] at hbound
-  simpa [actualApproximationDegree, J, Kstar] using hbound
+  assumption
 
 end NearlyMinimax

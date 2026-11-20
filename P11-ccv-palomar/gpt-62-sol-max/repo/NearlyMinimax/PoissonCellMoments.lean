@@ -14,9 +14,15 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 500000
 variable {H X : Type*} [MeasurableSpace H] [MeasurableSpace X]
 
-theorem partitionFieldFiber_product_integrable (μ : Measure H) [IsProbabilityMeasure μ]
-    (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) (n j : ℕ)
-    (U : Fin j → X) :
+section
+variable (μ : Measure H) [IsProbabilityMeasure μ]
+
+section
+variable (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) (n j : ℕ)
+    (U : Fin j → X)
+include hρ
+
+theorem partitionFieldFiber_product_integrable :
     Integrable (fun z : partitionFieldFiber H n => ∏ l, partitionFieldFiberValue ρ z (U l))
       (partitionFieldFiberLaw μ n) := by
   apply Integrable.of_bound
@@ -26,9 +32,7 @@ theorem partitionFieldFiber_product_integrable (μ : Measure H) [IsProbabilityMe
     simp only [Real.norm_eq_abs, Finset.abs_prod, partitionFieldFiberValue_abs,
       Finset.prod_const_one, le_refl])
 
-theorem partitionFieldFiber_product_moment (μ : Measure H) [IsProbabilityMeasure μ]
-    (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) (n j : ℕ)
-    (U : Fin j → X) :
+theorem partitionFieldFiber_product_moment :
     (∫ z, ∏ l, partitionFieldFiberValue ρ z (U l) ∂partitionFieldFiberLaw μ n) =
       ∫ h, if ∀ p : Fin n → Fin 2,
         Even ((Finset.univ.filter (fun l => partitionFieldPattern ρ h (U l) = p)).card)
@@ -37,7 +41,9 @@ theorem partitionFieldFiber_product_moment (μ : Measure H) [IsProbabilityMeasur
     (partitionFieldFiber_product_integrable μ ρ hρ n j U)]
   simp only [partitionFieldFiberValue, cellSign_product_moment]
 
-theorem poissonCellField_product_moment_nonneg (μ : Measure H) [IsProbabilityMeasure μ]
+end
+
+theorem poissonCellField_product_moment_nonneg
     (r : ℝ≥0) (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) (j : ℕ)
     (U : Fin j → X) :
     0 ≤ ∫ z, ∏ l, poissonCellFieldValue ρ z (U l) ∂poissonCellFieldLaw μ r := by
@@ -48,10 +54,8 @@ theorem poissonCellField_product_moment_nonneg (μ : Measure H) [IsProbabilityMe
   apply tsum_nonneg
   intro n
   simp only [poissonCellFieldValue, partitionFieldFiber_product_moment μ ρ hρ]
-  apply mul_nonneg (by positivity)
-  apply integral_nonneg
-  intro h
-  dsimp only [Pi.zero_apply]
-  split_ifs <;> norm_num
+  positivity
+
+end
 
 end NearlyMinimax

@@ -23,9 +23,7 @@ def factorialSeries (D : ℕ) (x : ℝ) : ℝ :=
   ∑ k ∈ Finset.range D, ((k + 1).factorial : ℝ) * x ^ (k + 1)
 
 theorem factorialSeries_nonneg (D : ℕ) {x : ℝ} (hx : 0 ≤ x) :
-    0 ≤ factorialSeries D x := by
-  unfold factorialSeries
-  exact Finset.sum_nonneg fun k hk => by positivity
+    0 ≤ factorialSeries D x := Finset.sum_nonneg fun k hk => by positivity
 
 /-- The successive-term ratio is bounded by `1/2` throughout the finite sum. -/
 theorem factorial_term_le_geometric {D k : ℕ} {x : ℝ}
@@ -36,18 +34,17 @@ theorem factorial_term_le_geometric {D k : ℕ} {x : ℝ}
   | succ k ih =>
     have hkp : k < D := by omega
     have hratio : ((k + 2 : ℕ) : ℝ) * x ≤ 1 / 2 := by
-      have hcast : ((k + 2 : ℕ) : ℝ) ≤ (D : ℝ) := by exact_mod_cast (by omega : k + 2 ≤ D)
+      have hcast : ((k + 2 : ℕ) : ℝ) ≤ (D : ℝ) := by exact_mod_cast by assumption
       exact (mul_le_mul_of_nonneg_right hcast hx).trans hD
     have hprev := ih hkp
     calc
       (((k + 1 + 1).factorial : ℕ) : ℝ) * x ^ (k + 1 + 1) =
           (((k + 2 : ℕ) : ℝ) * x) * (((k + 1).factorial : ℝ) * x ^ (k + 1)) := by
         rw [Nat.factorial_succ, Nat.cast_mul, pow_succ]
-        push_cast
         ring
       _ ≤ (1 / 2 : ℝ) * (x * (1 / 2 : ℝ) ^ k) :=
         mul_le_mul hratio hprev (by positivity) (by norm_num)
-      _ = x * (1 / 2 : ℝ) ^ (k + 1) := by rw [pow_succ]; ring
+      _ = x * (1 / 2 : ℝ) ^ (k + 1) := by ring
 
 /-- The uniform coarse-level estimate in the paper. -/
 theorem factorialSeries_coarse_bound {D : ℕ} {x : ℝ}
@@ -70,12 +67,15 @@ theorem factorialSeries_coarse_bound {D : ℕ} {x : ℝ}
 /-- Factorials are bounded by the maximal degree to the corresponding power. -/
 theorem factorial_cast_le_degree_pow {D k : ℕ} (hk : k ≤ D) :
     (k.factorial : ℝ) ≤ (D : ℝ) ^ k := by
-  have h : k.factorial ≤ D ^ k :=
+  have h :=
     (Nat.factorial_le_pow k).trans (Nat.pow_le_pow_left hk k)
   exact_mod_cast h
 
+section
+variable {D : ℕ}
+
 /-- The finite fine-level estimate, prior to replacing `D` by its real upper bound. -/
-theorem factorialSeries_fine_bound {D : ℕ} {x z B A : ℝ}
+theorem factorialSeries_fine_bound {x z B A : ℝ}
     (hx : 0 ≤ x) (hz : 0 ≤ z) (hDx : (D : ℝ) * x ≤ Real.exp z)
     (hDz : (D : ℝ) * z ≤ B) (hDA : (D : ℝ) ≤ A) :
     factorialSeries D x ≤ A * Real.exp B := by
@@ -84,14 +84,14 @@ theorem factorialSeries_fine_bound {D : ℕ} {x z B A : ℝ}
     _ ≤ ∑ k ∈ Finset.range D, Real.exp B := by
       apply Finset.sum_le_sum
       intro k hk
-      have hkD : k + 1 ≤ D := Finset.mem_range.1 hk
+      have hkD := Finset.mem_range.1 hk
       have hpow := pow_le_pow_left₀ (mul_nonneg (Nat.cast_nonneg D) hx) hDx (k + 1)
       have hcast : ((k + 1 : ℕ) : ℝ) ≤ (D : ℝ) := by exact_mod_cast hkD
       calc
         ((k + 1).factorial : ℝ) * x ^ (k + 1) ≤
             (D : ℝ) ^ (k + 1) * x ^ (k + 1) :=
           mul_le_mul_of_nonneg_right (factorial_cast_le_degree_pow hkD) (by positivity)
-        _ = ((D : ℝ) * x) ^ (k + 1) := by rw [mul_pow]
+        _ = ((D : ℝ) * x) ^ (k + 1) := by ring
         _ ≤ (Real.exp z) ^ (k + 1) := hpow
         _ = Real.exp (((k + 1 : ℕ) : ℝ) * z) := (Real.exp_nat_mul z (k + 1)).symm
         _ ≤ Real.exp B := Real.exp_le_exp.2
@@ -100,7 +100,7 @@ theorem factorialSeries_fine_bound {D : ℕ} {x z B A : ℝ}
     _ ≤ A * Real.exp B := mul_le_mul_of_nonneg_right hDA (Real.exp_pos B).le
 
 /-- Direct substitution of the fine-level allocation's `x = exp z/(C_D S)`. -/
-theorem factorialSeries_fine_allocation {D : ℕ} {z β C_D S : ℝ}
+theorem factorialSeries_fine_allocation {z β C_D S : ℝ}
     (hz : 0 ≤ z) (hCS : 0 < C_D * S)
     (hD : (D : ℝ) ≤ C_D * S) (hDz : (D : ℝ) * z ≤ β * S ^ 2 / 4) :
     factorialSeries D (Real.exp z / (C_D * S)) ≤
@@ -108,12 +108,12 @@ theorem factorialSeries_fine_allocation {D : ℕ} {z β C_D S : ℝ}
   apply factorialSeries_fine_bound (div_nonneg (Real.exp_pos z).le hCS.le) hz _ hDz hD
   have hd := mul_le_mul_of_nonneg_right hD (div_nonneg (Real.exp_pos z).le hCS.le)
   have he : (C_D * S) * (Real.exp z / (C_D * S)) = Real.exp z := by
-    rw [← mul_div_assoc, mul_comm (C_D * S), mul_div_cancel_right₀ _ hCS.ne']
+    grind
   rwa [he] at hd
 
 /-- The fine-level series remains bounded after its sampling weight. -/
-theorem factorialSeries_fine_weighted {D : ℕ} {z β C₀ C_D S M : ℝ}
-    (hz : 0 ≤ z) (_hC : 0 ≤ C₀) (hCS : 0 < C_D * S)
+theorem factorialSeries_fine_weighted {z β C₀ C_D S M : ℝ}
+    (hz : 0 ≤ z) (hCS : 0 < C_D * S)
     (hD : (D : ℝ) ≤ C_D * S) (hDz : (D : ℝ) * z ≤ β * S ^ 2 / 4)
     (hM : 0 ≤ M) (hMb : M ≤ C₀ * C_D * S) :
     factorialSeries D (Real.exp z / (C_D * S)) * M ≤
@@ -122,6 +122,8 @@ theorem factorialSeries_fine_weighted {D : ℕ} {z β C₀ C_D S M : ℝ}
   have h := mul_le_mul hs hMb hM (mul_nonneg hCS.le (Real.exp_pos _).le)
   apply h.trans_eq
   ring
+
+end
 
 /-- The fixed subtraction in `eq:Udef-S` leaves the quadratic budget reserve. -/
 theorem quadratic_allocation_budget {β H t S : ℝ}

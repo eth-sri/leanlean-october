@@ -1,5 +1,7 @@
 module
 
+public import NearlyMinimax.FiniteBounds
+
 public import NearlyMinimax.DyadicIncrementBias
 public import NearlyMinimax.DyadicPilotRows
 public import NearlyMinimax.PaperCorollaries
@@ -16,30 +18,28 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem anchoredFinVector_dotProduct {d ℓ : ℕ} (u v : AnchoredIndex d ℓ → ℝ) :
-    anchoredFinVector u ⬝ᵥ anchoredFinVector v = u ⬝ᵥ v := by
-  simp only [dotProduct, anchoredFinVector, anchoredFinIndex]
-  exact (Fintype.equivFin (AnchoredIndex d ℓ)).symm.sum_comp
-    (fun γ : AnchoredIndex d ℓ => u γ * v γ)
+section
+variable {d ℓ : ℕ}
 
-theorem dyadicPilotRow_dot_coefficients {d ℓ : ℕ} (j : ℕ)
+theorem anchoredFinVector_dotProduct (u v : AnchoredIndex d ℓ → ℝ) :
+    anchoredFinVector u ⬝ᵥ anchoredFinVector v = u ⬝ᵥ v := by
+  exact (Fintype.equivFin (AnchoredIndex d ℓ)).symm.sum_comp
+      (fun γ : AnchoredIndex d ℓ => u γ * v γ)
+
+theorem dyadicPilotRow_dot_coefficients (j : ℕ)
     (x y : Covariate d) (v : AnchoredIndex d ℓ → ℝ) :
     dyadicPilotRow j x y ⬝ᵥ anchoredFinVector v = dyadicAnchoredFeature j x y ⬝ᵥ v :=
   anchoredFinVector_dotProduct _ _
 
+end
+
 theorem finite_row_abs_dot_le_euclidean_norm {ι : Type*} [Fintype ι]
     (row v : ι → ℝ) :
     |row ⬝ᵥ v| ≤ (∑ i, |row i|) * ‖(EuclideanSpace.equiv ι ℝ).symm v‖ := by
-  apply (Finset.abs_sum_le_sum_abs _ _).trans
-  calc
-    (∑ i, |row i * v i|) ≤ ∑ i, |row i| * ‖(EuclideanSpace.equiv ι ℝ).symm v‖ := by
-      apply Finset.sum_le_sum
-      intro i _
-      rw [abs_mul]
-      apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-      simpa [EuclideanSpace.equiv, Real.norm_eq_abs] using
-        PiLp.norm_apply_le ((EuclideanSpace.equiv ι ℝ).symm v) i
-    _ = _ := by rw [Finset.sum_mul]
+  apply abs_weighted_sum_le
+  intro i _
+  simpa [EuclideanSpace.equiv, Real.norm_eq_abs] using
+    PiLp.norm_apply_le ((EuclideanSpace.equiv ι ℝ).symm v) i
 
 theorem dyadic_scale_rpow_cancel (j : ℕ) (s : ℝ) :
     (2 : ℝ) ^ j * (((2 : ℝ) ^ j)⁻¹) ^ s = (((2 : ℝ) ^ j)⁻¹) ^ (s - 1) := by
@@ -51,10 +51,17 @@ def dyadicPopulationPolynomial {d : ℕ} (C : ModelConstants d) (θ : Regression
   incrementFinVector (anchoredDimension d C.order) C.densityLower C.densityUpper
     (anchoredFinTransport d C.order) y m (dyadicIncrementRawMean θ j x)
 
+/-- Degree-dependent part of the inverse-polynomial approximation error. -/
+def dyadicPolynomialDecay {d : ℕ} (C : ModelConstants d) (m : ℕ) : ℝ :=
+  ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order * Real.exp (-(m : ℝ) * paperTau C)
+
+theorem dyadicPolynomialDecay_nonneg {d : ℕ} (C : ModelConstants d) (m : ℕ) :
+    0 ≤ dyadicPolynomialDecay C m := by unfold dyadicPolynomialDecay; positivity
+
 def dyadicPopulationBiasBudget {d : ℕ} (C : ModelConstants d) (J : ℕ) (m : ℕ → ℕ) : ℝ :=
   (((2 : ℝ) ^ J)⁻¹) ^ (C.smoothness - 1) +
     ∑ j ∈ Finset.range (J + 1), (((2 : ℝ) ^ j)⁻¹) ^ (C.smoothness - 1) *
-      ((m j + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order * Real.exp (-(m j : ℝ) * paperTau C)
+      dyadicPolynomialDecay C (m j)
 
 def dyadicPopulationResidual {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
     (J : ℕ) (m : ℕ → ℕ) (x y : Covariate d) : ℝ :=

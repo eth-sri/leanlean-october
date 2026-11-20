@@ -29,6 +29,6 @@ theorem highNormalizedParameterPath_apply (T : ℝ) (hT : 0 ≤ T) (a v η : ℝ
     highNormalizedParameterPath T hT a v η ha p F hF hq t ω =
       normalizedDensityTernaryParameter (p ω) (F ω) a (v-η^2*t) hF.of_uncurry_left ha (hq t ht ω) := by
   unfold highNormalizedParameterPath
-  rw [dif_pos ht]
+  simp_all
 
 end NearlyMinimax

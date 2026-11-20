@@ -1,7 +1,7 @@
 module
 
 public import NearlyMinimax.FinePairRowSource
-public import NearlyMinimax.FinePairRowAnnihilation
+public import NearlyMinimax.FinePairRows
 public import NearlyMinimax.HighUnionSourceGeometry
 
 @[expose] public section
@@ -16,45 +16,6 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
-
-abbrev FinePairRowDensityMark (d D M : ℕ) : FinePairRowTag → Type
-  | .unit => Unit × HighDensityMarkIndex D 2 D
-  | .coarse => (ℝ × FinePairFieldMark d) × HighDensityMarkIndex D 2 D
-  | .fine => (ℝ × FinePairFieldMark d) × FinePairDensityIndex M
-
-instance (d D M : ℕ) (i : FinePairRowTag) : MeasurableSpace (FinePairRowDensityMark d D M i) := by
-  cases i <;> dsimp only [FinePairRowDensityMark] <;> infer_instance
-
-def finePairRowDensityProj (d D M q : ℕ) (i : FinePairRowTag) :
-    FinePairRowMark d D M q i → FinePairRowDensityMark d D M i := by
-  cases i <;> exact fun e => (e.1,e.2.1)
-
-def finePairRowWithResponse (d D M q : ℕ) (i : FinePairRowTag)
-    (r : HighResponseMarkIndex (HighFrameIndex d D) q) :
-    FinePairRowDensityMark d D M i → FinePairRowMark d D M q i := by
-  cases i <;> exact fun e => (e.1,(e.2,r))
-
-theorem finePairRowWithResponse_measurable (d D M q : ℕ) (i : FinePairRowTag)
-    (r : HighResponseMarkIndex (HighFrameIndex d D) q) :
-    Measurable (finePairRowWithResponse d D M q i r) := by
-  cases i <;> exact measurable_fst.prodMk (measurable_snd.prodMk measurable_const)
-
-theorem finePairRow_density_observable_zero (d : ℕ) [NeZero d] (D M q : ℕ)
-    (a b C T₀ N : ℝ) (hpos : ∀ i, 0 < finePairRowMass d D M q a b C T₀ N i)
-    (i : FinePairRowTag) (F : FinePairRowDensityMark d D M i → ℝ) (hF : Measurable F)
-    (L : ℝ) (hL : ∀ e, ‖F e‖ ≤ L) :
-    (∫ e, finePairRowActivation d D M q a b C T₀ N i e *
-      F (finePairRowDensityProj d D M q i e) ∂finePairRowLaw d D M q a b C T₀ N i) = 0 := by
-  cases i
-  · exact highPacketAbsoluteLaw_density_observable_zero (Measure.dirac ()) a b D 2 D q C
-      (fun _ => finePairUnitMatrix d D) (fun _ _ => measurable_const) (integrable_const _)
-      (hpos .unit) F hF L hL
-  · exact highPacketAbsoluteLaw_density_observable_zero (finePairTimeFieldMeasure d 0 T₀)
-      a b D 2 D q C _ (finePairTimeMatrix_measurable d _)
-      (finePairTimeMatrix_cost_integrable d 0 T₀ _) (hpos .coarse) F hF L hL
-  · exact finePairPacketAbsoluteLaw_density_observable_zero (finePairTimeFieldMeasure d T₀ N)
-      a b M q C _ (finePairTimeMatrix_measurable d _)
-      (finePairTimeMatrix_cost_integrable d T₀ N _) (hpos .fine) F hF L hL
 
 /-- True complete-union action equals the sum of its actual uncentered
 row actions, for any bounded measurable observable. -/
@@ -83,12 +44,7 @@ theorem highUnionSource_bounded_action {d k F : ℕ} {I : Type*} [Fintype I] {E 
   exact highRowUnionActivation_action R.rowLaw R.rowMass hpos G.total_positive
     R.rowActivation G.activation_measurable (fun e => Fobs (Sum.inl e))
     (hF.comp measurable_inl) (fun i => (hi i).mul_bdd
-      (hF.comp (measurable_inl.comp (rowSigmaMk_measurable i))).aestronglyMeasurable
+      (hF.comp (measurable_inl.comp (measurable_sigma_mk_actual i))).aestronglyMeasurable
         (Filter.Eventually.of_forall (fun e => hL (Sum.inl ⟨i,e⟩))))
 
-section
-variable {d k D M q : ℕ} [NeZero k] [NeZero d] [LinearOrder (HighWindowLabels d k)]
-    (C : ModelConstants d) (Cfr T₀ N : ℝ)
-
-end
 end NearlyMinimax

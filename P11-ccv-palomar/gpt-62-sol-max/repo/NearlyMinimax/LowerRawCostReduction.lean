@@ -46,8 +46,6 @@ theorem lowerSaddle_raw_energy_cost {s d m θ C cf CB C5 C6 C7 ch x Bl E : ℝ}
   have he : (lowerSaddleEta s d m θ C cf x)^4 = cf^4*h^(4*s) := by
     unfold lowerSaddleEta
     rw [mul_pow, ← Real.rpow_mul_natCast hh.le]
-    congr 1
-    congr 1
     ring
   have hp : h^d*h^(4*s) = h^(d+4*s) := (Real.rpow_add hh _ _).symm
   have hr := raw_energy_cost_bound (n := x) (v := h^d)
@@ -58,7 +56,7 @@ theorem lowerSaddle_raw_energy_cost {s d m θ C cf CB C5 C6 C7 ch x Bl E : ℝ}
       (lowerSaddleN s d m θ C τM x)^(4-d))
     (CB := CB) (C5 := C5) (C6 := C6) (C7 := C7) (cf := cf) (ch := ch)
     (Real.rpow_pos_of_pos hh _)
-    (by rfl) hx (Real.rpow_nonneg hh.le _) he hB hBl hCB hC5 hC6 hC7 hcf hch
+    (by rfl) hx (Real.rpow_nonneg hh.le _) he hB hBl hCB hC6 hcf hch
     (Real.rpow_nonneg (lowerSaddleN_positive _ _ _ _ _ _ _).le _)
     (mul_nonneg (Real.exp_pos _).le (Real.rpow_nonneg (lowerSaddleN_positive _ _ _ _ _ _ _).le _))
     hcost (lowerSaddleM m x) (lowerSaddleD d m x) hE
@@ -67,10 +65,7 @@ theorem lowerSaddle_raw_energy_cost {s d m θ C cf CB C5 C6 C7 ch x Bl E : ℝ}
   have he1 : x^2*h^d*h^(4*s)*(lowerSaddleN s d m θ C τM x)^(-d) =
       lowerSaddleEnergyOne s d m θ C τM x := by
     unfold lowerSaddleEnergyOne
-    change x^2*h^d*h^(4*s)*(lowerSaddleN s d m θ C τM x)^(-d) =
-      x^2*h^(d+4*s)*(lowerSaddleN s d m θ C τM x)^(-d)
-    rw [Real.rpow_add hh]
-    ring
+    grind
   rw [he1] at hr
   simpa only [lowerSaddleEnergyTwo, lowerSaddleEnergyThree, ← mul_assoc] using hr
 

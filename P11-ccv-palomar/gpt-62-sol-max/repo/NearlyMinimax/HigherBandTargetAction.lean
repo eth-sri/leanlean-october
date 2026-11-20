@@ -20,12 +20,9 @@ def higherBandPhysicalFirstAction {d n : ℕ} (ad bd lam ell N mu : ℝ)
     (D M q : ℕ) (C : ℝ) (U : Fin n → Covariate d) (p : Fin n → ℝ)
     (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ)
     (i : Fin (D-2) × Bool) : ℝ :=
-  if i.2 = true then
-    if ell < higherBandTargetScale d (higherBandFamilyTarget i) N mu then
-      higherBandFirstAction ad bd lam ell (higherBandFamilyUpper d ell N mu i)
-        (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q C i.2 U p c Φ else 0
-  else higherBandFirstAction ad bd lam ell (higherBandFamilyUpper d ell N mu i)
-    (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q C i.2 U p c Φ
+  if i.2 = true → ell < higherBandTargetScale d (higherBandFamilyTarget i) N mu then
+    higherBandFirstAction ad bd lam ell (higherBandFamilyUpper d ell N mu i)
+      (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q C i.2 U p c Φ else 0
 
 theorem higherBandFamilyFirstAction_eq_physical {d n : ℕ} (ad bd lam ell N mu : ℝ)
     (D M q : ℕ) (C : ℝ) (hell : 1 ≤ ell)
@@ -50,31 +47,33 @@ theorem integrated_cardinal_matrix_fin_cast {d n m D : ℕ} (h : m = n) (lam T :
   subst n
   rfl
 
-theorem integrated_cardinal_matrix_full_subset {d n D : ℕ} (lam T : ℝ)
+section
+variable {d n D : ℕ}
+
+theorem integrated_cardinal_matrix_full_subset (lam T : ℝ)
     (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
     integratedCardinalMatrix lam T (spatialSubsetConfiguration Finset.univ U) β β' =
       integratedCardinalMatrix lam T U β β' := by
   let S : Finset (Fin n) := Finset.univ
   let h : S.card = n := by simp [S]
-  let e : Fin S.card ≃ S := (finCongr (Fintype.card_coe S).symm).trans (Fintype.equivFin S).symm
+  let e := (finCongr (Fintype.card_coe S).symm).trans (Fintype.equivFin S).symm
   let v : S ≃ Fin n := ⟨Subtype.val, (fun j => ⟨j, Finset.mem_univ j⟩),
     (by intro j; rfl), (by intro j; rfl)⟩
-  let τ : Equiv.Perm (Fin n) := ((finCongr h).symm.trans e).trans v
+  let τ := ((finCongr h).symm.trans e).trans v
   have hc : spatialSubsetConfiguration S U = (U ∘ τ) ∘ finCongr h := by
-    funext j
-    change U (e j).val = U (τ (finCongr h j))
-    dsimp [τ]
     rfl
   rw [hc, integrated_cardinal_matrix_fin_cast h]
-  exact integrated_cardinal_matrix_perm τ lam T U β β'
+  apply integrated_cardinal_matrix_perm <;> assumption
 
-theorem higherBandActualMatrix_full_subset {d n D : ℕ} (lam L T : ℝ) (fine : Bool)
+theorem higherBandActualMatrix_full_subset (lam L T : ℝ) (fine : Bool)
     (U : Fin n → Covariate d) :
     (higherBandActualMatrix lam L T fine (spatialSubsetConfiguration Finset.univ U) : HighFrameIndex d D → _ → ℝ) =
       higherBandActualMatrix lam L T fine U := by
   funext β β'
   cases fine <;> simp only [higherBandActualMatrix, Bool.false_eq_true, ite_false, ite_true,
     globalCardinalBandMatrix, integrated_cardinal_matrix_full_subset]
+
+end
 
 theorem higherBandFirstAction_target_count {d n : ℕ} (ad bd lam L T : ℝ)
     (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hL : 0 < L) (hT : 1 ≤ T)

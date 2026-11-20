@@ -1,6 +1,6 @@
 module
 
-public import NearlyMinimax.LocalEnergySeries
+public import NearlyMinimax.PoissonEnergyBounds
 
 
 @[expose] public section
@@ -12,21 +12,15 @@ open scoped BigOperators
 namespace NearlyMinimax
 
 theorem poissonCountWeight_mono {x y : ℝ} (hx : 0 ≤ x) (hxy : x ≤ y) (k : ℕ) :
-    poissonCountWeight x k ≤ poissonCountWeight y k := by
-  exact div_le_div_of_nonneg_right (pow_le_pow_left₀ hx hxy k) (Nat.cast_nonneg _)
-
-theorem finite_poissonCountWeight_tail_le {x : ℝ} (hx : 0 ≤ x) (a J : ℕ) :
-    (∑ j ∈ Finset.range J, poissonCountWeight x (a + j)) ≤
-      Real.exp x * poissonCountWeight x a := by
-  have hs : Summable (fun j => poissonCountWeight x (a + j)) :=
-    (poissonCountWeight_summable x).comp_injective (fun _ _ h => Nat.add_left_cancel h)
-  exact (hs.sum_le_tsum _ (fun j _ => poissonCountWeight_nonneg hx _)).trans
-    (poissonCountWeight_tail_le hx a)
+    poissonCountWeight x k ≤ poissonCountWeight y k := div_le_div_of_nonneg_right (pow_le_pow_left₀ hx hxy k) (Nat.cast_nonneg _)
 
 def aliasTailConstant (A Csharp C L : ℝ) : ℝ :=
   1 + A * Real.exp (Csharp * C) + Csharp * C * Real.exp L
 
-theorem aliasTailConstant_ge_one {A Csharp C L : ℝ}
+section
+variable {A Csharp C L : ℝ}
+
+theorem aliasTailConstant_ge_one
     (hA : 0 ≤ A) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C) :
     1 ≤ aliasTailConstant A Csharp C L := by
   unfold aliasTailConstant
@@ -34,31 +28,28 @@ theorem aliasTailConstant_ge_one {A Csharp C L : ℝ}
   have h2 : 0 ≤ Csharp * C * Real.exp L := by positivity
   linarith only [h1, h2]
 
-theorem aliasTailConstant_ge_prefactor {A Csharp C L : ℝ}
+theorem aliasTailConstant_ge_prefactor
     (hCs : 0 ≤ Csharp) (hC : 0 ≤ C) :
     A * Real.exp (Csharp * C) ≤ aliasTailConstant A Csharp C L := by
   unfold aliasTailConstant
   have h : 0 ≤ Csharp * C * Real.exp L := by positivity
   linarith only [h]
 
-theorem aliasTailConstant_ge_base {A Csharp C L : ℝ} (hA : 0 ≤ A) :
+theorem aliasTailConstant_ge_base (hA : 0 ≤ A) :
     Csharp * C * Real.exp L ≤ aliasTailConstant A Csharp C L := by
   unfold aliasTailConstant
-  have h : 0 ≤ A * Real.exp (Csharp * C) := by positivity
-  linarith only [h]
+  simp_all <;> positivity
+
+end
 
 theorem poissonCountWeight_exp_absorption {x L : ℝ} (hx : 0 ≤ x) (hL : 0 ≤ L) (M : ℕ) :
     Real.exp (L * M) * poissonCountWeight x (M + 1) ≤
       poissonCountWeight (x * Real.exp L) (M + 1) := by
   have he : Real.exp (L * M) ≤ Real.exp (L * (M + 1)) := by
-    apply Real.exp_le_exp.mpr
-    nlinarith only [hL]
+    grind [Real.exp_le_exp.mpr]
   have h := mul_le_mul_of_nonneg_right he (poissonCountWeight_nonneg hx (M + 1))
   have heq : Real.exp (L * ((M : ℝ) + 1)) = Real.exp L ^ (M + 1) := by
-    rw [← Real.exp_nat_mul]
-    congr 1
-    push_cast
-    ring
+    simp [← Real.exp_nat_mul] <;> ring
   rw [heq] at h
   simpa only [poissonCountWeight, mul_pow, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using h
 
@@ -75,7 +66,7 @@ theorem finite_alias_energy_tail_le {A P Csharp C L mu : ℝ}
         poissonCountWeight (aliasTailConstant A Csharp C L * mu) (M + 1) := by
   let K := aliasTailConstant A Csharp C L
   have hK1 : 1 ≤ K := aliasTailConstant_ge_one hA hCs hC
-  have hK0 : 0 ≤ K := (by norm_num : (0 : ℝ) ≤ 1).trans hK1
+  have hK0 := (by norm_num : (0 : ℝ) ≤ 1).trans hK1
   have hb (j : ℕ) (hj : j ∈ Finset.range J) :
       poissonCountWeight (Csharp * mu) (M + 1 + j) * R (M + 1 + j) ≤
       (A * P * Real.exp (L * M)) * poissonCountWeight (Csharp * C * mu) (M + 1 + j) := by
@@ -105,7 +96,7 @@ theorem finite_alias_energy_tail_le {A P Csharp C L mu : ℝ}
     _ ≤ (K * P) * poissonCountWeight (K * mu) (M + 1) := by
       apply mul_le_mul
         (mul_le_mul_of_nonneg_right (aliasTailConstant_ge_prefactor hCs hC) hP)
-        (poissonCountWeight_mono (by positivity) (by nlinarith only [hbase]) _)
+        (poissonCountWeight_mono (by positivity) (by linarith) _)
         (poissonCountWeight_nonneg (by positivity) _)
         (mul_nonneg hK0 hP)
     _ = _ := rfl

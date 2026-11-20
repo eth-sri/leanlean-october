@@ -1,7 +1,7 @@
 module
 
 public import NearlyMinimax.HistoryReferenceMeasure
-
+public import NearlyMinimax.ProductDensity
 
 @[expose] public section
 
@@ -30,98 +30,93 @@ def historyMarkedDensity (dependent : J → J → Prop) (ρ t : ℝ) {E : Type*}
     (a : E → ℝ) (h : HistoryMarked dependent E) : ℝ :=
   historyScaledUpperDensity (historyMarkedPieceWeight dependent a h) ρ Finset.univ t
 
-theorem historyMarkedDensity_fiber_measurable (dependent : J → J → Prop) (ρ t : ℝ) {E : Type*}
+section
+variable (dependent : J → J → Prop) (ρ t : ℝ) {E : Type*}
     [MeasurableSpace E] (a : E → ℝ) (ha : Measurable a)
-    (g : HistoryShape (fun i j => ¬ dependent i j)) :
-    Measurable (fun marks => historyMarkedDensity dependent ρ t a ⟨g, marks⟩) := by
-  classical
-  unfold historyMarkedDensity
-  simp_rw [historyScaledUpperDensity_eq_components, historyComponentWeight]
-  change Measurable (fun marks : Fin (historyShapeLength dependent g) → E =>
-    ∑ P ∈ historyUpperSets (Finset.univ : Finset (WordHeapPiece g.out dependent)),
-      (t / ρ) ^ P.card * historyOrderVolume P * ∏ x ∈ P,
-        a (marks (Fin.cast (historyShapeLength_out dependent g).symm x.position)))
-  apply Finset.measurable_fun_sum _
-  intro P hP
-  apply Measurable.const_mul
-  apply Finset.measurable_fun_prod _
-  intro x hx
-  exact ha.comp (measurable_pi_apply _)
+include ha
 
-theorem historyMarkedDensity_measurable (dependent : J → J → Prop) (ρ t : ℝ) {E : Type*}
-    [MeasurableSpace E] (a : E → ℝ) (ha : Measurable a) :
+theorem historyMarkedPieceWeight_fiber_measurable
+    (g : HistoryShape (fun i j => ¬ dependent i j)) (x : WordHeapPiece g.out dependent) :
+    Measurable (fun marks => historyMarkedPieceWeight dependent a ⟨g, marks⟩ x) :=
+  ha.comp (measurable_pi_apply (Fin.cast (historyShapeLength_out dependent g).symm x.position))
+
+theorem historyMarkedSubdensity_fiber_measurable
+    (g : HistoryShape (fun i j => ¬ dependent i j)) (S : Finset (WordHeapPiece g.out dependent)) :
+    Measurable (fun marks => historyScaledUpperDensity (historyMarkedPieceWeight dependent a ⟨g, marks⟩) ρ S t) := by
+  classical
+  simp_rw [historyScaledUpperDensity_eq_components, historyComponentWeight]
+  exact Finset.measurable_fun_sum _ fun P _ =>
+    (Finset.measurable_fun_prod P fun x _ => historyMarkedPieceWeight_fiber_measurable dependent a ha g x).const_mul
+      ((t / ρ) ^ P.card * historyOrderVolume P)
+
+theorem historyMarkedDensity_measurable :
     Measurable (historyMarkedDensity dependent ρ t a) :=
-  (historyMarked_measurable_iff dependent _).2
-    (historyMarkedDensity_fiber_measurable dependent ρ t a ha)
+  (historySigma_measurable_iff _).2
+    (fun g => historyMarkedSubdensity_fiber_measurable dependent ρ t a ha g Finset.univ)
+
+end
 
 /-- The source positivity interval is uniform over all shapes and all bounded marks. -/
-theorem historyMarkedDensity_bounds (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+theorem historyMarkedDensity_bounds {dependent : J → J → Prop} {Δ : ℕ}
+    (geom : HistoryDegreeBound dependent Δ)
     (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)
     {E : Type*} (a : E → ℝ) (ha : ∀ e, |a e| ≤ B)
     (hsmall : t * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2)) (h : HistoryMarked dependent E) :
     (1 / 2 : ℝ) ^ Fintype.card J ≤ historyMarkedDensity dependent ρ t a h ∧
       historyMarkedDensity dependent ρ t a h ≤ (3 / 2 : ℝ) ^ Fintype.card J :=
-  wordHeap_density_bounds h.1.out dependent hrefl hsymm Δ hlabels
+  wordHeap_density_bounds h.1.out geom
     (historyMarkedPieceWeight dependent a h) ρ t B hρ ht hB (fun _ => ha _) hsmall
 
-/-- A finite product over selected independent coordinates factors into expectations. -/
-theorem historyIntegral_pi_finset_prod {I E : Type*} [Fintype I] [DecidableEq I]
-    [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (S : Finset I) :
-    (∫ marks : I → E, ∏ i ∈ S, a (marks i) ∂Measure.pi (fun _ => π)) =
-      ∏ _i ∈ S, ∫ e, a e ∂π := by
-  classical
-  have hp : ∀ marks : I → E, (∏ i : I, if i ∈ S then a (marks i) else 1) =
-      ∏ i ∈ S, a (marks i) := fun marks => Finset.prod_ite_mem_eq S _
-  simp_rw [← hp]
-  rw [integral_fintype_prod_eq_prod (fun (i : I) (e : E) => if i ∈ S then a e else 1)]
-  calc
-    _ = ∏ i : I, if i ∈ S then ∫ e, a e ∂π else 1 := by
-      apply Finset.prod_congr rfl
-      intro i hi
-      by_cases hS : i ∈ S <;> simp [hS]
-    _ = _ := Finset.prod_ite_mem_eq S _
+section
+variable {I A E : Type*} [Fintype I] [MeasurableSpace E]
+    (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ)
+    (index : A → I) (hi : Function.Injective index) (P : Finset A)
+include hi
 
-theorem historyIntegrable_pi_finset_prod {I E : Type*} [Fintype I] [DecidableEq I]
-    [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ)
-    (ha : Integrable a π) (S : Finset I) :
-    Integrable (fun marks : I → E => ∏ i ∈ S, a (marks i)) (Measure.pi (fun _ => π)) := by
-  classical
-  have hp := Integrable.fintype_prod (μ := fun _ : I => π)
-    (f := fun i e => if i ∈ S then a e else 1)
-    (fun i => by by_cases hi : i ∈ S <;> simp [hi, ha])
-  simpa only [Finset.prod_ite_mem_eq] using hp
+/-- Restrict to the independent mark coordinates occupied by the pieces in `P`. -/
+private theorem history_piece_projection :
+    MeasurePreserving (fun marks : I → E => fun x : P => marks (index x))
+      (Measure.pi fun _ : I => π) (Measure.pi fun _ : P => π) :=
+  finite_probability_pi_embedding_preserving (fun _ => π)
+    ⟨fun x : P => index x, fun x y h => Subtype.ext (hi h)⟩
 
-/-- Selected independent mark products factor even with an injective piece indexing. -/
-theorem historyIntegral_pi_indexed_prod {I A E : Type*} [Fintype I] [DecidableEq I]
-    [DecidableEq A] [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π]
-    (a : E → ℝ) (index : A → I) (hi : Function.Injective index) (P : Finset A) :
+section
+variable (ha : Integrable a π)
+include ha
+
+theorem historyIntegral_pi_indexed_prod :
     (∫ marks : I → E, ∏ x ∈ P, a (marks (index x)) ∂Measure.pi (fun _ => π)) =
       ∏ _x ∈ P, ∫ e, a e ∂π := by
-  have hp : ∀ marks : I → E, (∏ i ∈ P.image index, a (marks i)) =
-      ∏ x ∈ P, a (marks (index x)) := fun marks => Finset.prod_image hi.injOn
+  let f : (P → E) → ℝ := fun marks => ∏ x, a (marks x)
+  have hp := history_piece_projection π index hi P
+  have hf : Integrable f (Measure.pi fun _ => π) := Integrable.fintype_prod (fun _ => ha)
   calc
-    _ = ∫ marks : I → E, ∏ i ∈ P.image index, a (marks i) ∂Measure.pi (fun _ => π) := by
-      apply integral_congr_ae
-      exact Filter.Eventually.of_forall (fun marks => (hp marks).symm)
-    _ = ∏ _i ∈ P.image index, ∫ e, a e ∂π := historyIntegral_pi_finset_prod π a _
-    _ = _ := Finset.prod_image hi.injOn
+    _ = ∫ marks : I → E, f (fun x => marks (index x)) ∂Measure.pi (fun _ => π) :=
+      integral_congr_ae (Filter.Eventually.of_forall fun marks => (Finset.prod_coe_sort P (fun x => a (marks (index x)))).symm)
+    _ = ∫ marks, f marks ∂Measure.pi (fun _ => π) := by
+      conv_rhs => rw [← hp.map_eq]
+      exact (integral_map hp.measurable.aemeasurable (by rw [hp.map_eq]; exact hf.aestronglyMeasurable)).symm
+    _ = _ := by rw [integral_fintype_prod_eq_prod]; exact Finset.prod_coe_sort P (fun _ => ∫ e, a e ∂π)
 
-theorem historyIntegrable_pi_indexed_prod {I A E : Type*} [Fintype I] [DecidableEq I]
-    [DecidableEq A] [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π]
-    (a : E → ℝ) (ha : Integrable a π) (index : A → I)
-    (hi : Function.Injective index) (P : Finset A) :
+theorem historyIntegrable_pi_indexed_prod :
     Integrable (fun marks : I → E => ∏ x ∈ P, a (marks (index x))) (Measure.pi (fun _ => π)) := by
-  have hp := historyIntegrable_pi_finset_prod π a ha (P.image index)
-  simpa only [Finset.prod_image hi.injOn] using hp
+  exact ((history_piece_projection π index hi P).integrable_comp_of_integrable
+      (Integrable.fintype_prod (μ := fun _ : P => π) (f := fun _ => a) (fun _ => ha))).congr
+    (Filter.Eventually.of_forall fun marks => Finset.prod_coe_sort P (fun x => a (marks (index x))))
+
+end
+
+end
 
 /-- Occurrences in a canonical heap have distinct independent mark coordinates. -/
 def historyMarkedPieceIndex (dependent : J → J → Prop)
     (g : HistoryShape (fun i j => ¬ dependent i j)) : WordHeapPiece g.out dependent → Fin (historyShapeLength dependent g) :=
   fun x => Fin.cast (historyShapeLength_out dependent g).symm x.position
 
-theorem historyMarkedPieceIndex_injective (dependent : J → J → Prop)
+section
+variable (dependent : J → J → Prop)
+
+theorem historyMarkedPieceIndex_injective
     (g : HistoryShape (fun i j => ¬ dependent i j)) :
     Function.Injective (historyMarkedPieceIndex dependent g) := by
   intro x y hxy
@@ -129,7 +124,7 @@ theorem historyMarkedPieceIndex_injective (dependent : J → J → Prop)
   exact Fin.cast_injective _ hxy
 
 /-- Centering kills every nonempty upper-set monomial of the actual density. -/
-theorem historyMarkedDensity_fiber_integral_one (dependent : J → J → Prop) (ρ t : ℝ) {E : Type*}
+theorem historyMarkedDensity_fiber_integral_one (ρ t : ℝ) {E : Type*}
     [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π]
     (a : E → ℝ) (ha : Integrable a π) (hcenter : ∫ e, a e ∂π = 0)
     (g : HistoryShape (fun i j => ¬ dependent i j)) :
@@ -142,26 +137,25 @@ theorem historyMarkedDensity_fiber_integral_one (dependent : J → J → Prop) (
       Integrable (fun marks => (t / ρ) ^ P.card * historyOrderVolume P * ∏ x ∈ P, a (marks (index x)))
         (Measure.pi (fun _ : Fin (historyShapeLength dependent g) => π)) := by
     intro P
-    exact (historyIntegrable_pi_indexed_prod π a ha index hi P).const_mul _
+    exact (historyIntegrable_pi_indexed_prod π a index hi P ha).const_mul _
   unfold historyMarkedDensity
   simp_rw [historyScaledUpperDensity_eq_components, historyComponentWeight]
   change (∫ marks, ∑ P ∈ historyUpperSets (Finset.univ : Finset (WordHeapPiece g.out dependent)),
     (t / ρ) ^ P.card * historyOrderVolume P * ∏ x ∈ P, a (marks (index x))
     ∂Measure.pi (fun _ : Fin (historyShapeLength dependent g) => π)) = 1
   rw [integral_finsetSum _ (fun P _ => hterm P)]
-  simp_rw [integral_const_mul, historyIntegral_pi_indexed_prod π a index hi, hcenter]
+  simp_rw [integral_const_mul, historyIntegral_pi_indexed_prod π a index hi _ ha, hcenter]
   rw [Finset.sum_eq_single ∅]
   · simp
-  · intro P hP hne
-    rw [Finset.prod_const]
-    simp [zero_pow (Finset.card_ne_zero.2 (Finset.nonempty_iff_ne_empty.2 hne))]
-  · intro hnot
-    exact (hnot (mem_historyUpperSets.2 ⟨Finset.empty_subset _, by simp⟩)).elim
+  · simp_all [Finset.prod_const]
+  · simpa using (hnot (mem_historyUpperSets.2 ⟨Finset.empty_subset _, by simp⟩)).elim
 
-@[simp] theorem historyMarkedDensity_zero (dependent : J → J → Prop) (ρ : ℝ) {E : Type*}
+@[simp] theorem historyMarkedDensity_zero (ρ : ℝ) {E : Type*}
     (a : E → ℝ) (h : HistoryMarked dependent E) : historyMarkedDensity dependent ρ 0 a h = 1 := by
   unfold historyMarkedDensity historyScaledUpperDensity
   exact historyUpperDensity_at_zero _ _
+
+end
 
 /-- The actual polynomial tilts the independent marks within a shape. -/
 def historyMarkedFiberPrior (dependent : J → J → Prop) (Δ : ℕ) (t : ℝ) {E : Type*}
@@ -172,9 +166,8 @@ def historyMarkedFiberPrior (dependent : J → J → Prop) (Δ : ℕ) (t : ℝ) 
     (fun marks => ENNReal.ofReal (historyMarkedDensity dependent (historyReferenceRho Δ) t a ⟨g, marks⟩))
 
 /-- Positivity is derived from the dependency heap, and normalization from centered marks. -/
-theorem historyMarkedFiberPrior_probability (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+theorem historyMarkedFiberPrior_probability {dependent : J → J → Prop} {Δ : ℕ}
+    (geom : HistoryDegreeBound dependent Δ)
     (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]
     (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Integrable a π)
     (hcenter : ∫ e, a e ∂π = 0) (habound : ∀ e, |a e| ≤ B)
@@ -185,7 +178,7 @@ theorem historyMarkedFiberPrior_probability (dependent : J → J → Prop)
   have hi := integrable_of_integral_eq_one he
   have hnonneg : ∀ marks, 0 ≤ historyMarkedDensity dependent (historyReferenceRho Δ) t a ⟨g, marks⟩ := by
     intro marks
-    have hb := historyMarkedDensity_bounds dependent hrefl hsymm Δ hlabels _ t B
+    have hb := historyMarkedDensity_bounds geom _ t B
       (historyReferenceRho_pos Δ) ht hB a habound hsmall ⟨g, marks⟩
     exact (by positivity : (0 : ℝ) ≤ (1 / 2 : ℝ) ^ Fintype.card J).trans hb.1
   constructor
@@ -205,9 +198,12 @@ def historyMarkedPrior (dependent : J → J → Prop) (Δ : ℕ) (t : ℝ) {E : 
     [MeasurableSpace E] (π : Measure E) (a : E → ℝ) : Measure (HistoryMarked dependent E) :=
   (historyMarkedReferenceRaw dependent Δ π Set.univ)⁻¹ • historyMarkedPriorRaw dependent Δ t π a
 
-theorem historyMarkedPriorRaw_univ (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+section
+variable {dependent : J → J → Prop} {Δ : ℕ}
+    (geom : HistoryDegreeBound dependent Δ)
+include geom
+
+theorem historyMarkedPriorRaw_univ
     (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]
     (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Integrable a π)
     (hcenter : ∫ e, a e ∂π = 0) (habound : ∀ e, |a e| ≤ B)
@@ -219,39 +215,76 @@ theorem historyMarkedPriorRaw_univ (dependent : J → J → Prop)
   congr 1
   funext g
   let : IsProbabilityMeasure (historyMarkedFiberPrior dependent Δ t π a g) :=
-    historyMarkedFiberPrior_probability dependent hrefl hsymm Δ hlabels t B ht hB π a ha hcenter habound hsmall g
-  rw [Measure.smul_apply, Measure.map_apply (historyMarked_measurable_mk dependent g) MeasurableSet.univ]
-  simp
+    historyMarkedFiberPrior_probability geom t B ht hB π a ha hcenter habound hsmall g
+  simp_all
 
 /-- The source path of positive prior measures is genuinely constructed for the whole interval. -/
-theorem historyMarkedPrior_probability (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+private theorem historyMarkedPrior_probability (hΔ : 1 ≤ Δ)
     (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]
     (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Integrable a π)
     (hcenter : ∫ e, a e ∂π = 0) (habound : ∀ e, |a e| ≤ B)
     (hsmall : t * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2)) :
     IsProbabilityMeasure (historyMarkedPrior dependent Δ t π a) := by
   let : IsFiniteMeasure (historyMarkedReferenceRaw dependent Δ π) :=
-    historyMarkedReferenceRaw_finite dependent hrefl hsymm Δ hΔ hlabels π
-  have hn : historyMarkedReferenceRaw dependent Δ π Set.univ ≠ 0 :=
+    historyMarkedReferenceRaw_finite geom hΔ π
+  have hn :=
     ne_of_gt (lt_of_lt_of_le zero_lt_one (historyMarkedReferenceRaw_univ_one_le dependent Δ π))
   constructor
   unfold historyMarkedPrior
-  rw [Measure.smul_apply, historyMarkedPriorRaw_univ dependent hrefl hsymm Δ hlabels t B ht hB π a ha hcenter habound hsmall,
+  rw [Measure.smul_apply, historyMarkedPriorRaw_univ geom t B ht hB π a ha hcenter habound hsmall,
     smul_eq_mul]
   exact ENNReal.inv_mul_cancel hn (measure_ne_top _ _)
 
-@[simp] theorem historyMarkedPrior_zero (dependent : J → J → Prop) (Δ : ℕ) {E : Type*}
-    [MeasurableSpace E] (π : Measure E) (a : E → ℝ) :
-    historyMarkedPrior dependent Δ 0 π a = historyMarkedReference dependent Δ π := by
-  unfold historyMarkedPrior historyMarkedReference historyMarkedPriorRaw historyMarkedReferenceRaw
-  congr 1
-  congr 1
-  funext g
-  unfold historyMarkedFiberPrior
-  simp only [historyMarkedDensity_zero, ENNReal.ofReal_one]
-  rw [show (fun _ : Fin (historyShapeLength dependent g) → E => (1 : ℝ≥0∞)) = 1 from rfl,
-    withDensity_one]
+end
+
+/-- Uniform small-activity conditions for a centered marked-history prior on `[0,T]`. -/
+structure HistoryPriorBounds (dependent : J → J → Prop) (Δ : ℕ)
+    {E : Type*} [MeasurableSpace E] (π : Measure E) (a : E → ℝ) (T B : ℝ) : Prop
+    extends HistoryDegreeBound dependent Δ where
+  degree_pos : 1 ≤ Δ
+  measurable : Measurable a
+  centered : ∫ e, a e ∂π = 0
+  bound_nonneg : 0 ≤ B
+  bound : ∀ e, |a e| ≤ B
+  small : T * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2)
+
+namespace HistoryPriorBounds
+
+variable {dependent : J → J → Prop} {Δ : ℕ} {E : Type*} [MeasurableSpace E]
+    {π : Measure E} [IsProbabilityMeasure π] {a : E → ℝ} {T B : ℝ}
+    (P : HistoryPriorBounds dependent Δ π a T B)
+include P
+
+lemma reference_probability : IsProbabilityMeasure (historyMarkedReference dependent Δ π) :=
+  historyMarkedReference_probability P.toHistoryDegreeBound P.degree_pos π
+
+section
+variable {t : ℝ}
+
+theorem small_at (ht : t ≤ T) :
+    t * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2) :=
+  (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right ht P.bound_nonneg)
+    (historyReferenceRho_pos Δ).le).trans P.small
+
+theorem density_bounds (ht : t ∈ Set.Icc 0 T) (h : HistoryMarked dependent E) :
+    (1 / 2 : ℝ) ^ Fintype.card J ≤ historyMarkedDensity dependent (historyReferenceRho Δ) t a h ∧
+    historyMarkedDensity dependent (historyReferenceRho Δ) t a h ≤ (3 / 2 : ℝ) ^ Fintype.card J :=
+  historyMarkedDensity_bounds P.toHistoryDegreeBound _ t B (historyReferenceRho_pos Δ)
+    ht.1 P.bound_nonneg a P.bound (P.small_at ht.2) h
+
+theorem density_nonneg (ht : t ∈ Set.Icc 0 T) (h : HistoryMarked dependent E) :
+    0 ≤ historyMarkedDensity dependent (historyReferenceRho Δ) t a h :=
+  (by positivity : 0 ≤ (1 / 2 : ℝ) ^ Fintype.card J).trans (P.density_bounds ht h).1
+
+theorem probability (ht : t ∈ Set.Icc 0 T) :
+    IsProbabilityMeasure (historyMarkedPrior dependent Δ t π a) := by
+  exact historyMarkedPrior_probability P.toHistoryDegreeBound P.degree_pos
+    t B ht.1 P.bound_nonneg π a (Integrable.of_bound P.measurable.aestronglyMeasurable B
+      (.of_forall fun e => by simpa only [Real.norm_eq_abs] using P.bound e))
+    P.centered P.bound (P.small_at ht.2)
+
+end
+
+end HistoryPriorBounds
 
 end NearlyMinimax

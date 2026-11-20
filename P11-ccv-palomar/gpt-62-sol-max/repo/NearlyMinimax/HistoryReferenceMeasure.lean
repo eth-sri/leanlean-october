@@ -1,6 +1,7 @@
 module
 
 public import NearlyMinimax.HistoryReferenceSum
+public import NearlyMinimax.FiniteSigmaProbability
 
 @[expose] public section
 
@@ -18,68 +19,41 @@ noncomputable section
 open MeasureTheory
 namespace NearlyMinimax
 
-variable {J : Type*} [Fintype J] [LinearOrder J]
+/-- The sum sigma-algebra makes sectionwise measurable maps measurable. -/
+theorem historySigma_measurable_iff {I : Type*} {X : I → Type*} {Y : Type*}
+    [∀ i, MeasurableSpace (X i)] [MeasurableSpace Y] (f : Sigma X → Y) :
+    Measurable f ↔ ∀ i, Measurable (fun x => f ⟨i, x⟩) := by
+  constructor
+  · intro hf i
+    have hi : Measurable (fun x : X i => (⟨i, x⟩ : Sigma X)) :=
+      Measurable.of_le_map (iInf_le _ i)
+    exact hf.comp hi
+  · intro hf s hs
+    rw [MeasurableSpace.measurableSet_iInf] <;> solve_by_elim
 
-instance historyShape_measurableSpace (independent : J → J → Prop) :
-    MeasurableSpace (HistoryShape independent) := ⊤
+variable {J : Type*} [Fintype J] [LinearOrder J]
 
 abbrev HistoryMarked (dependent : J → J → Prop) (E : Type*) :=
   Σ g : HistoryShape (fun a b => ¬ dependent a b), Fin (historyShapeLength dependent g) → E
 
+section
+variable (dependent : J → J → Prop)
+
 /-- Each canonical history fiber is measurably included in the marked-history space. -/
-theorem historyMarked_measurable_mk (dependent : J → J → Prop) {E : Type*}
+theorem historyMarked_measurable_mk {E : Type*}
     [MeasurableSpace E] (g : HistoryShape (fun a b => ¬ dependent a b)) :
     Measurable (fun marks : Fin (historyShapeLength dependent g) → E => (⟨g, marks⟩ : HistoryMarked dependent E)) := by
   apply Measurable.of_le_map
   exact iInf_le _ g
 
-/-- A map on histories is measurable exactly when it is measurable on every shape fiber. -/
-theorem historyMarked_measurable_iff (dependent : J → J → Prop) {E X : Type*}
-    [MeasurableSpace E] [MeasurableSpace X] (f : HistoryMarked dependent E → X) :
-    Measurable f ↔ ∀ g, Measurable (fun marks => f ⟨g, marks⟩) := by
-  constructor
-  · intro hf g
-    exact hf.comp (historyMarked_measurable_mk dependent g)
-  · intro hf s hs
-    change MeasurableSet[⨅ g, MeasurableSpace.map (Sigma.mk g)
-      (inferInstance : MeasurableSpace (Fin (historyShapeLength dependent g) → E))] (f ⁻¹' s)
-    rw [MeasurableSpace.measurableSet_iInf]
-    exact fun g => hf g hs
-
-/-- A countable disjoint union of Borel fibers has exactly their sum sigma-algebra. -/
-theorem historySigma_borelSpace {I : Type*} [Countable I] {X : I → Type*}
-    [∀ i, TopologicalSpace (X i)] [∀ i, MeasurableSpace (X i)] [∀ i, BorelSpace (X i)] :
-    BorelSpace (Sigma X) := by
-  constructor
-  apply le_antisymm
-  · intro s hs
-    have hsec : ∀ i, MeasurableSet (Sigma.mk i ⁻¹' s) :=
-      MeasurableSpace.measurableSet_iInf.1 hs
-    let : MeasurableSpace (Sigma X) := borel (Sigma X)
-    let : BorelSpace (Sigma X) := ⟨rfl⟩
-    have hu : s = ⋃ i, Sigma.mk i '' (Sigma.mk i ⁻¹' s) := by
-      ext x
-      constructor
-      · intro hx; exact Set.mem_iUnion.2 ⟨x.1, x.2, hx, rfl⟩
-      · intro hx
-        rcases Set.mem_iUnion.1 hx with ⟨i, y, hy, rfl⟩
-        exact hy
-    rw [hu]
-    exact MeasurableSet.iUnion fun i =>
-      (Topology.IsClosedEmbedding.sigmaMk (i := i)).measurableEmbedding.measurableSet_image' (hsec i)
-  · apply MeasurableSpace.generateFrom_le
-    intro s hs
-    rw [MeasurableSpace.measurableSet_iInf]
-    intro i
-    exact (hs.preimage continuous_sigmaMk).measurableSet
-
 /-- The chosen representative has exactly the intrinsic number of pieces. -/
-theorem historyShapeLength_out (dependent : J → J → Prop)
+theorem historyShapeLength_out
     (g : HistoryShape (fun a b => ¬ dependent a b)) :
     historyShapeLength dependent g = g.out.length := by
   have hh := congrArg (historyShapeLength dependent) (Quotient.out_eq g)
-  rw [historyShapeLength_mk] at hh
-  exact hh.symm
+  simp_all [historyShapeLength_mk]
+
+end
 
 /-- Label evaluations in the canonical word of a shape. -/
 def historyShapeCanonicalLabels (dependent : J → J → Prop)
@@ -111,12 +85,11 @@ theorem historyMarkedRawState_measurable (dependent : J → J → Prop) {E X : T
     [MeasurableSpace E] [MeasurableSpace X] (update : J → E → X → X)
     (hu : ∀ j, Measurable (fun ex : E × X => update j ex.1 ex.2)) (initial : X) :
     Measurable (historyMarkedRawState dependent update initial) := by
-  rw [historyMarked_measurable_iff]
+  rw [historySigma_measurable_iff]
   intro g
-  unfold historyMarkedRawState
   exact historyMarked_indexFold_measurable update hu (historyShapeLength dependent g)
-    (historyShapeCanonicalLabels dependent g) (List.ofFn (fun i : Fin (historyShapeLength dependent g) => i))
-    (fun _ => initial) measurable_const
+      (historyShapeCanonicalLabels dependent g) (List.ofFn (fun i : Fin (historyShapeLength dependent g) => i))
+      (fun _ => initial) measurable_const
 
 /-- The unnormalized source measure: countably many shapes, independently marked. -/
 def historyMarkedReferenceRaw (dependent : J → J → Prop) (Δ : ℕ) {E : Type*}
@@ -124,20 +97,18 @@ def historyMarkedReferenceRaw (dependent : J → J → Prop) (Δ : ℕ) {E : Typ
   Measure.sum fun g => ENNReal.ofReal (historyShapeReferenceWeight dependent Δ g) •
     Measure.map (Sigma.mk g) (Measure.pi fun _ : Fin (historyShapeLength dependent g) => π)
 
-theorem historyMarkedReferenceRaw_univ (dependent : J → J → Prop) (Δ : ℕ) {E : Type*}
-    [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π] :
+section
+variable (dependent : J → J → Prop) (Δ : ℕ) {E : Type*}
+    [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π]
+
+theorem historyMarkedReferenceRaw_univ :
     historyMarkedReferenceRaw dependent Δ π Set.univ =
       ∑' g, ENNReal.ofReal (historyShapeReferenceWeight dependent Δ g) := by
   unfold historyMarkedReferenceRaw
-  rw [Measure.sum_apply _ MeasurableSet.univ]
-  congr 1
-  funext g
-  rw [Measure.smul_apply, Measure.map_apply (historyMarked_measurable_mk dependent g) MeasurableSet.univ]
-  simp
+  simp_all
 
 /-- The empty shape contributes exactly one unit of raw reference mass. -/
-theorem historyMarkedReferenceRaw_univ_one_le (dependent : J → J → Prop) (Δ : ℕ) {E : Type*}
-    [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π] :
+theorem historyMarkedReferenceRaw_univ_one_le :
     1 ≤ historyMarkedReferenceRaw dependent Δ π Set.univ := by
   rw [historyMarkedReferenceRaw_univ]
   let empty : HistoryShape (fun a b => ¬ dependent a b) := Quotient.mk _ []
@@ -146,33 +117,32 @@ theorem historyMarkedReferenceRaw_univ_one_le (dependent : J → J → Prop) (Δ
   rw [← he]
   exact ENNReal.le_tsum (f := fun g => ENNReal.ofReal (historyShapeReferenceWeight dependent Δ g)) empty
 
-theorem historyMarkedReferenceRaw_finite (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+end
+
+theorem historyMarkedReferenceRaw_finite {dependent : J → J → Prop} {Δ : ℕ}
+    (geom : HistoryDegreeBound dependent Δ) (hΔ : 1 ≤ Δ)
     {E : Type*} [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π] :
     IsFiniteMeasure (historyMarkedReferenceRaw dependent Δ π) := by
   constructor
   rw [historyMarkedReferenceRaw_univ]
-  exact (historyShapeReferenceWeight_summable dependent hrefl hsymm Δ hΔ hlabels).tsum_ofReal_lt_top
+  exact (historyShapeReferenceWeight_summable geom hΔ).tsum_ofReal_lt_top
 
 /-- The normalized actual infinite marked-history reference law `tau_0`. -/
 def historyMarkedReference (dependent : J → J → Prop) (Δ : ℕ) {E : Type*}
     [MeasurableSpace E] (π : Measure E) : Measure (HistoryMarked dependent E) :=
   (historyMarkedReferenceRaw dependent Δ π Set.univ)⁻¹ • historyMarkedReferenceRaw dependent Δ π
 
-theorem historyMarkedReference_probability (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+theorem historyMarkedReference_probability {dependent : J → J → Prop} {Δ : ℕ}
+    (geom : HistoryDegreeBound dependent Δ) (hΔ : 1 ≤ Δ)
     {E : Type*} [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π] :
     IsProbabilityMeasure (historyMarkedReference dependent Δ π) := by
   let : IsFiniteMeasure (historyMarkedReferenceRaw dependent Δ π) :=
-    historyMarkedReferenceRaw_finite dependent hrefl hsymm Δ hΔ hlabels π
+    historyMarkedReferenceRaw_finite geom hΔ π
   have hpos : historyMarkedReferenceRaw dependent Δ π Set.univ ≠ 0 := by
     have hh := historyMarkedReferenceRaw_univ_one_le dependent Δ π
-    exact ne_of_gt (lt_of_lt_of_le zero_lt_one hh)
+    apply ne_of_gt <;> positivity
   unfold historyMarkedReference
   constructor
-  rw [Measure.smul_apply, smul_eq_mul]
   exact ENNReal.inv_mul_cancel hpos (measure_ne_top _ _)
 
 end NearlyMinimax

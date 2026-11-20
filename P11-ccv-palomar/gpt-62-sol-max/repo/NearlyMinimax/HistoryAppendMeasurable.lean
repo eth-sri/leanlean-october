@@ -13,27 +13,14 @@ noncomputable section
 open MeasureTheory
 namespace NearlyMinimax
 
-/-- The sum sigma-algebra makes sectionwise measurable maps measurable. -/
-theorem historySigma_measurable_iff {I : Type*} {X : I → Type*} {Y : Type*}
-    [∀ i, MeasurableSpace (X i)] [MeasurableSpace Y] (f : Sigma X → Y) :
-    Measurable f ↔ ∀ i, Measurable (fun x => f ⟨i, x⟩) := by
-  constructor
-  · intro hf i
-    have hi : Measurable (fun x : X i => (⟨i, x⟩ : Sigma X)) :=
-      Measurable.of_le_map (iInf_le _ i)
-    exact hf.comp hi
-  · intro hf s hs
-    rw [MeasurableSpace.measurableSet_iInf]
-    exact fun i => hf i hs
-
 /-- Standard Borel fibers let a product and a countable disjoint union interchange measurably. -/
 def historySigmaProdMeasurableEquiv {I : Type*} [Countable I] (X : I → Type*) (Y : Type*)
     [∀ i, MeasurableSpace (X i)] [∀ i, StandardBorelSpace (X i)]
     [MeasurableSpace Y] [StandardBorelSpace Y] : (Sigma X) × Y ≃ᵐ Sigma (fun i => X i × Y) := by
   let := fun i => upgradeStandardBorel (X i)
   let := upgradeStandardBorel Y
-  let : BorelSpace (Sigma X) := historySigma_borelSpace
-  let : BorelSpace (Sigma (fun i => X i × Y)) := historySigma_borelSpace
+  let : BorelSpace (Sigma X) := sigma_borelSpace_actual
+  let : BorelSpace (Sigma (fun i => X i × Y)) := sigma_borelSpace_actual
   exact (Homeomorph.sigmaProdDistrib (X := X) (Y := Y)).toMeasurableEquiv
 
 variable {J : Type*} [Fintype J] [LinearOrder J]

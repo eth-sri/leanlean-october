@@ -33,7 +33,13 @@ def highMarkedLocalScore {n : ℕ} (π : Measure E) (activation : E → ℝ)
     η ^ 2 * (∏ i, p i) * ∑ i, (w i) ^ 2 * highResponseVarianceTerm a V η g w φ c y i) /
     ((∏ i, p i) * highResponseProduct a V η g w φ c y)
 
-theorem highMarkedResponseProduct_measurable {n : ℕ} (a V η : ℝ)
+section
+variable {n : ℕ}
+
+section
+variable (a V η : ℝ)
+
+theorem highMarkedResponseProduct_measurable
     (cReset : E → ι → ℝ) (hc : ∀ γ, Measurable (fun e => cReset e γ))
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (y : Fin n → Fin 3) :
     Measurable (fun e => highResponseProduct a V η g w φ (cReset e) y) := by
@@ -44,23 +50,25 @@ theorem highMarkedResponseProduct_measurable {n : ℕ} (a V η : ℝ)
   unfold coefficientRegression
   fun_prop
 
-theorem highMarkedResponseProduct_abs_le_one {n : ℕ} (a V η : ℝ) (ha : a ≠ 0)
+theorem highMarkedResponseProduct_abs_le_one (ha : a ≠ 0)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (v : ι → ℝ)
     (hp : ∀ i b, 0 ≤ ternaryMass a (coefficientRegression η g w φ v i) V b)
     (y : Fin n → Fin 3) : |highResponseProduct a V η g w φ v y| ≤ 1 := by
   unfold highResponseProduct
   rw [Finset.abs_prod]
   apply Finset.prod_le_one₀
-  · intro i _
-    exact abs_nonneg _
-  · intro i _
-    rw [abs_of_nonneg (hp i (y i))]
-    exact ternary_mass_le_one a _ V ha (hp i) (y i)
+  · solve_by_elim [abs_nonneg]
+  · grind [ternary_mass_le_one]
+
+end
+
+section
+variable (π : Measure E)
+    (activation : E → ℝ)
 
 /-- Integrability follows from the actual integrable activation, Borel
 legal resets, and normalized nonnegative response masses. -/
-theorem highMarkedResponseAction_integrable {n : ℕ} (π : Measure E)
-    (activation : E → ℝ) (hAct : Integrable activation π)
+theorem highMarkedResponseAction_integrable (hAct : Integrable activation π)
     (a V η : ℝ) (ha : a ≠ 0) (pPlus : ℝ) (hpPlus : 0 ≤ pPlus)
     (pReset : E → Fin n → ℝ) (hReset : ∀ i, Measurable (fun e => pReset e i))
     (hBound : ∀ e i, |pReset e i| ≤ pPlus) (cReset : E → ι → ℝ)
@@ -74,16 +82,18 @@ theorem highMarkedResponseAction_integrable {n : ℕ} (π : Measure E)
     (Finset.measurable_fun_prod _ (fun i _ => hReset i)).aestronglyMeasurable
     (Filter.Eventually.of_forall (fun e => by
       simpa only [Real.norm_eq_abs] using
-        finite_density_product_abs_bound (pReset e) pPlus hpPlus (hBound e)))
+        finite_density_product_abs_bound (pReset e) pPlus (hBound e)))
   exact hDensity.mul_bdd (highMarkedResponseProduct_measurable a V η cReset hc g w φ y).aestronglyMeasurable
     (Filter.Eventually.of_forall (fun e => by
       simpa only [Real.norm_eq_abs] using
         highMarkedResponseProduct_abs_le_one a V η ha g w φ (cReset e) (hp e) y))
 
+section
+variable (a V η : ℝ)
+
 /-- Response normalization identifies the actual total action with the
 conditional density action, rather than assuming score centering. -/
-theorem highMarkedResponseAction_sum {n : ℕ} (π : Measure E) (activation : E → ℝ)
-    (a V η : ℝ) (ha : a ≠ 0) (pReset : E → Fin n → ℝ) (cReset : E → ι → ℝ)
+theorem highMarkedResponseAction_sum (ha : a ≠ 0) (pReset : E → Fin n → ℝ) (cReset : E → ι → ℝ)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ)
     (hInt : ∀ y, Integrable (fun e => activation e * (∏ i, pReset e i) *
       highResponseProduct a V η g w φ (cReset e) y) π) :
@@ -96,8 +106,7 @@ theorem highMarkedResponseAction_sum {n : ℕ} (π : Measure E) (activation : E 
 /-- The full marked score is conditionally centered whenever the actual
 signed density action vanishes. For the source row union this primitive
 comes from each row's proved conditional zero-mass rule. -/
-theorem highMarkedLocalScore_centered {n : ℕ} (π : Measure E) (activation : E → ℝ)
-    (a V η : ℝ) (ha : a ≠ 0) (p : Fin n → ℝ) (pReset : E → Fin n → ℝ)
+theorem highMarkedLocalScore_centered (ha : a ≠ 0) (p : Fin n → ℝ) (pReset : E → Fin n → ℝ)
     (cReset : E → ι → ℝ) (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
     (hpd : ∀ i, p i ≠ 0)
     (hp : ∀ i b, 0 < ternaryMass a (coefficientRegression η g w φ c i) V b)
@@ -128,8 +137,41 @@ theorem highMarkedLocalScore_centered {n : ℕ} (π : Measure E) (activation : E
   simp only [← Finset.mul_sum, high_response_variance_term_sum_zero,
     mul_zero, Finset.sum_const_zero, sub_zero, zero_div]
 
-theorem highMarkedLocalScore_depends_on_support {n : ℕ} (π : Measure E)
-    (activation : E → ℝ) (a V η : ℝ) (p : Fin n → ℝ) (pReset : E → Fin n → ℝ)
+theorem high_marked_local_score_ratio (p : Fin n → ℝ) (pReset : E → Fin n → ℝ)
+    (cReset : E → ι → ℝ) (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ)
+    (c : ι → ℝ) (y : Fin n → Fin 3) (hpd : ∀ i, p i ≠ 0)
+    (hp : ∀ i b, 0 < ternaryMass a (coefficientRegression η g w φ c i) V b) :
+    highMarkedLocalScore π activation a V η p pReset cReset g w φ c y =
+      (∫ z, activation z * (∏ i, pReset z i / p i) *
+        ∏ i, ternaryMass a (coefficientRegression η g w φ (cReset z) i) V (y i) /
+          ternaryMass a (coefficientRegression η g w φ c i) V (y i) ∂π) -
+      η ^ 2 * ∑ i, (w i) ^ 2 * (ternaryVarianceDerivative a (y i) /
+        ternaryMass a (coefficientRegression η g w φ c i) V (y i)) := by
+  have hpP : (∏ i, p i) ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hpd i)
+  have hqP : highResponseProduct a V η g w φ c y ≠ 0 :=
+    ne_of_gt (Finset.prod_pos (fun i _ => hp i (y i)))
+  unfold highMarkedLocalScore highMarkedResponseAction
+  rw [sub_div, ← integral_div]
+  have hfirst : (fun z => activation z * (∏ i, pReset z i) *
+      highResponseProduct a V η g w φ (cReset z) y /
+        ((∏ i, p i) * highResponseProduct a V η g w φ c y)) =
+      (fun z => activation z * (∏ i, pReset z i / p i) *
+        ∏ i, ternaryMass a (coefficientRegression η g w φ (cReset z) i) V (y i) /
+          ternaryMass a (coefficientRegression η g w φ c i) V (y i)) := by
+    funext z
+    simp only [Finset.prod_div_distrib]
+    unfold highResponseProduct
+    ring
+  rw [hfirst]
+  congr 1
+  calc
+    _ = η ^ 2 * ((∑ i, (w i) ^ 2 * highResponseVarianceTerm a V η g w φ c y i) /
+        highResponseProduct a V η g w φ c y) := by field_simp [hpP, hqP]
+    _ = _ := by
+      simp_rw [Finset.sum_div, mul_div_assoc,
+        high_response_variance_ratio a V η g w φ c y _ (fun i => hp i (y i))]
+
+theorem highMarkedLocalScore_depends_on_support (p : Fin n → ℝ) (pReset : E → Fin n → ℝ)
     (cReset : E → ι → ℝ) (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
     (S : Finset (Fin n)) (hw : ∀ i, i ∉ S → w i = 0)
     (y y' : Fin n → Fin 3) (hyy : ∀ i ∈ S, y i = y' i)
@@ -137,50 +179,29 @@ theorem highMarkedLocalScore_depends_on_support {n : ℕ} (π : Measure E)
     (hp : ∀ i b, 0 < ternaryMass a (coefficientRegression η g w φ c i) V b) :
     highMarkedLocalScore π activation a V η p pReset cReset g w φ c y =
       highMarkedLocalScore π activation a V η p pReset cReset g w φ c y' := by
-  have hB : (∏ i, p i) ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hpd i)
-  have hLy : highResponseProduct a V η g w φ c y ≠ 0 :=
-    ne_of_gt (Finset.prod_pos (fun i _ => hp i (y i)))
-  have hLy' : highResponseProduct a V η g w φ c y' ≠ 0 :=
-    ne_of_gt (Finset.prod_pos (fun i _ => hp i (y' i)))
-  have hfirst : highMarkedResponseAction π activation a V η pReset cReset g w φ y /
-      highResponseProduct a V η g w φ c y =
-    highMarkedResponseAction π activation a V η pReset cReset g w φ y' /
-      highResponseProduct a V η g w φ c y' := by
-    unfold highMarkedResponseAction
-    rw [← integral_div, ← integral_div]
-    apply integral_congr_ae
-    apply Filter.Eventually.of_forall
-    intro e
-    simp only [mul_div_assoc]
-    rw [high_response_ratio_depends_on_support a V η g w φ c (cReset e) S hw y y' hyy hp]
-  have hvar :
-      (∑ i, (w i) ^ 2 * highResponseVarianceTerm a V η g w φ c y i) /
-        highResponseProduct a V η g w φ c y =
-      (∑ i, (w i) ^ 2 * highResponseVarianceTerm a V η g w φ c y' i) /
-        highResponseProduct a V η g w φ c y' := by
-    simp_rw [Finset.sum_div, mul_div_assoc,
-      high_response_variance_ratio a V η g w φ c y _ (fun i => hp i (y i)),
-      high_response_variance_ratio a V η g w φ c y' _ (fun i => hp i (y' i))]
+  rw [high_marked_local_score_ratio π activation a V η p pReset cReset g w φ c y hpd hp,
+    high_marked_local_score_ratio π activation a V η p pReset cReset g w φ c y' hpd hp]
+  congr 1
+  · apply integral_congr_ae
+    exact Filter.Eventually.of_forall (fun e => by
+      dsimp only
+      congr 1
+      apply Finset.prod_congr rfl
+      intro i _
+      by_cases hi : i ∈ S
+      · rw [hyy i hi]
+      · grind [coefficientRegression, ternaryMass])
+  · congr 1
     apply Finset.sum_congr rfl
     intro i _
     by_cases hi : i ∈ S
     · rw [hyy i hi]
     · simp [hw i hi]
-  have hrep (z : Fin n → Fin 3) (hL : highResponseProduct a V η g w φ c z ≠ 0) :
-      highMarkedLocalScore π activation a V η p pReset cReset g w φ c z =
-      (highMarkedResponseAction π activation a V η pReset cReset g w φ z /
-        highResponseProduct a V η g w φ c z) / (∏ i, p i) -
-      η ^ 2 * ((∑ i, (w i) ^ 2 * highResponseVarianceTerm a V η g w φ c z i) /
-        highResponseProduct a V η g w φ c z) := by
-    unfold highMarkedLocalScore
-    field_simp [hB, hL]
-  rw [hrep y hLy, hrep y' hLy', hfirst, hvar]
 
 end
 
-section RowUnion
-variable {ι J : Type*} [Fintype ι] [DecidableEq ι] [Fintype J]
-  {E : J → Type*} [∀ j, MeasurableSpace (E j)]
+end
 
-end RowUnion
+end
+end
 end NearlyMinimax

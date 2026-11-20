@@ -37,13 +37,12 @@ theorem lowerAliasSpatialA_nonneg (d R : ℕ) : 0 ≤ lowerAliasSpatialA d R := 
 theorem lowerAliasSpatialL_nonneg {d R : ℕ} (hd : 4 ≤ d) {c0 K : ℝ}
     (hc0 : 0 ≤ c0) (_hK : 0 ≤ K) : 0 ≤ lowerAliasSpatialL d R c0 K := by
   unfold lowerAliasSpatialL
-  have hdR : (4 : ℝ) ≤ d := by exact_mod_cast hd
+  have hdR : (4 : ℝ) ≤ d := by simp_all
   positivity
 
 /-- Exact scalar reduction for any bounded-order band with the source cutoff. -/
 theorem cardinalBandSquareBudget_cutoff_le {d r R : ℕ} {M D K c0 N : ℝ}
-    (hd : 4 ≤ d) (hr : r ≤ R) (hM : 0 ≤ M) (hD : 0 ≤ D)
-    (hK : 0 ≤ K) (hc0 : 0 ≤ c0) (hDK : D ≤ K*M) (hN : 0 < N)
+    (hd : 4 ≤ d) (hr : r ≤ R) (hM : 0 ≤ M) (hD : 0 ≤ D) (hc0 : 0 ≤ c0) (hDK : D ≤ K*M) (hN : 0 < N)
     (hell : 1 ≤ N*Real.exp (-c0*D))
     (hH : Real.log (1+Real.log N) ≤ M) :
     (r : ℝ)^2 * (2 : ℝ)^d * cardinalBandSquareBudget d r (N*Real.exp (-c0*D)) ≤
@@ -52,14 +51,14 @@ theorem cardinalBandSquareBudget_cutoff_le {d r R : ℕ} {M D K c0 N : ℝ}
   have hdR : (4 : ℝ) ≤ d := by exact_mod_cast hd
   have he1 : Real.exp (-c0*D) ≤ 1 := Real.exp_le_one_iff.mpr (by nlinarith)
   have hellN : N*Real.exp (-c0*D) ≤ N := by nlinarith
-  have hN1 : 1 ≤ N := hell.trans hellN
+  have hN1 := hell.trans hellN
   have hHp : 0 < 1+Real.log N := by linarith [Real.log_nonneg hN1]
-  have hlog : 1+Real.log (N*Real.exp (-c0*D)) ≤ 1+Real.log N :=
+  have hlog :=
     add_le_add_right (Real.log_le_log (by positivity) hellN) 1
   have hlog0 : 0 ≤ 1+Real.log (N*Real.exp (-c0*D)) := by linarith [Real.log_nonneg hell]
   have hHexp : 1+Real.log N ≤ Real.exp M := by
     simpa only [Real.exp_log hHp] using Real.exp_le_exp.mpr hH
-  have hexp1 : 1 ≤ Real.exp M := Real.one_le_exp_iff.mpr hM
+  have hexp1 := Real.one_le_exp_iff.mpr hM
   have hlogpower : (1+Real.log (N*Real.exp (-c0*D)))^(r-2) ≤ Real.exp ((R : ℝ)*M) := by
     calc
       _ ≤ (Real.exp M)^(r-2) := pow_le_pow_left₀ hlog0 (hlog.trans hHexp) _
@@ -89,7 +88,7 @@ theorem cardinalBandSquareBudget_cutoff_le {d r R : ℕ} {M D K c0 N : ℝ}
     _ = _ := by
       unfold lowerAliasSpatialA lowerAliasSpatialL cardinalBandDimensionConstant
       rw [show Real.exp ((c0*K*((d : ℝ)-4)+(R : ℝ))*M) =
-        Real.exp ((c0*K*((d : ℝ)-4))*M) * Real.exp ((R : ℝ)*M) by rw [← Real.exp_add]; congr 1; ring]
+        Real.exp ((c0*K*((d : ℝ)-4))*M) * Real.exp ((R : ℝ)*M) by simp [← Real.exp_add] <;> ring]
       ring
 
 def lowerAliasSpatialFixedL (d : ℕ) (θ c0 : ℝ) : ℝ :=

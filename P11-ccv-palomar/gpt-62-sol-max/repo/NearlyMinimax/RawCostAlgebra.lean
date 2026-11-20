@@ -1,6 +1,6 @@
 module
 
-public import NearlyMinimax.LocalEnergySeries
+public import NearlyMinimax.PoissonEnergyBounds
 
 @[expose] public section
 
@@ -18,20 +18,25 @@ def rawCostConstants (CB C5 C6 C7 cf ch : ℝ) : Fin 7 → ℝ :=
 def rawCostConstant (CB C5 C6 C7 cf ch : ℝ) : ℝ :=
   Finset.univ.sup' (by simp) (rawCostConstants CB C5 C6 C7 cf ch)
 
-theorem rawCostConstant_ge (CB C5 C6 C7 cf ch : ℝ) (i : Fin 7) :
-    rawCostConstants CB C5 C6 C7 cf ch i ≤ rawCostConstant CB C5 C6 C7 cf ch :=
-  Finset.le_sup' _ (Finset.mem_univ i)
+section
+variable (CB C5 C6 C7 cf ch : ℝ)
 
-theorem rawCostConstant_ge_one (CB C5 C6 C7 cf ch : ℝ) :
+theorem rawCostConstant_ge (i : Fin 7) :
+    rawCostConstants CB C5 C6 C7 cf ch i ≤ rawCostConstant CB C5 C6 C7 cf ch :=
+  by apply Finset.le_sup' <;> simp_all
+
+theorem rawCostConstant_ge_one :
     1 ≤ rawCostConstant CB C5 C6 C7 cf ch := rawCostConstant_ge _ _ _ _ _ _ 0
 
+end
+
 theorem factorial_succ_energy_reduction {n v mu eta4 h4s cf c C F : ℝ}
-    (hv : 0 < v) (hmu : mu = n * v) (hn : 0 ≤ n) (hcf : 0 ≤ cf)
+    (hv : 0 < v) (hmu : mu = n * v) (hn : 0 ≤ n)
     (hp4s : 0 ≤ h4s) (heta : eta4 = cf ^ 4 * h4s)
     (hc : 0 ≤ c) (hcC : c ≤ C) (hF : 0 ≤ F) (m : ℕ) :
     v⁻¹ * (eta4 * F * (c * mu) ^ (m + 1) / (m + 1).factorial) ≤
       c * cf ^ 4 * n * h4s * F * (C * mu) ^ m / (m + 1).factorial := by
-  have hmu0 : 0 ≤ mu := by rw [hmu]; positivity
+  have hmu0 : 0 ≤ mu := by simp_all
   have hp : (c * mu) ^ (m + 1) ≤ c * mu * (C * mu) ^ m := by
     rw [pow_succ]
     have hh : (c * mu) ^ m ≤ (C * mu) ^ m :=
@@ -44,7 +49,7 @@ theorem factorial_succ_energy_reduction {n v mu eta4 h4s cf c C F : ℝ}
         apply mul_le_mul_of_nonneg_left hp
         rw [heta]
         positivity
-      · positivity
+      positivity
     _ = _ := by rw [heta, hmu]; field_simp
 
 theorem inverse_volume_pair_energy {n v mu eta4 h4s cf F : ℝ}
@@ -56,15 +61,15 @@ theorem inverse_volume_pair_energy {n v mu eta4 h4s cf F : ℝ}
 theorem activity_plus_one_bound {B Bl CB : ℝ} (hB : 1 ≤ B)
     (hCB : 0 ≤ CB) (hBl : 0 ≤ Bl) (hcost : Bl ≤ CB * B) :
     (Bl + 1) ^ 2 ≤ (CB + 1) ^ 2 * B ^ 2 := by
-  have h : Bl + 1 ≤ (CB + 1) * B := by nlinarith only [hcost, hB]
+  have h : Bl + 1 ≤ (CB + 1) * B := by linarith
   calc
-    _ ≤ ((CB + 1) * B) ^ 2 := (sq_le_sq₀ (by linarith only [hBl]) (by positivity)).mpr h
+    _ ≤ ((CB + 1) * B) ^ 2 := (sq_le_sq₀ (by positivity) (by positivity)).mpr h
     _ = _ := mul_pow _ _ _
 
 theorem raw_energy_cost_bound {n v mu eta4 h4s B Bl E Fdef Fal CB C5 C6 C7 cf ch : ℝ}
     (hv : 0 < v) (hmu : mu = n * v) (hn : 0 ≤ n) (hp4s : 0 ≤ h4s)
     (heta : eta4 = cf ^ 4 * h4s) (hB : 1 ≤ B) (hBl : 0 ≤ Bl)
-    (hCB : 0 ≤ CB) (hC5 : 0 ≤ C5) (hC6 : 0 ≤ C6) (hC7 : 0 ≤ C7)
+    (hCB : 0 ≤ CB) (hC6 : 0 ≤ C6)
     (hcf : 0 ≤ cf) (hch : 0 ≤ ch) (hFdef : 0 ≤ Fdef) (hFal : 0 ≤ Fal)
     (hcost : Bl ≤ CB * B) (M D : ℕ)
     (hE : E ≤ 3 * (C5 + C7) * eta4 * mu ^ 2 * Fdef +
@@ -86,7 +91,6 @@ theorem raw_energy_cost_bound {n v mu eta4 h4s B Bl E Fdef Fal CB C5 C6 C7 cf ch
     rawCostConstant_ge _ _ _ _ _ _ 6
   have hB0 : 0 ≤ B := by linarith only [hB]
   have hmu0 : 0 ≤ mu := by rw [hmu]; positivity
-  have hCG0 : 0 ≤ CG := by linarith only [hCG]
   have hb2 : Bl ^ 2 ≤ CB ^ 2 * B ^ 2 := by
     calc
       _ ≤ (CB * B) ^ 2 := (sq_le_sq₀ hBl (mul_nonneg hCB hB0)).mpr hcost
@@ -99,15 +103,13 @@ theorem raw_energy_cost_bound {n v mu eta4 h4s B Bl E Fdef Fal CB C5 C6 C7 cf ch
       CG * (n ^ 2 * v * h4s * Fdef) := by
     calc
       _ = 3 * (C5 + C7) * (cf ^ 4 * (n ^ 2 * v * h4s * Fdef)) := by
-        rw [show 3 * (C5 + C7) * eta4 * mu ^ 2 * Fdef =
-          3 * (C5 + C7) * (eta4 * mu ^ 2 * Fdef) by ring, mul_left_comm,
-          inverse_volume_pair_energy hv hmu heta]
+        grind
       _ ≤ _ := by
         convert mul_le_mul_of_nonneg_right hpG
           (by positivity : 0 ≤ n ^ 2 * v * h4s * Fdef) using 1 <;> ring
   have ha : v⁻¹ * (3 * C6 * eta4 * Fal * (C6 * mu) ^ (M + 1) / (M + 1).factorial) ≤
       CG * (n * h4s * Fal * (CG * mu) ^ M / (M + 1).factorial) := by
-    have hr := factorial_succ_energy_reduction hv hmu hn hcf hp4s heta hC6 hC6G hFal M
+    have hr := factorial_succ_energy_reduction hv hmu hn hp4s heta hC6 hC6G hFal M
     have hh := mul_le_mul_of_nonneg_left hr (by positivity : 0 ≤ 3 * C6)
     apply le_trans (by convert hh using 1 <;> ring)
     convert mul_le_mul_of_nonneg_right haG
@@ -115,7 +117,7 @@ theorem raw_energy_cost_bound {n v mu eta4 h4s B Bl E Fdef Fal CB C5 C6 C7 cf ch
   have ht : v⁻¹ * (Real.exp ch * eta4 * (Bl + 1) ^ 2 * (ch * mu) ^ (D + 1) /
       (D + 1).factorial) ≤
       CG * (n * h4s * B ^ 2 * (CG * mu) ^ D / (D + 1).factorial) := by
-    have hr := factorial_succ_energy_reduction hv hmu hn hcf hp4s heta hch hchG
+    have hr := factorial_succ_energy_reduction hv hmu hn hp4s heta hch hchG
       (show 0 ≤ (1 : ℝ) by norm_num) D
     have hh := mul_le_mul_of_nonneg_left hr
       (by positivity : 0 ≤ Real.exp ch * (Bl + 1) ^ 2)

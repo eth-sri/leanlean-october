@@ -11,17 +11,23 @@ open Set
 open scoped BigOperators ContDiff
 namespace RoughRegime.Model
 
-lemma linePath_sub_base_norm_le {d : ℕ} (x y : Covariate d)
+section
+variable {d : ℕ}
+
+lemma linePath_sub_base_norm_le (x y : Covariate d)
     (z : ℝ) (hz : z ∈ Icc (0 : ℝ) 1) : ‖linePath x y z - x‖ ≤ ‖y - x‖ := by
   simp only [linePath, ContinuousAffineMap.coe_lineMap_eq, AffineMap.lineMap_apply_module',
     add_sub_cancel_right, norm_smul, Real.norm_eq_abs, abs_of_nonneg hz.1]
-  exact mul_le_of_le_one_left (norm_nonneg _) hz.2
+  apply mul_le_of_le_one_left <;> simp_all
 
-@[simp] lemma holderTaylorPolynomial_zero_eval {d : ℕ} (f : Covariate d → ℝ)
+section
+variable (f : Covariate d → ℝ)
+
+@[simp] lemma holderTaylorPolynomial_zero_eval
     (x y : Covariate d) : MvPolynomial.eval (fun i => y i) (holderTaylorPolynomial f 0 x) = f x := by
   simp [holderTaylorPolynomial, multilinearPolynomial_eval, iteratedFDerivWithin_zero_apply]
 
-theorem holderTaylorPolynomial_error {d : ℕ} (f : Covariate d → ℝ)
+theorem holderTaylorPolynomial_error
     (t H : ℝ) (hH : 0 ≤ H) (hf : f ∈ holderBall t H)
     (x y : Covariate d) (hx : x ∈ cube d) (hy : y ∈ cube d) :
     |f y - MvPolynomial.eval (fun i => y i) (holderTaylorPolynomial f (holderOrder t) x)| ≤
@@ -35,7 +41,7 @@ theorem holderTaylorPolynomial_error {d : ℕ} (f : Covariate d → ℝ)
     rw [coordinateDerivative_of_order_zero f _ hk, coordinateDerivative_of_order_zero f _ hk] at hh
     simpa [hk, holderExponent] using hh
   | succ n =>
-    have hft : ContDiffOn ℝ (n + 1) f (cube d) := by simpa [hk] using hreg.2
+    have hft : ContDiffOn ℝ (n + 1) f (cube d) := by simp_all
     let F : ℝ → ℝ := f ∘ linePath x y
     have hF : ContDiffOn ℝ (n + 1) F (Icc (0 : ℝ) 1) := linePath_contDiffOn f hft x y hx hy
     have hn : (n : WithTop ℕ∞) < (n + 1 : ℕ) := by exact_mod_cast Nat.lt_succ_self n
@@ -64,7 +70,7 @@ theorem holderTaylorPolynomial_error {d : ℕ} (f : Covariate d → ℝ)
         iteratedDerivWithin (n + 1) F (Icc (0 : ℝ) 1) 0| ≤
         (d : ℝ) ^ (n + 1) * H * ‖y - x‖ ^ holderExponent t * ‖y - x‖ ^ (n + 1) := by
       rw [linePath_iteratedDerivWithin f hft le_rfl x y hx hy z hz',
-        linePath_iteratedDerivWithin f hft le_rfl x y hx hy 0 (by constructor <;> norm_num),
+        linePath_iteratedDerivWithin f hft le_rfl x y hx hy 0 (by simp),
         linePath_zero, ← Real.norm_eq_abs]
       have hb := (iteratedFDerivWithin ℝ (n + 1) f (cube d) (linePath x y z) -
         iteratedFDerivWithin ℝ (n + 1) f (cube d) x).le_opNorm (fun _ => y - x)
@@ -104,5 +110,9 @@ theorem holderTaylorPolynomial_error {d : ℕ} (f : Covariate d → ℝ)
       _ = ((d : ℝ) ^ (n + 1) * H / (n + 1).factorial) *
           (‖y - x‖ ^ holderExponent t * ‖y - x‖ ^ (n + 1)) := by ring
       _ = _ := by rw [hepow]
+
+end
+
+end
 
 end RoughRegime.Model

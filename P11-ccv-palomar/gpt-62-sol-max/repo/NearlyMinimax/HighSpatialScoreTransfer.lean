@@ -36,16 +36,13 @@ theorem high_raw_square_patch_integrable_bound {d k r : ℕ} [NeZero k]
   have hraw0 (x : Fin r → Covariate d) : 0 ≤ selectedRawSquareEnergy R x :=
     Finset.sum_nonneg (fun y _ => sq_nonneg _)
   have heval := highPatchProductChart_integrable hk j H hH
-  have hmem : ∀ᵐ x ∂Measure.pi (fun _ : Fin r => (cubeVolume d).restrict (highTorusPatch d k j)),
-      ∀ i, x i ∈ highTorusPatch d k j :=
-    ae_all_iff.mpr (fun i => Measure.tendsto_eval_ae_ae.eventually
-      (ae_restrict_mem (highTorusPatch_measurableSet d k j)))
+  have hmem := ae_pi_forall (ι := Fin r)
+    (ae_restrict_mem (μ := cubeVolume d) (highTorusPatch_measurableSet d k j))
   have hrawI : Integrable (selectedRawSquareEnergy R)
       (Measure.pi (fun _ : Fin r => (cubeVolume d).restrict (highTorusPatch d k j))) := by
     apply heval.mono' hrawMeas.aestronglyMeasurable
     filter_upwards [hmem] with x hx
-    rw [Real.norm_eq_abs, abs_of_nonneg (hraw0 x)]
-    exact hdom x hx
+    rw [Real.norm_eq_abs, abs_of_nonneg (hraw0 x)] <;> solve_by_elim
   refine ⟨hrawI, ?_⟩
   calc
     _ ≤ ∫ x, H (highPatchProductChart d k j x)

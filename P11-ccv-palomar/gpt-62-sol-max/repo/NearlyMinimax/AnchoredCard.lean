@@ -17,20 +17,13 @@ abbrev TotalDegreeIndex (d ℓ : ℕ) :=
 def totalDegreeSlackEquiv (d ℓ : ℕ) :
     TotalDegreeIndex d ℓ ≃ {v : Option (Fin d) → ℕ // ∑ i, v i = ℓ} where
   toFun γ := ⟨fun i => i.casesOn (ℓ - ∑ j, (γ.val j).val) (fun j => (γ.val j).val), by
-    rw [Fintype.sum_option]
-    exact Nat.sub_add_cancel γ.property⟩
+    grind [Fintype.sum_option]⟩
   invFun v := ⟨fun i => ⟨v.val (some i), by
     have hi : v.val (some i) ≤ ∑ j, v.val j :=
       Finset.single_le_sum (fun j _ => Nat.zero_le _) (Finset.mem_univ _)
-    rw [v.property] at hi
-    omega⟩, by
-      have h := v.property
-      rw [Fintype.sum_option] at h
-      exact Nat.le.intro (by simpa [Nat.add_comm] using h)⟩
+    grind [v.property]⟩, by
+      grind [Fintype.sum_option]⟩
   left_inv γ := by
-    apply Subtype.ext
-    funext i
-    apply Fin.ext
     rfl
   right_inv v := by
     apply Subtype.ext
@@ -73,11 +66,10 @@ theorem anchoredIndex_card (d ℓ : ℕ) :
         apply Subtype.ext
         funext i
         apply Fin.ext
-        have hi : (γ.val.val i).val ≤ ∑ j, (γ.val.val j).val :=
+        have hi :=
           Finset.single_le_sum (f := fun j => (γ.val.val j).val)
             (fun j _ => Nat.zero_le _) (Finset.mem_univ i)
-        rw [γ.property] at hi
-        exact Nat.eq_zero_of_le_zero hi }
+        apply Nat.eq_zero_of_le_zero <;> omega }
   rw [Fintype.card_congr (anchoredNonzeroEquiv d ℓ),
     Fintype.card_subtype_compl, totalDegreeIndex_card]
   have hz : Fintype.card {γ : TotalDegreeIndex d ℓ // (∑ i, (γ.val i).val) = 0} = 1 :=

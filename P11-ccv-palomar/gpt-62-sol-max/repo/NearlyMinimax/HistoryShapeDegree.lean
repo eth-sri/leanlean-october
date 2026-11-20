@@ -26,7 +26,10 @@ def historyIncidentPairs (dependent : J → J → Prop) (j : J) : Finset (Histor
 def historyPairOtherLabel (dependent : J → J → Prop) (j : J)
     (p : HistoryOrderedDependentPair dependent) : J := if p.val.1 = j then p.val.2 else p.val.1
 
-theorem historyIncidentPair_reconstruct (dependent : J → J → Prop) (j : J)
+section
+variable (dependent : J → J → Prop)
+
+theorem historyIncidentPair_reconstruct (j : J)
     (p : HistoryOrderedDependentPair dependent) (hp : p ∈ historyIncidentPairs dependent j) :
     p.val = if j < historyPairOtherLabel dependent j p then
       (j, historyPairOtherLabel dependent j p) else (historyPairOtherLabel dependent j p, j) := by
@@ -37,7 +40,7 @@ theorem historyIncidentPair_reconstruct (dependent : J → J → Prop) (j : J)
   · simp [historyPairOtherLabel, hab]
   · simp [historyPairOtherLabel, hab.ne, not_lt_of_gt hab]
 
-theorem historyIncidentPairs_card_le (dependent : J → J → Prop)
+theorem historyIncidentPairs_card_le
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (j : J) :
     (historyIncidentPairs dependent j).card ≤ (dependentLabelFinset dependent j).card - 1 := by
   classical
@@ -46,23 +49,13 @@ theorem historyIncidentPairs_card_le (dependent : J → J → Prop)
   apply Finset.card_le_card_of_injOn (historyPairOtherLabel dependent j)
   · intro p hp
     obtain ⟨_, hp⟩ := Finset.mem_filter.1 hp
-    rcases hp with hp | hp
-    · have he : historyPairOtherLabel dependent j p = p.val.2 := by simp [historyPairOtherLabel, hp]
-      rw [he]
-      apply Finset.mem_erase.2
-      refine ⟨?_, Finset.mem_filter.2 ⟨Finset.mem_univ _, ?_⟩⟩
-      · rw [← hp]; exact p.prop.1.ne.symm
-      · rw [← hp]; exact p.prop.2
-    · have hne : p.val.1 ≠ j := by rw [← hp]; exact p.prop.1.ne
-      have he : historyPairOtherLabel dependent j p = p.val.1 := by simp [historyPairOtherLabel, hne]
-      rw [he]
-      exact Finset.mem_erase.2 ⟨hne, Finset.mem_filter.2 ⟨Finset.mem_univ _, by rw [← hp]; exact hsymm p.prop.2⟩⟩
+    grind [historyPairOtherLabel, dependentLabelFinset]
   · intro p hp q hq hpq
     apply Subtype.ext
     rw [historyIncidentPair_reconstruct dependent j p hp,
       historyIncidentPair_reconstruct dependent j q hq, hpq]
 
-theorem historyPairExponent_incidence (dependent : J → J → Prop) (n : J → ℕ) :
+theorem historyPairExponent_incidence (n : J → ℕ) :
     (∑ p : HistoryOrderedDependentPair dependent, (n p.val.1 + n p.val.2)) =
       ∑ j : J, (historyIncidentPairs dependent j).card * n j := by
   classical
@@ -71,14 +64,8 @@ theorem historyPairExponent_incidence (dependent : J → J → Prop) (n : J → 
     intro p
     have ht : ∀ j : J, (if p.val.1 = j ∨ p.val.2 = j then n j else 0) =
         (if p.val.1 = j then n j else 0) + (if p.val.2 = j then n j else 0) := by
-      intro j
-      by_cases h1 : p.val.1 = j
-      · have h2 : p.val.2 ≠ j := fun h => p.prop.1.ne (h1.trans h.symm)
-        simp [h1, h2]
-      · by_cases h2 : p.val.2 = j <;> simp [h1, h2]
-    simp_rw [ht]
-    rw [Finset.sum_add_distrib]
-    simp [eq_comm]
+      grind
+    simp [ht, Finset.sum_add_distrib]
   calc
     _ = ∑ p : HistoryOrderedDependentPair dependent, ∑ j : J, if p.val.1 = j ∨ p.val.2 = j then n j else 0 :=
       Finset.sum_congr rfl (fun p _ => hp p)
@@ -90,27 +77,32 @@ theorem historyPairExponent_incidence (dependent : J → J → Prop) (n : J → 
       rw [← Finset.sum_filter]
       simp [historyIncidentPairs]
 
-theorem historyPairExponent_le (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ) (n : J → ℕ) :
+end
+
+section
+variable {dependent : J → J → Prop} {Δ : ℕ}
+    (geom : HistoryDegreeBound dependent Δ) (n : J → ℕ)
+include geom
+
+theorem historyPairExponent_le :
     (∑ p : HistoryOrderedDependentPair dependent, (n p.val.1 + n p.val.2)) ≤ (Δ - 1) * ∑ j : J, n j := by
   rw [historyPairExponent_incidence, Finset.mul_sum]
   apply Finset.sum_le_sum
   intro j hj
-  exact Nat.mul_le_mul_right (n j) ((historyIncidentPairs_card_le dependent hrefl hsymm j).trans
-    (Nat.sub_le_sub_right (hlabels j) 1))
+  exact Nat.mul_le_mul_right (n j) ((historyIncidentPairs_card_le dependent geom.refl geom.symm j).trans
+    (Nat.sub_le_sub_right (geom.degree_le j) 1))
 
 /-- The exact finite-multiplicity shape bound in `lower_heaps`. -/
-theorem historyMultiplicityShape_card_le_degree (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ) (n : J → ℕ) :
+theorem historyMultiplicityShape_card_le_degree :
     Nat.card (HistoryMultiplicityShape dependent n) ≤ 2 ^ ((Δ - 1) * ∑ j : J, n j) := by
   calc
     _ ≤ ∏ p : HistoryOrderedDependentPair dependent, 2 ^ (n p.val.1 + n p.val.2) :=
-      historyMultiplicityShape_card_le dependent hrefl hsymm n
+      historyMultiplicityShape_card_le dependent geom.refl geom.symm n
     _ = 2 ^ (∑ p : HistoryOrderedDependentPair dependent, (n p.val.1 + n p.val.2)) :=
       Finset.prod_pow_eq_pow_sum _ _ _
     _ ≤ _ := pow_le_pow_right₀ (by decide : 1 ≤ (2 : ℕ))
-      (historyPairExponent_le dependent hrefl hsymm Δ hlabels n)
+      (historyPairExponent_le geom n)
+
+end
 
 end NearlyMinimax

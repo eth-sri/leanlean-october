@@ -28,9 +28,9 @@ radius, including observations on the cube's right boundary. -/
 theorem regular_grid_index_radius (k : ℕ) (hk : 0 < k) (x : ℝ)
     (hx0 : 0 ≤ x) (hx1 : x ≤ 1) :
     |x - (regularGridIndex k hk x : ℝ) / k| ≤ 1 / k := by
-  have hkreal : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkreal : (0 : ℝ) < k := by simp_all
   let m := ⌊(k : ℝ) * x⌋₊
-  have hfloor : (m : ℝ) ≤ (k : ℝ) * x := Nat.floor_le (mul_nonneg hkreal.le hx0)
+  have hfloor := Nat.floor_le (mul_nonneg hkreal.le hx0)
   have hmin : ((min m (k - 1) : ℕ) : ℝ) ≤ m := by exact_mod_cast min_le_left m (k - 1)
   have hcorner : (regularGridIndex k hk x : ℝ) / k ≤ x := by
     apply (div_le_iff₀ hkreal).mpr
@@ -50,22 +50,27 @@ theorem regular_grid_index_radius (k : ℕ) (hk : 0 < k) (x : ℝ)
     rw [min_eq_right hm', Nat.cast_sub (by omega : 1 ≤ k), Nat.cast_one]
     nlinarith [mul_le_mul_of_nonneg_right hx1 hkreal.le]
 
+section
+variable {d : ℕ} (k : ℕ) (hk : 0 < k)
+include hk
+
 /-- Every chosen cell corner belongs to the model's design cube. -/
-theorem regular_grid_corner_mem_cube {d : ℕ} (k : ℕ) (hk : 0 < k)
+theorem regular_grid_corner_mem_cube
     (c : Fin d → Fin k) : regularGridCorner k c ∈ unitCube d := by
   intro i
-  have hkreal : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkreal : (0 : ℝ) < k := by simp_all
   refine ⟨div_nonneg (Nat.cast_nonneg _) hkreal.le, ?_⟩
   apply (div_le_iff₀ hkreal).mpr
-  have hi : ((c i).val : ℝ) < k := by exact_mod_cast (c i).isLt
-  simpa only [one_mul] using hi.le
+  simp
 
 /-- The regular-grid radius follows directly from the covariate's cube
 membership, with no assumed approximation property. -/
-theorem regular_grid_cell_radius {d : ℕ} (k : ℕ) (hk : 0 < k)
+theorem regular_grid_cell_radius
     (x : Covariate d) (hx : x ∈ unitCube d) (i : Fin d) :
     |x i - regularGridCorner k (regularGridCell k hk x) i| ≤ 1 / k :=
   regular_grid_index_radius k hk (x i) (hx i).1 (hx i).2
+
+end
 
 /-- Grid labels are Borel despite the floor discontinuities. -/
 theorem regular_grid_index_measurable (k : ℕ) (hk : 0 < k) :

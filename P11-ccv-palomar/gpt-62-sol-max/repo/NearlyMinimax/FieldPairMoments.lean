@@ -35,8 +35,7 @@ theorem fieldPairAverage_memLp {n : ℕ} (weight : ℝ) {G : P → E × E → �
   apply memLp_finsetSum
   intro p hp
   have hij := (Finset.mem_filter.mp hp).2
-  have hm : MeasurePreserving (fun z : P × Ω => (z.1, (X p.1 z.2, X p.2 z.2)))
-      (π.prod ν) (π.prod (μ.prod μ)) :=
+  have hm :=
     (MeasurePreserving.id π).prod (pair_measurePreserving X hind hX hij)
   exact (fieldWeightedSymmetrization_memLp weight hG).comp_measurePreserving hm
 

@@ -19,8 +19,8 @@ theorem probability_kernel_integral {Α Ω : Type*} [MeasurableSpace Α] [Measur
     (f : Ω → ℝ) (hf : Integrable f (K ∘ₘ μ)) :
     (∫ x, f x ∂(K ∘ₘ μ)) = ∫ a, ∫ x, f x ∂K a ∂μ := by
   have h := Kernel.integral_comp (κ := Kernel.const Unit μ) (η := K) (a := ())
-    (f := f) (by simpa only [← Measure.comp_eq_comp_const_apply] using hf)
-  simpa only [Kernel.const_apply, ← Measure.comp_eq_comp_const_apply] using h
+    (f := f) (by assumption)
+  assumption
 
 theorem boundedEstimator_worstCaseRisk_finite {d n : ℕ} (C : ModelConstants d)
     (T : BoundedEstimator C n) : worstCaseRisk C T.val < ∞ := by
@@ -32,7 +32,7 @@ theorem boundedEstimator_worstCaseRisk_finite {d n : ℕ} (C : ModelConstants d)
 theorem boundedEstimator_mixture_risk_le_of_exceptional_set {Α : Type*} [MeasurableSpace Α]
     {d n : ℕ} (C : ModelConstants d) (T : BoundedEstimator C n)
     (σ : Measure Α) [IsProbabilityMeasure σ]
-    (L : Kernel Α (Fin n → Observation d)) [IsMarkovKernel L]
+    (L : Kernel Α (ObservedSample d n)) [IsMarkovKernel L]
     (θ : Α → RegressionParameter d) (V ε : ℝ)
     (hL : ∀ a, L a = sampleLaw (θ a) n) (hVθ : ∀ a, (θ a).variance = V)
     (hV : V ∈ Icc C.varianceLower (effectiveVarianceUpper C))
@@ -42,23 +42,19 @@ theorem boundedEstimator_mixture_risk_le_of_exceptional_set {Α : Type*} [Measur
     (∫ x, (T.val.val x - V) ^ 2 ∂(L ∘ₘ σ)) ≤
       (worstCaseRisk C T.val).toReal + (effectiveVarianceUpper C - C.varianceLower) ^ 2 * ε := by
   let D := effectiveVarianceUpper C - C.varianceLower
-  let f (x : Fin n → Observation d) := (T.val.val x - V) ^ 2
-  have hfmeas : Measurable f := by
-    dsimp only [f]
-    exact (T.val.property.sub_const V).pow_const (2 : ℕ)
-  have hf0 (x : Fin n → Observation d) : 0 ≤ f x := sq_nonneg _
-  have hcap (x : Fin n → Observation d) : f x ≤ D ^ 2 := by
+  let f (x : ObservedSample d n) := (T.val.val x - V) ^ 2
+  have hfmeas : Measurable f := (T.val.property.sub_const V).pow_const (2 : ℕ)
+  have hf0 (x : ObservedSample d n) : 0 ≤ f x := sq_nonneg _
+  have hcap (x : ObservedSample d n) : f x ≤ D ^ 2 := by
     have ht := T.property x
     have hh : |T.val.val x - V| ≤ D := by
-      apply abs_le.mpr
-      constructor <;> dsimp only [D] <;> linarith only [ht.1, ht.2, hV.1, hV.2]
+      grind
     have hD : 0 ≤ D := sub_nonneg.mpr (effective_variance_interval_nondegenerate C).le
     simpa only [f, sq_abs] using (sq_le_sq₀ (abs_nonneg _) hD).mpr hh
-  have hfi (μ : Measure (Fin n → Observation d)) [IsProbabilityMeasure μ] : Integrable f μ := by
+  have hfi (μ : Measure (ObservedSample d n)) [IsProbabilityMeasure μ] : Integrable f μ := by
     apply (integrable_const (D ^ 2)).mono' hfmeas.aestronglyMeasurable
     exact Filter.Eventually.of_forall fun x => by
-      rw [Real.norm_eq_abs, abs_of_nonneg (hf0 x)]
-      exact hcap x
+      rw [Real.norm_eq_abs, abs_of_nonneg (hf0 x)] <;> solve_by_elim
   let e (a : Α) := ∫ x, f x ∂L a
   have hemeas : Measurable e := hfmeas.stronglyMeasurable.integral_kernel.measurable
   have he0 (a : Α) : 0 ≤ e a := integral_nonneg hf0
@@ -68,8 +64,7 @@ theorem boundedEstimator_mixture_risk_le_of_exceptional_set {Α : Type*} [Measur
   have hei : Integrable e σ := by
     apply (integrable_const (D ^ 2)).mono' hemeas.aestronglyMeasurable
     exact Filter.Eventually.of_forall fun a => by
-      rw [Real.norm_eq_abs, abs_of_nonneg (he0 a)]
-      exact hecap a
+      rw [Real.norm_eq_abs, abs_of_nonneg (he0 a)] <;> solve_by_elim
   have hgood (a : Α) (ha : Admissible C (θ a)) : e a ≤ (worstCaseRisk C T.val).toReal := by
     have heq : ENNReal.ofReal (e a) = meanSquaredRisk T.val (θ a) := by
       rw [meanSquaredRisk, ← hL a, hVθ a]

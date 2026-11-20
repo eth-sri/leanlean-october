@@ -24,13 +24,16 @@ namespace NearlyMinimax
 def polynomialGaussianConstant (r : ℕ) (a : ℝ) : ℝ :=
   (r.factorial : ℝ) / (a / 2) ^ r * Real.exp (a / 2)
 
-theorem polynomialGaussianConstant_pos (r : ℕ) {a : ℝ} (ha : 0 < a) :
+section
+variable (r : ℕ)
+
+theorem polynomialGaussianConstant_pos {a : ℝ} (ha : 0 < a) :
     0 < polynomialGaussianConstant r a := by
   unfold polynomialGaussianConstant
   positivity
 
 /-- The exponential-series argument behind the polynomial Gaussian absorption. -/
-theorem polynomial_exp_absorption (r : ℕ) {a t : ℝ} (ha : 0 < a) (ht : 0 ≤ t) :
+theorem polynomial_exp_absorption {a t : ℝ} (ha : 0 < a) (ht : 0 ≤ t) :
     (1 + t) ^ r * Real.exp (-a * t) ≤
       polynomialGaussianConstant r a * Real.exp (-(a / 2) * t) := by
   have hδ : 0 < a / 2 := by positivity
@@ -44,31 +47,25 @@ theorem polynomial_exp_absorption (r : ℕ) {a t : ℝ} (ha : 0 < a) (ht : 0 ≤
     calc
       (1 + t) ^ r ≤ (Real.exp (a / 2 * (1 + t)) * (r.factorial : ℝ)) / (a / 2) ^ r := by
         apply (le_div_iff₀ (pow_pos hδ r)).2
-        simpa [mul_comm] using hb
+        linarith
       _ = (r.factorial : ℝ) / (a / 2) ^ r * Real.exp (a / 2 * (1 + t)) := by ring
   have hs := mul_le_mul_of_nonneg_right hp (Real.exp_pos (-a * t)).le
   apply hs.trans_eq
   unfold polynomialGaussianConstant
   have he : Real.exp (a / 2 * (1 + t)) * Real.exp (-a * t) =
       Real.exp (a / 2) * Real.exp (-(a / 2) * t) := by
-    rw [← Real.exp_add, ← Real.exp_add]
-    congr 1
-    ring
-  calc
-    ((r.factorial : ℝ) / (a / 2) ^ r * Real.exp (a / 2 * (1 + t))) * Real.exp (-a * t) =
-        (r.factorial : ℝ) / (a / 2) ^ r *
-          (Real.exp (a / 2 * (1 + t)) * Real.exp (-a * t)) := by ring
-    _ = _ := by rw [he]; ring
+    simp [← Real.exp_add] <;> ring
+  grind
 
 /-- The exact polynomial absorption step at the paper's rescaled Gaussian variable. -/
-theorem polynomial_gaussian_absorption (r : ℕ) {a S u : ℝ}
+theorem polynomial_gaussian_absorption {a S u : ℝ}
     (ha : 0 < a) (hS : 0 < S) :
     (1 + u ^ 2 / S) ^ r * Real.exp (-a * u ^ 2 / S) ≤
       polynomialGaussianConstant r a * Real.exp (-(a / 2) * u ^ 2 / S) := by
   have h := polynomial_exp_absorption r ha (div_nonneg (sq_nonneg u) hS.le)
-  have h₁ : -a * (u ^ 2 / S) = -a * u ^ 2 / S := by ring
-  have h₂ : -(a / 2) * (u ^ 2 / S) = -(a / 2) * u ^ 2 / S := by ring
-  rwa [h₁, h₂] at h
+  grind
+
+end
 
 /-- Floor and coordinate subtraction give both needed bounds on approximation degree. -/
 theorem profile_approximation_degree_bounds {β Q : ℝ} (q : ℕ)
@@ -78,15 +75,18 @@ theorem profile_approximation_degree_bounds {β Q : ℝ} (q : ℕ)
   have hf := Nat.floor_le hβQ
   have hl := Nat.lt_floor_add_one (β * Q)
   rw [Nat.cast_sub hq]
-  constructor <;> linarith [(Nat.cast_nonneg q : (0 : ℝ) ≤ (q : ℝ))]
+  grind
+
+section
+variable (r : ℕ)
 
 /-- The profile upper bound controls the entire fixed polynomial prefactor. -/
-theorem profile_polynomial_prefactor_bound (r : ℕ) {β S z m : ℝ}
+theorem profile_polynomial_prefactor_bound {β S z m : ℝ}
     (hβ : 0 ≤ β) (hS : 1 ≤ S) (hm : 0 ≤ m + 1)
     (hmQ : m + 1 ≤ β * quadraticProfile S z + 1) :
     (m + 1) ^ r ≤ (1 + 3 * β / 2) ^ r * S ^ r *
       (1 + (z - S / 2) ^ 2 / S) ^ r := by
-  have hS₀ : 0 < S := lt_of_lt_of_le zero_lt_one hS
+  have hS₀ := lt_of_lt_of_le zero_lt_one hS
   have hQ := quadraticProfile_gaussian_upper (z := z) hS₀
   have ht : 0 ≤ (z - S / 2) ^ 2 / S := div_nonneg (sq_nonneg _) hS₀.le
   have hupper : m + 1 ≤ (1 + 3 * β / 2) * S *
@@ -100,29 +100,33 @@ theorem profile_polynomial_prefactor_bound (r : ℕ) {β S z m : ℝ}
   simpa only [mul_pow, mul_assoc] using hp
 
 /-- The logarithmic reserve cancels `S^r` leaving the Gaussian normalizer. -/
-theorem pow_mul_log_factor_eq_inv_sqrt (r : ℕ) {S : ℝ} (hS : 0 < S) :
+theorem pow_mul_log_factor_eq_inv_sqrt {S : ℝ} (hS : 0 < S) :
     S ^ r * Real.exp (-((r : ℝ) + 1 / 2) * Real.log S) = 1 / Real.sqrt S := by
-  have hsqrt : 0 < Real.sqrt S := Real.sqrt_pos.2 hS
+  have hsqrt := Real.sqrt_pos.2 hS
   rw [← Real.exp_log (pow_pos hS r), Real.log_pow, ← Real.exp_add]
   simp only [one_div]
   rw [← Real.exp_log hsqrt, ← Real.exp_neg]
-  congr 1
-  rw [Real.log_sqrt hS.le]
-  ring
+  simp [Real.log_sqrt hS.le] <;> ring
+
+end
 
 /-- Explicit constant for the normalized term bound in `eq:U12-term`. -/
 def allocationBiasTermConstant (r q : ℕ) (β θ τ : ℝ) : ℝ :=
   (1 + 3 * β / 2) ^ r * Real.exp (τ * ((q : ℝ) + 1)) * polynomialGaussianConstant r θ
 
-theorem allocationBiasTermConstant_pos (r q : ℕ) {β θ τ : ℝ}
+section
+variable (r q : ℕ)
+
+theorem allocationBiasTermConstant_pos {β θ τ : ℝ}
     (hβ : 0 ≤ β) (hθ : 0 < θ) : 0 < allocationBiasTermConstant r q β θ τ := by
-  unfold allocationBiasTermConstant
   exact mul_pos (mul_pos (by positivity) (Real.exp_pos _))
-    (polynomialGaussianConstant_pos r hθ)
+      (polynomialGaussianConstant_pos r hθ)
+
+section
+variable {β θ τ S z ell T m : ℝ}
 
 /-- The profile identity and degree lower bound produce the Gaussian decay. -/
-theorem allocation_bias_mass_bound (r q : ℕ) {β θ τ S z ell T m : ℝ}
-    (_hθ : 0 < θ) (hτ : 0 < τ) (hS : 0 < S) (hθβ : τ * β = θ)
+theorem allocation_bias_mass_bound (hτ : 0 < τ) (hS : 0 < S) (hθβ : τ * β = θ)
     (hm : β * quadraticProfile S z - (q : ℝ) - 1 ≤ m)
     (hreserve : ((r : ℝ) + 1 / 2) * Real.log S ≤ θ * (S - ell - T)) :
     Real.exp (-θ * (z - ell - T) - τ * m) ≤
@@ -139,12 +143,10 @@ theorem allocation_bias_mass_bound (r q : ℕ) {β θ τ S z ell T m : ℝ}
     rw [quadraticProfile_bias_identity hS.ne']
     ring
   rw [← Real.exp_add, ← Real.exp_add]
-  apply Real.exp_le_exp.2
-  ring_nf at hml hreserve hid ⊢
-  linarith
+  apply Real.exp_le_exp.2 <;> grind
 
 /-- The actual deterministic bias summand is bounded by a normalized Gaussian. -/
-theorem allocation_bias_term_bound (r q : ℕ) {β θ τ S z ell T m : ℝ}
+theorem allocation_bias_term_bound
     (hβ : 0 ≤ β) (hθ : 0 < θ) (hτ : 0 < τ) (hS : 1 ≤ S)
     (hθβ : τ * β = θ) (hmpos : 0 ≤ m + 1)
     (hml : β * quadraticProfile S z - (q : ℝ) - 1 ≤ m)
@@ -153,8 +155,8 @@ theorem allocation_bias_term_bound (r q : ℕ) {β θ τ S z ell T m : ℝ}
     Real.exp (-θ * (z - ell - T) - τ * m) * (m + 1) ^ r ≤
       allocationBiasTermConstant r q β θ τ / Real.sqrt S *
         Real.exp (-(θ / 2) * (z - S / 2) ^ 2 / S) := by
-  have hS₀ : 0 < S := lt_of_lt_of_le zero_lt_one hS
-  have hm := allocation_bias_mass_bound r q hθ hτ hS₀ hθβ hml hreserve
+  have hS₀ := lt_of_lt_of_le zero_lt_one hS
+  have hm := allocation_bias_mass_bound r q hτ hS₀ hθβ hml hreserve
   have hp := profile_polynomial_prefactor_bound r hβ hS hmpos hmu
   have ha := polynomial_gaussian_absorption r hθ (u := z - S / 2) hS₀
   have hc : 0 ≤ (1 + 3 * β / 2) ^ r * Real.exp (τ * ((q : ℝ) + 1)) := by positivity
@@ -176,6 +178,10 @@ theorem allocation_bias_term_bound (r q : ℕ) {β θ τ S z ell T m : ℝ}
       rw [pow_mul_log_factor_eq_inv_sqrt r hS₀]
       unfold allocationBiasTermConstant
       ring
+
+end
+
+end
 
 /-- The full finite scalar bias sum, under the quadratic profile and budget conditions. -/
 theorem finite_allocation_bias_sum_bound (A : Finset ℕ) (r q : ℕ)
@@ -211,9 +217,7 @@ def allocationBiasSumConstant (r q : ℕ) (β θ τ b : ℝ) : ℝ :=
 
 theorem allocationBiasSumConstant_pos (r q : ℕ) {β θ τ b : ℝ}
     (hβ : 0 ≤ β) (hθ : 0 < θ) (hb : 0 < b) :
-    0 < allocationBiasSumConstant r q β θ τ b := by
-  unfold allocationBiasSumConstant
-  exact mul_pos (allocationBiasTermConstant_pos r q hβ hθ) (by positivity)
+    0 < allocationBiasSumConstant r q β θ τ b := mul_pos (allocationBiasTermConstant_pos r q hβ hθ) (by positivity)
 
 /-- A single scalar threshold supplies all coordinate-order guards in the finite sum. -/
 theorem profile_coordinate_order_admissible (q : ℕ) {β S z : ℝ}
@@ -241,10 +245,7 @@ theorem raw_allocation_bias_sum_bound (A : Finset ℕ) (r q : ℕ)
     rw [Real.rpow_def_of_pos (hK j hj), Real.rpow_def_of_pos hKstar,
       ← Real.exp_nat_mul, ← Real.exp_add, ← Real.exp_add]
     congr 1
-    have hlogeq : Real.log (K j) = Real.log Kstar +
-        (u₀ + (j : ℝ) * b + S / 2 - ell - T) := by linarith [hlog j hj]
-    rw [hlogeq]
-    ring
+    grind
   have hsum := finite_allocation_bias_sum_bound A r q u₀ b β θ τ S ell T m
     hb hβ hθ hτ hS hθβ hreserve hml hmu
   calc
@@ -282,7 +283,7 @@ theorem floored_raw_allocation_bias_sum_bound (A : Finset ℕ) (r q : ℕ)
       ((allocatedApproximationDegree β S (u₀ + (j : ℝ) * b + S / 2) q : ℝ) + 1) ^ r *
         (Real.exp (-τ)) ^ (allocatedApproximationDegree β S (u₀ + (j : ℝ) * b + S / 2) q)) ≤
       allocationBiasSumConstant r q β θ τ b * Kstar ^ (-θ) := by
-  have hS₀ : 0 < S := lt_of_lt_of_le zero_lt_one hS
+  have hS₀ := lt_of_lt_of_le zero_lt_one hS
   have hbounds j (hj : j ∈ A) := profile_approximation_degree_bounds q
     (mul_nonneg hβ ((by positivity : (0 : ℝ) ≤ S / 4).trans (quadraticProfile_lower hS₀))) (hq j hj)
   exact raw_allocation_bias_sum_bound A r q u₀ b β θ τ S ell T Kstar K

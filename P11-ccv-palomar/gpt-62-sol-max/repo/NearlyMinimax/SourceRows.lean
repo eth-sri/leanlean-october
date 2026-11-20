@@ -28,30 +28,65 @@ def highUnionRowRestrict {d k D : ℕ} {I : Type*} {E : I → Type*} [∀ i, Mea
 abbrev SourceRowIndex (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :=
   FinePairRowTag ⊕ (Unit ⊕ HigherBandFamilyIndex d D M q a b C lam ℓ N μ)
 
-def SourceRowMark (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
-    SourceRowIndex d D M q a b C lam ℓ N μ → Type
-  | .inl p => FinePairRowMark d D M q p
-  | .inr (.inl _) => SingletonRowMark d D q
-  | .inr (.inr i) => HigherBandFamilyMark d D M q a b C lam ℓ N μ i
+def sourceRowSpace (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
+    SourceRowIndex d D M q a b C lam ℓ N μ → MarkPacketSpace
+  | .inl p => finePairRowSpace d D M p
+  | .inr (.inl _) => .of Unit (HighDensityMarkIndex D 1 D)
+  | .inr (.inr i) =>
+    letI := higherBandCarrier_standardBorel d (higherBandFamilyTarget i.val) i.val.2
+    .of (HigherBandCarrier d (higherBandFamilyTarget i.val) i.val.2)
+      (HighDensityMarkIndex (higherBandFamilyGuardDegree M i.val) (higherBandFamilyTarget i.val) D)
+
+abbrev SourceRowMark (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) (i : SourceRowIndex d D M q a b C lam ℓ N μ) :=
+  (sourceRowSpace d D M q a b C lam ℓ N μ i).Mark (HighFrameIndex d D) q
 
 instance sourceRowMark_measurable (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ) : MeasurableSpace (SourceRowMark d D M q a b C lam ℓ N μ i) := by
-  cases i with
-  | inl p => exact finePairRowMark_measurable d D M q p
-  | inr i => cases i <;> dsimp [SourceRowMark] <;> infer_instance
+    (i : SourceRowIndex d D M q a b C lam ℓ N μ) : MeasurableSpace (SourceRowMark d D M q a b C lam ℓ N μ i) :=
+  inferInstance
 
 instance sourceRowMark_standardBorel (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
     (i : SourceRowIndex d D M q a b C lam ℓ N μ) : StandardBorelSpace (SourceRowMark d D M q a b C lam ℓ N μ i) := by
-  cases i with
-  | inl p => exact finePairRowMark_standardBorel d D M q p
-  | inr i => cases i <;> dsimp [SourceRowMark, sourceRowMark_measurable] <;> infer_instance
+  letI : StandardBorelSpace (HighResponseMarkIndex (HighFrameIndex d D) q) := by infer_instance
+  infer_instance
+
+def sourceRowPacket (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
+    (i : SourceRowIndex d D M q a b C lam ℓ N μ) →
+      MarkPacketData (sourceRowSpace d D M q a b C lam ℓ N μ i) (HighFrameIndex d D)
+  | .inl p => finePairRowPacket d D M a b ℓ N p
+  | .inr (.inl _) => ⟨Measure.dirac (), densityPacketWeight a b D 1 D, fun _ => finePairUnitMatrix d D⟩
+  | .inr (.inr i) =>
+    let r := higherBandFamilyTarget i.val
+    ⟨higherBandCarrierMeasure d r ℓ (higherBandFamilyUpper d ℓ N μ i.val) i.val.2,
+      densityPacketWeight a b (higherBandFamilyGuardDegree M i.val) r D,
+      higherBandCarrierAmplitude d r D lam i.val.2⟩
+
+theorem sourceRowPacket_valid (d : ℕ) [NeZero d] (D M q : ℕ) (a b C lam ℓ N μ : ℝ)
+    (i : SourceRowIndex d D M q a b C lam ℓ N μ) :
+    let P := sourceRowPacket d D M q a b C lam ℓ N μ i
+    IsFiniteMeasure P.carrier ∧ SeparatedMatrixIntegrable P.carrier P.amplitude := by
+  rcases i with p | (_ | i)
+  · exact finePairRowPacket_valid d D M a b ℓ N p
+  · dsimp [sourceRowPacket]
+    exact ⟨inferInstance, SeparatedMatrixIntegrable.const _ _⟩
+  · exact ⟨higherBandCarrierMeasure_finite _ _ _ _ i.property.1 _,
+      higherBandCarrierAmplitude_integrable _ _ _ _ _ _ i.property.1 _⟩
 
 def sourceRowComponent (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
     (i : SourceRowIndex d D M q a b C lam ℓ N μ) →
       HighUnionRowData d k D Unit (fun _ => SourceRowMark d D M q a b C lam ℓ N μ i)
-  | .inl p => highUnionRowRestrict (finePairRowData d k D M q a b C ℓ N) p
-  | .inr (.inl _) => singletonRowData d k D q a b C
-  | .inr (.inr i) => higherBandFamilyComponent d k D M q a b C lam ℓ N μ i
+  | i =>
+    let P := sourceRowPacket d D M q a b C lam ℓ N μ i
+    let R : HighUnionRowData d k D Unit (fun _ => SourceRowMark d D M q a b C lam ℓ N μ i) := match i with
+      | .inl p => highUnionRowRestrict (finePairRowData d k D M q a b C ℓ N) p
+      | .inr (.inl _) => singletonRowData d k D q a b C
+      | .inr (.inr j) => higherBandFamilyComponent d k D M q a b C lam ℓ N μ j
+    { rowLaw := fun _ => P.law q C
+      rowMass := fun _ => P.mass q C
+      rowIntercept := R.rowIntercept
+      rowSlope := R.rowSlope
+      rowActivation := fun _ => P.activation q C
+      rowVector := fun _ e => (highResponseMarkAtom C q e.2.2).2
+      rowTime := fun _ e => responseNode q e.2.2.2.2 }
 
 def sourceRowData (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
     HighUnionRowData d k D (SourceRowIndex d D M q a b C lam ℓ N μ)
@@ -63,22 +98,5 @@ def sourceRowData (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
   rowSlope := fun j i => (sourceRowComponent d k D M q a b C lam ℓ N μ i).rowSlope j ()
   rowVector := fun i => (sourceRowComponent d k D M q a b C lam ℓ N μ i).rowVector ()
   rowTime := fun i => (sourceRowComponent d k D M q a b C lam ℓ N μ i).rowTime ()
-
-theorem sourceRowMass_nonneg (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ) :
-    0 ≤ (sourceRowData d k D M q a b C lam ℓ N μ).rowMass i := by
-  cases i with
-  | inl p => exact finePairRowMass_nonneg d D M q a b C ℓ N p
-  | inr i =>
-    cases i with
-    | inl _ => exact signedMarkMass_nonneg _ _
-    | inr i => exact (higherBandFamily_mass_positive d k D M q a b C lam ℓ N μ i).le
-
-theorem sourceRowTotalMass_positive (d k D M q : ℕ) (hq : 1 ≤ q)
-    (a b : ℝ) (ha : 0 < a) (hab : a < b) (C : ℝ) (hC : 0 < C) (lam ℓ N μ : ℝ) :
-    0 < highRowTotalMass (sourceRowData d k D M q a b C lam ℓ N μ).rowMass := by
-  apply (singletonRowMass_positive d D q hq a b ha hab C hC).trans_le
-  exact Finset.single_le_sum (fun i _ => sourceRowMass_nonneg d k D M q a b C lam ℓ N μ i)
-    (Finset.mem_univ (Sum.inr (Sum.inl ())))
 
 end NearlyMinimax

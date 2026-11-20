@@ -21,9 +21,8 @@ lemma sum_embedding_restriction {A B : Type*} [Fintype A] [Fintype B]
         ∑ e : A ↪ Fin n, f e := by
   classical
   let E := Equiv.sumEmbeddingEquivSigmaEmbeddingRestricted (α := A) (β := B) (γ := Fin n)
-  have hfirst (e : A ⊕ B ↪ Fin n) : (E e).1 = Function.Embedding.inl.trans e := rfl
   calc
-    _ = ∑ e : A ⊕ B ↪ Fin n, f (E e).1 := by simp only [hfirst]
+    _ = ∑ e : A ⊕ B ↪ Fin n, f (E e).1 := by rfl
     _ = ∑ u : Σ e : A ↪ Fin n, B ↪ ↥(Set.range e)ᶜ, f u.1 := E.sum_comp (fun u : Σ e : A ↪ Fin n, B ↪ ↥(Set.range e)ᶜ => f u.1)
     _ = ∑ e : A ↪ Fin n, ((n - Fintype.card A).descFactorial (Fintype.card B) : ℝ) * f e := by
       rw [Fintype.sum_sigma]
@@ -32,13 +31,15 @@ lemma sum_embedding_restriction {A B : Type*} [Fintype A] [Fintype B]
       simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Fintype.card_embedding_eq]
       have hcard : Fintype.card ↥(Set.range e)ᶜ = n - Fintype.card A := by
         change Fintype.card {j : Fin n // ¬j ∈ Set.range e} = _
-        rw [Fintype.card_subtype_compl]
-        rw [← Fintype.card_congr e.toEquivRange, Fintype.card_fin]
+        rw [Fintype.card_subtype_compl, ← Fintype.card_congr e.toEquivRange, Fintype.card_fin]
       rw [hcard]
     _ = _ := (Finset.mul_sum _ _ _).symm
 
-lemma sum_embedding_subtype_restriction {A : Type*} [Fintype A]
-    (n : ℕ) (S : Finset A) (f : (↥S ↪ Fin n) → ℝ) :
+section
+variable {A : Type*} [Fintype A]
+    (n : ℕ)
+
+lemma sum_embedding_subtype_restriction (S : Finset A) (f : (↥S ↪ Fin n) → ℝ) :
     (∑ e : A ↪ Fin n, f ((Function.Embedding.subtype (fun i => i ∈ S)).trans e)) =
       ((n - S.card).descFactorial (Fintype.card A - S.card) : ℝ) *
         ∑ e : ↥S ↪ Fin n, f e := by
@@ -58,8 +59,7 @@ lemma sum_embedding_subtype_restriction {A : Type*} [Fintype A]
       apply Function.Embedding.ext
       intro i
       change e ((Equiv.Set.sumCompl (S : Set A)).symm (i : A)) = e (Sum.inl i)
-      rw [Equiv.Set.sumCompl_symm_apply_of_mem (show (i : A) ∈ (S : Set A) from i.property)]
-      rfl
+      norm_num
     _ = ((n - Fintype.card ↥S).descFactorial (Fintype.card C) : ℝ) *
         ∑ e : ↥S ↪ Fin n, f e := sum_embedding_restriction n f
     _ = _ := by
@@ -71,26 +71,21 @@ lemma sum_embedding_subtype_restriction {A : Type*} [Fintype A]
       simp
 
 /-- Normalization cancels precisely the multiplicity of unused sample slots. -/
-lemma normalized_embedding_subtype_restriction {A : Type*} [Fintype A]
-    (n : ℕ) (hn : Fintype.card A ≤ n) (S : Finset A) (f : (↥S ↪ Fin n) → ℝ) :
+lemma normalized_embedding_subtype_restriction (hn : Fintype.card A ≤ n) (S : Finset A) (f : (↥S ↪ Fin n) → ℝ) :
     (n.descFactorial (Fintype.card A) : ℝ)⁻¹ *
         (∑ e : A ↪ Fin n, f ((Function.Embedding.subtype (fun i => i ∈ S)).trans e)) =
       (n.descFactorial S.card : ℝ)⁻¹ * ∑ e : ↥S ↪ Fin n, f e := by
   classical
   rw [sum_embedding_subtype_restriction]
+  have hcancel := Nat.descFactorial_mul_descFactorial (n := n) S.card_le_univ
   have hq : (n.descFactorial (Fintype.card A) : ℝ) ≠ 0 := by
-    exact_mod_cast (Nat.ne_of_gt (Nat.descFactorial_pos.mpr hn))
+    simp [Nat.descFactorial_eq_zero_iff_lt, not_lt_of_ge hn]
   have hr : (n.descFactorial S.card : ℝ) ≠ 0 := by
-    exact_mod_cast (Nat.ne_of_gt (Nat.descFactorial_pos.mpr (S.card_le_univ.trans hn)))
-  have hprod : ((n - S.card).descFactorial (Fintype.card A - S.card) : ℝ) *
-      (n.descFactorial S.card : ℝ) = n.descFactorial (Fintype.card A) := by
-    exact_mod_cast (Nat.descFactorial_mul_descFactorial S.card_le_univ)
-  have hcoeff : (n.descFactorial (Fintype.card A) : ℝ)⁻¹ *
-      ((n - S.card).descFactorial (Fintype.card A - S.card) : ℝ) =
-        (n.descFactorial S.card : ℝ)⁻¹ := by
-    field_simp
-    exact hprod
-  rw [← mul_assoc, hcoeff]
+    simp [Nat.descFactorial_eq_zero_iff_lt, not_lt_of_ge (S.card_le_univ.trans hn)]
+  field_simp
+  rw [mul_right_comm, ← Nat.cast_mul, hcancel]
+
+end
 
 /-- Exact centering expansion of one monomial lift. Every subset records the slots
 in which a centered observation is used. -/
@@ -110,8 +105,7 @@ theorem monomialLift_centering {Ω : Type*} {n p q : ℕ}
   intro S _
   have hprod (e : Fin q ↪ Fin n) :
       (∏ i ∈ S, Y (e i) ω (σ i)) =
-        ∏ i : ↥S, Y (e i) ω (σ i) := by
-    exact (Finset.prod_coe_sort S (fun i => Y (e i) ω (σ i))).symm
+        ∏ i : ↥S, Y (e i) ω (σ i) := (Finset.prod_coe_sort S (fun i => Y (e i) ω (σ i))).symm
   simp_rw [hprod]
   rw [← Finset.sum_mul]
   have h : (n.descFactorial q : ℝ)⁻¹ * (∑ e : Fin q ↪ Fin n, ∏ i : ↥S, Y (e i) ω (σ i)) =
@@ -121,53 +115,45 @@ theorem monomialLift_centering {Ω : Type*} {n p q : ℕ}
         (fun e : ↥S ↪ Fin n => ∏ i : ↥S, Y (e i) ω (σ i)))
   linear_combination (∏ i ∈ Sᶜ, m (σ i)) * h
 
-lemma range_embedding_of_subset_equiv {A B : Type*} [Fintype A] [Fintype B]
-    (S : Finset B) (a : A ≃ ↥S) :
-    Set.range (a.toEmbedding.trans (Function.Embedding.subtype (fun i => i ∈ S))) = S := by
-  ext j
-  constructor
-  · rintro ⟨i, rfl⟩
-    exact (a i).property
-  · intro hj
-    obtain ⟨i, hi⟩ := a.surjective ⟨j, hj⟩
-    exact ⟨i, congrArg Subtype.val hi⟩
+section
+variable {A B : Type*} [Fintype A] [Fintype B]
+
+/-- An ordering of a set is equivalently an embedding with that set as range. -/
+def embeddingsWithRangeEquiv (S : Set B) : (A ≃ S) ≃ {e : A ↪ B // Set.range e = S} where
+  toFun a := ⟨a.toEmbedding.trans (.subtype _), by simp⟩
+  invFun e := by
+    classical
+    exact e.1.toEquivRange.trans (Set.equivOfEq e.2)
+  left_inv a := by ext; rfl
+  right_inv e := Subtype.ext (Function.Embedding.ext fun _ => rfl)
 
 /-- An ordered injective tuple consists of its unordered range and an ordering of that range. -/
-lemma sum_embeddings_by_range {A B : Type*} [Fintype A] [Fintype B] [DecidableEq A] [DecidableEq B]
+lemma sum_embeddings_by_range [DecidableEq A] [DecidableEq B]
     (f : (A ↪ B) → ℝ) :
     (∑ e : A ↪ B, f e) =
       ∑ S : Finset B, ∑ a : A ≃ ↥S,
         f (a.toEmbedding.trans (Function.Embedding.subtype (fun i => i ∈ S))) := by
-  classical
-  let g : (Σ S : Finset B, A ≃ ↥S) → (A ↪ B) :=
-    fun u => u.2.toEmbedding.trans (Function.Embedding.subtype (fun i => i ∈ u.1))
+  let g (u : Σ S : Finset B, A ≃ ↥S) := ((embeddingsWithRangeEquiv (u.1 : Set B)) u.2).1
   have hg : Function.Bijective g := by
     constructor
     · rintro ⟨S, a⟩ ⟨T, b⟩ h
-      have hST : S = T := by
-        apply Finset.coe_injective
-        rw [← range_embedding_of_subset_equiv S a, ← range_embedding_of_subset_equiv T b]
-        exact congrArg (fun e : A ↪ B => Set.range (e : A → B)) h
+      have hs : Set.range (g ⟨S, a⟩) = (S : Set B) := ((embeddingsWithRangeEquiv _) a).2
+      rw [h] at hs
+      have hST := Finset.coe_injective (hs.symm.trans ((embeddingsWithRangeEquiv _) b).2)
       subst T
-      have hab : a = b := by
-        apply Equiv.ext
-        intro i
-        apply Subtype.ext
-        exact congrArg (fun e : A ↪ B => e i) h
-      subst b
-      rfl
+      exact congrArg (Sigma.mk S) ((embeddingsWithRangeEquiv (S : Set B)).injective (Subtype.ext h))
     · intro e
       let S := Finset.univ.map e
-      have hS : Set.range e = (S : Set B) := by ext j; simp [S]
-      let a : A ≃ ↥S := e.toEquivRange.trans (Set.equivOfEq hS)
-      refine ⟨⟨S, a⟩, ?_⟩
-      apply Function.Embedding.ext
-      intro i
-      rfl
+      have hS : Set.range e = (S : Set B) := by ext; simp [S]
+      let E : (A ≃ ↥S) ≃ _ := embeddingsWithRangeEquiv (S : Set B)
+      exact ⟨⟨S, E.symm ⟨e, hS⟩⟩, congrArg Subtype.val (E.apply_symm_apply ⟨e, hS⟩)⟩
   calc
-    _ = ∑ u : Σ S : Finset B, A ≃ ↥S, f (g u) :=
-      ((Equiv.ofBijective g hg).sum_comp f).symm
-    _ = _ := by rw [Fintype.sum_sigma]
+    _ = ∑ u : Σ S : Finset B, A ≃ ↥S, f (g u) := ((Equiv.ofBijective g hg).sum_comp f).symm
+    _ = _ := by
+      rw [Fintype.sum_sigma]
+      exact Fintype.sum_equiv (.refl _) _ _ fun _ => Fintype.sum_equiv (.refl _) _ _ fun _ => rfl
+
+end
 
 /-- The sample sum does not depend on which ordering is chosen for a fixed slot set. -/
 lemma sum_samples_subset_equiv {n p r : ℕ} (S : Finset (Fin p))
@@ -199,7 +185,6 @@ lemma monomial_replacement_by_subset {p q r : ℕ} (σ : Fin q → Fin p)
   let b : Fin r ↪ Fin q := a.toEmbedding.trans (Function.Embedding.subtype (fun i => i ∈ S))
   let f : Fin q → ℝ := fun j => if h : j ∈ Set.range b then v (b.toEquivRange.symm ⟨j, h⟩) (σ j)
     else m (σ j)
-  have hb : Set.range b = (S : Set (Fin q)) := range_embedding_of_subset_equiv S a
   change (∏ j : Fin q, f j) = _
   rw [← Finset.prod_mul_prod_compl S f]
   congr 1
@@ -214,11 +199,7 @@ lemma monomial_replacement_by_subset {p q r : ℕ} (σ : Fin q → Fin p)
         change v (b.toEquivRange.symm ⟨b i, _⟩) (σ (a i)) = _
         simp
   · apply Finset.prod_congr rfl
-    intro j hj
-    have hjb : j ∉ Set.range b := by
-      rw [hb]
-      simpa using Finset.mem_compl.mp hj
-    exact dite_eq_right hjb
+    aesop
 
 /-- Grouping the derivative injections by their range removes all dependence on
 how the selected monomial slots are ordered. -/
@@ -247,9 +228,7 @@ lemma monomial_derivative_sample_sum {n p q r : ℕ} (σ : Fin q → Fin p)
         intro e _
         exact monomial_replacement_by_subset σ S a m (fun i => Y (e i))
       _ = _ := by
-        rw [← Finset.sum_mul]
-        rw [sum_samples_subset_equiv S a (fun j i => Y j (σ i))]
-        exact mul_comm _ _
+        simpa only [← Finset.sum_mul, sum_samples_subset_equiv S a (fun j i => Y j (σ i))] using mul_comm _ _
   simp_rw [hsamp]
   simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
 
@@ -258,13 +237,12 @@ lemma card_equiv_fin_subset {q r : ℕ} (S : Finset (Fin q)) :
   classical
   split_ifs with h
   · let a : Fin r ≃ ↥S := Fintype.equivOfCardEq (by simpa using h.symm)
-    rw [Fintype.card_equiv a]
-    simp
+    simp_all [Fintype.card_equiv a]
   · have hempty : IsEmpty (Fin r ≃ ↥S) := ⟨fun a => h (by simpa using (Fintype.card_congr a).symm)⟩
-    exact Fintype.card_eq_zero
+    simp
 
 lemma normalized_monomial_derivative_sample_sum {n p q r : ℕ} (σ : Fin q → Fin p)
-    (m : Fin p → ℝ) (Y : Fin n → Fin p → ℝ) (hrn : r ≤ n) :
+    (m : Fin p → ℝ) (Y : Fin n → Fin p → ℝ) :
     (((r.factorial : ℝ) * (n.descFactorial r : ℝ))⁻¹ * ∑ e : Fin r ↪ Fin n,
       iteratedFDeriv ℝ r (RoughRegime.PolynomialDerivatives.monomial σ) m (fun i => Y (e i))) =
       ∑ S : Finset (Fin q), if S.card = r then
@@ -279,9 +257,7 @@ lemma normalized_monomial_derivative_sample_sum {n p q r : ℕ} (σ : Fin q → 
   split_ifs with h
   · rw [h]
     have hfac : (r.factorial : ℝ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero r
-    have hdesc : (n.descFactorial r : ℝ) ≠ 0 := by
-      exact_mod_cast (Nat.ne_of_gt (Nat.descFactorial_pos.mpr hrn))
-    field_simp
+    grind
   · simp
 
 /-- The derivative-defined distinct-sample expression at any expansion point. -/
@@ -291,8 +267,11 @@ def derivativeLiftAt {Ω : Type*} {n p : ℕ} (R : ℕ) (f : (Fin p → ℝ) →
     (((r.factorial : ℝ) * (n.descFactorial r : ℝ))⁻¹ * ∑ e : Fin r ↪ Fin n,
       iteratedFDeriv ℝ r f m (fun i => Y (e i) ω))
 
+section
+variable {Ω : Type*}
+
 /-- A monomial lift agrees exactly with the centered derivative expansion at its degree. -/
-theorem monomialLift_eq_derivativeLiftAt {Ω : Type*} {n p q : ℕ}
+theorem monomialLift_eq_derivativeLiftAt {n p q : ℕ}
     (σ : Fin q → Fin p) (Y : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
     (hqn : q ≤ n) (ω : Ω) :
     RoughRegime.Upper.monomialLift σ (fun j ω => Y j ω + m) ω =
@@ -300,9 +279,7 @@ theorem monomialLift_eq_derivativeLiftAt {Ω : Type*} {n p q : ℕ}
   classical
   rw [monomialLift_centering σ Y m hqn ω]
   unfold derivativeLiftAt
-  have hexp (r : ℕ) (hr : r ∈ Finset.range (q + 1)) :=
-    normalized_monomial_derivative_sample_sum σ m (fun j => Y j ω)
-      ((Nat.le_of_lt_succ (Finset.mem_range.mp hr)).trans hqn)
+  have hexp (r : ℕ) := normalized_monomial_derivative_sample_sum (r := r) σ m (fun j => Y j ω)
   calc
     _ = ∑ r ∈ Finset.range (q + 1), ∑ S : Finset (Fin q),
         if S.card = r then (∏ j ∈ Sᶜ, m (σ j)) *
@@ -316,9 +293,9 @@ theorem monomialLift_eq_derivativeLiftAt {Ω : Type*} {n p q : ℕ}
         simp only [Fintype.card_fin] at hcard
         omega
       simp [hS]
-    _ = _ := Finset.sum_congr rfl (fun r hr => (hexp r hr).symm)
+    _ = _ := Finset.sum_congr rfl (fun r _ => (hexp r).symm)
 
-lemma derivativeLiftAt_monomial_stable {Ω : Type*} {n p q R : ℕ}
+lemma derivativeLiftAt_monomial_stable {n p q R : ℕ}
     (σ : Fin q → Fin p) (Y : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
     (hqR : q ≤ R) (ω : Ω) :
     derivativeLiftAt R (RoughRegime.PolynomialDerivatives.monomial σ) m Y ω =
@@ -329,44 +306,31 @@ lemma derivativeLiftAt_monomial_stable {Ω : Type*} {n p q R : ℕ}
   apply Finset.sum_subset (Finset.range_mono (Nat.add_le_add_right hqR 1))
   intro r _ hr
   have hqr : q < r := by
-    have hr' : ¬r < q + 1 := fun h => hr (Finset.mem_range.mpr h)
-    omega
+    simp_all
   have hzero (e : Fin r ↪ Fin n) :=
     RoughRegime.PolynomialDerivatives.monomial_iteratedFDeriv_above_degree σ m
       (fun i => Y (e i) ω) hqr
   simp only [hzero, Finset.sum_const_zero, mul_zero]
 
-lemma derivativeLiftAt_polynomial_monomial_sum {Ω : Type*} {n p : ℕ}
+lemma derivativeLiftAt_polynomial_monomial_sum {n p : ℕ}
     (R : ℕ) (F : MvPolynomial (Fin p) ℝ) (Y : Fin n → Ω → Fin p → ℝ)
     (m : Fin p → ℝ) (ω : Ω) :
     derivativeLiftAt R (fun x => MvPolynomial.eval x F) m Y ω =
       ∑ α ∈ F.support, F.coeff α * derivativeLiftAt R
         (RoughRegime.PolynomialDerivatives.monomial (RoughRegime.Upper.exponentCoordinates α)) m Y ω := by
   classical
-  unfold derivativeLiftAt
-  have hstep (r : ℕ) :
-      (((r.factorial : ℝ) * (n.descFactorial r : ℝ))⁻¹ * ∑ e : Fin r ↪ Fin n,
-        iteratedFDeriv ℝ r (fun x => MvPolynomial.eval x F) m (fun i => Y (e i) ω)) =
-      ∑ α ∈ F.support, F.coeff α *
-        ((((r.factorial : ℝ) * (n.descFactorial r : ℝ))⁻¹ * ∑ e : Fin r ↪ Fin n,
-          iteratedFDeriv ℝ r (RoughRegime.PolynomialDerivatives.monomial
-            (RoughRegime.Upper.exponentCoordinates α)) m (fun i => Y (e i) ω))) := by
-    simp_rw [RoughRegime.PolynomialDerivatives.polynomial_iteratedFDeriv_monomial_sum]
+  simp only [derivativeLiftAt]
+  simp_rw [RoughRegime.PolynomialDerivatives.polynomial_iteratedFDeriv_monomial_sum, Finset.mul_sum]
+  conv_lhs =>
+    enter [2, r]
     rw [Finset.sum_comm]
-    simp_rw [← Finset.mul_sum]
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro α _
-    ring
-  simp_rw [hstep]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro α _
-  exact (Finset.mul_sum _ _ _).symm
+  congr! 3
+  ring
 
 /-- The monomial-defined unbiased lift equals the exact derivative-defined lift at
 every expansion point. In particular it is invariant under centering the observations. -/
-theorem polynomialLift_eq_derivativeLiftAt {Ω : Type*} {n p R : ℕ}
+theorem polynomialLift_eq_derivativeLiftAt {n p R : ℕ}
     (F : MvPolynomial (Fin p) ℝ) (Y : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
     (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n) (ω : Ω) :
     RoughRegime.Upper.polynomialLift F (fun j ω => Y j ω + m) ω =
@@ -383,7 +347,7 @@ theorem polynomialLift_eq_derivativeLiftAt {Ω : Type*} {n p R : ℕ}
   rw [derivativeLiftAt_monomial_stable _ Y m hqR ω]
   exact monomialLift_eq_derivativeLiftAt _ Y m (hqR.trans hRn) ω
 
-lemma derivativeLiftAt_eq_centeredDerivativeLift {Ω : Type*} {n p : ℕ}
+lemma derivativeLiftAt_eq_centeredDerivativeLift {n p : ℕ}
     (R : ℕ) (F : MvPolynomial (Fin p) ℝ) (Y : Fin n → Ω → Fin p → ℝ)
     (m : Fin p → ℝ) (ω : Ω) :
     derivativeLiftAt R (fun x => MvPolynomial.eval x F) m Y ω =
@@ -392,6 +356,7 @@ lemma derivativeLiftAt_eq_centeredDerivativeLift {Ω : Type*} {n p : ℕ}
   unfold derivativeLiftAt RoughRegime.UpperCovariance.centeredDerivativeLift
     RoughRegime.UpperCovariance.centeredKernelExpansion
     RoughRegime.UpperCovariance.kernelStatistic RoughRegime.UpperCovariance.kernelSum
+  simp only [ContinuousMultilinearMap.coe_coe]
   rw [Finset.sum_range_succ']
   simp only [iteratedFDeriv_zero_apply, Nat.factorial_zero, Nat.descFactorial_zero, Nat.cast_one,
     one_mul, inv_one, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Fintype.card_embedding_eq,
@@ -405,7 +370,7 @@ lemma derivativeLiftAt_eq_centeredDerivativeLift {Ω : Type*} {n p : ℕ}
 
 /-- Complete algebraic identity identifying the original coefficient lift with its
 centered derivative expansion. The center is arbitrary; no population identity is assumed. -/
-theorem polynomialLift_eq_centeredDerivativeLift {Ω : Type*} {n p R : ℕ}
+theorem polynomialLift_eq_centeredDerivativeLift {n p R : ℕ}
     (F : MvPolynomial (Fin p) ℝ) (X : Fin n → Ω → Fin p → ℝ) (m : Fin p → ℝ)
     (hdeg : F.totalDegree ≤ R) (hRn : R ≤ n) :
     RoughRegime.Upper.polynomialLift F X =
@@ -414,7 +379,8 @@ theorem polynomialLift_eq_centeredDerivativeLift {Ω : Type*} {n p R : ℕ}
   have hX : (fun j ω => (X j ω - m) + m) = X := by
     funext j ω
     exact sub_add_cancel (X j ω) m
-  rw [← derivativeLiftAt_eq_centeredDerivativeLift]
-  rw [← polynomialLift_eq_derivativeLiftAt F (fun j ω => X j ω - m) m hdeg hRn ω, hX]
+  simp [← derivativeLiftAt_eq_centeredDerivativeLift, ← polynomialLift_eq_derivativeLiftAt F (fun j ω => X j ω - m) m hdeg hRn ω]
+
+end
 
 end RoughRegime.LiftTranslation

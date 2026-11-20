@@ -36,8 +36,6 @@ theorem historyMarkedAppend_fiber_map (dependent : J → J → Prop)
   let ν := Measure.pi (fun _ : Fin (historyShapeLength dependent g) => π)
   let f : (Fin (historyShapeLength dependent g) → E) × E → HistoryMarked dependent E :=
     fun p => historyMarkedAppend dependent hsymm j (⟨g, p.1⟩, p.2)
-  have hf : Measurable f := (historyMarkedAppend_measurable dependent hsymm j).comp
-    ((historyMarked_measurable_mk dependent g).prodMap measurable_id)
   have hm : (Measure.map (Sigma.mk g) ν).prod π =
       Measure.map (Prod.map (fun marks : Fin (historyShapeLength dependent g) → E =>
         (⟨g, marks⟩ : HistoryMarked dependent E)) id) (ν.prod π) := by
@@ -92,7 +90,7 @@ theorem historyMarkedTerminalSet_measurable (dependent : J → J → Prop) (j : 
   intro g
   change MeasurableSet {marks : Fin (historyShapeLength dependent g) → E |
     g ∈ Set.range (historyShapeAppend dependent j)}
-  by_cases hg : g ∈ Set.range (historyShapeAppend dependent j) <;> simp [hg]
+  simp_all
 
 omit [Fintype J] [LinearOrder J] in
 /-- Reindex a sum of measures on an actual subtype, with zero outside it. -/
@@ -109,10 +107,14 @@ theorem historyMeasure_sum_subtype {I X : Type*} [MeasurableSpace X]
       split_ifs <;> rfl
     _ = _ := by simpa [Set.indicator_apply] using (tsum_subtype S (fun i => μ i s)).symm
 
-/-- The append component is exactly the actual reference measure restricted to appended shapes. -/
-theorem historyMarkedTerminalReferenceRaw_eq_restrict (dependent : J → J → Prop)
+section
+variable (dependent : J → J → Prop)
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (j : J) {E : Type*} [MeasurableSpace E] (π : Measure E) :
+    (Δ : ℕ) (j : J) {E : Type*} [MeasurableSpace E]
+include hrefl hsymm
+
+/-- The append component is exactly the actual reference measure restricted to appended shapes. -/
+theorem historyMarkedTerminalReferenceRaw_eq_restrict (π : Measure E) :
     historyMarkedTerminalReferenceRaw dependent Δ j π =
       (historyMarkedReferenceRaw dependent Δ π).restrict (historyMarkedTerminalSet dependent j) := by
   classical
@@ -131,7 +133,7 @@ theorem historyMarkedTerminalReferenceRaw_eq_restrict (dependent : J → J → P
         if g ∈ G then Set.univ else ∅ := by
       ext marks
       simp only [Set.mem_preimage, historyMarkedTerminalSet, Set.mem_ofPred_eq]
-      by_cases hg : g ∈ G <;> simp [G, hg]
+      grind
     rw [hp]
     by_cases hg : g ∈ G <;> simp [hg, μ]
   change _ = (Measure.sum μ).restrict _
@@ -143,11 +145,12 @@ theorem historyMarkedTerminalReferenceRaw_eq_restrict (dependent : J → J → P
   have he := Measure.sum_comp_equiv e (fun g : G => μ g.val)
   exact he
 
+section
+variable [StandardBorelSpace E]
+    (π : Measure E) [IsProbabilityMeasure π]
+
 /-- Full marked append/delete change of variables for the actual reference measure. -/
-theorem historyMarkedReferenceRaw_append_restrict (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (j : J) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] :
+theorem historyMarkedReferenceRaw_append_restrict :
     ENNReal.ofReal (historyReferenceRho Δ) •
       Measure.map (historyMarkedAppend dependent hsymm j (E := E))
         ((historyMarkedReferenceRaw dependent Δ π).prod π) =
@@ -156,10 +159,7 @@ theorem historyMarkedReferenceRaw_append_restrict (dependent : J → J → Prop)
     (historyMarkedTerminalReferenceRaw_eq_restrict dependent hrefl hsymm Δ j π)
 
 /-- The same exact append change of variables holds for the normalized reference probability. -/
-theorem historyMarkedReference_append_restrict (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (j : J) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] :
+theorem historyMarkedReference_append_restrict :
     ENNReal.ofReal (historyReferenceRho Δ) •
       Measure.map (historyMarkedAppend dependent hsymm j (E := E))
         ((historyMarkedReference dependent Δ π).prod π) =
@@ -173,5 +173,9 @@ theorem historyMarkedReference_append_restrict (dependent : J → J → Prop)
   · exact (historyMarkedAppend_measurable dependent hsymm j).aemeasurable
   rw [smul_smul, mul_comm, ← smul_smul,
     historyMarkedReferenceRaw_append_restrict dependent hrefl hsymm Δ j π]
+
+end
+
+end
 
 end NearlyMinimax

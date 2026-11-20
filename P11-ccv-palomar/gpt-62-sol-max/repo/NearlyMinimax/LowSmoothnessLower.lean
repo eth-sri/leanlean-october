@@ -39,24 +39,12 @@ theorem low_smoothness_nonparametric_minimax_lower {d : ℕ} (C : ModelConstants
     omega
   have hg := lowSmoothness_amplitude_legal_guards (d := d) C.smoothness_pos G.b_pos.le hnR
     G.field_guard G.variance_guard
-  have hη : 0 ≤ η := hg.1
-  have hfield : ((2 : ℝ) ^ d + 2) * η ≤ G.ternary.ρ := hg.2.1
-  have hvariance : η ^ 2 ≤ G.ternary.ρ := hg.2.2
-  have hmean : n * (2 / (k : ℝ)) ^ d ≤ 1 :=
+  have hmean :=
     lowSmoothness_design_occupancy C.smoothness_pos hd hnR
-  have hbudget : gridUniformScoreBudget G.ternary k n η ≤ 1 := by
-    have hb := lowSmoothness_total_score_budget (d := d) C.smoothness_pos G.b_pos.le hnR
-      (lowSmoothnessScoreConstant_nonneg G.ternary)
-    have he : gridUniformScoreBudget G.ternary k n η =
-        lowSmoothnessScoreConstant G.ternary *
-          ((n : ℝ) ^ 2 * (lowSmoothnessAmplitude d C.smoothness G.b n) ^ 4 /
-            (lowSmoothnessGrid d C.smoothness n : ℝ) ^ d) := by
-      dsimp [gridUniformScoreBudget, lowSmoothnessScoreConstant, k, η]
-      ring
-    rw [he]
-    exact hb.trans G.score_guard
-  have hprior := grid_prior_minimax_lower C G.ternary k η G.b hk hs1 G.b_pos.le hη
-    hfield hvariance (by rfl) G.holder_guard hmean hbudget
+  have hbudget : gridUniformScoreBudget G.ternary k n η ≤ 1 :=
+    (lowSmoothness_total_score_budget C.smoothness_pos G.b_pos.le hnR
+      (lowSmoothnessScoreConstant_nonneg G.ternary)).trans G.score_guard
+  have hprior := grid_prior_minimax_lower C G.ternary k η G.b hk hs1 G.b_pos.le hg (by rfl) G.holder_guard hmean hbudget
   have hseparation := lowSmoothness_variance_separation (d := d) (b := G.b)
     C.smoothness_pos hnR
   apply (ENNReal.ofReal_le_ofReal ?_).trans hprior

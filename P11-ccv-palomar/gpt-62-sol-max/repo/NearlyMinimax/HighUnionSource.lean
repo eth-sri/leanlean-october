@@ -49,17 +49,17 @@ variable {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
 def highUnionVacuum : HighRawState d k F := ((fun _ => 1), 0)
 
 def highUnionSourceState
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) :
+    (h : HighUnionHistory d k E) :
     HighRawState d k F :=
-  highUnionMarkedState R (fun i j => j ∈ highNeighborLabels d k i) (highCenterMix C)
+  highUnionMarkedState R (highNeighbors d k) (highCenterMix C)
     highUnionVacuum h
 
 def highUnionSourceDensity
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
+    (h : HighUnionHistory d k E)
     (x : Covariate d) : ℝ := (highUnionSourceState C R h).1 x
 
 def highUnionSourceMass
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) : ℝ :=
+    (h : HighUnionHistory d k E) : ℝ :=
   ∫ x, highUnionSourceDensity C R h x ∂cubeVolume d
 
 variable {M Cfr : ℝ} (G : HighUnionSourceGuards C M Cfr R)
@@ -86,16 +86,17 @@ theorem highUnionSource_vacuum_interval :
   have hr := highCenterRadius_le_margins C
   constructor <;> linarith [highCenterRadius_pos C]
 
-theorem highUnionSourceDensity_interval
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) (x : Covariate d) :
+section
+variable (h : HighUnionHistory d k E)
+
+theorem highUnionSourceDensity_interval (x : Covariate d) :
     highUnionSourceDensity C R h x ∈ Icc (C.densityLower+1/M) (C.densityUpper-1/M) :=
   highUnionHistory_density_interval R (highCenterMix C) _ _
     (highUnionSource_reset_interval C R G) (historyShapeLength _ h.1)
     (historyShapeCanonicalLabels _ h.1) highUnionVacuum
     (fun _ => highUnionSource_vacuum_interval C R G) h.2 x
 
-theorem highUnionSourceState_coefficient_ball
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) :
+theorem highUnionSourceState_coefficient_ball :
     ∀ j, (∑ γ, |(highUnionSourceState C R h).2 j γ|) ≤ Cfr⁻¹ := by
   exact highUnionHistory_coefficient_ball R (highCenterMix C) Cfr
     (by linarith [G.frame]) G.vector_ball G.time_interval (historyShapeLength _ h.1)
@@ -103,16 +104,22 @@ theorem highUnionSourceState_coefficient_ball
     (fun _ => by simpa [highUnionVacuum] using
       (inv_nonneg.mpr (by linarith [G.frame] : 0 ≤ Cfr))) h.2
 
-theorem highUnionSourceDensity_joint_measurable [∀ i, StandardBorelSpace (E i)] :
-    Measurable (fun hx : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-      (HighUnionMark E) × Covariate d => highUnionSourceDensity C R hx.1 hx.2) :=
-  highUnionMarkedDensity_joint_measurable R (fun i j => j ∈ highNeighborLabels d k i)
+end
+
+section
+variable [∀ i, StandardBorelSpace (E i)]
+
+theorem highUnionSourceDensity_joint_measurable :
+    Measurable (fun hx : HighUnionHistory d k E × Covariate d => highUnionSourceDensity C R hx.1 hx.2) :=
+  highUnionMarkedDensity_joint_measurable R (highNeighbors d k)
     G.slope_measurable G.intercept_measurable (highCenterMix C) highUnionVacuum measurable_const
 
-theorem highUnionSourceMass_measurable [∀ i, StandardBorelSpace (E i)] :
+theorem highUnionSourceMass_measurable :
     Measurable (highUnionSourceMass C R) :=
-  highUnionMarkedMass_measurable R (fun i j => j ∈ highNeighborLabels d k i)
+  highUnionMarkedMass_measurable R (highNeighbors d k)
     G.slope_measurable G.intercept_measurable (highCenterMix C) highUnionVacuum measurable_const
+
+end
 
 theorem highUnionSourceDensity_fiber_mean_one
     (g : HistoryShape (fun i j : HighWindowLabels d k => j ∉ highNeighborLabels d k i))
@@ -126,15 +133,18 @@ theorem highUnionSourceDensity_fiber_mean_one
     (highCenterMix C) (highCenterMix_mem C).1.le (highCenterMix_mem C).2
     (historyShapeLength _ g) (historyShapeCanonicalLabels _ g) highUnionVacuum (fun _ => rfl) x
 
-theorem highUnionSourceMass_interval [∀ i, StandardBorelSpace (E i)]
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) :
+section
+variable [∀ i, StandardBorelSpace (E i)]
+
+theorem highUnionSourceMass_interval
+    (h : HighUnionHistory d k E) :
     highUnionSourceMass C R h ∈ Icc (C.densityLower+1/M) (C.densityUpper-1/M) := by
   letI := cubeVolume_isProbability d
   exact boundedIntercept_mean_mem (cubeVolume d) (highUnionSourceDensity C R h)
     ((highUnionSourceDensity_joint_measurable C R G).comp (measurable_const.prodMk measurable_id))
     _ _ (highUnionSourceDensity_interval C R G h)
 
-theorem highUnionSourceMass_fiber_mean_one [∀ i, StandardBorelSpace (E i)]
+theorem highUnionSourceMass_fiber_mean_one
     (g : HistoryShape (fun i j : HighWindowLabels d k => j ∉ highNeighborLabels d k i)) :
     (∫ marks, highUnionSourceMass C R ⟨g,marks⟩
       ∂Measure.pi (fun _ : Fin (historyShapeLength _ g) => highUnionLaw R (highCenterMix C))) = 1 := by
@@ -167,14 +177,14 @@ theorem highUnionSourceMass_fiber_mean_one [∀ i, StandardBorelSpace (E i)]
   simp_rw [he]
   simp
 
-theorem highUnionSourceMass_block_oscillation [∀ i, StandardBorelSpace (E i)] (hk : 2 ≤ k)
+theorem highUnionSourceMass_block_oscillation (hk : 2 ≤ k)
     (g : HistoryShape (fun i j : HighWindowLabels d k => j ∉ highNeighborLabels d k i))
     (marks marks' : Fin (historyShapeLength _ g) → HighUnionMark E) (j : HighWindowLabels d k)
     (hMarks : ∀ i, historyShapeCanonicalLabels _ g i ≠ j → marks i = marks' i) :
     |highUnionSourceMass C R ⟨g,marks⟩ - highUnionSourceMass C R ⟨g,marks'⟩| ≤
       (2 / (k : ℝ))^d * (C.densityUpper-C.densityLower) := by
   have h := highAffineMarkedMass_block_oscillation d k hk
-    (fun i j => j ∈ highNeighborLabels d k i) (highUnionSlope R)
+    (highNeighbors d k) (highUnionSlope R)
     (fun _ e _ => highUnionIntercept R (highCenterMix C) e)
     (fun j e => (highUnionSlope_joint_measurable R G.slope_measurable j).comp
       (measurable_const.prodMk measurable_id)) (fun _ _ => measurable_const)
@@ -189,6 +199,8 @@ theorem highUnionSourceMass_block_oscillation [∀ i, StandardBorelSpace (E i)] 
     linarith
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   linarith [one_div_pos.mpr hM0]
+
+end
 
 end
 end NearlyMinimax

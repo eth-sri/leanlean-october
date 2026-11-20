@@ -48,12 +48,8 @@ omit [DecidableEq α] in
 theorem historyComponent_eq_of_connected {U : Finset α} {a b : α}
     (h : HistoryConnected U a b) : historyComponent U a = historyComponent U b := by
   ext x
-  rw [mem_historyComponent, mem_historyComponent]
-  constructor
-  · rintro ⟨hx, hax⟩
-    exact ⟨hx, .trans _ _ _ (.symm _ _ h) hax⟩
-  · rintro ⟨hx, hbx⟩
-    exact ⟨hx, .trans _ _ _ h hbx⟩
+  simp only [mem_historyComponent]
+  exact and_congr_right' ⟨fun hax => .trans _ _ _ (.symm _ _ h) hax, fun hbx => .trans _ _ _ h hbx⟩
 
 theorem historyComponent_eq_of_inter {U : Finset α} {a b : α}
     (h : (historyComponent U a ∩ historyComponent U b).Nonempty) :
@@ -63,7 +59,6 @@ theorem historyComponent_eq_of_inter {U : Finset α} {a b : α}
   apply historyComponent_eq_of_connected
   exact .trans _ _ _ (mem_historyComponent.1 hxa).2 (.symm _ _ (mem_historyComponent.1 hxb).2)
 
-omit [DecidableEq α] in
 omit [DecidableEq α] in
 theorem historyComponent_connected_lift {U : Finset α} {r a b : α}
     (h : HistoryConnected U a b) :
@@ -105,24 +100,38 @@ theorem historyComponent_upper {S U : Finset α} (hU : IsHistoryUpper S U) (r : 
 
 def historyComponents (U : Finset α) : Finset (Finset α) := U.image (historyComponent U)
 
-theorem mem_historyComponents {U P : Finset α} :
+section
+variable {U P : Finset α}
+
+theorem mem_historyComponents :
     P ∈ historyComponents U ↔ ∃ r ∈ U, historyComponent U r = P := Finset.mem_image
 
-theorem historyComponents_subset {U P : Finset α} (hP : P ∈ historyComponents U) : P ⊆ U := by
+section
+variable (hP : P ∈ historyComponents U)
+include hP
+
+theorem historyComponents_subset : P ⊆ U := by
   obtain ⟨r, _, rfl⟩ := mem_historyComponents.1 hP
   exact historyComponent_subset U r
 
-theorem historyComponents_connected {U P : Finset α} (hP : P ∈ historyComponents U) :
+theorem historyComponents_connected :
     IsConnectedHistorySubset P := by
   obtain ⟨r, hr, rfl⟩ := mem_historyComponents.1 hP
   exact historyComponent_connected hr
+
+end
+
+end
 
 theorem historyComponents_upper {S U P : Finset α} (hU : IsHistoryUpper S U)
     (hP : P ∈ historyComponents U) : IsHistoryUpper S P := by
   obtain ⟨r, _, rfl⟩ := mem_historyComponents.1 hP
   exact historyComponent_upper hU r
 
-theorem historyComponents_pairwise_disjoint (U : Finset α) :
+section
+variable (U : Finset α)
+
+theorem historyComponents_pairwise_disjoint :
     ∀ P ∈ historyComponents U, ∀ Q ∈ historyComponents U, P ≠ Q → Disjoint P Q := by
   intro P hP Q hQ hpq
   obtain ⟨p, _, rfl⟩ := mem_historyComponents.1 hP
@@ -130,7 +139,7 @@ theorem historyComponents_pairwise_disjoint (U : Finset α) :
   rw [Finset.disjoint_iff_inter_eq_empty, ← Finset.not_nonempty_iff_eq_empty]
   exact fun hi => hpq (historyComponent_eq_of_inter hi)
 
-theorem historyComponents_biUnion (U : Finset α) : (historyComponents U).biUnion id = U := by
+theorem historyComponents_biUnion : (historyComponents U).biUnion id = U := by
   ext x
   rw [Finset.mem_biUnion]
   constructor
@@ -139,17 +148,16 @@ theorem historyComponents_biUnion (U : Finset α) : (historyComponents U).biUnio
   · intro hx
     exact ⟨historyComponent U x, mem_historyComponents.2 ⟨x, hx, rfl⟩, self_mem_historyComponent hx⟩
 
+end
+
 theorem historyUpper_biUnion {S : Finset α} {F : Finset (Finset α)}
     (hF : ∀ P ∈ F, IsHistoryUpper S P) : IsHistoryUpper S (F.biUnion id) := by
-  refine ⟨?_, ?_⟩
-  · intro x hx
-    obtain ⟨P, hP, hxP⟩ := Finset.mem_biUnion.1 hx
-    exact (hF P hP).1 hxP
-  · intro x hx y hy hxy
-    obtain ⟨P, hP, hxP⟩ := Finset.mem_biUnion.1 hx
-    exact Finset.mem_biUnion.2 ⟨P, hP, (hF P hP).2 x hxP y hy hxy⟩
+  grind [IsHistoryUpper]
 
-theorem historyComponentWeight_biUnion (weight : α → ℝ) (ρ t : ℝ)
+section
+variable (weight : α → ℝ) (ρ t : ℝ)
+
+theorem historyComponentWeight_biUnion
     {S : Finset α} (F : Finset (Finset α)) (hF : ∀ P ∈ F, IsHistoryUpper S P)
     (hdis : ∀ P ∈ F, ∀ Q ∈ F, P ≠ Q → Disjoint P Q) :
     historyComponentWeight weight ρ t (F.biUnion id) = ∏ P ∈ F, historyComponentWeight weight ρ t P := by
@@ -160,19 +168,16 @@ theorem historyComponentWeight_biUnion (weight : α → ℝ) (ρ t : ℝ)
     have hFinDis : ∀ Q ∈ F, ∀ R ∈ F, Q ≠ R → Disjoint Q R :=
       fun Q hQ R hR hQR => hdis Q (Finset.mem_insert_of_mem hQ) R (Finset.mem_insert_of_mem hR) hQR
     have hPdis : Disjoint P (F.biUnion id) := by
-      apply Finset.disjoint_left.2
-      intro x hxP hxF
-      obtain ⟨Q, hQ, hxQ⟩ := Finset.mem_biUnion.1 hxF
-      have hPQ : P ≠ Q := fun heq => hPF (heq ▸ hQ)
-      exact Finset.disjoint_left.1 (hdis P (Finset.mem_insert_self _ _) Q
-        (Finset.mem_insert_of_mem hQ) hPQ) hxP hxQ
+      rw [Finset.disjoint_biUnion_right]
+      intro Q hQ
+      apply hdis <;> grind
     have hinc := historyUpper_disjoint_incomparable (hF P (Finset.mem_insert_self _ _))
       (historyUpper_biUnion hFin) hPdis
     rw [Finset.biUnion_insert, id_eq, historyComponentWeight_union weight ρ t hinc,
       Finset.prod_insert hPF, ih hFin hFinDis]
 
 /-- The actual weight of an upper set is the product of its connected weights. -/
-theorem historyComponentWeight_eq_component_prod (weight : α → ℝ) (ρ t : ℝ)
+theorem historyComponentWeight_eq_component_prod
     {S U : Finset α} (hU : IsHistoryUpper S U) :
     historyComponentWeight weight ρ t U =
       ∏ P ∈ historyComponents U, historyComponentWeight weight ρ t P := by
@@ -181,6 +186,8 @@ theorem historyComponentWeight_eq_component_prod (weight : α → ℝ) (ρ t : �
       rw [historyComponents_biUnion]
     _ = _ := historyComponentWeight_biUnion weight ρ t (historyComponents U)
       (fun _ hP => historyComponents_upper hU hP) (historyComponents_pairwise_disjoint U)
+
+end
 
 def historyUpperPolymers (S : Finset α) : Finset (Finset α) := by
   classical
@@ -194,7 +201,7 @@ theorem mem_historyUpperPolymers {S P : Finset α} :
 
 theorem historyUpperPolymer_support_nonempty {S P : Finset α} (hP : P ∈ historyUpperPolymers S) :
     (historyMaximalPieces P).Nonempty :=
-  historyUpper_nonempty_maximal (mem_historyUpperPolymers.1 hP).1 (mem_historyUpperPolymers.1 hP).2.1
+  historyUpper_nonempty_maximal (mem_historyUpperPolymers.1 hP).2.1
 
 theorem historyComponents_mem_gas {S U : Finset α} (hU : IsHistoryUpper S U) :
     historyComponents U ∈ historyGasFamilies (historyUpperPolymers S) historyMaximalPieces (historyMaximalPieces U) := by
@@ -216,30 +223,16 @@ theorem historyConnected_mono {P U : Finset α} (hsub : P ⊆ U) {a b : α}
   Relation.EqvGen.mono (r := historyComparableEdge P) (p := historyComparableEdge U)
     (fun _ _ hab => ⟨hsub hab.1, hsub hab.2.1, hab.2.2⟩) a b h
 
-theorem historyConnected_preserves_incomparable_part {P Q : Finset α}
-    (hinc : IncomparableHistoryParts P Q) {a b : α} (h : HistoryConnected (P ∪ Q) a b) :
-    a ∈ P ↔ b ∈ P := by
-  induction h with
-  | rel a b hab =>
-    constructor
-    · intro haP
-      rcases Finset.mem_union.1 hab.2.1 with hbP | hbQ
-      · exact hbP
-      · exact hab.2.2.elim
-          (fun hab => ((hinc a haP b hbQ).1 hab).elim)
-          (fun hba => ((hinc a haP b hbQ).2 hba).elim)
-    · intro hbP
-      rcases Finset.mem_union.1 hab.1 with haP | haQ
-      · exact haP
-      · exact hab.2.2.elim
-          (fun hab => ((hinc b hbP a haQ).2 hab).elim)
-          (fun hba => ((hinc b hbP a haQ).1 hba).elim)
-  | refl a => exact Iff.rfl
-  | symm a b hab ih => exact ih.symm
-  | trans a b c hab hbc ihab ihbc => exact ihab.trans ihbc
+section
+variable {P Q : Finset α}
+    (hinc : IncomparableHistoryParts P Q)
+include hinc
 
-theorem historyComponent_incomparable_union {P Q : Finset α}
-    (hinc : IncomparableHistoryParts P Q) (hP : IsConnectedHistorySubset P) {p : α} (hp : p ∈ P) :
+theorem historyConnected_preserves_incomparable_part {a b : α} (h : HistoryConnected (P ∪ Q) a b) :
+    a ∈ P ↔ b ∈ P := by
+  induction h <;> grind [historyComparableEdge, IncomparableHistoryParts]
+
+theorem historyComponent_incomparable_union (hP : IsConnectedHistorySubset P) {p : α} (hp : p ∈ P) :
     historyComponent (P ∪ Q) p = P := by
   ext x
   constructor
@@ -249,84 +242,84 @@ theorem historyComponent_incomparable_union {P Q : Finset α}
     exact mem_historyComponent.2 ⟨Finset.mem_union_left _ hx,
       historyConnected_mono Finset.subset_union_left (hP.2 p hp x hx)⟩
 
-theorem historyGasFamily_piece_disjoint {S R : Finset α} {F : Finset (Finset α)}
-    (hF : F ∈ historyGasFamilies (historyUpperPolymers S) historyMaximalPieces R) :
+end
+
+section
+variable {S R : Finset α} {F : Finset (Finset α)}
+    (hF : F ∈ historyGasFamilies (historyUpperPolymers S) historyMaximalPieces R)
+include hF
+
+theorem historyGasFamily_piece_disjoint :
     ∀ P ∈ F, ∀ Q ∈ F, P ≠ Q → Disjoint P Q := by
   obtain ⟨hFP, hc, _⟩ := mem_historyGasFamilies.1 hF
   intro P hP Q hQ hpq
   exact (historyUpper_disjoint_iff (mem_historyUpperPolymers.1 (hFP hP)).1
     (mem_historyUpperPolymers.1 (hFP hQ)).1).2 (hc P hP Q hQ hpq)
 
-theorem historyGasFamily_biUnion_upper {S R : Finset α} {F : Finset (Finset α)}
-    (hF : F ∈ historyGasFamilies (historyUpperPolymers S) historyMaximalPieces R) :
-    IsHistoryUpper S (F.biUnion id) := by
-  exact historyUpper_biUnion (fun _ hP => (mem_historyUpperPolymers.1 ((mem_historyGasFamilies.1 hF).1 hP)).1)
+private theorem historyGasFamily_piece_upper {P : Finset α} (hP : P ∈ F) : IsHistoryUpper S P :=
+  (mem_historyUpperPolymers.1 ((mem_historyGasFamilies.1 hF).1 hP)).1
 
-theorem historyGasFamily_component_at {S R : Finset α} {F : Finset (Finset α)}
-    (hF : F ∈ historyGasFamilies (historyUpperPolymers S) historyMaximalPieces R)
+theorem historyGasFamily_biUnion_upper : IsHistoryUpper S (F.biUnion id) :=
+  historyUpper_biUnion fun _ => historyGasFamily_piece_upper hF
+
+theorem historyGasFamily_component_at
     {P : Finset α} (hP : P ∈ F) {p : α} (hp : p ∈ P) :
     historyComponent (F.biUnion id) p = P := by
-  have hupper : ∀ Q ∈ F, IsHistoryUpper S Q :=
-    fun _ hQ => (mem_historyUpperPolymers.1 ((mem_historyGasFamilies.1 hF).1 hQ)).1
   have hdis : Disjoint P ((F.erase P).biUnion id) := by
-    apply Finset.disjoint_left.2
-    intro x hxP hxF
-    obtain ⟨Q, hQ, hxQ⟩ := Finset.mem_biUnion.1 hxF
-    obtain ⟨hQP, hQF⟩ := Finset.mem_erase.1 hQ
-    exact Finset.disjoint_left.1 (historyGasFamily_piece_disjoint hF P hP Q hQF hQP.symm) hxP hxQ
-  have hinc := historyUpper_disjoint_incomparable (hupper P hP)
-    (historyUpper_biUnion (fun Q hQ => hupper Q (Finset.mem_of_mem_erase hQ))) hdis
+    rw [Finset.disjoint_biUnion_right]
+    intro Q hQ
+    exact historyGasFamily_piece_disjoint hF P hP Q (Finset.mem_erase.mp hQ).2 (Finset.mem_erase.mp hQ).1.symm
+  have hinc := historyUpper_disjoint_incomparable (historyGasFamily_piece_upper hF hP)
+    (historyUpper_biUnion (fun Q hQ => historyGasFamily_piece_upper hF (Finset.mem_of_mem_erase hQ))) hdis
   have hUnion : F.biUnion id = P ∪ (F.erase P).biUnion id := by
-    conv_lhs => rw [← Finset.insert_erase hP]
-    rw [Finset.biUnion_insert, id_eq]
+    grind
   rw [hUnion]
   exact historyComponent_incomparable_union hinc
     (mem_historyUpperPolymers.1 ((mem_historyGasFamilies.1 hF).1 hP)).2 hp
 
 /-- Compatible connected upper families are exactly the components of their union. -/
-theorem historyGasFamily_components_biUnion {S R : Finset α} {F : Finset (Finset α)}
-    (hF : F ∈ historyGasFamilies (historyUpperPolymers S) historyMaximalPieces R) :
+theorem historyGasFamily_components_biUnion :
     historyComponents (F.biUnion id) = F := by
   ext P
   constructor
-  · intro hP
-    obtain ⟨p, hp, rfl⟩ := mem_historyComponents.1 hP
-    obtain ⟨Q, hQ, hpQ⟩ := Finset.mem_biUnion.1 hp
-    rw [historyGasFamily_component_at hF hQ hpQ]
-    exact hQ
+  · grind [historyGasFamily_component_at, mem_historyComponents]
   · intro hP
     have hPP := (mem_historyUpperPolymers.1 ((mem_historyGasFamilies.1 hF).1 hP)).2.1
     obtain ⟨p, hp⟩ := hPP
     exact mem_historyComponents.2 ⟨p, Finset.mem_biUnion.2 ⟨P, hP, hp⟩,
       historyGasFamily_component_at hF hP hp⟩
 
+end
+
 def historyRestrictedUpperSets (S R : Finset α) : Finset (Finset α) := by
   classical
   exact (historyUpperSets S).filter (fun U => historyMaximalPieces U ⊆ R)
 
-theorem mem_historyRestrictedUpperSets {S R U : Finset α} :
+section
+variable {S R U : Finset α}
+
+theorem mem_historyRestrictedUpperSets :
     U ∈ historyRestrictedUpperSets S R ↔ IsHistoryUpper S U ∧ historyMaximalPieces U ⊆ R := by
   classical
   simp only [historyRestrictedUpperSets, Finset.mem_filter, mem_historyUpperSets]
 
-theorem historyRestrictedUpperSets_components_gas {S R U : Finset α}
+theorem historyRestrictedUpperSets_components_gas
     (hU : U ∈ historyRestrictedUpperSets S R) :
     historyComponents U ∈ historyGasFamilies (historyUpperPolymers S) historyMaximalPieces R := by
   obtain ⟨hupper, hmax⟩ := mem_historyRestrictedUpperSets.1 hU
   obtain ⟨hcP, hcompat, hcSupport⟩ := mem_historyGasFamilies.1 (historyComponents_mem_gas hupper)
   exact mem_historyGasFamilies.2 ⟨hcP, hcompat, fun P hP => (hcSupport P hP).trans hmax⟩
 
+end
+
 theorem historyGasFamily_biUnion_restricted {S R : Finset α} {F : Finset (Finset α)}
     (hF : F ∈ historyGasFamilies (historyUpperPolymers S) historyMaximalPieces R) :
     F.biUnion id ∈ historyRestrictedUpperSets S R := by
-  apply mem_historyRestrictedUpperSets.2
-  refine ⟨historyGasFamily_biUnion_upper hF, ?_⟩
+  refine mem_historyRestrictedUpperSets.2 ⟨historyGasFamily_biUnion_upper hF, ?_⟩
   intro x hx
-  obtain ⟨hxU, hm⟩ := mem_historyMaximalPieces.1 hx
-  obtain ⟨P, hP, hxP⟩ := Finset.mem_biUnion.1 hxU
-  have hxmaxP : x ∈ historyMaximalPieces P := mem_historyMaximalPieces.2 ⟨hxP, fun y hy hxy =>
-    hm y (Finset.mem_biUnion.2 ⟨P, hP, hy⟩) hxy⟩
-  exact (mem_historyGasFamilies.1 hF).2.2 P hP hxmaxP
+  obtain ⟨⟨P, hP, hxP⟩, hm⟩ := (mem_historyMaximalPieces.1 hx).imp Finset.mem_biUnion.1 id
+  exact (mem_historyGasFamilies.1 hF).2.2 P hP
+    (mem_historyMaximalPieces.2 ⟨hxP, fun y hy => hm y (Finset.mem_biUnion.2 ⟨P, hP, hy⟩)⟩)
 
 def historyRestrictedUpperDensity (weight : α → ℝ) (ρ t : ℝ) (S R : Finset α) : ℝ :=
   ∑ U ∈ historyRestrictedUpperSets S R, historyComponentWeight weight ρ t U
@@ -338,11 +331,8 @@ theorem historyRestrictedUpperDensity_eq_gas (weight : α → ℝ) (ρ t : ℝ) 
         (historyComponentWeight weight ρ t) R := by
   unfold historyRestrictedUpperDensity historyGasPartition
   apply Finset.sum_bij (fun U _ => historyComponents U)
-  · intro U hU
-    exact historyRestrictedUpperSets_components_gas hU
-  · intro U hU V hV hUV
-    have hh := congrArg (fun F : Finset (Finset α) => F.biUnion id) hUV
-    simpa only [historyComponents_biUnion] using hh
+  · solve_by_elim [historyRestrictedUpperSets_components_gas]
+  · grind [historyComponents_biUnion]
   · intro F hF
     exact ⟨F.biUnion id, historyGasFamily_biUnion_restricted hF, historyGasFamily_components_biUnion hF⟩
   · intro U hU

@@ -31,17 +31,13 @@ theorem probability_mixture_exceptional_risk_bound {Α : Type*} [MeasurableSpace
   have hp : e ≤ᵐ[μ] fun x => risk + bad.indicator (fun _ : Α => D ^ 2) x := by
     filter_upwards [hgood, hbad] with x hxgood hxbad
     by_cases hx : x ∈ bad
-    · rw [indicator_of_mem hx]
-      linarith [hxbad hx]
-    · rw [indicator_of_notMem hx, add_zero]
-      exact hxgood hx
+    · simp [indicator_of_mem hx] <;> grind
+    simp_all
   calc
     (∫ x, e x ∂μ) ≤ ∫ x, risk + bad.indicator (fun _ : Α => D ^ 2) x ∂μ :=
       integral_mono_ae he ((integrable_const _).add hI) hp
     _ = risk + D ^ 2 * μ.real bad := by
-      rw [integral_add (integrable_const _) hI, integral_indicator hbadmeas,
-        integral_const, integral_const]
-      simp [Measure.real, mul_comm]
+      simp [integral_add (integrable_const _) hI, integral_indicator hbadmeas, integral_const] <;> ring
     _ ≤ risk + D ^ 2 * ε := by gcongr
 
 end NearlyMinimax

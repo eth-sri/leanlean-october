@@ -11,16 +11,24 @@ open Set
 open scoped BigOperators ContDiff
 namespace RoughRegime.Model
 
-theorem holderBall_regular {d : ℕ} (f : Covariate d → ℝ) (t H : ℝ)
+section
+variable {d : ℕ}
+
+section
+variable (f : Covariate d → ℝ) (t H : ℝ)
+
+theorem holderBall_regular
     (hf : f ∈ holderBall t H) : 0 < t ∧ ContDiffOn ℝ (holderOrder t) f (cube d) := by
   change holderNorm f t ≤ ENNReal.ofReal H at hf
   unfold holderNorm at hf
   split_ifs at hf with hreg
-  · exact hreg
-  · exact False.elim (ENNReal.ofReal_ne_top (top_le_iff.mp hf))
+  all_goals (simp_all)
 
-theorem holderBall_coordinate_bound {d : ℕ} (f : Covariate d → ℝ) (t H : ℝ)
-    (hH : 0 ≤ H) (hf : f ∈ holderBall t H) (q : ℕ) (hq : q ≤ holderOrder t)
+section
+variable (hH : 0 ≤ H) (hf : f ∈ holderBall t H)
+include hH hf
+
+theorem holderBall_coordinate_bound (q : ℕ) (hq : q ≤ holderOrder t)
     (σ : Fin q → Fin d) (x : Covariate d) (hx : x ∈ cube d) :
     |coordinateDerivative f q σ x| ≤ H := by
   have hreg := holderBall_regular f t H hf
@@ -34,8 +42,7 @@ theorem holderBall_coordinate_bound {d : ℕ} (f : Covariate d → ℝ) (t H : �
       (le_iSup_of_le x (le_iSup_of_le hx le_rfl))))
   exact (ENNReal.ofReal_le_ofReal_iff hH).mp (hp.trans hsup)
 
-theorem holderBall_coordinate_modulus {d : ℕ} (f : Covariate d → ℝ) (t H : ℝ)
-    (hH : 0 ≤ H) (hf : f ∈ holderBall t H) (σ : Fin (holderOrder t) → Fin d)
+theorem holderBall_coordinate_modulus (σ : Fin (holderOrder t) → Fin d)
     (x y : Covariate d) (hx : x ∈ cube d) (hy : y ∈ cube d) :
     |coordinateDerivative f (holderOrder t) σ x - coordinateDerivative f (holderOrder t) σ y| ≤
       H * ‖x - y‖ ^ holderExponent t := by
@@ -52,12 +59,15 @@ theorem holderBall_coordinate_modulus {d : ℕ} (f : Covariate d → ℝ) (t H :
         coordinateDerivative f (holderOrder t) σ y| / ‖x - y‖ ^ holderExponent t) ≤
         holderSeminorm f t := le_iSup_of_le σ (le_iSup_of_le x (le_iSup_of_le hx
       (le_iSup_of_le y (le_iSup_of_le hy (le_iSup_of_le he le_rfl)))))
-    have hb : |coordinateDerivative f (holderOrder t) σ x -
-        coordinateDerivative f (holderOrder t) σ y| / ‖x - y‖ ^ holderExponent t ≤ H :=
+    have hb :=
       (ENNReal.ofReal_le_ofReal_iff hH).mp (hp.trans hsem)
     exact (div_le_iff₀ (Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr he)) _)).mp hb
 
-lemma linear_norm_le_coordinate_bound {d : ℕ} (L : Covariate d →L[ℝ] ℝ)
+end
+
+end
+
+lemma linear_norm_le_coordinate_bound (L : Covariate d →L[ℝ] ℝ)
     (H : ℝ) (hH : 0 ≤ H) (hb : ∀ i, |L (EuclideanSpace.single i 1)| ≤ H) :
     ‖L‖ ≤ (d : ℝ) * H := by
   classical
@@ -74,41 +84,43 @@ lemma linear_norm_le_coordinate_bound {d : ℕ} (L : Covariate d →L[ℝ] ℝ)
       intro i _
       rw [map_smul, norm_smul, Real.norm_eq_abs]
       exact mul_le_mul (by simpa only [Real.norm_eq_abs] using PiLp.norm_apply_le x i)
-        (by simpa only [Real.norm_eq_abs] using hb i) (abs_nonneg _) (norm_nonneg _)
+        (by tauto) (abs_nonneg _) (norm_nonneg _)
     _ = (d : ℝ) * H * ‖x‖ := by simp; ring
 
-lemma coordinateDerivative_of_order_zero {d : ℕ} (f : Covariate d → ℝ)
+section
+variable (f : Covariate d → ℝ)
+
+lemma coordinateDerivative_of_order_zero
     (q : ℕ) (hq : q = 0) (σ : Fin q → Fin d) (x : Covariate d) :
     coordinateDerivative f q σ x = f x := by
   subst q
   rfl
 
-theorem holderBall_spatial_modulus {d : ℕ} (f : Covariate d → ℝ) (t H : ℝ)
+theorem holderBall_spatial_modulus (t H : ℝ)
     (hH : 0 ≤ H) (hf : f ∈ holderBall t H) (x y : Covariate d)
     (hx : x ∈ cube d) (hy : y ∈ cube d) :
     |f x - f y| ≤ ((d : ℝ) + 1) * H * ‖x - y‖ ^ min t 1 := by
   have hreg := holderBall_regular f t H hf
   by_cases ht : t ≤ 1
   · have hk : holderOrder t = 0 := by
-      have hh : Nat.ceil t ≤ 1 := Nat.ceil_le.mpr (by simpa using ht)
+      have hh : Nat.ceil t ≤ 1 := Nat.ceil_le.mpr (by simp_all)
       unfold holderOrder
       omega
     have hb := holderBall_coordinate_modulus f t H hH hf
       (fun i => Fin.elim0 (show Fin 0 from hk ▸ i)) x y hx hy
     have hzero : ∀ (σ : Fin (holderOrder t) → Fin d) z,
         coordinateDerivative f (holderOrder t) σ z = f z := by
-      intro σ z
-      exact coordinateDerivative_of_order_zero f _ hk σ z
+      solve_by_elim [coordinateDerivative_of_order_zero]
     rw [hzero, hzero] at hb
     simp only [holderExponent, hk, min_eq_left ht, sub_zero, Nat.cast_zero] at hb ⊢
     exact hb.trans (mul_le_mul_of_nonneg_right
       (show H ≤ ((d : ℝ) + 1) * H by nlinarith [mul_nonneg (Nat.cast_nonneg d) hH])
       (Real.rpow_nonneg (norm_nonneg _) _))
   · have hk : 1 ≤ holderOrder t := by
-      have hh : 1 < Nat.ceil t := Nat.lt_ceil.mpr (by simpa using lt_of_not_ge ht)
+      have hh : 1 < Nat.ceil t := Nat.lt_ceil.mpr (by simp_all)
       unfold holderOrder
       omega
-    have hdiff : DifferentiableOn ℝ f (cube d) := hreg.2.differentiableOn (by simpa using (by omega : holderOrder t ≠ 0))
+    have hdiff := hreg.2.differentiableOn (by simpa using (by omega : holderOrder t ≠ 0))
     have hbound : ∀ z ∈ cube d, ‖fderivWithin ℝ f (cube d) z‖ ≤ (d : ℝ) * H := by
       intro z hz
       apply linear_norm_le_coordinate_bound _ H hH
@@ -119,5 +131,9 @@ theorem holderBall_spatial_modulus {d : ℕ} (f : Covariate d → ℝ) (t H : �
     rw [Real.norm_eq_abs] at hlip
     rw [min_eq_right (le_of_not_ge ht), Real.rpow_one]
     exact hlip.trans (mul_le_mul_of_nonneg_right (by nlinarith) (norm_nonneg _))
+
+end
+
+end
 
 end RoughRegime.Model

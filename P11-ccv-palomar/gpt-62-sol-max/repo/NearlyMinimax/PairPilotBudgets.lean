@@ -16,8 +16,8 @@ set_option synthInstance.maxHeartbeats 200000
 variable {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
 variable {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
 variable (k : ℕ) (hk : 0 < k)
-variable (bar : Covariate d × Covariate d → PairVector)
-variable (η : Ω → Covariate d × Covariate d → PairVector) (Cp W lam : ℝ)
+variable (bar : CovariatePair d → PairVector)
+variable (η : Ω → CovariatePair d → PairVector) (Cp W lam : ℝ)
 variable (hp : PairPilotAssumptions θ k hk μ bar η Cp W lam)
 include hθ hp
 
@@ -34,8 +34,7 @@ theorem pairPilotVarianceBase_le :
     have h := integral_mono_ae hbar.norm.integrable_sq (integrable_const (Cp ^ 2))
       (hb.mono (fun w hw => pow_le_pow_left₀ (norm_nonneg _) hw 2))
     simpa only [integral_const, smul_eq_mul, mul_comm] using h
-  have hnoiseE := PilotFields.joint_energy_le_of_uniform_sections hp.noiseMeasurable hs
-    (mul_nonneg hp.constantNonnegative hp.budgetNonnegative) he
+  have hnoiseE := (PilotFields.pilot_joint_section_moments hp.noiseMeasurable hs he).2
   have hmass := (regularPairDesignMeasure_mass_bounds C θ hθ k hk).2
   have hbarU := mul_le_mul_of_nonneg_left hmass (sq_nonneg Cp)
   have hnoiseU := mul_le_mul_of_nonneg_left hmass

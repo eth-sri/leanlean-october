@@ -21,9 +21,7 @@ omit [Nonempty E] in
 theorem finiteMarkAppend_eq_snoc (n : ℕ) (fresh : E) (marks : Fin n → E) :
     historyFiniteMarkAppendEquiv n (fresh, marks) = Fin.snoc marks fresh := by
   funext i
-  refine Fin.lastCases ?_ (fun k => ?_) i
-  · rw [historyFiniteMarkAppendEquiv_last, Fin.snoc_last]
-  · rw [historyFiniteMarkAppendEquiv_old, Fin.snoc_castSucc]
+  refine Fin.lastCases ?_ (fun k => ?_) i <;> simp
 
 omit [Nonempty E] in
 /-- Independent last-coordinate insertion preserves the genuine product law, allowing nonidentical laws. -/
@@ -43,20 +41,21 @@ theorem exp_integral_le_of_oscillation (π : Measure E) [IsProbabilityMeasure π
   have hh := centered_mgf_le_of_oscillation π X hX R c hc hbound hosc u
   have hf : (fun e => Real.exp (u * X e)) =
       (fun e => Real.exp (u * ∫ f, X f ∂π) * Real.exp (u * (X e - ∫ f, X f ∂π))) := by
-    funext e
-    rw [← Real.exp_add]
-    congr 1
-    ring
+    simp [← Real.exp_add] <;> ring
   rw [hf, integral_const_mul]
   exact mul_le_mul_of_nonneg_left hh (Real.exp_pos _).le
 
-/-- True McDiarmid moment bound for an arbitrary bounded measurable function of finite independent blocks.
-Only the actual coordinate oscillation is an input; the concentration inequality is proved. -/
-theorem product_exp_integral_le (n : ℕ) (π : Fin n → Measure E)
+section
+variable (n : ℕ) (π : Fin n → Measure E)
     [∀ i, IsProbabilityMeasure (π i)]
     (F : (Fin n → E) → ℝ) (hF : Measurable F) (R c : ℝ) (hc : 0 ≤ c)
     (hbound : ∀ x, |F x| ≤ R)
-    (hosc : ∀ i x y, |F (Function.update x i y) - F x| ≤ c) (u : ℝ) :
+    (hosc : ∀ i x y, |F (Function.update x i y) - F x| ≤ c) (u : ℝ)
+include hF hc hbound hosc
+
+/-- True McDiarmid moment bound for an arbitrary bounded measurable function of finite independent blocks.
+Only the actual coordinate oscillation is an input; the concentration inequality is proved. -/
+theorem product_exp_integral_le :
     (∫ x, Real.exp (u * F x) ∂Measure.pi π) ≤
       Real.exp (u * ∫ x, F x ∂Measure.pi π) * Real.exp ((n : ℝ) * u ^ 2 * c ^ 2 / 8) := by
   induction n with
@@ -73,18 +72,18 @@ theorem product_exp_integral_le (n : ℕ) (π : Fin n → Measure E)
     let H := fun p : E × (Fin n → E) => F (e p)
     have hH : Measurable H := hF.comp e.measurable
     have hHi : Integrable H (ν.prod μ) := Integrable.of_bound hH.aestronglyMeasurable R
-      (Eventually.of_forall fun p => by simpa only [Real.norm_eq_abs] using hbound (e p))
+      (Eventually.of_forall fun p => by tauto)
     let G := fun x : Fin n → E => ∫ y, H (y, x) ∂ν
     have hG : Measurable G := hH.stronglyMeasurable.integral_prod_left'.measurable
     have hXi : ∀ x, Integrable (fun y => H (y, x)) ν := by
       intro x
       apply Integrable.of_bound (hH.comp (measurable_id.prodMk measurable_const)).aestronglyMeasurable R
-      exact Eventually.of_forall fun y => by simpa only [Real.norm_eq_abs, Function.comp_apply, Prod.map_apply, id_eq, H] using hbound (e (y, x))
+      solve_by_elim [Eventually.of_forall]
     have hGb : ∀ x, |G x| ≤ R := by
       intro x
       simpa [G, Real.norm_eq_abs] using
         norm_integral_le_of_norm_le_const (μ := ν) (f := fun y => H (y, x)) (C := R)
-          (Eventually.of_forall fun y => by simpa only [Real.norm_eq_abs, H] using hbound (e (y, x)))
+          (Eventually.of_forall fun y => by tauto)
     have hGo : ∀ i x y, |G (Function.update x i y) - G x| ≤ c := by
       intro i x y
       change |(∫ z, H (z, Function.update x i y) ∂ν) - ∫ z, H (z, x) ∂ν| ≤ c
@@ -113,18 +112,14 @@ theorem product_exp_integral_le (n : ℕ) (π : Fin n → Measure E)
       apply Eventually.of_forall
       intro p
       change ‖Real.exp (u * H p)‖ ≤ _
-      rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-      apply Real.exp_le_exp.2
-      exact (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_left (hbound (e p)) (abs_nonneg u))
+      simpa using (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_left (hbound (e p)) (abs_nonneg u))
     have hEGi : Integrable (fun x => Real.exp (u * G x)) μ := by
       apply Integrable.of_bound (Real.measurable_exp.comp (measurable_const.mul hG)).aestronglyMeasurable
         (Real.exp (|u| * R))
       apply Eventually.of_forall
       intro x
       change ‖Real.exp (u * G x)‖ ≤ _
-      rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-      apply Real.exp_le_exp.2
-      exact (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_left (hGb x) (abs_nonneg u))
+      simpa using (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_left (hGb x) (abs_nonneg u))
     rw [← hp.integral_comp' (fun x => Real.exp (u * F x)), integral_prod_symm _ hEi, hmean]
     calc
       _ ≤ ∫ x, Real.exp (u * G x) * Real.exp (u ^ 2 * c ^ 2 / 8) ∂μ :=
@@ -134,17 +129,10 @@ theorem product_exp_integral_le (n : ℕ) (π : Fin n → Measure E)
           Real.exp (u ^ 2 * c ^ 2 / 8) :=
         mul_le_mul_of_nonneg_right (ih (fun i : Fin n => π i.castSucc) G hG hGb hGo) (Real.exp_pos _).le
       _ = _ := by
-        rw [mul_assoc, ← Real.exp_add]
-        congr 2
-        push_cast
-        ring
+        simp [mul_assoc, ← Real.exp_add] <;> ring
 
 /-- Centering gives the exact source exponent N c² u²/8. -/
-theorem product_centered_mgf_le (n : ℕ) (π : Fin n → Measure E)
-    [∀ i, IsProbabilityMeasure (π i)]
-    (F : (Fin n → E) → ℝ) (hF : Measurable F) (R c : ℝ) (hc : 0 ≤ c)
-    (hbound : ∀ x, |F x| ≤ R)
-    (hosc : ∀ i x y, |F (Function.update x i y) - F x| ≤ c) (u : ℝ) :
+theorem product_centered_mgf_le :
     (∫ x, Real.exp (u * (F x - ∫ y, F y ∂Measure.pi π)) ∂Measure.pi π) ≤
       Real.exp ((n : ℝ) * u ^ 2 * c ^ 2 / 8) := by
   have hh := product_exp_integral_le n π F hF R c hc hbound hosc u
@@ -152,18 +140,17 @@ theorem product_centered_mgf_le (n : ℕ) (π : Fin n → Measure E)
   have hf : (fun x => Real.exp (u * (F x - m))) =
       (fun x => Real.exp (-u * m) * Real.exp (u * F x)) := by
     funext x
-    rw [← Real.exp_add]
-    congr 1
-    ring
+    simp [← Real.exp_add] <;> ring
   change (∫ x, Real.exp (u * (F x - m)) ∂Measure.pi π) ≤ _
   rw [hf, integral_const_mul]
   have hprod : Real.exp (-u * m) * Real.exp (u * m) = 1 := by
-    rw [← Real.exp_add]
-    simp
+    simp [← Real.exp_add]
   calc
     _ ≤ Real.exp (-u * m) *
         (Real.exp (u * m) * Real.exp ((n : ℝ) * u ^ 2 * c ^ 2 / 8)) :=
       mul_le_mul_of_nonneg_left hh (Real.exp_pos _).le
-    _ = _ := by rw [← mul_assoc, hprod, one_mul]
+    _ = _ := by grind
+
+end
 
 end NearlyMinimax

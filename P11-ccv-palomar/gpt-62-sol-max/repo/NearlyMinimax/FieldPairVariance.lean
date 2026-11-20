@@ -51,8 +51,6 @@ theorem fieldPairAverage_centered_sq_le {n : ℕ} (hn : 2 ≤ n)
     (Filter.Eventually.of_forall (fun _ => sq_nonneg _))] at hr
   have hbn : 0 ≤ bound := (mul_nonneg hw.le hcap).trans hbound
   exact (ENNReal.ofReal_le_ofReal_iff (by
-    have he : 0 ≤ ∫ z : P × (E × E), G z.1 z.2 ^ 2 ∂π.prod (μ.prod μ) :=
-      integral_nonneg (fun _ => sq_nonneg _)
     positivity)).1 hr
 
 end NearlyMinimax.PairUStatistic

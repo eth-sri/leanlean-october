@@ -22,7 +22,10 @@ def spatialAffineExponent {d : ℕ} (z : Fin d × Bool) : Fin d →₀ ℕ :=
 def spatialAffineCoefficient {d : ℕ} (x y : Covariate d) (z : Fin d × Bool) : ℝ :=
   if z.2 then (y z.1 - x z.1) * y z.1 else -8 * (y z.1 - x z.1)
 
-theorem spatial_cardinal_affine_monomial_sum {d : ℕ} (x y : Covariate d) :
+section
+variable {d : ℕ} (x y : Covariate d)
+
+theorem spatial_cardinal_affine_monomial_sum :
     spatialCardinalAffine x y =
       ∑ z : Fin d × Bool, MvPolynomial.monomial (spatialAffineExponent z) (spatialAffineCoefficient x y z) := by
   classical
@@ -36,8 +39,11 @@ theorem spatial_cardinal_affine_monomial_sum {d : ℕ} (x y : Covariate d) :
   rw [show (-8 : ℝ) * (y r - x r) = -(8 * (y r - x r)) by ring, map_neg]
   ring
 
-theorem spatial_cardinal_affine_coefficient_l1_le {d : ℕ} (x y : Covariate d)
-    (hy : ∀ r, |y r| ≤ 2) :
+section
+variable (hy : ∀ r, |y r| ≤ 2)
+include hy
+
+theorem spatial_cardinal_affine_coefficient_l1_le :
     frameCoefficientL1 (spatialCardinalAffine x y) ≤ 10 * ∑ r, |y r - x r| := by
   rw [spatial_cardinal_affine_monomial_sum]
   apply (frameCoefficientL1_sum_monomial_le _ _).trans
@@ -52,8 +58,7 @@ theorem spatial_cardinal_affine_coefficient_l1_le {d : ℕ} (x y : Covariate d)
 
 /-- The actual affine coefficient norm vanishes at a collision and is
 controlled by squared spatial distance everywhere. -/
-theorem spatial_cardinal_affine_coefficient_l1_square_le {d : ℕ} (x y : Covariate d)
-    (hy : ∀ r, |y r| ≤ 2) :
+theorem spatial_cardinal_affine_coefficient_l1_square_le :
     (frameCoefficientL1 (spatialCardinalAffine x y)) ^ 2 ≤ 100 * (d : ℝ) * spatialSquaredDistance x y := by
   have hb := spatial_cardinal_affine_coefficient_l1_le x y hy
   have hs := (sq_le_sq₀ (frameCoefficientL1_nonneg _) (by positivity)).mpr hb
@@ -62,6 +67,10 @@ theorem spatial_cardinal_affine_coefficient_l1_square_le {d : ℕ} (x y : Covari
   simp only [Finset.card_univ, Fintype.card_fin, sq_abs] at hsum
   change (∑ r, |y r - x r|) ^ 2 ≤ (d : ℝ) * spatialSquaredDistance x y at hsum
   nlinarith
+
+end
+
+end
 
 theorem spatial_cardinal_polynomial_coefficient_l1_square_le {d n : ℕ}
     (U : Fin n → Covariate d) (hU : ∀ l r, |U l r| ≤ 2) (i : Fin n) :
@@ -103,15 +112,17 @@ theorem spatial_centered_matrix_l1_eq {d n D : ℕ} (i : Fin n) (lam : ℝ)
     rw [← Finset.sum_mul, ← Finset.mul_sum]]
   ring
 
-theorem spatial_cardinal_scale_nonnegative {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (U : Fin n → Covariate d) (t : SpatialScaleVector i) (ht : t ∈ Ici 0) :
+section
+variable {d n : ℕ} (i : Fin n) (lam : ℝ)
+    (U : Fin n → Covariate d) (t : SpatialScaleVector i)
+
+theorem spatial_cardinal_scale_nonnegative (ht : t ∈ Ici 0) :
     0 ≤ spatialCardinalScale lam (spatialScaleExtend i t) U i := by
   rw [spatial_cardinal_scale_product]
   exact Finset.prod_nonneg (fun j _ =>
     mul_nonneg (mul_nonneg (ht j) (sq_nonneg _)) (Real.exp_pos _).le)
 
-theorem spatial_cardinal_weight_eq_scale_distance_product {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (U : Fin n → Covariate d) (t : SpatialScaleVector i) :
+theorem spatial_cardinal_weight_eq_scale_distance_product :
     spatialCardinalWeight lam (spatialScaleExtend i t) U i =
       spatialCardinalScale lam (spatialScaleExtend i t) U i *
         (∏ j : SpatialScaleIndex i, spatialSquaredDistance (U i) (U j.val)) ^ 2 := by
@@ -119,8 +130,9 @@ theorem spatial_cardinal_weight_eq_scale_distance_product {d n : ℕ} (i : Fin n
   apply Finset.prod_congr rfl
   intro j hj
   unfold spatialUnaryWeight
-  rw [mul_pow]
   ring
+
+end
 
 /-- Actual pointwise cardinal matrix envelope. Multiplication by the true
 Gamma weight avoids division, so this includes every collision. -/
@@ -142,9 +154,6 @@ theorem spatial_centered_matrix_l1_square_le_weight_scale {d n D : ℕ}
     (mul_le_mul_of_nonneg_left hb hn)
   apply hs.trans_eq
   rw [spatial_cardinal_weight_eq_scale_distance_product]
-  rw [show (100 * (d : ℝ)) ^ (2 * Fintype.card (SpatialScaleIndex i)) =
-      ((100 * (d : ℝ)) ^ Fintype.card (SpatialScaleIndex i)) ^ 2 by
-    rw [← pow_mul, Nat.mul_comm]]
   ring
 
 end NearlyMinimax

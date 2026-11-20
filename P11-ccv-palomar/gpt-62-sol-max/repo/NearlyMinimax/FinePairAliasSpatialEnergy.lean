@@ -17,13 +17,9 @@ attribute [local instance] Classical.propDecidable
 
  theorem fullSpatialPatchDesign_ae_hyperplaneCube {d n : ℕ} :
     ∀ᵐ U ∂fullSpatialPatchDesign d n, ∀ i, U i ∈ hyperplaneCube d := by
-  have hU : ∀ᵐ U ∂fullSpatialPatchDesign d n, ∀ i, U i ∈ spatialPatchBox d := by
-    apply ae_all_iff.mpr
-    intro i
-    exact (Measure.tendsto_eval_ae_ae (μ := fun _ : Fin n => volume.restrict (spatialPatchBox d))
-      (i := i)).eventually (ae_restrict_mem measurableSet_Icc)
-  filter_upwards [hU] with U hU i r
-  exact abs_le.mpr ⟨(hU i).1 r, (hU i).2 r⟩
+  filter_upwards [ae_pi_forall (ι := Fin n)
+    (ae_restrict_mem (μ := volume) (s := spatialPatchBox d) measurableSet_Icc)] with U hU i
+  exact spatialPatchBox_coord_abs_le (hU i)
 
  theorem finePairTimeSubsetMoment_univ_pair {d : ℕ} [NeZero d] {lo hi : ℝ}
     (hlo : 0 ≤ lo) (hhi : lo ≤ hi) (U : Fin 2 → Covariate d)
@@ -35,9 +31,7 @@ attribute [local instance] Classical.propDecidable
   rw [finePairTimeFieldValue_weighted_covariance d lo hi hlo _ _ (hU 0) (hU 1)]
   rw [exactEuclideanDistance_eq_euclideanNorm]
   unfold fineAliasLaplaceKernel
-  rw [intervalIntegral.integral_of_le hhi, ← integral_Icc_eq_integral_Ioc]
-  apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun T => by dsimp; rw [neg_mul])
+  simp [intervalIntegral.integral_of_le hhi, ← integral_Icc_eq_integral_Ioc]
 
  theorem finePairTimeSubsetMoment_pair_square_integrable_and_le {d j : ℕ} [NeZero d]
     (hd : 4 < d) {lo hi : ℝ} (hlo : 0 < lo) (hhi : lo ≤ hi) (hj : j = 2) :
@@ -71,8 +65,7 @@ attribute [local instance] Classical.propDecidable
     simpa only [hS] using hb
 
  def finePairAliasActionSpatialBudget (d n M q : ℕ) (ad bd C a ρ η T0 : ℝ) : ℝ :=
-  (finePairDensityCoefficientBudget ad bd M n *
-    (finePairResponseActionBudget d q C a ρ * (n : ℝ)^2 * η^2))^2 *
+  (finePairActionCap d n M q ad bd C a ρ η)^2 *
       (n.choose 2 : ℝ)^2 * (2 : ℝ)^(d*(n-2)) *
         (6*(2 : ℝ)^d*spatialInverseFourConstant d / T0^(d-4))
 

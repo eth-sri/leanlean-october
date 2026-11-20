@@ -59,7 +59,7 @@ attribute [local instance] Classical.propDecidable
   have hmat : integratedCardinalMatrix (D := D) lam (max 1 (higherBandTargetScale d n N μ)) U =
       integratedCardinalMatrix lam (higherBandTargetScale d n N μ) U := by
     funext γ δ
-    exact integrated_cardinal_matrix_max_one (by omega) lam hnuN U γ δ
+    apply integrated_cardinal_matrix_max_one <;> omega
   rw [completeSourceRawNumerator_higher ad bd lam ℓ N μ haD hab D M q hn hnD C a V η U p g w hp c y,
     higherBandFamilyFirstAction_matched_and_full_fine_alias ad bd lam ℓ N μ haD hab hlam hℓ D M q hn hnD hnu hFine
       C a V η U hU p g w hp c y,
@@ -68,132 +68,140 @@ attribute [local instance] Classical.propDecidable
   by_cases hnM : M<n
   · simp only [if_pos hnM]
     ring
-  · rw [if_neg hnM, finePairPairAliasAction_zero_selected_count ad bd ℓ N haD hab M q hn (le_of_not_gt hnM) C U p c]
-    simp only [if_neg hnM, ite_self]
-    ring
+  · simp [if_neg hnM, finePairPairAliasAction_zero_selected_count ad bd ℓ N haD hab M q hn (le_of_not_gt hnM) C U p c] <;> ring
 
- def completeSourceHigherGeometryEnvelope {d n D : ℕ} (aD bD c0 ℓ N μ : ℝ)
-    (M R q : ℕ) (C a ρ η : ℝ) (U : Fin n → Covariate d) : ℝ :=
-  4*(cardinalGeometryEnvelope (F := D) q (bD-(M : ℝ)⁻¹) C a ρ η (max 1 (higherBandTargetScale d n N μ)) U +
-    (if M<n then ordinaryFineAliasFamilyResponseSquareEnvelope (F := D) (ordinaryFineAliasTargetSet d D ℓ N μ)
-      M R q aD bD c0 C a ρ η ℓ (fun r => higherBandTargetScale d r N μ) U else 0) +
-    (if M<n then finePairAliasGeometryEnvelope (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N M q C a ρ η U else 0) +
-    fineFieldGeometryEnvelope (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N M q C a ρ η U)
+/-- Fixed scales and numerical parameters common to the four spatial energy components. -/
+structure SourceGeometry (d : ℕ) where
+  (D M R q : ℕ)
+  (aD bD c0 ell N mu C a rho eta : ℝ)
 
- theorem completeSourceHigherGeometryEnvelope_nonneg {d n D : ℕ} (aD bD c0 ℓ N μ : ℝ)
-    (M R q : ℕ) (C a ρ η : ℝ) (U : Fin n → Covariate d) :
-    0 ≤ completeSourceHigherGeometryEnvelope (D := D) aD bD c0 ℓ N μ M R q C a ρ η U := by
-  unfold completeSourceHigherGeometryEnvelope
-  have hA := cardinalGeometryEnvelope_nonneg (F := D) q (bD-(M : ℝ)⁻¹) C a ρ η (max 1 (higherBandTargetScale d n N μ)) U
-  have hB := ordinaryFineAliasFamilyResponseSquareEnvelope_nonneg (F := D) (ordinaryFineAliasTargetSet d D ℓ N μ) M R q aD bD c0 C a ρ η ℓ (fun r => higherBandTargetScale d r N μ) U
-  have hP := finePairAliasGeometryEnvelope_nonneg (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N M q C a ρ η U
-  have hF := fineFieldGeometryEnvelope_nonneg (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N M q C a ρ η U
-  split_ifs <;> positivity
+namespace SourceGeometry
+variable {d n : ℕ} (S : SourceGeometry d)
+
+abbrev ad : ℝ := S.aD+(S.M : ℝ)⁻¹
+abbrev bd : ℝ := S.bD-(S.M : ℝ)⁻¹
+abbrev tau : ℝ := exteriorTau ((S.ad+S.bd)/(S.bd-S.ad))
+abbrev scale (r : ℕ) := higherBandTargetScale d r S.N S.mu
+abbrev targets := ordinaryFineAliasTargetSet d S.D S.ell S.N S.mu
+
+abbrev cardinal (U : Fin n → Covariate d) :=
+  cardinalGeometryEnvelope (F := S.D) S.q S.bd S.C S.a S.rho S.eta (max 1 (S.scale n)) U
+abbrev ordinary (U : Fin n → Covariate d) :=
+  ordinaryFineAliasFamilyResponseSquareEnvelope (F := S.D) S.targets
+    S.M S.R S.q S.aD S.bD S.c0 S.C S.a S.rho S.eta S.ell S.scale U
+abbrev aliasEnvelope (U : Fin n → Covariate d) :=
+  finePairAliasGeometryEnvelope S.ad S.bd S.ell S.N S.M S.q S.C S.a S.rho S.eta U
+abbrev field (U : Fin n → Covariate d) :=
+  fineFieldGeometryEnvelope S.ad S.bd S.ell S.N S.M S.q S.C S.a S.rho S.eta U
+
+def components (U : Fin n → Covariate d) : Fin 4 → ℝ :=
+  ![S.cardinal U, if S.M<n then S.ordinary U else 0,
+    if S.M<n then S.aliasEnvelope U else 0, S.field U]
+
+def higherEnvelope (U : Fin n → Covariate d) : ℝ := 4 * ∑ i, S.components U i
+
+theorem higherEnvelope_nonneg (U : Fin n → Covariate d) : 0 ≤ S.higherEnvelope U := by
+  apply mul_nonneg (by norm_num)
+  apply Finset.sum_nonneg
+  intro i _
+  fin_cases i <;> simp only [components, apply_ite]
+  · exact cardinalGeometryEnvelope_nonneg _ _ _ _ _ _ _ U
+  · split_ifs
+    · exact ordinaryFineAliasFamilyResponseSquareEnvelope_nonneg _ _ _ _ _ _ _ _ _ _ _ _ _ U
+    · exact le_rfl
+  · split_ifs
+    · exact finePairAliasGeometryEnvelope_nonneg _ _ _ _ _ _ _ _ _ _ U
+    · exact le_rfl
+  · exact fineFieldGeometryEnvelope_nonneg _ _ _ _ _ _ _ _ _ _ U
+
+end SourceGeometry
 
  theorem completeSourceRawNumerator_higher_square_le_geometry {d n : ℕ} [NeZero d]
-    (aD bD c0 ℓ N μ : ℝ) (haD : 0 < aD) (hℓ : 1 ≤ ℓ) (D M R q : ℕ)
-    (hshrink : aD+(M : ℝ)⁻¹ < bD-(M : ℝ)⁻¹) (htau : shrunkDensityExponent aD bD M ≤ c0)
-    (hn : 3 ≤ n) (hnD : n ≤ D) (hq : 1 ≤ q)
-    (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N μ)
-    (hFine : ∀ j : Fin (D-2), ℓ < higherBandTargetScale d (j.val+3) N μ → j.val+3 ≤ M)
-    (hI : ∀ r ∈ ordinaryFineAliasTargetSet d D ℓ N μ, 1 ≤ r ∧ r ≤ R)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2)
+    (S : SourceGeometry d) (haD : 0 < S.aD) (hell : 1 ≤ S.ell)
+    (hshrink : S.ad < S.bd) (htau : shrunkDensityExponent S.aD S.bD S.M ≤ S.c0)
+    (hn : 3 ≤ n) (hnD : n ≤ S.D) (hq : 1 ≤ S.q)
+    (hnu : ∀ j : Fin (S.D-2), 0 < S.scale (j.val+3))
+    (hFine : ∀ j : Fin (S.D-2), S.ell < S.scale (j.val+3) → j.val+3 ≤ S.M)
+    (hI : ∀ r ∈ S.targets, 1 ≤ r ∧ r ≤ S.R)
+    (V : ℝ) (hC : 1 ≤ S.C) (ha : 0 < S.a) (heta : 0 ≤ S.eta) (hrho : 0 ≤ S.rho) (hetarho : S.eta ≤ S.rho/2)
     (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹))
-    (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1) (c : HighFrameIndex d D → ℝ)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ u, 0 ≤ ternaryMass a f V u) :
-    (∑ y : Fin n → Fin 3, completeSourceRawNumerator (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹)
-      (spatialInterpolationLambda d) ℓ N μ D M q C a V η U p g w c y^2) ≤
-      completeSourceHigherGeometryEnvelope (D := D) aD bD c0 ℓ N μ M R q C a ρ η U := by
-  let ad := aD+(M : ℝ)⁻¹
-  let bd := bD-(M : ℝ)⁻¹
-  have had : 0 < ad := by dsimp [ad]; positivity
+    (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc (S.ad) (S.bd))
+    (hg : ∀ i, |g i| ≤ S.rho/2) (hw : ∀ i, |w i| ≤ 1) (c : HighFrameIndex d S.D → ℝ)
+    (hc : ∑ γ, |c γ| ≤ S.C⁻¹) (hp : ∀ f : ℝ, |f| ≤ S.rho → ∀ u, 0 ≤ ternaryMass S.a f V u) :
+    (∑ y : Fin n → Fin 3, completeSourceRawNumerator (S.ad) (S.bd)
+      (spatialInterpolationLambda d) S.ell S.N S.mu S.D S.M S.q S.C S.a V S.eta U p g w c y^2) ≤
+      S.higherEnvelope U := by
+  let ad := S.ad
+  let bd := S.bd
+  have had : 0 < ad := by positivity
   have hlam : 0 ≤ spatialInterpolationLambda d := by unfold spatialInterpolationLambda; positivity
   let A := fun y => highCardinalRawNumerator ad bd (spatialInterpolationLambda d)
-    (max 1 (higherBandTargetScale d n N μ)) D D q C a V η U p g w c y
-  let B := fun y => if M<n then ordinaryFineAliasFamilyRawAction (ordinaryFineAliasTargetSet d D ℓ N μ)
-    ad bd (spatialInterpolationLambda d) ℓ (fun r => higherBandTargetScale d r N μ) M q C a V η U p g w c y else 0
-  let P := fun y => if M<n then finePairPairAliasAction ad bd ℓ N M q C U p c
-    (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y) else 0
-  let F := fun y => finePairEvenFieldAction ad bd ℓ N M q C U p c
-    (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)
-  have hA := highCardinalRawNumerator_sum_square_le_geometry (T := max 1 (higherBandTargetScale d n N μ)) ad bd had hshrink (le_max_left _ _) D D q
-    (by omega) hnD hnD hnD hq C a V η ρ hC ha hη hρ hηρ U hU p g w hpD hg hw c hc hp
-  have hB : (∑ y, B y^2) ≤ (if M<n then ordinaryFineAliasFamilyResponseSquareEnvelope (F := D)
-      (ordinaryFineAliasTargetSet d D ℓ N μ) M R q aD bD c0 C a ρ η ℓ (fun r => higherBandTargetScale d r N μ) U else 0) := by
-    by_cases hMn : M<n
+    (max 1 (S.scale n)) S.D S.D S.q S.C S.a V S.eta U p g w c y
+  let B := fun y => if S.M<n then ordinaryFineAliasFamilyRawAction (S.targets)
+    ad bd (spatialInterpolationLambda d) S.ell S.scale S.M S.q S.C S.a V S.eta U p g w c y else 0
+  let P := fun y => if S.M<n then finePairPairAliasAction ad bd S.ell S.N S.M S.q S.C U p c
+    (fun v => highResponseProduct S.a V S.eta g w (fun i => highFrameFeature (U i)) v y) else 0
+  let F := fun y => finePairEvenFieldAction ad bd S.ell S.N S.M S.q S.C U p c
+    (fun v => highResponseProduct S.a V S.eta g w (fun i => highFrameFeature (U i)) v y)
+  have hA := highCardinalRawNumerator_sum_square_le_geometry (T := max 1 (S.scale n)) ad bd had hshrink (le_max_left _ _) S.D S.D S.q
+    (by omega) hnD hnD hnD hq S.C S.a V S.eta S.rho hC ha heta hrho hetarho U hU p g w hpD hg hw c hc hp
+  have hB : (∑ y, B y^2) ≤ (if S.M<n then S.ordinary U else 0) := by
+    by_cases hMn : S.M<n
     · simp only [B, if_pos hMn]
-      exact ordinaryFineAliasFamilyResponseSquareEnvelope_dominates _ aD bD c0 ℓ _ haD hshrink htau hI q
-        (by omega) C a V η ρ hC ha hη hρ hηρ U hU (fun _ => p) (fun _ => g) (fun _ => w) (fun _ => c)
+      exact ordinaryFineAliasFamilyResponseSquareEnvelope_dominates _ S.aD S.bD S.c0 S.ell _ haD hshrink htau hI S.q
+        (by omega) S.C S.a V S.eta S.rho hC ha heta hrho hetarho U hU (fun _ => p) (fun _ => g) (fun _ => w) (fun _ => c)
           (fun _ => hpD) (fun _ => hg) (fun _ => hw) (fun _ => hc) hp
     · simp [B, hMn]
-  have hP : (∑ y, P y^2) ≤ (if M<n then finePairAliasGeometryEnvelope ad bd ℓ N M q C a ρ η U else 0) := by
-    by_cases hMn : M<n
+  have hP : (∑ y, P y^2) ≤ (if S.M<n then S.aliasEnvelope U else 0) := by
+    by_cases hMn : S.M<n
     · simp only [P, if_pos hMn]
-      exact finePairPairAliasAction_sum_square_le_geometry ad bd ℓ N had hshrink M q (by omega) C a V η ρ
-        hC ha hη hρ hηρ U hU p g w hpD c hc hg hw hp
+      apply finePairPairAliasAction_sum_square_le_geometry <;> omega
     · simp [P, hMn]
-  have hF := finePairEvenFieldAction_sum_square_le_geometry ad bd ℓ N had hshrink M q (by omega) C a V η ρ
-    hC ha hη hρ hηρ U hU p g w hpD c hc hg hw hp
-  have hb (y : Fin n → Fin 3) : completeSourceRawNumerator ad bd (spatialInterpolationLambda d) ℓ N μ
-      D M q C a V η U p g w c y^2 ≤ 4*(A y^2+B y^2+P y^2+F y^2) := by
-    rw [completeSourceRawNumerator_higher_components ad bd _ ℓ N μ had hshrink hlam hℓ D M q hn hnD
-      hnu hFine C a V η (lt_of_lt_of_le zero_lt_one hC).ne' U hU p g w hpD c y]
+  have hF := finePairEvenFieldAction_sum_square_le_geometry ad bd S.ell S.N had hshrink S.M S.q (by omega) S.C S.a V S.eta S.rho
+    hC ha heta hrho hetarho U hU p g w hpD c hc hg hw hp
+  have hb (y : Fin n → Fin 3) : completeSourceRawNumerator ad bd (spatialInterpolationLambda d) S.ell S.N S.mu
+      S.D S.M S.q S.C S.a V S.eta U p g w c y^2 ≤ 4*(A y^2+B y^2+P y^2+F y^2) := by
+    rw [completeSourceRawNumerator_higher_components ad bd _ S.ell S.N S.mu had hshrink hlam hell S.D S.M S.q hn hnD
+      hnu hFine S.C S.a V S.eta (lt_of_lt_of_le zero_lt_one hC).ne' U hU p g w hpD c y]
     change (A y+B y+P y+F y)^2 ≤ _
     nlinarith only [sq_nonneg (A y-B y), sq_nonneg (P y-F y), sq_nonneg (A y+B y-P y-F y)]
   have h := Finset.sum_le_sum (s := Finset.univ) (fun y _ => hb y)
   simp only [Finset.sum_add_distrib, ← Finset.mul_sum] at h
-  exact h.trans (by
-    unfold completeSourceHigherGeometryEnvelope
-    convert mul_le_mul_of_nonneg_left (add_le_add (add_le_add (add_le_add hA hB) hP) hF)
-      (by norm_num : (0 : ℝ) ≤ 4) using 1)
+  apply h.trans
+  rw [SourceGeometry.higherEnvelope, Fin.sum_univ_four]
+  simp only [SourceGeometry.components, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
+    Matrix.cons_val_three]
+  exact mul_le_mul_of_nonneg_left (add_le_add (add_le_add (add_le_add hA hB) hP) hF) (by norm_num)
 
- theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable {d n F : ℕ}
-    (hd : 5 ≤ d) (I : Finset ℕ) (M R q : ℕ) (ad bd c0 C a ρ η L : ℝ)
-    (T : ℕ → ℝ) (hL : 1 ≤ L) (hI : ∀ r ∈ I, 2 ≤ r ∧ L ≤ T r) :
-    Integrable (ordinaryFineAliasFamilyResponseSquareEnvelope (d := d) (n := n) (F := F)
-      I M R q ad bd c0 C a ρ η L T) (fullSpatialPatchDesign d n) := by
-  let f := fun r (U : Fin n → Covariate d) => ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a ρ η *
-    ordinaryFineAliasGeometryKernel (F := F) r L (T r) U
-  have hm (r) (hr : r ∈ I) : Measurable (f r) :=
-    (ordinaryFineAliasGeometryKernel_measurable r hL (hL.trans (hI r hr).2)).const_mul _
-  have hi (r) (hr : r ∈ I) : Integrable (fun U => f r U^2) (fullSpatialPatchDesign d n) := by
-    have h := (ordinaryFineAliasKernel_sum_square_integrable_and_le (F := F) (n := n)
-      hd (hI r hr).1 hL (hL.trans (hI r hr).2) (hI r hr).2).1.const_mul
-        ((ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a ρ η)^2)
-    convert h using 1
-    funext U
-    dsimp [f, ordinaryFineAliasGeometryKernel]
-    ring
-  have hs : Integrable (fun U => (∑ r ∈ I, f r U)^2) (fullSpatialPatchDesign d n) := by
-    have h := finite_sum_abs_square_integrable (fullSpatialPatchDesign d n) I f hm hi
-    apply h.mono' ((Finset.measurable_sum I hm).pow_const 2).aestronglyMeasurable
-    apply Filter.Eventually.of_forall
-    intro U
-    have hb := Finset.abs_sum_le_sum_abs (fun r => f r U) I
-    simpa only [Real.norm_eq_abs, abs_sq, sq_abs] using
-      (sq_le_sq₀ (abs_nonneg _) (Finset.sum_nonneg (fun _ _ => abs_nonneg _))).mpr hb
-  exact hs.const_mul ((3 : ℝ)^n)
+private theorem integrable_gate {α : Type*} [MeasurableSpace α] {μ : Measure α} {f : α → ℝ}
+    (P : Prop) [Decidable P] (hf : Integrable f μ) : Integrable (fun x => if P then f x else 0) μ := by
+  by_cases h : P <;> simp [h, hf]
 
- theorem completeSourceHigherGeometryEnvelope_integrable {d n D : ℕ} [NeZero d]
-    (hd : 5 ≤ d) (hn : 2 ≤ n) (aD bD c0 ℓ N μ : ℝ) (M R q : ℕ) (C a ρ η : ℝ)
-    (hℓ : 1 ≤ ℓ) (hN : ℓ ≤ N) :
-    Integrable (completeSourceHigherGeometryEnvelope (d := d) (n := n) (D := D)
-      aD bD c0 ℓ N μ M R q C a ρ η) (fullSpatialPatchDesign d n) := by
-  have hA := (cardinalGeometryEnvelope_integrable_and_le (F := D) hd hn q (bD-(M : ℝ)⁻¹) C a ρ η
-    (T := max 1 (higherBandTargetScale d n N μ)) (le_max_left _ _)).1
-  have hB := ordinaryFineAliasFamilyResponseSquareEnvelope_integrable (n := n) (F := D) hd
-    (ordinaryFineAliasTargetSet d D ℓ N μ) M R q aD bD c0 C a ρ η ℓ
-    (fun r => higherBandTargetScale d r N μ) hℓ (fun r hr => by
-      have h := (Finset.mem_filter.mp hr).2
-      exact ⟨by omega, h.2.le⟩)
-  have hP := (finePairAliasGeometryEnvelope_integrable_and_le (d := d) (n := n) (by omega)
-    (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N (lt_of_lt_of_le zero_lt_one hℓ) hN M q C a ρ η).1
-  have hF := (fineFieldGeometryEnvelope_integrable_and_le (d := d) (n := n) (by omega)
-    (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N (lt_of_lt_of_le zero_lt_one hℓ) M q C a ρ η).1
-  unfold completeSourceHigherGeometryEnvelope
-  split_ifs
-  · exact (((hA.add hB).add hP).add hF).const_mul 4
-  · exact by simpa only [Pi.add_apply, add_zero] using (hA.add hF).const_mul 4
+theorem SourceGeometry.higherEnvelope_integrable_and_eq {d r : ℕ} [NeZero d]
+    (S : SourceGeometry d) (hd : 5 ≤ d) (hr : 2 ≤ r) (hell : 1 ≤ S.ell) (hellN : S.ell ≤ S.N) :
+    Integrable (S.higherEnvelope (n := r)) (fullSpatialPatchDesign d r) ∧
+    (∫ U, S.higherEnvelope U ∂fullSpatialPatchDesign d r) =
+      4 * ∑ i, ∫ U, S.components U i ∂fullSpatialPatchDesign d r := by
+  have hA := (cardinalGeometryEnvelope_integrable_and_le (d := d) (n := r) (F := S.D) hd hr S.q
+    (S.bd) S.C S.a S.rho S.eta (T := max 1 (S.scale r)) (le_max_left _ _)).1
+  have hB := ordinaryFineAliasFamilyResponseSquareEnvelope_integrable (d := d) (n := r) (F := S.D) hd
+    (S.targets) S.M S.R S.q S.aD S.bD S.c0 S.C S.a S.rho S.eta S.ell
+    S.scale hell (fun t ht => by
+      have h := (Finset.mem_filter.mp ht).2
+      grind)
+  have hP := (finePairAliasGeometryEnvelope_integrable_and_le (d := d) (n := r) (by omega)
+    (S.ad) (S.bd) S.ell S.N (lt_of_lt_of_le zero_lt_one hell) hellN S.M S.q S.C S.a S.rho S.eta).1
+  have hF := (fineFieldGeometryEnvelope_integrable_and_le (d := d) (n := r) (by omega)
+    (S.ad) (S.bd) S.ell S.N (lt_of_lt_of_le zero_lt_one hell) S.M S.q S.C S.a S.rho S.eta).1
+  have hi (i : Fin 4) : Integrable (fun U => S.components U i)
+      (fullSpatialPatchDesign d r) := by
+    fin_cases i
+    · exact hA
+    · exact integrable_gate (S.M < r) hB
+    · exact integrable_gate (S.M < r) hP
+    · exact hF
+  unfold higherEnvelope
+  refine ⟨(integrable_finsetSum _ (fun i _ => hi i)).const_mul _, ?_⟩
+  rw [integral_const_mul, integral_finsetSum _ (fun i _ => hi i)]
 
 end NearlyMinimax

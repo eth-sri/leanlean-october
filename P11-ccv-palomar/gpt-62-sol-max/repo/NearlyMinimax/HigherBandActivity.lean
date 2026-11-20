@@ -14,18 +14,15 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 600000
 
 def higherBandInterpolationCap (d r : ℕ) (lam T : ℝ) : ℝ :=
-  2 * (r : ℝ) * (1024 * |lam| * (d : ℝ)^2)^(r-1) * T^2 * (1+Real.log T)^(r-2)
+  2 * cardinalSeparatedCostBound d r lam T
 
 theorem higherBandCarrier_cost_integral_le (d r D : ℕ) (hr : 2 ≤ r)
     (lam L T : ℝ) (hT : 1 ≤ T) (hLT : L ≤ T) (fine : Bool) :
     (∫ ζ, separatedMatrixCost (higherBandCarrierAmplitude d r D lam fine) ζ
       ∂higherBandCarrierMeasure d r L T fine) ≤ higherBandInterpolationCap d r lam T := by
   cases fine
-  · have h := cardinal_separated_cost_integral_le (d := d) (D := D) hr lam hT
-    have hb : 0 ≤ (r : ℝ) * (1024 * |lam| * (d : ℝ)^2)^(r-1) * T^2 * (1+Real.log T)^(r-2) := by
-      have hlog : 0 ≤ 1 + Real.log T := add_nonneg (by norm_num) (Real.log_nonneg hT)
-      positivity
-    exact h.trans (by dsimp [higherBandInterpolationCap]; nlinarith)
+  · exact (cardinal_separated_cost_integral_le hr lam hT).trans
+      (by dsimp [higherBandInterpolationCap]; linarith [cardinalSeparatedCostBound_nonneg (d := d) (n := r) lam hT])
   · exact cardinal_band_cost_integral_le hr lam L hT hLT
 
 def ordinaryDensityActivityBase (a b : ℝ) : ℝ :=
@@ -46,12 +43,11 @@ theorem higherBandRowMass_le_activityCap (d r m D q : ℕ) (hr : 2 ≤ r) (hD : 
   rw [higherBandRowMass_eq_variation d r m D q a b C lam L T hT fine]
   have h := highPacketSignedMeasure_exponential_cost (higherBandCarrierMeasure d r L T fine)
     a b ha hab m r D q (by omega) hD C (higherBandCarrierAmplitude d r D lam fine)
-    (higherBandCarrierAmplitude_measurable d r D lam fine)
-    (higherBandCarrierAmplitude_cost_integrable d r D lam L T hT fine)
+    (higherBandCarrierAmplitude_integrable d r D lam L T hT fine)
   apply h.trans
   change _ ≤ _ * higherBandInterpolationCap d r lam T
   apply mul_le_mul_of_nonneg_left
-  · exact higherBandCarrier_cost_integral_le d r D hr lam L T hT hLT fine
+  · apply higherBandCarrier_cost_integral_le <;> assumption
   · positivity
 
 end NearlyMinimax

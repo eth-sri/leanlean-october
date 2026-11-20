@@ -13,12 +13,12 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
 def initialSampleSplitEquiv (d m r : ℕ) :
-    (Fin (m + r) → Observation d) ≃ᵐ ((Fin m → Observation d) × (Fin r → Observation d)) :=
+    (Fin (m + r) → Observation d) ≃ᵐ ((ObservedSample d m) × ObservedSample d r) :=
   (MeasurableEquiv.piCongrLeft (fun _ : Fin m ⊕ Fin r => Observation d)
     (finSumFinEquiv : (Fin m ⊕ Fin r) ≃ Fin (m + r)).symm).trans
       (MeasurableEquiv.sumPiEquivProdPi (fun _ : Fin m ⊕ Fin r => Observation d))
 
-def initialSampleBlock (d m r : ℕ) (z : Fin (m + r) → Observation d) : Fin m → Observation d :=
+def initialSampleBlock (d m r : ℕ) (z : Fin (m + r) → Observation d) : ObservedSample d m :=
   (initialSampleSplitEquiv d m r z).1
 
 theorem initialSampleBlock_measurePreserving {d : ℕ} (C : ModelConstants d)
@@ -32,13 +32,13 @@ theorem initialSampleBlock_measurePreserving {d : ℕ} (C : ModelConstants d)
     (finSumFinEquiv : (Fin m ⊕ Fin r) ≃ Fin (m + r)).symm
   have h2 := measurePreserving_sumPiEquivProdPi (fun _ : Fin m ⊕ Fin r => observationLaw θ)
   have hf : MeasurePreserving
-      (Prod.fst : ((Fin m → Observation d) × (Fin r → Observation d)) → (Fin m → Observation d))
+      (Prod.fst : ((ObservedSample d m) × ObservedSample d r) → ObservedSample d m)
       ((sampleLaw θ m).prod (sampleLaw θ r)) (sampleLaw θ m) := measurePreserving_fst
   exact hf.comp (h2.comp h1)
 
 def sampleBlocksWithRemainder (d a b c r : ℕ)
     (z : Fin (a + b + c + r) → Observation d) :
-      ((Fin a → Observation d) × (Fin b → Observation d)) × (Fin c → Observation d) :=
+      ((ObservedSample d a) × ObservedSample d b) × ObservedSample d c :=
   sampleBlockSplitEquiv d a b c (initialSampleBlock d (a + b + c) r z)
 
 theorem sampleBlocksWithRemainder_measurePreserving {d : ℕ} (C : ModelConstants d)
@@ -49,7 +49,7 @@ theorem sampleBlocksWithRemainder_measurePreserving {d : ℕ} (C : ModelConstant
     (initialSampleBlock_measurePreserving C θ hθ (a + b + c) r)
 
 def blockEstimatorWithRemainder {d a b c r : ℕ}
-    (T : (((Fin a → Observation d) × (Fin b → Observation d)) × (Fin c → Observation d)) → ℝ)
+    (T : (((ObservedSample d a) × ObservedSample d b) × ObservedSample d c) → ℝ)
     (hmT : Measurable T) : Estimator d (a + b + c + r) :=
   ⟨fun z => T (sampleBlocksWithRemainder d a b c r z),
     hmT.comp ((sampleBlockSplitEquiv d a b c).measurable.comp
@@ -57,13 +57,12 @@ def blockEstimatorWithRemainder {d a b c r : ℕ}
 
 theorem blockEstimatorWithRemainder_risk_eq {d a b c r : ℕ} (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (T : (((Fin a → Observation d) × (Fin b → Observation d)) × (Fin c → Observation d)) → ℝ)
+    (T : (((ObservedSample d a) × ObservedSample d b) × ObservedSample d c) → ℝ)
     (hmT : Measurable T) :
     meanSquaredRisk (blockEstimatorWithRemainder (r := r) T hmT) θ =
       ∫⁻ z, ENNReal.ofReal ((T z - θ.variance) ^ 2)
         ∂((sampleLaw θ a).prod (sampleLaw θ b)).prod (sampleLaw θ c) := by
-  unfold meanSquaredRisk blockEstimatorWithRemainder
   exact (sampleBlocksWithRemainder_measurePreserving C θ hθ a b c r).lintegral_comp
-    (((hmT.sub measurable_const).pow_const 2).ennreal_ofReal)
+      (((hmT.sub measurable_const).pow_const 2).ennreal_ofReal)
 
 end NearlyMinimax

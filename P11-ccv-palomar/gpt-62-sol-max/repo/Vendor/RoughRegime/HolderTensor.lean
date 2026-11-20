@@ -15,23 +15,25 @@ lemma euclidean_coordinate_decomposition {d : ℕ} (x : Covariate d) :
   ext j
   simp [Pi.single_apply]
 
-theorem multilinear_coordinate_expansion {d q : ℕ}
+section
+variable {d q : ℕ}
     (L : ContinuousMultilinearMap ℝ (fun _ : Fin q => Covariate d) ℝ)
+
+theorem multilinear_coordinate_expansion
     (v : Fin q → Covariate d) :
     L v = ∑ σ : Fin q → Fin d, (∏ i, v i (σ i)) *
       L (fun i => EuclideanSpace.single (σ i) (1 : ℝ)) := by
   classical
   have hv : v = fun i => ∑ j : Fin d, v i j • EuclideanSpace.single j (1 : ℝ) := by
     funext i
-    exact euclidean_coordinate_decomposition (v i)
+    apply euclidean_coordinate_decomposition
   conv_lhs => rw [hv]
   change L.toMultilinearMap (fun i => ∑ j : Fin d, v i j • EuclideanSpace.single j (1 : ℝ)) = _
   rw [L.toMultilinearMap.map_sum]
   simp only [L.toMultilinearMap.map_smul_univ, smul_eq_mul]
   rfl
 
-theorem multilinear_norm_le_coordinate_bound {d q : ℕ}
-    (L : ContinuousMultilinearMap ℝ (fun _ : Fin q => Covariate d) ℝ)
+theorem multilinear_norm_le_coordinate_bound
     (H : ℝ) (hH : 0 ≤ H)
     (hb : ∀ σ : Fin q → Fin d, |L (fun i => EuclideanSpace.single (σ i) 1)| ≤ H) :
     ‖L‖ ≤ (d : ℝ) ^ q * H := by
@@ -50,6 +52,8 @@ theorem multilinear_norm_le_coordinate_bound {d q : ℕ}
       exact Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _)
         (fun i _ => by simpa only [Real.norm_eq_abs] using PiLp.norm_apply_le (v i) (σ i))
     _ = ((d : ℝ) ^ q * H) * ∏ i, ‖v i‖ := by simp; ring
+
+end
 
 theorem holderBall_iteratedFDerivWithin_modulus {d : ℕ} (f : Covariate d → ℝ)
     (t H : ℝ) (hH : 0 ≤ H) (hf : f ∈ holderBall t H)

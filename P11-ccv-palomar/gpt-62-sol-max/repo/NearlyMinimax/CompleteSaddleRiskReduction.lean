@@ -20,9 +20,9 @@ def CompleteSaddleCostRiskBudget {d : ℕ} (C : ModelConstants d)
   let m := highCompleteSourceSaddleCoefficient C
   let theta := highCompleteSourceSaddleTheta C
   let tauM := shrunkDensityExponent C.densityLower C.densityUpper
-  let k := lowerSaddleGrid d m theta Cω n
+  let k := completeSaddleGrid C Cω n
   let eta := cf*(k : ℝ)^(-C.smoothness)
-  let B := lowerSaddleActivity C.smoothness d m theta Cω tauM n
+  let B := completeSaddleActivityScale C Cω n
   ∃ Bl E : ℝ, 1 ≤ B ∧ 0 ≤ Bl ∧ 0 ≤ E ∧ Bl ≤ CB*B ∧
     E ≤ lowerSaddleRawEnergyBound C.smoothness d m theta Cω cf C5 C6 C7 ch Bl tauM n ∧
     ∀ U : ExtensionDomain d,
@@ -46,7 +46,7 @@ theorem completeSaddle_lower_rate_of_actual_cost_budget {d : ℕ} [NeZero d]
     ((d : ℝ)^2-16*C.smoothness)/((d : ℝ)*((d : ℝ)+4))*highCompleteSourceSaddleTheta C+
     2*d*densityIntervalExponent C.densityLower C.densityUpper/((d : ℝ)+4)+1
   obtain ⟨c,hc,hrate⟩ := completeSourceSaddle_penalized_numeric_envelope C hs hd
-    hcf hCB hC5 hC6 hC7 hch hctr hcm (Cω := Cω) (by dsimp only [Cω]; linarith)
+    hcf hCB hC5 hC6 hC7 hch hctr hcm (Cω := Cω) (by linarith)
   have hall : ∀ᶠ n : ℕ in atTop,
       2 ≤ n ∧ ∀ U : ExtensionDomain d,
         ENNReal.ofReal (c*paperRiskScale C n) ≤ minimaxRMS (C.withDomain U) n := by

@@ -19,7 +19,13 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicPilotCoordinate_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPilotIndex d ℓ) :
+section
+variable {d ℓ : ℕ} (j : ℕ)
+
+section
+variable (a : LocalPilotIndex d ℓ)
+
+theorem dyadicPilotCoordinate_measurable :
     Measurable (fun x : Covariate d => dyadicPilotCoordinate j x a) := by
   have hlin : Measurable (fun x : Covariate d => pilotPolynomialLinear (ℓ := 2 * ℓ)
       (dyadicPilotLabel j x) (dyadicPilotPolynomial j x a) (dyadicPilotResponse a)) := by
@@ -34,14 +40,16 @@ theorem dyadicPilotCoordinate_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPilot
           (Fin (DyadicGlobalDimension d ℓ j) → ℝ) →L[ℝ] ℝ))).comp (dyadicPilotLabel_measurable j))
   exact (measurable_const : Measurable (fun _ : Covariate d => dyadicPilotScale d j)).smul hlin
 
-theorem preconditionedPilotCoordinate_measurable {d ℓ : ℕ} (j : ℕ) (a : LocalPilotIndex d ℓ) :
+theorem preconditionedPilotCoordinate_measurable :
     Measurable (fun x : Covariate d => preconditionedPilotCoordinate j x a) := by
   unfold preconditionedPilotCoordinate
   exact Finset.measurable_sum Finset.univ (fun β _ =>
     ((dyadicKnownGram_inverse_measurable j).eval_matrix (i := localPilotRow a) (j := β)).smul
       (dyadicPilotCoordinate_measurable j (localPilotReplaceRow a β)))
 
-theorem incrementPilotFreeCoordinate_measurable {d ℓ : ℕ} (j : ℕ)
+end
+
+theorem incrementPilotFreeCoordinate_measurable
     (a : incrementVariables (anchoredDimension d ℓ)) :
     Measurable (fun x : Covariate d => incrementPilotFreeCoordinate j x a) := by
   let pc : ((Fin (DyadicGlobalDimension d ℓ j) → ℝ) →L[ℝ] ℝ) →L[ℝ]
@@ -66,25 +74,27 @@ theorem incrementPilotFreeCoordinate_measurable {d ℓ : ℕ} (j : ℕ)
       change Measurable (fun x : Covariate d => if j = 0 then
         (if a.2.1 = a.2.2 then incrementGlobalOne j else 0) else _)
       split_ifs
-      · exact measurable_const
-      · exact measurable_const
-      · exact hp (Sum.inl (anchoredFinIndex a.2.1, anchoredFinIndex a.2.2))
+      · simp
+      · simp
+      · fun_prop
   | inr a =>
     rcases a with ⟨parent, response, i⟩
     simp only [incrementPilotFreeCoordinate]
     split_ifs
-    · exact measurable_const
-    · exact hp (Sum.inr (Sum.inr (anchoredFinIndex i)))
-    · exact hp (Sum.inr (Sum.inl (anchoredFinIndex i)))
-    · exact hc (Sum.inr (Sum.inr (anchoredFinIndex i)))
-    · exact hc (Sum.inr (Sum.inl (anchoredFinIndex i)))
+    · simp
+    · apply hp
+    · apply hp
+    · tauto
+    · tauto
 
-theorem incrementPilotCoordinate_measurable {d ℓ : ℕ} (j : ℕ) :
+theorem incrementPilotCoordinate_measurable :
     Measurable (incrementPilotCoordinate (d := d) (ℓ := ℓ) j) := by
   exact (ContinuousLinearMap.piEquivL ℝ
     (Fin (Fintype.card (IncrementGlobalIndex d ℓ j)) → ℝ)
     (fun _ : Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) => ℝ)).continuous.measurable.comp
       (measurable_pi_iff.mpr (fun _ => incrementPilotFreeCoordinate_measurable j _))
+
+end
 
 theorem real_pi_projection_norm_le {ι : Type*} [Fintype ι] (i : ι) :
     ‖(ContinuousLinearMap.proj i : (ι → ℝ) →L[ℝ] ℝ)‖ ≤ 1 := by
@@ -108,7 +118,10 @@ theorem pilotPolynomialLinear_norm_le {q d ℓ : ℕ} (c : Fin q)
       exact (mul_le_mul (hP β) (real_pi_projection_norm_le _) (norm_nonneg _) hM).trans_eq (mul_one M)
     _ = (Fintype.card (PolynomialBox d ℓ) : ℝ) * M := by simp
 
-theorem dyadicPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
+section
+variable {d ℓ : ℕ} (j : ℕ)
+
+theorem dyadicPilotCoordinate_uniform_bound :
     ∃ M : ℝ, 0 < M ∧ ∀ x ∈ unitCube d, ∀ a : LocalPilotIndex d ℓ,
       ‖dyadicPilotCoordinate j x a‖ ≤ M := by
   obtain ⟨P, hP, hcap⟩ := dyadicPilotPolynomial_coeff_uniform_bound (d := d) (ℓ := ℓ) j
@@ -120,7 +133,7 @@ theorem dyadicPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
   exact (mul_le_mul_of_nonneg_left (pilotPolynomialLinear_norm_le _ _ _ P hP.le
     (hcap x hx a)) hscale).trans (le_max_right _ _)
 
-theorem preconditionedPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
+theorem preconditionedPilotCoordinate_uniform_bound :
     ∃ M : ℝ, 0 < M ∧ ∀ x ∈ unitCube d, ∀ a : LocalPilotIndex d ℓ,
       ‖preconditionedPilotCoordinate j x a‖ ≤ M := by
   obtain ⟨L, hL, hLb⟩ := dyadicKnownGram_inverse_uniform_bound (d := d) (ℓ := ℓ)
@@ -137,20 +150,20 @@ theorem preconditionedPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
       apply Finset.sum_le_sum
       intro β _
       rw [norm_smul]
-      exact mul_le_mul ((matrix_real_entry_norm_le _ _ _).trans (hLb j x hx))
+      exact mul_le_mul ((matrix_entry_norm_le_l2 _ _ _).trans (hLb j x hx))
         (hPb x hx _) (norm_nonneg _) hL.le
     _ = B := by simp [B]
     _ ≤ max 1 B := le_max_right _ _
 
-theorem incrementGlobalCurrent_norm_le {d ℓ : ℕ} (j : ℕ) :
+theorem incrementGlobalCurrent_norm_le :
     ‖incrementGlobalCurrent (d := d) (ℓ := ℓ) j‖ ≤ 1 :=
   ContinuousLinearMap.norm_pi_le_of_le (fun _ => real_pi_projection_norm_le _) zero_le_one
 
-theorem incrementGlobalParent_norm_le {d ℓ : ℕ} (j : ℕ) :
+theorem incrementGlobalParent_norm_le :
     ‖incrementGlobalParent (d := d) (ℓ := ℓ) j‖ ≤ 1 :=
   ContinuousLinearMap.norm_pi_le_of_le (fun _ => real_pi_projection_norm_le _) zero_le_one
 
-theorem incrementPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
+theorem incrementPilotCoordinate_uniform_bound :
     ∃ M : ℝ, 0 < M ∧ ∀ x ∈ unitCube d, ‖incrementPilotCoordinate (ℓ := ℓ) j x‖ ≤ M := by
   obtain ⟨C, hC, hCb⟩ := preconditionedPilotCoordinate_uniform_bound (d := d) (ℓ := ℓ) j
   obtain ⟨P, hP, hPb⟩ := preconditionedPilotCoordinate_uniform_bound (d := d) (ℓ := ℓ) (j - 1)
@@ -158,19 +171,19 @@ theorem incrementPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
   have hM : 0 < M := zero_lt_one.trans_le (le_max_left _ _)
   refine ⟨M, hM, ?_⟩
   intro x hx
-  have hCM : C ≤ M := (le_max_left C P).trans (le_max_right 1 (max C P))
-  have hPM : P ≤ M := (le_max_right C P).trans (le_max_right 1 (max C P))
+  have hCM := (le_max_left C P).trans (le_max_right 1 (max C P))
+  have hPM := (le_max_right C P).trans (le_max_right 1 (max C P))
   have hOne : ‖incrementGlobalOne (d := d) (ℓ := ℓ) j‖ ≤ 1 := real_pi_projection_norm_le _
   have hc (a : LocalPilotIndex d ℓ) :
       ‖(preconditionedPilotCoordinate j x a).comp (incrementGlobalCurrent j)‖ ≤ M :=
     (ContinuousLinearMap.opNorm_comp_le _ _).trans
       ((mul_le_mul (hCb x hx a) (incrementGlobalCurrent_norm_le j) (norm_nonneg _) hC.le).trans
-        (by simpa only [mul_one] using hCM))
+        (by linarith))
   have hp (a : LocalPilotIndex d ℓ) :
       ‖(preconditionedPilotCoordinate (j - 1) x a).comp (incrementGlobalParent j)‖ ≤ M :=
     (ContinuousLinearMap.opNorm_comp_le _ _).trans
       ((mul_le_mul (hPb x hx a) (incrementGlobalParent_norm_le j) (norm_nonneg _) hP.le).trans
-        (by simpa only [mul_one] using hPM))
+        (by linarith))
   apply ContinuousLinearMap.norm_pi_le_of_le _ hM.le
   intro i
   let a := (Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm i
@@ -184,15 +197,17 @@ theorem incrementPilotCoordinate_uniform_bound {d ℓ : ℕ} (j : ℕ) :
       split_ifs
       · exact hOne.trans (le_max_left _ _)
       · simpa only [norm_zero] using hM.le
-      · exact hp (Sum.inl (anchoredFinIndex a.2.1, anchoredFinIndex a.2.2))
+      · apply hp
   | inr a =>
     rcases a with ⟨parent, response, i⟩
     simp only [incrementPilotFreeCoordinate]
     split_ifs
     · simpa only [norm_zero] using hM.le
-    · exact hp (Sum.inr (Sum.inr (anchoredFinIndex i)))
-    · exact hp (Sum.inr (Sum.inl (anchoredFinIndex i)))
-    · exact hc (Sum.inr (Sum.inr (anchoredFinIndex i)))
-    · exact hc (Sum.inr (Sum.inl (anchoredFinIndex i)))
+    · apply hp
+    · apply hp
+    · apply hc
+    · apply hc
+
+end
 
 end NearlyMinimax

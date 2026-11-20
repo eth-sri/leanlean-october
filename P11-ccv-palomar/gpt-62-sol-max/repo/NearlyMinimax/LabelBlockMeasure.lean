@@ -42,13 +42,7 @@ theorem labelBlockReconstruct_preserving (labels : I → J) (π : Measure E) [Is
       Set.univ.pi (fun j : J => Set.univ.pi (fun i : I => if labels i = j then s i else Set.univ)) := by
     ext blocks
     simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, labelBlockReconstruct]
-    constructor
-    · intro h j i
-      by_cases hij : labels i = j
-      · simpa only [hij, ite_true] using h i
-      · simp only [hij, ite_false, Set.mem_univ]
-    · intro h i
-      simpa only [ite_true] using h (labels i) i
+    grind
   rw [hp, Measure.pi_pi]
   simp_rw [Measure.pi_pi]
   have he : ∀ j i, π (if labels i = j then s i else Set.univ) =

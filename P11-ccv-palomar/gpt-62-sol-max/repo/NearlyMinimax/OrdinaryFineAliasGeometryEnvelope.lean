@@ -1,6 +1,9 @@
 module
 
+public import NearlyMinimax.TernarySquareSum
+
 public import NearlyMinimax.OrdinaryFineAliasAggregation
+public import NearlyMinimax.FinePairSpatialEnergy
 
 @[expose] public section
 
@@ -26,12 +29,6 @@ def ordinaryFineAliasGeometryKernel {d n F : ℕ} (r : ℕ) (L T : ℝ)
     spatialMatrixL1 (globalCardinalBandMatrix (D := F) (spatialInterpolationLambda d) L T
       (spatialSubsetConfiguration S U))
 
-/-- The actual universal envelope on the full Q^n spatial domain. -/
-def ordinaryFineAliasResponseSquareEnvelope {d n F : ℕ} (M r R q : ℕ)
-    (ad bd c0 C a rho eta L T : ℝ) (U : Fin n → Covariate d) : ℝ :=
-  (3 : ℝ)^n * (ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a rho eta)^2 *
-    (ordinaryFineAliasGeometryKernel (F := F) r L T U)^2
-
 /-- Sum the actual geometric bands before squaring. This is the genuine
 triangle/Cauchy envelope for the sum of fine signed-row actions. -/
 def ordinaryFineAliasFamilyResponseSquareEnvelope {d n F : ℕ} (I : Finset ℕ)
@@ -41,24 +38,31 @@ def ordinaryFineAliasFamilyResponseSquareEnvelope {d n F : ℕ} (I : Finset ℕ)
     (∑ r ∈ I, ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a rho eta *
       ordinaryFineAliasGeometryKernel (F := F) r L (T r) U)^2
 
-theorem ordinaryFineAliasFamilyResponseSquareEnvelope_nonneg {d n F : ℕ} (I : Finset ℕ)
+section
+variable {d n F : ℕ}
+
+theorem ordinaryFineAliasFamilyResponseSquareEnvelope_nonneg (I : Finset ℕ)
     (M R q : ℕ) (ad bd c0 C a rho eta L : ℝ) (T : ℕ → ℝ) (U : Fin n → Covariate d) :
     0 ≤ ordinaryFineAliasFamilyResponseSquareEnvelope (F := F) I M R q ad bd c0 C a rho eta L T U := by
   unfold ordinaryFineAliasFamilyResponseSquareEnvelope
   positivity
 
-theorem ordinaryFineAliasGeometryKernel_measurable {d n F : ℕ} (r : ℕ) {L T : ℝ}
+theorem ordinaryFineAliasGeometryKernel_measurable (r : ℕ) {L T : ℝ}
     (hL : 1 ≤ L) (hT : 1 ≤ T) :
     Measurable (ordinaryFineAliasGeometryKernel (d := d) (n := n) (F := F) r L T) := by
-  unfold ordinaryFineAliasGeometryKernel spatialMatrixL1
   exact Finset.measurable_sum _ (fun S _ => Finset.measurable_sum _
-    (fun gamma _ => Finset.measurable_sum _ (fun beta _ =>
-      ((integrated_cardinal_band_continuous (spatialInterpolationLambda d) hL hT gamma beta).measurable.abs).comp
-        (spatialSubsetConfiguration_measurable S))))
+      (fun gamma _ => Finset.measurable_sum _ (fun beta _ =>
+        ((integrated_cardinal_band_continuous (spatialInterpolationLambda d) hL hT gamma beta).measurable.abs).comp
+          (spatialSubsetConfiguration_measurable S))))
+
+end
+
+section
+variable {d n F M R : ℕ}
 
 /-- Actual pointwise square domination for the entire fine family,
 separately uniform over each response's nuisance tuple. -/
-theorem ordinaryFineAliasFamilyResponseSquareEnvelope_dominates {d n F M R : ℕ}
+theorem ordinaryFineAliasFamilyResponseSquareEnvelope_dominates
     (I : Finset ℕ) (ad bd c0 L : ℝ) (T : ℕ → ℝ) (haD : 0 < ad)
     (hshrink : ad+(M : ℝ)⁻¹ < bd-(M : ℝ)⁻¹)
     (htau : shrunkDensityExponent ad bd M ≤ c0) (hI : ∀ r ∈ I, 1 ≤ r ∧ r ≤ R)
@@ -83,20 +87,46 @@ theorem ordinaryFineAliasFamilyResponseSquareEnvelope_dominates {d n F M R : ℕ
     apply (Finset.abs_sum_le_sum_abs _ I).trans
     exact Finset.sum_le_sum (fun r hr =>
       ordinaryFineAliasRawAction_abs_bound_of_chart ad bd c0 (spatialInterpolationLambda d) L (T r)
-        haD hshrink htau (hI r hr).1 (hI r hr).2 q hn C a V eta rho hC ha heta hrho hetarho
+        haD hshrink htau (hI r hr).1 (hI r hr).2 q hn C a V eta rho hC ha heta hetarho
         U hU (p y) (g y) (w y) (hpD y) (hg y) (hw y) (c y) (hc y) hp y)
-  have hsq (y : Fin n → Fin 3) :
-      ordinaryFineAliasFamilyRawAction I (ad+(M : ℝ)⁻¹) (bd-(M : ℝ)⁻¹)
-        (spatialInterpolationLambda d) L T M q C a V eta U (p y) (g y) (w y) (c y) y^2 ≤ H^2 := by
-    simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg _) ((abs_nonneg _).trans (hb y))).mpr (hb y)
-  have hs := Finset.sum_le_sum (fun y (_ : y ∈ (Finset.univ : Finset (Fin n → Fin 3))) => hsq y)
-  simpa only [Finset.sum_const, Finset.card_univ, Fintype.card_fun, Fintype.card_fin,
-    nsmul_eq_mul, Nat.cast_pow, Nat.cast_ofNat, ordinaryFineAliasFamilyResponseSquareEnvelope, H] using hs
+  exact ternary_sum_sq_le hb
+
+section
+variable (hd : 5 ≤ d) (I : Finset ℕ)
+include hd
+
+private theorem ordinaryFineAliasEnvelope_terms (M R q : ℕ)
+    (ad bd c0 C a ρ η L : ℝ) (T : ℕ → ℝ) (hL : 1 ≤ L)
+    (hI : ∀ r ∈ I, 2 ≤ r ∧ L ≤ T r) :
+    let f := fun r (U : Fin n → Covariate d) =>
+      ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a ρ η *
+        ordinaryFineAliasGeometryKernel (F := F) r L (T r) U
+    (∀ r ∈ I, Measurable (f r)) ∧
+      (∀ r ∈ I, Integrable (fun U => f r U ^ 2) (fullSpatialPatchDesign d n)) := by
+  let f := fun r (U : Fin n → Covariate d) => ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a ρ η *
+    ordinaryFineAliasGeometryKernel (F := F) r L (T r) U
+  have hm (r) (hr : r ∈ I) : Measurable (f r) :=
+    (ordinaryFineAliasGeometryKernel_measurable r hL (hL.trans (hI r hr).2)).const_mul _
+  have hi (r) (hr : r ∈ I) : Integrable (fun U => f r U^2) (fullSpatialPatchDesign d n) := by
+    have h := (ordinaryFineAliasKernel_sum_square_integrable_and_le (F := F) (n := n)
+      hd (hI r hr).1 hL (hL.trans (hI r hr).2) (hI r hr).2).1.const_mul
+        ((ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a ρ η)^2)
+    convert h using 1
+    funext U
+    dsimp [f, ordinaryFineAliasGeometryKernel]
+    ring
+  exact ⟨hm, hi⟩
+
+theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable (M R q : ℕ) (ad bd c0 C a ρ η L : ℝ)
+    (T : ℕ → ℝ) (hL : 1 ≤ L) (hI : ∀ r ∈ I, 2 ≤ r ∧ L ≤ T r) :
+    Integrable (ordinaryFineAliasFamilyResponseSquareEnvelope (d := d) (n := n) (F := F)
+      I M R q ad bd c0 C a ρ η L T) (fullSpatialPatchDesign d n) := by
+  obtain ⟨hm, hi⟩ := ordinaryFineAliasEnvelope_terms (n := n) (F := F) hd I M R q ad bd c0 C a ρ η L T hL hI
+  exact (finite_sum_square_integrable _ I _ hm hi).const_mul _
 
 /-- True integrability and geometric scale for the response-summed family
 envelope itself; independent of every nuisance field and chart inverse. -/
-theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable_and_scale_le {d n F M R : ℕ}
-    (hd : 5 ≤ d) (I : Finset ℕ) (hI : ∀ r ∈ I, 2 ≤ r ∧ r ≤ R)
+theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable_and_scale_le (hI : ∀ r ∈ I, 2 ≤ r ∧ r ≤ R)
     (ad bd c0 C a rho eta D K N : ℝ) (hbd : 0 ≤ bd)
     (hD : 0 ≤ D) (hK : 0 ≤ K) (hc0 : 0 ≤ c0) (hDK : D ≤ K*M)
     (hN : 0 < N) (hell : 1 ≤ N*Real.exp (-c0*D))
@@ -120,16 +150,10 @@ theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable_and_scale_le {d
     have := ordinaryAliasSpatialPrefactor_nonneg d q R ad bd c0 C a rho
     unfold ordinaryAliasSpatialCountBase
     positivity
-  have hm (r) (hr : r ∈ I) : Measurable (f r) :=
-    (ordinaryFineAliasGeometryKernel_measurable r hell (hell.trans (hLT r hr))).const_mul _
+  obtain ⟨hm, hi⟩ := ordinaryFineAliasEnvelope_terms (n := n) (F := F) hd I M R q ad bd c0 C a rho eta
+    (N * Real.exp (-c0 * D)) T hell (fun r hr => ⟨(hI r hr).1, hLT r hr⟩)
   have hk (r) (hr : r ∈ I) := ordinaryFineAliasKernel_sum_square_integrable_and_le (F := F) (n := n)
     hd (hI r hr).1 hell (hell.trans (hLT r hr)) (hLT r hr)
-  have hi (r) (hr : r ∈ I) : Integrable (fun U => f r U^2) (fullSpatialPatchDesign d n) := by
-    have h := (hk r hr).1.const_mul ((ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a rho eta)^2)
-    convert h using 1
-    funext U
-    dsimp [f, ordinaryFineAliasGeometryKernel]
-    ring
   have hb (r) (hr : r ∈ I) : (∫ U, f r U^2 ∂fullSpatialPatchDesign d n) ≤ B := by
     have h : (∫ U, f r U^2 ∂fullSpatialPatchDesign d n) ≤
         ordinaryFineAliasSpatialBudget d n M r R q ad bd c0 C a rho eta (N*Real.exp (-c0*D)) := by
@@ -140,23 +164,13 @@ theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable_and_scale_le {d
         rw [← integral_const_mul]
         congr 1
         funext U
-        dsimp [f]
         ring
       rw [hid]
       exact (mul_le_mul_of_nonneg_left (hk r hr).2 (sq_nonneg _)).trans_eq (by
-        unfold ordinaryFineAliasSpatialBudget ordinaryFineAliasAmplitudeFactor
-        ring)
+        rfl)
     exact h.trans (ordinaryFineAliasSpatialBudget_source_scale_le hd (hI r hr).2 hbd hD hK hc0
       hDK hN hell hH q)
-  have hs : Integrable (fun U => (∑ r ∈ I, f r U)^2) (fullSpatialPatchDesign d n) := by
-    have h := finite_sum_abs_square_integrable (fullSpatialPatchDesign d n) I f hm hi
-    have hupper : ∀ U, (∑ r ∈ I, f r U)^2 ≤ (∑ r ∈ I, |f r U|)^2 := by
-      intro U
-      have hb := Finset.abs_sum_le_sum_abs (fun r => f r U) I
-      simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg _)
-        (Finset.sum_nonneg (fun _ _ => abs_nonneg _))).mpr hb
-    exact h.mono' ((Finset.measurable_sum I hm).pow_const 2).aestronglyMeasurable
-      (Filter.Eventually.of_forall (fun U => by simpa only [Real.norm_eq_abs, abs_sq] using hupper U))
+  have hs := finite_sum_square_integrable (fullSpatialPatchDesign d n) I f hm hi
   have hcard : (I.card : ℝ)^2 ≤ ((R+1 : ℕ) : ℝ)^2 := by
     have hsub : I ⊆ Finset.range (R+1) := fun r hr => Finset.mem_range.mpr (by have := (hI r hr).2; omega)
     have h := Finset.card_le_card hsub
@@ -171,7 +185,10 @@ theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable_and_scale_le {d
     rw [← integral_const_mul]; rfl]
   exact (mul_le_mul_of_nonneg_left hsum (by positivity : 0 ≤ (3 : ℝ)^n)).trans_eq (by
     unfold B ordinaryAliasFamilySpatialPrefactor ordinaryAliasSpatialResponseBase
-    rw [mul_pow]
     ring)
+
+end
+
+end
 
 end NearlyMinimax

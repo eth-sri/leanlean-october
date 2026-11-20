@@ -28,34 +28,42 @@ def dyadicSeriesEnvelope {d : ℕ} (C : ModelConstants d) (A Λ : ℝ)
   Finset.univ.sup' Finset.univ_nonempty (fun j : Fin (J + 1) =>
     dyadicPilotSeries C A Λ j.val (m j.val) * max 1 (Λ / dyadicPilotScale d j.val))
 
-theorem dyadicSeriesEnvelope_level_le {d : ℕ} (C : ModelConstants d) (A Λ : ℝ)
+section
+variable {d : ℕ} (C : ModelConstants d) (A Λ : ℝ)
+
+theorem dyadicSeriesEnvelope_level_le
     (J : ℕ) (m : ℕ → ℕ) (j : Fin (J + 1)) :
     dyadicPilotSeries C A Λ j.val (m j.val) * max 1 (Λ / dyadicPilotScale d j.val) ≤
       dyadicSeriesEnvelope C A Λ J m :=
   Finset.le_sup' (fun j : Fin (J + 1) =>
     dyadicPilotSeries C A Λ j.val (m j.val) * max 1 (Λ / dyadicPilotScale d j.val)) (Finset.mem_univ j)
 
-theorem dyadicSeriesEnvelope_nonneg {d : ℕ} (C : ModelConstants d) (A Λ : ℝ)
-    (hΛ : 0 ≤ Λ) (J : ℕ) (m : ℕ → ℕ) : 0 ≤ dyadicSeriesEnvelope C A Λ J m := by
+section
+variable (hΛ : 0 ≤ Λ) (J : ℕ) (m : ℕ → ℕ)
+include hΛ
+
+theorem dyadicSeriesEnvelope_nonneg : 0 ≤ dyadicSeriesEnvelope C A Λ J m := by
   apply le_trans _ (dyadicSeriesEnvelope_level_le C A Λ J m ⟨0, by omega⟩)
   exact mul_nonneg (dyadicPilotSeries_nonneg C A Λ hΛ _ _) (zero_le_one.trans (le_max_left _ _))
 
-theorem dyadicPilotSeries_le_envelope {d : ℕ} (C : ModelConstants d) (A Λ : ℝ)
-    (hΛ : 0 ≤ Λ) (J : ℕ) (m : ℕ → ℕ) (j : Fin (J + 1)) :
+theorem dyadicPilotSeries_le_envelope (j : Fin (J + 1)) :
     dyadicPilotSeries C A Λ j.val (m j.val) ≤ dyadicSeriesEnvelope C A Λ J m := by
   have hnon := dyadicPilotSeries_nonneg C A Λ hΛ j.val (m j.val)
   apply le_trans _ (dyadicSeriesEnvelope_level_le C A Λ J m j)
-  exact le_mul_of_one_le_right hnon (le_max_left _ _)
+  apply le_mul_of_one_le_right <;> simp_all
 
-theorem dyadicPilotSeries_div_scale_le_envelope {d : ℕ} (C : ModelConstants d) (A Λ : ℝ)
+end
+
+theorem dyadicPilotSeries_div_scale_le_envelope
     (hΛ : 0 < Λ) (J : ℕ) (m : ℕ → ℕ) (j : Fin (J + 1)) :
     dyadicPilotSeries C A Λ j.val (m j.val) / dyadicPilotScale d j.val ≤
       dyadicSeriesEnvelope C A Λ J m / Λ := by
   have hnon := dyadicPilotSeries_nonneg C A Λ hΛ.le j.val (m j.val)
   have h := (mul_le_mul_of_nonneg_left (le_max_right 1 (Λ / dyadicPilotScale d j.val)) hnon).trans
     (dyadicSeriesEnvelope_level_le C A Λ J m j)
-  apply (le_div_iff₀ hΛ).mpr
-  convert h using 1 <;> ring
+  apply (le_div_iff₀ hΛ).mpr <;> grind
+
+end
 
 theorem dyadicPilotScale_parent_ratio_le {d j : ℕ} :
     dyadicPilotScale d j ≤ (2 : ℝ) ^ d * dyadicPilotScale d (j - 1) := by

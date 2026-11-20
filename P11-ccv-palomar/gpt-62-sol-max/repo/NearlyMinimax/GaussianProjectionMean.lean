@@ -34,20 +34,26 @@ theorem gaussianAbsoluteMean_pos : 0 < gaussianAbsoluteMean := by
   rw [variance_zero] at hv
   exact one_ne_zero hv
 
-theorem euclideanNorm_eq_toLp_norm {d : ℕ} (v : Covariate d) :
+section
+variable {d : ℕ}
+
+theorem euclideanNorm_eq_toLp_norm (v : Covariate d) :
     euclideanNorm v = ‖WithLp.toLp 2 v‖ := by
-  simp only [euclideanNorm, EuclideanSpace.norm_eq, PiLp.toLp_apply,
+  simp only [euclideanNorm, EuclideanSpace.norm_eq,
     Real.norm_eq_abs, sq_abs]
 
-theorem gaussianPhase_eq_inner {d : ℕ} (v Z : Covariate d) :
+theorem gaussianPhase_eq_inner (v Z : Covariate d) :
     gaussianPhase v Z = inner ℝ (WithLp.toLp 2 v) (WithLp.toLp 2 Z) := by
-  simp only [gaussianPhase, PiLp.inner_apply, WithLp.ofLp_toLp, RCLike.inner_apply,
+  simp only [gaussianPhase, PiLp.inner_apply, RCLike.inner_apply,
     conj_trivial, mul_comm]
 
-theorem gaussianPhase_map_eq_scaled_gaussian {d : ℕ} (v : Covariate d) :
+section
+variable (v : Covariate d)
+
+theorem gaussianPhase_map_eq_scaled_gaussian :
     (standardGaussianPi d).map (gaussianPhase v) =
       standardGaussianLine.map (fun z : ℝ => euclideanNorm v * z) := by
-  let L : StrongDual ℝ (EuclideanSpace ℝ (Fin d)) := innerSL ℝ (WithLp.toLp 2 v)
+  let L := innerSL ℝ (WithLp.toLp 2 v)
   have hfun : gaussianPhase v = L ∘ (WithLp.toLp 2) := by
     funext Z
     exact gaussianPhase_eq_inner v Z
@@ -61,7 +67,7 @@ theorem gaussianPhase_map_eq_scaled_gaussian {d : ℕ} (v : Covariate d) :
   simp only [L, innerSL_apply_norm, ← euclideanNorm_eq_toLp_norm]
   rfl
 
-theorem gaussianPhase_abs_integral {d : ℕ} (v : Covariate d) :
+theorem gaussianPhase_abs_integral :
     (∫ Z, |gaussianPhase v Z| ∂standardGaussianPi d) =
       gaussianAbsoluteMean * euclideanNorm v := by
   have hphase : Measurable (gaussianPhase v) := by unfold gaussianPhase; fun_prop
@@ -72,5 +78,9 @@ theorem gaussianPhase_abs_integral {d : ℕ} (v : Covariate d) :
   simp_rw [abs_mul, abs_of_nonneg (show 0 ≤ euclideanNorm v by unfold euclideanNorm; positivity)]
   rw [integral_const_mul]
   exact mul_comm _ _
+
+end
+
+end
 
 end NearlyMinimax

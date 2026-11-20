@@ -3,7 +3,8 @@ module
 public import NearlyMinimax.HighHistoryMassConcentration
 public import NearlyMinimax.HistoryInvariantLaw
 public import NearlyMinimax.HistoryPatchStateAppend
-public import NearlyMinimax.HighMassAnnihilation
+public import NearlyMinimax.HighCanonicalDensityMean
+public import NearlyMinimax.HighPacketBalancing
 
 @[expose] public section
 
@@ -18,15 +19,24 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 600000
 
-theorem highNeighbor_dependency_card (d k : ℕ) [NeZero k] (j : HighWindowLabels d k) :
-    (dependentLabelFinset (fun i j => j ∈ highNeighborLabels d k i) j).card ≤ 3^d := by
+section
+variable (d k : ℕ) [NeZero k]
+
+theorem highNeighbor_dependency_card (j : HighWindowLabels d k) :
+    (dependentLabelFinset (highNeighbors d k) j).card ≤ 3^d := by
   classical
-  have he : dependentLabelFinset (fun i j => j ∈ highNeighborLabels d k i) j =
+  have he : dependentLabelFinset (highNeighbors d k) j =
       highNeighborLabels d k j := by
     ext i
     simp [dependentLabelFinset]
   rw [he]
   exact highNeighborLabels_card_le d k j
+
+theorem highNeighbors_degreeBound :
+    HistoryDegreeBound (highNeighbors d k) (3 ^ d) :=
+  ⟨highNeighborLabels_self_mem d k, highNeighbors_symm d k, highNeighbor_dependency_card d k⟩
+
+end
 
 /-- The true tilted exceptional mass probability is determined by the genuine mass law. -/
 theorem massPowerTilt_abs_event_eq_of_massLaw {Ω : Type*} [MeasurableSpace Ω]
@@ -46,8 +56,7 @@ variable {Z : Type*} [MeasurableSpace Z] [StandardBorelSpace Z]
   (d k F m r D q : ℕ) [NeZero k] [LinearOrder (HighWindowLabels d k)]
   (σ : Measure Z) [IsFiniteMeasure σ] (a b C δ : ℝ)
   (A : Z → HighFrameIndex d F → HighFrameIndex d F → ℝ)
-  (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-  (hcost : Integrable (separatedMatrixCost A) σ)
+  (hA : SeparatedMatrixIntegrable σ A)
   (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
   (hδ : 0 < δ) (hδ1 : δ ≤ 1)
   (B : HighWindowLabels d k → Z → Covariate d → Fin r → ℝ)
@@ -57,7 +66,7 @@ variable {Z : Type*} [MeasurableSpace Z] [StandardBorelSpace Z]
   (hsmall : T * (highPacketMarkMass σ a b m r D q C A / δ) / historyReferenceRho (3^d) ≤
     1 / (2 + 8 * ((3^d : ℕ) : ℝ)^2))
 
-include hA hcost hpos hδ hδ1 hmB hi hT hsmall
+include hA hpos hδ hδ1 hmB hi hT hsmall
 
 variable (ha : 0 < a) (hab : a < b) (hr : 1 ≤ r) (hδlt : δ < 1)
   (radius width : ℝ) (hR : 0 < radius) (ha1 : a + radius ≤ 1) (hb1 : 1 + radius ≤ b)

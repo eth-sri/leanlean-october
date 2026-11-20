@@ -36,69 +36,33 @@ theorem ordinary_count_product_abs_bound {n : ℕ} (ad bd : ℝ)
     |densityCountCoefficient ad bd M r n * (∏ i ∈ S, p i)| ≤
       bd^n * (ordinaryDensityActivityBase ad bd)^r *
         Real.exp ((M : ℝ) * exteriorTau ((ad+bd)/(bd-ad))) := by
-  have hbd : 0 < bd := ha.trans hab
+  have hbd := ha.trans hab
   have hcard : r ≤ n := by simpa only [hS, Finset.card_univ, Fintype.card_fin] using Finset.card_le_univ S
-  have hm : 0 < |densityMargin ad bd 0| := abs_pos.mpr (densityMargin_zero_ne ad bd ha hab)
-  have hτ : 0 ≤ exteriorTau ((ad+bd)/(bd-ad)) := by
-    rw [exteriorTau_sqrt_ratio ad bd ha hab]
-    exact (densityIntervalExponent_pos ha hab).le
+  set τ := exteriorTau ((ad+bd)/(bd-ad))
+  let A := (bd-ad)/4/|densityMargin ad bd 0|
+  have hA : 0 ≤ A := by dsimp [A]; positivity
+  have hτ : 0 ≤ τ := exteriorTau_interval_nonneg ha.le hab
   have hprod : |∏ i ∈ S, p i| ≤ bd^r := by
-    rw [Finset.abs_prod]
-    calc
-      _ ≤ ∏ i ∈ S, bd := Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _) (fun i _ => by
-        simpa only [abs_of_pos (ha.trans_le (hp i).1)] using (hp i).2)
-      _ = _ := by rw [Finset.prod_const, hS]
+    rw [Finset.abs_prod, ← hS, ← Finset.prod_const]
+    exact Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _) (fun i _ => by grind)
   have hcoeff := densityCountCoefficient_abs_bound ad bd ha hab M r n hr
-  have hcosh : Real.cosh ((M+r : ℕ)*exteriorTau ((ad+bd)/(bd-ad))) ≤
-      Real.exp ((M+r : ℕ)*exteriorTau ((ad+bd)/(bd-ad))) := by
-    rw [Real.cosh_eq]
-    have he := Real.exp_le_exp.mpr (show -((M+r : ℕ)*exteriorTau ((ad+bd)/(bd-ad))) ≤
-      ((M+r : ℕ)*exteriorTau ((ad+bd)/(bd-ad))) by
-        have hh := mul_nonneg (Nat.cast_nonneg (M+r)) hτ
-        linarith)
-    linarith
-  have hj : (bd-ad)/4 ≤ bd := by linarith
-  have he : Real.exp (exteriorTau ((ad+bd)/(bd-ad))) ≤
-      Real.exp (1+exteriorTau ((ad+bd)/(bd-ad))) := Real.exp_le_exp.mpr (by linarith)
-  have hb : (bd-ad)/4/|densityMargin ad bd 0| * Real.exp (exteriorTau ((ad+bd)/(bd-ad))) ≤
-      ordinaryDensityActivityBase ad bd := by
+  rw [mul_div_assoc, ← div_pow] at hcoeff
+  have hcosh : Real.cosh ((M+r : ℕ)*τ) ≤ Real.exp ((M+r : ℕ)*τ) := cosh_le_exp_of_nonneg (by positivity)
+  have hb : A * Real.exp τ ≤ ordinaryDensityActivityBase ad bd := by
     unfold ordinaryDensityActivityBase
-    rw [abs_div, abs_of_pos hbd]
-    exact (mul_le_mul (div_le_div_of_nonneg_right hj hm.le) he
-      (Real.exp_pos _).le (div_nonneg hbd.le hm.le)).trans_eq (by ring)
-  have h1 := mul_le_mul hcoeff hprod (abs_nonneg _) (by positivity)
-  have h2 := mul_le_mul_of_nonneg_left hcosh
-    (show 0 ≤ (bd^(n-r)*((bd-ad)/4)^r/|densityMargin ad bd 0|^r)*bd^r by positivity)
-  have hid : ((bd^(n-r)*((bd-ad)/4)^r/|densityMargin ad bd 0|^r)*bd^r)*
-      Real.exp ((M+r : ℕ)*exteriorTau ((ad+bd)/(bd-ad))) =
-      bd^n * (((bd-ad)/4/|densityMargin ad bd 0|)*Real.exp (exteriorTau ((ad+bd)/(bd-ad))))^r *
-        Real.exp ((M : ℝ)*exteriorTau ((ad+bd)/(bd-ad))) := by
-    have heq : Real.exp ((M+r : ℕ)*exteriorTau ((ad+bd)/(bd-ad))) =
-        Real.exp ((M : ℝ)*exteriorTau ((ad+bd)/(bd-ad))) *
-          (Real.exp (exteriorTau ((ad+bd)/(bd-ad))))^r := by
-      rw [Nat.cast_add, add_mul, Real.exp_add]
-      congr 1
-      simpa only [mul_comm] using Real.exp_nat_mul (exteriorTau ((ad+bd)/(bd-ad))) r
-    rw [heq]
-    generalize (bd-ad)/4 = J
-    generalize |densityMargin ad bd 0| = H
-    generalize Real.exp (exteriorTau ((ad+bd)/(bd-ad))) = X
-    generalize Real.exp ((M : ℝ)*exteriorTau ((ad+bd)/(bd-ad))) = Y
-    rw [mul_pow, div_pow]
-    have hpw : bd^(n-r)*bd^r = bd^n := by rw [← pow_add, Nat.sub_add_cancel hcard]
-    calc _ = (bd^(n-r)*bd^r) *
-        (J^r/H^r) * X^r * Y := by ring
-         _ = _ := by rw [hpw]; ring
-  have h3 := mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hb r) (pow_nonneg hbd.le n))
-    (Real.exp_pos ((M : ℝ)*exteriorTau ((ad+bd)/(bd-ad)))).le
+    rw [abs_div, abs_of_pos hbd, mul_comm (Real.exp _)]
+    change A * Real.exp τ ≤ _ * Real.exp (1+τ)
+    dsimp only [A]
+    gcongr <;> linarith
+  rw [abs_mul]
   calc
-    _ ≤ (bd^(n-r)*((bd-ad)/4)^r/|densityMargin ad bd 0|^r)*bd^r *
-        Real.cosh ((M+r : ℕ)*exteriorTau ((ad+bd)/(bd-ad))) := by
-      simpa only [abs_mul, mul_assoc, mul_left_comm, mul_comm] using h1
-    _ ≤ _ := h2
-    _ = _ := hid
-    _ ≤ _ := h3
+    _ ≤ bd^(n-r)*A^r*Real.exp ((M+r : ℕ)*τ)*bd^r := by
+      refine (mul_le_mul hcoeff hprod (abs_nonneg _) (by positivity)).trans ?_
+      gcongr
+    _ = (bd^(n-r)*bd^r)*(A*Real.exp τ)^r*Real.exp ((M:ℝ)*τ) := by
+      rw [Nat.cast_add, add_mul, Real.exp_add, Real.exp_nat_mul, Real.exp_nat_mul, mul_pow]
+      ring
+    _ ≤ _ := by rw [← pow_add, Nat.sub_add_cancel hcard]; gcongr
 
 /-- Fixed constants bound every actual shrinking interval and every bounded
 fine target, before the exterior degree or sample size is chosen. -/
@@ -114,11 +78,7 @@ theorem ordinary_count_product_shrunk_abs_bound {n M r R : ℕ}
   have ht : 0 ≤ (M : ℝ)⁻¹ := inv_nonneg.mpr (Nat.cast_nonneg _)
   have hab : ad < bd := by linarith
   have hap : 0 < ad+(M : ℝ)⁻¹ := by linarith
-  have hbp : 0 < bd-(M : ℝ)⁻¹ := hap.trans hshrink
-  have he : exteriorTau (((ad+(M : ℝ)⁻¹)+(bd-(M : ℝ)⁻¹))/
-      ((bd-(M : ℝ)⁻¹)-(ad+(M : ℝ)⁻¹))) = shrunkDensityExponent ad bd M := by
-    rw [exteriorTau_sqrt_ratio _ _ hap hshrink]
-    rfl
+  have hbp := hap.trans hshrink
   have hB : 0 ≤ uniformOrdinaryDensityActivityBase ad bd c0 := by
     unfold uniformOrdinaryDensityActivityBase
     positivity
@@ -134,7 +94,7 @@ theorem ordinary_count_product_shrunk_abs_bound {n M r R : ℕ}
       (pow_le_pow_right₀ (by linarith) hrR)
   have h := ordinary_count_product_abs_bound (ad+(M : ℝ)⁻¹) (bd-(M : ℝ)⁻¹)
     hap hshrink M r hr p hp S hS
-  rw [he] at h
+  rw [exteriorTau_shrunk M ha hshrink] at h
   exact h.trans (mul_le_mul_of_nonneg_right
     (mul_le_mul hbn hBr
       (pow_nonneg (by unfold ordinaryDensityActivityBase; positivity) r)
@@ -150,7 +110,7 @@ theorem ordinaryFineAliasRawAction_abs_bound_of_chart {d n F M r R : ℕ}
     (hshrink : ad+(M : ℝ)⁻¹ < bd-(M : ℝ)⁻¹)
     (htau : shrunkDensityExponent ad bd M ≤ c0) (hr : 1 ≤ r) (hrR : r ≤ R)
     (q : ℕ) (hn : 1 ≤ n) (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a)
-    (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2)
+    (hη : 0 ≤ η) (hηρ : η ≤ ρ/2)
     (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
     (p g w : Fin n → ℝ)
     (hpD : ∀ i, p i ∈ Icc (ad+(M : ℝ)⁻¹) (bd-(M : ℝ)⁻¹))
@@ -171,23 +131,18 @@ theorem ordinaryFineAliasRawAction_abs_bound_of_chart {d n F M r R : ℕ}
   have hterm (S) (hmem : S ∈ (Finset.univ : Finset (Fin n)).powersetCard r) :=
     ordinary_count_product_shrunk_abs_bound ad bd c0 haD hshrink htau hr hrR p hpD S (hS S hmem)
   have hresponse (S : Finset (Fin n)) := high_response_matrix_all_count_bound q hn C a V η ρ
-    (lt_of_lt_of_le zero_lt_one hC) ha hη hρ hηρ
     (globalCardinalBandMatrix (D := F) lam L T (spatialSubsetConfiguration S U))
-    g w (fun i => highFrameFeature (U i)) c y hc hg hw
-    (fun v hv i => highFrameProfile_abs_le_one C hC (U i) (hU i) v hv) hp
+    g w (fun i => highFrameFeature (U i)) c y
+    (highFrameResponseGuards C a V η ρ hC ha hη hηρ U hU g w hg hw hp) hc
   rw [Finset.mul_sum]
   apply Finset.sum_le_sum
   intro S hmem
   have hh := mul_le_mul (hterm S hmem) (hresponse S) (abs_nonneg _)
     (show 0 ≤ (1+bd)^n * (1+uniformOrdinaryDensityActivityBase ad bd c0)^R *
       Real.exp ((M : ℝ)*shrunkDensityExponent ad bd M) by
-        have ht : 0 ≤ (M : ℝ)⁻¹ := inv_nonneg.mpr (Nat.cast_nonneg M)
-        have hbd : 0 < bd := by linarith
-        have hab : ad < bd := by linarith
-        unfold uniformOrdinaryDensityActivityBase
-        positivity)
+        grind)
   simpa only [abs_mul, mul_assoc] using hh.trans_eq (by
-    unfold ordinaryAliasResponseConstant highSeparatedDerivativeBudget spatialMatrixL1
+    unfold ordinaryAliasResponseConstant highSeparatedDerivativeBudget highLocalDerivativeConstant spatialMatrixL1
     ring)
 
 /-- Exact subset lifting of the constructed fine-band matrix envelope. -/
@@ -206,14 +161,13 @@ theorem ordinaryFineAliasKernel_sum_square_integrable_and_le {d n F r : ℕ}
   let f := fun (S : Finset (Fin n)) (V : Fin S.card → Covariate d) =>
     spatialMatrixL1 (globalCardinalBandMatrix (D := F) (spatialInterpolationLambda d) L T V)
   have hf (S : Finset (Fin n)) : Measurable (f S) := by
-    unfold f spatialMatrixL1
     exact Finset.measurable_sum _ (fun γ _ => Finset.measurable_sum _
-      (fun δ _ => (integrated_cardinal_band_continuous (spatialInterpolationLambda d) hL hT γ δ).measurable.abs))
-  have hs (S) (hS : S ∈ (Finset.univ : Finset (Fin n)).powersetCard r) : S.card = r :=
+          (fun δ _ => (integrated_cardinal_band_continuous (spatialInterpolationLambda d) hL hT γ δ).measurable.abs))
+  have hs (S) (hS : S ∈ (Finset.univ : Finset (Fin n)).powersetCard r) :=
     (Finset.mem_powersetCard.mp hS).2
   have hi (S) (hS : S ∈ (Finset.univ : Finset (Fin n)).powersetCard r) :
       Integrable (fun V => f S V^2) (fullSpatialPatchDesign d S.card) :=
-    globalCardinalBandMatrix_square_integrable hd (by rw [hs S hS]; exact hr) hL hT hLT
+    globalCardinalBandMatrix_square_integrable hd (by grind) hL hT hLT
   constructor
   · have h := finite_sum_abs_square_integrable (fullSpatialPatchDesign d n)
       ((Finset.univ : Finset (Fin n)).powersetCard r)
@@ -224,8 +178,8 @@ theorem ordinaryFineAliasKernel_sum_square_integrable_and_le {d n F r : ℕ}
   · exact spatial_subset_sum_square_integral_le f _ (fun S _ => hf S) hi
       (fun S hS => by
         have h := globalCardinalBandMatrix_square_integral_le (D := F) hd
-          (show 2 ≤ S.card by rw [hs S hS]; exact hr) hL hT hLT
-        simpa only [f, hs S hS] using h)
+          (show 2 ≤ S.card by grind) hL hT hLT
+        grind)
 
 def ordinaryFineAliasSpatialBudget (d n M r R q : ℕ) (ad bd c0 C a ρ η L : ℝ) : ℝ :=
   (((1+bd)^n * (1+uniformOrdinaryDensityActivityBase ad bd c0)^R *
@@ -254,7 +208,6 @@ theorem ordinary_alias_count_factors_le {d n r : ℕ} {bd : ℝ} (hbd : 0 ≤ bd
       (by positivity) (by positivity)) hc2 (by positivity) (by positivity)) hv (by positivity) (by positivity)
   apply h.trans_eq
   rw [← pow_mul, Nat.mul_comm n 2, pow_mul, ← mul_pow, ← mul_pow, ← mul_pow]
-  congr 1
   ring
 
 def ordinaryAliasSpatialPrefactor (d q R : ℕ) (ad bd c0 C a ρ : ℝ) : ℝ :=
@@ -268,9 +221,7 @@ def ordinaryAliasSpatialResponseBase (d : ℕ) (bd : ℝ) : ℝ :=
   3*ordinaryAliasSpatialCountBase d bd
 
 theorem ordinaryAliasSpatialPrefactor_nonneg (d q R : ℕ) (ad bd c0 C a ρ : ℝ) :
-    0 ≤ ordinaryAliasSpatialPrefactor d q R ad bd c0 C a ρ := by
-  unfold ordinaryAliasSpatialPrefactor
-  exact mul_nonneg (mul_nonneg (sq_nonneg _) (sq_nonneg _)) (lowerAliasSpatialA_nonneg d R)
+    0 ≤ ordinaryAliasSpatialPrefactor d q R ad bd c0 C a ρ := mul_nonneg (mul_nonneg (sq_nonneg _) (sq_nonneg _)) (lowerAliasSpatialA_nonneg d R)
 
 /-- Genuine cardinal-band integration and elementary count factors give the
 source alias scale, with constants fixed before M,n or nuisance values. -/
@@ -284,23 +235,19 @@ theorem ordinaryFineAliasSpatialBudget_source_scale_le {d n M r R : ℕ}
         η^4 * Real.exp (2*shrunkDensityExponent ad bd M*M) * N^(4-(d : ℝ)) *
           Real.exp (lowerAliasSpatialL d R c0 K*M) * (ordinaryAliasSpatialCountBase d bd)^n := by
   have hkernel := cardinalBandSquareBudget_cutoff_le (by omega : 4 ≤ d) hrR
-    (Nat.cast_nonneg M) hD hK hc0 hDK hN hell hH
+    (Nat.cast_nonneg M) hD hc0 hDK hN hell hH
   have hcount := ordinary_alias_count_factors_le (d := d) (n := n) (r := r) hbd
   let P := ((1+uniformOrdinaryDensityActivityBase ad bd c0)^R)^2 *
     (ordinaryAliasResponseConstant q C a ρ)^2 * η^4 * Real.exp (2*shrunkDensityExponent ad bd M*M)
-  have hP : 0 ≤ P := by dsimp [P]; positivity
+  have hP : 0 ≤ P := by positivity
   have he : (Real.exp ((M : ℝ)*shrunkDensityExponent ad bd M))^2 =
       Real.exp (2*shrunkDensityExponent ad bd M*M) := by
-    rw [← Real.exp_nat_mul]
-    congr 1
-    push_cast
-    ring
+    simp [← Real.exp_nat_mul] <;> ring
   have hid : ordinaryFineAliasSpatialBudget d n M r R q ad bd c0 C a ρ η (N*Real.exp (-c0*D)) =
       P * (((1+bd)^n)^2 * (n : ℝ)^4 * (n.choose r : ℝ)^2 * (2 : ℝ)^(d*(n-r))) *
         ((r : ℝ)^2*(2 : ℝ)^d*cardinalBandSquareBudget d r (N*Real.exp (-c0*D))) := by
     unfold ordinaryFineAliasSpatialBudget P
-    rw [mul_pow, mul_pow, mul_pow, mul_pow, mul_pow, he]
-    ring
+    grind
   rw [hid]
   have hh := mul_le_mul (mul_le_mul_of_nonneg_left hcount hP) hkernel (by
       unfold cardinalBandSquareBudget

@@ -19,18 +19,22 @@ open scoped Topology
 
 namespace NearlyMinimax
 
-theorem sq_div_sqrt_eq_mul_sqrt {L : ℝ} (hL : 0 < L) :
-    L ^ 2 / Real.sqrt L = L * Real.sqrt L := by
-  apply (div_eq_iff (Real.sqrt_pos.2 hL).ne').2
-  rw [mul_assoc, Real.mul_self_sqrt hL.le]
-  ring
+section
+variable {L : ℝ} (hL : 0 < L)
+include hL
 
-theorem mul_sqrt_eq_three_halves_power {L : ℝ} (hL : 0 < L) :
+theorem sq_div_sqrt_eq_mul_sqrt :
+    L ^ 2 / Real.sqrt L = L * Real.sqrt L := by
+  grind
+
+theorem mul_sqrt_eq_three_halves_power :
     L * Real.sqrt L = L ^ (3 / 2 : ℝ) := by
   calc
     L * Real.sqrt L = L ^ (1 : ℝ) * L ^ (1 / 2 : ℝ) := by rw [Real.rpow_one, Real.sqrt_eq_rpow]
     _ = L ^ (1 + 1 / 2 : ℝ) := (Real.rpow_add hL 1 (1 / 2)).symm
     _ = L ^ (3 / 2 : ℝ) := by norm_num
+
+end
 
 /-- A uniform profile bound throughout all coarse and fine levels. -/
 theorem quadraticProfile_degree_scale_bound {L S z c C : ℝ}
@@ -38,16 +42,15 @@ theorem quadraticProfile_degree_scale_bound {L S z c C : ℝ}
     (hSl : c * Real.sqrt L ≤ S) (hSu : S ≤ C * Real.sqrt L)
     (hzl : -L ≤ z) (hzu : z ≤ S) :
     quadraticProfile S z ≤ (C / 4 + (C + 1) ^ 2 / c) * L ^ (3 / 2 : ℝ) := by
-  have hL₀ : 0 < L := lt_of_lt_of_le zero_lt_one hL
-  have hsqrt : 0 < Real.sqrt L := Real.sqrt_pos.2 hL₀
-  have hdenom : 0 < c * Real.sqrt L := mul_pos hc hsqrt
-  have hS : 0 < S := hdenom.trans_le hSl
+  have hL₀ := lt_of_lt_of_le zero_lt_one hL
+  have hsqrt := Real.sqrt_pos.2 hL₀
+  have hdenom := mul_pos hc hsqrt
   have hsqrtL : Real.sqrt L ≤ L := (Real.sqrt_le_left hL₀.le).2 (by nlinarith)
-  have hSC : S ≤ C * L := hSu.trans (mul_le_mul_of_nonneg_left hsqrtL hC)
-  have hdiff : 0 ≤ S - z := sub_nonneg.2 hzu
+  have hSC := hSu.trans (mul_le_mul_of_nonneg_left hsqrtL hC)
+  have hdiff := sub_nonneg.2 hzu
   have hdiffup : S - z ≤ (C + 1) * L := by nlinarith
   have hboundpos : 0 ≤ (C + 1) * L := by positivity
-  have hsq : (S - z) ^ 2 ≤ ((C + 1) * L) ^ 2 := (sq_le_sq₀ hdiff hboundpos).2 hdiffup
+  have hsq := (sq_le_sq₀ hdiff hboundpos).2 hdiffup
   have hterm : (S - z) ^ 2 / S ≤ ((C + 1) ^ 2 / c) * (L * Real.sqrt L) := by
     calc
       _ ≤ (S - z) ^ 2 / (c * Real.sqrt L) :=
@@ -58,8 +61,7 @@ theorem quadraticProfile_degree_scale_bound {L S z c C : ℝ}
       _ = _ := by rw [sq_div_sqrt_eq_mul_sqrt hL₀]
   have hfirst : S / 4 ≤ (C / 4) * (L * Real.sqrt L) := by
     have hm := mul_le_mul_of_nonneg_right hL (by positivity : 0 ≤ C * Real.sqrt L / 4)
-    have hs := div_le_div_of_nonneg_right hSu (by norm_num : (0 : ℝ) ≤ 4)
-    nlinarith
+    grind
   unfold quadraticProfile
   rw [← mul_sqrt_eq_three_halves_power hL₀]
   nlinarith
@@ -73,7 +75,7 @@ theorem eventually_allocationWidth_comparable {a : ℝ} (ha : 0 < a) (C : ℝ) :
   filter_upwards [ht.eventually (lt_mem_nhds (by linarith : a / 2 < a)),
     ht.eventually (gt_mem_nhds (by linarith : a < 2 * a)),
     Real.tendsto_log_atTop.eventually (eventually_ge_atTop (1 : ℝ))] with x hlo hhi hx
-  have hp : 0 < Real.sqrt (Real.log x) := Real.sqrt_pos.2 (lt_of_lt_of_le zero_lt_one hx)
+  have hp := Real.sqrt_pos.2 (lt_of_lt_of_le zero_lt_one hx)
   exact ⟨hx, ((lt_div_iff₀ hp).1 hlo).le, ((div_lt_iff₀ hp).1 hhi).le⟩
 
 /-- The explicit coefficient of the uniform maximum-degree bound. -/
@@ -92,14 +94,14 @@ theorem eventually_allocation_degree_bound {a β : ℝ} (ha : 0 < a) (hβ : 0 �
   intro j hj
   have hp := quadraticProfile_degree_scale_bound hx.1 (by positivity : 0 < a / 2)
     (by positivity : 0 ≤ 2 * a) hx.2.1 hx.2.2 (hz j hj).1 (hz j hj).2
-  have hS : 0 < allocationWidth a C x :=
+  have hS :=
     (mul_pos (by positivity : 0 < a / 2) (Real.sqrt_pos.2 (by linarith : 0 < Real.log x))).trans_le hx.2.1
   have hQ : 0 ≤ quadraticProfile (allocationWidth a C x) (z x j) :=
     (by positivity : (0 : ℝ) ≤ allocationWidth a C x / 4).trans (quadraticProfile_lower hS)
   have hf := Nat.floor_le (mul_nonneg hβ hQ)
   have hm := mul_le_mul_of_nonneg_left hp hβ
   unfold allocationDegreeCoefficient
-  exact hf.trans (by simpa only [mul_assoc] using hm)
+  grind
 
 /-- The actual natural terminal level before spatial bandwidth rounding. -/
 def terminalAllocationLevel (δ a C H γ x : ℝ) : ℕ :=
@@ -117,9 +119,9 @@ theorem actual_allocation_level_range {δ a C H γ x : ℝ} {j : ℕ}
     (hj : j ≤ terminalAllocationLevel δ a C H γ x) :
     -Real.log x ≤ allocationLevelPosition δ a C H x j ∧
       allocationLevelPosition δ a C H x j ≤ allocationWidth a C x := by
-  have hell : 0 ≤ Real.log (H * allocationWidth a C x) := Real.log_nonneg hHS
-  have hlogS : 0 ≤ Real.log (allocationWidth a C x) := Real.log_nonneg hS
-  have hjreal : (j : ℝ) ≤ (terminalAllocationLevel δ a C H γ x : ℝ) := by exact_mod_cast hj
+  have hell := Real.log_nonneg hHS
+  have hlogS := Real.log_nonneg hS
+  have hjreal : (j : ℝ) ≤ (terminalAllocationLevel δ a C H γ x : ℝ) := by simp_all
   have hf := Nat.floor_le (div_nonneg hLT hδ.le)
   have hum := mul_le_mul_of_nonneg_left hf hδ.le
   have hmj := mul_le_mul_of_nonneg_left hjreal hδ.le
@@ -146,7 +148,6 @@ theorem eventually_actual_allocation_level_range {δ a H γ : ℝ}
     eventually_terminal_cell_log_nonneg ha hH C γ] with x hx hHx hLT
   intro j hj
   exact actual_allocation_level_range hδ hγ hx hHx hLT (by
-    have hmem := Finset.mem_range.1 hj
-    omega)
+    simp_all)
 
 end NearlyMinimax

@@ -17,29 +17,25 @@ theorem fine_pair_alias_cutoff_inverse {d : ℕ} (hd : 4 ≤ d)
     {N ell c0 D : ℝ} (hN : 0 < N) (hell : ell=N*Real.exp (-c0*D)) :
     1/ell^(d-4) = N^(4-(d : ℝ))*Real.exp (c0*D*((d : ℝ)-4)) := by
   have hnat : ((d-4 : ℕ) : ℝ) = (d : ℝ)-4 := by
-    exact_mod_cast (Nat.cast_sub hd : ((d-4 : ℕ) : ℤ) = (d : ℤ)-4)
+    simp_all
   have hpow : N^(4-(d : ℝ)) = (N^(d-4))⁻¹ := by
     rw [show (4 : ℝ)-d = -((d : ℝ)-4) by ring, Real.rpow_neg hN.le,
       ← hnat, Real.rpow_natCast]
-  rw [hell, mul_pow, ← Real.exp_nat_mul, hpow, one_div, mul_inv_rev, ← Real.exp_neg,
-    mul_comm (Real.exp _)]
-  congr 2
-  rw [hnat]
-  ring
+  rw [hell, mul_pow, ← Real.exp_nat_mul, hpow, one_div, mul_inv_rev, ← Real.exp_neg, mul_comm (Real.exp _), hnat] <;> grind
 
 def finePairSaddleAliasExponent (d : ℕ) (c0 K : ℝ) : ℝ :=
   2*c0+c0*K*((d : ℝ)-4)
 
 theorem fine_pair_alias_cutoff_scale_le {d M : ℕ} (hd : 4 ≤ d)
     {N ell tau c0 D K : ℝ} (hN : 0 < N) (hell : ell=N*Real.exp (-c0*D))
-    (hc0 : 0 ≤ c0) (hK : 0 ≤ K) (htau : tau ≤ c0) (hD : D ≤ K*M) :
+    (hc0 : 0 ≤ c0) (htau : tau ≤ c0) (hD : D ≤ K*M) :
     Real.exp (2*tau*M)/ell^(d-4) ≤
       N^(4-(d : ℝ))*Real.exp (finePairSaddleAliasExponent d c0 K*M) := by
   rw [div_eq_mul_inv, ← one_div, fine_pair_alias_cutoff_inverse hd hN hell]
   rw [← mul_assoc, mul_comm (Real.exp _) (N^_), mul_assoc, ← Real.exp_add]
   apply mul_le_mul_of_nonneg_left _ (Real.rpow_nonneg hN.le _)
   apply Real.exp_le_exp.mpr
-  have hdR : (4 : ℝ) ≤ d := by exact_mod_cast hd
+  have hdR : (4 : ℝ) ≤ d := by simp_all
   have hT := mul_le_mul_of_nonneg_right htau (by positivity : 0 ≤ (2 : ℝ)*M)
   have hDK := mul_le_mul_of_nonneg_left hD (by positivity : 0 ≤ c0*((d : ℝ)-4))
   unfold finePairSaddleAliasExponent
@@ -68,7 +64,7 @@ theorem finite_fine_pair_saddle_alias_budget_le {d : ℕ} (hd : 4 ≤ d)
     dsimp [A]
     positivity [finePairUniformSpatialPrefactor_nonneg d q aD bD C a rho c0,
       spatialInverseFourConstant_nonneg d]
-  have hBase : 0 ≤ finePairAliasGeometricBase d bD := finePairAliasGeometricBase_nonneg d bD
+  have hBase := finePairAliasGeometricBase_nonneg d bD
   have hL : 0 ≤ finePairSaddleAliasExponent d c0 K := by
     unfold finePairSaddleAliasExponent
     have hdR : (4 : ℝ) ≤ d := by exact_mod_cast hd
@@ -80,7 +76,7 @@ theorem finite_fine_pair_saddle_alias_budget_le {d : ℕ} (hd : 4 ≤ d)
   intro j _
   let n := M+1+j
   have h := finePairAliasActionSpatialBudget_uniform_geometric_le haD ha hb hab htau d n M q C a rho eta ell hellpos
-  have hs := fine_pair_alias_cutoff_scale_le hd hN hell hc0 hK htau hD
+  have hs := fine_pair_alias_cutoff_scale_le hd hN hell hc0 htau hD
   have hp := polynomial_count_factor_le n 8
   have hm := mul_le_mul_of_nonneg_left hs
     (by positivity : 0 ≤ A*finePairAliasGeometricBase d bD^n*(n : ℝ)^8*eta^4)

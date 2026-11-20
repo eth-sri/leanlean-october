@@ -59,15 +59,21 @@ def affinePullbackPolynomial {d : ℕ} (ℓ : ℕ) (a : Covariate d) (h : ℝ)
   ∑ γ : PolynomialBox d ℓ, C (P.coeff (polynomialBoxExponent γ)) *
     ∏ i, (C (a i) + C h * X i) ^ (γ i).val
 
-theorem affinePullbackPolynomial_eval {d ℓ : ℕ} (a : Covariate d) (h : ℝ)
-    (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ) (v : Covariate d) :
+section
+variable {d ℓ : ℕ}
+
+section
+variable (a : Covariate d) (h : ℝ)
+    (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ)
+include hP
+
+theorem affinePullbackPolynomial_eval (v : Covariate d) :
     eval v (affinePullbackPolynomial ℓ a h P) = eval (fun i => a i + h * v i) P := by
   rw [polynomial_box_evaluation P hP]
   simp only [affinePullbackPolynomial, map_sum, map_mul, map_prod, map_pow, map_add,
     eval_C, eval_X]
 
-theorem affinePullbackPolynomial_degree {d ℓ : ℕ} (a : Covariate d) (h : ℝ)
-    (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ) :
+theorem affinePullbackPolynomial_degree :
     (affinePullbackPolynomial ℓ a h P).totalDegree ≤ ℓ := by
   unfold affinePullbackPolynomial
   apply MvPolynomial.totalDegree_finsetSum_le
@@ -89,14 +95,16 @@ theorem affinePullbackPolynomial_degree {d ℓ : ℕ} (a : Covariate d) (h : ℝ
     simp
   exact (MvPolynomial.totalDegree_pow _ _).trans (by simpa using Nat.mul_le_mul_left _ hl)
 
+end
+
 /-- Every polynomial of the correct degree vanishing at its anchor has an
 exact centered monomial representation on all of the ambient space. -/
-theorem polynomial_centered_representation {d ℓ : ℕ} (u : Covariate d)
+theorem polynomial_centered_representation (u : Covariate d)
     (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ) (hu : eval u P = 0) :
     ∃ c : AnchoredIndex d ℓ → ℝ, ∀ z : Covariate d,
       eval z P = ∑ γ, c γ * anchoredFeature u z γ := by
   let Q := affinePullbackPolynomial ℓ u 1 P
-  have hQ : Q.totalDegree ≤ ℓ := affinePullbackPolynomial_degree u 1 P hP
+  have hQ := affinePullbackPolynomial_degree u 1 P hP
   have hQ0 : Q.coeff 0 = 0 := by
     rw [← constantCoeff_eq, ← eval_zero]
     have he := affinePullbackPolynomial_eval u 1 P hP 0
@@ -105,7 +113,6 @@ theorem polynomial_centered_representation {d ℓ : ℕ} (u : Covariate d)
   intro z
   have he := affinePullbackPolynomial_eval u 1 P hP (z - u)
   have hz : (fun i => u i + 1 * (z - u) i) = z := by
-    funext i
     simp
   rw [hz] at he
   calc
@@ -113,5 +120,7 @@ theorem polynomial_centered_representation {d ℓ : ℕ} (u : Covariate d)
     _ = eval (z - u) (anchoredPolynomial (fun γ => Q.coeff (anchoredExponent γ))) :=
       congrArg (eval (z - u)) (polynomial_as_anchored_sum Q hQ hQ0)
     _ = _ := anchoredPolynomial_eval _ (z - u)
+
+end
 
 end NearlyMinimax

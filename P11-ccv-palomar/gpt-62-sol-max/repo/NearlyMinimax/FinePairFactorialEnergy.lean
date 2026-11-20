@@ -1,6 +1,6 @@
 module
 
-public import NearlyMinimax.FinePairEnergyUniform
+public import NearlyMinimax.FinePairEnergyGeometric
 
 @[expose] public section
 
@@ -27,10 +27,10 @@ set_option maxHeartbeats 800000
   let P := finePairUniformSpatialPrefactor d q aD bD C a ρ c0 * η^4 *
     Real.exp (2*exteriorTau ((ad+bd)/(bd-ad))*M) * (T0^(2-(d : ℝ)))^2
   have hP : 0 ≤ P := by dsimp [P]; positivity [finePairUniformSpatialPrefactor_nonneg d q aD bD C a ρ c0]
-  have h := finite_polynomial_field_count_tail_le hP hCs (finePairFieldGeometricBase_nonneg d bD)
-    hμ hμ1 12 J (fun n => finePairEvenActionSpatialBudget d n M q ad bd C a ρ η T0)
+  have h := finite_polynomial_count_tail_le hP hCs (finePairFieldGeometricBase_nonneg d bD)
+    hμ hμ1 4 12 J (fun n => finePairEvenActionSpatialBudget d n M q ad bd C a ρ η T0)
     (fun j _ => (finePairEvenActionSpatialBudget_uniform_geometric_le haD ha hb hab htau d (4+j) M q C a ρ η T0).trans_eq
-      (by dsimp [P]; ring))
-  exact h.trans_eq (by unfold finePairFieldFactorialConstant; dsimp [P]; ring)
+      (by ring))
+  exact h.trans_eq (by unfold finePairFieldFactorialConstant; ring)
 
 end NearlyMinimax

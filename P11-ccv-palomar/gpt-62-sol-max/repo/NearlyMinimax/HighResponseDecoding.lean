@@ -15,36 +15,44 @@ attribute [local instance] Classical.propDecidable
 def decodeTernaryResponse (a y : ℝ) : Fin 3 :=
   if y = -a then 0 else if y = 0 then 1 else 2
 
-theorem decodeTernaryResponse_measurable (a : ℝ) : Measurable (decodeTernaryResponse a) := by
-  apply Measurable.ite (measurableSet_eq_fun measurable_id measurable_const) measurable_const
-  exact Measurable.ite (measurableSet_eq_fun measurable_id measurable_const) measurable_const measurable_const
+section
+variable (a : ℝ)
 
-theorem decodeTernaryResponse_value (a : ℝ) (ha : 0 < a) (y : Fin 3) :
+theorem decodeTernaryResponse_measurable : Measurable (decodeTernaryResponse a) := by
+  apply Measurable.ite (measurableSet_eq_fun measurable_id measurable_const) measurable_const
+  apply Measurable.ite <;> simp_all
+
+theorem decodeTernaryResponse_value (ha : 0 < a) (y : Fin 3) :
     decodeTernaryResponse a (ternaryValue a y) = y := by
   have hna : -a ≠ 0 := neg_ne_zero.mpr ha.ne'
   have han : a ≠ -a := by linarith
-  fin_cases y <;> simp [decodeTernaryResponse, ternaryValue, hna, ha.ne', han]
+  fin_cases y <;> simp [decodeTernaryResponse, ternaryValue, ha.ne', han]
 
-def decodeDesignResponse {d n : ℕ} (a : ℝ) (z : Fin n → Observation d) :
-    (Fin n → Covariate d) × (Fin n → Fin 3) :=
+end
+
+def decodeDesignResponse {d n : ℕ} (a : ℝ) (z : ObservedSample d n) :
+    TernarySample d n :=
   (fun i => (z i).1, fun i => decodeTernaryResponse a (z i).2)
 
-theorem decodeDesignResponse_measurable {d n : ℕ} (a : ℝ) :
+section
+variable {d n : ℕ} (a : ℝ)
+
+theorem decodeDesignResponse_measurable :
     Measurable (decodeDesignResponse (d := d) (n := n) a) := by
   apply Measurable.prodMk
-  · apply measurable_pi_lambda
-    intro i
-    exact measurable_fst.comp (measurable_pi_apply i)
+  · fun_prop
   · apply measurable_pi_lambda
     intro i
     exact (decodeTernaryResponse_measurable a).comp (measurable_snd.comp (measurable_pi_apply i))
 
-theorem decodeDesignResponse_encode {d n : ℕ} (a : ℝ) (ha : 0 < a)
-    (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
+theorem decodeDesignResponse_encode (ha : 0 < a)
+    (z : TernarySample d n) :
     decodeDesignResponse a (encodeDesignResponse a z) = z := by
   apply Prod.ext
   · rfl
   · funext i
-    exact decodeTernaryResponse_value a ha (z.2 i)
+    apply decodeTernaryResponse_value <;> assumption
+
+end
 
 end NearlyMinimax

@@ -26,37 +26,14 @@ theorem historyAdjacent_swap_lt (labels : Fin n → J) (dependent : J → J → 
     (hind : ¬ dependent (labels i) (labels j))
     (hxy : historyPositionStep dependent labels x y) :
     Equiv.swap i j x < Equiv.swap i j y := by
-  have hne : i ≠ j := by intro he; have := congrArg Fin.val he; omega
-  have hlt : x.val < y.val := hxy.1
+  have hne : i ≠ j := by grind
+  have hlt := hxy.1
   by_cases hxi : x = i
   · subst x
     by_cases hyj : y = j
     · subst y; exact (hind hxy.2).elim
-    · have hyi : y ≠ i := by intro he; subst y; simp at hlt
-      simp only [Equiv.swap_apply_left, Equiv.swap_apply_of_ne_of_ne hyi hyj]
-      change j.val < y.val
-      have := Fin.val_ne_iff.2 hyj
-      omega
-  · by_cases hxj : x = j
-    · subst x
-      have hyi : y ≠ i := by intro he; subst y; omega
-      have hyj : y ≠ j := by intro he; subst y; simp at hlt
-      simp only [Equiv.swap_apply_right, Equiv.swap_apply_of_ne_of_ne hyi hyj]
-      change i.val < y.val
-      omega
-    · by_cases hyi : y = i
-      · subst y
-        simp only [Equiv.swap_apply_left, Equiv.swap_apply_of_ne_of_ne hxi hxj]
-        change x.val < j.val
-        omega
-      · by_cases hyj : y = j
-        · subst y
-          simp only [Equiv.swap_apply_right, Equiv.swap_apply_of_ne_of_ne hxi hxj]
-          change x.val < i.val
-          have := Fin.val_ne_iff.2 hxi
-          omega
-        · simpa only [Equiv.swap_apply_of_ne_of_ne hxi hxj,
-            Equiv.swap_apply_of_ne_of_ne hyi hyj] using hxy.1
+    grind
+  grind
 
 /-- The actual word heap relation is its dependency relation on positions. -/
 theorem wordHeap_le_iff_position_reachable (word : List J) (dependent : J → J → Prop)
@@ -75,8 +52,6 @@ theorem wordHeap_le_iff_position_reachable (word : List J) (dependent : J → J 
       induction hpq with
       | refl => exact .refl
       | tail hreach hstep ih => exact ih.tail hstep
-    cases x
-    cases y
     exact hlift h
 
 theorem historyEquiv_reachable_iff {A B : Type*} (e : A ≃ B)
@@ -88,10 +63,8 @@ theorem historyEquiv_reachable_iff {A B : Type*} (e : A ≃ B)
   · intro h
     have hlift := Relation.ReflTransGen.lift e.symm
       (r := s) (p := r) (fun a b h => by
-        apply (hstep (e.symm a) (e.symm b)).2
-        simpa only [e.apply_symm_apply] using h) (e x) (e y) h
-    change Relation.ReflTransGen r (e.symm (e x)) (e.symm (e y)) at hlift
-    simpa only [e.symm_apply_apply] using hlift
+        grind) (e x) (e y) h
+    grind
 
 /-- Actual dependency heaps are isomorphic when their generating positions are. -/
 def wordHeapOrderIsoPosition (word word' : List J) (dependent : J → J → Prop)
@@ -105,16 +78,14 @@ def wordHeapOrderIsoPosition (word word' : List J) (dependent : J → J → Prop
   right_inv x := WordHeapPiece.ext (e.apply_symm_apply x.position)
   map_rel_iff' := by
     intro x y
-    rw [wordHeap_le_iff_position_reachable, wordHeap_le_iff_position_reachable]
-    exact (historyEquiv_reachable_iff e _ _ hstep x.position y.position).symm
+    simpa [wordHeap_le_iff_position_reachable] using (historyEquiv_reachable_iff e _ _ hstep x.position y.position).symm
 
 /-- Tuple positions and their actual finite word positions are canonically identical. -/
 def historyTuplePositionEquiv (labels : Fin n → J) : Fin (List.ofFn labels).length ≃ Fin n :=
   finCongr List.length_ofFn
 
 theorem historyTuplePositionEquiv_get (labels : Fin n → J) (i : Fin (List.ofFn labels).length) :
-    (List.ofFn labels).get i = labels (historyTuplePositionEquiv labels i) := by
-  exact List.get_ofFn labels i
+    (List.ofFn labels).get i = labels (historyTuplePositionEquiv labels i) := List.get_ofFn labels i
 
 /-- The actual word-position permutation of an adjacent tuple exchange. -/
 def historyTupleSwapPositions (labels : Fin n → J) (i j : Fin n) :
@@ -134,30 +105,28 @@ def historyTupleSwapHeapIso (labels : Fin n → J) (dependent : J → J → Prop
     simp only [historyTuplePositionEquiv_get]
     have hx : (historyTuplePositionEquiv (labels ∘ Equiv.swap i j))
         (historyTupleSwapPositions labels i j x) = Equiv.swap i j (historyTuplePositionEquiv labels x) := by
-      simp [historyTupleSwapPositions]
+      rfl
     have hy : (historyTuplePositionEquiv (labels ∘ Equiv.swap i j))
         (historyTupleSwapPositions labels i j y) = Equiv.swap i j (historyTuplePositionEquiv labels y) := by
-      simp [historyTupleSwapPositions]
+      rfl
     rw [hx, hy]
     simp only [Function.comp_def, Equiv.swap_apply_self]
     constructor
     · intro h
       have hpos : historyPositionStep dependent labels (historyTuplePositionEquiv labels x)
           (historyTuplePositionEquiv labels y) := by
-        refine ⟨?_, h.2⟩
-        simpa [historyTuplePositionEquiv, finCongr] using h.1
+        assumption
       have he := historyAdjacent_swap_lt labels dependent i j _ _ hij hind hpos
-      exact ⟨by simpa [historyTupleSwapPositions, historyTuplePositionEquiv, finCongr] using he, h.2⟩
+      tauto
     · intro h
       have hnew : historyPositionStep dependent (labels ∘ Equiv.swap i j)
           (Equiv.swap i j (historyTuplePositionEquiv labels x))
           (Equiv.swap i j (historyTuplePositionEquiv labels y)) := by
         refine ⟨?_, ?_⟩
-        · simpa [historyTupleSwapPositions, historyTuplePositionEquiv, finCongr] using h.1
+        · tauto
         · simpa only [Function.comp_def, Equiv.swap_apply_self] using h.2
       have hind' : ¬ dependent ((labels ∘ Equiv.swap i j) i) ((labels ∘ Equiv.swap i j) j) := by
-        simp only [Function.comp_def, Equiv.swap_apply_left, Equiv.swap_apply_right]
-        exact fun hd => hind (hsymm hd)
+        simpa using fun hd => hind (hsymm hd)
       have he := historyAdjacent_swap_lt (labels ∘ Equiv.swap i j) dependent i j _ _ hij hind' hnew
       exact ⟨by simpa [historyTuplePositionEquiv, finCongr] using he, h.2⟩)
 

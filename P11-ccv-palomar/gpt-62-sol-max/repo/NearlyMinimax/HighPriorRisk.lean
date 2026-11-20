@@ -20,14 +20,10 @@ attribute [local irreducible] highMarginalRealScore highRealSampleKernel history
   massPowerTilt massPowerNormalizer highRawDensityMass
 
 theorem historyMarkedPrior_original_minimax_path_bound
-    (dependent : J → J → Prop) (hrefl : ∀ j, dependent j j)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
+    {dependent : J → J → Prop} {Δ : ℕ} {T Ba : ℝ}
     {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ)
-    (ham : Measurable activation) (hact : ∫ e, activation e ∂π = 0)
-    (Ba T : ℝ) (hBa : 0 ≤ Ba) (hT : 0 ≤ T) (hab : ∀ e, |activation e| ≤ Ba)
-    (hsmall : T * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ)^2))
+    {π : Measure E} [IsProbabilityMeasure π] {activation : E → ℝ}
+    (prior : HistoryPriorBounds dependent Δ π activation T Ba) (hT : 0 ≤ T)
     {d : ℕ} (C : ModelConstants d) (n : ℕ) (a v η aRaw bRaw M ε : ℝ)
     (ha : 0 < a) (haRaw : 0 < aRaw)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
@@ -48,84 +44,57 @@ theorem historyMarkedPrior_original_minimax_path_bound
     (hbadmass : ∀ t ∈ Icc 0 T,
       (massPowerTilt (historyMarkedPrior dependent Δ t π activation)
         (fun ω => highRawDensityMass (p ω)) n).real (bad t) ≤ ε)
-    (hE : ∀ t ∈ Icc 0 T, Integrable
-      (fun z : HistoryMarked dependent E × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-        (highHistoryLikelihoodDerivative dependent hsymm π activation n a (v-η^2*t) η p F z.1 z.2)^2 /
-          highRawSampleLikelihood n a (v-η^2*t) (p z.1) (F z.1) z.2)
-      ((historyMarkedPrior dependent Δ t π activation).prod (highSampleReference d n)))
-    (hbudget : ∀ t ∈ Icc 0 T,
-      (massPowerNormalizer (historyMarkedPrior dependent Δ t π activation)
-        (fun ω => highRawDensityMass (p ω)) n)⁻¹ *
-        ∫ z : HistoryMarked dependent E × ((Fin n → Covariate d) × (Fin n → Fin 3)),
-          (highHistoryLikelihoodDerivative dependent hsymm π activation n a (v-η^2*t) η p F z.1 z.2)^2 /
-            highRawSampleLikelihood n a (v-η^2*t) (p z.1) (F z.1) z.2
-          ∂(historyMarkedPrior dependent Δ t π activation).prod (highSampleReference d n) ≤ M) :
-    let P (t : ℝ) := (highRealSampleKernel n a (v-η^2*t) p F hp hF) ∘ₘ
-      massPowerTilt (historyMarkedPrior dependent Δ t π activation)
-        (fun ω => highRawDensityMass (p ω)) n
-    let R (t : ℝ) := highMarginalRealScore dependent hsymm
-      (historyMarkedPrior dependent Δ t π activation) π activation n a (v-η^2*t) η p F
-    ENNReal.ofReal (η^4*T^2 /
-      (2 + ∫ t in (0 : ℝ)..T, Real.sqrt (∫ z, (R t z)^2 ∂P t))^2 -
+    (hE : ∀ t ∈ Icc 0 T, HighRawFisherBudget (historyMarkedPrior dependent Δ t π activation)
+      n a (v-η^2*t) p F (highHistoryLikelihoodDerivative dependent prior.symm π activation n a (v-η^2*t) η p F) M) :
+    ENNReal.ofReal (η^4*T^2 / (2 + T * Real.sqrt M)^2 -
       (effectiveVarianceUpper C-C.varianceLower)^2*ε) ≤ minimaxRisk C n := by
   let ν (t : ℝ) := historyMarkedPrior dependent Δ t π activation
   let σ (t : ℝ) := massPowerTilt (ν t) (fun ω => highRawDensityMass (p ω)) n
   let L (t : ℝ) := highRealSampleKernel n a (v-η^2*t) p F hp hF
-  let R (t : ℝ) := highMarginalRealScore dependent hsymm (ν t) π activation n a (v-η^2*t) η p F
-  let _ := historyMarkedReference_probability dependent hrefl hsymm Δ hΔ hlabels π
-  have hai : Integrable activation π := Integrable.of_bound ham.aestronglyMeasurable Ba
-    (Eventually.of_forall fun e => by simpa only [Real.norm_eq_abs] using hab e)
-  have hν (t : ℝ) (ht : t ∈ Icc 0 T) : IsProbabilityMeasure (ν t) := by
-    have hs : t*Ba/historyReferenceRho Δ ≤ 1/(2+8*(Δ:ℝ)^2) :=
-      (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right ht.2 hBa)
-        (historyReferenceRho_pos Δ).le).trans hsmall
-    exact historyMarkedPrior_probability dependent hrefl hsymm Δ hΔ hlabels t Ba ht.1 hBa
-      π activation hai hact hab hs
+  let R (t : ℝ) := highMarginalRealScore dependent prior.symm (ν t) π activation n a (v-η^2*t) η p F
+  let _ := prior.reference_probability
+  have hν (t : ℝ) (ht : t ∈ Icc 0 T) := prior.probability ht
   have hσ (t : ℝ) (ht : t ∈ Icc 0 T) : IsProbabilityMeasure (σ t) := by
     let _ := hν t ht
     exact massPowerTilt_isProbability (ν t) _ (highRawDensityMass_joint_measurable p hp)
-      n aRaw bRaw haRaw (fun ω => highRawDensityMass_mem_Icc (p ω) hp.of_uncurry_left
-        aRaw bRaw haRaw (Eventually.of_forall (hraw ω)))
+      n aRaw bRaw haRaw (fun ω => highRawDensityMass_joint_mem_Icc hp haRaw hraw ω)
   have hL (t : ℝ) (ht : t ∈ Icc 0 T) : IsMarkovKernel (L t) :=
     highRealSampleKernel_markov n a (v-η^2*t) p F hp hF aRaw bRaw haRaw hraw ha.ne'
       (fun ω x y => (hq t ht ω x y).le)
   have hsample (t : ℝ) (ht : t ∈ Icc 0 T) (ω) : L t ω = sampleLaw (θ t ω) n := by
     rw [hθ t ht ω]
-    exact highRealSampleKernel_eq_sampleLaw n a (v-η^2*t) p F hp hF aRaw bRaw haRaw hraw
-      ha.ne' (fun ω x y => (hq t ht ω x y).le) ω
+    apply highRealSampleKernel_eq_sampleLaw <;> assumption
   have hvariance (t : ℝ) (ht : t ∈ Icc 0 T) (ω) : (θ t ω).variance = v-η^2*t := by
     rw [hθ t ht ω]
     rfl
+  have hfisher (t : ℝ) (ht : t ∈ Icc 0 T) := by
+    let _ := hν t ht
+    exact highMarginalRealScore_memLp_energy dependent prior.symm (ν t) π activation prior.measurable
+      Ba prior.bound_nonneg prior.bound n a (v-η^2*t) η aRaw bRaw ha haRaw p F hp hF hraw (hq t ht) M (hE t ht)
   have hR : ∀ᵐ t ∂volume, t ∈ Icc 0 T → MemLp (R t) 2 (L t ∘ₘ σ t) :=
-    Eventually.of_forall fun t ht => by
-      let _ := hν t ht
-      exact (highMarginalRealScore_memLp_energy dependent hsymm (ν t) π activation ham
-        Ba hBa hab n a (v-η^2*t) η aRaw bRaw ha haRaw p F hp hF hraw (hq t ht) (hE t ht)).1
-  have hc := historyMarkedPrior_dataScore_centered_ae dependent hrefl hsymm Δ hΔ hlabels
-    T Ba hBa π activation ham hact hab hsmall n a v η aRaw bRaw ha haRaw p F hp hF hraw hq hmass
+    .of_forall fun t ht => (hfisher t ht).1
+  have hc := historyMarkedPrior_dataScore_centered_ae prior n a v η aRaw bRaw ha haRaw p F hp hF hraw hmass hq
   have hB : 0 ≤ effectiveVarianceUpper C :=
     C.varianceLower_pos.le.trans (effective_variance_interval_nondegenerate C).le
-  have hAC (S : BoundedEstimator C n) : AbsolutelyContinuousOnInterval
-      (fun t => ∫ z, S.val.val z ∂(L t ∘ₘ σ t)) 0 T :=
-    historyMarkedPrior_dataMean_absolutelyContinuous dependent hrefl hsymm Δ hΔ hlabels
-      T Ba hBa π activation ham hact hab hsmall n a v η aRaw bRaw ha haRaw p F hp hF hraw
-      (fun t ht ω x y => (hq t ht ω x y).le) hmass S.val.val S.val.property
-      (effectiveVarianceUpper C) hB (fun z => by
-        rw [abs_of_nonneg (C.varianceLower_pos.le.trans (S.property z).1)]
-        exact (S.property z).2) hT
-  have hd (S : BoundedEstimator C n) :=
-    historyMarkedPrior_dataMean_score_hasDerivAt_ae dependent hrefl hsymm Δ hΔ hlabels
-      T Ba hBa π activation ham hact hab hsmall n a v η aRaw bRaw ha haRaw p F hp hF hraw hq hmass
-      S.val.val S.val.property (effectiveVarianceUpper C) hB (fun z => by
-        rw [abs_of_nonneg (C.varianceLower_pos.le.trans (S.property z).1)]
-        exact (S.property z).2)
-  have hi := highHistoryScore_sqrt_energy_intervalIntegrable dependent hsymm Δ π activation ham
-    Ba hBa hab n a v η aRaw bRaw T M ha haRaw hT p F hp hF hν hraw hq hE hbudget
+  have hreg (S : BoundedEstimator C n) :=
+    historyMarkedPrior_dataMean_regularity prior n a v η aRaw bRaw ha haRaw p F hp hF hraw
+      hmass S.val.val S.val.property (effectiveVarianceUpper C) hB (S.abs_le C) hq hT
+  let W (t : ℝ) := ∫ z, (R t z)^2 ∂(L t ∘ₘ σ t)
+  have hW (t : ℝ) (ht : t ∈ Icc 0 T) : W t ≤ M :=
+    (hfisher t ht).2
+  have hi := highHistoryScore_sqrt_energy_intervalIntegrable prior n a v η aRaw bRaw ha haRaw hT
+    p F hp hF hraw (fun t ht ω x y => (hq t ht ω x y).le) M hW
   have hh := paper_score_to_risk C σ L θ (fun t => v-η^2*t) R T ε hT hσ hL hsample hvariance
-    hV bad hbad hlegal hbadmass hR hc hAC hd hi
+    hV bad hbad hlegal hbadmass hR hc (fun S => (hreg S).1) (fun S => time_ae_of_Ioo (hreg S).2) hi
   have he : ((v-η^2*T)-(v-η^2*0))^2 = η^4*T^2 := by ring
-  dsimp only at hh ⊢
   rw [he] at hh
-  exact hh
+  have hbound := intervalIntegral.integral_mono_on hT hi (intervalIntegrable_const (c := Real.sqrt M))
+    (fun t ht => Real.sqrt_le_sqrt (hW t ht))
+  simp only [intervalIntegral.integral_const, sub_zero, smul_eq_mul] at hbound
+  have h0 : 0 ≤ ∫ t in 0..T, Real.sqrt (W t) :=
+    intervalIntegral.integral_nonneg hT (fun _ _ => Real.sqrt_nonneg _)
+  refine le_trans (ENNReal.ofReal_le_ofReal (sub_le_sub_right ?_ _)) hh
+  apply div_le_div_of_nonneg_left (by positivity) (by positivity)
+  gcongr
 
 end NearlyMinimax

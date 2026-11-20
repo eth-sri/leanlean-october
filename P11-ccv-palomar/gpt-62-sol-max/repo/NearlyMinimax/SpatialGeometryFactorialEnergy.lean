@@ -19,19 +19,9 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
-theorem poissonCountWeight_mul_pow (x a : ℝ) (r : ℕ) :
-    poissonCountWeight x r * a^r = poissonCountWeight (a*x) r := by
-  unfold poissonCountWeight
-  rw [mul_pow]
-  ring
-
 theorem higherBandTargetScale_max_eq_matched {d r : ℕ} (hr : 2 ≤ r) (N mu : ℝ) :
     max 1 (higherBandTargetScale d r N mu) = matchedCardinalTargetCutoff d (r-2) N mu := by
-  have hnat : ((r-2 : ℕ) : ℝ) = (r : ℝ)-2 := by
-    rw [Nat.cast_sub hr]
-    norm_num
-  unfold higherBandTargetScale matchedCardinalTargetCutoff
-  rw [hnat]
+  simp_all [matchedCardinalTargetCutoff, higherBandTargetScale]
 
 def cardinalGeometryFactorialConstant (d q : ℕ) (B C a rho Cs : ℝ) : ℝ :=
   cardinalInterpolationFactorialConstant d B a (3*Cs) +
@@ -62,24 +52,16 @@ theorem finite_cardinal_geometry_budget_le {d D F : ℕ} (hd : 5 ≤ d)
     unfold cardinalAliasSpatialComponent cardinalTaylorSpatialComponent
       cardinalRawAliasCoefficient cardinalRawTaylorCoefficient spatialScaleIntegralConstant
     positivity
-  have hmajor : (∑ j ∈ Finset.range (D-2), poissonCountWeight (Cs*mu) (3+j) *
-      ∫ U, cardinalGeometryEnvelope (d := d) (n := 3+j) (F := F) q bd C a rho eta
-        (max 1 (higherBandTargetScale d (3+j) N mu)) U ∂fullSpatialPatchDesign d (3+j)) ≤
-        ∑ j ∈ Finset.range (D-2), f (3+j) := by
-    apply Finset.sum_le_sum
-    intro j _
+  refine (Finset.sum_le_sum (g := fun j => f (3+j)) ?_).trans
+    ((finite_refined_sum_le_start_two D f hf).trans ?_)
+  · intro j _
+    rw [higherBandTargetScale_max_eq_matched (by omega)]
+    have hT := higherBandTargetScale_max_eq_matched (d := d) (r := 3+j) (by omega) N mu
     have hi := (cardinalGeometryEnvelope_integrable_and_le (d := d) (n := 3+j) (F := F)
       hd (by omega) q bd C a rho eta (T := max 1 (higherBandTargetScale d (3+j) N mu))
         (le_max_left _ _)).2
-    have h := mul_le_mul_of_nonneg_left hi (poissonCountWeight_nonneg (by positivity : 0 ≤ Cs*mu) (3+j))
-    rw [cardinalRawSpatialEnergyBudget_split, higherBandTargetScale_max_eq_matched (by omega)] at h
-    rw [higherBandTargetScale_max_eq_matched (by omega)]
-    convert h using 1
-    try dsimp [f]
-    rw [← mul_assoc, poissonCountWeight_mul_pow]
-    congr 2
-    ring
-  apply (hmajor.trans (finite_refined_sum_le_start_two D f hf)).trans
+    rw [cardinalRawSpatialEnergyBudget_split, hT] at hi
+    simpa only [f, mul_assoc] using poissonCountWeight_mul_le_of_le_pow (x := Cs*mu) (by positivity) hi
   dsimp [f]
   simp_rw [show ∀ j : ℕ, 2+j-2=j from fun j => by omega, mul_add]
   rw [Finset.sum_add_distrib]
@@ -89,7 +71,11 @@ theorem finite_cardinal_geometry_budget_le {d D F : ℕ} (hd : 5 ≤ d)
     (by positivity) (lt_of_lt_of_le zero_lt_one hN) hmu.le hmu1 hTaylor
   exact (add_le_add hA hT).trans_eq (by unfold cardinalGeometryFactorialConstant; ring)
 
-theorem finite_fine_field_geometry_budget_le {d D : ℕ} [NeZero d] (hd : 5 ≤ d) (hD : 3 ≤ D)
+section
+variable {d D : ℕ} [NeZero d] (hd : 5 ≤ d)
+include hd
+
+theorem finite_fine_field_geometry_budget_le (hD : 3 ≤ D)
     {aD bD ad bd c0 : ℝ} (haD : 0 < aD) (had : aD ≤ ad) (hbd : bd ≤ bD)
     (hab : ad < bd) (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0)
     (M q : ℕ) (C a rho eta ell N Cs mu : ℝ) (hell : 0 < ell)
@@ -106,24 +92,16 @@ theorem finite_fine_field_geometry_budget_le {d D : ℕ} [NeZero d] (hd : 5 ≤ 
     simp [f, fineFieldGeometryEnvelope_count_three]
   change (∑ j ∈ Finset.range (D-2), f (3+j)) ≤ _
   rw [finite_refined_sum_eq_start_four D hD f hf3]
-  have hmajor : (∑ j ∈ Finset.range (D-3), f (4+j)) ≤
-      ∑ j ∈ Finset.range (D-3), poissonCountWeight ((3*Cs)*mu) (4+j) *
-        finePairEvenActionSpatialBudget d (4+j) M q ad bd C a rho eta ell := by
-    apply Finset.sum_le_sum
-    intro j _
-    have h := mul_le_mul_of_nonneg_left
-      (fineFieldGeometryEnvelope_integrable_and_le (d := d) (n := 4+j) (by omega)
-        ad bd ell N hell M q C a rho eta).2
-      (poissonCountWeight_nonneg (by positivity : 0 ≤ Cs*mu) (4+j))
-    convert h using 1
-    try dsimp [f]
-    rw [← mul_assoc, poissonCountWeight_mul_pow]
-    congr 2
-    ring
-  exact hmajor.trans (finite_fine_pair_field_budget_le haD had hbd hab htau d M q (D-3)
-    C a rho eta ell (3*Cs) mu (by positivity) hmu hmu1)
+  refine (Finset.sum_le_sum (g := fun j => poissonCountWeight ((3*Cs)*mu) (4+j) *
+    finePairEvenActionSpatialBudget d (4+j) M q ad bd C a rho eta ell) ?_).trans
+    (finite_fine_pair_field_budget_le haD had hbd hab htau d M q (D-3)
+      C a rho eta ell (3*Cs) mu (by positivity) hmu hmu1)
+  intro j _
+  simpa only [f, mul_assoc] using poissonCountWeight_mul_le_of_le_pow (x := Cs*mu) (by positivity)
+    (fineFieldGeometryEnvelope_integrable_and_le (d := d) (n := 4+j) (by omega)
+      ad bd ell N hell M q C a rho eta).2
 
-theorem finite_fine_pair_alias_geometry_budget_le {d D : ℕ} [NeZero d] (hd : 5 ≤ d)
+theorem finite_fine_pair_alias_geometry_budget_le
     {aD bD ad bd c0 K : ℝ} (haD : 0 < aD) (had : aD ≤ ad) (hbd : bd ≤ bD)
     (hab : ad < bd) (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0)
     (hc0 : 0 ≤ c0) (hK : 0 ≤ K) (M q : ℕ) (C a rho eta ell N Cs mu : ℝ)
@@ -143,26 +121,17 @@ theorem finite_fine_pair_alias_geometry_budget_le {d D : ℕ} [NeZero d] (hd : 5
     have h := poissonCountWeight_nonneg (by positivity : 0 ≤ (3*Cs)*mu) r
     have hK := spatialInverseFourConstant_nonneg d
     positivity
-  have hmajor : (∑ j ∈ Finset.range (D-2), poissonCountWeight (Cs*mu) (3+j) *
-      (if M<3+j then ∫ U, finePairAliasGeometryEnvelope (d := d) (n := 3+j)
-        ad bd ell N M q C a rho eta U ∂fullSpatialPatchDesign d (3+j) else 0)) ≤
-      ∑ j ∈ Finset.range (D-2), if M<3+j then f (3+j) else 0 := by
-    apply Finset.sum_le_sum
-    intro j _
-    by_cases hMj : M<3+j
-    · simp only [if_pos hMj]
-      have h := mul_le_mul_of_nonneg_left
-        (finePairAliasGeometryEnvelope_integrable_and_le (d := d) (n := 3+j) (by omega)
-          ad bd ell N (lt_of_lt_of_le zero_lt_one hell1) hellN M q C a rho eta).2
-        (poissonCountWeight_nonneg (by positivity : 0 ≤ Cs*mu) (3+j))
-      convert h using 1
-      dsimp [f]
-      rw [← mul_assoc, poissonCountWeight_mul_pow]
-      congr 2
-      ring
-    · simp only [if_neg hMj, mul_zero, le_refl]
-  apply (hmajor.trans (finite_refined_gated_sum_le_tail D M f hf)).trans
-  exact finite_fine_pair_saddle_alias_budget_le (by omega) haD had hbd hab htau hc0 hK M D q (D-M)
-    C a rho eta ell N (3*Cs) mu hN hell hDM (by positivity) hmu hmu1
+  simp_rw [mul_ite, mul_zero]
+  refine (finite_refined_gated_sum_le_tail D M (fun r => poissonCountWeight (Cs*mu) r *
+    ∫ U, finePairAliasGeometryEnvelope (d := d) (n := r) ad bd ell N M q C a rho eta U
+      ∂fullSpatialPatchDesign d r) f hf ?_).trans
+    (finite_fine_pair_saddle_alias_budget_le (by omega) haD had hbd hab htau hc0 hK M D q (D-M)
+      C a rho eta ell N (3*Cs) mu hN hell hDM (by positivity) hmu hmu1)
+  intro r hr _
+  simpa only [f, mul_assoc] using poissonCountWeight_mul_le_of_le_pow (x := Cs*mu) (by positivity)
+    (finePairAliasGeometryEnvelope_integrable_and_le (d := d) (n := r) hd
+      ad bd ell N (lt_of_lt_of_le zero_lt_one hell1) hellN M q C a rho eta).2
+
+end
 
 end NearlyMinimax

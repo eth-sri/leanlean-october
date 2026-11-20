@@ -32,7 +32,10 @@ def partitionFiberEvenIndicator (ρ : H → X → Fin 2) (n j : ℕ)
     Even ((Finset.univ.filter (fun l => partitionFieldPattern ρ h (U l) = p)).card)
     then 1 else 0
 
-theorem partitionFiberEvenIndicator_measurable (ρ : H → X → Fin 2)
+section
+variable (ρ : H → X → Fin 2)
+
+theorem partitionFiberEvenIndicator_measurable
     (hρ : Measurable (Function.uncurry ρ)) (n j : ℕ) (U : Fin j → X) :
     Measurable (partitionFiberEvenIndicator ρ n j U) := by
   let F : (Fin j → (Fin n → Fin 2)) → ℝ := fun p =>
@@ -46,7 +49,7 @@ theorem partitionFiberEvenIndicator_measurable (ρ : H → X → Fin 2)
       (measurable_id.prodMk measurable_const)
   exact hF.comp hp
 
-theorem partitionFiberEvenIndicator_le_pairs (ρ : H → X → Fin 2) (n j : ℕ)
+theorem partitionFiberEvenIndicator_le_pairs (n j : ℕ)
     (hj : 4 ≤ j) (U : Fin j → X) (h : Fin n → H) :
     partitionFiberEvenIndicator ρ n j U h ≤
       ∑ q : CellMomentQuadruple j, partitionFiberBothIndicator ρ n
@@ -74,7 +77,9 @@ theorem partitionFiberEvenIndicator_le_pairs (ρ : H → X → Fin 2) (n j : ℕ
   · apply Finset.sum_nonneg
     intro q _
     unfold partitionFiberBothIndicator
-    split_ifs <;> norm_num
+    positivity
+
+end
 
 def poissonCellEvenIndicator (ρ : H → X → Fin 2) (j : ℕ) (U : Fin j → X)
     (z : partitionFieldMark H) : ℝ := partitionFiberEvenIndicator ρ z.1 j U z.2.1
@@ -85,11 +90,17 @@ theorem poissonCellEvenIndicator_measurable (ρ : H → X → Fin 2)
   measurable_sigma_of_fibers _ (fun n =>
     (partitionFiberEvenIndicator_measurable ρ hρ n j U).comp measurable_fst)
 
+section
+variable (μ : Measure H) [IsProbabilityMeasure μ]
+
+section
+variable (r : ℝ≥0) (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ))
+    (j : ℕ)
+include hρ
+
 /-- The actual field moment is the probability of even occupancy, from the
 constructed independent fair signs and the true Poisson mark law. -/
-theorem poissonCellField_product_moment_eq_even (μ : Measure H) [IsProbabilityMeasure μ]
-    (r : ℝ≥0) (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ))
-    (j : ℕ) (U : Fin j → X) :
+theorem poissonCellField_product_moment_eq_even (U : Fin j → X) :
     (∫ z, ∏ l, poissonCellFieldValue ρ z (U l) ∂poissonCellFieldLaw μ r) =
       ∫ z, poissonCellEvenIndicator ρ j U z ∂poissonCellFieldLaw μ r := by
   rw [poissonCellField_integral_series μ r _
@@ -107,15 +118,11 @@ theorem poissonCellField_product_moment_eq_even (μ : Measure H) [IsProbabilityM
   change (∫ h, partitionFiberEvenIndicator ρ n j U h ∂Measure.pi (fun _ : Fin n => μ)) =
     ∫ z, partitionFiberEvenIndicator ρ n j U z.1
       ∂(Measure.pi (fun _ : Fin n => μ)).prod (cellSignLaw (Fin n → Fin 2))
-  rw [integral_fun_fst]
-  simp
+  simp [integral_fun_fst]
 
 /-- The higher field moment is bounded by the genuine probabilities of two
 disjoint same-cell pairs, with no assumed field moment bound. -/
-theorem poissonCellField_product_moment_le_two_pair_probabilities
-    (μ : Measure H) [IsProbabilityMeasure μ] (r : ℝ≥0)
-    (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ))
-    (j : ℕ) (hj : 4 ≤ j) (U : Fin j → X) :
+theorem poissonCellField_product_moment_le_two_pair_probabilities (hj : 4 ≤ j) (U : Fin j → X) :
     (∫ z, ∏ l, poissonCellFieldValue ρ z (U l) ∂poissonCellFieldLaw μ r) ≤
       ∑ q : CellMomentQuadruple j, Real.exp (-(r : ℝ) *
         (1 - partitionBothProbability μ ρ (U (q.val 0)) (U (q.val 1))
@@ -141,11 +148,13 @@ theorem poissonCellField_product_moment_le_two_pair_probabilities
       rw [integral_finsetSum Finset.univ (fun q _ => hq q)]
       apply Finset.sum_congr rfl
       intro q _
-      exact poissonCellBothIndicator_integral μ r ρ hρ _ _ _ _
+      apply poissonCellBothIndicator_integral <;> assumption
+
+end
 
 /-- The union separation probability dominates half the sum of the two
 individual separation probabilities. This comes from the actual indicators. -/
-theorem partition_union_separation_ge_half (μ : Measure H) [IsProbabilityMeasure μ]
+theorem partition_union_separation_ge_half
     (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) (a b c e : X) :
     ((1 - partitionSameProbability μ ρ a b) +
       (1 - partitionSameProbability μ ρ c e)) / 2 ≤
@@ -175,8 +184,7 @@ theorem partition_union_separation_ge_half (μ : Measure H) [IsProbabilityMeasur
 
 /-- The source two-pair exponential higher-moment envelope for the actual
 constructed Poisson cell field, for all orders at least four. -/
-theorem poissonCellField_product_moment_abs_le_two_pairs
-    (μ : Measure H) [IsProbabilityMeasure μ] (r : ℝ≥0)
+theorem poissonCellField_product_moment_abs_le_two_pairs (r : ℝ≥0)
     (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ))
     (j : ℕ) (hj : 4 ≤ j) (U : Fin j → X) :
     |∫ z, ∏ l, poissonCellFieldValue ρ z (U l) ∂poissonCellFieldLaw μ r| ≤
@@ -191,5 +199,7 @@ theorem poissonCellField_product_moment_abs_le_two_pairs
   have h := partition_union_separation_ge_half μ ρ hρ
     (U (q.val 0)) (U (q.val 1)) (U (q.val 2)) (U (q.val 3))
   nlinarith only [h, r.coe_nonneg]
+
+end
 
 end NearlyMinimax

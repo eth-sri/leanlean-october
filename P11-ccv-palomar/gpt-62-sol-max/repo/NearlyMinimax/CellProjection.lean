@@ -18,10 +18,8 @@ theorem empirical_design_fixes_evaluation {ι κ : Type*} [Fintype ι]
     empiricalDesignProjection B *ᵥ (B *ᵥ a) = B *ᵥ a := by
   have hs := empirical_design_projection_spec B
   have hq : B *ᵥ a ∈ LinearMap.range (empiricalDesignProjection B).mulVecLin := by
-    rw [hs.2.2]
-    exact ⟨a, rfl⟩
+    simp_all
   rcases hq with ⟨v, hv⟩
-  change empiricalDesignProjection B *ᵥ v = B *ᵥ a at hv
-  rw [← hv, mulVec_mulVec, hs.2.1]
+  simp [← hv, mulVec_mulVec, hs.2.1]
 
 end NearlyMinimax

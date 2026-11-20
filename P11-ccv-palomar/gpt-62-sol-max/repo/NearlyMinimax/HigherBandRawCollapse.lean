@@ -23,7 +23,7 @@ theorem higherBand_alias_index_sum_eq (d D n : ℕ) (ell N mu : ℝ) (A : ℕ �
   have hi (j : Fin (D-2)) :
       (if j.val+3 < n then (if ell < higherBandTargetScale d (j.val+3) N mu then A (j.val+3) else 0) else 0) =
       if j.val+3 < n ∧ ell < higherBandTargetScale d (j.val+3) N mu then A (j.val+3) else 0 := by
-    by_cases hn : j.val+3 < n <;> by_cases ha : ell < higherBandTargetScale d (j.val+3) N mu <;> simp [hn,ha]
+    grind
   simp_rw [hi]
   rw [← Finset.sum_filter]
   apply Finset.sum_bij (fun j _ => j.val+3)
@@ -32,24 +32,26 @@ theorem higherBand_alias_index_sum_eq (d D n : ℕ) (ell N mu : ℝ) (A : ℕ �
     apply Finset.mem_filter.mpr
     constructor
     · apply Finset.mem_filter.mpr
-      exact ⟨Finset.mem_range.mpr (by have hh := j.isLt; omega), by omega, hg.2⟩
+      grind
     · exact hg.1
-  · intro j hj j' hj' he
-    apply Fin.ext
-    omega
+  · grind
   · intro r hr
     have hr' := Finset.mem_filter.mp hr
     have hI := Finset.mem_filter.mp hr'.1
     have hrd := Finset.mem_range.mp hI.1
     let j : Fin (D-2) := ⟨r-3, by omega⟩
     have hj : j.val+3 = r := by dsimp [j]; omega
-    exact ⟨j, Finset.mem_filter.mpr ⟨Finset.mem_univ j, by simpa only [hj] using And.intro hr'.2 hI.2.2⟩, hj⟩
+    exact ⟨j, Finset.mem_filter.mpr ⟨Finset.mem_univ j, by grind⟩, hj⟩
   · intro j hj
     rfl
 
-theorem higherBandFine_below_eq_alias_family {d n : ℕ}
+section
+variable {d n : ℕ}
     (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hell : 1 ≤ ell)
-    (D M q : ℕ) (hD : 1 ≤ D) (hnD : n ≤ D) (C a V eta : ℝ)
+    (D M q : ℕ)
+include ha hab hlam hell
+
+theorem higherBandFine_below_eq_alias_family (hD : 1 ≤ D) (hnD : n ≤ D) (C a V eta : ℝ)
     (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
     (p g w : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
     (c : HighFrameIndex d D → ℝ) (y : Fin n → Fin 3) :
@@ -73,14 +75,12 @@ theorem higherBandFine_below_eq_alias_family {d n : ℕ}
     · exact higherBandFirstAction_fine_eq_aliasRawAction ad bd lam ell _ ha hab hlam (by linarith)
         (hell.trans ha'.le) (j.val+3) M D q (by omega) hD hnD C a V eta U hU p g w hp c y
     · rfl
-    · rfl
+    rfl
   rw [he]
   exact higherBand_alias_index_sum_eq d D n ell N mu
     (fun r => ordinaryFineAliasRawAction ad bd lam ell (higherBandTargetScale d r N mu) M r q C a V eta U p g w c y)
 
-theorem higherBandFamilyFirstAction_matched_and_alias_raw {d n : ℕ}
-    (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hell : 1 ≤ ell)
-    (D M q : ℕ) (hn : 3 ≤ n) (hnD : n ≤ D)
+theorem higherBandFamilyFirstAction_matched_and_alias_raw (hn : 3 ≤ n) (hnD : n ≤ D)
     (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
     (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
     (C a V eta : ℝ) (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
@@ -95,6 +95,8 @@ theorem higherBandFamilyFirstAction_matched_and_alias_raw {d n : ℕ}
   rw [higherBandFamilyFirstAction_matched_and_fine_below ad bd lam ell N mu ha hab hlam hell D M q hn hnD hnu hFine C U hU p hp c,
     higherBandFine_below_eq_alias_family ad bd lam ell N mu ha hab hlam hell D M q (by omega) hnD C a V eta U hU p g w hp c y]
 
+end
+
 theorem ordinaryFineAliasFamilyRawAction_below_eq_zero {d n F : ℕ}
     (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd)
     (D M q : ℕ) (hnM : n ≤ M) (C a V eta : ℝ)
@@ -107,8 +109,8 @@ theorem ordinaryFineAliasFamilyRawAction_below_eq_zero {d n F : ℕ}
   intro r hr
   have hfilter := Finset.mem_filter.mp hr
   have htarget := Finset.mem_filter.mp hfilter.1
-  have hr1 : 1 ≤ r := by have hh := htarget.2.1; omega
-  have hnr : r < n := hfilter.2
+  have hr1 : 1 ≤ r := by linarith
+  have hnr := hfilter.2
   unfold ordinaryFineAliasRawAction
   rw [densityCountCoefficient_exact ad bd ha hab M r n hr1 hnr.le hnM, if_neg (by omega : n ≠ r), zero_mul]
 
@@ -121,10 +123,9 @@ theorem ordinaryFineAliasTargetSet_below_eq (d D n M : ℕ) (ell N mu : ℝ) (hM
   have hrd := Finset.mem_range.mp htarget.1
   let j : Fin (D-2) := ⟨r-3, by omega⟩
   have hj : j.val+3 = r := by dsimp [j]; omega
-  have hactive : ell < higherBandTargetScale d (j.val+3) N mu := by simpa only [hj] using htarget.2.2
+  have hactive : ell < higherBandTargetScale d (j.val+3) N mu := by grind
   have hm := hFine j hactive
-  rw [hj] at hm
-  omega
+  simp [] <;> linarith
 
 /-- Before M the ordinary fine aliases cancel exactly. Beyond M every
 active fine target is strictly below the observed count, and its actual
@@ -145,9 +146,6 @@ theorem higherBandFamilyFirstAction_matched_and_full_fine_alias {d n : ℕ}
         ad bd lam ell (fun r => higherBandTargetScale d r N mu) M q C a V eta U p g w c y else 0) := by
   rw [higherBandFamilyFirstAction_matched_and_alias_raw ad bd lam ell N mu ha hab hlam hell D M q hn hnD
     hnu hFine C a V eta U hU p g w hp c y]
-  by_cases hnM : M<n
-  · rw [ite_eq_left hnM, ordinaryFineAliasTargetSet_below_eq d D n M ell N mu hnM hFine]
-  · rw [ite_eq_right hnM, ordinaryFineAliasFamilyRawAction_below_eq_zero ad bd lam ell N mu ha hab D M q
-      (le_of_not_gt hnM) C a V eta U p g w c y]
+  grind [ordinaryFineAliasFamilyRawAction_below_eq_zero, ordinaryFineAliasTargetSet_below_eq]
 
 end NearlyMinimax

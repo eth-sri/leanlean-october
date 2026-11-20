@@ -18,7 +18,10 @@ def finiteAffineHistory {J E : Type*} (slope offset : J → E → ℝ)
   (List.ofFn (fun i : Fin n => i)).foldl
     (fun value i => slope (labels i) (marks i) * value + offset (labels i) (marks i)) 1
 
-theorem finiteAffineHistory_succ {J E : Type*} (slope offset : J → E → ℝ)
+section
+variable {J E : Type*}
+
+theorem finiteAffineHistory_succ (slope offset : J → E → ℝ)
     (n : ℕ) (labels : Fin (n + 1) → J) (marks : Fin (n + 1) → E) :
     finiteAffineHistory slope offset (n + 1) labels marks =
       slope (labels (Fin.last n)) (marks (Fin.last n)) *
@@ -31,9 +34,13 @@ theorem finiteAffineHistory_succ {J E : Type*} (slope offset : J → E → ℝ)
       (List.ofFn (fun i : Fin n => i)).map Fin.castSucc := by rw [List.map_ofFn]; rfl
   rw [hh, List.foldl_map]
 
-theorem finiteAffineHistory_integrable {J E : Type*} [MeasurableSpace E]
+section
+variable [MeasurableSpace E]
     (π : Measure E) [IsProbabilityMeasure π] (slope offset : J → E → ℝ)
     (hs : ∀ j, Integrable (slope j) π) (ho : ∀ j, Integrable (offset j) π)
+include hs ho
+
+theorem finiteAffineHistory_integrable
     (n : ℕ) (labels : Fin n → J) :
     Integrable (finiteAffineHistory slope offset n labels) (Measure.pi (fun _ : Fin n => π)) := by
   induction n with
@@ -52,9 +59,7 @@ theorem finiteAffineHistory_integrable {J E : Type*} [MeasurableSpace E]
       historyFiniteMarkAppendEquiv_last, historyFiniteMarkAppendEquiv_old]
     rfl
 
-theorem finiteAffineHistory_integral_one {J E : Type*} [MeasurableSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (slope offset : J → E → ℝ)
-    (hs : ∀ j, Integrable (slope j) π) (ho : ∀ j, Integrable (offset j) π)
+theorem finiteAffineHistory_integral_one
     (hmean : ∀ j, (∫ e, slope j e ∂π) + (∫ e, offset j e ∂π) = 1)
     (n : ℕ) (labels : Fin n → J) :
     (∫ marks, finiteAffineHistory slope offset n labels marks
@@ -78,5 +83,9 @@ theorem finiteAffineHistory_integral_one {J E : Type*} [MeasurableSpace E]
       ((ho j).comp_fst _), integral_prod_mul, integral_fun_fst]
     simp only [measureReal_def, measure_univ, ENNReal.toReal_one, one_smul, ih, mul_one]
     exact hmean j
+
+end
+
+end
 
 end NearlyMinimax

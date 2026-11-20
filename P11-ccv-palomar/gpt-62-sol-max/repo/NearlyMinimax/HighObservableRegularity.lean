@@ -1,7 +1,6 @@
 module
 
 public import NearlyMinimax.HighObservableProductRule
-public import NearlyMinimax.HistoryExpectationRegularity
 
 @[expose] public section
 
@@ -13,66 +12,25 @@ set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-theorem historyMarkedPrior_variable_observable_lipschitz (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T B : ℝ) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Measurable a)
-    (habound : ∀ e, |a e| ≤ B)
-    (hsmall : T * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    (G : ℝ → HistoryMarked dependent E → ℝ) (hGM : ∀ u, Measurable (G u))
-    (M : ℝ) (hM : 0 ≤ M) (hGb : ∀ u ∈ Icc 0 T, ∀ h, |G u h| ≤ M)
-    (K : NNReal) (hGlip : ∀ h, LipschitzOnWith K (fun u => G u h) (Icc 0 T)) :
+theorem historyMarkedPrior_variable_observable_lipschitz {dependent : J → J → Prop} {Δ : ℕ} {T B : ℝ}
+    {E : Type*} [MeasurableSpace E] {π : Measure E} [IsProbabilityMeasure π]
+    {a : E → ℝ} (P : HistoryPriorBounds dependent Δ π a T B)
+    {G : ℝ → HistoryMarked dependent E → ℝ} {M : ℝ} {K : NNReal}
+    (hG : BoundedPath (Icc 0 T) G M) (hGlip : ∀ h, LipschitzOnWith K (fun u => G u h) (Icc 0 T)) :
     LipschitzOnWith
       ⟨(K : ℝ) * (3 / 2 : ℝ) ^ Fintype.card J +
         M * ((historyReferenceRho Δ)⁻¹ * (Fintype.card J : ℝ) * B * (3 / 2 : ℝ) ^ Fintype.card J),
-        by have hρ := historyReferenceRho_pos Δ; positivity⟩
+        by have hρ := historyReferenceRho_pos Δ; have := hG.nonneg; have := P.bound_nonneg; positivity⟩
       (fun u => ∫ h, G u h ∂historyMarkedPrior dependent Δ u π a) (Icc 0 T) := by
   let μ := historyMarkedReference dependent Δ π
-  let _ : IsProbabilityMeasure μ := historyMarkedReference_probability dependent hrefl hsymm Δ hΔ hlabels π
-  let ρ := historyReferenceRho Δ
-  let C : ℝ := (3 / 2 : ℝ) ^ Fintype.card J
-  let D : ℝ := ρ⁻¹ * (Fintype.card J : ℝ) * B * C
-  have hρ : 0 < ρ := historyReferenceRho_pos Δ
-  have hC : 0 ≤ C := by positivity
-  have hD : 0 ≤ D := by dsimp [D]; positivity
-  have hs (u : ℝ) (hu : u ∈ Icc 0 T) : u * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2) :=
-    (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hB) hρ.le).trans hsmall
-  have hφ (u : ℝ) (hu : u ∈ Icc 0 T) (h : HistoryMarked dependent E) :
-      ‖historyMarkedDensity dependent ρ u a h‖ ≤ C := by
-    have hb := historyMarkedDensity_bounds dependent hrefl hsymm Δ hlabels ρ u B hρ hu.1 hB a habound (hs u hu) h
-    rw [Real.norm_eq_abs, abs_of_nonneg ((by positivity : (0 : ℝ) ≤ (1 / 2 : ℝ) ^ Fintype.card J).trans hb.1)]
-    exact hb.2
-  let H : ℝ → HistoryMarked dependent E → ℝ := fun u h => G u h * historyMarkedDensity dependent ρ u a h
-  have hi (u : ℝ) (hu : u ∈ Icc 0 T) : Integrable (H u) μ := by
-    apply Integrable.of_bound ((hGM u).mul (historyMarkedDensity_measurable dependent ρ u a ha)).aestronglyMeasurable (M * C)
-    exact Eventually.of_forall fun h => by
-      rw [Pi.mul_apply, norm_mul, Real.norm_eq_abs]
-      exact mul_le_mul (hGb u hu h) (hφ u hu h) (norm_nonneg _) hM
+  let _ : IsProbabilityMeasure μ := P.reference_probability
+  obtain ⟨hφ, hφ'⟩ := P.density_path_bounds (Subset.rfl : Icc 0 T ⊆ Icc 0 T)
+  have hL := (hG.mul hφ).lipschitzIntegral_prob (ν := μ)
+    (hG.lipschitzMul hφ hGlip (hφ'.lipschitzOnWith (convex_Icc 0 T)
+      (fun u _ h => historyMarkedDensity_hasDerivAt dependent _ u a h)))
   apply LipschitzOnWith.of_dist_le_mul
   intro u hu v hv
-  rw [historyMarkedPrior_integral_eq_expectation dependent hrefl hsymm Δ hlabels u B hu.1 hB π a ha habound (hs u hu),
-    historyMarkedPrior_integral_eq_expectation dependent hrefl hsymm Δ hlabels v B hv.1 hB π a ha habound (hs v hv)]
-  change dist (∫ h, H u h ∂μ) (∫ h, H v h ∂μ) ≤ ((K : ℝ) * C + M * D) * dist u v
-  rw [dist_eq_norm, ← integral_sub (hi u hu) (hi v hv)]
-  have hb : ∀ᵐ h ∂μ, ‖H u h - H v h‖ ≤ ((K : ℝ) * C + M * D) * dist u v := by
-    apply Eventually.of_forall
-    intro h
-    have hGdiff := (hGlip h).dist_le_mul u hu v hv
-    rw [dist_eq_norm] at hGdiff
-    have hφdiff := (historyMarkedDensity_lipschitzOn dependent hrefl hsymm Δ hlabels ρ T B hρ hB a habound hsmall h).dist_le_mul u hu v hv
-    rw [dist_eq_norm] at hφdiff
-    have he : H u h - H v h = (G u h - G v h) * historyMarkedDensity dependent ρ u a h +
-      G v h * (historyMarkedDensity dependent ρ u a h - historyMarkedDensity dependent ρ v a h) := by dsimp [H]; ring
-    rw [he]
-    calc
-      _ ≤ ‖(G u h - G v h) * historyMarkedDensity dependent ρ u a h‖ +
-          ‖G v h * (historyMarkedDensity dependent ρ u a h - historyMarkedDensity dependent ρ v a h)‖ := norm_add_le _ _
-      _ ≤ ((K : ℝ) * dist u v) * C + M * (D * dist u v) := by
-        rw [norm_mul, norm_mul]
-        exact add_le_add (mul_le_mul hGdiff (hφ u hu h) (norm_nonneg _) (by positivity))
-          (mul_le_mul (by simpa only [Real.norm_eq_abs] using hGb v hv h) hφdiff (norm_nonneg _) hM)
-      _ = _ := by ring
-  simpa using norm_integral_le_of_norm_le_const hb
+  rw [P.integral_eq_density hu, P.integral_eq_density hv]
+  exact hL.dist_le_mul u hu v hv
 
 end NearlyMinimax

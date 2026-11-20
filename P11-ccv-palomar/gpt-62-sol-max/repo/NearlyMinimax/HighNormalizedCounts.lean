@@ -17,14 +17,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 700000
 attribute [local instance] Classical.propDecidable
 
-def highNormalizedDesignLaw {d : ℕ} (p : Covariate d → ℝ) : Measure (Covariate d) :=
-  (cubeVolume d).withDensity (fun x => ENNReal.ofReal (highNormalizedDensity p x))
-
-theorem high_normalized_design_probability {d : ℕ} (p : Covariate d → ℝ)
-    (hp : Measurable p) (a b : ℝ) (ha : 0 < a)
-    (hb : ∀ᵐ x ∂cubeVolume d, a ≤ p x ∧ p x ≤ b) : IsProbabilityMeasure (highNormalizedDesignLaw p) :=
-  normalizedDensityTernaryParameter_design_probability p hp a b ha hb
-
 /-- The exact source C_sharp, obtained from one raw density floor and one
 normalizing mass floor in the selected likelihood. -/
 def highFixedScoreDenominator (pMinus cMass : ℝ) : ℝ := (pMinus ^ 2 * cMass)⁻¹

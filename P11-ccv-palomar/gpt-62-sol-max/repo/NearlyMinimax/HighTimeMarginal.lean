@@ -25,7 +25,7 @@ theorem historyMarkedPrior_integral_joint_measurable {E Z : Type*}
   let f : (ℝ × Z) × HistoryMarked dependent E → ℝ := fun z =>
     (ENNReal.ofReal (historyMarkedDensity dependent (historyReferenceRho Δ) z.1.1 activation z.2)).toReal *
       G (z.1.1,(z.2,z.1.2))
-  have hm : Measurable f :=
+  have hm :=
     (((historyMarkedDensity_joint_measurable dependent (historyReferenceRho Δ) activation ham).comp
       ((measurable_fst.comp measurable_fst).prodMk measurable_snd)).ennreal_ofReal.ennreal_toReal).mul
       (hG.comp ((measurable_fst.comp measurable_fst).prodMk
@@ -51,11 +51,14 @@ theorem highMarginalRawLikelihood_time_measurable {E : Type*} [MeasurableSpace E
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
     (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
-    Measurable (fun z : ℝ × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
+    Measurable (fun z : ℝ × TernarySample d n =>
       highMarginalRawLikelihood (historyMarkedPrior dependent Δ z.1 π activation)
         n a (v-η^2*z.1) p F z.2) :=
   historyMarkedPrior_integral_joint_measurable dependent Δ π activation ham _
-    (highRawSampleLikelihood_time_measurable n a v η p F hp hF)
+    (highRawSampleLikelihood_params_measurable a hp hF
+      (X := ℝ × (HistoryMarked dependent E × TernarySample d n)) (V := fun z => v-η^2*z.1)
+      (measurable_fst.comp measurable_snd) (measurable_snd.comp measurable_snd)
+      (measurable_const.sub (measurable_const.mul measurable_fst)))
 
 theorem highMarginalIndexScore_time_measurable {E : Type*} [MeasurableSpace E]
     [StandardBorelSpace E] {d : ℕ}
@@ -64,36 +67,19 @@ theorem highMarginalIndexScore_time_measurable {E : Type*} [MeasurableSpace E]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
     (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
-    Measurable (fun z : ℝ × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
+    Measurable (fun z : ℝ × TernarySample d n =>
       highMarginalIndexScore dependent hsymm (historyMarkedPrior dependent Δ z.1 π activation)
         π activation n a (v-η^2*z.1) η p F z.2) :=
   (historyMarkedPrior_integral_joint_measurable dependent Δ π activation ham _
-    (highHistoryLikelihoodDerivative_time_measurable dependent hsymm π activation ham n a v η p F hp hF)).div
+    (highHistoryLikelihoodDerivative_params_measurable hsymm π ham a η hp hF
+      (X := ℝ × (HistoryMarked dependent E × TernarySample d n)) (V := fun z => v-η^2*z.1)
+      (measurable_fst.comp measurable_snd) (measurable_snd.comp measurable_snd)
+      (measurable_const.sub (measurable_const.mul measurable_fst)))).div
     (highMarginalRawLikelihood_time_measurable dependent Δ π activation ham n a v η p F hp hF)
 
 set_option backward.isDefEq.respectTransparency true
 attribute [local irreducible] highMarginalIndexScore highMarginalRawLikelihood
   historyMarkedPrior highRawDensityMass massPowerNormalizer
-
-theorem highMarginalRealScore_time_measurable {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (π : Measure E) [SFinite π] [SFinite (historyMarkedReference dependent Δ π)]
-    (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
-    Measurable (fun z : ℝ × (Fin n → Observation d) =>
-      highMarginalRealScore dependent hsymm (historyMarkedPrior dependent Δ z.1 π activation)
-        π activation n a (v-η^2*z.1) η p F z.2) := by
-  unfold highMarginalRealScore
-  change Measurable ((fun z : ℝ × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-    highMarginalIndexScore dependent hsymm (historyMarkedPrior dependent Δ z.1 π activation)
-      π activation n a (v-η^2*z.1) η p F z.2) ∘
-    (fun z : ℝ × (Fin n → Observation d) => (z.1, decodeDesignResponse a z.2)))
-  exact (highMarginalIndexScore_time_measurable dependent hsymm Δ π activation ham n a v η p F hp hF).comp
-    (show Measurable (fun z : ℝ × (Fin n → Observation d) =>
-      (z.1, decodeDesignResponse a z.2)) from
-      measurable_fst.prodMk ((decodeDesignResponse_measurable a).comp measurable_snd))
 
 theorem highMassPowerNormalizer_time_measurable {E : Type*} [MeasurableSpace E] {d : ℕ}
     (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
@@ -106,8 +92,7 @@ theorem highMassPowerNormalizer_time_measurable {E : Type*} [MeasurableSpace E] 
   have hG : Measurable (fun z : ℝ × (HistoryMarked dependent E × Unit) =>
       highRawDensityMass (p z.2.1)^n) :=
     ((highRawDensityMass_joint_measurable p hp).pow_const n).comp (measurable_fst.comp measurable_snd)
-  have hi : Measurable (fun z : ℝ × Unit =>
-      ∫ ω, highRawDensityMass (p ω)^n ∂historyMarkedPrior dependent Δ z.1 π activation) :=
+  have hi :=
     historyMarkedPrior_integral_joint_measurable dependent Δ π activation ham _ hG
   exact hi.comp (show Measurable (fun t : ℝ => (t, ())) from
     measurable_id.prodMk measurable_const)

@@ -23,8 +23,12 @@ theorem hyperplaneSpatialMomentConstant_ge_one (d : ℕ) :
   have hc := spatialExponentialConstant_nonneg d
   nlinarith only [hp, hc]
 
-theorem finePairTimeSubsetMoment_uniform_square_integral_le {d k : ℕ} [NeZero d]
-    (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) (S : Finset (Fin k)) (hS : 4 ≤ S.card) :
+section
+variable {d k : ℕ} [NeZero d]
+    (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo)
+include hd hlo
+
+theorem finePairTimeSubsetMoment_uniform_square_integral_le (S : Finset (Fin k)) (hS : 4 ≤ S.card) :
     (∫ U : Fin k → Covariate d, finePairTimeSubsetMoment lo hi U S ^ 2
       ∂fullSpatialPatchDesign d k) ≤
       (2 : ℝ) ^ (d * k) * hyperplaneSpatialMomentConstant d ^ (2 * k) *
@@ -33,11 +37,10 @@ theorem finePairTimeSubsetMoment_uniform_square_integral_le {d k : ℕ} [NeZero 
     simpa only [Finset.card_univ, Fintype.card_fin] using Finset.card_le_card (Finset.subset_univ S)
   have hv : (2 : ℝ) ^ (d * (k - S.card)) ≤ (2 : ℝ) ^ (d * k) :=
     pow_le_pow_right₀ (by norm_num) (Nat.mul_le_mul_left d (Nat.sub_le _ _))
-  have hconst : hyperplaneSpatialMomentConstant d ^ (2 * S.card) ≤
-      hyperplaneSpatialMomentConstant d ^ (2 * k) :=
+  have hconst :=
     pow_le_pow_right₀ (hyperplaneSpatialMomentConstant_ge_one d) (Nat.mul_le_mul_left 2 hc)
   have hj : (S.card : ℝ) ^ 8 ≤ (k : ℝ) ^ 8 :=
-    pow_le_pow_left₀ (Nat.cast_nonneg _) (by exact_mod_cast hc) 8
+    pow_le_pow_left₀ (Nat.cast_nonneg _) (by simp_all) 8
   have h := finePairTimeSubsetMoment_square_integral_le hd (hi := hi) hlo S hS
   apply h.trans
   have hC := (hyperplaneSpatialMomentConstant_positive d).le
@@ -49,8 +52,7 @@ theorem finePairTimeSubsetMoment_uniform_square_integral_le {d k : ℕ} [NeZero 
 
 /-- Any family of higher subsets has the same geometric count envelope;
 the concrete even-subset field family is a particular case. -/
-theorem finePairTimeSubsetMoment_sum_abs_square_integral_le {d k : ℕ} [NeZero d]
-    (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) (s : Finset (Finset (Fin k)))
+theorem finePairTimeSubsetMoment_sum_abs_square_integral_le (s : Finset (Finset (Fin k)))
     (hs : ∀ S ∈ s, 4 ≤ S.card) :
     (∫ U : Fin k → Covariate d, (∑ S ∈ s, |finePairTimeSubsetMoment lo hi U S|) ^ 2
       ∂fullSpatialPatchDesign d k) ≤
@@ -80,5 +82,7 @@ theorem finePairTimeSubsetMoment_sum_abs_square_integral_le {d k : ℕ} [NeZero 
     rw [show (4 : ℝ) = (2 : ℝ) ^ 2 by norm_num, ← pow_mul, Nat.mul_comm]
   rw [hfour]
   ring
+
+end
 
 end NearlyMinimax

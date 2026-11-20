@@ -26,6 +26,6 @@ theorem higherBandFirstAction_fine_eq_aliasRawAction {d n : ℕ}
       ordinaryFineAliasRawAction ad bd lam L T M r q C a V η U p g w c y := by
   rw [higherBandFirstAction_actual_count_expansion ad bd lam L T ha hab hlam hL hT
     r M D q hr hD hnD C true U hU p hp c]
-  simp only [ordinaryFineAliasRawAction, higherBandActualMatrix, ite_true]
+  rfl
 
 end NearlyMinimax

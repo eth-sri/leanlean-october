@@ -1,7 +1,7 @@
 module
 
 public import NearlyMinimax.HighHistoryDensityMean
-public import NearlyMinimax.HistoryReferenceMean
+public import NearlyMinimax.HistoryReferenceMeasure
 
 @[expose] public section
 
@@ -29,8 +29,7 @@ theorem packetSum_borelSpace {A B : Type*} [TopologicalSpace A] [TopologicalSpac
     have he : s = Sum.inl '' (Sum.inl ⁻¹' s) ∪ Sum.inr '' (Sum.inr ⁻¹' s) := by
       ext x
       cases x <;> simp
-    rw [he]
-    exact hleft.union hright
+    grind [hleft.union]
   · apply MeasurableSpace.generateFrom_le
     intro s hs
     exact measurableSet_sum_iff.mpr ⟨(hs.preimage continuous_inl).measurableSet,
@@ -43,7 +42,7 @@ variable {Z : Type*} [MeasurableSpace Z] (d k F m r D q : ℕ) [NeZero k]
 
 variable (σ : Measure Z) [IsFiniteMeasure σ] (a b C δ : ℝ)
   (A : Z → HighFrameIndex d F → HighFrameIndex d F → ℝ)
-  (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
+  (hA : SeparatedMatrixIntegrable σ A)
   (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
   (ha : 0 < a) (hab : a < b) (hr : 1 ≤ r) (hδ0 : 0 ≤ δ) (hδ1 : δ < 1)
   (radius width : ℝ) (hR : 0 < radius) (ha1 : a + radius ≤ 1) (hb1 : 1 + radius ≤ b)
@@ -53,7 +52,7 @@ variable (σ : Measure Z) [IsFiniteMeasure σ] (a b C δ : ℝ)
   (hB : ∀ j ζ x l, |B j ζ x l| ≤ 1)
   (initial : HighRawState d k F) (hinit : ∀ x, initial.1 x = 1)
 
-include hA hcost hpos ha hab hr hδ0 hδ1 hR ha1 hb1 hW hδW hB hinit
+include hA hpos ha hab hr hδ0 hδ1 hR ha1 hb1 hW hδW hB hinit
 
 end Canonical
 end NearlyMinimax

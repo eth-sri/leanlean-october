@@ -1,6 +1,7 @@
 module
 
 public import NearlyMinimax.HighSourceAllGeometry
+public import NearlyMinimax.CompleteSourceSaddleParameters
 public import NearlyMinimax.HighGeometryEnvelopeMonotone
 public import NearlyMinimax.OrdinaryFineAliasSaddleEnvelope
 
@@ -15,46 +16,35 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 500000
 attribute [local instance] Classical.propDecidable
 
- def completeSaddleGeometryEnvelope {d : ℕ} (C : ModelConstants d)
+def completeSaddleGeometryParameters {d : ℕ} (C : ModelConstants d)
+    (Q : LowSmoothnessTernaryConstants C) (Cfr cf Cω : ℝ) (n : ℕ) : SourceGeometry d :=
+  ⟨completeSaddleD C n, completeSaddleM C n,
+    ordinaryFineAliasSaddleTargetBound C.smoothness d C.densityLower C.densityUpper,
+    lowerSaddleResponseOrder C.smoothness d, C.densityLower, C.densityUpper,
+    completeSaddleC0 C, completeSaddleEll C Cω n, completeSaddleN C Cω n, completeSaddleMu C Cω n,
+    Cfr, Q.a, Q.ρ, completeSaddleEta C Cω cf n⟩
+
+def completeSaddleGeometryEnvelope {d : ℕ} (C : ModelConstants d)
     (Q : LowSmoothnessTernaryConstants C) (Cfr cf Cω : ℝ) (n : ℕ) :
     (r : ℕ) → (Fin r → Covariate d) → ℝ :=
-  let q := lowerSaddleResponseOrder C.smoothness d
-  let m := highCompleteSourceSaddleCoefficient C
-  let theta := highCompleteSourceSaddleTheta C
-  let c0 := densityIntervalExponent C.densityLower C.densityUpper+1
-  let M := lowerSaddleM m n
-  let D := lowerSaddleD d m n
-  let N := lowerSaddleN C.smoothness d m theta Cω (shrunkDensityExponent C.densityLower C.densityUpper) n
-  let mu := lowerSaddleMu d m theta Cω n
-  let ell := lowerAliasCutoff C.smoothness d m theta Cω c0 (shrunkDensityExponent C.densityLower C.densityUpper) n
-  let eta := lowerSaddleEta C.smoothness d m theta Cω cf n
-  let Rbound := ordinaryFineAliasSaddleTargetBound C.smoothness d C.densityLower C.densityUpper
-  let Chi := highSeparatedScoreExponentialConstant Q.a Q.ρ C.densityUpper 1 1
-  let Bl := completeSourceSaddleActivity C q Cfr (spatialInterpolationLambda d) Cω n
-  completeSourceGeometryEnvelope D M Rbound q C.densityLower C.densityUpper c0 ell N mu Cfr Q.a Q.ρ eta Chi Bl
+  let S := completeSaddleGeometryParameters C Q Cfr cf Cω n
+  S.envelope (highSeparatedScoreExponentialConstant Q.a Q.ρ C.densityUpper 1 1)
+    (completeSourceSaddleActivity C S.q Cfr (spatialInterpolationLambda d) Cω n)
 
- theorem completeSaddleGeometryEnvelope_nonneg {d : ℕ} (C : ModelConstants d)
+ section
+variable {d : ℕ}
+
+theorem completeSaddleGeometryEnvelope_nonneg (C : ModelConstants d)
     (Q : LowSmoothnessTernaryConstants C) (Cfr cf Cω : ℝ) (n r : ℕ) (U : Fin r → Covariate d) :
     0 ≤ completeSaddleGeometryEnvelope C Q Cfr cf Cω n r U :=
-  by
-    unfold completeSaddleGeometryEnvelope
-    exact completeSourceGeometryEnvelope_nonneg _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ r U
+  SourceGeometry.envelope_nonneg ..
 
- theorem completeSaddleGeometryEnvelope_integrable {d : ℕ} [NeZero d] (C : ModelConstants d)
+ theorem completeSaddleGeometryEnvelope_integrable [NeZero d] (C : ModelConstants d)
     (Q : LowSmoothnessTernaryConstants C) (hd : 5 ≤ d) (Cfr cf Cω : ℝ) (n r : ℕ)
-    (hell : 1 ≤ lowerAliasCutoff C.smoothness d (highCompleteSourceSaddleCoefficient C)
-      (highCompleteSourceSaddleTheta C) Cω (densityIntervalExponent C.densityLower C.densityUpper+1)
-      (shrunkDensityExponent C.densityLower C.densityUpper) n)
-    (hellN : lowerAliasCutoff C.smoothness d (highCompleteSourceSaddleCoefficient C)
-      (highCompleteSourceSaddleTheta C) Cω (densityIntervalExponent C.densityLower C.densityUpper+1)
-      (shrunkDensityExponent C.densityLower C.densityUpper) n ≤
-      lowerSaddleN C.smoothness d (highCompleteSourceSaddleCoefficient C)
-        (highCompleteSourceSaddleTheta C) Cω (shrunkDensityExponent C.densityLower C.densityUpper) n) :
+    (hell : 1 ≤ completeSaddleEll C Cω n) (hellN : completeSaddleEll C Cω n ≤ completeSaddleN C Cω n) :
     Integrable (completeSaddleGeometryEnvelope C Q Cfr cf Cω n r) (fullSpatialPatchDesign d r) :=
-  by
-    unfold completeSaddleGeometryEnvelope
-    apply completeSourceGeometryEnvelope_integrable hd
-    · exact hell
-    · exact hellN
+  SourceGeometry.envelope_integrable _ _ _ hd hell hellN r
+
+end
 
 end NearlyMinimax

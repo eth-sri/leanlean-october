@@ -32,7 +32,7 @@ abbrev HighUnionMark {I : Type*} (E : I → Type*) := (Sigma E) ⊕ Unit
 theorem highUnionMark_standardBorel {I : Type*} [Fintype I] {E : I → Type*}
     [∀ i, MeasurableSpace (E i)] [∀ i, StandardBorelSpace (E i)] :
     StandardBorelSpace (HighUnionMark E) := by
-  letI : StandardBorelSpace (Sigma E) := highRowReferenceUnion_standardBorel
+  letI : StandardBorelSpace (Sigma E) := sigma_standardBorel_actual
   letI := upgradeStandardBorel (Sigma E)
   letI : BorelSpace ((Sigma E) ⊕ Unit) := packetSum_borelSpace
   infer_instance
@@ -71,7 +71,7 @@ def highUnionRawUpdate (δ : ℝ) (j : HighWindowLabels d k) (e : HighUnionMark 
 theorem highUnionLaw_probability [∀ i, IsProbabilityMeasure (R.rowLaw i)]
     (hMass : ∀ i, 0 ≤ R.rowMass i) (hTotal : 0 < highRowTotalMass R.rowMass)
     (δ : ℝ) (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1) : IsProbabilityMeasure (highUnionLaw R δ) :=
-  highCenteredRowUnionLaw_probability R.rowLaw R.rowMass hMass hTotal δ hδ0 hδ1
+  by apply highCenteredRowUnionLaw_probability <;> assumption
 
 theorem highUnionActivation_measurable (hAct : ∀ i, Measurable (R.rowActivation i)) (δ : ℝ) :
     Measurable (highUnionActivation R δ) :=
@@ -83,8 +83,7 @@ theorem highUnionActivation_centered (hMass : ∀ i, 0 ≤ R.rowMass i)
     (hcAct : ∀ i, (∫ e, R.rowActivation i e ∂(R.rowLaw i)) = 0)
     (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1) :
     (∫ e, highUnionActivation R δ e ∂highUnionLaw R δ) = 0 :=
-  highCenteredRowUnionActivation_centered R.rowLaw R.rowMass hMass R.rowActivation
-    hAct hiAct hcAct δ hδ hδ1
+  by apply highCenteredRowUnionActivation_centered <;> assumption
 
 theorem highUnionIntercept_measurable (hOffset : ∀ i, Measurable (R.rowIntercept i)) (δ : ℝ) :
     Measurable (highUnionIntercept R δ) :=
@@ -96,9 +95,8 @@ theorem highUnionSlope_joint_measurable [∀ i, StandardBorelSpace (E i)]
     Measurable (fun ex : HighUnionMark E × Covariate d => highUnionSlope R j ex.1 ex.2) := by
   let G : Sigma (fun i => E i × Covariate d) → ℝ := fun ex =>
     R.rowSlope j ex.1 ex.2.1 ex.2.2
-  have hG : Measurable G := (historySigma_measurable_iff G).mpr (hSlope j)
-  have hSigma : Measurable (fun ex : (Sigma E) × Covariate d =>
-      R.rowSlope j ex.1.1 ex.1.2 ex.2) :=
+  have hG := (historySigma_measurable_iff G).mpr (hSlope j)
+  have hSigma :=
     hG.comp (historySigmaProdMeasurableEquiv E (Covariate d)).measurable
   have h := (hSigma.sumElim (measurable_const (a := (0 : ℝ)))).comp
     (MeasurableEquiv.sumProdDistrib (Sigma E) Unit (Covariate d)).measurable
@@ -129,25 +127,25 @@ theorem highUnionRawUpdate_measurable [∀ i, StandardBorelSpace (E i)]
   · apply measurable_pi_lambda
     intro x
     by_cases hx : x ∈ highTorusPatch d k j
-    · simp only [highUnionRawUpdate, rawPatchUpdate, affinePatchUpdate, if_pos hx]
+    · simp only [affinePatchUpdate, if_pos hx]
       exact ((hs x).comp measurable_fst).mul
         ((measurable_pi_apply x).comp (measurable_fst.comp measurable_snd)) |>.add
         ((highUnionIntercept_measurable R hOffset δ).comp measurable_fst)
-    · simp only [highUnionRawUpdate, rawPatchUpdate, affinePatchUpdate, if_neg hx]
-      exact (measurable_pi_apply x).comp (measurable_fst.comp measurable_snd)
+    · simp only [affinePatchUpdate, if_neg hx]
+      fun_prop
   · apply measurable_pi_lambda
     intro l
     apply measurable_pi_lambda
     intro γ
     by_cases hl : l = j
     · subst l
-      simp only [highUnionRawUpdate, rawPatchUpdate, responseCoordinateUpdate,
+      simp only [responseCoordinateUpdate,
         Function.update_self, highUnionResponseReset, coefficientReset]
       exact ((measurable_const.sub ((highUnionResponseTime_measurable R hTime).comp
           measurable_fst)).mul (by fun_prop)).add
         (((highUnionResponseTime_measurable R hTime).comp measurable_fst).mul
           ((highUnionResponseVector_measurable R hVector γ).comp measurable_fst))
-    · simp only [highUnionRawUpdate, rawPatchUpdate, responseCoordinateUpdate, Function.update_of_ne hl]
+    · simp only [responseCoordinateUpdate, Function.update_of_ne hl]
       fun_prop
 
 theorem highUnionResponseReset_ball (Cfr : ℝ) (hCfr : 0 < Cfr)
@@ -164,7 +162,7 @@ theorem highUnionResponseReset_ball (Cfr : ℝ) (hCfr : 0 < Cfr)
     cases e with
     | inl e => exact hVector e.1 e.2
     | inr e => simp [highUnionResponseVector, hCfr.le]
-  exact coefficientReset_mem_ball Cfr c _ _ hτ hc hv
+  apply coefficientReset_mem_ball <;> assumption
 
 end Reset
 end NearlyMinimax

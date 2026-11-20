@@ -34,9 +34,7 @@ def historyShapeMultiplicity (dependent : J → J → Prop) (j : J) :
 
 theorem historyShapeMultiplicity_out (dependent : J → J → Prop) (j : J)
     (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    (Quotient.out g).count j = historyShapeMultiplicity dependent j g := by
-  change historyShapeMultiplicity dependent j (Quotient.mk _ (Quotient.out g)) = _
-  exact congrArg (historyShapeMultiplicity dependent j) (Quotient.out_eq g)
+    (Quotient.out g).count j = historyShapeMultiplicity dependent j g := congrArg (historyShapeMultiplicity dependent j) (Quotient.out_eq g)
 
 abbrev HistoryMultiplicityShape (dependent : J → J → Prop) (n : J → ℕ) :=
   {g : HistoryShape (fun a b => ¬ dependent a b) // ∀ j, historyShapeMultiplicity dependent j g = n j}
@@ -44,9 +42,7 @@ abbrev HistoryMultiplicityShape (dependent : J → J → Prop) (n : J → ℕ) :
 theorem historyPairProjection_symm (i j : J) (word : List J) :
     historyPairProjection i j word = historyPairProjection j i word := by
   unfold historyPairProjection
-  congr 1
-  funext x
-  simp only [or_comm]
+  grind
 
 theorem historyPairProjection_self (j : J) (word : List J) :
     historyPairProjection j j word = List.replicate (word.count j) j := by
@@ -68,35 +64,39 @@ theorem historyPairProjection_length {i j : J} (hij : i ≠ j) (word : List J) :
       simp [historyPairProjection] at ih
       simp [historyPairProjection, hij]
       omega
-    · by_cases haj : a = j
-      · subst a
-        simp [historyPairProjection] at ih
-        simp [historyPairProjection, Ne.symm hij]
-        omega
-      · simpa [historyPairProjection, List.count_cons, hai, haj] using ih
+    · grind [historyPairProjection]
 
 def historyPairBits (i j : J) (word : List J) : List Bool :=
   (historyPairProjection i j word).map (fun x => decide (x = j))
 
-theorem historyPairBits_length {i j : J} (hij : i ≠ j) (word : List J) :
+section
+variable {i j : J} (hij : i ≠ j)
+include hij
+
+section
+variable (word : List J)
+
+theorem historyPairBits_length :
     (historyPairBits i j word).length = word.count i + word.count j := by
   rw [historyPairBits, List.length_map, historyPairProjection_length hij]
 
-theorem historyPairBits_reconstruct {i j : J} (hij : i ≠ j) (word : List J) :
+theorem historyPairBits_reconstruct :
     (historyPairBits i j word).map (fun b => if b then j else i) = historyPairProjection i j word := by
   unfold historyPairBits
   rw [List.map_map]
   conv_rhs => rw [← List.map_id (historyPairProjection i j word)]
   apply List.map_congr_left
   intro x hx
-  have hm : x = i ∨ x = j := of_decide_eq_true (List.mem_filter.1 hx).2
-  rcases hm with rfl | rfl
-  · simp [hij]
-  · simp
+  have hm := of_decide_eq_true (List.mem_filter.1 hx).2
+  grind
 
-theorem historyPairProjection_eq_of_bits_eq {i j : J} (hij : i ≠ j) {u v : List J}
+end
+
+theorem historyPairProjection_eq_of_bits_eq {u v : List J}
     (h : historyPairBits i j u = historyPairBits i j v) : historyPairProjection i j u = historyPairProjection i j v := by
   rw [← historyPairBits_reconstruct hij u, ← historyPairBits_reconstruct hij v, h]
+
+end
 
 abbrev HistoryOrderedDependentPair (dependent : J → J → Prop) [LinearOrder J] :=
   {p : J × J // p.1 < p.2 ∧ dependent p.1 p.2}
@@ -110,8 +110,7 @@ def historyMultiplicityPairCode (dependent : J → J → Prop) [LinearOrder J] (
     (g : HistoryMultiplicityShape dependent n) :
     ∀ p : HistoryOrderedDependentPair dependent, List.Vector Bool (n p.val.1 + n p.val.2) := fun p =>
   ⟨historyPairBits p.val.1 p.val.2 (Quotient.out g.val), by
-    rw [historyPairBits_length p.prop.1.ne, historyShapeMultiplicity_out, historyShapeMultiplicity_out,
-      g.prop p.val.1, g.prop p.val.2]⟩
+    simp [historyPairBits_length p.prop.1.ne, historyShapeMultiplicity_out, g.prop p.val.1, g.prop p.val.2]⟩
 
 theorem historyMultiplicityPairCode_injective (dependent : J → J → Prop) [LinearOrder J]
     (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (n : J → ℕ) :
@@ -123,24 +122,25 @@ theorem historyMultiplicityPairCode_injective (dependent : J → J → Prop) [Li
     · have he := congrArg Subtype.val (congrFun hcode ⟨⟨i, j⟩, hlt, hij⟩)
       exact historyPairProjection_eq_of_bits_eq hlt.ne he
     · subst j
-      rw [historyPairProjection_self, historyPairProjection_self, historyShapeMultiplicity_out,
-        historyShapeMultiplicity_out, g.prop i, h.prop i]
+      simp [historyPairProjection_self, historyShapeMultiplicity_out, g.prop i, h.prop i]
     · have he := congrArg Subtype.val (congrFun hcode ⟨⟨j, i⟩, hgt, hsymm hij⟩)
-      rw [historyPairProjection_symm i j, historyPairProjection_symm i j]
-      exact historyPairProjection_eq_of_bits_eq hgt.ne he
+      simpa [historyPairProjection_symm i j] using historyPairProjection_eq_of_bits_eq hgt.ne he
   apply Subtype.ext
   have hh : Quotient.mk (historyShapeSetoid (fun a b => ¬ dependent a b)) (Quotient.out g.val) =
       Quotient.mk (historyShapeSetoid (fun a b => ¬ dependent a b)) (Quotient.out h.val) :=
     Quotient.sound (historyShapeRelation_of_pair_projections hrefl hsymm hproj)
   exact (Quotient.out_eq g.val).symm.trans (hh.trans (Quotient.out_eq h.val))
 
-theorem historyMultiplicityShape_finite [Fintype J] [LinearOrder J] (dependent : J → J → Prop)
-    (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (n : J → ℕ) :
+section
+variable [Fintype J] [LinearOrder J] (dependent : J → J → Prop)
+    (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (n : J → ℕ)
+include hrefl hsymm
+
+theorem historyMultiplicityShape_finite :
     Finite (HistoryMultiplicityShape dependent n) :=
   Finite.of_injective _ (historyMultiplicityPairCode_injective dependent hrefl hsymm n)
 
-theorem historyMultiplicityShape_card_le [Fintype J] [LinearOrder J] (dependent : J → J → Prop)
-    (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (n : J → ℕ) :
+theorem historyMultiplicityShape_card_le :
     Nat.card (HistoryMultiplicityShape dependent n) ≤
       ∏ p : HistoryOrderedDependentPair dependent, 2 ^ (n p.val.1 + n p.val.2) := by
   let : Finite (HistoryMultiplicityShape dependent n) := historyMultiplicityShape_finite dependent hrefl hsymm n
@@ -151,5 +151,7 @@ theorem historyMultiplicityShape_card_le [Fintype J] [LinearOrder J] (dependent 
     rw [Nat.card_eq_fintype_card]
     simp only [Fintype.card_pi, card_vector, Fintype.card_bool]
   rwa [hc] at hh
+
+end
 
 end NearlyMinimax

@@ -51,13 +51,9 @@ theorem signedDensity_integral (w : X → ℝ) (hw : Integrable w μ) (hmw : Mea
   have hpf := hw.pos_part.mul_bdd hf.aestronglyMeasurable (Filter.Eventually.of_forall hbound)
   have hnf := hw.neg_part.mul_bdd hf.aestronglyMeasurable (Filter.Eventually.of_forall hbound)
   rw [← integral_sub hpf hnf]
-  apply integral_congr_ae
-  apply Filter.Eventually.of_forall
-  intro x
-  have he : max (w x) 0 - max (-w x) 0 = w x := by
-    by_cases hh : 0 ≤ w x <;> simp [max_eq_left, max_eq_right, hh, neg_nonpos.mpr, neg_nonneg.mpr]
-  dsimp only
-  rw [← sub_mul, he]
+  exact integral_congr_ae (.of_forall fun x => by
+    dsimp only
+    rw [← sub_mul, max_zero_sub_max_neg_zero_eq_self])
 
 end SignedDensity
 
@@ -65,19 +61,13 @@ section FiniteProduct
 variable {Z I : Type*} [MeasurableSpace Z] [MeasurableSpace I]
   [Fintype I] [MeasurableSingletonClass I]
 
-theorem finite_count_integrable (f : I → ℝ) : Integrable f Measure.count := by
-  have hm : Measurable f := measurable_of_countable f
-  apply (integrable_const (∑ i, ‖f i‖)).mono' hm.aestronglyMeasurable
-  exact Filter.Eventually.of_forall (fun i =>
-    Finset.single_le_sum (fun j _ => norm_nonneg (f j)) (Finset.mem_univ i))
-
 theorem joint_finite_integrable (σ : Measure Z) [IsFiniteMeasure σ] (f : Z × I → ℝ)
     (hf : ∀ i, Measurable (fun ζ => f (ζ, i)))
     (hi : ∀ i, Integrable (fun ζ => f (ζ, i)) σ) :
     Integrable f (σ.prod Measure.count) := by
-  have hm : Measurable f := measurable_from_prod_countable_left hf
+  have hm := measurable_from_prod_countable_left hf
   apply (integrable_prod_iff hm.aestronglyMeasurable).mpr
-  refine ⟨Filter.Eventually.of_forall (fun ζ => finite_count_integrable _), ?_⟩
+  refine ⟨Filter.Eventually.of_forall (fun ζ => integrable_count_iff.mpr ((hasSum_fintype _).summable)), ?_⟩
   simp only [integral_count]
   exact integrable_finsetSum _ (fun i _ => (hi i).norm)
 
@@ -103,62 +93,10 @@ def highResponseMarkWeight (C : ℝ) (q : ℕ) (A : ι → ι → ℝ)
     (h : HighResponseMarkIndex ι q) : ℝ :=
   responseWeight q h.2.2 * covarianceWeight C A h.1.1 h.1.2 h.2.1.1 h.2.1.2
 
-def highPacketMarkWeight (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (e : Z × HighPacketMarkIndex ι m r D q) : ℝ :=
-  densityPacketWeight a b m r D e.2.1 * highResponseMarkWeight C q (A e.1) e.2.2
+section
+variable (q : ℕ) (C : ℝ) (A : ι → ι → ℝ)
 
-theorem highPacketMarkWeight_slice_measurable (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-    (h : HighPacketMarkIndex ι m r D q) :
-    Measurable (fun ζ => highPacketMarkWeight a b m r D q C A (ζ, h)) := by
-  dsimp [highPacketMarkWeight, highResponseMarkWeight, covarianceWeight]
-  fun_prop
-
-theorem highPacketMarkWeight_measurable (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) :
-    Measurable (highPacketMarkWeight a b m r D q C A) :=
-  measurable_from_prod_countable_left (highPacketMarkWeight_slice_measurable a b m r D q C A hA)
-
-theorem highPacketMarkWeight_slice_integrable (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-    (hcost : Integrable (separatedMatrixCost A) σ) (h : HighPacketMarkIndex ι m r D q) :
-    Integrable (fun ζ => highPacketMarkWeight a b m r D q C A (ζ, h)) σ := by
-  dsimp [highPacketMarkWeight, highResponseMarkWeight, covarianceWeight]
-  exact (((((separatedMatrix_entry_integrable σ A hA hcost h.2.1.1 h.2.1.2).const_mul
-    (C ^ 2 / 2)).mul_const (fairSign h.2.2.1.1)).mul_const (fairSign h.2.2.1.2)).const_mul
-      (responseWeight q h.2.2.2)).const_mul (densityPacketWeight a b m r D h.1)
-
-theorem highPacketMarkWeight_integrable (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
-    Integrable (highPacketMarkWeight a b m r D q C A) (σ.prod Measure.count) :=
-  joint_finite_integrable σ _ (highPacketMarkWeight_slice_measurable a b m r D q C A hA)
-    (highPacketMarkWeight_slice_integrable σ a b m r D q C A hA hcost)
-
-/-- The original joint Xi packet as a genuine signed measure, represented
-on the finite atom indices together with the actual positive sigma mark. -/
-def highPacketSignedMeasure (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) : SignedMeasure (Z × HighPacketMarkIndex ι m r D q) :=
-  (σ.prod Measure.count).withDensityᵥ (highPacketMarkWeight a b m r D q C A)
-
-theorem highPacketSignedMeasure_integral (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
-    (F : Z × HighPacketMarkIndex ι m r D q → ℝ)
-    (hF : ∀ h, Measurable (fun ζ => F (ζ, h))) (M : ℝ)
-    (hBound : ∀ ζ h, ‖F (ζ, h)‖ ≤ M) :
-    (∫ᵛ e, F e ∂<•(highPacketSignedMeasure σ a b m r D q C A)) =
-      ∫ ζ, ∑ h : HighPacketMarkIndex ι m r D q,
-        highPacketMarkWeight a b m r D q C A (ζ, h) * F (ζ, h) ∂σ := by
-  have hw := highPacketMarkWeight_integrable σ a b m r D q C A hA hcost
-  have hmF : Measurable F := measurable_from_prod_countable_left hF
-  have hb : ∀ e : Z × HighPacketMarkIndex ι m r D q, ‖F e‖ ≤ M := fun e => hBound e.1 e.2
-  rw [highPacketSignedMeasure, signedDensity_integral _ _ hw
-    (highPacketMarkWeight_measurable a b m r D q C A hA) F hmF M hb,
-    integral_prod _ (hw.mul_bdd hmF.aestronglyMeasurable (Filter.Eventually.of_forall hb))]
-  simp only [integral_count]
-
-theorem highResponseMark_action (q : ℕ) (C : ℝ) (A : ι → ι → ℝ)
+theorem highResponseMark_action
     (c : ι → ℝ) (Φ : (ι → ℝ) → ℝ) :
     (∑ h : HighResponseMarkIndex ι q, highResponseMarkWeight C q A h *
       Φ (coefficientReset c (highResponseMarkAtom C q h).2 (highResponseMarkAtom C q h).1)) =
@@ -170,173 +108,278 @@ theorem highResponseMark_action (q : ℕ) (C : ℝ) (A : ι → ι → ℝ)
   apply Finset.sum_congr rfl
   intro j _
   apply Finset.sum_congr rfl
-  intro s _
-  apply Finset.sum_congr rfl
-  intro t _
-  apply Finset.sum_congr rfl
-  intro h _
-  ring
+  grind
 
-def highPacketObservable (a b : ℝ) (m r D q : ℕ) (C : ℝ) (c : ι → ℝ)
-    (G : Z → ℝ → (Fin r → ℝ) → ℝ) (Φ : (ι → ℝ) → ℝ)
-    (e : Z × HighPacketMarkIndex ι m r D q) : ℝ :=
-  G e.1 (densityPacketAtom a b m r D e.2.1).1 (densityPacketAtom a b m r D e.2.1).2 *
-    Φ (coefficientReset c (highResponseMarkAtom C q e.2.2).2 (highResponseMarkAtom C q e.2.2).1)
-
-theorem highPacketObservable_finite_action (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (c : ι → ℝ)
-    (G : Z → ℝ → (Fin r → ℝ) → ℝ) (Φ : (ι → ℝ) → ℝ) (ζ : Z) :
-    (∑ h : HighPacketMarkIndex ι m r D q,
-      highPacketMarkWeight a b m r D q C A (ζ, h) * highPacketObservable a b m r D q C c G Φ (ζ, h)) =
-      densityPacketAction a b m r D (fun z ε => G ζ z ε * responseMatrixAction q C (A ζ) c Φ) := by
-  rw [Fintype.sum_prod_type]
-  have he (h : HighDensityMarkIndex m r D) :
-      (∑ v : HighResponseMarkIndex ι q,
-        highPacketMarkWeight a b m r D q C A (ζ, (h, v)) *
-          highPacketObservable a b m r D q C c G Φ (ζ, (h, v))) =
-      densityPacketWeight a b m r D h *
-        (G ζ (densityPacketAtom a b m r D h).1 (densityPacketAtom a b m r D h).2 *
-          responseMatrixAction q C (A ζ) c Φ) := by
-    rw [← highResponseMark_action q C (A ζ) c Φ]
-    simp only [Finset.mul_sum, highPacketMarkWeight, highPacketObservable]
-    apply Finset.sum_congr rfl
-    intro v _
-    ring
-  simp_rw [he]
-  have hi := densityPacketSignedRule_integral a b m r D
-    (fun z ε => G ζ z ε * responseMatrixAction q C (A ζ) c Φ)
-  rw [densityPacketSignedRule, atomicSignedRule_integral] at hi
-  exact hi
-
-/-- The joint signed integral equals the actual iterated Xi action used
-in the local-row theorem. -/
-theorem highPacketSignedMeasure_factor_integral (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
-    (c : ι → ℝ) (G : Z → ℝ → (Fin r → ℝ) → ℝ)
-    (hG : ∀ z ε, Measurable (fun ζ => G ζ z ε)) (L : ℝ) (hL : 0 ≤ L)
-    (hGbound : ∀ (ζ : Z) (h : HighDensityMarkIndex m r D),
-      |G ζ (densityPacketAtom a b m r D h).1 (densityPacketAtom a b m r D h).2| ≤ L)
-    (Φ : (ι → ℝ) → ℝ) (M : ℝ)
-    (hΦ : ∀ h : HighResponseMarkIndex ι q,
-      |Φ (coefficientReset c (highResponseMarkAtom C q h).2 (highResponseMarkAtom C q h).1)| ≤ M) :
-    (∫ᵛ e, highPacketObservable a b m r D q C c G Φ e
-      ∂<•(highPacketSignedMeasure σ a b m r D q C A)) =
-      highSeparatedPacketAction σ a b m r D q C A c G Φ := by
-  have hmF (h : HighPacketMarkIndex ι m r D q) :
-      Measurable (fun ζ => highPacketObservable a b m r D q C c G Φ (ζ, h)) := by
-    change Measurable (fun ζ => G ζ (densityPacketAtom a b m r D h.1).1
-      (densityPacketAtom a b m r D h.1).2 *
-        Φ (coefficientReset c (highResponseMarkAtom C q h.2).2 (highResponseMarkAtom C q h.2).1))
-    exact (hG _ _).mul_const _
-  rw [highPacketSignedMeasure_integral σ a b m r D q C A hA hcost _
-    hmF (L * M)]
-  · simp only [highPacketObservable_finite_action, highSeparatedPacketAction]
-  · intro ζ h
-    rw [highPacketObservable, Real.norm_eq_abs, abs_mul]
-    exact mul_le_mul (hGbound ζ h.1) (hΦ h.2) (abs_nonneg _) hL
-
-theorem highPacketSignedMeasure_variation (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
-    ((highPacketSignedMeasure σ a b m r D q C A).variation univ).toReal =
-      ∫ ζ, ∑ h : HighPacketMarkIndex ι m r D q,
-        |highPacketMarkWeight a b m r D q C A (ζ, h)| ∂σ := by
-  have hw := highPacketMarkWeight_integrable σ a b m r D q C A hA hcost
-  rw [highPacketSignedMeasure, Measure.variation_withDensityᵥ hw,
-    withDensity_apply _ MeasurableSet.univ]
-  simp only [Measure.restrict_univ]
-  rw [← integral_norm_eq_lintegral_enorm hw.aestronglyMeasurable,
-    integral_prod _ hw.norm]
-  simp only [integral_count, Real.norm_eq_abs]
-
-theorem highResponseMark_variation (q : ℕ) (C : ℝ) (A : ι → ι → ℝ) :
+theorem highResponseMark_variation :
     (∑ h : HighResponseMarkIndex ι q, |highResponseMarkWeight C q A h|) =
       (∑ h : Fin (2 * q + 2), |responseWeight q h|) * (2 * C ^ 2 * ∑ i, ∑ j, |A i j|) := by
   simp only [highResponseMarkWeight, Fintype.sum_prod_type, abs_mul]
   simp_rw [← Finset.sum_mul, ← Finset.mul_sum]
   rw [covariance_weight_variation]
 
-theorem highPacketMarkWeight_variation (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (ζ : Z) :
-    (∑ h : HighPacketMarkIndex ι m r D q, |highPacketMarkWeight a b m r D q C A (ζ, h)|) =
-      (∑ h : HighDensityMarkIndex m r D, |densityPacketWeight a b m r D h|) *
-        (∑ h : Fin (2 * q + 2), |responseWeight q h|) * (2 * C ^ 2) * separatedMatrixCost A ζ := by
-  rw [Fintype.sum_prod_type]
-  simp only [highPacketMarkWeight, abs_mul]
-  simp_rw [← Finset.mul_sum, highResponseMark_variation]
-  rw [← Finset.sum_mul]
-  unfold separatedMatrixCost
+end
+
+private theorem sum_prod_mul {I J : Type*} [Fintype I] [Fintype J] (f : I → ℝ) (g : J → ℝ) :
+    (∑ h : I × J, f h.1 * g h.2) = (∑ i, f i) * ∑ j, g j := by
+  rw [Fintype.sum_prod_type, Fintype.sum_mul_sum]
+
+/-! A signed response packet is the tensor product of a finite density rule
+and a matrix-weighted response rule. Both the ordinary and the fine-pair
+packets use the same integration, cost, and cancellation identities. -/
+section ResponsePacket
+variable {I : Type*} [Fintype I] [MeasurableSpace I] [MeasurableSingletonClass I]
+variable (w : I → ℝ) (q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+
+/-- The shared observable on finite density and response marks. -/
+def responsePacketObservable {X : Type*} (atom : I → X) (c : ι → ℝ)
+    (G : Z → X → ℝ) (Φ : (ι → ℝ) → ℝ) (e : Z × (I × HighResponseMarkIndex ι q)) : ℝ :=
+  G e.1 (atom e.2.1) *
+    Φ (coefficientReset c (highResponseMarkAtom C q e.2.2).2 (highResponseMarkAtom C q e.2.2).1)
+
+def responsePacketWeight (e : Z × (I × HighResponseMarkIndex ι q)) : ℝ :=
+  w e.2.1 * highResponseMarkWeight C q (A e.1) e.2.2
+
+section
+variable (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
+include hA
+
+private theorem responsePacketWeight_slice_measurable (h : I × HighResponseMarkIndex ι q) :
+    Measurable (fun ζ => responsePacketWeight w q C A (ζ,h)) := by
+  dsimp [responsePacketWeight, highResponseMarkWeight, covarianceWeight]
+  fun_prop
+
+theorem responsePacketWeight_measurable :
+    Measurable (responsePacketWeight w q C A) :=
+  measurable_from_prod_countable_left (responsePacketWeight_slice_measurable w q C A hA)
+
+end
+
+section
+variable (σ : Measure Z) [IsFiniteMeasure σ]
+    (hA : SeparatedMatrixIntegrable σ A)
+include hA
+
+theorem responsePacketWeight_integrable :
+    Integrable (responsePacketWeight w q C A) (σ.prod Measure.count) := by
+  apply joint_finite_integrable σ _ (responsePacketWeight_slice_measurable w q C A hA.meas)
+  intro ⟨i,h⟩
+  dsimp [responsePacketWeight, highResponseMarkWeight, covarianceWeight]
+  exact (((((hA.entry h.1.1 h.1.2).const_mul
+    (C ^ 2 / 2)).mul_const (fairSign h.2.1.1)).mul_const (fairSign h.2.1.2)).const_mul
+      (responseWeight q h.2.2)).const_mul (w i)
+
+private theorem responsePacket_signed_integral
+    (F : Z × (I × HighResponseMarkIndex ι q) → ℝ)
+    (hF : ∀ h, Measurable (fun ζ => F (ζ,h))) (M : ℝ) (hb : ∀ ζ h, ‖F (ζ,h)‖ ≤ M) :
+    (∫ᵛ e, F e ∂<•((σ.prod Measure.count).withDensityᵥ (responsePacketWeight w q C A))) =
+      ∫ ζ, ∑ h, responsePacketWeight w q C A (ζ,h) * F (ζ,h) ∂σ := by
+  have hmw := responsePacketWeight_measurable w q C A hA.meas
+  have hw := responsePacketWeight_integrable w q C A σ hA
+  have hm := measurable_from_prod_countable_left hF
+  rw [signedDensity_integral _ _ hw hmw F hm M (fun e => hb e.1 e.2),
+    integral_prod _ (hw.mul_bdd hm.aestronglyMeasurable (.of_forall (fun e => hb e.1 e.2)))]
+  simp only [integral_count]
+
+theorem responsePacket_signed_integral_mul
+    (f : Z → I → ℝ) (g : HighResponseMarkIndex ι q → ℝ)
+    (hf : ∀ i, Measurable (fun ζ => f ζ i)) {L : ℝ} (hL : 0 ≤ L)
+    (hb : ∀ ζ i, |f ζ i| ≤ L) :
+    (∫ᵛ e, f e.1 e.2.1 * g e.2.2
+        ∂<•((σ.prod Measure.count).withDensityᵥ (responsePacketWeight w q C A))) =
+      ∫ ζ, (∑ i, w i * f ζ i) * (∑ h, highResponseMarkWeight C q (A ζ) h * g h) ∂σ := by
+  classical
+  let M := ∑ h, |g h|
+  have hg (h) : |g h| ≤ M := Finset.single_le_sum (fun j _ => abs_nonneg (g j)) (Finset.mem_univ h)
+  rw [responsePacket_signed_integral w q C A σ hA _ (fun h => (hf h.1).mul_const (g h.2)) (L*M)
+    (fun ζ h => by
+      simpa using mul_le_mul (hb ζ h.1) (hg h.2) (abs_nonneg _) hL)]
+  simp only [responsePacketWeight, mul_mul_mul_comm (w _)]
+  congr 1
+  funext ζ
+  exact sum_prod_mul (fun i => w i * f ζ i) (fun h => highResponseMarkWeight C q (A ζ) h * g h)
+
+end
+
+/-- Factor a product of density resets before evaluating the response action. -/
+theorem responsePacket_signed_integral_product {X : Type*} [MeasurableSpace X]
+    [MeasurableSingletonClass X] {n : ℕ} (σ : Measure Z) [IsFiniteMeasure σ]
+    (hA : SeparatedMatrixIntegrable σ A) (atom : I → X) (c : ι → ℝ)
+    (f : Z → X → Fin n → ℝ) (hf : ∀ i u, Measurable (fun ζ => f ζ (atom i) u))
+    {b : ℝ} (hb : 0 ≤ b) (hle : ∀ ζ i u, |f ζ (atom i) u| ≤ b) (Φ : (ι → ℝ) → ℝ) :
+    (∫ᵛ e, responsePacketObservable q C atom c (fun ζ x => ∏ u, f ζ x u) Φ e
+      ∂<•((σ.prod Measure.count).withDensityᵥ (responsePacketWeight w q C A))) =
+      ∫ ζ, (∫ᵛ x, ∏ u, f ζ x u ∂<•atomicSignedRule atom w) * responseMatrixAction q C (A ζ) c Φ ∂σ := by
+  refine (responsePacket_signed_integral_mul w q C A σ hA
+    (fun ζ i => ∏ u, f ζ (atom i) u)
+    (fun h => Φ (coefficientReset c (highResponseMarkAtom C q h).2 (highResponseMarkAtom C q h).1))
+    (fun i => Finset.measurable_fun_prod _ fun u _ => hf i u) (pow_nonneg hb n)
+    (fun ζ i => by simpa using abs_prod_le_pow (s := Finset.univ) (fun u _ => hle ζ i u))).trans ?_
+  simp only [atomicSignedRule_integral, highResponseMark_action]
+
+theorem responsePacket_signed_variation (σ : Measure Z) [IsFiniteMeasure σ]
+    (hA : SeparatedMatrixIntegrable σ A) :
+    ((((σ.prod Measure.count).withDensityᵥ (responsePacketWeight w q C A)).variation univ).toReal) =
+      (∑ i, |w i|) * (∑ h : Fin (2*q+2), |responseWeight q h|) * (2*C^2) *
+        ∫ ζ, separatedMatrixCost A ζ ∂σ := by
+  have hw := responsePacketWeight_integrable w q C A σ hA
+  rw [Measure.variation_withDensityᵥ hw, withDensity_apply _ MeasurableSet.univ,
+    Measure.restrict_univ, ← integral_norm_eq_lintegral_enorm hw.aestronglyMeasurable,
+    integral_prod _ hw.norm, ← integral_const_mul]
+  simp only [integral_count, Real.norm_eq_abs, responsePacketWeight, abs_mul]
+  congr 1
+  funext ζ
+  rw [sum_prod_mul (fun i => |w i|) (fun h => |highResponseMarkWeight C q (A ζ) h|),
+    highResponseMark_variation, separatedMatrixCost]
   ring
+
+theorem responsePacketWeight_density_sum_zero (F : I → ℝ) (ζ : Z) :
+    (∑ h : I × HighResponseMarkIndex ι q, responsePacketWeight w q C A (ζ,h) * F h.1) = 0 := by
+  have hz : (∑ h, highResponseMarkWeight C q (A ζ) h) = 0 := by
+    simpa only [mul_one, responseMatrixAction_zero_mass] using
+      highResponseMark_action q C (A ζ) (fun _ => 0) (fun _ => 1)
+  simp only [responsePacketWeight, mul_right_comm (w _)]
+  rw [sum_prod_mul (fun i => w i * F i) (highResponseMarkWeight C q (A ζ)), hz, mul_zero]
+
+theorem responsePacketWeight_integral_zero (σ : Measure Z) [IsFiniteMeasure σ]
+    (hA : SeparatedMatrixIntegrable σ A) :
+    (∫ e, responsePacketWeight w q C A e ∂σ.prod Measure.count) = 0 := by
+  rw [integral_prod _ (responsePacketWeight_integrable w q C A σ hA)]
+  simp only [integral_count]
+  have hz (ζ : Z) := responsePacketWeight_density_sum_zero w q C A (fun _ => 1) ζ
+  simp only [mul_one] at hz
+  simp [hz]
+
+end ResponsePacket
+
+def highPacketMarkWeight (a b : ℝ) (m r D q : ℕ) (C : ℝ)
+    (A : Z → ι → ι → ℝ) (e : Z × HighPacketMarkIndex ι m r D q) : ℝ :=
+  responsePacketWeight (densityPacketWeight a b m r D) q C A e
+
+theorem highPacketMarkWeight_measurable (a b : ℝ) (m r D q : ℕ) (C : ℝ)
+    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) :
+    Measurable (highPacketMarkWeight a b m r D q C A) :=
+  responsePacketWeight_measurable _ q C A hA
+
+theorem highPacketMarkWeight_integrable (σ : Measure Z) [IsFiniteMeasure σ]
+    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+    (hA : SeparatedMatrixIntegrable σ A) :
+    Integrable (highPacketMarkWeight a b m r D q C A) (σ.prod Measure.count) :=
+  responsePacketWeight_integrable _ q C A σ hA
+
+/-- The original joint Xi packet as a genuine signed measure, represented
+on the finite atom indices together with the actual positive sigma mark. -/
+def highPacketSignedMeasure (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
+    (A : Z → ι → ι → ℝ) : SignedMeasure (Z × HighPacketMarkIndex ι m r D q) :=
+  (σ.prod Measure.count).withDensityᵥ (highPacketMarkWeight a b m r D q C A)
+
+def highPacketObservable (a b : ℝ) (m r D q : ℕ) (C : ℝ) (c : ι → ℝ)
+    (G : Z → ℝ → (Fin r → ℝ) → ℝ) (Φ : (ι → ℝ) → ℝ)
+    (e : Z × HighPacketMarkIndex ι m r D q) : ℝ :=
+  responsePacketObservable q C (densityPacketAtom a b m r D) c (fun ζ x => G ζ x.1 x.2) Φ e
+
+/-- The signed action of a separated packet on a product of density resets. -/
+def highPacketFirstAction {n : ℕ} (σ : Measure Z) (a b : ℝ) (m r D q : ℕ)
+    (C : ℝ) (A : Z → ι → ι → ℝ) (c : ι → ℝ) (p : Fin n → ℝ)
+    (B : Z → Fin n → Fin r → ℝ) (Φ : (ι → ℝ) → ℝ) : ℝ :=
+  ∫ᵛ e, highPacketObservable a b m r D q C c
+    (fun ζ z ε => ∏ i, localDensityReset a b r z ε p (B ζ) i) Φ e
+    ∂<•highPacketSignedMeasure σ a b m r D q C A
+
+/-- Factor a product of density resets before evaluating the response action. -/
+theorem highPacketSignedMeasure_product_integral {n : ℕ} (σ : Measure Z) [IsFiniteMeasure σ]
+    (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r)
+    (C : ℝ) (A : Z → ι → ι → ℝ) (hA : SeparatedMatrixIntegrable σ A)
+    (c : ι → ℝ) (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc a b)
+    (B : Z → Fin n → Fin r → ℝ) (hBm : ∀ i l, Measurable (fun ζ => B ζ i l))
+    (hB : ∀ ζ i l, |B ζ i l| ≤ 1) (Φ : (ι → ℝ) → ℝ) :
+    highPacketFirstAction σ a b m r D q C A c p B Φ =
+      highSeparatedPacketAction σ a b m r D q C A c
+        (fun ζ z ε => ∏ i, localDensityReset a b r z ε p (B ζ) i) Φ := by
+  unfold highPacketFirstAction
+  have h := responsePacket_signed_integral_product (densityPacketWeight a b m r D) q C A σ hA
+    (densityPacketAtom a b m r D) c (fun ζ x i => localDensityReset a b r x.1 x.2 p (B ζ) i)
+    (fun h i => measurable_const.add ((Finset.measurable_fun_sum _ fun l _ =>
+      (hBm i l).const_mul ((densityPacketAtom a b m r D h).2 l)).const_mul _))
+    (ha.trans hab).le (fun ζ h i => densityPacketReset_abs_le a b ha hab m r D hr h p _ i (hp i) (hB ζ i)) Φ
+  refine h.trans ?_
+  change (∫ ζ, (∫ᵛ e, ∏ i, localDensityReset a b r e.1 e.2 p (B ζ) i ∂<•densityPacketSignedRule a b m r D) *
+      responseMatrixAction q C (A ζ) c Φ ∂σ) = _
+  unfold highSeparatedPacketAction
+  congr 1
+  funext ζ
+  rw [densityPacketSignedRule_integral a b m r D (fun z eps => ∏ i, localDensityReset a b r z eps p (B ζ) i)]
+
+section
+variable {n : ℕ} (σ : Measure Z) [IsFiniteMeasure σ]
+    (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hnD : n ≤ D)
+    (C : ℝ) (A : Z → ι → ι → ℝ) (hA : SeparatedMatrixIntegrable σ A)
+    (c : ι → ℝ) (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc a b)
+include ha hab hr hD hnD hA hp
+
+theorem highPacketFirstAction_count_expansion
+    (B : Z → Fin n → Fin r → ℝ) (hm : ∀ i l, Measurable (fun ζ => B ζ i l))
+    (hb : ∀ ζ i l, |B ζ i l| ≤ 1) (Φ : (ι → ℝ) → ℝ) :
+    highPacketFirstAction σ a b m r D q C A c p B Φ =
+      densityCountCoefficient a b m r n *
+        ∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard r, (∏ i ∈ S, p i) *
+          responseMatrixAction q C (separatedSubsetMatrix σ r B A S) c Φ := by
+  rw [highPacketSignedMeasure_product_integral σ a b ha hab m r D q hr C A hA c p hp B hm hb Φ]
+  simpa using highSeparatedPacketAction_row σ a b ha hab m r D q hr hD Finset.univ
+    (by simpa using hnD) p B hm hb C A hA c Φ
+
+/-- Columns that agree drop out of the permutation average, for every target count. -/
+theorem highPacketFirstAction_identical_columns (hnm : n ≤ m)
+    (ψ : Z → Fin n → ℝ) (hm : ∀ i, Measurable (fun ζ => ψ ζ i))
+    (hb : ∀ ζ i, |ψ ζ i| ≤ 1) (Φ : (ι → ℝ) → ℝ) :
+    highPacketFirstAction σ a b m r D q C A c p (fun ζ i _ => ψ ζ i) Φ =
+      if n = r then
+        (∏ i, p i) * ∫ ζ, (∏ i, ψ ζ i) * responseMatrixAction q C (A ζ) c Φ ∂σ else 0 := by
+  classical
+  rw [highPacketSignedMeasure_product_integral σ a b ha hab m r D q hr C A hA c p hp _
+    (fun i _ => hm i) (fun ζ i _ => hb ζ i) Φ]
+  unfold highSeparatedPacketAction
+  simp_rw [density_packet_product_count_selector (Finset.univ : Finset (Fin n)) a b ha hab m r D hr hD
+    (by simpa using hnD) (by simpa using hnm), Finset.card_univ, Fintype.card_fin]
+  split_ifs with h
+  · subst r
+    have hs : (Finset.univ : Finset (Fin n)).powersetCard n = {Finset.univ} := by
+      simpa using Finset.powersetCard_self (Finset.univ : Finset (Fin n))
+    have hc (ζ : Z) : densitySeparatedSym n (fun i _ => ψ ζ i) Finset.univ = ∏ i, ψ ζ i := by
+      rw [densitySeparatedSym_eq_permutation_average _ _ _ (Equiv.subtypeUnivEquiv (fun i : Fin n => Finset.mem_univ i)).symm]
+      simp [Fintype.card_perm, Finset.sum_const, mul_div_cancel_left₀,
+        show (n.factorial : ℝ) ≠ 0 by positivity]
+    simp only [hs, Finset.sum_singleton, hc, mul_assoc, integral_const_mul]
+  · simp []
+
+end
+
+section
+variable (σ : Measure Z) [IsFiniteMeasure σ]
+    (a b : ℝ)
 
 /-- Exact raw-atom variation of Xi: the density packet cost, fixed scalar
 response cost and signed covariance cost multiply the actual representation cost. -/
-theorem highPacketSignedMeasure_totalVariation (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
+theorem highPacketSignedMeasure_totalVariation (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+    (hA : SeparatedMatrixIntegrable σ A) :
     ((highPacketSignedMeasure σ a b m r D q C A).variation univ).toReal =
       (∑ h : HighDensityMarkIndex m r D, |densityPacketWeight a b m r D h|) *
         (∑ h : Fin (2 * q + 2), |responseWeight q h|) * (2 * C ^ 2) *
-          ∫ ζ, separatedMatrixCost A ζ ∂σ := by
-  rw [highPacketSignedMeasure_variation σ a b m r D q C A hA hcost]
-  simp only [highPacketMarkWeight_variation]
-  rw [integral_const_mul]
+          ∫ ζ, separatedMatrixCost A ζ ∂σ :=
+  responsePacket_signed_variation _ q C A σ hA
 
-theorem densityPacketAtom_injective (a b : ℝ) (hab : a < b)
-    (m r D : ℕ) (hr : 1 ≤ r) : Function.Injective (densityPacketAtom a b m r D) := by
-  intro e f he
-  apply Prod.ext
-  · exact (exteriorNode_strictAnti a b hab (m + r) (by omega)).injective (congrArg Prod.fst he)
-  · funext l
-    exact (lobattoNode_strictAnti (derivativeOrder D) (by unfold derivativeOrder; omega)).injective
-      (congrArg (fun e : ℝ × (Fin r → ℝ) => e.2 l) he)
-
-theorem densityPacketWeight_exponential_cost (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (m r D : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) :
-    (∑ h : HighDensityMarkIndex m r D, |densityPacketWeight a b m r D h|) ≤
-      (Real.exp (1 + exteriorTau ((a + b) / (b - a))) * |b / densityMargin a b 0|) ^ r *
-        (D : ℝ) ^ r * Real.exp ((m : ℝ) * exteriorTau ((a + b) / (b - a))) := by
-  have he := atomicSignedRule_totalVariation_eq (densityPacketAtom a b m r D)
-    (densityPacketWeight a b m r D) (densityPacketAtom_injective a b hab m r D hr)
-  rw [← he]
-  exact densityPacketSignedRule_exponential_cost a b ha hab m r D hr hD
-
-theorem highPacketSignedMeasure_exponential_cost (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D)
-    (C : ℝ) (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-    (hcost : Integrable (separatedMatrixCost A) σ) :
+theorem highPacketSignedMeasure_exponential_cost (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D)
+    (C : ℝ) (A : Z → ι → ι → ℝ) (hA : SeparatedMatrixIntegrable σ A) :
     ((highPacketSignedMeasure σ a b m r D q C A).variation univ).toReal ≤
       ((Real.exp (1 + exteriorTau ((a + b) / (b - a))) * |b / densityMargin a b 0|) ^ r *
         (D : ℝ) ^ r * Real.exp ((m : ℝ) * exteriorTau ((a + b) / (b - a)))) *
           (∑ h : Fin (2 * q + 2), |responseWeight q h|) * (2 * C ^ 2) *
             ∫ ζ, separatedMatrixCost A ζ ∂σ := by
-  rw [highPacketSignedMeasure_totalVariation σ a b m r D q C A hA hcost]
-  apply mul_le_mul_of_nonneg_right
-  · apply mul_le_mul_of_nonneg_right
-    · exact mul_le_mul_of_nonneg_right (densityPacketWeight_exponential_cost a b ha hab m r D hr hD)
-        (Finset.sum_nonneg (fun _ _ => abs_nonneg _))
-    · positivity
-  · apply integral_nonneg
-    intro ζ
-    exact Finset.sum_nonneg (fun i _ => Finset.sum_nonneg (fun j _ => abs_nonneg (A ζ i j)))
+  rw [highPacketSignedMeasure_totalVariation σ a b m r D q C A hA]
+  have h := densityPacketWeight_exponential_cost a b ha hab m r D hr hD
+  gcongr
+  exact integral_nonneg fun ζ => Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => abs_nonneg _
 
-theorem highPacketSignedMeasure_zero_mass (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
-    highPacketSignedMeasure σ a b m r D q C A univ = 0 := by
-  have hw := highPacketMarkWeight_integrable σ a b m r D q C A hA hcost
-  rw [highPacketSignedMeasure, withDensityᵥ_apply hw MeasurableSet.univ, Measure.restrict_univ,
-    integral_prod _ hw]
-  simp only [integral_count]
-  have hz (ζ : Z) : (∑ h : HighPacketMarkIndex ι m r D q,
-      highPacketMarkWeight a b m r D q C A (ζ, h)) = 0 := by
-    have h := highPacketObservable_finite_action a b m r D q C A (fun _ => 0)
-      (fun _ _ _ => 1) (fun _ => 1) ζ
-    simpa only [highPacketObservable, mul_one, mul_zero, responseMatrixAction_zero_mass,
-      densityPacketAction_zero] using h
-  simp only [hz, integral_zero]
-
-variable {α : Type*} [DecidableEq α]
+end
 
 end Packet
 

@@ -23,11 +23,18 @@ def anchoredPreconditionedMoment {d ℓ : ℕ} (u : Covariate d)
     (p g : Covariate d → ℝ) : AnchoredIndex d ℓ → ℝ :=
   (anchoredGram u)⁻¹ *ᵥ anchoredVectorMoment u p g
 
-theorem anchoredVectorMoment_coordinate_bound {d ℓ : ℕ} (u : Covariate d)
+section
+variable {d ℓ : ℕ}
+
+section
+variable (u : Covariate d)
     (hu : u ∈ unitCube d) (p g : Covariate d → ℝ) (b F : ℝ)
     (hb : 0 ≤ b) (hF : 0 ≤ F)
     (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b)
-    (hg : ∀ w ∈ unitCube d, |g w| ≤ F) (γ : AnchoredIndex d ℓ) :
+    (hg : ∀ w ∈ unitCube d, |g w| ≤ F)
+include hu hb hF hp hg
+
+theorem anchoredVectorMoment_coordinate_bound (γ : AnchoredIndex d ℓ) :
     |anchoredVectorMoment u p g γ| ≤ b * F := by
   let := cubeVolume_isProbability d
   have hbound : ∀ᵐ w ∂cubeVolume d,
@@ -45,30 +52,28 @@ theorem anchoredVectorMoment_coordinate_bound {d ℓ : ℕ} (u : Covariate d)
   simpa only [Real.norm_eq_abs, measureReal_def, measure_univ, ENNReal.toReal_one, mul_one, anchoredVectorMoment]
     using norm_integral_le_of_norm_le_const hbound
 
-theorem anchoredVectorMoment_norm_bound {d ℓ : ℕ} (u : Covariate d)
-    (hu : u ∈ unitCube d) (p g : Covariate d → ℝ) (b F : ℝ)
-    (hb : 0 ≤ b) (hF : 0 ≤ F)
-    (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b)
-    (hg : ∀ w ∈ unitCube d, |g w| ≤ F) :
+theorem anchoredVectorMoment_norm_bound :
     ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm (anchoredVectorMoment u p g)‖ ≤
       Real.sqrt (Fintype.card (AnchoredIndex d ℓ) : ℝ) * (b * F) := by
   let v := (EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm (anchoredVectorMoment u p g)
   change ‖v‖ ≤ _
   rw [EuclideanSpace.norm_eq, Real.sqrt_le_iff]
   constructor
-  · exact mul_nonneg (Real.sqrt_nonneg _) (mul_nonneg hb hF)
+  · apply mul_nonneg <;> positivity
   · calc
       (∑ γ : AnchoredIndex d ℓ, ‖v γ‖ ^ 2) ≤ ∑ _γ : AnchoredIndex d ℓ, (b * F) ^ 2 := by
         apply Finset.sum_le_sum
         intro γ hγ
         apply pow_le_pow_left₀ (norm_nonneg _) _ 2
-        exact anchoredVectorMoment_coordinate_bound u hu p g b F hb hF hp hg γ
+        apply anchoredVectorMoment_coordinate_bound <;> assumption
       _ = (Fintype.card (AnchoredIndex d ℓ) : ℝ) * (b * F) ^ 2 := by simp
       _ = (Real.sqrt (Fintype.card (AnchoredIndex d ℓ) : ℝ) * (b * F)) ^ 2 := by
         simp only [mul_pow, Real.sq_sqrt (Nat.cast_nonneg _)]
 
+end
+
 /-- The actual known-Gram inverse has a fixed finite bound on all cube anchors. -/
-theorem anchoredGram_inverse_uniform_bound {d ℓ : ℕ} :
+theorem anchoredGram_inverse_uniform_bound :
     ∃ N : ℝ, 0 < N ∧ ∀ u ∈ unitCube d, ‖(anchoredGram (ℓ := ℓ) u)⁻¹‖ ≤ N := by
   have hc : Continuous (fun u : Covariate d => (anchoredGram (ℓ := ℓ) u)⁻¹) := by
     have heq : (fun u : Covariate d => (anchoredGram (ℓ := ℓ) u)⁻¹) =
@@ -82,7 +87,7 @@ theorem anchoredGram_inverse_uniform_bound {d ℓ : ℕ} :
   exact (hM (mem_image_of_mem _ hu)).trans (le_max_right _ _)
 
 /-- A uniform scalar bound for every actual preconditioned vector family. -/
-theorem anchoredPreconditionedMoment_uniform_bound {d ℓ : ℕ}
+theorem anchoredPreconditionedMoment_uniform_bound
     (b F : ℝ) (hb : 0 ≤ b) (hF : 0 ≤ F) :
     ∃ W : ℝ, 0 < W ∧ ∀ u ∈ unitCube d, ∀ p g : Covariate d → ℝ,
       (∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b) →
@@ -100,8 +105,10 @@ theorem anchoredPreconditionedMoment_uniform_bound {d ℓ : ℕ}
     apply hA.trans
     apply (mul_le_mul (hNu u hu) hM (norm_nonneg _) hN.le).trans
     exact le_max_right _ _
-  apply (pi_norm_le_iff_of_nonneg (by dsimp [W]; positivity)).mpr
+  apply (pi_norm_le_iff_of_nonneg (by positivity)).mpr
   intro γ
   exact (PiLp.norm_apply_le _ γ).trans hpre
+
+end
 
 end NearlyMinimax

@@ -28,7 +28,6 @@ theorem finePairTimeMatrix_cost_integral {ι : Type*} [Fintype ι]
     (d : ℕ) [NeZero d] (lo hi : ℝ) (hlo : 0 ≤ lo) (horder : lo ≤ hi) (A : ι → ι → ℝ) :
     (∫ e, separatedMatrixCost (finePairTimeMatrix d A) e ∂finePairTimeFieldMeasure d lo hi) =
       (∑ i, ∑ j, |A i j|) * ((hi ^ 2 - lo ^ 2) / 2) := by
-  simp_rw [finePairTimeMatrix_cost]
-  rw [integral_mul_const, finePairTimeFieldMeasure_abs_time_integral d lo hi hlo horder, mul_comm]
+  norm_num [finePairTimeMatrix_cost, integral_mul_const, finePairTimeFieldMeasure_abs_time_integral d lo hi hlo horder, mul_comm]
 
 end NearlyMinimax

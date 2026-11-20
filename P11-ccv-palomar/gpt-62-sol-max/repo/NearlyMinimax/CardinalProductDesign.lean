@@ -2,6 +2,7 @@ module
 
 public import NearlyMinimax.CardinalBandL2
 public import NearlyMinimax.CardinalIntegratedContinuity
+public import NearlyMinimax.ExponentialSpatialKernels
 
 
 @[expose] public section
@@ -21,14 +22,12 @@ def cardinalHeadSplit {d n : ℕ} (i : Fin n) :
   left_inv U := by
     funext j
     change (if h : j ≠ i then U j else U i) = U j
-    split_ifs with h
-    · rfl
-    · exact congrArg U (not_ne_iff.mp h).symm
+    simp_all
   right_inv z := by
     apply Prod.ext
-    · exact anchored_configuration_same i z.1 z.2
+    · apply anchored_configuration_same <;> assumption
     · funext j
-      exact anchored_configuration_other i z.1 z.2 j
+      apply anchored_configuration_other <;> assumption
   measurable_toFun := (measurable_pi_apply i).prodMk
     (Measurable.of_eval (fun j => measurable_pi_apply j.val))
   measurable_invFun := by
@@ -62,12 +61,33 @@ instance fullSpatialPatchDesign_finite (d n : ℕ) : IsFiniteMeasure (fullSpatia
   unfold fullSpatialPatchDesign
   infer_instance
 
-theorem fullSpatialPatchDesign_split {d n : ℕ} (i : Fin n)
-    (f : (Fin n → Covariate d) → ℝ) :
-    (∫ U, f U ∂fullSpatialPatchDesign d n) =
-      ∫ z : Covariate d × (SpatialScaleIndex i → Covariate d),
-        f (anchoredPatchConfiguration i z.1 z.2)
-        ∂(volume.restrict (spatialPatchBox d)).prod (spatialPatchDesignMeasure i d) := by
-  exact (((cardinalHeadSplit_measurePreserving i (volume.restrict (spatialPatchBox d))).symm).integral_comp' f).symm
+/-- A uniform anchored integral bound extends to the full product design. -/
+theorem fullSpatialPatchDesign_fiber_integral_le {d n : ℕ} (i : Fin n)
+    {f : (Fin n → Covariate d) → ℝ} {B : ℝ}
+    (hf : Integrable (fun z => f (anchoredPatchConfiguration i z.1 z.2))
+      ((volume.restrict (spatialPatchBox d)).prod (spatialPatchDesignMeasure i d)))
+    (hB : ∀ x ∈ spatialPatchBox d,
+      (∫ y, f (anchoredPatchConfiguration i x y) ∂spatialPatchDesignMeasure i d) ≤ B) :
+    (∫ U, f U ∂fullSpatialPatchDesign d n) ≤ (2 : ℝ)^d * B := by
+  calc
+    _ = ∫ z, f (anchoredPatchConfiguration i z.1 z.2)
+        ∂(volume.restrict (spatialPatchBox d)).prod (spatialPatchDesignMeasure i d) :=
+      (((cardinalHeadSplit_measurePreserving i (volume.restrict (spatialPatchBox d))).symm).integral_comp' f).symm
+    _ ≤ _ := by
+      rw [integral_prod _ hf]
+      refine (integral_mono_ae hf.integral_prod_left (integrable_const B)
+        ((ae_restrict_mem measurableSet_Icc).mono hB)).trans_eq ?_
+      rw [integral_const, measureReal_restrict_apply_univ, smul_eq_mul]
+      exact congrArg (· * B) (spatialPatchBox_real_volume d)
+
+/-- Transfer the moments of a pair kernel to the actual two-coordinate design. -/
+theorem fullSpatialPatchDesign_pair_moments {d : ℕ} {f : CovariatePair d → ℝ} {B : ℝ}
+    (hf : Integrable f ((volume.restrict (spatialPatchBox d)).prod (volume.restrict (spatialPatchBox d))))
+    (h : (∫ z, f z ∂(volume.restrict (spatialPatchBox d)).prod (volume.restrict (spatialPatchBox d))) ≤ B) :
+    Integrable (fun U : Fin 2 → Covariate d => f (U 0, U 1)) (fullSpatialPatchDesign d 2) ∧
+    (∫ U : Fin 2 → Covariate d, f (U 0, U 1) ∂fullSpatialPatchDesign d 2) ≤ B := by
+  have hp := measurePreserving_finTwoArrow (volume.restrict (spatialPatchBox d))
+  exact ⟨hp.integrable_comp_of_integrable hf,
+    (hp.integral_comp MeasurableEquiv.finTwoArrow.measurableEmbedding f).trans_le h⟩
 
 end NearlyMinimax

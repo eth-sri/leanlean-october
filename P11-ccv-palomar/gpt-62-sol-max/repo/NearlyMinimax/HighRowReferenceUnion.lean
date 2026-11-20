@@ -1,6 +1,7 @@
 module
 
 public import NearlyMinimax.HighPacketBalancing
+public import NearlyMinimax.FiniteSigmaProbability
 
 @[expose] public section
 
@@ -19,80 +20,78 @@ attribute [local instance] Classical.propDecidable
 section
 variable {J : Type*} [Fintype J] {E : J → Type*} [∀ j, MeasurableSpace (E j)]
 
-theorem rowSigmaMk_measurable (j : J) : Measurable (@Sigma.mk J E j) := by
-  apply Measurable.of_le_map
-  exact iInf_le _ j
-
 theorem rowSigmaFunction_measurable (F : (j : J) → E j → ℝ)
-    (hF : ∀ j, Measurable (F j)) : Measurable (fun e : Sigma E => F e.1 e.2) := by
-  intro s hs
-  change MeasurableSet[⨅ j, MeasurableSpace.map (Sigma.mk j)
-    (inferInstance : MeasurableSpace (E j))] ((fun e : Sigma E => F e.1 e.2) ⁻¹' s)
-  rw [MeasurableSpace.measurableSet_iInf]
-  exact fun j => hF j hs
+    (hF : ∀ j, Measurable (F j)) : Measurable (fun e : Sigma E => F e.1 e.2) :=
+  measurable_sigma_of_fibers _ hF
 
-theorem highRowReferenceUnion_standardBorel [∀ j, StandardBorelSpace (E j)] :
-    StandardBorelSpace (Sigma E) := by
-  letI := fun j => upgradeStandardBorel (E j)
-  letI : BorelSpace (Sigma E) := historySigma_borelSpace
-  infer_instance
 
 def highRowTotalMass (B : J → ℝ) : ℝ := ∑ j, B j
 
 def highRowSelectionProbability (B : J → ℝ) (j : J) : ℝ := B j / highRowTotalMass B
 
-theorem highRowSelectionProbability_nonneg (B : J → ℝ) (hB : ∀ j, 0 ≤ B j) (j : J) :
+section
+variable (B : J → ℝ)
+
+theorem highRowSelectionProbability_nonneg (hB : ∀ j, 0 ≤ B j) (j : J) :
     0 ≤ highRowSelectionProbability B j :=
   div_nonneg (hB j) (Finset.sum_nonneg (fun j _ => hB j))
 
-theorem highRowSelectionProbability_pos (B : J → ℝ) (hB : ∀ j, 0 < B j)
+theorem highRowSelectionProbability_pos (hB : ∀ j, 0 < B j)
     (hTotal : 0 < highRowTotalMass B) (j : J) : 0 < highRowSelectionProbability B j :=
-  div_pos (hB j) hTotal
+  by solve_by_elim [div_pos]
 
-theorem highRowSelectionProbability_sum (B : J → ℝ) (hTotal : highRowTotalMass B ≠ 0) :
+theorem highRowSelectionProbability_sum (hTotal : highRowTotalMass B ≠ 0) :
     (∑ j, highRowSelectionProbability B j) = 1 := by
   unfold highRowSelectionProbability
   rw [← Finset.sum_div]
   exact div_self hTotal
 
+end
+
 /-- The actual positive reference law on the finite tagged mark union. -/
 def highRowReferenceUnion (π : (j : J) → Measure (E j)) (B : J → ℝ) : Measure (Sigma E) :=
-  ∑ j, ENNReal.ofReal (highRowSelectionProbability B j) • (π j).map (Sigma.mk j)
+  ∑ j, (ENNReal.ofReal (highRowSelectionProbability B j) • π j).map (Sigma.mk j)
 
-theorem highRowReferenceUnion_probability (π : (j : J) → Measure (E j))
+section
+variable (π : (j : J) → Measure (E j))
+
+theorem highRowReferenceUnion_probability
     [∀ j, IsProbabilityMeasure (π j)] (B : J → ℝ) (hB : ∀ j, 0 ≤ B j)
     (hTotal : 0 < highRowTotalMass B) : IsProbabilityMeasure (highRowReferenceUnion π B) := by
   constructor
   rw [highRowReferenceUnion, Measure.finsetSum_apply]
-  simp only [Measure.smul_apply, Measure.map_apply (rowSigmaMk_measurable _) MeasurableSet.univ,
-    preimage_univ, measure_univ, smul_eq_mul, mul_one]
-  rw [← ENNReal.ofReal_sum_of_nonneg (fun j _ => highRowSelectionProbability_nonneg B hB j),
-    highRowSelectionProbability_sum B hTotal.ne']
-  norm_num
+  simp_rw [Measure.map_smul _ (measurable_sigma_mk_actual _).aemeasurable]
+  simp_all [← ENNReal.ofReal_sum_of_nonneg (fun j _ => highRowSelectionProbability_nonneg B hB j), highRowSelectionProbability_sum B hTotal.ne']
 
-theorem highRowReferenceUnion_integrable (π : (j : J) → Measure (E j)) (B : J → ℝ)
+section
+variable (B : J → ℝ)
+
+private theorem highRowReferenceUnion_moments (B : J → ℝ)
     (F : Sigma E → ℝ) (hF : Measurable F)
     (hInt : ∀ j, Integrable (fun e => F ⟨j, e⟩) (π j)) :
-    Integrable F (highRowReferenceUnion π B) := by
-  apply integrable_finsetSum_measure.mpr
-  intro j _
-  have h := (integrable_map_measure hF.aestronglyMeasurable (rowSigmaMk_measurable j).aemeasurable).mpr
-    (hInt j)
-  exact h.smul_measure ENNReal.ofReal_ne_top
+    Integrable F (highRowReferenceUnion π B) ∧
+    (∫ e, F e ∂highRowReferenceUnion π B) =
+      ∑ j, ∫ e, F ⟨j, e⟩ ∂(ENNReal.ofReal (highRowSelectionProbability B j) • π j) :=
+  finite_map_mixture_moments Sigma.mk measurable_sigma_mk_actual
+    (fun j => ENNReal.ofReal (highRowSelectionProbability B j) • π j) hF
+    (fun j => (hInt j).smul_measure ENNReal.ofReal_ne_top)
 
-theorem highRowReferenceUnion_integral (π : (j : J) → Measure (E j)) (B : J → ℝ)
+theorem highRowReferenceUnion_integrable
+    (F : Sigma E → ℝ) (hF : Measurable F)
+    (hInt : ∀ j, Integrable (fun e => F ⟨j, e⟩) (π j)) :
+    Integrable F (highRowReferenceUnion π B) := (highRowReferenceUnion_moments π B F hF hInt).1
+
+theorem highRowReferenceUnion_integral
     (hB : ∀ j, 0 ≤ B j) (F : Sigma E → ℝ) (hF : Measurable F)
     (hInt : ∀ j, Integrable (fun e => F ⟨j, e⟩) (π j)) :
     (∫ e, F e ∂highRowReferenceUnion π B) =
       ∑ j, highRowSelectionProbability B j * ∫ e, F ⟨j, e⟩ ∂π j := by
-  unfold highRowReferenceUnion
-  rw [integral_finsetSum_measure (fun j _ =>
-    ((integrable_map_measure hF.aestronglyMeasurable (rowSigmaMk_measurable j).aemeasurable).mpr
-      (hInt j)).smul_measure ENNReal.ofReal_ne_top)]
-  apply Finset.sum_congr rfl
-  intro j _
-  rw [integral_smul_measure, integral_map (rowSigmaMk_measurable j).aemeasurable hF.aestronglyMeasurable,
-    ENNReal.toReal_ofReal (highRowSelectionProbability_nonneg B hB j), smul_eq_mul]
+  simpa only [integral_smul_measure, ENNReal.toReal_ofReal (highRowSelectionProbability_nonneg B hB _),
+    smul_eq_mul] using (highRowReferenceUnion_moments π B F hF hInt).2
+
+end
+
+end
 
 def highRowUnionActivation (B : J → ℝ) (w : (j : J) → E j → ℝ) (e : Sigma E) : ℝ :=
   w e.1 e.2 / highRowSelectionProbability B e.1
@@ -101,8 +100,11 @@ theorem highRowUnionActivation_measurable (B : J → ℝ) (w : (j : J) → E j �
     (hw : ∀ j, Measurable (w j)) : Measurable (highRowUnionActivation B w) :=
   rowSigmaFunction_measurable _ (fun j => (hw j).div_const _)
 
-theorem highRowUnionActivation_integrable (π : (j : J) → Measure (E j))
-    (B : J → ℝ) (w : (j : J) → E j → ℝ) (hw : ∀ j, Measurable (w j))
+section
+variable (π : (j : J) → Measure (E j))
+    (B : J → ℝ)
+
+theorem highRowUnionActivation_integrable (w : (j : J) → E j → ℝ) (hw : ∀ j, Measurable (w j))
     (hInt : ∀ j, Integrable (w j) (π j)) :
     Integrable (highRowUnionActivation B w) (highRowReferenceUnion π B) :=
   highRowReferenceUnion_integrable π B _ (highRowUnionActivation_measurable B w hw)
@@ -110,8 +112,7 @@ theorem highRowUnionActivation_integrable (π : (j : J) → Measure (E j))
       (hInt j).div_const (highRowSelectionProbability B j))
 
 /-- Every row is genuinely centered; hence so is the combined activation. -/
-theorem highRowUnionActivation_centered (π : (j : J) → Measure (E j))
-    (B : J → ℝ) (hB : ∀ j, 0 ≤ B j) (w : (j : J) → E j → ℝ)
+theorem highRowUnionActivation_centered (hB : ∀ j, 0 ≤ B j) (w : (j : J) → E j → ℝ)
     (hw : ∀ j, Measurable (w j)) (hInt : ∀ j, Integrable (w j) (π j))
     (hCenter : ∀ j, (∫ e, w j e ∂π j) = 0) :
     (∫ e, highRowUnionActivation B w e ∂highRowReferenceUnion π B) = 0 := by
@@ -119,6 +120,8 @@ theorem highRowUnionActivation_centered (π : (j : J) → Measure (E j))
     (fun j => by simpa only [highRowUnionActivation] using
       (hInt j).div_const (highRowSelectionProbability B j))]
   simp only [highRowUnionActivation, integral_div, hCenter, zero_div, mul_zero, Finset.sum_const_zero]
+
+end
 
 /-- The exact source activation budget is retained by the finite mixture. -/
 theorem highRowUnionActivation_bound (B : J → ℝ) (hB : ∀ j, 0 < B j)
@@ -132,13 +135,15 @@ theorem highRowUnionActivation_bound (B : J → ℝ) (hB : ∀ j, 0 < B j)
   have he : highRowTotalMass B / δ * highRowSelectionProbability B e.1 = B e.1 / δ := by
     unfold highRowSelectionProbability
     field_simp
-  rw [he]
-  exact hw e.1 e.2
+  grind
+
+section
+variable (π : (j : J) → Measure (E j))
+    (B : J → ℝ)
 
 /-- The signed action of all row tags is exactly the sum of their genuine
 row actions; the mixture weights cancel and no signed action premise is used. -/
-theorem highRowUnionActivation_action (π : (j : J) → Measure (E j))
-    (B : J → ℝ) (hB : ∀ j, 0 < B j) (hTotal : 0 < highRowTotalMass B)
+theorem highRowUnionActivation_action (hB : ∀ j, 0 < B j) (hTotal : 0 < highRowTotalMass B)
     (w : (j : J) → E j → ℝ) (hw : ∀ j, Measurable (w j))
     (F : Sigma E → ℝ) (hF : Measurable F)
     (hInt : ∀ j, Integrable (fun e => w j e * F ⟨j, e⟩) (π j)) :
@@ -152,21 +157,20 @@ theorem highRowUnionActivation_action (π : (j : J) → Measure (E j))
   rw [highRowReferenceUnion_integral π B (fun j => (hB j).le)
     (fun e => highRowUnionActivation B w e * F e)
     ((highRowUnionActivation_measurable B w hw).mul hF)
-    (fun j => by rw [he j]; exact (hInt j).div_const _)]
+    (fun j => by simp [he j] <;> fun_prop)]
   apply Finset.sum_congr rfl
   intro j _
   rw [he j, integral_div]
   exact mul_div_cancel₀ _ (highRowSelectionProbability_pos B hB hTotal j).ne'
 
-theorem highRowReferenceUnion_integral_common_mean (π : (j : J) → Measure (E j))
-    (B : J → ℝ) (hB : ∀ j, 0 ≤ B j) (hTotal : 0 < highRowTotalMass B)
+theorem highRowReferenceUnion_integral_common_mean (hB : ∀ j, 0 ≤ B j) (hTotal : 0 < highRowTotalMass B)
     (F : (j : J) → E j → ℝ) (hF : ∀ j, Measurable (F j))
     (hInt : ∀ j, Integrable (F j) (π j)) (m : ℝ)
     (hMean : ∀ j, (∫ e, F j e ∂π j) = m) :
     (∫ e : Sigma E, F e.1 e.2 ∂highRowReferenceUnion π B) = m := by
-  rw [highRowReferenceUnion_integral π B hB _ (rowSigmaFunction_measurable F hF) hInt]
-  simp only [hMean]
-  rw [← Finset.sum_mul, highRowSelectionProbability_sum B hTotal.ne', one_mul]
+  simp_all [highRowReferenceUnion_integral π B hB _ (rowSigmaFunction_measurable F hF) hInt, ← Finset.sum_mul, highRowSelectionProbability_sum B hTotal.ne', one_mul]
+
+end
 
 end
 end NearlyMinimax

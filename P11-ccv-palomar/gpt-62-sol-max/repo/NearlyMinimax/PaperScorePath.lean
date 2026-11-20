@@ -16,9 +16,9 @@ set_option backward.isDefEq.respectTransparency false
 
 theorem paper_score_to_risk {Α : Type*} [MeasurableSpace Α] {d n : ℕ}
     (C : ModelConstants d) (σ : ℝ → Measure Α)
-    (L : ℝ → Kernel Α (Fin n → Observation d))
+    (L : ℝ → Kernel Α (ObservedSample d n))
     (θ : ℝ → Α → RegressionParameter d) (V : ℝ → ℝ)
-    (R : ℝ → (Fin n → Observation d) → ℝ) (δ ε : ℝ) (hδ : 0 ≤ δ)
+    (R : ℝ → ObservedSample d n → ℝ) (δ ε : ℝ) (hδ : 0 ≤ δ)
     (hσ : ∀ t ∈ Icc 0 δ, IsProbabilityMeasure (σ t))
     (hLprob : ∀ t ∈ Icc 0 δ, IsMarkovKernel (L t))
     (hL : ∀ t ∈ Icc 0 δ, ∀ a, L t a = sampleLaw (θ t a) n)
@@ -40,7 +40,7 @@ theorem paper_score_to_risk {Α : Type*} [MeasurableSpace Α] {d n : ℕ}
     ENNReal.ofReal ((V δ - V 0) ^ 2 /
       (2 + ∫ t in (0 : ℝ)..δ, Real.sqrt (∫ x, (R t x) ^ 2 ∂(L t ∘ₘ σ t))) ^ 2
       - (effectiveVarianceUpper C - C.varianceLower) ^ 2 * ε) ≤ minimaxRisk C n := by
-  have hε : 0 ≤ ε := (measureReal_nonneg).trans (hmass 0 ⟨le_rfl, hδ⟩)
+  have hε := (measureReal_nonneg).trans (hmass 0 ⟨le_rfl, hδ⟩)
   let P (t : ℝ) := L t ∘ₘ σ t
   have hprob (t : ℝ) (ht : t ∈ Icc 0 δ) : IsProbabilityMeasure (P t) := by
     let _ := hσ t ht
@@ -61,11 +61,10 @@ theorem paper_score_to_risk {Α : Type*} [MeasurableSpace Α] {d n : ℕ}
     let _ := hσ t ht
     let _ := hLprob t ht
     rw [hrEq]
-    exact boundedEstimator_mixture_risk_le_of_exceptional_set C T (σ t) (L t) (θ t) (V t) ε
-      (hL t ht) (hVθ t ht) (hV t ht) (bad t) (hbad t ht) (hlegal t ht) (hmass t ht)
+    apply boundedEstimator_mixture_risk_le_of_exceptional_set <;> solve_by_elim
   have hT (t : ℝ) (ht : t ∈ Icc 0 δ) : MemLp T.val.val 2 (P t) := by
     let _ := hprob t ht
-    exact boundedEstimator_memLp C T (P t) 2
+    apply boundedEstimator_memLp
   have hlower := probability_absolutelyContinuous_score_path_risk_lower_bound
     P T.val.val R V δ r risk.toReal D ε hδ hr hprob hT hR hcenter (hAC T)
     (hderiv T) hTrisk hscoreInt hrEq

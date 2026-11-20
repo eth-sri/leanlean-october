@@ -22,8 +22,7 @@ theorem highMarkedResponseMass_measurable (a V η : ℝ) (g w : α → ℝ)
     (hφ : ∀ γ, Measurable (fun x => φ x γ)) (c : ι → ℝ) (y : Fin 3) :
     Measurable (fun x => highMarkedResponseMass a V η g w φ c x y) := by
   apply ternaryMass_measurable_comp
-  exact hg.add ((measurable_const.mul hw).mul
-    (Finset.measurable_sum _ (fun γ _ => (hφ γ).mul_const (c γ))))
+  fun_prop
 
 theorem highMarkedSampleNumerator_measurable (r : ℕ) (π : Measure E) [SFinite π]
     (activation : E → ℝ) (hAct : Measurable activation) (a V η : ℝ)
@@ -38,12 +37,7 @@ theorem highMarkedSampleNumerator_measurable (r : ℕ) (π : Measure E) [SFinite
     hpReset.comp (measurable_fst.prodMk ((measurable_pi_apply i).comp measurable_snd))
   have hreg (i : Fin r) : Measurable (fun z : E × (Fin r → α) =>
       coefficientRegression η (g ∘ z.2) (w ∘ z.2) (φ ∘ z.2) (cReset z.1) i) := by
-    unfold coefficientRegression
-    exact (hg.comp ((measurable_pi_apply i).comp measurable_snd)).add
-      ((measurable_const.mul (hw.comp ((measurable_pi_apply i).comp measurable_snd))).mul
-        (Finset.measurable_sum _ (fun γ _ =>
-          ((hφ γ).comp ((measurable_pi_apply i).comp measurable_snd)).mul
-            ((hcReset γ).comp measurable_fst))))
+    fun_prop [coefficientRegression]
   have hproduct : Measurable (fun z : E × (Fin r → α) =>
       highResponseProduct a V η (g ∘ z.2) (w ∘ z.2) (φ ∘ z.2) (cReset z.1) y) :=
     Finset.measurable_prod _ (fun i _ => ternaryMass_measurable_comp a V _ (hreg i) (y i))
@@ -60,12 +54,8 @@ theorem highMarkedSampleNumerator_measurable (r : ℕ) (π : Measure E) [SFinite
     (highMarkedResponseMass_measurable a V η g w hg hw φ hφ c (y i)).comp (measurable_pi_apply i)
   have hvar (i : Fin r) : Measurable (fun x : Fin r → α =>
       highResponseVarianceTerm a V η (g ∘ x) (w ∘ x) (φ ∘ x) c y i) := by
-    unfold highResponseVarianceTerm
-    exact measurable_const.mul (Finset.measurable_prod _ (fun l _ => hq l))
-  exact hAction.sub ((measurable_const.mul
-    (Finset.measurable_prod _ (fun i _ => hp.comp (measurable_pi_apply i)))).mul
-      (Finset.measurable_sum _ (fun i _ =>
-        ((hw.comp (measurable_pi_apply i)).pow_const 2).mul (hvar i))))
+    apply measurable_const.mul <;> fun_prop
+  apply hAction.sub <;> fun_prop
 
 end
 end NearlyMinimax

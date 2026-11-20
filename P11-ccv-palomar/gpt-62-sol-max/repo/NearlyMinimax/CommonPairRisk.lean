@@ -43,8 +43,8 @@ variable {Ω Ξ : Type*} [MeasurableSpace Ω] [MeasurableSpace Ξ]
 variable (μ : Measure Ω) (ν : Measure Ξ) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
 variable {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
 variable (k : ℕ) (hk : 0 < k)
-variable (bar : Covariate d × Covariate d → PairVector)
-variable (η : Ω → Covariate d × Covariate d → PairVector) (Cp W lam : ℝ)
+variable (bar : CovariatePair d → PairVector)
+variable (η : Ω → CovariatePair d → PairVector) (Cp W lam : ℝ)
 variable (hp : PairPilotAssumptions θ k hk μ bar η Cp W lam)
 variable {m : ℕ} (hm : 2 ≤ m) (X : Fin m → Ξ → Observation d)
 variable (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν (observationLaw θ))
@@ -67,38 +67,37 @@ theorem common_pair_ratio_risk_le (b a : ℝ) (ha : 0 < a)
   let S := PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (pairPilotScoreKernel θ k hk bar η) X
   let D := PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (pairPilotNoiseKernel k hk bar η) X
   let N := PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (pairPilotNumeratorKernel k hk bar η) X
-  have hmc := pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp
-  have hmS : Measurable S := PairUStatistic.fieldPairAverage_measurable _ _
-    (rawModelPairScore_measurable θ k hk hmc) X (fun i => (hX i).measurable)
-  have hmD : Measurable D := PairUStatistic.fieldPairAverage_measurable _ _
-    (rawModelPairNoise_measurable k hk hmc) X (fun i => (hX i).measurable)
-  have hS : MemLp S 2 ((μ.prod μ).prod ν) := PairUStatistic.fieldPairAverage_memLp _
-    (pairPilotScoreKernel_memLp μ C θ hθ k hk bar η Cp W lam hp) X hind hX
-  have hD : MemLp D 2 ((μ.prod μ).prod ν) := PairUStatistic.fieldPairAverage_memLp _
-    (pairPilotNoiseKernel_memLp μ C θ hθ k hk bar η Cp W lam hp) X hind hX
+  have hGS := pairPilotScoreKernel_moments μ C θ hθ k hk bar η Cp W lam hp
+  have hGD := pairPilotNoiseKernel_moments μ C θ hθ k hk bar η Cp W lam hp
+  have hmS : Measurable S := PairUStatistic.fieldPairAverage_measurable _ _ hGS.1 X (fun i => (hX i).measurable)
+  have hmD : Measurable D := PairUStatistic.fieldPairAverage_measurable _ _ hGD.1 X (fun i => (hX i).measurable)
+  have hS : MemLp S 2 ((μ.prod μ).prod ν) := PairUStatistic.fieldPairAverage_memLp _ hGS.2.1 X hind hX
+  have hD : MemLp D 2 ((μ.prod μ).prod ν) := PairUStatistic.fieldPairAverage_memLp _ hGD.2.1 X hind hX
   have he : N = fun z => S z + θ.variance * D z := by
     funext z
     dsimp [N, S, D]
     rw [pairPilotNumeratorKernel_eq_score_add_noise θ]
-    exact PairUStatistic.fieldPairAverage_add_smul _ _ _ _ _ _ _
-  have hmN : Measurable N := by rw [he]; exact hmS.add (hmD.const_mul _)
+    apply PairUStatistic.fieldPairAverage_add_smul <;> assumption
+  have hmN : Measurable N := by rw [he]; fun_prop
   have hdif : (fun z => N z - θ.variance * D z) = S := by
-    rw [he]
-    funext z
-    ring
+    simp [he]
   have hgap : MemLp (fun z => N z - θ.variance * D z) 2 ((μ.prod μ).prod ν) := by rw [hdif]; exact hS
   have hvlo := hθ.2.2.2.2.2.1
   have hvhi := hθ.2.2.2.2.2.2.1
   have hr := stabilized_ratio_lintegral_mse_le ((μ.prod μ).prod ν) hmN hmD hgap hD
     ha hvlo hvhi (C.varianceLower_pos.le.trans hvlo) hfloor
-  have hpoint : ∀ z, N z - θ.variance * D z = S z := fun z => congrFun hdif z
+  have hpoint := fun z => congrFun hdif z
   simp_rw [hpoint] at hr
   have hM := pairPilotAssumptions_meanConditions μ C θ hθ k hk bar η Cp W lam hp
   have hb := pairPilotScoreMean_abs_bias_le C θ hθ k hk μ bar η Cp lam hM b hresidual
   have hb2 := pow_le_pow_left₀ (abs_nonneg _) hb 2
   rw [sq_abs] at hb2
-  have hSv := pairPilotScoreEstimate_centered_sq_le μ ν C θ hθ k hk bar η Cp W lam hp hm X hind hX
-  have hDv := pairPilotNoiseEstimate_centered_sq_le μ ν C θ hθ k hk bar η Cp W lam hp hm X hind hX
+  obtain ⟨hmS', _, hvS⟩ := pairPilotScoreMean_moments C θ hθ k hk μ bar η Cp lam hM
+  obtain ⟨hmD', _, hvD⟩ := pairPilotNoiseMean_moments C θ hθ k hk μ bar η Cp lam hM
+  have hSv := pairPilotEvaluation_variance μ ν C θ hθ k hk bar η Cp W hm X hind hX
+    (A := observationScoreOperator θ.variance) hGS hmS' hvS
+  have hDv := pairPilotEvaluation_variance μ ν C θ hθ k hk bar η Cp W hm X hind hX
+    (A := observationNoiseOperator) hGD hmD' hvD
   have hSb := integral_sq_le_twice_centered ((μ.prod μ).prod ν) hS
     (∫ p, pairPilotScoreMean θ k hk bar η p ∂μ.prod μ)
   apply hr.trans
@@ -106,9 +105,11 @@ theorem common_pair_ratio_risk_le (b a : ℝ) (ha : 0 < a)
   unfold pairRiskBudget
   apply mul_le_mul_of_nonneg_left _ (by positivity : 0 ≤ 2 / a ^ 2)
   apply add_le_add
-  · change (∫ z, S z ^ 2 ∂(μ.prod μ).prod ν) ≤ _
-    nlinarith
-  · exact mul_le_mul_of_nonneg_left hDv (sq_nonneg _)
+  · unfold pairPilotVarianceBase
+    change (∫ z, (S z - ∫ p, pairPilotScoreMean θ k hk bar η p ∂μ.prod μ)^2 ∂(μ.prod μ).prod ν) ≤ _ at hSv
+    change (∫ z, S z ^ 2 ∂(μ.prod μ).prod ν) ≤ _
+    linarith only [hSb, hSv, hb2]
+  · exact mul_le_mul_of_nonneg_left (hDv.trans_eq (by unfold pairPilotVarianceBase; ring)) (sq_nonneg _)
 
 end
 end NearlyMinimax

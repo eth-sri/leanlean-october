@@ -1,6 +1,7 @@
 module
 
-public import NearlyMinimax.HistoryExpectationRegularity
+public import NearlyMinimax.HighObservableRegularity
+public import Mathlib.Analysis.Calculus.Deriv.MeanValue
 
 
 @[expose] public section
@@ -15,94 +16,65 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-/-- Conditional signed-mark annihilation kills the true append generator by Fubini. -/
-theorem historyMarkedGeneratorExpectation_eq_zero (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Measurable a)
-    (habound : ∀ e, |a e| ≤ B)
-    (hsmall : t * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
+section
+variable {dependent : J → J → Prop} {Δ : ℕ} {T B : ℝ}
+    {E : Type*} [MeasurableSpace E] [StandardBorelSpace E] {π : Measure E} [IsProbabilityMeasure π]
+    {a : E → ℝ} (P : HistoryPriorBounds dependent Δ π a T B)
     (F : HistoryMarked dependent E → ℝ) (hF : Measurable F)
     (M : ℝ) (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M)
-    (hkill : ∀ j h, ∫ e, F (historyMarkedAppend dependent hsymm j (h, e)) * a e ∂π = 0) :
-    historyMarkedGeneratorExpectation dependent hsymm (historyReferenceRho Δ) t
-      (historyMarkedReference dependent Δ π) π a F = 0 := by
-  let μ := historyMarkedReference dependent Δ π
-  let : IsProbabilityMeasure μ := historyMarkedReference_probability dependent hrefl hsymm Δ hΔ hlabels π
-  unfold historyMarkedGeneratorExpectation
+    (hkill : ∀ j h, ∫ e, F (historyMarkedAppend dependent P.symm j (h, e)) * a e ∂π = 0)
+include hF hM hFbound hkill
+
+section
+variable {t : ℝ} (ht : t ∈ Icc 0 T)
+include ht
+
+/-- Conditional signed annihilation kills the positive prior's append generator by Fubini. -/
+private theorem prior_generator_eq_zero :
+    historyMarkedPriorGenerator dependent P.symm Δ t π a F = 0 := by
+  let _ := P.probability ht
+  unfold historyMarkedPriorGenerator
   apply Finset.sum_eq_zero
-  intro j hj
-  let G := fun p : HistoryMarked dependent E × E =>
-    F (historyMarkedAppend dependent hsymm j p) * a p.2 *
-      historyMarkedDensity dependent (historyReferenceRho Δ) t a p.1
+  intro j _
+  let G := fun p : HistoryMarked dependent E × E => F (historyMarkedAppend dependent P.symm j p) * a p.2
   have hG : Measurable G :=
-    ((hF.comp (historyMarkedAppend_measurable dependent hsymm j)).mul (ha.comp measurable_snd)).mul
-      ((historyMarkedDensity_measurable dependent _ t a ha).comp measurable_fst)
-  have hInt : Integrable G (μ.prod π) := by
-    apply Integrable.of_bound hG.aestronglyMeasurable (M * B * (3 / 2 : ℝ) ^ Fintype.card J)
-    apply Eventually.of_forall
-    intro p
-    change ‖F (historyMarkedAppend dependent hsymm j p) * a p.2 *
-      historyMarkedDensity dependent (historyReferenceRho Δ) t a p.1‖ ≤ _
-    rw [Real.norm_eq_abs, abs_mul, abs_mul]
-    have hb := historyMarkedDensity_bounds dependent hrefl hsymm Δ hlabels
-      (historyReferenceRho Δ) t B (historyReferenceRho_pos Δ) ht hB a habound hsmall p.1
-    have hp : 0 ≤ historyMarkedDensity dependent (historyReferenceRho Δ) t a p.1 :=
-      (by positivity : (0 : ℝ) ≤ (1 / 2 : ℝ) ^ Fintype.card J).trans hb.1
-    rw [abs_of_nonneg hp]
-    exact mul_le_mul (mul_le_mul (hFbound _) (habound _) (abs_nonneg _) hM) hb.2 hp (mul_nonneg hM hB)
-  change (∫ p, G p ∂μ.prod π) = 0
-  rw [integral_prod G hInt]
-  have hin : ∀ h, ∫ e, G (h, e) ∂π = 0 := by
-    intro h
-    dsimp only [G]
-    rw [integral_mul_const, hkill j h, zero_mul]
-  simp_rw [hin]
-  exact integral_zero _ _
+    (hF.comp (historyMarkedAppend_measurable dependent P.symm j)).mul (P.measurable.comp measurable_snd)
+  have hi : Integrable G ((historyMarkedPrior dependent Δ t π a).prod π) :=
+    Integrable.of_bound hG.aestronglyMeasurable (M * B) (.of_forall fun p => by
+      simpa only [G, Real.norm_eq_abs, abs_mul] using
+        mul_le_mul (hFbound _) (P.bound p.2) (abs_nonneg _) hM)
+  change (∫ p, G p ∂_) = 0
+  rw [integral_prod G hi]
+  simp [G, hkill j]
 
-/-- An annihilated bounded observable has the same expectation throughout the closed source interval. -/
-theorem historyMarkedPrior_invariant_observable (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T B : ℝ) (hT : 0 ≤ T) (hB : 0 ≤ B)
-    {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Measurable a)
-    (habound : ∀ e, |a e| ≤ B)
-    (hsmall : T * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    (F : HistoryMarked dependent E → ℝ) (hF : Measurable F)
-    (M : ℝ) (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M)
-    (hkill : ∀ j h, ∫ e, F (historyMarkedAppend dependent hsymm j (h, e)) * a e ∂π = 0)
-    (t : ℝ) (ht : t ∈ Icc 0 T) :
+/-- An annihilated bounded observable is constant along the source path. -/
+theorem historyMarkedPrior_invariant_observable :
     (∫ h, F h ∂historyMarkedPrior dependent Δ t π a) = ∫ h, F h ∂historyMarkedReference dependent Δ π := by
-  let μ := historyMarkedReference dependent Δ π
-  let : IsProbabilityMeasure μ := historyMarkedReference_probability dependent hrefl hsymm Δ hΔ hlabels π
-  let f := historyMarkedExpectation dependent (historyReferenceRho Δ) μ a F
-  have hs : ∀ u ∈ Icc 0 T, u * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2) := by
-    intro u hu
-    exact (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hB)
-      (historyReferenceRho_pos Δ).le).trans hsmall
-  have hAC : AbsolutelyContinuousOnInterval f 0 T :=
-    historyMarkedExpectation_absolutelyContinuous dependent hrefl hsymm Δ hlabels
-      (historyReferenceRho Δ) T B (historyReferenceRho_pos Δ) hT hB μ a ha habound hsmall F hF M hM hFbound
-  have hn0 : ∀ᵐ u : ℝ, u ≠ 0 := by rw [ae_iff]; simp
-  have hnT : ∀ᵐ u : ℝ, u ≠ T := by rw [ae_iff]; simp
-  have hzero : ∀ᵐ u : ℝ, u ∈ uIcc 0 T → HasDerivAt f 0 u := by
-    filter_upwards [hn0, hnT] with u hu0 huT hu
-    rw [uIcc_of_le hT] at hu
-    have hd := historyMarkedExpectation_weak_transport dependent hrefl hsymm Δ hΔ hlabels
-      T B u (lt_of_le_of_ne hu.1 (Ne.symm hu0)) (lt_of_le_of_ne hu.2 huT) hB
-      π a ha habound hsmall F hF M hM hFbound
-    rw [historyMarkedGeneratorExpectation_eq_zero dependent hrefl hsymm Δ hΔ hlabels u B hu.1 hB
-      π a ha habound (hs u hu) F hF M hM hFbound hkill] at hd
-    exact hd
-  obtain ⟨C, hC⟩ := hAC.const_of_ae_hasDerivAt_zero hzero
-  have hft : f t = f 0 := (hC t (by simpa only [uIcc_of_le hT] using ht)).trans
-    (hC 0 (by simp only [uIcc_of_le hT, mem_Icc]; exact ⟨le_rfl, hT⟩)).symm
-  rw [historyMarkedPrior_integral_eq_expectation dependent hrefl hsymm Δ hlabels
-    t B ht.1 hB π a ha habound (hs t ht) F]
+  have hT := ht.1.trans ht.2
+  let f := fun u => ∫ h, F h ∂historyMarkedPrior dependent Δ u π a
+  have h0 : f 0 = ∫ h, F h ∂historyMarkedReference dependent Δ π := by
+    change (∫ h, F h ∂historyMarkedPrior dependent Δ 0 π a) = _
+    rw [P.integral_eq_density ⟨le_rfl, hT⟩ F]
+    simp [historyMarkedDensity_zero]
   change f t = _
-  rw [hft]
-  simp [f, μ, historyMarkedExpectation, historyMarkedDensity_zero]
+  rw [← h0]
+  rcases ht.1.eq_or_lt with he | hp
+  · simp [← he]
+  have hF₀ := BoundedPath.const (s := Icc 0 T) hF hM hFbound
+  have hc : ContinuousOn f (Icc 0 T) :=
+    (historyMarkedPrior_variable_observable_lipschitz P hF₀
+      (fun h => (LipschitzWith.const (F h)).lipschitzOnWith)).continuousOn
+  have hd (u : ℝ) (hu : u ∈ Ioo 0 T) : HasDerivAt f 0 u := by
+    have he := historyMarkedPrior_observable_product_rule P hu
+      (hF₀.mono Ioo_subset_Icc_self) (BoundedPath.const (f := fun _ : HistoryMarked dependent E => 0)
+        measurable_const le_rfl (by simp)) (fun _ v _ => hasDerivAt_const v _)
+    simpa only [f, prior_generator_eq_zero P F hF M hM hFbound hkill (Ioo_subset_Icc_self hu),
+      integral_zero, add_zero] using he
+  obtain ⟨u, hu, he⟩ := exists_hasDerivAt_eq_slope f (fun _ => 0) hp (hc.mono (Icc_subset_Icc_right ht.2))
+    (fun u hu => hd u (Ioo_subset_Ioo_right ht.2 hu))
+  exact sub_eq_zero.mp ((div_eq_zero_iff.mp he.symm).resolve_right (by simpa using hp.ne'))
 
+end
+
+end
 end NearlyMinimax

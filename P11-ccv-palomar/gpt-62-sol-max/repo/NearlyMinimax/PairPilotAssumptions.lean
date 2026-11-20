@@ -1,6 +1,6 @@
 module
 
-public import NearlyMinimax.PairNoiseEvaluation
+public import NearlyMinimax.PairEvaluation
 public import NearlyMinimax.PairPilotMean
 public import NearlyMinimax.PilotTotalMoments
 public import NearlyMinimax.FieldPairMoments
@@ -20,12 +20,12 @@ set_option maxHeartbeats 800000
 
 theorem regularPairDesignMeasure_ae_of_supported {d : ℕ}
     (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
-    {P : Covariate d × Covariate d → Prop}
-    (hp : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
+    {P : CovariatePair d → Prop}
+    (hp : ∀ᵐ w ∂designPairLaw θ,
       sameLabelKernel (regularGridCell k hk) w ≠ 0 → P w) :
     ∀ᵐ w ∂regularPairDesignMeasure θ k hk, P w := by
   change ∀ᵐ w ∂ENNReal.ofReal ((k : ℝ) ^ d) •
-    ((designLaw θ).prod (designLaw θ)).restrict
+    (designPairLaw θ).restrict
       {z | regularGridCell k hk z.1 = regularGridCell k hk z.2}, P w
   apply Measure.ae_smul_measure
   apply (ae_restrict_iff' (measurableSet_eq_fun
@@ -38,21 +38,21 @@ theorem regularPairDesignMeasure_ae_of_supported {d : ℕ}
 
 structure PairPilotAssumptions {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
     (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) (μ : Measure Ω)
-    (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) (Cp W lam : ℝ) : Prop where
+    (bar : CovariatePair d → PairVector)
+    (η : Ω → CovariatePair d → PairVector) (Cp W lam : ℝ) : Prop where
   constantNonnegative : 0 ≤ Cp
   budgetNonnegative : 0 ≤ W
   barMeasurable : Measurable bar
-  noiseMeasurable : Measurable (fun z : Ω × (Covariate d × Covariate d) => η z.1 z.2)
-  barBound : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
+  noiseMeasurable : Measurable (fun z : Ω × (CovariatePair d) => η z.1 z.2)
+  barBound : ∀ᵐ w ∂designPairLaw θ,
     sameLabelKernel (regularGridCell k hk) w ≠ 0 → ‖bar w‖ ≤ Cp
-  noiseSection : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
+  noiseSection : ∀ᵐ w ∂designPairLaw θ,
     sameLabelKernel (regularGridCell k hk) w ≠ 0 → MemLp (fun x => η x w) 2 μ
-  noiseEnergy : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
+  noiseEnergy : ∀ᵐ w ∂designPairLaw θ,
     sameLabelKernel (regularGridCell k hk) w ≠ 0 → (∫ x, ‖η x w‖ ^ 2 ∂μ) ≤ Cp * W
   noiseCentered : ∀ᵐ w ∂regularPairDesignMeasure θ k hk, (∫ x, η x w ∂μ) = 0
   lamNonnegative : 0 ≤ lam
-  linearTest : ∀ v : (Covariate d × Covariate d) → PairVector,
+  linearTest : ∀ v : (CovariatePair d) → PairVector,
     MemLp v 2 (regularPairDesignMeasure θ k hk) →
     (∫ x, PilotFields.test (M := regularPairDesignMeasure θ k hk) η v x ^ 2 ∂μ) ≤
       lam * ∫ w, ‖v w‖ ^ 2 ∂regularPairDesignMeasure θ k hk
@@ -61,54 +61,57 @@ section
 variable {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
 variable {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
 variable (k : ℕ) (hk : 0 < k)
-variable (bar : Covariate d × Covariate d → PairVector)
-variable (η : Ω → Covariate d × Covariate d → PairVector) (Cp W lam : ℝ)
+variable (bar : CovariatePair d → PairVector)
+variable (η : Ω → CovariatePair d → PairVector) (Cp W lam : ℝ)
 variable (hp : PairPilotAssumptions θ k hk μ bar η Cp W lam)
 include hp
 
 theorem pairPilotCoefficient_measurable :
-    Measurable (fun z : Ω × (Covariate d × Covariate d) => pairPilotCoefficient bar η z.1 z.2) :=
+    Measurable (fun z : Ω × (CovariatePair d) => pairPilotCoefficient bar η z.1 z.2) :=
   (hp.barMeasurable.comp measurable_snd).add hp.noiseMeasurable
 
 theorem pairPilotCoefficient_sections :
-    ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
+    ∀ᵐ w ∂designPairLaw θ,
       sameLabelKernel (regularGridCell k hk) w ≠ 0 →
         MemLp (fun x => pairPilotCoefficient bar η x w) 2 μ := by
   filter_upwards [hp.noiseSection] with w hw hs
-  exact PilotFields.pilot_coefficient_memLp_two (bar w) (hw hs)
+  solve_by_elim [PilotFields.pilot_coefficient_memLp_two]
 
 theorem pairPilotCoefficient_energy :
-    ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
+    ∀ᵐ w ∂designPairLaw θ,
       sameLabelKernel (regularGridCell k hk) w ≠ 0 →
         (∫ x, ‖pairPilotCoefficient bar η x w‖ ^ 2 ∂μ) ≤ 2 * Cp ^ 2 + 2 * Cp * W := by
   filter_upwards [hp.noiseSection, hp.barBound, hp.noiseEnergy] with w hs hb he hq
   simpa only [pairPilotCoefficient, mul_assoc] using
-    PilotFields.pilot_coefficient_second_moment_le (bar w) (hs hq)
-      hp.constantNonnegative (hb hq) (he hq)
+    PilotFields.pilot_coefficient_second_moment_le (bar w) (hs hq) (hb hq) (he hq)
 
 include C hθ
 
-theorem pairPilotScoreKernel_memLp :
-    MemLp (fun z : (Ω × Ω) × (Observation d × Observation d) =>
-      pairPilotScoreKernel θ k hk bar η z.1 z.2) 2
-      ((μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) := by
-  exact rawModelPairScore_memLp μ C θ hθ k hk
+private theorem pairPilotKernel_moments {A : PairOperator d} {B : ℝ}
+    (hmA : Measurable (fun z : ObservationPair d × PairVector => A z.1 z.2))
+    (hiA : Integrable (fun z => observationPairMask k hk z * ‖A z‖ ^ 2) (observationPairLaw θ))
+    (hA : (∫ z, observationPairMask k hk z * ‖A z‖ ^ 2 ∂observationPairLaw θ) ≤ B) :
+    PairKernelMoments (μ.prod μ) θ (pairEvaluationKernel k hk A (pairPilotCoefficient bar η))
+      ((2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * B) :=
+  pairEvaluationKernel_moments μ C θ hθ k hk (c := pairPilotCoefficient bar η) (A := A) (B := B)
     (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
     (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
-    (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,
-      mul_nonneg hp.constantNonnegative hp.budgetNonnegative] : 0 ≤ 2 * Cp ^ 2 + 2 * Cp * W)
-    (pairPilotCoefficient_energy μ θ k hk bar η Cp W lam hp)
+    (pairPilotCoefficient_energy μ θ k hk bar η Cp W lam hp) hmA hiA hA
 
-theorem pairPilotNoiseKernel_memLp :
-    MemLp (fun z : (Ω × Ω) × (Observation d × Observation d) =>
-      pairPilotNoiseKernel k hk bar η z.1 z.2) 2
-      ((μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) := by
-  exact rawModelPairNoise_memLp μ C θ hθ k hk
-    (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
-    (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
-    (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,
-      mul_nonneg hp.constantNonnegative hp.budgetNonnegative] : 0 ≤ 2 * Cp ^ 2 + 2 * Cp * W)
-    (pairPilotCoefficient_energy μ θ k hk bar η Cp W lam hp)
+theorem pairPilotScoreKernel_moments :
+    PairKernelMoments (μ.prod μ) θ (pairPilotScoreKernel θ k hk bar η)
+      ((2 * Cp ^ 2 + 2 * Cp * W)^2 * (responseOperatorEnergyBound C * (C.densityUpper / (k : ℝ)^d))) := by
+  have h := regularResponseOperatorEnergy_moments C θ hθ k hk
+  exact pairPilotKernel_moments μ C θ hθ k hk bar η Cp W lam hp (A := observationScoreOperator θ.variance)
+    (observationPairScoreOperator_measurable_apply θ.variance)
+    h.1 h.2
+
+theorem pairPilotNoiseKernel_moments :
+    PairKernelMoments (μ.prod μ) θ (pairPilotNoiseKernel k hk bar η)
+      ((2 * Cp ^ 2 + 2 * Cp * W)^2 * (4 * (C.densityUpper / (k : ℝ)^d))) :=
+  pairPilotKernel_moments μ C θ hθ k hk bar η Cp W lam hp (A := observationNoiseOperator)
+    (observationPairNoiseOperator_measurable_apply d)
+    (observationPairNoiseOperator_energy_integrable C θ hθ k hk) (observationPairNoiseOperator_energy_le C θ hθ k hk)
 
 theorem pairPilotAssumptions_meanConditions :
     PairPilotMeanConditions θ k hk μ bar η Cp lam := by
@@ -118,38 +121,12 @@ theorem pairPilotAssumptions_meanConditions :
   have he := regularPairDesignMeasure_ae_of_supported θ k hk hp.noiseEnergy
   refine ⟨hp.barMeasurable, regularPairDesignMeasure_ae_of_supported θ k hk hp.barBound,
     hp.noiseMeasurable, ?_, hp.noiseCentered, hp.lamNonnegative, hp.linearTest, ?_, ?_⟩
-  · exact PilotFields.memLp_joint_of_uniform_section_energy hp.noiseMeasurable hs
-      (mul_nonneg hp.constantNonnegative hp.budgetNonnegative) he
-  · exact ((pairPilotScoreKernel_memLp μ C θ hθ k hk bar η Cp W lam hp).integrable
+  · exact (PilotFields.pilot_joint_section_moments hp.noiseMeasurable hs he).1
+  · exact ((pairPilotScoreKernel_moments μ C θ hθ k hk bar η Cp W lam hp).2.1.integrable
       (by norm_num : (1 : ℝ≥0∞) ≤ 2)).prod_right_ae
-  · exact ((pairPilotNoiseKernel_memLp μ C θ hθ k hk bar η Cp W lam hp).integrable
+  · exact ((pairPilotNoiseKernel_moments μ C θ hθ k hk bar η Cp W lam hp).2.1.integrable
       (by norm_num : (1 : ℝ≥0∞) ≤ 2)).prod_right_ae
 
-
-theorem pairPilotScoreKernel_energy_le :
-    (∫ z : (Ω × Ω) × (Observation d × Observation d),
-      pairPilotScoreKernel θ k hk bar η z.1 z.2 ^ 2
-      ∂(μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) ≤
-      (2 * Cp ^ 2 + 2 * Cp * W) ^ 2 *
-        (responseOperatorEnergyBound C * (C.densityUpper / (k : ℝ) ^ d)) := by
-  exact rawModelPairScore_energy_le μ C θ hθ k hk
-    (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
-    (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
-    (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,
-      mul_nonneg hp.constantNonnegative hp.budgetNonnegative])
-    (pairPilotCoefficient_energy μ θ k hk bar η Cp W lam hp)
-
-theorem pairPilotNoiseKernel_energy_le :
-    (∫ z : (Ω × Ω) × (Observation d × Observation d),
-      pairPilotNoiseKernel k hk bar η z.1 z.2 ^ 2
-      ∂(μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) ≤
-      (2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * (4 * (C.densityUpper / (k : ℝ) ^ d)) := by
-  exact rawModelPairNoise_energy_le μ C θ hθ k hk
-    (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
-    (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
-    (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,
-      mul_nonneg hp.constantNonnegative hp.budgetNonnegative])
-    (pairPilotCoefficient_energy μ θ k hk bar η Cp W lam hp)
 
 end
 end NearlyMinimax

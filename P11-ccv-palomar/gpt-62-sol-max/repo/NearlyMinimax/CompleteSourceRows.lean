@@ -17,20 +17,16 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
-theorem high_source_interval_numeric {d : ℕ} (C : ModelConstants d) (M : ℝ)
-    (hM : highCenterResolutionThreshold C ≤ M) :
-    0 < C.densityLower+1/M ∧ C.densityLower+1/M < C.densityUpper-1/M := by
-  have hg := highCenterResolution_guards C M hM
-  have hM0 : 0 < M := by linarith [hg.1]
-  constructor
-  · linarith [C.densityLower_pos,one_div_pos.mpr hM0]
-  · linarith [hg.2,highCenterRadius_pos C,(highCenterRadius_le_margins C).1,
-      (highCenterRadius_le_margins C).2]
-
 def completeSourceRows {d : ℕ} (C : ModelConstants d) (k D M q : ℕ)
     (Cfr lam ℓ N μ : ℝ) :=
   sourceRowData d k D M q (C.densityLower+1/(M : ℝ))
     (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ
+
+/-- Histories for the full singleton, pair, and higher-band source family. -/
+abbrev HighCompleteSourceHistory {d : ℕ} (C : ModelConstants d) (k D M q : ℕ)
+    [NeZero k] [LinearOrder (HighWindowLabels d k)] (Cfr lam ℓ N μ : ℝ) :=
+  HighUnionHistory d k (SourceRowMark d D M q (C.densityLower + 1/(M : ℝ))
+    (C.densityUpper - 1/(M : ℝ)) Cfr lam ℓ N μ)
 
 /-- The actual singleton response/density row satisfies every source
 primitive guard; its nondegeneracy and centering follow from finite rules. -/
@@ -39,57 +35,11 @@ theorem singletonRowSource_guards {d : ℕ} (C : ModelConstants d) (k D M q : �
     (Cfr : ℝ) (hCfr : 1 ≤ Cfr) :
     HighUnionSourceGuards C (M : ℝ) Cfr
       (singletonRowData d k D q (C.densityLower+1/(M : ℝ)) (C.densityUpper-1/(M : ℝ)) Cfr) := by
-  let a := C.densityLower+1/(M : ℝ)
-  let b := C.densityUpper-1/(M : ℝ)
-  obtain ⟨ha,hab⟩ := high_source_interval_numeric C (M : ℝ) hM
-  have hCf : 0 < Cfr := by linarith
-  have hpos := singletonRowMass_positive d D q hq a b ha hab Cfr hCf
-  let A := fun _ : Unit => finePairUnitMatrix d D
-  have hA : ∀ i j, Measurable (fun ζ : Unit => A ζ i j) := fun _ _ => measurable_const
-  have hc : Integrable (separatedMatrixCost A) (Measure.dirac ()) := by
-    simp [A,separatedMatrixCost]
-  refine {
-    resolution := hM
-    frame := hCfr
-    row_probability := fun _ => singletonRow_probability d k D q hq a b ha hab Cfr hCf
-    mass_nonneg := fun _ => hpos.le
-    total_positive := ?_
-    activation_measurable := fun _ => absoluteActivation_measurable _ _
-      (highPacketMarkWeight_measurable a b D 1 D q Cfr A hA)
-    activation_bound := fun _ => highPacketActivation_bound (Measure.dirac ()) a b D 1 D q Cfr A
-    activation_centered := fun _ => highPacketActivation_centered (Measure.dirac ()) a b D 1 D q Cfr A hA hc hpos
-    slope_measurable := ?_
-    slope_integrable := ?_
-    slope_centered := ?_
-    intercept_measurable := fun _ => highPacketIntercept_measurable a b D 1 D q
-    intercept_interval := fun _ e => (densityPacketAtom_mem a b hab.le D 1 D e.2.1).1
-    row_reset_interval := ?_
-    vector_measurable := ?_
-    time_measurable := ?_
-    vector_ball := fun _ _ => covarianceAtom_mem_ball Cfr hCf _ _ _ _
-    time_interval := fun _ _ => responseNode_mem_unit q _ }
-  · simpa [highRowTotalMass,singletonRowData,a,b] using hpos
-  · intro j i
-    exact (highPacketSlope_measurable a b D 1 D q (fun _ : Unit => fun _ => (1 : ℝ))
-      (fun _ => measurable_const)).comp measurable_fst
-  · intro j x i
-    exact highPacketSlope_integrable (Measure.dirac ()) a b ha hab D 1 D q (by norm_num) Cfr A hA hc hpos
-      (fun _ : Unit => fun _ => (1 : ℝ)) (fun _ => measurable_const) (by intro _ _; norm_num)
-  · intro j x i
-    exact highPacketAbsoluteLaw_slope_integral_zero (Measure.dirac ()) a b ha hab D 1 D q (by norm_num)
-      Cfr A hA hc hpos (fun _ : Unit => fun _ => (1 : ℝ)) (fun _ => measurable_const) (by intro _ _; norm_num)
-  · intro j i e x v hv
-    have hh := localDensityReset_mem_interval a b ha hab 1 (by norm_num)
-      (densityPacketAtom a b D 1 D e.2.1).1 (densityPacketAtom_mem a b hab.le D 1 D e.2.1).1
-      (densityPacketAtom a b D 1 D e.2.1).2 (densityPacketAtom_mem a b hab.le D 1 D e.2.1).2
-      (fun _ : Unit => v) (fun _ _ => (1 : ℝ)) () hv (by intro _; norm_num)
-    convert hh using 1 <;> dsimp [singletonRowData,highPacketSlope,highPacketIntercept,localDensityReset] <;> ring
-  · intro i γ
-    exact (measurable_of_countable (fun h : HighPacketMarkIndex (HighFrameIndex d D) D 1 D q =>
-      (highResponseMarkAtom Cfr q h.2).2 γ)).comp measurable_snd
-  · intro i
-    exact (measurable_of_countable (fun h : HighPacketMarkIndex (HighFrameIndex d D) D 1 D q =>
-      (highResponseMarkAtom (ι := HighFrameIndex d D) 0 q h.2).1)).comp measurable_snd
+  obtain ⟨ha, hab⟩ := high_source_interval_numeric C (M : ℝ) hM
+  exact highPacketRowData_guards C M hM k D 1 D q (by decide) Cfr hCfr (Measure.dirac ())
+    (fun _ => finePairUnitMatrix d D) (SeparatedMatrixIntegrable.const _ _)
+    (singletonRowMass_positive d D q hq _ _ ha hab Cfr (by linarith))
+    (fun _ _ _ _ => 1) (fun _ _ => measurable_const) (by simp)
 
 /-- Restricting primitive guards to one genuine positive row preserves
 all of them. The one-row total is its actual variation mass. -/
@@ -124,7 +74,8 @@ theorem completeSourceRows_guards {d : ℕ} (C : ModelConstants d) [NeZero d]
     (k D M q : ℕ) (hD : 3 ≤ D) (hq : 1 ≤ q)
     (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
     (Cfr lam ℓ N μ : ℝ) (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N) :
-    HighUnionSourceGuards C (M : ℝ) Cfr (completeSourceRows C k D M q Cfr lam ℓ N μ) := by
+    let R := completeSourceRows C k D M q Cfr lam ℓ N μ
+    HighUnionSourceGuards C (M : ℝ) Cfr R ∧ ∀ i, 0 < R.rowMass i := by
   let a := C.densityLower+1/(M : ℝ)
   let b := C.densityUpper-1/(M : ℝ)
   obtain ⟨ha,hab⟩ := high_source_interval_numeric C (M : ℝ) hM
@@ -144,12 +95,18 @@ theorem completeSourceRows_guards {d : ℕ} (C : ModelConstants d) [NeZero d]
           (by have hh := (higherBandFamily_target_bounds d D M q a b Cfr lam ℓ N μ i).1; omega)
           (M : ℝ) Cfr lam ℓ (higherBandFamilyUpper d ℓ N μ i.val) i.val.2 hM hCfr
           i.property.1 i.property.2.2.2
+  dsimp only
+  have hpos (i : SourceRowIndex d D M q a b Cfr lam ℓ N μ) :
+      0 < (completeSourceRows C k D M q Cfr lam ℓ N μ).rowMass i := by
+    change 0 < (sourceRowComponent d k D M q a b Cfr lam ℓ N μ i).rowMass ()
+    simpa only [highRowTotalMass, Fintype.sum_unique] using (hcomp i).total_positive
+  refine ⟨?_, hpos⟩
   exact {
     resolution := hM
     frame := hCfr
     row_probability := fun i => (hcomp i).row_probability ()
-    mass_nonneg := fun i => (hcomp i).mass_nonneg ()
-    total_positive := sourceRowTotalMass_positive d k D M q hq a b ha hab Cfr hCf lam ℓ N μ
+    mass_nonneg := fun i => (hpos i).le
+    total_positive := Finset.sum_pos (fun i _ => hpos i) Finset.univ_nonempty
     activation_measurable := fun i => (hcomp i).activation_measurable ()
     activation_bound := fun i => (hcomp i).activation_bound ()
     activation_centered := fun i => (hcomp i).activation_centered ()

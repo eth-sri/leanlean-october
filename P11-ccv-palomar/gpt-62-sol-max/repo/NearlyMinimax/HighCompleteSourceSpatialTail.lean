@@ -1,8 +1,8 @@
 module
 
-public import NearlyMinimax.HighCompleteSourceFrameTail
+public import NearlyMinimax.HighCompleteSourceTail
 public import NearlyMinimax.HighMarkedMeasurable
-public import NearlyMinimax.ResponseConfigurationEnergy
+public import NearlyMinimax.HighSelectedScoreEnergy
 public import NearlyMinimax.AliasTailSummation
 public import NearlyMinimax.CardinalProductDesign
 

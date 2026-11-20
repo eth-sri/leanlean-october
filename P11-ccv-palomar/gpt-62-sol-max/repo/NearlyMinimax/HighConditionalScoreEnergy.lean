@@ -28,20 +28,8 @@ theorem response_sample_square_integrable_integral {α : Type*} [MeasurableSpace
     Integrable (fun z => S z ^ 2) (μ.compProd (responseSampleIndexKernel n a V F hF)) ∧
     (∫ z, S z ^ 2 ∂μ.compProd (responseSampleIndexKernel n a V F hF)) =
       ∫ x, finiteResponseSquareEnergy n a V F S x ∂μ := by
-  let _ := responseSampleIndexKernel_markov n a V F hF ha hq
-  have he (x : Fin n → α) : (∫ y, ‖S (x, y) ^ 2‖ ∂responseSampleIndexKernel n a V F hF x) =
-      finiteResponseSquareEnergy n a V F S x := by
-    simp_rw [Real.norm_eq_abs, abs_sq]
-    exact responseSampleIndexKernel_integral n a V F hF x (fun i y => hq (x i) y) _
-  have hi : Integrable (fun z => S z ^ 2) (μ.compProd (responseSampleIndexKernel n a V F hF)) := by
-    apply (Measure.integrable_compProd_iff (hS.pow_const 2).aestronglyMeasurable).mpr
-    constructor
-    · exact Filter.Eventually.of_forall (fun _ => Integrable.of_finite)
-    · simpa only [he] using hE
-  refine ⟨hi, ?_⟩
-  rw [Measure.integral_compProd hi]
-  apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun x =>
-    responseSampleIndexKernel_integral n a V F hF x (fun i y => hq (x i) y) _)
+  let := responseSampleIndexKernel_markov n a V F hF ha hq
+  exact finiteKernel_integrable_integral μ _ (hS.pow_const 2) (fun _ => sq_nonneg _)
+    (fun x => responseSampleIndexKernel_integral n a V F hF x (fun i y => hq (x i) y) _) hE
 
 end NearlyMinimax

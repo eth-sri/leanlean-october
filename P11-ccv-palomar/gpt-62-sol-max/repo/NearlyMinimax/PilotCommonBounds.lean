@@ -14,11 +14,14 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicMultilevelErrorField_envelope_test_moment_facts {d : ℕ} (C : ModelConstants d)
+section
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem dyadicMultilevelErrorField_envelope_test_moment_facts
     [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
     (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ max C.holderBound 1) (m : ℕ → ℕ)
     (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n)
-    (ν : Covariate d × Covariate d → ℝ)
+    (ν : CovariatePair d → ℝ)
     (hν : MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity))) :
     MemLp (fun t => ∫ w, ν w * dyadicMultilevelErrorField C θ n J y m t w
       ∂regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) 2 (sampleLaw θ n) ∧
@@ -29,13 +32,13 @@ theorem dyadicMultilevelErrorField_envelope_test_moment_facts {d : ℕ} (C : Mod
   exact dyadicMultilevelErrorField_test_moment_facts (pilotModelConstants C) θ
     (admissible_pilotModelConstants C θ hθ) n J L hJL y hy m hdegree ν hν
 
-theorem dyadicMultilevelErrorField_envelope_weighted_integrable {d : ℕ} (C : ModelConstants d)
+theorem dyadicMultilevelErrorField_envelope_weighted_integrable
     [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
     (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ max C.holderBound 1) (m : ℕ → ℕ)
     (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n)
-    (ν : Covariate d × Covariate d → ℝ)
+    (ν : CovariatePair d → ℝ)
     (hν : MemLp ν 2 (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)))
-    (t : Fin n → Observation d) :
+    (t : ObservedSample d n) :
     Integrable (fun w => ν w * dyadicMultilevelErrorField C θ n J y m t w)
       (regularPairDesignMeasure θ ((2 : ℕ) ^ L) (by positivity)) := by
   letI : Nonempty (AnchoredIndex d (pilotModelConstants C).order) :=
@@ -48,5 +51,7 @@ theorem dyadicMultilevelErrorField_envelope_weighted_integrable {d : ℕ} (C : M
   funext w
   simp only [dyadicMultilevelErrorField, Finset.mul_sum]
   rfl
+
+end
 
 end NearlyMinimax

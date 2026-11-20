@@ -31,11 +31,14 @@ def ordinaryFineAliasSaddleGeometryEnvelope (s : ℝ) (d q : ℕ)
   ordinaryFineAliasFamilyResponseSquareEnvelope (F := F) (ordinaryFineAliasTargetSet d D L N mu)
     M R q ad bd c0 C a rho eta L (fun r => higherBandTargetScale d r N mu) U
 
+section
+variable {s ad bd : ℝ} {d : ℕ} (hs : 1 < s) (hd : 4*s < (d : ℝ))
+    (haD : 0 < ad) (hab : ad < bd) (Cw cf : ℝ) (q : ℕ)
+include hs hd haD hab Cw cf q
+
 /-- True universal Q^n envelope moment, at all counts and frame degrees.
 The fixed constant is chosen before x, n, F or nuisance data. -/
-theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_integrable_and_scale_le
-    {s ad bd : ℝ} {d : ℕ} (hs : 1 < s) (hd : 4*s < (d : ℝ))
-    (haD : 0 < ad) (hab : ad < bd) (Cw cf : ℝ) (q : ℕ) (C a rho : ℝ) :
+theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_integrable_and_scale_le (C a rho : ℝ) :
     ∀ᶠ x in atTop, ∀ (n F : ℕ),
       Integrable (ordinaryFineAliasSaddleGeometryEnvelope s d q ad bd Cw cf C a rho x n F)
         (fullSpatialPatchDesign d n) ∧
@@ -78,8 +81,6 @@ theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_integrable_and_scale_
 moment, at the paper's rounded M/D/N/mu and eta=cf*h^s. No nuisance or
 conditional pointwise norm premise is needed. -/
 theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_factorial_tail
-    {s ad bd : ℝ} {d : ℕ} (hs : 1 < s) (hd : 4*s < (d : ℝ))
-    (haD : 0 < ad) (hab : ad < bd) (Cw cf : ℝ) (q : ℕ)
     (C a rho Csharp : ℝ) (hCs : 0 ≤ Csharp) :
     ∀ᶠ x in atTop,
       let m := ordinaryFineAliasSaddleCoefficient s d ad bd
@@ -96,12 +97,11 @@ theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_factorial_tail
             (M+1+j) (F (M+1+j)) U ∂fullSpatialPatchDesign d (M+1+j))) ≤
         C6 * (eta^4 * Real.exp (2*shrunkDensityExponent ad bd M*M) * N^(4-(d : ℝ))) *
           poissonCountWeight (C6*mu) (M+1) := by
-  let tau := densityIntervalExponent ad bd
   let m := ordinaryFineAliasSaddleCoefficient s d ad bd
   let theta := ordinaryFineAliasSaddleTheta s d ad bd
-  have htau : 0 < tau := densityIntervalExponent_pos haD hab
-  have hm : 0 < m := lowerSaddleCoefficient_pos hs hd htau
-  have htheta : 0 < theta := lowerSaddleTheta_pos hs hd htau
+  have htau := densityIntervalExponent_pos haD hab
+  have hm := lowerSaddleCoefficient_pos hs hd htau
+  have htheta := lowerSaddleTheta_pos hs hd htau
   have hd0 : (0 : ℝ)<d := by linarith
   have hd4 : 4 ≤ d := by
     have h : (4 : ℝ)<d := by linarith
@@ -124,9 +124,8 @@ theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_factorial_tail
   have hmu0 : 0 ≤ mu := by dsimp [mu]; rw [lowerSaddleMu_eq_exp hx]; positivity
   have hA : 0 ≤ A := ordinaryAliasFamilySpatialPrefactor_nonneg _ _ _ _ _ _ _ _ _
   have hP : 0 ≤ P := by
-    dsimp [P]
     exact mul_nonneg (mul_nonneg (by positivity) (Real.exp_pos _).le)
-      (Real.rpow_nonneg (lowerSaddleN_positive _ _ _ _ _ _ _).le _)
+          (Real.rpow_nonneg (lowerSaddleN_positive _ _ _ _ _ _ _).le _)
   have hB : 0 ≤ B := by unfold B ordinaryAliasSpatialResponseBase ordinaryAliasSpatialCountBase; positivity
   have hL : 0 ≤ L := lowerAliasSpatialFixedL_nonneg hd4 _ (by linarith)
   apply finite_alias_energy_tail_le hA hP hCs hB hL hmu0 hmu1.le M (D-M)
@@ -134,8 +133,10 @@ theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_factorial_tail
       n (F n) U ∂fullSpatialPatchDesign d n)
   intro j hj
   have he := (henergy (M+1+j) (F (M+1+j))).2
-  convert he using 1 <;> simp only [A,P,L,B,m,theta,M,D,N,mu,eta,
+  convert he using 1 <;> simp only [A,P,L,B,m,theta,M,N,eta,
     ordinaryFineAliasSaddleTailPrefactor, ordinaryFineAliasSaddleTailExponent,
     ordinaryFineAliasSaddleTargetBound, ordinaryFineAliasSaddleCoefficient, ordinaryFineAliasSaddleTheta] <;> ring
+
+end
 
 end NearlyMinimax

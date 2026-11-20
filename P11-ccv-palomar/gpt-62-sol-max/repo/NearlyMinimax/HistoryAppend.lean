@@ -58,35 +58,25 @@ theorem historyShapeAppend_injective (dependent : J → J → Prop)
   have hc := congrArg (fun shape => historyShapePairCode dependent hrefl hsymm shape ⟨(i, k), hik⟩) heq
   change historyPairProjection i k (u ++ [j]) = historyPairProjection i k (v ++ [j]) at hc
   unfold historyPairProjection at hc ⊢
-  rw [List.filter_append, List.filter_append] at hc
-  exact List.append_cancel_right hc
+  simp_all [List.filter_append]
 
-omit [Fintype J] in
-@[simp] theorem historyShapeMultiplicity_append (dependent : J → J → Prop) (j i : J)
-    (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    historyShapeMultiplicity dependent i (historyShapeAppend dependent j g) =
-      historyShapeMultiplicity dependent i g + if j = i then 1 else 0 := by
-  induction g using Quotient.inductionOn
-  rename_i word
-  change (word ++ [j]).count i = word.count i + if j = i then 1 else 0
-  by_cases hj : j = i
-  · subst j; simp
-  · simp [hj]
+section
+variable (dependent : J → J → Prop)
 
-@[simp] theorem historyShapeLength_append (dependent : J → J → Prop) (j : J)
+@[simp] theorem historyShapeLength_append (j : J)
     (g : HistoryShape (fun a b => ¬ dependent a b)) :
     historyShapeLength dependent (historyShapeAppend dependent j g) = historyShapeLength dependent g + 1 := by
   induction g using Quotient.inductionOn
-  rename_i word
-  rw [historyShapeAppend_mk, historyShapeLength_mk, historyShapeLength_mk]
-  simp
+  simp [historyShapeAppend_mk, historyShapeLength_mk]
 
 /-- The exact source reference factor needed for append/delete change of variables. -/
-theorem historyShapeReferenceWeight_append (dependent : J → J → Prop) (Δ : ℕ) (j : J)
+theorem historyShapeReferenceWeight_append (Δ : ℕ) (j : J)
     (g : HistoryShape (fun a b => ¬ dependent a b)) :
     historyShapeReferenceWeight dependent Δ (historyShapeAppend dependent j g) =
       historyReferenceRho Δ * historyShapeReferenceWeight dependent Δ g := by
   unfold historyShapeReferenceWeight
   rw [historyShapeLength_append, pow_succ, mul_comm]
+
+end
 
 end NearlyMinimax

@@ -38,7 +38,7 @@ theorem fintype_product_centered_mgf_le [DecidableEq J] (π : J → Measure E)
     by_cases hk : k = i
     · subst k
       simp
-    · have hfki : f k ≠ f i := fun h => hk (f.injective h)
+    · have hfki := fun h => hk (f.injective h)
       rw [Function.update_of_ne hk, Function.update_of_ne hfki]
       exact (MeasurableEquiv.piCongrLeft_apply_apply f (β := fun _ : J => E) x k).symm
   let G := F ∘ e
@@ -46,7 +46,7 @@ theorem fintype_product_centered_mgf_le [DecidableEq J] (π : J → Measure E)
     intro i x y
     dsimp only [G, Function.comp_apply]
     rw [he]
-    exact hosc (f i) (e x) y
+    grind
   have hh := product_centered_mgf_le (Fintype.card J) (fun i => π (f i)) G
     (hF.comp e.measurable) R c hc (fun x => hbound (e x)) hGo u
   have hm : (∫ x, G x ∂Measure.pi (fun i => π (f i))) = ∫ x, F x ∂Measure.pi π :=
@@ -73,10 +73,7 @@ theorem label_block_centered_mgf_le {I : Type*} [Fintype I] [DecidableEq J]
   have hp := labelBlockReconstruct_preserving labels π
   have hG : Measurable G := hF.comp (labelBlockReconstruct_measurable labels)
   have ho : ∀ j blocks new, |G (Function.update blocks j new) - G blocks| ≤ c := by
-    intro j blocks new
-    apply hosc j (labelBlockReconstruct labels (Function.update blocks j new)) (labelBlockReconstruct labels blocks)
-    intro i hi
-    exact labelBlockReconstruct_update_other labels blocks j new i hi
+    solve_by_elim [hosc, labelBlockReconstruct_update_other]
   have hh := fintype_product_centered_mgf_le (fun _ : J => ν) G hG R c hc
     (fun blocks => hbound (labelBlockReconstruct labels blocks)) ho u
   have hm : (∫ blocks, G blocks ∂μ) = ∫ marks, F marks ∂ν := by
@@ -90,7 +87,6 @@ theorem label_block_centered_mgf_le {I : Type*} [Fintype I] [DecidableEq J]
       Real.measurable_exp.comp (measurable_const.mul (hF.sub measurable_const))
     exact (integral_map hp.measurable.aemeasurable hmeas.aestronglyMeasurable).symm.trans
       (congrArg (fun m : Measure (I → E) => ∫ marks, Real.exp (u * (F marks - ∫ marks', F marks' ∂ν)) ∂m) hp.map_eq)
-  rw [hi] at hh
-  exact hh
+  simpa only [hi] using hh
 
 end NearlyMinimax

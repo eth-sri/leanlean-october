@@ -1,6 +1,7 @@
 module
 
-public import NearlyMinimax.DyadicPilotLift
+public import NearlyMinimax.PilotCoordinateExpansion
+public import NearlyMinimax.KernelMomentBounds
 
 
 @[expose] public section
@@ -24,20 +25,20 @@ theorem regular_grid_index_parent (k : ℕ) (hk : 0 < k) (x : ℝ) :
   simp only [regularGridIndex, Fin.val_mk]
   omega
 
+section
+variable {d : ℕ}
+
 /-- A genuine fine-cell equality implies equality of the dyadic parent labels. -/
-theorem regular_grid_cell_parent_eq {d : ℕ} (k : ℕ) (hk : 0 < k)
+theorem regular_grid_cell_parent_eq (k : ℕ) (hk : 0 < k)
     (x z : Covariate d)
     (h : regularGridCell (2 * k) (by omega) z = regularGridCell (2 * k) (by omega) x) :
     regularGridCell k hk z = regularGridCell k hk x := by
   funext i
   apply Fin.ext
   have hi := congrArg (fun c => (c i).val / 2) h
-  change (regularGridIndex (2 * k) (by omega) (z i)).val / 2 =
-    (regularGridIndex (2 * k) (by omega) (x i)).val / 2 at hi
-  rw [regular_grid_index_parent k hk, regular_grid_index_parent k hk] at hi
-  exact hi
+  grind [regularGridCell, regular_grid_index_parent]
 
-theorem dyadicPilotCell_subset_parent {d : ℕ} (j : ℕ) (x : Covariate d) :
+theorem dyadicPilotCell_subset_parent (j : ℕ) (x : Covariate d) :
     dyadicPilotCell j x ⊆ dyadicPilotCell (j - 1) x := by
   cases j with
   | zero => simp
@@ -46,7 +47,9 @@ theorem dyadicPilotCell_subset_parent {d : ℕ} (j : ℕ) (x : Covariate d) :
     apply regular_grid_cell_parent_eq ((2 : ℕ) ^ j) (by positivity) x z
     change regularGridCell ((2 : ℕ) ^ (j + 1)) (by positivity) z =
       regularGridCell ((2 : ℕ) ^ (j + 1)) (by positivity) x at hz
-    have hsize : (2 : ℕ) ^ (j + 1) = 2 * 2 ^ j := by rw [pow_succ]; omega
+    have hsize : (2 : ℕ) ^ (j + 1) = 2 * 2 ^ j := by ring
     exact (regular_grid_same_cell_congr hsize (by positivity) (by positivity) x z).mp hz
+
+end
 
 end NearlyMinimax

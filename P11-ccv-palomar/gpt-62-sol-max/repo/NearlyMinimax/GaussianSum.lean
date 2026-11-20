@@ -20,8 +20,11 @@ open MeasureTheory Set
 
 namespace NearlyMinimax.GaussianSum
 
+section
+variable (S : Finset ℝ)
+
 /-- The kth point of a nonnegative δ-separated finite set lies at least kδ from zero. -/
-theorem orderEmbOfFin_ge_mul_sep (S : Finset ℝ) {δ : ℝ} (_hδ : 0 ≤ δ)
+theorem orderEmbOfFin_ge_mul_sep {δ : ℝ}
     (hnonneg : ∀ x ∈ S, 0 ≤ x)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|)
     (k : Fin S.card) : (k.val : ℝ) * δ ≤ S.orderEmbOfFin rfl k := by
@@ -47,7 +50,7 @@ theorem orderEmbOfFin_ge_mul_sep (S : Finset ℝ) {δ : ℝ} (_hδ : 0 ≤ δ)
   exact hrank k.val k.isLt
 
 /-- A separated finite Gaussian sum is bounded by its equally spaced comparison sum. -/
-theorem separated_gaussian_sum_le (S : Finset ℝ) {δ c : ℝ} (hδ : 0 < δ)
+theorem separated_gaussian_sum_le {δ c : ℝ} (hδ : 0 < δ)
     (hc : 0 < c) (hnonneg : ∀ x ∈ S, 0 ≤ x)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
     ∑ x ∈ S, Real.exp (-c * x ^ 2) ≤
@@ -65,22 +68,23 @@ theorem separated_gaussian_sum_le (S : Finset ℝ) {δ c : ℝ} (hδ : 0 < δ)
       intro k _
       apply Real.exp_le_exp.mpr
       have hn := hnonneg _ (S.orderEmbOfFin_mem rfl k)
-      have hk := orderEmbOfFin_ge_mul_sep S hδ.le hnonneg hsep k
+      have hk := orderEmbOfFin_ge_mul_sep S hnonneg hsep k
       have hp : 0 ≤ (k.val : ℝ) * δ := mul_nonneg (Nat.cast_nonneg _) hδ.le
       have hs := (sq_le_sq₀ hp hn).mpr hk
       nlinarith
     _ = ∑ k ∈ Finset.range S.card, Real.exp (-(c * δ ^ 2) * (k : ℝ) ^ 2) := by
       rw [Finset.sum_fin_eq_sum_range]
       apply Finset.sum_congr rfl
-      intro k hk
-      simp [Finset.mem_range.mp hk]
+      grind
+
+end
 
 /-- A Gaussian is decreasing on the nonnegative half-line. -/
 theorem gaussian_antitone {c : ℝ} (hc : 0 ≤ c) :
     AntitoneOn (fun x : ℝ => Real.exp (-c * x ^ 2)) (Ici 0) := by
   intro x hx y hy hxy
   apply Real.exp_le_exp.mpr
-  have hs : x ^ 2 ≤ y ^ 2 := (sq_le_sq₀ hx hy).2 hxy
+  have hs := (sq_le_sq₀ hx hy).2 hxy
   nlinarith [mul_le_mul_of_nonneg_left hs hc]
 
 /-- The elementary Gaussian partial-sum bound used in the window estimate. -/
@@ -107,9 +111,7 @@ theorem gaussian_sum_range_le (c : ℝ) (hc : 0 < c) (N : ℕ) :
       have hcomp : (∑ k ∈ Finset.range N,
           Real.exp (-c * ((k + 1 : ℕ) : ℝ) ^ 2)) ≤
           (∫ x in Ioi (0 : ℝ), Real.exp (-c * x ^ 2)) := by
-        simpa using (by simpa using hcomp' :
-          (∑ k ∈ Finset.range N, Real.exp (-c * ((k + 1 : ℕ) : ℝ) ^ 2)) ≤
-            (∫ x in (0 : ℝ)..(N : ℝ), Real.exp (-c * x ^ 2))).trans hInt
+        grind
       calc
         (∑ k ∈ Finset.range N, Real.exp (-c * ((k + 1 : ℕ) : ℝ) ^ 2)) +
             Real.exp (-c * ((0 : ℕ) : ℝ) ^ 2)
@@ -127,43 +129,33 @@ theorem gaussian_constant_spacing (c δ : ℝ) (hc : 0 < c) (hδ : 0 < δ) :
   rw [halg, Real.sqrt_div (div_nonneg Real.pi_pos.le hc.le),
     Real.sqrt_sq_eq_abs, abs_of_pos hδ]
 
+section
+variable (S : Finset ℝ)
+
+section
+variable (δ a : ℝ)
+    (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|)
+include hsep
+
 /-- Translating a separated finite set preserves its separation. -/
-theorem separated_translate (S : Finset ℝ) (δ a : ℝ)
-    (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
+theorem separated_translate :
     ∀ u ∈ S.image (fun x => x - a), ∀ v ∈ S.image (fun x => x - a),
       u ≠ v → δ ≤ |u - v| := by
-  classical
-  intro u hu v hv huv
-  obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hu
-  obtain ⟨y, hy, rfl⟩ := Finset.mem_image.mp hv
-  have hxy : x ≠ y := by
-    intro h
-    exact huv (congrArg (fun z => z - a) h)
-  have h := hsep x hx y hy hxy
-  convert h using 1
-  congr 1
-  ring
+  grind
 
 /-- Reflection about a center preserves separation. -/
-theorem separated_reflect (S : Finset ℝ) (δ a : ℝ)
-    (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
+theorem separated_reflect :
     ∀ u ∈ S.image (fun x => a - x), ∀ v ∈ S.image (fun x => a - x),
       u ≠ v → δ ≤ |u - v| := by
-  classical
-  intro u hu v hv huv
-  obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hu
-  obtain ⟨y, hy, rfl⟩ := Finset.mem_image.mp hv
-  have hxy : x ≠ y := by
-    intro h
-    exact huv (congrArg (fun z => a - z) h)
-  have h := hsep x hx y hy hxy
-  rw [abs_sub_comm x y] at h
-  convert h using 1
-  congr 1
-  ring
+  grind
+
+end
+
+section
+variable {δ c : ℝ}
 
 /-- A nonnegative separated Gaussian sum is bounded by the half Gaussian integral. -/
-theorem gaussian_half_sum (S : Finset ℝ) {δ c : ℝ}
+theorem gaussian_half_sum
     (hδ : 0 < δ) (hc : 0 < c)
     (hnonneg : ∀ x ∈ S, 0 ≤ x)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
@@ -179,7 +171,7 @@ theorem gaussian_half_sum (S : Finset ℝ) {δ c : ℝ}
         rw [gaussian_constant_spacing c δ hc hδ]
 
 /-- A Gaussian sum over an arbitrary separated finite set, centered at a. -/
-theorem gaussian_centered_sum (S : Finset ℝ) {δ c : ℝ} (a : ℝ)
+theorem gaussian_centered_sum (a : ℝ)
     (hδ : 0 < δ) (hc : 0 < c)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
     (∑ x ∈ S, Real.exp (-c * (x - a) ^ 2)) ≤
@@ -188,31 +180,24 @@ theorem gaussian_centered_sum (S : Finset ℝ) {δ c : ℝ} (a : ℝ)
   let P := S.filter (fun x => a ≤ x)
   let N := S.filter (fun x => ¬a ≤ x)
   have hPsep : ∀ x ∈ P, ∀ y ∈ P, x ≠ y → δ ≤ |x - y| := by
-    intro x hx y hy hxy
-    exact hsep x (Finset.mem_filter.mp hx).1 y (Finset.mem_filter.mp hy).1 hxy
+    grind
   have hNsep : ∀ x ∈ N, ∀ y ∈ N, x ≠ y → δ ≤ |x - y| := by
-    intro x hx y hy hxy
-    exact hsep x (Finset.mem_filter.mp hx).1 y (Finset.mem_filter.mp hy).1 hxy
+    grind
   have hPnonneg : ∀ u ∈ P.image (fun x => x - a), 0 ≤ u := by
-    intro u hu
-    obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hu
-    exact sub_nonneg.mpr (Finset.mem_filter.mp hx).2
+    grind
   have hNnonneg : ∀ u ∈ N.image (fun x => a - x), 0 ≤ u := by
-    intro u hu
-    obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hu
-    exact sub_nonneg.mpr (not_le.mp (Finset.mem_filter.mp hx).2).le
+    grind
   have hP := gaussian_half_sum (P.image (fun x => x - a)) hδ hc hPnonneg
     (separated_translate P δ a hPsep)
   have hN := gaussian_half_sum (N.image (fun x => a - x)) hδ hc hNnonneg
     (separated_reflect N δ a hNsep)
-  rw [Finset.sum_image (by intro x hx y hy h; linarith)] at hP
-  rw [Finset.sum_image (by intro x hx y hy h; linarith)] at hN
+  rw [Finset.sum_image (by simp)] at hP
+  rw [Finset.sum_image (by simp)] at hN
   have hN' : (∑ x ∈ N, Real.exp (-c * (x - a) ^ 2)) ≤
       1 + Real.sqrt (Real.pi / c) / δ / 2 := by
     convert hN using 1
     apply Finset.sum_congr rfl
     intro x hx
-    congr 1
     ring
   have hsplit : (∑ x ∈ S, Real.exp (-c * (x - a) ^ 2)) =
       (∑ x ∈ P, Real.exp (-c * (x - a) ^ 2)) +
@@ -221,6 +206,10 @@ theorem gaussian_centered_sum (S : Finset ℝ) {δ c : ℝ} (a : ℝ)
       (fun x => Real.exp (-c * (x - a) ^ 2))).symm
   rw [hsplit]
   linarith
+
+end
+
+end
 
 /-- An arithmetic lattice has separation equal to its positive step. -/
 theorem arithmetic_lattice_separated (u₀ b : ℝ) (hb : 0 < b) (A : Finset ℕ) :
@@ -231,18 +220,22 @@ theorem arithmetic_lattice_separated (u₀ b : ℝ) (hb : 0 < b) (A : Finset ℕ
   intro x hx y hy hxy
   obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hx
   obtain ⟨j, hj, rfl⟩ := Finset.mem_image.mp hy
-  have hij : i ≠ j := by intro he; apply hxy; rw [he]
+  have hij : i ≠ j := by grind
   rcases lt_or_gt_of_ne hij with hlt | hgt
   · have hcast : (i : ℝ) + 1 ≤ (j : ℝ) := by exact_mod_cast Nat.succ_le_of_lt hlt
     have hdiff : b ≤ (u₀ + (j : ℝ) * b) - (u₀ + (i : ℝ) * b) := by nlinarith
-    exact hdiff.trans (le_abs_self _ |>.trans_eq (abs_sub_comm _ _))
+    grind
   · have hcast : (j : ℝ) + 1 ≤ (i : ℝ) := by exact_mod_cast Nat.succ_le_of_lt hgt
     have hdiff : b ≤ (u₀ + (i : ℝ) * b) - (u₀ + (j : ℝ) * b) := by nlinarith
     exact hdiff.trans (le_abs_self _)
 
+section
+variable (A : Finset ℕ) (u₀ a b S : ℝ)
+    (ha : 0 < a) (hb : 0 < b) (hS : 1 ≤ S)
+include ha hb hS
+
 /-- A finite lattice Gaussian sum with an explicit bound uniform in its center. -/
-theorem gaussian_lattice_sum_le (A : Finset ℕ) (u₀ a b S : ℝ)
-    (ha : 0 < a) (hb : 0 < b) (hS : 1 ≤ S) :
+theorem gaussian_lattice_sum_le :
     (∑ j ∈ A, Real.exp (-a * (u₀ + (j : ℝ) * b) ^ 2 / S)) ≤
       (2 + Real.sqrt (Real.pi / a) / b) * Real.sqrt S := by
   classical
@@ -258,10 +251,7 @@ theorem gaussian_lattice_sum_le (A : Finset ℕ) (u₀ a b S : ℝ)
   simp only [sub_zero] at hgauss
   have hsum : (∑ j ∈ A, Real.exp (-a * (u₀ + (j : ℝ) * b) ^ 2 / S)) =
       ∑ j ∈ A, Real.exp (-(a / S) * (u₀ + (j : ℝ) * b) ^ 2) := by
-    apply Finset.sum_congr rfl
-    intro j hj
-    congr 1
-    ring
+    apply Finset.sum_congr rfl <;> grind
   rw [hsum]
   have halg : Real.pi / (a / S) = Real.pi / a * S := by field_simp
   rw [halg, Real.sqrt_mul (div_nonneg Real.pi_pos.le ha.le)] at hgauss
@@ -269,16 +259,15 @@ theorem gaussian_lattice_sum_le (A : Finset ℕ) (u₀ a b S : ℝ)
   calc
     _ ≤ 2 + Real.sqrt (Real.pi / a) * Real.sqrt S / b := hgauss
     _ ≤ (2 + Real.sqrt (Real.pi / a) / b) * Real.sqrt S := by
-      rw [show Real.sqrt (Real.pi / a) * Real.sqrt S / b =
-        (Real.sqrt (Real.pi / a) / b) * Real.sqrt S by ring]
-      nlinarith
+      grind
 
 /-- After the `S⁻¹ᐟ²` factor in `eq:U12-term`, the allocation sum is uniformly bounded. -/
-theorem normalized_gaussian_lattice_sum_le (A : Finset ℕ) (u₀ a b S : ℝ)
-    (ha : 0 < a) (hb : 0 < b) (hS : 1 ≤ S) :
+theorem normalized_gaussian_lattice_sum_le :
     (∑ j ∈ A, Real.exp (-a * (u₀ + (j : ℝ) * b) ^ 2 / S)) / Real.sqrt S ≤
       2 + Real.sqrt (Real.pi / a) / b := by
-  have hp : 0 < Real.sqrt S := Real.sqrt_pos.2 (lt_of_lt_of_le zero_lt_one hS)
+  have hp := Real.sqrt_pos.2 (lt_of_lt_of_le zero_lt_one hS)
   exact (div_le_iff₀ hp).2 (gaussian_lattice_sum_le A u₀ a b S ha hb hS)
+
+end
 
 end NearlyMinimax.GaussianSum

@@ -13,7 +13,10 @@ open MeasureTheory Set
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
-theorem absolutelyContinuous_path_mean_change_le {m score : ℝ → ℝ} {δ r : ℝ}
+section
+variable {m score : ℝ → ℝ}
+
+theorem absolutelyContinuous_path_mean_change_le {δ r : ℝ}
     (hδ : 0 ≤ δ) (hAC : AbsolutelyContinuousOnInterval m 0 δ)
     (hscore : IntervalIntegrable score volume 0 δ)
     (hbound : ∀ᵐ t ∂volume, t ∈ Icc 0 δ → |deriv m t| ≤ r * score t) :
@@ -24,26 +27,23 @@ theorem absolutelyContinuous_path_mean_change_le {m score : ℝ → ℝ} {δ r :
   filter_upwards [hbound] with t ht hmem
   exact ht ⟨hmem.1.le, hmem.2⟩
 
-theorem absolutelyContinuous_path_separation_le {m score : ℝ → ℝ} {δ r V₀ Vδ : ℝ}
+theorem absolutelyContinuous_path_separation_le {δ r V₀ Vδ : ℝ}
     (hδ : 0 ≤ δ) (hAC : AbsolutelyContinuousOnInterval m 0 δ)
     (hscore : IntervalIntegrable score volume 0 δ)
     (hbound : ∀ᵐ t ∂volume, t ∈ Icc 0 δ → |deriv m t| ≤ r * score t)
     (hfirst : |m 0 - V₀| ≤ r) (hlast : |m δ - Vδ| ≤ r) :
     |Vδ - V₀| ≤ (2 + ∫ t in (0 : ℝ)..δ, score t) * r := by
-  have hchange := absolutelyContinuous_path_mean_change_le hδ hAC hscore hbound
-  calc
-    |Vδ - V₀| = |(Vδ - m δ) + (m δ - m 0) + (m 0 - V₀)| := by congr 1; ring
-    _ ≤ |Vδ - m δ| + |m δ - m 0| + |m 0 - V₀| :=
-      (abs_add_le _ _).trans (add_le_add (abs_add_le _ _) le_rfl)
-    _ ≤ r + (r * ∫ t in (0 : ℝ)..δ, score t) + r := by
-      rw [abs_sub_comm Vδ (m δ)]
-      exact add_le_add (add_le_add hlast hchange) hfirst
-    _ = _ := by ring
+  have h := endpoint_separation_le hfirst hlast (absolutelyContinuous_path_mean_change_le hδ hAC hscore hbound)
+  linarith only [h]
+
+end
+
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+    (P : ℝ → Measure Ω) (T : Ω → ℝ) (R : ℝ → Ω → ℝ) (V : ℝ → ℝ)
 
 /-- The score and derivative are only required almost everywhere in time. -/
 theorem probability_absolutelyContinuous_score_path_separation_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : ℝ → Measure Ω) (T : Ω → ℝ) (R : ℝ → Ω → ℝ) (V : ℝ → ℝ)
     (δ r : ℝ) (hδ : 0 ≤ δ) (hr : 0 ≤ r)
     (hprob : ∀ t ∈ Icc 0 δ, IsProbabilityMeasure (P t))
     (hT : ∀ t ∈ Icc 0 δ, MemLp T 2 (P t))
@@ -61,8 +61,7 @@ theorem probability_absolutelyContinuous_score_path_separation_le
   · filter_upwards [hR, hcenter, hderiv] with t hRt hct hdt ht
     let _ := hprob t ht
     rw [(hdt ht).deriv]
-    exact probability_score_bound (P t) T (R t) (V t) r
-      (hT t ht) (hRt ht) hr (hct ht) (hrisk t ht)
+    apply probability_score_bound <;> solve_by_elim
   · let _ := hprob 0 ⟨le_rfl, hδ⟩
     exact probability_mean_error_le (P 0) T (V 0) r
       (hT 0 ⟨le_rfl, hδ⟩) hr (hrisk 0 ⟨le_rfl, hδ⟩)
@@ -71,8 +70,6 @@ theorem probability_absolutelyContinuous_score_path_separation_le
       (hT δ ⟨hδ, le_rfl⟩) hr (hrisk δ ⟨hδ, le_rfl⟩)
 
 theorem probability_absolutelyContinuous_score_path_risk_lower_bound
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : ℝ → Measure Ω) (T : Ω → ℝ) (R : ℝ → Ω → ℝ) (V : ℝ → ℝ)
     (δ r risk D ε : ℝ) (hδ : 0 ≤ δ) (hr : 0 ≤ r)
     (hprob : ∀ t ∈ Icc 0 δ, IsProbabilityMeasure (P t))
     (hT : ∀ t ∈ Icc 0 δ, MemLp T 2 (P t))
@@ -93,6 +90,8 @@ theorem probability_absolutelyContinuous_score_path_risk_lower_bound
   have hB : 0 ≤ ∫ t in (0 : ℝ)..δ, Real.sqrt (∫ x, (R t x) ^ 2 ∂P t) :=
     intervalIntegral.integral_nonneg_of_forall hδ (fun t => Real.sqrt_nonneg _)
   simpa only [sq_abs] using
-    path_risk_lower_bound hB hr (abs_nonneg (V δ - V 0)) hsep hriskEq
+    path_risk_lower_bound hB (abs_nonneg (V δ - V 0)) hsep hriskEq
+
+end
 
 end NearlyMinimax

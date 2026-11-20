@@ -15,13 +15,14 @@ namespace NearlyMinimax
 def dyadicTaylorCoefficients {d ℓ : ℕ} (c : AnchoredIndex d ℓ → ℝ) (j : ℕ) :
     AnchoredIndex d ℓ → ℝ := (anchoredTransport d ℓ) ^ j *ᵥ c
 
-theorem dyadicTaylorCoefficients_succ {d ℓ : ℕ} (c : AnchoredIndex d ℓ → ℝ) (j : ℕ) :
-    dyadicTaylorCoefficients c (j + 1) = anchoredTransport d ℓ *ᵥ dyadicTaylorCoefficients c j := by
-  rw [dyadicTaylorCoefficients, pow_succ', ← Matrix.mulVec_mulVec]
-  rfl
+section
+variable {d ℓ : ℕ} (c : AnchoredIndex d ℓ → ℝ) (j : ℕ)
 
-theorem dyadicTaylorCoefficients_evaluation {d ℓ : ℕ} (c : AnchoredIndex d ℓ → ℝ)
-    (j : ℕ) (x z : Covariate d) :
+theorem dyadicTaylorCoefficients_succ :
+    dyadicTaylorCoefficients c (j + 1) = anchoredTransport d ℓ *ᵥ dyadicTaylorCoefficients c j := by
+  simp [dyadicTaylorCoefficients, pow_succ', ← Matrix.mulVec_mulVec]
+
+theorem dyadicTaylorCoefficients_evaluation (x z : Covariate d) :
     dyadicAnchoredFeature j x z ⬝ᵥ dyadicTaylorCoefficients c j = anchoredFitPolynomial x c z := by
   induction j with
   | zero =>
@@ -34,8 +35,7 @@ theorem dyadicTaylorCoefficients_evaluation {d ℓ : ℕ} (c : AnchoredIndex d �
   | succ j ih =>
     rw [dyadicTaylorCoefficients_succ, dyadicAnchoredFeature_transport_dot, ih]
 
-theorem dyadicTaylorCoefficients_normalized_evaluation {d ℓ : ℕ}
-    (c : AnchoredIndex d ℓ → ℝ) (j : ℕ) (x w : Covariate d) :
+theorem dyadicTaylorCoefficients_normalized_evaluation (x w : Covariate d) :
     anchoredFitPolynomial (dyadicNormalizedAnchor j x) (dyadicTaylorCoefficients c j) w =
       anchoredFitPolynomial x c (dyadicCellAffine j x w) := by
   have he := dyadicTaylorCoefficients_evaluation c j x (dyadicCellAffine j x w)
@@ -47,25 +47,28 @@ theorem dyadicTaylorCoefficients_normalized_evaluation {d ℓ : ℕ}
   calc
     _ = anchoredFeature (dyadicNormalizedAnchor j x) w ⬝ᵥ dyadicTaylorCoefficients c j := by
       unfold anchoredFitPolynomial dotProduct
-      apply Finset.sum_congr rfl
-      intro γ _
-      ring
+      apply Finset.sum_congr rfl <;> grind
     _ = _ := he
 
-theorem euclideanNorm_smul {d : ℕ} (a : ℝ) (v : Covariate d) :
+end
+
+section
+variable {d : ℕ}
+
+theorem euclideanNorm_smul (a : ℝ) (v : Covariate d) :
     euclideanNorm (a • v) = |a| * euclideanNorm v := by
   unfold euclideanNorm
   simp only [Pi.smul_apply, smul_eq_mul, mul_pow]
   rw [← Finset.mul_sum, Real.sqrt_mul (sq_nonneg a), Real.sqrt_sq_eq_abs]
 
-theorem dyadicCellAffine_euclidean_distance {d : ℕ} (j : ℕ) (x w : Covariate d) :
+theorem dyadicCellAffine_euclidean_distance (j : ℕ) (x w : Covariate d) :
     euclideanNorm (dyadicCellAffine j x w - x) =
       ((2 : ℝ) ^ j)⁻¹ * euclideanNorm (w - dyadicNormalizedAnchor j x) := by
   rw [dyadicCellAffine_difference, euclideanNorm_smul, abs_of_nonneg (by positivity)]
 
 /-- One actual Taylor polynomial generates a coherent coefficient family at
 every level and a genuine residual bound, uniformly in the original model. -/
-theorem admissible_dyadic_taylor_family {d : ℕ} (C : ModelConstants d)
+theorem admissible_dyadic_taylor_family (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (x : Covariate d)
     (hx : x ∈ unitCube d) :
     ∃ c : AnchoredIndex d C.order → ℝ, ∀ j : ℕ, ∀ w ∈ unitCube d,
@@ -81,7 +84,7 @@ theorem admissible_dyadic_taylor_family {d : ℕ} (C : ModelConstants d)
   have hxP : eval x P = θ.regression x := by
     have h := herr x hx
     simp [euclideanNorm, Real.zero_rpow C.smoothness_pos.ne'] at h
-    exact (sub_eq_zero.mp h).symm
+    grind
   have hP0 : (P - MvPolynomial.C (θ.regression x)).totalDegree ≤ C.order :=
     (MvPolynomial.totalDegree_sub _ _).trans (max_le hP (by simp))
   have hzero : eval x (P - MvPolynomial.C (θ.regression x)) = 0 := by
@@ -116,5 +119,7 @@ theorem admissible_dyadic_taylor_family {d : ℕ} (C : ModelConstants d)
     rw [dyadicCellAffine_euclidean_distance, Real.mul_rpow (by positivity)
       (by unfold euclideanNorm; positivity)]
     ring
+
+end
 
 end NearlyMinimax

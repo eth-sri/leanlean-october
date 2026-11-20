@@ -32,11 +32,11 @@ theorem finePairSourceRows_guards {d : ℕ} (C : ModelConstants d) [NeZero d]
   let a := C.densityLower+1/(M : ℝ)
   let b := C.densityUpper-1/(M : ℝ)
   have hg := highCenterResolution_guards C (M : ℝ) hM
-  have hM0 : (0 : ℝ) < M := by linarith [hg.1]
+  have hM0 : (0 : ℝ) < M := by linarith
   have hr := highCenterRadius_pos C
   have hmargin := highCenterRadius_le_margins C
   have ha : 0 < a := by dsimp [a]; linarith [C.densityLower_pos, one_div_pos.mpr hM0]
-  have hab : a < b := by dsimp [a,b]; linarith [hg.2]
+  have hab : a < b := by linarith
   have hCf : 0 < Cfr := by linarith
   have hpos := finePairRowMass_positive d D hD M q hq a b ha hab Cfr hCf T₀ N hT₀ hTN
   refine {
@@ -58,21 +58,21 @@ theorem finePairSourceRows_guards {d : ℕ} (C : ModelConstants d) [NeZero d]
     time_measurable := ?_
     vector_ball := ?_
     time_interval := ?_ }
-  · exact finePairRowLaw_probability d D M q a b Cfr T₀ N hpos
-  · exact finePairRowMass_nonneg d D M q a b Cfr T₀ N
+  · apply finePairRowLaw_probability <;> assumption
+  · apply finePairRowMass_nonneg
   · exact Finset.sum_pos' (fun i _ => (hpos i).le) ⟨.unit, Finset.mem_univ _, hpos .unit⟩
-  · exact finePairRowActivation_measurable d D M q a b Cfr T₀ N hpos
-  · exact finePairRowActivation_bound d D M q a b Cfr T₀ N
-  · exact finePairRowActivation_centered d D M q a b Cfr T₀ N hpos
-  · exact finePairRowSlope_joint_measurable d k D M q a b
-  · exact finePairRowSlope_integrable d k D M q a b Cfr T₀ N hpos ha hab
-  · exact finePairRowSlope_centered d k D M q a b Cfr T₀ N hpos ha hab
-  · exact finePairRowIntercept_measurable d D M q a b
+  · apply finePairRowActivation_measurable
+  · apply finePairRowActivation_bound
+  · apply finePairRowActivation_centered <;> assumption
+  · apply finePairRowSlope_joint_measurable
+  · apply finePairRowSlope_integrable <;> assumption
+  · apply finePairRowSlope_centered <;> assumption
+  · apply finePairRowIntercept_measurable
   · exact finePairRowIntercept_mem d D M q a b hab.le
-  · exact finePairRow_reset_interval d k D M q a b ha hab
-  · exact finePairRowVector_measurable d D M q Cfr
+  · apply finePairRow_reset_interval <;> assumption
+  · apply finePairRowVector_measurable
   · exact finePairRowTime_measurable d D M q
-  · exact finePairRowVector_ball d D M q Cfr hCf
+  · apply finePairRowVector_ball <;> assumption
   · exact finePairRowTime_unit d D M q
 
 end NearlyMinimax

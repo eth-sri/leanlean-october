@@ -24,18 +24,14 @@ theorem polynomial_bounds_nat_of_rateBracket {risk : ℕ → ℝ} {lam kappa a G
       (hu.eventually (gt_mem_nhds (by norm_num : (0 : ℝ)<1))),
     tendsto_natCast_atTop_atTop.eventually (eventually_gt_atTop (1 : ℝ))]
     with n hn hlow hupp hn1
-  have hn0 : 0 < (n : ℝ) := by linarith only [hn1]
+  have hn0 : 0 < (n : ℝ) := by positivity
   have hp : 0 < Real.exp (-lam*Real.log n) := Real.exp_pos _
   constructor
   · apply le_trans _ hn.1
     rw [rateScale_eq_base_mul_correction]
     have hr : (n : ℝ)^(-lam-epsilon) = Real.exp (-lam*Real.log n)*(n : ℝ)^(-epsilon) := by
-      rw [Real.rpow_def_of_pos hn0,Real.rpow_def_of_pos hn0,←Real.exp_add]
-      congr 1
-      ring
-    rw [hr]
-    simp only [←mul_assoc]
-    exact mul_le_mul_of_nonneg_left hlow.1 (mul_pos hc hp).le
+      simp [Real.rpow_def_of_pos hn0, ←Real.exp_add] <;> ring
+    grind [mul_le_mul_of_nonneg_left]
   · apply le_trans hn.2
     rw [rateScale_eq_base_mul_correction,Real.rpow_def_of_pos hn0]
     rw [mul_comm (Real.log (n : ℝ)) (-lam)]

@@ -43,12 +43,15 @@ def graphConnectedSubsets {V : Type*} [Fintype V] (G : SimpleGraph V) (x : V) (k
   classical
   exact Finset.univ.powerset.filter (fun P => x ∈ P ∧ P.card = k ∧ (G.induce (P : Set V)).Connected)
 
-theorem mem_graphConnectedSubsets {V : Type*} [Fintype V] {G : SimpleGraph V} {x : V} {k : ℕ} {P : Finset V} :
+section
+variable {V : Type*} [Fintype V]
+
+theorem mem_graphConnectedSubsets {G : SimpleGraph V} {x : V} {k : ℕ} {P : Finset V} :
     P ∈ graphConnectedSubsets G x k ↔ x ∈ P ∧ P.card = k ∧ (G.induce (P : Set V)).Connected := by
   classical
   simp [graphConnectedSubsets]
 
-theorem graphConnectedSubset_closed_walk {V : Type*} [Fintype V] [DecidableEq V] {G : SimpleGraph V} {x : V} {k : ℕ}
+theorem graphConnectedSubset_closed_walk [DecidableEq V] {G : SimpleGraph V} {x : V} {k : ℕ}
     {P : Finset V} (hP : P ∈ graphConnectedSubsets G x k) :
     ∃ p : G.Walk x x, p.length = 2 * (k - 1) ∧ p.support.toFinset = P := by
   classical
@@ -57,9 +60,7 @@ theorem graphConnectedSubset_closed_walk {V : Type*} [Fintype V] [DecidableEq V]
   obtain ⟨p, hplen, hpall⟩ := finite_connected_closed_spanning_walk (G.induce (P : Set V)) hconn x'
   let f : G.induce (P : Set V) →g G := { toFun := Subtype.val, map_rel' := fun h => h }
   refine ⟨p.map f, ?_, ?_⟩
-  · have hc : Fintype.card (P : Set V) = P.card :=
-      Fintype.card_ofFinset P (fun _ => Iff.rfl)
-    simpa only [SimpleGraph.Walk.length_map, hc, hcard] using hplen
+  · simp_all <;> field_simp <;> ring
   · ext y
     rw [List.mem_toFinset, SimpleGraph.Walk.support_map, List.mem_map]
     constructor
@@ -69,7 +70,7 @@ theorem graphConnectedSubset_closed_walk {V : Type*} [Fintype V] [DecidableEq V]
       exact ⟨⟨y, hy⟩, hpall _, rfl⟩
 
 /-- The source connected-set bound, uniformly in the number of vertices. -/
-theorem graph_connected_subsets_card_le {V : Type*} [Fintype V] [DecidableEq V]
+theorem graph_connected_subsets_card_le [DecidableEq V]
     (G : SimpleGraph V) [G.LocallyFinite] (D : ℕ) (hD : ∀ v, G.degree v ≤ D) (x : V) (k : ℕ) :
     (graphConnectedSubsets G x k).card ≤ D ^ (2 * (k - 1)) := by
   classical
@@ -77,20 +78,16 @@ theorem graph_connected_subsets_card_le {V : Type*} [Fintype V] [DecidableEq V]
     if hP : P ∈ graphConnectedSubsets G x k then Classical.choose (graphConnectedSubset_closed_walk hP) else .nil
   have hf : ∀ P ∈ graphConnectedSubsets G x k,
       (f P).length = 2 * (k - 1) ∧ (f P).support.toFinset = P := by
-    intro P hP
-    dsimp only [f]
-    rw [dite_eq_left hP]
-    exact Classical.choose_spec (graphConnectedSubset_closed_walk hP)
+    grind
   calc
     _ ≤ (G.finsetWalkLength (2 * (k - 1)) x x).card := by
       apply Finset.card_le_card_of_injOn f
       · intro P hP
         exact SimpleGraph.mem_finsetWalkLength_iff.2 (hf P hP).1
       · intro P hP Q hQ hPQ
-        calc
-          P = (f P).support.toFinset := (hf P hP).2.symm
-          _ = (f Q).support.toFinset := by rw [hPQ]
-          _ = Q := (hf Q hQ).2
+        grind
     _ ≤ _ := graph_walk_count_le G D hD _ _ _
+
+end
 
 end NearlyMinimax

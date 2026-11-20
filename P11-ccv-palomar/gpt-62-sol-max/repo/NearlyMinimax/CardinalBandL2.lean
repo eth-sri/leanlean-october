@@ -21,15 +21,17 @@ def centeredCardinalBandMatrix {d n D : ℕ} (i : Fin n) (lam L T : ℝ)
   ∫ t : SpatialScaleVector i in spatialScaleDomain i T \ spatialScaleDomain i L,
     spatialCenteredCardinalMatrix i lam U t β β'
 
-theorem spatial_centered_matrix_cost_integrable {d n D : ℕ} (i : Fin n) (lam : ℝ)
+section
+variable {d n D : ℕ} (i : Fin n)
+
+theorem spatial_centered_matrix_cost_integrable (lam : ℝ)
     {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d) :
     Integrable (fun t => spatialMatrixL1 (spatialCenteredCardinalMatrix (D := D) i lam U t))
       (spatialScaleMeasure i T) := by
-  unfold spatialMatrixL1
   exact integrable_finsetSum _ (fun β _ => integrable_finsetSum _
-    (fun β' _ => (spatial_centered_cardinal_matrix_integrable i lam T hT U β β').abs))
+      (fun β' _ => (spatial_centered_cardinal_matrix_integrable i lam T hT U β β').abs))
 
-theorem spatial_centered_band_cost_le_integral_cost {d n D : ℕ} (i : Fin n) (lam L : ℝ)
+theorem spatial_centered_band_cost_le_integral_cost (lam L : ℝ)
     {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d) :
     spatialMatrixL1 (centeredCardinalBandMatrix (D := D) i lam L T U) ≤
       ∫ t : SpatialScaleVector i in spatialScaleDomain i T \ spatialScaleDomain i L,
@@ -49,7 +51,7 @@ theorem spatial_centered_band_cost_le_integral_cost {d n D : ℕ} (i : Fin n) (l
 
 /-- The squared actual centered band matrix is bounded by its actual
 scale kernel integral; no desired norm bound is a premise. -/
-theorem centered_cardinal_band_matrix_l1_square_le {d n D : ℕ} (i : Fin n) {lam : ℝ}
+theorem centered_cardinal_band_matrix_l1_square_le {lam : ℝ}
     (hlam : 0 ≤ lam) (L : ℝ) {T : ℝ} (hT : 1 ≤ T)
     (U : Fin n → Covariate d) (hU : ∀ l r, |U l r| ≤ 2) :
     (spatialMatrixL1 (centeredCardinalBandMatrix (D := D) i lam L T U)) ^ 2 ≤
@@ -100,6 +102,8 @@ theorem centered_cardinal_band_matrix_l1_square_le {d n D : ℕ} (i : Fin n) {la
     (spatial_centered_band_cost_le_integral_cost (D := D) i lam L hT U)
   exact htriangle.trans (by simpa only [integral_const_mul] using hbound)
 
+end
+
 theorem anchored_patch_configuration_continuous {d n : ℕ} (i : Fin n) (x : Covariate d) :
     Continuous (anchoredPatchConfiguration i x) := by
   apply continuous_pi
@@ -132,31 +136,26 @@ theorem anchored_centered_band_matrix_entry_measurable {d n D : ℕ} (i : Fin n)
 theorem anchored_patch_configuration_in_box_ae {d n : ℕ} (i : Fin n) (x : Covariate d)
     (hx : x ∈ spatialPatchBox d) :
     ∀ᵐ Y ∂spatialPatchDesignMeasure i d, ∀ l r, |anchoredPatchConfiguration i x Y l r| ≤ 2 := by
-  have hae : ∀ᵐ Y ∂spatialPatchDesignMeasure i d, ∀ j : SpatialScaleIndex i, Y j ∈ spatialPatchBox d := by
-    apply ae_all_iff.mpr
-    intro j
-    exact (Measure.tendsto_eval_ae_ae (μ := fun _ : SpatialScaleIndex i => volume.restrict (spatialPatchBox d))
-      (i := j)).eventually (ae_restrict_mem measurableSet_Icc)
-  filter_upwards [hae] with Y hY
-  intro l r
-  by_cases hl : l ≠ i
-  · have hh := hY ⟨l, hl⟩
-    simp only [anchoredPatchConfiguration, dite_eq_left hl]
-    apply (abs_le.mpr ⟨hh.1 r, hh.2 r⟩).trans
-    norm_num
-  · have hli : l = i := not_ne_iff.mp hl
-    subst l
-    rw [anchored_configuration_same]
-    exact (abs_le.mpr ⟨hx.1 r, hx.2 r⟩).trans (by norm_num)
+  filter_upwards [ae_pi_forall (ι := SpatialScaleIndex i)
+    (ae_restrict_mem (μ := volume) (s := spatialPatchBox d) measurableSet_Icc)] with Y hY l r
+  have h : anchoredPatchConfiguration i x Y l ∈ spatialPatchBox d := by
+    unfold anchoredPatchConfiguration
+    split <;> apply_rules
+  exact (spatialPatchBox_coord_abs_le h r).trans (by norm_num)
 
-theorem anchored_centered_band_matrix_l1_square_measurable {d n D : ℕ} (i : Fin n)
+section
+variable {d n D : ℕ}
+
+section
+variable (i : Fin n)
+
+theorem anchored_centered_band_matrix_l1_square_measurable
     (lam L T : ℝ) (x : Covariate d) :
     Measurable (fun Y => (spatialMatrixL1 (anchoredCenteredCardinalBandMatrix (D := D) i lam L T x Y)) ^ 2) := by
-  unfold spatialMatrixL1
   exact (Finset.measurable_fun_sum _ (fun β _ => Finset.measurable_fun_sum _
-    (fun β' _ => (anchored_centered_band_matrix_entry_measurable i lam L T x β β').abs))).pow_const 2
+      (fun β' _ => (anchored_centered_band_matrix_entry_measurable i lam L T x β β').abs))).pow_const 2
 
-theorem anchored_centered_band_matrix_l1_square_integrable {d n D : ℕ} (i : Fin n)
+theorem anchored_centered_band_matrix_l1_square_integrable
     {lam T : ℝ} (hlam : 0 ≤ lam) (hT : 1 ≤ T) (L : ℝ) (x : Covariate d) (hx : x ∈ spatialPatchBox d) :
     Integrable (fun Y => (spatialMatrixL1 (anchoredCenteredCardinalBandMatrix (D := D) i lam L T x Y)) ^ 2)
       (spatialPatchDesignMeasure i d) := by
@@ -165,11 +164,13 @@ theorem anchored_centered_band_matrix_l1_square_integrable {d n D : ℕ} (i : Fi
   apply hi.mono' (anchored_centered_band_matrix_l1_square_measurable i lam L T x).aestronglyMeasurable
   filter_upwards [anchored_patch_configuration_in_box_ae i x hx] with Y hY
   rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
-  exact centered_cardinal_band_matrix_l1_square_le i hlam L hT (anchoredPatchConfiguration i x Y) hY
+  apply centered_cardinal_band_matrix_l1_square_le <;> assumption
+
+end
 
 /-- Actual fixed-head spatial L² bound for the centered cardinal band.
 The constant is explicit and depends only on dimension. -/
-theorem anchored_centered_band_matrix_l1_square_integral_le {d n D : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
+theorem anchored_centered_band_matrix_l1_square_integral_le (hd : 5 ≤ d) (hn : 2 ≤ n)
     (i : Fin n) (x : Covariate d) (hx : x ∈ spatialPatchBox d) {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) :
     (∫ Y, (spatialMatrixL1 (anchoredCenteredCardinalBandMatrix (D := D) i (spatialInterpolationLambda d) L T x Y)) ^ 2
       ∂spatialPatchDesignMeasure i d) ≤
@@ -184,7 +185,7 @@ theorem anchored_centered_band_matrix_l1_square_integral_le {d n D : ℕ} (hd : 
         ∫ t in spatialScaleDomain i T \ spatialScaleDomain i L,
           anchoredCardinalScale i (spatialInterpolationLambda d) x t Y) := by
     filter_upwards [anchored_patch_configuration_in_box_ae i x hx] with Y hY
-    exact centered_cardinal_band_matrix_l1_square_le i hlam L hT (anchoredPatchConfiguration i x Y) hY
+    apply centered_cardinal_band_matrix_l1_square_le <;> assumption
   have hfirst := integral_mono_ae (anchored_centered_band_matrix_l1_square_integrable i hlam hT L x hx) hi hdom
   rw [integral_const_mul, spatial_scale_index_card] at hfirst
   have htail := mul_le_mul_of_nonneg_left (anchored_cardinal_band_scale_spatial_integral_bound hd hn i x hx hL hT)
@@ -192,5 +193,7 @@ theorem anchored_centered_band_matrix_l1_square_integral_le {d n D : ℕ} (hd : 
   have hfull := hfirst.trans htail
   rw [show 2 * (n - 1) = (n - 1) * 2 by omega, pow_mul] at hfull
   simpa only [mul_pow, ← pow_mul, Nat.mul_comm, mul_assoc, mul_comm, mul_left_comm] using hfull
+
+end
 
 end NearlyMinimax

@@ -15,16 +15,13 @@ namespace NearlyMinimax
 def anchoredPopulationFit {d ℓ : ℕ} (u : Covariate d) (p g : Covariate d → ℝ) :
     AnchoredIndex d ℓ → ℝ := (anchoredDensityGram u p)⁻¹ *ᵥ anchoredVectorMoment u p g
 
-def anchoredFitPolynomial {d ℓ : ℕ} (u : Covariate d) (c : AnchoredIndex d ℓ → ℝ) :
-    Covariate d → ℝ := fun w => ∑ γ, c γ * anchoredFeature u w γ
+section
+variable {d ℓ : ℕ}
 
-theorem anchoredFitPolynomial_continuous {d ℓ : ℕ} (u : Covariate d)
-    (c : AnchoredIndex d ℓ → ℝ) : Continuous (anchoredFitPolynomial u c) := by
-  apply continuous_finsetSum
-  intro γ _
-  exact ((anchoredMonomial_continuous γ).comp (continuous_id.sub continuous_const)).const_mul _
+section
+variable (u : Covariate d)
 
-theorem anchoredPopulationFit_normal_equation {d ℓ : ℕ} (u : Covariate d)
+theorem anchoredPopulationFit_normal_equation
     (p g : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 < a)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) :
     anchoredDensityGram (ℓ := ℓ) u p *ᵥ anchoredPopulationFit u p g =
@@ -33,38 +30,25 @@ theorem anchoredPopulationFit_normal_equation {d ℓ : ℕ} (u : Covariate d)
     (anchoredDensityGram_posDef (ℓ := ℓ) u p hpmeas a b ha hp).isUnit
   rw [anchoredPopulationFit, Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv _ hdet, Matrix.one_mulVec]
 
-theorem anchoredVectorMoment_polynomial {d ℓ : ℕ} (u : Covariate d)
+theorem anchoredVectorMoment_polynomial
     (p : Covariate d → ℝ) (hpmeas : Measurable p) (b : ℝ)
     (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b) (c : AnchoredIndex d ℓ → ℝ) :
     anchoredVectorMoment u p (anchoredFitPolynomial u c) = anchoredDensityGram u p *ᵥ c := by
-  classical
   ext γ
-  unfold anchoredVectorMoment anchoredFitPolynomial
-  simp only [Finset.mul_sum]
-  rw [integral_finsetSum]
-  · change (∑ δ, ∫ w, p w * anchoredFeature u w γ * (c δ * anchoredFeature u w δ)
-      ∂cubeVolume d) = ∑ δ, anchoredDensityGram u p γ δ * c δ
-    apply Finset.sum_congr rfl
-    intro δ _
-    have he : (fun w => p w * anchoredFeature u w γ * (c δ * anchoredFeature u w δ)) =
-        fun w => (p w * (anchoredFeature u w γ * anchoredFeature u w δ)) * c δ := by
-      funext w; ring
-    rw [he, integral_mul_const]
-    rfl
-  · intro δ _
-    have he : (fun w => p w * anchoredFeature u w γ * (c δ * anchoredFeature u w δ)) =
-        fun w => (p w * (anchoredFeature u w γ * anchoredFeature u w δ)) * c δ := by
-      funext w; ring
-    rw [he]
-    exact (anchoredDensityGram_product_integrable u p hpmeas b hp γ δ).mul_const _
+  exact (weighted_gram_mulVec (cubeVolume d) p (anchoredFeature u) c
+    (anchoredDensityGram_product_integrable u p hpmeas b hp) γ).2
 
-theorem dyadicAnchoredFeature_transport_dot {d ℓ : ℕ} (j : ℕ) (x z : Covariate d)
+end
+
+theorem dyadicAnchoredFeature_transport_dot (j : ℕ) (x z : Covariate d)
     (c : AnchoredIndex d ℓ → ℝ) :
     dyadicAnchoredFeature (j + 1) x z ⬝ᵥ (anchoredTransport d ℓ *ᵥ c) =
       dyadicAnchoredFeature j x z ⬝ᵥ c := by
   rw [Matrix.dotProduct_mulVec]
   have hT : (anchoredTransport d ℓ)ᵀ = anchoredTransport d ℓ := Matrix.diagonal_transpose _
   rw [← hT, Matrix.vecMul_transpose, dyadicAnchoredFeature_transport]
+
+end
 
 def anchoredIncrement {d ℓ : ℕ} (a : ℕ → AnchoredIndex d ℓ → ℝ) :
     ℕ → AnchoredIndex d ℓ → ℝ

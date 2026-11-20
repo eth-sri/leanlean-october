@@ -47,12 +47,12 @@ theorem paper_lower_sharp {d : ℕ} (C : ModelConstants d) : LowerSharpClaim C :
   intro Cω
   filter_upwards [hgeometry Cfr cf hmin hcf Cω,
     tendsto_natCast_atTop_atTop.eventually
-      (eventually_completeSourceSaddle_parameters C hs hd hcf heta0 hcm Cω),
+      (eventually_completeSourceSaddle_parameters C hs hd (cf := cf) heta0 hcm Cω),
     tendsto_natCast_atTop_atTop.eventually
       (completeSourceSaddleActivity_eventually_bound C hs hd q Cfr lam Cω)] with n hgeo hp hactivity
   let m := highCompleteSourceSaddleCoefficient C
   let theta := highCompleteSourceSaddleTheta C
-  let k := lowerSaddleGrid d m theta Cω n
+  let k := completeSaddleGrid C Cω n
   let M := completeSaddleM C n
   let D := completeSaddleD C n
   let N := completeSaddleN C Cω n
@@ -69,34 +69,23 @@ theorem paper_lower_sharp {d : ℕ} (C : ModelConstants d) : LowerSharpClaim C :
     LinearOrder.lift' (Fintype.equivFin (HighWindowLabels d k))
       (Fintype.equivFin (HighWindowLabels d k)).injective
   let R := completeSourceRows C k D M q Cfr lam ell N mu
-  obtain ⟨E,hE,hEcap,hHI,hH0,hdom,hseries⟩ := hgeo inferInstance inferInstance
+  let E := completeSaddleEnergyBudget C Q Cfr cf Cω n
+  obtain ⟨hE,hHI,hH0,hdom,hseries⟩ := hgeo inferInstance inferInstance
   have hq : 1 ≤ q := by dsimp only [q,lowerSaddleResponseOrder]; omega
-  have G := completeSourceRows_guards C k D M q hD' hq hM' Cfr lam ell N mu hCfr hell hellN
+  have G := (completeSourceRows_guards C k D M q hD' hq hM' Cfr lam ell N mu hCfr hell hellN).1
   let Bl := highRowTotalMass R.rowMass/highCenterMix C
   have hBl : 0 ≤ Bl := div_nonneg G.total_positive.le (highCenterMix_mem C).1.le
   have hactivity' : Bl ≤ CB*lowerSaddleActivity C.smoothness d m theta Cω
       (shrunkDensityExponent C.densityLower C.densityUpper) n := hactivity
   change CompleteSaddleCostRiskBudget C cf CB C5 C6 C7 ch ctr cm Cω n
   dsimp only [CompleteSaddleCostRiskBudget]
-  refine ⟨Bl,E,hB,hBl,hE,hactivity',hEcap,?_⟩
+  refine ⟨Bl,E,hB,hBl,hE,hactivity',le_rfl,?_⟩
   intro U
-  let I := Real.sqrt ((3^d : ℕ)*(k : ℝ)^d*E)
-  let delta := localScorePathLength (highPathConstant (3^d) Q.ρ eta0) Bl I
-  have heta0' : 0 ≤ eta := mul_nonneg hcf.le (Real.rpow_nonneg (Nat.cast_nonneg _) _)
-  have hvariance : eta^2*delta ≤ Q.ρ := highPath_variance_budget (3^d) Q.ρ_pos heta0 hBl
-    (Real.sqrt_nonneg _) heta0' heta
-  have hV (t : ℝ) (ht : t ∈ Icc 0 delta) : |(Q.v-eta^2*t)-Q.v| ≤ Q.ρ := by
-    simp only [sub_sub_cancel_left,abs_neg,abs_mul,abs_of_nonneg (sq_nonneg eta),abs_of_nonneg ht.1]
-    exact (mul_le_mul_of_nonneg_left ht.2 (sq_nonneg eta)).trans hvariance
   have hetaEq : eta = completeSaddleEta C Cω cf n := completeSourceSaddle_eta_eq C Cω cf n
   have hout := hcost U k D M q inferInstance inferInstance hk' hD' hq hM' lam ell N mu hell hellN
     cf hcf.le hHolder heta cm hcm.le hcmU n E hE heps
-    (fun _t _h _j r => completeSaddleGeometryEnvelope C Q Cfr cf Cω n r)
-    (fun _t _ht _h _j r => hHI r)
-    (fun _t _ht _h _j r u => hH0 r u)
-    (fun t ht h j r x hx => by
-      simpa only [← hetaEq] using hdom (Q.v-eta^2*t) (hV t ht) h j r x hx)
-    (fun _t _ht _h => hseries)
+    (completeSaddleGeometryEnvelope C Q Cfr cf Cω n) hHI hH0
+    (fun V hV h j r x hx => by simpa only [← hetaEq] using hdom V hV h j r x hx) hseries
   have htail : 2*Real.exp (-(cm/(M : ℝ))^2/
       (8*highHistoryMassParameter d k C.densityLower C.densityUpper)) =
       highCompleteSourceSaddleTail C Cω cm n :=

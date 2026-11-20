@@ -16,13 +16,16 @@ def dyadicFeaturePolynomial {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
     (γ : AnchoredIndex d ℓ) : MvPolynomial (Fin d) ℝ :=
   ∏ i, (C ((2 : ℝ) ^ j) * (X i - C (x i))) ^ (γ.val i).val
 
-theorem dyadicFeaturePolynomial_eval {d ℓ : ℕ} (j : ℕ) (x z : Covariate d)
+section
+variable {d ℓ : ℕ} (j : ℕ)
+
+theorem dyadicFeaturePolynomial_eval (x z : Covariate d)
     (γ : AnchoredIndex d ℓ) :
     eval z (dyadicFeaturePolynomial j x γ) = dyadicAnchoredFeature j x z γ := by
   simp only [dyadicFeaturePolynomial, map_prod, map_pow, map_mul, map_sub, eval_C, eval_X,
     dyadicAnchoredFeature, anchoredMonomial]
 
-theorem dyadicFeaturePolynomial_degree {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+theorem dyadicFeaturePolynomial_degree (x : Covariate d)
     (γ : AnchoredIndex d ℓ) : (dyadicFeaturePolynomial j x γ).totalDegree ≤ ℓ := by
   unfold dyadicFeaturePolynomial
   apply (MvPolynomial.totalDegree_finsetProd Finset.univ _).trans
@@ -34,26 +37,31 @@ theorem dyadicFeaturePolynomial_degree {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
     exact (MvPolynomial.totalDegree_sub _ _).trans (by simp)
   exact (MvPolynomial.totalDegree_pow _ _).trans (by simpa using Nat.mul_le_mul_left _ hlinear)
 
+end
+
 /-- Coefficientwise continuity of a polynomial family; this does not require
 choosing an auxiliary topology on the infinite polynomial ring. -/
 def PolynomialCoefficientContinuous {X σ : Type*} [TopologicalSpace X]
     (P : X → MvPolynomial σ ℝ) : Prop := ∀ e, Continuous (fun x => (P x).coeff e)
 
-theorem polynomialCoefficientContinuous_const {X σ : Type*} [TopologicalSpace X]
+section
+variable {X σ : Type*} [TopologicalSpace X]
+
+theorem polynomialCoefficientContinuous_const
     (P : MvPolynomial σ ℝ) : PolynomialCoefficientContinuous (fun _ : X => P) :=
   fun _ => continuous_const
 
-theorem polynomialCoefficientContinuous_C {X σ : Type*} [TopologicalSpace X]
+theorem polynomialCoefficientContinuous_C
     [DecidableEq σ] (g : X → ℝ) (hg : Continuous g) :
     PolynomialCoefficientContinuous (fun x => C (g x) : X → MvPolynomial σ ℝ) := by
   intro e
   simp only [coeff_C]
   by_cases he : 0 = e
-  · simpa only [he, if_true] using hg
+  · simp_all
   · simp only [he, if_false]
-    exact continuous_const
+    fun_prop
 
-theorem polynomialCoefficientContinuous_mul {X σ : Type*} [TopologicalSpace X]
+theorem polynomialCoefficientContinuous_mul
     [DecidableEq σ] (P Q : X → MvPolynomial σ ℝ)
     (hP : PolynomialCoefficientContinuous P) (hQ : PolynomialCoefficientContinuous Q) :
     PolynomialCoefficientContinuous (fun x => P x * Q x) := by
@@ -63,15 +71,14 @@ theorem polynomialCoefficientContinuous_mul {X σ : Type*} [TopologicalSpace X]
   intro v hv
   exact (hP v.1).mul (hQ v.2)
 
-theorem polynomialCoefficientContinuous_sub {X σ : Type*} [TopologicalSpace X]
+theorem polynomialCoefficientContinuous_sub
     (P Q : X → MvPolynomial σ ℝ)
     (hP : PolynomialCoefficientContinuous P) (hQ : PolynomialCoefficientContinuous Q) :
     PolynomialCoefficientContinuous (fun x => P x - Q x) := by
   intro e
-  simp only [coeff_sub]
   exact (hP e).sub (hQ e)
 
-theorem polynomialCoefficientContinuous_pow {X σ : Type*} [TopologicalSpace X]
+theorem polynomialCoefficientContinuous_pow
     [DecidableEq σ] (P : X → MvPolynomial σ ℝ)
     (hP : PolynomialCoefficientContinuous P) (n : ℕ) :
     PolynomialCoefficientContinuous (fun x => P x ^ n) := by
@@ -80,6 +87,8 @@ theorem polynomialCoefficientContinuous_pow {X σ : Type*} [TopologicalSpace X]
   | succ n hn =>
     simp_rw [pow_succ]
     exact polynomialCoefficientContinuous_mul _ _ hn hP
+
+end
 
 theorem polynomialCoefficientContinuous_prod {X σ ι : Type*} [TopologicalSpace X]
     [DecidableEq σ] (s : Finset ι) (P : ι → X → MvPolynomial σ ℝ)
@@ -93,8 +102,11 @@ theorem polynomialCoefficientContinuous_prod {X σ ι : Type*} [TopologicalSpace
     exact polynomialCoefficientContinuous_mul _ _ (hP i (Finset.mem_insert_self i s))
       (hs (fun j hj => hP j (Finset.mem_insert_of_mem hj)))
 
+section
+variable {d ℓ : ℕ} (j : ℕ)
+
 /-- All actual anchor-dependent coefficients used in a factorial lift are Borel. -/
-theorem dyadicFeaturePolynomial_coeff_continuous {d ℓ : ℕ} (j : ℕ)
+theorem dyadicFeaturePolynomial_coeff_continuous
     (γ : AnchoredIndex d ℓ) (e : Fin d →₀ ℕ) :
     Continuous (fun x : Covariate d => (dyadicFeaturePolynomial j x γ).coeff e) := by
   unfold dyadicFeaturePolynomial
@@ -106,13 +118,15 @@ theorem dyadicFeaturePolynomial_coeff_continuous {d ℓ : ℕ} (j : ℕ)
   · exact polynomialCoefficientContinuous_const _
   · apply polynomialCoefficientContinuous_sub
     · exact polynomialCoefficientContinuous_const _
-    · exact polynomialCoefficientContinuous_C _ (continuous_apply i)
+    · apply polynomialCoefficientContinuous_C <;> fun_prop
 
-theorem dyadicFeatureProduct_coeff_continuous {d ℓ : ℕ} (j : ℕ)
+theorem dyadicFeatureProduct_coeff_continuous
     (γ δ : AnchoredIndex d ℓ) (e : Fin d →₀ ℕ) :
     Continuous (fun x : Covariate d =>
       (dyadicFeaturePolynomial j x γ * dyadicFeaturePolynomial j x δ).coeff e) :=
   polynomialCoefficientContinuous_mul _ _ (dyadicFeaturePolynomial_coeff_continuous j γ)
     (dyadicFeaturePolynomial_coeff_continuous j δ) e
+
+end
 
 end NearlyMinimax

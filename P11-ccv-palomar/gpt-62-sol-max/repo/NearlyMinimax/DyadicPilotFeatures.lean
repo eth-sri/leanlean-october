@@ -34,14 +34,17 @@ theorem dyadicPilotCell_measurable {d : ℕ} (j : ℕ) (x : Covariate d) :
     MeasurableSet (dyadicPilotCell j x) :=
   measurableSet_eq_fun (regular_grid_cell_measurable _ _) measurable_const
 
-theorem dyadicAnchoredFeature_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+section
+variable {d ℓ : ℕ} (j : ℕ)
+
+theorem dyadicAnchoredFeature_measurable (x : Covariate d)
     (γ : AnchoredIndex d ℓ) : Measurable (fun z => dyadicAnchoredFeature j x z γ) := by
   exact ((anchoredMonomial_continuous γ).comp (continuous_pi (fun i =>
     continuous_const.mul ((continuous_apply i).sub continuous_const)))).measurable
 
 /-- Current-cell normalization bounds the exact anchored monomials, including
 the assigned right cube boundary. -/
-theorem dyadicAnchoredFeature_abs_le_one {d ℓ : ℕ} (j : ℕ) (x z : Covariate d)
+theorem dyadicAnchoredFeature_abs_le_one (x z : Covariate d)
     (hx : x ∈ unitCube d) (hz : z ∈ unitCube d) (hc : z ∈ dyadicPilotCell j x)
     (γ : AnchoredIndex d ℓ) : |dyadicAnchoredFeature j x z γ| ≤ 1 := by
   apply anchoredMonomial_abs_le_one
@@ -50,8 +53,9 @@ theorem dyadicAnchoredFeature_abs_le_one {d ℓ : ℕ} (j : ℕ) (x z : Covariat
   have hk : 0 < (2 : ℝ) ^ j := by positivity
   have he : (((2 : ℕ) ^ j : ℕ) : ℝ) = (2 : ℝ) ^ j := by simp
   rw [he] at hr
-  rw [abs_mul, abs_of_pos hk]
-  exact (mul_le_mul_of_nonneg_left hr hk.le).trans_eq (by field_simp)
+  simpa using (mul_le_mul_of_nonneg_left hr hk.le).trans_eq (by field_simp)
+
+end
 
 def dyadicPilotScalar {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
     (a : LocalPilotIndex d ℓ) (z : Observation d) : ℝ :=
@@ -67,8 +71,14 @@ def dyadicPilotFeature {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
   dyadicPilotScale d j * (Prod.fst ⁻¹' dyadicPilotCell j x).indicator
     (dyadicPilotScalar j x a) z
 
-theorem dyadicPilotScalar_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) : Measurable (dyadicPilotScalar j x a) := by
+section
+variable {d ℓ : ℕ}
+
+section
+variable (j : ℕ) (x : Covariate d)
+    (a : LocalPilotIndex d ℓ)
+
+theorem dyadicPilotScalar_measurable : Measurable (dyadicPilotScalar j x a) := by
   cases a with
   | inl a =>
     exact ((dyadicAnchoredFeature_measurable j x a.1).comp measurable_fst).mul
@@ -80,14 +90,16 @@ theorem dyadicPilotScalar_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
         ((dyadicAnchoredFeature_measurable j x γ).comp measurable_fst)
     | inr γ => exact (dyadicAnchoredFeature_measurable j x γ).comp measurable_fst
 
-theorem dyadicPilotFeature_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) : Measurable (dyadicPilotFeature j x a) :=
+theorem dyadicPilotFeature_measurable : Measurable (dyadicPilotFeature j x a) :=
   measurable_const.mul ((dyadicPilotScalar_measurable j x a).indicator
     (measurable_fst (dyadicPilotCell_measurable j x)))
 
-theorem dyadicPilotScalar_abs_bound {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) (z : Observation d) (hx : x ∈ unitCube d)
-    (hz : z.1 ∈ unitCube d) (hc : z.1 ∈ dyadicPilotCell j x) :
+section
+variable (z : Observation d) (hx : x ∈ unitCube d)
+    (hz : z.1 ∈ unitCube d)
+include hx hz
+
+theorem dyadicPilotScalar_abs_bound (hc : z.1 ∈ dyadicPilotCell j x) :
     |dyadicPilotScalar j x a z| ≤ 1 + |z.2| := by
   have hb := dyadicAnchoredFeature_abs_le_one (ℓ := ℓ) j x z.1 hx hz hc
   cases a with
@@ -106,9 +118,7 @@ theorem dyadicPilotScalar_abs_bound {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
     | inr γ => exact (hb γ).trans (le_add_of_nonneg_right (abs_nonneg z.2))
 
 /-- Exact geometric support and the paper's raw feature envelope. -/
-theorem dyadicPilotFeature_abs_bound {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) (z : Observation d) (hx : x ∈ unitCube d)
-    (hz : z.1 ∈ unitCube d) :
+theorem dyadicPilotFeature_abs_bound :
     |dyadicPilotFeature j x a z| ≤ dyadicPilotScale d j *
       (Prod.fst ⁻¹' dyadicPilotCell j x).indicator
         (fun z : Observation d => 1 + |z.2|) z := by
@@ -120,7 +130,11 @@ theorem dyadicPilotFeature_abs_bound {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
       (dyadicPilotScale_pos d j).le
   · simp [dyadicPilotFeature, hc]
 
-theorem dyadicPilotFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
+end
+
+end
+
+theorem dyadicPilotFeature_memLp_two (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (a : LocalPilotIndex d ℓ) :
     MemLp (dyadicPilotFeature j x a) 2 (observationLaw θ) := by
@@ -135,6 +149,8 @@ theorem dyadicPilotFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
   apply (dyadicPilotFeature_abs_bound j x a z hx hz).trans
   by_cases hc : z.1 ∈ dyadicPilotCell j x <;> simp [hc]
   exact mul_nonneg (dyadicPilotScale_pos d j).le (by positivity)
+
+end
 
 def dyadicPilotMomentConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
   (2 * (1 + responseSecondBound C)) * C.densityUpper
@@ -191,8 +207,7 @@ theorem dyadicPilotFeature_second_le {d ℓ : ℕ} (C : ModelConstants d)
       dyadicPilotMomentConstant C * dyadicPilotScale d j := by
     unfold dyadicPilotMomentConstant
     field_simp [ne_of_gt (dyadicPilotScale_pos d j)] <;> ring
-  rw [heq] at hm
-  simpa only [mul_assoc] using hm
+  simp [] <;> linarith
 
 def dyadicPilotPopulation {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
     LocalPilotIndex d ℓ → ℝ := fun a => ∫ z, dyadicPilotFeature j x a z ∂observationLaw θ

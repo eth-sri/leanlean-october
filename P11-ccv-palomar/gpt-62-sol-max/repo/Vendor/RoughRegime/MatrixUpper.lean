@@ -27,7 +27,7 @@ lemma normalizedChebyshev_natDegree (lo hi : ℝ) (k : ℕ) :
       natDegree_comp_le
     _ ≤ k * 1 := by
       apply Nat.mul_le_mul
-      · simp [Polynomial.Chebyshev.natDegree_T]
+      · simp
       · exact (natDegree_C_mul_le _ _).trans (by simp)
     _ = k := by simp
 
@@ -39,13 +39,12 @@ lemma normalizedChebyshev_eval (lo hi x : ℝ) (k : ℕ) :
 
 /-- The Chebyshev coefficient has ℓ² operator norm at most one whenever the matrix spectrum
 lies in the interval, exactly the spectral bound used before Lemma 5. -/
-theorem matrix_chebyshev_norm_le_one {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (M : Matrix n n ℝ) (hM : M.IsHermitian)
+theorem normalizedChebyshev_aeval_norm_le_one {A : Type*} [NormedRing A] [StarRing A]
+    [NormedAlgebra ℝ A] [IsometricContinuousFunctionalCalculus ℝ A IsSelfAdjoint]
+    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi) (M : A) (hM : IsSelfAdjoint M)
     (hSpec : spectrum ℝ M ⊆ Set.Icc lo hi) (k : ℕ) :
     ‖Polynomial.aeval M (normalizedChebyshev lo hi k)‖ ≤ 1 := by
-  have hs : IsSelfAdjoint M := Matrix.isHermitian_iff_isSelfAdjoint.mp hM
-  rw [← cfc_polynomial _ M hs]
+  rw [← cfc_polynomial _ M hM]
   apply norm_cfc_le (by norm_num)
   intro x hx
   rw [normalizedChebyshev_eval, Real.norm_eq_abs]
@@ -55,7 +54,10 @@ theorem matrix_chebyshev_norm_le_one {n : Type*} [Fintype n] [DecidableEq n]
 def variableMatrix (n : Type*) : Matrix n n (MvPolynomial (n × n) ℝ) :=
   fun i j => MvPolynomial.X (i, j)
 
-lemma variableMatrix_power_degree {n : Type*} [Fintype n] [DecidableEq n]
+section
+variable {n : Type*} [Fintype n] [DecidableEq n]
+
+lemma variableMatrix_power_degree
     (k : ℕ) (i j : n) :
     ((variableMatrix n ^ k) i j).totalDegree ≤ k := by
   induction k generalizing i j with
@@ -69,43 +71,39 @@ lemma variableMatrix_power_degree {n : Type*} [Fintype n] [DecidableEq n]
     exact (MvPolynomial.totalDegree_mul _ _).trans
       (Nat.add_le_add (ih i a) (by simp [variableMatrix]))
 
-lemma variableMatrix_power_eval {n : Type*} [Fintype n] [DecidableEq n]
-    (M : Matrix n n ℝ) (k : ℕ) (i j : n) :
-    MvPolynomial.eval (fun ij : n × n => M ij.1 ij.2) ((variableMatrix n ^ k) i j) =
-      (M ^ k) i j := by
-  induction k generalizing i j with
-  | zero =>
-    simp only [pow_zero, Matrix.one_apply]
-    split_ifs <;> simp
-  | succ k ih =>
-    simp only [pow_succ, Matrix.mul_apply, map_sum, map_mul, ih]
-    simp [variableMatrix]
+end
 
 /-- Explicit entry polynomial for a univariate polynomial in a matrix. -/
 def matrixEntryPolynomial {n : Type*} [Fintype n] [DecidableEq n]
     (q : ℝ[X]) (i j : n) : MvPolynomial (n × n) ℝ :=
-  ∑ k ∈ Finset.range (q.natDegree + 1),
-    MvPolynomial.C (q.coeff k) * (variableMatrix n ^ k) i j
+  (aeval (variableMatrix n) q) i j
 
-lemma matrixEntryPolynomial_degree {n : Type*} [Fintype n] [DecidableEq n]
-    (q : ℝ[X]) (i j : n) :
+section
+variable {n : Type*} [Fintype n] [DecidableEq n]
+    (q : ℝ[X])
+
+lemma matrixEntryPolynomial_degree (i j : n) :
     (matrixEntryPolynomial q i j).totalDegree ≤ q.natDegree := by
-  unfold matrixEntryPolynomial
+  simp only [matrixEntryPolynomial, aeval_eq_sum_range, Matrix.sum_apply, Matrix.smul_apply]
   apply MvPolynomial.totalDegree_finsetSum_le
   intro k hk
+  rw [Algebra.smul_def, MvPolynomial.algebraMap_eq]
   calc
     _ ≤ (MvPolynomial.C (q.coeff k) : MvPolynomial (n × n) ℝ).totalDegree +
       ((variableMatrix n ^ k) i j).totalDegree := MvPolynomial.totalDegree_mul _ _
     _ ≤ 0 + k := Nat.add_le_add (by simp) (variableMatrix_power_degree k i j)
-    _ ≤ q.natDegree := by simpa using Nat.le_of_lt_succ (Finset.mem_range.mp hk)
+    _ ≤ q.natDegree := by simp_all
 
-lemma matrixEntryPolynomial_eval {n : Type*} [Fintype n] [DecidableEq n]
-    (q : ℝ[X]) (M : Matrix n n ℝ) (i j : n) :
-    MvPolynomial.eval (fun ij : n × n => M ij.1 ij.2) (matrixEntryPolynomial q i j) =
+lemma matrixEntryPolynomial_eval {K : Type*} [CommRing K] [Algebra ℝ K] (M : Matrix n n K) (i j : n) :
+    MvPolynomial.eval₂ (algebraMap ℝ K) (fun ij : n × n => M ij.1 ij.2) (matrixEntryPolynomial q i j) =
       (Polynomial.aeval M q) i j := by
-  rw [Polynomial.aeval_eq_sum_range]
-  unfold matrixEntryPolynomial
-  simp only [map_sum, map_mul, MvPolynomial.eval_C, variableMatrix_power_eval,
-    Matrix.sum_apply, Matrix.smul_apply, smul_eq_mul]
+  let φ : Matrix n n (MvPolynomial (n × n) ℝ) →ₐ[ℝ] Matrix n n K :=
+    (MvPolynomial.aeval (fun ij : n × n => M ij.1 ij.2)).mapMatrix
+  have hφ : φ (variableMatrix n) = M := by ext i j; simp [φ, variableMatrix]
+  have h := Polynomial.aeval_algHom_apply φ (variableMatrix n) q
+  rw [hφ] at h
+  exact (congrArg (fun A : Matrix n n K => A i j) h).symm
+
+end
 
 end RoughRegime.MatrixUpper

@@ -33,30 +33,25 @@ theorem fieldPairAverage_add_smul (n : ℕ) (weight V : ℝ)
 end PairUStatistic
 
 def pairPilotNumeratorKernel {Ω : Type*} {d : ℕ} (k : ℕ) (hk : 0 < k)
-    (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) (p : Ω × Ω)
-    (z : Observation d × Observation d) : ℝ :=
-  sameLabelKernel (regularObservationLabel k hk) z *
-    ⟪pairPilotCoefficient bar η p.1 (pairCovariates z),
-      InnerProductSpace.rankOne ℝ (pairResponseVector z.1.2 z.2.2)
-        (pairResponseVector z.1.2 z.2.2)
-          (pairPilotCoefficient bar η p.2 (pairCovariates z))⟫
+    (bar : CovariatePair d → PairVector)
+    (η : Ω → CovariatePair d → PairVector) (p : Ω × Ω)
+    (z : ObservationPair d) : ℝ :=
+  coefficientPairNumeratorKernel k hk (pairPilotCoefficient bar η) p z
 
 theorem pairPilotNumeratorKernel_eq_score_add_noise {Ω : Type*} {d : ℕ}
     (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
-    (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) :
+    (bar : CovariatePair d → PairVector)
+    (η : Ω → CovariatePair d → PairVector) :
     pairPilotNumeratorKernel k hk bar η =
       (fun p z => pairPilotScoreKernel θ k hk bar η p z +
         θ.variance * pairPilotNoiseKernel k hk bar η p z) := by
   funext p z
-  have hq : sameLabelKernel (regularObservationLabel k hk) z =
-      sameLabelKernel (regularGridCell k hk) (z.1.1, z.2.1) := rfl
-  simp only [pairPilotNumeratorKernel, pairPilotScoreKernel, pairPilotNoiseKernel,
-    pairScoreFieldKernel, pairNoiseFieldKernel, pairCovariates, regularObservationLabel,
+  have hq : observationPairMask k hk z = sameLabelKernel (regularGridCell k hk) (z.1.1, z.2.1) := rfl
+  simp only [pairPilotNumeratorKernel, coefficientPairNumeratorKernel, pairEvaluationKernel,
+    PilotFields.maskedPilotKernel, observationScoreOperator, pairPilotScoreKernel,
+    pairPilotNoiseKernel, pairScoreFieldKernel, pairNoiseFieldKernel, pairCovariates,
     pairScoreOperator, ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply,
-    inner_sub_right, inner_smul_right]
-  rw [hq]
+    inner_sub_right, inner_smul_right, zero_smul, sub_zero, hq]
   ring
 
 end NearlyMinimax

@@ -35,7 +35,7 @@ theorem pilotPolynomialLinear_raw_apply {q d ℓ : ℕ} (cell : Covariate d → 
   · simp only [h, ite_true, ← mul_assoc, ← Finset.sum_mul]
     rw [polynomial_box_evaluation P hP]
     rfl
-  · simp [h]
+  · simp_all
 
 abbrev DyadicPilotLabelIndex (d j : ℕ) := Fin d → Fin ((2 : ℕ) ^ j)
 
@@ -44,13 +44,18 @@ def dyadicPilotLabel {d : ℕ} (j : ℕ) (x : Covariate d) :
   Fintype.equivFin (DyadicPilotLabelIndex d j)
     (regularGridCell ((2 : ℕ) ^ j) (by positivity) x)
 
-theorem dyadicPilotLabel_measurable {d : ℕ} (j : ℕ) :
+section
+variable {d : ℕ} (j : ℕ)
+
+theorem dyadicPilotLabel_measurable :
     Measurable (dyadicPilotLabel (d := d) j) :=
   (measurable_of_countable _).comp (regular_grid_cell_measurable _ _)
 
-theorem dyadicPilotLabel_eq_iff {d : ℕ} (j : ℕ) (x z : Covariate d) :
+theorem dyadicPilotLabel_eq_iff (x z : Covariate d) :
     dyadicPilotLabel j z = dyadicPilotLabel j x ↔ z ∈ dyadicPilotCell j x :=
   (Fintype.equivFin (DyadicPilotLabelIndex d j)).injective.eq_iff
+
+end
 
 def dyadicPilotPolynomial {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
     (a : LocalPilotIndex d ℓ) : MvPolynomial (Fin d) ℝ :=
@@ -65,8 +70,11 @@ def dyadicPilotResponse {d ℓ : ℕ} (a : LocalPilotIndex d ℓ) : Bool :=
   | Sum.inr (Sum.inl _) => true
   | Sum.inr (Sum.inr _) => false
 
-theorem dyadicPilotPolynomial_degree {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) : (dyadicPilotPolynomial j x a).totalDegree ≤ 2 * ℓ := by
+section
+variable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+    (a : LocalPilotIndex d ℓ)
+
+theorem dyadicPilotPolynomial_degree : (dyadicPilotPolynomial j x a).totalDegree ≤ 2 * ℓ := by
   cases a with
   | inl a =>
     exact (MvPolynomial.totalDegree_mul _ _).trans
@@ -75,8 +83,7 @@ theorem dyadicPilotPolynomial_degree {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
   | inr a =>
     cases a <;> exact (dyadicFeaturePolynomial_degree j x _).trans (by omega)
 
-theorem dyadicPilotPolynomial_scalar {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) (z : Observation d) :
+theorem dyadicPilotPolynomial_scalar (z : Observation d) :
     eval z.1 (dyadicPilotPolynomial j x a) * (if dyadicPilotResponse a then z.2 else 1) =
       dyadicPilotScalar j x a z := by
   cases a with
@@ -85,6 +92,8 @@ theorem dyadicPilotPolynomial_scalar {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
   | inr a =>
     cases a <;> simp [dyadicPilotPolynomial, dyadicPilotResponse, dyadicPilotScalar,
       dyadicFeaturePolynomial_eval, mul_comm]
+
+end
 
 def dyadicPilotCoordinate {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
     (a : LocalPilotIndex d ℓ) :
@@ -104,9 +113,9 @@ theorem dyadicPilotCoordinate_raw_apply {d ℓ : ℕ} (j : ℕ) (x : Covariate d
     dyadicPilotFeature]
   by_cases h : z.1 ∈ dyadicPilotCell j x
   · have he := (dyadicPilotLabel_eq_iff j x z.1).mpr h
-    simp [h, he]
-  · have he : dyadicPilotLabel j z.1 ≠ dyadicPilotLabel j x :=
+    simp_all
+  · have he :=
       fun he => h ((dyadicPilotLabel_eq_iff j x z.1).mp he)
-    simp [h, he]
+    simp_all
 
 end NearlyMinimax

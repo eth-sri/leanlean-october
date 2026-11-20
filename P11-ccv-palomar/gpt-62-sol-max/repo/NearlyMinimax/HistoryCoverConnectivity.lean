@@ -95,13 +95,10 @@ theorem historyCoverConnected_reachable {U : Finset α} {a b : α}
         | symm x y h ih => exact ih.elim (fun h => Or.inl h.symm) (fun h => Or.inr h.symm)
         | trans x y z hxy hyz ihxy ihyz =>
           rcases ihxy with rfl | ⟨hx, hy⟩
-          · exact ihyz
-          · rcases ihyz with rfl | ⟨_, hz⟩
-            · exact Or.inr ⟨hx, hy⟩
-            · exact Or.inr ⟨hx, hz⟩
+          · assumption
+          · grind
       rcases hs hab with hab' | hab'
-      · exact (hbU (hab' ▸ ha)).elim
-      · exact (hbU hab'.2).elim
+      all_goals (grind)
 
 omit [DecidableEq α] in
 theorem historyInducedCoverGraph_reachable_connected {U : Finset α} {a b : U}
@@ -126,7 +123,6 @@ theorem historyUpperPolymer_coverGraph_connected [Fintype α] {P : Finset α}
   let : Nonempty (P : Set α) := ⟨⟨x, hx⟩⟩
   constructor
   intro a b
-  change (historyInducedCoverGraph P).Reachable a b
   exact (historyConnected_iff_coverGraph_reachable hupper a.prop b.prop).1 (hconn.2 a a.prop b b.prop)
 
 end NearlyMinimax

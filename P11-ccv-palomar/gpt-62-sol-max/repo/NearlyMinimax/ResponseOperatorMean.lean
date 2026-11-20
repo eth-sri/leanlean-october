@@ -40,7 +40,7 @@ theorem product_pairScoreOperator_integral {E F : Type*}
   have ha₃ := integral_add (((h₀.add h₁).add h₂).add h₃) h₄
   have ha₄ := integral_add ((((h₀.add h₁).add h₂).add h₃).add h₄) h₅
   have ha₅ := integral_sub (((((h₀.add h₁).add h₂).add h₃).add h₄).add h₅) h₆
-  simp only [Pi.add_apply, Pi.sub_apply, Pi.mul_apply] at ha₀ ha₁ ha₂ ha₃ ha₄ ha₅
+  simp only [Pi.add_apply, Pi.mul_apply] at ha₀ ha₁ ha₂ ha₃ ha₄ ha₅
   simp_rw [pairScoreOperator_inner_polynomial]
   rw [ha₅, ha₄, ha₃, ha₂, ha₁, ha₀]
   have hs₀ : (∫ z : E × F, Y' z.2 ^ 2 ∂μ.prod ν) = f' ^ 2 + V := by
@@ -69,14 +69,12 @@ theorem conditional_pairScoreOperator_integral (μ ν : Measure ℝ)
     (f f' : ℝ) (a b : PairVector) :
     (∫ z : ℝ × ℝ, ⟪a, pairScoreOperator V (f + z.1) (f' + z.2) b⟫ ∂μ.prod ν) =
       ⟪a, InnerProductSpace.rankOne ℝ (pairResponseVector f f') (pairResponseVector f f') b⟫ := by
-  have hY : MemLp (fun u : ℝ => f + u) 2 μ := (memLp_const f).add hμ
-  have hY' : MemLp (fun u : ℝ => f' + u) 2 ν := (memLp_const f').add hν
+  have hY := (memLp_const f).add hμ
+  have hY' := (memLp_const f').add hν
   apply product_pairScoreOperator_integral μ ν hY hY' _ _
     (response_second_moment_of_centered_error hμ hmμ h2μ f)
     (response_second_moment_of_centered_error hν hmν h2ν f') a b
-  · rw [integral_add (integrable_const _) (hμ.integrable (by norm_num)), hmμ]
-    simp
-  · rw [integral_add (integrable_const _) (hν.integrable (by norm_num)), hmν]
-    simp
+  · simp [integral_add (integrable_const _) (hμ.integrable (by norm_num)), hmμ]
+  · simp [integral_add (integrable_const _) (hν.integrable (by norm_num)), hmν]
 
 end NearlyMinimax

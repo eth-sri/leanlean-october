@@ -15,6 +15,11 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
+/-- Marked histories for the dependent windows and a union of source rows. -/
+abbrev HighUnionHistory {I : Type*} (d k : ℕ) [NeZero k] [LinearOrder (HighWindowLabels d k)]
+    (E : I → Type*) :=
+  HistoryMarked (highNeighbors d k) (HighUnionMark E)
+
 section Finite
 variable {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
   [∀ i, MeasurableSpace (E i)] (R : HighUnionRowData d k F I E)
@@ -69,7 +74,7 @@ theorem highUnionHistory_density_mean_one [∀ i, IsProbabilityMeasure (R.rowLaw
         (highRowReferenceUnion_integrable R.rowLaw R.rowMass _
           (rowSigmaFunction_measurable _ (hSlope j x)) (hiSlope j x))
     · simp only [s, if_neg hx]
-      exact integrable_const _
+      simp
   have ho : ∀ j, Integrable (o j) π := by
     intro j
     by_cases hx : x ∈ highTorusPatch d k j
@@ -80,7 +85,7 @@ theorem highUnionHistory_density_mean_one [∀ i, IsProbabilityMeasure (R.rowLaw
           (fun i => boundedIntercept_integrable (R.rowLaw i) (R.rowIntercept i)
             (hOffset i) a b (hOffsetBound i)))
     · simp only [o, if_neg hx]
-      exact integrable_const _
+      simp
   have hmean : ∀ j, (∫ e, s j e ∂π) + (∫ e, o j e ∂π) = 1 := by
     intro j
     by_cases hx : x ∈ highTorusPatch d k j
@@ -94,8 +99,8 @@ theorem highUnionHistory_density_mean_one [∀ i, IsProbabilityMeasure (R.rowLaw
         highCenteredRowUnionIntercept_integral_one R.rowLaw R.rowMass hMass hTotal
           R.rowIntercept hOffset a b hOffsetBound δ hδ0 hδ1]
       norm_num
-    · simp only [s, o, if_neg hx, integral_const, integral_zero,
-        measureReal_def, measure_univ, ENNReal.toReal_one, smul_eq_mul, mul_one, add_zero]
+    · simp only [s, o, if_neg hx, integral_const,
+        measureReal_def, measure_univ, ENNReal.toReal_one, smul_eq_mul, mul_one]
       norm_num
   convert finiteAffineHistory_integral_one π s o hs ho hmean n labels using 1
   apply integral_congr_ae
@@ -162,10 +167,14 @@ def highUnionMarkedMass (δ : ℝ) (initial : HighRawState d k F)
     (h : HistoryMarked dependent (HighUnionMark E)) : ℝ :=
   ∫ x, highUnionMarkedDensity R dependent δ initial h x ∂cubeVolume d
 
-theorem highUnionMarkedDensity_joint_measurable [∀ i, StandardBorelSpace (E i)]
+section
+variable [∀ i, StandardBorelSpace (E i)]
     (hSlope : ∀ j i, Measurable (fun ex : E i × Covariate d => R.rowSlope j i ex.1 ex.2))
     (hOffset : ∀ i, Measurable (R.rowIntercept i)) (δ : ℝ)
-    (initial : HighRawState d k F) (hi : Measurable initial.1) :
+    (initial : HighRawState d k F) (hi : Measurable initial.1)
+include hSlope hOffset hi
+
+theorem highUnionMarkedDensity_joint_measurable :
     Measurable (fun hx : HistoryMarked dependent (HighUnionMark E) × Covariate d =>
       highUnionMarkedDensity R dependent δ initial hx.1 hx.2) := by
   letI : StandardBorelSpace (HighUnionMark E) := highUnionMark_standardBorel
@@ -180,25 +189,23 @@ theorem highUnionMarkedDensity_joint_measurable [∀ i, StandardBorelSpace (E i)
       (historyShapeLength dependent g) (historyShapeCanonicalLabels dependent g) initial hi
   exact hG.comp (historySigmaProdMeasurableEquiv X (Covariate d)).measurable
 
-theorem highUnionMarkedMass_measurable [∀ i, StandardBorelSpace (E i)]
-    (hSlope : ∀ j i, Measurable (fun ex : E i × Covariate d => R.rowSlope j i ex.1 ex.2))
-    (hOffset : ∀ i, Measurable (R.rowIntercept i)) (δ : ℝ)
-    (initial : HighRawState d k F) (hi : Measurable initial.1) :
+theorem highUnionMarkedMass_measurable :
     Measurable (highUnionMarkedMass R dependent δ initial) := by
   letI := cubeVolume_isProbability d
   exact (highUnionMarkedDensity_joint_measurable R dependent hSlope hOffset δ initial hi).stronglyMeasurable.integral_prod_right'.measurable
 
+end
+
 theorem highUnionMarkedState_append [NeZero k] (δ : ℝ) (initial : HighRawState d k F)
     (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
+    (h : HighUnionHistory d k E)
     (fresh : HighUnionMark E) :
-    highUnionMarkedState R (fun i j => j ∈ highNeighborLabels d k i) δ initial
-      (historyMarkedAppend (fun i j => j ∈ highNeighborLabels d k i)
-        (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,fresh)) =
+    highUnionMarkedState R (highNeighbors d k) δ initial
+      (historyMarkedAppend (highNeighbors d k)
+        (highNeighbors_symm d k) j (h,fresh)) =
       highUnionRawUpdate R δ j fresh
-        (highUnionMarkedState R (fun i j => j ∈ highNeighborLabels d k i) δ initial h) :=
-  highMarkedRawState_patch_append d k (highUnionSlope R)
-    (fun _ e _ => highUnionIntercept R δ e) (fun _ => highUnionResponseReset R) initial j h fresh
+        (highUnionMarkedState R (highNeighbors d k) δ initial h) :=
+  by apply highMarkedRawState_patch_append
 
 end Canonical
 end NearlyMinimax

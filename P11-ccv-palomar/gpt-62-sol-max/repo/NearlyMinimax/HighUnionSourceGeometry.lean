@@ -24,27 +24,30 @@ theorem highUnionRawUpdate_density_of_not_mem (δ : ℝ)
 
 variable [NeZero k] [LinearOrder (HighWindowLabels d k)] (C : ModelConstants d)
 
-theorem highUnionSourceState_append (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) :
+section
+variable (j : HighWindowLabels d k)
+    (h : HighUnionHistory d k E)
+    (e : HighUnionMark E)
+
+theorem highUnionSourceState_append :
     highUnionSourceState C R (historyMarkedAppend
-      (fun i j => j ∈ highNeighborLabels d k i)
-      (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) =
+      (highNeighbors d k)
+      (highNeighbors_symm d k) j (h,e)) =
     highUnionRawUpdate R (highCenterMix C) j e (highUnionSourceState C R h) :=
-  highUnionMarkedState_append R _ highUnionVacuum j h e
+  by apply highUnionMarkedState_append <;> assumption
 
 /-- Appending a full source mark leaves every density value outside that
 label's physical patch exactly unchanged. -/
-theorem highUnionSourceDensity_append_of_not_mem (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) (x : Covariate d) (hx : x ∉ highTorusPatch d k j) :
+theorem highUnionSourceDensity_append_of_not_mem (x : Covariate d) (hx : x ∉ highTorusPatch d k j) :
     highUnionSourceDensity C R (historyMarkedAppend
-      (fun i j => j ∈ highNeighborLabels d k i)
-      (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) x =
+      (highNeighbors d k)
+      (highNeighbors_symm d k) j (h,e)) x =
     highUnionSourceDensity C R h x := by
   change (highUnionSourceState C R _).1 x = _
   rw [highUnionSourceState_append R C j h e]
-  exact highUnionRawUpdate_density_of_not_mem R _ j e _ x hx
+  apply highUnionRawUpdate_density_of_not_mem <;> assumption
+
+end
 
 end
 end NearlyMinimax

@@ -13,29 +13,21 @@ open scoped ENNReal BigOperators
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
-theorem finite_pi_reindex_integrable {I J E : Type*} [Fintype I] [Fintype J]
-    [MeasurableSpace E] (μ : Measure E) [SigmaFinite μ] (e : I ≃ J) (f : (J → E) → ℝ)
-    (hf : Integrable f (Measure.pi (fun _ : J => μ))) :
-    Integrable (fun U : I → E => f (fun j => U (e.symm j))) (Measure.pi (fun _ : I => μ)) := by
-  have hp := measurePreserving_piCongrLeft (fun _ : J => μ) e
-  have he (U : I → E) : (Equiv.piCongrLeft (fun _ : J => E) e) U =
-      fun j => U (e.symm j) := by
-    funext j
-    simp only [Equiv.piCongrLeft_apply_eq_cast, cast_eq]
-  have h := hp.integrable_comp_of_integrable hf
-  simpa only [Function.comp_def, MeasurableEquiv.coe_piCongrLeft, he] using h
-
 theorem spatial_subset_square_integrable_enumerated {d k : ℕ} (s : Finset (Fin k))
     (f : (Fin s.card → Covariate d) → ℝ)
     (hf : Integrable (fun V => f V ^ 2) (fullSpatialPatchDesign d s.card)) :
     Integrable (fun U : Fin k → Covariate d => f (spatialSubsetConfiguration s U) ^ 2)
-      (fullSpatialPatchDesign d k) := by
-  let e : s ≃ Fin s.card := (Fintype.equivFin s).trans (finCongr (Fintype.card_coe s))
-  have hi := finite_pi_reindex_integrable (volume.restrict (spatialPatchBox d)) e
-    (fun V => f V ^ 2) hf
-  have h := finite_pi_subset_integrable (volume.restrict (spatialPatchBox d)) s
-    (fun V : s → Covariate d => f (fun j => V (e.symm j)) ^ 2) hi
-  exact h
+      (fullSpatialPatchDesign d k) :=
+  finite_pi_subset_integrable (volume.restrict (spatialPatchBox d)) s _
+    (finite_pi_reindex_integrable _ (spatialSubsetEquiv s) (fun V => f V ^ 2) hf)
+
+theorem finite_sum_square_integrable {X I : Type*} [MeasurableSpace X]
+    (μ : Measure X) (s : Finset I) (f : I → X → ℝ)
+    (hm : ∀ i ∈ s, Measurable (f i))
+    (hi : ∀ i ∈ s, Integrable (fun x => f i x ^ 2) μ) :
+    Integrable (fun x => (∑ i ∈ s, f i x) ^ 2) μ :=
+  (memLp_finsetSum s fun i hs =>
+    (memLp_two_iff_integrable_sq (hm i hs).aestronglyMeasurable).mpr (hi i hs)).integrable_sq
 
 theorem finite_sum_square_integral_le {I X : Type*} [MeasurableSpace X]
     (μ : Measure X) (s : Finset I) (f : I → X → ℝ) (K : ℝ)
@@ -49,12 +41,7 @@ theorem finite_sum_square_integral_le {I X : Type*} [MeasurableSpace X]
       Finset.sum_mul_sq_le_sq_mul_sq s (fun _ : I => (1 : ℝ)) (fun i => f i x)
   have hu : Integrable (fun x => (s.card : ℝ) * ∑ i ∈ s, f i x ^ 2) μ :=
     (integrable_finsetSum s hi).const_mul _
-  have hl : Integrable (fun x => (∑ i ∈ s, f i x) ^ 2) μ := by
-    apply hu.mono' ((Finset.measurable_fun_sum s hm).pow_const 2).aestronglyMeasurable
-    exact Filter.Eventually.of_forall (fun x => by
-      rw [Real.norm_eq_abs, abs_sq]
-      exact hb x)
-  have h := integral_mono hl hu hb
+  have h := integral_mono (finite_sum_square_integrable μ s f hm hi) hu hb
   rw [integral_const_mul, integral_finsetSum _ hi] at h
   apply h.trans
   have hh := mul_le_mul_of_nonneg_left (Finset.sum_le_sum hK) (Nat.cast_nonneg s.card)

@@ -16,7 +16,7 @@ open MeasureTheory ProbabilityTheory
 namespace RoughRegime.UpperCovariance
 
 def kernelSum {Ω : Type*} {n p r : ℕ}
-    (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
+    (H : MultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (ω : Ω) : ℝ :=
   ∑ e : Fin r ↪ Fin n, H (fun i => X (e i) ω)
 
@@ -24,7 +24,7 @@ def kernelSum {Ω : Type*} {n p r : ℕ}
 def kernelStatistic {Ω : Type*} {n p r : ℕ}
     (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (ω : Ω) : ℝ :=
-  ((r.factorial : ℝ) * (n.descFactorial r : ℝ))⁻¹ * kernelSum H X ω
+  ((r.factorial : ℝ) * (n.descFactorial r : ℝ))⁻¹ * kernelSum H.toMultilinearMap X ω
 
 /-- Finite centered expansion, with the exact coefficients from the paper's Taylor lift. -/
 def centeredKernelExpansion {Ω : Type*} {n p R : ℕ} (c : ℝ)

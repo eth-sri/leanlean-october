@@ -21,11 +21,8 @@ theorem pairSameIndicator_measurable (ρ : H → X → Fin 2)
     (hρ : Measurable (Function.uncurry ρ)) (x y : X) :
     Measurable (pairSameIndicator ρ x y) := by
   apply Measurable.ite
-  · exact measurableSet_eq_fun
-      (hρ.comp (measurable_id.prodMk measurable_const))
-      (hρ.comp (measurable_id.prodMk measurable_const))
-  · exact measurable_const
-  · exact measurable_const
+  · apply measurableSet_eq_fun <;> fun_prop
+  all_goals (simp)
 
 theorem pairSameIndicator_integrable (μ : Measure H) [IsFiniteMeasure μ]
     (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) (x y : X) :
@@ -58,8 +55,7 @@ theorem partitionFiberBothIndicator_measurable (ρ : H → X → Fin 2)
           (measurable_id.prodMk measurable_const))
         ((partitionFieldPattern_measurable ρ hρ n).comp
           (measurable_id.prodMk measurable_const))
-  · exact measurable_const
-  · exact measurable_const
+  all_goals (simp)
 
 theorem partitionFiberBothIndicator_integral (μ : Measure H) [IsProbabilityMeasure μ]
     (ρ : H → X → Fin 2) (n : ℕ) (a b c e : X) :

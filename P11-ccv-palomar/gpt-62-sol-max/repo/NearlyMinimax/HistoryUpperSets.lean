@@ -40,14 +40,21 @@ omit [DecidableEq α] in
 @[simp] theorem empty_mem_historyUpperSets (S : Finset α) : ∅ ∈ historyUpperSets S :=
   mem_historyUpperSets.2 (empty_historyUpper S)
 
-theorem historyUpper_maximal_subset {S U : Finset α} (hU : IsHistoryUpper S U) :
+section
+variable {S U : Finset α}
+
+section
+variable (hU : IsHistoryUpper S U)
+include hU
+
+theorem historyUpper_maximal_subset :
     historyMaximalPieces U ⊆ historyMaximalPieces S := by
   intro x hx
   obtain ⟨hxU, hmax⟩ := mem_historyMaximalPieces.1 hx
   apply mem_historyMaximalPieces.2
   exact ⟨hU.1 hxU, fun y hy hxy => hmax y (hU.2 x hxU y hy hxy) hxy⟩
 
-theorem historyUpper_maximal_eq_inter {S U : Finset α} (hU : IsHistoryUpper S U) :
+theorem historyUpper_maximal_eq_inter :
     historyMaximalPieces U = U ∩ historyMaximalPieces S := by
   ext x
   constructor
@@ -58,38 +65,49 @@ theorem historyUpper_maximal_eq_inter {S U : Finset α} (hU : IsHistoryUpper S U
     exact mem_historyMaximalPieces.2 ⟨hxU, fun y hy hxy =>
       (mem_historyMaximalPieces.1 hxS).2 y (hU.1 hy) hxy⟩
 
-theorem historyUpper_erase {S U : Finset α} (hU : IsHistoryUpper S U) {x : α}
-    (_hx : x ∈ historyMaximalPieces U) : IsHistoryUpper (S.erase x) (U.erase x) := by
+theorem historyUpper_erase {x : α} : IsHistoryUpper (S.erase x) (U.erase x) := by
   refine ⟨Finset.erase_subset_erase _ hU.1, ?_⟩
   intro a ha b hb hab
   exact Finset.mem_erase.2 ⟨(Finset.mem_erase.1 hb).1,
     hU.2 a (Finset.mem_of_mem_erase ha) b (Finset.mem_of_mem_erase hb) hab⟩
 
-theorem historyUpper_insert {S U : Finset α} {x : α}
-    (hx : x ∈ historyMaximalPieces S) (hU : IsHistoryUpper (S.erase x) U) :
+end
+
+section
+variable {x : α}
+
+section
+variable (hx : x ∈ historyMaximalPieces S) (hU : IsHistoryUpper (S.erase x) U)
+include hx hU
+
+theorem historyUpper_insert :
     IsHistoryUpper S (insert x U) := by
   obtain ⟨hxS, hmax⟩ := mem_historyMaximalPieces.1 hx
   refine ⟨Finset.insert_subset hxS (hU.1.trans (Finset.erase_subset _ _)), ?_⟩
   intro a ha b hb hab
   rcases Finset.mem_insert.1 ha with rfl | haU
-  · rw [hmax b hb hab]
-    exact Finset.mem_insert_self _ _
+  · grind
   · by_cases hbx : b = x
-    · subst b; exact Finset.mem_insert_self _ _
+    · grind [Finset.mem_insert_self]
     · exact Finset.mem_insert_of_mem (hU.2 a haU b (Finset.mem_erase.2 ⟨hbx, hb⟩) hab)
 
-theorem historyUpper_maximal_insert {S U : Finset α} {x : α}
-    (hx : x ∈ historyMaximalPieces S) (hU : IsHistoryUpper (S.erase x) U) :
+theorem historyUpper_maximal_insert :
     x ∈ historyMaximalPieces (insert x U) := by
   apply mem_historyMaximalPieces.2
   refine ⟨Finset.mem_insert_self _ _, ?_⟩
   intro y hy hxy
   exact (mem_historyMaximalPieces.1 hx).2 y ((historyUpper_insert hx hU).1 hy) hxy
 
-theorem historyUpper_not_mem_deleted {S U : Finset α} {x : α}
+end
+
+theorem historyUpper_not_mem_deleted
     (hU : IsHistoryUpper (S.erase x) U) : x ∉ U := by
   intro hxU
   exact Finset.notMem_erase x S (hU.1 hxU)
+
+end
+
+end
 
 omit [DecidableEq α] in
 theorem historyUpper_disjoint_incomparable {S P Q : Finset α}
@@ -102,15 +120,18 @@ theorem historyUpper_disjoint_incomparable {S P Q : Finset α}
   · intro hqp
     exact Finset.disjoint_left.1 hdis hp (hQ.2 q hq p (hP.1 hp) hqp)
 
-theorem historyUpper_nonempty_maximal {S U : Finset α} (_hU : IsHistoryUpper S U)
+theorem historyUpper_nonempty_maximal {U : Finset α}
     (hne : U.Nonempty) : (historyMaximalPieces U).Nonempty := by
   obtain ⟨x, hx, hmax⟩ := U.exists_maximal hne
   refine ⟨x, mem_historyMaximalPieces.2 ⟨hx, ?_⟩⟩
-  intro y hy hxy
-  exact le_antisymm (hmax hy hxy) hxy
+  grind
 
-theorem historyUpper_inter_iff_maximal_inter {S P Q : Finset α}
-    (hP : IsHistoryUpper S P) (hQ : IsHistoryUpper S Q) :
+section
+variable {S P Q : Finset α}
+    (hP : IsHistoryUpper S P) (hQ : IsHistoryUpper S Q)
+include hP hQ
+
+theorem historyUpper_inter_iff_maximal_inter :
     (P ∩ Q).Nonempty ↔ (historyMaximalPieces P ∩ historyMaximalPieces Q).Nonempty := by
   constructor
   · rintro ⟨x, hx⟩
@@ -118,22 +139,21 @@ theorem historyUpper_inter_iff_maximal_inter {S P Q : Finset α}
     obtain ⟨y, hxy, hyS, hmax⟩ := S.exists_le_maximal (hP.1 hxP)
     have hyP := hP.2 x hxP y hyS hxy
     have hyQ := hQ.2 x hxQ y hyS hxy
-    have hymax : y ∈ historyMaximalPieces S :=
+    have hymax :=
       mem_historyMaximalPieces.2 ⟨hyS, fun z hz hyz => le_antisymm (hmax hz hyz) hyz⟩
     refine ⟨y, Finset.mem_inter.2 ⟨?_, ?_⟩⟩
-    · rw [historyUpper_maximal_eq_inter hP]; exact Finset.mem_inter.2 ⟨hyP, hymax⟩
-    · rw [historyUpper_maximal_eq_inter hQ]; exact Finset.mem_inter.2 ⟨hyQ, hymax⟩
+    · simp_all [historyUpper_maximal_eq_inter hP]
+    · simp_all [historyUpper_maximal_eq_inter hQ]
   · rintro ⟨x, hx⟩
     obtain ⟨hxP, hxQ⟩ := Finset.mem_inter.1 hx
     exact ⟨x, Finset.mem_inter.2 ⟨historyMaximalPieces_subset P hxP,
       historyMaximalPieces_subset Q hxQ⟩⟩
 
-theorem historyUpper_disjoint_iff {S P Q : Finset α}
-    (hP : IsHistoryUpper S P) (hQ : IsHistoryUpper S Q) :
+theorem historyUpper_disjoint_iff :
     Disjoint P Q ↔ Disjoint (historyMaximalPieces P) (historyMaximalPieces Q) := by
-  rw [Finset.disjoint_iff_inter_eq_empty, Finset.disjoint_iff_inter_eq_empty,
-    ← Finset.not_nonempty_iff_eq_empty, ← Finset.not_nonempty_iff_eq_empty]
-  exact not_congr (historyUpper_inter_iff_maximal_inter hP hQ)
+  simpa [Finset.disjoint_iff_inter_eq_empty, ← Finset.not_nonempty_iff_eq_empty] using not_congr (historyUpper_inter_iff_maximal_inter hP hQ)
+
+end
 
 /-- The upper-subset maximal-deletion sum is an actual finite bijection. -/
 theorem historyUpper_maximal_sum (S : Finset α) (F : Finset α → α → ℝ) :
@@ -150,7 +170,7 @@ theorem historyUpper_maximal_sum (S : Finset α) (F : Finset α → α → ℝ) 
     obtain ⟨hiU, hix⟩ := Finset.mem_sigma.1 hi
     have hU := mem_historyUpperSets.1 hiU
     exact Finset.mem_sigma.2 ⟨historyUpper_maximal_subset hU hix,
-      mem_historyUpperSets.2 (historyUpper_erase hU hix)⟩
+      mem_historyUpperSets.2 (historyUpper_erase hU)⟩
   · intro i hi j hj heq
     obtain ⟨hiU, hix⟩ := Finset.mem_sigma.1 hi
     obtain ⟨hjU, hjx⟩ := Finset.mem_sigma.1 hj
@@ -162,9 +182,7 @@ theorem historyUpper_maximal_sum (S : Finset α) (F : Finset α → α → ℝ) 
         ← Finset.insert_erase (historyMaximalPieces_subset j.1 hjx), hrest, hx]
     cases i
     cases j
-    dsimp at hx hwhole
-    subst_vars
-    rfl
+    simp_all
   · intro i hi
     obtain ⟨hix, hiU⟩ := Finset.mem_sigma.1 hi
     have hU := mem_historyUpperSets.1 hiU
@@ -174,21 +192,23 @@ theorem historyUpper_maximal_sum (S : Finset α) (F : Finset α → α → ℝ) 
     · simp only [Finset.erase_insert (historyUpper_not_mem_deleted hU)]
   · intro i hi
     have hx := historyMaximalPieces_subset i.1 (Finset.mem_sigma.1 hi).2
-    rw [Finset.insert_erase hx]
+    simp_all
 
 def historyUpperDensity (weight : α → ℝ) (S : Finset α) (t : ℝ) : ℝ :=
   ∑ U ∈ historyUpperSets S, t ^ U.card * historyOrderVolume U * ∏ x ∈ U, weight x
 
-@[simp] theorem historyUpperDensity_at_zero (weight : α → ℝ) (S : Finset α) :
+section
+variable (weight : α → ℝ)
+
+section
+variable (S : Finset α)
+
+@[simp] theorem historyUpperDensity_at_zero :
     historyUpperDensity weight S 0 = 1 := by
   unfold historyUpperDensity
-  rw [Finset.sum_eq_single ∅]
-  · simp
-  · intro U hU hne
-    simp only [zero_pow (Finset.card_ne_zero.2 (Finset.nonempty_iff_ne_empty.2 hne)), zero_mul]
-  · simp
+  simp_all [Finset.sum_eq_single ∅]
 
-theorem historyUpperDensity_derivative_formula (weight : α → ℝ) (S : Finset α) (t : ℝ) :
+theorem historyUpperDensity_derivative_formula (t : ℝ) :
     HasDerivAt (historyUpperDensity weight S)
       (∑ U ∈ historyUpperSets S,
         ((U.card : ℝ) * t ^ (U.card - 1)) * historyOrderVolume U * ∏ x ∈ U, weight x) t := by
@@ -197,7 +217,9 @@ theorem historyUpperDensity_derivative_formula (weight : α → ℝ) (S : Finset
   simpa only [id_eq, mul_one] using! ((hasDerivAt_id t).pow U.card).mul_const
     (historyOrderVolume U) |>.mul_const (∏ x ∈ U, weight x)
 
-theorem historyUpperDensity_term_derivative (weight : α → ℝ) (U : Finset α) (t : ℝ) :
+end
+
+theorem historyUpperDensity_term_derivative (U : Finset α) (t : ℝ) :
     ((U.card : ℝ) * t ^ (U.card - 1)) * historyOrderVolume U * (∏ x ∈ U, weight x) =
       ∑ x ∈ historyMaximalPieces U,
         weight x * (t ^ (U.erase x).card * historyOrderVolume (U.erase x) *
@@ -215,8 +237,11 @@ theorem historyUpperDensity_term_derivative (weight : α → ℝ) (U : Finset α
       rw [Finset.card_erase_of_mem hxU, ← Finset.mul_prod_erase U weight hxU]
       ring
 
+section
+variable (S : Finset α) (t : ℝ)
+
 /-- The actual finite upper-set sum satisfies the source deletion derivative. -/
-theorem historyUpperDensity_hasDerivAt (weight : α → ℝ) (S : Finset α) (t : ℝ) :
+theorem historyUpperDensity_hasDerivAt :
     HasDerivAt (historyUpperDensity weight S)
       (∑ x ∈ historyMaximalPieces S, weight x * historyUpperDensity weight (S.erase x) t) t := by
   have hh := historyUpperDensity_derivative_formula weight S t
@@ -232,7 +257,7 @@ theorem historyUpperDensity_hasDerivAt (weight : α → ℝ) (S : Finset α) (t 
   rw [Finset.erase_insert (historyUpper_not_mem_deleted (mem_historyUpperSets.1 hU))]
 
 /-- The deletion enumeration is exactly the finite upper-subset volume sum. -/
-theorem historyUpperDensity_eq_deletionPolynomial (weight : α → ℝ) (S : Finset α) (t : ℝ) :
+theorem historyUpperDensity_eq_deletionPolynomial :
     historyUpperDensity weight S t = historyDeletionPolynomial weight S t := by
   induction S using Finset.strongInductionOn generalizing t
   rename_i S ih
@@ -247,17 +272,24 @@ theorem historyUpperDensity_eq_deletionPolynomial (weight : α → ℝ) (S : Fin
       intro x hx
       rw [ih (S.erase x) (Finset.erase_ssubset (historyMaximalPieces_subset S hx)) u]
     rw [hsum, sub_self] at hh
-    exact hh
+    assumption
   have hh := is_const_of_deriv_eq_zero (fun u => (hd u).differentiableAt)
     (fun u => (hd u).deriv) t 0
   simp only [historyUpperDensity_at_zero, historyDeletionPolynomial_at_zero, sub_self] at hh
   exact sub_eq_zero.1 hh
 
+end
+
+end
+
 def historyScaledUpperDensity (weight : α → ℝ) (ρ : ℝ) (S : Finset α) (t : ℝ) : ℝ :=
   historyUpperDensity (fun x => weight x / ρ) S t
 
+section
+variable (weight : α → ℝ) (ρ : ℝ) (S : Finset α) (t : ℝ)
+
 /-- The source's finite density formula with `rho^{-|U|}` component weights. -/
-theorem historyScaledUpperDensity_eq_components (weight : α → ℝ) (ρ : ℝ) (S : Finset α) (t : ℝ) :
+theorem historyScaledUpperDensity_eq_components :
     historyScaledUpperDensity weight ρ S t =
       ∑ U ∈ historyUpperSets S, historyComponentWeight weight ρ t U := by
   unfold historyScaledUpperDensity historyUpperDensity historyComponentWeight
@@ -267,15 +299,15 @@ theorem historyScaledUpperDensity_eq_components (weight : α → ℝ) (ρ : ℝ)
   ring
 
 /-- Exact finite source deletion equation, including the reference-weight factor. -/
-theorem historyScaledUpperDensity_hasDerivAt (weight : α → ℝ) (ρ : ℝ) (S : Finset α) (t : ℝ) :
+theorem historyScaledUpperDensity_hasDerivAt :
     HasDerivAt (historyScaledUpperDensity weight ρ S)
       (ρ⁻¹ * ∑ x ∈ historyMaximalPieces S, weight x * historyScaledUpperDensity weight ρ (S.erase x) t) t := by
   unfold historyScaledUpperDensity
   have hh := historyUpperDensity_hasDerivAt (fun x => weight x / ρ) S t
   convert hh using 1
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro x hx
   ring
+
+end
 
 end NearlyMinimax

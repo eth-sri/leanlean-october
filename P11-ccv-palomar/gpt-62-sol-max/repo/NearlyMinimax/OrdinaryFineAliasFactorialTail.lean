@@ -41,8 +41,7 @@ def ordinaryFineAliasFactorialConstant (s : ℝ) (d q : ℕ) (ad bd C a rho Csha
 theorem ordinaryFineAliasFactorialConstant_ge_one {s ad bd C a rho Csharp : ℝ} {d q : ℕ}
     (hbd : 0 ≤ bd) (hCs : 0 ≤ Csharp) :
     1 ≤ ordinaryFineAliasFactorialConstant s d q ad bd C a rho Csharp := by
-  unfold ordinaryFineAliasFactorialConstant
   exact aliasTailConstant_ge_one (ordinaryAliasFamilySpatialPrefactor_nonneg _ _ _ _ _ _ _ _ _)
-    hCs (by unfold ordinaryAliasSpatialResponseBase ordinaryAliasSpatialCountBase; positivity)
+      hCs (by unfold ordinaryAliasSpatialResponseBase ordinaryAliasSpatialCountBase; positivity)
 
 end NearlyMinimax

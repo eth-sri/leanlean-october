@@ -22,15 +22,17 @@ theorem spatial_matrix_l1_eq_zero_iff {d F : ℕ}
       calc
         _ ≤ ∑ γ, |A β γ| := Finset.single_le_sum (fun _ _ => abs_nonneg _) (Finset.mem_univ β')
         _ ≤ _ := by
-          unfold spatialMatrixL1
           exact Finset.single_le_sum (f := fun β => ∑ γ, |A β γ|)
-            (fun _ _ => Finset.sum_nonneg (fun _ _ => abs_nonneg _))
-            (Finset.mem_univ β)
-    exact abs_eq_zero.mp (le_antisymm (hentry.trans_eq h) (abs_nonneg _))
+                      (fun _ _ => Finset.sum_nonneg (fun _ _ => abs_nonneg _))
+                      (Finset.mem_univ β)
+    simp_all
   · intro h
     simp [spatialMatrixL1, h]
 
-theorem finePairUnitMatrix_l1_pos (d F : ℕ) :
+section
+variable (d F : ℕ)
+
+theorem finePairUnitMatrix_l1_pos :
     0 < spatialMatrixL1 (finePairUnitMatrix d F) := by
   apply lt_of_le_of_ne (spatial_matrix_l1_nonnegative _) ?_
   intro he
@@ -40,7 +42,7 @@ theorem finePairUnitMatrix_l1_pos (d F : ℕ) :
   simp only [spatialFrameCovariance, hz, mul_zero, Finset.sum_const_zero] at hk
   norm_num at hk
 
-theorem finePairDistanceMatrix_l1_pos (d F : ℕ) [NeZero d] (hF : 3 ≤ F) :
+theorem finePairDistanceMatrix_l1_pos [NeZero d] (hF : 3 ≤ F) :
     0 < spatialMatrixL1 (finePairDistanceMatrix d F) := by
   apply lt_of_le_of_ne (spatial_matrix_l1_nonnegative _) ?_
   intro he
@@ -51,5 +53,7 @@ theorem finePairDistanceMatrix_l1_pos (d F : ℕ) [NeZero d] (hF : 3 ≤ F) :
   have heU : spatialSquaredDistance (U 0) (U 1) = (d : ℝ) := by simp [U, spatialSquaredDistance]
   rw [heU] at hk
   exact NeZero.ne d (Nat.cast_eq_zero.mp (neg_eq_zero.mp hk.symm))
+
+end
 
 end NearlyMinimax

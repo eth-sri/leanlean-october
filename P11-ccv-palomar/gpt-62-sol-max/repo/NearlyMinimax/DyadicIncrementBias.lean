@@ -19,41 +19,44 @@ set_option backward.isDefEq.respectTransparency false
 def anchoredFinVector {d ℓ : ℕ} (v : AnchoredIndex d ℓ → ℝ) :
     Fin (anchoredDimension d ℓ) → ℝ := fun i => v (anchoredFinIndex i)
 
-theorem anchoredFinVector_norm {d ℓ : ℕ} (v : AnchoredIndex d ℓ → ℝ) :
+section
+variable {d ℓ : ℕ}
+
+theorem anchoredFinVector_norm (v : AnchoredIndex d ℓ → ℝ) :
     ‖(EuclideanSpace.equiv (Fin (anchoredDimension d ℓ)) ℝ).symm (anchoredFinVector v)‖ =
       ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm v‖ := by
   let e := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (Fintype.equivFin (AnchoredIndex d ℓ))
-  have he : e ((EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm v) =
-      (EuclideanSpace.equiv (Fin (anchoredDimension d ℓ)) ℝ).symm (anchoredFinVector v) := by
-    ext i
-    rfl
-  rw [← he]
   exact e.norm_map _
 
-theorem anchoredFinReindex_mulVec {d ℓ : ℕ}
-    (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ)
+section
+variable (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ)
+
+theorem anchoredFinReindex_mulVec
     (v : AnchoredIndex d ℓ → ℝ) :
     anchoredFinReindex d ℓ A *ᵥ anchoredFinVector v = anchoredFinVector (A *ᵥ v) := by
   ext i
-  simp only [anchoredFinReindex, Matrix.reindexAlgEquiv_apply, Matrix.reindex_apply,
-    anchoredFinVector, anchoredFinIndex, Matrix.mulVec, dotProduct]
   exact (Fintype.equivFin (AnchoredIndex d ℓ)).symm.sum_comp
-    (fun γ : AnchoredIndex d ℓ => A (anchoredFinIndex i) γ * v γ)
+      (fun γ : AnchoredIndex d ℓ => A (anchoredFinIndex i) γ * v γ)
 
-theorem anchoredFinReindex_inv {d ℓ : ℕ}
-    (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ) :
+theorem anchoredFinReindex_inv :
     (anchoredFinReindex d ℓ A)⁻¹ = anchoredFinReindex d ℓ A⁻¹ :=
   Matrix.inv_reindex _ _ A
 
-theorem anchoredFinVector_sub {d ℓ : ℕ} (v w : AnchoredIndex d ℓ → ℝ) :
+end
+
+theorem anchoredFinVector_sub (v w : AnchoredIndex d ℓ → ℝ) :
     anchoredFinVector (v - w) = anchoredFinVector v - anchoredFinVector w := rfl
 
-theorem anchoredFinVector_smul {d ℓ : ℕ} (a : ℝ) (v : AnchoredIndex d ℓ → ℝ) :
+theorem anchoredFinVector_smul (a : ℝ) (v : AnchoredIndex d ℓ → ℝ) :
     anchoredFinVector (a • v) = a • anchoredFinVector v := rfl
 
-theorem dyadicFinPilotMoments_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
+section
+variable (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
-    (x : Covariate d) (hx : x ∈ unitCube d) (t : Bool) :
+    (x : Covariate d) (hx : x ∈ unitCube d)
+include hθ hx
+
+theorem dyadicFinPilotMoments_eq_actual (t : Bool) :
     dyadicFinPilotMoments (ℓ := ℓ) θ j x t = anchoredFinVector
       ((dyadicKnownGram j x)⁻¹ *ᵥ (if t then dyadicConstantMoment θ j x else dyadicResponseMoment θ j x)) := by
   ext i
@@ -64,38 +67,35 @@ theorem dyadicFinPilotMoments_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
   all_goals simp only [localPilotRow, localPilotReplaceRow, Matrix.mulVec, dotProduct,
     dyadicPilotPopulation_response C θ hθ j x hx, dyadicPilotPopulation_constant C θ hθ]
 
-theorem dyadicFinPilot_fit {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
-    (x : Covariate d) (hx : x ∈ unitCube d) :
+theorem dyadicFinPilot_fit :
     (dyadicFinPilotGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
       (dyadicFinPilotMoments θ j x false - θ.regression x • dyadicFinPilotMoments θ j x true) =
         anchoredFinVector (dyadicPopulationFit θ j x) := by
   rw [dyadicFinPilotMoments_eq_actual C θ hθ j x hx false,
     dyadicFinPilotMoments_eq_actual C θ hθ j x hx true]
   simp only [Bool.false_eq_true, ↓reduceIte]
-  rw [← anchoredFinVector_smul, ← anchoredFinVector_sub,
-    ← Matrix.mulVec_smul, ← Matrix.mulVec_sub]
-  rw [dyadicFinPilotGram, anchoredFinReindex_inv, anchoredFinReindex_mulVec,
-    dyadicPopulationFit_preconditioner_cancels C θ hθ]
+  rw [← anchoredFinVector_smul, ← anchoredFinVector_sub, ← Matrix.mulVec_smul, ← Matrix.mulVec_sub, dyadicFinPilotGram, anchoredFinReindex_inv, anchoredFinReindex_mulVec, dyadicPopulationFit_preconditioner_cancels C θ]
 
-theorem dyadicFinite_increment_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
-    (x : Covariate d) (hx : x ∈ unitCube d) :
+theorem dyadicFinite_increment_eq_actual :
     (dyadicFinPilotGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
       (dyadicFinPilotMoments θ j x false - θ.regression x • dyadicFinPilotMoments θ j x true) -
       anchoredFinTransport d ℓ *ᵥ
-        ((if j = 0 then 1 else dyadicFinPilotGram θ (j - 1) x)⁻¹ *ᵥ
-          ((if j = 0 then 0 else dyadicFinPilotMoments θ (j - 1) x) false -
-            θ.regression x • (if j = 0 then 0 else dyadicFinPilotMoments θ (j - 1) x) true)) =
+        ((dyadicParent 1 (fun i => dyadicFinPilotGram θ i x) j)⁻¹ *ᵥ
+          ((dyadicParent 0 (fun i => dyadicFinPilotMoments θ i x) j) false -
+            θ.regression x • (dyadicParent 0 (fun i => dyadicFinPilotMoments θ i x) j) true)) =
         anchoredFinVector (dyadicPopulationIncrement θ x j) := by
   rw [dyadicFinPilot_fit C θ hθ j x hx]
   cases j with
-  | zero => simp [dyadicPopulationIncrement, anchoredIncrement]
+  | zero => simp [dyadicParent, dyadicPopulationIncrement, anchoredIncrement]
   | succ j =>
-    simp only [Nat.add_one_ne_zero, ↓reduceIte, Nat.add_sub_cancel_right]
+    simp only [dyadicParent, Nat.add_one_ne_zero, ↓reduceIte, Nat.add_sub_cancel_right]
     rw [dyadicFinPilot_fit C θ hθ j x hx]
     rw [anchoredFinTransport, anchoredFinReindex_mulVec, ← anchoredFinVector_sub]
     rfl
+
+end
+
+end
 
 theorem incrementFinVector_eval_population {r : ℕ} [NeZero r] (a b : ℝ)
     (A B T : Matrix (Fin r) (Fin r) ℝ) (U V : Bool → Fin r → ℝ)

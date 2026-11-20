@@ -16,6 +16,14 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 
+/-- Exact spatial factorial series in the original normalized experiment. -/
+def highSourceSpatialSeries (d k n : ℕ) [NeZero k] (pMinus cMass : ℝ)
+    (H : HighWindowLabels d k → (r : ℕ) → (Fin r → Covariate d) → ℝ) : ℝ :=
+  (3^d : ℕ)*∑ j : HighWindowLabels d k, ∑ r ∈ Finset.range (n+1),
+    ((n : ℝ)*highFixedScoreDenominator pMinus cMass*(2/(k : ℝ))^d)^r /
+      (r.factorial : ℝ)*∫ u, H j r u
+        ∂Measure.pi (fun _ : Fin r => volume.restrict (spatialPatchBox d))
+
 section
 variable {E : Type*} [MeasurableSpace E]
 
@@ -25,46 +33,14 @@ def highFrameFullMarkedScore (d k D n : ℕ) [NeZero k]
     (pReset : HighWindowLabels d k → E → Covariate d → ℝ)
     (cReset : HighWindowLabels d k → E → HighFrameIndex d D → ℝ)
     (c : HighWindowLabels d k → HighFrameIndex d D → ℝ)
-    (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
+    (z : TernarySample d n) : ℝ :=
   ∑ j, highFrameMarkedScore d k D n π activation a V η (p ∘ z.1)
     (fun j e => pReset j e ∘ z.1) cReset c z.1 j z.2
 
-theorem highFrameFullMarkedScore_measurable (d k D n : ℕ) [NeZero k]
-    (π : HighWindowLabels d k → Measure E) [∀ j, SFinite (π j)]
-    (activation : HighWindowLabels d k → E → ℝ) (hAct : ∀ j, Measurable (activation j))
-    (a V η : ℝ) (p : Covariate d → ℝ) (hp : Measurable p)
-    (pReset : HighWindowLabels d k → E → Covariate d → ℝ)
-    (hReset : ∀ j, Measurable (Function.uncurry (pReset j)))
-    (cReset : HighWindowLabels d k → E → HighFrameIndex d D → ℝ)
-    (hcReset : ∀ j γ, Measurable (fun e => cReset j e γ))
-    (c : HighWindowLabels d k → HighFrameIndex d D → ℝ) :
-    Measurable (highFrameFullMarkedScore d k D n π activation a V η p pReset cReset c) := by
-  apply measurable_from_prod_countable_left
-  intro y
-  apply Finset.measurable_sum
-  intro j hj
-  let g := highLocalFieldWithout d k D η c j
-  let w := highPeriodicTensor d k j
-  let φ : Covariate d → HighFrameIndex d D → ℝ := fun x => highLocalFrameFeature k j x
-  have hg : Measurable g := (highLocalFieldWithout_continuous d k D η c j).measurable
-  have hw : Measurable w := (highPeriodicTensor_contDiff d k j).continuous.measurable
-  have hφ : ∀ γ, Measurable (fun x => φ x γ) := highLocalFrameFeature_measurable k j
-  have hR := highMarkedSampleNumerator_measurable n (π j) (activation j) (hAct j)
-    a V η p hp (pReset j) (hReset j) (cReset j) (hcReset j) g w hg hw φ hφ (c j) y
-  have hq : Measurable (fun x : Fin n → Covariate d =>
-      ∏ i, highMarkedResponseMass a V η g w φ (c j) (x i) (y i)) :=
-    Finset.measurable_prod _ (fun i _ =>
-      (highMarkedResponseMass_measurable a V η g w hg hw φ hφ (c j) (y i)).comp (measurable_pi_apply i))
-  have hL : Measurable (fun x : Fin n → Covariate d => selectedRawLikelihood p
-      (highMarkedResponseMass a V η g w φ (c j)) x y) :=
-    (Finset.measurable_prod _ (fun i _ => hp.comp (measurable_pi_apply i))).mul hq
-  change Measurable (fun x : Fin n → Covariate d =>
-    highMarkedLocalScore (π j) (activation j) a V η (p ∘ x) (fun e => pReset j e ∘ x)
-      (cReset j) (g ∘ x) (w ∘ x) (φ ∘ x) (c j) y)
-  simp_rw [high_marked_sample_score_eq_ratio]
-  exact hR.div hL
+section
+variable (d k D n : ℕ) [NeZero k]
 
-theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem high_frame_complete_design_spatial_series (hk : 4 ≤ k)
     (π : HighWindowLabels d k → Measure E) [∀ j, SFinite (π j)]
     (activation : HighWindowLabels d k → E → ℝ)
     (hAct : ∀ j, Measurable (activation j)) (hActI : ∀ j, Integrable (activation j) (π j))
@@ -99,10 +75,7 @@ theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk
       (responseSampleIndexKernel n a V F hF)) ∧
     (∫ z, S z ^ 2 ∂(Measure.pi (fun _ : Fin n => highNormalizedDesignLaw p)).compProd
       (responseSampleIndexKernel n a V F hF)) ≤
-      (3 ^ d : ℕ) * ∑ j : HighWindowLabels d k, ∑ r ∈ Finset.range (n + 1),
-        ((n : ℝ) * highFixedScoreDenominator pMinus cMass * (2 / (k : ℝ)) ^ d) ^ r /
-          (r.factorial : ℝ) * ∫ u, H j r u
-            ∂Measure.pi (fun _ : Fin r => volume.restrict (spatialPatchBox d)) := by
+      highSourceSpatialSeries d k n pMinus cMass H := by
   let F := highFrameField d k η (fun l => highFramePolynomial (c l))
   have hF : Measurable F := (highFrameField_contDiff d k η _).continuous.measurable
   let S := highFrameFullMarkedScore d k D n π activation a V η p pReset cReset c
@@ -116,8 +89,7 @@ theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk
       cMass ≤ highMarkedResponseMass a V η (highLocalFieldWithout d k D η c j)
         (highPeriodicTensor d k j) (fun x => highLocalFrameFeature k j x) (c j) x y := by
     unfold highMarkedResponseMass
-    rw [← highFrameField_local_decomposition d k D hk η c j x]
-    exact hq x y
+    rw [← highFrameField_local_decomposition d k D hk η c j x] <;> solve_by_elim
   have hlocal (j : HighWindowLabels d k) := high_marked_original_design_spatial_series hk j n
     (π j) (activation j) (hAct j) a V η ha pMinus pPlus cMass hpMinus hcMass p hp hraw
     (pReset j) (hReset j) (cReset j) (hcReset j)
@@ -129,8 +101,7 @@ theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk
       by_contra h
       exact hx (highPeriodicTensor_supported_patch d k j h))
     (hOutside j) (H j) (hH j) (hH0 j) (hdom j)
-  have hSm : Measurable S := highFrameFullMarkedScore_measurable d k D n π activation hAct
-    a V η p hp pReset hReset cReset hcReset c
+  have hSm : Measurable S := Finset.measurable_sum _ fun j _ => (hlocal j).1
   have hEm : Measurable Eglobal := by
     apply Finset.measurable_sum
     intro y hy
@@ -165,12 +136,12 @@ theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk
       rw [ternary_index_product_integral] at hs
       rw [hreg] at hs
       rw [ternary_index_product_integral]
-      exact hs
+      assumption
     dsimp only [F] at hloc
     simp_rw [hloc] at he
-    exact he
+    assumption
   have hu : Integrable (fun x => (3 ^ d : ℕ) * ∑ j, Elocal j x) μ :=
-    (integrable_finsetSum _ (fun j _ => (hlocal j).1)).const_mul _
+    (integrable_finsetSum _ (fun j _ => (hlocal j).2.1)).const_mul _
   have hEI : Integrable Eglobal μ := by
     apply hu.mono' hEm.aestronglyMeasurable
     exact Filter.Eventually.of_forall (fun x => by
@@ -180,11 +151,14 @@ theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk
     (fun x y => hcMass.le.trans (hq x y)) S hSm hEI
   refine ⟨hs.1, ?_⟩
   rw [hs.2]
+  unfold highSourceSpatialSeries
   calc
     _ ≤ ∫ x, (3 ^ d : ℕ) * ∑ j, Elocal j x ∂μ := integral_mono hEI hu hpoint
     _ = (3 ^ d : ℕ) * ∑ j, ∫ x, Elocal j x ∂μ := by
-      rw [integral_const_mul, integral_finsetSum _ (fun j _ => (hlocal j).1)]
-    _ ≤ _ := mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun j _ => (hlocal j).2)) (Nat.cast_nonneg _)
+      rw [integral_const_mul, integral_finsetSum _ (fun j _ => (hlocal j).2.1)]
+    _ ≤ _ := mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun j _ => (hlocal j).2.2)) (Nat.cast_nonneg _)
+
+end
 
 end
 end NearlyMinimax

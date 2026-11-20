@@ -17,7 +17,7 @@ set_option backward.isDefEq.respectTransparency false
 
 def sampleBlockSplitEquiv (d a b c : ℕ) :
     (Fin (a + b + c) → Observation d) ≃ᵐ
-      (((Fin a → Observation d) × (Fin b → Observation d)) × (Fin c → Observation d)) :=
+      (((ObservedSample d a) × ObservedSample d b) × ObservedSample d c) :=
   (MeasurableEquiv.piCongrLeft
     (fun _ : (Fin a ⊕ Fin b) ⊕ Fin c => Observation d)
     (sampleBlockIndexEquiv a b c).symm).trans
@@ -25,7 +25,7 @@ def sampleBlockSplitEquiv (d a b c : ℕ) :
     (fun _ : (Fin a ⊕ Fin b) ⊕ Fin c => Observation d)).trans
   (MeasurableEquiv.prodCongr
     (MeasurableEquiv.sumPiEquivProdPi (fun _ : Fin a ⊕ Fin b => Observation d))
-    (MeasurableEquiv.refl (Fin c → Observation d))))
+    (MeasurableEquiv.refl (ObservedSample d c))))
 
 theorem sampleBlockSplit_measurePreserving {d : ℕ} (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (a b c : ℕ) :

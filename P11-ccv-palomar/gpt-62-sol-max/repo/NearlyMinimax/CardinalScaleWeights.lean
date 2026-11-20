@@ -13,65 +13,39 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 200000
 
-def unaryScaleDensity (alpha t : ℝ) : ℝ := t * alpha ^ 2 * Real.exp (-(alpha * t))
+def unaryScaleDensity (alpha t : ℝ) : ℝ := alpha ^ 2 * (t * Real.exp (-(alpha * t)))
 
-theorem unary_scale_density_integrable (alpha : ℝ) (ha : 0 ≤ alpha) :
-    IntegrableOn (unaryScaleDensity alpha) (Ici (0 : ℝ)) := by
-  rcases eq_or_lt_of_le ha with hzero | hpos
+private theorem unary_scale_density_integrable {alpha : ℝ} (ha : 0 ≤ alpha) :
+    IntegrableOn (unaryScaleDensity alpha) (Ici 0) := by
+  rcases ha.eq_or_lt with h | h
   · subst alpha
-    change Integrable (fun t : ℝ => t * 0 ^ 2 * Real.exp (-(0 * t))) (volume.restrict (Ici 0))
-    simpa using (integrable_zero ℝ ℝ : Integrable (fun _ : ℝ => (0 : ℝ)) (volume.restrict (Ici 0)))
+    change Integrable (fun t : ℝ => 0 ^ 2 * (t * Real.exp (-(0 * t)))) _
+    simp
   · rw [integrableOn_Ici_iff_integrableOn_Ioi]
-    have h := (integrableOn_rpow_mul_exp_neg_mul_rpow (s := 1) (p := 1) (b := alpha)
-      (by norm_num) (by norm_num) hpos).const_mul (alpha ^ 2)
-    change Integrable (fun t => t * alpha ^ 2 * Real.exp (-(alpha * t))) (volume.restrict (Ioi 0))
-    convert h using 1
-    funext t
-    simp only [Real.rpow_one]
-    ring
+    change Integrable (fun t : ℝ => alpha ^ 2 * (t * Real.exp (-(alpha * t)))) _
+    simpa only [Real.rpow_one, neg_mul] using
+      (integrableOn_rpow_mul_exp_neg_mul_rpow (s := 1) (p := 1) (b := alpha)
+        (by norm_num) (by norm_num) h).const_mul (alpha ^ 2)
 
-theorem unary_scale_density_integral (alpha : ℝ) (ha : 0 ≤ alpha) :
-    (∫ t in Ici (0 : ℝ), unaryScaleDensity alpha t) = if alpha = 0 then 0 else 1 := by
+private theorem unary_scale_density_integral {alpha : ℝ} (ha : 0 ≤ alpha) :
+    (∫ t in Ici 0, unaryScaleDensity alpha t) = if alpha = 0 then 0 else 1 := by
   by_cases hzero : alpha = 0
   · simp [unaryScaleDensity, hzero]
-  · have hpos : 0 < alpha := lt_of_le_of_ne ha (Ne.symm hzero)
-    have hGamma := Real.integral_rpow_mul_exp_neg_mul_Ioi (a := 2) (r := alpha)
-      (by norm_num) hpos
-    have he : (unaryScaleDensity alpha) = fun t => alpha ^ 2 * (t * Real.exp (-(alpha * t))) := by
-      funext t
-      unfold unaryScaleDensity
-      ring
-    rw [he, integral_Ici_eq_integral_Ioi, integral_const_mul, ite_eq_right hzero]
+  · have hGamma := Real.integral_rpow_mul_exp_neg_mul_Ioi (a := 2) (r := alpha)
+      (by norm_num) (lt_of_le_of_ne ha (Ne.symm hzero))
+    rw [integral_Ici_eq_integral_Ioi, ite_eq_right hzero]
+    simp only [unaryScaleDensity, integral_const_mul]
     norm_num only [show (2 : ℝ) - 1 = 1 by norm_num, Real.rpow_one] at hGamma
-    have hG2 : Real.Gamma 2 = 1 := by
-      simpa using Real.Gamma_nat_eq_factorial 1
-    rw [hGamma, hG2, mul_one]
-    rw [Real.rpow_two]
-    field_simp
+    simp_all
 
-theorem spatial_unary_scale_integrable {d : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
-    (x y : Covariate d) :
-    IntegrableOn (fun t => spatialUnaryWeight lam t x y) (Ici (0 : ℝ)) := by
-  have hdist : 0 ≤ spatialSquaredDistance x y := Finset.sum_nonneg (fun r _ => sq_nonneg _)
-  have he : (fun t => spatialUnaryWeight lam t x y) = unaryScaleDensity (lam * spatialSquaredDistance x y) := by
-    funext t
-    unfold spatialUnaryWeight unaryScaleDensity
-    congr 1
-    ring
-  rw [he]
-  exact unary_scale_density_integrable _ (mul_nonneg hlam hdist)
+private theorem spatial_unary_weight_eq_density {d : ℕ} (lam : ℝ) (x y : Covariate d) :
+    (fun t => spatialUnaryWeight lam t x y) = unaryScaleDensity (lam * spatialSquaredDistance x y) := by
+  ext t
+  unfold spatialUnaryWeight unaryScaleDensity
+  ring
 
-theorem spatial_unary_scale_integral_le_one {d : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
-    (x y : Covariate d) :
-    (∫ t in Ici (0 : ℝ), spatialUnaryWeight lam t x y) ≤ 1 := by
-  have hdist : 0 ≤ spatialSquaredDistance x y := Finset.sum_nonneg (fun r _ => sq_nonneg _)
-  have he : (fun t => spatialUnaryWeight lam t x y) = unaryScaleDensity (lam * spatialSquaredDistance x y) := by
-    funext t
-    unfold spatialUnaryWeight unaryScaleDensity
-    congr 1
-    ring
-  rw [he, unary_scale_density_integral _ (mul_nonneg hlam hdist)]
-  split_ifs <;> norm_num
+private theorem spatial_unary_rate_nonneg {d : ℕ} {lam : ℝ} (hlam : 0 ≤ lam) (x y : Covariate d) :
+    0 ≤ lam * spatialSquaredDistance x y := by unfold spatialSquaredDistance; positivity
 
 theorem spatial_cardinal_weight_scale_product {d n : ℕ} (i : Fin n) (lam : ℝ)
     (U : Fin n → Covariate d) (t : SpatialScaleVector i) :
@@ -89,24 +63,25 @@ theorem spatial_scale_orthant_measure {n : ℕ} (i : Fin n) :
       Measure.pi (fun _j : SpatialScaleIndex i => volume.restrict (Ici (0 : ℝ))) := by
   have hset : Ici (0 : SpatialScaleVector i) = Set.univ.pi (fun _ => Ici (0 : ℝ)) := by
     ext t
-    simp only [mem_Ici, mem_pi, mem_univ, forall_true_left]
-    rfl
+    tauto
   rw [hset]
-  exact Measure.restrict_pi_pi (μ := fun _j : SpatialScaleIndex i => (volume : Measure ℝ)) _
+  apply Measure.restrict_pi_pi
 
-theorem spatial_cardinal_weight_orthant_integrable {d n : ℕ} (i : Fin n)
-    (lam : ℝ) (hlam : 0 ≤ lam) (U : Fin n → Covariate d) :
+section
+variable {d n : ℕ} (i : Fin n)
+    (lam : ℝ)
+
+theorem spatial_cardinal_weight_orthant_integrable (hlam : 0 ≤ lam) (U : Fin n → Covariate d) :
     Integrable (fun t => spatialCardinalWeight lam (spatialScaleExtend i t) U i)
       (volume.restrict (Ici (0 : SpatialScaleVector i))) := by
-  simp_rw [spatial_cardinal_weight_scale_product]
-  rw [spatial_scale_orthant_measure]
-  exact Integrable.fintype_prod (𝕜 := ℝ)
-    (f := fun (j : SpatialScaleIndex i) (t : ℝ) => spatialUnaryWeight lam t (U i) (U j.val))
-    (μ := fun _j : SpatialScaleIndex i => volume.restrict (Ici (0 : ℝ)))
-    (fun j => spatial_unary_scale_integrable lam hlam (U i) (U j.val))
+  simpa only [spatial_cardinal_weight_scale_product, spatial_scale_orthant_measure] using Integrable.fintype_prod (𝕜 := ℝ)
+      (f := fun (j : SpatialScaleIndex i) (t : ℝ) => spatialUnaryWeight lam t (U i) (U j.val))
+      (μ := fun _j : SpatialScaleIndex i => volume.restrict (Ici (0 : ℝ)))
+      (fun j => by
+        rw [spatial_unary_weight_eq_density]
+        exact unary_scale_density_integrable (spatial_unary_rate_nonneg hlam _ _))
 
-theorem spatial_cardinal_weight_orthant_nonnegative {d n : ℕ} (i : Fin n)
-    (lam : ℝ) (U : Fin n → Covariate d) :
+theorem spatial_cardinal_weight_orthant_nonnegative (U : Fin n → Covariate d) :
     0 ≤ᵐ[volume.restrict (Ici (0 : SpatialScaleVector i))]
       (fun t => spatialCardinalWeight lam (spatialScaleExtend i t) U i) := by
   have hae : ∀ᵐ t : SpatialScaleVector i ∂volume.restrict (Ici (0 : SpatialScaleVector i)),
@@ -119,22 +94,23 @@ theorem spatial_cardinal_weight_orthant_nonnegative {d n : ℕ} (i : Fin n)
   unfold spatialUnaryWeight
   positivity
 
-theorem spatial_cardinal_weight_orthant_integral_le_one {d n : ℕ} (i : Fin n)
-    (lam : ℝ) (hlam : 0 ≤ lam) (U : Fin n → Covariate d) :
+private theorem spatial_cardinal_weight_orthant_integral (hlam : 0 ≤ lam) (U : Fin n → Covariate d) :
+    (∫ t, spatialCardinalWeight lam (spatialScaleExtend i t) U i
+      ∂volume.restrict (Ici (0 : SpatialScaleVector i))) =
+      ∏ j : SpatialScaleIndex i, if lam * spatialSquaredDistance (U i) (U j.val) = 0 then 0 else 1 := by
+  simp_rw [spatial_cardinal_weight_scale_product]
+  rw [spatial_scale_orthant_measure, integral_fintype_prod_eq_prod (fun (j : SpatialScaleIndex i) t => spatialUnaryWeight lam t (U i) (U j.val))]
+  apply Finset.prod_congr rfl
+  intro j _
+  rw [spatial_unary_weight_eq_density, unary_scale_density_integral (spatial_unary_rate_nonneg hlam _ _)]
+
+theorem spatial_cardinal_weight_orthant_integral_le_one (hlam : 0 ≤ lam) (U : Fin n → Covariate d) :
     (∫ t, spatialCardinalWeight lam (spatialScaleExtend i t) U i
       ∂volume.restrict (Ici (0 : SpatialScaleVector i))) ≤ 1 := by
-  simp_rw [spatial_cardinal_weight_scale_product]
-  rw [spatial_scale_orthant_measure, integral_fintype_prod_eq_prod
-    (μ := fun _j : SpatialScaleIndex i => volume.restrict (Ici (0 : ℝ)))
-    (fun (j : SpatialScaleIndex i) (t : ℝ) => spatialUnaryWeight lam t (U i) (U j.val))]
-  apply (Finset.prod_le_prod₀ _ (fun j _ => spatial_unary_scale_integral_le_one lam hlam (U i) (U j.val))).trans_eq
-  · exact Finset.prod_const_one
-  · intro j _
-    apply integral_nonneg_of_ae
-    filter_upwards [ae_restrict_mem measurableSet_Ici] with t ht
-    have ht0 : (0 : ℝ) ≤ t := ht
-    unfold spatialUnaryWeight
-    positivity
+  rw [spatial_cardinal_weight_orthant_integral i lam hlam U]
+  apply Finset.prod_le_one₀ <;> intro j _ <;> split_ifs <;> norm_num
+
+end
 
 theorem spatial_scale_measure_le_orthant {n : ℕ} (i : Fin n) (T : ℝ) :
     spatialScaleMeasure i T ≤ volume.restrict (Ici (0 : SpatialScaleVector i)) :=
@@ -159,26 +135,19 @@ theorem spatial_scale_domain_mono {n : ℕ} (i : Fin n) {L T : ℝ}
   exact (show spatialScaleLogSum i t ≤ 2 * Real.log L from ht.2).trans
     (mul_le_mul_of_nonneg_left (Real.log_le_log hL hLT) (by norm_num))
 
-theorem spatial_squared_distance_pos {d : ℕ} (x y : Covariate d) (hxy : x ≠ y) :
+section
+variable {d : ℕ}
+
+theorem spatial_squared_distance_pos (x y : Covariate d) (hxy : x ≠ y) :
     0 < spatialSquaredDistance x y := by
   have he : ∃ r, x r ≠ y r := by
-    by_contra hn
-    push Not at hn
-    exact hxy (funext hn)
+    grind
   obtain ⟨r, hr⟩ := he
   apply Finset.sum_pos' (fun _ _ => sq_nonneg _)
   exact ⟨r, Finset.mem_univ r, sq_pos_of_ne_zero (sub_ne_zero.mpr (Ne.symm hr))⟩
 
-theorem spatial_unary_scale_integral_eq_one {d : ℕ} (lam : ℝ) (hlam : 0 < lam)
-    (x y : Covariate d) (hxy : x ≠ y) :
-    (∫ t in Ici (0 : ℝ), spatialUnaryWeight lam t x y) = 1 := by
-  have ha : 0 < lam * spatialSquaredDistance x y := mul_pos hlam (spatial_squared_distance_pos x y hxy)
-  have he : (fun t => spatialUnaryWeight lam t x y) = unaryScaleDensity (lam * spatialSquaredDistance x y) := by
-    funext t
-    unfold spatialUnaryWeight unaryScaleDensity
-    congr 1
-    ring
-  rw [he, unary_scale_density_integral _ ha.le, ite_eq_right ha.ne']
+
+end
 
 /-- Away from coincident observations the full untruncated scale
 measure has exact weight one. -/
@@ -187,46 +156,44 @@ theorem spatial_cardinal_weight_orthant_integral_eq_one {d n : ℕ} (i : Fin n)
     (hU : ∀ j, j ≠ i → U i ≠ U j) :
     (∫ t, spatialCardinalWeight lam (spatialScaleExtend i t) U i
       ∂volume.restrict (Ici (0 : SpatialScaleVector i))) = 1 := by
-  simp_rw [spatial_cardinal_weight_scale_product]
-  rw [spatial_scale_orthant_measure, integral_fintype_prod_eq_prod
-    (μ := fun _j : SpatialScaleIndex i => volume.restrict (Ici (0 : ℝ)))
-    (fun (j : SpatialScaleIndex i) (t : ℝ) => spatialUnaryWeight lam t (U i) (U j.val))]
-  apply Finset.prod_eq_one
-  intro j _
-  exact spatial_unary_scale_integral_eq_one lam hlam (U i) (U j.val) (hU j.val j.property)
+  rw [spatial_cardinal_weight_orthant_integral i lam hlam.le U]
+  exact Finset.prod_eq_one fun j _ => ite_eq_right (mul_pos hlam (spatial_squared_distance_pos _ _ (hU j j.property))).ne'
 
-theorem spatial_scale_domain_one {n : ℕ} (i : Fin n) : spatialScaleDomain i 1 = {0} := by
+section
+variable {n : ℕ}
+
+theorem spatial_scale_domain_one (i : Fin n) : spatialScaleDomain i 1 = {0} := by
   ext t
   constructor
   · intro ht
     apply mem_singleton_iff.mpr
     funext j
     have hsub := spatial_scale_domain_subset_box i 1 (by norm_num) ht
-    have hlow : (0 : ℝ) ≤ t j := hsub.1 j
-    have hhigh : t j ≤ (1 : ℝ) ^ 2 - 1 := hsub.2 j
+    have hlow := hsub.1 j
+    have hhigh := hsub.2 j
     norm_num at hhigh
     exact le_antisymm hhigh hlow
   · rintro rfl
     constructor
-    · change (0 : SpatialScaleVector i) ≤ 0; exact le_rfl
+    · simp
     · simp [spatialScaleLogSum]
 
-theorem spatial_scale_measure_one_eq_zero {n : ℕ} (hn : 2 ≤ n) (i : Fin n) :
+theorem spatial_scale_measure_one_eq_zero (hn : 2 ≤ n) (i : Fin n) :
     spatialScaleMeasure i 1 = 0 := by
-  have hni : Nontrivial (Fin n) := Fin.nontrivial_iff_two_le.mpr hn
+  have hni := Fin.nontrivial_iff_two_le.mpr hn
   letI := hni
   obtain ⟨j, hji⟩ := exists_ne i
   letI : Nonempty (SpatialScaleIndex i) := ⟨⟨j, hji⟩⟩
   unfold spatialScaleMeasure
-  rw [spatial_scale_domain_one]
-  exact Measure.restrict_eq_zero.mpr (measure_singleton (0 : SpatialScaleVector i))
+  simp [spatial_scale_domain_one]
+
+end
 
 theorem integrated_cardinal_matrix_one_eq_zero {d n D : ℕ} (hn : 2 ≤ n)
     (lam : ℝ) (U : Fin n → Covariate d) : integratedCardinalMatrix (D := D) lam 1 U = 0 := by
   funext β β'
   unfold integratedCardinalMatrix
-  simp_rw [spatial_scale_measure_one_eq_zero hn, integral_zero_measure]
-  exact Finset.sum_const_zero
+  simp [spatial_scale_measure_one_eq_zero hn, integral_zero_measure]
 
 /-- The true interpolation defect is exactly the complementary scale
 integral off the collision set. This supplies the object to which the

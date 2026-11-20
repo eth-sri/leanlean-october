@@ -43,12 +43,7 @@ theorem affinePatchUpdate_commute {X : Type*} (P Q : Set X)
     (A B C D : X → ℝ) (hPQ : Disjoint P Q) (state : X → ℝ) :
     affinePatchUpdate Q C D (affinePatchUpdate P A B state) =
       affinePatchUpdate P A B (affinePatchUpdate Q C D state) := by
-  classical
-  funext x
-  by_cases hxP : x ∈ P
-  · have hxQ : x ∉ Q := fun hxQ => Set.disjoint_left.1 hPQ hxP hxQ
-    simp [affinePatchUpdate, hxP, hxQ]
-  · by_cases hxQ : x ∈ Q <;> simp [affinePatchUpdate, hxP, hxQ]
+  grind [affinePatchUpdate]
 
 def responseCoordinateUpdate {α E : Type*} [DecidableEq α]
     (j : α) (response : E → E) (state : α → E) : α → E := Function.update state j (response (state j))
@@ -58,8 +53,7 @@ theorem responseCoordinateUpdate_commute {α E : Type*} [DecidableEq α]
     responseCoordinateUpdate j g (responseCoordinateUpdate i f state) =
       responseCoordinateUpdate i f (responseCoordinateUpdate j g state) := by
   unfold responseCoordinateUpdate
-  simp only [Function.update_of_ne hij, Function.update_of_ne (Ne.symm hij)]
-  exact Function.update_comm hij _ _ state
+  grind
 
 def rawPatchUpdate {α X E : Type*} [DecidableEq α] (j : α) (patch : Set X)
     (A B : X → ℝ) (response : E → E) (state : (X → ℝ) × (α → E)) : (X → ℝ) × (α → E) :=
@@ -71,7 +65,6 @@ theorem rawPatchUpdate_commute {α X E : Type*} [DecidableEq α] {i j : α}
     (hij : i ≠ j) (hPQ : Disjoint P Q) (state : (X → ℝ) × (α → E)) :
     rawPatchUpdate j Q C D g (rawPatchUpdate i P A B f state) =
       rawPatchUpdate i P A B f (rawPatchUpdate j Q C D g state) := by
-  exact Prod.ext (affinePatchUpdate_commute P Q A B C D hPQ state.1)
-    (responseCoordinateUpdate_commute hij f g state.2)
+  grind [rawPatchUpdate, affinePatchUpdate_commute, responseCoordinateUpdate_commute]
 
 end NearlyMinimax

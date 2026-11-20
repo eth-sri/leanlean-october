@@ -29,10 +29,7 @@ theorem dyadicPopulationFit_physical_evaluation {d ℓ : ℕ} (j : ℕ)
   have h := dyadicAnchoredFeature_affine j x (dyadicNormalizedAnchor j y) γ
   change dyadicAnchoredFeature j x (dyadicCellAffine j x (dyadicNormalizedAnchor j y)) γ = _ at h
   rw [he] at h
-  change dyadicAnchoredFeature j x y γ =
-    anchoredFeature (dyadicNormalizedAnchor j x) (dyadicNormalizedAnchor j y) γ at h
-  rw [h]
-  ring
+  grind [dyadicAnchoredFeature, dyadicNormalizedAnchor, anchoredFeature]
 
 theorem positive_rpow_times_distance (h s r : ℝ) (hh : 0 < h) :
     h ^ s * r = (h * r) * h ^ (s - 1) := by
@@ -42,7 +39,7 @@ theorem positive_rpow_times_distance (h s r : ℝ) (hh : 0 < h) :
 
 /-- The known preconditioner cancels in the genuine inverse population fit. -/
 theorem dyadicPopulationFit_preconditioner_cancels {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
+    (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
     (dyadicPreconditionedGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
       ((dyadicKnownGram j x)⁻¹ *ᵥ (dyadicResponseMoment θ j x - θ.regression x • dyadicConstantMoment θ j x)) =
         dyadicPopulationFit θ j x := by

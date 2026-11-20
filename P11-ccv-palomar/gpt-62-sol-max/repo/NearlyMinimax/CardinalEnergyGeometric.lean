@@ -31,7 +31,6 @@ set_option maxHeartbeats 800000
 
  theorem cardinalSpatialGeometricBase_nonneg (B κ : ℝ) : 0 ≤ cardinalSpatialGeometricBase B κ := by
   unfold cardinalSpatialGeometricBase
-  have h : 0 ≤ max (1 : ℝ) κ := zero_le_one.trans (le_max_left _ _)
   positivity
 
  theorem cardinal_monomial_geometric_le {b B κ : ℝ} (hb : 0 ≤ b) (hbB : b ≤ B) (hκ : 0 ≤ κ) (n : ℕ) :
@@ -43,14 +42,18 @@ set_option maxHeartbeats 800000
   have h := mul_le_mul hbp hκp (pow_nonneg hκ (n-1)) (pow_nonneg (sq_nonneg B) n)
   have h2 : (B^2*max 1 κ)^n ≤ cardinalSpatialGeometricBase B κ^n :=
     pow_le_pow_left₀ (mul_nonneg (sq_nonneg B) (zero_le_one.trans hM))
-      (by unfold cardinalSpatialGeometricBase; linarith only []) n
+      (by unfold cardinalSpatialGeometricBase; simp) n
   exact h.trans (by simpa only [mul_pow] using h2)
 
  def cardinalInterpolationEnergyPrefactor (d : ℕ) (a : ℝ) : ℝ := 2*(2 : ℝ)^d/a^4
  def cardinalTaylorEnergyPrefactor (d q : ℕ) (C a ρ : ℝ) : ℝ :=
   2*(2 : ℝ)^d*highResponseRemainderConstant q C a ρ^2
 
- theorem cardinalAliasSpatialComponent_geometric_le {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+ section
+variable {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+include hbd hB
+
+theorem cardinalAliasSpatialComponent_geometric_le
     (d n : ℕ) (a η T : ℝ) (ha : 0 < a) (hT : 1 ≤ T) :
     cardinalAliasSpatialComponent d n bd a η T ≤
       cardinalInterpolationEnergyPrefactor d a * cardinalSpatialGeometricBase B (16*spatialUnaryIntegralConstant d)^n *
@@ -62,12 +65,9 @@ set_option maxHeartbeats 800000
   have h := mul_le_mul_of_nonneg_right hp
     (by positivity : 0 ≤ cardinalInterpolationEnergyPrefactor d a*(n : ℝ)^2*η^4*T^(-(d : ℝ))*(1+Real.log T)^(n-2))
   convert h using 1 <;> dsimp only [cardinalAliasSpatialComponent, cardinalRawAliasCoefficient, cardinalDefectSquareBudget, cardinalInterpolationEnergyPrefactor]
-  · simp only [mul_pow, ← pow_mul]
-    field_simp
-    ring
-  · ring
+  all_goals (ring)
 
- theorem cardinalTaylorSpatialComponent_geometric_le {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+ theorem cardinalTaylorSpatialComponent_geometric_le
     (d n q : ℕ) (C a ρ η : ℝ) :
     cardinalTaylorSpatialComponent d n q bd C a ρ η ≤
       cardinalTaylorEnergyPrefactor d q C a ρ *
@@ -82,8 +82,8 @@ set_option maxHeartbeats 800000
   have h := mul_le_mul_of_nonneg_right hp
     (by positivity : 0 ≤ cardinalTaylorEnergyPrefactor d q C a ρ*(n : ℝ)^(4*q+6)*η^(4*q+4))
   convert h using 1 <;> dsimp only [cardinalTaylorSpatialComponent, cardinalRawTaylorCoefficient, cardinalTaylorEnergyPrefactor]
-  · simp only [mul_pow, ← pow_mul]
-    ring_nf
-  · ring
+  all_goals (ring)
+
+end
 
 end NearlyMinimax

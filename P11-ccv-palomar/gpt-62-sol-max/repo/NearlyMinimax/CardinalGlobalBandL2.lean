@@ -14,8 +14,12 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 700000
 
-theorem centeredCardinalBandMatrix_eq_difference {d n D : ℕ} (i : Fin n) (lam : ℝ)
+section
+variable {d n D : ℕ} (i : Fin n) (lam : ℝ)
     {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T)
+include hL hT hLT
+
+theorem centeredCardinalBandMatrix_eq_difference
     (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
     centeredCardinalBandMatrix i lam L T U β β' =
       (∫ t, spatialCenteredCardinalMatrix i lam U t β β' ∂spatialScaleMeasure i T) -
@@ -24,8 +28,7 @@ theorem centeredCardinalBandMatrix_eq_difference {d n D : ℕ} (i : Fin n) (lam 
     (spatial_centered_cardinal_matrix_integrable i lam T hT U β β')
     (spatial_scale_domain_mono i (lt_of_lt_of_le (by norm_num) hL) hLT)
 
-theorem centeredCardinalBandMatrix_continuous {d n D : ℕ} (i : Fin n) (lam : ℝ)
-    {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T) (β β' : HighFrameIndex d D) :
+theorem centeredCardinalBandMatrix_continuous (β β' : HighFrameIndex d D) :
     Continuous (fun U => centeredCardinalBandMatrix i lam L T U β β') := by
   simp_rw [centeredCardinalBandMatrix_eq_difference i lam hL hT hLT]
   exact (continuous_parametric_integral_of_continuous
@@ -35,19 +38,23 @@ theorem centeredCardinalBandMatrix_continuous {d n D : ℕ} (i : Fin n) (lam : �
         (spatial_centered_cardinal_matrix_joint_continuous i lam β β')
         (spatial_scale_domain_isCompact i L hL))
 
-theorem centeredCardinalBandMatrix_l1_square_measurable {d n D : ℕ} (i : Fin n) (lam : ℝ)
-    {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T) :
+theorem centeredCardinalBandMatrix_l1_square_measurable :
     Measurable (fun U : Fin n → Covariate d => spatialMatrixL1 (centeredCardinalBandMatrix (D := D) i lam L T U) ^ 2) := by
-  unfold spatialMatrixL1
   exact (Finset.measurable_fun_sum _ (fun β _ => Finset.measurable_fun_sum _
-    (fun β' _ => (centeredCardinalBandMatrix_continuous i lam hL hT hLT β β').measurable.abs))).pow_const 2
+      (fun β' _ => (centeredCardinalBandMatrix_continuous i lam hL hT hLT β β').measurable.abs))).pow_const 2
+
+end
 
 def cardinalBandSquareBudget (d n : ℕ) (L : ℝ) : ℝ :=
   ((100 * (d : ℝ)) ^ 2 * 16 * spatialScaleIntegralConstant d) ^ (n - 1) *
     L ^ (4 - (d : ℝ)) * (1 + Real.log L) ^ (n - 2)
 
-theorem centeredCardinalBandMatrix_joint_integrable {d n D : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
-    (i : Fin n) {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T) :
+section
+variable {d n D : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
+    (i : Fin n) {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T)
+include hd hn hL hT hLT
+
+theorem centeredCardinalBandMatrix_joint_integrable :
     Integrable (fun z : Covariate d × (SpatialScaleIndex i → Covariate d) =>
       spatialMatrixL1 (anchoredCenteredCardinalBandMatrix (D := D) i
         (spatialInterpolationLambda d) L T z.1 z.2) ^ 2)
@@ -71,37 +78,24 @@ theorem centeredCardinalBandMatrix_joint_integrable {d n D : ℕ} (hd : 5 ≤ d)
     integral_nonneg (fun _ => norm_nonneg _)
   rw [Real.norm_eq_abs, abs_of_nonneg hinner]
   simp only [f, Real.norm_eq_abs, abs_sq]
-  exact anchored_centered_band_matrix_l1_square_integral_le hd hn i x hx hL hT
+  apply anchored_centered_band_matrix_l1_square_integral_le <;> assumption
 
-theorem centeredCardinalBandMatrix_full_integrable {d n D : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
-    (i : Fin n) {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T) :
+theorem centeredCardinalBandMatrix_full_integrable :
     Integrable (fun U => spatialMatrixL1 (centeredCardinalBandMatrix (D := D) i
       (spatialInterpolationLambda d) L T U) ^ 2) (fullSpatialPatchDesign d n) := by
   have hp := (cardinalHeadSplit_measurePreserving i (volume.restrict (spatialPatchBox d))).symm
   exact (hp.integrable_comp_emb (cardinalHeadSplit i).symm.measurableEmbedding).mp
       (centeredCardinalBandMatrix_joint_integrable hd hn i hL hT hLT)
 
-theorem centeredCardinalBandMatrix_full_integral_le {d n D : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
-    (i : Fin n) {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T) :
+theorem centeredCardinalBandMatrix_full_integral_le :
     (∫ U, spatialMatrixL1 (centeredCardinalBandMatrix (D := D) i
       (spatialInterpolationLambda d) L T U) ^ 2 ∂fullSpatialPatchDesign d n) ≤
       (2 : ℝ) ^ d * cardinalBandSquareBudget d n L := by
-  rw [fullSpatialPatchDesign_split i _]
-  change (∫ z : Covariate d × (SpatialScaleIndex i → Covariate d),
-    spatialMatrixL1 (anchoredCenteredCardinalBandMatrix (D := D) i
-      (spatialInterpolationLambda d) L T z.1 z.2) ^ 2
-      ∂(volume.restrict (spatialPatchBox d)).prod (spatialPatchDesignMeasure i d)) ≤ _
-  rw [integral_prod _ (centeredCardinalBandMatrix_joint_integrable hd hn i hL hT hLT)]
-  have hi := (centeredCardinalBandMatrix_joint_integrable (D := D) hd hn i hL hT hLT).integral_prod_left
-  have hb : (fun x => ∫ Y, spatialMatrixL1 (anchoredCenteredCardinalBandMatrix (D := D) i
-      (spatialInterpolationLambda d) L T x Y) ^ 2 ∂spatialPatchDesignMeasure i d) ≤ᵐ[
-      volume.restrict (spatialPatchBox d)] (fun _ => cardinalBandSquareBudget d n L) := by
-    filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
-    exact anchored_centered_band_matrix_l1_square_integral_le hd hn i x hx hL hT
-  apply (integral_mono_ae hi (integrable_const _) hb).trans_eq
-  simp only [integral_const, smul_eq_mul, measureReal_def, Measure.restrict_apply_univ]
-  change volume.real (spatialPatchBox d) * cardinalBandSquareBudget d n L = _
-  rw [spatialPatchBox_real_volume]
+  apply fullSpatialPatchDesign_fiber_integral_le i (centeredCardinalBandMatrix_joint_integrable hd hn i hL hT hLT)
+  intro x hx
+  exact anchored_centered_band_matrix_l1_square_integral_le hd hn i x hx hL hT
+
+end
 
 def globalCardinalBandMatrix {d n D : ℕ} (lam L T : ℝ) (U : Fin n → Covariate d)
     (β β' : HighFrameIndex d D) : ℝ :=
@@ -128,14 +122,17 @@ theorem cardinal_matrix_l1_sum_le {d D : ℕ} {I : Type*} [Fintype I]
       rw [Finset.sum_comm]
     _ = _ := Finset.sum_comm
 
-theorem globalCardinalBandMatrix_square_le_sum {d n D : ℕ} (lam : ℝ)
+section
+variable {d n D : ℕ}
+
+theorem globalCardinalBandMatrix_square_le_sum (lam : ℝ)
     {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T) (U : Fin n → Covariate d) :
     spatialMatrixL1 (globalCardinalBandMatrix (D := D) lam L T U) ^ 2 ≤
       (n : ℝ) * ∑ i, spatialMatrixL1 (centeredCardinalBandMatrix (D := D) i lam L T U) ^ 2 := by
   have he : globalCardinalBandMatrix (D := D) lam L T U =
       fun β β' => ∑ i, centeredCardinalBandMatrix i lam L T U β β' := by
     funext β β'
-    exact globalCardinalBandMatrix_eq_sum lam hL hT hLT U β β'
+    apply globalCardinalBandMatrix_eq_sum <;> assumption
   rw [he]
   have hsum := cardinal_matrix_l1_sum_le (fun i : Fin n =>
     centeredCardinalBandMatrix (D := D) i lam L T U)
@@ -145,8 +142,15 @@ theorem globalCardinalBandMatrix_square_le_sum {d n D : ℕ} (lam : ℝ)
     nsmul_eq_mul, mul_one] using Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
       (fun _ : Fin n => (1 : ℝ)) (fun i => spatialMatrixL1 (centeredCardinalBandMatrix (D := D) i lam L T U))
 
-theorem globalCardinalBandMatrix_square_integrable {d n D : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
-    {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T) :
+section
+variable (hd : 5 ≤ d) (hn : 2 ≤ n)
+include hd hn
+
+section
+variable {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T)
+include hL hT hLT
+
+theorem globalCardinalBandMatrix_square_integrable :
     Integrable (fun U : Fin n → Covariate d =>
       spatialMatrixL1 (globalCardinalBandMatrix (D := D) (spatialInterpolationLambda d) L T U) ^ 2)
       (fullSpatialPatchDesign d n) := by
@@ -154,16 +158,14 @@ theorem globalCardinalBandMatrix_square_integrable {d n D : ℕ} (hd : 5 ≤ d) 
     centeredCardinalBandMatrix_full_integrable (D := D) hd hn i hL hT hLT)).const_mul (n : ℝ)
   have hm : Measurable (fun U : Fin n → Covariate d =>
       spatialMatrixL1 (globalCardinalBandMatrix (D := D) (spatialInterpolationLambda d) L T U) ^ 2) := by
-    unfold spatialMatrixL1 globalCardinalBandMatrix
     exact (Finset.measurable_fun_sum _ (fun β _ => Finset.measurable_fun_sum _
-      (fun β' _ => (integrated_cardinal_band_continuous (spatialInterpolationLambda d) hL hT β β').measurable.abs))).pow_const 2
+          (fun β' _ => (integrated_cardinal_band_continuous (spatialInterpolationLambda d) hL hT β β').measurable.abs))).pow_const 2
   apply hi.mono' hm.aestronglyMeasurable
   exact Filter.Eventually.of_forall (fun U => by
     rw [Real.norm_eq_abs, abs_sq]
-    exact globalCardinalBandMatrix_square_le_sum (spatialInterpolationLambda d) hL hT hLT U)
+    apply globalCardinalBandMatrix_square_le_sum <;> assumption)
 
-theorem globalCardinalBandMatrix_square_integral_le {d n D : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
-    {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) (hLT : L ≤ T) :
+theorem globalCardinalBandMatrix_square_integral_le :
     (∫ U, spatialMatrixL1 (globalCardinalBandMatrix (D := D) (spatialInterpolationLambda d) L T U) ^ 2
       ∂fullSpatialPatchDesign d n) ≤ (n : ℝ) ^ 2 * (2 : ℝ) ^ d * cardinalBandSquareBudget d n L := by
   have hi := (integrable_finsetSum Finset.univ (fun i _ =>
@@ -178,33 +180,37 @@ theorem globalCardinalBandMatrix_square_integral_le {d n D : ℕ} (hd : 5 ≤ d)
   have hm := mul_le_mul_of_nonneg_left hs (Nat.cast_nonneg n)
   convert hm using 1 <;> simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul] <;> ring
 
-theorem integratedCardinalMatrix_full_square_integrable {d n D : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
-    {T : ℝ} (hT : 1 ≤ T) :
+end
+
+omit hd in
+private theorem globalCardinalBandMatrix_one {T : ℝ} (U : Fin n → Covariate d) :
+    globalCardinalBandMatrix (D := D) (spatialInterpolationLambda d) 1 T U =
+      integratedCardinalMatrix (spatialInterpolationLambda d) T U := by
+  unfold globalCardinalBandMatrix
+  simp [integrated_cardinal_matrix_one_eq_zero hn]
+
+section
+variable {T : ℝ} (hT : 1 ≤ T)
+include hT
+
+theorem integratedCardinalMatrix_full_square_integrable :
     Integrable (fun U => spatialMatrixL1 (integratedCardinalMatrix (D := D)
       (spatialInterpolationLambda d) T U) ^ 2) (fullSpatialPatchDesign d n) := by
-  have he (U : Fin n → Covariate d) : globalCardinalBandMatrix (D := D)
-      (spatialInterpolationLambda d) 1 T U =
-      integratedCardinalMatrix (spatialInterpolationLambda d) T U := by
-    unfold globalCardinalBandMatrix
-    rw [integrated_cardinal_matrix_one_eq_zero hn]
-    simp
   have hi := globalCardinalBandMatrix_square_integrable (D := D) hd hn (le_refl 1) hT hT
-  simp_rw [he] at hi
-  exact hi
+  simpa only [globalCardinalBandMatrix_one hn] using hi
 
-theorem integratedCardinalMatrix_full_square_integral_le {d n D : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
-    {T : ℝ} (hT : 1 ≤ T) :
+theorem integratedCardinalMatrix_full_square_integral_le :
     (∫ U, spatialMatrixL1 (integratedCardinalMatrix (D := D) (spatialInterpolationLambda d) T U) ^ 2
       ∂fullSpatialPatchDesign d n) ≤ (n : ℝ) ^ 2 * (2 : ℝ) ^ d *
       ((100 * (d : ℝ)) ^ 2 * 16 * spatialScaleIntegralConstant d) ^ (n - 1) := by
-  have he (U : Fin n → Covariate d) : globalCardinalBandMatrix (D := D)
-      (spatialInterpolationLambda d) 1 T U =
-      integratedCardinalMatrix (spatialInterpolationLambda d) T U := by
-    unfold globalCardinalBandMatrix
-    rw [integrated_cardinal_matrix_one_eq_zero hn]
-    simp
   have hb := globalCardinalBandMatrix_square_integral_le (D := D) hd hn (le_refl 1) hT hT
-  simp_rw [he] at hb
+  simp_rw [globalCardinalBandMatrix_one hn] at hb
   simpa only [cardinalBandSquareBudget, Real.one_rpow, Real.log_one, add_zero, one_pow, mul_one] using hb
+
+end
+
+end
+
+end
 
 end NearlyMinimax

@@ -21,7 +21,7 @@ def wordHeapPiecePositionEquiv (word : List J) (dependent : J → J → Prop) :
     WordHeapPiece word dependent ≃ Fin word.length where
   toFun := WordHeapPiece.position
   invFun i := ⟨i⟩
-  left_inv x := by cases x; rfl
+  left_inv x := by rfl
   right_inv _ := rfl
 
 /-- A true heap isomorphism induces a bijection of actual mark coordinates. -/
@@ -33,7 +33,6 @@ def historyHeapCoordinateEquiv {u v : List J} {dependent : J → J → Prop}
 @[simp] theorem historyHeapCoordinateEquiv_position {u v : List J} {dependent : J → J → Prop}
     (e : WordHeapPiece u dependent ≃o WordHeapPiece v dependent) (x : WordHeapPiece u dependent) :
     historyHeapCoordinateEquiv e x.position = (e x).position := by
-  cases x
   rfl
 
 /-- This is the actual measurable coordinate insertion into another word representative. -/
@@ -48,6 +47,6 @@ def historyHeapMarkEquiv {u v : List J} {dependent : J → J → Prop}
     historyHeapMarkEquiv e marks (e x).position = marks x.position := by
   have hh := MeasurableEquiv.piCongrLeft_apply_apply (historyHeapCoordinateEquiv e)
     (β := fun _ : Fin v.length => E) marks x.position
-  simpa only [historyHeapMarkEquiv, historyHeapCoordinateEquiv_position] using hh
+  tauto
 
 end NearlyMinimax

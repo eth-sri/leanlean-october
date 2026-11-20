@@ -16,8 +16,12 @@ variable {E I : Type*} [MeasurableSpace E] [MeasurableSpace I]
 variable [MeasurableSingletonClass I]
 variable {μ : Measure E} [IsProbabilityMeasure μ]
 
-theorem supported_row_sq_le (label : E → I) (hlabel : Measurable label)
-    {K : E × E → ℝ} (hsupport : ∀ x y, label x ≠ label y → K (x, y) = 0)
+section
+variable (label : E → I) (hlabel : Measurable label)
+    {K : E × E → ℝ}
+include hlabel
+
+theorem supported_row_sq_le (hsupport : ∀ x y, label x ≠ label y → K (x, y) = 0)
     (x : E) (hKx : MemLp (fun y => K (x, y)) 2 μ)
     {cap : ℝ} (hcap : ∀ i, μ.real (label ⁻¹' {i}) ≤ cap) :
     rowIntegral (μ := μ) K x ^ 2 ≤ cap * ∫ y, K (x, y) ^ 2 ∂μ := by
@@ -28,16 +32,14 @@ theorem supported_row_sq_le (label : E → I) (hlabel : Measurable label)
     by_cases hy : y ∈ S
     · exact indicator_of_mem hy _
     · rw [indicator_of_notMem hy]
-      exact (hsupport x y (by simpa only [S, mem_preimage, mem_singleton_iff, ne_comm] using hy)).symm
+      exact (hsupport x y (by tauto)).symm
   have he₂ : S.indicator (fun y => K (x, y) ^ 2) = (fun y => K (x, y) ^ 2) := by
     funext y
     by_cases hy : y ∈ S
     · exact indicator_of_mem hy _
-    · rw [indicator_of_notMem hy,
-        hsupport x y (by simpa only [S, mem_preimage, mem_singleton_iff, ne_comm] using hy)]
-      norm_num
+    · simp [indicator_of_notMem hy, hsupport x y (by tauto)]
   have hrestrict : (μ.restrict S).real univ = μ.real S := by
-    simp only [Measure.real, Measure.restrict_apply_univ]
+    simp
   calc
     _ = (∫ y in S, K (x, y) ∂μ) ^ 2 := by
       rw [← integral_indicator hS, he]
@@ -49,8 +51,7 @@ theorem supported_row_sq_le (label : E → I) (hlabel : Measurable label)
     _ ≤ _ := mul_le_mul_of_nonneg_right (hcap (label x))
       (integral_nonneg (fun _ => sq_nonneg _))
 
-theorem partition_row_energy_le (label : E → I) (hlabel : Measurable label)
-    {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ))
+theorem partition_row_energy_le (hK : MemLp K 2 (μ.prod μ))
     (hsupport : ∀ x y, label x ≠ label y → K (x, y) = 0)
     {cap : ℝ} (hcap : ∀ i, μ.real (label ⁻¹' {i}) ≤ cap) :
     (∫ x, rowIntegral (μ := μ) K x ^ 2 ∂μ) ≤
@@ -64,6 +65,8 @@ theorem partition_row_energy_le (label : E → I) (hlabel : Measurable label)
       filter_upwards [hsec] with x hx
       exact supported_row_sq_le label hlabel hsupport x hx hcap
     _ = _ := by rw [integral_const_mul, integral_prod _ hK.integrable_sq]
+
+end
 
 theorem partition_pairAverage_centered_sq_le {Ω : Type*} [MeasurableSpace Ω]
     {ν : Measure Ω} [IsProbabilityMeasure ν] {n : ℕ} (hn : 2 ≤ n)

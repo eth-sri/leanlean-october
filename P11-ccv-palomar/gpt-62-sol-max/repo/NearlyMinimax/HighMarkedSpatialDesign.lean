@@ -37,6 +37,9 @@ theorem high_marked_original_design_spatial_series {ι E : Type*}
     (hdom : ∀ r x, (∀ i, x i ∈ highTorusPatch d k j) →
       selectedRawSquareEnergy (highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c) x ≤
         H r (highPatchProductChart d k j x)) :
+    Measurable (fun z : TernarySample d n =>
+      highMarkedLocalScore π activation a V η (p ∘ z.1) (fun e => pReset e ∘ z.1) cReset
+        (g ∘ z.1) (w ∘ z.1) (φ ∘ z.1) c z.2) ∧
     Integrable (highMarkedSampleConditionalEnergy n π activation a V η p pReset cReset g w φ c)
       (Measure.pi (fun _ : Fin n => highNormalizedDesignLaw p)) ∧
     (∫ x, highMarkedSampleConditionalEnergy n π activation a V η p pReset cReset g w φ c x
@@ -48,12 +51,19 @@ theorem high_marked_original_design_spatial_series {ι E : Type*}
   let _ := cubeVolume_isProbability d
   have hprob := high_normalized_design_probability p hpMeas pMinus pPlus hpMinus
     (Filter.Eventually.of_forall hraw)
-  have hm : pMinus ≤ highRawDensityMass p :=
+  have hm :=
     (highRawDensityMass_mem_Icc p hpMeas pMinus pPlus hpMinus (Filter.Eventually.of_forall hraw)).1
-  have hR (r : ℕ) (y : Fin r → Fin 3) : Measurable (fun x =>
-      highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c x y) :=
+  have hR (r : ℕ) (y : Fin r → Fin 3) :=
     highMarkedSampleNumerator_measurable r π activation hAct a V η p hpMeas pReset hpReset
       cReset hcReset g w hg hw φ hφ c y
+  have hqMeas := highMarkedResponseMass_measurable a V η g w hg hw φ hφ c
+  refine ⟨?_, ?_⟩
+  · apply measurable_from_prod_countable_left
+    intro y
+    simp_rw [high_marked_sample_score_eq_ratio]
+    refine (hR n y).div ?_
+    unfold selectedRawLikelihood
+    fun_prop (disch := assumption)
   have hRaw (r : ℕ) := high_raw_square_patch_integrable_bound hk j
     (highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c)
     (hR r) (H r) (hH r) (hH0 r) (hdom r)
@@ -61,7 +71,7 @@ theorem high_marked_original_design_spatial_series {ι E : Type*}
     (highTorusPatch d k j) (highTorusPatch_measurableSet d k j)
     (highRawDensityMass p) pMinus cMass hpMinus hcMass hm π activation a V η ha p hpMeas
     pReset cReset g w φ c
-    (highMarkedResponseMass_measurable a V η g w hg hw φ hφ c)
+    hqMeas
     hprob (fun x => (hraw x).1) hq hwo hro hR (fun r => (hRaw r).1)
   refine ⟨hs.1, hs.2.trans ?_⟩
   apply Finset.sum_le_sum
@@ -70,12 +80,12 @@ theorem high_marked_original_design_spatial_series {ι E : Type*}
     apply div_nonneg
     · exact pow_nonneg (mul_nonneg (Nat.cast_nonneg n)
         (high_fixed_score_denominator_pos hpMinus hcMass).le) r
-    · exact Nat.cast_nonneg _
+    simp
   calc
     _ ≤ (((n : ℝ) * highFixedScoreDenominator pMinus cMass) ^ r / (r.factorial : ℝ)) *
         (((2 / (k : ℝ)) ^ d) ^ r * ∫ u, H r u
           ∂Measure.pi (fun _ : Fin r => volume.restrict (spatialPatchBox d))) :=
       mul_le_mul_of_nonneg_left (hRaw r).2 hco
-    _ = _ := by rw [mul_pow]; ring
+    _ = _ := by ring
 
 end NearlyMinimax

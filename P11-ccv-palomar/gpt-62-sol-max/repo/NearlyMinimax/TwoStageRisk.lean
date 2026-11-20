@@ -36,7 +36,7 @@ theorem two_stage_mean_squared_bound {P X : Type*}
   have hmean' : (∫⁻ z, g z ∂μ.prod ν) ≤ ENNReal.ofReal d := by
     rw [lintegral_prod _ hg.aemeasurable]
     simp only [g, lintegral_const, measure_univ, mul_one]
-    exact hmean
+    assumption
   have hbudget : 0 ≤ a * ∫ p, b p ∂μ :=
     mul_nonneg ha (integral_nonneg_of_ae hb0)
   calc
@@ -59,7 +59,6 @@ theorem two_stage_mean_squared_bound {P X : Type*}
         ← ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 2),
         ← ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 2),
         ← ENNReal.ofReal_add (mul_nonneg (by norm_num) hbudget) (mul_nonneg (by norm_num) hd)]
-      congr 1
       ring
 
 end NearlyMinimax

@@ -21,15 +21,15 @@ theorem norm_fderiv_le_div (f : E → F) (hf : Differentiable ℂ f)
     (x : E) (R A : ℝ) (hR : 0 < R)
     (hbound : ∀ y ∈ closedBall x R, ‖f y‖ ≤ A) :
     ‖fderiv ℂ f x‖ ≤ A / R := by
-  have hA : 0 ≤ A := (norm_nonneg (f x)).trans (hbound x (mem_closedBall_self hR.le))
+  have hA := (norm_nonneg (f x)).trans (hbound x (mem_closedBall_self hR.le))
   apply ContinuousLinearMap.opNorm_le_bound _ (div_nonneg hA hR.le)
   intro v
   by_cases hv : v = 0
   · simp [hv]
-  have hvpos : 0 < ‖v‖ := norm_pos_iff.mpr hv
+  have hvpos := norm_pos_iff.mpr hv
   let g : ℂ → F := fun z => f (x + z • v)
   have hg : Differentiable ℂ g := by
-    exact hf.comp ((differentiable_const x).add (differentiable_id.smul_const v))
+    fun_prop
   have hd : deriv g 0 = (fderiv ℂ f x) v := by
     have hline : HasDerivAt (fun z : ℂ => x + z • v) v 0 := by
       simpa using ((hasDerivAt_id (0 : ℂ)).smul_const v).const_add x
@@ -44,18 +44,19 @@ theorem norm_fderiv_le_div (f : E → F) (hf : Differentiable ℂ f)
     rw [mem_closedBall, dist_eq_norm]
     change ‖x + z • v - x‖ ≤ R
     rw [add_sub_cancel_left, norm_smul]
-    have hz' : ‖z‖ = R / ‖v‖ := by simpa [mem_sphere, dist_eq_norm] using hz
-    rw [hz']
-    exact le_of_eq (div_mul_cancel₀ R (ne_of_gt hvpos))
+    aesop
   rw [hd] at hc
   convert hc using 1
   field_simp
 
-/-- Iterating the first derivative estimate on equal-width nested balls. -/
-theorem iteratedFDeriv_closedBall_aux {E F : Type u}
+section
+variable {E F : Type u}
     [NormedAddCommGroup E] [NormedSpace ℂ E]
     [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
-    (n : ℕ) (f : E → F) (hf : AnalyticOnNhd ℂ f Set.univ)
+    (n : ℕ)
+
+/-- Iterating the first derivative estimate on equal-width nested balls. -/
+theorem iteratedFDeriv_closedBall_aux (f : E → F) (hf : AnalyticOnNhd ℂ f Set.univ)
     (x : E) (δ A : ℝ) (hδ : 0 < δ)
     (hbound : ∀ y ∈ closedBall x ((n : ℝ) * δ), ‖f y‖ ≤ A) :
     ‖iteratedFDeriv ℂ n f x‖ ≤ A / δ ^ n := by
@@ -82,25 +83,21 @@ theorem iteratedFDeriv_closedBall_aux {E F : Type u}
     field_simp
 
 /-- The degree-independent norm estimate on an open ball, before the factorial comparison. -/
-theorem iteratedFDeriv_openBall {E F : Type u}
-    [NormedAddCommGroup E] [NormedSpace ℂ E]
-    [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
-    (n : ℕ) (hn : 0 < n) (f : E → F) (hf : AnalyticOnNhd ℂ f Set.univ)
+theorem iteratedFDeriv_openBall (hn : 0 < n) (f : E → F) (hf : AnalyticOnNhd ℂ f Set.univ)
     (x : E) (ε A : ℝ) (hε : 0 < ε)
     (hbound : ∀ y ∈ ball x ε, ‖f y‖ ≤ A) :
     ‖iteratedFDeriv ℂ n f x‖ ≤ A * ((n : ℝ) / ε) ^ n := by
-  have hnreal : 0 < (n : ℝ) := by exact_mod_cast hn
+  have hnreal : 0 < (n : ℝ) := by positivity
   have hinner (R : ℝ) (hR : 0 < R) (hRε : R < ε) :
       ‖iteratedFDeriv ℂ n f x‖ ≤ A * ((n : ℝ) / R) ^ n := by
-    have hδ : 0 < R / (n : ℝ) := div_pos hR hnreal
+    have hδ := div_pos hR hnreal
     have h := iteratedFDeriv_closedBall_aux n f hf x (R / n) A hδ (by
       intro y hy
       apply hbound
       rw [mem_closedBall] at hy
       rw [mem_ball]
       have heq : (n : ℝ) * (R / n) = R := by field_simp
-      rw [heq] at hy
-      exact hy.trans_lt hRε)
+      grind)
     convert h using 1
     simp_rw [div_pow]
     field_simp
@@ -114,15 +111,16 @@ theorem iteratedFDeriv_openBall {E F : Type u}
     (self_mem_nhdsWithin : Set.Iio ε ∈ nhdsWithin ε (Set.Iio ε))] with R hR hRε
   exact hinner R hR hRε
 
+end
+
 /-- The elementary factorial comparison used in Lemma 5(c). -/
 lemma pow_le_factorial_exp (n : ℕ) :
     (n : ℝ) ^ n ≤ (n.factorial : ℝ) * Real.exp 1 ^ n := by
-  have hf : 0 < (n.factorial : ℝ) := by exact_mod_cast Nat.factorial_pos n
+  have hf : 0 < (n.factorial : ℝ) := by positivity
   have h := (div_le_iff₀ hf).mp (Real.pow_div_factorial_le_exp (n : ℝ) (Nat.cast_nonneg n) n)
   have he : Real.exp (n : ℝ) = Real.exp 1 ^ n := by
-    simpa using Real.exp_nat_mul 1 n
-  rw [he] at h
-  simpa [mul_comm] using h
+    simp
+  grind
 
 /-- Lemma 5(c) for arbitrary entire analytic maps of complex normed spaces. -/
 theorem iteratedFDeriv_direction_bound {E F : Type u}
@@ -133,7 +131,7 @@ theorem iteratedFDeriv_direction_bound {E F : Type u}
     (hbound : ∀ y ∈ ball x ε, ‖f y‖ ≤ A) (v : Fin n → E) :
     ‖iteratedFDeriv ℂ n f x v‖ ≤
       A * (n.factorial : ℝ) * (Real.exp 1 / ε) ^ n * ∏ i, ‖v i‖ := by
-  have hA : 0 ≤ A := (norm_nonneg (f x)).trans (hbound x (mem_ball_self hε))
+  have hA := (norm_nonneg (f x)).trans (hbound x (mem_ball_self hε))
   have hnorm := iteratedFDeriv_openBall n hn f hf x ε A hε hbound
   have hfactor : A * ((n : ℝ) / ε) ^ n ≤
       A * (n.factorial : ℝ) * (Real.exp 1 / ε) ^ n := by

@@ -16,12 +16,15 @@ set_option maxHeartbeats 500000
 def gaussianHermite {d : ℕ} (a b : Fin d) (Z : Covariate d) : ℝ :=
   (if a = b then 1 else 0) - Z a * Z b
 
-theorem standardGaussian_cross_integrable {d : ℕ} (a b : Fin d) :
+section
+variable {d : ℕ}
+
+theorem standardGaussian_cross_integrable (a b : Fin d) :
     Integrable (fun Z : Covariate d => Z a * Z b) (standardGaussianPi d) := by
   have h := (gaussian_cross_complex_characteristic_integrable (fun _ => 0) a b).re
   simpa [gaussianPhase, Complex.mul_re] using h
 
-theorem standardGaussian_coordinate_square_integral {d : ℕ} (a : Fin d) :
+theorem standardGaussian_coordinate_square_integral (a : Fin d) :
     (∫ Z : Covariate d, (Z a) ^ 2 ∂standardGaussianPi d) = 1 := by
   have h := standardGaussian_cross_complex_characteristic (fun _ => 0) a a
   simp [gaussianPhase] at h
@@ -30,15 +33,18 @@ theorem standardGaussian_coordinate_square_integral {d : ℕ} (a : Fin d) :
     funext Z
     simp [pow_two]
   rw [he, integral_complex_ofReal] at h
-  exact_mod_cast h
+  simp_all
 
-theorem gaussianHermite_integrable {d : ℕ} (a b : Fin d) :
+section
+variable (a b : Fin d)
+
+theorem gaussianHermite_integrable :
     Integrable (gaussianHermite a b) (standardGaussianPi d) :=
   (integrable_const _).sub (standardGaussian_cross_integrable a b)
 
 /-- Genuine uniform Gaussian coefficient cost: the Hermite amplitude has
 L1 norm at most two, independently of the spatial scale and observations. -/
-theorem standardGaussian_hermite_abs_integral_le_two {d : ℕ} (a b : Fin d) :
+theorem standardGaussian_hermite_abs_integral_le_two :
     (∫ Z, |gaussianHermite a b Z| ∂standardGaussianPi d) ≤ 2 := by
   have ha : Integrable (fun Z : Covariate d => (Z a) ^ 2) (standardGaussianPi d) := by
     simpa only [pow_two] using standardGaussian_cross_integrable a a
@@ -62,18 +68,24 @@ theorem standardGaussian_hermite_abs_integral_le_two {d : ℕ} (a b : Fin d) :
   norm_num at hm
   exact hm
 
+end
+
+end
+
 def gaussianSpatialFrequency {d : ℕ} (lam t : ℝ) (x y : Covariate d) : Covariate d :=
   fun l => Real.sqrt (2 * lam * t) * (y l - x l)
 
-theorem gaussianSpatialFrequency_squared {d : ℕ} (lam t : ℝ) (hlam : 0 ≤ lam) (ht : 0 ≤ t)
+section
+variable {d : ℕ}
+
+theorem gaussianSpatialFrequency_squared (lam t : ℝ) (hlam : 0 ≤ lam) (ht : 0 ≤ t)
     (x y : Covariate d) :
     (∑ l, (gaussianSpatialFrequency lam t x y l) ^ 2) =
       2 * lam * t * spatialSquaredDistance x y := by
   unfold gaussianSpatialFrequency spatialSquaredDistance
-  simp_rw [mul_pow, Real.sq_sqrt (by positivity : 0 ≤ 2 * lam * t)]
-  rw [Finset.mul_sum]
+  simp_all [mul_pow, Finset.mul_sum]
 
-theorem standardGaussian_hermite_cos_integral_const {d : ℕ} (w : Covariate d)
+theorem standardGaussian_hermite_cos_integral_const (w : Covariate d)
     (a b : Fin d) (α β : ℝ) :
     (∫ Z, gaussianHermite a b Z * α * β * Real.cos (gaussianPhase w Z)
       ∂standardGaussianPi d) =
@@ -86,5 +98,7 @@ theorem standardGaussian_hermite_cos_integral_const {d : ℕ} (w : Covariate d)
   unfold gaussianHermite
   rw [standardGaussian_hermite_cos_characteristic]
   ring
+
+end
 
 end NearlyMinimax

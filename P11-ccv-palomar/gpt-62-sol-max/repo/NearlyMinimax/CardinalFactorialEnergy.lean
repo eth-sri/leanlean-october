@@ -29,7 +29,11 @@ set_option maxHeartbeats 800000
 
  def matchedCardinalTargetCutoff (d j : ℕ) (N μ : ℝ) : ℝ := max 1 (N*(μ*(1+Real.log N))^((j : ℝ)/d))
 
- theorem cardinalAliasSpatialComponent_allocated_le {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+ section
+variable {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+include hbd hB
+
+theorem cardinalAliasSpatialComponent_allocated_le
     {d : ℕ} (hd : 0 < d) (j : ℕ) (a η : ℝ) (ha : 0 < a)
     {N μ : ℝ} (hN : 1 ≤ N) (hμ : 0 < μ) (hsmall : μ*(1+Real.log N) ≤ 1) :
     cardinalAliasSpatialComponent d (2+j) bd a η (matchedCardinalTargetCutoff d j N μ) ≤
@@ -46,7 +50,7 @@ set_option maxHeartbeats 800000
   apply h.trans
   convert hh using 1 <;> (try dsimp [matchedCardinalTargetCutoff]) <;> (try simp only [show 2+j-2=j by omega]) <;> ring
 
- theorem cardinalTaylorSpatialComponent_allocated_le {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+ theorem cardinalTaylorSpatialComponent_allocated_le
     (d n q : ℕ) (C a ρ η : ℝ) {N : ℝ} (hN : 0 < N) (hsmall : η^(4*q)*N^d ≤ 1) :
     cardinalTaylorSpatialComponent d n q bd C a ρ η ≤
       cardinalTaylorEnergyPrefactor d q C a ρ *
@@ -60,9 +64,9 @@ set_option maxHeartbeats 800000
     (by positivity : 0 ≤ cardinalTaylorEnergyPrefactor d q C a ρ *
       cardinalSpatialGeometricBase B ((100*(d : ℝ))^2*16*spatialScaleIntegralConstant d)^n*(n : ℝ)^(4*q+6))
   apply h.trans
-  apply hh.trans_eq
-  rw [Real.rpow_neg hN.le, Real.rpow_natCast]
-  ring
+  rw [Real.rpow_neg hN.le, Real.rpow_natCast] <;> grind
+
+end
 
  def cardinalInterpolationFactorialConstant (d : ℕ) (B a Csharp : ℝ) : ℝ :=
   cardinalInterpolationEnergyPrefactor d a *
@@ -75,7 +79,7 @@ set_option maxHeartbeats 800000
       cardinalAliasSpatialComponent d (2+j) bd a η (matchedCardinalTargetCutoff d j N μ)) ≤
       cardinalInterpolationFactorialConstant d B a Csharp * η^4*N^(-(d : ℝ))*μ^2 := by
   let P := cardinalInterpolationEnergyPrefactor d a * η^4*N^(-(d : ℝ))
-  have hP : 0 ≤ P := by dsimp [P, cardinalInterpolationEnergyPrefactor]; positivity [lt_of_lt_of_le zero_lt_one hN]
+  have hP : 0 ≤ P := by dsimp [P, cardinalInterpolationEnergyPrefactor]; positivity
   have hBase := cardinalSpatialGeometricBase_nonneg B (16*spatialUnaryIntegralConstant d)
   have h := finite_interpolation_defect_tail_le hP hCs
     (by positivity : 0 ≤ cardinalSpatialGeometricBase B (16*spatialUnaryIntegralConstant d)*2^2) hμ J
@@ -84,12 +88,12 @@ set_option maxHeartbeats 800000
       have hb := cardinalAliasSpatialComponent_allocated_le hbd hB hd j a η ha hN hμ hsmall
       have hp := polynomial_count_factor_le (2+j) 2
       have hm := mul_le_mul_of_nonneg_left hp
-        (by positivity [lt_of_lt_of_le zero_lt_one hN] : 0 ≤ P*cardinalSpatialGeometricBase B (16*spatialUnaryIntegralConstant d)^(2+j)/μ^j)
+        (by positivity : 0 ≤ P*cardinalSpatialGeometricBase B (16*spatialUnaryIntegralConstant d)^(2+j)/μ^j)
       rw [show 2+j-2=j by omega]
       apply hb.trans
-      convert hm using 1 <;> dsimp [P] <;> (try simp only [mul_pow, show 2+j-2=j by omega]) <;> ring)
+      convert hm using 1 <;> dsimp [P] <;> (try simp only [mul_pow]) <;> ring)
   simpa only [show ∀ j : ℕ, 2+j-2=j from fun j => by omega] using
-    h.trans_eq (by unfold cardinalInterpolationFactorialConstant; dsimp [P]; ring)
+    h.trans_eq (by unfold cardinalInterpolationFactorialConstant; ring)
 
  def cardinalTaylorFactorialConstant (d q : ℕ) (B C a ρ Csharp : ℝ) : ℝ :=
   cardinalTaylorEnergyPrefactor d q C a ρ * defectTailConstant Csharp
@@ -103,11 +107,11 @@ set_option maxHeartbeats 800000
       cardinalTaylorFactorialConstant d q B C a ρ Csharp * η^4*N^(-(d : ℝ))*μ^2 := by
   let P := cardinalTaylorEnergyPrefactor d q C a ρ * η^4*N^(-(d : ℝ))
   have hP : 0 ≤ P := by dsimp [P, cardinalTaylorEnergyPrefactor]; positivity
-  have h := finite_taylor_count_energy_tail_le hP hCs
-    (cardinalSpatialGeometricBase_nonneg B ((100*(d : ℝ))^2*16*spatialScaleIntegralConstant d)) hμ hμ1 (4*q+6) J
+  have h := finite_polynomial_count_tail_le hP hCs
+    (cardinalSpatialGeometricBase_nonneg B ((100*(d : ℝ))^2*16*spatialScaleIntegralConstant d)) hμ hμ1 2 (4*q+6) J
     (fun n => cardinalTaylorSpatialComponent d n q bd C a ρ η)
     (fun j _ => (cardinalTaylorSpatialComponent_allocated_le hbd hB d (2+j) q C a ρ η hN hsmall).trans_eq
-      (by dsimp [P]; ring))
-  exact h.trans_eq (by unfold cardinalTaylorFactorialConstant; dsimp [P]; ring)
+      (by ring))
+  exact h.trans_eq (by unfold cardinalTaylorFactorialConstant; ring)
 
 end NearlyMinimax

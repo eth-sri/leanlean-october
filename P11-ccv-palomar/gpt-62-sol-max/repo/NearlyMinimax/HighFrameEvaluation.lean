@@ -29,12 +29,14 @@ theorem highFrameProfile_evaluation {d D : ℕ} (c : HighFrameIndex d D → ℝ)
       highFrameFeature x γ := by
     rw [frameScaledPolynomial_eval]
     unfold highFrameMonomial highFrameFeature
-    rw [MvPolynomial.eval_monomial, one_mul, Finsupp.prod_fintype _ _ (fun _ => pow_zero _)]
-    simp only [polynomial_box_exponent_apply]
+    norm_num [MvPolynomial.eval_monomial, one_mul, Finsupp.prod_fintype _ _ (fun _ => pow_zero _)]
   rw [hm]
   ring
 
-theorem highPeriodizedFrame_evaluation (d k D : ℕ) (j : HighWindowLabels d k)
+section
+variable (d k D : ℕ)
+
+theorem highPeriodizedFrame_evaluation (j : HighWindowLabels d k)
     (c : HighFrameIndex d D → ℝ) (x : Covariate d) :
     highPeriodizedChart d k j (highFrameProfile (highFramePolynomial c)) x =
       ∑ γ, c γ * highPeriodizedChart d k j (highFrameProfile (highFrameMonomial γ)) x := by
@@ -49,24 +51,21 @@ theorem highPeriodizedFrame_evaluation (d k D : ℕ) (j : HighWindowLabels d k)
     _ = ∑ᶠ z : Fin d → ℤ, ∑ γ : HighFrameIndex d D,
         c γ * (if (∀ r, (z r : ZMod k) = j r) then
           highFrameProfile (highFrameMonomial γ) (fun r => (k : ℝ) * x r - z r) else 0) := by
-      apply finsum_congr
-      intro z
-      by_cases hz : ∀ r, (z r : ZMod k) = j r
-      · simp only [ite_eq_left hz]
-        exact highFrameProfile_evaluation c _
-      · simp only [ite_eq_right hz, mul_zero, Finset.sum_const_zero]
+      simp [highFrameProfile_evaluation] <;> grind
     _ = ∑ γ : HighFrameIndex d D, ∑ᶠ z : Fin d → ℤ,
         c γ * (if (∀ r, (z r : ZMod k) = j r) then
           highFrameProfile (highFrameMonomial γ) (fun r => (k : ℝ) * x r - z r) else 0) :=
       (sum_finsum_comm Finset.univ _ (fun γ _ => hfinite γ)).symm
     _ = _ := by simp_rw [← mul_finsum]
 
-theorem highFrameField_finite_evaluation (d k D : ℕ) [NeZero k] (η : ℝ)
+theorem highFrameField_finite_evaluation [NeZero k] (η : ℝ)
     (c : HighWindowLabels d k → HighFrameIndex d D → ℝ) (x : Covariate d) :
     highFrameField d k η (fun j => highFramePolynomial (c j)) x =
       η * ∑ j, ∑ γ, c j γ * highPeriodizedChart d k j (highFrameProfile (highFrameMonomial γ)) x := by
   unfold highFrameField
   simp_rw [highPeriodizedFrame_evaluation]
+
+end
 
 theorem highFrameField_joint_measurable {Ω : Type*} [MeasurableSpace Ω]
     (d k D : ℕ) [NeZero k] (η : ℝ)

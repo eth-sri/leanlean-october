@@ -24,8 +24,8 @@ theorem centered_mgf_le_of_oscillation (π : Measure E) [IsProbabilityMeasure π
     (∫ e, Real.exp (u * (X e - ∫ f, X f ∂π)) ∂π) ≤ Real.exp (u ^ 2 * c ^ 2 / 8) := by
   let S := Set.range X
   have hne : S.Nonempty := Set.range_nonempty X
-  have hbelow : BddBelow S := ⟨-R, by rintro z ⟨e, rfl⟩; exact (abs_le.1 (hbound e)).1⟩
-  have habove : BddAbove S := ⟨R, by rintro z ⟨e, rfl⟩; exact (abs_le.1 (hbound e)).2⟩
+  have hbelow : BddBelow S := ⟨-R, by rintro z ⟨e, rfl⟩; grind⟩
+  have habove : BddAbove S := ⟨R, by rintro z ⟨e, rfl⟩; grind⟩
   have hx : ∀ e, X e ∈ Icc (sInf S) (sSup S) := by
     intro e
     exact ⟨csInf_le hbelow ⟨e, rfl⟩, le_csSup habove ⟨e, rfl⟩⟩

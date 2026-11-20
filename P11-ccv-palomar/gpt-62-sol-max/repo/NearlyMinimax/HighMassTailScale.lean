@@ -27,7 +27,6 @@ theorem highHistoryMassParameter_eq_hpower (d k : ℕ) (a b : ℝ) (hk : 0 < k) 
     highHistoryMassParameter d k a b = highHistoryMassMomentConstant d a b * ((k : ℝ)⁻¹)^d := by
   rw [highHistoryMassParameter_eq d k a b hk]
   unfold highHistoryMassMomentConstant
-  simp only [div_eq_mul_inv, mul_inv_rev, inv_pow]
   ring
 
 theorem highHistoryMassParameter_lowerSaddle (d : ℕ) (m θ C a b x : ℝ) :
@@ -42,7 +41,7 @@ theorem eventually_highHistoryMass_saddle_guard {d : ℕ} (hd : 0 < d)
     {m θ cm : ℝ} (hm : 0 < m) (hθ : 0 < θ) (hcm : 0 < cm) (C a b : ℝ) (hab : a < b) :
     ∀ᶠ x : ℝ in atTop, 2 ≤ lowerSaddleGrid d m θ C x ∧
       8 * highHistoryMassParameter d (lowerSaddleGrid d m θ C x) a b * x ≤ cm / lowerSaddleM m x := by
-  have hdR : (0 : ℝ) < d := by exact_mod_cast hd
+  have hdR : (0 : ℝ) < d := by simp_all
   have hCmgf := highHistoryMassMomentConstant_pos d a b hab
   filter_upwards [eventually_lowerSaddle_grid_and_mass hdR hm hθ hcm hCmgf C 2] with x hx
   refine ⟨hx.1, ?_⟩
@@ -58,8 +57,6 @@ theorem highHistoryMass_saddle_tail_eq (d : ℕ) (m θ C cm a b x : ℝ) :
   rw [highHistoryMassParameter_lowerSaddle]
   unfold lowerSaddleExceptionalTail
   congr 1
-  congr 1
-  simp only [div_eq_mul_inv, mul_inv_rev]
   ring
 
 end NearlyMinimax

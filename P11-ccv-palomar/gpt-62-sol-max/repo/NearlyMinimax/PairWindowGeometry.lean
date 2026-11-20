@@ -19,12 +19,15 @@ namespace NearlyMinimax
 
 def elementarySmoothness {d : ℕ} (C : ModelConstants d) : ℝ := min C.smoothness 1
 
-theorem elementarySmoothness_pos {d : ℕ} (C : ModelConstants d) :
+section
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem elementarySmoothness_pos :
     0 < elementarySmoothness C := lt_min C.smoothness_pos (by norm_num)
 
 /-- All admissible regressions have the spatial modulus needed by a first
 order pair difference, including smoothness above one. -/
-theorem admissible_regression_spatial_modulus {d : ℕ} (C : ModelConstants d)
+theorem admissible_regression_spatial_modulus
     (θ : RegressionParameter d) (hθ : Admissible C θ)
     (x y : Covariate d) (hx : x ∈ unitCube d) (hy : y ∈ unitCube d) :
     |θ.regression x - θ.regression y| ≤
@@ -44,9 +47,11 @@ theorem admissible_regression_spatial_modulus {d : ℕ} (C : ModelConstants d)
   unfold elementarySmoothness
   convert hm using 1 <;> ring
 
+end
+
 theorem regular_grid_index_corner_le (k : ℕ) (hk : 0 < k) (x : ℝ) (hx : 0 ≤ x) :
     (regularGridIndex k hk x : ℝ) / k ≤ x := by
-  have hkr : 0 < (k : ℝ) := by exact_mod_cast hk
+  have hkr : 0 < (k : ℝ) := by simp_all
   have hfloor := Nat.floor_le (mul_nonneg hkr.le hx)
   have hmin : ((min ⌊(k : ℝ) * x⌋₊ (k - 1) : ℕ) : ℝ) ≤ ⌊(k : ℝ) * x⌋₊ := by
     exact_mod_cast min_le_left ⌊(k : ℝ) * x⌋₊ (k - 1)
@@ -54,12 +59,18 @@ theorem regular_grid_index_corner_le (k : ℕ) (hk : 0 < k) (x : ℝ) (hx : 0 �
   change ((min ⌊(k : ℝ) * x⌋₊ (k - 1) : ℕ) : ℝ) ≤ x * k
   nlinarith
 
-theorem regular_grid_cell_corner_le {d : ℕ} (k : ℕ) (hk : 0 < k)
+section
+variable {d : ℕ}
+
+section
+variable (k : ℕ) (hk : 0 < k)
+
+theorem regular_grid_cell_corner_le
     (x : Covariate d) (hx : x ∈ unitCube d) (i : Fin d) :
     regularGridCorner k (regularGridCell k hk x) i ≤ x i :=
   regular_grid_index_corner_le k hk (x i) (hx i).1
 
-theorem regular_grid_same_cell_radius {d : ℕ} (k : ℕ) (hk : 0 < k)
+theorem regular_grid_same_cell_radius
     (x y : Covariate d) (hx : x ∈ unitCube d) (hy : y ∈ unitCube d)
     (hcell : regularGridCell k hk x = regularGridCell k hk y) (i : Fin d) :
     |x i - y i| ≤ 1 / k := by
@@ -67,11 +78,11 @@ theorem regular_grid_same_cell_radius {d : ℕ} (k : ℕ) (hk : 0 < k)
   have hy' := regular_grid_cell_radius k hk y hy i
   have hxlo := regular_grid_cell_corner_le k hk x hx i
   have hylo := regular_grid_cell_corner_le k hk y hy i
-  rw [hcell] at hx'
-  rw [hcell] at hxlo
-  exact abs_le.2 ⟨by linarith [(abs_le.mp hy').2], by linarith [(abs_le.mp hx').2]⟩
+  grind
 
-theorem regular_grid_same_cell_regression_difference {d : ℕ}
+end
+
+theorem regular_grid_same_cell_regression_difference
     (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
     (k : ℕ) (hk : 0 < k) (x y : Covariate d)
     (hx : x ∈ unitCube d) (hy : y ∈ unitCube d)
@@ -87,18 +98,27 @@ theorem regular_grid_same_cell_regression_difference {d : ℕ}
       (elementarySmoothness_pos C).le)
   exact mul_nonneg (mul_nonneg (by norm_num) (by positivity)) C.holderBound_pos.le
 
+end
+
 /-- The probability of each explicit regular-grid label under the actual
 admissible design law. -/
 def regularGridProbability {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
     (c : Fin d → Fin k) : ℝ :=
   (designLaw θ).real ((regularGridCell k hk) ⁻¹' {c})
 
-theorem regularGridProbability_nonneg {d : ℕ} (θ : RegressionParameter d)
+section
+variable {d : ℕ}
+
+theorem regularGridProbability_nonneg (θ : RegressionParameter d)
     (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k) :
     0 ≤ regularGridProbability θ k hk c := measureReal_nonneg
 
-theorem regularGridProbability_sum {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
+section
+variable (C : ModelConstants d)
+    (θ : RegressionParameter d) (hθ : Admissible C θ)
+include hθ
+
+theorem regularGridProbability_sum (k : ℕ) (hk : 0 < k) :
     ∑ c, regularGridProbability θ k hk c = 1 := by
   letI := designLaw_isProbability C θ hθ
   unfold regularGridProbability
@@ -108,8 +128,7 @@ theorem regularGridProbability_sum {d : ℕ} (C : ModelConstants d)
   simpa using he
 
 /-- The original density cap gives domination by scaled cube volume. -/
-theorem admissible_designLaw_le_cubeVolume {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem admissible_designLaw_le_cubeVolume :
     designLaw θ ≤ ENNReal.ofReal C.densityUpper • cubeVolume d := by
   unfold designLaw
   rw [← withDensity_const]
@@ -117,9 +136,11 @@ theorem admissible_designLaw_le_cubeVolume {d : ℕ} (C : ModelConstants d)
   filter_upwards [hθ.2.2.1] with x hx
   exact ENNReal.ofReal_le_ofReal hx.2
 
+end
+
 /-- Each cell fiber, restricted to the cube, lies in a closed coordinate
 box of side `1/k`. The right-boundary convention preserves this bound. -/
-theorem regular_grid_fiber_volume_le {d : ℕ} (k : ℕ) (hk : 0 < k)
+theorem regular_grid_fiber_volume_le (k : ℕ) (hk : 0 < k)
     (c : Fin d → Fin k) :
     cubeVolume d ((regularGridCell k hk) ⁻¹' {c}) ≤ ENNReal.ofReal (1 / (k : ℝ)) ^ d := by
   have hmeas : MeasurableSet ((regularGridCell k hk) ⁻¹' {c}) :=
@@ -136,19 +157,20 @@ theorem regular_grid_fiber_volume_le {d : ℕ} (k : ℕ) (hk : 0 < k)
     · intro i
       simpa only [hcell] using regular_grid_cell_corner_le k hk x hx.2 i
     · intro i
-      have hi := (abs_le.mp (hr i)).2
-      dsimp [b]
-      linarith
+      grind
   apply (measure_mono hsub).trans_eq
   rw [Real.volume_Icc_pi]
-  have hside (i : Fin d) : b i - a i = 1 / (k : ℝ) := by dsimp [a, b]; ring
-  simp_rw [hside]
-  simp
+  have hside (i : Fin d) : b i - a i = 1 / (k : ℝ) := by ring
+  simp [hside]
+
+section
+variable (C : ModelConstants d)
+    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
+    (c : Fin d → Fin k)
+include hθ
 
 /-- A genuine uniform upper bound for every grid cell probability. -/
-theorem regularGridProbability_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
-    (c : Fin d → Fin k) :
+theorem regularGridProbability_le :
     regularGridProbability θ k hk c ≤ C.densityUpper * (1 / (k : ℝ)) ^ d := by
   letI := designLaw_isProbability C θ hθ
   have hdom := Measure.le_iff.1 (admissible_designLaw_le_cubeVolume C θ hθ)
@@ -162,13 +184,14 @@ theorem regularGridProbability_le {d : ℕ} (C : ModelConstants d)
     exact regular_grid_fiber_volume_le k hk c
   have hu : 0 ≤ C.densityUpper := (by linarith [C.one_lt_densityUpper])
   apply (ENNReal.toReal_mono (by finiteness) hcap).trans_eq
-  simp only [ENNReal.toReal_mul, ENNReal.toReal_pow, ENNReal.toReal_ofReal hu]
-  rw [ENNReal.toReal_ofReal (by positivity : (0 : ℝ) ≤ 1 / k)]
+  simp_all
 
-theorem regularGridProbability_cap {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
-    (c : Fin d → Fin k) :
+theorem regularGridProbability_cap :
     regularGridProbability θ k hk c ≤ C.densityUpper / (k : ℝ) ^ d := by
   convert regularGridProbability_le C θ hθ k hk c using 1 <;> rw [div_pow, one_pow] <;> ring
+
+end
+
+end
 
 end NearlyMinimax

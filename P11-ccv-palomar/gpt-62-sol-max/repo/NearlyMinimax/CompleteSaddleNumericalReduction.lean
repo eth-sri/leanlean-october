@@ -29,9 +29,9 @@ set_option maxHeartbeats 1000000
       let m := highCompleteSourceSaddleCoefficient C
       let theta := highCompleteSourceSaddleTheta C
       let tauM := shrunkDensityExponent C.densityLower C.densityUpper
-      let k := lowerSaddleGrid d m theta Cω n
+      let k := completeSaddleGrid C Cω n
       let eta := cf*(k : ℝ)^(-C.smoothness)
-      let B := lowerSaddleActivity C.smoothness d m theta Cω tauM n
+      let B := completeSaddleActivityScale C Cω n
       ∀ Bl E : ℝ, 1 ≤ B → 0 ≤ Bl → 0 ≤ E → Bl ≤ CB*B →
       E ≤ lowerSaddleRawEnergyBound C.smoothness d m theta Cω cf C5 C6 C7 ch Bl tauM n →
       (c*paperRiskScale C n)^2 ≤ ctr*eta^4/(1+Bl^2+(k : ℝ)^d*E)-
@@ -52,23 +52,16 @@ set_option maxHeartbeats 1000000
   have hden := hcst Bl E hB hBl hBlcap hEcap
   have hvolume := completeSourceSaddle_inverse_volume C Cω (n : ℝ)
   have hdenpos : 0 < 1+Bl^2+
-      (lowerSaddleGrid d (highCompleteSourceSaddleCoefficient C)
-        (highCompleteSourceSaddleTheta C) Cω n : ℝ)^d*E := by positivity
+      (completeSaddleGrid C Cω n : ℝ)^d*E := by positivity
   have hcost' : 1+Bl^2+
-      (lowerSaddleGrid d (highCompleteSourceSaddleCoefficient C)
-        (highCompleteSourceSaddleTheta C) Cω n : ℝ)^d*E ≤
-      3*CG*(lowerSaddleActivity C.smoothness d (highCompleteSourceSaddleCoefficient C)
-        (highCompleteSourceSaddleTheta C) Cω
-        (shrunkDensityExponent C.densityLower C.densityUpper) n)^2 := by
+      (completeSaddleGrid C Cω n : ℝ)^d*E ≤
+      3*CG*(completeSaddleActivityScale C Cω n)^2 := by
     rw [hvolume]
-    exact hden
+    assumption
   have hmain := lowerSaddle_cost_risk_reduction (cf := cf)
     (shrunkDensityExponent C.densityLower C.densityUpper) hdenpos hCG hctr.le hcost'
   rw [← completeSourceSaddle_eta_eq C Cω cf (n : ℝ)] at hmain
-  have hpaper : paperRiskScale C n =
-      rateScale (rateExponent C.smoothness d)
-        (stretchConstant C.smoothness d (densityIntervalExponent C.densityLower C.densityUpper))
-        (lowerLogPower C.smoothness d) n := paperRiskScale_eq_rateScale C hn2
+  have hpaper := paperRiskScale_eq_rateScale C hn2
   rw [hpaper]
   apply hn.trans
   exact sub_le_sub_right hmain _

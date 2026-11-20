@@ -17,8 +17,11 @@ def multilinearPolynomial {d q : ℕ}
   ∑ σ : Fin q → Fin d, C (L (fun i => EuclideanSpace.single (σ i) 1)) *
     ∏ i, (X (σ i) - C (x (σ i)))
 
-theorem multilinearPolynomial_eval {d q : ℕ}
+section
+variable {d q : ℕ}
     (L : ContinuousMultilinearMap ℝ (fun _ : Fin q => Covariate d) ℝ)
+
+theorem multilinearPolynomial_eval
     (x y : Covariate d) :
     MvPolynomial.eval (fun i => y i) (multilinearPolynomial L x) = L (fun _ => y - x) := by
   classical
@@ -30,8 +33,7 @@ theorem multilinearPolynomial_eval {d q : ℕ}
   simp only [PiLp.sub_apply]
   ring
 
-theorem multilinearPolynomial_degree {d q : ℕ}
-    (L : ContinuousMultilinearMap ℝ (fun _ : Fin q => Covariate d) ℝ)
+theorem multilinearPolynomial_degree
     (x : Covariate d) : (multilinearPolynomial L x).totalDegree ≤ q := by
   classical
   apply totalDegree_finsetSum_le
@@ -43,15 +45,20 @@ theorem multilinearPolynomial_degree {d q : ℕ}
     _ ≤ ∑ _i : Fin q, 1 := by
       apply Finset.sum_le_sum
       intro i _
-      exact (totalDegree_sub_C_le _ _).trans (by rw [totalDegree_X])
+      exact (totalDegree_sub_C_le _ _).trans (by simp)
     _ = q := by simp
+
+end
 
 def holderTaylorPolynomial {d : ℕ} (f : Covariate d → ℝ) (k : ℕ)
     (x : Covariate d) : MvPolynomial (Fin d) ℝ :=
   ∑ q ∈ Finset.range (k + 1), C ((q.factorial : ℝ)⁻¹) *
     multilinearPolynomial (iteratedFDerivWithin ℝ q f (cube d) x) x
 
-theorem holderTaylorPolynomial_degree {d : ℕ} (f : Covariate d → ℝ) (k : ℕ)
+section
+variable {d : ℕ} (f : Covariate d → ℝ) (k : ℕ)
+
+theorem holderTaylorPolynomial_degree
     (x : Covariate d) : (holderTaylorPolynomial f k x).totalDegree ≤ k := by
   classical
   apply totalDegree_finsetSum_le
@@ -60,11 +67,13 @@ theorem holderTaylorPolynomial_degree {d : ℕ} (f : Covariate d → ℝ) (k : �
   rw [totalDegree_C, zero_add]
   exact (multilinearPolynomial_degree _ _).trans (Nat.le_of_lt_succ (Finset.mem_range.mp hq))
 
-theorem holderTaylorPolynomial_eval {d : ℕ} (f : Covariate d → ℝ) (k : ℕ)
+theorem holderTaylorPolynomial_eval
     (x y : Covariate d) :
     MvPolynomial.eval (fun i => y i) (holderTaylorPolynomial f k x) =
       ∑ q ∈ Finset.range (k + 1), (q.factorial : ℝ)⁻¹ *
         iteratedFDerivWithin ℝ q f (cube d) x (fun _ => y - x) := by
   simp [holderTaylorPolynomial, multilinearPolynomial_eval]
+
+end
 
 end RoughRegime.Model

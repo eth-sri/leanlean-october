@@ -12,16 +12,6 @@ noncomputable section
 open Set
 namespace NearlyMinimax
 
-def lowSmoothnessScoreConstant {d : ℕ} {C : ModelConstants d}
-    (P : LowSmoothnessTernaryConstants C) : ℝ :=
-  (40 : ℝ) ^ d * ternaryScoreExponentialConstant P.a P.ρ P.c ^ 2 *
-    Real.exp (ternaryScoreExponentialConstant P.a P.ρ P.c)
-
-theorem lowSmoothnessScoreConstant_nonneg {d : ℕ} {C : ModelConstants d}
-    (P : LowSmoothnessTernaryConstants C) : 0 ≤ lowSmoothnessScoreConstant P := by
-  unfold lowSmoothnessScoreConstant
-  positivity
-
 structure LowSmoothnessPriorConstants {d : ℕ} (C : ModelConstants d) where
   ternary : LowSmoothnessTernaryConstants C
   b : ℝ
@@ -29,7 +19,7 @@ structure LowSmoothnessPriorConstants {d : ℕ} (C : ModelConstants d) where
   b_le_one : b ≤ 1
   field_guard : ((2 : ℝ) ^ d + 2) * b ≤ ternary.ρ
   variance_guard : b ^ 2 ≤ ternary.ρ
-  holder_guard : ((2 : ℝ) ^ d + 68 * (2 : ℝ) ^ d * (d + 1)) * b ≤ C.holderBound
+  holder_guard : gridHolderBudget d * b ≤ C.holderBound
   score_guard : lowSmoothnessScoreConstant ternary * b ^ 4 ≤ 1
 
 /-- All prior legality and score guards hold for a fixed positive amplitude. -/
@@ -37,11 +27,11 @@ theorem lowSmoothnessPriorConstants_exists {d : ℕ} (C : ModelConstants d) :
     Nonempty (LowSmoothnessPriorConstants C) := by
   obtain ⟨P⟩ := lowSmoothnessTernaryConstants_exists C
   let M := (2 : ℝ) ^ d + 2
-  let H := (2 : ℝ) ^ d + 68 * (2 : ℝ) ^ d * (d + 1)
+  let H := gridHolderBudget d
   let Q := lowSmoothnessScoreConstant P
-  have hM : 0 < M := by dsimp [M]; positivity
-  have hH : 0 < H := by dsimp [H]; positivity
-  have hQ : 0 ≤ Q := lowSmoothnessScoreConstant_nonneg P
+  have hM : 0 < M := by positivity
+  have hH : 0 < H := gridHolderBudget_pos d
+  have hQ := lowSmoothnessScoreConstant_nonneg P
   let b := min (min (min (min 1 (P.ρ / M)) (Real.sqrt P.ρ)) (C.holderBound / H)) (1 / (Q + 1))
   have hb : 0 < b := lt_min
     (lt_min (lt_min (lt_min (by norm_num) (div_pos P.ρ_pos hM)) (Real.sqrt_pos.mpr P.ρ_pos))

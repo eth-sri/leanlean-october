@@ -35,10 +35,7 @@ theorem pairResponseVector_norm_sq (y y' : ℝ) :
   simp [pairResponseVector, Fin.sum_univ_succ, add_assoc]
 
 theorem pairCoordinateVector_norm (i : Fin 3) : ‖pairCoordinateVector i‖ = 1 := by
-  have hs : ‖pairCoordinateVector i‖ ^ 2 = 1 := by
-    rw [EuclideanSpace.real_norm_sq_eq]
-    simp [pairCoordinateVector, Pi.single_apply, Finset.sum_ite_eq']
-  nlinarith [norm_nonneg (pairCoordinateVector i)]
+  simp_all [PairVector, pairCoordinateVector]
 
 theorem pairNoiseOperator_norm_le : ‖pairNoiseOperator‖ ≤ 2 := by
   have h := norm_add_le
@@ -46,7 +43,7 @@ theorem pairNoiseOperator_norm_le : ‖pairNoiseOperator‖ ≤ 2 := by
     (InnerProductSpace.rankOne ℝ (pairCoordinateVector 1) (pairCoordinateVector 1))
   norm_num only [InnerProductSpace.norm_rankOne, pairCoordinateVector_norm,
     one_mul] at h
-  exact h
+  assumption
 
 theorem pairScoreOperator_norm_sq_le (V y y' : ℝ) :
     ‖pairScoreOperator V y y'‖ ^ 2 ≤ 6 * (y ^ 4 + y' ^ 4 + 1) + 8 * V ^ 2 := by
@@ -62,15 +59,13 @@ theorem pairScoreOperator_norm_sq_le (V y y' : ℝ) :
       pairResponseVector_norm_sq]
     nlinarith [sq_nonneg (y ^ 2 - y' ^ 2), sq_nonneg (y ^ 2 - 1),
       sq_nonneg (y' ^ 2 - 1)]
-  have hv : |V| ^ 2 = V ^ 2 := sq_abs V
+  have hv := sq_abs V
   nlinarith [sq_nonneg (‖pairResponseVector y y'‖ ^ 2 - 2 * |V|)]
 
 theorem pairResponseVector_continuous :
     Continuous (fun z : ℝ × ℝ => pairResponseVector z.1 z.2) := by
   apply (PiLp.continuous_toLp 2 (fun _ : Fin 3 => ℝ)).comp
-  apply continuous_pi
-  intro i
-  fin_cases i <;> simp [pairResponseVector] <;> fun_prop
+  fun_prop
 
 theorem pairScoreOperator_continuous (V : ℝ) :
     Continuous (fun z : ℝ × ℝ => pairScoreOperator V z.1 z.2) := by

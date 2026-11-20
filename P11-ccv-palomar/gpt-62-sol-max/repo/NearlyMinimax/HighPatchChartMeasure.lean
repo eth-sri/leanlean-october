@@ -18,14 +18,16 @@ attribute [local instance] Classical.propDecidable
 def highAffineChart (d k : ℕ) (z : Fin d → ℤ) (x : Covariate d) : Covariate d :=
   fun r => (k : ℝ) * x r - z r
 
-theorem highAffineChart_measurable (d k : ℕ) (z : Fin d → ℤ) :
+section
+variable (d k : ℕ)
+
+theorem highAffineChart_measurable (z : Fin d → ℤ) :
     Measurable (highAffineChart d k z) := by unfold highAffineChart; fun_prop
 
-theorem highAffineChart_map_volume (d k : ℕ) (hk : 0 < k) (z : Fin d → ℤ) :
+theorem highAffineChart_map_volume (hk : 0 < k) (z : Fin d → ℤ) :
     Measure.map (highAffineChart d k z) volume =
       ENNReal.ofReal ((k : ℝ)^d)⁻¹ • (volume : Measure (Covariate d)) := by
   let f : Covariate d →ₗ[ℝ] Covariate d := (k : ℝ) • LinearMap.id
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
   have hdet : LinearMap.det f = (k : ℝ)^d := by
     simp [f, LinearMap.det_smul, LinearMap.det_id]
   have hf := Real.map_linearMap_volume_pi_eq_smul_volume_pi (f := f)
@@ -36,44 +38,24 @@ theorem highAffineChart_map_volume (d k : ℕ) (hk : 0 < k) (z : Fin d → ℤ) 
     ring
   rw [heq, ← Measure.map_map (by fun_prop) (by fun_prop), hf, hdet,
     Measure.map_smul _ (by fun_prop), map_add_left_eq_self]
-  congr 1
   rw [abs_of_nonneg (by positivity)]
 
-theorem highPatch_lift_cube_cases (k : ℕ) [NeZero k] (hk : 4 ≤ k)
-    (j : ZMod k) (x : ℝ) (hx : x ∈ Icc (0 : ℝ) 1) (z : ℤ)
-    (hz : (z : ZMod k) = j) (hclose : |(k : ℝ)*x-z| < 1) :
-    z = (j.val : ℤ) ∨ z = (j.val : ℤ)+(k : ℤ) := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast (by omega : 0 < k)
-  have hkv : (j.val : ℤ) < k := by exact_mod_cast ZMod.val_lt j
-  obtain ⟨q, hq⟩ := (ZMod.intCast_eq_iff k z j).mp hz
-  have hzz : 0 ≤ z ∧ z ≤ (k : ℤ) := by
-    have hh := abs_lt.mp hclose
-    have hzL : (-1 : ℝ) < z := by nlinarith [mul_nonneg hkR.le hx.1]
-    have hzU : (z : ℝ) < k+1 := by nlinarith [mul_le_mul_of_nonneg_left hx.2 hkR.le]
-    have hzLZ : (-1 : ℤ) < z := by exact_mod_cast hzL
-    have hzUZ : z < (k : ℤ)+1 := by exact_mod_cast hzU
-    omega
-  have hqcases : q = 0 ∨ q = 1 := by
-    have hj0 : (0 : ℤ) ≤ j.val := Int.natCast_nonneg _
-    have hkZ : (0 : ℤ) < k := by exact_mod_cast (by omega : 0 < k)
-    have hqL : 0 ≤ q := by
-      by_contra h
-      have hqneg : q ≤ -1 := by omega
-      nlinarith
-    have hqU : q ≤ 1 := by
-      by_contra h
-      have hqbig : 2 ≤ q := by omega
-      nlinarith
-    omega
-  rcases hqcases with hq0 | hq1
-  · exact Or.inl (by simpa [hq0] using hq)
-  · exact Or.inr (by simpa [hq1] using hq)
+end
 
 def highPatchWrapLift {d k : ℕ} (j : HighWindowLabels d k) (b : Fin d → Bool) : Fin d → ℤ :=
   fun r => if b r then (j r).val+(k : ℤ) else (j r).val
 
-theorem highLocalCoordinates_eq_affine_on_patch {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
-    (j : HighWindowLabels d k) {x : Covariate d} (hx : x ∈ highTorusPatch d k j)
+section
+variable {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
+    (j : HighWindowLabels d k)
+include hk
+
+section
+variable {x : Covariate d} (hx : x ∈ highTorusPatch d k j)
+include hx
+
+omit hx in
+theorem highLocalCoordinates_eq_affine_on_patch
     (z : Fin d → ℤ) (hz : ∀ r, (z r : ZMod k)=j r)
     (hc : ∀ r, |(k : ℝ)*x r-z r| < 1) :
     highLocalCoordinates d k j x = highAffineChart d k z x := by
@@ -82,21 +64,19 @@ theorem highLocalCoordinates_eq_affine_on_patch {d k : ℕ} [NeZero k] (hk : 4 �
   simp only [highLocalCoordinates, highLocalCoordinate, highRawChartCoordinate, he,
     if_pos (hc r).le, highAffineChart]
 
-theorem highLocalCoordinates_patch_mem_box {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
-    (j : HighWindowLabels d k) {x : Covariate d} (hx : x ∈ highTorusPatch d k j) :
+theorem highLocalCoordinates_patch_mem_box :
     highLocalCoordinates d k j x ∈ spatialPatchBox d := by
   obtain ⟨z, hz, hc⟩ := hx
-  rw [highLocalCoordinates_eq_affine_on_patch hk j ⟨z,hz,hc⟩ z hz hc]
+  rw [highLocalCoordinates_eq_affine_on_patch hk j z hz hc]
   change (∀ r, -1 ≤ highAffineChart d k z x r) ∧ (∀ r, highAffineChart d k z x r ≤ 1)
-  constructor <;> intro r
-  · exact (abs_lt.mp (hc r)).1.le
-  · exact (abs_lt.mp (hc r)).2.le
+  grind [highAffineChart]
+
+end
 
 /-- The genuine local-coordinate pushforward on a torus patch is dominated
 by the scaled Lebesgue measure on [-1,1]^d.  The factor 2^d counts wrapping
 chart lifts and is independent of the polynomial and all sample sizes. -/
-theorem highLocalCoordinates_patch_map_le {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
-    (j : HighWindowLabels d k) :
+theorem highLocalCoordinates_patch_map_le :
     Measure.map (highLocalCoordinates d k j)
       ((cubeVolume d).restrict (highTorusPatch d k j)) ≤
       ENNReal.ofReal ((2 / (k : ℝ))^d) • volume.restrict (spatialPatchBox d) := by
@@ -109,17 +89,15 @@ theorem highLocalCoordinates_patch_map_le {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
     obtain ⟨z, hz, hc⟩ := hx.1.2
     have hzcase (r : Fin d) : ∃ b : Bool,
         z r = if b then ((j r).val : ℤ)+(k : ℤ) else ((j r).val : ℤ) := by
-      rcases highPatch_lift_cube_cases k hk (j r) (x r) (hx.2 r) (z r) (hz r) (hc r) with h | h
+      rcases highPatch_lift_cube_cases k (j r) (x r) (hx.2 r) (z r) (hz r) (hc r) with h | ⟨hj, h⟩
       · exact ⟨false, h⟩
-      · exact ⟨true, h⟩
+      · exact ⟨true, by simpa [hj] using h⟩
     choose b hb using hzcase
     have hzb : z = highPatchWrapLift j b := by funext r; exact hb r
-    have he := highLocalCoordinates_eq_affine_on_patch hk j hx.1.2 z hz hc
+    have he := highLocalCoordinates_eq_affine_on_patch hk j z hz hc
     apply Set.mem_iUnion.mpr
     refine ⟨b, ?_⟩
-    change highAffineChart d k (highPatchWrapLift j b) x ∈ S ∩ spatialPatchBox d
-    rw [← hzb, ← he]
-    exact ⟨hx.1.1, highLocalCoordinates_patch_mem_box hk j hx.1.2⟩
+    simpa [← hzb, ← he] using ⟨hx.1.1, highLocalCoordinates_patch_mem_box hk j hx.1.2⟩
   rw [Measure.map_apply (highLocalCoordinates_measurable d k j) hS,
     Measure.restrict_apply ((highLocalCoordinates_measurable d k j) hS),
     cubeVolume, Measure.restrict_apply (((highLocalCoordinates_measurable d k j) hS).inter
@@ -144,10 +122,9 @@ theorem highLocalCoordinates_patch_map_le {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
       rw [← mul_assoc]
       congr 1
       have ht : (2 : ℝ≥0∞)^d = ENNReal.ofReal ((2 : ℝ)^d) := by
-        rw [ENNReal.ofReal_pow] <;> norm_num
-      rw [ht, ← ENNReal.ofReal_mul (by positivity)]
-      congr 1
-      rw [div_pow]
-      ring
+        simp
+      rw [ht, ← ENNReal.ofReal_mul (by positivity)] <;> ring
+
+end
 
 end NearlyMinimax

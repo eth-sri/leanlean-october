@@ -42,13 +42,8 @@ theorem spatial_cardinal_polynomial_coefficients_continuous {d n : ℕ}
     apply Continuous.sub
     · by_cases hδ : (0 : Fin d →₀ ℕ) = δ
       · simp only [coeff_C, hδ, ite_true]; fun_prop
-      · simp only [coeff_C, hδ, ite_false]; exact continuous_const
-    · exact (by fun_prop : Continuous (fun U : Fin n → Covariate d => 8 * (U j r - U i r))).mul
-        continuous_const
-  exact mvpolynomial_product_coefficients_continuous
-    (α := Fin n → Covariate d) (κ := Fin n) (σ := Fin d)
-    ((Finset.univ : Finset (Fin n)).erase i)
-    (fun j (U : Fin n → Covariate d) => spatialCardinalAffine (U i) (U j))
-    (fun j _ δ => hcoeff j δ) β
+      · simp only [coeff_C, hδ, ite_false]; fun_prop
+    fun_prop
+  solve_by_elim [mvpolynomial_product_coefficients_continuous]
 
 end NearlyMinimax

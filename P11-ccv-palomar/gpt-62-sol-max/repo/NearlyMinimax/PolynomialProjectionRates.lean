@@ -1,7 +1,7 @@
 module
 
 public import NearlyMinimax.PolynomialGridProjection
-public import NearlyMinimax.ProjectionGridChoice
+public import NearlyMinimax.ProjectionStatistical
 
 
 @[expose] public section
@@ -22,8 +22,12 @@ theorem polynomialFeatureCount_pos {d : ℕ} (C : ModelConstants d) :
 def polynomialProjectionGridSize {d : ℕ} (C : ModelConstants d) (n : ℕ) : ℕ :=
   ⌊((n : ℝ) / (2 * polynomialFeatureCount C)) ^ ((d : ℝ)⁻¹)⌋₊
 
-theorem polynomial_projection_grid_size_spec {d n : ℕ} (C : ModelConstants d)
-    (hn : 2 * polynomialFeatureCount C ≤ n) :
+section
+variable {d n : ℕ} (C : ModelConstants d)
+    (hn : 2 * polynomialFeatureCount C ≤ n)
+include hn
+
+theorem polynomial_projection_grid_size_spec :
     0 < polynomialProjectionGridSize C n ∧
     (polynomialProjectionGridSize C n : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2 ∧
     ((n : ℝ) / (2 * polynomialFeatureCount C)) ^ ((d : ℝ)⁻¹) ≤
@@ -34,7 +38,7 @@ theorem polynomial_projection_grid_size_spec {d n : ℕ} (C : ModelConstants d)
   let r := ((n : ℝ) / (2 * polynomialFeatureCount C)) ^ ((d : ℝ)⁻¹)
   have hb1 : (1 : ℝ) ≤ n / (2 * polynomialFeatureCount C) := by
     apply (le_div_iff₀ (by positivity)).mpr
-    simpa only [one_mul] using hnreal
+    simp_all
   have hr1 : 1 ≤ r := Real.one_le_rpow hb1 (inv_nonneg.mpr hdreal.le)
   have hk : 0 < polynomialProjectionGridSize C n := Nat.floor_pos.mpr hr1
   have hkle : (polynomialProjectionGridSize C n : ℝ) ≤ r := Nat.floor_le (by positivity)
@@ -52,14 +56,13 @@ theorem polynomial_projection_grid_size_spec {d n : ℕ} (C : ModelConstants d)
   exact ⟨hk, hcolumns, by linarith⟩
 
 /-- Floor rounding changes inverse cell width by a fixed model factor. -/
-theorem polynomial_projection_grid_inverse_width_bound {d n : ℕ} (C : ModelConstants d)
-    (hn : 2 * polynomialFeatureCount C ≤ n) :
+theorem polynomial_projection_grid_inverse_width_bound :
     1 / (polynomialProjectionGridSize C n : ℝ) ≤
       (2 * (2 * polynomialFeatureCount C : ℝ) ^ ((d : ℝ)⁻¹)) *
         (n : ℝ) ^ (-((d : ℝ)⁻¹)) := by
   have hqreal : (0 : ℝ) < polynomialFeatureCount C := by exact_mod_cast polynomialFeatureCount_pos C
   have hnreal : (0 : ℝ) < n := by
-    exact_mod_cast (lt_of_lt_of_le (by have := polynomialFeatureCount_pos C; omega : 0 < 2 * polynomialFeatureCount C) hn)
+    first | (simp_all; omega) | (simp_all; linarith)
   have hspec := polynomial_projection_grid_size_spec C hn
   have hkreal : (0 : ℝ) < polynomialProjectionGridSize C n := by exact_mod_cast hspec.1
   have hrreal : (0 : ℝ) < ((n : ℝ) / (2 * polynomialFeatureCount C)) ^ ((d : ℝ)⁻¹) :=
@@ -67,10 +70,12 @@ theorem polynomial_projection_grid_inverse_width_bound {d n : ℕ} (C : ModelCon
   have hi : 1 / (polynomialProjectionGridSize C n : ℝ) ≤
       2 / (((n : ℝ) / (2 * polynomialFeatureCount C)) ^ ((d : ℝ)⁻¹)) := by
     apply (div_le_div_iff₀ hkreal hrreal).mpr
-    simpa only [one_mul] using hspec.2.2
+    grind
   apply hi.trans_eq
   rw [Real.div_rpow hnreal.le (by positivity), Real.rpow_neg hnreal.le]
   field_simp
+
+end
 
 /-- Explicit full-smoothness approximation constant, independent of sample size. -/
 def polynomialProjectionApproximationConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
@@ -88,7 +93,7 @@ theorem polynomial_projection_grid_bias_rate {d n : ℕ} (C : ModelConstants d)
     exact_mod_cast (polynomial_projection_grid_size_spec C hn).1
   have hp := Real.rpow_le_rpow (by positivity : 0 ≤ 1 / (polynomialProjectionGridSize C n : ℝ))
     (polynomial_projection_grid_inverse_width_bound C hn) C.smoothness_pos.le
-  have hcoef : 0 ≤ taylorErrorFactor C * C.holderBound :=
+  have hcoef :=
     mul_nonneg (taylorErrorFactor_pos C).le C.holderBound_pos.le
   have hHp := mul_le_mul_of_nonneg_left hp hcoef
   have hbase : 0 ≤ taylorErrorFactor C * C.holderBound *
@@ -101,10 +106,7 @@ theorem polynomial_projection_grid_bias_rate {d n : ℕ} (C : ModelConstants d)
   have hpower : (((n : ℝ) ^ (-((d : ℝ)⁻¹))) ^ C.smoothness) ^ 4 =
       (n : ℝ) ^ (-(4 * C.smoothness / d)) := by
     rw [← Real.rpow_natCast _ 4, ← Real.rpow_mul (by positivity), ← Real.rpow_mul hnreal.le]
-    congr 1
     ring
-  simp only [mul_pow]
-  rw [hpower]
-  ring
+  grind
 
 end NearlyMinimax

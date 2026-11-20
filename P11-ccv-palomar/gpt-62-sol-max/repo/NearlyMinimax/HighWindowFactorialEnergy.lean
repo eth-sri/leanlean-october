@@ -1,7 +1,7 @@
 module
 
 public import NearlyMinimax.HighFrameDesignEnergy
-public import NearlyMinimax.LocalEnergySeries
+public import NearlyMinimax.PoissonEnergyBounds
 
 @[expose] public section
 

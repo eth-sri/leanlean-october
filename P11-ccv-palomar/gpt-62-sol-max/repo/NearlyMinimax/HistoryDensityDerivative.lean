@@ -1,6 +1,7 @@
 module
 
 public import NearlyMinimax.HistoryReferenceAppendTransport
+public import NearlyMinimax.FiniteBounds
 
 
 @[expose] public section
@@ -16,41 +17,52 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-/-- Every genuine maximal deletion is the old canonical density of an actual append inverse. -/
-theorem historyMarkedDensity_deleted_bounds (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)
-    {E : Type*} [MeasurableSpace E] (a : E → ℝ) (ha : ∀ e, |a e| ≤ B)
-    (hsmall : t * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    (g : HistoryShape (fun a b => ¬ dependent a b)) (marks : Fin (historyShapeLength dependent g) → E)
-    (x : WordHeapPiece g.out dependent) (hx : x ∈ historyMaximalPieces Finset.univ) :
-    (1 / 2 : ℝ) ^ Fintype.card J ≤
-      historyScaledUpperDensity (historyMarkedPieceWeight dependent a ⟨g, marks⟩) ρ (Finset.univ.erase x) t ∧
-      historyScaledUpperDensity (historyMarkedPieceWeight dependent a ⟨g, marks⟩) ρ (Finset.univ.erase x) t ≤
-        (3 / 2 : ℝ) ^ Fintype.card J := by
+/-- The derivative contribution from deleting one occurrence. -/
+def historyMarkedDeleteContribution (dependent : J → J → Prop) (ρ t : ℝ) {E : Type*}
+    (a : E → ℝ) (h : HistoryMarked dependent E) (x : WordHeapPiece h.1.out dependent) : ℝ :=
+  historyMarkedPieceWeight dependent a h x *
+    historyScaledUpperDensity (historyMarkedPieceWeight dependent a h) ρ (Finset.univ.erase x) t
+
+theorem historyMarkedDeleteContribution_append (dependent : J → J → Prop)
+    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (ρ t : ℝ) {E : Type*} [MeasurableSpace E]
+    (a : E → ℝ) (j : J) (g : HistoryShape (fun i j => ¬ dependent i j)) (fresh : E)
+    (marks : Fin (historyShapeLength dependent g) → E) :
+    historyMarkedDeleteContribution dependent ρ t a (historyMarkedAppend dependent hsymm j (⟨g, marks⟩, fresh))
+      (historyCanonicalAppendedPiece dependent hsymm j g) = a fresh * historyMarkedDensity dependent ρ t a ⟨g, marks⟩ :=
+  congrArg₂ (· * ·) (congrArg a (historyCanonicalMarkAppendEquiv_fresh dependent hsymm j g fresh marks))
+    (historyCanonicalAppend_density_delete dependent hsymm j g fresh marks a ρ t)
+
+section
+variable {dependent : J → J → Prop} {Δ : ℕ} {E : Type*} [MeasurableSpace E]
+    {π : Measure E} [IsProbabilityMeasure π] {a : E → ℝ} {T B : ℝ}
+    (P : HistoryPriorBounds dependent Δ π a T B)
+include P
+
+theorem HistoryPriorBounds.deleteContribution_abs_le {t : ℝ} (ht : t ∈ Set.Icc 0 T)
+    (h : HistoryMarked dependent E) (x : WordHeapPiece h.1.out dependent)
+    (hx : x ∈ historyMaximalPieces Finset.univ) :
+    |historyMarkedDeleteContribution dependent (historyReferenceRho Δ) t a h x| ≤ B * (3 / 2 : ℝ) ^ Fintype.card J := by
   classical
+  rcases h with ⟨g, marks⟩
   generalize hj : wordHeapLabel x = j
-  have hg : g ∈ Set.range (historyShapeAppend dependent j) :=
-    (historyShape_terminal_iff_maximal dependent hsymm j g).2 ⟨x, hx, hj⟩
-  obtain ⟨old, rfl⟩ := hg
-  have hxe : x = historyCanonicalAppendedPiece dependent hsymm j old :=
-    wordHeap_maximal_label_injective hrefl hsymm Finset.univ hx
-      (historyCanonicalAppendedPiece_maximal dependent hsymm j old)
-      (hj.trans (historyCanonicalAppendedPiece_label dependent hsymm j old).symm)
-  rw [hxe]
-  let p := (historyCanonicalMarkAppendEquiv dependent hsymm j old (E := E)).symm marks
-  have hm : historyCanonicalMarkAppendEquiv dependent hsymm j old (p.1, p.2) = marks :=
-    (historyCanonicalMarkAppendEquiv dependent hsymm j old).apply_symm_apply marks
-  rw [← hm, historyCanonicalAppend_density_delete]
-  exact historyMarkedDensity_bounds dependent hrefl hsymm Δ hlabels ρ t B hρ ht hB a ha hsmall ⟨old, p.2⟩
+  obtain ⟨old, rfl⟩ := (historyShape_terminal_iff_maximal dependent P.symm j g).2 ⟨x, hx, hj⟩
+  rw [wordHeap_maximal_label_injective P.refl P.symm Finset.univ hx
+    (historyCanonicalAppendedPiece_maximal dependent P.symm j old)
+    (hj.trans (historyCanonicalAppendedPiece_label dependent P.symm j old).symm)]
+  let e := historyCanonicalMarkAppendEquiv dependent P.symm j old (E := E)
+  obtain ⟨⟨fresh, oldMarks⟩, rfl⟩ := e.surjective marks
+  change |historyMarkedDeleteContribution dependent (historyReferenceRho Δ) t a
+    (historyMarkedAppend dependent P.symm j (⟨old, oldMarks⟩, fresh)) _| ≤ _
+  rw [historyMarkedDeleteContribution_append, abs_mul, abs_of_nonneg (P.density_nonneg ht _)]
+  exact mul_le_mul (P.bound _) (P.density_bounds ht _).2 (P.density_nonneg ht _) P.bound_nonneg
+
+end
 
 /-- The true finite maximal-deletion expression for the time derivative. -/
 def historyMarkedDensityDerivative (dependent : J → J → Prop) (ρ t : ℝ)
     {E : Type*} (a : E → ℝ) (h : HistoryMarked dependent E) : ℝ :=
   ρ⁻¹ * ∑ x ∈ historyMaximalPieces Finset.univ,
-    historyMarkedPieceWeight dependent a h x *
-      historyScaledUpperDensity (historyMarkedPieceWeight dependent a h) ρ (Finset.univ.erase x) t
+    historyMarkedDeleteContribution dependent ρ t a h x
 
 /-- Differentiability comes from the actual finite upper-set polynomial. -/
 theorem historyMarkedDensity_hasDerivAt (dependent : J → J → Prop) (ρ t : ℝ)
@@ -59,77 +71,39 @@ theorem historyMarkedDensity_hasDerivAt (dependent : J → J → Prop) (ρ t : �
       (historyMarkedDensityDerivative dependent ρ t a h) t :=
   historyScaledUpperDensity_hasDerivAt _ ρ Finset.univ t
 
-/-- The derivative bound depends on the finite label set, not the unbounded history length. -/
-theorem historyMarkedDensityDerivative_bound (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)
-    {E : Type*} [MeasurableSpace E] (a : E → ℝ) (ha : ∀ e, |a e| ≤ B)
-    (hsmall : t * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2)) (h : HistoryMarked dependent E) :
-    |historyMarkedDensityDerivative dependent ρ t a h| ≤
-      ρ⁻¹ * (Fintype.card J : ℝ) * B * (3 / 2 : ℝ) ^ Fintype.card J := by
-  classical
-  let S := historyMaximalPieces (Finset.univ : Finset (WordHeapPiece h.1.out dependent))
-  let C : ℝ := (3 / 2 : ℝ) ^ Fintype.card J
-  have hC : 0 ≤ C := by positivity
-  have hw : ∀ x ∈ S, |historyMarkedPieceWeight dependent a h x *
-      historyScaledUpperDensity (historyMarkedPieceWeight dependent a h) ρ (Finset.univ.erase x) t| ≤ B * C := by
-    intro x hx
-    have hb := historyMarkedDensity_deleted_bounds dependent hrefl hsymm Δ hlabels
-      ρ t B hρ ht hB a ha hsmall h.1 h.2 x hx
-    have hn : 0 ≤ historyScaledUpperDensity (historyMarkedPieceWeight dependent a h) ρ (Finset.univ.erase x) t :=
-      (by positivity : (0 : ℝ) ≤ (1 / 2 : ℝ) ^ Fintype.card J).trans hb.1
-    rw [abs_mul, abs_of_nonneg hn]
-    exact mul_le_mul (ha _) hb.2 hn hB
-  have hc : (S.card : ℝ) ≤ Fintype.card J := by
-    exact_mod_cast wordHeap_maximal_card_le_labels hrefl hsymm Finset.univ
-  unfold historyMarkedDensityDerivative
-  rw [abs_mul, abs_of_pos (inv_pos.2 hρ)]
-  calc
-    _ ≤ ρ⁻¹ * ∑ x ∈ S, |historyMarkedPieceWeight dependent a h x *
-        historyScaledUpperDensity (historyMarkedPieceWeight dependent a h) ρ (Finset.univ.erase x) t| :=
-      mul_le_mul_of_nonneg_left (Finset.abs_sum_le_sum_abs _ _) (inv_nonneg.2 hρ.le)
-    _ ≤ ρ⁻¹ * (S.card : ℝ) * (B * C) := by
-      simpa only [Finset.sum_const, nsmul_eq_mul, mul_assoc] using
-        mul_le_mul_of_nonneg_left (Finset.sum_le_sum hw) (inv_nonneg.2 hρ.le)
-    _ ≤ _ := by
-      change _ ≤ ρ⁻¹ * (Fintype.card J : ℝ) * B * C
-      nlinarith [mul_nonneg hB hC, mul_le_mul_of_nonneg_right hc (mul_nonneg (inv_nonneg.2 hρ.le) (mul_nonneg hB hC))]
+/-- The derivative bound depends on the label count rather than history length. -/
+theorem HistoryPriorBounds.densityDerivative_abs_le {dependent : J → J → Prop} {Δ : ℕ}
+    {E : Type*} [MeasurableSpace E] {π : Measure E} [IsProbabilityMeasure π]
+    {a : E → ℝ} {T B : ℝ} (P : HistoryPriorBounds dependent Δ π a T B)
+    {t : ℝ} (ht : t ∈ Set.Icc 0 T) (h : HistoryMarked dependent E) :
+    |historyMarkedDensityDerivative dependent (historyReferenceRho Δ) t a h| ≤
+      (historyReferenceRho Δ)⁻¹ * (Fintype.card J : ℝ) * B * (3 / 2 : ℝ) ^ Fintype.card J := by
+  have hp := P.bound_nonneg
+  have hρ := historyReferenceRho_pos Δ
+  rw [historyMarkedDensityDerivative, abs_mul, abs_of_pos (inv_pos.mpr hρ), mul_assoc, mul_assoc]
+  gcongr
+  refine (abs_sum_le_card_mul (P.deleteContribution_abs_le ht h)).trans ?_
+  gcongr
+  exact_mod_cast wordHeap_maximal_card_le_labels P.refl P.symm Finset.univ
 
-/-- Actual polynomial measurability on every fixed canonical deletion subset. -/
-theorem historyMarkedSubdensity_fiber_measurable (dependent : J → J → Prop) (ρ t : ℝ)
+section
+variable (dependent : J → J → Prop) (ρ t : ℝ)
     {E : Type*} [MeasurableSpace E] (a : E → ℝ) (ha : Measurable a)
-    (g : HistoryShape (fun i j => ¬ dependent i j)) (S : Finset (WordHeapPiece g.out dependent)) :
-    Measurable (fun marks : Fin (historyShapeLength dependent g) → E =>
-      historyScaledUpperDensity (historyMarkedPieceWeight dependent a ⟨g, marks⟩) ρ S t) := by
-  classical
-  simp_rw [historyScaledUpperDensity_eq_components, historyComponentWeight]
-  change Measurable (fun marks : Fin (historyShapeLength dependent g) → E =>
-    ∑ P ∈ historyUpperSets S, (t / ρ) ^ P.card * historyOrderVolume P *
-      ∏ x ∈ P, a (marks (Fin.cast (historyShapeLength_out dependent g).symm x.position)))
-  apply Finset.measurable_fun_sum _
-  intro P hP
-  apply Measurable.const_mul
-  apply Finset.measurable_fun_prod _
-  intro x hx
-  exact ha.comp (measurable_pi_apply (Fin.cast (historyShapeLength_out dependent g).symm x.position))
+include ha
+
+theorem historyMarkedDeleteContribution_fiber_measurable
+    (g : HistoryShape (fun i j => ¬ dependent i j)) (x : WordHeapPiece g.out dependent) :
+    Measurable (fun marks => historyMarkedDeleteContribution dependent ρ t a ⟨g, marks⟩ x) :=
+  (historyMarkedPieceWeight_fiber_measurable dependent a ha g x).mul
+    (historyMarkedSubdensity_fiber_measurable dependent ρ t a ha g (Finset.univ.erase x))
 
 /-- The actual finite derivative is measurably evaluable under the countable reference law. -/
-theorem historyMarkedDensityDerivative_measurable (dependent : J → J → Prop) (ρ t : ℝ)
-    {E : Type*} [MeasurableSpace E] (a : E → ℝ) (ha : Measurable a) :
-    Measurable (historyMarkedDensityDerivative dependent ρ t a) := by
-  classical
-  rw [historyMarked_measurable_iff]
-  intro g
-  unfold historyMarkedDensityDerivative
-  change Measurable (fun marks : Fin (historyShapeLength dependent g) → E =>
-    ρ⁻¹ * ∑ x ∈ historyMaximalPieces (Finset.univ : Finset (WordHeapPiece g.out dependent)),
-      a (marks (Fin.cast (historyShapeLength_out dependent g).symm x.position)) *
-      historyScaledUpperDensity (historyMarkedPieceWeight dependent a ⟨g, marks⟩) ρ (Finset.univ.erase x) t)
-  apply Measurable.const_mul
-  apply Finset.measurable_fun_sum _
-  intro x hx
-  exact (ha.comp (measurable_pi_apply (Fin.cast (historyShapeLength_out dependent g).symm x.position))).mul
-    (historyMarkedSubdensity_fiber_measurable dependent ρ t a ha g (Finset.univ.erase x))
+theorem historyMarkedDensityDerivative_measurable :
+    Measurable (historyMarkedDensityDerivative dependent ρ t a) :=
+  (historySigma_measurable_iff _).2 fun g =>
+    (Finset.measurable_fun_sum (historyMaximalPieces Finset.univ) fun x _ =>
+      historyMarkedDeleteContribution_fiber_measurable dependent ρ t a ha g x).const_mul ρ⁻¹
+
+end
 
 end NearlyMinimax

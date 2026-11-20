@@ -28,70 +28,33 @@ theorem fine_pair_filtered_sum_abs_bound {I : Type*} (s : Finset I) (P : I → P
   by_cases hP : P i
   · simp only [if_pos hP, mul_one]
     calc
-      _ = (|c i| * |R|) * |H i| := by rw [abs_mul, abs_mul]; ring
+      _ = (|c i| * |R|) * |H i| := by grind [abs_mul]
       _ ≤ (B*K) * |H i| := mul_le_mul_of_nonneg_right
         (mul_le_mul (hc i hi) hR (abs_nonneg _) hB) (abs_nonneg _)
   · simp [hP]
 
-section Actual
-variable {d n F : ℕ}
-
-theorem finePairDistance_response_bound_of_chart (q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (g w : Fin n → ℝ) (c : HighFrameIndex d F → ℝ) (y : Fin n → Fin 3)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) :
-    |responseMatrixAction q C (finePairDistanceMatrix d F) c
-      (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)| ≤
-        finePairResponseActionBudget d q C a ρ * (n : ℝ)^2 * η^2 :=
-  finePairDistance_response_all_count_bound q hn C a V η ρ (lt_of_lt_of_le zero_lt_one hC)
-    ha hη hρ hηρ U g w c y hc hg hw
-    (fun v hv i => highFrameProfile_abs_le_one C hC (U i) (hU i) v hv) hp
-
-theorem finePairPairAliasAction_abs_bound_of_chart
+section
+variable {d n F : ℕ} (P : ℕ → Prop) [DecidablePred P]
     (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
+    (C a V η ρ : ℝ) (U : Fin n → Covariate d)
     (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ) (y : Fin n → Fin 3)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) :
-    |finePairPairAliasAction ad bd T0 N M q C U p c
+    (c : HighFrameIndex d F → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹)
+    (H : ResponseGuards C a V η ρ g w (fun i => highFrameFeature (D := F) (U i)))
+include haD hab hn hpD hc H
+
+theorem finePairSelectedAction_abs_le (y : Fin n → Fin 3) :
+    |finePairSelectedAction P ad bd T0 N M q C U p c
       (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)| ≤
-      finePairDensityCoefficientBudget ad bd M n *
-        (finePairResponseActionBudget d q C a ρ * (n : ℝ)^2 * η^2) *
-          ∑ W ∈ (Finset.univ : Finset (Fin n)).powerset,
-            if W.card = 2 then |finePairTimeSubsetMoment T0 N U W| else 0 := by
-  unfold finePairPairAliasAction
-  exact fine_pair_filtered_sum_abs_bound ((Finset.univ : Finset (Fin n)).powerset) (fun W => W.card = 2)
+      finePairActionCap d n M q ad bd C a ρ η *
+        ∑ W ∈ ((Finset.univ : Finset (Fin n)).powerset).filter (fun W => P W.card),
+          |finePairTimeSubsetMoment T0 N U W| := by
+  rw [Finset.sum_filter]
+  exact fine_pair_filtered_sum_abs_bound _ (fun W => P W.card)
     (fun W => finePairCountCoefficient ad bd M n W.card * ∏ i ∈ W, p i)
     (fun W => finePairTimeSubsetMoment T0 N U W) _ _ _
     (finePairDensityCoefficientBudget_nonneg ad bd (haD.trans hab).le M n)
     (fun W _ => finePairCountCoefficient_product_bound ad bd haD hab M p hpD W)
-    (finePairDistance_response_bound_of_chart q hn C a V η ρ hC ha hη hρ hηρ U hU g w c y hc hg hw hp)
+    (finePairDistance_response_all_count_bound q hn C a V η ρ U g w c y H hc)
 
-theorem finePairEvenFieldAction_abs_bound_of_chart
-    (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
-    (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d F → ℝ) (y : Fin n → Fin 3)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) :
-    |finePairEvenFieldAction ad bd T0 N M q C U p c
-      (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y)| ≤
-      finePairDensityCoefficientBudget ad bd M n *
-        (finePairResponseActionBudget d q C a ρ * (n : ℝ)^2 * η^2) *
-          ∑ W ∈ (Finset.univ : Finset (Fin n)).powerset,
-            if 4 ≤ W.card ∧ Even W.card then |finePairTimeSubsetMoment T0 N U W| else 0 := by
-  unfold finePairEvenFieldAction
-  exact fine_pair_filtered_sum_abs_bound ((Finset.univ : Finset (Fin n)).powerset) (fun W => 4 ≤ W.card ∧ Even W.card)
-    (fun W => finePairCountCoefficient ad bd M n W.card * ∏ i ∈ W, p i)
-    (fun W => finePairTimeSubsetMoment T0 N U W) _ _ _
-    (finePairDensityCoefficientBudget_nonneg ad bd (haD.trans hab).le M n)
-    (fun W _ => finePairCountCoefficient_product_bound ad bd haD hab M p hpD W)
-    (finePairDistance_response_bound_of_chart q hn C a V η ρ hC ha hη hρ hηρ U hU g w c y hc hg hw hp)
-
-end Actual
+end
 end NearlyMinimax

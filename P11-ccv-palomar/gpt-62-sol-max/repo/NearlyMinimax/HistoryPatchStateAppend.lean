@@ -28,8 +28,7 @@ theorem historyMarkedRawState_patch_append {Z E R : Type*} [DecidableEq J] [Meas
       (historyMarkedRawState dependent
         (fun j e => rawPatchUpdate j (patch j) (slope j e) (intercept j e) (response j e)) initial h) := by
   apply historyMarkedRawState_append
-  intro i j h e f state
-  exact rawPatchUpdate_commute _ _ _ _ _ _ _ _ (hdistinct i j h) (hdisjoint i j h) state
+  grind [rawPatchUpdate_commute]
 
 /-- The torus-neighbour dependency gives canonical append compatibility
 for arbitrary full-mark density and coefficient resets. -/
@@ -40,24 +39,20 @@ theorem highMarkedRawState_patch_append (d k : ℕ) [NeZero k]
     (response : HighWindowLabels d k → E → R → R)
     (initial : (Covariate d → ℝ) × (HighWindowLabels d k → R))
     (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) E) (fresh : E) :
-    historyMarkedRawState (fun i j => j ∈ highNeighborLabels d k i)
+    (h : HistoryMarked (highNeighbors d k) E) (fresh : E) :
+    historyMarkedRawState (highNeighbors d k)
       (fun j e => rawPatchUpdate j (highTorusPatch d k j) (slope j e) (intercept j e) (response j e)) initial
-      (historyMarkedAppend (fun i j => j ∈ highNeighborLabels d k i)
-        (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h, fresh)) =
+      (historyMarkedAppend (highNeighbors d k)
+        (highNeighbors_symm d k) j (h, fresh)) =
     rawPatchUpdate j (highTorusPatch d k j) (slope j fresh) (intercept j fresh) (response j fresh)
-      (historyMarkedRawState (fun i j => j ∈ highNeighborLabels d k i)
+      (historyMarkedRawState (highNeighbors d k)
         (fun j e => rawPatchUpdate j (highTorusPatch d k j) (slope j e) (intercept j e) (response j e)) initial h) := by
   have hi : ∀ i j : HighWindowLabels d k, j ∉ highNeighborLabels d k i → i ≠ j := by
     intro i j h he
     subst j
     exact h (highNeighborLabels_self_mem d k i)
-  have hd : ∀ i j : HighWindowLabels d k, j ∉ highNeighborLabels d k i →
-      Disjoint (highTorusPatch d k i) (highTorusPatch d k j) :=
+  have hd :=
     fun i j h => highTorusPatch_disjoint_of_not_neighbor d k i j h
-  exact historyMarkedRawState_patch_append
-    (fun i j => j ∈ highNeighborLabels d k i)
-    (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h)
-    (highTorusPatch d k) slope intercept response hi hd initial j h fresh
+  apply historyMarkedRawState_patch_append <;> assumption
 
 end NearlyMinimax

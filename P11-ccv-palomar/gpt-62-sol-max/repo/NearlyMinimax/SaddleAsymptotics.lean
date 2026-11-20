@@ -34,8 +34,7 @@ theorem allocationWidth_tendsto_atTop {a : ℝ} (ha : 0 < a) (C : ℝ) :
     Tendsto (allocationWidth a C) atTop atTop := by
   have h := tendsto_atTop_add_const_right atTop (-C)
     (tendsto_sqrt_log_atTop.const_mul_atTop ha)
-  change Tendsto (fun x => a * Real.sqrt (Real.log x) - C) atTop atTop
-  simpa only [sub_eq_add_neg] using h
+  assumption
 
 theorem allocationWidth_div_sqrt_log_limit (a C : ℝ) :
     Tendsto (fun x : ℝ => allocationWidth a C x / Real.sqrt (Real.log x)) atTop (𝓝 a) := by
@@ -45,7 +44,7 @@ theorem allocationWidth_div_sqrt_log_limit (a C : ℝ) :
   simp only [sub_zero] at h
   refine h.congr' ?_
   filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
-  have hp : Real.sqrt (Real.log x) ≠ 0 := (Real.sqrt_pos.2 (Real.log_pos hx)).ne'
+  have hp := (Real.sqrt_pos.2 (Real.log_pos hx)).ne'
   unfold allocationWidth
   field_simp
 
@@ -57,11 +56,17 @@ theorem log_allocationWidth_residual_limit {a : ℝ} (ha : 0 < a) (C : ℝ) :
   refine hl.congr' ?_
   filter_upwards [eventually_gt_atTop (1 : ℝ),
     (allocationWidth_tendsto_atTop ha C).eventually (eventually_gt_atTop (0 : ℝ))] with x hx hw
-  simp only [Function.comp_apply]
-  rw [Real.log_div hw.ne' (Real.sqrt_pos.2 (Real.log_pos hx)).ne', Real.log_sqrt (Real.log_pos hx).le]
+  simp [Real.log_div hw.ne' (Real.sqrt_pos.2 (Real.log_pos hx)).ne', Real.log_sqrt (Real.log_pos hx).le]
+
+section
+variable {a H : ℝ} (ha : 0 < a) (hH : 0 < H)
+include ha hH
+
+section
+variable (C γ : ℝ)
 
 /-- The logarithmic correction in `T°` is proved, including its constant limit. -/
-theorem terminalDepth_expansion_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H) (C γ : ℝ) :
+theorem terminalDepth_expansion_limit :
     Tendsto (fun x : ℝ => candidateTerminalDepth a C H γ x - a * Real.sqrt (Real.log x) +
       (1 + γ) / 2 * Real.log (Real.log x)) atTop
         (𝓝 (-C - Real.log H - (1 + γ) * Real.log a)) := by
@@ -76,7 +81,7 @@ theorem terminalDepth_expansion_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H) (C �
   ring
 
 /-- The logarithmic depth correction is negligible relative to the diverging width. -/
-theorem terminalDepth_div_width_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H) (C γ : ℝ) :
+theorem terminalDepth_div_width_limit :
     Tendsto (fun x : ℝ => candidateTerminalDepth a C H γ x / allocationWidth a C x)
       atTop (𝓝 1) := by
   have hw := allocationWidth_tendsto_atTop ha C
@@ -93,8 +98,7 @@ theorem terminalDepth_div_width_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H) (C �
   field_simp
   ring
 
-theorem candidateTerminalDepth_tendsto_atTop {a H : ℝ}
-    (ha : 0 < a) (hH : 0 < H) (C γ : ℝ) :
+theorem candidateTerminalDepth_tendsto_atTop :
     Tendsto (candidateTerminalDepth a C H γ) atTop atTop := by
   have hw := allocationWidth_tendsto_atTop ha C
   have hm := hw.atTop_mul_pos zero_lt_one (terminalDepth_div_width_limit ha hH C γ)
@@ -102,9 +106,13 @@ theorem candidateTerminalDepth_tendsto_atTop {a H : ℝ}
   filter_upwards [hw.eventually (eventually_gt_atTop (0 : ℝ))] with x hx
   exact mul_div_cancel₀ _ hx.ne'
 
+end
+
+section
+variable (C γ lam c : ℝ)
+
 /-- The unrounded saddle risk scale has an exact positive ratio limit. -/
-theorem upper_saddle_scale_ratio_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H)
-    (C γ lam c : ℝ) :
+theorem upper_saddle_scale_ratio_limit :
     Tendsto (fun x : ℝ =>
       Real.exp (-lam * Real.log x - c * candidateTerminalDepth a C H γ x) /
         Real.exp (-lam * Real.log x - c * a * Real.sqrt (Real.log x) +
@@ -118,13 +126,10 @@ theorem upper_saddle_scale_ratio_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H)
   apply hl.congr'
   filter_upwards [] with x
   simp only [Function.comp_apply]
-  rw [← Real.exp_sub]
-  congr 1
-  ring
+  simp [← Real.exp_sub] <;> ring
 
 /-- The unrounded allocation scale is therefore bounded above and below by the displayed rate. -/
-theorem upper_saddle_scale_bracket {a H : ℝ} (ha : 0 < a) (hH : 0 < H)
-    (C γ lam c : ℝ) :
+theorem upper_saddle_scale_bracket :
     ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ᶠ x : ℝ in atTop,
       A * Real.exp (-lam * Real.log x - c * a * Real.sqrt (Real.log x) +
         c * (1 + γ) / 2 * Real.log (Real.log x)) ≤
@@ -136,11 +141,15 @@ theorem upper_saddle_scale_bracket {a H : ℝ} (ha : 0 < a) (hH : 0 < H)
   have hQ : 0 < Q := Real.exp_pos _
   have ht := upper_saddle_scale_ratio_limit ha hH C γ lam c
   refine ⟨Q / 2, 2 * Q, by positivity, by positivity, ?_⟩
-  filter_upwards [ht.eventually (lt_mem_nhds (by dsimp [Q]; linarith [hQ] : Q / 2 < Q)),
-    ht.eventually (gt_mem_nhds (by dsimp [Q]; linarith [hQ] : Q < 2 * Q))] with x hlo hhi
+  filter_upwards [ht.eventually (lt_mem_nhds (by linarith : Q / 2 < Q)),
+    ht.eventually (gt_mem_nhds (by linarith : Q < 2 * Q))] with x hlo hhi
   have hp := Real.exp_pos (-lam * Real.log x - c * a * Real.sqrt (Real.log x) +
     c * (1 + γ) / 2 * Real.log (Real.log x))
   exact ⟨((lt_div_iff₀ hp).1 hlo).le, ((div_lt_iff₀ hp).1 hhi).le⟩
+
+end
+
+end
 
 /-- Natural flooring of the terminal log-cell count. -/
 def roundedTerminalDepth (δ L T : ℝ) : ℝ :=
@@ -167,11 +176,9 @@ theorem rounded_saddle_scale_bounds {δ L T c lam : ℝ}
   obtain ⟨hl, hu⟩ := roundedTerminalDepth_bounds hδ hLT
   constructor
   · apply Real.exp_le_exp.2
-    have hm := mul_le_mul_of_nonneg_left hu hc
-    linarith
+    nlinarith
   · rw [← Real.exp_add]
     apply Real.exp_le_exp.2
-    have hm := mul_le_mul_of_nonneg_left hl.le hc
     nlinarith
 
 /-- The candidate terminal-cell count is eventually nonnegative. -/
@@ -181,7 +188,7 @@ theorem eventually_terminal_cell_log_nonneg {a H : ℝ}
   filter_upwards [Real.tendsto_log_atTop.eventually (eventually_ge_atTop (0 : ℝ)),
     (candidateTerminalDepth_tendsto_atTop ha hH C γ).eventually (eventually_ge_atTop (0 : ℝ))]
     with x hx ht
-  exact add_nonneg hx ht
+  positivity
 
 /-- This is the full scalar saddle rate after dyadic terminal-depth rounding. -/
 theorem rounded_upper_saddle_scale_bracket {a H δ : ℝ}
@@ -210,9 +217,7 @@ theorem eventually_width_degree_threshold {a β : ℝ} (ha : 0 < a) (hβ : 0 < �
   have ht := (allocationWidth_tendsto_atTop ha C).const_mul_atTop
     (by positivity : 0 < β / 4)
   have he := ht.eventually (eventually_ge_atTop ((q : ℝ) + 2))
-  filter_upwards [he] with x hx
-  rw [show β * allocationWidth a C x / 4 = (β / 4) * allocationWidth a C x by ring]
-  exact hx
+  grind
 
 /-- Every fixed power of the logarithm is negligible relative to the sample size. -/
 theorem tendsto_log_power_div_sample (p : ℝ) :

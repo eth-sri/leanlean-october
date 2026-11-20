@@ -27,27 +27,24 @@ theorem history_dependent_pair_members {dependent : J → J → Prop}
     (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     {i j x y : J} (hij : dependent i j) (hx : x = i ∨ x = j) (hy : y = i ∨ y = j) :
     dependent x y := by
-  rcases hx with rfl | rfl <;> rcases hy with rfl | rfl
-  · exact hrefl _
-  · exact hij
-  · exact hsymm hij
-  · exact hrefl _
+  grind
 
-theorem historyPairProjection_exchange {dependent : J → J → Prop}
+section
+variable {dependent : J → J → Prop}
     (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     {i j : J} (hij : dependent i j) {u v : List J}
+include hrefl hsymm hij
+
+theorem historyPairProjection_exchange
     (h : IndependentHistoryExchange (fun a b => ¬ dependent a b) u v) :
     historyPairProjection i j u = historyPairProjection i j v := by
   cases h with
   | swap before after x y hxy =>
     by_cases hx : x = i ∨ x = j
-    · have hy : ¬ (y = i ∨ y = j) := fun hy => hxy (history_dependent_pair_members hrefl hsymm hij hx hy)
-      simp [historyPairProjection, List.filter_append, hx, hy]
+    · grind [historyPairProjection]
     · by_cases hy : y = i ∨ y = j <;> simp [historyPairProjection, List.filter_append, hx, hy]
 
-theorem historyPairProjection_shape_invariant {dependent : J → J → Prop}
-    (hrefl : ∀ i, dependent i i) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    {i j : J} (hij : dependent i j) {u v : List J}
+theorem historyPairProjection_shape_invariant
     (h : Relation.EqvGen (IndependentHistoryExchange (fun a b => ¬ dependent a b)) u v) :
     historyPairProjection i j u = historyPairProjection i j v := by
   induction h with
@@ -56,6 +53,8 @@ theorem historyPairProjection_shape_invariant {dependent : J → J → Prop}
   | symm _ _ _ ih => exact ih.symm
   | trans _ _ _ _ _ ih₁ ih₂ => exact ih₁.trans ih₂
 
+end
+
 theorem history_first_decomposition {a : J} {word : List J} (ha : a ∈ word) :
     ∃ before after, word = before ++ a :: after ∧ a ∉ before := by
   induction word with
@@ -63,9 +62,7 @@ theorem history_first_decomposition {a : J} {word : List J} (ha : a ∈ word) :
   | cons b word ih =>
     by_cases hba : b = a
     · subst b; exact ⟨[], word, rfl, by simp⟩
-    · have ha' : a ∈ word := (List.mem_cons.1 ha).resolve_left (Ne.symm hba)
-      obtain ⟨before, after, hword, hbefore⟩ := ih ha'
-      exact ⟨b :: before, after, by simp [hword], by simp [hbefore, (Ne.symm hba)]⟩
+    · grind
 
 theorem historyPairProjection_prefix_head {a b : J} {before after : List J}
     (ha : a ∉ before) (hb : b ∈ before) :
@@ -77,8 +74,7 @@ theorem historyPairProjection_prefix_head {a b : J} {before after : List J}
     have habefore : a ∉ before := fun h => ha (List.mem_cons.2 (Or.inr h))
     by_cases hcb : c = b
     · subst c; simp [historyPairProjection]
-    · have hbbefore : b ∈ before := (List.mem_cons.1 hb).resolve_left (Ne.symm hcb)
-      simpa [historyPairProjection, hca, hcb] using ih habefore hbbefore
+    · grind [historyPairProjection]
 
 omit [DecidableEq J] in
 theorem historyShapeRelation_cons {independent : J → J → Prop} (a : J) {u v : List J}
@@ -128,7 +124,7 @@ theorem historyShapeRelation_of_pair_projections {dependent : J → J → Prop}
       have hh := congrArg List.head? (hproj a b (hsymm hba))
       rw [hv, historyPairProjection_prefix_head ha hb] at hh
       have hab : a = b := by simpa [historyPairProjection] using hh
-      exact ha (hab ▸ hb)
+      grind
     have hmove := historyShapeRelation_move_first (independent := fun b c => ¬ dependent b c) a before after hind
     have hrest : ∀ i j, dependent i j → historyPairProjection i j u = historyPairProjection i j (before ++ after) := by
       intro i j hij
@@ -136,9 +132,7 @@ theorem historyShapeRelation_of_pair_projections {dependent : J → J → Prop}
         rw [hv]
         exact historyPairProjection_shape_invariant hrefl hsymm hij hmove
       have hh := (hproj i j hij).trans hm
-      by_cases hai : a = i ∨ a = j
-      · simpa [historyPairProjection, hai] using hh
-      · simpa [historyPairProjection, hai] using hh
+      grind [historyPairProjection]
     have hcons := historyShapeRelation_cons a (ih hrest)
     rw [hv]
     exact .trans _ _ _ hcons (.symm _ _ hmove)

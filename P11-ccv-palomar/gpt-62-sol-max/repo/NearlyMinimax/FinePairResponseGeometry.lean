@@ -23,34 +23,19 @@ theorem high_response_matrix_two_general {ι : Type*} [Fintype ι] [DecidableEq 
       η ^ 2 * w 0 * w 1 * spatialFrameCovariance A φ 0 1 *
         ternaryMeanDerivative a (coefficientRegression η g w φ c 0) (y 0) *
         ternaryMeanDerivative a (coefficientRegression η g w φ c 1) (y 1) := by
-  let δ := coefficientDirection η w φ c
-  let f := coefficientRegression η g w φ c
-  let m := fun i => ternaryMeanDerivative a (f i) (y i)
-  let e := fun i => highResponseVarianceTerm a V η g w φ c y i
   have he0 : ({0, 1} : Finset (Fin 2)).erase 0 = {1} := by decide
   have he1 : ({0, 1} : Finset (Fin 2)).erase 1 = {0} := by decide
-  have hs (v : ι → ℝ) : finiteProductSecond Finset.univ
-      (fun i z => ternaryMass a (f i + z * δ v i) V (y i))
-      (fun i z => δ v i * ternaryMeanDerivative a (f i + z * δ v i) (y i))
-      (fun i _ => (δ v i) ^ 2 * ternaryMeanSecondDerivative a (y i)) 0 =
-      (2 * e 0) * (δ v 0 * δ v 0) + (2 * e 1) * (δ v 1 * δ v 1) +
-        (2 * m 0 * m 1) * (δ v 0 * δ v 1) := by
-    simp [finiteProductSecond, Finset.univ_fin2, he0, he1, e, highResponseVarianceTerm,
-      ternary_heat_identity, m, f]
+  have hsym : spatialFrameCovariance A φ 1 0 = spatialFrameCovariance A φ 0 1 := by
+    unfold spatialFrameCovariance
+    rw [Finset.sum_comm]
+    apply Finset.sum_congr rfl
+    intro i _
+    apply Finset.sum_congr rfl
+    intro j _
+    rw [hA j i]
     ring
-  rw [high_response_matrix_second q hq C a V η A g w φ c y]
-  change (1 / 2 : ℝ) * covarianceAction C A
-    (fun v => finiteProductSecond Finset.univ
-      (fun i z => ternaryMass a (f i + z * δ v i) V (y i))
-      (fun i z => δ v i * ternaryMeanDerivative a (f i + z * δ v i) (y i))
-      (fun i _ => (δ v i) ^ 2 * ternaryMeanSecondDerivative a (y i)) 0) = _
-  simp_rw [hs]
-  rw [covarianceAction_add, covarianceAction_add]
-  simp_rw [covarianceAction_mul]
-  rw [covariance_direction_product C η A hC hA w φ c 0 0,
-    covariance_direction_product C η A hC hA w φ c 1 1,
-    covariance_direction_product C η A hC hA w φ c 0 1]
-  dsimp [m, f, e]
+  rw [high_response_matrix_expansion q hq C a V η A hC hA g w φ c y]
+  simp [Finset.univ_fin2, he0, he1, highResponseMixedTerm, hsym]
   ring
 
 def finePairCoordinatePolynomial {d : ℕ} (l : Fin d) : MvPolynomial (Fin d) ℝ := C 8 * X l
@@ -59,8 +44,7 @@ def finePairSquarePolynomial (d : ℕ) : MvPolynomial (Fin d) ℝ :=
   ∑ l, (finePairCoordinatePolynomial l) ^ 2
 
 theorem finePairCoordinatePolynomial_degree {d : ℕ} (l : Fin d) :
-    (finePairCoordinatePolynomial l).totalDegree ≤ 1 := by
-  exact (totalDegree_mul _ _).trans (by simp [finePairCoordinatePolynomial])
+    (finePairCoordinatePolynomial l).totalDegree ≤ 1 := (totalDegree_mul _ _).trans (by simp)
 
 theorem finePairSquarePolynomial_degree (d : ℕ) :
     (finePairSquarePolynomial d).totalDegree ≤ 2 := by
@@ -89,39 +73,41 @@ def finePairDistanceMatrix (d F : ℕ) (β β' : HighFrameIndex d F) : ℝ :=
     highFrameCoefficients (1 : MvPolynomial (Fin d) ℝ) β *
       highFrameCoefficients (finePairSquarePolynomial d) β'
 
-theorem finePairUnitMatrix_symmetric (d F : ℕ) (β β' : HighFrameIndex d F) :
+section
+variable (d F : ℕ) (β β' : HighFrameIndex d F)
+
+theorem finePairUnitMatrix_symmetric :
     finePairUnitMatrix d F β β' = finePairUnitMatrix d F β' β := mul_comm _ _
 
-theorem finePairDistanceMatrix_symmetric (d F : ℕ) (β β' : HighFrameIndex d F) :
+theorem finePairDistanceMatrix_symmetric :
     finePairDistanceMatrix d F β β' = finePairDistanceMatrix d F β' β := by
   unfold finePairDistanceMatrix
-  have hs : (∑ l : Fin d, 2 * highFrameCoefficients (finePairCoordinatePolynomial l) β *
-      highFrameCoefficients (finePairCoordinatePolynomial l) β') =
-      ∑ l : Fin d, 2 * highFrameCoefficients (finePairCoordinatePolynomial l) β' *
-        highFrameCoefficients (finePairCoordinatePolynomial l) β :=
-    Finset.sum_congr rfl (fun l _ => by ring)
-  rw [hs]
-  ring
+  grind
 
-theorem spatial_frame_covariance_outer {κ : Type*} [Fintype κ] [DecidableEq κ]
-    {n : ℕ} (u v : κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
+end
+
+section
+variable {κ : Type*} [Fintype κ] [DecidableEq κ]
+    {n : ℕ}
+
+theorem spatial_frame_covariance_outer (u v : κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
     spatialFrameCovariance (fun β β' => u β * v β') φ i j =
       (∑ β, φ i β * u β) * (∑ β, φ j β * v β) := by
   simp only [spatialFrameCovariance, Finset.mul_sum, Finset.sum_mul]
   conv_rhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro β _
-  apply Finset.sum_congr rfl
-  intro β' _
-  ring
+  apply Finset.sum_congr rfl <;> grind
 
-theorem spatial_frame_covariance_sub {κ : Type*} [Fintype κ] [DecidableEq κ]
-    {n : ℕ} (A B : κ → κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
+theorem spatial_frame_covariance_sub (A B : κ → κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
     spatialFrameCovariance (fun β β' => A β β' - B β β') φ i j =
       spatialFrameCovariance A φ i j - spatialFrameCovariance B φ i j := by
   simp only [spatialFrameCovariance, mul_sub, Finset.sum_sub_distrib]
 
-theorem finePairUnitMatrix_kernel {d n F : ℕ} (U : Fin n → Covariate d) (i j : Fin n) :
+end
+
+section
+variable {d n F : ℕ}
+
+theorem finePairUnitMatrix_kernel (U : Fin n → Covariate d) (i j : Fin n) :
     spatialFrameCovariance (finePairUnitMatrix d F) (fun l => highFrameFeature (U l)) i j = 1 := by
   unfold finePairUnitMatrix
   rw [spatial_frame_covariance_outer]
@@ -131,7 +117,7 @@ theorem finePairUnitMatrix_kernel {d n F : ℕ} (U : Fin n → Covariate d) (i j
       (by simp) x).symm
   rw [he, he, one_mul]
 
-theorem finePairDistanceMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F)
+theorem finePairDistanceMatrix_kernel (hF : 3 ≤ F)
     (U : Fin n → Covariate d) (i j : Fin n) :
     spatialFrameCovariance (finePairDistanceMatrix d F) (fun l => highFrameFeature (U l)) i j =
       -spatialSquaredDistance (U i) (U j) := by
@@ -153,12 +139,14 @@ theorem finePairDistanceMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F)
   rw [spatial_frame_covariance_sub, spatial_frame_covariance_sub,
     spatial_frame_covariance_sum]
   simp_rw [spatial_frame_covariance_rank_one, spatial_frame_covariance_outer, hc, hl, hs]
-  simp only [mul_one, one_mul, spatialSquaredDistance, Finset.sum_neg_distrib,
+  simp only [mul_one, one_mul, spatialSquaredDistance,
     ← Finset.sum_sub_distrib]
   rw [← Finset.sum_neg_distrib]
   apply Finset.sum_congr rfl
   intro l _
   ring
+
+end
 
 def finePairCombinedMatrix (d F : ℕ) (W : ℝ) (β β' : HighFrameIndex d F) : ℝ :=
   finePairUnitMatrix d F β β' + W * finePairDistanceMatrix d F β β'
@@ -172,11 +160,7 @@ theorem spatial_frame_covariance_scalar {κ : Type*} [Fintype κ] [DecidableEq �
     {n : ℕ} (A : κ → κ → ℝ) (W : ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
     spatialFrameCovariance (fun β β' => W * A β β') φ i j = W * spatialFrameCovariance A φ i j := by
   simp only [spatialFrameCovariance, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro β _
-  apply Finset.sum_congr rfl
-  intro β' _
-  ring
+  apply Finset.sum_congr rfl <;> grind
 
 theorem finePairCombinedMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F) (W : ℝ)
     (U : Fin n → Covariate d) (i j : Fin n) :

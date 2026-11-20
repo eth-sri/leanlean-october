@@ -54,14 +54,16 @@ def upperSaddleCoefficient (s d τ : ℝ) : ℝ :=
 def lowerSaddleCoefficient (s d τ : ℝ) : ℝ :=
   Real.sqrt (8 * (d - 4 * s) * (s - 1) / (d ^ 2 * (d + 4) * τ))
 
+section
+variable {s d τ : ℝ} (hs : 1 < s)
+    (hd : 4 * s < d) (hτ : 0 < τ)
+include hs hd hτ
+
 /-- The upper saddle identifies the paper's stretched-exponential constant. -/
-theorem upper_saddle_stretchConstant {s d τ : ℝ} (hs : 1 < s)
-    (hd : 4 * s < d) (hτ : 0 < τ) :
+theorem upper_saddle_stretchConstant :
     2 * (s - 1) / (d + 4) * upperSaddleCoefficient s d τ = stretchConstant s d τ := by
   have hd₀ : 0 < d := by linarith
-  have hdp : 0 < d + 4 := by linarith
   have hsm : 0 < s - 1 := by linarith
-  have hds : 0 < d - 4 * s := by linarith
   have hu : 0 ≤ 8 * τ * (d - 4 * s) / ((d + 4) * (s - 1)) := by positivity
   have hk : 0 ≤ 2 * τ * (s - 1) * (d - 4 * s) / (d + 4) ^ 3 := by positivity
   unfold upperSaddleCoefficient stretchConstant
@@ -71,11 +73,9 @@ theorem upper_saddle_stretchConstant {s d τ : ℝ} (hs : 1 < s)
   ring
 
 /-- The lower saddle gives exactly the same stretched-exponential constant. -/
-theorem lower_saddle_stretchConstant {s d τ : ℝ} (hs : 1 < s)
-    (hd : 4 * s < d) (hτ : 0 < τ) :
+theorem lower_saddle_stretchConstant :
     2 * d * τ / (d + 4) * lowerSaddleCoefficient s d τ = stretchConstant s d τ := by
   have hd₀ : 0 < d := by linarith
-  have hdp : 0 < d + 4 := by linarith
   have hsm : 0 < s - 1 := by linarith
   have hds : 0 < d - 4 * s := by linarith
   have hm : 0 ≤ 8 * (d - 4 * s) * (s - 1) / (d ^ 2 * (d + 4) * τ) := by positivity
@@ -86,12 +86,18 @@ theorem lower_saddle_stretchConstant {s d τ : ℝ} (hs : 1 < s)
   field_simp
   ring
 
+end
+
 /-- Logarithm of the unrounded bandwidth `h°` in `eq:Urate-h`. -/
 def spatialBalanceLog (s d L T : ℝ) : ℝ :=
   2 / (d + 4) * (-L + 2 * ((s - 1) / d) * (L + T))
 
+section
+variable {s d : ℝ} (hs : 1 < s) (hd : 4 * s < d) (L T : ℝ)
+include hs hd
+
 /-- Exact equality of the bias and pair-noise logarithms, before rounding. -/
-theorem spatial_balance {s d : ℝ} (hs : 1 < s) (hd : 4 * s < d) (L T : ℝ) :
+theorem spatial_balance :
     2 * spatialBalanceLog s d L T - 2 * ((s - 1) / d) * (L + T) =
       -L - d / 2 * spatialBalanceLog s d L T := by
   have h₁ : d ≠ 0 := by linarith
@@ -101,7 +107,7 @@ theorem spatial_balance {s d : ℝ} (hs : 1 < s) (hd : 4 * s < d) (L T : ℝ) :
   ring
 
 /-- The exact risk exponent identity in `eq:Urate-scale`. -/
-theorem spatial_balance_rate {s d : ℝ} (hs : 1 < s) (hd : 4 * s < d) (L T : ℝ) :
+theorem spatial_balance_rate :
     -L - d / 2 * spatialBalanceLog s d L T =
       -rateExponent s d * L - 2 * (s - 1) / (d + 4) * T := by
   have h₁ : d ≠ 0 := by linarith
@@ -109,6 +115,8 @@ theorem spatial_balance_rate {s d : ℝ} (hs : 1 < s) (hd : 4 * s < d) (L T : �
   unfold spatialBalanceLog rateExponent
   field_simp
   ring
+
+end
 
 /-- Exact algebra of the lower saddle's logarithm of `N`. -/
 def lowerSaddleLogN (s d L ω τ M : ℝ) : ℝ :=
@@ -132,37 +140,37 @@ def rateLog (lam κ a x : ℝ) : ℝ :=
 /-- A total real-valued definition of the scale; asymptotic results use `x > 1`. -/
 def rateScale (lam κ a x : ℝ) : ℝ := Real.exp (rateLog lam κ a x)
 
-theorem rateScale_pos (lam κ a x : ℝ) : 0 < rateScale lam κ a x := Real.exp_pos _
+section
+variable (lam κ a x : ℝ)
 
-theorem log_rateScale (lam κ a x : ℝ) :
+theorem rateScale_pos : 0 < rateScale lam κ a x := Real.exp_pos _
+
+theorem log_rateScale :
     Real.log (rateScale lam κ a x) = rateLog lam κ a x := Real.log_exp _
 
-theorem rateScale_eq_base_mul_correction (lam κ a x : ℝ) :
+theorem rateScale_eq_base_mul_correction :
     rateScale lam κ a x = Real.exp (-lam * Real.log x) *
       Real.exp (-κ * Real.sqrt (Real.log x) + a * Real.log (Real.log x)) := by
   unfold rateScale rateLog
-  rw [← Real.exp_add]
-  congr 1
-  ring
+  simp [← Real.exp_add] <;> ring
+
+end
 
 /-- Equivalence with the paper's product using real powers. -/
 theorem rateScale_eq_rpow (lam κ a : ℝ) {x : ℝ} (hx : 1 < x) :
     rateScale lam κ a x =
       x ^ (-lam) * Real.exp (-κ * Real.sqrt (Real.log x)) * (Real.log x) ^ a := by
   have hx₀ : 0 < x := by linarith
-  have hl : 0 < Real.log x := Real.log_pos hx
+  have hl := Real.log_pos hx
   rw [Real.rpow_def_of_pos hx₀, Real.rpow_def_of_pos hl]
   unfold rateScale rateLog
-  rw [← Real.exp_add, ← Real.exp_add]
-  congr 1
-  ring
+  simp [← Real.exp_add] <;> ring
 
 theorem tendsto_sqrt_div_self :
     Tendsto (fun x : ℝ => Real.sqrt x / x) atTop (𝓝 0) := by
   refine (tendsto_rpow_neg_atTop (by norm_num : 0 < (1 / 2 : ℝ))).congr' ?_
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
-  rw [Real.sqrt_eq_rpow, ← Real.rpow_sub_one hx.ne']
-  norm_num
+  norm_num [Real.sqrt_eq_rpow, ← Real.rpow_sub_one hx.ne']
 
 theorem tendsto_log_div_sqrt :
     Tendsto (fun x : ℝ => Real.log x / Real.sqrt x) atTop (𝓝 0) := by
@@ -188,7 +196,7 @@ theorem tendsto_correction_div_log (κ a : ℝ) :
       atTop (𝓝 0) := by
   have h := (tendsto_sqrt_log_div_log.const_mul (-κ)).add
     (tendsto_loglog_div_log.const_mul a)
-  convert h using 1 <;> simp [add_div, mul_div_assoc, neg_div]
+  grind
 
 /-- A stretched exponential in `sqrt(log x)` defeats every fixed log-power. -/
 theorem tendsto_stretched_log_factor {κ : ℝ} (hκ : 0 < κ) (a : ℝ) :
@@ -206,7 +214,7 @@ theorem tendsto_stretched_log_factor {κ : ℝ} (hκ : 0 < κ) (a : ℝ) :
   apply Real.tendsto_exp_atBot.comp
   refine hm.congr' ?_
   filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
-  have hp : Real.sqrt (Real.log x) ≠ 0 := (Real.sqrt_pos.2 (Real.log_pos hx)).ne'
+  have hp := (Real.sqrt_pos.2 (Real.log_pos hx)).ne'
   field_simp
 
 /-- A quantitative eventual form of subpolynomiality, on both sides. -/
@@ -217,7 +225,7 @@ theorem eventually_correction_between_powers (κ a : ℝ) {ε : ℝ} (hε : 0 < 
   have h := tendsto_correction_div_log κ a
   filter_upwards [h.eventually (lt_mem_nhds (neg_lt_zero.2 hε)),
     h.eventually (gt_mem_nhds hε), eventually_gt_atTop (1 : ℝ)] with x hlo hhi hx
-  have hl : 0 < Real.log x := Real.log_pos hx
+  have hl := Real.log_pos hx
   have hx₀ : 0 < x := by linarith
   rw [Real.rpow_def_of_pos hx₀, Real.rpow_def_of_pos hx₀]
   constructor
@@ -235,7 +243,7 @@ theorem tendsto_normalized_log_scale (lam κ a c : ℝ) :
   simp only [sub_zero] at h
   refine h.congr' ?_
   filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
-  have hl : Real.log x ≠ 0 := (Real.log_pos hx).ne'
+  have hl := (Real.log_pos hx).ne'
   unfold rateLog
   field_simp
   ring
@@ -256,7 +264,7 @@ theorem exponent_limit_nat_of_rateBracket {risk : ℕ → ℝ} {lam κ a Γ : �
     ((tendsto_normalized_log_scale lam κ a (Real.log c)).comp tendsto_natCast_atTop_atTop)
   · filter_upwards [hb, tendsto_natCast_atTop_atTop.eventually
       (eventually_gt_atTop (1 : ℝ))] with n hn hn₁
-    have hr : 0 < risk n := (mul_pos hc (rateScale_pos _ _ _ _)).trans_le hn.1
+    have hr := (mul_pos hc (rateScale_pos _ _ _ _)).trans_le hn.1
     have hl := Real.log_le_log hr hn.2
     rw [Real.log_mul hC.ne' (rateScale_pos _ _ _ _).ne', log_rateScale] at hl
     exact div_le_div_of_nonneg_right (by linarith) (Real.log_pos hn₁).le

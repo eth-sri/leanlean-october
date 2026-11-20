@@ -22,8 +22,8 @@ theorem paper_common_pair_rms {Ω Ξ : Type*} [MeasurableSpace Ω] [MeasurableSp
     (μ : Measure Ω) (ν : Measure Ξ) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
     {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
     (k : ℕ) (hk : 0 < k)
-    (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) (Cp W : ℝ)
+    (bar : CovariatePair d → PairVector)
+    (η : Ω → CovariatePair d → PairVector) (Cp W : ℝ)
     {n m : ℕ} (hn : 0 < n) (hm : 2 ≤ m) {c : ℝ} (hc : 0 < c)
     (hsize : c * (n : ℝ) ≤ m)
     (hp : PairPilotAssumptions θ k hk μ bar η Cp W (Cp ^ 2 * W / (n : ℝ)))
@@ -42,11 +42,10 @@ theorem paper_common_pair_rms {Ω Ξ : Type*} [MeasurableSpace Ω] [MeasurableSp
   have hfloor : 2 * (1 / 4 : ℝ) ≤ ∫ p, pairPilotNoiseMean θ k hk bar η p ∂μ.prod μ := by
     have hM := pairPilotAssumptions_meanConditions μ C θ hθ k hk bar η Cp W _ hp
     norm_num only [show 2 * (1 / 4 : ℝ) = 1 / 2 by norm_num]
-    exact pairPilotNoiseMean_denominator_lower C θ hθ k hk μ bar η Cp _ hM hfirst
+    apply pairPilotNoiseMean_denominator_lower <;> assumption
   have hr := common_pair_ratio_risk_le μ ν C θ hθ k hk bar η Cp W _ hp hm X hind hX
     b (1 / 4) (by norm_num) hresidual hfloor
-  have hrate := pairRiskBudget_rate_le (k := k) (b := b) C hn hm hp.constantNonnegative hp.budgetNonnegative
-    hp.lamNonnegative (pairPilotVarianceBase_nonneg θ k hk μ bar η)
+  have hrate := pairRiskBudget_rate_le (k := k) (b := b) C hn hm hp.constantNonnegative hp.budgetNonnegative (pairPilotVarianceBase_nonneg θ k hk μ bar η)
     hc (by norm_num : (0 : ℝ) < 1 / 4) hsize le_rfl
     (pairPilotVarianceBase_le μ C θ hθ k hk bar η Cp W _ hp)
   have h := hr.trans (ENNReal.ofReal_mono hrate)
@@ -58,6 +57,6 @@ theorem paper_common_pair_rms {Ω Ξ : Type*} [MeasurableSpace Ω] [MeasurableSp
   have hrms := ENNReal.rpow_le_rpow h (by norm_num : (0 : ℝ) ≤ 1 / 2)
   rw [ENNReal.ofReal_rpow_of_nonneg (mul_nonneg hC0 (sq_nonneg _)) (by norm_num),
     ← Real.sqrt_eq_rpow, Real.sqrt_mul hC0, Real.sqrt_sq hR0] at hrms
-  exact hrms
+  assumption
 
 end NearlyMinimax
