@@ -8,28 +8,20 @@ module
 public import VaughtConjecture.Knight.TopFreePinnedExtension
 public import VaughtConjecture.Knight.FiniteMasterState
 public import VaughtConjecture.Knight.FiniteRequestData
-public import VaughtConjecture.Knight.FixedHeightChain
+public import VaughtConjecture.Knight.FinitePartialState
+public import VaughtConjecture.TypeTower.ChainUnion
 public import VaughtConjecture.Knight.CapReceivingModel
 public import VaughtConjecture.Knight.TopFreeTerminal
 public import VaughtConjecture.TypeTower.FiniteMasterScheduler
 
-/-! # Capped scheduling with top-free masters
-
-Requests specify a whole coface and an observation cutoff. The existence endpoint
-uses the shared finite-master dense-set scheduler: absorb the root, then resolve
-the request permanently. Each finite step uses the constructed top-free pinned
-extension, and every union label comes from a top-free finite master.
-
-The historical repeated-run statements remain for compatibility, but neither
-existence endpoint uses them. Only the donor is approximated at a cutoff; the old
-master is always retained literally. No exact realization of a top donor is claimed.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.TopFreeCapHenkin
+
 open TypeTower StageType Value ExtOrd KnightRealization FixedHeight AmalgamationPlan
+
 universe w
+
 variable {β : LimitStage} {M : Type w}
 
 structure State (β : LimitStage) (M : Type w) extends RunState β M where
@@ -99,8 +91,7 @@ theorem service [Infinite M] (st : State β M) (r : Request β M)
     subst t
     exact extendFace_trans_snoc f hy hyt
   rw [← htup]
-  rw [st'.hA.consistent _ Q (extendFace f) hQ]
-  exact hQq
+  rwa [st'.hA.consistent _ Q (extendFace f) hQ]
 
 theorem absorb (st : State β M) {x : M} (hx : x ∉ Set.range st.tup) :
     ∃ st' : State β M, Extends st.A st'.A ∧ Set.range st.tup ⊆ Set.range st'.tup ∧
@@ -110,7 +101,7 @@ theorem absorb (st : State β M) {x : M} (hx : x ∉ Set.range st.tup) :
   obtain ⟨Q, hQ, hproper, _⟩ := TopFreePinnedExtension.exists_pinned st.P st.proper
     (Function.Embedding.refl _) st.P (typeMap_refl _) q hq ⊥ (bot_lt_ofOrd _)
   obtain ⟨st', hext, hrange, _, hx'⟩ := install st hx Q hQ hproper
-  exact ⟨st', hext, hrange, hx'⟩
+  tauto
 
 /-- A serviced observation is a literal finite evaluation, so it persists. -/
 theorem Serves.mono {A B : KnightRealization β M} (h : Extends A B)
@@ -136,7 +127,7 @@ theorem exists_topFree_model [Countable M] [Infinite M]
   have habs : ∀ s x, ∃ t, master s ≤ master t ∧ x ∈ Set.range (master t).tuple := by
     intro s x
     by_cases hx : x ∈ Set.range s.tup
-    · exact ⟨s, le_rfl, hx⟩
+    · tauto
     · obtain ⟨t, hext, _, ht⟩ := absorb s hx
       exact ⟨t, RunState.master_extends hext, ht⟩
   have hserve : ∀ s r, (master s).chart.eval (task r).root = some (task r).base →
@@ -153,8 +144,8 @@ theorem exists_topFree_model [Countable M] [Infinite M]
     intro n t p hp q hq δ hδ hδβ
     obtain ⟨ν, rfl, hν⟩ : ∃ ν : Ordinal.{0}, δ = ofOrd ν ∧ ν < β.1 := by
       rcases ExtOrd.cases δ with rfl | rfl | ⟨ν, rfl⟩
-      · exact False.elim (lt_irrefl _ hδ)
-      · exact False.elim ((not_lt_of_ge le_top) hδβ)
+      · trivial
+      · trivial
       · exact ⟨ν, rfl, ofOrd_lt_ofOrd.mp hδβ⟩
     exact hs ⟨n, t, p, ⟨q, hq⟩, ⟨ν, hν⟩⟩ hp
   refine ⟨R, hreceiving.isModel inferInstance hc

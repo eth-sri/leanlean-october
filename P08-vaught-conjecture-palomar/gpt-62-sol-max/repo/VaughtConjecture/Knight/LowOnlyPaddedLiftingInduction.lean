@@ -5,93 +5,62 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.LowOnlyPaddedStepLedger
-
-/-! # Closed all-cap lifting induction on the installed padded tower
-
-The actual grade-two base initializes the uniform successor ledger. Every
-predecessor lifting input is discharged by induction on integration's unchanged
-build. Completeness is restricted to installed heights; the ambient-height
-output is bountiful and complete.
--/
+public import VaughtConjecture.Knight.LowOnlyPaddedFibre
+public import VaughtConjecture.Knight.LowOnlyPaddedIteration
+public import VaughtConjecture.Knight.EffectiveGradeLifting
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLiftingInduction
+
 open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
-open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
-open LowOnlyPaddedDecode (grid_fixed_below)
+
+open LowOnlyPaddedContract Padded.StepRows LowOnlyOrderedLadder
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
+  (hroot : I.RootMatches F.root)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
   (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
 
-open LowOnlyPaddedIteration TargetGradeLifting AmalgamationPlan CoatomBoundaryExtension
+open LowOnlyPaddedIteration AmalgamationPlan CoatomBoundaryExtension
+
 include hcover
 
-/-- Closed induction on integration's actual installed recursion. -/
-theorem build_lifting (t : ℕ) (ht : t + 2 ≤ A.card) :
-    Through (build I F hroot hA hB hC t ht).rows (t + 2) := by
-  induction t with
-  | zero => exact LowOnlyPaddedLiftingReady.through_two I F hroot hA hB hC hcover
-  | succ t ih =>
-    exact LowOnlyPaddedStepLedger.through_successor
-      (build I F hroot hA hB hC t (by omega)) (by omega) (by omega)
-      (build_plan I F hroot hA hB hC t (by omega)) (ih (by omega)) hcover
+local notation "t₀" => (A.card - 2)
+local notation "L" => build I F hroot hA hB hC t₀ (by omega)
 
-/-- Completeness is asserted only at filled grades. Proper original owners
-above this height are retained but no missing full owners are postulated. -/
-theorem complete_through (t : ℕ) (ht : t + 2 ≤ A.card) {J : Finset ι × ℕ}
-    (hJ : J ∈ Plan.gradedPlan R) (hj : J.2 ≤ t + 2) :
-    ∃ d, (build I F hroot hA hB hC t ht).carrier.cell d = J := by
-  let L := build I F hroot hA hB hC t ht
-  rcases J with ⟨T, j⟩
-  by_cases he : T = A
-  · subst T
-    obtain ⟨a, _⟩ := F.exists_rank_anchor (by omega : 1 ≤ t + 2)
-      (F.zero_admissible (t + 2))
-    obtain ⟨c, hc, _⟩ := L.ceiling_at le_rfl (state F a)
-      (state_admissible F a) (state_proper F a)
-      (G := PairedSlotComparison.sourceGrid (t + 2) (Fintype.card (Field I.left I.right)))
-      (H := CanonicalFieldLayer.ceiling (t + 2) (Field I.left I.right))
-      (fun _ hz => PairedSlotComparison.sourceGrid_visible hz)
-      (PairedSlotComparison.sourceGrid_visible
-        (PairedSlotComparison.sourceGrid_endpoint le_rfl))
-      (fun f => by rw [state_profile]; exact LowOnlyRecursiveCharts.anchor_bound F a f)
-      j (Plan.mem_gradedPlan.mp hJ).2.1 hj
-    exact ⟨c, hc⟩
-  · obtain ⟨d, hd⟩ := (I.occupied_iff hJ).mpr (hcover T (Plan.mem_gradedPlan.mp hJ).1 he)
-    refine ⟨L.baseMap (RelativeLadderLayer.old I.boundary (by omega) d), ?_⟩
-    exact (L.base_index _).trans
-      ((RelativeLadderLayer.old_index I.boundary (by omega) d).trans hd)
+/-- The original face lifts at all cutoffs give bountifulness at the full height. -/
+theorem full_bountiful : (L).rows.IsBountiful := by
+  apply EffectiveGradeLifting.bountiful_of_same_grade
+  intro S U i hS hU hSU
+  rw [build_plan I F hroot hA hB hC t₀ (by omega)] at hS hU
+  have hu := Plan.mem_gradedPlan.mp hU
+  have hcard : U.card ≤ A.card := Finset.card_le_card (I.isPlan.subset_of_mem hu.1)
+  have hui : i ≤ U.card := hu.2.2
+  have hi : i ≤ t₀ + 2 := by omega
+  exact I.same_grade_of_faces ((L).face I.leftFace hB.not_ge) ((L).face I.rightFace hC.not_ge)
+    hB.subset hC.subset hcover
+    (fun h => (LowOnlyPaddedFibre.donorNative I F hroot hA hB hC).capped_clause
+      I.consistent hB t₀ (by omega) (Plan.mem_gradedPlan.mp h).2.1 hi)
+    (fun h => (LowOnlyPaddedFibre.privateNative I F hroot hA hB hC).capped_clause
+      I.consistent hC t₀ (by omega) (Plan.mem_gradedPlan.mp h).2.1 hi)
+    hS hU hSU
 
-/-- At the ambient height every permitted graded pair is covered. -/
-theorem full_bountiful :
-    (build I F hroot hA hB hC (A.card - 2) (by omega)).rows.IsBountiful := by
-  intro U V hU hV h _
-  have hv : V.2 ≤ A.card - 2 + 2 := by
-    have hV' := Plan.mem_gradedPlan.mp hV
-    have hscope :=
-      (build I F hroot hA hB hC (A.card - 2) (by omega)).carrier.isPlan.subset_of_mem hV'.1
-    have hb := hV'.2.2.trans (Finset.card_le_card hscope)
-    omega
-  exact build_lifting I F hroot hA hB hC hcover (A.card - 2) (by omega) hU hV h hv
-
-theorem full_complete :
-    (build I F hroot hA hB hC (A.card - 2) (by omega)).carrier.IsComplete := by
-  intro J hJ
-  have hJ' := Plan.mem_gradedPlan.mp hJ
-  have hscope :=
-    (build I F hroot hA hB hC (A.card - 2) (by omega)).carrier.isPlan.subset_of_mem hJ'.1
-  have hb := hJ'.2.2.trans (Finset.card_le_card hscope)
-  apply complete_through I F hroot hA hB hC hcover (A.card - 2) (by omega) _ (by omega)
-  rwa [build_plan] at hJ
+theorem full_complete : (L).carrier.IsComplete := by
+  rintro ⟨S, j⟩ hJ
+  rw [build_plan I F hroot hA hB hC t₀ (by omega)] at hJ
+  obtain ⟨hS, hj, hcard⟩ := Plan.mem_gradedPlan.mp hJ
+  by_cases h : S = A
+  · subst S
+    change j ≤ A.card at hcard
+    exact (L).full_occupied (by omega) j hj (by omega)
+  · obtain ⟨d, hd⟩ := (I.occupied_iff hJ).mpr (hcover S hS h)
+    exact ⟨(L).original d, ((L).original_index d).trans hd⟩
 
 end
+
 end VaughtConjecture.Knight.LowOnlyPaddedLiftingInduction

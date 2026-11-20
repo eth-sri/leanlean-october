@@ -9,17 +9,6 @@ public import VaughtConjecture.Knight.CofinalEnumeration
 public import VaughtConjecture.Knight.LimitOfChain
 public import VaughtConjecture.Knight.PartialExpansion
 
-/-! # Countable-limit expansion existence
-
-A model that expands, on its own carrier, to every block below a countable limit `l` expands
-to block `l` (`exists_model_at_limit_of_forall_lt`): choose a cofinal `ℕ`-sequence of blocks
-(countability of `l` supplies the enumeration; the carrier need not be countable), take the
-unique partial expansions at those blocks — coherent by expansion uniqueness — and apply the
-constructed model-limit theorem.  This is the limit branch of the canonical-stop argument with
-the stop rank replaced by an arbitrary countable limit and the lower witnesses supplied as a
-hypothesis; `CanonicalStop` and the expansion-domain continuity theorem are its clients.
-No stopping rank, termination, or terminal classification is used. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.KnightRealization

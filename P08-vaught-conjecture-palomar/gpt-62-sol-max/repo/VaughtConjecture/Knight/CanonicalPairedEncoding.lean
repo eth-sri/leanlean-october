@@ -7,18 +7,12 @@ module
 
 public import VaughtConjecture.Knight.PairedSlotProfiles
 
-/-! # Canonical paired normalization
-
-The canonical inventory uses fixed points of paired normalization, not all short
-coded profiles. These scalar facts retain the complete finite field inventory.
-They do not change the refuted `PairedMixedGradeLayers` construction.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedEncoding
+
 open Transform Value ExtOrd PairedSlotEncoding
+
 noncomputable section
 
 def codeOrd (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : Ordinal.{0} :=
@@ -28,12 +22,10 @@ def codedValues (j : ℕ) (S : Finset Ordinal.{0}) : Finset Ordinal.{0} :=
   S.image (codeOrd j S)
 
 theorem codeOrd_finitePart (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
-    finitePart (codeOrd j S a) = offset j S a := by
-  exact finitePart_mul_add _ _
+    finitePart (codeOrd j S a) = offset j S a := finitePart_mul_add _ _
 
 theorem codeOrd_limitPart (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
-    limitPart (codeOrd j S a) = Ordinal.omega0 * block j S a := by
-  exact limitPart_mul_add _ _
+    limitPart (codeOrd j S a) = Ordinal.omega0 * block j S a := limitPart_mul_add _ _
 
 theorem orbit_codeOrd_iff {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
     (ha : a ∈ S) : Orbit j (codedValues j S) (codeOrd j S a) ↔ Orbit j S a := by
@@ -44,13 +36,10 @@ theorem orbit_codeOrd_iff {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
     rw [codeOrd_finitePart] at hbj
     have hob : Orbit j S b := by
       by_contra hn
-      simp only [offset, ite_eq_right hn, lt_self_iff_false] at hbj
+      simp [offset, ite_eq_right hn, lt_self_iff_false] at hbj
     have he : block j S b = block j S a := by
       simp only [codeOrd_limitPart] at hba
-      have h := congrArg blockIdx hba
-      have hz (n : ℕ) : blockIdx (Ordinal.omega0 * n) = (n : Ordinal.{0}) := by
-        simpa only [Nat.cast_zero, add_zero] using blockIdx_mul_add n 0
-      simpa only [hz, Nat.cast_inj] using h
+      aesop
     by_contra hoa
     simp only [block, ite_eq_left hob, ite_eq_right hoa] at he
     omega
@@ -59,8 +48,8 @@ theorem orbit_codeOrd_iff {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
     have hob := orbit_of_invisible hb hbj
     refine ⟨by rw [codeOrd_finitePart]; exact offset_le _ _ _,
       codeOrd j S b, Finset.mem_image_of_mem _ hb, ?_, ?_⟩
-    · simpa only [codeOrd_finitePart, offset, ite_eq_left hob] using hbj
-    · simp only [codeOrd_limitPart, block_eq_of_key_eq hb ha hk]
+    · simpa [codeOrd_finitePart, offset, ite_eq_left hob] using hbj
+    · simp [codeOrd_limitPart, block_eq_of_key_eq hb ha hk]
 
 theorem key_codeOrd_eq_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
     (ha : a ∈ S) (hb : b ∈ S) (hk : key j S a = key j S b) :
@@ -70,10 +59,10 @@ theorem key_codeOrd_eq_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordin
   have he := block_eq_of_key_eq ha hb hk
   by_cases hoa : Orbit j S a
   · have hob := (orbit_iff_of_key_eq ha hb hk).mp hoa
-    simp only [key, ite_eq_left ((orbit_codeOrd_iff ha).mpr hoa),
+    simp [key, ite_eq_left ((orbit_codeOrd_iff ha).mpr hoa),
       ite_eq_left ((orbit_codeOrd_iff hb).mpr hob), codeOrd_limitPart, he]
   · have hob : ¬ Orbit j S b := fun h => hoa ((orbit_iff_of_key_eq ha hb hk).mpr h)
-    have hab : a = b := by simpa only [key, ite_eq_right hoa, ite_eq_right hob] using hk
+    have hab : a = b := by simpa [key, ite_eq_right hoa, ite_eq_right hob] using hk
     rw [hab]
 
 theorem key_codeOrd_lt_of_key_lt {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
@@ -154,13 +143,14 @@ theorem encode_codeOrd {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
   have hr := rank_codeOrd (j := j) ha
   by_cases ho : Orbit j S a
   · have hc := (orbit_codeOrd_iff ha).mpr ho
-    simp only [encode, block, offset, ite_eq_left ho, ite_eq_left hc, hr,
+    simp [encode, block, offset, ite_eq_left ho, ite_eq_left hc, hr,
       codeOrd_finitePart]
   · have hc : ¬ Orbit j (codedValues j S) (codeOrd j S a) :=
       fun h => ho ((orbit_codeOrd_iff ha).mp h)
-    simp only [encode, block, offset, ite_eq_right ho, ite_eq_right hc, hr]
+    simp [encode, block, offset, ite_eq_right ho, ite_eq_right hc, hr]
 
 section Profile
+
 variable {X : Type*} [Fintype X]
 
 theorem values_normalize (j : ℕ) (p : X → ExtOrd) :
@@ -172,7 +162,7 @@ theorem values_normalize (j : ℕ) (p : X → ExtOrd) :
   · rintro ⟨d, hd⟩
     rcases ExtOrd.cases (p d) with hb | ht | ⟨b, hb⟩
     · simp only [PairedSlotEncoding.normalize, hb] at hd
-      exact (ofOrd_ne_bot _ hd.symm).elim
+      trivial
     · simp only [PairedSlotEncoding.normalize, ht] at hd
       exact (ofOrd_ne_top _ hd.symm).elim
     · exact ⟨b, mem_values.mpr ⟨d, hb⟩, ofOrd_inj.mp ((normalize_ofOrd hb).symm.trans hd)⟩
@@ -186,11 +176,13 @@ theorem normalize_idempotent (j : ℕ) (p : X → ExtOrd) :
     normalize j (normalize j p) = normalize j p := by
   funext d
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
-  · simp only [PairedSlotEncoding.normalize, hb]
-  · simp only [PairedSlotEncoding.normalize, ht]
+  · simp [PairedSlotEncoding.normalize, hb]
+  · simp [PairedSlotEncoding.normalize, ht]
   · rw [normalize_ofOrd (normalize_ofOrd ha), values_normalize, normalize_ofOrd ha]
     exact encode_codeOrd (mem_values.mpr ⟨d, ha⟩)
 
 end Profile
+
 end
+
 end VaughtConjecture.Knight.CanonicalPairedEncoding

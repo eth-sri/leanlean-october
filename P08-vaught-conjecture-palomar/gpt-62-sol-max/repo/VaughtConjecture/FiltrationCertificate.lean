@@ -7,23 +7,12 @@ module
 
 public import VaughtConjecture.DomainSeparation
 
-/-! # A filtration certificate for counting and homogeneous observations
-
-The construction supplies decreasing domains, countable successor losses, limit continuity,
-cofinally nonempty losses, and homogeneous observations separating points. Standard countable
-loss induction and separation then give cardinality `ℵ₁` and a countable truth side for each
-observation. No stopping rank, eventual departure, or descriptive-set dichotomy is assumed.
-
-The class presentation is in `Type 1`, matching the existing cardinality theorem. Observations
-may live in any universe. The logic/DST application, including actual-satisfaction readback,
-is separate in `Spectrum.FiltrationCertificate`.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture
 
 open Cardinal Set
+
 universe u
 
 /-- Explicit receipts for the generic filtration argument. Homogeneity only needs some
@@ -43,24 +32,22 @@ structure FiltrationCertificate (Q : Type 1) (O : Type u) (truth : O → Q → P
 namespace FiltrationCertificate
 
 variable {Q : Type 1} {O : Type u} {truth : O → Q → Prop}
+
 variable (c : FiltrationCertificate Q O truth)
 
 /-- Countable losses accumulate to countable complements below `ω₁`. -/
 theorem compl_countable {β : Ordinal.{0}} (hβ : β < (aleph 1).ord) :
     (c.domain β)ᶜ.Countable :=
-  CountableLoss.compl_countable_of_loss c.domain c.zero c.loss_countable c.limit β hβ
+  InfinitaryLogic.compl_countable_of_loss c.domain c.zero c.loss_countable c.limit β hβ
 
 /-- Separation bounds the persistent core by one point, without proving it empty. -/
 theorem persistent_core_countable : (⋂ ξ < (aleph 1).ord, c.domain ξ).Countable := by
   apply Set.Subsingleton.countable
   intro p hp q hq
-  exact DomainSeparation.persistent_subsingleton_of_separation
-    (fun i : {ξ : Ordinal.{0} // ξ < (aleph 1).ord} => (· ∈ c.domain i.1))
-    truth c.separates (fun s => by
-      obtain ⟨ξ, hξ, h⟩ := c.homogeneous s
-      exact ⟨⟨ξ, hξ⟩, h⟩)
-    p q (fun i => Set.mem_iInter₂.mp hp i.1 i.2)
-    (fun i => Set.mem_iInter₂.mp hq i.1 i.2)
+  by_contra hne
+  obtain ⟨s, hs⟩ := c.separates p q hne
+  obtain ⟨ξ, hξ, h⟩ := c.homogeneous s
+  exact hs (h p (Set.mem_iInter₂.mp hp ξ hξ) q (Set.mem_iInter₂.mp hq ξ hξ))
 
 include c in
 /-- Counting uses only the countable persistent core, not eventual departure. -/
@@ -69,4 +56,5 @@ theorem cardinality : #Q = aleph 1 :=
     (fun _ h => c.compl_countable h) c.persistent_core_countable c.cofinal_losses
 
 end FiltrationCertificate
+
 end VaughtConjecture

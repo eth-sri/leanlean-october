@@ -7,13 +7,6 @@ module
 
 public import VaughtConjecture.Knight.Rank
 
-/-! # Cofinal enumeration of countable limits
-
-The `ℕ`-indexed cofinal-sequence machinery for countable limit ordinals — enumeration below
-`ω₁`, running maxima, cofinality, and its descent to block levels.  Extracted from
-`LimitRankSupply.lean` so that the rank spine (intrinsic termination, the canonical stop
-witness, the canonical tower) can assemble countable limits without the receipt cone. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -21,8 +14,6 @@ namespace VaughtConjecture.Knight
 open TypeTower
 
 universe w
-
-/-! ### An `ℕ`-indexed cofinal sequence in a countable limit ordinal -/
 
 /-- **Enumeration of a countable ordinal**: below `ω₁`, the ordinals `< γ` are the range
 of an `ℕ`-indexed sequence (surjective enumeration of `Set.Iio γ`; countable choice
@@ -38,9 +29,9 @@ theorem exists_nat_enum_lt {γ : Ordinal.{0}} (hγ₁ : γ < (Cardinal.aleph 1).
   have : Countable (Set.Iio γ) := Cardinal.mk_le_aleph0_iff.mp hmk
   have : Nonempty (Set.Iio γ) := ⟨⟨0, h0⟩⟩
   obtain ⟨f, hf⟩ := exists_surjective_nat (Set.Iio γ)
-  refine ⟨fun n => (f n).1, fun n => (f n).2, fun ξ hξ => ?_⟩
+  refine ⟨fun n => (f n).1, by grind, fun ξ hξ => ?_⟩
   obtain ⟨n, hn⟩ := hf ⟨ξ, hξ⟩
-  exact ⟨n, congrArg Subtype.val hn⟩
+  grind
 
 /-- The running-maxima cofinal sequence over an enumeration `g`, with DEFINITIONAL base
 `β` (`cofSeq β g 0` reduces to `β`, so the recursion state at index `0` is the base

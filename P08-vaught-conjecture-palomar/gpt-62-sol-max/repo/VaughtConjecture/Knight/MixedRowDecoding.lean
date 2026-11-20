@@ -8,21 +8,14 @@ module
 public import VaughtConjecture.Knight.SourceBlockLocalityTransport
 public import VaughtConjecture.Knight.OwnerwiseDecoding
 
-/-! # Decode short new rows and long original rows together
-
-At each owner, either its row is short at its own grade, or the outer witness
-reflects bottom on its actual lower-domain values. The former uses repaired
-composition; the latter uses the source-block criterion. No global bottom
-reflection, shortness of original rows, or lawful-image hypothesis is needed.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.SharpWitnessComposition
+
 open Transform Value ExtOrd
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable {sem : Semantics D} {BJ : Finset ι × ℕ}
 
 /-- Ownerwise mixed transport: short new rows and finitely reflecting old rows
@@ -41,7 +34,7 @@ theorem map_respects_of_short_or_reflecting {r : D.below BJ → ExtOrd}
   · exact Or.inl hs
   · right
     have hlocal := (map_respects_iff_rowBlockBottom (hr.mono c.2)
-      (fun d => d.2.2.trans (hK c)) (boundedMap_of_witness hν)).mpr
+      (fun d => d.2.2.trans (hK c)) (hν.bounded)).mpr
       (rowBlockBottom_of_same_pattern (rowBlockBottom_of_respects (hr.mono c.2)) hb)
     exact hlocal.locality ⟨c.1, GradedLe.refl _⟩
 

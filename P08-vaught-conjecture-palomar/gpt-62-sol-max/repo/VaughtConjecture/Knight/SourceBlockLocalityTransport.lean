@@ -7,38 +7,11 @@ module
 
 public import VaughtConjecture.Knight.PrefixFaithfulInterpolation
 
-/-! # Positive-cap agreement repairs locality composition
-
-For a bounded-commuting scalar image of a respecting labelling, the only remaining
-locality condition is the capped bottom pattern on each actual source block.
-This is necessary and sufficient, independent of off-row witness choices.
-Agreement below any nonbottom cap with a respecting ambient supplies that pattern.
-No global faithful outer shifter, bottom reflection, or extra visibility grade is
-needed. This does not construct the scalar map or the replacement base labelling.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.SharpWitnessComposition
 
 open Transform Value ExtOrd
-
-/-- A normalized witness supplies bounded commutation at its own grade. -/
-theorem boundedMap_of_witness {m : ℕ} {τ : ExtOrd → ExtOrd}
-    (hτ : Witness (gTop m) τ) : BoundedMap m τ where
-  bot := hτ.bot
-  mono := hτ.mono
-  comm x k i hk hi := hτ.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi
-
-/-- The outer scalar map needs bounded commutation, not a global faithful witness. -/
-theorem BoundedMap.comp_witness {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
-    (hν : BoundedMap K ν) (hσ : Witness (gTop m) σ) (hmK : m ≤ K) :
-    BoundedMap m (ν ∘ σ) where
-  bot := by simp only [Function.comp_apply, hσ.bot, hν.bot]
-  mono := hν.mono.comp hσ.mono
-  comm x k i hk hi := by
-    simp only [Function.comp_apply]
-    rw [(boundedMap_of_witness hσ).comm x k i hk hi, hν.comm _ k i (hk.trans hmK) hi]
 
 section Scheme
 
@@ -81,7 +54,7 @@ theorem map_respects_iff_rowBlockBottom {r : D.below BJ → ExtOrd}
       classical
       let _ := Fintype.ofFinite (D.below (D.cell c.1))
       let s := Finset.univ.image (sem.E c.1)
-      let hf := hν.comp_witness (C.witness c) (hK c)
+      let hf := hν.comp (C.witness c).bounded (hK c)
       have hbs : BlockBottom s (ν ∘ C.shift c) := by
         intro x hx y hy hxy hz
         obtain ⟨d, _, rfl⟩ := Finset.mem_image.mp hx
@@ -90,13 +63,11 @@ theorem map_respects_iff_rowBlockBottom {r : D.below BJ → ExtOrd}
         change ν (C.shift c (sem.E c.1 d)) = ⊥ at hz
         rw [C.read c d, hν.mono.map_min] at hz
         rw [C.read c e, hν.mono.map_min]
-        exact hb c d e hxy hz
+        tauto
       obtain ⟨τ, hτ, hread⟩ := (hf.interpolate_iff_source_blocks s).mpr hbs
-      apply hτ.transformsTo
+      apply hτ.transformsTo_top (fun d => d.2.2)
       intro d
-      have hd : D.grade d.1 ≤ D.grade c.1 := d.2.2
-      rw [gTop_of_le hd, min_top_right,
-        hread _ (Finset.mem_image.mpr ⟨d, Finset.mem_univ _, rfl⟩)]
+      rw [hread _ (Finset.mem_image.mpr ⟨d, Finset.mem_univ _, rfl⟩)]
       change min (ν (r (CellScheme.below.incl c d))) (ν (r c)) =
         ν (C.shift c (sem.E c.1 d))
       rw [C.read c d, hν.mono.map_min]
@@ -111,19 +82,14 @@ theorem rowBlockBottom_of_same_pattern {q r : D.below BJ → ExtOrd}
   have he (c : D.below BJ) (d : D.below (D.cell c.1)) :
       min (r (CellScheme.below.incl c d)) (r c) = ⊥ ↔
         min (q (CellScheme.below.incl c d)) (q c) = ⊥ := by
-    simp only [min_eq_bot, hpattern]
+    simp_all
   intro c d e hb hz
   exact (he c e).mpr (hq c d e hb ((he c d).mp hz))
 
 /-- Capped agreement at a nonbottom cap preserves the cellwise bottom flag. -/
 theorem bottom_pattern_of_cap_agreement {X : Type*} {q r : X → ExtOrd} {γ : ExtOrd}
     (hγ : γ ≠ ⊥) (hag : ∀ d, min (r d) γ = min (q d) γ) :
-    ∀ d, r d = ⊥ ↔ q d = ⊥ := by
-  intro d
-  have h := hag d
-  have hr : min (r d) γ = ⊥ ↔ r d = ⊥ := by simp only [min_eq_bot, hγ, or_false]
-  have hq : min (q d) γ = ⊥ ↔ q d = ⊥ := by simp only [min_eq_bot, hγ, or_false]
-  rw [← hr, ← hq, h]
+    ∀ d, r d = ⊥ ↔ q d = ⊥ := by grind
 
 /-- Positive-cap agreement supplies all the source-block checks. The transformed labelling's
 respect is a conclusion, not an assumption. The cap need not satisfy a visibility hypothesis. -/

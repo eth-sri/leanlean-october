@@ -8,92 +8,6 @@ module
 public import VaughtConjecture.Knight.Terminal
 public import VaughtConjecture.DirectedNat
 
-/-! # Model-internal directedness of labelled covers (#51 (1/3); §5.3)
-
-Boundary 1 of #51: the ambient order theory of Knight's §5.3 cover arguments, stated for an
-**arbitrary supplied model** (`IsModel` as a consumed hypothesis — no #121/#106/#42
-construction machinery; that independence is exactly what this boundary tests).
-
-The paper's Def. 5.3.9 and Lemma 5.3.10 quantify over "the finite subsets `A` of `M`" with
-their labels `M(A)`, ordered by inclusion (Def. 3.2.8).  The rebuilt form of that index set is
-the **labelled-cover poset** `KnightRealization.LabelledExt`: the labelled injective tuples of
-the one realization `R`, preordered by *"is a visible face of, with the labels restricting
-exactly"* — the same common-extension shape `StabilizesTo` (Def. 5.3.9, `Knight/Terminal.lean`)
-already quantifies with.  Four results, one per headline of the boundary:
-
-1. **Directedness** (`directed_labelledExt`, from the absorption lemma
-   `exists_labelledExt_le`): any two labelled covers of a model have a common labelled
-   extension.  The proof is *concatenate, cover, restrict*: concatenate the two tuples
-   (`exists_common_tuple`, pure combinatorics of injective tuples), cover the concatenation by
-   a labelled tuple (clause (3), `IsInitialSegmentCovering`), and read both labels back off the
-   covering label by exact consistency (clause (2), `IsExactParentConsistent`).
-
-2. **Dominating → coinitial upgrade** (`IsDominating.isCoinitial`,
-   `isCoinitial_iff_isDominating` — the Cor. 5.3.8 shape).  A set of covers is **dominating**
-   (`IsDominating`) when every labelled cover has a member above it — for a model this is
-   exactly Def. 5.3.9's "dominating set of finite subsets", quantifying over arbitrary tuples
-   (`isDominating_iff`); it is **coinitial** (`IsCoinitial`) when above every labelled
-   cover it contains a whole principal tail.  Dominating does *not* imply coinitial in a
-   directed preorder; the upgrade consumes the **Lemma 5.3.7 ratchet** in poset form
-   (`IsRatcheted`: once the property is lost above a member it never returns — the "stays
-   fixed or jumps to `≥ α + K^q`, irreversibly" content of the ratchet).  Instantiating
-   `IsRatcheted` for the provisional-value sets `stableSet` *is* Lemma 5.3.7 proper
-   (provisional-value row arithmetic over given types), deferred to the later boundaries of
-   #51; the bridge `stabilizesTo_iff_isDominating` already identifies Def. 5.3.9's
-   dominating form with poset domination of `stableSet`.
-
-3. **Finite intersections of coinitial tails are coinitial** (`isCoinitial_biInter`,
-   `isCoinitial_biInter_tail`; binary form `IsCoinitial.inter`).  Coinitial sets are
-   closed under finite intersection — the filter fact behind Lemma 5.3.10's "sufficiently
-   large cover" (one stabilization/escape tail per cell of the finite `dom p`, then one cover
-   in the intersection); dominating sets are **not** so closed, which is why the Cor. 5.3.8
-   upgrade is load-bearing.  Directedness enters through `isCoinitial_tail`: the
-   principal tails themselves are coinitial, so the tails of a model generate a filter.
-
-4. **Top-grade growth** (`StageType.topGrade_le_of_typeMap_eq_some`, `growthSet`,
-   `HasTopGradeGrowth`, `HasTopGradeGrowth.isCoinitial_growthSet`).  `K^p` (`topGrade`,
-   Def. 5.3.1) is weakly increasing along the cover order: exact restriction preserves the
-   `∞`-label and the grade of a top cell into the bigger type, and availability
-   (Def. 2.5.4(2)) + completeness (Def. 2.5.15) produce a full-scope `∞`-cell of the same
-   grade there (`grade_mem_topGrades`).  Hence the growth sets `{q : K < K^q}` are upward
-   closed, upward-closed sets are ratcheted for free (`isRatcheted_of_upwardClosed`), and the
-   **growth branch** of Lemma 5.3.10's dichotomy — for every `K` the growth set is dominating
-   (`HasTopGradeGrowth`, mirroring `StabilizesTo`'s dominating form;
-   `hasTopGradeGrowth_iff` is the tuple-quantified reading) — upgrades to: *every
-   sufficiently large cover has top grade `> K`* (the growth sets are coinitial).
-
-## Cor. 5.3.8 without amalgamation
-
-The printed Cor. 5.3.8 cites "amalgamation" for the dominating ↔ coinitial equivalence.  Here
-the equivalence is **model-internal**: directedness of the labelled covers comes from clauses
-(2) and (3) of Def. 3.2.1 alone (concatenate, cover, restrict), and the upgrade itself is pure
-order theory over that poset.  No §4.3 completion, no `ExtendsDomain`, no #106 producer, and
-no S-level amalgamation (Cor. 4.3.22 → 4.3.19) is touched (`docs/CONCORDANCE.md` §5.3).
-
-## The falsification test of #51 — outcome
-
-**The construction needs NO named-coface realization service — covering and exact consistency
-suffice.**  Boundary 1 had to decide whether covering, consistency, the realized request
-families, and `StabilizesTo` prove existence of the required sufficiently large labelled cover
-without such a service; they do, and less was needed: every theorem in this module consumes
-only clause (2) (exact consistency) and clause (3) (initial-segment covering) — each
-realization-facing lemma is **stated with exactly those minimal hypotheses**
-(`IsExactParentConsistent`, `IsInitialSegmentCovering`; covering alone for
-`nonempty_labelledExt`), and the full-`IsModel` signatures are kept only as one-line
-convenience wrappers delegating to the cores; the
-four existential-closure clauses of `IsModel` are never consulted, no coface is manufactured,
-and no realization service (named or otherwise) appears.  The "sufficiently large cover" of
-Lemma 5.3.10 is a member of a finite intersection of coinitial sets over the model's **own**
-labelled covers (headline 3), whose coinitiality is supplied by headlines 2 and 4.  The one
-remaining §5.3 obligation feeding this route — that the provisional-value sets `stableSet` are
-ratcheted (Lemma 5.3.7) — is a statement about *given* stage types under `typeMap` and exact
-consistency, not about any extension producer; it is deferred to #51's later boundaries, not
-to a serviced object.
-
-Guardrails honoured: the `∨`-branching of prolongation stays classical control flow (no
-`P ∨ ¬P` theorem is a milestone here); no exact-coface service; no global transitivity of `⇒`
-(`TransformsTo` is not mentioned); no new fields on `SemScheme` or `IsModel`. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -101,12 +15,6 @@ namespace VaughtConjecture.Knight
 open TypeTower
 
 universe w
-
-/-! ### Concatenation of injective tuples
-
-The combinatorial half of "concatenate, cover, restrict": two injective tuples embed jointly
-into a single injective tuple, the first as its initial segment (`t` first, then the points of
-`s` not on `t`).  Pure `Fin`/`Finset` bookkeeping; no realization is involved. -/
 
 /-- Any two injective tuples `t`, `s` on `M` jointly embed into one injective tuple: `t` is an
 initial segment, and `s` embeds via `g`. -/
@@ -116,61 +24,42 @@ theorem exists_common_tuple {M : Type w} {n m : ℕ} (t : Fin n ↪ M) (s : Fin 
   classical
   set B : Finset M := Finset.univ.image s \ Finset.univ.image t with hBdef
   have hBt : ∀ b ∈ B, b ∉ Set.range t := by
-    rintro b hb ⟨j, hj⟩
-    exact (Finset.mem_sdiff.mp hb).2 (Finset.mem_image.mpr ⟨j, Finset.mem_univ _, hj⟩)
+    simp_all
   let e : Fin B.card → M := fun j => (B.equivFin.symm j : M)
-  have he : Function.Injective e := fun i j hij =>
-    B.equivFin.symm.injective (Subtype.coe_injective hij)
   have hte : ∀ (a : Fin n) (b : Fin B.card), t a ≠ e b := by
-    intro a b hab
-    exact hBt _ (B.equivFin.symm b).2 ⟨a, hab⟩
+    grind
   have hwinj : Function.Injective (Fin.append (⇑t) e) := by
     intro i j hij
     induction i using Fin.addCases with
     | left i₁ =>
       induction j using Fin.addCases with
       | left j₁ =>
-        rw [Fin.append_left, Fin.append_left] at hij
-        exact congrArg (Fin.castAdd B.card) (t.injective hij)
+        simp_all
       | right j₁ =>
-        rw [Fin.append_left, Fin.append_right] at hij
-        exact absurd hij (hte i₁ j₁)
+        simp_all
     | right i₁ =>
       induction j using Fin.addCases with
       | left j₁ =>
         rw [Fin.append_right, Fin.append_left] at hij
-        exact absurd hij.symm (hte j₁ i₁)
+        tauto
       | right j₁ =>
-        rw [Fin.append_right, Fin.append_right] at hij
-        exact congrArg (Fin.natAdd n) (he hij)
+        aesop
   let w : Fin (n + B.card) ↪ M := ⟨Fin.append (⇑t) e, hwinj⟩
-  have hw_left : ∀ j : Fin n, w (Fin.castAdd B.card j) = t j := fun j =>
-    Fin.append_left (⇑t) e j
-  have hw_right : ∀ j : Fin B.card, w (Fin.natAdd n j) = e j := fun j =>
-    Fin.append_right (⇑t) e j
+  have hw_left : ∀ j : Fin n, w (Fin.castAdd B.card j) = t j := by aesop
   have hmem : ∀ i : Fin m, (¬ ∃ j, t j = s i) → s i ∈ B := by
-    intro i hi
-    refine Finset.mem_sdiff.mpr ⟨Finset.mem_image.mpr ⟨i, Finset.mem_univ _, rfl⟩, ?_⟩
-    intro hmem'
-    obtain ⟨j, -, hj⟩ := Finset.mem_image.mp hmem'
-    exact hi ⟨j, hj⟩
+    simp_all
   obtain ⟨g0, hg0⟩ : ∃ g0 : Fin m → Fin (n + B.card), ∀ i, w (g0 i) = s i := by
     refine ⟨fun i => if h : ∃ j, t j = s i then Fin.castAdd B.card h.choose
       else Fin.natAdd n (B.equivFin ⟨s i, hmem i h⟩), fun i => ?_⟩
     dsimp only
     by_cases h : ∃ j, t j = s i
-    · rw [dite_eq_left h, hw_left]
-      exact h.choose_spec
-    · rw [dite_eq_right h, hw_right]
-      exact congrArg Subtype.val (B.equivFin.symm_apply_apply _)
-  refine ⟨B.card, w, ⟨g0, fun i j hij => s.injective (by rw [← hg0 i, ← hg0 j, hij])⟩, ?_, ?_⟩
+    · grind
+    aesop
+  refine ⟨B.card, w, ⟨g0, fun i j hij => s.injective (by grind)⟩, ?_, ?_⟩
   · ext j
-    simp only [Function.Embedding.trans_apply, Fin.castAddEmb_apply]
-    exact hw_left j
+    tauto
   · ext i
-    exact hg0 i
-
-/-! ### `K^p` is weakly increasing along exact restriction -/
+    tauto
 
 namespace StageType
 
@@ -194,12 +83,9 @@ theorem topGrade_le_of_typeMap_eq_some {q : S α n} {p : S α m} {f : Fin m ↪ 
     exact le_csSup q.topGrades_bddAbove hmem
   · rw [Set.not_nonempty_iff_eq_empty] at hne
     unfold topGrade
-    rw [hne]
-    simp [csSup_empty]
+    simp_all
 
 end StageType
-
-/-! ### The labelled-cover poset -/
 
 namespace KnightRealization
 
@@ -238,8 +124,7 @@ instance : Preorder (LabelledExt R) where
     rintro ⟨f, hft, hfp⟩ ⟨g, hgt, hgp⟩
     refine ⟨f.trans g, ?_, ?_⟩
     · rw [Function.Embedding.trans_assoc, hgt, hft]
-    · rw [← typeMap_trans f g z.type y.type hgp]
-      exact hfp
+    · rwa [← typeMap_trans f g z.type y.type hgp]
 
 /-- `K^p` is weakly increasing along the labelled-cover order. -/
 theorem topGrade_mono {x y : LabelledExt R} (h : x ≤ y) :
@@ -250,13 +135,9 @@ theorem topGrade_mono {x y : LabelledExt R} (h : x ≤ y) :
 /-- The principal **tail** above a labelled cover: all labelled covers extending it. -/
 def tail (x : LabelledExt R) : Set (LabelledExt R) := {y | x ≤ y}
 
-@[simp] theorem mem_tail {x y : LabelledExt R} : y ∈ x.tail ↔ x ≤ y := Iff.rfl
-
 end LabelledExt
 
 variable {R : KnightRealization α M}
-
-/-! ### Directedness: covering + consistency give common larger labelled covers -/
 
 /-- **Absorption** (minimal hypotheses — clauses (2) and (3) suffice): above any labelled
 cover there is a labelled cover containing any prescribed tuple.  *Concatenate*
@@ -270,16 +151,14 @@ theorem exists_labelledExt_le (hcons : R.IsExactParentConsistent)
   obtain ⟨k', u, hu, husome⟩ := hcov w
   obtain ⟨q, hq⟩ := Option.isSome_iff_exists.mp husome
   have htuple : ((Fin.castAddEmb k).trans (Fin.castAddEmb k')).trans u = x.tuple := by
-    rw [Function.Embedding.trans_assoc, hu]
-    exact hwt
+    aesop
   have htype : typeMap ((Fin.castAddEmb k).trans (Fin.castAddEmb k')) q = some x.type := by
     have h := hcons u q ((Fin.castAddEmb k).trans (Fin.castAddEmb k')) hq
     rw [htuple, x.eval_eq] at h
-    exact h.symm
+    tauto
   refine ⟨⟨_, u, q, hq⟩, ⟨(Fin.castAddEmb k).trans (Fin.castAddEmb k'), htuple, htype⟩,
     g0.trans (Fin.castAddEmb k'), ?_⟩
-  rw [Function.Embedding.trans_assoc, hu]
-  exact hws
+  aesop
 
 /-- Convenience wrapper of `exists_labelledExt_le` for a full model. -/
 theorem IsModel.exists_labelledExt_le (hR : R.IsModel) (x : R.LabelledExt) {m : ℕ}
@@ -298,7 +177,7 @@ theorem directed_labelledExt (hcons : R.IsExactParentConsistent)
   refine ⟨z, hxz, g, hg, ?_⟩
   have h := hcons z.tuple z.type g z.eval_eq
   rw [hg, y.eval_eq] at h
-  exact h.symm
+  tauto
 
 /-- A covering realization has labelled covers (clause (3) alone suffices: it labels an
 extension of the empty tuple). -/
@@ -306,8 +185,6 @@ theorem nonempty_labelledExt (hcov : R.IsInitialSegmentCovering) : Nonempty R.La
   obtain ⟨k, u, -, husome⟩ := hcov (Function.Embedding.ofIsEmpty : Fin 0 ↪ M)
   obtain ⟨q, hq⟩ := Option.isSome_iff_exists.mp husome
   exact ⟨⟨_, u, q, hq⟩⟩
-
-/-! ### Dominating and coinitial sets of covers (Def. 5.3.9 / Cor. 5.3.8 vocabulary) -/
 
 /-- A set of labelled covers is **dominating** when every labelled cover has a member above it
 (Def. 5.3.9's "dominating set"; for a model this quantification over labelled covers agrees
@@ -338,15 +215,11 @@ theorem isCoinitial_iff_eventually (hcons : R.IsExactParentConsistent)
   constructor
   · intro h
     obtain ⟨y, _, hy⟩ := h (Classical.arbitrary R.LabelledExt)
-    exact Filter.eventually_atTop.mpr ⟨y, hy⟩
+    aesop
   · intro h x
     obtain ⟨y, hy⟩ := Filter.eventually_atTop.mp h
     obtain ⟨z, hxz, hyz⟩ := exists_ge_ge x y
     exact ⟨z, hxz, fun w hw => hy w (hyz.trans hw)⟩
-
-/-! ### Finite intersections of coinitial tails -/
-
-/-! ### The stabilization sets of Def. 5.3.9 on the poset -/
 
 /-- The **stabilization set** of a cell: the labelled covers extending `x` on which the
 transported cell has provisional value `γ` (relationally, `IsProvisionalValue` — no chooser).
@@ -375,7 +248,7 @@ theorem stabilizesTo_iff_isDominating (hcons : R.IsExactParentConsistent)
     refine ⟨⟨_, u, q, hq⟩, ⟨f, hfu, hpq, hval⟩, g, hgu, ?_⟩
     have h := hcons u q g hq
     rw [hgu, x'.eval_eq] at h
-    exact h.symm
+    tauto
   · intro hD m s
     obtain ⟨k, u₀, hu₀, husome⟩ := hcov s
     obtain ⟨q₀, hq₀⟩ := Option.isSome_iff_exists.mp husome
@@ -384,10 +257,7 @@ theorem stabilizesTo_iff_isDominating (hcons : R.IsExactParentConsistent)
     obtain ⟨f, hf, hpq, hval⟩ := hzD
     refine ⟨z.arity, z.tuple, (Fin.castAddEmb k).trans e, f, z.type, hpq, z.eval_eq, ?_,
       hf, hval⟩
-    rw [Function.Embedding.trans_assoc, he']
-    exact hu₀
-
-/-! ### Top-grade growth -/
+    rwa [Function.Embedding.trans_assoc, he']
 
 /-- The **growth set** at threshold `K`: the labelled covers whose label has top grade
 (Def. 5.3.1's `K^p`) strictly above `K`.  Upward closed by `topGrade_mono`. -/

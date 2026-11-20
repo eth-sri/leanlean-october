@@ -5,20 +5,20 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReceivingGradeOneSourceCut
-
-/-! # Outgoing decoding at the constructed lower source cut
-
-Interpolate only the tracked fields and the cut. This produces a bounded
-replacement-commuting map, not an unjustified globally faithful composition.
-The tail decoder then restores the entire private prescription literally.
--/
+public import VaughtConjecture.Knight.SupportLadderRows
+public import VaughtConjecture.AmalgamationPlan.Plan
+public import VaughtConjecture.Knight.Domain
+public import Mathlib.Logic.Equiv.Fin.Basic
+public import VaughtConjecture.Knight.SharpWitnessComposition
+public import VaughtConjecture.Knight.ReceivingCatalogueIncidences
+public import VaughtConjecture.Knight.FullScopeBountiful
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingCutDecoder
+
 open Transform Value ExtOrd SharpWitnessComposition FullRowLifting
+
 noncomputable section
 
 /-- A finite visible ordered table plus its actual separating cut constructs
@@ -42,7 +42,7 @@ theorem exists_chart {X : Type*} [Finite X] {s v : X → ExtOrd} {δ γ : ExtOrd
     intro d
     cases d with
     | none => exact hγ
-    | some f => exact selfVis_min (hv f) hγ
+    | some f => grind
   have horder : ∀ d e, E d ≤ E e → t d ≤ t e := by
     intro d e h
     cases d with
@@ -50,17 +50,16 @@ theorem exists_chart {X : Type*} [Finite X] {s v : X → ExtOrd} {δ γ : ExtOrd
       cases e with
       | none => exact le_rfl
       | some f =>
-        have hhi : γ ≤ v f := not_lt.mp (fun hf => ((hcut f).mpr hf).not_ge h)
-        exact le_min hhi le_rfl
+        grind
     | some f =>
       cases e with
       | none => exact min_le_right _ _
-      | some g => exact min_le_min_right _ (hord f g h)
+      | some g => aesop
   have hzero : ∀ d, E d = ⊥ → t d = ⊥ := by
     intro d hd
     cases d with
-    | none => exact (hδb hd).elim
-    | some f => exact (congrArg (fun x => min x γ) (hbot f hd)).trans (min_bot_left _)
+    | none => trivial
+    | some f => aesop
   refine ⟨orderInterpolate E t, orderInterpolate_bounded hE ht,
     orderInterpolate_read horder hzero none, fun f => orderInterpolate_read horder hzero (some f)⟩
 
@@ -73,19 +72,9 @@ theorem extend_bounded (S : Finset Ordinal.{0}) {b : ℕ} {τ : ExtOrd → ExtOr
   · refine ⟨by rw [hτ.bot, min_bot_left], fun _ _ h => min_le_min_right _ (hτ.mono h), ?_⟩
     intro x k i hk hi
     rw [hτ.comm x k i hk hi, evr_min_of_selfVis hγ hk hi]
-  · exact boundedMap_of_witness (PaddedSourceDecoder.witness_release
-      (isStepShifter_canonicalDecoder (S := S) (K := 1)).normalizedWitness b)
-
-open CappedDonor CappedDonor.Ref ReceivingLadderCarrier ReceivingCatalogueSources
-variable {I : Type*} [Fintype I] {nP K : ℕ} {P : SemScheme (nP + 1)}
-  {C : SemScheme 2} {R : Ref I nP 2 2 P C} (L : R.LowRef K)
-
-local instance : Fintype (C.scheme.below (effC 2 1)) := Fintype.ofFinite _
-local notation "ℓ" => rungs (P := P) (C := C)
-
-variable (hC : C.scheme.plan = privatePlan) (request : Cell P.scheme)
-local notation "D" => carrier L hC
-local notation "E" => semantics L hC request
+  · exact (PaddedSourceDecoder.witness_release
+      (isStepShifter_canonicalDecoder (S := S) (K := 1)).normalizedWitness b).bounded
 
 end
+
 end VaughtConjecture.Knight.ReceivingCutDecoder

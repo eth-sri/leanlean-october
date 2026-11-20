@@ -8,40 +8,6 @@ module
 public import Mathlib.SetTheory.Ordinal.Arithmetic
 public import Mathlib.Order.WithBot
 
-/-! # Knight's ordinal labels: finite/limit parts, visibility replacement, truncation
-
-Ported from Knight-VC `KnightVC/Basic.lean` (`ExtOrd`) and `KnightVC/OrdinalOps.lean`
-@ f7c7847d (plus `IsNonSuccessor` from `PaperProtoFiber.lean`); `lemma_2_2_4` is renamed
-`extVisibilityReplace_self_iff`.  The canonical block levels `blockLevel` are new.
-
-The **label** of a cell (Knight, Def. 2.2.1) is a point of the extended ordinal line
-`{-∞} ∪ Ordinal ∪ {∞}`: the bottom label `-∞`, an ordinal, or the top label `∞`.  Here this is
-`ExtOrd := WithBot (WithTop Ordinal.{0})` with `⊥ = -∞`, `⊤ = ∞`, and `ExtOrd.ofOrd α` the
-ordinal `α`.  The ordinal universe is fixed at `Ordinal.{0}`, as in Knight-VC: the labels of
-the finite stage types are countable-ordinal data (every stage `α < ω₁` is an `Ordinal.{0}`),
-and a universe-polymorphic variant can be added later if a consumer needs it.
-
-The paper's idiosyncratic ordinal operations (Defs. 2.2.1–2.2.4) all rest on the unique
-decomposition `α = μ + n` of an ordinal into a **limit part** `μ` (zero or a limit) and a
-**finite part** `n < ω`:
-
-* `limitPart α := ω * (α / ω)`, `finitePart α` = the natural number `α % ω`, with
-  `decomposition : limitPart α + finitePart α = α`;
-* `ordinalReplace α m := limitPart α + m` (Def. 2.2.2) replaces the finite part by `m`;
-* `visibilityReplace α K m` (Def. 2.2.3) replaces it only when `finitePart α < K` (the
-  visibility threshold `K`), and `extVisibilityReplace` lifts this to labels, fixing `⊥`
-  and `⊤`; `extVisibilityReplace_self_iff` is Lemma 2.2.4 (self-visibility);
-* `truncExt α` is the (strict) vertical truncation of a label at stage `α` (Def. 3.1.2):
-  ordinals `≥ α` become the top label, ordinals `< α` are kept.  Its calculus
-  (`truncExt_compose`, `truncExt_truncExt`, `truncExt_mono`, `truncExt_id_of_bound`,
-  …) is what the vertical `reduce` of the Knight `TypeTower` instance (`Knight.Reduction`)
-  is built from; `truncExt_evr_comm` records that truncation commutes with visibility
-  replacement at every limit stage.  Knight-VC's non-strict truncation (which keeps the
-  boundary label `ofOrd α`, and does not commute with visibility replacement there) is not
-  used (decision #84; its comparison copy `legacyTruncExt` was retired with #88 (2/2));
-* `IsNonSuccessor` (zero or a limit) and the canonical block levels
-  `blockLevel ξ := ω + ω * ξ` (the ω-blocks of `docs/TERMINOLOGY.md`). -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -77,9 +43,6 @@ def ofOrd (α : Ordinal.{0}) : ExtOrd := ((α : WithTop Ordinal.{0}) : ExtOrd)
 @[simp] theorem ofOrd_lt_top (α : Ordinal.{0}) : ofOrd α < (⊤ : ExtOrd) :=
   WithBot.coe_lt_coe.mpr (WithTop.coe_lt_top α)
 
-@[simp] theorem not_top_le_ofOrd (α : Ordinal.{0}) : ¬ (⊤ : ExtOrd) ≤ ofOrd α :=
-  not_le_of_gt (ofOrd_lt_top α)
-
 @[simp] theorem not_ofOrd_le_bot (α : Ordinal.{0}) : ¬ ofOrd α ≤ (⊥ : ExtOrd) :=
   not_le_of_gt (bot_lt_ofOrd α)
 
@@ -89,16 +52,27 @@ theorem cases (x : ExtOrd) : x = ⊥ ∨ x = ⊤ ∨ ∃ α : Ordinal.{0}, x = o
   | bot => exact Or.inl rfl
   | coe y =>
     induction y using WithTop.recTopCoe with
-    | top => exact Or.inr (Or.inl rfl)
-    | coe α => exact Or.inr (Or.inr ⟨α, rfl⟩)
+    | top => simp_all
+    | coe α => tauto
+
+/-- For a map of the extended line, check monotonicity on ordinals and at the endpoints. -/
+theorem monotone_ofOrd {Y : Type*} [Preorder Y] {f : ExtOrd → Y}
+    (hbot : ∀ x, f ⊥ ≤ f x) (htop : ∀ x, f x ≤ f ⊤)
+    (hord : Monotone (f ∘ ofOrd)) : Monotone f := by
+  intro x y h
+  rcases cases x with rfl | rfl | ⟨a, rfl⟩
+  · exact hbot _
+  · rw [top_le_iff.mp h]
+  · rcases cases y with rfl | rfl | ⟨b, rfl⟩
+    · exact (not_ofOrd_le_bot a h).elim
+    · exact htop _
+    · exact hord (ofOrd_le_ofOrd.mp h)
 
 end ExtOrd
 
 namespace Value
 
 open Ordinal ExtOrd
-
-/-! ### Limit and finite parts -/
 
 /-- The limit part `μ` in the decomposition `α = μ + n` (`n < ω`), defined as `ω * (α / ω)`
 by the ordinal division algorithm. -/
@@ -114,10 +88,15 @@ theorem finitePart_spec (α : Ordinal.{0}) :
     (α % Ordinal.omega0 : Ordinal) = ↑(finitePart α) :=
   (Ordinal.lt_omega0.mp (Ordinal.mod_lt α Ordinal.omega0_ne_zero)).choose_spec
 
+theorem finitePart_natCast (n : ℕ) : finitePart (n : Ordinal.{0}) = n := by
+  have h := finitePart_spec (n : Ordinal.{0})
+  rw [Ordinal.mod_eq_of_lt (Ordinal.natCast_lt_omega0 n)] at h
+  exact_mod_cast h.symm
+
 /-- The fundamental decomposition `α = limitPart α + finitePart α`. -/
 theorem decomposition (α : Ordinal.{0}) : limitPart α + ↑(finitePart α) = α := by
   rw [limitPart, ← finitePart_spec]
-  exact Ordinal.div_add_mod α Ordinal.omega0
+  apply Ordinal.div_add_mod
 
 /-- `limitPart` is monotone. -/
 theorem limitPart_mono {γ δ : Ordinal.{0}} (h : γ ≤ δ) : limitPart γ ≤ limitPart δ :=
@@ -150,8 +129,6 @@ theorem limitPart_limitPart_add_nat (ξ : Ordinal.{0}) (i : ℕ) :
   have h := decomposition (limitPart ξ + i)
   rw [finitePart_limitPart_add_nat] at h
   exact (Ordinal.add_right_cancel i).mp h
-
-/-! ### Replacement of the finite part and visibility replacement -/
 
 /-- Replace the finite part of `α` by `m` (Knight, Def. 2.2.2). -/
 noncomputable def ordinalReplace (α : Ordinal.{0}) (m : ℕ) : Ordinal.{0} :=
@@ -186,13 +163,12 @@ theorem visibilityReplace_self_iff (α : Ordinal.{0}) (K : ℕ) :
     visibilityReplace α K K = α ↔ K ≤ finitePart α := by
   unfold visibilityReplace
   split_ifs with hlt
-  · refine ⟨fun h => ?_, fun hge => absurd hlt (not_lt.mpr hge)⟩
+  · refine ⟨fun h => ?_, by lia⟩
     exfalso
     have key : limitPart α + ↑K = limitPart α + ↑(finitePart α) :=
       h.trans (decomposition α).symm
-    have h2 : K = finitePart α := by exact_mod_cast add_left_cancel key
-    omega
-  · exact ⟨fun _ => not_lt.mp hlt, fun _ => rfl⟩
+    simp_all
+  simp_all
 
 /-- Self-visibility (Knight, Lemma 2.2.4): a label `γ` satisfies `γ = γ ⊔⁺_K K` iff it is the
 bottom label, the top label, or an ordinal whose finite part is at least `K`.
@@ -214,12 +190,7 @@ theorem extVisibilityReplace_self_iff (γ : ExtOrd) (K : ℕ) :
 /-- Self-visibility at threshold `k` implies self-visibility at every `k' ≤ k`. -/
 theorem extVisReplace_self_of_le {v : ExtOrd} {k k' : ℕ}
     (h : extVisibilityReplace v k k = v) (hle : k' ≤ k) :
-    extVisibilityReplace v k' k' = v := by
-  rw [extVisibilityReplace_self_iff] at h ⊢
-  rcases h with rfl | rfl | ⟨α, rfl, hfp⟩
-  · exact Or.inl rfl
-  · exact Or.inr (Or.inl rfl)
-  · exact Or.inr (Or.inr ⟨α, rfl, hle.trans hfp⟩)
+    extVisibilityReplace v k' k' = v := by grind [extVisibilityReplace_self_iff]
 
 /-- For a limit ordinal `α`, visibility replacement of an ordinal `≥ α` stays `≥ α`:
 `limitPart δ ≥ α`, so `ordinalReplace δ i = limitPart δ + i ≥ α`. -/
@@ -230,7 +201,7 @@ theorem visReplace_ge_of_ge_limit {α : Ordinal.{0}}
   unfold visibilityReplace
   split_ifs with hfp
   · exact le_trans (succLimit_le_limitPart hα hδ) le_self_add
-  · exact hδ
+  assumption
 
 /-- For a limit ordinal `α`, visibility replacement of an ordinal `< α` stays `< α`
 (`β < α → β + 1 < α`, iterated finitely often). -/
@@ -247,7 +218,7 @@ theorem visReplace_lt_of_lt_limit {α : Ordinal.{0}}
     | succ n ih =>
       rw [Nat.cast_succ, ← add_assoc]
       exact hα.succ_lt ih
-  · exact hδ
+  assumption
 
 /-- For a limit ordinal `α`, visibility replacement on labels preserves `ofOrd α ≤ ·`
 (`visReplace_ge_of_ge_limit` on ordinal labels; `⊤` is fixed). -/
@@ -255,10 +226,9 @@ theorem extVisReplace_ge_of_ge_limit {α : Ordinal.{0}} (hα : Order.IsSuccLimit
     {x : ExtOrd} (hx : ofOrd α ≤ x) (k i : ℕ) :
     ofOrd α ≤ extVisibilityReplace x k i := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨δ, rfl⟩
-  · exact absurd hx (not_ofOrd_le_bot α)
-  · exact le_top
-  · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
-    exact visReplace_ge_of_ge_limit hα (ofOrd_le_ofOrd.mp hx) k i
+  · assumption
+  · assumption
+  simp_all [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd, visReplace_ge_of_ge_limit]
 
 /-- For a limit ordinal `α`, visibility replacement on labels preserves `· < ofOrd α`
 (`visReplace_lt_of_lt_limit` on ordinal labels; `⊥` is fixed). -/
@@ -266,10 +236,9 @@ theorem extVisReplace_lt_of_lt_limit {α : Ordinal.{0}} (hα : Order.IsSuccLimit
     {x : ExtOrd} (hx : x < ofOrd α) (k i : ℕ) :
     extVisibilityReplace x k i < ofOrd α := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨δ, rfl⟩
-  · exact bot_lt_ofOrd α
-  · exact absurd hx (not_lt.mpr le_top)
-  · rw [extVisibilityReplace_ofOrd, ofOrd_lt_ofOrd]
-    exact visReplace_lt_of_lt_limit hα (ofOrd_lt_ofOrd.mp hx) k i
+  · assumption
+  · assumption
+  simp_all [extVisibilityReplace_ofOrd, ofOrd_lt_ofOrd, visReplace_lt_of_lt_limit]
 
 /-- Visibility replacement stays `≤ δ` when `γ ≤ δ`, `δ` is self-visible at `k`, and the
 replacement value is `≤ k`. -/
@@ -285,20 +254,7 @@ theorem visReplace_le_of_le_selfVis {γ δ : Ordinal.{0}} {k i : ℕ}
         ≤ limitPart δ + (k : Ordinal) := add_le_add (limitPart_mono hγδ) hi'
       _ ≤ limitPart δ + (finitePart δ : Ordinal) := add_le_add_right hk' (limitPart δ)
       _ = δ := decomposition δ
-  · exact hγδ
-
-/-- `extVisibilityReplace` stays `≤ ofOrd δ` when `x ≤ ofOrd γ`, `γ ≤ δ`, `δ` is self-visible
-at `k`, and the replacement value is `≤ k`. -/
-theorem extVisReplace_le_of_le {γ δ : Ordinal.{0}} {k i : ℕ} {x : ExtOrd}
-    (hx : x ≤ ofOrd γ) (hγδ : γ ≤ δ) (hδ_sv : k ≤ finitePart δ) (hi : i ≤ k) :
-    extVisibilityReplace x k i ≤ ofOrd δ := by
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · exact bot_le
-  · exact absurd hx (not_top_le_ofOrd γ)
-  · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
-    exact visReplace_le_of_le_selfVis ((ofOrd_le_ofOrd.mp hx).trans hγδ) hδ_sv hi
-
-/-! ### Vertical truncation of labels -/
+  assumption
 
 /-- Vertical truncation of a label at stage `α` (the pointwise content of Knight's reduction
 map, Def. 3.1.2, on a single cell): ordinal labels `≥ α` become the top label `⊤`; ordinal
@@ -328,117 +284,72 @@ theorem truncExt_ofOrd (α β : Ordinal.{0}) :
     truncExt α (ofOrd β) = ⊤ := by
   rw [truncExt_ofOrd, ite_eq_right (not_lt_of_ge h)]
 
-/-- A truncated label is `< ofOrd α` or the top label (the label bound of a stage-`α` type;
-note `⊥ < ofOrd α`). -/
-theorem truncExt_bound (α : Ordinal.{0}) (γ : ExtOrd) :
-    truncExt α γ < ofOrd α ∨ truncExt α γ = (⊤ : ExtOrd) := by
-  rcases ExtOrd.cases γ with rfl | rfl | ⟨β, rfl⟩
-  · exact Or.inl (bot_lt_ofOrd α)
-  · exact Or.inr rfl
-  · rcases lt_or_ge β α with h | h
-    · exact Or.inl (by simp [h])
-    · exact Or.inr (truncExt_ofOrd_of_le h)
+theorem truncExt_eq_ite (α : Ordinal.{0}) (x : ExtOrd) :
+    truncExt α x = if x < ofOrd α then x else ⊤ := by
+  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩ <;> simp [truncExt_ofOrd]
 
-/-- `truncExt α` is the identity on labels `< ofOrd α`. -/
+theorem truncExt_bound (α : Ordinal.{0}) (x : ExtOrd) :
+    truncExt α x < ofOrd α ∨ truncExt α x = ⊤ := by
+  rw [truncExt_eq_ite]; split_ifs <;> tauto
+
 theorem truncExt_id_of_lt {α : Ordinal.{0}} {x : ExtOrd} (hx : x < ofOrd α) :
-    truncExt α x = x := by
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · rfl
-  · exact absurd hx (not_lt.mpr le_top)
-  · exact truncExt_ofOrd_of_lt (ofOrd_lt_ofOrd.mp hx)
+    truncExt α x = x := by rw [truncExt_eq_ite, if_pos hx]
 
-/-- `truncExt α` is the identity on labels already bounded at stage `α`
-(`x < ofOrd α ∨ x = ⊤`, the label bound of a stage-`α` type); together with
-`truncExt_bound` this is the reflexivity law of vertical reduction. -/
 theorem truncExt_id_of_bound {α : Ordinal.{0}} {x : ExtOrd}
     (h : x < ofOrd α ∨ x = ⊤) : truncExt α x = x := by
-  rcases h with hlt | rfl
-  · exact truncExt_id_of_lt hlt
+  rcases h with h | rfl
+  · exact truncExt_id_of_lt h
   · rfl
 
-/-- Labels `≥ ofOrd α` (the boundary label included) truncate to the top label. -/
 theorem truncExt_eq_top_of_ge {α : Ordinal.{0}} {x : ExtOrd} (hx : ofOrd α ≤ x) :
-    truncExt α x = ⊤ := by
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · exact absurd hx (not_ofOrd_le_bot α)
-  · rfl
-  · exact truncExt_ofOrd_of_le (ofOrd_le_ofOrd.mp hx)
+    truncExt α x = ⊤ := by rw [truncExt_eq_ite, if_neg hx.not_gt]
 
-/-- A label truncates to the top label iff it is `≥ ofOrd α`. -/
 theorem truncExt_eq_top_iff {α : Ordinal.{0}} {x : ExtOrd} :
     truncExt α x = ⊤ ↔ ofOrd α ≤ x := by
-  refine ⟨fun h => ?_, truncExt_eq_top_of_ge⟩
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · exact absurd h bot_ne_top
-  · exact le_top
-  · rcases lt_or_ge β α with hβα | hβα
-    · rw [truncExt_ofOrd_of_lt hβα] at h
-      exact absurd h (ofOrd_ne_top β)
-    · exact ofOrd_le_ofOrd.mpr hβα
+  rw [truncExt_eq_ite]
+  split_ifs with h
+  · exact iff_of_false (ne_top_of_lt h) h.not_ge
+  · simp [le_of_not_gt h]
 
-/-- `truncExt α` is inflationary: `x ≤ truncExt α x`. -/
 theorem truncExt_le_self (α : Ordinal.{0}) (x : ExtOrd) : x ≤ truncExt α x := by
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · exact bot_le
-  · exact le_rfl
-  · rcases lt_or_ge β α with hβ | hβ
-    · rw [truncExt_ofOrd_of_lt hβ]
-    · rw [truncExt_ofOrd_of_le hβ]; exact le_top
+  rw [truncExt_eq_ite]; split_ifs <;> simp
 
-/-- `truncExt α` is monotone. -/
 theorem truncExt_mono (α : Ordinal.{0}) : Monotone (truncExt α) := by
   intro x y hxy
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · exact bot_le
-  · rw [top_le_iff.mp hxy]
-  · rcases lt_or_ge β α with hβ | hβ
-    · rw [truncExt_ofOrd_of_lt hβ]
-      exact hxy.trans (truncExt_le_self α y)
-    · rw [truncExt_ofOrd_of_le hβ,
-        truncExt_eq_top_of_ge ((ofOrd_le_ofOrd.mpr hβ).trans hxy)]
+  by_cases hy : y < ofOrd α
+  · rwa [truncExt_id_of_lt hy, truncExt_id_of_lt (hxy.trans_lt hy)]
+  · rw [truncExt_eq_top_of_ge (le_of_not_gt hy)]
+    exact le_top
 
-/-- Self-visibility is preserved by truncation: an ordinal label `< α` is unchanged, and one
-`≥ α` becomes `⊤`, which is self-visible. -/
-theorem truncExt_preserves_selfVis (α : Ordinal.{0}) (γ : ExtOrd) (K : ℕ)
-    (h : extVisibilityReplace γ K K = γ) :
-    extVisibilityReplace (truncExt α γ) K K = truncExt α γ := by
-  rcases ExtOrd.cases γ with rfl | rfl | ⟨β, rfl⟩
-  · rfl
-  · rfl
-  · rcases lt_or_ge β α with hβ | hβ
-    · rwa [truncExt_ofOrd_of_lt hβ]
-    · rw [truncExt_ofOrd_of_le hβ, extVisibilityReplace_top]
+theorem truncExt_lt_iff {α : Ordinal.{0}} {x y : ExtOrd} (hy : y ≤ ofOrd α) :
+    truncExt α x < y ↔ x < y :=
+  ⟨(truncExt_le_self _ _).trans_lt, fun h => (truncExt_id_of_lt (h.trans_le hy)).symm ▸ h⟩
 
-/-- `truncExt α` distributes over `min`. -/
+theorem lt_truncExt_iff {α : Ordinal.{0}} {x y : ExtOrd} (hy : y < ofOrd α) :
+    y < truncExt α x ↔ y < x := by
+  rw [truncExt_eq_ite]
+  split_ifs with hx
+  · rfl
+  · simp [hy.trans_le (le_of_not_gt hx), hy.trans_le le_top]
+
+theorem truncExt_preserves_selfVis (α : Ordinal.{0}) (x : ExtOrd) (K : ℕ)
+    (h : extVisibilityReplace x K K = x) :
+    extVisibilityReplace (truncExt α x) K K = truncExt α x := by
+  rw [truncExt_eq_ite]; split_ifs <;> simp_all
+
 theorem truncExt_min (α : Ordinal.{0}) (x y : ExtOrd) :
-    truncExt α (min x y) = min (truncExt α x) (truncExt α y) := by
-  rcases le_total x y with hle | hle
-  · rw [min_eq_left hle, min_eq_left (truncExt_mono α hle)]
-  · rw [min_eq_right hle, min_eq_right (truncExt_mono α hle)]
+    truncExt α (min x y) = min (truncExt α x) (truncExt α y) :=
+  (truncExt_mono α).map_min
 
-/-- Truncations compose: for `γ ≤ α`, truncating at `γ` after truncating at `α` is truncating
-at `γ` (the transitivity law of vertical reduction). -/
 theorem truncExt_compose {γ α : Ordinal.{0}} (hle : γ ≤ α) (x : ExtOrd) :
     truncExt γ (truncExt α x) = truncExt γ x := by
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
+  rw [truncExt_eq_ite α x]
+  split_ifs with hx
   · rfl
-  · rfl
-  · rcases lt_or_ge β α with hβα | hβα
-    · rw [truncExt_ofOrd_of_lt hβα]
-    · rw [truncExt_ofOrd_of_le hβα, truncExt_top, truncExt_ofOrd_of_le (hle.trans hβα)]
+  · rw [truncExt_top, truncExt_eq_top_of_ge ((ofOrd_le_ofOrd.mpr hle).trans (le_of_not_gt hx))]
 
-/-- Truncation preserves and reflects the bottom label. -/
 theorem truncExt_eq_bot_iff {α : Ordinal.{0}} {x : ExtOrd} :
-    truncExt α x = ⊥ ↔ x = ⊥ := by
-  refine ⟨fun h => ?_, fun h => by rw [h, truncExt_bot]⟩
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · rfl
-  · exact absurd h top_ne_bot
-  · rcases lt_or_ge β α with hβα | hβα
-    · rw [truncExt_ofOrd_of_lt hβα] at h
-      exact absurd h (ofOrd_ne_bot β)
-    · rw [truncExt_ofOrd_of_le hβα] at h
-      exact absurd h top_ne_bot
+    truncExt α x = ⊥ ↔ x = ⊥ := by grind [truncExt_eq_ite, bot_lt_ofOrd]
 
 /-- Truncation commutes with visibility replacement at every limit stage `α`, for every label
 and every threshold and replacement value (Knight, Def. 2.3.9(5) for the reduction map):
@@ -456,12 +367,8 @@ theorem truncExt_evr_comm {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
   · rfl
   · rfl
   · rcases lt_or_ge δ α with hδ | hδ
-    · rw [truncExt_ofOrd_of_lt hδ, extVisibilityReplace_ofOrd,
-        truncExt_ofOrd_of_lt (visReplace_lt_of_lt_limit hα hδ k i)]
-    · rw [truncExt_ofOrd_of_le hδ, extVisibilityReplace_ofOrd,
-        truncExt_ofOrd_of_le (visReplace_ge_of_ge_limit hα hδ k i), extVisibilityReplace_top]
-
-/-! ### Non-successor stages and canonical block levels -/
+    · simp_all [truncExt_ofOrd_of_lt, extVisibilityReplace_ofOrd, visReplace_lt_of_lt_limit]
+    grind [truncExt_ofOrd_of_le, extVisibilityReplace_ofOrd, visReplace_ge_of_ge_limit, extVisibilityReplace_top]
 
 /-- A non-successor ordinal: zero or a limit.  Knight's Def. 3.2.1(4)(b) quantifies over
 "non-successor `γ` with `0 ≤ γ < α`", which includes `γ = 0`, excluded by Mathlib's
@@ -481,7 +388,7 @@ theorem blockLevel_succ (ξ : Ordinal.{0}) :
 theorem blockLevel_strictMono : StrictMono blockLevel := by
   intro ξ η h
   unfold blockLevel
-  exact add_lt_add_right ((Ordinal.isNormal_mul_right Ordinal.omega0_pos).strictMono h) _
+  simp_all
 
 @[simp] theorem blockLevel_zero : blockLevel 0 = Ordinal.omega0 := by
   simp [blockLevel]
@@ -494,5 +401,25 @@ theorem isSuccLimit_blockLevel (ξ : Ordinal.{0}) : Order.IsSuccLimit (blockLeve
     (Ordinal.dvd_add_iff dvd_rfl).mpr (dvd_mul_right _ _)⟩
 
 end Value
+
+namespace ExtOrd
+
+open Value
+
+/-- Values bounded at a stage are determined by any nonempty cofinal set of reads. -/
+theorem eq_of_forall_truncExt_eq {I : Type*} [Nonempty I] {x y : ExtOrd}
+    {δ : Ordinal.{0}} {c : I → Ordinal.{0}} (hcof : ∀ γ < δ, ∃ i, γ < c i)
+    (hx : x < ofOrd δ ∨ x = ⊤) (hy : y < ofOrd δ ∨ y = ⊤)
+    (h : ∀ i, truncExt (c i) x = truncExt (c i) y) : x = y := by
+  have bound {a b : ExtOrd} (ha : a < ofOrd δ ∨ a = ⊤)
+      (hab : ∀ i, truncExt (c i) a = truncExt (c i) b) : b ≤ a := by
+    rcases ha with ha | rfl
+    · obtain ⟨i, hi⟩ : ∃ i, a < ofOrd (c i) := by
+        rcases cases a with rfl | rfl | ⟨γ, rfl⟩ <;> simp_all
+      exact (truncExt_le_self _ _).trans_eq ((hab i).symm.trans (truncExt_id_of_lt hi))
+    · exact le_top
+  exact le_antisymm (bound hy fun i => (h i).symm) (bound hx h)
+
+end ExtOrd
 
 end VaughtConjecture.Knight

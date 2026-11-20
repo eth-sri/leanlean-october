@@ -8,19 +8,6 @@ module
 public import VaughtConjecture.Knight.CappedLocalityRecoding
 public import VaughtConjecture.Knight.SemScheme
 
-/-! # A shared finite source code at arbitrary bounded grades
-
-Every lawful finite profile has a coded profile respecting the unchanged
-semantics, with exact decoding and a direct outgoing faithful witness.
-The codebook may contain additional values, so different profiles and
-their restrictions can share it. Literal top receives a proper cap code.
-
-Incoming locality uses `coded_locality_S` and the Cap Lemma, never general
-transitivity. This constructs source profiles over existing lower domains,
-not new controllers or the cross-localities between added rows. Decoding
-an arbitrary lawful coded labelling is not asserted to preserve respect.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.SourceCode
@@ -31,15 +18,7 @@ open AmalgamationPlan Transform Value ExtOrd
 def Supported (S : Finset Ordinal.{0}) (x : ExtOrd) : Prop :=
   ∀ v, x = ofOrd v → v ∈ S
 
-theorem supported_bot (S : Finset Ordinal.{0}) : Supported S ⊥ := by
-  intro v h
-  exact False.elim ((ofOrd_ne_bot v) h.symm)
-
-theorem Supported.min {S : Finset Ordinal.{0}} {x y : ExtOrd}
-    (hx : Supported S x) (hy : Supported S y) : Supported S (min x y) := by
-  rcases le_total x y with h | h
-  · rwa [min_eq_left h]
-  · rwa [min_eq_right h]
+theorem supported_bot (S : Finset Ordinal.{0}) : Supported S ⊥ := by tauto
 
 theorem Supported.keyed {S : Finset Ordinal.{0}} {x : ExtOrd}
     (h : Supported S x) (K : ℕ) : Keyed K S x := by
@@ -57,8 +36,8 @@ noncomputable def encode (K : ℕ) (S : Finset Ordinal.{0}) : ExtOrd → ExtOrd
 theorem encode_eq_cap (K : ℕ) (S : Finset Ordinal.{0}) (x : ExtOrd) :
     encode K S x = min (encT K S x) (ofOrd (capCode K S)) := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨v, rfl⟩
-  · exact (min_eq_left bot_le).symm
-  · exact (min_eq_right le_top).symm
+  · rfl
+  · rfl
   · exact (min_eq_left (ofOrd_le_ofOrd.mpr (code_le_capCode K S v))).symm
 
 theorem encode_coded (K : ℕ) (S : Finset Ordinal.{0}) (x : ExtOrd) :
@@ -103,8 +82,7 @@ theorem outgoing {X : Type*} (grade : X → ℕ) (p : X → ExtOrd) (K : ℕ)
 
 section Semantics
 
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {BJ CI : Finset ι × ℕ} {p : D.below BJ → ExtOrd}
+variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem : Semantics D} {BJ : Finset ι × ℕ} {p : D.below BJ → ExtOrd}
 
 /-- The coded profile respects every unchanged inherited row. The codebook
 may contain other profiles' values; only inclusion of this one's is required. -/

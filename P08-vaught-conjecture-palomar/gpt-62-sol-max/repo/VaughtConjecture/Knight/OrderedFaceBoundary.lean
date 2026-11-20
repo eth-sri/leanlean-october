@@ -5,29 +5,69 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.AmalgamatedBoundary
-
-/-! # Ordered inherited boundary for two arbitrary visible faces
-
-Generalizes the occurrence construction of `AmalgamatedBoundary` beyond coatom
-geometry. The common plan is supplied, every occurrence of both inputs is retained,
-and exactly the specified overlap is identified. Both original orders and complete
-lower domains are preserved. No cells at new mixed indices are constructed here.
-
-This is the ordered-boundary part of new25, not a receiving probe.
--/
+public import VaughtConjecture.Knight.CellBelowEquiv
+public import VaughtConjecture.Knight.ProfileBoundaryOrder
 
 @[expose] public section
 
-set_option autoImplicit false
+namespace VaughtConjecture.Knight.AmalgamatedBoundary
+
+open AmalgamationPlan
+
+variable {ι : Type*} [DecidableEq ι]
+
+/-- Put a scheme on an injective image of its point domain, without changing
+its occurrence enumeration. -/
+def pointImage {κ : Type*} [DecidableEq κ] {B : Finset ι} {C : Finset κ}
+    (D : CellScheme B) (e : ι ↪ κ) (he : B.image e = C) : CellScheme C where
+  plan := D.plan.image (Finset.image e)
+  isPlan := he ▸ Plan.isPlan_image e D.isPlan
+  card := D.card
+  cell d := ((D.scope d).image e, D.grade d)
+  cell_mem d := by
+    obtain ⟨hm, hp, hc⟩ := Plan.mem_gradedPlan.mp (D.cell_mem d)
+    refine Plan.mem_gradedPlan.mpr ⟨Finset.mem_image.mpr ⟨_, hm, rfl⟩, hp, ?_⟩
+    change D.grade d ≤ (D.scope d).card at hc
+    simpa only [Finset.card_image_of_injective _ e.injective] using hc
+
+theorem pointImage_complete {κ : Type*} [DecidableEq κ] {B : Finset ι} {C : Finset κ}
+    (D : CellScheme B) (e : ι ↪ κ) (he : B.image e = C) (hD : D.IsComplete) :
+    (pointImage D e he).IsComplete := by
+  intro BJ hBJ
+  obtain ⟨hm, hp, hc⟩ := Plan.mem_gradedPlan.mp hBJ
+  obtain ⟨K, hK, hKB⟩ := Finset.mem_image.mp hm
+  have hj : BJ.2 ≤ K.card := by
+    rw [← hKB, Finset.card_image_of_injective _ e.injective] at hc
+    exact hc
+  obtain ⟨d, hd⟩ := hD (K, BJ.2) (Plan.mem_gradedPlan.mpr ⟨hK, hp, hj⟩)
+  refine ⟨d, ?_⟩
+  change ((D.cell d).1.image e, (D.cell d).2) = BJ
+  rw [hd]
+  exact Prod.ext hKB rfl
+
+/-- Exact shared occurrences of two ordered faces in one ambient point set.
+The exhaustion fields concern geometry only, not labels or transformations. -/
+structure Overlap {B C : Finset ι} (D : CellScheme B) (E : CellScheme C) (k : ℕ) where
+  f : Fin k ↪ Cell D
+  g : Fin k ↪ Cell E
+  f_mono : StrictMono f
+  g_mono : StrictMono g
+  shared : ∀ i, D.cell (f i) = E.cell (g i)
+  left_exhaustive : ∀ d, D.scope d ⊆ C → ∃ i, f i = d
+  right_exhaustive : ∀ e, E.scope e ⊆ B → ∃ i, g i = e
+
+end VaughtConjecture.Knight.AmalgamatedBoundary
 
 namespace VaughtConjecture.Knight.OrderedFaceBoundary
 
 open AmalgamationPlan
+
 open AmalgamatedBoundary (Overlap)
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
+
 variable (D : CellScheme B) (E : CellScheme C)
+
 variable {k : ℕ} (w : Overlap D E k)
 
 abbrev Boundary := ProfileFaceUnion.Carrier (X := Cell D) w.g
@@ -52,33 +92,10 @@ theorem inside_right (z : Boundary D E w) (hz : (index D E w z).1 ⊆ C) :
   rcases ProfileFaceUnion.covered w.f w.g z with ⟨d, rfl⟩ | ⟨e, rfl⟩
   · obtain ⟨i, rfl⟩ := w.left_exhaustive d hz
     exact ⟨w.g i, ProfileFaceUnion.right_shared w.f w.g i⟩
-  · exact ⟨e, rfl⟩
-
-theorem below_left (d : Cell D) (z : Boundary D E w) :
-    GradedLe (index D E w z) (D.cell d) ↔
-      ∃ e : D.below (D.cell d), ProfileFaceUnion.left w.g e.1 = z := by
-  constructor
-  · intro h
-    obtain ⟨e, rfl⟩ := inside_left D E w z
-      (h.1.trans (D.isPlan.subset_of_mem (D.scope_mem_plan d)))
-    exact ⟨⟨e, h⟩, rfl⟩
-  · rintro ⟨e, rfl⟩
-    exact e.2
-
-theorem below_right (d : Cell E) (z : Boundary D E w) :
-    GradedLe (index D E w z) (E.cell d) ↔
-      ∃ e : E.below (E.cell d), ProfileFaceUnion.right w.f w.g e.1 = z := by
-  constructor
-  · intro h
-    obtain ⟨e, rfl⟩ := inside_right D E w z
-      (h.1.trans (E.isPlan.subset_of_mem (E.scope_mem_plan d)))
-    rw [index_right] at h
-    exact ⟨⟨e, h⟩, rfl⟩
-  · rintro ⟨e, rfl⟩
-    rw [index_right]
-    exact e.2
+  lia
 
 variable (R : Finset (Finset ι)) (hR : Plan.IsPlan A R)
+
 variable (hD : D.plan ⊆ R) (hE : E.plan ⊆ R)
 
 include hD hE in
@@ -136,7 +153,7 @@ theorem right_exhaustive (c : Cell (scheme D E w R hR hD hE))
     ∃ e, rightCell D E w R hR hD hE e = c := by
   obtain ⟨e, he⟩ := inside_right D E w ((enumeration D E w).symm c) hc
   exact ⟨e, (congrArg (enumeration D E w) he).trans
-    ((enumeration D E w).apply_symm_apply c)⟩
+    (by grind)⟩
 
 theorem overlap (d : Cell D) (e : Cell E) :
     leftCell D E w R hR hD hE d = rightCell D E w R hR hD hE e ↔
@@ -144,40 +161,6 @@ theorem overlap (d : Cell D) (e : Cell E) :
   change enumeration D E w _ = enumeration D E w _ ↔ _
   rw [Equiv.apply_eq_iff_eq]
   exact ProfileFaceUnion.overlap w.f w.g d e
-
-noncomputable def leftBelow (d : Cell D) : D.below (D.cell d) ≃
-    (scheme D E w R hR hD hE).below
-      ((scheme D E w R hR hD hE).cell (leftCell D E w R hR hD hE d)) :=
-  Equiv.ofBijective (fun e => ⟨leftCell D E w R hR hD hE e.1, by
-    rw [left_index, left_index]
-    exact e.2⟩) ⟨by
-    intro e f h
-    exact Subtype.ext ((left_order D E w R hR hD hE).injective (congrArg Subtype.val h)), by
-    intro e
-    have he := e.2.trans (show GradedLe
-      ((scheme D E w R hR hD hE).cell (leftCell D E w R hR hD hE d)) (D.cell d) from by
-      rw [left_index]
-      exact GradedLe.refl _)
-    obtain ⟨f, hf⟩ := (below_left D E w d ((enumeration D E w).symm e.1)).mp he
-    exact ⟨f, Subtype.ext ((congrArg (enumeration D E w) hf).trans
-      ((enumeration D E w).apply_symm_apply e.1))⟩⟩
-
-noncomputable def rightBelow (d : Cell E) : E.below (E.cell d) ≃
-    (scheme D E w R hR hD hE).below
-      ((scheme D E w R hR hD hE).cell (rightCell D E w R hR hD hE d)) :=
-  Equiv.ofBijective (fun e => ⟨rightCell D E w R hR hD hE e.1, by
-    rw [right_index, right_index]
-    exact e.2⟩) ⟨by
-    intro e f h
-    exact Subtype.ext ((right_order D E w R hR hD hE).injective (congrArg Subtype.val h)), by
-    intro e
-    have he := e.2.trans (show GradedLe
-      ((scheme D E w R hR hD hE).cell (rightCell D E w R hR hD hE d)) (E.cell d) from by
-      rw [right_index]
-      exact GradedLe.refl _)
-    obtain ⟨f, hf⟩ := (below_right D E w d ((enumeration D E w).symm e.1)).mp he
-    exact ⟨f, Subtype.ext ((congrArg (enumeration D E w) hf).trans
-      ((enumeration D E w).apply_symm_apply e.1))⟩⟩
 
 /-- Completeness at an old index is inherited; new mixed indices are not claimed complete. -/
 theorem complete_on_input (hDc : D.IsComplete) (hEc : E.IsComplete)

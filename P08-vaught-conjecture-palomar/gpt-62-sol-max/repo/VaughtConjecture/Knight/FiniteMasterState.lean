@@ -8,14 +8,6 @@ module
 public import VaughtConjecture.Knight.MasterChart
 public import VaughtConjecture.Knight.Domain
 
-/-! # Finite master states for fixed-height construction
-
-These are the finite master states shared by the exact-family and top-free capped
-clients. No request family, enumeration or infinite run is constructed here.
-The historical partial-state fields are retained as a compatibility adapter; their
-realization is uniquely determined by the finite master.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -23,6 +15,7 @@ namespace VaughtConjecture.Knight
 universe w
 
 open TypeTower
+
 open Value ExtOrd
 
 namespace FixedHeight
@@ -30,8 +23,6 @@ namespace FixedHeight
 open KnightRealization
 
 variable {β : LimitStage} {M : Type w}
-
-/-! ### The run state -/
 
 /-- The fair run's state: a partial state, its single master (tuple and evaluated type),
 and the master discipline.  Construction-private bookkeeping — no receipt, failure
@@ -95,8 +86,6 @@ noncomputable def RunState.ofMaster (s : FiniteMaster knightTower β M) : RunSta
     obtain ⟨p, hp⟩ := Option.isSome_iff_exists.mp ht
     exact s.supported_of_eval hp
 
-/-! ### The initial state: an arity-0 master over the mute seed -/
-
 /-- The first master event: an arbitrary arity-0 stage type at the empty tuple over the
 mute seed. -/
 noncomputable def initState (β : LimitStage) (M : Type w) : RunState β M := by
@@ -104,4 +93,5 @@ noncomputable def initState (β : LimitStage) (M : Type w) : RunState β M := by
     ⟨0, Function.Embedding.ofIsEmpty, Classical.choice (StageType.nonempty β.2 0)⟩
 
 end FixedHeight
+
 end VaughtConjecture.Knight

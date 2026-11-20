@@ -7,13 +7,6 @@ module
 
 public import VaughtConjecture.Knight.LowOnlyCommonRoot
 
-/-! # The gate-free LOW family on two original legal cofaces
-
-Complete vectors retain all future occurrences. The only extra scalar field is
-the cutoff. No receiving `Ref`, gate, shadow synchronization, or output scheme is
-used. The common root is transported by its literal occurrence and row identities.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.LowOnly
@@ -46,39 +39,31 @@ structure State (P C : SemScheme n) where
 namespace State
 
 def lowerP (S : State P C) (j : ℕ) (d : P.scheme.below (effC n j)) : ExtOrd := S.u d.1
+
 def lowerC (S : State P C) (j : ℕ) (d : C.scheme.below (effC n j)) : ExtOrd := S.v d.1
 
 def replace (S : State P C) {j : ℕ} (u : P.scheme.below (effC n j) → ExtOrd)
     (v : C.scheme.below (effC n j) → ExtOrd) (b : ExtOrd) : State P C :=
-  ⟨completeAt S.u u, completeAt S.v v, b⟩
+  ⟨CellScheme.complete S.u u, CellScheme.complete S.v v, b⟩
 
 theorem replace_lowerP (S : State P C) {j : ℕ}
     (u : P.scheme.below (effC n j) → ExtOrd) (v : C.scheme.below (effC n j) → ExtOrd)
-    (b : ExtOrd) : (S.replace u v b).lowerP j = u := funext (completeAt_present S.u u)
+    (b : ExtOrd) : (S.replace u v b).lowerP j = u := funext (CellScheme.complete_present S.u u)
 
 theorem replace_lowerC (S : State P C) {j : ℕ}
     (u : P.scheme.below (effC n j) → ExtOrd) (v : C.scheme.below (effC n j) → ExtOrd)
-    (b : ExtOrd) : (S.replace u v b).lowerC j = v := funext (completeAt_present S.v v)
+    (b : ExtOrd) : (S.replace u v b).lowerC j = v := funext (CellScheme.complete_present S.v v)
 
 def CapEq (γ : ExtOrd) (S S' : State P C) : Prop :=
   (∀ d, min (S'.u d) γ = min (S.u d) γ) ∧
   (∀ d, min (S'.v d) γ = min (S.v d) γ) ∧ min S'.b γ = min S.b γ
-
-def FutureEq (j : ℕ) (S S' : State P C) : Prop :=
-  (∀ d, j < P.scheme.grade d → S'.u d = S.u d) ∧
-  (∀ d, j < C.scheme.grade d → S'.v d = S.v d)
-
-theorem replace_future (S : State P C) {j : ℕ}
-    (u : P.scheme.below (effC n j) → ExtOrd) (v : C.scheme.below (effC n j) → ExtOrd)
-    (b : ExtOrd) : S.FutureEq j (S.replace u v b) :=
-  ⟨completeAt_future S.u u, completeAt_future S.v v⟩
 
 theorem replace_caps (S : State P C) {j : ℕ}
     {u : P.scheme.below (effC n j) → ExtOrd} {v : C.scheme.below (effC n j) → ExtOrd}
     {b γ : ExtOrd} (hu : ∀ d, min (u d) γ = min (S.lowerP j d) γ)
     (hv : ∀ d, min (v d) γ = min (S.lowerC j d) γ) (hb : min b γ = min S.b γ) :
     S.CapEq γ (S.replace u v b) :=
-  ⟨completeAt_cap S.u hu, completeAt_cap S.v hv, hb⟩
+  ⟨CellScheme.complete_cap S.u hu, CellScheme.complete_cap S.v hv, hb⟩
 
 end State
 
@@ -109,8 +94,8 @@ theorem Source.replace {j : ℕ} {S : State P C} (hS : F.Source j S)
       u (CellScheme.below.mono (faceIndex_le F.root.A j) a) =
         v (CellScheme.below.mono (faceIndex_le F.root.B j) (F.root.faceAt j a))) :
     F.Source j (S.replace u v b) where
-  lawfulP := completeAt_respects S.u hu
-  lawfulC := completeAt_respects S.v hv
+  lawfulP := CellScheme.complete_lawful S.u hu
+  lawfulC := CellScheme.complete_lawful S.v hv
   shared := F.root.shared_complete hS.shared u v hface
   futureP d hd := by
     rw [show (S.replace u v b).u d = S.u d from completeAt_future _ _ _ hd]
@@ -150,7 +135,7 @@ theorem frontier_cap {j : ℕ} (hj : K ≤ j) {v v' : C.scheme.below (effC n j) 
   unfold SourceGap.eC
   rw [← F.gap.e_min hγ, ← F.gap.e_min hγ]
   congr 1
-  exact funext (fun d => hag (CellScheme.below.mono (F.gap.domLe hj) d))
+  aesop
 
 theorem frontier_le_root {j : ℕ} (hj : K ≤ j)
     {v : C.scheme.below (effC n j) → ExtOrd}
@@ -161,5 +146,7 @@ theorem frontier_le_root {j : ℕ} (hj : K ≤ j)
   F.gap.e_le_of_gap (F.gap.lowD_respects hj hv) _ (F.root_gap (F.root.fullP a) ht)
 
 end Family
+
 end
+
 end VaughtConjecture.Knight.LowOnly

@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.LowOnlyTerminalSupport
-public import VaughtConjecture.Knight.LowOnlyPaddedEndpoints

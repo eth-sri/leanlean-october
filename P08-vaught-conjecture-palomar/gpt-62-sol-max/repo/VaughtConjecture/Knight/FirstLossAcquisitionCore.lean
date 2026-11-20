@@ -12,39 +12,6 @@ public import VaughtConjecture.Knight.CanonicalCoatomFiniteSupply
 public import VaughtConjecture.Knight.CoatomFaceLift
 public import VaughtConjecture.Knight.CappedDonorFace
 
-/-! # The first-loss acquisition at finite characteristic
-
-The acquisition step of the finite-characteristic residual receiver (newapproach17 new34 §1,
-newapproach18 new40 §3), from the residual property of `TopSupportRigidCore`: in an exactly
-consistent realization with a constant top-grade tail `K > 0`
-and without globally rigid cores, over **any** actual root,
-
-* the root is enlarged to an actual context `B⁺` past which every labelled cover has top grade
-  exactly `K` (the explicit coinitial-tail hypothesis); `B⁺` carries a full-scope
-  grade-`K` top;
-* the residual property supplies an actual cover of `B⁺` with a proper admissible top support
-  `H` containing every top of the `B⁺`-face;
-* a maximal full visible face above the `B⁺`-face has an immediate nonfull superface,
-  giving a **first loss**: consecutive visible
-  faces `g ⊂ g ⌢ c` with every top of the `g`-face in `H` and some top `x` of the `g ⌢ c`-face
-  outside `H` (`exists_adjacent_loss`, with the `exists_first_loss` compatibility wrapper);
-* top availability from the protected grade-`K` top supplies a **surviving full-scope grade-`K`
-  owner** `o ∈ H` of the larger face (completeness gives the full-scope grade-`K` index), and
-  finite characteristic bounds the grade of the lost top by `K`, so it lies in `o`'s lower
-  domain; source separation then gives the **strict source gaps**
-  `evr (E o x) K K < E o a` for every retained top `a` below `o`, `o` itself and every top of
-  the smaller face included (`first_loss`).
-
-Separately, the donor is **enlarged over the larger root** by the constructed ordinary coatom
-supplier and its pinned-coface consumer (`FixedHeight.pinnedCofaceLift` with
-`CanonicalCoatomSupply.supply`), and the tops it introduces above grade `K` are **removed** by
-the uniform lowering at a cap visible at the enlarged arity: the set of tops of grade at most
-`K` is an admissible support (`admissible_gradeTrunc`, new41 §5), so the lowering is lawful,
-retains the root literally and restricts to the original donor exactly (`exists_enlarged_donor`).
-
-No physical receiver or realization covering is used or asserted. The tail is eventual
-constancy above every starting context, not merely frequent occurrences. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.FirstLossAcquisition
@@ -56,8 +23,6 @@ universe w
 
 variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 
-/-! ## Grade truncation of admissible supports -/
-
 /-- **Grade truncation preserves admissibility**: the tops of grade at most `K` in an admissible
 support form an admissible support (availability preserves the grade; an omitted top below a
 retained owner of grade at most `K` has grade at most `K`, so it was already omitted). -/
@@ -68,15 +33,10 @@ theorem admissible_gradeTrunc {ι : Type*} [DecidableEq ι] {A : Finset ι} {D :
   available := by
     intro d hd Xi₀ hsc hgr
     obtain ⟨Xi, hcell, hXi⟩ := hH.available d hd.1 Xi₀ hsc hgr
-    refine ⟨Xi, hcell, hXi, ?_⟩
-    have hg : D.grade Xi = D.grade Xi₀ := congrArg Prod.snd hcell
-    rw [hg, ← hgr]
-    exact hd.2
+    aesop
   separated := by
     intro c hc a ha d hdtop hdH
     exact hH.separated c hc.1 a ha.1 d hdtop fun hdmem => hdH ⟨hdmem, d.2.2.trans hc.2⟩
-
-/-! ## Adjacent loss at a maximal full visible face -/
 
 /-- The support `H` is **full on the face `f`**: every top cell of the cover's type whose scope
 lies in the face is in `H`. -/
@@ -84,8 +44,6 @@ def Full {m : ℕ} (Q : S α.1 m) (H : Set (Cell Q.scheme.scheme)) {n : ℕ} (f 
     Prop :=
   ∀ x : Cell Q.scheme.scheme, Q.scheme.scheme.scope x ⊆ Finset.univ.image f → Q.label x = ⊤ →
     x ∈ H
-
-/-! A maximal full face gives the required adjacent loss without choosing a chain. -/
 
 /-- An adjacent full/nonfull pair above the protected root, chosen by finite maximality. -/
 theorem exists_adjacent_loss {α : LimitStage} {m n : ℕ} (Q : S α.1 m)
@@ -112,18 +70,16 @@ theorem exists_adjacent_loss {α : LimitStage} {m n : ℕ} (Q : S α.1 m)
     apply hne
     apply Set.Subset.antisymm hsub
     intro d hd
-    exact hBg d (by rw [h]; exact Finset.subset_univ _) hd
+    exact hBg d (by simp_all) hd
   obtain ⟨C, hC, hsubC, hcardC⟩ :=
     Q.scheme.scheme.isPlan.exists_visible_card_succ_superface hBvis hneB
   obtain ⟨c, hcC, hcB⟩ := Finset.exists_of_ssubset hsubC
   have hc : c ∉ Set.range g := by
-    rintro ⟨i, rfl⟩
-    exact hcB (Finset.mem_image_of_mem g (Finset.mem_univ i))
+    simp_all
   have hCeq : C = insert c (Finset.univ.image g) := by
     symm
     apply Finset.eq_of_subset_of_card_le
-    · exact Finset.insert_subset hcC hsubC.subset
-    · rw [Finset.card_insert_of_notMem hcB, hcardC]
+    all_goals grind
   have himage : Finset.univ.image (snoc g c hc) = C := by
     rw [image_snoc_univ, hCeq]
   refine ⟨k, g, c, hc, e, he, hBvis, himage ▸ hC, hBg, ?_⟩
@@ -133,26 +89,22 @@ theorem exists_adjacent_loss {α : LimitStage} {m n : ℕ} (Q : S α.1 m)
     refine ⟨Finset.mem_univ _, hC, k + 1, snoc g c hc, e.trans Fin.castSuccEmb,
       ?_, himage, hfullC⟩
     rw [Function.Embedding.trans_assoc, castSuccEmb_trans_snoc, he]
-  have hle := hmax C hCmem
-  omega
+  grind
 
 /-- The tops of a visible face of a type have grade at most the type's top grade. -/
 theorem face_top_grade_le {m n : ℕ} {Q : S α.1 m} {f : Fin n ↪ Fin m} {p : S α.1 n}
     (h : typeMap f Q = some p) (d : Cell p.scheme.scheme) (hd : p.label d = ⊤) :
     p.scheme.scheme.grade d ≤ Q.topGrade := by
   have hv : Finset.univ.image f ∈ Q.scheme.scheme.plan :=
-    (typeMap_isSome_iff f Q).mp (by rw [h]; rfl)
+    (typeMap_isSome_iff f Q).mp (by simp_all)
   have hs : Q.scheme.restrictFace f hv = p.scheme :=
     congrArg StageType.scheme (Option.some.inj ((typeMap_eq_some f Q hv).symm.trans h))
   have hl := (typeMap_eq_some_iff_labels f Q p hv hs).mp h (SemScheme.castCell hs.symm d)
   have htop : Q.label (toCell Q.scheme.scheme f hv (SemScheme.castCell hs.symm d)) = ⊤ := by
-    rw [hl]; exact hd
+    aesop
   have hg : (Q.scheme.restrictFace f hv).scheme.grade (SemScheme.castCell hs.symm d) ≤
       Q.topGrade := grade_le_topGrade_of_top htop
-  rw [CappedDonor.castCell_grade hs.symm d] at hg
-  exact hg
-
-/-! ## The first-loss acquisition -/
+  rwa [CappedDonor.castCell_grade hs.symm d] at hg
 
 /-- **The first-loss acquisition.**  In a model of characteristic arity `K > 0` without globally
 rigid cores, over any actual root `t ↦ p`: an actual cover `C ↦ Q` of top grade `K` containing
@@ -193,7 +145,7 @@ theorem first_loss_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
   have hyz : y ≤ (⟨m, C, Q, hQ⟩ : LabelledExt R) := ⟨e, he, htyp⟩
   have hQK : Q.topGrade = K := hy hyz
   have hve : Finset.univ.image e ∈ Q.scheme.scheme.plan :=
-    (typeMap_isSome_iff e Q).mp (by rw [htyp]; rfl)
+    (typeMap_isSome_iff e Q).mp (by simp_all)
   have hse : Q.scheme.restrictFace e hve = y.type.scheme :=
     congrArg StageType.scheme (Option.some.inj ((typeMap_eq_some e Q hve).symm.trans htyp))
   -- maximality supplies the adjacent loss above the context face
@@ -210,15 +162,13 @@ theorem first_loss_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
     by_contra hall
     apply hnot
     intro x hx hxt
-    by_contra hxH
-    exact hall ⟨x, hx, hxt, hxH⟩
+    grind
   -- the protected grade-`K` top of the context, as a cell of the cover
-  obtain ⟨Θ, hΘs, hΘg, hΘt⟩ := exists_topCell_of_topGrade_pos y.type (by rw [hyK]; exact hKpos)
+  obtain ⟨Θ, hΘs, hΘg, hΘt⟩ := exists_topCell_of_topGrade_pos y.type (by lia)
   set a₀ : Cell Q.scheme.scheme :=
     toCell Q.scheme.scheme e hve (SemScheme.castCell hse.symm Θ) with ha₀def
   have ha₀t : Q.label a₀ = ⊤ := by
-    rw [ha₀def, (typeMap_eq_some_iff_labels e Q y.type hve hse).mp htyp]
-    exact hΘt
+    rwa [ha₀def, (typeMap_eq_some_iff_labels e Q y.type hve hse).mp htyp]
   have ha₀g : Q.scheme.scheme.grade a₀ = K := by
     have h : (Q.scheme.restrictFace e hve).scheme.grade (SemScheme.castCell hse.symm Θ) = K := by
       rw [CappedDonor.castCell_grade hse.symm Θ, hΘg, hyK]
@@ -227,12 +177,12 @@ theorem first_loss_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
     rw [← he']
     intro z hz
     obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp hz
-    exact Finset.mem_image_of_mem g (Finset.mem_univ _)
+    simp
   have hgg' : Finset.univ.image g ⊆ Finset.univ.image (snoc g c hc) := by
     intro z hz
     obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp hz
     rw [← snoc_apply_castSucc g c hc i]
-    exact Finset.mem_image_of_mem _ (Finset.mem_univ _)
+    grind
   have ha₀s : Q.scheme.scheme.scope a₀ ⊆ Finset.univ.image g :=
     (scope_toCell_subset (D := Q.scheme.scheme) e hve _).trans heg
   have ha₀H : a₀ ∈ H := hfull a₀ ha₀s ha₀t
@@ -247,7 +197,7 @@ theorem first_loss_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
     congrArg Prod.fst hXi₀
   have hXi₀g : Q.scheme.scheme.grade Xi₀ = K := congrArg Prod.snd hXi₀
   obtain ⟨o, hocell, hoH⟩ := hH.available a₀ ha₀H Xi₀
-    (by rw [hXi₀s]; exact ha₀s.trans hgg') (by rw [ha₀g, hXi₀g])
+    (by grind) (by lia)
   have hocell' : Q.scheme.scheme.cell o = (Finset.univ.image (snoc g c hc), K) :=
     hocell.trans hXi₀
   -- the lost top lies in the owner's lower domain
@@ -260,9 +210,7 @@ theorem first_loss_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
   refine ⟨x, o, hxs, hxtop, hxH, hoH, hocell', hxo, fun a ha => ?_⟩
   have hog : Q.scheme.scheme.grade o = K := congrArg Prod.snd hocell'
   have hsep := hH.separated o hoH a ha ⟨x, hxo⟩ hxtop hxH
-  rwa [hog] at hsep
-
-/-! ## Donor enlargement over the larger root, with the high tops removed -/
+  lia
 
 /-- **Donor enlargement.**  A legal donor coface `q` of the public root `p`, with tops of grade at
 most `K`, enlarges over a larger root `pR ⊇ p` (its tops of grade at most `K`) to a coface `Q`
@@ -279,7 +227,7 @@ theorem exists_enlarged_donor {n k : ℕ} (pR : S α.1 k) (e : Fin n ↪ Fin k) 
       ∀ d, Q.label d = ⊤ → Q.scheme.scheme.grade d ≤ K := by
   have hnk : n ≤ k := by
     have := Fintype.card_le_of_embedding e
-    simpa only [Fintype.card_fin] using this
+    simp_all
   obtain ⟨Q₀, hQ₀cof, hQ₀e⟩ := FixedHeight.pinnedCofaceLift (CanonicalCoatomSupply.supply α.2)
     (k - n) (by omega) pR e p hep q hq
   -- the tops of grade at most `K`, an admissible support
@@ -297,13 +245,12 @@ theorem exists_enlarged_donor {n k : ℕ} (pR : S α.1 k) (e : Fin n ↪ Fin k) 
         (SemScheme.castCell hQ₀cof.extendsDomain.restrict.symm d) ≤ K := by
       rw [CappedDonor.castCell_grade]
       apply hR
-      rw [← hQ₀cof.label_cellOf d]
-      exact hd
+      rwa [← hQ₀cof.label_cellOf d]
     exact h1
   refine ⟨lowerType Q₀ HK hb hβ hβgt hHK, isCoface_lowerType hQ₀cof hb hβ hβgt hHK hroot, ?_, ?_⟩
   · -- the original donor is retained: its tops have grade at most `K`
     have hv' : Finset.univ.image (FixedHeight.extendFace e) ∈ Q₀.scheme.scheme.plan :=
-      (typeMap_isSome_iff _ Q₀).mp (by rw [hQ₀e]; rfl)
+      (typeMap_isSome_iff _ Q₀).mp (by simp_all)
     have hs' : Q₀.scheme.restrictFace (FixedHeight.extendFace e) hv' = q.scheme :=
       congrArg StageType.scheme (Option.some.inj ((typeMap_eq_some _ Q₀ hv').symm.trans hQ₀e))
     have hlab := (typeMap_eq_some_iff_labels _ Q₀ q hv' hs').mp hQ₀e
@@ -316,9 +263,7 @@ theorem exists_enlarged_donor {n k : ℕ} (pR : S α.1 k) (e : Fin n ↪ Fin k) 
         have h2 : (Q₀.scheme.restrictFace (FixedHeight.extendFace e) hv').scheme.grade i ≤
             K := by
           rw [← CappedDonor.castCell_grade hs' i]
-          apply hqK
-          rw [← hlab i]
-          exact htop
+          grind
         exact h2
       rw [lower_of_mem htop hmem]
       exact ((hlab i).symm.trans htop).symm

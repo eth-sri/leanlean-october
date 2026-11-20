@@ -8,58 +8,6 @@ module
 public import VaughtConjecture.Knight.Cell
 public import VaughtConjecture.Knight.Transform
 
-/-! # Knight's semantic rows, respect of semantics, and consistent semantics
-
-Ported from Knight-VC `KnightVC/Semantics.lean` @ f7c7847d (`Sem.Semantics`,
-`Sem.Semantics.ext`, `Sem.RespectsSemantics`), over the cell schemes of `Knight.Cell`
-(Knight-VC's `Domain`, here `CellScheme`; `arity` is `grade`), and extended by the clauses of
-Knight's Defs. 2.5.4 and 2.5.12 that Knight-VC left out.
-
-A **semantics** on a cell scheme `D` (Knight, Def. 2.5.3, lightweight version) assigns to each
-cell `Sig` its **semantic row** `E Sig`: a labelling of the lower set `D.below (D.cell Sig)` of
-cells below `Sig` in the graded preorder, orderly at the grades of those cells.  Knight calls
-`Sig` the controlling cell and the row `E(Σ)` its local entailment profile.
-
-A labelling `p : Cell D → ExtOrd` **respects** a semantics `sem` (Def. 2.5.4) when
-
-* `p` is orderly (Def. 2.5.4 presupposes it);
-* **locality** (clause 1): for every cell `Sig`, the semantic row `sem.E Sig` transforms
-  (`Transform.TransformsTo`, Def. 2.3.9) to the labelling `d ↦ min (p d) (p Sig)` of the cells
-  below `Sig` — Knight's `E(Σ) ⇒ (p ↾ D⟨B,j⟩) ∧ p(Σ)`, with `∧ γ` the pointwise cap at `γ`
-  and the grade function the restriction of `D.grade`;
-* **availability** (clause 2): if `C ⊆ B`, `Σ ∈ D^{C,i}` and `D^{B,i} ≠ ∅`, there is
-  `Ξ ∈ D^{B,i}` with `p Ξ ≥ p Σ`.  Encoded with a witness of non-emptiness: for cells
-  `Sig Xi₀` with `D.scope Sig ⊆ D.scope Xi₀` and `D.grade Sig = D.grade Xi₀` (so `Xi₀` shows
-  `D^{scope Xi₀, grade Sig} ≠ ∅`), there is a cell `Xi` with `D.cell Xi = D.cell Xi₀` and
-  `p Sig ≤ p Xi`.
-
-A semantics is **consistent** (Def. 2.5.12, `Semantics.IsConsistent`) when every row `E Σ`,
-as a labelling of `D⟨B,j⟩ = D.below (D.cell Σ)`, respects the restricted semantics `E⟨B,j⟩`
-of `D⟨B,j⟩`.  The restricted scheme has cells `D.below BJ` and, for each such cell `Sig'`, the
-row `E Sig'` on `D⟨B,j⟩⟨Sig'⟩ = D.below (D.cell Sig')` (a subset of `D.below BJ` by
-`GradedLe.trans`); respect of it by a labelling of `D.below BJ` is spelled out as
-`RespectsSemanticsBelow sem BJ r` (the same three clauses, read on the lower set), so that
-`IsConsistent` is literally "every row respects the restricted semantics".
-
-## Fidelity status
-
-`RespectsSemantics` (all clauses of Def. 2.5.4, with the faithful `TransformsTo`) and
-`Semantics.IsConsistent` (Def. 2.5.12) are the notions in use (#85); Knight-VC's predicate
-(orderliness and locality only, with Knight-VC's guarded, inflationary relation) was kept here
-transitionally (as `LegacyRespectsSemantics`) and **retired** with #88 (2/2)/#89: the stage types
-(`Knight.Type`) carry the faithful `RespectsSemantics` of the associated semantics
-(`Knight.SemScheme`), and vertical reduction transports it **with the semantics fixed**
-(`RespectsSemantics.truncate`, at a limit stage, via `TransformsTo.truncExt_target`), which is
-the paper's reading of Lemma 3.1.3 (rows kept).  No lemmas about `IsConsistent` are proved yet.
-
-**Transport along face restriction** (`CellScheme.restrictFace`, the scheme part of Knight-VC's
-`typeMap`): the rows of `D` restrict to rows of `D.restrictFace f hr` by reading each row at the
-underlying visible cell (`Semantics.restrictFace`, via `restrictFace.belowMap`), and respect of
-semantics transports to the restricted labelling `p ∘ toCell` (`RespectsSemantics.restrictFace`,
-used by `Knight.Type.typeMap`; locality by `TransformsTo.reindex`, availability by lifting the
-witness along `toCell`).  `Semantics.E_congr` is the congruence lemma for rows at
-propositionally equal indices (Knight-VC `sem_E_congr`). -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -117,8 +65,6 @@ theorem RespectsSemantics.bot {ι : Type*} [DecidableEq ι] {A : Finset ι} {D :
   locality c := TransformsTo.to_bot (sem.E c)
   availability _ Xi₀ _ _ := ⟨Xi₀, rfl, le_rfl⟩
 
-/-! ### Restricted semantics and consistent semantics -/
-
 /-- The row of `sem` at a cell `Sig` of the lower set `D.below BJ` has domain
 `D.below (D.cell Sig)`, which embeds in `D.below BJ` (`GradedLe.trans`): this is the
 restricted scheme's own "below" of `Sig`, `D⟨B,j⟩⟨Sig⟩ = D⟨Sig⟩`. -/
@@ -171,7 +117,29 @@ theorem RespectsSemanticsBelow.toRespects {sem : Semantics D} {BJ : Finset ι ×
   locality Sig := h.locality ⟨Sig, hall Sig⟩
   availability Sig Xi₀ hs hg := by
     obtain ⟨Xi, hc, hle⟩ := h.availability ⟨Sig, hall Sig⟩ ⟨Xi₀, hall Xi₀⟩ hs hg
-    exact ⟨Xi.1, hc, hle⟩
+    tauto
+
+/-- Checking the section at each row's own lower domain suffices. -/
+theorem RespectsSemanticsBelow.of_local {sem : Semantics D} {J : Finset ι × ℕ}
+    {p : D.below J → ExtOrd}
+    (h : ∀ c : D.below J, RespectsSemanticsBelow sem (D.cell c.1) (p ∘ c.incl)) :
+    RespectsSemanticsBelow sem J p where
+  orderly c := (h c).orderly ⟨c.1, GradedLe.refl _⟩
+  locality c := (h c).locality ⟨c.1, GradedLe.refl _⟩
+  availability c t hs hg := by
+    obtain ⟨w, hw, hv⟩ := (h t).availability ⟨c.1, hs, hg.le⟩ ⟨t.1, GradedLe.refl _⟩ hs hg
+    exact ⟨t.incl w, hw, hv⟩
+
+theorem RespectsSemantics.of_local {sem : Semantics D} {p : Cell D → ExtOrd}
+    (h : ∀ c, RespectsSemanticsBelow sem (D.cell c) (fun d => p d.1)) :
+    RespectsSemantics sem p :=
+  (RespectsSemanticsBelow.of_local (J := (A, A.card)) (p := fun d => p d.1) (fun c => h c.1)).toRespects
+    (fun d => ⟨D.scope_subset d, (D.grade_le_card_scope d).trans (Finset.card_le_card (D.scope_subset d))⟩)
+
+/-- Change the index of a lawful lower section along an equality. -/
+theorem RespectsSemanticsBelow.cast_index {sem : Semantics D} {J K : Finset ι × ℕ}
+    {p : D.below J → ExtOrd} (hp : RespectsSemanticsBelow sem J p) (h : J = K) :
+    RespectsSemanticsBelow sem K (fun d => p ⟨d.1, h.symm ▸ d.2⟩) := by aesop
 
 /-- The all-bottom labelling is lawful on every lower set of any semantics. -/
 theorem RespectsSemanticsBelow.bot (sem : Semantics D) (BJ : Finset ι × ℕ) :
@@ -185,7 +153,7 @@ theorem RespectsSemanticsBelow.eq_bot_of_diagonal {sem : Semantics D} {BJ : Fins
   obtain ⟨g, σ, _, _, hbot, _, _, heq⟩ := h.locality c
   have hread := heq ⟨c.1, GradedLe.refl _⟩
   change min (r c) (r c) = min (σ (sem.E c.1 ⟨c.1, GradedLe.refl _⟩)) _ at hread
-  simpa only [min_self, hc, hbot, min_eq_left bot_le] using hread
+  grind
 
 /-- A semantics is **consistent** (Knight, Def. 2.5.12): for every cell `Sig` with graded
 index `(B, j)`, the row `E Sig`, a labelling of `D⟨B,j⟩ = D.below (D.cell Sig)`, respects the
@@ -198,10 +166,7 @@ def Semantics.IsConsistent (sem : Semantics D) : Prop :=
 `sem_E_congr`; the index of `E` is dependent, so this is stated with both equalities). -/
 theorem Semantics.E_congr (sem : Semantics D) {a b : Cell D} (hab : a = b) {c d : Cell D}
     {hc : GradedLe (D.cell c) (D.cell a)} {hd : GradedLe (D.cell d) (D.cell b)} (hcd : c = d) :
-    sem.E a ⟨c, hc⟩ = sem.E b ⟨d, hd⟩ := by
-  subst hab; subst hcd; rfl
-
-/-! ### Transport along vertical truncation (semantics fixed) -/
+    sem.E a ⟨c, hc⟩ = sem.E b ⟨d, hd⟩ := by aesop
 
 /-- Faithful respect of semantics is preserved by the strict vertical truncation of the
 labelling at a limit stage `α`, **with the semantics fixed** (the reduction half of
@@ -219,12 +184,10 @@ theorem RespectsSemantics.truncate {sem : Semantics D} {p : Cell D → ExtOrd}
         fun d => min ((Value.truncExt α ∘ p) d.1) ((Value.truncExt α ∘ p) Sig) := by
       funext d
       simp only [Function.comp_apply, Value.truncExt_min]
-    rwa [heq] at key
+    simp_all
   availability Sig Xi₀ hscope hgrade := by
     obtain ⟨Xi, hcell, hle⟩ := h.availability Sig Xi₀ hscope hgrade
     exact ⟨Xi, hcell, Value.truncExt_mono α hle⟩
-
-/-! ### Transport along face restriction -/
 
 section RestrictFace
 
@@ -245,32 +208,121 @@ noncomputable def Semantics.restrictFace (sem : Semantics D) (f : Fin m ↪ Fin 
     (d : (D.restrictFace f hr).below ((D.restrictFace f hr).cell Sig)) :
     (sem.restrictFace f hr).E Sig d = sem.E (toCell D f hr Sig) (belowMap D f hr Sig d) := rfl
 
-/-- Faithful respect of semantics (Def. 2.5.4, both clauses) transports along face
-restriction: the restricted labelling `p ∘ toCell` respects the restricted rows.  Locality is
-`TransformsTo.reindex` along `belowMap`; availability lifts the witness: the scopes of
-restricted cells are the `f`-preimages of the scopes of the underlying cells, so an inclusion of
-restricted scopes is an inclusion of the underlying scopes, the paper's witness `Xi` has the
-graded index of the underlying cell of `Xi₀`, hence is visible, hence is `toCell` of a restricted
-cell (`exists_toCell_eq`), whose pulled-back index is that of `Xi₀` (`pullCell_congr`). -/
-theorem RespectsSemantics.restrictFace {sem : Semantics D} {p : Cell D → ExtOrd}
-    (h : RespectsSemantics sem p) (f : Fin m ↪ Fin n) (hr : Finset.univ.image f ∈ D.plan) :
-    RespectsSemantics (sem.restrictFace f hr) (fun i => p (toCell D f hr i)) where
-  orderly i := h.orderly (toCell D f hr i)
-  locality Sig := (h.locality (toCell D f hr Sig)).reindex (belowMap D f hr Sig)
-  availability Sig Xi₀ hscope hgrade := by
-    have hscope' : D.scope (toCell D f hr Sig) ⊆ D.scope (toCell D f hr Xi₀) := by
-      rw [← CellScheme.restrictFace.image_scope_restrictFace D f hr Sig,
-        ← CellScheme.restrictFace.image_scope_restrictFace D f hr Xi₀]
-      exact Finset.image_subset_image hscope
-    obtain ⟨Xi', hcell, hle⟩ :=
-      h.availability (toCell D f hr Sig) (toCell D f hr Xi₀) hscope' hgrade
-    have hvis : D.scope Xi' ⊆ Finset.univ.image f := by
-      change (D.cell Xi').1 ⊆ _
-      rw [hcell]
-      exact CellScheme.restrictFace.scope_toCell_subset D f hr Xi₀
-    obtain ⟨Xi, rfl⟩ := CellScheme.restrictFace.exists_toCell_eq D f hr hvis
-    exact ⟨Xi, CellScheme.pullCell_congr D f hcell, hle⟩
-
 end RestrictFace
+
+/-- `TransformsTo` is invariant under propositional equality of its three functions. -/
+theorem transformsTo_congr {D : Type*} {g g' : D → ℕ} {p p' q q' : D → ExtOrd} (hg : g = g')
+    (hp : p = p') (hq : q = q') (h : TransformsTo g p q) : TransformsTo g' p' q' := by lia
+
+section Transport
+
+variable {ι ι' : Type*} [DecidableEq ι] [DecidableEq ι'] {A : Finset ι} {A' : Finset ι'}
+  {D : CellScheme A} {D' : CellScheme A'} {sem : Semantics D} {sem' : Semantics D'}
+
+/-- The graded order is reflected and preserved by a bijection preserving scopes and grades. -/
+theorem gradedLe_iff_of_equiv {BJ : Finset ι' × ℕ} {BJ' : Finset ι × ℕ}
+    (e : D'.below BJ ≃ D.below BJ') (hgrade : ∀ a, D'.grade a.1 = D.grade (e a).1)
+    (hscope : ∀ a b, D'.scope a.1 ⊆ D'.scope b.1 ↔ D.scope (e a).1 ⊆ D.scope (e b).1)
+    (a b : D'.below BJ) :
+    GradedLe (D'.cell a.1) (D'.cell b.1) ↔ GradedLe (D.cell (e a).1) (D.cell (e b).1) := by
+  change (D'.scope a.1 ⊆ D'.scope b.1 ∧ D'.grade a.1 ≤ D'.grade b.1) ↔
+    (D.scope (e a).1 ⊆ D.scope (e b).1 ∧ D.grade (e a).1 ≤ D.grade (e b).1)
+  rw [hscope, hgrade a, hgrade b]
+
+/-- **Respect transports along a bijection of lower sets with agreeing rows.** -/
+theorem RespectsSemanticsBelow.of_equiv {BJ : Finset ι' × ℕ} {BJ' : Finset ι × ℕ}
+    (e : D'.below BJ ≃ D.below BJ') (hgrade : ∀ a, D'.grade a.1 = D.grade (e a).1)
+    (hscope : ∀ a b, D'.scope a.1 ⊆ D'.scope b.1 ↔ D.scope (e a).1 ⊆ D.scope (e b).1)
+    (hrows : ∀ (Sig : D'.below BJ) (d : D'.below (D'.cell Sig.1))
+      (hd : GradedLe (D.cell (e ⟨d.1, d.2.trans Sig.2⟩).1) (D.cell (e Sig).1)),
+      sem'.E Sig.1 d = sem.E (e Sig).1 ⟨(e ⟨d.1, d.2.trans Sig.2⟩).1, hd⟩)
+    {q : D.below BJ' → ExtOrd} (hq : RespectsSemanticsBelow sem BJ' q) :
+    RespectsSemanticsBelow sem' BJ (fun a => q (e a)) where
+  orderly a := by
+    have := hq.orderly (e a)
+    grind
+  locality Sig := by
+    let φ : D'.below (D'.cell Sig.1) → D.below (D.cell (e Sig).1) := fun d =>
+      ⟨(e ⟨d.1, d.2.trans Sig.2⟩).1, (gradedLe_iff_of_equiv e hgrade hscope _ _).mp d.2⟩
+    have key := (hq.locality (e Sig)).reindex φ
+    refine transformsTo_congr ?_ ?_ ?_ key
+    · funext d
+      exact (hgrade ⟨d.1, d.2.trans Sig.2⟩).symm
+    · funext d
+      exact (hrows Sig d _).symm
+    · funext d
+      rfl
+  availability Sig Xi₀ hs hg := by
+    obtain ⟨Xi, hcell, hle⟩ := hq.availability (e Sig) (e Xi₀) ((hscope _ _).mp hs)
+      (by rw [← hgrade, ← hgrade]; exact hg)
+    refine ⟨e.symm Xi, ?_, ?_⟩
+    · apply GradedLe.antisymm'
+      · rw [gradedLe_iff_of_equiv e hgrade hscope, e.apply_symm_apply, hcell]
+        trivial
+      · rw [gradedLe_iff_of_equiv e hgrade hscope, e.apply_symm_apply, hcell]
+        trivial
+    simp_all
+
+end Transport
+
+section Transport2
+
+variable {ι ι' : Type*} [DecidableEq ι] [DecidableEq ι'] {A : Finset ι} {A' : Finset ι'}
+  {D : CellScheme A} {D' : CellScheme A'} {sem : Semantics D} {sem' : Semantics D'}
+
+/-- **Respect transports both ways** along a bijection with agreeing rows. -/
+theorem respects_iff_of_equiv {BJ : Finset ι' × ℕ} {BJ' : Finset ι × ℕ}
+    (e : D'.below BJ ≃ D.below BJ') (hgrade : ∀ a, D'.grade a.1 = D.grade (e a).1)
+    (hscope : ∀ a b, D'.scope a.1 ⊆ D'.scope b.1 ↔ D.scope (e a).1 ⊆ D.scope (e b).1)
+    (hrows : ∀ (Sig : D'.below BJ) (d : D'.below (D'.cell Sig.1))
+      (hd : GradedLe (D.cell (e ⟨d.1, d.2.trans Sig.2⟩).1) (D.cell (e Sig).1)),
+      sem'.E Sig.1 d = sem.E (e Sig).1 ⟨(e ⟨d.1, d.2.trans Sig.2⟩).1, hd⟩)
+    (q : D'.below BJ → ExtOrd) :
+    RespectsSemanticsBelow sem' BJ q ↔ RespectsSemanticsBelow sem BJ' (q ∘ e.symm) := by
+  constructor
+  · intro hq
+    refine RespectsSemanticsBelow.of_equiv (sem := sem') (sem' := sem) e.symm
+      (fun b => by rw [hgrade (e.symm b), e.apply_symm_apply])
+      (fun a b => by rw [hscope (e.symm a) (e.symm b), e.apply_symm_apply, e.apply_symm_apply])
+      ?_ hq
+    intro Sig d hd
+    have hv1 : (e (e.symm ⟨d.1, d.2.trans Sig.2⟩)).1 = d.1 :=
+      congrArg Subtype.val (e.apply_symm_apply ⟨d.1, d.2.trans Sig.2⟩)
+    have hv2 : (e (e.symm Sig)).1 = Sig.1 := congrArg Subtype.val (e.apply_symm_apply Sig)
+    have hd0 : GradedLe (D.cell (e (e.symm ⟨d.1, d.2.trans Sig.2⟩)).1)
+        (D.cell (e (e.symm Sig)).1) := by
+      rw [hv1, hv2]; exact d.2
+    have h1 := hrows (e.symm Sig) ⟨(e.symm ⟨d.1, d.2.trans Sig.2⟩).1, hd⟩ hd0
+    have h2 : sem.E Sig.1 d =
+        sem.E (e (e.symm Sig)).1 ⟨(e (e.symm ⟨d.1, d.2.trans Sig.2⟩)).1, hd0⟩ :=
+      sem.E_congr hv2.symm hv1.symm
+    exact h2.trans h1.symm
+  · intro hq
+    have := RespectsSemanticsBelow.of_equiv e hgrade hscope hrows hq
+    convert this using 1
+    funext a
+    change q a = q (e.symm (e a))
+    rw [e.symm_apply_apply]
+
+end Transport2
+
+/-- When the cell indices are literal, grade and inclusion transport are automatic. -/
+theorem respects_iff_of_index_equiv {ι : Type*} [DecidableEq ι] {A B : Finset ι}
+    {D : CellScheme A} {E : CellScheme B} {rd : Semantics D} {re : Semantics E}
+    {I J : Finset ι × ℕ} (e : D.below I ≃ E.below J)
+    (index : ∀ d, E.cell (e d).1 = D.cell d.1)
+    (rows : ∀ (c : D.below I) (d : D.below (D.cell c.1))
+      (h : GradedLe (E.cell (e ⟨d.1, d.2.trans c.2⟩).1) (E.cell (e c).1)),
+      rd.E c.1 d = re.E (e c).1 ⟨(e ⟨d.1, d.2.trans c.2⟩).1, h⟩)
+    (p : D.below I → ExtOrd) :
+    RespectsSemanticsBelow rd I p ↔ RespectsSemanticsBelow re J (p ∘ e.symm) :=
+  respects_iff_of_equiv e (fun d => (congrArg Prod.snd (index d)).symm)
+    (fun d f => by simp only [CellScheme.scope, index]) rows p
+
+/-- Exchange a pullback equivalence for the inverse pullback equivalence. -/
+theorem iff_comp_symm {α β γ : Type*} (e : α ≃ β)
+    {P : (β → γ) → Prop} {Q : (α → γ) → Prop}
+    (h : ∀ p, P p ↔ Q (p ∘ e)) (q : α → γ) : Q q ↔ P (q ∘ e.symm) := by
+  simpa only [Function.comp_def, Equiv.symm_apply_apply] using (h (q ∘ e.symm)).symm
 
 end VaughtConjecture.Knight

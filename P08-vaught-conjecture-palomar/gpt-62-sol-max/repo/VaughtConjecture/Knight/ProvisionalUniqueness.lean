@@ -7,32 +7,7 @@ module
 
 public import VaughtConjecture.Knight.Terminal
 
-/-! # Lemma 5.3.2: band-index independence, and functionality of `p⁺`
-
-Knight's Lemma 5.3.2: clause 2.(b) of
-Def. 5.3.1 is well defined — the band index `i` with `E(Θ)(Ξ) = E(Θ)(Ξ) ⊔⁺_{K^p} i` does not
-depend on the witnessing full-scope `∞`-cell `Θ` of grade `K^p`.
-
-**The argument in the faithful relation.**  Let `Θ, Θ'` be two witnesses, `a := E(Θ)(Ξ)`,
-`a' := E(Θ')(Ξ)`, `K := K^p`.  Consistency of the rows (Def. 2.5.12) makes `E(Θ')` respect the
-semantics on its lower set, so locality at `Θ` gives `E(Θ) ⇒ min(E(Θ') ∘ incl, E(Θ')(Θ))` with
-witnesses `g, σ`.  Reading it at `Θ` shows `x := E(Θ')(Θ) ≤ g K`; reading it at `Ξ` gives
-`min(a', x) = min(σ a, g (grade Ξ))`.  Failure of clause 2.(a) at `Σ := Θ'`, with `E(Θ)(Θ')`
-self-visible at `K` by orderliness, gives `a < E(Θ)(Θ')`; symmetrically `a' < x`.  Hence
-`a' = min(σ a, g (grade Ξ))`, and since `a' < x ≤ g K ≤ g (grade Ξ)` (`g` antitone), `a' = σ a`
-with `σ a ≤ g K`.  Clause 5 of `⇒` then transports the band replacement at `K`:
-`a' = σ a = σ (a ⊔⁺_K i) = σ a ⊔⁺_K i = a' ⊔⁺_K i`, so `i` is the finite part of `a'`, which is
-also `i'`.
-
-* `ProvisionalBand.unique` — Lemma 5.3.2.
-* `IsProvisionalValue.unique` — Def. 5.3.1 is single-valued.
-* `isProvisionalValue_iff` — `someProvisionalValue` computes THE provisional value.
-
-Construction-private (not root-exported). -/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 
@@ -41,6 +16,31 @@ open TypeTower Value ExtOrd
 namespace StageType
 
 variable {α : Ordinal.{0}} {n : ℕ}
+
+/-- The transform data of the locality of `E_q(Θ)` at `Ψ'`, read at a cell `d` below `Ψ'`:
+`min (E_q Θ d) y = min (σ (E_q Ψ' d)) (g (grade d))`, together with `y ≤ g (grade Ψ')`. -/
+theorem locality_data {q : S α n} {Θ Ψ' : Cell q.scheme.scheme}
+    (hΨ'Θ : GradedLe (q.scheme.scheme.cell Ψ') (q.scheme.scheme.cell Θ)) :
+    ∃ (g : ℕ → ExtOrd) (σ : ExtOrd → ExtOrd),
+      Antitone g ∧ Monotone σ ∧
+      (∀ (a : ExtOrd) (k : ℕ), σ a ≤ g k → ∀ i : ℕ, i ≤ k →
+        σ (extVisibilityReplace a k i) = extVisibilityReplace (σ a) k i) ∧
+      (∀ d : q.scheme.scheme.below (q.scheme.scheme.cell Ψ'),
+        min (q.scheme.rows.E Θ ⟨d.1, d.2.trans hΨ'Θ⟩) (q.scheme.rows.E Θ ⟨Ψ', hΨ'Θ⟩) =
+          min (σ (q.scheme.rows.E Ψ' d)) (g (q.scheme.scheme.grade d.1))) ∧
+      q.scheme.rows.E Θ ⟨Ψ', hΨ'Θ⟩ ≤ g (q.scheme.scheme.grade Ψ') := by
+  obtain ⟨g, σ, hganti, -, -, hσmono, hσ5, hloc⟩ := (q.scheme.consistent Θ).locality ⟨Ψ', hΨ'Θ⟩
+  exact ⟨g, σ, antitone_iff_forall_lt.mpr hganti, hσmono, hσ5, hloc,
+    (min_self _).symm.trans_le ((hloc ⟨Ψ', GradedLe.refl _⟩).trans_le (min_le_right _ _))⟩
+
+theorem uncapped_eq {a b x y : ExtOrd} (h : min a x = min b y)
+    (hx : a < x) (hy : a < y) : a = b := by
+  grind
+
+theorem band_eq_finitePart {β : Ordinal.{0}} {K i : ℕ} (h : finitePart β < K)
+    (he : ofOrd β = extVisibilityReplace (ofOrd β) K i) : i = finitePart β := by
+  rw [extVisibilityReplace_ofOrd, ofOrd_inj, visibilityReplace, if_pos h, ordinalReplace] at he
+  simpa only [finitePart_limitPart_add_nat] using (congrArg finitePart he).symm
 
 /-- A band witness reads the band index off the finite part of an ordinal row value below the
 threshold (extracted from `ProvisionalBand.lt_topGrade`). -/
@@ -57,22 +57,14 @@ theorem ProvisionalBand.exists_ordinal {p : S α n} {Xi : Cell p.scheme.scheme} 
       extVisibilityReplace (p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩) p.topGrade p.topGrade ≠
         p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩ := fun hself =>
     hcap ⟨Θ, hXiΘ, ⟨Xi, hXiΘ⟩, hsc, hgr, hΘtop, htop, le_of_eq hself⟩
-  rcases ExtOrd.cases (p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩) with hbot | htop' | ⟨β, hβ⟩
-  · rw [hbot] at hnotself
-    exact absurd rfl hnotself
-  · rw [htop'] at hnotself
-    exact absurd rfl hnotself
-  · rw [hβ, extVisibilityReplace_ofOrd] at hnotself heq
+  rcases ExtOrd.cases (p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩) with hb | ht | ⟨β, hβ⟩
+  · exact (hnotself (by rw [hb]; rfl)).elim
+  · exact (hnotself (by rw [ht]; rfl)).elim
+  · rw [hβ] at hnotself heq
     have hfp : finitePart β < p.topGrade := by
-      by_contra hge
-      exact hnotself (congrArg ofOrd ((visibilityReplace_self_iff β _).mpr (not_lt.mp hge)))
-    have hβeq : β = limitPart β + (i : Ordinal) := by
-      have h0 := ofOrd_inj.mp heq
-      unfold visibilityReplace ordinalReplace at h0
-      rwa [ite_eq_left hfp] at h0
-    have hcast : (i : Ordinal.{0}) = (finitePart β : Ordinal.{0}) :=
-      add_left_cancel (hβeq.symm.trans (decomposition β).symm)
-    exact ⟨β, hβ, hfp, by exact_mod_cast hcast⟩
+      rw [extVisibilityReplace_ofOrd] at hnotself
+      exact lt_of_not_ge fun h => hnotself (congrArg ofOrd ((visibilityReplace_self_iff β _).mpr h))
+    exact ⟨β, hβ, hfp, band_eq_finitePart hfp heq⟩
 
 /-- Under `¬` clause 2.(a), the row of a witness `Θ` at `Ξ` lies strictly below its value at
 any other witness `Θ'` (orderliness makes `E(Θ)(Θ')` self-visible at `K^p`). -/
@@ -103,76 +95,25 @@ theorem ProvisionalBand.unique {p : S α n} {Xi : Cell p.scheme.scheme}
   -- the two witnesses lie below each other (same graded index)
   have hΘ'Θ : GradedLe (p.scheme.scheme.cell Θ') (p.scheme.scheme.cell Θ) := by
     refine ⟨?_, ?_⟩
-    · change p.scheme.scheme.scope Θ' ⊆ p.scheme.scheme.scope Θ
-      rw [hsc]
-      exact Finset.subset_univ _
-    · change p.scheme.scheme.grade Θ' ≤ p.scheme.scheme.grade Θ
-      rw [hgr, hgr']
+    · simp_all
+    simp_all
   have hΘΘ' : GradedLe (p.scheme.scheme.cell Θ) (p.scheme.scheme.cell Θ') := by
-    refine ⟨?_, ?_⟩
-    · change p.scheme.scheme.scope Θ ⊆ p.scheme.scheme.scope Θ'
-      rw [hsc']
-      exact Finset.subset_univ _
-    · change p.scheme.scheme.grade Θ ≤ p.scheme.scheme.grade Θ'
-      rw [hgr, hgr']
-  set K := p.topGrade with hK
-  set a := p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩ with ha
-  set a' := p.scheme.rows.E Θ' ⟨Xi, hXiΘ'⟩ with ha'
-  set x := p.scheme.rows.E Θ' ⟨Θ, hΘΘ'⟩ with hx
-  -- strict comparisons from ¬ clause 2.(a)
-  have ha'x : a' < x := row_lt_of_not_cap hcap hXiΘ' hΘΘ' hsc' hgr' hΘ'top hgr hΘtop
-  -- locality of the row E(Θ') at Θ
-  obtain ⟨g, σ, hganti, -, -, -, hσ5, hloc⟩ :=
-    (p.scheme.consistent Θ').locality ⟨Θ, hΘΘ'⟩
-  have hlocΘ := hloc ⟨Θ, GradedLe.refl _⟩
-  have hlocΞ := hloc ⟨Xi, hXiΘ⟩
-  change min (p.scheme.rows.E Θ' ⟨Θ, _⟩) x = min (σ (p.scheme.rows.E Θ ⟨Θ, _⟩))
-    (g (p.scheme.scheme.grade Θ)) at hlocΘ
-  change min (p.scheme.rows.E Θ' ⟨Xi, _⟩) x = min (σ a) (g (p.scheme.scheme.grade Xi)) at hlocΞ
-  have hxle : x ≤ g K := by
-    have : min x x = min (σ (p.scheme.rows.E Θ ⟨Θ, GradedLe.refl _⟩)) (g K) := by
-      rw [← hgr]
-      exact hlocΘ
-    rw [min_self] at this
-    rw [this]
-    exact min_le_right _ _
-  have hgradeXi : p.scheme.scheme.grade Xi ≤ K := by
-    have h2 : p.scheme.scheme.grade Xi ≤ p.scheme.scheme.grade Θ := hXiΘ.2
-    rw [hgr] at h2
-    exact h2
-  have hgle : g K ≤ g (p.scheme.scheme.grade Xi) := by
-    rcases hgradeXi.lt_or_eq with hlt | heqg
-    · exact hganti _ _ hlt
-    · rw [heqg]
-  have hmin : min a' x = a' := min_eq_left ha'x.le
-  rw [hmin] at hlocΞ
-  -- a' < g (grade Ξ), so the right-hand minimum is σ a
-  have ha'g : a' < g (p.scheme.scheme.grade Xi) := lt_of_lt_of_le ha'x (hxle.trans hgle)
-  have ha'σ : a' = σ a := by
-    rcases le_total (σ a) (g (p.scheme.scheme.grade Xi)) with hle | hle
-    · rw [min_eq_left hle] at hlocΞ
-      exact hlocΞ
-    · rw [min_eq_right hle] at hlocΞ
-      exact absurd hlocΞ ha'g.ne
-  have hσaK : σ a ≤ g K := ha'σ ▸ (ha'x.le.trans hxle)
-  -- clause 5 transports the band replacement at K
-  obtain ⟨β, hβ, hfp, hi⟩ := ProvisionalBand.exists_ordinal htop hcap hXiΘ hsc hgr hΘtop heq
-  obtain ⟨β', hβ', hfp', hi'⟩ :=
-    ProvisionalBand.exists_ordinal htop hcap hXiΘ' hsc' hgr' hΘ'top heq'
-  have hiK : i ≤ K := (hi ▸ hfp).le
-  have h5 := hσ5 a K hσaK i hiK
-  rw [← heq] at h5
-  -- h5 : σ a = extVisibilityReplace (σ a) K i
-  have hβ'' : a' = ofOrd β' := hβ'
-  rw [← ha'σ, hβ'', extVisibilityReplace_ofOrd] at h5
-  have hβ'eq : β' = limitPart β' + (i : Ordinal) := by
-    have h0 := ofOrd_inj.mp h5
-    unfold visibilityReplace ordinalReplace at h0
-    rwa [ite_eq_left hfp'] at h0
-  have hcast : (i : Ordinal.{0}) = (finitePart β' : Ordinal.{0}) :=
-    add_left_cancel (hβ'eq.symm.trans (decomposition β').symm)
-  have : i = finitePart β' := by exact_mod_cast hcast
-  omega
+    simp_all
+  let a := p.scheme.rows.E Θ ⟨Xi, hXiΘ⟩
+  let a' := p.scheme.rows.E Θ' ⟨Xi, hXiΘ'⟩
+  let x := p.scheme.rows.E Θ' ⟨Θ, hΘΘ'⟩
+  have hax : a' < x := row_lt_of_not_cap hcap hXiΘ' hΘΘ' hsc' hgr' hΘ'top hgr hΘtop
+  obtain ⟨g, σ, hg, -, hσ, hloc, hx⟩ := locality_data hΘΘ'
+  have he : a' = σ a := uncapped_eq (hloc ⟨Xi, hXiΘ⟩) hax
+    (hax.trans_le (hx.trans (hg hXiΘ.2)))
+  obtain ⟨_, -, hfp, hi⟩ := ProvisionalBand.exists_ordinal htop hcap hXiΘ hsc hgr hΘtop heq
+  obtain ⟨β, hβ, hfp', hi'⟩ := ProvisionalBand.exists_ordinal htop hcap hXiΘ' hsc' hgr' hΘ'top heq'
+  have hw : σ a ≤ g p.topGrade := by rw [← he, ← hgr]; exact hax.le.trans hx
+  have hr := hσ a p.topGrade hw i (hi ▸ hfp.le)
+  change a = extVisibilityReplace a p.topGrade i at heq
+  change a' = ofOrd β at hβ
+  rw [← heq, ← he, hβ] at hr
+  exact (band_eq_finitePart hfp' hr).trans hi'.symm
 
 /-- **Def. 5.3.1 is single-valued**: any two provisional values of a cell agree. -/
 theorem IsProvisionalValue.unique {p : S α n} {Xi : Cell p.scheme.scheme} {v v' : ExtOrd}

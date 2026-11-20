@@ -7,21 +7,14 @@ module
 
 public import VaughtConjecture.Knight.OrdinaryScopeOperator
 
-/-! # The ordinary operation on an actual binary plan step
-
-The two facets are the plan's actual erased facets, not the original small donor
-substituted for an as-yet-unconstructed facet. Coverage and both height bounds
-are derived here. The two legal facet schemes and their literal common face
-are inputs to this local operation; global scope relocation and iteration still
-have to construct those inputs coherently.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryPlanScopeStep
+
 open AmalgamationPlan Transform Value ExtOrd AmalgamatedBoundaryPlan OrdinaryScopeOperator
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} (s : Step A)
 
 theorem left_proper : A.erase s.a ≠ A :=
@@ -37,7 +30,7 @@ theorem coverage (T : Finset ι) (hT : T ∈ s.plan) (hTA : T ≠ A) :
   · rcases Finset.mem_union.mp hT with hT | hT
     · exact Or.inl (s.left_plan.subset_of_mem hT)
     · exact Or.inr (s.right_plan.subset_of_mem hT)
-  · exact (hTA (Finset.mem_singleton.mp hT)).elim
+  aesop
 
 theorem left_height {k : ℕ} (hcard : A.card = k + 1) : (A.erase s.a).card = k := by
   rw [Finset.card_erase_of_mem s.ha, hcard]
@@ -47,9 +40,6 @@ theorem right_height {k : ℕ} (hcard : A.card = k + 1) : (A.erase s.b).card = k
   rw [Finset.card_erase_of_mem s.hb, hcard]
   omega
 
-variable {m nL nR : ℕ}
-variable (I : WholeDonorBoundary.Input A (A.erase s.a) (A.erase s.b) s.plan m nL nR)
-variable (k : ℕ) (hk : 0 < k) (hcard : A.card = k + 1)
-
 end
+
 end VaughtConjecture.Knight.OrdinaryPlanScopeStep

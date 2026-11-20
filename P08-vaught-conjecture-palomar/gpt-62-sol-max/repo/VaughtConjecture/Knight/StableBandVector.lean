@@ -8,18 +8,7 @@ module
 public import VaughtConjecture.JumpClosedCore
 public import VaughtConjecture.Knight.StableBand
 
-/-! # Finite band vectors and their decoding
-
-This is the algebraic interface for provisional and stable band vectors.
-Definitions and declarations are shared by the finite-jump and topological
-proofs of stable lawfulness. No band-closedness proof is imported here.
-Stable values are decoded from suprema in the completed band, not ordinal
-suprema. Proper source labels remain literal.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 
@@ -109,7 +98,7 @@ theorem bandLabel_provisionalBand (y : RootedCover x) :
   unfold StageType.bandLabel
   by_cases h : x.type.label Xi = ⊤
   · rw [dite_eq_left h, value_eq_offset Xi h y]
-    exact bandValue_natCast α.1 (offset Xi h y)
+    solve_by_elim
   · rw [dite_eq_right h]
     change x.type.label Xi = y.1.type.someProvisionalValue (cell y Xi)
     rw [someProvisionalValue_of_ne_top (by rw [label_cell]; exact h), label_cell]

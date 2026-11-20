@@ -7,239 +7,199 @@ module
 
 public import VaughtConjecture.Knight.GrowthPaddedNativeRows
 
-/-! # Birth provenance for every inherited higher growth owner
-
-The producer exhausts the actual installed inventory. Its returned maps preserve
-occurrence order, every base coordinate, and the owner's entire native row.
-No provenance or hidden-completion hypothesis is supplied by the caller.
--/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedOwnerProvenance
+
 open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources
+
 open GrowthPaddedContract GrowthPaddedIteration GrowthPaddedNativeRows
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
-  (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
-  (X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows)
-  (T : RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X)
-  (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
+  (G : BuildContext A B C R m n J)
 
-/-- Constructed birth data for an actual owner on a fixed final carrier. -/
-structure Origin (t : ℕ) (ht : t + 2 ≤ A.card)
-    (c : Cell (build I X T hA hB hC t ht).carrier) where
+local notation "P" => G.tower
+local notation "Fld" => Field G.I.right.scheme G.I.left.scheme
+local notation "Pt" => RelativeLadderLayer.Point (X := Fld) (Q := Catalogue G.X 1)
+local notation "B₀" => GrowthPaddedContract.base G.I G.X G.attach G.height G.leftProper G.rightProper
+
+/-- The birth rows of a higher owner persist on actual occurrences in the
+installed tower. Only the forward transport of its arguments is needed. -/
+structure Origin (c : Cell (P).carrier) where
   birth : ℕ
-  birth_le : birth ≤ t
-  height : birth + 2 ≤ A.card
-  member : Catalogue X (birth + 2)
-  map : Cell (build I X T hA hB hC birth height).carrier →
-    Cell (build I X T hA hB hC t ht).carrier
-  order : StrictMono map
-  index : ∀ d, (build I X T hA hB hC t ht).carrier.cell (map d) =
-    (build I X T hA hB hC birth height).carrier.cell d
-  base : ∀ d, map ((build I X T hA hB hC birth height).baseMap d) =
-    (build I X T hA hB hC t ht).baseMap d
-  occurrence : map (owner I X T hA hB hC birth height member) = c
-  domain : (build I X T hA hB hC birth height).carrier.below
-      ((build I X T hA hB hC birth height).carrier.cell
-        (owner I X T hA hB hC birth height member)) ≃
-    (build I X T hA hB hC t ht).carrier.below
-      ((build I X T hA hB hC t ht).carrier.cell c)
-  domain_val : ∀ d, (domain d).1 = map d.1
-  row : ∀ d, (build I X T hA hB hC t ht).rows.E c (domain d) =
-    source I X T hA hB hC birth height member d.1
-
-def native (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 2)) :
-    Origin I X T hA hB hC t ht (owner I X T hA hB hC t ht a) where
-  birth := t
-  birth_le := le_rfl
-  height := ht
-  member := a
-  map := id
-  order := strictMono_id
-  index _ := rfl
-  base _ := rfl
-  occurrence := rfl
-  domain := Equiv.refl _
-  domain_val _ := rfl
-  row := owner_row I X T hA hB hC t ht a
-
-def inherit (t : ℕ) (ht : (t + 1) + 2 ≤ A.card)
-    (c : Cell (build I X T hA hB hC t (by omega)).carrier)
-    (O : Origin I X T hA hB hC t (by omega) c) :
-    Origin I X T hA hB hC (t + 1) ht
-      (GrowthPaddedStepRows.old (build I X T hA hB hC t (by omega)) (by omega) c) where
-  birth := O.birth
-  birth_le := O.birth_le.trans (Nat.le_succ t)
-  height := O.height
-  member := O.member
-  map d := GrowthPaddedStepRows.old (build I X T hA hB hC t (by omega)) (by omega) (O.map d)
-  order := (SourceLayerCarrier.old_order _ _ _ (Nat.succ_pos _) (by omega)).comp O.order
-  index d := (SourceLayerCarrier.cell_toCell _ _ _ _ _ _).trans (O.index d)
-  base d := congrArg (GrowthPaddedStepRows.old _ _) (O.base d)
-  occurrence := congrArg (GrowthPaddedStepRows.old _ _) O.occurrence
-  domain := O.domain.trans (GrowthPaddedStepRows.ownerEquiv
-    (build I X T hA hB hC t (by omega)) (by omega) (by omega) c)
-  domain_val d := congrArg (GrowthPaddedStepRows.old _ _) (O.domain_val d)
-  row d := (GrowthPaddedStepRows.inherited_row
-    (build I X T hA hB hC t (by omega)) (by omega) (by omega) c (O.domain d)).trans (O.row d)
-
-/-- Exhaustive actual-owner provenance, including every inherited layer. -/
-theorem exists_origin (t : ℕ) (ht : t + 2 ≤ A.card)
-    (c : Cell (build I X T hA hB hC t ht).carrier)
-    (hc : (build I X T hA hB hC t ht).carrier.scope c = A)
-    (hg : 2 ≤ (build I X T hA hB hC t ht).carrier.grade c) :
-    Nonempty (Origin I X T hA hB hC t ht c) := by
-  induction t with
-  | zero =>
-    rcases GrowthPaddedSuccessor.cell_cases I X T hA hB hC c with ⟨d, rfl⟩ | ⟨a, rfl⟩
-    · have hi : (build I X T hA hB hC 0 ht).carrier.cell
-          (GrowthPaddedSuccessor.old I X T hA hB hC d) =
-          (base I X T hA hB hC).cell d :=
-        SourceLayerCarrier.cell_toCell _ _ _ _ _ _
-      have hs : (base I X T hA hB hC).scope d = A :=
-        (congrArg Prod.fst hi).symm.trans hc
-      have he := base_full_grade I X T hA hB hC d hs
-      have hh : 2 ≤ (base I X T hA hB hC).grade d :=
-        hg.trans_eq (congrArg Prod.snd hi)
-      omega
-    · exact ⟨native I X T hA hB hC 0 ht a⟩
-  | succ t ih =>
-    let P := build I X T hA hB hC t (by omega)
-    obtain ⟨x, hx⟩ := (SourceLayerCarrier.enumeration P.carrier
-      (Catalogue X (t + 2 + 1)) (t + 2 + 1) (Nat.succ_pos _) (by omega)).surjective c
-    change SourceLayerCarrier.toCell _ _ _ _ _ x = c at hx
-    rcases x with d | a
-    · rw [← hx] at hc hg ⊢
-      have hi : (build I X T hA hB hC (t + 1) ht).carrier.cell
-          (SourceLayerCarrier.toCell P.carrier (Catalogue X (t + 2 + 1))
-            (t + 2 + 1) (Nat.succ_pos _) (by omega) (.inl d)) = P.carrier.cell d :=
-        SourceLayerCarrier.cell_toCell _ _ _ _ _ _
-      obtain ⟨O⟩ := ih (by omega) d ((congrArg Prod.fst hi).symm.trans hc)
-        (hg.trans_eq (congrArg Prod.snd hi))
-      exact ⟨inherit I X T hA hB hC t ht d O⟩
-    · rw [← hx]
-      exact ⟨native I X T hA hB hC (t + 1) ht a⟩
-
-/-- Canonical chosen provenance, constructed from the actual inventory. -/
-def origin (t : ℕ) (ht : t + 2 ≤ A.card)
-    (c : Cell (build I X T hA hB hC t ht).carrier)
-    (hc : (build I X T hA hB hC t ht).carrier.scope c = A)
-    (hg : 2 ≤ (build I X T hA hB hC t ht).carrier.grade c) :
-    Origin I X T hA hB hC t ht c :=
-  Classical.choice (exists_origin I X T hA hB hC t ht c hc hg)
+  earlier : birth ≤ G.depth
+  member : Catalogue G.X (birth + 2)
+  map : Cell (G.earlier earlier).tower.carrier → Cell (P).carrier
+  index : ∀ d, (P).carrier.cell (map d) = (G.earlier earlier).tower.carrier.cell d
+  base : ∀ d, map ((G.earlier earlier).tower.baseMap d) = (P).baseMap d
+  occurrence : map ((G.earlier earlier).tower.controller member).1 = c
+  row : ∀ d : (G.earlier earlier).tower.carrier.below (A, birth + 2),
+    (P).rows.E c ⟨map d.1, by
+      rw [← occurrence, index, index, ((G.earlier earlier).tower.controller member).2]
+      exact d.2⟩ = (G.earlier earlier).tower.source member d.1
 
 namespace Origin
-variable {I X T hA hB hC} {t : ℕ} {ht : t + 2 ≤ A.card}
-  {c : Cell (build I X T hA hB hC t ht).carrier}
-  (O : Origin I X T hA hB hC t ht c)
 
-theorem owner_index : (build I X T hA hB hC t ht).carrier.cell c = (A, O.birth + 2) :=
-  (congrArg _ O.occurrence).symm.trans ((O.index _).trans
-    (GrowthPaddedNativeRows.owner_index I X T hA hB hC O.birth O.height O.member))
+variable {G}
+variable {c : Cell G.tower.carrier} (O : Origin G c)
 
-theorem row_diagonal :
-    (build I X T hA hB hC t ht).rows.E c ⟨c, GradedLe.refl _⟩ =
-      ceiling I O.birth := by
-  let e : (build I X T hA hB hC O.birth O.height).carrier.below
-      ((build I X T hA hB hC O.birth O.height).carrier.cell
-        (owner I X T hA hB hC O.birth O.height O.member)) :=
-    ⟨owner I X T hA hB hC O.birth O.height O.member, GradedLe.refl _⟩
-  have he : O.domain e = ⟨c, GradedLe.refl _⟩ :=
-    Subtype.ext ((O.domain_val e).trans O.occurrence)
-  exact (congrArg ((build I X T hA hB hC t ht).rows.E c) he).symm.trans
-    ((O.row e).trans (source_diagonal I X T hA hB hC O.birth O.height O.member))
+abbrev birthContext := G.earlier O.earlier
+abbrev anchor := O.birthContext.tower.baseAnchor O.member
+abbrev ceiling := GrowthPaddedNativeRows.ceiling (I := G.I) O.birth
 
-/-- An actual base occurrence in this inherited owner's domain. -/
-def baseArgument (d : Cell (GrowthPaddedContract.base I X T hA hB hC))
-    (hd : GradedLe ((GrowthPaddedContract.base I X T hA hB hC).cell d) (A, O.birth + 2)) :
-    (build I X T hA hB hC t ht).carrier.below
-      ((build I X T hA hB hC t ht).carrier.cell c) :=
-  ⟨(build I X T hA hB hC t ht).baseMap d, by rw [Layer.base_index, O.owner_index]; exact hd⟩
+local notation "E₀" => O.birthContext.tower
 
-theorem row_base_source (d : Cell (GrowthPaddedContract.base I X T hA hB hC))
-    (hd : GradedLe ((GrowthPaddedContract.base I X T hA hB hC).cell d) (A, O.birth + 2)) :
-    (build I X T hA hB hC t ht).rows.E c (O.baseArgument d hd) =
-      source I X T hA hB hC O.birth O.height O.member
-        ((build I X T hA hB hC O.birth O.height).baseMap d) := by
-  let e : (build I X T hA hB hC O.birth O.height).carrier.below
-      ((build I X T hA hB hC O.birth O.height).carrier.cell
-        (owner I X T hA hB hC O.birth O.height O.member)) :=
-    ⟨(build I X T hA hB hC O.birth O.height).baseMap d, by
-      rw [Layer.base_index, GrowthPaddedNativeRows.owner_index]; exact hd⟩
-  have he : O.domain e = O.baseArgument d hd := Subtype.ext
-    ((O.domain_val e).trans (O.base d))
-  rw [← he, O.row]
+theorem owner_index : (P).carrier.cell c = (A, O.birth + 2) :=
+  (congrArg (P).carrier.cell O.occurrence).symm.trans
+    ((O.index _).trans ((E₀).controller O.member).2)
 
-/-- Present original fields are literal numerical columns. The membership
-premise only asserts presence; absent future fields use the shadow theorem. -/
-theorem row_original (d : Cell I.boundary)
-    (hd : GradedLe (I.boundary.cell d) (A, O.birth + 2)) :
-    (build I X T hA hB hC t ht).rows.E c
-      (O.baseArgument (RelativeLadderLayer.old I.boundary (by omega : 0 < A.card) d)
-        (by simpa only [RelativeLadderLayer.old_index] using hd)) =
-      fields X (O.birth + 2) O.member (field I d) := by
-  rw [row_base_source, source_original]
+def argument (d : (E₀).carrier.below (A, O.birth + 2)) :
+    (P).carrier.below ((P).carrier.cell c) :=
+  ⟨O.map d.1, by rw [O.index, O.owner_index]; exact d.2⟩
 
-def ladderArgument (v : RelativeLadderLayer.Point
-    (X := Field I.right.scheme I.left.scheme) (Q := Catalogue X 1)) :
-    (build I X T hA hB hC t ht).carrier.below
-      ((build I X T hA hB hC t ht).carrier.cell c) :=
-  O.baseArgument (RelativeLadderLayer.added I.boundary (by omega : 0 < A.card) v)
-    (by rw [RelativeLadderLayer.added_index]; exact ⟨le_rfl, by omega⟩)
-
-theorem row_ladder_source (v : RelativeLadderLayer.Point
-    (X := Field I.right.scheme I.left.scheme) (Q := Catalogue X 1)) :
-    (build I X T hA hB hC t ht).rows.E c (O.ladderArgument v) =
-      source I X T hA hB hC O.birth O.height O.member
-        (ladder I X T hA hB hC O.birth O.height v) :=
-  O.row_base_source _ _
-
-/-- The full rank table, not merely represented-field readouts. -/
-theorem row_ladder (v : RelativeLadderLayer.Point
-    (X := Field I.right.scheme I.left.scheme) (Q := Catalogue X 1)) :
-    (build I X T hA hB hC t ht).rows.E c (O.ladderArgument v) =
-      SupportLadderRows.image (RelativeLadderLayer.ranks (fields X 1))
-        (anchor I X T hA hB hC O.birth O.height O.member)
-        (LadderScalarRendering.level
-          (LadderScalarRendering.values (fields X (O.birth + 2) O.member))
-          (ceiling I O.birth)) v := by
-  rw [O.row_ladder_source, source_ladder]
-
-theorem row_shadow_sup (f : Field I.right.scheme I.left.scheme) :
-    (Finset.univ : Finset (Catalogue X 1)).sup
-      (fun b => (build I X T hA hB hC t ht).rows.E c
-        (O.ladderArgument (SupportLadderRows.shadow b f))) =
-      fields X (O.birth + 2) O.member f := by
-  simp only [O.row_ladder_source]
-  exact source_shadow_sup I X T hA hB hC O.birth O.height O.member f
-
-theorem row_spare :
-    (build I X T hA hB hC t ht).rows.E c
-      (O.ladderArgument (SupportLadderRows.leaf (by exact Nat.succ_pos _)
-        (anchor I X T hA hB hC O.birth O.height O.member))) = ceiling I O.birth := by
-  rw [O.row_ladder_source]
-  exact source_spare I X T hA hB hC O.birth O.height O.member
-
-theorem row_ceiling_at (i : ℕ) (hi : 1 ≤ i) (hib : i ≤ O.birth + 2) :
-    ∃ d : (build I X T hA hB hC t ht).carrier.below
-        ((build I X T hA hB hC t ht).carrier.cell c),
-      (build I X T hA hB hC t ht).carrier.cell d.1 = (A, i) ∧
-        (build I X T hA hB hC t ht).rows.E c d = ceiling I O.birth := by
-  obtain ⟨d, hd, hv⟩ := source_ceiling_at I X T hA hB hC O.birth O.height O.member i hi hib
-  let e : (build I X T hA hB hC O.birth O.height).carrier.below
-      ((build I X T hA hB hC O.birth O.height).carrier.cell
-        (owner I X T hA hB hC O.birth O.height O.member)) :=
-    ⟨d, by rw [hd, GrowthPaddedNativeRows.owner_index]; exact ⟨le_rfl, hib⟩⟩
-  exact ⟨O.domain e, (congrArg _ (O.domain_val e)).trans ((O.index d).trans hd),
-    (O.row e).trans hv⟩
+theorem row_argument (d : (E₀).carrier.below (A, O.birth + 2)) :
+    (P).rows.E c (O.argument d) = (E₀).source O.member d.1 := O.row d
 
 end Origin
 
-open GrowthPaddedCutTransport
+private def native (a : Catalogue G.X (G.depth + 2)) : Origin G ((P).controller a).1 where
+  birth := G.depth
+  earlier := le_rfl
+  member := a
+  map := id
+  index _ := rfl
+  base _ := rfl
+  occurrence := rfl
+  row d := (P).controller_row a ⟨d.1, by rw [((P).controller a).2]; exact d.2⟩
+
+section Successor
+
+variable (t : ℕ) (ht : (t + 1) + 2 ≤ A.card)
+
+local notation "L" => G.atDepth t (by omega)
+local notation "H" => G.atDepth (t + 1) ht
+local notation "up" => Padded.StepRows.old (BuildContext.tower L) ht
+
+private def inherit (c : Cell (L).tower.carrier) (O : Origin L c) : Origin H (up c) where
+  birth := O.birth
+  earlier := O.earlier.trans (Nat.le_succ t)
+  member := O.member
+  map d := up (O.map d)
+  index d := (SourceLayerCarrier.cell_toCell _ _ _ _ _ _).trans (O.index d)
+  base d := congrArg up (O.base d)
+  occurrence := congrArg up O.occurrence
+  row d := (Padded.StepRows.inherited_row (L).tower (Nat.le_add_left 2 t) ht c (O.argument d)).trans
+    (O.row_argument d)
+
+end Successor
+
+/-- Exhaustive actual-owner provenance, including every inherited layer. -/
+theorem exists_origin_at (t : ℕ) (ht : t + 2 ≤ A.card)
+    (c : Cell (G.atDepth t ht).tower.carrier)
+    (hc : (G.atDepth t ht).tower.carrier.scope c = A)
+    (hg : 2 ≤ (G.atDepth t ht).tower.carrier.grade c) :
+    Nonempty (Origin (G.atDepth t ht) c) := by
+  induction t with
+  | zero =>
+    rcases GrowthPaddedSuccessor.cell_cases G.I G.X G.attach G.height G.leftProper G.rightProper c with
+      ⟨d, rfl⟩ | ⟨a, rfl⟩
+    · have hi : (G.atDepth 0 ht).tower.carrier.cell
+          (GrowthPaddedSuccessor.old G.I G.X G.attach G.height G.leftProper G.rightProper d) =
+          (B₀).cell d := SourceLayerCarrier.cell_toCell _ _ _ _ _ _
+      have hs : (B₀).scope d = A := (congrArg Prod.fst hi).symm.trans hc
+      have hh : 2 ≤ (B₀).grade d := hg.trans_eq (congrArg Prod.snd hi)
+      have h := (spec G.I G.X G.attach G.height G.leftProper G.rightProper).base_full_grade d hs
+      exact (Nat.not_succ_le_self 1 (hh.trans_eq h)).elim
+    · exact ⟨native (G.atDepth 0 ht) a⟩
+  | succ t ih =>
+    let L := (G.atDepth t (by omega)).tower
+    obtain ⟨x, hx⟩ := (SourceLayerCarrier.enumeration L.carrier
+      (Catalogue G.X (t + 2 + 1)) (t + 2 + 1) (Nat.succ_pos _) (by omega)).surjective c
+    change SourceLayerCarrier.toCell _ _ _ _ _ x = c at hx
+    rcases x with d | a
+    · rw [← hx] at hc hg ⊢
+      have hi := SourceLayerCarrier.cell_toCell L.carrier (Catalogue G.X (t + 2 + 1))
+          (t + 2 + 1) (Nat.succ_pos _) (by omega) (.inl d)
+      obtain ⟨O⟩ := ih (by omega) d ((congrArg Prod.fst hi).symm.trans hc)
+        (hg.trans_eq (congrArg Prod.snd hi))
+      exact ⟨inherit G t ht d O⟩
+    · rw [← hx]
+      exact ⟨native (G.atDepth (t + 1) ht) a⟩
+
+/-- Chosen provenance from the actual inventory. -/
+def origin (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
+    (hg : 2 ≤ (P).carrier.grade c) : Origin G c :=
+  Classical.choice (exists_origin_at G G.depth G.fits c hc hg)
+
+namespace Origin
+
+variable {G}
+variable {c : Cell G.tower.carrier} (O : Origin G c)
+
+local notation "E₀" => O.birthContext.tower
+
+theorem row_diagonal : (P).rows.E c ⟨c, GradedLe.refl _⟩ = O.ceiling := by
+  let b := (E₀).controller O.member
+  have hb : (E₀).carrier.cell b.1 = (A, O.birth + 2) := b.2
+  exact ((P).rows.E_congr rfl O.occurrence.symm).trans
+    ((O.row_argument ⟨b.1, ⟨(congrArg Prod.fst hb).le, (congrArg Prod.snd hb).le⟩⟩).trans ((E₀).source_diagonal O.member))
+
+def baseArgument (d : Cell B₀) (hd : GradedLe ((B₀).cell d) (A, O.birth + 2)) :
+    (P).carrier.below ((P).carrier.cell c) :=
+  ⟨(P).baseMap d, by rw [Padded.Layer.base_index, O.owner_index]; exact hd⟩
+
+theorem row_base_source (d : Cell B₀) (hd : GradedLe ((B₀).cell d) (A, O.birth + 2)) :
+    (P).rows.E c (O.baseArgument d hd) = (E₀).source O.member ((E₀).baseMap d) :=
+  ((P).rows.E_congr rfl (O.base d).symm).trans
+    (O.row_argument ⟨(E₀).baseMap d, ((E₀).base_index d) ▸ hd⟩)
+
+def originalArgument (d : Cell G.I.boundary)
+    (hd : GradedLe (G.I.boundary.cell d) (A, O.birth + 2)) :
+    (P).carrier.below ((P).carrier.cell c) :=
+  O.baseArgument (RelativeLadderLayer.old G.I.boundary G.pos d)
+    (by simpa only [RelativeLadderLayer.old_index] using hd)
+
+/-- Present originals are literal columns; future fields use shadow maxima. -/
+theorem row_original (d : Cell G.I.boundary) (hd : GradedLe (G.I.boundary.cell d) (A, O.birth + 2)) :
+    (P).rows.E c (O.originalArgument d hd) = fields G.X (O.birth + 2) O.member (field G.I d) :=
+  (O.row_base_source _ _).trans ((E₀).source_original O.member d)
+
+def ladderArgument (v : Pt) : (P).carrier.below ((P).carrier.cell c) :=
+  O.baseArgument (RelativeLadderLayer.added G.I.boundary G.pos v)
+    (by rw [RelativeLadderLayer.added_index]; exact ⟨le_rfl, by omega⟩)
+
+theorem row_ladder_source (v : Pt) : (P).rows.E c (O.ladderArgument v) =
+    (E₀).source O.member (ladder O.birthContext v) := O.row_base_source _ _
+
+/-- The full rank table, not merely represented-field readouts. -/
+theorem row_ladder (v : Pt) : (P).rows.E c (O.ladderArgument v) =
+    SupportLadderRows.image (RelativeLadderLayer.ranks (fields G.X 1)) O.anchor
+      (LadderScalarRendering.level (LadderScalarRendering.values (fields G.X (O.birth + 2) O.member))
+        O.ceiling) v :=
+  (O.row_ladder_source v).trans (source_ladder O.birthContext O.member v)
+
+theorem row_shadow_sup (f : Fld) : (Finset.univ : Finset (Catalogue G.X 1)).sup
+    (fun b => (P).rows.E c (O.ladderArgument (SupportLadderRows.shadow b f))) =
+      fields G.X (O.birth + 2) O.member f := by
+  simp only [O.row_ladder_source]
+  exact source_shadow_sup O.birthContext O.member f
+
+theorem row_spare : (P).rows.E c (O.ladderArgument (SupportLadderRows.leaf (Nat.succ_pos _) O.anchor)) =
+    O.ceiling :=
+  (O.row_ladder_source _).trans (source_spare O.birthContext O.member)
+
+theorem row_ceiling_at (i : ℕ) (hi : 1 ≤ i) (hib : i ≤ O.birth + 2) :
+    ∃ d : (P).carrier.below ((P).carrier.cell c),
+      (P).carrier.cell d.1 = (A, i) ∧ (P).rows.E c d = O.ceiling := by
+  obtain ⟨d, hd, hv⟩ := (E₀).source_ceiling_at O.member i hi hib
+  let e : (E₀).carrier.below (A, O.birth + 2) := ⟨d, hd ▸ ⟨le_rfl, hib⟩⟩
+  exact ⟨O.argument e, (O.index d).trans hd, (O.row_argument e).trans hv⟩
+
+end Origin
 
 end
+
 end VaughtConjecture.Knight.GrowthPaddedOwnerProvenance

@@ -6,28 +6,21 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.GrowthStableTemplate
-public import VaughtConjecture.Knight.GrowthStableCarrierReceiving
+public import VaughtConjecture.Knight.GrowthCarrierEvaluation
+public import VaughtConjecture.Knight.StableActualLabelling
+public import VaughtConjecture.Knight.GrowthStableSelectedInput
 public import VaughtConjecture.Knight.AnchorStable
-
-/-! # Positive-root stable receiving before its modelhood applications
-
-Non-hollowness supplies an attained proper stable marker. The constructed
-calibration and native template feed the positive-cap physical receiver over
-the actual private context. Its independently lawful stable labels satisfy
-correctness; modelhood of the stable candidate is not assumed.
-
-The two conclusions remain distinct: non-top donor values are exact, while
-donor tops read above the requested threshold. Cap receiving and selected
-occurrence supplies are downstream applications, not imports of this producer.
--/
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.NonHollowGrowthReceiving
+
 open TypeTower StageType KnightRealization Value ExtOrd
+
 noncomputable section
+
 universe w
+
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
 /-- Stable receiving over a positive root, with no supplied calibration,
@@ -54,14 +47,14 @@ theorem receives_positive (hM : W.IsModel) (hh : ¬ W.IsHollow)
     rw [hclass]
     rfl
   obtain ⟨y, _, hyRoot, s, hev, he, hc⟩ :=
-    GrowthStableCarrierReceiving.exists_correct_donor C q.scheme p.scheme f
-      hvC hvP hF hP X T hsmall hM hC hin
-  have hy : y ∉ Set.range t := by rwa [hfu] at hyRoot
-  have htup : snoc (f.trans u) y hyRoot = snoc t y hy := by
-    cases hfu
-    rfl
-  rw [htup] at hev hc
-  exact ⟨y, hy, s, hev, he.symm, hread _ hc⟩
+    GrowthCarrierEvaluation.exists_correct_donor C q.scheme p.scheme f
+      hvC hvP hF hP X T hsmall (stableActualLabelling hM.consistent hM.covering) hM hC
+      (fun d => (GrowthStableSelectedInput.private_bottom hM hC d.1).trans (hin d))
+  change X.req.Correct (X.req.sec (W.stableValue u C))
+    (fun d => W.stableValue (snoc (f.trans u) y hyRoot) s (SemScheme.castCell he.symm d)) at hc
+  rw [← hfu]
+  exact ⟨y, hyRoot, s, hev, he.symm, hread _ hc⟩
 
 end
+
 end VaughtConjecture.Knight.NonHollowGrowthReceiving

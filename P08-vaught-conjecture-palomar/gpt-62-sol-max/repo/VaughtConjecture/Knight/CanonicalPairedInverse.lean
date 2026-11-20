@@ -7,19 +7,12 @@ module
 
 public import VaughtConjecture.Knight.CanonicalPairedProfiles
 
-/-! # Supported inverse with fixed unused grid endpoints
-
-Occupied rays read the original observations. At every unhosted block through
-the retained cut, an added constant step fixes that block's grid endpoint.
-Hosted blocks retain their affine rays instead: a constant patch there would
-destroy the invisible observations. This is separate from right-filled decoding.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedInverse
+
 open Transform Value ExtOrd PairedSlotEncoding
+
 noncomputable section
 
 def grid (j b : ℕ) : ExtOrd := ofOrd (Ordinal.omega0 * b + j)
@@ -37,7 +30,7 @@ def inverse (j : ℕ) (S : Finset Ordinal.{0}) (B : ℕ) (x : ExtOrd) : ExtOrd :
 
 theorem grid_visible (j b : ℕ) : SelfVis j (grid j b) := by
   apply selfVis_ofOrd_iff.mpr
-  simp only [finitePart_mul_add, le_refl]
+  simp [finitePart_mul_add, le_refl]
 
 theorem inverse_witness (j : ℕ) (S : Finset Ordinal.{0}) (B : ℕ) :
     Witness (gTop j) (inverse j S B) :=
@@ -46,8 +39,10 @@ theorem inverse_witness (j : ℕ) (S : Finset Ordinal.{0}) (B : ℕ) :
       (fun b _ => Witness.stepLimit j b bot_le (selfVis_bot j) (grid_visible j b)))
 
 section Relative
+
 variable {j B : ℕ} {S : Finset Ordinal.{0}}
   (hc : ∀ a ∈ S, min (encode j S a) (grid j B) = min (ofOrd a) (grid j B))
+
 include hc
 
 theorem encoded_low {a : Ordinal.{0}} (ha : a ∈ S) (hl : encode j S a < grid j B) :
@@ -59,7 +54,7 @@ theorem original_reaches {a : Ordinal.{0}} (ha : a ∈ S) {b : ℕ}
     apply add_le_add
     · gcongr
     · exact le_rfl)
-  exact (le_min he hcut).trans ((hc a ha) ▸ min_le_left (ofOrd a) (grid j B))
+  grind
 
 theorem patch_encode_le {a : Ordinal.{0}} (ha : a ∈ S) :
     patch j S B (encode j S a) ≤ ofOrd a := by
@@ -67,15 +62,15 @@ theorem patch_encode_le {a : Ordinal.{0}} (ha : a ∈ S) :
   apply Finset.sup_le
   intro b hb
   obtain ⟨hbB, hbfree⟩ := Finset.mem_filter.mp hb
-  have hbB : b ≤ B := by simpa only [Finset.mem_range, Nat.lt_succ_iff] using hbB
+  have hbB : b ≤ B := by simp_all
   by_cases hba : b ≤ block j S a
   · apply (PairedSlotDecoder.step_zero_le _ _ _).trans
     apply original_reaches hc ha hbB
     rcases lt_or_eq_of_le hba with hlt | heq
     · exact ofOrd_le_ofOrd.mpr ((code_add_lt_mul (Nat.cast_lt.mpr hlt) j).le.trans
         le_self_add)
-    · have ho : ¬ Orbit j S a := fun ho => hbfree ⟨a, ha, ho, heq.symm⟩
-      simp only [encode, offset, ite_eq_right ho, grid, heq, le_refl]
+    · have ho : ¬ Orbit j S a := by grind
+      simp [encode, offset, ite_eq_right ho, grid, heq, le_refl]
   · rw [encode, stepShifter_of_lt (ofOrd_ne_bot _)
       (ofOrd_lt_ofOrd.mpr (code_add_lt_mul (Nat.cast_lt.mpr (not_le.mp hba)) _))]
     exact bot_le
@@ -144,11 +139,10 @@ theorem grid_reaches {b : ℕ} (hb : b ≤ B) : grid j b ≤ inverse j S B (grid
     have hread := inverse_encode hc hv
     have hw := inverse_witness j S B
     have hsrc : extVisibilityReplace (encode j S v) j j = grid j b := by
-      simp only [encode, offset, ite_eq_left hov, hvb,
+      simp [encode, offset, ite_eq_left hov, hvb,
         extVisibilityReplace_ofOrd, visibilityReplace, finitePart_mul_add,
         ite_eq_left hvj, ordinalReplace, limitPart_mul_add, grid]
-    have hcomm := hw.clause5 (encode j S v) j (by rw [gTop_of_le le_rfl]; exact le_top)
-      j le_rfl
+    have hcomm := hw.comm (encode j S v) le_rfl le_rfl
     rw [hsrc, hread, ← hfix, hsrc] at hcomm
     exact hcomm.ge
   · have hm : b ∈ freeBlocks j S B :=
@@ -167,6 +161,7 @@ theorem inverse_grid {b : ℕ} (hb : b < B) : inverse j S B (grid j b) = grid j 
 end Relative
 
 section Profile
+
 variable {X : Type*} [Fintype X] {j B : ℕ} {a p : X → ExtOrd}
 
 theorem encoded_cap
@@ -178,15 +173,15 @@ theorem encoded_cap
   obtain ⟨d, hd⟩ := mem_values.mp hv
   have he := CanonicalPairedProfiles.normalize_cap X j ha hag d
   rw [normalize_ofOrd hd] at he
-  exact he.trans (by simpa only [hd, grid] using hag d)
+  exact he.trans (by simpa [hd, grid] using hag d)
 
 theorem inverse_normalize
     (ha : a ∈ CanonicalPairedProfiles.inventory X j) (hp : ∀ d, p d ≠ ⊤)
     (hag : ∀ d, min (a d) (grid j B) = min (p d) (grid j B)) (d : X) :
     inverse j (values p) B (PairedSlotEncoding.normalize j p d) = p d := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨v, hv⟩
-  · simp only [PairedSlotEncoding.normalize, hb, (inverse_witness j (values p) B).bot]
-  · exact (hp d ht).elim
+  · simp [PairedSlotEncoding.normalize, hb, (inverse_witness j (values p) B).bot]
+  · tauto
   · rw [normalize_ofOrd hv, inverse_encode (encoded_cap ha hag) (mem_values.mpr ⟨d, hv⟩), hv]
 
 /-- Only represented low anchors and their replacement orbits are fixed.
@@ -199,15 +194,14 @@ theorem inverse_supported
       extVisibilityReplace (a d) k i := by
   have he : a d = p d := eq_of_cap_eq_lt (hag d) hd
   have hn : PairedSlotEncoding.normalize j p d = a d := by
-    rw [← normalize_prefix (by simp only [finitePart_mul_add, le_refl]) hag d hd, ha.1]
+    rw [← normalize_prefix (by simp [finitePart_mul_add, le_refl]) hag d hd, ha.1]
   have hr : inverse j (values p) B (a d) = a d := by
     calc
       inverse j (values p) B (a d) =
           inverse j (values p) B (PairedSlotEncoding.normalize j p d) := congrArg _ hn.symm
       _ = p d := inverse_normalize ha hp hag d
       _ = a d := he.symm
-  rw [(inverse_witness j (values p) B).clause5 _ k
-    (by rw [gTop_of_le hk]; exact le_top) i hi, hr]
+  rw [(inverse_witness j (values p) B).comm _ hk hi, hr]
 
 /-- A constructed supported inverse, with no supplied scalar map or alignment.
 The canonical source and the proper repaired field vector agree at the same
@@ -228,5 +222,7 @@ theorem exists_supported_inverse
   · exact fun d hd k hk i hi => inverse_supported ha hp hag d hd hk hi
 
 end Profile
+
 end
+
 end VaughtConjecture.Knight.CanonicalPairedInverse

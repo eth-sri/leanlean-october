@@ -7,25 +7,22 @@ module
 
 public import VaughtConjecture.Knight.CanonicalFieldOwnerLift
 
-/-! # Literal grade-one lifting on the canonical complete-field catalogue
-
-The maximizing owner is constructed from actual prescribed availability.
-Arbitrary distinct prescribed values and literal top are allowed. Every new
-controller's original cap is retained, including controllers distinguished by
-fields outside the physical grade-one boundary.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalGradeOneLift
+
 open Transform Value ExtOrd CanonicalFieldLayer CanonicalFieldOwnerLift
+
 open CoatomBoundaryExtension
+
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable (sem : Semantics D) (X : Type*) [Fintype X] (occ : Cell D → X)
+
 variable (hA : 1 ≤ A.card) (hproper : ∀ d : Cell D, D.scope d ≠ A)
+
 variable (hg : ∀ d : Cell D, D.grade d ≤ 1) (hinj : Function.Injective occ)
 
 include hinj
@@ -40,17 +37,11 @@ theorem exists_positive_lift {C : Finset ι}
     (hq : RespectsSemanticsBelow (rows sem 1 X occ (by decide) hA hproper hg) (A, 1) q)
     {γ : ExtOrd} (hγ : SelfVis 1 γ) (hγb : γ ≠ ⊥)
     (hag : ∀ e : D.below (C, 1), min (p e) γ =
-      min (q (oldTarget sem 1 X occ (by decide) hA hproper hg e.1)) γ)
-    {U V O : Finset ι × ℕ}
-    (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
-    (hCU : GradedLe (C, 1) U) (hOU : GradedLe O U) (hOV : GradedLe O V)
-    (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
-      GradedLe (D.cell d) O)
-    (hleft : CappedLift sem hCU) (hright : CappedLift sem hOV)
-    (hU : U.2 ≤ 1) (hV : V.2 ≤ 1) :
+      min (q (oldTarget sem 1 X occ (by decide) hA hg e.1)) γ)
+    (W : CutCover sem (C, 1) 1) :
     ∃ r : target sem 1 X occ (by decide) hA → ExtOrd,
       RespectsSemanticsBelow (rows sem 1 X occ (by decide) hA hproper hg) (A, 1) r ∧
-      (∀ e : D.below (C, 1), r (oldTarget sem 1 X occ (by decide) hA hproper hg e.1) = p e) ∧
+      (∀ e : D.below (C, 1), r (oldTarget sem 1 X occ (by decide) hA hg e.1) = p e) ∧
       ∀ d, min (r d) γ = min (q d) γ := by
   obtain ⟨c, hci, hmax⟩ := AmbientGradeCharts.exists_maximizer hp hfull
   have hdom (e : D.below (C, 1)) : p e ≤ p c :=
@@ -60,20 +51,17 @@ theorem exists_positive_lift {C : Finset ι}
     have hcle : GradedLe (D.cell c.1) (C, 1) := by rw [hci]; exact GradedLe.refl _
     let pc : D.below (D.cell c.1) → ExtOrd := fun e => p ⟨e.1, e.2.trans hcle⟩
     have hpc : RespectsSemanticsBelow sem (D.cell c.1) pc := hp.mono hcle
-    have hcU : GradedLe (D.cell c.1) U := hcle.trans hCU
-    have hleftc : CappedLift sem hcU := by simpa only [hci] using hleft
+    have Wc : CutCover sem (D.cell c.1) 1 := hci.symm ▸ W
     obtain ⟨r, hr, hread, hcap⟩ := exists_owner_capped_lift sem 1 X occ (by decide) hA
       hproper hg hinj c.1 hc hpc hq hγ hγb (fun e => hag ⟨e.1, e.2.trans hcle⟩)
-      hactive hcover hcU hOU hOV hinter hleftc hright hU hV
+      hactive Wc
     refine ⟨r, hr, ?_, hcap⟩
     intro e
-    have he : GradedLe (D.cell e.1) (D.cell c.1) := by rw [hci]; exact e.2
+    have he : GradedLe (D.cell e.1) (D.cell c.1) := by grind
     exact (hread ⟨e.1, he⟩).trans (min_eq_left (hdom e))
   · refine ⟨fun d => min (q d) γ, hq.cap hγ, ?_, ?_⟩
-    · intro e
-      exact (hag e).symm.trans (min_eq_left ((hdom e).trans (not_lt.mp hactive)))
-    · intro d
-      rw [min_assoc, min_self]
+    all_goals grind
 
 end
+
 end VaughtConjecture.Knight.CanonicalGradeOneLift

@@ -7,15 +7,6 @@ module
 
 public import VaughtConjecture.Knight.HighGradeExtension
 
-/-! # Unrestricted lifting across a fresh higher grade
-
-Lift the retained part by its bountifulness. At the new controller keep
-the prescribed value if present, and otherwise cap its actual ambient
-value at the original cap. Its locality follows by the Cap Lemma. No
-separated-source, uniqueness, selected-label, or whole-ambient hypothesis
-is imposed on the lower-grade semantics.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.HighGradeExtension.Data
@@ -61,7 +52,7 @@ theorem respects_of {r : D.below (cut BJ k) → ExtOrd} {q : D.below BJ → ExtO
       rfl
     · by_cases he : c.1 = F.high
       · exact hhigh c he
-      · simpa only [hmute c hc he, min_bot_right] using
+      · simpa [hmute c hc he, min_bot_right] using
           (TransformsTo.to_bot (grade := fun d : D.below (D.cell c.1) => D.grade d.1)
             (F.rows.E c.1))
   availability d e hs hg := by
@@ -70,15 +61,14 @@ theorem respects_of {r : D.below (cut BJ k) → ExtOrd} {q : D.below BJ → ExtO
       obtain ⟨f, hf, hv⟩ := hr.availability
         ⟨d.1, d.2.1, le_min d.2.2 hd⟩ ⟨e.1, e.2.1, le_min e.2.2 he⟩ hs hg
       have hfb : GradedLe (D.cell f.1) BJ := f.2.trans cut_le
-      have hfk : D.grade f.1 ≤ k := f.2.2.trans (min_le_right _ _)
+      have hfk : D.grade f.1 ≤ k := (by simp_all)
       refine ⟨⟨f.1, hfb⟩, hf, ?_⟩
-      rw [hread d hd, hread ⟨f.1, hfb⟩ hfk]
-      exact hv
+      rwa [hread d hd, hread ⟨f.1, hfb⟩ hfk]
     · by_cases he : d.1 = F.high
       · refine ⟨d, ?_, le_rfl⟩
         rw [he]
         exact F.high_index (by simpa only [he] using hs) (by simpa only [he] using hg)
-      · exact ⟨e, rfl, by rw [hmute d hd he]; exact bot_le⟩
+      · exact ⟨e, rfl, by simp_all⟩
 
 def fill (r : D.below (cut BJ k) → ExtOrd) (η : ExtOrd) (d : D.below BJ) : ExtOrd :=
   if hd : D.grade d.1 ≤ k then r ⟨d.1, d.2.1, le_min d.2.2 hd⟩ else
@@ -95,7 +85,7 @@ theorem fill_high {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
 
 theorem fill_mute {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
     (d : D.below BJ) (hd : ¬D.grade d.1 ≤ k) (he : d.1 ≠ F.high) :
-    F.fill r η d = ⊥ := by simp only [fill, hd, he, ↓reduceDIte, ↓reduceIte]
+    F.fill r η d = ⊥ := by simp [fill, hd, he, ↓reduceDIte, ↓reduceIte]
 
 private theorem base_lift (hb : F.base.IsBountiful)
     (hCI : CI ∈ Plan.gradedPlan D.plan) (hBJ : BJ ∈ Plan.gradedPlan D.plan)
@@ -170,14 +160,14 @@ theorem bountiful (hk : 1 ≤ k) (hb : F.base.IsBountiful) : F.rows.IsBountiful 
   apply F.respects_of hr (fun d hd => F.fill_old d hd)
   · intro d
     by_cases hd : D.grade d.1 ≤ k
-    · simpa only [fill, hd, ↓reduceDIte] using
+    · simpa [fill, hd, ↓reduceDIte] using
         (hr.orderly ⟨d.1, d.2.1, le_min d.2.2 hd⟩).symm
     · by_cases he : d.1 = F.high
       · rcases d with ⟨d, hdBJ⟩
         dsimp only at he
         subst d
-        simpa only [fill, not_le_of_gt F.above, ↓reduceDIte, ↓reduceIte] using ηvis
-      · simpa only [fill, hd, he, ↓reduceDIte, ↓reduceIte] using selfVis_bot (D.grade d.1)
+        simpa [fill, not_le_of_gt F.above, ↓reduceDIte, ↓reduceIte] using ηvis
+      · simpa [fill, hd, he, ↓reduceDIte, ↓reduceIte] using selfVis_bot (D.grade d.1)
   · exact fun d hd he => F.fill_mute d hd he
   · rintro ⟨c, hcBJ⟩ he
     dsimp only at he

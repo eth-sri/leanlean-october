@@ -6,16 +6,9 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.SpectrumAssembly
-public import VaughtConjecture.Knight.BlockGeometry
+public import VaughtConjecture.Knight.BlockStages
+public import VaughtConjecture.Knight.Rank
 public import VaughtConjecture.Knight.NoTop
-
-/-! # Terminal models: the low-level definitions
-
-`TerminalModel`, the terminal setoid and classes, the block-zero lift, and the reduct map to
-the counted classes — extracted from `TerminalClassBound.lean` so that the rank spine can
-speak about terminal models without the receipt/Zorn cone.  The surjection onto the counted
-classes (linked terminal totality) and the spectrum bounds stay behind in
-`TerminalClassBound.lean`. -/
 
 @[expose] public section
 

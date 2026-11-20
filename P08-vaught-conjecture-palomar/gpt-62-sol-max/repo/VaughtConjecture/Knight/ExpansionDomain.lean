@@ -5,34 +5,12 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.CountableLoss
+public import InfinitaryLogic.OrdinalCountability
 public import VaughtConjecture.Knight.LimitExpansion
 public import VaughtConjecture.Knight.ProlongationNormalization
 public import VaughtConjecture.Knight.CountableTerminalFibres
 public import VaughtConjecture.Knight.ClassTruth
 public import VaughtConjecture.Knight.OneBlockComparison
-
-/-! # Expansion domains: countable fixed-stage exceptions without stopping ranks
-
-`domain ξ` is the set of counted isomorphism classes admitting a model expansion to block
-`ξ`.  It is defined by expansion **existence**, not by the stopping rank, and the three facts
-below use no stopping rank, no termination theorem, and no canonical stopping expansion:
-
-* **Successor losses are countable** (`loss_countable`): any expansion witnessing membership
-  in `domain ξ` of a class outside `domain (ξ + 1)` is terminal, so the loss lies in the image
-  of the terminal classes at block `ξ` (`loss_subset_range`), countable by the supplied
-  terminal-fibre countability.  No canonical or unique expansion is chosen.
-* **No loss at a countable limit** (`iInter_subset_domain`): the countable-limit expansion
-  theorem `exists_model_at_limit_of_forall_lt`.
-* **Fixed-stage complements are countable** (`compl_countable`): the generic
-  `CountableLoss.compl_countable_of_loss`.
-
-With the one-block readback hypothesis, classes in `domain (ω · η)` agree on every sentence of
-quantifier rank at most `η` (`realizes_iff_of_mem_domain`), so every sentence has a countable
-truth side (`sentence_split_countable`).  Terminal countability and receiving are explicit
-hypotheses here; `ExpansionDomainThinness` discharges them.  The existing rank filtration is
-untouched: under termination, `domain ξ = {q | ξ ≤ knightNatStopRank q}`, but that
-identification is not used. -/
 
 @[expose] public section
 
@@ -77,8 +55,6 @@ theorem domain_antitone : Antitone domain := by
   | h R =>
     exact Realization.ProlongsToIn.mono isModelClass_reduct (blockStage_mono hξη) hq
 
-/-! ## Successor losses -/
-
 /-- A class lost at the next block is the class of a terminal model at this block. -/
 theorem loss_subset_range (ξ : Ordinal.{0}) :
     domain ξ \ domain (ξ + 1) ⊆ Set.range (terminalToClass ξ) := by
@@ -108,8 +84,6 @@ theorem loss_countable (hct : CountableTerminalFibres) {ξ : Ordinal.{0}}
   have : Countable (TerminalClass ξ) := Cardinal.mk_le_aleph0_iff.mp (hct ξ hξ)
   (Set.countable_range _).mono (loss_subset_range ξ)
 
-/-! ## Limits -/
-
 /-- **No loss at a countable limit**: the countable-limit expansion theorem. -/
 theorem iInter_subset_domain {l : Ordinal.{0}} (hl : Order.IsSuccLimit l)
     (hlω : l < (aleph 1).ord) : (⋂ ξ < l, domain ξ) ⊆ domain l := by
@@ -123,10 +97,8 @@ theorem iInter_subset_domain {l : Ordinal.{0}} (hl : Order.IsSuccLimit l)
 /-- **Fixed-stage complements are countable.** -/
 theorem compl_countable (hct : CountableTerminalFibres) {β : Ordinal.{0}}
     (hβ : β < (aleph 1).ord) : (domain β)ᶜ.Countable :=
-  CountableLoss.compl_countable_of_loss domain domain_zero
+  InfinitaryLogic.compl_countable_of_loss domain domain_zero
     (fun _ hξ => loss_countable hct hξ) (fun _ hl hlω => iInter_subset_domain hl hlω) β hβ
-
-/-! ## Fixed-stage comparison on a domain -/
 
 theorem reduct_omegaStage_eq {ξ : Ordinal.{0}} {R : KnightNatModel}
     {W : KnightRealization (blockStage ξ) ℕ}

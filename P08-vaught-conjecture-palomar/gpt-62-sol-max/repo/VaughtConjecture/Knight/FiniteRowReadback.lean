@@ -7,15 +7,7 @@ module
 
 public import VaughtConjecture.Knight.Type
 
-/-! # Finite row readback at top-labelled cells
-
-Elementary locality readback shared by lawful provisional lifts and the
-arbitrary-ordinal ratchet, before provisional or model definitions.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 
@@ -33,10 +25,7 @@ theorem row_ne_bot_of_label_top (p : S α n) {Θ : Cell p.scheme.scheme}
   obtain ⟨g, σ, -, -, hσbot, -, -, hloc⟩ := p.respects.locality Θ
   have h : min (p.label Sg.1) (p.label Θ) =
       min (σ (p.scheme.rows.E Θ Sg)) (g (p.scheme.scheme.grade Sg.1)) := hloc Sg
-  rw [hSg, hΘ, min_self] at h
-  intro hbot
-  rw [hbot, hσbot] at h
-  exact absurd h.symm (by simp)
+  aesop
 
 end StageType
 

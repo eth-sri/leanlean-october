@@ -5,28 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.CountableLoss
-
-/-! # Separation, point tails, persistent cores, and cardinality with a countable core
-
-Generic set-level results about a family of domains `D i` (any index type `I`) and a family of
-observations `holds s : Q → Prop` that are eventually homogeneous on the domains.  The first
-four are the reviewer's scratch-compiled generic core (2026-09-28, ported with their proofs
-unchanged); the last is the cardinality theorem that tolerates a countable persistent core.
-
-* `point_tail_of_isolation`: isolating observations plus homogeneity give **point tails**: for
-  every `q` some domain either misses `q` or is `{q}`.
-* `no_persistent_of_point_tails`, `exists_failure_of_point_tails`: point tails and cofinal
-  successor losses leave no point in every domain (no continuity, countability, or initial
-  condition is used).
-* `persistent_subsingleton_of_separation`: pairwise separation alone bounds the persistent core
-  by one point; it does not empty it.
-* `mk_eq_aleph_one_of_countable_core`: decreasing domains indexed by countable ordinals with
-  countable complements at countable indices, a countable persistent core, and cofinally many
-  nonempty successor losses exhaust a space of cardinality exactly `ℵ₁`.  Eventual departure of
-  every point is **not** assumed; the core may be a singleton.
-
-Nothing here mentions ordinals except the last theorem, and nothing is construction-specific. -/
+public import InfinitaryLogic.OrdinalCountability
+public import Mathlib.SetTheory.Cardinal.Ordinal
 
 @[expose] public section
 
@@ -34,51 +14,20 @@ namespace VaughtConjecture.DomainSeparation
 
 open Cardinal Set
 
-universe u v w
-
-section Generic
-
-variable {I : Type u} {Q : Type v} {S : Type w}
-
-/-- Pairwise separation alone bounds the persistent core by one point.  It does not imply that
-this core is empty. -/
-theorem persistent_subsingleton_of_separation
-    (D : I → Q → Prop) (holds : S → Q → Prop)
-    (separates : ∀ p q : Q, p ≠ q → ∃ s : S, ¬ (holds s p ↔ holds s q))
-    (homogeneous : ∀ s : S, ∃ i : I,
-      ∀ p : Q, D i p → ∀ q : Q, D i q → (holds s p ↔ holds s q))
-    (p q : Q) (hp : ∀ i : I, D i p) (hq : ∀ i : I, D i q) : p = q := by
-  classical
-  by_contra hne
-  obtain ⟨s, hs⟩ := separates p q hne
-  obtain ⟨i, hi⟩ := homogeneous s
-  exact hs (hi p (hp i) q (hq i))
-
-end Generic
-
-/-! ## Cardinality with a countable persistent core -/
-
 /-- A set of countable ordinals that is cofinal in `ω₁` has cardinality `ℵ₁`. -/
 theorem aleph_one_le_mk_of_cofinal (T : Set Ordinal.{0}) (hT : ∀ ξ ∈ T, ξ < (aleph 1).ord)
     (hcof : ∀ η, η < (aleph 1).ord → ∃ ξ ∈ T, η ≤ ξ) : aleph 1 ≤ #T := by
-  by_contra h
-  have hc : #T ≤ ℵ₀ := Cardinal.lt_aleph_one_iff.mp (not_le.mp h)
-  have hcount : Countable T := Cardinal.mk_le_aleph0_iff.mp hc
-  obtain ⟨ξ₀, hξ₀, -⟩ := hcof 0 (Cardinal.isSuccLimit_ord (aleph0_le_aleph 1)).pos
-  have : Nonempty T := ⟨⟨ξ₀, hξ₀⟩⟩
-  obtain ⟨e, he⟩ := exists_surjective_nat T
-  have hsup : iSup (fun n => (e n).1) < (aleph 1).ord :=
-    Ordinal.iSup_lt_of_lt_cof
-      (by rw [Cardinal.mk_nat, Cardinal.isRegular_aleph_one.cof_ord]; exact aleph0_lt_aleph_one)
-      fun n => hT _ (e n).2
-  have hlim := Cardinal.isSuccLimit_ord (aleph0_le_aleph 1)
-  obtain ⟨ξ, hξT, hle⟩ := hcof _ (hlim.succ_lt hsup)
-  obtain ⟨n, hn⟩ := he ⟨ξ, hξT⟩
-  have hbdd : BddAbove (Set.range fun n => (e n).1) :=
-    ⟨(aleph 1).ord, by rintro _ ⟨m, rfl⟩; exact (hT _ (e m).2).le⟩
-  have : (e n).1 ≤ iSup fun n => (e n).1 := le_ciSup hbdd n
-  rw [hn] at this
-  exact absurd (hle.trans this) (not_le.mpr (Order.lt_succ _))
+  let U : Set (Set.Iio (aleph 1).ord) := {ξ | ξ.val ∈ T}
+  have hu : IsCofinal U := by
+    intro ξ
+    obtain ⟨ζ, hζ, hle⟩ := hcof ξ.1 ξ.2
+    exact ⟨⟨ζ, hT ζ hζ⟩, hζ, hle⟩
+  have h := Order.cof_le hu
+  rw [Ordinal.cof_Iio, ← Ordinal.lift_cof, isRegular_aleph_one.cof_ord] at h
+  exact (by simpa using h : aleph 1 ≤ #U).trans
+    (Cardinal.mk_le_of_injective (f := fun ξ : U => (⟨ξ.1.1, ξ.2⟩ : T)) (by
+      intro a b e
+      exact Subtype.ext (Subtype.ext (congrArg (fun ξ : T => ξ.val) e))))
 
 /-- **Exact cardinality with a countable persistent core.**  Decreasing domains, countable
 complements at countable indices, a countable persistent core, and cofinally many nonempty
@@ -91,44 +40,22 @@ theorem mk_eq_aleph_one_of_countable_core {X : Type 1} (D : Ordinal.{0} → Set 
       (D ξ \ D (ξ + 1)).Nonempty) :
     #X = aleph 1 := by
   apply le_antisymm
-  · -- every point is in the core or leaves some countable-index domain
-    have hcov : (Set.univ : Set X) = (⋂ β < (aleph 1).ord, D β) ∪
-        ⋃ β ∈ Set.Iio (aleph 1).ord, (D β)ᶜ := by
+  · let C := ⋂ β < (aleph 1).ord, D β
+    let U := ⋃ β < (aleph 1).ord, (D β)ᶜ
+    have hc : #C ≤ aleph 1 := (le_aleph0_iff_set_countable.mpr hcore).trans (aleph0_le_aleph 1)
+    have hu : #U ≤ aleph 1 := mk_biUnion_le_of_le_lift (by simp) (aleph0_le_aleph 1)
+      (fun β => (D β)ᶜ) fun β hβ =>
+        (le_aleph0_iff_set_countable.mpr (hcompl β hβ)).trans (aleph0_le_aleph 1)
+    have hcov : C ∪ U = Set.univ := by
       ext x
-      simp only [Set.mem_univ, true_iff, Set.mem_union, Set.mem_iInter, Set.mem_iUnion,
-        Set.mem_compl_iff, Set.mem_Iio]
-      by_cases h : ∀ β < (aleph 1).ord, x ∈ D β
-      · exact Or.inl h
-      · push Not at h
-        obtain ⟨β, hβ, hx⟩ := h
-        exact Or.inr ⟨β, hβ, hx⟩
-    have hcount : (Set.univ : Set X).Countable ∨ True := Or.inr trivial
-    calc #X = #(Set.univ : Set X) := Cardinal.mk_univ.symm
-      _ ≤ #((⋂ β < (aleph 1).ord, D β) ∪ ⋃ β ∈ Set.Iio (aleph 1).ord, (D β)ᶜ : Set X) := by
-          rw [hcov]
-      _ ≤ #(⋂ β < (aleph 1).ord, D β : Set X) +
-          #(⋃ β ∈ Set.Iio (aleph 1).ord, (D β)ᶜ : Set X) := Cardinal.mk_union_le _ _
-      _ ≤ aleph 1 + aleph 1 := by
-          gcongr
-          · exact (Cardinal.le_aleph0_iff_set_countable.mpr hcore).trans aleph0_lt_aleph_one.le
-          · calc #(⋃ β ∈ Set.Iio (aleph 1).ord, (D β)ᶜ : Set X)
-                ≤ #(Set.Iio (aleph 1).ord) * ⨆ β : Set.Iio (aleph 1).ord, #((D β.1)ᶜ : Set X) :=
-                  Cardinal.mk_biUnion_le _ _
-              _ ≤ aleph 1 * aleph 1 := by
-                  rw [CountableLoss.mk_Iio_ord_aleph_one]
-                  gcongr
-                  exact ciSup_le' fun β =>
-                    (Cardinal.le_aleph0_iff_set_countable.mpr (hcompl β.1 β.2)).trans
-                      aleph0_lt_aleph_one.le
-              _ = aleph 1 := by simp only [Cardinal.aleph_mul_aleph, max_self]
-      _ = aleph 1 := by simp only [Cardinal.aleph_add_aleph, max_self]
+      simp only [C, U, mem_union, mem_iInter, mem_iUnion, mem_compl_iff, mem_univ]
+      grind
+    simpa [hcov] using (mk_union_le C U).trans (add_le_add hc hu)
   · -- one point from each nonempty loss; losses are pairwise disjoint by antitonicity
     classical
     let T : Set Ordinal.{0} := {ξ | ξ < (aleph 1).ord ∧ (D ξ \ D (ξ + 1)).Nonempty}
     have hT : ∀ ξ ∈ T, ξ < (aleph 1).ord := fun _ h => h.1
-    have hcof : ∀ η, η < (aleph 1).ord → ∃ ξ ∈ T, η ≤ ξ := fun η hη => by
-      obtain ⟨ξ, hηξ, hξ, hne⟩ := hloss η hη
-      exact ⟨ξ, ⟨hξ, hne⟩, hηξ⟩
+    have hcof : ∀ η, η < (aleph 1).ord → ∃ ξ ∈ T, η ≤ ξ := by grind
     let pick : T → X := fun ξ => ξ.2.2.some
     have hpick : ∀ ξ : T, pick ξ ∈ D ξ.1 \ D (ξ.1 + 1) := fun ξ => ξ.2.2.some_mem
     have hinj : Function.Injective pick := by

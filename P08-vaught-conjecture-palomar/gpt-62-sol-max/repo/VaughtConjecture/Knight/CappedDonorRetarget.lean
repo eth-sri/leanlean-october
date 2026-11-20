@@ -7,49 +7,11 @@ module
 
 public import VaughtConjecture.Knight.CappedDonorLowRef
 
-/-! # Uniform top retargeting and exact old-face restoration (audit16 §2, note §3.1)
-
-The first of the two original-row operations of the two-threshold family: on the **unchanged
-request scheme `P`**, using only its original rows and the original donor.
-
-**Vertical gluing** (`RespectsSemanticsBelow.glue`): a lawful section on a lower grade set and a
-lawful section on the full set with the same scope glue to a lawful section when, at every owner
-above the lower grade, the lower section reads like the full one below the owner's own value.
-
-**Uniform retargeting** (`retargetTops`, `retargetTops_respects`): let `u` be lawful at a cutoff
-`j ≥ K`,
-let `b` be positive and `K`-visible with every donor non-top value strictly below `b` and every
-donor-top value at least `b`, and let `η ≥ b` be `K`-visible.  Replacing every designated
-donor-top value by `η` and retaining every other value is lawful.  At a donor non-top owner the
-capped target is unchanged.  At a donor-top owner `o` (grade `k ≤ K`) the original donor gives
-`R_k(E_o d) < E_o t` between donor non-top and donor-top sources (`srcP_nonTop_lt_top`, from
-the donor's exact witness at `o`); with `a_o` the maximum of the rounded non-top sources, the
-new shifter is the exact normalized witness of `u` at `o` below `a_o`, constantly `η` above, and
-bottom wherever the old witness is bottom — monotone, replacement-compatible through `k`, and
-bottom-closed above `k` (`retargetShifter_witness`).  Availability uses the donor's witnesses at
-designated tops and `u`'s witnesses elsewhere.  This is per-owner surgery, not one scalar
-function of the values.
-
-**Exact old-face restoration, arbitrary root** (`exists_retarget_restore`; newapproach2 §4):
-given further a lawful private section whose present face values agree with `u` at every donor
-non-top face cell and are at least `η` at every donor-top face cell, there is a lawful section
-at the cutoff with the whole present face literally that section's, every donor non-top value
-literally `u`'s, and every donor-top value at least `η`: restore only the **grade-`≤ K` part of
-the face** inside the retargeted section through the effective grade `min K (arity P)` by old
-`P`-bountifulness at cap `η`, then attach the unchanged higher-grade values by gluing — every
-higher owner is donor non-top and lies below `b ≤ η`, so its whole locality target is unchanged.
-The higher-grade face cells are donor non-top, so their prescribed values are `u`'s and the
-gluing restores them too.  No bound `KA ≤ K` on the root arity is needed; an empty low part
-needs no extension call.  The cap `η` is used as a bountifulness cap only through `K`, never at
-a higher grade. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd AmalgamationPlan
-
-/-! ## Vertical gluing -/
 
 section Glue
 
@@ -83,7 +45,7 @@ theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI 
     RespectsSemanticsBelow sem BJ (glueSection w q) where
   orderly d := by
     by_cases hd : GradedLe (D.cell d.1) CI
-    · rw [glueSection_of_le w q hd]; exact hw.orderly ⟨d.1, hd⟩
+    · rw [glueSection_of_le w q hd]; apply hw.orderly
     · rw [glueSection_of_not_le w q hd]; exact hq.orderly d
   locality Sig := by
     by_cases hS : GradedLe (D.cell Sig.1) CI
@@ -114,8 +76,7 @@ theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI 
           rw [← hg]; exact hS.2⟩
       obtain ⟨Xi, hcell, hle⟩ := hw.availability ⟨Sig.1, hS⟩ ⟨Xi₀.1, hX⟩ hs hg
       refine ⟨⟨Xi.1, Xi.2.trans h⟩, hcell, ?_⟩
-      rw [glueSection_of_le w q hS, glueSection_of_le w q (d := ⟨Xi.1, Xi.2.trans h⟩) Xi.2]
-      exact hle
+      rwa [glueSection_of_le w q hS, glueSection_of_le w q (d := ⟨Xi.1, Xi.2.trans h⟩) Xi.2]
     · obtain ⟨Xi, hcell, hle⟩ := hq.availability Sig Xi₀ hs hg
       have hX : ¬ GradedLe (D.cell Xi.1) CI := by
         intro hX
@@ -125,8 +86,7 @@ theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI 
         change D.grade Sig.1 ≤ CI.2
         rw [hg, ← h1]; exact hX.2
       refine ⟨Xi, hcell, ?_⟩
-      rw [glueSection_of_not_le w q hS, glueSection_of_not_le w q hX]
-      exact hle
+      rwa [glueSection_of_not_le w q hS, glueSection_of_not_le w q hX]
 
 end Glue
 
@@ -134,58 +94,26 @@ namespace CappedDonor
 
 namespace Ref
 
-variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
-  {R : Ref I nP N J P C}
-
-/-! ## The donor's source separation at a donor-top owner -/
-
-/-! ## Uniform retargeting -/
-
 section Retarget
-
-variable {K : ℕ} (L : R.LowRef K) {j : ℕ} {u : P.scheme.below (effP nP j) → ExtOrd}
-  {b η : ExtOrd}
-
-/-- The hypotheses of the retargeting lemma: a lawful section whose donor non-top values lie
-strictly below a positive `K`-visible `b` and whose donor-top values are at least `b`, and a
-`K`-visible target `η ≥ b`. -/
-structure RetargetData (u : P.scheme.below (effP nP j) → ExtOrd) (b η : ExtOrd) : Prop where
-  respects : RespectsSemanticsBelow P.rows (effP nP j) u
-  b_vis : SelfVis K b
-  b_pos : ⊥ < b
-  nonTop_lt : ∀ d, R.p d.1 ≠ ⊤ → u d < b
-  top_ge : ∀ d, R.p d.1 = ⊤ → b ≤ u d
-  η_vis : SelfVis K η
-  b_le_η : b ≤ η
-
-variable (hj : K ≤ j) (hu : RetargetData (R := R) (K := K) u b η)
-
-include L hj hu
 
 /-- The shifter at a donor-top owner: the old witness where it is bottom or below the rounded
 non-top sources, constantly `η` above. -/
 noncomputable def retargetShifter (τ : ExtOrd → ExtOrd) (a η : ExtOrd) (x : ExtOrd) : ExtOrd :=
   if τ x = ⊥ then ⊥ else if x ≤ a then τ x else η
 
-omit L hj hu in
 theorem retargetShifter_of_bot {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x = ⊥) :
     retargetShifter τ a η x = ⊥ := by
   unfold retargetShifter; rw [ite_eq_left h]
 
-omit L hj hu in
 theorem retargetShifter_of_le {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (hx : x ≤ a) :
     retargetShifter τ a η x = τ x := by
   unfold retargetShifter
-  by_cases h : τ x = ⊥
-  · rw [ite_eq_left h, h]
-  · rw [ite_eq_right h, ite_eq_left hx]
+  aesop
 
-omit L hj hu in
 theorem retargetShifter_of_lt {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x ≠ ⊥) (hx : a < x) :
     retargetShifter τ a η x = η := by
-  unfold retargetShifter; rw [ite_eq_right h, ite_eq_right (not_le.mpr hx)]
+  unfold retargetShifter; aesop
 
-omit L hj hu in
 /-- The retargeting shifter is a normalized witness through `k` whenever the old witness is, the
 split point is `k`-visible with the old witness at most `b ≤ η` there, and `η` is `k`-visible and
 positive. -/
@@ -212,12 +140,10 @@ theorem retargetShifter_witness {k : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witnes
     intro x kk hle i hi
     by_cases hkk : kk ≤ k
     · by_cases hx : τ x = ⊥
-      · have h1 : τ (extVisibilityReplace x kk i) = ⊥ := by
-          rw [hτ.clause5 x kk (by rw [gTop_of_le hkk]; exact le_top) i hi, hx,
-            extVisibilityReplace_bot]
+      · have h1 : τ (extVisibilityReplace x kk i) = ⊥ := hτ.zero_repl x hx kk hi
         rw [retargetShifter_of_bot hx, retargetShifter_of_bot h1, extVisibilityReplace_bot]
       · have h1 : τ (extVisibilityReplace x kk i) = extVisibilityReplace (τ x) kk i :=
-          hτ.clause5 x kk (by rw [gTop_of_le hkk]; exact le_top) i hi
+          hτ.comm x hkk hi
         by_cases hxa : x ≤ a
         · have h2 : extVisibilityReplace x kk i ≤ a := evr_le_of_le_selfVis ha hkk hi hxa
           rw [retargetShifter_of_le hxa, retargetShifter_of_le h2, h1]
@@ -236,12 +162,8 @@ theorem retargetShifter_witness {k : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witnes
         split_ifs at hle with hxa
         · exact hx hle
         · exact absurd hle (ne_bot_of_gt hηpos)
-      have h1 : τ (extVisibilityReplace x kk i) = ⊥ := by
-        rw [hτ.clause5 x kk (by rw [gTop_of_gt (not_le.mp hkk), hx]) i hi, hx,
-          extVisibilityReplace_bot]
+      have h1 : τ (extVisibilityReplace x kk i) = ⊥ := hτ.zero_repl x hx kk hi
       rw [hle, retargetShifter_of_bot h1, extVisibilityReplace_bot]
-
-/-! ## Exact old-face restoration -/
 
 end Retarget
 

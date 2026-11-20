@@ -6,71 +6,13 @@ Authors: Cameron Freer
 module
 
 public import InfinitaryLogic.Descriptive.KleeneBrouwer
-public import InfinitaryLogic.Descriptive.BFEquivBorel
+public import InfinitaryLogic.OrdinalUtil
+public import InfinitaryLogic.Descriptive.SatisfactionBorel
+public import InfinitaryLogic.Scott.BackAndForth
+public import Mathlib.SetTheory.Cardinal.Aleph
+public import Architect
 public import InfinitaryLogic.Descriptive.StructureIsoSetoid
 public import Mathlib.Basic.Finite.Sum
-
-/-!
-# The forced back-and-forth tree of a pair of coded structures
-
-For two codes `c d : StructureSpace L` of relational structures on `ℕ`, `bfTree c d` is the
-tree of finite partial isomorphisms built by a **forced** schedule: step `2 i` puts element `i`
-of the left structure into the domain, step `2 i + 1` puts element `i` of the right structure
-into the range, and a node is a list of the opposite-side answers.  A node is in the tree iff
-the two finite tuples it decodes have the same atomic type.
-
-## Main declarations
-
-* `CodeBFEquiv α c d`: the empty tuples of the decoded structures are `α`-back-and-forth
-  equivalent.
-* `bfLeft s`, `bfRight s`: the left and right tuples decoded from a node `s : List ℕ`; position
-  `2 i` is `i` on the left and `s[2 i]` on the right, position `2 i + 1` is `s[2 i + 1]` on the
-  left and `i` on the right.
-* `bfNodes c d`, `bfTree c d`: the nodes whose decoded tuples have the same atomic type, and the
-  tree they form (`bfNodes_prefix` is the prefix closure, `mem_bfTree_iff` the membership
-  condition).
-* `isClosed_setOf_mem_bfTree`: each node condition is closed in the product topology on
-  `StructureSpace L × StructureSpace L`, for every relational `L`;
-  `isClopen_setOf_mem_bfTree` when `L` has finitely many relation symbols;
-  `measurableSet_setOf_mem_bfTree` and `measurable_bfTree` when it has countably many.
-* `hasInfiniteBranch_bfTree_iff`: the tree has an infinite branch iff the two coded structures
-  are isomorphic.
-* `nil_mem_bfTree_iff`, `bfTree_eq_bot_iff`: the root is a node iff the empty tuples agree on
-  every atom (the nullary relation symbols), and otherwise the tree is empty.
-* `le_rank_bfTree_of_bfEquiv`, `lt_treeHeight_bfTree_of_codeBFEquiv`: back-and-forth
-  equivalence bounds the rank of a node, and that of the empty tuples the height of the tree.
-
-## Interpretation choices
-
-* **Closed, not necessarily clopen.**  A node condition demands full agreement of all equality
-  and relation atoms on the decoded tuples.  With infinitely many relation symbols this tests
-  infinitely many atoms, so the node set is an intersection of infinitely many clopen sets: it
-  is closed, not necessarily clopen, and the assignment `p ↦ bfTree p.1 p.2` need not be
-  continuous.  It is clopen when there are finitely many relation symbols, and measurable (for
-  the product σ-algebra on `Set (List ℕ)`) when there are countably many.
-* **Rank convention.**  Ranks are `WellFounded.rank (extBelow (bfTree c d))`, where `extBelow`
-  is strict extension: a node sits above its proper extensions.  One tree step is one forth or
-  one back move, and there is **no ordinal offset at nodes**: `BFEquiv α` at the tuples of a
-  node gives rank at least `α` (`le_rank_bfTree_of_bfEquiv`).  The height
-  `treeHeight T = ⨆ x, succ (rank x)` is a strict supremum, which is the only offset: a tree
-  consisting of the root alone has root rank `0` and height `1`, and `CodeBFEquiv α c d` gives
-  `α < treeHeight (bfTree c d)` (`lt_treeHeight_bfTree_of_codeBFEquiv`).
-* **The empty tree.**  Root membership is not assumed: it is obtained from atomic agreement of
-  the empty tuples.  If a nullary relation symbol holds in one structure and fails in the
-  other, the tree is empty (height `0`), and `CodeBFEquiv α c d` fails at every `α`, since it
-  already fails at level `0` (`bfTree_eq_bot_iff`).
-* **Universes.**  `L : Language.{u, v}` is arbitrary and only `[L.IsRelational]` is assumed;
-  countability of the relation symbols enters only the measurability statements.  The carrier is
-  `ℕ`, so ranks and back-and-forth levels are both `Ordinal.{0}` and no lift appears.
-
-## References
-
-* Trees on `ℕ`, their infinite branches, the ranks of well-founded trees and the
-  Kleene–Brouwer order are standard in descriptive set theory; see A. S. Kechris, *Classical
-  Descriptive Set Theory*, Graduate Texts in Mathematics 156, Springer, 1995.  The forced
-  schedule is the usual back-and-forth enumeration of an isomorphism between countable
-  structures, recorded here as a tree of finite partial isomorphisms.
--/
 
 @[expose] public section
 
@@ -82,12 +24,23 @@ open Descriptive KleeneBrouwer Structure MeasureTheory
 
 variable {L : Language.{u, v}} [L.IsRelational]
 
-/-! ### The empty tuples and the node tuples -/
-
 /-- `CodeBFEquiv α c d`: the empty tuples of the structures coded by `c` and `d` are
 `α`-back-and-forth equivalent. -/
 def CodeBFEquiv (α : Ordinal.{0}) (c d : StructureSpace L) : Prop :=
   @BFEquiv L ℕ c.toStructure ℕ d.toStructure α 0 Fin.elim0 Fin.elim0
+
+variable (L) in
+/-- **Back-and-forth equivalence at level `η`** on all codes: `CodeBFEquiv η`, an equivalence
+relation by reflexivity, symmetry and transitivity of `BFEquiv`. -/
+def codeBFEquivSetoid (η : Ordinal.{0}) : Setoid (StructureSpace L) where
+  r := CodeBFEquiv η
+  iseqv :=
+    { refl := fun c ↦ @BFEquiv.refl L ℕ c.toStructure 0 η Fin.elim0
+      symm := fun {c d} h ↦ @BFEquiv.symm L ℕ c.toStructure ℕ d.toStructure 0 η
+        Fin.elim0 Fin.elim0 h
+      trans := fun {c d e} h₁ h₂ ↦ @BFEquiv.trans L ℕ c.toStructure ℕ d.toStructure
+        ℕ e.toStructure (n := 0) (α := η) (a := Fin.elim0) (b := Fin.elim0) (c := Fin.elim0)
+        h₁ h₂ }
 
 /-- The left tuple of a node: position `2 i` holds `i` (element `i` of the left structure enters
 the domain), position `2 i + 1` holds the node's entry (the left answer to element `i` of the
@@ -101,79 +54,43 @@ structure enters the range). -/
 def bfRight (s : List ℕ) : Fin s.length → ℕ :=
   fun j ↦ if j.val % 2 = 0 then s[j.val] else j.val / 2
 
-/-- Position `2 i` of the left tuple is `i`. -/
-@[simp]
-theorem bfLeft_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfLeft s ⟨2 * i, h⟩ = i := by
-  simp [bfLeft]
-
-/-- Position `2 i + 1` of the left tuple is the node's entry there. -/
-@[simp]
-theorem bfLeft_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfLeft s ⟨2 * i + 1, h⟩ = s[2 * i + 1] := by
-  simp [bfLeft, Nat.add_mod]
-
-/-- Position `2 i` of the right tuple is the node's entry there. -/
-@[simp]
-theorem bfRight_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfRight s ⟨2 * i, h⟩ = s[2 * i] := by
-  simp [bfRight]
-
-/-- Position `2 i + 1` of the right tuple is `i`. -/
-@[simp]
-theorem bfRight_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfRight s ⟨2 * i + 1, h⟩ = i := by
-  simp [bfRight, Nat.add_mod]
-  omega
-
 /-- On a prefix, the decoded tuples are restrictions. -/
-private theorem bfLeft_comp_castLE {s t : List ℕ} (hst : s <+: t) :
-    bfLeft t ∘ Fin.castLE hst.length_le = bfLeft s := by
+private theorem tuple_prefix (move : ℕ → ℕ → ℕ) {s t : List ℕ} (hst : s <+: t) :
+    (fun j : Fin t.length => move j.val t[j.val]) ∘ Fin.castLE hst.length_le =
+      fun j : Fin s.length => move j.val s[j.val] := by
   funext j
-  simp only [Function.comp_apply, bfLeft, Fin.val_castLE]
-  split_ifs
-  · rfl
-  · exact (hst.getElem j.2).symm
+  exact congrArg (move j.val) (hst.getElem j.2).symm
+
+private theorem bfLeft_comp_castLE {s t : List ℕ} (hst : s <+: t) :
+    bfLeft t ∘ Fin.castLE hst.length_le = bfLeft s :=
+  tuple_prefix (fun j x => if j % 2 = 0 then j / 2 else x) hst
 
 private theorem bfRight_comp_castLE {s t : List ℕ} (hst : s <+: t) :
-    bfRight t ∘ Fin.castLE hst.length_le = bfRight s := by
-  funext j
-  simp only [Function.comp_apply, bfRight, Fin.val_castLE]
-  split_ifs
-  · exact (hst.getElem j.2).symm
-  · rfl
+    bfRight t ∘ Fin.castLE hst.length_le = bfRight s :=
+  tuple_prefix (fun j x => if j % 2 = 0 then x else j / 2) hst
 
-/-- The decoded tuples of a one-step extension: the left tuple gains the left move of position
-`s.length`. -/
-private theorem bfLeft_append_singleton (s : List ℕ) (x : ℕ) :
-    bfLeft (s ++ [x]) = Fin.snoc (bfLeft s)
-      (if s.length % 2 = 0 then s.length / 2 else x) ∘ Fin.cast (by simp) := by
+private theorem tuple_snoc (move : ℕ → ℕ → ℕ) (s : List ℕ) (x : ℕ) :
+    (fun j : Fin (s ++ [x]).length => move j.val (s ++ [x])[j.val]) =
+      Fin.snoc (fun j : Fin s.length => move j.val s[j.val]) (move s.length x) ∘ Fin.cast (by simp) := by
   funext j
   obtain ⟨j, hj⟩ := j
-  have hj' : j < s.length + 1 := by simpa using hj
+  have hj' : j < s.length + 1 := by simp_all
   rcases Nat.lt_succ_iff_lt_or_eq.mp hj' with hlt | rfl
   · have : (Fin.cast (by simp) ⟨j, hj⟩ : Fin (s.length + 1)) = Fin.castSucc ⟨j, hlt⟩ := rfl
-    simp only [Function.comp_apply, this, Fin.snoc_castSucc, bfLeft]
-    rw [List.getElem_append_left hlt]
+    simp only [Function.comp_apply, this, Fin.snoc_castSucc]
+    simp_all
   · have : (Fin.cast (by simp) ⟨s.length, hj⟩ : Fin (s.length + 1)) = Fin.last _ := rfl
-    simp only [Function.comp_apply, this, Fin.snoc_last, bfLeft]
-    split_ifs <;> simp
+    simp_all
+
+private theorem bfLeft_append_singleton (s : List ℕ) (x : ℕ) :
+    bfLeft (s ++ [x]) = Fin.snoc (bfLeft s)
+      (if s.length % 2 = 0 then s.length / 2 else x) ∘ Fin.cast (by simp) :=
+  tuple_snoc (fun j x => if j % 2 = 0 then j / 2 else x) s x
 
 private theorem bfRight_append_singleton (s : List ℕ) (x : ℕ) :
     bfRight (s ++ [x]) = Fin.snoc (bfRight s)
-      (if s.length % 2 = 0 then x else s.length / 2) ∘ Fin.cast (by simp) := by
-  funext j
-  obtain ⟨j, hj⟩ := j
-  have hj' : j < s.length + 1 := by simpa using hj
-  rcases Nat.lt_succ_iff_lt_or_eq.mp hj' with hlt | rfl
-  · have : (Fin.cast (by simp) ⟨j, hj⟩ : Fin (s.length + 1)) = Fin.castSucc ⟨j, hlt⟩ := rfl
-    simp only [Function.comp_apply, this, Fin.snoc_castSucc, bfRight]
-    rw [List.getElem_append_left hlt]
-  · have : (Fin.cast (by simp) ⟨s.length, hj⟩ : Fin (s.length + 1)) = Fin.last _ := rfl
-    simp only [Function.comp_apply, this, Fin.snoc_last, bfRight]
-    split_ifs <;> simp
-
-/-! ### The tree -/
+      (if s.length % 2 = 0 then x else s.length / 2) ∘ Fin.cast (by simp) :=
+  tuple_snoc (fun j x => if j % 2 = 0 then x else j / 2) s x
 
 /-- The nodes of the forced back-and-forth tree: the lists whose decoded left and right tuples
 have the same atomic type (all equality and relation atoms agree). -/
@@ -206,9 +123,9 @@ private theorem mem_bfTree_of_bfEquiv {c d : StructureSpace L} {α : Ordinal.{0}
   (@BFEquiv.zero L ℕ c.toStructure ℕ d.toStructure _ _ _).mp
     (@BFEquiv.monotone L ℕ c.toStructure ℕ d.toStructure _ _ _ zero_le _ _ h)
 
-private theorem bfLeft_nil : bfLeft [] = Fin.elim0 := funext fun j ↦ absurd j.2 (by simp)
+private theorem bfLeft_nil : bfLeft [] = Fin.elim0 := by trivial
 
-private theorem bfRight_nil : bfRight [] = Fin.elim0 := funext fun j ↦ absurd j.2 (by simp)
+private theorem bfRight_nil : bfRight [] = Fin.elim0 := by trivial
 
 /-- `CodeBFEquiv` is back-and-forth equivalence at the root node. -/
 private theorem codeBFEquiv_iff_root {α : Ordinal.{0}} {c d : StructureSpace L} :
@@ -224,8 +141,6 @@ theorem nil_mem_bfTree_iff {c d : StructureSpace L} :
   rw [codeBFEquiv_iff_root, @BFEquiv.zero L ℕ c.toStructure ℕ d.toStructure]
   rfl
 
-/-! ### Closedness and measurability of the node conditions -/
-
 /-- One atomic condition at fixed tuples is clopen on the pair space. -/
 private theorem isClopen_setOf_holds_iff {n : ℕ} (a b : Fin n → ℕ) (idx : L.AtomicIdx n) :
     IsClopen {p : StructureSpace L × StructureSpace L |
@@ -239,18 +154,14 @@ private theorem isClopen_setOf_holds_iff {n : ℕ} (a b : Fin n → ℕ) (idx : 
     let g : StructureSpace L × StructureSpace L → Bool × Bool :=
       fun p ↦ (p.1 ⟨⟨_, R⟩, a ∘ f⟩, p.2 ⟨⟨_, R⟩, b ∘ f⟩)
     have hg : Continuous g :=
-      ((continuous_apply _).comp continuous_fst).prodMk
-        ((continuous_apply _).comp continuous_snd)
+      by fun_prop
     exact (isClopen_discrete {x : Bool × Bool | x.1 = true ↔ x.2 = true}).preimage hg
 
 /-- The node condition is the intersection, over all atoms, of the atomic conditions. -/
 private theorem setOf_mem_bfTree_eq_iInter (s : List ℕ) :
     {p : StructureSpace L × StructureSpace L | s ∈ bfTree p.1 p.2} =
       ⋂ idx : L.AtomicIdx s.length, {p | @AtomicIdx.holds L ℕ p.1.toStructure _ idx (bfLeft s) ↔
-        @AtomicIdx.holds L ℕ p.2.toStructure _ idx (bfRight s)} := by
-  ext p
-  simp only [Set.mem_ofPred_eq, Set.mem_iInter]
-  rfl
+        @AtomicIdx.holds L ℕ p.2.toStructure _ idx (bfRight s)} := by aesop
 
 /-- **Node conditions are closed**, for every relational `L`: the set of code pairs whose tree
 contains `s` is an intersection of clopen atomic conditions.  It need not be clopen, and the
@@ -260,8 +171,6 @@ theorem isClosed_setOf_mem_bfTree (s : List ℕ) :
     IsClosed {p : StructureSpace L × StructureSpace L | s ∈ bfTree p.1 p.2} := by
   rw [setOf_mem_bfTree_eq_iInter]
   exact isClosed_iInter fun idx ↦ (isClopen_setOf_holds_iff _ _ idx).isClosed
-
-/-! ### Infinite branches are isomorphisms -/
 
 /-- The left sequence along a branch `z`: even positions enumerate the left structure. -/
 private def seqLeft (z : ℕ → ℕ) (j : ℕ) : ℕ := if j % 2 = 0 then j / 2 else z j
@@ -303,14 +212,14 @@ private theorem holds_seq_of_branch {c d : StructureSpace L} {z : ℕ → ℕ}
       @AtomicIdx.holds L ℕ d.toStructure l idx (seqRight z ∘ g) := by
   obtain ⟨N, hN⟩ : ∃ N, ∀ k, g k < N :=
     ⟨Finset.univ.sup g + 1, fun k ↦ Nat.lt_succ_of_le (Finset.le_sup (Finset.mem_univ k))⟩
-  have ht : ∀ k, g k < (List.ofFn fun i : Fin N ↦ z i).length := by simpa using hN
+  have ht : ∀ k, g k < (List.ofFn fun i : Fin N ↦ z i).length := by simp_all
   let σ : Fin l → Fin (List.ofFn fun i : Fin N ↦ z i).length := fun k ↦ ⟨g k, ht k⟩
   have h := @SameAtomicType.relabel L ℕ c.toStructure ℕ d.toStructure _ _ _ _ (hz N) σ idx
   have hl : bfLeft (List.ofFn fun i : Fin N ↦ z i) ∘ σ = seqLeft z ∘ g :=
     funext fun k ↦ bfLeft_ofFn z N (σ k)
   have hr : bfRight (List.ofFn fun i : Fin N ↦ z i) ∘ σ = seqRight z ∘ g :=
     funext fun k ↦ bfRight_ofFn z N (σ k)
-  rwa [hl, hr] at h
+  simp_all
 
 /-- **A branch gives an isomorphism**: `m ↦ z (2 m)`.  Equality atoms give injectivity, and
 surjectivity by comparing position `2 n + 1` (where the right structure offers `n`) with
@@ -329,7 +238,7 @@ private theorem nonempty_equiv_of_branch {c d : StructureSpace L} {z : ℕ → �
     intro n
     refine ⟨z (2 * n + 1), ?_⟩
     have := (heq (2 * z (2 * n + 1)) (2 * n + 1)).mp
-      (by rw [seqLeft_two_mul, seqLeft_two_mul_add_one])
+      (by simp_all [seqLeft_two_mul, seqLeft_two_mul_add_one])
     rwa [seqRight_two_mul, seqRight_two_mul_add_one] at this
   refine ⟨@Language.Equiv.mk L ℕ ℕ c.toStructure d.toStructure (Equiv.ofBijective e ⟨hinj, hsurj⟩)
     (fun f ↦ isEmptyElim f) (fun {l} R v ↦ ?_)⟩
@@ -337,7 +246,7 @@ private theorem nonempty_equiv_of_branch {c d : StructureSpace L} {z : ℕ → �
   have hl : seqLeft z ∘ (fun k ↦ 2 * v k) = v := funext fun k ↦ seqLeft_two_mul z (v k)
   have hr : seqRight z ∘ (fun k ↦ 2 * v k) = e ∘ v := funext fun k ↦ seqRight_two_mul z (v k)
   simp only [AtomicIdx.holds, Function.comp_id, hl, hr] at h
-  exact h.symm
+  tauto
 
 omit [L.IsRelational] in
 /-- An isomorphism preserves the atomic type of every tuple.  The structures are implicit
@@ -364,14 +273,12 @@ private theorem branch_of_equiv {c d : StructureSpace L}
   set z : ℕ → ℕ := fun j ↦ if j % 2 = 0 then f (j / 2) else f.symm (j / 2) with hz
   refine ⟨z, fun n ↦ ?_⟩
   have hR : ∀ j, seqRight z j = f (seqLeft z j) := by
-    intro j
-    by_cases hj : j % 2 = 0 <;> simp [seqLeft, seqRight, hz, hj]
+    grind [seqLeft, seqRight]
   have hfun : bfRight (List.ofFn fun i : Fin n ↦ z i) =
       f ∘ bfLeft (List.ofFn fun i : Fin n ↦ z i) := by
     funext j
     rw [Function.comp_apply, bfLeft_ofFn, bfRight_ofFn, hR]
-  rw [mem_bfTree_iff, hfun]
-  exact sameAtomicType_comp_equiv e _
+  grind [mem_bfTree_iff, sameAtomicType_comp_equiv]
 
 /-- **Branches are isomorphisms**: the forced back-and-forth tree of `c` and `d` has an infinite
 branch iff the coded structures are isomorphic.  Every element of both structures is covered:
@@ -386,17 +293,13 @@ theorem hasInfiniteBranch_bfTree_iff (c d : StructureSpace L) :
   · rintro ⟨e⟩
     exact branch_of_equiv e
 
-/-! ### Ranks -/
-
 omit [L.IsRelational] in
 /-- Reindexing along a cast of the tuple length does not change `BFEquiv`.  The structures are
 implicit arguments, not instances. -/
 private theorem bfEquiv_comp_cast {M N : Type*} {iM : L.Structure M} {iN : L.Structure N}
     {α : Ordinal.{0}} {n m : ℕ} (h : n = m) (a : Fin m → M) (b : Fin m → N) :
     @BFEquiv L M iM N iN α n (a ∘ Fin.cast h) (b ∘ Fin.cast h) ↔
-      @BFEquiv L M iM N iN α m a b := by
-  subst h
-  rfl
+      @BFEquiv L M iM N iN α m a b := by aesop
 
 /-- `BFEquiv` at the tuples of a one-step extension is `BFEquiv` at the extended tuples. -/
 private theorem bfEquiv_append_singleton_iff {c d : StructureSpace L} {α : Ordinal.{0}}
@@ -405,9 +308,7 @@ private theorem bfEquiv_append_singleton_iff {c d : StructureSpace L} {α : Ordi
       (bfRight (s ++ [x])) ↔
     @BFEquiv L ℕ c.toStructure ℕ d.toStructure α (s.length + 1)
       (Fin.snoc (bfLeft s) (if s.length % 2 = 0 then s.length / 2 else x))
-      (Fin.snoc (bfRight s) (if s.length % 2 = 0 then x else s.length / 2)) := by
-  rw [bfLeft_append_singleton, bfRight_append_singleton]
-  exact bfEquiv_comp_cast _ _ _
+      (Fin.snoc (bfRight s) (if s.length % 2 = 0 then x else s.length / 2)) := by simp_all [bfLeft_append_singleton, bfRight_append_singleton, bfEquiv_comp_cast]
 
 /-- **Node rank comparison**: if the decoded tuples of a node are `α`-back-and-forth
 equivalent, the node has rank at least `α`, with no offset.  Each tree step is one move: at
@@ -426,14 +327,14 @@ theorem le_rank_bfTree_of_bfEquiv {c d : StructureSpace L} [WellFounded (extBelo
       by_cases hk : s.length % 2 = 0
       · obtain ⟨y, hy⟩ :=
           @BFEquiv.forth L ℕ c.toStructure ℕ d.toStructure _ _ _ _ h (s.length / 2)
-        exact ⟨y, (bfEquiv_append_singleton_iff s y).mpr (by simpa [hk] using hy)⟩
+        exact ⟨y, (bfEquiv_append_singleton_iff s y).mpr (by simp_all)⟩
       · obtain ⟨y, hy⟩ :=
           @BFEquiv.back L ℕ c.toStructure ℕ d.toStructure _ _ _ _ h (s.length / 2)
-        exact ⟨y, (bfEquiv_append_singleton_iff s y).mpr (by simpa [hk] using hy)⟩
+        exact ⟨y, (bfEquiv_append_singleton_iff s y).mpr (by simp_all)⟩
     obtain ⟨x, hx⟩ := hex
     have hmem : s ++ [x] ∈ bfTree c d := mem_bfTree_of_bfEquiv hx
     have hrel : extBelow (bfTree c d) ⟨s ++ [x], hmem⟩ ⟨s, hs⟩ :=
-      ⟨List.prefix_append s [x], fun he ↦ by simpa using congrArg List.length he⟩
+      ⟨List.prefix_append s [x], fun he ↦ by simp_all⟩
     exact Order.succ_le_of_lt ((ih hmem hx).trans_lt (WellFounded.rank_lt_of_rel hrel))
   | limit β hβ ih =>
     by_contra hlt

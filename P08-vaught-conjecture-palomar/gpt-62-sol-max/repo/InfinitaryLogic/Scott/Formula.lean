@@ -11,40 +11,6 @@ public import InfinitaryLogic.Lomega1omega.OpenBoundsSemantics
 public import Architect
 public import Mathlib.SetTheory.Cardinal.Aleph
 
-/-!
-# Scott Formulas
-
-This file defines Scott formulas, which are Lω₁ω formulas that capture back-and-forth
-equivalence at each ordinal level.
-
-## Main Definitions
-
-- `scottFormula`: The Scott formula for a tuple at a given ordinal level.
-- `scottSentenceAt`: the Scott formula of the empty tuple of a structure at a given level, as a
-  sentence.
-
-## Main Results
-
-- `realize_scottFormula_iff_BFEquiv`: A tuple b satisfies the Scott formula for a at level α
-  if and only if a and b are BF-equivalent at level α.
-- `realize_scottSentenceAt_iff_BFEquiv`: for `α < ω₁`, a structure satisfies
-  `scottSentenceAt M α` iff it is BF-equivalent to `M` at level `α` on the empty tuple.
-
-## Implementation Notes
-
-The Scott formula at ordinal α is defined by recursion on α:
-- At 0: the atomic diagram of the tuple
-- At successor α + 1: the formula at α, plus forth and back conditions
-- At limit λ: the conjunction over all β < λ
-
-For the forth and back conditions, we need to quantify over elements of M, which requires
-`[Countable M]` to form the countable conjunction/disjunction.
-
-The key technical challenge is handling the variable binding correctly. When we have
-a formula φ(x₀,...,xₙ) with n+1 free variables and want to existentially quantify
-over the last variable, we use `relabel` to move it into a bound position.
--/
-
 @[expose] public section
 
 universe u v w w'
@@ -54,11 +20,13 @@ namespace FirstOrder
 namespace Language
 
 variable {L : Language.{u, v}} [L.IsRelational]
+
 variable {M : Type w} [L.Structure M]
+
 variable [Countable (Σ l, L.Relations l)]
+
 variable [Countable M]
 
--- Derive Encodable from Countable for use in einf/esup
 attribute [local instance] Encodable.ofCountable
 
 open FirstOrder Structure Fin Ordinal BoundedFormulaω
@@ -165,17 +133,14 @@ noncomputable def scottFormula {n : ℕ} (a : Fin n → M) (α : Ordinal) : L.Fo
 
 omit [L.IsRelational] in
 theorem scottFormula_zero {n : ℕ} (a : Fin n → M) :
-    scottFormula (L := L) a 0 = atomicDiagram a := by
-  simp only [scottFormula, Ordinal.limitRecOn_zero]
+    scottFormula (L := L) a 0 = atomicDiagram a := by simp [scottFormula, Ordinal.limitRecOn_zero]
 
 omit [L.IsRelational] in
 theorem scottFormula_succ {n : ℕ} (a : Fin n → M) (α : Ordinal) :
     scottFormula (L := L) a (Order.succ α) =
       scottFormula a α ⊓
       einf (fun m : M => existsLastVar (scottFormula (snoc a m) α)) ⊓
-      forallLastVar (esup (fun m : M => scottFormula (snoc a m) α)) := by
-  have : Encodable M := Encodable.ofCountable M
-  simp only [scottFormula, Order.succ_eq_add_one, Ordinal.limitRecOn_add_one]
+      forallLastVar (esup (fun m : M => scottFormula (snoc a m) α)) := by simp_all [scottFormula]
 
 omit [L.IsRelational] in
 /-- The fundamental correspondence: a tuple b realizes the Scott formula for a at level α
@@ -215,23 +180,23 @@ theorem realize_scottFormula_iff_BFEquiv
     · intro ⟨⟨hbase, hforth⟩, hback⟩
       simp only [Formulaω.realize_einf, realize_existsLastVar] at hforth
       simp only [realize_forallLastVar, Formulaω.realize_esup] at hback
-      refine ⟨(ih a b hβ).mp hbase, fun m => ?_, fun n' => ?_⟩
+      refine ⟨by grind, fun m => ?_, fun n' => ?_⟩
       · let ⟨n', hn'⟩ := hforth m
-        exact ⟨n', (ih (snoc a m) (snoc b n') hβ).mp hn'⟩
+        grind
       · let ⟨m, hm⟩ := hback n'
-        exact ⟨m, (ih (snoc a m) (snoc b n') hβ).mp hm⟩
+        grind
     · intro ⟨hbase, hforth, hback⟩
-      refine ⟨⟨(ih a b hβ).mpr hbase, ?_⟩, ?_⟩
+      refine ⟨⟨by grind, ?_⟩, ?_⟩
       · rw [Formulaω.realize_einf]
         intro m
         rw [realize_existsLastVar]
         let ⟨n', hn'⟩ := hforth m
-        exact ⟨n', (ih (snoc a m) (snoc b n') hβ).mpr hn'⟩
+        grind
       · rw [realize_forallLastVar]
         intro n'
         rw [Formulaω.realize_esup]
         let ⟨m, hm⟩ := hback n'
-        exact ⟨m, (ih (snoc a m) (snoc b n') hβ).mpr hm⟩
+        grind
   | limit β hβlimit ih =>
     rw [BFEquiv.limit β hβlimit]
     unfold scottFormula
@@ -241,12 +206,6 @@ theorem realize_scottFormula_iff_BFEquiv
     simp only [hα, dite_true, Formulaω.realize_einf]
     exact ⟨fun h γ hγ => (ih γ hγ a b (lt_trans hγ hα)).mp (h ⟨γ, hγ⟩),
            fun h ⟨γ, hγ⟩ => (ih γ hγ a b (lt_trans hγ hα)).mpr (h γ hγ)⟩
-
-end Language
-
-/-! ### The Scott sentence of a structure at a level -/
-
-namespace Language
 
 end Language
 

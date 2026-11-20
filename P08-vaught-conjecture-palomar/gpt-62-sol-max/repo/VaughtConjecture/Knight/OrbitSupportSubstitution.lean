@@ -7,19 +7,10 @@ module
 
 public import VaughtConjecture.Knight.OrbitPrefixSupport
 
-/-! # Support substitution at one fixed external threshold
-
-The ordinary receiving renderer is composed across point scopes. Its intermediate
-auxiliaries are genuine values, not additional original fields. Substitution
-below proves that their replacement orbits remain supported by the original
-fields and the same visible grid. The endpoint offset is treated separately:
-replacing an endpoint again leaves that endpoint, not the new offset.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrbitPrefixSupport
+
 open Transform Value ExtOrd
 
 /-- Exact replacement composition, including the terminal offset. -/
@@ -46,9 +37,9 @@ theorem Supported.replace {X : Type*} {K : ℕ} {G : Set ExtOrd} {p : X → ExtO
     {x : ExtOrd} (hx : Supported K G p x) (hG : ∀ z ∈ G, SelfVis K z)
     {j : ℕ} (hj : j ≤ K) : Supported K G p (extVisibilityReplace x K j) := by
   rcases hx with rfl | hx | ⟨d, i, hi, rfl⟩
-  · exact Or.inl (extVisibilityReplace_bot _ _)
+  · tauto
   · rw [replace_visible (hG _ hx)]
-    exact Or.inr (Or.inl hx)
+    tauto
   · rw [replace_replace]
     exact Or.inr (Or.inr ⟨d, _, by split_ifs <;> assumption, rfl⟩)
 
@@ -60,20 +51,7 @@ theorem Supported.substitute {X Y : Type*} {K : ℕ} {G : Set ExtOrd}
     (hq : ∀ d, Supported K G p (q d)) : Supported K G p x := by
   rcases hx with hx | hx | ⟨d, i, hi, rfl⟩
   · exact Or.inl hx
-  · exact Or.inr (Or.inl hx)
+  · tauto
   · exact (hq d).replace hG hi
-
-/-- Literal fields themselves have support, even if they are invisible. -/
-theorem supported_field {X : Type*} (K : ℕ) (G : Set ExtOrd) (p : X → ExtOrd) (d : X) :
-    Supported K G p (p d) := by
-  rcases ExtOrd.cases (p d) with he | he | ⟨a, he⟩
-  · exact Or.inl he
-  · exact Or.inr (Or.inr ⟨d, K, le_rfl, by rw [he, extVisibilityReplace_top]⟩)
-  · refine Or.inr (Or.inr ⟨d, min (finitePart a) K, min_le_right _ _, ?_⟩)
-    rw [he, extVisibilityReplace_ofOrd, ofOrd_inj, visibilityReplace]
-    split_ifs with h
-    · rw [min_eq_left h.le]
-      exact (decomposition a).symm
-    · rfl
 
 end VaughtConjecture.Knight.OrbitPrefixSupport

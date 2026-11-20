@@ -5,20 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.FullRowLifting
-
-/-! # Interpolating a finite table of self-visible values
-
-When all sources and targets are self-visible at K, source order and the bottom
-read suffice to construct a bounded-commuting monotone map. Take the finite upper
-envelope: at a nonbottom x, the least target whose source is at least x, or top
-if there is none. Source cuts are invariant under every bounded replacement.
-
-This map need not itself be a faithful witness at thresholds above K. For
-positive-cap lifting, the existing source-block repair theorem supplies exactly
-that missing step. This eliminates infinite shifter variables from the
-grade-one lifting criterion, retaining finite occurrence-indexed label variables.
--/
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import Mathlib.Data.Fintype.Lattice
 
 @[expose] public section
 
@@ -44,7 +32,7 @@ theorem orderInterpolate_mono (E r : X → ExtOrd) : Monotone (orderInterpolate 
   by_cases hx : x = ⊥
   · rw [hx, orderInterpolate_bot]
     exact bot_le
-  have hy : y ≠ ⊥ := fun hy => hx (le_bot_iff.mp (hy ▸ hxy))
+  have hy : y ≠ ⊥ := by grind
   simp only [orderInterpolate, ite_eq_right hx, ite_eq_right hy]
   apply Finset.le_inf
   intro i _
@@ -52,7 +40,7 @@ theorem orderInterpolate_mono (E r : X → ExtOrd) : Monotone (orderInterpolate 
   · rw [ite_eq_left hi]
     have hb := Finset.inf_le (f := fun j => if x ≤ E j then r j else ⊤)
       (Finset.mem_univ i)
-    rwa [ite_eq_left (hxy.trans hi)] at hb
+    grind
   · rw [ite_eq_right hi]
     exact le_top
 
@@ -66,8 +54,7 @@ theorem orderInterpolate_visible {E r : X → ExtOrd} {K : ℕ}
       (fun _ ha _ hb => selfVis_min ha hb)
     intro i _
     split_ifs
-    · exact hr i
-    · exact extVisibilityReplace_top _ _
+    all_goals tauto
 
 /-- The interpolation commutes with all replacements at thresholds at most K. -/
 theorem orderInterpolate_bounded {E r : X → ExtOrd} {K : ℕ}
@@ -84,7 +71,7 @@ theorem orderInterpolate_bounded {E r : X → ExtOrd} {K : ℕ}
       simp only [orderInterpolate, ite_eq_right hx, ite_eq_right he]
       apply Finset.inf_congr rfl
       intro j _
-      simp only [replace_le_visible_cut_iff (hE j) hk hi]
+      simp [replace_le_visible_cut_iff (hE j) hk hi]
 
 /-- Equal source occurrences must have equal targets, as a consequence of the
 two source-order implications. No quotient of the occurrences is taken. -/
@@ -93,21 +80,14 @@ theorem orderInterpolate_read {E r : X → ExtOrd}
     (hbot : ∀ i, E i = ⊥ → r i = ⊥) (i : X) : orderInterpolate E r (E i) = r i := by
   classical
   by_cases hi : E i = ⊥
-  · rw [hi, orderInterpolate_bot, hbot i hi]
+  · aesop
   simp only [orderInterpolate, ite_eq_right hi]
   apply le_antisymm
   · have hh := Finset.inf_le (f := fun j => if E i ≤ E j then r j else ⊤)
       (Finset.mem_univ i)
-    simpa only [ite_eq_left le_rfl] using hh
-  · apply Finset.le_inf
-    intro j _
-    split_ifs with hij
-    · exact hord i j hij
-    · exact le_top
+    grind
+  aesop
 
 end Interpolation
-
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {BJ : Finset ι × ℕ}
 
 end VaughtConjecture.Knight.FullRowLifting

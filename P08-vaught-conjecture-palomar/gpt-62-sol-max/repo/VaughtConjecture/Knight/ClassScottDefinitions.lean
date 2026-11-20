@@ -8,17 +8,10 @@ module
 public import VaughtConjecture.Knight.ClassPresentation
 public import InfinitaryLogic.Descriptive.ScottDefinability
 
-/-! # Scott sentences define every countable set of classes
-
-This is the ordinary Scott-sentence argument through the sentence/model
-correspondence. It uses no receiving, classification or rank analysis. In
-particular countable disjunction includes empty and finite sets, and it asserts
-neither effective enumeration nor a measurable choice of Scott sentences.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.StoppingRankFiltration
+
 open FirstOrder Language
 
 /-- Ordinary Scott sentences isolate each class among the actual Knight models

@@ -7,23 +7,12 @@ module
 
 public import VaughtConjecture.TypeTower.RealizationExtension
 
-/-! # Finite master charts
-
-A finite master is one labelled injective tuple. Its chart is derived, not additional
-state: a tuple factoring through the master receives its partial pullback, and a tuple
-outside the master receives `none`. Exact extension retains the whole old master.
-Consequently every old supported tuple retains its entire option, including invisibility.
-
-Only the tower's **conditional** composition law is used. An invisible intermediate
-face need not have invisible subfaces. An arity-zero master is permitted and labelled;
-it is not the everywhere-undefined realization.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.TypeTower
 
 universe u v w
+
 variable {Λ : Type v} [Preorder Λ] {T : TypeTower.{u} Λ} {α : Λ} {M : Type w}
 
 /-- One labelled finite tuple; the partial realization is its derived chart. -/
@@ -51,11 +40,11 @@ theorem supported_iff {n : ℕ} (t : Fin n ↪ M) :
   classical
   constructor
   · rintro ⟨f, rfl⟩ i
-    exact ⟨f i, rfl⟩
+    simp
   · intro h
     choose f hf using h
     refine ⟨⟨f, fun i j hij => t.injective ?_⟩, ?_⟩
-    · exact (hf i).symm.trans ((congrArg s.tuple hij).trans (hf j))
+    · grind
     · ext i
       exact hf i
 
@@ -68,7 +57,7 @@ theorem chart_factor {n : ℕ} (f : Fin n ↪ Fin s.n) :
     s.chart.eval (f.trans s.tuple) = T.pull f s.type := by
   have h : s.Supported (f.trans s.tuple) := ⟨f, rfl⟩
   have hf : h.choose = f := s.factor_unique h.choose_spec rfl
-  simp only [chart, dite_eq_left h, hf]
+  simp [chart, dite_eq_left h, hf]
 
 theorem chart_nonfactor {n : ℕ} (t : Fin n ↪ M) (h : ¬ s.Supported t) :
     s.chart.eval t = none := dite_eq_right h
@@ -77,10 +66,7 @@ theorem chart_nonfactor {n : ℕ} (t : Fin n ↪ M) (h : ¬ s.Supported t) :
   simpa using (s.chart_factor (Function.Embedding.refl _)).trans (T.pull_refl s.type)
 
 theorem supported_of_eval {n : ℕ} {t : Fin n ↪ M} {p : T.Ty α n}
-    (h : s.chart.eval t = some p) : s.Supported t := by
-  by_contra ht
-  rw [s.chart_nonfactor t ht] at h
-  cases h
+    (h : s.chart.eval t = some p) : s.Supported t := by grind +locals
 
 theorem consistent : s.chart.IsExactParentConsistent := by
   intro m n t p f hp
@@ -101,9 +87,7 @@ theorem eq_chart {A : T.Realization α M} (hA : A.IsExactParentConsistent)
   · obtain ⟨f, rfl⟩ := ht
     exact (hA s.tuple s.type f hs).trans (s.chart_factor f).symm
   · rw [s.chart_nonfactor t ht]
-    cases h : A.eval t with
-    | none => rfl
-    | some p => exact False.elim (ht (hsupport t (by rw [h]; rfl)))
+    (ext <;> grind)
 
 /-- The larger master retains the old tuple and its type literally. -/
 def Extends (s t : FiniteMaster T α M) : Prop :=
@@ -149,8 +133,8 @@ theorem extends_iff (t : FiniteMaster T α M) : s.Extends t ↔ s.chart.Extends 
     exact (h.eval_eq (s.supported_of_eval hp)).trans hp
   · intro h
     have hp := h s.tuple s.type s.chart_self
-    obtain ⟨f, hf⟩ := t.supported_of_eval hp
-    exact ⟨f, hf, (t.chart_factor f).symm.trans (hf ▸ hp)⟩
+    grind +locals
 
 end FiniteMaster
+
 end VaughtConjecture.TypeTower

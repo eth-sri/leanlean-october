@@ -7,16 +7,6 @@ module
 
 public import VaughtConjecture.Knight.RelativePrefixEncoding
 
-/-! # A lawful two-input paste at aligned cuts
-
-Keep the old source labelling below a source cut, and attach a coded tail only
-where the prescribed output exceeds a separate output cap. Raised outputs must
-come from old sources at or above the source cut. Under this explicit alignment,
-the paste respects the unchanged semantics. Locality is proved by bounded
-commutation and repair on the actual source blocks; availability may use either
-input's witnesses. No general closure under pointwise maximum is asserted.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.AlignedCutJoin
@@ -75,12 +65,10 @@ variable {X : Type*} {s p : X → ExtOrd} {a γ : ExtOrd} {v : ExtOrd → ExtOrd
   (halign : ∀ d, γ < p d → a ≤ s d)
 
 include hlow in
-theorem paste_of_le (d : X) (hd : p d ≤ γ) : paste s p a v d = min (s d) a := by
-  rw [paste, hlow d hd, max_bot_right]
+theorem paste_of_le (d : X) (hd : p d ≤ γ) : paste s p a v d = min (s d) a := by grind [paste]
 
 include hhigh in
-theorem paste_of_gt (d : X) (hd : γ < p d) : paste s p a v d = v (p d) := by
-  exact max_eq_right ((min_le_right _ _).trans (hhigh d hd).le)
+theorem paste_of_gt (d : X) (hd : γ < p d) : paste s p a v d = v (p d) := max_eq_right ((min_le_right _ _).trans (hhigh d hd).le)
 
 include hlow hhigh halign in
 /-- Every old source cut is preserved, even when the old output witness
@@ -112,12 +100,11 @@ theorem paste_read (hv : Monotone v) (d c : X) :
     rw [hlow c hc, min_bot_right, max_bot_right,
       paste_of_gt hhigh d hd', paste_of_le hlow c hc,
       min_eq_right ((min_le_right _ _).trans (hhigh d hd').le)]
-    rw [min_comm (s d) (s c), min_assoc, min_eq_right (halign d hd')]
+    grind
   · have hd' := not_le.mp hd
     have hc' := not_le.mp hc
     rw [paste_of_gt hhigh d hd', paste_of_gt hhigh c hc']
-    exact max_eq_right ((min_le_right _ _).trans
-      (le_min (hhigh d hd').le (hhigh c hc').le))
+    grind
 
 end Scalar
 
@@ -176,9 +163,8 @@ theorem paste_respects {s p : D.below BJ → ExtOrd} {K : ℕ} {a γ : ExtOrd}
     exact (selfVis_max (selfVis_min (hs.orderly d).symm (ha.mono (hK d))) hpv).symm
   · intro c
     apply locality_of_bounded_read hbottom c
-      (bounded_max (boundedMap_of_witness
-        (FreeDiagonal.clip_witness (Cs.witness c) (ha.mono (hK c))))
-        (hv.comp_witness (Cp.witness c) (hK c)))
+      (bounded_max (FreeDiagonal.clip_witness (Cs.witness c) (ha.mono (hK c))).bounded
+        (hv.comp (Cp.witness c).bounded (hK c)))
     intro d
     change max (min (Cs.shift c (sem.E c.1 d)) a) (v (Cp.shift c (sem.E c.1 d))) = _
     rw [Cs.read c d, Cp.read c d]
@@ -188,8 +174,7 @@ theorem paste_respects {s p : D.below BJ → ExtOrd} {K : ℕ} {a γ : ExtOrd}
     · obtain ⟨e, he, hde⟩ := hs.availability d c hscope hgrade
       refine ⟨e, he, ?_⟩
       change max (min (s d) a) (v (p d)) ≤ max (min (s e) a) (v (p e))
-      rw [max_eq_left h]
-      exact (min_le_min hde le_rfl).trans (le_max_left _ _)
+      aesop
     · obtain ⟨e, he, hde⟩ := hp.availability d c hscope hgrade
       refine ⟨e, he, ?_⟩
       change max (min (s d) a) (v (p d)) ≤ max (min (s e) a) (v (p e))

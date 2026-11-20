@@ -6,25 +6,20 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.OrdinaryFinalCatalogue
-public import VaughtConjecture.Knight.WholeDonorOrdinarySections
-
-/-! # Ordinary catalogue sources on the literal two-face boundary
-
-All fields are present at the final cutoff. Admission therefore supplies two
-lawful whole input sections, agreeing on the literal common face. Pasting them
-uses the actual ordered boundary; no auxiliary agreement or lawful extension
-is assumed. The face identification below is purely an occurrence equation.
--/
+public import VaughtConjecture.Knight.WholeDonorBoundary
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryReceivingSources
+
 open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
+
 open OrdinaryFinalCatalogue SourcePrefixRows OrbitPrefixSupport
+
 noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
+
 variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 
 theorem private_lawful (a : OrdinaryFinalCatalogue.Member R) :
@@ -52,8 +47,11 @@ theorem face_agreement (a : OrdinaryFinalCatalogue.Member R) (d : P.scheme.below
   exact (hs.face d (req_grade_le R d.1)).symm
 
 variable {ι : Type*} [DecidableEq ι] {A B T : Finset ι} {plan : Finset (Finset ι)}
+
 variable (W : WholeDonorBoundary.Input A B T plan nP N (nP + 1))
+
 variable (R : Ref I nP N N W.right W.left)
+
 variable (hface : ∀ i : Cell W.common.scheme,
   ∃ d : W.right.scheme.below (R.A, R.KA),
     d.1 = W.shared.g i ∧ (R.face d).1 = W.shared.f i)
@@ -82,33 +80,25 @@ theorem boundary_lawful (a : OrdinaryFinalCatalogue.Member R) :
     RespectsSemantics W.rows (boundary W R a) :=
   W.paste_respects (private_lawful R a) (request_lawful R a) (shared W R hface a)
 
-include hface in
 theorem boundary_bound (a : OrdinaryFinalCatalogue.Member R) (d : Cell W.boundary) :
     boundary W R a d ≤ CanonicalFieldLayer.ceiling N (Field W.right W.left) :=
-  WholeDonorOrdinarySections.paste_bound W (fun _ => member_bound R a _)
-    (fun _ => member_bound R a _) (shared W R hface a) d
+  W.paste_pred (r := (· ≤ CanonicalFieldLayer.ceiling N (Field W.right W.left)))
+    (fun c => member_bound R a (.priv c)) (fun c => member_bound R a (.req c)) d
 
-include hface in
 theorem boundary_agreement {a b : OrdinaryFinalCatalogue.Member R} {h : ExtOrd}
-    (hab : Agree a.val b.val h) :
-    Agree (boundary W R a) (boundary W R b) h :=
-  WholeDonorOrdinarySections.paste_agreement W (shared W R hface a) (shared W R hface b)
-    (fun _ => hab _) (fun _ => hab _)
+    (hab : Agree a.val b.val h) : Agree (boundary W R a) (boundary W R b) h :=
+  W.paste_rel (r := fun x y => min x h = min y h) (fun _ => hab _) (fun _ => hab _)
 
-include hface in
 theorem boundary_field (a : OrdinaryFinalCatalogue.Member R) (d : Cell W.boundary) :
-    ∃ f : Field W.right W.left, boundary W R a d = a.val f := by
-  rcases WholeDonorOrdinarySections.covered W d with ⟨c, rfl⟩ | ⟨c, rfl⟩
-  · exact ⟨.priv c, boundary_private W R a c⟩
-  · exact ⟨.req c, boundary_request W R hface a c⟩
+    ∃ f : Field W.right W.left, boundary W R a d = a.val f :=
+  W.paste_pred (r := fun x => ∃ f : Field W.right W.left, x = a.val f)
+    (fun c => ⟨.priv c, rfl⟩) (fun c => ⟨.req c, rfl⟩) d
 
-include hface in
 theorem boundary_support (a : OrdinaryFinalCatalogue.Member R) (G : Set ExtOrd)
-    (d : Cell W.boundary) :
-    Supported N G a.val (boundary W R a d) := by
-  obtain ⟨f, hf⟩ := boundary_field W R hface a d
-  rw [hf]
-  exact supported_field N G a.val f
+    (d : Cell W.boundary) : Supported N G a.val (boundary W R a d) :=
+  W.paste_pred (fun c => supported_field N G a.val (.priv c))
+    (fun c => supported_field N G a.val (.req c)) d
 
 end
+
 end VaughtConjecture.Knight.OrdinaryReceivingSources

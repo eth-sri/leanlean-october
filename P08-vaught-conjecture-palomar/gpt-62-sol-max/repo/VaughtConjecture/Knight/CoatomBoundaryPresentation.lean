@@ -9,17 +9,7 @@ public import VaughtConjecture.Knight.SemSchemeBoundaryInput
 public import VaughtConjecture.Knight.CoatomAmalgamation
 public import VaughtConjecture.Knight.RequestAttachment
 
-/-! # Deriving the placed boundary from abstract coatom inputs
-
-The two embeddings and literal common-face restrictions determine every
-geometric field of `SemSchemeBoundaryInput.Input`. No plan, overlap map,
-semantic compatibility, or old-face lifting hypothesis is supplied separately.
-This constructs the proper boundary, not full-scope rows or an amalgam type.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.CoatomBoundaryPresentation
 
@@ -40,9 +30,7 @@ theorem exists_missing (f : Fin (n + 1) ↪ Fin (n + 2)) :
   refine ⟨a, ?_⟩
   ext x
   have hx := Finset.ext_iff.mp ha x
-  simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_singleton] at hx
-  simp only [Finset.mem_erase, Finset.mem_univ, and_true]
-  tauto
+  grind
 
 def missing (f : Fin (n + 1) ↪ Fin (n + 2)) : Fin (n + 2) :=
   Classical.choose (exists_missing f)
@@ -72,9 +60,9 @@ theorem common_image :
     have hl : x ∈ Finset.univ.image C.f₁ :=
       Finset.image_subset_image (Finset.subset_univ _) hx
     have hr : x ∈ Finset.univ.image C.f₂ :=
-      Finset.image_subset_image (Finset.subset_univ _) (hcomm ▸ hx)
+      by grind
     rw [image_missing] at hl hr
-    exact Finset.mem_erase.mpr ⟨(Finset.mem_erase.mp hr).1, hl⟩
+    grind
   · rw [Finset.card_image_of_injective _ C.f₁.injective,
       Finset.card_image_of_injective _ C.g₁.injective,
       Finset.card_erase_of_mem (Finset.mem_erase.mpr
@@ -138,6 +126,7 @@ def step : Step (Finset.univ : Finset (Fin (n + 2))) where
 
 /-- Canonical adapter to the proper-boundary constructor; all geometry is proved. -/
 def input : Input D.step n (n + 1) (n + 1) where
+  isPlan := AmalgamatedBoundaryPlan.isPlan D.step
   left := D.left
   right := D.right
   common := D.common
@@ -155,8 +144,8 @@ def input : Input D.step n (n + 1) (n + 1) where
   intersection := by
     rw [AmalgamatedBoundaryPlan.erased_inter]
     exact common_image C
-  planLeft := rfl
-  planRight := rfl
+  planLeft := restrict_left D.step
+  planRight := restrict_right D.step
 
 end Data
 
@@ -174,5 +163,29 @@ def of_compatible {α : Ordinal.{0}} {pa pb : S α (n + 1)}
     Classical.choose_spec (face_of_typeMap_eq_some C.g₁ hl),
     Classical.choose_spec (face_of_typeMap_eq_some C.g₂ hr)⟩
 
+private theorem faceMap_label {α : Ordinal.{0}} {a b : ℕ}
+    (p : S α b) (r : S α a) (f : Fin a ↪ Fin b)
+    (hv : Finset.univ.image f ∈ p.scheme.scheme.plan)
+    (hs : p.scheme.restrictFace f hv = r.scheme) (h : typeMap f p = some r)
+    (d : Cell r.scheme.scheme) :
+    p.label (SemSchemeBoundaryInput.faceMap p.scheme r.scheme f hv hs d) = r.label d := by
+  have he : p.restrictFace f hv = r :=
+    Option.some.inj ((typeMap_eq_some f p hv).symm.trans h)
+  subst r
+  rfl
+
+/-- Compatibility supplies label agreement even at empty common roots. -/
+theorem compatible_labels {α : Ordinal.{0}} (C : CoatomPair n)
+    {pa pb : S α (n + 1)} (h : C.Compatible pa pb) :
+    let I := (CoatomBoundaryPresentation.of_compatible C h).input
+    ∀ i, pa.label (I.shared.f i) = pb.label (I.shared.g i) := by
+  dsimp only
+  intro i
+  let r := Classical.choose h
+  have hl := (Classical.choose_spec h).1
+  have hr := (Classical.choose_spec h).2
+  exact (faceMap_label pa r C.g₁ _ _ hl i).trans (faceMap_label pb r C.g₂ _ _ hr i).symm
+
 end
+
 end VaughtConjecture.Knight.CoatomBoundaryPresentation

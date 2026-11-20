@@ -8,18 +8,12 @@ module
 public import VaughtConjecture.Knight.CanonicalPairedEncoding
 public import VaughtConjecture.Knight.PairedSlotComparison
 
-/-! # Relative prefix room for canonical paired inventories
-
-A complete field inventory is normalized at once. Literal low-prefix stability
-is only half the assertion: new upper groups must not enter below the old cut.
-The canonical fixed-point hypothesis supplies exactly this relative slot bound.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedPrefix
+
 open Transform Value ExtOrd PairedSlotEncoding CanonicalPairedEncoding
+
 noncomputable section
 
 def lowerGroups (j : ℕ) (S : Finset Ordinal.{0}) (h : Ordinal.{0}) : ℕ :=
@@ -70,14 +64,13 @@ theorem cut_le_next_slot {j B : ℕ} {S : Finset Ordinal.{0}}
           by_contra hn
           exact hba.not_ge (hmin b (Finset.mem_filter.mpr ⟨hb, not_lt.mp hn⟩))
         exact ⟨Finset.mem_image_of_mem _ hb, (key_le j S b).trans_lt hbh⟩
-      · rintro ⟨hx, hxh⟩
-        exact ⟨hx, hxh.trans_le (not_lt.mp hk)⟩
+      grind
     have hr : PairedSlotEncoding.rank j S a = lowerGroups j S h := congrArg Finset.card hf
     by_cases ho : Orbit j S a
     · obtain ⟨b, hb, hbj, hba⟩ := ho.2
       have hhb : h ≤ b := by
         apply (not_lt.mp hk).trans
-        simpa only [key, ite_eq_left ho, ← hba] using limitPart_le b
+        simpa [key, ite_eq_left ho, ← hba] using limitPart_le b
       have hab := hmin b (Finset.mem_filter.mpr ⟨hb, hhb⟩)
       have haj : finitePart a < j :=
         (finitePart_le_of_le_of_limitPart_eq hab hba.symm).trans_lt hbj
@@ -90,16 +83,17 @@ theorem cut_le_next_slot {j B : ℕ} {S : Finset Ordinal.{0}}
           rw [he]
           apply lt_of_lt_of_le
             ((add_lt_add_iff_left _).mpr (Nat.cast_lt.mpr
-              (show offset j S a < j by simpa only [offset, ite_eq_left ho] using haj)))
+              (show offset j S a < j by simpa [offset, ite_eq_left ho] using haj)))
           exact add_le_add (by gcongr) le_rfl
         exact hsmall.not_ge hha
       exact add_le_add (by gcongr) le_rfl
     · have hh : codeOrd j S a =
           Ordinal.omega0 * (2 * lowerGroups j S h + 1 : ℕ) + j := by
-        simp only [codeOrd, block, offset, ite_eq_right ho, hr]
-      exact hha.trans_eq (he.trans hh)
+        simp [codeOrd, block, offset, ite_eq_right ho, hr]
+      grind
 
 section Profile
+
 variable {X : Type*} [Fintype X]
 
 theorem fixed_values {j : ℕ} {p : X → ExtOrd}
@@ -116,24 +110,22 @@ theorem normalize_upper {j B : ℕ} {p q : X → ExtOrd}
     ofOrd (Ordinal.omega0 * B + j) ≤ normalize j q d := by
   classical
   let h := Ordinal.omega0 * B + j
-  have hv : j ≤ finitePart h := by simp only [h, finitePart_mul_add, le_refl]
+  have hv : j ≤ finitePart h := by simp [h, finitePart_mul_add, le_refl]
   have hpref := keys_prefix hv (values_prefix hag)
   have hl : lowerGroups j (values p) h = lowerGroups j (values q) h :=
     congrArg Finset.card hpref
   have hpd : ofOrd h ≤ p d := by
-    have he := hag d
-    rw [min_eq_right hd] at he
-    exact (min_eq_right_iff.mp he)
+    grind
   have hu : ∃ a ∈ values p, h ≤ a := by
     rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
-    · exact (ofOrd_ne_bot h (le_bot_iff.mp (hb ▸ hpd))).elim
-    · exact (hp d ht).elim
+    · aesop
+    · tauto
     · exact ⟨a, mem_values.mpr ⟨d, ha⟩, ofOrd_le_ofOrd.mp (ha ▸ hpd)⟩
   have hbound := cut_le_next_slot (B := B) (fixed_values hc) hu
   rw [hl] at hbound
   rcases ExtOrd.cases (q d) with hb | ht | ⟨a, ha⟩
-  · exact (ofOrd_ne_bot h (le_bot_iff.mp (hb ▸ hd))).elim
-  · simp only [PairedSlotEncoding.normalize, ht, le_top]
+  · aesop
+  · simp [PairedSlotEncoding.normalize, ht, le_top]
   · have haS : a ∈ values q := mem_values.mpr ⟨d, ha⟩
     have hha : h ≤ a := ofOrd_le_ofOrd.mp (ha ▸ hd)
     by_cases hk : key j (values q) a < h
@@ -142,8 +134,7 @@ theorem normalize_upper {j B : ℕ} {p q : X → ExtOrd}
         simp only [key, ite_eq_right hn] at hk
         exact hk.not_ge hha
       obtain ⟨b, hbS, hbj, hba⟩ := ho.2
-      have hbh : b < h := invisible_lt_cut hbj hv (by
-        simpa only [key, ite_eq_left ho, ← hba] using hk)
+      have hbh : b < h := invisible_lt_cut hbj hv (by simpa [key, ite_eq_left ho, ← hba] using hk)
       obtain ⟨e, he⟩ := mem_values.mp hbS
       have hlow : normalize j q e = q e := by
         have heqOld : p e = q e :=
@@ -164,9 +155,8 @@ theorem normalize_upper {j B : ℕ} {p q : X → ExtOrd}
         apply le_antisymm
         · exact (evr_mono (ofOrd_lt_ofOrd.mpr hbh).le (le_refl j)).trans_eq
             (selfVis_ofOrd_iff.mpr hv)
-        · exact (ofOrd_le_ofOrd.mpr hha).trans haround
-      have heq : ofOrd a = ofOrd h := le_antisymm
-        (haround.trans_eq hround) (ofOrd_le_ofOrd.mpr hha)
+        grind
+      have heq : ofOrd a = ofOrd h := by grind
       have hw := (PairedSlotIncoming.encoder_bounded j (values q)).comm
         (ofOrd b) j j le_rfl le_rfl
       rw [hround, ← heq, PairedSlotIncoming.encoder_at haS,
@@ -186,7 +176,7 @@ theorem normalize_upper {j B : ℕ} {p q : X → ExtOrd}
       · have hb : 2 * lowerGroups j (values q) h + 1 ≤ block j (values q) a := by
           simp only [block, ite_eq_right ho]
           omega
-        exact add_le_add (by gcongr) (by simp only [offset, ite_eq_right ho, le_refl])
+        exact add_le_add (by gcongr) (by simp [offset, ite_eq_right ho, le_refl])
 
 /-- Relative normalization retains the entire original cut, not only the
 coordinates strictly below it. The ambient must be a proper canonical fixed point. -/
@@ -197,13 +187,13 @@ theorem normalize_cap {j B : ℕ} {p q : X → ExtOrd}
     min (normalize j q d) (ofOrd (Ordinal.omega0 * B + j)) =
       min (p d) (ofOrd (Ordinal.omega0 * B + j)) := by
   by_cases hd : p d < ofOrd (Ordinal.omega0 * B + j)
-  · rw [← normalize_prefix (by simp only [finitePart_mul_add, le_refl]) hag d hd, hc]
+  · rw [← normalize_prefix (by simp [finitePart_mul_add, le_refl]) hag d hd, hc]
   · have hqd : ofOrd (Ordinal.omega0 * B + j) ≤ q d := by
-      have he := hag d
-      rw [min_eq_right (not_lt.mp hd)] at he
-      exact min_eq_right_iff.mp he.symm
+      grind
     rw [min_eq_right (normalize_upper hc hp hag d hqd), min_eq_right (not_lt.mp hd)]
 
 end Profile
+
 end
+
 end VaughtConjecture.Knight.CanonicalPairedPrefix

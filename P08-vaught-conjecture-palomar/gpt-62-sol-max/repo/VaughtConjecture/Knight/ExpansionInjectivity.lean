@@ -7,19 +7,6 @@ module
 
 public import VaughtConjecture.Knight.ExpansionUniqueness
 
-/-! # Expansion injectivity: limit uniqueness and transfinite injectivity
-
-The rank spine's uniqueness core, extracted from the rigidity module so that intrinsic
-termination can consume it without the terminal-totality cone:
-
-* **Limit uniqueness** (`eq_of_reduct_eq_of_forall_lt`): two stage-`blockStage λ`
-  realizations (`λ` a limit) with equal reducts to every lower block are equal — no model
-  hypotheses; every label is `< blockLevel λ` (hence seen by some lower reduct) or `∞`
-  (forced by all of them).
-* **Transfinite injectivity** (`eq_of_reduct_eq_of_le`): two models at block `η` with equal
-  reducts to block `ξ ≤ η` are equal — successor steps by expansion uniqueness
-  (`eq_of_reduct_eq_blockStage`), limits by limit uniqueness. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -28,63 +15,19 @@ open TypeTower KnightRealization Value ExtOrd Cardinal
 
 universe w
 
-/-! ### Block levels as a normal function -/
-
 theorem isNormal_blockLevel : Order.IsNormal blockLevel :=
   (Ordinal.isNormal_add_right Ordinal.omega0).comp
     (Ordinal.isNormal_mul_right Ordinal.omega0_pos)
 
-theorem exists_lt_blockLevel_of_lt {l μ : Ordinal.{0}} (hl : Order.IsSuccLimit l)
-    (h : μ < blockLevel l) : ∃ ξ < l, μ < blockLevel ξ :=
-  (isNormal_blockLevel.lt_iff_exists_lt hl).mp h
-
-theorem blockLevel_le_of_forall_lt {l b : Ordinal.{0}} (hl : Order.IsSuccLimit l)
-    (h : ∀ ξ < l, blockLevel ξ ≤ b) : blockLevel l ≤ b :=
-  (isNormal_blockLevel.le_iff_forall_le hl).mpr h
-
-/-- A value below a limit block level, or `∞`, is determined by its truncations at the lower
-block levels. -/
+/-- A label at a limit block is determined by the lower blocks. -/
 theorem ExtOrd.eq_of_forall_truncExt_blockLevel_eq {l : Ordinal.{0}} (hl : Order.IsSuccLimit l)
     {x y : ExtOrd} (hx : x < ofOrd (blockLevel l) ∨ x = ⊤) (hy : y < ofOrd (blockLevel l) ∨ y = ⊤)
     (h : ∀ ξ < l, truncExt (blockLevel ξ) x = truncExt (blockLevel ξ) y) : x = y := by
-  have h0 : (0 : Ordinal.{0}) < l := hl.pos
-  rcases ExtOrd.cases x with rfl | rfl | ⟨μ, rfl⟩
-  · have := h 0 h0
-    rw [truncExt_bot] at this
-    exact (truncExt_eq_bot_iff.mp this.symm).symm
-  · rcases ExtOrd.cases y with rfl | rfl | ⟨ν, rfl⟩
-    · have := h 0 h0
-      rw [truncExt_bot, truncExt_top] at this
-      exact absurd this (by simp)
-    · rfl
-    · exfalso
-      have hν : ν < blockLevel l := by
-        rcases hy with hy | hy
-        · exact ofOrd_lt_ofOrd.mp hy
-        · exact absurd hy (ofOrd_ne_top ν)
-      have hle : ∀ ξ < l, blockLevel ξ ≤ ν := fun ξ hξ => by
-        have := h ξ hξ
-        rw [truncExt_top] at this
-        exact ofOrd_le_ofOrd.mp (truncExt_eq_top_iff.mp this.symm)
-      exact absurd (blockLevel_le_of_forall_lt hl hle) (not_le.mpr hν)
-  · have hμ : μ < blockLevel l := by
-      rcases hx with hx | hx
-      · exact ofOrd_lt_ofOrd.mp hx
-      · exact absurd hx (ofOrd_ne_top μ)
-    obtain ⟨ξ, hξ, hμξ⟩ := exists_lt_blockLevel_of_lt hl hμ
-    have := h ξ hξ
-    rw [truncExt_ofOrd_of_lt hμξ] at this
-    rcases ExtOrd.cases y with rfl | rfl | ⟨ν, rfl⟩
-    · rw [truncExt_bot] at this
-      exact absurd this (ofOrd_ne_bot μ)
-    · rw [truncExt_top] at this
-      exact absurd this (ofOrd_ne_top μ)
-    · rw [truncExt_ofOrd] at this
-      split_ifs at this with hνξ
-      · exact this
-      · exact absurd this (ofOrd_ne_top μ)
-
-/-! ### Limit uniqueness -/
+  letI : Nonempty {ξ // ξ < l} := ⟨⟨0, hl.pos⟩⟩
+  refine ExtOrd.eq_of_forall_truncExt_eq (c := fun ξ : {ξ // ξ < l} => blockLevel ξ.1)
+    (fun γ hγ => ?_) hx hy (fun i => h i.1 i.2)
+  obtain ⟨ξ, hξ, hlt⟩ := (isNormal_blockLevel.lt_iff_exists_lt hl).mp hγ
+  exact ⟨⟨ξ, hξ⟩, hlt⟩
 
 namespace KnightRealization
 
@@ -104,21 +47,12 @@ theorem eq_of_reduct_eq_of_forall_lt {l : Ordinal.{0}} (hl : Order.IsSuccLimit l
     congrArg (fun R : KnightRealization (blockStage ξ) M => R.eval t) (hred ξ h)
   rcases hp' : N.eval t with _ | p' <;> rcases hp'' : N'.eval t with _ | p''
   · rfl
-  · have := hr 0 h0
-    rw [hp', hp''] at this
-    have h2 : (none : Option (S (blockStage 0).1 n)) = some _ := this
-    cases h2
-  · have := hr 0 h0
-    rw [hp', hp''] at this
-    have h2 : some _ = (none : Option (S (blockStage 0).1 n)) := this
-    cases h2
+  · grind
+  · grind
   · congr 1
     -- the reductions of the two labels agree at every lower block
     have hrt : ∀ ξ (h : ξ < l), reduceType (blockStage ξ).2 (blockStage_mono h.le) p' =
-        reduceType (blockStage ξ).2 (blockStage_mono h.le) p'' := fun ξ h => by
-      have := hr ξ h
-      rw [hp', hp''] at this
-      exact Option.some_injective _ this
+        reduceType (blockStage ξ).2 (blockStage_mono h.le) p'' := by aesop
     have hsch : p'.scheme = p''.scheme :=
       congrArg (fun q : S (blockStage 0).1 n => q.scheme) (hrt 0 h0)
     obtain ⟨sc, lab, bnd, resp⟩ := p'
@@ -130,8 +64,6 @@ theorem eq_of_reduct_eq_of_forall_lt {l : Ordinal.{0}} (hl : Order.IsSuccLimit l
     have hh := (StageType.ext_iff.mp (hrt ξ hξ)).2
     have hfun := eq_of_heq hh
     exact congrFun hfun Xi
-
-/-! ### Transfinite injectivity of reduction on models -/
 
 /-- **Reduction is injective on models**: two models at block `η` with equal reducts to a block
 `ξ ≤ η` are equal. -/

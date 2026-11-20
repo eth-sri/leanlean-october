@@ -7,15 +7,6 @@ module
 
 public import VaughtConjecture.Knight.AlignedCutJoin
 
-/-! # Encoding above a source cut without inverting the ambient witness
-
-The low codes come from the old lawful source labelling, not from an inverse of
-its shifter. Only prescribed outputs above the external cap get new tail codes.
-The aligned paste is lawful and decodes literally. The source cut and the output
-cap may differ; the latter need not belong to the source alphabet. Existence of
-an aligned cut and room in a fixed alphabet remain explicit hypotheses.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.AlignedCutEncoding
@@ -57,6 +48,16 @@ theorem encode_of_gt (s p : X → ExtOrd) {K b : ℕ} {a γ : ExtOrd}
       PaddedSourceDecoder.encode (RelativePrefixEncoding.inventory p γ) K b (p d) := by
   rw [encode, paste_of_gt (high_gap p hroom) d hd, above_of_gt hd]
 
+theorem encode_ne_top {s p : X → ExtOrd} {K b : ℕ} {a γ : ExtOrd}
+    (hroom : a < ofOrd (Ordinal.omega0 * b)) (d : X) : encode s p K b a γ d ≠ ⊤ := by
+  by_cases hd : p d ≤ γ
+  · rw [encode_of_le _ _ _ _ _ _ d hd]
+    exact ne_of_lt ((min_le_right _ _).trans_lt (hroom.trans (ofOrd_lt_top _)))
+  · rw [encode_of_gt _ _ hroom d (not_le.mp hd)]
+    rcases mem_codedAlphabet_iff.mp (PaddedSourceDecoder.encode_mem _ K b (p d)) with h | ⟨_, _, _, _, h⟩
+    · exact h.trans_ne bot_ne_top
+    · exact h.trans_ne (ofOrd_ne_top _)
+
 /-- Capped source agreement is derived from the alignment of raised outputs. -/
 theorem encode_cap (s p : X → ExtOrd) {K b : ℕ} {a γ : ExtOrd}
     (hroom : a < ofOrd (Ordinal.omega0 * b))
@@ -95,40 +96,39 @@ theorem encode_respects
     (halign : ∀ d, γ < p d → a ≤ s d) :
     RespectsSemanticsBelow sem BJ (encode s p K b a γ) :=
   paste_respects hs hp hK ha hab
-    (above_bounded (boundedMap_of_witness (tail_witness _ K b)) hγ)
+    (above_bounded ((tail_witness _ K b).bounded) hγ)
     (fun _ h => above_of_le h) (high_gap p hroom) halign
 
-/-- Decode an independently constructed coded lift. Agreement at the source
-cut preserves every ambient output cap, and positive-cap transport proves
-respect of the output without assuming faithful transformations compose. -/
+/-- Decode at the retuned face cut, then check lawfulness at the protected ambient cap. -/
 theorem decode_lift
     {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
     {sem : Semantics D} {BJ : Finset ι × ℕ} {X : Type*} [Fintype X]
     (s : D.below BJ → ExtOrd) (p : X → ExtOrd) (incl : X → D.below BJ)
-    {r q : D.below BJ → ExtOrd} {K b : ℕ} {a γ : ExtOrd} {σ : ExtOrd → ExtOrd}
+    {r q : D.below BJ → ExtOrd} {K b : ℕ} {a γ δ : ExtOrd} {σ : ExtOrd → ExtOrd}
     (hr : RespectsSemanticsBelow sem BJ r) (hq : RespectsSemanticsBelow sem BJ q)
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
-    (hσ : Witness (gTop K) σ) (hγ : SelfVis K γ) (hγb : γ ≠ ⊥)
-    (hroom : a < ofOrd (Ordinal.omega0 * b)) (hactive : γ ≤ σ a)
+    (hσ : Witness (gTop K) σ) (hδ : SelfVis K δ) (hγb : γ ≠ ⊥) (hγδ : γ ≤ δ)
+    (hroom : a < ofOrd (Ordinal.omega0 * b)) (hactive : δ ≤ σ a)
     (hsource : ∀ d, min (r d) a = min (s d) a)
     (hambient : ∀ d, min (σ (s d)) γ = min (q d) γ)
-    (hface : ∀ d, min (p d) γ = min (q (incl d)) γ)
-    (hlit : ∀ d, r (incl d) = encode (s ∘ incl) p K b a γ d) :
+    (hface : ∀ d, min (p d) δ = min (σ (s (incl d))) δ)
+    (hlit : ∀ d, r (incl d) = encode (s ∘ incl) p K b a δ d) :
     ∃ q' : D.below BJ → ExtOrd, RespectsSemanticsBelow sem BJ q' ∧
       (∀ d, q' (incl d) = p d) ∧ ∀ d, min (q' d) γ = min (q d) γ := by
-  let S := RelativePrefixEncoding.inventory p γ
-  let τ := PaddedSourceDecoder.extend S K b σ γ
-  have hτ : Witness (gTop K) τ := PaddedSourceDecoder.extend_witness S hσ hγ
-  have hag d : min (τ (r d)) γ = min (q d) γ :=
-    (PaddedSourceDecoder.extend_cap_agreement S hσ hγ hroom hactive (hsource d)).trans
-      (hambient d)
+  let S := RelativePrefixEncoding.inventory p δ
+  let τ := PaddedSourceDecoder.extend S K b σ δ
+  have hτ := PaddedSourceDecoder.extend_witness S (b := b) hσ hδ
+  have hag d : min (τ (r d)) γ = min (q d) γ := by
+    have he := PaddedSourceDecoder.extend_cap_agreement S hσ hδ hroom hactive (hsource d)
+    exact (show min (τ (r d)) γ = min (σ (s d)) γ by
+      simpa only [min_assoc, min_eq_right hγδ] using congrArg (min · γ) he).trans (hambient d)
   refine ⟨fun d => τ (r d),
-    map_respects_of_positive_cap_agreement hr hq hK (boundedMap_of_witness hτ) hγb hag,
+    map_respects_of_positive_cap_agreement hr hq hK (hτ.bounded) hγb hag,
     ?_, hag⟩
   intro d
-  change PaddedSourceDecoder.extend S K b σ γ (r (incl d)) = p d
+  change PaddedSourceDecoder.extend S K b σ δ (r (incl d)) = p d
   rw [hlit d]
   exact decode_encode (s ∘ incl) p hσ.mono hroom hactive
-    (fun e => (hambient (incl e)).trans (hface e).symm) d
+    (fun e => (hface e).symm) d
 
 end VaughtConjecture.Knight.AlignedCutEncoding

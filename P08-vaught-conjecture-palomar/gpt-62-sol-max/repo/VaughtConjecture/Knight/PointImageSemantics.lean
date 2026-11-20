@@ -5,25 +5,18 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.AmalgamatedBoundaryRows
-
-/-! # Literal semantics under an injective change of point domain
-
-Changing the point domain leaves the occurrence enumeration and every row
-value unchanged. The lower-domain equivalences transport consistency and
-coding without changing labels or composing transformations.
--/
+public import VaughtConjecture.Knight.OrderedFaceBoundaryRows
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.PointImageSemantics
 
 open AmalgamationPlan Transform Value ExtOrd AmalgamatedBoundary
 
 variable {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
+
 variable {B : Finset ι} {C : Finset κ} (D : CellScheme B) (e : ι ↪ κ)
+
 variable (he : B.image e = C) (sem : Semantics D)
 
 local notation "K" => pointImage D e he
@@ -44,20 +37,13 @@ def rows : Semantics K where
   E c d := sem.E c ((belowEquiv D e he c).symm d)
   orderly c d := sem.orderly c ((belowEquiv D e he c).symm d)
 
-theorem row (c : Cell D) (d : D.below (D.cell c)) :
-    (rows D e he sem).E c (belowEquiv D e he c d) = sem.E c d := by
-  change sem.E c ((belowEquiv D e he c).symm (belowEquiv D e he c d)) = _
-  rw [Equiv.symm_apply_apply]
-
 theorem consistent (hc : sem.IsConsistent) : (rows D e he sem).IsConsistent := by
   intro c
   exact RespectsSemanticsBelow.of_equiv (sem := sem) (sem' := rows D e he sem)
     (belowEquiv D e he c).symm (fun _ => rfl)
     (fun _ _ => Finset.image_subset_image_iff e.injective) (fun _ _ _ => rfl) (hc c)
 
-theorem coded (hc : sem.IsCoded) : (rows D e he sem).IsCoded := by
-  intro c d
-  exact hc c ((belowEquiv D e he c).symm d)
+theorem coded (hc : sem.IsCoded) : (rows D e he sem).IsCoded := by solve_by_elim
 
 theorem total_eq (c d : Cell D) :
     AmalgamatedBoundaryRows.total (rows D e he sem) c d =
@@ -79,7 +65,7 @@ theorem respects_iff (p : Cell D → ExtOrd) :
     refine ⟨hp.orderly, ?_, ?_⟩
     · intro c
       have h := (hp.locality c).reindex (belowEquiv D e he c)
-      exact transformsTo_congr rfl (by funext d; exact row D e he sem c d) rfl h
+      assumption
     · intro c d hs hg
       obtain ⟨z, hz, hle⟩ := hp.availability c d (Finset.image_subset_image hs) hg
       refine ⟨z, ?_, hle⟩

@@ -5,23 +5,20 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.WholeDonorSmallScopes
-
-/-! # A constructed ordinary scope operator at every positive height
-
-The output record below is populated by `build`, from the actual two legal
-input facets. It is not a new induction hypothesis asserting future completion.
-The grade-one, grade-two and recursive cases use their checked, unchanged rows.
-The mute completion is separate, so no active maximal apex is introduced.
--/
+public import VaughtConjecture.Knight.WholeDonorOrdinaryLift
+public import VaughtConjecture.Knight.CanonicalOneCoatom
+public import VaughtConjecture.Knight.OrdinaryScopeMute
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryScopeOperator
+
 open AmalgamationPlan Transform Value ExtOrd SourcePrefixRows OrbitPrefixSupport
-open WholeDonorOrdinarySections WholeDonorOrdinaryLift
+
+open WholeDonorOrdinaryLift
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
 /-- Receipts for the actual rows and specified renderer returned by `build`. -/
@@ -33,7 +30,7 @@ structure Core (sem : Semantics D) (k : ℕ) where
   index : ∀ d, carrier.cell (original d) = D.cell d
   coverage : ∀ d, (∃ c, original c = d) ∨ carrier.scope d = A
   row : ∀ (c : Cell D) (d : D.below (D.cell c)),
-    rows.E (original c) ⟨original d.1, by rw [index, index]; exact d.2⟩ = sem.E c d
+    rows.E (original c) ⟨original d.1, by grind⟩ = sem.E c d
   consistent : rows.IsConsistent
   coded : rows.IsCoded
   bountiful : rows.IsBountiful
@@ -57,12 +54,10 @@ structure Core (sem : Semantics D) (k : ℕ) where
     (∀ z ∈ G, SelfVis k z) → SelfVis k θ → γ ∈ G → γ ≤ θ → Agree p q γ →
     Agree (render hp htp G θ) (render hq htq G θ) γ
 
-variable {B C : Finset ι} {R : Finset (Finset ι)} {m nL nR : ℕ}
-variable (I : WholeDonorBoundary.Input A B C R m nL nR) (hBA : B ≠ A) (hCA : C ≠ A)
-variable (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
-
 namespace Core
+
 variable {sem : Semantics D} {k : ℕ} (S : Core sem k)
+
 variable (hk : 0 < k) (hcard : A.card = k + 1)
 
 /-- Close this scope with its actual zero highest row. The selected renderer
@@ -73,21 +68,21 @@ def finish (S : Core sem k) (hk : 0 < k) (hcard : A.card = k + 1) : Core sem (k 
   plan := S.plan
   original := S.original.trans (OrderEmbedding.ofStrictMono
     (OrdinaryScopeMute.old S.carrier k (k + 1) (by omega) hcard.ge)
-    (SourceLayerCarrier.old_order _ _ _ _ _))
+    (by tauto))
   index d := (MaximalFullLayer.old_index S.carrier k (k + 1) (by omega) hcard.ge
     (S.original d)).trans (S.index d)
   coverage d := by
     rcases OrdinaryScopeMute.covered S.carrier k (k + 1) (by omega) hcard.ge d with
       ⟨c, rfl⟩ | rfl
     · rcases S.coverage c with ⟨a, rfl⟩ | ha
-      · exact Or.inl ⟨a, rfl⟩
+      · simp
       · exact Or.inr ((congrArg Prod.fst
           (MaximalFullLayer.old_index S.carrier k (k + 1) (by omega) hcard.ge c)).trans ha)
     · exact Or.inr (congrArg Prod.fst
         (MaximalFullLayer.apex_index S.carrier k (k + 1) (by omega) hcard.ge))
   row c d := (OrdinaryScopeMute.inherited_row S.carrier S.rows k (k + 1) S.grade
     (by omega) hcard.ge (S.original c)
-      ⟨S.original d.1, by rw [S.index, S.index]; exact d.2⟩).trans (S.row c d)
+      ⟨S.original d.1, by rw [S.index, S.index]; grind⟩).trans (S.row c d)
   consistent := OrdinaryScopeMute.consistent _ _ _ _ _ _ _ S.consistent
   coded := OrdinaryScopeMute.coded _ _ _ _ _ _ _ S.coded
   bountiful := OrdinaryScopeMute.bountiful _ _ _ _ _ _ _ hk S.bountiful
@@ -146,4 +141,5 @@ theorem finish_complete : (S.finish hk hcard).carrier.IsComplete :=
 end Core
 
 end
+
 end VaughtConjecture.Knight.OrdinaryScopeOperator

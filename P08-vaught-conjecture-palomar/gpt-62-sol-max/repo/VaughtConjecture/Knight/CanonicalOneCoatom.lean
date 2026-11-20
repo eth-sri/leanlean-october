@@ -9,71 +9,73 @@ public import VaughtConjecture.Knight.CanonicalGradeOneLift
 public import VaughtConjecture.Knight.CanonicalCoatomBountiful
 public import VaughtConjecture.Knight.CanonicalSeedCoding
 
-/-! # The small grade-one coatom seed, at every original cap
-
-The catalogue and rows are the existing canonical field layer. Old legal-face
-lifts supply the boundary; no lift or completion of the output is assumed.
--/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalOneCoatom
+
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable (sem : Semantics D) (hA : 1 ≤ A.card)
   (hp : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ 1)
+
 abbrev scheme := CanonicalFieldLayer.scheme sem 1 (Cell D) id (by decide) hA
+
 abbrev rows := CanonicalFieldLayer.rows sem 1 (Cell D) id (by decide) hA hp hg
+
 abbrev old := CanonicalFieldLayer.old sem 1 (Cell D) id (by decide) hA
+
+theorem coverage (d : Cell (scheme sem hA)) :
+    (∃ c, old sem hA c = d) ∨ (scheme sem hA).scope d = A := by
+  obtain ⟨c, rfl⟩ := (SourceLayerCarrier.enumeration D
+    (CanonicalFieldLayer.Profile sem 1 (Cell D) id) 1 (by decide) hA).surjective d
+  rcases c with c | c
+  · exact Or.inl ⟨c, rfl⟩
+  · exact Or.inr (congrArg Prod.fst (SourceLayerCarrier.cell_toCell _ _ _ _ _ _))
+
+theorem complete
+    (hc : ∀ J ∈ Plan.gradedPlan D.plan, J.1 ≠ A → ∃ d, D.cell d = J)
+    (J : Finset ι × ℕ) (hJ : J ∈ Plan.gradedPlan D.plan) (hj : J.2 ≤ 1) :
+    ∃ d, (scheme sem hA).cell d = J := by
+  by_cases hs : J.1 = A
+  · have h : J.2 = 1 := by have := (Plan.mem_gradedPlan.mp hJ).2.1; omega
+    let c := CanonicalFieldLayer.controller sem 1 (Cell D) id (by decide) hA
+      (CanonicalFieldLayer.Profile.bot sem 1 (Cell D) id)
+    exact ⟨c.1, c.2.trans (Prod.ext hs.symm h.symm)⟩
+  · obtain ⟨d, hd⟩ := hc J hJ hs
+    exact ⟨old sem hA d, (SourceLayerCarrier.cell_toCell _ _ _ _ _ (.inl d)).trans hd⟩
+
 abbrev equiv (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) :=
   GradeCutLayerCarrier.properEquiv D (CanonicalFieldLayer.Profile sem 1 (Cell D) id)
     1 (by decide) hA J hJ
 
 theorem respects_iff (J : Finset ι × ℕ) (hJ : ¬ A ⊆ J.1) (p : D.below J → ExtOrd) :
     RespectsSemanticsBelow sem J p ↔
-      RespectsSemanticsBelow (rows sem hA hp hg) J (p ∘ (equiv sem hA J hJ).symm) := by
-  apply respects_iff_of_equiv (equiv sem hA J hJ)
-    (fun d => (congrArg Prod.snd (SourceLayerCarrier.cell_toCell D _ 1 (by decide) hA
-      (.inl d.1))).symm) (fun d e => ?_) (fun c d _ => ?_) p
-  · change (D.cell d.1).1 ⊆ (D.cell e.1).1 ↔
-      ((scheme sem hA).cell (old sem hA d.1)).1 ⊆ ((scheme sem hA).cell (old sem hA e.1)).1
-    simp only [old, CanonicalFieldLayer.old, SourceLayerCarrier.cell_toCell,
-      SourceLayerCarrier.index]
-  · exact (CanonicalFieldLayer.inherited_row sem 1 (Cell D) id (by decide) hA hp hg c.1 d).symm
+      RespectsSemanticsBelow (rows sem hA hp hg) J (p ∘ (equiv sem hA J hJ).symm) :=
+  respects_iff_of_index_equiv (equiv sem hA J hJ)
+    (fun d => SourceLayerCarrier.cell_toCell D _ 1 (by decide) hA (.inl d.1))
+    (fun c d _ => (CanonicalFieldLayer.inherited_row sem 1 (Cell D) id (by decide) hA hp hg c.1 d).symm) p
 
 theorem pullback {J : Finset ι × ℕ} (hJ : ¬ A ⊆ J.1)
     {q : (scheme sem hA).below J → ExtOrd} (hq : RespectsSemanticsBelow (rows sem hA hp hg) J q) :
-    RespectsSemanticsBelow sem J (q ∘ equiv sem hA J hJ) := by
-  apply (respects_iff sem hA hp hg J hJ _).mpr
-  simpa only [Function.comp_def, Equiv.apply_symm_apply] using hq
+    RespectsSemanticsBelow sem J (q ∘ equiv sem hA J hJ) :=
+  (iff_comp_symm (equiv sem hA J hJ).symm (respects_iff sem hA hp hg J hJ) q).mp hq
 
 theorem proper_lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : ¬ A ⊆ J.1)
     (hl : CappedLift sem h) : CappedLift (rows sem hA hp hg) h := by
-  intro p q γ hpr hqr hγ hag
   have hI : ¬ A ⊆ I.1 := fun hi => hJ (hi.trans h.1)
-  let eI := equiv sem hA I hI
-  let eJ := equiv sem hA J hJ
-  have hm (d : D.below I) : eJ (CellScheme.below.mono h d) =
-      CellScheme.below.mono h (eI d) := rfl
-  obtain ⟨r, hr, hc, he⟩ := hl (p ∘ eI) (q ∘ eJ) γ
-    (pullback sem hA hp hg hI hpr) (pullback sem hA hp hg hJ hqr) hγ (fun d => hag (eI d))
-  refine ⟨r ∘ eJ.symm, (respects_iff sem hA hp hg J hJ r).mp hr, ?_, ?_⟩
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hc (eJ.symm d)
-  · intro d
-    have hd : eJ.symm (CellScheme.below.mono h d) = CellScheme.below.mono h (eI.symm d) := by
-      apply eJ.injective
-      rw [Equiv.apply_symm_apply, hm, Equiv.apply_symm_apply]
-    rw [Function.comp_apply, hd, he]
-    exact congrArg p (eI.apply_symm_apply d)
+  exact CappedLift.of_equiv (equiv sem hA I hI) (equiv sem hA J hJ)
+    (fun _ => rfl) le_rfl (respects_iff sem hA hp hg I hI) (respects_iff sem hA hp hg J hJ) hl
 
 /-- Literal tops are decoded from proper representatives, not inserted into the catalogue. -/
 theorem exists_whole {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) :
     ∃ r : Cell (scheme sem hA) → ExtOrd, RespectsSemantics (rows sem hA hp hg) r ∧
       ∀ d, r (old sem hA d) = p d := by
   let all (d : Cell D) : D.below (A, 1) :=
-    ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hg d⟩
+    ⟨d, D.scope_subset d, hg d⟩
   obtain ⟨S, u, hu, _, hcode, hdecode⟩ :=
     (hpr.toBelow (A, 1)).exists_coded_representative (fun d => hg d.1)
       (le_refl (Nat.card (D.below (A, 1))))
@@ -87,8 +89,8 @@ theorem exists_whole {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) :
   have hs := CanonicalFieldLayer.section_lawful sem 1 (Cell D) id (by decide) hA hp hg hv ht
     (G := ∅) (by simp) (extVisibilityReplace_top 1 1)
   let all' (d : Cell (scheme sem hA)) : (scheme sem hA).below (A, 1) :=
-    ⟨d, (scheme sem hA).isPlan.subset_of_mem ((scheme sem hA).scope_mem_plan d),
-      (CanonicalFieldLayer.data sem 1 (Cell D) id (by decide) hA hp hg).max_grade d⟩
+    ⟨d, (scheme sem hA).scope_subset d,
+      CanonicalFieldLayer.max_grade sem 1 (Cell D) id (by decide) hA hg d⟩
   have hd := (hs.toBelow (A, 1)).decoded S (fun d => d.2.2)
   refine ⟨fun d => canonicalDecoder S 1 (s d), hd.toRespects (fun d => (all' d).2), ?_⟩
   intro d
@@ -97,6 +99,7 @@ theorem exists_whole {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) :
       (G := ∅) (by simp) (extVisibilityReplace_top 1 1) d)).trans (hdecode (all d))
 
 variable (hold : CanonicalCoatomBountiful.OldLifts sem) {L R : Finset ι}
+
 variable (hL : L ∈ D.plan) (hR : R ∈ D.plan) (hLA : L ≠ A) (hRA : R ≠ A)
   (hLc : 1 ≤ L.card) (hRc : 1 ≤ R.card) (hO : L ∩ R ∈ D.plan)
   (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)
@@ -108,27 +111,15 @@ theorem full_left {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A) (hCc : 1 �
       (show GradedLe (C, 1) (A, 1) from ⟨D.isPlan.subset_of_mem hC, le_rfl⟩) := by
   let h : GradedLe (C, 1) (A, 1) := ⟨D.isPlan.subset_of_mem hC, le_rfl⟩
   have hn : ¬ A ⊆ C := fun hh => hCA (Finset.Subset.antisymm h.1 hh)
-  have cover (d : Cell D) : GradedLe (D.cell d) (L, 1) ∨ GradedLe (D.cell d) (R, 1) :=
-    (hcover _ (D.scope_mem_plan d) (hp d)).imp (fun hh => ⟨hh, hg d⟩) (fun hh => ⟨hh, hg d⟩)
-  have hl : CappedLift sem (show GradedLe (C, 1) (L, 1) from ⟨hCL, le_rfl⟩) :=
-    hold (C, 1) (L, 1) (Plan.mem_gradedPlan.mpr ⟨hC, (by decide : 0 < 1), hCc⟩)
-      (Plan.mem_gradedPlan.mpr ⟨hL, (by decide : 0 < 1), hLc⟩) hLA ⟨hCL, le_rfl⟩
-  have hr : CappedLift sem (target_le_right (U := (L, 1)) (V := (R, 1))) := by
-    by_cases hne : (L ∩ R).Nonempty
-    · exact hold _ _ (target_mem_gradedPlan hO (by decide : 0 < 1) (by decide : 0 < 1) hne)
-        (Plan.mem_gradedPlan.mpr ⟨hR, (by decide : 0 < 1), hRc⟩) hRA target_le_right
-    · let := target_empty (D := D) (U := (L, 1)) (V := (R, 1))
-        (Finset.not_nonempty_iff_eq_empty.mp hne)
-      exact lift_empty target_le_right
+  let W : CutCover sem (C, 1) 1 := CanonicalCoatomBountiful.oldCover sem hold hL hR hLA hRA hO (by decide : 0 < 1)
+    hLc hRc (Plan.mem_gradedPlan.mpr ⟨hC, Nat.zero_lt_one, hCc⟩) ⟨hCL, le_rfl⟩
+    (fun d => hcover _ (D.scope_mem_plan d) (hp d))
   intro p q γ hpr hqr hγ hag
   let e := equiv sem hA (C, 1) hn
   have hpr' := pullback sem hA hp hg hn hpr
-  have inter (d : Cell D) (hl : GradedLe (D.cell d) (L, 1))
-      (hr : GradedLe (D.cell d) (R, 1)) := (below_target_iff d).mpr ⟨hl, hr⟩
   by_cases hb : γ = ⊥
-  · obtain ⟨b, hread⟩ := section_left (show GradedLe (C, 1) (L, 1) from ⟨hCL, le_rfl⟩)
-      target_le_left target_le_right inter hl hr (p ∘ e) hpr'
-    obtain ⟨r, hrr, he⟩ := exists_whole sem hA hp hg (b.whole_respects cover)
+  · obtain ⟨b, hbr, hread⟩ := W.section_of hg hpr'
+    obtain ⟨r, hrr, he⟩ := exists_whole sem hA hp hg hbr
     refine ⟨fun d => r d.1, hrr.toBelow (A, 1), fun _ => by simp only [hb, min_bot_right], ?_⟩
     intro d
     obtain ⟨a, rfl⟩ := e.surjective d
@@ -138,8 +129,7 @@ theorem full_left {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A) (hCc : 1 �
       ⟨⟨c, by rw [hc]; exact GradedLe.refl _⟩, hc⟩
     obtain ⟨r, hrr, he, hcap⟩ := CanonicalGradeOneLift.exists_positive_lift
       sem (Cell D) id hA hp hg Function.injective_id hf hpr' hqr hγ hb
-      (fun d => (hag (e d)).symm) cover ⟨hCL, le_rfl⟩ target_le_left target_le_right
-      inter hl hr le_rfl le_rfl
+      (fun d => (hag (e d)).symm) W
     refine ⟨r, hrr, hcap, ?_⟩
     intro d
     obtain ⟨a, rfl⟩ := e.surjective d
@@ -148,7 +138,7 @@ theorem full_left {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A) (hCc : 1 �
 include hold hL hR hLA hRA hLc hRc hO hcover hcomplete in
 theorem bountiful : (rows sem hA hp hg).IsBountiful := by
   apply EffectiveGradeLifting.bountiful_of_bounded_same_grade
-    (CanonicalFieldLayer.data sem 1 (Cell D) id (by decide) hA hp hg).max_grade (by decide : 0 < 1)
+    (CanonicalFieldLayer.max_grade sem 1 (Cell D) id (by decide) hA hg) (by decide : 0 < 1)
   intro C B j hC hB hj hCB
   have hj1 : j = 1 := by have := (Plan.mem_gradedPlan.mp hC).2.1; omega
   subst j
@@ -168,4 +158,5 @@ theorem bountiful : (rows sem hA hp hg).IsBountiful := by
       (hold _ _ hC hB hBA ⟨hCB, le_rfl⟩)
 
 end
+
 end VaughtConjecture.Knight.CanonicalOneCoatom

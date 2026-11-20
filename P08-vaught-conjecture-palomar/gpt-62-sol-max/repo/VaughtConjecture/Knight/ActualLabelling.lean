@@ -7,19 +7,14 @@ module
 
 public import VaughtConjecture.Knight.ActualOccurrence
 
-/-! # Lawful, restriction-compatible labels on actual occurrences
-
-The evaluator is not a model and need not have stage-bounded values. Its two
-laws concern only actual occurrences of the original realization. In particular,
-realizing a legal scheme in that realization does not realize chosen labels.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.KnightRealization
+
 open TypeTower StageType Value ExtOrd
+
 universe w
+
 variable {M : Type w} {α : LimitStage} (W : KnightRealization α M)
 
 /-- An evaluator of actual finite occurrences, with lawful rows and literal face

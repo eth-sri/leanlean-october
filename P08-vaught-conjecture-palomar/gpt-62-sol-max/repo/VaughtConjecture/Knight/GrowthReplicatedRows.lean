@@ -6,33 +6,25 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.ScopeReplicationLifting
-public import VaughtConjecture.Knight.GrowthPaddedInstallation
-
-/-! # The actual growth rows on every mixed scope
-
-Instantiate scope replication on the constructed one-scope growth layers.
-The catalogue and the full padded grade-one base are unchanged. Every mixed
-scope receives each eligible full-scope prototype, with actual enlarged rows.
-Consistency, coding, selected lawfulness, prefix agreement and support are
-derived. Original faces remain literal and ordered. Completeness through the
-installed height no longer assumes that proper scopes lie in an original face.
-This does not yet prove arbitrary mixed-section extension or bountifulness.
--/
+public import VaughtConjecture.Knight.GrowthPaddedIteration
+public import VaughtConjecture.Knight.PaddedInstallation
+public import VaughtConjecture.Knight.PaddedSourceTable
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthReplicatedRows
+
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources
+
 open GrowthPaddedContract GrowthPaddedIteration ScopeReplicationCarrier
+
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   {I : WholeDonorBoundary.Input A B C R m (n + 1) J}
-  {X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows}
-  {attach : RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X}
+  {X : I.GrowthData}
+  {attach : I.GrowthAttachment X}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A}
   {k : ℕ} (P : Layer I X attach hA hB hC k)
 
@@ -46,123 +38,103 @@ theorem proper_covered (c : Cell P.carrier) (hc : P.carrier.scope c ≠ A) :
     · have hi := (P.base_index (RelativeLadderLayer.old I.boundary (by omega) e)).trans
         (RelativeLadderLayer.old_index I.boundary (by omega) e)
       have he := (I.occupied_iff (I.boundary.cell_mem e)).mp ⟨e, rfl⟩
-      simpa only [CellScheme.scope, hi] using he
+      simp_all
     · exact (hc ((congrArg Prod.fst (P.base_index _)).trans
         (congrArg Prod.fst (RelativeLadderLayer.added_index I.boundary (by omega) v)))).elim
-  · exact (hc hs).elim
+  trivial
 
-abbrev carrier := ScopeReplicationCarrier.scheme P.carrier B C
-abbrev old := ScopeReplicationCarrier.old P.carrier B C
-abbrev erase := ScopeReplicationCarrier.erase P.carrier B C
+abbrev frame : Frame A := ⟨P.carrier, B, C, proper_covered P, P.rows⟩
+
+abbrev carrier := ScopeReplicationCarrier.scheme (frame P)
+
+abbrev old := ScopeReplicationCarrier.old (frame P)
+
+abbrev erase := ScopeReplicationCarrier.erase (frame P)
 
 def rows : Semantics (carrier P) :=
-  ScopeReplicationSemantics.rows P.carrier B C (proper_covered P) P.rows
+  ScopeReplicationSemantics.rows (frame P)
 
 theorem consistent : (rows P).IsConsistent :=
-  ScopeReplicationSemantics.consistent P.carrier B C (proper_covered P) P.rows P.consistent
+  ScopeReplicationSemantics.consistent (frame P) P.consistent
 
 theorem coded (hp : P.rows.IsCoded) : (rows P).IsCoded := by
   intro c d
   change IsCodedLabel ((carrier P).grade c) (P.rows.E (erase P c) _)
-  rw [← ScopeReplicationCarrier.erase_grade P.carrier B C c]
+  rw [← ScopeReplicationCarrier.erase_grade (frame P) c]
   exact hp _ _
 
 def face {T : Finset ι} {E : CellScheme T} {semE : Semantics E}
     (F : ExactSemanticFace semE P.rows) (hT : T ⊆ B ∨ T ⊆ C) :
     ExactSemanticFace semE (rows P) :=
-  ScopeReplicationSemantics.face P.carrier B C (proper_covered P) P.rows F hT
+  ScopeReplicationSemantics.face (frame P) F hT
 
 theorem copy_eq {V : Finset ι × ℕ} {p : (carrier P).below V → ExtOrd}
     (hp : RespectsSemanticsBelow (rows P) V p) (a b : (carrier P).below V)
     (hs : (carrier P).scope a.1 ⊆ (carrier P).scope b.1) (he : erase P a.1 = erase P b.1) :
     p a = p b :=
-  ScopeReplicationSemantics.copy_eq P.carrier B C (proper_covered P) P.rows hp a b hs he
+  ScopeReplicationSemantics.copy_eq (frame P) hp a b hs he
 
 /-- Replication consumes the single-scope lift, not a selected rendering or
 an assumed extension of the replicated ambient. -/
 theorem lift_to_full {U : Finset ι × ℕ} {j : ℕ} (h : GradedLe U (A, j))
     (hside : U.1 ⊆ B ∨ U.1 ⊆ C) (hl : CoatomBoundaryExtension.CappedLift P.rows h) :
     CoatomBoundaryExtension.CappedLift (rows P) h :=
-  ScopeReplicationLifting.lift_to_full P.carrier B C (proper_covered P) P.rows h hside hl
+  ScopeReplicationLifting.lift_to_full (frame P) h hside hl
 
 section Constructed
-variable (I X attach hA hB hC) (t : ℕ) (ht : t + 2 ≤ A.card)
 
-abbrev built := build I X attach hA hB hC t ht
+variable (G : BuildContext A B C R m n J)
 
-theorem build_consistent : (rows (built I X attach hA hB hC t ht)).IsConsistent :=
-  consistent _
+local notation "Q" => G.tower
 
-theorem build_coded : (rows (built I X attach hA hB hC t ht)).IsCoded :=
-  coded _ (GrowthPaddedInstallation.build_coded I X attach hA hB hC t ht)
+theorem build_coded : (rows Q).IsCoded :=
+  coded _ (Padded.build_coded G.I.consistent G.I.coded G.depth G.fits)
 
-def donorFace : ExactSemanticFace I.leftRows (rows (built I X attach hA hB hC t ht)) :=
-  face _ (GrowthPaddedInstallation.donorFace I X attach hA hB hC t ht) (Or.inl le_rfl)
+def donorFace : ExactSemanticFace G.I.leftRows (rows Q) :=
+  face _ ((Q).face G.I.leftFace G.leftProper.not_ge) (Or.inl le_rfl)
 
-def privateFace : ExactSemanticFace I.rightRows (rows (built I X attach hA hB hC t ht)) :=
-  face _ (GrowthPaddedInstallation.privateFace I X attach hA hB hC t ht) (Or.inr le_rfl)
+def privateFace : ExactSemanticFace G.I.rightRows (rows Q) :=
+  face _ ((Q).face G.I.rightFace G.rightProper.not_ge) (Or.inr le_rfl)
 
-theorem donor_order : StrictMono (donorFace I X attach hA hB hC t ht).map :=
-  (old_order _ B C).comp (GrowthPaddedInstallation.donor_order I X attach hA hB hC t ht)
+theorem donor_order : StrictMono (donorFace G).map :=
+  (old_order (frame Q)).comp ((Q).face_mono _ G.leftProper.not_ge G.I.left_order)
 
-theorem private_order : StrictMono (privateFace I X attach hA hB hC t ht).map :=
-  (old_order _ B C).comp (GrowthPaddedInstallation.private_order I X attach hA hB hC t ht)
+theorem private_order : StrictMono (privateFace G).map :=
+  (old_order (frame Q)).comp ((Q).face_mono _ G.rightProper.not_ge G.I.right_order)
 
-/-- All actual plan scopes, mixed ones included, are occupied through the
-installed height. No two-face coverage hypothesis remains. -/
+/-- All plan scopes, including mixed ones, are occupied through the installed height. -/
 theorem complete_through {V : Finset ι × ℕ} (hV : V ∈ Plan.gradedPlan R)
-    (hv : V.2 ≤ t + 2) :
-    ∃ d, (carrier (built I X attach hA hB hC t ht)).cell d = V := by
+    (hv : V.2 ≤ G.depth + 2) : ∃ d, (carrier Q).cell d = V := by
   classical
-  let P := built I X attach hA hB hC t ht
   by_cases hside : V.1 ⊆ B ∨ V.1 ⊆ C
-  · obtain ⟨d, hd⟩ := (I.occupied_iff hV).mpr hside
-    refine ⟨old P (P.baseMap (RelativeLadderLayer.old I.boundary (by omega) d)), ?_⟩
-    exact (old_index _ B C _).trans ((P.base_index _).trans
-      ((RelativeLadderLayer.old_index I.boundary (by omega) d).trans hd))
-  · obtain ⟨c, hc⟩ := GrowthPaddedInstallation.full_occupied I X attach hA hB hC t ht
-      V.2 (Plan.mem_gradedPlan.mp hV).2.1 hv
-    have hs : P.carrier.scope c = A := congrArg Prod.fst hc
+  · obtain ⟨d, hd⟩ := (G.I.occupied_iff hV).mpr hside
+    exact ⟨old Q ((Q).original d), (old_index _ _).trans (((Q).original_index d).trans hd)⟩
+  · obtain ⟨c, hc⟩ := (Q).full_occupied (by omega) V.2 (Plan.mem_gradedPlan.mp hV).2.1 hv
     have hg := congrArg Prod.snd hc
-    change P.carrier.grade c = V.2 at hg
-    have hm : V.1 = A ∨ Mixed B C V.1 := Or.inr
-      ⟨fun h => hside (Or.inl h), fun h => hside (Or.inr h)⟩
-    have hplan : V.1 ∈ P.carrier.plan := by
+    change (Q).carrier.grade c = V.2 at hg
+    have hm : V.1 = A ∨ Mixed B C V.1 := by tauto
+    have hplan : V.1 ∈ (Q).carrier.plan := by
       rw [GrowthPaddedIteration.build_plan]; exact (Plan.mem_gradedPlan.mp hV).1
-    refine ⟨atScope P.carrier B C V.1 hplan hm c hs
+    refine ⟨atScope (frame Q) V.1 hplan hm c (congrArg Prod.fst hc)
       (hg ▸ (Plan.mem_gradedPlan.mp hV).2.2), ?_⟩
-    exact (atScope_index P.carrier B C _ _ _ _ _ _).trans (by rw [hg])
+    exact (atScope_index _ _ _ _ _ _ _).trans (by rw [hg])
+
+/-- At full installed height this includes the whole graded plan. -/
+theorem complete (hfull : A.card ≤ G.depth + 2) : (carrier Q).IsComplete := by
+  intro V hV
+  have hp : (carrier Q).plan = R := GrowthPaddedIteration.build_plan ..
+  rw [hp] at hV
+  exact complete_through G hV ((Plan.mem_gradedPlan.mp hV).2.2.trans
+    ((Finset.card_le_card (G.I.isPlan.subset_of_mem (Plan.mem_gradedPlan.mp hV).1)).trans hfull))
+
+/-- Targets inside either original face use that face's bountifulness. -/
+theorem inherited_lift {U V : Finset ι × ℕ}
+    (hU : U ∈ Plan.gradedPlan R) (hV : V ∈ Plan.gradedPlan R)
+    (h : GradedLe U V) (hv : V.1 ⊆ B ∨ V.1 ⊆ C) : CoatomBoundaryExtension.CappedLift (rows Q) h :=
+  G.I.installed_lift (donorFace G) (privateFace G) hU hV h hv
 
 end Constructed
 
-/-- At full installed height every graded-plan index is occupied, including
-all mixed scopes. This is completeness, not bountifulness. -/
-theorem complete :
-    (carrier (built I X attach hA hB hC (A.card - 2) (by omega))).IsComplete := by
-  intro V hV
-  have hp : (carrier (built I X attach hA hB hC (A.card - 2) (by omega))).plan = R :=
-    GrowthPaddedIteration.build_plan I X attach hA hB hC (A.card - 2) (by omega)
-  have hV' : V ∈ Plan.gradedPlan R := by rwa [hp] at hV
-  have hg := (Plan.mem_gradedPlan.mp hV').2.2
-  have hs := I.boundary.isPlan.subset_of_mem (Plan.mem_gradedPlan.mp hV').1
-  have hc := Finset.card_le_card hs
-  exact complete_through I X attach hA hB hC (A.card - 2) (by omega) hV' (by omega)
-
-/-- Targets inside either literal original face use that face's existing
-bountifulness, with no mixed-target extension premise. -/
-theorem inherited_lift (t : ℕ) (ht : t + 2 ≤ A.card) {U V : Finset ι × ℕ}
-    (hU : U ∈ Plan.gradedPlan R) (hV : V ∈ Plan.gradedPlan R)
-    (h : GradedLe U V) (hv : V.1 ⊆ B ∨ V.1 ⊆ C) :
-    CoatomBoundaryExtension.CappedLift (rows (built I X attach hA hB hC t ht)) h := by
-  by_cases he : U = V
-  · subst V; exact CoatomBoundaryExtension.lift_refl
-  rcases hv with hb | hc
-  · exact (donorFace I X attach hA hB hC t ht).lift hb
-      (I.left_mem hU (h.1.trans hb)) (I.left_mem hV hb) h he
-      (PointImageSemantics.bountiful _ _ _ _ I.left.complete I.left.bountiful)
-  · exact (privateFace I X attach hA hB hC t ht).lift hc
-      (I.right_mem hU (h.1.trans hc)) (I.right_mem hV hc) h he
-      (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
-
 end
+
 end VaughtConjecture.Knight.GrowthReplicatedRows

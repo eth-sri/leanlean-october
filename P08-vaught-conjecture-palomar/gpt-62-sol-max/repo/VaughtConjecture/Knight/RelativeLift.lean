@@ -9,67 +9,20 @@ public import VaughtConjecture.Knight.RelativeLiftData
 -- Ported from V-C 4d2e8cb. Only the unrelated model-side GuardActivation
 -- import is removed; its scalar cancellation helper is proved locally.
 
-/-! # The relative lifting theorem from one lawful reference template
-
-The reviewer's notes3 relative lifting lemma (`guarded_probe_construction.md` §4), in full:
-**every allowed pair has every relative old-face lift.**  Given an allowed pair `(u, v)`
-(`RelativeData.Allowed`) and an arbitrary lawful replacement `u'` of the entire old face
-agreeing with `u` below an `N`-visible cap `γ`, there is a lawful candidate labelling `v'`
-with the literal root `u'|_B`, the same `γ`-reading as `v`, and `(u', v')` allowed
-(`relative_lift`).  The four cases:
-
-* **Case 0** — `u'` is outside the distinguished bottom-pattern class: install the new root by
-  the candidate's bountifulness at `γ`; correctness is vacuous (`lift_case0`).
-* **Case 1** — `u'` in the class, `c' = u'(C) ≤ γ`: the same lift; every relation at `c'` is
-  retained since `c' ≤ γ`, `c'` is `N`-visible, and the references agree at `c'`
-  (`correct_of_cap_le`).
-* **Case 2** — in the class, `c' > γ`, high values requested, `d' = d(u') < γ`: the frame puts
-  every exact value below `γ`, so the lift at `γ` fixes them literally; the high values keep a
-  reading at least `d'` (`correct_of_dOf_lt`).
-* **Case 3** — in the class, `c' > γ`, and no high values or `γ ≤ d'`: the **template image**
-  `w = θ ∘ V` under the capped decoder of `u'` at the cap is lawful by same-bottom-pattern
-  transport (long rows harmless: every reference is nonbottom in the class), has the
-  `γ`-reading of `v`, and its root is `u'|_B ∧ c'`; the candidate's bountifulness at `c'`
-  restores the literal root, retaining every `c'`-reading and hence the `γ`-reading
-  (`template_image_respects`, `lift_case3`).  At `γ = ⊥` the `γ`-agreement is trivial and
-  the lawfulness of `w` comes from its bottom pattern, not from a positive-cap argument.
-
-The proof uses the **original candidate's** bountifulness and the template only; no
-controller is added and no row changed.  Existence of the template and existence of the
-legal guarded probe are separate conclusions, not supplied here.
-
-**General cap (notes7).**  The cap is a full-scope grade-`N` cell of a possibly larger private
-context; the pattern test, the donor and the decoder live on its lower domain, and the
-correctness relations read only cells there (`Requests.sec`).  The marker reads at offset
-`R < N`.  Cells above the cap are carried along untouched by `u'`, which is a lawful labelling
-of the whole private scheme.  The selector's cap is retained by every lift
-(`RelativeData.selector_cap_agree`).
-
-Construction-private (not root-exported). -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
 
 open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
 
-/-! ## Meets under nested caps -/
-
 theorem min_cap_of_le {x x' c' γ : ExtOrd} (h : c' ≤ γ) (hag : min x γ = min x' γ) :
-    min x c' = min x' c' := by
-  calc min x c' = min (min x γ) c' := by rw [min_assoc, min_eq_right h]
-    _ = min (min x' γ) c' := by rw [hag]
-    _ = min x' c' := by rw [min_assoc, min_eq_right h]
+    min x c' = min x' c' := by grind
 
-theorem min_min_of_le {x c c' : ExtOrd} (h : c' ≤ c) : min (min x c) c' = min x c' := by
-  rw [min_assoc, min_eq_right h]
+theorem min_min_of_le {x c c' : ExtOrd} (h : c' ≤ c) : min (min x c) c' = min x c' := by grind
 
 /-- `min e c = v` with `v < c` forces `e = v`. -/
 theorem eq_of_min_eq_of_lt' {e c v : ExtOrd} (h : min e c = v) (hv : v < c) : e = v :=
-by
-  rcases le_total e c with he | he
-  · simpa only [min_eq_left he] using h
-  · exact (hv.ne ((min_eq_right he).symm.trans h).symm).elim
+by grind
 
 namespace RelativeData
 
@@ -98,8 +51,6 @@ theorem cap_selfVis {u : Cell DA → ExtOrd} (hu : RespectsSemantics semA u) :
   have := (hu.orderly X.req.C).symm
   rwa [X.grade_C] at this
 
-/-! ## Case 0 -/
-
 /-- **Case 0**: outside the class, the root lift at `γ` suffices. -/
 theorem lift_case0 {u v u' : _} (hall : X.Allowed u v) (hu' : RespectsSemantics semA u')
     {γ : ExtOrd} (hγ : SelfVis X.req.N γ) (hag : ∀ d, min (u' d) γ = min (u d) γ)
@@ -110,8 +61,6 @@ theorem lift_case0 {u v u' : _} (hall : X.Allowed u v) (hu' : RespectsSemantics 
     (fun r => by rw [hroot r]; exact (hag _).symm)
   exact ⟨v', ⟨hu', hv', hr', fun h => absurd h hcls⟩, hcap⟩
 
-/-! ## Case 1 -/
-
 /-- **Case 1**: in the class with `c' ≤ γ`, correctness transfers to any `γ`-agreeing lift. -/
 theorem correct_of_cap_le {u v u' v' : _} (hu' : RespectsSemantics semA u')
     (hC : X.req.Correct (X.req.sec u) v) {γ : ExtOrd} (hag : ∀ d, min (u' d) γ = min (u d) γ)
@@ -120,31 +69,24 @@ theorem correct_of_cap_le {u v u' v' : _} (hu' : RespectsSemantics semA u')
   rw [X.correct_sec_iff] at hC ⊢
   have hvisc' := X.cap_selfVis hu'
   have hc'c : u' X.req.C ≤ u X.req.C := by
-    have h := hag X.req.C
-    rw [min_eq_left hc'γ] at h
-    exact h.trans_le (min_le_left _ _)
+    grind
   refine ⟨?_, ?_, ?_⟩
-  · intro z hz
-    rw [min_cap_of_le hc'γ (hcap z), ← min_min_of_le hc'c, hC.1 z hz]
-    exact min_eq_left bot_le
+  · grind
   · intro f hf
     have hi := X.off_lt f hf
     have e3 : min (u (X.req.ρ f).1) (u' X.req.C) = min (u' (X.req.ρ f).1) (u' X.req.C) :=
-      (min_cap_of_le hc'γ (hag (X.req.ρ f).1)).symm
+      by grind
     rw [min_cap_of_le hc'γ (hcap f), ← min_min_of_le hc'c, hC.2.1 f hf, X.tOf_eq, X.tOf_eq,
       min_min_of_le hc'c, ← evr_min_of_selfVis hvisc' le_rfl hi, e3,
       evr_min_of_selfVis hvisc' le_rfl hi]
   · intro y hy
     have e1 : min (v' y) (u' X.req.C) = min (min (v y) (u X.req.C)) (u' X.req.C) :=
-      (min_cap_of_le hc'γ (hcap y)).trans (min_min_of_le hc'c).symm
+      by grind
     have e2 : X.req.dOf (X.req.sec u') = min (X.req.dOf (X.req.sec u)) (u' X.req.C) := by
       rw [X.dOf_eq, X.dOf_eq, ← evr_min_of_selfVis hvisc' le_rfl X.R_le_N,
         min_cap_of_le hc'γ (hag X.req.a.1), evr_min_of_selfVis hvisc' le_rfl X.R_le_N,
         min_min_of_le hc'c]
-    rw [e1, e2]
-    exact min_le_min_right _ (hC.2.2 y hy)
-
-/-! ## Case 2 -/
+    aesop
 
 /-- **Case 2**: in the class with `c' > γ`, high values requested, and `d' < γ`: the frame
 fixes every exact value below `γ`, so correctness transfers to any `γ`-agreeing lift. -/
@@ -159,45 +101,26 @@ theorem correct_of_dOf_lt {u v u' v' : _}
   have hcne : u X.req.C ≠ ⊥ := X.cap_ne_bot hcls
   have hγne : γ ≠ ⊥ := ne_bot_of_gt hd'
   have hcγ : γ ≤ u X.req.C := by
-    have h := hag X.req.C
-    rw [min_eq_right hγc'.le] at h
-    exact min_eq_right_iff.mp h.symm
+    grind
   -- `d' = R_{N,R}(u' a)` and `u a = u' a`
   have hd'eq : X.req.dOf (X.req.sec u') =
       extVisibilityReplace (u' X.req.a.1) X.req.N X.req.R := by
     rw [X.dOf_eq] at hd' ⊢
-    rcases le_total (extVisibilityReplace (u' X.req.a.1) X.req.N X.req.R) (u' X.req.C)
-      with h | h
-    · rw [min_eq_left h]
-    · rw [min_eq_right h] at hd'; exact absurd (hγc'.trans hd') (lt_irrefl _)
+    grind
   have hua : u X.req.a.1 = u' X.req.a.1 := by
     have hlt : u' X.req.a.1 < γ := lt_of_evr_lt hγ (hd'eq ▸ hd')
-    have h := hag X.req.a.1
-    rw [min_eq_left hlt.le] at h
-    exact eq_of_min_eq_of_lt' h.symm hlt
+    grind
   have hdu : X.req.dOf (X.req.sec u) = X.req.dOf (X.req.sec u') := by
     rw [X.dOf_eq, hua, hd'eq]
-    exact min_eq_left ((hd'eq ▸ hd').le.trans hcγ)
+    grind
   refine ⟨?_, ?_, ?_⟩
-  · intro z hz
-    have hvz : v z = ⊥ := by
-      rcases min_eq_bot.mp (hC.1 z hz) with h | h
-      · exact h
-      · exact absurd h hcne
-    have h := hcap z
-    rw [hvz, min_eq_left bot_le] at h
-    rcases min_eq_bot.mp h with h' | h'
-    · rw [h']; exact min_eq_left bot_le
-    · exact absurd h' hγne
+  · grind
   · intro f hf
-    have ht' : X.req.tOf (X.req.sec u') f < γ := (hframe' f hf).trans_lt hd'
+    have ht' : X.req.tOf (X.req.sec u') f < γ := by grind
     have ht'eq : X.req.tOf (X.req.sec u') f =
         extVisibilityReplace (u' (X.req.ρ f).1) X.req.N (X.req.off f) := by
       rw [X.tOf_eq] at ht' ⊢
-      rcases le_total (extVisibilityReplace (u' (X.req.ρ f).1) X.req.N (X.req.off f))
-        (u' X.req.C) with h | h
-      · rw [min_eq_left h]
-      · rw [min_eq_right h] at ht'; exact absurd (hγc'.trans ht') (lt_irrefl _)
+      grind
     have huρ : u (X.req.ρ f).1 = u' (X.req.ρ f).1 := by
       have hlt : u' (X.req.ρ f).1 < γ := lt_of_evr_lt hγ (ht'eq ▸ ht')
       have h := hag (X.req.ρ f).1
@@ -220,8 +143,6 @@ theorem correct_of_dOf_lt {u v u' v' : _}
     have h2 : X.req.dOf (X.req.sec u') ≤ min (v' y) γ := by
       rw [hcap y]; exact le_min h1 hd'.le
     exact le_min (h2.trans (min_le_left _ _)) (hd'.trans hγc').le
-
-/-! ## Case 3: the template image -/
 
 section Template
 
@@ -330,8 +251,6 @@ theorem template_image_respects : RespectsSemantics semQ (fun d => θ (X.V d)) :
       (fun d => X.grade_le d.1) hθ hpat)
 
 end Template
-
-/-! ## The theorem -/
 
 /-- **The relative lifting theorem** (notes3 §4): every allowed pair has every relative
 old-face lift at every `N`-visible comparison cap, bottom included. -/

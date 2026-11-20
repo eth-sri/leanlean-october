@@ -7,22 +7,16 @@ module
 
 public import VaughtConjecture.Knight.Semantics
 
-/-! # Splicing a lawful lower section into a bounded upper tail
-
-Only semantic lawfulness and cap agreement enter this operation. It does not
-construct a lower section, change rows, or require a decoding witness.
-The restoration module retains the original names and adds its raising-map
-application.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradeTailRestoration
+
 open Transform Value ExtOrd
+
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable {sem : Semantics D} {BJ : Finset ι × ℕ} {j : ℕ}
 
 def lowerIncl (hj : j ≤ BJ.2) (d : D.below (BJ.1, j)) : D.below BJ :=
@@ -42,9 +36,7 @@ theorem splice_high (u : D.below BJ → ExtOrd) (v : D.below (BJ.1, j) → ExtOr
 /-- Equality at the restoration cap preserves every smaller cap, without
 any visibility or source-shortness assumption. -/
 theorem cap_below {x y M γ : ExtOrd} (h : min x M = min y M) (hγ : γ ≤ M) :
-    min x γ = min y γ := by
-  have hh := congrArg (fun z => min z γ) h
-  simpa only [min_assoc, min_eq_right hγ] using hh
+    min x γ = min y γ := by grind
 
 theorem splice_cap (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
     {v : D.below (BJ.1, j) → ExtOrd} {M : ExtOrd}
@@ -53,7 +45,7 @@ theorem splice_cap (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
   intro d
   by_cases h : D.grade d.1 ≤ j
   · rw [splice_low u v d h]
-    exact hag ⟨d.1, d.2.1, h⟩
+    solve_by_elim
   · rw [splice_high u v d h]
 
 /-- An actual lower lift can be installed without changing any upper locality
@@ -97,16 +89,13 @@ theorem splice_respects (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
     · have hc : D.grade c.1 ≤ j := hg ▸ h
       obtain ⟨w, hw, hdw⟩ := hv.availability ⟨d.1, d.2.1, h⟩ ⟨c.1, c.2.1, hc⟩ hs hg
       refine ⟨lowerIncl hj w, hw, ?_⟩
-      rw [splice_low u v d h, splice_low u v (lowerIncl hj w) w.2.2]
-      exact hdw
+      rwa [splice_low u v d h, splice_low u v (lowerIncl hj w) w.2.2]
     · obtain ⟨w, hw, hdw⟩ := hu.availability d c hs hg
       have hwj : ¬ D.grade w.1 ≤ j := by
-        have hwg := congrArg Prod.snd hw
-        change D.grade w.1 = D.grade c.1 at hwg
-        simpa only [hwg, ← hg] using h
+        simp_all
       refine ⟨w, hw, ?_⟩
-      rw [splice_high u v d h, splice_high u v w hwj]
-      exact hdw
+      rwa [splice_high u v d h, splice_high u v w hwj]
 
 end
+
 end VaughtConjecture.Knight.GradeTailRestoration

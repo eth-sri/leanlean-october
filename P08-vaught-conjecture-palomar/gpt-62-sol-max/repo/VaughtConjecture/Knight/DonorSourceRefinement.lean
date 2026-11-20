@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.SourceBlockPadding
-public import VaughtConjecture.Knight.FreeDiagonal

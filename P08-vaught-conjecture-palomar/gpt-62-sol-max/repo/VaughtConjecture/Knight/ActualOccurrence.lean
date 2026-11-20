@@ -7,29 +7,15 @@ module
 
 public import VaughtConjecture.Knight.Terminal
 
-/-! # Literal restriction of actual occurrences
-
-Coordinate geometry and exact parent consistency restrict an already realized
-extension to any named subroot. This does not realize a chosen labelling, assert
-readback, or use covering or any existential model clause. Literal face identities
-separately identify the restricted scheme and its installed occurrence map.
-
-The hollow, stable and ordinary receiving applications share this transport;
-their lawful-row constructions, realization mechanisms and readback proofs remain
-separate. Historical names for the coordinate geometry are preserved.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight
+
 open TypeTower KnightRealization StageType
 
 /-- The last coordinate is not a cast-successor. -/
 theorem last_not_mem_range_trans_castSuccEmb {n m : ℕ} (e : Fin n ↪ Fin m) :
-    Fin.last m ∉ Set.range (e.trans Fin.castSuccEmb) := by
-  rintro ⟨i, hi⟩
-  exact (Fin.castSucc_lt_last (e i)).ne hi
+    Fin.last m ∉ Set.range (e.trans Fin.castSuccEmb) := by simp
 
 /-- The one-point extension of a coordinate embedding: the new point goes to the new point. -/
 def onePointProj {n m : ℕ} (e : Fin n ↪ Fin m) : Fin (n + 1) ↪ Fin (m + 1) :=
@@ -65,7 +51,9 @@ theorem exists_restriction_with_map {α : Ordinal.{0}} {m n : ℕ}
 end StageType
 
 namespace KnightRealization
+
 universe w
+
 variable {M : Type w} {m n : ℕ}
 
 /-- Concatenating along a restricted tuple is restricting along `onePointProj e`. -/
@@ -91,8 +79,8 @@ theorem restrict_actual_extension {α : LimitStage} {W : KnightRealization α M}
   have hyRoot : y ∉ Set.range (e.trans u) := fun ⟨i, hi⟩ => hy ⟨e i, hi⟩
   have he := onePointProj_trans_snoc e u y hy hyRoot
   refine ⟨hyRoot, he, ?_⟩
-  rw [← he, hW (snoc u y hy) r (onePointProj e) hr]
-  exact hs
+  rwa [← he, hW (snoc u y hy) r (onePointProj e) hr]
 
 end KnightRealization
+
 end VaughtConjecture.Knight

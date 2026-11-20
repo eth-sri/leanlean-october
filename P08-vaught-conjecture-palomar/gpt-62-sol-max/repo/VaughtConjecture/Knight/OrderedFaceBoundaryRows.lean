@@ -6,35 +6,59 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.OrderedFaceBoundary
-public import VaughtConjecture.Knight.AmalgamatedBoundaryRows
-
-/-! # Literal semantics on two arbitrary ordered inherited faces
-
-The two inherited tables are glued on their exact occurrence overlap.
-No display is recoded and no faithful transformations are composed.
-Only equality of the shared source rows is required for row installation.
-Generalizes `AmalgamatedBoundaryRows` without requiring coatom geometry.
--/
+public import VaughtConjecture.Knight.FullScopeBountiful
+public import VaughtConjecture.Knight.SemanticPatch
 
 @[expose] public section
 
-set_option autoImplicit false
+namespace VaughtConjecture.Knight.AmalgamatedBoundaryRows
+
+open AmalgamationPlan
+
+open Transform Value ExtOrd
+
+variable {ι : Type*} [DecidableEq ι]
+
+open Classical in
+/-- Extend a semantic row by bottom outside its actual lower domain. -/
+noncomputable def total {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
+    (c d : Cell D) : ExtOrd :=
+  if h : GradedLe (D.cell d) (D.cell c) then sem.E c ⟨d, h⟩ else ⊥
+
+theorem total_below {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
+    (c : Cell D) (d : D.below (D.cell c)) : total sem c d.1 = sem.E c d := by
+  rw [total, dite_eq_left d.2]
+  aesop
+
+theorem total_outside {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
+    (c d : Cell D) (h : ¬ GradedLe (D.cell d) (D.cell c)) : total sem c d = ⊥ := by simp_all [total]
+
+end VaughtConjecture.Knight.AmalgamatedBoundaryRows
 
 namespace VaughtConjecture.Knight.OrderedFaceBoundaryRows
 
 open AmalgamationPlan OrderedFaceBoundary Transform Value ExtOrd
+
 open AmalgamatedBoundary (Overlap)
-open AmalgamatedBoundaryRows (total total_below pushRow pushRow_at pushRow_outside)
+
+open AmalgamatedBoundaryRows (total total_below)
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
+
 variable (D : CellScheme B) (E : CellScheme C)
+
 variable {k : ℕ} (w : Overlap D E k)
+
 variable (R : Finset (Finset ι)) (hR : Plan.IsPlan A R)
+
 variable (hD : D.plan ⊆ R) (hE : E.plan ⊆ R)
+
 variable (semD : Semantics D) (semE : Semantics E)
 
 local notation "K" => scheme D E w R hR hD hE
+
 local notation "l" => leftCell D E w R hR hD hE
+
 local notation "r" => rightCell D E w R hR hD hE
 
 /-- Source equality on all shared occurrences, including every auxiliary. -/
@@ -52,86 +76,26 @@ theorem covered (c : Cell K) : (∃ d, l d = c) ∨ ∃ e, r e = c := by
   · exact Or.inr ⟨e, (congrArg (enumeration D E w) he).trans
       ((enumeration D E w).apply_symm_apply c)⟩
 
-theorem pushRow_shared (hc : Compatible D E w semD semE) (i : Fin k) :
-    pushRow l semD (w.f i) = pushRow r semE (w.g i) := by
-  funext z
-  by_cases hz : GradedLe ((K).cell z) (D.cell (w.f i))
-  · have hzl : GradedLe ((K).cell z) ((K).cell (l (w.f i))) := by
-      rw [left_index]
-      exact hz
-    obtain ⟨d, hd⟩ := (leftBelow D E w R hR hD hE (w.f i)).surjective ⟨z, hzl⟩
-    have he : l d.1 = z := congrArg Subtype.val hd
-    have hdc : D.scope d.1 ⊆ C := by
-      have hs := d.2.1
-      change D.scope d.1 ⊆ (D.cell (w.f i)).1 at hs
-      have hs' : (D.cell (w.f i)).1 ⊆ (E.cell (w.g i)).1 :=
-        subset_of_eq (congrArg Prod.fst (w.shared i))
-      exact hs.trans (hs'.trans (E.isPlan.subset_of_mem (E.scope_mem_plan _)))
-    obtain ⟨j, hj⟩ := w.left_exhaustive d.1 hdc
-    rw [← he, ← hj, pushRow_at l (left_order D E w R hR hD hE).injective,
-      shared_cell, pushRow_at r (right_order D E w R hR hD hE).injective]
-    exact hc i j
-  · rw [pushRow_outside l (left_order D E w R hR hD hE).injective
-      (left_index D E w R hR hD hE) semD _ _ hz,
-      pushRow_outside r (right_order D E w R hR hD hE).injective
-      (right_index D E w R hR hD hE) semE]
-    rwa [← w.shared]
+noncomputable def patches : SemanticPatchUnion D E K where
+  old := ⟨⟨l, (left_order D E w R hR hD hE).injective⟩, left_index D E w R hR hD hE,
+    fun c d hd => left_exhaustive D E w R hR hD hE d (hd.1.trans (D.scope_subset c))⟩
+  low := ⟨⟨r, (right_order D E w R hR hD hE).injective⟩, right_index D E w R hR hD hE,
+    fun c d hd => right_exhaustive D E w R hR hD hE d (hd.1.trans (E.scope_subset c))⟩
+  cover := covered D E w R hR hD hE
 
-noncomputable def table (c : Cell K) : Cell K → ExtOrd :=
-  ProfileFaceUnion.paste w.g (pushRow l semD) (pushRow r semE)
-    ((enumeration D E w).symm c)
+local notation "U" => patches D E w R hR hD hE
 
-theorem table_left (c d : Cell D) : table D E w R hR hD hE semD semE (l c) (l d) =
-    total semD c d := by
-  change ProfileFaceUnion.paste w.g (pushRow l semD) (pushRow r semE)
-    ((enumeration D E w).symm
-    (enumeration D E w (ProfileFaceUnion.left w.g c))) (l d) = _
-  rw [Equiv.symm_apply_apply]
-  exact pushRow_at l (left_order D E w R hR hD hE).injective semD c d
-
-theorem table_right (hc : Compatible D E w semD semE) (c d : Cell E) :
-    table D E w R hR hD hE semD semE (r c) (r d) = total semE c d := by
-  change ProfileFaceUnion.paste w.g (pushRow l semD) (pushRow r semE)
-    ((enumeration D E w).symm
-    (enumeration D E w (ProfileFaceUnion.right w.f w.g c))) (r d) = _
-  rw [Equiv.symm_apply_apply, ProfileFaceUnion.paste_right w.f w.g
-    (pushRow_shared D E w R hR hD hE semD semE hc)]
-  exact pushRow_at r (right_order D E w R hR hD hE).injective semE c d
-
-variable (hc : Compatible D E w semD semE)
-
-include hc in
-theorem table_orderly (c : Cell K) (d : (K).below ((K).cell c)) :
-    table D E w R hR hD hE semD semE c d.1 =
-      extVisibilityReplace (table D E w R hR hD hE semD semE c d.1)
-        ((K).grade d.1) ((K).grade d.1) := by
-  rcases covered D E w R hR hD hE c with ⟨c, rfl⟩ | ⟨c, rfl⟩
-  · obtain ⟨e, rfl⟩ := (leftBelow D E w R hR hD hE c).surjective d
-    change table D E w R hR hD hE semD semE (l c) (l e.1) =
-      extVisibilityReplace (table D E w R hR hD hE semD semE (l c) (l e.1))
-        ((K).cell (l e.1)).2 ((K).cell (l e.1)).2
-    rw [table_left, total_below, left_index]
-    exact semD.orderly c e
-  · obtain ⟨e, rfl⟩ := (rightBelow D E w R hR hD hE c).surjective d
-    change table D E w R hR hD hE semD semE (r c) (r e.1) =
-      extVisibilityReplace (table D E w R hR hD hE semD semE (r c) (r e.1))
-        ((K).cell (r e.1)).2 ((K).cell (r e.1)).2
-    rw [table_right D E w R hR hD hE semD semE hc, total_below, right_index]
-    exact semE.orderly c e
+theorem agreement (hc : Compatible D E w semD semE) : (U).Agreement semD semE := by
+  apply (U).agreement_of_shared semD semE w.f w.g (shared_cell D E w R hR hD hE)
+    (fun h => (overlap D E w R hR hD hE _ _).mp h)
+  · intro i d
+    exact w.left_exhaustive d.1 ((d.2.1.trans (subset_of_eq (congrArg Prod.fst (w.shared i)))).trans
+      (E.scope_subset (w.g i)))
+  · intro i j hd
+    exact (total_below semD _ ⟨_, hd⟩).symm.trans ((hc i j).trans
+      (total_below semE _ ⟨w.g j, by simpa only [← w.shared] using hd⟩))
 
 /-- Both rows are copied literally; the common rows agree by compatibility. -/
-noncomputable def rows : Semantics K where
-  E c d := table D E w R hR hD hE semD semE c d.1
-  orderly := table_orderly D E w R hR hD hE semD semE hc
-
-theorem rows_left (c : Cell D) (d : D.below (D.cell c)) :
-    (rows D E w R hR hD hE semD semE hc).E (l c) (leftBelow D E w R hR hD hE c d) =
-      semD.E c d :=
-  (table_left D E w R hR hD hE semD semE c d.1).trans (total_below semD c d)
-
-theorem rows_right (c : Cell E) (d : E.below (E.cell c)) :
-    (rows D E w R hR hD hE semD semE hc).E (r c) (rightBelow D E w R hR hD hE c d) =
-      semE.E c d :=
-  (table_right D E w R hR hD hE semD semE hc c d.1).trans (total_below semE c d)
+noncomputable abbrev rows := (U).rows semD semE
 
 end VaughtConjecture.Knight.OrderedFaceBoundaryRows

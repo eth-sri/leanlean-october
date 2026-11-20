@@ -7,21 +7,18 @@ module
 
 public import VaughtConjecture.Knight.OrdinaryScopeIteration
 
-/-! # Constructing all proper scopes from the actual legal inputs
-
-The initial ledger is the union of the two literal input faces. The finite
-iteration constructs every other proper scope on that same ordered inventory.
-The full ambient scope is deliberately not completed here.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryProperPredecessor
+
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
+
 open OrdinaryScopeIteration
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι} {R : Finset (Finset ι)}
+
 variable {m nL nR : ℕ} (I : WholeDonorBoundary.Input A B C R m nL nR)
 
 def initialScopes : Finset (Finset ι) := I.boundary.plan.filter (fun S => S ⊆ B ∨ S ⊆ C)
@@ -55,11 +52,8 @@ def seed : State I.rows (initialScopes I) N G θ (initialScopes I) :=
       refine (mem_initial I).mpr ⟨hT, ?_⟩
       exact (mem_initial I |>.mp hS).2.imp ht.trans ht.trans)
     (fun J hJ h => (I.occupied_iff hJ).mpr (mem_initial I |>.mp h).2)
-    (by
-      intro CI BJ hCI hBJ hscope h
-      by_cases he : CI = BJ
-      · subst BJ; exact lift_refl
-      · exact I.inherited_lift hCI hBJ h he (mem_initial I |>.mp hscope).2)
+    (fun _ _ hCI hBJ hscope h =>
+      I.installed_lift I.leftFace I.rightFace hCI hBJ h (mem_initial I |>.mp hscope).2)
 
 theorem small_scopes (hunion : A = B ∪ C) {S : Finset ι}
     (hS : S ∈ R) (hcard : S.card ≤ 1) : S ∈ initialScopes I := by
@@ -69,8 +63,8 @@ theorem small_scopes (hunion : A = B ∪ C) {S : Finset ι}
     have hxa := I.isPlan.subset_of_mem hS hx
     rw [hunion, Finset.mem_union] at hxa
     have he : ∀ y ∈ S, y = x := fun y hy => Finset.card_le_one.mp hcard y hy x hx
-    exact hxa.imp (fun h y hy => he y hy ▸ h) (fun h y hy => he y hy ▸ h)
-  · exact Or.inl (Finset.not_nonempty_iff_eq_empty.mp hs ▸ Finset.empty_subset B)
+    grind
+  aesop
 
 /-- This record is inhabited by `construct`, not an assumed local-operator
 interface. All proper targets have been constructed and have unrestricted lifts. -/
@@ -153,7 +147,7 @@ excluded explicitly, while its actual grade-N owners remain in the inventory. -/
 theorem nonprivate_mute (hcard : A.card = N + 1) (hB : B.card = N) (hC : C.card < N)
     (d : Cell X.state.carrier) (hg : X.state.carrier.grade d = N)
     (hd : X.state.carrier.scope d ≠ B) : X.state.rows.E d ⟨d, GradedLe.refl _⟩ = ⊥ := by
-  have hs := X.state.carrier.isPlan.subset_of_mem (X.state.carrier.scope_mem_plan d)
+  have hs := X.state.carrier.scope_subset d
   have hlt := Finset.card_lt_card (Finset.ssubset_iff_subset_ne.mpr ⟨hs, proper I X d⟩)
   have hge := X.state.carrier.grade_le_card_scope d
   have hsize : (X.state.carrier.scope d).card = N := by omega
@@ -165,4 +159,5 @@ theorem nonprivate_mute (hcard : A.card = N + 1) (hB : B.card = N) (hC : C.card 
     omega
 
 end
+
 end VaughtConjecture.Knight.OrdinaryProperPredecessor

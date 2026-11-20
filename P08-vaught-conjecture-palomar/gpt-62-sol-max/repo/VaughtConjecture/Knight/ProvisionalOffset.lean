@@ -8,37 +8,7 @@ module
 public import VaughtConjecture.Knight.StableValue
 public import VaughtConjecture.Knight.ProvisionalLeastLift
 
-/-! # Provisional offsets on the rooted covers of an occurrence
-
-Fix an actual labelled cover `x` and a cell `Ξ` of its type.  The **rooted covers** of `x` are
-the labelled covers above `x` in the cover order (`RootedCover x`); each carries a unique
-embedding of `x` (`RootedCover.emb`, by `LabelledExt.emb_unique`), hence an actual transport
-of `Ξ` (`RootedCover.cell`) and a provisional value there (`RootedCover.value`).  The
-least lawful finite lift makes that value monotone along rooted covers (`value_mono`).
-
-For a top cell the provisional value is `α + j` with a natural offset `j`
-(`RootedCover.offset`), so the offsets form a monotone natural-valued observation on a
-nonempty directed preorder, and the generic theory of `DirectedNat` applies:
-
-* stabilization to `α + k` is exactly eventual constancy of the offset at `k`
-  (`stabilizesTo_iff_eventually_offset_eq`);
-* the stable value is `⊤` exactly when the offsets escape every finite bound
-  (`stableValue_eq_top_iff_tendsto`);
-* `stableValue_dichotomy` packages the two cases, and
-  `exists_stabilizesTo_of_bddAbove` is the bounded case used by `AnchorStable` and
-  `DefectFiniteWitness`;
-* `eventually_syncValues` is **finite synchronization** as one eventual condition in the
-  rooted-cover filter: every cell eventually reads its proper stable value literally, and every
-  stable top eventually escapes a prescribed finite threshold strictly.  Its occurrence-level
-  adapter is `exists_syncCover'` (`StableLiftCore`).
-
-Directedness of the rooted covers needs exact parent consistency and initial-segment covering
-of the source; the consistency-only uniqueness theorems of `ProvisionalRatchet` are consumed
-here, not strengthened. -/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 
@@ -66,8 +36,6 @@ theorem isDirectedOrder (hcons : R.IsExactParentConsistent) (hcov : R.IsInitialS
     obtain ⟨w, hyw, hzw⟩ := directed_labelledExt hcons hcov y.1 z.1
     exact ⟨⟨w, y.2.trans hyw⟩, hyw, hzw⟩⟩
 
-/-! ### The transport of the root and of a fixed cell -/
-
 /-- The embedding of `x` into a rooted cover. -/
 noncomputable def emb (y : RootedCover x) : Fin x.arity ↪ Fin y.1.arity := y.2.choose
 
@@ -92,8 +60,7 @@ theorem cell_eq (y : RootedCover x) {f : Fin x.arity ↪ Fin y.1.arity}
     (Xi : Cell x.type.scheme.scheme) : cell y Xi = mapCell hf Xi := by
   have h : ∀ (g : Fin x.arity ↪ Fin y.1.arity) (hg : typeMap g y.1.type = some x.type),
       g = f → mapCell hg Xi = mapCell hf Xi := by
-    rintro g hg rfl
-    rfl
+    simp_all
   exact h (emb y) (emb_typeMap y) (emb_eq y hft)
 
 /-- Transport composes along rooted covers. -/
@@ -106,13 +73,11 @@ theorem cell_trans {y z : RootedCover x} {g : Fin y.1.arity ↪ Fin z.1.arity}
   have hft : ((emb y).trans g).trans z.1.tuple = x.tuple := by
     rw [Function.Embedding.trans_assoc, hgt, emb_trans]
   rw [cell_eq z hpz hft]
-  exact mapCell_trans hg (emb_typeMap y) hpz Xi
+  apply mapCell_trans
 
 theorem label_cell (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) :
     y.1.type.label (cell y Xi) = x.type.label Xi :=
   label_mapCell (emb_typeMap y) Xi
-
-/-! ### The provisional value along rooted covers -/
 
 /-- The provisional value of the transported cell. -/
 noncomputable def value (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) : ExtOrd :=
@@ -138,15 +103,13 @@ theorem mem_stableSet (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) :
     y.1 ∈ stableSet x Xi (value y Xi) :=
   ⟨emb y, emb_trans y, emb_typeMap y, isProvisionalValue_value y Xi⟩
 
-/-! ### Top cells: the natural offset -/
-
 section Top
 
 variable (Xi : Cell x.type.scheme.scheme) (htop : x.type.label Xi = ⊤)
 
 include htop in
 theorem exists_offset (y : RootedCover x) : ∃ j : ℕ, value y Xi = ofOrd (α.1 + j) :=
-  someProvisionalValue_top_form (by rw [label_cell]; exact htop)
+  someProvisionalValue_top_form (by grind [label_cell])
 
 /-- The natural offset of the transported top cell's provisional value. -/
 noncomputable def offset (y : RootedCover x) : ℕ := (exists_offset Xi htop y).choose
@@ -156,15 +119,10 @@ theorem value_eq_offset (y : RootedCover x) :
   (exists_offset Xi htop y).choose_spec
 
 theorem offset_le_of_value_le {y : RootedCover x} {K : ℕ}
-    (h : value y Xi ≤ ofOrd (α.1 + K)) : offset Xi htop y ≤ K := by
-  rw [value_eq_offset Xi htop y, ofOrd_le_ofOrd] at h
-  exact Nat.cast_le.mp (le_of_add_le_add_left h)
+    (h : value y Xi ≤ ofOrd (α.1 + K)) : offset Xi htop y ≤ K := by simp_all [value_eq_offset]
 
 theorem offset_eq_of_value_eq {y : RootedCover x} {k : ℕ}
-    (h : value y Xi = ofOrd (α.1 + k)) : offset Xi htop y = k := by
-  have := (value_eq_offset Xi htop y).symm.trans h
-  rw [ofOrd_inj] at this
-  exact Nat.cast_injective (add_left_cancel this)
+    (h : value y Xi = ofOrd (α.1 + k)) : offset Xi htop y = k := by simp_all [value_eq_offset]
 
 /-- **Monotonicity of the offset**, from the ratchet. -/
 theorem offset_mono : Monotone (offset Xi htop) := by
@@ -172,9 +130,7 @@ theorem offset_mono : Monotone (offset Xi htop) := by
   have := value_mono Xi h
   change value y Xi ≤ value z Xi at this
   rw [value_eq_offset Xi htop y, value_eq_offset Xi htop z, ofOrd_le_ofOrd] at this
-  exact Nat.cast_le.mp (le_of_add_le_add_left this)
-
-/-! ### Stabilization is eventual constancy; stable top is escape -/
+  simp_all
 
 variable (hcons : R.IsExactParentConsistent) (hcov : R.IsInitialSegmentCovering)
 
@@ -190,7 +146,7 @@ theorem stabilizesTo_of_eventually {k : ℕ} (h : ∀ᶠ y in atTop, offset Xi h
   let w' : RootedCover x := ⟨w, i.2.trans hiw⟩
   have hw : value w' Xi = ofOrd (α.1 + k) := by
     rw [value_eq_offset Xi htop w', hi w' hiw]
-  exact ⟨w, hw ▸ mem_stableSet w' Xi, haw⟩
+  grind [mem_stableSet]
 
 include hcons hcov in
 /-- Escaping offsets stabilize to no proper value. -/
@@ -211,13 +167,12 @@ theorem not_stabilizesTo_of_tendsto (h : Tendsto (offset Xi htop) atTop atTop)
     refine ⟨g', hgu', ?_⟩
     have hc := hcons u' q' g' hu'
     rw [hgu', i.1.eval_eq] at hc
-    exact hc.symm
+    tauto
   have hz : offset Xi htop z = offset Xi htop y := by
     apply offset_eq_of_value_eq Xi htop
     rw [← hδ, isProvisionalValue_iff.mp hval']
     exact congrArg _ (cell_eq z hpq' hfu' Xi)
-  have := hi z hiz
-  omega
+  grind
 
 include hcons hcov in
 /-- **The bounded case**: bounded offsets stabilize at an attained offset. -/
@@ -238,15 +193,13 @@ theorem stableValue_eq_top_iff_tendsto :
     · have hs : R.StabilizesTo x.tuple x.type Xi (ofOrd (α.1 + k)) :=
         stabilizesTo_of_eventually Xi htop hcons hcov hk
       have hval : R.stableValue x.tuple x.type Xi = ofOrd (α.1 + k) :=
-        stableValue_of_stabilizesTo hcons hcov x.eval_eq (ofOrd_lt_ofOrd.mpr
-          ((add_lt_add_iff_left _).mpr (Ordinal.natCast_lt_omega0 k))) hs
-      rw [htopv] at hval
-      exact absurd hval.symm (ofOrd_ne_top _)
-    · exact ht
+        stableValue_of_stabilizesTo hcons hcov x.eval_eq (by simp) hs
+      simp_all
+    assumption
   · intro ht
     rcases R.hasStableValue_stableValue x.tuple x.type Xi with ⟨-, hs⟩ | ⟨heq, -⟩
-    · exact (not_stabilizesTo_of_tendsto Xi htop hcons hcov ht hs).elim
-    · exact heq
+    · solve_by_elim [not_stabilizesTo_of_tendsto]
+    assumption
 
 include hcons hcov in
 /-- **The dichotomy**: the offset is eventually constant at the stable value's offset, or it
@@ -264,8 +217,6 @@ theorem stableValue_dichotomy :
   · exact Or.inr ⟨ht, (stableValue_eq_top_iff_tendsto Xi htop hcons hcov).mpr ht⟩
 
 end Top
-
-/-! ### Finite synchronization in the rooted-cover filter -/
 
 /-- **Finite synchronization, as an eventual condition on rooted covers.**  Eventually every
 cell of `x` with a proper stable value carries it as its provisional value, and every source-top
@@ -287,17 +238,17 @@ theorem eventually_syncValues (hcons : R.IsExactParentConsistent)
     · -- a proper stable value: the offset is eventually its plateau
       refine hk.mono fun y hy => ⟨fun _ => ?_, fun _ hsv => ?_⟩
       · rw [value_eq_offset Xi htop y, hy, hval]
-      · exact absurd (hval.symm.trans hsv) (ofOrd_ne_top _)
+      aesop
     · -- a stable top: the offset eventually exceeds `K`
       refine (ht.eventually (eventually_gt_atTop K)).mono fun y hy => ?_
       refine ⟨fun hne => absurd hsv hne, fun _ _ => ?_⟩
       rw [value_eq_offset Xi htop y, ofOrd_lt_ofOrd]
-      exact (add_lt_add_iff_left _).mpr (Nat.cast_lt.mpr hy)
+      simp_all
   · -- a non-top label is literal at every rooted cover, including bottom
     refine Eventually.of_forall fun y => ⟨fun _ => ?_, fun h => absurd h htop⟩
     rw [stableValue_of_ne_top hcons hcov x.eval_eq htop]
     change y.1.type.someProvisionalValue (cell y Xi) = x.type.label Xi
-    rw [someProvisionalValue_of_ne_top (by rw [label_cell]; exact htop), label_cell]
+    rw [someProvisionalValue_of_ne_top (by rw [label_cell]; assumption), label_cell]
 
 end RootedCover
 

@@ -8,20 +8,16 @@ module
 public import VaughtConjecture.Knight.ActualLabelling
 public import VaughtConjecture.Knight.StableLiftCore
 
-/-! # Stable labels as an evaluator, before stable modelhood
-
-Lawfulness needs consistency and covering of the source. Literal restriction
-compatibility needs only consistency. No occurrence supply for the stable lift
-or modelhood of that lift is used here.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.KnightRealization
+
 open TypeTower StageType
+
 noncomputable section
+
 universe w
+
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
 /-- Stable labels form a lawful evaluator of actual source occurrences. -/
@@ -34,4 +30,5 @@ def stableActualLabelling (hcons : W.IsExactParentConsistent)
     exact stableValue_mapCell' hcons hv hfu hpq d
 
 end
+
 end VaughtConjecture.Knight.KnightRealization

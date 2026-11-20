@@ -9,34 +9,12 @@ public import VaughtConjecture.Knight.CappedDonorCatalogue
 public import VaughtConjecture.Knight.CanonicalPairedInverse
 public import VaughtConjecture.Knight.PairedSlotComparison
 
-/-! # The scalar repair package of the ordinary final catalogue
-
-The two scalar producers consumed by the physical final-grade layer's decoding
-(`FinalGateDecoding.decode_source_prefix` on the integration branch, and its selected-display
-decoder), composed from the existing private fibre, normalization, terminal insertion and the
-supported inverse — none of whose machinery is re-proved here.
-
-* **`positive_cap_repair`**: from a canonical admitted source `a` (a member of the fixed
-  `Catalogue`) and a lawful **proper** private prescription agreeing with `a`'s private part at a
-  source-grid endpoint `grid N B`: an admitted proper complete vector `b₀` retaining the
-  prescription literally, with complete-field prefix agreement at the endpoint; its canonical
-  normalization, a member of the **same** catalogue, with the same capped prefix agreement; and
-  the actual supported inverse `κ` — a witness through `N` decoding `b₀` exactly from its
-  normalization, fixing every unused grid endpoint below the cut (`fix_sourceGrid` gives the
-  `sourceGrid` form) and every supported orbit of `a` below the cut, and reaching the cut.
-* **`bottom_supply`**: independent bottom-cap private supply — from the zero admitted state,
-  install an arbitrary lawful private prescription, **literal top included**, with the gate off;
-  terminal insertion then gives a member of the catalogue with an exact decoder reading the
-  installed prescription back.
-
-Nothing here asserts a physical section, a display, admission of an arbitrary section or any
-upward admission. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.CappedDonor.Ref
 
 open Transform Value ExtOrd
+
 noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
@@ -88,53 +66,24 @@ theorem positive_cap_repair {a : Field P C → ExtOrd} (ha : a ∈ R.Catalogue)
   have hpre' : ∀ f, min (b₀ f) (CanonicalPairedInverse.grid N B) =
       min (a f) (CanonicalPairedInverse.grid N B) := fun f => (hpre f).trans (hrec₁ f)
   have hag : ∀ f, min (a f) (CanonicalPairedInverse.grid N B) =
-      min (b₀ f) (CanonicalPairedInverse.grid N B) := fun f => (hpre' f).symm
+      min (b₀ f) (CanonicalPairedInverse.grid N B) := by simp_all
   refine ⟨b₀, hb₀, hprop, fun d => ?_, hpre', hb₀.normalize_mem_catalogue hprop, fun f => ?_, ?_⟩
-  · rw [hlit _ (by rw [hpriv₁ d]; exact hv₁p d), hpriv₁ d]
+  · grind
   · exact CanonicalPairedProfiles.normalize_cap (Field P C) N hinv hag f
   · exact CanonicalPairedInverse.exists_supported_inverse hinv hprop hag
 
-/-- **Independent bottom-cap private supply, with a supported decoder.**  From the zero
-admitted state, an arbitrary lawful private prescription — literal top included — is installed
-with the gate off; terminal insertion gives a member of the catalogue with an exact decoder
-reading it back, every output of which is supported by the installed vector (bottom and top
-allowed). -/
-theorem bottom_supply' {v₁ : C.scheme.below (effC J N) → ExtOrd}
-    (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁) :
-    ∃ a : Field P C → ExtOrd, R.Admitted a ∧
-      (∀ d : C.scheme.below (effC J N), a (.priv d.1) = v₁ d) ∧ a .gate = ⊥ ∧
-      ∃ b₀ : Field P C → ExtOrd, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
-        PairedSlotEncoding.normalize N b₀ ∈ R.Catalogue ∧
-        ∃ δ : ExtOrd → ExtOrd, Witness (gTop N) δ ∧
-          (∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f) ∧
-          ∀ x, OrbitPrefixSupport.Supported N ({⊤} : Set ExtOrd) a (δ x) := by
-  obtain ⟨st₁, hst₁, hv, -, -, -⟩ := R.exists_private_lift (zeroState_admissible N) hv₁
-    (selfVis_bot _) (fun d => by simp only [min_bot_right])
-  let st₂ : R.State N := Ref.gateOff (resync st₁)
-  have hadm : R.Admitted st₂.sourceProfile :=
-    ⟨st₂, hst₁.resync.gateOff, (resync_synchronized hst₁).gateOff R.one_le_N,
-      extVisibilityReplace_bot _ _, rfl⟩
-  obtain ⟨b₀, hb₀, hprop, -, -, hnorm, hmem, δ, hδ, hread, hsupp⟩ := hadm.exists_terminal' 0
-  refine ⟨st₂.sourceProfile, hadm, fun d => ?_, ?_, b₀, hb₀, hprop, ⟨hmem, hnorm⟩, δ, hδ, hread,
-    hsupp⟩
-  · rw [State.sourceProfile_of_present _ ((present_priv_iff N d.1).mp d.2)]
-    change st₁.v ⟨d.1, _⟩ = v₁ d
-    rw [hv]
-    exact congrArg v₁ (Subtype.ext rfl)
-  · rw [State.sourceProfile_of_present _ (show (Field.gate : Field P C).grade ≤ N from R.one_le_N)]
-    rfl
-
-/-- **Independent bottom-cap private supply** (the decoder's support conjunct dropped). -/
-theorem bottom_supply {v₁ : C.scheme.below (effC J N) → ExtOrd}
-    (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁) :
-    ∃ a : Field P C → ExtOrd, R.Admitted a ∧
-      (∀ d : C.scheme.below (effC J N), a (.priv d.1) = v₁ d) ∧ a .gate = ⊥ ∧
-      ∃ b₀ : Field P C → ExtOrd, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
-        PairedSlotEncoding.normalize N b₀ ∈ R.Catalogue ∧
-        ∃ δ : ExtOrd → ExtOrd, Witness (gTop N) δ ∧
-          ∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f := by
-  obtain ⟨a, h1, h2, h3, b₀, h4, h5, h6, δ, hδ, hread, -⟩ := bottom_supply' (R := R) hv₁
-  exact ⟨a, h1, h2, h3, b₀, h4, h5, h6, δ, hδ, hread⟩
+/-- Install any private prescription in an admitted source, with the gate off. -/
+theorem exists_private_admitted {v : C.scheme.below (effC J N) → ExtOrd}
+    (hv : RespectsSemanticsBelow C.rows (effC J N) v) :
+    ∃ a, R.Admitted a ∧ ∀ d, a (.priv d.1) = v d := by
+  obtain ⟨st, hs, hread, -, -, -⟩ := R.exists_private_lift (zeroState_admissible N) hv
+    (selfVis_bot _) (fun _ => by simp only [min_bot_right])
+  let z := Ref.gateOff (resync st)
+  refine ⟨z.sourceProfile, ⟨z, hs.resync.gateOff, (resync_synchronized hs).gateOff R.one_le_N,
+    extVisibilityReplace_bot _ _, rfl⟩, fun d => ?_⟩
+  rw [State.sourceProfile_of_present _ ((present_priv_iff N d.1).mp d.2)]
+  exact congrFun hread d
 
 end
+
 end VaughtConjecture.Knight.CappedDonor.Ref

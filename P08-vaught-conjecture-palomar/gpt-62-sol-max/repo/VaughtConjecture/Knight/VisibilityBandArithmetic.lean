@@ -7,15 +7,7 @@ module
 
 public import VaughtConjecture.Knight.Value
 
-/-! # Elementary visibility band arithmetic
-
-The arithmetic shared by finite lawful provisional lifts and the arbitrary-ordinal
-ratchet. Public declarations retain their original statements and proofs.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 

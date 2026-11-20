@@ -8,23 +8,6 @@ module
 public import VaughtConjecture.Knight.ClassTruth
 public import InfinitaryLogic.Descriptive.SmallVocabularyTransport
 
-/-! # The class quotient as a presentation of the coded models
-
-`InfinitaryLogic`'s descriptive theorems for a countable relational language take a
-**presentation** of the isomorphism classes: a map `classOf` from codes to a type `Q`,
-surjective and constant on isomorphic codes, with a truth predicate on `Q` that reads back as
-satisfaction on codes.  The counted class quotient `Classes` is such a presentation of the coded
-models of `knightSentence`:
-
-* `modelClass c` is the class of the coded model `c` (`isoClassEquiv` after `Quotient.mk`);
-* `modelClass_surjective`, `modelClass_eq_of_iso`: the presentation laws;
-* `realizes_modelClass`: class truth is satisfaction on the code.
-
-Countability of classes and countability of codes remain distinct: `Q` carries no measurable
-structure, and no measurable section of `modelClass` is chosen.  These are the actual
-satisfaction equations consumed by the sentence-split, observable-constancy and
-Scott-definability applications. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.StoppingRankFiltration

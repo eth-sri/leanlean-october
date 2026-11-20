@@ -6,75 +6,17 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CappedDonorSelector
-public import VaughtConjecture.Knight.GradeTwoCodedBountiful
-
-/-! # The gated receiving-input family and both original-state fibres (notes32 §§4–6)
-
-The reviewer's notes32 §§4–6 (audit5 §§3–5) on the coherent capped-donor selector of
-`Knight/CappedDonorSelector.lean`: a **constructed family of receiving inputs** — states of the
-request scheme `P` and the private scheme `C` at every numerical cutoff `j`, with a free
-grade-one gate and numerical persistent shadow fields — and **both original-state fibres**,
-proved from the unchanged old bountifulness of `P` and `C` alone.  This is the receiving-input
-side only; the physical (legal-probe) realization of notes32 §7 is not here.
-
-**Effective grades.**  At cutoff `j` the present fields of `P` are its lower set
-`effP nP j = (univ, min j (nP + 1))` and those of `C` (arity `J ≥ N`) are
-`effC J j = (univ, min j J)`; the cap (grade `N`) is present exactly when `N ≤ j`, and then the
-cap's lower domain `Low` — the acquisition face's cells of grade at most `N` — is present
-(`capLe`); the private cells above grade `N` are present only from their own grade on.  A
-section at such a cutoff restricts to the cap's lower domain (`lowC`), which is all the selector
-reads.  Caps are
-permissible at a scheme's *own* effective grade: an `N`-visible cut is permissible for `P`
-because every grade of `P` is below `N` (`selfVis_effP_of_N`); the external cap `γ` is
-`j`-visible, hence visible at every present grade, including those above `N`.
-
-**States** (`State j`): lawful current numerical sections `u` of `effP nP j` and `v` of
-`effC J j`, the grade-one gate, and **numerical persistent shadows** `shadowP`, `shadowC` —
-`1`-visible values for *every* field, present or future (**future-field visibility**).
-
-**The filtered literal face** (newapproach2 §3.1).  The common face `(A, KA)` is the literal
-root, of any arity `KA ≥ 0`; at cutoff `j` its **present portion** is the grade-`≤ j` part, and
-admissibility demands the two numerical sections to agree on it **at every cutoff**
-(`Admissible.face`, through `reqFace`/`privFace`) — not only once the whole face is present.
-For `KA > K` this is what lets the low-reference repairs (`CappedDonorRetarget`,
-`CappedDonorRelease`) control the already-present high-grade root values.  Installing a face
-prescription (`exists_installP`, `exists_installC`) is old bountifulness on the present lower set
-`(A, min KA j)` (`faceSec`, `faceCSec`), through the equal-index form
-`Semantics.IsBountiful.extend`; an empty present portion (empty root, or `j = 0`) needs no
-extension call.
-**Admissibility** (`Admissible`): both sections lawful; the whole common face literal whenever
-it is present; gate and shadows `1`-visible; each present field's shadow has the field's
-numerical support; the finite support guard (11) — a positive gate and cap shadow force positive
-reference shadows and the donor's support on the request fields; and the numerical relation
-(10), **only when the cap is present**, the gate is positive and the cap is positive:
-
-    u ∧ cut v = sel v        on every request cell.
-
-A positive future cap shadow never forces a positive numerical cap before grade `N`.
-
-**The fibres.**  Both retain the entire common face, every original cap coordinate, and the
-**cap receipts** of the gate and of every shadow (`CapReceipts`: agreement below the comparison
-cap); at a positive cap the gate and every shadow are retained literally:
-
-* `exists_private_lift` (§5): for an independently lawful private prescription `v₁` agreeing
-  with `v` below a permissible `γ`, there is an admissible state with `v₁` literally and `u`
-  retained below `γ`.  Two cases when active: `cut v₁ ≤ γ` uses old `P`-bountifulness at `γ`
-  from the old ambient `u`; `γ < cut v₁` uses old `P`-bountifulness at `cut v₁` from the lawful
-  ambient `sel v₁` with the exact face prescription, whose compatibility hypothesis is the
-  capped-donor boundary (7).
-* `exists_request_lift` (§6): for a lawful request prescription `u₁` agreeing with `u` below
-  `γ`, old `C`-bountifulness installs the face and **clipping every private coordinate of grade
-  at least `N` at `γ`** (`clip`, lawful by grade-sensitive capping) restores the relation
-  through the clip identities of the selector.
-* **Bottom cap** (`offState`): at `γ = ⊥` the gate is switched off and the shadows of the
-  present fields recomputed as the `1`-visible roundings of the new values (the future shadows
-  are retained); the relation and the guard are then vacuous.  At a positive cap an already
-  positive gate is never switched off (the persistence lemma `admissible_persist`).
-
-The **empty block list** needs no representative: the selector is then identically bottom and
-the relation is vacuous (`Ref.sel_of_isEmpty`).  The actual pair with the gate on is admissible
-at every cutoff (`actual_admissible`), by `sel vact = p ∧ cut vact`.  All old extension calls
-are inside the unchanged `P` and `C`; no new-domain bountifulness is an input. -/
+public import VaughtConjecture.Knight.SectionExtension
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.CappedLocalityRecoding
+public import VaughtConjecture.Knight.Semantics
+public import VaughtConjecture.Knight.Reduction
+public import VaughtConjecture.Knight.VisibilityAlgebra
+public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import VaughtConjecture.Knight.FullScopeZeroExtension
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.PositiveNormalization
 
 @[expose] public section
 
@@ -82,27 +24,7 @@ namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd SharpWitnessComposition AmalgamationPlan
 
-/-! ## Bountifulness with equal indices -/
-
-/-- Bountifulness with the source index allowed to equal the target index. -/
-theorem Semantics.IsBountiful.extend {ι : Type*} [DecidableEq ι] {A : Finset ι}
-    {D : CellScheme A} {sem : Semantics D} (hb : sem.IsBountiful) {CI BJ : Finset ι × ℕ}
-    (hCI : CI ∈ Plan.gradedPlan D.plan) (hBJ : BJ ∈ Plan.gradedPlan D.plan) (h : GradedLe CI BJ)
-    {p : D.below CI → ExtOrd} {q : D.below BJ → ExtOrd} {γ : ExtOrd}
-    (hp : RespectsSemanticsBelow sem CI p) (hq : RespectsSemanticsBelow sem BJ q)
-    (hγ : extVisibilityReplace γ BJ.2 BJ.2 = γ)
-    (hcompat : ∀ d : D.below CI, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
-    ∃ q' : D.below BJ → ExtOrd, RespectsSemanticsBelow sem BJ q' ∧
-      (∀ d : D.below BJ, min (q' d) γ = min (q d) γ) ∧
-      ∀ d : D.below CI, q' (CellScheme.below.mono h d) = p d := by
-  by_cases heq : CI = BJ
-  · subst heq
-    exact ⟨p, hp, fun d => (hcompat d).symm, fun _ => rfl⟩
-  · exact hb CI BJ hCI hBJ h heq p q γ hp hq hγ hcompat
-
 namespace CappedDonor
-
-/-! ## Effective cutoffs -/
 
 /-- The present request fields at cutoff `j`. -/
 def effP (nP j : ℕ) : Finset (Fin (nP + 1)) × ℕ := (Finset.univ, min j (nP + 1))
@@ -114,20 +36,11 @@ section Cutoffs
 
 variable {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
 
-theorem effP_mem {j : ℕ} (hj : 0 < j) : effP nP j ∈ Plan.gradedPlan P.scheme.plan :=
-  Plan.mem_gradedPlan.mpr ⟨P.scheme.isPlan.domain_mem, lt_min hj (Nat.succ_pos _), by
-    change min j (nP + 1) ≤ (Finset.univ : Finset (Fin (nP + 1))).card
-    rw [Finset.card_univ, Fintype.card_fin]
-    exact min_le_right _ _⟩
-
 theorem gradeC_le (d : Cell C.scheme) : C.scheme.grade d ≤ J :=
   (C.scheme.grade_le_card_scope d).trans (by simpa using Finset.card_le_univ (C.scheme.scope d))
 
-theorem effC_mem {j : ℕ} (hj : 0 < j) (hJ : 0 < J) : effC J j ∈ Plan.gradedPlan C.scheme.plan :=
-  Plan.mem_gradedPlan.mpr ⟨C.scheme.isPlan.domain_mem, lt_min hj hJ, by
-    change min j J ≤ (Finset.univ : Finset (Fin J)).card
-    rw [Finset.card_univ, Fintype.card_fin]
-    exact min_le_right _ _⟩
+theorem grade_le_effC {j : ℕ} (d : Cell C.scheme) : C.scheme.grade d ≤ (effC J j).2 ↔ C.scheme.grade d ≤ j :=
+  le_min_iff.trans (and_iff_left (gradeC_le d))
 
 end Cutoffs
 
@@ -135,8 +48,6 @@ namespace Ref
 
 variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
   (R : Ref I nP N J P C)
-
-/-! ## Effective grades relative to the reference data -/
 
 include R in
 theorem effP_snd_le_N (j : ℕ) : (effP nP j).2 ≤ N := (min_le_right _ _).trans R.arity_lt.le
@@ -176,8 +87,6 @@ include R in
 theorem selfVis_effP_of_N (j : ℕ) {β : ExtOrd} (hβ : SelfVis N β) : SelfVis (effP nP j).2 β :=
   hβ.mono (R.effP_snd_le_N j)
 
-/-! ## The present portion of the face -/
-
 /-- A face cell present at cutoff `j` as a present request field. -/
 def reqFace {j : ℕ} (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j) :
     P.scheme.below (effP nP j) :=
@@ -200,10 +109,7 @@ theorem face_le_effC {j : ℕ} : GradedLe (R.A', min R.KA j) (effC J j) :=
   ⟨Finset.subset_univ _, le_min (min_le_right _ _)
     ((min_le_left _ _).trans (R.KA_lt_N.le.trans R.N_le))⟩
 
-/-- No face cell is present when the present portion has grade zero. -/
-theorem face_absent {j : ℕ} (hk : ¬ 0 < min R.KA j) (a : P.scheme.below (R.A, R.KA))
-    (h : P.scheme.grade a.1 ≤ j) : False :=
-  hk (lt_min ((P.scheme.grade_pos a.1).trans_le a.2.2) ((P.scheme.grade_pos a.1).trans_le h))
+
 
 /-- A private section read on the present portion of the request copy of the face. -/
 def faceSec {j : ℕ} (v : C.scheme.below (effC J j) → ExtOrd)
@@ -218,8 +124,6 @@ theorem faceSec_respects {j : ℕ} {v : C.scheme.below (effC J j) → ExtOrd}
 theorem lowC_face {j : ℕ} (hj : N ≤ j) (v : C.scheme.below (effC J j) → ExtOrd)
     (a : P.scheme.below (R.A, R.KA)) :
     R.lowC hj v (R.lowFace a) = v (R.privFace a (R.face_grade_le_of_N hj a)) := rfl
-
-/-! ## States and admissibility -/
 
 /-- A state at cutoff `j`: the present numerical sections, the gate, and the numerical
 persistent shadows of every field (present or future). -/
@@ -267,8 +171,6 @@ theorem Admissible.active {j : ℕ} {st : R.State j} (hst : R.Admissible st) (hj
       exact (hsupp a.1).mp ((hst.shadowP_iff _).mpr hne) ha
     rw [R.lowC_face, ← hst.face a (R.face_grade_le_of_N hj a), hu]
 
-/-! ## Cap receipts, persistence at a positive cap, and the bottom-cap state -/
-
 /-- **Cap receipts**: the gate and every shadow of the new state agree with the old ones below
 the comparison cap `γ`. -/
 def CapReceipts {j : ℕ} (γ : ExtOrd) (st st₁ : R.State j) : Prop :=
@@ -276,12 +178,12 @@ def CapReceipts {j : ℕ} (γ : ExtOrd) (st st₁ : R.State j) : Prop :=
     ∀ d, min (st₁.shadowC d) γ = min (st.shadowC d) γ
 
 theorem capReceipts_bot {j : ℕ} (st st₁ : R.State j) : R.CapReceipts ⊥ st st₁ :=
-  ⟨by rw [min_bot_right, min_bot_right], fun _ => by rw [min_bot_right, min_bot_right],
-    fun _ => by rw [min_bot_right, min_bot_right]⟩
+  ⟨by simp, fun _ => by simp,
+    fun _ => by simp⟩
 
 theorem capReceipts_of_eq {j : ℕ} (γ : ExtOrd) {st st₁ : R.State j} (hg : st₁.gate = st.gate)
     (hP : st₁.shadowP = st.shadowP) (hC : st₁.shadowC = st.shadowC) : R.CapReceipts γ st st₁ :=
-  ⟨by rw [hg], fun _ => by rw [hP], fun _ => by rw [hC]⟩
+  ⟨by tauto, fun _ => by tauto, fun _ => by tauto⟩
 
 /-- **Persistence**: at a positive cap the gate and every shadow are retained; new lawful
 sections agreeing with the old ones below the cap, with the literal face and the relation, form
@@ -306,28 +208,46 @@ theorem admissible_persist {j : ℕ} {st : R.State j} (hst : R.Admissible st) {�
   shadowC_vis := hst.shadowC_vis
   shadowP_iff d := by
     rw [hst.shadowP_iff d]
-    exact not_congr (bottom_pattern_of_cap_agreement hγ hu d).symm
+    grind
   shadowC_iff d := by
     rw [hst.shadowC_iff d]
-    exact not_congr (bottom_pattern_of_cap_agreement hγ hv d).symm
+    grind
   support := hst.support
   relation := hrel
 
-open Classical in
-/-- **The bottom-cap state**: the gate switched off, the shadows of the present fields
-recomputed as the `1`-visible roundings of the new sections, the shadows of the future fields
-retained. -/
-noncomputable def offState {j : ℕ} (st : R.State j) (u₁ : P.scheme.below (effP nP j) → ExtOrd)
-    (v₁ : C.scheme.below (effC J j) → ExtOrd) : R.State j where
-  u := u₁
-  v := v₁
-  gate := ⊥
-  shadowP d := if h : GradedLe (P.scheme.cell d) (effP nP j) then
-    extVisibilityReplace (u₁ ⟨d, h⟩) 1 1 else st.shadowP d
-  shadowC d := if h : GradedLe (C.scheme.cell d) (effC J j) then
-    extVisibilityReplace (v₁ ⟨d, h⟩) 1 1 else st.shadowC d
+section Shadow
 
-open Classical in
+variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {BJ : Finset ι × ℕ}
+
+/-- Present shadows read the incoming section; future shadows are retained. -/
+noncomputable def completeShadow (a : Cell D → ExtOrd) (p : D.below BJ → ExtOrd) : Cell D → ExtOrd :=
+  CellScheme.complete a (fun d => extVisibilityReplace (p d) 1 1)
+
+theorem completeShadow_present (a : Cell D → ExtOrd) (p : D.below BJ → ExtOrd) (d : D.below BJ) :
+    completeShadow a p d.1 = extVisibilityReplace (p d) 1 1 := CellScheme.complete_present _ _ d
+
+theorem completeShadow_visible {a : Cell D → ExtOrd} (ha : ∀ d, SelfVis 1 (a d))
+    (p : D.below BJ → ExtOrd) (d : Cell D) : SelfVis 1 (completeShadow a p d) :=
+  CellScheme.complete_cases (P := fun _ x => SelfVis 1 x)
+    (fun c => TopSupport.selfVis_evr_self 1 (p c)) (fun c _ => ha c) d
+
+theorem completeShadow_ne_bot (a : Cell D → ExtOrd) (p : D.below BJ → ExtOrd) (d : D.below BJ) :
+    completeShadow a p d.1 ≠ ⊥ ↔ p d ≠ ⊥ := by
+  rw [completeShadow_present]
+  exact not_congr (evr_eq_bot_iff 1 1)
+
+end Shadow
+
+variable {R} in
+/-- Update the sections and the gate; refresh the present shadows without touching future cells. -/
+noncomputable def State.replace {j : ℕ} (st : R.State j) (u : P.scheme.below (effP nP j) → ExtOrd)
+    (v : C.scheme.below (effC J j) → ExtOrd) (g : ExtOrd) : R.State j :=
+  ⟨u, v, g, completeShadow st.shadowP u, completeShadow st.shadowC v⟩
+
+/-- At the bottom cap the gate can be turned off. -/
+noncomputable abbrev offState {j : ℕ} (st : R.State j) (u : P.scheme.below (effP nP j) → ExtOrd)
+    (v : C.scheme.below (effC J j) → ExtOrd) : R.State j := st.replace u v ⊥
+
 theorem admissible_off {j : ℕ} {st : R.State j} (hst : R.Admissible st)
     {u₁ : P.scheme.below (effP nP j) → ExtOrd} {v₁ : C.scheme.below (effC J j) → ExtOrd}
     (hu₁ : RespectsSemanticsBelow P.rows (effP nP j) u₁)
@@ -339,32 +259,12 @@ theorem admissible_off {j : ℕ} {st : R.State j} (hst : R.Admissible st)
   v_respects := hv₁
   face := hface
   gate_vis := selfVis_bot 1
-  shadowP_vis d := by
-    change SelfVis 1 (if h : GradedLe (P.scheme.cell d) (effP nP j) then
-      extVisibilityReplace (u₁ ⟨d, h⟩) 1 1 else st.shadowP d)
-    split_ifs
-    · exact TopSupport.selfVis_evr_self 1 _
-    · exact hst.shadowP_vis d
-  shadowC_vis d := by
-    change SelfVis 1 (if h : GradedLe (C.scheme.cell d) (effC J j) then
-      extVisibilityReplace (v₁ ⟨d, h⟩) 1 1 else st.shadowC d)
-    split_ifs
-    · exact TopSupport.selfVis_evr_self 1 _
-    · exact hst.shadowC_vis d
-  shadowP_iff d := by
-    change (if h : GradedLe (P.scheme.cell d.1) (effP nP j) then
-      extVisibilityReplace (u₁ ⟨d.1, h⟩) 1 1 else st.shadowP d.1) ≠ ⊥ ↔ u₁ d ≠ ⊥
-    rw [dite_eq_left d.2]
-    exact not_congr (evr_eq_bot_iff 1 1)
-  shadowC_iff d := by
-    change (if h : GradedLe (C.scheme.cell d.1) (effC J j) then
-      extVisibilityReplace (v₁ ⟨d.1, h⟩) 1 1 else st.shadowC d.1) ≠ ⊥ ↔ v₁ d ≠ ⊥
-    rw [dite_eq_left d.2]
-    exact not_congr (evr_eq_bot_iff 1 1)
+  shadowP_vis := completeShadow_visible hst.shadowP_vis u₁
+  shadowC_vis := completeShadow_visible hst.shadowC_vis v₁
+  shadowP_iff := completeShadow_ne_bot _ u₁
+  shadowC_iff := completeShadow_ne_bot _ v₁
   support h := (h rfl).elim
   relation _ h := (h rfl).elim
-
-/-! ## Installing a face prescription by old bountifulness -/
 
 /-- Old `P`-bountifulness installs a lawful private face prescription into a request section at
 a permissible cap, on the present portion of the face; nothing is done when that portion is
@@ -379,16 +279,10 @@ theorem exists_installP {j : ℕ} {u : P.scheme.below (effP nP j) → ExtOrd}
       (∀ d, min (u₁ d) γ = min (u d) γ) ∧
       ∀ (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j),
         u₁ (R.reqFace a h) = v₁ (R.privFace a h) := by
-  by_cases hk : 0 < min R.KA j
-  · obtain ⟨u₁, hu₁, hcap, hface⟩ := P.bountiful.extend (R.face_mem hk (min_le_left _ _))
-      (effP_mem (hk.trans_le (min_le_right _ _))) R.face_le_effP (R.faceSec_respects hv₁) hu hγ
-      (fun a => hcompat (R.faceLift (min_le_left _ _) a) (a.2.2.trans (min_le_right _ _)))
-    exact ⟨u₁, hu₁, hcap, fun a h => hface ⟨a.1, ⟨a.2.1, le_min a.2.2 h⟩⟩⟩
-  · exact ⟨u, hu, fun _ => rfl, fun a h => (R.face_absent hk a h).elim⟩
-
-/-! ## Clipping the coordinates of grade at least `N` -/
-
-/-! ## The private-context-prescribed fibre (notes32 §5) -/
+  obtain ⟨u₁, hu₁, hcap, hface⟩ := P.bountiful.extend R.A_mem P.scheme.isPlan.domain_mem
+    R.face_le_effP (R.faceSec_respects hv₁) hu hγ
+    (fun a => hcompat (R.faceLift (min_le_left _ _) a) (a.2.2.trans (min_le_right _ _)))
+  exact ⟨u₁, hu₁, hcap, fun a h => hface ⟨a.1, a.2.1, le_min a.2.2 h⟩⟩
 
 /-- **The private fibre**: an independently lawful private prescription `v₁` agreeing with the
 current private section below a permissible cap `γ` lifts to an admissible state retaining `v₁`
@@ -405,7 +299,7 @@ theorem exists_private_lift {j : ℕ} {st : R.State j} (hst : R.Admissible st)
       min (st.u (R.reqFace a h)) γ = min (v₁ (R.privFace a h)) γ := by
     intro a h
     rw [hst.face a h]
-    exact (hagree _).symm
+    simp_all
   by_cases hbot : γ = ⊥
   · -- bottom cap: switch the gate off
     subst hbot
@@ -436,21 +330,20 @@ theorem exists_private_lift {j : ℕ} {st : R.State j} (hst : R.Admissible st)
       obtain ⟨u₁, hu₁, hcap, hface⟩ := R.exists_installP hst.u_respects hv₁ hγP hcompat
       refine ⟨⟨u₁, v₁, st.gate, st.shadowP, st.shadowC⟩,
         R.admissible_persist hst hbot hu₁ hv₁ hcap hagree hface ?_, rfl, hcap,
-        R.capReceipts_of_eq γ rfl rfl rfl, fun _ => ⟨rfl, rfl, rfl⟩⟩
+        R.capReceipts_of_eq γ rfl rfl rfl, by lia⟩
       intro hj' _ _ d
       change min (u₁ d) (R.cut (R.lowC hj v₁)) = R.sel (R.lowC hj v₁) d.1
       have hβ' : R.cut (R.lowC hj v₁) = min (R.cut (R.lowC hj st.v)) γ := by
-        rw [← hcutγ, min_eq_left hβ]
+        grind
       calc min (u₁ d) (R.cut (R.lowC hj v₁))
-          = min (min (u₁ d) γ) (R.cut (R.lowC hj v₁)) := by rw [min_assoc, min_eq_right hβ]
-        _ = min (min (st.u d) γ) (R.cut (R.lowC hj v₁)) := by rw [hcap d]
-        _ = min (st.u d) (R.cut (R.lowC hj v₁)) := by rw [min_assoc, min_eq_right hβ]
-        _ = min (min (st.u d) (R.cut (R.lowC hj st.v))) γ := by rw [hβ', min_assoc]
-        _ = min (R.sel (R.lowC hj st.v) d.1) γ := by rw [hrel₀ d]
-        _ = min (R.sel (R.lowC hj v₁) d.1) γ := (hselγ d.1).symm
+          = min (min (u₁ d) γ) (R.cut (R.lowC hj v₁)) := by grind
+        _ = min (min (st.u d) γ) (R.cut (R.lowC hj v₁)) := by tauto
+        _ = min (st.u d) (R.cut (R.lowC hj v₁)) := by grind
+        _ = min (min (st.u d) (R.cut (R.lowC hj st.v))) γ := by grind
+        _ = min (R.sel (R.lowC hj st.v) d.1) γ := by tauto
+        _ = min (R.sel (R.lowC hj v₁) d.1) γ := by grind
         _ = R.sel (R.lowC hj v₁) d.1 := min_eq_left ((R.sel_le_cut _ d.1).trans hβ)
     · -- the cap is below the cut: extend from the lawful selector at the cut
-      have hγβ : γ ≤ R.cut (R.lowC hj v₁) := (not_le.mp hβ).le
       obtain ⟨u₁, hu₁, hcap₁, hface₁⟩ := R.exists_installP
         (u := fun d => R.sel (R.lowC hj v₁) d.1) ((Active.sel_respects R hA₁).toBelow _) hv₁
         (R.selfVis_effP_of_N j hcutvis) (by
@@ -463,31 +356,17 @@ theorem exists_private_lift {j : ℕ} {st : R.State j} (hst : R.Admissible st)
         rw [hcap₁ d]
         exact min_eq_left (R.sel_le_cut _ d.1)
       have hcap : ∀ d, min (u₁ d) γ = min (st.u d) γ := by
-        intro d
-        calc min (u₁ d) γ
-            = min (min (u₁ d) (R.cut (R.lowC hj v₁))) γ := by
-              rw [min_assoc, min_eq_right hγβ]
-          _ = min (R.sel (R.lowC hj v₁) d.1) γ := by rw [hrel₁ d]
-          _ = min (R.sel (R.lowC hj st.v) d.1) γ := hselγ d.1
-          _ = min (min (st.u d) (R.cut (R.lowC hj st.v))) γ := by rw [hrel₀ d]
-          _ = min (st.u d) (min (R.cut (R.lowC hj v₁)) γ) := by rw [min_assoc, hcutγ]
-          _ = min (st.u d) γ := by rw [min_eq_right hγβ]
+        grind
       refine ⟨⟨u₁, v₁, st.gate, st.shadowP, st.shadowC⟩,
         R.admissible_persist hst hbot hu₁ hv₁ hcap hagree hface₁ ?_, rfl, hcap,
-        R.capReceipts_of_eq γ rfl rfl rfl, fun _ => ⟨rfl, rfl, rfl⟩⟩
-      intro _ _ _ d
-      exact hrel₁ d
+        R.capReceipts_of_eq γ rfl rfl rfl, by simp⟩
+      solve_by_elim
   · -- inactive: plain matching-face bountifulness; the relation stays vacuous
     obtain ⟨u₁, hu₁, hcap, hface⟩ := R.exists_installP hst.u_respects hv₁ hγP hcompat
     refine ⟨⟨u₁, v₁, st.gate, st.shadowP, st.shadowC⟩,
       R.admissible_persist hst hbot hu₁ hv₁ hcap hagree hface ?_, rfl, hcap,
-      R.capReceipts_of_eq γ rfl rfl rfl, fun _ => ⟨rfl, rfl, rfl⟩⟩
-    intro hj hg hc
-    exact absurd ⟨hj, hg, fun h => hc ((hpat _).mpr h)⟩ hact
-
-/-! ## The request-prescribed fibre (notes32 §6) -/
-
-/-! ## The actual state -/
+      R.capReceipts_of_eq γ rfl rfl rfl, by lia⟩
+    grind
 
 /-- The actual pair — the donor on the request scheme and the actual private labelling — with
 the gate on and the shadows the `1`-visible roundings of the actual values, at any cutoff. -/
@@ -512,7 +391,7 @@ theorem actual_admissible (j : ℕ) : R.Admissible (R.actualState j) where
   support _ _ := ⟨fun i => by
     change extVisibilityReplace (R.vact (R.ref i)) 1 1 ≠ ⊥
     rw [R.vact_ref, ne_eq, evr_eq_bot_iff]
-    exact ofOrd_ne_bot _, fun _ => not_congr (evr_eq_bot_iff 1 1)⟩
+    simp, fun _ => not_congr (evr_eq_bot_iff 1 1)⟩
   relation _ _ _ d := by
     change min (R.p d.1) (R.cut R.vactL) = R.sel R.vactL d.1
     exact (R.sel_actual d.1).symm

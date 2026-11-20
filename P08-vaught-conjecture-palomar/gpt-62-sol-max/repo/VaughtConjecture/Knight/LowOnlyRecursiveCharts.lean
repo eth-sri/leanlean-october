@@ -5,29 +5,21 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.RecursiveRungLocality
+public import VaughtConjecture.Knight.RecursiveRungRendering
 public import VaughtConjecture.Knight.LowOnlyLadderRepair
-
-/-! # Recursive auxiliary charts for the actual LOW catalogues
-
-Every source grade uses its own finite admitted catalogue. Canonical membership
-supplies properness, bounds and native shortness; present-cell lawfulness and
-future visibility supply grade-one visibility on the complete field vector.
-Thus the recursive charts specialize without an abstract source-row contract.
-
-This is numerical auxiliary locality, not original-owner lawfulness or an
-installed scope geometry. It neither promotes admission to a higher cutoff nor
-asserts equality of renderings made at different construction grades.
--/
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyRecursiveCharts
+
 open Transform Value ExtOrd CappedDonor LowOnly
+
 open PairedSlotEncoding RecursiveRungRendering
+
 open SharpWitnessComposition
+
 noncomputable section
+
 variable {m K : ℕ} {P C : SemScheme m} (F : LowOnly.Family P C K)
 
 private theorem lower_visible_one {D : SemScheme m} {j : ℕ}
@@ -39,7 +31,7 @@ private theorem lower_visible_one {D : SemScheme m} {j : ℕ}
   · let d' : D.scheme.below (effC m j) :=
       ⟨d, Finset.subset_univ _, le_min hd (gradeC_le d)⟩
     exact selfVis_mono (hv.orderly d').symm (D.scheme.grade_pos d)
-  · exact hf d (Nat.lt_of_not_ge hd)
+  grind
 
 /-- Future fields and the free cutoff are covered too. -/
 theorem profile_visible_one {j : ℕ} (hj : 1 ≤ j) {S : State P C}
@@ -57,16 +49,6 @@ theorem anchor_bound {j : ℕ} (a : F.Anchor j) (d : Field P C) :
   apply (CanonicalPairedProfiles.inventory_bound _ _ a.property.1 d).trans
   exact ofOrd_le_ofOrd.mpr (add_le_add (by gcongr; omega) le_rfl)
 
-theorem anchor_short {j : ℕ} (a : F.Anchor j) (d : Field P C) :
-    Short j (F.fields j a d) :=
-  CanonicalPairedProfiles.inventory_short _ _ a.property.1 d
-
-theorem anchor_visible_one {j : ℕ} (hj : 1 ≤ j) (a : F.Anchor j) (d : Field P C) :
-    SelfVis 1 (F.fields j a d) := by
-  obtain ⟨S, hS, he⟩ := a.property.2
-  change SelfVis 1 (a.val d)
-  rw [← he]
-  exact profile_visible_one F hj hS d
-
 end
+
 end VaughtConjecture.Knight.LowOnlyRecursiveCharts

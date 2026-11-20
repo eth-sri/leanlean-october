@@ -8,14 +8,10 @@ module
 public import VaughtConjecture.Knight.BlockStages
 public import VaughtConjecture.Knight.BlockReflection
 
-/-! # Successor stages and the next block
-
-This arithmetic bridge is independent of terminal defects and occurrence supply.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
+
 open Value
 
 /-- Successor block stages are next blocks. -/

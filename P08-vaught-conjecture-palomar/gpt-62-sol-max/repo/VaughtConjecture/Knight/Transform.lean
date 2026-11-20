@@ -7,51 +7,7 @@ module
 
 public import Mathlib.Order.Monotone.Basic
 public import Mathlib.Order.MinMax
-public import VaughtConjecture.Knight.Value
-
-/-! # Knight's transformation calculus on labelled cells
-
-Ported from Knight-VC `KnightVC/Transforms.lean` @ f7c7847d, with Knight-VC's `arity`
-renamed `grade` (the grade function `D → ℕ` of a family of cells; see `docs/TERMINOLOGY.md`).
-
-A family of cells `D` with grades `grade : D → ℕ` carries labellings `p : D → ExtOrd`
-(Knight, Defs. 2.3.*):
-
-* `IsOrderly grade p` (Def. 2.3.4): every label is self-visible at the grade of its cell,
-  `p d = p d ⊔⁺_{grade d} grade d`;
-* `IsGradeSuppression grade p q g` (Def. 2.3.5): `q` is `p` capped by an antitone, self-visible
-  suppressor `g` evaluated at the grade of each cell;
-* `TransformsTo grade p q` (Def. 2.3.9, the directed approximation `p ⇒ q`): there are a
-  suppressor `g` and a "shifter" `σ : ExtOrd → ExtOrd` (fixing `⊥`, monotone, and commuting
-  with visibility replacement `⊔⁺_k i`, `i ≤ k`, on labels `α` with `σ α ≤ g k`) with
-  `q d = min (σ (p d)) (g (grade d))`;
-* `Equivalent grade p q` is `p ⇒ q ∧ q ⇒ p` (the two-sided relation, analogous to Def. 2.3.2's
-  `⇔_K` for `⇒_K`; the paper does not name it separately).
-
-## Fidelity status
-
-`TransformsTo` is the **faithful** transcription of Def. 2.3.9 (and `Equivalent` its two-sided
-form); these are the only relations in the repository (#85).  Knight-VC's relation — the shifter
-additionally **inflationary** (`∀ x, x ≤ σ x`) and clause 5 **guarded** by `g k ≠ ⊤` — was kept
-here transitionally (as `LegacyTransformsTo`) while faithful closure under vertical reduction was
-blocked, because the stage-type instance then truncated labels *and* rows and the transport
-needed inflationarity (`truncExt_comp_infl`); it was **retired** (#88 (2/2), #89) once the
-faithful closure with the semantics fixed landed (`TransformsTo.truncExt_target`).  The paper
-argues Lemma 3.1.3 through transitivity of `⇒` (Lemma 2.3.14), whose printed composite witness
-`(min (h, τ ∘ g), τ ∘ σ)` is refuted at the equality orbit (Knight-VC
-`docs/paper/formalization-discrepancies.md`, Section 2.3 / item 5); the reduction half of
-Lemma 3.1.3 with the rows kept is nevertheless available, by a direct witness and without
-transitivity (`TransformsTo.truncExt_target`, #89; see its docstring).
-
-Facts.  `TransformsTo` is reflexive (`TransformsTo.refl`, witnesses `σ = id`, `g = ⊤`),
-pulls back along any reindexing of the cells (`TransformsTo.reindex`), every labelling
-transforms to its truncation at a limit stage (`TransformsTo.truncExt_self`, witnesses
-`σ = truncExt α`, `g = ⊤`, by `truncExt_evr_comm`), and `⇒` is closed under strict truncation
-of the target at a limit stage, source fixed (`TransformsTo.truncExt_target`, witnesses
-`truncExt α ∘ g`, `truncExt α ∘ σ`). General existential transitivity is false:
-`SharpWitnessCompositionControls.not_transitive` proves a counterexample. Restricted
-post-composition remains available in `RestrictedComposition.lean`; the counterexample
-does not invalidate those guarded statements. -/
+public import VaughtConjecture.Knight.VisibilityBandArithmetic
 
 @[expose] public section
 
@@ -97,8 +53,6 @@ end
 
 variable {D : Type*} {grade : D → ℕ}
 
-/-! ### The faithful relation -/
-
 /-- Reflexivity: every labelling transforms to itself, with witnesses `σ = id` and `g = ⊤`
 (clause 5 holds for `id` trivially). -/
 theorem TransformsTo.refl (p : D → ExtOrd) : TransformsTo grade p p :=
@@ -108,32 +62,38 @@ theorem TransformsTo.refl (p : D → ExtOrd) : TransformsTo grade p p :=
     rfl,
     monotone_id,
     fun _ _ _ _ _ => rfl,
-    fun d => (min_top_right (p d)).symm⟩
+    by simp⟩
 
 /-- Reindexing: a transformation on cells `D` pulls back along any map `φ : D' → D` of cell
 families (same witnesses `g`, `σ`; used to transport locality along face restriction). -/
 theorem TransformsTo.reindex {D' : Type*} {p q : D → ExtOrd} (h : TransformsTo grade p q)
     (φ : D' → D) : TransformsTo (grade ∘ φ) (p ∘ φ) (q ∘ φ) := by
   obtain ⟨g, σ, hg_dec, hg_vis, hσ_bot, hσ_mono, hσ_vis, hσ_eq⟩ := h
-  exact ⟨g, σ, hg_dec, hg_vis, hσ_bot, hσ_mono, hσ_vis, fun d => hσ_eq (φ d)⟩
+  exact ⟨g, σ, hg_dec, hg_vis, hσ_bot, hσ_mono, hσ_vis, by tauto⟩
 
-/-- **Faithful closure under strict truncation of the target, source fixed** (the reduction
-half of Lemma 3.1.3, proved directly at a limit stage `α`, without transitivity): if `p ⇒ q`
-then `p ⇒ truncExt α ∘ q`, with the truncated witnesses `(truncExt α ∘ g, truncExt α ∘ σ)`.
+/-- A downward-closed part of the image that is stable under replacement
+pulls back across a guarded shifter. A downward move can be reversed within its block. -/
+theorem preimage_of_replacement {P : ExtOrd → Prop} {σ : ExtOrd → ExtOrd} (hm : Monotone σ)
+    {k i : ℕ} (hi : i ≤ k) (down : ∀ {x y}, x ≤ y → P y → P x)
+    (stable : ∀ {x j}, j ≤ k → P x → P (extVisibilityReplace x k j))
+    (comm : ∀ x, P (σ x) → ∀ j, j ≤ k →
+      σ (extVisibilityReplace x k j) = extVisibilityReplace (σ x) k j)
+    {x : ExtOrd} (hx : P (σ (extVisibilityReplace x k i))) : P (σ x) := by
+  obtain hik | rfl := hi.lt_or_eq
+  · rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
+    · exact hx
+    · exact hx
+    by_cases h : finitePart a < k
+    · rw [extVisibilityReplace_ofOrd, visibilityReplace, if_pos h, ordinalReplace] at hx
+      have he := comm _ hx (finitePart a) h.le
+      rw [extVisibilityReplace_ofOrd, visibilityReplace,
+        if_pos (by rwa [finitePart_limitPart_add_nat]), ordinalReplace,
+        limitPart_limitPart_add_nat, decomposition] at he
+      exact he.symm ▸ stable h.le hx
+    · rwa [extVisibilityReplace_ofOrd, visibilityReplace, if_neg h] at hx
+  · exact down (hm (Value.le_extVisibilityReplace_self x _)) hx
 
-Clause 5 for the truncated witnesses, given `truncExt α (σ x) ≤ truncExt α (g k)` and `i ≤ k`:
-the right-hand side is `truncExt α (evr (σ x) k i)` (`truncExt_evr_comm`).  If `σ x ≤ g k`
-the original clause applies.  Otherwise `g k < σ x`, so the two truncations coincide and are
-`⊤` (if they were `< ofOrd α` both labels would be fixed and equal), i.e. `ofOrd α ≤ g k` and
-`ofOrd α ≤ σ x`.  The right-hand side is then `⊤` (`extVisReplace_ge_of_ge_limit`), and the
-left-hand side is `⊤` once `ofOrd α ≤ σ (evr x k i)`: clear if `evr x k i ≥ x` (monotonicity
-of `σ`; this covers `x = ⊤`, the untriggered case `k ≤ finitePart ξ`, and `i ≥ finitePart ξ`),
-and otherwise `x = ofOrd ξ` with `i < finitePart ξ =: m < k`, `y := evr x k i =
-ofOrd (limitPart ξ + i)` satisfies `evr y k m = x`; if `σ y < ofOrd α ≤ g k`, the original
-clause at `y` gives `σ x = evr (σ y) k m < ofOrd α` (`extVisReplace_lt_of_lt_limit`), a
-contradiction.  This is exactly the case Knight-VC's guard `g k ≠ ⊤` excludes (there
-`truncExt α (g k) = ⊤` makes the clause vacuous), which is why the route needed the faithful
-relation. -/
+/-- Strict truncation of targets at a limit preserves the transformation. -/
 theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
     {p q : D → ExtOrd} (h : TransformsTo grade p q) :
     TransformsTo grade p (truncExt α ∘ q) := by
@@ -150,7 +110,7 @@ theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit
   rw [← truncExt_evr_comm hα (σ x) k i]
   by_cases hxk : σ x ≤ g k
   · -- the original clause applies
-    rw [hσ_vis x k hxk i hi]
+    tauto
   -- `g k < σ x`: both truncations are `⊤`
   have hlt : g k < σ x := not_le.mp hxk
   have htop : truncExt α (g k) = ⊤ := by
@@ -162,41 +122,16 @@ theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit
         truncExt_id_of_lt ((truncExt_le_self α (g k)).trans_lt hb)
       have hσx : truncExt α (σ x) = σ x :=
         truncExt_id_of_lt ((truncExt_le_self α (σ x)).trans_lt (heq ▸ hb))
-      exact hlt.ne (by rw [← hgk, heq, hσx])
+      grind
     · exact hb
   have hαg : ofOrd α ≤ g k := truncExt_eq_top_iff.mp htop
   have hασ : ofOrd α ≤ σ x := hαg.trans hlt.le
   rw [truncExt_eq_top_of_ge (extVisReplace_ge_of_ge_limit hα hασ k i)]
   apply truncExt_eq_top_of_ge
-  -- it remains to see `ofOrd α ≤ σ (evr x k i)`
-  rcases ExtOrd.cases x with rfl | rfl | ⟨ξ, rfl⟩
-  · exact absurd (hσ_bot ▸ hlt) (not_lt_bot)
-  · simpa [extVisibilityReplace_top] using hασ
-  rw [extVisibilityReplace_ofOrd]
-  unfold visibilityReplace
-  split_ifs with hfp
-  · unfold ordinalReplace
-    rcases le_or_gt (finitePart ξ) i with hmi | him
-    · -- `i ≥ finitePart ξ`: the replaced label dominates `x`
-      have hxy : ofOrd ξ ≤ ofOrd (limitPart ξ + i) := by
-        rw [ofOrd_le_ofOrd]
-        calc ξ = limitPart ξ + (finitePart ξ : Ordinal) := (decomposition ξ).symm
-          _ ≤ limitPart ξ + (i : Ordinal) :=
-              add_le_add_right (Nat.cast_le.mpr hmi : (finitePart ξ : Ordinal) ≤ i) _
-      exact hασ.trans (hσ_mono hxy)
-    · -- `i < finitePart ξ < k`: replacing back at `finitePart ξ` recovers `x`
-      by_contra hcon
-      have hσy_lt : σ (ofOrd (limitPart ξ + i)) < ofOrd α := not_le.mp hcon
-      have hback : extVisibilityReplace (ofOrd (limitPart ξ + i)) k (finitePart ξ) = ofOrd ξ := by
-        rw [extVisibilityReplace_ofOrd, visibilityReplace,
-          ite_eq_left (by rw [finitePart_limitPart_add_nat]; exact him.trans hfp),
-          ordinalReplace, limitPart_limitPart_add_nat, decomposition]
-      have hclause := hσ_vis (ofOrd (limitPart ξ + i)) k (hσy_lt.le.trans hαg)
-        (finitePart ξ) hfp.le
-      rw [hback] at hclause
-      exact absurd (hclause ▸ hασ)
-        (not_le.mpr (extVisReplace_lt_of_lt_limit hα hσy_lt k (finitePart ξ)))
-  · exact hασ
+  by_contra hn
+  exact hασ.not_gt (preimage_of_replacement (P := (· < ofOrd α)) hσ_mono hi
+    (fun h h' => h.trans_lt h') (fun _ hx => extVisReplace_lt_of_lt_limit hα hx _ _)
+    (fun x hx => hσ_vis x k (hx.le.trans hαg)) (not_le.mp hn))
 
 /-- Every labelling transforms to the constantly-`−∞` labelling (witnesses `σ ≡ ⊥`, `g ≡ ⊤`;
 clause 5 is `⊥ = ⊥`). -/
@@ -207,8 +142,8 @@ theorem TransformsTo.to_bot {X : Type*} {grade : X → ℕ} (p : X → ExtOrd) :
     fun _ => rfl,
     rfl,
     monotone_const,
-    fun _ _ _ _ _ => (extVisibilityReplace_bot _ _).symm,
-    fun _ => (min_eq_left bot_le).symm⟩
+    by simp,
+    by simp⟩
 
 end Transform
 

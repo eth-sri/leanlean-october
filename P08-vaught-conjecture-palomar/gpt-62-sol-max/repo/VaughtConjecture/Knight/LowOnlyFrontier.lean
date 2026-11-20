@@ -8,12 +8,6 @@ module
 public import VaughtConjecture.Knight.LowOnlyFaceRestoration
 public import VaughtConjecture.Knight.CappedDonorRelease
 
-/-! # Private source gaps independently of receiving reference records
-
-This is precisely the original-row data needed for LOW-only frontier release. There is
-no upper threshold, reference-block inventory, or inequality between the two facet arities.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.LowOnly
@@ -77,8 +71,7 @@ theorem exists_witness {v : L.Dom → ExtOrd}
     (hv : RespectsSemanticsBelow C.rows (C.scheme.cell L.c) v) :
     ∃ τ : ExtOrd → ExtOrd, Witness (gTop K) τ ∧ (∀ x, τ x ≤ v L.cL) ∧
       ∀ d : L.Dom, τ (C.rows.E L.c d) = min (v d) (v L.cL) := by
-  have h := exists_bounded_exact_capped_witness (grade := fun d : L.Dom => C.scheme.grade d.1)
-    (c := L.cL) (p := v) (fun d => d.2.2) (hv.orderly L.cL).symm (hv.locality L.cL)
+  have h := hv.rowWitness L.cL
   have hg : C.scheme.grade L.cL.1 = K := L.c_grade
   rwa [hg] at h
 
@@ -86,7 +79,7 @@ theorem e_eq_read {v : L.Dom → ExtOrd} {τ : ExtOrd → ExtOrd} (hτ : Witness
     (hread : ∀ d : L.Dom, τ (C.rows.E L.c d) = min (v d) (v L.cL))
     (hvis : SelfVis K (v L.cL)) : L.e v = τ L.h := by
   unfold e h
-  rw [hτ.comm_gTop _ le_rfl, hread, evr_min_of_selfVis hvis le_rfl le_rfl, min_comm]
+  rw [hτ.comm _ le_rfl le_rfl, hread, evr_min_of_selfVis hvis le_rfl le_rfl, min_comm]
 
 /-- The original strict gap, not the numerical top flag, supplies this bound. -/
 theorem e_le_of_gap {v : L.Dom → ExtOrd}
@@ -120,7 +113,7 @@ theorem le_r_of_lt_e {v : L.Dom → ExtOrd} {γ : ExtOrd} (hγ : SelfVis K γ)
   by_contra hlt
   have h1 : extVisibilityReplace (v L.r) K K ≤ γ :=
     evr_le_of_le_selfVis hγ le_rfl le_rfl (not_le.mp hlt).le
-  exact absurd ((he.trans_le (min_le_right _ _)).trans_le h1) (lt_irrefl _)
+  grind +locals
 
 end SourceGap
 

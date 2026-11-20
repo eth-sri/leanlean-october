@@ -6,41 +6,18 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.FiniteFloorCompletion
-public import VaughtConjecture.Knight.TwoContextCoupled
+public import VaughtConjecture.Knight.CappedLocalityRecoding
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.FullScopeBountiful
+public import VaughtConjecture.Knight.Domain
+public import VaughtConjecture.Knight.OnePointSuccessor
+public import Mathlib.Tactic.DeriveFintype
 
-/-! # The owner-local saturation endpoint (audit13 / notes40 §2.1)
-
-The reviewer's grid-free replacement for first-cut minimality in owner alignment
-(`/home/freer/work/vc-notes/audit-notes1/notes40_foundations_and_relative_generics.md` §2.1,
-audit13).  Fix a grade `j`, a finite family of owner arguments `ι` with source section `s` and
-target section `p`, an owner `c`, a positive cap `γ`, and a bottom-preserving monotone map `τ`
-bounded by `γ` with `τ (s d) = min (p d) γ` on every argument.  A *saturated* argument is one
-whose image reaches the cap, `τ (s d) = γ`; the owner is saturated because `γ < p c`.  Define
-
-    E = { R_j (s d) | τ (s d) = γ },      h = min E,
-
-where `R_j x = extVisibilityReplace x j j` rounds `x` up to the `j`-visible endpoint of its strip.
-Then `⊥ < h`, `h` is proper and `j`-visible, `τ h = γ` (reaching), `h ≤ s c` (the owner
-bound), and every saturated argument with `s d < h` has `R_j (s d) = h` — it lies in the single
-short strip ending at `h` (`IsEndpoint.strip`), is `j`-invisible (`IsEndpoint.not_selfVis_of_lt`)
-and shares the block floor of `h` (`IsEndpoint.blockFloor_eq_of_lt`).
-
-There is no source-grid cardinal in the statement: the endpoint is characterised by a least-element
-property over the saturated observations (`IsEndpoint`), the observations range over an arbitrary
-finite type, and `exists_isEndpoint` produces it.  The wrapper `exists_isEndpoint_below` states it
-on the owner's lower domain `D.below (D.cell c)` with the shapes used by owner face alignment, and
-`Saturation.of_witness` derives the map hypotheses from a normalized witness with suppressor
-`gTop j`.
-
-V-C's source module retains the regression `Example`: `j = 2`, owner observations `ω·6+1` and
-`ω·6+2`, and `τ` bottom on block `0` and constantly `γ = ω·10+2` on every later block.  The
-full source grid already reaches `γ` at `ω+2`, but the owner-local endpoint is `ω·6+2`; no
-property of the unused earlier grid point is needed. That numerical regression
-is not duplicated in this dependency port.
-
-Ported from V-C commit `7aeeea5`, with the endpoint statements and proofs retained.
-The three scalar endpoint helpers use the existing KVC dependencies directly;
-the source-side numerical example stays on the V-C branch. -/
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.WitnessSplice
+public import VaughtConjecture.Knight.Type
+public import VaughtConjecture.Knight.WitnessAlgebra
 
 @[expose] public section
 
@@ -58,7 +35,7 @@ theorem le_endpoint (j : ℕ) (x : ExtOrd) : x ≤ endpoint j x := le_extVisibil
 theorem selfVis_endpoint (j : ℕ) (x : ExtOrd) : SelfVis j (endpoint j x) := by
   unfold endpoint
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot]; exact selfVis_bot j
+  · rfl
   · exact extVisibilityReplace_top j j
   · rw [extVisibilityReplace_ofOrd, selfVis_ofOrd_iff, finitePart_visibilityReplace]
     split_ifs <;> omega
@@ -68,18 +45,11 @@ theorem endpoint_of_selfVis {j : ℕ} {x : ExtOrd} (h : SelfVis j x) : endpoint 
 theorem endpoint_mono {j : ℕ} {x y : ExtOrd} (h : x ≤ y) : endpoint j x ≤ endpoint j y :=
   evr_mono h le_rfl
 
-theorem endpoint_ne_top {j : ℕ} {x : ExtOrd} (h : x ≠ ⊤) : endpoint j x ≠ ⊤ := by
-  unfold endpoint
-  rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot]; exact bot_ne_top
-  · exact absurd rfl h
-  · rw [extVisibilityReplace_ofOrd]; exact ofOrd_ne_top _
-
 variable {ι : Type*}
 
 /-- The owner-local saturation hypotheses: `τ` is bottom-preserving, monotone and bounded by the
 positive cap `γ`; the owner `c` exceeds the cap under `p`; the face equation holds on every
-argument; every source observation is proper; and the owner's source value is `j`-visible. -/
+argument and the owner's source value is `j`-visible. -/
 structure Saturation (j : ℕ) (s p : ι → ExtOrd) (c : ι) (τ : ExtOrd → ExtOrd) (γ : ExtOrd) :
     Prop where
   bot : τ ⊥ = ⊥
@@ -88,7 +58,6 @@ structure Saturation (j : ℕ) (s p : ι → ExtOrd) (c : ι) (τ : ExtOrd → E
   pos : ⊥ < γ
   cap : γ < p c
   face : ∀ d, τ (s d) = min (p d) γ
-  proper : ∀ d, s d ≠ ⊤
   owner_vis : SelfVis j (s c)
 
 /-- The endpoint `h` is the least rounded saturated observation. -/
@@ -115,13 +84,7 @@ theorem Saturation.owner_saturated (S : Saturation j s p c τ γ) : τ (s c) = �
 theorem IsEndpoint.selfVis (H : IsEndpoint j s τ γ h) : SelfVis j h := by
   obtain ⟨d, -, hd⟩ := H.exists_witness
   rw [← hd]
-  exact selfVis_endpoint j (s d)
-
-/-- Properness, from properness of the observations. -/
-theorem IsEndpoint.ne_top (H : IsEndpoint j s τ γ h) (S : Saturation j s p c τ γ) : h ≠ ⊤ := by
-  obtain ⟨d, -, hd⟩ := H.exists_witness
-  rw [← hd]
-  exact endpoint_ne_top (S.proper d)
+  apply selfVis_endpoint
 
 /-- Reaching: the endpoint itself is mapped to the cap. -/
 theorem IsEndpoint.reach (H : IsEndpoint j s τ γ h) (S : Saturation j s p c τ γ) : τ h = γ := by
@@ -154,32 +117,27 @@ theorem IsEndpoint.not_selfVis_of_lt (H : IsEndpoint j s τ γ h) {d : ι} (hlt 
 
 end Conclusions
 
-/-- **The owner-local saturation endpoint lemma** (notes40 §2.1).  Over a finite family of owner
-arguments the least rounded saturated observation exists; it is positive, proper, `j`-visible,
-reaches the cap, is bounded by the owner's source value, and collects every saturated
-observation below it into its own strip. -/
+/-- Over a finite family, the least rounded saturated observation exists. -/
 theorem exists_isEndpoint [Finite ι] {j : ℕ} {s p : ι → ExtOrd} {c : ι} {τ : ExtOrd → ExtOrd}
     {γ : ExtOrd} (S : Saturation j s p c τ γ) :
-    ∃ h, IsEndpoint j s τ γ h ∧ ⊥ < h ∧ h ≠ ⊤ ∧ SelfVis j h ∧ τ h = γ ∧ h ≤ s c ∧
-      ∀ d, s d < h → τ (s d) = γ → endpoint j (s d) = h := by
+    ∃ h, IsEndpoint j s τ γ h := by
   classical
   let _ : Fintype ι := Fintype.ofFinite ι
   obtain ⟨d₀, hd₀, hmin⟩ := Finset.exists_min_image (Finset.univ.filter fun d ↦ τ (s d) = γ)
     (fun d ↦ endpoint j (s d)) ⟨c, by simp [S.owner_saturated]⟩
   have H : IsEndpoint j s τ γ (endpoint j (s d₀)) :=
-    ⟨⟨⟨d₀, (Finset.mem_filter.mp hd₀).2, rfl⟩, by
+    ⟨⟨by grind, by
       rintro x ⟨d, hd, rfl⟩
-      exact hmin d (by simp [hd])⟩⟩
-  exact ⟨_, H, H.bot_lt S, H.ne_top S, H.selfVis, H.reach S, H.le_owner S,
-    fun d hlt hd ↦ H.strip hlt hd⟩
+      grind⟩⟩
+  exact ⟨_, H⟩
 
 /-- The map hypotheses of `Saturation` from a normalized witness with suppressor `gTop j`
 (the sufficient condition named in notes40 §2). -/
 theorem Saturation.of_witness {j : ℕ} {s p : ι → ExtOrd} {c : ι} {τ : ExtOrd → ExtOrd}
     {γ : ExtOrd} (hτ : Witness (gTop j) τ) (bound : ∀ x, τ x ≤ γ) (pos : ⊥ < γ) (cap : γ < p c)
-    (face : ∀ d, τ (s d) = min (p d) γ) (proper : ∀ d, s d ≠ ⊤) (owner_vis : SelfVis j (s c)) :
+    (face : ∀ d, τ (s d) = min (p d) γ) (owner_vis : SelfVis j (s c)) :
     Saturation j s p c τ γ :=
-  ⟨hτ.bot, hτ.mono, bound, pos, cap, face, proper, owner_vis⟩
+  ⟨hτ.bot, hτ.mono, bound, pos, cap, face, owner_vis⟩
 
 end OwnerLocalEndpoint
 

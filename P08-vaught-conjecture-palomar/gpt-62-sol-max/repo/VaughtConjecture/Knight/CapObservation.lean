@@ -7,22 +7,10 @@ module
 
 public import VaughtConjecture.Knight.Value
 
-/-! # Finite-cut observations
-
-Capping at an ordinal and strict truncation record exactly the same information:
-the literal value below the cutoff, and one common value at or above it. Their
-kernels coincide (`min_eq_min_iff_truncExt_eq`). Observing a lower cutoff commutes
-with higher truncation, so capped agreement is both preserved and reflected by
-stage reduction.
-
-These are scalar order identities, including cutoff zero. No visibility, limit
-stage or lawfulness premise is used. In particular, this file does **not** assert
-that a section capped at an arbitrary cutoff remains lawful.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.Value
+
 open ExtOrd
 
 /-- Truncation does not change an observation at or below its cutoff. -/
@@ -39,8 +27,8 @@ theorem min_eq_min_iff_truncExt_eq {α : Ordinal.{0}} {x y : ExtOrd} :
   constructor
   · intro h
     have h' := congrArg (truncExt α) h
-    simpa only [truncExt_min, truncExt_ofOrd_of_le le_rfl, min_eq_left le_top] using h'
+    grind [truncExt_min, truncExt_ofOrd_of_le le_rfl, min_eq_left le_top]
   · intro h
-    simpa only [min_truncExt_of_le le_rfl] using congrArg (fun z => min z (ofOrd α)) h
+    simpa [min_truncExt_of_le le_rfl] using congrArg (fun z => min z (ofOrd α)) h
 
 end VaughtConjecture.Knight.Value

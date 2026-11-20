@@ -7,28 +7,6 @@ module
 
 public import VaughtConjecture.Knight.Model
 
-/-! # Modelhood transports along a bijection of carriers (#46 probe, prerequisite; #73 audit)
-
-`TypeTower/Basic.lean` (#111) transports the two consistency predicates and the two covering
-predicates of a realization along an isomorphism of carriers (`IsIso.isExactParentConsistent`,
-…), and shows that a realization isomorphic to `R` *is* a push-forward `R.map e`
-(`IsIso.map_eq`).  What was missing — named by the #73 audit, and the prerequisite of the #46
-bounded limit probe — is the same transport for the four existential-closure clauses of
-Def. 3.2.1, i.e. for full modelhood: `KnightRealization.IsModel.map`.
-
-Each clause is an existential over tuples and points of the carrier whose stage-type content
-(family membership, the coface equation) does not mention the carrier at all, so the witnesses
-push through `e : M ≃ N` verbatim: the tuple `t` of `N` pulls back to `t ∘ e⁻¹`, the clause at
-`R` produces `y ∉ range (t ∘ e⁻¹)` and a stage type `q`, and `e y ∉ range t` realizes the same
-`q` over `t` in `R.map e` (`RealizesSome.map`, from the concatenation identity
-`snoc_trans_symm`: `(t⌢(e y)) ∘ e⁻¹ = (t ∘ e⁻¹)⌢y`).
-
-Consequence (stated as `isModelClass_map` / `prolongsToIn_isModelClass_iff_on` in
-`Knight/ProlongationNormalization.lean`, where the target class `IsModelClass` lives): the
-model class is closed under push-forward, so by `prolongsToIn_iff_prolongsToOnIn` every certified link
-`ProlongsToIn IsModel` normalizes to Knight's literal Def. 5.1.1 shape — an actual model **on
-the carrier of the source** whose reduct **equals** the source. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -45,7 +23,7 @@ variable {α : LimitStage} {M : Type w} {N : Type w'} {n : ℕ}
 theorem not_mem_range_trans_of_not_mem {e : M ≃ N} {t : Fin n ↪ N} {y : M}
     (hy : y ∉ Set.range (t.trans e.symm.toEmbedding)) : e y ∉ Set.range t := by
   rintro ⟨i, hi⟩
-  exact hy ⟨i, by simp [Function.Embedding.trans_apply, hi]⟩
+  exact hy ⟨i, by simp_all⟩
 
 /-- Concatenation commutes with pulling back along `e⁻¹`:
 `(t⌢(e y)) ∘ e⁻¹ = (t ∘ e⁻¹)⌢y`. -/
@@ -75,24 +53,17 @@ audit; the prerequisite of the #46 limit probe): the push-forward `R.map e` of a
 model.  Clauses (2)/(3) are the generic #111 transports; the four existential-closure clauses
 push their witnesses through `e` (`RealizesSome.map`). -/
 theorem IsModel.map {R : KnightRealization α M} (h : R.IsModel) (e : M ≃ N) :
-    IsModel (R.map e) where
-  nonempty := h.nonempty.map e
-  consistent :=
-    Realization.IsIso.isExactParentConsistent (Realization.isIso_map e R) h.consistent
-  covering :=
-    Realization.IsIso.isInitialSegmentCovering (Realization.isIso_map e R) h.covering
-  genSat t p hp D hD := by
+    IsModel (R.map e) := by
+  have he : R.IsIso (R.map e) e := Realization.isIso_map e R
+  refine ⟨h.nonempty.map e, he.isExactParentConsistent h.consistent,
+    he.isInitialSegmentCovering h.covering, ?_, ?_, ?_, ?_⟩
+  all_goals
+    intro n t p hp
     rw [Realization.map_eval] at hp
-    exact (h.genSat _ p hp D hD).map e
-  bottomPattern t p hp D hD q' hq' hext := by
-    rw [Realization.map_eval] at hp
-    exact (h.bottomPattern _ p hp D hD q' hq' hext).map e
-  uniformity t p hp γ hγ hγα := by
-    rw [Realization.map_eval] at hp
-    exact (h.uniformity _ p hp γ hγ hγα).map e
-  highGradeDominance t p hp γ hγα := by
-    rw [Realization.map_eval] at hp
-    exact (h.highGradeDominance _ p hp γ hγα).map e
+    intros
+    apply RealizesSome.map
+    first | solve_by_elim [h.genSat] | solve_by_elim [h.bottomPattern]
+          | solve_by_elim [h.uniformity] | solve_by_elim [h.highGradeDominance]
 
 end KnightRealization
 

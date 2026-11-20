@@ -9,41 +9,43 @@ public import VaughtConjecture.Knight.CanonicalRecursiveCoding
 public import VaughtConjecture.Knight.CoatomRecursiveDisplay
 public import VaughtConjecture.Knight.MaximalFullLayer
 
-/-! # Complete coded coatom output with an active maximal apex
-
-For input arities at least three, the recursive output supplies every index
-below the final grade. The added final cell is activated at literal top.
-Both given displays and the stage bound are retained. Ordered restriction
-equations and the two small arities are not asserted here.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomRecursiveApex
+
 open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan
+
 open SemSchemeBoundaryInput CoatomRecursiveInput
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {s : Step A} {m n : ℕ}
+
 variable (I : Input s m (n + 3) (n + 3))
 
 include I in
 theorem card_eq : A.card = n + 4 := by
-  have hh := I.card_left
+  have hh := I.left_card
   rw [Finset.card_erase_of_mem s.ha] at hh
   have := height_le I
   omega
 
 abbrev finalHeight : n + 4 ≤ A.card := (card_eq I).ge
+
 abbrev scheme := MaximalFullLayer.scheme (CoatomRecursiveInput.scheme I)
   (n + 3) (n + 4) (by omega) (finalHeight I)
+
 abbrev old := MaximalFullLayer.old (CoatomRecursiveInput.scheme I)
   (n + 3) (n + 4) (by omega) (finalHeight I)
+
 abbrev apex := MaximalFullLayer.apex (CoatomRecursiveInput.scheme I)
   (n + 3) (n + 4) (by omega) (finalHeight I)
+
 abbrev ownerEquiv := MaximalFullLayer.ownerEquiv (CoatomRecursiveInput.scheme I)
   (n + 3) (n + 4) (grade_bound I) (by omega) (finalHeight I)
+
 abbrev left (d : Cell I.left.scheme) := old I (CoatomRecursiveDisplay.left I d)
+
 abbrev right (d : Cell I.right.scheme) := old I (CoatomRecursiveDisplay.right I d)
 
 theorem complete : (scheme I).IsComplete := by
@@ -90,7 +92,7 @@ theorem exists_display {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
     exact truncExt_id_of_bound (hqb d)
   · change truncExt α (r (apex I)) = ⊤
     rw [htop]
-    exact truncExt_id_of_bound (Or.inr rfl)
+    rfl
 
 /-- Constructed output data; none of these fields is a hypothesis of the constructor. -/
 structure Display (α : Ordinal.{0}) (p : Cell I.left.scheme → ExtOrd)
@@ -116,8 +118,8 @@ def display {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
   let out := Classical.choose result
   let r := Classical.choose (Classical.choose_spec result)
   have hs := Classical.choose_spec (Classical.choose_spec result)
-  exact ⟨out, r, hs.1, hs.2.1, hs.2.2.1, hs.2.2.2.1, hs.2.2.2.2.1,
-    hs.2.2.2.2.2.1, hs.2.2.2.2.2.2.1, hs.2.2.2.2.2.2.2.1, hs.2.2.2.2.2.2.2.2⟩
+  exact ⟨out, r, hs.1, hs.2.1, hs.2.2.1, by tauto, hs.2.2.2.2.1,
+    by tauto, by tauto, hs.2.2.2.2.2.2.2.1, by tauto⟩
 
 variable {α : Ordinal.{0}} {s' : Step (Finset.univ : Finset (Fin (n + 4)))}
   {I' : Input s' m (n + 3) (n + 3)} {p : Cell I'.left.scheme → ExtOrd}
@@ -146,7 +148,8 @@ def ofCompatible (hα : Order.IsSuccLimit α) (C : CoatomPair (n + 2))
     {pa pb : S α (n + 3)} (h : C.Compatible pa pb) :
     Display (CoatomBoundaryPresentation.of_compatible C h).input α pa.label pb.label :=
   display _ hα pa.respects pb.respects pa.label_bound pb.label_bound
-    (CoatomRecursiveDisplay.compatible_labels C h)
+    (CoatomBoundaryPresentation.compatible_labels C h)
 
 end
+
 end VaughtConjecture.Knight.CoatomRecursiveApex

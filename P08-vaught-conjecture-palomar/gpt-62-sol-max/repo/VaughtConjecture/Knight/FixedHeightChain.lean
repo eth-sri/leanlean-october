@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.FinitePartialState
-public import VaughtConjecture.TypeTower.ChainUnion

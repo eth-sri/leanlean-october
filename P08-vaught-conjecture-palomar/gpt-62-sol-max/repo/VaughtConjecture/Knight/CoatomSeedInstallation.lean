@@ -7,17 +7,14 @@ module
 
 public import VaughtConjecture.Knight.CoatomRecursiveOrdered
 
-/-! # Installing a constructed small coatom seed
-
-Internal receipts for the existing one- and two-grade seeds. These are proved
-on each seed, not assumptions of the final all-arity supplier.
--/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomSeedInstallation
+
 open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
+
 noncomputable section
+
 variable {n m : ℕ} {s : Step (Finset.univ : Finset (Fin (n + 2)))}
   (I : Input s m (n + 1) (n + 1))
 
@@ -40,16 +37,23 @@ structure Seed where
     ∃ q, RespectsSemantics rows q ∧ ∀ d, q (boundary d) = p d
 
 variable (F : Seed I)
+
 abbrev height : n + 2 ≤ (Finset.univ : Finset (Fin (n + 2))).card := by simp
-abbrev scheme := MaximalFullLayer.scheme F.scheme (n + 1) (n + 2) (by omega) (height (n := n))
-abbrev old := MaximalFullLayer.old F.scheme (n + 1) (n + 2) (by omega) (height (n := n))
-abbrev apex := MaximalFullLayer.apex F.scheme (n + 1) (n + 2) (by omega) (height (n := n))
+
+abbrev scheme := MaximalFullLayer.scheme F.scheme (n + 1) (n + 2) (by omega) (by simp)
+
+abbrev old := MaximalFullLayer.old F.scheme (n + 1) (n + 2) (by omega) (by simp)
+
+abbrev apex := MaximalFullLayer.apex F.scheme (n + 1) (n + 2) (by omega) (by simp)
+
 abbrev ownerEquiv := MaximalFullLayer.ownerEquiv F.scheme (n + 1) (n + 2) F.grade
-  (by omega) (height (n := n))
+  (by omega) (by simp)
+
 abbrev boundary (d : Cell I.boundary) := old I F (F.boundary d)
 
 theorem boundary_index (d : Cell I.boundary) : (scheme I F).cell (boundary I F d) =
     I.boundary.cell d := (MaximalFullLayer.old_index _ _ _ _ _ _).trans (F.index d)
+
 theorem boundary_order : StrictMono (boundary I F) :=
   (SourceLayerCarrier.old_order _ _ _ _ _).comp F.boundary.strictMono
 
@@ -92,7 +96,7 @@ def face {B : Finset (Fin (n + 2))} {D : CellScheme B} {sem : Semantics D}
       change ((scheme I F).cell (boundary I F d)).1 ⊆ B at hz
       rwa [boundary_index] at hz
     obtain ⟨x, rfl⟩ := G.exhaustive d hd
-    exact ⟨x, rfl⟩
+    simp
   row c d := by
     let e := G.belowMap c d
     let e' : F.scheme.below (F.scheme.cell (F.boundary (G.map c))) :=
@@ -106,15 +110,8 @@ theorem joint_section {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.sche
     ∃ r : Cell F.scheme → ExtOrd, RespectsSemantics F.rows r ∧
       (∀ d, r (F.boundary (I.leftFace.map d)) = p d) ∧
       ∀ d, r (F.boundary (I.rightFace.map d)) = q d := by
-  have hl := (PointImageSemantics.respects_iff I.left.scheme I.placeLeft I.imageLeft
-    I.left.rows p).mpr hp
-  have hr := (PointImageSemantics.respects_iff I.right.scheme I.placeRight I.imageRight
-    I.right.rows q).mpr hq
-  obtain ⟨u, hu, hul, hur⟩ :=
-    (AmalgamatedBoundarySemantics.section_iff s I.leftScheme I.rightScheme I.shared
-      I.planLeft I.planRight I.leftRows I.rightRows I.compatible hl hr).mpr ha
-  obtain ⟨r, hrr, he⟩ := F.extend_whole u hu
-  exact ⟨r, hrr, fun d => (he _).trans (hul d), fun d => (he _).trans (hur d)⟩
+  obtain ⟨r, hrr, he⟩ := F.extend_whole _ (I.paste_respects hp hq ha)
+  exact ⟨r, hrr, fun d => (he _).trans (I.paste_left p q d), fun d => (he _).trans (I.paste_right p q ha d)⟩
 
 include F in
 theorem install {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
@@ -134,17 +131,16 @@ theorem install {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
     ⟨⟨scheme I F, out, hcode, hc, hb, complete I F⟩,
       fun d => truncExt α (u d), fun _ => truncExt_bound _ _, hu.truncate hα⟩
   have hpL : ¬ (Finset.univ : Finset (Fin (n + 2))) ⊆ Finset.univ.erase s.a :=
-    fun h => Finset.notMem_erase s.a Finset.univ (h s.ha)
+    by simp
   have hpR : ¬ (Finset.univ : Finset (Fin (n + 2))) ⊆ Finset.univ.erase s.b :=
-    fun h => Finset.notMem_erase s.b Finset.univ (h s.hb)
+    by simp
   refine ⟨t, ?_, ?_, ?_⟩
   · apply typeMap_of_pointImage_face t ⟨I.left, p, hpb, hp⟩ I.placeLeft I.imageLeft
       (face I F I.leftFace hpL out he)
     · exact (boundary_order I F).comp
-        (AmalgamatedBoundary.left_order s I.leftScheme I.rightScheme I.shared
-          I.planLeft I.planRight)
+        I.left_order
     · change Plan.restrictPlan F.scheme.plan (Finset.univ.erase s.a) = _
-      rw [F.plan, show I.boundary.plan = s.plan from rfl, restrict_left, ← I.planLeft]
+      exact (congrArg (fun R => Plan.restrictPlan R _) F.plan).trans I.planLeft
     · intro d
       change truncExt α (u (old I F (F.boundary (I.leftFace.map d)))) = p d
       rw [hread, hl]
@@ -152,10 +148,9 @@ theorem install {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
   · apply typeMap_of_pointImage_face t ⟨I.right, q, hqb, hq⟩ I.placeRight I.imageRight
       (face I F I.rightFace hpR out he)
     · exact (boundary_order I F).comp
-        (AmalgamatedBoundary.right_order s I.leftScheme I.rightScheme I.shared
-          I.planLeft I.planRight)
+        I.right_order
     · change Plan.restrictPlan F.scheme.plan (Finset.univ.erase s.b) = _
-      rw [F.plan, show I.boundary.plan = s.plan from rfl, restrict_right, ← I.planRight]
+      exact (congrArg (fun R => Plan.restrictPlan R _) F.plan).trans I.planRight
     · intro d
       change truncExt α (u (old I F (F.boundary (I.rightFace.map d)))) = q d
       rw [hread, hright]
@@ -168,4 +163,5 @@ theorem install {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
       exact le_top
 
 end
+
 end VaughtConjecture.Knight.CoatomSeedInstallation

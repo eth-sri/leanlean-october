@@ -9,20 +9,14 @@ public import VaughtConjecture.Knight.HollowGrowthAdmission
 public import VaughtConjecture.Knight.CanonicalCoatomFiniteSupply
 public import VaughtConjecture.Knight.CoatomFaceLift
 
-/-! # Positive-root calibration over arbitrary public roots
-
-Pad the realized root by one actual point and enlarge the legal donor with
-the constructed ordinary coatom supplier. The scalar receiving template
-then has a positive graded root, while the original donor stays a literal
-face. No growth physical receiver or stable occurrence is asserted.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
+
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor
+
 universe w
+
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
 /-- Arbitrary-root acquisition, including the empty root. The padded donor
@@ -41,7 +35,7 @@ theorem acquire_padded (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHol
   obtain ⟨Q, hQ, hkeep⟩ := FixedHeight.pinnedCofaceLift (CanonicalCoatomSupply.supply α.2)
     1 (by omega) pR Fin.castSuccEmb p hco q hq
   obtain ⟨D, hD⟩ := acquire Q hM hg hh (Nat.succ_pos n) heval hQ floor
-  exact ⟨z, hz, pR, heval, hco, Q, hQ, hkeep, D, hD⟩
+  grind
 
 /-- The donor restriction after padding still has the original public root
 and the same new donor point. This is the tuple equation a later model
@@ -51,12 +45,10 @@ theorem donor_tuple {n : ℕ} (t : Fin n ↪ M) (z : M) (hz : z ∉ Set.range t)
     (FixedHeight.extendFace Fin.castSuccEmb).trans (snoc (snoc t z hz) y hy) =
       snoc t y (fun h => hy (by
         obtain ⟨i, hi⟩ := h
-        exact ⟨Fin.castSucc i, (snoc_apply_castSucc t z hz i).trans hi⟩)) := by
+        exact ⟨Fin.castSucc i, by simp_all⟩)) := by
   apply Function.Embedding.ext
   intro i
   refine Fin.lastCases ?_ (fun k => ?_) i
-  · simp only [Function.Embedding.trans_apply, FixedHeight.extendFace_last, snoc_apply_last]
-  · simp only [Function.Embedding.trans_apply, FixedHeight.extendFace_castSucc,
-      Fin.castSuccEmb_apply, snoc_apply_castSucc]
+  all_goals simp_all
 
 end VaughtConjecture.Knight.HollowGrowthTemplate

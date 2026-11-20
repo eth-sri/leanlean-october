@@ -5,21 +5,17 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CoherentGradeCaps
-
-/-! # Lawful projection from lawful grade-capped prefixes
-
-The raw vector need not be lawful or belong to a single admitted catalogue.
-It suffices that its cap at each grade is lawful through that grade, with
-antitone heights. The projected vector uses the height at each cell's own
-grade. This is the finite semantic observation of new72 §5.
--/
+public import VaughtConjecture.Knight.FullScopeBountiful
+public import VaughtConjecture.Knight.ReferenceContext
+public import VaughtConjecture.Knight.FreeDiagonal
+public import VaughtConjecture.Knight.MixedGradeInterpolation
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradePrefixProjection
+
 open Transform Value ExtOrd AmalgamationPlan
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
   {sem : Semantics D} {BJ : Finset ι × ℕ} {ρ : Cell D → ExtOrd} {H : ℕ → ExtOrd}
 
@@ -37,14 +33,11 @@ theorem respectsBelow (ha : Antitone H)
     change min (min (ρ d.1) (H (D.grade c.1))) (min (ρ c.1) (H (D.grade c.1))) =
       min (min (ρ d.1) (H (D.grade d.1))) (min (ρ c.1) (H (D.grade c.1)))
     have hdc : H (D.grade c.1) ≤ H (D.grade d.1) := ha d.2.2
-    rw [min_min_min_comm, min_self, min_min_min_comm, min_eq_right hdc]
+    grind
   availability c e hs hg := by
     obtain ⟨w, hw, hle⟩ := (hp (D.grade c.1) c.2.2).availability
       ⟨c.1, c.2.1, le_rfl⟩ ⟨e.1, e.2.1, hg.symm.le⟩ hs hg
     refine ⟨⟨w.1, w.2.1, w.2.2.trans c.2.2⟩, hw, ?_⟩
-    have hgrade : D.grade w.1 = D.grade c.1 := (congrArg Prod.snd hw).trans hg.symm
-    change min (ρ c.1) (H (D.grade c.1)) ≤ min (ρ w.1) (H (D.grade w.1))
-    rw [hgrade]
-    exact hle
+    aesop
 
 end VaughtConjecture.Knight.GradePrefixProjection

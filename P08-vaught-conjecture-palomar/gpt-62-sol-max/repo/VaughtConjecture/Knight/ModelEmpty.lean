@@ -7,10 +7,6 @@ module
 
 public import VaughtConjecture.Knight.Model
 
-/-! # Empty-tuple evaluation from consistency and covering
-
-This elementary model consequence is independent of terminal histories and rank analysis. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -41,7 +37,7 @@ theorem exists_eval_empty_of_structural {R : KnightRealization α M}
   obtain ⟨p₀, hp₀⟩ := Option.isSome_iff_exists.mp hsome'
   have hft : f.trans s = (Function.Embedding.ofIsEmpty : Fin 0 ↪ M) :=
     Function.Embedding.ext fun i => i.elim0
-  exact ⟨p₀, by rw [← hft, heval, hp₀]; rfl⟩
+  aesop
 
 /-- Compatibility wrapper for models. -/
 theorem exists_eval_empty_at {R : KnightRealization α M} (hR : R.IsModel) :

@@ -9,31 +9,6 @@ public import InfinitaryLogic.OrdinalUtil
 public import InfinitaryLogic.Scott.Sentence
 public import Architect
 
-/-!
-# Proof of CountableRefinementHypothesis
-
-This file proves `CountableRefinementHypothesis` and provides unconditional wrappers for
-all Sentence.lean-level theorems. Together with the downstream wrappers in Rank.lean,
-Height.lean, CountableCorollary.lean, and CountingModels.lean, this recovers the full
-unconditional API.
-
-## Strategy
-
-The proof uses the "constant chain" argument:
-1. Self-stabilization (`exists_complete_self_stabilization`) gives α₀ < ω₁ where the
-   internal BFEquiv relation on M is frozen.
-2. Under self-stabilization, forth/back witnesses chosen at level α₀ automatically work
-   at all higher levels (`chain_step` + `witness_at_all_levels`).
-3. By transfinite induction (`BFEquiv_of_all_finite_levels`), BFEquiv (α₀+k) for all k
-   upgrades to BFEquiv ε for all ε.
-4. Hence no refinement ordinals exist above γ = sup_k(α₀+k) < ω₁, and R(n,a) ⊆ [0,γ)
-   is countable.
-
-## Main Result
-
-- `countableRefinementHypothesis` : `CountableRefinementHypothesis L`
--/
-
 @[expose] public section
 
 universe u v w
@@ -43,16 +18,10 @@ namespace FirstOrder
 namespace Language
 
 variable {L : Language.{u, v}} [L.IsRelational]
+
 variable [Countable (Σ l, L.Relations l)]
 
 open FirstOrder Structure Ordinal BoundedFormulaω
-
-/-! ### Self-stabilization to full stabilization
-
-The key insight: `SelfStabilizesCompletely M α₀` (internal BFEquiv stabilization) implies
-that the back-and-forth game cannot create new refinements above α₀ + ω, because any
-forth/back witness at level α₀ already works at all higher levels (the "constant chain"
-argument). This avoids the need to count external BFEquiv types directly. -/
 
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
 /-- Chain-constant step: under self-stabilization at α₀, if BFEquiv ε holds at (n+1)-tuples
@@ -77,8 +46,7 @@ private theorem chain_step
     hmw
 
 private theorem add_nat_succ (α : Ordinal.{0}) (k : ℕ) :
-    α + ↑(k + 1) = Order.succ (α + ↑k) := by
-  simp only [Order.succ_eq_add_one, Nat.cast_add, Nat.cast_one, add_assoc]
+    α + ↑(k + 1) = Order.succ (α + ↑k) := by simp [Order.succ_eq_add_one, Nat.cast_add, Nat.cast_one, add_assoc]
 
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
 /-- From a forth/back witness at level α₀, upgrade to BFEquiv (α₀+k) for all k.
@@ -100,9 +68,6 @@ private theorem witness_at_all_levels
     rw [Order.succ_eq_add_one, Order.succ_eq_add_one, add_assoc, add_assoc]
     convert hbase (j + 2) using 1; norm_cast
 
--- Main upgrade: from self-stabilization at α₀ and BFEquiv (α₀+k) for all k ∈ ℕ,
--- deduce BFEquiv ε for all ordinals ε. Uses transfinite induction on ε with
--- `witness_at_all_levels` to provide forth/back witnesses at successor steps.
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
 private theorem BFEquiv_of_all_finite_levels
     {M : Type w} [L.Structure M]
@@ -116,15 +81,13 @@ private theorem BFEquiv_of_all_finite_levels
   | zero => exact BFEquiv.monotone bot_le (by simpa using h 0)
   | add_one ε ih =>
     have hsucc_α₀ : BFEquiv (L := L) (Order.succ α₀) n a b := by
-      have := h 1; rwa [Nat.cast_one, ← Order.succ_eq_add_one] at this
+      have := h 1; simp_all
     rw [← Order.succ_eq_add_one, BFEquiv.succ]; refine ⟨@ih n a b h, fun m => ?_, fun m' => ?_⟩
     · let ⟨m'₀, hm'₀⟩ := BFEquiv.forth hsucc_α₀ m
       exact ⟨m'₀, @ih _ _ _ (witness_at_all_levels hstab h hm'₀)⟩
     · let ⟨m₀, hm₀⟩ := BFEquiv.back hsucc_α₀ m'
       exact ⟨m₀, @ih _ _ _ (witness_at_all_levels hstab h hm₀)⟩
-  | limit ε hε ih => rw [BFEquiv.limit ε hε]; exact fun δ hδ => @ih δ hδ n a b h
-
-/-! ### The Counting Lemma -/
+  | limit ε hε ih => rw [BFEquiv.limit ε hε]; solve_by_elim
 
 /-- The countable refinement hypothesis holds for all countable relational languages.
 
@@ -171,16 +134,6 @@ theorem countableRefinementHypothesis : CountableRefinementHypothesis.{u, v, w} 
   exact hNot (BFEquiv_of_all_finite_levels hstab
     (fun k => BFEquiv.monotone (le_trans (le_ciSup hBdd k) hge) hBF)
     (Order.succ ε))
-
-/-! ### Unconditional Wrappers (Sentence.lean level)
-
-Each theorem below is a one-liner applying `countableRefinementHypothesis` to the
-corresponding `_of` variant in Sentence.lean. -/
-
-/-- Complete stabilization below ω₁. -/
-theorem exists_complete_stabilization (M : Type w) [L.Structure M] [Countable M] :
-    ∃ α < (Ordinal.omega 1 : Ordinal.{0}), StabilizesCompletely (L := L) M α :=
-  exists_complete_stabilization_of countableRefinementHypothesis M
 
 /-- The Scott sentence of M characterizes M up to isomorphism among countable structures. -/
 @[blueprint "thm:scott-characterizes"

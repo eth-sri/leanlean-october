@@ -5,21 +5,11 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ProfileFaceGluing
+public import VaughtConjecture.Knight.ProfileFaceUnion
 public import Mathlib.Data.Prod.Lex
 public import Mathlib.Data.Finset.Sort
 
-/-! # Simultaneous ordering of arbitrary finite face inventories
-
-Two increasing embeddings of a common finite inventory admit a common
-ordered union. Shared occurrences are identified exactly once, private
-occurrences remain distinct, and both entire old orders are preserved.
-No inventory size or initial prefix is fixed.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.ProfileBoundaryOrder
 
@@ -33,9 +23,7 @@ def rank (f : Fin c ↪ Fin n) (x : Fin n) : ℕ :=
 theorem rank_mono (f : Fin c ↪ Fin n) : Monotone (rank f) := by
   intro x y hxy
   apply Finset.card_le_card
-  intro i hi
-  exact Finset.mem_filter.mpr ⟨Finset.mem_univ _,
-    (Finset.mem_filter.mp hi).2.trans hxy⟩
+  grind
 
 theorem rank_lt_at_shared (f : Fin c ↪ Fin n) {x y : Fin n}
     (hxy : x < y) (hy : y ∈ Set.range f) : rank f x < rank f y := by
@@ -44,12 +32,10 @@ theorem rank_lt_at_shared (f : Fin c ↪ Fin n) {x y : Fin n}
   apply Finset.ssubset_iff_subset_ne.mpr
   refine ⟨?_, ?_⟩
   · intro j hj
-    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _,
-      (Finset.mem_filter.mp hj).2.trans hxy.le⟩
+    grind
   · intro he
     have hi : i ∈ Finset.univ.filter (fun j => f j ≤ f i) := by simp
-    rw [← he] at hi
-    exact (not_le_of_gt hxy) (Finset.mem_filter.mp hi).2
+    grind
 
 theorem rank_shared (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
     (hf : StrictMono f) (hg : StrictMono g) (i : Fin c) :
@@ -57,7 +43,7 @@ theorem rank_shared (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
   unfold rank
   congr 1
   ext j
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and, hf.le_iff_le, hg.le_iff_le]
+  simp [Finset.mem_filter, Finset.mem_univ, true_and, hf.le_iff_le, hg.le_iff_le]
 
 noncomputable def faceKey (f : Fin c ↪ Fin n) (tag : ℕ) (x : Fin n) : ℕ ×ₗ ℕ := by
   classical
@@ -74,18 +60,13 @@ theorem faceKey_strict (f : Fin c ↪ Fin n) {tag : ℕ} (htag : 0 < tag) :
   · have he : rank f x = rank f y := le_antisymm (rank_mono f hxy.le) (le_of_not_gt hr)
     refine Or.inr ⟨he, ?_⟩
     have hy : y ∉ Set.range f := fun hy => hr (rank_lt_at_shared f hxy hy)
-    rw [ite_eq_right hy]
-    by_cases hx : x ∈ Set.range f
-    · rw [ite_eq_left hx]
-      omega
-    · rw [ite_eq_right hx]
-      exact Nat.add_lt_add_left hxy tag
+    grind
 
 theorem faceKey_shared (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
     (hf : StrictMono f) (hg : StrictMono g) (i : Fin c) :
     faceKey f 1 (f i) = faceKey g (n + 1) (g i) := by
   classical
-  simp only [faceKey, Set.mem_range_self, ite_true, rank_shared f g hf hg i]
+  simp [faceKey, Set.mem_range_self, ite_true, rank_shared f g hf hg i]
 
 theorem faceKey_overlap (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
     (hf : StrictMono f) (hg : StrictMono g) (x : Fin n) (y : Fin m) :
@@ -100,13 +81,7 @@ theorem faceKey_overlap (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
     · obtain ⟨i, rfl⟩ := hx
       have he := (faceKey_shared f g hf hg i).symm.trans h
       exact ⟨i, rfl, (faceKey_strict g (by omega : 0 < n + 1)).injective he⟩
-    · rw [ite_eq_right hx] at ho
-      by_cases hy : y ∈ Set.range g
-      · rw [ite_eq_left hy] at ho
-        omega
-      · rw [ite_eq_right hy] at ho
-        have := x.isLt
-        omega
+    grind
   · rintro ⟨i, rfl, rfl⟩
     exact faceKey_shared f g hf hg i
 
@@ -125,9 +100,9 @@ theorem key_injective (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
   rcases x with x | x <;> rcases y with y | y
   · exact congrArg Sum.inl ((faceKey_strict f (by decide : 0 < 1)).injective h)
   · obtain ⟨i, _, hi⟩ := (faceKey_overlap f g hf hg x y.val).mp h
-    exact False.elim (y.property ⟨i, hi⟩)
+    grind
   · obtain ⟨i, _, hi⟩ := (faceKey_overlap f g hf hg y x.val).mp h.symm
-    exact False.elim (x.property ⟨i, hi⟩)
+    grind
   · exact congrArg Sum.inr (Subtype.ext
       ((faceKey_strict g (by omega : 0 < n + 1)).injective h))
 

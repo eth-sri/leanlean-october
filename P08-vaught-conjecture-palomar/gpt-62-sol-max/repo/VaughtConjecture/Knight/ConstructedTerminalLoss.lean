@@ -8,15 +8,6 @@ module
 public import VaughtConjecture.Knight.ExpansionDomainLoss
 public import VaughtConjecture.Knight.TopFreeCapHenkin
 
-/-! # Nonempty losses and the lower spectrum bound without global termination
-
-The top-free capped scheduler constructs a terminal model at every countable
-block. Unique expansion puts its base class in that block's successor loss.
-These losses are disjoint, so choosing one class in each injects the countable
-ordinals into the counted classes. No classification or global termination is
-used to produce these witnesses or obtain the lower cardinal bound.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.ExpansionDomain

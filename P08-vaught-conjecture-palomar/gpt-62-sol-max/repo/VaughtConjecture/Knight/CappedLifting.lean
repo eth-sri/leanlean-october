@@ -8,40 +8,30 @@ module
 public import VaughtConjecture.Knight.SemScheme
 public import VaughtConjecture.Knight.VisibilityAlgebra
 
-/-! # The foundational original-cap lifting calculus
-
-One literal lifting property, its identity and composition laws, old-face transport,
-and generation by finite cover relations. These results do not depend on any concrete
-carrier, code table, receiver or model. Historical public names remain in the
-`CoatomBoundaryExtension` namespace for compatibility.
-
-General lifting asserts existence for each ambient and cap. It does not assert a unique
-extension or simultaneous cap preservation; those require injective restriction and are
-supplied separately by `CappedLiftOfExtension`.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 
 open Transform Value ExtOrd
+
 open VaughtConjecture.AmalgamationPlan
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable {sem : Semantics D} {I U J K : Finset ι × ℕ}
+
+/-- A literal section on the source, with its target cap agreement. -/
+abbrev LiftResult (sem : Semantics D) (h : GradedLe I U)
+    (p : D.below I → ExtOrd) (q : D.below U → ExtOrd) (γ : ExtOrd) : Prop :=
+  ∃ r : D.below U → ExtOrd, RespectsSemanticsBelow sem U r ∧
+    (∀ d, min (r d) γ = min (q d) γ) ∧ ∀ d, r (CellScheme.below.mono h d) = p d
 
 /-- A single literal old graded-pair lifting clause, also allowing equal
 indices and empty source domains. No new whole-target lift is included. -/
 def CappedLift (sem : Semantics D) (h : GradedLe I U) : Prop :=
   ∀ (p : D.below I → ExtOrd) (q : D.below U → ExtOrd) (γ : ExtOrd),
-    RespectsSemanticsBelow sem I p → RespectsSemanticsBelow sem U q →
-    SelfVis U.2 γ →
-    (∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) →
-    ∃ r : D.below U → ExtOrd, RespectsSemanticsBelow sem U r ∧
-      (∀ d, min (r d) γ = min (q d) γ) ∧
-      ∀ d, r (CellScheme.below.mono h d) = p d
+    RespectsSemanticsBelow sem I p → RespectsSemanticsBelow sem U q → SelfVis U.2 γ →
+    (∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) → LiftResult sem h p q γ
 
 /-- Equal indices require no appeal to strict-pair bountifulness. -/
 theorem lift_refl : CappedLift sem (GradedLe.refl I) := by
@@ -60,8 +50,7 @@ theorem lift_of_bountiful (hb : sem.IsBountiful)
   by_cases he : I = U
   · subst U
     exact lift_refl
-  · intro p q γ hp hq hγ hag
-    exact hb I U hI hU h he p q γ hp hq hγ hag
+  solve_by_elim
 
 /-- Transport a lift along literal lower-domain equivalences. The restriction square must
 commute, lawful sections must transport, and the old target grade must permit the new cap.
@@ -73,35 +62,38 @@ theorem CappedLift.of_equiv
     (eI : D'.below I' ≃ D.below I) (eU : D'.below U' ≃ D.below U)
     (hsquare : ∀ d, eU (CellScheme.below.mono h' d) = CellScheme.below.mono h (eI d))
     (hgrade : U'.2 ≤ U.2)
-    (hsource : ∀ p, RespectsSemanticsBelow sem I p →
-      RespectsSemanticsBelow sem' I' (p ∘ eI))
-    (htarget : ∀ q, RespectsSemanticsBelow sem U q ↔
-      RespectsSemanticsBelow sem' U' (q ∘ eU))
+    (hsource : ∀ p, RespectsSemanticsBelow sem' I' p ↔
+      RespectsSemanticsBelow sem I (p ∘ eI.symm))
+    (htarget : ∀ q, RespectsSemanticsBelow sem' U' q ↔
+      RespectsSemanticsBelow sem U (q ∘ eU.symm))
     (hl : CappedLift sem' h') : CappedLift sem h := by
   intro p q γ hp hq hγ hag
-  obtain ⟨r, hr, hc, hf⟩ := hl (p ∘ eI) (q ∘ eU) γ (hsource p hp)
-    ((htarget q).mp hq) (hγ.mono hgrade) (fun d => by
+  obtain ⟨r, hr, hc, hf⟩ := hl (p ∘ eI) (q ∘ eU) γ
+    ((hsource _).mpr (by simpa only [Function.comp_def, Equiv.apply_symm_apply] using hp))
+    ((htarget _).mpr (by simpa [Function.comp_def, Equiv.apply_symm_apply] using hq)) (hγ.mono hgrade) (fun d => by
       simpa only [Function.comp_apply, hsquare] using hag (eI d))
-  refine ⟨r ∘ eU.symm, (htarget _).mpr ?_, ?_, ?_⟩
-  · simpa only [Function.comp_def, Equiv.symm_apply_apply] using hr
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hc (eU.symm d)
+  refine ⟨r ∘ eU.symm, (htarget _).mp hr, ?_, ?_⟩
+  · simp_all
   · intro d
     have he : eU.symm (CellScheme.below.mono h d) = CellScheme.below.mono h' (eI.symm d) := by
-      apply eU.injective
-      rw [Equiv.apply_symm_apply, hsquare, Equiv.apply_symm_apply]
-    rw [Function.comp_apply, he, hf, Function.comp_apply, Equiv.apply_symm_apply]
+      grind
+    simp_all
 
-section FaceTransport
-
-open CellScheme.restrictFace
-
-variable {m n : ℕ} {D₀ : CellScheme (ι := Fin n) Finset.univ}
-variable {s : Semantics D₀} {f : Fin m ↪ Fin n}
-variable {hf : Finset.univ.image f ∈ D₀.plan}
-variable {I' U' : Finset (Fin m) × ℕ}
-
-end FaceTransport
+/-- The same transport, using pullback characterizations of lawful sections. -/
+theorem CappedLift.of_pullback
+    {ι' : Type*} [DecidableEq ι'] {A' : Finset ι'} {D' : CellScheme A'}
+    {sem' : Semantics D'} {I' U' : Finset ι' × ℕ}
+    {h : GradedLe I U} {h' : GradedLe I' U'}
+    (eI : D.below I ≃ D'.below I') (eU : D.below U ≃ D'.below U')
+    (hsquare : ∀ d, eU (CellScheme.below.mono h d) = CellScheme.below.mono h' (eI d))
+    (hgrade : U'.2 ≤ U.2)
+    (hi : ∀ p, RespectsSemanticsBelow sem I p ↔ RespectsSemanticsBelow sem' I' (p ∘ eI.symm))
+    (hu : ∀ q, RespectsSemanticsBelow sem U q ↔ RespectsSemanticsBelow sem' U' (q ∘ eU.symm))
+    (hl : CappedLift sem' h') : CappedLift sem h :=
+  CappedLift.of_equiv eI.symm eU.symm
+    (fun d => eU.injective (by rw [Equiv.apply_symm_apply, hsquare, Equiv.apply_symm_apply])) hgrade
+    (fun p => by simpa [Function.comp_def, Equiv.apply_symm_apply, Equiv.symm_symm] using (hi (p ∘ eI)).symm)
+    (fun q => by simpa [Function.comp_def, Equiv.apply_symm_apply, Equiv.symm_symm] using (hu (q ∘ eU)).symm) hl
 
 theorem CappedLift.comp {hIJ : GradedLe I J} {hJK : GradedLe J K}
     (hleft : CappedLift sem hIJ) (hright : CappedLift sem hJK) :

@@ -8,13 +8,6 @@ module
 public import VaughtConjecture.Knight.ProvisionalRatchet
 public import VaughtConjecture.Knight.TopGradeDichotomy
 
-/-! # Structural stable-spectrum bounds and characteristic-to-tail implication
-
-These proofs use exact parent consistency and initial-segment covering. In particular,
-`IsCharacteristicArity.isCoinitial_topGrade` does not invoke the converse or proper-label
-cofinality. The zero-grade converse remains in `TopGradeStableSpectrum`.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -36,8 +29,7 @@ theorem exists_topCell_of_topGrade_pos (p : S α n) (hpos : 0 < p.topGrade) :
     have hempty : p.topGrades = ∅ := Set.not_nonempty_iff_eq_empty.mp hn
     have : p.topGrade = 0 := by
       unfold topGrade
-      rw [hempty, csSup_empty]
-      rfl
+      simp_all
     omega
   exact Nat.sSup_mem hne p.topGrades_bddAbove
 
@@ -53,8 +45,7 @@ variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 theorem exists_hasStableValue {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
     (Xi : Cell p.scheme.scheme) : ∃ γ, R.HasStableValue t p Xi γ := by
   by_cases h : ∃ δ : ExtOrd, δ < ofOrd (α.1 + Ordinal.omega0) ∧ R.StabilizesTo t p Xi δ
-  · obtain ⟨δ, hδ, hs⟩ := h
-    exact ⟨δ, Or.inl ⟨hδ, hs⟩⟩
+  · tauto
   · push Not at h
     exact ⟨⊤, Or.inr ⟨rfl, h⟩⟩
 
@@ -69,7 +60,6 @@ theorem stabilizesTo_label_of_ne_top (x : R.LabelledExt) {Xi : Cell x.type.schem
   · rw [label_mapCell hpq Xi]; exact hne
   · rw [label_mapCell hpq Xi]
 
-/-! ### Stabilization on a tail of constant top grade -/
-
 end KnightRealization
+
 end VaughtConjecture.Knight

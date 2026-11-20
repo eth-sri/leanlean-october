@@ -8,72 +8,6 @@ module
 public import Mathlib.MeasureTheory.Constructions.Polish.Basic
 public import InfinitaryLogic.Descriptive.KleeneBrouwer
 
-/-!
-# Boundedness for analytic families of well-founded trees
-
-An analytic family of well-founded trees on `ℕ`, whose node sets are closed, has heights bounded
-by a single countable ordinal.  The proof is descriptive and self-contained: a continuous
-parametrization by Baire space, one countable witness tree that dominates every tree of the
-family, and the countability of the height of a well-founded tree.  It uses only the definition
-of analytic sets, convergence in Baire space and the regularity of `ℵ₁`; no boundedness theorem
-for well-orders is involved.
-
-## Main declarations
-
-* `KleeneBrouwer.analytic_tree_rank_bounded`: for an analytic `A ⊆ X` and `T : X → tree ℕ` with
-  every node set `{x | s ∈ T x}` closed and `T x` well-founded on `A`, some `β < ω₁` strictly
-  bounds `treeHeight (T x)` for every `x ∈ A`.
-
-The helpers it consumes live with their subjects: `InfinitaryLogic.rank_le_rank_of_relHom`
-(`OrdinalUtil`), and `hasInfiniteBranch_iff_exists_seq`, `treeHeight_le_of_relHom` and
-`treeHeight_lt_omega1` (`KleeneBrouwer`).
-
-## The witness tree
-
-Write `A` as the range of a continuous `f : (ℕ → ℕ) → X` (the empty case is immediate).  A node
-of the witness tree `W` is a list of `Nat.pair` codes of pairs `(s i, u i)` such that some `y`
-extending `u` has `s ∈ T (f y)`; it is prefix-closed because the trees `T (f y)` are.
-
-* `W` is well-founded.  Take a branch, with first coordinates `x` and second coordinates `y`,
-  and for each stage `n` a witness `yₙ` extending `y|n` with `x|n ∈ T (f yₙ)`.  Fix a length `k`.
-  For every stage `n ≥ k`, prefix closure of `T (f yₙ)` puts `yₙ` in the fixed set
-  `{z | x|k ∈ T (f z)}`, which is closed as the preimage of a closed node set under `f`.  Since
-  `yₙ → y` in Baire space, the limit `y` lies in that set: `x|k ∈ T (f y)` for every `k`, an
-  infinite branch of `T (f y)`, although `f y ∈ A`.
-* For `y : ℕ → ℕ`, the map `s ↦ (s, y|s.length)` is a homomorphism of strict extension from
-  `T (f y)` to `W`, so `treeHeight (T (f y)) ≤ treeHeight W`; it is injective (the first
-  coordinates recover `s`), but `treeHeight_le_of_relHom` does not use injectivity.  As `W` is a
-  well-founded tree on `ℕ`, `treeHeight W < ω₁`, and `β = treeHeight W + 1` works.
-
-## Interpretation choices
-
-* **Closed node sets.**  The hypothesis is that each `{x | s ∈ T x}` is closed, not necessarily
-  clopen, so the assignment `x ↦ T x` need not be continuous.  Closedness is what the limit step
-  uses, pulled back along the parametrization.  Measurable node sets on a Polish space are not
-  treated here.
-* **The explicit limit step.**  Membership of the limit is obtained from witnesses at all
-  sufficiently long stages lying in one fixed closed set (`IsClosed.mem_of_tendsto`), not from a
-  compactness or König argument.
-* **Rank convention.**  `treeHeight T = ⨆ x, succ (rank x)` for the rank of strict extension, so
-  the empty tree has height `0` and the root-only tree height `1`; the bound is strict.
-* **Universes.**  Heights and the bound live in `Ordinal.{0}`; the parameter space `X` is in any
-  universe.
-* **Namespace.**  The theorem is stated in `KleeneBrouwer`, the namespace of `treeHeight`,
-  `extBelow` and `HasInfiniteBranch`, which it is about.
-
-## References
-
-* A. S. Kechris, *Classical Descriptive Set Theory*, Graduate Texts in Mathematics 156,
-  Springer, 1995, §31.A: Theorem 31.2 (the Boundedness Theorem for WF: an analytic set of
-  well-founded trees on `ℕ` has ranks bounded below `ω₁`), derived there from Theorem 31.1
-  (analytic well-founded relations have countable rank), whose proof (due to Kunen) maps into a
-  countable well-founded tree of attempts.  The statement here parametrizes the trees over an
-  arbitrary topological space with closed node sets; Kechris's `ρ(T)` is `treeHeight T`.
-* R. Chen, *A topological proof of the boundedness theorem for Σ¹₁ well-founded relations*, note,
-  rynchn.github.io/math/treebound.pdf: a direct proof through inverse limits of Polish spaces.
-  The construction here is the witness tree above, not the argument of that note.
--/
-
 @[expose] public section
 
 namespace KleeneBrouwer
@@ -81,8 +15,6 @@ namespace KleeneBrouwer
 open Descriptive MeasureTheory Filter Topology Set
 
 variable {X : Type*}
-
-/-! ## Coded pairs -/
 
 /-- The first coordinates of a list of `Nat.pair` codes. -/
 private def fstList (l : List ℕ) : List ℕ := l.map fun n ↦ n.unpair.1
@@ -108,10 +40,7 @@ private theorem properPrefix_pairList {s t : List ℕ} (y : ℕ → ℕ) (h : Pr
     fun heq ↦ hne ?_⟩
   have hlen := congrArg List.length heq
   simp only [pairList, List.length_mapIdx, List.length_append] at hlen
-  have hr : r = [] := List.eq_nil_of_length_eq_zero (by omega)
-  simp [hr]
-
-/-! ## The witness tree -/
+  aesop
 
 /-- The nodes of the witness tree: codes of pairs `(s, u)` such that some `y` extending `u` has
 `s ∈ T (f y)`. -/
@@ -123,7 +52,7 @@ private theorem witnessNodes_prefix {f : (ℕ → ℕ) → X} {T : X → tree �
   obtain ⟨y, hy, hmem⟩ := h
   refine ⟨y, fun i hi ↦ ?_, Tree.mem_of_prefix ?_ hmem⟩
   · have := hy i (by simp; omega)
-    rwa [List.getElem_append_left hi] at this
+    simp_all
   · simp [fstList]
 
 /-- The witness tree ("tree of attempts") of `T` along `f`. -/
@@ -150,8 +79,7 @@ private theorem wellFounded_witnessTree [TopologicalSpace X] {f : (ℕ → ℕ) 
     fun n ↦ by simp [fstList, hx, List.map_ofFn, Function.comp_def]
   have hagree : ∀ n i, i < n → w n i = y i := fun n i hi ↦ by
     have := hw n i (by simpa using hi)
-    simp only [List.getElem_ofFn] at this
-    exact this.symm
+    grind
   -- the witnesses converge to `y` in Baire space
   have htend : Tendsto w atTop (𝓝 y) :=
     tendsto_pi_nhds.mpr fun i ↦ tendsto_atTop_of_eventually_const (i₀ := i + 1)
@@ -176,8 +104,6 @@ private def witnessHom (f : (ℕ → ℕ) → X) (T : X → tree ℕ) (y : ℕ �
   toFun s := ⟨pairList s y, mem_witnessTree.mpr
     ⟨y, sndAgrees_pairList _ y, by rw [fstList_pairList]; exact s.2⟩⟩
   map_rel' h := properPrefix_pairList y h
-
-/-! ## Boundedness -/
 
 /-- **Boundedness for analytic families of well-founded trees.**  If `A` is analytic, every node
 set `{x | s ∈ T x}` is closed, and `T x` is well-founded for `x ∈ A`, then one countable ordinal

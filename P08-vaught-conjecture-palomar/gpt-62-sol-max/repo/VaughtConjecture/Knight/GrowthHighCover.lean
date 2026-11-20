@@ -7,19 +7,14 @@ module
 
 public import VaughtConjecture.Knight.TopGradeStableCore
 
-/-! # High common covers
-
-Directedness and top-grade growth supply a common cover with a full-scope top
-above any finite grade floor. This geometric construction computes no stable
-value or source offset and requires only consistency and covering.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.KnightRealization
+
 open StageType
+
 universe w
+
 variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 
 /-- Absorb a tuple and then grow past a prescribed grade floor. -/

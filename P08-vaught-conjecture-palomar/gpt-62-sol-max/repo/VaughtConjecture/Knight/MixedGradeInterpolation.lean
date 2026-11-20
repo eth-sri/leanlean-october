@@ -5,20 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ControllerPrefixFamily
-
-/-! # Mixed-grade interpolation: orbit blocks, not just source order
-
-A grade-two witness can interpolate one grade-one-visible value followed by an arbitrary
-finite monotone list of grade-two-visible values. The source template is fixed in advance:
-`ω + 1` for the low probe and `ω * (i + 2) + 2` for the high probes. The witness is one orbit
-strip and a finite maximum of limit steps. Bottom, top, and repeated high values are allowed.
-
-This does not assemble a controller family or establish bountifulness. In particular, separate
-source blocks cannot be used indiscriminately: equal capped targets that are not visible at
-the controller grade must come from the same source block. The latter is a necessary law for
-every actual maximal-grade controller locality, not just the interpolation template.
--/
+public import VaughtConjecture.Knight.CoupledGradeOne
+public import VaughtConjecture.Knight.WitnessAlgebra
 
 @[expose] public section
 
@@ -58,9 +46,7 @@ theorem finitePart_eq_of_nonvisible_image {τ : ExtOrd → ExtOrd} {K : ℕ}
   have hh := hc (ofOrd a) (finitePart a) hfa.le
   rw [extVisibilityReplace_of_finitePart_lt hfa, decomposition a, ht,
     extVisibilityReplace_of_finitePart_lt hft, ofOrd_inj] at hh
-  have hf := congrArg finitePart hh
-  rw [finitePart_limitPart_add_nat] at hf
-  exact hf.symm
+  grind [finitePart_limitPart_add_nat]
 
 /-- Finite pointwise suprema preserve witnesses with a common suppressor, provided the empty
 supremum has a witness too. This is a construction tool, not composition of transformations. -/
@@ -69,9 +55,9 @@ theorem Witness.finset_sup {ι : Type*} {g : ℕ → ExtOrd} {f : ι → ExtOrd 
     Witness g (fun a => s.sup (fun i => f i a)) := by
   classical
   induction s using Finset.induction_on with
-  | empty => simpa only [Finset.sup_empty] using hbot
+  | empty => assumption
   | @insert i s hi ih =>
-    simpa only [Finset.sup_insert] using
+    simpa [Finset.sup_insert] using
       (hf i (Finset.mem_insert_self _ _)).max
         (ih (fun j hj => hf j (Finset.mem_insert_of_mem hj)))
 
@@ -83,9 +69,8 @@ theorem zero_witness (K : ℕ) : Witness (gTop K) (fun _ => ⊥) where
   vis := (witness_id K).vis
   bot := rfl
   mono := monotone_const
-  clause5 := by intros; exact (extVisibilityReplace_bot _ _).symm
-
-/-! ## A non-vacuous mixed-grade tie regression -/
+  clause5 := by aesop
 
 end MixedGradeInterpolation
+
 end VaughtConjecture.Knight

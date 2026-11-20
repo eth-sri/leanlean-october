@@ -7,25 +7,6 @@ module
 
 public import InfinitaryLogic.Lomega1omega.Operations
 
-/-!
-# Atomic Diagrams for Relational Languages
-
-This file defines atomic types and atomic diagrams for relational first-order languages.
-These are the building blocks for Scott formulas.
-
-## Main Definitions
-
-- `AtomicIdx`: An index type for atomic formulas over a relational language.
-- `atomicFormula`: Builds an atomic formula from an index.
-- `atomicDiagram`: The conjunction of all true/false atomic facts about a tuple.
-- `SameAtomicType`: Two tuples have the same atomic type iff they satisfy the same atomics.
-
-## Implementation Notes
-
-We restrict to relational languages (`L.IsRelational`) so that the atomic diagram of a finite
-tuple is determined by equality and relation holding information.
--/
-
 @[expose] public section
 
 universe u v w w'
@@ -35,7 +16,9 @@ namespace FirstOrder
 namespace Language
 
 variable {L : Language.{u, v}} [L.IsRelational]
+
 variable {M : Type w} [L.Structure M]
+
 variable {n : ℕ}
 
 open FirstOrder Structure Fin
@@ -60,8 +43,8 @@ instance [Countable (Σ l, L.Relations l)] : Countable (L.AtomicIdx n) := by
   exact {
     toFun := fun | .inl ⟨i, j⟩ => .eq i j | .inr ⟨_, R, f⟩ => .rel R f
     invFun := fun | .eq i j => .inl ⟨i, j⟩ | .rel R f => .inr ⟨_, R, f⟩
-    left_inv := fun | .inl ⟨_, _⟩ => rfl | .inr ⟨_, _, _⟩ => rfl
-    right_inv := fun | .eq _ _ => rfl | .rel _ _ => rfl
+    left_inv := by grind
+    right_inv := by grind
   }
 
 omit [L.IsRelational] in
@@ -85,8 +68,8 @@ theorem holds_comp_eq_holds_pushforward {m : ℕ} (idx : L.AtomicIdx m)
     (a : Fin n → M) (σ : Fin m → Fin n) :
     idx.holds (a ∘ σ) = (idx.pushforward σ).holds a := by
   cases idx with
-  | eq i j => simp only [holds, pushforward, Function.comp_apply]
-  | rel R f => simp only [holds, pushforward, Function.comp_assoc]
+  | eq i j => rfl
+  | rel R f => rfl
 
 end AtomicIdx
 
@@ -105,12 +88,9 @@ omit [L.IsRelational] in
 theorem realize_atomicFormula (idx : L.AtomicIdx n) (a : Fin n → M) :
     (atomicFormula idx).Realize a Fin.elim0 ↔ idx.holds a := by
   cases idx with
-  | eq i j => simp [atomicFormula, AtomicIdx.holds, Term.equal, Term.realize]
+  | eq i j => solve_by_elim
   | rel R f =>
-    simp only [atomicFormula, AtomicIdx.holds, Relations.formula, BoundedFormula.realize_rel]
-    refine iff_of_eq (congrArg (Structure.RelMap R) ?_)
-    funext i
-    simp
+    rfl
 
 omit [L.IsRelational] in
 @[simp]
@@ -186,16 +166,6 @@ theorem SameAtomicType.symm {N : Type w'} [L.Structure N]
   fun idx => (h idx).symm
 
 omit [L.IsRelational] in
-/-- Same atomic type is transitive. -/
-@[trans]
-theorem SameAtomicType.trans {N P : Type*} [L.Structure N] [L.Structure P]
-    {a : Fin n → M} {b : Fin n → N} {c : Fin n → P}
-    (hab : SameAtomicType (L := L) (M := M) (N := N) a b)
-    (hbc : SameAtomicType (L := L) (M := N) (N := P) b c) :
-    SameAtomicType (L := L) (M := M) (N := P) a c :=
-  fun idx => (hab idx).trans (hbc idx)
-
-omit [L.IsRelational] in
 /-- Same atomic type is preserved under relabeling.
 If `SameAtomicType a b` and `σ : Fin m → Fin n`, then `SameAtomicType (a ∘ σ) (b ∘ σ)`. -/
 theorem SameAtomicType.relabel {N : Type w'} [L.Structure N] {n m : ℕ}
@@ -204,7 +174,7 @@ theorem SameAtomicType.relabel {N : Type w'} [L.Structure N] {n m : ℕ}
   intro idx
   -- Use holds_comp_eq_holds_pushforward to relate to the original tuples
   rw [AtomicIdx.holds_comp_eq_holds_pushforward, AtomicIdx.holds_comp_eq_holds_pushforward]
-  exact h (idx.pushforward σ)
+  solve_by_elim
 
 /-- Atomic types are transported along isomorphisms.
 
@@ -218,15 +188,11 @@ theorem SameAtomicType.map_equiv.{v₀, u₀, w₀, w₀', u_1, u_2} {L : Langua
   constructor <;> intro h idx <;> have hidx := h idx <;> cases idx with
   | eq i j =>
     simp only [AtomicIdx.holds, Function.comp] at hidx ⊢
-    first
-    | exact ⟨fun hij => e'.injective (hidx.mp (congrArg e hij)),
-        fun hij => e.injective (hidx.mpr (congrArg e' hij))⟩
-    | exact ⟨fun hij => congrArg e' (hidx.mp (e.injective hij)),
-        fun hij => congrArg e (hidx.mpr (e'.injective hij))⟩
+    simp_all
   | rel R f =>
     simp only [AtomicIdx.holds] at hidx ⊢
     first
-    | rwa [Function.comp_assoc, Function.comp_assoc, e.map_rel, e'.map_rel] at hidx
+    | simp_all [Function.comp_assoc, Function.comp_assoc, e.map_rel, e'.map_rel]
     | rwa [Function.comp_assoc, Function.comp_assoc, e.map_rel, e'.map_rel]
 
 end Language

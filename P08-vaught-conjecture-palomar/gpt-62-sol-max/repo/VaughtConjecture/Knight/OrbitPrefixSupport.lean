@@ -9,26 +9,7 @@ public import VaughtConjecture.Knight.WitnessSplice
 public import VaughtConjecture.Knight.RowCorrectness
 public import VaughtConjecture.Knight.SourceBlockLocalityTransport
 
-/-! # Orbit-supported values survive prefix-fixing decoding
-
-The source-prefix argument in `vc-notes/simplification/note4.md`, Section 4,
-needs more than agreement on visible grid cuts: invisible auxiliary values must
-come from replacement orbits represented on the proper boundary.
-
-This module proves the scalar consequence of that support condition. A faithful
-shifter which fixes the boundary and the grid below a self-visible cut fixes every
-supported value below the cut. If its image of the cut reaches the cut, it retains
-all supported capped readings. The suppressor bound used by clause 5 is explicit;
-neither bottom reflection nor composition of transformations is assumed.
-
-The construction of supported sections, paired normalization, and the right-filled
-decoder comparison are not proved here. In particular, `Supported` is an input to
-the preservation theorem, not a hidden finite-extension supply assumption.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.OrbitPrefixSupport
 
@@ -41,6 +22,19 @@ The offset may equal the threshold; the supporting boundary value need not itsel
 be invisible. The finite constructor may establish a stronger support invariant. -/
 def Supported (K : ℕ) (grid : Set ExtOrd) (p : D → ExtOrd) (x : ExtOrd) : Prop :=
   x = ⊥ ∨ x ∈ grid ∨ ∃ d i, i ≤ K ∧ x = extVisibilityReplace (p d) K i
+
+/-- Literal fields themselves have support, even if they are invisible. -/
+theorem supported_field {X : Type*} (K : ℕ) (G : Set ExtOrd) (p : X → ExtOrd) (d : X) :
+    Supported K G p (p d) := by
+  rcases ExtOrd.cases (p d) with he | he | ⟨a, he⟩
+  · exact Or.inl he
+  · exact Or.inr (Or.inr ⟨d, K, le_rfl, by simp_all⟩)
+  · refine Or.inr (Or.inr ⟨d, min (finitePart a) K, min_le_right _ _, ?_⟩)
+    rw [he, extVisibilityReplace_ofOrd, ofOrd_inj, visibilityReplace]
+    split_ifs with h
+    · rw [min_eq_left h.le]
+      exact (decomposition a).symm
+    · rfl
 
 /-- A replacement below a self-visible cut has its supporting value below that
 cut too. This supplies the strict inequality needed to use boundary fixation. -/
@@ -114,6 +108,6 @@ theorem decode_respects_of_positive_cut
   have hguard : h ≤ gTop K K := by rw [gTop_of_le le_rfl]; exact le_top
   have hag' := decode_agree hw hh hguard hreach hgrid hboundary hs hag
   exact ⟨SharpWitnessComposition.map_respects_of_positive_cap_agreement hb ha hK
-    (SharpWitnessComposition.boundedMap_of_witness hw) hpos hag', hag'⟩
+    (hw.bounded) hpos hag', hag'⟩
 
 end VaughtConjecture.Knight.OrbitPrefixSupport

@@ -9,26 +9,6 @@ public import VaughtConjecture.Knight.FiniteBandReadback
 public import VaughtConjecture.Knight.SuccLimitBandArithmetic
 public import VaughtConjecture.Knight.NormalForm
 
-/-! # Restricted composition: post-composition with threshold and band maps preserves `⇒`
-
-The faithful `⇒` of Def. 2.3.9 is not generally transitive, as proved by
-`SharpWitnessCompositionControls.not_transitive`. The provisional-lift route needs only
-two special post-compositions, both proved
-here without any general composite: the **threshold** (jump) map, which Lemma 5.3.10's `∞`
-case needs, and the **band map**, which Lemma 5.3.5 needs.  In both, clause 5 is only demanded
-at grades `≤ K`, where `σ`'s own clause 5 at the band mate keeps the composite honest; above
-`K` the suppressor is kept below `α` (or `⊥`), where the outer map is the identity.
-
-## The threshold map
-
-`jump τ` is the identity at or below `τ` and `⊤`
-above.  If `⟨g, σ⟩ : p ⇒ q` and every cell of grade `> K` has target `< α`, then
-`p ⇒ jump (α + K) ∘ q`, with witnesses `jump ∘ σ` and a suppressor that is `jump ∘ g` up to
-grade `K` and a sub-`α` self-visible bound beyond.  The clause-5 obstruction of general
-transitivity does not arise: at grades `≤ K`, monotonicity and `σ`'s own clause 5 at the band
-mate force `σ a ≤ τ` whenever `σ (a ⊔⁺_k i) ≤ τ`; at grades `> K` the suppressor keeps
-everything below `α`, where the map is the identity. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -60,330 +40,65 @@ theorem jump_min (τ x y : ExtOrd) : jump τ (min x y) = min (jump τ x) (jump �
 
 @[simp] theorem jump_bot (τ : ExtOrd) : jump τ ⊥ = ⊥ := jump_of_le bot_le
 
-open Classical in
-/-- The sub-`α` part of a value (`0` for `⊥`, `⊤`, or values `≥ α`). -/
-noncomputable def ordOrZero (x : ExtOrd) : Ordinal.{0} :=
-  if h : ∃ μ : Ordinal.{0}, x = ofOrd μ then h.choose else 0
-
-theorem ordOrZero_bot : ordOrZero ⊥ = 0 := by
-  unfold ordOrZero
-  rw [dite_eq_right]
-  rintro ⟨μ, hμ⟩
-  exact ofOrd_ne_bot μ hμ.symm
-
-theorem ordOrZero_ofOrd (μ : Ordinal.{0}) : ordOrZero (ofOrd μ) = μ := by
-  unfold ordOrZero
-  have h : ∃ μ' : Ordinal.{0}, ofOrd μ = ofOrd μ' := ⟨μ, rfl⟩
-  rw [dite_eq_left h]
-  exact (ofOrd_inj.mp h.choose_spec).symm
-
 end ExtOrd
-
-/-! ### Band arithmetic for the threshold -/
 
 namespace Value
 
 /-- Below a limit, band replacement stays below the limit. -/
-theorem visibilityReplace_lt_of_lt {α μ : Ordinal.{0}} (hα : Order.IsSuccLimit α) (hμ : μ < α)
-    (k i : ℕ) : visibilityReplace μ k i < α := by
-  unfold visibilityReplace ordinalReplace
-  split_ifs with h
-  · calc limitPart μ + (i : Ordinal.{0}) < limitPart μ + Ordinal.omega0 :=
-          (add_lt_add_iff_left _).mpr (Ordinal.natCast_lt_omega0 i)
-      _ ≤ α := add_omega0_le_of_lt_isSuccLimit hα ((limitPart_le μ).trans_lt hμ)
-  · exact hμ
-
 theorem visibilityReplace_of_not_lt {μ : Ordinal.{0}} {k i : ℕ} (h : ¬ finitePart μ < k) :
     visibilityReplace μ k i = μ := by
   unfold visibilityReplace ordinalReplace
   rw [ite_eq_right h]
 
-/-- Below `α + K`, band replacement at threshold `k ≤ K` with `i ≤ K` stays below `α + K`. -/
-theorem visibilityReplace_le_add_of_le {α μ : Ordinal.{0}} (hα : Order.IsSuccLimit α) {K i : ℕ}
-    (hμ : μ ≤ α + K) (k : ℕ) (hi : i ≤ K) : visibilityReplace μ k i ≤ α + K := by
-  unfold visibilityReplace ordinalReplace
-  split_ifs with h
-  · have hlp : limitPart μ ≤ α := by
-      rcases lt_or_ge μ α with hlt | hge
-      · exact (limitPart_le μ).trans hlt.le
-      · have hlt : μ < α + (K + 1 : ℕ) := by
-          push_cast
-          exact hμ.trans_lt ((add_lt_add_iff_left α).mpr (lt_add_one _))
-        have := limitPart_eq_of_le_of_lt (μ := α) (z := μ)
-          (by rw [limitPart_of_succLimit hα]; exact hge)
-          (by rw [limitPart_of_succLimit hα]; exact hlt)
-        rw [this, limitPart_of_succLimit hα]
-    exact add_le_add hlp ((Nat.cast_le (α := Ordinal.{0})).mpr hi)
-  · exact hμ
-
 end Value
 
 open Transform in
-/-- **Threshold composition**: if `⟨g, σ⟩ : p ⇒ q` and every cell of grade `> K` has target
-`< α`, then `p ⇒ jump (α + K) ∘ q`. -/
-theorem TransformsTo.comp_jump {D : Type*} [Finite D] {grade : D → ℕ} {p q : D → ExtOrd}
-    (h : TransformsTo grade p q) {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) (K n : ℕ)
-    (hK_le_n : K ≤ n) (hn : ∀ d, grade d ≤ n) (hK : ∀ d, K < grade d → q d < ofOrd α) :
-    TransformsTo grade p (fun d => jump (ofOrd (α + K)) (q d)) := by
-  classical
-  have := Fintype.ofFinite D
-  obtain ⟨g, σ, hganti, hgself, hσbot, hσmono, hσ5, heq⟩ := h
-  set τ : ExtOrd := ofOrd (α + K) with hτ
-  have hα0 : (0 : Ordinal.{0}) < α := hα.pos
-  have hατ : ofOrd α ≤ τ := ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
-  -- the sub-`α` bound
-  let S : Ordinal.{0} :=
-    (Finset.univ.sup fun d => if q d < ofOrd α then ordOrZero (q d) else 0) ⊔
-      ((Finset.range (n + 1)).sup fun k => if g k < ofOrd α then ordOrZero (g k) else 0)
-  have hS : S < α := by
-    refine sup_lt_iff.mpr ⟨?_, ?_⟩
-    · rw [Finset.sup_lt_iff hα0]
-      intro d _
-      split_ifs with hd
-      · rcases ExtOrd.cases (q d) with hb | ht | ⟨μ, hμ⟩
-        · rw [hb, ordOrZero_bot]; exact hα0
-        · rw [ht] at hd; exact absurd hd (not_lt.mpr le_top)
-        · rw [hμ, ordOrZero_ofOrd]; rw [hμ] at hd; exact ofOrd_lt_ofOrd.mp hd
-      · exact hα0
-    · rw [Finset.sup_lt_iff hα0]
-      intro k _
-      split_ifs with hk
-      · rcases ExtOrd.cases (g k) with hb | ht | ⟨μ, hμ⟩
-        · rw [hb, ordOrZero_bot]; exact hα0
-        · rw [ht] at hk; exact absurd hk (not_lt.mpr le_top)
-        · rw [hμ, ordOrZero_ofOrd]; rw [hμ] at hk; exact ofOrd_lt_ofOrd.mp hk
-      · exact hα0
-  let c : Ordinal.{0} := limitPart S + (max n (finitePart S) : ℕ)
-  have hc : c < α := by
-    calc limitPart S + ((max n (finitePart S) : ℕ) : Ordinal.{0})
-        < limitPart S + Ordinal.omega0 := (add_lt_add_iff_left _).mpr (Ordinal.natCast_lt_omega0 _)
-      _ ≤ α := add_omega0_le_of_lt_isSuccLimit hα ((limitPart_le S).trans_lt hS)
-  have hSc : S ≤ c := by
-    calc S = limitPart S + (finitePart S : Ordinal.{0}) := (decomposition S).symm
-      _ ≤ c := add_le_add (le_refl _) ((Nat.cast_le (α := Ordinal.{0})).mpr (le_max_right _ _))
-  have hfpc : finitePart c = max n (finitePart S) := finitePart_limitPart_add_nat _ _
-  have hcself : ∀ k, k ≤ n → visibilityReplace c k k = c := fun k hk =>
-    (visibilityReplace_self_iff c k).mpr (by rw [hfpc]; exact hk.trans (le_max_left _ _))
-  have hqc : ∀ d, q d < ofOrd α → q d ≤ ofOrd c := by
-    intro d hd
-    rcases ExtOrd.cases (q d) with hb | ht | ⟨μ, hμ⟩
-    · rw [hb]; exact bot_le
-    · rw [ht] at hd; exact absurd hd (not_lt.mpr le_top)
-    · rw [hμ, ofOrd_le_ofOrd]
-      refine le_trans ?_ hSc
-      refine le_trans ?_ le_sup_left
-      have := Finset.le_sup (f := fun d => if q d < ofOrd α then ordOrZero (q d) else 0)
-        (Finset.mem_univ d)
-      rw [ite_eq_left hd, hμ, ordOrZero_ofOrd] at this
-      exact this
-  have hgc : ∀ k, k ≤ n → g k < ofOrd α → g k ≤ ofOrd c := by
-    intro k hk hg
-    rcases ExtOrd.cases (g k) with hb | ht | ⟨μ, hμ⟩
-    · rw [hb]; exact bot_le
-    · rw [ht] at hg; exact absurd hg (not_lt.mpr le_top)
-    · rw [hμ, ofOrd_le_ofOrd]
-      refine le_trans ?_ hSc
-      refine le_trans ?_ le_sup_right
-      have := Finset.le_sup (f := fun k => if g k < ofOrd α then ordOrZero (g k) else 0)
-        (Finset.mem_range.mpr (Nat.lt_succ_of_le hk))
-      rw [ite_eq_left hg, hμ, ordOrZero_ofOrd] at this
-      exact this
-  -- the witnesses: `jump ∘ g` up to `K`, the sub-`α` bound on `(K, n]`, `⊥` beyond
-  let g' : ℕ → ExtOrd := fun k =>
-    if k ≤ K then jump τ (g k) else if k ≤ n then (if g k < ofOrd α then g k else ofOrd c) else ⊥
-  let σ' : ExtOrd → ExtOrd := fun x => jump τ (σ x)
-  have hg'K : ∀ k, k ≤ K → g' k = jump τ (g k) := fun k hk => by
-    change (if k ≤ K then _ else _) = _
-    rw [ite_eq_left hk]
-  have hg'mid : ∀ k, K < k → k ≤ n → g' k = (if g k < ofOrd α then g k else ofOrd c) :=
-    fun k hk hkn => by
-      change (if k ≤ K then _ else if k ≤ n then _ else _) = _
-      rw [ite_eq_right (not_le.mpr hk), ite_eq_left hkn]
-  have hg'top : ∀ k, n < k → g' k = ⊥ := fun k hk => by
-    have hkK : ¬ k ≤ K := not_le.mpr (lt_of_le_of_lt hK_le_n hk)
-    change (if k ≤ K then _ else if k ≤ n then _ else _) = _
-    rw [ite_eq_right hkK, ite_eq_right (not_le.mpr hk)]
-  have hg'mid_lt : ∀ k, K < k → k ≤ n → g' k < ofOrd α := by
-    intro k hk hkn
-    rw [hg'mid k hk hkn]
-    split_ifs with h
-    · exact h
-    · exact ofOrd_lt_ofOrd.mpr hc
-  have hg'mid_le : ∀ k, K < k → k ≤ n → g' k ≤ g k := by
-    intro k hk hkn
-    rw [hg'mid k hk hkn]
-    split_ifs with h
-    · exact le_rfl
-    · exact (ofOrd_lt_ofOrd.mpr hc).le.trans (not_lt.mp h)
-  -- `σ a ≤ τ` is forced by a band mate below the threshold
-  have key : ∀ (a : ExtOrd) (k i : ℕ), k ≤ K → i ≤ k → τ < g k →
-      σ (extVisibilityReplace a k i) ≤ τ → σ a ≤ τ := by
-    intro a k i hkK hik hgk hb
-    rcases ExtOrd.cases a with rfl | rfl | ⟨ν, rfl⟩
-    · rw [hσbot]; exact bot_le
-    · rw [extVisibilityReplace_top] at hb; exact hb
-    · rw [extVisibilityReplace_ofOrd] at hb
-      by_cases hfp : finitePart ν < k
-      · rw [visibilityReplace_of_finitePart_lt hfp] at hb
-        rcases lt_or_eq_of_le hik with hik' | hik'
-        · -- clause 5 at the mate `limitPart ν + i` with index `finitePart ν`
-          have h5 := hσ5 (ofOrd (limitPart ν + i)) k (hb.trans hgk.le) (finitePart ν) hfp.le
-          rw [extVisibilityReplace_ofOrd, visibilityReplace_of_finitePart_lt
-            (by rw [finitePart_limitPart_add_nat]; exact hik'), limitPart_limitPart_add_nat,
-            decomposition] at h5
-          rw [h5]
-          -- `evr (σ (mate)) k (fp ν) ≤ τ`
-          rcases ExtOrd.cases (σ (ofOrd (limitPart ν + i))) with hb' | ht' | ⟨μ, hμ⟩
-          · rw [hb', extVisibilityReplace_bot]; exact bot_le
-          · rw [ht'] at hb; exact absurd hb (not_le.mpr (ofOrd_lt_top _))
-          · rw [hμ] at hb ⊢
-            rw [extVisibilityReplace_ofOrd, hτ, ofOrd_le_ofOrd]
-            exact visibilityReplace_le_add_of_le hα (ofOrd_le_ofOrd.mp hb) k (hfp.le.trans hkK)
-        · -- `i = k`: the mate is above `ν`
-          rw [hik'] at hb
-          have hle : ofOrd ν ≤ ofOrd (limitPart ν + k) := by
-            rw [ofOrd_le_ofOrd]
-            calc ν = limitPart ν + (finitePart ν : Ordinal.{0}) := (decomposition ν).symm
-              _ ≤ limitPart ν + k := add_le_add (le_refl _)
-                ((Nat.cast_le (α := Ordinal.{0})).mpr hfp.le)
-          exact (hσmono hle).trans hb
-      · rw [visibilityReplace_of_not_lt hfp] at hb
-        exact hb
-  refine ⟨g', σ', ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · -- antitone
-    intro k₁ k₂ hlt
-    have hg := hganti k₁ k₂ hlt
-    by_cases h2 : k₂ ≤ K
-    · rw [hg'K k₁ (hlt.le.trans h2), hg'K k₂ h2]; exact jump_mono τ hg
-    by_cases h2n : k₂ ≤ n
-    · rw [hg'mid k₂ (not_le.mp h2) h2n]
-      by_cases h1 : k₁ ≤ K
-      · rw [hg'K k₁ h1]
-        split_ifs with hk₂
-        · exact hg.trans (le_jump τ _)
-        · exact (ofOrd_lt_ofOrd.mpr hc).le.trans ((not_lt.mp hk₂).trans (hg.trans (le_jump τ _)))
-      · rw [hg'mid k₁ (not_le.mp h1) (hlt.le.trans h2n)]
-        by_cases hk₁ : g k₁ < ofOrd α
-        · rw [ite_eq_left hk₁]
-          by_cases hk₂ : g k₂ < ofOrd α
-          · rw [ite_eq_left hk₂]; exact hg
-          · exact absurd (lt_of_lt_of_le hk₁ ((not_lt.mp hk₂).trans hg)) (lt_irrefl _)
-        · rw [ite_eq_right hk₁]
-          by_cases hk₂ : g k₂ < ofOrd α
-          · rw [ite_eq_left hk₂]; exact hgc k₂ h2n hk₂
-          · rw [ite_eq_right hk₂]
-    · rw [hg'top k₂ (not_le.mp h2n)]; exact bot_le
-  · -- self-visible
-    intro k
+/-- Raising values above a visible cutoff preserves transformations at the bounded grades. -/
+theorem TransformsTo.jump_target {D : Type*} {grade : D → ℕ} {p q : D → ExtOrd}
+    (h : TransformsTo grade p q) {τ : ExtOrd} {K : ℕ} (hτ : SelfVis K τ)
+    (hK : ∀ d, grade d ≤ K) : TransformsTo grade p (fun d => jump τ (q d)) := by
+  obtain ⟨g, σ, hanti, hvis, hbot, hmono, hcomm, hread⟩ := h
+  let r : ℕ → ExtOrd := fun k => if k ≤ K then jump τ (g k) else ⊥
+  refine ⟨r, jump τ ∘ σ, ?_, ?_, by simp [Function.comp_def, hbot], (jump_mono τ).comp hmono,
+    ?_, fun d => by simp only [Function.comp_apply, r, if_pos (hK d), hread d, jump_min]⟩
+  · intro i j hij
+    change r j ≤ r i
+    by_cases hj : j ≤ K
+    · simpa only [r, if_pos hj, if_pos (hij.le.trans hj)] using jump_mono τ (hanti i j hij)
+    · simp [r, hj]
+  · intro k
     by_cases hk : k ≤ K
-    · rw [hg'K k hk]
-      by_cases hgk : g k ≤ τ
-      · rw [jump_of_le hgk]; exact hgself k
-      · rw [jump_of_not_le hgk, extVisibilityReplace_top]
-    by_cases hkn : k ≤ n
-    · rw [hg'mid k (not_le.mp hk) hkn]
-      split_ifs with h
-      · exact hgself k
-      · rw [extVisibilityReplace_ofOrd, hcself k hkn]
-    · rw [hg'top k (not_le.mp hkn), extVisibilityReplace_bot]
-  · -- `σ' ⊥ = ⊥`
-    simp only [σ', hσbot, jump_bot]
-  · -- monotone
-    intro x y hxy
-    exact jump_mono τ (hσmono hxy)
-  · -- clause 5
-    intro a k hak i hik
-    simp only [σ'] at hak ⊢
-    by_cases hkK : k ≤ K
-    · rw [hg'K k hkK] at hak
-      by_cases hσa : σ a ≤ τ
-      · -- `σ a ≤ τ`: everything stays at or below `τ`
-        rw [jump_of_le hσa] at hak ⊢
-        have hσag : σ a ≤ g k := by
-          by_cases hgk : g k ≤ τ
-          · rwa [jump_of_le hgk] at hak
-          · exact hσa.trans (not_le.mp hgk).le
-        rw [hσ5 a k hσag i hik]
-        have hle : extVisibilityReplace (σ a) k i ≤ τ := by
-          rcases ExtOrd.cases (σ a) with hb | ht | ⟨μ, hμ⟩
-          · rw [hb, extVisibilityReplace_bot]; exact bot_le
-          · rw [ht] at hσa; exact absurd hσa (not_le.mpr (ofOrd_lt_top _))
-          · rw [hμ] at hσa ⊢
-            rw [extVisibilityReplace_ofOrd, hτ, ofOrd_le_ofOrd]
-            exact visibilityReplace_le_add_of_le hα (ofOrd_le_ofOrd.mp hσa) k (hik.trans hkK)
-        rw [jump_of_le hle]
-      · -- `σ a > τ`: the target is `⊤`, and the band mate cannot drop below `τ`
-        rw [jump_of_not_le hσa] at hak ⊢
-        have hgk : τ < g k := by
-          by_contra hle
-          rw [jump_of_le (not_lt.mp hle)] at hak
-          exact hσa (le_top.trans hak |>.trans (not_lt.mp hle))
-        rw [extVisibilityReplace_top]
-        by_contra hne
-        have hb : σ (extVisibilityReplace a k i) ≤ τ := by
-          by_contra hgt
-          exact hne (jump_of_not_le hgt)
-        exact hσa (key a k i hkK hik hgk hb)
-    · -- `k > K`: the suppressor is below `α`, where the jump is the identity
-      by_cases hkn : k ≤ n
-      · have hlt := hg'mid_lt k (not_le.mp hkK) hkn
-        have hσ'lt : jump τ (σ a) < ofOrd α := hak.trans_lt hlt
-        have hσa : σ a ≤ τ := by
-          by_contra h
-          rw [jump_of_not_le h] at hσ'lt
-          exact absurd hσ'lt (not_lt.mpr le_top)
-        rw [jump_of_le hσa] at hak hσ'lt ⊢
-        have hσag : σ a ≤ g k := hak.trans (hg'mid_le k (not_le.mp hkK) hkn)
-        rw [hσ5 a k hσag i hik]
-        have hlt' : extVisibilityReplace (σ a) k i < ofOrd α := by
-          rcases ExtOrd.cases (σ a) with hb | ht | ⟨μ, hμ⟩
-          · rw [hb, extVisibilityReplace_bot]; exact bot_lt_ofOrd _
-          · rw [ht] at hσ'lt; exact absurd hσ'lt (not_lt.mpr le_top)
-          · rw [hμ] at hσ'lt ⊢
-            rw [extVisibilityReplace_ofOrd, ofOrd_lt_ofOrd]
-            exact visibilityReplace_lt_of_lt hα (ofOrd_lt_ofOrd.mp hσ'lt) k i
-        rw [jump_of_le (hlt'.le.trans hατ)]
-      · rw [hg'top k (not_le.mp hkn)] at hak
-        have hσ'bot : jump τ (σ a) = ⊥ := le_bot_iff.mp hak
-        have hσa : σ a = ⊥ := by
-          by_contra h
-          have := le_jump τ (σ a)
-          rw [hσ'bot] at this
-          exact h (le_bot_iff.mp this)
-        rw [hσa, jump_bot, extVisibilityReplace_bot]
-        have := hσ5 a k (by rw [hσa]; exact bot_le) i hik
-        rw [hσa, extVisibilityReplace_bot] at this
-        rw [this, jump_bot]
-  · -- the transform equation
-    intro d
-    have hd := heq d
-    change jump τ (q d) = min (jump τ (σ (p d))) (g' (grade d))
-    by_cases hk : grade d ≤ K
-    · rw [hg'K _ hk, hd, jump_min]
-    · have hkn := hn d
-      have hqd0 : q d < ofOrd α := hK d (not_le.mp hk)
-      have hqd := hqd0
-      rw [hg'mid _ (not_le.mp hk) hkn, jump_of_le (hqd0.le.trans hατ)]
-      rw [hd] at hqd ⊢
-      by_cases hg : g (grade d) < ofOrd α
-      · rw [ite_eq_left hg]
-        rcases le_total (σ (p d)) (g (grade d)) with hle | hle
-        · rw [min_eq_left hle] at hqd ⊢
-          rw [jump_of_le (hqd.le.trans hατ), min_eq_left hle]
-        · rw [min_eq_right hle] at hqd ⊢
-          rw [min_eq_right (hle.trans (le_jump τ _))]
-      · rw [ite_eq_right hg]
-        have hle : σ (p d) ≤ g (grade d) := by
-          by_contra h'
-          rw [min_eq_right (not_le.mp h').le] at hqd
-          exact hg hqd
-        rw [min_eq_left hle] at hqd ⊢
-        have hc' : σ (p d) ≤ ofOrd c := by
-          have := hqc d hqd0
-          rwa [hd, min_eq_left hle] at this
-        rw [jump_of_le (hqd.le.trans hατ), min_eq_left hc']
+    · simp only [r, if_pos hk, jump]
+      split_ifs
+      · exact hvis k
+      · exact (extVisibilityReplace_top _ _).symm
+    · simp [r, hk]
+  · intro x k hx i hi
+    simp only [Function.comp_apply] at hx ⊢
+    by_cases hk : k ≤ K
+    · have hv := hτ.mono hk
+      simp only [r, if_pos hk] at hx
+      by_cases hle : σ x ≤ τ
+      · have hxg : σ x ≤ g k := by
+          by_cases hg : g k ≤ τ
+          · simpa only [jump_of_le hle, jump_of_le hg] using hx
+          · exact hle.trans (le_of_not_ge hg)
+        rw [hcomm x k hxg i hi, jump_of_le hle,
+          jump_of_le (extVisibilityReplace_le_of_le_selfVis hi hv hle)]
+      · have hτg : τ ≤ g k := by
+          by_contra hg
+          have ht : (⊤ : ExtOrd) ≤ g k := by
+            simpa only [jump_of_not_le hle, jump_of_le (le_of_lt (not_le.mp hg))] using hx
+          exact hle ((le_top.trans ht).trans (not_le.mp hg).le)
+        rw [jump_of_not_le hle, extVisibilityReplace_top]
+        apply jump_of_not_le
+        intro hs
+        exact hle (preimage_of_replacement (P := (· ≤ τ)) hmono hi
+          (fun ha hb => ha.trans hb) (fun hj hy => extVisibilityReplace_le_of_le_selfVis hj hv hy)
+          (fun y hy => hcomm y k (hy.trans hτg)) hs)
+    · have hz : σ x = ⊥ := le_bot_iff.mp ((le_jump τ _).trans (by simpa only [r, if_neg hk] using hx))
+      rw [hcomm x k (hz ▸ bot_le) i hi, hz, extVisibilityReplace_bot, jump_bot, extVisibilityReplace_bot]
 
-/-! ## The band map -/
 
 namespace ExtOrd
 
@@ -406,24 +121,24 @@ theorem bandMap_ofOrd_of_cap {α lam : Ordinal.{0}} {K : ℕ} {ν : Ordinal.{0}}
 theorem bandMap_ofOrd_of_band {α lam : Ordinal.{0}} {K : ℕ} {ν : Ordinal.{0}} (h₁ : lam ≤ ν)
     (h₂ : ν < lam + K) : bandMap α lam K (ofOrd ν) = ofOrd (α + finitePart ν) := by
   change (if lam + K ≤ ν then _ else if lam ≤ ν then _ else _) = _
-  rw [ite_eq_right (not_le.mpr h₂), ite_eq_left h₁]
+  simp_all
 
 theorem bandMap_ofOrd_of_lt {α lam : Ordinal.{0}} {K : ℕ} {ν : Ordinal.{0}} (h : ν < lam) :
     bandMap α lam K (ofOrd ν) = ofOrd α := by
   change (if lam + K ≤ ν then _ else if lam ≤ ν then _ else _) = _
   have h' : ¬ lam + K ≤ ν := not_le.mpr (h.trans_le (le_add_of_nonneg_right zero_le))
-  rw [ite_eq_right h', ite_eq_right (not_le.mpr h)]
+  grind
 
 theorem le_bandMap_of_ne_bot (α lam : Ordinal.{0}) (K : ℕ) {x : ExtOrd} (hx : x ≠ ⊥) :
     ofOrd α ≤ bandMap α lam K x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
   · exact absurd rfl hx
-  · rw [bandMap_top]; exact ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
+  · rw [bandMap_top]; simp_all
   · by_cases h1 : lam + K ≤ ν
-    · rw [bandMap_ofOrd_of_cap h1]; exact ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
+    · rw [bandMap_ofOrd_of_cap h1]; simp_all
     · by_cases h2 : lam ≤ ν
       · rw [bandMap_ofOrd_of_band h2 (not_le.mp h1)]
-        exact ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
+        simp_all
       · rw [bandMap_ofOrd_of_lt (not_le.mp h2)]
 
 theorem bandMap_le {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (K : ℕ) (x : ExtOrd) :
@@ -454,10 +169,10 @@ theorem bandMap_mono_of_le {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (
     {x y : ExtOrd} (hx : ofOrd lam ≤ x) (hxy : x ≤ y) :
     bandMap α lam K x ≤ bandMap α lam K y := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
-  · exact absurd hx (not_le.mpr (bot_lt_ofOrd _))
+  · solve_by_elim
   · rw [top_le_iff.mp hxy]
   · rcases ExtOrd.cases y with rfl | rfl | ⟨ν', rfl⟩
-    · exact absurd hxy (not_le.mpr (bot_lt_ofOrd _))
+    · trivial
     · rw [bandMap_top]; exact bandMap_le hlam K _
     · have hνν' : ν ≤ ν' := ofOrd_le_ofOrd.mp hxy
       have hlν : lam ≤ ν := ofOrd_le_ofOrd.mp hx
@@ -475,16 +190,14 @@ theorem bandMap_mono_of_le {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (
               (by rw [hlam]; exact not_le.mp h1)
             rwa [hlam] at this
           have hlp' : limitPart ν' = lam := by
-            have h₁ : limitPart lam ≤ ν' := by rw [hlam]; exact hlν.trans hνν'
-            have h₂ : ν' < limitPart lam + K := by rw [hlam]; exact not_le.mp h1'
+            have h₁ : limitPart lam ≤ ν' := by grind
+            have h₂ : ν' < limitPart lam + K := by simp_all
             have := limitPart_eq_of_le_of_lt (μ := lam) (z := ν') h₁ h₂
             rwa [hlam] at this
           have hfp : finitePart ν ≤ finitePart ν' := finitePart_le_of_le (hlp.trans hlp'.symm) hνν'
-          exact add_le_add (le_refl _) ((Nat.cast_le (α := Ordinal.{0})).mpr hfp)
+          simp_all
 
 end ExtOrd
-
-/-! ### Multiples of `ω` -/
 
 namespace Value
 
@@ -510,30 +223,6 @@ theorem add_omega0_le_limitPart_of_lt {μ ν : Ordinal.{0}} (hμ : limitPart μ 
   rw [← Ordinal.mul_succ]
   exact mul_le_mul_right (Order.succ_le_of_lt hq) _
 
-/-- Band replacement below a multiple-of-`ω` bound stays below it. -/
-theorem visibilityReplace_lt_of_lt_of_limitPart_eq {μ ν : Ordinal.{0}} (hμ : limitPart μ = μ)
-    (hν : ν < μ) (k i : ℕ) : visibilityReplace ν k i < μ := by
-  unfold visibilityReplace ordinalReplace
-  split_ifs with h
-  · have hlt : limitPart ν < μ := (limitPart_le ν).trans_lt hν
-    have := add_omega0_le_limitPart_of_lt (μ := limitPart ν) (ν := μ) (limitPart_limitPart ν)
-      (by rwa [hμ])
-    rw [hμ] at this
-    exact lt_of_lt_of_le ((add_lt_add_iff_left _).mpr (Ordinal.natCast_lt_omega0 i)) this
-  · exact hν
-
-/-- Band replacement with `i ≤ K` below `μ + K` (`μ` a multiple of `ω`) stays below `μ + K`. -/
-theorem visibilityReplace_le_add_of_le_of_limitPart_eq {μ ν : Ordinal.{0}}
-    (hμ : limitPart μ = μ) {K i : ℕ} (hν : ν ≤ μ + K) (k : ℕ) (hi : i ≤ K) :
-    visibilityReplace ν k i ≤ μ + K := by
-  unfold visibilityReplace ordinalReplace
-  split_ifs with h
-  · have hlp : limitPart ν ≤ μ := by
-      have := limitPart_mono hν
-      rwa [limitPart_add_nat_of_limitPart_eq hμ] at this
-    exact add_le_add hlp ((Nat.cast_le (α := Ordinal.{0})).mpr hi)
-  · exact hν
-
 /-- Band replacement at threshold `k ≤ K` with `i ≤ k` of a value above `μ + K` (`μ` a
 multiple of `ω`) stays at or above `μ + K`. -/
 theorem le_visibilityReplace_of_lt_of_limitPart_eq {μ ν : Ordinal.{0}} (hμ : limitPart μ = μ)
@@ -548,17 +237,15 @@ theorem le_visibilityReplace_of_lt_of_limitPart_eq {μ ν : Ordinal.{0}} (hμ : 
       rw [heq] at hdec
       rw [← hdec] at hν
       have : (K : Ordinal.{0}) < finitePart ν := (add_lt_add_iff_left _).mp hν
-      have : K < finitePart ν := by exact_mod_cast this
-      omega
+      (simp_all <;> omega)
     have hlt : μ < limitPart ν := by
       rcases lt_or_ge μ (limitPart ν) with h' | h'
       · exact h'
       · exfalso
-        have h1 : limitPart ν ≤ μ := h'
         have h2 : μ ≤ limitPart ν := by
           have := limitPart_mono hν.le
           rwa [limitPart_add_nat_of_limitPart_eq hμ] at this
-        exact hne (le_antisymm h1 h2)
+        grind
     calc μ + (K : Ordinal.{0}) ≤ μ + Ordinal.omega0 :=
           add_le_add (le_refl _) (Ordinal.natCast_lt_omega0 K).le
       _ ≤ limitPart ν := add_omega0_le_limitPart_of_lt hμ hlt
@@ -597,11 +284,6 @@ theorem bandMap_extVisibilityReplace {α lam : Ordinal.{0}} (hα : Order.IsSuccL
       have hlp : limitPart ν = lam := by
         have := limitPart_eq_of_le_of_lt (μ := lam) (z := ν) (by rwa [hlam]) (by rwa [hlam])
         rwa [hlam] at this
-      have hfpν : finitePart ν < K := by
-        have hdec := decomposition ν
-        rw [hlp] at hdec
-        rw [← hdec] at hband
-        exact_mod_cast (add_lt_add_iff_left _).mp hband
       by_cases hfp : finitePart ν < k
       · rw [visibilityReplace_of_finitePart_lt hfp, hlp,
           visibilityReplace_of_finitePart_lt (by rw [finitePart_succLimit_add_nat hα]; exact hfp),
@@ -615,30 +297,5 @@ theorem bandMap_extVisibilityReplace {α lam : Ordinal.{0}} (hα : Order.IsSuccL
         exact bandMap_ofOrd_of_band hlν hband
 
 end ExtOrd
-
-/-! ### The gate: post-composition with the band map -/
-
-open Value ExtOrd in
-/-- Under a multiple-of-`ω` bound `c = μ + K'` with `K ≤ K'`, band replacement at thresholds
-`≤ K` commutes with capping at `c`. -/
-theorem min_extVisibilityReplace_cap {μ : Ordinal.{0}} (hμ : limitPart μ = μ) {K K' k i : ℕ}
-    (hKK' : K ≤ K') (hk : k ≤ K) (hi : i ≤ k) (x : ExtOrd) (hx : x ≠ ⊤) :
-    min (extVisibilityReplace x k i) (ofOrd (μ + K')) =
-      extVisibilityReplace (min x (ofOrd (μ + K'))) k i := by
-  have hfp : ¬ finitePart (μ + K') < k := by
-    rw [finitePart_limitPart_add_nat' hμ]; exact not_lt.mpr (hk.trans hKK')
-  rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
-  · simp only [extVisibilityReplace_bot, min_eq_left bot_le]
-  · exact absurd rfl hx
-  · rw [extVisibilityReplace_ofOrd]
-    rcases le_or_gt ν (μ + K') with hle | hlt
-    · have h1 : visibilityReplace ν k i ≤ μ + K' :=
-        visibilityReplace_le_add_of_le_of_limitPart_eq hμ hle k ((hi.trans hk).trans hKK')
-      rw [min_eq_left (ofOrd_le_ofOrd.mpr h1), min_eq_left (ofOrd_le_ofOrd.mpr hle),
-        extVisibilityReplace_ofOrd]
-    · have h1 : μ + K' ≤ visibilityReplace ν k i :=
-        le_visibilityReplace_of_lt_of_limitPart_eq hμ hlt (hk.trans hKK') hi
-      rw [min_eq_right (ofOrd_le_ofOrd.mpr h1), min_eq_right (ofOrd_le_ofOrd.mpr hlt.le),
-        extVisibilityReplace_ofOrd, visibilityReplace_of_not_lt hfp]
 
 end VaughtConjecture.Knight

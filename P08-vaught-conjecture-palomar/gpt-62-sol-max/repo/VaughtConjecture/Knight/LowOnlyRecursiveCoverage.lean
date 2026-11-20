@@ -7,27 +7,18 @@ module
 
 public import VaughtConjecture.Knight.LowOnlyRecursiveCharts
 
-/-! # Constructed catalogue coverage for recursive LOW rendering
-
-Downward admission keeps the complete source vector, including crossing and
-future fields. Normalizing at the lower grade therefore constructs an actual
-member of that grade's fixed catalogue. The base rank match and the ceiling
-leaf at every retained higher grade are consequences, not coverage premises.
-
-Original fields are read literally, so their lawful restrictions are inherited
-without composing witnesses on long original rows. These are numerical master
-vectors: scope placement and the physical availability and lifting ledgers are
-not asserted here. No upward admission or cross-grade rendering equality is used.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyRecursiveCoverage
+
 open Transform Value ExtOrd CappedDonor LowOnly
+
 open PairedSlotEncoding PairedSlotComparison RecursiveRungRendering
+
 open LowOnlyRecursiveCharts
+
 noncomputable section
+
 variable {m K : ℕ} {P C : SemScheme m} (F : LowOnly.Family P C K)
 
 /-- The same complete state is admitted at every lower cutoff. Crossing fields
@@ -48,10 +39,6 @@ def normalizedAnchor {i j : ℕ} (hi : 1 ≤ i) (hij : i ≤ j)
   ⟨(S.normalize i).profile, LowOnly.Family.normalize_inventory i hp,
     S.normalize i, F.normalize_admissible hi (admissible_down F (hi.trans hij) hij hS), rfl⟩
 
-theorem normalizedAnchor_fields {i j : ℕ} (hi : 1 ≤ i) (hij : i ≤ j)
-    {S : State P C} (hS : F.Admissible j S) (hp : ∀ d, S.profile d ≠ ⊤) :
-    F.fields i (normalizedAnchor F hi hij hS hp) = normalize i S.profile :=
-  funext (State.profile_normalize i S)
-
 end
+
 end VaughtConjecture.Knight.LowOnlyRecursiveCoverage

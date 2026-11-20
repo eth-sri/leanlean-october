@@ -7,14 +7,6 @@ module
 
 public import VaughtConjecture.Knight.ExpansionDomainBF
 
-/-! # Homogeneous expansion domains at the sentence's own rank
-
-Sentence agreement is read from the domain's projected back-and-forth comparison,
-with no extra `ω`-factor in the budget. The old one-block interface is unchanged.
-These statements use expansion existence directly, not stopping ranks, and
-terminal countability is needed only to count the exceptional classes.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.ExpansionDomain

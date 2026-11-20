@@ -7,68 +7,15 @@ module
 
 public import VaughtConjecture.Knight.Tower
 
-/-! # Knight models: the axioms of Def. 3.2.1, clause by clause
-
-Knight's Def. 3.2.1: for `α ≤ ω₁` a limit ordinal, a **model of `S^α`** with (nonempty)
-domain `M` is a partial function `𝓜` from finite tuples on `M` to `S^α` such that
-
-1. **(arity)** `𝓜(x)` is undefined when `x` repeats an entry, and `𝓜(x) ∈ S^α_n` when it is
-   defined on a non-repeating `n`-tuple;
-2. **(consistency)** if `𝓜(x) ∈ S^α_n` and `f : m ↪ n`, then `𝓜(x ∘ f) = (S^α f)(𝓜(x))` when
-   the right side exists, and is undefined when it does not;
-3. **(covering)** every non-repeating tuple `a` has some `x` with `a⌢x ∈ dom 𝓜`;
-4. **(existential closure)** if `𝓜(x) = p` with `x` an `n`-tuple, and `U` is a subset of the
-   **cofaces** `(S^α ι_{n,n+1})⁻¹(p)` of one of four kinds — (a)(i) generalised saturation,
-   (a)(ii) a prescribed `−∞`-pattern, (b) uniformity, (c) high-arity dominance — then there
-   are `y ∈ M` and `q ∈ U` with `𝓜(x⌢y) = q`.
-
-Here a Knight model is a `TypeTower.Realization` of the Knight tower `knightTower`
-(`KnightRealization`) satisfying `IsModel`, which transcribes the clauses:
-
-* clause (1) is **automatic** from the encoding: `eval : (Fin n ↪ M) → Option (S α n)` is
-  only defined on injective tuples and lands in the stage types of the same arity;
-* clause (2) is `IsExactParentConsistent` (the exact `Option` equality `eval (f.trans t) =
-  typeMap f q`, decided in #38 — `docs/DESIGN.md` §4);
-* clause (3) is `IsInitialSegmentCovering` (the paper-literal form; equivalent to the generic
-  `IsCovering` for Knight realizations by `knightTower_permTotal`, #38);
-* clause (4) is stated once per family — `genSat`, `bottomPattern`, `uniformity`,
-  `highGradeDominance` — each saying that **some member of that family** is realized over the
-  old tuple as a coface (`RealizesSome`): never universal service of an arbitrary coface.  The
-  four families are `GenSatFamily`, `BottomPatternFamily`, `UniformityFamily`,
-  `HighGradeDominanceFamily`, with their parameter side conditions stated as hypotheses of the
-  corresponding clause.
-
-The paper's inclusion `ι_{n,n+1} : n ↪ n+1` is `Fin.castSuccEmb` (definitionally
-`Fin.castAddEmb 1`, the embedding used by `IsInitialSegmentCovering`), the concatenation
-`x⌢y` is `snoc`, and the cofaces of `p` are `Coface p`.  In the paper's vocabulary "the arity
-of a cell" is our **grade** (`docs/TERMINOLOGY.md`), so (c) asks for a cell of grade `n+1`.
-
-Two sibling-only reroutes of Knight-VC are **not** re-imported (`docs/CONCORDANCE.md`):
-KVC-d23 (the `−∞`-pattern clause restricted to stage-bounded proto-types) — here the pattern
-source `q'` is any labelling respecting the semantics of `D`, with **no stage bound**, as in
-the paper; and KVC-d24 (the dominance witness asked for full scope, forgetting its grade) —
-here the witness has grade `n+1`.
-
-Positive-arity domains and stage types are constructed in `Knight.Domain` (#41 (1/3): mute
-domains, their one-point extension with the face equation `ExtendsDomain` asks for, and a stage
-type on every domain, Prop. 4.3.24); `IsModel` is a predicate with no instance in this file —
-existence of models is #41/#42.  Reduction of a
-model to a lower limit stage preserves clauses (2) and (3) (`IsModel.consistent_reduct`,
-`IsModel.covering_reduct`, from the generic lemmas); preservation of the four
-existential-closure clauses — full modelhood of the reduct, `IsModel.reduct` — is proved in
-`Knight/ReductModel.lean` (#101; the `−∞`-pattern clause transfers by bountifulness at the
-cutoff `n + 1`). -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
 
 open TypeTower
+
 open CellScheme.restrictFace (toCell)
 
 universe w
-
-/-! ### Knight realizations, concatenation, cofaces -/
 
 /-- A **Knight realization** at the limit stage `α` on the carrier `M`: a realization of the
 Knight tower, i.e. a partial labelling of the injective finite tuples of `M` by stage types
@@ -116,11 +63,12 @@ structure ExtendsDomain (p : S α n) (D : SemScheme (n + 1)) : Prop where
 
 /-- Transport of cells along an equality of domains (`Cell X.scheme = Fin X.scheme.card`). -/
 def SemScheme.castCell {X Y : SemScheme n} (h : X = Y) : Cell X.scheme → Cell Y.scheme :=
-  Fin.cast (congrArg (fun Z : SemScheme n => Z.scheme.card) h)
+  Fin.cast (by tauto)
 
-/-- Cell transport along a self-equality is the identity (proof irrelevance). -/
-theorem SemScheme.castCell_self {n : ℕ} {X : SemScheme n} (h : X = X) (d : Cell X.scheme) :
-    SemScheme.castCell h d = d := rfl
+/-- An equality of stage types transports their labels along the induced cell map. -/
+theorem StageType.label_castCell {α : Ordinal.{0}} {n : ℕ} {X Y : S α n}
+    (h : X = Y) (d : Cell X.scheme.scheme) :
+    Y.label (SemScheme.castCell (congrArg StageType.scheme h) d) = X.label d := by aesop
 
 /-- The cell map `dom p → D` of an extension of domains: the cell `d` of `dom p = D⟨n,n⟩` as
 a cell of `D` (through the cell map of the face restriction, `toCell`). -/
@@ -136,16 +84,7 @@ theorem IsCoface.extendsDomain {p : S α n} {q : S α (n + 1)} (h : IsCoface p q
   refine ⟨hvis, ?_⟩
   unfold IsCoface at h
   rw [typeMap_eq_some _ q hvis, Option.some.injEq] at h
-  subst h
-  rfl
-
-/-! ### The four request families of Def. 3.2.1(4)
-
-Each is a set of stage types on `(n+1)`-tuples; the clause for the family asks that some
-member be realized over the old tuple *as a coface of `p`* (the paper's `U ⊆ (S^α
-ι_{n,n+1})⁻¹(p)`), so the coface condition is stated alongside membership in `RealizesSome`.
-The parameter side conditions (`ExtendsDomain`, `RespectsSemantics`, `IsNonSuccessor`, `γ <
-α`) are hypotheses of the corresponding `IsModel` clause. -/
+  aesop
 
 /-- **(a)(i) Generalised saturation**: the cofaces with domain `D` (for `D` a domain on `n+1`
 with `D⟨n,n⟩ = dom p`, the side condition `ExtendsDomain p D`). -/
@@ -172,8 +111,6 @@ of grade `n+1` labelled strictly above `γ`. -/
 def HighGradeDominanceFamily (γ : Ordinal.{0}) : Set (S α (n + 1)) :=
   {q | ∃ Sig : Cell q.scheme.scheme,
     q.scheme.scheme.grade Sig = n + 1 ∧ ExtOrd.ofOrd γ < q.label Sig}
-
-/-! ### Models -/
 
 namespace KnightRealization
 
@@ -230,7 +167,7 @@ theorem isCoface_of_consistent (hR : R.IsExactParentConsistent) {t : Fin n ↪ M
     (hp : R.eval t = some p) (hq : R.eval (snoc t y hy) = some q) : IsCoface p q := by
   have h := hR (snoc t y hy) q Fin.castSuccEmb hq
   rw [castSuccEmb_trans_snoc, hp] at h
-  exact h.symm
+  tauto
 
 /-- A model is covering in the generic sense. -/
 theorem IsModel.isCovering (h : R.IsModel) : R.IsCovering :=
@@ -249,15 +186,6 @@ theorem IsModel.covering_reduct (h : R.IsModel) {β : LimitStage} (hβ : β ≤ 
     (R.reduct hβ).IsInitialSegmentCovering :=
   h.covering.reduct hβ
 
-/-! ### Every model is infinite
-
-Clause (3) labels the empty tuple (an initial segment of some labelled tuple), and clause
-(4)(c) at `γ = 0 < α` (or (4)(b) at the non-successor `0`) realizes a coface over every labelled
-tuple — with a **fresh** point `y ∉ range t`.  So labelled injective tuples exist in every arity
-beyond some `m`, and the carrier is infinite.  No domain construction (#41) is involved: the
-model's own existential-closure clauses supply the new points (cf. `NoTop.lean`, which uses the
-same two clauses and counting for `α = ω₁`). -/
-
 /-- From a labelled `m`-tuple, a labelled `(m + k)`-tuple for every `k` (clause (4)(c) at `0`). -/
 theorem IsModel.exists_labelled_add (h : R.IsModel) {m : ℕ} (t : Fin m ↪ M)
     (ht : (R.eval t).isSome) (k : ℕ) : ∃ s : Fin (m + k) ↪ M, (R.eval s).isSome := by
@@ -269,7 +197,7 @@ theorem IsModel.exists_labelled_add (h : R.IsModel) {m : ℕ} (t : Fin m ↪ M)
     have h0 : (0 : Ordinal.{0}) < α.1 := by
       simpa [Ordinal.bot_eq_zero] using α.2.bot_lt
     obtain ⟨y, hy, q, -, -, hq⟩ := h.highGradeDominance s p hp 0 h0
-    exact ⟨snoc s y hy, by rw [hq]; rfl⟩
+    exact ⟨snoc s y hy, by aesop⟩
 
 /-- A labelled injective tuple of every sufficiently large arity. -/
 theorem IsModel.exists_labelled_ge (h : R.IsModel) :

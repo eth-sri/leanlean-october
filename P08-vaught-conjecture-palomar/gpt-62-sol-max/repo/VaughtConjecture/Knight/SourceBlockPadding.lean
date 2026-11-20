@@ -7,15 +7,6 @@ module
 
 public import VaughtConjecture.Knight.PositiveNormalization
 
-/-! # Reserving an initial source block
-
-Left addition by omega shifts finite coded sources by one block. Both the shift
-and its partial inverse commute with replacement at every threshold, including
-thresholds above the owner's grade. Thus source precomposition uses an actual
-witness, not an unrestricted composition principle. Only a construction-owned
-row is changed; the semantic rows it respects remain fixed.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -30,7 +21,7 @@ noncomputable def pad : ExtOrd → ExtOrd
   | some (some α) => ofOrd (Ordinal.omega0 + α)
 
 @[simp] theorem pad_bot : pad ⊥ = ⊥ := rfl
-@[simp] theorem pad_top : pad ⊤ = ⊤ := rfl
+
 @[simp] theorem pad_ofOrd (α : Ordinal.{0}) : pad (ofOrd α) = ofOrd (Ordinal.omega0 + α) := rfl
 
 theorem pad_mono : Monotone pad := by
@@ -39,15 +30,13 @@ theorem pad_mono : Monotone pad := by
   · exact bot_le
   · rw [top_le_iff.mp hxy]
   · rcases ExtOrd.cases y with rfl | rfl | ⟨β, rfl⟩
-    · exact False.elim (not_ofOrd_le_bot _ hxy)
+    · simp_all
     · exact le_top
-    · exact ofOrd_le_ofOrd.mpr (add_le_add_right (ofOrd_le_ofOrd.mp hxy) _)
+    simp_all
 
 theorem pad_reflects_bottom (x : ExtOrd) (hx : pad x = ⊥) : x = ⊥ := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
-  · rfl
-  · exact False.elim (top_ne_bot hx)
-  · exact False.elim (ofOrd_ne_bot _ hx)
+  all_goals tauto
 
 theorem pad_decomposition (α : Ordinal.{0}) :
     Ordinal.omega0 + α =
@@ -71,9 +60,7 @@ theorem pad_comm (x : ExtOrd) (k i : ℕ) :
   · rfl
   · rw [pad_ofOrd, extVisibilityReplace_ofOrd, extVisibilityReplace_ofOrd,
       visibilityReplace, visibilityReplace, finitePart_pad]
-    split_ifs
-    · rw [ordinalReplace, ordinalReplace, pad_ofOrd, limitPart_pad, add_assoc]
-    · rfl
+    grind [ordinalReplace, pad_ofOrd, limitPart_pad]
 
 theorem pad_step (K : ℕ) : IsStepShifter K pad where
   map_bot := rfl
@@ -92,7 +79,6 @@ noncomputable def unpad : ExtOrd → ExtOrd
   | some (some α) => if Ordinal.omega0 ≤ α then ofOrd (α - Ordinal.omega0) else ⊥
 
 @[simp] theorem unpad_bot : unpad ⊥ = ⊥ := rfl
-@[simp] theorem unpad_top : unpad ⊤ = ⊤ := rfl
 
 open Classical in
 theorem unpad_ofOrd (α : Ordinal.{0}) :
@@ -112,7 +98,7 @@ theorem unpad_mono : Monotone unpad := by
   · exact bot_le
   · rw [top_le_iff.mp hxy]
   · rcases ExtOrd.cases y with rfl | rfl | ⟨β, rfl⟩
-    · exact False.elim (not_ofOrd_le_bot _ hxy)
+    · simp_all
     · exact le_top
     · rw [unpad_ofOrd, unpad_ofOrd]
       by_cases hα : Ordinal.omega0 ≤ α
@@ -136,13 +122,11 @@ theorem unpad_comm (x : ExtOrd) (k i : ℕ) :
       rw [hrep, ← pad_comm, unpad_pad, unpad_pad]
     · have hlt := not_le.mp hα
       obtain ⟨n, rfl⟩ := Ordinal.lt_omega0.mp hlt
-      have hf := finitePart_natCast n
       have hl := limitPart_natCast n
       rw [unpad_ofOrd, ite_eq_right hα, extVisibilityReplace_bot,
         extVisibilityReplace_ofOrd, visibilityReplace]
       split_ifs
-      · rw [ordinalReplace, hl, zero_add, unpad_ofOrd,
-          ite_eq_right (not_le.mpr (Ordinal.natCast_lt_omega0 i))]
+      · simp_all [ordinalReplace, unpad_ofOrd]
       · rw [unpad_ofOrd, ite_eq_right hα]
 
 /-- A direct source change for an arbitrary faithful witness; no composition
@@ -159,8 +143,7 @@ theorem witness_precompose_unpad {g : ℕ → ExtOrd} {τ : ExtOrd → ExtOrd}
 theorem pad_code (b j : ℕ) : pad (ofOrd (Ordinal.omega0 * b + j)) =
     ofOrd (Ordinal.omega0 * (b + 1 : ℕ) + j) := by
   rw [pad_ofOrd, ← add_assoc]
-  congr 2
-  rw [show b + 1 = 1 + b by omega, Nat.cast_add, Nat.cast_one, mul_add, mul_one]
+  simp_all [show b + 1 = 1 + b by omega, Nat.cast_add, Nat.cast_one, mul_add, mul_one]
 
 end SourceBlockPadding
 

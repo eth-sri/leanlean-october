@@ -8,20 +8,6 @@ module
 public import VaughtConjecture.Approximation.Prolongation
 public import VaughtConjecture.Knight.ModelMap
 
-/-! # Same-carrier normalization of certified links (#166 follow-up)
-
-The target class `IsModelClass` (Knight's model axioms, Def. 3.2.1, as a class for certified
-prolongation) and the normalization theorem `prolongsToIn_isModelClass_iff_on`: by
-`IsModel.map` (`Knight/ModelMap.lean`) the model class is closed under push-forward, so by
-the generic `prolongsToIn_iff_prolongsToOnIn` every certified link `ProlongsToIn IsModel`
-normalizes to Knight's literal Def. 5.1.1 shape — an actual model **on the carrier of the
-source** whose reduct **equals** the source.
-
-This sits just above `Knight/ModelMap.lean` and below `Knight/Rank.lean`: the source
-construction (`Knight/EndogenousExtension.lean`) consumes normalization without importing
-the intrinsic-rank lower-bound layer.  Reduct-closure of the class (`isModelClass_reduct`)
-stays in `Knight/Rank.lean` with the block machinery it serves. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight

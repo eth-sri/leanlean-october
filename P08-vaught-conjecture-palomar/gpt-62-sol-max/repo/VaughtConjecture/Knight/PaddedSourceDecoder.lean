@@ -8,16 +8,6 @@ module
 public import VaughtConjecture.Knight.CapFirstScalar
 public import VaughtConjecture.Knight.SourceBlockPadding
 
-/-! # A finite decoder tail above a preserved capped prefix
-
-Reserve finitely many source blocks, decode a new finite inventory beyond them,
-and take the maximum with the old shifter clipped at the output cap. The result
-is an actual faithful witness, literal on the clipped prefix and exact on all
-tracked new targets above the output cap, including literal top. The source
-alphabet bound is explicit. This constructs a scalar map and codes, not a lawful
-replacement member, available controller, or uniform source enlargement.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.PaddedSourceDecoder
@@ -39,22 +29,17 @@ noncomputable def release : ℕ → ExtOrd → ExtOrd
   | zero => rfl
   | succ b ih => simp only [reserve, ih, pad_bot]
 
-@[simp] theorem release_bot (b : ℕ) : release b ⊥ = ⊥ := by
-  induction b with
-  | zero => rfl
-  | succ b ih => simpa only [release, unpad_bot] using ih
-
 /-- The inverse is literal at every padded source, including bottom and top. -/
 theorem release_reserve (b : ℕ) (x : ExtOrd) : release b (reserve b x) = x := by
   induction b with
   | zero => rfl
-  | succ b ih => simpa only [reserve, release, unpad_pad] using ih
+  | succ b ih => simpa [reserve, release, unpad_pad] using ih
 
 /-- Repeated source padding preserves the finite part exactly. -/
 theorem reserve_code (b u j : ℕ) : reserve b (ofOrd (Ordinal.omega0 * u + j)) =
     ofOrd (Ordinal.omega0 * (u + b : ℕ) + j) := by
   induction b with
-  | zero => simp only [reserve, Nat.add_zero]
+  | zero => rfl
   | succ b ih => rw [reserve, ih, pad_code, Nat.add_assoc]
 
 /-- Precomposition is justified by exact replacement commutation, not transitivity. -/
@@ -69,18 +54,17 @@ private theorem unpad_lt_floor {b : ℕ} {x : ExtOrd}
     unpad x < ofOrd (Ordinal.omega0 * b) := by
   classical
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
-  · rw [unpad_bot]; exact bot_lt_ofOrd _
-  · exact False.elim (not_lt_of_ge le_top hx)
+  · simp
+  · trivial
   · by_cases hα : Ordinal.omega0 ≤ α
     · have he : pad (unpad (ofOrd α)) = ofOrd α := by
         rw [unpad_ofOrd, ite_eq_left hα, pad_ofOrd, Ordinal.add_sub_cancel_of_le hα]
       have hp : pad (ofOrd (Ordinal.omega0 * b)) =
           ofOrd (Ordinal.omega0 * (b + 1 : ℕ)) := by
-        simpa only [Nat.cast_zero, add_zero] using pad_code b 0
+        simpa [Nat.cast_zero, add_zero] using pad_code b 0
       by_contra hn
       have hle := pad_mono (not_lt.mp hn)
-      rw [he, hp] at hle
-      exact not_lt_of_ge hle hx
+      grind
     · rw [unpad_ofOrd, ite_eq_right hα]
       exact bot_lt_ofOrd _
 
@@ -91,10 +75,7 @@ theorem release_eq_bot_of_lt {b : ℕ} {x : ExtOrd}
   | zero =>
     change x = ⊥
     rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
-    · rfl
-    · exact False.elim (not_lt_of_ge le_top hx)
-    · have hα := ofOrd_lt_ofOrd.mp hx
-      simp only [Nat.cast_zero, mul_zero, not_lt_zero] at hα
+    all_goals simp_all
   | succ b ih => exact ih (unpad_lt_floor hx)
 
 /-- An alphabet of block bound `t` moves to block bound `t + b`. -/
@@ -127,8 +108,7 @@ theorem encode_ge_floor (S : Finset Ordinal.{0}) {K b : ℕ} {y : ExtOrd}
     ofOrd (Ordinal.omega0 * b) ≤ encode S K b y := by
   by_contra hn
   have he := decode_encode (K := K) (b := b) S hy
-  rw [release_eq_bot_of_lt (not_le.mp hn), canonicalDecoder_bot] at he
-  exact hyb he.symm
+  simp_all [release_eq_bot_of_lt]
 
 /-- Join a clipped old witness to the new decoder. The join uses existing normalized
 witness closure; its decoder is precomposed only with the exact source inverse. -/
@@ -155,9 +135,7 @@ Bottom is allowed when the cap is bottom; top is handled by its proper code. -/
 theorem extend_encode (S : Finset Ordinal.{0}) {K b : ℕ}
     {σ : ExtOrd → ExtOrd} {γ y : ExtOrd}
     (hy : y = ⊥ ∨ y = ⊤ ∨ ∃ α ∈ S, y = ofOrd α) (hγy : γ ≤ y) :
-    extend S K b σ γ (encode S K b y) = y := by
-  rw [extend, encode, release_reserve, canonicalDecoder_canonicalNormalizer hy]
-  exact max_eq_right ((min_le_right _ _).trans hγy)
+    extend S K b σ γ (encode S K b y) = y := by simp_all [extend, encode, release_reserve, canonicalDecoder_canonicalNormalizer hy]
 
 /-- The proposed new source map preserves output caps on every pair of sources
 agreeing below an interior source cut. Nothing requires the old map to attain `γ`. -/

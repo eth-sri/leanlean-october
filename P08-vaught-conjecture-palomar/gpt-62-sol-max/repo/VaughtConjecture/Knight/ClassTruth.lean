@@ -7,16 +7,10 @@ module
 
 public import VaughtConjecture.Knight.Correspondence
 
-/-! # Infinitary truth on actual model classes
-
-Satisfaction descends to isomorphism classes through the sentence/model
-correspondence alone. No receiving, terminal classification or stopping-rank
-theorem enters. The historical namespace is retained for compatibility.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.StoppingRankFiltration
+
 open TypeTower FirstOrder Language
 
 /-- These are the isomorphism classes counted by Knight's sentence, via
@@ -33,9 +27,5 @@ def realizes (φ : knightLang.Sentenceω) : Classes → Prop :=
       exact propext (@LomegaEquiv.of_equiv knightLang ℕ ℕ
         (structureOf R.1) (structureOf S.1)
         (KnightRealization.IsIso.structureOfEquiv e.2) φ))
-
-@[simp] theorem realizes_mk (φ : knightLang.Sentenceω) (R : KnightNatModel) :
-    realizes φ (Quotient.mk knightModelSetoid R) ↔
-      @Sentenceω.Realize knightLang φ ℕ (structureOf R.1) := Iff.rfl
 
 end VaughtConjecture.Knight.StoppingRankFiltration

@@ -8,39 +8,6 @@ module
 public import VaughtConjecture.Knight.Model
 public import InfinitaryLogic.Scott.AtomicDiagram
 
-/-! # Stage chart languages (#137)
-
-At the terminal semantic boundary, a Knight stage type `p ∈ S^α_n` can be read as an ordinary
-`n`-ary **relation symbol** — a *chart* — and a realization as an ordinary relational structure
-in the resulting language.  This module defines that encoding at every limit stage and connects
-exact face consistency to `InfinitaryLogic`'s standard atomic-diagram API:
-
-* `stageLang α` — the relational chart language at the limit stage `α`
-  (`Relations n := S α n`, no function symbols); countable when the stage is
-  (`stageLang.countable_relations`);
-* `stageStructureOf R` — the chart structure of a realization: `P_p(x̄)` iff `x̄` is injective
-  and `R.eval x̄ = some p`;
-* `stageStructureEquivOfIsIso` / `isIsoOfStageStructureEquiv` — realization isomorphisms
-  correspond to chart-structure isomorphisms, in both directions.  The encoding *reflects*
-  isomorphism without modelhood or transfer hypotheses: a language isomorphism of
-  `stageStructureOf` structures already transports the complete `Option`-valued labelling;
-* `HasCommonChart` and `sameAtomicType_of_commonChart` — a common full/projected chart implies
-  equality of the complete atomic diagram (`SameAtomicType`).  Exact face consistency is
-  precisely strong enough: invisible faces become *negative* atomic facts
-  (`stageHolds_comp_iff_of_eval`), and repeated-coordinate projections are handled by the
-  selector `σ`;
-* `hasCommonChart_of_eval_eq_some` — two injective tuples literally evaluated to the same stage
-  type carry a common (full) chart, so a producer theorem whose conclusion is an exact
-  request-face equation already closes the certificate.
-
-**Never identify** (#137): `S α n` is **not** a complete first-order
-type — horizontal restriction is partial and request families are not Boolean completions; the
-charts are *atomic relation symbols only*.  Equality of complete types does not replace
-forth/back: the semantic consumer of this encoding is `InfinitaryLogic`'s `PotentialIso`
-(`Knight/ChartKarp.lean`), whose compatibility field is exactly `SameAtomicType`.  No claim is
-made that two occurrences of one chart have the same quantified extension behaviour — that is a
-producer transfer theorem, not a consequence of this encoding. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -99,17 +66,13 @@ theorem isIsoOfStageStructureEquiv {α : LimitStage} {M : Type w} {N : Type w'}
   · intro ht
     have htarget : @StageHolds α N instN n p (⇑e' ∘ ⇑t) := by
       refine ⟨e'.toEquiv.injective.comp t.injective, ?_⟩
-      have he : (⟨⇑e' ∘ ⇑t, e'.toEquiv.injective.comp t.injective⟩ : Fin n ↪ N) =
-          t.trans ee.toEmbedding := by ext i; rfl
-      rwa [he]
+      solve_by_elim
     obtain ⟨hsrc, hsource⟩ := (key p).mp htarget
-    have he : (⟨⇑t, hsrc⟩ : Fin n ↪ M) = t := by ext i; rfl
-    rwa [he] at hsource
+    solve_by_elim
   · intro hs
     have hsource : @StageHolds α M instM n p t := ⟨t.injective, hs⟩
     obtain ⟨htgt, htarget⟩ := (key p).mpr hsource
-    have he : (⟨⇑e' ∘ ⇑t, htgt⟩ : Fin n ↪ N) = t.trans ee.toEmbedding := by ext i; rfl
-    rwa [he] at htarget
+    solve_by_elim
 
 /-- Exact face consistency determines every relation atom on every (possibly repeated)
 subtuple of a labelled injective tuple.  A visible face gives its unique pulled-back label;
@@ -124,23 +87,18 @@ theorem stageHolds_comp_iff_of_eval {α : LimitStage} {M : Type w}
   rw [stageHolds_stageStructureOf]
   constructor
   · rintro ⟨htf, hq⟩
-    have hf : Function.Injective f := fun i j hij => htf (by simp [hij])
+    have hf : Function.Injective f := fun i j hij => by aesop
     refine ⟨hf, ?_⟩
     have hface := hR t p (⟨f, hf⟩ : Fin m ↪ Fin n) ht
     have he : (⟨t ∘ f, htf⟩ : Fin m ↪ M) = (⟨f, hf⟩ : Fin m ↪ Fin n).trans t := by
       ext i
       rfl
-    rw [he] at hq
-    exact hface.symm.trans hq
+    simp_all
   · rintro ⟨hf, hq⟩
     have htf : Function.Injective (t ∘ f) := t.injective.comp hf
     refine ⟨htf, ?_⟩
     have hface := hR t p (⟨f, hf⟩ : Fin m ↪ Fin n) ht
-    have he : (⟨t ∘ f, htf⟩ : Fin m ↪ M) = (⟨f, hf⟩ : Fin m ↪ Fin n).trans t := by
-      ext i
-      rfl
-    rw [he]
-    exact hface.trans hq
+    aesop
 
 /-- Two labelled tuples carrying the same full chart have the same atomic chart-language type.
 This includes equality atoms, repeated relation tuples, and invisible faces. -/
@@ -154,9 +112,7 @@ theorem sameAtomicType_of_eval_eq_some {α : LimitStage} {M : Type w} {N : Type 
   cases idx with
   | eq i j =>
       simp only [AtomicIdx.holds]
-      constructor <;> intro hij
-      · exact congrArg b (a.injective hij)
-      · exact congrArg a (b.injective hij)
+      simp
   | rel q f =>
       exact (stageHolds_comp_iff_of_eval hR ha q f).trans
         (stageHolds_comp_iff_of_eval hR' hb q f).symm
@@ -180,6 +136,6 @@ theorem sameAtomicType_of_commonChart {α : LimitStage} {M : Type w} {N : Type w
   let instN : (stageLang α).Structure N := stageStructureOf R'
   obtain ⟨m, ta, tb, σ, p, hta, htb, ha, hb⟩ := h
   have hfull := (sameAtomicType_of_eval_eq_some hR hR' hta htb).relabel σ
-  simpa only [ha, hb] using hfull
+  simp_all
 
 end VaughtConjecture.Knight

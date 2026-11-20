@@ -9,28 +9,24 @@ public import VaughtConjecture.Knight.MaximalFullLayer
 public import VaughtConjecture.Knight.HighLayerSections
 public import VaughtConjecture.Knight.OrbitSupportSubstitution
 
-/-! # Completing an ordinary scope with a mute highest owner
-
-Use the existing zero-row high layer, not its active-apex modification. The
-renderer is specified on every occurrence: old values remain literal and the
-only new value is bottom. Thus one external grid and original support inventory
-survive scope completion unchanged. The predecessor's bountifulness is consumed;
-no bountifulness of a prospective output is assumed.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryScopeMute
+
 open Transform Value ExtOrd SourceLayerCarrier SourcePrefixRows
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} (D : CellScheme A)
   (sem : Semantics D) (K l : ℕ) (hK : ∀ d : Cell D, D.grade d ≤ K)
   (hKl : K < l) (hlA : l ≤ A.card)
 
 abbrev carrier := MaximalFullLayer.scheme D K l hKl hlA
+
 abbrev old := MaximalFullLayer.old D K l hKl hlA
+
 abbrev apex := MaximalFullLayer.apex D K l hKl hlA
+
 abbrev rows := MaximalFullLayer.base D sem K l hK hKl hlA
 
 def render (p : Cell D → ExtOrd) : Cell (carrier D K l hKl hlA) → ExtOrd :=
@@ -38,19 +34,15 @@ def render (p : Cell D → ExtOrd) : Cell (carrier D K l hKl hlA) → ExtOrd :=
     (toOcc D Unit l (MaximalFullLayer.positive K l hKl) hlA d)
 
 theorem render_old (p : Cell D → ExtOrd) (d : Cell D) :
-    render D K l hKl hlA p (old D K l hKl hlA d) = p d := by
-  simp only [render, old, MaximalFullLayer.old, toOcc_toCell, Sum.elim_inl]
+    render D K l hKl hlA p (old D K l hKl hlA d) = p d := by simp [render, old, MaximalFullLayer.old, toOcc_toCell, Sum.elim_inl]
 
 theorem render_apex (p : Cell D → ExtOrd) :
-    render D K l hKl hlA p (apex D K l hKl hlA) = ⊥ := by
-  simp only [render, apex, MaximalFullLayer.apex, toOcc_toCell, Sum.elim_inr]
+    render D K l hKl hlA p (apex D K l hKl hlA) = ⊥ := by simp [render, apex, MaximalFullLayer.apex, toOcc_toCell, Sum.elim_inr]
 
 theorem covered (d : Cell (carrier D K l hKl hlA)) :
     (∃ c, d = old D K l hKl hlA c) ∨ d = apex D K l hKl hlA := by
   obtain ⟨x, rfl⟩ := (enumeration D Unit l (MaximalFullLayer.positive K l hKl) hlA).surjective d
-  cases x with
-  | inl c => exact Or.inl ⟨c, rfl⟩
-  | inr u => cases u; exact Or.inr rfl
+  aesop
 
 theorem render_lawful {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) :
     RespectsSemantics (rows D sem K l hK hKl hlA) (render D K l hKl hlA p) := by
@@ -89,8 +81,7 @@ theorem render_supported {X : Type*} {v : X → ExtOrd} {k : ℕ} {G : Set ExtOr
 
 theorem apex_row (d : (carrier D K l hKl hlA).below
     ((carrier D K l hKl hlA).cell (apex D K l hKl hlA))) :
-    (rows D sem K l hK hKl hlA).E (apex D K l hKl hlA) d = ⊥ := by
-  simp only [rows, MaximalFullLayer.base, apex, MaximalFullLayer.apex,
+    (rows D sem K l hK hKl hlA).E (apex D K l hKl hlA) d = ⊥ := by simp [rows, MaximalFullLayer.base, apex, MaximalFullLayer.apex,
     SeparatedSourceLayerCarrier.base, toOcc_toCell, SeparatedSourceLayerCarrier.oldTable]
 
 theorem apex_short (d : (carrier D K l hKl hlA).below
@@ -145,7 +136,8 @@ theorem complete_last (hcard : A.card = l) (hnext : l = K + 1)
   by_contra hn
   have hj : J.2 = l := by omega
   have he : J.1 = A := Finset.eq_of_subset_of_card_le hsub (by omega)
-  exact hne (Prod.ext he hj)
+  grind
 
 end
+
 end VaughtConjecture.Knight.OrdinaryScopeMute

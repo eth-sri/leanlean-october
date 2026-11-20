@@ -11,39 +11,17 @@ public import VaughtConjecture.Knight.TopGradeDichotomy
 public import VaughtConjecture.Knight.CountableTerminalFibres
 public import VaughtConjecture.CountableCover
 
-/-! # Counting terminal classes directly from top-grade behaviour
-
-At a countable stage the models are covered by countably many conditions, each met by
-at most one isomorphism class:
-
-* an actual globally rigid core of a given finite type (rigid-core comparison);
-* no globally rigid core, and top grade eventually a given `K` (cap-native residual
-  comparison, which consumes the coinitial top-grade tail itself);
-* hollow top-grade growth (hollow-growth comparison).
-
-The top-grade dichotomy places every model without a core in the second or third
-condition. Eventual top grade zero leaves no actual top cell, so the empty tuple is then a
-globally rigid core; the second condition therefore only occurs with `K > 0`.
-
-No characteristic arity, stable spectrum, or characteristic-based growth predicate on
-terminal classes is used. Growth prolongation and hollow-growth comparison are consumed
-as hypotheses here and supplied in `ConstructedTerminalCountability`.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.TopGradeTerminalCounting
-open TypeTower StageType KnightRealization Value ExtOrd TopSupport Cardinal
-noncomputable section
-universe w
-variable {α : LimitStage} {M : Type w} {W : KnightRealization α M}
 
-/-- Countably many conditions, each met by at most one member of a family and jointly
-covering it, make the family countable. -/
-theorem countable_of_cover {ι κ : Type*} [Countable κ] (P : κ → ι → Prop)
-    (hsub : ∀ c i j, P c i → P c j → i = j) (hcover : ∀ i, ∃ c, P c i) : Countable ι :=
-  CountableCover.countable_of_cover P hsub hcover
+open TypeTower StageType KnightRealization Value ExtOrd TopSupport Cardinal
+
+noncomputable section
+
+universe w
+
+variable {α : LimitStage} {M : Type w} {W : KnightRealization α M}
 
 /-- **Eventual top grade zero gives a rigid core**: every actual top grade is then zero,
 so no actual cover has a top cell, and every tuple (in particular the empty one) is a
@@ -102,7 +80,7 @@ theorem countable {ι : Type*} (hα : α.1.card ≤ Cardinal.aleph0)
     intro i j h
     by_contra hne
     exact (hanti i j hne).false h.some
-  refine countable_of_cover (κ := (Σ n : ℕ, S α.1 n) ⊕ ℕ ⊕ Unit)
+  refine CountableCover.countable_of_cover (κ := (Σ n : ℕ, S α.1 n) ⊕ ℕ ⊕ Unit)
     (Sum.elim
       (fun p i => ∃ B : Fin p.1 ↪ N i,
         (W i).eval B = some p.2 ∧ TopSupportRigidCore.RigidCore (W i) B)
@@ -122,7 +100,7 @@ theorem countable {ι : Type*} (hα : α.1.card ≤ Cardinal.aleph0)
       exact ⟨.inl ⟨k, b⟩, B, hb, hr⟩
     · rcases (hW i).hasTopGradeGrowth_or_coinitial_constant with hg | ⟨K, hK⟩
       · exact ⟨.inr (.inr ()), hg, hhollow i hg⟩
-      · exact ⟨.inr (.inl K), fun B hB => hcore ⟨_, B, hB⟩, hK⟩
+      · exact ⟨.inr (.inl K), by grind, hK⟩
 
 /-- **Terminal countability from top-grade behaviour.** At a countable block, the terminal
 classes are countable once non-hollow growth prolongs and hollow growth models compare.
@@ -139,8 +117,7 @@ theorem countable_terminalClass {ρ : Ordinal.{0}} (hρ : ρ < (aleph 1).ord)
   · intro q hg
     by_contra hn
     exact q.out.2.2 (hprolong q.out hn hg)
-  · intro q r
-    exact hcompare q.out r.out
+  · tauto
   · intro q r hne
     exact ⟨fun e => hne (Quotient.out_equiv_out.mp ⟨e⟩)⟩
 
@@ -155,7 +132,8 @@ theorem countableTerminalFibres_of_growth_results
           Nonempty (W.1.Iso V.1)) : CountableTerminalFibres := by
   intro ρ hρ
   exact Cardinal.mk_le_aleph0_iff.mpr
-    (countable_terminalClass hρ (hprolong ρ hρ) (hcompare ρ hρ))
+    (by apply_rules [countable_terminalClass])
 
 end
+
 end VaughtConjecture.Knight.TopGradeTerminalCounting

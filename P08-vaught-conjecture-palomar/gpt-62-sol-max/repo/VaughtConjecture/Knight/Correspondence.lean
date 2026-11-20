@@ -7,56 +7,13 @@ module
 
 public import VaughtConjecture.Knight.Sentence
 
-/-! # Prop. 3.3.5: countable models of `T` ↔ countable models of `S^ω`, up to isomorphism
-
-`Knight/Sentence.lean` gives the **pointwise** correspondence between `L`-structures satisfying
-Knight's sentence `T` (`knightSentence`) and models of `S^ω` (`KnightRealization.IsModel`):
-`toRealization M` / `structureOf R`, both directions, with round trips.  This file does the
-**isomorphism-class bookkeeping**, so that the count `Spectrum.natModelSpectrum knightSentence`
-(`I(T, ℵ₀)`, isomorphism classes of coded `ℕ`-models of `T`, `InfinitaryLogic`'s `isoSetoid`)
-is the number of models of `S^ω` on the carrier `ℕ` up to isomorphism.
-
-**Isomorphism of realizations.**  Generic: `TypeTower.Realization.IsIso R R' e` (`e : M ≃ N`
-transports labels, `R'.eval (t.trans e) = R.eval t`), `Realization.Iso`, and the ambient setoid
-`Realization.isoSetoid T α M` (`TypeTower/Basic.lean`).  Here `knightModelSetoid` is its pullback
-to the `ℕ`-carrier models of `S^ω`, `KnightNatModel := {R : KnightRealization omegaStage ℕ //
-R.IsModel}`.
-
-**Transfer.**  An `L`-isomorphism `e : M ≃[knightLang] N` of structures satisfying `T` is an
-isomorphism `toRealization M ≅ toRealization N` (`IsKnightModel.isIso_toRealization`); conversely
-an isomorphism of realizations `R ≅ R'` is an `L`-isomorphism `structureOf R ≃[knightLang]
-structureOf R'` (`IsIso.structureOfEquiv`), and an `L`-isomorphism of the structures of two
-models is an isomorphism of the models (`IsIso.of_structureOf`).
-
-**The bijection.**  `isoClassEquiv : Quotient (isoSetoid knightSentence) ≃ Quotient
-knightModelSetoid`, built from `realizationOfCode` (decode, then `toRealization`) and
-`codeOfModel` (`structureOf`, then `ofStructure`), each respecting isomorphism, inverse to each
-other up to isomorphism by the round trips of `Knight/Sentence.lean`.  Hence
-`natModelSpectrum_knightSentence : natModelSpectrum knightSentence = #(Quotient knightModelSetoid)`
-(both sides in `Cardinal.{1}`: `knightLang : Language.{0, 1}`, so `StructureSpace knightLang :
-Type 1`, and `S ω n : Type 1`, so `KnightRealization omegaStage ℕ : Type 1` — no lifts), and, with
-`hasNoFiniteModels_knightSentence`, `allCountableSpectrum_knightSentence : allCountableSpectrum
-knightSentence = natModelSpectrum knightSentence` (all carrier tiers agree with the `ℕ` tier).
-
-**All tiers, by `codeModel`.**  For a countable model `R` of `S^ω` on any carrier,
-`IsModel.codedClass hR := codeModel hR.realize_knightSentence : AllCodedIsoClasses knightSentence`;
-isomorphic models have the same class (`codedClass_eq_of_iso`), models with the same class are
-isomorphic (`iso_of_codedClass_eq`), and every class arises (`codedClass_surjective`).
-
-The only structure-coding bridge not in `InfinitaryLogic` is `ofStructureEquiv`: an `L`-structure
-on `ℕ` is `L`-isomorphic (by the identity) to the decoding of its own code — stated here
-generically in `L` (candidate for `StructureSpace.ofStructure` in `InfinitaryLogic`). -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
 
 open FirstOrder Language Structure TypeTower Spectrum Cardinal
-open scoped Lomega1omega
 
 universe u v w w'
-
-/-! ### Coding bridge: a structure on `ℕ` and the decoding of its code -/
 
 section Coding
 
@@ -79,8 +36,6 @@ theorem realize_toStructure_ofStructure (inst : L.Structure ℕ) (φ : L.Sentenc
 
 end Coding
 
-/-! ### Isomorphism transfer between structures and realizations -/
-
 section Transfer
 
 variable {M : Type w} {N : Type w'}
@@ -98,7 +53,7 @@ theorem IsKnightModel.isIso_toRealization {instM : knightLang.Structure M}
   cases h : (toRealization M).eval t with
   | none =>
     rw [toRealization_eval_eq_none_iff] at h ⊢
-    exact fun p hp => h p ((key p).mp hp)
+    grind
   | some p =>
     exact (hN.eval_eq_some_iff _ p).mpr ((key p).mpr ((hM.eval_eq_some_iff t p).mp h))
 
@@ -126,8 +81,6 @@ def IsKnightModel.structureOfToRealizationEquiv {inst : knightLang.Structure M}
     (fun f => isEmptyElim f) fun p xs => (holds_structureOf_toRealization h p xs).symm
 
 end Transfer
-
-/-! ### `ℕ`-carrier models of `S^ω` up to isomorphism, and the bijection with `I(T, ℵ₀)` -/
 
 /-- The models of `S^ω` on the carrier `ℕ`. -/
 abbrev KnightNatModel : Type 1 := {R : KnightRealization omegaStage ℕ // R.IsModel}
@@ -216,8 +169,7 @@ noncomputable def isoClassEquiv :
       R.2.isKnightModel
       (@Language.Equiv.symm knightLang ℕ ℕ (structureOf R.1) (codeStructure R)
         (ofStructureEquiv _))) t
-    rw [toRealization_structureOf_eval] at h
-    exact h
+    rwa [toRealization_structureOf_eval] at h
 
 /-- **`I(T, ℵ₀)` is the number of models of `S^ω` on `ℕ` up to isomorphism** (the transfer
 #61 consumes).  Both sides live in `Cardinal.{1}` (`knightLang : Language.{0, 1}`;
@@ -225,13 +177,5 @@ noncomputable def isoClassEquiv :
 theorem natModelSpectrum_knightSentence :
     natModelSpectrum knightSentence = #(Quotient knightModelSetoid) :=
   mk_congr isoClassEquiv
-
-/-! ### All countable carriers, through `codeModel` -/
-
-section Coded
-
-variable {M N : Type} [Countable M] [Countable N]
-
-end Coded
 
 end VaughtConjecture.Knight

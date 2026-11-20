@@ -9,32 +9,18 @@ public import VaughtConjecture.Knight.CappedDonorCatalogue
 public import VaughtConjecture.Knight.CanonicalFieldLayer
 public import VaughtConjecture.Knight.FinalGateDecoding
 
-/-! # The ordinary catalogue on the actual final gate layer
-
-Use the finite ordinary catalogue, including its gate-off members, as the
-controller inventory of `FinalGateLayer`. Gate visibility, field bounds and
-shortness follow from catalogue membership. Predecessor sources and their
-whole-coordinate prefix agreement remain inputs to the installer; no scope
-recursion or bountifulness is asserted here.
-
-The actual donor/private vector has a catalogue representative with one faithful
-decoder, including literal tops and an active gate. This is a field-level
-selected-display producer, not yet lawfulness of its physical rendering.
-
-The scalar catalogue is V-C's (`04276e9`, updated to `7a1deef` with the
-unprimed APIs preserved). The physical layer uses KVC's weighted installer
-and the reviewer's final-gate construction.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalCatalogue
+
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows
+
 open PairedSlotComparison SharpWitnessComposition
+
 noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
+
 variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 
 abbrev Member := ↥R.Catalogue
@@ -52,8 +38,7 @@ theorem member_bound (a : Member R) (f : Field P C) :
 theorem member_gate_visible (a : Member R) : SelfVis N (a.val .gate) := by
   obtain ⟨st, -, -, hg, he⟩ := a.property.2
   rw [← he]
-  rw [st.sourceProfile_of_present (f := .gate) R.one_le_N]
-  exact hg
+  rwa [st.sourceProfile_of_present (f := .gate) R.one_le_N]
 
 include R in
 theorem req_grade_le (d : Cell P.scheme) : P.scheme.grade d ≤ N :=
@@ -86,17 +71,12 @@ def install (sem : Semantics D) (hA : N ≤ A.card)
         min (lower a d) h = min (lower b d) h) :
     FinalGateLayer.Input D N (Field P C) (Member R) where
   sem := sem
-  positive := R.one_le_N
+  pos := R.one_le_N
   height := hA
   separated := hsep
   fields a := a.val
   gate := .gate
-  grid := sourceGrid N (Fintype.card (Field P C))
-  bot_mem := sourceGrid_bot _ _
-  ceiling := CanonicalFieldLayer.ceiling N (Field P C)
-  ceiling_mem := sourceGrid_endpoint le_rfl
-  grid_bound _ hh := CanonicalFieldLayer.grid_bound N (Field P C) hh
-  grid_visible _ hh := sourceGrid_visible hh
+  toAttachmentGrid := AttachmentGrid.canonical N (Fintype.card (Field P C))
   lower := lower
   lower_lawful := hlaw
   lower_bound := hbound
@@ -104,8 +84,17 @@ def install (sem : Semantics D) (hA : N ≤ A.card)
   gate_visible := member_gate_visible R
   gate_bound a := member_bound R a .gate
 
-/-- One catalogue member and one decoder recover the actual complete field
-vector. The gate is literally top after decoding, not merely positive. -/
+/-- Terminal insertion decodes an admitted vector while preserving its bottom pattern. -/
+theorem exists_member_decoder {a : Field P C → ExtOrd} (ha : R.Admitted a) :
+    ∃ (b : Member R) (δ : ExtOrd → ExtOrd), Witness (gTop N) δ ∧
+      (∀ f, δ (b.val f) = a f) ∧ ∀ f, δ (b.val f) = ⊥ ↔ b.val f = ⊥ := by
+  obtain ⟨b, -, -, hp, -, hb, hc, δ, hδ, hr⟩ := ha.exists_terminal 0
+  refine ⟨⟨PairedSlotEncoding.normalize N b, hc, hb⟩, δ, hδ, hr, fun f => ?_⟩
+  change δ (PairedSlotEncoding.normalize N b f) = ⊥ ↔ _
+  rw [hr, PairedSlotEncoding.normalize_bot_iff]
+  exact (bottom_pattern_of_cap_agreement (ofOrd_ne_bot 0) hp f).symm
+
+/-- The actual complete field vector has a bottom-reflecting decoder. -/
 theorem exists_actual_member_reflecting :
     ∃ (a : Member R) (δ : ExtOrd → ExtOrd), Witness (gTop N) δ ∧
       (∀ d : Cell P.scheme, δ (a.val (.req d)) = R.p d) ∧
@@ -113,28 +102,13 @@ theorem exists_actual_member_reflecting :
       δ (a.val .gate) = ⊤ ∧
       ∀ f, δ (a.val f) = ⊥ ↔ a.val f = ⊥ := by
   let st := resync (R.actualState N)
-  have hadm : R.Admitted st.sourceProfile :=
+  obtain ⟨a, δ, hδ, hr, hb⟩ := exists_member_decoder R
     ⟨st, (R.actual_admissible N).resync, resync_synchronized (R.actual_admissible N),
       TopSupport.selfVis_top_ext N, rfl⟩
-  obtain ⟨b, -, -, hprefix, -, hb, hcan, δ, hδ, hr⟩ := hadm.exists_terminal 0
-  refine ⟨⟨PairedSlotEncoding.normalize N b, hcan, hb⟩, δ, hδ, ?_, ?_, ?_, ?_⟩
-  · intro d
-    exact (hr (.req d)).trans (profile_present R st (.req d))
-  · intro d
-    exact (hr (.priv d)).trans (profile_present R st (.priv d))
-  · exact (hr .gate).trans (profile_present R st .gate)
-  · intro f
-    rw [hr, PairedSlotEncoding.normalize_bot_iff]
-    exact (bottom_pattern_of_cap_agreement (ofOrd_ne_bot 0) hprefix f).symm
-
-/-- The field-level exact display, without its finite reflection receipt. -/
-theorem exists_actual_member :
-    ∃ (a : Member R) (δ : ExtOrd → ExtOrd), Witness (gTop N) δ ∧
-      (∀ d : Cell P.scheme, δ (a.val (.req d)) = R.p d) ∧
-      (∀ d : Cell C.scheme, δ (a.val (.priv d)) = R.vact d) ∧
-      δ (a.val .gate) = ⊤ := by
-  obtain ⟨a, δ, hw, hP, hC, hg, -⟩ := exists_actual_member_reflecting R
-  exact ⟨a, δ, hw, hP, hC, hg⟩
+  exact ⟨a, δ, hδ, fun d => (hr _).trans (profile_present R st (.req d)),
+    fun d => (hr _).trans (profile_present R st (.priv d)),
+    (hr _).trans (profile_present R st .gate), hb⟩
 
 end
+
 end VaughtConjecture.Knight.OrdinaryFinalCatalogue

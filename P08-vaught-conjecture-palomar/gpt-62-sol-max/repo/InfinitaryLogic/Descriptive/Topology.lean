@@ -5,21 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import InfinitaryLogic.Descriptive.Measurable
+public import InfinitaryLogic.Descriptive.StructureSpace
+public import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 public import Mathlib.Topology.Clopen
-
-/-!
-# Product Topology on the Structure Space
-
-This file equips `StructureSpace L` with the product topology (from `RelQuery L → Bool`
-with `Bool` discrete) and proves that cylinder sets are clopen.
-
-## Main Results
-
-- `instTopologicalSpaceStructureSpace`: Product topology on `StructureSpace L`.
-- `isClopen_relHolds`: The set `{c | c q = true}` is clopen for each query `q`.
-- `isOpen_relHolds`, `isClosed_relHolds`: Components of the clopen result.
--/
 
 @[expose] public section
 
@@ -31,7 +19,6 @@ namespace Language
 
 variable {L : Language.{u, v}}
 
--- Generic instance: StructureSpaceOn is abbrev, so TC sees through it.
 instance {α : Type*} : TopologicalSpace (StructureSpaceOn L α) := Pi.topologicalSpace
 
 /-- `StructureSpace L` inherits the product topology from `RelQuery L → Bool`.

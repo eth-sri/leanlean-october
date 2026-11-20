@@ -5,19 +5,19 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.FiniteCoverReceiving
+public import VaughtConjecture.Knight.FiniteCoverReceivingCore
+public import VaughtConjecture.Knight.OrdinaryFiniteCutReceiving
+public import VaughtConjecture.Knight.BlockCode
 public import VaughtConjecture.Knight.TopSupportRigidCoreCap
-
-/-! # Classification from globally rigid top-support cores
-
-Model-level chart extension, isomorphism, and countability results for globally rigid cores.
--/
 
 @[expose] public section
 
 namespace VaughtConjecture.Knight.TopSupportRigidCore
+
 open TypeTower StageType KnightRealization Value ExtOrd
+
 universe w
+
 variable {α : LimitStage} {M M₁ M₂ : Type w} {R : KnightRealization α M}
   {R₁ : KnightRealization α M₁} {R₂ : KnightRealization α M₂}
 
@@ -43,7 +43,7 @@ theorem rigidCore_mono {k m : ℕ} {B : Fin k ↪ M} {C : Fin m ↪ M}
   apply ht x ?_ htop
   intro z hz
   obtain ⟨i, -, hi⟩ := Finset.mem_image.mp (hx hz)
-  exact Finset.mem_image.mpr ⟨f i, Finset.mem_univ _, hi⟩
+  aesop
 
 /-- Any globally rigid tuple has an actual labelled rigid cover. -/
 theorem exists_labelled_core (hM : R.IsModel)

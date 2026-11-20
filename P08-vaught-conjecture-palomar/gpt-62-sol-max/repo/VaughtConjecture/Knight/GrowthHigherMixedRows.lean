@@ -7,94 +7,115 @@ module
 
 public import VaughtConjecture.Knight.GrowthPaddedOwnerProvenance
 public import VaughtConjecture.Knight.GrowthReplicatedRows
-public import VaughtConjecture.Knight.ScopeReplicationCharts
+public import VaughtConjecture.Knight.AmbientGradeCharts
 public import VaughtConjecture.Knight.GrowthLeafRecognition
-
-/-! # Higher-owner columns on the actual replicated growth carrier
-
-The final build and observation cutoff are independent. Every inherited higher
-owner has its own birth provenance, and the entire padded base has named copies
-at the observed mixed scope. No lawful extension is used to obtain these rows.
--/
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
+
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
+
 open GrowthPaddedContract GrowthPaddedIteration SupportLadderRows
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
-  (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
-  (X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows)
-  (T : RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X)
-  (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
-  (t : ℕ) (ht : t + 2 ≤ A.card)
+  (G : GrowthPaddedIteration.BuildContext A B C R m n J)
 
-abbrev tower := build I X T hA hB hC t ht
-abbrev carrier := GrowthReplicatedRows.carrier (tower I X T hA hB hC t ht)
-abbrev rows := GrowthReplicatedRows.rows (tower I X T hA hB hC t ht)
-abbrev erase := GrowthReplicatedRows.erase (tower I X T hA hB hC t ht)
+abbrev carrier := GrowthReplicatedRows.carrier (G.tower)
 
-local notation "P" => tower I X T hA hB hC t ht
-local notation "D" => carrier I X T hA hB hC t ht
-local notation "Fld" => Field I.right.scheme I.left.scheme
-local notation "Pt" => RelativeLadderLayer.Point (X := Fld) (Q := Catalogue X 1)
+abbrev rows := GrowthReplicatedRows.rows (G.tower)
 
-def original (d : Cell I.boundary) : Cell (P).carrier :=
-  (P).baseMap (RelativeLadderLayer.old I.boundary (by omega : 0 < A.card) d)
+abbrev erase := GrowthReplicatedRows.erase (G.tower)
 
-theorem original_index (d : Cell I.boundary) : (P).carrier.cell
-    (original I X T hA hB hC t ht d) = I.boundary.cell d :=
+local notation "P" => G.tower
+
+local notation "D" => carrier G
+
+local notation "Fld" => Field G.I.right.scheme G.I.left.scheme
+
+local notation "Pt" => RelativeLadderLayer.Point (X := Fld) (Q := Catalogue G.X 1)
+
+def original (d : Cell G.I.boundary) : Cell (P).carrier :=
+  (P).baseMap (RelativeLadderLayer.old G.I.boundary G.pos d)
+
+theorem original_index (d : Cell G.I.boundary) : (P).carrier.cell
+    (original G d) = G.I.boundary.cell d :=
   ((P).base_index _).trans (RelativeLadderLayer.old_index _ _ d)
 
 abbrev ladder (v : Pt) : Cell (P).carrier :=
-  GrowthPaddedNativeRows.ladder I X T hA hB hC t ht v
+  GrowthPaddedNativeRows.ladder G v
 
 theorem ladder_index (v : Pt) : (P).carrier.cell
-    (ladder I X T hA hB hC t ht v) = (A, 1) :=
-  GrowthPaddedNativeRows.ladder_index I X T hA hB hC t ht v
+    (ladder G v) = (A, 1) :=
+  GrowthPaddedNativeRows.ladder_index G v
 
-variable (U : Finset ι) (hU : U ∈ R)
-  (hm : U = A ∨ ScopeReplicationCarrier.Mixed B C U)
-  (j : ℕ) (hj : j ≤ U.card)
+/-- A positive cutoff on an installed mixed scope of the replicated tower. -/
+structure Cut (G : GrowthPaddedIteration.BuildContext A B C R m n J) where
+  scope : Finset ι
+  grade : ℕ
+  member : scope ∈ R
+  mixed : scope = A ∨ ScopeReplicationCarrier.Mixed B C scope
+  card : grade ≤ scope.card
+  pos : 1 ≤ grade
+  installed : grade ≤ G.depth + 2
+
+namespace Cut
+
+variable {G} (W : Cut G)
+
+abbrev index : Finset ι × ℕ := (W.scope, W.grade)
+
+theorem plan : W.scope ∈ (G.tower).carrier.plan := by
+  rw [GrowthPaddedIteration.build_plan]
+  exact W.member
+
+theorem gradeOne : GradedLe (W.scope, 1) W.index := ⟨le_rfl, W.pos⟩
+
+def one : Cut G :=
+  ⟨W.scope, 1, W.member, W.mixed, W.pos.trans W.card, le_rfl, by omega⟩
+
+def raise (V : Finset ι) (hV : V ∈ R) (hm : V = A ∨ ScopeReplicationCarrier.Mixed B C V)
+    (h : W.scope ⊆ V) : Cut G :=
+  ⟨V, W.grade, hV, hm, W.card.trans (Finset.card_le_card h), W.pos, W.installed⟩
+
+end Cut
+
+variable {G} (W : Cut G)
 
 def place (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
-    (hg : (P).carrier.grade c ≤ j) : (D).below (U, j) :=
-  ⟨ScopeReplicationCarrier.atScope (P).carrier B C U
-      (by rw [GrowthPaddedIteration.build_plan]; exact hU) hm c hc (hg.trans hj),
-    by rw [ScopeReplicationCarrier.atScope_index]; exact ⟨le_rfl, hg⟩⟩
+    (hg : (P).carrier.grade c ≤ W.grade) : (D).below W.index :=
+  ScopeReplicationCarrier.replica (GrowthReplicatedRows.frame P) W.plan W.mixed W.card c hc hg
 
 theorem place_index (c) (hc) (hg) : (D).cell
-    (place I X T hA hB hC t ht U hU hm j hj c hc hg).1 = (U, (P).carrier.grade c) :=
-  ScopeReplicationCarrier.atScope_index (P).carrier B C U _ hm c hc (hg.trans hj)
+    (place W c hc hg).1 = (W.scope, (P).carrier.grade c) :=
+  ScopeReplicationCarrier.replica_index (GrowthReplicatedRows.frame P) W.plan W.mixed W.card _ _ _
 
-theorem erase_place (c) (hc) (hg) : erase I X T hA hB hC t ht
-    (place I X T hA hB hC t ht U hU hm j hj c hc hg).1 = c :=
-  ScopeReplicationCarrier.erase_atScope (P).carrier B C U _ hm c hc (hg.trans hj)
+theorem erase_place (c) (hc) (hg) : erase G
+    (place W c hc hg).1 = c :=
+  ScopeReplicationCarrier.erase_replica (GrowthReplicatedRows.frame P) W.plan W.mixed W.card _ _ _
 
-variable (hj0 : 1 ≤ j)
-
-def ladderAt (v : Pt) : (D).below (U, j) :=
-  place I X T hA hB hC t ht U hU hm j hj (ladder I X T hA hB hC t ht v)
-    (congrArg Prod.fst (ladder_index I X T hA hB hC t ht v))
-    ((congrArg Prod.snd (ladder_index I X T hA hB hC t ht v)).le.trans hj0)
+def ladderAt (v : Pt) : (D).below W.index :=
+  place W (ladder G v)
+    (congrArg Prod.fst (ladder_index G v))
+    ((congrArg Prod.snd (ladder_index G v)).le.trans W.pos)
 
 theorem ladderAt_index (v : Pt) : (D).cell
-    (ladderAt I X T hA hB hC t ht U hU hm j hj hj0 v).1 = (U, 1) :=
-  (place_index I X T hA hB hC t ht U hU hm j hj _ _ _).trans
-    (congrArg (fun k => (U, k)) (congrArg Prod.snd (ladder_index I X T hA hB hC t ht v)))
+    (ladderAt W v).1 = (W.scope, 1) :=
+  (place_index W _ _ _).trans
+    (congrArg (fun k => (W.scope, k)) (congrArg Prod.snd (ladder_index G v)))
 
-theorem erase_ladderAt (v : Pt) : erase I X T hA hB hC t ht
-    (ladderAt I X T hA hB hC t ht U hU hm j hj hj0 v).1 =
-      ladder I X T hA hB hC t ht v :=
-  erase_place I X T hA hB hC t ht U hU hm j hj _ _ _
+theorem erase_ladderAt (v : Pt) : erase G
+    (ladderAt W v).1 =
+      ladder G v :=
+  erase_place W _ _ _
 
-def shadowSup (p : (D).below (U, j) → ExtOrd) (f : Fld) : ExtOrd :=
-  Finset.univ.sup fun a : Catalogue X 1 =>
-    p (ladderAt I X T hA hB hC t ht U hU hm j hj hj0 (shadow a f))
+def shadowSup (p : (D).below W.index → ExtOrd) (f : Fld) : ExtOrd :=
+  Finset.univ.sup fun a : Catalogue G.X 1 =>
+    p (ladderAt W (shadow a f))
 
 end
+
 end VaughtConjecture.Knight.GrowthHigherMixed

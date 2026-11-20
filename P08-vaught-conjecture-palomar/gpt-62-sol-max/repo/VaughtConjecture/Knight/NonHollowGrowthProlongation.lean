@@ -7,24 +7,14 @@ module
 
 public import VaughtConjecture.Knight.CapStableModel
 
-/-! # Non-hollow growth prolongs through cap-native stable modelhood
-
-The stable candidate is consistent and covering before it is known to be a
-model. Positive-root stable receiving supplies cap requests; finite attachment
-handles the empty root. The general cap-to-model theorem then supplies modelhood.
-The literal stable reduct equation gives an actual next-block expansion on the
-same carrier, without passing through the selected occurrence package.
-
-The historical theorem names are retained and reexported by
-`NonHollowGrowthReceiving`, which keeps the optional selected-donor application.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.NonHollowGrowthReceiving
+
 open TypeTower KnightRealization
+
 universe w
+
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
 /-- Modelhood of the canonical stable lift from constructed cap receiving,

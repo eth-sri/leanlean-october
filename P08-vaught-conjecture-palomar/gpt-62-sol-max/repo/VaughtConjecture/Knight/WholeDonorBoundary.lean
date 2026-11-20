@@ -5,31 +5,25 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.SemSchemeBoundaryInput
+public import VaughtConjecture.Knight.SchemeBoundaryFaceMap
 public import VaughtConjecture.Knight.OrderedFaceBoundarySemantics
-
-/-! # The ordered inherited boundary from literal legal input faces
-
-Generalizes `SemSchemeBoundaryInput` beyond coatom geometry, reusing its
-restriction-derived face maps. The inputs give actual schemes, a common literal
-face, point placements and a common support plan. Shared rows, exact semantic
-faces, consistency, coding and lawful pasting are outputs, not hypotheses.
-
-This constructs no mixed owners and does not claim bountifulness of the union.
--/
+public import VaughtConjecture.Knight.CappedLifting
+public import VaughtConjecture.Knight.FullScopeZeroExtension
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.WholeDonorBoundary
 
-open AmalgamationPlan Transform Value ExtOrd
+open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
+
 open AmalgamatedBoundary (Overlap pointImage pointImage_complete)
+
 open SemSchemeBoundaryInput (faceMap faceMap_index faceMap_exhaustive faceMap_total)
+
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] (A B C : Finset ι)
+
 variable (R : Finset (Finset ι))
 
 /-- Two legal inputs on arbitrary faces with one literal common face.
@@ -61,8 +55,11 @@ namespace Input
 variable {A B C R} {m nL nR : ℕ} (I : Input A B C R m nL nR)
 
 abbrev leftScheme := pointImage I.left.scheme I.placeLeft I.imageLeft
+
 abbrev rightScheme := pointImage I.right.scheme I.placeRight I.imageRight
+
 abbrev leftRows := PointImageSemantics.rows I.left.scheme I.placeLeft I.imageLeft I.left.rows
+
 abbrev rightRows := PointImageSemantics.rows I.right.scheme I.placeRight I.imageRight I.right.rows
 
 private theorem common_image_right :
@@ -70,6 +67,27 @@ private theorem common_image_right :
       B ∩ C := by
   rw [Finset.image_image, ← I.intersection, Finset.image_image]
   exact congrArg (fun e : Fin m ↪ ι => Finset.univ.image e) I.commute.symm
+
+/-- Exchange the two sides of the same literal attachment. -/
+def swap : Input A C B R m nR nL where
+  isPlan := I.isPlan
+  left := I.right
+  right := I.left
+  common := I.common
+  placeLeft := I.placeRight
+  placeRight := I.placeLeft
+  imageLeft := I.imageRight
+  imageRight := I.imageLeft
+  commonLeft := I.commonRight
+  commonRight := I.commonLeft
+  visibleLeft := I.visibleRight
+  visibleRight := I.visibleLeft
+  faceLeft := I.faceRight
+  faceRight := I.faceLeft
+  commute := I.commute.symm
+  intersection := by exact (common_image_right I).trans (Finset.inter_comm _ _)
+  planLeft := I.planRight
+  planRight := I.planLeft
 
 private theorem image_common (T : Finset (Fin m)) :
     (T.image I.commonLeft).image I.placeLeft =
@@ -100,15 +118,13 @@ def shared : Overlap I.leftScheme I.rightScheme I.common.scheme.card where
     apply (Finset.image_subset_image_iff I.placeLeft.injective).mp
     rw [I.intersection]
     exact Finset.subset_inter
-      ((Finset.image_subset_image (Finset.subset_univ _)).trans
-        (Finset.subset_of_eq I.imageLeft)) hd
+      (by grind) hd
   right_exhaustive d hd := by
     apply faceMap_exhaustive
     apply (Finset.image_subset_image_iff I.placeRight.injective).mp
     rw [common_image_right I]
     exact Finset.subset_inter hd
-      ((Finset.image_subset_image (Finset.subset_univ _)).trans
-        (Finset.subset_of_eq I.imageRight))
+      (by grind)
 
 theorem compatible : OrderedFaceBoundaryRows.Compatible I.leftScheme I.rightScheme
     I.shared I.leftRows I.rightRows := by
@@ -134,12 +150,13 @@ theorem rightPlan_le : I.rightScheme.plan ⊆ R := by
 
 abbrev boundary := OrderedFaceBoundary.scheme I.leftScheme I.rightScheme I.shared
   R I.isPlan I.leftPlan_le I.rightPlan_le
+
 abbrev rows := OrderedFaceBoundaryRows.rows I.leftScheme I.rightScheme I.shared
-  R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows I.compatible
+  R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows
 
 def leftFace : ExactSemanticFace I.leftRows I.rows :=
   OrderedFaceBoundarySemantics.leftFace I.leftScheme I.rightScheme I.shared
-    R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows I.compatible
+    R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows
 
 def rightFace : ExactSemanticFace I.rightRows I.rows :=
   OrderedFaceBoundarySemantics.rightFace I.leftScheme I.rightScheme I.shared
@@ -153,7 +170,7 @@ theorem consistent : I.rows.IsConsistent :=
 
 theorem coded : I.rows.IsCoded :=
   OrderedFaceBoundarySemantics.coded I.leftScheme I.rightScheme I.shared
-    R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows I.compatible
+    R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows
     (PointImageSemantics.coded _ _ _ _ I.left.rows_coded)
     (PointImageSemantics.coded _ _ _ _ I.right.rows_coded)
 
@@ -170,7 +187,7 @@ theorem respects_iff (p : Cell I.boundary → ExtOrd) :
     RespectsSemantics I.rows p ↔
       RespectsSemantics I.left.rows (p ∘ I.leftFace.map) ∧
       RespectsSemantics I.right.rows (p ∘ I.rightFace.map) := by
-  rw [OrderedFaceBoundarySemantics.respects_iff]
+  rw [OrderedFaceBoundarySemantics.respects_iff _ _ _ _ _ _ _ _ _ I.compatible]
   exact and_congr
     (PointImageSemantics.respects_iff _ _ _ _ _)
     (PointImageSemantics.respects_iff _ _ _ _ _)
@@ -179,6 +196,15 @@ def paste (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOr
     Cell I.boundary → ExtOrd :=
   OrderedFaceBoundarySemantics.paste I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le p q
+
+theorem paste_pred {r : ExtOrd → Prop} {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
+    (hp : ∀ d, r (p d)) (hq : ∀ d, r (q d)) (d : Cell I.boundary) : r (I.paste p q d) :=
+  ProfileFaceUnion.paste_pred I.shared.g hp hq ((OrderedFaceBoundary.enumeration _ _ I.shared).symm d)
+
+theorem paste_rel {r : ExtOrd → ExtOrd → Prop}
+    {p p' : Cell I.left.scheme → ExtOrd} {q q' : Cell I.right.scheme → ExtOrd}
+    (hp : ∀ d, r (p d) (p' d)) (hq : ∀ d, r (q d) (q' d)) (d : Cell I.boundary) :
+    r (I.paste p q d) (I.paste p' q' d) := ProfileFaceUnion.paste_rel I.shared.g hp hq ((OrderedFaceBoundary.enumeration _ _ I.shared).symm d)
 
 theorem paste_left (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOrd)
     (d : Cell I.left.scheme) : I.paste p q (I.leftFace.map d) = p d :=
@@ -203,6 +229,55 @@ theorem paste_respects {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.sch
   · have he : I.paste p q ∘ I.rightFace.map = q := funext (I.paste_right p q h)
     exact he.symm ▸ hq
 
+/-- The boundary contains exactly the two placed input faces. -/
+theorem covered (d : Cell I.boundary) :
+    (∃ c, I.leftFace.map c = d) ∨ (∃ c, I.rightFace.map c = d) :=
+  OrderedFaceBoundaryRows.covered I.leftScheme I.rightScheme I.shared
+    R I.isPlan I.leftPlan_le I.rightPlan_le d
+
+/-- Properly placed inputs have no full-scope boundary owner. -/
+theorem proper (hB : B ⊂ A) (hC : C ⊂ A) (d : Cell I.boundary) : I.boundary.scope d ≠ A := by
+  rcases I.covered d with ⟨d, rfl⟩ | ⟨d, rfl⟩
+  · rw [CellScheme.scope, I.leftFace.index]
+    exact fun h => hB.not_ge (h ▸ I.leftScheme.scope_subset d)
+  · rw [CellScheme.scope, I.rightFace.index]
+    exact fun h => hC.not_ge (h ▸ I.rightScheme.scope_subset d)
+
+/-- Paste two lawful lower sections. Their cutoffs may be nominal or reduced
+by arity, provided they select exactly the cells through the target grade. -/
+theorem paste_respects_below {j i k : ℕ} {p : Cell I.left.scheme → ExtOrd}
+    {q : Cell I.right.scheme → ExtOrd}
+    (hp : RespectsSemanticsBelow I.left.rows (Finset.univ, i) (fun d => p d.1))
+    (hq : RespectsSemanticsBelow I.right.rows (Finset.univ, k) (fun d => q d.1))
+    (hs : ∀ d, p (I.shared.f d) = q (I.shared.g d))
+    (hi : ∀ d, I.left.scheme.grade d ≤ i ↔ I.left.scheme.grade d ≤ j)
+    (hk : ∀ d, I.right.scheme.grade d ≤ k ↔ I.right.scheme.grade d ≤ j) :
+    RespectsSemanticsBelow I.rows (A, j) (fun d => I.paste p q d.1) := by
+  let u (d : Cell I.left.scheme) := if I.left.scheme.grade d ≤ j then p d else ⊥
+  let v (d : Cell I.right.scheme) := if I.right.scheme.grade d ≤ j then q d else ⊥
+  have hu : RespectsSemantics I.left.rows u := by
+    convert hp.zeroAbove using 1
+    funext d
+    simp only [u, CellScheme.zeroAbove_apply, hi d]
+  have hv : RespectsSemantics I.right.rows v := by
+    convert hq.zeroAbove using 1
+    funext d
+    simp only [v, CellScheme.zeroAbove_apply, hk d]
+  have hs' (d) : u (I.shared.f d) = v (I.shared.g d) := by
+    have h : I.left.scheme.grade (I.shared.f d) = I.right.scheme.grade (I.shared.g d) :=
+      congrArg Prod.snd (I.shared.shared d)
+    simp only [u, v, h, hs]
+  convert (I.paste_respects hu hv hs').toBelow (A, j) using 1
+  funext d
+  have hd : I.boundary.grade d.1 ≤ j := d.2.2
+  rcases I.covered d.1 with ⟨c, hc⟩ | ⟨c, hc⟩
+  · change Cell I.left.scheme at c
+    rw [← hc, I.paste_left, I.paste_left]
+    exact (if_pos ((congrArg Prod.snd (I.leftFace.index c)).ge.trans (hc ▸ hd))).symm
+  · change Cell I.right.scheme at c
+    rw [← hc, I.paste_right _ _ hs, I.paste_right _ _ hs']
+    exact (if_pos ((congrArg Prod.snd (I.rightFace.index c)).ge.trans (hc ▸ hd))).symm
+
 theorem left_mem {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hB : J.1 ⊆ B) :
     J ∈ Plan.gradedPlan I.leftScheme.plan := by
   obtain ⟨hm, hp, hc⟩ := Plan.mem_gradedPlan.mp hJ
@@ -224,14 +299,13 @@ theorem occupied_iff {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) :
     (∃ d, I.boundary.cell d = J) ↔ J.1 ⊆ B ∨ J.1 ⊆ C := by
   constructor
   · rintro ⟨d, rfl⟩
-    rcases OrderedFaceBoundaryRows.covered I.leftScheme I.rightScheme I.shared
-      R I.isPlan I.leftPlan_le I.rightPlan_le d with ⟨d, rfl⟩ | ⟨d, rfl⟩
+    rcases I.covered d with ⟨d, rfl⟩ | ⟨d, rfl⟩
     · exact Or.inl (by
-        rw [OrderedFaceBoundary.left_index]
-        exact I.leftScheme.isPlan.subset_of_mem (I.leftScheme.scope_mem_plan d))
+        rw [I.leftFace.index]
+        exact I.leftScheme.scope_subset d)
     · exact Or.inr (by
-        rw [OrderedFaceBoundary.right_index]
-        exact I.rightScheme.isPlan.subset_of_mem (I.rightScheme.scope_mem_plan d))
+        rw [I.rightFace.index]
+        exact I.rightScheme.scope_subset d)
   · intro h
     apply OrderedFaceBoundary.complete_on_input I.leftScheme I.rightScheme I.shared
       R I.isPlan I.leftPlan_le I.rightPlan_le
@@ -239,26 +313,40 @@ theorem occupied_iff {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) :
       (pointImage_complete _ _ _ I.right.complete)
     exact h.imp (I.left_mem hJ) (I.right_mem hJ)
 
-/-- Every lifting problem whose upper scope stays inside either original face
-is inherited at the original cap, for arbitrary lawful target-local ambients. -/
-theorem inherited_lift {CI BJ : Finset ι × ℕ}
-    (hCI : CI ∈ Plan.gradedPlan R) (hBJ : BJ ∈ Plan.gradedPlan R)
-    (h : GradedLe CI BJ) (hne : CI ≠ BJ) (hscope : BJ.1 ⊆ B ∨ BJ.1 ⊆ C)
-    (p : I.boundary.below CI → ExtOrd) (q : I.boundary.below BJ → ExtOrd) (γ : ExtOrd)
-    (hp : RespectsSemanticsBelow I.rows CI p) (hq : RespectsSemanticsBelow I.rows BJ q)
-    (hγ : extVisibilityReplace γ BJ.2 BJ.2 = γ)
-    (ha : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
-    ∃ q', RespectsSemanticsBelow I.rows BJ q' ∧
-      (∀ d, min (q' d) γ = min (q d) γ) ∧
-      ∀ d, q' (CellScheme.below.mono h d) = p d := by
-  rcases hscope with hl | hr
-  · exact I.leftFace.lift hl (I.left_mem hCI (h.1.trans hl)) (I.left_mem hBJ hl) h hne
+include I in
+theorem left_card : B.card = nL := by rw [← I.imageLeft, Finset.card_image_of_injective _ I.placeLeft.injective]; simp
+
+include I in
+theorem right_card : C.card = nR := by rw [← I.imageRight, Finset.card_image_of_injective _ I.placeRight.injective]; simp
+
+section Installed
+
+variable {D : CellScheme A} {sem : Semantics D}
+  (L : ExactSemanticFace I.leftRows sem) (G : ExactSemanticFace I.rightRows sem)
+
+include I L G in
+theorem installed_lift {U V : Finset ι × ℕ}
+    (hU : U ∈ Plan.gradedPlan R) (hV : V ∈ Plan.gradedPlan R)
+    (h : GradedLe U V) (hv : V.1 ⊆ B ∨ V.1 ⊆ C) : CappedLift sem h := by
+  rcases hv with hb | hc
+  · exact L.lift hb (I.left_mem hU (h.1.trans hb)) (I.left_mem hV hb) h
       (PointImageSemantics.bountiful _ _ _ _ I.left.complete I.left.bountiful)
-      p q γ hp hq hγ ha
-  · exact I.rightFace.lift hr (I.right_mem hCI (h.1.trans hr)) (I.right_mem hBJ hr) h hne
+  · exact G.lift hc (I.right_mem hU (h.1.trans hc)) (I.right_mem hV hc) h
       (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
-      p q γ hp hq hγ ha
+
+end Installed
+
+theorem grade_le (d : Cell I.boundary) : I.boundary.grade d ≤ max nL nR := by
+  rcases I.covered d with ⟨d, rfl⟩ | ⟨d, rfl⟩
+  · have h : I.left.scheme.grade d ≤ nL := by
+      simpa using (I.left.scheme.grade_le_card_scope d).trans (Finset.card_le_univ _)
+    exact (congrArg Prod.snd (I.leftFace.index d)).le.trans (h.trans (le_max_left _ _))
+  · have h : I.right.scheme.grade d ≤ nR := by
+      simpa using (I.right.scheme.grade_le_card_scope d).trans (Finset.card_le_univ _)
+    exact (congrArg Prod.snd (I.rightFace.index d)).le.trans (h.trans (le_max_right _ _))
 
 end Input
+
 end
+
 end VaughtConjecture.Knight.WholeDonorBoundary

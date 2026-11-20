@@ -8,35 +8,6 @@ module
 public import VaughtConjecture.Knight.LowSeparatorPaired
 public import VaughtConjecture.Knight.LadderScalarRendering
 
-/-! # The LOW separator on the rank ladder (grade `K = 1`)
-
-The grade-one regime of newapproach19 new45 §5, kept distinct from the paired-slot regime: the
-grade-one base is the actual long rank ladder (`SupportLadderRows`), whose anchors are rank
-profiles (`LadderScalarRendering.fieldRank`) and whose spare tips are `SupportLadderRows.leaf`.
-No paired-profile leaf is identified with a ladder tip.
-
-* **The rank partner** (`rankPartner`): lower only the cutoff to the non-top maximum `M(s)` and
-  re-rank.  Its cutoff rank is `k := rank_s(M(s))` (`rankPartner_cutoff`; `k = 0` for a bottom
-  maximum), it agrees with `s`'s rank profile through `k` (`rankPartner_agree`, ties and future
-  fields included since ranks are over the complete field type), and the **common rank cut** is
-  exactly `k` (`cut_rankPartner`).
-* **Strict comparison activates LOW** (`activation_of_cut_lt`, `activation_of_source`): a rank
-  profile `a` with `Δ(a, t) < Δ(a, ŝ)` has `Δ(a, t) = k < Δ(a, ŝ)`, so every non-top donor rank
-  is at most `k` and the cutoff rank exceeds `k`; for the actual source `a'` with ranks `a`,
-  every non-top donor field lies strictly below the cutoff: `M(a') < a' b`.
-* **The two-spare-tip separator on the actual ladder** (`ladder_separator`,
-  `ladder_readback`): a lawful ladder section reading the partner's tip strictly below `s`'s tip
-  is served by one anchor with a positive monotone table (`Lawful.exists_shape`); the tip
-  readings are the table at the two common rank cuts, so LOW is active at the serving source,
-  and a monotone rank table reading the private owner and low source as `⊤` reads every
-  designated donor top as `⊤` (`readout_image`).
-* **The selected readings** (`render_tip_partner`, `render_tip_self`): the ceiling-filled
-  rendering of `s` reads the partner's tip at `M(s)` and its own tip at the ceiling, a strict
-  comparison whenever the ceiling exceeds the cutoff.
-
-The family section instantiates the activation and readback on KVC's `LowOnly.Family` at
-`K = 1`.  No physical installation, bountifulness or model application is asserted. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.LowSeparatorRank
@@ -76,7 +47,7 @@ variable {s : X → ExtOrd} (hlt : donorMax N s < s b)
 
 include hlt in
 theorem sb_mem_values : s b ∈ values s :=
-  mem_values.mpr ⟨ne_of_gt (bot_le.trans_lt hlt), b, rfl⟩
+  mem_values.mpr (by aesop)
 
 include hlt in
 theorem rankCut_lt_cutoff : rankCut N s < fieldRank s b :=
@@ -98,14 +69,13 @@ theorem values_rankPartner_below :
     by_cases hdb : d = b
     · rw [hdb, rankPartner_apply_self N b] at hd
       obtain ⟨_, e, he⟩ := mem_values.mp (donorMax_mem_values N (hd ▸ hz))
-      exact ⟨e, he.trans hd⟩
+      grind
     · rw [rankPartner_apply_of_ne N b s hdb] at hd
       exact ⟨d, hd⟩
   · rintro ⟨hz, d, hd⟩
     refine ⟨hz, ?_⟩
     by_cases hdb : d = b
-    · subst hdb
-      exact absurd (hd ▸ hy) (lt_irrefl _)
+    · aesop
     · exact ⟨d, by rw [rankPartner_apply_of_ne N b s hdb]; exact hd⟩
 
 include hlt in
@@ -135,11 +105,9 @@ theorem rankPartner_agree :
             rankCut N s := by
           have := rankPartner_cutoff N b hlt
           unfold fieldRank at this
-          rw [rankPartner_apply_self N b] at this
-          exact this
-        rw [← hk]
-        exact h
-      rw [min_eq_right h1, min_eq_right h2]
+          rwa [rankPartner_apply_self N b] at this
+        omega
+      lia
 
 include hlt in
 /-- **The common rank cut is `k`.** -/
@@ -151,9 +119,6 @@ theorem cut_rankPartner {H : ℕ} (hH : Fintype.card X ≤ H) :
     have hag := agree_cut H (fieldRank s) (fieldRank (rankPartner N b s)) b
     rw [rankPartner_cutoff N b hlt, min_eq_left hgt.le] at hag
     have h1 := rankCut_lt_cutoff N b hlt
-    have : rankCut N s <
-        min (fieldRank s b) (cut H (fieldRank s) (fieldRank (rankPartner N b s))) :=
-      lt_min h1 hgt
     omega
   · exact le_cut ((rankCut_le N s).trans hH) (rankPartner_agree N b hlt)
 
@@ -212,19 +177,6 @@ theorem activation_of_source {k : ℕ} (a : X → ExtOrd)
 
 end Scalar
 
-/-! ## The two-spare-tip separator on the actual ladder -/
-
-section Ladder
-
-variable {X : Type*} [Fintype X] (N : X → Prop) [DecidablePred N] (b : X)
-  {Q : Type*} [Finite Q] {H : ℕ} (profile : Q → X → ℕ)
-  (hbound : ∀ a d, profile a d ≤ H) (hH : 0 < H)
-  (src : Q → X → ExtOrd) (hsrc : ∀ a, profile a = fieldRank (src a))
-
-end Ladder
-
-/-! ## The selected rendered readings -/
-
 section Selected
 
 variable {X : Type*} [Fintype X] (N : X → Prop) [DecidablePred N] (b : X)
@@ -256,8 +208,6 @@ theorem render_tip_self (s : X → ExtOrd) (hHX : Fintype.card X < H) (qs : Q) (
 
 end Selected
 
-/-! ## The family instance at `K = 1` -/
-
 section Family
 
 open LowOnly
@@ -274,8 +224,7 @@ theorem low_min_le {A : State P C} (hA : F.Admissible 1 A) (hm : F.maximum A < A
     have h := (hA.lawfulC.orderly (CellScheme.below.mono (F.gap.domLe le_rfl) F.gap.r)).symm
     change SelfVis (C.scheme.grade F.gap.r.1) (A.v F.gap.r.1) at h
     exact h.mono (C.scheme.grade_pos _)
-  rw [evr_eq_self_of_selfVis hvis] at hlow
-  exact (le_max_right _ _).trans hlow
+  simp_all
 
 end Family
 

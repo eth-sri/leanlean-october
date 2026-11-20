@@ -5,58 +5,60 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CanonicalSeedBountiful
-public import VaughtConjecture.Knight.CanonicalRecursiveRecurrence
-
-/-! # Initialized bountiful grade recursion on the actual canonical rows
-
-Seed lifting is proved directly on its complete persistent inventory. The
-banked lower-pair theorem supplies restoration; no equivalence of catalogues
-is used to import three-grade bountifulness. The established successor then
-iterates from this constructed base, within the explicit old-coatom bounds.
--/
+public import VaughtConjecture.Knight.CanonicalPairLowerLifting
+public import VaughtConjecture.Knight.CanonicalRecursiveBountiful
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveInitialized
+
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
-open CanonicalRecursiveRecurrence
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
-variable (hs : sem.IsConsistent) (hold : CanonicalCoatomBountiful.OldLifts sem)
+
+abbrev Ready (n : ℕ) (hn : n + 2 ≤ A.card) : Prop :=
+  (GradeCutBoundary.rows (CanonicalRecursiveContract.stageCarrier sem n hn) (n + 2)
+    (CanonicalRecursiveSemantics.stage sem hp n hn).rows).IsBountiful
+
+variable (hold : CanonicalCoatomBountiful.OldLifts sem)
+
 variable {L R : Finset ι} (hL : L ∈ D.plan) (hR : R ∈ D.plan)
+
 variable (hLA : L ≠ A) (hRA : R ≠ A) (hO : L ∩ R ∈ D.plan)
+
 variable (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)
 
-include hs hold hL hR hLA hRA hO hcover in
-/-- Initialization on the exact recursive seed, including every actual
-controller cap and retained higher proper occurrence. -/
-theorem seed_ready (hA : 3 ≤ A.card) (hLc : 3 ≤ L.card) (hRc : 3 ≤ R.card)
-    (hcomplete : ∀ C ∈ D.plan, C ≠ A → ∀ i, 0 < i → i ≤ C.card → i ≤ 3 →
-      ∃ d : Cell D, D.cell d = (C, i)) : Ready sem hp 0 hA := by
-  have hb := CanonicalSeedLifting.predecessor_bountiful sem hA hp hold
-    hL hR hLA hRA (Nat.le_of_succ_le hLc) (Nat.le_of_succ_le hRc) hO hcover
-    (fun C hC hCA i hi hic hi2 => hcomplete C hC hCA i hi hic (by omega))
-  exact ⟨hs, CanonicalSeedBountiful.bountiful sem hA hp hb hold
-    hL hR hLA hRA hLc hRc hO hcover
-    (fun C hC hCA hc => hcomplete C hC hCA 3 (by decide) hc le_rfl)⟩
+include hold hL hR hLA hRA hO hcover in
+private theorem base_bountiful (hA : 2 ≤ A.card) (hLc : 2 ≤ L.card) (hRc : 2 ≤ R.card)
+    (hcomplete : ∀ C ∈ D.plan, C ≠ A → ∀ i, 0 < i → i ≤ C.card → i ≤ 2 →
+      ∃ d : Cell D, D.cell d = (C, i)) :
+    (GradeCutBoundary.rows (CanonicalPairLocalSections.carrier sem hA) 2 (CanonicalPairLocalSections.semantics sem hA hp)).IsBountiful := by
+  apply EffectiveGradeLifting.bountiful_of_bounded_same_grade
+    (GradeCutBoundary.grade_bound (CanonicalPairLocalSections.carrier sem hA) 2) (by decide)
+  intro C B i hC hB hi hCB
+  apply (GradeCutLifting.lift_iff (CanonicalPairLocalSections.semantics sem hA hp) 2 _ hi).mpr
+  exact CanonicalPairLowerLifting.lower_lift sem hp hA
+    hold hL hR hLA hRA hLc hRc hO hcover hcomplete hC hB ⟨hCB, le_rfl⟩ hi
 
-include hs hold hL hR hLA hRA hO hcover in
-/-- Finite grade iteration with no supplied seed-readiness premise. The rows
-are those of the one recursive constructor, not independently chosen tables. -/
-theorem ready (n : ℕ) (hA : n + 3 ≤ A.card)
-    (hLc : n + 3 ≤ L.card) (hRc : n + 3 ≤ R.card)
-    (hcomplete : ∀ C ∈ D.plan, C ≠ A → ∀ i, 0 < i → i ≤ C.card → i ≤ n + 3 →
+include hold hL hR hLA hRA hO hcover in
+theorem ready (n : ℕ) (hA : n + 2 ≤ A.card)
+    (hLc : n + 2 ≤ L.card) (hRc : n + 2 ≤ R.card)
+    (hcomplete : ∀ C ∈ D.plan, C ≠ A → ∀ i, 0 < i → i ≤ C.card → i ≤ n + 2 →
       ∃ d : Cell D, D.cell d = (C, i)) : Ready sem hp n hA := by
-  have hseed := seed_ready sem hp hs hold hL hR hLA hRA hO hcover
-    (by omega : 3 ≤ A.card) (by omega : 3 ≤ L.card) (by omega : 3 ≤ R.card)
-    (fun C hC hCA i hi hic hi3 => hcomplete C hC hCA i hi hic (by omega))
-  exact CanonicalRecursiveRecurrence.iterate sem hp hold hL hR hLA hRA hO hcover
-    n hA hseed hLc hRc hcomplete
+  induction n with
+  | zero => exact base_bountiful sem hp hold hL hR hLA hRA hO hcover hA hLc hRc hcomplete
+  | succ n ih =>
+    exact CanonicalRecursiveBountiful.bountiful sem n hA hp
+      (ih (Nat.le_of_succ_le hA) (Nat.le_of_succ_le hLc) (Nat.le_of_succ_le hRc)
+        (fun C hC hCA i hi hic hin => hcomplete C hC hCA i hi hic (by omega)))
+      hold hL hR hLA hRA hLc hRc hO hcover
+      (fun C hC hCA hic => hcomplete C hC hCA (n + 3) (by omega) hic le_rfl)
 
-include hs hold hL hR hLA hRA hO hcover in
+include hold hL hR hLA hRA hO hcover in
 /-- Actual lower-domain lifting at every constructed grade, including equal
 indices, arbitrary lawful prescriptions, literal top, and all auxiliary caps.
 No serving controller, alignment, completion, or initial bountifulness is supplied. -/
@@ -69,12 +71,13 @@ theorem lift (n : ℕ) (hA : n + 3 ≤ A.card)
     CappedLift (CanonicalRecursiveSemantics.rows sem hp n hA) h := by
   apply (GradeCutLifting.lift_iff (CanonicalRecursiveSemantics.rows sem hp n hA)
     (n + 3) h hJk).mp
-  apply lift_of_bountiful (ready sem hp hs hold hL hR hLA hRA hO hcover
-    n hA hLc hRc hcomplete).2
+  apply lift_of_bountiful (ready sem hp hold hL hR hLA hRA hO hcover
+    (n + 1) hA hLc hRc hcomplete)
   · change I ∈ Plan.gradedPlan (CanonicalRecursiveContract.carrier sem n hA).plan
     rw [CanonicalRecursiveBoundaryTransport.plan_eq]; exact hI
   · change J ∈ Plan.gradedPlan (CanonicalRecursiveContract.carrier sem n hA).plan
     rw [CanonicalRecursiveBoundaryTransport.plan_eq]; exact hJ
 
 end
+
 end VaughtConjecture.Knight.CanonicalRecursiveInitialized

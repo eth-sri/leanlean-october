@@ -8,22 +8,18 @@ module
 public import VaughtConjecture.Knight.HighLayerBountiful
 public import VaughtConjecture.Knight.CanonicalGradeCutSections
 
-/-! # A recursive full-layer inventory over one unchanged proper boundary
-
-Stage n contains the complete old boundary and every controller inventory
-at grades 1 through n. Old higher-grade proper owners are never discarded.
-This module constructs geometry, not consistent source rows or bountifulness.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RecursiveSourceCarrier
+
 open Transform Value ExtOrd
+
 open scoped BigOperators
+
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
+
 variable (D : CellScheme A) (Q : ℕ → Type*) [∀ j, Fintype (Q j)]
 
 def scheme : (n : ℕ) → n ≤ A.card → CellScheme A
@@ -87,7 +83,7 @@ theorem classify (n : ℕ) (hn : n ≤ A.card) (d : Cell (scheme D Q n hn)) :
     (∃ c : Cell D, boundary D Q n hn c = d) ∨
       ∃ j, 0 < j ∧ j ≤ n ∧ (scheme D Q n hn).cell d = (A, j) := by
   induction n with
-  | zero => exact Or.inl ⟨d, rfl⟩
+  | zero => tauto
   | succ n ih =>
     obtain ⟨x, rfl⟩ := (SourceLayerCarrier.enumeration
       (scheme D Q n (Nat.le_of_succ_le hn)) (Q (n + 1)) (n + 1) (Nat.succ_pos n) hn).surjective d
@@ -103,9 +99,7 @@ theorem full_grade (hp : ∀ d : Cell D, D.scope d ≠ A)
     (hd : (scheme D Q n hn).scope d = A) : (scheme D Q n hn).grade d ≤ n := by
   rcases classify D Q n hn d with ⟨c, rfl⟩ | ⟨j, _, hj, he⟩
   · exact (hp c ((congrArg Prod.fst (boundary_cell D Q n hn c)).symm.trans hd)).elim
-  · change ((scheme D Q n hn).cell d).2 ≤ n
-    rw [he]
-    exact hj
+  simp_all
 
 /-- Proper old owners may be higher than the next layer. Separation comes
 from their scope, not an incorrect whole-predecessor grade bound. -/
@@ -114,8 +108,9 @@ theorem separated (hp : ∀ d : Cell D, D.scope d ≠ A)
     ¬ GradedLe (A, n + 1) ((scheme D Q n hn).cell d) := by
   intro h
   have hs : (scheme D Q n hn).scope d = A := Finset.Subset.antisymm
-    ((scheme D Q n hn).isPlan.subset_of_mem ((scheme D Q n hn).scope_mem_plan d)) h.1
+    ((scheme D Q n hn).scope_subset d) h.1
   exact (Nat.not_succ_le_self n) (h.2.trans (full_grade D Q hp n hn d hs))
 
 end
+
 end VaughtConjecture.Knight.RecursiveSourceCarrier

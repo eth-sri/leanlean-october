@@ -9,22 +9,15 @@ public import VaughtConjecture.Knight.FiniteCofaceSupply
 public import VaughtConjecture.Knight.CoatomAmalgamation
 public import VaughtConjecture.Knight.VisibleFaceOneStep
 
-/-! # Finite coface lifting from coatom amalgamation
-
-The finite consequences of `MaximalCoatomAmalgamationSupply`: zero-padded
-face lifting, exact-pair amalgamation, and uniformity/high-grade cofaces.
-Their statements and namespaces are unchanged. The Henkin model-existence
-and spectrum applications remain in `CoatomHenkinBridge`.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
-open StageType TypeTower Cardinal
-namespace FixedHeight
-variable {α : Ordinal.{0}}
 
-/-! ### Face-embedding algebra -/
+open StageType TypeTower Cardinal
+
+namespace FixedHeight
+
+variable {α : Ordinal.{0}}
 
 theorem extendFace_trans {k n N : ℕ} (e : Fin k ↪ Fin n) (h : Fin n ↪ Fin N) :
     (extendFace e).trans (extendFace h) = extendFace (e.trans h) := by
@@ -34,9 +27,7 @@ theorem extendFace_trans {k n N : ℕ} (e : Fin k ↪ Fin n) (h : Fin n ↪ Fin 
   | cast i => simp
 
 theorem castSuccEmb_trans_extendFace {n N : ℕ} (g : Fin n ↪ Fin N) :
-    (Fin.castSuccEmb : Fin n ↪ Fin (n + 1)).trans (extendFace g) = g.trans Fin.castSuccEmb := by
-  refine Function.Embedding.ext fun i => ?_
-  simp [Fin.castSuccEmb_apply]
+    (Fin.castSuccEmb : Fin n ↪ Fin (n + 1)).trans (extendFace g) = g.trans Fin.castSuccEmb := by aesop
 
 /-- The image of an embedding of `Fin n` into itself is everything. -/
 theorem image_univ_eq_univ_of_card {n : ℕ} (g : Fin n ↪ Fin n) :
@@ -57,11 +48,7 @@ def _root_.VaughtConjecture.Knight.CoatomPair.step {n : ℕ} (e : Fin n ↪ Fin 
     intro h
     have hl : Fin.last (n + 1) ∈ Finset.univ.image (extendFace e) :=
       Finset.mem_image.mpr ⟨Fin.last n, Finset.mem_univ _, extendFace_last e⟩
-    rw [h] at hl
-    obtain ⟨k, -, hk⟩ := Finset.mem_image.mp hl
-    exact (Fin.castSucc_lt_last k).ne hk
-
-/-! ### The zero-padded face lift -/
+    simp_all
 
 /-- **The zero-padded face lift**, by induction on the codimension `m` of the face. -/
 theorem pinnedCofaceLift (H : MaximalCoatomAmalgamationSupply α) :
@@ -124,16 +111,10 @@ theorem pinnedCofaceLift (H : MaximalCoatomAmalgamationSupply α) :
     -- enumerate `C` and factor `g` through it
     let h : Fin (n + 1) ↪ Fin N := (C.orderEmbOfFin hcard).toEmbedding
     have hrange : Finset.univ.image h = C := by
-      apply Finset.coe_injective
-      rw [Finset.coe_image, Finset.coe_univ, Set.image_univ]
-      exact Finset.range_orderEmbOfFin C hcard
-    have hmem : ∀ i, g i ∈ C := fun i =>
-      hBC.subset (Finset.mem_image_of_mem _ (Finset.mem_univ i))
+      aesop
+    have hmem : ∀ i, g i ∈ C := by grind
     let e : Fin n ↪ Fin (n + 1) :=
-      ⟨fun i => (C.orderIsoOfFin hcard).symm ⟨g i, hmem i⟩, fun i j hij => by
-        have := congrArg (fun x => ((C.orderIsoOfFin hcard) x).1) hij
-        simp only [OrderIso.apply_symm_apply] at this
-        exact g.injective this⟩
+      ⟨fun i => (C.orderIsoOfFin hcard).symm ⟨g i, hmem i⟩, fun i j hij => by simp_all⟩
     have hfactor : e.trans h = g := by
       refine Function.Embedding.ext fun i => ?_
       change (C.orderEmbOfFin hcard) ((C.orderIsoOfFin hcard).symm ⟨g i, hmem i⟩) = g i
@@ -150,8 +131,7 @@ theorem pinnedCofaceLift (H : MaximalCoatomAmalgamationSupply α) :
     -- lift `Q'` over the enlarged face by the induction hypothesis
     obtain ⟨Q, hQP, hQh⟩ := ih (N := N) (n := n + 1) (by omega) P h p' hp' Q' hQ'₂
     refine ⟨Q, hQP, ?_⟩
-    rw [← hfactor, ← extendFace_trans, ← typeMap_trans _ _ Q Q' hQh]
-    exact hQ'₁
+    rwa [← hfactor, ← extendFace_trans, ← typeMap_trans _ _ Q Q' hQh]
 
 /-- **Rung 1 from the receiver**: the pinned coface supply. -/
 theorem pinnedCofaceSupply_of_supply {β : LimitStage}
@@ -162,16 +142,13 @@ theorem pinnedCofaceSupply_of_supply {β : LimitStage}
     simpa using this
   exact pinnedCofaceLift H (N - n) (by omega) P g p hg q hq
 
-/-! ### The band producer and the master supply -/
-
 /-- A uniformity coface of every base, from the receiver and the seed labelled `γ + 1`. -/
 theorem exists_uniformity_coface {β : LimitStage} (H : MaximalCoatomAmalgamationSupply β.1)
     {n : ℕ} (p : S β.1 n) (γ : Ordinal.{0}) (_h1 : Value.IsNonSuccessor γ) (h2 : γ < β.1) :
     ∃ q ∈ UniformityFamily (α := β.1) γ, IsCoface p q := by
   obtain ⟨r, Sig, hr⟩ := exists_successorOneType_of_lt β.2 h2
   refine exists_uniformity_candidate H p r Sig ?_ ?_
-  · rw [hr, ExtOrd.ofOrd_le_ofOrd]; exact Order.le_succ γ
-  · rw [hr, ExtOrd.ofOrd_lt_ofOrd]; exact (add_lt_add_iff_left γ).mpr Ordinal.one_lt_omega0
+  all_goals simp_all
 
 /-- A high-grade-dominance coface of every base, from the receiver and the seed labelled
 `γ + 1`. -/
@@ -180,7 +157,8 @@ theorem exists_highGrade_coface {β : LimitStage} (H : MaximalCoatomAmalgamation
     ∃ q ∈ HighGradeDominanceFamily (α := β.1) γ, IsCoface p q := by
   obtain ⟨r, Sig, hr⟩ := exists_successorOneType_of_lt β.2 h2
   refine exists_highGradeDominance_candidate H p r Sig ?_
-  rw [hr, ExtOrd.ofOrd_lt_ofOrd]; exact Order.lt_succ γ
+  simp_all
 
 end FixedHeight
+
 end VaughtConjecture.Knight

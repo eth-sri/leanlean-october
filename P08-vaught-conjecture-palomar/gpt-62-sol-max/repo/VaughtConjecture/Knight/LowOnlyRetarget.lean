@@ -7,14 +7,6 @@ module
 
 public import VaughtConjecture.Knight.CappedDonorRetarget
 
-/-! # LOW-only donor retargeting without reference-context geometry
-
-This factors the donor surgery of `CappedDonorRetarget` through a lawful donor display,
-on an arbitrary actual lower domain. No reference context or arity inequality is required.
-The existing scalar shifter is reused; locality and availability are constructed on the
-unchanged donor rows. Attribution: the corresponding proofs in `CappedDonorRetarget`.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.LowOnly
@@ -30,25 +22,16 @@ theorem srcP_nonTop_lt_top (o : P.scheme.below (BJ)) (ho : p o.1 = ⊤)
     (d t : P.scheme.below (P.scheme.cell o.1)) (hd : p d.1 ≠ ⊤) (ht : p t.1 = ⊤) :
     extVisibilityReplace (P.rows.E o.1 d) (P.scheme.grade o.1) (P.scheme.grade o.1) <
       P.rows.E o.1 t := by
-  have hp := hp.toBelow (BJ)
-  obtain ⟨τ, hτ, -, hread⟩ := exists_bounded_exact_capped_witness
-    (grade := fun d : P.scheme.below (P.scheme.cell o.1) => P.scheme.grade d.1)
-    (c := ⟨o.1, GradedLe.refl _⟩) (p := fun d => p d.1) (fun d => d.2.2)
-    (hp.orderly o).symm (hp.locality o)
+  obtain ⟨τ, hτ, -, hread⟩ := hp.rowWitness o.1
   have hd' : τ (P.rows.E o.1 d) = p d.1 := by
     rw [hread]
-    change min (p d.1) (p o.1) = _
-    rw [ho, min_top_right]
+    grind
   have ht' : τ (P.rows.E o.1 t) = ⊤ := by
-    rw [hread]
-    change min (p t.1) (p o.1) = _
-    rw [ho, ht, min_top_right]
+    grind
   by_contra hle
   have h := hτ.mono (not_lt.mp hle)
-  rw [ht', hτ.comm_gTop _ le_rfl, hd', top_le_iff] at h
+  rw [ht', hτ.comm _ le_rfl le_rfl, hd', top_le_iff] at h
   exact TopSupport.evr_ne_top hd _ _ h
-
-/-! ## Uniform retargeting -/
 
 open Classical in
 /-- Replace every designated donor-top value by `η`, retain every other value. -/
@@ -57,12 +40,10 @@ noncomputable def retargetTops (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd
   if p d.1 = ⊤ then η else u d
 
 theorem retargetTops_of_top (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd)
-    {d : P.scheme.below (BJ)} (h : p d.1 = ⊤) : retargetTops (p := p) η u d = η := by
-  unfold retargetTops; rw [ite_eq_left h]
+    {d : P.scheme.below (BJ)} (h : p d.1 = ⊤) : retargetTops (p := p) η u d = η := by grind [retargetTops]
 
 theorem retargetTops_of_nonTop (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd)
-    {d : P.scheme.below (BJ)} (h : p d.1 ≠ ⊤) : retargetTops (p := p) η u d = u d := by
-  unfold retargetTops; rw [ite_eq_right h]
+    {d : P.scheme.below (BJ)} (h : p d.1 ≠ ⊤) : retargetTops (p := p) η u d = u d := by grind [retargetTops]
 
 section Retarget
 
@@ -116,11 +97,7 @@ theorem RetargetData.srcMax_lt_top (o : P.scheme.below (BJ)) (ho : p o.1 = ⊤)
     RetargetData.srcMax (p := p) o < P.rows.E o.1 t := by
   let _ := Fintype.ofFinite (P.scheme.below (P.scheme.cell o.1))
   have hpos : ⊥ < P.rows.E o.1 t := by
-    have hp := hp.toBelow (BJ)
-    obtain ⟨τ, hτ, -, hread⟩ := exists_bounded_exact_capped_witness
-      (grade := fun d : P.scheme.below (P.scheme.cell o.1) => P.scheme.grade d.1)
-      (c := ⟨o.1, GradedLe.refl _⟩) (p := fun d => p d.1) (fun d => d.2.2)
-      (hp.orderly o).symm (hp.locality o)
+    obtain ⟨τ, hτ, -, hread⟩ := hp.rowWitness o.1
     have h := hread t
     change τ (P.rows.E o.1 t) = min (p t.1) (p o.1) at h
     rw [ht, ho, min_top_right] at h
@@ -141,15 +118,12 @@ theorem RetargetData.retargetTops_respects
   orderly d := by
     by_cases h : p d.1 = ⊤
     · rw [retargetTops_of_top η u h]
-      exact (hu.η_vis.mono ((htop d.1 h).trans_eq' rfl)).symm
+      exact (hu.η_vis.mono (by tauto)).symm
     · rw [retargetTops_of_nonTop η u h]; exact hu.respects.orderly d
   locality o := by
     by_cases ho : p o.1 = ⊤
     · -- a donor-top owner: per-owner surgery on the exact witness
-      obtain ⟨τ, hτ, -, hread⟩ := exists_bounded_exact_capped_witness
-        (grade := fun d : P.scheme.below (P.scheme.cell o.1) => P.scheme.grade d.1)
-        (c := ⟨o.1, GradedLe.refl _⟩) (p := fun d => u (CellScheme.below.incl o d))
-        (fun d => d.2.2) (hu.respects.orderly o).symm (hu.respects.locality o)
+      obtain ⟨τ, hτ, -, hread⟩ := hu.respects.rowWitness o
       have hko : P.scheme.grade o.1 ≤ K := htop o.1 ho
       have hτa : τ (RetargetData.srcMax (p := p) o) ≤ b := by
         let _ := Fintype.ofFinite (P.scheme.below (P.scheme.cell o.1))
@@ -157,11 +131,11 @@ theorem RetargetData.retargetTops_respects
         rw [Finset.apply_sup_eq_sup_comp τ (fun _ _ => hτ.mono.map_max) hτ.bot]
         refine Finset.sup_le fun d hd => ?_
         simp only [Function.comp_apply]
-        rw [hτ.comm_gTop _ le_rfl, hread]
+        rw [hτ.comm _ le_rfl le_rfl, hread]
         change extVisibilityReplace (min (u (CellScheme.below.incl o d)) (u o)) _ _ ≤ b
         exact evr_le_of_le_selfVis hu.b_vis hko le_rfl ((min_le_left _ _).trans
           (hu.nonTop_lt _ (Finset.mem_filter.mp hd).2).le)
-      have hw := retargetShifter_witness hτ (RetargetData.srcMax_selfVis (p := p) o) hτa
+      have hw := retargetShifter_witness hτ (by solve_by_elim [RetargetData.srcMax_selfVis]) hτa
         hu.b_le_η (hu.η_vis.mono hko) (hu.b_pos.trans_le hu.b_le_η)
       refine hw.transformsTo fun d => ?_
       have hg : gTop (P.scheme.grade (⟨o.1, GradedLe.refl _⟩ :
@@ -174,9 +148,9 @@ theorem RetargetData.retargetTops_respects
           rw [hread]
           change min (u (CellScheme.below.incl o d)) (u o) ≠ ⊥
           exact ne_bot_of_gt (lt_min (hu.top_pos hd) (hu.top_pos ho))
-        rw [retargetShifter_of_lt hne (RetargetData.srcMax_lt_top (p := p) hp o ho hd)]
+        rw [retargetShifter_of_lt hne (by solve_by_elim [RetargetData.srcMax_lt_top])]
       · rw [retargetTops_of_nonTop η u (d := CellScheme.below.incl o d) hd,
-          retargetShifter_of_le (RetargetData.le_srcMax (p := p) o hd), hread]
+          retargetShifter_of_le (by solve_by_elim [RetargetData.le_srcMax]), hread]
         change min (u (CellScheme.below.incl o d)) η = min (u (CellScheme.below.incl o d)) (u o)
         rw [min_eq_left ((hu.nonTop_lt _ hd).le.trans hu.b_le_η),
           min_eq_left ((hu.nonTop_lt _ hd).le.trans (hu.top_ge o ho))]
@@ -192,21 +166,19 @@ theorem RetargetData.retargetTops_respects
         · rw [retargetTops_of_top η u (d := CellScheme.below.incl o d) hd,
             min_eq_right ((hu.nonTop_lt o ho).le.trans hu.b_le_η),
             min_eq_right ((hu.nonTop_lt o ho).le.trans (hu.top_ge _ hd))]
-        · rw [retargetTops_of_nonTop η u (d := CellScheme.below.incl o d) hd]
-      rw [heq]; exact key
+        solve_by_elim [retargetTops_of_nonTop, CellScheme.below.incl]
+      simp_all
   availability Sig Xi₀ hs hg := by
     by_cases hS : p Sig.1 = ⊤
     · obtain ⟨Xi, hcell, hle⟩ := (hp.toBelow (BJ)).availability Sig Xi₀ hs hg
-      have hX : p Xi.1 = ⊤ := top_le_iff.mp (hS ▸ hle)
-      refine ⟨Xi, hcell, ?_⟩
-      rw [retargetTops_of_top η u hS, retargetTops_of_top η u hX]
+      grind [retargetTops_of_top]
     · obtain ⟨Xi, hcell, hle⟩ := hu.respects.availability Sig Xi₀ hs hg
       refine ⟨Xi, hcell, ?_⟩
       rw [retargetTops_of_nonTop η u hS]
       by_cases hX : p Xi.1 = ⊤
       · rw [retargetTops_of_top η u hX]
         exact (hu.nonTop_lt Sig hS).le.trans hu.b_le_η
-      · rw [retargetTops_of_nonTop η u hX]; exact hle
+      grind [retargetTops_of_nonTop]
 
 end Retarget
 

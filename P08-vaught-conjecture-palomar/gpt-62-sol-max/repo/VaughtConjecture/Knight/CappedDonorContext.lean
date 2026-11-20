@@ -8,48 +8,21 @@ module
 public import VaughtConjecture.Knight.CappedDonorReceiving
 public import VaughtConjecture.Knight.CappedDonorFace
 public import VaughtConjecture.Knight.ReferenceContextMargin
-public import VaughtConjecture.Knight.ReferenceOrbitRow
-
-/-! # The receiving input from an actual model (notes32 §1, the adapter)
-
-The capped-donor reference data `CappedDonor.Ref` — hence the receiving-input family and both
-fibres of `Knight/CappedDonorReceiving.lean` — **obtained from an actual model**: a model `R`,
-a realized root tuple `t` of type `p`, and a lawful stage-`α` donor `q`, a coface of `p` (the
-request scheme on `A + x` with the actual tuple's type on `A`).
-
-* The **requests** are the block and offset of every proper donor label (`donorRequests`,
-  `mem_donorRequests`); their blocks are non-successors below the stage (`donorRequests_ok`).
-  The block list `blocks q` may be empty: no representative is then required.
-* The **private context** is the reference context with the endpoint margin
-  (`exists_referenceContext_margin`, floor `n + 1`), of arity `J = C.m ≥ N`; its cap is the
-  full-scope grade-`N` controller `FullController` dominating the reference cap, so the
-  acquisition face is the whole context here (`C₀ = univ`).
-* The **common face** is literal: the root type is the restriction of the context along the
-  projection (the model's consistency clause) and of the donor along the initial segment (the
-  coface condition), so `commonFace` / `commonFace_respects` supply the identification and its
-  lawfulness transport **at every grade** (`commonFace_grade`, `commonFace_val_congr`), and the
-  labels agree on the face (`face_actual`) by `StageType.label_castCell`.  The root arity is
-  arbitrary: `KA = n`, with `n = 0` the empty root (the empty face is visible).
-
-`exists_ref` packages all of this: the reference data exists with the donor as `p`, the actual
-context labelling as `vact` and the controller as `cap`.  The only model clauses used are those
-of the existing reference-context construction (Uniformity, High-Grade Dominance) and
-consistency; the margin is supplied by the same High-Grade Dominance step with a larger finite
-bound, so no branch is left unsupplied. -/
+public import VaughtConjecture.Knight.WholeDonorAttachment
+public import VaughtConjecture.Knight.CommonFaceAlignment
 
 @[expose] public section
 
 namespace VaughtConjecture.Knight
 
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CellScheme.restrictFace
+open SemSchemeBoundaryInput
 
 namespace CappedDonor
 
 universe w
 
 variable {M : Type w} {α : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
-
-/-! ## The requests of a donor -/
 
 /-- The block request of a proper label: its block and offset. -/
 noncomputable def properRequest : ExtOrd → Option BlockRequest
@@ -65,7 +38,7 @@ theorem properRequest_eq_some {x : ExtOrd} {r : BlockRequest} (h : properRequest
   · exact nomatch h
   · exact nomatch h
   · rw [properRequest_ofOrd] at h
-    exact ⟨β, rfl, (Option.some.inj h).symm⟩
+    aesop
 
 /-- The requests of a donor: the block and offset of each proper label. -/
 noncomputable def donorRequests (q : S α.1 (n + 1)) : List BlockRequest :=
@@ -79,9 +52,9 @@ theorem mem_donorRequests {q : S α.1 (n + 1)} {r : BlockRequest} :
   constructor
   · rintro ⟨d, -, hd⟩
     obtain ⟨β, hβ, hr⟩ := properRequest_eq_some hd
-    exact ⟨d, β, hβ, hr⟩
+    tauto
   · rintro ⟨d, β, hβ, rfl⟩
-    exact ⟨d, List.mem_finRange d, by rw [hβ, properRequest_ofOrd]⟩
+    exact ⟨d, List.mem_finRange d, by aesop⟩
 
 /-- The limit part of an ordinal is a non-successor (ported from the reviewer's private lemma in
 `FiniteBlockBridge`, with attribution). -/
@@ -103,18 +76,7 @@ theorem donorRequests_ok (q : S α.1 (n + 1)) :
   · rw [hβ, ofOrd_lt_ofOrd] at h
     exact (limitPart_le β).trans_lt h
   · rw [hβ] at h
-    exact absurd h (ofOrd_ne_top β)
-
-open Classical in
-/-- The blocks of a request list. -/
-noncomputable def blocksOf (reqs : List BlockRequest) : Finset Ordinal.{0} :=
-  reqs.toFinset.image BlockRequest.block
-
-open Classical in
-theorem mem_blocksOf {reqs : List BlockRequest} {μ : Ordinal.{0}} :
-    μ ∈ blocksOf reqs ↔ ∃ r ∈ reqs, r.block = μ := by
-  unfold blocksOf
-  simp only [Finset.mem_image, List.mem_toFinset]
+    simp_all
 
 /-- The requested blocks of a donor. -/
 noncomputable def blocks (q : S α.1 (n + 1)) : Finset Ordinal.{0} := blocksOf (donorRequests q)
@@ -122,36 +84,24 @@ noncomputable def blocks (q : S α.1 (n + 1)) : Finset Ordinal.{0} := blocksOf (
 theorem mem_blocks {q : S α.1 (n + 1)} {μ : Ordinal.{0}} :
     μ ∈ blocks q ↔ ∃ r ∈ donorRequests q, r.block = μ := mem_blocksOf
 
-/-! ## The reference data from the model -/
+/-- The two reference rows are indexed by the very same common cells as the attachment. -/
+abbrev Aligned {I : Type*} [Fintype I] {n N : ℕ} {P : SemScheme (n + 1)}
+    {C : SemScheme N} {Q : SemScheme n} {e : Fin n ↪ Fin N}
+    (T : WholeDonorAttachment.SharedFace C P Q e) (Rf : Ref I n N N P C) : Prop :=
+  ∀ i : Cell Q.scheme, ∃ d : P.scheme.below (Rf.A, Rf.KA),
+    d.1 = T.boundary.shared.g i ∧ (Rf.face d).1 = T.boundary.shared.f i
 
-/-- **The receiving input from a reference context**: over a realized root tuple `t` of type `p`
-(any arity, the empty root included), a lawful donor `q`, a coface of `p`, and a reference
-context with the endpoint margin for a request list containing the donor's requests, there are a
-full-scope grade-`N` controller and capped-donor reference data over the blocks of the list whose
-donor is `q`, whose actual private labelling is the context's, and whose cap is the controller.
-Extra requests are
-**comparison-only references**: representatives acquired and their offsets observed before the
-threshold is chosen.  This form exports the geometric receipts of the construction: the block map
-is the block itself (`μ = Subtype.val`), the faces, representatives and offsets are the context's,
-and the face identification is the literal common face `commonFace`. -/
-theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
+/-- Acquire reference data with the literal alignment needed by the receiving probe. -/
+theorem ref_of_referenceContext (hM : R.IsModel) (p : S α.1 n)
     (hp : R.eval t = some p) (q : S α.1 (n + 1)) (hq : IsCoface p q) {reqs : List BlockRequest}
     (hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1)
     (hsub : ∀ r ∈ donorRequests q, r ∈ reqs) (C : ReferenceContext R t reqs)
-    (hNmin : n + 1 < C.N) (hcap_pos : ⊥ < C.p₀.label C.capBase)
-    (hmargin : ∀ r ∈ reqs, ofOrd (r.block + C.N) < C.p₀.label C.capBase) :
-    ∃ (F : C.FullController) (Rf : Ref ↥(blocksOf reqs) n C.N C.m q.scheme C.p₀.scheme),
-      Rf.p = q.label ∧ Rf.vact = C.p₀.label ∧ Rf.cap = F.cell ∧ Rf.KA = n ∧
-      Rf.A' = Finset.univ.image C.proj ∧ Rf.A = Finset.univ.image Fin.castSuccEmb ∧
-      Rf.μ = Subtype.val ∧ Rf.C₀ = Finset.univ ∧ Rf.ref = (fun i => C.repBase i.1) ∧
-      Rf.off = (fun i => C.repOff i.1) ∧
-      ∃ (hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan)
-        (hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme)
-        (hvC : Finset.univ.image C.proj ∈ C.p₀.scheme.scheme.plan)
-        (hC : C.p₀.scheme.restrictFace C.proj hvC = p.scheme),
-        HEq Rf.face (commonFace Fin.castSuccEmb hvP hP C.proj hvC hC n) := by
+    (hNmin : n + 1 < C.m) (hcap_pos : ⊥ < C.p₀.label C.capBase)
+    (hmargin : ∀ r ∈ reqs, ofOrd (r.block + C.m) < C.p₀.label C.capBase) :
+    ∃ (T : WholeDonorAttachment.SharedFace C.p₀.scheme q.scheme p.scheme C.proj)
+      (Rf : Ref ↥(blocksOf reqs) n C.m C.m q.scheme C.p₀.scheme),
+      Rf.p = q.label ∧ Rf.vact = C.p₀.label ∧ Rf.μ = Subtype.val ∧ Aligned T Rf := by
   classical
-  obtain ⟨F⟩ := C.exists_fullController
   -- the consistency clause: the root type is the restriction of the context along the projection
   have hcons : typeMap C.proj C.p₀ = some p := by
     have h := hM.consistent C.ctx C.p₀ C.proj C.eval_ctx
@@ -161,29 +111,20 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
     (typeMap_isSome_iff _ _).mp (by rw [hcons]; rfl)
   have hC' : C.p₀.restrictFace C.proj hvC = p := by
     have h := hcons
-    rw [typeMap_eq_some _ _ hvC, Option.some.injEq] at h
-    exact h
+    rwa [typeMap_eq_some _ _ hvC, Option.some.injEq] at h
   -- the coface condition: the root type is the restriction of the donor along the initial face
   have hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan := hq.extendsDomain.visible
   have hP' : q.restrictFace Fin.castSuccEmb hvP = p := by
     have h : typeMap Fin.castSuccEmb q = some p := hq
-    rw [typeMap_eq_some _ _ hvP, Option.some.injEq] at h
-    exact h
+    rwa [typeMap_eq_some _ _ hvP, Option.some.injEq] at h
   have hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme := congrArg StageType.scheme hP'
   have hC : C.p₀.scheme.restrictFace C.proj hvC = p.scheme := congrArg StageType.scheme hC'
-  -- the controller's grade is at most the context arity
-  have hNm : C.N ≤ C.m := by
-    have h := C.p₀.scheme.scheme.grade_le_card_scope F.cell
-    rw [show C.p₀.scheme.scheme.grade F.cell = C.N from congrArg Prod.snd F.index,
-      show C.p₀.scheme.scheme.scope F.cell = Finset.univ from congrArg Prod.fst F.index,
-      Finset.card_univ, Fintype.card_fin] at h
-    exact h
   -- each block is the block of a request
   have hblk : ∀ i : ↥(blocksOf reqs), ∃ r ∈ reqs, r.block = i.1 := fun i =>
     mem_blocksOf.mp i.2
-  refine ⟨F, {
+  refine ⟨⟨hvC, hvP, hC, hP⟩, {
     arity_lt := hNmin
-    N_le := hNm
+    N_le := le_rfl
     μ := Subtype.val
     μ_limit := fun i => by
       obtain ⟨r, hr, hrb⟩ := hblk i
@@ -197,8 +138,8 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
       have h := C.rep_off_lt r hr
       rwa [hrb] at h
     C₀ := Finset.univ
-    cap := F.cell
-    cap_cell := F.index
+    cap := C.capBase
+    cap_cell := C.cap_index
     ref_scope := fun _ => Finset.subset_univ _
     vact := C.p₀.label
     vact_respects := C.p₀.respects
@@ -206,12 +147,11 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
       obtain ⟨r, hr, hrb⟩ := hblk i
       have h := C.rep_label r hr
       rwa [hrb] at h
-    cap_pos := hcap_pos.trans_le F.dominates
+    cap_pos := hcap_pos
     margin := fun i => by
       obtain ⟨r, hr, hrb⟩ := hblk i
       have h := hmargin r hr
-      rw [hrb] at h
-      exact h.trans_le F.dominates
+      rwa [hrb] at h
     p := q.label
     p_respects := q.respects
     p_code := fun d hb ht => by
@@ -227,12 +167,9 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
     A' := Finset.univ.image C.proj
     KA := n
     A_mem := hvP
-    A'_mem := hvC
     KA_le_card := by
       rw [Finset.card_image_of_injective _ Fin.castSuccEmb.injective, Finset.card_univ,
         Fintype.card_fin]
-    KA_le_card' := by
-      rw [Finset.card_image_of_injective _ C.proj.injective, Finset.card_univ, Fintype.card_fin]
     A'_sub := Finset.subset_univ _
     face := commonFace Fin.castSuccEmb hvP hP C.proj hvC hC n
     face_grade := commonFace_grade Fin.castSuccEmb hvP hP C.proj hvC hC n
@@ -245,8 +182,12 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
       refine Iff.of_eq (congrArg (RespectsSemanticsBelow q.scheme.rows _) (funext fun a => ?_))
       congr 1
       apply Subtype.ext
-      exact commonFace_val_congr Fin.castSuccEmb hvP hP C.proj hvC hC k a _ rfl }, rfl, rfl, rfl,
-    rfl, rfl, rfl, rfl, rfl, rfl, rfl, hvP, hP, hvC, hC, HEq.rfl⟩
+      exact commonFace_val_congr Fin.castSuccEmb hvP hP C.proj hvC hC k a _ rfl 
+  }, rfl, rfl, rfl, ?_⟩
+  intro i
+  exact ⟨faceBelow q.scheme p.scheme Fin.castSuccEmb hvP hP i, faceBelow_val _ _ _ _ _ _, by
+    rw [commonFace_faceBelow]
+    exact faceBelow_val _ _ _ _ _ _⟩
 
 end CappedDonor
 

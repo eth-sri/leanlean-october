@@ -9,55 +9,6 @@ public import InfinitaryLogic.Descriptive.BFTree
 public import InfinitaryLogic.Descriptive.AnalyticTreeBoundedness
 public import InfinitaryLogic.Descriptive.AnalyticClosure
 
-/-!
-# Uniform back-and-forth separation of analytic sets of non-isomorphic pairs
-
-If `A` is an analytic set of pairs of codes of countable relational structures and no pair in
-`A` is isomorphic, then a single countable back-and-forth level separates every pair of `A`:
-there is `α < ω₁` with `¬ CodeBFEquiv α c d` for every `(c, d) ∈ A`.  The proof is descriptive
-boundedness applied to the forced back-and-forth trees: the trees `bfTree c d` with
-`(c, d) ∈ A` form an analytic family of well-founded trees with closed node sets, so their
-heights are bounded by one `α < ω₁`, and `CodeBFEquiv α c d` would put `α` strictly below the
-height of `bfTree c d`.  No sentence, coding of sentences, or boundedness theorem for
-well-orders is involved.
-
-## Main declarations
-
-* `exists_uniform_bfSeparation`: an analytic isomorphism-free set of pairs is separated at one
-  back-and-forth level `α < ω₁`.
-* `exists_uniform_bfSeparation_forall_ge`: the same level separates at every higher level.
-* `exists_uniform_bfSeparation_of_analyticSets`: for analytic `B` and `C` with no element of `B`
-  isomorphic to an element of `C`, one level `α < ω₁` separates every `x ∈ B` from every
-  `y ∈ C`.
-
-## Interpretation choices
-
-* **Universes.**  `L : Language.{u, v}` is arbitrary and only `[L.IsRelational]` is assumed.
-  The carrier is `ℕ`, so tree heights, the bound and the back-and-forth levels are all
-  `Ordinal.{0}`, and no lift appears.
-* **No countability of symbols.**  Analyticity refers to the product topology on
-  `StructureSpace L × StructureSpace L`, which exists for every `L` (`AnalyticSet` needs only a
-  topology), and the node conditions of `bfTree` are closed for every relational `L`
-  (`isClosed_setOf_mem_bfTree`).  Countably many relation symbols are needed only to *produce*
-  analytic sets from Borel ones, which is not done here.
-* **Rank convention.**  Inherited from `BFTree`: ranks are those of strict extension and
-  `treeHeight T = ⨆ x, succ (rank x)`, so `CodeBFEquiv α c d` gives
-  `α < treeHeight (bfTree c d)` (`lt_treeHeight_bfTree_of_codeBFEquiv`); with the strict
-  height bound `treeHeight (bfTree c d) < α` from `KleeneBrouwer.analytic_tree_rank_bounded`,
-  the level `α` itself separates, with no offset.
-* **Isomorphism.**  Non-isomorphism is stated through `structureIsoSetoid L`; no invariance
-  predicate is assumed or produced.
-* **Products of analytic sets.**  Mathlib has no product lemma for analytic sets; the
-  two-set form uses `MeasureTheory.AnalyticSet.prod` from `AnalyticClosure` (Mathlib-only
-  imports), stated there for arbitrary topological spaces.
-
-## References
-
-* A. S. Kechris, *Classical Descriptive Set Theory*, Graduate Texts in Mathematics 156,
-  Springer, 1995, §31.A (the Boundedness Theorem for well-founded trees, Theorem 31.2) and
-  §14.A (analytic sets as continuous images of Baire space).
--/
-
 @[expose] public section
 
 universe u v

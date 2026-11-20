@@ -6,30 +6,29 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CanonicalPairedProfiles
-public import VaughtConjecture.Knight.ProperBoundarySourceLayer
 public import VaughtConjecture.Knight.PairedCoupledSections
 
-/-! # Canonical controllers normalized over the complete field inventory
-
-`X` retains all fields, including fields not yet present at this grade. Both
-normalization and controller agreement cuts use all of `X`. Only the actual
-occurrence map is projected when checking inherited-row lawfulness. The new
-controller family and its selected sections are constructed, not supplied.
--/
+public import VaughtConjecture.Knight.SourceAttachment
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalFieldLayer
+
 open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
+
 open PairedSlotEncoding PairedSlotComparison
+
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable (sem : Semantics D) (j : ℕ) (X : Type*) [Fintype X] (occ : Cell D → X)
 
 def Profile := {p : X → ExtOrd // RespectsSemantics sem (p ∘ occ) ∧
   p ∈ CanonicalPairedProfiles.inventory X j}
+
+def Profile.bot : Profile sem j X occ :=
+  ⟨fun _ => ⊥, RespectsSemantics.bot sem, rfl, fun _ => bot_ne_top⟩
 
 instance : Fintype (Profile sem j X occ) :=
   ((CanonicalPairedProfiles.inventory_finite X j).subset (fun _ h => h.2)).fintype
@@ -37,151 +36,112 @@ instance : Fintype (Profile sem j X occ) :=
 theorem profile_short (q : Profile sem j X occ) (x : X) : Short j (q.val x) :=
   CanonicalPairedProfiles.inventory_short X j q.property.2 x
 
-def ceiling : ExtOrd := ofOrd (Ordinal.omega0 * (2 * Fintype.card X + 1 : ℕ) + j)
+abbrev ceiling : ExtOrd := AttachmentGrid.endpoint j (Fintype.card X)
 
-theorem grid_bound {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card X)) :
-    h ≤ ceiling j X := by
-  classical
-  rcases Finset.mem_insert.mp hh with rfl | hh
-  · exact bot_le
-  · obtain ⟨b, hb, rfl⟩ := Finset.mem_image.mp hh
-    have hb' : b ≤ 2 * Fintype.card X + 1 := by
-      have := Finset.mem_range.mp hb
-      omega
-    exact ofOrd_le_ofOrd.mpr (add_le_add (by gcongr) le_rfl)
+theorem grid_bound {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card X)) : h ≤ ceiling j X :=
+  (AttachmentGrid.canonical j (Fintype.card X)).grid_bound h hh
 
 theorem profile_bound (q : Profile sem j X occ) (x : X) : q.val x ≤ ceiling j X := by
   apply (CanonicalPairedProfiles.inventory_bound X j q.property.2 x).trans
-  exact ofOrd_le_ofOrd.mpr (add_le_add (by gcongr; omega) le_rfl)
+  exact ofOrd_le_ofOrd.mpr (add_le_add (by simp) le_rfl)
 
 theorem grid_short {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card X)) :
     Short j h := by
   classical
   rcases Finset.mem_insert.mp hh with rfl | hh
-  · exact Or.inl rfl
+  · tauto
   · obtain ⟨b, _, rfl⟩ := Finset.mem_image.mp hh
     exact Or.inr (Or.inr ⟨_, rfl, by rw [finitePart_mul_add]⟩)
 
 variable (hj : 0 < j) (hA : j ≤ A.card)
+
 variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
+
 variable (hg : ∀ d : Cell D, D.grade d ≤ j)
 
 def encode {p : X → ExtOrd} (hp : RespectsSemantics sem (p ∘ occ))
     (ht : ∀ x, p x ≠ ⊤) : Profile sem j X occ := by
   refine ⟨PairedSlotEncoding.normalize j p, ?_,
     CanonicalPairedProfiles.normalize_mem_inventory X j ht⟩
-  have hr := FiniteOrbitEmbedding.map_respects (hp.toBelow (A, j))
-    (fun d => hg d.1) (PairedSlotIncoming.encoder_witness j (values p))
+  have hr := RespectsSemanticsBelow.map_bottom_reflecting (hp.toBelow (A, j))
+    (by tauto) (PairedSlotIncoming.encoder_witness j (values p))
     (PairedSlotIncoming.encoder_reflects_bottom j (values p))
   have hw := hr.toRespects
-    (fun d => ⟨D.isPlan.subset_of_mem (D.scope_mem_plan d), hg d⟩)
+    (fun d => ⟨D.scope_subset d, hg d⟩)
   simpa only [Function.comp_def, PairedSlotIncoming.encoder_profile] using hw
 
 abbrev scheme := SourceLayerCarrier.scheme D (Profile sem j X occ) j hj hA
+
 abbrev old (d : Cell D) : Cell (scheme sem j X occ hj hA) :=
   SourceLayerCarrier.toCell D (Profile sem j X occ) j hj hA (.inl d)
+
 abbrev controller (q : Profile sem j X occ) :=
   SourceLayerCarrier.controller D (Profile sem j X occ) j hj hA q
-abbrev member := ProperBoundarySourceLayer.member D (Profile sem j X occ) j hj hA hproper
-abbrev ownerEquiv := ProperBoundarySourceLayer.ownerEquiv D (Profile sem j X occ) j hj hA hproper
-abbrev lower (q : Profile sem j X occ) :=
-  ProperBoundarySourceLayer.lower D (Profile sem j X occ) j hj hA (fun q => q.val ∘ occ) q
 
-def data : SourcePrefixLayer.Data (scheme sem j X occ hj hA) j X where
-  base := ProperBoundarySourceLayer.base D sem (Profile sem j X occ) j hj hA hproper
-  max_grade d := by
-    rw [CellScheme.grade, SourceLayerCarrier.cell_eq]
-    cases SourceLayerCarrier.toOcc D (Profile sem j X occ) j hj hA d with
-    | inl x => exact hg x
-    | inr q => exact le_rfl
-  grid := sourceGrid j (Fintype.card X)
-  bot_mem := sourceGrid_bot _ _
-  ceiling := ceiling j X
-  ceiling_mem := sourceGrid_endpoint le_rfl
-  grid_bound _ hh := grid_bound j X hh
-  grid_visible _ hh := sourceGrid_visible hh
-  boundary c := (member sem j X occ hj hA hproper c).val
-  lower c := lower sem j X occ hj hA (member sem j X occ hj hA hproper c)
-  lower_bound c d hd := by
-    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence D (Profile sem j X occ) j hj hA d hd
-    simpa only [lower, ProperBoundarySourceLayer.lower_old, Function.comp_apply] using
-      profile_bound sem j X occ (member sem j X occ hj hA hproper c) (occ x)
-  lower_lawful c d hd := by
-    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence D (Profile sem j X occ) j hj hA d hd
-    apply (SeparatedSourceLayerCarrier.base_respects_iff D (Profile sem j X occ) j hj hA
-      (SeparatedSourceLayerCarrier.separated_of_proper D j hproper) sem x _).mpr
-    change RespectsSemanticsBelow sem (D.cell x) (fun d =>
-      lower sem j X occ hj hA (member sem j X occ hj hA hproper c)
-        (old sem j X occ hj hA d.1))
-    simpa only [lower, old, ProperBoundarySourceLayer.lower_old] using
-      (member sem j X occ hj hA hproper c).property.1.toBelow (D.cell x)
-  grid_agreement p q h _ hag d hd := by
-    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence D (Profile sem j X occ) j hj hA d hd
-    simpa only [lower, old, ProperBoundarySourceLayer.lower_old, Function.comp_apply]
-      using hag (occ x)
+include hg in
+theorem max_grade (d : Cell (scheme sem j X occ hj hA)) :
+    (scheme sem j X occ hj hA).grade d ≤ j := by
+  rw [CellScheme.grade, SourceLayerCarrier.cell_eq]
+  cases SourceLayerCarrier.toOcc D (Profile sem j X occ) j hj hA d with
+  | inl x => exact hg x
+  | inr q => exact le_rfl
+
+def attachment : SourceAttachment D j X (Profile sem j X occ) where
+  sem := sem
+  pos := hj
+  height := hA
+  separated := SeparatedSourceLayerCarrier.separated_of_proper D j hproper
+  toAttachmentGrid := AttachmentGrid.canonical j (Fintype.card X)
+  fields := Subtype.val
+  lower q := q.val ∘ occ
+  lower_bound q d _ := profile_bound sem j X occ q (occ d)
+  lower_lawful q := q.property.1.toBelow _
+  lower_prefix _ _ _ _ hag d _ := hag (occ d)
+
+abbrev data (_hg : ∀ d : Cell D, D.grade d ≤ j) := (attachment sem j X occ hj hA hproper).data
+
+abbrev ownerEquiv := (attachment sem j X occ hj hA hproper).ownerEquiv
 
 abbrev rows := (data sem j X occ hj hA hproper hg).rows
+
 abbrev source (q : Profile sem j X occ) :=
   (data sem j X occ hj hA hproper hg).profile (controller sem j X occ hj hA q)
 
 theorem source_old (q : Profile sem j X occ) (d : Cell D) :
-    source sem j X occ hj hA hproper hg q (old sem j X occ hj hA d) = q.val (occ d) := by
-  rw [source, SourcePrefixLayer.Data.profile_old _ _ (SeparatedSourceLayerCarrier.old_not_full
-    D (Profile sem j X occ) j hj hA
-    (SeparatedSourceLayerCarrier.separated_of_proper D j hproper) d)]
-  change lower sem j X occ hj hA
-    (member sem j X occ hj hA hproper (controller sem j X occ hj hA q)) _ = _
-  simp only [lower, member, controller, ProperBoundarySourceLayer.member_controller,
-    ProperBoundarySourceLayer.lower_old, Function.comp_apply]
+    source sem j X occ hj hA hproper hg q (old sem j X occ hj hA d) = q.val (occ d) :=
+  (attachment sem j X occ hj hA hproper).source_old q d
+
+theorem source_supported (a : Profile sem j X occ) (d : Cell (scheme sem j X occ hj hA)) :
+    OrbitPrefixSupport.Supported j (sourceGrid j (Fintype.card X) : Set ExtOrd) a.val
+      (source sem j X occ hj hA hproper hg a d) := by
+  exact (attachment sem j X occ hj hA hproper).source_supported
+    (fun q e => OrbitPrefixSupport.supported_field _ _ q.val (occ e)) a d
 
 theorem inherited_row (c : Cell D) (d : D.below (D.cell c)) :
     (rows sem j X occ hj hA hproper hg).E (old sem j X occ hj hA c)
-      (ownerEquiv sem j X occ hj hA hproper c d) = sem.E c d := by
-  rw [SourcePrefixLayer.Data.row_old _ (SeparatedSourceLayerCarrier.old_not_full
-    D (Profile sem j X occ) j hj hA
-    (SeparatedSourceLayerCarrier.separated_of_proper D j hproper) c)]
-  exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ c d
+      (ownerEquiv sem j X occ hj hA hproper c d) = sem.E c d :=
+  (attachment sem j X occ hj hA hproper).inherited_row c d
 
-theorem consistent (hs : sem.IsConsistent) : (rows sem j X occ hj hA hproper hg).IsConsistent := by
-  apply SourcePrefixLayer.Data.consistent
-  intro d hd
-  obtain ⟨c, rfl⟩ := SourceLayerCarrier.old_occurrence D (Profile sem j X occ) j hj hA d hd
-  apply (SeparatedSourceLayerCarrier.base_respects_iff D (Profile sem j X occ) j hj hA
-    (SeparatedSourceLayerCarrier.separated_of_proper D j hproper) sem c _).mpr
-  have he : (data sem j X occ hj hA hproper hg).base.E (old sem j X occ hj hA c) ∘
-      ownerEquiv sem j X occ hj hA hproper c = sem.E c := by
-    funext d
-    exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ c d
-  rw [he]
-  exact hs c
+theorem consistent (hs : sem.IsConsistent) : (rows sem j X occ hj hA hproper hg).IsConsistent :=
+  (attachment sem j X occ hj hA hproper).consistent hs
 
 theorem source_prefix (p q : Profile sem j X occ) {h : ExtOrd}
     (hh : h ∈ sourceGrid j (Fintype.card X)) (hag : Agree p.val q.val h) :
     Agree (source sem j X occ hj hA hproper hg p)
-      (source sem j X occ hj hA hproper hg q) h := by
-  apply (data sem j X occ hj hA hproper hg).profile_prefix hh
-  change Agree (member sem j X occ hj hA hproper (controller sem j X occ hj hA p)).val
-    (member sem j X occ hj hA hproper (controller sem j X occ hj hA q)).val h
-  simpa only [member, controller, ProperBoundarySourceLayer.member_controller] using hag
+      (source sem j X occ hj hA hproper hg q) h :=
+  (attachment sem j X occ hj hA hproper).source_prefix hh hag (fun d => hag (occ d))
 
 theorem full_source_short (c : Cell (scheme sem j X occ hj hA))
     (hc : (scheme sem j X occ hj hA).scope c = A)
     (d : (scheme sem j X occ hj hA).below ((scheme sem j X occ hj hA).cell c)) :
     Short ((scheme sem j X occ hj hA).grade c) ((rows sem j X occ hj hA hproper hg).E c d) := by
-  apply (data sem j X occ hj hA hproper hg).full_source_short
-    (fun _ hh => grid_short j X hh) _ _ c hc d
-  · intro q x hx
-    obtain ⟨y, rfl⟩ := SourceLayerCarrier.old_occurrence D (Profile sem j X occ) j hj hA x hx
-    change Short j (lower sem j X occ hj hA (member sem j X occ hj hA hproper q)
-      (old sem j X occ hj hA y))
-    simpa only [lower, ProperBoundarySourceLayer.lower_old, Function.comp_apply] using
-      profile_short sem j X occ (member sem j X occ hj hA hproper q) (occ y)
-  · intro x hs hx
-    obtain ⟨y, rfl⟩ := SourceLayerCarrier.old_occurrence D (Profile sem j X occ) j hj hA x hx
-    exact (hproper y (by simpa only [CellScheme.scope, SourceLayerCarrier.cell_toCell,
-      SourceLayerCarrier.index] using hs)).elim
+  exact (attachment sem j X occ hj hA hproper).higher_short 0
+    (fun a e => PairedCoupledSections.supported_short (fun _ hh => grid_short j X hh)
+      (profile_short sem j X occ a) (source_supported sem j X occ hj hA hproper hg a e))
+    (fun x hs _ _ => (hproper x hs).elim) c hc (Nat.zero_le _) d
 
 variable {p : X → ExtOrd} (hp : RespectsSemantics sem (p ∘ occ)) (ht : ∀ x, p x ≠ ⊤)
+
 variable {G : Finset ExtOrd} {C : ExtOrd}
 
 def sectionOf (G : Finset ExtOrd) (C : ExtOrd) (d : Cell (scheme sem j X occ hj hA)) : ExtOrd :=
@@ -196,34 +156,18 @@ theorem section_old (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C) (d : Cell
 theorem section_lawful (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C) :
     RespectsSemantics (rows sem j X occ hj hA hproper hg)
       (sectionOf sem j X occ hj hA hproper hg hp ht G C) := by
-  apply (data sem j X occ hj hA hproper hg).decoded_respects
-    (controller sem j X occ hj hA (encode sem j X occ hg hp ht)) le_rfl
-    (PairedSlotDecoder.decode_witness hG hC) _ (full_source_short sem j X occ hj hA hproper hg)
-  intro c hc
-  have hc' : (scheme sem j X occ hj hA).cell c ≠ (A, j) := fun he => hc (congrArg Prod.fst he)
-  obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence D (Profile sem j X occ) j hj hA c hc'
-  apply (SeparatedSourceLayerCarrier.base_respects_iff D (Profile sem j X occ) j hj hA
-    (SeparatedSourceLayerCarrier.separated_of_proper D j hproper) sem x _).mpr
-  change RespectsSemanticsBelow sem (D.cell x) (fun d =>
-    PairedSlotDecoder.decode j (values p) G C
-      (lower sem j X occ hj hA
-        (member sem j X occ hj hA hproper
-          (controller sem j X occ hj hA (encode sem j X occ hg hp ht)))
-        (old sem j X occ hj hA d.1)))
-  simp only [lower, member, controller, ProperBoundarySourceLayer.member_controller,
-    ProperBoundarySourceLayer.lower_old, Function.comp_apply]
-  change RespectsSemanticsBelow sem (D.cell x) (fun d =>
+  apply (attachment sem j X occ hj hA hproper).decoded_whole
+    (encode sem j X occ hg hp ht) (PairedSlotDecoder.decode_witness hG hC)
+    (max_grade sem j X occ hj hA hg) _ (full_source_short sem j X occ hj hA hproper hg)
+  intro c _
+  change RespectsSemanticsBelow sem (D.cell c) (fun d =>
     PairedSlotDecoder.decode j (values p) G C (PairedSlotEncoding.normalize j p (occ d.1)))
-  simpa only [PairedSlotDecoder.decode_normalize hG hC ht, Function.comp_apply] using
-    hp.toBelow (D.cell x)
+  simpa only [Function.comp_apply, PairedSlotDecoder.decode_normalize hG hC ht] using hp.toBelow (D.cell c)
 
 theorem section_bound (hC : SelfVis j C) (hb : ∀ x, p x ≤ C)
     (d : Cell (scheme sem j X occ hj hA)) :
     sectionOf sem j X occ hj hA hproper hg hp ht G C d ≤ C := by
-  apply PairedSlotDecoder.decode_le hC
-  intro a ha
-  obtain ⟨x, hx⟩ := mem_values.mp ha
-  simpa only [hx] using hb x
+  exact PairedSlotDecoder.decode_le_of_bound hC hb _
 
 theorem section_supported {K : ℕ} (hjK : j ≤ K) (hCG : C ∈ G)
     (d : Cell (scheme sem j X occ hj hA)) :
@@ -239,12 +183,9 @@ theorem section_agreement {q : X → ExtOrd} (hq : RespectsSemantics sem (q ∘ 
     (hh : h ∈ G) (hhC : h ≤ C) (hag : Agree p q h) :
     Agree (sectionOf sem j X occ hj hA hproper hg hp ht G C)
       (sectionOf sem j X occ hj hA hproper hg hq htq G C) h := by
-  obtain ⟨heG, _, heAgree, hpReach, hqReach, hcompare⟩ :=
-    largestCommonCut_spec hG hC hC hh hhC hhC ht htq hag
-  have hs := source_prefix sem j X occ hj hA hproper hg
-    (encode sem j X occ hg hp ht) (encode sem j X occ hg hq htq) heG heAgree
-  exact hs.decode (PairedSlotDecoder.decode_witness hG hC).mono
-    (PairedSlotDecoder.decode_witness hG hC).mono hpReach hqReach (fun _ _ => hcompare _)
+  exact decode_agreement hG hC hh hhC ht htq hag
+    (fun _ he ha => source_prefix sem j X occ hj hA hproper hg _ _ he ha)
 
 end
+
 end VaughtConjecture.Knight.CanonicalFieldLayer

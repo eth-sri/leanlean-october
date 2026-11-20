@@ -7,34 +7,32 @@ module
 
 public import VaughtConjecture.Knight.CapReceivingModel
 
-/-! # Complete positive-root cap receiving using an actual positive chart
-
-The finite singleton attachment is constructed by the ordinary finite supplier.
-No actual singleton chart, target modelhood, uniformity or dominance is assumed.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.FiniteCutReceiving
+
 open TypeTower StageType KnightRealization Value ExtOrd CellScheme.restrictFace
+
 universe w
+
 variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 
-/-- A single positive chart bootstraps empty-root receiving. -/
-theorem of_positive_chart (hcons : R.IsExactParentConsistent)
-    (hchart : ∃ (m : ℕ) (u : Fin (m + 1) ↪ M) (P : S α.1 (m + 1)), R.eval u = some P)
-    (hpos : ∀ {n : ℕ}, 0 < n → ∀ (t : Fin n ↪ M) (p : S α.1 n), R.eval t = some p →
-      ∀ q : S α.1 (n + 1), IsCoface p q →
-        ∀ δ : ExtOrd, ⊥ < δ → δ < ofOrd α.1 →
-          ∃ (y : M) (hy : y ∉ Set.range t) (r : S α.1 (n + 1)),
-            R.eval (snoc t y hy) = some r ∧ ∃ he : r.scheme = q.scheme,
-              ∀ d, min (r.label d) δ = min (q.label (SemScheme.castCell he d)) δ) :
+/-- Covering supplies a positive chart and thereby bootstraps empty-root receiving. -/
+theorem of_positive (hne : Nonempty M) (hcons : R.IsExactParentConsistent)
+    (hcover : R.IsInitialSegmentCovering)
+    (hpos : ∀ {n : ℕ}, 0 < n → FiniteCutReceiving.At R n) :
     FiniteCutReceiving R := by
   intro n t p hp q hqp δ hδ hδα
   cases n with
   | succ n => exact hpos (Nat.succ_pos n) t p hp q hqp δ hδ hδα
   | zero =>
-    obtain ⟨m, u, P, hP⟩ := hchart
+    obtain ⟨x⟩ := hne
+    let t₁ : Fin 1 ↪ M := ⟨fun _ => x, fun a b _ => Subsingleton.elim a b⟩
+    obtain ⟨m, s, -, hu⟩ := hcover t₁
+    have hchart : ∃ (u : Fin (1 + m) ↪ M) (P : S α.1 (1 + m)), R.eval u = some P :=
+      ⟨s, Option.isSome_iff_exists.mp hu⟩
+    rw [Nat.add_comm 1 m] at hchart
+    obtain ⟨u, P, hP⟩ := hchart
     obtain ⟨Q, hQP, hQq, _⟩ := exists_amalgam_point (CanonicalCoatomSupply.supply α.2)
       m (Fin.last (m + 1)) P q
     have hcof : IsCoface P Q := by
@@ -51,11 +49,6 @@ theorem of_positive_chart (hcons : R.IsExactParentConsistent)
       (typeMap_isSome_iff f Q).mp (by rw [hQq]; rfl)
     have heq : Q.restrictFace f hv = q :=
       Option.some.inj ((typeMap_eq_some f Q hv).symm.trans hQq)
-    have hlabels : ∀ {a b : S α.1 1} (h : a = b) (d : Cell a.scheme.scheme),
-        a.label d = b.label (SemScheme.castCell (congrArg StageType.scheme h) d) := by
-      intro a b h d
-      cases h
-      rfl
     have hy0 : y ∉ Set.range t := fun ⟨i, _⟩ => i.elim0
     have htup : f.trans (snoc u y hy) = snoc t y hy0 := by
       ext i
@@ -69,27 +62,6 @@ theorem of_positive_chart (hcons : R.IsExactParentConsistent)
       exact typeMap_eq_some f r hv
     · intro d
       exact (hcap (toCell Q.scheme.scheme f hv d)).trans
-        (congrArg (fun x => min x δ) (hlabels heq d))
-
-/-- Nonemptiness and covering supply the positive chart, without a model request clause. -/
-theorem of_positive (hne : Nonempty M) (hcons : R.IsExactParentConsistent)
-    (hcover : R.IsInitialSegmentCovering)
-    (hpos : ∀ {n : ℕ}, 0 < n → ∀ (t : Fin n ↪ M) (p : S α.1 n), R.eval t = some p →
-      ∀ q : S α.1 (n + 1), IsCoface p q →
-        ∀ δ : ExtOrd, ⊥ < δ → δ < ofOrd α.1 →
-          ∃ (y : M) (hy : y ∉ Set.range t) (r : S α.1 (n + 1)),
-            R.eval (snoc t y hy) = some r ∧ ∃ he : r.scheme = q.scheme,
-              ∀ d, min (r.label d) δ = min (q.label (SemScheme.castCell he d)) δ) :
-    FiniteCutReceiving R := by
-  refine of_positive_chart hcons ?_ hpos
-  obtain ⟨x⟩ := hne
-  let t : Fin 1 ↪ M := ⟨fun _ => x, fun a b _ => Subsingleton.elim a b⟩
-  obtain ⟨k, u, _, hu⟩ := hcover t
-  obtain ⟨P, hP⟩ := Option.isSome_iff_exists.mp hu
-  refine ⟨k, ?_⟩
-  have hh : ∃ (u : Fin (1 + k) ↪ M) (P : S α.1 (1 + k)), R.eval u = some P :=
-    ⟨u, P, hP⟩
-  rw [Nat.add_comm 1 k] at hh
-  exact hh
+        (congrArg (min · δ) ((typeMap_eq_some_iff_labels f Q q hv hscheme).mp hQq d))
 
 end VaughtConjecture.Knight.FiniteCutReceiving

@@ -9,22 +9,6 @@ public import VaughtConjecture.Knight.FiniteCoverReceivingCore
 public import VaughtConjecture.Knight.BlockStages
 public import VaughtConjecture.Knight.LimitOfChain
 
-/-! # One-sided uniform transfer into one receiving realization
-
-The transfer step of the uniform finite-cover comparison needs only the target side. A
-consistent cap-receiving realization at block `β + 1` receives any finite legal donor over its
-actual root, and the received cover reduces to block `β` exactly as the donor does. There is no
-source model: the donor is a lawful stage type, and its face along `f` must be the target's
-actual root type literally (`typeMap f Q = some p`), not merely up to a cap.
-
-This is one direction of one back-and-forth step. It is not a back-and-forth equivalence and
-does not give an isomorphism: comparison needs the step in both directions, and the two-model
-wrappers in `UniformCoverComparisonCore` apply it once in each direction. It is not a new
-receiving construction either; it is `finiteCoverReceiving_of_receiving` at the cutoff
-`blockStage β`, read as an exact reduction. For models, the ordinary receiver still supplies
-the receiving hypothesis. This module imports neither that receiver nor any modelhood endpoint.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight

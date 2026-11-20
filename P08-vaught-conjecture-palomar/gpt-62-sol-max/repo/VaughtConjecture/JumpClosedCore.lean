@@ -10,14 +10,6 @@ public import Mathlib.Data.Nat.Cast.Order.Basic
 public import Mathlib.Order.Filter.AtTopBot.Basic
 public import Mathlib.Order.Filter.Finite
 
-/-! # The topology-free combinatorial core of finite-vector jumps
-
-A jump keeps coordinates at most its natural cutoff and sends the others to
-top. Finite-coordinate agreement and escape above one cutoff suffice to
-reconstruct a completed vector. These APIs retain their original namespace,
-statements, and proofs from `JumpClosed`.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.JumpClosed
@@ -37,13 +29,6 @@ def Approximates (K : ℕ) (u r : I → ℕ∞) : Prop :=
 /-- The jump at `K` of a `K`-approximation is the vector itself, once `K` bounds its finite
 coordinates. -/
 theorem jump_eq_of_approximates {K : ℕ} {u r : I → ℕ∞} (h : Approximates K u r)
-    (hK : ∀ i, r i ≠ ⊤ → r i ≤ K) : jump K u = r := by
-  funext i
-  obtain ⟨h1, h2⟩ := h i
-  by_cases hr : r i = ⊤
-  · exact (ite_eq_right (not_le.mpr (h2 hr))).trans hr.symm
-  · exact (ite_eq_left ((h1 hr).symm ▸ hK i hr)).trans (h1 hr)
-
-variable [Finite I] {A : Set (I → ℕ∞)}
+    (hK : ∀ i, r i ≠ ⊤ → r i ≤ K) : jump K u = r := by grind +locals
 
 end VaughtConjecture.JumpClosed

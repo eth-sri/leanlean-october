@@ -7,12 +7,6 @@ module
 
 public import PalomarProof.Infinitary.QuantifierRank
 
-/-! # Relabelling free variables in infinitary formulas
-
-General syntax, satisfaction, and quantifier-rank transport, independent of the
-Knight comparison construction. Extracted unchanged from `Knight/SentenceAgreement`.
--/
-
 @[expose] public section
 
 namespace FirstOrder.Language.BoundedFormulaInf
@@ -75,16 +69,12 @@ theorem qrank_relabelFree (g : α → β) :
   | equal t₁ t₂ => rfl
   | rel R ts => rfl
   | imp φ ψ ihφ ihψ =>
-    change max (relabelFree g φ).qrank (relabelFree g ψ).qrank = max φ.qrank ψ.qrank
-    rw [ihφ, ihψ]
+    simp_all!
   | all φ ih =>
-    change Order.succ (relabelFree g φ).qrank = Order.succ φ.qrank
-    rw [ih]
+    simp_all!
   | iSup φs ih =>
-    change (⨆ i, (relabelFree g (φs i)).qrank) = ⨆ i, (φs i).qrank
-    exact iSup_congr ih
+    simp_all!
   | iInf φs ih =>
-    change (⨆ i, (relabelFree g (φs i)).qrank) = ⨆ i, (φs i).qrank
-    exact iSup_congr ih
+    simp_all!
 
 end FirstOrder.Language.BoundedFormulaInf

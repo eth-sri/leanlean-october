@@ -6,30 +6,14 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.PairedSlotProfiles
-
-/-! # Constructed common cuts and whole paired-decoder comparison
-
-For bottom/proper boundary profiles agreeing under a visible target grid cut,
-the actual paired decoders agree under that cut at every source value. The
-proof compares whole low pieces and their gaps, then reaches the cut through
-the first upper gap or a shared orbit endpoint. A constructed visible common
-source cut also supplies the required bounds at the largest agreement-grid cut.
-
-The source grid reserves one block past every occupied slot, so its final
-endpoint decodes to the chosen ceiling even for an empty boundary. The target
-grid is shared and contains the external cut; both ceilings reach that cut.
-External bottom and top caps are included. Literal-top boundary profiles are
-not included. No coupled section operator or amalgamation is asserted.
-
-The old encoder and decoder are unchanged. Matching a group means matching its
-whole affine ray or point step, not just its represented boundary readings.
--/
+public import VaughtConjecture.Knight.SourcePrefixRows
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PairedSlotComparison
-open Transform Value ExtOrd PairedSlotEncoding PairedSlotDecoder
+
+open Transform Value ExtOrd PairedSlotEncoding PairedSlotDecoder SourcePrefixRows
+
 noncomputable section
 
 theorem block_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{0}}
@@ -38,7 +22,7 @@ theorem block_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{0
   have hr := rank_congr_below hh heq ha
   have ho := orbit_congr_below hh heq ((limitPart_le a).trans_lt ha)
   classical
-  simp only [block, hr, ho]
+  simp [block, hr, ho]
 
 theorem piece_eq_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
     (ha : a ∈ S) (hb : b ∈ S) (hk : key j S a = key j S b) :
@@ -49,11 +33,11 @@ theorem piece_eq_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}
   by_cases hoa : Orbit j S a
   · have hob := ho.mp hoa
     have hl : limitPart a = limitPart b := by
-      simpa only [key, ite_eq_left hoa, ite_eq_left hob] using hk
-    simp only [piece, ite_eq_left hoa, ite_eq_left hob, hblock, hl]
-  · have hob : ¬ Orbit j S b := fun h => hoa (ho.mpr h)
+      simpa [key, ite_eq_left hoa, ite_eq_left hob] using hk
+    simp [piece, ite_eq_left hoa, ite_eq_left hob, hblock, hl]
+  · have hob : ¬ Orbit j S b := by lia
     have hab : a = b := by
-      simpa only [key, ite_eq_right hoa, ite_eq_right hob] using hk
+      simpa [key, ite_eq_right hoa, ite_eq_right hob] using hk
     rw [hab]
 
 theorem piece_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{0}}
@@ -62,7 +46,7 @@ theorem piece_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{0
   have hb := block_congr_below hh heq ha
   have ho := orbit_congr_below hh heq ((limitPart_le a).trans_lt ha)
   classical
-  simp only [piece, hb, ho]
+  simp [piece, hb, ho]
 
 /-- Every low key, even one represented only by an optional orbit endpoint,
 has the same full decoding piece in the other inventory. -/
@@ -72,7 +56,7 @@ theorem low_group_transfer {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{
     ∃ b ∈ T, b < h ∧ key j S a = key j T b ∧
       block j S a = block j T b ∧ piece j S a = piece j T b := by
   obtain ⟨b, hb, hbh, hba⟩ := exists_low_key hh ha hk
-  exact ⟨b, (heq b hbh).mp hb, hbh,
+  exact ⟨b, by simp_all, hbh,
     hba.symm.trans (key_congr_below hh heq hbh),
     (block_eq_of_key_eq ha hb hba.symm).trans (block_congr_below hh heq hbh),
     (piece_eq_of_key_eq ha hb hba.symm).trans (piece_congr_below hh heq hbh)⟩
@@ -91,7 +75,7 @@ theorem gapStart_congr {j : ℕ} {S T : Finset Ordinal.{0}} {a b h : Ordinal.{0}
     intro c hc
     split_ifs with hca
     · obtain ⟨d, hd, _, hkd, hbd, _⟩ := low_group_transfer hh heq hc (hca.trans ha)
-      have hdb : key j T d < key j T b := by rwa [← hkd, ← hk]
+      have hdb : key j T d < key j T b := by lia
       rw [hbd]
       exact block_lt_gapStart hd hdb
     · exact Nat.zero_le _
@@ -102,9 +86,7 @@ theorem gap_congr {j : ℕ} {S T : Finset Ordinal.{0}} {a b h : Ordinal.{0}}
     (G : Finset ExtOrd) (hh : j ≤ finitePart h)
     (heq : ∀ c, c < h → (c ∈ S ↔ c ∈ T))
     (hk : key j S a = key j T b) (ha : key j S a < h) :
-    gap j S G a = gap j T G b := by
-  unfold gap
-  rw [gapStart_congr hh heq hk ha, hk]
+    gap j S G a = gap j T G b := by grind [gap, gapStart_congr]
 
 /-- First block after all groups with key strictly below the target cut.
 With an empty prefix it is block zero, so the initial gap is retained. -/
@@ -117,7 +99,7 @@ theorem block_lt_prefixEnd {j : ℕ} {S : Finset Ordinal.{0}} {a h : Ordinal.{0}
   classical
   change block j S a + 1 ≤ _
   apply Finset.le_sup_of_le ha
-  simp only [ite_eq_left hk, le_refl]
+  simp_all
 
 theorem prefixEnd_congr {j : ℕ} {S T : Finset Ordinal.{0}} {h : Ordinal.{0}}
     (hh : j ≤ finitePart h) (heq : ∀ b, b < h → (b ∈ S ↔ b ∈ T)) :
@@ -130,9 +112,8 @@ theorem prefixEnd_congr {j : ℕ} {S T : Finset Ordinal.{0}} {h : Ordinal.{0}}
     intro a ha
     split_ifs with hk
     · obtain ⟨b, hb, _, hkb, hbb, _⟩ := low_group_transfer hh heq ha hk
-      rw [hbb]
-      exact block_lt_prefixEnd hb (hkb ▸ hk)
-    · exact Nat.zero_le _
+      simp_all [block_lt_prefixEnd]
+    lia
   exact le_antisymm (one S T heq) (one T S (fun b hb => (heq b hb).symm))
 
 theorem prefixEnd_le_gapStart {j : ℕ} {S : Finset Ordinal.{0}} {a h : Ordinal.{0}}
@@ -142,7 +123,7 @@ theorem prefixEnd_le_gapStart {j : ℕ} {S : Finset Ordinal.{0}} {a h : Ordinal.
   intro b hb
   split_ifs with hbh
   · exact block_lt_gapStart hb (hbh.trans_le ha)
-  · exact Nat.zero_le _
+  lia
 
 theorem prefixEnd_le_tailStart (j : ℕ) (S : Finset Ordinal.{0}) (h : Ordinal.{0}) :
     prefixEnd j S h ≤ tailStart j S := by
@@ -151,7 +132,7 @@ theorem prefixEnd_le_tailStart (j : ℕ) (S : Finset Ordinal.{0}) (h : Ordinal.{
   intro a ha
   split_ifs
   · exact Nat.succ_le_succ (Finset.le_sup (f := block j S) ha)
-  · exact Nat.zero_le _
+  lia
 
 theorem piece_of_lt_block {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
     {x : ExtOrd} (hx : x < ofOrd (Ordinal.omega0 * block j S a)) :
@@ -160,7 +141,7 @@ theorem piece_of_lt_block {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
   rcases ExtOrd.cases x with rfl | rfl | ⟨b, rfl⟩
   · unfold piece
     split_ifs <;> rfl
-  · exact (not_lt_of_ge le_top hx).elim
+  · trivial
   · unfold piece
     split_ifs
     · rw [FiniteOrbitEmbedding.ray_ofOrd,
@@ -171,7 +152,7 @@ theorem step_of_lt_prefix {n k : ℕ} {C x : ExtOrd}
     (hn : n ≤ k) (hx : x < ofOrd (Ordinal.omega0 * n)) :
     stepShifter k ⊥ C x = ⊥ := by
   by_cases hb : x = ⊥
-  · rw [hb]; rfl
+  · aesop
   · apply stepShifter_of_lt hb
     exact hx.trans_le (ofOrd_le_ofOrd.mpr (by gcongr))
 
@@ -211,7 +192,7 @@ theorem decode_eq_before_prefix {j : ℕ} {S T : Finset Ordinal.{0}} {h : Ordina
         exact bot_le
   exact le_antisymm (one S T C C' heq hx)
     (one T S C' C (fun b hb => (heq b hb).symm)
-      (by rwa [prefixEnd_congr hh (fun b hb => (heq b hb).symm)]))
+      (by grind [prefixEnd_congr]))
 
 /-- The gap preceding the first upper group starts immediately after the
 unchanged prefix, even when that upper group is an orbit rather than a point. -/
@@ -224,8 +205,8 @@ theorem gapStart_first_upper {j : ℕ} {S : Finset Ordinal.{0}} {a h : Ordinal.{
   apply Finset.sup_le
   intro b hb
   split_ifs with hba
-  · exact block_lt_prefixEnd hb (hfirst b hb hba)
-  · exact Nat.zero_le _
+  · solve_by_elim [block_lt_prefixEnd]
+  lia
 
 theorem decode_prefix_reaches_of_first_upper
     {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd} {C : ExtOrd}
@@ -255,11 +236,7 @@ theorem decode_prefix_reaches
   · let U := S.filter (fun b => h ≤ key j S b)
     have hU : U.Nonempty := ⟨a, Finset.mem_filter.mpr ⟨ha, le_of_not_gt hk⟩⟩
     obtain ⟨b, hb, hmin⟩ := U.exists_min_image (key j S) hU
-    apply decode_prefix_reaches_of_first_upper (Finset.mem_filter.mp hb).1 hhG
-      (Finset.mem_filter.mp hb).2
-    intro c hc hcb
-    by_contra hn
-    exact not_lt_of_ge (hmin c (Finset.mem_filter.mpr ⟨hc, le_of_not_gt hn⟩)) hcb
+    grind [decode_prefix_reaches_of_first_upper]
 
 theorem decode_cap_ceiling {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd}
     {C C' h : ExtOrd} (hC : min C h = min C' h) (x : ExtOrd) :
@@ -271,7 +248,7 @@ theorem decode_cap_ceiling {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd
     · rfl
     · exact hC
     · change min (if _ then _ else _) h = min (if _ then _ else _) h
-      split_ifs <;> first | rfl | exact hC
+      lia
   simp only [decode, min_max_distrib_right, hs]
 
 /-- The decoder comparison includes every source value, not only short
@@ -286,7 +263,7 @@ theorem decode_cap_agree_of_upper
     min (decode j S G C x) (ofOrd h) = min (decode j T G C' x) (ofOrd h) := by
   have hh : j ≤ finitePart h := selfVis_ofOrd_iff.mp (hG _ hhG)
   by_cases hx : x < ofOrd (Ordinal.omega0 * prefixEnd j S h)
-  · rw [decode_eq_before_prefix G C C' hh heq hx]
+  · grind [decode_eq_before_prefix]
   · have hp := decode_prefix_reaches hG hC hhG hS
     have hq := decode_prefix_reaches hG hC' hhG hT
     rw [← prefixEnd_congr hh heq] at hq
@@ -312,8 +289,7 @@ theorem gapStart_lt_orbit_block {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.
       unfold block
       split_ifs <;> omega
     · omega
-  simp only [block, ite_eq_left ha]
-  omega
+  grind [block]
 
 /-- Each profile has a visible grid cut reaching the external cut and lying
 below every upper boundary source. The spare terminal block handles profiles
@@ -346,9 +322,7 @@ theorem exists_source_cut {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd}
       refine ⟨block j S a, (block_le_twice_card ha).trans (Nat.le_succ _), ?_, ?_⟩
       · rw [← he, decode_encode ha]
         exact ofOrd_le_ofOrd.mpr hha
-      · intro b hb hhb
-        rw [← he]
-        exact hmincode b hb hhb
+      simp_all
     · have ho := orbit_of_invisible ha (lt_of_not_ge hv)
       have hfloor : h ≤ key j S a := by
         simp only [key, ite_eq_left ho]
@@ -368,12 +342,13 @@ theorem exists_source_cut {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd}
           le_self_add
   · have ht : tailStart j S ≤ 2 * S.card + 1 := by
       apply Nat.succ_le_succ
-      exact Finset.sup_le (fun a ha => block_le_twice_card ha)
+      simp_all [block_le_twice_card]
     refine ⟨tailStart j S, ht, hhC.trans (decode_tail (ofOrd_le_ofOrd.mpr le_self_add)), ?_⟩
     intro a ha hha
     exact (hU ⟨a, Finset.mem_filter.mpr ⟨ha, hha⟩⟩).elim
 
 section Profile
+
 variable {X : Type*} [Fintype X]
 
 /-- Whole-function capped agreement for decoders of boundary profiles.
@@ -391,14 +366,12 @@ theorem decode_cap_agree {j : ℕ} {p q : X → ExtOrd}
   by_cases hhigh : ∃ d, ofOrd h ≤ p d
   · obtain ⟨d, hd⟩ := hhigh
     have hqd : ofOrd h ≤ q d := by
-      have he := hpq d
-      rw [min_eq_right hd] at he
-      exact he.trans_le (min_le_left _ _)
+      grind
     have upper (v : X → ExtOrd) (hv : ∀ d, v d ≠ ⊤) (hd : ofOrd h ≤ v d) :
         ∃ a ∈ values v, h ≤ a := by
       rcases ExtOrd.cases (v d) with hb | ht | ⟨a, ha⟩
-      · exact (not_ofOrd_le_bot h (hb ▸ hd)).elim
-      · exact (hv d ht).elim
+      · simp_all
+      · tauto
       · exact ⟨a, mem_values.mpr ⟨d, ha⟩, ofOrd_le_ofOrd.mp (ha ▸ hd)⟩
     apply decode_cap_agree_of_upper hG hC hC' hhG _ (upper p hp hd) (upper q hq hqd)
     intro b hb
@@ -413,8 +386,7 @@ theorem decode_cap_agree {j : ℕ} {p q : X → ExtOrd}
       exact mem_values.mpr ⟨e, (eq_of_cap_eq_lt (hpq e).symm hlt).symm.trans he⟩
   · have he : p = q := funext fun d =>
       eq_of_cap_eq_lt (hpq d) (lt_of_not_ge (fun hd => hhigh ⟨d, hd⟩))
-    rw [he]
-    exact decode_cap_ceiling (by rw [min_eq_right hhC, min_eq_right hhC']) x
+    grind [decode_cap_ceiling]
 
 /-- A constructed common source-grid cut with all three scalar properties
 needed by coupled source-prefix decoding. It covers unused gaps as well as
@@ -444,26 +416,18 @@ theorem exists_common_source_cut {j : ℕ} {p q : X → ExtOrd}
   have he₁ : e ≤ ofOrd (Ordinal.omega0 * b + j) := by
     apply ofOrd_le_ofOrd.mpr
     gcongr
-    exact min_le_left b c
+    simp
   have he₂ : e ≤ ofOrd (Ordinal.omega0 * c + j) := by
     apply ofOrd_le_ofOrd.mpr
     gcongr
-    exact min_le_right b c
+    simp
   have both : ofOrd h ≤ decode j (values p) G C e ∧
       ofOrd h ≤ decode j (values q) G C' e := by
     have he := hcompare e
-    rcases le_total b c with hbc | hcb
-    · have hpread : ofOrd h ≤ decode j (values p) G C e := by
-        simpa only [e, min_eq_left hbc] using hread
-      rw [min_eq_right hpread] at he
-      exact ⟨hpread, he.trans_le (min_le_left _ _)⟩
-    · have hqread : ofOrd h ≤ decode j (values q) G C' e := by
-        simpa only [e, min_eq_right hcb] using hread'
-      rw [min_eq_right hqread] at he
-      exact ⟨he.symm.trans_le (min_le_left _ _), hqread⟩
+    grind
   refine ⟨min b c, hbound, ?_, ?_, both.1, both.2, hcompare⟩
   · apply selfVis_ofOrd_iff.mpr
-    simp only [finitePart_mul_add, le_refl]
+    simp [finitePart_mul_add, le_refl]
   · intro d
     change min (PairedSlotEncoding.normalize j p d) e =
       min (PairedSlotEncoding.normalize j q d) e
@@ -472,20 +436,18 @@ theorem exists_common_source_cut {j : ℕ} {p q : X → ExtOrd}
     · have hpd : ofOrd h ≤ p d := le_of_not_gt hd
       have hqd : ofOrd h ≤ q d := by
         have he := hpq d
-        rw [min_eq_right hpd] at he
-        exact he.trans_le (min_le_left _ _)
+        simp_all
       have upper (v : X → ExtOrd) (hv : ∀ d, v d ≠ ⊤) (k : ℕ)
           (hk : e ≤ ofOrd (Ordinal.omega0 * k + j))
           (hu : ∀ a ∈ values v, h ≤ a →
             ofOrd (Ordinal.omega0 * k + j) ≤ encode j (values v) a)
           (hd : ofOrd h ≤ v d) : e ≤ PairedSlotEncoding.normalize j v d := by
         rcases ExtOrd.cases (v d) with hb | ht | ⟨a, ha⟩
-        · exact (not_ofOrd_le_bot h (hb ▸ hd)).elim
-        · exact (hv d ht).elim
+        · simp_all
+        · tauto
         · rw [normalize_ofOrd ha]
           exact hk.trans (hu a (mem_values.mpr ⟨d, ha⟩) (ofOrd_le_ofOrd.mp (ha ▸ hd)))
-      rw [min_eq_right (upper p hp b he₁ hupper hpd),
-        min_eq_right (upper q hq c he₂ hupper' hqd)]
+      grind
 
 end Profile
 
@@ -498,7 +460,7 @@ def sourceGrid (j n : ℕ) : Finset ExtOrd := by
 
 theorem sourceGrid_bot (j n : ℕ) : ⊥ ∈ sourceGrid j n := by
   classical
-  exact Finset.mem_insert_self _ _
+  apply Finset.mem_insert_self
 
 theorem sourceGrid_endpoint {j n b : ℕ} (hb : b ≤ 2 * n + 1) :
     ofOrd (Ordinal.omega0 * b + j) ∈ sourceGrid j n := by
@@ -513,9 +475,10 @@ theorem sourceGrid_visible {j n : ℕ} {e : ExtOrd} (he : e ∈ sourceGrid j n) 
   · exact selfVis_bot j
   · obtain ⟨b, _, rfl⟩ := Finset.mem_image.mp he
     apply selfVis_ofOrd_iff.mpr
-    simp only [finitePart_mul_add, le_refl]
+    simp [finitePart_mul_add, le_refl]
 
 section Profile
+
 variable {X : Type*} [Fintype X]
 
 /-- The reserved terminal endpoint reads the chosen ceiling exactly. This
@@ -532,10 +495,7 @@ theorem decode_reserved_ceiling {j : ℕ} {p : X → ExtOrd} {G : Finset ExtOrd}
     have hb := block_le_twice_card (j := j) ha
     omega
   apply le_antisymm
-  · apply decode_le hC
-    intro a ha
-    obtain ⟨d, hd⟩ := mem_values.mp ha
-    simpa only [hd] using hpC d
+  · exact decode_le_of_bound hC hpC _
   · apply decode_tail
     apply ofOrd_le_ofOrd.mpr
     exact (by gcongr : Ordinal.omega0 * tailStart j (values p) ≤
@@ -556,7 +516,7 @@ theorem exists_common_cut {j : ℕ} {p q : X → ExtOrd}
       (∀ x, min (decode j (values p) G C x) h = min (decode j (values q) G C' x) h) := by
   rcases ExtOrd.cases h with rfl | rfl | ⟨a, rfl⟩
   · exact ⟨⊥, sourceGrid_bot _ _, fun _ => by simp, bot_le, bot_le, fun _ => by simp⟩
-  · have he : p = q := funext fun d => by simpa only [min_top_right] using hpq d
+  · have he : p = q := by grind
     have hc : C = ⊤ := top_le_iff.mp hhC
     have hc' : C' = ⊤ := top_le_iff.mp hhC'
     subst q
@@ -564,55 +524,24 @@ theorem exists_common_cut {j : ℕ} {p q : X → ExtOrd}
     subst C'
     refine ⟨ofOrd (Ordinal.omega0 * (2 * Fintype.card X + 1 : ℕ) + j),
       sourceGrid_endpoint le_rfl, fun _ => rfl, ?_, ?_, fun _ => rfl⟩ <;>
-      rw [decode_reserved_ceiling (show SelfVis j ⊤ from rfl) (fun _ => le_top)]
+      rw [decode_reserved_ceiling rfl (fun _ => le_top)]
   · obtain ⟨b, hb, _, hagree, hread, hread', hcompare⟩ :=
       exists_common_source_cut hG hC hC' hhG hhC hhC' hp hq hpq
     exact ⟨_, sourceGrid_endpoint hb, hagree, hread, hread', hcompare⟩
 
-/-- The same largest-agreement-grid formula used by the source-row layer,
-specialized to the paired normalization and its fixed endpoint grid. -/
-def largestCommonCut (j : ℕ) (p q : X → ExtOrd) : ExtOrd := by
-  classical
-  exact ((sourceGrid j (Fintype.card X)).filter (fun e =>
-    ∀ d, min (PairedSlotEncoding.normalize j p d) e =
-      min (PairedSlotEncoding.normalize j q d) e)).sup id
-
-/-- The coupled constructor may use its largest common grid cut, rather
-than the smaller witness selected by the existence proof. -/
-theorem largestCommonCut_spec {j : ℕ} {p q : X → ExtOrd}
-    {G : Finset ExtOrd} {C C' h : ExtOrd}
-    (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C) (hC' : SelfVis j C')
-    (hhG : h ∈ G) (hhC : h ≤ C) (hhC' : h ≤ C')
-    (hp : ∀ d, p d ≠ ⊤) (hq : ∀ d, q d ≠ ⊤)
-    (hpq : ∀ d, min (p d) h = min (q d) h) :
-    let e := largestCommonCut j p q
-    e ∈ sourceGrid j (Fintype.card X) ∧ SelfVis j e ∧
-      (∀ d, min (PairedSlotEncoding.normalize j p d) e =
-        min (PairedSlotEncoding.normalize j q d) e) ∧
-      h ≤ decode j (values p) G C e ∧ h ≤ decode j (values q) G C' e ∧
-      (∀ x, min (decode j (values p) G C x) h = min (decode j (values q) G C' x) h) := by
-  classical
-  let A := (sourceGrid j (Fintype.card X)).filter (fun e =>
-    ∀ d, min (PairedSlotEncoding.normalize j p d) e =
-      min (PairedSlotEncoding.normalize j q d) e)
-  have hA : A.Nonempty :=
-    ⟨⊥, Finset.mem_filter.mpr ⟨sourceGrid_bot _ _, fun _ => by simp⟩⟩
-  obtain ⟨e, heA, he⟩ := Finset.sup_mem_of_nonempty (f := id) hA
-  change e = largestCommonCut j p q at he
-  have heG : largestCommonCut j p q ∈ sourceGrid j (Fintype.card X) :=
-    he ▸ (Finset.mem_filter.mp heA).1
-  have hagree : ∀ d, min (PairedSlotEncoding.normalize j p d) (largestCommonCut j p q) =
-      min (PairedSlotEncoding.normalize j q d) (largestCommonCut j p q) :=
-    he ▸ (Finset.mem_filter.mp heA).2
-  obtain ⟨c, hcG, hc, hread, hread', hcompare⟩ :=
-    exists_common_cut hG hC hC' hhG hhC hhC' hp hq hpq
-  have hce : c ≤ largestCommonCut j p q :=
-    Finset.le_sup (f := id) (Finset.mem_filter.mpr ⟨hcG, hc⟩)
-  exact ⟨heG, sourceGrid_visible heG, hagree,
-    hread.trans ((decode_witness hG hC).mono hce),
-    hread'.trans ((decode_witness hG hC').mono hce), hcompare⟩
+/-- Prefix agreement on the fixed source grid lifts to decoded sections at any retained cut. -/
+theorem decode_agreement {Y : Type*} {a b : Y → ExtOrd} {j : ℕ} {p q : X → ExtOrd}
+    {G : Finset ExtOrd} {C h : ExtOrd} (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C)
+    (hhG : h ∈ G) (hhC : h ≤ C) (hp : ∀ d, p d ≠ ⊤) (hq : ∀ d, q d ≠ ⊤)
+    (hpq : Agree p q h)
+    (hab : ∀ e ∈ sourceGrid j (Fintype.card X), Agree (normalize j p) (normalize j q) e → Agree a b e) :
+    Agree (decode j (values p) G C ∘ a) (decode j (values q) G C ∘ b) h := by
+  obtain ⟨e, he, hag, hpe, hqe, hcompare⟩ := exists_common_cut hG hC hC hhG hhC hhC hp hq hpq
+  exact (hab e he hag).decode (decode_witness hG hC).mono (decode_witness hG hC).mono
+    hpe hqe (fun _ _ => hcompare _)
 
 end Profile
 
 end
+
 end VaughtConjecture.Knight.PairedSlotComparison

@@ -7,17 +7,6 @@ module
 
 public import VaughtConjecture.AmalgamationPlan.Plan
 
-/-! # One-point attachment along a prescribed visible face
-
-The old plan and a candidate one-point extension of one of its visible faces
-can be retained simultaneously. The induction follows a coatom containing
-the requested face; it need not use the fixed branch chosen by
-`isPlan_extend_one`.
-
-This is a statement about support geometry only. It constructs no semantic
-rows and does not assert amalgamation of prescribed respecting labellings.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.AmalgamationPlan.Plan
@@ -28,32 +17,23 @@ private theorem restrict_restrict {P : Finset (Finset α)} {A B : Finset α}
     (hBA : B ⊆ A) : restrictPlan (restrictPlan P A) B = restrictPlan P B := by
   ext S
   simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
-  exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hBA⟩, h.2⟩⟩
-
-private theorem restrict_self {A : Finset α} {P : Finset (Finset α)}
-    (hP : IsPlan A P) : restrictPlan P A = P := by
-  ext S
-  simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
-  exact ⟨And.left, fun h => ⟨h, hP.subset_of_mem h⟩⟩
+  tauto
 
 private theorem coatom_over_face {A B : Finset α} {P : Finset (Finset α)}
     (hP : IsPlan A P) (hB : B ∈ P) (hne : B ≠ A) :
     ∃ a ∈ A, A.erase a ∈ P ∧ B ⊆ A.erase a := by
   cases hP with
   | empty =>
-    exact (hne (Finset.mem_singleton.mp hB)).elim
+    simp_all
   | singleton a =>
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hB
-    rcases hB with rfl | hB
-    · exact ⟨a, by simp, by simp, Finset.empty_subset _⟩
-    · exact (hne hB).elim
+    simp_all
   | @step A a b Q R P ha hb hab hQ hR hmem hre hPeq =>
     subst P
     simp only [Finset.mem_union, Finset.mem_singleton] at hB
     rcases hB with (hB | hB) | hB
     · exact ⟨a, ha, by simp [hQ.domain_mem], hQ.subset_of_mem hB⟩
     · exact ⟨b, hb, by simp [hR.domain_mem], hR.subset_of_mem hB⟩
-    · exact (hne hB).elim
+    lia
 
 private theorem restrict_glue_left {A B : Finset α} {P Q : Finset (Finset α)}
     (hP : IsPlan A P) (hQ : IsPlan B Q)
@@ -73,7 +53,7 @@ private theorem restrict_glue_left {A B : Finset α} {P Q : Finset (Finset α)}
         Finset.mem_inter.mpr ⟨hS, Finset.mem_powerset.mpr hSAB⟩
       rw [← hres] at hm
       exact (Finset.mem_inter.mp hm).1
-    · exact (hxA (hSA (Finset.mem_union_right _ hxB))).elim
+    grind
   · intro hS
     exact ⟨Or.inl (Or.inl hS), hP.subset_of_mem hS⟩
 
@@ -88,16 +68,11 @@ private theorem attach_coatom {A : Finset α} {P Q : Finset (Finset α)}
   have hex : (A ∪ {x}).erase x = A := by
     rw [Finset.union_singleton, Finset.erase_insert hx]
   have hea : (A ∪ {x}).erase a = A.erase a ∪ {x} := by
-    rw [Finset.union_singleton, Finset.erase_insert_of_ne hax.symm,
-      Finset.union_singleton]
+    grind
   have hi : A ∩ (A.erase a ∪ {x}) = A.erase a := by
-    ext y
-    simp only [Finset.mem_inter, Finset.mem_union, Finset.mem_erase, Finset.mem_singleton]
-    aesop
+    grind
   have hu : A ∪ (A.erase a ∪ {x}) = A ∪ {x} := by
-    ext y
-    simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_singleton]
-    tauto
+    grind
   have hare : a ∉ A.erase a ∪ {x} := by simp [hax]
   have hover : restrictPlan P (A ∩ (A.erase a ∪ {x})) =
       restrictPlan Q (A ∩ (A.erase a ∪ {x})) := by rw [hi, hres]
@@ -106,9 +81,9 @@ private theorem attach_coatom {A : Finset α} {P Q : Finset (Finset α)}
   · apply IsPlan.step (a := x) (b := a)
       (Finset.mem_union_right _ (Finset.mem_singleton_self _))
       (Finset.mem_union_left _ ha) hax.symm
-    · simpa only [hex] using hP
-    · simpa only [hea] using hQ
-    · simpa only [hex] using And.intro hface hfaceQ
+    · aesop
+    · aesop
+    · simp_all
     · change restrictPlan P (((A ∪ {x}).erase x).erase a) =
         restrictPlan Q (((A ∪ {x}).erase x).erase a)
       rw [hex, hres]
@@ -156,12 +131,6 @@ theorem IsPlan.attach_one_over_face {A B : Finset α} {P Q : Finset (Finset α)}
       calc restrictPlan R (B ∪ {x})
           = restrictPlan (restrictPlan R (A.erase a ∪ {x})) (B ∪ {x}) :=
             (restrict_restrict hBEx).symm
-        _ = Q := by rw [hRE, hEB]
-
--- Non-vacuous regression at both ends of a three-point old domain. These
--- are separate extension plans, not simultaneous visibility claims.
-
--- Both inputs contribute two private points, not just one. The overlap
--- is the singleton {2}; each side retains its arbitrary prescribed plan.
+        _ = Q := by lia
 
 end VaughtConjecture.AmalgamationPlan.Plan

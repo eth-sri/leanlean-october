@@ -5,15 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ExpansionIsomorphism
-
-/-! # Expansion as a unique partial operation
-
-The domain is the existing literal, same-carrier model-expansion predicate. On that domain,
-reduct injectivity makes any chosen witness unique. Reduction gives downward domain closure
-and coherent values; transport along a specified isomorphism retains its underlying bijection.
-Nothing here produces a limit expansion or lifts an arbitrary embedding.
--/
+public import VaughtConjecture.Knight.ExpansionInjectivity
 
 @[expose] public section
 
@@ -22,7 +14,8 @@ namespace VaughtConjecture.Knight.PartialExpansion
 open TypeTower KnightRealization
 
 universe w w'
-variable {M : Type w} {N : Type w'} {σ τ ρ : Ordinal.{0}}
+
+variable {M : Type w} {σ τ ρ : Ordinal.{0}}
 
 /-- Realizations admitting an actual model expansion on the same carrier. -/
 abbrev Domain (h : σ ≤ ρ) (M : Type w) :=

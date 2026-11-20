@@ -8,22 +8,7 @@ module
 public import VaughtConjecture.DirectedFiniteJump
 public import VaughtConjecture.Knight.StableBandVector
 
-/-! # Stable lawfulness from one finite observation and a jump
-
-The stable band vector is a jump of one provisional vector above any requested
-base cover. The jump cutoff can be fixed before choosing that base: choose it
-beyond the finitely many finite stable offsets. Monotonicity and directedness
-then synchronize finite attainments and infinite escape. This is finite
-synchronization, not its elimination, and it uses no topology.
-
-The decoded stable labels are therefore lawful by finite provisional lawfulness
-and jump preservation. Only source consistency and covering are required;
-receiving and successor modelhood remain separate. Face coherence is unchanged.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 

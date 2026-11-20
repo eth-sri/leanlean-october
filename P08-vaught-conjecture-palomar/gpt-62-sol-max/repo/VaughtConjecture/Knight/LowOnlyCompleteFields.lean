@@ -7,14 +7,6 @@ module
 
 public import VaughtConjecture.Knight.LowOnlyRelease
 
-/-! # Complete-field receipts for LOW-only repairs
-
-Local repair changes present coordinates only. Future coordinates are retained literally,
-and must still participate in LOW's non-top maximum. The activation barrier below quantifies
-over the complete finite field vector, with no grade restriction on its non-top set.
-These are receipt lemmas, not the two coface repair fibres themselves.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.LowOnly
@@ -25,42 +17,10 @@ noncomputable section
 
 variable {n : ℕ} {P : SemScheme n} {j : ℕ}
 
-open Classical in
-/-- Install the constructed present section, preserving all still-future fields. -/
-def completeAt (a : Cell P.scheme → ExtOrd)
-    (u : P.scheme.below (effC n j) → ExtOrd) (d : Cell P.scheme) : ExtOrd :=
-  if hd : GradedLe (P.scheme.cell d) (effC n j) then u ⟨d, hd⟩ else a d
-
-theorem completeAt_present (a : Cell P.scheme → ExtOrd)
-    (u : P.scheme.below (effC n j) → ExtOrd) (d : P.scheme.below (effC n j)) :
-    completeAt a u d.1 = u d := by
-  unfold completeAt
-  rw [dite_eq_left d.2]
-  rfl
-
 theorem completeAt_future (a : Cell P.scheme → ExtOrd)
     (u : P.scheme.below (effC n j) → ExtOrd) (d : Cell P.scheme)
-    (hd : j < P.scheme.grade d) : completeAt a u d = a d := by
-  unfold completeAt
-  rw [dite_eq_right (fun h => (not_le.mpr hd) (h.2.trans (min_le_left _ _)))]
-
-theorem completeAt_respects (a : Cell P.scheme → ExtOrd)
-    {u : P.scheme.below (effC n j) → ExtOrd}
-    (hu : RespectsSemanticsBelow P.rows (effC n j) u) :
-    RespectsSemanticsBelow P.rows (effC n j) (fun d => completeAt a u d.1) := by
-  have h : (fun d : P.scheme.below (effC n j) => completeAt a u d.1) = u :=
-    funext (completeAt_present a u)
-  rw [h]; exact hu
-
-/-- Every field, not just present fields, retains its original comparison-cap reading. -/
-theorem completeAt_cap (a : Cell P.scheme → ExtOrd)
-    {u : P.scheme.below (effC n j) → ExtOrd} {γ : ExtOrd}
-    (hcap : ∀ d, min (u d) γ = min (a d.1) γ) (d : Cell P.scheme) :
-    min (completeAt a u d) γ = min (a d) γ := by
-  unfold completeAt
-  split_ifs with hd
-  · exact hcap ⟨d, hd⟩
-  · rfl
+    (hd : j < P.scheme.grade d) : CellScheme.complete a u d = a d :=
+  CellScheme.complete_future a u d ((min_le_left _ _).trans_lt hd)
 
 section Barrier
 
@@ -90,14 +50,13 @@ theorem clipped_activation {T : F → Prop} {a a' : F → ExtOrd} {b γ : ExtOrd
       (((le_nonTopMax a' hd).trans_lt hactive).trans_le (min_le_right _ _))).symm
   have hM : nonTopMax T a' = nonTopMax T a := by
     apply Finset.sup_congr rfl
-    intro d hd
-    exact hfix d (Finset.mem_filter.mp hd).2
-  exact ⟨hfix, hM, hM ▸ hactive.trans_le (min_le_left _ _)⟩
+    grind
+  grind
 
-theorem clipped_cutoff_cap (b γ : ExtOrd) : min (min b γ) γ = min b γ := by
-  rw [min_assoc, min_self]
+theorem clipped_cutoff_cap (b γ : ExtOrd) : min (min b γ) γ = min b γ := by simp
 
 end Barrier
+
 end
 
 end VaughtConjecture.Knight.LowOnly

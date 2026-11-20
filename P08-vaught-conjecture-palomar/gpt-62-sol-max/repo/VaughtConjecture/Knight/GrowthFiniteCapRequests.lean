@@ -6,20 +6,15 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.GrowthStableCalibration
+public import VaughtConjecture.Knight.GrowthTemplateInput
 public import VaughtConjecture.Knight.GrowthFiniteCapTemplate
-
-/-! # Calibrated requests for a chosen next-block donor
-
-The finite cutoff is chosen from the entire donor vector, not only its root.
-Correctness gives separate exact-proper and high-value receipts; it does not
-force donor tops to remain top.
--/
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthFiniteCapRequests
+
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
+
 noncomputable section
 
 theorem block_le {α : LimitStage} {β : Ordinal.{0}} (hβ : β < α.nextBlock.1) :
@@ -28,11 +23,6 @@ theorem block_le {α : LimitStage} {β : Ordinal.{0}} (hβ : β < α.nextBlock.1
   · exact (limitPart_le β).trans h.le
   · obtain ⟨k, rfl⟩ := exists_nat_of_lt_add_omega h hβ
     rw [limitPart_add_nat_of_limit (limitPart_eq_self_of_isNonSuccessor (Or.inr α.2))]
-
-theorem blocks_limit {α : LimitStage} {n : ℕ} (q : S α.nextBlock.1 (n + 1))
-    (μ : Ordinal.{0}) (hμ : μ ∈ blocks q) : limitPart μ = μ := by
-  obtain ⟨r, hr, rfl⟩ := mem_blocks.mp hμ
-  exact limitPart_eq_self_of_isNonSuccessor (donorRequests_ok q r hr).1
 
 theorem blocks_le {α : LimitStage} {n : ℕ} (q : S α.nextBlock.1 (n + 1))
     (μ : Ordinal.{0}) (hμ : μ ∈ blocks q) : μ ≤ α.1 := by
@@ -55,11 +45,11 @@ theorem exists_cut {α : LimitStage} {n : ℕ} (q : S α.nextBlock.1 (n + 1)) (f
       finitePart (ordOf (q.label d))) (Finset.mem_univ d)
     rw [hd, ordOf_ofOrd] at h
     dsimp [L]; omega
-  refine ⟨L, by dsimp [L]; omega, by dsimp [L]; omega, hfp, ?_⟩
+  refine ⟨L, by lia, by lia, hfp, ?_⟩
   intro d hnt
   rcases ExtOrd.cases (q.label d) with hb | ht | ⟨β, hd⟩
   · rw [hb]; exact bot_lt_ofOrd _
-  · exact (hnt ht).elim
+  · lia
   · have hb := block_le (ofOrd_lt_ofOrd.mp (hd ▸ (q.label_bound d).resolve_right hnt))
     rw [hd]
     apply ofOrd_lt_ofOrd.mpr
@@ -72,17 +62,8 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
 
 def requests (c : Cell DA) (L : ℕ) (hL : L < DA.grade c)
     (a : DA.below (DA.cell c)) (ref : Ordinal.{0} → DA.below (DA.cell c))
-    (P : Cell DQ → ExtOrd) : Requests DA DQ where
-  C := c
-  N := DA.grade c
-  R := L
-  R_lt_N := hL
-  Z := {d | P d = ⊥}
-  F := {d | P d ≠ ⊥ ∧ P d ≠ ⊤}
-  T := {d | P d = ⊤}
-  ρ d := ref (limitPart (ordOf (P d)))
-  off d := finitePart (ordOf (P d))
-  a := a
+    (P : Cell DQ → ExtOrd) : Requests DA DQ :=
+  Requests.ofLabels c hL a ref P
 
 variable (c : Cell DA) (L : ℕ) (hL : L < DA.grade c)
   (a : DA.below (DA.cell c)) (ref : Ordinal.{0} → DA.below (DA.cell c))
@@ -98,15 +79,7 @@ include href in
 theorem tOf_eq {d : Cell DQ} (hd : P d ≠ ⊥ ∧ P d ≠ ⊤) :
     (requests c L hL a ref P).tOf ((requests c L hL a ref P).sec w) d =
       min (P d) (w c) := by
-  rcases ExtOrd.cases (P d) with hb | ht | ⟨β, hβ⟩
-  · exact (hd.1 hb).elim
-  · exact (hd.2 ht).elim
-  obtain ⟨ho, hr⟩ := href d β hβ
-  change min (extVisibilityReplace (w (ref (limitPart (ordOf (P d)))).1)
-    (DA.grade c) (finitePart (ordOf (P d)))) (w c) = _
-  rw [hβ, ordOf_ofOrd, hr, extVisibilityReplace_of_finitePart_lt (by
-    rw [finitePart_limitPart_add_nat]; exact ho), limitPart_limitPart_add_nat,
-    limitPart_add_finitePart]
+  exact Requests.ofLabels_tOf w (fun d β h => ⟨off _, href d β h⟩) hd
 
 include hα hi ha hcut in
 theorem dOf_eq :
@@ -120,17 +93,8 @@ include href in
 /-- The same compatible vector satisfies the activated receiving relation.
 This is derived from reference readings, not assumed as admission. -/
 theorem correct : (requests c L hL a ref P).Correct
-    ((requests c L hL a ref P).sec w) P := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro d hd
-    change min (P d) (w c) = ⊥
-    rw [hd]; exact min_eq_left bot_le
-  · intro d hd
-    exact (tOf_eq c L hL a ref P w off href hd).symm
-  · intro d hd
-    change min (extVisibilityReplace (w a.1) (DA.grade c) L) (w c) ≤ min (P d) (w c)
-    rw [hd, min_top_left]
-    exact min_le_right _ _
+    ((requests c L hL a ref P).sec w) P :=
+  Requests.ofLabels_correct w (fun d β h => ⟨off _, href d β h⟩)
 
 include href hproper hcut in
 /-- Exact proper readback is separate from the high-request inequality. -/
@@ -151,7 +115,8 @@ theorem high_readback {v : Cell DQ → ExtOrd}
     {d : Cell DQ} (hd : P d = ⊤) : ofOrd (α + L) ≤ v d := by
   have he := h.2.2 d hd
   rw [dOf_eq c L hL a ref P w hα hi ha hcut] at he
-  exact he.trans (min_le_left _ _)
+  simp_all
 
 end
+
 end VaughtConjecture.Knight.GrowthFiniteCapRequests

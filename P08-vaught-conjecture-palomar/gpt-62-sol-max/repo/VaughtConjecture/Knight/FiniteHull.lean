@@ -5,20 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.AmalgamationPlan.PairHulls
+public import VaughtConjecture.AmalgamationPlan.ClosedGeometry
+public import VaughtConjecture.Knight.VisibleFaceOneStep
 public import VaughtConjecture.Order.FiniteSupportClosure
 public import VaughtConjecture.Knight.Directedness
-
-/-!
-# Canonical finite hulls of actual chart supports
-
-Adapted from the newsimple14 canonical-hulls draft, using the verified finite-plan geometry.
-Assumptions throughout are exact consistency and
-covering only.  The DecidableEq instance is only Finset bookkeeping and can
-always be supplied classically.  This module must initially sit ABOVE
-Directedness: using its common-cover theorem to build hulls, and then importing
-hulls back into Directedness, would create a cycle.
--/
 
 @[expose] public section
 
@@ -27,6 +17,7 @@ namespace VaughtConjecture.Knight.KnightRealization.FiniteHull
 open TypeTower StageType
 
 variable {α : LimitStage} {M : Type*} [DecidableEq M]
+
 variable {R : KnightRealization α M}
 
 noncomputable section
@@ -67,8 +58,7 @@ theorem factor_of_support_subset {n m : ℕ} (t : Fin n ↪ M) (u : Fin m ↪ M)
   choose f hf using hex
   refine ⟨⟨f, ?_⟩, ?_⟩
   · intro i j hij
-    apply t.injective
-    rw [← hf i, ← hf j, hij]
+    grind
   · ext i
     exact hf i
 
@@ -101,7 +91,7 @@ theorem exists_actual_superset (hcov : R.IsInitialSegmentCovering) (S : Finset M
   obtain ⟨p, hp⟩ := Option.isSome_iff_exists.mp hsome
   refine ⟨support u, ⟨⟨_, u, p, hp⟩, rfl⟩, ?_⟩
   intro z hz
-  have hz' : z ∈ support (enumerate S) := by simpa only [support_enumerate] using hz
+  have hz' : z ∈ support (enumerate S) := by simp_all
   obtain ⟨i, hi⟩ := (mem_support (enumerate S) z).mp hz'
   apply (mem_support u z).mpr
   refine ⟨Fin.castAddEmb k i, ?_⟩
@@ -126,17 +116,13 @@ theorem actual_inter (hcons : R.IsExactParentConsistent)
   have heq : (support f ∩ support g).image z.tuple =
       support x.tuple ∩ support y.tuple := by
     rw [Finset.image_inter _ _ z.tuple.injective, ← support_trans, ← support_trans, hft, hgt]
-  simpa only [heq] using hactual
+  simp_all
 
 /-- The canonical least actual finite support. Not a chosen enumeration. -/
 def hull (hcons : R.IsExactParentConsistent) (hcov : R.IsInitialSegmentCovering) :
     ClosureOperator (Finset M) :=
   FiniteSupportClosure.ofCofinalInterClosed (IsActualSupport R)
     (actual_inter hcons hcov) (exists_actual_superset hcov)
-
-@[simp] theorem hull_isClosed (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) (S : Finset M) :
-    (hull hcons hcov).IsClosed S ↔ IsActualSupport R S := Iff.rfl
 
 theorem hull_actual (hcons : R.IsExactParentConsistent)
     (hcov : R.IsInitialSegmentCovering) (S : Finset M) :
@@ -147,12 +133,6 @@ theorem subset_hull (hcons : R.IsExactParentConsistent)
     (hcov : R.IsInitialSegmentCovering) (S : Finset M) :
     S ⊆ hull hcons hcov S := (hull hcons hcov).le_closure S
 
-theorem hull_min (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) {S A : Finset M}
-    (hA : IsActualSupport R A) (hSA : S ⊆ A) : hull hcons hcov S ⊆ A := by
-  exact (FiniteSupportClosure.hull_spec (IsActualSupport R)
-    (actual_inter hcons hcov) (exists_actual_superset hcov) S).2.2 A hA hSA
-
 /-- The old tuple-facing interface is recovered with literal occurrence maps. -/
 theorem exists_hull_chart (hcons : R.IsExactParentConsistent)
     (hcov : R.IsInitialSegmentCovering) {n : ℕ} (t : Fin n ↪ M) :
@@ -161,42 +141,10 @@ theorem exists_hull_chart (hcons : R.IsExactParentConsistent)
   obtain ⟨x, hx⟩ := hull_actual hcons hcov (support t)
   have ht : support t ⊆ support x.tuple := by
     rw [hx]
-    exact subset_hull hcons hcov (support t)
+    apply subset_hull
   obtain ⟨f, hf⟩ := factor_of_support_subset t x.tuple ht
-  exact ⟨x, f, hf, hx⟩
-
-@[simp] theorem hull_eq_iff_actual (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) (S : Finset M) :
-    hull hcons hcov S = S ↔ IsActualSupport R S := by
-  constructor
-  · intro h
-    have hS := hull_actual hcons hcov S
-    simpa only [h] using hS
-  · intro hS
-    exact Finset.Subset.antisymm
-      (hull_min hcons hcov hS (Finset.Subset.refl S))
-      (subset_hull hcons hcov S)
-
-/-- Coordinates of a finite support in a supplied chart. -/
-def coordinates (x : R.LabelledExt) (S : Finset M) : Finset (Fin x.arity) :=
-  Finset.univ.filter fun i => x.tuple i ∈ S
-
-@[simp] theorem mem_coordinates (x : R.LabelledExt) (S : Finset M) (i : Fin x.arity) :
-    i ∈ coordinates x S ↔ x.tuple i ∈ S := by simp [coordinates]
-
-@[simp] theorem hull_empty (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) : hull hcons hcov ∅ = ∅ := by
-  obtain ⟨x⟩ := nonempty_labelledExt hcov
-  apply (hull_eq_iff_actual hcons hcov ∅).mpr
-  simpa using actual_of_face hcons x x.type.scheme.scheme.isPlan.empty_mem
-
-@[simp] theorem hull_singleton (hcons : R.IsExactParentConsistent)
-    (hcov : R.IsInitialSegmentCovering) (a : M) : hull hcons hcov {a} = {a} := by
-  obtain ⟨A, ⟨x, rfl⟩, hA⟩ := exists_actual_superset hcov {a}
-  obtain ⟨i, rfl⟩ := (mem_support x.tuple a).mp (hA (Finset.mem_singleton_self a))
-  apply (hull_eq_iff_actual hcons hcov _).mpr
-  simpa using actual_of_face hcons x
-    (x.type.scheme.scheme.isPlan.singleton_mem (Finset.mem_univ i))
+  tauto
 
 end
+
 end VaughtConjecture.Knight.KnightRealization.FiniteHull

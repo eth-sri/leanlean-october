@@ -7,17 +7,7 @@ module
 
 public import VaughtConjecture.Knight.SharpWitnessComposition
 
-/-! # Decoding with exceptional owner localities
-
-Orderliness and availability transport uniformly through a bounded witness.
-At each owner, a short row admits repaired composition; an exceptional long
-row instead supplies its own mapped locality. This does not assume lawfulness
-of the whole decoded section, bottom reflection, or a particular catalogue.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.SharpWitnessComposition
 
@@ -37,20 +27,14 @@ theorem map_respects_of_short_or_local
       TransformsTo (fun d : D.below (D.cell c.1) => D.grade d.1)
         (sem.E c.1)
         (fun d => min (ν (r (CellScheme.below.incl c d))) (ν (r c)))) :
-    RespectsSemanticsBelow sem BJ (fun d => ν (r d)) where
-  orderly d := by
-    have h := hν.clause5 (r d) (D.grade d.1)
-      (by rw [gTop_of_le (hK d)]; exact le_top) (D.grade d.1) le_rfl
-    rwa [← hr.orderly d] at h
-  locality c := by
-    rcases hc c with hs | hl
-    · exact map_capped_locality
-        (c := (⟨c.1, GradedLe.refl _⟩ : D.below (D.cell c.1)))
-        (p := fun d => r (CellScheme.below.incl c d))
-        (fun d => d.2.2) (hK c) hs (hr.orderly c).symm (hr.locality c) hν
-    · exact hl
-  availability d c hs hg := by
-    obtain ⟨e, he, hde⟩ := hr.availability d c hs hg
-    exact ⟨e, he, hν.mono hde⟩
+    RespectsSemanticsBelow sem BJ (fun d => ν (r d)) := by
+  apply hr.map_of_locality hK hν
+  intro c
+  rcases hc c with hs | hl
+  · exact map_capped_locality
+      (c := (⟨c.1, GradedLe.refl _⟩ : D.below (D.cell c.1)))
+      (p := fun d => r (CellScheme.below.incl c d))
+      (fun d => d.2.2) (hK c) hs (hr.orderly c).symm (hr.locality c) hν
+  · exact hl
 
 end VaughtConjecture.Knight.SharpWitnessComposition

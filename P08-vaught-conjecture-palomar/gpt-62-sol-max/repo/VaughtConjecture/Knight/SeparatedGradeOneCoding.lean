@@ -5,20 +5,12 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.SeparatedGradeOneMute
+public import Mathlib.Data.Finset.Sort
+public import VaughtConjecture.Knight.VisibleOrderInterpolation
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import Mathlib.Data.Fintype.Lattice
+public import Mathlib.Logic.Relation
 public import VaughtConjecture.Knight.SourceCode
-
-/-! # Producing separated source profiles by one common codebook
-
-Grade-one coding of visible labels has exactly offset one at every nonbottom
-value. Thus equality of block floors is equality of codes. This supplies the
-separation hypothesis of the actual bountiful row construction, including
-inputs with literal top. The selected uncoded labels themselves respect the
-new rows by direct outgoing witnesses, not by faithful composition.
-
-This is not a replacement for arbitrary inherited rows. The source profile
-is shared by all grade-one rows, and every higher-grade row remains mute.
--/
 
 @[expose] public section
 
@@ -42,7 +34,5 @@ theorem band_mono {m n : ℕ} (h : m ≤ n) : band m ≤ band n := by
 
 theorem band_floor (n : ℕ) : blockFloor (band n) = ofOrd (Ordinal.omega0 * n) := by
   rw [band, blockFloor_ofOrd, limitPart_mul_add n 1]
-
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
 end VaughtConjecture.Knight.SeparatedGradeOne

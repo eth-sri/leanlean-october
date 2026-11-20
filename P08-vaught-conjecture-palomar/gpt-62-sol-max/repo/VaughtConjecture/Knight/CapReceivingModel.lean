@@ -9,19 +9,14 @@ public import VaughtConjecture.Knight.FiniteCoverReceivingCore
 public import VaughtConjecture.Knight.CanonicalCoatomFiniteSupply
 public import VaughtConjecture.Knight.CoatomFaceLift
 
-/-! # Finite-cut receiving supplies the old model requests
-
-This direction uses the constructed finite coface supplier, not ordinary receiving
-in an already established model. The reverse implication remains downstream.
-Ordinal zero is a positive extended-ordinal observation cutoff, not bottom; we
-never assert that capping a lawful labelling at this cutoff is lawful.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
+
 open TypeTower StageType KnightRealization Value ExtOrd
+
 universe w
+
 variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 
 namespace FiniteCutReceiving
@@ -63,11 +58,7 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
       FixedHeight.exists_uniformity_coface (CanonicalCoatomSupply.supply α.2) p γ hγ hγα
     obtain ⟨a, ha⟩ : ∃ a : Ordinal.{0}, q.label d = ofOrd a := by
       rcases ExtOrd.cases (q.label d) with hb | ht | h
-      · rw [hb] at hlo
-        exact False.elim ((not_le_of_gt (bot_lt_ofOrd γ)) hlo)
-      · rw [ht] at hhi
-        exact False.elim ((not_lt_of_ge le_top) hhi)
-      · exact h
+      all_goals simp_all
     have haα : a < α.1 := ofOrd_lt_ofOrd.mp
       ((q.label_bound d).resolve_right (by rw [ha]; exact ofOrd_ne_top _) |> fun h => ha ▸ h)
     obtain ⟨y, hy, r, hr, he, hcap⟩ := hFC t p ht q hqp (ofOrd (a + 1))
@@ -76,8 +67,7 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
       eq_of_cap_lt (hcap _) (by rw [ha, ofOrd_lt_ofOrd]; exact Order.lt_succ a)
     refine ⟨y, hy, r, ⟨SemScheme.castCell he.symm d, ?_, ?_⟩,
       isCoface_of_consistent hcons ht hr, hr⟩
-    · rwa [hd]
-    · rwa [hd]
+    all_goals lia
   · intro n t p ht γ hγα
     obtain ⟨q, ⟨d, hgrade, hhigh⟩, hqp⟩ :=
       FixedHeight.exists_highGrade_coface (CanonicalCoatomSupply.supply α.2) p γ hγα
@@ -87,17 +77,15 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
       isCoface_of_consistent hcons ht hr, hr⟩
     · have hgcast : ∀ {X Y : SemScheme (n + 1)} (e : X = Y) (d : Cell X.scheme),
           Y.scheme.grade (SemScheme.castCell e d) = X.scheme.grade d := by
-        intro X Y e d
-        cases e
-        rfl
-      exact (hgcast he.symm d).trans hgrade
+        aesop
+      aesop
     · have hc := hcap (SemScheme.castCell he.symm d)
       have hh : ofOrd γ < min (q.label d) (ofOrd (γ + 1)) :=
-        lt_min hhigh (ofOrd_lt_ofOrd.mpr (Order.lt_succ γ))
+        by simp_all
       change min (r.label (SemScheme.castCell he.symm d)) (ofOrd (γ + 1)) =
         min (q.label d) (ofOrd (γ + 1)) at hc
-      rw [← hc] at hh
-      exact hh.trans_le (min_le_left _ _)
+      grind
 
 end FiniteCutReceiving
+
 end VaughtConjecture.Knight

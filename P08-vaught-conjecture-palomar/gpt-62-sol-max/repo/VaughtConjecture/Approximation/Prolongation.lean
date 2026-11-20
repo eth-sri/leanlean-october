@@ -7,60 +7,6 @@ module
 
 public import VaughtConjecture.TypeTower.Basic
 
-/-! # Prolongation up to isomorphism
-
-The public, isomorphism-invariant **prolongation** predicate on realizations of a type tower
-(issue #29; TERMINOLOGY: *prolongation*, never "expansion" except when quoting Knight).
-
-Knight's Def. 5.1.1 says that a model `N` of `S^β` is an *expansion* of a model `M` of `S^α`
-(`α < β`) when `M = S ι_{α,β} ∘ N` — literally, on the same carrier.  Counting arguments only
-ever use this up to isomorphism of the source (Knight-VC's `PaperExactModelExpandsTo`:
-"some model at `β` whose truncation is isomorphic to `M`"), and that is the notion fixed here:
-
-* `Realization.ProlongsTo R hβ` — some stage-`β` realization (on some carrier) reduces, up to
-  isomorphism, to `R`;
-* `Realization.ProlongsToOn R hβ` — the literal Def. 5.1.1 shape: some stage-`β` realization on
-  the *same carrier* reduces *exactly* to `R`.  The two are equivalent
-  (`prolongsTo_iff_prolongsToOn`): a target on any carrier is pushed forward along the
-  isomorphism onto the carrier of `R` (`Realization.map`, `IsIso.map_eq`);
-* `Realization.NoProlongationTo R hβ` — the negation (Knight-VC's `NoExpansionTo`; its instance
-  at `β = α + ω` is Knight-VC's `FailsAtAlphaOmega`);
-* `Realization.ProlongsToIn C R hβ` — prolongation **within a target class** `C` (a predicate on
-  realizations at every stage and carrier, e.g. "is a model", Def. 3.2.1): the target is
-  required to satisfy `C`.  `ProlongsTo` is the case `C := ⊤` (`prolongsToIn_true_iff`), and
-  Knight's Def. 5.1.1 is literally `ProlongsToOnIn IsModel`.
-
-The generic predicates carry no model axioms (those are Knight-specific and enter through `C`);
-the acceptance property of #29 is **isomorphism invariance** (`IsIso.prolongsTo_iff`,
-`Iso.prolongsTo_iff`, and the lift to the isomorphism classes `ProlongsToClass`), together with
-downward monotonicity in the target stage (`ProlongsTo.mono`) and reflexivity (`ProlongsTo.refl`).
-
-**Two levels (deliberate).**
-1. *Raw / structural prolongation* `ProlongsTo`: isomorphism-invariant and downward monotone in
-   the target stage **structurally** (`ProlongsTo.mono`, by `reduct_reduct`) — no model axioms.
-2. *Certified model prolongation* `ProlongsToIn C` with `C := IsModel`: the rank-relevant
-   notion (histories, `stopRank`, #70/#30) must prolong through **actual models**.  Its downward
-   monotonicity `ProlongsToIn.mono` is *not* inherited from level 1: it needs the target class
-   to be closed under reduction (`hC`).  For Knight that closure is the strict model-reduction
-   theorem `KnightRealization.IsModel.reduct` (#101, `Knight/ReductModel.lean`): full modelhood,
-   including the `⊥`-pattern clause, is preserved by `reduct` for arbitrary models, so
-   `ProlongsToIn IsModel` is downward closed as a theorem (Knight façade), not via a
-   `ProlongationStep` receipt or a coherent history.  Had (a)(ii) been construction-specific,
-   downward closure would have had to come from a receipt; that fallback is no longer needed.
-
-**Universes.**  The target carrier is quantified over `Type w`, the universe of the source
-carrier `M`, so `ProlongsTo` has no universe parameter beyond those of `R` and isomorphism
-invariance needs no `ULift`.  Nothing is lost: a target on a carrier of any universe `w'` is
-isomorphic (through its reduct) to `R`, hence is a push-forward of a realization on `M`, and
-`ProlongsTo.of_reduct_iso` accepts such a target directly.  (The target-class variant
-`ProlongsToIn C` takes `C` on carriers of universe `w` only, and its invariance is stated for
-sources in that universe.)
-
-**Non-goals.**  No uniqueness of prolongations (Knight's Lemma 5.5.2 is *avoided*, CONCORDANCE
-§5); no construction of prolongations (the construction datum `ProlongationStep` is #51/#30);
-no coherent histories (`∀ β, ProlongsTo` is *not* a history — TERMINOLOGY, banned
-identification 4). -/
-
 @[expose] public section
 
 namespace VaughtConjecture
@@ -70,69 +16,6 @@ universe u v w w'
 namespace TypeTower.Realization
 
 variable {Λ : Type v} [Preorder Λ] {T : TypeTower.{u} Λ} {α β γ : Λ} {M : Type w}
-
-/-! ### The predicates -/
-
-/-- `R` **prolongs to stage `β`**: some stage-`β` realization (on some carrier in the universe of
-`M`) reduces, up to isomorphism, to `R`.  The public, isomorphism-invariant form of Knight's
-Def. 5.1.1 (Knight-VC `PaperExactModelExpandsTo`, without the model axioms, which enter through
-`ProlongsToIn`). -/
-def ProlongsTo (R : T.Realization α M) (hβ : α ≤ β) : Prop :=
-  ∃ (N : Type w) (R' : T.Realization β N), Nonempty ((R'.reduct hβ).Iso R)
-
-/-! ### Entry points: any carrier, any universe -/
-
-/-- A stage-`β` realization on a carrier `N` of *any* universe whose reduct is isomorphic to `R`
-witnesses `ProlongsTo`: push it forward along the isomorphism onto `M`. -/
-theorem ProlongsTo.of_reduct_iso {N : Type w'} (R : T.Realization α M) (hβ : α ≤ β)
-    (R' : T.Realization β N) (i : (R'.reduct hβ).Iso R) : R.ProlongsTo hβ :=
-  ⟨M, R'.map i.1, ⟨by rw [reduct_map, IsIso.map_eq i.2]; exact Iso.refl R⟩⟩
-
-/-! ### Isomorphism invariance (the acceptance property of #29) -/
-
-theorem ProlongsTo.of_isIso {N : Type w'} {R : T.Realization α M} {R₂ : T.Realization α N}
-    {e : M ≃ N} (hi : R.IsIso R₂ e) {hβ : α ≤ β} (h : R.ProlongsTo hβ) : R₂.ProlongsTo hβ := by
-  obtain ⟨K, R', ⟨i⟩⟩ := h
-  exact ProlongsTo.of_reduct_iso R₂ hβ R' (i.trans ⟨e, hi⟩)
-
-/-- **Isomorphism invariance** of prolongation (Knight-VC `paperExactModelExpandsTo_iff_of_iso`,
-generalised to any tower, any carriers, any universes). -/
-theorem IsIso.prolongsTo_iff {N : Type w'} {R : T.Realization α M} {R₂ : T.Realization α N}
-    {e : M ≃ N} (hi : R.IsIso R₂ e) (hβ : α ≤ β) : R.ProlongsTo hβ ↔ R₂.ProlongsTo hβ :=
-  ⟨ProlongsTo.of_isIso hi, ProlongsTo.of_isIso (IsIso.symm hi)⟩
-
-theorem Iso.prolongsTo_iff {N : Type w'} {R : T.Realization α M} {R₂ : T.Realization α N}
-    (i : R.Iso R₂) (hβ : α ≤ β) : R.ProlongsTo hβ ↔ R₂.ProlongsTo hβ :=
-  IsIso.prolongsTo_iff i.2 hβ
-
-theorem prolongsTo_iff_of_iso {N : Type w'} {R : T.Realization α M} {R₂ : T.Realization α N}
-    (h : Nonempty (R.Iso R₂)) (hβ : α ≤ β) : R.ProlongsTo hβ ↔ R₂.ProlongsTo hβ :=
-  h.elim fun i => i.prolongsTo_iff hβ
-
-/-! ### Reflexivity and downward monotonicity in the target stage -/
-
-/-! ### The isomorphism-class lift
-
-`ProlongsTo` descends to the isomorphism classes of stage-`α` realizations on `M`
-(`Realization.isoSetoid`), so that a stopping rank (#70) can be defined on classes. -/
-
-/-- Prolongability of an **isomorphism class** of realizations (well defined by
-`Iso.prolongsTo_iff`). -/
-def ProlongsToClass (hβ : α ≤ β) (q : Quotient (isoSetoid T α M)) : Prop :=
-  Quotient.lift (fun R : T.Realization α M => R.ProlongsTo hβ)
-    (fun _ _ h => propext (prolongsTo_iff_of_iso h hβ)) q
-
-@[simp]
-theorem prolongsToClass_mk (hβ : α ≤ β) (R : T.Realization α M) :
-    ProlongsToClass hβ (Quotient.mk (isoSetoid T α M) R) ↔ R.ProlongsTo hβ := Iff.rfl
-
-/-! ### Prolongation within a target class
-
-A *target class* is a predicate on realizations at every stage and on every carrier of the
-universe of `M` (for Knight: "is a model of `S^β`", Def. 3.2.1).  `ProlongsToIn C` requires
-the prolongation target to lie in `C`; it is invariant under isomorphism of the source without
-any hypothesis on `C`, is downward monotone when `C` is closed under reduction, and coincides
-with the carrier-fixed literal form when `C` is closed under push-forward along bijections. -/
 
 section TargetClass
 
@@ -203,16 +86,6 @@ theorem ProlongsToIn.mono
     R.ProlongsToIn C hβ := by
   obtain ⟨N, R', hR', ⟨i⟩⟩ := h
   exact ⟨N, R'.reduct hβγ, hC hβγ R' hR', ⟨by rw [reduct_reduct]; exact i⟩⟩
-
-variable (C) in
-/-- Prolongability within `C` of an isomorphism class of realizations. -/
-def ProlongsToClassIn (hβ : α ≤ β) (q : Quotient (isoSetoid T α M)) : Prop :=
-  Quotient.lift (fun R : T.Realization α M => R.ProlongsToIn C hβ)
-    (fun _ _ h => propext (prolongsToIn_iff_of_iso h hβ)) q
-
-@[simp]
-theorem prolongsToClassIn_mk (hβ : α ≤ β) (R : T.Realization α M) :
-    ProlongsToClassIn C hβ (Quotient.mk (isoSetoid T α M) R) ↔ R.ProlongsToIn C hβ := Iff.rfl
 
 end TargetClass
 

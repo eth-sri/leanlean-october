@@ -6,17 +6,20 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CoatomRecursiveApex
-public import VaughtConjecture.Knight.CanonicalRecursiveLiteralRows
+public import VaughtConjecture.Knight.CanonicalRecursiveBoundaryTransport
 
-/-! # Ordered original faces of the activated recursive coatom output -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomRecursiveOrdered
+
 open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan
+
 open SemSchemeBoundaryInput CoatomRecursiveApex
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B : Finset ι} {s : Step A} {m n : ℕ}
+
 variable (I : Input s m (n + 3) (n + 3)) {α : Ordinal.{0}}
   {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
   (O : Display I α p q)
@@ -35,24 +38,18 @@ theorem boundary_order : StrictMono (boundary I) :=
 theorem boundary_exhaustive (hB : ¬ A ⊆ B) (z : Cell (scheme I))
     (hz : (scheme I).scope z ⊆ B) :
     ∃ d, boundary I d = z := by
-  have hn : (scheme I).cell z ≠ (A, n + 4) := fun h => hB (by
-    change ((scheme I).cell z).1 ⊆ B at hz
-    simpa only [h] using hz)
+  have hn : (scheme I).cell z ≠ (A, n + 4) := by aesop
   obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (CoatomRecursiveInput.scheme I)
     Unit (n + 4) (by omega) (finalHeight I) z hn
   have hx : (CoatomRecursiveInput.scheme I).scope x ⊆ B := by
     change ((scheme I).cell (old I x)).1 ⊆ B at hz
     rwa [MaximalFullLayer.old_index] at hz
-  rcases RecursiveSourceCarrier.classify I.boundary (CanonicalRecursiveInventory.Profile I.rows)
-      (n + 3) (CoatomRecursiveInput.height_le I) x with ⟨d, hd⟩ | ⟨j, _, _, he⟩
-  · exact ⟨d, congrArg (old I) hd⟩
-  · apply False.elim
-    apply hB
-    change ((CoatomRecursiveInput.scheme I).cell x).1 ⊆ B at hx
-    simpa only [he] using hx
+  obtain ⟨d, hd⟩ := CanonicalRecursiveInventory.proper_occurrence I.rows (n + 3)
+    (CoatomRecursiveInput.height_le I) x (fun h => hB (h.trans hx))
+  exact ⟨d, congrArg (old I) hd⟩
 
 theorem boundary_row (c : Cell I.boundary) (d : I.boundary.below (I.boundary.cell c)) :
-    O.rows.E (boundary I c) ⟨boundary I d.1, by rw [boundary_index, boundary_index]; exact d.2⟩ =
+    O.rows.E (boundary I c) ⟨boundary I d.1, by rw [boundary_index, boundary_index]; grind⟩ =
       I.rows.E c d := by
   let cb := CoatomRecursiveDisplay.boundary I c
   let db : (CoatomRecursiveInput.scheme I).below ((CoatomRecursiveInput.scheme I).cell cb) :=
@@ -60,26 +57,21 @@ theorem boundary_row (c : Cell I.boundary) (d : I.boundary.below (I.boundary.cel
       rw [CanonicalRecursiveInventory.boundary_cell, CanonicalRecursiveInventory.boundary_cell]
       exact d.2⟩
   exact (O.old_row cb db).trans
-    (CanonicalRecursiveLiteralRows.row I.rows I.proper n (CoatomRecursiveInput.height_le I) c d)
+    (CanonicalRecursiveBoundaryTransport.row I.rows I.proper n (CoatomRecursiveInput.height_le I) c d)
 
 def face {D : CellScheme B} {sem : Semantics D} (F : ExactSemanticFace sem I.rows)
-    (hB : ¬ A ⊆ B) : ExactSemanticFace sem O.rows where
-  map := ⟨fun d => boundary I (F.map d), (boundary_order I).injective.comp F.map.injective⟩
-  index d := (boundary_index I _).trans (F.index d)
-  exhaustive z hz := by
-    obtain ⟨d, rfl⟩ := boundary_exhaustive I hB z hz
-    have hd : I.boundary.scope d ⊆ B := by
-      change ((scheme I).cell (boundary I d)).1 ⊆ B at hz
-      rwa [boundary_index] at hz
-    obtain ⟨x, rfl⟩ := F.exhaustive d hd
-    exact ⟨x, rfl⟩
-  row c d := (boundary_row I O (F.map c) (F.belowMap c d)).trans (F.row c d)
+    (hB : ¬ A ⊆ B) : ExactSemanticFace sem O.rows :=
+  F.through ⟨boundary I, (boundary_order I).injective⟩ (boundary_index I)
+    (boundary_exhaustive I hB) (boundary_row I O)
 
 end
+
 end VaughtConjecture.Knight.CoatomRecursiveOrdered
 
 namespace VaughtConjecture.Knight
+
 open Transform Value ExtOrd AmalgamationPlan
+
 noncomputable section
 
 /-- Exact physical rows, exhaustive occurrence order, plan, and labels suffice
@@ -117,47 +109,35 @@ theorem typeMap_of_pointImage_face {α : Ordinal.{0}} {m n : ℕ}
     exact (congrArg (t.scheme.rows.E (F.map c)) (Subtype.ext hd)).trans hh
 
 end
+
 end VaughtConjecture.Knight
 
 namespace VaughtConjecture.Knight.CoatomRecursiveOrdered
+
 open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan
+
 open SemSchemeBoundaryInput CoatomRecursiveApex
+
 noncomputable section
+
 variable {n m : ℕ} {α : Ordinal.{0}}
   {s : Step (Finset.univ : Finset (Fin (n + 4)))}
   (I : Input s m (n + 3) (n + 3))
   {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
   (O : Display I α p q)
 
-theorem left_typeMap (hp : RespectsSemantics I.left.rows p)
-    (hpb : ∀ d, p d < ofOrd α ∨ p d = ⊤) :
-    typeMap I.placeLeft O.toType = some (⟨I.left, p, hpb, hp⟩ : S α (n + 3)) := by
-  have hn : ¬ (Finset.univ : Finset (Fin (n + 4))) ⊆ Finset.univ.erase s.a :=
-    fun h => Finset.notMem_erase s.a Finset.univ (h s.ha)
-  apply typeMap_of_pointImage_face O.toType ⟨I.left, p, hpb, hp⟩ I.placeLeft I.imageLeft
-    (face I O I.leftFace hn)
-  · exact (boundary_order I).comp
-      (AmalgamatedBoundary.left_order s I.leftScheme I.rightScheme I.shared I.planLeft I.planRight)
-  · have he : (scheme I).plan = s.plan :=
-      CanonicalRecursiveBoundaryTransport.plan_eq I.rows (n + 3) (CoatomRecursiveInput.height_le I)
-    change Plan.restrictPlan (scheme I).plan (Finset.univ.erase s.a) = _
-    rw [he, restrict_left, ← I.planLeft]
-  · exact O.left_read
-
-theorem right_typeMap (hq : RespectsSemantics I.right.rows q)
-    (hqb : ∀ d, q d < ofOrd α ∨ q d = ⊤) :
-    typeMap I.placeRight O.toType = some (⟨I.right, q, hqb, hq⟩ : S α (n + 3)) := by
-  have hn : ¬ (Finset.univ : Finset (Fin (n + 4))) ⊆ Finset.univ.erase s.b :=
-    fun h => Finset.notMem_erase s.b Finset.univ (h s.hb)
-  apply typeMap_of_pointImage_face O.toType ⟨I.right, q, hqb, hq⟩ I.placeRight I.imageRight
-    (face I O I.rightFace hn)
-  · exact (boundary_order I).comp
-      (AmalgamatedBoundary.right_order s I.leftScheme I.rightScheme I.shared I.planLeft I.planRight)
-  · have he : (scheme I).plan = s.plan :=
-      CanonicalRecursiveBoundaryTransport.plan_eq I.rows (n + 3) (CoatomRecursiveInput.height_le I)
-    change Plan.restrictPlan (scheme I).plan (Finset.univ.erase s.b) = _
-    rw [he, restrict_right, ← I.planRight]
-  · exact O.right_read
+private theorem face_typeMap {k : ℕ} (t : S α k) (f : Fin k ↪ Fin (n + 4))
+    {B : Finset (Fin (n + 4))} (hf : Finset.univ.image f = B)
+    (hn : ¬ Finset.univ ⊆ B)
+    (F : ExactSemanticFace (PointImageSemantics.rows t.scheme.scheme f hf t.scheme.rows) I.rows)
+    (hmono : StrictMono F.map)
+    (hplan : Plan.restrictPlan s.plan B = t.scheme.scheme.plan.image (Finset.image f))
+    (hlabel : ∀ d, O.toType.label ((face I O F hn).map d) = t.label d) :
+    typeMap f O.toType = some t := by
+  apply typeMap_of_pointImage_face O.toType t f hf (face I O F hn)
+    ((boundary_order I).comp hmono) _ hlabel
+  exact (congrArg (fun R => Plan.restrictPlan R B)
+    (CanonicalRecursiveBoundaryTransport.plan_eq I.rows (n + 3) (CoatomRecursiveInput.height_le I))).trans hplan
 
 /-- The complete supplier for coatom input arities at least three. -/
 theorem exists_amalgam (hα : Order.IsSuccLimit α) (C : CoatomPair (n + 2))
@@ -166,8 +146,10 @@ theorem exists_amalgam (hα : Order.IsSuccLimit α) (C : CoatomPair (n + 2))
   let I := (CoatomBoundaryPresentation.of_compatible C h).input
   let O := ofCompatible hα C h
   exact ⟨O.toType,
-    ⟨left_typeMap I O pa.respects pa.label_bound,
-      right_typeMap I O pb.respects pb.label_bound⟩, O.maximal⟩
+    ⟨face_typeMap I O pa I.placeLeft I.imageLeft (by simp) I.leftFace I.left_order I.planLeft O.left_read,
+      face_typeMap I O pb I.placeRight I.imageRight (by simp) I.rightFace I.right_order I.planRight O.right_read⟩,
+    O.maximal⟩
 
 end
+
 end VaughtConjecture.Knight.CoatomRecursiveOrdered

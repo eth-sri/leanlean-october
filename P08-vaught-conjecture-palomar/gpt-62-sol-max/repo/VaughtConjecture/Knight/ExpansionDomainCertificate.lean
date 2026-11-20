@@ -9,14 +9,6 @@ public import VaughtConjecture.Knight.ExpansionDomainUniform
 public import VaughtConjecture.Knight.ClassScottDefinitions
 public import VaughtConjecture.FiltrationCertificate
 
-/-! # Construction receipts for the generic filtration certificate
-
-The domains are expansion domains. Terminal classification supplies countable losses; local
-terminal models supply cofinal nonempty losses (both left explicit here). Limit expansion
-supplies continuity, uniform finite-cover comparison supplies agreement at the sentence's own
-rank, and ordinary Scott isolation supplies separation. No older one-block producer is added.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.ExpansionDomain
@@ -36,7 +28,7 @@ def filtrationCertificate (hct : CountableTerminalFibres)
   cofinal_losses := hloss
   separates := fun p q hpq => by
     obtain ⟨φ, hφ⟩ := exists_isolating_sentence p
-    exact ⟨φ, fun h => hpq (((hφ q).mp (h.mp ((hφ p).mpr rfl))).symm)⟩
+    exact ⟨φ, by grind⟩
   homogeneous := fun φ =>
     ⟨φ.qrank, qrank_lt_ord_aleph_one φ,
       fun _ hp _ hq => realizes_iff_of_mem_domain_uniform φ le_rfl hp hq⟩

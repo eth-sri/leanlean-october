@@ -8,24 +8,7 @@ module
 public import VaughtConjecture.DirectedNat
 public import VaughtConjecture.JumpClosedCore
 
-/-! # Finite jumps reconstruct directed natural-vector suprema
-
-Monotone natural observations on a nonempty directed preorder attain each
-finite completed coordinate on a tail and escape every finite cutoff at each
-infinite coordinate. Finitely many such requirements synchronize. One cutoff
-beyond every finite completed coordinate therefore reconstructs the whole
-completed vector by jumping observations on a common tail.
-
-Coordinates may be empty; index and coordinate universes are independent.
-There is no countability hypothesis, topology, or project stable machinery.
-The cutoff is fixed before the base index is chosen, but the witness index
-may depend on that base. An arbitrary jump-preserved predicate consequently
-passes from all finite observations to their completed vector.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.DirectedFiniteJump
 
@@ -44,12 +27,12 @@ private theorem eventually_approximates_coordinate (f : I → ℕ) (hf : Monoton
   by_cases hr : (⨆ a, (f a : ℕ∞)) = ⊤
   · obtain ⟨a, ha⟩ := lt_iSup_iff.mp (hr ▸ ENat.natCast_lt_top K)
     filter_upwards [eventually_ge_atTop a] with i hai
-    exact ⟨fun h => (h hr).elim,
+    exact ⟨by lia,
       fun _ => ha.trans_le (ENat.natCast_le_natCast.mpr (hf hai))⟩
   · obtain ⟨a, ha⟩ := ENat.exists_eq_iSup_of_lt_top (lt_top_iff_ne_top.mpr hr)
     filter_upwards [eventually_ge_atTop a] with i hai
     exact ⟨fun _ => le_antisymm (le_iSup (fun a => (f a : ℕ∞)) i)
-      (ha ▸ ENat.natCast_le_natCast.mpr (hf hai)), fun h => (hr h).elim⟩
+      (ha ▸ ENat.natCast_le_natCast.mpr (hf hai)), by lia⟩
 
 /-- Above any base, all finite-coordinate attainments and infinite-coordinate
 escapes hold together on one common tail. -/
@@ -88,7 +71,7 @@ theorem exists_jump_eq_iSup_above (f : J → I → ℕ) (hf : ∀ j, Monotone (f
   obtain ⟨base, hbase⟩ := eventually_atTop.mp h
   refine ⟨K, hK, fun i0 => ?_⟩
   obtain ⟨i, hi0, hi⟩ := exists_ge_ge i0 base
-  exact ⟨i, hi0, hbase i hi⟩
+  tauto
 
 /-- A predicate preserved by every jump above `K0` passes from all finite
 observations to the completed vector. No topological closedness is assumed. -/
@@ -100,6 +83,6 @@ theorem predicate_iSup_of_jump (f : J → I → ℕ) (hf : ∀ j, Monotone (f j)
   obtain ⟨K, hK, h⟩ := exists_jump_eq_iSup_above f hf K0
   obtain ⟨i, _, hi⟩ := h (Classical.arbitrary I)
   rw [← hi]
-  exact hjump K hK _ (hfinite i)
+  solve_by_elim
 
 end VaughtConjecture.DirectedFiniteJump

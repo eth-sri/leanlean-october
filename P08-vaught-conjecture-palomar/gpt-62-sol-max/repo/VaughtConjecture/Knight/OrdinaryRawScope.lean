@@ -6,22 +6,20 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.OrdinaryPlanScopeStep
-
-/-! # The ordinary producer on its actual raw boundary
-
-Factor the existing canonical constructors over their old-boundary premises.
-No second enumeration, independently chosen facet, or output lifting theorem
-is supplied. The binary facets and their common plan come from this plan.
--/
+public import VaughtConjecture.Knight.CanonicalProperOwnerSections
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryRawScope
+
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
+
 open OrdinaryScopeOperator AmalgamatedBoundaryPlan
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable (sem : Semantics D)
 
 /-- Properties of the existing proper boundary, not of a prospective output. -/
@@ -57,16 +55,9 @@ theorem coverage (C : Finset ι) (hC : C ∈ D.plan) (hCA : C ≠ A) :
 include H in
 theorem boundary_grade {k : ℕ} (hA : A.card ≤ k + 1) (d : Cell D) : D.grade d ≤ k := by
   have hc := Finset.card_lt_card (Finset.ssubset_iff_subset_ne.mpr
-    ⟨D.isPlan.subset_of_mem (D.scope_mem_plan d), H.proper d⟩)
+    ⟨D.scope_subset d, H.proper d⟩)
   have hg := D.grade_le_card_scope d
   omega
-
-private def bottomProfile (j : ℕ) : CanonicalFieldLayer.Profile sem j (Cell D) id := by
-  refine ⟨fun _ => ⊥, ⟨?_, ?_, ?_⟩, rfl, fun _ => bot_ne_top⟩
-  · intro d; exact (extVisibilityReplace_bot _ _).symm
-  · intro c
-    simpa only [Function.comp_apply, min_self] using TransformsTo.to_bot (sem.E c)
-  · intro _ b _ _; exact ⟨b, rfl, le_rfl⟩
 
 def one (hA : 1 ≤ A.card) (hg : ∀ d : Cell D, D.grade d ≤ 1)
     (hL : 1 ≤ (A.erase s.a).card) (hR : 1 ≤ (A.erase s.b).card) :
@@ -75,14 +66,9 @@ def one (hA : 1 ≤ A.card) (hg : ∀ d : Cell D, D.grade d ≤ 1)
   rows := CanonicalOneCoatom.rows sem hA H.proper hg
   plan := rfl
   original := OrderEmbedding.ofStrictMono (CanonicalOneCoatom.old sem hA)
-    (SourceLayerCarrier.old_order _ _ _ _ _)
+    (by tauto)
   index d := SourceLayerCarrier.cell_toCell _ _ _ _ _ (.inl d)
-  coverage d := by
-    obtain ⟨x, rfl⟩ := (SourceLayerCarrier.enumeration D
-      (CanonicalFieldLayer.Profile sem 1 (Cell D) id) 1 (by decide) hA).surjective d
-    cases x with
-    | inl c => exact Or.inl ⟨c, rfl⟩
-    | inr q => exact Or.inr (congrArg Prod.fst (SourceLayerCarrier.cell_toCell _ _ _ _ _ _))
+  coverage := CanonicalOneCoatom.coverage sem hA
   row := CanonicalFieldLayer.inherited_row sem 1 (Cell D) id (by decide) hA H.proper hg
   consistent := CanonicalFieldLayer.consistent sem 1 (Cell D) id (by decide) hA
     H.proper hg H.consistent
@@ -92,17 +78,8 @@ def one (hA : 1 ≤ A.card) (hg : ∀ d : Cell D, D.grade d ≤ 1)
     (OrdinaryPlanScopeStep.left_proper s) (OrdinaryPlanScopeStep.right_proper s)
     hL hR (overlap_mem s hplan) (coverage s hplan)
     (fun C hC hCA hc => H.complete (C, 1) (Plan.mem_gradedPlan.mpr ⟨hC, Nat.zero_lt_one, hc⟩) hCA)
-  grade := (CanonicalFieldLayer.data sem 1 (Cell D) id (by decide) hA H.proper hg).max_grade
-  complete J hJ hj := by
-    have hj1 : J.2 = 1 := by have := (Plan.mem_gradedPlan.mp hJ).2.1; omega
-    by_cases hJA : J.1 = A
-    · exact ⟨(CanonicalFieldLayer.controller sem 1 (Cell D) id (by decide) hA
-        (bottomProfile sem 1)).1,
-        (CanonicalFieldLayer.controller sem 1 (Cell D) id (by decide) hA
-          (bottomProfile sem 1)).2.trans (Prod.ext hJA.symm hj1.symm)⟩
-    · obtain ⟨d, hd⟩ := H.complete J hJ hJA
-      exact ⟨CanonicalOneCoatom.old sem hA d,
-        (SourceLayerCarrier.cell_toCell _ _ _ _ _ (.inl d)).trans hd⟩
+  grade := CanonicalFieldLayer.max_grade sem 1 (Cell D) id (by decide) hA hg
+  complete := CanonicalOneCoatom.complete sem hA H.complete
   short := CanonicalFieldLayer.full_source_short sem 1 (Cell D) id (by decide) hA H.proper hg
   render := CanonicalFieldLayer.sectionOf sem 1 (Cell D) id (by decide) hA H.proper hg
   readback := CanonicalFieldLayer.section_old sem 1 (Cell D) id (by decide) hA H.proper hg
@@ -120,20 +97,16 @@ def two (hA : 3 ≤ A.card) (hg : ∀ d : Cell D, D.grade d ≤ 2)
   plan := rfl
   original := CanonicalRecursiveInventory.boundary sem 2 (by omega)
   index := CanonicalRecursiveInventory.boundary_cell sem 2 (by omega)
-  coverage d := by
-    rcases RecursiveSourceCarrier.classify D (CanonicalRecursiveInventory.Profile sem)
-      2 (by omega) d with ⟨c, rfl⟩ | ⟨j, _, _, he⟩
-    · exact Or.inl ⟨c, rfl⟩
-    · exact Or.inr (congrArg Prod.fst he)
+  coverage := CanonicalRecursiveCoverage.coverage sem 2 (by omega)
   row := GradeCutPairRows.old_row D _ _ 1 2 (by decide)
-    (CanonicalPairLocalSections.one_le (by omega)) (by decide) (by omega) H.proper
+    (by omega) (by decide) (by omega) H.proper
     (by decide) sem (CanonicalPairLocalSections.smallRows sem (by omega) H.proper)
   consistent := CanonicalPairBoundary.consistent sem 1 2 (by decide) (by omega) (by decide)
     (by omega) H.proper (by decide) H.consistent
   coded := CanonicalSeedCoding.pair sem (by omega) H.proper H.coded
   bountiful := by
     apply EffectiveGradeLifting.bountiful_of_bounded_same_grade
-      (CanonicalRecursiveCoverage.grade_bound sem 2 (by omega) hg) (by decide : 0 < 2)
+      (CanonicalRecursiveCoverage.grade_bound sem 2 (by omega) hg) (by trivial)
     intro C T j hC hT hj hCT
     exact CanonicalPairLowerLifting.lower_lift sem H.proper (by omega) H.lifts
       (left_mem s hplan) (right_mem s hplan)
@@ -145,26 +118,25 @@ def two (hA : 3 ≤ A.card) (hg : ∀ d : Cell D, D.grade d ≤ 2)
   complete := CanonicalRecursiveCoverage.complete_through sem 2 (by omega) H.complete
   short := CanonicalProperOwnerSections.lower_full_short sem 3 (by decide) hA H.proper
   render := fun hp ht => CanonicalPairLocalSections.sectionOf sem (by omega) H.proper
-    (by omega : 2 ≤ A.card) (hp.toBelow (A, A.card)) ht
+    (by omega) (hp.toBelow (A, A.card)) ht
   readback := by
     intro p hp ht G θ _ _ d
     exact CanonicalPairLocalSections.section_old sem (by omega) H.proper
-      (by omega : 2 ≤ A.card) (hp.toBelow (A, A.card)) ht d
+      (by omega) (hp.toBelow (A, A.card)) ht d
   lawful := by
     intro p hp ht G θ hG hθ
     apply (CanonicalPairLocalSections.section_lawful sem (by omega) H.proper
-      (by omega : 2 ≤ A.card) (hp.toBelow (A, A.card)) ht hG hθ).toRespects
+      (by omega) (hp.toBelow (A, A.card)) ht hG hθ).toRespects
     intro d
-    exact ⟨(CanonicalPairLocalSections.carrier sem (by omega)).isPlan.subset_of_mem
-      ((CanonicalPairLocalSections.carrier sem (by omega)).scope_mem_plan d),
+    exact ⟨(CanonicalPairLocalSections.carrier sem (by omega)).scope_subset d,
       (CanonicalRecursiveCoverage.grade_bound sem 2 (by omega) hg d).trans (by omega)⟩
   bound := fun hp ht => CanonicalPairLocalSections.section_bound sem (by omega) H.proper
-    (by omega : 2 ≤ A.card) (hp.toBelow (A, A.card)) ht
+    (by omega) (hp.toBelow (A, A.card)) ht
   support := fun hp ht => CanonicalPairLocalSections.section_supported sem (by omega) H.proper
-    (by omega : 2 ≤ A.card) (hp.toBelow (A, A.card)) ht
+    (by omega) (hp.toBelow (A, A.card)) ht
   agreement := fun hp ht hq htq => CanonicalPairLocalSections.section_agreement sem
     (by omega) H.proper
-    (by omega : 2 ≤ A.card) (hp.toBelow (A, A.card)) ht (hq.toBelow (A, A.card)) htq
+    (by omega) (hp.toBelow (A, A.card)) ht (hq.toBelow (A, A.card)) htq
 
 def higher (n : ℕ) (hA : n + 3 ≤ A.card) (hg : ∀ d : Cell D, D.grade d ≤ n + 3)
     (hL : n + 3 ≤ (A.erase s.a).card) (hR : n + 3 ≤ (A.erase s.b).card) :
@@ -174,20 +146,16 @@ def higher (n : ℕ) (hA : n + 3 ≤ A.card) (hg : ∀ d : Cell D, D.grade d ≤
   plan := CanonicalRecursiveBoundaryTransport.plan_eq sem (n + 3) hA
   original := CanonicalRecursiveInventory.boundary sem (n + 3) hA
   index := CanonicalRecursiveInventory.boundary_cell sem (n + 3) hA
-  coverage d := by
-    rcases RecursiveSourceCarrier.classify D (CanonicalRecursiveInventory.Profile sem)
-      (n + 3) hA d with ⟨c, rfl⟩ | ⟨j, _, _, he⟩
-    · exact Or.inl ⟨c, rfl⟩
-    · exact Or.inr (congrArg Prod.fst he)
-  row := CanonicalRecursiveLiteralRows.row sem H.proper n hA
+  coverage := CanonicalRecursiveCoverage.coverage sem (n + 3) hA
+  row := CanonicalRecursiveBoundaryTransport.row sem H.proper n hA
   consistent := CanonicalRecursiveSemantics.consistent sem H.proper H.consistent n hA
   coded := CanonicalRecursiveCoding.coded sem H.proper H.coded n hA
   bountiful := by
     apply EffectiveGradeLifting.bountiful_of_bounded_same_grade
-      (CanonicalRecursiveCoverage.grade_bound sem (n + 3) hA hg) (by omega : 0 < n + 3)
+      (CanonicalRecursiveCoverage.grade_bound sem (n + 3) hA hg) (by norm_num)
     intro C T j hC hT hj hCT
     rw [CanonicalRecursiveBoundaryTransport.plan_eq] at hC hT
-    exact CanonicalRecursiveInitialized.lift sem H.proper H.consistent H.lifts
+    exact CanonicalRecursiveInitialized.lift sem H.proper H.lifts
       (left_mem s hplan) (right_mem s hplan)
       (OrdinaryPlanScopeStep.left_proper s) (OrdinaryPlanScopeStep.right_proper s)
       (overlap_mem s hplan) (coverage s hplan) n hA hL hR
@@ -205,8 +173,7 @@ def higher (n : ℕ) (hA : n + 3 ≤ A.card) (hg : ∀ d : Cell D, D.grade d ≤
     apply ((CanonicalRecursiveSemantics.state sem H.proper n hA).section_lawful
       hA (hp.toBelow (A, A.card)) ht hG hθ).toRespects
     intro d
-    exact ⟨(CanonicalRecursiveContract.carrier sem n hA).isPlan.subset_of_mem
-      ((CanonicalRecursiveContract.carrier sem n hA).scope_mem_plan d),
+    exact ⟨(CanonicalRecursiveContract.carrier sem n hA).scope_subset d,
       (CanonicalRecursiveCoverage.grade_bound sem (n + 3) hA hg d).trans hA⟩
   bound := fun hp ht => (CanonicalRecursiveSemantics.state sem H.proper n hA).section_bound
     hA (hp.toBelow (A, A.card)) ht
@@ -234,7 +201,9 @@ def build (k : ℕ) (hk : 0 < k) (hcard : A.card = k + 1) :
 end
 
 section Mute
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable {sem : Semantics D} {k : ℕ} (S : OrdinaryScopeOperator.Core sem k)
 
 theorem completed_highest_row (hk : 0 < k) (hcard : A.card = k + 1)
@@ -253,4 +222,5 @@ theorem completed_highest_row (hk : 0 < k) (hcard : A.card = k + 1)
       (Nat.lt_succ_self k) hcard.ge d
 
 end Mute
+
 end VaughtConjecture.Knight.OrdinaryRawScope

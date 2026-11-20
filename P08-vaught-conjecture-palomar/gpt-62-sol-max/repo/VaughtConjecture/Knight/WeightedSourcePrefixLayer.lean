@@ -5,30 +5,21 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ScopedSourcePrefixLayer
-
-/-! # Weighted owners on a source-prefix layer
-
-Install weighted nodes and ceiling-height leaves at one actual index. A node's
-diagonal is its weight, not the common source ceiling. Its row is the master
-source capped at that weight; the master source includes the weighted columns
-of *every* sibling. All inherited rows remain literal.
-
-This proves the row-construction step, including cross-grade locality and
-availability, from lawful predecessor sources. It does not construct receiving
-predecessor sources or prove lifting. No shortness assumption is made on old
-rows: in particular, their long ladder rows are retained unchanged.
--/
+public import VaughtConjecture.Knight.SourcePrefixProfile
+public import VaughtConjecture.Knight.OrbitPrefixSupport
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.WeightedSourcePrefixLayer
+
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
+
 noncomputable section
 
 variable {ι X : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {k : ℕ}
+
 variable (F : ScopedSourcePrefixLayer.Data D k X)
+
 variable (weight : Controller D k → ExtOrd)
 
 /-- The uncapped master has weighted new columns and literal old columns. -/
@@ -44,23 +35,26 @@ theorem master_new (q p : Controller D k) :
     master F weight q p.1 = min (cut F.grid (F.boundary q) (F.boundary p)) (weight p) := by
   simp only [master, p.2, ↓reduceDIte, F.profile_new]
 
-theorem master_le_profile (q : Controller D k) (d : Cell D) :
-    master F weight q d ≤ F.profile q d := by
-  unfold master
-  split_ifs
-  · exact min_le_left _ _
-  · exact le_rfl
-
 theorem master_bound (q : Controller D k) (d : Cell D) (hd : D.grade d ≤ k) :
-    master F weight q d ≤ F.ceiling :=
-  (master_le_profile F weight q d).trans (F.profile_bound q d hd)
+    master F weight q d ≤ F.ceiling := by
+  unfold master
+  split
+  · exact (min_le_left _ _).trans (F.profile_bound q d hd)
+  · exact F.profile_bound q d hd
+
+theorem master_ceiling (q : Controller D k) (d : Cell D) :
+    master F (fun _ => F.ceiling) q d = F.profile q d := by
+  unfold master
+  split_ifs with h
+  · exact min_eq_left (F.profile_bound q d (congrArg Prod.snd h).le)
+  · rfl
 
 theorem master_agreement (p q : Controller D k) (d : Cell D) (hd : D.grade d ≤ k) :
     min (master F weight p d) (cut F.grid (F.boundary p) (F.boundary q)) =
       min (master F weight q d) (cut F.grid (F.boundary p) (F.boundary q)) := by
   unfold master
   split_ifs with he
-  · simpa only [min_right_comm] using
+  · simpa [min_right_comm] using
       congrArg (fun x => min x (weight ⟨d, he⟩)) (F.profile_agreement p q d hd)
   · exact F.profile_agreement p q d hd
 
@@ -95,16 +89,13 @@ def rows : Semantics D where
         simpa only [CellScheme.grade, hc] using d.2.2
       exact (selfVis_min (master_visible F weight hvis ⟨c, hc⟩ d.1 hd)
         ((hvis ⟨c, hc⟩).mono hd)).symm
-    · exact F.base.orderly c d
+    · apply F.base.orderly
 
 theorem row_old {c : Cell D} (hc : D.cell c ≠ (A, k)) :
-    (rows F weight hvis).E c = F.base.E c := by
-  funext d
-  simp only [rows, hc, ↓reduceDIte]
+    (rows F weight hvis).E c = F.base.E c := by grind [rows]
 
 theorem row_new (q : Controller D k) (d : D.below (D.cell q.1)) :
-    (rows F weight hvis).E q.1 d = min (master F weight q d.1) (weight q) := by
-  simp only [rows, q.2, ↓reduceDIte]
+    (rows F weight hvis).E q.1 d = min (master F weight q d.1) (weight q) := by grind [rows]
 
 theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
     {r : D.below (D.cell c) → ExtOrd} :
@@ -112,7 +103,7 @@ theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
       RespectsSemanticsBelow F.base (D.cell c) r := by
   constructor <;> intro hr <;> refine ⟨hr.orderly, ?_, hr.availability⟩
   · intro d
-    simpa only [row_old F weight hvis (F.below_old hc d)] using hr.locality d
+    simpa [row_old F weight hvis (F.below_old hc d)] using hr.locality d
   · intro d
     rw [row_old F weight hvis (F.below_old hc d)]
     exact hr.locality d
@@ -206,14 +197,9 @@ theorem master_supported
       · have ha := agree_cut F.bot_mem (F.boundary q) (F.boundary p) x
         rw [← hw, min_eq_left hc'.le] at ha
         have hx : F.boundary q x = weight p := by
-          by_cases hb : F.boundary q x ≤ cut F.grid (F.boundary q) (F.boundary p)
-          · rwa [min_eq_left hb] at ha
-          · rw [min_eq_right (le_of_not_ge hb)] at ha
-            exact False.elim (ne_of_lt hc' ha.symm)
-        exact Or.inr (Or.inr ⟨x, 0, Nat.zero_le _, by
-          rw [hx]; exact (evr_eq_self_of_selfVis (hvis p) 0).symm⟩)
-  · rw [master_old F weight q he]
-    exact hlower q d hd he
+          grind
+        exact Or.inr (by grind)
+  grind [master_old]
 
 /-- A ceiling leaf with the same source supplies availability even for zero nodes. -/
 theorem master_respects
@@ -249,11 +235,12 @@ theorem consistent
   intro c
   by_cases hc : D.cell c = (A, k)
   · have hr := (master_respects F weight hvis hleaf ⟨c, hc⟩).cap (hvis ⟨c, hc⟩)
-    have ht := GradeCutLayerRows.cast_respects D (rows F weight hvis) hc.symm hr
+    have ht := hr.cast_index hc.symm
     convert ht using 1
     exact funext (row_new F weight hvis ⟨c, hc⟩)
   · rw [row_old F weight hvis hc]
     exact (old_respects_iff F weight hvis hc).mpr (hbase c hc)
 
 end
+
 end VaughtConjecture.Knight.WeightedSourcePrefixLayer

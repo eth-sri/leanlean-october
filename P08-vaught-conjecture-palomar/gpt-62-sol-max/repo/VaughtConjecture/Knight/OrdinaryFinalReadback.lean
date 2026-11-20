@@ -9,42 +9,32 @@ public import VaughtConjecture.Knight.OrdinaryFinalCatalogue
 public import VaughtConjecture.Knight.FinalGateChart
 public import VaughtConjecture.Knight.CappedDonorCappedReadback
 
-/-! # Capped readback from arbitrary lawful final-layer sections
-
-Availability at the retained private cap chooses an actual installed ceiling
-leaf. Its locality gives the whole-coordinate chart; one positive marked node
-forces the chosen source's gate positive. Literal private retention then supplies
-every cap and representative receipt in V-C's one-chart readback theorem.
-
-Only the **chosen catalogue member** is admitted. The arbitrary physical section
-is not assumed synchronized, decoded, or admitted. No LOW clause, anchor,
-protected flexibility, or literal-top readback is used. The predecessor's
-original occurrence maps and literal source equations remain explicit inputs;
-this file does not build the predecessor or prove final-layer bountifulness.
-
-`CappedDonorCappedReadback` is ported unchanged from V-C's `04276e9`.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalReadback
+
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref OrdinaryFinalCatalogue
+
 noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
+
 variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
 
 /-- An inherited occurrence in the final active lower set. -/
 abbrev oldAt (d : Cell D) (hd : D.grade d ≤ N) : F.carrier.below (A, N) :=
   ⟨F.old d, by
     rw [F.old_index]
-    exact ⟨D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩⟩
+    exact ⟨D.scope_subset d, hd⟩⟩
 
 variable (req : Cell P.scheme ↪ Cell D) (priv : Cell C.scheme ↪ Cell D)
+
 variable (hreqGrade : ∀ d, D.grade (req d) = P.scheme.grade d)
+
 variable (hprivGrade : ∀ d, D.grade (priv d) = C.scheme.grade d)
 
 abbrev reqAt (d : Cell P.scheme) : F.carrier.below (A, N) :=
@@ -75,7 +65,7 @@ theorem capped_readback
     exact ne_bot_of_gt R.cap_pos
   obtain ⟨a, hca, hga, τ, hτ, -, hr⟩ := F.exists_active_chart hv c hc hpos b hpositive
   have hm : R.vact R.cap ≤ v (F.addedAt a false) := by
-    simpa only [c, hretain] using hca
+    grind
   obtain ⟨st, hst, -, -, hp⟩ := a.property.2
   have hsu (e : P.scheme.below (effP nP N)) : a.val (.req e.1) = st.u e :=
     (congrFun hp (.req e.1)).symm.trans (profile_present R st (.req e.1))
@@ -101,4 +91,5 @@ theorem capped_readback
       (R.ref_lt_cap i).le) hg (CappedDonor.Ref.reqCell d (req_grade_le R d))
 
 end
+
 end VaughtConjecture.Knight.OrdinaryFinalReadback

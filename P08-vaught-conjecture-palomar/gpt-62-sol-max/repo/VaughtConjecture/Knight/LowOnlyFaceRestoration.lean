@@ -7,14 +7,6 @@ module
 
 public import VaughtConjecture.Knight.LowOnlyRetarget
 
-/-! # Whole-root restoration after LOW-only donor retargeting
-
-The face is an actual face of the original donor, not a reference-context surrogate.
-Only its grade-at-most-`K` portion is restored at the retargeting cap; higher original
-rows are retained using their unchanged capped targets. Empty faces need no lift.
-The proof factors `CappedDonor.Ref.exists_retarget_restore` without its `Ref` geometry.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.LowOnly
@@ -35,19 +27,11 @@ theorem faceIndex_le (A : Finset (Fin n)) (j : ℕ) :
 theorem faceIndex_mono (A : Finset (Fin n)) {i j : ℕ} (h : i ≤ j) :
     GradedLe (faceIndex A i) (faceIndex A j) := ⟨le_rfl, min_le_min_left _ h⟩
 
-theorem faceIndex_mem {A : Finset (Fin n)} (hA : A ∈ P.scheme.plan) {j : ℕ}
-    (hj : 0 < min A.card j) : faceIndex A j ∈ Plan.gradedPlan P.scheme.plan :=
-  Plan.mem_gradedPlan.mpr ⟨hA, hj, min_le_left _ _⟩
-
-theorem faceIndex_absent {A : Finset (Fin n)} {j : ℕ} (h : ¬ 0 < min A.card j)
-    (d : P.scheme.below (faceIndex A j)) : False :=
-  h ((P.scheme.grade_pos d.1).trans_le d.2.2)
-
 /-- Restore an arbitrary lawful whole-root prescription after retargeting designated tops.
 No second scheme, receiving reference, or output bountifulness is an input. -/
 theorem RetargetData.exists_retarget_restore
     {p : Cell P.scheme → ExtOrd} (hp : RespectsSemantics P.rows p)
-    {K j : ℕ} (hK : 0 < K) (hn : 0 < n) (hj : K ≤ j)
+    {K j : ℕ} (hj : K ≤ j)
     (ht : ∀ d, p d = ⊤ → P.scheme.grade d ≤ K)
     {u : P.scheme.below (effC n j) → ExtOrd} {b η : ExtOrd}
     (hu : RetargetData (p := p) (K := K) u b η)
@@ -64,25 +48,14 @@ theorem RetargetData.exists_retarget_restore
   have hKj : GradedLe (effC n K) (effC n j) := ⟨le_rfl, min_le_min_right _ hj⟩
   have hwK := hw.mono hKj
   have hηK : SelfVis (effC n K).2 η := hu.η_vis.mono (min_le_left _ _)
-  have hrest : ∃ w : P.scheme.below (effC n K) → ExtOrd,
-      RespectsSemanticsBelow P.rows (effC n K) w ∧
-      (∀ d, min (w d) η = min (retargetTops (p := p) η u
-        (CellScheme.below.mono hKj d)) η) ∧
-      ∀ a : P.scheme.below (faceIndex A K),
-        w (CellScheme.below.mono (faceIndex_le A K) a) =
-          v (CellScheme.below.mono (faceIndex_mono A hj) a) := by
-    by_cases hk : 0 < min A.card K
-    · apply P.bountiful.extend (faceIndex_mem hA hk) (effC_mem hK hn) (faceIndex_le A K)
-        (hv.mono (faceIndex_mono A hj)) hwK hηK
-      intro a
-      by_cases hat : p a.1 = ⊤
-      · rw [retargetTops_of_top η u hat, min_self]
-        exact (min_eq_right (htop _ hat)).symm
-      · rw [retargetTops_of_nonTop η u hat]
-        exact congrArg (fun x => min x η)
-          (hnon (CellScheme.below.mono (faceIndex_mono A hj) a) hat).symm
-    · exact ⟨_, hwK, fun _ => rfl, fun a => (faceIndex_absent hk a).elim⟩
-  obtain ⟨w, hw, hcap, hface⟩ := hrest
+  obtain ⟨w, hw, hcap, hface⟩ := P.bountiful.extend hA P.scheme.isPlan.domain_mem
+    (faceIndex_le A K) (hv.mono (faceIndex_mono A hj)) hwK hηK (fun a => by
+    by_cases hat : p a.1 = ⊤
+    · rw [retargetTops_of_top η u hat, min_self]
+      exact (min_eq_right (htop _ hat)).symm
+    · rw [retargetTops_of_nonTop η u hat]
+      exact congrArg (fun x => min x η)
+        (hnon (CellScheme.below.mono (faceIndex_mono A hj) a) hat).symm)
   have hlowNon : ∀ d : P.scheme.below (effC n K), p d.1 ≠ ⊤ →
       w d = u (CellScheme.below.mono hKj d) := by
     intro d hd
@@ -105,16 +78,16 @@ theorem RetargetData.exists_retarget_restore
     · rw [min_eq_right ((hu.nonTop_lt Sig hSn).le.trans (hu.b_le_η.trans
         (hlowTop ⟨d.1, hd⟩ hdt))),
         min_eq_right ((hu.nonTop_lt Sig hSn).le.trans (hu.top_ge _ hdt))]
-    · rw [hlowNon ⟨d.1, hd⟩ hdt]; rfl
+    solve_by_elim
   · intro d hd
     by_cases h : GradedLe (P.scheme.cell d.1) (effC n K)
     · rw [glueSection_of_le w u h, hlowNon ⟨d.1, h⟩ hd]; rfl
     · rw [glueSection_of_not_le w u h]
   · intro d hd
     have h : GradedLe (P.scheme.cell d.1) (effC n K) :=
-      ⟨Finset.subset_univ _, le_min (ht d.1 hd) (gradeC_le d.1)⟩
+      by grind
     rw [glueSection_of_le w u h]
-    exact hlowTop ⟨d.1, h⟩ hd
+    solve_by_elim
   · intro a
     by_cases hK : P.scheme.grade a.1 ≤ K
     · have hg : GradedLe (P.scheme.cell a.1) (effC n K) :=
@@ -124,6 +97,6 @@ theorem RetargetData.exists_retarget_restore
     · have hg : ¬ GradedLe (P.scheme.cell a.1) (effC n K) := fun hg =>
         hK (hg.2.trans (min_le_left _ _))
       rw [glueSection_of_not_le w u hg]
-      exact (hnon a fun ht' => hK (ht a.1 ht')).symm
+      grind
 
 end VaughtConjecture.Knight.LowOnly

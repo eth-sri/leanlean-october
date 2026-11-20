@@ -7,21 +7,13 @@ module
 
 public import VaughtConjecture.Knight.CanonicalRecursiveSemantics
 
-/-! # Coding from finite canonical fields and supported orbits
-
-Shortness alone does not bound the ordinal block. These lemmas use the
-actual coded field inventory and grid, and retain coding under replacement.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalCodingSupport
-open Transform Value ExtOrd PairedSlotComparison SourcePrefixRows
-noncomputable section
 
-theorem at_grade {i j : ℕ} {x : ExtOrd} (he : i = j) (hx : IsCodedLabel i x) :
-    IsCodedLabel j x := he ▸ hx
+open Transform Value ExtOrd PairedSlotComparison SourcePrefixRows
+
+noncomputable section
 
 theorem replacement {k i : ℕ} {x : ExtOrd} (hx : IsCodedLabel k x) (hi : i ≤ k) :
     IsCodedLabel k (extVisibilityReplace x k i) := by
@@ -33,7 +25,7 @@ theorem replacement {k i : ℕ} {x : ExtOrd} (hx : IsCodedLabel k x) (hi : i ≤
       exact Or.inr ⟨b, i, hi.trans (Nat.le_succ k), rfl⟩
     · rw [extVisibilityReplace_of_le_finitePart (by
         rw [finitePart_mul_add]; exact le_of_not_gt h)]
-      exact Or.inr ⟨b, j, hj, rfl⟩
+      tauto
 
 theorem supported {X : Type*} {k : ℕ} {G : Set ExtOrd} {p : X → ExtOrd}
     (hG : ∀ x ∈ G, IsCodedLabel k x) (hp : ∀ d, IsCodedLabel k (p d))
@@ -54,8 +46,7 @@ theorem field {ι X : Type*} [DecidableEq ι] [Fintype X]
     (q : CanonicalFieldLayer.Profile sem k X occ) (d : X) : IsCodedLabel k (q.val d) := by
   rcases mem_codedAlphabet_iff.mp (CanonicalPairedProfiles.inventory_coded X k q.property.2 d)
     with hb | ⟨b, i, _, hi, he⟩
-  · exact Or.inl hb
-  · exact Or.inr ⟨b, i, hi, he⟩
+  all_goals tauto
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
 
@@ -87,4 +78,5 @@ theorem layer (D : CellScheme A) (Q : Type*) [Fintype Q]
   | inr q => exact hnew q d
 
 end
+
 end VaughtConjecture.Knight.CanonicalCodingSupport

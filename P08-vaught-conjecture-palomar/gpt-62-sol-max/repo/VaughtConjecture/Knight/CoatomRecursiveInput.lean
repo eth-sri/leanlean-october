@@ -9,20 +9,14 @@ public import VaughtConjecture.Knight.CoatomBoundaryPresentation
 public import VaughtConjecture.Knight.CanonicalRecursiveInitialized
 public import VaughtConjecture.Knight.CanonicalRecursiveCoverage
 
-/-! # Initialized grade recursion from actual legal coatom inputs
-
-The input schemes supply every proper-boundary hypothesis. The output is
-consistent and bountiful at all nominal grades, and complete through the
-coatom height. The missing highest full index and ordered stage-labelled
-installation are separate obligations.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomRecursiveInput
+
 open AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
+
 open Transform Value ExtOrd CoatomBoundaryExtension
+
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {s : Step A}
@@ -30,28 +24,26 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {s : Step A}
 theorem oldLifts {m nL nR : ℕ} (I : Input s m nL nR) :
     CanonicalCoatomBountiful.OldLifts I.rows := by
   intro CI BJ hCI hBJ hB h
-  by_cases he : CI = BJ
-  · subst BJ
-    exact lift_refl
-  · exact I.proper_lift hCI hBJ h he hB
+  exact I.proper_lift hCI hBJ h hB
 
 variable {m n : ℕ} (I : Input s m (n + 3) (n + 3))
 
 include I in
 theorem height_le : n + 3 ≤ A.card := by
-  rw [← I.card_left]
+  rw [← I.left_card]
   exact Finset.card_le_card (Finset.erase_subset _ _)
 
 abbrev scheme := CanonicalRecursiveContract.carrier I.rows n (height_le I)
+
 abbrev rows := CanonicalRecursiveSemantics.rows I.rows I.proper n (height_le I)
 
-theorem ready : CanonicalRecursiveRecurrence.Ready I.rows I.proper n (height_le I) := by
-  apply CanonicalRecursiveInitialized.ready I.rows I.proper I.consistent (oldLifts I)
+theorem ready : CanonicalRecursiveInitialized.Ready I.rows I.proper (n + 1) (height_le I) := by
+  apply CanonicalRecursiveInitialized.ready I.rows I.proper (oldLifts I)
     I.left_visible I.right_visible
     (fun h => Finset.notMem_erase s.a A (h.symm ▸ s.ha))
     (fun h => Finset.notMem_erase s.b A (h.symm ▸ s.hb))
-    I.intersection_visible (fun _ hC hCA => I.proper_scope_cover hC hCA)
-    n (height_le I) (by rw [I.card_left]) (by rw [I.card_right])
+    I.intersection_visible (fun _ hC hCA => proper_scope_cover s hC hCA)
+    (n + 1) (height_le I) (by rw [I.left_card]) (by rw [I.right_card])
   intro C hC hCA j hj hjC _
   exact I.complete_proper (Plan.mem_gradedPlan.mpr ⟨hC, hj, hjC⟩) hCA
 
@@ -60,7 +52,7 @@ theorem consistent : (rows I).IsConsistent :=
 
 theorem grade_bound (d : Cell (scheme I)) : (scheme I).grade d ≤ n + 3 :=
   CanonicalRecursiveCoverage.grade_bound I.rows (n + 3) (height_le I)
-    (fun d => by simpa only [max_self] using I.grade_le d) d
+    (fun d => by simpa [max_self] using I.grade_le d) d
 
 /-- Effective nominal grades are included; no cap is raised. -/
 theorem bountiful : (rows I).IsBountiful := by
@@ -68,7 +60,7 @@ theorem bountiful : (rows I).IsBountiful := by
   intro C B j hC hB hj hCB
   apply (GradeCutLifting.lift_iff (rows I) (n + 3)
     (I := (C, j)) (J := (B, j)) ⟨hCB, le_rfl⟩ hj).mp
-  exact lift_of_bountiful (ready I).2 hC hB ⟨hCB, le_rfl⟩
+  exact lift_of_bountiful (ready I) hC hB ⟨hCB, le_rfl⟩
 
 theorem complete_through (J : Finset ι × ℕ)
     (hJ : J ∈ Plan.gradedPlan (scheme I).plan) (hj : J.2 ≤ n + 3) :
@@ -77,4 +69,5 @@ theorem complete_through (J : Finset ι × ℕ)
     (fun _ h hA => I.complete_proper h hA) J hJ hj
 
 end
+
 end VaughtConjecture.Knight.CoatomRecursiveInput

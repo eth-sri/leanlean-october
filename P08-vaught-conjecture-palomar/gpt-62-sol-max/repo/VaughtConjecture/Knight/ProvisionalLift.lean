@@ -8,34 +8,6 @@ module
 public import VaughtConjecture.Knight.ProvisionalLocality
 public import VaughtConjecture.Knight.Reduction
 
-/-! # Proposition 5.3.3: the provisional labelling respects the semantics
-
-`p⁺ = p.someProvisionalValue` (Def. 5.3.1) respects the unchanged semantics of `p`
-(`provisionalLift_respects`): orderliness (Lemma 5.3.4 — in the band case, consistency of the
-coded row makes its finite part the band index), locality (Lemma 5.3.5 — at a finite-labelled
-controller the target is the original one; at a top-labelled controller
-`topController_locality_provisional`), availability (Lemma 5.3.6 — the row's availability at a
-maximal top witness, transported by the monotone label witness and the band map).  The lift
-`p.provisionalLift : S (α + ω) n` is then a genuine stage type reducing literally to `p`
-(`reduceType_provisionalLift`).
-
-## The two roles of `M⁺`
-
-The paper's notation `M⁺` conflates a deterministic type-lifting operation with a separate
-occurrence-production theorem; the formalization proves the former outright and isolates the
-latter.
-
-* **Local transport.**  `p ↦ p⁺` is a canonical, model-free operation on stage types: it
-  preserves semantic legality (this module) and reduces literally to `p`.  It is generic label
-  arithmetic plus restricted transform composition (`RestrictedComposition`,
-  `ProvisionalBandBridge`, `ProvisionalLocality`).
-* **Production.**  A model of `S^{α+ω}` must additionally *realize* compatible lifted one-point
-  types over every tuple — in particular stable-top / exact-band occurrences supplying the new
-  block's uniformity and high-grade demands (Lemma 5.3.10's per-tuple high-grade argument).
-  `M⁺` does not manufacture source points: the production half selects suitable already-existing
-  source occurrences and installs their canonical lifts.  This is the separate model-level
-  premise `OnePointStableTopSupply`, not part of Proposition 5.3.3. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -50,17 +22,16 @@ variable {α : Ordinal.{0}} {n : ℕ}
 theorem someProvisionalValue_lt_add_omega (p : S α n) (Xi : Cell p.scheme.scheme) :
     p.someProvisionalValue Xi < ofOrd (α + Ordinal.omega0) := by
   refine (p.someProvisionalValue_le Xi).trans_lt (ofOrd_lt_ofOrd.mpr ?_)
-  exact (add_lt_add_iff_left α).mpr (Ordinal.natCast_lt_omega0 p.topGrade)
+  simp
 
 /-- The provisional value of an `∞`-cell is at least `α`. -/
 theorem le_someProvisionalValue_of_top {p : S α n} {Xi : Cell p.scheme.scheme}
     (htop : p.label Xi = ⊤) : ofOrd α ≤ p.someProvisionalValue Xi := by
   by_cases hcap : p.ProvisionalCap Xi
   · rw [someProvisionalValue_of_cap htop hcap]
-    exact ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
+    simp
   · obtain ⟨i, -, -, hval⟩ := someProvisionalValue_of_band htop hcap
-    rw [hval]
-    exact ofOrd_le_ofOrd.mpr (le_add_of_nonneg_right zero_le)
+    simp_all
 
 /-- The label dominates nothing above the provisional value: `p(Ξ) ≤ p⁺(Ξ)` fails only
 through `⊤`, so a finite value below `p(Ξ)` is below `p⁺(Ξ)`. -/
@@ -92,13 +63,13 @@ theorem someProvisionalValue_orderly (p : S α n) (hα : Order.IsSuccLimit α) :
       have hrowCoded := p.scheme.rows_coded Theta ⟨Xi, hXi⟩
       rcases hrowCoded with hbot | ⟨a, j, hj, hrow⟩
       · have hne := row_ne_bot_of_label_top p hThetaTop ⟨Xi, hXi⟩ htop
-        exact absurd hbot hne
+        trivial
       · have hself : visibilityReplace (Ordinal.omega0 * a + j)
             (p.scheme.scheme.grade Xi) (p.scheme.scheme.grade Xi) =
             Ordinal.omega0 * a + j := by
           have hrow' : row = ofOrd (Ordinal.omega0 * a + j) := hrow
           rw [hrow', extVisibilityReplace_ofOrd, ofOrd_inj] at hrowOrder
-          exact hrowOrder.symm
+          tauto
         have hgradeFp : p.scheme.scheme.grade Xi ≤ finitePart (Ordinal.omega0 * a + j) :=
           (visibilityReplace_self_iff _ _).mp hself
         have hfpTop : finitePart (Ordinal.omega0 * a + j) < p.topGrade := by
@@ -111,7 +82,7 @@ theorem someProvisionalValue_orderly (p : S α n) (hα : Order.IsSuccLimit α) :
         have hrowBand : Ordinal.omega0 * a + j = limitPart (Ordinal.omega0 * a + j) + i := by
           rw [hrow, extVisibilityReplace_ofOrd, visibilityReplace_of_finitePart_lt hfpTop,
             ofOrd_inj] at heq
-          exact heq
+          assumption
         have hfpEq : finitePart (Ordinal.omega0 * a + j) = i := by
           calc
             finitePart (Ordinal.omega0 * a + j) =
@@ -136,26 +107,16 @@ theorem exists_monotone_label_of_row (p : S α n) {Θ : Cell p.scheme.scheme}
   obtain ⟨g, σ, hganti, _, _, hσmono, _, heq⟩ := p.respects.locality Θ
   have heq' : ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Θ),
       p.label d.1 = min (σ (p.scheme.rows.E Θ d)) (g (p.scheme.scheme.grade d.1)) := by
-    intro d
-    have := heq d
-    change min (p.label d.1) (p.label Θ) = min (σ (p.scheme.rows.E Θ d))
-      (g (p.scheme.scheme.grade d.1)) at this
-    rwa [hΘ, min_top_right] at this
+    grind
   have hgK : ∀ k, k ≤ p.topGrade → g k = ⊤ := by
     intro k hk
     have hΘ' := heq' ⟨Θ, GradedLe.refl _⟩
-    change p.label Θ = min (σ (p.scheme.rows.E Θ ⟨Θ, GradedLe.refl _⟩))
-      (g (p.scheme.scheme.grade Θ)) at hΘ'
-    rw [hΘ, hgr] at hΘ'
-    have hgKtop : g p.topGrade = ⊤ := top_le_iff.mp (hΘ'.le.trans (min_le_right _ _))
-    rcases hk.lt_or_eq with hlt | rfl
-    · exact top_le_iff.mp (hgKtop ▸ hganti _ _ hlt)
-    · exact hgKtop
+    grind
   refine ⟨σ, hσmono, fun d => ?_⟩
   have hk : p.scheme.scheme.grade d.1 ≤ p.topGrade := by
     have h2 : p.scheme.scheme.grade d.1 ≤ p.scheme.scheme.grade Θ := d.2.2
-    rwa [hgr] at h2
-  rw [heq' d, hgK _ hk, min_top_right]
+    omega
+  grind
 
 /-- **Lemma 5.3.5 (locality of `p⁺`)** at every controller. -/
 theorem provisional_locality (p : S α n) (hα : Order.IsSuccLimit α)
@@ -192,8 +153,7 @@ theorem provisional_availability (p : S α n) :
   · obtain ⟨Θ, hSgΘ, hsc, hgr, hΘ⟩ := exists_top_witness htop
     have hXi₀Θ : GradedLe (p.scheme.scheme.cell Xi₀) (p.scheme.scheme.cell Θ) := by
       refine ⟨?_, ?_⟩
-      · change p.scheme.scheme.scope Xi₀ ⊆ p.scheme.scheme.scope Θ
-        rw [hsc]; exact Finset.subset_univ _
+      · simp_all
       · change p.scheme.scheme.grade Xi₀ ≤ p.scheme.scheme.grade Θ
         rw [← hgrade]; exact hSgΘ.2
     obtain ⟨Xi, hcell, hle⟩ :=
@@ -237,14 +197,13 @@ theorem truncExt_someProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) :
   · rw [htop]
     by_cases hcap : p.ProvisionalCap Xi
     · rw [someProvisionalValue_of_cap htop hcap]
-      exact truncExt_ofOrd_of_le (le_add_of_nonneg_right zero_le)
+      simp
     · obtain ⟨i, -, -, hval⟩ := someProvisionalValue_of_band htop hcap
-      rw [hval]
-      exact truncExt_ofOrd_of_le (le_add_of_nonneg_right zero_le)
+      simp_all
   · rw [someProvisionalValue_of_ne_top htop]
     rcases p.label_bound Xi with hlt | htop'
     · exact truncExt_id_of_lt hlt
-    · exact absurd htop' htop
+    trivial
 
 end StageType
 

@@ -7,18 +7,6 @@ module
 
 public import VaughtConjecture.Knight.ExpansionDomainEndpoint
 
-/-!
-# Proof of the independent infinitary counterexample statement
-
-This module deliberately does not import Challenge: its conventional infinitary
-syntax and semantics are supplied by the proof library instead. Comparator must
-compare their actual definitions as well as the final theorem. The finite model
-and perfect-set assertions use the same sentence as the cardinality assertion.
-
-This module consumes the migrated proof closure. Verification of the full migrated
-package and its independent replay are prerequisites for submission.
--/
-
 @[expose] public section
 
 namespace PalomarChallenge
@@ -89,6 +77,7 @@ def NoPerfectAntichain (φ : (language R).Sentenceω) : Prop :=
       ∀ c ∈ P, ∀ d ∈ P, c ≠ d → ¬ Isomorphic R c d
 
 open FirstOrder.Language
+
 open VaughtConjecture.Knight
 
 abbrev knightRelations := knightLang.Relations
@@ -108,7 +97,7 @@ theorem isomorphic_iff_library (c d : Code knightRelations ℕ) :
       (FirstOrder.Language.StructureSpaceOn.toStructure d) e
       (fun f => isEmptyElim f) (fun {n} r xs => ?_)⟩
     change d ⟨⟨n, r⟩, e ∘ xs⟩ = true ↔ c ⟨⟨n, r⟩, xs⟩ = true
-    rw [h n r xs]
+    grind
   · rintro ⟨e⟩
     let σ := @FirstOrder.Language.Equiv.toEquiv knightLang ℕ ℕ
       (FirstOrder.Language.StructureSpaceOn.toStructure c)
@@ -118,14 +107,13 @@ theorem isomorphic_iff_library (c d : Code knightRelations ℕ) :
       (FirstOrder.Language.StructureSpaceOn.toStructure c)
       (FirstOrder.Language.StructureSpaceOn.toStructure d) e n r xs
     change (d ⟨⟨n, r⟩, σ ∘ xs⟩ = true ↔ c ⟨⟨n, r⟩, xs⟩ = true) at h
-    cases hc : c ⟨⟨n, r⟩, xs⟩ <;>
-      cases hd : d ⟨⟨n, r⟩, σ ∘ xs⟩ <;> simp_all
+    aesop
 
 /-- The independently stated model relation is the one used by the proved endpoint. -/
 theorem knight_modelSetoid_eq :
     modelSetoid knightRelations knightSentence = FirstOrder.Language.isoSetoid knightSentence := by
   ext c d
-  exact isomorphic_iff_library c.1 d.1
+  apply isomorphic_iff_library
 
 /-- A countable relational infinitary sentence with exact spectrum and CH-independent thinness. -/
 theorem independent_challenge :
@@ -138,8 +126,7 @@ theorem independent_challenge :
     exact ExpansionDomainEndpoint.natModelSpectrum_eq_aleph_one
   · intro n c hc
     have hmem : c ∈ ModelsOfOn (α := Fin n) knightSentence := hc
-    rw [hasNoFiniteModels_knightSentence n] at hmem
-    exact hmem
+    rwa [hasNoFiniteModels_knightSentence n] at hmem
   · rintro ⟨P, hne, hperfect, hmodels, hanti⟩
     apply ExpansionDomainEndpoint.isThinOnNatModels
     refine ⟨P, hperfect, hne, hmodels, ?_⟩

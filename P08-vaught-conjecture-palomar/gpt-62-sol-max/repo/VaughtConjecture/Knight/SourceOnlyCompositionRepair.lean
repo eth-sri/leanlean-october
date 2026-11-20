@@ -7,14 +7,6 @@ module
 
 public import VaughtConjecture.Knight.FiniteCompositionRepair
 
-/-! # Source-only tests for faithful interpolation
-
-For a bounded-commuting monotone map, a faithful interpolant on a finite source
-inventory exists exactly when the forced bounded replacement table has a constant
-bottom flag on each source block. Unforced floor readings are not constraints.
-This is a normalized-witness interpolation theorem, not unrestricted transitivity.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.SharpWitnessComposition
@@ -61,8 +53,8 @@ theorem forcedSources_closed (m : ℕ) (s : Finset ExtOrd) :
   · obtain ⟨j, hj, hjx⟩ := Finset.mem_biUnion.mp hx
     obtain ⟨y, hy, rfl⟩ := Finset.mem_image.mp hjx
     rcases ExtOrd.cases y with rfl | rfl | ⟨a, rfl⟩
-    · exact subset_forcedSources m s hy
-    · exact subset_forcedSources m s hy
+    · simp_all
+    · simp_all
     · by_cases ha : finitePart a < m
       · rw [extVisibilityReplace_of_finitePart_lt ha]
         by_cases hjk : j < k
@@ -89,7 +81,7 @@ theorem witness_blockBottom {m : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witness (g
   apply bot_of_same_block (f := τ) _ hb hx
   intro z hz k i hi
   have h := hτ.clause5 z k (by rw [hz]; exact bot_le) i hi
-  rwa [hz, extVisibilityReplace_bot] at h
+  simp_all
 
 /-- The finite source reads force all the bounded replacement reads. -/
 theorem forcedSources_read {m : ℕ} {s : Finset ExtOrd} {f τ : ExtOrd → ExtOrd}
@@ -115,7 +107,7 @@ include hf
 theorem roundUp_bounded (s : Finset ExtOrd)
     (hclosed : ∀ x ∈ s, ∀ k i : ℕ, k ≤ m → i ≤ k → extVisibilityReplace x k i ∈ s) :
     BoundedMap m (f ∘ roundUp s) where
-  bot := by simp only [Function.comp_apply, roundUp_bot, hf.bot]
+  bot := by simp [Function.comp_apply, roundUp_bot, hf.bot]
   mono := hf.mono.comp (roundUp_mono s)
   comm x k i hk hi := by
     simp only [Function.comp_apply]
@@ -138,7 +130,7 @@ theorem interpolate_closed (s : Finset ExtOrd)
     hg.finite_witness s (hg.floor_check_on_strip s hfloor), ?_⟩
   intro x hx
   rw [hg.finite_read s hx]
-  simp only [Function.comp_apply, roundUp_of_mem hx]
+  simp [Function.comp_apply, roundUp_of_mem hx]
 
 /-- Exact criterion: only original sources and the replacements they force are tested. -/
 theorem interpolate_iff (s : Finset ExtOrd) :
@@ -164,8 +156,7 @@ theorem replace_eq_bot_iff (x : ExtOrd) (k i : ℕ) :
   · intro h
     by_contra hx
     exact extVisibilityReplace_ne_bot hx k i h
-  · intro h
-    rw [h, extVisibilityReplace_bot]
+  simp_all
 
 namespace BoundedMap
 
@@ -178,13 +169,13 @@ theorem forcedSources_origin {s : Finset ExtOrd} {z : ExtOrd} (hz : z ∈ forced
     ∃ x ∈ s, blockFloor z = blockFloor x ∧ (f z = ⊥ ↔ f x = ⊥) := by
   classical
   rcases Finset.mem_union.mp hz with hz | hz
-  · exact ⟨z, hz, rfl, Iff.rfl⟩
+  · grind
   · obtain ⟨i, hi, hiz⟩ := Finset.mem_biUnion.mp hz
     obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hiz
     have hi' : i ≤ m := by have := Finset.mem_range.mp hi; omega
     refine ⟨x, hx, blockFloor_evr x m i, ?_⟩
     rw [hf.comm x m i le_rfl hi']
-    exact replace_eq_bot_iff (f x) m i
+    apply replace_eq_bot_iff
 
 /-- The forced table adds no new bottom-pattern tests. -/
 theorem forcedSources_blockBottom_iff (s : Finset ExtOrd) :
@@ -195,7 +186,7 @@ theorem forcedSources_blockBottom_iff (s : Finset ExtOrd) :
   · intro h x hx y hy hb hz
     obtain ⟨u, hu, hux, huf⟩ := hf.forcedSources_origin hx
     obtain ⟨v, hv, hvy, hvf⟩ := hf.forcedSources_origin hy
-    exact hvf.mpr (h u hu v hv (hux.symm.trans (hb.trans hvy)) (huf.mp hz))
+    aesop
 
 /-- The exact test uses only the original source reads, not even their forced replacements. -/
 theorem interpolate_iff_source_blocks (s : Finset ExtOrd) :

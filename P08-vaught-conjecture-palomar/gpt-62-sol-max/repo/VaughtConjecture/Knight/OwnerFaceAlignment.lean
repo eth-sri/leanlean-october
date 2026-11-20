@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.OwnerStripRetuning
-public import VaughtConjecture.Knight.AlignedCutEncoding

@@ -7,19 +7,6 @@ module
 
 public import VaughtConjecture.Knight.PositiveNormalization
 
-/-! # Faithful composition on grade-short source rows
-
-A monotone, bottom-preserving map commuting with replacements through grade `m`
-can fail the bottom guard at higher grades. Flattening each source block after
-offset `m` repairs that guard. It leaves every source of finite part at most `m`
-literal. Consequently normalized witnesses compose on such source rows without
-bottom reflection, although their literal function composite need not be faithful.
-
-The source condition is stronger than `IsCodedLabel m`, which permits offset
-`m + 1`. No unrestricted transitivity or closure for arbitrary coded rows is
-asserted. Bottom and top are fixed by the source flattening.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.SharpWitnessComposition
@@ -32,8 +19,6 @@ noncomputable def trim (m : ℕ) : ExtOrd → ExtOrd
   | some ⊤ => ⊤
   | some (some a) => ofOrd (limitPart a + (min (finitePart a) m : ℕ))
 
-@[simp] theorem trim_bot (m : ℕ) : trim m ⊥ = ⊥ := rfl
-@[simp] theorem trim_top (m : ℕ) : trim m ⊤ = ⊤ := rfl
 @[simp] theorem trim_ofOrd (m : ℕ) (a : Ordinal.{0}) :
     trim m (ofOrd a) = ofOrd (limitPart a + (min (finitePart a) m : ℕ)) := rfl
 
@@ -47,7 +32,7 @@ theorem trim_mono (m : ℕ) : Monotone (trim m) := by
   · exact bot_le
   · rw [top_le_iff.mp hxy]
   · rcases ExtOrd.cases y with rfl | rfl | ⟨b, rfl⟩
-    · exact False.elim (not_ofOrd_le_bot _ hxy)
+    · simp_all
     · exact le_top
     · rw [trim_ofOrd, trim_ofOrd, ofOrd_le_ofOrd]
       have hab := ofOrd_le_ofOrd.mp hxy
@@ -69,11 +54,11 @@ theorem trim_evr (m : ℕ) (x : ExtOrd) {k i : ℕ} (hk : k ≤ m) (hi : i ≤ k
         finitePart_limitPart_add_nat, limitPart_limitPart_add_nat,
         min_eq_left (hi.trans hk), trim_ofOrd,
         extVisibilityReplace_of_finitePart_lt (by
-          rw [finitePart_limitPart_add_nat]; exact (min_le_left _ _).trans_lt ha),
+          rw [finitePart_limitPart_add_nat]; omega),
         limitPart_limitPart_add_nat]
     · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp ha), trim_ofOrd,
         extVisibilityReplace_of_le_finitePart (by
-          rw [finitePart_limitPart_add_nat]; exact le_min (not_lt.mp ha) hk)]
+          rw [finitePart_limitPart_add_nat]; simp_all)]
 
 /-- The weak data needed before repairing the higher-grade bottom guard. -/
 structure BoundedMap (m : ℕ) (f : ExtOrd → ExtOrd) : Prop where
@@ -82,7 +67,116 @@ structure BoundedMap (m : ℕ) (f : ExtOrd → ExtOrd) : Prop where
   comm : ∀ x k i, k ≤ m → i ≤ k →
     f (extVisibilityReplace x k i) = extVisibilityReplace (f x) k i
 
+end VaughtConjecture.Knight.SharpWitnessComposition
+
+namespace VaughtConjecture.Knight
+
+open SharpWitnessComposition Value ExtOrd
+
+theorem Witness.bounded {K : ℕ} {τ : ExtOrd → ExtOrd} (h : Witness (gTop K) τ) : BoundedMap K τ :=
+  ⟨h.bot, h.mono, fun x _ _ => h.comm x⟩
+
+open Transform
+section StripReadback
+
+variable {N : ℕ} {τ : ExtOrd → ExtOrd} (hτ : BoundedMap N τ)
+
+include hτ in
+/-- An invisible proper reading locates its source and reads the entire low strip. -/
+theorem read_strip {x : ExtOrd} {t : Ordinal.{0}} (h : τ x = ofOrd t) (ht : finitePart t < N) :
+    x = ofOrd (ordOf x) ∧ finitePart (ordOf x) = finitePart t ∧
+      ∀ i ≤ N, τ (ofOrd (limitPart (ordOf x) + i)) = ofOrd (limitPart t + i) := by
+  have hn : ¬ SelfVis N x := fun hx => (not_le_of_gt ht) (selfVis_ofOrd_iff.mp
+    (h ▸ (hτ.comm x N N le_rfl le_rfl).symm.trans (congrArg τ hx)))
+  rcases ExtOrd.cases x with rfl | rfl | ⟨s, rfl⟩
+  · exact (hn (selfVis_bot N)).elim
+  · exact (hn (extVisibilityReplace_top N N)).elim
+  have hs := lt_of_not_ge (fun hs => hn (selfVis_ofOrd_iff.mpr hs))
+  have horbit (i) (hi : i ≤ N) := hτ.comm (ofOrd s) N i le_rfl hi
+  simp only [extVisibilityReplace_of_finitePart_lt hs, h,
+    extVisibilityReplace_of_finitePart_lt ht] at horbit
+  have he := horbit (finitePart s) hs.le
+  rw [limitPart_add_finitePart, h, ofOrd_inj] at he
+  have hf := congrArg finitePart he
+  rw [finitePart_limitPart_add_nat] at hf
+  rw [ordOf_ofOrd]
+  exact ⟨rfl, hf.symm, horbit⟩
+
+include hτ in
+/-- A low-offset reading identifies the source and the entire low affine strip. -/
+theorem read_strip_block {x : ExtOrd} {a : Ordinal.{0}} {i : ℕ}
+    (ha : limitPart a = a) (hi : i < N) (h : τ x = ofOrd (a + i)) :
+    x = ofOrd (ordOf x) ∧ finitePart (ordOf x) = i ∧
+      ∀ n ≤ N, τ (ofOrd (limitPart (ordOf x) + n)) = ofOrd (a + n) := by
+  have h' : τ x = ofOrd (limitPart a + i) := by rwa [ha]
+  have hs := read_strip hτ h' (by rwa [finitePart_limitPart_add_nat])
+  simp only [finitePart_limitPart_add_nat, limitPart_limitPart_add_nat] at hs
+  simpa only [ha] using hs
+
+theorem strip_le_of_affine (hm : Monotone τ) (hN : 0 < N)
+    {s s' t t' : Ordinal.{0}}
+    (h : ∀ i ≤ N, τ (ofOrd (limitPart s + i)) = ofOrd (t + i))
+    (h' : ∀ i ≤ N, τ (ofOrd (limitPart s' + i)) = ofOrd (t' + i))
+    (hle : t ≤ t') : limitPart s ≤ limitPart s' := by
+  by_contra! hs
+  have he := hm (ofOrd_le_ofOrd.mpr (limitPart_add_nat_le_of_lt hs N))
+  have h0 := h 0 (Nat.zero_le _)
+  simp only [Nat.cast_zero, add_zero] at h0
+  rw [h' _ le_rfl, h0, ofOrd_le_ofOrd] at he
+  have hlt : t' < t' + (N : Ordinal.{0}) := by
+    simpa only [Nat.cast_zero, add_zero] using
+      add_lt_add_right ((Nat.cast_lt (α := Ordinal.{0})).mpr hN) (t')
+  exact (hle.trans_lt hlt).not_ge he
+
+include hτ in
+theorem strip_le_of_read {s s' t t' : Ordinal.{0}} (h : τ (ofOrd s) = ofOrd t)
+    (h' : τ (ofOrd s') = ofOrd t') (ht : finitePart t < N) (ht' : finitePart t' < N)
+    (hle : limitPart t ≤ limitPart t') : limitPart s ≤ limitPart s' := by
+  have h₁ := (read_strip hτ h ht).2.2
+  have h₂ := (read_strip hτ h' ht').2.2
+  simp only [ordOf_ofOrd] at h₁ h₂
+  exact strip_le_of_affine hτ.mono (Nat.zero_lt_of_lt ht) h₁ h₂ hle
+
+include hτ in
+theorem strip_lt_of_read {s s' t t' : Ordinal.{0}} (h : τ (ofOrd s) = ofOrd t)
+    (h' : τ (ofOrd s') = ofOrd t') (ht : finitePart t < N) (ht' : finitePart t' < N)
+    (hlt : limitPart t < limitPart t') : limitPart s < limitPart s' := by
+  have h₁ := (read_strip hτ h ht).2.2 0 (Nat.zero_le _)
+  have h₂ := (read_strip hτ h' ht').2.2 0 (Nat.zero_le _)
+  by_contra! hs
+  have he := hτ.mono (ofOrd_le_ofOrd.mpr hs)
+  simp only [ordOf_ofOrd, Nat.cast_zero, add_zero] at h₁ h₂
+  rw [h₂, h₁, ofOrd_le_ofOrd] at he
+  exact hlt.not_ge he
+
+include hτ in
+/-- A pinned reading at offset `i` determines the whole source strip. -/
+theorem read_strip_at {i : ℕ} {x : ExtOrd} {u : Ordinal.{0}} (hi : i < N)
+    (hx : τ x = ofOrd (limitPart u + i)) :
+    ∃ v : Ordinal.{0}, x = ofOrd (limitPart v + i) ∧
+      ∀ n ≤ N, τ (ofOrd (limitPart v + n)) = ofOrd (limitPart u + n) := by
+  obtain ⟨hv, hi', hread⟩ := read_strip_block hτ (limitPart_idem u) hi hx
+  exact ⟨ordOf x, hv.trans (by rw [← hi', decomposition]), hread⟩
+
+end StripReadback
+
+end VaughtConjecture.Knight
+
+namespace VaughtConjecture.Knight.SharpWitnessComposition
+
+open Transform Value ExtOrd
+
 namespace BoundedMap
+
+theorem comp {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
+    (hν : BoundedMap K ν) (hσ : BoundedMap m σ) (hmK : m ≤ K) :
+    BoundedMap m (ν ∘ σ) where
+  bot := by simp [Function.comp_apply, hσ.bot, hν.bot]
+  mono := hν.mono.comp hσ.mono
+  comm x k i hk hi := by
+    simp only [Function.comp_apply]
+    rw [hσ.comm x k i hk hi, hν.comm _ k i (hk.trans hmK) hi]
+
 
 variable {m : ℕ} {f : ExtOrd → ExtOrd} (hf : BoundedMap m f)
 
@@ -95,7 +189,7 @@ theorem trim_bot_block {a b : Ordinal.{0}} (hab : limitPart a = limitPart b)
     apply le_bot_iff.mp
     exact (hf.mono (ofOrd_le_ofOrd.mpr le_self_add)).trans_eq ha
   by_cases hm : m = 0
-  · simpa [trim_ofOrd, hm, ← hab] using hfloor
+  · simp_all
   have he : extVisibilityReplace (ofOrd (limitPart a)) m (min (finitePart b) m) =
       trim m (ofOrd b) := by
     rw [extVisibilityReplace_of_finitePart_lt (by
@@ -117,7 +211,7 @@ theorem witness : Witness (gTop m) (f ∘ trim m) where
     by_cases hk : k ≤ m
     · rw [trim_evr m x hk hi, hf.comm _ _ _ hk hi]
     · have hz : f (trim m x) = ⊥ := by
-        simpa only [Function.comp_apply, gTop_of_gt (not_le.mp hk), le_bot_iff] using hact
+        simpa [Function.comp_apply, gTop_of_gt (not_le.mp hk), le_bot_iff] using hact
       rw [hz, extVisibilityReplace_bot]
       rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
       · exact hf.bot
@@ -141,26 +235,14 @@ theorem trim_of_short {m : ℕ} {x : ExtOrd} (hx : Short m x) : trim m x = x := 
   · rfl
   · exact trim_eq ha
 
-/-- The function composite has bounded commutation, even without bottom reflection. -/
-theorem bounded_comp {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
-    (hσ : Witness (gTop m) σ) (hν : Witness (gTop K) ν) (hmK : m ≤ K) :
-    BoundedMap m (ν ∘ σ) where
-  bot := by simp only [Function.comp_apply, hσ.bot, hν.bot]
-  mono := hν.mono.comp hσ.mono
-  comm := by
-    intro x k i hk hi
-    simp only [Function.comp_apply]
-    rw [hσ.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi,
-      hν.clause5 (σ x) k (by rw [gTop_of_le (hk.trans hmK)]; exact le_top) i hi]
-
 /-- Repair the composite off the row. Every grade-short source is unchanged. -/
 theorem comp_read {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
     (hσ : Witness (gTop m) σ) (hν : Witness (gTop K) ν) (hmK : m ≤ K) :
     ∃ τ : ExtOrd → ExtOrd, Witness (gTop m) τ ∧
       ∀ x, Short m x → τ x = ν (σ x) := by
-  refine ⟨(ν ∘ σ) ∘ trim m, (bounded_comp hσ hν hmK).witness, ?_⟩
+  refine ⟨(ν ∘ σ) ∘ trim m, (hν.bounded.comp hσ.bounded hmK).witness, ?_⟩
   intro x hx
-  simp only [Function.comp_apply, trim_of_short hx]
+  simp [Function.comp_apply, trim_of_short hx]
 
 /-- A source-short controller locality survives any normalized outer shifter of
 at least its grade. The witness is repaired, not the semantic source row. -/
@@ -175,9 +257,6 @@ theorem map_capped_locality
     TransformsTo grade E (fun d => min (ν (p d)) (ν (p c))) := by
   obtain ⟨σ, hσ, _, hread⟩ := exists_bounded_exact_capped_witness hmax hvis hloc
   obtain ⟨τ, hτ, hτread⟩ := comp_read hσ hν hcK
-  apply hτ.transformsTo
-  intro d
-  rw [gTop_of_le (hmax d), min_top_right, hτread _ (hshort d), hread,
-    hν.mono.map_min]
+  exact hτ.transformsTo_top hmax (fun d => by rw [hτread _ (hshort d), hread, hν.mono.map_min])
 
 end VaughtConjecture.Knight.SharpWitnessComposition

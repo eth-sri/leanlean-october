@@ -9,29 +9,7 @@ public import VaughtConjecture.Knight.CappedLifting
 public import VaughtConjecture.Knight.NormalForm
 public import VaughtConjecture.CapCompatibleExtension
 
-/-! # Capped lifting from lawful extension and injective restriction
-
-The growth4 reorganization: instead of a separate arbitrary-ambient capped lift, prove for a graded
-pair `I ≤ U`
-
-* **existence** (`LawfulExtension`): every lawful section below `I` extends to a lawful section
-  below `U`, literally on `I`;
-* **uniqueness** (`RestrictionInjective`): two lawful sections below `U` agreeing on `I` agree on
-  the entire lower domain below `U` — every auxiliary occurrence included, not merely field
-  readouts.
-
-Cap preservation then follows from the existing lawful-capping theorem
-(`RespectsSemanticsBelow.cap`): the extension `r` of the prescription and the ambient `q`, both
-capped at a permitted `γ`, are lawful and agree on `I` (the prescription agrees with the ambient
-below `γ` there), hence agree everywhere.  This is `CoatomBoundaryExtension.CappedLift` for every
-permitted cap, bottom and top included (`cappedLift_of_extension_injective`), and bountifulness
-when both properties hold at every graded pair (`bountiful_of_extension_injective`).
-
-Nothing here establishes extension or injectivity for any carrier; both are hypotheses. -/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.ExtensionInjectivity
 
@@ -83,7 +61,7 @@ theorem allCapsExtension_of_extension_injective (hext : LawfulExtension sem h)
       exact funext (hinj r.1 s.1 r.2 s.2 (congrFun (congrArg Subtype.val hrs)))
     · intro p
       obtain ⟨r, hr, hres⟩ := hext p.1 p.2
-      exact ⟨⟨r, hr⟩, Subtype.ext (funext hres)⟩
+      aesop
   intro p hp
   obtain ⟨r, hres, hcaps⟩ := CapCompatibleExtension.exists_extension restrict capX capY hr
     (fun _ _ => rfl) ⟨p, hp⟩
@@ -97,6 +75,6 @@ theorem AllCapsExtension.cappedLift (hall : AllCapsExtension sem h) :
     CoatomBoundaryExtension.CappedLift sem h := by
   intro p q γ hp hq hγ hag
   obtain ⟨r, hr, hres, hcaps⟩ := hall p hp
-  exact ⟨r, hr, hcaps γ q hγ hq hag, hres⟩
+  grind
 
 end VaughtConjecture.Knight.ExtensionInjectivity

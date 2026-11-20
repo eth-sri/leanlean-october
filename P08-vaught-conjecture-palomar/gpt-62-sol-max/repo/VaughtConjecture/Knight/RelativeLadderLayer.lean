@@ -8,38 +8,39 @@ module
 public import VaughtConjecture.Knight.SeparatedSourceLayerCarrier
 public import VaughtConjecture.Knight.ReceivingCatalogueIncidences
 
-/-! # The first relative mixed layer
-
-Append actual grade-one rungs and shadows to a proper inherited boundary.
-The inputs are scalar sections lawful on that boundary, not lawful physical
-predecessor vectors. Rank postprocessing constructs their incidences with all
-inherited grade-one owners, including long rows. Every shadow, including a
-zero-rank shadow, has a separately installed same-source ceiling leaf.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
+
 open Transform Value ExtOrd LadderScalarRendering
+
 noncomputable section
 
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype X] [Fintype Q] {A : Finset ι}
+
 variable (D : CellScheme A) (sem : Semantics D) (hA : 0 < A.card)
+
 variable (field : Cell D → X) (fields : Q → X → ExtOrd)
 
 def ranks (a : Q) (x : X) : ℕ := fieldRank (fields a) x
+
 def rungs : ℕ := Fintype.card X + 1
+
 abbrev Point := SupportLadderRows.Point (rungs (X := X)) X Q
+
 abbrev carrier := SourceLayerCarrier.scheme D (Point (X := X) (Q := Q)) 1 Nat.one_pos hA
+
 abbrev old (d : Cell D) : Cell (carrier D hA (X := X) (Q := Q)) :=
   SourceLayerCarrier.toCell D (Point (X := X) (Q := Q)) 1 Nat.one_pos hA (.inl d)
+
 abbrev added (v : Point (X := X) (Q := Q)) : Cell (carrier D hA (X := X) (Q := Q)) :=
   SourceLayerCarrier.toCell D (Point (X := X) (Q := Q)) 1 Nat.one_pos hA (.inr v)
+
 abbrev view := SourceLayerCarrier.toOcc D (Point (X := X) (Q := Q)) 1 Nat.one_pos hA
 
 theorem old_index (d : Cell D) : (carrier D hA (X := X) (Q := Q)).cell (old D hA d) = D.cell d :=
   SourceLayerCarrier.cell_toCell D _ 1 Nat.one_pos hA (.inl d)
+
 theorem added_index (v : Point (X := X) (Q := Q)) :
     (carrier D hA (X := X) (Q := Q)).cell (added D hA v) = (A, 1) :=
   SourceLayerCarrier.cell_toCell D _ 1 Nat.one_pos hA (.inr v)
@@ -50,11 +51,11 @@ theorem cell_cases (d : Cell (carrier D hA (X := X) (Q := Q))) :
   | inl c =>
       refine Or.inl ⟨c, ?_⟩
       rw [← SourceLayerCarrier.toCell_toOcc D (Point (X := X) (Q := Q)) 1 Nat.one_pos hA d]
-      exact congrArg (SourceLayerCarrier.toCell D _ 1 Nat.one_pos hA) he
+      aesop
   | inr v =>
       refine Or.inr ⟨v, ?_⟩
       rw [← SourceLayerCarrier.toCell_toOcc D (Point (X := X) (Q := Q)) 1 Nat.one_pos hA d]
-      exact congrArg (SourceLayerCarrier.toCell D _ 1 Nat.one_pos hA) he
+      aesop
 
 def rankIndex (a : Q) (d : Cell (carrier D hA (X := X) (Q := Q))) : ℕ :=
   match view D hA d with
@@ -64,6 +65,7 @@ def rankIndex (a : Q) (d : Cell (carrier D hA (X := X) (Q := Q))) : ℕ :=
 @[simp] theorem rankIndex_old (a : Q) (d : Cell D) :
     rankIndex D hA field fields a (old D hA d) = ranks fields a (field d) := by
   simp only [rankIndex, old, view, SourceLayerCarrier.toOcc_toCell]
+
 @[simp] theorem rankIndex_added (a : Q) (v : Point (X := X) (Q := Q)) :
     rankIndex D hA field fields a (added D hA v) = SupportLadderRows.index (ranks fields) a v := by
   simp only [rankIndex, added, view, SourceLayerCarrier.toOcc_toCell]
@@ -90,7 +92,7 @@ theorem rankIndex_bound (a : Q) (d : Cell (carrier D hA (X := X) (Q := Q))) :
   unfold rankIndex
   split
   · exact (rank_bound fields _ _).le
-  · exact SupportLadderRows.index_le _ _
+  · apply SupportLadderRows.index_le
 
 theorem rankIndex_agreement (a b : Q) (d : Cell (carrier D hA (X := X) (Q := Q))) :
     min (rankIndex D hA field fields a d)
@@ -99,8 +101,8 @@ theorem rankIndex_agreement (a b : Q) (d : Cell (carrier D hA (X := X) (Q := Q))
         (FiniteProfileControllers.cut (rungs (X := X)) (ranks fields a) (ranks fields b)) := by
   unfold rankIndex
   split
-  · exact FiniteProfileControllers.agree_cut _ _ _ _
-  · exact SupportLadderRows.index_agreement _ _ _
+  · apply FiniteProfileControllers.agree_cut
+  · apply SupportLadderRows.index_agreement
 
 def image (a : Q) (f : ℕ → ExtOrd) (d : Cell (carrier D hA (X := X) (Q := Q))) : ExtOrd :=
   f (rankIndex D hA field fields a d)
@@ -109,11 +111,24 @@ def ladderRow (v : Point (X := X) (Q := Q)) : Cell (carrier D hA (X := X) (Q := 
   image D hA field fields (SupportLadderRows.parent v)
     (SupportLadderRows.source (SupportLadderRows.ceiling (ranks fields) v))
 
+theorem ladderRow_added (v w : Point (X := X) (Q := Q)) :
+    ladderRow D hA field fields v (added D hA w) = SupportLadderRows.row (ranks fields) v w := by
+  rw [ladderRow, image, rankIndex_added]
+  rfl
+
+theorem ladderRow_old (v : Point (X := X) (Q := Q)) (d : Cell D) :
+    ladderRow D hA field fields v (old D hA d) =
+      SupportLadderRows.source (SupportLadderRows.ceiling (ranks fields) v)
+        (ranks fields (SupportLadderRows.parent v) (field d)) := by
+  simp only [ladderRow, image, rankIndex_old]
+
 variable (hp : ∀ d : Cell D, D.scope d ≠ A)
 
 abbrev separated := SeparatedSourceLayerCarrier.separated_of_proper D 1 hp
+
 abbrev ownerEquiv := SeparatedSourceLayerCarrier.ownerEquiv D
   (Point (X := X) (Q := Q)) 1 Nat.one_pos hA (separated D hp)
+
 abbrev base := SeparatedSourceLayerCarrier.base D
   (Point (X := X) (Q := Q)) 1 Nat.one_pos hA (separated D hp) sem
 
@@ -135,7 +150,7 @@ def rows : Semantics (carrier D hA (X := X) (Q := Q)) where
     · rename_i v h
       have hc : c = added D hA v := by
         rw [← SourceLayerCarrier.toCell_toOcc D (Point (X := X) (Q := Q)) 1 Nat.one_pos hA c]
-        exact congrArg (SourceLayerCarrier.toCell D _ 1 Nat.one_pos hA) h
+        tauto
       have hg : (carrier D hA (X := X) (Q := Q)).grade d.1 = 1 :=
         below_grade_one D hA v ⟨d.1, hc ▸ d.2⟩
       change _ = extVisibilityReplace _
@@ -146,19 +161,17 @@ def rows : Semantics (carrier D hA (X := X) (Q := Q)) where
 theorem row_added (v : Point (X := X) (Q := Q))
     (d : (carrier D hA (X := X) (Q := Q)).below
       ((carrier D hA (X := X) (Q := Q)).cell (added D hA v))) :
-    (rows D sem hA field fields hp).E (added D hA v) d = ladderRow D hA field fields v d.1 := by
-  simp only [rows, view, added, SourceLayerCarrier.toOcc_toCell]
+    (rows D sem hA field fields hp).E (added D hA v) d = ladderRow D hA field fields v d.1 := by simp_all [rows, view, added]
 
 theorem row_old (c : Cell D)
     (d : (carrier D hA (X := X) (Q := Q)).below
       ((carrier D hA (X := X) (Q := Q)).cell (old D hA c))) :
-    (rows D sem hA field fields hp).E (old D hA c) d = (base D sem hA hp).E (old D hA c) d := by
-  simp only [rows, view, old, SourceLayerCarrier.toOcc_toCell]
+    (rows D sem hA field fields hp).E (old D hA c) d = (base D sem hA hp).E (old D hA c) d := by simp_all [rows, view, old]
 
 theorem inherited_row (c : Cell D) (d : D.below (D.cell c)) :
     (rows D sem hA field fields hp).E (old D hA c) (ownerEquiv D hA hp c d) = sem.E c d := by
   rw [row_old]
-  exact SeparatedSourceLayerCarrier.base_old D _ 1 Nat.one_pos hA (separated D hp) sem c d
+  apply SeparatedSourceLayerCarrier.base_old
 
 theorem old_respects_iff (c : Cell D)
     (p : (carrier D hA (X := X) (Q := Q)).below
@@ -174,7 +187,7 @@ theorem old_respects_iff (c : Cell D)
     (separated D hp) sem c p]
   constructor <;> intro h <;> refine ⟨h.orderly, ?_, h.availability⟩
   · intro d
-    simpa only [he d] using h.locality d
+    simpa [he d] using h.locality d
   · intro d
     rw [he d]
     exact h.locality d
@@ -204,7 +217,7 @@ theorem rank_respects (a : Q)
     let f : ExtOrd → ExtOrd := fun x => SupportLadderRows.source t (rank (values (fields a)) x)
     have hm : Monotone f := (SupportLadderRows.source_mono t).comp (rank_mono _)
     have h0 : f ⊥ = ⊥ := by
-      simp only [f, rank_bot (bot_not_values _), SupportLadderRows.source_zero]
+      simp [f, rank_bot (bot_not_values _), SupportLadderRows.source_zero]
     have hz (x : X) : f (fields a x) = ⊥ ↔ fields a x = ⊥ := by
       change SupportLadderRows.source t (ranks fields a x) = ⊥ ↔ _
       rw [SupportLadderRows.source_bot_iff, Nat.min_eq_zero_iff, or_iff_left ht]
@@ -212,10 +225,10 @@ theorem rank_respects (a : Q)
     have hl := ha.locality c
     rw [hgrade] at hl
     have hout := ReceivingCatalogueIncidences.postprocess hl
-      (fun d => by simpa only [hgc d] using (sem.orderly c.1 d).symm) hm h0
+      (fun d => by simpa [hgc d] using (sem.orderly c.1 d).symm) hm h0
       (fun _ => SupportLadderRows.source_visible _ _)
       (fun d => by rw [hm.map_min, min_eq_bot, hz, hz, min_eq_bot])
-    simpa only [hm.map_min, f, ranks, fieldRank] using hout
+    simpa [hm.map_min, f, ranks, fieldRank] using hout
   · intro c v hs hgr
     obtain ⟨w, hw, hcw⟩ := ha.availability c v hs hgr
     exact ⟨w, hw, SupportLadderRows.source_mono t (rank_mono _ hcw)⟩
@@ -262,7 +275,7 @@ theorem image_locality (a : Q) (f : ℕ → ExtOrd) (hf : Monotone f) (h0 : f 0 
       (SupportLadderRows.ceiling (ranks fields) v) (fun i => f (min i e))
       (fun _ _ h => hf (min_le_min_right _ h)) (by simpa using h0) (fun _ => hv _)
       (fun i hi _ => hpos _ (by omega) ((min_le_right _ _).trans hel))
-    simpa only [min_assoc, min_eq_right hec] using ht
+    aesop
 
 theorem image_respects {j : ℕ} (a : Q) (f : ℕ → ExtOrd) (hf : Monotone f) (h0 : f 0 = ⊥)
     (hv : ∀ i, SelfVis 1 (f i)) (hpos : ∀ i, 0 < i → i ≤ rungs (X := X) → f i ≠ ⊥)
@@ -293,30 +306,28 @@ theorem image_respects {j : ℕ} (a : Q) (f : ℕ → ExtOrd) (hf : Monotone f) 
           CellScheme.below.mono] using hl
       have hh := hphysical.locality ⟨old D hA x, GradedLe.refl _⟩
       rcases c with ⟨c, hc⟩
-      dsimp only at hx
-      subst c
-      exact hh
+      aesop
     · rcases c with ⟨c, hc⟩
       dsimp only at hv'
       subst c
-      exact image_locality D sem hA field fields hp a f hf h0 hv hpos v
+      solve_by_elim [image_locality]
   · intro c t hs hgr
     rcases cell_cases D hA t.1 with ⟨x, hx⟩ | ⟨v, hv'⟩
     · have hct : GradedLe ((carrier D hA (X := X) (Q := Q)).cell c.1)
           ((carrier D hA (X := X) (Q := Q)).cell (old D hA x)) := hx ▸ ⟨hs, hgr.le⟩
       obtain ⟨y, hy⟩ := (ownerEquiv D hA hp x).surjective ⟨c.1, hct⟩
       have hy' : c.1 = old D hA y.1 := (congrArg Subtype.val hy).symm
-      have hx' : GradedLe (D.cell x) (A, j) := by simpa only [hx, old_index] using t.2
+      have hx' : GradedLe (D.cell x) (A, j) := by grind [old_index]
       have hscope : D.scope y.1 ⊆ D.scope x := by
-        simpa only [hy', hx, CellScheme.scope, old_index] using hs
+        grind [CellScheme.scope, old_index]
       have hgrade : D.grade y.1 = D.grade x := by
-        simpa only [hy', hx, CellScheme.grade, old_index] using hgr
+        grind [CellScheme.grade, old_index]
       obtain ⟨w, hw, hle⟩ := hold.availability ⟨y.1, y.2.trans hx'⟩ ⟨x, hx'⟩ hscope hgrade
-      refine ⟨⟨old D hA w.1, by rw [old_index]; exact w.2⟩, ?_, ?_⟩
-      · rw [old_index, hx, old_index]; exact hw
-      · simpa only [hy', image, rankIndex_old] using hle
+      refine ⟨⟨old D hA w.1, by grind [old_index]⟩, ?_, ?_⟩
+      · grind [old_index]
+      simp_all [image, rankIndex_old]
     · let leaf : Point (X := X) (Q := Q) := SupportLadderRows.leaf (Nat.succ_pos _) a
-      refine ⟨⟨added D hA leaf, by simpa only [hv', added_index] using t.2⟩, ?_, ?_⟩
+      refine ⟨⟨added D hA leaf, by grind [added_index]⟩, ?_, ?_⟩
       · rw [added_index, hv', added_index]
       · change f _ ≤ f _
         apply hf
@@ -324,7 +335,7 @@ theorem image_respects {j : ℕ} (a : Q) (f : ℕ → ExtOrd) (hf : Monotone f) 
           exact (rankIndex_added D hA field fields a leaf).trans
             ((SupportLadderRows.index_leaf (profile := ranks fields) (Nat.succ_pos _) a a).trans
               (FiniteProfileControllers.cut_refl _ _))
-        exact (rankIndex_bound D hA field fields a c.1).trans_eq hl.symm
+        grind [rankIndex_bound]
 
 /-- All new long rows are lawful on the installed lower domain, rather than
 only on the abstract ladder table. -/
@@ -338,9 +349,8 @@ theorem ladder_respects
         ladderRow D hA field fields v d = ⊥ := by
       exact (SupportLadderRows.source_bot_iff _ _).mpr (by simp [ht])
     simp only [hz]
-    exact ⟨fun _ => (selfVis_bot _).symm, fun c => by
-      simpa only [min_self] using TransformsTo.to_bot ((rows D sem hA field fields hp).E c.1),
-      fun _ t _ _ => ⟨t, rfl, le_rfl⟩⟩
+    exact ⟨by tauto, fun c => by simpa [min_self] using TransformsTo.to_bot ((rows D sem hA field fields hp).E c.1),
+      by tauto⟩
   · exact image_respects D sem hA field fields hp (SupportLadderRows.parent v) _
       (SupportLadderRows.source_mono _) (SupportLadderRows.source_zero _)
       (SupportLadderRows.source_visible _) (fun i hi _ hz => by
@@ -361,9 +371,6 @@ theorem consistent (hs : sem.IsConsistent)
     convert hr using 1
     exact funext (row_added D sem hA field fields hp v)
 
-def selected (a : Q) (C : ExtOrd) : Cell (carrier D hA (X := X) (Q := Q)) → ExtOrd :=
-  image D hA field fields a (LadderScalarRendering.level (values (fields a)) C)
-
 theorem coded (hs : sem.IsCoded) : (rows D sem hA field fields hp).IsCoded := by
   intro c d
   rcases cell_cases D hA c with ⟨c, rfl⟩ | ⟨v, rfl⟩
@@ -376,4 +383,5 @@ theorem coded (hs : sem.IsCoded) : (rows D sem hA field fields hp).IsCoded := by
         (rankIndex D hA field fields (SupportLadderRows.parent v) d.1)
 
 end
+
 end VaughtConjecture.Knight.RelativeLadderLayer

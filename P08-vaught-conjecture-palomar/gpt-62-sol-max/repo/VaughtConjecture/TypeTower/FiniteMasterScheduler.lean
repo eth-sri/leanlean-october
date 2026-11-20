@@ -8,28 +8,14 @@ module
 public import VaughtConjecture.TypeTower.FiniteMaster
 public import VaughtConjecture.TypeTower.ChainUnion
 public import Mathlib.Order.Ideal
-public import Mathlib.Data.Countable.Basic
-
-/-! # Finite-master scheduling by countable dense sets
-
-There are two finite obligations: absorb a carrier point, and serve an applicable
-rooted task. Before deciding a task, absorb its entire root. Its option is then fixed
-forever, so rejection is permanent and service needs no arbitrarily-late repetition.
-Mathlib's `Order.sequenceOfCofinals` supplies the only recursion.
-
-The countable alphabet consists of **task codes**, not all answer families. `RootedTask`
-allows any upward-persistent service predicate; in the applications it is a finite
-coface evaluation in an exact family, or an exact-scheme capped donor observation.
-State invariants are carried by the arbitrary state type `S`; neither the state space
-nor the tower's types need be countable. The theorem also covers empty alphabets and
-empty carriers: `Encodable.decode` provides the idle steps automatically.
--/
+public import Mathlib.Basic.Countable.Basic
 
 @[expose] public section
 
 namespace VaughtConjecture.TypeTower
 
 universe u v w z z'
+
 variable {Λ : Type v} [Preorder Λ] {T : TypeTower.{u} Λ} {α : Λ} {M : Type w}
 
 /-- A rooted obligation, with service persistent under positive realization extension. -/
@@ -59,7 +45,7 @@ theorem absorb_finset (s : S) (F : Finset M) :
     ∃ t, master s ≤ master t ∧ ∀ x ∈ F, x ∈ Set.range (master t).tuple := by
   classical
   induction F using Finset.induction_on with
-  | empty => exact ⟨s, le_rfl, by simp⟩
+  | empty => grind
   | @insert x F hx ih =>
     obtain ⟨t, hst, ht⟩ := ih
     obtain ⟨r, htr, hr⟩ := absorb t x
@@ -97,10 +83,10 @@ theorem exists_chain {I : Type z'} [Countable I] [Countable M]
   let D : I ⊕ M → Order.Cofinal S
     | .inl i => ⟨{s | Resolved master (task i) s}, fun s => by
         obtain ⟨t, hst, ht⟩ := resolve master absorb s (task i) (fun s => serve s i)
-        exact ⟨t, ht, hst⟩⟩
+        tauto⟩
     | .inr x => ⟨{s | x ∈ Set.range (master s).tuple}, fun s => by
         obtain ⟨t, hst, ht⟩ := absorb s x
-        exact ⟨t, ht, hst⟩⟩
+        tauto⟩
   refine ⟨Order.sequenceOfCofinals seed D, rfl,
     Order.sequenceOfCofinals.monotone seed D, ?_, ?_⟩
   · intro x
@@ -154,7 +140,8 @@ theorem exists_realization {I : Type z'} [Countable I] [Countable M]
     · exact (task i).mono (Realization.extends_chainUnion hchain k) hserved
   · intro n t p hp
     obtain ⟨k, hk⟩ := Realization.chainUnion_eval_some_exists hp
-    exact ⟨A k, hk⟩
+    tauto
 
 end FiniteMasterScheduler
+
 end VaughtConjecture.TypeTower

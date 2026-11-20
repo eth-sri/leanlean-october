@@ -9,13 +9,6 @@ public import Mathlib.Order.Filter.AtTopBot.Basic
 public import Mathlib.Order.Filter.Finite
 public import Mathlib.Order.Lattice.Nat
 
-/-! # Stabilization of directed natural-valued observations
-
-These elementary order/filter facts have no model-theoretic hypotheses. A monotone
-natural-valued observation on a nonempty directed preorder either attains a maximum and
-is eventually constant, or tends to infinity. Finite synchronization is filter intersection.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.DirectedNat
@@ -37,13 +30,13 @@ theorem eventually_constant_or_tendsto (hf : Monotone f) :
     (∃ k : ℕ, ∀ᶠ i in atTop, f i = k) ∨ Tendsto f atTop atTop := by
   by_cases hb : BddAbove (Set.range f)
   · obtain ⟨i, hi⟩ := eventually_eq_of_bddAbove hf hb
-    exact Or.inl ⟨f i, hi⟩
+    tauto
   · right
     apply hf.tendsto_atTop_atTop_iff.mpr
     intro k
     by_contra h
     push Not at h
-    exact hb ⟨k, by rintro _ ⟨i, rfl⟩; exact (h i).le⟩
+    exact hb ⟨k, by rintro _ ⟨i, rfl⟩; grind⟩
 
 /-- Finitely many eventual requirements hold on a common tail above any chosen base. -/
 theorem synchronize {ι : Type*} [Finite ι] (P : ι → D → Prop)
@@ -51,6 +44,6 @@ theorem synchronize {ι : Type*} [Finite ι] (P : ι → D → Prop)
     ∃ d, base ≤ d ∧ ∀ e, d ≤ e → ∀ i, P i e := by
   obtain ⟨d, hd⟩ := eventually_atTop.mp (Filter.eventually_all.mpr hP)
   obtain ⟨e, hbe, hde⟩ := exists_ge_ge base d
-  exact ⟨e, hbe, fun e' he' => hd e' (hde.trans he')⟩
+  grind
 
 end VaughtConjecture.DirectedNat

@@ -7,20 +7,14 @@ module
 
 public import VaughtConjecture.Knight.ReceivingCutDecoder
 
-/-! # Literal lower readback by a cap-preserving rank table
-
-The low rank segment retains the actual ambient chart. The high segment is
-the finite maximum of the prescribed values already encountered. Distinct
-prescriptions and literal top are retained without synchronizing physical
-sections with raw receiving fields.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingRankLift
+
 open Transform Value ExtOrd SharpWitnessComposition FullRowLifting
+
 open LadderScalarRendering
+
 noncomputable section
 
 /-- Every occupied rank has an actual field representative. -/
@@ -41,10 +35,10 @@ theorem exists_field_rank {X : Type*} [Fintype X] (a : X → ExtOrd) {i : ℕ}
         · exact ((rank_strict hx h).ne hxy.symm).elim
       rw [Finset.card_image_of_injOn hinj, Nat.card_Icc]
       omega
-  have hm : i ∈ S.image (rank S) := by rw [he]; exact Finset.mem_Icc.mpr ⟨hi, hic⟩
+  have hm : i ∈ S.image (rank S) := by aesop
   obtain ⟨x, hx, hxi⟩ := Finset.mem_image.mp hm
   obtain ⟨_, f, hf⟩ := mem_values.mp hx
-  exact ⟨f, by change rank S (a f) = i; rw [hf]; exact hxi⟩
+  aesop
 
 open Classical in
 def table {X : Type*} [Fintype X] (r : X → ℕ) (p : X → ExtOrd)
@@ -75,13 +69,10 @@ theorem exists_table {X : Type*} [Finite X] (a b : X → ℕ) (p : X → ExtOrd)
     by_cases hj : j < k
     · rw [glow i (hij.trans_lt hj), glow j hj]; exact hf hij
     · by_cases hi : i < k
-      · rw [glow i hi]; exact (hlow i hi).le.trans (gh j (not_lt.mp hj))
+      · grind
       · rw [ghigh i (not_lt.mp hi), ghigh j (not_lt.mp hj)]
         apply max_le_max_left
-        apply Finset.sup_le
-        intro d hd
-        exact Finset.le_sup (f := p) (Finset.mem_filter.mpr
-          ⟨Finset.mem_univ _, (Finset.mem_filter.mp hd).2.trans hij⟩)
+        grind
   · intro i
     by_cases hi : i < k
     · rw [glow i hi]; exact hfv i
@@ -91,9 +82,7 @@ theorem exists_table {X : Type*} [Finite X] (a b : X → ℕ) (p : X → ExtOrd)
         (fun d _ => hpv d)
   · intro d
     by_cases hd : b d < k
-    · have he : a d = b d := by have := hprefix d; omega
-      rw [glow _ hd]
-      exact PairedSlotEncoding.eq_of_cap_eq_lt (he ▸ hag d) (hlow _ hd)
+    · grind
     · have ha : k ≤ a d := by have := hprefix d; omega
       have hpd : γ ≤ p d := by
         apply min_eq_right_iff.mp
@@ -121,12 +110,12 @@ theorem exists_rank_decoder (H : ℕ) (g : ℕ → ExtOrd) (hg : Monotone g)
   have hz : ∀ i, s i = ⊥ → v i = ⊥ := by
     intro i h
     have hh := (SupportLadderRows.source_bot_iff H i).mp h
-    rw [min_eq_left (by omega : i.val ≤ H)] at hh
-    exact (congrArg g hh).trans h0
+    grind
   refine ⟨orderInterpolate s v,
     orderInterpolate_bounded (fun i => SupportLadderRows.source_visible _ _) (fun i => hv i), ?_⟩
   intro i hi
   exact orderInterpolate_read ho hz ⟨i, by omega⟩
 
 end
+
 end VaughtConjecture.Knight.ReceivingRankLift

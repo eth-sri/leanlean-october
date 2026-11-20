@@ -7,14 +7,6 @@ module
 
 public import VaughtConjecture.Knight.StableBandFiniteLawful
 
-/-! # Structural stable lift
-
-Synchronization, lawful stable labels, and the stable realization with its literal
-reduct, evaluation, consistency and covering equations. No occurrence supply or
-modelhood construction for the stable candidate is imported. The model-facing names
-remain definitional compatibility wrappers around the consistency-and-covering core.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -26,6 +18,7 @@ universe w
 namespace KnightRealization
 
 variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
+
 /-- **The synchronizing cover** (the "sufficiently large cover" of Lemma 5.3.10, made exact):
 above any realized tuple there is a labelled cover at which every cell with a proper stable
 value carries it as its provisional value, and every nonstabilizing `∞`-cell has provisional
@@ -73,13 +66,6 @@ theorem stableLiftRespects (hR : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S �
     RespectsSemantics p.scheme.rows (fun Xi => R.stableValue t p Xi) :=
   stableLiftRespects_of_consistent hR.consistent hR.covering hpt
 
-/-! ### Gates 4–6: the stable type, the realization, the model clauses
-
-The stable type and the stabilized realization are built from exact parent consistency and
-initial-segment covering of the source alone (`stableLiftTypeOf`, `stableLiftOf`); the
-model-hypothesis names `stableLiftType`, `stableLift` are definitional wrappers, so every
-existing statement about them is unchanged. -/
-
 /-- **Gate 4: the stable lift of a realized type** — same scheme and rows, labels the stable
 values; a genuine stage type of `S^{α+ω}` by gate 3.  Consistency-and-covering form. -/
 noncomputable def stableLiftTypeOf (hcons : R.IsExactParentConsistent)
@@ -89,8 +75,7 @@ noncomputable def stableLiftTypeOf (hcons : R.IsExactParentConsistent)
   label Xi := R.stableValue t p Xi
   label_bound Xi := by
     rcases R.hasStableValue_stableValue t p Xi with ⟨hlt, -⟩ | ⟨heq, -⟩
-    · exact Or.inl hlt
-    · exact Or.inr heq
+    all_goals tauto
   respects := stableLiftRespects_of_consistent hcons hcov hpt
 
 /-- **Gate 4** in its original interface: the source is a model. -/
@@ -109,6 +94,7 @@ theorem truncExt_stableValue (hcons : R.IsExactParentConsistent)
     exact truncExt_id_of_lt ((p.label_bound Xi).resolve_right htop)
 
 section Of
+
 variable (hcons : R.IsExactParentConsistent) (hcov : R.IsInitialSegmentCovering)
 
 /-- The stable lift reduces literally to the source type. -/
@@ -130,9 +116,7 @@ theorem stableLiftOf_eval_none {n : ℕ} {t : Fin n ↪ M}
   change (match h' : R.eval t with
     | none => none
     | some p => some (stableLiftTypeOf hcons hcov t p h')) = none
-  split
-  · rfl
-  · next p' h' => rw [h] at h'; cases h'
+  aesop
 
 theorem stableLiftOf_eval_some {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
     (h : R.eval t = some p) :
@@ -140,12 +124,7 @@ theorem stableLiftOf_eval_some {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
   change (match h' : R.eval t with
     | none => none
     | some p => some (stableLiftTypeOf hcons hcov t p h')) = _
-  split
-  · next h' => rw [h] at h'; cases h'
-  · next p' h' =>
-      have : p' = p := Option.some_injective _ (h'.symm.trans h)
-      subst this
-      rfl
+  grind
 
 /-- The inverse eval equation. -/
 theorem stableLiftOf_eval_eq_some {n : ℕ} {t : Fin n ↪ M}
@@ -155,10 +134,10 @@ theorem stableLiftOf_eval_eq_some {n : ℕ} {t : Fin n ↪ M}
   · obtain ⟨p, hp⟩ := Option.isSome_iff_exists.mp hs
     refine ⟨p, hp, ?_⟩
     rw [stableLiftOf_eval_some hcons hcov hp] at h
-    exact (Option.some_injective _ h).symm
+    grind
   · rw [Option.not_isSome_iff_eq_none] at hs
     rw [stableLiftOf_eval_none hcons hcov hs] at h
-    cases h
+    trivial
 
 /-- **The reduct of the stabilized realization is literally the source.** -/
 theorem stableLiftOf_reduct : (stableLiftOf hcons hcov).reduct α.le_nextBlock = R := by
@@ -192,22 +171,21 @@ theorem stableLiftOf_consistent : (stableLiftOf hcons hcov).IsExactParentConsist
     congr 1
     refine StageType.ext rfl (heq_of_eq (funext fun Xi => ?_))
     have hpq : typeMap f p = some (p.restrictFace f hr) := typeMap_eq_some f p hr
-    exact (stableValue_mapCell hcons hcov hRf' hp (rfl : f.trans t = f.trans t) hpq Xi).symm
+    exact (stableValue_mapCell hcons hcov hRf' hp rfl hpq Xi).symm
   · -- the face is invisible: both sides are undefined
     have h3 : typeMap f p = none := by
       by_contra hne
       obtain ⟨q'', hq''⟩ := Option.ne_none_iff_exists'.mp hne
-      exact hr ((typeMap_isSome_iff f p).mp (by rw [hq'']; rfl))
+      exact hr ((typeMap_isSome_iff f p).mp (by simp_all))
     have h4 : typeMap f (stableLiftTypeOf hcons hcov t p hp) = none := by
       by_contra hne
       obtain ⟨q'', hq''⟩ := Option.ne_none_iff_exists'.mp hne
       exact hr ((typeMap_isSome_iff f (stableLiftTypeOf hcons hcov t p hp)).mp
-        (by rw [hq'']; rfl))
+        (by simp_all))
     have hRf' : R.eval (f.trans t) = none := by
-      rw [hRf]
-      exact h3
+      aesop
     rw [stableLiftOf_eval_none hcons hcov hRf']
-    exact h4.symm
+    tauto
 
 /-- Covering of the stabilized realization. -/
 theorem stableLiftOf_covering : (stableLiftOf hcons hcov).IsInitialSegmentCovering := by
@@ -219,8 +197,6 @@ theorem stableLiftOf_covering : (stableLiftOf hcons hcov).IsInitialSegmentCoveri
   rfl
 
 end Of
-
-/-! #### The model-hypothesis interface, as definitional wrappers -/
 
 /-- **The stabilized realization `M⁺`**, in its original interface: the source is a model. -/
 noncomputable def stableLift (hR : R.IsModel) : KnightRealization α.nextBlock M :=

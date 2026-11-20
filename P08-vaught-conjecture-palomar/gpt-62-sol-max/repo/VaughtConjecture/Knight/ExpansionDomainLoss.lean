@@ -8,16 +8,6 @@ module
 public import VaughtConjecture.Knight.ExpansionDomain
 public import VaughtConjecture.Knight.ExpansionInjectivity
 
-/-! # Terminal models are precisely the successor losses
-
-`ExpansionDomain.loss_subset_range` assigns a terminal model to a class lost at a
-successor. The converse uses uniqueness of expansions: a later expansion of the
-base class would, after same-carrier normalization, reduce to the given terminal
-model. Neither direction requires global termination or a canonical stopping
-expansion. In particular terminal models can supply nonempty losses independently
-of the theorem counting terminal classes.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.ExpansionDomain

@@ -7,21 +7,16 @@ module
 
 public import VaughtConjecture.Knight.ReferenceContext
 
-/-! # Actual block references before a cap is chosen
-
-Uniformity supplies one actual representative per requested block. No padding,
-threshold or intermediate cap is constructed. References are indexed by the
-finite requested blocks: an empty root and empty request set need no default
-cell. Clients choose a final cap only after observing the reference offsets.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight
+
 open TypeTower StageType KnightRealization Value ExtOrd
+
 noncomputable section
+
 universe w
+
 variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
   {n : ℕ} {t : Fin n ↪ M}
 
@@ -33,6 +28,7 @@ structure RawReferenceContext (R : KnightRealization α M) {n : ℕ} (t : Fin n 
   rep_label : ∀ μ, p₀.label (repBase μ) = ofOrd (μ.1 + repOff μ)
 
 namespace RawReferenceContext
+
 variable {blocks : Finset Ordinal.{0}} (C : RawReferenceContext R t blocks)
 
 /-- A finite bound chosen after the actual offsets have been obtained. -/
@@ -40,6 +36,22 @@ def offsetBound : ℕ := Finset.univ.sup C.repOff
 
 theorem rep_off_le (μ : blocks) : C.repOff μ ≤ C.offsetBound :=
   Finset.le_sup (f := C.repOff) (Finset.mem_univ μ)
+
+def step {y : M} {hy : y ∉ Set.range C.ctx} {q : S α.1 (C.m + 1)}
+    (hq : IsCoface C.p₀ q) (heval : R.eval (snoc C.ctx y hy) = some q) :
+    RawReferenceContext R t blocks :=
+  ⟨C.toCtx.step y hy q heval, hq.extendsDomain.cellOf ∘ C.repBase, C.repOff,
+    fun μ => (hq.label_cellOf (C.repBase μ)).trans (C.rep_label μ)⟩
+
+/-- Increase arity without changing the offsets of the previously acquired cells. -/
+theorem pad (hM : R.IsModel) (k : ℕ) :
+    ∃ C' : RawReferenceContext R t blocks, C'.m = C.m + k ∧ C'.repOff = C.repOff := by
+  induction k with
+  | zero => exact ⟨C, rfl, rfl⟩
+  | succ k ih =>
+    obtain ⟨C', hm, ho⟩ := ih
+    obtain ⟨y, hy, q, -, hcof, heval⟩ := hM.highGradeDominance C'.ctx C'.p₀ C'.eval_ctx 0 stage_pos
+    exact ⟨C'.step hcof heval, congrArg (· + 1) hm, ho⟩
 
 end RawReferenceContext
 
@@ -50,17 +62,25 @@ theorem exists_rawReferenceContext (hM : R.IsModel) (p : S α.1 n)
     (hblocks : ∀ μ ∈ blocks, IsNonSuccessor μ ∧ μ < α.1) :
     Nonempty (RawReferenceContext R t blocks) := by
   classical
-  let reqs : List BlockRequest := blocks.toList.map (fun μ => ⟨μ, 0⟩)
-  have hreqs : ∀ r ∈ reqs, IsNonSuccessor r.block ∧ r.block < α.1 := by
-    intro r hr
-    obtain ⟨μ, hμ, rfl⟩ := List.mem_map.mp hr
-    exact hblocks μ (Finset.mem_toList.mp hμ)
-  obtain ⟨C, hC⟩ := exists_ctx_hasCells hM (Ctx.root p hp) reqs hreqs
-  have href (μ : blocks) : ∃ (c : Cell C.p₀.scheme.scheme) (j : ℕ),
-      C.p₀.label c = ofOrd (μ.1 + j) :=
-    hC ⟨μ.1, 0⟩ (List.mem_map.mpr ⟨μ.1, Finset.mem_toList.mpr μ.2, rfl⟩)
-  choose rep off hrep using href
-  exact ⟨{ toCtx := C, repBase := rep, repOff := off, rep_label := hrep }⟩
+  have acquire : ∃ C : Ctx R t, ∀ μ ∈ blocks, ∃ (c : Cell C.p₀.scheme.scheme) (j : ℕ),
+      C.p₀.label c = ofOrd (μ + j) := by
+    induction blocks using Finset.induction_on with
+    | empty => exact ⟨Ctx.root p hp, by simp⟩
+    | @insert μ blocks _ ih =>
+      obtain ⟨C, hC⟩ := ih fun ν hν => hblocks ν (Finset.mem_insert_of_mem hν)
+      obtain ⟨hns, hlt⟩ := hblocks μ (Finset.mem_insert_self _ _)
+      obtain ⟨y, hy, q, ⟨d, hlo, hhi⟩, hcof, heval⟩ :=
+        hM.uniformity C.ctx C.p₀ C.eval_ctx μ hns hlt
+      refine ⟨C.step y hy q heval, fun ν hν => ?_⟩
+      rcases Finset.mem_insert.mp hν with rfl | hν
+      · obtain ⟨j, hj⟩ := exists_nat_of_band hlo hhi
+        exact ⟨d, j, hj⟩
+      · obtain ⟨c, j, hj⟩ := hC ν hν
+        exact ⟨hcof.extendsDomain.cellOf c, j, (hcof.label_cellOf c).trans hj⟩
+  obtain ⟨C, hC⟩ := acquire
+  choose rep off hrep using fun μ : blocks => hC μ μ.2
+  exact ⟨⟨C, rep, off, hrep⟩⟩
 
 end
+
 end VaughtConjecture.Knight

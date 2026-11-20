@@ -6,73 +6,9 @@ Authors: Cameron Freer
 module
 
 public import Mathlib.Data.Fin.SuccPred
-public import VaughtConjecture.Knight.ModelAssembly
+public import VaughtConjecture.Knight.Coface
+public import VaughtConjecture.Knight.Model
 public import VaughtConjecture.Knight.OnePointSuccessor
-
-/-! # Coatom amalgamation: the faithful receiver for Cor. 4.3.22
-
-The paper's §4.3 completion ends in **Corollary 4.3.22**: if `pa ∈ S^α(A∖{a})` and
-`pb ∈ S^α(A∖{b})` agree on the common lower face, `(pa)_b = (pb)_a`, then some `q ∈ S^α_A` has
-`q_a = pa`, `q_b = pb`, and a cell `Ξ ∈ D'^{A,|A|}` (full scope, full grade) with
-`q(Ξ) = max ran q`.  The contribution of Cor. 4.3.22 to the paper's later arguments — coface
-existence (Prop. 4.3.23), the uniformity and high-arity dominance candidates
-(Lemmas 4.4.2/4.4.3), and the countable model recursion (Prop. 4.4.5) — is consumed through this
-statement; those arguments have further inputs of their own, recorded below.  This module states
-it as a receiver on V-C's own objects and proves the first tier of consumers.
-
-## The live coatom geometry
-
-A plan on a set of size `≥ 2` has **exactly two** visible coatoms, the pivots `A∖{a}` and
-`A∖{b}` of its step decomposition, and their intersection `A∖{a,b}` is visible in both
-sub-plans (`IsPlan.pivot_pair`, Def. 2.1.1).  So the two inputs of the amalgamation are two
-`(n+1)`-ary faces of an `(n+2)`-ary filler, not an `(n+1)`-type against a one-point type: a
-`CoatomPair n` carries the two coatom embeddings `f₁ f₂ : Fin (n+1) ↪ Fin (n+2)` with distinct
-ranges and explicit embeddings `g₁ g₂ : Fin n ↪ Fin (n+1)` of the common lower face, commuting
-(`g₁.trans f₁ = g₂.trans f₂`).  Compatibility is the literal face equality
-`typeMap g₁ pa = some r = typeMap g₂ pb` (Def. 3.1.5's partial restriction; the lower face is
-visible on both sides by Def. 2.1.1(3)(a)), and the amalgam is asserted by the two literal face
-equalities `typeMap f₁ q = some pa`, `typeMap f₂ q = some pb` (`CoatomPair.IsAmalgam`) together
-with the maximal full cell (`StageType.HasMaximalFullCell`).
-
-`MaximalCoatomAmalgamationSupply α` is the receiver: the corollary at every `n`, every coatom
-pair, every compatible pair.  It is a **consumer** of the §4.3 construction — nothing here
-builds a filler — and it is stated with no reference to the construction's internals
-(stacks, caps, raw rows, decoders).
-
-## Consumers proved here (Prop. 4.3.23 and Lemmas 4.4.2/4.4.3, faithfully)
-
-* `CoatomPair.ofPoints a b'`: the canonical pair at a point `a` and a pivot `b'` of the
-  `a`-face, with the lower-face embeddings `succAbove` and `predAbove`; commutation is
-  Mathlib's `Fin.succAbove_succAbove_succAbove_predAbove`.
-* `exists_amalgam_point` (**finite joint amalgamation**, the recursion of Prop. 4.3.23 and
-  of "recursively amalgamated" in Lemma 4.4.3): from the supply, every `p : S α (n+1)` at the
-  coatom `A∖{a}` and every one-point type `r : S α 1` at `{a}` have a common filler
-  `q : S α (n+2)` with a maximal full cell.  Induction on `n`: a pivot of `dom p` supplies
-  the second coatom (`exists_erase_mem_plan`), the induction hypothesis amalgamates the
-  restriction of `p` with `r` on that coatom, and the supply glues.  One-point visibility
-  propagates through `typeMap_trans`.
-* `exists_isCoface` (Prop. 4.3.23): every `p : S α (n+1)` has a coface, with a maximal full
-  cell.
-* `exists_uniformity_candidate` / `exists_highGradeDominance_candidate`
-  (Lemmas 4.4.2/4.4.3): a one-point type with a label in `[γ, γ+ω)`, resp. above `γ`,
-  amalgamates into a coface in `UniformityFamily γ`, resp. `HighGradeDominanceFamily γ`; the
-  latter reads the maximal full cell.
-* `KnightRealization.hasCandidates_of_coatomAmalgamation`: the full candidate bundle of
-  `Knight/ModelAssembly.lean` from the supply alone — the one-point types with label `γ + 1`
-  it consumes are Lemma 4.2.2's second clause, compiled in `Knight/OnePointSuccessor.lean`
-  (`exists_successorOneType_of_lt`); `hasCandidates_of_coatomAmalgamation_of_onePoint` keeps
-  that input explicit.
-* `KnightRealization.isModel_of_coatomAmalgamation`: the residual model inputs, exactly.  From
-  the supply, a realization is a model as soon as it is exactly parent-consistent, initial-segment
-  covering and exact-copy servicing.
-
-## What is deliberately not here
-
-This module does **not** produce `CofinalHighStageModels`: it reduces faithful model construction
-to the three realization invariants just named (`isModel_of_candidates`), none of which is implied
-by the amalgamation package and none of which is assumed or derived here.  The countable
-recursion from the package to `CofinalHighStageModels` is a separate tranche.
-Construction-private, not root-exported. -/
 
 @[expose] public section
 
@@ -81,8 +17,6 @@ namespace VaughtConjecture.Knight
 open StageType AmalgamationPlan.Plan
 
 variable {α : Ordinal.{0}} {n : ℕ}
-
-/-! ### Coatom pairs -/
 
 /-- A **coatom pair** on `Fin (n+2)`: two coatom faces with distinct ranges, each given by an
 embedding of `Fin (n+1)`, together with explicit embeddings of their common lower face into
@@ -116,22 +50,7 @@ def ofPoints (a : Fin (n + 2)) (b' : Fin (n + 1)) : CoatomPair n where
     refine Function.Embedding.ext fun k => ?_
     simp only [Function.Embedding.trans_apply, Fin.succAboveEmb_apply]
     exact (Fin.succAbove_succAbove_succAbove_predAbove a b' k).symm
-  ne := by
-    intro h
-    have hb : a.succAbove b' ∈ Finset.univ.image (Fin.succAboveEmb a) :=
-      Finset.mem_image_of_mem _ (Finset.mem_univ b')
-    rw [h] at hb
-    obtain ⟨k, -, hk⟩ := Finset.mem_image.mp hb
-    exact Fin.succAbove_ne _ k hk
-
-@[simp] theorem ofPoints_f₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₁ = Fin.succAboveEmb a := rfl
-
-@[simp] theorem ofPoints_f₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₂ = Fin.succAboveEmb (a.succAbove b') := rfl
-
-@[simp] theorem ofPoints_g₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').g₁ = Fin.succAboveEmb b' := rfl
+  ne := by simp
 
 @[simp] theorem ofPoints_g₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
     (ofPoints a b').g₂ = Fin.succAboveEmb (b'.predAbove a) := rfl
@@ -165,14 +84,9 @@ def MaximalCoatomAmalgamationSupply (α : Ordinal.{0}) : Prop :=
   ∀ (n : ℕ) (C : CoatomPair n) (pa pb : S α (n + 1)), C.Compatible pa pb →
     ∃ q : S α (n + 2), C.IsAmalgam pa pb q ∧ q.HasMaximalFullCell
 
-/-! ### Faces of `Fin`: the pivot coatom and the one-point face -/
-
 /-- The range of `Fin.succAboveEmb p` is the coatom omitting `p`. -/
 theorem image_succAboveEmb (p : Fin (n + 1)) :
-    Finset.univ.image (Fin.succAboveEmb p) = Finset.univ.erase p := by
-  apply Finset.coe_injective
-  rw [Finset.coe_image, Finset.coe_univ, Set.image_univ, Finset.coe_erase, Finset.coe_univ,
-    Fin.coe_succAboveEmb, Fin.range_succAbove, Set.compl_eq_univ_sdiff]
+    Finset.univ.image (Fin.succAboveEmb p) = Finset.univ.erase p := by aesop
 
 /-- Every plan on `Fin (n+1)` has a visible coatom: for `n = 0` the empty face, otherwise a
 pivot of the step decomposition (`IsPlan.pivot_pair`). -/
@@ -182,7 +96,7 @@ theorem exists_erase_mem_plan (C : CellScheme (ι := Fin (n + 1)) Finset.univ) :
   | zero => exact ⟨0, by simpa using C.isPlan.empty_mem⟩
   | succ n =>
     obtain ⟨a, b, ha, -, -, hz, -, -⟩ := C.isPlan.pivot_pair (by simp)
-    exact ⟨a, (hz a ha).mpr (Or.inl rfl)⟩
+    simp_all
 
 /-- The one-point face at `a`. -/
 def pointEmb (a : Fin n) : Fin 1 ↪ Fin n :=
@@ -200,14 +114,12 @@ theorem pointEmb_eq_trans (a : Fin (n + 2)) (b' : Fin (n + 1)) :
 /-- The initial face `Fin.castSuccEmb` is the coatom omitting the last point. -/
 theorem castSuccEmb_eq_succAboveEmb_last :
     (Fin.castSuccEmb : Fin n ↪ Fin (n + 1)) = Fin.succAboveEmb (Fin.last n) :=
-  Function.Embedding.ext fun i => (Fin.succAbove_last_apply i).symm
+  by aesop
 
 /-- The empty face is visible in every plan. -/
 theorem image_fin_zero_mem_plan (f : Fin 0 ↪ Fin n)
     (C : CellScheme (ι := Fin n) Finset.univ) : Finset.univ.image f ∈ C.plan := by
   simpa using C.isPlan.empty_mem
-
-/-! ### Finite joint amalgamation (Prop. 4.3.23's recursion) -/
 
 /-- **Finite joint amalgamation with a one-point type**: from the supply, for every point
 `a : Fin (n+2)`, every `p : S α (n+1)` on the coatom omitting `a` and every one-point type
@@ -246,8 +158,6 @@ theorem exists_amalgam_point (H : MaximalCoatomAmalgamationSupply α) :
     refine ⟨q, hq.face₁, ?_, hmax⟩
     rw [pointEmb_eq_trans a b', ← typeMap_trans _ _ q q' hface₂, hq'₂]
 
-/-! ### The uniformity and high-grade dominance candidates (Lemmas 4.4.2/4.4.3) -/
-
 /-- Every `r : S α 1` is a coface of the unique `p : S α 0`. -/
 theorem isCoface_zero (p : S α 0) (r : S α 1) : IsCoface p r := by
   rw [IsCoface, typeMap_eq_some _ r (image_fin_zero_mem_plan _ _)]
@@ -268,10 +178,9 @@ theorem exists_label_eq_of_typeMap_point {q : S α (n + 2)} {a : Fin (n + 2)} {r
     (h : typeMap (pointEmb a) q = some r) (Sig : Cell r.scheme.scheme) :
     ∃ d : Cell q.scheme.scheme, q.label d = r.label Sig := by
   have hvis : Finset.univ.image (pointEmb a) ∈ q.scheme.scheme.plan :=
-    (typeMap_isSome_iff _ q).mp (by rw [h]; rfl)
+    (typeMap_isSome_iff _ q).mp (by simp_all)
   rw [typeMap_eq_some _ q hvis, Option.some.injEq] at h
-  subst h
-  exact ⟨_, rfl⟩
+  aesop
 
 /-- **Uniformity candidate** (Lemma 4.4.2's amalgamation step): from the supply and a one-point
 type with a label in `[γ, γ + ω)`, every `p : S α n` has a coface in `UniformityFamily γ`. -/
@@ -285,8 +194,7 @@ theorem exists_uniformity_candidate (H : MaximalCoatomAmalgamationSupply α) (p 
     obtain ⟨q, hq, hr, -⟩ := exists_amalgam_point H n (Fin.last (n + 1)) p r
     obtain ⟨d, hd⟩ := exists_label_eq_of_typeMap_point hr Sig
     refine ⟨q, ⟨d, hd ▸ hlo, hd ▸ hhi⟩, ?_⟩
-    rw [IsCoface, castSuccEmb_eq_succAboveEmb_last]
-    exact hq
+    rwa [IsCoface, castSuccEmb_eq_succAboveEmb_last]
 
 /-- **High-grade dominance candidate** (Lemma 4.4.3's amalgamation step): from the supply and a
 one-point type with a label above `γ`, every `p : S α n` has a coface in
@@ -300,8 +208,7 @@ theorem exists_highGradeDominance_candidate (H : MaximalCoatomAmalgamationSupply
   | succ n =>
     obtain ⟨q, hq, hr, Ξ, hΞ, hmax⟩ := exists_amalgam_point H n (Fin.last (n + 1)) p r
     obtain ⟨d, hd⟩ := exists_label_eq_of_typeMap_point hr Sig
-    refine ⟨q, ⟨Ξ, hΞ, lt_of_lt_of_le (hd ▸ hγ) (hmax d)⟩, ?_⟩
-    rw [IsCoface, castSuccEmb_eq_succAboveEmb_last]
-    exact hq
+    refine ⟨q, ⟨Ξ, hΞ, by grind⟩, ?_⟩
+    rwa [IsCoface, castSuccEmb_eq_succAboveEmb_last]
 
 end VaughtConjecture.Knight

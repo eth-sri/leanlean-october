@@ -7,17 +7,6 @@ module
 
 public import VaughtConjecture.Knight.Directedness
 
-/-! # Top-grade growth or eventual constancy
-
-The order-theoretic half of the top-grade split used in Cor. 5.3.8: on the directed
-labelled-cover poset the monotone top grade either grows cofinally (`HasTopGradeGrowth`) or is
-constant on a coinitial tail (`hasTopGradeGrowth_or_coinitial_constant`).  Uses only
-directedness and monotonicity of `topGrade`.  The semantic bridge — growth excludes finite
-characteristic arity; a coinitial constant top grade `K` gives characteristic arity `K` — is
-the next lane.
-
-Construction-private (not root-exported).  Reviewer probe (2026-09-03), graduated. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -45,7 +34,7 @@ theorem KnightRealization.hasTopGradeGrowth_or_coinitial_constant
     intro K x
     obtain ⟨y, hy⟩ := Filter.tendsto_atTop_atTop.mp hg (K + 1)
     obtain ⟨z, hxz, hyz⟩ := exists_ge_ge x y
-    exact ⟨z, hy z hyz, hxz⟩
+    tauto
 
 /-- Model-facing compatibility wrapper. -/
 theorem KnightRealization.IsModel.hasTopGradeGrowth_or_coinitial_constant

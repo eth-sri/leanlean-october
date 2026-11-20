@@ -14,45 +14,11 @@ public import Mathlib.Data.List.Lex
 public import Mathlib.Data.ENat.Basic
 public import InfinitaryLogic.OrdinalUtil
 
-/-!
-# The Kleene–Brouwer order on a tree
-
-Pure combinatorics on `Descriptive.tree ℕ` (prefix-closed sets of `List ℕ`), no codes: the raw
-mathematics behind analytic boundedness for well-founded trees (issue #73).
-
-* `HasInfiniteBranch T` is a **descending chain in strict extension** — a sequence of nodes each
-  properly extending the previous — so "no infinite branch" is well-foundedness of `extBelow T`
-  on the nose (`wellFounded_extBelow_iff_not_hasInfiniteBranch`), with no appeal to König.
-* The Kleene–Brouwer order is the lexicographic order on `List ℕ∞` pulled back along
-  `kbEncode x = x.map (↑) ++ [⊤]`: appending `⊤` makes every proper extension of a node *smaller*
-  than the node, and among incomparable nodes the leftmost first difference decides.  Linearity is
-  inherited (`kbLinearOrder`); `kbLT_of_extBelow` records that strict extension is a
-  subrelation.
-* `wellFounded_kbLT`: KB is well-founded on a well-founded tree.  Along a strictly KB-descending
-  sequence every `k`-prefix stabilizes (`exists_stable_prefix`): once the `k`-prefix is fixed, the
-  `k`-th KB head is antitone in `ℕ∞` and hence eventually constant, and it cannot stabilize at
-  `⊤`, since the sequence would then repeat a list.  The stabilized prefixes form an infinite
-  branch.
-* `treeHeight T` is the strict supremum of the ranks of the nodes under strict extension, and
-  `treeHeight_le_type` bounds it by the KB order type, through the monotonicity of
-  `WellFounded.rank` in the relation (`InfinitaryLogic.rank_le_rank_of_imp`).
-* Comparing and bounding heights: an infinite branch is a sequence with every initial segment in
-  the tree (`hasInfiniteBranch_iff_exists_seq`); a homomorphism of strict extension, injective or
-  not, bounds one height by another (`treeHeight_le_of_relHom`, through
-  `InfinitaryLogic.rank_le_rank_of_relHom`); and a well-founded tree on `ℕ` has height below `ω₁`
-  (`treeHeight_lt_omega1`), by regularity of `ℵ₁`.
-
-The encoding lands in `ℕ∞`, which is defined as `WithTop ℕ`; the named type is what carries the
-derived `WellFoundedLT` instance the chain condition uses.
--/
-
 @[expose] public section
 
 namespace KleeneBrouwer
 
 open Descriptive
-
-/-! ## Strict extension and branches -/
 
 /-- `x` is a proper prefix of `y`. -/
 def ProperPrefix (x y : List ℕ) : Prop := x <+: y ∧ x ≠ y
@@ -86,51 +52,13 @@ theorem wellFounded_extBelow_iff_not_hasInfiniteBranch (T : tree ℕ) :
   · rintro ⟨h⟩ ⟨f, hf, hstep⟩
     exact h (RelEmbedding.natGT (fun n => (⟨f n, hf n⟩ : ↥T)) fun n => hstep n)
   · intro h
-    refine ⟨fun e => h ⟨fun n => (e n : List ℕ), fun n => (e n).2, fun n => ?_⟩⟩
+    refine ⟨fun e => h ⟨fun n => (e n : List ℕ), by simp, fun n => ?_⟩⟩
     exact e.map_rel_iff.mpr (Nat.lt_succ_self n)
-
-/-! ## The Kleene–Brouwer order, via lexicographic order on `WithTop ℕ` -/
-
-/-- Encode a node so that a proper prefix becomes *larger* than its extensions: append `⊤`. -/
-def kbEncode (x : List ℕ) : List ℕ∞ := x.map (fun a : ℕ => (a : ℕ∞)) ++ [⊤]
-
-theorem kbEncode_injective : Function.Injective kbEncode := by
-  intro x y h
-  have := List.append_inj_left' h (by simp)
-  exact (List.map_injective_iff (f := fun a : ℕ => (a : ℕ∞))).mpr
-    (fun _ _ hab => ENat.natCast_inj.mp hab) this
-
-/-- The Kleene–Brouwer order: proper extensions come first, then leftmost-first differences. -/
-def KBLT (x y : List ℕ) : Prop := kbEncode x < kbEncode y
-
-instance : DecidableRel KBLT := fun x y => inferInstanceAs (Decidable (kbEncode x < kbEncode y))
-
-instance : DecidableRel KBLT := fun x y => inferInstanceAs (Decidable (kbEncode x < kbEncode y))
-
-instance : DecidableRel KBLT := fun x y => inferInstanceAs (Decidable (kbEncode x < kbEncode y))
-
-/-- The KB order on the nodes of `T`. -/
-def kbLT (T : tree ℕ) (x y : ↥T) : Prop := KBLT (x : List ℕ) y
-
-/-- The nodes of `T`, linearly ordered by KB (pulled back from `List ℕ∞`). -/
-@[instance_reducible] noncomputable def kbLinearOrder (T : tree ℕ) : LinearOrder ↥T :=
-  LinearOrder.lift' (fun x : ↥T => kbEncode (x : List ℕ))
-    (fun _ _ h => Subtype.ext (kbEncode_injective h))
-
-/-! ## Proper extensions are KB-below -/
-
-/-! ## KB is well-founded on a well-founded tree -/
-
-instance (T : tree ℕ) : IsStrictOrder ↥T (kbLT T) where
-  irrefl x h := lt_irrefl (kbEncode (x : List ℕ)) h
-  trans _ _ _ h₁ h₂ := lt_trans (α := List ℕ∞) h₁ h₂
 
 /-- The height of the tree: the strict supremum of the ranks of its nodes under strict
 extension. -/
 noncomputable def treeHeight (T : tree ℕ) [WellFounded (extBelow T)] : Ordinal :=
   ⨆ x : ↥T, Order.succ (WellFounded.rank (extBelow T) x)
-
-/-! ## Branches as sequences -/
 
 /-- **Branches are sequences**: `T` has an infinite branch iff some `z : ℕ → ℕ` has every finite
 initial segment in `T`.  Forward, the `i`-th entry of the sequence is read off the `(i + 1)`-st
@@ -156,7 +84,7 @@ theorem hasInfiniteBranch_iff_exists_seq (T : tree ℕ) :
     have heq : List.ofFn (fun i : Fin n ↦ (f (i + 1)).getD i 0) = (f n).take n := by
       refine List.ext_getElem (by simp [hlen n]) fun i h₁ h₂ ↦ ?_
       have hi : i < n := by simpa using h₁
-      have hi' : i < (f (i + 1)).length := lt_of_lt_of_le (Nat.lt_succ_self i) (hlen (i + 1))
+      have hi' : i < (f (i + 1)).length := by tauto
       simp only [List.getElem_ofFn, List.getElem_take, List.getD_eq_getElem?_getD,
         List.getElem?_eq_getElem hi', Option.getD_some]
       exact (hchain (i + 1) n hi).getElem hi'
@@ -167,8 +95,6 @@ theorem hasInfiniteBranch_iff_exists_seq (T : tree ℕ) :
     · simp only [List.ofFn_succ_last]
       exact List.prefix_append _ _
     · simpa using congrArg List.length h
-
-/-! ## Comparing heights -/
 
 /-- **Rank domination between trees**: a homomorphism of strict extension from `S` to `T`
 bounds the height of `S` by the height of `T`.  Not necessarily injective: only the extension

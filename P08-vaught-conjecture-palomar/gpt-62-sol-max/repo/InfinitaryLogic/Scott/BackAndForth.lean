@@ -9,94 +9,6 @@ public import InfinitaryLogic.Scott.AtomicDiagram
 public import Architect
 public import Mathlib.SetTheory.Ordinal.Arithmetic
 
-/-!
-# Back-and-Forth Equivalence
-
-This file defines the back-and-forth equivalence relation between tuples in structures,
-indexed by ordinals. This is the semantic predicate that corresponds to Scott formulas.
-
-## Main Definitions
-
-- `BFEquiv`: The α-back-and-forth equivalence between tuples, indexed by ordinal α.
-
-## Main Results
-
-- `BFEquiv.zero_iff_sameAtomicType`: At level 0, BF-equivalence is atomic type equivalence.
-- `BFEquiv.monotone`: BF-equivalence at higher ordinals implies equivalence at lower ordinals.
-- `BFEquiv.forth`/`BFEquiv.back`: Extension properties at successor ordinals.
-- `BFEquiv.symm`: BF-equivalence is symmetric.
-
-## Implementation Notes
-
-We use `Ordinal.limitRecOn` for the definition, which requires handling three cases:
-- Zero: same atomic type
-- Successor `Order.succ α`: equivalence at α plus forth and back conditions
-- Limit (with `Order.IsSuccLimit`): equivalence at all smaller ordinals
-
-## Known Limitation: ω-Level Coherence and Quantifier Swap
-
-A natural approach to proving `BFEquiv_omega_implies_equiv` (BF-equivalence at ω implies
-isomorphism) is to define a "strategy" type that carries explicit witnesses instead of
-just existence claims. The inductive definition:
-
-```
-inductive BFStrategy : (k : ℕ) → ... → Type
-  | zero : SameAtomicType a b → BFStrategy 0 n a b
-  | succ : BFStrategy k n a b →
-           (forth : (m : M) → Σ n', BFStrategy k (n+1) ...) → ...
-```
-
-fails Lean's nested-inductive check. However, we CAN define BFStrategy by recursion on k
-(this compiles and avoids the kernel restriction). See `BFStrategy` below.
-
-We then define `BFStrategyOmega n a b := ∀ k, BFStrategy k n a b`, a coherent family of
-strategies at all finite levels. This is the "winning strategy in the ω-round EF game."
-
-**The real mathematical issue**: Even with these definitions, we have:
-- `BFStrategyOmega → isomorphism` is provable (the strategy gives coherent witnesses)
-- `BFEquiv ω → BFStrategyOmega` is the open problem (possibly false without extra assumptions)
-
-This is the standard model-theory distinction: "BFEquiv holds at all finite levels"
-(∀ k, Duplicator wins the k-round game) does NOT imply "Duplicator has a winning strategy
-in the ω-round game," even for countable structures.
-
-The obstruction is the quantifier swap:
-
-```
-From BFEquiv ω: ∀ k, ∃ n'_k, BFEquiv k (snoc a m) (snoc b n'_k)
-Need:          ∃ n', ∀ k, BFEquiv k (snoc a m) (snoc b n')
-```
-
-**Concrete counterexample** to such swaps: Let S_k = {n ∈ ℕ | n ≥ k}. Each S_k is non-empty,
-and S_0 ⊇ S_1 ⊇ S_2 ⊇ ..., but ⋂_k S_k = ∅. The witnesses keep shifting as k grows.
-
-In our setting, S_k = {n' ∈ N | BFEquiv k (snoc a m) (snoc b n')}. By monotonicity of
-BFEquiv, these sets are decreasing. But without a stabilization property, their
-intersection may be empty.
-
-**Note on alternative approaches**:
-- Dependent choice does NOT help: even with full AC, ∀ k, ∃ n'_k doesn't yield ∃ n', ∀ k
-  when the sets strictly decrease to empty intersection.
-- König's lemma would require finite branching or compactness; not available here since
-  the "tree" of valid witnesses lacks the necessary finiteness properties.
-- A game-theoretic formulation (strategy as function on finite plays) might help but
-  still requires proving a winning strategy exists from BFEquiv ω.
-
-**Resolution (in Sentence.lean)**: We use the stabilization approach:
-1. `StabilizesForTuples M α n`: BFEquiv α ↔ BFEquiv (succ α) for n-tuples from M
-2. `StabilizesCompletely M α`: All tuple sizes stabilize at α
-3. `exists_complete_stabilization`: For countable M, such α < ω₁ exists
-4. `BFEquiv_stabilization_implies_equiv`: At stabilization, BFEquiv → isomorphism
-
-At a complete stabilization ordinal, forth/back witnesses stay at the same level,
-so the standard back-and-forth closes without quantifier swap issues.
-
-**Important**: BFEquiv ω is equivalent to elementary equivalence (winning all finite EF games),
-which does NOT imply isomorphism. Potential counterexamples in relational languages include
-equivalence relations with matching finite-class structure but different arrangements of
-infinite classes.
--/
-
 @[expose] public section
 
 universe u v w w'
@@ -106,7 +18,9 @@ namespace FirstOrder
 namespace Language
 
 variable {L : Language.{u, v}} [L.IsRelational]
+
 variable {M : Type w} [L.Structure M]
+
 variable {N : Type w'} [L.Structure N]
 
 open FirstOrder Structure Fin Ordinal
@@ -153,28 +67,26 @@ variable {n : ℕ}
 
 omit [L.IsRelational] in
 theorem BFEquiv.zero (a : Fin n → M) (b : Fin n → N) :
-    BFEquiv (L := L) 0 n a b ↔ SameAtomicType (L := L) (M := M) (N := N) a b := by
-  simp only [BFEquiv, Ordinal.limitRecOn_zero]
+    BFEquiv (L := L) 0 n a b ↔ SameAtomicType (L := L) (M := M) (N := N) a b := by simp [BFEquiv, Ordinal.limitRecOn_zero]
 
 omit [L.IsRelational] in
 theorem BFEquiv.succ (α : Ordinal) (a : Fin n → M) (b : Fin n → N) :
     BFEquiv (L := L) (Order.succ α) n a b ↔
       BFEquiv (L := L) α n a b ∧
       (∀ m : M, ∃ n' : N, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) ∧
-      (∀ n' : N, ∃ m : M, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) := by
-  simp only [BFEquiv, Order.succ_eq_add_one, Ordinal.limitRecOn_add_one]
+      (∀ n' : N, ∃ m : M, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) := by simp [BFEquiv, Order.succ_eq_add_one, Ordinal.limitRecOn_add_one]
 
 omit [L.IsRelational] in
 theorem BFEquiv.limit (α : Ordinal) (hα : Order.IsSuccLimit α) (a : Fin n → M) (b : Fin n → N) :
     BFEquiv (L := L) α n a b ↔ ∀ β, β < α → BFEquiv (L := L) β n a b := by
   unfold BFEquiv
-  rw [Ordinal.limitRecOn_limit _ _ _ _ hα]
+  simp_all
 
 omit [L.IsRelational] in
 /-- BF-equivalence at level α + 1 implies BF-equivalence at level α. -/
 theorem BFEquiv.of_succ {α : Ordinal} {a : Fin n → M} {b : Fin n → N}
     (h : BFEquiv (L := L) (Order.succ α) n a b) : BFEquiv (L := L) α n a b :=
-  ((BFEquiv.succ α a b).mp h).1
+  (by grind [BFEquiv.succ])
 
 omit [L.IsRelational] in
 /-- BF-equivalence is monotone: higher ordinals imply lower ordinals. -/
@@ -183,8 +95,7 @@ theorem BFEquiv.monotone {α β : Ordinal} (hαβ : α ≤ β)
     BFEquiv (L := L) α n a b := by
   induction β using Ordinal.limitRecOn generalizing n a b with
   | zero =>
-    simp only [nonpos_iff_eq_zero] at hαβ
-    rwa [hαβ]
+    simp_all
   | add_one γ ih =>
     rw [← Order.succ_eq_add_one] at hαβ h
     rcases hαβ.lt_or_eq with hαβ' | rfl
@@ -192,9 +103,7 @@ theorem BFEquiv.monotone {α β : Ordinal} (hαβ : α ≤ β)
       exact ih hαβ' (BFEquiv.of_succ h)
     · exact h
   | limit γ hγ _ih =>
-    rcases hαβ.lt_or_eq with hαβ' | rfl
-    · exact (BFEquiv.limit γ hγ a b).mp h α hαβ'
-    · exact h
+    grind [BFEquiv.limit]
 
 omit [L.IsRelational] in
 /-- The "forth" property at a successor level. -/
@@ -218,10 +127,10 @@ theorem BFEquiv.refl (α : Ordinal) (a : Fin n → M) :
   | zero => exact (BFEquiv.zero a a).mpr (SameAtomicType.refl a)
   | add_one β ih =>
     rw [← Order.succ_eq_add_one, BFEquiv.succ]
-    exact ⟨ih a, fun m => ⟨m, ih (snoc a m)⟩, fun m => ⟨m, ih (snoc a m)⟩⟩
+    tauto
   | limit β hβ ih =>
     rw [BFEquiv.limit β hβ]
-    exact fun γ hγ => ih γ hγ a
+    tauto
 
 omit [L.IsRelational] in
 /-- BF-equivalence is symmetric at all levels. -/
@@ -237,7 +146,7 @@ theorem BFEquiv.symm {α : Ordinal} {a : Fin n → M} {b : Fin n → N}
            fun m => let ⟨n', hn'⟩ := h.2.1 m; ⟨n', ih hn'⟩⟩
   | limit β hβ ih =>
     rw [BFEquiv.limit β hβ] at h ⊢
-    exact fun γ hγ => ih γ hγ (h γ hγ)
+    tauto
 
 omit [L.IsRelational] in
 /-- BF-equivalence is transitive at all levels.
@@ -254,31 +163,11 @@ theorem BFEquiv.trans {P : Type*} [L.Structure P]
   | add_one β ih =>
     rw [← Order.succ_eq_add_one, BFEquiv.succ] at hab hbc ⊢
     refine ⟨ih hab.1 hbc.1, fun m => ?_, fun p => ?_⟩
-    · let ⟨nb, hnb⟩ := hab.2.1 m; let ⟨p, hp⟩ := hbc.2.1 nb; exact ⟨p, ih hnb hp⟩
-    · let ⟨nb, hnb⟩ := hbc.2.2 p; let ⟨m, hm⟩ := hab.2.2 nb; exact ⟨m, ih hm hnb⟩
+    · let ⟨nb, hnb⟩ := hab.2.1 m; let ⟨p, hp⟩ := hbc.2.1 nb; tauto
+    · let ⟨nb, hnb⟩ := hbc.2.2 p; let ⟨m, hm⟩ := hab.2.2 nb; tauto
   | limit β hβ ih =>
     rw [BFEquiv.limit β hβ] at hab hbc ⊢
-    exact fun γ hγ => ih γ hγ (hab γ hγ) (hbc γ hγ)
-
-/-! ### BFStrategy: Explicit Witness Strategies
-
-A back-and-forth strategy at level k provides explicit witnesses for extensions.
-Unlike `BFEquiv` which only asserts existence, a strategy carries the actual witnesses.
-
-The key insight is that `BFStrategy` can be defined by recursion on k (not as an
-inductive type), avoiding Lean's nested-inductive check that blocks inductive definitions.
-
-The open problem is `BFEquiv ω → BFStrategyOmega`: this is the quantifier swap obstruction.
-Having a strategy implies BFEquiv, but the converse requires choosing coherent witnesses.
-
-**Important**: `BFEquiv ω` (winning all finite games) does NOT imply isomorphism in general.
-Winning all finite back-and-forth games does not give an ω-round strategy. The Type-valued
-`BFStrategyT` below is genuinely stronger than `BFEquiv ω` because it carries witnesses. -/
-
-/-! ### Universe Lifting for BFEquiv
-
-BFEquiv is defined by `Ordinal.limitRecOn`, which is universe-specific. These lemmas
-transport BFEquiv between ordinal universes via `Ordinal.lift`. -/
+    grind
 
 end Language
 

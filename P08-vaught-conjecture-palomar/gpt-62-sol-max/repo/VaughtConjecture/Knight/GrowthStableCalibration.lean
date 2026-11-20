@@ -9,44 +9,19 @@ public import VaughtConjecture.Knight.GrowthStableSelectedInput
 public import VaughtConjecture.Knight.GrowthHighCover
 public import VaughtConjecture.Knight.CappedDonorContext
 public import VaughtConjecture.Knight.RawReferenceContext
-
-/-! # Actual reference acquisition for a proper stable marker
-
-Old-block references are acquired in the original model. The new stable block
-uses the attained marker itself. A subsequent growth cover contains both and
-places them below an actual top cap of sufficiently high grade. No occurrence
-of the chosen stable donor is assumed.
--/
+public import VaughtConjecture.Knight.SameStageCalibration
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableCalibration
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
-noncomputable section
-universe w
-variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
-/-- The stable cap bound, with the proof from integration's
-`SameStageCalibration.stable_ge_of_top`, without its guard dependencies. -/
-theorem stable_cap_bound (hM : W.IsModel) {m : ℕ} {u : Fin m ↪ M} {Q : S α.1 m}
-    (hQ : W.eval u = some Q) {c : Cell Q.scheme.scheme} (hc : Q.label c = ⊤) :
-    ofOrd (α.1 + Q.scheme.scheme.grade c) ≤ W.stableValue u Q c := by
-  have hα := le_stableValue_of_top (R := W) hQ hc
-  have hvis : SelfVis (Q.scheme.scheme.grade c) (W.stableValue u Q c) :=
-    ((stableLiftRespects hM hQ).orderly c).symm
-  rcases ExtOrd.cases (W.stableValue u Q c) with hb | ht | ⟨γ, hγ⟩
-  · rw [hb] at hα; exact absurd hα (not_ofOrd_le_bot _)
-  · rw [ht]; exact le_top
-  · rw [hγ] at hα hvis ⊢
-    rw [selfVis_ofOrd_iff] at hvis
-    have hlim := limitPart_mono (ofOrd_le_ofOrd.mp hα)
-    rw [limitPart_eq_self_of_isNonSuccessor (Or.inr α.2)] at hlim
-    apply ofOrd_le_ofOrd.mpr
-    calc α.1 + (Q.scheme.scheme.grade c : Ordinal.{0})
-        ≤ limitPart γ + (Q.scheme.scheme.grade c : Ordinal.{0}) := add_le_add_left hlim _
-      _ ≤ limitPart γ + finitePart γ := add_le_add_right (Nat.cast_le.mpr hvis) _
-      _ = γ := limitPart_add_finitePart γ
+open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
+
+noncomputable section
+
+universe w
+
+variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
 /-- Construct all block references under one actual cap, while retaining both
 the requested root and the independently supplied attained marker. The floor
@@ -113,7 +88,7 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
   have hi' : i < Q.scheme.scheme.grade c := by rwa [hgr]
   have hm : C.m < Q.scheme.scheme.grade c := by rw [hgr]; omega
   have hoff : C.offsetBound < Q.scheme.scheme.grade c := by rw [hgr]; omega
-  have hbound := stable_cap_bound hM hQ hc
+  have hbound := stable_ge_of_top hM hQ hc
   have hcut : ofOrd (α.1 + L) < W.stableValue u Q c :=
     (ofOrd_lt_ofOrd.mpr (add_lt_add_right (Nat.cast_lt.mpr hL) _)).trans_le hbound
   have hai : ofOrd (α.1 + i) < W.stableValue u Q c :=
@@ -124,7 +99,7 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
       GradedLe (Q.scheme.scheme.cell (mapCell hgQ d)) (Q.scheme.scheme.cell c) := by
     constructor
     · change Q.scheme.scheme.scope (mapCell hgQ d) ⊆ Q.scheme.scheme.scope c
-      rw [hsc]; exact Finset.subset_univ _
+      grind
     · change Q.scheme.scheme.grade (mapCell hgQ d) ≤ Q.scheme.scheme.grade c
       rw [grade_mapCell]
       exact (C.p₀.scheme.scheme.grade_le_card_scope d).trans
@@ -160,4 +135,5 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
       And.intro ((C.rep_off_le b).trans_lt hoff) (And.intro hstable hlt)
 
 end
+
 end VaughtConjecture.Knight.GrowthStableCalibration

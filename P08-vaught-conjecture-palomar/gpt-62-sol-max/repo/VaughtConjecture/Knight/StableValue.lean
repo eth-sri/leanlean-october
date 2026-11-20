@@ -9,23 +9,6 @@ public import VaughtConjecture.Knight.ProvisionalLift
 public import VaughtConjecture.Knight.TopGradeStableCore
 public import VaughtConjecture.Knight.BlockReflection
 
-/-! # The stable value as a function: reduction, face naturality, the jump closure
-
-`M⁺(Ξ)`'s graph `HasStableValue` (Def. 5.3.9) is total and functional under the model
-axioms; `stableValue` selects it.  A non-`∞` cell stabilizes at its source label
-(`stableValue_of_ne_top`); an `∞` cell's stable value is at least `α`
-(`le_stableValue_of_top`); and along an exact face of realized tuples corresponding cells
-have equal stable values (`stableValue_mapCell'` — the paper's `s_y = p*` coherence, from exact
-consistency alone: a stabilization witness over the face, requested at a tuple joining the
-larger root to an arbitrary tuple, already is an actual common extension, and consistency plus
-injectivity identify its embeddings; `stableValue_mapCell` keeps the original interface).
-`RespectsSemantics.jump` is the jump-map closure of respect
-(`comp_jump` with a vacuous high-grade side condition), and `someProvisionalValue_top_form`
-the `α + j` shape of provisional values at `∞`-cells; both feed the stabilized-row theorem
-(`Knight/StableLift.lean`).
-
-Construction-private (not root-exported). -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -43,39 +26,28 @@ theorem someProvisionalValue_top_form {β : Ordinal.{0}} {n : ℕ} {p : S β n}
   · obtain ⟨i, -, -, hval⟩ := someProvisionalValue_of_band htop hcap
     exact ⟨i, hval⟩
 
-/-- **Respect is closed under the jump map** when every grade is at most the threshold
-(clause 5 above the threshold never fires: the restricted composite `comp_jump` with a
-vacuous high-grade side condition). -/
+/-- Respect is closed under the jump map below the visible threshold. -/
 theorem RespectsSemantics.jump {n : ℕ} {D : SemScheme n} {v : Cell D.scheme → ExtOrd}
     (h : RespectsSemantics D.rows v) {β : Ordinal.{0}} (hβ : Order.IsSuccLimit β) (K : ℕ)
     (hgr : ∀ d : Cell D.scheme, D.scheme.grade d ≤ K) :
     RespectsSemantics D.rows (fun d => ExtOrd.jump (ofOrd (β + K)) (v d)) where
   orderly d := by
-    change ExtOrd.jump (ofOrd (β + K)) (v d) =
-      extVisibilityReplace (ExtOrd.jump (ofOrd (β + K)) (v d)) (D.scheme.grade d)
-        (D.scheme.grade d)
-    by_cases hle : v d ≤ ofOrd (β + K)
-    · rw [jump_of_le hle]; exact h.orderly d
-    · rw [jump_of_not_le hle, extVisibilityReplace_top]
-  locality Sig := by
-    have h1 := TransformsTo.comp_jump (h.locality Sig) hβ K K le_rfl (fun d => hgr d.1)
-      (fun d hd => absurd (hgr d.1) (not_le.mpr hd))
-    have h2 : (fun d : D.scheme.below (D.scheme.cell Sig) =>
-        ExtOrd.jump (ofOrd (β + K)) (min (v d.1) (v Sig))) =
-        fun d => min (ExtOrd.jump (ofOrd (β + K)) (v d.1))
-          (ExtOrd.jump (ofOrd (β + K)) (v Sig)) := by
-      funext d
-      exact jump_min _ _ _
-    rwa [h2] at h1
-  availability Sig Xi₀ hsub hgrade := by
-    obtain ⟨Xi, hcell, hle⟩ := h.availability Sig Xi₀ hsub hgrade
-    exact ⟨Xi, hcell, jump_mono _ hle⟩
+    simp only [ExtOrd.jump]
+    split_ifs
+    · exact h.orderly d
+    · exact (extVisibilityReplace_top _ _).symm
+  locality c := by
+    have hvis : SelfVis K (ofOrd (β + K)) := selfVis_ofOrd_iff.mpr (by
+      rw [← limitPart_of_succLimit hβ, finitePart_limitPart_add_nat])
+    simpa only [Function.comp_apply, jump_min] using
+      TransformsTo.jump_target (h.locality c) hvis (fun d => hgr d.1)
+  availability c d hs hg := by
+    obtain ⟨e, he, hle⟩ := h.availability c d hs hg
+    exact ⟨e, he, jump_mono _ hle⟩
 
 namespace KnightRealization
 
 variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
-
-/-! ### Gate 1: the stable value as a function -/
 
 /-- **The stable value `M⁺(Ξ)` as a function** (Def. 5.3.9, functional under clauses (2) and
 (3)): a classical choice from the total graph `HasStableValue`. -/
@@ -105,8 +77,6 @@ theorem stableValue_of_stabilizesTo (hcons : R.IsExactParentConsistent)
     R.stableValue t p Xi = γ :=
   stableValue_eq hcons hcov hpt (Or.inl ⟨hγ, h⟩)
 
-/-! ### Gate 2a: reduction — a non-`∞` cell stabilizes at its label -/
-
 /-- The stable value of a non-`∞` cell is its source label. -/
 theorem stableValue_of_ne_top (hcons : R.IsExactParentConsistent)
     (hcov : R.IsInitialSegmentCovering) {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
@@ -129,9 +99,7 @@ theorem le_stableValue_of_top {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
     calc ofOrd α.1 ≤ q.someProvisionalValue (mapCell hpq Xi) :=
           le_someProvisionalValue_of_top hlab
       _ = R.stableValue t p Xi := (isProvisionalValue_iff.mp hval).symm
-  · rw [heq]; exact le_top
-
-/-! ### Gate 2b: face naturality of the stable value -/
+  simp_all
 
 /-- **Face naturality of stabilization from exact consistency alone**: along an actual face,
 a cell stabilizes iff its underlying ambient cell does.  Each witness over the face, requested
@@ -150,7 +118,7 @@ theorem stabilizesTo_mapCell_iff' (hcons : R.IsExactParentConsistent) {n m : ℕ
     have hpr : typeMap (f.trans e) r = some p := by
       rw [← typeMap_trans f e r q hqr]; exact hpq
     refine ⟨l, z, g, f.trans e, r, hpr, hz, hgz, ?_, ?_⟩
-    · rw [Function.Embedding.trans_assoc, hez, hfu]
+    · aesop
     · rw [mapCell_trans hqr hpq hpr Xi]; exact hv
   · -- join `u` and `s` into one tuple; stabilization over `t` supplies its actual extension
     intro hs k s
@@ -158,11 +126,10 @@ theorem stabilizesTo_mapCell_iff' (hcons : R.IsExactParentConsistent) {n m : ℕ
     obtain ⟨j, z, g, e, r, hpr, hz, hgz, hez, hv⟩ := hs w
     set b : Fin m ↪ Fin j := (Fin.castAddEmb l).trans g with hb
     have hbz : b.trans z = u := by
-      rw [hb, Function.Embedding.trans_assoc, hgz, hwu]
+      aesop
     have hqr : typeMap b r = some q := by
       have h := hcons z r b hz
-      rw [hbz, hqu] at h
-      exact h.symm
+      simp_all
     have he : e = f.trans b := by
       apply Function.Embedding.ext
       intro i
@@ -184,7 +151,7 @@ theorem hasStableValue_mapCell_iff' (hcons : R.IsExactParentConsistent) {n m : �
     R.HasStableValue u q (mapCell hpq Xi) γ ↔ R.HasStableValue t p Xi γ := by
   have h := fun δ => stabilizesTo_mapCell_iff' hcons hqu hfu hpq Xi δ
   refine or_congr (and_congr_right fun _ => h γ) (and_congr_right fun _ => ?_)
-  exact forall_congr' fun δ => imp_congr_right fun _ => not_congr (h δ)
+  simp_all
 
 /-- **Face naturality of the stable value from exact consistency alone** (the paper's
 `s_y = p*` coherence): along an actual face, corresponding cells have equal stable values. -/

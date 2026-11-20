@@ -8,25 +8,18 @@ module
 public import VaughtConjecture.Knight.OrdinaryFinalCatalogue
 public import VaughtConjecture.Knight.CanonicalPairedInverse
 
-/-! # Actual private-owner factorization for the ordinary catalogue
-
-Restrict a canonical admitted source to the original private scheme. At any
-active grade-N private owner, its full scope is derived from the private arity.
-KVC's owner-local factorization then constructs the reaching cut, a lawful
-proper replacement, and an outgoing witness reading the prescription capped
-at that owner. All N-short source readings retain their original external cap,
-including unused grid/orbit values. No alignment or completion is assumed.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryOwnerFactorization
+
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition
+
 open OrdinaryFinalCatalogue CanonicalPairedInverse
+
 noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
+
 variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 
 abbrev privateCell (c : Cell C.scheme) : C.scheme.below (effC N N) :=
@@ -71,7 +64,7 @@ theorem exists_factorization (c : Cell C.scheme) (hc : C.scheme.grade c = N)
   have hp' : RespectsSemanticsBelow C.rows (C.scheme.cell c) p' := hp.mono _
   have hsource (e : C.scheme.below (C.scheme.cell c)) : s e = a.val (.priv e.1) :=
     (profile_present R st (.priv e.1)).symm.trans (congrFun hprofile (.priv e.1))
-  obtain ⟨δ, hδ, hδpos, -, -, ⟨fac⟩⟩ :=
+  obtain ⟨δ, hδ, hδpos, ⟨fac⟩⟩ :=
     PrivateRowFactorization.exists_factorization c (Fintype.card (Field P C)) hs hp'
       (fun e => by
         rw [hsource, hc]
@@ -81,19 +74,20 @@ theorem exists_factorization (c : Cell C.scheme) (hc : C.scheme.grade c = N)
       (fun e => by rw [hsource]; exact hag (toEff e))
   rw [hc] at hδ
   rcases Finset.mem_insert.mp hδ with hz | hm
-  · exact (not_lt_of_ge (le_of_eq hz) hδpos).elim
+  · grind
   obtain ⟨B, hB, he⟩ := Finset.mem_image.mp hm
   change grid N B = δ at he
   subst δ
-  refine ⟨B, Finset.mem_insert_of_mem (Finset.mem_image.mpr ⟨B, hB, rfl⟩),
+  refine ⟨B, by lia,
     fac.source ∘ fromEff, fac.outgoing, fac.lawful.mono _,
     (fun d => fac.proper (fromEff d)), ?_, ?_, fac.bounded, ?_, fac.reaches, ?_⟩
   · intro d
     exact (fac.prefix_eq (fromEff d)).trans (congrArg (fun x => min x (grid N B)) (hsource _))
-  · simpa only [hc] using fac.witness
+  · simpa [hc] using fac.witness
   · intro d
-    exact fac.readback (fromEff d)
-  · simpa only [hc] using fac.caps
+    apply fac.readback
+  · simpa [hc] using fac.caps
 
 end
+
 end VaughtConjecture.Knight.OrdinaryOwnerFactorization

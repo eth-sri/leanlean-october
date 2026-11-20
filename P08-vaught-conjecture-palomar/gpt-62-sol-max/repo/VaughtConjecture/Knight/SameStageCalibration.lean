@@ -5,37 +5,17 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.GuardActivation
+public import VaughtConjecture.Knight.ReferenceContext
+public import VaughtConjecture.Knight.ReductModel
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.Semantics
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.RestrictedComposition
+public import VaughtConjecture.Knight.CountedEncoding
 public import VaughtConjecture.Knight.StableLiftCore
 public import VaughtConjecture.Knight.Directedness
 public import VaughtConjecture.Knight.FiniteOffset
-
-/-! # Same-stage calibration from an attained stable marker and top-grade growth
-
-The reviewer's assignment (2026-09-18, item 3): at the model's own stage, guard activation
-cannot come from an ordinary label strictly below the cap (the marker is labelled `⊤`).  It
-comes from the **stable labelling**: an attained marker `a` with ordinary label `⊤` and stable
-value `α + j`, `0 < j`, together with top-grade growth, which supplies a cover with a
-top-labelled full-scope cell of grade `N > j` — the cap — chosen **after** `j` and every other
-offset are known.  In every coface the model realizes over that cover:
-
-* the stable labelling is lawful on the same rows (`stableLiftRespects`), so the guard on the
-  stable capped labelling reflects to the controller's row;
-* the stable value of the marker is retained (`stableValue_mapCell`, along the cover and along
-  the coface), and the stable values of the top-labelled grade-`N` cap and controller are at
-  least `α + N > α + j` (`stable_ge_of_top`: at least `α` and `N`-visible), so the capped
-  stable marker is `α + j` (`stable_guard_active`);
-* the ordinary labelling reads back: the controller is labelled `⊤` (`exists_top_controller`),
-  so `guarded_readback_at` transports the row's correctness to the ordinary labels, proper
-  requests read exactly (`read_proper`) and, with the block-floor bound, top requests read
-  literally `⊤` (`read_top_of_cutoffBound`).
-
-**Explicit hypotheses, not asserted branches.**  The attained marker and top-grade growth are
-hypotheses here: they are what the positive tight grade-defect branch supplies, and this module
-does not claim them for the band-defect, zero-threshold, or bounded-top-grade branches, nor
-does it use a threshold-vacuous infinity anchor.  The safe rows are supplied by the probe.
-
-Construction-private (not root-exported). -/
 
 @[expose] public section
 
@@ -46,10 +26,6 @@ open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan Transfo
 universe w
 
 variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
-
-/-! ## A top cap of high grade from top-grade growth -/
-
-/-! ## Stable values of top-labelled cells of grade `N` -/
 
 /-- The stage is its own limit part. -/
 theorem limitPart_stage : limitPart α.1 = α.1 :=
@@ -76,22 +52,13 @@ theorem stable_ge_of_top (hM : R.IsModel) {m : ℕ} {u : Fin m ↪ M} {q : S α.
   have hvis : SelfVis (q.scheme.scheme.grade Θ) (R.stableValue u q Θ) :=
     ((stableLiftRespects hM hu).orderly Θ).symm
   rcases ExtOrd.cases (R.stableValue u q Θ) with hb | ht | ⟨γ, hγ⟩
-  · rw [hb] at hα; exact absurd hα (not_ofOrd_le_bot _)
-  · rw [ht]; exact le_top
+  · aesop
+  · simp_all
   · rw [hγ] at hα hvis ⊢
     exact ofOrd_le_ofOrd.mpr (stage_add_le_of_selfVis (ofOrd_le_ofOrd.mp hα) hvis)
 
 /-- `α + j < α + N` for `j < N`. -/
 theorem stage_add_lt {j N : ℕ} (h : j < N) : ofOrd (α.1 + j) < ofOrd (α.1 + N) :=
-  ofOrd_lt_ofOrd.mpr (add_lt_add_right (Nat.cast_lt.mpr h) _)
-
-/-! ## The controller and the stable guard in a realized coface -/
-
-variable (hM : R.IsModel) {m : ℕ} {u : Fin m ↪ M} {q₀ : S α.1 m} (hu : R.eval u = some q₀)
-  {N : ℕ} {cap : Cell q₀.scheme.scheme} (hcap : q₀.scheme.scheme.cell cap = (Finset.univ, N))
-  (hcapl : q₀.label cap = ⊤)
-  {y : M} {hy : y ∉ Set.range u} {Q : S α.1 (m + 1)} (hQ : R.eval (snoc u y hy) = some Q)
-
-/-! ## Readback in the ordinary labelling -/
+  by simp_all
 
 end VaughtConjecture.Knight

@@ -7,12 +7,6 @@ module
 
 public import VaughtConjecture.Knight.Model
 
-/-! # Finite request data and elementary countability
-
-Pattern codes retain their original admissibility predicate. This module contains no
-request enumeration, scheduler, or stopping-rank theory.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -23,17 +17,7 @@ universe w
 
 variable {α : Ordinal.{0}} {n : ℕ}
 
-/-! ### The bottom-pattern quotient theorem -/
-
 namespace FixedHeight
-
-/-! ### Pattern codes at an arbitrary limit stage
-
-The stage-`ω` versions live in `Knight/Sentence.lean` (`BotPattern`, `PatternFamily`,
-`IsPatternOf`); they are reproduced here at an arbitrary stage, namespaced `FixedHeight` to
-keep the lane quarantined. -/
-
-/-! ### Elementary countability -/
 
 variable {M : Type w}
 
@@ -48,4 +32,5 @@ theorem countable_lt (hβ : α.card ≤ Cardinal.aleph0) :
   ((Ordinal.countable_Iic_of_card_le_aleph0 hβ).mono Set.Iio_subset_Iic_self).to_subtype
 
 end FixedHeight
+
 end VaughtConjecture.Knight

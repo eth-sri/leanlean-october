@@ -8,30 +8,22 @@ module
 public import VaughtConjecture.Knight.CappedDonorRepairPackage
 public import VaughtConjecture.Knight.OrdinaryFinalCatalogue
 
-/-! # Ordinary catalogue repair on every installed final-layer coordinate
-
-V-C's scalar package (`414cb17`, ported unchanged) constructs the repaired
-catalogue member and supported inverse. The actual source-prefix theorem then
-gives a lawful physical image preserving every source-cut coordinate, including
-all fixed marked columns and unused predecessor auxiliaries. The proper private
-prescription is read literally. No physical completion or decoder is an input.
-
-The source cut is not the original external cap. Owner alignment and outgoing
-decoding are connected separately; this result alone is not arbitrary-input
-lifting. The explicit predecessor support/section contract is unchanged.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalRepair
+
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows
+
 open OrdinaryFinalCatalogue CanonicalPairedInverse
+
 noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
+
 variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
 
 /-- A proper private repair is installed in the fixed physical inventory with
@@ -58,25 +50,20 @@ theorem exists_source_repair
     positive_cap_repair a.property hv hproper hag
   let b : OrdinaryFinalCatalogue.Member R := ⟨PairedSlotEncoding.normalize N b₀, hcat⟩
   have hfixFields : ∀ f, F.fields a f < grid N B → κ (F.fields a f) = F.fields a f := by
-    intro f hf
-    rw [hfields] at hf ⊢
-    calc
-      κ (a.val f) = κ (PairedSlotEncoding.normalize N b₀ f) :=
-        congrArg κ (PairedSlotEncoding.eq_of_cap_eq_lt (hnorm f).symm hf)
-      _ = b₀ f := hread f
-      _ = a.val f := (PairedSlotEncoding.eq_of_cap_eq_lt (hprefix f).symm hf).symm
+    grind
   have hfixGrid : ∀ z ∈ F.grid, z < grid N B → κ z = z := by
     rw [hgrid]
     exact fix_sourceGrid hκ.bot hfix _
   have hag' : Agree (F.fields b) (F.fields a) (grid N B) := by
     intro f
-    simpa only [hfields] using hnorm f
+    grind
   obtain ⟨hlaw, hcaps⟩ := F.decode_source_prefix hsupport a b hB (ofOrd_ne_bot _)
     hag' hκ hreach hfixGrid hfixFields
   refine ⟨b, κ, hκ, hlaw, hcaps, ?_⟩
   intro d
   rw [F.source_old, hpriv]
-  exact (hread (.priv d.1)).trans (hprivate d)
+  grind
 
 end
+
 end VaughtConjecture.Knight.OrdinaryFinalRepair

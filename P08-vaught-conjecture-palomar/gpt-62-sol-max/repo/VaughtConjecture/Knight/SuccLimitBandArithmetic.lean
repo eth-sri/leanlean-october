@@ -7,12 +7,6 @@ module
 
 public import VaughtConjecture.Knight.Value
 
-/-! # Ordinal bands below a successor limit
-
-The ordinal arithmetic used by model reduction and finite restricted composition,
-with no stage-type, model or receiving imports.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight

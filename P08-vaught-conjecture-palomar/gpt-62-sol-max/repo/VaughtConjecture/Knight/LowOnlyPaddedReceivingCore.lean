@@ -10,41 +10,30 @@ public import VaughtConjecture.Knight.FiniteCoverReceivingCore
 public import VaughtConjecture.Knight.TopSupportReceiving
 public import VaughtConjecture.Knight.LowOnlyActualState
 
-/-! # Cap-native exact receiving from the constructed LOW certificate
-
-Finite-cover receiving installs an approximation to the lawful whole display
-over an actual private tuple. The private labels stay literal by consistency;
-the two physical separator readings then force the donor labels exactly.
-
-The family, its ordered two-face attachment, and an active state with a cutoff
-below the stage are explicit inputs. The finished display is truncated once;
-its auxiliary labels need no stage bounds. The historical bounded-state API
-is retained as a wrapper. No exact-receiving or physical-probe hypothesis is used.
-The target supplies only exact consistency and finite-cut receiving, not realization covering.
-Finite geometric coverage of the attachment remains explicit. The first-loss acquisition and
-its rootwise attachment are separate adapters.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedModelReceiving
+
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly
+
 open CellScheme.restrictFace
+
 noncomputable section
+
 universe w
+
 variable {l m n K : ℕ} {B C : Finset (Fin l)} {R : Finset (Finset (Fin l))}
   (I : WholeDonorBoundary.Input Finset.univ B C R m n n)
   (F : LowOnly.Family I.left I.right K)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
+  (hroot : I.RootMatches F.root)
   (hA : 2 ≤ (Finset.univ : Finset (Fin l)).card)
   (hB : B ⊂ Finset.univ) (hC : C ⊂ Finset.univ)
   (hcover : ∀ S ∈ R, S ≠ Finset.univ → S ⊆ B ∨ S ⊆ C)
 
 local notation "E" => LowOnlyPaddedLegal.semScheme I F hroot hA hB hC hcover
+
 local notation "donor" => LowOnlyPaddedLegal.donor I F hroot hA hB hC hcover
+
 local notation "priv" => LowOnlyPaddedLegal.privateFace I F hroot hA hB hC hcover
 
 include hroot hA hB hC hcover in
@@ -69,23 +58,13 @@ theorem receive_raw_of_receiving {M : Type w} {α : LimitStage} {W : KnightReali
     LowOnlyPaddedLegalCertificate.exists_supported_certificate I F hroot hA hB hC hcover
       hS hdonor hc hr hactive
   let Q : StageType α.1 l := ofRespects α.2 E w hw
-  have hvC := LowOnlyPaddedLegal.private_visible I F hroot hA hB hC hcover
-  have hsC := LowOnlyPaddedLegal.restrict_private I F hroot hA hB hC hcover
-  have hoccC (d : Cell I.right.scheme) :
-      toCell (E).scheme I.placeRight hvC (SemScheme.castCell hsC.symm d) = (priv).map d :=
-    LowOnlyPaddedLegal.private_occurrence I F hroot hA hB hC hcover d
-  have hp : typeMap I.placeRight Q = some pC := by
-    apply (typeMap_eq_some_iff_labels I.placeRight Q pC hvC (hsC.trans hCs.symm)).mpr
-    change ∀ i : Cell ((E).restrictFace I.placeRight hvC).scheme,
-      truncExt α.1 (w (toCell (E).scheme I.placeRight hvC i)) =
-        pC.label (SemScheme.castCell (hsC.trans hCs.symm) i)
-    intro i
-    have hi := hoccC (SemScheme.castCell hsC i)
-    simp only [SemScheme.castCell_castCell_symm] at hi
-    change truncExt α.1 (w (toCell (E).scheme I.placeRight hvC i)) = _
-    rw [(congrArg w hi).trans ((hwp _).trans
-      (hCv (SemScheme.castCell (hsC.trans hCs.symm) i)).symm)]
-    exact truncExt_id_of_bound (pC.label_bound _)
+  have RC := LowOnlyPaddedLegal.private_receipt I F hroot hA hB hC hcover
+  have hCv' (d : Cell I.right.scheme) : pC.label (SemScheme.castCell hCs.symm d) = S.v d := by
+    simpa only [SemScheme.castCell_castCell_symm] using hCv (SemScheme.castCell hCs.symm d)
+  have hp : typeMap I.placeRight Q = some pC := (RC.labels_iff pC hCs.symm).2 fun d => by
+    change truncExt α.1 (w ((priv).map d)) = _
+    exact (congrArg (truncExt α.1) ((hwp d).trans (hCv' d).symm)).trans
+      (truncExt_id_of_bound (pC.label_bound _))
   obtain ⟨v, Q', hv, hev, hq, hcap⟩ :=
     FiniteCoverReceiving.finiteCoverReceiving_of_receiving hcons hFC Q I.placeRight u pC hp hu S.b
       (lt_of_le_of_lt bot_le hactive) hb
@@ -98,31 +77,21 @@ theorem receive_raw_of_receiving {M : Type w} {α : LimitStage} {W : KnightReali
     have h := hcons v T I.placeRight hev
     rw [hv, hu] at h
     exact h.symm
-  have hretain : ∀ d, q ((priv).map d) = S.v d := by
-    intro d
-    have h := (typeMap_eq_some_iff_labels I.placeRight T pC hvC
-      (hsC.trans hCs.symm)).mp hprivate (SemScheme.castCell hsC.symm d)
-    rw [hoccC d, hCv] at h
-    exact h
+  have hretain (d : Cell I.right.scheme) : q ((priv).map d) = S.v d :=
+    ((RC.labels_iff pC hCs.symm).1 hprivate d).trans (hCv' d)
   have hcaps : ∀ d, min (q d) S.b = min (w d) S.b := by
     intro d
     have he := hcap (SemScheme.castCell hq.symm d)
     change min (q d) S.b = min (truncExt α.1 (w d)) S.b at he
     exact he.trans (FiniteCoverReceiving.min_truncExt_of_lt hb (w d))
   have hdon : ∀ d, q ((donor).map d) = F.p d := hread q hqLaw hretain S.b hactive hcaps
-  have hvD := LowOnlyPaddedLegal.donor_visible I F hroot hA hB hC hcover
-  have hsD := LowOnlyPaddedLegal.restrict_donor I F hroot hA hB hC hcover
-  refine ⟨v, T.restrictFace I.placeLeft hvD, hv, ?_, ?_, hsD, ?_⟩
+  have RD := LowOnlyPaddedLegal.donor_receipt I F hroot hA hB hC hcover
+  refine ⟨v, T.restrictFace I.placeLeft RD.visible, hv, ?_, ?_, RD.restrict_eq, fun d => ?_⟩
   · rw [hcons v T I.placeLeft hev]
-    exact typeMap_eq_some I.placeLeft T hvD
+    exact typeMap_eq_some I.placeLeft T RD.visible
   · rw [← Function.Embedding.trans_assoc, I.commute, Function.Embedding.trans_assoc, hv]
-  · intro d
-    have hocc := LowOnlyPaddedLegal.donor_occurrence I F hroot hA hB hC hcover
-      (SemScheme.castCell hsD d)
-    change q (toCell (E).scheme I.placeLeft hvD d) = _
-    have hd := hdon (SemScheme.castCell hsD d)
-    rw [← hocc] at hd
-    exact hd
+  · change q (toCell (E).scheme I.placeLeft RD.visible d) = _
+    exact (congrArg q (RD.toCell_eq d)).trans (hdon _)
 
 include hroot hA hB hC hcover in
 /-- Exact receiving from the actual private tuple and a lawful donor sharing
@@ -148,4 +117,5 @@ theorem receive_of_shared_of_receiving {M : Type w} {α : LimitStage} {W : Knigh
     (S := ⟨F.p, v, b⟩) (hadm _) rfl hc hr hactive hb u pC hu hCs (fun _ => rfl)
 
 end
+
 end VaughtConjecture.Knight.LowOnlyPaddedModelReceiving

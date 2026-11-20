@@ -8,40 +8,6 @@ module
 public import VaughtConjecture.Knight.CappedDonorFields
 public import VaughtConjecture.Knight.PositiveNormalization
 
-/-! # The synchronized source-profile family and its normalization (the source-family adapter)
-
-The **source profiles** are the specialization of the receiving family of
-`Knight/CappedDonorReceiving.lean` in which the two-component state is one field vector: the
-persistent value of every *present* field is the `1`-visible rounding of its numerical value
-(`Synchronized`), while the persistent values of *future* fields are retained as they are.  Such
-a state is determined by its single source vector `State.sourceProfile` (numerical values at
-present fields, persistent values at future fields): `persistent = R₁ ∘ sourceProfile`
-(`Synchronized`, `synchronized_iff`).
-
-This is a specialization of the source family only.  Arbitrary physical sections are **not**
-required to satisfy it (a positive persistent shadow with a bottom numerical owner at an inactive
-controller is a legitimate physical section but not a source profile); nothing here extracts a
-source profile from a physical section, and no positive-continuability filtering is imposed.
-
-* **Resynchronization** (`resync`): recompute the present persistent fields from the numerical
-  values, retain the future ones.  It preserves admissibility (`Admissible.resync`) and makes any
-  admissible state synchronized (`resync_synchronized`); when the numerical fields agree with a
-  synchronized state below a permissible cap, the cap receipts of every persistent field survive
-  resynchronization (`resync_capReceipts`).
-* **Both same-grade fibres on source profiles** (`exists_private_lift_sync`,
-  `exists_request_lift_sync`): the general fibres followed by resynchronization — the lifted
-  state is admissible and synchronized, retains the prescription literally and the other section
-  below the cap, and carries **complete cap receipts** for every persistent field, present or
-  future.  At bottom cap the general fibres already resynchronize (`offState`).
-* **Normalization preservation** (`mapState`, `Admissible.map`, `Synchronized.map`): applying a
-  bottom-reflecting normalized witness `σ` with suppressor `gTop K`, `K` at least the grades
-  currently present and at least `1` (the arity form `K ≥ J` is `Admissible.map_of_arity`), to
-  every field —
-  the shape of the incoming normalization maps (`FiniteOrbitEmbedding.interpolate`,
-  `SourceBlockPadding.pad`; `Admissible.interpolate`, `Admissible.pad`) — preserves admissibility
-  and synchronization.  The selector commutes with such maps (`cut_map`, `sel_map`), so the
-  numerical relation is preserved exactly; supports are preserved because `σ` reflects bottom. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
@@ -54,8 +20,6 @@ namespace Ref
 
 variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
   {R : Ref I nP N J P C}
-
-/-! ## The source profile and synchronization -/
 
 /-- A present request cell as a present field. -/
 def reqCell {j : ℕ} (d : Cell P.scheme) (h : P.scheme.grade d ≤ j) : P.scheme.below (effP nP j) :=
@@ -72,11 +36,11 @@ noncomputable def State.sourceProfile {j : ℕ} (st : R.State j) (f : Field P C)
 
 theorem State.sourceProfile_of_present {j : ℕ} (st : R.State j) {f : Field P C}
     (h : f.grade ≤ j) : st.sourceProfile f = st.numeric f h := by
-  unfold State.sourceProfile; rw [dite_eq_left h]
+  unfold State.sourceProfile; simp_all
 
 theorem State.sourceProfile_of_future {j : ℕ} (st : R.State j) {f : Field P C}
     (h : ¬ f.grade ≤ j) : st.sourceProfile f = st.persistent f := by
-  unfold State.sourceProfile; rw [dite_eq_right h]
+  unfold State.sourceProfile; simp_all
 
 /-- **Synchronized**: every persistent value is the `1`-visible rounding of the source vector. -/
 def Synchronized {j : ℕ} (st : R.State j) : Prop :=
@@ -85,22 +49,12 @@ def Synchronized {j : ℕ} (st : R.State j) : Prop :=
 theorem Synchronized.shadowP {j : ℕ} {st : R.State j} (hs : Synchronized st)
     (d : P.scheme.below (effP nP j)) : st.shadowP d.1 = extVisibilityReplace (st.u d) 1 1 := by
   have h := hs (.req d.1)
-  rw [st.sourceProfile_of_present (f := .req d.1) ((present_req_iff j d.1).mp d.2)] at h
-  exact h
+  rwa [st.sourceProfile_of_present (f := .req d.1) ((present_req_iff j d.1).mp d.2)] at h
 
 theorem Synchronized.shadowC {j : ℕ} {st : R.State j} (hs : Synchronized st)
     (d : C.scheme.below (effC J j)) : st.shadowC d.1 = extVisibilityReplace (st.v d) 1 1 := by
   have h := hs (.priv d.1)
-  rw [st.sourceProfile_of_present (f := .priv d.1) ((present_priv_iff j d.1).mp d.2)] at h
-  exact h
-
-theorem Synchronized.shadowP' {j : ℕ} {st : R.State j} (hs : Synchronized st) (d : Cell P.scheme)
-    (h : P.scheme.grade d ≤ j) : st.shadowP d = extVisibilityReplace (st.u (reqCell d h)) 1 1 :=
-  hs.shadowP (reqCell d h)
-
-theorem Synchronized.shadowC' {j : ℕ} {st : R.State j} (hs : Synchronized st) (d : Cell C.scheme)
-    (h : C.scheme.grade d ≤ j) : st.shadowC d = extVisibilityReplace (st.v (privCell d h)) 1 1 :=
-  hs.shadowC (privCell d h)
+  rwa [st.sourceProfile_of_present (f := .priv d.1) ((present_priv_iff j d.1).mp d.2)] at h
 
 /-- Synchronization of an admissible state is the synchronization of its present cells. -/
 theorem synchronized_iff {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
@@ -117,56 +71,31 @@ theorem synchronized_iff {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
   · rw [st.sourceProfile_of_future h]
     exact (hst.persistent_selfVis f).symm
 
-/-! ## Resynchronization -/
-
 /-- Recompute the present persistent fields from the numerical values; retain the future ones. -/
-noncomputable def resync {j : ℕ} (st : R.State j) : R.State j where
-  u := st.u
-  v := st.v
-  gate := st.gate
-  shadowP d := if h : P.scheme.grade d ≤ j then
-    extVisibilityReplace (st.u (reqCell d h)) 1 1 else st.shadowP d
-  shadowC d := if h : C.scheme.grade d ≤ j then
-    extVisibilityReplace (st.v (privCell d h)) 1 1 else st.shadowC d
+noncomputable abbrev resync {j : ℕ} (st : R.State j) : R.State j := st.replace st.u st.v st.gate
 
-theorem resync_shadowP_of_present {j : ℕ} (st : R.State j) (d : Cell P.scheme)
-    (h : P.scheme.grade d ≤ j) :
-    (resync st).shadowP d = extVisibilityReplace (st.u (reqCell d h)) 1 1 := by
-  change (if h : P.scheme.grade d ≤ j then
-    extVisibilityReplace (st.u (reqCell d h)) 1 1 else st.shadowP d) = _
-  rw [dite_eq_left h]
+section Shadow
 
-theorem resync_shadowC_of_present {j : ℕ} (st : R.State j) (d : Cell C.scheme)
-    (h : C.scheme.grade d ≤ j) :
-    (resync st).shadowC d = extVisibilityReplace (st.v (privCell d h)) 1 1 := by
-  change (if h : C.scheme.grade d ≤ j then
-    extVisibilityReplace (st.v (privCell d h)) 1 1 else st.shadowC d) = _
-  rw [dite_eq_left h]
+variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {BJ : Finset ι × ℕ}
 
-theorem resync_shadowP_of_future {j : ℕ} (st : R.State j) {d : Cell P.scheme}
-    (h : ¬ P.scheme.grade d ≤ j) : (resync st).shadowP d = st.shadowP d := by
-  change (if h : P.scheme.grade d ≤ j then _ else st.shadowP d) = _
-  rw [dite_eq_right h]
+private theorem completeShadow_support {a : Cell D → ExtOrd} {p : D.below BJ → ExtOrd}
+    (h : ∀ d, a d.1 ≠ ⊥ ↔ p d ≠ ⊥) (d : Cell D) :
+    completeShadow a p d ≠ ⊥ ↔ a d ≠ ⊥ :=
+  CellScheme.complete_cases (P := fun c x => x ≠ ⊥ ↔ a c ≠ ⊥)
+    (fun c => (not_congr (evr_eq_bot_iff 1 1)).trans (h c).symm) (fun _ _ => Iff.rfl) d
 
-theorem resync_shadowC_of_future {j : ℕ} (st : R.State j) {d : Cell C.scheme}
-    (h : ¬ C.scheme.grade d ≤ j) : (resync st).shadowC d = st.shadowC d := by
-  change (if h : C.scheme.grade d ≤ j then _ else st.shadowC d) = _
-  rw [dite_eq_right h]
+private theorem completeShadow_cap {a b : Cell D → ExtOrd} {p q : D.below BJ → ExtOrd}
+    {γ : ExtOrd} (hγ : Nonempty (D.below BJ) → SelfVis 1 γ)
+    (ha : ∀ d, a d.1 = extVisibilityReplace (p d) 1 1)
+    (hpq : ∀ d, min (q d) γ = min (p d) γ)
+    (hab : ∀ d, min (b d) γ = min (a d) γ) (d : Cell D) :
+    min (completeShadow b q d) γ = min (a d) γ := by
+  apply CellScheme.complete_cases (P := fun c x => min x γ = min (a c) γ) _ (fun c _ => hab c) d
+  intro c
+  have hv := hγ ⟨c⟩
+  simp only [ha c, ← evr_min_of_selfVis hv le_rfl le_rfl, hpq c]
 
-/-- Resynchronization preserves every persistent support. -/
-theorem resync_shadowP_ne_bot_iff {j : ℕ} {st : R.State j} (hst : R.Admissible st)
-    (d : Cell P.scheme) : (resync st).shadowP d ≠ ⊥ ↔ st.shadowP d ≠ ⊥ := by
-  by_cases h : P.scheme.grade d ≤ j
-  · rw [resync_shadowP_of_present st d h]
-    exact (not_congr (evr_eq_bot_iff 1 1)).trans (hst.shadowP_iff (reqCell d h)).symm
-  · rw [resync_shadowP_of_future st h]
-
-theorem resync_shadowC_ne_bot_iff {j : ℕ} {st : R.State j} (hst : R.Admissible st)
-    (d : Cell C.scheme) : (resync st).shadowC d ≠ ⊥ ↔ st.shadowC d ≠ ⊥ := by
-  by_cases h : C.scheme.grade d ≤ j
-  · rw [resync_shadowC_of_present st d h]
-    exact (not_congr (evr_eq_bot_iff 1 1)).trans (hst.shadowC_iff (privCell d h)).symm
-  · rw [resync_shadowC_of_future st h]
+end Shadow
 
 /-- Resynchronization preserves admissibility. -/
 theorem Admissible.resync {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
@@ -175,34 +104,21 @@ theorem Admissible.resync {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
   v_respects := hst.v_respects
   face := hst.face
   gate_vis := hst.gate_vis
-  shadowP_vis d := by
-    by_cases h : P.scheme.grade d ≤ j
-    · rw [resync_shadowP_of_present st d h]
-      exact TopSupport.selfVis_evr_self 1 _
-    · rw [resync_shadowP_of_future st h]; exact hst.shadowP_vis d
-  shadowC_vis d := by
-    by_cases h : C.scheme.grade d ≤ j
-    · rw [resync_shadowC_of_present st d h]
-      exact TopSupport.selfVis_evr_self 1 _
-    · rw [resync_shadowC_of_future st h]; exact hst.shadowC_vis d
-  shadowP_iff d := by
-    rw [resync_shadowP_of_present st d.1 ((present_req_iff j d.1).mp d.2)]
-    exact not_congr (evr_eq_bot_iff 1 1)
-  shadowC_iff d := by
-    rw [resync_shadowC_of_present st d.1 ((present_priv_iff j d.1).mp d.2)]
-    exact not_congr (evr_eq_bot_iff 1 1)
+  shadowP_vis := completeShadow_visible hst.shadowP_vis st.u
+  shadowC_vis := completeShadow_visible hst.shadowC_vis st.v
+  shadowP_iff := completeShadow_ne_bot _ _
+  shadowC_iff := completeShadow_ne_bot _ _
   support hg hc := by
-    obtain ⟨href, hsupp⟩ := hst.support hg ((resync_shadowC_ne_bot_iff hst R.cap).mp hc)
-    exact ⟨fun i => (resync_shadowC_ne_bot_iff hst _).mpr (href i),
-      fun d => (resync_shadowP_ne_bot_iff hst d).trans (hsupp d)⟩
+    have hp := completeShadow_support hst.shadowP_iff
+    have hv := completeShadow_support hst.shadowC_iff
+    obtain ⟨href, hsupp⟩ := hst.support hg ((hv R.cap).mp hc)
+    exact ⟨fun i => (hv _).mpr (href i), fun d => (hp d).trans (hsupp d)⟩
   relation := hst.relation
 
 /-- The resynchronized state of an admissible state is synchronized. -/
 theorem resync_synchronized {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
     Synchronized (resync st) :=
-  (synchronized_iff hst.resync).mpr
-    ⟨fun d => resync_shadowP_of_present st d.1 ((present_req_iff j d.1).mp d.2),
-      fun d => resync_shadowC_of_present st d.1 ((present_priv_iff j d.1).mp d.2)⟩
+  (synchronized_iff hst.resync).mpr ⟨completeShadow_present _ _, completeShadow_present _ _⟩
 
 include R in
 /-- The comparison cap of a nonempty cutoff is `1`-visible. -/
@@ -220,23 +136,11 @@ theorem resync_capReceipts {j : ℕ} {st st₁ : R.State j} (hs : Synchronized s
     (hv : ∀ d, min (st₁.v d) γ = min (st.v d) γ) (hrec : R.CapReceipts γ st st₁) :
     R.CapReceipts γ st (resync st₁) := by
   obtain ⟨hg, hP, hC⟩ := hrec
-  refine ⟨hg, fun d => ?_, fun d => ?_⟩
-  · by_cases h : P.scheme.grade d ≤ j
-    · have h1 : SelfVis 1 γ := selfVis_one_of_effC (R := R) ((P.scheme.grade_pos d).trans_le h) hγ
-      rw [resync_shadowP_of_present st₁ d h, hs.shadowP' d h,
-        ← evr_min_of_selfVis h1 le_rfl le_rfl, ← evr_min_of_selfVis h1 le_rfl le_rfl,
-        hu (reqCell d h)]
-    · rw [resync_shadowP_of_future st₁ h]; exact hP d
-  · by_cases h : C.scheme.grade d ≤ j
-    · have h1 : SelfVis 1 γ := selfVis_one_of_effC (R := R) ((C.scheme.grade_pos d).trans_le h) hγ
-      rw [resync_shadowC_of_present st₁ d h, hs.shadowC' d h,
-        ← evr_min_of_selfVis h1 le_rfl le_rfl, ← evr_min_of_selfVis h1 le_rfl le_rfl,
-        hv (privCell d h)]
-    · rw [resync_shadowC_of_future st₁ h]; exact hC d
-
-/-! ## Both same-grade fibres on source profiles -/
-
-/-! ## Normalization preservation -/
+  refine ⟨hg, completeShadow_cap (fun ⟨d⟩ => ?_) hs.shadowP hu hP,
+    completeShadow_cap (fun ⟨d⟩ => ?_) hs.shadowC hv hC⟩
+  · exact selfVis_one_of_effC (R := R) ((P.scheme.grade_pos d.1).trans_le
+      ((present_req_iff j d.1).mp d.2)) hγ
+  · exact hγ.mono ((C.scheme.grade_pos d.1).trans_le d.2.2)
 
 /-- Apply a scalar map to every field of a state. -/
 def mapState {j : ℕ} (σ : ExtOrd → ExtOrd) (st : R.State j) : R.State j where
@@ -262,11 +166,9 @@ include hσ
 
 theorem map_comm {k : ℕ} (hk : k ≤ K) (x : ExtOrd) {i : ℕ} (hi : i ≤ k) :
     σ (extVisibilityReplace x k i) = extVisibilityReplace (σ x) k i :=
-  hσ.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi
+  hσ.comm x hk hi
 
-theorem selfVis_map {k : ℕ} (hk : k ≤ K) {x : ExtOrd} (h : SelfVis k x) : SelfVis k (σ x) := by
-  change extVisibilityReplace (σ x) k k = σ x
-  rw [← map_comm hσ hk x le_rfl, h]
+theorem selfVis_map {k : ℕ} (hk : k ≤ K) {x : ExtOrd} (h : SelfVis k x) : SelfVis k (σ x) := by grind [extVisibilityReplace, map_comm]
 
 theorem map_ne_bot_iff (hbot : ∀ x, σ x = ⊥ → x = ⊥) (x : ExtOrd) : σ x ≠ ⊥ ↔ x ≠ ⊥ :=
   not_congr ⟨hbot x, fun h => by rw [h, hσ.bot]⟩
@@ -279,9 +181,7 @@ theorem map_sup (f : I → ExtOrd) :
 theorem cut_map (hN : N ≤ K) (v : R.Low → ExtOrd) : R.cut (fun d => σ (v d)) = σ (R.cut v) := by
   unfold cut
   rw [hσ.mono.map_min, map_sup hσ]
-  congr 2
-  funext i
-  exact (map_comm hσ hN _ le_rfl).symm
+  grind [map_comm]
 
 /-- The selector commutes with a normalized witness through `N`. -/
 theorem sel_map (hN : N ≤ K) (v : R.Low → ExtOrd) (d : Cell P.scheme) :
@@ -296,15 +196,15 @@ theorem sel_map (hN : N ≤ K) (v : R.Low → ExtOrd) (d : Cell P.scheme) :
 
 /-- **Admissibility is preserved by every bottom-reflecting normalized witness through the grades
 currently present** (and grade one, for the gate and the persistent fields): lawfulness by
-`FiniteOrbitEmbedding.map_respects`, visibility and supports by commutation and bottom reflection,
+`RespectsSemanticsBelow.map_bottom_reflecting`, visibility and supports by commutation and bottom reflection,
 the relation by `cut_map`/`sel_map` — which needs commutation through `N` only when the cap is
 present, i.e. when `N` is among the present grades. -/
 theorem Admissible.map {j : ℕ} (hK : (effC J j).2 ≤ K) (h1 : 1 ≤ K)
     (hbot : ∀ x, σ x = ⊥ → x = ⊥) {st : R.State j} (hst : R.Admissible st) :
     R.Admissible (mapState σ st) where
-  u_respects := FiniteOrbitEmbedding.map_respects hst.u_respects
+  u_respects := RespectsSemanticsBelow.map_bottom_reflecting hst.u_respects
     (fun d => d.2.2.trans ((R.effP_snd_le_effC j).trans hK)) hσ hbot
-  v_respects := FiniteOrbitEmbedding.map_respects hst.v_respects (fun d => d.2.2.trans hK) hσ hbot
+  v_respects := RespectsSemanticsBelow.map_bottom_reflecting hst.v_respects (fun d => d.2.2.trans hK) hσ hbot
   face a h := congrArg σ (hst.face a h)
   gate_vis := selfVis_map hσ h1 hst.gate_vis
   shadowP_vis d := selfVis_map hσ h1 (hst.shadowP_vis d)
@@ -316,7 +216,7 @@ theorem Admissible.map {j : ℕ} (hK : (effC J j).2 ≤ K) (h1 : 1 ≤ K)
   support hg hc := by
     obtain ⟨href, hsupp⟩ := hst.support ((map_ne_bot_iff hσ hbot _).mp hg)
       ((map_ne_bot_iff hσ hbot _).mp hc)
-    exact ⟨fun i => (map_ne_bot_iff hσ hbot _).mpr (href i),
+    exact ⟨by tauto,
       fun d => (map_ne_bot_iff hσ hbot _).trans (hsupp d)⟩
   relation hj hg hc d := by
     have hN : N ≤ K := (le_min hj R.N_le).trans hK

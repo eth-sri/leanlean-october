@@ -11,25 +11,12 @@ public import VaughtConjecture.Knight.TopGradeTerminalCounting
 public import VaughtConjecture.Knight.BlockSuccessor
 public import VaughtConjecture.Knight.GrowthProlongationInterface
 
-/-! # Constructed terminal countability, before the spectrum applications
-
-Non-hollow growth prolongs; hollow growth models compare. Together with the
-top-grade count of `TopGradeTerminalCounting` (rigid cores, eventual top grade,
-hollow growth), these give countable terminal fibres. The count consumes the
-coinitial top-grade tail directly; it does not pass through characteristic.
-Neither cofinal high-stage existence nor an exact-cardinality conclusion is an
-input. Both cardinality and expansion-domain thinness consume this producer.
-
-The historical namespace and theorem names are retained. This separates the
-producer from the cardinality application, not from all rank-related imports
-inside the existing classification infrastructure.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ConstructedSpectrumEndpoint
+
 open TypeTower KnightRealization
+
 universe w
 
 /-- The constructed non-hollow growth prolongation producer at every block stage. -/

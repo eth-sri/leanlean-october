@@ -7,15 +7,10 @@ module
 
 public import VaughtConjecture.Knight.TerminalBase
 
-/-! # The neutral terminal-fibre countability interface
-
-The upper-bound target, independent of any particular counting producer or
-cardinal/perfect-set application. The original `FinalHandoff` import reexports it.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
+
 open Cardinal
 
 /-- **Neutral per-rank fibre countability** — the actual upper-bound output.  Both the

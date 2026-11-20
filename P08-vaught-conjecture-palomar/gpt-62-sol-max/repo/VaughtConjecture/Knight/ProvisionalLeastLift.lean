@@ -8,25 +8,12 @@ module
 public import VaughtConjecture.Knight.ProvisionalLift
 public import VaughtConjecture.Knight.FiniteBandReadback
 
-/-! # The provisional vector is the least lawful lift
-
-Finite band readback identifies every competing value below the reduct's top-grade
-threshold. Above that threshold the provisional bound gives leastness. The minimum
-is attained simultaneously by the lawful provisional lift on the unchanged scheme.
-
-These are finite-type statements, with no model or receiving hypothesis. The finite
-supplier excludes the `ExpansionUniqueness` and `ProvisionalRatchet` import
-cones. Model definitions remain upstream through `Terminal`. No closure under
-pointwise minima is asserted.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.StageType
 
 open TypeTower Value ExtOrd
+
 open CellScheme.restrictFace (toCell)
 
 variable {α β : Ordinal.{0}} {n : ℕ}
@@ -47,9 +34,7 @@ theorem label_eq_provisional_or_threshold_le (hα : Order.IsSuccLimit α) (hαβ
           ((add_lt_add_iff_left α).mpr (Ordinal.natCast_lt_omega0 p.topGrade)))
       obtain ⟨i, hi⟩ := exists_nat_of_mem_band hge hlt
       have hiK : i < p.topGrade := by
-        have h := lt_of_not_ge hlarge
-        rw [hi, ofOrd_lt_ofOrd, add_lt_add_iff_left] at h
-        exact_mod_cast h
+        simp_all
       left
       exact hi.trans (isProvisionalValue_iff.mp
         (isProvisionalValue_band_of_expansion hα hαβ d hi hiK))
@@ -79,10 +64,7 @@ theorem provisional_le_of_lawful_lift (p : S α n) (hα : Order.IsSuccLimit α)
   let q : S β n := ⟨p.scheme, v, hbound, hlawful⟩
   have hred : reduceType hα hαβ q = p :=
     StageType.ext rfl (heq_of_eq (funext hreduce))
-  have he : (reduceType hα hαβ q).someProvisionalValue = p.someProvisionalValue :=
-    eq_of_heq (congr_arg_heq (fun t : S α n => t.someProvisionalValue) hred)
-  intro d
-  simpa only [he] using provisional_reduct_le_label hα hαβ q d
+  grind [provisional_reduct_le_label]
 
 /-- Restricting a larger provisional lift gives a lawful lift of the face.
 Leastness therefore proves provisional monotonicity without invoking the

@@ -7,40 +7,11 @@ module
 
 public import VaughtConjecture.Knight.RelativeLiftData
 
-/-! # The finite block-relabelling witness
-
-The reviewer's notes7 (`mixed_proper_top_charts.md` §6, 2026-09-19): the encoding
-`⊥ ↦ ⊥`, `μ + i ↦ λ_μ + i`, `⊤ ↦ h` of a candidate labelling by *source strips* must be a
-bounded replacement-commuting map, so that the encoded candidate is lawful on its unchanged
-rows (`map_respects_of_same_bottom_pattern`).
-
-A **block code** assigns to every block (limit part) `μ` either no target (`Λ μ = none`: a
-low block, sent to bottom) or a target strip `Λ μ = some λ`, monotonically, with the *listed*
-blocks — those carrying requests — sent strictly increasingly.  On a listed block the offset
-is kept up to `N`; on an unlisted block with a target the whole block is sent to `λ + N`, the
-supremum of the listed image, which keeps the map monotone across the gaps.  Top goes to a
-code `h` with finite part at least `R`, above every strip's `λ + N`.  The code commutes with
-replacement through grade `R` (`boundedMap_code`): the top code need only be `R`-visible, so
-the encoding is a grade-`R` witness, **not** a grade-`N` one — the candidate's grades must be
-at most `R` (`q ≤ R < N`).
-
-`BlockCode.ofFinset` builds a code from a finite set of listed blocks and a strip function
-strictly increasing on them: every block is sent to the strip of the largest listed block
-below it, and to nothing if there is none.
-
-The code reflects bottom exactly on the blocks with a target (`code_ofOrd_eq_bot_iff`); the
-candidate's values must avoid low blocks, which the requests arrange by listing every block
-occurring in the candidate.
-
-Construction-private (not root-exported). -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd SharpWitnessComposition
-
-/-! ## Limit arithmetic -/
 
 theorem limitPart_add_nat_of_limit {l : Ordinal.{0}} (hl : limitPart l = l) (n : ℕ) :
     limitPart (l + n) = l := by
@@ -55,13 +26,11 @@ theorem finitePart_add_nat_of_limit {l : Ordinal.{0}} (hl : limitPart l = l) (n 
 /-- Below a larger limit, a limit plus any natural stays below. -/
 theorem add_nat_lt_of_lt_limit {l l' : Ordinal.{0}} (hl : limitPart l = l)
     (hl' : limitPart l' = l') (h : l < l') (n : ℕ) : l + n < l' := by
-  have h1 : limitPart l < limitPart l' := by rw [hl, hl']; exact h
+  have h1 : limitPart l < limitPart l' := by simp_all
   have h2 := limitPart_add_nat_le_of_lt h1 (n + 1)
   rw [hl, hl'] at h2
   refine lt_of_lt_of_le ?_ h2
-  exact (add_lt_add_iff_left l).mpr (Nat.cast_lt.mpr (Nat.lt_succ_self n))
-
-/-! ## Block codes -/
+  simp
 
 /-- **A block code**: target strips for blocks, the listed blocks, and the top code's block. -/
 structure BlockCode where
@@ -95,16 +64,14 @@ noncomputable def off (a : Ordinal.{0}) : ℕ :=
   if B.listed (limitPart a) then min (finitePart a) B.N else B.N
 
 theorem off_le_N (a : Ordinal.{0}) : B.off a ≤ B.N := by
-  unfold off; split_ifs
-  · exact min_le_right _ _
-  · exact le_rfl
+  unfold off; aesop
 
 theorem off_of_listed {a : Ordinal.{0}} (h : B.listed (limitPart a)) :
     B.off a = min (finitePart a) B.N := by
-  unfold off; exact ite_eq_left h
+  unfold off; simp_all
 
 theorem off_of_not_listed {a : Ordinal.{0}} (h : ¬ B.listed (limitPart a)) : B.off a = B.N := by
-  unfold off; exact ite_eq_right h
+  unfold off; simp_all
 
 /-- The top code. -/
 noncomputable def topCode : ExtOrd := ofOrd B.htop
@@ -126,12 +93,12 @@ noncomputable def code (x : ExtOrd) : ExtOrd :=
 theorem code_ofOrd_of_none {a : Ordinal.{0}} (h : B.Λ (limitPart a) = none) :
     B.code (ofOrd a) = ⊥ := by
   change (match B.Λ (limitPart a) with | none => ⊥ | some l => ofOrd (l + B.off a)) = ⊥
-  rw [h]
+  simp_all
 
 theorem code_ofOrd_of_some {a l : Ordinal.{0}} (h : B.Λ (limitPart a) = some l) :
     B.code (ofOrd a) = ofOrd (l + B.off a) := by
   change (match B.Λ (limitPart a) with | none => ⊥ | some l => ofOrd (l + B.off a)) = _
-  rw [h]
+  simp_all
 
 /-- On a listed block with a target, a value with finite part at most `N` is sent to the
 same offset on the target strip. -/
@@ -145,27 +112,24 @@ theorem strip_le_topCode {μ l : Ordinal.{0}} (h : B.Λ μ = some l) {n : ℕ} (
     l + n ≤ B.htop :=
   (add_le_add_right (Nat.cast_le.mpr hn) _).trans (B.Λ_le μ l h)
 
-/-! ## Monotonicity -/
-
 theorem code_mono : Monotone B.code := by
   intro x y hxy
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [code_bot]; exact bot_le
-  · have : y = ⊤ := top_le_iff.mp hxy
-    rw [this]
+  · simp
+  · simp_all
   rcases ExtOrd.cases y with rfl | rfl | ⟨b, rfl⟩
-  · exact absurd (le_bot_iff.mp hxy) (ofOrd_ne_bot a)
+  · trivial
   · rw [code_top]
     rcases h : B.Λ (limitPart a) with _ | l
-    · rw [B.code_ofOrd_of_none h]; exact bot_le
+    · rw [B.code_ofOrd_of_none h]; simp
     · rw [B.code_ofOrd_of_some h, topCode, ofOrd_le_ofOrd]
       exact B.strip_le_topCode h (B.off_le_N a)
   rw [ofOrd_le_ofOrd] at hxy
   have hlp : limitPart a ≤ limitPart b := limitPart_mono hxy
   rcases ha : B.Λ (limitPart a) with _ | l
-  · rw [B.code_ofOrd_of_none ha]; exact bot_le
+  · rw [B.code_ofOrd_of_none ha]; simp
   rcases hb : B.Λ (limitPart b) with _ | l'
-  · exact absurd (B.low_down _ _ hlp hb) (by rw [ha]; exact Option.some_ne_none l)
+  · exact absurd (B.low_down _ _ hlp hb) (by simp_all)
   rw [B.code_ofOrd_of_some ha, B.code_ofOrd_of_some hb, ofOrd_le_ofOrd]
   have hll' : l ≤ l' := B.Λ_mono _ _ l l' hlp ha hb
   rcases hll'.lt_or_eq with hlt | heq
@@ -181,17 +145,12 @@ theorem code_mono : Monotone B.code := by
       exact B.off_le_N a
     · have hfp : finitePart a ≤ finitePart b := finitePart_le_of_le_of_limitPart_eq hxy heq
       unfold off
-      rw [heq]
-      split_ifs
-      · exact min_le_min_right _ hfp
-      · exact le_rfl
-
-/-! ## Commutation with replacement through grade `R` -/
+      aesop
 
 theorem code_comm (x : ExtOrd) (k i : ℕ) (hk : k ≤ B.R) (hi : i ≤ k) :
     B.code (extVisibilityReplace x k i) = extVisibilityReplace (B.code x) k i := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot, code_bot, extVisibilityReplace_bot]
+  · rfl
   · rw [extVisibilityReplace_top, code_top, topCode,
       extVisibilityReplace_of_le_finitePart (hk.trans B.R_le_htop)]
   by_cases hfp : k ≤ finitePart a
@@ -209,23 +168,23 @@ theorem code_comm (x : ExtOrd) (k i : ℕ) (hk : k ≤ B.R) (hi : i ≤ k) :
     rw [extVisibilityReplace_of_finitePart_lt hfp']
     rcases h : B.Λ (limitPart a) with _ | l
     · have h' : B.Λ (limitPart (limitPart a + i)) = none := by
-        rw [limitPart_limitPart_add_nat]; exact h
+        rw [limitPart_limitPart_add_nat]; assumption
       rw [B.code_ofOrd_of_none h, B.code_ofOrd_of_none h', extVisibilityReplace_bot]
     · have h' : B.Λ (limitPart (limitPart a + i)) = some l := by
-        rw [limitPart_limitPart_add_nat]; exact h
+        rw [limitPart_limitPart_add_nat]; assumption
       rw [B.code_ofOrd_of_some h, B.code_ofOrd_of_some h']
       have hlim := B.Λ_limit _ l h
       by_cases hl : B.listed (limitPart a)
       · have hl' : B.listed (limitPart (limitPart a + i)) := by
-          rw [limitPart_limitPart_add_nat]; exact hl
+          rw [limitPart_limitPart_add_nat]; assumption
         rw [B.off_of_listed hl, B.off_of_listed hl', finitePart_limitPart_add_nat,
           min_eq_left (hfp'.le.trans (hk.trans B.R_lt_N.le)),
           min_eq_left ((hi.trans hk).trans B.R_lt_N.le),
           extVisibilityReplace_of_finitePart_lt
-            (by rw [finitePart_add_nat_of_limit hlim]; exact hfp'),
+            (by rw [finitePart_add_nat_of_limit hlim]; assumption),
           limitPart_add_nat_of_limit hlim]
       · have hl' : ¬ B.listed (limitPart (limitPart a + i)) := by
-          rw [limitPart_limitPart_add_nat]; exact hl
+          rw [limitPart_limitPart_add_nat]; assumption
         rw [B.off_of_not_listed hl, B.off_of_not_listed hl',
           extVisibilityReplace_of_le_finitePart
             (by rw [finitePart_add_nat_of_limit hlim]; exact hk.trans B.R_lt_N.le)]
@@ -235,8 +194,6 @@ theorem boundedMap_code : BoundedMap B.R B.code where
   bot := B.code_bot
   mono := B.code_mono
   comm := B.code_comm
-
-/-! ## Construction from a finite set of listed blocks -/
 
 section OfFinset
 
@@ -253,15 +210,13 @@ open Classical in
 theorem targetOf_eq_none_iff (μ : Ordinal.{0}) :
     targetOf S strip μ = none ↔ ¬ (S.filter fun μ' => μ' ≤ μ).Nonempty := by
   unfold targetOf
-  split_ifs with h
-  · simp [h]
-  · simp [h]
+  simp
 
 open Classical in
 theorem targetOf_eq_some {μ : Ordinal.{0}} (h : (S.filter fun μ' => μ' ≤ μ).Nonempty) :
     targetOf S strip μ = some (strip ((S.filter fun μ' => μ' ≤ μ).max' h)) := by
   unfold targetOf
-  rw [dite_eq_left h]
+  simp_all
 
 open Classical in
 /-- The largest listed block at or below `μ` is listed, at most `μ`, and above every listed
@@ -296,7 +251,7 @@ noncomputable def ofFinset (hlim : ∀ μ ∈ S, limitPart (strip μ) = strip μ
       rw [← hl]
       exact hlim _ (max'_filter_spec S h).1
     · rw [(targetOf_eq_none_iff S strip μ).mpr h] at hl
-      exact absurd hl (Option.some_ne_none l).symm
+      trivial
   Λ_le := by
     intro μ l hl
     by_cases h : (S.filter fun μ' => μ' ≤ μ).Nonempty
@@ -304,48 +259,42 @@ noncomputable def ofFinset (hlim : ∀ μ ∈ S, limitPart (strip μ) = strip μ
       rw [← hl]
       exact hle _ (max'_filter_spec S h).1
     · rw [(targetOf_eq_none_iff S strip μ).mpr h] at hl
-      exact absurd hl (Option.some_ne_none l).symm
+      trivial
   low_down := by
     intro μ μ' hμμ' hnone
     rw [targetOf_eq_none_iff] at hnone ⊢
     intro ⟨ν, hν⟩
     rw [Finset.mem_filter] at hν
-    exact hnone ⟨ν, Finset.mem_filter.mpr ⟨hν.1, hν.2.trans hμμ'⟩⟩
+    exact hnone ⟨ν, by grind⟩
   Λ_mono := by
     intro μ μ' l l' hμμ' hl hl'
     by_cases h : (S.filter fun ν => ν ≤ μ).Nonempty
     swap
     · rw [(targetOf_eq_none_iff S strip μ).mpr h] at hl
-      exact absurd hl (Option.some_ne_none l).symm
+      trivial
     by_cases h' : (S.filter fun ν => ν ≤ μ').Nonempty
     swap
     · rw [(targetOf_eq_none_iff S strip μ').mpr h'] at hl'
-      exact absurd hl' (Option.some_ne_none l').symm
+      trivial
     rw [targetOf_eq_some S strip h, Option.some.injEq] at hl
     rw [targetOf_eq_some S strip h', Option.some.injEq] at hl'
     rw [← hl, ← hl']
     obtain ⟨hm1, hm2, -⟩ := max'_filter_spec S h
     obtain ⟨hm1', -, hm3'⟩ := max'_filter_spec S h'
-    have hle' := hm3' _ hm1 (hm2.trans hμμ')
-    rcases hle'.lt_or_eq with hlt | heq
-    · exact (hstrict _ hm1 _ hm1' hlt).le
-    · rw [heq]
+    grind
   Λ_strict := by
     intro μ μ' l l' hμμ' hμ'S hl hl'
     by_cases h : (S.filter fun ν => ν ≤ μ).Nonempty
     swap
     · rw [(targetOf_eq_none_iff S strip μ).mpr h] at hl
-      exact absurd hl (Option.some_ne_none l).symm
+      trivial
     have h' : (S.filter fun ν => ν ≤ μ').Nonempty := ⟨μ', Finset.mem_filter.mpr ⟨hμ'S, le_rfl⟩⟩
     rw [targetOf_eq_some S strip h, Option.some.injEq] at hl
     rw [targetOf_eq_some S strip h', Option.some.injEq] at hl'
     rw [← hl, ← hl']
     obtain ⟨hm1, hm2, -⟩ := max'_filter_spec S h
     obtain ⟨hm1', -, hm3'⟩ := max'_filter_spec S h'
-    have hmax' : (S.filter fun ν => ν ≤ μ').max' h' = μ' :=
-      le_antisymm (max'_filter_spec S h').2.1 (hm3' _ hμ'S le_rfl)
-    rw [hmax']
-    exact hstrict _ hm1 _ hμ'S (hm2.trans_lt hμμ')
+    grind
 
 /-- A listed block's target is its own strip. -/
 theorem ofFinset_Λ_listed (hlim : ∀ μ ∈ S, limitPart (strip μ) = strip μ)

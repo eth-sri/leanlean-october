@@ -8,18 +8,6 @@ module
 public import VaughtConjecture.Knight.SharpWitnessComposition
 public import VaughtConjecture.Knight.FiniteFloorCompletion
 
-/-! # Finite floor checks for composition repair
-
-Bounded commutation plus a finite block-floor condition constructs a full faithful
-witness on any finite source inventory. The witness is the lower envelope of the
-completed strip table. This includes source offsets above the controller grade,
-where grade-short composition does not apply.
-
-The floor condition is sufficient for this particular table, not a necessary
-condition for every possible interpolating witness. Failing it is not a semantic
-impossibility certificate. No respect or existence of an extension is assumed.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.SharpWitnessComposition
@@ -36,8 +24,7 @@ include hf
 theorem bot_on_strip {a : Ordinal.{0}} (ha : f (ofOrd (limitPart a)) = ⊥)
     {i : ℕ} (hi : i ≤ m) : f (ofOrd (limitPart a + i)) = ⊥ := by
   by_cases hm : m = 0
-  · have hi0 : i = 0 := Nat.eq_zero_of_le_zero (hm ▸ hi)
-    simpa only [hi0, Nat.cast_zero, add_zero] using ha
+  · simp_all
   have he := hf.comm (ofOrd (limitPart a)) m i le_rfl hi
   rw [extVisibilityReplace_of_finitePart_lt (by
     rw [finitePart_limitPart]; exact Nat.pos_of_ne_zero hm), limitPart_idem,
@@ -70,7 +57,7 @@ theorem finite_witness (s : Finset ExtOrd)
   have hsupport : FloorSupport t f := by
     intro z hz _ hzb
     exact ⟨blockFloor z, stripDomain_floor_mem hz, le_rfl,
-      fun h => hzb (hfloor z hz h)⟩
+      by tauto⟩
   have horbit : FiniteShifterWeakOrbit t f (gTop m) := by
     intro x hx k i hi hact
     by_cases hk : k ≤ m
@@ -118,13 +105,10 @@ theorem exists_localCharts (hr : RespectsSemanticsBelow sem BJ r) :
   have h (c : D.below BJ) : ∃ σ, Witness (gTop (D.grade c.1)) σ ∧
       ∀ d : D.below (D.cell c.1),
         σ (sem.E c.1 d) = min (r (CellScheme.below.incl c d)) (r c) := by
-    obtain ⟨σ, hw, _, he⟩ := exists_bounded_exact_capped_witness
-      (c := (⟨c.1, GradedLe.refl _⟩ : D.below (D.cell c.1)))
-      (p := fun d => r (CellScheme.below.incl c d))
-      (fun d => d.2.2) (hr.orderly c).symm (hr.locality c)
-    exact ⟨σ, hw, he⟩
+    obtain ⟨σ, hw, -, he⟩ := hr.rowWitness c
+    tauto
   choose σ hw he using h
-  exact ⟨⟨σ, hw, he⟩⟩
+  solve_by_elim
 
 end Scheme
 

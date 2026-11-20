@@ -1,4 +1,0 @@
-module
-public import VaughtConjecture.Knight.FreshSourceSlots
-public import VaughtConjecture.Knight.DonorSourceRefinement
-public import VaughtConjecture.Knight.GradeOneInputEncoding

@@ -9,19 +9,12 @@ public import VaughtConjecture.Knight.LowOnlyFibres
 public import VaughtConjecture.Knight.CappedDonorNormalization
 public import VaughtConjecture.Knight.CanonicalPairedProfiles
 
-/-! # Current-grade normalization of the complete gate-free LOW inventory
-
-The inventory contains both complete original vectors and the cutoff, including
-future occurrences. Common-root copies are equal but need not be quotiented.
-Closure uses bottom-reflecting transport on long original rows. This is not
-upward admission, and no physical auxiliary receipts are asserted here.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.LowOnly
 
 open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
+
 open SharpWitnessComposition
 
 noncomputable section
@@ -41,31 +34,20 @@ def profile (S : State P C) : Field P C → ExtOrd
 def ofProfile (a : Field P C → ExtOrd) : State P C :=
   ⟨fun d => a (.inl d), fun d => a (.inr (.inl d)), a (.inr (.inr ()))⟩
 
-@[simp] theorem ofProfile_profile (S : State P C) : ofProfile S.profile = S := rfl
-
 @[simp] theorem profile_ofProfile (a : Field P C → ExtOrd) :
-    (ofProfile a).profile = a := by
-  funext f
-  rcases f with d | d | ⟨⟩ <;> rfl
-
-theorem profile_injective : Function.Injective (profile (P := P) (C := C)) := by
-  intro S T h
-  simpa only [ofProfile_profile] using congrArg ofProfile h
+    (ofProfile a).profile = a := by aesop
 
 def map (σ : ExtOrd → ExtOrd) (S : State P C) : State P C :=
   ⟨fun d => σ (S.u d), fun d => σ (S.v d), σ S.b⟩
 
 theorem profile_map (σ : ExtOrd → ExtOrd) (S : State P C) (d : Field P C) :
-    (S.map σ).profile d = σ (S.profile d) := by
-  rcases d with d | d | d <;> rfl
+    (S.map σ).profile d = σ (S.profile d) := by aesop
 
 theorem capEq_iff_profile {S S' : State P C} {γ : ExtOrd} :
     S.CapEq γ S' ↔ ∀ d, min (S'.profile d) γ = min (S.profile d) γ := by
   constructor
   · rintro ⟨hu, hv, hb⟩ (d | d | d)
-    · exact hu d
-    · exact hv d
-    · exact hb
+    all_goals tauto
   · intro h
     exact ⟨fun d => h (.inl d), fun d => h (.inr (.inl d)), h (.inr (.inr ()))⟩
 
@@ -97,9 +79,9 @@ theorem Admissible.map {j : ℕ} {S : State P C} (hS : F.Admissible j S)
     {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop j) σ) (hj : 1 ≤ j)
     (hbot : ∀ x, σ x = ⊥ → x = ⊥) : F.Admissible j (S.map σ) where
   lawfulP := map_respects_of_bottom_reflecting hS.lawfulP
-    (fun d => d.2.2.trans (min_le_left _ _)) (boundedMap_of_witness hσ) hbot
+    (fun d => d.2.2.trans (min_le_left _ _)) (hσ.bounded) hbot
   lawfulC := map_respects_of_bottom_reflecting hS.lawfulC
-    (fun d => d.2.2.trans (min_le_left _ _)) (boundedMap_of_witness hσ) hbot
+    (fun d => d.2.2.trans (min_le_left _ _)) (hσ.bounded) hbot
   shared a := congrArg σ (hS.shared a)
   futureP d hd := selfVis_map hσ hj (hS.futureP d hd)
   futureC d hd := selfVis_map hσ hj (hS.futureC d hd)
@@ -126,5 +108,7 @@ theorem normalize_inventory (j : ℕ) {S : State P C} (hp : ∀ d, S.profile d �
   exact CanonicalPairedProfiles.normalize_mem_inventory _ _ hp
 
 end Family
+
 end
+
 end VaughtConjecture.Knight.LowOnly

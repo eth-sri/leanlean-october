@@ -5,28 +5,44 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReceivingCatalogueAdmission
-
-/-! # Rank preservation for downward catalogue normalization
-
-The finite rank table depends on order, equality and bottom, not the numerical
-choice of codes. A monotone encoder with a monotone left inverse on the tracked
-field values preserves every field rank. Paired-slot normalization has such a
-decoder for proper profiles, including profiles invisible at the lower grade.
-
-Consequently each existing grade-two controller has an actual grade-one
-catalogue image with identical ranks and identical lower ladder readings.
-There is no converse: a newly repaired grade-one source is not thereby an
-installed grade-two controller. No carrier or row is changed here.
--/
+public import VaughtConjecture.Knight.CappedDonorAdmission
+public import VaughtConjecture.Knight.PrivateRowFactorization
+public import VaughtConjecture.Knight.CappedDonorLowHighNormalization
+public import VaughtConjecture.Knight.CanonicalPairedInverse
+public import VaughtConjecture.Knight.PairedSlotComparison
+public import VaughtConjecture.Knight.OrbitPrefixSupport
+public import VaughtConjecture.Knight.LadderScalarRendering
+public import VaughtConjecture.Knight.SourcePrefixRows
+public import VaughtConjecture.Knight.AmbientGradeCharts
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingCatalogueRanks
+
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref
+
 open LadderScalarRendering
+
 noncomputable section
+
+/-- A bottom-preserving round trip induces an injection of occupied values. -/
+theorem values_transport {X : Type*} [Fintype X] (p : X → ExtOrd) {f g : ExtOrd → ExtOrd}
+    (hf : f ⊥ = ⊥) (hg : g ⊥ = ⊥) (hinv : ∀ d, g (f (p d)) = p d) :
+    values (f ∘ p) = (values p).image f ∧ Set.InjOn f (values p : Set ExtOrd) := by
+  have hb (d : X) : f (p d) ≠ ⊥ ↔ p d ≠ ⊥ :=
+    ⟨fun h hd => h (hd ▸ hf), fun h hd => h ((hinv d).symm.trans ((congrArg g hd).trans hg))⟩
+  constructor
+  · ext y
+    simp only [Finset.mem_image, mem_values, Function.comp_apply]
+    constructor
+    · rintro ⟨hy, d, rfl⟩
+      exact ⟨p d, ⟨(hb d).mp hy, d, rfl⟩, rfl⟩
+    · rintro ⟨_, ⟨hx, d, rfl⟩, rfl⟩
+      exact ⟨(hb d).mpr hx, d, rfl⟩
+  · intro x hx y hy h
+    obtain ⟨_, d, rfl⟩ := mem_values.mp hx
+    obtain ⟨_, e, rfl⟩ := mem_values.mp hy
+    rw [← hinv d, ← hinv e, h]
 
 /-- A tracked monotone encoding with a monotone inverse preserves finite ranks. -/
 theorem fieldRank_of_leftInverse {X : Type*} [Fintype X] (p : X → ExtOrd)
@@ -35,35 +51,16 @@ theorem fieldRank_of_leftInverse {X : Type*} [Fintype X] (p : X → ExtOrd)
     (hinv : ∀ d, g (f (p d)) = p d) (d : X) :
     fieldRank (fun e => f (p e)) d = fieldRank p d := by
   classical
-  have hpos (e : X) : f (p e) ≠ ⊥ ↔ p e ≠ ⊥ := by
-    constructor
-    · intro h he
-      exact h (he ▸ hfbot)
-    · intro h he
-      exact h ((hinv e).symm.trans ((congrArg g he).trans hgbot))
-  have he : (values (fun e => f (p e))).filter (· ≤ f (p d)) =
-      ((values p).filter (· ≤ p d)).image f := by
-    ext y
-    constructor
-    · intro hy
-      obtain ⟨hyval, hyle⟩ := Finset.mem_filter.mp hy
-      obtain ⟨hypos, e, rfl⟩ := mem_values.mp hyval
-      refine Finset.mem_image.mpr ⟨p e,
-        Finset.mem_filter.mpr ⟨mem_values.mpr ⟨(hpos e).mp hypos, e, rfl⟩, ?_⟩, rfl⟩
-      simpa only [hinv] using hg hyle
-    · intro hy
-      obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hy
-      obtain ⟨hxval, hxle⟩ := Finset.mem_filter.mp hx
-      obtain ⟨hxpos, e, rfl⟩ := mem_values.mp hxval
-      exact Finset.mem_filter.mpr ⟨mem_values.mpr ⟨(hpos e).mpr hxpos, e, rfl⟩, hf hxle⟩
-  change ((values (fun e => f (p e))).filter (· ≤ f (p d))).card =
-    ((values p).filter (· ≤ p d)).card
-  rw [he]
-  apply Finset.card_image_of_injOn
-  intro x hx y hy hxy
-  obtain ⟨_, e, rfl⟩ := mem_values.mp (Finset.mem_filter.mp hx).1
-  obtain ⟨_, e', rfl⟩ := mem_values.mp (Finset.mem_filter.mp hy).1
-  simpa only [hinv] using congrArg g hxy
+  obtain ⟨he, hinj⟩ := values_transport p hfbot hgbot hinv
+  change fieldRank (f ∘ p) d = fieldRank p d
+  unfold fieldRank LadderScalarRendering.rank
+  rw [he, Finset.filter_image, Finset.card_image_of_injOn
+    (hinj.mono (Finset.coe_subset.mpr (Finset.filter_subset ..)))]
+  congr 1
+  apply Finset.filter_congr
+  rintro x hx
+  obtain ⟨_, e, rfl⟩ := mem_values.mp hx
+  exact ⟨fun h => by simpa only [Function.comp_apply, hinv] using hg h, fun h => hf h⟩
 
 /-- Paired-slot normalization preserves all ranks, not just the bottom pattern. -/
 theorem fieldRank_normalize {X : Type*} [Fintype X] (j : ℕ) (p : X → ExtOrd)
@@ -79,11 +76,8 @@ theorem fieldRank_normalize {X : Type*} [Fintype X] (j : ℕ) (p : X → ExtOrd)
     rw [PairedSlotIncoming.encoder_profile]
     exact PairedSlotDecoder.decode_normalize (by simp) (selfVis_bot j) hp e
   have h := fieldRank_of_leftInverse p hf.mono hg.mono hf.bot hg.bot hinv d
-  simpa only [f, PairedSlotIncoming.encoder_profile] using h
-
-variable {I : Type*} [Fintype I] {nP N J K : ℕ}
-  {P : SemScheme (nP + 1)} {C : SemScheme J} {R : Ref I nP N J P C}
-  (L : R.LowRef K)
+  simpa [f, PairedSlotIncoming.encoder_profile] using h
 
 end
+
 end VaughtConjecture.Knight.ReceivingCatalogueRanks

@@ -8,28 +8,7 @@ module
 public import Mathlib.Data.ENat.Lattice
 public import VaughtConjecture.Knight.ProvisionalOffset
 
-/-! # Stable values as suprema in the completed band
-
-Fix an actual labelled cover `x` and a source-top cell `Ξ`.  Along the rooted covers of `x` the
-transported provisional value is `α + j` with a monotone natural offset `j`
-(`RootedCover.offset`).  This module identifies the stable value with the supremum of those
-offsets, taken in the **completed natural-number band** `ℕ∞` and then decoded:
-
-  `stableValue x Ξ = bandValue α (⨆ y, offset Ξ y)`   (`stableValue_eq_bandValue_iSup`),
-
-where `bandValue α` sends `k : ℕ` to `α + k` and `⊤` to `⊤`.  The definition of `stableValue`
-is unchanged; the identification is a consequence of the offset dichotomy
-(`RootedCover.stableValue_dichotomy`) and monotonicity.  A finite supremum is the stable offset
-(`iSup_offset_eq_natCast_iff`), and an infinite supremum is stable top
-(`iSup_offset_eq_top_iff`).
-
-The supremum is taken in `ℕ∞`, never in the ordinal label space: there `⨆ n, α + n = α + ω`,
-which is a proper label, not `⊤`.  Non-top source cells keep their literal labels
-(`stableValue_of_ne_top`) and have no offset. -/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 
@@ -76,12 +55,12 @@ theorem stableValue_eq_bandValue_iSup :
       · obtain ⟨z, hyz, hiz⟩ := exists_ge_ge y i
         exact_mod_cast (offset_mono Xi htop hyz).trans (hi z hiz).le
       · exact (hi i le_rfl).symm ▸ le_iSup (fun y => (offset Xi htop y : ℕ∞)) i
-    rw [hsup, bandValue_natCast, hval]
+    simp_all
   · have hsup : (⨆ y, (offset Xi htop y : ℕ∞)) = ⊤ := by
       refine ENat.eq_top_iff_forall_ge.mpr fun k => ?_
       obtain ⟨y, hy⟩ := (ht.eventually (eventually_ge_atTop k)).exists
       exact (Nat.cast_le.mpr hy).trans (le_iSup (fun y => (offset Xi htop y : ℕ∞)) y)
-    rw [hsup, bandValue_top, hsv]
+    simp_all
 
 end RootedCover
 

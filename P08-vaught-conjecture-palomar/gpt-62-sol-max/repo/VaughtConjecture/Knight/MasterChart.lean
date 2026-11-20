@@ -8,18 +8,14 @@ module
 public import VaughtConjecture.Knight.FinitePartialState
 public import VaughtConjecture.TypeTower.FiniteMaster
 
-/-! # Literal master-chart normal form
-
-An exactly consistent partial realization supported on an evaluated master is
-literally its face diagram, including undefined invisible faces. No saturation,
-modelhood or nonempty-master assumption is involved.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.FixedHeight
+
 open TypeTower KnightRealization
+
 universe w
+
 variable {β : LimitStage} {M : Type w} {N : ℕ}
 
 noncomputable def masterChart (w : Fin N ↪ M) (P : S β.1 N) : KnightRealization β M :=

@@ -7,31 +7,12 @@ module
 
 public import VaughtConjecture.Knight.CappedDonorReadback
 
-/-! # One-chart capped readback
-
-The readback calculation of the upper-only route (newapproach16 new29 §3, new31 §5): from the
-**ordinary** numerical relation of an admissible source at a cutoff `j ≥ N`, one normalized
-witness `σ` through `N` that reads the source's donor section as a section `u` capped at a height
-`m ≥ H`, the actual cap and reference labels literally, and a positive gate, conclude the
-**capped** donor equality
-
-  `u d ∧ β = p d ∧ β`,  `β = R.cut R.vactL`.
-
-No LOW clause, no low reference, no extracted two-threshold state, no synchronization and no
-bottom reflection of `σ` are used, and the source's anchor is arbitrary.  For a donor top this
-gives `u d ≥ β`, not literal top — exactly the distinction that lets LOW be omitted; literal
-donor tops remain `LowRef.readback_of_actualFace`'s business.
-
-* `gate_of_trigger`: one actual row inequality `x ≤ st.gate` with `σ x ≠ ⊥` activates the source.
-* `capC_ne_bot_of_read`: the source cap is positive because its image is the actual cap.
-* `capped_readback`: the calculation, through `cut_map`/`sel_map`, `cut_congr`/`sel_congr` and
-  `sel_actual`. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight.CappedDonor.Ref
 
 open Transform Value ExtOrd
+
 noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
@@ -69,7 +50,8 @@ theorem capped_readback {j : ℕ} (hj : N ≤ j) {st : R.State j} (hst : R.Admis
   have h := congrArg σ hrel
   rw [hσ.mono.map_min, hu, hcut, hsel] at h
   have hβm : R.cut R.vactL ≤ m := (cut_actual_lt_cap (R := R)).le.trans hm
-  rwa [min_assoc, min_eq_right hβm] at h
+  grind
 
 end
+
 end VaughtConjecture.Knight.CappedDonor.Ref

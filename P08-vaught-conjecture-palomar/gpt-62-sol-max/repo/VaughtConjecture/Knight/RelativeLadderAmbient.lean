@@ -8,21 +8,16 @@ module
 public import VaughtConjecture.Knight.RelativeLadderLayer
 public import VaughtConjecture.Knight.AmbientGradeCharts
 
-/-! # Actual serving leaves for arbitrary padded-ladder ambients
-
-Availability first supplies a maximal owner. Its actual row identifies its
-diagonal with the same-source ceiling leaf, so locality promotes that leaf to
-the maximum. Its bounded witness reads every actual grade-one coordinate. This
-does not assume synchronization, a selected ambient, or bountifulness.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
+
 open Transform Value ExtOrd
+
 noncomputable section
+
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype X] [Fintype Q] {A : Finset ι}
+
 variable (D : CellScheme A) (sem : Semantics D) (hA : 0 < A.card)
   (field : Cell D → X) (fields : Q → X → ExtOrd) (hp : ∀ d, D.scope d ≠ A)
 
@@ -45,14 +40,14 @@ theorem exists_maximal_leaf (seed : Q)
     rcases cell_cases D hA chart.owner.1 with ⟨c, hc⟩ | hv
     · have he := chart.index
       rw [hc, old_index] at he
-      exact (hp c (congrArg Prod.fst he)).elim
+      aesop
     · exact hv
   have hr (d : (carrier D hA (X := X) (Q := Q)).below (A, 1)) :
       chart.shift (ladderRow D hA field fields v d.1) = q d := by
     have hh := chart.read_grade d (hg d)
     have he : (rows D sem hA field fields hp).E chart.owner.1
         (chart.occurrence d (hg d).le) = ladderRow D hA field fields v d.1 := by
-      simp only [rows, hv, view, added, SourceLayerCarrier.toOcc_toCell,
+      simp [rows, hv, view, added, SourceLayerCarrier.toOcc_toCell,
         AmbientGradeCharts.Chart.occurrence]
     rwa [he] at hh
   let a := SupportLadderRows.parent v
@@ -65,7 +60,7 @@ theorem exists_maximal_leaf (seed : Q)
     exact SupportLadderRows.row_parent (fun a x => (rank_bound fields a x).le)
       (Nat.succ_pos _) v
   have hqeq : q (leafOccurrence D hA a) = q chart.owner := by
-    rw [← hr, ← hr, he]
+    grind
   exact ⟨a, fun d => (chart.dominates d (hg d)).trans_eq hqeq.symm⟩
 
 /-- The actual leaf's witness reads the entire ambient exactly, not only its
@@ -79,12 +74,9 @@ theorem exists_leaf_chart (seed : Q)
         (SupportLadderRows.leaf (Nat.succ_pos _) a) d.1) = q d := by
   obtain ⟨a, hmax⟩ := exists_maximal_leaf D sem hA field fields hp seed hq
   let c := leafOccurrence (X := X) D hA a
-  let self : (carrier D hA (X := X) (Q := Q)).below
-      ((carrier D hA).cell c.1) := ⟨c.1, GradedLe.refl _⟩
   have hg : (carrier D hA (X := X) (Q := Q)).grade c.1 = 1 :=
     congrArg Prod.snd (added_index D hA _)
-  obtain ⟨τ, hτ, hb, hr⟩ := exists_bounded_exact_capped_witness
-    (c := self) (fun d => d.2.2) (hq.orderly c).symm (hq.locality c)
+  obtain ⟨τ, hτ, hb, hr⟩ := hq.rowWitness c
   refine ⟨a, τ, hg ▸ hτ, hb, ?_⟩
   intro d
   let e : (carrier D hA (X := X) (Q := Q)).below
@@ -109,7 +101,8 @@ theorem exists_capped_leaf_chart (seed : Q)
         τ (ladderRow D hA field fields (SupportLadderRows.leaf (Nat.succ_pos _) a) d.1) =
           min (q d) γ := by
   obtain ⟨a, τ, hw, hb, hr⟩ := exists_leaf_chart D sem hA field fields hp seed (hq.cap hγ)
-  exact ⟨a, τ, hw, fun x => (hb x).trans (min_le_right _ _), hr⟩
+  exact ⟨a, τ, hw, by simp_all, hr⟩
 
 end
+
 end VaughtConjecture.Knight.RelativeLadderLayer

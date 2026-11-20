@@ -7,16 +7,7 @@ module
 
 public import VaughtConjecture.Knight.Cell
 
-/-! # Uniform geometry of a binary support-plan step
-
-Every proper graded pair belongs entirely to one inherited face. The proof
-uses the common restriction, not a finite enumeration of scopes or grades.
-Every nontrivial support plan admits the input data used here.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.AmalgamatedBoundaryPlan
 
@@ -62,14 +53,11 @@ private theorem restrict_union {A B C : Finset ι} {Q R : Finset (Finset ι)}
           (Finset.subset_inter hSB (hR.subset_of_mem hS))⟩
       rw [← hcommon] at hc
       exact (Finset.mem_inter.mp hc).1
-    · exact False.elim (hne hSB)
+    lia
   · intro hS
     exact ⟨Or.inl (Or.inl hS), hQ.subset_of_mem hS⟩
 
-theorem erased_inter : A.erase s.a ∩ A.erase s.b = (A.erase s.a).erase s.b := by
-  ext x
-  simp only [Finset.mem_inter, Finset.mem_erase]
-  tauto
+theorem erased_inter : A.erase s.a ∩ A.erase s.b = (A.erase s.a).erase s.b := by grind
 
 theorem restrict_left : Plan.restrictPlan s.plan (A.erase s.a) = s.left := by
   apply restrict_union s.left_plan s.right_plan
@@ -86,36 +74,13 @@ theorem restrict_right : Plan.restrictPlan s.plan (A.erase s.b) = s.right := by
       Plan.restrictPlan s.left (A.erase s.b ∩ A.erase s.a) := by
     rw [Finset.inter_comm, erased_inter]
     exact s.common.symm
-  simpa only [Step.plan, Finset.union_comm s.right s.left] using h hc
+  grind +locals
 
-theorem proper_index_cover {BJ : Finset ι × ℕ}
-    (hBJ : BJ ∈ Plan.gradedPlan s.plan) (hB : BJ.1 ≠ A) :
-    BJ ∈ Plan.gradedPlan s.left ∨ BJ ∈ Plan.gradedPlan s.right := by
-  obtain ⟨hmem, hpos, hcard⟩ := Plan.mem_gradedPlan.mp hBJ
-  rcases Finset.mem_union.mp hmem with hmem | hmem
-  · rcases Finset.mem_union.mp hmem with hmem | hmem
-    · exact Or.inl (Plan.mem_gradedPlan.mpr ⟨hmem, hpos, hcard⟩)
-    · exact Or.inr (Plan.mem_gradedPlan.mpr ⟨hmem, hpos, hcard⟩)
-  · exact False.elim (hB (Finset.mem_singleton.mp hmem))
-
-/-- A proper target and every graded source below it lie in the same old face. -/
-theorem proper_pair_cover {CI BJ : Finset ι × ℕ}
-    (hCI : CI ∈ Plan.gradedPlan s.plan) (hBJ : BJ ∈ Plan.gradedPlan s.plan)
-    (h : GradedLe CI BJ) (hB : BJ.1 ≠ A) :
-    (CI ∈ Plan.gradedPlan s.left ∧ BJ ∈ Plan.gradedPlan s.left) ∨
-      (CI ∈ Plan.gradedPlan s.right ∧ BJ ∈ Plan.gradedPlan s.right) := by
-  have hC := Plan.mem_gradedPlan.mp hCI
-  rcases proper_index_cover s hBJ hB with hl | hr
-  · refine Or.inl ⟨Plan.mem_gradedPlan.mpr ⟨?_, hC.2⟩, hl⟩
-    have hc : CI.1 ∈ Plan.restrictPlan s.plan (A.erase s.a) :=
-      Finset.mem_inter.mpr ⟨hC.1, Finset.mem_powerset.mpr
-        (h.1.trans (s.left_plan.subset_of_mem (Plan.mem_gradedPlan.mp hl).1))⟩
-    rwa [restrict_left] at hc
-  · refine Or.inr ⟨Plan.mem_gradedPlan.mpr ⟨?_, hC.2⟩, hr⟩
-    have hc : CI.1 ∈ Plan.restrictPlan s.plan (A.erase s.b) :=
-      Finset.mem_inter.mpr ⟨hC.1, Finset.mem_powerset.mpr
-        (h.1.trans (s.right_plan.subset_of_mem (Plan.mem_gradedPlan.mp hr).1))⟩
-    rwa [restrict_right] at hc
+theorem proper_scope_cover {B : Finset ι} (hB : B ∈ s.plan) (hne : B ≠ A) :
+    B ⊆ A.erase s.a ∨ B ⊆ A.erase s.b := by
+  rcases Finset.mem_union.mp hB with hB | hB
+  · exact (Finset.mem_union.mp hB).imp s.left_plan.subset_of_mem s.right_plan.subset_of_mem
+  simp_all
 
 /-- The uniform step data are available for every nontrivial support plan. -/
 theorem exists_step {P : Finset (Finset ι)} (hP : Plan.IsPlan A P) (hA : 2 ≤ A.card) :

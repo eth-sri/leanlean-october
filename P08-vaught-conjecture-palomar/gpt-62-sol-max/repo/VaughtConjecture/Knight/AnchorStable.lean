@@ -8,42 +8,11 @@ module
 public import VaughtConjecture.Knight.StableAnchor
 public import VaughtConjecture.Knight.ProvisionalOffset
 
-/-! # Anchors at infinity are exactly the finite stable top values
-
-The reviewer's notes16 §2 (2026-09-19), completing `Knight/StableAnchor.lean`
-(`isInfinityAnchor_of_stable`: a finite stable top value is an anchor at threshold `j + 1`)
-with the converse and the resulting equivalences.
-
-* **The band forced by an anchor** (`someProvisionalValue_lt_of_anchor`): in a cover whose top
-  grade exceeds the threshold `K'`, the strict anchor clause at the cover's full-scope top owner,
-  taken against the anchor itself as the top source, gives `E(Θ)(∞̃) < R_{K',K'}(E(Θ)(∞̃))`, so
-  the source has finite part `j < K'`; the cap clause fails (the cap inequality at the top grade
-  would contradict the strict clause, replacement at a larger grade being larger), and the band
-  is at most `j`.  Hence the provisional value is `α + j` with `j < K'`
-  (`someProvisionalValue_le_of_anchor` in every cover).
-* **Stabilization from a uniform bound** (`exists_stabilizesTo_of_bounded`): if the provisional
-  values of a top cell are bounded by `α + K` on every cover, the greatest attained offset
-  stabilizes — the ratchet only allows a value to stay or to jump above `α + K^y`, and the
-  greatest offset is attained at a cover `y` whose `α + K^y` dominates it.
-* **Anchor ⇒ finite stable value** (`exists_stableValue_of_anchor`,
-  `stableValue_le_of_anchor`), and the equivalences `hasInfinityAnchor_iff_exists_finite_stable`
-  and `isHollow_iff_stable_identity` (hollowness is exactly stable-label fixedness; the forward
-  direction is `stableValue_eq_label_of_hollow`).
-* **The sharp threshold, under top-grade growth only** (`lt_of_anchor_of_growth`,
-  `isLeast_anchor_threshold`): with `HasTopGradeGrowth`, an anchor at `K'` with stable value
-  `α + j` has `j < K'`, so `j + 1` is the least threshold.  This is stated separately from the
-  equivalence: at finite characteristic arity, thresholds above the characteristic are vacuous
-  (`isInfinityAnchor_succ_of_label_top`), and the sharp calculation does not hold there.
-
-Construction-private (not root-exported). -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
 
 open TypeTower StageType KnightRealization Value ExtOrd Transform
-
-/-! ## Replacement at a larger grade is larger -/
 
 theorem evr_self_le_evr_self (x : ExtOrd) {k k' : ℕ} (h : k ≤ k') :
     extVisibilityReplace x k k ≤ extVisibilityReplace x k' k' := by
@@ -60,15 +29,15 @@ theorem evr_self_le_evr_self (x : ExtOrd) {k k' : ℕ} (h : k ≤ k') :
         conv_lhs => rw [← limitPart_add_finitePart a]
         exact add_le_add_right (Nat.cast_le.mpr h''.le) _
       · rw [extVisibilityReplace_of_finitePart_lt (not_le.mp hk), ofOrd_le_ofOrd]
-        exact add_le_add_right (Nat.cast_le.mpr h) _
+        simp_all
 
 /-- A value strictly below its own replacement is a proper value with finite part below the
 grade. -/
 theorem exists_finitePart_lt_of_lt_evr {x : ExtOrd} {k : ℕ}
     (h : x < extVisibilityReplace x k k) : ∃ a : Ordinal.{0}, x = ofOrd a ∧ finitePart a < k := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · rw [extVisibilityReplace_bot] at h; exact absurd h (lt_irrefl _)
-  · rw [extVisibilityReplace_top] at h; exact absurd h (lt_irrefl _)
+  · aesop
+  · aesop
   · refine ⟨a, rfl, ?_⟩
     by_contra hk
     rw [extVisibilityReplace_of_le_finitePart (not_lt.mp hk)] at h
@@ -77,8 +46,6 @@ theorem exists_finitePart_lt_of_lt_evr {x : ExtOrd} {k : ℕ}
 universe w
 
 variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
-
-/-! ## The band forced by an anchor -/
 
 /-- **In a cover whose top grade exceeds the threshold, an anchor reads a band below the
 threshold.** -/
@@ -108,7 +75,7 @@ theorem someProvisionalValue_lt_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.
     have hst := (h.2 s f q hfs hq hpq Θ' (by rw [hgr']; exact hN.le) hΘ' Sig' hSig' hXi'').2
       (by rw [hgr']; exact hN)
     have h1 := hst.trans_le (evr_self_le_evr_self _ hN.le)
-    exact lt_irrefl _ (h1.trans_le hle)
+    grind
   -- the band at the finite part
   have hband : q.ProvisionalBand Xi' (finitePart a) := by
     refine ⟨Θ, hXiΘ, hsc, hgr, hΘ, ?_⟩
@@ -116,7 +83,7 @@ theorem someProvisionalValue_lt_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.
   have hex : ∃ i, q.ProvisionalBand Xi' i := ⟨_, hband⟩
   refine ⟨Nat.find hex, lt_of_le_of_lt (Nat.find_le hband) hfp, ?_⟩
   unfold someProvisionalValue
-  rw [ite_eq_left htop', ite_eq_right hcap, dite_eq_left hex]
+  lia
 
 /-- **The provisional value of an anchor is at most `α + K'` in every cover.** -/
 theorem someProvisionalValue_le_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
@@ -126,13 +93,9 @@ theorem someProvisionalValue_le_of_anchor {n : ℕ} {t : Fin n ↪ M} {p : S α.
     q.someProvisionalValue (mapCell hpq Xi) ≤ ofOrd (α.1 + K') := by
   by_cases hN : K' < q.topGrade
   · obtain ⟨j, hj, hval⟩ := someProvisionalValue_lt_of_anchor h hfs hq hpq hN
-    rw [hval, ofOrd_le_ofOrd]
-    exact add_le_add_right (Nat.cast_le.mpr hj.le) _
+    (simp_all <;> omega)
   · refine (someProvisionalValue_le q _).trans ?_
-    rw [ofOrd_le_ofOrd]
-    exact add_le_add_right (Nat.cast_le.mpr (not_lt.mp hN)) _
-
-/-! ## Stabilization from a uniform bound -/
+    aesop
 
 /-- **Bounded provisional values stabilize**: if the provisional values of a top cell are at
 most `α + K` on every cover, the greatest attained offset stabilizes.  The offsets along the
@@ -151,9 +114,7 @@ theorem exists_stabilizesTo_of_bounded (hcons : R.IsExactParentConsistent)
       (hB y.1 (RootedCover.emb y) (RootedCover.emb_trans y) (RootedCover.emb_typeMap y))
   obtain ⟨i, hi⟩ := RootedCover.exists_stabilizesTo_of_bddAbove Xi htop hcons hcov
     ⟨K, by rintro _ ⟨y, rfl⟩; exact hle y⟩
-  exact ⟨_, hle i, hi⟩
-
-/-! ## Anchor ⇒ finite stable value -/
+  tauto
 
 /-- **An anchor at threshold `K'` has stable value `α + j` for some `j ≤ K'`.** -/
 theorem exists_stableValue_of_anchor (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
@@ -164,10 +125,7 @@ theorem exists_stableValue_of_anchor (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M
     ⟨n, t, p, hpt⟩ h.1 K'
     (fun y f hf hpq => someProvisionalValue_le_of_anchor h hf y.eval_eq hpq)
   refine ⟨j, hj, stableValue_of_stabilizesTo hM.consistent hM.covering hpt ?_ hs⟩
-  rw [ofOrd_lt_ofOrd]
-  exact (add_lt_add_iff_left _).mpr (Ordinal.natCast_lt_omega0 j)
-
-/-! ## The equivalences -/
+  aesop
 
 /-- **Anchors are exactly the finite stable top values.** -/
 theorem hasInfinityAnchor_iff_exists_finite_stable (hM : R.IsModel) :
@@ -180,7 +138,5 @@ theorem hasInfinityAnchor_iff_exists_finite_stable (hM : R.IsModel) :
     exact ⟨n, t, p, hpt, Xi, j, h.1, hs⟩
   · rintro ⟨n, t, p, hpt, Xi, j, hXi, hs⟩
     exact ⟨n, t, p, hpt, Xi, j + 1, isInfinityAnchor_of_stable hM hpt hXi hs⟩
-
-/-! ## The sharp threshold under top-grade growth -/
 
 end VaughtConjecture.Knight

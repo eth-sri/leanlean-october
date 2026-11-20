@@ -6,23 +6,20 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CanonicalRecursiveSemantics
-
-/-! # Literal-top boundary sections on the constructed recursive carrier
-
-Finite outer coding gives a proper source profile; decoding recovers every
-current old-boundary coordinate literally. No lower lifting or output
-bountifulness is assumed. Future old fields outside the target are not part
-of this prescription.
--/
+public import VaughtConjecture.Knight.FullScopeZeroExtension
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveTopSections
+
 open Transform Value ExtOrd CanonicalRecursiveContract
+
 noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+
 variable (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
+
 variable (n : ℕ) (hA : n + 3 ≤ A.card)
 
 def boundaryTarget (d : D.below (A, n + 3)) : (carrier sem n hA).below (A, n + 3) :=
@@ -40,20 +37,13 @@ theorem exists_section {p : D.below (A, n + 3) → ExtOrd}
   classical
   obtain ⟨S, u, hu, _, hcode, hdecode⟩ := hpr.exists_coded_representative
     (fun d => d.2.2) (le_refl (Nat.card (D.below (A, n + 3))))
-  let v : Cell D → ExtOrd := fun d => if hd : D.grade d ≤ n + 3 then
-    u ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩ else ⊥
-  have hv (d : D.below (A, n + 3)) : v d.1 = u d := dite_eq_left d.2.2
-  have hvr : RespectsSemanticsBelow sem (A, n + 3) (fun d => v d.1) := by
-    simpa only [hv] using hu
-  have hvt (d : Cell D) : v d ≠ ⊤ := by
-    dsimp only [v]
-    split_ifs with hd
-    · rcases mem_codedAlphabet_iff.mp
-        (hcode ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩) with
-        hb | ⟨b, i, _, _, he⟩
-      · exact hb.trans_ne bot_ne_top
-      · exact he.trans_ne (ofOrd_ne_top _)
-    · exact bot_ne_top
+  let v := CellScheme.zeroAbove u
+  have hvr : RespectsSemanticsBelow sem (A, n + 3) (fun d => v d.1) :=
+    CellScheme.complete_lawful _ hu
+  have hvt : ∀ d, v d ≠ ⊤ := CellScheme.complete_cases
+    (P := fun _ x => x ≠ ⊤) (fun d => by
+      rcases mem_codedAlphabet_iff.mp (hcode d) with hb | ⟨b, i, _, _, he⟩ <;> simp_all)
+    (fun _ _ => bot_ne_top)
   let T := CanonicalRecursiveSemantics.state sem hp n hA
   let w := T.sectionOf le_rfl hvr hvt ∅ ⊤
   have hw : RespectsSemanticsBelow T.rows (A, n + 3) (fun d => w d.1) :=
@@ -64,7 +54,9 @@ theorem exists_section {p : D.below (A, n + 3) → ExtOrd}
   have hr := T.section_boundary le_rfl hvr hvt (G := ∅) (by simp)
     (extVisibilityReplace_top (n + 3) (n + 3)) d.1
   change canonicalDecoder S (n + 3) (w (boundary sem n hA d.1)) = p d
-  exact (congrArg (canonicalDecoder S (n + 3)) (hr.trans (hv d))).trans (hdecode d)
+  change w (boundary sem n hA d.1) = v d.1 at hr
+  exact (congrArg (canonicalDecoder S (n + 3)) (hr.trans (CellScheme.zeroAbove_low u d))).trans (hdecode d)
 
 end
+
 end VaughtConjecture.Knight.CanonicalRecursiveTopSections

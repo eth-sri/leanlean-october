@@ -7,13 +7,6 @@ module
 
 public import VaughtConjecture.Knight.TopGradeStableCore
 
-/-! # Elementary grade bounds at finite characteristic
-
-These bounds use the coinitial top-grade characterization only. Historical
-anchor-threshold and profile-code consequences remain in `AnchorThresholdBoundary`,
-which reexports these declarations without changing their names or statements.
--/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight

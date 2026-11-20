@@ -8,20 +8,7 @@ module
 public import VaughtConjecture.Knight.LongGuardRows
 public import VaughtConjecture.Knight.FiniteProfileControllers
 
-/-! # Physical support ladders
-
-The rung of height `t ≥ 2` puts ranks `t - 1` and `t` in the same
-source block, at offsets one and two. Every rung is an actual row owner;
-unused field ranks are not omitted. These are the ladder rows of
-`newapproach4` / `newapproach5`, with their original odd-block encoding.
-
-This module concerns the complete row table. Installation on mixed supports
-and grade-two numerical receiving remain separate obligations.
--/
-
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.SupportLadderRows
 
@@ -36,13 +23,13 @@ theorem source_visible (t i : ℕ) : SelfVis 1 (source t i) := by
   unfold source
   split_ifs
   · exact SlotControllerFamily.value_visible _
-  · exact LongGuardRows.source_visible _ _
+  · apply LongGuardRows.source_visible
 
 theorem source_coded (t i : ℕ) : IsCodedLabel 1 (source t i) := by
   unfold source
   split_ifs
   · exact SlotControllerFamily.value_coded _
-  · exact LongGuardRows.source_coded _ _
+  · apply LongGuardRows.source_coded
 
 theorem source_le_iff (t i j : ℕ) :
     source t i ≤ source t j ↔ min i t ≤ min j t := by
@@ -57,18 +44,17 @@ theorem source_mono (t : ℕ) : Monotone (source t) :=
   fun _ _ h => (source_le_iff _ _ _).mpr (min_le_min_right _ h)
 
 @[simp] theorem source_zero (t : ℕ) : source t 0 = ⊥ := by
-  simp [source, SlotControllerFamily.value]
+  simp [source, LongGuardRows.source, SlotControllerFamily.value]
 
 theorem source_bot_iff (t i : ℕ) : source t i = ⊥ ↔ min i t = 0 := by
   have h := source_le_iff t i 0
-  simpa only [source_zero, le_bot_iff, Nat.zero_min, Nat.le_zero] using h
+  aesop
 
 theorem source_floor_bot_iff (t i : ℕ) :
     blockFloor (source t i) = ⊥ ↔ source t i = ⊥ := by
   unfold source LongGuardRows.source SlotControllerFamily.value
   split_ifs <;>
-    simp [LongGuardRows.endpoint,
-      blockFloor_ofOrd, SeparatedGradeOne.band]
+    tauto
 
 /-- Adjacent actual rungs share the decisive short/long source block. -/
 theorem predecessor_block {t : ℕ} (ht : 2 ≤ t) :
@@ -97,15 +83,13 @@ theorem transforms_positive {Y : Type*} [Finite Y] (a : Y → ℕ) (t : ℕ)
     rw [(source_bot_iff _ _).mp hd, h0]
   · intro d e hde hd
     have hz : min (a d) t = 0 := by
-      by_contra hn
-      exact hp _ (Nat.pos_of_ne_zero hn) (min_le_right _ _) hd
+      grind
     have hs : source t (a d) = ⊥ := (source_bot_iff _ _).mpr hz
     rw [hs, blockFloor_bot] at hde
     have he := (source_floor_bot_iff _ _).mp hde.symm
     rw [(source_bot_iff _ _).mp he, h0]
 
-theorem source_min (t i : ℕ) : source t (min i t) = source t i := by
-  simp only [source, min_assoc, min_self]
+theorem source_min (t i : ℕ) : source t (min i t) = source t i := by simp [source, min_assoc, min_self]
 
 variable {X Q : Type*} {H : ℕ} {profile : Q → X → ℕ}
 
@@ -121,7 +105,9 @@ def ceiling (profile : Q → X → ℕ) (v : Point H X Q) : ℕ :=
   | .inr d => profile v.1 d
 
 def rung (a : Q) (i : Fin H) : Point H X Q := (a, .inl i)
+
 def shadow (a : Q) (d : X) : Point H X Q := (a, .inr d)
+
 def leaf (hH : 0 < H) (a : Q) : Point H X Q := rung a ⟨H - 1, by omega⟩
 
 noncomputable def index (profile : Q → X → ℕ) (a : Q) (v : Point H X Q) : ℕ :=
@@ -141,7 +127,7 @@ theorem ceiling_le (hbound : ∀ a d, profile a d ≤ H) (v : Point H X Q) :
     ceiling profile v ≤ H := by
   rcases v with ⟨a, i | d⟩
   · exact i.isLt
-  · exact hbound a d
+  tauto
 
 theorem index_le (a : Q) (v : Point H X Q) : index profile a v ≤ H :=
   (min_le_left _ _).trans (cut_le _ _ _)
@@ -201,7 +187,7 @@ theorem image_lawful (a : Q) (f : ℕ → ExtOrd) (hf : Monotone f) (h0 : f 0 = 
   have het : e ≤ ceiling profile c := min_le_right _ _
   by_cases hz : e = 0
   · have hzero : (fun v : Point H X Q => f (min (index profile (parent c) v) e)) =
-        fun _ => ⊥ := by simp [hz, h0]
+        fun _ => ⊥ := by simp_all
     change TransformsTo _ _ (fun v => f (min (index profile (parent c) v) e))
     rw [hzero]
     exact TransformsTo.to_bot _
@@ -209,9 +195,7 @@ theorem image_lawful (a : Q) (f : ℕ → ExtOrd) (hf : Monotone f) (h0 : f 0 = 
         (fun i => f (min i e))
         (fun _ _ h => hf (min_le_min_right _ h)) (by simpa using h0)
         (fun _ => hv _) (fun i hi _ => hp _ (by omega) ((min_le_right _ _).trans (index_le a c)))
-    change TransformsTo _ (fun v => source (ceiling profile c) (index profile (parent c) v))
-      (fun v => f (min (index profile (parent c) v) e))
-    simpa only [min_assoc, min_eq_right het] using ht
+    aesop
 
 omit [Finite X] [Finite Q] in
 theorem row_parent (hbound : ∀ a d, profile a d ≤ H) (hH : 0 < H)
@@ -219,8 +203,7 @@ theorem row_parent (hbound : ∀ a d, profile a d ≤ H) (hH : 0 < H)
     row profile c (leaf hH (parent c)) = row profile c c := by
   rw [row, row, index_leaf, cut_refl, index_diagonal hbound]
   have h := source_min (ceiling profile c) H
-  rw [min_eq_right (ceiling_le hbound c)] at h
-  exact h.symm
+  grind [ceiling_le]
 
 omit [Finite X] [Finite Q] in
 /-- Locality at the auxiliary itself bounds it by its actual parent leaf. -/
@@ -233,7 +216,7 @@ theorem Lawful.le_parent {q : Point H X Q → ExtOrd} (hq : Lawful profile q)
     min (q (leaf hH (parent c))) (q c) =
         min (σ (row profile c (leaf hH (parent c)))) (g 1) := hr _
     _ = min (σ (row profile c c)) (g 1) := by rw [row_parent hbound hH]
-    _ = q c := by simpa only [min_self] using (hr c).symm
+    _ = q c := by grind
 
 omit [Finite X] [Finite Q] in
 /-- An actual long rung forbids a zero predecessor and a positive diagonal.
@@ -250,10 +233,10 @@ theorem Lawful.predecessor_bot {q : Point H X Q → ExtOrd} (hq : Lawful profile
     rw [index_rung, index_rung]
     have hi' : i - 1 + 1 = i := by omega
     rw [hi']
-    simpa only [Nat.add_sub_cancel] using predecessor_block (t := i + 1) (by omega)
-  have hd : min (q d) (q c) = ⊥ := by rw [show q d = ⊥ from hz, min_bot_left]
+    simpa [Nat.add_sub_cancel] using predecessor_block (t := i + 1) (by omega)
+  have hd : min (q d) (q c) = ⊥ := by aesop
   have hh := LongGuardRows.bottom_of_same_block (hq.2 c) hb hd
-  simpa only [min_self] using hh
+  grind
 
 omit [Finite X] in
 /-- Extract a scalar chart from an actual maximal leaf of an arbitrary lawful
@@ -268,7 +251,7 @@ theorem Lawful.exists_shape [Nonempty Q] {q : Point H X Q → ExtOrd}
   obtain ⟨g, σ, _, hg, h0, hm, h5, hr⟩ := hq.2 (leaf hH a)
   let f : ℕ → ExtOrd := fun i => min (σ (source H i)) (g 1)
   refine ⟨a, f, fun _ _ h => min_le_min_right _ (hm (source_mono H h)), ?_, ?_, ?_⟩
-  · simp only [f, source_zero, h0, min_bot_left]
+  · simp [f, source_zero, h0, min_bot_left]
   · intro i
     change SelfVis 1 (min (σ (source H i)) (g 1))
     by_cases hi : σ (source H i) ≤ g 1
@@ -276,14 +259,12 @@ theorem Lawful.exists_shape [Nonempty Q] {q : Point H X Q → ExtOrd}
       have he := h5 (source H i) 1 hi 1 le_rfl
       rw [source_visible H i] at he
       exact he.symm
-    · rw [min_eq_right (not_le.mp hi).le]
-      exact (hg 1).symm
+    grind
   · intro v
     have h := hr v
     dsimp only at h
     rw [min_eq_left (hdom v)] at h
-    rw [row, ceiling_leaf] at h
-    exact h
+    rwa [row, ceiling_leaf] at h
 
 /-- The full ladder excludes partial support erasure: every lawful section
 is zero, or its serving chart is positive at every actual rung. -/
@@ -306,18 +287,18 @@ theorem lawful_iff_shape [Nonempty Q]
     have hstep (i : ℕ) (hi : 0 < i) (hiH : i < H) (hz : f i = ⊥) : f (i + 1) = ⊥ := by
       have hz' : q (rung a ⟨i - 1, by omega⟩) = ⊥ := by
         rw [he, image, index_rung]
-        simpa only [Nat.sub_add_cancel hi] using hz
+        grind
       have hh := hq.predecessor_bot a hi hiH hz'
-      simpa only [he, image, index_rung] using hh
+      simpa [he, image, index_rung] using hh
     have hp (i : ℕ) (hi : 0 < i) (hiH : i ≤ H) : f i ≠ ⊥ := by
       intro hz
       have hall : ∀ j, i ≤ j → j ≤ H → f j = ⊥ := by
         intro j hij hjH
         induction j, hij using Nat.le_induction with
         | base => exact hz
-        | succ j hij ih => exact hstep j (by omega) (by omega) (ih (by omega))
-      exact htop (hall H hiH le_rfl)
-    exact Or.inr ⟨a, f, hf, h0, hv, hp, he⟩
+        | succ j hij ih => grind
+      tauto
+    tauto
   · rintro (hz | ⟨a, f, hf, h0, hv, hp, he⟩)
     · have he : q = fun _ => ⊥ := funext hz
       rw [he]
@@ -349,7 +330,7 @@ theorem readout_image (hbound : ∀ a d, profile a d ≤ H) (a : Q)
         (Finset.mem_univ a)
     change f (profile a d) ≤
       Finset.univ.sup (fun b : Q => image (H := H) profile a f (shadow b d))
-    simpa only [image, index, shadow, parent, ceiling, cut_refl,
+    simpa [image, index, shadow, parent, ceiling, cut_refl,
       min_eq_right (hbound a d)] using h
 
 omit [Finite X] [Finite Q] in
@@ -367,9 +348,7 @@ theorem cap_agreement (a b : Q) {k : ℕ}
   simp only [min_assoc, min_eq_right hk] at he
   change min (f (index profile a v)) γ = min (g (index profile b v)) γ
   by_cases ha : index profile a v < k
-  · have hb : index profile b v = index profile a v := by omega
-    rw [hb]
-    exact hfg _ ha
+  · grind
   · have ha' : k ≤ index profile a v := by omega
     have hb' : k ≤ index profile b v := by omega
     rw [min_eq_right (hγf.trans (hf ha')), min_eq_right (hγg.trans (hg hb'))]

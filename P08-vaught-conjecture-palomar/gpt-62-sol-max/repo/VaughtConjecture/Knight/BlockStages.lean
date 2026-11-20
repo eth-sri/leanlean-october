@@ -7,17 +7,11 @@ module
 
 public import VaughtConjecture.Knight.Tower
 
-/-! # The block schedule, without stopping-rank machinery
-
-Elementary stage arithmetic used by both receiving and the later rank analysis. -/
-
 @[expose] public section
 
 namespace VaughtConjecture.Knight
 
 open TypeTower Value
-
-/-! ### The canonical block schedule -/
 
 /-- The canonical block levels as limit stages: `blockStage ξ := ⟨blockLevel ξ, _⟩` with
 `blockLevel ξ = ω + ω·ξ` (`Knight/Value.lean`).  The stage schedule of the Knight stopping rank:

@@ -9,27 +9,20 @@ public import VaughtConjecture.Knight.GrowthFilteredRoot
 public import VaughtConjecture.Knight.StableLiftCore
 public import VaughtConjecture.Knight.ReceivingTemplate
 
-/-! # Stable-root compatibility for selected growth donors
-
-The donor extends the stable root, not the actual root. The stable labelling
-of an actual private cover supplies a lawful compatible complete vector. This
-uses the original model only, not modelhood of its stable lift. Admission is
-proved below activation; calibrated request correctness above activation is
-deliberately not assumed or asserted here.
-
-The proper-field bound is at the next block. A proper stable value of an
-actual top prevents replacing that bound by the original stage bound.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableSelectedInput
+
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
+
 open CellScheme.restrictFace
+
 open SharpWitnessComposition
+
 noncomputable section
+
 universe w
+
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   (hM : W.IsModel) {n J : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
   (hp : W.eval t = some p) {u : Fin J ↪ M} {C : S α.1 J}
@@ -85,12 +78,7 @@ theorem exists_cleaned_source_chart (c : Cell C.scheme.scheme) (hc : C.label c =
         (∀ x, θ x ≤ W.stableValue u C c) ∧
         ∀ d, θ (e d) = min (W.stableValue u C d.1) (W.stableValue u C c) := by
   have hl := stableLiftRespects hM hC
-  have hvis : SelfVis (C.scheme.scheme.grade c) (W.stableValue u C c) :=
-    (hl.orderly c).symm
-  obtain ⟨τ, hbot, hmono, hread, hcomm, -⟩ := exists_exact_capped_shifter
-    (D := C.scheme.scheme.below (C.scheme.scheme.cell c))
-    (grade := fun d => C.scheme.scheme.grade d.1) (p := fun d => W.stableValue u C d.1)
-    (c := ⟨c, GradedLe.refl _⟩) (fun d => d.2.2) hvis (hl.locality c)
+  obtain ⟨τ, hτ, hbound, hread⟩ := hl.rowWitness c
   have hcb : W.stableValue u C c ≠ ⊥ := by
     intro h
     exact top_ne_bot (hc.symm.trans ((private_bottom hM hC c).mp h))
@@ -103,7 +91,7 @@ theorem exists_cleaned_source_chart (c : Cell C.scheme.scheme) (hc : C.label c =
     fun d => if C.label d.1 = ⊥ then ⊥ else C.scheme.rows.E c d
   have he : RespectsSemanticsBelow C.scheme.rows (C.scheme.scheme.cell c) e := by
     have h := cleaned_respects_of_bottom_agreement (C.scheme.consistent c) (hl.toBelow _)
-      (fun d => d.2.2) ⟨hbot, hmono, hcomm⟩ hbottom
+      (fun d => d.2.2) hτ.bounded hbottom
     simpa only [private_bottom hM hC] using h
   have heq (d) (hd : C.label d.1 ≠ ⊥) : e d = C.scheme.rows.E c d := ite_eq_right hd
   have heb (d) : e d = ⊥ ↔ C.label d.1 = ⊥ := by
@@ -111,31 +99,12 @@ theorem exists_cleaned_source_chart (c : Cell C.scheme.scheme) (hc : C.label c =
     · simp only [e, hd, ite_true]
     · rw [heq d hd]
       exact ⟨fun h => (hd ((private_bottom hM hC d.1).mp
-        ((hbottom d).mp (by rw [h, hbot])))).elim, fun h => (hd h).elim⟩
-  refine ⟨e, he, heb, heq, fun x => min (τ x) (W.stableValue u C c),
-    ⟨?_, ?_, ?_⟩, fun x => min_le_right _ _, ?_⟩
-  · rw [hbot, min_eq_left bot_le]
-  · intro x y hxy
-    exact min_le_min_right _ (hmono hxy)
-  · intro x k i hk hi
-    rw [hcomm x k i hk hi, evr_min_of_selfVis hvis hk hi]
-  · intro d
-    change min (τ (e d)) (W.stableValue u C c) =
-      min (W.stableValue u C d.1) (W.stableValue u C c)
-    by_cases hd : C.label d.1 = ⊥
-    · rw [(heb d).mpr hd, hbot, (private_bottom hM hC d.1).mpr hd]
-    · rw [heq d hd, hread d, min_assoc, min_self]
-
-section Attachment
-variable
-  (hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan)
-  (hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme)
-  (hvC : Finset.univ.image f ∈ C.scheme.scheme.plan)
-  (hF : C.scheme.restrictFace f hvC = p.scheme)
-  (X : RelativeData C.scheme.scheme C.scheme.rows q.scheme.scheme q.scheme.rows)
-  (T : Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP f hvC hF X)
-
-end Attachment
+        ((hbottom d).mp (by rw [h, hτ.bot])))).elim, by lia⟩
+  refine ⟨e, he, heb, heq, τ, hτ.bounded, hbound, fun d => ?_⟩
+  by_cases hd : C.label d.1 = ⊥
+  · rw [(heb d).mpr hd, hτ.bot, (private_bottom hM hC d.1).mpr hd, min_bot_left]
+  · rw [heq d hd, hread d]
 
 end
+
 end VaughtConjecture.Knight.GrowthStableSelectedInput

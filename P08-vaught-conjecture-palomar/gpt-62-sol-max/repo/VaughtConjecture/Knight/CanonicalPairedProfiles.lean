@@ -7,25 +7,16 @@ module
 
 public import VaughtConjecture.Knight.CanonicalPairedPrefix
 
-/-! # Canonical inventories on the complete field vector
-
-This is a separate inventory, not a change to the refuted all-short family.
-The finite type `X` counts every field normalized together, including auxiliary
-fields. No boundary-cardinality estimate is substituted for its cardinality.
-
-The inventory supplies canonical representatives and relative capped agreement.
-It does not yet supply a prefix-fixing inverse or coupled semantic sections.
-The ordinary exact decoder below is deliberately not claimed to fix unused grids.
--/
-
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedProfiles
+
 open Transform Value ExtOrd PairedSlotEncoding PairedSlotProfiles SharpWitnessComposition
+
 noncomputable section
 
 section Inventory
+
 variable (X : Type*) [Fintype X] (j : ℕ)
 
 /-- Proper canonical fixed points on the complete inventory. -/
@@ -56,9 +47,8 @@ theorem normalize_mem_inventory {p : X → ExtOrd} (hp : ∀ d, p d ≠ ⊤) :
   refine ⟨CanonicalPairedEncoding.normalize_idempotent j p, ?_⟩
   intro d
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
-  · simpa only [PairedSlotEncoding.normalize, hb] using
-      (show (⊥ : ExtOrd) ≠ ⊤ from hb ▸ hp d)
-  · exact (hp d ht).elim
+  · simp_all [PairedSlotEncoding.normalize]
+  · tauto
   · rw [normalize_ofOrd ha]
     exact ofOrd_ne_top _
 
@@ -72,12 +62,15 @@ theorem normalize_cap {a p : X → ExtOrd} {B : ℕ}
       min (a d) (ofOrd (Ordinal.omega0 * B + j)) :=
   CanonicalPairedPrefix.normalize_cap ha.1 ha.2 hag d
 
+/-- Finite canonical profiles realized by a specified family of states. -/
+def Realized {S : Type*} (profile : S → X → ExtOrd) (adm : S → Prop) : Set (X → ExtOrd) :=
+  {a | a ∈ inventory X j ∧ ∃ s, adm s ∧ profile s = a}
+
+theorem realized_finite {S : Type*} (profile : S → X → ExtOrd) (adm : S → Prop) :
+    (Realized X j profile adm).Finite := (inventory_finite X j).subset fun _ h => h.1
+
 end Inventory
 
-section Scheme
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  (sem : Semantics D) (BJ : Finset ι × ℕ) [Fintype (D.below BJ)] (j : ℕ)
-
-end Scheme
 end
+
 end VaughtConjecture.Knight.CanonicalPairedProfiles
