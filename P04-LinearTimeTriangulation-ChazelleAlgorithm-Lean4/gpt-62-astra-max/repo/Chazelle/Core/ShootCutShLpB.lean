@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.ShootCutShLpA
 
@@ -30,26 +31,16 @@ def LoopR (r : ℕ) : Prop :=
   r = 140008 ∨ r = 140334 ∨ r = 140100 ∨ r = 140110 ∨ (140234 ≤ r ∧ r < 140241) ∨ r = ALLOC
 
 theorem Blpl_env (r : ℕ) (h : envR r) : Blpl r = false := by
-  unfold envR at h
-  simp only [Blpl, K1, ALLOC, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-    beq_eq_false_iff_ne] at h ⊢
-  omega
+  grind [envR, Blpl, K1, ALLOC, beq_eq_false_iff_ne]
 
 theorem Blpl_org (r : ℕ) (h1 : 140234 ≤ r) (h2 : r < 140241) : Blpl r = false := by
-  simp only [Blpl, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
-  omega
+  grind [Blpl, beq_eq_false_iff_ne]
 
 theorem Bk0_loop (r : ℕ) (h : LoopR r) : Bk0 r = false := by
-  unfold LoopR at h
-  simp only [Bk0, Bedge, Bmrg, Bk, Bprim, ALLOC, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-    beq_eq_false_iff_ne] at h ⊢
-  omega
+  grind [LoopR, Bk0, Bedge, Bmrg, Bk, Bprim, ALLOC, beq_eq_false_iff_ne]
 
 theorem Wk1_loop (r : ℕ) (h : LoopR r) : Wk1 r = false := by
-  unfold LoopR at h
-  simp only [Wk1, ALLOC, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-    beq_eq_false_iff_ne] at h ⊢
-  omega
+  grind [LoopR, Wk1, ALLOC, beq_eq_false_iff_ne]
 
 theorem Bk0_ob (r : ℕ) (h : Bk0 r = true) :
     (bandOf r = 1 ∨ bandOf r = 5 ∨ bandOf r = 12 ∨ bandOf r = 14) ∧ r ≠ ALLOC := by
@@ -79,7 +70,7 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
   obtain ⟨hw, E, Og, h08, h34, h100, hrec, hm0, hEA, fr, hbud, j, hj, h110, hB⟩ := hI
   have hjq : j < ps.length := by rw [h110, h100] at hlt; omega
   set pc := ps[j]'hjq with hpc
-  have hpcm : pc ∈ ps := List.getElem_mem hjq
+  have hpcm := List.getElem_mem hjq
   have hok := X.ok pc hpcm
   obtain ⟨r0, r1, r2, r3, r4, r58⟩ := hrec j hjq
   set p := A₀ + 1 + 9 * j with hp
@@ -87,9 +78,6 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
   have hLp : L - p = (L - (p + 9)) + 9 := by omega
   have hbud' : c.nreg ALLOC + ((L - (p + 9)) * (K + 2) + 9 * (K + 2)) ≤ W := by
     rw [h110, hLp, Nat.add_mul] at hbud; exact hbud
-  have hAW : c.nreg ALLOC + 9 * (K + 2) ≤ W := by
-    have : 0 ≤ (L - (p + 9)) * (K + 2) := Nat.zero_le _
-    omega
   have htk : ps.take (j + 1) = ps.take j ++ [pc] := by
     rw [List.take_add_one, List.getElem?_eq_getElem hjq]; rfl
   -- the keys and the subarc
@@ -230,10 +218,7 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
 /-! ## The loop -/
 
 theorem Blpi_env (r : ℕ) (h : envR r) : Blpi r = false := by
-  unfold envR at h
-  simp only [Blpi, K1, ALLOC, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-    beq_eq_false_iff_ne] at h ⊢
-  omega
+  grind [envR, Blpi, K1, ALLOC, beq_eq_false_iff_ne]
 
 theorem Blpi_ob (r : ℕ) (h : Blpi r = true) :
     (bandOf r = 1 ∨ bandOf r = 5 ∨ bandOf r = 12 ∨ bandOf r = 14) ∧ r ≠ ALLOC := by
@@ -266,7 +251,7 @@ theorem shLoop_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
   have I₁ : LpI P W H C z σ m₀ A₀ ps c K c₁ := by
     refine ⟨e₁.wb_right, E₁, Og.keep fun r a b => k₁' r (by simp only [Blpi,
       Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]; omega),
-      by rw [k₁' _ (by decide)]; exact h08, v34, by rw [k₁' _ (by decide)]; exact h100,
+      by block_post, v34, by block_post,
       by rw [f₁.2.2.1]; exact hrec, fun a ha => by rw [f₁.2.2.1]; exact hm0 a ha,
       by rw [hA₁]; exact hEA, FrameNK.step (FrameNK.refl c) F₁, ?_, 0, Nat.zero_le _,
       by rw [v10], ?_⟩
@@ -286,7 +271,7 @@ theorem shLoop_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
   refine ⟨c₂, _, ex, ?_, hB, fr₂.frame ?_, E₂⟩
   · rw [v10, show A₀ + 1 + 9 * ps.length - (A₀ + 1) = 9 * ps.length by omega] at hk₂
     omega
-  · rw [hA₁] at hψ; omega
+  all_goals grind
 
 end
 

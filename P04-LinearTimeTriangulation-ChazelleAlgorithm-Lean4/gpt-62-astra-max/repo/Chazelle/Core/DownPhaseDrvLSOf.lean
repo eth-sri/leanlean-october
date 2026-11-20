@@ -27,7 +27,7 @@ theorem levelSpec_of {O : OracleIface} (hH : HostRamSpec) (hReg : RegionSpec O)
   obtain ⟨sH, κH, hHm⟩ := hostMeets_of hH
   obtain ⟨sR, κR, hRm⟩ := regMeets_of hReg
   obtain ⟨sX, κX, hXm⟩ := extMeets_of hX
-  exact levelSpec_of_loop (sH := sH) (sR := sR) (sX := sX) (κH := κH) (κR := κR) (κX := κX)
+  exact levelSpec_of_loop
     (fun P W c₁ c L E reg lam Kb ctx hKb hroom hinv0 =>
       lvLoop_exec hHm hRm hXm hR1 hLM ctx hKb hroom hinv0) hT hC
 

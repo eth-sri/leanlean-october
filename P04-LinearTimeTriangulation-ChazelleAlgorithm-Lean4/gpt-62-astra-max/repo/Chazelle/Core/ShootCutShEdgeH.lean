@@ -1,4 +1,12 @@
 module
+public import Chazelle.Core.ModelAccess
+public import Chazelle.Machine.Contract
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Evidence
+public import Chazelle.Programs.ReadWords
+public import Chazelle.Programs.RunProof
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.ShootCutShEdgeR
 
@@ -63,29 +71,24 @@ variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
 theorem PtRecB.keep {c c' : Config} {B : ℕ} {q : Point} {R : ℝ} (h : PtRecB P c B q R)
     (hk : ∀ r, B ≤ r → r < B + 11 → c'.nreg r = c.nreg r) : PtRecB P c' B q R := by
   obtain ⟨ax, hy, fr⟩ := h
-  refine ⟨absRec_copy' ax (hk _ le_rfl (by omega)) (hk _ (by omega) (by omega))
-    (hk _ (by omega) (by omega)) (hk _ (by omega) (by omega)),
-    hy.copy (hk _ (by omega) (by omega)) (by rw [hk _ (by omega) (by omega)])
-      (by rw [hk _ (by omega) (by omega)]), fun h7 => ?_⟩
-  obtain ⟨s, hs, hl, hv⟩ := fr (by rw [← hk _ (by omega) (by omega)]; exact h7)
-  exact ⟨s, NFLoc.symPtIn_copy hs (hk _ (by omega) (by omega)) (by rw [hk _ (by omega) (by omega)])
-    (by rw [hk _ (by omega) (by omega)]), hl, hv⟩
+  refine ⟨absRec_copy' ax (guarded (hk _ le_rfl)) (at_index hk _)
+    (at_index hk _) (at_index hk _),
+    hy.copy (hk _ (by omega) (by omega)) (by read_words)
+      (by read_words), fun h7 => ?_⟩
+  obtain ⟨s, hs, hl, hv⟩ := fr (by simp_all)
+  exact ⟨s, NFLoc.symPtIn_copy hs (hk _ (by omega) (by omega)) (by read_words)
+    (by read_words), hl, hv⟩
 
 theorem Bkb_bedge {dst : ℕ} (hd : Bedge dst = true) (r : ℕ) (h : Bkb dst r = true) :
     Bedge r = true := by
-  simp only [Bkb, Bk, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at h
+  simp [Bkb, Bk] at h
   rcases h with h | rfl
-  · simp [Bedge, Bprim]; omega
+  · address_omega
   · exact hd
 
 theorem Bld_bedge {B : ℕ} (hB : 140262 ≤ B ∧ B + 11 ≤ 140330) (r : ℕ) (h : Bld B r = true) :
     Bedge r = true := by
-  simp only [Bld, Bool.or_eq_true, decide_eq_true_eq] at h
-  simp only [Bedge, Bool.or_eq_true, decide_eq_true_eq]
-  rcases h with (h | h) | h
-  · exact Or.inl (Or.inl (Or.inl h))
-  · exact Or.inl (Or.inl (Or.inr h))
-  · exact Or.inr (by omega)
+  address_omega
 
 /-! ## The ends at one height -/
 
@@ -96,7 +99,7 @@ def PosAt (P : Polygon) (C : Chain) (c : Config) (e h : ℕ) (q : Point) : Prop 
 
 theorem PosAt.keep {c c' : Config} {e h : ℕ} {q : Point} (hp : PosAt P C c e h q)
     (he : c'.nreg e = c.nreg e) (hh : c'.nreg h = c.nreg h) : PosAt P C c' e h q := by
-  unfold PosAt at *; rw [he, hh]; exact hp
+  simp_all [PosAt]
 
 theorem ne_of_seg {U V z X : Point} (hz : z ∉ seg U V) (hX : X ∈ seg U V) (hy : z.2 = X.2) :
     X.1 ≠ z.1 := fun h => hz (by
@@ -111,79 +114,75 @@ theorem eqTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ
       FrameB Bedge c c' := by
   have hW : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
   have hc := edge_cand (U := pU) (V := pV) (X := pU) E.hσ hz (fun h => by
-    exfalso; rcases h with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith)
-  dsimp only at hc
+    grind)
+  simp at hc
   unfold eqTree
   by_cases t0 : c.nreg 140312 < c.nreg K1
-  · have hzU : ¬ z.2 = pU.2 := fun h => by have := b12.2.2 h; rw [E.k1] at t0; omega
-    rw [show edgeSel _ _ _ _ _ _ _ _ = 0 by unfold edgeSel; rw [ite_eq_left hUV,
-      ite_eq_right hzU]] at hc
-    obtain ⟨c', k, ex, hk, ca, f⟩ := cand0_exec (P := P) (C := C) (z := z) (σ := σ) c hw
-      (hc.2 (by norm_num))
-    exact ⟨c', _, .ifLtN_true t0 ex, by omega, ca, f⟩
-  have hzU : z.2 = pU.2 := b12.2.1 (by have := b12.1; rw [E.k1] at t0; omega)
-  obtain ⟨c₁, k₁, e₁, hk₁, a₁, f₁⟩ := aheadT_exec (P := P) c hw E (A := 140270) (dst := 140314)
+  · have hzU : ¬ z.2 = pU.2 := fun h => by have := b12.2.2 h; grind [E.k1]
+    rw [show edgeSel _ _ _ _ _ _ _ _ = 0 by grind [edgeSel]] at hc
+    obtain ⟨c', k, ex, hk, ca, f⟩ := cand0_exec (P := P) (C := C) c hw
+      (guarded hc.2)
+    finish_run (.ifLtN_true t0 ex)
+  have hzU := b12.2.1 (by have := b12.1; rw [E.k1] at t0; omega)
+  obtain ⟨c₁, k₁, e₁, hk₁, a₁, f₁⟩ := aheadT_exec c hw E (dst := 140314)
     (by norm_num) (by norm_num) rU.1 (ne_of_seg hz (U_mem_seg pU pV) hzU)
   have E₁ := E.frame f₁ fun r hr => by
     have := Bedge_env r hr
     cases h : Bkb 140314 r
     · rfl
-    · exact absurd (Bkb_bedge (by decide) r h) (by rw [this]; decide)
-  have kp : ∀ r, 140260 ≤ r → r < 140300 → r ≠ 140314 → c₁.nreg r = c.nreg r := fun r h1 h2 h3 =>
+    · exact at_index absurd (Bkb_bedge (by decide) r h)
+  have kp : ∀ r ≥ 140260, r < 140300 → r ≠ 140314 → c₁.nreg r = c.nreg r := fun r h1 h2 h3 =>
     f₁.1 r (by simp [Bkb, Bk]; omega)
-  have rU₁ := rU.keep fun r h1 h2 => kp r (by omega) (by omega) (by omega)
-  have rV₁ := rV.keep fun r h1 h2 => kp r (by omega) (by omega) (by omega)
-  have pU₁ := pU'.keep (kp _ (by norm_num) (by norm_num) (by norm_num))
-    (kp _ (by norm_num) (by norm_num) (by norm_num))
-  have pV₁ := pV'.keep (kp _ (by norm_num) (by norm_num) (by norm_num))
-    (kp _ (by norm_num) (by norm_num) (by norm_num))
-  have fe₁ : FrameB Bedge c c₁ := FrameB.wk f₁ (Bkb_bedge (by decide))
+  have rU₁ := rU.keep fun r h1 h2 => at_index kp r
+  have rV₁ := rV.keep fun r h1 h2 => at_index kp r
+  have pU₁ := pU'.keep (at_index kp _)
+    (at_index kp _)
+  have pV₁ := pV'.keep (at_index kp _)
+    (at_index kp _)
+  have fe₁ := FrameB.wk f₁ (Bkb_bedge (by decide))
   have w₁ := e₁.wb_right
-  have t0' : ¬ c.nreg 140312 < c.nreg K1 := t0
+  have t0' := t0
   by_cases t1 : c₁.nreg 140314 < c₁.nreg K1
   · have hA : ¬ 0 < σ * (pU.1 - z.1) := fun h => by
-      have := a₁.2.2 h; rw [E₁.k1] at t1; omega
-    rw [show edgeSel _ _ _ _ _ _ _ _ = 0 by unfold edgeSel; rw [ite_eq_left hUV,
-      ite_eq_left hzU, ite_eq_right hA]] at hc
-    obtain ⟨c', k, ex, hk, ca, f⟩ := cand0_exec (P := P) (C := C) (z := z) (σ := σ) c₁ w₁
-      (hc.2 (by norm_num))
-    exact ⟨c', _, .ifLtN_false t0' (.seq e₁ (.ifLtN_true t1 ex)), by omega, ca, fe₁.trans f⟩
-  have hA : 0 < σ * (pU.1 - z.1) := a₁.2.1 (by have := a₁.1; rw [E₁.k1] at t1; omega)
+      have := a₁.2.2 h; grind [E₁.k1]
+    rw [show edgeSel _ _ _ _ _ _ _ _ = 0 by grind [edgeSel]] at hc
+    obtain ⟨c', k, ex, hk, ca, f⟩ := cand0_exec (P := P) (C := C) c₁ w₁
+      (guarded hc.2)
+    exact ⟨c', _, .ifLtN_false t0' (e₁ ;; .ifLtN_true t1 ex), by omega, ca, fe₁.trans f⟩
+  have hA := a₁.2.1 (by have := a₁.1; rw [E₁.k1] at t1; omega)
   obtain ⟨c₂, k₂, e₂, hk₂, a₂, f₂⟩ := nearT_exec (P := P) c₁ w₁ E₁ (dst := 140316) (by norm_num)
     rU₁.1 rV₁.1
   have E₂ := E₁.frame f₂ fun r hr => by
     have := Bedge_env r hr
     cases h : Bkb 140316 r
     · rfl
-    · exact absurd (Bkb_bedge (by decide) r h) (by rw [this]; decide)
+    · exact at_index absurd (Bkb_bedge (by decide) r h)
   have kp₂ : ∀ r, 140260 ≤ r → r < 140300 → r ≠ 140316 → c₂.nreg r = c₁.nreg r :=
     fun r h1 h2 h3 => f₂.1 r (by simp [Bkb, Bk]; omega)
-  have rU₂ := rU₁.keep fun r h1 h2 => kp₂ r (by omega) (by omega) (by omega)
-  have rV₂ := rV₁.keep fun r h1 h2 => kp₂ r (by omega) (by omega) (by omega)
-  have pU₂ := pU₁.keep (kp₂ _ (by norm_num) (by norm_num) (by norm_num))
-    (kp₂ _ (by norm_num) (by norm_num) (by norm_num))
-  have pV₂ := pV₁.keep (kp₂ _ (by norm_num) (by norm_num) (by norm_num))
-    (kp₂ _ (by norm_num) (by norm_num) (by norm_num))
+  have rU₂ := rU₁.keep fun r h1 h2 => at_index kp₂ r
+  have rV₂ := rV₁.keep fun r h1 h2 => at_index kp₂ r
+  have pU₂ := pU₁.keep (at_index kp₂ _)
+    (at_index kp₂ _)
+  have pV₂ := pV₁.keep (at_index kp₂ _)
+    (at_index kp₂ _)
   have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (Bkb_bedge (by decide))
   have w₂ := e₂.wb_right
   have t1' : ¬ c₁.nreg 140314 < c₁.nreg K1 := t1
   by_cases t2 : c₂.nreg 140316 < c₂.nreg K1
   · have hn : σ * pU.1 ≤ σ * pV.1 := by
       by_contra h; have := a₂.2.2 h; rw [E₂.k1] at t2; omega
-    rw [show edgeSel _ _ _ _ _ _ _ _ = 1 by unfold edgeSel; rw [ite_eq_left hUV,
-      ite_eq_left hzU, ite_eq_left hA, ite_eq_left hn]] at hc
+    rw [show edgeSel _ _ _ _ _ _ _ _ = 1 by grind [edgeSel]] at hc
     obtain ⟨c', k, ex, hk, ca, f⟩ := candFrom_exec (P := P) (C := C) (S := seg pU pV) c₂ w₂
       (by omega) (A := 140270) (e := 140263) (h := 140264) (by norm_num) (by norm_num)
       (by norm_num) rU₂.1 (hc.1 rfl) pU₂.2.1 pU₂.2.2 (by rw [pU₂.1, hzU])
-    exact ⟨c', _, .ifLtN_false t0' (.seq e₁ (.ifLtN_false t1' (.seq e₂ (.ifLtN_true t2 ex)))),
+    exact ⟨c', _, .ifLtN_false t0' (e₁ ;; .ifLtN_false t1' (.seq e₂ (.ifLtN_true t2 ex))),
       by omega, ca, (fe₁.trans fe₂).trans f⟩
   have hn : ¬ σ * pU.1 ≤ σ * pV.1 := a₂.2.1 (by have := a₂.1; rw [E₂.k1] at t2; omega)
-  rw [show edgeSel _ _ _ _ _ _ _ _ = 2 by unfold edgeSel; rw [ite_eq_left hUV,
-    ite_eq_left hzU, ite_eq_left hA, ite_eq_right hn]] at hc
+  rw [show edgeSel _ _ _ _ _ _ _ _ = 2 by grind [edgeSel]] at hc
   obtain ⟨c', k, ex, hk, ca, f⟩ := candFrom_exec (P := P) (C := C) (S := seg pU pV) c₂ w₂
     (by omega) (A := 140281) (e := 140265) (h := 140266) (by norm_num) (by norm_num)
     (by norm_num) rV₂.1 (hc.1 rfl) pV₂.2.1 pV₂.2.2 (by rw [pV₂.1, hzU, hUV])
-  exact ⟨c', _, .ifLtN_false t0' (.seq e₁ (.ifLtN_false t1' (.seq e₂ (.ifLtN_false t2 ex)))),
+  exact ⟨c', _, .ifLtN_false t0' (e₁ ;; .ifLtN_false t1' (.seq e₂ (.ifLtN_false t2 ex))),
     by omega, ca, (fe₁.trans fe₂).trans f⟩
 
 /-! ## The point at the height of the origin -/
@@ -210,50 +209,43 @@ theorem xTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
   have hin : i + 1 ≤ P.n := hpp.2.2
   have e₁ := Exec.addN (P := P) hw 140304 140236 K1 (by rw [h36, E.k1]; omega)
   set c₁ : Config := { c with nreg := upd c.nreg 140304 (c.nreg 140236 + c.nreg K1) } with hc₁
-  have g₁ : ∀ r, r ≠ 140304 → c₁.nreg r = c.nreg r := fun r hr => by rw [hc₁]; simp [hr]
   have fe₁ : FrameB Bedge c c₁ := frameB_upd c _ (by decide)
   have E₁ := E.frame fe₁ Bedge_env
   have q04 : c₁.nreg 140304 = i + 1 := by rw [hc₁]; simp [h36, E.k1]
-  have q62 : c₁.nreg 140262 = p := by rw [g₁ _ (by decide), h62]
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by decide)
-  obtain ⟨c₂, k₂, e₂, hk₂, r₂, f₂⟩ := ptLoad_exec (P := P) c₁ e₁.wb_right E₁ (e := 140262)
-    (h := 140304) (B := 140292) (by norm_num) (by norm_num) (by norm_num) (by rw [q62]; exact hpn)
-    (by rw [q62, q04]; exact hpp) (Or.inr (by rw [q62, q04]; exact hqR)) (by rw [hA₁]; exact hroom)
+  have q62 : c₁.nreg 140262 = p := by simp_all
+  obtain ⟨c₂, k₂, e₂, hk₂, r₂, f₂⟩ := guarded (ptLoad_exec (P := P) c₁ e₁.wb_right E₁ (e := 140262)
+    (h := 140304) (B := 140292) (by norm_num) (by norm_num) (by norm_num) (by simp_all)
+    (by simp_all) (Or.inr (by simp_all)))
   rw [q62, q04] at r₂
-  have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (Bld_bedge (by norm_num))
+  have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (guarded Bld_bedge)
   have E₂ := E₁.frame fe₂ Bedge_env
   have k₂' : ∀ r, (r = 140262 ∨ r = 140304) → c₂.nreg r = c₁.nreg r := fun r hr =>
-    f₂.1 r (by rcases hr with rfl | rfl <;> decide)
+    at_index f₂.1 r
   obtain ⟨c₃, k₃, e₃, hk₃, a₃, f₃⟩ := aheadT_exec (P := P) c₂ e₂.wb_right E₂ (A := 140292)
     (dst := 140314) (by norm_num) (by norm_num) r₂.1 (ne_of_seg hz hq hqy.symm)
   have fe₃ : FrameB Bedge c₂ c₃ := FrameB.wk f₃ (Bkb_bedge (by decide))
   have E₃ := E₂.bkb (by decide) f₃
-  have kp : ∀ r, 140260 ≤ r → r < 140310 → c₃.nreg r = c₂.nreg r := fun r h1 h2 =>
+  have kp : AgreeOnBand 140260 140310 c₃.nreg c₂.nreg := fun r h1 h2 =>
     f₃.1 r (by simp [Bkb, Bk]; omega)
-  have r₃ := r₂.keep fun r h1 h2 => kp r (by omega) (by omega)
-  have hc := seg_at E.hσ hUV hq hqy
+  have hc := from_facts seg_at
   have w₃ := e₃.wb_right
   unfold xTree
   by_cases t : c₃.nreg 140314 < c₃.nreg K1
-  · have hA : ¬ 0 < σ * (((chainModel C).pos (Qof P) ⟨p, i + 1⟩).1 - z.1) := fun h => by
-      have := a₃.2.2 h; rw [E₃.k1] at t; omega
-    rw [ite_eq_right hA] at hc
-    obtain ⟨c', k, ex, hk, ca, f⟩ := cand0_exec (P := P) (C := C) (z := z) (σ := σ) c₃ w₃
-      (hc.2 (by norm_num))
-    exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.ifLtN_true t ex))), by omega, ca,
+  · have hA : ¬ 0 < σ * ((C.chainModel.pos P.Qof ⟨p, i + 1⟩).1 - z.1) := fun h => by
+      have := a₃.2.2 h; grind [E₃.k1]
+    rw_facts [ite_eq_right] at hc
+    obtain ⟨c', k, ex, hk, ca, f⟩ := from_facts (cand0_exec (P := P) (C := C) (z := z) (σ := σ) c₃)
+    exact ⟨c', _, e₁ ;; e₂ ;; e₃ ;; .ifLtN_true t ex, by omega, ca,
       ((fe₁.trans fe₂).trans fe₃).trans f⟩
-  · have hA : 0 < σ * (((chainModel C).pos (Qof P) ⟨p, i + 1⟩).1 - z.1) :=
-      a₃.2.1 (by have := a₃.1; rw [E₃.k1] at t; omega)
-    rw [ite_eq_left hA] at hc
+  · 
+    rw [ite_eq_left (a₃.2.1 (by have := a₃.1; rw [E₃.k1] at t; omega))] at hc
     obtain ⟨c', k, ex, hk, ca, f⟩ := candFrom_exec (P := P) (C := C) (S := seg pU pV) c₃ w₃
       (by omega) (A := 140292) (e := 140262) (h := 140304) (by norm_num) (by norm_num)
-      (by norm_num) r₃.1 (hc.1 rfl)
-      (by rw [kp _ (by norm_num) (by norm_num), kp _ (by norm_num) (by norm_num),
-        k₂' _ (Or.inl rfl), k₂' _ (Or.inr rfl), q62, q04]; exact hpp)
-      (by rw [kp _ (by norm_num) (by norm_num), k₂' _ (Or.inl rfl), q62]; exact hpn)
-      (by rw [kp _ (by norm_num) (by norm_num), kp _ (by norm_num) (by norm_num),
-        k₂' _ (Or.inl rfl), k₂' _ (Or.inr rfl), q62, q04, ← hqy])
-    exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.ifLtN_false t ex))), by omega, ca,
+      (by norm_num) (r₂.keep fun r h1 h2 => at_index kp r).1 (hc.1 rfl)
+      (by grind)
+      (by grind)
+      (by grind)
+    exact ⟨c', _, e₁ ;; e₂ ;; e₃ ;; .ifLtN_false t ex, by omega, ca,
       ((fe₁.trans fe₂).trans fe₃).trans f⟩
 
 /-! ## The origin strictly inside the heights -/
@@ -289,12 +281,11 @@ theorem midTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       have kp : ∀ r, r ≠ dst → 140262 ≤ r → r < 140330 → c₁.nreg r = c₀.nreg r :=
         fun r h1 h2 h3 => f.1 r (by simp [Bkb, Bk]; omega)
       exact ⟨c₁, k, ex, hk, bt, f, E₀.bkb (by simp [Bedge]; omega) f,
-        rU₀.keep fun r h1 h2 => kp r (by omega) (by omega) (by omega),
-        rV₀.keep fun r h1 h2 => kp r (by omega) (by omega) (by omega),
-        by rw [kp _ (by omega) (by norm_num) (by norm_num), h62₀],
+        rU₀.keep fun r h1 h2 => at_index kp r,
+        rV₀.keep fun r h1 h2 => at_index kp r,
+        by read_words,
         by rw [f.1 ALLOC (by simp [Bkb, Bk, ALLOC]; omega), hA₀], kp⟩
-  obtain ⟨c₁, k₁, e₁, hk₁, b17, f₁, E₁, rU₁, rV₁, q₁, a₁, kp₁⟩ := step c 140317 hw E rU rV h62 rfl
-    le_rfl (by norm_num) 140274 140234 _ _ (Or.inl rfl) (Or.inr (Or.inl rfl)) rU.2.1 E.oy
+  obtain ⟨c₁, k₁, e₁, hk₁, b17, f₁, E₁, rU₁, rV₁, q₁, a₁, kp₁⟩ := from_facts (step c 140317 140274 140234 _ _)
   obtain ⟨c₂, k₂, e₂, hk₂, b18, f₂, E₂, rU₂, rV₂, q₂, a₂, kp₂⟩ := step c₁ 140318 e₁.wb_right E₁ rU₁
     rV₁ q₁ a₁ (by norm_num) (by norm_num) 140234 140285 _ _ (Or.inr (Or.inl rfl))
     (Or.inr (Or.inr rfl)) E₁.oy rV₁.2.1
@@ -306,21 +297,20 @@ theorem midTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
     (Or.inl rfl) E₃.oy rU₃.2.1
   -- the bits survive
   have b17' : BitIs c₄ 140317 (pU.2 < z.2) :=
-    ((b17.of_eq (kp₂ _ (by norm_num) (by norm_num) (by norm_num))).of_eq
-      (kp₃ _ (by norm_num) (by norm_num) (by norm_num))).of_eq
-      (kp₄ _ (by norm_num) (by norm_num) (by norm_num))
+    ((b17.of_eq (at_index kp₂ _)).of_eq
+      (at_index kp₃ _)).of_eq
+      (at_index kp₄ _)
   have b18' : BitIs c₄ 140318 (z.2 < pV.2) :=
-    (b18.of_eq (kp₃ _ (by norm_num) (by norm_num) (by norm_num))).of_eq
-      (kp₄ _ (by norm_num) (by norm_num) (by norm_num))
+    (b18.of_eq (at_index kp₃ _)).of_eq
+      (at_index kp₄ _)
   have b19' : BitIs c₄ 140319 (pV.2 < z.2) :=
-    b19.of_eq (kp₄ _ (by norm_num) (by norm_num) (by norm_num))
+    b19.of_eq (at_index kp₄ _)
   have fe : FrameB Bedge c c₄ :=
     (((FrameB.wk f₁ (Bkb_bedge (by decide))).trans (FrameB.wk f₂ (Bkb_bedge (by decide)))).trans
       (FrameB.wk f₃ (Bkb_bedge (by decide)))).trans (FrameB.wk f₄ (Bkb_bedge (by decide)))
   have hpre : ∀ {s : Stmt} {c' : Config} {k : ℕ}, Exec P W s c₄ c' k →
-      Exec P W (.seq (hLess 140274 140234 140317) (.seq (hLess 140234 140285 140318)
-        (.seq (hLess 140285 140234 140319) (.seq (hLess 140234 140274 140320) s)))) c c'
-        (k₁ + (k₂ + (k₃ + (k₄ + k)))) := fun ex => .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ ex)))
+      Exec P W (hLess 140274 140234 140317 ;; hLess 140234 140285 140318 ;; hLess 140285 140234 140319 ;; hLess 140234 140274 140320 ;; s) c c'
+        (k₁ + (k₂ + (k₃ + (k₄ + k)))) := fun ex => e₁ ;; e₂ ;; e₃ ;; e₄ ;; ex
   have w₄ := e₄.wb_right
   -- the answer when the origin is strictly between
   obtain ⟨hpn, α, β, hα, hαβ, hβ, hpU, hpV⟩ := geo
@@ -332,29 +322,29 @@ theorem midTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
     -- the origin is at the height of a vertex of `Q`
     obtain ⟨-, hzR, -, hi, hzi⟩ : c₄.nreg 140234 = 1 ∧ |z.2| < C.radius ∧
         c₄.nreg (140234 + 1) = 0 ∧ c₄.nreg (140234 + 2) < P.n ∧
-        z.2 = ((Qof P).vtx (c₄.nreg (140234 + 2))).2 := by
+        z.2 = (P.Qof.vtx (c₄.nreg (140234 + 2))).2 := by
       rcases E₄.oy with ⟨_, h⟩ | ⟨_, h⟩ | h
-      · exfalso; rw [h] at hmid; rcases hmid with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith
-      · exfalso; rw [h] at hmid; rcases hmid with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith
+      · exfalso; rw [h] at hmid; grind
+      · grind
       · exact h
     set i := c₄.nreg (140234 + 2) with hi_def
-    have hm := mid_pos (chainModel C) (Qof P) (p := p) (h := i) hα hαβ hβ (by
+    have hm := mid_pos C.chainModel P.Qof (p := p) (h := i) hα hαβ hβ (by
       rw [← hpU, ← hpV, ← hzi]; exact hmid)
     rw [← hpU, ← hpV] at hm
     obtain ⟨hmem, hy, hp0, hp1⟩ := hm
-    exact xTree_exec c₄ w₄ E₄ (p := p) (i := i) q₄ rfl hmem (by rw [hy, ← hzi])
-      ⟨hp0.le, hp1, show i + 1 ≤ P.n by omega⟩ hpn (by rw [hy, ← hzi]; exact hzR) hUV hz
+    exact xTree_exec c₄ w₄ E₄ (p := p) (i := i) q₄ rfl hmem (by simp [hy, hzi])
+      ⟨hp0.le, hp1, show i + 1 ≤ P.n by omega⟩ hpn (by grind) hUV hz
       (by rw [a₄]; exact hroom)
   have ocase : ¬ ((pU.2 < z.2 ∧ z.2 < pV.2) ∨ (pV.2 < z.2 ∧ z.2 < pU.2)) →
-      ∃ c' k, Exec P W cand0 c₄ c' k ∧ k = 1 ∧ CandAt P C c' 140220 (seg pU pV) z σ ∧
+      RunsFor P W cand0 c₄ 1 fun c' => CandAt P C c' 140220 (seg pU pV) z σ ∧
         FrameB Bedge c₄ c' := fun hmid => by
-    refine cand0_exec c₄ w₄ ((seg_out (x := 0) ?_).2 (by norm_num))
+    refine cand0_exec c₄ w₄ (guarded (seg_out (x := 0) ?_).2)
     rintro ⟨h1, h2⟩
     apply hmid
     rcases le_total pU.2 pV.2 with h | h
-    · rw [min_eq_left h] at h1; rw [max_eq_right h] at h2
+    · rw_facts [min_eq_left] at h1; rw_facts [max_eq_right] at h2
       exact Or.inl ⟨lt_of_le_of_ne h1 (Ne.symm hzU), lt_of_le_of_ne h2 hzV⟩
-    · rw [min_eq_right h] at h1; rw [max_eq_left h] at h2
+    · rw_facts [min_eq_right] at h1; rw_facts [max_eq_left] at h2
       exact Or.inr ⟨lt_of_le_of_ne h1 (Ne.symm hzV), lt_of_le_of_ne h2 hzU⟩
   have k1 := E₄.k1
   unfold midTree
@@ -363,28 +353,24 @@ theorem midTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       (.ifLtN 140320 K1 cand0 xTree)) c₄ c' k ∧ k ≤ 16210 ∧
       CandAt P C c' 140220 (seg pU pV) z σ ∧ FrameB Bedge c₄ c' := fun hn => by
     by_cases t19 : c₄.nreg 140319 < c₄.nreg K1
-    · have h19 : ¬ pV.2 < z.2 := fun h => by have := b19'.2.2 h; rw [k1] at t19; omega
+    · have h19 : ¬ pV.2 < z.2 := fun h => by have := b19'.2.2 h; grind
       obtain ⟨c', k, ex, hk, ca, f⟩ := ocase (by tauto)
       exact ⟨c', _, .ifLtN_true t19 ex, by omega, ca, f⟩
-    have h19 : pV.2 < z.2 := b19'.2.1 (by have := b19'.1; rw [k1] at t19; omega)
     by_cases t20 : c₄.nreg 140320 < c₄.nreg K1
-    · have h20 : ¬ z.2 < pU.2 := fun h => by have := b20.2.2 h; rw [k1] at t20; omega
+    · have h20 : ¬ z.2 < pU.2 := fun h => by have := b20.2.2 h; grind
       obtain ⟨c', k, ex, hk, ca, f⟩ := ocase (by tauto)
       exact ⟨c', _, .ifLtN_false t19 (.ifLtN_true t20 ex), by omega, ca, f⟩
-    have h20 : z.2 < pU.2 := b20.2.1 (by have := b20.1; rw [k1] at t20; omega)
-    obtain ⟨c', k, ex, hk, ca, f⟩ := xcase (Or.inr ⟨h19, h20⟩)
+    obtain ⟨c', k, ex, hk, ca, f⟩ := xcase (Or.inr ⟨(b19'.2.1 (by have := b19'.1; rw [k1] at t19; omega)), (b20.2.1 (by have := b20.1; rw [k1] at t20; omega))⟩)
     exact ⟨c', _, .ifLtN_false t19 (.ifLtN_false t20 ex), by omega, ca, f⟩
   by_cases t17 : c₄.nreg 140317 < c₄.nreg K1
-  · have h17 : ¬ pU.2 < z.2 := fun h => by have := b17'.2.2 h; rw [k1] at t17; omega
-    obtain ⟨c', k, ex, hk, ca, f⟩ := T2 (fun h => h17 h.1)
+  · 
+    obtain ⟨c', k, ex, hk, ca, f⟩ := T2 (fun h => (fun h => by have := b17'.2.2 h; grind) h.1)
     exact ⟨c', _, hpre (.ifLtN_true t17 ex), by omega, ca, fe.trans f⟩
-  have h17 : pU.2 < z.2 := b17'.2.1 (by have := b17'.1; rw [k1] at t17; omega)
   by_cases t18 : c₄.nreg 140318 < c₄.nreg K1
-  · have h18 : ¬ z.2 < pV.2 := fun h => by have := b18'.2.2 h; rw [k1] at t18; omega
-    obtain ⟨c', k, ex, hk, ca, f⟩ := T2 (fun h => h18 h.2)
+  · 
+    obtain ⟨c', k, ex, hk, ca, f⟩ := T2 (fun h => (fun h => by have := b18'.2.2 h; grind) h.2)
     exact ⟨c', _, hpre (.ifLtN_false t17 (.ifLtN_true t18 ex)), by omega, ca, fe.trans f⟩
-  have h18 : z.2 < pV.2 := b18'.2.1 (by have := b18'.1; rw [k1] at t18; omega)
-  obtain ⟨c', k, ex, hk, ca, f⟩ := xcase (Or.inl ⟨h17, h18⟩)
+  obtain ⟨c', k, ex, hk, ca, f⟩ := xcase (Or.inl ⟨(b17'.2.1 (by have := b17'.1; rw [k1] at t17; omega)), (b18'.2.1 (by have := b18'.1; rw [k1] at t18; omega))⟩)
   exact ⟨c', _, hpre (.ifLtN_false t17 (.ifLtN_false t18 ex)), by omega, ca, fe.trans f⟩
 
 /-! ## The ends at different heights -/
@@ -400,26 +386,25 @@ theorem endCase_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
   obtain ⟨c₁, k₁, e₁, hk₁, a₁, f₁⟩ := aheadT_exec (P := P) c hw E (A := A) (dst := 140314)
     (by omega) (by norm_num) rq.1 (ne_of_seg hz hq hqz.symm)
   have E₁ := E.bkb (by decide) f₁
-  have kp : ∀ r, 140262 ≤ r → r < 140310 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
+  have kp : AgreeOnBand 140262 140310 c₁.nreg c.nreg := fun r h1 h2 =>
     f₁.1 r (by simp [Bkb, Bk]; omega)
-  have rq₁ := rq.keep fun r h1 h2 => kp r (by omega) (by omega)
-  have pq₁ := pq.keep (kp e (by omega) (by omega)) (kp h (by omega) (by omega))
+  have rq₁ := rq.keep fun r h1 h2 => at_index kp r
+  have pq₁ := pq.keep (at_index kp e) (at_index kp h)
   have fe₁ : FrameB Bedge c c₁ := FrameB.wk f₁ (Bkb_bedge (by decide))
-  have hc := seg_at E.hσ hUV hq hqz
+  have hc := from_facts seg_at
   have w₁ := e₁.wb_right
   by_cases t : c₁.nreg 140314 < c₁.nreg K1
   · have hA' : ¬ 0 < σ * (q.1 - z.1) := fun h => by
-      have := a₁.2.2 h; rw [E₁.k1] at t; omega
+      have := a₁.2.2 h; grind [E₁.k1]
     rw [ite_eq_right hA'] at hc
-    obtain ⟨c', k, ex, hk, ca, f⟩ := cand0_exec (P := P) (C := C) (z := z) (σ := σ) c₁ w₁
-      (hc.2 (by norm_num))
-    exact ⟨c', _, .seq e₁ (.ifLtN_true t ex), by omega, ca, fe₁.trans f⟩
+    obtain ⟨c', k, ex, hk, ca, f⟩ := from_facts (cand0_exec (P := P) (C := C) (z := z) (σ := σ) c₁)
+    exact ⟨c', _, e₁ ;; .ifLtN_true t ex, by omega, ca, fe₁.trans f⟩
   · have hA' : 0 < σ * (q.1 - z.1) := a₁.2.1 (by have := a₁.1; rw [E₁.k1] at t; omega)
     rw [ite_eq_left hA'] at hc
     obtain ⟨c', k, ex, hk, ca, f⟩ := candFrom_exec (P := P) (C := C) (S := seg pU pV) c₁ w₁
       (by omega) (A := A) (e := e) (h := h) (by omega) (by omega) (by omega) rq₁.1 (hc.1 rfl)
       pq₁.2.1 pq₁.2.2 (by rw [pq₁.1, ← hqz])
-    exact ⟨c', _, .seq e₁ (.ifLtN_false t ex), by omega, ca, fe₁.trans f⟩
+    exact ⟨c', _, e₁ ;; .ifLtN_false t ex, by omega, ca, fe₁.trans f⟩
 
 theorem neTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ c)
     {pU pV : Point} {p : ℕ} (rU : PtRecB P c 140270 pU C.radius)
@@ -432,19 +417,17 @@ theorem neTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ
   have k1 := E.k1
   unfold neTree
   by_cases t12 : c.nreg 140312 < c.nreg K1
-  · have hzU : z.2 ≠ pU.2 := fun h => by have := b12.2.2 h; rw [k1] at t12; omega
+  · have hzU : z.2 ≠ pU.2 := fun h => by have := b12.2.2 h; simp_all
     by_cases t13 : c.nreg 140313 < c.nreg K1
-    · have hzV : z.2 ≠ pV.2 := fun h => by have := b13.2.2 h; rw [k1] at t13; omega
-      obtain ⟨c', k, ex, hk, ca, f⟩ := midTree_exec c hw E rU rV h62 geo hUV hzU hzV hz hroom
-      exact ⟨c', _, .ifLtN_true t12 (.ifLtN_true t13 ex), by omega, ca, f⟩
-    have hzV : z.2 = pV.2 := b13.2.1 (by have := b13.1; rw [k1] at t13; omega)
-    obtain ⟨c', k, ex, hk, ca, f⟩ := endCase_exec c hw E (V_mem_seg pU pV) hzV.symm hUV hz
+    · have hzV : z.2 ≠ pV.2 := fun h => by have := b13.2.2 h; simp_all
+      obtain ⟨c', k, ex, hk, ca, f⟩ := from_facts midTree_exec
+      finish_run (.ifLtN_true t12 (.ifLtN_true t13 ex))
+    obtain ⟨c', k, ex, hk, ca, f⟩ := endCase_exec c hw E (V_mem_seg pU pV) (b13.2.1 (by have := b13.1; rw [k1] at t13; omega)).symm hUV hz
       (A := 140281) (e := 140265) (h := 140266) (by norm_num) (by norm_num) (by norm_num) rV pV'
-    exact ⟨c', _, .ifLtN_true t12 (.ifLtN_false t13 ex), by omega, ca, f⟩
-  have hzU : z.2 = pU.2 := b12.2.1 (by have := b12.1; rw [k1] at t12; omega)
-  obtain ⟨c', k, ex, hk, ca, f⟩ := endCase_exec c hw E (U_mem_seg pU pV) hzU.symm hUV hz
-    (A := 140270) (e := 140263) (h := 140264) (by norm_num) (by norm_num) (by norm_num) rU pU'
-  exact ⟨c', _, .ifLtN_false t12 ex, by omega, ca, f⟩
+    finish_run (.ifLtN_true t12 (.ifLtN_false t13 ex))
+  obtain ⟨c', k, ex, hk, ca, f⟩ := endCase_exec c hw E (U_mem_seg pU pV) (b12.2.1 (by have := b12.1; rw [k1] at t12; omega)).symm hUV hz
+    (A := 140270) (e := 140263) (by norm_num) (by norm_num) (by norm_num) rU pU'
+  finish_run (.ifLtN_false t12 ex)
 
 /-! ## The segment machine -/
 
@@ -459,45 +442,38 @@ theorem edgeH_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
     (hroom : c.nreg ALLOC + 50000 ≤ W) :
     ∃ c' k, Exec P W edgeH c c' k ∧ k ≤ 50000 ∧ CandAt P C c' 140220 (seg pU pV) z σ ∧
       FrameB Bedge c c' := by
-  have hW : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
-  have hR := C.radius_pos
   -- `U`
   obtain ⟨⟨pUe, pUp, pUn⟩, pUy⟩ := iU
-  obtain ⟨c₁, k₁, e₁, hk₁, rU₁, f₁⟩ := ptLoad_exec (P := P) c hw E (e := 140263) (h := 140264)
-    (B := 140270) (by norm_num) (by norm_num) (by norm_num) pUn pUp (by rw [pUe]; exact pUy)
+  obtain ⟨c₁, k₁, e₁, hk₁, rU₁, f₁⟩ := ptLoad_exec c hw E
+    (B := 140270) (by norm_num) (by norm_num) (by norm_num) pUn pUp (by simp_all)
     (by omega)
   rw [pUe] at rU₁
-  have fe₁ : FrameB Bedge c c₁ := FrameB.wk f₁ (Bld_bedge (by norm_num))
+  have fe₁ := FrameB.wk f₁ (guarded Bld_bedge)
   have E₁ := E.frame fe₁ Bedge_env
-  have kp₁ : ∀ r, 140262 ≤ r → r < 140270 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
-    f₁.1 r (by simp [Bld, Bprim]; omega)
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := f₁.1 ALLOC (by simp [Bld, Bprim, ALLOC])
+  have kp₁ : AgreeOnBand 140262 140270 c₁.nreg c.nreg := fun r h1 h2 =>
+    at_index f₁.1 r
+  have hA₁ := f₁.1 ALLOC (rfl)
   -- `V`
   obtain ⟨⟨pVe, pVp, pVn⟩, pVy⟩ := iV
-  obtain ⟨c₂, k₂, e₂, hk₂, rV₂, f₂⟩ := ptLoad_exec (P := P) c₁ e₁.wb_right E₁ (e := 140265)
+  obtain ⟨c₂, k₂, e₂, hk₂, rV₂, f₂⟩ := ptLoad_exec c₁ e₁.wb_right E₁ (e := 140265)
     (h := 140266) (B := 140281) (by norm_num) (by norm_num) (by norm_num)
-    (by rw [kp₁ _ (by norm_num) (by norm_num)]; exact pVn)
-    (by rw [kp₁ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]; exact pVp)
-    (by rw [kp₁ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num), pVe]; exact pVy)
+    (by simp_all)
+    (by simp_all)
+    (by simp_all)
     (by rw [hA₁]; omega)
-  rw [kp₁ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num), pVe] at rV₂
-  have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (Bld_bedge (by norm_num))
-  have E₂ := E₁.frame fe₂ Bedge_env
-  have kp₂ : ∀ r, 140262 ≤ r → r < 140281 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
-    f₂.1 r (by simp [Bld, Bprim]; omega)
+  rw [at_index kp₁ _, at_index kp₁ _, pVe] at rV₂
+  have fe₂ := FrameB.wk f₂ (guarded Bld_bedge)
+  have kp₂ : AgreeOnBand 140262 140281 c₂.nreg c₁.nreg := fun r h1 h2 =>
+    at_index f₂.1 r
   have hA₂ : c₂.nreg ALLOC = c.nreg ALLOC := by
-    rw [f₂.1 ALLOC (by simp [Bld, Bprim, ALLOC]), hA₁]
-  have rU₂ := rU₁.keep fun r h1 h2 => kp₂ r (by omega) (by omega)
+    rw_facts [f₂.1, hA₁]
+  have rU₂ := rU₁.keep fun r h1 h2 => at_index kp₂ r
   have pU₂ : PosAt P C c₂ 140263 140264 pU := by
-    refine PosAt.keep ⟨pUe, pUp, pUn⟩ ?_ ?_
-    · rw [kp₂ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]
-    · rw [kp₂ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]
+    refine PosAt.keep ⟨pUe, pUp, pUn⟩ ?_ ?_ <;> simp [*]
   have pV₂ : PosAt P C c₂ 140265 140266 pV := by
-    refine PosAt.keep ⟨pVe, pVp, pVn⟩ ?_ ?_
-    · rw [kp₂ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]
-    · rw [kp₂ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]
+    refine PosAt.keep ⟨pVe, pVp, pVn⟩ ?_ ?_ <;> simp [*]
   have q62 : c₂.nreg 140262 = p := by
-    rw [kp₂ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num), h62]
+    simp_all
   -- the three height bits
   have hEqStep : ∀ (c₀ : Config) (a b dst : ℕ) (ya yb : ℝ), WordsBounded W c₀ →
       ShEnv P W H C z σ c₀ → 140311 ≤ dst → dst < 140314 → HRecS P c₀ a ya C.radius →
@@ -505,48 +481,42 @@ theorem edgeH_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
       ∃ c₁ k, Exec P W (hEq a b dst) c₀ c₁ k ∧ k ≤ 20 ∧ BitIs c₁ dst (ya = yb) ∧
         (∀ r, r ≠ dst → c₁.nreg r = c₀.nreg r) ∧ FrameB Bedge c₀ c₁ ∧ ShEnv P W H C z σ c₁ :=
     fun c₀ a b dst ya yb hw₀ E₀ hd1 hd2 hA hB => by
-      obtain ⟨c₁, k, ex, hk, bt, hc⟩ := hEq_exec E₀.hG (by omega) c₀ hw₀ (dst := dst) E₀.k1 hR hA hB
-      have kp : ∀ r, r ≠ dst → c₁.nreg r = c₀.nreg r := fun r hr => by rw [hc]; simp [hr]
+      obtain ⟨c₁, k, ex, hk, bt, hc⟩ := hEq_exec E₀.hG (by omega) c₀ hw₀ (dst := dst) E₀.k1 C.radius_pos hA hB
       have fr : FrameB Bedge c₀ c₁ := by
         rw [hc]; exact frameB_upd c₀ _ (by simp [Bedge]; omega)
-      exact ⟨c₁, k, ex, hk, bt, kp, fr, E₀.frame fr Bedge_env⟩
+      exact ⟨c₁, k, ex, hk, bt, (fun r hr => by rw [hc]; simp [hr]), fr, E₀.frame fr Bedge_env⟩
   obtain ⟨c₃, k₃, e₃, hk₃, b11, kp₃, fe₃, E₃⟩ := hEqStep c₂ 140274 140285 140311 _ _ e₂.wb_right
-    E₂ le_rfl (by norm_num) rU₂.2.1 rV₂.2.1
-  have rU₃ := rU₂.keep fun r h1 h2 => kp₃ r (by omega)
-  have rV₃ := rV₂.keep fun r h1 h2 => kp₃ r (by omega)
+    (E₁.frame fe₂ Bedge_env) le_rfl (by norm_num) rU₂.2.1 rV₂.2.1
+  have rU₃ := rU₂.keep fun r h1 h2 => at_index kp₃ r
   obtain ⟨c₄, k₄, e₄, hk₄, b12, kp₄, fe₄, E₄⟩ := hEqStep c₃ 140234 140274 140312 _ _ e₃.wb_right
     E₃ (by norm_num) (by norm_num) E₃.oy rU₃.2.1
-  have rU₄ := rU₃.keep fun r h1 h2 => kp₄ r (by omega)
-  have rV₄ := rV₃.keep fun r h1 h2 => kp₄ r (by omega)
+  have rV₄ := (rV₂.keep fun r h1 h2 => at_index kp₃ r).keep fun r h1 h2 => at_index kp₄ r
   obtain ⟨c₅, k₅, e₅, hk₅, b13, kp₅, fe₅, E₅⟩ := hEqStep c₄ 140234 140285 140313 _ _ e₄.wb_right
     E₄ (by norm_num) (by norm_num) E₄.oy rV₄.2.1
-  have rU₅ := rU₄.keep fun r h1 h2 => kp₅ r (by omega)
-  have rV₅ := rV₄.keep fun r h1 h2 => kp₅ r (by omega)
-  have kk : ∀ r, 140262 ≤ r → r < 140270 → c₅.nreg r = c₂.nreg r := fun r h1 h2 => by
-    rw [kp₅ r (by omega), kp₄ r (by omega), kp₃ r (by omega)]
-  have pU₅ := pU₂.keep (kk _ (by norm_num) (by norm_num)) (kk _ (by norm_num) (by norm_num))
-  have pV₅ := pV₂.keep (kk _ (by norm_num) (by norm_num)) (kk _ (by norm_num) (by norm_num))
-  have q62' : c₅.nreg 140262 = p := by rw [kk _ (by norm_num) (by norm_num), q62]
-  have b11' : BitIs c₅ 140311 (pU.2 = pV.2) :=
-    (b11.of_eq (kp₄ _ (by norm_num))).of_eq (kp₅ _ (by norm_num))
-  have b12' : BitIs c₅ 140312 (z.2 = pU.2) := b12.of_eq (kp₅ _ (by norm_num))
+  have rU₅ := (rU₃.keep fun r h1 h2 => at_index kp₄ r).keep fun r h1 h2 => at_index kp₅ r
+  have rV₅ := rV₄.keep fun r h1 h2 => at_index kp₅ r
+  have kk : AgreeOnBand 140262 140270 c₅.nreg c₂.nreg := fun r h1 h2 => by
+    frame_simp [kp₅, kp₄, kp₃]
+  have pU₅ := pU₂.keep (at_index kk _) (at_index kk _)
+  have pV₅ := pV₂.keep (at_index kk _) (at_index kk _)
+  have b11' :=
+    (b11.of_eq (at_index kp₄ _)).of_eq (at_index kp₅ _)
+  have b12' := b12.of_eq (at_index kp₅ _)
   have hA₅ : c₅.nreg ALLOC = c.nreg ALLOC := by
-    rw [kp₅ _ (by decide), kp₄ _ (by decide), kp₃ _ (by decide), hA₂]
-  have fe : FrameB Bedge c c₅ := (((fe₁.trans fe₂).trans fe₃).trans fe₄).trans fe₅
+    frame_simp [kp₅, kp₄, kp₃, hA₂]
+  have fe := (((fe₁.trans fe₂).trans fe₃).trans fe₄).trans fe₅
   have w₅ := e₅.wb_right
   have hpre : ∀ {s : Stmt} {c' : Config} {k : ℕ}, Exec P W s c₅ c' k →
-      Exec P W (.seq (ptLoad 140263 140264 140270) (.seq (ptLoad 140265 140266 140281)
-        (.seq (hEq 140274 140285 140311) (.seq (hEq 140234 140274 140312)
-          (.seq (hEq 140234 140285 140313) s))))) c c' (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k))))) :=
-    fun ex => .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ ex))))
+      Exec P W (ptLoad 140263 140264 140270 ;; ptLoad 140265 140266 140281 ;; hEq 140274 140285 140311 ;; hEq 140234 140274 140312 ;; hEq 140234 140285 140313 ;; s) c c' (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k))))) :=
+    fun ex => e₁ ;; e₂ ;; e₃ ;; e₄ ;; e₅ ;; ex
   unfold edgeH
   by_cases t11 : c₅.nreg 140311 < c₅.nreg K1
-  · have hUV : pU.2 ≠ pV.2 := fun h => by have := b11'.2.2 h; rw [E₅.k1] at t11; omega
-    obtain ⟨c', k, ex, hk, ca, f⟩ := neTree_exec c₅ w₅ E₅ rU₅ rV₅ pU₅ pV₅ q62' geo hUV b12' b13
+  · 
+    obtain ⟨c', k, ex, hk, ca, f⟩ := neTree_exec c₅ w₅ E₅ rU₅ rV₅ pU₅ pV₅ (by frame_simp [kk, q62]) geo (fun h => by have := b11'.2.2 h; grind [E₅.k1]) b12' b13
       hz (by rw [hA₅]; omega)
     exact ⟨c', _, hpre (.ifLtN_true t11 ex), by omega, ca, fe.trans f⟩
-  · have hUV : pU.2 = pV.2 := b11'.2.1 (by have := b11'.1; rw [E₅.k1] at t11; omega)
-    obtain ⟨c', k, ex, hk, ca, f⟩ := eqTree_exec c₅ w₅ E₅ rU₅ rV₅ pU₅ pV₅ hUV b12' hz
+  · 
+    obtain ⟨c', k, ex, hk, ca, f⟩ := eqTree_exec c₅ w₅ E₅ rU₅ rV₅ pU₅ pV₅ (b11'.2.1 (by have := b11'.1; rw [E₅.k1] at t11; omega)) b12' hz
     exact ⟨c', _, hpre (.ifLtN_false t11 ex), by omega, ca, fe.trans f⟩
 
 end

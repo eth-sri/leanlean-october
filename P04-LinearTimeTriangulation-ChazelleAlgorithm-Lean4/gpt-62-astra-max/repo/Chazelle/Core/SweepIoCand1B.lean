@@ -1,4 +1,6 @@
 module
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Evidence
 
 public import Chazelle.Core.SweepIoCand1P
 
@@ -104,7 +106,7 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 /-- `bL = 1` from the run-time test. -/
 theorem bL_one (hq : QState P J 1 z c) (hK : Consts c₂) (fr : CandFr c c₂)
     (hb : c₂.nreg K0 < c₂.nreg bL) : c.nreg bL = 1 := by
-  have := hq.hbL.1; rw [hK.1, candFr_bL fr] at hb; omega
+  have := hq.hbL.1; grind [candFr_bL]
 
 theorem bL_zero (hq : QState P J 1 z c) (hK : Consts c₂) (fr : CandFr c c₂)
     (hb : ¬ c₂.nreg K0 < c₂.nreg bL) : ¬ z.2 ≤ J.left.top.2 := fun h => by
@@ -128,27 +130,26 @@ theorem boxB_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl 
   unfold boxB
   refine IRS.ite (fun hb => ?_) (fun hb => ?_)
   · have hb1 := bL_one hq hK fr hb
-    have h₁ : z.2 ≤ J.left.top.2 := (hq.hbL.2).1 hb1
-    obtain ⟨hgL, hposL, hparL⟩ := lhGeo_boxL hbox hgeo (by rw [hzpos]; exact habs)
-      (by rw [hzpos]; exact h₁)
+    obtain ⟨hgL, hposL, hparL⟩ := lhGeo_boxL hbox hgeo (by simp_all)
+      (by grind [hq.hbL.2])
     have h := lhsL_irs (e := qE) (t := 0) hsh hBs hXl hA (by unfold OutL qE sw; omega) hI₂
-      (Mod := ModB J (c.nreg bL) (c.nreg bR)) (R₀ := J.whole.radius) (L := L) (z := z)
-      (by rw [eE, cm_n]; rcases hbox with h | h <;> rw [h] <;> omega)
-      (by rw [eE, eH]; unfold ProperPos; rw [hparL]; exact hpp)
-      (by rw [eE, eH, hposL, hzpos])
-      (by rw [show J.left.radius = J.right.radius from rfl]; exact habs)
-      (Or.inl (by rw [eE]; exact hbox))
+      (Mod := ModB J (c.nreg bL) (c.nreg bR)) (L := L) (z := z)
+      (by grind [cm_n])
+      (by grind [ProperPos])
+      (by grind)
+      (habs)
+      (guarded Or.inl)
       (by rw [eD]; exact hM.1) (by norm_num) (modB_left hb1) rfl hroom
     refine h.mono le_rfl ?_
     rintro c' ⟨⟨L', a', s', g', geo'⟩, fr', hA', hm'⟩
     rw [eD] at a' g' geo'
     rw [eE, eH] at geo'
-    have hM' : Mid P J z c c' L' := mid_step hM a' s'
+    have hM' := mid_step hM a' s'
       (fun τ hτ => (g' τ hτ).imp_right (fun h => ⟨h.1, onCB_of_left J h.2⟩))
-      (candFr_lhw fr' hA' hm')
-    exact fin1 hq hM' (fun _ => geo' hgL)
-  · have hb0 := bL_zero hq hK fr hb
-    exact IRS.skip hI₂ (fin1 hq hM (fun h => absurd h hb0))
+      (guarded candFr_lhw)
+    grind [fin1]
+  · 
+    exact IRS.skip hI₂ (fin1 hq hM (fun h => absurd h (bL_zero hq hK fr hb)))
 
 /-- **The brute-force class.** -/
 theorem bruteB_irs {bruteS : Stmt → Stmt} {κB : ℕ} (hBr : BruteBody bruteS κB)
@@ -160,26 +161,25 @@ theorem bruteB_irs {bruteS : Stmt → Stmt} {κB : ℕ} (hBr : BruteBody bruteS 
       (16707 + κB * (N₁.arcs.length + 1) * (F (c₀.nreg (sw 5)) + 1) + 2)
       (fun c' => CandOut P J z c c' ∧ CandFr c c') := by
   obtain ⟨hzpos, hqE, hpp, habs, hz₂, hpc, hgeo, hσ, h1H, hHn, hht⟩ := q1_facts hq
-  obtain ⟨hzC, -, hcls⟩ := tour_set J.right (Qof P) hpc hnb hpp.1 hpp.2.1
+  obtain ⟨hzC, -, hcls⟩ := from_facts tour_set
   rw [hzpos] at hzC
   have fr := hM.2.2.2
   have eE := candFr_qE fr
   have eH := candFr_qH fr
-  have eD := candFr_qD fr
   have hK := hA.hK.fix hI₂
   unfold bruteB
   refine IRS.ite (fun hb => ?_) (fun hb => ?_)
-  · have hb1 := bL_one hq hK fr hb
-    have h₁ : z.2 ≤ J.left.top.2 := (hq.hbL.2).1 hb1
-    have hsym := callSym_irs (dsc := sw 21) (re := qE) (rh := qH) (o := sw 3230) hI₂
+  · have hb1 := guarded bL_one
+    have h₁ := (hq.hbL.2).1 hb1
+    have hsym := callSym_irs (re := qE) (rh := qH) (o := sw 3230) hI₂
       (AEnv.ctxR hA hI₂) (by unfold qE qH sw; omega) (by unfold sw; omega)
       (by rw [eE]; exact hqE) (by rw [eE, eH]; exact hpp)
-      (by rw [eE, eH, hzpos]; exact habs) (by rw [eE, eH]; exact hcls) (by omega)
+      (by rwa [eE, eH, hzpos]) (by rwa [eE, eH]) (by omega)
     refine IRS.seq hsym ?_
     rintro c₃ hI₃ hA₃ hA₃' ⟨sp, hsp, hlt, hev, hfr3, hal3, hm3⟩
-    have fr3 : CandFr c₂ c₃ := candFr_regs (S := fun r => sw 3230 ≤ r ∧ r ≤ sw 3233)
-      (fun r h => by unfold Alw; unfold sw at h ⊢; omega)
-      (fun r a b d => hfr3 r a (by unfold sw at b ⊢; omega) d) hal3 hm3
+    have fr3 := candFr_regs (S := fun r => sw 3230 ≤ r ∧ r ≤ sw 3233)
+      (fun r h => by address_omega)
+      (fun r a b d => at_index hfr3 r) hal3 hm3
     have fr3' := candFr_trans fr fr3
     have eD3 := candFr_qD fr3'
     have eL3 := candFr_bL fr3'
@@ -189,22 +189,22 @@ theorem bruteB_irs {bruteS : Stmt → Stmt} {κB : ℕ} (hBr : BruteBody bruteS 
         (dirOf (c₃.nreg qD)) L c₃ := by
       rw [eD3, eL3, eR3]
       exact hM.1.transport (fun j hj => by
-        rw [hfr3 _ (not_oracle_sw (by unfold accA sw; omega) (by unfold accA sw; omega))
+        rw [hfr3 _ (guarded not_oracle_sw)
           (by unfold accA sw; omega) (by unfold accA ALLOC sw; omega)])
     have hab := abs_lt_whole hzC
-    have h := hBr sh Bs F X Ok hsh hBs hXl P W c₀ c₃ J H N₁ N₂ E L sp z hA hI₃
-      (by rw [show sO = sw 3230 + 1 from rfl]; exact hsp) hlt hev (not_mem_left hA.hP hzC hns)
-      hab.1 hab.2 h₁ (by rw [eL3]; exact hb1) hacc3 (by omega)
+    have h := guarded (hBr sh Bs F X Ok hsh hBs hXl P W c₀ c₃ J H N₁ N₂ E L sp z hA hI₃
+      (hsp) hlt hev (not_mem_left hA.hP hzC hns)
+      hab.1 hab.2 h₁)
     refine h.mono le_rfl ?_
     rintro c' ⟨⟨L', a', s', g', geo'⟩, pf⟩
     rw [eD3, eL3, eR3] at a'
     rw [eD3] at g' geo'
-    have hM' : Mid P J z c c' L' := mid_step hM a' s'
+    have hM' := mid_step hM a' s'
       (fun τ hτ => (g' τ hτ).imp_right (fun h => ⟨h.1, onCB_of_left J h.2⟩))
       (candFr_trans fr3 (candFr_part pf))
     exact fin1 hq hM' (fun _ => geo' (freeAt_left_of J h₁ hq.hfree))
-  · have hb0 := bL_zero hq hK fr hb
-    exact IRS.skip hI₂ (fin1 hq hM (fun h => absurd h hb0))
+  · 
+    exact IRS.skip hI₂ (fin1 hq hM (fun h => absurd h (guarded bL_zero)))
 
 /-- **A regular endpoint query**: the table step. -/
 theorem tab_irs {tabB : Stmt} {κT : ℕ} (hT : TabBody tabB κT)
@@ -215,7 +215,7 @@ theorem tab_irs {tabB : Stmt} {κT : ℕ} (hT : TabBody tabB κT)
     (hns : z ≠ J.shared) (hnt : z ≠ J.right.top) (hroom : c₂.nreg ALLOC + κT ≤ W) :
     IRS P W c₀ tabB c₂ κT (fun c' => CandOut P J z c c' ∧ CandFr c c') := by
   obtain ⟨hzpos, hqE, hpp, habs, hz₂, hpc, hgeo, hσ, h1H, hHn, hht⟩ := q1_facts hq
-  obtain ⟨hzC, -, -⟩ := tour_set J.right (Qof P) hpc hnb hpp.1 hpp.2.1
+  obtain ⟨hzC, -, -⟩ := from_facts tour_set
   rw [hzpos] at hzC
   obtain ⟨ho, hd⟩ := endQ_facts hA.hNF₂ hj hend
   rw [hzpos] at ho
@@ -224,14 +224,14 @@ theorem tab_irs {tabB : Stmt} {κT : ℕ} (hT : TabBody tabB κT)
   have eD := candFr_qD fr
   have eL := candFr_bL fr
   have eR := candFr_bR fr
-  have h := hT P W X Ok J H N₁ N₂ E c₀ c₂ L z hA hI₂ (by rw [eJ]; exact hj)
-    (by rw [eJ]; exact ho.symm) (by rw [eJ, eD]; exact hd.symm) hzC hns hnt
+  have h := hT P W X Ok J H N₁ N₂ E c₀ c₂ L z hA hI₂ (by simp_all)
+    (by simp_all) (by simp_all) hzC hns hnt
     (by rw [eD, eL, eR]; exact hM.1) hroom
   refine h.mono le_rfl ?_
   rintro c' ⟨⟨L', a', s', g', hh⟩, fr'⟩
   rw [eD, eL, eR] at a'
   rw [eD] at g' hh
-  exact fin2 (mid_step hM a' s' g' fr') hh
+  exact fin2 (guarded mid_step) hh
 
 /-- **The shared vertex.** -/
 theorem shr_irs {shrB : Stmt → Stmt} {κS : ℕ} (hS : ShrBody shrB κS)
@@ -249,18 +249,17 @@ theorem shr_irs {shrB : Stmt → Stmt} {κS : ℕ} (hS : ShrBody shrB κS)
   have eD := candFr_qD fr
   have eL := candFr_bL fr
   have eR := candFr_bR fr
-  have h₁ : J.shared.2 ≤ J.left.top.2 := J.left.snd_le_top_of_mem_set J.shared_mem_left
-  have hb1 : c.nreg bL = 1 := (hq.hbL.2).2 h₁
+  have h₁ := J.left.snd_le_top_of_mem_set J.shared_mem_left
   have h := hS sh Bs F X Ok hsh hBs hXl P W c₀ c₂ J H N₁ N₂ E L hA hI₂
-    (by rw [eH]; exact h1H) (by rw [eH]; exact hHn) (by rw [eH]; exact hht)
-    (by rw [eD]; exact hq.hfree) (by rw [eL]; exact hb1) (by rw [eD, eL, eR]; exact hM.1) hroom
+    (by simp_all) (by simp_all) (by simp_all)
+    (by grind [hq.hfree]) (by grind [hq.hbL.2]) (by simp [*]; exact hM.1) hroom
   refine h.mono le_rfl ?_
   rintro c' ⟨⟨L', a', s', g', hh⟩, fr'⟩
   rw [eD, eL, eR] at a'
   rw [eD] at g' hh
-  have hM' : Mid P J J.shared c c' L' := mid_step hM a' s'
+  have hM' := mid_step hM a' s'
     (fun τ hτ => (g' τ hτ).imp_right (fun h => ⟨h.1, onCB_of_left J h.2⟩)) fr'
-  exact fin1 hq hM' (fun _ => hh)
+  grind [fin1]
 
 end Cand1
 

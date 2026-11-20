@@ -41,7 +41,7 @@ def transL (li : Bool) (n c₀ : ℕ) (L₀ : List (ℕ × ℕ × ℕ)) : List (
 
 theorem transL_length_le (li : Bool) (n c₀ : ℕ) (L₀ : List (ℕ × ℕ × ℕ)) :
     (transL li n c₀ L₀).length ≤ L₀.length := by
-  unfold transL; rw [List.length_map]; exact List.length_filter_le _ _
+  grind [transL, List.length_map, List.length_filter_le]
 
 /-- The chords of the computed normal form are the chords of the list. -/
 theorem F_buildNF (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) :
@@ -55,7 +55,7 @@ theorem F_buildNF (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : 
     obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hx
     refine ⟨_, ⟨i, hi, rfl⟩, ?_⟩
     have : L.getD i (0, 0, 0) = L[i] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+      simp_all
     unfold BuildNF.chordRec
     rw [this]
     rfl
@@ -69,11 +69,8 @@ theorem chord_eq_of_sub {D : Set Point} {y₁ a₁ b₁ y₂ a₂ b₂ y a b : �
   obtain ⟨ey₂, ha₂, hb₂⟩ := hseg_sub hab.le s₂
   have hm : (((a + b) / 2, y) : Point) ∈ hseg y a b := ⟨rfl, by linarith, by linarith⟩
   rcases Chazelle.Chain.hchordIn_inter h₁ h₂ (s₁ hm) (s₂ hm) with ⟨e1, e2, e3⟩ | ⟨hp, -⟩
-  · rw [e1, e2, e3]
-  · exfalso
-    rcases hp with hp | hp
-    · have := congrArg Prod.fst hp; simp only at this; linarith
-    · have := congrArg Prod.fst hp; simp only at this; linarith
+  · simp_all
+  all_goals grind
 
 variable {P : Polygon} {C : Chain} {N : NF}
 
@@ -128,8 +125,8 @@ theorem ncard_F {M : Model} {Q : Polygon} {N : NF}
     ext c
     simp only [NF.F, mem_ofPred_eq, List.mem_map]
     constructor
-    · rintro ⟨r, hr, rfl⟩; exact ⟨r, hr, rfl⟩
-    · rintro ⟨r, hr, rfl⟩; exact ⟨r, hr, rfl⟩
+    · grind
+    · grind
   have hnd : (N.chords.map fun r => r.toSet M Q).Nodup := by
     rw [List.nodup_iff_injective_getElem]
     intro i j hij
@@ -141,10 +138,10 @@ theorem ncard_F {M : Model} {Q : Polygon} {N : NF}
       unfold NF.chord
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
     exact Fin.ext (hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-      (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij))
+      (by unfold NF.nChords; simpa using j.2) (by simp_all))
   rw [hF, show {c | c ∈ N.chords.map fun r => r.toSet M Q} =
       ((N.chords.map fun r => r.toSet M Q).toFinset : Set (Set Point)) by
-    ext c; simp, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map]
+    simp, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map]
 
 section filt
 
@@ -188,12 +185,8 @@ theorem famOf_transL (hN : IsNF (chainModel C) Q N) :
 theorem chordTriplesOK_transL (hN : IsNF (chainModel C) Q N)
     (hFam : (interiorModel Q).ChordFamily Q (Trans.pieces Q (N.F (chainModel C) Q))) :
     ChordTriplesOK (interiorModel Q) Q (transL li Q.n (c0 C li) (triplesOf N)) := by
-  have hmn := T.hm
-  have hm1 := C.one_le
   refine ⟨?_, ?_, ?_, ?_⟩
-  · have := famOf_transL hQ T hD hli hN
-    unfold famOf at this
-    rw [this]; exact hFam
+  · grind [famOf, famOf_transL]
   · unfold transL
     rw [List.map_map]
     refine List.Nodup.map_on (fun x hx x' hx' hxx => ?_)
@@ -214,7 +207,7 @@ theorem chordTriplesOK_transL (hN : IsNF (chainModel C) Q N)
     rw [hcab'] at hsub'
     have heq := chord_eq_of_sub hch hch' hch''.lt hsub hsub'
     refine List.inj_on_of_nodup_map (nodup_triples_toSet hN) hxm hxm' ?_
-    rw [hcab, hcab', heq]
+    simp_all
   · intro x' hx'
     unfold transL at hx'
     obtain ⟨x, hx, rfl⟩ := List.mem_map.1 hx'

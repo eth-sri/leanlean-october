@@ -1,4 +1,8 @@
 module
+public import Chazelle.Cost.Arithmetic
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseDrvRTailSpec
 public import Chazelle.Core.DownPhaseDrvRLvC
@@ -53,10 +57,7 @@ def LoopOK (O : OracleIface) (sH sR sX : Stmt) (κH κR κX : ℕ) : Prop :=
       k ≤ (Kb + 2) * (L.length + 1) + 2 ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k
 
 theorem nextLvl_ge {lam : ℕ} (h : 16 ≤ lam) : 15 ≤ nextLvl lam := by
-  unfold nextLvl
-  have := ceilBeta_mono h
-  have e : Cost.ceilBeta 16 = 4 := by rw [Setup.ceilBeta_eq]
-  omega
+  grind [nextLvl, Setup.ceilBeta_eq, ceilBeta_mono]
 
 /-- The arithmetic of the cost of one level. -/
 theorem lv_cost (K X κH κR κX κc κT N Kb : ℕ) (hX : 1 ≤ X) (hN : N ≤ κc * X)
@@ -67,7 +68,7 @@ theorem lv_cost (K X κH κR κX κc κT N Kb : ℕ) (hX : 1 ≤ X) (hN : N ≤ 
     rw [hKb]
     have a1 : κH ≤ κH * X := Nat.le_mul_of_pos_right _ hX
     have a2 : κX * (N + 1) ≤ κX * κc * X + κX * X := by
-      have : κX * (N + 1) ≤ κX * (κc * X + X) := Nat.mul_le_mul_left _ (by omega)
+      have : κX * (N + 1) ≤ κX * (κc * X + X) := at_index Nat.mul_le_mul_left _
       calc κX * (N + 1) ≤ κX * (κc * X + X) := this
         _ = κX * κc * X + κX * X := by ring
     have e : (32 + κH + κR + κX + κX * κc + κc) * X =
@@ -94,8 +95,7 @@ theorem lv_cost (K X κH κR κX κc κT N Kb : ℕ) (hX : 1 ≤ X) (hN : N ≤ 
   generalize (32 + κH + κR + κX + κX * κc + κc) * ((K + 1) * X) = u at *
   generalize κT * (K + 1) * X = v at *
   generalize (Kb + 2) * (K + 1) = w at *
-  generalize (K + 1) * X = y at *
-  omega
+  grind
 
 theorem rd21 (c : Config) (i : ℕ) : rd c bDownDrv i = c.nreg (210000 + i) := rfl
 
@@ -109,16 +109,11 @@ theorem ne_nil_of_big {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ
     (hbig : 2 ^ (Cost.ceilBeta (topGrade P.n) + 13) + 200 ≤ P.n) : L ≠ [] := by
   intro hL
   subst hL
-  have hE : E = [] := by simpa using hperm
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have h := DrvB.n_le_of_empty hQ hE hwt
-  have hn : (Qof P).n = P.n := shear_n _ _
-  rw [hn] at h
+  have h := DrvB.n_le_of_empty ((shearInvariance (epsOf P) P).1 hG.1) (by simpa using hperm) hwt
+  rw [(shear_n _ _)] at h
   have h1 : 2 ^ (Cost.ceilBeta lam + 12) ≤ 2 ^ (Cost.ceilBeta (topGrade P.n) + 12) :=
     Nat.pow_le_pow_right (by norm_num) (by have := ceilBeta_mono hlp; omega)
-  have h2 : 2 ^ (Cost.ceilBeta (topGrade P.n) + 13) = 2 * 2 ^ (Cost.ceilBeta (topGrade P.n) + 12) := by
-    rw [pow_succ]; ring
-  omega
+  cost_bound
 
 /-- The bounds `big`, `big2` of the context above the threshold. -/
 theorem big_of {n lam : ℕ} (h16 : 16 ≤ lam) (hlp : lam ≤ topGrade n)
@@ -127,15 +122,12 @@ theorem big_of {n lam : ℕ} (h16 : 16 ≤ lam) (hlp : lam ≤ topGrade n)
       2 ^ (Cost.ceilBeta (nextLvl lam) + 12) ≤ n - 1 := by
   have hμ := nextLvl_lt h16
   have hc : Cost.ceilBeta (nextLvl lam) ≤ Cost.ceilBeta (topGrade n) :=
-    ceilBeta_mono (by omega)
+    guarded ceilBeta_mono
   have h1 : 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) ≤ 2 ^ (Cost.ceilBeta (topGrade n) + 12) :=
     Nat.pow_le_pow_right (by norm_num) (by omega)
   have h2 : 2 ^ (Cost.ceilBeta (topGrade n) + 13) = 2 * 2 ^ (Cost.ceilBeta (topGrade n) + 12) := by
     rw [pow_succ]; ring
-  have h3 : 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) = 4 * 2 ^ (Cost.ceilBeta (nextLvl lam) + 10) := by
-    rw [show Cost.ceilBeta (nextLvl lam) + 12 = Cost.ceilBeta (nextLvl lam) + 10 + 2 by omega,
-      pow_add]; ring
-  omega
+  cost_bound
 
 /-- The `LeftInside` bit of the interior model descriptor. -/
 theorem li_of_desc {m : ℕ → ℕ} {B : ℕ} {Q : Polygon}
@@ -155,7 +147,7 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   obtain ⟨⟨n₀, hn₀⟩, hb⟩ := hC
   obtain ⟨κc, hκc⟩ := hb 0
   obtain ⟨sT, κT, hTm⟩ := hT
-  refine ⟨n₀, .seq lvPar (.seq (lvLoop sH sR sX) sT), κLv κH κR κX κc κT,
+  refine ⟨n₀, lvPar ;; lvLoop sH sR sX ;; sT, κLv κH κR κX κc κT,
     fun P W c hw hpre hroom => ?_⟩
   obtain ⟨hE, hn, h16, hlp, hInv⟩ := hpre
   beta_reduce at hroom ⊢
@@ -164,15 +156,14 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   simp only [rd21, Nat.reduceAdd] at h16 hlp hInv hroom
   rw [hlam] at h16 hlp hInv hroom
   obtain ⟨hD, hDa, L, E, hK, hLb, hLa, hEb, hEa, hok, hperm, hsort, hN, hdeg, hwt, hcnt⟩ := hInv
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
+  have hQ := (shearInvariance (epsOf P) P).1 hG.1
   obtain ⟨-, -, -, reg, g1, g2, g3, g4, -⟩ := DownMath.isNF_build hQ hok hperm hsort
   set X := lemma41Nat (nextLvl lam) + 1 with hX
   set K := L.length with hKdef
   have hX1 : 1 ≤ X := by omega
   have hμ15 := nextLvl_ge h16
-  have hNc : lvNch (nextLvl lam) ≤ κc * X := (hκc _ hμ15).1
   set Kb := lvKb κH κR κX lam with hKb
-  have hcost := lv_cost K X κH κR κX κc κT (lvNch (nextLvl lam)) Kb hX1 hNc rfl
+  have hcost := lv_cost K X κH κR κX κc κT _ Kb hX1 ((hκc _ hμ15).1) rfl
   have hκ : κLv κH κR κX κc κT = 89 + κH + κR + κX + κX * κc + κc + κT := rfl
   rw [← hκ] at hcost
   have hK' : c.nreg 210003 = K := hK
@@ -183,20 +174,17 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   obtain ⟨c₁, k₁, e₁, hk₁, a00, a01, a02, a03, a04, a06, a07, b08, b08', a14, a15, a16, a17, d09,
     d11, d99, d10, d12, d13, w₁, hreg, hmm, F₁⟩ := lvPar_exec (P := P) c hw (S := c.nreg 230000)
       (n := P.n) rfl hlam (MD := c.nreg 210001) rfl (K := K) hK' hS.holds h16 hlp hD
-      (by generalize κLv κH κR κX κc κT * ((K + 1) * X) = u at hcost hroom
-          generalize (Kb + 2) * (K + 1) = v at hcost
-          generalize κT * (K + 1) * X = w at hcost
-          omega) hW11
+      (by grind) hW11
   have keep : ∀ q, 210000 ≤ q → q ≤ 210005 → c₁.nreg q = c.nreg q := fun q h1 h2 =>
-    hreg q (by omega) (by omega) (by omega) (by unfold ALLOC; omega)
+    at_index hreg q
   have k230 : ∀ q, 230000 ≤ q → q ≤ 230001 → c₁.nreg q = c.nreg q := fun q h1 h2 =>
-    hreg q (by omega) (by omega) (by omega) (by unfold ALLOC; omega)
-  have hc0 : c₁.nreg (coreReg 0) = c.nreg (coreReg 0) := k230 230000 le_rfl (by norm_num)
+    at_index hreg q
+  have hc0 : c₁.nreg (coreReg 0) = c.nreg (coreReg 0) := guarded (k230 230000 le_rfl)
   have hc1 : c₁.nreg (coreReg 1) = c.nreg (coreReg 1) := k230 230001 (by norm_num) le_rfl
   -- 2. the context
   have ctx : LvCtx O P W c₁ L E reg lam := by
     refine ⟨hG, hW3, hWh, ?_, ?_, ?_, h16, hlp, ne_nil_of_big hG hperm hwt hlp (hn₀ _ hn), hok,
-      hperm, hsort, hdeg, hwt, ⟨g1, g2, g3, g4⟩, ?_, by rw [keep _ le_rfl (by norm_num), hlam],
+      hperm, hsort, hdeg, hwt, ⟨g1, g2, g3, g4⟩, ?_, by frame_simp [keep, hlam],
       a02, a04, a06, a07, b08, ?_, ?_, a14, (big_of h16 hlp (hn₀ _ hn)).1,
       (big_of h16 hlp (hn₀ _ hn)).2, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · rw [d09, hmm, hc0]; exact hS
@@ -205,13 +193,13 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
     · rw [d09, hmm, keep _ (by norm_num) le_rfl]; exact hN
     · rw [b08']; exact li_of_desc hDa.holds
     · rw [d09, d99]
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hDa
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hD
-    · rw [keep _ (by norm_num) (by norm_num)]; exact hK
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hLb
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hLa
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hEb
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hEa
+    · rw [d09, hmm, at_index keep _]; exact hDa
+    · rw [d09, at_index keep _]; exact hD
+    · block_post
+    · rw [d09, at_index keep _]; exact hLb
+    · rw [d09, hmm, at_index keep _]; exact hLa
+    · rw [d09, at_index keep _]; exact hEb
+    · rw [d09, hmm, at_index keep _]; exact hEa
   -- 3. the loop invariant at the start
   have hn3 : 3 ≤ (Qof P).n := hQ.1
   have inv0 : LvInv O P W c₁ L E reg Kb 0 c₁ := by
@@ -222,11 +210,10 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
       by rw [d12]; simp, fun r hr => absurd hr (Nat.not_lt_zero r), Or.inl d13,
       fun r hr => absurd hr (Nat.not_lt_zero r)⟩
   -- 4. the loop
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC + 3 * (K + 1) := d99
   obtain ⟨c₂, k₂, e₂, I₂, hk₂, hA₂⟩ := hloop P W c₁ c₁ L E reg lam Kb ctx le_rfl
-    (by rw [hA₁]
+    (by rw [d99]
         have hkb : (K + 1) * Kb ≤ (Kb + 2) * (K + 1) := by
-          rw [Nat.mul_comm]; exact Nat.mul_le_mul_right _ (by omega)
+          rw [Nat.mul_comm]; apply Nat.mul_le_mul_right <;> omega
         generalize κLv κH κR κX κc κT * ((K + 1) * X) = u at hcost hroom
         generalize (Kb + 2) * (K + 1) = v at hcost hkb
         generalize κT * (K + 1) * X = w at hcost
@@ -239,8 +226,8 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
         generalize κT * (K + 1) * X = w at hcost ⊢
         omega)
   obtain ⟨-, -, -, -, m₂, rm₂, r₂, rr₂, o₂, a₂, -, -⟩ := I₂
-  have ex : Exec P W (.seq lvPar (.seq (lvLoop sH sR sX) sT)) c c₃ (k₁ + (k₂ + k₃)) :=
-    .seq e₁ (.seq e₂ e₃)
+  have ex : Exec P W (lvPar ;; lvLoop sH sR sX ;; sT) c c₃ (k₁ + (k₂ + k₃)) :=
+    e₁ ;; e₂ ;; e₃
   have b21 : bDownDrv ∈ drvBands := bDownDrv_mem_drvBands
   refine ⟨c₃, _, ex, ?_, ⟨?_, ?_⟩, ?_⟩
   · -- the cost
@@ -253,14 +240,13 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   · simp only [rd21, Nat.reduceAdd]; rw [h00, hlam]
   · simp only [rd21, Nat.reduceAdd]; rw [hlam]; exact hInv₃
   · -- the frame
-    have hA9 : c₁.nreg 211009 = c.nreg ALLOC := d09
     refine ⟨fun r hr hrA => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
     · rw [F₃.1 r hr hrA, r₂ r hr hrA, F₁.1 r (fun h => hr (by
-        simp only [Finset.mem_singleton] at h; rw [h]; exact b21)) hrA]
+        simp only [Finset.mem_singleton] at h; rwa [h])) hrA]
     · rw [F₃.2.1 r hr, rr₂ r hr, F₁.2.1 r (fun h => hr (by
-        simp only [Finset.mem_singleton] at h; rw [h]; exact b21))]
-    · rw [F₃.2.2.1 a (by omega), m₂ a (by omega), hmm]
-    · rw [F₃.2.2.2.1 a (by omega), rm₂ a (by omega), F₁.2.2.2.1 a ha]
+        simp only [Finset.mem_singleton] at h; rwa [h]))]
+    · frame_simp [F₃.2.2.1, m₂, hmm]
+    · frame_simp [F₃.2.2.2.1, rm₂, F₁.2.2.2.1]
     · rw [F₃.2.2.2.2.1, o₂, F₁.2.2.2.2.1]
     · have := F₃.2.2.2.2.2.1; omega
     · have := F₃.2.2.2.2.2.2; have := F₁.2.2.2.2.2.2; omega

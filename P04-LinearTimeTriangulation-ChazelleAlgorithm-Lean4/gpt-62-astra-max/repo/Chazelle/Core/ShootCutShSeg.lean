@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.ShootCutShTile
 public import Chazelle.Core.ShootCutSeg
@@ -34,7 +35,7 @@ def seg (U V : Point) : Set Point := {x | ∃ u : ℝ, 0 ≤ u ∧ u ≤ 1 ∧ x
 
 theorem lerp_lerp (a b : Point) (α β u : ℝ) :
     lerp (lerp a b α) (lerp a b β) u = lerp a b (α + u * (β - α)) := by
-  ext <;> simp only [lerp_fst, lerp_snd] <;> ring
+  grind [lerp_fst, lerp_snd]
 
 /-- **A sub-segment of a walk edge is the segment between its ends.** -/
 theorem subSeg_eq_seg (M : Model) (p : ℕ) {α β : ℝ} (hαβ : α ≤ β) :
@@ -43,11 +44,10 @@ theorem subSeg_eq_seg (M : Model) (p : ℕ) {α β : ℝ} (hαβ : α ≤ β) :
   constructor
   · rintro ⟨s, h0, h1, rfl⟩
     rcases hαβ.lt_or_eq with hlt | heq
-    · refine ⟨(s - α) / (β - α), div_nonneg (by linarith) (by linarith),
-        (div_le_one (by linarith)).2 (by linarith), ?_⟩
-      rw [lerp_lerp]; congr 1; field_simp; ring
-    · subst heq
-      exact ⟨0, le_rfl, zero_le_one, by rw [lerp_lerp]; congr 1; linarith⟩
+    · refine ⟨(s - α) / (β - α), guarded div_nonneg,
+        guarded (div_le_one (by linarith)).2, ?_⟩
+      grind [lerp_lerp]
+    · exact ⟨0, le_rfl, zero_le_one, by grind [lerp_lerp]⟩
   · rintro ⟨u, h0, h1, rfl⟩
     refine ⟨α + u * (β - α), by nlinarith, by nlinarith, by rw [lerp_lerp]⟩
 
@@ -61,7 +61,7 @@ theorem V_mem_seg (U V : Point) : V ∈ seg U V :=
 theorem seg_snd_of_eq {U V : Point} (h : U.2 = V.2) {x : Point} (hx : x ∈ seg U V) :
     x.2 = U.2 := by
   obtain ⟨u, -, -, rfl⟩ := hx
-  simp only [lerp_snd]; rw [h]; ring
+  simp_all
 
 variable {U V z : Point} {σ : ℝ}
 
@@ -75,39 +75,32 @@ theorem rayPt_of_x (hσ : σ = 1 ∨ σ = -1) {X : Point} (hX : X.2 = z.2) :
     rayPt z σ (σ * (X.1 - z.1)) = X := by
   have := sigma_sq hσ
   ext
-  · simp only [rayPt_fst]; rw [← mul_assoc, this, one_mul]; ring
-  · simp only [rayPt_snd]; exact hX.symm
+  · grind [rayPt_fst, mul_assoc, one_mul]
+  · exact hX.symm
 
 /-- **A set meeting the line of the ray in at most one point `X`.** -/
 theorem cand_single {S : Set Point} (hσ : σ = 1 ∨ σ = -1) {X : Point} (hXS : X ∈ S)
     (hX : X.2 = z.2) (huniq : ∀ x ∈ S, x.2 = z.2 → x = X) :
     Cand S z σ (if 0 < σ * (X.1 - z.1) then 1 else 0) X.1 := by
-  have hσ2 := sigma_sq hσ
   have key : ∀ t, rayPt z σ t ∈ S → t = σ * (X.1 - z.1) := fun t ht => by
     have := huniq _ ht rfl
     have hx := congrArg Prod.fst this
     simp only [rayPt_fst] at hx
-    rw [← hx]; ring_nf; rw [show σ ^ 2 = σ * σ by ring, hσ2]; ring
+    rw [← hx]; ring_nf; grind
   by_cases hpos : 0 < σ * (X.1 - z.1)
   · rw [ite_eq_left hpos]
-    refine ⟨fun _ => ⟨hpos, by rw [rayPt_of_x hσ hX]; exact hXS, fun t' h1 h2 hS => ?_⟩,
-      fun h => absurd rfl h⟩
+    refine ⟨fun _ => ⟨hpos, by rwa [rayPt_of_x hσ hX], fun t' h1 h2 hS => ?_⟩,
+      absurd rfl⟩
     have := key t' hS; linarith
   · rw [ite_eq_right hpos]
-    refine ⟨fun h => absurd h (by norm_num), fun _ t ht hS => ?_⟩
-    have := key t hS; rw [this] at ht; exact hpos ht
+    refine ⟨fun h => at_index absurd h, fun _ t ht hS => ?_⟩
+    grind
 
 /-- **Ends at different heights**: the segment meets the line of `z` at most once. -/
 theorem seg_unique (h : U.2 ≠ V.2) {x x' : Point} (hx : x ∈ seg U V) (hx' : x' ∈ seg U V)
     (hy : x.2 = x'.2) : x = x' := by
   obtain ⟨u, -, -, rfl⟩ := hx
-  obtain ⟨u', -, -, rfl⟩ := hx'
-  simp only [lerp_snd] at hy
-  have : u = u' := by
-    have hne : V.2 - U.2 ≠ 0 := sub_ne_zero.2 (Ne.symm h)
-    have := mul_right_cancel₀ hne (show u * (V.2 - U.2) = u' * (V.2 - U.2) by linarith)
-    exact this
-  rw [this]
+  obtain ⟨u', -, -, rfl⟩ := hx' <;> grind [lerp_snd, mul_right_cancel₀]
 
 /-- **The hit at a point `X` of a segment with ends at different heights.** -/
 theorem seg_at (hσ : σ = 1 ∨ σ = -1) (h : U.2 ≠ V.2) {X : Point} (hXS : X ∈ seg U V)
@@ -118,7 +111,7 @@ theorem seg_at (hσ : σ = 1 ∨ σ = -1) (h : U.2 ≠ V.2) {X : Point} (hXS : X
 /-- **No hit**: the height of `z` is outside the heights of the ends. -/
 theorem seg_out (hout : ¬ (min U.2 V.2 ≤ z.2 ∧ z.2 ≤ max U.2 V.2)) (x : ℝ) :
     Cand (seg U V) z σ 0 x := by
-  refine ⟨fun h' => absurd h' (by norm_num), fun _ t _ hS => hout ?_⟩
+  refine ⟨fun h' => at_index absurd h', fun _ t _ hS => hout ?_⟩
   obtain ⟨u, h0, h1, he⟩ := hS
   have hy := congrArg Prod.snd he
   simp only [rayPt_snd, lerp_snd] at hy
@@ -146,10 +139,10 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
       refine ⟨u, h0, h1, ?_⟩
       ext
       · simpa using he
-      · simp only [rayPt_snd, lerp_snd]; rw [hz, h]; ring
+      · simp_all
   -- `z` is not between `U` and `V`
-  have hzn : ∀ u : ℝ, 0 ≤ u → u ≤ 1 → z.1 ≠ U.1 + u * (V.1 - U.1) := fun u h0 h1 he =>
-    hzS ⟨u, h0, h1, Prod.ext (by simpa using he) (by simp only [lerp_snd]; rw [hz, h]; ring)⟩
+  have hzn := fun u h0 h1 he =>
+    hzS ⟨u, h0, h1, Prod.ext (by simpa using he) (by simp_all)⟩
   have hzU : z.1 ≠ U.1 := fun he => hzn 0 le_rfl zero_le_one (by rw [he]; ring)
   have hzV : z.1 ≠ V.1 := fun he => hzn 1 zero_le_one le_rfl (by rw [he]; ring)
   -- both ends on the same side of `z`
@@ -159,45 +152,34 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
       by_contra hV
       push Not at hV
       have hV' : σ * (V.1 - z.1) < 0 := lt_of_le_of_ne hV (fun h0 => by
-        have : V.1 - z.1 = 0 := by
-          rcases hσ with rfl | rfl <;> linarith
-        exact hzV (by linarith))
+        grind)
       -- a point between `U` and `V` is `z`
       set u := (z.1 - U.1) / (V.1 - U.1)
       have hne : V.1 - U.1 ≠ 0 := fun h0 => by
-        have : V.1 = U.1 := by linarith
-        rw [this] at hV'; linarith
+        grind
       have hu : z.1 = U.1 + u * (V.1 - U.1) := by simp only [u]; field_simp; ring
       rcases hσ with rfl | rfl
-      · have h1 : U.1 > z.1 := by linarith
-        have h2 : V.1 < z.1 := by linarith
-        exact hzn u (div_nonneg_of_nonpos (by linarith) (by linarith))
-          ((div_le_one_of_neg (by linarith)).2 (by linarith)) hu
-      · have h1 : U.1 < z.1 := by linarith
-        have h2 : V.1 > z.1 := by linarith
-        exact hzn u (div_nonneg (by linarith) (by linarith))
-          ((div_le_one (by linarith)).2 (by linarith)) hu
+      · 
+        exact hzn u (guarded div_nonneg_of_nonpos)
+          (guarded (div_le_one_of_neg (by linarith)).2) hu
+      · 
+        exact hzn u (guarded div_nonneg)
+          (guarded (div_le_one (by linarith)).2) hu
     · intro hV
       by_contra hU
       push Not at hU
-      have hU' : σ * (U.1 - z.1) < 0 := lt_of_le_of_ne hU (fun h0 => by
-        have : U.1 - z.1 = 0 := by
-          rcases hσ with rfl | rfl <;> linarith
-        exact hzU (by linarith))
       set u := (z.1 - U.1) / (V.1 - U.1)
       have hne : V.1 - U.1 ≠ 0 := fun h0 => by
-        have : V.1 = U.1 := by linarith
-        rw [this] at hV; linarith
+        grind
       have hu : z.1 = U.1 + u * (V.1 - U.1) := by simp only [u]; field_simp; ring
       rcases hσ with rfl | rfl
-      · have h1 : U.1 < z.1 := by linarith
-        have h2 : V.1 > z.1 := by linarith
-        exact hzn u (div_nonneg (by linarith) (by linarith))
-          ((div_le_one (by linarith)).2 (by linarith)) hu
-      · have h1 : U.1 > z.1 := by linarith
+      · 
+        exact hzn u (guarded div_nonneg)
+          (guarded (div_le_one (by linarith)).2) hu
+      · 
         have h2 : V.1 < z.1 := by linarith
-        exact hzn u (div_nonneg_of_nonpos (by linarith) (by linarith))
-          ((div_le_one_of_neg (by linarith)).2 (by linarith)) hu
+        exact hzn u (guarded div_nonneg_of_nonpos)
+          (guarded (div_le_one_of_neg (by linarith)).2) hu
   by_cases hU : 0 < σ * (U.1 - z.1)
   · rw [ite_eq_left hU]
     have hV := hside.1 hU
@@ -207,12 +189,10 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
     have hXle : σ * X ≤ σ * U.1 ∧ σ * X ≤ σ * V.1 := by
       rw [hXd]; split_ifs with hh
       · exact ⟨le_rfl, hh⟩
-      · push Not at hh; exact ⟨hh.le, le_rfl⟩
+      · grind
     have hXpos : 0 < σ * (X - z.1) := by rcases hXU with e | e <;> rw [e] <;> assumption
     refine ⟨fun _ => ⟨hXpos, ?_, fun t' h1 h2 hS => ?_⟩, fun h => absurd rfl h⟩
-    · rcases hXU with e | e
-      · rw [e, rayPt_of_x hσ (by rw [hz])]; exact U_mem_seg U V
-      · rw [e, rayPt_of_x hσ (by rw [hz, h])]; exact V_mem_seg U V
+    · grind [rayPt_of_x, U_mem_seg, V_mem_seg]
     · obtain ⟨u, h0, h1', he⟩ := (hmem t').1 hS
       -- `σ x` of a point of the segment is at least `σ X`
       have hx : σ * (U.1 + u * (V.1 - U.1)) ≥ σ * X := by
@@ -224,7 +204,7 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
       linarith
   · rw [ite_eq_right hU]
     have hV : ¬ 0 < σ * (V.1 - z.1) := fun h' => hU (hside.2 h')
-    refine ⟨fun h => absurd h (by norm_num), fun _ t ht hS => ?_⟩
+    refine ⟨fun h => at_index absurd h, fun _ t ht hS => ?_⟩
     obtain ⟨u, h0, h1, he⟩ := (hmem t).1 hS
     push Not at hU hV
     have e0 : σ * (z.1 + σ * t) = σ * z.1 + t := by rw [mul_add, ← mul_assoc, hσ2, one_mul]

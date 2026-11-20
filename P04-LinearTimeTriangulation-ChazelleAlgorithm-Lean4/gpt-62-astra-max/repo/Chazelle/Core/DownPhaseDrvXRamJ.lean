@@ -1,4 +1,7 @@
 module
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseDrvXRamI
 
@@ -35,38 +38,31 @@ theorem kl_succ (P : Polygon) (v : XV) (NR : NF) (i : ℕ) :
     kl P v NR (i + 1) = kl P v NR i ++ (if kR P v (NR.chord i) then [i] else []) := by
   unfold kl
   rw [List.range_succ, List.filter_append]
-  congr 1
-  by_cases h : kR P v (NR.chord i) <;> simp [h]
+  grind
 
 theorem xL_kept {P : Polygon} {v : XV} {NR : NF} {i : ℕ} (h : kR P v (NR.chord i)) :
     xL P v NR (i + 1) = xL P v NR i ++ [xT P v NR i] := by
-  unfold xL; rw [kl_succ, ite_eq_left h, List.map_append]; rfl
+  grind [xL, kl_succ, List.map_append]
 
 theorem xL_not {P : Polygon} {v : XV} {NR : NF} {i : ℕ} (h : ¬ kR P v (NR.chord i)) :
     xL P v NR (i + 1) = xL P v NR i := by
-  unfold xL; rw [kl_succ, ite_eq_right h, List.append_nil]
+  grind [xL, kl_succ, List.append_nil]
 
 theorem xL_length_le (P : Polygon) (v : XV) (NR : NF) (i : ℕ) : (xL P v NR i).length ≤ i := by
-  unfold xL kl
-  rw [List.length_map]
-  exact (List.length_filter_le _ _).trans (by rw [List.length_range])
+  grind [xL, kl, List.length_map]
 
 theorem endPos_append {L M : List (ℕ × ℕ × ℕ)} {q : ℕ} (hq : q < 2 * L.length) :
     endPos (L ++ M) q = endPos L q := by
-  unfold endPos
-  rw [List.getD_append _ _ _ _ (by omega)]
+  block_post [endPos, List.getD_append]
 
 theorem endPos_last_l (L : List (ℕ × ℕ × ℕ)) (x : ℕ × ℕ × ℕ) :
     endPos (L ++ [x]) (2 * L.length) = (recOf x).lpos := by
-  unfold endPos
-  rw [ite_eq_left (by omega), show 2 * L.length / 2 = L.length by omega,
-    List.getD_append_right _ _ _ _ (le_refl _), Nat.sub_self]
-  rfl
+  simp_all [endPos]
 
 theorem endPos_last_r (L : List (ℕ × ℕ × ℕ)) (x : ℕ × ℕ × ℕ) :
     endPos (L ++ [x]) (2 * L.length + 1) = (recOf x).rpos := by
   unfold endPos
-  rw [ite_eq_right (by omega), show (2 * L.length + 1) / 2 = L.length by omega,
+  rw [guarded ite_eq_right, show (2 * L.length + 1) / 2 = L.length by omega,
     List.getD_append_right _ _ _ _ (le_refl _), Nat.sub_self]
   rfl
 
@@ -101,7 +97,7 @@ theorem loopS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBound
   let Inv : ℕ → Config → Prop := fun i c => WordsBounded W c ∧ c.nreg 217039 = i ∧
     c.nreg 217028 = v.K ∧ XG P v c ∧ c.nreg 217040 = v.CB + 5 * i ∧
     c.nreg 217038 = (xL P v NR i).length ∧ c.nreg 217045 = v.LxB + 3 * (xL P v NR i).length ∧
-    c.nreg 217046 = v.BkB + 2 * (xL P v NR i).length ∧ (∀ a, a < A0 → c.nmem a = mem0 a) ∧
+    c.nreg 217046 = v.BkB + 2 * (xL P v NR i).length ∧ (AgreeBelow A0 c.nmem mem0) ∧
     ChordListAt c.nmem v.LxB (xL P v NR i) ∧
     (∀ q, q < 2 * (xL P v NR i).length →
       c.nmem (v.BkB + q) = keyBkt (Qof P) N (endPos (xL P v NR i) q)) ∧ FrameM Bch d c
@@ -116,8 +112,8 @@ theorem loopS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBound
       have hlen := xL_length_le P v NR i
       obtain ⟨c', kc, ec, hkc, b39, b40, bk, bn, bf⟩ := chS_exec E c hwc cmem cg hi hlen c39 c40
         c38 c45 c46
-      have cg' : XG P v c' := cg.frameM bf (by decide)
-      refine ⟨c', kc, ec, ⟨ec.wb_right, b39, by rw [bf.1 _ (by decide), c28], cg', b40, ?_⟩, hkc⟩
+      have cg' : XG P v c' := at_index cg.frameM bf
+      refine ⟨c', kc, ec, ⟨ec.wb_right, b39, by frame_simp [bf.1, c28], cg', b40, ?_⟩, hkc⟩
       by_cases hk : kR P v (NR.chord i)
       · obtain ⟨m', d38, d45, d46⟩ := bk hk
         rw [xL_kept hk]
@@ -126,7 +122,7 @@ theorem loopS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBound
         have hA0 := E.hA0
         refine ⟨d38, d45, d46, fun a ha => ?_, fun q hq => ?_, fun q hq => ?_, cf.trans bf⟩
         · rw [m', stMem_apply]
-          split_ifs <;> first | omega | exact cmem a ha
+          grind
         · rw [m']
           simp only [List.length_append, List.length_singleton] at hq
           rcases Nat.lt_succ_iff_lt_or_eq.1 hq with hq' | hq'
@@ -156,13 +152,13 @@ theorem loopS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBound
               split_ifs <;> first | omega | rfl
       · obtain ⟨m', d38, d45, d46⟩ := bn hk
         rw [xL_not hk]
-        exact ⟨d38, d45, d46, fun a ha => by rw [m']; exact cmem a ha, by rw [m']; exact clist,
-          fun q hq => by rw [m']; exact cbkt q hq, cf.trans bf⟩)
+        exact ⟨d38, d45, d46, fun a ha => by grind, by rw [m']; exact clist,
+          fun q hq => by grind, cf.trans bf⟩)
     hI0 (Nat.zero_le _)
   have hk : k' ≤ 24002 * v.K + 2 := by
     have : v.K - 0 = v.K := Nat.sub_zero _
     rw [this] at hk'; omega
-  exact ⟨d', k', e', hk, g', c38, cm, cl, cb, f'⟩
+  refine ⟨d', k', e', ?_⟩ <;> grind
 
 end loop
 

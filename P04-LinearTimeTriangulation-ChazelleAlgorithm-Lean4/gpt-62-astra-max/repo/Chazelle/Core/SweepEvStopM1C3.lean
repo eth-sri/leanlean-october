@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.SweepEvStopM1C2
 
@@ -34,23 +35,21 @@ theorem m1c_efr {X Y Z : ℕ → Prop} {c₁ c₂ : Config} (h₁ : EFr X c c₁
 
 /-- The local-hit registers, the save registers `r1F …` lie in `M1R`. -/
 theorem lhsw_m1r (r : ℕ) (h : LHSW r1F r) : M1R r := by
-  unfold LHSW LHR r1F at h; unfold M1R; unfold sw at h ⊢; omega
+  address_omega
 
 /-- The local-hit inputs lie in `M1R`. -/
 theorem lin_m1r (r : ℕ) (h : r = lE ∨ r = lH ∨ r = lD) : M1R r := by
-  unfold lE lH lD at h; unfold M1R; unfold sw at h ⊢; omega
+  address_omega
 
 theorem efr_lin (c : Config) (l : List Instr)
     (h : ∀ q, q ≠ lE → q ≠ lH → q ≠ lD → regB c.nmem l c.nreg q = c.nreg q) :
     EFr (fun r => r = lE ∨ r = lH ∨ r = lD) c { c with nreg := regB c.nmem l c.nreg } := by
   refine ⟨fun r _ hr _ => h r (fun e => hr (Or.inl e)) (fun e => hr (Or.inr (Or.inl e)))
     (fun e => hr (Or.inr (Or.inr e))), ?_, fun _ _ => rfl⟩
-  show c.nreg ALLOC ≤ regB c.nmem l c.nreg ALLOC
-  rw [h ALLOC (by unfold lE ALLOC sw; omega) (by unfold lH ALLOC sw; omega)
-    (by unfold lD ALLOC sw; omega)]
+  simp_all [lE, ALLOC, sw, lH, lD]
 
 theorem dr_m1 : DR MD₁ ∧ DR CD₁ ∧ DR (sw 3) ∧ DR (sw 33) := by
-  unfold DR MD₁ CD₁ sw; omega
+  address_omega
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {J : Merge.Junction} {N₁ N₂ : NF}
@@ -60,7 +59,7 @@ theorem m1c_n33 (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     c.nreg (sw 33) = 2 * J.left.m + 7 := by
   obtain ⟨H₀, -, hst⟩ := E.hst
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, h33, -⟩ := hst
-  rw [hI.hin _ (by unfold IFix sw; omega)]; exact h33
+  rwa [at_index hI.hin _]
 
 set_option maxRecDepth 20000 in
 /-- **The wall code.** -/
@@ -71,10 +70,9 @@ theorem m1cK1_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     (hK : lhRunK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) + 10 ≤ K)
     (hroom : c.nreg ALLOC + K ≤ W) :
     IRS P W c₀ (m1cK1 sh) c K (M1Post P J N₂ c) := by
-  have hok : StOK P J N₂ 1 (c.nreg oKk) (c.nreg oB) := hk ▸ hD.ok
-  have hps : OrgPos P J N₂ 1 (c.nreg oKk) (c.nreg oB) (c.nreg oPE) (c.nreg oPH) := hk ▸ hpos
-  obtain ⟨hbx, hlt, hpp, hz, hy, hx1, hsl⟩ := m1c_wall E.hP E.hNF₂ hok hps
-  have hb : c.nreg oB ≤ 1 := hok.2.1
+  have hok := hk ▸ hD.ok
+  obtain ⟨hbx, hlt, hpp, hz, hy, hx1, hsl⟩ := m1c_wall E.hP E.hNF₂ hok (hk ▸ hpos)
+  have hb := hok.2.1
   obtain ⟨v1, v2, v3, vo⟩ := m1cL1_val c.nmem c.nreg
   obtain ⟨d1, d2, d3, d4⟩ := dr_m1
   unfold m1cK1 M1Post
@@ -84,21 +82,16 @@ theorem m1cK1_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     (by omega) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
   have eA : regB c.nmem m1cL1 c.nreg ALLOC = c.nreg ALLOC :=
-    vo _ (by unfold lE ALLOC sw; omega) (by unfold lH ALLOC sw; omega)
-      (by unfold lD ALLOC sw; omega)
+    at_index vo _
   have h33 : regB c.nmem m1cL1 c.nreg (sw 33) = 2 * J.left.m + 7 := by
     have := m1c_n33 E hI₁; exact this
-  refine (lhSave_irs (x := ⟨c.nreg oPE, c.nreg oPH⟩)
+  refine (guarded (lhSave_irs (x := ⟨c.nreg oPE, c.nreg oPH⟩)
     (Gd := FreeAt J.left (stOrig J (Qof P) N₂ 1 (c.nreg oKk) (c.nreg oB)) (dirOf (c.nreg oB)) ∧
       (stOrig J (Qof P) N₂ 1 (c.nreg oKk) (c.nreg oB)).2 ≤ J.left.top.2)
-    E.hsh E.hBs E.hXl d1 d2 d3 d4 (by unfold r1F sw; omega) hI₁ E.hK E.hG E.hWh (mctx1 E hI₁)
-    E.hP E.hNF₁ E.hX E.hcap E.hOk₁ E.hsg₁ E.hdeg₁ h33 v1 v2 (by show regB _ _ _ lD ≤ 1; rw [v3]; exact hb)
-    hlt hpp (Or.inl hbx) (by rw [hz]; exact hy) (Or.inr (by rw [hz]; exact hx1)) ?_
-    (by show regB _ _ _ ALLOC + _ ≤ W; rw [eA]; omega)).mono le_rfl ?_
-  · intro g
-    show sideLeft _ _ _ (rayPt _ (dirOf (regB c.nmem m1cL1 c.nreg lD)) 1) ∧ _
-    rw [v3, hz]
-    exact ⟨hsl, g.2⟩
+    E.hsh E.hBs E.hXl d1 d2 d3 d4 (by decide) hI₁ E.hK E.hG E.hWh (mctx1 E hI₁)
+    E.hP E.hNF₁ E.hX E.hcap E.hOk₁ E.hsg₁ E.hdeg₁ h33 v1 v2 (hb)
+    hlt hpp (Or.inl hbx) (by simp_all) (Or.inr (by simp_all)) ?_)).mono le_rfl ?_
+  · simp_all
   · rintro c' ⟨hres, hfr⟩
     have e3 : ({ c with nreg := regB c.nmem m1cL1 c.nreg } : Config).nreg lD = c.nreg oB := v3
     rw [e3, hz] at hres
@@ -122,12 +115,12 @@ theorem m1cK0_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   obtain ⟨H₀, -, hst⟩ := E.hst
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, h45, -⟩ := hst
   have e46 : c.nreg (sw 46) = cstL J 1 := by
-    rw [hI.hin _ (by unfold IFix sw; omega)]; exact h45 1 (by norm_num)
+    rw [at_index hI.hin _]; exact at_index h45 1
   obtain ⟨sl, spp, spos⟩ := Cand1.shared_posL E.hP (Qof P) P.n
-  have k0 : c.nreg K0 = 0 := (E.hK.fix hI).1
-  have hshL : J.shared ∈ J.left.set := J.shared_mem_left
-  have hsy : |J.shared.2| < J.left.radius := absy_lt J.left hshL
-  have hst1 : J.shared.2 ≤ J.left.top.2 := J.left.snd_le_top_of_mem_set hshL
+  have k0 := (E.hK.fix hI).1
+  have hshL := J.shared_mem_left
+  have hsy := absy_lt J.left hshL
+  have hst1 := J.left.snd_le_top_of_mem_set hshL
   obtain ⟨d1, d2, d3, d4⟩ := dr_m1
   obtain ⟨R, hRd⟩ : ∃ R, R = lhRunK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) := ⟨_, rfl⟩
   rw [← hRd] at hK
@@ -135,9 +128,9 @@ theorem m1cK0_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   rw [hk, stOrig_zero]
   refine (IRS.seq (K₁ := 35007)
     (K₂ := R + 12)
-    (callArr_irs (P := P) (dsc := CD₁) (re := sw 46) (rh := K0) (rd := oB) (o := m1o)
-      (C := J.left) hI (E.ctx1' hI) (by unfold CD₁ K0 oB sw; omega) (by unfold m1o sw; omega)
-      (by rw [e46]; exact sl) (by rw [e46, k0]; exact spp) (by rw [e46, k0, spos]; exact hsy)
+    (callArr_irs
+ hI (E.ctx1' hI) (by decide) (by decide)
+      (by simp_all) (by simp_all) (by simp_all)
       (by omega)) ?_).mono (by omega) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨⟨hf1, harr, hnarr⟩, hfr1, hal1, hm1⟩
   rw [e46, k0, spos] at harr hnarr
@@ -146,9 +139,8 @@ theorem m1cK0_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       (fun e => b (Or.inr (Or.inr e))) d, hal1, hm1⟩
   have m1o_m1r : ∀ r, (r = m1o ∨ r = m1o + 1 ∨ r = m1o + 2) → M1R r := by
     intro r h; unfold m1o at h; unfold M1R; unfold sw at h ⊢; omega
-  have eB : c₁.nreg oB = c.nreg oB := hfr1 _ (not_oracle_sw (by unfold oB sw; omega)
-    (by unfold oB sw; omega)) (by unfold oB m1o sw; omega) (by unfold oB m1o sw; omega)
-    (by unfold oB m1o sw; omega) (by unfold oB ALLOC sw; omega)
+  have eB : c₁.nreg oB = c.nreg oB := guarded (hfr1 _ (not_oracle_sw (by decide)
+    (by decide)))
   have hK1 := E.hK.fix hI₁
   refine (IRS.ite (K := R + 10) (fun h1 => ?_) (fun h1 => ?_)).mono
     (show R + 10 + 2 ≤ R + 12 by omega) (fun _ h => h)
@@ -162,8 +154,7 @@ theorem m1cK0_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       (by omega) (fun _ h => h)
     rintro c₂ hI₂ - - rfl
     have eA : regB c₁.nmem m1cL0 c₁.nreg ALLOC = c₁.nreg ALLOC :=
-      vo _ (by unfold lE ALLOC sw; omega) (by unfold lH ALLOC sw; omega)
-        (by unfold lD ALLOC sw; omega)
+      at_index vo _
     have h33 : regB c₁.nmem m1cL0 c₁.nreg (sw 33) = 2 * J.left.m + 7 := by
       have := m1c_n33 E hI₂; exact this
     have hpt : (chainModel J.left).pos (Qof P) ⟨c₁.nreg (m1o + 1), c₁.nreg (m1o + 2)⟩ =
@@ -172,17 +163,13 @@ theorem m1cK0_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       posClass_of hpn hppA.1 hppA.2.1 (by rw [hpt]; exact hsy) (Or.inl (by rw [hpt]; exact hst1))
     have hsec := hA.2.2.2.2
     rw [neg_neg] at hsec
-    refine (lhSave_irs (x := ⟨c₁.nreg (m1o + 1), c₁.nreg (m1o + 2)⟩)
+    refine (guarded (lhSave_irs (x := ⟨c₁.nreg (m1o + 1), c₁.nreg (m1o + 2)⟩)
       (Gd := FreeAt J.left J.shared (dirOf (c.nreg oB)) ∧ J.shared.2 ≤ J.left.top.2)
-      E.hsh E.hBs E.hXl d1 d2 d3 d4 (by unfold r1F sw; omega) hI₂ E.hK E.hG E.hWh (mctx1 E hI₂)
+      E.hsh E.hBs E.hXl d1 d2 d3 d4 (by decide) hI₂ E.hK E.hG E.hWh (mctx1 E hI₂)
       E.hP E.hNF₁ E.hX E.hcap E.hOk₁ E.hsg₁ E.hdeg₁ h33 v1 v2
       (by show regB _ _ _ lD ≤ 1; rw [v3, eB]; exact hb)
-      hpn hppA hcl (by rw [hpt]; exact hsy) (Or.inl (by rw [hpt]; exact hshL)) ?_
-      (by show regB _ _ _ ALLOC + _ ≤ W; rw [eA]; omega)).mono (by omega) ?_
-    · intro g
-      show sideLeft _ _ _ (rayPt _ (dirOf (regB c₁.nmem m1cL0 c₁.nreg lD)) 1) ∧ _
-      rw [v3, eB, hpt]
-      exact ⟨hsec, g.2⟩
+      hpn hppA hcl (by rw [hpt]; exact hsy) (Or.inl (by rw [hpt]; exact hshL)) ?_)).mono (by omega) ?_
+    · grind
     · rintro c' ⟨hres, hfr⟩
       have e3 : ({ c₁ with nreg := regB c₁.nmem m1cL0 c₁.nreg } : Config).nreg lD =
           c.nreg oB := by show regB _ _ _ lD = _; rw [v3, eB]
@@ -193,7 +180,7 @@ theorem m1cK0_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     have hng : ¬ (FreeAt J.left J.shared (dirOf (c.nreg oB)) ∧ J.shared.2 ≤ J.left.top.2) := by
       intro g
       obtain ⟨p, t, hA⟩ := (freeAt_iff_arr J.left E.hP hσ (Or.inl hshL)).1 g.1
-      exact hnarr (by omega) p t hA
+      apply hnarr <;> omega
     refine (m1c_noRes (C := J.left) (a := J.shared) (σ := dirOf (c.nreg oB)) hI₁ hng).mono
       (by omega) ?_
     rintro c' ⟨hres, hk', hm'⟩

@@ -1,4 +1,7 @@
 module
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.SweepEvInit
 
@@ -45,17 +48,17 @@ theorem frame_of_irs {W : ℕ} {c c' : Config} {k : ℕ} (hI : IInv W c c') (hf 
 theorem frame_regs {c c' : Config} (k : ℕ) (hr : ∀ r, bandOf r ∉ ioBands → c'.nreg r = c.nreg r)
     (hrr : c'.rreg = c.rreg) (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : Frame ioBands c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC alloc_not_io
-  exact ⟨fun r h _ => hr r h, fun r _ => by rw [hrr], fun a _ => by rw [hm],
-    fun a _ => by rw [hrm], ho, by rw [hA], by rw [hA]; omega⟩
+  have hA := hr ALLOC alloc_not_io
+  exact ⟨fun r h _ => hr r h, fun r _ => by simp_all, fun a _ => by simp_all,
+    fun a _ => by simp_all, ho, by simp_all, by simp_all⟩
 
 theorem frame_ioB {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : Frame (B ∪ B) c c' k) :
     Frame B c c' k := by
-  rw [Finset.union_self] at h; exact h
+  simp_all
 
 /-- Registers of the sweep's band are in `ioBands`. -/
 theorem sw_io {r : ℕ} (h1 : 240000 ≤ r) (h2 : r < 250000) : bandOf r ∈ ioBands := by
-  rw [band_sw h1 h2]; exact bSweep_mem
+  grind [band_sw, bSweep_mem]
 
 /-! ## The top of `C₁` -/
 
@@ -81,17 +84,15 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
     (by simp only [okW, okWI]; exact ⟨hW6, by omega, trivial⟩)
   set c₁ : Config := { c with nreg := regB c.nmem [.constN iE 6, .constN iH 0] c.nreg } with hc₁
   have hw₁ := e₁.wb_right
-  have q1 : ∀ r, r ≠ iE → r ≠ iH → c₁.nreg r = c.nreg r := fun r h1 h2 => by
+  have q1 : AgreeExcept [iE, iH] c₁.nreg c.nreg := fun r h1 h2 => by
     simp only [hc₁, regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
   have qE : c₁.nreg iE = 6 := by
-    simp only [hc₁, regB, regI]; rw [upd_other _ _ _ (by swoInit2), upd_same]
+    simp only [hc₁, regB, regI]; rw [guarded (upd_other _ _ _), upd_same]
   have qH : c₁.nreg iH = 0 := by simp only [hc₁, regB, regI]; rw [upd_same]
   have hI₁ : IInv W c₁ c₁ := ⟨hw₁, fun _ _ => rfl, le_rfl, fun _ _ => rfl, fun _ _ => rfl⟩
   have hctx₁ : ChainCtx P W c₁ (sw 20) J.left :=
-    hctx.transport (q1 _ (by swoInit2) (by swoInit2)) (fun _ _ => rfl)
-      (by rw [q1 _ (by swoInit2) (by swoInit2)])
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := q1 _ (by swoInit2)
-    (by swoInit2)
+    guarded (hctx.transport (q1 _ (by swoInit2) (by swoInit2)) (fun _ _ => rfl))
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := at_index q1 _
   have hm1 := J.left.one_le
   have hpar : (chainModel J.left).param (Qof P) ⟨6, 0⟩ = 0 := rfl
   obtain ⟨c₂, k₂, e₂, hk₂, hI₂, hf₂, ⟨s, hs, hsl, hse⟩, hk2, -, -⟩ :=
@@ -106,28 +107,24 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
     rw [hpar, Chazelle.Chain.sidePt_zero, walk_vtx_six]
   rw [hpos] at hse
   have hw₂ := e₂.wb_right
-  have e₃ := exec_regB (P := P) symCp hw₂ (by
-    simp only [symCp, okW, okWI]; exact ⟨trivial, trivial, trivial, trivial⟩)
+  have e₃ := exec_regB (P := P) symCp hw₂ (⟨trivial, trivial, trivial, trivial⟩)
   set c₃ : Config := { c₂ with nreg := regB c₂.nmem symCp c₂.nreg } with hc₃
   have q3 : ∀ r, (r < sw 645 ∨ sw 647 < r) → c₃.nreg r = c₂.nreg r := fun r hr => by
     simp only [hc₃, symCp, regB, regI, cT1, sw] at hr ⊢
-    rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega)]
-  refine ⟨c₃, 2 + (k₂ + 3), .seq e₁ (.seq e₂ e₃), by omega, ?_, ⟨s, ?_, hsl, hse⟩, ?_⟩
-  · have f₁ : Frame ioBands c c₁ 2 := frame_regs 2 (fun r hr => q1 r
-      (fun h => hr (by rw [h]; exact sw_io (by swoInit2) (by swoInit2)))
-      (fun h => hr (by rw [h]; exact sw_io (by swoInit2) (by swoInit2))))
+    frame_simp [upd_other]
+  refine ⟨c₃, 2 + (k₂ + 3), e₁ ;; e₂ ;; e₃, by omega, ?_, ⟨s, ?_, hsl, hse⟩, ?_⟩
+  · have f₁ := frame_regs 2 (fun r hr => q1 r
+      (fun h => hr (by rw [h]; decide))
+      (fun h => hr (by rw [h]; decide)))
       rfl rfl rfl rfl
-    have f₂ := frame_of_irs hI₂ hf₂
-    have f₃ : Frame ioBands c₂ c₃ 3 := frame_regs 3 (fun r hr => q3 r (by
+    have f₃ := frame_regs 3 (fun r hr => q3 r (by
       by_contra h
       exact hr (sw_io (by swoInit2) (by swoInit2)))) rfl rfl rfl rfl
-    exact frame_ioB (frame_ioB (f₁.trans (f₂.trans f₃)))
-  · refine symPtIn_transport hs ?_ ?_ ?_ <;>
-    simp only [hc₃, symCp, regB, regI, cT1, iY, sw, Nat.reduceAdd] <;>
-    simp only [upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true]
+    exact frame_ioB (frame_ioB (f₁.trans ((frame_of_irs hI₂ hf₂).trans f₃)))
+  · block_post
   · intro r hr hrA h1 h2
     rw [q3 r h1, hk2 r hr (by swoInit2) hrA]
-    exact q1 r (by swoInit2) (by swoInit2)
+    exact at_index q1 r
 
 /-! ## The model descriptor of `C₁` -/
 
@@ -158,15 +155,12 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
     ∃ c₂, Exec P W (block (mdCpW k)) c₁ c₂ 4 ∧ MdInv c A S (j + 1) c₂ := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9⟩ := hI
   have n20 : c₁.nreg (sw 20) = S := by
-    rw [h6 _ (by swoInit2) (by swoInit2) (by swoInit2)
-      (by swoInit2), hS]
+    rw [at_index h6 _, hS]
   have nk : c₁.nreg k = j := by rw [h6 _ hk1 hk2 hk3 hk4, hk]
-  have e₁ := Exec.addN (P := P) hw iA (sw 20) k (by rw [n20, nk]; omega)
+  have e₁ := guarded (Exec.addN (P := P) hw iA (sw 20) k)
   have e₂ := Exec.loadN (P := P) e₁.wb_right iV iA
   have e₃ := Exec.addN (P := P) e₂.wb_right iA CD₁ k (by
-    simp only
-    rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
-      upd_other _ _ _ hk4, upd_other _ _ _ hk3, h2, nk]; omega)
+    block_post)
   have e₄ := Exec.storeN (P := P) e₃.wb_right iA iV
   refine ⟨_, Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_cons e₃ (Exec.block_cons e₄
     (Exec.block_nil e₄.wb_right)))), ?_⟩
@@ -174,28 +168,23 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
       ((upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) CD₁ +
         (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) k) iA = A + 1 + j := by
     intro v
-    rw [upd_same, upd_other _ _ _ (by swoInit2),
-      upd_other _ _ _ (by swoInit2), upd_other _ _ _ hk4,
+    rw [upd_same, guarded (upd_other _ _ _),
+      guarded (upd_other _ _ _), upd_other _ _ _ hk4,
       upd_other _ _ _ hk3, h2, nk]
   have vV : ∀ v, upd (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) iA
       ((upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) CD₁ +
         (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) k) iV = v := by
     intro v
-    rw [upd_other _ _ _ (by swoInit2), upd_same]
+    rw [guarded (upd_other _ _ _), upd_same]
   simp only
   rw [vA, vV, upd_same, n20, nk]
-  have hsrc : c₁.nmem (S + j) = c.nmem (S + j) := h5 _ (by omega)
   refine ⟨?_, ?_, ?_, fun i hi => ?_, fun a ha => ?_, fun r r1 r2 r3 r4 => ?_, h7, h8, h9⟩ <;>
     simp only
-  · rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
-      upd_other _ _ _ (by swoInit2), h1]
-  · rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
-      upd_other _ _ _ (by swoInit2), h2]
-  · rw [upd_other _ _ _ (by omega), h3]
-  · rcases Nat.lt_or_ge i j with h | h
-    · rw [upd_other _ _ _ (by omega), h4 i h]
-    · rw [show i = j by omega, upd_same, hsrc]
-  · rw [upd_other _ _ _ (by omega), h5 a ha]
+  · frame_simp [upd_other, h1]
+  · frame_simp [upd_other, h2]
+  · frame_simp [upd_other, h3]
+  · grind [upd_other, upd_same]
+  · frame_simp [upd_other, h5]
   · rw [upd_other _ _ _ r3, upd_other _ _ _ r4, upd_other _ _ _ r3, h6 r r1 r2 r3 r4]
 
 set_option maxRecDepth 20000 in
@@ -207,11 +196,11 @@ theorem mdHead_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   simp only [MD₁, CD₁, K0, K1, ALLOC, iA, iV, sw, Nat.reduceAdd] at *
   exec_block
   · config_simp; rw [k1]; omega
-  · refine ⟨rfl, by config_simp, by config_simp; rw [k1], by config_simp; rw [k0],
+  · refine ⟨rfl, by config_simp, by simp_all, by simp_all,
       fun i hi => absurd hi (Nat.not_lt_zero _), fun a ha => ?_, fun r h1 h2 _ _ => ?_,
       rfl, rfl, rfl⟩
     · config_simp; rw [upd_other _ _ _ (by omega)]
-    · config_simp; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+    · simp_all
 
 set_option maxRecDepth 20000 in
 /-- **The model descriptor of `C₁`** at the allocator `A`: `0` at `A`, the five words of the
@@ -233,27 +222,25 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
       q ≠ MD₁ ∧ q ≠ CD₁ ∧ q ≠ iA ∧ q ≠ iV := by
     rintro q (rfl | rfl | rfl | rfl | rfl) <;> refine ⟨?_, ?_, ?_, ?_⟩ <;> swoInit2
   obtain ⟨c₂, e₄, I₂⟩ := mdCpW_step (P := P) eH.wb_right I₁ rfl hSA (by omega) (by norm_num) k0
-    (nk K0 (by simp)).1 (nk K0 (by simp)).2.1 (nk K0 (by simp)).2.2.1 (nk K0 (by simp)).2.2.2
+    (at_index nk K0).1 (at_index nk K0).2.1 (at_index nk K0).2.2.1 (at_index nk K0).2.2.2
   obtain ⟨c₃, e₅, I₃⟩ := mdCpW_step (P := P) e₄.wb_right I₂ rfl hSA (by omega) (by norm_num) k1
-    (nk K1 (by simp)).1 (nk K1 (by simp)).2.1 (nk K1 (by simp)).2.2.1 (nk K1 (by simp)).2.2.2
+    (at_index nk K1).1 (at_index nk K1).2.1 (at_index nk K1).2.2.1 (at_index nk K1).2.2.2
   obtain ⟨c₄, e₆, I₄⟩ := mdCpW_step (P := P) e₅.wb_right I₃ rfl hSA (by omega) (by norm_num) k2
-    (nk K2 (by simp)).1 (nk K2 (by simp)).2.1 (nk K2 (by simp)).2.2.1 (nk K2 (by simp)).2.2.2
+    (at_index nk K2).1 (at_index nk K2).2.1 (at_index nk K2).2.2.1 (at_index nk K2).2.2.2
   obtain ⟨c₅, e₇, I₅⟩ := mdCpW_step (P := P) e₆.wb_right I₄ rfl hSA (by omega) (by norm_num) k3
-    (nk K3 (by simp)).1 (nk K3 (by simp)).2.1 (nk K3 (by simp)).2.2.1 (nk K3 (by simp)).2.2.2
+    (at_index nk K3).1 (at_index nk K3).2.1 (at_index nk K3).2.2.1 (at_index nk K3).2.2.2
   obtain ⟨c₆, e₈, I₆⟩ := mdCpW_step (P := P) e₇.wb_right I₅ rfl hSA (by omega) (by norm_num) k4
-    (nk K4 (by simp)).1 (nk K4 (by simp)).2.1 (nk K4 (by simp)).2.2.1 (nk K4 (by simp)).2.2.2
+    (at_index nk K4).1 (at_index nk K4).2.1 (at_index nk K4).2.2.1 (at_index nk K4).2.2.2
   obtain ⟨g1, g2, g3, g4, g5, g6, g7, g8, g9⟩ := I₆
-  have gA : c₆.nreg ALLOC = A := g6 _ (by swoInit2)
-    (by swoInit2) (by swoInit2) (by swoInit2)
+  have gA : c₆.nreg ALLOC = A := at_index g6 _
   have g6' : c₆.nreg K6 = 6 := by
-    rw [g6 _ (by swoInit2) (by swoInit2) (by swoInit2)
-      (by swoInit2), k6]
-  have e₉ := Exec.addN (P := P) e₈.wb_right ALLOC ALLOC K6 (by rw [gA, g6']; omega)
-  refine ⟨_, _, .seq eH (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))), by omega, ?_, ?_, ?_,
+    rw [at_index g6 _, k6]
+  have e₉ := guarded (Exec.addN (P := P) e₈.wb_right ALLOC ALLOC K6)
+  refine ⟨_, _, eH ;; e₄ ;; e₅ ;; e₆ ;; e₇ ;; e₈ ;; e₉, by omega, ?_, ?_, ?_,
     g3, g4, g5, fun r h0 h1 h2 h3 h4 => ?_, g7, g8, g9⟩
-  · simp only [upd_same]; rw [gA, g6']
-  · simp only; rw [upd_other _ _ _ (by swoInit2), g1]
-  · simp only; rw [upd_other _ _ _ (by swoInit2), g2]
+  · frame_simp [upd_same, gA, g6']
+  · block_post
+  · block_post
   · simp only; rw [upd_other _ _ _ h0, g6 r h1 h2 h3 h4]
 
 end

@@ -1,4 +1,6 @@
 module
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseDrvTFiltL
 
@@ -42,20 +44,17 @@ theorem nfAt_robust_bound {A : ℕ} {m : ℕ → ℕ} {B : ℕ} {N : NF}
     by_contra hc
     push Not at hc
     have := (h (Function.update m (B + 11) (N.dec.length + 1)) (fun a ha => by
-      rw [Function.update_of_ne (by omega)])).2.2.2.2.1
-    rw [Function.update_self] at this
-    omega
+      frame_simp [Function.update_of_ne])).2.2.2.2.1
+    simp_all
   refine ⟨h1, fun i hi => ?_⟩
   by_contra hc
   push Not at hc
   set a := m (B + 3) + 5 * i + 4 with ha
   have hm : ∀ a', a' < A → Function.update m a ((N.chord i).dn + 1) a' = m a' := fun a' ha' => by
-    rw [Function.update_of_ne (by omega)]
-  have hN := h _ hm
-  have h3 : Function.update m a ((N.chord i).dn + 1) (B + 3) = m (B + 3) := hm _ (by omega)
-  have := (hN.2.2.2.2.2.1 i hi).2.2.2.2
-  rw [h3, ← ha, Function.update_self] at this
-  omega
+    frame_simp [Function.update_of_ne]
+  have h3 : Function.update m a ((N.chord i).dn + 1) (B + 3) = m (B + 3) := at_index hm _
+  have := ((h _ hm).2.2.2.2.2.1 i hi).2.2.2.2
+  grind
 
 section exec
 
@@ -73,7 +72,6 @@ theorem fSetup_exec (c : Config) (hw : WordsBounded W c) {A Bn K₀ CB b : ℕ}
       (∀ r, (r < 190017 ∨ 190043 < r) → r ≠ 9999 → c'.nreg r = c.nreg r) ∧
       (∀ a, c'.nmem a = if a = A + 1 then b else if a = A then 1 else c.nmem a) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have hAW : A ≤ W := by omega
   unfold fSetup
   exec_block
   all_goals try omega
@@ -84,7 +82,7 @@ theorem fSetup_exec (c : Config) (hw : WordsBounded W c) {A Bn K₀ CB b : ℕ}
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hA, hBn, hK, hCB, hb]
   all_goals try omega
-  all_goals (try simp only [Machine.upd_apply])
+  rfl
 
 /-- The records of a robust normal form, as triples. -/
 theorem recsT_of_nfAt {A : ℕ} {m m' : ℕ → ℕ} {B : ℕ} {N : NF}
@@ -112,19 +110,17 @@ theorem chordListAt_memT {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀
     (hm : ∀ a, m a = memT m₀ li n c₀ L₀ B' L₀.length a) :
     ChordListAt m B' (transL li n c₀ L₀) := by
   have hlen : rankF (keepT li n c₀) L₀ L₀.length = (transL li n c₀ L₀).length := by
-    rw [DownBase.rankF_length]; unfold transL; rw [List.length_map]
+    rw [DownBase.rankF_length]; unfold transL; simp
   intro j hj
   have hq : ∀ q, q < 3 → m (B' + 3 * j + q) = tw (transL li n c₀ L₀) (3 * j + q) := by
     intro q hq
-    rw [hm]; unfold memT; rw [hlen, ite_eq_left (by omega), show B' + 3 * j + q - B' = 3 * j + q by
+    rw [hm]; unfold memT; rw [hlen, guarded ite_eq_left, show B' + 3 * j + q - B' = 3 * j + q by
       omega]
   refine ⟨?_, ?_, ?_⟩
-  · have := hq 0 (by norm_num); rw [Nat.add_zero, Nat.add_zero] at this; rw [this]
-    unfold tw; rw [show 3 * j % 3 = 0 by omega, show 3 * j / 3 = j by omega]; simp
-  · rw [hq 1 (by norm_num)]
-    unfold tw; rw [show (3 * j + 1) % 3 = 1 by omega, show (3 * j + 1) / 3 = j by omega]; simp
-  · rw [hq 2 (by norm_num)]
-    unfold tw; rw [show (3 * j + 2) % 3 = 2 by omega, show (3 * j + 2) / 3 = j by omega]; simp
+  · have := at_index hq 0; rw [Nat.add_zero, Nat.add_zero] at this; rw [this]
+    unfold tw; simp
+  · grind [tw]
+  · grind [tw]
 
 set_option maxHeartbeats 4000000 in
 /-- **The filter procedure.** -/

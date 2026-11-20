@@ -1,4 +1,6 @@
 module
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
 
 public import Chazelle.Final.RamOrient
 public import Chazelle.Core.DownPhaseDrvTList
@@ -147,14 +149,12 @@ theorem bitO_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
     exec_block
     · omega
     by_cases h : (0 : ℝ) < c.rreg 100
-    · refine spec_ifLtR_true (by config_simp; simpa using h) ?_
+    · refine spec_ifLtR_true (by simpa using h) ?_
       refine spec_instr (Exec.constN ‹WordsBounded _ _› _ _ hW) fun _ => ?_
-      refine ⟨by omega, by config_simp; omega, by config_simp; simp [h], by config_simp,
-        rfl⟩
-    · refine spec_ifLtR_false (by config_simp; simpa using h) ?_
+      simp_all
+    · refine spec_ifLtR_false (by simpa using h) ?_
       refine spec_skip ‹WordsBounded _ _› ?_
-      refine ⟨by omega, by config_simp; omega, by config_simp; simp [h],
-        by config_simp, rfl⟩
+      simp_all
   exact ⟨c', k, e, hk, h1, h2, h3, exec_frameM e wrM_bitO, hm⟩
 
 /-- **The `LeftInside` bit.** -/
@@ -162,38 +162,36 @@ theorem orientT_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wo
     ∃ c' k, Exec P W orientT c c' k ∧ k ≤ 14 * P.n + 120 ∧
       c'.nreg 190001 ≤ 1 ∧ (c'.nreg 190001 = 1 ↔ Mountain.LeftInside (Qof P)) ∧
       FrameM B19 c c' ∧ c'.nmem = c.nmem := by
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   obtain ⟨c₀, k₀, e₀, hk₀, s1, F₀, rr₀, m₀⟩ := saveN_exec (P := P) c hw
   obtain ⟨c₁, k₁, e₁, hk₁, s2, F₁, nr₁, m₁⟩ := saveR_exec (P := P) c₀ e₀.wb_right
   obtain ⟨c₂, k₂, e₂, hk₂, ho, f2n, f2r, m₂, rm₂, o₂⟩ :=
-    Final.orientStmt_exec (shearRel_Qof hG.2) hQ c₁ e₁.wb_right (by omega)
-  obtain ⟨c₃, k₃, e₃, hk₃, b1, b2, b3, F₃, m₃⟩ := bitO_exec (P := P) c₂ e₂.wb_right (by omega)
+    guarded (Final.orientStmt_exec (shearRel_Qof hG.2) ((shearInvariance (epsOf P) P).1 hG.1) c₁ e₁.wb_right)
+  obtain ⟨c₃, k₃, e₃, hk₃, b1, b2, b3, F₃, m₃⟩ := guarded (bitO_exec (P := P) c₂ e₂.wb_right)
   obtain ⟨c₄, k₄, e₄, hk₄, r1, F₄, rr₄, m₄⟩ := restN_exec (P := P) c₃ e₃.wb_right
   obtain ⟨c₅, k₅, e₅, hk₅, r2, F₅, nr₅, m₅⟩ := restR_exec (P := P) c₄ e₄.wb_right
   refine ⟨c₅, k₀ + (k₁ + (k₂ + (k₃ + (k₄ + k₅)))),
-    .seq e₀ (.seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))), by omega, ?_, ?_,
-    ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_⟩, by rw [m₅, m₄, m₃, m₂, m₁, m₀]⟩
-  · rw [nr₅, F₄.1 _ (by decide)]; exact b1
-  · rw [nr₅, F₄.1 _ (by decide), b2, ho]
-    unfold Mountain.orient
-    split_ifs with h <;> simp [h]
+    e₀ ;; e₁ ;; e₂ ;; e₃ ;; e₄ ;; e₅, by omega, ?_, ?_,
+    ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_⟩, by grind⟩
+  · rwa [nr₅, at_index F₄.1 _]
+  · rw [nr₅, at_index F₄.1 _, b2, ho]
+    grind [Mountain.orient]
   · -- natural registers outside band `19`
     unfold B19 at hr
     simp only [decide_eq_false_iff_not, not_and, not_lt] at hr
     rw [nr₅]
     by_cases hres : 230 ≤ r ∧ r ≤ 236
-    · rw [r1 r hres.1 hres.2, F₃.1 (190000 + r) (by unfold Bbit; simp; omega),
-        f2n (190000 + r) (by omega), nr₁, s1 r hres.1 hres.2]
-    · rw [F₄.1 r (by unfold BrN; simp; omega), F₃.1 r (by unfold Bbit; simp; omega),
-        f2n r (by omega), nr₁, F₀.1 r (by unfold B19; simp; omega)]
+    · rw [r1 r hres.1 hres.2, at_index F₃.1 (190000 + r),
+        at_index f2n (190000 + r), nr₁, s1 r hres.1 hres.2]
+    · rw [at_index F₄.1 r, at_index F₃.1 r,
+        at_index f2n r, nr₁, at_index F₀.1 r]
   · -- real registers outside band `19`
     unfold B19 at hr
     simp only [decide_eq_false_iff_not, not_and, not_lt] at hr
     by_cases hres : r = 100 ∨ (230 ≤ r ∧ r ≤ 243)
-    · rw [r2 r hres, rr₄, F₃.2.1 (190000 + r) (by unfold Bbit; simp; omega),
-        f2r (190000 + r) (by omega) (by omega), s2 r hres, rr₀]
-    · rw [F₅.2.1 r (by unfold BrR; simp; omega), rr₄, F₃.2.1 r (by unfold Bbit; simp; omega),
-        f2r r (by omega) (by omega), F₁.2.1 r (by unfold B19; simp; omega), rr₀]
+    · rw [r2 r hres, rr₄, at_index F₃.2.1 (190000 + r),
+        at_index f2r (190000 + r), s2 r hres, rr₀]
+    · rw [at_index F₅.2.1 r, rr₄, at_index F₃.2.1 r,
+        at_index f2r r, at_index F₁.2.1 r, rr₀]
   · rw [F₅.2.2.1, F₄.2.2.1, F₃.2.2.1, rm₂, F₁.2.2.1, F₀.2.2.1]
   · rw [F₅.2.2.2, F₄.2.2.2, F₃.2.2.2, o₂, F₁.2.2.2, F₀.2.2.2]
 

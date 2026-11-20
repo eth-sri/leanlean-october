@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.DownPhaseDrvLMFam
 
@@ -25,26 +26,23 @@ open DownStep (stepFam)
 /-- `2^(⌈βλ⌉+12) = 2 · 2^μ`. -/
 theorem pow_lvl (lam : ℕ) : 2 ^ (Cost.ceilBeta lam + 12) = 2 * 2 ^ DrvR.nextLvl lam := by
   unfold DrvR.nextLvl
-  rw [show Cost.ceilBeta lam + 12 = Cost.ceilBeta lam + 11 + 1 by omega, pow_succ]
   ring
 
 /-- **The math of one level (D7).** -/
 theorem levelMathSpec : DrvR.LevelMathSpec := by
   classical
   intro P L E reg lam hG hLne hL hperm hsort hdeg hwt hregs
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have hdh : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
-  have hK : 0 < L.length := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
+  have hQ := (shearInvariance (epsOf P) P).1 hG.1
+  have hK := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
   have B : DrvB.BaseCtx (Qof P) L E reg (decide (Mountain.LeftInside (Qof P))) :=
-    ⟨hQ, hdh, hL, hperm, hsort, hK, hregs, decide_eq_true_iff⟩
+    ⟨hQ, ((goodShear_epsOf hG.2).2.1), hL, hperm, hsort, hK, hregs, decide_eq_true_iff⟩
   have hS : (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
       (Qof P) = Gran.lset (interiorModel (Qof P)) (Qof P) L :=
     Gran.F_of_map (BuildNF.isNF_goodModel (Or.inr ⟨Qof P, hQ, rfl⟩) hL hperm hsort).2.1
   have hγ := pow_lvl lam
   refine ⟨fun r hr => ?_, ?_⟩
   · -- 1. the hosts
-    obtain ⟨h1, h2, h3, h4⟩ := host_facts B hr hdeg hwt
-    exact ⟨h1, fun a ℓ h => by have := h2 a ℓ h; omega, h3, by omega⟩
+    obtain ⟨h1, h2, h3, h4⟩ := host_facts B hr hdeg hwt <;> grind
   intro γ₀ M C NR γR Lx hγ₀ hreg
   -- the host facts of the regions
   have hH : ∀ r, r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions →
@@ -52,21 +50,19 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
         (reg r) (C r) := by
     intro r hr
     obtain ⟨hP, hs, hm, -⟩ := hreg r hr
-    have h := DownMath.hostR1Spec P L E reg r hG hLne hL hperm hsort hdeg hregs hr
-    obtain ⟨-, -, hsimp, -, -, -, hex⟩ := h
-    refine ⟨by rw [hP]; exact hsimp, ?_⟩
+    obtain ⟨-, -, hsimp, -, -, -, hex⟩ := (DownMath.hostR1Spec P L E reg r hG hLne hL hperm hsort hdeg hregs hr)
+    refine ⟨by rwa [hP], ?_⟩
     have := hex (C r) hP hs hm
-    rw [hS] at this
-    exact this
+    rwa [hS] at this
   -- the abstract level
   have X : LvlCtx (Qof P) L (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions reg C
       (fun r => (NR r).F (chainModel (C r)) (Qof P)) Lx DrvR.regCap
       (2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 12)) := by
-    refine ⟨hQ, hL, by rw [← hS]; exact hdeg, fun r hr => by rw [← hS]; exact hregs.1.1 r hr,
-      hregs.1.2.1, fun U hU => hregs.1.2.2 U (by rw [hS]; exact hU), fun r hr => (hH r hr).2,
+    refine ⟨hQ, hL, by rwa [← hS], fun r hr => by rw [← hS]; exact hregs.1.1 r hr,
+      hregs.1.2.1, fun U hU => hregs.1.2.2 U (by rwa [hS]), fun r hr => (hH r hr).2,
       fun r hr => ?_, fun r hr => ?_, fun r hr => ?_, fun r hr => ?_⟩
     · obtain ⟨-, -, -, hcan, -, hhi, -⟩ := hreg r hr
-      exact ⟨hcan.1.1, hcan.2.1, fun U hU => (hcan.2.2.1.1 U hU).trans (by omega)⟩
+      exact ⟨hcan.1.1, hcan.2.1, fun U hU => guarded (hcan.2.2.1.1 U hU).trans⟩
     · obtain ⟨-, -, -, -, -, -, hkept, -⟩ := hreg r hr
       exact hkept
     · obtain ⟨-, -, -, -, -, -, -, hnd, -⟩ := hreg r hr
@@ -94,7 +90,7 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
     have h4 := (host_facts B hr hdeg hwt).2.2.2
     calc (Lx r).length * (γ₀ + 1) ≤ 140 * (DrvR.regCap + 2) * (2 * (C r).m + 1) := h1
       _ ≤ 140 * (DrvR.regCap + 2) * (20 * 2 ^ DrvR.nextLvl lam + 17) :=
-        Nat.mul_le_mul_left _ (by omega)
+        at_index Nat.mul_le_mul_left _
   · -- the buckets
     exact bcnt_le_four hK hperm hsort hregs
       (fun r hr => (hreg r hr).2.2.2.2.2.2.2.2.2.2)
@@ -111,12 +107,11 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
         X.step]
     rw [hF', hS]
     refine ⟨Set.subset_union_left, X.down.2.1, X.down.2.2, X.count (fun r hr => ?_)⟩
-    have h1 := hsize r hr
     have h2 := hm r hr
     rw [pts_length B hr, hS] at h2
     rw [← h2]
-    calc (Lx r).length * (γ₀ + 1) ≤ 140 * (DrvR.regCap + 2) * (2 * (C r).m + 1) := h1
-      _ ≤ 140 * (DrvR.regCap + 2) * (2 * ((C r).m + 1)) := Nat.mul_le_mul_left _ (by omega)
+    calc (Lx r).length * (γ₀ + 1) ≤ 140 * (DrvR.regCap + 2) * (2 * (C r).m + 1) := (hsize r hr)
+      _ ≤ 140 * (DrvR.regCap + 2) * (2 * ((C r).m + 1)) := at_index Nat.mul_le_mul_left _
       _ = 280 * (DrvR.regCap + 2) * ((C r).m + 1) := by ring
 
 end

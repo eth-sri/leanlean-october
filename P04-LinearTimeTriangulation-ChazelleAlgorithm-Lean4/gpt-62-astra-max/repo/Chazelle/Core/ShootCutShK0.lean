@@ -1,4 +1,7 @@
 module
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.ShootCutShP0
 
@@ -53,24 +56,20 @@ def pieceK0 : Stmt :=
 def Bk0 (r : ℕ) : Bool := Bedge r || Bmrg r || decide (140330 ≤ r ∧ r < 140334)
 
 theorem Bk0_env (r : ℕ) (h : envR r) : Bk0 r = false := by
-  have := Bedge_env r h
-  unfold envR at h
-  simp only [Bk0, this, Bmrg, Bk, K1, ALLOC, Bool.false_or, Bool.or_eq_false_iff,
-    decide_eq_false_iff_not, beq_eq_false_iff_ne] at h ⊢
-  omega
+  grind [envR, Bk0, Bmrg, Bk, K1, ALLOC, beq_eq_false_iff_ne, Bedge_env]
 
 variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
 
 theorem CandAt.keep {c c' : Config} {b : ℕ} {S : Set Point} (h : CandAt P C c b S z σ)
     (hk : ∀ j, j < 7 → c'.nreg (b + j) = c.nreg (b + j)) : CandAt P C c' b S z σ := by
-  have h0 := hk 0 (by norm_num)
+  have h0 := at_index hk 0
   simp only [Nat.add_zero] at h0
   obtain ⟨hb, hn, hy⟩ := h
-  refine ⟨by rw [h0]; exact hb, fun hne => hn (by rw [← h0]; exact hne), fun h1 => ?_⟩
-  obtain ⟨x, a, f, p, n, q⟩ := hy (by rw [← h0]; exact h1)
-  rw [hk 5 (by norm_num), hk 6 (by norm_num)]
-  exact ⟨x, absRec_copy' a (hk 1 (by norm_num)) (hk 2 (by norm_num)) (hk 3 (by norm_num))
-    (hk 4 (by norm_num)), f, p, n, q⟩
+  refine ⟨by simp_all, fun hne => guarded hn, fun h1 => ?_⟩
+  obtain ⟨x, a, f, p, n, q⟩ := guarded hy
+  rw [at_index hk 5, at_index hk 6]
+  exact ⟨x, absRec_copy' a (at_index hk 1) (at_index hk 2) (at_index hk 3)
+    (at_index hk 4), f, p, n, q⟩
 
 theorem CandAt.of_eq {c : Config} {b : ℕ} {S S' : Set Point} (h : CandAt P C c b S z σ)
     (hS : S = S') : CandAt P C c b S' z σ := hS ▸ h
@@ -96,9 +95,9 @@ theorem k0Init_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n
         exec_block
         all_goals first | omega | (config_simp; rw [h34, h50, h52]; omega) | skip
         refine ⟨rfl, by config_simp; rw [h34, h50, h52], fun r hr => by simp [hr], rfl⟩
-      refine ⟨c₁, _, .ifLtN_true (by rw [h52, h50]; exact hl) e₁, by omega, ?_, r₁, m₁⟩
+      refine ⟨c₁, _, .ifLtN_true (by rwa [h52, h50]) e₁, by omega, ?_, r₁, m₁⟩
       rw [q31, Nat.mod_eq_of_lt (by omega)]; omega
-    · refine ⟨_, _, .ifLtN_false (by rw [h52, h50]; exact hl) (Exec.subN hw _ _ _), by norm_num,
+    · refine ⟨_, _, .ifLtN_false (by simp_all) (Exec.subN hw _ _ _), by norm_num,
         ?_, fun r hr => by simp [hr], rfl⟩
       simp only [upd_same]
       rw [h52, h50, show eE + n - sE = (eE - sE) + n by omega, Nat.add_mod_right,
@@ -114,7 +113,7 @@ theorem k0Init_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n
     have g50 : c₂.nreg 140250 = sE := by rw [r₂ _ (by decide), h50]
     exec_block
     all_goals first | omega | (config_simp; rw [q31', g1]; omega) | skip
-    refine ⟨rfl, by config_simp; rw [q31', g1], by config_simp, by config_simp; rw [g50],
+    refine ⟨rfl, by frame_simp [q31', g1], by config_simp, by config_simp; rw [g50],
       fun r h1 h2 h3 => ?_, rfl⟩
     simp only [upd]; split_ifs <;> first | rfl | omega
   refine ⟨c₃, _, .seq e₂ e₃, by omega, q30, ?_, q32, q33, fun r hr => ?_, ?_, ?_, ?_, ?_⟩
@@ -145,41 +144,39 @@ theorem setUV_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n 
   set c₁ := ({ ({ c with nreg := upd c.nreg 140262 (c.nreg 140333) } : Config) with
     nreg := upd (upd c.nreg 140262 (c.nreg 140333)) 140263
       (upd c.nreg 140262 (c.nreg 140333) 140333) } : Config) with hc₁
-  have e₁ : Exec P W (block [.copyN 140262 140333, .copyN 140263 140333]) c c₁ 2 :=
+  have e₁ :=
     Exec.block_cons ea (Exec.block_cons eb (Exec.block_nil eb.wb_right))
   have g₁ : ∀ r, r ≠ 140262 → r ≠ 140263 → c₁.nreg r = c.nreg r := fun r h1 h2 => by
-    rw [hc₁]; simp [h1, h2]
+    simp_all
   have q62 : c₁.nreg 140262 = pcEdge n x.edge d := by rw [hc₁]; simp [h33]
   have q63 : c₁.nreg 140263 = pcEdge n x.edge d := by rw [hc₁]; simp [h33]
   have w₁ := e₁.wb_right
-  have p30 : c₁.nreg 140330 = d := by rw [g₁ _ (by decide) (by decide), h30]
-  have pK : c₁.nreg K1 = 1 := by rw [g₁ _ (by decide) (by decide), h1]
+  have p30 : c₁.nreg 140330 = d := by simp_all
+  have pK : c₁.nreg K1 = 1 := by rw [at_index g₁ _, h1]
   -- `U.hgt`
   obtain ⟨c₂, k₂, e₂, hk₂, q64, g₂⟩ : ∃ c₂ k₂, Exec P W (.ifLtN 140330 K1
       (.instr (.copyN 140264 140251)) (.instr (.constN 140264 0))) c₁ c₂ k₂ ∧ k₂ ≤ 3 ∧
       c₂.nreg 140264 = (pcU n x d).hgt ∧ ∀ r, r ≠ 140264 → c₂.nreg r = c₁.nreg r := by
     by_cases h0 : d = 0
-    · refine ⟨_, _, .ifLtN_true (by rw [p30, pK, h0]; norm_num) (Exec.copyN w₁ _ _), by norm_num, ?_,
-        fun r hr => by simp [hr]⟩
+    · refine ⟨_, _, .ifLtN_true (by simp_all) (Exec.copyN w₁ _ _), by norm_num, ?_,
+        fun r hr => by simp_all⟩
       simp [pcU, h0, g₁ _ (by decide : (140251 : ℕ) ≠ 140262) (by decide), h51]
-    · refine ⟨_, _, .ifLtN_false (by rw [p30, pK]; omega) (Exec.constN w₁ _ _ (Nat.zero_le _)),
+    · refine ⟨_, _, .ifLtN_false (by simp_all) (Exec.constN w₁ _ _ (Nat.zero_le _)),
         by norm_num, ?_,
-        fun r hr => by simp [hr]⟩
+        fun r hr => by simp_all⟩
       simp [pcU, h0]
   have w₂ := e₂.wb_right
   have gg : ∀ r, r ≠ 140262 → r ≠ 140263 → r ≠ 140264 → c₂.nreg r = c.nreg r :=
-    fun r a b c' => by rw [g₂ r c', g₁ r a b]
-  have q30 : c₂.nreg 140330 = d := by rw [gg _ (by decide) (by decide) (by decide), h30]
-  have q31 : c₂.nreg 140331 = D := by rw [gg _ (by decide) (by decide) (by decide), h31]
+    fun r a b c' => by simp_all
+  have q30 : c₂.nreg 140330 = d := by simp_all
+  have q31 : c₂.nreg 140331 = D := by simp_all
   have q33 : c₂.nreg 140333 = pcEdge n x.edge d := by
-    rw [gg _ (by decide) (by decide) (by decide), h33]
-  have q34 : c₂.nreg 140334 = n := by rw [gg _ (by decide) (by decide) (by decide), h34]
+    simp_all
+  have q34 : c₂.nreg 140334 = n := by simp_all
   have qK : c₂.nreg K1 = 1 := by rw [gg _ (by decide) (by decide) (by decide), h1]
   -- `V`
   obtain ⟨c₃, k₃, e₃, hk₃, v5, v6, g₃⟩ : ∃ c₃ k₃, Exec P W (.ifLtN 140330 140331
-      (.seq (.instr (.addN 140265 140333 K1))
-        (.seq (.ifLtN 140265 140334 .skip (.instr (.constN 140265 0)))
-          (.instr (.constN 140266 0))))
+      (.instr (.addN 140265 140333 K1) ;; .ifLtN 140265 140334 .skip (.instr (.constN 140265 0)) ;; .instr (.constN 140266 0))
       (block [.copyN 140265 140252, .copyN 140266 140253])) c₂ c₃ k₃ ∧ k₃ ≤ 6 ∧
       c₃.nreg 140265 = (pcV n x y D d).edge ∧ c₃.nreg 140266 = (pcV n x y D d).hgt ∧
       (∀ r, r ≠ 140265 → r ≠ 140266 → c₃.nreg r = c₂.nreg r) := by
@@ -196,9 +193,9 @@ theorem setUV_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n 
           cb.nreg 140265 = (pcEdge n x.edge d + 1) % n ∧
           ∀ r, r ≠ 140265 → cb.nreg r = ca.nreg r := by
         by_cases hl : pcEdge n x.edge d + 1 < n
-        · exact ⟨ca, _, .ifLtN_true (by rw [a65, a34]; exact hl) (.skip ea.wb_right),
+        · exact ⟨ca, _, .ifLtN_true (by rwa [a65, a34]) (.skip ea.wb_right),
             by norm_num, by rw [a65, Nat.mod_eq_of_lt hl], fun _ _ => rfl⟩
-        · refine ⟨_, _, .ifLtN_false (by rw [a65, a34]; exact hl)
+        · refine ⟨_, _, .ifLtN_false (by rwa [a65, a34])
             (Exec.constN ea.wb_right _ _ (Nat.zero_le _)), by norm_num, ?_,
             fun r hr => by simp [hr]⟩
           simp only [Config.nreg_mk, upd_same]
@@ -235,38 +232,34 @@ theorem adv_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n j 
     ∃ c' k, Exec P W adv c c' k ∧ k ≤ 5 ∧ c'.nreg 140330 = d + 1 ∧
       c'.nreg 140333 = (j + 1) % n ∧ FrameB (fun r => r == 140330 || r == 140333) c c' := by
   have h1' : c.nreg 140401 = 1 := h1
-  have ea := Exec.addN (P := P) hw 140330 140330 K1 (by rw [h30, h1]; omega)
+  have ea := guarded (Exec.addN (P := P) hw 140330 140330 K1)
   have eb := Exec.addN (P := P) ea.wb_right 140333 140333 K1 (by simp [K1, h33, h1']; omega)
   set c₁ := ({ ({ c with nreg := upd c.nreg 140330 (c.nreg 140330 + c.nreg K1) } : Config) with
     nreg := upd (upd c.nreg 140330 (c.nreg 140330 + c.nreg K1)) 140333
       (upd c.nreg 140330 (c.nreg 140330 + c.nreg K1) 140333 +
         upd c.nreg 140330 (c.nreg 140330 + c.nreg K1) K1) } : Config) with hc₁
-  have e₁ : Exec P W (block [.addN 140330 140330 K1, .addN 140333 140333 K1]) c c₁ 2 :=
+  have e₁ :=
     Exec.block_cons ea (Exec.block_cons eb (Exec.block_nil eb.wb_right))
-  have q30 : c₁.nreg 140330 = d + 1 := by rw [hc₁]; simp [K1, h30, h1']
+  have q30 : c₁.nreg 140330 = d + 1 := by simp_all
   have q33 : c₁.nreg 140333 = j + 1 := by rw [hc₁]; simp [K1, h33, h1']
-  have q34 : c₁.nreg 140334 = n := by rw [hc₁]; simp [h34]
+  have q34 : c₁.nreg 140334 = n := by simp_all
   have w₁ := e₁.wb_right
   obtain ⟨c₂, k₂, e₂, hk₂, v33, v30⟩ : ∃ c₂ k₂, Exec P W (.ifLtN 140333 140334 .skip
       (.instr (.constN 140333 0))) c₁ c₂ k₂ ∧ k₂ ≤ 3 ∧ c₂.nreg 140333 = (j + 1) % n ∧
       c₂.nreg 140330 = d + 1 := by
     by_cases hl : j + 1 < n
-    · exact ⟨c₁, _, .ifLtN_true (by rw [q33, q34]; exact hl) (.skip w₁), by norm_num,
-        by rw [q33, Nat.mod_eq_of_lt hl], q30⟩
-    · refine ⟨_, _, .ifLtN_false (by rw [q33, q34]; exact hl) (Exec.constN w₁ _ _
-        (Nat.zero_le _)), by norm_num, ?_, by simp [q30]⟩
-      simp only [Config.nreg_mk, upd_same]
-      rw [show j + 1 = n by omega, Nat.mod_self]
+    · exact ⟨c₁, _, .ifLtN_true (by simp_all) (.skip w₁), by norm_num,
+        by grind [Nat.mod_eq_of_lt], q30⟩
+    · refine ⟨_, _, .ifLtN_false (by simp_all) (Exec.constN w₁ _ _
+        (Nat.zero_le _)), by norm_num, ?_, by simp_all⟩
+      grind [upd_same, Nat.mod_self]
   have ex : Exec P W adv c c₂ (2 + k₂) := .seq e₁ e₂
   exact ⟨c₂, _, ex, by omega, v30, v33, exec_frameB ex wr_adv⟩
 
 /-! ## The loop -/
 
 theorem Bmrg_env (r : ℕ) (h : envR r) : Bmrg r = false := by
-  unfold envR at h
-  simp only [Bmrg, Bk, K1, ALLOC, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-    beq_eq_false_iff_ne] at h ⊢
-  omega
+  grind [envR, Bmrg, Bk, K1, ALLOC, beq_eq_false_iff_ne]
 
 /-- The loop invariant of `pieceK0`. -/
 def K0Inv (P : Polygon) (W : ℕ) (H : Host) (C : Chain) (z : Point) (σ : ℝ) (x y : WPos)
@@ -295,39 +288,38 @@ theorem pieceK0_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
     ∃ c' k, Exec P W pieceK0 c c' k ∧ k ≤ 600000 ∧
       CandAt P C c' 140210 (S₀ ∪ (chainModel C).arcSet ((chainModel C).key (Qof P) x)
         ((chainModel C).key (Qof P) y)) z σ ∧ FrameB Bk0 c c' := by
-  have hnWn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hnWn := chainModel_n C
   set n := 2 * C.m + 7 with hn
   set D := pcD n x.edge y.edge with hDdef
   have hD9 : D ≤ 9 := piece0_D_le hx hy hxn hyn hwt
-  have hDn : D < n := Nat.mod_lt _ (by omega)
+  have hDn : D < n := at_index Nat.mod_lt _
   have hfull := segSet_full (Q := Qof P) hx hy hxn hyn hwt
   -- the set-up
   obtain ⟨c₁, k₁, e₁, hk₁, q30, q31, q32, q33, r₁, m₁, rr₁, rm₁, o₁⟩ :=
-    k0Init_exec (P := P) c hw E.k1 h34 h50 h52 hxn hyn (by omega)
-  have f₁ : FrameB Bk0 c c₁ := ⟨fun r hr => r₁ r (by simp [Bk0] at hr; omega),
+    guarded (k0Init_exec (P := P) c hw E.k1 h34 h50 h52 hxn hyn)
+  have f₁ : FrameB Bk0 c c₁ := ⟨fun r hr => at_index r₁ r,
     fun r _ => by rw [rr₁], m₁, rm₁, o₁⟩
   have E₁ := E.frame f₁ Bk0_env
   have I₁ : K0Inv P W H C z σ x y S₀ (c.nreg ALLOC) c c₁ := by
-    refine ⟨e₁.wb_right, E₁, 0, by omega, q30, q31, q32, ?_, by rw [r₁ _ (by omega), h34],
-      by rw [r₁ _ (by omega), h50], by rw [r₁ _ (by omega), h51], by rw [r₁ _ (by omega), h52],
-      by rw [r₁ _ (by omega), h53], ?_, by rw [r₁ _ (by simp [ALLOC])], f₁⟩
+    refine ⟨e₁.wb_right, E₁, 0, by omega, q30, q31, q32, ?_, by block_post,
+      by frame_simp [r₁, h50], by frame_simp [r₁, h51], by frame_simp [r₁, h52],
+      by frame_simp [r₁, h53], ?_, by grind [ALLOC], f₁⟩
     · rw [q33]; unfold pcEdge; rw [Nat.add_zero, Nat.mod_eq_of_lt hxn]
-    · rw [segSet_zero, Set.union_empty]
-      exact hB.keep fun j hj => r₁ _ (by omega)
+    · grind [segSet_zero, Set.union_empty, hB.keep]
   -- the body
   obtain ⟨c₂, k₂, e₂, I₂, hx₂, hk₂⟩ := Exec.whileLtN_bounded (P := P) (a := 140330)
-    (b := 140332) (body := .seq setUV (.seq edgeH (.seq mrg adv)))
+    (b := 140332) (body := setUV ;; edgeH ;; mrg ;; adv)
     (K0Inv P W H C z σ x y S₀ (c.nreg ALLOC) c) (fun c' => D + 1 - c'.nreg 140330) 50300
     (fun _ h => h.1) (fun c₀ ⟨hw₀, E₀, d, hd, i30, i31, i32, i33, i34, i50, i51, i52, i53, iB,
       iA, iF⟩ hlt => by
       rw [i30, i32] at hlt
       have hdD : d ≤ D := Nat.lt_succ_iff.mp hlt
       -- the ends
-      obtain ⟨c₁', k₁', e₁', hk₁', u62, u63, u64, u65, u66, fu⟩ := setUV_exec (P := P) c₀ hw₀
+      obtain ⟨c₁', k₁', e₁', hk₁', u62, u63, u64, u65, u66, fu⟩ := guarded (setUV_exec (P := P) c₀ hw₀
         E₀.k1 (n := n) (x := x) (y := y) (d := d) (D := D) i30 i31 i33 i34 i50 i51 i52 i53
-        hxn hdD (by omega)
+        hxn hdD)
       have E₁' := E₀.frame fu fun r hr => by
-        unfold envR at hr; simp only [decide_eq_false_iff_not, K1, ALLOC] at hr ⊢; omega
+        address_omega
       have ku : ∀ r, (r < 140262 ∨ 140267 ≤ r) → c₁'.nreg r = c₀.nreg r := fun r hr =>
         fu.1 r (by simp; omega)
       -- the segment
@@ -352,9 +344,9 @@ theorem pieceK0_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
           · exact hyn
           · exact pcEdge_lt (by omega) _
       have iU : EndIn P C c₁' 140263 140264 ((chainModel C).pos (Qof P) (pcU n x d)) :=
-        ⟨hU', by rw [u64]; unfold pcU; split_ifs <;> first | exact hxe | exact Or.inl rfl⟩
+        ⟨hU', by grind [pcU]⟩
       have iV : EndIn P C c₁' 140265 140266 ((chainModel C).pos (Qof P) (pcV n x y D d)) :=
-        ⟨hV', by rw [u66]; unfold pcV; split_ifs <;> first | exact hye | exact Or.inl rfl⟩
+        ⟨hV', by grind [pcV]⟩
       have geo : SegGeo C (pcEdge n x.edge d) ((chainModel C).pos (Qof P) (pcU n x d))
           ((chainModel C).pos (Qof P) (pcV n x y D d)) :=
         ⟨by rw [hnWn]; exact pcEdge_lt (by omega) _, _, _, a0, ab, b1, hU, hV⟩
@@ -363,15 +355,14 @@ theorem pieceK0_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
         rw [← hfull]
         unfold segSet
         simp only [Set.mem_iUnion, List.mem_range, exists_prop]
-        exact ⟨d, by omega, hm⟩)
+        grind)
       have hA₁' : c₁'.nreg ALLOC = c.nreg ALLOC := by rw [ku _ (by simp [ALLOC]), iA]
-      obtain ⟨c₂', k₂', e₂', hk₂', ca, fe⟩ := edgeH_exec c₁' e₁'.wb_right E₁' iU iV u62 geo hzd
-        (by rw [hA₁']; omega)
+      obtain ⟨c₂', k₂', e₂', hk₂', ca, fe⟩ := guarded (edgeH_exec c₁' e₁'.wb_right E₁' iU iV u62 geo hzd)
       have E₂' := E₁'.frame fe Bedge_env
       have ke : ∀ r, Bedge r = false → c₂'.nreg r = c₁'.nreg r := fe.1
       have iB' : CandAt P C c₂' 140210 (S₀ ∪ segSet C (Qof P) x y d) z σ := by
         refine iB.keep fun j hj => ?_
-        rw [ke _ (by simp [Bedge, Bprim]; omega), ku _ (by omega)]
+        rw [at_index ke _, ku _ (by omega)]
       obtain ⟨c₃', k₃', e₃', hk₃', cb, fm⟩ := mrg_exec c₂' e₂'.wb_right E₂' iB' ca
       have E₃' := E₂'.frame fm Bmrg_env
       have km : ∀ r, Bmrg r = false → c₃'.nreg r = c₂'.nreg r := fm.1
@@ -379,35 +370,35 @@ theorem pieceK0_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       have keep3 : ∀ r, (140330 ≤ r ∧ r < 140335) ∨ (140250 ≤ r ∧ r < 140254) ∨ r = ALLOC →
           c₃'.nreg r = c₀.nreg r := fun r hr => by
         rw [km r (by simp [Bmrg, Bk]; unfold ALLOC at hr; omega),
-          ke r (by simp [Bedge, Bprim]; unfold ALLOC at hr; omega),
+          at_index ke r,
           ku r (by unfold ALLOC at hr; omega)]
       obtain ⟨c₄', k₄', e₄', hk₄', v30, v33, fa⟩ := adv_exec (P := P) c₃' e₃'.wb_right E₃'.k1
         (n := n) (j := pcEdge n x.edge d) (d := d)
-        (by rw [keep3 _ (Or.inl ⟨le_rfl, by norm_num⟩), i30])
-        (by rw [keep3 _ (Or.inl ⟨by norm_num, by norm_num⟩), i33])
-        (by rw [keep3 _ (Or.inl ⟨by norm_num, by norm_num⟩), i34]) (pcEdge_lt (by omega) _)
+        (by grind)
+        (by grind)
+        (by grind) (pcEdge_lt (by omega) _)
         (by omega) (by omega)
       have E₄' := E₃'.frame fa fun r hr => by
         unfold envR at hr; simp only [Bool.or_eq_false_iff, beq_eq_false_iff_ne, K1, ALLOC] at hr ⊢
         omega
-      have ka : ∀ r, r ≠ 140330 → r ≠ 140333 → c₄'.nreg r = c₃'.nreg r := fun r h1 h2 =>
+      have ka : AgreeExcept [140330, 140333] c₄'.nreg c₃'.nreg := fun r h1 h2 =>
         fa.1 r (by simp [h1, h2])
       have kk : ∀ r, (r = 140331 ∨ r = 140332 ∨ r = 140334 ∨ (140250 ≤ r ∧ r < 140254) ∨
           r = ALLOC) → c₄'.nreg r = c₀.nreg r := fun r hr => by
-        rw [ka r (by unfold ALLOC at hr; omega) (by unfold ALLOC at hr; omega),
-          keep3 r (by unfold ALLOC at hr ⊢; omega)]
+        rw [at_index ka r,
+          at_index keep3 r]
       have fb : FrameB Bk0 c₀ c₄' :=
-        (((FrameB.wk fu (fun r h => by simp at h; simp [Bk0, Bedge]; omega)).trans
+        (((FrameB.wk fu (fun r h => by address_omega)).trans
           (FrameB.wk fe (fun r h => by simp [Bk0, h]))).trans
           (FrameB.wk fm (fun r h => by simp [Bk0, h]))).trans
           (FrameB.wk fa (fun r h => by simp at h; simp [Bk0]; omega))
-      refine ⟨c₄', _, .seq e₁' (.seq e₂' (.seq e₃' e₄')), ⟨e₄'.wb_right, E₄', d + 1, by omega,
+      refine ⟨c₄', _, e₁' ;; e₂' ;; e₃' ;; e₄', ⟨e₄'.wb_right, E₄', d + 1, by omega,
         v30, by rw [kk _ (Or.inl rfl), i31], by rw [kk _ (Or.inr (Or.inl rfl)), i32],
         by rw [v33, pcEdge_succ], by rw [kk _ (Or.inr (Or.inr (Or.inl rfl))), i34],
-        by rw [kk _ (by omega), i50], by rw [kk _ (by omega), i51], by rw [kk _ (by omega), i52],
-        by rw [kk _ (by omega), i53], ?_, by rw [kk _ (by simp), iA], iF.trans fb⟩,
-        by omega, by rw [v30, i30]; omega⟩
-      refine (cb.keep fun j hj => ka _ (by omega) (by omega)).of_eq ?_
+        by frame_simp [kk, i50], by frame_simp [kk, i51], by frame_simp [kk, i52],
+        by frame_simp [kk, i53], ?_, by rw [at_index kk _, iA], iF.trans fb⟩,
+        by omega, by grind⟩
+      refine (cb.keep fun j hj => at_index ka _).of_eq ?_
       rw [segSet_succ, Set.union_assoc]) I₁
   obtain ⟨-, E₂, d, hd, i30, -, i32, -, -, -, -, -, -, iB, -, iF⟩ := I₂
   have i32' : c₂.nreg 140332 = D + 1 := i32
@@ -416,10 +407,7 @@ theorem pieceK0_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
   have hdD : d = D + 1 := by omega
   rw [hdD, hfull] at iB
   refine ⟨c₂, _, .seq e₁ e₂, ?_, iB, iF⟩
-  have : D + 1 - c₁.nreg 140330 = D + 1 := by rw [q30]; rfl
-  rw [this] at hk₂
-  have : (50300 + 2) * (D + 1) ≤ 50302 * 10 := Nat.mul_le_mul_left _ (by omega)
-  omega
+  grind
 
 end
 

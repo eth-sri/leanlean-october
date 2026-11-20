@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.SweepEvTasks4
 public import Chazelle.Core.SweepEvStartM
@@ -36,23 +37,18 @@ noncomputable def hPolyS (F : Set (Set Point)) (hfin : F.Finite) : Polygon :=
 theorem hPolyS_vtx {F : Set (Set Point)} (hfin : F.Finite) {C : Chain} {c : Set Point}
     (hc : c ∈ F) (hcC : c ∈ Merge.augChords C) :
     ∃ h, h < (hPolyS F hfin).n ∧ ∃ a b : ℝ, c = hseg ((hPolyS F hfin).vtx h).2 a b := by
-  have hmem : ((0 : ℝ), (Merge.lend c).2) ∈ (hPolyS F hfin).vertices := by
-    simp only [hPolyS]
-    exact List.mem_map.2 ⟨c, by simp [hc], rfl⟩
+  have hmem : ((0 : ℝ), (Merge.lend c).2) ∈ (hPolyS F hfin).vertices := List.mem_map.2 ⟨c, by simp [hc], rfl⟩
   obtain ⟨h, hh, he⟩ := List.mem_iff_getElem.1 hmem
   obtain ⟨y, a, b, -, -, hcd, hl, -⟩ := Merge.augChords_spec hcC
   refine ⟨h, hh, a, b, ?_⟩
-  have hv : (hPolyS F hfin).vtx h = ((0 : ℝ), (Merge.lend c).2) := by
-    unfold Polygon.vtx
-    rw [List.getD_eq_getElem _ _ hh, he]
-  rw [hv, hl, hcd]
+  simp_all [Polygon.vtx]
 
 /-- **One polygon for the families `S₂` and `F₂⁺`.** -/
 theorem chordFamily_pair (J : Merge.Junction) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) :
     ∃ Q : Polygon, (chainModel J.right).ChordFamily Q S₂ ∧
       (chainModel J.whole).ChordFamily Q (F₂plus J S₂) := by
-  have hfin : (S₂ ∪ F₂plus J S₂).Finite := hS₂f.union (F₂plus_finite J hS₂f)
+  have hfin := hS₂f.union (F₂plus_finite J hS₂f)
   refine ⟨hPolyS _ hfin, ⟨hS₂f, hS₂, fun c hc => hPolyS_vtx hfin (Or.inl hc) (hS₂ hc)⟩,
     ⟨F₂plus_finite J hS₂f, F₂plus_subset J hS₂, fun c hc =>
       hPolyS_vtx hfin (Or.inr hc) (F₂plus_subset J hS₂ hc)⟩⟩
@@ -87,8 +83,7 @@ theorem stop_facts {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
       (Lst J : ℝ) ≤ soff P J rs[i] := by
   have hi' : i < (stopsOf J (Qof P) N₂ rs).length := by simp [stopsOf, hi]
   have h := hst.1 _ (List.getElem_mem hi')
-  rw [stopsOf_getElem hi] at h
-  exact h
+  rwa [stopsOf_getElem hi] at h
 
 /-- **The stops are sorted by offset.** -/
 theorem stops_sorted {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
@@ -109,23 +104,22 @@ theorem stops_two (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂
     (hi : i + 2 < rs.length) :
     soff P J (rs[i]'(by omega)) < soff P J rs[i + 2] := by
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
-  have hS₂ : S₂ ⊆ Merge.augChords J.right := hN.1.2.1
-  have hS₂f : S₂.Finite := hN.1.1
+  have hS₂ := hN.1.2.1
+  have hS₂f := hN.1.1
   have hC := corr_right0 J hP hS₂ hS₂f
-  have h01 := stops_sorted hst (i := i) (i' := i + 1) (by omega) (by omega)
-  have h12 := stops_sorted hst (i := i + 1) (i' := i + 2) (by omega) (by omega)
+  have h01 := guarded (stops_sorted hst (i := i) (i' := i + 1))
+  have h12 := guarded (stops_sorted hst (i := i + 1) (i' := i + 2))
   by_contra hlt
   push Not at hlt
   have e01 : soff P J (rs[i]'(by omega)) = soff P J (rs[i + 1]'(by omega)) := by linarith
   have e02 : soff P J (rs[i]'(by omega)) = soff P J rs[i + 2] := by linarith
-  obtain ⟨f0, -, a0, -⟩ := stop_facts hst (i := i) (by omega)
-  obtain ⟨f1, -, a1, -⟩ := stop_facts hst (i := i + 1) (by omega)
-  obtain ⟨f2, -, a2, -⟩ := stop_facts hst (i := i + 2) (by omega)
+  obtain ⟨f0, -, a0, -⟩ := guarded (stop_facts hst (i := i))
+  obtain ⟨f1, -, a1, -⟩ := guarded (stop_facts hst (i := i + 1))
+  obtain ⟨f2, -, a2, -⟩ := guarded (stop_facts hst (i := i + 2))
   obtain ⟨p01, t01⟩ := pos_eq_of_oW hP hS₂ hS₂f a0.1 a1.1 a0.2.1 a0.2.2.1 a1.2.1 a1.2.2.1 e01
   obtain ⟨p02, t02⟩ := pos_eq_of_oW hP hS₂ hS₂f a0.1 a2.1 a0.2.1 a0.2.2.1 a2.2.1 a2.2.2.1 e02
   -- the chords are pairwise distinct (no duplicate stops)
   have hl : (stopsOf J (Qof P) N₂ rs).length = rs.length := by simp [stopsOf]
-  have hnd := hst.2.2.2
   have dist : ∀ a b (ha : a < rs.length) (hb : b < rs.length), a ≠ b →
       (rs[a]).1 = (rs[b]).1 →
       (chainModel J.whole).param (Qof P) ⟨(rs[a]).1, (rs[a]).2.1⟩ =
@@ -134,7 +128,7 @@ theorem stops_two (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂
         stopSet J (Qof P) N₂ (rs[b]).2.2.1 (rs[b]).2.2.2.1 (rs[b]).2.2.2.2 := by
     intro a b ha hb hab h1 h2 h3
     apply hab
-    have := (List.Nodup.getElem_inj_iff hnd (hi := by rw [hl]; exact ha) (hj := by rw [hl]; exact hb)).1 (by
+    have := (List.Nodup.getElem_inj_iff hst.2.2.2 (hi := by rw [hl]; exact ha) (hj := by rw [hl]; exact hb)).1 (by
       rw [stopsOf_getElem ha, stopsOf_getElem hb, h2, h1, h3])
     exact this
   have d01 := dist i (i + 1) (by omega) (by omega) (by omega) p01 t01
@@ -186,7 +180,7 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
         BeforeFaces (chainModel J.right) (vEnd J) 0 V ∧ Λ = {V}) :
     EvInv J (N₂.F (chainModel J.right) (Qof P)) (Lst J) Λ := by
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
-  have hS₂ : S₂ ⊆ Merge.augChords J.right := hN.1.2.1
+  have hS₂ := hN.1.2.1
   have hS₂f : S₂.Finite := hN.1.1
   have hC := corr_right0 J hP hS₂ hS₂f
   obtain ⟨Q', hQ₂, hQF⟩ := chordFamily_pair J hS₂ hS₂f
@@ -199,7 +193,7 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
       ∃ i, ∃ hi : i < rs.length, soff P J rs[i] = Lst J ∧
         stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2 = e := by
     intro e he hA
-    have hmem := hst.2.1 e he (hstop e he hA) pK 0 hA (by rw [hoK'])
+    have hmem := guarded (hst.2.1 e he (hstop e he hA) pK 0 hA)
     obtain ⟨k, hk, hkx⟩ := List.mem_iff_getElem.1 hmem
     have hk' : k < rs.length := by simpa [stopsOf] using hk
     rw [stopsOf_getElem hk'] at hkx

@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.DownPhaseDrvXBkt
 
@@ -40,16 +41,7 @@ def GoodPos (Q : Polygon) (x : WPos) : Prop :=
 theorem bktF_congr {A j : ℕ} {a a' b b' c c' : Prop} [Decidable a] [Decidable a']
     [Decidable b] [Decidable b'] [Decidable c] [Decidable c'] (ha : a ↔ a') (hb : b ↔ b')
     (hc : c ↔ c') : bktF A j a b c = bktF A j a' b' c' := by
-  unfold bktF
-  by_cases h1 : a
-  · rw [ite_eq_left h1, ite_eq_left (ha.1 h1)]
-  · rw [ite_eq_right h1, ite_eq_right (fun h => h1 (ha.2 h))]
-    by_cases h2 : b
-    · rw [ite_eq_left h2, ite_eq_left (hb.1 h2)]
-    · rw [ite_eq_right h2, ite_eq_right (fun h => h2 (hb.2 h))]
-      by_cases h3 : c
-      · rw [ite_eq_left h3, ite_eq_left (hc.1 h3)]
-      · rw [ite_eq_right h3, ite_eq_right (fun h => h3 (hc.2 h))]
+  simp_all
 
 instance (x y : WPos) : Decidable (PosEq x y) := by unfold PosEq; infer_instance
 
@@ -70,11 +62,7 @@ theorem onArc_iff {N : NF} {j : ℕ} {x : WPos} (hx : GoodPos Q x) (hs : GoodPos
   have h2 := key_lt_iff hli hdh hn hs.1 hx.1 hs.2.1 hx.2.1 hs.2.2
   have h3 := key_lt_iff hli hdh hn hx.1 he.1 hx.2.1 he.2.1 hx.2.2
   unfold sideInArc
-  by_cases hse : PosLt Q li (N.arc j).s (N.arc j).e
-  · rw [ite_eq_left (h1.2 hse), h2, h3]
-    exact ⟨fun h => ⟨fun _ => h, fun h' => absurd hse h'⟩, fun h => h.1 hse⟩
-  · rw [ite_eq_right (fun h => hse (h1.1 h)), h2, h3]
-    exact ⟨fun h => ⟨fun h' => absurd h' hse, fun _ => h⟩, fun h => h.2 hse⟩
+  grind
 
 open Classical in
 /-- **The bucket by comparisons.** -/
@@ -131,17 +119,12 @@ theorem arc_facts :
         ((interiorModel (Qof P)).key (Qof P)
           ((buildNF (interiorModel (Qof P)) (Qof P) L E).arc j').s)) := by
   set N := buildNF (interiorModel (Qof P)) (Qof P) L E with hNdef
-  have hN := X.hN
   have hK := X.hK
   have hE := X.hE
-  have hArcs := X.hregs.2.2.1
-  obtain ⟨-, -, -, -, -, -, -, -, -, -, hprop⟩ := hN
+  obtain ⟨-, -, -, -, -, -, -, -, -, -, hprop⟩ := X.hN
   have hWn : (interiorModel (Qof P)).W.n = (Qof P).n := DownMath.walk_n _
   -- every arc is an arc of its region
-  have harc : ∀ j, j < N.arcs.length → (interiorModel (Qof P)).IsArc
-      (N.F (interiorModel (Qof P)) (Qof P)) (reg (N.arc j).reg)
-      ((interiorModel (Qof P)).key (Qof P) (N.arc j).s)
-      ((interiorModel (Qof P)).key (Qof P) (N.arc j).e) := fun j hj => (hArcs.1 j hj).2
+  have harc := fun j hj => (X.hregs.2.2.1.1 j hj).2
   -- the ends of the arcs are chord positions
   have hhgt : ∀ j, j < N.arcs.length → 1 ≤ (N.arc j).s.hgt ∧ 1 ≤ (N.arc j).e.hgt := by
     intro j hj
@@ -161,8 +144,8 @@ theorem arc_facts :
     obtain ⟨-, has, -, hbe, -⟩ := harc j hj
     rw [hWn] at has hbe
     exact ⟨⟨hs, (hhgt j hj).1, hedge _ hs has⟩, ⟨he, (hhgt j hj).2, hedge _ he hbe⟩⟩
-  · have hcut := (WalkAx.arc_cuts X.hne (harc j' hj')).1
-    exact (harc j hj).2.2.2.2.2.1 _ hin hcut
+  · 
+    exact (harc j hj).2.2.2.2.2.1 _ hin ((WalkAx.arc_cuts X.hne (harc j' hj')).1)
 
 end XHyp
 
@@ -175,7 +158,7 @@ theorem hlt_iff {P : Polygon} (hG : GoodEnv P) {u v : ℕ} (hu : u < (Qof P).n) 
     ((Qof P).vtx u).2 < ((Qof P).vtx v).2 ↔ Mountain.ylexLT (P.vtx u) (P.vtx v) := by
   have hgood := goodShear_epsOf hG.2
   have hn : (Qof P).n = P.n := shear_n _ P
-  rw [hgood.2.2.1 u v (by rw [← hn]; exact hu) (by rw [← hn]; exact hv)]
+  rw [guarded (hgood.2.2.1 u v)]
   show _ ↔ ((Qof P).vtx u).2 < ((Qof P).vtx v).2 ∨
     (((Qof P).vtx u).2 = ((Qof P).vtx v).2 ∧ ((Qof P).vtx u).1 < ((Qof P).vtx v).1)
   constructor
@@ -183,7 +166,7 @@ theorem hlt_iff {P : Polygon} (hG : GoodEnv P) {u v : ℕ} (hu : u < (Qof P).n) 
   · rintro (h | ⟨h, h'⟩)
     · exact h
     · by_cases huv : u = v
-      · subst huv; exact absurd h' (lt_irrefl _)
+      · grind
       · exact absurd h (hgood.2.1 u v hu hv huv)
 
 end

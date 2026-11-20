@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.DownPhaseOracleTop
 public import Chazelle.Core.BruteCorner
@@ -58,7 +59,7 @@ theorem rng_of {n cs L k : ℕ} (hcs : cs < n) (hL : L < n) (hk : k ≤ L) :
   by_cases h : cs + k < n
   · left; rw [Nat.mod_eq_of_lt h]; split_ifs <;> omega
   · right
-    rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    rw [guarded Nat.mod_eq_sub_mod, guarded Nat.mod_eq_of_lt]
     split_ifs <;> omega
 
 theorem of_rng1 {n cs L v : ℕ} (hcs : cs < n) (h1 : cs ≤ v) (h2 : v ≤ rY1 n cs L) :
@@ -75,7 +76,7 @@ theorem of_rng2 {n cs L v : ℕ} (hcs : cs < n) (hL : L < n) (h1 : rX2 n cs L �
     exact ⟨0, by omega, by rw [Nat.add_zero, Nat.mod_eq_of_lt hcs]; omega⟩
   · rw [ite_eq_right h] at h1 h2
     refine ⟨v + n - cs, by omega, ?_⟩
-    rw [show cs + (v + n - cs) = v + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+    rw [show cs + (v + n - cs) = v + n by omega, Nat.add_mod_right, guarded Nat.mod_eq_of_lt]
 
 theorem rY1_lt {n cs L : ℕ} (hcs : cs < n) : rY1 n cs L < n := by
   unfold rY1; split_ifs <;> omega
@@ -105,18 +106,18 @@ theorem topIdx_ch (hD : DistinctHeights Q) {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 
     (ch Q u L h1 h2).topIdx = (v + Q.n - cStart Q u L) % Q.n ∧
       (cStart Q u L + (ch Q u L h1 h2).topIdx) % Q.n = v := by
   obtain ⟨j, hj, rfl⟩ := hv
-  have hT : (ch Q u L h1 h2).topIdx = j :=
+  have hT :=
     topIdx_of_max (C := ch Q u L h1 h2) hD hj (fun k hk => by
       rw [ch_vertex, ch_vertex]; exact hmax k hk)
-  refine ⟨?_, by rw [hT]⟩
+  refine ⟨?_, by simp_all⟩
   rw [hT]
   have hjn : j < Q.n := by omega
   by_cases h : cStart Q u L + j < Q.n
-  · have e1 : (cStart Q u L + j) % Q.n = cStart Q u L + j := Nat.mod_eq_of_lt h
-    rw [e1, show cStart Q u L + j + Q.n - cStart Q u L = j + Q.n by omega,
+  · 
+    rw [(Nat.mod_eq_of_lt h), show cStart Q u L + j + Q.n - cStart Q u L = j + Q.n by omega,
       Nat.add_mod_right, Nat.mod_eq_of_lt hjn]
   · have e1 : (cStart Q u L + j) % Q.n = cStart Q u L + j - Q.n := by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+      rw [guarded Nat.mod_eq_sub_mod, guarded Nat.mod_eq_of_lt]
     rw [e1, show cStart Q u L + j - Q.n + Q.n - cStart Q u L = j by omega, Nat.mod_eq_of_lt hjn]
 
 /-! ## The orientation bit -/
@@ -136,30 +137,25 @@ of `Q` taken modulo `n`. -/
 theorem sideBeta_ch {C : Chain} (hC : C.P = Q) (hD : DistinctHeights Q) (hT0 : 0 < C.topIdx)
     {v : ℕ} (hv : v = (C.s + C.topIdx) % Q.n) :
     C.sideBeta = true ↔ BetaF (Q.vtx ((v + Q.n - 1) % Q.n)) (Q.vtx v) (Q.vtx ((v + 1) % Q.n)) := by
-  have hDH : DistinctHeights C.P := by rw [hC]; exact hD
-  have hn : 1 < Q.n := by have := C.add_one_le; have := C.one_le; rw [hC] at *; omega
+  have hDH : DistinctHeights C.P := by simp_all
   have eA : C.vertex (C.topIdx - 1) = Q.vtx ((v + Q.n - 1) % Q.n) := by
     show C.P.vtx ((C.s + (C.topIdx - 1)) % C.P.n) = _
-    rw [hC, prev_idx hn hT0, hv]
+    rw [hC, prev_idx (by grind [C.add_one_le, C.one_le]) hT0, hv]
   have eT : C.top = Q.vtx v := by
     show C.P.vtx ((C.s + C.topIdx) % C.P.n) = _
-    rw [hC, hv]
+    simp_all
   have eB : C.vertex (C.topIdx + 1) = Q.vtx ((v + 1) % Q.n) := by
     show C.P.vtx ((C.s + (C.topIdx + 1)) % C.P.n) = _
     rw [hC, hv, Nat.mod_add_mod, Nat.add_assoc]
-  rw [Brute.sideBeta_iff (C := C) hDH hT0, eA, eT, eB]
+  rw [Brute.sideBeta_iff hDH hT0, eA, eT, eB]
   unfold BetaF
   constructor
   · rintro (h | ⟨h1, h3⟩ | h | h)
     · exact Or.inl h
-    · exact Or.inr (Or.inl ⟨not_lt.2 h1.le, h1.ne, h3⟩)
-    · exact Or.inr (Or.inr (Or.inl h))
-    · exact Or.inr (Or.inr (Or.inr h))
-  · rintro (h | ⟨h1, h2, h3⟩ | h | h)
-    · exact Or.inl h
-    · exact Or.inr (Or.inl ⟨lt_of_le_of_ne (not_lt.1 h1) h2, h3⟩)
-    · exact Or.inr (Or.inr (Or.inl h))
-    · exact Or.inr (Or.inr (Or.inr h))
+    · grind
+    · solve_by_elim [Or.inr]
+    · solve_by_elim [Or.inr]
+  · grind
 
 /-! ## The boundary symbolic point of a hit, in closed form -/
 
@@ -176,9 +172,9 @@ theorem mod2_eq {L j : ℕ} (_hL : 1 ≤ L) (hj : j < 6 * L) : mod2 L j = j % (2
   by_cases h1 : 2 * L ≤ j
   · rw [ite_eq_left h1]
     by_cases h2 : 2 * L ≤ j - 2 * L
-    · rw [ite_eq_left h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_sub_mod h2, Nat.mod_eq_of_lt (by omega)]
-    · rw [ite_eq_right h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (by omega)]
-  · rw [ite_eq_right h1, ite_eq_right h1, Nat.mod_eq_of_lt (by omega)]
+    · rw [ite_eq_left h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_sub_mod h2, guarded Nat.mod_eq_of_lt]
+    · grind [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
+  · grind [Nat.mod_eq_of_lt]
 
 /-- The vertex index of `Q` at the walk vertex `6 + i` (`i ≤ 2L`) of the chain model. -/
 def cVtxV (n cs L S i : ℕ) : ℕ :=
@@ -207,13 +203,13 @@ theorem hitSym_ch {C : Chain} {v : ℕ} (hv : v = (C.s + C.topIdx) % C.P.n) {e h
     hitSym C e h = hitSymV C.P.n C.s C.m (sSV C.sideBeta C.topIdx C.m) v e h := by
   unfold hitSym hitSymV
   by_cases h6 : e < 6 ∨ 2 * C.m + 6 ≤ e
-  · rw [ite_eq_left h6, ite_eq_left h6, hv]
+  · simp_all
   · rw [ite_eq_right h6, ite_eq_right h6]
     have e1 : cVtx C e = cVtxV C.P.n C.s C.m (sSV C.sideBeta C.topIdx C.m) (e - 6) := by
-      rw [← cVtx_ch (by omega), show e - 6 + 6 = e by omega]
+      rw [← guarded cVtx_ch, show e - 6 + 6 = e by omega]
     have e2 : cVtx C (e + 1) = cVtxV C.P.n C.s C.m (sSV C.sideBeta C.topIdx C.m) (e - 6 + 1) := by
-      rw [← cVtx_ch (by omega), show e - 6 + 1 + 6 = e + 1 by omega]
-    rw [e1, e2]
+      rw [← guarded cVtx_ch, show e - 6 + 1 + 6 = e + 1 by omega]
+    simp_all
 
 /-! ## First hits on a union -/
 
@@ -223,7 +219,7 @@ theorem firstHit_union_l {A B : Set Point} {z : Point} {σ t : ℝ} (hA : FirstH
 
 theorem firstHit_union_r {A B : Set Point} {z : Point} {σ t : ℝ} (hB : FirstHit B z σ t)
     (hA : ∀ t', 0 < t' → t' < t → rayPt z σ t' ∉ A) : FirstHit (A ∪ B) z σ t := by
-  rw [Set.union_comm]; exact firstHit_union_l hB hA
+  grind [Set.union_comm, firstHit_union_l]
 
 theorem firstHit_noHit {A B : Set Point} {z : Point} {σ t : ℝ} (hA : FirstHit A z σ t)
     (hB : NoHit B z σ) : FirstHit (A ∪ B) z σ t :=

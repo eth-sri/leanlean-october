@@ -176,8 +176,7 @@ theorem two_pow_topGrade_le (n : ℕ) : 2 ^ topGrade n ≤ 2 * n + 2 := by
   rcases Nat.lt_or_ge (n - 1) 2 with h | h
   · rw [Nat.clog_of_right_le_one (show n - 1 ≤ 1 by omega), pow_zero]; omega
   · have h1 := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) (show 1 < n - 1 by omega)
-    have h2 : 1 ≤ Nat.clog 2 (n - 1) := Nat.clog_pos (by norm_num) (by omega)
-    obtain ⟨q, hq⟩ : ∃ q, Nat.clog 2 (n - 1) = q + 1 := ⟨_, (Nat.succ_pred_eq_of_pos h2).symm⟩
+    obtain ⟨q, hq⟩ : ∃ q, Nat.clog 2 (n - 1) = q + 1 := ⟨_, (Nat.succ_pred_eq_of_pos (Nat.clog_pos (by norm_num) (by omega))).symm⟩
     rw [hq] at h1 ⊢
     rw [pow_succ]
     simp only [Nat.pred_succ] at h1

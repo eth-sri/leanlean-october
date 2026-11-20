@@ -1,4 +1,6 @@
 module
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.SweepEvTasks3
 public import Chazelle.Core.SweepEvCand3
@@ -40,15 +42,14 @@ theorem finite_ncard_le_of_rel {α β : Type*} {A : Set α} {B : Set β} (hB : B
     (huniq : ∀ a a' b, R a b → R a' b → a = a') : A.Finite ∧ A.ncard ≤ B.ncard := by
   classical
   rcases A.eq_empty_or_nonempty with hA | ⟨a₀, ha₀⟩
-  · rw [hA]; exact ⟨finite_empty, by simp⟩
+  · rw [hA]; simp
   obtain ⟨b₀, -, -⟩ := hcov a₀ ha₀
   have : Nonempty β := ⟨b₀⟩
   choose! f hfB hfR using hcov
   have hinj : InjOn f A := fun a ha a' ha' h =>
-    huniq a a' (f a) (hfR a ha) (by rw [h]; exact hfR a' ha')
+    huniq a a' (f a) (hfR a ha) (by simp_all)
   refine ⟨Finite.of_finite_image (hB.subset ?_) hinj, ncard_le_ncard_of_injOn f hfB hinj hB⟩
-  rintro _ ⟨a, ha, rfl⟩
-  exact hfB a ha
+  grind
 
 /-! ## Cut keys -/
 
@@ -59,10 +60,8 @@ theorem attach_keys {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Ad
     hM.ends _ hc
   refine ⟨pa + ta, pb + tb, fun p t hA => ?_⟩
   rcases hM.attach_endpoint hopen hA with h | h
-  · obtain ⟨rfl, rfl⟩ := hM.attach_unique hc hA hAa (h.trans hpa.symm)
-    exact Or.inl rfl
-  · obtain ⟨rfl, rfl⟩ := hM.attach_unique hc hA hAb (h.trans hpb.symm)
-    exact Or.inr rfl
+  · grind [hM.attach_unique]
+  · grind [hM.attach_unique]
 
 /-- **The cut keys of a finite admissible family** are finitely many, at most twice its size. -/
 theorem cut_keys_ncard {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
@@ -73,8 +72,8 @@ theorem cut_keys_ncard {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F
   have hsub : {x : ℝ | M.IsCut F x} ⊆ fx '' F ∪ fy '' F := by
     rintro x ⟨c, hc, p, t, hA, rfl⟩
     rcases hxy c hc p t hA with h | h
-    · exact Or.inl ⟨c, hc, h.symm⟩
-    · exact Or.inr ⟨c, hc, h.symm⟩
+    · grind
+    · grind
   have hfu : (fx '' F ∪ fy '' F).Finite := (hfin.image _).union (hfin.image _)
   refine ⟨hfu.subset hsub, ?_⟩
   calc {x : ℝ | M.IsCut F x}.ncard ≤ (fx '' F ∪ fy '' F).ncard := ncard_le_ncard hsub hfu
@@ -87,14 +86,14 @@ theorem cut_keys_ncard {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F
 /-- There are at most two top chords at the top of `C₂`. -/
 theorem topChords₂_ncard_le (J : Merge.Junction) : (topChords₂ J).ncard ≤ 2 := by
   have hsub : topChords₂ J ⊆
-      (fun σ => J.whole.chordSet (J.m₁ + J.right.topIdx) σ) '' ({1, -1} : Set ℝ) := by
+      (J.whole.chordSet (J.m₁ + J.right.topIdx)) '' ({1, -1} : Set ℝ) := by
     rintro d ⟨σ, hσ, -, rfl⟩
-    exact ⟨σ, by rcases hσ with rfl | rfl <;> simp, rfl⟩
+    exact ⟨σ, by simp_all, rfl⟩
   calc (topChords₂ J).ncard
-      ≤ ((fun σ => J.whole.chordSet (J.m₁ + J.right.topIdx) σ) '' ({1, -1} : Set ℝ)).ncard :=
+      ≤ ((J.whole.chordSet (J.m₁ + J.right.topIdx)) '' ({1, -1} : Set ℝ)).ncard :=
         ncard_le_ncard hsub ((toFinite _).image _)
     _ ≤ ({1, -1} : Set ℝ).ncard := ncard_image_le (toFinite _)
-    _ = 2 := ncard_pair (by norm_num)
+    _ = 2 := guarded ncard_pair
 
 /-- **`|F₂⁺| ≤ 2 |S₂| + 4`.** -/
 theorem F₂plus_ncard_le (J : Merge.Junction) {S₂ : Set (Set Point)} (hS₂f : S₂.Finite) :
@@ -109,8 +108,7 @@ theorem F₂plus_ncard_le (J : Merge.Junction) {S₂ : Set (Set Point)} (hS₂f 
 theorem cutOffs_ncard (J : Merge.Junction) (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) :
     (cutOffs J S₂).Finite ∧ (cutOffs J S₂).ncard ≤ 4 * S₂.ncard + 8 := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  obtain ⟨hfin, hle⟩ := cut_keys_ncard hM (F₂plus_subset J hS₂) (F₂plus_finite J hS₂f)
+  obtain ⟨hfin, hle⟩ := cut_keys_ncard (FactsChain.walkAx J.whole hP) (F₂plus_subset J hS₂) (F₂plus_finite J hS₂f)
   have hsub : cutOffs J S₂ ⊆ oW J '' {x : ℝ | (chainModel J.whole).IsCut (F₂plus J S₂) x} := by
     rintro o ⟨x, hx, -, -, rfl⟩
     exact ⟨x, hx, rfl⟩
@@ -127,7 +125,7 @@ theorem cutOffs_ncard (J : Merge.Junction) (hP : J.P.Simple) {S₂ : Set (Set Po
 /-- The point of the walk of `C₁` at `b₁` is the shared vertex. -/
 theorem b₁_pt (J : Merge.Junction) :
     sidePt (chainModel J.left).W ((b₁ J + 0) % (chainModel J.left).W.n) 0 = J.shared := by
-  rw [add_zero, Nat.mod_eq_of_lt (b₁_lt (J := J))]
+  rw [add_zero, Nat.mod_eq_of_lt (b₁_lt)]
   unfold b₁
   split_ifs with h
   · rw [(sidePt_top_copies J.left).2]
@@ -140,9 +138,9 @@ theorem pred_mod' {b d n e : ℕ} (hb : b < n) (hd : d < n) (h1 : 1 ≤ d)
     (he : (b + d) % n = e) (he0 : e ≠ 0) : (b + (d - 1)) % n + 1 = e := by
   by_cases h : b + d < n
   · rw [Nat.mod_eq_of_lt h] at he
-    rw [Nat.mod_eq_of_lt (by omega)]; omega
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at he
-    rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+    block_post [Nat.mod_eq_of_lt]
+  · rw [guarded Nat.mod_eq_sub_mod, guarded Nat.mod_eq_of_lt] at he
+    block_post [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
 
 /-- The two readings `(d, 1)` and `(d + 1, 0)` of a vertex key give the same offset. -/
 theorem win_uniq_step (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ}
@@ -150,15 +148,15 @@ theorem win_uniq_step (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ}
     (hk : (b₁ J + d') % (chainModel J.left).W.n = (b₁ J + d) % (chainModel J.left).W.n + 1) :
     ψ J d + 1 = ψ J d' := by
   have hb := b₁_lt (J := J)
-  have hE := E₁_le (J := J) hP
+  have hE := E₁_le hP
   have hd : d < (chainModel J.left).W.n := lt_of_lt_of_le hv.1 hE
-  have hd' : d' < (chainModel J.left).W.n := lt_of_lt_of_le hv'.1 hE
+  have hd' := lt_of_lt_of_le hv'.1 hE
   have hd'1 : 1 ≤ d' := by
     rcases Nat.eq_zero_or_pos d' with h0 | h0
     · subst h0; exact absurd (b₁_pt J) (hv'.2.2.2 rfl)
     · exact h0
-  have hpm := pred_mod' hb hd' hd'1 hk (by omega)
-  have hdd : d = d' - 1 := add_mod_inj (g := b₁ J) hd (by omega) (by omega)
+  have hpm := guarded (pred_mod' hb hd' hd'1 hk)
+  have hdd : d = d' - 1 := guarded (add_mod_inj (g := b₁ J) hd)
   subst hdd
   obtain ⟨-, hg, hl, -⟩ := hv
   obtain ⟨-, hg', -, -⟩ := hv'
@@ -174,9 +172,7 @@ theorem win_uniq (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ} {t t' : ℝ
       (((b₁ J + d') % (chainModel J.left).W.n : ℕ) : ℝ) + t') :
     (ψ J d : ℝ) + t = ψ J d' + t' := by
   set n₁ := (chainModel J.left).W.n with hn₁
-  have hE := E₁_le (J := J) hP
-  have hd : d < n₁ := lt_of_lt_of_le hv.1 hE
-  have hd' : d' < n₁ := lt_of_lt_of_le hv'.1 hE
+  have hE := E₁_le hP
   set k := (b₁ J + d) % n₁ with hkdef
   set k' := (b₁ J + d') % n₁ with hk'def
   have hlo : (k : ℝ) < k' + 2 := by linarith
@@ -185,7 +181,7 @@ theorem win_uniq (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ} {t t' : ℝ
   have hhi' : k' < k + 2 := by exact_mod_cast hhi
   rcases (show k = k' ∨ k' = k + 1 ∨ k = k' + 1 by omega) with h | h | h
   · have htt : t = t' := by rw [h] at hx; linarith
-    have hdd : d = d' := add_mod_inj hd hd' h
+    have hdd := add_mod_inj (lt_of_lt_of_le hv.1 hE) (lt_of_lt_of_le hv'.1 hE) h
     rw [htt, hdd]
   · have e : (k' : ℝ) = k + 1 := by exact_mod_cast h
     have ht : t = 1 := by linarith
@@ -208,9 +204,8 @@ theorem win_uniq (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ} {t t' : ℝ
 theorem winOffs_ncard (P : Polygon) (J : Merge.Junction) (hP : J.P.Simple) (N₁ : NF)
     (hN₁ : IsNF (chainModel J.left) (Qof P) N₁) :
     (winOffs P J N₁).Finite ∧ (winOffs P J N₁).ncard ≤ 2 * N₁.nChords + 1 := by
-  have hP₁ : J.left.P.Simple := hP
-  have hM : WalkAx (chainModel J.left) := FactsChain.walkAx J.left hP₁
-  obtain ⟨hfin, hle⟩ := cut_keys_ncard hM hN₁.1.2.1 hN₁.1.1
+  have hP₁ := hP
+  obtain ⟨hfin, hle⟩ := cut_keys_ncard (FactsChain.walkAx J.left hP₁) hN₁.1.2.1 hN₁.1.1
   rw [Gran.ncard_F hN₁] at hle
   obtain ⟨hf2, hl2⟩ := finite_ncard_le_of_rel hfin
     (A := {o | ∃ (d : ℕ) (t : ℝ), MValid J d t ∧ 0 ≤ t ∧ t ≤ 1 ∧
@@ -219,12 +214,9 @@ theorem winOffs_ncard (P : Polygon) (J : Merge.Junction) (hP : J.P.Simple) (N₁
     (fun o x => ∃ (d : ℕ) (t : ℝ), MValid J d t ∧ 0 ≤ t ∧ t ≤ 1 ∧
       x = (((b₁ J + d) % (chainModel J.left).W.n : ℕ) : ℝ) + t ∧ o = (Lst J : ℝ) + ψ J d + t)
     (by
-      rintro o ⟨d, t, hv, h0, h1, hc, rfl⟩
-      exact ⟨_, hc, d, t, hv, h0, h1, rfl, rfl⟩)
+      rintro o ⟨d, t, hv, h0, h1, hc, rfl⟩ <;> grind)
     (by
-      rintro o o' x ⟨d, t, hv, h0, h1, rfl, rfl⟩ ⟨d', t', hv', h0', h1', hx, rfl⟩
-      have := win_uniq J hP hv h0 h1 hv' h0' h1' hx
-      linarith)
+      grind [win_uniq])
   refine ⟨(finite_singleton _).union hf2, ?_⟩
   calc (winOffs P J N₁).ncard ≤ ({(Lst J : ℝ) + lL1 J} : Set ℝ).ncard + _ := ncard_union_le _ _
     _ ≤ 2 * N₁.nChords + 1 := by rw [ncard_singleton]; omega
@@ -235,9 +227,7 @@ theorem countTask : CountTask := by
   obtain ⟨hc, hcl⟩ := cutOffs_ncard J hP hN₂.1.2.1 hN₂.1.1
   rw [Gran.ncard_F hN₂] at hcl
   obtain ⟨hw, hwl⟩ := winOffs_ncard P J hP N₁ hN₁
-  refine ⟨hc.union hw, ?_⟩
-  have := ncard_union_le (cutOffs J (N₂.F (chainModel J.right) (Qof P))) (winOffs P J N₁)
-  omega
+  refine ⟨hc.union hw, ?_⟩ <;> grind [ncard_union_le]
 
 end
 

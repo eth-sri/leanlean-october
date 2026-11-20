@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.SweepEvLoopStartM
 
@@ -72,8 +73,7 @@ theorem stLoad_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
     regB m lsStLoad f zE = m (f sB + 5 * f sP) ∧ regB m lsStLoad f zH = m (f sB + 5 * f sP + 1) := by
   have e1 : f 240611 = 1 := hk1
   simp only [lsStLoad, regB, regI, upd, zX, zE, zH, sP, sB, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  exact ⟨congrArg m (by ring), congrArg m (by ring)⟩
+  grind
 
 theorem stLoad_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ zX) (h2 : q ≠ zE) (h3 : q ≠ zH) :
     regB m lsStLoad f q = f q :=
@@ -87,21 +87,16 @@ theorem stLoad_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f sB + 5 * f sP + 1
   have e1 : f 240611 = 1 := hk1
   have hb' : f 242600 + 5 * f 242450 + 1 ≤ W := hb
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
+    guarded iscr_sw
   simp only [lsStLoad, okB, okI, regI, upd, zX, zE, zH, sP, sB, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  exact ⟨⟨s 2485 (by norm_num) (by norm_num), by omega⟩, ⟨s 2485 (by norm_num) (by norm_num),
-    by omega⟩, ⟨s 2485 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 2485 (by norm_num) (by norm_num), by omega⟩, s 2480 (by norm_num) (by norm_num),
-    ⟨s 2485 (by norm_num) (by norm_num), by omega⟩, s 2481 (by norm_num) (by norm_num), trivial⟩
+  grind
 
 theorem stAux_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
     regB m stAux f zA = m (f aB + 5 * f sP) ∧ regB m stAux f zN = m (f aB + 5 * f sP + 1) ∧
     regB m stAux f zL = m (f aB + 5 * f sP + 2) ∧ regB m stAux f zM = m (f aB + 5 * f sP + 3) := by
   have e1 : f 240611 = 1 := hk1
   simp only [stAux, regB, regI, upd, zX, zA, zN, zL, zM, sP, aB, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  exact ⟨congrArg m (by ring), congrArg m (by ring), congrArg m (by ring), congrArg m (by ring)⟩
+  grind
 
 theorem stAux_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ zX) (h2 : q ≠ zA) (h3 : q ≠ zN)
     (h4 : q ≠ zL) (h5 : q ≠ zM) : regB m stAux f q = f q :=
@@ -115,15 +110,9 @@ theorem stAux_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f aB + 5 * f sP + 3 
   have e1 : f 240611 = 1 := hk1
   have hb' : f 242602 + 5 * f 242450 + 3 ≤ W := hb
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
+    guarded iscr_sw
   simp only [stAux, okB, okI, regI, upd, zX, zA, zN, zL, zM, sP, aB, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  exact ⟨⟨s 2485 (by norm_num) (by norm_num), by omega⟩, ⟨s 2485 (by norm_num) (by norm_num),
-    by omega⟩, ⟨s 2485 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 2485 (by norm_num) (by norm_num), by omega⟩, s 2486 (by norm_num) (by norm_num),
-    ⟨s 2485 (by norm_num) (by norm_num), by omega⟩, s 2487 (by norm_num) (by norm_num),
-    ⟨s 2485 (by norm_num) (by norm_num), by omega⟩, s 2488 (by norm_num) (by norm_num),
-    ⟨s 2485 (by norm_num) (by norm_num), by omega⟩, s 2489 (by norm_num) (by norm_num), trivial⟩
+  grind
 
 /-! ## Label lists -/
 
@@ -137,58 +126,36 @@ def axLabs (x : ℕ × ℕ × ℕ × ℕ × ℕ) : List ℕ :=
   else []
 
 theorem st_addL_self {l : List ℕ} (h : l.length < 4) (v : ℕ) : v ∈ addL l v := by
-  unfold addL; split_ifs with h1
-  · rcases h1 with h1 | h1
-    · exact h1
-    · omega
-  · simp
+  grind [addL]
 
 theorem st_addL_len (l : List ℕ) (v : ℕ) : (addL l v).length ≤ l.length + 1 := by
   unfold addL; split_ifs <;> simp
 
 theorem labAdd_len (l : List ℕ) (n a b : ℕ) : (labAdd l n a b).length ≤ l.length + 2 := by
-  unfold labAdd
-  have h1 := st_addL_len l a
-  split_ifs with h2 h3
-  · have := st_addL_len (addL l a) b; omega
-  · have := st_addL_len l b; omega
-  · omega
-  · omega
+  grind [labAdd, st_addL_len]
 
 theorem labAdd_old {l : List ℕ} {n a b x : ℕ} (h : x ∈ l) : x ∈ labAdd l n a b := by
-  unfold labAdd
-  split_ifs <;> first | exact mem_addL_of_mem (mem_addL_of_mem h) | exact mem_addL_of_mem h | exact h
+  grind [labAdd, mem_addL_of_mem]
 
 theorem labAdd_mem {l : List ℕ} {n a b x : ℕ} (h : x ∈ labAdd l n a b) :
     x ∈ l ∨ (0 < n ∧ x = a) ∨ (1 < n ∧ x = b) := by
   unfold labAdd at h
   by_cases h1 : 1 < n
-  · rw [ite_eq_left h1, ite_eq_left (by omega)] at h
+  · rw [ite_eq_left h1, guarded ite_eq_left] at h
     rcases mem_addL h with h | h
-    · rcases mem_addL h with h | h
-      · exact Or.inl h
-      · exact Or.inr (Or.inl ⟨by omega, h⟩)
-    · exact Or.inr (Or.inr ⟨h1, h⟩)
+    · rcases mem_addL h with h | h <;> grind
+    · solve_by_elim [Or.inr]
   · rw [ite_eq_right h1] at h
     by_cases h0 : 0 < n
     · rw [ite_eq_left h0] at h
       rcases mem_addL h with h | h
       · exact Or.inl h
-      · exact Or.inr (Or.inl ⟨h0, h⟩)
-    · rw [ite_eq_right h0] at h
-      exact Or.inl h
+      · solve_by_elim [Or.inr]
+    · simp_all
 
 theorem labAdd_new {l : List ℕ} (hl : l.length ≤ 2) {n a b x : ℕ}
     (h : (0 < n ∧ x = a) ∨ (1 < n ∧ x = b)) : x ∈ labAdd l n a b := by
-  unfold labAdd
-  have hla := st_addL_len l a
-  rcases h with ⟨h1, rfl⟩ | ⟨h1, rfl⟩
-  · rw [ite_eq_left h1]
-    split_ifs
-    · exact mem_addL_of_mem (st_addL_self (by omega) x)
-    · exact st_addL_self (by omega) x
-  · rw [ite_eq_left h1, ite_eq_left (by omega)]
-    exact st_addL_self (by omega) x
+  grind [labAdd, st_addL_len, mem_addL_of_mem, st_addL_self]
 
 theorem lblR_facts : IScr kN ∧ (∀ i, i < 4 → IScr (kL + i)) ∧ (∀ i, i < 4 → kN ≠ kL + i) ∧
     (∀ k, k = K1 ∨ k = K2 ∨ k = K3 ∨ k = K4 → ¬ LblR kN kL k) :=
@@ -208,9 +175,8 @@ theorem condLab_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hN : c.nreg kN ≤ 
   obtain ⟨hsN, hsL, hNL, hKN⟩ := lblR_facts
   refine IRS.ite (K := 30) (fun h => ?_) (fun h => ?_)
   · refine (addLab_irs hI (hK.fix hI) hsN hsL hNL hrN hrL hKN hN hW).mono le_rfl ?_
-    rintro c' ⟨h1, h2, h3, h4⟩
-    exact ⟨h1, by rw [ite_eq_left h]; exact h2, h3, h4⟩
-  · exact IRS.skip hI ⟨hN, by rw [ite_eq_right h], fun _ _ => rfl, rfl⟩
+    simp_all
+  · grind [IRS.skip]
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -226,49 +192,41 @@ theorem stLabs_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hN : c.nreg kN ≤ 4
   unfold stLabs
   by_cases hz : c.nreg zA < c.nreg K1
   · refine (IRS.ifT hz (IRS.skip (K := 68) hI ⟨hN, ?_, ?_, fun _ _ _ => rfl, rfl⟩)).mono
-      (by omega) (fun _ h => h)
-    · rw [ite_eq_right (by rw [k1] at hz; omega)]
-    · rw [ite_eq_right (by rw [k1] at hz; omega)]
+      (by omega) (fun _ h => h) <;> (grind)
   · have hz1 : c.nreg zA = 1 := by rw [k1] at hz; omega
     refine (IRS.ifF hz ?_).mono (K := 68 + 2) le_rfl (fun _ h => h)
     simp only [hz1, ite_true]
     -- set the flag
-    refine IRS.seq (K₁ := 1) (K₂ := 67) (IRS.instr1 (i := .constN aF 1) hI
-      ⟨iscr_sw (by unfold aF sw; norm_num) (by unfold aF sw; norm_num), by omega⟩) ?_
+    refine IRS.seq (K₁ := 1) (K₂ := 67) (IRS.instr1 hI
+      ⟨guarded iscr_sw, by omega⟩) ?_
     rintro c₁ hI₁ - - hc₁
     have f1 : ∀ q, q ≠ aF → c₁.nreg q = c.nreg q := fun q hq => by
       rw [hc₁]; simp [regI, upd_other _ _ _ hq]
     have v1 : c₁.nreg aF = 1 := by rw [hc₁]; simp [regI]
     have m1 : c₁.nmem = c.nmem := by rw [hc₁]
-    have nN : kN ≠ aF := by unfold kN aF sw; omega
+    have nN : kN ≠ aF := by decide
     have hlbl1 : lblOf c₁ kN kL = lblOf c kN kL := by
       unfold lblOf
       rw [f1 _ nN]
       refine List.map_congr_left fun i hi => f1 _ ?_
       simp only [List.mem_range] at hi
       unfold kL aF sw; omega
-    have zN1 : c₁.nreg zN = c.nreg zN := f1 _ (by unfold zN aF sw; omega)
-    have zL1 : c₁.nreg zL = c.nreg zL := f1 _ (by unfold zL aF sw; omega)
-    have zM1 : c₁.nreg zM = c.nreg zM := f1 _ (by unfold zM aF sw; omega)
-    have k0₁ := (hK.fix hI₁).1
     -- the first label
-    refine IRS.seq (K₁ := 32) (K₂ := 32 + 3) (condLab_irs (g := K0) (r := zL) hI₁ hK
-      (by rw [f1 _ nN]; exact hN) (by unfold zL kN sw; omega)
+    refine IRS.seq (K₁ := 32) (K₂ := 32 + 3) (condLab_irs hI₁ hK
+      (by simp_all) (by decide)
       (fun i hi => by unfold zL kL sw; omega) hW) ?_ |>.mono (by omega) (fun _ h => h)
     rintro c₂ hI₂ - - ⟨n2, l2, f2, m2⟩
     have nL : ∀ q, (q = zN ∨ q = zM ∨ q = aF ∨ q = K1) → ¬ LblR kN kL q := by
       rintro q (rfl | rfl | rfl | rfl) <;> simp [LblR, kN, kL, zN, zM, aF, K1, sw]
-    have k1₂ := (hK.fix hI₂).2.1
-    refine (condLab_irs (g := K1) (r := zM) hI₂ hK n2 (by unfold zM kN sw; omega)
+    refine (condLab_irs (g := K1) (r := zM) hI₂ hK n2 (by decide)
       (fun i hi => by unfold zM kL sw; omega) hW).mono (by omega) ?_
     rintro c₃ ⟨n3, l3, f3, m3⟩
-    refine ⟨n3, ?_, ?_, fun q hq hqa => ?_, by rw [m3, m2, m1]⟩
-    · rw [l3, l2, hlbl1, f2 _ (nL _ (Or.inl rfl)), f2 _ (nL _ (Or.inr (Or.inl rfl))), k1₂, k0₁,
-        zN1, zL1, zM1]
+    refine ⟨n3, ?_, ?_, fun q hq hqa => ?_, by grind⟩
+    · rw [l3, l2, hlbl1, f2 _ (nL _ (Or.inl rfl)), f2 _ (nL _ (Or.inr (Or.inl rfl))), ((hK.fix hI₂).2.1), ((hK.fix hI₁).1),
+        (at_index f1 _), (at_index f1 _), (at_index f1 _)]
       unfold labAdd
       rfl
-    · rw [f3 _ (nL _ (Or.inr (Or.inr (Or.inl rfl)))), f2 _ (nL _ (Or.inr (Or.inr (Or.inl rfl)))),
-        v1]
+    · grind
     · rw [f3 _ hq, f2 _ hq, f1 _ hqa]
 
 /-! ## The state of the stop steps -/
@@ -303,21 +261,20 @@ theorem lblOf_congrK {c c' : Config} (h : ∀ q, LblR kN kL q → c'.nreg q = c.
   unfold lblOf
   rw [h kN (Or.inl rfl)]
   refine List.map_congr_left fun i hi => h _ (Or.inr ?_)
-  simp only [List.mem_range] at hi
-  omega
+  simp_all
 
 theorem stI_congr {P : Polygon} {J : Merge.Junction} {N₂ : NF} {rs ax : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
     {c c' : Config} (h : StI P J N₂ rs ax c)
     (hr : ∀ q, (LblR kN kL q ∨ q = aF ∨ q = sP) → c'.nreg q = c.nreg q) : StI P J N₂ rs ax c' := by
-  have hl := lblOf_congrK (c := c) (c' := c') fun q hq => hr q (Or.inl hq)
+  have hl := lblOf_congrK fun q hq => hr q (Or.inl hq)
   have hN := hr kN (Or.inl (Or.inl rfl))
   have hA := hr aF (Or.inr (Or.inl rfl))
   have hP := hr sP (Or.inr (Or.inr rfl))
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9⟩ := h
-  refine ⟨by rw [hN]; exact h1, by rw [hP]; exact h2, by rw [hP]; exact h3,
-    fun i hi hi' => h4 i hi (by rw [hP] at hi'; exact hi'), by rw [hl, hP]; exact h5,
-    fun i hi v hv => by rw [hl]; exact h6 i (by rw [hP] at hi; exact hi) v hv,
-    fun v hv => h7 v (by rw [hl] at hv; exact hv), by rw [hA]; exact h8, by rw [hA, hP]; exact h9⟩
+  refine ⟨by rwa [hN], by rwa [hP], by rwa [hP],
+    fun i hi hi' => guarded (h4 i hi), by rwa [hl, hP],
+    fun i hi v hv => by grind,
+    fun v hv => h7 v (by rwa [hl] at hv), by rwa [hA], by rwa [hA, hP]⟩
 
 end
 

@@ -1,4 +1,8 @@
 module
+public import Chazelle.Cost.Arithmetic
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseOracleCuR2
 
@@ -80,16 +84,10 @@ theorem wrM_mvW : BuildRam.wrM Bmv mvW = true := by decide
 
 theorem frameM_mono {B B' : ℕ → Bool} {c c' : Config} (h : BuildRam.FrameM B c c')
     (hB : ∀ r, B r = true → B' r = true) : BuildRam.FrameM B' c c' := by
-  refine ⟨fun r hr => h.1 r ?_, fun r hr => h.2.1 r ?_, h.2.2.1, h.2.2.2⟩
-  · cases hb : B r
-    · rfl
-    · rw [hB r hb] at hr; exact absurd hr (by simp)
-  · cases hb : B r
-    · rfl
-    · rw [hB r hb] at hr; exact absurd hr (by simp)
+  refine ⟨fun r hr => h.1 r ?_, fun r hr => h.2.1 r ?_, h.2.2.1, h.2.2.2⟩ <;> grind
 
 theorem bmv_bcp (r : ℕ) (h : Bmv r = true) : Bcp r = true := by
-  simp only [Bmv, Bcp, decide_eq_true_eq] at h ⊢; omega
+  address_omega
 
 /-! ## Execution -/
 
@@ -106,25 +104,24 @@ theorem trI_exec (c : Config) (hw : WordsBounded W c) {n u₀ g₀ w : ℕ}
       (block [.subN 170237 170236 170232, .addN 170237 170233 170237]) c c₁ k₁ ∧ k₁ = 2 ∧
       c₁.nreg 170237 = u₀ + (w - g₀) ∧ c₁.nreg 170010 = n ∧ c₁.nmem = c.nmem := by
     exec_block
-    · config_simp; rw [h33, h36, h32]; omega
-    refine ⟨rfl, ?_, ?_, rfl⟩ <;> config_simp <;> simp only [h33, h36, h32, h10]
+    · simp_all
+    simp_all
   have w₁ := e₁.wb_right
   have F₁ := BuildRam.exec_frameM e₁ (by decide : BuildRam.wrM (fun r => decide (r = 170237))
     (block [.subN 170237 170236 170232, .addN 170237 170233 170237]) = true)
   by_cases hlt : c₁.nreg 170237 < c₁.nreg 170010
-  · have ex : Exec P W trI c c₁ (k₁ + (0 + 1)) := .seq e₁ (.ifLtN_true hlt (.skip w₁))
-    refine ⟨c₁, _, ex, by omega, by omega, ?_, am, F₁⟩
-    rw [a37]; unfold trE; rw [ite_eq_left (by rw [← a37, ← a10]; exact hlt)]
+  · 
+    refine ⟨c₁, _, (e₁ ;; .ifLtN_true hlt (.skip w₁)), by omega, by omega, ?_, am, F₁⟩
+    simp_all [trE]
   · obtain ⟨c₂, k₂, e₂, hk₂, b37, bm⟩ : ∃ c₂ k₂, Exec P W (block [.subN 170237 170237 170010])
         c₁ c₂ k₂ ∧ k₂ = 1 ∧ c₂.nreg 170237 = c₁.nreg 170237 - c₁.nreg 170010 ∧
         c₂.nmem = c₁.nmem := by
       exec_block
-      exact ⟨rfl, by config_simp, rfl⟩
+      simp
     have F₂ := BuildRam.exec_frameM e₂ (by decide : BuildRam.wrM (fun r => decide (r = 170237))
       (block [.subN 170237 170237 170010]) = true)
-    have ex : Exec P W trI c c₂ (k₁ + (k₂ + 2)) := .seq e₁ (.ifLtN_false hlt e₂)
-    refine ⟨c₂, _, ex, by omega, by omega, ?_, by rw [bm, am], F₁.trans F₂⟩
-    rw [b37, a37, a10]; unfold trE; rw [ite_eq_right (by rw [← a37, ← a10]; exact hlt)]
+    refine ⟨c₂, _, (e₁ ;; .ifLtN_false hlt e₂), by omega, by omega, ?_, by simp_all, F₁.trans F₂⟩
+    grind [trE]
 
 theorem mvW_exec (c : Config) (hw : WordsBounded W c) {src dst : ℕ}
     (h11 : c.nreg 170011 = 1) (h34 : c.nreg 170234 = src) (h22 : c.nreg 170222 = dst)
@@ -138,9 +135,9 @@ theorem mvW_exec (c : Config) (hw : WordsBounded W c) {src dst : ℕ}
     exact ⟨c', k, e, h1, h2, h3, h4, BuildRam.exec_frameM e wrM_mvW⟩
   unfold mvW
   exec_block
-  · config_simp; rw [h34, h11]; omega
-  · config_simp; rw [h22, h11]; omega
-  refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h34, h22, h11]
+  · simp_all
+  · simp_all
+  simp_all
 
 theorem mvT_exec (c : Config) (hw : WordsBounded W c) {n u₀ g₀ src dst : ℕ}
     (h10 : c.nreg 170010 = n) (h11 : c.nreg 170011 = 1) (h32 : c.nreg 170232 = g₀)
@@ -153,40 +150,33 @@ theorem mvT_exec (c : Config) (hw : WordsBounded W c) {n u₀ g₀ src dst : ℕ
       k₁ = 1 ∧ c₁.nreg 170236 = c.nmem src ∧ (∀ r, r ≠ 170236 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem := by
     exec_block
-    refine ⟨rfl, ?_, fun r hr => ?_, rfl⟩
-    · config_simp; rw [h34]
-    · config_simp; simp [upd, hr]
+    simp_all
   have F₁ := BuildRam.exec_frameM e₁ (by decide : BuildRam.wrM Bmv
     (block [.loadN 170236 170234]) = true)
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', b37, bm, F₂⟩ := trI_exec (P := P) c₁ e₁.wb_right
-    ((ar _ (by decide)).trans h10) ((ar _ (by decide)).trans h32)
-    ((ar _ (by decide)).trans h33) a36 ht
-  have f₂ : ∀ r, r ≠ 170237 → c₂.nreg r = c₁.nreg r := fun r hr => F₂.1 r (by simp [hr])
+    ((at_index ar _).trans h10) ((at_index ar _).trans h32)
+    ((at_index ar _).trans h33) a36 ht
+  have f₂ : AgreeExcept [170237] c₂.nreg c₁.nreg := fun r hr => at_index F₂.1 r
   have w₂ := e₂.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, d34, d22, dm⟩ : ∃ c₃ k₃, Exec P W
       (block [.storeN 170222 170237, .addN 170234 170234 170011, .addN 170222 170222 170011])
       c₂ c₃ k₃ ∧ k₃ = 3 ∧ c₃.nreg 170234 = src + 1 ∧ c₃.nreg 170222 = dst + 1 ∧
       c₃.nmem = upd c₂.nmem dst (trE n u₀ g₀ (c.nmem src)) := by
-    have g34 : c₂.nreg 170234 = src := (f₂ _ (by decide)).trans ((ar _ (by decide)).trans h34)
-    have g22 : c₂.nreg 170222 = dst := (f₂ _ (by decide)).trans ((ar _ (by decide)).trans h22)
-    have g11 : c₂.nreg 170011 = 1 := (f₂ _ (by decide)).trans ((ar _ (by decide)).trans h11)
-    exec_block
-    · config_simp; rw [g34, g11]; omega
-    · config_simp; rw [g22, g11]; omega
-    refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [g34, g22, g11, b37]
+    have g34 : c₂.nreg 170234 = src := (at_index f₂ _).trans ((at_index ar _).trans h34)
+    have g22 : c₂.nreg 170222 = dst := (at_index f₂ _).trans ((at_index ar _).trans h22)
+    have g11 : c₂.nreg 170011 = 1 := (at_index f₂ _).trans ((at_index ar _).trans h11)
+    verify_block
   have F₃ := BuildRam.exec_frameM e₃ (by decide : BuildRam.wrM Bmv
     (block [.storeN 170222 170237, .addN 170234 170234 170011,
       .addN 170222 170222 170011]) = true)
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, by omega, d34, d22, by rw [dm, bm, am],
-    (F₁.trans (frameM_mono F₂ (fun r hr => by simp at hr; simp [Bmv, hr]))).trans F₃⟩
+  refine ⟨c₃, _, e₁ ;; e₂ ;; e₃, by omega, by omega, d34, d22, by grind,
+    (F₁.trans (frameM_mono F₂ (fun r hr => by grind [Bmv]))).trans F₃⟩
 
 /-- Seven consecutive updates, away from them. -/
 theorem upd7_lo {m : ℕ → ℕ} {d a v0 v1 v2 v3 v4 v5 v6 : ℕ} (h : a < d) :
     upd (upd (upd (upd (upd (upd (upd m d v0) (d + 1) v1) (d + 2) v2) (d + 3) v3) (d + 4) v4)
       (d + 5) v5) (d + 6) v6 a = m a := by
-  rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega),
-    upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega),
-    upd_other _ _ _ (by omega)]
+  frame_simp [upd_other]
 
 /-- Seven consecutive updates, at them. -/
 theorem upd7_at {m : ℕ → ℕ} {d v0 v1 v2 v3 v4 v5 v6 : ℕ} :
@@ -194,26 +184,7 @@ theorem upd7_at {m : ℕ → ℕ} {d v0 v1 v2 v3 v4 v5 v6 : ℕ} :
       (d + 4) v4) (d + 5) v5) (d + 6) v6
     M d = v0 ∧ M (d + 1) = v1 ∧ M (d + 2) = v2 ∧ M (d + 3) = v3 ∧ M (d + 4) = v4 ∧
       M (d + 5) = v5 ∧ M (d + 6) = v6 := by
-  intro M
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · simp only [M]
-    rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega),
-      upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_same]
-  · simp only [M]
-    rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega),
-      upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_same]
-  · simp only [M]
-    rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega),
-      upd_other _ _ _ (by omega), upd_same]
-  · simp only [M]
-    rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega),
-      upd_same]
-  · simp only [M]
-    rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_same]
-  · simp only [M]
-    rw [upd_other _ _ _ (by omega), upd_same]
-  · simp only [M]
-    rw [upd_same]
+  simp
 
 /-- **One piece record copied.** -/
 theorem cpBody_exec (c : Config) (hw : WordsBounded W c) {n u₀ g₀ src dst : ℕ}
@@ -243,7 +214,7 @@ theorem cpBody_exec (c : Config) (hw : WordsBounded W c) {n u₀ g₀ src dst : 
   obtain ⟨q10, q11, q32, q33, q35, q23⟩ := keep F₁
   have m1 : c₁.nmem (src + 1) = c.nmem (src + 1) := by rw [am, upd_other _ _ _ (by omega)]
   obtain ⟨c₂, k₂, e₂, hk₂, b34, b22, bm, F₂⟩ := mvW_exec (P := P) c₁ e₁.wb_right
-    (by rw [q11, h11]) a34 a22 (by omega) (by omega)
+    (by simp_all) a34 a22 (by omega) (by omega)
   obtain ⟨p10, p11, p32, p33, p35, p23⟩ := keep F₂
   have m2 : c₂.nmem (src + 2) = c.nmem (src + 2) := by
     rw [bm, upd_other _ _ _ (by omega), am, upd_other _ _ _ (by omega)]
@@ -329,19 +300,19 @@ theorem cpLoop_exec (c : Config) (hw : WordsBounded W c) {n L q g₀ u₀ O : �
   set d₀ := c.nreg 170222 with hd₀
   set n₀ := c.nreg 170223 with hn₀
   set m₀ := c.nmem with hm₀
-  let I : Config → Prop := fun d => WordsBounded W d ∧ ∃ i, i ≤ q ∧ d.nreg 170235 = i ∧
+  let I := fun d => WordsBounded W d ∧ ∃ i, i ≤ q ∧ d.nreg 170235 = i ∧
     d.nreg 170234 = L + 1 + 7 * i ∧ d.nreg 170222 = d₀ + 7 * i ∧ d.nreg 170223 = n₀ + i ∧
-    (∀ a, a < d₀ → d.nmem a = m₀ a) ∧
+    (AgreeBelow d₀ d.nmem m₀) ∧
     (∀ j, j < i → ∀ f, f < 7 → d.nmem (d₀ + 7 * j + f) = pcW (trPcR n u₀ g₀ (rdPc m₀ L j)) f) ∧
     BuildRam.FrameM Bcp c d
   obtain ⟨c', k, e, ⟨w', i, hiq, r35, r34, r22, r23, hlo, hout, F⟩, hex, hk, hψ⟩ :=
     whileLtN_pot2 (P := P) (a := 170235) (b := 170231) (body := cpBody) I
       (fun d => 42 * (q - d.nreg 170235)) (fun d => d.nreg 170222) (fun _ h => h.1)
       (fun d ⟨wd, i, hiq, d35, d34, d22, d23, dlo, dout, dF⟩ hlt => by
-        have d31 : d.nreg 170231 = q := by rw [dF.1 _ (by decide)]; exact h31
+        have d31 : d.nreg 170231 = q := by rw [at_index dF.1 _]; exact h31
         rw [d35, d31] at hlt
         have dsrc : ∀ f, f < 7 → d.nmem (L + 1 + 7 * i + f) = m₀ (L + 1 + 7 * i + f) :=
-          fun f hf => dlo _ (by omega)
+          fun f hf => at_index dlo _
         obtain ⟨he0, he2⟩ := hed i hlt
         obtain ⟨d', k', e', hk', hk'', a34, a22, a35, a23, alo, a0, a1, a2, a3, a4, a5, a6, aF⟩ :=
           cpBody_exec (P := P) d wd ((dF.1 _ (by decide)).trans h10)
@@ -351,28 +322,27 @@ theorem cpLoop_exec (c : Config) (hw : WordsBounded W c) {n L q g₀ u₀ O : �
             (by rw [dsrc 2 (by omega)]; omega)
             (by rw [d35]; have := hw.1 170231; omega) (by rw [d23]; omega)
         refine ⟨d', k', e', ⟨e'.wb_right, i + 1, by omega, by rw [a35, d35],
-          by rw [a34]; ring, by rw [a22]; ring, by rw [a23, d23]; ring,
-          fun a ha => by rw [alo a (by omega)]; exact dlo a ha, fun j hj f hf => ?_, dF.trans aF⟩,
-          by rw [a35, d35]; omega, by rw [a22, d22]; omega⟩
+          by rw [a34]; ring, by rw [a22]; ring, by cost_bound,
+          fun a ha => by block_post, fun j hj f hf => ?_, dF.trans aF⟩,
+          by grind, by grind⟩
         rcases (show j < i ∨ j = i by omega) with hj' | rfl
-        · rw [alo _ (by omega)]; exact dout j hj' f hf
+        · grind
         · interval_cases f
           · simp only [Nat.add_zero]; rw [a0]
-            have := dsrc 0 (by omega); simp only [Nat.add_zero] at this; rw [this]; rfl
-          · rw [a1, dsrc 1 (by omega)]; rfl
-          · rw [a2, dsrc 2 (by omega)]; rfl
-          · rw [a3, dsrc 3 (by omega)]; rfl
-          · rw [a4, dsrc 4 (by omega)]; rfl
-          · rw [a5, dsrc 5 (by omega)]; rfl
-          · rw [a6, dsrc 6 (by omega)]; rfl)
+            have := at_index dsrc 0; simp only [Nat.add_zero] at this; rw [this]; rfl
+          · rw [a1, at_index dsrc 1]; rfl
+          · rw [a2, at_index dsrc 2]; rfl
+          · rw [a3, at_index dsrc 3]; rfl
+          · rw [a4, at_index dsrc 4]; rfl
+          · rw [a5, at_index dsrc 5]; rfl
+          · rw [a6, at_index dsrc 6]; rfl)
       (c := c) ⟨hw, 0, by omega, h35, by omega, by omega, by omega, fun a _ => rfl,
-        fun j hj => absurd hj (by omega), BuildRam.FrameM.refl _ _⟩
-  have r31 : c'.nreg 170231 = q := by rw [F.1 _ (by decide)]; exact h31
+        fun j hj => at_index absurd hj, BuildRam.FrameM.refl _ _⟩
+  have r31 : c'.nreg 170231 = q := by rw [at_index F.1 _]; exact h31
   rw [r35, r31] at hex
   have hi : i = q := by omega
   subst hi
-  refine ⟨c', k, e, by rw [h35] at hk; simpa using hk, by rw [r22] at hψ; omega, r22, r23, hlo,
-    hout, F⟩
+  refine ⟨c', k, e, ?_⟩ <;> grind
 
 end exec
 

@@ -1,4 +1,6 @@
 module
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.SweepEvTasks3
 
@@ -59,10 +61,10 @@ theorem kqIsOne_irs {r : ℕ} {s : Stmt} {K : ℕ} {Q : Config → Prop} (hI : I
   unfold kqIsOne
   by_cases h1 : c.nreg K0 < c.nreg r
   · by_cases h2 : c.nreg r < c.nreg K2
-    · exact (IRS.ifT h1 (IRS.ifT h2 (hs (by omega)))).mono (by omega) (fun _ h => h)
-    · exact (IRS.ifT h1 (IRS.ifF h2 (IRS.skip (K := 0) hI (hq (by omega))))).mono (by omega)
+    · exact (IRS.ifT h1 (IRS.ifT h2 (guarded hs))).mono (by omega) (fun _ h => h)
+    · exact (IRS.ifT h1 (IRS.ifF h2 (IRS.skip (K := 0) hI (guarded hq)))).mono (by omega)
         (fun _ h => h)
-  · exact (IRS.ifF h1 (IRS.skip (K := 0) hI (hq (by omega)))).mono (by omega) (fun _ h => h)
+  · exact (IRS.ifF h1 (IRS.skip (K := 0) hI (guarded hq))).mono (by omega) (fun _ h => h)
 
 /-! ## Offer to the running minimum -/
 
@@ -94,20 +96,17 @@ theorem kqTake_irs (hI : IInv W c₀ c) (hW : 1 ≤ W) :
       c'.nreg kqH = c.nreg kqSH ∧ EFr OffR c c') := by
   refine (IRS.block kqTake hI ?_).mono le_rfl ?_
   · simp only [kqTake, okB, okI]
-    exact ⟨⟨iscr_sw' (by norm_num) (by norm_num), hW⟩, iscr_sw' (by norm_num) (by norm_num),
-      iscr_sw' (by norm_num) (by norm_num), trivial⟩
+    exact ⟨⟨guarded iscr_sw', hW⟩, guarded iscr_sw',
+      guarded iscr_sw', trivial⟩
   · rintro c' rfl
     refine ⟨?_, ?_, ?_, ⟨fun r _ hr hra => ?_, ?_, fun a _ => rfl⟩⟩
-    · simp [kqTake, regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw]
-    · simp [kqTake, regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw]
-    · simp [kqTake, regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw]
+    · rfl
+    · rfl
+    · rfl
     · unfold OffR at hr
       simp only [kqTake, regB, regI]
-      rw [upd_other _ _ _ (by tauto), upd_other _ _ _ (by tauto), upd_other _ _ _ (by tauto)]
-    · simp only [kqTake, regB, regI]
-      rw [upd_other _ _ _ (by unfold ALLOC kqH sw; omega),
-        upd_other _ _ _ (by unfold ALLOC kqE sw; omega),
-        upd_other _ _ _ (by unfold ALLOC kqF sw; omega)]
+      simp_all
+    · rfl
 
 set_option maxHeartbeats 4000000 in
 /-- **The offer.** -/
@@ -125,13 +124,13 @@ theorem offerQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c)
   · have hF1 : c.nreg kqF = 1 := by omega
     have htP := ht hF1
     refine IRS.mono (K := 11015 + 2) (IRS.ifT h1 ?_) (by norm_num) (fun _ h => h)
-    refine IRS.seq (K₁ := 11008) (K₂ := 7) (callOff_irs (dsc := sw 2) (ex := kqSE) (hx := kqSH)
-      (ey := kqE) (hy := kqH) (g := cGW) (o := kqO) hI hctx
-      ⟨by norm_num [sw], by norm_num [sw], by unfold kqSE sw; norm_num, by unfold kqSE sw; norm_num,
-        by unfold kqSH sw; norm_num, by unfold kqSH sw; norm_num, by unfold kqE sw; norm_num,
-        by unfold kqE sw; norm_num, by unfold kqH sw; norm_num, by unfold kqH sw; norm_num,
-        by unfold cGW sw; norm_num, by unfold cGW sw; norm_num⟩
-      ⟨by unfold kqO sw; norm_num, by unfold kqO sw; norm_num⟩ hq.1 htP.1 (by rw [hgw]; exact hgn)
+    refine IRS.seq (K₁ := 11008) (K₂ := 7) (callOff_irs
+ hI hctx
+      ⟨by decide, by decide, by decide, by decide,
+        by decide, by decide, by decide,
+        by decide, by decide, by decide,
+        by decide, by decide⟩
+      ⟨by decide, by decide⟩ hq.1 htP.1 (by simp_all)
       hq.2.1 htP.2.1 hq.2.2 htP.2.2 hroom) ?_
     rintro c₁ hI₁ hA₁ hA₁' ⟨b1, -, k₁, ha₁, hm₁⟩
     rw [hgw'] at b1
@@ -143,37 +142,32 @@ theorem offerQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c)
       intro r hr
       have hr' : 242480 ≤ r ∧ r ≤ 242484 := by
         unfold kqF kqE kqH kqSE kqSH sw at hr; omega
-      exact k₁ r (not_oracle_sw (by omega) (by omega)) (by unfold kqO sw; omega)
-        (by unfold kqO sw; omega) (by unfold ALLOC; omega)
+      exact guarded (k₁ r (not_oracle_sw (by omega) (by omega)))
     have k01 : c₁.nreg K0 = 0 := by
-      rw [k₁ K0 (not_oracle_sw (by unfold K0 sw; omega) (by unfold K0 sw; omega))
-        (by unfold K0 kqO sw; omega) (by unfold K0 kqO sw; omega) (by unfold K0 ALLOC sw; omega)]
+      rw [k₁ K0 (guarded not_oracle_sw)
+        (by decide) (by decide) (by decide)]
       exact k0
     by_cases h2 : c₁.nreg K0 < c₁.nreg kqO
     · rw [k01] at h2
-      have hlt := b1.2.1 (by have := b1.1; omega)
-      refine IRS.mono (K := 3 + 2) (IRS.ifT (by rw [k01]; exact h2) (kqTake_irs hI₁ hW1))
+      refine IRS.mono (K := 3 + 2) (IRS.ifT (by rwa [k01]) (kqTake_irs hI₁ hW1))
         (by norm_num) ?_
       rintro c' ⟨e1, e2, e3, fr2⟩
       rw [keep _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))] at e2
       rw [keep _ (Or.inr (Or.inr (Or.inr (Or.inr rfl))))] at e3
-      exact ⟨e1, Or.inr ⟨e2, e3⟩, by rw [e2, e3], fun _ => by rw [e2, e3]; exact hlt.le,
+      exact ⟨e1, Or.inr ⟨e2, e3⟩, by rw [e2, e3], fun _ => by rw [e2, e3]; exact (b1.2.1 (by have := b1.1; omega)).le,
         fr1.trans fr2⟩
     · rw [k01] at h2
-      have hnlt : ¬ offK P J (c.nreg kqSE) (c.nreg kqSH) < offK P J (c.nreg kqE) (c.nreg kqH) :=
-        fun h => by have := b1.2.2 h; omega
-      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact h2) (IRS.skip hI₁ rfl))
+      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k01]) (IRS.skip hI₁ rfl))
         (by norm_num) ?_
       rintro c' rfl
-      have eF := keep _ (Or.inl rfl)
       have eE := keep _ (Or.inr (Or.inl rfl))
       have eH := keep _ (Or.inr (Or.inr (Or.inl rfl)))
-      exact ⟨by rw [eF, hF1], Or.inl ⟨hF1, eE, eH⟩, by rw [eE, eH]; exact not_lt.1 hnlt,
+      exact ⟨by grind, Or.inl ⟨hF1, eE, eH⟩, by rw [eE, eH]; exact not_lt.1 (fun h => by have := b1.2.2 h; omega),
         fun _ => by rw [eE, eH], fr1⟩
   · have hF0 : c.nreg kqF ≠ 1 := by omega
     refine IRS.mono (K := 3 + 2) (IRS.ifF h1 (kqTake_irs hI hW1)) (by norm_num) ?_
     rintro c' ⟨e1, e2, e3, fr2⟩
-    exact ⟨e1, Or.inr ⟨e2, e3⟩, by rw [e2, e3], fun h => absurd h hF0, fr2⟩
+    exact ⟨e1, Or.inr ⟨e2, e3⟩, by simp_all, fun h => absurd h hF0, fr2⟩
 
 /-! ## Stores -/
 
@@ -197,13 +191,13 @@ theorem storeL_irs {x : ℕ} (hx : IScr x) (hx1 : x ≠ K1) :
     simp only [List.length_cons] at hW ⊢
     have e : 2 * (vs.length + 1) = 1 + (1 + 2 * vs.length) := by ring
     rw [e]
-    refine IRS.seq (IRS.store (v := v) hI hA) ?_
+    refine IRS.seq (IRS.store hI hA) ?_
     rintro c₁ hI₁ - - rfl
-    refine IRS.seq (IRS.instr1 (i := .addN x x K1) hI₁ ⟨hx, by simp only [hK1]; omega⟩) ?_
+    refine IRS.seq (IRS.instr1 hI₁ ⟨hx, by address_omega⟩) ?_
     rintro c₂ hI₂ - - rfl
     have hx2 : (upd c.nreg x (c.nreg x + c.nreg K1)) x = c.nreg x + 1 := by
-      rw [upd_same, hK1]
-    refine (storeL_irs hx hx1 vs hI₂ (by simp only [regI]; rw [upd_other _ _ _ (Ne.symm hx1)]; exact hK1)
+      simp_all
+    refine (storeL_irs hx hx1 vs hI₂ (by simp only [regI]; rwa [upd_other _ _ _ (Ne.symm hx1)])
       (fun w hw => hv w (List.mem_cons_of_mem _ hw))
       (by simp only [regI]; rw [hx2]; omega)
       (by simp only [regI]; rw [hx2]; omega)).mono le_rfl ?_
@@ -211,15 +205,10 @@ theorem storeL_irs {x : ℕ} (hx : IScr x) (hx1 : x ≠ K1) :
     simp only [regI, hx2] at s1 s2 s3
     refine ⟨fun i hi => ?_, fun y hy => ?_, fun r hr => ?_⟩
     · rcases i with _ | i
-      · rw [s2 _ (Or.inl (by omega))]
+      · rw [s2 _ (guarded Or.inl)]
         simp
-      · have := s1 i (by simpa using hi)
-        rw [show c.nreg x + (i + 1) = c.nreg x + 1 + i by ring, this]
-        simp only [List.getElem_cons_succ]
-        rw [upd_other _ _ _ (hv _ (List.mem_cons_of_mem _ (List.getElem_mem _)))]
-    · rw [s2 _ (by omega)]
-      simp only [upd]
-      rw [ite_eq_right (by omega)]
+      · grind [List.getElem_cons_succ, upd_other]
+    · block_post
     · rw [s3 r hr, upd_other _ _ _ hr]
 
 /-! ## Loads -/
@@ -242,8 +231,7 @@ theorem ldStop_irs (hI : IInv W c₀ c) (hK1 : c.nreg K1 = 1)
   · rintro c' rfl
     simp [ldStopL, regB, regI, upd, kqX, kqSE, kqSH, sP, sB, K1, sw, hK1]
     refine ⟨by ring_nf, by ring_nf, ?_⟩
-    intro r ha hb hc
-    simp [ha, hb, hc]
+    simp_all
 
 /-- Load the flag of the auxiliary record `sP`: `kqX = aB + 5 sP`. -/
 def ldAuxL : List Instr :=
@@ -261,8 +249,7 @@ theorem ldAux_irs (hI : IInv W c₀ c) (hW : c.nreg aB + 5 * c.nreg sP ≤ W) :
   · rintro c' rfl
     simp [ldAuxL, regB, regI, upd, kqX, kqV, sP, aB, sw]
     refine ⟨by ring_nf, by ring_nf, ?_⟩
-    intro r ha hb
-    simp [ha, hb]
+    simp_all
 
 /-- Advance `kqX` and load `kqV` (resp. `kqY`) from it. -/
 theorem ldNext_irs {r : ℕ} (hr : r = kqV ∨ r = kqY) (hI : IInv W c₀ c) (hK1 : c.nreg K1 = 1)
@@ -277,8 +264,7 @@ theorem ldNext_irs {r : ℕ} (hr : r = kqV ∨ r = kqY) (hI : IInv W c₀ c) (hK
   · rintro c' rfl
     rcases hr with rfl | rfl <;>
     · simp [regB, regI, upd, kqX, kqV, kqY, K1, sw, hK1]
-      intro r ha hb
-      simp [ha, hb]
+      simp_all
 
 end
 

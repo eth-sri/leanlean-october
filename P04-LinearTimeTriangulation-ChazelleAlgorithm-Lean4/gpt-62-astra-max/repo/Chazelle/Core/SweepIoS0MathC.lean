@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.SweepIoS0MathB
 
@@ -38,15 +39,15 @@ theorem F₂plus_origin {S₂ : Set (Set Point)} {e : Set Point} (he : e ∈ F�
         ∃ c ∈ S₂, (d = 1 ∧ o = Merge.lend c) ∨ (d = -1 ∧ o = Merge.rend c)) := by
   rcases he with ((⟨c₀, hc₀, hfr, rfl⟩ | ⟨c₀, hc₀, hfr, rfl⟩) | ⟨σ, hσ, hfr, rfl⟩) |
       ⟨σ, hσ, hfr, rfl⟩
-  · have hc₀' : c₀ ∈ S₂ := by simpa using hc₀
-    exact ⟨_, 1, Or.inl rfl, hfr, rfl, Or.inr (Or.inr ⟨c₀, hc₀', Or.inl ⟨rfl, rfl⟩⟩)⟩
-  · have hc₀' : c₀ ∈ S₂ := by simpa using hc₀
-    exact ⟨_, -1, Or.inr rfl, hfr, rfl, Or.inr (Or.inr ⟨c₀, hc₀', Or.inr ⟨rfl, rfl⟩⟩)⟩
+  · 
+    grind
+  · 
+    grind
   · exact ⟨J.shared, σ, hσ, hfr, rfl, Or.inl rfl⟩
   · have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
       rw [Merge.Junction.whole_vertex_add]; rfl
     refine ⟨J.right.top, σ, hσ, ?_, ?_, Or.inr (Or.inl rfl)⟩
-    · rw [← hv]; exact hfr
+    · rwa [← hv]
     · rw [← hv]; rfl
 
 /-- **A ray along a shot chord from its far end.** -/
@@ -65,11 +66,7 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
     intro p hp hpD
     obtain ⟨h1, h2, h3⟩ := (hmem p).1 hp
     rcases h2.lt_or_eq with h2 | h2
-    · rcases h3.lt_or_eq with h3 | h3
-      · exact absurd (by
-          have := hH.open_mem p.1 h2 h3
-          rwa [show ((p.1, y) : Point) = p from Prod.ext rfl h1.symm] at this) hpD
-      · exact Or.inr h3
+    · grind [hH.open_mem]
     · exact Or.inl h2.symm
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hev
   have hδ' : (0 : ℝ) < δ := hδ
@@ -77,7 +74,7 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
     intro s h0 h1
     have := (hmem _).1 (hsub ⟨h0, h1⟩)
     simpa [rayPt_fst, rayPt_snd] using this
-  have hzy : z.2 = y := (hray (δ / 2) (by linarith) (by linarith)).1
+  have hzy : z.2 = y := (at_index hray (δ / 2)).1
   -- the side of `z`
   have hzlr : (σ = 1 ∧ z.1 = l) ∨ (σ = -1 ∧ z.1 = r) := by
     have hz1 : l ≤ z.1 ∧ z.1 ≤ r := by
@@ -85,43 +82,40 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
       · by_contra h
         push Not at h
         set s := min (δ / 2) ((l - z.1) / 2) with hs
-        have hs0 : 0 < s := lt_min (by linarith) (by linarith)
+        have hs0 : 0 < s := guarded lt_min
         have hs1 := min_le_left (δ / 2) ((l - z.1) / 2)
         have hs2 := min_le_right (δ / 2) ((l - z.1) / 2)
-        have := (hray s hs0 (by linarith)).2.1
+        have := (guarded (hray s hs0)).2.1
         rcases hσ with rfl | rfl <;> nlinarith
       · by_contra h
         push Not at h
         set s := min (δ / 2) ((z.1 - r) / 2) with hs
-        have hs0 : 0 < s := lt_min (by linarith) (by linarith)
+        have hs0 : 0 < s := guarded lt_min
         have hs1 := min_le_left (δ / 2) ((z.1 - r) / 2)
         have hs2 := min_le_right (δ / 2) ((z.1 - r) / 2)
-        have := (hray s hs0 (by linarith)).2.2
+        have := (guarded (hray s hs0)).2.2
         rcases hσ with rfl | rfl <;> nlinarith
     have hze : z ∈ e := (hmem z).2 ⟨hzy, hz1⟩
-    have hs0 : (0 : ℝ) < min (δ / 2) ((r - l) / 2) := lt_min (by linarith) (by linarith)
+    have hs0 : (0 : ℝ) < min (δ / 2) ((r - l) / 2) := guarded lt_min
     have hs1 := min_le_left (δ / 2) ((r - l) / 2)
-    have h := hray (min (δ / 2) ((r - l) / 2)) hs0 (by linarith)
+    have h := guarded (hray (min (δ / 2) ((r - l) / 2)) hs0)
     rcases hends z hze hzD with h1 | h1 <;> rcases hσ with rfl | rfl
     · exact Or.inl ⟨rfl, h1⟩
     · exfalso; nlinarith [h.2.1]
     · exfalso; nlinarith [h.2.2]
     · exact Or.inr ⟨rfl, h1⟩
-  have hze : z ∈ e := (hmem z).2 ⟨hzy, by rcases hzlr with ⟨-, h⟩ | ⟨-, h⟩ <;> constructor <;>
-    linarith⟩
+  have hze : z ∈ e := (hmem z).2 ⟨hzy, by grind⟩
   -- the origin is the other end
   have hoe : o ∈ e := by rw [heo]; exact origin_mem J
   obtain ⟨hoy, -, -⟩ := (hmem o).1 hoe
-  have hoz1 : o.1 ≠ z.1 := fun h => hzo (Prod.ext h.symm (by rw [hoy, hzy]))
+  have hoz1 : o.1 ≠ z.1 := fun h => hzo (at_index Prod.ext h.symm)
   have hoend := hends o hoe hoD
   set τ := r - l with hτ
   have hτ0 : 0 < τ := by linarith
   have hwo : rayPt z σ τ = o := by
     apply point_ext
-    · rw [rayPt_fst]
-      rcases hzlr with ⟨rfl, h⟩ | ⟨rfl, h⟩ <;> rcases hoend with h' | h' <;>
-        first | (exfalso; exact hoz1 (by linarith)) | linarith
-    · rw [rayPt_snd, hzy, hoy]
+    · grind [rayPt_fst]
+    · grind [rayPt_snd]
   have hg : Genuine J.whole z σ τ :=
     genuine_along_chord J.whole he hze hzD hσ hτ0 (by rw [hwo]; exact hoe) (by rw [hwo]; exact hoD)
   have hT : J.whole.hitParam z σ = τ :=
@@ -135,11 +129,8 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
   rw [rayPt_fst] at hh1
   have hhz : rayPt o d (J.whole.hitParam o d) = z := by
     apply point_ext
-    · rw [rayPt_fst]
-      rcases hd with rfl | rfl <;> rcases hzlr with ⟨rfl, h⟩ | ⟨rfl, h⟩ <;>
-        rcases hoend with h' | h' <;> rcases hh1 with h'' | h'' <;>
-        first | (exfalso; exact hoz1 (by linarith)) | linarith
-    · rw [rayPt_snd, hzy, hoy]
+    · grind [rayPt_fst]
+    · grind
   have hdσ : d = -σ := by
     have h1 := congrArg Prod.fst hhz
     have h2 := congrArg Prod.fst hwo
@@ -147,17 +138,8 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
     rcases hd with rfl | rfl <;> rcases hσ with rfl | rfl <;>
       first | rfl | (exfalso; nlinarith) | norm_num
   refine ⟨by rw [hT, hwo], hdσ, hhz, by rw [hT]; exact hτ0, fun p hp hpD => ?_,
-    fun p hp => by rw [((hmem p).1 hp).1, hzy]⟩
-  have hpy := ((hmem p).1 hp).1
-  rcases hends p hp hpD with h | h <;> rcases hzlr with ⟨-, h'⟩ | ⟨-, h'⟩
-  · exact Or.inl (Prod.ext (by rw [h, h']) (by rw [hpy, hzy]))
-  · rcases hoend with h'' | h''
-    · exact Or.inr (Prod.ext (by rw [h, h'']) (by rw [hpy, hoy]))
-    · exact absurd (h''.trans h'.symm) hoz1
-  · rcases hoend with h'' | h''
-    · exact absurd (h''.trans h'.symm) hoz1
-    · exact Or.inr (Prod.ext (by rw [h, h'']) (by rw [hpy, hoy]))
-  · exact Or.inl (Prod.ext (by rw [h, h']) (by rw [hpy, hzy]))
+    fun p hp => by grind⟩
+  grind
 
 /-- **An attachment of a chord along the ray is an arrival position of the reversed ray.** -/
 theorem arrival_of_attach {W : Polygon} {e : Set Point} {p : ℕ} {t : ℝ} {z : Point} {σ : ℝ}
@@ -167,12 +149,12 @@ theorem arrival_of_attach {W : Polygon} {e : Set Point} {p : ℕ} {t : ℝ} {z :
   refine ⟨hp, ht0, ht1, hpt, ?_⟩
   rw [neg_neg]
   obtain ⟨s, ⟨hse, hsr⟩, hs0⟩ := ((hev.and (Ioo_mem_nhdsGT hr)).and self_mem_nhdsWithin).exists
-  have hs0' : (0 : ℝ) < s := hs0
-  have hdist : dist (rayPt z σ s) z = s := dist_rayPt z hσ hs0'.le
+  have hs0' := hs0
+  have hdist := dist_rayPt z hσ hs0'.le
   have h1 : sideLeft W p t (rayPt z σ s) := by
     refine hcl _ hse ?_ ?_
-    · rw [hpt]; intro h; rw [h, dist_self] at hdist; linarith
-    · rw [hpt, hdist]; exact hsr.2
+    · rw [hpt]; intro h; simp_all
+    · simp_all
   rw [← hpt] at h1 ⊢
   exact (sideLeft_rayPt_iff W p t σ hs0' one_pos).1 h1
 
@@ -186,27 +168,18 @@ theorem stopSet_eq (Q : Polygon) (N : NF) (kind k b : ℕ) :
 (the default chord record is the slit top). -/
 theorem endOrigin_big (Q : Polygon) (N : NF) {j : ℕ} (hj : N.nChords ≤ j / 2) :
     (endOrigin J Q N j).1 = J.right.top.1 := by
-  have hch : N.chord (j / 2) = ⟨0, 0, 0, 0, 0⟩ := by
-    unfold NF.chord; exact List.getD_eq_default _ _ hj
-  have hn : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
+  have hch : N.chord (j / 2) = ⟨0, 0, 0, 0, 0⟩ := List.getD_eq_default _ _ hj
+  have hn := cm_n J.right
   have hpos : (chainModel J.right).pos Q ⟨0, 0 + 1⟩ = J.right.slitTop := by
     have hwa : (chainModel J.right).wa 0 = J.right.slitTop := rfl
-    have hwb : (chainModel J.right).wb 0 = ((-J.right.radius, J.right.radius) : Point) := by
-      show (chainModel J.right).W.vtx ((0 + 1) % (chainModel J.right).W.n) = _
-      rw [show (0 + 1) % (chainModel J.right).W.n = 1 by rw [hn]; exact Nat.mod_eq_of_lt (by omega)]
-      rfl
+    have hwb : (chainModel J.right).wb 0 = ((-J.right.radius, J.right.radius) : Point) := rfl
     have hpar : (chainModel J.right).param Q ⟨0, 0 + 1⟩ = 0 := by
       show (if ((chainModel J.right).wa 0).2 = ((chainModel J.right).wb 0).2 then 0 else _) = _
-      rw [ite_eq_left (by rw [hwa, hwb]; rfl)]
-    unfold Model.pos
-    simp only [hpar, Geometry.lerp_zero]
-    exact hwa
+      rw [guarded ite_eq_left]
+    simp_all [Model.pos]
   have hset : (N.chord (j / 2)).toSet (chainModel J.right) Q =
       hseg (Q.vtx 0).2 J.right.slitTop.1 J.right.slitTop.1 := by
-    rw [hch]
-    unfold CRec.toSet CRec.lpos CRec.rpos
-    simp only
-    rw [hpos]
+    simp_all [CRec.toSet, CRec.lpos, CRec.rpos]
   unfold endOrigin
   split_ifs
   · rw [hset, Merge.lend_hseg le_rfl]; rfl

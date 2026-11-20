@@ -37,12 +37,7 @@ theorem wposOf_mem {c : ℕ} (hc : c < 2 * L.length) :
     ∃ x ∈ L, wposOf L c = (recOf x).lpos ∨ wposOf L c = (recOf x).rpos := by
   have hi : c / 2 < L.length := by omega
   refine ⟨L[c / 2], getElem_mem _, ?_⟩
-  have hcr : crec L (c / 2) = recOf L[c / 2] := by
-    unfold crec; rw [getD_eq_getElem _ _ hi]
-  unfold wposOf
-  split_ifs
-  · left; rw [hcr]
-  · right; rw [hcr]
+  grind [wposOf, crec]
 
 /-- The facts about the ends of an attached band chord. -/
 theorem end_facts (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q L)
@@ -50,7 +45,7 @@ theorem end_facts (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) 
     w.edge < (chainModel C).W.n ∧ BandPos C C' Q w ∧
       (0 ≤ (chainModel C).param Q w ∧ (chainModel C).param Q w < 1) := by
   obtain ⟨hl, hr⟩ := hL.2.2.1 x hx
-  have hb : |(Q.vtx x.1).2| < bnd C C' := hband x hx
+  have hb := hband x hx
   rcases hw with rfl | rfl
   · exact ⟨hl.1, Or.inr ⟨x.1, rfl, hb⟩, hl.2.1, hl.2.2.1⟩
   · exact ⟨hr.1, Or.inr ⟨x.1, rfl, hb⟩, hr.2.1, hr.2.2.1⟩
@@ -78,8 +73,7 @@ theorem chordTriplesOK (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainMode
   obtain ⟨⟨-, hadm, -⟩, hnd, hatt, hh⟩ := hL
   refine ⟨⟨?_, ?_, ?_⟩, ?_, ?_, hh⟩
   · refine ((List.finite_toSet L).image fun x => (recOf x).toSet (chainModel C') Q).subset ?_
-    rintro c ⟨x, hx, rfl⟩
-    exact ⟨x, hx, rfl⟩
+    rintro c ⟨x, hx, rfl⟩ <;> grind
   · rintro c ⟨x, hx, rfl⟩
     obtain ⟨hl, hbl, hml⟩ := end_facts hband hL0 hx (Or.inl rfl)
     obtain ⟨hr, hbr, hmr⟩ := end_facts hband hL0 hx (Or.inr rfl)
@@ -91,7 +85,7 @@ theorem chordTriplesOK (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainMode
       rw [h.pos_eq hl hbl hml, h.pos_eq hr hbr hmr]
       rfl
     rw [e]
-    exact h.augChords_transfer (hband x hx) hc
+    solve_by_elim [h.augChords_transfer]
   · rintro c ⟨x, hx, rfl⟩
     exact ⟨x.1, hh x hx, _, _, rfl⟩
   · have e : L.map (fun x => (recOf x).toSet (chainModel C') Q) =
@@ -129,9 +123,7 @@ theorem keyCongr (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q
     exact h.arcWt_eq hb hb' hm hm'
   wt0 _ := by
     have hb : BandPos C C' Q ⟨0, 0⟩ := Or.inl rfl
-    have hm : 0 ≤ (chainModel C).param Q ⟨0, 0⟩ ∧ (chainModel C).param Q ⟨0, 0⟩ < 1 := by
-      simp [Model.param]
-    exact h.arcWt_eq hb hb hm hm
+    grind [Model.param, h.arcWt_eq]
   dir c _ := by
     rw [h.wa_eq, h.wb_eq]
     exact sig_lt_iff

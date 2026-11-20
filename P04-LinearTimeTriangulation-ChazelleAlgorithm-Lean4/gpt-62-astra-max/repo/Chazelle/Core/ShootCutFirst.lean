@@ -1,4 +1,10 @@
 module
+public import Chazelle.Core.ModelAccess
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Evidence
+public import Chazelle.Programs.ReadWords
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.ShootCutGen
 
@@ -35,33 +41,33 @@ theorem uFlag_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
       (∀ x, x ≠ dst → x ≠ idx → d'.nreg x = d.nreg x) ∧ d'.nmem = d.nmem := by
   unfold uFlag uIx
   by_cases hp6 : p < 6
-  · refine spec_ifLtN_true (by rw [hs, h96]; exact hp6) ?_
-    refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
+  · refine spec_ifLtN_true (by simp_all) ?_
+    refine spec_step (from_facts Exec.constN) fun w₁ => ?_
     refine spec_step (Exec.addN w₁ _ _ _ (by
-      simp only [upd, h1, Ne.symm h3, ite_false]; rw [hs, h91]; omega))
+      block_post))
       fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-    · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_left (by omega)]
-    · simp only [upd, ite_true, h1, Ne.symm h3, ite_false]
-      rw [hs, h91, ite_eq_left (by omega)]
-    · simp only [upd, hx1, hx2, ite_false]
+    · simp only [upd, h2, ite_false, ite_true]; frame_simp [ite_eq_left]
+    · simp [upd, h1, Ne.symm h3]
+      frame_simp [hs, h91, ite_eq_left]
+    · simp_all
   · by_cases hpm : p < 2 * m + 6
-    · refine spec_ifLtN_false (by rw [hs, h96]; exact hp6)
-        (spec_ifLtN_true (by rw [hs, h32]; exact hpm) ?_)
-      refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
-      refine spec_step (Exec.constN w₁ _ _ (by omega))
+    · refine spec_ifLtN_false (by simp_all)
+        (spec_ifLtN_true (by simp_all) ?_)
+      refine spec_step (from_facts Exec.constN) fun w₁ => ?_
+      refine spec_step (from_facts Exec.constN)
         fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-      · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, hx1, hx2, ite_false]
-    · refine spec_ifLtN_false (by rw [hs, h96]; exact hp6)
-        (spec_ifLtN_false (by rw [hs, h32]; exact hpm)
+      · simp only [upd, h2, ite_false, ite_true]; frame_simp [ite_eq_right]
+      · simp only [upd, ite_true]; frame_simp [ite_eq_right]
+      · simp_all
+    · refine spec_ifLtN_false (by simp_all)
+        (spec_ifLtN_false (by simp_all)
           (spec_ifLtN_false (by rw [hs, h32]; omega) ?_))
-      refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
-      refine spec_step (Exec.constN w₁ _ _ (by omega))
+      refine spec_step (from_facts Exec.constN) fun w₁ => ?_
+      refine spec_step (from_facts Exec.constN)
         fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-      · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_left (by omega)]
-      · simp only [upd, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, hx1, hx2, ite_false]
+      · simp only [upd, h2, ite_false, ite_true]; frame_simp [ite_eq_left]
+      · simp only [upd, ite_true]; frame_simp [ite_eq_right]
+      · simp_all
 
 /-! ## The pieces of kind `0` -/
 
@@ -80,10 +86,8 @@ theorem wt_last_edge (C : Chain) (Q : Polygon) {n : ℕ} {x y : WPos}
     (hx : ProperPos (chainModel C) Q n x) (hy : ProperPos (chainModel C) Q n y)
     (hxe : x.edge = 2 * C.m + 5) (hU : InU C y.edge) :
     (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1 := by
-  rw [arcWt_chain C Q hx hy]
-  have hc := le_keyCeil y.edge ((chainModel C).param Q y)
-  have hc' := keyCeil_le y.edge ((chainModel C).param Q y)
-  have hm := C.one_le
+  rw_facts [arcWt_chain]
+  have hc' := keyCeil_le y.edge (C.chainModel.param Q y)
   unfold arcWtNat
 
   rw [hxe]
@@ -136,9 +140,9 @@ theorem leaf_exec {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop} {I : List Pc
   obtain ⟨d₁, k₁, e₁, hk₁, hR, fr₁, kp₁⟩ := hB
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp₂, mem₂⟩ := hE.run _ pc d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
   obtain ⟨d₃, e₃, fr₃, hp₃, r₃, m₃⟩ := hT d₂ e₂.wb_right fun r hr => (kp₂ r hr).trans (kp₁ r hr)
-  refine ⟨d₃, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega, hE.stable _ _ _ hI₂ fr₃, hp₃,
-    fun r hr h1 => by rw [r₃ r h1, kp₂ r hr, kp₁ r hr], fun a ha => ?_⟩
-  rw [m₃, mem₂ a ha, fr₁.2.2.1]
+  refine ⟨d₃, k₁ + (k₂ + 1), e₁ ;; e₂ ;; e₃, by omega, hE.stable _ _ _ hI₂ fr₃, hp₃,
+    fun r hr h1 => by grind, fun a ha => ?_⟩
+  read_words
 
 theorem pcSE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {s e : WPos}
     (h01 : d.nreg 150001 = s.edge) (h02 : d.nreg 150002 = s.hgt) (h03 : d.nreg 150003 = e.edge)
@@ -150,14 +154,9 @@ theorem pcSE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
       d₁.nreg 150053 = e.hgt ∧ d₁.nreg 150054 = 0 ∧
       (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) := by
     unfold pcSE
-    exec_block
-    all_goals first | omega | skip
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_⟩
-    all_goals first | (config_simp; first | exact h01 | exact h02 | exact h03 | exact h04; done) |
-      (config_simp; done) | skip
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    verify_block
   exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pSE] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+    at_index exec_frameB e₁, fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
 
 theorem pcSV_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {s : WPos} {v : ℕ}
     (h01 : d.nreg 150001 = s.edge) (h02 : d.nreg 150002 = s.hgt) (h75 : d.nreg 150075 = v) :
@@ -168,14 +167,9 @@ theorem pcSV_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
       d₁.nreg 150053 = 0 ∧ d₁.nreg 150054 = 0 ∧
       (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) := by
     unfold pcSV
-    exec_block
-    all_goals first | omega | skip
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_⟩
-    all_goals first | (config_simp; first | exact h01 | exact h02 | exact h75; done) |
-      (config_simp; done) | skip
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    verify_block
   exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pSV] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+    at_index exec_frameB e₁, fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
 
 theorem pcVE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {e : WPos} {v : ℕ}
     (h75 : d.nreg 150075 = v) (h03 : d.nreg 150003 = e.edge) (h04 : d.nreg 150004 = e.hgt) :
@@ -186,14 +180,9 @@ theorem pcVE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
       d₁.nreg 150053 = e.hgt ∧ d₁.nreg 150054 = 0 ∧
       (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) := by
     unfold pcVE
-    exec_block
-    all_goals first | omega | skip
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_⟩
-    all_goals first | (config_simp; first | exact h03 | exact h04 | exact h75; done) |
-      (config_simp; done) | skip
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    verify_block
   exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pVE] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+    at_index exec_frameB e₁, fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
 
 end
 

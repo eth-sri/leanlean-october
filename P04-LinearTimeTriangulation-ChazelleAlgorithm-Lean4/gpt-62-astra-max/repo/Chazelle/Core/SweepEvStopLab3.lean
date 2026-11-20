@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.SweepEvStopLab2
 public import Chazelle.Core.SweepEvStep
@@ -33,9 +34,8 @@ theorem slb_shoot_pt {C : Chain} {a w : Point} {σ : ℝ} (hw : w ∈ Merge.shoo
     w.2 = a.2 ∧ ∃ s : ℝ, 0 ≤ s ∧ w.1 = a.1 + σ * s := by
   unfold Merge.shoot at hw
   obtain ⟨u, hu0, hu1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hw
-  have hT : 0 ≤ C.hitParam a σ := Real.sInf_nonneg fun _ ht => ht.1.le
-  refine ⟨by simp [Geometry.lerp_snd, Visibility.rayPt_snd], u * C.hitParam a σ,
-    mul_nonneg hu0 hT, ?_⟩
+  refine ⟨by simp, u * C.hitParam a σ,
+    mul_nonneg hu0 (Real.sInf_nonneg fun _ ht => ht.1.le), ?_⟩
   simp only [Geometry.lerp_fst, Visibility.rayPt_fst]
   ring
 
@@ -62,22 +62,11 @@ theorem slb_nonfused_pt {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChor
   have haa : a = a' := by
     rcases ha with rfl | rfl <;> rcases ha' with rfl | rfl
     · rfl
-    · exact shared_eq_top_of_snd J (by rw [← h2', h2])
-    · exact (shared_eq_top_of_snd J (by rw [← h2, h2'])).symm
+    · exact at_index shared_eq_top_of_snd J
+    · exact (at_index shared_eq_top_of_snd J).symm
     · rfl
   subst haa
-  have hσσ : σ' ≠ σ := fun h => hne (by rw [h])
-  have hσ' : σ' = -σ := by
-    rcases hσ with rfl | rfl <;> rcases hσ' with rfl | rfl <;> simp_all
-  have hss : σ * (s + s') = 0 := by rw [hσ'] at h1'; linarith
-  have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
-  have hs0 : s = 0 := by
-    have := (mul_eq_zero.1 hss).resolve_left hσ0
-    linarith
-  have hwa : w = a := Prod.ext (by rw [h1, hs0]; ring) h2
-  rcases ha with rfl | rfl
-  · exact hwv hwa
-  · exact hwt hwa
+  grind [Prod.ext]
 
 /-- **No tie of two non-fused chords** at a vertex position of the open right stretch other than
 the split vertex. -/
@@ -111,10 +100,7 @@ theorem slb_nonfused_tie (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)
 
 /-- In case G the slit has positive length. -/
 theorem slb_rδ_pos (h : rL1 J < Lst J) : 0 < rδ J := by
-  unfold Lst at h
-  unfold rL2 at h
-  unfold rδ
-  split_ifs at h ⊢ <;> omega
+  grind [Lst, rL2, rδ]
 
 /-- **The tie at the split vertex leaving the stretch** (`TieOut`). -/
 theorem slb_tieOut (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
@@ -136,21 +122,19 @@ theorem slb_tieOut (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hsplit' := sidePt_split J hP hS₂.2.1 hS₂.1 hlt
   obtain ⟨q, s, hB, hBo⟩ := hK
   obtain ⟨pb', tb', hB', hBne'⟩ := far_attach hM (hF.2.1 he') J.right.top
-  have hoff := hC.off_M hlt le_rfl zero_lt_one
   have hBne : sidePt (chainModel J.whole).W q s ≠
       sidePt (chainModel J.whole).W ((gW J + rL1 J) % (chainModel J.whole).W.n) 0 := by
     intro h
     obtain ⟨rfl, rfl⟩ := hM.attach_unique (hC.hF he) hB hA h
-    have : oW J (((gW J + rL1 J) % (chainModel J.whole).W.n : ℕ) + 0) = rL1 J + 0 := hoff
+    have : oW J (((gW J + rL1 J) % (chainModel J.whole).W.n : ℕ) + 0) = rL1 J + 0 := (hC.off_M hlt le_rfl zero_lt_one)
     rw [this] at hBo
     have : (rL1 J : ℝ) < (Lst J : ℝ) := by exact_mod_cast hlt
     linarith
   refine ⟨e, e', rL1 J, q, pb', s, tb', ρ, he, he', hne, hd0, hlt, hA, hA', hB, hB', hBne,
-    by first | (rw [hsplit']; exact hBne'), fun h => ?_, hOff pb' tb' hB' (by first | (rw [hsplit]; exact hBne')), hρ,
+    by simp_all, fun h => ?_, hOff pb' tb' hB' (by simp_all), hρ,
     hS, hS', hsplit ▸ hA.2.2.2.1, hsplit ▸ hA'.2.2.2.1⟩
   have : (Lst J : ℝ) ≤ off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (q + s) :=
     hBo
-  have h2 := h.2
   have : ((rL1 J + rL2 J : ℕ) : ℝ) = (Lst J : ℝ) := rfl
   linarith
 

@@ -48,19 +48,6 @@ def gTop : Stmt :=
 def Bg (r : ℕ) : Bool := decide (170000 ≤ r ∧ r < 170100) || Bk r || r == 218013
 
 theorem wr_gTop : wr Bg gTop = true := by
-  have h1 : wr Bg IOrc.topLoop = true := SweepPrim.wr_mono IOrc.wr_topLoop (fun r hr => by
-    simp only [IOrc.Btop, Bool.or_eq_true, decide_eq_true_eq] at hr
-    simp only [Bg, Bool.or_eq_true, decide_eq_true_eq]
-    rcases hr with hr | hr
-    · exact Or.inl (Or.inl ⟨by omega, by omega⟩)
-    · exact Or.inl (Or.inr hr))
-  have h2 : wr Bg IOrc.cmpUpd = true := SweepPrim.wr_mono IOrc.wr_cmpUpd (fun r hr => by
-    simp only [IOrc.Btop, Bool.or_eq_true, decide_eq_true_eq] at hr
-    simp only [Bg, Bool.or_eq_true, decide_eq_true_eq]
-    rcases hr with hr | hr
-    · exact Or.inl (Or.inl ⟨by omega, by omega⟩)
-    · exact Or.inl (Or.inr hr))
-  simp only [gTop, gSetup, gEnds, wr, block, wrOK, h1, h2, Bool.and_true, Bool.true_and]
   decide
 
 /-! ## Execution -/

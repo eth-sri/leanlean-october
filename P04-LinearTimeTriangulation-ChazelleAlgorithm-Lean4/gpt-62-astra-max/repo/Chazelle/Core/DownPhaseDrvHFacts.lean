@@ -1,4 +1,6 @@
 module
+public import Chazelle.Core.ModelAccess
+public import Chazelle.Programs.Evidence
 
 public import Chazelle.Core.DownPhaseDrvRHostSpec
 public import Chazelle.Core.DownPhaseMathRec
@@ -45,11 +47,10 @@ theorem region_arcs_le_of {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hN
     (N.region r).arcs.length ≤ 5 := by
   classical
   obtain ⟨hF, -, -, reg, hR, -, hA, hRs, -⟩ := hN
-  have hU : reg r ∈ M.regions (N.F M Q) := hR.1 r hr
-  have hnd := (hRs r hr).2.2.1
+  have hU := hR.1 r hr
   set L := (N.region r).arcs
   set f : ℕ → ℝ × ℝ := fun j => (M.key Q (N.arc j).s, M.key Q (N.arc j).e)
-  have hmem : ∀ j ∈ L, j < N.arcs.length ∧ (N.arc j).reg = r := fun j hj => (hA.2.2.2 r hr j).1 hj
+  have hmem := fun j hj => (hA.2.2.2 r hr j).1 hj
   have hinj : Set.InjOn f {j | j ∈ L} := by
     intro j hj j' hj' hjj
     obtain ⟨h1, h2⟩ := hmem j hj
@@ -59,13 +60,13 @@ theorem region_arcs_le_of {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hN
     rintro _ ⟨j, hj, rfl⟩
     obtain ⟨h1, h2⟩ := hmem j hj
     have := (hA.1 j h1).2
-    rw [h2] at this; exact this
+    rwa [h2] at this
   obtain ⟨hfin, hcard⟩ := hM.arcs_bound hF.2.1 hF.1 hU
   have hdg := hdeg _ hU
   have hL : L.length = ({j | j ∈ L} : Set ℕ).ncard := by
     rw [show ({j | j ∈ L} : Set ℕ) = ↑L.toFinset by ext; simp, Set.ncard_coe_finset,
-      List.toFinset_card_of_nodup hnd]
-  have h1 : ({j | j ∈ L} : Set ℕ).ncard = (f '' {j | j ∈ L}).ncard :=
+      List.toFinset_card_of_nodup ((hRs r hr).2.2.1)]
+  have h1 :=
     (Set.InjOn.ncard_image hinj).symm
   have h2 := Set.ncard_le_ncard hsub hfin
   omega
@@ -79,10 +80,10 @@ theorem hfacts_of {Q : Polygon} (hQ : Q.Simple) {L : List (ℕ × ℕ × ℕ)} {
       ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) 4) {r : ℕ}
     (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) :
     HFacts Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r := by
-  set N := BuildNF.buildNF (interiorModel Q) Q L E with hNdef
-  have hK : 0 < L.length := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
-  have hN : IsNF (interiorModel Q) Q N := DownMath.isNF_build hQ hL hperm hsort
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  set N := BuildNF.buildNF Q.interiorModel Q L E with hNdef
+  have hK := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
+  have hN : IsNF (Q.interiorModel) Q N := from_facts DownMath.isNF_build
+  have hM : WalkAx Q.interiorModel := walkAx_interiorModel hQ
   have hpos : ∀ x : WPos, DownMath.ChordPos N x → x.edge < Q.n ∧ x.hgt ≤ Q.n := by
     intro x hx
     obtain ⟨i, hi, hxi⟩ := hx
@@ -90,15 +91,14 @@ theorem hfacts_of {Q : Polygon} (hQ : Q.Simple) {L : List (ℕ × ℕ × ℕ)} {
     exact ⟨DownMath.walk_n Q ▸ hA.1, by omega⟩
   obtain ⟨-, -, -, reg, hRC, -, hAO, hRO, -, hh, -⟩ := id hN
   refine ⟨hr, region_arcs_le_of hM hN hdeg hr, ?_, fun j hj => ?_, fun i hi => ?_⟩
-  · rw [← Gran.deg_region hN hRC hRO hr]
+  · rw_facts [← Gran.deg_region]
     exact hdeg _ (hRC.1 r hr)
   · have hj' := ((hAO.2.2.2 r hr j).1 hj).1
-    obtain ⟨hs, he⟩ := DownMath.arc_pos hQ hL hperm hsort hK hj'
-    exact ⟨hj', (hpos _ hs).1, (hpos _ hs).2, (hpos _ he).1, (hpos _ he).2⟩
+    grind [DownMath.arc_pos]
   · have hi' := ((hRO r hr).1 i).1 hi |>.1
     have h1 := hpos _ ⟨i, hi', Or.inl rfl⟩
     have h2 := hpos _ ⟨i, hi', Or.inr rfl⟩
-    exact ⟨hi', h1.1, h2.1, by have := hh i hi'; omega⟩
+    record_facts
 
 end
 

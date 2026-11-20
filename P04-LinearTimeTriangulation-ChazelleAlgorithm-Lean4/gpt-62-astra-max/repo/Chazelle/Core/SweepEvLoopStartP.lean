@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.SweepEvLoopStartG
 
@@ -43,7 +44,7 @@ theorem stepRes {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)} {s s' : ℕ}
     (hb : (∀ hi : s < rs.length, soff P J rs[s] ≠ Lst J) → s' = s) (j : ℕ) (hj : j = s) :
     (∀ hi : j < rs.length, soff P J rs[j] = Lst J → s' = j + 1) ∧
       ((∀ hi : j < rs.length, soff P J rs[j] ≠ Lst J) → s' = j) := by
-  subst hj; exact ⟨ha, hb⟩
+  grind
 
 /-- **The pointer after two stop steps** skips exactly the stops at the start key. -/
 theorem ptr_char (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
@@ -57,32 +58,27 @@ theorem ptr_char (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
     ∀ i (hi : i < rs.length), i < s2 ↔ soff P J rs[i] = Lst J := by
   have ge : ∀ i (hi : i < rs.length), (Lst J : ℝ) ≤ soff P J rs[i] := fun i hi =>
     (stop_facts hst hi).2.2.2
-  have s1le : s1 ≤ 1 := by
-    by_cases h : ∃ hi : 0 < rs.length, soff P J rs[0] = Lst J
-    · obtain ⟨hi, h⟩ := h; have := h1a hi h; omega
-    · push Not at h; have := h1b h; omega
   have s2ge : s1 ≤ s2 := by
     by_cases h : ∃ hi : s1 < rs.length, soff P J rs[s1] = Lst J
-    · obtain ⟨hi, h⟩ := h; have := h2a hi h; omega
-    · push Not at h; have := h2b h; omega
+    · grind
+    · grind
   intro i hi
   refine ⟨hat i hi, fun hie => ?_⟩
   rcases (by omega : i = 0 ∨ i = 1 ∨ 2 ≤ i) with rfl | rfl | h2
   · have := h1a hi hie; omega
   · have h0 : soff P J (rs[0]'(by omega)) = Lst J := by
       have := stops_sorted hst (i := 0) (i' := 1) (by omega) hi
-      have := ge 0 (by omega)
+      have := at_index ge 0
       linarith
     have e1 : s1 = 1 := h1a (by omega) h0
     subst e1
     have := h2a hi hie
     omega
   · exfalso
-    have h3 := stops_two hP hN hst (i := i - 2) (by omega)
+    have h3 := guarded (stops_two hP hN hst (i := i - 2))
     have e : rs[i - 2 + 2] = rs[i] := by congr 1; omega
     rw [e, hie] at h3
-    have := ge (i - 2) (by omega)
-    linarith
+    grind
 
 end Ptr
 
@@ -94,10 +90,10 @@ theorem stopData_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' 
     (hlay : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC ∧ c.nreg aB + 5 * c.nreg sC ≤ c.nreg ALLOC)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) : StopData P J N₂ c' rs ax := by
   obtain ⟨hl, hlax, hSR, hAR, h5, h6, h7, h8⟩ := h
-  refine ⟨by rw [hsC]; exact hl, hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
-  · rw [hsB, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega)]
+  refine ⟨by rwa [hsC], hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
+  · rw [hsB, at_index hm _, at_index hm _, at_index hm _, at_index hm _, at_index hm _]
     exact hSR i hi
-  · rw [haB, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega)]
+  · rw [haB, at_index hm _, at_index hm _, at_index hm _, at_index hm _, at_index hm _]
     exact hAR i hi
 
 /-! ## Register sets -/
@@ -109,13 +105,11 @@ theorem fpr_stR {r : ℕ} (h : FPR r) : StR r := by
 
 theorem lblR_stR {r : ℕ} (h : LblR kN kL r) : StR r := by
   unfold LblR at h; unfold StR
-  simp only [kE, kH, kN, kL, gN, gR, sP, dF, lC, sw] at h ⊢
-  omega
+  grind
 
 theorem gapR_stR {r : ℕ} (h : GapR r) : StR r := by
   unfold GapR at h; unfold StR
-  simp only [kE, kH, kN, kL, gN, gR, sP, dF, lC, sw] at h ⊢
-  omega
+  grind
 
 /-- The raw post of the start. -/
 def SRaw (P : Polygon) (J : Merge.Junction) (N₂ : NF) (rs ax : List (ℕ × ℕ × ℕ × ℕ × ℕ))

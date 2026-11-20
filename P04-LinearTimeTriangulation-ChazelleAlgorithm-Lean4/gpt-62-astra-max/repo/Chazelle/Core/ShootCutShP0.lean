@@ -1,4 +1,8 @@
 module
+public import Chazelle.Core.ModelAccess
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Evidence
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.ShootCutShMerge
 
@@ -29,17 +33,13 @@ def pcV (n : ℕ) (x y : WPos) (D d : ℕ) : WPos :=
 theorem pcEdge_D {n sE eE : ℕ} (hs : sE < n) (he : eE < n) : pcEdge n sE (pcD n sE eE) = eE := by
   unfold pcEdge pcD
   rcases Nat.lt_or_ge eE sE with h | h
-  · rw [Nat.mod_eq_of_lt (show eE + n - sE < n by omega),
-      show sE + (eE + n - sE) = eE + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt he]
-  · rw [show eE + n - sE = (eE - sE) + n by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (show eE - sE < n by omega), show sE + (eE - sE) = eE by omega,
-      Nat.mod_eq_of_lt he]
+  · frame_simp [Nat.mod_eq_of_lt, show sE + (eE + n - sE) = eE + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt he]
+  · frame_simp [show eE + n - sE = (eE - sE) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt, show sE + (eE - sE) = eE by omega, Nat.mod_eq_of_lt he]
 
 theorem pcEdge_lt {n sE : ℕ} (hn : 0 < n) (d : ℕ) : pcEdge n sE d < n := Nat.mod_lt _ hn
 
 theorem pcEdge_succ (n sE d : ℕ) : pcEdge n sE (d + 1) = (pcEdge n sE d + 1) % n := by
-  unfold pcEdge; rw [Nat.add_comm ((sE + d) % n) 1, Nat.add_mod_mod, ← Nat.add_assoc,
-    Nat.add_comm 1]
+  unfold pcEdge; grind
 
 variable {C : Chain} {Q : Polygon}
 
@@ -53,28 +53,26 @@ theorem pc0_pts {x y : WPos} (hxn : x.edge < 2 * C.m + 7) (hyn : y.edge < 2 * C.
         lerp ((chainModel C).wa (pcEdge (2 * C.m + 7) x.edge d))
           ((chainModel C).wb (pcEdge (2 * C.m + 7) x.edge d))
           (pcB (pcD (2 * C.m + 7) x.edge y.edge) ((chainModel C).param Q y) d) := by
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
   set n := 2 * C.m + 7
   set D := pcD n x.edge y.edge
   constructor
   · unfold pcU pcA
     by_cases h0 : d = 0
     · subst h0
-      simp only [↓reduceIte]
-      rw [show pcEdge n x.edge 0 = x.edge by unfold pcEdge; rw [Nat.add_zero, Nat.mod_eq_of_lt hxn]]
+      simp
+      rw [show pcEdge n x.edge 0 = x.edge by unfold pcEdge; simp [Nat.mod_eq_of_lt hxn]]
       rfl
     · simp only [h0, ↓reduceIte]; rfl
   · unfold pcV pcB
     by_cases hD : d = D
     · subst hD
-      simp only [↓reduceIte]
+      simp
       rw [pcEdge_D hxn hyn]; rfl
-    · simp only [hD, ↓reduceIte]
-      rw [lerp_one']
-      show lerp ((chainModel C).wa _) ((chainModel C).wb _) 0 = _
+    · simp_all
+      show lerp (C.chainModel.wa _) (C.chainModel.wb _) 0 = _
       rw [lerp_zero']
       unfold Model.wa Model.wb
-      rw [hnW, pcEdge_succ]
+      rw [(chainModel_n C), pcEdge_succ]
 
 theorem pc0_ab {x y : WPos} {N : ℕ} (hx : ProperPos (chainModel C) Q N x)
     (hy : ProperPos (chainModel C) Q N y) (hxn : x.edge < 2 * C.m + 7)
@@ -85,21 +83,19 @@ theorem pc0_ab {x y : WPos} {N : ℕ} (hx : ProperPos (chainModel C) Q N x)
         ((chainModel C).param Q y) d ∧
       pcB (pcD (2 * C.m + 7) x.edge y.edge) ((chainModel C).param Q y) d ≤ 1 := by
   have hx0 := hx.1
-  have hx1 := hx.2.1
-  have hy0 := hy.1
   have hy1 := hy.2.1
   unfold pcA pcB
   by_cases h0 : d = 0 <;> by_cases hD : d = pcD (2 * C.m + 7) x.edge y.edge
   · -- one edge
-    rw [ite_eq_left h0, ite_eq_left hD]
+    rw_facts [ite_eq_left, ite_eq_left]
     have hxy : x.edge = y.edge := by
-      have := pcEdge_D (n := 2 * C.m + 7) hxn hyn
+      have := pcEdge_D hxn hyn
       rw [← hD, h0] at this
-      unfold pcEdge at this; rw [Nat.add_zero, Nat.mod_eq_of_lt hxn] at this; exact this
-    exact ⟨hx0, (piece0_nowrap hx hy hxy hxn hwt).le, hy1.le⟩
-  · rw [ite_eq_left h0, ite_eq_right hD]; exact ⟨hx0, hx1.le, le_rfl⟩
-  · rw [ite_eq_right h0, ite_eq_left hD]; exact ⟨le_rfl, hy0, hy1.le⟩
-  · rw [ite_eq_right h0, ite_eq_right hD]; exact ⟨le_rfl, zero_le_one, le_rfl⟩
+      unfold pcEdge at this; rwa [Nat.add_zero, Nat.mod_eq_of_lt hxn] at this
+    exact ⟨hx0, (at_index piece0_nowrap hx).le, hy1.le⟩
+  · rw_facts [ite_eq_left, ite_eq_right]; exact ⟨hx0, hx.2.1.le, le_rfl⟩
+  · grind [hy.1]
+  · simp_all
 
 
 /-- The segments `0 … d' - 1` of a kind-0 piece. -/
@@ -115,7 +111,7 @@ theorem segSet_succ (x y : WPos) (d : ℕ) : segSet C Q x y (d + 1) = segSet C Q
       ((chainModel C).pos Q (pcV (2 * C.m + 7) x y (pcD (2 * C.m + 7) x.edge y.edge) d)) := by
   unfold segSet
   rw [List.range_succ]
-  ext p; simp [or_comm]
+  ext p; simp
 
 /-- **The segments of a kind-0 piece cover it.** -/
 theorem segSet_full {N : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q N x)
@@ -124,22 +120,13 @@ theorem segSet_full {N : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q N x)
     (hwt : (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1) :
     segSet C Q x y (pcD (2 * C.m + 7) x.edge y.edge + 1) =
       (chainModel C).arcSet ((chainModel C).key Q x) ((chainModel C).key Q y) := by
-  rw [piece0_union hx hy hxn hyn hwt]
+  frame_simp [piece0_union]
   unfold segSet pcSet
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hnW := chainModel_n C
   ext p
   simp only [mem_iUnion, List.mem_range, exists_prop]
   constructor
-  · rintro ⟨d, hd, hp⟩
-    refine ⟨d, hd, ?_⟩
-    obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega)
-    obtain ⟨a0, ab, b1⟩ := pc0_ab hx hy hxn hyn hwt d
-    rw [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV]; exact hp
-  · rintro ⟨d, hd, hp⟩
-    refine ⟨d, hd, ?_⟩
-    obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega)
-    obtain ⟨a0, ab, b1⟩ := pc0_ab hx hy hxn hyn hwt d
-    rw [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV] at hp; exact hp
+  all_goals (rintro ⟨d, hd, hp⟩; refine ⟨d, hd, ?_⟩; obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega) <;> grind [subSeg_eq_seg, pc0_ab])
 
 end ShootCut
 

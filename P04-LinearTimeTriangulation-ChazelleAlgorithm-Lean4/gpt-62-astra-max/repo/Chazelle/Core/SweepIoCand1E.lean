@@ -45,7 +45,7 @@ theorem hreg : HostRegular P.n H := by
 include hA hI in
 theorem ctxW : ChainCtx P W c (sw 2) J.whole := by
   obtain ⟨-, -, -, -, hJ, hJWF, -⟩ := hA.hst
-  obtain ⟨hC, hw⟩ := chainDesc_keep hJWF.2.2.1 hJ.2.2 (fun a ha => hI.hm a ha) hI.hA
+  obtain ⟨hC, hw⟩ := chainDesc_keep hJWF.2.2.1 hJ.2.2 (hI.hm) hI.hA
   rw [← fixr hI (show IFix (sw 2) by unfold IFix sw; omega)] at hC hw
   exact ⟨hA.hG, hA.hWh, hw, ⟨H, hC, hA.hreg⟩, hA.hP, hA.hWm⟩
 
@@ -159,12 +159,12 @@ theorem q1_facts {z : Point} (hq : QState P J 1 z c) :
         (((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).1 + dirOf (c.nreg qD),
           ((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).2) := by
       simp [Chazelle.Visibility.rayPt]
-    rw [e]; exact h7
-  have habs : |((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).2| < J.right.radius :=
+    simp_all
+  have habs :=
     query_abs h1 h4 h5 h6 hσ hsec
   have hpc := posClass_of h1 h4 h5 habs (Or.inl h6)
   rw [hz] at habs h6 hht
-  refine ⟨hz, h1, ⟨h4, h5, by rw [← hQn]; exact h3⟩, habs, h6, hpc,
+  refine ⟨hz, h1, ⟨h4, h5, by grind⟩, habs, h6, hpc,
     ⟨c.nreg qH - 1, by show c.nreg qH = _; omega, by omega, by rw [hz, hht], hsec, by rw [hz]; exact h6⟩,
     hσ, h2, by omega, hht.symm⟩
 

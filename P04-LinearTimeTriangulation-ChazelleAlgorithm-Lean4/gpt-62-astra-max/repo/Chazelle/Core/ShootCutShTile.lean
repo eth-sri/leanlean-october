@@ -65,7 +65,7 @@ theorem kpath_wset {M : Model} {Q : Polygon} (hn : 0 < M.W.n) :
     rw [e, hpc]
     by_cases hne' : ps = []
     · subst hne'
-      have : V₁ = V' := hrest
+      have := hrest
       subst this
       simp
     · rw [← kpath_wset hn hrest hne' (by linarith) (fun pc' hpc' => hk pc'
@@ -96,7 +96,7 @@ theorem arcSet_pieces {s e : WPos} {ps : List Pc} (hA : ArcOK C Q s e ps)
 /-! ## Candidates -/
 
 theorem sigma_sq {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) : σ * σ = 1 := by
-  rcases hσ with rfl | rfl <;> norm_num
+  grind
 
 /-- **A candidate answer** on `S`: flag `1` and the first hit at abscissa `x`, or no hit. -/
 def Cand (S : Set Point) (z : Point) (σ : ℝ) (f : ℕ) (x : ℝ) : Prop :=
@@ -110,7 +110,7 @@ theorem cand_iff {S : Set Point} {z : Point} {σ : ℝ} {f : ℕ} {x : ℝ} :
     Cand S z σ f x ↔ FirstHitOpt S z σ (candOpt z σ f x) := by
   unfold Cand candOpt
   by_cases hf : f = 1
-  · rw [ite_eq_left hf]; exact ⟨fun h => h.1 hf, fun h => ⟨fun _ => h, fun h' => absurd hf h'⟩⟩
+  · rw [ite_eq_left hf]; exact ⟨fun h => h.1 hf, fun h => ⟨fun _ => h, absurd hf⟩⟩
   · rw [ite_eq_right hf]; exact ⟨fun h => h.2 hf, fun h => ⟨fun h' => absurd h' hf, fun _ => h⟩⟩
 
 /-- **The nearer of two candidates** is a candidate on the union. -/
@@ -118,20 +118,10 @@ theorem cand_union {S₁ S₂ : Set Point} {z : Point} {σ : ℝ} (_hσ : σ = 1
     {x₁ x₂ : ℝ} (h₁ : Cand S₁ z σ f₁ x₁) (h₂ : Cand S₂ z σ f₂ x₂) :
     Cand (S₁ ∪ S₂) z σ (if f₂ = 1 ∧ (f₁ ≠ 1 ∨ σ * x₂ < σ * x₁) then 1 else f₁)
       (if f₂ = 1 ∧ (f₁ ≠ 1 ∨ σ * x₂ < σ * x₁) then x₂ else x₁) := by
-  have hu := firstHitOpt_union (cand_iff.1 h₁) (cand_iff.1 h₂)
   rw [cand_iff]
-  convert hu using 1
+  convert (firstHitOpt_union (cand_iff.1 h₁) (cand_iff.1 h₂)) using 1
   unfold candOpt omin
-  by_cases hf₂ : f₂ = 1 <;> by_cases hf₁ : f₁ = 1
-  · by_cases hlt : σ * x₂ < σ * x₁
-    · simp only [hf₂, hf₁, hlt, ne_eq, not_true_eq_false, or_true, and_self, ite_true]
-      congr 1; rw [min_eq_right (by nlinarith)]
-    · simp only [hf₂, hf₁, hlt, ne_eq, not_true_eq_false, or_false, and_false, ite_false,
-        ite_true]
-      congr 1; rw [min_eq_left (by push Not at hlt; nlinarith)]
-  · simp [hf₂, hf₁]
-  · simp [hf₂, hf₁]
-  · simp [hf₂, hf₁]
+  grind
 
 end ShootCut
 

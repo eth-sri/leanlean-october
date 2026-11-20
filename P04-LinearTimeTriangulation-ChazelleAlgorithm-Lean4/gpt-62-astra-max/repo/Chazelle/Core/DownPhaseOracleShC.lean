@@ -1,4 +1,7 @@
 module
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseOracleShB
 
@@ -31,18 +34,14 @@ open Chazelle.Visibility (rayPt)
 /-- **A register frame inside the adapter's bands is a frame of the interior oracles.** -/
 theorem frameIO_of_frameB {B : ℕ → Bool} (hB : ∀ r, B r = true → bandOf r ∈ ioBands ∧ r ≠ ALLOC)
     {c c' : Config} (h : FrameB B c c') (k : ℕ) : Frame ioBands c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := h.1 _ (by
+  have hA := h.1 _ (by
     cases hb : B ALLOC
     · rfl
     · exact absurd rfl (hB _ hb).2)
   refine ⟨fun r hr _ => h.1 r ?_, fun r hr => h.2.1 r ?_, fun a _ => by rw [h.2.2.1],
-    fun a _ => by rw [h.2.2.2.1], h.2.2.2.2, by rw [hA], by rw [hA]; omega⟩
-  · cases hb : B r
-    · rfl
-    · exact absurd (hB r hb).1 hr
-  · cases hb : B r
-    · rfl
-    · exact absurd (hB r hb).1 hr
+    fun a _ => by rw [h.2.2.2.1], h.2.2.2.2, by simp_all, by simp_all⟩
+  · grind
+  all_goals grind
 
 /-- Registers of band `17` or of the kernel are in the adapter's bands. -/
 theorem io_of_band {r : ℕ} (h : (170000 ≤ r ∧ r < 180000) ∨ (10000 ≤ r ∧ r < 10500) ∨
@@ -82,10 +81,10 @@ theorem shSet_exec (c : Config) (hw : WordsBounded W c) :
         rcases hp with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
         rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp)
     (by simp [shSetL])
-  refine ⟨c', e, h1 (140000, 170078) (by simp [shSetL]), h1 (140005, 170020) (by simp [shSetL]),
-    h1 (140006, 170021) (by simp [shSetL]), h1 (140007, 170022) (by simp [shSetL]),
-    h1 (140008, 170008) (by simp [shSetL]), h1 (140009, 170009) (by simp [shSetL]),
-    h1 (140013, 170013) (by simp [shSetL]), fun r r1 r2 r3 => h2 r ?_, h3, h4, h5, h6⟩
+  refine ⟨c', e, at_index h1 (140000, 170078), at_index h1 (140005, 170020),
+    at_index h1 (140006, 170021), at_index h1 (140007, 170022),
+    at_index h1 (140008, 170008), at_index h1 (140009, 170009),
+    at_index h1 (140013, 170013), fun r r1 r2 r3 => h2 r ?_, h3, h4, h5, h6⟩
   simp only [shSetL, List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]
   omega
 
@@ -93,13 +92,10 @@ theorem shSet_exec (c : Config) (hw : WordsBounded W c) :
 theorem SEnv.ctx {c : Config} (hS : SEnv P W O s c) :
     (gradeCtx O).holds P c.nmem s.h (c.nreg ALLOC) ∧
       s.γ ≤ (gradeCtx O).cap P c.nmem s.h := by
-  have hloc : (gradeCtx O).holds P c.nmem s.h s.A₀ :=
-    (gradeCtx O).local_ P s.m₀ c.nmem s.h s.A₀ (fun a ha => (hS.mem a ha).symm) hS.grade
-  refine ⟨(gradeCtx O).mono P _ _ _ _ (by have := hS.alloc; omega) hloc, ?_⟩
+  refine ⟨(gradeCtx O).mono P _ _ _ _ (by have := hS.alloc; omega) ((gradeCtx O).local_ P s.m₀ c.nmem s.h s.A₀ (fun a ha => (hS.mem a ha).symm) hS.grade), ?_⟩
   have hh := (ShootCut.grade_low hS.grade).1
   show s.γ ≤ 2 ^ (c.nmem s.h - 1)
-  rw [hS.mem _ (by omega)]
-  exact hS.cap
+  grind [hS.mem, hS.cap]
 
 /-- **One shot at a chain arc.** -/
 theorem shotI_exec {sh : Stmt} {F : ℕ → ℕ}
@@ -128,29 +124,27 @@ theorem shotI_exec {sh : Stmt} {F : ℕ → ℕ}
   obtain ⟨c₁, e₁, i0, i5, i6, i7, i8, i9, i13, r₁, rr₁, m₁, rm₁, o₁⟩ := shSet_exec (P := P) c hw
   have w₁ := e₁.wb_right
   have k₁ : ∀ r, 170000 ≤ r → c₁.nreg r = c.nreg r := fun r hr =>
-    r₁ r (by omega) (by omega) (by omega)
+    at_index r₁ r
   have F₁ : Frame ioBands c c₁ 7 := by
     refine frameIO_of_frameB (B := fun r => decide (140000 ≤ r ∧ r < 140014))
-      (fun r hr => io_of_band (Or.inr (Or.inr (by simp at hr; omega)))) ⟨fun r hr => ?_,
+      (fun r hr => io_of_band (Or.inr (guarded Or.inr))) ⟨fun r hr => ?_,
         fun r _ => by rw [rr₁], m₁, rm₁, o₁⟩ 7
     simp only [decide_eq_false_iff_not] at hr
-    exact r₁ r (by omega) (by omega) (by omega)
-  have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => k₁ r h1) (fun a _ => by rw [m₁])
+    apply r₁ <;> omega
+  have S₁ := hS.keep (fun r h1 h2 => k₁ r h1) (fun a _ => by rw [m₁])
     (by rw [r₁ _ (by decide) (by decide) (by decide)])
   have D₁ : DescOK P c₁.nmem (c₁.nreg 140000) C (c₁.nreg ALLOC) := by
-    rw [i0, m₁, r₁ _ (by decide) (by decide) (by decide)]; exact hC.desc
+    rw [i0, m₁, at_index r₁ _]; exact hC.desc
   obtain ⟨hMD, hMWF, hReg⟩ := D₁
   obtain ⟨hctx, hcap⟩ := S₁.ctx
   obtain ⟨sP, eP, sE, eE, sI', eI, hwt, hset⟩ := harc
-  have horg : OriginIn c₁ (bandReg bShoot 5) (.sym s.o) := by
-    show SymPtIn c₁ 140005 s.o
-    exact NFLoc.symPtIn_copy hS.org i5 i6 i7
+  have horg : OriginIn c₁ (bandReg bShoot 5) (.sym s.o) := NFLoc.symPtIn_copy hS.org i5 i6 i7
   have hinner : (chainModel C).InnerPt (s.o.eval (Qof P)) :=
-    innerPt_chain C (by rw [hCd, ch_P]; exact ho1) (by rw [hCd, ch_P]; exact ho2)
-  have b1 : c₁.nreg 140001 = sa.edge := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha1
-  have b2 : c₁.nreg 140002 = sa.hgt := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha2
-  have b3 : c₁.nreg 140003 = ea.edge := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha3
-  have b4 : c₁.nreg 140004 = ea.hgt := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha4
+    at_index innerPt_chain C
+  have b1 : c₁.nreg 140001 = sa.edge := by rwa [at_index r₁ _]
+  have b2 : c₁.nreg 140002 = sa.hgt := by rw [at_index r₁ _]; exact ha2
+  have b3 : c₁.nreg 140003 = ea.edge := by rw [at_index r₁ _]; exact ha3
+  have b4 : c₁.nreg 140004 = ea.hgt := by rw [at_index r₁ _]; exact ha4
   have e1 : rd c₁ bShoot 1 = sa.edge := b1
   have e2 : rd c₁ bShoot 2 = sa.hgt := b2
   have e3 : rd c₁ bShoot 3 = ea.edge := b3
@@ -163,46 +157,42 @@ theorem shotI_exec {sh : Stmt} {F : ℕ → ℕ}
   -- the chain shooter
   obtain ⟨c₂, k₂, e₂, hk₂, hpost, F₂⟩ := hsh P W c₁ w₁ ⟨hG, hW,
     by show (gradeCtx O).holds P c₁.nmem (c₁.nreg 140013) (c₁.nreg ALLOC); rw [h13]; exact hctx,
-    by show c₁.nreg 140009 ≤ (gradeCtx O).cap P c₁.nmem (c₁.nreg 140013); rw [h9, h13]; exact hcap,
+    by show c₁.nreg 140009 ≤ (gradeCtx O).cap P c₁.nmem (c₁.nreg 140013); grind,
     hMWF, hReg, chainModel C, hMD, okModel_sub hG,
-    by show ProperPos _ _ _ ⟨c₁.nreg 140001, c₁.nreg 140002⟩; rw [hsa, ← hQ]; exact sP,
-    by show ProperPos _ _ _ ⟨c₁.nreg 140003, c₁.nreg 140004⟩; rw [hea, ← hQ]; exact eP,
-    by show c₁.nreg 140001 < _; rw [b1]; exact sE,
-    by show c₁.nreg 140003 < _; rw [b3]; exact eE,
-    by show c₁.nreg 140002 = 0 ∨ (chainModel C).InnerPt ((chainModel C).pos (Qof P)
-          ⟨c₁.nreg 140001, c₁.nreg 140002⟩)
-       rw [hsa, b2]; exact sI',
-    by show c₁.nreg 140004 = 0 ∨ (chainModel C).InnerPt ((chainModel C).pos (Qof P)
-          ⟨c₁.nreg 140003, c₁.nreg 140004⟩)
-       rw [hea, b4]; exact eI,
-    by show _ ≤ c₁.nreg 140009; rw [e1, e2, e3, e4, h9]; exact hwt,
+    by grind,
+    by grind,
+    by grind,
+    by grind,
+    by grind,
+    by grind,
+    by show _ ≤ c₁.nreg 140009; grind,
     .sym s.o, hol, horg, Or.inr ⟨hinner, fun x hx => by cases hx⟩,
-    by show s.o.eval (Qof P) ∉ _; rw [e1, e2, e3, e4, hset]; exact hoA⟩
+    by show s.o.eval (Qof P) ∉ _; grind⟩
     (by show c₁.nreg ALLOC + F (c₁.nreg 140009) ≤ W
-        rw [h9, r₁ _ (by decide) (by decide) (by decide)]; omega)
+        block_post [h9, r₁])
   have hp := hpost (chainModel C) (.sym s.o) hMD horg
   have e8 : rd c₁ bShoot 8 = s.dir := h8
   rw [e1, e2, e3, e4, hset, e8] at hp
   obtain ⟨hhit, hno⟩ := hp
   have w₂ := e₂.wb_right
   -- the registers survive the shooter
-  have g₂ : ∀ r, 170000 ≤ r → r < 180000 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
+  have g₂ : AgreeOnBand 170000 180000 c₂.nreg c₁.nreg := fun r h1 h2 =>
     F₂.1 r (by unfold bandOf; rw [show r / 10000 = 17 by omega]; decide)
       (by unfold ALLOC; omega)
   have hA₂ := F₂.2.2.2.2.2.1
   have C₂ : CEnv P W O s u L h1 h2 c₂ := (hC.keep (fun r hr => by
       rw [k₁ r (by unfold CRegs at hr; omega)]) (fun a _ => by rw [m₁])
       (by rw [r₁ _ (by decide) (by decide) (by decide)])).keep
-    (fun r hr => g₂ r (by unfold CRegs at hr; omega) (by unfold CRegs at hr; omega))
+    (fun r hr => at_index g₂ r)
     F₂.2.2.1 hA₂
   have S₂ := C₂.env
   have hR₂ : HRegs P W c₂ (cStart (Qof P) u L) L (C.sideS C.sideBeta)
       ((cStart (Qof P) u L + C.topIdx) % (Qof P).n) := ⟨S₂.r10, S₂.r11, S₂.r12, C₂.r37,
     C₂.r38, C₂.r76, C₂.r79, C₂.r89, by rw [← qn']; exact cStart_lt (by rw [qn']; exact C₂.hu),
-    by have := C.sideS_lt C.sideBeta; rw [hCd, ch_m] at this; exact this, h1,
-    by rw [← qn']; exact h2, by unfold hostWords at hW; exact hW⟩
+    by have := C.sideS_lt C.sideBeta; grind [ch_m], h1,
+    by grind, by unfold hostWords at hW; exact hW⟩
   have hB₂ : BestI P c₂ Sp (s.o.eval (Qof P)) (dirOf s.dir) := (hB.keep (fun r h1 h2 =>
-    k₁ r (by omega))).keep (fun r h1 h2 => g₂ r (by omega) (by omega))
+    at_index k₁ r)).keep (fun r h1 h2 => at_index g₂ r)
   have d8 : c₂.nreg 170008 = s.dir := S₂.r8
   -- the update
   have hcm : (chainModel C).W.n = 2 * L + 7 := cm_n'
@@ -214,15 +204,13 @@ theorem shotI_exec {sh : Stmt} {F : ℕ → ℕ}
       obtain ⟨t, hft, hpp, hlt, hpos⟩ := hhit hf
       exact ⟨t, hft, hpp, hpos⟩) hno hB₂
   have f₃ : ∀ r, Bupd r = false → c₃.nreg r = c₂.nreg r := F₃.1
-  have ex : Exec P W (shotI sh) c c₃ (7 + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
+  have ex : Exec P W (shotI sh) c c₃ (7 + (k₂ + k₃)) := e₁ ;; e₂ ;; e₃
   have hk₂' : k₂ ≤ F s.γ := by have := hk₂; simp only [rd, bandReg] at this; rw [← h9]; exact this
-  have F₃' : Frame ioBands c₂ c₃ k₃ := frameIO_of_frameB (B := Bupd) (fun r hr => io_of_band (by
-    simp only [Bupd, Bk, Bool.or_eq_true, decide_eq_true_eq] at hr; omega)) F₃ k₃
+  have F₃' : Frame ioBands c₂ c₃ k₃ := frameIO_of_frameB (B := Bupd) (fun r hr => guarded io_of_band) F₃ k₃
   have F₂' : Frame ioBands c₁ c₂ k₂ := F₂.mono oracleBands_sub_io le_rfl
-  refine ⟨c₃, _, ex, by omega, hB₃, C₂.keep (fun r hr => f₃ r (by
-      unfold CRegs at hr; simp only [Bupd, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
-      (fun a _ => by rw [F₃.2.2.1]) (by rw [f₃ _ (by decide)]),
-    ((F₁.trans F₂').trans F₃').mono (by simp) (by omega), fun r h1 h2 hr => ?_⟩
+  refine ⟨c₃, _, ex, by omega, hB₃, C₂.keep (fun r hr => at_index f₃ r)
+      (fun a _ => by rw [F₃.2.2.1]) (by block_post),
+    guarded ((F₁.trans F₂').trans F₃').mono, fun r h1 h2 hr => ?_⟩
   rw [f₃ r hr, g₂ r h1 h2, k₁ r h1]
 
 end exec

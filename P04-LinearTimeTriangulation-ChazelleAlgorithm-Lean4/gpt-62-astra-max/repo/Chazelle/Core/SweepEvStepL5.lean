@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.SweepEvStepL4
 
@@ -107,9 +108,7 @@ theorem skip_at {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
   have ho := hk3 i h1 h2
   rw [S.stopOff_rs hi] at ho
   obtain ⟨e1, e2⟩ := S.posEq a0.1 a0.2.1 a0.2.2.1 ho
-  refine ⟨f0, f1, ?_, e1, e2⟩
-  rw [← e2, ← e1]
-  exact a0
+  simp_all
 
 /-- **A stop chord at the next key is a skipped stop.** -/
 theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)))
@@ -125,8 +124,7 @@ theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.ri
     have := S.L.keyL
     show (Lst J : ℝ) ≤ keyOff P J c'
     linarith
-  have hmem := hok.2.1 e he hs _ _ hA hL
-  obtain ⟨r, hr, hreq⟩ := List.mem_map.1 hmem
+  obtain ⟨r, hr, hreq⟩ := List.mem_map.1 (hok.2.1 e he hs _ _ hA hL)
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
   simp only [Prod.mk.injEq] at hreq
   obtain ⟨h1, h2, h3⟩ := hreq
@@ -135,15 +133,15 @@ theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.ri
     unfold soff
     rw [h2, h1]
     rfl
-  have hic : i < c.nreg sC := hlen ▸ hi
+  have hic := hlen ▸ hi
   obtain ⟨-, -, hptr, -⟩ := stp_ptr_c' S.E S.L S.hI S.hd
   obtain ⟨-, -, esC', -, -⟩ := stp_arrays_c' S.E S.L S.hI S.hd
   have hso := (stp_stops_c' S.E S.L S.hI S.hd).2 i hic
   refine ⟨i, hi, ?_, ?_, h3⟩
   · by_contra h
-    have := (S.L.ptrL i hic).1 (by omega)
+    have := guarded (S.L.ptrL i hic).1
     linarith
-  · exact (hptr i (by omega)).2 (by rw [hso.2.2, ho])
+  · simp_all
 
 /-- **A non-stop chord at the next key** is the chord of an accepted triple at its offset, and
 the best candidate is there. -/
@@ -156,24 +154,21 @@ theorem nonstop_acc {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J
       co.nreg bF = 1 ∧ offK P J (co.nreg bE) (co.nreg bH) = keyOff P J c' := by
   obtain ⟨hlt, -, -⟩ := stp_next_key S.E S.L S.hI S.hd
   obtain ⟨-, -, -, ewX, ewE, ewH⟩ := iter_stops S.L S.hI
-  have hsome := stp_key_some S.hI S.hd
   obtain ⟨hW, -, hR, -, hK⟩ := S.hI
   obtain ⟨hkp, -, -, -⟩ := stp_pre_frame hW hR
-  have ekE : cs.nreg kE = c.nreg kE := hkp 2400 (by omega)
-  have ekH : cs.nreg kH = c.nreg kH := hkp 2401 (by omega)
-  obtain ⟨-, -, hKb, -, hKw, -⟩ := hK.2.2.2 hsome
+  have ekE : cs.nreg kE = c.nreg kE := at_index hkp 2400
+  have ekH : cs.nreg kH = c.nreg kH := at_index hkp 2401
+  obtain ⟨-, -, hKb, -, hKw, -⟩ := hK.2.2.2 (stp_key_some S.hI S.hd)
   obtain ⟨k, hk, a, σ, ha, haR, hav, hat, hfree, rfl, hlt', j, hj, hjk, hjO, hjD, h, hh, hmA⟩ :=
     stp_accepted_of_found S.E S.L hW hR S.hBA he hA hlt S.gapK hs (fun h0 => by
-      have := hKw (by rw [ewX]; exact h0)
-      rw [ewE, ewH] at this
-      exact this)
+      have := guarded hKw
+      rwa [ewE, ewH] at this)
   have hoT : offT P J (j, c'.nreg kE, h) = keyOff P J c' := by
     show oW J (_ + (chainModel J.whole).param (Qof P) ⟨_, h⟩) = _
     rw [hh]
     rfl
   obtain ⟨hbF, hle⟩ := S.hBA.bMin _ hmA (by rw [hoT, ekE, ekH]; exact hlt)
-  have hge := hKb hbF
-  exact ⟨_, hmA, hoT, by rw [hjO, hjD], hbF, le_antisymm (hle.trans hoT.le) hge⟩
+  exact ⟨_, hmA, hoT, by simp_all, hbF, le_antisymm (hle.trans hoT.le) (hKb hbF)⟩
 
 /-- **The chord of an accepted triple at the offset of the next key** is attached there, is not
 a stop chord and is anchored. -/
@@ -190,16 +185,15 @@ theorem triple_at {t : ℕ × ℕ × ℕ} (ht : t ∈ A) (hto : offT P J t = key
   obtain ⟨-, hj, hfree, hmemF, hAt, -, -, hpw, hlt'⟩ := S.hBA.acc t ht
   obtain ⟨haR, hav, hat⟩ := S.hval t ht
   obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Qof P) hj
-  have hS₂a : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := S.E.hNF₂.1.2.1
+  have hS₂a := S.E.hNF₂.1.2.1
   obtain ⟨e1, e2⟩ := S.posEq hpw.1 hpw.2.1.1 hpw.2.1.2.1 hto
-  refine ⟨hmemF, by rw [← e2, ← e1]; exact hAt,
+  refine ⟨hmemF, by simp_all,
     origin_not_stop hP hS₂a (hS₂a hc) ha haR hav hat hlt', fun hbr => ?_⟩
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have haD : endOrigin J (Qof P) N₂ t.1 ∉ J.whole.dom := fun hd =>
+  have haD := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.right_set_subset haR)
-  obtain ⟨q, s, hq, hqpt⟩ := endpoint_attach hM (F₂plus_subset J hS₂a hmemF) (origin_mem J) haD
-  have := off_right_pt J hP (S₂ := ∅) (empty_subset _) finite_empty hq.1 hq.2.1 hq.2.2.1
-    (by rw [hqpt]; exact haR) (by rw [hqpt]; exact hav)
+  obtain ⟨q, s, hq, hqpt⟩ := endpoint_attach (FactsChain.walkAx J.whole hP) (F₂plus_subset J hS₂a hmemF) (origin_mem J) haD
+  have := off_right_pt J hP (empty_subset _) finite_empty hq.1 hq.2.1 hq.2.2.1
+    (by simp_all) (by simp_all)
   rw [← oW_eq, ← Lst_eq] at this
   have := hbr q s hq
   linarith

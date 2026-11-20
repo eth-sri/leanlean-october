@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.DownPhaseDrvPDrop
 public import Chazelle.Core.DownPhaseMathLevel
@@ -27,7 +28,7 @@ open BuildRegions (famOf)
 
 theorem chain_eq {C C' : Chain} (hP : C.P = C'.P) (hs : C.s = C'.s) (hm : C.m = C'.m) :
     C = C' := by
-  cases C; cases C'; simp only at hP hs hm; subst hP hs hm; rfl
+  cases C; simp_all
 
 /-- **A leaf is a box twin** of the chain of `Q` over the same vertices. -/
 theorem twin_leaf {P : Polygon} {H : Host} {CQ CH : Chain} {a : ℕ} (hQ : CQ.P = Qof P)
@@ -35,9 +36,9 @@ theorem twin_leaf {P : Polygon} {H : Host} {CQ CH : Chain} {a : ℕ} (hQ : CQ.P 
     (hsm : CH.s + CH.m < (H.pts P.n).length) (han : a + CH.m < P.n)
     (hpt : ∀ k, k ≤ CH.m → pt H P.n (CH.s + k) = .vtx (a + k)) : BoxT.Twin CQ CH := by
   refine ⟨hm, fun k hk => ?_⟩
-  rw [hchain_vertex_lt hCH (by omega), hpt k (by omega)]
+  rw [at_index hchain_vertex_lt hCH, at_index hpt k]
   show CQ.P.vtx ((CQ.s + k) % CQ.P.n) = _
-  rw [hQ, hsQ, qof_n, Nat.mod_eq_of_lt (by omega)]
+  rw [hQ, hsQ, qof_n, guarded Nat.mod_eq_of_lt]
   rfl
 
 /-- **The transported list of a leaf.** -/
@@ -49,9 +50,8 @@ theorem leaf_list {P : Polygon} {CQ CH : Chain} {N₀ : NF} {γ' : ℕ} (hG : Go
         (famOf (chainModel CH) (Qof P) (BoxT.dropWalls (DrvT.triplesOf N₀))) 4 ∧
       (chainModel CH).Semigranular
         (famOf (chainModel CH) (Qof P) (BoxT.dropWalls (DrvT.triplesOf N₀))) (2 * γ') := by
-  have hP : CQ.P.Simple := by rw [hQ]; exact (shearInvariance (epsOf P) P).1 hG.1
   obtain ⟨hNF, hdeg, hgran, -⟩ := hN₀
-  exact BoxT.boxTransport_nf hT hP hP' hNF hdeg hgran.semigranular
+  exact BoxT.boxTransport_nf hT (by rw [hQ]; exact (shearInvariance (epsOf P) P).1 hG.1) hP' hNF hdeg hgran.semigranular
 
 /-- **The empty list of a connector.** -/
 theorem conn_list {P : Polygon} {CH : Chain} {γ : ℕ} (hP' : CH.P.Simple) (h2m : 2 * CH.m ≤ γ) :
@@ -59,19 +59,16 @@ theorem conn_list {P : Polygon} {CH : Chain} {γ : ℕ} (hP' : CH.P.Simple) (h2m
       (chainModel CH).DegLe (famOf (chainModel CH) (Qof P) []) 4 ∧
       (chainModel CH).Semigranular (famOf (chainModel CH) (Qof P) []) γ := by
   have he : famOf (chainModel CH) (Qof P) [] = ∅ := by
-    ext c; simp [famOf]
-  have hM := walkAx_chainModel hP'
+    simp [famOf]
   refine ⟨⟨⟨?_, ?_, ?_⟩, by simp, by simp, by simp⟩, ?_, ?_⟩
-  · have : {c | ∃ x ∈ ([] : List (ℕ × ℕ × ℕ)), c = (recOf x).toSet (chainModel CH) (Qof P)} =
-        (∅ : Set (Set Point)) := by ext c; simp
-    rw [this]; exact finite_empty
-  · intro c hc; simp at hc
-  · intro c hc; simp at hc
+  · simp
+  · simp
+  · simp
   · rw [he]; intro U _
     unfold Model.deg
     simp
   · rw [he]; intro U hU
-    rw [Gran.weight_empty hM hU, DownMath.chainModel_size]
+    rw [Gran.weight_empty (walkAx_chainModel hP') hU, DownMath.chainModel_size]
     exact h2m
 
 theorem isDecomp_mono {N : NF} {d d' : ℕ} (h : IsDecomp N d) (hd : d ≤ d') : IsDecomp N d' := by
@@ -85,7 +82,6 @@ theorem canonical_cap {M : Model} {Q : Polygon} {N : NF} {γ D : ℕ}
     (h : IsCanonicalNF M Q N γ 4) (hD : 4 ≤ D) : IsCanonicalNF M Q N γ D := by
   obtain ⟨h1, h2, h3, h4⟩ := h
   refine ⟨h1, Model.DegLe.mono M h2 hD, h3, isDecomp_mono h4 ?_⟩
-  unfold decDepth
   exact Nat.add_le_add_right (Nat.mul_le_mul_right _ hD) 1
 
 theorem semigranular_mono {M : Model} {F : Set (Set Point)} {γ γ' : ℕ} (h : M.Semigranular F γ)

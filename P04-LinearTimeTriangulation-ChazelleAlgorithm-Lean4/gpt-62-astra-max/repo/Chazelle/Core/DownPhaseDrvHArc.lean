@@ -1,4 +1,7 @@
 module
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseDrvHPart
 
@@ -50,33 +53,25 @@ structure HEnv (W n : ℕ) (N : NF) (r : ℕ) (li : Bool) (T : ℕ) (d : Config)
 theorem HEnv.keep {W n : ℕ} {N : NF} {r : ℕ} {li : Bool} {T : ℕ} {d d' : Config}
     (h : HEnv W n N r li T d) (hf : FrameM Bdyn d d') (hm : ∀ a, a < T → d'.nmem a = d.nmem a) :
     HEnv W n N r li T d' := by
-  have g : ∀ q, Bdyn q = false → d'.nreg q = d.nreg q := hf.1
-  have g25 : d'.nreg 215025 = d.nreg 215025 := g _ (by decide)
-  have g26 : d'.nreg 215026 = d.nreg 215026 := g _ (by decide)
-  have g27 : d'.nreg 215027 = d.nreg 215027 := g _ (by decide)
-  have g28 : d'.nreg 215028 = d.nreg 215028 := g _ (by decide)
-  have g29 : d'.nreg 215029 = d.nreg 215029 := g _ (by decide)
-  refine ⟨h.K.frame hf (by decide), h.F, by rw [g _ (by decide), h.aR],
-    by rw [g _ (by decide), h.kR], by rw [g _ (by decide), h.tR], fun t ht => ?_, fun v hv => ?_,
+  have g := hf.1
+  have g27 : d'.nreg 215027 = d.nreg 215027 := at_index g _
+  have g28 : d'.nreg 215028 = d.nreg 215028 := at_index g _
+  have g29 : d'.nreg 215029 = d.nreg 215029 := at_index g _
+  refine ⟨at_index h.K.frame hf, h.F, by frame_simp [g, h.aR],
+    by frame_simp [g, h.kR], by frame_simp [g, h.tR], fun t ht => ?_, fun v hv => ?_,
     fun j hj => ?_, fun i hi => ?_, h.hT, h.hn, h.hn0⟩
-  · obtain ⟨a1, a2⟩ := h.arcs t ht
-    rw [g27, g28, hm _ a2]; exact ⟨a1, a2⟩
-  · obtain ⟨a1, a2⟩ := h.chs v hv
-    rw [g27, g29, hm _ a2]; exact ⟨a1, a2⟩
+  · grind [h.arcs]
+  · grind [h.chs]
   · obtain ⟨a1, a2, a3, a4, a5⟩ := h.arcR j hj
-    rw [g26, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ a5]
-    exact ⟨a1, a2, a3, a4, a5⟩
+    block_post
   · obtain ⟨a1, a2, a3, a4⟩ := h.chR i hi
-    rw [g25, hm _ (by omega), hm _ (by omega), hm _ a4]
-    exact ⟨a1, a2, a3, a4⟩
+    block_post
 
 theorem add_1_1 (a : ℕ) : a + 1 + 1 = a + 2 := rfl
 theorem add_5 (a b : ℕ) : a + (b + b + (b + b) + b) = a + 5 * b := by ring
 
 theorem mod_succ_of_lt {t A : ℕ} (ht : t < A) : (t + 1) % A = if t + 1 < A then t + 1 else 0 := by
-  split_ifs with h
-  · exact Nat.mod_eq_of_lt h
-  · rw [show t + 1 = A by omega, Nat.mod_self]
+  grind [Nat.mod_self, Nat.mod_eq_of_lt]
 
 section exec
 
@@ -95,7 +90,7 @@ theorem ldS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r : �
       d'.nreg 215051 = (N.arc ((N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0)).e.hgt ∧
       d'.nmem = d.nmem ∧ FrameM Bld d d' := by
   have hmem : ∀ t', t' < (N.region r).arcs.length → (N.region r).arcs.getD t' 0 ∈ (N.region r).arcs :=
-    fun t' h' => by rw [List.getD_eq_getElem _ _ h']; exact List.getElem_mem h'
+    fun t' h' => by simp_all
   have K := hE.K
   have hT := hE.hT
   obtain ⟨b1, b2⟩ := hE.arcs t ht
@@ -118,7 +113,7 @@ theorem ldS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r : �
       exec_block
       all_goals try (config_simp; (try simp only [h41, K.one]); omega)
       refine spec_seq ?_
-      refine spec_ifLtN_true (by config_simp; simp only [h41, K.one, hE.aR]; omega) ?_
+      refine spec_ifLtN_true (by block_post [h41, K.one, hE.aR]) ?_
       refine spec_skip ‹_› ?_
       exec_block
       all_goals try (config_simp; (try simp only [h41, K.one, K.three, b1, c1, add_5, add_1_1]); omega)
@@ -176,25 +171,22 @@ theorem cpEm_exec (a b : ℕ) (hb : b ≠ 215064) (d : Config)
   have B₂ : Buf n T xs d₂ := ⟨hB.1, by rw [g _ (by decide) (by decide), hB.2.1],
     by rw [g _ (by decide) (by decide), hB.2.2.1], by rw [g _ (by decide) (by decide), hB.2.2.2]⟩
   have v64 : d₂.nreg 215064 = e := by
-    rw [hd₂, hd₁]; simp only [Machine.upd_other _ _ _ (show (215064 : ℕ) ≠ 215065 by decide),
-      Machine.upd_same, h1]
+    simp_all
   have v65 : d₂.nreg 215065 = h := by
-    rw [hd₂, hd₁]
-    simp only [Machine.upd_same]
-    rw [Machine.upd_other _ _ _ hb, h2]
+    simp_all
   have eb : Exec P W (block [.copyN 215064 a, .copyN 215065 b]) d d₂ 2 :=
-    .seq e₁ (.seq e₂ (.skip e₂.wb_right))
+    e₁ ;; e₂ ;; .skip e₂.wb_right
   have fb : FrameM (fun q => decide (q = 215064) || decide (q = 215065)) d d₂ :=
-    exec_frameM eb (by simp [wrM, block, wrOKM, SignK.wrOK])
+    at_index exec_frameM eb
   obtain ⟨d₃, k₃, e₃, hk₃, B₃, m₃, f₃⟩ := emitS_exec (P := P) d₂ e₂.wb_right K₂ v64 v65 B₂
     hW1 hW2 hW3
-  refine ⟨d₃, 2 + k₃, .seq eb e₃, by omega, B₃, fun x hx => by rw [m₃ x hx], ?_⟩
+  refine ⟨d₃, 2 + k₃, .seq eb e₃, by omega, B₃, fun x hx => by simp_all, ?_⟩
   exact (fb.mono fun q hq => by
-      simp only [Bool.or_eq_true, decide_eq_true_eq] at hq ⊢; omega).trans
-    (f₃.mono fun q hq => by simp only [Bool.or_eq_true] at hq ⊢; exact Or.inl (Or.inl hq))
+      address_omega).trans
+    (f₃.mono fun q hq => by grind)
 
 theorem wpos_ne {p s : WPos} (h : p ≠ s) : ¬ (p.edge = s.edge ∧ p.hgt = s.hgt) := by
-  rintro ⟨h1, h2⟩; apply h; cases p; cases s; simp_all
+  rintro ⟨h1, h2⟩; apply h; cases p; simp_all
 
 /-- **The junction point.** -/
 theorem junS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ} {xs : List HostItem}
@@ -216,22 +208,22 @@ theorem junS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ} {
     refine ⟨rfl, ?_, rfl⟩
     config_simp; simp only [h52, h53, h48, h49]
   have f₁ : FrameM (fun q => decide (q = 215060) || decide (q = 215061) || decide (q = 215063))
-    d d₁ := exec_frameM e₁ (by decide)
-  have K₁ := hK.frame f₁ (by decide)
+    d d₁ := at_index exec_frameM e₁
+  have K₁ := at_index hK.frame f₁
   have B₁ := hB.frame f₁ (by decide) m₁
   have F₁ : FrameM Bjun d d₁ := f₁.mono fun q hq => by
     simp only [Bjun, Bem, Bool.or_eq_true, decide_eq_true_eq] at hq ⊢; omega
   by_cases hps : p = s
   · have h0 : d₁.nreg 215060 = 0 := by rw [v60, hps]; omega
-    refine ⟨d₁, 7 + (0 + 1), (Exec.seq e₁ (.ifLtN_true (by rw [h0, K₁.one]; omega)
-      (.skip e₁.wb_right))).cast (by omega), by omega, ?_, fun x _ => by rw [m₁], F₁⟩
+    refine ⟨d₁, 7 + (0 + 1), guarded (Exec.seq e₁ (.ifLtN_true (by rw [h0, K₁.one]; omega)
+      (.skip e₁.wb_right))).cast, by omega, ?_, fun x _ => by simp_all, F₁⟩
     simp only [hps, ↓reduceIte, List.append_nil]; exact B₁
   · have hne := wpos_ne hps
     have h1 : 1 ≤ d₁.nreg 215060 := by rw [v60]; omega
     obtain ⟨d₂, k₂, e₂, hk₂, B₂, m₂, f₂⟩ := cpEm_exec (P := P) 215052 215053 (by decide) d₁
       e₁.wb_right K₁ (by rw [f₁.1 _ (by decide), h52]) (by rw [f₁.1 _ (by decide), h53]) B₁ hW1
       hW2 (by omega)
-    refine ⟨d₂, k₁ + (k₂ + 2), .seq e₁ (.ifLtN_false (by rw [K₁.one]; omega) e₂), by omega, ?_,
+    refine ⟨d₂, k₁ + (k₂ + 2), e₁ ;; .ifLtN_false (by rw [K₁.one]; omega) e₂, by omega, ?_,
       fun x hx => by rw [m₂ x hx, m₁], F₁.trans (f₂.mono fun q hq => ?_)⟩
     · simp only [hps, ↓reduceIte]; exact B₂
     · simp only [Bjun, Bool.or_eq_true, decide_eq_true_eq] at hq ⊢
@@ -247,10 +239,7 @@ theorem partner_bounds {n : ℕ} {N : NF} {r : ℕ} (hF : HFacts n N r) {x : WPo
   cases hf : (N.region r).chords.find? (pmatch N x) with
   | none => exact ⟨hx, hxh⟩
   | some i =>
-    have hi := List.mem_of_find?_eq_some hf
-    obtain ⟨-, hl, hr, hh⟩ := hF.hch i hi
-    simp only [resOf]
-    split_ifs <;> simp only [CRec.lpos, CRec.rpos] <;> omega
+    obtain ⟨-, hl, hr, hh⟩ := hF.hch i (List.mem_of_find?_eq_some hf) <;> grind [resOf, CRec.lpos, CRec.rpos, hF.hch]
 
 theorem sub_Bdyn {B : ℕ → Bool} (h : ∀ q, B q = true → q = 215011 ∨ q = 215012 ∨
     (215040 ≤ q ∧ q < 216000)) {c c' : Config} (hf : FrameM B c c') : FrameM Bdyn c c' :=
@@ -270,11 +259,11 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
       Buf n T (pre li n N r (t + 1)) d' ∧ (∀ a, a < T → d'.nmem a = d.nmem a) ∧
       FrameM Bdyn d d' := by
   have hmem : ∀ t', t' < (N.region r).arcs.length → (N.region r).arcs.getD t' 0 ∈ (N.region r).arcs :=
-    fun t' h' => by rw [List.getD_eq_getElem _ _ h']; exact List.getElem_mem h'
+    fun t' h' => by grind
   set jp := (N.region r).arcs.getD t 0 with hjp
   set j := (N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0 with hj
   obtain ⟨-, -, -, hxe, hxh⟩ := hE.F.harc jp (hmem t ht)
-  obtain ⟨-, hse, hsh, hee, heh⟩ := hE.F.harc j (hmem _ (Nat.mod_lt _ (by omega)))
+  obtain ⟨-, hse, hsh, hee, heh⟩ := hE.F.harc j (hmem _ (at_index Nat.mod_lt _))
   have hn := hE.hn
   have hT := hE.hT
   set xs := pre li n N r t with hxs
@@ -283,31 +272,31 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
   have hA5 := hE.F.hA
   have hxl' : xs.length ≤ 16 := by omega
   have hxp' : ptsLen n xs ≤ 4 * n + 12 := by
-    have : (n + 3) * t ≤ (n + 3) * 4 := Nat.mul_le_mul_left _ (by omega)
+    have : (n + 3) * t ≤ (n + 3) * 4 := at_index Nat.mul_le_mul_left _
     omega
   -- loading
   obtain ⟨d₁, k₁, e₁, hk₁, v46, v47, v48, v49, v50, v51, m₁, f₁⟩ := ldS_exec (P := P) d hw hE h41 ht
-  have K₁ := hE.K.frame f₁ (by decide)
+  have K₁ := at_index hE.K.frame f₁
   have B₁ := hB.frame f₁ (by decide) m₁
   have g₁ : ∀ q, Bld q = false → d₁.nreg q = d.nreg q := f₁.1
   -- the partner
   obtain ⟨d₂, k₂, e₂, hk₂, v52, v53, m₂, f₂⟩ := partS_exec (P := P) d₁ e₁.wb_right K₁ hE.F v46 v47
-    hxe hxh (by rw [g₁ _ (by decide), hE.kR])
+    hxe hxh (by frame_simp [g₁, hE.kR])
     (fun v hv => by
       obtain ⟨a1, a2⟩ := hE.chs v hv
-      rw [m₁, g₁ _ (by decide), g₁ _ (by decide)]; exact ⟨a1, by omega⟩)
+      block_post)
     (fun i hi => by
       obtain ⟨a1, a2, a3, a4⟩ := hE.chR i hi
-      rw [m₁, g₁ _ (by decide)]; exact ⟨a1, a2, a3, by omega⟩) (by omega)
-  have K₂ := K₁.frame f₂ (by decide)
+      block_post) (by omega)
+  have K₂ := at_index K₁.frame f₂
   have B₂ := B₁.frame f₂ (by decide) m₂
   have g₂ : ∀ q, Bpart q = false → d₂.nreg q = d₁.nreg q := f₂.1
   obtain ⟨hpe, hph⟩ := partner_bounds hE.F hxe hxh
   -- the junction
   obtain ⟨d₃, k₃, e₃, hk₃, B₃, m₃, f₃⟩ := junS_exec (P := P) d₂ e₂.wb_right K₂ v52 v53
-    (by rw [g₂ _ (by decide), v48]) (by rw [g₂ _ (by decide), v49]) hpe hph hse hsh B₂
+    (by block_post) (by block_post) hpe hph hse hsh B₂
     (by omega) (by omega) (by omega)
-  have K₃ := K₂.frame f₃ (by decide)
+  have K₃ := at_index K₂.frame f₃
   have g₃ : ∀ q, Bjun q = false → d₃.nreg q = d₂.nreg q := f₃.1
   set ys := xs ++ (if partner N r (N.arc jp).e = (N.arc j).s then []
     else [ptI li n (partner N r (N.arc jp).e) false]) with hys
@@ -318,9 +307,9 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
     · rw [ptI, ptsLen_pt]
   -- the start point
   obtain ⟨d₄, k₄, e₄, hk₄, B₄, m₄, f₄⟩ := cpEm_exec (P := P) 215048 215049 (by decide) d₃ (e := (N.arc j).s.edge) (h := (N.arc j).s.hgt)
-    e₃.wb_right K₃ (by rw [g₃ _ (by decide), g₂ _ (by decide), v48])
-    (by rw [g₃ _ (by decide), g₂ _ (by decide), v49]) B₃ (by omega) (by omega) (by omega)
-  have K₄ := K₃.frame f₄ (by decide)
+    e₃.wb_right K₃ (by block_post)
+    (by block_post) B₃ (by omega) (by omega) (by omega)
+  have K₄ := at_index K₃.frame f₄
   have g₄ : ∀ q, (Bem q || decide (q = 215064) || decide (q = 215065)) = false →
     d₄.nreg q = d₃.nreg q := f₄.1
   -- the run
@@ -331,7 +320,7 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
     (by rw [g₄ _ (by decide), g₃ _ (by decide), g₂ _ (by decide), v51]) hse hee B₄
     (by simp only [List.length_append, List.length_singleton]; omega)
     (by rw [ptsLen_append, ptE, ptsLen_pt]; omega) (by omega)
-  have K₅ := K₄.frame f₅ (by decide)
+  have K₅ := at_index K₄.frame f₅
   have g₅ : ∀ q, Brun q = false → d₅.nreg q = d₄.nreg q := f₅.1
   have hrl := runItems_length_le li n (N.arc j).s (N.arc j).e
   have hrp : ptsLen n (runItems li n (N.arc j).s (N.arc j).e) < n :=
@@ -345,21 +334,21 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
     (by simp only [List.length_append, List.length_singleton]; omega)
     (by simp only [ptsLen_append, ptE, ptsLen_pt]; omega)
     (by split_ifs <;> [have := Nat.mod_lt ((N.arc j).e.edge + n - 1) hE.hn0; skip] <;> omega)
-  have K₆ := K₅.frame f₆ (by decide)
+  have K₆ := at_index K₅.frame f₆
   have g₆ : ∀ q, (Bem q || decide (q = 215064) || decide (q = 215065)) = false →
     d₆.nreg q = d₅.nreg q := f₆.1
   -- the counter
   have r41 : d₆.nreg 215041 = t := by
-    rw [g₆ _ (by decide), g₅ _ (by decide), g₄ _ (by decide), g₃ _ (by decide), g₂ _ (by decide),
-      g₁ _ (by decide), h41]
+    rw [g₆ _ (by decide), at_index g₅ _, g₄ _ (by decide), at_index g₃ _, at_index g₂ _,
+      at_index g₁ _, h41]
   have e₇ := Exec.addN (P := P) e₆.wb_right 215041 215041 215020 (by rw [r41, K₆.one]; omega)
   set d₇ : Config := { d₆ with nreg := upd d₆.nreg 215041 (d₆.nreg 215041 + d₆.nreg 215020) }
     with hd₇
   have f₇ : FrameM (fun q => decide (q = 215041)) d₆ d₇ :=
     exec_frameM e₇ (s := .instr (.addN 215041 215041 215020)) (by decide)
-  have B₇ := B₆.frame f₇ (by decide) rfl
+  have B₇ := at_index B₆.frame f₇
   refine ⟨d₇, k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (1 + 0)))))),
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.skip e₇.wb_right))))))),
+    e₁ ;; e₂ ;; e₃ ;; e₄ ;; e₅ ;; e₆ ;; e₇ ;; .skip e₇.wb_right,
     by omega, ?_, ?_, fun a ha => ?_, ?_⟩
   · simp only [hd₇, Programs.Config.nreg_mk, Machine.upd_same, r41, K₆.one]
   · have e : pre li n N r (t + 1) = ys ++ [ptE li n (N.arc j).s.edge (N.arc j).s.hgt] ++
@@ -371,8 +360,8 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
       rfl
     rw [e]; exact B₇
   · show d₆.nmem a = d.nmem a
-    rw [m₆ a (by simp only [List.length_append]; omega), m₅ a (by simp only [List.length_append]; omega),
-      m₄ a (by omega), m₃ a (by omega), m₂, m₁]
+    rw [at_index m₆ a, at_index m₅ a,
+      at_index m₄ a, at_index m₃ a, m₂, m₁]
   · refine ((((((sub_Bdyn ?_ f₁).trans (sub_Bdyn ?_ f₂)).trans (sub_Bdyn ?_ f₃)).trans
       (sub_Bdyn ?_ f₄)).trans (sub_Bdyn ?_ f₅)).trans (sub_Bdyn ?_ f₆)).trans (sub_Bdyn ?_ f₇) <;>
       intro q hq <;>

@@ -1,4 +1,6 @@
 module
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseDrvHEmit
 
@@ -66,7 +68,7 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
     all_goals try (config_simp; (try simp only [h55, hi, hK.one, e5, hh, hlp, hrp, h46, h47]); omega)
     by_cases hL : (N.chord i).lpos = x
     · have hL' := lpos_eq_iff.1 hL
-      refine spec_ifLtN_true (by config_simp; simp only [h55, hi, hK.one, e5, hh, hlp, h46, h47]; omega) ?_
+      refine spec_ifLtN_true (by block_post [h55, hi, hK.one, e5, hh, hlp, h46, h47]) ?_
       exec_block
       · omega
       refine ⟨by omega, ?_, rfl⟩
@@ -77,7 +79,7 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
       refine spec_ifLtN_false (by config_simp; simp only [h55, hi, hK.one, e5, hh, hlp, h46, h47]; omega) ?_
       by_cases hR : (N.chord i).rpos = x
       · have hR' := rpos_eq_iff.1 hR
-        refine spec_ifLtN_true (by config_simp; simp only [h55, hi, hK.one, e5, hh, hrp, h46, h47]; omega) ?_
+        refine spec_ifLtN_true (by block_post [h55, hi, hK.one, e5, hh, hrp, h46, h47]) ?_
         exec_block
         · omega
         refine ⟨by omega, ?_, rfl⟩
@@ -88,8 +90,8 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
         refine spec_ifLtN_false (by config_simp; simp only [h55, hi, hK.one, e5, hh, hrp, h46, h47]; omega) ?_
         refine spec_skip ‹_› ⟨by omega, ?_, rfl⟩
         simp only [hL, hR, ↓reduceIte]
-        refine ⟨?_, ?_, ?_⟩ <;> config_simp
-  exact ⟨d', k, ex, hk, hpost, hm, exec_frameM ex (by decide)⟩
+        block_post
+  exact ⟨d', k, ex, hk, hpost, hm, at_index exec_frameM ex⟩
 
 
 /-- The search predicate of `partner`. -/
@@ -107,8 +109,7 @@ theorem partner_eq (N : NF) (r : ℕ) (x : WPos) :
 theorem find_take_succ {l : List ℕ} {p : ℕ → Bool} {v : ℕ} (hv : v < l.length) :
     (l.take (v + 1)).find? p =
       ((l.take v).find? p).or (if p (l.getD v 0) then some (l.getD v 0) else none) := by
-  rw [List.take_add_one, List.find?_append, List.getElem?_eq_getElem hv, Option.toList_some,
-    List.find?_singleton, List.getD_eq_getElem _ _ hv]
+  grind [List.take_add_one, List.find?_append, List.getElem?_eq_getElem, Option.toList_some, List.find?_singleton, List.getD_eq_getElem]
 
 set_option maxHeartbeats 1000000 in
 /-- **The partner search.** -/
@@ -136,11 +137,8 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
         (block [.copyN 215052 215046, .copyN 215053 215047, .constN 215054 0, .constN 215055 0])
         d d₀ k₀ ∧ k₀ = 4 ∧ d₀.nreg 215052 = x.edge ∧ d₀.nreg 215053 = x.hgt ∧
         d₀.nreg 215054 = 0 ∧ d₀.nreg 215055 = 0 ∧ d₀.nmem = d.nmem := by
-      exec_block
-      · omega
-      · omega
-      refine ⟨rfl, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> simp only [h46, h47]
-    exact ⟨d₀, k₀, e₀, hk₀, a52, a53, a54, a55, m₀, exec_frameM e₀ (by decide)⟩
+      verify_block
+    exact ⟨d₀, k₀, e₀, hk₀, a52, a53, a54, a55, m₀, at_index exec_frameM e₀⟩
   -- the loop
   let Inv : ℕ → Config → Prop := fun v e => WordsBounded W e ∧ e.nreg 215055 = v ∧
     e.nreg 215031 = cs.length ∧
@@ -153,7 +151,7 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
     (fun v e ⟨hw, h1, h2, _⟩ => ⟨hw, h1, h2⟩)
     (fun v e hv ⟨hwe, e55, e31, e52, e53, e54, fe, me⟩ => by
       have g : ∀ q, Bpart q = false → e.nreg q = d.nreg q := fe.1
-      have Ke : Kst n li e := hK.frame fe (by decide)
+      have Ke : Kst n li e := at_index hK.frame fe
       have hfs := find_take_succ (p := pmatch N x) hv
       have hmem : cs.getD v 0 ∈ cs := by
         rw [List.getD_eq_getElem _ _ hv]; exact List.getElem_mem hv
@@ -188,11 +186,11 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
           set i := cs.getD v 0 with hidef
           obtain ⟨r1, r2, r3, r4⟩ := hrec i hi1
           obtain ⟨c1, c2⟩ := hch v hv
-          have t46 : e.nreg 215046 = x.edge := by rw [g _ (by decide), h46]
-          have t47 : e.nreg 215047 = x.hgt := by rw [g _ (by decide), h47]
-          have t27 : e.nreg 215027 = d.nreg 215027 := g _ (by decide)
-          have t29 : e.nreg 215029 = d.nreg 215029 := g _ (by decide)
-          have t25 : e.nreg 215025 = d.nreg 215025 := g _ (by decide)
+          have t46 : e.nreg 215046 = x.edge := by rw [at_index g _, h46]
+          have t47 : e.nreg 215047 = x.hgt := by rw [at_index g _, h47]
+          have t27 : e.nreg 215027 = d.nreg 215027 := at_index g _
+          have t29 : e.nreg 215029 = d.nreg 215029 := at_index g _
+          have t25 : e.nreg 215025 = d.nreg 215025 := at_index g _
           have ti : e.nmem (e.nreg 215027 + (e.nreg 215029 + v)) = i := by rw [me, t27, t29, c1]
           have tiW : e.nreg 215027 + (e.nreg 215029 + v) ≤ W := by rw [t27, t29]; exact c2
           have th : e.nmem (e.nreg 215025 + 5 * i) = (N.chord i).h := by rw [me, t25, r1]
@@ -202,8 +200,8 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
           refine spec_use (chTest_exec (P := P) e hwe Ke t46 t47 e55 ti tiW th tl tr tW hxe hxh
             hil hir hih hW) ?_
           intro c₁ k₁ hk₁ hw₁ ⟨hpost, hm₁, hf₁⟩
-          have q55 : c₁.nreg 215055 = v := by rw [hf₁.1 _ (by decide), e55]
-          have q20 : c₁.nreg 215020 = 1 := by rw [hf₁.1 _ (by decide), Ke']
+          have q55 : c₁.nreg 215055 = v := by rw [at_index hf₁.1 _, e55]
+          have q20 : c₁.nreg 215020 = 1 := by rw [at_index hf₁.1 _, Ke']
           exec_block
           · omega
           rw [hfs, hfound, Option.none_or]
@@ -215,9 +213,9 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
               ↓reduceIte, resOf, Option.isSome_some, Option.isSome_none, Bool.false_eq_true,
               hpost.1, hpost.2.1, hpost.2.2, e52, e53, e54, hm₁]
       have fe' := exec_frameM ex wrM_chBody
-      exact ⟨e', k, ex, ⟨ex.wb_right, p55, by rw [fe'.1 _ (by decide), e31], p52, p53, p54,
+      exact ⟨e', k, ex, ⟨ex.wb_right, p55, by frame_simp [fe'.1, e31], p52, p53, p54,
         fe.trans fe', pm.trans me⟩, hk⟩)
-    (j := 0) ⟨e₀.wb_right, a55, by rw [f₀.1 _ (by decide), h31], by simp [resOf, a52],
+    (j := 0) ⟨e₀.wb_right, a55, by frame_simp [f₀.1, h31], by simp [resOf, a52],
       by simp [resOf, a53], by simp [a54], f₀, m₀⟩ (Nat.zero_le _)
   refine ⟨d', k₀ + k, .seq e₀ ex, by omega, ?_, ?_, m', f'⟩
   · rw [v52, List.take_length, partner_eq]

@@ -82,8 +82,7 @@ theorem prAdr_irs (hI : IInv W c₀ d) (hW : d.nreg prB + 5 * d.nreg prI ≤ W) 
   · rintro d' rfl
     simp [prAdrL, regB, regI, upd, prX, prB, prI, sw]
     refine ⟨by ring_nf, ?_⟩
-    intro r ha
-    simp [ha]
+    simp_all
 
 theorem prEnd_irs (hI : IInv W c₀ d) (hK1 : d.nreg K1 = 1) (hK2 : d.nreg K2 = 2)
     (hW : d.nreg prX + 2 ≤ W) (hh : d.nmem (d.nreg prX) + 1 ≤ W) :
@@ -96,8 +95,7 @@ theorem prEnd_irs (hI : IInv W c₀ d) (hK1 : d.nreg K1 = 1) (hK2 : d.nreg K2 = 
     omega
   · rintro d' rfl
     simp [prEndL, regB, regI, upd, prX, prH, prE, oB, K1, K2, sw, hK1, hK2]
-    intro r ha hb hc
-    simp [ha, hb, hc]
+    simp_all
 
 /-! ## One chord -/
 
@@ -122,13 +120,11 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     simp only [oB, pE2, pH2, sw] at hr
     simp only [ParR, oPar, sw]
     omega
-  have e4 : d.nreg (sw 4) = c.nreg (sw 4) := kp _ (nPar _ (Or.inl rfl)).1 (nPar _ (Or.inl rfl)).2
   have eB : d.nreg oB = c.nreg oB := kp _ (nPar _ (by simp)).1 (nPar _ (by simp)).2
-  have eE2 : d.nreg pE2 = c.nreg pE2 := kp _ (nPar _ (by simp)).1 (nPar _ (by simp)).2
   have eH2 : d.nreg pH2 = c.nreg pH2 := kp _ (nPar _ (by simp)).1 (nPar _ (by simp)).2
   -- the normal form
   have hNW := E.nw₂' hI
-  have hNA : NFAt c.nmem (c.nreg (sw 4)) N₂ := hNW.holds
+  have hNA := hNW.holds
   obtain ⟨-, hb2, -⟩ := Restore.nf_bounds hNW
   obtain ⟨r0, r1, r2, -, -⟩ := hNA.2.2.2.2.2.1 i hlt
   have hb2i := hb2 i hlt
@@ -175,21 +171,21 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have k2 : ∀ q, q ≠ prX → q ≠ prH → q ≠ prE → d₂.nreg q = d.nreg q := fun q h1 h2 h3 =>
     (b3 q h1 h2 h3).trans (a2 q h1)
   have eE2₂ : d₂.nreg pE2 = c.nreg pE2 := (k2 _ (by unfold pE2 prX sw; omega)
-    (by unfold pE2 prH sw; omega) (by unfold pE2 prE sw; omega)).trans eE2
+    (by unfold pE2 prH sw; omega) (by unfold pE2 prE sw; omega)).trans (kp _ (nPar _ (by simp)).1 (nPar _ (by simp)).2)
   have eH2₂ : d₂.nreg pH2 = c.nreg pH2 := (k2 _ (by unfold pH2 prX sw; omega)
     (by unfold pH2 prH sw; omega) (by unfold pH2 prE sw; omega)).trans eH2
   have hK₂ := E.hK.fix hI₂
   have hn0 : 0 < (chainModel J.right).W.n := by omega
   -- 3. the comparison
-  refine IRS.seq (K₁ := 11008) (K₂ := 12) (callOff_irs (dsc := sw 21) (ex := prE) (hx := prH)
-    (ey := pE2) (hy := pH2) (g := K0) (o := prO) hI₂ (E.ctx2' hI₂)
-    ⟨by norm_num [sw], by norm_num [sw], by unfold prE sw; norm_num, by unfold prE sw; norm_num,
-      by unfold prH sw; norm_num, by unfold prH sw; norm_num, by unfold pE2 sw; norm_num,
-      by unfold pE2 sw; norm_num, by unfold pH2 sw; norm_num, by unfold pH2 sw; norm_num,
-      by unfold K0 sw; norm_num, by unfold K0 sw; norm_num⟩
-    ⟨by unfold prO sw; norm_num, by unfold prO sw; norm_num⟩ heE (by rw [eE2₂]; exact hpe)
-    (by rw [hK₂.1]; exact hn0) hpE (by rw [eE2₂, eH2₂]; exact hpp) (fun h => absurd h hH0)
-    (by rw [eE2₂, eH2₂]; exact hp6) (by omega)) ?_
+  refine IRS.seq (K₁ := 11008) (K₂ := 12) (callOff_irs
+ hI₂ (E.ctx2' hI₂)
+    ⟨by decide, by decide, by decide, by decide,
+      by decide, by decide, by decide,
+      by decide, by decide, by decide,
+      by decide, by decide⟩
+    ⟨by decide, by decide⟩ heE (by rwa [eE2₂])
+    (by rwa [hK₂.1]) hpE (by rwa [eE2₂, eH2₂]) (fun h => absurd h hH0)
+    (by rwa [eE2₂, eH2₂]) (by omega)) ?_
   rintro d₃ hI₃ hA₃ hA₃' ⟨o1, o2, k₃, ha₃, hm₃⟩
   have hg0 : ((d₂.nreg K0 : ℕ) : ℝ) = 0 := by rw [hK₂.1]; simp
   rw [hg0, Restore.off_zero (Restore.key_nonneg hpE), Restore.off_zero (Restore.key_nonneg
@@ -207,17 +203,15 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have frd3 : EFr ParR d d₃ := by
     refine ⟨fun r hb hr hra => ?_, hA₁.trans (hA₂.trans ha₃), fun a ha => ?_⟩
     · have h1 : r ≠ prX := by rintro rfl; exact hr (prR_par (by unfold prX sw; omega) (by unfold prX sw; omega))
-      have h2 : r ≠ prH := by rintro rfl; exact hr (prR_par (by unfold prH sw; omega) (by unfold prH sw; omega))
-      have h3 : r ≠ prE := by rintro rfl; exact hr (prR_par (by unfold prE sw; omega) (by unfold prE sw; omega))
-      have h4 : r ≠ prO := by rintro rfl; exact hr (prR_par (by unfold prO sw; omega) (by unfold prO sw; omega))
-      have h5 : r ≠ prO + 1 := by rintro rfl; exact hr (prR_par (by unfold prO sw; omega) (by unfold prO sw; omega))
+      have h2 : r ≠ prH := by rintro rfl; exact hr (prR_par (by decide) (by decide))
+      have h3 : r ≠ prE := by rintro rfl; exact hr (prR_par (by decide) (by decide))
+      have h4 : r ≠ prO := by rintro rfl; exact hr (prR_par (by decide) (by decide))
+      have h5 : r ≠ prO + 1 := by rintro rfl; exact hr (prR_par (by decide) (by decide))
       rw [k₃ r hb h4 h5 hra, k2 r h1 h2 h3]
     · rw [hm₃ a (lt_of_lt_of_le ha (hA₁.trans hA₂)), b4, a3]
   have hK₃ := E.hK.fix hI₃
   have eI3 : d₃.nreg prI = i := k3 _ (by simp)
   have eP3 : d₃.nreg oPar = d.nreg oPar := k3 _ (by simp)
-  have hiW : i + 1 ≤ W := by
-    have := hI.hw.2 (c.nreg (sw 4)); rw [hNA.1] at this; unfold NF.nChords at hlt; omega
   -- the final increment
   have incr : ∀ d₄ : Config, IInv W c₀ d₄ → EFr ParR d d₄ → d₄.nreg prI = i →
       d₄.nreg K1 = 1 → d₄.nreg prK = N₂.nChords → d₄.nreg prB = c.nmem (c.nreg (sw 4) + 3) →
@@ -230,61 +224,55 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         N₂.nChords - d'.nreg prI < N₂.nChords - i) := by
     intro d₄ hI₄ fr4 eI eK1 eK eB4 hP1 hP2 hP3
     refine (IRS.block _ hI₄ (by
-      simp only [okB, okI]
       exact ⟨⟨iscr_sw' (by norm_num) (by norm_num), by rw [eI, eK1]; omega⟩, trivial⟩)).mono le_rfl ?_
     rintro d' hd'
     have w1 : d'.nreg prI = i + 1 := by rw [hd']; simp [regB, regI, eI, eK1]
     have w2 : ∀ r, r ≠ prI → d'.nreg r = d₄.nreg r := fun r hr => by
       rw [hd']; simp [regB, regI, upd, hr]
     have fr' : EFr ParR d₄ d' := ⟨fun r _ hr _ => w2 r (by
-        rintro rfl; exact hr (prR_par (by unfold prI sw; omega) (by unfold prI sw; omega))),
-      by rw [w2 ALLOC (by unfold ALLOC prI sw; omega)], fun a _ => by rw [hd']⟩
-    have eP : d'.nreg oPar = d₄.nreg oPar := w2 _ (by unfold oPar prI sw; omega)
-    refine ⟨⟨fr.trans (fr4.trans fr'), by rw [w2 _ (by unfold prK prI sw; omega), eK],
-      by rw [w2 _ (by unfold prB prI sw; omega), eB4], by rw [w1]; omega, by rw [w1, eP]; exact hP1,
+        rintro rfl; exact hr (prR_par (by decide) (by decide))),
+      by rw [w2 ALLOC (by decide)], fun a _ => by rw [hd']⟩
+    have eP : d'.nreg oPar = d₄.nreg oPar := w2 _ (by decide)
+    refine ⟨⟨fr.trans (fr4.trans fr'), by rw [w2 _ (by decide), eK],
+      by rw [w2 _ (by decide), eB4], by rw [w1]; omega, by rwa [w1, eP],
       fun h => by rw [eP] at h ⊢; exact hP2 h, fun h => by rw [w1]; rw [eP] at h; exact hP3 h⟩,
       by rw [w1]; omega⟩
-  have k01 : d₃.nreg K0 = 0 := hK₃.1
+  have k01 := hK₃.1
   by_cases h1 : d₃.nreg K0 < d₃.nreg prO
   · -- the end is before the position
     have h1' := h1
     rw [k01] at h1'
-    have hlt' : kE' < kP := o1.2.1 (by have := o1.1; omega)
     refine (IRS.seq (K₁ := 0 + 2) (K₂ := 1) (IRS.ifT h1 (IRS.skip hI₃ rfl)) ?_).mono (by norm_num)
       (fun _ h => h)
     rintro d₄ hI₄ - - rfl
-    exact incr d₃ hI₃ frd3 eI3 hK₃.2.1 (by rw [k3 _ (by simp)]; exact hK) (by rw [k3 _ (by simp)]; exact hB)
+    exact incr d₃ hI₃ frd3 eI3 hK₃.2.1 (by rwa [k3 _ (by simp)]) (by rwa [k3 _ (by simp)])
       (by rw [eP3]; omega) (fun h => by rw [eP3] at h ⊢; exact hpos h)
       (fun h i' hi' => by
         rw [eP3] at h
         rcases Nat.lt_or_ge i' i with h' | h'
         · exact hneg h i' h'
-        · rw [show i' = i by omega]; exact ne_of_lt hlt')
+        · rw [show i' = i by omega]; exact ne_of_lt (o1.2.1 (by have := o1.1; omega)))
   · have h1' := h1
     rw [k01] at h1'
-    have hnlt : ¬ kE' < kP := fun h => by have := o1.2.2 h; omega
     by_cases h2 : d₃.nreg K0 < d₃.nreg (prO + 1)
     · have h2' := h2
       rw [k01] at h2'
-      have hgt : kP < kE' := o2.2.1 (by have := o2.1; omega)
       refine (IRS.seq (K₁ := 0 + 2 + 2) (K₂ := 1) (IRS.ifF h1
         (IRS.ifT h2 (IRS.skip hI₃ rfl))) ?_).mono (by norm_num) (fun _ h => h)
       rintro d₄ hI₄ - - rfl
-      exact incr d₃ hI₃ frd3 eI3 hK₃.2.1 (by rw [k3 _ (by simp)]; exact hK)
-        (by rw [k3 _ (by simp)]; exact hB) (by rw [eP3]; omega)
+      exact incr d₃ hI₃ frd3 eI3 hK₃.2.1 (by rwa [k3 _ (by simp)])
+        (by rwa [k3 _ (by simp)]) (by rw [eP3]; omega)
         (fun h => by rw [eP3] at h ⊢; exact hpos h)
         (fun h i' hi' => by
           rw [eP3] at h
           rcases Nat.lt_or_ge i' i with h' | h'
           · exact hneg h i' h'
-          · rw [show i' = i by omega]; exact ne_of_gt hgt)
+          · rw [show i' = i by omega]; exact ne_of_gt (o2.2.1 (by have := o2.1; omega)))
     · have h2' := h2
       rw [k01] at h2'
-      have hngt : ¬ kP < kE' := fun h => by have := o2.2.2 h; omega
-      have heq : kE' = kP := le_antisymm (not_lt.1 hngt) (not_lt.1 hnlt)
+      have heq := le_antisymm (not_lt.1 (fun h => by have := o2.2.2 h; omega)) (not_lt.1 (fun h => by have := o1.2.2 h; omega))
       refine (IRS.seq (K₁ := 1 + 2 + 2) (K₂ := 1) (IRS.ifF h1
         (IRS.ifF h2 (IRS.block [.addN oPar prI K1] hI₃ (by
-          simp only [okB, okI]
           exact ⟨⟨iscr_sw' (by norm_num) (by norm_num), by rw [eI3, hK₃.2.1]; omega⟩, trivial⟩)))) ?_).mono (by norm_num)
         (fun _ h => h)
       rintro d₄ hI₄ - - hd₄
@@ -292,12 +280,12 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       have w2 : ∀ r, r ≠ oPar → d₄.nreg r = d₃.nreg r := fun r hr => by
         rw [hd₄]; simp [regB, regI, upd, hr]
       have fr4 : EFr ParR d₃ d₄ := ⟨fun r _ hr _ => w2 r (fun h => hr (Or.inl h)),
-        by rw [w2 ALLOC (by unfold ALLOC oPar sw; omega)], fun a _ => by rw [hd₄]⟩
-      exact incr d₄ hI₄ (frd3.trans fr4) (by rw [w2 _ (by unfold prI oPar sw; omega), eI3])
-        (by rw [w2 _ (by unfold K1 oPar sw; omega), hK₃.2.1])
-        (by rw [w2 _ (by unfold prK oPar sw; omega), k3 _ (by simp)]; exact hK)
-        (by rw [w2 _ (by unfold prB oPar sw; omega), k3 _ (by simp)]; exact hB)
-        (by rw [w1]) (fun _ => by rw [w1, Nat.add_sub_cancel]; exact heq)
+        by rw [w2 ALLOC (by decide)], fun a _ => by rw [hd₄]⟩
+      exact incr d₄ hI₄ (frd3.trans fr4) (by rw [w2 _ (by decide), eI3])
+        (by rw [w2 _ (by decide), hK₃.2.1])
+        (by rw [w2 _ (by decide), k3 _ (by simp)]; exact hK)
+        (by rw [w2 _ (by decide), k3 _ (by simp)]; exact hB)
+        (by rw [w1]) (fun _ => by rwa [w1, Nat.add_sub_cancel])
         (fun h => by rw [w1] at h; omega)
 
 /-! ## The scan -/
@@ -311,43 +299,40 @@ theorem parScan_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     IRS P W c₀ parScan c (11040 * (N₂.nChords + 1)) (ParOut P J N₂ c) := by
   have hK := E.hK.fix hI
   have hNW := E.nw₂' hI
-  have hNA : NFAt c.nmem (c.nreg (sw 4)) N₂ := hNW.holds
+  have hNA := hNW.holds
   obtain ⟨hb0, -⟩ := Restore.nf_bounds hNW
   have hAW := hI.hw.1 ALLOC
   unfold parScan
-  have k3 : c.nreg K3 = 3 := hK.2.2.2.2.2.2
+  have k3 := hK.2.2.2.2.2.2
   refine (IRS.seq (K₁ := 5) (K₂ := 11032 * N₂.nChords + 2) (IRS.block prInitL hI (by
     simp only [sw, K3, Nat.reduceAdd] at k3 hb0 hAW
     simp [prInitL, okB, okI, regI, upd, oPar, prI, prK, prB, K3, sw, IScr, k3]
     omega)) ?_).mono (by omega) (fun _ h => h)
   rintro d hId hA hA' hd
-  have v0 : d.nreg oPar = 0 := by rw [hd]; simp [prInitL, regB, regI, upd, oPar, prI, prK, prB, sw]
-  have vI : d.nreg prI = 0 := by rw [hd]; simp [prInitL, regB, regI, upd, oPar, prI, prK, prB, sw]
+  have v0 : d.nreg oPar = 0 := by rw [hd]; rfl
+  have vI : d.nreg prI = 0 := by rw [hd]; rfl
   have vK : d.nreg prK = N₂.nChords := by
-    rw [hd]; simp [prInitL, regB, regI, upd, oPar, prI, prK, prB, sw]; exact hNA.1
+    rw [hd]; exact hNA.1
   have vB : d.nreg prB = c.nmem (c.nreg (sw 4) + 3) := by
     rw [hd]; simp [prInitL, regB, regI, upd, oPar, prI, prK, prB, K3, sw]
-    have := hK.2.2.2.2.2.2; simp only [K3, sw] at this; rw [this]
+    have := hK.2.2.2.2.2.2; simp only [K3, sw] at this; simp_all
   have frd : EFr ParR c d := by
     rw [hd]
     refine ⟨fun r _ hr _ => regB_other _ _ _ (fun i hi h => hr ?_), ?_, fun _ _ => rfl⟩
     · simp only [prInitL, List.mem_cons, List.not_mem_nil, or_false] at hi
       rcases hi with rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] at h <;> subst h <;>
         simp only [ParR, oPar, prI, prK, prB, sw] <;> norm_num
-    · exact (regB_other _ _ _ (fun i hi h => by
-        simp only [prInitL, List.mem_cons, List.not_mem_nil, or_false] at hi
-        rcases hi with rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] at h <;>
-          simp only [ALLOC, oPar, prI, prK, prB, sw] at h <;> omega)).ge
-  have inv0 : PrInv P J N₂ c d := ⟨frd, vK, vB, by rw [vI]; omega, by rw [v0, vI],
-    fun h => by rw [v0] at h; omega, fun _ i h => by rw [vI] at h; omega⟩
-  refine (IRS.while (PrInv P J N₂ c) (fun d => N₂.nChords - d.nreg prI) 11030
+    · rfl
+  have inv0 : PrInv P J N₂ c d := ⟨frd, vK, vB, by simp_all, by simp_all,
+    fun h => by simp_all, fun _ i h => by simp_all⟩
+  refine (IRS.while _ (fun d => N₂.nChords - d.nreg prI) 11030
     (fun d hv h => by have := hv.2.1; omega)
     (fun d hId hv hlt hroom => prBody_irs E hI hpe hpp hp6 hoB hId hv hlt hroom) hId inv0
-    (by rw [vI]; omega)).mono (by rw [vI]; omega) ?_
+    (by rw [vI]; omega)).mono (by simp) ?_
   rintro d' ⟨⟨fr', hK', hB', hIK', hPI, hpos, hneg⟩, hex⟩
   rw [hK'] at hex
   refine ⟨by omega, hpos, fun h i hi => hneg h i (by omega), fr'.2.2, fr'.2.1,
-    fun r hb hr hra => fr'.1 r hb hr hra⟩
+    fr'.1⟩
 
 /-- **Task P: the parent scan.** -/
 theorem parTask : ParTask :=

@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Evidence
 
 public import Chazelle.Core.DownPhaseDropWt
 
@@ -37,86 +38,72 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
     ∀ W ∈ regionsIn D F', {c | c ∈ F' ∧ TouchesIn D c W}.ncard ≤ d := by
   set U : Set Point := Ioo (-R) R ×ˢ Ioo (-R) yp with hUdef
   set Up : Set Point := Ioo (-R) R ×ˢ Ioo ys yp with hUpdef
-  have hUo : IsOpen U := isOpen_Ioo.prod isOpen_Ioo
-  have hUpc : IsPreconnected Up := isPreconnected_Ioo.prod isPreconnected_Ioo
-  have hUD' : U ⊆ D := fun z hz => hUD z hz.1.1 hz.1.2 hz.2.1 hz.2.2
   have hUpF : Up ⊆ freeIn D F := by
     intro z hz
     refine ⟨hUD z hz.1.1 hz.1.2 (by linarith [hz.2.1]) hz.2.2, ?_⟩
     rintro ⟨c, hc, hzc⟩
     by_cases hc' : c ∈ F'
-    · linarith [hF' c hc' z hzc, hz.2.2]
-    · linarith [hW c hc hc' z hzc, hz.2.1]
+    all_goals grind
   set p0 : Point := (0, (ys + yp) / 2)
-  have hp0 : p0 ∈ Up := ⟨⟨by simp [p0]; linarith, by simp [p0]; linarith⟩,
+  have hp0 : p0 ∈ Up := ⟨⟨by linarith, by linarith⟩,
     ⟨by simp [p0]; linarith, by simp [p0]; linarith⟩⟩
   set X := connectedComponentIn (freeIn D F) p0 with hXdef
   have hXr : X ∈ regionsIn D F := ⟨p0, hUpF hp0, rfl⟩
-  have hXo : IsOpen X := hsys.regionsIn_open subset_rfl hXr
-  have hUpX : Up ⊆ X := hUpc.subset_connectedComponentIn hp0 hUpF
   -- points of the closure of `U` above `ys` are in the closure of `X`
-  have hclU : ∀ z, z ∈ closure U → ys < z.2 → z ∈ closure X := by
+  have hclU : ∀ z ∈ closure U, ys < z.2 → z ∈ closure X := by
     intro z hz hzy
-    have hO : IsOpen {w : Point | ys < w.2} := isOpen_lt continuous_const continuous_snd
-    have := hO.inter_closure ⟨hzy, hz⟩
+    have := (isOpen_lt continuous_const continuous_snd).inter_closure ⟨hzy, hz⟩
     refine closure_mono ?_ this
     rintro w ⟨hw1, hw2⟩
-    exact hUpX ⟨hw2.1, hw1, hw2.2.2⟩
-  have hclU' : closure U ⊆ {w : Point | w.2 ≤ yp} :=
-    closure_minimal (fun w hw => hw.2.2.le) (isClosed_le continuous_snd continuous_const)
+    exact ((isPreconnected_Ioo.prod isPreconnected_Ioo).subset_connectedComponentIn hp0 hUpF) ⟨hw2.1, hw1, hw2.2.2⟩
   -- a free point in the closure of `X` is in `X`
-  have hfreeX : ∀ w, w ∈ freeIn D F → w ∈ closure X → w ∈ X := by
+  have hfreeX : ∀ w ∈ freeIn D F, w ∈ closure X → w ∈ X := by
     intro w hw hwc
     set Y := connectedComponentIn (freeIn D F) w
     have hYr : Y ∈ regionsIn D F := ⟨w, hw, rfl⟩
-    have hYo : IsOpen Y := hsys.regionsIn_open subset_rfl hYr
-    have hwY : w ∈ Y := mem_connectedComponentIn hw
-    obtain ⟨v, hvY, hvX⟩ := mem_closure_iff.1 hwc Y hYo hwY
+    have hwY := mem_connectedComponentIn hw
+    obtain ⟨v, hvY, hvX⟩ := mem_closure_iff.1 hwc Y (hsys.regionsIn_open subset_rfl hYr) hwY
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hYr hXr with h | h
-    · rw [← h]; exact hwY
+    · rwa [← h]
     · exact absurd (h.le_bot ⟨hvY, hvX⟩) (fun h => h)
   intro W hWr
-  have hWF' : W ⊆ freeIn D F' := Chazelle.Chain.regionsIn_subset hWr
-  have hfin' : {c | c ∈ F ∧ TouchesIn D c X}.Finite := hfin.subset fun c hc => hc.1
+  have hWF' := Chazelle.Chain.regionsIn_subset hWr
   by_cases hWU : (W ∩ U).Nonempty
   · -- `W ⊆ U ∪ X`
     have hsubW : W ⊆ U ∪ X := by
       refine (Chazelle.Chain.regionsIn_isPreconnected hWr).subset_of_closure_inter_subset
-        (hUo.union hXo) (by obtain ⟨w, h1, h2⟩ := hWU; exact ⟨w, h1, Or.inl h2⟩) ?_
+        ((isOpen_Ioo.prod isOpen_Ioo).union (hsys.regionsIn_open subset_rfl hXr)) (by obtain ⟨w, h1, h2⟩ := hWU; exact ⟨w, h1, Or.inl h2⟩) ?_
       rintro w ⟨hwc, hwW⟩
-      have hwD : w ∈ D := (hWF' hwW).1
+      have hwD := (hWF' hwW).1
       obtain ⟨hb1, hb2⟩ := hDbox w hwD
       rw [abs_lt] at hb1 hb2
       by_cases hwF : w ∈ ⋃₀ F
       · obtain ⟨c, hc, hwc'⟩ := hwF
-        have hc' : c ∉ F' := fun h => (hWF' hwW).2 ⟨c, h, hwc'⟩
-        have := hW c hc hc' w hwc'
+        have := hW c hc (fun h => (hWF' hwW).2 ⟨c, h, hwc'⟩) w hwc'
         exact Or.inl ⟨⟨hb1.1, hb1.2⟩, ⟨hb2.1, by linarith⟩⟩
       · have hwfree : w ∈ freeIn D F := ⟨hwD, hwF⟩
         rw [closure_union] at hwc
         rcases hwc with hwc | hwc
         · by_cases hwy : w.2 < yp
           · exact Or.inl ⟨⟨hb1.1, hb1.2⟩, ⟨hb2.1, hwy⟩⟩
-          · have := hclU' hwc
-            simp only [mem_ofPred_eq] at this
-            exact Or.inr (hfreeX w hwfree (hclU w hwc (by linarith)))
-        · exact Or.inr (hfreeX w hwfree hwc)
-    refine le_trans (Set.ncard_le_ncard ?_ hfin') (hd X hXr)
+          all_goals grind
+        all_goals grind
+    refine le_trans (Set.ncard_le_ncard ?_ (hfin.subset fun c hc => hc.1)) (hd X hXr)
     rintro c ⟨hc, z, ⟨hzc, hzD⟩, hzW⟩
     refine ⟨hsub hc, z, ⟨hzc, hzD⟩, ?_⟩
     have hzy := hF' c hc z hzc
     have hz := closure_mono hsubW hzW
     rw [closure_union] at hz
     rcases hz with hz | hz
-    · exact hclU z hz (by linarith)
+    · grind
     · exact hz
   · -- `W` misses the dropped chords: it is a region of `F`
     have hWF : W ⊆ freeIn D F := by
       intro w hw
       refine ⟨(hWF' hw).1, ?_⟩
       rintro ⟨c, hc, hwc⟩
-      have hc' : c ∉ F' := fun h => (hWF' hw).2 ⟨c, h, hwc⟩
-      have hwy := hW c hc hc' w hwc
+      have hc' := fun h => (hWF' hw).2 ⟨c, h, hwc⟩
+      have hwy := from_facts hW
       obtain ⟨hb1, hb2⟩ := hDbox w (hWF' hw).1
       rw [abs_lt] at hb1 hb2
       exact hWU ⟨w, hw, ⟨hb1.1, hb1.2⟩, ⟨hb2.1, by linarith⟩⟩
@@ -126,10 +113,8 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
       · exact (Chazelle.Chain.regionsIn_isPreconnected hWr).subset_connectedComponentIn hw0 hWF
       · rw [Chazelle.Chain.regionsIn_eq_component hWr hw0]
         exact connectedComponentIn_mono w0 (Chazelle.Chain.freeIn_anti D hsub)
-    have hWr' : W ∈ regionsIn D F := ⟨w0, hWF hw0, hWeq⟩
-    refine le_trans (Set.ncard_le_ncard ?_ (hfin.subset fun c hc => hc.1)) (hd W hWr')
-    rintro c ⟨hc, ht⟩
-    exact ⟨hsub hc, ht⟩
+    refine le_trans (Set.ncard_le_ncard ?_ (hfin.subset fun c hc => hc.1)) (hd W ⟨w0, hWF hw0, hWeq⟩)
+    grind
 
 end
 

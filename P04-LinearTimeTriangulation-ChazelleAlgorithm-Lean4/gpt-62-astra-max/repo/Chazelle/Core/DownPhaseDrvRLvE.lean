@@ -355,8 +355,8 @@ theorem lvLoop_exec {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
     {c : Config} (hinv0 : LvInv O P W c₁ L E reg Kb 0 c) :
     ∃ c' k, Exec P W (lvLoop sH sR sX) c c' k ∧ LvInv O P W c₁ L E reg Kb (L.length + 1) c' ∧
       k ≤ (Kb + 2) * (L.length + 1) + 2 ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k := by
-  obtain ⟨c', k, ex, hI, hk, hA⟩ := forLoopA (P := P) (W := W) (ir := 211010) (nr := 211011)
-    (fun j c => LvInv O P W c₁ L E reg Kb j c) Kb (L.length + 1)
+  obtain ⟨c', k, ex, hI, hk, hA⟩ := forLoopA
+    (LvInv O P W c₁ L E reg Kb) Kb _
     (fun j c h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c hj h => lvBody_exec hH hR hX hR1 hLM ctx hKb hroom hj h) hinv0 (Nat.zero_le _)
   exact ⟨c', k, ex, hI, by simpa using hk, hA⟩

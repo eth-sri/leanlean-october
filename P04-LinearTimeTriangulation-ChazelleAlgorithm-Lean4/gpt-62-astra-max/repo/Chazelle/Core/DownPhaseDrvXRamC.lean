@@ -1,4 +1,7 @@
 module
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseDrvXRamB
 
@@ -24,7 +27,7 @@ theorem NRegs.same {d d' : Config} {r v : ℕ} (h : NRegs d d' (upd d.nreg r v))
 
 theorem NRegs.other {d d' : Config} {r v : ℕ} (h : NRegs d d' (upd d.nreg r v)) {r' : ℕ}
     (hr : r' ≠ r) : d'.nreg r' = d.nreg r' := by
-  rw [h.1, Machine.upd_other _ _ _ hr]
+  frame_simp [h.1, Machine.upd_other]
 
 theorem seqs_one (s : Stmt) : seqs [s] = s := rfl
 
@@ -35,12 +38,12 @@ theorem red_red {x M : ℕ} (_hM : 0 < M) (hx : x < 3 * M) :
     (if (if x < M then x else x - M) < M then (if x < M then x else x - M)
       else (if x < M then x else x - M) - M) = x % M := by
   by_cases h1 : x < M
-  · rw [ite_eq_left h1, ite_eq_left h1, Nat.mod_eq_of_lt h1]
+  · grind [Nat.mod_eq_of_lt]
   · rw [ite_eq_right h1]
     by_cases h2 : x - M < M
-    · rw [ite_eq_left h2, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt h2]
-    · rw [ite_eq_right h2, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_sub_mod (by omega),
-        Nat.mod_eq_of_lt (by omega)]
+    · grind [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
+    · rw [ite_eq_right h2, guarded Nat.mod_eq_sub_mod, guarded Nat.mod_eq_sub_mod,
+        guarded Nat.mod_eq_of_lt]
 
 /-- The registers `clsS` writes. -/
 def Bcls (r : ℕ) : Bool :=
@@ -48,7 +51,7 @@ def Bcls (r : ℕ) : Bool :=
     (217090 ≤ r ∧ r ≤ 217097))
 
 theorem Blook_cls {r : ℕ} (h : Bcls r = false) : Blook r = false := by
-  simp only [Bcls, Blook, decide_eq_false_iff_not] at h ⊢; omega
+  address_omega
 
 section cls
 
@@ -311,48 +314,46 @@ theorem peS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool} {s :
     | vtx j =>
       simp only [Enc] at henc
       simp only [SymPt.Lt] at hs
-      refine spec_ifLtN_true (by rw [henc.1, h44]; omega) ?_
-      obtain ⟨d1, k1, e1, hk1, n1, -⟩ := ivBS_exec (P := P) d hw (src := 217071) (dst := 217100)
-        h20 h26 h27 (by decide) (by decide) (by decide)
+      refine spec_ifLtN_true (by simp_all) ?_
+      obtain ⟨d1, k1, e1, hk1, n1, -⟩ := guarded (ivBS_exec (P := P) d hw (src := 217071) (dst := 217100)
+        h20 h26 h27)
       exact ⟨d1, k1, e1, by omega, by rw [n1, Machine.upd_same, henc.2]; rfl⟩
     | onEdge e h =>
       simp only [Enc] at henc
       simp only [SymPt.Lt] at hs
-      refine spec_ifLtN_false (by rw [henc.1, h44]; omega) ?_
-      obtain ⟨d1, k1, e1, hk1, a1, o1, -, m1, -⟩ := qES_exec (P := P) d hw (src := 217071)
-        (dst := 217101) h20 h26 h27 (by rw [henc.2.1]; exact hs.1) hnW (by decide) (by decide)
-        (by decide) (by decide) (by decide)
-      have hq : DrvR.qE li n e < n := DownMath.qE_lt li hs.1
+      refine spec_ifLtN_false (by simp_all) ?_
+      obtain ⟨d1, k1, e1, hk1, a1, o1, -, m1, -⟩ := guarded (qES_exec (P := P) d hw (src := 217071)
+        (dst := 217101) h20 h26 h27)
       rw [henc.2.1] at a1
       obtain ⟨d2, k2, e2, hk2, n2, -⟩ := succS_exec (P := P) d1 e1.wb_right (src := 217101)
-        (dst := 217102) (n := n) (by rw [o1 _ (by decide) (by decide), h20])
-        (by rw [o1 _ (by decide) (by decide), h27]) (by rw [a1]; exact hq) hnW (by decide)
-      have b2 : d2.nreg 217102 = (DrvR.qE li n e + 1) % n := by rw [n2, Machine.upd_same, a1]
-      have o2 : ∀ r, r ≠ 217102 → d2.nreg r = d1.nreg r := fun r hr => by
-        rw [n2, Machine.upd_other _ _ _ hr]
+        (dst := 217102) (n := n) (by simp_all)
+        (by simp_all) (by rw [a1]; exact (DownMath.qE_lt li hs.1)) hnW (by decide)
+      have b2 : d2.nreg 217102 = (DrvR.qE li n e + 1) % n := by simp_all
+      have o2 : AgreeExcept [217102] d2.nreg d1.nreg := fun r hr => by
+        simp_all
       obtain ⟨d3, k3, e3, hk3, n3, -⟩ := ivBS_exec (P := P) d2 e2.wb_right (src := 217102)
         (dst := 217103) (n := n) (li := li)
-        (by rw [o2 _ (by decide), o1 _ (by decide) (by decide), h20])
-        (by rw [o2 _ (by decide), o1 _ (by decide) (by decide), h26])
-        (by rw [o2 _ (by decide), o1 _ (by decide) (by decide), h27])
+        (by simp_all)
+        (by simp_all)
+        (by simp_all)
         (by decide) (by decide) (by decide)
       have b3 : d3.nreg 217103 = DrvR.ivB li n ((DrvR.qE li n e + 1) % n) := by
-        rw [n3, Machine.upd_same, b2]
-      have o3 : ∀ r, r ≠ 217103 → d3.nreg r = d2.nreg r := fun r hr => by
-        rw [n3, Machine.upd_other _ _ _ hr]
+        simp_all
+      have o3 : AgreeExcept [217103] d3.nreg d2.nreg := fun r hr => by
+        simp_all
       have b72 : d3.nreg 217072 = h := by
-        rw [o3 _ (by decide), o2 _ (by decide), o1 _ (by decide) (by decide), henc.2.2]
+        simp_all
       have b101 : d3.nreg 217101 = DrvR.qE li n e := by
-        rw [o3 _ (by decide), o2 _ (by decide), a1]
-      have b102 : d3.nreg 217102 = (DrvR.qE li n e + 1) % n := by rw [o3 _ (by decide), b2]
+        simp_all
+      have b102 : d3.nreg 217102 = (DrvR.qE li n e + 1) % n := by rw [at_index o3 _, b2]
       have hw3 := e3.wb_right
       obtain ⟨d4, k4, e4, hk4, n4⟩ := x_ifR (P := P) (W := W) (a := 217072) (b := 217103)
         (r := 217100) (t := block [.copyN 217100 217101])
         (e := .ifLtN 217103 217072 (block [.copyN 217100 217101]) (block [.copyN 217100 217102]))
-        (d := d3) (K := 3) (fun _ => x_mono (x_copy d3 hw3 217100 217101) (by omega))
+        (d := d3) (K := 3) (fun _ => at_index x_mono (x_copy d3 hw3 217100 217101))
         (fun _ => x_ifR (fun _ => x_copy d3 hw3 217100 217101)
           (fun _ => x_copy d3 hw3 217100 217102))
-      refine ⟨d4, k1 + (k2 + (k3 + k4)), .seq e1 (.seq e2 (.seq e3 e4)), by omega, ?_⟩
+      refine ⟨d4, k1 + (k2 + (k3 + k4)), e1 ;; e2 ;; e3 ;; e4, by omega, ?_⟩
       rw [n4.same, b72, b3, b101, b102]
       simp only [pEdge]
       split_ifs <;> omega

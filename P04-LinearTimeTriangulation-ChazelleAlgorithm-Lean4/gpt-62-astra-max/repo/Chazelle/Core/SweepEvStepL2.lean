@@ -1,4 +1,10 @@
 module
+public import Chazelle.Core.ModelAccess
+public import Chazelle.Cost.Invariant
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Evidence
+public import Chazelle.Programs.ReadWords
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.SweepEvStepL1
 
@@ -38,11 +44,10 @@ theorem stp_pre_frame (hW : WinOut P J N₁ c cw) (hR : ResetRel cw cs) :
     (∀ x, x < c.nreg ALLOC → cs.nmem x = c.nmem x) ∧
     cs.nreg wGB = cw.nreg wGB ∧ cs.nreg wGK = cw.nreg wGK := by
   obtain ⟨rs₁, -, -, -, -, -, -, -, -, -, hmW, hregW⟩ := hW
-  refine ⟨fun k hk => ?_, fun x hx => by rw [hR.1, hmW x hx], ?_, ?_⟩
-  · rw [hR.2.2.2 _ (by unfold bF sw; omega) (by unfold bN sw; omega)]
+  refine ⟨fun k hk => ?_, fun x hx => by grind [hR.1], ?_, ?_⟩
+  all_goals try (solve | (invariant_facts; block_post))
+  · rw [at_index hR.2.2.2 _]
     exact stp_win_keep hregW hk
-  · exact hR.2.2.2 _ (by unfold bF wGB sw; omega) (by unfold bN wGB sw; omega)
-  · exact hR.2.2.2 _ (by unfold bF wGK sw; omega) (by unfold bN wGK sw; omega)
 
 /-- **A stop chord attached on the `C₁` part is a stop record.** -/
 theorem stp_stop_at (L : LoopInv P J N₁ N₂ c₀ c) {s : Set Point}
@@ -55,19 +60,18 @@ theorem stp_stop_at (L : LoopInv P J N₁ N₂ c₀ c) {s : Set Point}
       i < c.nreg sC ∧ stopOff P J c i = oW J (p + t) := by
   obtain ⟨rs, ax, hD⟩ := L.stops
   obtain ⟨hlen, -, hrec, -, hok, -⟩ := id hD
-  have hmem := hok.2.1 s hs hss p t hsA hL
-  obtain ⟨r, hr, hreq⟩ := List.mem_map.1 hmem
+  obtain ⟨r, hr, hreq⟩ := List.mem_map.1 (hok.2.1 s hs hss p t hsA hL)
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
-  simp only [Prod.mk.injEq] at hreq
+  simp at hreq
   obtain ⟨h1, h2, h3⟩ := hreq
   obtain ⟨e0, e1, -⟩ := hrec i hi
   rw [List.getD_eq_getElem _ _ hi] at e0 e1
   have hoff : stopOff P J c i = oW J (p + t) := by
     show offK P J (c.nmem (c.nreg sB + 5 * i)) (c.nmem (c.nreg sB + 5 * i + 1)) = _
     rw [e0, e1]
-    show oW J ((rs[i].1 : ℝ) + (chainModel J.whole).param (Qof P) ⟨rs[i].1, rs[i].2.1⟩) = _
-    rw [h2, h1]
-  exact ⟨rs, ax, hD, i, hi, h1, h2, h3, hlen ▸ hi, hoff⟩
+    show oW J ((rs[i].1 : ℝ) + J.whole.chainModel.param (P.Qof) ⟨rs[i].1, rs[i].2.1⟩) = _
+    simp_all
+  grind
 
 /-- **Every stop record is a cut** of `F₂⁺` on the `C₁` part. -/
 theorem stp_stop_cut (L : LoopInv P J N₁ N₂ c₀ c) {i : ℕ} (hi : i < c.nreg sC) :
@@ -76,16 +80,15 @@ theorem stp_stop_cut (L : LoopInv P J N₁ N₂ c₀ c) {i : ℕ} (hi : i < c.nr
       StopChord2 J (N₂.F (chainModel J.right) (Qof P)) e := by
   obtain ⟨rs, ax, hD⟩ := L.stops
   obtain ⟨hlen, -, hrec, -, hok, -⟩ := hD
-  have hi' : i < rs.length := hlen ▸ hi
-  have hmem : (stopsOf J (Qof P) N₂ rs)[i]'(by simpa [stopsOf] using hi') ∈
-      stopsOf J (Qof P) N₂ rs := List.getElem_mem _
+  have hi' := hlen ▸ hi
+  have hmem : (stopsOf J P.Qof N₂ rs)[i]'(by simpa [stopsOf] using hi') ∈
+      stopsOf J P.Qof N₂ rs := List.getElem_mem _
   obtain ⟨h1, h2, h3, -⟩ := hok.1 _ hmem
   obtain ⟨e0, e1, -⟩ := hrec i hi'
   rw [List.getD_eq_getElem _ _ hi'] at e0 e1
   refine ⟨_, h1, _, _, h3, ?_, h2⟩
   show offK P J (c.nmem (c.nreg sB + 5 * i)) (c.nmem (c.nreg sB + 5 * i + 1)) = _
-  rw [e0, e1]
-  simp [stopsOf]
+  simp [e0, e1, stopsOf]
   rfl
 
 /-- **The stops at the first cut beyond the key** are the stops `sP` and `sP + 1`. -/
@@ -96,10 +99,10 @@ theorem stp_stop_near (L : LoopInv P J N₁ N₂ c₀ c) {o : ℝ} (ho : keyOff 
     i = c.nreg sP ∨ i = c.nreg sP + 1 := by
   have hpi : c.nreg sP ≤ i := by
     by_contra h
-    have := (L.ptrL i hi).1 (by omega)
+    have := guarded (L.ptrL i hi).1
     linarith
   -- every stop from `sP` to `i` is at `o`
-  have hat : ∀ i', c.nreg sP ≤ i' → i' ≤ i → stopOff P J c i' = o := by
+  have hat : ∀ i' ≥ c.nreg sP, i' ≤ i → stopOff P J c i' = o := by
     intro i' h1 h2
     have hi' : i' < c.nreg sC := by omega
     have hgt : keyOff P J c < stopOff P J c i' := by
@@ -109,14 +112,10 @@ theorem stp_stop_near (L : LoopInv P J N₁ N₂ c₀ c) {o : ℝ} (ho : keyOff 
     have hle : stopOff P J c i' ≤ o := hio ▸ L.sorted i' i h2 hi
     obtain ⟨e, he, q, s, hA, hq, -⟩ := stp_stop_cut L hi'
     rcases hle.lt_or_eq with h | h
-    · rw [hq] at hgt h
-      exact absurd ⟨hgt, h⟩ (hgap e he q s hA)
+    · grind
     · exact h
   by_contra hne
-  have h2 : c.nreg sP + 2 ≤ i := by omega
-  have := L.two (c.nreg sP) (by omega)
-  rw [hat _ le_rfl (by omega), hat _ (by omega) h2] at this
-  exact lt_irrefl _ this
+  have := at_index L.two (c.nreg sP); grind
 
 /-- **The chord of `S₂` of a non-stop chord at the first cut beyond the key is tried** in the
 iteration: it touches a region of the label set or a gap region (`regO`), or contains a stop chord
@@ -136,42 +135,38 @@ theorem stp_query_tried (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopI
     ∃ k, k < N₂.nChords ∧ (N₂.chord k).toSet (chainModel J.right) (Qof P) = ch ∧
       ∀ s, s ≤ 1 → 2 * k + s ∈ iterO N₂ cs := by
   obtain ⟨hkp, hmem, -, -⟩ := stp_pre_frame hW hR
-  have ekN : cs.nreg kN = c.nreg kN := hkp 2402 (by omega)
-  have ekL : ∀ u, u < 4 → cs.nreg (kL + u) = c.nreg (kL + u) := fun u hu => by
-    have := hkp (2403 + u) (by omega)
-    rwa [show sw (2403 + u) = kL + u by unfold kL sw; omega] at this
-  have egN : cs.nreg gN = c.nreg gN := hkp 2440 (by omega)
-  have egR : ∀ u, u < 2 → cs.nreg (gR + u) = c.nreg (gR + u) := fun u hu => by
-    have := hkp (2441 + u) (by omega)
-    rwa [show sw (2441 + u) = gR + u by unfold gR sw; omega] at this
+  have ekN : cs.nreg kN = c.nreg kN := at_index hkp 2402
+  have ekL : ∀ u < 4, cs.nreg (kL + u) = c.nreg (kL + u) := fun u hu => by
+    have := at_index hkp (2403 + u)
+    grind [kL, sw]
+  have egN : cs.nreg gN = c.nreg gN := at_index hkp 2440
+  have egR : ∀ u < 2, cs.nreg (gR + u) = c.nreg (gR + u) := fun u hu => by
+    have := at_index hkp (2441 + u)
+    grind [gR, sw]
   rcases hsrc with ⟨V, -, hVΛ, hT⟩ | ⟨s₀, hs₀, hsA, hss, hsub⟩
   · obtain ⟨k, hk, hci⟩ := Restore.mem_F_iff hch
     refine ⟨k, hk, hci.symm, fun s hs => ?_⟩
-    have hRO := (regOf_spec E.hNF₂).2.2.2.1
-    have hreg : ∀ l, l < N₂.nRegions → regOf (chainModel J.right) (Qof P) N₂ l = V →
+    have hreg : ∀ l < N₂.nRegions, regOf J.right.chainModel P.Qof N₂ l = V →
         2 * k + s ∈ regO N₂ l := by
       intro l hl hlV
-      refine ⟨k, ((hRO l hl).1 k).2 ⟨hk, ?_⟩, s, hs, rfl⟩
-      rw [← hci, hlV]; exact hT
+      refine ⟨k, ((((regOf_spec E.hNF₂).2.2.2.1) l hl).1 k).2 ⟨hk, ?_⟩, s, hs, rfl⟩
+      rwa [← hci, hlV]
     rcases hVΛ with ⟨l, hl, hlV⟩ | hg
-    · obtain ⟨u, hu, hu4, rfl⟩ : ∃ u, u < c.nreg kN ∧ u < 4 ∧ l = c.nreg (kL + u) := by
+    · obtain ⟨u, hu, hu4, rfl⟩ : ∃ u < c.nreg kN, u < 4 ∧ l = c.nreg (kL + u) := by
         rcases hl with h | h | h | h
-        · exact ⟨0, h.1, by norm_num, by rw [add_zero]; exact h.2⟩
+        · exact ⟨0, h.1, by norm_num, h.2⟩
         · exact ⟨1, h.1, by norm_num, h.2⟩
         · exact ⟨2, h.1, by norm_num, h.2⟩
         · exact ⟨3, h.1, by norm_num, h.2⟩
       refine Or.inl (Or.inl ⟨u, by rw [ekN]; omega, ?_⟩)
-      rw [ekL u hu4]
-      exact hreg _ (L.labR u hu) hlV
+      rw_facts [ekL]
+      exact from_facts hreg
     · obtain ⟨u, hu, hlV⟩ := L.gap V hg
-      have hu2 : u < 2 := by have := L.gapN; omega
-      refine Or.inl (Or.inr ⟨u, by rw [egN]; have := L.gapN; omega, ?_⟩)
-      rw [egR u hu2]
-      exact hreg _ (L.gapR u hu) hlV
+      refine Or.inl (Or.inr ⟨u, by grind [L.gapN], ?_⟩)
+      rw [egR u (by have := L.gapN; omega)]
+      exact from_facts hreg
   · -- the parent of a stop at the cut
-    have hL : (Lst J : ℝ) ≤ oW J (pK + tK) := by rw [hoK]; linarith [L.keyL]
-    obtain ⟨rs, ax, hD, i, hi, -, -, hset, hic, hio⟩ := stp_stop_at L hs₀ hss hsA hL
-    have hnear := stp_stop_near L ho hgap hic (hio.trans hoK)
+    obtain ⟨rs, ax, hD, i, hi, -, -, hset, hic, hio⟩ := stp_stop_at L hs₀ hss hsA (by rw [hoK]; linarith [L.keyL])
     obtain ⟨-, hax, -, hrecA, -, -, hauxOK, -⟩ := hD
     have hiA : i < ax.length := hax ▸ hi
     have hok := hauxOK i hi
@@ -180,15 +175,15 @@ theorem stp_query_tried (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopI
     obtain ⟨hpar0, hpch⟩ := hpar ch hch hsub
     obtain ⟨-, -, -, -, e4⟩ := hrecA i hiA
     rw [List.getD_eq_getElem _ _ hiA] at e4
-    have esP : cs.nreg sP = c.nreg sP := hkp 2450 (by omega)
-    have esC : cs.nreg sC = c.nreg sC := hkp 2601 (by omega)
-    have eaB : cs.nreg aB = c.nreg aB := hkp 2602 (by omega)
+    have esP : cs.nreg sP = c.nreg sP := at_index hkp 2450
+    have esC : cs.nreg sC = c.nreg sC := at_index hkp 2601
+    have eaB : cs.nreg aB = c.nreg aB := at_index hkp 2602
     have hlay5 := L.lay5
     have hpo : parOf cs i = ax[i].2.2.2.2 := by
       unfold parOf
-      rw [eaB, hmem _ (by omega), e4]
-    refine ⟨ax[i].2.2.2.2 - 1, by omega, hpch, fun s hs => Or.inr ⟨i, by rw [esP]; exact hnear,
-      by rw [esC]; exact hic, by rw [hpo]; exact hpar0, s, hs, by rw [hpo]⟩⟩
+      read_words
+    refine ⟨ax[i].2.2.2.2 - 1, by omega, hpch, fun s hs => Or.inr ⟨i, by rw [esP]; exact (stp_stop_near L ho hgap hic (hio.trans hoK)),
+      by rw [esC]; exact hic, by rwa [hpo], s, hs, by rw [hpo]⟩⟩
 
 /-- **A non-stop chord at the first cut beyond the key, not beyond the window end, is accepted**
 by the batch of origins (at its far end, from a valid origin). -/
@@ -212,42 +207,38 @@ theorem stp_accepted_of_found (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L :
       ∃ j, j < 2 * N₂.nChords ∧ j / 2 = k ∧ endOrigin J (Qof P) N₂ j = a ∧ endDir j = σ ∧
         ∃ h, (chainModel J.whole).param (Qof P) ⟨p, h⟩ = t ∧ (j, p, h) ∈ A := by
   classical
-  set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
+  set S₂ := N₂.F J.right.chainModel P.Qof with hS₂d
   have hP := E.hP
-  have hS₂ : (chainModel J.right).ChordFamily (Qof P) S₂ := E.hNF₂.1
-  have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
-  have hF := F₂plus_chordFamily E
-  have hLst : (Lst J : ℝ) < oW J (p + t) := lt_of_le_of_lt L.keyL hlt
+  have hS₂ := E.hNF₂.1
+  have hS₂a := hS₂.2.1
+  have hLst := lt_of_le_of_lt L.keyL hlt
   obtain ⟨ch, hch, a, σ, ha, haR, hav, hat, hfree, rfl, hsrc⟩ :=
-    nonstop_found hP hS₂ hF L.keyL L.inv hA.1 hA.2.1 hA.2.2.1 hlt hgap he hA hst
-  obtain ⟨k, hk, hkch, htried⟩ := stp_query_tried E L hW hR hlt hgap rfl hch hsrc
+    nonstop_found hP hS₂ (F₂plus_chordFamily E) L.keyL L.inv hA.1 hA.2.1 hA.2.2.1 hlt hgap he hA hst
+  obtain ⟨k, hk, hkch, htried⟩ := from_facts stp_query_tried
   have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
-  have hlt' := whole_lt_right hP hS₂a hch ha haR hav hfree hst hA hLst
+  have hlt' := by apply whole_lt_right <;> assumption
   have hpt := attach_far hP hσ haR hav hfree hA hLst.le
-  have hnv : sidePt (chainModel J.whole).W p t ≠ J.shared := by
+  have hnv : sidePt J.whole.chainModel.W p t ≠ J.shared := by
     intro h
-    have hm : J.shared ∈ Merge.shoot J.whole a σ := h ▸ hA.2.2.2.1
-    have hvD : J.shared ∉ J.whole.dom := fun hd =>
+    have hvD := fun hd =>
       J.whole.not_mem_set_of_mem_dom hd (J.left_set_subset J.shared_mem_left)
-    obtain ⟨σ', hσ', hfr, he'⟩ := chord_eq_shoot_of_end J.whole (F₂plus_subset J hS₂a he) hm hvD
+    obtain ⟨σ', hσ', hfr, he'⟩ := chord_eq_shoot_of_end J.whole (F₂plus_subset J hS₂a he) (h ▸ hA.2.2.2.1) hvD
     exact hst (Or.inl (Or.inl ⟨σ', hσ', hfr, he'⟩))
   have ha₁ : a.2 ≤ J.left.top.2 := by
-    rcases SweepStop.hit_cases (J := J) (right_hit_end (hS₂a hch) ha).2.1 hσ with h | h
+    rcases SweepStop.hit_cases (right_hit_end (hS₂a hch) ha).2.1 hσ with h | h
     · exact absurd h hlt'.ne
     · exact h.1
-  obtain ⟨-, -, d, hMV, hmE, hArr⟩ := cand_prep hP hS₂a hch ha haR hav ha₁ hA hpt hLst hnv hlt'
+  obtain ⟨-, -, d, hMV, hmE, hArr⟩ := guarded (cand_prep hP hS₂a hch ha haR hav ha₁)
   rw [← hkch] at ha
   -- the endpoint query
-  obtain ⟨j, hj, hjk, hji, hjO, hjD⟩ : ∃ j, j < 2 * N₂.nChords ∧ j / 2 = k ∧
-      (∃ s, s ≤ 1 ∧ j = 2 * k + s) ∧ endOrigin J (Qof P) N₂ j = a ∧ endDir j = σ := by
+  obtain ⟨j, hj, hjk, hji, hjO, hjD⟩ : ∃ j < 2 * N₂.nChords, j / 2 = k ∧
+      (∃ s ≤ 1, j = 2 * k + s) ∧ endOrigin J P.Qof N₂ j = a ∧ endDir j = σ := by
     unfold endOrigin endDir
     rcases ha with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-    · refine ⟨2 * k, by omega, by omega, ⟨0, by omega, by omega⟩, ?_, ?_⟩
-      · rw [ite_eq_left (by omega), show 2 * k / 2 = k by omega]
-      · rw [ite_eq_left (by omega)]
+    · refine ⟨2 * k, by omega, by omega, ⟨0, by omega, by omega⟩, ?_, ?_⟩ <;> simp
     · refine ⟨2 * k + 1, by omega, by omega, ⟨1, le_rfl, rfl⟩, ?_, ?_⟩
-      · rw [ite_eq_right (by omega), show (2 * k + 1) / 2 = k by omega]
-      · rw [ite_eq_right (by omega)]
+      · rw [guarded ite_eq_right, show (2 * k + 1) / 2 = k by omega]
+      · simp
   have hjO' : j ∈ iterO N₂ cs := by
     obtain ⟨s, hs, rfl⟩ := hji
     exact htried s hs
@@ -260,15 +251,14 @@ theorem stp_accepted_of_found (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L :
     rw [dOf_add_mod stp_gW_lt (Lst_ψ_lt hP hMV.1)]
     push_cast; ring
   have hlo : rayPt a σ (J.whole.hitParam a σ) ∈
-      ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) (cs.nreg wGK) [] := by
-    have hin := hcov d t hMV hA.2.1 hA.2.2.1 (by rw [hoffd]; exact hlt) (fun h0 => by
-      rw [hoffd]; exact hwin h0)
+      ShotList.loSet J.left.chainModel P.Qof cs.nmem (cs.nreg wGB) (cs.nreg wGK) [] := by
+    have hin := hcov d t hMV hA.2.1 hA.2.2.1 (by rwa [hoffd]) (fun h0 => by
+      grind)
     rw [hArr.2.2.2.1, ← hgk] at hin
-    rw [hR.1, eGB, eGK]
-    exact hin
-  obtain ⟨h, hh, hmA⟩ := hBA.comp j hjO' hj ⟨by rw [hjO]; exact haR, by rw [hjO]; exact hav,
-    by rw [hjO]; exact hat⟩ p t (by rw [hjO, hjD]; exact hA) (by rw [hjO, hjD]; exact hpt) hLst
-    hnv (by rw [hjO, hjD]; exact hlt') (by rw [hjO, hjD]; exact hlo)
+    rwa [hR.1, eGB, eGK]
+  obtain ⟨h, hh, hmA⟩ := hBA.comp j hjO' hj ⟨by rwa [hjO], by rwa [hjO],
+    by rwa [hjO]⟩ p t (by rwa [hjO, hjD]) (by rwa [hjO, hjD]) hLst
+    hnv (by rwa [hjO, hjD]) (by rwa [hjO, hjD])
   exact ⟨k, hk, a, σ, ha, haR, hav, hat, hfree, rfl, hlt', j, hj, hjk, hjO, hjD, h, hh, hmA⟩
 
 end

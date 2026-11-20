@@ -1,4 +1,6 @@
 module
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.SweepIoS0CandQ1
 
@@ -48,15 +50,15 @@ theorem cIn_val (m f : ℕ → ℕ) :
     regB m cIn f lsxE = f zP ∧ regB m cIn f lsxH = f zPh ∧
       ∀ q, q ≠ lsxE → q ≠ lsxH → regB m cIn f q = f q := by
   refine ⟨?_, ?_, fun q h1 h2 => ?_⟩
-  · simp [cIn, regB, regI, upd, lsxE, lsxH, zP, zPh, sw]
-  · simp [cIn, regB, regI, upd, lsxE, lsxH, zP, zPh, sw]
+  · rfl
+  · rfl
   · simp only [cIn, regB, regI]
-    rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+    simp_all
 
 theorem cIn_ok (m f : ℕ → ℕ) : okB W m cIn f := by
   simp only [cIn, okB, okI]
-  exact ⟨iscr_sw (by simp [lsxE, sw]) (by simp [lsxE, sw]),
-    iscr_sw (by simp [lsxH, sw]) (by simp [lsxH, sw]), trivial⟩
+  exact ⟨guarded iscr_sw,
+    guarded iscr_sw, trivial⟩
 
 theorem cAddr_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
     regB m cAddr f kE = m (f (sw 300) + 7 * f lsI) ∧
@@ -65,11 +67,9 @@ theorem cAddr_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
   have e1 : f 240611 = 1 := hk1
   refine ⟨?_, ?_, fun q h1 h2 h3 => ?_⟩
   · simp only [cAddr, regB, regI, upd, kA, kE, kH, lsI, K1, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-    exact congrArg m (by ring)
+    grind
   · simp only [cAddr, regB, regI, upd, kA, kE, kH, lsI, K1, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-    exact congrArg m (by ring)
+    grind
   · refine regB_other m cAddr f (fun i hi => ?_)
     simp only [cAddr, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
@@ -78,35 +78,29 @@ theorem cAddr_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
 theorem cAddr_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f (sw 300) + 7 * f lsI + 1 ≤ W) :
     okB W m cAddr f := by
   have e1 : f 240611 = 1 := hk1
-  have s : IScr kA := iscr_sw (by simp [kA, sw]) (by simp [kA, sw])
-  have sE : IScr kE := iscr_sw (by simp [kE, sw]) (by simp [kE, sw])
-  have sH : IScr kH := iscr_sw (by simp [kH, sw]) (by simp [kH, sw])
+  have s : IScr kA := guarded iscr_sw
+  have sE : IScr kE := guarded iscr_sw
+  have sH : IScr kH := guarded iscr_sw
   simp only [kA, kE, kH, sw] at s sE sH
   have hb' : f 240300 + 7 * f 244000 + 1 ≤ W := hb
   simp only [cAddr, okB, okI, regI, upd, kA, kE, kH, lsI, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  refine ⟨s, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩,
-    ⟨s, by omega⟩, ⟨s, by omega⟩, sE, ⟨s, by omega⟩, sH, trivial⟩
+  grind
 
 theorem cSlot_val (m f : ℕ → ℕ) :
     regB m cSlot f kS = f sB + 6 * f lsI ∧ ∀ q, q ≠ kS → regB m cSlot f q = f q := by
   refine ⟨?_, fun q h1 => ?_⟩
   · simp only [cSlot, regB, regI, upd, kS, sB, lsI, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-    try ring
+    grind
   · refine regB_other m cSlot f (fun i hi => ?_)
     simp only [cSlot, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [dstI] <;> intro he <;> subst he <;> simp_all
+    grind [dstI]
 
 theorem cSlot_ok (m f : ℕ → ℕ) (hb : f sB + 6 * f lsI ≤ W) : okB W m cSlot f := by
-  have s : IScr kS := iscr_sw (by simp [kS, sw]) (by simp [kS, sw])
+  have s : IScr kS := guarded iscr_sw
   simp only [kS, sw] at s
   have hb' : f 240620 + 6 * f 244000 ≤ W := hb
   simp only [cSlot, okB, okI, regI, upd, kS, sB, lsI, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  refine ⟨s, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩,
-    ⟨s, by omega⟩, trivial⟩
+  grind
 
 theorem cRead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
     regB m cRead f kF = m (f kS) ∧ regB m cRead f kPe = m (f kS + 1) ∧
@@ -114,55 +108,50 @@ theorem cRead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
       ∀ q, q ≠ kS → q ≠ kF → q ≠ kPe → q ≠ kPh → regB m cRead f q = f q := by
   have e1 : f 240611 = 1 := hk1
   refine ⟨?_, ?_, ?_, fun q h1 h2 h3 h4 => ?_⟩
+  · block_post
   · simp only [cRead, regB, regI, upd, kS, kF, kPe, kPh, K1, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
+    grind
   · simp only [cRead, regB, regI, upd, kS, kF, kPe, kPh, K1, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  · simp only [cRead, regB, regI, upd, kS, kF, kPe, kPh, K1, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  · refine regB_other m cRead f (fun i hi => ?_)
-    simp only [cRead, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl <;>
-      simp only [dstI] <;> intro he <;> subst he <;> simp_all
+    grind
+  · refine regB_other m cRead f (fun i hi => ?_) <;> grind [cRead, List.mem_cons, List.not_mem_nil, dstI]
 
 theorem cRead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f kS + 2 ≤ W) : okB W m cRead f := by
   have e1 : f 240611 = 1 := hk1
-  have s : IScr kS := iscr_sw (by simp [kS, sw]) (by simp [kS, sw])
-  have sF : IScr kF := iscr_sw (by simp [kF, sw]) (by simp [kF, sw])
-  have sE : IScr kPe := iscr_sw (by simp [kPe, sw]) (by simp [kPe, sw])
-  have sH : IScr kPh := iscr_sw (by simp [kPh, sw]) (by simp [kPh, sw])
+  have s : IScr kS := guarded iscr_sw
+  have sF : IScr kF := guarded iscr_sw
+  have sE : IScr kPe := guarded iscr_sw
+  have sH : IScr kPh := guarded iscr_sw
   simp only [kS, kF, kPe, kPh, sw] at s sF sE sH
   have hb' : f 244106 + 2 ≤ W := hb
   simp only [cRead, okB, okI, regI, upd, kS, kF, kPe, kPh, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  exact ⟨sF, ⟨s, by omega⟩, sE, ⟨s, by omega⟩, sH, trivial⟩
+  grind
 
 /-! ## The direction -/
 
 theorem cDir_irs (hI : IInv W c₀ c) (hK : Consts c) (hb : c.nreg kS + 3 ≤ W) :
     IRS P W c₀ cDir c 5 (fun c' => c'.nreg kS = c.nreg kS + 3 * qS (c.nreg qD) ∧
       (∀ q, q ≠ kS → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
-  have k1 : c.nreg K1 = 1 := hK.2.1
-  have k3 : c.nreg K3 = 3 := hK.2.2.2.2.2.2
+  have k1 := hK.2.1
+  have k3 := hK.2.2.2.2.2.2
   unfold cDir
   by_cases h0 : c.nreg qD < c.nreg K1
   · refine (IRS.ifT h0 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by norm_num)
       (fun _ h => h)
-    rw [k1] at h0; unfold qS; rw [ite_eq_right (by omega)]; ring
+    simp_all [qS]
   · refine (IRS.ifF h0 ?_).mono (K := 3 + 2) (by norm_num) (fun _ h => h)
     by_cases h1 : c.nreg K1 < c.nreg qD
     · refine (IRS.ifT h1 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by norm_num)
         (fun _ h => h)
-      rw [k1] at h1; unfold qS; rw [ite_eq_right (by omega)]; ring
+      grind [qS]
     · refine (IRS.ifF h1 (IRS.instr1 (i := .addN kS kS K3) hI
-        ⟨iscr_sw (by simp [kS, sw]) (by simp [kS, sw]), by rw [k3]; exact hb⟩)).mono
+        ⟨guarded iscr_sw, by simp_all⟩)).mono
         (by norm_num) ?_
       rintro c' rfl
       rw [k1] at h0 h1
       refine ⟨?_, fun q hq => ?_, rfl⟩
       · simp only [regI, upd_same, k3]
-        unfold qS; rw [ite_eq_left (by omega)]
-      · simp only [regI]; exact upd_other _ _ _ hq
+        grind [qS]
+      · exact upd_other _ _ _ hq
 
 end
 

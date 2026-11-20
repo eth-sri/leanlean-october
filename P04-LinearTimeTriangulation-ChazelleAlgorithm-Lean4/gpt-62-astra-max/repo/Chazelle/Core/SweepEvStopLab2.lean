@@ -38,7 +38,7 @@ theorem slb_sub_same_way (_hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨y₁, a₁, b₁, hH₁, -, rfl, -, -⟩ := Merge.augChords_spec (F₂plus_subset J hS₂ he)
   have hy1 : y₁ ≤ J.right.top.2 := by
     have := F₂plus_snd_le J hS₂ he hwe
-    rw [hwe.1] at this; exact this
+    rwa [hwe.1] at this
   obtain ⟨hwy, hwa, hwb⟩ := hwc
   obtain ⟨hwy₁, hwa₁, hwb₁⟩ := hwe
   have hyy : y₁ = y := hwy₁.symm.trans hwy
@@ -107,26 +107,23 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       rcases dC' with h' | h'
       · exact (dir_not_both hM (hC.hF he') hA' (fun z hz => h' z (he'c' hz)) h).elim
       · exact h'
-  have hcA' : SideAttach (chainModel J.right).W c' (cpA J d) 0 := hcA
   rcases hopp with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · -- `e` east, `e'` and `c'` west
     have hc'w := hc'way.2 h2
     rcases dC'' with h3 | h3
     · exact absurd (slb_sub_same_way hP hS₂.2.1 he hc'' hwe hwc'' (Or.inl ⟨h1, h3⟩))
         (hnf c'' hc'')
-    · exact hM₂.attach_west_unique hS₂.2.1 hc'' hc' hA'' hcA (by rw [← hw]; exact h3)
-        (by rw [← hw]; exact hc'w)
+    · exact hM₂.attach_west_unique hS₂.2.1 hc'' hc' hA'' hcA (by rwa [← hw])
+        (by rwa [← hw])
   · have hc'e := hc'way.1 h2
     rcases dC'' with h3 | h3
-    · exact hM₂.attach_east_unique hS₂.2.1 hc'' hc' hA'' hcA (by rw [← hw]; exact h3)
-        (by rw [← hw]; exact hc'e)
+    · exact hM₂.attach_east_unique hS₂.2.1 hc'' hc' hA'' hcA (by rwa [← hw])
+        (by rwa [← hw])
     · exact absurd (slb_sub_same_way hP hS₂.2.1 he hc'' hwe hwc'' (Or.inr ⟨h1, h3⟩))
         (hnf c'' hc'')
 
 theorem slb_cpB_eq {d : ℕ} (hd0 : d ≠ 0) (hdr : d ≠ rL1 J) : cpB J d = cpA J d := by
-  have h : dq (rL1 J) (rδ J) (d - 1) + 1 = dq (rL1 J) (rδ J) d := by
-    unfold dq; split_ifs <;> omega
-  unfold cpA cpB; rw [h]
+  grind [dq, cpA, cpB]
 
 /-- **The middle region of a tie with a fused partner** (away from the base and the split
 vertex): its label is faced at the counterpart position. -/
@@ -144,29 +141,25 @@ theorem slb_middle_fused (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)
     (hVa : Va ∈ (chainModel J.right).regions S₂) (hVb : Vb ∈ (chainModel J.right).regions S₂)
     (ha : AfterFaces (chainModel J.right) (cpA J d) 0 Va)
     (hb : BeforeFaces (chainModel J.right) (cpB J d) 0 Vb) : EvVal J S₂ {Va, Vb} G := by
-  have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hGM₂ : GoodModel (chainModel J.right) := Or.inl ⟨J.right, hP, rfl⟩
   rw [slb_cpB_eq hd0 hdr] at hb
-  have hcA : SideAttach (chainModel J.right).W c' (cpA J d) 0 :=
+  have hcA :=
     attach_counterpart2 J hP hS₂.2.1 hS₂.1 hd le_rfl zero_lt_one (fun _ => ⟨hd0, hdr⟩) he'
       (hS₂.2.1 hc') he'c' hA'
   have huniq : ∀ c'' ∈ S₂, SideAttach (chainModel J.right).W c'' (cpA J d) 0 → c'' = c' :=
     fun c'' hc'' h => slb_U2 hP hS₂ he he' hne hnf hc' he'c' hd hA hA' hcA hc'' h
-  have hsec : (0 : ℝ) = 0 → d ≠ 0 ∧ d ≠ rL1 J := fun _ => ⟨hd0, hdr⟩
   have lab := fun {V : Set Point} (hV : V ∈ (chainModel J.right).regions S₂)
       (hVs : SideOf (chainModel J.right) ρ c' V) =>
-    sideLabel_fused J hP hS₂ hF he' hc' he'c' hd le_rfl zero_lt_one hsec hA' hρ hV hVs G hG hS'
-  rcases hC.hM₂.attach_dir (hS₂.2.1 hc') hcA with h | h
-  · have sa := after_side hGM₂ hS₂ hc' hcA huniq (Or.inl ⟨rfl, h⟩) hVa ha
-    have sb := before_side hGM₂ hS₂ hc' hcA huniq (Or.inl ⟨rfl, h⟩) hVb hb
+    sideLabel_fused J hP hS₂ hF he' hc' he'c' hd le_rfl zero_lt_one (fun _ => ⟨hd0, hdr⟩) hA' hρ hV hVs G hG hS'
+  rcases (corr_right0 J hP hS₂.2.1 hS₂.1).hM₂.attach_dir (hS₂.2.1 hc') hcA with h | h
+  · 
     rcases hρ with rfl | rfl
-    · exact slb_evVal (Set.mem_insert_of_mem _ rfl) hVb (lab hVb sb)
-    · exact slb_evVal (Set.mem_insert _ _) hVa (lab hVa sa)
-  · have sa := after_side hGM₂ hS₂ hc' hcA huniq (Or.inr ⟨rfl, h⟩) hVa ha
-    have sb := before_side hGM₂ hS₂ hc' hcA huniq (Or.inr ⟨rfl, h⟩) hVb hb
+    · exact slb_evVal (Set.mem_insert_of_mem _ rfl) hVb (lab hVb (before_side hGM₂ hS₂ hc' hcA huniq (Or.inl ⟨rfl, h⟩) hVb hb))
+    · exact slb_evVal (Set.mem_insert _ _) hVa (lab hVa (after_side hGM₂ hS₂ hc' hcA huniq (Or.inl ⟨rfl, h⟩) hVa ha))
+  · 
     rcases hρ with rfl | rfl
-    · exact slb_evVal (Set.mem_insert _ _) hVa (lab hVa (by simpa using sa))
-    · exact slb_evVal (Set.mem_insert_of_mem _ rfl) hVb (lab hVb sb)
+    · exact slb_evVal (Set.mem_insert _ _) hVa (lab hVa (by simpa using (after_side hGM₂ hS₂ hc' hcA huniq (Or.inr ⟨rfl, h⟩) hVa ha)))
+    · exact slb_evVal (Set.mem_insert_of_mem _ rfl) hVb (lab hVb (before_side hGM₂ hS₂ hc' hcA huniq (Or.inr ⟨rfl, h⟩) hVb hb))
 
 end
 

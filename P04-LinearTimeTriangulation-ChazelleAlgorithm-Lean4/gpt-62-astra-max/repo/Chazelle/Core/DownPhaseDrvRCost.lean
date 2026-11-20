@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.DownPhaseDrvRInv
 
@@ -38,7 +39,7 @@ theorem pot_of_le {f : ℕ → ℕ} {lam : ℕ} (h : 16 ≤ lam) :
   rw [pot, dite_eq_left h]
 
 theorem pot_of_lt {f : ℕ → ℕ} {lam : ℕ} (h : lam < 16) : pot f lam = 0 := by
-  rw [pot, dite_eq_right (by omega)]
+  rw [pot, guarded dite_eq_right]
 
 /-- **The potential is at most the sum of the per-level bounds** over `j ≤ λ`. -/
 theorem pot_le_sum (f : ℕ → ℕ) (B : ℕ → ℝ) (hB : ∀ j, 0 ≤ B j) (L₀ : ℕ)
@@ -51,17 +52,16 @@ theorem pot_le_sum (f : ℕ → ℕ) (B : ℕ → ℝ) (hB : ∀ j, 0 ≤ B j) (
     by_cases h16 : 16 ≤ lam
     · rw [pot_of_le h16]
       have hlt := nextLvl_lt h16
-      have hih := ih (nextLvl lam) hlt (by omega)
+      have hih := guarded (ih (nextLvl lam) hlt)
       have hsub : ∑ j ∈ range (nextLvl lam + 1), B j ≤ ∑ j ∈ range lam, B j :=
-        Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_subset_range.mpr (by omega))
+        Finset.sum_le_sum_of_subset_of_nonneg (guarded Finset.range_subset_range.mpr)
           (fun j _ _ => hB j)
       rw [Finset.sum_range_succ]
       push_cast
       have := hf lam h16 hl
       linarith
-    · rw [pot_of_lt (by omega)]
-      push_cast
-      exact Finset.sum_nonneg (fun j _ => hB j)
+    · rw [guarded pot_of_lt]
+      grind [Finset.sum_nonneg]
 
 /-! ## The budget of one level -/
 
@@ -81,11 +81,11 @@ theorem lemma41Nat_add_one_le {g : ℕ} (hg : 2 ≤ g) :
   unfold lemma41Nat
   rw [Cost.lemma41Bound_eq]
   have hc : (1 : ℝ) ≤ Nat.clog 2 g := by
-    have : 1 ≤ Nat.clog 2 g := Nat.clog_pos (by norm_num) (by omega)
+    have : 1 ≤ Nat.clog 2 g := guarded Nat.clog_pos
     exact_mod_cast this
   have hg' : (2 : ℝ) ≤ g := by exact_mod_cast hg
   have hq : (1 : ℝ) ≤ (2 : ℝ) ^ ((74 / 75 : ℝ) * g) :=
-    Real.one_le_rpow (by norm_num) (by positivity)
+    guarded Real.one_le_rpow
   have e : (74 : ℝ) / 75 * g = (74 / 75 : ℝ) * g := by norm_num
   rw [e]
   set x : ℝ := (2 : ℝ) ^ ((74 / 75 : ℝ) * g) with hx
@@ -130,11 +130,9 @@ def lvlConst (C K₁ : ℕ) : ℕ := 4096 * (C + 1) * (4 * K₁)
 theorem lvlBudget_le {cnt : ℕ → ℕ} {C K₁ p lam : ℕ} (hc : cnt lam ≤ C) (h16 : 16 ≤ lam)
     (hp : lam ≤ p) :
     (lvlBudget K₁ cnt p lam : ℝ) ≤ (lvlConst C K₁ : ℝ) * ((2 : ℝ) ^ p * Cost.downOverhead lam) := by
-  have hR := kBound_add_one_le (p := p) hc
   have hl := lemma41Nat_add_one_le (g := nextLvl lam) (by unfold nextLvl; omega)
-  have hK0 : (0 : ℝ) ≤ (C : ℝ) + 1 := by positivity
   have hk0 : (0 : ℝ) ≤ 4 * (K₁ : ℝ) := by positivity
-  have hstep := Cost.downStep_cost_le hK0 hk0 (by omega : 14 ≤ lam) hp hR
+  have hstep := Cost.downStep_cost_le (by positivity) hk0 (by omega : 14 ≤ lam) hp (kBound_add_one_le (p := p) hc)
   unfold lvlBudget lvlConst
   push_cast
   have hR0 : (0 : ℝ) ≤ (kBound cnt p lam : ℝ) + 1 := by positivity
@@ -152,8 +150,6 @@ theorem lvlBudget_le {cnt : ℕ → ℕ} {C K₁ p lam : ℕ} (hc : cnt lam ≤ 
             (4 * Cost.lemma41Bound (Cost.ceilBeta lam + 11)) := this
       _ = ((kBound cnt p lam : ℝ) + 1) *
             (4 * (K₁ : ℝ) * Cost.lemma41Bound (Cost.ceilBeta lam + 11)) := by ring
-  have e : (4096 : ℝ) * ((C : ℝ) + 1) * (4 * (K₁ : ℝ)) * ((2 : ℝ) ^ p * Cost.downOverhead lam) =
-      4096 * ((C : ℝ) + 1) * (4 * (K₁ : ℝ)) * ((2 : ℝ) ^ p * Cost.downOverhead lam) := rfl
   linarith
 
 /-- The constant of the whole level loop: `4500³ · 3000 · lvlConst C K₁`. -/
@@ -163,17 +159,14 @@ def potConst (C K₁ : ℕ) : ℕ := 4500 ^ 3 * 3000 * lvlConst C K₁
 `cnt` is bounded by `C`. -/
 theorem pot_lvlBudget_le {cnt : ℕ → ℕ} {C : ℕ} (hc : ∀ l, cnt l ≤ C) (K₁ p lam : ℕ)
     (hl : lam ≤ p) : pot (lvlBudget K₁ cnt p) lam ≤ potConst C K₁ * 2 ^ p := by
-  have hB : ∀ j, (0 : ℝ) ≤ (lvlConst C K₁ : ℝ) * ((2 : ℝ) ^ p * Cost.downOverhead j) :=
-    fun j => mul_nonneg (by positivity) (mul_nonneg (by positivity) (Cost.downOverhead_nonneg j))
-  have h1 := pot_le_sum (lvlBudget K₁ cnt p) _ hB p
+  have h1 := pot_le_sum (lvlBudget K₁ cnt p) _ (fun j => mul_nonneg (by positivity) (mul_nonneg (by positivity) (Cost.downOverhead_nonneg j))) p
     (fun j h16 hj => lvlBudget_le (hc j) h16 hj) lam hl
   rw [← Finset.mul_sum, ← Finset.mul_sum] at h1
-  have h2 := Cost.sum_downOverhead_le (lam + 1)
   have h3 : (pot (lvlBudget K₁ cnt p) lam : ℝ) ≤ (potConst C K₁ : ℝ) * (2 : ℝ) ^ p := by
     unfold potConst
     push_cast
     have h0 : (0 : ℝ) ≤ (lvlConst C K₁ : ℝ) * (2 : ℝ) ^ p := by positivity
-    have := mul_le_mul_of_nonneg_left h2 h0
+    have := mul_le_mul_of_nonneg_left (Cost.sum_downOverhead_le (lam + 1)) h0
     nlinarith
   exact_mod_cast h3
 

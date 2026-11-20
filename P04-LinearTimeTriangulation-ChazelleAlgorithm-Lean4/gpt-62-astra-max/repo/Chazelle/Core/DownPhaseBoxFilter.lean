@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.DownPhaseBoxTransfer
 
@@ -63,8 +64,6 @@ theorem band_of_edge {e : ℕ} (he : e < (C.sideWalk C.sideBeta).n) (h1 : e ≠ 
     (hyt : y ≤ C.top.2) (hyR : |y| < C.radius) : |y| ≤ bnd C C' - 1 / 2 := by
   have hn : (C.sideWalk C.sideBeta).n = 2 * C.m + 7 := C.sideWalk_n _
   have htop := h.abs_le_of_mem C.top_mem_set
-  have hbR : bnd C C' < C.radius := bnd_lt
-  have htR : C.top.2 < C.radius := by linarith [(abs_le.1 htop.2).2]
   have hR := abs_lt.1 hyR
   unfold sidePt at hpy
   rw [Geometry.lerp_snd] at hpy
@@ -74,16 +73,12 @@ theorem band_of_edge {e : ℕ} (he : e < (C.sideWalk C.sideBeta).n) (h1 : e ≠ 
     rw [hmod] at hpy
     interval_cases e
     · rw [C.sideWalk_vtx_zero, C.sideWalk_vtx_one] at hpy
-      simp only [Chain.slitTop] at hpy
-      linarith
+      grind [Chain.slitTop]
     · exact absurd rfl h1
-    · rw [C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hpy
-      simp only at hpy
-      linarith
+    · grind [C.sideWalk_vtx_two, C.sideWalk_vtx_three]
     · exact absurd rfl h3
     · rw [C.sideWalk_vtx_four, C.sideWalk_vtx_five] at hpy
-      simp only [Chain.slitTop] at hpy
-      linarith
+      grind [Chain.slitTop]
     · rw [C.sideWalk_vtx_five, C.sideWalk_vtx_six] at hpy
       simp only [Chain.slitTop] at hpy
       nlinarith
@@ -91,11 +86,10 @@ theorem band_of_edge {e : ℕ} (he : e < (C.sideWalk C.sideBeta).n) (h1 : e ≠ 
     · have hmod : (e + 1) % (C.sideWalk C.sideBeta).n = e + 1 := by
         rw [hn]; exact Nat.mod_eq_of_lt (by omega)
       rw [hmod] at hpy
-      have hu := h.abs_le_of_mem (tour_mem C h6 (by omega))
-      have hv := h.abs_le_of_mem (tour_mem C (by omega : 6 ≤ e + 1) (by omega))
+      have hu := h.abs_le_of_mem (guarded (tour_mem C h6))
+      have hv := h.abs_le_of_mem (guarded (tour_mem C (by omega : 6 ≤ e + 1)))
       have hb := abs_lerp_le hu hv ht.1 ht.2.le
-      rw [Geometry.lerp_snd, hpy] at hb
-      exact hb.2
+      grind [Geometry.lerp_snd]
     · have he' : e = 2 * C.m + 6 := by omega
       subst he'
       rw [C.sideWalk_vtx_wrap, walk_last] at hpy
@@ -117,13 +111,12 @@ theorem band_of_end {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} (hL : ChordTrip
   rw [e] at hmem'
   have hy1 : (sidePt (C.sideWalk C.sideBeta) w.edge ((chainModel C).param Q w)).2 =
       (Q.vtx x.1).2 := hmem.1
-  have hy2 : (sidePt (C.sideWalk C.sideBeta) w.edge ((chainModel C).param Q w)).2 = y' := hmem'.1
-  have hyy : (Q.vtx x.1).2 = y' := hy1.symm.trans hy2
+  have hy2 := hmem'.1
+  have hyy := hy1.symm.trans hy2
   have hR : |y'| < C.radius := by
     have hm := hh.open_mem ((a + b) / 2) (by linarith [hh.lt]) (by linarith [hh.lt])
     exact (C.dom_subset_box hm).2
-  rw [hyy]
-  exact h.band_of_edge hp h1 h3 ⟨ht0, ht1⟩ hy2 hyt hR
+  grind [h.band_of_edge]
 
 /-- **The chords off the side walls are in the band.** -/
 theorem inBand_dropWalls {Q : Polygon} {L : List (ℕ × ℕ × ℕ)}

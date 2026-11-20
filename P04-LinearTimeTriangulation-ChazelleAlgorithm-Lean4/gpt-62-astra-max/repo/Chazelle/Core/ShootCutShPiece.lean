@@ -1,4 +1,6 @@
 module
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.ShootCutShSeg
 
@@ -46,21 +48,16 @@ theorem pcSet_succ (M : Model) (sE : ℕ) (a : ℝ) (D : ℕ) (b : ℝ) (j : ℕ
       subSeg M (pcEdge M.W.n sE (j + 1)) (pcA a (j + 1)) (pcB D b (j + 1)) := by
   unfold pcSet
   rw [List.range_succ]
-  ext x; simp [or_comm]
+  ext x; simp
 
 theorem pcSet_zero (M : Model) (sE : ℕ) (a : ℝ) (D : ℕ) (b : ℝ) :
     pcSet M sE a D b 0 = subSeg M (pcEdge M.W.n sE 0) (pcA a 0) (pcB D b 0) := by
-  unfold pcSet; ext x; simp
+  unfold pcSet; simp
 
 /-- The sub-segments up to `j < D` do not depend on the end parameter. -/
 theorem pcSet_congr (M : Model) (sE : ℕ) (a : ℝ) {D D' : ℕ} {b b' : ℝ} {j : ℕ}
     (h : ∀ d, d ≤ j → pcB D b d = pcB D' b' d) : pcSet M sE a D b j = pcSet M sE a D' b' j := by
-  unfold pcSet
-  ext x
-  simp only [mem_iUnion, List.mem_range, exists_prop]
-  constructor
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [← h d (by omega)]; exact hx⟩
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [h d (by omega)]; exact hx⟩
+  simp_all [pcSet]
 
 theorem nat_split (k n : ℕ) : (k : ℝ) = ((k % n : ℕ) : ℝ) + ((k / n : ℕ) : ℤ) * (n : ℝ) := by
   rw [Int.cast_natCast]; exact_mod_cast (Nat.mod_add_div' k n).symm
@@ -101,7 +98,7 @@ theorem wset_decomp (M : Model) {sE : ℕ} (hn : 0 < M.W.n) {a : ℝ} (ha0 : 0 �
         simp only [q]; push_cast; ring
       rw [e1, e2]
       exact wset_edge M (Nat.mod_lt _ hn) le_rfl hb0 hb1 _
-    rw [← hlast, wset_union M (by linarith) (by push_cast; linarith)]
+    grind [wset_union]
 
 /-! ## The number of edges -/
 
@@ -112,15 +109,7 @@ theorem piece0_nowrap {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n 
     (hy : ProperPos (chainModel C) Q n y) (hxy : x.edge = y.edge) (hxn : x.edge < 2 * C.m + 7)
     (hwt : (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1) :
     (chainModel C).param Q x < (chainModel C).param Q y := by
-  rw [arcWt_chain C Q hx hy] at hwt
-  by_contra hle
-  push Not at hle
-  have hm := C.one_le
-  have hc := le_keyCeil y.edge ((chainModel C).param Q y)
-  have hc' := keyCeil_le y.edge ((chainModel C).param Q y)
-  unfold arcWtNat at hwt
-  rw [ite_eq_right (by rw [hxy]; push Not; linarith)] at hwt
-  omega
+  grind [arcWtNat, arcWt_chain, C.one_le, le_keyCeil, keyCeil_le]
 
 /-- The count of a kind-0 piece. -/
 def pcD (n sE eE : ℕ) : ℕ := (eE + n - sE) % n
@@ -131,9 +120,7 @@ theorem piece0_D_le {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
     (hyn : y.edge < 2 * C.m + 7)
     (hwt : (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1) :
     pcD (2 * C.m + 7) x.edge y.edge ≤ 9 := by
-  have hnw := piece0_nowrap hx hy
   rw [arcWt_chain C Q hx hy] at hwt
-  have hm := C.one_le
   have hc := le_keyCeil y.edge ((chainModel C).param Q y)
   have hc' := keyCeil_le y.edge ((chainModel C).param Q y)
   have hx0 := hx.1
@@ -150,17 +137,16 @@ theorem piece0_D_le {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
       have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast h
       linarith
     rw [show y.edge + (2 * C.m + 7) - x.edge = (y.edge - x.edge) + (2 * C.m + 7) by omega,
-      Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      Nat.add_mod_right, guarded Nat.mod_eq_of_lt]
     omega
   · -- wrap in keys: `y.edge ≤ x.edge`
     have hle : y.edge ≤ x.edge := by
       by_contra h
       push Not at h
       have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast h
-      exact hlt (by linarith)
+      exact guarded hlt
     rcases hle.lt_or_eq with hlt' | heq
-    · rw [Nat.mod_eq_of_lt (by omega)]
-      omega
+    · block_post [Nat.mod_eq_of_lt]
     · rw [heq, Nat.add_sub_cancel_left, Nat.mod_self]; omega
 
 /-- **The unwrapped end** of a kind-0 piece. -/
@@ -184,20 +170,18 @@ theorem piece0_end {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
       have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast h
       linarith
     rw [show y.edge + (2 * C.m + 7) - x.edge = (y.edge - x.edge) + (2 * C.m + 7) by omega,
-      Nat.add_mod_right, Nat.mod_eq_of_lt (by omega), Nat.cast_sub hle]
+      Nat.add_mod_right, guarded Nat.mod_eq_of_lt, Nat.cast_sub hle]
     ring
   · have hle : y.edge ≤ x.edge := by
       by_contra h
       push Not at h
       have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast h
-      exact hlt (by linarith)
+      exact guarded hlt
     rcases hle.lt_or_eq with hlt' | heq
-    · rw [Nat.mod_eq_of_lt (by omega)]
+    · rw [guarded Nat.mod_eq_of_lt]
       push_cast [show x.edge ≤ y.edge + (2 * C.m + 7) by omega]
       ring
-    · exfalso
-      have := hnw heq.symm hxn hwt
-      exact hlt (by rw [heq]; linarith)
+    all_goals grind
 
 /-- **A kind-0 piece is the union of its edge segments.** -/
 theorem piece0_union {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
@@ -213,21 +197,19 @@ theorem piece0_union {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x
   have kx := key_range hx hxn
   have ky := key_range hy hyn
   rw [← hnW] at kx ky
-  have hL := len_le (M.W.n : ℝ) (M.key Q x) (M.key Q y) kx.1 ky.2
-  have hend := piece0_end hx hy hxn hyn hwt
   have hstep := arcSet_step M kx.1 kx.2 ky.1 ky.2 0
   simp only [Int.cast_zero, zero_mul, add_zero] at hstep
   rw [hnW] at hstep
-  rw [hstep, hend, show M.key Q x = (x.edge : ℝ) + M.param Q x from rfl]
+  rw [hstep, (piece0_end hx hy hxn hyn hwt), show M.key Q x = (x.edge : ℝ) + M.param Q x from rfl]
   refine wset_decomp M (sE := x.edge) hn hx.1 hx.2.1.le (pcD (2 * C.m + 7) x.edge y.edge) hy.1
     hy.2.1.le (fun hD => ?_)
   -- one edge: the start comes first
   have hxy : x.edge = y.edge := by
     unfold pcD at hD
     rcases Nat.lt_or_ge y.edge x.edge with h | h
-    · rw [Nat.mod_eq_of_lt (by omega)] at hD; omega
+    · rw [guarded Nat.mod_eq_of_lt] at hD; omega
     · rw [show y.edge + (2 * C.m + 7) - x.edge = (y.edge - x.edge) + (2 * C.m + 7) by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)] at hD
+        Nat.add_mod_right, guarded Nat.mod_eq_of_lt] at hD
       omega
   exact (piece0_nowrap hx hy hxy hxn hwt).le
 

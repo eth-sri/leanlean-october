@@ -1,4 +1,6 @@
 module
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseDrvRCost
 public import Chazelle.Programs.Tactics
@@ -75,19 +77,17 @@ theorem frame_drv {c c' : Config} {k : ℕ}
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
   refine ⟨fun r hr' _ => hr r ?_, fun r _ => by rw [hrr], fun a _ => by rw [hm],
     fun a _ => by rw [hrm], ho, by omega, by omega⟩
-  simp only [Finset.mem_singleton, bandOf, bDownDrv] at hr'
-  omega
+  grind [Finset.mem_singleton, bandOf, bDownDrv]
 
 /-- The frame of the final copy into `coreReg 3`. -/
 theorem frame_core {c c' : Config} {k : ℕ}
     (hr : ∀ r, r ≠ 230003 → c'.nreg r = c.nreg r) (hm : c'.nmem = c.nmem)
     (hrr : c'.rreg = c.rreg) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     Frame {bCore} c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
+  have hA : c'.nreg ALLOC = c.nreg ALLOC := at_index hr ALLOC
   refine ⟨fun r hr' _ => hr r ?_, fun r _ => by rw [hrr], fun a _ => by rw [hm],
     fun a _ => by rw [hrm], ho, by omega, by omega⟩
-  simp only [Finset.mem_singleton, bandOf, bCore] at hr'
-  omega
+  grind [Finset.mem_singleton, bandOf, bCore]
 
 /-! ## The pieces -/
 
@@ -110,16 +110,9 @@ theorem guardS_exec (n₀ : ℕ) (c : Config) (hw : WordsBounded W c) (hn₀ : n
   all_goals try omega
   by_cases h : P.n < n₀
   · refine spec_ifLtN_true (by config_simp; omega) ?_
-    refine spec_skip ‹_› ?_
-    refine ⟨by omega, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl, rfl⟩
-    · simp only [Machine.upd_same, ite_eq_right (show ¬ n₀ ≤ P.n by omega)]
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+    refine spec_skip ‹_› ?_ <;> grind [Machine.upd_same, Machine.upd_other]
   · refine spec_ifLtN_false (by config_simp; omega) ?_
-    refine spec_instr (Exec.copyN ‹_› 210007 210000) fun _ => ?_
-    refine ⟨by omega, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl, rfl⟩
-    · simp (disch := omega) only [Machine.upd_same, Machine.upd_other,
-        ite_eq_left (show n₀ ≤ P.n by omega)]
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+    refine spec_instr (Exec.copyN ‹_› 210007 210000) fun _ => ?_ <;> grind [Machine.upd_same, Machine.upd_other]
 
 set_option maxHeartbeats 4000000 in
 /-- **`λ := p`.** -/
@@ -130,12 +123,7 @@ theorem lamP_exec (c : Config) (hw : WordsBounded W c) {S : ℕ} (hS : c.nreg 23
       (∀ r, 210001 ≤ r → r ≤ 210010 → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold lamP
-  exec_block
-  all_goals try omega
-  all_goals try (simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, hS]; omega)
-  refine ⟨rfl, ?_, fun r hr => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-  all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hS]
+  verify_block
 
 set_option maxHeartbeats 4000000 in
 /-- **`λ := ⌈λ/5⌉ + 11`** from the setup table. -/
@@ -148,13 +136,7 @@ theorem lamNext_exec (c : Config) (hw : WordsBounded W c) {S p lam : ℕ}
       (∀ r, 210001 ≤ r → r ≤ 210010 → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold lamNext
-  exec_block
-  all_goals try omega
-  all_goals try (simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, hS, hp, hl]; omega)
-  refine ⟨rfl, ?_, fun r hr => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-  all_goals simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, hS, hp, hl]
+  verify_block
 
 end exec
 

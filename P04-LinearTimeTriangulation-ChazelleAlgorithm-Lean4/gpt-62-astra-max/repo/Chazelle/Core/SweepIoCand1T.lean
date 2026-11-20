@@ -1,4 +1,6 @@
 module
+public import Chazelle.Core.ModelAccess
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.SweepIoCand1B
 
@@ -45,12 +47,12 @@ theorem mid_keep {c₃ : Config} (hM : Mid P J z c c₂ L)
     (ha : c₂.nreg ALLOC ≤ c₃.nreg ALLOC) (hm : ∀ a, a < c₂.nreg ALLOC → c₃.nmem a = c₂.nmem a) :
     Mid P J z c c₃ L := by
   refine mid_step hM (hM.1.transport (fun j hj => h _
-    (not_oracle_sw (by unfold accA sw; omega) (by unfold accA sw; omega))
+    (guarded not_oracle_sw)
     (by unfold accA sw; omega) (by unfold accA ALLOC sw; omega))) subset_rfl
     (fun τ hτ => Or.inl hτ) ?_
   exact candFr_regs (S := fun r => sw 4800 ≤ r ∧ r ≤ sw 4999)
-    (fun r h => by unfold Alw; unfold sw at h ⊢; omega)
-    (fun r a b d => h r a (by unfold sw at b ⊢; omega) d) ha hm
+    (fun r h => by address_omega)
+    (fun r a b d => at_index h r) ha hm
 
 /-- The budget of the decision tree (the leaves). -/
 def kD (κT κS LK KB : ℕ) : ℕ := 16749 + κT + κS + LK + KB
@@ -90,7 +92,7 @@ theorem tree_pos (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB) :
       0 ≤ (chainModel J.right).param (Qof P) ⟨c.nreg qE, c.nreg qH⟩ ∧
       (chainModel J.right).param (Qof P) ⟨c.nreg qE, c.nreg qH⟩ < 1 := by
   obtain ⟨hzpos, hqE, hpp, -⟩ := q1_facts h.hq
-  exact ⟨hzpos, hqE, hpp.1, hpp.2.1⟩
+  grind [hpp.1, hpp.2.1]
 
 include hT in
 theorem leaf_tab (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB)
@@ -121,8 +123,7 @@ theorem leaf_brute (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB)
       (kD κT κS (lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB)
       (fun c' => CandOut P J z c c' ∧ CandFr c c') := by
   have hk := h.hKB hbq
-  exact (bruteB_irs hBr hsh hBs hXl h.hA h.hq h.hI₂ h.hM h.hnb hns
-    (by unfold kD at hroom; omega)).mono (by unfold kD; omega) (fun _ h => h)
+  exact (guarded (bruteB_irs hBr hsh hBs hXl h.hA h.hq h.hI₂ h.hM h.hnb hns)).mono (by unfold kD; omega) (fun _ h => h)
 
 include hT hBr hsh hBs hXl in
 /-- **A vertex position other than the shared vertex.** -/
@@ -134,7 +135,7 @@ theorem topT_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB) (
       (kD κT κS (lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB + 14)
       (fun c' => CandOut P J z c c' ∧ CandFr c c') := by
   obtain ⟨hzpos, hx, hp0, hp1⟩ := tree_pos h
-  have htop := top_iffR h.hA.hP (Qof P) hx hp0 hp1
+  have htop := top_iffR h.hA.hP P.Qof hx hp0 hp1
   rw [hzpos] at htop
   dsimp only at htop
   have k6 := h.hK.2.2.1
@@ -142,7 +143,6 @@ theorem topT_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB) (
   unfold topT
   refine irs_ite' (K := KK + 12) (by omega) (fun hj => ?_) (fun hj => ?_)
   · rw [h.vj, h.vk] at hj
-    have hj' : c.nreg qJ < 2 * N₂.nChords := by omega
     refine irs_ifEq' (K := KK + 8) (by omega) (fun e => ?_) (fun e => ?_)
     · rw [h.vE, k6] at e
       exact (leaf_brute hBr hsh hBs hXl h (Or.inr (htop.2 ⟨h0, Or.inl e⟩)) hns hroom).mono
@@ -156,17 +156,9 @@ theorem topT_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB) (
         · rw [h.vE, h.vt] at e''
           exact leaf_brute hBr hsh hBs hXl h (Or.inr (htop.2 ⟨h0, Or.inr (Or.inr e'')⟩)) hns
             hroom
-        · rw [h.vE, k6] at e
-          rw [h.vE, h.vy] at e'
-          rw [h.vE, h.vt] at e''
-          have hnt : z ≠ J.right.top := fun hz => by
-            rcases (htop.1 hz).2 with a | a | a
-            · exact e a
-            · exact e' (by omega)
-            · exact e'' a
-          exact leaf_tab hT h hj' hns hnt hroom
+        · grind [h.vE, h.vy, h.vt, leaf_tab]
   · rw [h.vj, h.vk] at hj
-    exact (leaf_brute hBr hsh hBs hXl h (Or.inl (by omega)) hns hroom).mono (by omega)
+    exact (leaf_brute hBr hsh hBs hXl h (guarded Or.inl) hns hroom).mono (by omega)
       (fun _ h => h)
 
 include hT hS hBr hsh hBs hXl in
@@ -179,32 +171,31 @@ theorem dec_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB)
       (kD κT κS (lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB + 28)
       (fun c' => CandOut P J z c c' ∧ CandFr c c') := by
   obtain ⟨hzpos, hx, hp0, hp1⟩ := tree_pos h
-  have hsh' := shared_iffR h.hA.hP (Qof P) hx hp0 hp1
+  have hsh' := shared_iffR h.hA.hP (P.Qof) hx hp0 hp1
   rw [hzpos] at hsh'
   dsimp only at hsh'
   set KK := kD κT κS (lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB with hKK
   have k0 := h.hK.1
   have k6 := h.hK.2.2.1
-  have hz0 := nhgt_eq_zero_iff (chainModel J.right) (Qof P) ⟨c.nreg qE, c.nreg qH⟩
+  have hz0 := nhgt_eq_zero_iff J.right.chainModel P.Qof ⟨c.nreg qE, c.nreg qH⟩
   refine irs_ite' (K := KK + 26) (by omega) (fun hp => ?_) (fun hp => ?_)
   · -- parameter positive
-    rw [k0, vH] at hp
-    have hne : (chainModel J.right).param (Qof P) ⟨c.nreg qE, c.nreg qH⟩ ≠ 0 :=
+    simp [*] at hp
+    have hne :=
       fun e => by rw [hz0.2 e] at hp; exact lt_irrefl _ hp
-    have hns : z ≠ J.shared := fun e => hne (hsh'.1 e).1
-    have hnt : z ≠ J.right.top := fun e => by
-      have := (top_iffR h.hA.hP (Qof P) hx hp0 hp1).1 (by rw [hzpos]; exact e)
+    have hns := fun e => hne (hsh'.1 e).1
+    have hnt := fun e => by
+      have := guarded (top_iffR h.hA.hP P.Qof hx hp0 hp1).1
       exact hne this.1
     unfold genT
     refine irs_ite' (K := KK) (by omega) (fun hj => ?_) (fun hj => ?_)
+    · grind [h.vj, h.vk, leaf_tab]
     · rw [h.vj, h.vk] at hj
-      exact leaf_tab hT h (by omega) hns hnt hroom
-    · rw [h.vj, h.vk] at hj
-      exact leaf_brute hBr hsh hBs hXl h (Or.inl (by omega)) hns hroom
+      exact leaf_brute hBr hsh hBs hXl h (guarded Or.inl) hns hroom
   · -- parameter zero
     rw [k0, vH] at hp
-    have h0 : (chainModel J.right).param (Qof P) ⟨c.nreg qE, c.nreg qH⟩ = 0 :=
-      hz0.1 (by omega)
+    have h0 :=
+      guarded hz0.1
     unfold zeroT
     refine irs_ifEq' (K := KK + 22) (by omega) (fun e => ?_) (fun e => ?_)
     · rw [h.vE, h.v41] at e
@@ -218,17 +209,10 @@ theorem dec_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB)
           have e1 : c.nreg qE + 1 = 2 * J.m₂ + 7 := by omega
           exact (leaf_shr hS hsh hBs hXl h (hsh'.2 ⟨h0, Or.inr ⟨e1, e''⟩⟩) hroom).mono
             (by omega) (fun _ h => h)
-        · rw [h.v41, k6] at e''
-          have hns : z ≠ J.shared := fun hz => by
-            rcases (hsh'.1 hz).2 with a | ⟨-, a⟩
-            · exact e a
-            · exact e'' a
-          exact topT_irs hT hBr hsh hBs hXl h hns h0 hroom
+        · grind [h.v41, topT_irs]
       · rw [h.vE, h.vy] at e'
         have hns : z ≠ J.shared := fun hz => by
-          rcases (hsh'.1 hz).2 with a | ⟨a, -⟩
-          · exact e a
-          · exact e' (by omega)
+          grind
         exact (topT_irs hT hBr hsh hBs hXl h hns h0 hroom).mono (by omega) (fun _ h => h)
 
 end Tree

@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.SweepEvKey2
 
@@ -90,8 +91,8 @@ theorem kqEfr_block {X : ℕ → Prop} (l : List Instr) (hX : ∀ i ∈ l, X (ds
 theorem kqStop_keep {X : ℕ → Prop} {c d : Config} (h : EFr X c d) (hsB : ¬ X sB)
     (hH : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC) {i : ℕ} (hi : i < c.nreg sC) :
     d.nmem (d.nreg sB + 5 * i) = stopE c i ∧ d.nmem (d.nreg sB + 5 * i + 1) = stopH c i := by
-  rw [h.kkeep hsB (by unfold sB sw; omega)]
-  exact ⟨h.2.2 _ (by omega), h.2.2 _ (by omega)⟩
+  rw [at_index h.kkeep hsB]
+  exact ⟨at_index h.2.2 _, at_index h.2.2 _⟩
 
 /-! ## The steps -/
 
@@ -100,38 +101,32 @@ theorem selB_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hW : 1 ≤ W) :
     IRS P W c₀ kqSelB c 8 (fun d => SelInv P J c d False False) := by
   unfold kqSelB
   refine IRS.seq (K₁ := 1) (K₂ := 7) (IRS.block [.constN kqF 0] hI
-    ⟨⟨iscr_sw' (by norm_num) (by norm_num), by omega⟩, trivial⟩) ?_
+    ⟨⟨guarded iscr_sw', by omega⟩, trivial⟩) ?_
   rintro c₁ hI₁ - - hc₁
   have fr1 : EFr SelR c c₁ := by
     rw [hc₁]; exact kqEfr_block _ (by simp [dstI, SelR, OffR]) (by unfold SelR; kqr)
-  have e0 : c₁.nreg kqF = 0 := by rw [hc₁]; simp [regB, regI]
-  have eF : c₁.nreg bF = c.nreg bF := fr1.kkeep (by unfold SelR; kqr) (by kqr)
-  have eE : c₁.nreg bE = c.nreg bE := fr1.kkeep (by unfold SelR; kqr) (by kqr)
-  have eH : c₁.nreg bH = c.nreg bH := fr1.kkeep (by unfold SelR; kqr) (by kqr)
-  have hK₁ : Consts c₁ := hK₀.fix hI₁
-  refine kqIsOne_irs (K := 3) hI₁ hK₁ (fun h1 => ?_) (fun h1 => ?_)
+  have e0 : c₁.nreg kqF = 0 := by rw [hc₁]; rfl
+  have eF : c₁.nreg bF = c.nreg bF := guarded fr1.kkeep
+  refine kqIsOne_irs (K := 3) hI₁ (hK₀.fix hI₁) (fun h1 => ?_) (fun h1 => ?_)
   · refine (IRS.block _ hI₁ (by
       simp only [okB, okI]
-      exact ⟨⟨iscr_sw' (by norm_num) (by norm_num), hW⟩,
-        iscr_sw' (by norm_num) (by norm_num), iscr_sw' (by norm_num) (by norm_num), trivial⟩)).mono
+      exact ⟨⟨guarded iscr_sw', hW⟩,
+        guarded iscr_sw', guarded iscr_sw', trivial⟩)).mono
       le_rfl ?_
     rintro d hd
     have fr2 : EFr SelR c₁ d := by
       rw [hd]; exact kqEfr_block _ (by simp [dstI, SelR, OffR]) (by unfold SelR; kqr)
-    have v1 : d.nreg kqF = 1 := by rw [hd]; simp [regB, regI, upd, kqF, kqE, kqH, sw]
-    have v2 : d.nreg kqE = c₁.nreg bE := by rw [hd]; simp [regB, regI, upd, kqF, kqE, kqH, bE, sw]
+    have v1 : d.nreg kqF = 1 := by rw [hd]; rfl
+    have v2 : d.nreg kqE = c₁.nreg bE := by rw [hd]; rfl
     have v3 : d.nreg kqH = c₁.nreg bH := by
-      rw [hd]; simp [regB, regI, upd, kqF, kqE, kqH, bH, sw]
-    rw [eE] at v2; rw [eH] at v3; rw [eF] at h1
+      rw [hd]; rfl
+    rw [(guarded fr1.kkeep)] at v2; rw [(guarded fr1.kkeep)] at v3; rw [eF] at h1
     refine ⟨fr1.trans fr2, by omega, ⟨fun _ => Or.inl h1, fun _ => v1⟩, fun _ => ⟨Or.inl ⟨h1, v2, v3⟩,
-      fun _ => by rw [v2, v3], fun h => h.elim, fun h => h.elim⟩⟩
+      fun _ => by simp_all, fun h => h.elim, fun h => h.elim⟩⟩
   · rw [eF] at h1
-    refine ⟨fr1, by rw [e0]; omega, ⟨fun h => by rw [e0] at h; omega, fun h => ?_⟩,
-      fun h => by rw [e0] at h; omega⟩
-    rcases h with h | ⟨h, -⟩ | ⟨h, -⟩
-    · exact absurd h h1
-    · exact h.elim
-    · exact h.elim
+    refine ⟨fr1, by simp_all, ⟨fun h => by simp_all, fun h => ?_⟩,
+      fun h => by simp_all⟩
+    grind
 
 set_option maxHeartbeats 8000000 in
 theorem selS_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
@@ -140,64 +135,42 @@ theorem selS_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
     (hS : SelInv P J c d False False) (hroom : d.nreg ALLOC + 11030 ≤ W) :
     IRS P W c₀ selS d 11029 (fun d' => SelInv P J c d' True False) := by
   obtain ⟨fr, hF, hiff, hmin⟩ := hS
-  have eSP : d.nreg sP = c.nreg sP := fr.kkeep (by unfold SelR; kqr) (by kqr)
-  have eSC : d.nreg sC = c.nreg sC := fr.kkeep (by unfold SelR; kqr) (by kqr)
-  have eBF : d.nreg bF = c.nreg bF := fr.kkeep (by unfold SelR; kqr) (by kqr)
-  have eSB : d.nreg sB = c.nreg sB := fr.kkeep (by unfold SelR; kqr) (by kqr)
-  have hKd := hK₀.fix hId
+  have eSP : d.nreg sP = c.nreg sP := guarded fr.kkeep
+  have eSC : d.nreg sC = c.nreg sC := guarded fr.kkeep
   unfold selS
   by_cases hs : d.nreg sP < d.nreg sC
   · rw [eSP, eSC] at hs
     obtain ⟨l1, l2⟩ := kqStop_keep fr (by unfold SelR; kqr) hH.2.2.2 hs
-    refine IRS.mono (K := 11027 + 2) (IRS.ifT (by rw [eSP, eSC]; exact hs) ?_) le_rfl (fun _ h => h)
-    refine IRS.seq (K₁ := 7) (K₂ := 11020) (ldStop_irs hId hKd.2.1 (by
-      rw [eSP, eSB]
+    refine IRS.mono (K := 11027 + 2) (IRS.ifT (by simp_all) ?_) le_rfl (fun _ h => h)
+    refine IRS.seq (K₁ := 7) (K₂ := 11020) (ldStop_irs hId (hK₀.fix hId).2.1 (by
+      rw [eSP, (fr.kkeep (by unfold SelR; kqr) (by kqr))]
       have := hH.2.2.2; have := fr.2.1; omega)) ?_
     rintro d₁ hI₁ hA₁ hA₁' ⟨s1, s2, s3, s4⟩
     rw [eSP, l1] at s1; rw [eSP, l2] at s2
     have fr1 : EFr SelR d d₁ := ⟨fun r _ hr _ => s3 r (fun h => hr (Or.inr (Or.inr (Or.inr h))))
       (fun h => hr (Or.inr (Or.inl h))) (fun h => hr (Or.inr (Or.inr (Or.inl h)))),
-      (s3 ALLOC (by kqr) (by kqr) (by kqr)).ge, fun a _ => by rw [s4]⟩
+      (at_index s3 ALLOC).ge, fun a _ => by simp_all⟩
     have k1 : ∀ r, r = kqF ∨ r = kqE ∨ r = kqH → d₁.nreg r = d.nreg r := fun r hr => by
       rcases hr with rfl | rfl | rfl <;> exact s3 _ (by kqr) (by kqr) (by kqr)
-    have hF1 : d₁.nreg kqF ≤ 1 := by rw [k1 _ (Or.inl rfl)]; exact hF
     refine (offerQ_irs hI₁ (hK₀.fix hI₁) (hctx.transport (fr1.kkeep (by unfold SelR; kqr) (by kqr))
-      (fun a ha => fr1.2.2 a ha) fr1.2.1) (by rw [fr1.kkeep (by unfold SelR; kqr) (by kqr)]; exact hgw)
-      hgn hF1 (fun h => ?_) (by rw [s1, s2]; exact hH.2.2.1 _ hs) (by omega)).mono le_rfl ?_
-    · rw [k1 _ (Or.inl rfl)] at h
-      rw [k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))]
-      exact candK_posW hH (hmin h).1
+      (fr1.2.2) fr1.2.1) (by rwa [fr1.kkeep (by unfold SelR; kqr) (by kqr)])
+      hgn (by rw [k1 _ (Or.inl rfl)]; exact hF) (fun h => ?_) (by rw [s1, s2]; exact hH.2.2.1 _ hs) (by omega)).mono le_rfl ?_
+    · grind [candK_posW]
     rintro d' ⟨o1, o2, o3, o4, fr2⟩
     rw [s1, s2] at o2 o3
     rw [k1 _ (Or.inl rfl), k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))] at o2 o4
     refine ⟨fr.trans (fr1.trans (fr2.mono fun r h => Or.inl h)), by omega,
       ⟨fun _ => Or.inr (Or.inl ⟨trivial, hs⟩), fun _ => o1⟩, fun _ => ?_⟩
     rcases o2 with ⟨hF', e1, e2⟩ | ⟨e1, e2⟩
-    · obtain ⟨m1, m2, -, -⟩ := hmin hF'
-      rw [e1, e2]
-      refine ⟨m1, m2, fun _ _ => by rw [← e1, ← e2]; exact o3, fun h => h.elim⟩
+    · grind
     · rw [e1, e2]
       refine ⟨Or.inr (Or.inl ⟨hs, rfl, rfl⟩), fun hb => ?_, fun _ _ => le_rfl, fun h => h.elim⟩
-      have hF' : d.nreg kqF = 1 := hiff.2 (Or.inl hb)
-      rw [← e1, ← e2]
-      exact (o4 hF').trans ((hmin hF').2.1 hb)
+      grind
   · rw [eSP, eSC] at hs
-    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [eSP, eSC]; exact hs) (IRS.skip hId rfl))
+    refine IRS.mono (K := 0 + 2) (IRS.ifF (by simp_all) (IRS.skip hId rfl))
       (by norm_num) ?_
     rintro d' rfl
-    refine ⟨fr, hF, ?_, fun h => ?_⟩
-    · rw [hiff]
-      constructor
-      · rintro (h | ⟨h, -⟩ | ⟨h, -⟩)
-        · exact Or.inl h
-        · exact h.elim
-        · exact h.elim
-      · rintro (h | ⟨-, h⟩ | ⟨h, -⟩)
-        · exact Or.inl h
-        · exact absurd h hs
-        · exact h.elim
-    · obtain ⟨m1, m2, -, -⟩ := hmin h
-      exact ⟨m1, m2, fun _ h' => absurd h' hs, fun h => h.elim⟩
+    refine ⟨fr, hF, ?_, fun h => ?_⟩ <;> grind
 
 set_option maxHeartbeats 8000000 in
 theorem selW_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
@@ -206,32 +179,20 @@ theorem selW_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
     (hS : SelInv P J c d True False) (hroom : d.nreg ALLOC + 11030 ≤ W) :
     IRS P W c₀ selW d 11024 (fun d' => SelInv P J c d' True True) := by
   obtain ⟨fr, hF, hiff, hmin⟩ := hS
-  have eWX : d.nreg wX = c.nreg wX := fr.kkeep (by unfold SelR; kqr) (by kqr)
-  have eWE : d.nreg wE = c.nreg wE := fr.kkeep (by unfold SelR; kqr) (by kqr)
-  have eWH : d.nreg wH = c.nreg wH := fr.kkeep (by unfold SelR; kqr) (by kqr)
+  have eWX : d.nreg wX = c.nreg wX := guarded fr.kkeep
+  have eWE : d.nreg wE = c.nreg wE := guarded fr.kkeep
+  have eWH : d.nreg wH = c.nreg wH := guarded fr.kkeep
   have hKd := hK₀.fix hId
   unfold selW
   by_cases hs : d.nreg K0 < d.nreg wX
   · have hw : c.nreg wX ≠ 0 := by rw [hKd.1] at hs; omega
     refine IRS.mono (K := 0 + 2) (IRS.ifT hs (IRS.skip hId rfl)) (by norm_num) ?_
     rintro d' rfl
-    refine ⟨fr, hF, ?_, fun h => ?_⟩
-    · rw [hiff]
-      constructor
-      · rintro (h | h | ⟨h, -⟩)
-        · exact Or.inl h
-        · exact Or.inr (Or.inl h)
-        · exact h.elim
-      · rintro (h | h | ⟨-, h⟩)
-        · exact Or.inl h
-        · exact Or.inr (Or.inl h)
-        · exact absurd h hw
-    · obtain ⟨m1, m2, m3, -⟩ := hmin h
-      exact ⟨m1, m2, m3, fun _ h' => absurd h' hw⟩
+    refine ⟨fr, hF, ?_, fun h => ?_⟩ <;> grind
   · have hw : c.nreg wX = 0 := by rw [hKd.1] at hs; omega
     refine IRS.mono (K := 11022 + 2) (IRS.ifF hs ?_) le_rfl (fun _ h => h)
     refine IRS.seq (K₁ := 2) (K₂ := 11020) (IRS.block [.copyN kqSE wE, .copyN kqSH wH] hId
-      ⟨iscr_sw' (by norm_num) (by norm_num), iscr_sw' (by norm_num) (by norm_num), trivial⟩) ?_
+      ⟨guarded iscr_sw', guarded iscr_sw', trivial⟩) ?_
     rintro d₁ hI₁ hA₁ hA₁' hd₁
     have fr1 : EFr SelR d d₁ := by
       rw [hd₁]; exact kqEfr_block _ (by simp [dstI, SelR]) (by unfold SelR; kqr)
@@ -241,30 +202,25 @@ theorem selW_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
     have k1 : ∀ r, r = kqF ∨ r = kqE ∨ r = kqH → d₁.nreg r = d.nreg r := fun r hr => by
       rw [hd₁]
       rcases hr with rfl | rfl | rfl <;> simp [regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw]
-    have hF1 : d₁.nreg kqF ≤ 1 := by rw [k1 _ (Or.inl rfl)]; exact hF
+    have hF1 : d₁.nreg kqF ≤ 1 := by simp_all
     refine (offerQ_irs hI₁ (hK₀.fix hI₁) (hctx.transport (fr1.kkeep (by unfold SelR; kqr) (by kqr))
-      (fun a ha => fr1.2.2 a ha) fr1.2.1) (by rw [fr1.kkeep (by unfold SelR; kqr) (by kqr)]; exact hgw)
+      (fr1.2.2) fr1.2.1) (by rwa [fr1.kkeep (by unfold SelR; kqr) (by kqr)])
       hgn hF1 (fun h => ?_) (by rw [s1, s2]; exact hH.2.1 hw) (by omega)).mono le_rfl ?_
-    · rw [k1 _ (Or.inl rfl)] at h
-      rw [k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))]
-      exact candK_posW hH (hmin h).1
+    · grind [candK_posW]
     rintro d' ⟨o1, o2, o3, o4, fr2⟩
     rw [s1, s2] at o2 o3
     rw [k1 _ (Or.inl rfl), k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))] at o2 o4
     refine ⟨fr.trans (fr1.trans (fr2.mono fun r h => Or.inl h)), by omega,
       ⟨fun _ => Or.inr (Or.inr ⟨trivial, hw⟩), fun _ => o1⟩, fun _ => ?_⟩
     rcases o2 with ⟨hF', e1, e2⟩ | ⟨e1, e2⟩
-    · obtain ⟨m1, m2, m3, -⟩ := hmin hF'
-      rw [e1, e2]
-      exact ⟨m1, m2, m3, fun _ _ => by rw [← e1, ← e2]; exact o3⟩
+    · grind
     · rw [e1, e2]
       have hle : ∀ x : ℝ, d.nreg kqF = 1 → offK P J (d.nreg kqE) (d.nreg kqH) ≤ x →
           offK P J (c.nreg wE) (c.nreg wH) ≤ x := fun x hF' hx => by
-        rw [← e1, ← e2]; exact (o4 hF').trans hx
+        grind
       refine ⟨Or.inr (Or.inr ⟨hw, rfl, rfl⟩), fun hb => ?_, fun _ hs' => ?_, fun _ _ => le_rfl⟩
-      · exact hle _ (hiff.2 (Or.inl hb)) ((hmin (hiff.2 (Or.inl hb))).2.1 hb)
-      · exact hle _ (hiff.2 (Or.inr (Or.inl ⟨trivial, hs'⟩)))
-          ((hmin (hiff.2 (Or.inr (Or.inl ⟨trivial, hs'⟩)))).2.2.1 trivial hs')
+      · grind
+      all_goals grind
 
 end
 

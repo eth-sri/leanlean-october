@@ -1,4 +1,7 @@
 module
+public import Chazelle.Machine.Frames
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseDrvXRamA
 
@@ -53,8 +56,7 @@ theorem x_skipR (d : Config) (hw : WordsBounded W d) (r : ℕ) :
 theorem x_mono {s : Stmt} {d : Config} {K K' : ℕ} {Q : Config → Prop}
     (h : ∃ d' k, Exec P W s d d' k ∧ k ≤ K ∧ Q d') (hK : K ≤ K') :
     ∃ d' k, Exec P W s d d' k ∧ k ≤ K' ∧ Q d' := by
-  obtain ⟨d', k, e, hk, q⟩ := h
-  exact ⟨d', k, e, by omega, q⟩
+  grind
 
 theorem x_if {a b : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {f g : ℕ → ℕ}
     (ht : d.nreg a < d.nreg b → ∃ d' k, Exec P W t d d' k ∧ k ≤ K ∧ NRegs d d' f)
@@ -63,9 +65,9 @@ theorem x_if {a b : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {f g : ℕ → ℕ}
       NRegs d d' (if d.nreg a < d.nreg b then f else g) := by
   by_cases h : d.nreg a < d.nreg b
   · obtain ⟨d', k, ex, hk, hn⟩ := ht h
-    exact ⟨d', k + 1, .ifLtN_true h ex, by omega, by rw [ite_eq_left h]; exact hn⟩
+    exact ⟨d', k + 1, .ifLtN_true h ex, by omega, by simp_all⟩
   · obtain ⟨d', k, ex, hk, hn⟩ := he h
-    exact ⟨d', k + 2, .ifLtN_false h ex, by omega, by rw [ite_eq_right h]; exact hn⟩
+    exact ⟨d', k + 2, .ifLtN_false h ex, by omega, by rwa [ite_eq_right h]⟩
 
 theorem x_ifR {a b r : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {v₁ v₂ : ℕ}
     (ht : d.nreg a < d.nreg b → ∃ d' k, Exec P W t d d' k ∧ k ≤ K ∧ NRegs d d' (upd d.nreg r v₁))
@@ -73,11 +75,7 @@ theorem x_ifR {a b r : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {v₁ v₂ : ℕ
       NRegs d d' (upd d.nreg r v₂)) :
     ∃ d' k, Exec P W (.ifLtN a b t e) d d' k ∧ k ≤ K + 2 ∧
       NRegs d d' (upd d.nreg r (if d.nreg a < d.nreg b then v₁ else v₂)) := by
-  obtain ⟨d', k, ex, hk, hn⟩ := x_if ht he
-  refine ⟨d', k, ex, hk, ?_⟩
-  by_cases h : d.nreg a < d.nreg b
-  · rw [ite_eq_left h] at hn ⊢; exact hn
-  · rw [ite_eq_right h] at hn ⊢; exact hn
+  obtain ⟨d', k, ex, hk, hn⟩ := x_if ht he <;> grind
 
 /-- Sequencing with an `NRegs` first part. -/
 theorem x_seq {s t : Stmt} {d : Config} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config → Prop}
@@ -116,30 +114,22 @@ theorem itemAt_of_hostAt {m : ℕ → ℕ} {B : ℕ} {H : Host} (hH : HostAt m B
     (hi : i < H.length) : ItemAt m (B + 1 + 3 * i) (H.getD i (.run 0 0)) := by
   have h := hH.2 i hi
   have e1 : B + 1 + 3 * i + 1 = B + 2 + 3 * i := by omega
-  have e2 : B + 1 + 3 * i + 2 = B + 3 + 3 * i := by omega
-  rcases hx : H.getD i (.run 0 0) with ⟨a, ℓ⟩ | ⟨j | ⟨e, h'⟩⟩ <;> rw [hx] at h <;>
-    simp only [ItemAt, e1, e2] at h ⊢ <;> exact h
+  grind [ItemAt]
 
 theorem itemWF_of_hostWF {n : ℕ} {H : Host} (hH : HostWF n H) {i : ℕ} (hi : i < H.length) :
     ItemWF n (H.getD i (.run 0 0)) := by
   have hmem : H.getD i (.run 0 0) ∈ H := by
-    rw [List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi
+    simp_all
   have h := hH _ hmem
   rcases hx : H.getD i (.run 0 0) with ⟨a, ℓ⟩ | x <;> rw [hx] at h <;> exact h
 
 theorem pts_take_succ {n : ℕ} {H : Host} {j : ℕ} (hj : j < H.length) :
     Host.pts n (H.take (j + 1)) = Host.pts n (H.take j) ++ (H.getD j (.run 0 0)).pts n := by
-  unfold Host.pts
-  rw [List.take_add_one, List.flatMap_append, List.getElem?_eq_getElem hj,
-    List.getD_eq_getElem _ _ hj]
-  simp
+  grind [Host.pts, List.take_add_one, List.flatMap_append, List.getElem?_eq_getElem, List.getD_eq_getElem]
 
 theorem hpt_take {n : ℕ} {H : Host} {j k : ℕ} (hk : k < (Host.pts n (H.take j)).length) :
     hpt n H k = (Host.pts n (H.take j)).getD k (.vtx 0) := by
-  unfold hpt
-  conv_lhs => rw [← List.take_append_drop j H]
-  unfold Host.pts at hk ⊢
-  rw [List.flatMap_append, List.getD_append _ _ _ _ hk]
+  grind [hpt, Host.pts, List.take_append_drop, List.flatMap_append, List.getD_append]
 
 theorem run_pts_length (n a ℓ : ℕ) : ((HostItem.run a ℓ).pts n).length = ℓ + 1 := by
   simp [HostItem.pts]
@@ -147,8 +137,7 @@ theorem run_pts_length (n a ℓ : ℕ) : ((HostItem.run a ℓ).pts n).length = �
 theorem run_pts_getD (n a ℓ : ℕ) {t : ℕ} (ht : t ≤ ℓ) :
     ((HostItem.run a ℓ).pts n).getD t (.vtx 0) = .vtx ((a + t) % n) := by
   simp only [HostItem.pts]
-  rw [List.getD_eq_getElem _ _ (by simp; omega)]
-  simp
+  simp_all
 
 /-! ## `lookS` -/
 
@@ -219,22 +208,14 @@ theorem lookRun_exec (d : Config) (hw : WordsBounded W d) {n a ℓ cum : ℕ}
     by_cases c1 : d.nreg 217090 < d.nreg 217093
     · refine spec_ifLtN_true c1 ?_
       refine spec_skip hw ?_
-      exec_block
-      · omega
-      · config_simp; omega
-      · refine ⟨by omega, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
-          by config_simp⟩, fun h _ => absurd c1 (by omega)⟩
+      verify_block
     · refine spec_ifLtN_false c1 ?_
       refine spec_seq ?_
       exec_block
       by_cases c2 : ℓ < d.nreg 217090 - cum
       · refine spec_ifLtN_true (by config_simp; omega) ?_
         refine spec_skip ‹_› ?_
-        exec_block
-        · config_simp; omega
-        · config_simp; omega
-        · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
-            fun _ h => absurd c2 (by omega)⟩
+        verify_block
       · refine spec_ifLtN_false (by config_simp; omega) ?_
         refine spec_seq ?_
         exec_block
@@ -243,24 +224,9 @@ theorem lookRun_exec (d : Config) (hw : WordsBounded W d) {n a ℓ cum : ℕ}
         by_cases c3 : a + (d.nreg 217090 - cum) < n
         · refine spec_ifLtN_true (by config_simp; omega) ?_
           refine spec_skip ‹_› ?_
-          exec_block
-          · config_simp; omega
-          · config_simp; omega
-          · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
-              fun _ _ => ?_⟩
-            simp only [Enc]
-            config_simp
-            rw [Nat.mod_eq_of_lt c3]; omega
+          verify_block [Enc, Nat.mod_eq_of_lt]
         · refine spec_ifLtN_false (by config_simp; omega) ?_
-          exec_block
-          · config_simp; omega
-          · config_simp; omega
-          · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
-              fun _ _ => ?_⟩
-            simp only [Enc]
-            config_simp
-            rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-            omega
+          verify_block [Enc, Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
   exact ⟨d', k, ex, hk, h1, h2, h3, exec_frameB ex wr_lookRun⟩
 
 set_option maxHeartbeats 1000000 in
@@ -282,23 +248,14 @@ theorem lookPt_exec (d : Config) (hw : WordsBounded W d) {cum : ℕ}
     by_cases c1 : d.nreg 217090 < d.nreg 217093
     · refine spec_ifLtN_true c1 ?_
       refine spec_skip hw ?_
-      exec_block
-      · omega
-      · refine ⟨by omega, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
-          by config_simp⟩, fun h => absurd c1 (by omega)⟩
+      verify_block
     · refine spec_ifLtN_false c1 ?_
       by_cases c2 : d.nreg 217093 < d.nreg 217090
       · refine spec_ifLtN_true c2 ?_
         refine spec_skip hw ?_
-        exec_block
-        · omega
-        · refine ⟨by omega, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
-            by config_simp⟩, fun h => absurd c2 (by omega)⟩
+        verify_block
       · refine spec_ifLtN_false c2 ?_
-        exec_block
-        · config_simp; omega
-        · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
-            fun _ => ⟨by config_simp, by config_simp, by config_simp⟩⟩
+        verify_block
   exact ⟨d', k, ex, hk, h1, h2, h3, exec_frameB ex wr_lookPt⟩
 
 set_option maxHeartbeats 2000000 in
@@ -327,12 +284,7 @@ theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it :
     exec_block
     · config_simp; omega
     · config_simp; omega
-    · refine ⟨by omega, ?_, ?_, ?_, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, rfl⟩ <;> config_simp
-      · rw [h92]
-      · rw [h92, h27]
-      · rw [h92, h27, show p + 1 + 1 = p + 2 by omega]
-      · simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2,
-          Machine.upd_other _ _ _ h3, Machine.upd_other _ _ _ h4]
+    · simp_all
   have hw1 := e1.wb_right
   -- the item
   obtain ⟨d2, k2, e2, hk2, a93, hkeep, henc, f2⟩ : ∃ d2 k2,
@@ -342,62 +294,54 @@ theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it :
         d2.nreg 217072 = d.nreg 217072) ∧
       (cum ≤ d.nreg 217090 → d.nreg 217090 < cum + (it.pts n).length →
         Enc d2 ((it.pts n).getD (d.nreg 217090 - cum) (.vtx 0))) ∧ FrameB Bitem d1 d2 := by
-    have b20 : d1.nreg 217020 = n := by rw [f1 _ (by decide) (by decide) (by decide) (by decide), h20]
+    have b20 : d1.nreg 217020 = n := by simp_all
     have b27 : d1.nreg 217027 = 1 := by
-      rw [f1 _ (by decide) (by decide) (by decide) (by decide), h27]
+      simp_all
     have b93 : d1.nreg 217093 = cum := by
-      rw [f1 _ (by decide) (by decide) (by decide) (by decide), h93]
-    have b90 : d1.nreg 217090 = d.nreg 217090 := f1 _ (by decide) (by decide) (by decide) (by decide)
-    have b70 : d1.nreg 217070 = d.nreg 217070 := f1 _ (by decide) (by decide) (by decide) (by decide)
-    have b71 : d1.nreg 217071 = d.nreg 217071 := f1 _ (by decide) (by decide) (by decide) (by decide)
-    have b72 : d1.nreg 217072 = d.nreg 217072 := f1 _ (by decide) (by decide) (by decide) (by decide)
+      simp_all
+    have b90 : d1.nreg 217090 = d.nreg 217090 := at_index f1 _
+    have b70 : d1.nreg 217070 = d.nreg 217070 := at_index f1 _
+    have b71 : d1.nreg 217071 = d.nreg 217071 := at_index f1 _
+    have b72 : d1.nreg 217072 = d.nreg 217072 := at_index f1 _
     rcases it with ⟨a, ℓ⟩ | ⟨j | ⟨e, h⟩⟩
     · obtain ⟨i0, i1, i2⟩ := hit
       obtain ⟨ha, hℓ⟩ := hwf
       rw [run_pts_length] at hcW ⊢
-      obtain ⟨d2, k2, e2, hk2, r93, r1, r2, rf⟩ := lookRun_exec (P := P) d1 hw1 b20 b27 b93
-        (by rw [a95, i1]) (by rw [a96, i2]) ha hℓ hnW (by omega)
-      refine ⟨d2, k2 + 1, .ifLtN_true (by rw [a94, i0, b27]; omega) e2, by omega, r93,
+      obtain ⟨d2, k2, e2, hk2, r93, r1, r2, rf⟩ := guarded (lookRun_exec (P := P) d1 hw1 b20 b27 b93
+        (by rw [a95, i1]) (by rw [a96, i2]) ha hℓ hnW)
+      refine ⟨d2, k2 + 1, .ifLtN_true (by grind) e2, by omega, r93,
         fun h => ?_, fun h h' => ?_, rf⟩
-      · obtain ⟨x, y, z⟩ := r1 (by rw [b90]; exact h)
-        exact ⟨x.trans b70, y.trans b71, z.trans b72⟩
-      · rw [run_pts_getD n a ℓ (by omega)]
-        have := r2 (by rw [b90]; exact h) (by rw [b90]; omega)
-        rwa [b90] at this
+      · grind
+      · rw [guarded (run_pts_getD n a ℓ)]
+        grind
     · obtain ⟨i0, i1⟩ := hit
-      obtain ⟨d2, k2, e2, hk2, r93, r1, r2, rf⟩ := lookPt_exec (P := P) d1 hw1 b27 b93
-        (by simp [HostItem.pts] at hcW; omega)
-      refine ⟨d2, k2 + 2, .ifLtN_false (by rw [a94, i0, b27]; omega) e2, by omega,
-        by rw [r93]; simp [HostItem.pts], fun h => ?_, fun h h' => ?_, rf⟩
-      · obtain ⟨x, y, z⟩ := r1 (by rw [b90]; omega)
-        exact ⟨x.trans b70, y.trans b71, z.trans b72⟩
+      obtain ⟨d2, k2, e2, hk2, r93, r1, r2, rf⟩ := guarded (lookPt_exec (P := P) d1 hw1 b27 b93)
+      refine ⟨d2, k2 + 2, .ifLtN_false (by grind) e2, by omega,
+        by rw [r93]; rfl, fun h => ?_, fun h h' => ?_, rf⟩
+      · grind
       · simp only [HostItem.pts, List.length_singleton] at h'
         have hk : d.nreg 217090 = cum := by omega
-        obtain ⟨x, y, -⟩ := r2 (by rw [b90]; exact hk)
+        obtain ⟨x, y, -⟩ := guarded r2
         rw [hk, Nat.sub_self]
-        simp only [HostItem.pts, List.getD_cons_zero, Enc]
-        exact ⟨by rw [x, a94, i0], by rw [y, a95, i1]⟩
+        exact ⟨by grind, by grind⟩
     · obtain ⟨i0, i1, i2⟩ := hit
-      obtain ⟨d2, k2, e2, hk2, r93, r1, r2, rf⟩ := lookPt_exec (P := P) d1 hw1 b27 b93
-        (by simp [HostItem.pts] at hcW; omega)
-      refine ⟨d2, k2 + 2, .ifLtN_false (by rw [a94, i0, b27]; omega) e2, by omega,
-        by rw [r93]; simp [HostItem.pts], fun h => ?_, fun h h' => ?_, rf⟩
-      · obtain ⟨x, y, z⟩ := r1 (by rw [b90]; omega)
-        exact ⟨x.trans b70, y.trans b71, z.trans b72⟩
+      obtain ⟨d2, k2, e2, hk2, r93, r1, r2, rf⟩ := guarded (lookPt_exec (P := P) d1 hw1 b27 b93)
+      refine ⟨d2, k2 + 2, .ifLtN_false (by grind) e2, by omega,
+        by rw [r93]; rfl, fun h => ?_, fun h h' => ?_, rf⟩
+      · grind
       · simp only [HostItem.pts, List.length_singleton] at h'
         have hk : d.nreg 217090 = cum := by omega
-        obtain ⟨x, y, z⟩ := r2 (by rw [b90]; exact hk)
+        obtain ⟨x, y, z⟩ := guarded r2
         rw [hk, Nat.sub_self]
-        simp only [HostItem.pts, List.getD_cons_zero, Enc]
-        exact ⟨by rw [x, a94, i0], by rw [y, a95, i1], by rw [z, a96, i2]⟩
+        grind [HostItem.pts, List.getD_cons_zero, Enc]
   have hw2 := e2.wb_right
   -- advance
   have c91 : d2.nreg 217091 = d.nreg 217091 := by
-    rw [f2.1 _ (by decide), f1 _ (by decide) (by decide) (by decide) (by decide)]
+    rw [f2.1 _ (by decide), at_index f1 _]
   have c92 : d2.nreg 217092 = p := by
-    rw [f2.1 _ (by decide), f1 _ (by decide) (by decide) (by decide) (by decide), h92]
+    rw [f2.1 _ (by decide), at_index f1 _, h92]
   have c27 : d2.nreg 217027 = 1 := by
-    rw [f2.1 _ (by decide), f1 _ (by decide) (by decide) (by decide) (by decide), h27]
+    rw [f2.1 _ (by decide), at_index f1 _, h27]
   obtain ⟨d3, k3, e3, hk3, a91, a92, f3⟩ : ∃ d3 k3, Exec P W lookNx d2 d3 k3 ∧ k3 ≤ 4 ∧
       d3.nreg 217091 = d.nreg 217091 + 1 ∧ d3.nreg 217092 = p + 3 ∧
       (∀ r, r ≠ 217091 → r ≠ 217092 → d3.nreg r = d2.nreg r) := by
@@ -414,14 +358,12 @@ theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it :
   have wr3 : wr Blook lookNx = true := by decide
   have wr1 : wr Blook lookRd = true := by decide
   have wr2 : wr Blook (.ifLtN 217094 217027 lookRun lookPt) = true := by decide
-  refine ⟨d3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, a91, a92, ?_, fun h => ?_,
+  refine ⟨d3, k1 + (k2 + k3), e1 ;; e2 ;; e3, by omega, a91, a92, ?_, fun h => ?_,
     fun h h' => ?_, (exec_frameB e1 wr1).trans ((exec_frameB e2 wr2).trans (exec_frameB e3 wr3))⟩
-  · rw [f3 _ (by decide) (by decide), a93]
-  · obtain ⟨x, y, z⟩ := hkeep h
-    exact ⟨(f3 _ (by decide) (by decide)).trans x, (f3 _ (by decide) (by decide)).trans y,
-      (f3 _ (by decide) (by decide)).trans z⟩
-  · exact (henc h h').congr (f3 _ (by decide) (by decide)) (f3 _ (by decide) (by decide))
-      (f3 _ (by decide) (by decide))
+  · frame_simp [f3, a93]
+  · grind
+  · exact (henc h h').congr (at_index f3 _) (at_index f3 _)
+      (at_index f3 _)
 
 set_option maxHeartbeats 2000000 in
 /-- **`lookS`: host point `k = 217090`** of a well-formed host of at most `64` items. -/
@@ -442,20 +384,16 @@ theorem lookS_exec (d : Config) (hw : WordsBounded W d) {n HB : ℕ} {H : Host}
     obtain ⟨d0, k0, e0, hk0, a91, a92, a93⟩ : ∃ d0 k0, Exec P W (block [.constN 217091 0,
         .copyN 217092 217035, .constN 217093 0]) d d0 k0 ∧ k0 ≤ 3 ∧
         d0.nreg 217091 = 0 ∧ d0.nreg 217092 = HB + 1 ∧ d0.nreg 217093 = 0 := by
-      exec_block
-      · omega
-      · omega
-      · refine ⟨by omega, ?_, ?_, ?_⟩ <;> config_simp
-        exact h35
-    exact ⟨d0, k0, e0, hk0, a91, a92, a93, exec_frameB e0 (by decide)⟩
+      verify_block
+    exact ⟨d0, k0, e0, hk0, a91, a92, a93, at_index exec_frameB e0⟩
   -- the loop
   set k := d.nreg 217090 with hkdef
   let Inv : ℕ → Config → Prop := fun j c => WordsBounded W c ∧ c.nreg 217091 = j ∧
     c.nreg 217034 = H.length ∧ c.nreg 217092 = HB + 1 + 3 * j ∧
     c.nreg 217093 = (Host.pts n (H.take j)).length ∧
     (k < (Host.pts n (H.take j)).length → Enc c (hpt n H k)) ∧ FrameB Blook d c
-  have hI0 : Inv 0 d0 := ⟨e0.wb_right, a91, by rw [f0.1 _ (by decide), h34], by rw [a92],
-    by rw [a93]; simp [Host.pts], fun h => by simp [Host.pts] at h, f0⟩
+  have hI0 : Inv 0 d0 := ⟨e0.wb_right, a91, by frame_simp [f0.1, h34], by rw [a92],
+    by grind [Host.pts], fun h => by simp [Host.pts] at h, f0⟩
   obtain ⟨d', k', e', ⟨-, -, -, -, -, henc, f'⟩, hk'⟩ := DrvR.forLoop (P := P) (W := W) (ir := 217091)
     (nr := 217034) (body := lookBody) Inv 30 H.length
     (fun j c hc => ⟨hc.1, hc.2.1, hc.2.2.1⟩)
@@ -468,28 +406,21 @@ theorem lookS_exec (d : Config) (hw : WordsBounded W d) {n HB : ℕ} {H : Host}
       rw [pts_take_succ hj, List.length_append] at hlen'
       obtain ⟨c', kb, eb, hkb, b91, b92, b93, bkeep, benc, bf⟩ := lookBody_exec (P := P) c hwc
         (n := n) (p := HB + 1 + 3 * j) (cum := (Host.pts n (H.take j)).length)
-        (it := H.getD j (.run 0 0)) (by rw [cf.1 _ (by decide), h20])
-        (by rw [cf.1 _ (by decide), h27]) c92 c93
+        (it := H.getD j (.run 0 0)) (by frame_simp [cf.1, h20])
+        (by frame_simp [cf.1, h27]) c92 c93
         (by rw [cf.2.2.1]; exact itemAt_of_hostAt hH hj) (itemWF_of_hostWF hwf hj)
         (by omega) (by omega) (by rw [c91]; omega) hnW
-      have c90 : c.nreg 217090 = k := cf.1 _ (by decide)
-      refine ⟨c', kb, eb, ⟨eb.wb_right, by rw [b91, c91], by rw [bf.1 _ (by decide), c34],
-        by rw [b92]; ring, by rw [b93, pts_take_succ hj, List.length_append], fun hk => ?_,
+      have c90 : c.nreg 217090 = k := at_index cf.1 _
+      refine ⟨c', kb, eb, ⟨eb.wb_right, by rw [b91, c91], by frame_simp [bf.1, c34],
+        by rw [b92]; ring, by grind [pts_take_succ, List.length_append], fun hk => ?_,
         cf.trans bf⟩, hkb⟩
       rw [c90] at bkeep benc
       by_cases hk0 : k < (Host.pts n (H.take j)).length
       · obtain ⟨x, y, z⟩ := bkeep hk0
         exact (cenc hk0).congr x y z
-      · rw [pts_take_succ hj, List.length_append] at hk
-        have := benc (by omega) (by omega)
-        rw [hpt_take (n := n) (H := H) (j := j + 1) (k := k)
-            (by rw [pts_take_succ hj, List.length_append]; omega),
-          pts_take_succ hj, List.getD_append_right _ _ _ _ (by omega)]
-        exact this)
+      · grind [pts_take_succ, List.length_append, hpt_take, List.getD_append_right])
     hI0 (Nat.zero_le _)
-  refine ⟨d', k0 + k', .seq e0 e', by omega, fun hk => ?_, f'⟩
-  rw [List.take_of_length_le (le_refl _)] at henc
-  exact henc hk
+  refine ⟨d', k0 + k', .seq e0 e', ?_⟩ <;> grind
 
 end look
 

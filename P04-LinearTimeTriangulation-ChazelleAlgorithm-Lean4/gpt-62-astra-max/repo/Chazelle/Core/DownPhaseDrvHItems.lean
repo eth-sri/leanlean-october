@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseDrvHFacts
 
@@ -51,9 +52,7 @@ def ItemsAt (m : ℕ → ℕ) (T : ℕ) (xs : List HostItem) : Prop :=
 def wr3 (m : ℕ → ℕ) (p a b c : ℕ) : ℕ → ℕ := upd (upd (upd m p a) (p + 1) b) (p + 2) c
 
 theorem wr3_lt {m : ℕ → ℕ} {p a b c x : ℕ} (hx : x < p) : wr3 m p a b c x = m x := by
-  unfold wr3
-  rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-    Machine.upd_other _ _ _ (by omega)]
+  block_post [wr3, Machine.upd_other]
 
 theorem ItemsAt.nil (m : ℕ → ℕ) (T : ℕ) : ItemsAt m T [] := fun i hi => by simp at hi
 
@@ -67,30 +66,17 @@ theorem ItemsAt.snoc {m : ℕ → ℕ} {T : ℕ} {xs : List HostItem} (h : Items
   rcases Nat.lt_or_ge i xs.length with h1 | h1
   · rw [List.getD_append _ _ _ _ h1]
     obtain ⟨a1, a2, a3⟩ := h i h1
-    refine ⟨?_, ?_, ?_⟩
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), a1]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), a2]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), a3]
+    block_post
   · have hi' : i = xs.length := by omega
     subst hi'
     rw [List.getD_append_right _ _ _ _ le_rfl, Nat.sub_self]
-    simp only [List.getD_cons_zero]
-    refine ⟨?_, ?_, ?_⟩
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_same]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_same]
-    · rw [Machine.upd_same]
+    simp
 
 /-- Items survive a change of the memory outside their words. -/
 theorem ItemsAt.congr {m m' : ℕ → ℕ} {T : ℕ} {xs : List HostItem} (h : ItemsAt m T xs)
     (hm : ∀ a, T ≤ a → a < T + 3 * xs.length → m' a = m a) : ItemsAt m' T xs := by
   intro i hi
-  obtain ⟨a1, a2, a3⟩ := h i hi
-  exact ⟨by rw [hm _ (by omega) (by omega), a1], by rw [hm _ (by omega) (by omega), a2],
-    by rw [hm _ (by omega) (by omega), a3]⟩
+  obtain ⟨a1, a2, a3⟩ := h i hi <;> grind
 
 /-- **The host layout** is the count word followed by the items. -/
 theorem hostAt_of {m : ℕ → ℕ} {B : ℕ} {H : Host} (h0 : m B = H.length) (h : ItemsAt m (B + 1) H) :
@@ -163,21 +149,14 @@ theorem runItems_length_le (li : Bool) (n : ℕ) (s e : WPos) : (runItems li n s
 
 theorem arcItems_length_le (li : Bool) (n : ℕ) (N : NF) (r jp j : ℕ) :
     (arcItems li n N r jp j).length ≤ 4 := by
-  unfold arcItems
-  have := runItems_length_le li n (N.arc j).s (N.arc j).e
-  simp only [List.length_append, List.length_singleton]
-  split_ifs <;> simp <;> omega
+  grind [arcItems, List.length_append, List.length_singleton, runItems_length_le]
 
 theorem pre_length_le (li : Bool) (n : ℕ) (N : NF) (r t : ℕ) :
     (pre li n N r t).length ≤ 4 * t := by
   induction t with
-  | zero => simp [pre]
+  | zero => rfl
   | succ t ih =>
-    rw [pre_succ, List.length_append]
-    have := arcItems_length_le li n N r ((N.region r).arcs.getD t 0)
-      ((N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0)
-    unfold arcIt
-    omega
+    grind [arcIt, pre_succ, List.length_append, arcItems_length_le]
 
 theorem runCnt_lt (li : Bool) {n : ℕ} (hn : 0 < n) (s e : WPos) : runCnt li n s e < n :=
   Nat.mod_lt _ hn
@@ -196,12 +175,12 @@ theorem ptsLen_arcItems_le (li : Bool) {n : ℕ} (hn : 0 < n) (N : NF) (r jp j :
   have h1 := ptsLen_runItems li hn (N.arc j).s (N.arc j).e
   have h2 := runCnt_lt li hn (N.arc j).s (N.arc j).e
   have h3 : ∀ x b, ptsLen n [ptI li n x b] = 1 := fun x b => ptsLen_pt n _
-  split_ifs <;> simp only [ptsLen_append, h3, List.nil_append] <;> omega
+  grind [ptsLen_append, List.nil_append]
 
 theorem ptsLen_pre_le (li : Bool) {n : ℕ} (hn : 0 < n) (N : NF) (r t : ℕ) :
     ptsLen n (pre li n N r t) ≤ (n + 3) * t := by
   induction t with
-  | zero => simp [pre, ptsLen_nil]
+  | zero => rfl
   | succ t ih =>
     rw [pre_succ, ptsLen_append]
     have := ptsLen_arcItems_le li hn N r ((N.region r).arcs.getD t 0)

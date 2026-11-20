@@ -1,4 +1,6 @@
 module
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.SweepEvOrgDo
 public import Chazelle.Core.SweepEvTasks3
@@ -93,26 +95,17 @@ def BatchInv (P : Polygon) (J : Merge.Junction) (N₂ : NF) (cs : Config) (lo : 
 /-! ## Label lists -/
 
 theorem addL_nodup {l : List ℕ} (h : l.Nodup) (v : ℕ) : (addL l v).Nodup := by
-  unfold addL; split_ifs with h1
-  · exact h
-  · push Not at h1
-    exact List.Nodup.append h (List.nodup_singleton v) (by simpa using h1.1)
+  grind [addL, List.Nodup.append]
 
 theorem mem_addL_of_mem {l : List ℕ} {v x : ℕ} (h : x ∈ l) : x ∈ addL l v := by
-  unfold addL; split_ifs
-  · exact h
-  · exact List.mem_append_left _ h
+  grind [addL, List.mem_append_left]
 
 theorem addL_len4 {l : List ℕ} (h : l.length = 4) (v : ℕ) : (addL l v).length = 4 := by
-  unfold addL; rw [ite_eq_left (Or.inr h.ge)]; exact h
+  simp_all [addL]
 
 theorem addL_self {l : List ℕ} (h : l.length ≤ 4) (v : ℕ) :
     v ∈ addL l v ∨ (addL l v).length = 4 := by
-  unfold addL; split_ifs with h1
-  · rcases h1 with h1 | h1
-    · exact Or.inl h1
-    · exact Or.inr (by omega)
-  · exact Or.inl (by simp)
+  grind [addL]
 
 theorem lblOf_len (c : Config) : (lblOf c bN bL).length ≤ 4 := by
   rw [lblOf_length]; omega
@@ -130,17 +123,17 @@ theorem addL_len_le {l : List ℕ} (h : l.length ≤ 4) (v : ℕ) : (addL l v).l
 /-! ## The table -/
 
 theorem tabUpd_0 (m : ℕ → ℕ) (T j e h : ℕ) : tabUpd m T j e h (T + 3 * j) = 1 := by
-  unfold tabUpd; rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_same]
+  simp_all [tabUpd]
 
 theorem tabUpd_1 (m : ℕ → ℕ) (T j e h : ℕ) : tabUpd m T j e h (T + 3 * j + 1) = e := by
-  unfold tabUpd; rw [upd_other _ _ _ (by omega), upd_same]
+  simp_all [tabUpd]
 
 theorem tabUpd_2 (m : ℕ → ℕ) (T j e h : ℕ) : tabUpd m T j e h (T + 3 * j + 2) = h := by
-  unfold tabUpd; rw [upd_same]
+  unfold tabUpd; simp
 
 theorem tabUpd_o (m : ℕ → ℕ) {T j e h x : ℕ} (h0 : x ≠ T + 3 * j) (h1 : x ≠ T + 3 * j + 1)
     (h2 : x ≠ T + 3 * j + 2) : tabUpd m T j e h x = m x := by
-  unfold tabUpd; rw [upd_other _ _ _ h2, upd_other _ _ _ h1, upd_other _ _ _ h0]
+  simp_all [tabUpd]
 
 variable {P : Polygon} {J : Merge.Junction} {N₂ : NF}
 
@@ -160,21 +153,19 @@ theorem batch_stable {cs c c' : Config} {lo : Set Point} {O : Set ℕ}
     (hm : c'.nmem = c.nmem) : BatchInv P J N₂ cs lo O c' := by
   obtain ⟨hreg, hA, A, hB⟩ := h
   have nLR : ∀ q, LblR bN bL q ∨ q = bF ∨ q = bE ∨ q = bH → ¬ LR q := fun q hq => by
-    unfold LR LblR oK oS bN bL bF bE bH sw at *; omega
+    address_omega
   have eF := hr bF (nLR _ (Or.inr (Or.inl rfl)))
   have eE := hr bE (nLR _ (Or.inr (Or.inr (Or.inl rfl))))
   have eH := hr bH (nLR _ (Or.inr (Or.inr (Or.inr rfl))))
-  have eN := hr bN (nLR _ (Or.inl (Or.inl rfl)))
-  have eL : lblOf c' bN bL = lblOf c bN bL := lblOf_congr fun q hq => hr q (nLR q (Or.inl hq))
-  have eA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold LR ALLOC oK oS sw; omega)
-  refine ⟨fun r h1 h2 h3 h4 => (hr r h3).trans (hreg r h1 h2 h3 h4), by rw [eA]; exact hA, A,
+  have eL := lblOf_congr fun q hq => hr q (nLR q (Or.inl hq))
+  refine ⟨fun r h1 h2 h3 h4 => (hr r h3).trans (hreg r h1 h2 h3 h4), by rw [(at_index hr ALLOC)]; exact hA, A,
     ⟨hB.acc, fun x h1 h2 => by rw [hm]; exact hB.memT x h1 h2,
-    fun j hj => by rw [hm]; exact hB.slot j hj, fun t ht => by rw [hm]; exact hB.flag t ht, hB.comp, by rw [eF]; exact hB.fF,
-    by rw [eN]; exact hB.fN, ?_, ?_, ?_, ?_, ?_, hB.val⟩⟩
+    fun j hj => by rw [hm]; exact hB.slot j hj, fun t ht => by rw [hm]; exact hB.flag t ht, hB.comp, by grind [hB.fF],
+    by rw [(hr bN (nLR _ (Or.inl (Or.inl rfl))))]; exact hB.fN, ?_, ?_, ?_, ?_, ?_, hB.val⟩⟩
   · intro h; rw [eE, eH]; rw [eF] at h; exact hB.bAcc h
-  · intro t ht h1; rw [eF, eE, eH]; exact hB.bMin t ht h1
-  · intro h; rw [eL]; rw [eF] at h; exact hB.lNd h
-  · intro h; rw [eL, eE, eH]; rw [eF] at h; exact hB.lSrc h
+  · grind [hB.bMin]
+  · grind [hB.lNd]
+  · grind [hB.lSrc]
   · intro h; rw [eL, eE, eH]; rw [eF] at h; exact hB.lCov h
 
 set_option maxHeartbeats 4000000 in
@@ -198,40 +189,30 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
   have hk2 : (2 * k + s) / 2 = k := by omega
   have hup : upOf N₂ (2 * k + s) = (N₂.chord k).up := by unfold upOf; rw [hk2]
   have hdn : dnOf N₂ (2 * k + s) = (N₂.chord k).dn := by unfold dnOf; rw [hk2]
-  have keepS : ∀ r, 240000 ≤ r → r < 250000 → ¬ OrgR r → ¬ LR r → c.nreg r = cs.nreg r :=
-    fun r h1 h2 h3 h4 => hreg r (band_sw_not ⟨h1, h2⟩) h3 h4 (by unfold ALLOC; omega)
+  have keepS :=
+    fun r h1 h2 h3 h4 => guarded (hreg r (band_sw_not ⟨h1, h2⟩) h3 h4)
   have hTc : c.nreg cTB = cs.nreg cTB :=
-    keepS _ (by unfold cTB sw; omega) (by unfold cTB sw; omega)
-      (by unfold OrgR CandR BestR LblR cTB bF bE bH bN bL sw; omega)
-      (by unfold LR cTB oK oS sw; omega)
+    at_index keepS _
   have hkE : c.nreg kE = cs.nreg kE :=
-    keepS _ (by unfold kE sw; omega) (by unfold kE sw; omega)
-      (by unfold OrgR CandR BestR LblR kE bF bE bH bN bL sw; omega)
-      (by unfold LR kE oK oS sw; omega)
+    at_index keepS _
   have hkH : c.nreg kH = cs.nreg kH :=
-    keepS _ (by unfold kH sw; omega) (by unfold kH sw; omega)
-      (by unfold OrgR CandR BestR LblR kH bF bE bH bN bL sw; omega)
-      (by unfold LR kH oK oS sw; omega)
+    at_index keepS _
   rw [hTc] at hres hcomp
   set j := 2 * k + s with hjd
   set a := endOrigin J (Qof P) N₂ j
   set σ := endDir j
   set S₂ := N₂.F (chainModel J.right) (Qof P)
   set oL := offK P J (cs.nreg kE) (cs.nreg kH) with hoL
-  have hTA : (cs.nreg cTB) + 6 * N₂.nChords ≤ c.nreg ALLOC := by omega
   -- the new set of accepted triples
   set A' : Set (ℕ × ℕ × ℕ) := A ∪ {t | t.1 = j ∧ ValidJ J (Qof P) N₂ j ∧
     AccAt P J S₂ (cs.nreg cTB) j (N₂.chord k).up (N₂.chord k).dn a σ c c' t.2.1 t.2.2} with hA'd
   have hsub : A ⊆ A' := Set.subset_union_left
-  have hreg' : ∀ r, bandOf r ∉ oracleBands → ¬ OrgR r → ¬ LR r → r ≠ ALLOC →
-      c'.nreg r = cs.nreg r := fun r h1 h2 h3 h4 => (hfr r h1 h2 h4).trans (hreg r h1 h2 h3 h4)
-  refine ⟨hreg', by omega, A', ?_⟩
+  refine ⟨(fun r h1 h2 h3 h4 => (hfr r h1 h2 h4).trans (hreg r h1 h2 h3 h4)), by omega, A', ?_⟩
   -- common fields
   have acc' : ∀ t ∈ A', t.1 ∈ insert j O ∧ t.1 < 2 * N₂.nChords ∧
       CandOK P J S₂ (endOrigin J (Qof P) N₂ t.1) (endDir t.1) t.2.1 t.2.2 := by
     rintro t (ht | ⟨ht1, -, ht2⟩)
-    · obtain ⟨h1, h2, h3⟩ := hB.acc t ht
-      exact ⟨Set.mem_insert_of_mem _ h1, h2, h3⟩
+    · grind [hB.acc]
     · rw [ht1]; exact ⟨Set.mem_insert _ _, hj, ht2.1⟩
   have comp' : ∀ j' ∈ insert j O, j' < 2 * N₂.nChords → ValidJ J (Qof P) N₂ j' →
       ∀ (p : ℕ) (t : ℝ),
@@ -247,14 +228,12 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
       ∃ h, (chainModel J.whole).param (Qof P) ⟨p, h⟩ = t ∧ (j', p, h) ∈ A' := by
     intro j' hj' hj'n hv p t h1 h2 h3 h4 h5 h6
     rcases Set.mem_insert_iff.1 hj' with rfl | hj'
-    · obtain ⟨h, hh, hacc⟩ := hcomp hv p t h1 h2 h3 h4 h5 h6
-      exact ⟨h, hh, Or.inr ⟨rfl, hv, hacc⟩⟩
-    · obtain ⟨h, hh, hm⟩ := hB.comp j' hj' hj'n hv p t h1 h2 h3 h4 h5 h6
-      exact ⟨h, hh, hsub hm⟩
+    · have := hcomp hv p t h1 h2 h3 h4 h5 h6; grind
+    · grind [hB.comp]
   have val' : ∀ t ∈ A', ValidJ J (Qof P) N₂ t.1 := by
     rintro t (ht | ⟨ht1, hv, -⟩)
     · exact hB.val t ht
-    · rw [ht1]; exact hv
+    · rwa [ht1]
   by_cases hacc : ∃ e h, ValidJ J (Qof P) N₂ j ∧
     AccAt P J S₂ (cs.nreg cTB) j (N₂.chord k).up (N₂.chord k).dn a σ c c' e h
   · obtain ⟨e, h, hvj, hAcc⟩ := hacc
@@ -265,34 +244,34 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
       · exact absurd ht hn
       · simp only at ht1 hmem₁
         subst ht1
-        have w1 := hmem₁ ((cs.nreg cTB) + 3 * j + 1) (by omega)
-        have w2 := hmem₁ ((cs.nreg cTB) + 3 * j + 2) (by omega)
-        rw [hmem ((cs.nreg cTB) + 3 * j + 1) (by omega), tabUpd_1, tabUpd_1] at w1
-        rw [hmem ((cs.nreg cTB) + 3 * j + 2) (by omega), tabUpd_2, tabUpd_2] at w2
+        have w1 := at_index hmem₁ ((cs.nreg cTB) + 3 * j + 1)
+        have w2 := at_index hmem₁ ((cs.nreg cTB) + 3 * j + 2)
+        rw [at_index hmem ((cs.nreg cTB) + 3 * j + 1), tabUpd_1, tabUpd_1] at w1
+        rw [at_index hmem ((cs.nreg cTB) + 3 * j + 2), tabUpd_2, tabUpd_2] at w2
         rw [w1, w2]
     have hnew : (j, e, h) ∈ A' := Or.inr ⟨rfl, hvj, hok, hmem, hoff⟩
     have hmA : ∀ t ∈ A', t ∈ A ∨ t = (j, e, h) := fun t ht => by
       by_cases h' : t ∈ A
       · exact Or.inl h'
-      · exact Or.inr (huq t ht h')
+      · solve_by_elim [Or.inr]
     obtain ⟨o1, o2, o3, o4, o5, o6⟩ := hoff
     rw [hkE, hkH] at o3 o4 o5 o6
     have hoffN : offT P J (j, e, h) = offK P J e h := rfl
     refine ⟨acc', fun x h1 h2 => ?_, fun j' hj' => ?_, fun t ht => ?_, comp', o1, o2, ?_, ?_, ?_, ?_, ?_, val'⟩
-    · rw [hmem x (by omega), tabUpd_o _ (by omega) (by omega) (by omega)]
+    · rw [at_index hmem x, at_index tabUpd_o _]
       exact hB.memT x h1 h2
     · by_cases hjj : j' = j
       · subst hjj
         refine Or.inr ⟨e, h, hnew, ?_, ?_, ?_⟩
-        · rw [hmem _ (by omega), tabUpd_0]
-        · rw [hmem _ (by omega), tabUpd_1]
-        · rw [hmem _ (by omega), tabUpd_2]
+        · frame_simp [hmem, tabUpd_0]
+        · frame_simp [hmem, tabUpd_1]
+        · frame_simp [hmem, tabUpd_2]
       · have e0 : c'.nmem ((cs.nreg cTB) + 3 * j') = c.nmem ((cs.nreg cTB) + 3 * j') := by
-          rw [hmem _ (by omega), tabUpd_o _ (by omega) (by omega) (by omega)]
+          rw [at_index hmem _, at_index tabUpd_o _]
         have e1 : c'.nmem ((cs.nreg cTB) + 3 * j' + 1) = c.nmem ((cs.nreg cTB) + 3 * j' + 1) := by
-          rw [hmem _ (by omega), tabUpd_o _ (by omega) (by omega) (by omega)]
+          rw [at_index hmem _, at_index tabUpd_o _]
         have e2 : c'.nmem ((cs.nreg cTB) + 3 * j' + 2) = c.nmem ((cs.nreg cTB) + 3 * j' + 2) := by
-          rw [hmem _ (by omega), tabUpd_o _ (by omega) (by omega) (by omega)]
+          rw [at_index hmem _, at_index tabUpd_o _]
         rw [e0, e1, e2]
         rcases hB.slot j' hj' with h' | ⟨e', h'', hm, w⟩
         · exact Or.inl h'
@@ -300,10 +279,10 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
     · rcases hmA t ht with ht | rfl
       · have htj := (hB.acc t ht).2.1
         by_cases hjj : t.1 = j
-        · rw [hjj, hmem _ (by omega), tabUpd_0]
-        · rw [hmem _ (by omega), tabUpd_o _ (by omega) (by omega) (by omega)]
+        · frame_simp [hjj, hmem, tabUpd_0]
+        · rw [at_index hmem _, at_index tabUpd_o _]
           exact hB.flag t ht
-      · rw [hmem _ (by omega), tabUpd_0]
+      · frame_simp [hmem, tabUpd_0]
     -- the best candidate: four cases of the offer
     · intro hF'
       by_cases hlt : oL < offK P J e h
@@ -327,32 +306,24 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
     · intro t ht hlt
       rcases hmA t ht with ht | rfl
       · obtain ⟨hF, hle⟩ := hB.bMin t ht hlt
-        have hlt' : oL < offK P J e h ∨ ¬ oL < offK P J e h := em _
-        rcases hlt' with hl | hl
+        rcases (em _) with hl | hl
         · by_cases hnb : c.nreg bF ≠ 1 ∨ offK P J e h < offK P J (c.nreg bE) (c.nreg bH)
-          · obtain ⟨w1, w2, w3, -, -⟩ := o4 hl hnb
-            rw [w1, w2, w3]
-            rcases hnb with hnb | hnb
-            · exact absurd hF hnb
-            · exact ⟨rfl, by linarith⟩
+          · have := o4 hl hnb; grind
           · push Not at hnb
             rcases hnb.2.lt_or_eq with hlt2 | heq
             · have hs' := o6 hl hnb.1 hlt2
               rw [hs'.1, hs'.2.1, hs'.2.2.1]; exact ⟨hF, hle⟩
-            · obtain ⟨w1, w2, w3, -⟩ := o5 hl hnb.1 heq.symm
-              rw [w1, w2, w3]; exact ⟨rfl, hle⟩
+            all_goals grind
         · have hs' := o3 hl
           rw [hs'.1, hs'.2.1, hs'.2.2.1]; exact ⟨hF, hle⟩
       · rw [hoffN] at hlt ⊢
         by_cases hnb : c.nreg bF ≠ 1 ∨ offK P J e h < offK P J (c.nreg bE) (c.nreg bH)
-        · obtain ⟨w1, w2, w3, -, -⟩ := o4 hlt hnb
-          rw [w1, w2, w3]; exact ⟨rfl, le_rfl⟩
+        · grind
         · push Not at hnb
           rcases hnb.2.lt_or_eq with hlt2 | heq
           · have hs' := o6 hlt hnb.1 hlt2
             rw [hs'.1, hs'.2.1, hs'.2.2.1]; exact ⟨hnb.1, hlt2.le⟩
-          · obtain ⟨w1, w2, w3, -⟩ := o5 hlt hnb.1 heq.symm
-            rw [w1, w2, w3]; exact ⟨rfl, heq.le⟩
+          all_goals grind
     · -- no repetitions
       intro hF'
       by_cases hlt : oL < offK P J e h
@@ -361,8 +332,8 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
           rw [w4]; simpa using hud
         · push Not at hnb
           rcases hnb.2.lt_or_eq with hlt2 | heq
-          · have hs' := o6 hlt hnb.1 hlt2
-            rw [hs'.2.2.2.1]; exact hB.lNd hnb.1
+          · 
+            rw [(o6 hlt hnb.1 hlt2).2.2.2.1]; exact hB.lNd hnb.1
           · obtain ⟨-, -, -, w4⟩ := o5 hlt hnb.1 heq.symm
             rw [w4]; exact addL_nodup (addL_nodup (hB.lNd hnb.1) _) _
       · have hs' := o3 hlt
@@ -387,8 +358,8 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
             · rcases mem_addL hx with hx | hx
               · obtain ⟨t, ht, h1, h2⟩ := hB.lSrc hnb.1 x hx
                 exact ⟨t, hsub ht, h1, h2⟩
-              · exact ⟨(j, e, h), hnew, heq.symm, Or.inl (by rw [hup]; exact hx)⟩
-            · exact ⟨(j, e, h), hnew, heq.symm, Or.inr (by rw [hdn]; exact hx)⟩
+              · exact ⟨(j, e, h), hnew, heq.symm, guarded Or.inl⟩
+            · exact ⟨(j, e, h), hnew, heq.symm, guarded Or.inr⟩
       · have hs' := o3 hlt
         rw [hs'.2.2.2.1] at hx; rw [hs'.2.1, hs'.2.2.1]; rw [hs'.1] at hF'
         obtain ⟨t, ht, h1, h2⟩ := hB.lSrc hF' x hx
@@ -400,10 +371,7 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
         · obtain ⟨-, w2, w3, w4, -⟩ := o4 hlt hnb
           rw [w4]; rw [w2, w3] at hto
           rcases hmA t ht with ht | rfl
-          · obtain ⟨hF, hle⟩ := hB.bMin t ht (by rw [hto]; exact hlt)
-            rcases hnb with hnb | hnb
-            · exact absurd hF hnb
-            · linarith
+          · obtain ⟨hF, hle⟩ := hB.bMin t ht (by rwa [hto]) <;> grind
           · rw [hup, hdn]; simp
         · push Not at hnb
           rcases hnb.2.lt_or_eq with hlt2 | heq
@@ -411,7 +379,7 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
             rw [hs'.2.2.2.1]; rw [hs'.2.1, hs'.2.2.1] at hto
             rcases hmA t ht with ht | rfl
             · exact hB.lCov hnb.1 t ht hto
-            · rw [hoffN] at hto; linarith
+            all_goals grind
           · obtain ⟨-, w2, w3, w4⟩ := o5 hlt hnb.1 heq.symm
             rw [w4]; rw [w2, w3] at hto
             have hl := lblOf_len c
@@ -424,26 +392,25 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
         rw [hs'.2.2.2.1]; rw [hs'.2.1, hs'.2.2.1] at hto; rw [hs'.1] at hF'
         rcases hmA t ht with ht | rfl
         · exact hB.lCov hF' t ht hto
-        · obtain ⟨-, hb⟩ := hB.bAcc hF'
-          rw [hoffN] at hto; exact absurd (hto ▸ hb) hlt
+        · obtain ⟨-, hb⟩ := hB.bAcc hF' <;> grind
   · -- no acceptance: the rejection
     have hrej : RejAt c c' := by
       by_cases hv : ValidJ J (Qof P) N₂ j
       · rcases hres with h | ⟨e, h, hh⟩
         · exact h
-        · exact absurd ⟨e, h, hv, hh⟩ hacc
+        all_goals grind
       · exact hval hv
     obtain ⟨hmem, hbs⟩ := hrej
     have hA'A : ∀ t ∈ A', t ∈ A := by
       rintro t (ht | ⟨-, hv, ht⟩)
       · exact ht
-      · exact absurd ⟨_, _, hv, ht⟩ hacc
+      · grind
     obtain ⟨eF, eE, eH, eL, eN⟩ := hbs
-    refine ⟨acc', fun x h1 h2 => by rw [hmem x (by omega)]; exact hB.memT x h1 h2,
-      fun j' hj' => ?_, fun t ht => ?_, comp', by rw [eF]; exact hB.fF, by rw [eN]; exact hB.fN, fun h => ?_,
-      fun t ht h1 => by rw [eF, eE, eH]; exact hB.bMin t (hA'A t ht) h1,
-      fun h => by rw [eL]; rw [eF] at h; exact hB.lNd h, fun h x hx => ?_, fun h t ht h1 => ?_, val'⟩
-    · rw [hmem _ (by omega), hmem _ (by omega), hmem _ (by omega)]
+    refine ⟨acc', fun x h1 h2 => by rw [at_index hmem x]; exact hB.memT x h1 h2,
+      fun j' hj' => ?_, fun t ht => ?_, comp', by grind [hB.fF], by grind [hB.fN], fun h => ?_,
+      fun t ht h1 => by rw [eF, eE, eH]; solve_by_elim [hB.bMin],
+      fun h => by grind [hB.lNd], fun h x hx => ?_, fun h t ht h1 => ?_, val'⟩
+    · rw [at_index hmem _, at_index hmem _, at_index hmem _]
       rcases hB.slot j' hj' with h' | ⟨e', h'', hm, w⟩
       · exact Or.inl h'
       · exact Or.inr ⟨e', h'', hsub hm, w⟩
@@ -457,7 +424,7 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
       obtain ⟨t, ht, h1, h2⟩ := hB.lSrc h x hx
       exact ⟨t, hsub ht, h1, h2⟩
     · rw [eF] at h; rw [eL]; rw [eE, eH] at h1
-      exact hB.lCov h t (hA'A t ht) h1
+      solve_by_elim [hB.lCov]
 
 end
 

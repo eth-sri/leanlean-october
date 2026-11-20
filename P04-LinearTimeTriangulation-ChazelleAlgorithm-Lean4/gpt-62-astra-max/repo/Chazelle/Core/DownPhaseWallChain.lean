@@ -1,4 +1,8 @@
 module
+public import Chazelle.Core.ModelAccess
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Evidence
+public import Chazelle.Programs.Verification
 
 public import Chazelle.Core.DownPhaseDropDeg
 public import Chazelle.Core.DownPhaseBoxFilter
@@ -35,55 +39,49 @@ theorem mem_set_lerp (C : Chain) {z : Point} (hz : z ∈ C.set) :
       z.2 = (C.vertex k).2 + t * ((C.vertex (k + 1)).2 - (C.vertex k).2) := by
   obtain ⟨k, hk, hzk⟩ := hz
   rw [C.chainEdge_eq] at hzk
-  obtain ⟨t, ht0, ht1, rfl⟩ := hzk
-  exact ⟨k, hk, t, ht0, ht1, rfl⟩
+  obtain ⟨t, ht0, ht1, rfl⟩ := hzk <;> grind
 
 /-- Every chain point is at least as high as some vertex. -/
 theorem vertex_below (C : Chain) {z : Point} (hz : z ∈ C.set) :
     ∃ k, k ≤ C.m ∧ (C.vertex k).2 ≤ z.2 := by
   obtain ⟨k, hk, t, ht0, ht1, e⟩ := mem_set_lerp C hz
   rcases le_total (C.vertex k).2 (C.vertex (k + 1)).2 with h | h
-  · exact ⟨k, hk.le, by rw [e]; nlinarith⟩
-  · exact ⟨k + 1, hk, by rw [e]; nlinarith⟩
+  · exact ⟨k, hk.le, by nlinarith⟩
+  · exact ⟨k + 1, hk, by nlinarith⟩
 
 /-- **A line missing the chain, not above the top, lies below the chain.** -/
 theorem chain_above (C : Chain) {y : ℝ} (hno : ∀ z ∈ C.set, z.2 ≠ y) (htop : y < C.top.2) :
     ∀ z ∈ C.set, y < z.2 := by
-  have step : ∀ k, k < C.m → (y < (C.vertex k).2 ↔ y < (C.vertex (k + 1)).2) := by
+  have step : ∀ k < C.m, (y < (C.vertex k).2 ↔ y < (C.vertex (k + 1)).2) := by
     intro k hk
     have hseg : ∀ t : ℝ, 0 ≤ t → t ≤ 1 →
         (((C.vertex k).1 + t * ((C.vertex (k + 1)).1 - (C.vertex k).1),
           (C.vertex k).2 + t * ((C.vertex (k + 1)).2 - (C.vertex k).2)) : Point) ∈ C.set :=
       fun t h0 h1 => ⟨k, hk, by rw [C.chainEdge_eq]; exact ⟨t, h0, h1, rfl⟩⟩
-    have ha : (C.vertex k).2 ≠ y := hno _ (C.vertex_mem_set hk.le)
-    have hb : (C.vertex (k + 1)).2 ≠ y := hno _ (C.vertex_mem_set hk)
     set a := (C.vertex k).2
     set b := (C.vertex (k + 1)).2
     by_contra hne
     have hcross : (y < a ∧ b < y) ∨ (a < y ∧ y < b) := by
-      rcases lt_or_gt_of_ne ha with h1 | h1 <;> rcases lt_or_gt_of_ne hb with h2 | h2
-      · exact absurd (iff_of_false (not_lt.2 h1.le) (not_lt.2 h2.le)) hne
-      · exact Or.inr ⟨h1, h2⟩
-      · exact Or.inl ⟨h1, h2⟩
-      · exact absurd (iff_of_true h1 h2) hne
+      rcases lt_or_gt_of_ne (hno _ (C.vertex_mem_set hk.le)) with h1 | h1 <;> rcases lt_or_gt_of_ne (hno _ (C.vertex_mem_set hk)) with h2 | h2
+      · grind
+      · solve_by_elim [Or.inr]
+      · solve_by_elim [Or.inl]
+      · grind
     rcases hcross with ⟨h1, h2⟩ | ⟨h1, h2⟩
     · have hpos : 0 < a - b := by linarith
       refine hno _ (hseg ((a - y) / (a - b)) (div_nonneg (by linarith) hpos.le)
-        ((div_le_one hpos).2 (by linarith))) ?_
-      show a + (a - y) / (a - b) * (b - a) = y
-      field_simp; ring
+        (guarded (div_le_one hpos).2)) ?_
+      grind
     · have hpos : 0 < b - a := by linarith
       refine hno _ (hseg ((y - a) / (b - a)) (div_nonneg (by linarith) hpos.le)
-        ((div_le_one hpos).2 (by linarith))) ?_
-      show a + (y - a) / (b - a) * (b - a) = y
-      field_simp; ring
-  have hall : ∀ k, k ≤ C.m → (y < (C.vertex k).2 ↔ y < (C.vertex 0).2) := by
+        (guarded (div_le_one hpos).2)) ?_
+      grind
+  have hall : ∀ k ≤ C.m, (y < (C.vertex k).2 ↔ y < (C.vertex 0).2) := by
     intro k hk
     induction k with
     | zero => exact Iff.rfl
-    | succ k ih => exact (step k (by omega)).symm.trans (ih (by omega))
-  have h0 : y < (C.vertex 0).2 := (hall _ C.topIdx_le).1 htop
-  have hv : ∀ k, k ≤ C.m → y < (C.vertex k).2 := fun k hk => (hall k hk).2 h0
+    | succ k ih => grind
+  have hv : ∀ k ≤ C.m, y < (C.vertex k).2 := fun k hk => (hall k hk).2 ((hall _ C.topIdx_le).1 htop)
   intro z hz
   obtain ⟨k, hk, t, ht0, ht1, e⟩ := mem_set_lerp C hz
   have h1 := hv k hk.le
@@ -98,8 +96,7 @@ theorem chain_above (C : Chain) {y : ℝ} (hno : ∀ z ∈ C.set, z.2 ≠ y) (ht
 theorem sidePt_small (C : Chain) {p : ℕ} (hp : p < 6) (t : ℝ) :
     sidePt (C.sideWalk C.sideBeta) p t =
       Geometry.lerp ((C.sideWalk C.sideBeta).vtx p) ((C.sideWalk C.sideBeta).vtx (p + 1)) t := by
-  unfold sidePt
-  rw [C.sideWalk_n, Nat.mod_eq_of_lt (by omega)]
+  block_post [sidePt, C.sideWalk_n, Nat.mod_eq_of_lt]
 
 /-- **The cuts of an augmented chord.** -/
 theorem cut_cases (C : Chain) {e : Set Point} {y : ℝ} (hey : ∀ z ∈ e, z.2 = y)
@@ -110,36 +107,30 @@ theorem cut_cases (C : Chain) {e : Set Point} {y : ℝ} (hey : ∀ z ∈ e, z.2 
   obtain ⟨hp, ht0, ht1, hmem, -⟩ := hA
   have hpy := hey _ hmem
   have hn : (C.sideWalk C.sideBeta).n = 2 * C.m + 7 := C.sideWalk_n _
-  have htR := C.top_snd_lt_radius
   have hR := abs_lt.1 hyR
   rcases Nat.lt_or_ge p 6 with h6 | h6
-  · rw [sidePt_small C h6, Geometry.lerp_snd] at hpy
+  · rw_facts [sidePt_small, Geometry.lerp_snd] at hpy
     interval_cases p
-    · rw [C.sideWalk_vtx_zero, C.sideWalk_vtx_one] at hpy
-      simp only [Chain.slitTop] at hpy; linarith
-    · rw [C.sideWalk_vtx_one, C.sideWalk_vtx_two] at hpy
-      left; exact ⟨rfl, by simp only at hpy; linarith⟩
-    · rw [C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hpy
-      simp only at hpy; linarith
-    · rw [C.sideWalk_vtx_three, C.sideWalk_vtx_four] at hpy
-      right; left; exact ⟨rfl, by simp only at hpy; linarith⟩
-    · rw [C.sideWalk_vtx_four, C.sideWalk_vtx_five] at hpy
-      simp only [Chain.slitTop] at hpy; linarith
+    · grind [C.sideWalk_vtx_zero, C.sideWalk_vtx_one, Chain.slitTop]
+    · grind [C.sideWalk_vtx_one, C.sideWalk_vtx_two]
+    · grind [C.sideWalk_vtx_two, C.sideWalk_vtx_three]
+    · grind [C.sideWalk_vtx_three, C.sideWalk_vtx_four]
+    · grind [C.sideWalk_vtx_four, C.sideWalk_vtx_five, Chain.slitTop]
     · rw [C.sideWalk_vtx_five, C.sideWalk_vtx_six] at hpy
-      simp only [Chain.slitTop] at hpy; nlinarith
+      simp [Chain.slitTop] at hpy; nlinarith
   · right; right
     refine ⟨h6, fun y' hy' => ?_⟩
     unfold sidePt at hpy
     rw [Geometry.lerp_snd] at hpy
     rcases Nat.lt_or_ge p (2 * C.m + 6) with h' | h'
-    · rw [hn, Nat.mod_eq_of_lt (by omega)] at hpy
-      have hu := hy' _ (tour_mem C h6 (by omega))
-      have hv := hy' _ (tour_mem C (by omega : 6 ≤ p + 1) (by omega))
+    · rw [hn, guarded Nat.mod_eq_of_lt] at hpy
+      have hu := hy' _ (guarded (tour_mem C h6))
+      have hv := hy' _ (guarded (tour_mem C (by omega : 6 ≤ p + 1)))
       rw [← hpy]; nlinarith
     · have hp' : p = 2 * C.m + 6 := by omega
       subst hp'
       rw [C.sideWalk_vtx_wrap, walk_last] at hpy
-      simp only [Chain.slitTop] at hpy
+      simp [Chain.slitTop] at hpy
       have := hy' _ C.top_mem_set
       rw [← hpy]; nlinarith
 
@@ -152,7 +143,7 @@ theorem hseg_eq {y u v y' a b : ℝ} (he : hseg y u v = hseg y' a b) (hab : a < 
     y = y' ∧ u = a ∧ v = b := by
   have ha : ((a, y') : Point) ∈ hseg y u v := by rw [he]; exact ⟨rfl, le_rfl, hab.le⟩
   have hb : ((b, y') : Point) ∈ hseg y u v := by rw [he]; exact ⟨rfl, hab.le, le_rfl⟩
-  have hyy : y' = y := ha.1
+  have hyy := ha.1
   subst hyy
   have hu : ((u, y') : Point) ∈ hseg y' a b := by
     rw [← he]; exact ⟨rfl, le_rfl, le_trans ha.2.1 ha.2.2⟩
@@ -168,26 +159,15 @@ theorem rec_facts (hL : ChordTriplesOK (chainModel C) Q L) {x : ℕ × ℕ × �
         (recOf x).toSet (chainModel C) Q = hseg (Q.vtx x.1).2 a b := by
   obtain ⟨y', a, b, hh, hyt, e⟩ := hL.1.2.1 ⟨x, hx, rfl⟩
   have hmem := (hL.2.2.1 x hx).1.2.2.2.1
-  have hmem' : sidePt (C.sideWalk C.sideBeta) (recOf x).lp
-      ((chainModel C).param Q (recOf x).lpos) ∈ hseg y' a b := e ▸ hmem
-  have hyy : (Q.vtx x.1).2 = y' := hmem.1.symm.trans hmem'.1
+  have hyy := hmem.1.symm.trans (e ▸ hmem).1
   rw [← hyy] at hh hyt e
-  have hR : |(Q.vtx x.1).2| < C.radius := by
-    have hm := hh.open_mem ((a + b) / 2) (by linarith [hh.lt]) (by linarith [hh.lt])
-    exact (C.dom_subset_box hm).2
+  have hR : |(Q.vtx x.1).2| < C.radius := (C.dom_subset_box (hh.open_mem ((a + b) / 2) (by linarith [hh.lt]) (by linarith [hh.lt]))).2
   exact ⟨fun z hz => hz.1, hR, hyt, a, b, hh, e⟩
 
 theorem wall_x {p : ℕ} (hp : p = 1 ∨ p = 3) (t : ℝ) :
     (sidePt (C.sideWalk C.sideBeta) p t).1 = -C.radius ∨
       (sidePt (C.sideWalk C.sideBeta) p t).1 = C.radius := by
-  rcases hp with rfl | rfl
-  · left
-    rw [sidePt_small C (by norm_num), Geometry.lerp_fst, C.sideWalk_vtx_one, C.sideWalk_vtx_two]
-    ring
-  · right
-    rw [sidePt_small C (by norm_num), Geometry.lerp_fst, C.sideWalk_vtx_three,
-      C.sideWalk_vtx_four]
-    ring
+  grind [sidePt_small, Geometry.lerp_fst, C.sideWalk_vtx_one, C.sideWalk_vtx_two, C.sideWalk_vtx_three, C.sideWalk_vtx_four]
 
 /-- **A wall-to-wall record is the full-width chord.** -/
 theorem wall_shape (hL : ChordTriplesOK (chainModel C) Q L) {x : ℕ × ℕ × ℕ} (hx : x ∈ L)
@@ -199,23 +179,22 @@ theorem wall_shape (hL : ChordTriplesOK (chainModel C) Q L) {x : ℕ × ℕ × �
   unfold CRec.toSet at e'
   obtain ⟨-, hu, hv⟩ := hseg_eq e' hh.lt
   have hR := C.radius_pos
-  have h1 := wall_x (C := C) hw.1 ((chainModel C).param Q (recOf x).lpos)
-  have h2 := wall_x (C := C) hw.2 ((chainModel C).param Q (recOf x).rpos)
+  have h1 := wall_x (C := C) hw.1 (C.chainModel.param Q (recOf x).lpos)
+  have h2 := wall_x (C := C) hw.2 (C.chainModel.param Q (recOf x).rpos)
   have hlt := hh.lt
-  have hu' : ((chainModel C).pos Q (recOf x).lpos).1 = a := hu
-  have hv' : ((chainModel C).pos Q (recOf x).rpos).1 = b := hv
-  have hpl : (chainModel C).pos Q (recOf x).lpos =
-      sidePt (C.sideWalk C.sideBeta) x.2.1 ((chainModel C).param Q (recOf x).lpos) := rfl
-  have hpr : (chainModel C).pos Q (recOf x).rpos =
-      sidePt (C.sideWalk C.sideBeta) x.2.2 ((chainModel C).param Q (recOf x).rpos) := rfl
+  have hu' : (C.chainModel.pos Q (recOf x).lpos).1 = a := hu
+  have hv' : (C.chainModel.pos Q (recOf x).rpos).1 = b := hv
+  have hpl : C.chainModel.pos Q (recOf x).lpos =
+      sidePt (C.sideWalk C.sideBeta) x.2.1 (C.chainModel.param Q (recOf x).lpos) := rfl
+  have hpr : C.chainModel.pos Q (recOf x).rpos =
+      sidePt (C.sideWalk C.sideBeta) x.2.2 (C.chainModel.param Q (recOf x).rpos) := rfl
   rw [hpl] at hu'
   rw [hpr] at hv'
   have ha : a = -C.radius := by
     rcases h1 with h1 | h1 <;> rcases h2 with h2 | h2 <;> linarith
   have hb : b = C.radius := by
     rcases h1 with h1 | h1 <;> rcases h2 with h2 | h2 <;> linarith
-  subst ha hb
-  exact ⟨e, hh⟩
+  grind
 
 /-- A full-width chord lies below the chain. -/
 theorem wall_below {y : ℝ} (hh : IsHChordIn C.dom y (-C.radius) C.radius) (hyt : y ≤ C.top.2) :
@@ -240,31 +219,28 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
     (hγ : (chainModel C).Semigranular (famOf (chainModel C) Q L) γ) :
     (chainModel C).DegLe (famOf (chainModel C) Q (dropWalls L)) d ∧
       (chainModel C).Semigranular (famOf (chainModel C) Q (dropWalls L)) (2 * γ) := by
-  set M := chainModel C
+  set M := C.chainModel
   set F := famOf M Q L
   set F' := famOf M Q (dropWalls L)
-  have hM : WalkAx M := walkAx_of_goodModel (Or.inl ⟨C, hP, rfl⟩)
-  have hFA : F ⊆ M.Adm := hL.1.2.1
-  have hfin : F.Finite := hL.1.1
+  have hM := walkAx_of_goodModel (Or.inl ⟨C, hP, rfl⟩)
+  have hFA := hL.1.2.1
+  have hfin := hL.1.1
   have hsub : F' ⊆ F := famOf_mono fun x hx => (mem_dropWalls.1 hx).1
   have hR := C.radius_pos
   by_cases hwall : ∃ x ∈ L, WallRec x
   swap
   · push Not at hwall
     have hLL : dropWalls L = L := by
-      unfold dropWalls
-      rw [filter_eq_self]
-      intro x hx; simp [hwall x hx]
+      simp_all [dropWalls]
     have hFF : F' = F := by simp only [F', F, hLL]
     rw [hFF]
-    exact ⟨hd, fun U hU => (hγ U hU).trans (by omega)⟩
+    exact ⟨hd, fun U hU => guarded (hγ U hU).trans⟩
   -- the highest wall-to-wall chord
-  obtain ⟨xs, ⟨hxsL, hxsw⟩, hxsmax⟩ := Set.exists_max_image {x | x ∈ L ∧ WallRec x}
-    (fun x => (Q.vtx x.1).2) ((List.finite_toSet L).subset fun x hx => hx.1)
-    (by obtain ⟨x, hx, hw⟩ := hwall; exact ⟨x, hx, hw⟩)
+  obtain ⟨xs, ⟨hxsL, hxsw⟩, hxsmax⟩ := guarded (Set.exists_max_image {x | x ∈ L ∧ WallRec x}
+    (fun x => (Q.vtx x.1).2) ((List.finite_toSet L).subset fun x hx => hx.1))
   set ys := (Q.vtx xs.1).2 with hysdef
   obtain ⟨-, hysR, hyst, -⟩ := rec_facts hL hxsL
-  have hbelow : ∀ z ∈ C.set, ys < z.2 := wall_below (wall_shape hL hxsL hxsw).2 hyst
+  have hbelow := wall_below (wall_shape hL hxsL hxsw).2 hyst
   -- heights of the kept chords
   have hkept : ∀ x ∈ dropWalls L, ys < (Q.vtx x.1).2 := by
     intro x hx
@@ -274,26 +250,26 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
     have hthird : ∀ {p : ℕ} {t : ℝ}, SideAttach (C.sideWalk C.sideBeta)
         ((recOf x).toSet M Q) p t → p ≠ 1 → p ≠ 3 → ys < (Q.vtx x.1).2 := by
       intro p t hA h1 h3
-      rcases cut_cases C hey hyR hyt hA with ⟨h, -⟩ | ⟨h, -⟩ | ⟨-, h⟩
+      rcases from_facts cut_cases with ⟨h, -⟩ | ⟨h, -⟩ | ⟨-, h⟩
       · exact absurd h h1
       · exact absurd h h3
       · exact h ys hbelow
     unfold WallRec at hxw
     by_cases hlw : x.2.1 = 1 ∨ x.2.1 = 3
     · have hrw : ¬ (x.2.2 = 1 ∨ x.2.2 = 3) := fun h => hxw ⟨hlw, h⟩
-      rw [not_or] at hrw
+      simp at hrw
       exact hthird hr hrw.1 hrw.2
-    · rw [not_or] at hlw
+    · simp at hlw
       exact hthird hl hlw.1 hlw.2
   -- the level `yp`
   set Hs : Finset ℝ := (Finset.range (C.m + 1)).image (fun k => (C.vertex k).2) ∪
     ((dropWalls L).map fun x => (Q.vtx x.1).2).toFinset with hHs
   have hHne : Hs.Nonempty := ⟨(C.vertex 0).2, Finset.mem_union_left _
-    (Finset.mem_image.2 ⟨0, Finset.mem_range.2 (by omega), rfl⟩)⟩
+    (Finset.mem_image.2 ⟨0, guarded Finset.mem_range.2, rfl⟩)⟩
   set yp := Hs.min' hHne with hyp
-  have hyp_v : ∀ k, k ≤ C.m → yp ≤ (C.vertex k).2 := fun k hk =>
+  have hyp_v : ∀ k ≤ C.m, yp ≤ (C.vertex k).2 := fun k hk =>
     Hs.min'_le _ (Finset.mem_union_left _ (Finset.mem_image.2
-      ⟨k, Finset.mem_range.2 (by omega), rfl⟩))
+      ⟨k, guarded Finset.mem_range.2, rfl⟩))
   have hyp_k : ∀ x ∈ dropWalls L, yp ≤ (Q.vtx x.1).2 := fun x hx =>
     Hs.min'_le _ (Finset.mem_union_right _ (List.mem_toFinset.2 (List.mem_map_of_mem hx)))
   have hlt : ys < yp := by
@@ -313,8 +289,7 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
       (fun z hz => C.dom_subset_box hz) ?_ ?_ ?_ hd
     · intro z h1 h2 h3 h4
       refine (C.mem_dom_iff).2 ⟨⟨abs_lt.2 ⟨h1, h2⟩, abs_lt.2 ⟨h3, by linarith⟩⟩, fun hz => ?_, fun hz => ?_⟩
-      · obtain ⟨k, hk, hkz⟩ := vertex_below C hz
-        linarith [hyp_v k hk]
+      · grind [vertex_below]
       · have := (C.mem_slit_iff.1 hz).2.1
         linarith
     · rintro c ⟨x, hx, rfl⟩ z hz
@@ -323,7 +298,7 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
     · rintro c ⟨x, hx, rfl⟩ hc' z hz
       rw [(rec_facts hL hx).1 z hz]
       by_cases hw : WallRec x
-      · exact hxsmax x ⟨hx, hw⟩
+      · grind
       · exact absurd ⟨x, mem_dropWalls.2 ⟨hx, hw⟩, rfl⟩ hc'
   · -- weights
     set R := C.radius
@@ -334,15 +309,15 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
       by_cases hw : WallRec x
       · right
         obtain ⟨hey, hyR, hyt, -⟩ := rec_facts hL hx
-        have hyx : (Q.vtx x.1).2 ≤ ys := hxsmax x ⟨hx, hw⟩
+        have hyx := hxsmax x ⟨hx, hw⟩
         have ht1 := hA.2.2.1
         have hbx := wall_below (wall_shape hL hx hw).2 hyt
-        rcases cut_cases C hey hyR hyt hA with ⟨rfl, e⟩ | ⟨rfl, e⟩ | ⟨-, h⟩
-        · have : (R - ys) / (2 * R) ≤ t := by rw [div_le_iff₀ h2R]; linarith
+        rcases from_facts cut_cases with ⟨rfl, e⟩ | ⟨rfl, e⟩ | ⟨-, h⟩
+        · have : (R - ys) / (2 * R) ≤ t := by rw_facts [div_le_iff₀]; linarith
           have : (ys + R) / (2 * R) ≥ 0 := div_nonneg (by linarith) h2R.le
           push_cast; constructor <;> linarith
-        · have : t ≤ (ys + R) / (2 * R) := by rw [le_div_iff₀ h2R]; linarith
-          have : (R - ys) / (2 * R) ≤ 1 := by rw [div_le_iff₀ h2R]; linarith
+        · have : t ≤ (ys + R) / (2 * R) := by rw_facts [le_div_iff₀]; linarith
+          have : (R - ys) / (2 * R) ≤ 1 := by rw_facts [div_le_iff₀]; linarith
           have := hA.2.1
           push_cast; constructor <;> linarith
         · exact absurd (h _ hbx) (lt_irrefl _)
@@ -350,22 +325,22 @@ theorem drop_ok (hP : C.P.Simple) (hL : ChordTriplesOK (chainModel C) Q L) {d γ
         exact ⟨_, ⟨x, mem_dropWalls.2 ⟨hx, hw⟩, rfl⟩, p, t, hA, rfl⟩
     · rintro k ⟨c, ⟨x, hx, rfl⟩, p, t, hA, rfl⟩
       obtain ⟨hey, hyR, hyt, -⟩ := rec_facts hL (mem_dropWalls.1 hx).1
-      have hyx : ys < (Q.vtx x.1).2 := hkept x hx
-      have hkR : (ys + R) / (2 * R) < 1 := by rw [div_lt_one h2R]; linarith
+      have hyx := hkept x hx
+      have hkR : (ys + R) / (2 * R) < 1 := by rw_facts [div_lt_one]; linarith
       have ht0 := hA.2.1
-      rcases cut_cases C hey hyR hyt hA with ⟨rfl, e⟩ | ⟨rfl, e⟩ | ⟨h6, -⟩
+      rcases from_facts cut_cases with ⟨rfl, e⟩ | ⟨rfl, e⟩ | ⟨h6, -⟩
       · left
-        have : t < (R - ys) / (2 * R) := by rw [lt_div_iff₀ h2R]; linarith
+        have : t < (R - ys) / (2 * R) := by rw_facts [lt_div_iff₀]; linarith
         push_cast; linarith
       · right
-        have : (ys + R) / (2 * R) < t := by rw [div_lt_iff₀ h2R]; linarith
+        have : (ys + R) / (2 * R) < t := by rw_facts [div_lt_iff₀]; linarith
         push_cast; linarith
       · right
         have : (6 : ℝ) ≤ p := by exact_mod_cast h6
         linarith
     · intro p hp
       have h6 : (6 : ℝ) ≤ p := by exact_mod_cast hp.1
-      have hkR : (ys + R) / (2 * R) < 1 := by rw [div_lt_one h2R]; linarith
+      have hkR : (ys + R) / (2 * R) < 1 := by rw_facts [div_lt_one]; linarith
       linarith
 
 /-! ## Box transport (B3′) -/

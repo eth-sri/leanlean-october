@@ -22,10 +22,7 @@ open DrvR (ivB qE)
 
 theorem two_mul_le_flatMap {α : Type} (l : List ℕ) (f : ℕ → List α)
     (h : ∀ a, 2 ≤ (f a).length) : 2 * l.length ≤ (l.flatMap f).length := by
-  induction l with
-  | nil => simp
-  | cons a l ih =>
-    simp only [List.flatMap_cons, List.length_append, List.length_cons]; have := h a; omega
+  induction l <;> grind
 
 /-- A region has at most half as many arcs as its host has items. -/
 theorem regHost_length_ge (li : Bool) (n : ℕ) (N : NF) (r : ℕ) :
@@ -35,18 +32,18 @@ theorem regHost_length_ge (li : Bool) (n : ℕ) (N : NF) (r : ℕ) :
     have := two_mul_le_flatMap (List.range (N.region r).arcs.length)
       (fun t => DrvR.arcItems li n N r ((N.region r).arcs.getD t 0)
         ((N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0))
-      (fun t => by unfold DrvR.arcItems; simp only [List.length_append, List.length_singleton]; omega)
-    rwa [List.length_range] at this
+      (fun t => by unfold DrvR.arcItems; grind [List.length_append, List.length_singleton])
+    simp_all
   unfold DrvR.regHost
   split_ifs
   · exact hw
-  · rwa [List.length_reverse]
+  · simp_all
 
 /-- The host points of a well-formed host are in range. -/
 theorem hpt_lt {n : ℕ} {H : Host} (hwf : HostWF n H) (hn : 0 < n) {k : ℕ}
     (hk : k < (H.pts n).length) : (hpt n H k).Lt n := by
   have hmem : hpt n H k ∈ H.pts n := by
-    unfold hpt; rw [List.getD_eq_getElem _ _ hk]; exact List.getElem_mem hk
+    simp_all [hpt]
   unfold Host.pts at hmem
   obtain ⟨it, hit, hin⟩ := List.mem_flatMap.1 hmem
   have hw := hwf it hit
@@ -54,8 +51,7 @@ theorem hpt_lt {n : ℕ} {H : Host} (hwf : HostWF n H) (hn : 0 < n) {k : ℕ}
   · simp only [HostItem.pts, List.mem_map, List.mem_range] at hin
     obtain ⟨t, -, ht⟩ := hin
     rw [← ht]; exact Nat.mod_lt _ hn
-  · simp only [HostItem.pts, List.mem_singleton] at hin
-    rw [hin]; exact hw
+  · grind [HostItem.pts, List.mem_singleton]
 
 theorem pEdge_lt (li : Bool) {n : ℕ} {s : SymPt} (hs : s.Lt n) : pEdge li n s < n := by
   have hn : 0 < n := by cases s <;> simp only [SymPt.Lt] at hs <;> omega

@@ -1,4 +1,5 @@
 module
+public import Chazelle.Programs.Address
 
 public import Chazelle.Core.ShootCutShK1M
 public import Chazelle.Core.ShootCutOrig
@@ -36,7 +37,7 @@ theorem inC_of_mem {C : Chain} {x : Point} (h : x ∈ C.set) : InC C x :=
 theorem conv_gt {lo a b t : ℝ} (ha : lo < a) (hb : lo < b) (h0 : 0 ≤ t) (h1 : t ≤ 1) :
     lo < (1 - t) * a + t * b := by
   rcases h0.lt_or_eq with h | h
-  · nlinarith [mul_pos h (sub_pos.2 hb), mul_nonneg (sub_nonneg.2 h1) (sub_pos.2 ha).le]
+  · nlinarith
   · subst h; simp; linarith
 
 theorem conv_lt {hi a b t : ℝ} (ha : a < hi) (hb : b < hi) (h0 : 0 ≤ t) (h1 : t ≤ 1) :
@@ -68,9 +69,9 @@ theorem block_inC {C : Chain} {p₀ w : ℕ} (hw : 1 ≤ w) (hp6 : 6 ≤ p₀) (
   obtain ⟨d, hd, hxd⟩ := (arcSet_nat (M := chainModel C) (p₀ := p₀) hw (by omega) x).1 hx
   have hv : ∀ q, 6 ≤ q → q ≤ 2 * C.m + 6 → (chainModel C).W.vtx q ∈ C.set := fun q h1 h2 => by
     obtain ⟨i, rfl⟩ : ∃ i, q = i + 6 := ⟨q - 6, by omega⟩
-    rw [SweepPrim.walk_vtx_tour C (by omega)]
+    rw [at_index SweepPrim.walk_vtx_tour C]
     exact C.vertex_mem_set (C.sideIdx_le _ _)
-  exact inC_seg (hv _ (by omega) (by omega)) (hv _ (by omega) (by omega)) hxd
+  grind [inC_seg]
 
 variable {C : Chain} {S : Set Point} {z : Point} {σ : ℝ}
 
@@ -106,8 +107,8 @@ theorem box_shift (hσ : σ = 1 ∨ σ = -1) {R R' : ℝ} {z' : Point} (hz : z.1
   simp only [abs_lt] at h
   rw [hz, hz']
   rcases hσ with rfl | rfl
-  · constructor <;> linarith [h.1.1, h.2.1]
-  · constructor <;> linarith [h.1.2, h.2.2]
+  · grind
+  all_goals grind
 
 /-- **The relation of a query origin to the origin of the ray.** -/
 def QRel (P : Polygon) (C : Chain) (σ : ℝ) (z : Point) : QOrigin → Prop
@@ -126,12 +127,7 @@ theorem query_transfer {P : Polygon} (hσ : σ = 1 ∨ σ = -1) {Cα : Chain} {o
   have hσ2 := sigma_sq hσ
   cases o with
   | sym s =>
-    simp only [QRel] at hrel
-    simp only [QOrigin.eval, hrel]
-    refine ⟨fun t' ht' => ?_, id⟩
-    have : σ * ((rayPt z σ t').1 - z.1) = t' := by
-      rw [rayPt_fst]; ring_nf; rw [show σ ^ 2 = σ * σ by ring, hσ2]; ring
-    rw [this]; exact ⟨ht', rfl⟩
+    grind [QRel, QOrigin.eval, rayPt_fst]
   | box h =>
     simp only [QRel] at hrel
     simp only [QOrigin.eval]
@@ -139,15 +135,7 @@ theorem query_transfer {P : Polygon} (hσ : σ = 1 ∨ σ = -1) {Cα : Chain} {o
       (z' := (-σ * Cα.radius, ((Qof P).vtx h).2)) (by rw [hrel]) rfl (by rw [hrel])
       (fun x hx => ⟨(hSC x hx).1, (Cα.set_subset_box (hS hx)).1⟩)
     refine ⟨fun t' ht' => ?_, hsh.2⟩
-    have hf := hsh.1 t' ht'
-    have e : σ * ((rayPt (-σ * Cα.radius, ((Qof P).vtx h).2) σ t').1 - z.1) =
-        t' + σ * ((-σ * Cα.radius, ((Qof P).vtx h).2).1 - z.1) := by
-      rw [rayPt_fst]; ring_nf; rw [show σ ^ 2 = σ * σ by ring, hσ2]; ring
-    rw [e]
-    refine ⟨hf, ?_⟩
-    ext
-    · simp only [rayPt_fst]; linear_combination (-σ * Cα.radius - z.1) * hσ2
-    · simp only [rayPt_snd]; rw [hrel]
+    grind [rayPt_fst, rayPt_snd]
 
 end ShootCut
 

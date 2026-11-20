@@ -1,4 +1,6 @@
 module
+public import Chazelle.Programs.Address
+public import Chazelle.Programs.Evidence
 
 public import Chazelle.Core.SweepEvStopFin7S
 
@@ -27,24 +29,23 @@ theorem slfRec_words {m : ℕ → ℕ} {RB j pe ph dc : ℕ} {cc : Config}
     rawRec m RB j = (cc.nreg pe, cc.nreg ph, cc.nreg oKd, cc.nreg oKk, cc.nreg oB) ∧
       rawDc m RB j = cc.nreg dc ∧
       rawAux m RB j = (cc.nreg slfA, cc.nreg slfN, cc.nreg slfL0, cc.nreg slfL1, cc.nreg oPar) := by
-  have w : ∀ i, i < 11 → m (RB + 11 * j + i) = cc.nreg ((slfWords pe ph dc).getD i 0) := hw
-  have w0 := w 0 (by norm_num)
-  have w1 := w 1 (by norm_num)
-  have w2 := w 2 (by norm_num)
-  have w3 := w 3 (by norm_num)
-  have w4 := w 4 (by norm_num)
-  have w5 := w 5 (by norm_num)
-  have w6 := w 6 (by norm_num)
-  have w7 := w 7 (by norm_num)
-  have w8 := w 8 (by norm_num)
-  have w9 := w 9 (by norm_num)
-  have w10 := w 10 (by norm_num)
-  simp only [slfWords, List.getD_cons_zero, List.getD_cons_succ, Nat.add_zero] at w0 w1 w2 w3
-  simp only [slfWords, List.getD_cons_zero, List.getD_cons_succ] at w4 w5 w6 w7
-  simp only [slfWords, List.getD_cons_zero, List.getD_cons_succ] at w8 w9 w10
+  have w := hw
+  have w0 := at_index w 0
+  have w1 := at_index w 1
+  have w2 := at_index w 2
+  have w3 := at_index w 3
+  have w4 := at_index w 4
+  have w5 := at_index w 5
+  have w6 := at_index w 6
+  have w7 := at_index w 7
+  have w8 := at_index w 8
+  have w9 := at_index w 9
+  have w10 := at_index w 10
+  simp [slfWords, List.getD_cons_zero, List.getD_cons_succ] at w0 w1 w2 w3
+  simp [slfWords] at w4 w5 w6 w7
+  simp [slfWords] at w8 w9 w10
   unfold rawRec rawDc rawAux
-  rw [w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10]
-  exact ⟨rfl, rfl, rfl⟩
+  grind
 
 /-- **A valid raw record.** -/
 theorem slfRawV {kind k b : ℕ} (hD : OrgD P J N kind k b) {d : ℕ} (hd : d ≤ 1) {p h : ℕ}
@@ -60,20 +61,15 @@ theorem slfRawV {kind k b : ℕ} (hD : OrgD P J N kind k b) {d : ℕ} (hd : d �
     RawV P J N m RB j := by
   unfold RawV
   rw [hr, hdc, hx]
-  exact ⟨⟨hD.ok, hD.free, hA, hL, hd, hpt⟩, hpw, hax⟩
+  record_facts
 
 /-- The raw record only reads its eleven words. -/
 theorem slfRec_congr {m m' : ℕ → ℕ} {RB j : ℕ}
     (h : ∀ i, i < 11 → m' (RB + 11 * j + i) = m (RB + 11 * j + i)) :
     rawRec m' RB j = rawRec m RB j ∧ rawDc m' RB j = rawDc m RB j ∧
       rawAux m' RB j = rawAux m RB j := by
-  have h0 := h 0 (by norm_num)
-  rw [Nat.add_zero] at h0
-  unfold rawRec rawDc rawAux
-  rw [h0, h 1 (by norm_num), h 2 (by norm_num), h 3 (by norm_num), h 4 (by norm_num),
-    h 5 (by norm_num), h 6 (by norm_num), h 7 (by norm_num), h 8 (by norm_num),
-    h 9 (by norm_num), h 10 (by norm_num)]
-  exact ⟨rfl, rfl, rfl⟩
+  have h0 := at_index h 0
+  simp_all [rawRec, rawDc, rawAux]
 
 variable {W : ℕ} {c₀ : Config}
 
@@ -91,12 +87,12 @@ theorem slfMaybe_irs {bitr pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slf
       (∀ r, r ≠ slfX → r ≠ gRC → c'.nreg r = c.nreg r)) := by
   refine IRS.ite (fun h => ?_) (fun h => ?_)
   · have h1 : c.nreg bitr = 1 := by omega
-    refine IRS.skip hI ⟨by rw [ite_eq_left h1, Nat.add_zero], fun h' => absurd h1 h', fun _ _ => rfl,
+    refine IRS.skip hI ⟨by simp_all, absurd h1, fun _ _ => rfl,
       fun _ _ _ => rfl⟩
   · have h1 : c.nreg bitr ≠ 1 := by omega
     refine (slfEmit_irs hpe hph hdc hI hk1 hA hW).mono (by norm_num) ?_
     rintro c' ⟨a1, a2, a3, a4⟩
-    exact ⟨by rw [a3, ite_eq_right h1], fun _ => a1, a2, a4⟩
+    exact ⟨by simp [*], fun _ => a1, a2, a4⟩
 
 end
 
