@@ -1,3 +1,0 @@
-module
-public import proofs.RAFReactionQuotient.FiniteApproximation
-public import proofs.HordijkSteelThreshold.TransitionConsequences

@@ -1,173 +1,109 @@
 module
 
-public import proofs.RAFCriticalWindowQuantitative.FiniteClosure
+public import proofs.RAFReactionQuotient.QuotientMap
+public import proofs.HordijkSteelThreshold.ReversibleClosure
+public import proofs.HordijkSteelThreshold.AmbientIndependence
 
 @[expose] public section
 
 namespace RAFCriticalWindowQuantitative
-open HordijkSteelThreshold RAF.Concrete RAF.Polymer
+open HordijkSteelThreshold RAF.Concrete RAF.Polymer RAFReactionQuotient OverlapCorrectedRAF.Source
 
-def settledChannels {M R : Type*} [DecidableEq M] (Q : ReversibleCRS M R)
-    (S : Finset R) (C : Finset M) : Finset R :=
-  S.filter (fun r => Q.lhs r ⊆ C ∧ Q.rhs r ⊆ C)
+inductive ProductiveHistory {M R : Type*} [Fintype M] [DecidableEq M] [DecidableEq R]
+    (Q : ReversibleCRS M R) (S : Finset R) : ℕ → Finset R → Prop
+  | nil : ProductiveHistory Q S 0 ∅
+  | step {k T r} : ProductiveHistory Q S k T → r ∈ S → r ∉ T →
+      revClosureStep Q {r} (fullClosure Q T) ≠ fullClosure Q T →
+      ProductiveHistory Q S (k+1) (insert r T)
 
-theorem settledChannels_mono {M R : Type*} [DecidableEq M] (Q : ReversibleCRS M R)
-    (S : Finset R) {C D : Finset M} (h : C ⊆ D) :
-    settledChannels Q S C ⊆ settledChannels Q S D := by
-  intro r hr
-  obtain ⟨hr,hleft,hright⟩ := Finset.mem_filter.mp hr
-  exact Finset.mem_filter.mpr ⟨hr,hleft.trans h,hright.trans h⟩
+/-- Food is short, and one enabled channel can at most double the length bound. -/
+def LengthGrowth {N : ℕ} {R : Type*} (Q : ReversibleCRS (Molecule N) R) : Prop :=
+  (∀ x ∈ Q.food, molLength x ≤ 2) ∧
+  ∀ C r b, (∀ x ∈ C, molLength x ≤ b) →
+    (Q.lhs r ⊆ C ∨ Q.rhs r ⊆ C) → ∀ x ∈ Q.lhs r ∪ Q.rhs r, molLength x ≤ 2*b
 
-theorem enabled_settled_next {M R : Type*} [DecidableEq M] (Q : ReversibleCRS M R)
-    (S : Finset R) (C : Finset M) (r : R) (hr : r ∈ S)
-    (hen : RevEnabledLhs Q C r ∨ RevEnabledRhs Q C r) :
-    r ∈ settledChannels Q S (revClosureStep Q S C) := by
-  have hold : C ⊆ revClosureStep Q S C := Finset.subset_union_left
-  have hadd : (if RevEnabledLhs Q C r then Q.rhs r else ∅) ∪
-      (if RevEnabledRhs Q C r then Q.lhs r else ∅) ⊆ revClosureStep Q S C := by
-    intro x hx
-    exact Finset.mem_union_right _ (Finset.mem_biUnion.mpr ⟨r,hr,hx⟩)
-  apply Finset.mem_filter.mpr
-  refine ⟨hr,?_⟩
-  rcases hen with hL | hR
-  · refine ⟨hL.trans hold,?_⟩
-    intro x hx
-    apply hadd
-    apply Finset.mem_union_left
-    simpa only [ite_eq_left hL] using hx
-  · refine ⟨?_,hR.trans hold⟩
-    intro x hx
-    apply hadd
-    apply Finset.mem_union_right
-    simpa only [ite_eq_left hR] using hx
-
-theorem growing_closure_grows_settled {M R : Type*} [DecidableEq M] [DecidableEq R]
-    (Q : ReversibleCRS M R) (S : Finset R) (C : Finset M)
-    (hg : revClosureStep Q S C ≠ C) :
-    (settledChannels Q S C).card < (settledChannels Q S (revClosureStep Q S C)).card := by
-  classical
-  have hold : C ⊆ revClosureStep Q S C := Finset.subset_union_left
-  have hn : ¬ revClosureStep Q S C ⊆ C := fun hh => hg (Finset.Subset.antisymm hh hold)
-  obtain ⟨x,hx,hnot⟩ := Finset.not_subset.mp hn
-  have hxnew : x ∈ S.biUnion (fun r =>
-      (if RevEnabledLhs Q C r then Q.rhs r else ∅) ∪
-      (if RevEnabledRhs Q C r then Q.lhs r else ∅)) :=
-    (Finset.mem_union.mp hx).resolve_left hnot
-  obtain ⟨r,hr,hxr⟩ := Finset.mem_biUnion.mp hxnew
-  have hactive : RevEnabledLhs Q C r ∨ RevEnabledRhs Q C r := by
-    by_contra hh
-    push Not at hh
-    simp [hh.1,hh.2] at hxr
-  have hsettled := enabled_settled_next Q S C r hr hactive
-  have hnotsettled : r ∉ settledChannels Q S C := by
-    intro hs
-    obtain ⟨_,hleft,hright⟩ := Finset.mem_filter.mp hs
-    rcases Finset.mem_union.mp hxr with hxL | hxR
-    · by_cases hL : RevEnabledLhs Q C r
-      · exact hnot (hright (by simpa only [ite_eq_left hL] using hxL))
-      · simp [hL] at hxL
-    · by_cases hR : RevEnabledRhs Q C r
-      · exact hnot (hleft (by simpa only [ite_eq_left hR] using hxR))
-      · simp [hR] at hxR
-  apply Finset.card_lt_card
-  refine Finset.ssubset_iff_subset_ne.mpr ⟨settledChannels_mono Q S hold,?_⟩
-  intro he
-  exact hnotsettled (he.symm ▸ hsettled)
-
-theorem settled_growth_or_stable {M R : Type*} [DecidableEq M] [DecidableEq R]
-    (Q : ReversibleCRS M R) (S : Finset R) (k : ℕ) :
-    k ≤ (settledChannels Q S (revClosureAt Q S k)).card ∨
-      revClosureAt Q S (k+1) = revClosureAt Q S k := by
-  induction k with
-  | zero => exact Or.inl (Nat.zero_le _)
-  | succ k ih =>
-    by_cases he : revClosureAt Q S (k+1) = revClosureAt Q S k
-    · right
-      change revClosureStep Q S (revClosureAt Q S (k+1)) = _
-      rw [he]
-      exact he
-    · have hk := ih.resolve_right he
-      exact Or.inl (Nat.succ_le_of_lt (lt_of_le_of_lt hk (growing_closure_grows_settled Q S _ he)))
-
-/-- Each nonstationary round finishes at least one new channel. -/
-theorem closure_stable_at_channel_count {M R : Type*} [DecidableEq M] [DecidableEq R]
-    (Q : ReversibleCRS M R) (S : Finset R) :
-    revClosureAt Q S (S.card+1) = revClosureAt Q S S.card := by
-  rcases settled_growth_or_stable Q S S.card with hg | he
-  · by_contra hn
-    have hh := growing_closure_grows_settled Q S (revClosureAt Q S S.card) hn
-    have hbound : (settledChannels Q S (revClosureStep Q S (revClosureAt Q S S.card))).card ≤ S.card :=
-      Finset.card_le_card (Finset.filter_subset _ _)
-    omega
-  · exact he
-
-theorem closure_stable_after_channel_count {M R : Type*} [DecidableEq M] [DecidableEq R]
-    (Q : ReversibleCRS M R) (S : Finset R) (j : ℕ) :
-    revClosureAt Q S (S.card+j) = revClosureAt Q S S.card := by
-  induction j with
-  | zero => simp
-  | succ j ih =>
-    rw [Nat.add_succ,revClosureAt,ih]
-    exact closure_stable_at_channel_count Q S
-
-theorem temporaryClosure_eq_channel_iteration (N L : ℕ) (S : Finset (Reaction N)) :
-    temporaryReactionClosure L S = revClosureAt (binaryPolymerCRS N L) S S.card := by
-  classical
-  ext x
-  rw [mem_temporaryReactionClosure]
+theorem split_growth (N : ℕ) : LengthGrowth (binaryPolymerCRS N 2) := by
   constructor
-  · rintro ⟨k,hk⟩
-    by_cases h : k ≤ S.card
-    · exact revClosureAt_mono_stage _ _ h hk
-    · have he : k = S.card+(k-S.card) := by omega
-      rw [he,closure_stable_after_channel_count] at hk
-      exact hk
-  · intro hx
-    exact ⟨S.card,hx⟩
+  · simp [binaryPolymerCRS, binaryFood]
+  · simp [binaryPolymerCRS, Finset.insert_subset_iff]
+    grind [reaction_length_add, molLength_reactionLeft, molLength_reactionRight, molLength_reactionProduct]
 
-theorem finite_iteration_length (N : ℕ) (S : Finset (Reaction N)) (k : ℕ)
-    (x : Molecule N) (hx : x ∈ revClosureAt (binaryPolymerCRS N 2) S k) :
-    molLength x ≤ 2^(k+1) := by
-  classical
-  induction k generalizing x with
+theorem quotient_growth (N : ℕ) : LengthGrowth (repositoryCRS N 2) := by
+  constructor
+  · exact (split_growth N).1
+  · intro C r b hC
+    obtain ⟨s,rfl⟩ := splitToQuotient_surjective N r
+    rw [(quotient_sides (t := 2) s).1,
+      (quotient_sides (t := 2) s).2]
+    exact (split_growth N).2 C s b hC
+
+/-- Grow a productive history while keeping all selected channels settled.
+When a new channel is enabled, its endpoints and the old closure already
+form a closed set for the enlarged history. -/
+theorem long_target_productive_history {N : ℕ} {R : Type*} [DecidableEq R]
+    (Q : ReversibleCRS (Molecule N) R) (hQ : LengthGrowth Q)
+    (S : Finset R) (k : ℕ) (x : Molecule N) (hx : x ∈ fullClosure Q S)
+    (hlen : 2^(k+1) < molLength x) :
+    ∃ T, ProductiveHistory Q S k T ∧ T.card = k ∧ T ⊆ S ∧
+      (∀ r ∈ T, Q.lhs r ∪ Q.rhs r ⊆ fullClosure Q T) ∧
+      ∀ y ∈ fullClosure Q T, molLength y ≤ 2^(k+1) := by
+  induction k with
   | zero =>
-    exact (Finset.mem_filter.mp hx).2
+    refine ⟨∅, .nil, by simp, by simp, by simp, ?_⟩
+    simpa [fullClosure_eq_food_of_no_seed Q ∅ (by simp)] using hQ.1
   | succ k ih =>
-    have hinc : 2^(k+1) ≤ 2^(k+1+1) := by
+    have hp : 2^(k+1) < molLength x := by rw [pow_succ] at hlen; omega
+    obtain ⟨T,hT,hcard,hTS,hsettled,hl⟩ := ih hp
+    let C := fullClosure Q T
+    obtain ⟨r,hr,he,hn⟩ : ∃ r ∈ S, (Q.lhs r ⊆ C ∨ Q.rhs r ⊆ C) ∧ ¬ Q.lhs r ∪ Q.rhs r ⊆ C := by
+      by_contra! h
+      exact hp.not_ge (hl x (fullClosure_least (fullClosure_food Q T) h hx))
+    have hrT : r ∉ T := fun h => hn (hsettled r h)
+    have hD : fullClosure Q (insert r T) ⊆ (C ∪ (Q.lhs r ∪ Q.rhs r)) := fullClosure_least
+      ((fullClosure_food Q T).trans Finset.subset_union_left)
+      (by grind)
+    have hsub : C ⊆ fullClosure Q (insert r T) := fullClosure_mono Q (Finset.subset_insert ..)
+    refine ⟨insert r T, .step hT hr hrT (by simpa [revClosureStep_eq_iff, RevClosed] using And.intro he hn),
+      by simp_all, Finset.insert_subset hr hTS, ?_, ?_⟩
+    · have hr := fullClosure_completes Q (S := insert r T) (Finset.mem_insert_self ..)
+      grind
+    · intro y hy
+      have h := hQ.2 C r _ hl he y
       rw [pow_succ]
-      omega
-    change x ∈ revClosureStep (binaryPolymerCRS N 2) S
-      (revClosureAt (binaryPolymerCRS N 2) S k) at hx
-    rcases Finset.mem_union.mp hx with hx | hx
-    · exact (ih x hx).trans hinc
-    · obtain ⟨r,_,hx⟩ := Finset.mem_biUnion.mp hx
-      have hlen : molLength (reactionLeft r)+molLength (reactionRight r) =
-          molLength (reactionProduct r) := by
-        simp only [molLength_reactionLeft,molLength_reactionRight,molLength_reactionProduct,reaction_length_add]
-      rcases Finset.mem_union.mp hx with hx | hx
-      · by_cases hen : RevEnabledLhs (binaryPolymerCRS N 2)
-            (revClosureAt (binaryPolymerCRS N 2) S k) r
-        · rw [ite_eq_left hen] at hx
-          have he : x = reactionProduct r := Finset.mem_singleton.mp hx
-          have hl := ih (reactionLeft r) (hen (by simp [binaryPolymerCRS]))
-          have hr := ih (reactionRight r) (hen (by simp [binaryPolymerCRS]))
-          rw [he,pow_succ]
-          omega
-        · simp [hen] at hx
-      · by_cases hen : RevEnabledRhs (binaryPolymerCRS N 2)
-            (revClosureAt (binaryPolymerCRS N 2) S k) r
-        · rw [ite_eq_left hen] at hx
-          have hp := ih (reactionProduct r) (hen (by simp [binaryPolymerCRS]))
-          have hx' : x = reactionLeft r ∨ x = reactionRight r := by
-            simpa only [binaryPolymerCRS,Finset.mem_insert,Finset.mem_singleton] using hx
-          rcases hx' with rfl | rfl <;> omega
-        · simp [hen] at hx
+      grind
 
-/-- A sparse set of open channels cannot generate an arbitrarily long molecule. -/
-theorem sparse_closure_length (N : ℕ) (S : Finset (Reaction N))
-    (x : Molecule N) (hx : x ∈ temporaryReactionClosure 2 S) :
-    molLength x ≤ 2^(S.card+1) := by
-  rw [temporaryClosure_eq_channel_iteration] at hx
-  exact finite_iteration_length N S S.card x hx
+open Classical MeasureTheory unitInterval
+
+def sparseWitnessCap (r : ℕ) : ℕ := 2*(2^(r+1)+2)
+
+def splitSparseCoefficient (r : ℕ) : ℕ := (Fintype.card (Reaction (sparseWitnessCap r))).choose r
+
+def quotientSparseCoefficient (r : ℕ) : ℕ := (Fintype.card (RepositoryChannel (sparseWitnessCap r))).choose r
+
+theorem catalogue_sparse_bound {J : Type*} [Fintype J] {g : CutMap}
+    (a : I) (r : ℕ) (C : FiniteCatalogue J (sparseWitnessCap r) g)
+    (hC : LengthGrowth (C.crs 2)) :
+    latentSurvival g a ≤ ((Fintype.card J).choose r : ENNReal)*(toNNReal a : ENNReal)^r := by
+  refine ((latent_survival_le_escape g a _).trans_eq ((C.escape_restriction _ a).2 rfl).symm).trans ?_
+  rw [← Finset.card_univ (α := J), ← Finset.card_powersetCard]
+  refine measure_le_card_mul _ (blockEvent · True) ?_ ?_
+  · rintro ω ⟨x,hx,hl⟩
+    obtain ⟨T,_,hcard,hT,_,_⟩ := long_target_productive_history (C.crs 2) hC _ r x hx ((Nat.le_add_right _ 2).trans_lt hl)
+    exact ⟨T, by simp [hcard], by simpa [blockEvent, Finset.subset_iff] using hT⟩
+  · intro T hT
+    simpa [← Measure.infinitePi_eq_pi, (Finset.mem_powersetCard.mp hT).2] using (iid_block a T True).2.le
+
+theorem sparse_toReal {s : ENNReal} {a : I} {r c : ℕ}
+    (h : s ≤ (c : ENNReal)*(toNNReal a : ENNReal)^r) : s.toReal ≤ (c : ℝ)*(a : ℝ)^r := by
+  simpa using ENNReal.toReal_mono (by finiteness) h
+
+/-- The quadratic certificate uses the channel count, not an enumeration of fields. -/
+theorem worked_low_openness_bound (a : I) (ha : (a : ℝ) ≤ 1/10^20) :
+    (staticSurvival a).toReal < 8/10^26 := by
+  rw [staticSurvival_pullback]
+  refine (sparse_toReal (catalogue_sparse_bound a 2 (splitCatalogue _) (split_growth _))).trans_lt ?_
+  have := a.property.1
+  grw [ha]
+  norm_num [sparseWitnessCap, Nat.choose_two_right, Fin.sum_univ_eq_sum_range (fun i : ℕ => 2^(i+1)*i)]
 
 end RAFCriticalWindowQuantitative
