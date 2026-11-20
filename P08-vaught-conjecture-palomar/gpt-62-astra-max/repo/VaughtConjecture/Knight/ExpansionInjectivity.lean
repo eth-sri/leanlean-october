@@ -34,14 +34,6 @@ theorem isNormal_blockLevel : Order.IsNormal blockLevel :=
   (Ordinal.isNormal_add_right Ordinal.omega0).comp
     (Ordinal.isNormal_mul_right Ordinal.omega0_pos)
 
-theorem exists_lt_blockLevel_of_lt {l μ : Ordinal.{0}} (hl : Order.IsSuccLimit l)
-    (h : μ < blockLevel l) : ∃ ξ < l, μ < blockLevel ξ :=
-  (isNormal_blockLevel.lt_iff_exists_lt hl).mp h
-
-theorem blockLevel_le_of_forall_lt {l b : Ordinal.{0}} (hl : Order.IsSuccLimit l)
-    (h : ∀ ξ < l, blockLevel ξ ≤ b) : blockLevel l ≤ b :=
-  (isNormal_blockLevel.le_iff_forall_le hl).mpr h
-
 /-- A value below a limit block level, or `∞`, is determined by its truncations at the lower
 block levels. -/
 theorem ExtOrd.eq_of_forall_truncExt_blockLevel_eq {l : Ordinal.{0}} (hl : Order.IsSuccLimit l)
@@ -66,12 +58,12 @@ theorem ExtOrd.eq_of_forall_truncExt_blockLevel_eq {l : Ordinal.{0}} (hl : Order
         have := h ξ hξ
         rw [truncExt_top] at this
         exact ofOrd_le_ofOrd.mp (truncExt_eq_top_iff.mp this.symm)
-      exact absurd (blockLevel_le_of_forall_lt hl hle) (not_le.mpr hν)
+      exact absurd ((isNormal_blockLevel.le_iff_forall_le hl).mpr hle) (not_le.mpr hν)
   · have hμ : μ < blockLevel l := by
       rcases hx with hx | hx
       · exact ofOrd_lt_ofOrd.mp hx
       · exact absurd hx (ofOrd_ne_top μ)
-    obtain ⟨ξ, hξ, hμξ⟩ := exists_lt_blockLevel_of_lt hl hμ
+    obtain ⟨ξ, hξ, hμξ⟩ := (isNormal_blockLevel.lt_iff_exists_lt hl).mp hμ
     have := h ξ hξ
     rw [truncExt_ofOrd_of_lt hμξ] at this
     rcases ExtOrd.cases y with rfl | rfl | ⟨ν, rfl⟩
@@ -152,7 +144,7 @@ theorem eq_of_reduct_eq_of_le (η : Ordinal.{0}) :
       have h1 := ih η' hη' ξ hξη' (N.reduct (blockStage_mono (Order.le_succ η')))
         (N'.reduct (blockStage_mono (Order.le_succ η'))) (hN.reduct _) (hN'.reduct _)
         (by rw [Realization.reduct_reduct, Realization.reduct_reduct]; exact hred)
-      exact eq_of_reduct_eq_blockStage hN hN' h1
+      exact eq_of_reduct_eq (blockStage_le_succ η') (blockStage_succ_toOrdinal η') hN hN' h1
   · apply eq_of_reduct_eq_of_forall_lt hlim
     intro ζ hζ
     rcases le_or_gt ξ ζ with hξζ | hζξ

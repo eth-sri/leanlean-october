@@ -6,11 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.SourceBlockLocalityTransport
-public import VaughtConjecture.Knight.SlackCutPasting
-public import VaughtConjecture.Knight.CountedEncoding
-public import VaughtConjecture.Knight.RestrictedComposition
 public import VaughtConjecture.Knight.OrbitBlock
-public import VaughtConjecture.Knight.Coface
 
 /-! # Data for the relative lifting theorem of pattern-guarded probes
 
@@ -160,7 +156,7 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem :
 
 /-- A lawful section below an index dominating every cell is a lawful whole labelling. -/
 theorem RespectsSemantics.of_below_top {top : Finset ι × ℕ} (htop : ∀ d, GradedLe (D.cell d) top)
-    {r : D.below top → ExtOrd} (hr : RespectsSemanticsBelow sem top r) :
+    {r : D.SectionAt top} (hr : sem.Lawful r) :
     RespectsSemantics sem (fun d => r ⟨d, htop d⟩) where
   orderly d := hr.orderly ⟨d, htop d⟩
   locality Sig := hr.locality ⟨Sig, htop Sig⟩
@@ -171,8 +167,8 @@ theorem RespectsSemantics.of_below_top {top : Finset ι × ℕ} (htop : ∀ d, G
 /-- **Same-bottom-pattern transport** (the reviewer's helper, notes3): a bounded
 replacement-commuting image of a lawful section having the bottom flags of a lawful section is
 lawful.  No bottom reflection of the scalar map is needed. -/
-theorem map_respects_of_same_bottom_pattern {BJ : Finset ι × ℕ} {r q : D.below BJ → ExtOrd}
-    (hr : RespectsSemanticsBelow sem BJ r) (hq : RespectsSemanticsBelow sem BJ q) {K : ℕ}
+theorem map_respects_of_same_bottom_pattern {BJ : Finset ι × ℕ} {r q : D.SectionAt BJ}
+    (hr : sem.Lawful r) (hq : sem.Lawful q) {K : ℕ}
     {ν : ExtOrd → ExtOrd} (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) (hν : BoundedMap K ν)
     (hpattern : ∀ d, ν (r d) = ⊥ ↔ q d = ⊥) :
     RespectsSemanticsBelow sem BJ (fun d => ν (r d)) :=
@@ -202,38 +198,38 @@ structure Requests (DA : CellScheme A) (DQ : CellScheme Q) where
   /-- High values, read by a cutoff. -/
   T : Set (Cell DQ)
   /-- The old reference of an exact request, below the cap. -/
-  ρ : Cell DQ → DA.below (DA.cell C)
+  ρ : Cell DQ → DA.RowDomain C
   /-- Its offset. -/
   off : Cell DQ → ℕ
   /-- The old marker, below the cap. -/
-  a : DA.below (DA.cell C)
+  a : DA.RowDomain C
 
 namespace Requests
 
 variable {DA : CellScheme A} {DQ : CellScheme Q} (r : Requests DA DQ)
 
 /-- The cap as a cell of its own lower domain. -/
-def capCell : DA.below (DA.cell r.C) := ⟨r.C, GradedLe.refl _⟩
+def capCell : DA.RowDomain r.C := ⟨r.C, GradedLe.refl _⟩
 
 /-- The restriction of an old labelling to the cap's lower domain. -/
-def sec (u : Cell DA → ExtOrd) (d : DA.below (DA.cell r.C)) : ExtOrd := u d.1
+def sec (u : DA.Labelling) (d : DA.RowDomain r.C) : ExtOrd := u d.1
 
-@[simp] theorem sec_apply (u : Cell DA → ExtOrd) (d : DA.below (DA.cell r.C)) :
+@[simp] theorem sec_apply (u : DA.Labelling) (d : DA.RowDomain r.C) :
     r.sec u d = u d.1 := rfl
 
-@[simp] theorem sec_capCell (u : Cell DA → ExtOrd) : r.sec u r.capCell = u r.C := rfl
+@[simp] theorem sec_capCell (u : DA.Labelling) : r.sec u r.capCell = u r.C := rfl
 
 /-- `t_f(s)`: the capped replacement of the reference, for a section `s` below the cap. -/
-noncomputable def tOf (s : DA.below (DA.cell r.C) → ExtOrd) (f : Cell DQ) : ExtOrd :=
+noncomputable def tOf (s : DA.RowDomain r.C → ExtOrd) (f : Cell DQ) : ExtOrd :=
   min (extVisibilityReplace (s (r.ρ f)) r.N (r.off f)) (s r.capCell)
 
 /-- `d(s)`: the capped offset-`R` replacement of the marker. -/
-noncomputable def dOf (s : DA.below (DA.cell r.C) → ExtOrd) : ExtOrd :=
+noncomputable def dOf (s : DA.RowDomain r.C → ExtOrd) : ExtOrd :=
   min (extVisibilityReplace (s r.a) r.N r.R) (s r.capCell)
 
 /-- **The target relations** between an old section `s` below the cap and a candidate
 labelling `v`. -/
-def Correct (s : DA.below (DA.cell r.C) → ExtOrd) (v : Cell DQ → ExtOrd) : Prop :=
+def Correct (s : DA.RowDomain r.C → ExtOrd) (v : DQ.Labelling) : Prop :=
   (∀ z ∈ r.Z, min (v z) (s r.capCell) = ⊥) ∧
     (∀ f ∈ r.F, min (v f) (s r.capCell) = r.tOf s f) ∧
     ∀ y ∈ r.T, r.dOf s ≤ min (v y) (s r.capCell)
@@ -242,7 +238,7 @@ end Requests
 
 /-- The distinguished old bottom-pattern class, tested on a lower domain only. -/
 def InClass {DA : CellScheme A} {BJ : Finset ιA × ℕ} (ZA : Set (DA.below BJ))
-    (u : Cell DA → ExtOrd) : Prop :=
+    (u : DA.Labelling) : Prop :=
   ∀ d : DA.below BJ, u d.1 = ⊥ ↔ d ∈ ZA
 
 /-! ## The relative data -/
@@ -257,13 +253,13 @@ structure RelativeData (DA : CellScheme A) (semA : Semantics DA) (DQ : CellSchem
   /-- The cap has grade `N`. -/
   grade_C : DA.grade req.C = req.N
   /-- The distinguished bottom pattern, on the lower domain below the cap. -/
-  ZA : Set (DA.below (DA.cell req.C))
+  ZA : Set (DA.RowDomain req.C)
   C_notin : req.capCell ∉ ZA
   a_notin : req.a ∉ ZA
   ρ_notin : ∀ f ∈ req.F, req.ρ f ∉ ZA
   off_lt : ∀ f ∈ req.F, req.off f ≤ req.N
   /-- The cleaned donor: bottom exactly on the class, the cap's row elsewhere. -/
-  e : DA.below (DA.cell req.C) → ExtOrd
+  e : DA.RowDomain req.C → ExtOrd
   e_bot : ∀ d, e d = ⊥ ↔ d ∈ ZA
   e_eq : ∀ d, d ∉ ZA → e d = semA.E req.C d
   /-- The candidate's root and top indices. -/
@@ -277,15 +273,15 @@ structure RelativeData (DA : CellScheme A) (semA : Semantics DA) (DQ : CellSchem
   top_le_N : top.2 ≤ req.N
   /-- Root cells are old cells below the cap, and lawful old sections below the cap pull back
   to lawful root sections. -/
-  κ : DQ.below root → DA.below (DA.cell req.C)
-  hroot : ∀ s : DA.below (DA.cell req.C) → ExtOrd, RespectsSemanticsBelow semA (DA.cell req.C) s →
+  κ : DQ.below root → DA.RowDomain req.C
+  hroot : ∀ s : DA.RowDomain req.C → ExtOrd, semA.Lawful s →
     RespectsSemanticsBelow semQ root (fun d => s (κ d))
   /-- The candidate is bountiful. -/
   bountiful : semQ.IsBountiful
   /-- Every candidate cell is requested or a root cell. -/
   cover : ∀ d, d ∈ req.Z ∨ d ∈ req.F ∨ d ∈ req.T ∨ ∃ r : DQ.below root, r.1 = d
   /-- The reference template: lawful, the donor on the root, correct against the donor. -/
-  V : Cell DQ → ExtOrd
+  V : DQ.Labelling
   V_respects : RespectsSemantics semQ V
   V_root : ∀ r : DQ.below root, V r.1 = e (κ r)
   V_correct : req.Correct e V
@@ -298,18 +294,13 @@ variable {DA : CellScheme A} {semA : Semantics DA} {DQ : CellScheme Q} {semQ : S
   (X : RelativeData DA semA DQ semQ)
 
 /-- An **allowed** pair: lawful on both faces, agreeing on the root, correct in the class. -/
-def Allowed (u : Cell DA → ExtOrd) (v : Cell DQ → ExtOrd) : Prop :=
+def Allowed (u : Cell DA → ExtOrd) (v : DQ.Labelling) : Prop :=
   RespectsSemantics semA u ∧ RespectsSemantics semQ v ∧
     (∀ r : DQ.below X.root, v r.1 = u (X.κ r).1) ∧
     (InClass X.ZA u → X.req.Correct (X.req.sec u) v)
 
 theorem grade_le (d : Cell DQ) : DQ.grade d ≤ X.req.N :=
   (X.below_top d).2.trans X.top_le_N
-
-/-- Lawful old labellings pull back to lawful root sections. -/
-theorem hroot' (u : Cell DA → ExtOrd) (hu : RespectsSemantics semA u) :
-    RespectsSemanticsBelow semQ X.root (fun d => u (X.κ d).1) :=
-  X.hroot (fun d => u d.1) (hu.toBelow _)
 
 /-- In the class the cap is nonbottom. -/
 theorem cap_ne_bot {u : Cell DA → ExtOrd} (hcls : InClass X.ZA u) : u X.req.C ≠ ⊥ :=
@@ -319,14 +310,14 @@ theorem cap_ne_bot {u : Cell DA → ExtOrd} (hcls : InClass X.ZA u) : u X.req.C 
 
 /-- **The root lift**: candidate bountifulness at the root–top pair installs a lawful old root
 into a lawful candidate ambient at any `N`-visible cap, retaining the ambient's cap reading. -/
-theorem lift_root {u' : Cell DA → ExtOrd} (hu' : RespectsSemantics semA u')
-    {w : Cell DQ → ExtOrd} (hw : RespectsSemantics semQ w) {γ : ExtOrd}
+theorem lift_root {u' : DA.Labelling} (hu' : RespectsSemantics semA u')
+    {w : DQ.Labelling} (hw : RespectsSemantics semQ w) {γ : ExtOrd}
     (hγ : SelfVis X.req.N γ)
-    (hagr : ∀ r : DQ.below X.root, min (w r.1) γ = min (u' (X.κ r).1) γ) :
-    ∃ v' : Cell DQ → ExtOrd, RespectsSemantics semQ v' ∧
-      (∀ r : DQ.below X.root, v' r.1 = u' (X.κ r).1) ∧ ∀ d, min (v' d) γ = min (w d) γ := by
+    (hagr : CappedEq (w ∘ Subtype.val) (fun r => u' (X.κ r).1) γ) :
+    ∃ v' : DQ.Labelling, RespectsSemantics semQ v' ∧
+      (∀ r : DQ.below X.root, v' r.1 = u' (X.κ r).1) ∧ CappedEq v' w γ := by
   obtain ⟨q', hq', hcap, hface⟩ := X.bountiful X.root X.top X.root_mem X.top_mem X.root_le
-    X.root_ne (fun d => u' (X.κ d).1) (fun d => w d.1) γ (X.hroot' u' hu') (hw.toBelow X.top)
+    X.root_ne (fun d => u' (X.κ d).1) (fun d => w d.1) γ (X.hroot (fun d => u' d.1) (hu'.toBelow _)) (hw.toBelow X.top)
     (hγ.mono X.top_le_N) (fun d => hagr d)
   refine ⟨fun d => q' ⟨d, X.below_top d⟩, RespectsSemantics.of_below_top X.below_top hq', ?_, ?_⟩
   · intro r
@@ -343,7 +334,7 @@ theorem decoder {u' : Cell DA → ExtOrd} (hu' : RespectsSemantics semA u')
       ∀ d, θ (X.e d) = min (X.req.sec u' d) (u' X.req.C) := by
   have hvis : SelfVis (DA.grade X.req.C) (u' X.req.C) := (hu'.orderly X.req.C).symm
   obtain ⟨τ, hbot, hmono, hread, hcomm, -⟩ := exists_exact_capped_shifter
-    (D := DA.below (DA.cell X.req.C)) (grade := fun d => DA.grade d.1) (p := fun d => u' d.1)
+    (D := DA.RowDomain X.req.C) (grade := fun d => DA.grade d.1) (p := fun d => u' d.1)
     (c := ⟨X.req.C, GradedLe.refl _⟩) (fun d => d.2.2) hvis (hu'.locality X.req.C)
   have hvisN : SelfVis X.req.N (u' X.req.C) := by rwa [X.grade_C] at hvis
   refine ⟨fun x => min (τ x) (u' X.req.C), ⟨?_, ?_, ?_⟩, fun x => min_le_right _ _, ?_⟩

@@ -5,6 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.TwoFaceLifting
+
 public import VaughtConjecture.Knight.OrdinaryScopeIteration
 
 /-! # Constructing all proper scopes from the actual legal inputs
@@ -16,7 +18,6 @@ The full ambient scope is deliberately not completed here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryProperPredecessor
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
 open OrdinaryScopeIteration
@@ -28,10 +29,6 @@ def initialScopes : Finset (Finset ι) := I.boundary.plan.filter (fun S => S ⊆
 
 theorem mem_initial {S : Finset ι} : S ∈ initialScopes I ↔ S ∈ R ∧ (S ⊆ B ∨ S ⊆ C) :=
   Finset.mem_filter
-
-theorem initial_occupied (d : Cell I.boundary) : I.boundary.scope d ∈ initialScopes I :=
-  mem_initial I |>.mpr ⟨I.boundary.scope_mem_plan d,
-    (I.occupied_iff (I.boundary.cell_mem d)).mp ⟨d, rfl⟩⟩
 
 variable (hBA : B ≠ A) (hCA : C ≠ A)
 
@@ -48,18 +45,14 @@ variable (N : ℕ) (G : Finset ExtOrd) (θ : ExtOrd)
 
 /-- Every premise of the initial iteration state follows from input legality. -/
 def seed : State I.rows (initialScopes I) N G θ (initialScopes I) :=
-  initial I.rows (initialScopes I) N G θ I.consistent I.coded (initial_occupied I)
+  initial I.rows (initialScopes I) N G θ I.consistent I.coded (fun d => (mem_initial I).mpr ⟨CellScheme.scope_mem_plan I.boundary d, (WholeDonorBoundary.Input.occupied_iff I (I.boundary.cell_mem d)).mp (Exists.intro d rfl)⟩)
     (fun _ h => (mem_initial I |>.mp h).1) (initial_proper I hBA hCA)
     (by
       intro S hS T hT ht
       refine (mem_initial I).mpr ⟨hT, ?_⟩
       exact (mem_initial I |>.mp hS).2.imp ht.trans ht.trans)
     (fun J hJ h => (I.occupied_iff hJ).mpr (mem_initial I |>.mp h).2)
-    (by
-      intro CI BJ hCI hBJ hscope h
-      by_cases he : CI = BJ
-      · subst BJ; exact lift_refl
-      · exact I.inherited_lift hCI hBJ h he (mem_initial I |>.mp hscope).2)
+    (fun _ _ hu hv hs h => I.liftWithin I.leftFace I.rightFace hu hv h ((mem_initial I).mp hs).2)
 
 theorem small_scopes (hunion : A = B ∪ C) {S : Finset ι}
     (hS : S ∈ R) (hcard : S.card ≤ 1) : S ∈ initialScopes I := by
@@ -106,7 +99,7 @@ theorem complete {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) (hJA : J.
     ∃ d, X.state.carrier.cell d = J :=
   X.state.complete J hJ (X.done J.1 (Plan.mem_gradedPlan.mp hJ).1 hJA)
 
-theorem lifts : CanonicalCoatomBountiful.OldLifts X.state.rows := by
+theorem lifts : CoatomBoundaryExtension.OldLifts X.state.rows := by
   intro CI BJ hCI hBJ hJA h
   rw [X.state.plan] at hCI hBJ
   exact X.state.lifts CI BJ hCI hBJ (X.done BJ.1 (Plan.mem_gradedPlan.mp hBJ).1 hJA) h

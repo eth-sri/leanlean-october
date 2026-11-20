@@ -29,8 +29,6 @@ which is a proper label, not `⊤`.  Non-top source cells keep their literal lab
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd StageType Filter

@@ -19,8 +19,6 @@ suprema. Proper source labels remain literal.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd StageType
@@ -45,7 +43,7 @@ def LawfulBand (p : S β n) : Set (p.TopCell → ℕ∞) :=
   {r | RespectsSemantics p.scheme.rows (p.bandLabel r)}
 
 /-- The band jump at `K` decodes to the label jump at `β + K`. -/
-theorem bandLabel_jump (p : S β n) (K : ℕ) (r : p.TopCell → ℕ∞) :
+theorem bandLabel_jump (p : S β n) K r :
     p.bandLabel (JumpClosed.jump K r) =
       fun Xi => ExtOrd.jump (ofOrd (β + K)) (p.bandLabel r Xi) := by
   funext Xi
@@ -68,9 +66,9 @@ theorem bandLabel_jump (p : S β n) (K : ℕ) (r : p.TopCell → ℕ∞) :
 
 /-- Once the threshold bounds the grades, jumping a lawful band vector remains
 lawful. This finite closure fact is shared by both stable-lawfulness proofs. -/
-theorem jump_mem_lawfulBand (p : S β n) (hβ : Order.IsSuccLimit β) (K : ℕ)
+theorem jump_mem_lawfulBand (p : S β n) (hβ : Order.IsSuccLimit β) K
     (hK : ∀ d : Cell p.scheme.scheme, p.scheme.scheme.grade d ≤ K)
-    {r : p.TopCell → ℕ∞} (hr : r ∈ p.LawfulBand) :
+    {r} (hr : r ∈ p.LawfulBand) :
     JumpClosed.jump K r ∈ p.LawfulBand := by
   change RespectsSemantics p.scheme.rows (p.bandLabel (JumpClosed.jump K r))
   rw [bandLabel_jump]
@@ -79,8 +77,8 @@ theorem jump_mem_lawfulBand (p : S β n) (hβ : Order.IsSuccLimit β) (K : ℕ)
 end StageType
 
 /-- The provisional labelling restricted along an actual face is lawful. -/
-theorem respects_someProvisionalValue_mapCell {β : Ordinal.{0}} (hβ : Order.IsSuccLimit β)
-    {m n : ℕ} {p : S β n} {q : S β m} {f : Fin n ↪ Fin m} (hpq : typeMap f q = some p) :
+theorem respects_someProvisionalValue_mapCell {β} (hβ : Order.IsSuccLimit β)
+    {m n} {p} {q : S β m} {f : Fin n ↪ Fin m} (hpq : typeMap f q = some p) :
     RespectsSemantics p.scheme.rows (fun Xi => q.someProvisionalValue (mapCell hpq Xi)) := by
   obtain ⟨hr, rfl⟩ : ∃ hr, q.restrictFace f hr = p :=
     ⟨visible_of_typeMap_eq_some hpq, restrictFace_eq_of_typeMap_eq_some hpq⟩
@@ -103,7 +101,7 @@ noncomputable def stableBand (x : R.LabelledExt) : x.type.TopCell → ℕ∞ :=
   fun i => ⨆ y : RootedCover x, (offset i.1 i.2 y : ℕ∞)
 
 /-- The provisional band vector decodes to the provisional values along the rooted cover. -/
-theorem bandLabel_provisionalBand (y : RootedCover x) :
+theorem bandLabel_provisionalBand y :
     x.type.bandLabel (provisionalBand y) = fun Xi => value y Xi := by
   funext Xi
   unfold StageType.bandLabel
@@ -115,7 +113,7 @@ theorem bandLabel_provisionalBand (y : RootedCover x) :
     rw [someProvisionalValue_of_ne_top (by rw [label_cell]; exact h), label_cell]
 
 /-- Provisional band vectors are lawful. -/
-theorem provisionalBand_mem_lawfulBand (y : RootedCover x) :
+theorem provisionalBand_mem_lawfulBand y :
     provisionalBand y ∈ x.type.LawfulBand := by
   change RespectsSemantics _ _
   rw [bandLabel_provisionalBand]

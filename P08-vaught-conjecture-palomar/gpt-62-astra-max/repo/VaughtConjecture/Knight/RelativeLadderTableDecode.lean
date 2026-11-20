@@ -17,7 +17,6 @@ field ranks. Thus unused rungs, spare tips and zero shadows are included.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
 open Transform Value ExtOrd
 noncomputable section

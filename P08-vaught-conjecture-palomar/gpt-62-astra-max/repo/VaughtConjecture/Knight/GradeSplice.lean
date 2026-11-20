@@ -17,7 +17,6 @@ application.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradeTailRestoration
 open Transform Value ExtOrd
 noncomputable section
@@ -28,16 +27,16 @@ variable {sem : Semantics D} {BJ : Finset ι × ℕ} {j : ℕ}
 def lowerIncl (hj : j ≤ BJ.2) (d : D.below (BJ.1, j)) : D.below BJ :=
   ⟨d.1, d.2.trans ⟨Finset.Subset.refl _, hj⟩⟩
 
-def splice (u : D.below BJ → ExtOrd) (v : D.below (BJ.1, j) → ExtOrd)
+def splice (u : D.SectionAt BJ) (v : D.SectionAt (BJ.1, j))
     (d : D.below BJ) : ExtOrd :=
   if h : D.grade d.1 ≤ j then v ⟨d.1, d.2.1, h⟩ else u d
 
-theorem splice_low (u : D.below BJ → ExtOrd) (v : D.below (BJ.1, j) → ExtOrd)
+theorem splice_low u (v : D.SectionAt (BJ.1, j))
     (d : D.below BJ) (h : D.grade d.1 ≤ j) :
     splice u v d = v ⟨d.1, d.2.1, h⟩ := dite_eq_left h
 
-theorem splice_high (u : D.below BJ → ExtOrd) (v : D.below (BJ.1, j) → ExtOrd)
-    (d : D.below BJ) (h : ¬ D.grade d.1 ≤ j) : splice u v d = u d := dite_eq_right h
+theorem splice_high u (v : D.SectionAt (BJ.1, j))
+    d (h : ¬ D.grade d.1 ≤ j) : splice u v d = u d := dite_eq_right h
 
 /-- Equality at the restoration cap preserves every smaller cap, without
 any visibility or source-shortness assumption. -/
@@ -46,10 +45,10 @@ theorem cap_below {x y M γ : ExtOrd} (h : min x M = min y M) (hγ : γ ≤ M) :
   have hh := congrArg (fun z => min z γ) h
   simpa only [min_assoc, min_eq_right hγ] using hh
 
-theorem splice_cap (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
-    {v : D.below (BJ.1, j) → ExtOrd} {M : ExtOrd}
-    (hag : ∀ d, min (v d) M = min (u (lowerIncl hj d)) M) :
-    ∀ d, min (splice u v d) M = min (u d) M := by
+theorem splice_cap (hj : j ≤ BJ.2) {u}
+    {v : D.SectionAt (BJ.1, j)} {M}
+    (hag : CappedEq v (u ∘ lowerIncl hj) M) :
+    CappedEq (splice u v) u M := by
   intro d
   by_cases h : D.grade d.1 ≤ j
   · rw [splice_low u v d h]
@@ -59,13 +58,13 @@ theorem splice_cap (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
 /-- An actual lower lift can be installed without changing any upper locality
 target. Availability stays inside the actual target: witnesses have the same
 grade as the requester, and therefore stay on the same side of the splice. -/
-theorem splice_respects (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
-    {v : D.below (BJ.1, j) → ExtOrd} {M : ExtOrd}
-    (hu : RespectsSemanticsBelow sem BJ u)
-    (hv : RespectsSemanticsBelow sem (BJ.1, j) v)
+theorem splice_respects (hj : j ≤ BJ.2) {u}
+    {v} {M}
+    (hu : sem.Lawful u)
+    (hv : sem.Lawful v)
     (hbound : ∀ d, j < D.grade d.1 → u d ≤ M)
-    (hag : ∀ d, min (v d) M = min (u (lowerIncl hj d)) M) :
-    RespectsSemanticsBelow sem BJ (splice u v) where
+    (hag : CappedEq v (u ∘ lowerIncl hj) M) :
+    sem.Lawful (splice u v) where
   orderly d := by
     by_cases h : D.grade d.1 ≤ j
     · rw [splice_low u v d h]
@@ -74,7 +73,7 @@ theorem splice_respects (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
       exact hu.orderly d
   locality c := by
     by_cases h : D.grade c.1 ≤ j
-    · have he : (fun d : D.below (D.cell c.1) =>
+    · have he : (fun d : D.RowDomain c.1 =>
           min (splice u v (CellScheme.below.incl c d)) (splice u v c)) =
           (fun d => min (v (CellScheme.below.incl (⟨c.1, c.2.1, h⟩ :
             D.below (BJ.1, j)) d)) (v ⟨c.1, c.2.1, h⟩)) := by
@@ -84,7 +83,7 @@ theorem splice_respects (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
         rfl
       rw [he]
       exact hv.locality ⟨c.1, c.2.1, h⟩
-    · have he : (fun d : D.below (D.cell c.1) =>
+    · have he : (fun d : D.RowDomain c.1 =>
           min (splice u v (CellScheme.below.incl c d)) (splice u v c)) =
           (fun d => min (u (CellScheme.below.incl c d)) (u c)) := by
         funext d

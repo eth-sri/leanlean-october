@@ -19,7 +19,6 @@ original-face lift is assumed proved by this module.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationLifting
 open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier
 open ScopeReplicationSemantics CoatomBoundaryExtension
@@ -29,11 +28,11 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (hcover : ∀ c : Cell D, D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
   (sem : Semantics D)
 
-def fullErase (j : ℕ) (d : (scheme D B C).below (A, j)) : D.below (A, j) :=
+def fullErase j (d : (scheme D B C).below (A, j)) : D.below (A, j) :=
   ⟨erase D B C d.1, D.isPlan.subset_of_mem (D.scope_mem_plan _),
     (erase_grade D B C d.1).le.trans d.2.2⟩
 
-def duplicate {j : ℕ} (p : D.below (A, j) → ExtOrd) : (scheme D B C).below (A, j) → ExtOrd :=
+def duplicate {j} (p : D.SectionAt (A, j)) : (scheme D B C).SectionAt (A, j) :=
   p ∘ fullErase D B C j
 
 theorem duplicate_lawful {j : ℕ} {p : D.below (A, j) → ExtOrd}
@@ -43,8 +42,8 @@ theorem duplicate_lawful {j : ℕ} {p : D.below (A, j) → ExtOrd}
 
 /-- Every auxiliary copy is retained individually, not reconstructed from
 field readouts or a selected profile. -/
-theorem duplicate_restrict {j : ℕ} {p : (scheme D B C).below (A, j) → ExtOrd}
-    (hp : RespectsSemanticsBelow (rows D B C hcover sem) (A, j) p) :
+theorem duplicate_restrict {j} {p}
+    (hp : (rows D B C hcover sem).Lawful p) :
     duplicate D B C (p ∘ oldBelow D B C (A, j)) = p := by
   funext d
   apply (copy_eq D B C hcover sem hp d (oldBelow D B C (A, j) (fullErase D B C j d))
@@ -55,14 +54,14 @@ theorem duplicate_restrict {j : ℕ} {p : (scheme D B C).below (A, j) → ExtOrd
 
 /-- A single-copy original-face lift gives a replicated full-target lift at
 the same external cap, bottom and top included. -/
-theorem lift_to_full {I : Finset ι × ℕ} {j : ℕ} (h : GradedLe I (A, j))
+theorem lift_to_full {I} {j} (h : GradedLe I (A, j))
     (hside : I.1 ⊆ B ∨ I.1 ⊆ C) (hl : CappedLift sem h) :
     CappedLift (rows D B C hcover sem) h := by
   intro p q γ hp hq hγ hag
   let p' := p ∘ oldBelow D B C I
   let q' := q ∘ oldBelow D B C (A, j)
-  have hp' : RespectsSemanticsBelow sem I p' := restrict_respects D B C hcover sem hp
-  have hq' : RespectsSemanticsBelow sem (A, j) q' := restrict_respects D B C hcover sem hq
+  have hp' : sem.Lawful p' := restrict_respects D B C hcover sem hp
+  have hq' : sem.Lawful q' := restrict_respects D B C hcover sem hq
   obtain ⟨r, hr, hcap, hread⟩ := hl p' q' γ hp' hq' hγ (fun d => hag (oldBelow D B C I d))
   refine ⟨duplicate D B C r, duplicate_lawful D B C hcover sem hr, ?_, ?_⟩
   · intro d

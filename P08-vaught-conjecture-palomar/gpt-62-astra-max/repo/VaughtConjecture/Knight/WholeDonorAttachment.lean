@@ -17,7 +17,6 @@ catalogue, model, or receiving predicate are needed for this input adapter.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.WholeDonorAttachment
 open AmalgamationPlan Transform Value ExtOrd
 noncomputable section
@@ -28,47 +27,34 @@ abbrev donorScope : Finset (Fin (N + 1)) := Finset.univ.image (onePointProj e)
 abbrev rootScope : Finset (Fin (N + 1)) := Finset.univ.image (e.trans Fin.castSuccEmb)
 
 theorem donor_card : (donorScope e).card = n + 1 := by
-  rw [donorScope, Finset.card_image_of_injective _ (onePointProj e).injective]
-  exact Finset.card_fin (n + 1)
+  rw [Finset.card_image_of_injective _ (onePointProj e).injective]
+  simp
 
-theorem fresh_private : Fin.last N ∉ privateScope (N := N) := by
-  rw [privateScope, image_castSuccEmb_univ]
-  exact Finset.notMem_erase _ _
+theorem fresh_private : Fin.last N ∉ privateScope := by
+  simp
 
-theorem root_private : rootScope e ⊆ privateScope (N := N) := by
+theorem root_private : rootScope e ⊆ privateScope := by
   intro x hx
-  obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hx
-  exact Finset.mem_image_of_mem _ (Finset.mem_univ (e i))
+  aesop
 
 theorem root_left_image : (Finset.univ.image e).image Fin.castSuccEmb = rootScope e := by
-  rw [Finset.image_image]
-  rfl
+  aesop
 
 theorem root_right_image :
-    (Finset.univ.image (Fin.castSuccEmb : Fin n ↪ Fin (n + 1))).image (onePointProj e) =
+    (Finset.univ.image Fin.castSuccEmb).image (onePointProj e) =
       rootScope e := by
   rw [Finset.image_image]
-  congr 1
-  funext i
-  exact onePointProj_castSucc e i
+  aesop
 
 theorem commute : e.trans Fin.castSuccEmb = Fin.castSuccEmb.trans (onePointProj e) := by
-  apply Function.Embedding.ext
-  intro i
-  exact (onePointProj_castSucc e i).symm
+  aesop
 
-theorem intersection : privateScope (N := N) ∩ donorScope e = rootScope e := by
+theorem intersection : privateScope ∩ donorScope e = rootScope e := by
   rw [donorScope, univ_image_onePointProj]
   ext x
-  simp only [Finset.mem_inter, Finset.mem_union, Finset.mem_singleton]
-  constructor
-  · rintro ⟨hp, hr | rfl⟩
-    · exact hr
-    · exact (fresh_private hp).elim
-  · intro hr
-    exact ⟨root_private e hr, Or.inl hr⟩
+  aesop
 
-theorem union : (Finset.univ : Finset (Fin (N + 1))) = privateScope ∪ donorScope e := by
+theorem union : Finset.univ = privateScope ∪ donorScope e := by
   rw [donorScope, univ_image_onePointProj, ← Finset.union_assoc,
     Finset.union_eq_left.mpr (root_private e)]
   exact image_castSuccEmb_union_last.symm
@@ -80,8 +66,7 @@ theorem private_proper : privateScope (N := N) ≠ Finset.univ := by
 theorem donor_proper (h : n + 1 < N) : donorScope e ≠ Finset.univ := by
   intro he
   have hc := donor_card e
-  rw [he, Finset.card_fin] at hc
-  omega
+  simp_all
 
 section Plans
 variable {a b c : ℕ} (D : SemScheme b) (Q : SemScheme a)
@@ -96,13 +81,11 @@ theorem pushed_root_plan :
   have hc : (Finset.univ.image f).image g = Finset.univ.image (f.trans g) := by
     rw [Finset.image_image]; rfl
   rw [← hc, restrictPlan_image, ← image_restrictFace_plan D.scheme f hf]
-  have hp := congrArg (fun S : SemScheme a => S.scheme.plan) he
+  have hp := congrArg (fun S => S.scheme.plan) he
   change ((D.restrictFace f hf).scheme.plan.image (Finset.image f)).image (Finset.image g) = _
-  rw [hp, Finset.image_image]
+  rw [Finset.image_image]
   congr 1
-  funext V
-  simp only [Function.comp_apply, Finset.image_image]
-  rfl
+  aesop
 end Plans
 
 variable (P : SemScheme N) (D : SemScheme (n + 1)) (Q : SemScheme n)
@@ -111,31 +94,31 @@ variable (hd : Finset.univ.image Fin.castSuccEmb ∈ D.scheme.plan)
 variable (hpr : P.restrictFace e hp = Q) (hdr : D.restrictFace Fin.castSuccEmb hd = Q)
 
 include hpr hdr in
-theorem exists_plan : ∃ R : Finset (Finset (Fin (N + 1))),
+theorem exists_plan : ∃ R,
     Plan.IsPlan Finset.univ R ∧ privateScope ∈ R ∧
     Plan.restrictPlan R privateScope = P.scheme.plan.image (Finset.image Fin.castSuccEmb) ∧
     donorScope e ∈ R ∧
     Plan.restrictPlan R (donorScope e) = D.scheme.plan.image (Finset.image (onePointProj e)) := by
   have hP := Plan.isPlan_image Fin.castSuccEmb P.scheme.isPlan
-  have hroot : rootScope e ∈ P.scheme.plan.image (Finset.image Fin.castSuccEmb) :=
+  have hroot :=
     Finset.mem_image.mpr ⟨_, hp, root_left_image e⟩
   have hD : Plan.IsPlan (rootScope e ∪ {Fin.last N})
       (D.scheme.plan.image (Finset.image (onePointProj e))) := by
     rw [← univ_image_onePointProj]
     exact Plan.isPlan_image _ D.scheme.isPlan
-  have hrootD : rootScope e ∈ D.scheme.plan.image (Finset.image (onePointProj e)) :=
+  have hrootD :=
     Finset.mem_image.mpr ⟨_, hd, root_right_image e⟩
   have heq : Plan.restrictPlan (D.scheme.plan.image (Finset.image (onePointProj e)))
       (rootScope e) =
       Plan.restrictPlan (P.scheme.plan.image (Finset.image Fin.castSuccEmb)) (rootScope e) := by
-    rw [pushed_root_plan P Q e Fin.castSuccEmb hp hpr, commute e]
+    rw [pushed_root_plan P Q e Fin.castSuccEmb hp hpr]
     simpa only [← commute e] using
       pushed_root_plan D Q Fin.castSuccEmb (onePointProj e) hd hdr
   obtain ⟨R, hr, hleft, hl, hright, hr'⟩ :=
     hP.attach_one_over_face hroot fresh_private hD hrootD heq
   rw [image_castSuccEmb_union_last] at hr
   rw [← univ_image_onePointProj] at hright hr'
-  exact ⟨R, hr, hleft, hl, hright, hr'⟩
+  grind
 
 def plan : Finset (Finset (Fin (N + 1))) := Classical.choose (exists_plan e P D Q hp hd hpr hdr)
 
@@ -169,8 +152,6 @@ def input : WholeDonorBoundary.Input Finset.univ privateScope (donorScope e)
   intersection := (root_left_image e).trans (intersection e).symm
   planLeft := (plan_spec e P D Q hp hd hpr hdr).2.2.1
   planRight := (plan_spec e P D Q hp hd hpr hdr).2.2.2.2
-
-local notation "I" => input e P D Q hp hd hpr hdr
 
 end
 end VaughtConjecture.Knight.WholeDonorAttachment

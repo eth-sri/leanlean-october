@@ -31,8 +31,8 @@ universe w
 variable {M : Type w}
 
 /-- **Expansion to a countable limit block** from expansions to every lower block. -/
-theorem exists_model_at_limit_of_forall_lt {l : Ordinal.{0}} (hlim : Order.IsSuccLimit l)
-    (hl : l < (aleph 1).ord) {R : KnightRealization (blockStage 0) M}
+theorem exists_model_at_limit_of_forall_lt {l} (hlim : Order.IsSuccLimit l)
+    (hl : l < (aleph 1).ord) {R}
     (h : ∀ ξ, ξ < l → ∃ W : KnightRealization (blockStage ξ) M,
       W.IsModel ∧ W.reduct (blockStage_zero_le ξ) = R) :
     ∃ W : KnightRealization (blockStage l) M,
@@ -40,7 +40,7 @@ theorem exists_model_at_limit_of_forall_lt {l : Ordinal.{0}} (hlim : Order.IsSuc
   have h0 : (0 : Ordinal.{0}) < l := hlim.pos
   obtain ⟨g, hg1, hg2⟩ := exists_nat_enum_lt hl h0
   have hcs_lt : ∀ n, cofSeq 0 g n < l := cofSeq_lt h0 hg1
-  have hmono : Monotone (cofSeq 0 g) := cofSeq_monotone 0 g
+  have hmono : Monotone (cofSeq 0 g) := monotone_nat_of_le_succ (cofSeq_le_succ 0 g)
   let bases (n : ℕ) : PartialExpansion.Domain
       (zero_le : (0 : Ordinal.{0}) ≤ cofSeq 0 g n) M :=
     ⟨R, h _ (hcs_lt n)⟩

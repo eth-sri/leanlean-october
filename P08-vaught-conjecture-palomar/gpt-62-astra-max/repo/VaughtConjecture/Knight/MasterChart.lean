@@ -23,7 +23,7 @@ universe w
 variable {β : LimitStage} {M : Type w} {N : ℕ}
 
 noncomputable def masterChart (w : Fin N ↪ M) (P : S β.1 N) : KnightRealization β M :=
-  (FiniteMaster.mk N w P : FiniteMaster knightTower β M).chart
+  (FiniteMaster.mk N w P).chart
 
 theorem eq_masterChart {A : KnightRealization β M}
     (hcons : A.IsExactParentConsistent) (w : Fin N ↪ M) (P : S β.1 N)

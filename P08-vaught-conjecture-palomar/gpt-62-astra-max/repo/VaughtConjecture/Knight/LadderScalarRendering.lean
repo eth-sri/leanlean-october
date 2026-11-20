@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReceivingLadderLowerRows
+public import VaughtConjecture.Knight.SupportLadderRows
+public import Mathlib.Logic.Equiv.Fin.Basic
 
 /-! # Ceiling-filled scalar rendering for the support ladder
 
@@ -19,8 +20,6 @@ higher semantic rows or claim bountifulness of a receiving scheme.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.LadderScalarRendering
 
@@ -327,7 +326,7 @@ private theorem eq_of_capped_lt {x y h : ExtOrd} (he : min x h = min y h) (hx : 
     exact (ne_of_lt hx he).elim
 
 theorem values_agree_below {p q : X → ExtOrd} {h : ExtOrd}
-    (hag : ∀ d, min (p d) h = min (q d) h) :
+    (hag : CappedEq p q h) :
     ∀ x, x < h → (x ∈ values p ↔ x ∈ values q) := by
   intro x hx
   rw [mem_values, mem_values]
@@ -341,7 +340,7 @@ theorem values_agree_below {p q : X → ExtOrd} {h : ExtOrd}
 
 /-- Capped scalar agreement constructs the common rank prefix. -/
 theorem fieldRank_agreement {p q : X → ExtOrd} {h : ExtOrd} (hh : ⊥ < h)
-    (hag : ∀ d, min (p d) h = min (q d) h) :
+    (hag : CappedEq p q h) :
     FiniteProfileControllers.Agree (fieldRank p) (fieldRank q) (next (values p) h) := by
   have hs := values_agree_below hag
   have hn : next (values p) h = next (values q) h :=
@@ -368,7 +367,7 @@ theorem fieldRank_agreement {p q : X → ExtOrd} {h : ExtOrd} (hh : ⊥ < h)
 /-- Both ladders reach the cap at a constructed common rank and agree
 literally at all preceding rungs. No rank-cut hypothesis is supplied. -/
 theorem common_rank_cut {p q : X → ExtOrd} {C h : ExtOrd}
-    (hh : ⊥ < h) (hC : h ≤ C) (hag : ∀ d, min (p d) h = min (q d) h) :
+    (hh : ⊥ < h) (hC : h ≤ C) (hag : CappedEq p q h) :
     ∃ k, 0 < k ∧ k ≤ Fintype.card X + 1 ∧
       FiniteProfileControllers.Agree (fieldRank p) (fieldRank q) k ∧
       h ≤ level (values p) C k ∧ h ≤ level (values q) C k ∧
@@ -398,7 +397,7 @@ theorem render_cap_agreement {a b : Q} {p q : X → ExtOrd} {C h : ExtOrd}
     (hL : Fintype.card X + 1 ≤ L)
     (ha : ∀ d, profile a d = fieldRank p d) (hb : ∀ d, profile b d = fieldRank q d)
     (hp : ∀ d, p d ≤ C) (hq : ∀ d, q d ≤ C) (hC : h ≤ C)
-    (hag : ∀ d, min (p d) h = min (q d) h) (v : SupportLadderRows.Point L X Q) :
+    (hag : CappedEq p q h) (v : SupportLadderRows.Point L X Q) :
     min (render profile a p C v) h = min (render profile b q C v) h := by
   by_cases hz : h = ⊥
   · simp only [hz, min_eq_right bot_le]

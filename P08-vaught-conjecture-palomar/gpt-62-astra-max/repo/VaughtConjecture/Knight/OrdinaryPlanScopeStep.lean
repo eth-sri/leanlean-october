@@ -18,7 +18,6 @@ have to construct those inputs coherently.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryPlanScopeStep
 open AmalgamationPlan Transform Value ExtOrd AmalgamatedBoundaryPlan OrdinaryScopeOperator
 noncomputable section

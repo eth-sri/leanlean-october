@@ -32,7 +32,7 @@ def jump (K : ℕ) (u : I → ℕ∞) : I → ℕ∞ := fun i => if u i ≤ K th
 /-- A vector is `K`-approximated by `u` when `u` agrees with it at its finite coordinates and
 strictly exceeds `K` at its infinite ones. -/
 def Approximates (K : ℕ) (u r : I → ℕ∞) : Prop :=
-  ∀ i, (r i ≠ ⊤ → u i = r i) ∧ (r i = ⊤ → (K : ℕ∞) < u i)
+  ∀ i, (r i ≠ ⊤ → u i = r i) ∧ (r i = ⊤ → K < u i)
 
 /-- The jump at `K` of a `K`-approximation is the vector itself, once `K` bounds its finite
 coordinates. -/

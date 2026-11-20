@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.HollowGrowthReference
-public import VaughtConjecture.Knight.ReceivingContextReceipts
+public import VaughtConjecture.Knight.ReceivingContext
 public import VaughtConjecture.Knight.GrowthFilteredRoot
 public import VaughtConjecture.Knight.CappedDonorContext
 
@@ -20,7 +20,6 @@ root-arity hypothesis is the unchanged graded-root premise of `RelativeData`.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 open CellScheme.restrictFace
@@ -31,9 +30,7 @@ private theorem belowMap_val_of_heq {ιA ιB : Type*} [DecidableEq ιA] [Decidab
     {f : DA.below I → DB.below U} {g : DA.below J → DB.below V}
     (hfg : HEq f g) (a : DA.below I) :
     (f a).1 = (g ⟨a.1, hIJ ▸ a.2⟩).1 := by
-  subst J
-  subst V
-  exact congrArg Subtype.val (congrFun (eq_of_heq hfg) a)
+  aesop
 
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
@@ -95,7 +92,7 @@ theorem actual_correct : (requests q D).Correct ((requests q D).sec D.context.ty
 
 /-- Scalar correctness over the actual private face is exact donor readback.
 The physical construction must still establish that correctness. -/
-theorem correct_iff_eq_actual (v : Cell q.scheme.scheme → ExtOrd) :
+theorem correct_iff_eq_actual (v : q.scheme.scheme.Labelling) :
     (requests q D).Correct ((requests q D).sec D.context.type.label) v ↔ v = q.label := by
   constructor
   · intro h
@@ -118,19 +115,22 @@ theorem correct_iff_eq_actual (v : Cell q.scheme.scheme → ExtOrd) :
   · rintro rfl
     exact actual_correct q D
 
+/-- Receipts of the constructed scalar input, not a physical-probe interface. -/
+structure Input where
+  hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan
+  hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme
+  hvC : Finset.univ.image D.face ∈ D.context.type.scheme.scheme.plan
+  hC : D.context.type.scheme.restrictFace D.face hvC = p.scheme
+  relative : RelativeData D.context.type.scheme.scheme D.context.type.scheme.rows
+    q.scheme.scheme q.scheme.rows
+  req_eq : relative.req = requests q D
+  attachment : Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP D.face hvC hC relative
+  class_eq : HEq relative.ZA {d : D.context.type.scheme.scheme.below
+    (D.context.type.scheme.scheme.cell D.cap) | D.context.type.label d.1 = ⊥}
+
 /-- Every proper donor label, every donor top, and every donor bottom is a
 request; no donor coordinate is omitted by the coverage proof. -/
-theorem exists_template (hn : 0 < n) (hq : IsCoface p q) :
-    ∃ (hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan)
-      (hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme)
-      (hvC : Finset.univ.image D.face ∈ D.context.type.scheme.scheme.plan)
-      (hC : D.context.type.scheme.restrictFace D.face hvC = p.scheme)
-      (X : RelativeData D.context.type.scheme.scheme D.context.type.scheme.rows
-        q.scheme.scheme q.scheme.rows),
-      X.req = requests q D ∧ X.top = (Finset.univ, n + 1) ∧
-      Nonempty (Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP D.face hvC hC X) ∧
-      HEq X.ZA {d : D.context.type.scheme.scheme.below
-        (D.context.type.scheme.scheme.cell D.cap) | D.context.type.label d.1 = ⊥} := by
+theorem exists_input (hn : 0 < n) (hq : IsCoface p q) : Nonempty (Input q D) := by
   classical
   let C := D.context.type
   have hvP := hq.extendsDomain.visible
@@ -158,7 +158,7 @@ theorem exists_template (hn : 0 < n) (hq : IsCoface p q) :
     exact ((StageType.label_castCell hC'.symm _).trans
       ((StageType.label_castCell hP' _).trans
         (congrArg q.label (toCell_belowEquiv_symm_val _ _ _ _ a)))).symm
-  have hroot : ∀ s, RespectsSemanticsBelow C.scheme.rows (C.scheme.scheme.cell D.cap) s →
+  have hroot : ∀ s, C.scheme.rows.Lawful s →
       RespectsSemanticsBelow q.scheme.rows root (fun a => s (κ a)) :=
     fun _ hs => Growth.literalKappa_lawful _ _ _ _ _ _ _ _ _ hs
   have htoproot (a : q.scheme.scheme.below root) (ha : C.label (κ a).1 = ⊤) :
@@ -219,13 +219,12 @@ theorem exists_template (hn : 0 < n) (hq : IsCoface p q) :
     by_cases ht : q.label d = ⊤
     · exact Or.inr (Or.inr (Or.inl ht))
     exact Or.inr (Or.inl ⟨hb, ht⟩)
-  obtain ⟨X, hreq, hr, ht, hk, hz, _⟩ :=
+  obtain ⟨X, hreq, hr, _, hk, hz, _⟩ :=
     exists_relativeData_of_context_with_root (requests q D) D.cap_grade
       (C.scheme.consistent D.cap) C.respects D.cap_top D.marker_top hmarker
       (blocks q) hS D.ref href q.respects hrootmem htopmem hrt hne hbelow le_rfl κ hroot
       q.scheme.bountiful hcover hlit hblocks (fun _ h => h) (fun _ h => h) hF htoproot
-  refine ⟨hvP, hP, hvC, hC, X, hreq, ht, ?_, hz⟩
-  refine ⟨⟨hr, ?_⟩⟩
+  refine ⟨⟨hvP, hP, hvC, hC, X, hreq, ⟨hr, ?_⟩, hz⟩⟩
   intro a
   exact belowMap_val_of_heq hr (congrArg (fun r => C.scheme.scheme.cell r.C) hreq) hk a
 

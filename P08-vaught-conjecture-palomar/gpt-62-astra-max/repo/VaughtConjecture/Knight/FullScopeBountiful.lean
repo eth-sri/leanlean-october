@@ -24,8 +24,6 @@ Consequently the content of bountifulness lies entirely in the pairs `⟨C,i⟩ 
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd
@@ -33,32 +31,29 @@ open Transform Value ExtOrd
 /-- `TransformsTo` is invariant under propositional equality of its three functions. -/
 theorem transformsTo_congr {D : Type*} {g g' : D → ℕ} {p p' q q' : D → ExtOrd} (hg : g = g')
     (hp : p = p') (hq : q = q') (h : TransformsTo g p q) : TransformsTo g' p' q' := by
-  subst hg hp hq; exact h
+  simp_all
 
 section FullScope
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
 theorem dite_of_pos {c : Prop} [Decidable c] {α : Sort*} {a : c → α} {b : ¬c → α} (h : c) :
-    dite c a b = a h := by simp [h]
-theorem dite_of_neg {c : Prop} [Decidable c] {α : Sort*} {a : c → α} {b : ¬c → α} (h : ¬c) :
-    dite c a b = b h := by simp [h]
+    dite c a b = a h := by simp_all
 
 /-- Same-scope grade extension for any semantics and any scope. Only the
 grade tail is capped; the prescribed lower-grade part stays literal. -/
 theorem bountiful_same_scope (sem : Semantics D) {B : Finset ι} {i j : ℕ}
     (h : GradedLe (B, i) (B, j))
-    (p : D.below (B, i) → ExtOrd) (q : D.below (B, j) → ExtOrd) (γ : ExtOrd)
-    (hp : RespectsSemanticsBelow sem (B, i) p) (hq : RespectsSemanticsBelow sem (B, j) q)
+    (p : D.SectionAt (B, i)) (q : D.SectionAt (B, j)) (γ : ExtOrd)
+    (hp : sem.Lawful p) (hq : sem.Lawful q)
     (hγ : SelfVis j γ)
-    (hag : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
-    ∃ r : D.below (B, j) → ExtOrd, RespectsSemanticsBelow sem (B, j) r ∧
-      (∀ d, min (r d) γ = min (q d) γ) ∧
+    (hag : CappedEq (q ∘ CellScheme.below.mono h) p γ) :
+    ∃ r : D.SectionAt (B, j), sem.Lawful r ∧
+      CappedEq r q γ ∧
       ∀ d, r (CellScheme.below.mono h d) = p d := by
-  let u : D.below (B, j) → ExtOrd := fun d => min (q d) γ
-  have hu : RespectsSemanticsBelow sem (B, j) u := hq.cap hγ
-  have hcap : ∀ d, min (p d) γ =
-      min (u (GradeTailRestoration.lowerIncl (BJ := (B, j)) h.2 d)) γ := by
+  let u := fun d => min (q d) γ
+  have hu := hq.cap hγ
+  have hcap : CappedEq p (u ∘ GradeTailRestoration.lowerIncl (BJ := (B, j)) h.2) γ := by
     intro d
     change min (p d) γ = min (min (q (CellScheme.below.mono h d)) γ) γ
     rw [min_assoc, min_self]
@@ -68,22 +63,7 @@ theorem bountiful_same_scope (sem : Semantics D) {B : Finset ι} {i j : ℕ}
     ?_, fun d => GradeTailRestoration.splice_low u p (CellScheme.below.mono h d) d.2.2⟩
   intro d
   exact (GradeTailRestoration.splice_cap h.2 hcap d).trans (by
-    dsimp only [u]
-    rw [min_assoc, min_self])
-
-/-- **Bountifulness between full-scope pairs holds for every semantics**: for `(A,i) ≤ (A,j)` the
-extension is `p` on the cells of grade `≤ i` and `q ∧ γ` on the rest.  Locality at a cell of grade
-`> i` is the capped locality of `q` (`TransformsTo.capped`), which agrees with `p` below the cap;
-availability never crosses the grade boundary (a witness has the grade of its request). -/
-theorem bountiful_full_scope (sem : Semantics D) {i j : ℕ} (h : GradedLe (A, i) (A, j))
-    (p : D.below (A, i) → ExtOrd) (q : D.below (A, j) → ExtOrd) (γ : ExtOrd)
-    (hp : RespectsSemanticsBelow sem (A, i) p) (hq : RespectsSemanticsBelow sem (A, j) q)
-    (hγ : extVisibilityReplace γ j j = γ)
-    (hagree : ∀ d : D.below (A, i), min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
-    ∃ q' : D.below (A, j) → ExtOrd, RespectsSemanticsBelow sem (A, j) q' ∧
-      (∀ d : D.below (A, j), min (q' d) γ = min (q d) γ) ∧
-      (∀ d : D.below (A, i), q' (CellScheme.below.mono h d) = p d) :=
-  bountiful_same_scope sem h p q γ hp hq hγ hagree
+    grind)
 
 end FullScope
 

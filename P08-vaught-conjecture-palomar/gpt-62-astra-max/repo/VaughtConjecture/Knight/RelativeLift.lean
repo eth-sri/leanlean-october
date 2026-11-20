@@ -6,6 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.RelativeLiftData
+
 -- Ported from V-C 4d2e8cb. Only the unrelated model-side GuardActivation
 -- import is removed; its scalar cancellation helper is proved locally.
 
@@ -77,14 +78,14 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ] {A : Finset ιA} 
   {DA : CellScheme A} {semA : Semantics DA} {DQ : CellScheme Q} {semQ : Semantics DQ}
   (X : RelativeData DA semA DQ semQ)
 
-theorem tOf_eq (u : Cell DA → ExtOrd) (f : Cell DQ) : X.req.tOf (X.req.sec u) f =
+theorem tOf_eq u f : X.req.tOf (X.req.sec u) f =
     min (extVisibilityReplace (u (X.req.ρ f).1) X.req.N (X.req.off f)) (u X.req.C) := rfl
 
-theorem dOf_eq (u : Cell DA → ExtOrd) : X.req.dOf (X.req.sec u) =
+theorem dOf_eq u : X.req.dOf (X.req.sec u) =
     min (extVisibilityReplace (u X.req.a.1) X.req.N X.req.R) (u X.req.C) := rfl
 
 /-- The correctness relations of a whole old labelling, read at the cap's label. -/
-theorem correct_sec_iff (u : Cell DA → ExtOrd) (v : Cell DQ → ExtOrd) :
+theorem correct_sec_iff u v :
     X.req.Correct (X.req.sec u) v ↔
       (∀ z ∈ X.req.Z, min (v z) (u X.req.C) = ⊥) ∧
       (∀ f ∈ X.req.F, min (v f) (u X.req.C) = X.req.tOf (X.req.sec u) f) ∧
@@ -93,7 +94,7 @@ theorem correct_sec_iff (u : Cell DA → ExtOrd) (v : Cell DQ → ExtOrd) :
 theorem R_le_N : X.req.R ≤ X.req.N := X.req.R_lt_N.le
 
 /-- The cap's label is `N`-visible. -/
-theorem cap_selfVis {u : Cell DA → ExtOrd} (hu : RespectsSemantics semA u) :
+theorem cap_selfVis {u} (hu : RespectsSemantics semA u) :
     SelfVis X.req.N (u X.req.C) := by
   have := (hu.orderly X.req.C).symm
   rwa [X.grade_C] at this
@@ -101,21 +102,21 @@ theorem cap_selfVis {u : Cell DA → ExtOrd} (hu : RespectsSemantics semA u) :
 /-! ## Case 0 -/
 
 /-- **Case 0**: outside the class, the root lift at `γ` suffices. -/
-theorem lift_case0 {u v u' : _} (hall : X.Allowed u v) (hu' : RespectsSemantics semA u')
-    {γ : ExtOrd} (hγ : SelfVis X.req.N γ) (hag : ∀ d, min (u' d) γ = min (u d) γ)
+theorem lift_case0 {u v u'} (hall : X.Allowed u v) (hu' : RespectsSemantics semA u')
+    {γ} (hγ : SelfVis X.req.N γ) (hag : CappedEq u' u γ)
     (hcls : ¬ InClass X.ZA u') :
-    ∃ v' : Cell DQ → ExtOrd, X.Allowed u' v' ∧ ∀ d, min (v' d) γ = min (v d) γ := by
+    ∃ v', X.Allowed u' v' ∧ CappedEq v' v γ := by
   obtain ⟨-, hv, hroot, -⟩ := hall
   obtain ⟨v', hv', hr', hcap⟩ := X.lift_root hu' hv hγ
-    (fun r => by rw [hroot r]; exact (hag _).symm)
+    (fun r => by exact (congrArg (min · γ) (hroot r)).trans (hag _).symm)
   exact ⟨v', ⟨hu', hv', hr', fun h => absurd h hcls⟩, hcap⟩
 
 /-! ## Case 1 -/
 
 /-- **Case 1**: in the class with `c' ≤ γ`, correctness transfers to any `γ`-agreeing lift. -/
-theorem correct_of_cap_le {u v u' v' : _} (hu' : RespectsSemantics semA u')
-    (hC : X.req.Correct (X.req.sec u) v) {γ : ExtOrd} (hag : ∀ d, min (u' d) γ = min (u d) γ)
-    (hc'γ : u' X.req.C ≤ γ) (hcap : ∀ d, min (v' d) γ = min (v d) γ) :
+theorem correct_of_cap_le {u v u' v'} (hu' : RespectsSemantics semA u')
+    (hC : X.req.Correct (X.req.sec u) v) {γ} (hag : CappedEq u' u γ)
+    (hc'γ : u' X.req.C ≤ γ) (hcap : CappedEq v' v γ) :
     X.req.Correct (X.req.sec u') v' := by
   rw [X.correct_sec_iff] at hC ⊢
   have hvisc' := X.cap_selfVis hu'
@@ -148,12 +149,12 @@ theorem correct_of_cap_le {u v u' v' : _} (hu' : RespectsSemantics semA u')
 
 /-- **Case 2**: in the class with `c' > γ`, high values requested, and `d' < γ`: the frame
 fixes every exact value below `γ`, so correctness transfers to any `γ`-agreeing lift. -/
-theorem correct_of_dOf_lt {u v u' v' : _}
-    (hcls : InClass X.ZA u) (hC : X.req.Correct (X.req.sec u) v) {γ : ExtOrd}
-    (hγ : SelfVis X.req.N γ) (hag : ∀ d, min (u' d) γ = min (u d) γ)
+theorem correct_of_dOf_lt {u v u' v'}
+    (hcls : InClass X.ZA u) (hC : X.req.Correct (X.req.sec u) v) {γ}
+    (hγ : SelfVis X.req.N γ) (hag : CappedEq u' u γ)
     (hγc' : γ < u' X.req.C) (hd' : X.req.dOf (X.req.sec u') < γ)
     (hframe' : ∀ f ∈ X.req.F, X.req.tOf (X.req.sec u') f ≤ X.req.dOf (X.req.sec u'))
-    (hcap : ∀ d, min (v' d) γ = min (v d) γ) :
+    (hcap : CappedEq v' v γ) :
     X.req.Correct (X.req.sec u') v' := by
   rw [X.correct_sec_iff] at hC ⊢
   have hcne : u X.req.C ≠ ⊥ := X.cap_ne_bot hcls
@@ -225,15 +226,15 @@ theorem correct_of_dOf_lt {u v u' v' : _}
 
 section Template
 
-variable {u' : Cell DA → ExtOrd} (hu' : RespectsSemantics semA u') (hcls' : InClass X.ZA u')
+variable {u' : DA.Labelling} (hu' : RespectsSemantics semA u') (hcls' : InClass X.ZA u')
   {θ : ExtOrd → ExtOrd} (hθ : BoundedMap X.req.N θ) (hθle : ∀ x, θ x ≤ u' X.req.C)
   (hθe : ∀ d, θ (X.e d) = min (X.req.sec u' d) (u' X.req.C))
 
 include hθ in
-theorem θ_min (x y : ExtOrd) : θ (min x y) = min (θ x) (θ y) := hθ.mono.map_min
+theorem θ_min x y : θ (min x y) = min (θ x) (θ y) := hθ.mono.map_min
 
 include hθ in
-theorem θ_evr (x : ExtOrd) {i : ℕ} (hi : i ≤ X.req.N) :
+theorem θ_evr x {i} (hi : i ≤ X.req.N) :
     θ (extVisibilityReplace x X.req.N i) = extVisibilityReplace (θ x) X.req.N i :=
   hθ.comm x X.req.N i le_rfl hi
 
@@ -241,7 +242,7 @@ include hθe in
 theorem θ_cap : θ (X.e X.req.capCell) = u' X.req.C := by
   rw [hθe, Requests.sec_capCell, min_self]
 
-theorem tOf_e_eq (f : Cell DQ) : X.req.tOf X.e f =
+theorem tOf_e_eq f : X.req.tOf X.e f =
     min (extVisibilityReplace (X.e (X.req.ρ f)) X.req.N (X.req.off f)) (X.e X.req.capCell) := rfl
 
 theorem dOf_e_eq : X.req.dOf X.e =
@@ -249,7 +250,7 @@ theorem dOf_e_eq : X.req.dOf X.e =
 
 include hu' hθ hθe in
 /-- The decoder sends `t_f(e)` to `t_f(u')`. -/
-theorem θ_tOf {f : Cell DQ} (hf : f ∈ X.req.F) :
+theorem θ_tOf {f} (hf : f ∈ X.req.F) :
     θ (X.req.tOf X.e f) = X.req.tOf (X.req.sec u') f := by
   rw [X.tOf_e_eq, X.tOf_eq, θ_min X hθ, θ_evr X hθ _ (X.off_lt f hf), θ_cap X hθe, hθe,
     Requests.sec_apply, evr_min_of_selfVis (X.cap_selfVis hu') le_rfl (X.off_lt f hf),
@@ -264,33 +265,33 @@ theorem θ_dOf : θ (X.req.dOf X.e) = X.req.dOf (X.req.sec u') := by
 
 include hu' hθ hθe in
 /-- The frame inequalities transport to `u'`. -/
-theorem frame_transport (hT : X.req.T.Nonempty) {f : Cell DQ} (hf : f ∈ X.req.F) :
+theorem frame_transport (hT : X.req.T.Nonempty) {f} (hf : f ∈ X.req.F) :
     X.req.tOf (X.req.sec u') f ≤ X.req.dOf (X.req.sec u') := by
   rw [← θ_tOf X hu' hθ hθe hf, ← θ_dOf X hu' hθ hθe]
   exact hθ.mono (X.frame hT f hf)
 
 include hu' hθ hθe in
 /-- On the exact requests, the template image reads `t_f(u')` under the cap. -/
-theorem image_tOf {f : Cell DQ} (hf : f ∈ X.req.F) :
+theorem image_tOf {f} (hf : f ∈ X.req.F) :
     min (θ (X.V f)) (u' X.req.C) = X.req.tOf (X.req.sec u') f := by
   rw [← θ_cap X hθe, ← θ_min X hθ, X.V_correct.2.1 f hf, θ_tOf X hu' hθ hθe hf]
 
 include hu' hθ hθe in
 /-- On the high requests, the template image reads at least `d(u')` under the cap. -/
-theorem image_dOf {y : Cell DQ} (hy : y ∈ X.req.T) :
+theorem image_dOf {y} (hy : y ∈ X.req.T) :
     X.req.dOf (X.req.sec u') ≤ min (θ (X.V y)) (u' X.req.C) := by
   rw [← θ_cap X hθe, ← θ_min X hθ, ← θ_dOf X hu' hθ hθe]
   exact hθ.mono (X.V_correct.2.2 y hy)
 
 /-- The template is bottom on the requested-bottom cells. -/
-theorem V_bot {z : Cell DQ} (hz : z ∈ X.req.Z) : X.V z = ⊥ := by
+theorem V_bot {z} (hz : z ∈ X.req.Z) : X.V z = ⊥ := by
   rcases min_eq_bot.mp (X.V_correct.1 z hz) with h | h
   · exact h
   · exact absurd ((X.e_bot _).mp h) X.C_notin
 
 include hθe in
 /-- On the root, the template image is the capped old labelling. -/
-theorem image_root (r : DQ.below X.root) :
+theorem image_root r :
     θ (X.V r.1) = min (u' (X.κ r).1) (u' X.req.C) := by
   rw [X.V_root r, hθe, Requests.sec_apply]
 
@@ -335,9 +336,9 @@ end Template
 
 /-- **The relative lifting theorem** (notes3 §4): every allowed pair has every relative
 old-face lift at every `N`-visible comparison cap, bottom included. -/
-theorem relative_lift {u v u' : _} (hall : X.Allowed u v) (hu' : RespectsSemantics semA u')
-    {γ : ExtOrd} (hγ : SelfVis X.req.N γ) (hag : ∀ d, min (u' d) γ = min (u d) γ) :
-    ∃ v' : Cell DQ → ExtOrd, X.Allowed u' v' ∧ ∀ d, min (v' d) γ = min (v d) γ := by
+theorem relative_lift {u v u'} (hall : X.Allowed u v) (hu' : RespectsSemantics semA u')
+    {γ} (hγ : SelfVis X.req.N γ) (hag : CappedEq u' u γ) :
+    ∃ v', X.Allowed u' v' ∧ CappedEq v' v γ := by
   by_cases hcls' : InClass X.ZA u'
   swap
   · exact X.lift_case0 hall hu' hγ hag hcls'
@@ -354,7 +355,7 @@ theorem relative_lift {u v u' : _} (hall : X.Allowed u v) (hu' : RespectsSemanti
   · -- Case 1
     have hγne : γ ≠ ⊥ := fun h => hc'ne (le_bot_iff.mp (h ▸ hc'γ))
     obtain ⟨v', hv', hr', hcap⟩ := X.lift_root hu' hv hγ
-      (fun r => by rw [hroot r]; exact (hag _).symm)
+      (fun r => by exact (congrArg (min · γ) (hroot r)).trans (hag _).symm)
     exact ⟨v', ⟨hu', hv', hr', fun _ =>
       X.correct_of_cap_le hu' (hcorr (hclsu hγne)) hag hc'γ hcap⟩, hcap⟩
   have hγc' : γ < u' X.req.C := not_le.mp hc'γ
@@ -363,14 +364,14 @@ theorem relative_lift {u v u' : _} (hall : X.Allowed u v) (hu' : RespectsSemanti
     obtain ⟨hT, hd'⟩ := hcase2
     have hγne : γ ≠ ⊥ := ne_bot_of_gt hd'
     obtain ⟨v', hv', hr', hcap⟩ := X.lift_root hu' hv hγ
-      (fun r => by rw [hroot r]; exact (hag _).symm)
+      (fun r => by exact (congrArg (min · γ) (hroot r)).trans (hag _).symm)
     exact ⟨v', ⟨hu', hv', hr', fun _ =>
       X.correct_of_dOf_lt (hclsu hγne) (hcorr (hclsu hγne)) hγ hag hγc' hd'
         (fun f hf => frame_transport X hu' hθ hθe hT hf) hcap⟩, hcap⟩
   -- Case 3
   have hT : X.req.T.Nonempty → γ ≤ X.req.dOf (X.req.sec u') := fun hT =>
     not_lt.mp fun h => hcase2 ⟨hT, h⟩
-  set w : Cell DQ → ExtOrd := fun d => θ (X.V d) with hw
+  set w : DQ.Labelling := fun d => θ (X.V d) with hw
   have hwr : RespectsSemantics semQ w := template_image_respects X hu' hcls' hθ hθe
   have hwle : ∀ d, w d ≤ u' X.req.C := fun d => hθle _
   obtain ⟨v', hv', hr', hcap'⟩ := X.lift_root hu' hwr hvisc'

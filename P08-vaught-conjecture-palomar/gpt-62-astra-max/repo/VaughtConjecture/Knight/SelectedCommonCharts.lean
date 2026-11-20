@@ -54,7 +54,7 @@ variable {A₁ : KnightRealization α M₁} {A₂ : KnightRealization α M₂}
 selection may repeat or omit coordinates, and its image need not be a visible face. -/
 def selectedChartFamily (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop) :
     Set (Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) :=
-  {x | ∃ nd, Good nd ∧ ∃ σ : Fin x.1 → Fin nd.arity,
+  {x | ∃ nd, Good nd ∧ ∃ σ,
     nd.tuple₁ ∘ σ = x.2.1 ∧ nd.tuple₂ ∘ σ = x.2.2}
 
 /-- A good chart's own tuple pair is selected, by the identity selection. -/
@@ -83,9 +83,9 @@ theorem selectedChartFamily_commonChart
 next chart: the old selection is pushed forward along the extension embedding. -/
 theorem snoc_mem_selectedChartFamily {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
     {x : Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)} {nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)}
-    {z : M₁ ⊕ M₂} (d : GoodCommonChartExtension Good nd z) {σ : Fin x.1 → Fin nd.arity}
+    {z} (d : GoodCommonChartExtension Good nd z) {σ}
     (hσ₁ : nd.tuple₁ ∘ σ = x.2.1) (hσ₂ : nd.tuple₂ ∘ σ = x.2.2)
-    (j : Fin d.extension.next.arity) :
+    j :
     (⟨x.1 + 1, Fin.snoc x.2.1 (d.extension.next.tuple₁ j),
       Fin.snoc x.2.2 (d.extension.next.tuple₂ j)⟩ :
         Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈ selectedChartFamily Good := by
@@ -98,7 +98,7 @@ theorem snoc_mem_selectedChartFamily {Good : CommonChartNode (A₁ := A₁) (A�
 /-- Forth: the restricted supply at the good containing chart absorbs the requested point. -/
 theorem selectedChartFamily_forth {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
     (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
-    ∀ x ∈ selectedChartFamily Good, ∀ m : M₁, ∃ n' : M₂,
+    ∀ x ∈ selectedChartFamily Good, ∀ m : M₁, ∃ n',
       (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
         Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈ selectedChartFamily Good := by
   rintro x ⟨nd, hnd, σ, hσ₁, hσ₂⟩ m
@@ -110,7 +110,7 @@ theorem selectedChartFamily_forth {Good : CommonChartNode (A₁ := A₁) (A₂ :
 /-- Back: the restricted supply at the good containing chart absorbs the requested point. -/
 theorem selectedChartFamily_back {Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop}
     (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
-    ∀ x ∈ selectedChartFamily Good, ∀ n' : M₂, ∃ m : M₁,
+    ∀ x ∈ selectedChartFamily Good, ∀ n' : M₂, ∃ m,
       (⟨x.1 + 1, Fin.snoc x.2.1 m, Fin.snoc x.2.2 n'⟩ :
         Σ n : ℕ, (Fin n → M₁) × (Fin n → M₂)) ∈ selectedChartFamily Good := by
   rintro x ⟨nd, hnd, σ, hσ₁, hσ₂⟩ n'

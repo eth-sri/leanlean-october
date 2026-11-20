@@ -18,8 +18,6 @@ condition or new support-plan legality is inferred.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ProfileFaceGluing
 
 open Transform Value ExtOrd NormalizedProfileFamily

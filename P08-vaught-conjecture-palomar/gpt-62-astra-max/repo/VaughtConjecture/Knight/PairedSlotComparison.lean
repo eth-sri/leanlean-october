@@ -27,7 +27,6 @@ whole affine ray or point step, not just its represented boundary readings.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PairedSlotComparison
 open Transform Value ExtOrd PairedSlotEncoding PairedSlotDecoder
 noncomputable section
@@ -384,7 +383,7 @@ theorem decode_cap_agree {j : ℕ} {p q : X → ExtOrd}
     (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C) (hC' : SelfVis j C')
     (hhG : ofOrd h ∈ G) (hhC : ofOrd h ≤ C) (hhC' : ofOrd h ≤ C')
     (hp : ∀ d, p d ≠ ⊤) (hq : ∀ d, q d ≠ ⊤)
-    (hpq : ∀ d, min (p d) (ofOrd h) = min (q d) (ofOrd h)) (x : ExtOrd) :
+    (hpq : CappedEq p q (ofOrd h)) (x : ExtOrd) :
     min (decode j (values p) G C x) (ofOrd h) =
       min (decode j (values q) G C' x) (ofOrd h) := by
   classical
@@ -424,16 +423,14 @@ theorem exists_common_source_cut {j : ℕ} {p q : X → ExtOrd}
     (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C) (hC' : SelfVis j C')
     (hhG : ofOrd h ∈ G) (hhC : ofOrd h ≤ C) (hhC' : ofOrd h ≤ C')
     (hp : ∀ d, p d ≠ ⊤) (hq : ∀ d, q d ≠ ⊤)
-    (hpq : ∀ d, min (p d) (ofOrd h) = min (q d) (ofOrd h)) :
+    (hpq : CappedEq p q (ofOrd h)) :
     ∃ b ≤ 2 * Fintype.card X + 1,
       let e := ofOrd (Ordinal.omega0 * b + j)
       SelfVis j e ∧
-      (∀ d, min (PairedSlotEncoding.normalize j p d) e =
-        min (PairedSlotEncoding.normalize j q d) e) ∧
+      CappedEq (PairedSlotEncoding.normalize j p) (PairedSlotEncoding.normalize j q) e ∧
       ofOrd h ≤ decode j (values p) G C e ∧
       ofOrd h ≤ decode j (values q) G C' e ∧
-      (∀ x, min (decode j (values p) G C x) (ofOrd h) =
-        min (decode j (values q) G C' x) (ofOrd h)) := by
+      CappedEq (decode j (values p) G C) (decode j (values q) G C') (ofOrd h) := by
   obtain ⟨b, hb, hread, hupper⟩ := exists_source_cut (S := values p) hG hC hhG hhC
   obtain ⟨c, hc, hread', hupper'⟩ := exists_source_cut (S := values q) hG hC' hhG hhC'
   have hcompare := decode_cap_agree hG hC hC' hhG hhC hhC' hp hq hpq
@@ -548,12 +545,11 @@ theorem exists_common_cut {j : ℕ} {p q : X → ExtOrd}
     (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C) (hC' : SelfVis j C')
     (hhG : h ∈ G) (hhC : h ≤ C) (hhC' : h ≤ C')
     (hp : ∀ d, p d ≠ ⊤) (hq : ∀ d, q d ≠ ⊤)
-    (hpq : ∀ d, min (p d) h = min (q d) h) :
+    (hpq : CappedEq p q h) :
     ∃ e ∈ sourceGrid j (Fintype.card X),
-      (∀ d, min (PairedSlotEncoding.normalize j p d) e =
-        min (PairedSlotEncoding.normalize j q d) e) ∧
+      CappedEq (PairedSlotEncoding.normalize j p) (PairedSlotEncoding.normalize j q) e ∧
       h ≤ decode j (values p) G C e ∧ h ≤ decode j (values q) G C' e ∧
-      (∀ x, min (decode j (values p) G C x) h = min (decode j (values q) G C' x) h) := by
+      CappedEq (decode j (values p) G C) (decode j (values q) G C') h := by
   rcases ExtOrd.cases h with rfl | rfl | ⟨a, rfl⟩
   · exact ⟨⊥, sourceGrid_bot _ _, fun _ => by simp, bot_le, bot_le, fun _ => by simp⟩
   · have he : p = q := funext fun d => by simpa only [min_top_right] using hpq d
@@ -574,8 +570,7 @@ specialized to the paired normalization and its fixed endpoint grid. -/
 def largestCommonCut (j : ℕ) (p q : X → ExtOrd) : ExtOrd := by
   classical
   exact ((sourceGrid j (Fintype.card X)).filter (fun e =>
-    ∀ d, min (PairedSlotEncoding.normalize j p d) e =
-      min (PairedSlotEncoding.normalize j q d) e)).sup id
+    CappedEq (PairedSlotEncoding.normalize j p) (PairedSlotEncoding.normalize j q) e)).sup id
 
 /-- The coupled constructor may use its largest common grid cut, rather
 than the smaller witness selected by the existence proof. -/
@@ -584,25 +579,22 @@ theorem largestCommonCut_spec {j : ℕ} {p q : X → ExtOrd}
     (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C) (hC' : SelfVis j C')
     (hhG : h ∈ G) (hhC : h ≤ C) (hhC' : h ≤ C')
     (hp : ∀ d, p d ≠ ⊤) (hq : ∀ d, q d ≠ ⊤)
-    (hpq : ∀ d, min (p d) h = min (q d) h) :
+    (hpq : CappedEq p q h) :
     let e := largestCommonCut j p q
     e ∈ sourceGrid j (Fintype.card X) ∧ SelfVis j e ∧
-      (∀ d, min (PairedSlotEncoding.normalize j p d) e =
-        min (PairedSlotEncoding.normalize j q d) e) ∧
+      CappedEq (PairedSlotEncoding.normalize j p) (PairedSlotEncoding.normalize j q) e ∧
       h ≤ decode j (values p) G C e ∧ h ≤ decode j (values q) G C' e ∧
-      (∀ x, min (decode j (values p) G C x) h = min (decode j (values q) G C' x) h) := by
+      CappedEq (decode j (values p) G C) (decode j (values q) G C') h := by
   classical
   let A := (sourceGrid j (Fintype.card X)).filter (fun e =>
-    ∀ d, min (PairedSlotEncoding.normalize j p d) e =
-      min (PairedSlotEncoding.normalize j q d) e)
+    CappedEq (PairedSlotEncoding.normalize j p) (PairedSlotEncoding.normalize j q) e)
   have hA : A.Nonempty :=
     ⟨⊥, Finset.mem_filter.mpr ⟨sourceGrid_bot _ _, fun _ => by simp⟩⟩
   obtain ⟨e, heA, he⟩ := Finset.sup_mem_of_nonempty (f := id) hA
   change e = largestCommonCut j p q at he
   have heG : largestCommonCut j p q ∈ sourceGrid j (Fintype.card X) :=
     he ▸ (Finset.mem_filter.mp heA).1
-  have hagree : ∀ d, min (PairedSlotEncoding.normalize j p d) (largestCommonCut j p q) =
-      min (PairedSlotEncoding.normalize j q d) (largestCommonCut j p q) :=
+  have hagree : CappedEq (PairedSlotEncoding.normalize j p) (PairedSlotEncoding.normalize j q) (largestCommonCut j p q) :=
     he ▸ (Finset.mem_filter.mp heA).2
   obtain ⟨c, hcG, hc, hread, hread', hcompare⟩ :=
     exists_common_cut hG hC hC' hhG hhC hhC' hp hq hpq

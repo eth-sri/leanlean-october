@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.GrowthFrame
 public import VaughtConjecture.Knight.GrowthPaddedAllCutoff
 public import VaughtConjecture.Knight.GrowthReplicatedRows
 
@@ -17,33 +18,30 @@ Mixed prescriptions and proper mixed targets remain separate obligations.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthReplicatedAllCutoff
 open AmalgamationPlan Transform Value ExtOrd Growth CoatomBoundaryExtension
 open GrowthPaddedIteration GrowthReplicatedRows
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
-  (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
-  (X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows)
-  (T : RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X)
-  (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
+  {I : WholeDonorBoundary.Input A B C R m (n + 1) J}
+  {X : I.GrowthData}
+  (frame : I.GrowthFrame X)
   (t : ℕ) (ht : t + 2 ≤ A.card)
 
 theorem private_subface {S : Finset ι} {i j : ℕ}
     (hS : (S, i) ∈ Plan.gradedPlan R) (hSC : S ⊆ C) (hij : i ≤ j) (hj : j ≤ t + 2) :
-    CappedLift (rows (build I X T hA hB hC t ht))
-      (show GradedLe (S, i) (A, j) from ⟨hSC.trans hC.subset, hij⟩) :=
-  lift_to_full (build I X T hA hB hC t ht) _ (Or.inr hSC)
-    (GrowthPaddedAllCutoff.private_subface I X T hA hB hC t ht hS hSC hij hj)
+    CappedLift (rows (build frame t ht))
+      (show GradedLe (S, i) (A, j) from ⟨hSC.trans frame.rightProper.subset, hij⟩) :=
+  lift_to_full (build frame t ht) _ (Or.inr hSC)
+    (GrowthPaddedAllCutoff.private_subface frame t ht hS hSC hij hj)
 
 theorem donor_subface (hsmall : n + 1 < X.req.N) {S : Finset ι} {i j : ℕ}
     (hS : (S, i) ∈ Plan.gradedPlan R) (hSB : S ⊆ B) (hij : i ≤ j) (hj : j ≤ t + 2) :
-    CappedLift (rows (build I X T hA hB hC t ht))
-      (show GradedLe (S, i) (A, j) from ⟨hSB.trans hB.subset, hij⟩) :=
-  lift_to_full (build I X T hA hB hC t ht) _ (Or.inl hSB)
-    (GrowthPaddedAllCutoff.donor_subface I X T hA hB hC hsmall t ht hS hSB hij hj)
+    CappedLift (rows (build frame t ht))
+      (show GradedLe (S, i) (A, j) from ⟨hSB.trans frame.leftProper.subset, hij⟩) :=
+  lift_to_full (build frame t ht) _ (Or.inl hSB)
+    (GrowthPaddedAllCutoff.donor_subface frame hsmall t ht hS hSB hij hj)
 
 end
 end VaughtConjecture.Knight.GrowthReplicatedAllCutoff

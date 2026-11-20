@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReceivingGradeOneSourceCut
+public import VaughtConjecture.Knight.ReceivingCatalogueIncidences
 
 /-! # Outgoing decoding at the constructed lower source cut
 
@@ -16,7 +16,6 @@ The tail decoder then restores the entire private prescription literally.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingCutDecoder
 open Transform Value ExtOrd SharpWitnessComposition FullRowLifting
 noncomputable section
@@ -66,26 +65,15 @@ theorem exists_chart {X : Type*} [Finite X] {s v : X → ExtOrd} {δ γ : ExtOrd
 
 /-- Extending the clipped chart only needs bounded commutation. This does
 not claim the literal function composite is a faithful witness. -/
-theorem extend_bounded (S : Finset Ordinal.{0}) {b : ℕ} {τ : ExtOrd → ExtOrd}
+theorem extend_bounded {b : ℕ} {τ : ExtOrd → ExtOrd}
     {γ : ExtOrd} (hτ : BoundedMap 1 τ) (hγ : SelfVis 1 γ) :
-    BoundedMap 1 (PaddedSourceDecoder.extend S 1 b τ γ) := by
+    BoundedMap 1 (PaddedSourceDecoder.extend b τ γ) := by
   apply PairedSlotIncoming.bounded_max
   · refine ⟨by rw [hτ.bot, min_bot_left], fun _ _ h => min_le_min_right _ (hτ.mono h), ?_⟩
     intro x k i hk hi
     rw [hτ.comm x k i hk hi, evr_min_of_selfVis hγ hk hi]
   · exact boundedMap_of_witness (PaddedSourceDecoder.witness_release
-      (isStepShifter_canonicalDecoder (S := S) (K := 1)).normalizedWitness b)
-
-open CappedDonor CappedDonor.Ref ReceivingLadderCarrier ReceivingCatalogueSources
-variable {I : Type*} [Fintype I] {nP K : ℕ} {P : SemScheme (nP + 1)}
-  {C : SemScheme 2} {R : Ref I nP 2 2 P C} (L : R.LowRef K)
-
-local instance : Fintype (C.scheme.below (effC 2 1)) := Fintype.ofFinite _
-local notation "ℓ" => rungs (P := P) (C := C)
-
-variable (hC : C.scheme.plan = privatePlan) (request : Cell P.scheme)
-local notation "D" => carrier L hC
-local notation "E" => semantics L hC request
+      (witness_id 1) b)
 
 end
 end VaughtConjecture.Knight.ReceivingCutDecoder

@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.PointImageSemantics
-public import VaughtConjecture.Knight.PartialSections
 
 /-! # Bountifulness under an injective change of point domain
 
@@ -15,8 +14,6 @@ original cap and arbitrary target-local ambient transport literally.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.PointImageSemantics
 
@@ -28,8 +25,8 @@ variable (he : B.image e = C) (sem : Semantics D)
 
 local notation "K" => pointImage D e he
 
-theorem respects_owner_iff (c : Cell D) (q : (K).below ((K).cell c) → ExtOrd) :
-    RespectsSemanticsBelow (rows D e he sem) ((K).cell c) q ↔
+theorem respects_owner_iff (c : Cell D) (q : (K).RowDomain c → ExtOrd) :
+    (rows D e he sem).Lawful q ↔
       RespectsSemanticsBelow sem (D.cell c) (q ∘ belowEquiv D e he c) :=
   respects_iff_of_equiv (belowEquiv D e he c).symm (fun _ => rfl)
     (fun _ _ => Finset.image_subset_image_iff e.injective) (fun _ _ _ => rfl) q

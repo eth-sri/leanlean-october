@@ -22,8 +22,6 @@ supplied separately by `CappedLiftOfExtension`.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 
 open Transform Value ExtOrd
@@ -35,13 +33,18 @@ variable {sem : Semantics D} {I U J K : Finset ι × ℕ}
 /-- A single literal old graded-pair lifting clause, also allowing equal
 indices and empty source domains. No new whole-target lift is included. -/
 def CappedLift (sem : Semantics D) (h : GradedLe I U) : Prop :=
-  ∀ (p : D.below I → ExtOrd) (q : D.below U → ExtOrd) (γ : ExtOrd),
-    RespectsSemanticsBelow sem I p → RespectsSemanticsBelow sem U q →
+  ∀ (p : D.SectionAt I) (q : D.SectionAt U) (γ : ExtOrd),
+    sem.Lawful p → sem.Lawful q →
     SelfVis U.2 γ →
-    (∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) →
-    ∃ r : D.below U → ExtOrd, RespectsSemanticsBelow sem U r ∧
-      (∀ d, min (r d) γ = min (q d) γ) ∧
+    CappedEq (q ∘ CellScheme.below.mono h) p γ →
+    ∃ r : D.SectionAt U, sem.Lawful r ∧
+      CappedEq r q γ ∧
       ∀ d, r (CellScheme.below.mono h d) = p d
+
+/-- Lifting along the original proper faces, including equal indices. -/
+def OldLifts (sem : Semantics D) : Prop :=
+  ∀ I J, I ∈ Plan.gradedPlan D.plan → J ∈ Plan.gradedPlan D.plan → J.1 ≠ A →
+    (h : GradedLe I J) → CappedLift sem h
 
 /-- Equal indices require no appeal to strict-pair bountifulness. -/
 theorem lift_refl : CappedLift sem (GradedLe.refl I) := by
@@ -73,9 +76,9 @@ theorem CappedLift.of_equiv
     (eI : D'.below I' ≃ D.below I) (eU : D'.below U' ≃ D.below U)
     (hsquare : ∀ d, eU (CellScheme.below.mono h' d) = CellScheme.below.mono h (eI d))
     (hgrade : U'.2 ≤ U.2)
-    (hsource : ∀ p, RespectsSemanticsBelow sem I p →
+    (hsource : ∀ p, sem.Lawful p →
       RespectsSemanticsBelow sem' I' (p ∘ eI))
-    (htarget : ∀ q, RespectsSemanticsBelow sem U q ↔
+    (htarget : ∀ q, sem.Lawful q ↔
       RespectsSemanticsBelow sem' U' (q ∘ eU))
     (hl : CappedLift sem' h') : CappedLift sem h := by
   intro p q γ hp hq hγ hag
@@ -92,16 +95,26 @@ theorem CappedLift.of_equiv
       rw [Equiv.apply_symm_apply, hsquare, Equiv.apply_symm_apply]
     rw [Function.comp_apply, he, hf, Function.comp_apply, Equiv.apply_symm_apply]
 
-section FaceTransport
+/-- Transport of a predicate on labellings is equally expressible by pushforward or pullback. -/
+theorem pullback_iff {α β γ : Type*} {P : (α → γ) → Prop} {Q : (β → γ) → Prop}
+    (e : α ≃ β) (H : ∀ f, P f ↔ Q (f ∘ e.symm)) (g : β → γ) : Q g ↔ P (g ∘ e) := by
+  simpa only [Function.comp_def, Equiv.apply_symm_apply] using (H (g ∘ e)).symm
 
-open CellScheme.restrictFace
-
-variable {m n : ℕ} {D₀ : CellScheme (ι := Fin n) Finset.univ}
-variable {s : Semantics D₀} {f : Fin m ↪ Fin n}
-variable {hf : Finset.univ.image f ∈ D₀.plan}
-variable {I' U' : Finset (Fin m) × ℕ}
-
-end FaceTransport
+/-- Literal equivalences of the source and target domains preserve lifting in both directions. -/
+theorem CappedLift.equiv_iff {ι' : Type*} [DecidableEq ι'] {A' : Finset ι'} {D' : CellScheme A'}
+    {sem' : Semantics D'} {I' U' : Finset ι' × ℕ} {h : GradedLe I U} {h' : GradedLe I' U'}
+    (eI : D.below I ≃ D'.below I') (eU : D.below U ≃ D'.below U')
+    (square : ∀ d, eU (CellScheme.below.mono h d) = CellScheme.below.mono h' (eI d))
+    (grade : U.2 = U'.2)
+    (source : ∀ p, RespectsSemanticsBelow sem I p ↔ RespectsSemanticsBelow sem' I' (p ∘ eI.symm))
+    (target : ∀ q, RespectsSemanticsBelow sem U q ↔ RespectsSemanticsBelow sem' U' (q ∘ eU.symm)) :
+    CappedLift sem h ↔ CappedLift sem' h' := by
+  constructor
+  · exact of_equiv eI eU square grade.le (fun p => (pullback_iff eI source p).mp) (pullback_iff eU target)
+  · apply of_equiv eI.symm eU.symm _ grade.ge (fun p => (source p).mp) target
+    intro d
+    apply eU.injective
+    rw [Equiv.apply_symm_apply, square, Equiv.apply_symm_apply]
 
 theorem CappedLift.comp {hIJ : GradedLe I J} {hJK : GradedLe J K}
     (hleft : CappedLift sem hIJ) (hright : CappedLift sem hJK) :

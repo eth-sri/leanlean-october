@@ -28,7 +28,7 @@ theorem of_positive_chart (hcons : R.IsExactParentConsistent)
         ∀ δ : ExtOrd, ⊥ < δ → δ < ofOrd α.1 →
           ∃ (y : M) (hy : y ∉ Set.range t) (r : S α.1 (n + 1)),
             R.eval (snoc t y hy) = some r ∧ ∃ he : r.scheme = q.scheme,
-              ∀ d, min (r.label d) δ = min (q.label (SemScheme.castCell he d)) δ) :
+              CappedEq r.label (q.label ∘ SemScheme.castCell he) δ) :
     FiniteCutReceiving R := by
   intro n t p hp q hqp δ hδ hδα
   cases n with
@@ -79,7 +79,7 @@ theorem of_positive (hne : Nonempty M) (hcons : R.IsExactParentConsistent)
         ∀ δ : ExtOrd, ⊥ < δ → δ < ofOrd α.1 →
           ∃ (y : M) (hy : y ∉ Set.range t) (r : S α.1 (n + 1)),
             R.eval (snoc t y hy) = some r ∧ ∃ he : r.scheme = q.scheme,
-              ∀ d, min (r.label d) δ = min (q.label (SemScheme.castCell he d)) δ) :
+              CappedEq r.label (q.label ∘ SemScheme.castCell he) δ) :
     FiniteCutReceiving R := by
   refine of_positive_chart hcons ?_ hpos
   obtain ⟨x⟩ := hne

@@ -16,9 +16,9 @@ produces exactly that finite reference geometry from the model clauses alone:
 
 * `ReferenceContext R t reqs`: an enlarged realized context `ctx ⊇ t` with the projection back
   to the root, its realized type `p₀`, a threshold `N`, the cap `capBase` of grade `N`
-  (`cap_grade`, `cap_dom`), and the representatives `repBase`/`repOff` with their labels
+  (`cap_grade`), and the representatives `repBase`/`repOff` with their labels
   `μ + j`, `j < N`, under the cap.  These are the "old cell" fields of `ReadbackInputs`
-  (`capBase`, `cap_dom`, `repBase`, `repOff`, `rep_label`, `rep_off_lt`, `rep_le_cap`) and the
+  (`capBase`, `repBase`, `repOff`, `rep_label`, `rep_off_lt`) and the
   context/projection fields of `CorrectCertificateData` (`m`, `ctx`, `p₀`, `eval_ctx`, `proj`,
   `proj_ctx`).
 * `exists_referenceContext`: it exists in every model, over every realized root tuple, for every
@@ -76,9 +76,6 @@ structure BlockRequest where
   /-- The requested finite offset. -/
   offset : ℕ
 
-/-- The requested value `μ + i`. -/
-def BlockRequest.value (r : BlockRequest) : Ordinal.{0} := r.block + r.offset
-
 /-- **The finite reference context** over a root tuple `t`, for the requests `reqs`. -/
 structure ReferenceContext (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M)
     (reqs : List BlockRequest) : Type (max 1 w) where
@@ -100,8 +97,6 @@ structure ReferenceContext (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪
   capBase : Cell p₀.scheme.scheme
   /-- The cap has grade `N`. -/
   cap_grade : p₀.scheme.scheme.grade capBase = N
-  /-- The cap dominates every requested finite value. -/
-  cap_dom : ∀ r ∈ reqs, ofOrd r.value < p₀.label capBase
   /-- The block representatives. -/
   repBase : Ordinal.{0} → Cell p₀.scheme.scheme
   /-- Their offsets. -/
@@ -110,8 +105,6 @@ structure ReferenceContext (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪
   rep_label : ∀ r ∈ reqs, p₀.label (repBase r.block) = ofOrd (r.block + repOff r.block)
   /-- The offsets are below the threshold. -/
   rep_off_lt : ∀ r ∈ reqs, repOff r.block < N
-  /-- The representatives are under the cap. -/
-  rep_le_cap : ∀ r ∈ reqs, p₀.label (repBase r.block) ≤ p₀.label capBase
   /-- The requested offsets are below the threshold. -/
   offset_lt : ∀ r ∈ reqs, r.offset < N
 

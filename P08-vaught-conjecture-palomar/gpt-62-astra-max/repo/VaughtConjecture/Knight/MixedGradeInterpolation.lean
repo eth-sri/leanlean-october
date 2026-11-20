@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ControllerPrefixFamily
+public import VaughtConjecture.Knight.SlackCutPasting
 
 /-! # Mixed-grade interpolation: orbit blocks, not just source order
 
@@ -60,7 +60,7 @@ theorem finitePart_eq_of_nonvisible_image {τ : ExtOrd → ExtOrd} {K : ℕ}
     extVisibilityReplace_of_finitePart_lt hft, ofOrd_inj] at hh
   have hf := congrArg finitePart hh
   rw [finitePart_limitPart_add_nat] at hf
-  exact hf.symm
+  omega
 
 /-- Finite pointwise suprema preserve witnesses with a common suppressor, provided the empty
 supremum has a witness too. This is a construction tool, not composition of transformations. -/
@@ -69,9 +69,9 @@ theorem Witness.finset_sup {ι : Type*} {g : ℕ → ExtOrd} {f : ι → ExtOrd 
     Witness g (fun a => s.sup (fun i => f i a)) := by
   classical
   induction s using Finset.induction_on with
-  | empty => simpa only [Finset.sup_empty] using hbot
+  | empty => exact hbot
   | @insert i s hi ih =>
-    simpa only [Finset.sup_insert] using
+    simpa using
       (hf i (Finset.mem_insert_self _ _)).max
         (ih (fun j hj => hf j (Finset.mem_insert_of_mem hj)))
 
@@ -83,7 +83,7 @@ theorem zero_witness (K : ℕ) : Witness (gTop K) (fun _ => ⊥) where
   vis := (witness_id K).vis
   bot := rfl
   mono := monotone_const
-  clause5 := by intros; exact (extVisibilityReplace_bot _ _).symm
+  clause5 := by simp
 
 /-! ## A non-vacuous mixed-grade tie regression -/
 

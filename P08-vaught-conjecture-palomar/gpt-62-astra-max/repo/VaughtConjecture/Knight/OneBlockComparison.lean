@@ -5,15 +5,13 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.OneBlockReceiving
-public import VaughtConjecture.Knight.FiniteCoverCoordinates
+public import VaughtConjecture.Knight.BlockStages
 public import VaughtConjecture.Knight.ModelEmpty
 public import VaughtConjecture.Knight.ReductModel
 public import VaughtConjecture.Knight.Sentence
 public import VaughtConjecture.Knight.VisibleFaceOneStep
 public import VaughtConjecture.CountableQuantifierRank
 public import VaughtConjecture.InfinitaryRelabel
-public import InfinitaryLogic.Karp.CarrierTheorem
 
 /-! # Logical comparison from one-block receiving
 
@@ -45,7 +43,7 @@ universe w u v u'
 
 /-- The quantifier rank of an `L_{ω₁ω}` formula (countable branching) is a countable ordinal. -/
 theorem qrank_lt_ord_aleph_one {L : Language.{u, v}} {γ : Type u'} :
-    ∀ {n : ℕ} (φ : L.BoundedFormulaInf ℕ γ n), φ.qrank < (aleph 1).ord :=
+    ∀ {n} (φ : L.BoundedFormulaInf ℕ γ n), φ.qrank < (aleph 1).ord :=
   VaughtConjecture.qrank_lt_ord_aleph_one
 
 /-! ## Sentence agreement -/

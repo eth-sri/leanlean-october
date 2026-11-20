@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.WitnessSplice
-public import VaughtConjecture.Knight.RowCorrectness
 public import VaughtConjecture.Knight.SourceBlockLocalityTransport
 
 /-! # Orbit-supported values survive prefix-fixing decoding
@@ -28,8 +27,6 @@ the preservation theorem, not a hidden finite-extension supply assumption.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.OrbitPrefixSupport
 
 open Transform Value ExtOrd
@@ -42,16 +39,9 @@ be invisible. The finite constructor may establish a stronger support invariant.
 def Supported (K : ℕ) (grid : Set ExtOrd) (p : D → ExtOrd) (x : ExtOrd) : Prop :=
   x = ⊥ ∨ x ∈ grid ∨ ∃ d i, i ≤ K ∧ x = extVisibilityReplace (p d) K i
 
-/-- A replacement below a self-visible cut has its supporting value below that
-cut too. This supplies the strict inequality needed to use boundary fixation. -/
-theorem boundary_lt_of_orbit_lt {h : ExtOrd} (hh : SelfVis K h)
-    {d : D} {i : ℕ} (hx : extVisibilityReplace (p d) K i < h) : p d < h := by
-  by_contra hn
-  exact (not_le_of_gt hx) (le_extVisibilityReplace_of_selfVis_le hh (le_of_not_gt hn))
-
 /-- Clause 5 propagates fixation from the protected boundary to every supported
 hidden value below the cut, including replacement endpoints. -/
-theorem fixed_below {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g σ)
+theorem fixed_below {g} {σ} (hw : Witness g σ)
     {h x : ExtOrd} (hh : SelfVis K h) (hguard : h ≤ g K)
     (hgrid : ∀ z ∈ grid, z < h → σ z = z)
     (hboundary : ∀ d, p d < h → σ (p d) = p d)
@@ -59,13 +49,13 @@ theorem fixed_below {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness 
   rcases hs with rfl | hs | ⟨d, i, hi, rfl⟩
   · exact hw.bot
   · exact hgrid _ hs hx
-  · have hd := boundary_lt_of_orbit_lt hh hx
+  · have hd := Decidable.byContradiction fun hn => not_le_of_gt hx (le_extVisibilityReplace_of_selfVis_le hh (le_of_not_gt hn))
     have hfix := hboundary d hd
     rw [hw.clause5 (p d) K (by rw [hfix]; exact hd.le.trans hguard) i hi, hfix]
 
 /-- Below the cut there is exact fixation; at and above it monotonicity and the
 cut's image preserve the capped reading. Literal top and bottom are included. -/
-theorem cap_fixed {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g σ)
+theorem cap_fixed {g} {σ} (hw : Witness g σ)
     {h x : ExtOrd} (hh : SelfVis K h) (hguard : h ≤ g K) (hreach : h ≤ σ h)
     (hgrid : ∀ z ∈ grid, z < h → σ z = z)
     (hboundary : ∀ d, p d < h → σ (p d) = p d)
@@ -78,13 +68,13 @@ theorem cap_fixed {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g 
 /-- A second row with the same source prefix keeps that prefix after decoding.
 Support is needed only for the protected row, not for the replacement row. -/
 theorem decode_agree {X : Type*} {a b : X → ExtOrd}
-    {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g σ)
+    {g} {σ} (hw : Witness g σ)
     {h : ExtOrd} (hh : SelfVis K h) (hguard : h ≤ g K) (hreach : h ≤ σ h)
     (hgrid : ∀ z ∈ grid, z < h → σ z = z)
     (hboundary : ∀ d, p d < h → σ (p d) = p d)
     (hs : ∀ x, Supported K grid p (a x))
-    (hag : ∀ x, min (b x) h = min (a x) h) :
-    ∀ x, min (σ (b x)) h = min (a x) h := by
+    (hag : CappedEq b a h) :
+    CappedEq (σ ∘ b) a h := by
   intro x
   have hmin (z : ExtOrd) : min (σ (min z h)) h = min (σ z) h := by
     rw [monotone_min_apply hw.mono, min_assoc, min_eq_right hreach]
@@ -99,18 +89,18 @@ on arbitrary inherited rows. No short-source hypothesis or composition of
 faithful transformations is used. Existence of the lawful coded row remains an
 input; this theorem only decodes it and proves its legality and full cap agreement. -/
 theorem decode_respects_of_positive_cut
-    {ι : Type*} [DecidableEq ι] {A : Finset ι} {S : CellScheme A}
-    {sem : Semantics S} {BJ : Finset ι × ℕ} {a b : S.below BJ → ExtOrd}
-    {σ : ExtOrd → ExtOrd} (hw : Witness (gTop K) σ)
-    (ha : RespectsSemanticsBelow sem BJ a) (hb : RespectsSemanticsBelow sem BJ b)
+    {ι : Type*} [DecidableEq ι] {A} {S : CellScheme A}
+    {sem} {BJ : Finset ι × ℕ} {a b : S.SectionAt BJ}
+    {σ} (hw : Witness (gTop K) σ)
+    (ha : sem.Lawful a) (hb : sem.Lawful b)
     (hK : ∀ d : S.below BJ, S.grade d.1 ≤ K)
     {h : ExtOrd} (hh : SelfVis K h) (hpos : h ≠ ⊥) (hreach : h ≤ σ h)
     (hgrid : ∀ z ∈ grid, z < h → σ z = z)
     (hboundary : ∀ d, p d < h → σ (p d) = p d)
     (hs : ∀ d, Supported K grid p (a d))
-    (hag : ∀ d, min (b d) h = min (a d) h) :
+    (hag : CappedEq b a h) :
     RespectsSemanticsBelow sem BJ (fun d => σ (b d)) ∧
-      ∀ d, min (σ (b d)) h = min (a d) h := by
+      CappedEq (σ ∘ b) a h := by
   have hguard : h ≤ gTop K K := by rw [gTop_of_le le_rfl]; exact le_top
   have hag' := decode_agree hw hh hguard hreach hgrid hboundary hs hag
   exact ⟨SharpWitnessComposition.map_respects_of_positive_cap_agreement hb ha hK

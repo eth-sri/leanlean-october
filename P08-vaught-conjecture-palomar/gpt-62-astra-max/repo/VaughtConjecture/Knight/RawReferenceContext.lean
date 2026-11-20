@@ -17,7 +17,6 @@ cell. Clients choose a final cap only after observing the reference offsets.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight
 open TypeTower StageType KnightRealization Value ExtOrd
 noncomputable section
@@ -37,9 +36,6 @@ variable {blocks : Finset Ordinal.{0}} (C : RawReferenceContext R t blocks)
 
 /-- A finite bound chosen after the actual offsets have been obtained. -/
 def offsetBound : ℕ := Finset.univ.sup C.repOff
-
-theorem rep_off_le (μ : blocks) : C.repOff μ ≤ C.offsetBound :=
-  Finset.le_sup (f := C.repOff) (Finset.mem_univ μ)
 
 end RawReferenceContext
 

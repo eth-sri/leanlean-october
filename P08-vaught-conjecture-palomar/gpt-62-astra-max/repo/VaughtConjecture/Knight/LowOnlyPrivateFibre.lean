@@ -35,10 +35,10 @@ theorem top_present {j : ℕ} (hj : K ≤ j) {d : Cell P.scheme} (hd : F.p d = �
 
 /-- The active-grade private fibre, including top comparison cap. -/
 theorem private_active {j : ℕ} (hj : K ≤ j) {S : State P C}
-    (hS : F.Admissible j S) {v : C.scheme.below (effC n j) → ExtOrd}
-    (hv : RespectsSemanticsBelow C.rows (effC n j) v) {γ : ExtOrd}
+    (hS : F.Admissible j S) {v : C.ClippedCells j → ExtOrd}
+    (hv : C.rows.Lawful v) {γ : ExtOrd}
     (hγ : SelfVis (effC n j).2 γ)
-    (hag : ∀ d, min (v d) γ = min (S.lowerC j d) γ) :
+    (hag : CappedEq v (S.lowerC j) γ) :
     ∃ S', F.Admissible j S' ∧ S'.lowerC j = v ∧ S.CapEq γ S' ∧ S.FutureEq j S' := by
   obtain ⟨u, hQ, hucap⟩ := hS.toSource.install_private F hv hγ hag
   have hface0 : ∀ a : P.scheme.below (faceIndex F.root.A j),
@@ -64,7 +64,7 @@ theorem private_active {j : ℕ} (hj : K ≤ j) {S : State P C}
     have hγfloor : γ ≤ max S.b (F.gap.eC hj (S.lowerC j)) := by
       rw [min_eq_right hη.le] at hfloor
       exact min_eq_right_iff.mp hfloor.symm
-    have htopγ : ∀ d : P.scheme.below (effC n j), F.p d.1 = ⊤ → γ ≤ u d := by
+    have htopγ : ∀ d : P.ClippedCells j, F.p d.1 = ⊤ → γ ≤ u d := by
       intro d hd
       exact le_of_capAgree_of_le (hucap d).symm (hγfloor.trans (hlow d.1 hd))
     have hRD : RetargetData (p := F.p) (K := K) u (min S.b γ)
@@ -75,7 +75,7 @@ theorem private_active {j : ℕ} (hj : K ≤ j) {S : State P C}
           have h := (le_nonTopMax Q.u hd).trans_lt hm
           simpa only [Q, State.replace, completeAt_present] using h),
         (fun d hd => (min_le_right _ _).trans (htopγ d hd)),
-        TopSupport.selfVis_max_of hbvis (F.gap.e_selfVis (F.gap.lowD_respects hj hv)),
+        TopSupport.selfVis_max_of hbvis (selfVis_min (F.gap.c_selfVis (F.gap.lowD_respects hj hv)) (TopSupport.selfVis_evr_self K _)),
         le_max_left _ _⟩
     obtain ⟨u', hu', hnon, htop, hface⟩ := hRD.exists_retarget_restore
       F.p_lawful F.gap.K_pos (F.gap.K_pos.trans_le F.gap.K_le) hj F.top_grade
@@ -84,8 +84,8 @@ theorem private_active {j : ℕ} (hj : K ≤ j) {S : State P C}
       (fun a ha => max_le
         ((min_le_right _ _).trans
           ((htopγ (CellScheme.below.mono (faceIndex_le F.root.A j) a) ha).trans_eq (hface0 a)))
-        (F.frontier_le_root hj hv a ha))
-    have hcap' : ∀ d, min (u' d) γ = min (S.lowerP j d) γ := by
+        (F.gap.e_le_of_gap (F.gap.lowD_respects hj hv) _ (F.root_gap (F.root.fullP a) ha)))
+    have hcap' : CappedEq u' (S.lowerP j) γ := by
       intro d
       by_cases hd : F.p d.1 = ⊤
       · change min (u' d) γ = min (S.u d.1) γ

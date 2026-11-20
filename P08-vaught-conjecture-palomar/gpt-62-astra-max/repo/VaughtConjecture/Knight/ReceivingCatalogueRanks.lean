@@ -5,7 +5,15 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReceivingCatalogueAdmission
+public import VaughtConjecture.Knight.CappedDonorRetarget
+public import VaughtConjecture.Knight.CappedDonorRelease
+public import VaughtConjecture.Knight.CappedDonorNormalization
+public import VaughtConjecture.Knight.TerminalBlock
+public import VaughtConjecture.Knight.PrivateRowFactorization
+public import VaughtConjecture.Knight.CanonicalPairedInverse
+public import VaughtConjecture.Knight.LadderScalarRendering
+
+public import VaughtConjecture.Knight.ProfileCatalogue
 
 /-! # Rank preservation for downward catalogue normalization
 
@@ -22,15 +30,14 @@ installed grade-two controller. No carrier or row is changed here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingCatalogueRanks
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref
 open LadderScalarRendering
 noncomputable section
 
 /-- A tracked monotone encoding with a monotone inverse preserves finite ranks. -/
-theorem fieldRank_of_leftInverse {X : Type*} [Fintype X] (p : X → ExtOrd)
-    {f g : ExtOrd → ExtOrd} (hf : Monotone f) (hg : Monotone g)
+theorem fieldRank_of_leftInverse {X : Type*} [Fintype X] p
+    {f g} (hf : Monotone f) (hg : Monotone g)
     (hfbot : f ⊥ = ⊥) (hgbot : g ⊥ = ⊥)
     (hinv : ∀ d, g (f (p d)) = p d) (d : X) :
     fieldRank (fun e => f (p e)) d = fieldRank p d := by
@@ -66,7 +73,7 @@ theorem fieldRank_of_leftInverse {X : Type*} [Fintype X] (p : X → ExtOrd)
   simpa only [hinv] using congrArg g hxy
 
 /-- Paired-slot normalization preserves all ranks, not just the bottom pattern. -/
-theorem fieldRank_normalize {X : Type*} [Fintype X] (j : ℕ) (p : X → ExtOrd)
+theorem fieldRank_normalize {X : Type*} [Fintype X] j p
     (hp : ∀ d, p d ≠ ⊤) (d : X) :
     fieldRank (PairedSlotEncoding.normalize j p) d = fieldRank p d := by
   let f := PairedSlotIncoming.encoder j (PairedSlotEncoding.values p)
@@ -87,3 +94,16 @@ variable {I : Type*} [Fintype I] {nP N J K : ℕ}
 
 end
 end VaughtConjecture.Knight.ReceivingCatalogueRanks
+
+namespace VaughtConjecture.Knight.ProfileCatalogue
+open Transform ExtOrd TerminalProfile LadderScalarRendering ReceivingCatalogueRanks
+variable {Z X : Type*} [Fintype X] {j : ℕ} (F : Family Z X j) {s : Z}
+
+theorem rank_member (hj : 1 ≤ j) (hs : F.admitted s) :
+    ∃ a : Member F, ∀ d, fieldRank a.val d = fieldRank (F.profile s) d := by
+  let v := F.profile s
+  obtain ⟨z, hz, he⟩ := F.realize hj hs 0
+  refine ⟨⟨_,canonical v j 0,z,hz,he⟩,fun d => (fieldRank_normalize j _ (proper v j 0) d).trans ?_⟩
+  exact fieldRank_of_leftInverse v (fun _ _ h => min_le_min_right _ h)
+    (collapseBlock_witness j (limit v 0)).mono (min_bot_left _) (collapseBlock_witness j (limit v 0)).bot (collapse v j 0) d
+end VaughtConjecture.Knight.ProfileCatalogue

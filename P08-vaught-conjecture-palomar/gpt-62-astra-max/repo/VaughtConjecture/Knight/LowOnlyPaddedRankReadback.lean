@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.LowFrame
 public import VaughtConjecture.Knight.LowSeparatorRank
 public import VaughtConjecture.Knight.LowOnlyPaddedContract
 public import VaughtConjecture.Knight.LowOnlyDonorOrderedLift
@@ -19,7 +20,6 @@ lawful section supplies its own serving leaf and monotone rank table.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedRankReadback
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LadderScalarRendering LowOnlyPaddedContract LowSeparator
@@ -30,7 +30,7 @@ variable {n : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C 1)
 
 def partnerState (S : State P C) : State P C := ⟨S.u, S.v, F.maximum S⟩
 
-theorem partner_profile (S : State P C) :
+theorem partner_profile S :
     (partnerState F S).profile =
       LowSeparatorRank.rankPartner (donorField F) cutoffField S.profile := by
   classical
@@ -42,7 +42,7 @@ theorem partner_profile (S : State P C) :
     exact (maximum_eq_donorMax F S).trans
       (LowSeparatorRank.rankPartner_apply_self (donorField F) cutoffField S.profile).symm
 
-theorem partner_admissible {S : State P C} (hS : F.Admissible 1 S) :
+theorem partner_admissible {S} (hS : F.Admissible 1 S) :
     F.Admissible 1 (partnerState F S) where
   lawfulP := hS.lawfulP
   lawfulC := hS.lawfulC
@@ -59,8 +59,8 @@ theorem partner_admissible {S : State P C} (hS : F.Admissible 1 S) :
 
 /-- The existing catalogue contains both rank anchors, literal-top selected
 fields included. No raw vector is identified with its canonical normalization. -/
-theorem exists_anchors {S : State P C} (hS : F.Admissible 1 S) :
-    ∃ a b : F.Anchor 1,
+theorem exists_anchors {S} (hS : F.Admissible 1 S) :
+    ∃ a b,
       RelativeLadderLayer.ranks (F.fields 1) a = fieldRank S.profile ∧
       RelativeLadderLayer.ranks (F.fields 1) b =
         fieldRank (LowSeparatorRank.rankPartner (donorField F) cutoffField S.profile) := by
@@ -72,9 +72,7 @@ end Partner
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right 1)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
+  (hroot : I.RootAgreement F)
   (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
 local notation "D" => RelativeLadderLayer.carrier I.boundary hA
@@ -91,16 +89,16 @@ include hroot in
 The source, chart and LOW instance are all derived from actual lawfulness. -/
 theorem donor_top_of_separator {S : State I.left I.right}
     (hlt : donorMax (donorField F) S.profile < S.b)
-    {qs qt : F.Anchor 1}
+    {qs qt}
     (hqs : RelativeLadderLayer.ranks (F.fields 1) qs = fieldRank S.profile)
     (hqt : RelativeLadderLayer.ranks (F.fields 1) qt =
       fieldRank (LowSeparatorRank.rankPartner (donorField F) cutoffField S.profile))
-    {q : (D).below (A, 1) → ExtOrd} (hq : RespectsSemanticsBelow E (A, 1) q)
+    {q} (hq : RespectsSemanticsBelow E (A, 1) q)
     (hsep : q (RelativeLadderLayer.leafOccurrence I.boundary hA qt) <
       q (RelativeLadderLayer.leafOccurrence I.boundary hA qs))
     (hc : q (originalAt I F hA (privateIncl I (F.gap.cC le_rfl))) = ⊤)
     (hr : q (originalAt I F hA (privateIncl I (F.gap.rC le_rfl))) = ⊤)
-    (d : I.left.scheme.below (effC n 1)) (hd : F.p d.1 = ⊤) :
+    d (hd : F.p d.1 = ⊤) :
     q (originalAt I F hA (donorIncl I d)) = ⊤ := by
   obtain ⟨a, τ, hτ, _, hread⟩ := RelativeLadderLayer.exists_leaf_chart I.boundary I.rows hA
     (field I) (F.fields 1) (proper I hB hC) qs hq
@@ -138,7 +136,7 @@ theorem donor_top_of_separator {S : State I.left I.right}
     rw [maximum_eq_donorMax]
     change donorMax (donorField F) (state F a).profile < (state F a).profile cutoffField
     simpa only [state_profile, Family.fields] using hact
-  have hv (e : I.right.scheme.below (effC n 1)) :
+  have hv (e : I.right.ClippedCells 1) :
       q (originalAt I F hA (privateIncl I e)) =
         g (fieldRank (state F a).profile (Sum.inr (Sum.inl e.1))) := by
     apply (he _).trans

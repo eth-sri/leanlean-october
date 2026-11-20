@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.NormalizedProfileLifting
+public import VaughtConjecture.Knight.NormalizedProfileFamily
 
 /-! # Occurrence-exact unions of two faces
 
@@ -15,8 +15,6 @@ boundary inventory, not the missing full-scope rows of a support plan.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.ProfileFaceUnion
 
@@ -36,11 +34,6 @@ theorem right_shared (c : C) : right f g (g c) = left g (f c) := by
   rw [right, dite_eq_left h]
   exact congrArg (fun d => Sum.inl (f d)) (g.injective h.choose_spec)
 
-theorem right_private (y : {y : Y // y ∉ Set.range g}) :
-    right f g y = .inr y := by
-  classical
-  simp only [right, dite_eq_right y.property]
-
 theorem overlap (x : X) (y : Y) :
     left g x = right f g y ↔ ∃ c, f c = x ∧ g c = y := by
   classical
@@ -59,7 +52,9 @@ theorem covered (z : Carrier (X := X) g) :
     (∃ x, left g x = z) ∨ ∃ y, right f g y = z := by
   cases z with
   | inl x => exact Or.inl ⟨x, rfl⟩
-  | inr y => exact Or.inr ⟨y, right_private f g y⟩
+  | inr y => exact Or.inr ⟨y, by
+          classical
+          simp only [right, dite_eq_right y.property]⟩
 
 def paste {V : Type*} (p : X → V) (q : Y → V) : Carrier (X := X) g → V
   | .inl x => p x

@@ -6,8 +6,6 @@ Authors: Cameron Freer
 module
 
 public import Mathlib.SetTheory.Descriptive.Tree
-public import Mathlib.SetTheory.Ordinal.Rank
-public import Mathlib.SetTheory.Ordinal.Family
 public import Mathlib.SetTheory.Cardinal.Regular
 public import Mathlib.Order.OrderIsoNat
 public import Mathlib.Data.List.Lex
@@ -67,7 +65,7 @@ def HasInfiniteBranch (T : tree ℕ) : Prop :=
   ∃ f : ℕ → List ℕ, (∀ n, f n ∈ T) ∧ ∀ n, ProperPrefix (f n) (f (n + 1))
 
 /-- The strict-extension relation restricted to the nodes of `T`. -/
-def extBelow (T : tree ℕ) (y x : ↥T) : Prop := ExtBelow (y : List ℕ) x
+def extBelow (T : tree ℕ) (y x : ↥T) : Prop := ExtBelow y x
 
 theorem ProperPrefix.trans {x y z : List ℕ} (h₁ : ProperPrefix x y) (h₂ : ProperPrefix y z) :
     ProperPrefix x z := by
@@ -84,46 +82,16 @@ theorem wellFounded_extBelow_iff_not_hasInfiniteBranch (T : tree ℕ) :
   rw [RelEmbedding.wellFounded_iff_isEmpty]
   constructor
   · rintro ⟨h⟩ ⟨f, hf, hstep⟩
-    exact h (RelEmbedding.natGT (fun n => (⟨f n, hf n⟩ : ↥T)) fun n => hstep n)
+    exact h (RelEmbedding.natGT (fun n => ⟨f n, hf n⟩) fun n => hstep n)
   · intro h
-    refine ⟨fun e => h ⟨fun n => (e n : List ℕ), fun n => (e n).2, fun n => ?_⟩⟩
+    refine ⟨fun e => h ⟨fun n => (e n), fun n => (e n).2, fun n => ?_⟩⟩
     exact e.map_rel_iff.mpr (Nat.lt_succ_self n)
 
 /-! ## The Kleene–Brouwer order, via lexicographic order on `WithTop ℕ` -/
 
-/-- Encode a node so that a proper prefix becomes *larger* than its extensions: append `⊤`. -/
-def kbEncode (x : List ℕ) : List ℕ∞ := x.map (fun a : ℕ => (a : ℕ∞)) ++ [⊤]
-
-theorem kbEncode_injective : Function.Injective kbEncode := by
-  intro x y h
-  have := List.append_inj_left' h (by simp)
-  exact (List.map_injective_iff (f := fun a : ℕ => (a : ℕ∞))).mpr
-    (fun _ _ hab => ENat.natCast_inj.mp hab) this
-
-/-- The Kleene–Brouwer order: proper extensions come first, then leftmost-first differences. -/
-def KBLT (x y : List ℕ) : Prop := kbEncode x < kbEncode y
-
-instance : DecidableRel KBLT := fun x y => inferInstanceAs (Decidable (kbEncode x < kbEncode y))
-
-instance : DecidableRel KBLT := fun x y => inferInstanceAs (Decidable (kbEncode x < kbEncode y))
-
-instance : DecidableRel KBLT := fun x y => inferInstanceAs (Decidable (kbEncode x < kbEncode y))
-
-/-- The KB order on the nodes of `T`. -/
-def kbLT (T : tree ℕ) (x y : ↥T) : Prop := KBLT (x : List ℕ) y
-
-/-- The nodes of `T`, linearly ordered by KB (pulled back from `List ℕ∞`). -/
-@[instance_reducible] noncomputable def kbLinearOrder (T : tree ℕ) : LinearOrder ↥T :=
-  LinearOrder.lift' (fun x : ↥T => kbEncode (x : List ℕ))
-    (fun _ _ h => Subtype.ext (kbEncode_injective h))
-
 /-! ## Proper extensions are KB-below -/
 
 /-! ## KB is well-founded on a well-founded tree -/
-
-instance (T : tree ℕ) : IsStrictOrder ↥T (kbLT T) where
-  irrefl x h := lt_irrefl (kbEncode (x : List ℕ)) h
-  trans _ _ _ h₁ h₂ := lt_trans (α := List ℕ∞) h₁ h₂
 
 /-- The height of the tree: the strict supremum of the ranks of its nodes under strict
 extension. -/
@@ -142,30 +110,30 @@ theorem hasInfiniteBranch_iff_exists_seq (T : tree ℕ) :
     have hchain : ∀ m n, m ≤ n → f m <+: f n := by
       intro m n hmn
       induction n, hmn using Nat.le_induction with
-      | base => exact List.prefix_refl _
+      | base => rfl
       | succ n _ ih => exact ih.trans (hstep n).1
     have hlen : ∀ n, n ≤ (f n).length := by
       intro n
       induction n with
-      | zero => exact Nat.zero_le _
+      | zero => simp
       | succ n ih =>
-        have hlt : (f n).length < (f (n + 1)).length :=
+        have hlt :=
           lt_of_le_of_ne (hstep n).1.length_le fun h ↦ (hstep n).2 ((hstep n).1.eq_of_length h)
         omega
     refine ⟨fun i ↦ (f (i + 1)).getD i 0, fun n ↦ ?_⟩
     have heq : List.ofFn (fun i : Fin n ↦ (f (i + 1)).getD i 0) = (f n).take n := by
-      refine List.ext_getElem (by simp [hlen n]) fun i h₁ h₂ ↦ ?_
+      refine List.ext_getElem (by simp_all) fun i h₁ h₂ ↦ ?_
       have hi : i < n := by simpa using h₁
-      have hi' : i < (f (i + 1)).length := lt_of_lt_of_le (Nat.lt_succ_self i) (hlen (i + 1))
-      simp only [List.getElem_ofFn, List.getElem_take, List.getD_eq_getElem?_getD,
-        List.getElem?_eq_getElem hi', Option.getD_some]
+      have hi' := lt_of_lt_of_le (Nat.lt_succ_self i) (hlen (i + 1))
+      simp [List.getElem_take,
+        List.getElem?_eq_getElem hi']
       exact (hchain (i + 1) n hi).getElem hi'
     rw [heq]
     exact Tree.take_mem ⟨f n, hf n⟩
   · rintro ⟨z, hz⟩
-    refine ⟨fun n ↦ List.ofFn (fun i : Fin n ↦ z i), hz, fun n ↦ ⟨?_, fun h ↦ ?_⟩⟩
+    refine ⟨fun n ↦ List.ofFn (fun i ↦ z i), hz, fun n ↦ ⟨?_, fun h ↦ ?_⟩⟩
     · simp only [List.ofFn_succ_last]
-      exact List.prefix_append _ _
+      simp
     · simpa using congrArg List.length h
 
 /-! ## Comparing heights -/
@@ -177,7 +145,7 @@ theorem treeHeight_le_of_relHom {S T : tree ℕ} [WellFounded (extBelow S)]
     [WellFounded (extBelow T)] (f : extBelow S →r extBelow T) :
     treeHeight S ≤ treeHeight T :=
   Ordinal.iSup_le fun x ↦ (Order.succ_le_succ (InfinitaryLogic.rank_le_rank_of_relHom f x)).trans
-    (Ordinal.le_iSup (fun y : ↥T ↦ Order.succ (WellFounded.rank (extBelow T) y)) (f x))
+    (Ordinal.le_iSup (fun y ↦ Order.succ (WellFounded.rank (extBelow T) y)) (f x))
 
 /-- Ranks in a well-founded relation on a countable type are countable. -/
 private theorem rank_lt_omega1 {α : Type} [Countable α] (r : α → α → Prop) [WellFounded r]

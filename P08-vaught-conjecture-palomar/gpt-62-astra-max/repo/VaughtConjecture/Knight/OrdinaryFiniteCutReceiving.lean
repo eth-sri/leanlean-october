@@ -8,7 +8,6 @@ module
 public import VaughtConjecture.Knight.OrdinaryAttachedReceiving
 public import VaughtConjecture.Knight.CappedDonorComparisonRequest
 public import VaughtConjecture.Knight.TopSupportReceiving
-public import VaughtConjecture.Knight.ExtensionSets
 public import VaughtConjecture.Knight.CapObservation
 
 /-! # Finite-cut receiving in a model
@@ -101,23 +100,22 @@ theorem fc_of_reference (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1
   subst hJ
   subst hut
   obtain ⟨hvP, hP, hvC, hC, hface⟩ := hface
+  let W := OrdinaryAttachedReceiving.boundary p₀.scheme q.scheme p.scheme e hvC hvP hC hP
+  have hU := WholeDonorAttachment.union e
+  have hf := OrdinaryAttachedReceiving.alignment p₀.scheme q.scheme p.scheme e hvC hvP hC hP Rf hA hA' hK hface
   -- the legal probe and its exact faces
   let D : SemScheme (k + 5) :=
-    OrdinaryAttachedReceiving.semScheme p₀.scheme q.scheme p.scheme e hvC hvP hC hP Rf hA hA' hK
-      hface
-  have hvis := OrdinaryAttachedReceiving.private_visible p₀.scheme q.scheme p.scheme e hvC hvP hC
-    hP Rf hA hA' hK hface
-  have hres := OrdinaryAttachedReceiving.private_restrict p₀.scheme q.scheme p.scheme e hvC hvP hC
-    hP Rf hA hA' hK hface
+    OrdinaryReceivingAssembly.semScheme W Rf hU hf
+  have hvis := OrdinaryReceivingProbe.private_visible W Rf hU hf
+  have hres := OrdinaryReceivingProbe.private_restrict W Rf hU hf
   have hD : ExtendsDomain p₀ D := ⟨hvis, hres⟩
   -- A raw lawful display suffices for the prescribed-bottom-pattern clause.
-  obtain ⟨a, r, hr, -, hrv, hg⟩ := OrdinaryAttachedReceiving.exists_raw_display p₀.scheme q.scheme
-    p.scheme e hvC hvP hC hP Rf hA hA' hK hface
+  obtain ⟨a, r, hr, hrv, hg⟩ := OrdinaryReceivingProbe.exists_raw_display W Rf hU hf
   -- the model's prescribed-bottom-pattern clause over the private tuple
   obtain ⟨y, hy, q₁, ⟨h₁, hpat⟩, hcof, hev⟩ := hM.bottomPattern u p₀ hu D hD r hr (fun d => by
     rw [ExtendsDomain.cellOf]
-    rw [OrdinaryAttachedReceiving.private_toCell p₀.scheme q.scheme p.scheme e hvC hvP hC hP Rf
-      hA hA' hK hface d, hrv d, hRv])
+    exact (congrArg r (OrdinaryReceivingProbe.private_toCell W Rf hU hf d)).trans
+      ((hrv d).trans (congrFun hRv d)))
   -- the realized section on the probe
   let qq : Cell D.scheme → ExtOrd := fun c => q₁.label (SemScheme.castCell h₁.symm c)
   have hqq : RespectsSemantics D.rows qq := respects_of_scheme_eq q₁ h₁
@@ -125,31 +123,23 @@ theorem fc_of_reference (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1
   have ht' : q₁ = t' := ext_of_label h₁ (fun i => rfl)
   rw [ht'] at hcof hev
   -- literal private retention
-  have hretain : ∀ d, qq ((OrdinaryAttachedReceiving.privateFace p₀.scheme q.scheme p.scheme e
-      hvC hvP hC hP Rf hA hA' hK hface).map d) = Rf.vact d := by
+  have hretain : ∀ d, qq ((OrdinaryReceivingProbe.privateFace W Rf hU hf).map d) = Rf.vact d := by
     intro d
     have key := (typeMap_eq_some_iff_labels Fin.castSuccEmb t' p₀ hvis hres).mp hcof
       (SemScheme.castCell hres.symm d)
-    rw [OrdinaryAttachedReceiving.private_toCell p₀.scheme q.scheme p.scheme e hvC hvP hC hP Rf
-      hA hA' hK hface d] at key
-    rw [hRv]
-    exact key
+    exact (congrArg qq (OrdinaryReceivingProbe.private_toCell W Rf hU hf d)).symm.trans
+      (key.trans (congrFun hRv.symm d))
   -- the gate is inside the bottom-pattern test and stays positive
-  have hgate : qq (OrdinaryAttachedReceiving.gate p₀.scheme q.scheme p.scheme e hvC hvP hC hP Rf
-      hA hA' hK hface a) ≠ ⊥ := by
+  have hgate : qq (OrdinaryReceivingProbe.gate W Rf hU hf a) ≠ ⊥ := by
     intro hb
-    have := (hpat ⟨_, Finset.subset_univ _, (OrdinaryAttachedReceiving.gate_grade p₀.scheme
-      q.scheme p.scheme e hvC hvP hC hP Rf hA hA' hK hface a).le⟩).mp hb
+    have := (hpat ⟨_, Finset.subset_univ _, (OrdinaryReceivingProbe.gate_grade W Rf hU hf a).le⟩).mp hb
     rw [hg] at this
     exact top_ne_bot this
   -- capped readback on the donor occurrences
-  have hread := fun d => OrdinaryAttachedReceiving.readback_below p₀.scheme q.scheme p.scheme e
-    hvC hvP hC hP Rf hA hA' hK hface hqq hretain a hgate hδ d
+  have hread := fun d => OrdinaryReceivingProbe.readback_below W Rf hU hf hqq hretain a hgate hδ d
   -- restriction to the donor face over the root tuple
-  have hvreq := OrdinaryAttachedReceiving.request_visible p₀.scheme q.scheme p.scheme e hvC hvP hC
-    hP Rf hA hA' hK hface
-  have hrreq := OrdinaryAttachedReceiving.request_restrict p₀.scheme q.scheme p.scheme e hvC hvP
-    hC hP Rf hA hA' hK hface
+  have hvreq := OrdinaryReceivingProbe.request_visible W Rf hU hf
+  have hrreq := OrdinaryReceivingProbe.request_restrict W Rf hU hf
   have hy' : y ∉ Set.range (e.trans u) := fun ⟨j, hj⟩ => hy ⟨e j, hj⟩
   refine ⟨y, hy', t'.restrictFace (onePointProj e) hvreq, ?_, hrreq, ?_⟩
   · have h := hM.consistent (snoc u y hy) t' (onePointProj e) hev
@@ -158,8 +148,7 @@ theorem fc_of_reference (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1
     exact typeMap_eq_some (onePointProj e) t' hvreq
   · intro d
     have key := hread (SemScheme.castCell hrreq d)
-    rw [← OrdinaryAttachedReceiving.request_toCell p₀.scheme q.scheme p.scheme e hvC hvP hC hP Rf
-      hA hA' hK hface (SemScheme.castCell hrreq d), hRp] at key
+    rw [← OrdinaryReceivingProbe.request_toCell W Rf hU hf (SemScheme.castCell hrreq d), hRp] at key
     exact key
 
 /-- **Every model satisfies finite-cut receiving**: reference acquisition above the requested

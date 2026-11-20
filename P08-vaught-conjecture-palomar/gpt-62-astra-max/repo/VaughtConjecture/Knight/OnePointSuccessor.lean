@@ -220,10 +220,4 @@ theorem exists_successorOneType {α γ : Ordinal} (hγ : γ + 1 < α) :
   obtain ⟨Sig, -⟩ := hcomplete
   exact ⟨r, Sig, rfl⟩
 
-/-- At a limit stage, every `γ < α` has a one-point type with a cell labelled `γ + 1`. -/
-theorem exists_successorOneType_of_lt {α γ : Ordinal} (hα : Order.IsSuccLimit α)
-    (hγ : γ < α) :
-    ∃ (r : S α 1) (Sig : Cell r.scheme.scheme), r.label Sig = ofOrd (γ + 1) :=
-  exists_successorOneType (hα.add_one_lt hγ)
-
 end VaughtConjecture.Knight

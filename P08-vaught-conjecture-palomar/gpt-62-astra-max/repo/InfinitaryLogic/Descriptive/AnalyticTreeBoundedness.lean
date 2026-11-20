@@ -94,14 +94,14 @@ private def SndAgrees (l : List ℕ) (y : ℕ → ℕ) : Prop :=
 /-- Pair a list with the initial segment of `y` of the same length. -/
 private def pairList (s : List ℕ) (y : ℕ → ℕ) : List ℕ := s.mapIdx fun i a ↦ Nat.pair a (y i)
 
-private theorem fstList_pairList (s : List ℕ) (y : ℕ → ℕ) : fstList (pairList s y) = s :=
+private theorem fstList_pairList s y : fstList (pairList s y) = s :=
   List.ext_getElem (by simp [fstList, pairList]) fun i _ _ ↦ by simp [fstList, pairList]
 
-private theorem sndAgrees_pairList (s : List ℕ) (y : ℕ → ℕ) : SndAgrees (pairList s y) y :=
+private theorem sndAgrees_pairList s y : SndAgrees (pairList s y) y :=
   fun i _ ↦ by simp [pairList]
 
 /-- Pairing with a fixed sequence preserves proper prefixes. -/
-private theorem properPrefix_pairList {s t : List ℕ} (y : ℕ → ℕ) (h : ProperPrefix s t) :
+private theorem properPrefix_pairList {s t} y (h : ProperPrefix s t) :
     ProperPrefix (pairList s y) (pairList t y) := by
   obtain ⟨⟨r, rfl⟩, hne⟩ := h
   refine ⟨by simp only [pairList, List.mapIdx_append]; exact List.prefix_append _ _,
@@ -118,7 +118,7 @@ private theorem properPrefix_pairList {s t : List ℕ} (y : ℕ → ℕ) (h : Pr
 private def witnessNodes (f : (ℕ → ℕ) → X) (T : X → tree ℕ) : Set (List ℕ) :=
   {l | ∃ y, SndAgrees l y ∧ fstList l ∈ T (f y)}
 
-private theorem witnessNodes_prefix {f : (ℕ → ℕ) → X} {T : X → tree ℕ} ⦃l : List ℕ⦄ ⦃a : ℕ⦄
+private theorem witnessNodes_prefix {f} {T : X → tree ℕ} ⦃l : List ℕ⦄ ⦃a : ℕ⦄
     (h : l ++ [a] ∈ witnessNodes f T) : l ∈ witnessNodes f T := by
   obtain ⟨y, hy, hmem⟩ := h
   refine ⟨y, fun i hi ↦ ?_, Tree.mem_of_prefix ?_ hmem⟩
@@ -130,12 +130,12 @@ private theorem witnessNodes_prefix {f : (ℕ → ℕ) → X} {T : X → tree �
 private def witnessTree (f : (ℕ → ℕ) → X) (T : X → tree ℕ) : tree ℕ :=
   ⟨witnessNodes f T, fun _ _ h ↦ witnessNodes_prefix h⟩
 
-private theorem mem_witnessTree {f : (ℕ → ℕ) → X} {T : X → tree ℕ} {l : List ℕ} :
+private theorem mem_witnessTree {f} {T : X → tree ℕ} {l} :
     l ∈ witnessTree f T ↔ ∃ y, SndAgrees l y ∧ fstList l ∈ T (f y) := Iff.rfl
 
 /-- **The witness tree is well-founded**: a branch would converge, through closed node sets, to an
 infinite branch of a tree of the family. -/
-private theorem wellFounded_witnessTree [TopologicalSpace X] {f : (ℕ → ℕ) → X}
+private theorem wellFounded_witnessTree [TopologicalSpace X] {f}
     (hf : Continuous f) (T : X → tree ℕ) (hT : ∀ s : List ℕ, IsClosed {x | s ∈ T x})
     (hwf : ∀ x ∈ range f, WellFounded (extBelow (T x))) :
     WellFounded (extBelow (witnessTree f T)) := by
@@ -171,7 +171,7 @@ private theorem wellFounded_witnessTree [TopologicalSpace X] {f : (ℕ → ℕ) 
 
 /-- The tree of the parameter `f y` maps into the witness tree, pairing each node with the
 matching initial segment of `y`. -/
-private def witnessHom (f : (ℕ → ℕ) → X) (T : X → tree ℕ) (y : ℕ → ℕ) :
+private def witnessHom f (T : X → tree ℕ) y :
     extBelow (T (f y)) →r extBelow (witnessTree f T) where
   toFun s := ⟨pairList s y, mem_witnessTree.mpr
     ⟨y, sndAgrees_pairList _ y, by rw [fstList_pairList]; exact s.2⟩⟩
@@ -182,10 +182,10 @@ private def witnessHom (f : (ℕ → ℕ) → X) (T : X → tree ℕ) (y : ℕ �
 /-- **Boundedness for analytic families of well-founded trees.**  If `A` is analytic, every node
 set `{x | s ∈ T x}` is closed, and `T x` is well-founded for `x ∈ A`, then one countable ordinal
 strictly bounds the heights of all the trees `T x` with `x ∈ A`. -/
-theorem analytic_tree_rank_bounded [TopologicalSpace X] {A : Set X} (hA : AnalyticSet A)
+theorem analytic_tree_rank_bounded [TopologicalSpace X] {A} (hA : AnalyticSet A)
     (T : X → tree ℕ) (hT : ∀ s : List ℕ, IsClosed {x | s ∈ T x})
     (hwf : ∀ x ∈ A, WellFounded (extBelow (T x))) :
-    ∃ β : Ordinal.{0}, β < Ordinal.omega 1 ∧
+    ∃ β, β < Ordinal.omega 1 ∧
       ∀ x (hx : x ∈ A), @treeHeight (T x) (hwf x hx) < β := by
   rw [AnalyticSet] at hA
   rcases hA with rfl | ⟨f, hf, rfl⟩

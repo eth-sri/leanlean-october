@@ -168,7 +168,7 @@ theorem pinnedCofaceSupply_of_supply {β : LimitStage}
 theorem exists_uniformity_coface {β : LimitStage} (H : MaximalCoatomAmalgamationSupply β.1)
     {n : ℕ} (p : S β.1 n) (γ : Ordinal.{0}) (_h1 : Value.IsNonSuccessor γ) (h2 : γ < β.1) :
     ∃ q ∈ UniformityFamily (α := β.1) γ, IsCoface p q := by
-  obtain ⟨r, Sig, hr⟩ := exists_successorOneType_of_lt β.2 h2
+  obtain ⟨r, Sig, hr⟩ := exists_successorOneType (Order.IsSuccLimit.add_one_lt β.property h2)
   refine exists_uniformity_candidate H p r Sig ?_ ?_
   · rw [hr, ExtOrd.ofOrd_le_ofOrd]; exact Order.le_succ γ
   · rw [hr, ExtOrd.ofOrd_lt_ofOrd]; exact (add_lt_add_iff_left γ).mpr Ordinal.one_lt_omega0
@@ -178,7 +178,7 @@ theorem exists_uniformity_coface {β : LimitStage} (H : MaximalCoatomAmalgamatio
 theorem exists_highGrade_coface {β : LimitStage} (H : MaximalCoatomAmalgamationSupply β.1)
     {n : ℕ} (p : S β.1 n) (γ : Ordinal.{0}) (h2 : γ < β.1) :
     ∃ q ∈ HighGradeDominanceFamily (α := β.1) γ, IsCoface p q := by
-  obtain ⟨r, Sig, hr⟩ := exists_successorOneType_of_lt β.2 h2
+  obtain ⟨r, Sig, hr⟩ := exists_successorOneType (Order.IsSuccLimit.add_one_lt β.property h2)
   refine exists_highGradeDominance_candidate H p r Sig ?_
   rw [hr, ExtOrd.ofOrd_lt_ofOrd]; exact Order.lt_succ γ
 

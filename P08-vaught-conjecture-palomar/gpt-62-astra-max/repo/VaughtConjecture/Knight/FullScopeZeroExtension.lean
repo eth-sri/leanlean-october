@@ -14,8 +14,6 @@ This is a grade extension, not an extension across a proper scope.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd
@@ -25,24 +23,24 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {K : �
 namespace CellScheme
 
 /-- A lower labelling at full scope, with bottom at every higher-grade cell. -/
-noncomputable def zeroAbove (q : D.below (A, K) → ExtOrd) (d : Cell D) : ExtOrd :=
+noncomputable def zeroAbove (q : D.SectionAt (A, K)) (d : Cell D) : ExtOrd :=
   if hd : D.grade d ≤ K then
     q ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩ else ⊥
 
-theorem zeroAbove_low (q : D.below (A, K) → ExtOrd) (d : D.below (A, K)) :
+theorem zeroAbove_low q (d : D.below (A, K)) :
     zeroAbove q d.1 = q d := by
   have hd : D.grade d.1 ≤ K := d.2.2
   rw [zeroAbove, dite_of_pos hd]
   rfl
 
-theorem zeroAbove_high (q : D.below (A, K) → ExtOrd) {d : Cell D} (hd : ¬ D.grade d ≤ K) :
-    zeroAbove q d = ⊥ := by rw [zeroAbove, dite_of_neg hd]
+theorem zeroAbove_high (q : D.SectionAt (A, K)) {d} (hd : ¬ D.grade d ≤ K) :
+    zeroAbove q d = ⊥ := by rw [zeroAbove, of_eq_true (Eq.trans (congrFun' (congrArg Eq (dite_eq_right_of_eq_false (eq_false hd))) ((fun hd => ⊥) hd)) (eq_self ((fun hd => ⊥) (of_eq_false (eq_false hd)))))]
 
 end CellScheme
 
 /-- Extending a respecting full-scope lower labelling by bottom preserves respect. -/
-theorem RespectsSemanticsBelow.zeroAbove {sem : Semantics D} {q : D.below (A, K) → ExtOrd}
-    (hq : RespectsSemanticsBelow sem (A, K) q) :
+theorem RespectsSemanticsBelow.zeroAbove {sem} {q : D.SectionAt (A, K)}
+    (hq : sem.Lawful q) :
     RespectsSemantics sem (CellScheme.zeroAbove q) := by
   have mem (d : Cell D) (hd : D.grade d ≤ K) : GradedLe (D.cell d) (A, K) :=
     ⟨D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩

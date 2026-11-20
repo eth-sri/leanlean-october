@@ -5,10 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.GrowthPaddedSuccessor
-public import VaughtConjecture.Knight.GrowthFiniteReflection
-public import VaughtConjecture.Knight.AmbientGradeCharts
-public import VaughtConjecture.Knight.SupportLadderBottomReflection
+public import VaughtConjecture.Knight.GrowthFrame
+public import VaughtConjecture.Knight.GrowthHigherSources
+public import VaughtConjecture.Knight.GrowthNormalization
 
 /-! # Complete-field recognition from the maximal leaf chart on the growth successor rows
 
@@ -43,11 +42,9 @@ here. -/
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.GrowthLeafRecognition
 
-open Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedSuccessor
+open Transform Value ExtOrd Growth GrowthHigherSources
 open SupportLadderRows LadderScalarRendering SharpWitnessComposition
 
 noncomputable section
@@ -56,33 +53,16 @@ theorem card_pos {ι : Type*} {A : Finset ι} (h : 2 ≤ A.card) : 0 < A.card :=
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
-  (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
-  (X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows)
-  (T : RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X)
-  (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
+  {I : WholeDonorBoundary.Input A B C R m (n + 1) J}
+  {X : I.GrowthData}
+  (frame : I.GrowthFrame X)
 
 local notation "Fld" => Field I.right.scheme I.left.scheme
-local notation "Ωc" => carrier I X T hA hB hC
-local notation "Occ" => CellScheme.below (carrier I X T hA hB hC) (A, 2)
-local notation "cellΩ" => CellScheme.cell (carrier I X T hA hB hC)
-local notation "gradeΩ" => CellScheme.grade (carrier I X T hA hB hC)
-local notation "Eρ" => Semantics.E (rows I X T hA hB hC)
-local notation "Rows" => rows I X T hA hB hC
-local notation "src" => source I X T hA hB hC
-local notation "Pt" => RelativeLadderLayer.Point (X := Fld) (Q := Catalogue X 1)
 local notation "ranks₁" => RelativeLadderLayer.ranks (fields X 1)
 local notation "rungs" => RelativeLadderLayer.rungs (X := Fld)
-local notation "ceil" => RecursiveRungRendering.ceiling Fld 2
-local notation "lowerΩ" => LadderWeightedSuccessor.Input.lower (input I X T hA hB hC)
 
+variable (I) in
 theorem rungs_pos : 0 < rungs := Nat.succ_pos _
-
-/-! ## Occurrences below `(A, 2)` -/
-
-/-! ## The finite maxima -/
-
-variable (p : CellScheme.below (carrier I X T hA hB hC) (A, 2) → ExtOrd)
 
 /-- Finite maxima commute with capping. -/
 theorem cap_sup {Y : Type*} [Fintype Y] (g : Y → ExtOrd) (h : ExtOrd) :
@@ -92,9 +72,11 @@ theorem cap_sup {Y : Type*} [Fintype Y] (g : Y → ExtOrd) (h : ExtOrd) :
 
 /-! ## The native rows on the padded base -/
 
+variable (I X) in
 theorem rank_le_rungs (a : Catalogue X 1) (f : Fld) : ranks₁ a f ≤ rungs :=
   (RelativeLadderLayer.rank_bound (fields X 1) a f).le
 
+variable (I X) in
 /-- The birth anchor's own shadow of `f` is indexed by the rank of `f`. -/
 theorem index_shadow_self (a : Catalogue X 1) (f : Fld) :
     SupportLadderRows.index (H := rungs) ranks₁ a (shadow a f) = ranks₁ a f := by
@@ -102,25 +84,10 @@ theorem index_shadow_self (a : Catalogue X 1) (f : Fld) :
   rw [FiniteProfileControllers.cut_refl]
   exact min_eq_right (rank_le_rungs I X a f)
 
-/-! ## The ladder restriction of an arbitrary lawful section -/
-
-variable {p}
-
-/-! ## The maximal leaf chart -/
-
+variable (I X) in
 /-- The catalogue is nonempty: the zero state is admitted and canonical. -/
 def zeroMember (j : ℕ) (hj : 1 ≤ j) : Catalogue X j :=
   Growth.zeroMember X j hj
-
-/-! ## Recognition and finite bottom reflection -/
-
-section Chart
-
-variable {a : Catalogue X 2} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop 2) σ)
-
-include hσ
-
-end Chart
 
 end
 end VaughtConjecture.Knight.GrowthLeafRecognition

@@ -241,16 +241,8 @@ instance : Preorder (LabelledExt R) where
     · rw [← typeMap_trans f g z.type y.type hgp]
       exact hfp
 
-/-- `K^p` is weakly increasing along the labelled-cover order. -/
-theorem topGrade_mono {x y : LabelledExt R} (h : x ≤ y) :
-    x.type.topGrade ≤ y.type.topGrade := by
-  obtain ⟨f, -, hpq⟩ := h
-  exact topGrade_le_of_typeMap_eq_some hpq
-
 /-- The principal **tail** above a labelled cover: all labelled covers extending it. -/
 def tail (x : LabelledExt R) : Set (LabelledExt R) := {y | x ≤ y}
-
-@[simp] theorem mem_tail {x y : LabelledExt R} : y ∈ x.tail ↔ x ≤ y := Iff.rfl
 
 end LabelledExt
 

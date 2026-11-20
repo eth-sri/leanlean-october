@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.RelativePrefixEncoding
+public import VaughtConjecture.Knight.PaddedSourceDecoder
 
 /-! # A lawful two-input paste at aligned cuts
 
@@ -128,14 +128,14 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
 /-- Convert bounded read equations into an actual faithful locality using
 only the block-bottom condition at the controller's actual source occurrences. -/
-theorem locality_of_bounded_read {q : D.below BJ → ExtOrd}
+theorem locality_of_bounded_read {q : D.SectionAt BJ}
     (hb : RowBlockBottom sem BJ q) (c : D.below BJ) {f : ExtOrd → ExtOrd}
     (hf : BoundedMap (D.grade c.1) f)
     (hread : ∀ d, f (sem.E c.1 d) = min (q (CellScheme.below.incl c d)) (q c)) :
-    TransformsTo (fun d : D.below (D.cell c.1) => D.grade d.1) (sem.E c.1)
+    TransformsTo (fun d : D.RowDomain c.1 => D.grade d.1) (sem.E c.1)
       (fun d => min (q (CellScheme.below.incl c d)) (q c)) := by
   classical
-  let _ := Fintype.ofFinite (D.below (D.cell c.1))
+  let _ := Fintype.ofFinite (D.RowDomain c.1)
   let sources := Finset.univ.image (sem.E c.1)
   have hbs : BlockBottom sources f := by
     intro x hx y hy hxy hz
@@ -153,15 +153,15 @@ theorem locality_of_bounded_read {q : D.below BJ → ExtOrd}
 
 /-- The pasted labelling is lawful on the original scheme. No shared
 availability selector, injective decoder, or pre-existing completion is assumed. -/
-theorem paste_respects {s p : D.below BJ → ExtOrd} {K : ℕ} {a γ : ExtOrd}
+theorem paste_respects {s p : D.SectionAt BJ} {K : ℕ} {a γ : ExtOrd}
     {v : ExtOrd → ExtOrd}
-    (hs : RespectsSemanticsBelow sem BJ s) (hp : RespectsSemanticsBelow sem BJ p)
+    (hs : sem.Lawful s) (hp : sem.Lawful p)
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
     (ha : SelfVis K a) (hab : a ≠ ⊥) (hv : BoundedMap K v)
     (hlow : ∀ d, p d ≤ γ → v (p d) = ⊥)
     (hhigh : ∀ d, γ < p d → a < v (p d))
     (halign : ∀ d, γ < p d → a ≤ s d) :
-    RespectsSemanticsBelow sem BJ (paste s p a v) := by
+    sem.Lawful (paste s p a v) := by
   have hbottom : RowBlockBottom sem BJ (paste s p a v) :=
     rowBlockBottom_of_same_pattern (rowBlockBottom_of_respects hs)
       (bottom_pattern_of_cap_agreement hab (paste_cap hlow hhigh halign))

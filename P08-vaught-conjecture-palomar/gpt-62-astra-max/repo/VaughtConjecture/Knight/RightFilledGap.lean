@@ -25,8 +25,6 @@ chosen coded ceiling.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.RightFilledGap
 
 open Transform Value ExtOrd
@@ -37,29 +35,19 @@ noncomputable def floor (G : Finset ExtOrd) (B : ExtOrd) : ExtOrd :=
 
 theorem floor_le (G : Finset ExtOrd) (B : ExtOrd) : floor G B ≤ B := by
   apply Finset.sup_le
-  intro z _
-  split_ifs with hz
-  · exact hz
-  · exact bot_le
+  aesop
 
 theorem le_floor {G : Finset ExtOrd} {h B : ExtOrd} (hh : h ∈ G) (hle : h ≤ B) :
     h ≤ floor G B := by
-  unfold floor
   apply Finset.le_sup_of_le hh
-  simp only [ite_eq_left hle, le_refl]
+  simp_all
 
 /-- A finite maximum creates no extra value between the grid points. -/
 theorem floor_eq_bot_or_mem (G : Finset ExtOrd) (B : ExtOrd) :
     floor G B = ⊥ ∨ floor G B ∈ G := by
   apply Finset.sup_induction (p := fun z => z = ⊥ ∨ z ∈ G)
-  · exact Or.inl rfl
-  · intro a ha b hb
-    rcases le_total a b with hab | hba
-    · simpa only [sup_eq_right.mpr hab] using hb
-    · simpa only [sup_eq_left.mpr hba] using ha
-  · intro z hz
-    split_ifs
-    · exact Or.inr hz
-    · exact Or.inl rfl
+  · simp
+  · grind
+  grind
 
 end VaughtConjecture.Knight.RightFilledGap

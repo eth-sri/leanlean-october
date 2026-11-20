@@ -29,6 +29,8 @@ theorem topGrade_le_of_isCoinitial {K : ℕ}
     (hcoin : KnightRealization.IsCoinitial {x : R.LabelledExt | x.type.topGrade = K})
     (x : R.LabelledExt) : x.type.topGrade ≤ K := by
   obtain ⟨y, hxy, hy⟩ := hcoin x
-  exact (LabelledExt.topGrade_mono hxy).trans_eq (hy (le_refl y))
+  exact (show topGrade x.type ≤ topGrade y.type from by
+          obtain ⟨f, -, hpq⟩ := hxy
+          exact topGrade_le_of_typeMap_eq_some hpq).trans_eq (hy (le_refl y))
 
 end VaughtConjecture.Knight

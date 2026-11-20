@@ -7,7 +7,6 @@ module
 
 public import VaughtConjecture.Knight.OrdinaryFinalCatalogue
 public import VaughtConjecture.Knight.FinalGateChart
-public import VaughtConjecture.Knight.CappedDonorCappedReadback
 
 /-! # Capped readback from arbitrary lawful final-layer sections
 
@@ -27,7 +26,6 @@ this file does not build the predecessor or prove final-layer bountifulness.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalReadback
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref OrdinaryFinalCatalogue
 noncomputable section
@@ -38,7 +36,7 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
 
 /-- An inherited occurrence in the final active lower set. -/
-abbrev oldAt (d : Cell D) (hd : D.grade d ≤ N) : F.carrier.below (A, N) :=
+abbrev oldAt d (hd : D.grade d ≤ N) : F.carrier.below (A, N) :=
   ⟨F.old d, by
     rw [F.old_index]
     exact ⟨D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩⟩
@@ -59,11 +57,11 @@ theorem capped_readback
     (hfields : ∀ a f, F.fields a f = a.val f) (hgate : F.gate = .gate)
     (hreq : ∀ a d, F.lower a (req d) = a.val (.req d))
     (hpriv : ∀ a d, F.lower a (priv d) = a.val (.priv d))
-    {v : F.carrier.below (A, N) → ExtOrd}
-    (hv : RespectsSemanticsBelow F.rows (A, N) v)
+    {v}
+    (hv : F.rows.Lawful v)
     (hretain : ∀ d, v (privAt R F priv hprivGrade d) = R.vact d)
-    (b : OrdinaryFinalCatalogue.Member R) (hpositive : v (F.addedAt b true) ≠ ⊥)
-    (d : Cell P.scheme) :
+    b (hpositive : v (F.addedAt b true) ≠ ⊥)
+    d :
     min (v (reqAt R F req hreqGrade d)) (R.cut R.vactL) =
       min (R.p d) (R.cut R.vactL) := by
   let c := privAt R F priv hprivGrade R.cap
@@ -76,29 +74,22 @@ theorem capped_readback
   obtain ⟨a, hca, hga, τ, hτ, -, hr⟩ := F.exists_active_chart hv c hc hpos b hpositive
   have hm : R.vact R.cap ≤ v (F.addedAt a false) := by
     simpa only [c, hretain] using hca
-  obtain ⟨st, hst, -, -, hp⟩ := a.property.2
-  have hsu (e : P.scheme.below (effP nP N)) : a.val (.req e.1) = st.u e :=
-    (congrFun hp (.req e.1)).symm.trans (profile_present R st (.req e.1))
-  have hsv (e : C.scheme.below (effC N N)) : a.val (.priv e.1) = st.v e :=
-    (congrFun hp (.priv e.1)).symm.trans (profile_present R st (.priv e.1))
-  have hg : st.gate ≠ ⊥ := by
-    rw [hgate, hfields] at hga
-    have he : a.val .gate = st.gate :=
-      (congrFun hp .gate).symm.trans (profile_present R st .gate)
-    exact he ▸ hga
-  have hu (e : P.scheme.below (effP nP N)) :
-      τ (st.u e) = min (v (reqAt R F req hreqGrade e.1)) (v (F.addedAt a false)) := by
-    have he := hr (reqAt R F req hreqGrade e.1)
-    simpa only [reqAt, oldAt, F.source_old, hreq, hsu] using he
-  have hread (e : C.scheme.below (effC N N)) (he : R.vact e.1 ≤ R.vact R.cap) :
-      τ (st.v e) = R.vact e.1 := by
-    have hr' := hr (privAt R F priv hprivGrade e.1)
-    simpa only [privAt, oldAt, F.source_old, hpriv, hsv, hretain,
-      min_eq_left (he.trans hm)] using hr'
-  exact Ref.capped_readback le_rfl hst le_rfl hτ hm hu
-    (hread (R.capC le_rfl) le_rfl)
-    (fun i => hread (CellScheme.below.mono (R.capLe le_rfl) (R.lowRef i))
-      (R.ref_lt_cap i).le) hg (CappedDonor.Ref.reqCell d (req_grade_le R d))
+  let v₀ := R.low (a.val ∘ Field.priv)
+  have hread e (he : R.vact e ≤ R.vact R.cap) : τ (a.val (.priv e)) = R.vact e := by
+    simpa only [privAt,oldAt,F.source_old,hpriv,hretain,min_eq_left (he.trans hm)] using hr (privAt R F priv hprivGrade e)
+  have hcap := hread R.cap le_rfl
+  have href i := hread (R.ref i) (R.ref_lt_cap i).le
+  have hcut : τ (R.cut v₀) = R.cut R.vactL := by
+    rw [← cut_map hτ le_rfl]; exact cut_congr hcap href
+  have hsel : τ (R.sel v₀ d) = min (R.p d) (R.cut R.vactL) := by
+    rw [← sel_map hτ le_rfl, sel_congr (v₁ := fun e => τ (v₀ e)) (v₂ := R.vactL) hcap href, sel_actual]
+  rw [hgate,hfields] at hga
+  have hcpos : a.val (.priv R.cap) ≠ ⊥ := fun he => R.cap_pos.ne' (hcap.symm.trans ((congrArg τ he).trans hτ.bot))
+  have he := congrArg τ (a.property.2.relation hga hcpos d)
+  have hu' := hr (reqAt R F req hreqGrade d)
+  simp only [reqAt,oldAt,F.source_old,hreq] at hu'
+  change τ (min _ (R.cut v₀)) = τ (R.sel v₀ d) at he
+  rwa [hτ.mono.map_min,hu',hcut,hsel,min_assoc,min_eq_right ((R.cut_le_cap _).trans hm)] at he
 
 end
 end VaughtConjecture.Knight.OrdinaryFinalReadback

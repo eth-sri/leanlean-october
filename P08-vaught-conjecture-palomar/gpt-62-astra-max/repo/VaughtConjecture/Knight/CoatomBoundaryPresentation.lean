@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.SemSchemeBoundaryInput
+public import VaughtConjecture.Knight.TwoFaceLifting
 public import VaughtConjecture.Knight.CoatomAmalgamation
 public import VaughtConjecture.Knight.RequestAttachment
 
@@ -19,7 +19,12 @@ This constructs the proper boundary, not full-scope rows or an amalgam type.
 
 @[expose] public section
 
-set_option autoImplicit false
+namespace VaughtConjecture.Knight.SemSchemeBoundaryInput
+open AmalgamatedBoundaryPlan
+/-- The coatom presentation specializes ordered face gluing to a binary plan. -/
+structure Input {ι : Type*} [DecidableEq ι] {A : Finset ι} (s : Step A) (m l r : ℕ)
+    extends toFaces : WholeDonorBoundary.Input A (A.erase s.a) (A.erase s.b) s.plan m l r
+end VaughtConjecture.Knight.SemSchemeBoundaryInput
 
 namespace VaughtConjecture.Knight.CoatomBoundaryPresentation
 
@@ -138,6 +143,7 @@ def step : Step (Finset.univ : Finset (Fin (n + 2))) where
 
 /-- Canonical adapter to the proper-boundary constructor; all geometry is proved. -/
 def input : Input D.step n (n + 1) (n + 1) where
+  isPlan := AmalgamatedBoundaryPlan.isPlan D.step
   left := D.left
   right := D.right
   common := D.common
@@ -155,8 +161,8 @@ def input : Input D.step n (n + 1) (n + 1) where
   intersection := by
     rw [AmalgamatedBoundaryPlan.erased_inter]
     exact common_image C
-  planLeft := rfl
-  planRight := rfl
+  planLeft := restrict_left D.step
+  planRight := restrict_right D.step
 
 end Data
 

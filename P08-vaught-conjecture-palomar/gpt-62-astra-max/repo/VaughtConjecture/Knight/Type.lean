@@ -78,7 +78,7 @@ structure StageType (α : Ordinal.{0}) (n : ℕ) where
   "domain" of the type) owning its rows. -/
   scheme : SemScheme n
   /-- The label of each cell. -/
-  label : Cell scheme.scheme → ExtOrd
+  label : scheme.scheme.Labelling
   /-- Labels are strictly bounded at stage `α`: in `{-∞} ∪ α ∪ {∞}` (Def. 3.1.1). -/
   label_bound : ∀ d : Cell scheme.scheme, label d < ExtOrd.ofOrd α ∨ label d = ⊤
   /-- The labelling respects the associated semantics (Def. 2.5.4, faithful: orderliness,
@@ -112,7 +112,7 @@ theorem ext_of_components {t₁ t₂ : S α n}
     (h_cell : ∀ i, t₁.scheme.scheme.cell (Fin.cast h_card.symm i) = t₂.scheme.scheme.cell i)
     (h_label : ∀ i, t₁.label (Fin.cast h_card.symm i) = t₂.label i)
     (h_row : ∀ (Sig : Cell t₂.scheme.scheme)
-      (d : t₂.scheme.scheme.below (t₂.scheme.scheme.cell Sig)),
+      (d : t₂.scheme.scheme.RowDomain Sig),
       t₁.scheme.rows.E (Fin.cast h_card.symm Sig)
         ⟨Fin.cast h_card.symm d.1, by rw [h_cell d.1, h_cell Sig]; exact d.2⟩ =
       t₂.scheme.rows.E Sig d) :
@@ -233,24 +233,6 @@ noncomputable def restrictFace (t : S α n) (f : Fin m ↪ Fin n)
   label_bound i := t.label_bound (toCell t.scheme.scheme f hr i)
   respects := t.respects.restrictFace f hr
 
-@[simp] theorem restrictFace_scheme (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) :
-    (t.restrictFace f hr).scheme = t.scheme.restrictFace f hr := rfl
-
-@[simp] theorem restrictFace_label (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (i : Cell (t.scheme.scheme.restrictFace f hr)) :
-    (t.restrictFace f hr).label i = t.label (toCell t.scheme.scheme f hr i) := rfl
-
-@[simp] theorem restrictFace_rows_E (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (Sig : Cell (t.scheme.scheme.restrictFace f hr))
-    (d : (t.scheme.scheme.restrictFace f hr).below
-      ((t.scheme.scheme.restrictFace f hr).cell Sig)) :
-    (t.restrictFace f hr).scheme.rows.E Sig d =
-      t.scheme.rows.E (toCell t.scheme.scheme f hr Sig) (belowMap t.scheme.scheme f hr Sig d) :=
-  rfl
-
 end StageType
 
 open StageType
@@ -295,8 +277,8 @@ theorem typeMap_eq_some_of_emb (f : Fin m ↪ Fin n) (t : S α n) (q : S α m)
     (hplan : (t.scheme.scheme.restrictFace f hr).plan = q.scheme.scheme.plan)
     (hcell : ∀ c, t.scheme.scheme.pullCell f (emb c) = q.scheme.scheme.cell c)
     (hlabel : ∀ c, t.label (emb c) = q.label c)
-    (hrow : ∀ (Sig : Cell q.scheme.scheme) (d : q.scheme.scheme.below (q.scheme.scheme.cell Sig))
-      (d' : t.scheme.scheme.below (t.scheme.scheme.cell (emb Sig))),
+    (hrow : ∀ (Sig : Cell q.scheme.scheme) (d : q.scheme.scheme.RowDomain Sig)
+      (d' : t.scheme.scheme.RowDomain (emb Sig)),
       d'.1 = emb d.1 → t.scheme.rows.E (emb Sig) d' = q.scheme.rows.E Sig d) :
     typeMap f t = some q := by
   rw [typeMap_eq_some f t hr]
@@ -327,7 +309,7 @@ theorem typeMap_refl (t : S α n) : typeMap (Function.Embedding.refl (Fin n)) t 
     (fun c => by rw [hrng]; exact Finset.subset_univ _) (fun d _ => ⟨d, rfl⟩) ?_ ?_ (fun _ => rfl)
     (fun Sig d d' hd => congrArg _ (Subtype.ext hd))
   · exact Option.some_injective _
-      ((CellScheme.pullbackPlan_eq_restrictFace_plan _ _ hr).symm.trans
+      ((Plan.pullbackPlan_eq_some (Function.Embedding.refl (Fin n)) hr).symm.trans
         (Plan.pullbackPlan_refl t.scheme.scheme.isPlan))
   · intro c
     refine Prod.ext ?_ rfl
@@ -384,11 +366,10 @@ theorem typeMap_trans (f : Fin k ↪ Fin m) (g : Fin m ↪ Fin n) (t : S α n) (
       exact ⟨c, rfl⟩
     · -- plans: conditional composition of pullback plans
       exact Option.some_injective _
-        ((CellScheme.pullbackPlan_eq_restrictFace_plan _ _ hfg).symm.trans
+        ((Plan.pullbackPlan_eq_some (f.trans g) hfg).symm.trans
           ((Plan.pullbackPlan_trans f g
-            (CellScheme.pullbackPlan_eq_restrictFace_plan t.scheme.scheme g hg)).symm.trans
-            (CellScheme.pullbackPlan_eq_restrictFace_plan (t.scheme.scheme.restrictFace g hg) f
-              hf)))
+            (Plan.pullbackPlan_eq_some g hg)).symm.trans
+            (Plan.pullbackPlan_eq_some f hf)))
     · -- cells: pulling back twice is pulling back along the composite
       intro c
       change _ = (t.scheme.scheme.restrictFace g hg).pullCell f

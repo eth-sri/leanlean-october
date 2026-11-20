@@ -17,7 +17,6 @@ not a claim that every scope has already been completed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrderedScopeRelocation
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
 noncomputable section
@@ -41,8 +40,8 @@ def oldLower (J : Finset ι × ℕ) (hJ : ¬ B ⊆ J.1) : D.below J ≃ (K).belo
     · exact False.elim (hJ (hd ▸ z.2.1))⟩
 
 theorem oldLower_respects (J : Finset ι × ℕ) (hJ : ¬ B ⊆ J.1)
-    (p : D.below J → ExtOrd) :
-    RespectsSemanticsBelow sem J p ↔
+    (p : D.SectionAt J) :
+    sem.Lawful p ↔
       RespectsSemanticsBelow (rows sem hB S hsep) J (p ∘ (oldLower sem hB S J hJ).symm) :=
   respects_iff_of_equiv (oldLower sem hB S J hJ)
     (fun d => (congrArg Prod.snd (old_index sem hB S d.1)).symm)
@@ -52,7 +51,7 @@ theorem oldLower_respects (J : Finset ι × ℕ) (hJ : ¬ B ⊆ J.1)
     (fun c d _ => (row_old sem hB S hsep c.1 d).symm) p
 
 theorem oldLower_pullback (J : Finset ι × ℕ) (hJ : ¬ B ⊆ J.1)
-    (q : (K).below J → ExtOrd) :
+    (q : (K).SectionAt J) :
     RespectsSemanticsBelow (rows sem hB S hsep) J q ↔
       RespectsSemanticsBelow sem J (q ∘ oldLower sem hB S J hJ) := by
   have h := oldLower_respects sem hB S hsep J hJ (q ∘ oldLower sem hB S J hJ)
@@ -92,7 +91,7 @@ theorem local_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
 /-- The selected-display decoder needs this alternative, not global shortness. -/
 def OwnerClassification {X : Type*} (original : X → Cell D) : Prop :=
   ∀ c : Cell D, (∀ d, SharpWitnessComposition.Short (D.grade c) (sem.E c d)) ∨
-    ∀ d : D.below (D.cell c), ∃ x, original x = d.1
+    ∀ d : D.RowDomain c, ∃ x, original x = d.1
 
 theorem ownerClassification {X : Type*} (original : X → Cell D)
     (hc : OwnerClassification sem original) :
@@ -130,9 +129,4 @@ theorem ownerClassification_initial : OwnerClassification sem (id : Cell D → C
 
 end
 
-section InitialBoundary
-variable {ι : Type*} [DecidableEq ι] {A L R B : Finset ι}
-variable {P : Finset (Finset ι)} {m nL nR : ℕ}
-
-end InitialBoundary
 end VaughtConjecture.Knight.OrderedScopeRelocation

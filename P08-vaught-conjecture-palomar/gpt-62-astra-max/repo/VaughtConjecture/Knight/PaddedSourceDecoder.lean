@@ -8,14 +8,10 @@ module
 public import VaughtConjecture.Knight.CapFirstScalar
 public import VaughtConjecture.Knight.SourceBlockPadding
 
-/-! # A finite decoder tail above a preserved capped prefix
+/-! # Reserving a prefix of ordinal blocks
 
-Reserve finitely many source blocks, decode a new finite inventory beyond them,
-and take the maximum with the old shifter clipped at the output cap. The result
-is an actual faithful witness, literal on the clipped prefix and exact on all
-tracked new targets above the output cap, including literal top. The source
-alphabet bound is explicit. This constructs a scalar map and codes, not a lawful
-replacement member, available controller, or uniform source enlargement.
+Shift the new tail as a whole; no compression or enumeration of its labels is necessary.
+Releasing the reserved blocks reads every shifted value, including literal top.
 -/
 
 @[expose] public section
@@ -34,37 +30,20 @@ noncomputable def release : ℕ → ExtOrd → ExtOrd
   | 0, x => x
   | b + 1, x => release b (unpad x)
 
-@[simp] theorem reserve_bot (b : ℕ) : reserve b ⊥ = ⊥ := by
-  induction b with
-  | zero => rfl
-  | succ b ih => simp only [reserve, ih, pad_bot]
-
-@[simp] theorem release_bot (b : ℕ) : release b ⊥ = ⊥ := by
-  induction b with
-  | zero => rfl
-  | succ b ih => simpa only [release, unpad_bot] using ih
-
 /-- The inverse is literal at every padded source, including bottom and top. -/
-theorem release_reserve (b : ℕ) (x : ExtOrd) : release b (reserve b x) = x := by
+theorem release_reserve b x : release b (reserve b x) = x := by
   induction b with
   | zero => rfl
   | succ b ih => simpa only [reserve, release, unpad_pad] using ih
 
-/-- Repeated source padding preserves the finite part exactly. -/
-theorem reserve_code (b u j : ℕ) : reserve b (ofOrd (Ordinal.omega0 * u + j)) =
-    ofOrd (Ordinal.omega0 * (u + b : ℕ) + j) := by
-  induction b with
-  | zero => simp only [reserve, Nat.add_zero]
-  | succ b ih => rw [reserve, ih, pad_code, Nat.add_assoc]
-
 /-- Precomposition is justified by exact replacement commutation, not transitivity. -/
-theorem witness_release {g : ℕ → ExtOrd} {τ : ExtOrd → ExtOrd}
-    (hτ : Witness g τ) (b : ℕ) : Witness g (fun x => τ (release b x)) := by
+theorem witness_release {g} {τ}
+    (hτ : Witness g τ) b : Witness g (fun x => τ (release b x)) := by
   induction b with
   | zero => exact hτ
   | succ b ih => exact witness_precompose_unpad ih
 
-private theorem unpad_lt_floor {b : ℕ} {x : ExtOrd}
+private theorem unpad_lt_floor {b} {x}
     (hx : x < ofOrd (Ordinal.omega0 * (b + 1 : ℕ))) :
     unpad x < ofOrd (Ordinal.omega0 * b) := by
   classical
@@ -85,7 +64,7 @@ private theorem unpad_lt_floor {b : ℕ} {x : ExtOrd}
       exact bot_lt_ofOrd _
 
 /-- The decoder sees bottom on the entire reserved prefix, not just listed sources. -/
-theorem release_eq_bot_of_lt {b : ℕ} {x : ExtOrd}
+theorem release_eq_bot_of_lt {b : ℕ} {x}
     (hx : x < ofOrd (Ordinal.omega0 * b)) : release b x = ⊥ := by
   induction b generalizing x with
   | zero =>
@@ -97,78 +76,32 @@ theorem release_eq_bot_of_lt {b : ℕ} {x : ExtOrd}
       simp only [Nat.cast_zero, mul_zero, not_lt_zero] at hα
   | succ b ih => exact ih (unpad_lt_floor hx)
 
-/-- An alphabet of block bound `t` moves to block bound `t + b`. -/
-theorem reserve_mem_codedAlphabet {t K : ℕ} {x : ExtOrd}
-    (hx : x ∈ ExtOrd.codedAlphabet t K) (b : ℕ) :
-    reserve b x ∈ ExtOrd.codedAlphabet (t + b) K := by
-  rcases mem_codedAlphabet_iff.mp hx with rfl | ⟨u, j, hu, hj, rfl⟩
-  · exact mem_codedAlphabet_iff.mpr (Or.inl (reserve_bot b))
-  · exact mem_codedAlphabet_iff.mpr
-      (Or.inr ⟨u + b, j, Nat.add_le_add_right hu b, hj, reserve_code b u j⟩)
-
-/-- The actual finite tail code. Original literal top is represented by a proper code. -/
-noncomputable def encode (S : Finset Ordinal.{0}) (K b : ℕ) (y : ExtOrd) : ExtOrd :=
-  reserve b (canonicalNormalizer S K y)
-
-/-- Exact alphabet accounting: no availability of this much room in a tower is assumed. -/
-theorem encode_mem (S : Finset Ordinal.{0}) (K b : ℕ) (y : ExtOrd) :
-    encode S K b y ∈ ExtOrd.codedAlphabet (S.card + b) K :=
-  reserve_mem_codedAlphabet (canonicalNormalizer_mem_codedAlphabet le_rfl y) b
-
-/-- Exact readback before taking any maximum with the old witness. -/
-theorem decode_encode (S : Finset Ordinal.{0}) {K b : ℕ} {y : ExtOrd}
-    (hy : y = ⊥ ∨ y = ⊤ ∨ ∃ α ∈ S, y = ofOrd α) :
-    canonicalDecoder S K (release b (encode S K b y)) = y := by
-  rw [encode, release_reserve, canonicalDecoder_canonicalNormalizer hy]
-
-/-- Every nonbottom tracked target really is placed beyond the reserved blocks. -/
-theorem encode_ge_floor (S : Finset Ordinal.{0}) {K b : ℕ} {y : ExtOrd}
-    (hy : y = ⊥ ∨ y = ⊤ ∨ ∃ α ∈ S, y = ofOrd α) (hyb : y ≠ ⊥) :
-    ofOrd (Ordinal.omega0 * b) ≤ encode S K b y := by
+/-- Every nonbottom target is shifted beyond the reserved prefix. -/
+theorem floor_le_reserve {b : ℕ} {y : ExtOrd} (hy : y ≠ ⊥) :
+    ofOrd (Ordinal.omega0 * b) ≤ reserve b y := by
   by_contra hn
-  have he := decode_encode (K := K) (b := b) S hy
-  rw [release_eq_bot_of_lt (not_le.mp hn), canonicalDecoder_bot] at he
-  exact hyb he.symm
+  exact hy ((release_reserve b y).symm.trans (release_eq_bot_of_lt (not_le.mp hn)))
 
-/-- Join a clipped old witness to the new decoder. The join uses existing normalized
-witness closure; its decoder is precomposed only with the exact source inverse. -/
-noncomputable def extend (S : Finset Ordinal.{0}) (K b : ℕ)
-    (σ : ExtOrd → ExtOrd) (γ : ExtOrd) (x : ExtOrd) : ExtOrd :=
-  max (min (σ x) γ) (canonicalDecoder S K (release b x))
+noncomputable def extend (b : ℕ) (σ : ExtOrd → ExtOrd) (γ x : ExtOrd) :=
+  max (min (σ x) γ) (release b x)
 
-/-- The extension is globally faithful, including the higher-threshold bottom clauses. -/
-theorem extend_witness (S : Finset Ordinal.{0}) {K b : ℕ}
-    {σ : ExtOrd → ExtOrd} {γ : ExtOrd}
-    (hσ : Witness (gTop K) σ) (hγ : SelfVis K γ) :
-    Witness (gTop K) (extend S K b σ γ) :=
-  (FreeDiagonal.clip_witness hσ hγ).max
-    (witness_release (isStepShifter_canonicalDecoder (S := S) (K := K)).normalizedWitness b)
+theorem extend_witness {K b : ℕ} {σ : ExtOrd → ExtOrd} {γ : ExtOrd}
+    (hσ : Witness (gTop K) σ) (hγ : SelfVis K γ) : Witness (gTop K) (extend b σ γ) :=
+  (FreeDiagonal.clip_witness hσ hγ).max (witness_release (witness_id K) b)
 
-/-- Every value before the tail remains exactly the old value capped at `γ`. -/
-theorem extend_before (S : Finset Ordinal.{0}) {K b : ℕ}
-    {σ : ExtOrd → ExtOrd} {γ x : ExtOrd} (hx : x < ofOrd (Ordinal.omega0 * b)) :
-    extend S K b σ γ x = min (σ x) γ := by
-  rw [extend, release_eq_bot_of_lt hx, canonicalDecoder_bot, max_bot_right]
+theorem extend_before {b : ℕ} {σ : ExtOrd → ExtOrd} {γ x : ExtOrd}
+    (hx : x < ofOrd (Ordinal.omega0 * b)) : extend b σ γ x = min (σ x) γ := by
+  rw [extend, release_eq_bot_of_lt hx, max_bot_right]
 
-/-- New high targets are read literally, with no restriction on their finite part.
-Bottom is allowed when the cap is bottom; top is handled by its proper code. -/
-theorem extend_encode (S : Finset Ordinal.{0}) {K b : ℕ}
-    {σ : ExtOrd → ExtOrd} {γ y : ExtOrd}
-    (hy : y = ⊥ ∨ y = ⊤ ∨ ∃ α ∈ S, y = ofOrd α) (hγy : γ ≤ y) :
-    extend S K b σ γ (encode S K b y) = y := by
-  rw [extend, encode, release_reserve, canonicalDecoder_canonicalNormalizer hy]
-  exact max_eq_right ((min_le_right _ _).trans hγy)
+theorem extend_reserve {b : ℕ} {σ : ExtOrd → ExtOrd} {γ y : ExtOrd} (h : γ ≤ y) :
+    extend b σ γ (reserve b y) = y := by
+  rw [extend, release_reserve, max_eq_right ((min_le_right _ _).trans h)]
 
-/-- The proposed new source map preserves output caps on every pair of sources
-agreeing below an interior source cut. Nothing requires the old map to attain `γ`. -/
-theorem extend_cap_agreement (S : Finset Ordinal.{0}) {K b : ℕ}
-    {σ : ExtOrd → ExtOrd} {γ a x y : ExtOrd}
+theorem extend_cap_agreement {K b : ℕ} {σ} {γ a x y}
     (hσ : Witness (gTop K) σ) (hγ : SelfVis K γ)
     (ha : a < ofOrd (Ordinal.omega0 * b)) (hactive : γ ≤ σ a)
-    (hxy : min x a = min y a) :
-    min (extend S K b σ γ x) γ = min (σ y) γ :=
-  CapFirstScalar.map_cap_agreement_of_clipped_prefix hσ.mono
-    (extend_witness S hσ hγ).mono
-    (fun _ hz => extend_before S (hz.trans_lt ha)) hxy hactive
+    (hxy : min x a = min y a) : min (extend b σ γ x) γ = min (σ y) γ :=
+  CapFirstScalar.map_cap_agreement_of_clipped_prefix hσ.mono (extend_witness hσ hγ).mono
+    (fun _ hz => extend_before (hz.trans_lt ha)) hxy hactive
 
 end VaughtConjecture.Knight.PaddedSourceDecoder

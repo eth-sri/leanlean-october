@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CappedDonorRepairPackage
+public import VaughtConjecture.Knight.ProfileCatalogue
 public import VaughtConjecture.Knight.OrdinaryFinalCatalogue
 
 /-! # Ordinary catalogue repair on every installed final-layer coordinate
@@ -23,7 +23,6 @@ lifting. The explicit predecessor support/section contract is unchanged.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalRepair
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows
 open OrdinaryFinalCatalogue CanonicalPairedInverse
@@ -44,39 +43,35 @@ theorem exists_source_repair
     (priv : Cell C.scheme ↪ Cell D)
     (hpriv : ∀ a d, F.lower a (priv d) = a.val (.priv d))
     (a : OrdinaryFinalCatalogue.Member R)
-    {v : C.scheme.below (effC N N) → ExtOrd}
-    (hv : RespectsSemanticsBelow C.rows (effC N N) v) (hproper : ∀ d, v d ≠ ⊤)
+    {v : C.ClippedCells N → ExtOrd}
+    (hv : C.rows.Lawful v)
     {B : ℕ} (hB : grid N B ∈ F.grid)
-    (hag : ∀ d, min (v d) (grid N B) = min (a.val (.priv d.1)) (grid N B)) :
+    (hag : CappedEq v (a.val ∘ .priv ∘ Subtype.val) (grid N B)) :
     ∃ (b : OrdinaryFinalCatalogue.Member R) (κ : ExtOrd → ExtOrd),
       Witness (gTop N) κ ∧
       RespectsSemanticsBelow F.rows (A, N) (fun d => κ (F.source b d.1)) ∧
       (∀ d : F.carrier.below (A, N),
         min (κ (F.source b d.1)) (grid N B) = min (F.source a d.1) (grid N B)) ∧
-      (∀ d : C.scheme.below (effC N N), κ (F.source b (F.old (priv d.1))) = v d) := by
-  obtain ⟨b₀, -, -, hprivate, hprefix, hcat, hnorm, κ, hκ, hread, hfix, hreach, -⟩ :=
-    positive_cap_repair a.property hv hproper hag
-  let b : OrdinaryFinalCatalogue.Member R := ⟨PairedSlotEncoding.normalize N b₀, hcat⟩
+      (∀ d : C.ClippedCells N, κ (F.source b (F.old (priv d.1))) = v d) := by
+  obtain ⟨b₀,hb,hprivate,hpre⟩ := a.property.2.private_repair hv (grid_visible N B) hag
+  obtain ⟨r⟩ := ProfileCatalogue.exists_repair R.profiles R.one_le_N a.property.1 hb (fun f => (hpre f).symm)
+  let b : OrdinaryFinalCatalogue.Member R := ⟨r.encoded,r.canonical,r.admitted⟩
+  let κ := r.decoder
+  have hκ := r.witness
   have hfixFields : ∀ f, F.fields a f < grid N B → κ (F.fields a f) = F.fields a f := by
-    intro f hf
-    rw [hfields] at hf ⊢
-    calc
-      κ (a.val f) = κ (PairedSlotEncoding.normalize N b₀ f) :=
-        congrArg κ (PairedSlotEncoding.eq_of_cap_eq_lt (hnorm f).symm hf)
-      _ = b₀ f := hread f
-      _ = a.val f := (PairedSlotEncoding.eq_of_cap_eq_lt (hprefix f).symm hf).symm
+    simpa only [hfields] using r.boundary_fixed
   have hfixGrid : ∀ z ∈ F.grid, z < grid N B → κ z = z := by
     rw [hgrid]
-    exact fix_sourceGrid hκ.bot hfix _
+    exact fun _ => r.fixedBelow
   have hag' : Agree (F.fields b) (F.fields a) (grid N B) := by
     intro f
-    simpa only [hfields] using hnorm f
+    simp only [hfields]; exact r.prefix_eq f
   obtain ⟨hlaw, hcaps⟩ := F.decode_source_prefix hsupport a b hB (ofOrd_ne_bot _)
-    hag' hκ hreach hfixGrid hfixFields
+    hag' hκ r.reaches hfixGrid hfixFields
   refine ⟨b, κ, hκ, hlaw, hcaps, ?_⟩
   intro d
   rw [F.source_old, hpriv]
-  exact (hread (.priv d.1)).trans (hprivate d)
+  exact (r.readback (.priv d.1)).trans (hprivate d)
 
 end
 end VaughtConjecture.Knight.OrdinaryFinalRepair

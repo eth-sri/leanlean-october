@@ -9,7 +9,6 @@ public import VaughtConjecture.Knight.FiniteCutReceiving
 public import VaughtConjecture.Knight.StageCappedRepair
 public import VaughtConjecture.Knight.GradeSplice
 public import VaughtConjecture.Knight.VisibleFaceOneStep
-public import VaughtConjecture.Knight.CapObservation
 
 /-! # Finite-cover receiving at one stage
 
@@ -38,20 +37,19 @@ universe w
 
 variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
 
-
 /-- **Finite-cover receiving at an auxiliary cap.**  For a donor `Q` on `m` points whose face `f`
 is the realized root `t ↦ p`, and a cap `γ` self-visible at `m`, proper and below the stage,
 `r = m - n` applications of finite-cut receiving along a saturated visible chain of `Q`'s plan,
 each preceded by a repair of the donor to the actual current root, produce an actual tuple `u`
 over `t` on `Q`'s exact scheme agreeing with `Q` below `γ`. -/
 theorem receive_cover_at_cap_of_receiving (hcons : R.IsExactParentConsistent)
-    (hFC : FiniteCutReceiving R) {γ : ExtOrd} (hγbot : ⊥ < γ)
-    (hγα : γ < ofOrd α.1) (r : ℕ) :
-    ∀ {n m : ℕ} (Q : S α.1 m), SelfVis m γ → ∀ (f : Fin n ↪ Fin m), n + r = m →
-      ∀ (t : Fin n ↪ M) (p : S α.1 n), typeMap f Q = some p → R.eval t = some p →
+    (hFC : FiniteCutReceiving R) {γ} (hγbot : ⊥ < γ)
+    (hγα : γ < ofOrd α.1) r :
+    ∀ {n m} Q, SelfVis m γ → ∀ f, n + r = m →
+      ∀ t (p : S α.1 n), typeMap f Q = some p → R.eval t = some p →
         ∃ (u : Fin m ↪ M) (Q' : S α.1 m), f.trans u = t ∧ R.eval u = some Q' ∧
           ∃ h : Q'.scheme = Q.scheme,
-            ∀ d, min (Q'.label d) γ = min (Q.label (SemScheme.castCell h d)) γ := by
+            CappedEq Q'.label (Q.label ∘ SemScheme.castCell h) γ := by
   induction r with
   | zero =>
     intro n m Q _ f hcard t p hp ht
@@ -127,13 +125,13 @@ theorem receive_cover_at_cap_of_receiving (hcons : R.IsExactParentConsistent)
 `Q` whose face `f` is `p` is received below any proper cutoff `δ` below the stage: an actual
 tuple `u` over `t` on `Q`'s exact scheme agrees with `Q` below `δ`.  No stage block is spent. -/
 theorem finiteCoverReceiving_of_receiving (hcons : R.IsExactParentConsistent)
-    (hFC : FiniteCutReceiving R) {n m : ℕ} (Q : S α.1 m) (f : Fin n ↪ Fin m)
-    (t : Fin n ↪ M) (p : S α.1 n) (hp : typeMap f Q = some p) (ht : R.eval t = some p)
-    (δ : ExtOrd) (hδbot : ⊥ < δ) (hδα : δ < ofOrd α.1) :
+    (hFC : FiniteCutReceiving R) {n m} Q f
+    t (p : S α.1 n) (hp : typeMap f Q = some p) (ht : R.eval t = some p)
+    δ (hδbot : ⊥ < δ) (hδα : δ < ofOrd α.1) :
     ∃ (u : Fin m ↪ M) (Q' : S α.1 m), f.trans u = t ∧ R.eval u = some Q' ∧
       ∃ h : Q'.scheme = Q.scheme,
-        ∀ d, min (Q'.label d) δ = min (Q.label (SemScheme.castCell h d)) δ := by
-  obtain ⟨ν, rfl, hν⟩ : ∃ ν : Ordinal.{0}, δ = ofOrd ν ∧ ν < α.1 := by
+        CappedEq Q'.label (Q.label ∘ SemScheme.castCell h) δ := by
+  obtain ⟨ν, rfl, hν⟩ : ∃ ν, δ = ofOrd ν ∧ ν < α.1 := by
     rcases ExtOrd.cases δ with rfl | rfl | ⟨ν, rfl⟩
     · exact absurd hδbot (lt_irrefl _)
     · exact absurd hδα (not_lt.mpr le_top)

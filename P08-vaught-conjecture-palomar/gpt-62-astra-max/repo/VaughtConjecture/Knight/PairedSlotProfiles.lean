@@ -21,7 +21,6 @@ the family's finite coded alphabet contains only bottom and proper ordinals.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PairedSlotProfiles
 open Transform Value ExtOrd PairedSlotEncoding SharpWitnessComposition
 noncomputable section
@@ -63,10 +62,5 @@ theorem normalize_le_ceiling {j : ℕ} {p : X → ExtOrd}
 
 end Profile
 
-section Scheme
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  (sem : Semantics D) (BJ : Finset ι × ℕ) [Fintype (D.below BJ)] (j : ℕ)
-
-end Scheme
 end
 end VaughtConjecture.Knight.PairedSlotProfiles

@@ -5,9 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.RootedPotentialIso
 public import VaughtConjecture.Knight.SelectedCommonCharts
-public import VaughtConjecture.Knight.CommonChartChain
+public import VaughtConjecture.Knight.PairedTrace
 
 /-! # Root-preserving classification: chain adapters and compatibility signatures
 
@@ -48,20 +47,7 @@ theorem exists_iso_of_commonChartStepSupply
     (supply : CommonChartStepSupply (A₁ := A₁) (A₂ := A₂)) :
     ∃ e : A₁.Iso A₂, ∀ i, e.1 (seed.tuple₁ i) = seed.tuple₂ i :=
   exists_iso_of_selectedCommonCharts hA₁ hA₂ (fun _ => True) seed trivial
-    (restrictedCommonChartStepSupply_true supply)
-
-/-- Root-preserving restricted cashout: the isomorphism extends the good seed chart. Kept as the
-compatibility signature of `exists_iso_of_selectedCommonCharts`; the `Nonempty` instances are no
-longer used. -/
-theorem exists_iso_of_restrictedCommonChartStepSupply
-    [Countable M₁] [Countable M₂] [Nonempty M₁] [Nonempty M₂]
-    (hA₁ : A₁.IsExactParentConsistent) (hA₂ : A₂.IsExactParentConsistent)
-    (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop)
-    (seed : CommonChartNode (A₁ := A₁) (A₂ := A₂))
-    (seed_good : Good seed)
-    (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
-    ∃ e : A₁.Iso A₂, ∀ i, e.1 (seed.tuple₁ i) = seed.tuple₂ i :=
-  exists_iso_of_selectedCommonCharts hA₁ hA₂ Good seed seed_good supply
+    fun nd x z => Nonempty.map (fun d => { extension := d, good_next := trivial }) (supply nd z)
 
 end KnightRealization
 

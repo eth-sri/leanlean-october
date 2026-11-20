@@ -8,7 +8,6 @@ module
 public import VaughtConjecture.Knight.LowOnlyResidualCoverCore
 public import VaughtConjecture.Knight.CharacteristicGradeBounds
 public import VaughtConjecture.Knight.ModelEmpty
-public import VaughtConjecture.Knight.RootedKarp
 public import VaughtConjecture.Knight.FiniteHull
 
 /-! # Cap-native rooted classification of the residual
@@ -24,7 +23,6 @@ whose every extension has the stated grade. The zero-grade converse is not part 
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyResidualClassification
 open TypeTower StageType KnightRealization Value ExtOrd
 noncomputable section
@@ -94,25 +92,6 @@ theorem stepSupply_of_receiving (hcons₁ : W₁.IsExactParentConsistent)
     exact ⟨⟨TopSupportRigidCore.swapNode next, emb, h₁, h₂,
       fun _ hx => absurd hx Sum.inr_ne_inl, fun _ hy' => (Sum.inr.inj hy') ▸ hy⟩⟩
 
-/-- **Root-preserving residual classification**: in the positive finite-characteristic
-residual, every common chart of two countable models extends to an isomorphism carrying the
-one tuple onto the other coordinatewise. -/
-theorem exists_iso_of_commonChart_of_receiving [Countable M₁] [Countable M₂]
-    [Nonempty M₁] [Nonempty M₂]
-    (hcons₁ : W₁.IsExactParentConsistent) (hcov₁ : W₁.IsInitialSegmentCovering)
-    (hFC₁ : FiniteCutReceiving W₁) (hcons₂ : W₂.IsExactParentConsistent)
-    (hcov₂ : W₂.IsInitialSegmentCovering) (hFC₂ : FiniteCutReceiving W₂) {K : ℕ}
-    (hcoin₁ : KnightRealization.IsCoinitial {x : W₁.LabelledExt | x.type.topGrade = K})
-    (hcoin₂ : KnightRealization.IsCoinitial {x : W₂.LabelledExt | x.type.topGrade = K})
-    (hKpos : 0 < K)
-    (hres₁ : ∀ {k : ℕ} (B : Fin k ↪ M₁), ¬ TopSupportRigidCore.RigidCore W₁ B)
-    (hres₂ : ∀ {k : ℕ} (B : Fin k ↪ M₂), ¬ TopSupportRigidCore.RigidCore W₂ B)
-    {k : ℕ} (t₁ : Fin k ↪ M₁) (t₂ : Fin k ↪ M₂) {p : S α.1 k}
-    (h₁ : W₁.eval t₁ = some p) (h₂ : W₂.eval t₂ = some p) :
-    ∃ e : W₁.Iso W₂, ∀ i, e.1 (t₁ i) = t₂ i :=
-  exists_iso_of_commonChartStepSupply hcons₁ hcons₂ ⟨k, t₁, t₂, p, h₁, h₂⟩
-    (stepSupply_of_receiving hcons₁ hcov₁ hFC₁ hcons₂ hcov₂ hFC₂ hcoin₁ hcoin₂ hKpos hres₁ hres₂)
-
 /-- At any limit stage, at most one countable residual class has each positive
 finite characteristic. -/
 theorem nonempty_iso_of_receiving [Countable M₁] [Countable M₂]
@@ -129,9 +108,8 @@ theorem nonempty_iso_of_receiving [Countable M₁] [Countable M₂]
   obtain ⟨p₁, hp₁⟩ := exists_eval_empty_of_structural hcons₁ hcov₁
   obtain ⟨p₂, hp₂⟩ := exists_eval_empty_of_structural hcons₂ hcov₂
   obtain rfl : p₁ = p₂ := Subsingleton.elim _ _
-  obtain ⟨e, -⟩ := exists_iso_of_commonChart_of_receiving hcons₁ hcov₁ hFC₁
-    hcons₂ hcov₂ hFC₂ hcoin₁ hcoin₂ hKpos hres₁ hres₂
-    Function.Embedding.ofIsEmpty Function.Embedding.ofIsEmpty hp₁ hp₂
+  obtain ⟨e, -⟩ := exists_iso_of_commonChartStepSupply hcons₁ hcons₂ ⟨0, Function.Embedding.ofIsEmpty, Function.Embedding.ofIsEmpty, p₁, hp₁, hp₂⟩
+    (stepSupply_of_receiving hcons₁ hcov₁ (fun {n} => hFC₁) hcons₂ hcov₂ (fun {n} => hFC₂) hcoin₁ hcoin₂ hKpos (fun {k} => hres₁) (fun {k} => hres₂))
   exact ⟨e⟩
 
 end

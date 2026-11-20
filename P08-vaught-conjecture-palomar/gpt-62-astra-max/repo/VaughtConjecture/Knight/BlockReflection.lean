@@ -5,7 +5,6 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReductModel
 public import VaughtConjecture.Knight.ExpansionUniqueness
 
 /-! # Old-block requests reflect through reduction; the next block
@@ -38,15 +37,5 @@ noncomputable def LimitStage.nextBlock (α : LimitStage) : LimitStage :=
 
 theorem LimitStage.le_nextBlock (α : LimitStage) : α ≤ α.nextBlock :=
   show α.1 ≤ α.1 + Ordinal.omega0 from le_add_of_nonneg_right zero_le
-
-namespace Value
-
-end Value
-
-namespace StageType
-
-variable {α β : Ordinal.{0}} {n : ℕ}
-
-end StageType
 
 end VaughtConjecture.Knight

@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ExpansionIsomorphism
+public import VaughtConjecture.Knight.ExpansionInjectivity
 
 /-! # Expansion as a unique partial operation
 
@@ -41,14 +41,14 @@ theorem isModel (h : σ ≤ ρ) (R : Domain h M) : (value h R).IsModel :=
   R.2.choose_spec.2
 
 /-- Independence from the particular expansion witness, not merely from its existence proof. -/
-theorem value_eq (h : σ ≤ ρ) (R : Domain h M)
+theorem value_eq (h : σ ≤ ρ) R
     {W : KnightRealization (blockStage ρ) M} (hW : W.IsModel)
     (hWR : W.reduct (blockStage_mono h) = R.1) : value h R = W :=
   eq_of_reduct_eq_of_le ρ σ h _ _ (isModel h R) hW ((reduct_value h R).trans hWR.symm)
 
 /-- Independently supplied existence proofs at two heights produce coherent values. -/
 theorem coherent (hστ : σ ≤ τ) (hτρ : τ ≤ ρ)
-    (R : Domain (hστ.trans hτρ) M) (S : Domain hστ M) (hRS : R.1 = S.1) :
+    R (S : Domain hστ M) (hRS : R.1 = S.1) :
     (value (hστ.trans hτρ) R).reduct (blockStage_mono hτρ) = value hστ S := by
   apply (value_eq hστ S ((isModel _ R).reduct _) ?_).symm
   rw [Realization.reduct_reduct, reduct_value, hRS]

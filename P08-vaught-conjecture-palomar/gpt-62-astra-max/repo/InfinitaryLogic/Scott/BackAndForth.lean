@@ -137,15 +137,15 @@ agreement fails: with one unary function symbol `f`, the empty tuples of `(ℕ, 
 noncomputable def BFEquiv (α : Ordinal) (n : ℕ) (a : Fin n → M) (b : Fin n → N) : Prop :=
   Ordinal.limitRecOn α
     -- Zero case: same atomic type
-    (fun (k : ℕ) (a' : Fin k → M) (b' : Fin k → N) =>
-      SameAtomicType (L := L) (M := M) (N := N) a' b')
+    (fun k a' b' =>
+      SameAtomicType (L := L) a' b')
     -- Successor case
-    (fun _β ih (k : ℕ) (a' : Fin k → M) (b' : Fin k → N) =>
+    (fun _β ih k a' b' =>
       ih k a' b' ∧
       (∀ m : M, ∃ n' : N, ih (k + 1) (snoc a' m) (snoc b' n')) ∧
       (∀ n' : N, ∃ m : M, ih (k + 1) (snoc a' m) (snoc b' n')))
     -- Limit case
-    (fun _β _hβ ih (k : ℕ) (a' : Fin k → M) (b' : Fin k → N) =>
+    (fun _β _hβ ih k a' b' =>
       ∀ γ (hγ : γ < _β), ih γ hγ k a' b')
     n a b
 
@@ -153,8 +153,8 @@ variable {n : ℕ}
 
 omit [L.IsRelational] in
 theorem BFEquiv.zero (a : Fin n → M) (b : Fin n → N) :
-    BFEquiv (L := L) 0 n a b ↔ SameAtomicType (L := L) (M := M) (N := N) a b := by
-  simp only [BFEquiv, Ordinal.limitRecOn_zero]
+    BFEquiv (L := L) 0 n a b ↔ SameAtomicType (L := L) a b := by
+  simp [BFEquiv]
 
 omit [L.IsRelational] in
 theorem BFEquiv.succ (α : Ordinal) (a : Fin n → M) (b : Fin n → N) :
@@ -162,13 +162,13 @@ theorem BFEquiv.succ (α : Ordinal) (a : Fin n → M) (b : Fin n → N) :
       BFEquiv (L := L) α n a b ∧
       (∀ m : M, ∃ n' : N, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) ∧
       (∀ n' : N, ∃ m : M, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) := by
-  simp only [BFEquiv, Order.succ_eq_add_one, Ordinal.limitRecOn_add_one]
+  simp [BFEquiv]
 
 omit [L.IsRelational] in
 theorem BFEquiv.limit (α : Ordinal) (hα : Order.IsSuccLimit α) (a : Fin n → M) (b : Fin n → N) :
     BFEquiv (L := L) α n a b ↔ ∀ β, β < α → BFEquiv (L := L) β n a b := by
   unfold BFEquiv
-  rw [Ordinal.limitRecOn_limit _ _ _ _ hα]
+  simp_all
 
 omit [L.IsRelational] in
 /-- BF-equivalence at level α + 1 implies BF-equivalence at level α. -/
@@ -183,18 +183,12 @@ theorem BFEquiv.monotone {α β : Ordinal} (hαβ : α ≤ β)
     BFEquiv (L := L) α n a b := by
   induction β using Ordinal.limitRecOn generalizing n a b with
   | zero =>
-    simp only [nonpos_iff_eq_zero] at hαβ
-    rwa [hαβ]
+    simp_all
   | add_one γ ih =>
     rw [← Order.succ_eq_add_one] at hαβ h
-    rcases hαβ.lt_or_eq with hαβ' | rfl
-    · rw [Order.lt_succ_iff] at hαβ'
-      exact ih hαβ' (BFEquiv.of_succ h)
-    · exact h
+    rcases hαβ.lt_or_eq with hαβ' | rfl <;> simp_all [BFEquiv.of_succ]
   | limit γ hγ _ih =>
-    rcases hαβ.lt_or_eq with hαβ' | rfl
-    · exact (BFEquiv.limit γ hγ a b).mp h α hαβ'
-    · exact h
+    grind [BFEquiv.limit]
 
 omit [L.IsRelational] in
 /-- The "forth" property at a successor level. -/
@@ -213,31 +207,29 @@ theorem BFEquiv.back {α : Ordinal} {a : Fin n → M} {b : Fin n → N}
 omit [L.IsRelational] in
 /-- BF-equivalence is reflexive at all levels. -/
 theorem BFEquiv.refl (α : Ordinal) (a : Fin n → M) :
-    BFEquiv (L := L) (M := M) (N := M) α n a a := by
+    BFEquiv (L := L) α n a a := by
   induction α using Ordinal.limitRecOn generalizing n a with
   | zero => exact (BFEquiv.zero a a).mpr (SameAtomicType.refl a)
   | add_one β ih =>
     rw [← Order.succ_eq_add_one, BFEquiv.succ]
-    exact ⟨ih a, fun m => ⟨m, ih (snoc a m)⟩, fun m => ⟨m, ih (snoc a m)⟩⟩
+    grind
   | limit β hβ ih =>
-    rw [BFEquiv.limit β hβ]
-    exact fun γ hγ => ih γ hγ a
+    simp_all [BFEquiv.limit]
 
 omit [L.IsRelational] in
 /-- BF-equivalence is symmetric at all levels. -/
 theorem BFEquiv.symm {α : Ordinal} {a : Fin n → M} {b : Fin n → N}
-    (h : BFEquiv (L := L) α n a b) : BFEquiv (L := L) (M := N) (N := M) α n b a := by
+    (h : BFEquiv (L := L) α n a b) : BFEquiv (L := L) α n b a := by
   induction α using Ordinal.limitRecOn generalizing n a b with
   | zero =>
     rw [BFEquiv.zero] at h ⊢
-    exact h.symm
+    solve_by_elim
   | add_one β ih =>
     rw [← Order.succ_eq_add_one, BFEquiv.succ] at h ⊢
     exact ⟨ih h.1, fun n' => let ⟨m, hm⟩ := h.2.2 n'; ⟨m, ih hm⟩,
            fun m => let ⟨n', hn'⟩ := h.2.1 m; ⟨n', ih hn'⟩⟩
   | limit β hβ ih =>
-    rw [BFEquiv.limit β hβ] at h ⊢
-    exact fun γ hγ => ih γ hγ (h γ hγ)
+    simp_all [BFEquiv.limit]
 
 omit [L.IsRelational] in
 /-- BF-equivalence is transitive at all levels.
@@ -250,15 +242,14 @@ theorem BFEquiv.trans {P : Type*} [L.Structure P]
   induction α using Ordinal.limitRecOn generalizing n a b c with
   | zero =>
     rw [BFEquiv.zero] at hab hbc ⊢
-    exact fun idx => (hab idx).trans (hbc idx)
+    simp_all [SameAtomicType]
   | add_one β ih =>
     rw [← Order.succ_eq_add_one, BFEquiv.succ] at hab hbc ⊢
     refine ⟨ih hab.1 hbc.1, fun m => ?_, fun p => ?_⟩
-    · let ⟨nb, hnb⟩ := hab.2.1 m; let ⟨p, hp⟩ := hbc.2.1 nb; exact ⟨p, ih hnb hp⟩
-    · let ⟨nb, hnb⟩ := hbc.2.2 p; let ⟨m, hm⟩ := hab.2.2 nb; exact ⟨m, ih hm hnb⟩
+    · let ⟨nb, hnb⟩ := hab.2.1 m; let ⟨p, hp⟩ := hbc.2.1 nb; grind
+    · let ⟨nb, hnb⟩ := hbc.2.2 p; let ⟨m, hm⟩ := hab.2.2 nb; grind
   | limit β hβ ih =>
-    rw [BFEquiv.limit β hβ] at hab hbc ⊢
-    exact fun γ hγ => ih γ hγ (hab γ hγ) (hbc γ hγ)
+    grind [BFEquiv.limit]
 
 /-! ### BFStrategy: Explicit Witness Strategies
 

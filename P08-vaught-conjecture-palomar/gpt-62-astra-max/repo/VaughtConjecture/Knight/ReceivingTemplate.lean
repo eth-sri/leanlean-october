@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.RelativeReset
+public import VaughtConjecture.Knight.RelativeLift
+public import VaughtConjecture.Knight.FullScopeZeroExtension
 public import VaughtConjecture.Knight.BlockCode
 
 /-! # The receiving template: donor cleaning and the encoded candidate
@@ -61,13 +62,13 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem :
 noncomputable def cleaner (σ : ExtOrd → ExtOrd) (x : ExtOrd) : ExtOrd :=
   if σ x = ⊥ then ⊥ else x
 
-theorem cleaner_of_eq {σ : ExtOrd → ExtOrd} {x : ExtOrd} (h : σ x = ⊥) : cleaner σ x = ⊥ :=
+theorem cleaner_of_eq {σ} {x} (h : σ x = ⊥) : cleaner σ x = ⊥ :=
   ite_eq_left h
 
-theorem cleaner_of_ne {σ : ExtOrd → ExtOrd} {x : ExtOrd} (h : σ x ≠ ⊥) : cleaner σ x = x :=
+theorem cleaner_of_ne {σ} {x} (h : σ x ≠ ⊥) : cleaner σ x = x :=
   ite_eq_right h
 
-theorem cleaner_eq_bot_iff {σ : ExtOrd → ExtOrd} (hσ : σ ⊥ = ⊥) (x : ExtOrd) :
+theorem cleaner_eq_bot_iff {σ} (hσ : σ ⊥ = ⊥) x :
     cleaner σ x = ⊥ ↔ σ x = ⊥ := by
   by_cases h : σ x = ⊥
   · rw [cleaner_of_eq h]; exact ⟨fun _ => h, fun _ => rfl⟩
@@ -75,7 +76,7 @@ theorem cleaner_eq_bot_iff {σ : ExtOrd → ExtOrd} (hσ : σ ⊥ = ⊥) (x : Ex
     exact ⟨fun hx => by rw [hx] at h; exact absurd hσ h, fun hx => absurd hx h⟩
 
 /-- The cleaning map of a bounded map is a bounded map. -/
-theorem boundedMap_cleaner {K : ℕ} {σ : ExtOrd → ExtOrd} (hσ : BoundedMap K σ) :
+theorem boundedMap_cleaner {K} {σ} (hσ : BoundedMap K σ) :
     BoundedMap K (cleaner σ) where
   bot := cleaner_of_eq hσ.bot
   mono x y hxy := by
@@ -96,9 +97,9 @@ theorem boundedMap_cleaner {K : ℕ} {σ : ExtOrd → ExtOrd} (hσ : BoundedMap 
       rw [cleaner_of_ne hx, cleaner_of_ne h']
 
 /-- Cleaning only needs the reading's bottom pattern, including on long source rows. -/
-theorem cleaned_respects_of_bottom_agreement {BJ : Finset ι × ℕ} {r u : D.below BJ → ExtOrd}
-    (hr : RespectsSemanticsBelow sem BJ r) (hu : RespectsSemanticsBelow sem BJ u) {K : ℕ}
-    (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) {σ : ExtOrd → ExtOrd} (hσ : BoundedMap K σ)
+theorem cleaned_respects_of_bottom_agreement {BJ} {r u}
+    (hr : sem.Lawful r) (hu : sem.Lawful u) {K}
+    (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) {σ} (hσ : BoundedMap K σ)
     (hbot : ∀ d, σ (r d) = ⊥ ↔ u d = ⊥) :
     RespectsSemanticsBelow sem BJ (fun d => if u d = ⊥ then ⊥ else r d) := by
   have h := map_respects_of_same_bottom_pattern hr hu hK (boundedMap_cleaner hσ)
@@ -112,12 +113,6 @@ end Cleaning
 
 /-! ## The cleaned donor at a cap -/
 
-section Cap
-
-variable {ιA : Type*} [DecidableEq ιA] {A : Finset ιA} {DA : CellScheme A} {semA : Semantics DA}
-
-end Cap
-
 /-! ## The template from an encoding -/
 
 section Template
@@ -129,20 +124,20 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ] {A : Finset ιA} 
 labelling and the cap's row; the template and its four properties are supplied by
 `template_of_encoding` or `template_of_encoding_capped`. -/
 noncomputable def mkRelativeData (req : Requests DA DQ) (grade_C : DA.grade req.C = req.N)
-    (hrow : RespectsSemanticsBelow semA (DA.cell req.C) (semA.E req.C))
-    {u₀ : Cell DA → ExtOrd} (hu₀ : RespectsSemantics semA u₀) (hC : u₀ req.C = ⊤)
+    (hrow : semA.Lawful (semA.E req.C))
+    {u₀} (hu₀ : RespectsSemantics semA u₀) (hC : u₀ req.C = ⊤)
     (a_ne : u₀ req.a.1 ≠ ⊥) (ρ_ne : ∀ f ∈ req.F, u₀ (req.ρ f).1 ≠ ⊥)
-    (off_lt : ∀ f ∈ req.F, req.off f ≤ req.N) {root top : Finset ιQ × ℕ}
+    (off_lt : ∀ f ∈ req.F, req.off f ≤ req.N) {root top}
     (root_mem : root ∈ Plan.gradedPlan DQ.plan) (top_mem : top ∈ Plan.gradedPlan DQ.plan)
     (root_le : GradedLe root top) (root_ne : root ≠ top)
     (below_top : ∀ d, GradedLe (DQ.cell d) top) (top_le_N : top.2 ≤ req.N)
-    (κ : DQ.below root → DA.below (DA.cell req.C))
-    (hroot : ∀ s : DA.below (DA.cell req.C) → ExtOrd,
-      RespectsSemanticsBelow semA (DA.cell req.C) s →
+    (κ : DQ.below root → DA.RowDomain req.C)
+    (hroot : ∀ s : DA.RowDomain req.C → ExtOrd,
+      semA.Lawful s →
         RespectsSemanticsBelow semQ root (fun d => s (κ d)))
     (bountiful : semQ.IsBountiful)
     (cover : ∀ d, d ∈ req.Z ∨ d ∈ req.F ∨ d ∈ req.T ∨ ∃ r : DQ.below root, r.1 = d)
-    (V : Cell DQ → ExtOrd) (V_respects : RespectsSemantics semQ V)
+    V (V_respects : RespectsSemantics semQ V)
     (V_root : ∀ r : DQ.below root, V r.1 = if u₀ (κ r).1 = ⊥ then ⊥ else semA.E req.C (κ r))
     (V_correct : req.Correct (fun d => if u₀ d.1 = ⊥ then ⊥ else semA.E req.C d) V)
     (frame : req.T.Nonempty → ∀ f ∈ req.F,
@@ -195,28 +190,27 @@ noncomputable def mkRelativeData (req : Requests DA DQ) (grade_C : DA.grade req.
 
 /-- Capped template repair needs encoding commutation only through the donor's top grade. -/
 theorem template_of_encoding_at_grade (req : Requests DA DQ)
-    (e : DA.below (DA.cell req.C) → ExtOrd)
-    (he : RespectsSemanticsBelow semA (DA.cell req.C) e) (ha_ne : e req.a ≠ ⊥)
-    {P : Cell DQ → ExtOrd} (hP : RespectsSemantics semQ P) {root top : Finset ιQ × ℕ}
+    e
+    (he : semA.Lawful e) (ha_ne : e req.a ≠ ⊥)
+    {P} (hP : RespectsSemantics semQ P) {root top}
     (root_mem : root ∈ Plan.gradedPlan DQ.plan) (top_mem : top ∈ Plan.gradedPlan DQ.plan)
     (root_le : GradedLe root top) (root_ne : root ≠ top)
     (below_top : ∀ d, GradedLe (DQ.cell d) top)
-    (κ : DQ.below root → DA.below (DA.cell req.C))
-    (hroot : ∀ s : DA.below (DA.cell req.C) → ExtOrd,
-      RespectsSemanticsBelow semA (DA.cell req.C) s →
+    (κ : DQ.below root → DA.RowDomain req.C)
+    (hroot : ∀ s : DA.RowDomain req.C → ExtOrd,
+      semA.Lawful s →
         RespectsSemanticsBelow semQ root (fun d => s (κ d)))
     (bountiful : semQ.IsBountiful)
-    {enc : ExtOrd → ExtOrd} (henc : BoundedMap top.2 enc)
+    {enc} (henc : BoundedMap top.2 enc)
     (hbotP : ∀ d, enc (P d) = ⊥ → P d = ⊥)
     (hvis : SelfVis top.2 (extVisibilityReplace (e req.a) req.N req.R))
-    (hroot_cap : ∀ r, min (enc (P r.1)) (extVisibilityReplace (e req.a) req.N req.R) =
-      min (e (κ r)) (extVisibilityReplace (e req.a) req.N req.R))
+    (hroot_cap : CappedEq (enc ∘ P ∘ Subtype.val) (e ∘ κ) (extVisibilityReplace (e req.a) req.N req.R))
     (hZ : ∀ z ∈ req.Z, P z = ⊥)
     (hF : ∀ f ∈ req.F, enc (P f) = extVisibilityReplace (e (req.ρ f)) req.N (req.off f))
     (hFlt : ∀ f ∈ req.F, extVisibilityReplace (e (req.ρ f)) req.N (req.off f) <
       extVisibilityReplace (e req.a) req.N req.R)
     (hT : ∀ y ∈ req.T, enc (P y) = extVisibilityReplace (e req.a) req.N req.R) :
-    ∃ V : Cell DQ → ExtOrd, RespectsSemantics semQ V ∧ (∀ r, V r.1 = e (κ r)) ∧
+    ∃ V, RespectsSemantics semQ V ∧ (∀ r, V r.1 = e (κ r)) ∧
       req.Correct e V ∧ (req.T.Nonempty → ∀ f ∈ req.F, req.tOf e f ≤ req.dOf e) ∧
       (∀ f ∈ req.F, V f = extVisibilityReplace (e (req.ρ f)) req.N (req.off f)) ∧
       (∀ y ∈ req.T, extVisibilityReplace (e req.a) req.N req.R ≤ V y) ∧
@@ -233,7 +227,7 @@ theorem template_of_encoding_at_grade (req : Requests DA DQ)
   obtain ⟨q', hq', hcap, hface⟩ := bountiful root top root_mem top_mem root_le root_ne
     (fun d => e (κ d)) (fun d => enc (P d.1)) h (hroot e he) (hV0.toBelow top)
     hvis (fun d => hroot_cap d)
-  set V : Cell DQ → ExtOrd := fun d => q' ⟨d, below_top d⟩ with hVdef
+  set V : DQ.Labelling := fun d => q' ⟨d, below_top d⟩ with hVdef
   have hVr : RespectsSemantics semQ V := RespectsSemantics.of_below_top below_top hq'
   have hVcap : ∀ d, min (V d) h = min (enc (P d)) h := fun d => hcap ⟨d, below_top d⟩
   have hVF : ∀ f ∈ req.F, V f = extVisibilityReplace (e (req.ρ f)) req.N (req.off f) := by
@@ -272,28 +266,27 @@ top-labelled root cells, whose sources dominate `h`), the candidate's bountifuln
 root–top pair at cap `h` restores the literal donor root while retaining every `h`-reading;
 the exact requests must then sit strictly below `h`. -/
 theorem template_of_encoding_capped (req : Requests DA DQ)
-    (e : DA.below (DA.cell req.C) → ExtOrd)
-    (he : RespectsSemanticsBelow semA (DA.cell req.C) e) (ha_ne : e req.a ≠ ⊥)
-    {P : Cell DQ → ExtOrd} (hP : RespectsSemantics semQ P) {root top : Finset ιQ × ℕ}
+    (e : DA.RowDomain req.C → ExtOrd)
+    (he : semA.Lawful e) (ha_ne : e req.a ≠ ⊥)
+    {P : DQ.Labelling} (hP : RespectsSemantics semQ P) {root top : Finset ιQ × ℕ}
     (root_mem : root ∈ Plan.gradedPlan DQ.plan) (top_mem : top ∈ Plan.gradedPlan DQ.plan)
     (root_le : GradedLe root top) (root_ne : root ≠ top)
     (below_top : ∀ d, GradedLe (DQ.cell d) top) (top_le_R : top.2 ≤ req.R)
-    (κ : DQ.below root → DA.below (DA.cell req.C))
-    (hroot : ∀ s : DA.below (DA.cell req.C) → ExtOrd,
-      RespectsSemanticsBelow semA (DA.cell req.C) s →
+    (κ : DQ.below root → DA.RowDomain req.C)
+    (hroot : ∀ s : DA.RowDomain req.C → ExtOrd,
+      semA.Lawful s →
         RespectsSemanticsBelow semQ root (fun d => s (κ d)))
     (bountiful : semQ.IsBountiful)
     {enc : ExtOrd → ExtOrd} (henc : BoundedMap req.R enc)
     (hbotP : ∀ d, enc (P d) = ⊥ → P d = ⊥)
     (hvis : SelfVis req.R (extVisibilityReplace (e req.a) req.N req.R))
-    (hroot_cap : ∀ r, min (enc (P r.1)) (extVisibilityReplace (e req.a) req.N req.R) =
-      min (e (κ r)) (extVisibilityReplace (e req.a) req.N req.R))
+    (hroot_cap : CappedEq (enc ∘ P ∘ Subtype.val) (e ∘ κ) (extVisibilityReplace (e req.a) req.N req.R))
     (hZ : ∀ z ∈ req.Z, P z = ⊥)
     (hF : ∀ f ∈ req.F, enc (P f) = extVisibilityReplace (e (req.ρ f)) req.N (req.off f))
     (hFlt : ∀ f ∈ req.F, extVisibilityReplace (e (req.ρ f)) req.N (req.off f) <
       extVisibilityReplace (e req.a) req.N req.R)
     (hT : ∀ y ∈ req.T, enc (P y) = extVisibilityReplace (e req.a) req.N req.R) :
-    ∃ V : Cell DQ → ExtOrd, RespectsSemantics semQ V ∧ (∀ r, V r.1 = e (κ r)) ∧
+    ∃ V : DQ.Labelling, RespectsSemantics semQ V ∧ (∀ r, V r.1 = e (κ r)) ∧
       req.Correct e V ∧ (req.T.Nonempty → ∀ f ∈ req.F, req.tOf e f ≤ req.dOf e) ∧
       (∀ f ∈ req.F, V f = extVisibilityReplace (e (req.ρ f)) req.N (req.off f)) ∧
       (∀ y ∈ req.T, extVisibilityReplace (e req.a) req.N req.R ≤ V y) ∧

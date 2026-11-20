@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import InfinitaryLogic.Descriptive.KleeneBrouwer
-public import InfinitaryLogic.Descriptive.BFEquivBorel
+public import InfinitaryLogic.Scott.BackAndForth
 public import InfinitaryLogic.Descriptive.StructureIsoSetoid
 public import Mathlib.Basic.Finite.Sum
 
@@ -101,48 +101,6 @@ structure enters the range). -/
 def bfRight (s : List ℕ) : Fin s.length → ℕ :=
   fun j ↦ if j.val % 2 = 0 then s[j.val] else j.val / 2
 
-/-- Position `2 i` of the left tuple is `i`. -/
-@[simp]
-theorem bfLeft_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfLeft s ⟨2 * i, h⟩ = i := by
-  simp [bfLeft]
-
-/-- Position `2 i + 1` of the left tuple is the node's entry there. -/
-@[simp]
-theorem bfLeft_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfLeft s ⟨2 * i + 1, h⟩ = s[2 * i + 1] := by
-  simp [bfLeft, Nat.add_mod]
-
-/-- Position `2 i` of the right tuple is the node's entry there. -/
-@[simp]
-theorem bfRight_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfRight s ⟨2 * i, h⟩ = s[2 * i] := by
-  simp [bfRight]
-
-/-- Position `2 i + 1` of the right tuple is `i`. -/
-@[simp]
-theorem bfRight_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfRight s ⟨2 * i + 1, h⟩ = i := by
-  simp [bfRight, Nat.add_mod]
-  omega
-
-/-- On a prefix, the decoded tuples are restrictions. -/
-private theorem bfLeft_comp_castLE {s t : List ℕ} (hst : s <+: t) :
-    bfLeft t ∘ Fin.castLE hst.length_le = bfLeft s := by
-  funext j
-  simp only [Function.comp_apply, bfLeft, Fin.val_castLE]
-  split_ifs
-  · rfl
-  · exact (hst.getElem j.2).symm
-
-private theorem bfRight_comp_castLE {s t : List ℕ} (hst : s <+: t) :
-    bfRight t ∘ Fin.castLE hst.length_le = bfRight s := by
-  funext j
-  simp only [Function.comp_apply, bfRight, Fin.val_castLE]
-  split_ifs
-  · exact (hst.getElem j.2).symm
-  · rfl
-
 /-- The decoded tuples of a one-step extension: the left tuple gains the left move of position
 `s.length`. -/
 private theorem bfLeft_append_singleton (s : List ℕ) (x : ℕ) :
@@ -187,7 +145,17 @@ theorem bfNodes_prefix (c d : StructureSpace L) ⦃s : List ℕ⦄ ⦃a : ℕ⦄
   have hst : s <+: s ++ [a] := List.prefix_append s [a]
   have := @SameAtomicType.relabel L ℕ c.toStructure ℕ d.toStructure _ _ _ _ h
     (Fin.castLE hst.length_le)
-  rwa [bfLeft_comp_castLE hst, bfRight_comp_castLE hst] at this
+  rwa [show bfLeft (s ++ [a]) ∘ Fin.castLE (List.IsPrefix.length_le hst) = bfLeft s from by
+         funext j
+         simp only [Function.comp_apply, bfLeft, Fin.val_castLE]
+         split_ifs
+         · rfl
+         · exact (hst.getElem j.2).symm, show bfRight (s ++ [a]) ∘ Fin.castLE (List.IsPrefix.length_le hst) = bfRight s from by
+          funext j
+          simp only [Function.comp_apply, bfRight, Fin.val_castLE]
+          split_ifs
+          · exact (hst.getElem j.2).symm
+          · rfl] at this
 
 /-- **The forced back-and-forth tree** of a pair of codes. -/
 def bfTree (c d : StructureSpace L) : tree ℕ :=

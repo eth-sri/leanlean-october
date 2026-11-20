@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.RecursiveRungLocality
+public import VaughtConjecture.Knight.RecursiveRungRendering
 public import VaughtConjecture.Knight.LowOnlyLadderRepair
 
 /-! # Recursive auxiliary charts for the actual LOW catalogues
@@ -22,7 +22,6 @@ asserts equality of renderings made at different construction grades.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyRecursiveCharts
 open Transform Value ExtOrd CappedDonor LowOnly
 open PairedSlotEncoding RecursiveRungRendering
@@ -31,12 +30,12 @@ noncomputable section
 variable {m K : ℕ} {P C : SemScheme m} (F : LowOnly.Family P C K)
 
 private theorem lower_visible_one {D : SemScheme m} {j : ℕ}
-    {v : Cell D.scheme → ExtOrd}
+    {v : D.scheme.Labelling}
     (hv : RespectsSemanticsBelow D.rows (effC m j) (fun d => v d.1))
     (hf : ∀ d, j < D.scheme.grade d → SelfVis 1 (v d)) (d : Cell D.scheme) :
     SelfVis 1 (v d) := by
   by_cases hd : D.scheme.grade d ≤ j
-  · let d' : D.scheme.below (effC m j) :=
+  · let d' : D.ClippedCells j :=
       ⟨d, Finset.subset_univ _, le_min hd (gradeC_le d)⟩
     exact selfVis_mono (hv.orderly d').symm (D.scheme.grade_pos d)
   · exact hf d (Nat.lt_of_not_ge hd)
@@ -56,10 +55,6 @@ theorem anchor_bound {j : ℕ} (a : F.Anchor j) (d : Field P C) :
     F.fields j a d ≤ ceiling (Field P C) j := by
   apply (CanonicalPairedProfiles.inventory_bound _ _ a.property.1 d).trans
   exact ofOrd_le_ofOrd.mpr (add_le_add (by gcongr; omega) le_rfl)
-
-theorem anchor_short {j : ℕ} (a : F.Anchor j) (d : Field P C) :
-    Short j (F.fields j a d) :=
-  CanonicalPairedProfiles.inventory_short _ _ a.property.1 d
 
 theorem anchor_visible_one {j : ℕ} (hj : 1 ≤ j) (a : F.Anchor j) (d : Field P C) :
     SelfVis 1 (F.fields j a d) := by

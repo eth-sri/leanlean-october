@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CappedDonorLowRef
-public import VaughtConjecture.Knight.SourceBlockLocalityTransport
 
 /-! # Exact release of the private frontier (audit16 §2, note §3.2)
 

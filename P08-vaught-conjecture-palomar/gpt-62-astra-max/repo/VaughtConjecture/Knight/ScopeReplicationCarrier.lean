@@ -18,7 +18,6 @@ No semantic or lifting hypothesis enters this finite carrier construction.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationCarrier
 open AmalgamationPlan
 noncomputable section
@@ -104,14 +103,6 @@ theorem scope_le_erase (d : Cell (scheme D B C)) :
   · rw [erase_added, p.2.2.2.1]
     exact (scheme D B C).isPlan.subset_of_mem ((scheme D B C).scope_mem_plan _)
 
-theorem full_or_mixed (d : Cell (scheme D B C))
-    (h : D.scope (erase D B C d) = A) :
-    (scheme D B C).scope d = A ∨ Mixed B C ((scheme D B C).scope d) := by
-  rcases cases D B C d with ⟨c, rfl⟩ | ⟨p, rfl⟩
-  · exact Or.inl ((congrArg Prod.fst (old_index D B C c)).trans
-      (by simpa only [erase_old, CellScheme.scope] using h))
-  · exact Or.inr (by simpa only [CellScheme.scope, added_index] using p.2.2.1)
-
 variable (hcover : ∀ c : Cell D, D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
 
 include hcover in
@@ -137,7 +128,7 @@ theorem erase_le {d c : Cell (scheme D B C)}
       · exact (p.2.2.1.2 (hs.trans hc')).elim
 
 def belowErase (c : Cell (scheme D B C)) :
-    (scheme D B C).below ((scheme D B C).cell c) → D.below (D.cell (erase D B C c)) :=
+    (scheme D B C).RowDomain c → D.RowDomain (erase D B C c) :=
   fun d => ⟨erase D B C d.1, erase_le D B C hcover d.2⟩
 
 include hcover in
@@ -193,7 +184,11 @@ theorem exists_at_index (t : Cell (scheme D B C)) (w : Cell D)
     have hwg : D.grade w = (scheme D B C).grade t :=
       (congrArg Prod.snd hw).trans (erase_grade D B C t)
     let z := atScope D B C ((scheme D B C).scope t) ((scheme D B C).scope_mem_plan t)
-      (full_or_mixed D B C t ht) w hws (hwg ▸ (scheme D B C).grade_le_card_scope t)
+      (by
+         rcases cases D B C t with ⟨c, rfl⟩ | ⟨p, rfl⟩
+         · exact Or.inl ((congrArg Prod.fst (old_index D B C c)).trans
+             (by simpa only [erase_old, CellScheme.scope] using ht))
+         · exact Or.inr (by simpa only [CellScheme.scope, added_index] using p.2.2.1)) w hws (hwg ▸ (scheme D B C).grade_le_card_scope t)
     refine ⟨z, ?_, erase_atScope D B C _ _ _ _ _ _⟩
     exact (atScope_index D B C _ _ _ _ _ _).trans (by rw [hwg]; rfl)
   · refine ⟨old D B C w, (old_index D B C w).trans (hw.trans ?_), erase_old D B C w⟩

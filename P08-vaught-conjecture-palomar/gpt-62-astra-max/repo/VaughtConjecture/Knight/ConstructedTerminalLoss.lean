@@ -33,9 +33,4 @@ theorem loss_nonempty {ξ : Ordinal.{0}} (hξ : ξ < (aleph 1).ord) :
   exact ⟨_, terminalModel_mem_loss ⟨W, hW,
     hterm _ (blockStage_strictMono (Order.lt_add_one_iff.mpr le_rfl))⟩⟩
 
-/-- In particular successor losses are cofinally nonempty below `ω₁`. -/
-theorem cofinal_losses (η : Ordinal.{0}) (hη : η < (aleph 1).ord) :
-    ∃ ξ, η ≤ ξ ∧ ξ < (aleph 1).ord ∧ (domain ξ \ domain (ξ + 1)).Nonempty :=
-  ⟨η, le_rfl, hη, loss_nonempty hη⟩
-
 end VaughtConjecture.Knight.ExpansionDomain

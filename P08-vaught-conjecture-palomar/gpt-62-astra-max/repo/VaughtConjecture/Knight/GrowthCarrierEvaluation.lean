@@ -20,7 +20,6 @@ The evaluator need not be a model, and its values need not lie below the stage.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthCarrierEvaluation
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 open Growth CellScheme.restrictFace
@@ -45,10 +44,6 @@ theorem extendsDomain : ExtendsDomain C E :=
   ⟨GrowthAttachedCarrier.private_visible C.scheme P Q e hvC hvP hC hP X T hsmall,
     GrowthAttachedCarrier.restrict_private C.scheme P Q e hvC hvP hC hP X T hsmall⟩
 
-theorem private_cellOf (d : Cell C.scheme.scheme) :
-    (extendsDomain C P Q e hvC hvP hC hP X T hsmall).cellOf d = (F).map d :=
-  GrowthAttachedCarrier.private_occurrence C.scheme P Q e hvC hvP hC hP X T hsmall d
-
 variable (L : W.ActualLabelling) {u : Fin J ↪ M}
 
 /-- Restriction compatibility retains the evaluated private face literally. -/
@@ -59,7 +54,7 @@ theorem private_label {y : M} {hy : y ∉ Set.range u} {r : S α.1 (J + 1)}
   obtain ⟨Er, v, hb, hv⟩ := r
   dsimp only at hr
   subst Er
-  rw [← private_cellOf C P Q e hvC hvP hC hP X T hsmall d]
+  rw [← GrowthAttachedCarrier.private_occurrence C.scheme P Q e hvC hvP hC hP X T hsmall d]
   exact L.mapCell heval (castSuccEmb_trans_snoc u y hy) hco d
 
 /-- Physical readback applies to any lawful evaluator in the required bottom class. -/
@@ -68,11 +63,9 @@ theorem correct_of_coface (hclass : InClass X.ZA (L.label u C))
     (hr : r.scheme = E) (hco : IsCoface C r) (heval : W.eval (snoc u y hy) = some r) :
     X.req.Correct (X.req.sec (L.label u C))
       (fun d => L.label (snoc u y hy) r (SemScheme.castCell hr.symm ((G).map d))) := by
-  exact GrowthCappedReadback.full_correct
-    (GrowthAttachedCarrier.boundary C.scheme P Q e hvC hvP hC hP) X T
-    (GrowthAttachedCarrier.height C.scheme P X hsmall)
-    (GrowthAttachedCarrier.donor_proper C.scheme P e X hsmall)
-    GrowthAttachedCarrier.private_proper _ _ hsmall (by omega)
+  exact GrowthCappedReadback.full_correct (I := GrowthAttachedCarrier.boundary C.scheme P Q e hvC hvP hC hP) (X := X)
+    ⟨T, GrowthAttachedCarrier.height C.scheme P X hsmall, GrowthAttachedCarrier.donor_proper C.scheme P e X hsmall,
+      GrowthAttachedCarrier.private_proper⟩ _ _ hsmall (by omega)
     (respects_castCell hr (L.lawful heval)) (L.label u C) hclass (X.cap_ne_bot hclass)
     (private_label C P Q e hvC hvP hC hP X T hsmall L hr hco heval)
 

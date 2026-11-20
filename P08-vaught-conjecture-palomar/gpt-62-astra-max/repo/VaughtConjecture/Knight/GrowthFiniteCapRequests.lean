@@ -17,7 +17,6 @@ force donor tops to remain top.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthFiniteCapRequests
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 noncomputable section
@@ -71,8 +70,8 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {A : Finset ιA} {Q : Finset ιQ} {DA : CellScheme A} {DQ : CellScheme Q}
 
 def requests (c : Cell DA) (L : ℕ) (hL : L < DA.grade c)
-    (a : DA.below (DA.cell c)) (ref : Ordinal.{0} → DA.below (DA.cell c))
-    (P : Cell DQ → ExtOrd) : Requests DA DQ where
+    (a : DA.RowDomain c) (ref : Ordinal.{0} → DA.RowDomain c)
+    (P : DQ.Labelling) : Requests DA DQ where
   C := c
   N := DA.grade c
   R := L
@@ -85,8 +84,8 @@ def requests (c : Cell DA) (L : ℕ) (hL : L < DA.grade c)
   a := a
 
 variable (c : Cell DA) (L : ℕ) (hL : L < DA.grade c)
-  (a : DA.below (DA.cell c)) (ref : Ordinal.{0} → DA.below (DA.cell c))
-  (P : Cell DQ → ExtOrd) (w : Cell DA → ExtOrd)
+  (a : DA.RowDomain c) (ref : Ordinal.{0} → DA.RowDomain c)
+  (P : DQ.Labelling) (w : DA.Labelling)
   {α : Ordinal.{0}} (hα : limitPart α = α) {i : ℕ} (hi : i < DA.grade c)
   (ha : w a.1 = ofOrd (α + i)) (hcut : ofOrd (α + L) < w c)
   (off : Ordinal.{0} → ℕ)
@@ -134,7 +133,7 @@ theorem correct : (requests c L hL a ref P).Correct
 
 include href hproper hcut in
 /-- Exact proper readback is separate from the high-request inequality. -/
-theorem proper_readback {v : Cell DQ → ExtOrd}
+theorem proper_readback {v : DQ.Labelling}
     (h : (requests c L hL a ref P).Correct ((requests c L hL a ref P).sec w) v)
     {d : Cell DQ} (hd : P d ≠ ⊥ ∧ P d ≠ ⊤) : v d = P d := by
   have he := h.2.1 d hd
@@ -146,7 +145,7 @@ theorem proper_readback {v : Cell DQ → ExtOrd}
 include hα hi ha hcut in
 /-- High requests need not be literal tops: their separate receipt is a value
 at least the calibrated cutoff. -/
-theorem high_readback {v : Cell DQ → ExtOrd}
+theorem high_readback {v : DQ.Labelling}
     (h : (requests c L hL a ref P).Correct ((requests c L hL a ref P).sec w) v)
     {d : Cell DQ} (hd : P d = ⊤) : ofOrd (α + L) ≤ v d := by
   have he := h.2.2 d hd

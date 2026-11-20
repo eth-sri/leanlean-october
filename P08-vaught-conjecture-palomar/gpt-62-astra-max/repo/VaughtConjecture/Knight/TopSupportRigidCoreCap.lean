@@ -8,7 +8,6 @@ module
 public import VaughtConjecture.Knight.FiniteCoverReceivingCore
 public import VaughtConjecture.Knight.LawfulCapping
 public import VaughtConjecture.Knight.TopSupportReceiving
-public import VaughtConjecture.Knight.RootedKarp
 
 /-! # Globally top-rigid cores: classification and the residual acquisition
 
@@ -78,8 +77,7 @@ theorem exists_flexible_cover_of_not_rigidCore {k : ℕ} {B : Fin k ↪ M} (h : 
   by_contra hcon
   apply h
   intro m C c hc e he H hH htops
-  by_contra hne
-  exact hcon ⟨m, C, c, hc, e, he, H, hH, htops, hne⟩
+  grind
 
 /-! ## Classification of models with globally rigid cores -/
 
@@ -97,12 +95,6 @@ def CoreChart {k : ℕ} (B₁ : Fin k ↪ M₁) (B₂ : Fin k ↪ M₂)
 def swapNode (nd : CommonChartNode (A₁ := R₁) (A₂ := R₂)) :
     CommonChartNode (A₁ := R₂) (A₂ := R₁) :=
   ⟨nd.arity, nd.tuple₂, nd.tuple₁, nd.type, nd.eval₂, nd.eval₁⟩
-
-theorem coreChart_swapNode {k : ℕ} {B₁ : Fin k ↪ M₁} {B₂ : Fin k ↪ M₂}
-    {nd : CommonChartNode (A₁ := R₁) (A₂ := R₂)} (h : CoreChart B₁ B₂ nd) :
-    CoreChart B₂ B₁ (swapNode nd) := by
-  obtain ⟨e, h₁, h₂⟩ := h
-  exact ⟨e, h₂, h₁⟩
 
 /-- **One forth step**: a common chart containing both cores extends to one containing a
 scheduled point of the first model, by covering it in the first model, receiving the cover's
@@ -127,7 +119,7 @@ theorem exists_step_left_of_receiving (hcons₁ : R₁.IsExactParentConsistent) 
   set f : Fin nd.arity ↪ Fin (nd.arity + 1 + j) := Fin.castSuccEmb.trans (Fin.castAddEmb j)
     with hfdef
   have hfs : f.trans s = nd.tuple₁ := by
-    rw [hfdef, Function.Embedding.trans_assoc, hs, castSuccEmb_trans_snoc]
+    rw [Function.Embedding.trans_assoc, hs, castSuccEmb_trans_snoc]
   have hfP : typeMap f P = some nd.type := by
     have h := hcons₁ s P f hP
     rw [hfs, nd.eval₁] at h
@@ -137,48 +129,46 @@ theorem exists_step_left_of_receiving (hcons₁ : R₁.IsExactParentConsistent) 
   obtain ⟨u, Q', hfu, hu, h, hagree⟩ := FiniteCoverReceiving.finiteCoverReceiving_of_receiving
     hcons₂ hFC₂ P f
     nd.tuple₂ nd.type hfP nd.eval₂ δ hδbot hδα
-  let Q'' : Cell P.scheme.scheme → ExtOrd := fun d => Q'.label (SemScheme.castCell h.symm d)
-  have hQ'' : RespectsSemantics P.scheme.rows Q'' := respects_castCell h Q'.respects
+  let Q'' := fun d => Q'.label (SemScheme.castCell h.symm d)
+  have hQ'' := respects_castCell h Q'.respects
   let T' : S α.1 (nd.arity + 1 + j) := ⟨P.scheme, Q'', fun d => Q'.label_bound _, hQ''⟩
   have hT' : Q' = T' := StageType.eq_of_label h (fun _ => rfl)
-  have hoff : ∀ d, P.label d ≠ ⊤ → Q'' d = P.label d := fun d hd =>
+  have hoff := fun d hd =>
     label_eq_of_agree h hagree d (hδgt d hd)
   -- the chart is received literally: both types restrict to `nd.type` along `f`
-  have hvf : Finset.univ.image f ∈ P.scheme.scheme.plan :=
-    (typeMap_isSome_iff f P).mp (by rw [hfP]; rfl)
-  have hsP : P.scheme.restrictFace f hvf = nd.type.scheme :=
+  have hvf :=
+    (typeMap_isSome_iff f P).mp (by grind)
+  have hsP :=
     congrArg StageType.scheme (Option.some.inj ((typeMap_eq_some f P hvf).symm.trans hfP))
   have hPr := (typeMap_eq_some_iff_labels f P nd.type hvf hsP).mp hfP
   have hT'f : typeMap f T' = some nd.type := by
     have h := hcons₂ u Q' f hu
     rw [hfu, nd.eval₂, hT'] at h
     exact h.symm
-  have hQr := (typeMap_eq_some_iff_labels f T' nd.type hvf hsP).mp hT'f
   have hroot : ∀ i, Q'' (toCell P.scheme.scheme f hvf i) =
-      P.label (toCell P.scheme.scheme f hvf i) := fun i => (hQr i).trans (hPr i).symm
+      P.label (toCell P.scheme.scheme f hvf i) := fun i => (((typeMap_eq_some_iff_labels f T' nd.type hvf hsP).mp hT'f) i).trans (hPr i).symm
   -- rigidity of the first model's core on the cover `s`
   set e' : Fin k ↪ Fin (nd.arity + 1 + j) := e.trans f with he'def
-  have he's : e'.trans s = B₁ := by rw [he'def, Function.Embedding.trans_assoc, hfs, he₁]
+  have he's : e'.trans s = B₁ := by rw [Function.Embedding.trans_assoc, hfs, he₁]
   have hQP : Q'' = P.label := by
     refine eq_of_unique_admissible hQ''
       (TB := {y | P.scheme.scheme.scope y ⊆ Finset.univ.image e' ∧ P.label y = ⊤}) ?_ hoff ?_
     · intro H hTB hH
-      exact r₁ s P hP e' he's H hH (fun y hy hytop => hTB ⟨hy, hytop⟩)
+      exact r₁ s P hP e' he's H hH fun y hy hytop => hTB ⟨hy, hytop⟩
     · rintro y ⟨hy, hytop⟩
-      have hyf : P.scheme.scheme.scope y ⊆ Finset.univ.image f := hy.trans fun z hz => by
+      have hyf := hy.trans fun z hz => by
         obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp hz
         exact Finset.mem_image_of_mem f (Finset.mem_univ _)
       obtain ⟨i, rfl⟩ := exists_toCell_eq (D := P.scheme.scheme) (f := f) (hr := hvf) hyf
-      rw [hroot i]
-      exact hytop
+      grind
   have hQ'P : Q' = P := by
     rw [hT']
-    exact StageType.eq_of_label rfl (fun d => congrFun hQP d)
-  refine ⟨⟨nd.arity + 1 + j, s, u, P, hP, by rw [← hQ'P]; exact hu⟩, f, hfs, hfu,
+    exact StageType.eq_of_label rfl (congrFun hQP)
+  refine ⟨⟨nd.arity + 1 + j, s, u, P, hP, by grind⟩, f, hfs, hfu,
     ⟨Fin.castAddEmb j (Fin.last nd.arity), ?_⟩, e', he's, ?_⟩
-  · have hlast := congrArg (fun g : Fin (nd.arity + 1) ↪ M₁ => g (Fin.last nd.arity)) hs
-    simpa only [Function.Embedding.trans_apply, snoc_apply_last] using hlast
-  · rw [he'def, Function.Embedding.trans_assoc, hfu, he₂]
+  · have hlast := congrArg (fun g => g (Fin.last nd.arity)) hs
+    simpa using hlast
+  · rw [Function.Embedding.trans_assoc, hfu, he₂]
 
 /-- The chart invariant is preserved by density on both sides. -/
 theorem restrictedStepSupply_of_receiving (hcons₁ : R₁.IsExactParentConsistent) (hcov₁ :
@@ -194,10 +184,13 @@ theorem restrictedStepSupply_of_receiving (hcons₁ : R₁.IsExactParentConsiste
     exact ⟨⟨⟨next, emb, h₁, h₂, fun _ hx' => (Sum.inl.inj hx') ▸ hx,
       fun _ hy => absurd hy Sum.inl_ne_inr⟩, hgood⟩⟩
   · obtain ⟨next, emb, h₁, h₂, hy, hgood⟩ :=
-      exists_step_left_of_receiving hcons₂ hcov₂ hcons₁ hFC₁ r₂ (swapNode nd) (coreChart_swapNode
-        hnd) y
+      exists_step_left_of_receiving hcons₂ hcov₂ hcons₁ hFC₁ r₂ (swapNode nd) (by
+          obtain ⟨e, h₁, h₂⟩ := hnd
+          exact ⟨e, h₂, h₁⟩) y
     exact ⟨⟨⟨swapNode next, emb, h₂, h₁, fun _ hx => absurd hx Sum.inr_ne_inl,
-      fun _ hy' => (Sum.inr.inj hy') ▸ hy⟩, coreChart_swapNode hgood⟩⟩
+      fun _ hy' => (Sum.inr.inj hy') ▸ hy⟩, by
+          obtain ⟨e, h₁, h₂⟩ := hgood
+          exact ⟨e, h₂, h₁⟩⟩⟩
 
 /-- **Root-preserving classification**: two countable models at the same stage with globally
 rigid cores of the same finite type are isomorphic by an isomorphism carrying one core onto the
@@ -209,10 +202,7 @@ theorem exists_iso_of_rigidCores_of_receiving [Countable M₁] [Countable M₂] 
       {B₂ : Fin k ↪ M₂} {b : S α.1 k}
     (h₁ : R₁.eval B₁ = some b) (h₂ : R₂.eval B₂ = some b) (r₁ : RigidCore R₁ B₁)
     (r₂ : RigidCore R₂ B₂) : ∃ e : R₁.Iso R₂, ∀ i, e.1 (B₁ i) = B₂ i :=
-  exists_iso_of_restrictedCommonChartStepSupply hcons₁ hcons₂ (CoreChart B₁ B₂)
-    ⟨k, B₁, B₂, b, h₁, h₂⟩
-    ⟨Function.Embedding.refl _, Function.Embedding.refl_trans _, Function.Embedding.refl_trans _⟩
-    (restrictedStepSupply_of_receiving hcons₁ hcov₁ hFC₁ hcons₂ hcov₂ hFC₂ r₁ r₂)
+  exists_iso_of_selectedCommonCharts hcons₁ hcons₂ (CoreChart B₁ B₂) ⟨k, B₁, B₂, b, h₁, h₂⟩ ⟨Function.Embedding.refl _, Function.Embedding.refl_trans _, Function.Embedding.refl_trans _⟩ (restrictedStepSupply_of_receiving hcons₁ hcov₁ hFC₁ hcons₂ hcov₂ hFC₂ r₁ r₂)
 
 /-- **Classification**: two countable models at the same stage with globally rigid cores of the
 same finite type are isomorphic. -/

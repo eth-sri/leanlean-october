@@ -8,7 +8,6 @@ module
 public import VaughtConjecture.Knight.CappedDonorReceiving
 public import VaughtConjecture.Knight.CappedDonorFace
 public import VaughtConjecture.Knight.ReferenceContextMargin
-public import VaughtConjecture.Knight.ReferenceOrbitRow
 
 /-! # The receiving input from an actual model (notes32 §1, the adapter)
 
@@ -56,11 +55,11 @@ noncomputable def properRequest : ExtOrd → Option BlockRequest
   | some (some β) => some ⟨limitPart β, finitePart β⟩
   | _ => none
 
-theorem properRequest_ofOrd (β : Ordinal.{0}) :
+theorem properRequest_ofOrd β :
     properRequest (ofOrd β) = some ⟨limitPart β, finitePart β⟩ := rfl
 
-theorem properRequest_eq_some {x : ExtOrd} {r : BlockRequest} (h : properRequest x = some r) :
-    ∃ β : Ordinal.{0}, x = ofOrd β ∧ r = ⟨limitPart β, finitePart β⟩ := by
+theorem properRequest_eq_some {x} {r} (h : properRequest x = some r) :
+    ∃ β, x = ofOrd β ∧ r = ⟨limitPart β, finitePart β⟩ := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
   · exact nomatch h
   · exact nomatch h
@@ -71,7 +70,7 @@ theorem properRequest_eq_some {x : ExtOrd} {r : BlockRequest} (h : properRequest
 noncomputable def donorRequests (q : S α.1 (n + 1)) : List BlockRequest :=
   (List.finRange q.scheme.scheme.card).filterMap fun d => properRequest (q.label d)
 
-theorem mem_donorRequests {q : S α.1 (n + 1)} {r : BlockRequest} :
+theorem mem_donorRequests {q : S α.1 (n + 1)} {r} :
     r ∈ donorRequests q ↔ ∃ (d : Cell q.scheme.scheme) (β : Ordinal.{0}),
       q.label d = ofOrd β ∧ r = ⟨limitPart β, finitePart β⟩ := by
   unfold donorRequests
@@ -85,7 +84,7 @@ theorem mem_donorRequests {q : S α.1 (n + 1)} {r : BlockRequest} :
 
 /-- The limit part of an ordinal is a non-successor (ported from the reviewer's private lemma in
 `FiniteBlockBridge`, with attribution). -/
-theorem isNonSuccessor_limitPart (δ : Ordinal.{0}) : IsNonSuccessor (limitPart δ) := by
+theorem isNonSuccessor_limitPart δ : IsNonSuccessor (limitPart δ) := by
   by_cases h0 : limitPart δ = 0
   · exact Or.inl h0
   · refine Or.inr ?_
@@ -111,7 +110,7 @@ noncomputable def blocksOf (reqs : List BlockRequest) : Finset Ordinal.{0} :=
   reqs.toFinset.image BlockRequest.block
 
 open Classical in
-theorem mem_blocksOf {reqs : List BlockRequest} {μ : Ordinal.{0}} :
+theorem mem_blocksOf {reqs} {μ} :
     μ ∈ blocksOf reqs ↔ ∃ r ∈ reqs, r.block = μ := by
   unfold blocksOf
   simp only [Finset.mem_image, List.mem_toFinset]
@@ -119,7 +118,7 @@ theorem mem_blocksOf {reqs : List BlockRequest} {μ : Ordinal.{0}} :
 /-- The requested blocks of a donor. -/
 noncomputable def blocks (q : S α.1 (n + 1)) : Finset Ordinal.{0} := blocksOf (donorRequests q)
 
-theorem mem_blocks {q : S α.1 (n + 1)} {μ : Ordinal.{0}} :
+theorem mem_blocks {q : S α.1 (n + 1)} {μ} :
     μ ∈ blocks q ↔ ∃ r ∈ donorRequests q, r.block = μ := mem_blocksOf
 
 /-! ## The reference data from the model -/
@@ -135,7 +134,7 @@ threshold is chosen.  This form exports the geometric receipts of the constructi
 is the block itself (`μ = Subtype.val`), the faces, representatives and offsets are the context's,
 and the face identification is the literal common face `commonFace`. -/
 theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
-    (hp : R.eval t = some p) (q : S α.1 (n + 1)) (hq : IsCoface p q) {reqs : List BlockRequest}
+    (hp : R.eval t = some p) q (hq : IsCoface p q) {reqs}
     (hreqs : ∀ r ∈ reqs, Value.IsNonSuccessor r.block ∧ r.block < α.1)
     (hsub : ∀ r ∈ donorRequests q, r ∈ reqs) (C : ReferenceContext R t reqs)
     (hNmin : n + 1 < C.N) (hcap_pos : ⊥ < C.p₀.label C.capBase)

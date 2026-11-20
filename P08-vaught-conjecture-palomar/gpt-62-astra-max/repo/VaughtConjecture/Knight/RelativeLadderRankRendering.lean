@@ -15,7 +15,6 @@ catalogue, while the rendered vector reads the incoming numerical values.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
 open Transform Value ExtOrd LadderScalarRendering
 noncomputable section
@@ -24,7 +23,7 @@ variable (D : CellScheme A) (sem : Semantics D) (hA : 0 < A.card)
   (field : Cell D → X) (fields : Q → X → ExtOrd) (hp : ∀ d, D.scope d ≠ A)
 
 def renderWith (a : Q) (p : X → ExtOrd) (C : ExtOrd) :
-    Cell (carrier D hA (X := X) (Q := Q)) → ExtOrd :=
+    (carrier D hA (X := X) (Q := Q)).Labelling :=
   image D hA field fields a (LadderScalarRendering.level (values p) C)
 
 theorem renderWith_old (a : Q) (p : X → ExtOrd) (C : ExtOrd)
@@ -60,7 +59,7 @@ theorem renderWith_agreement {a b : Q} {p q : X → ExtOrd} {C h : ExtOrd}
     (hra : ∀ x, ranks fields a x = fieldRank p x)
     (hrb : ∀ x, ranks fields b x = fieldRank q x)
     (ha : ∀ x, p x ≤ C) (hb : ∀ x, q x ≤ C) (hC : h ≤ C)
-    (hag : ∀ x, min (p x) h = min (q x) h)
+    (hag : CappedEq p q h)
     (d : Cell (carrier D hA (X := X) (Q := Q))) :
     min (renderWith D hA field fields a p C d) h =
       min (renderWith D hA field fields b q C d) h := by

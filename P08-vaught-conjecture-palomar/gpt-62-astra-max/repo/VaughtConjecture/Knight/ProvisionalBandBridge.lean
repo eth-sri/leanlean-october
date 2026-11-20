@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.RestrictedComposition
-public import VaughtConjecture.Knight.ProvisionalUniqueness
 public import VaughtConjecture.Knight.FiniteRowReadback
 
 /-! # The provisional value is the band map of the row at a top witness
@@ -59,24 +58,19 @@ namespace StageType
 
 variable {α : Ordinal.{0}} {n : ℕ}
 
-/-- The rows of `∞`-cells below a top witness are not `⊥`. -/
-theorem row_ne_bot' (p : S α n) {Θ : Cell p.scheme.scheme} (hΘ : p.label Θ = ⊤)
-    (d : p.scheme.scheme.below (p.scheme.scheme.cell Θ)) (hd : p.label d.1 = ⊤) :
-    p.scheme.rows.E Θ d ≠ ⊥ := row_ne_bot_of_label_top p hΘ d hd
-
 /-- **Non-cap `∞`-rows below a top witness share one limit part.**  If `d, d'` are `∞`-cells
 below the top witness `Θ` with neither capped, their rows are ordinals with finite part
 `< K^p` and equal limit parts. -/
 theorem limitPart_eq_of_not_cap {p : S α n} {Θ : Cell p.scheme.scheme}
     (hsc : p.scheme.scheme.scope Θ = Finset.univ) (hgr : p.scheme.scheme.grade Θ = p.topGrade)
-    (hΘ : p.label Θ = ⊤) {d d' : p.scheme.scheme.below (p.scheme.scheme.cell Θ)}
+    (hΘ : p.label Θ = ⊤) {d d' : p.scheme.scheme.RowDomain Θ}
     (hd : p.label d.1 = ⊤) (hd' : p.label d'.1 = ⊤)
     (hcap : ¬ p.ProvisionalCap d.1) (hcap' : ¬ p.ProvisionalCap d'.1)
     {ν ν' : Ordinal.{0}} (hν : p.scheme.rows.E Θ d = ofOrd ν)
     (hν' : p.scheme.rows.E Θ d' = ofOrd ν') :
     finitePart ν < p.topGrade ∧ finitePart ν' < p.topGrade ∧ limitPart ν = limitPart ν' := by
   -- finite parts below `K`: otherwise the cell caps itself
-  have hfp : ∀ (e : p.scheme.scheme.below (p.scheme.scheme.cell Θ)) (μ : Ordinal.{0}),
+  have hfp : ∀ (e : p.scheme.scheme.RowDomain Θ) (μ : Ordinal.{0}),
       p.label e.1 = ⊤ → ¬ p.ProvisionalCap e.1 → p.scheme.rows.E Θ e = ofOrd μ →
       finitePart μ < p.topGrade := by
     intro e μ he hce hμ
@@ -114,7 +108,7 @@ theorem ProvisionalCap.transport {p : S α n} {d : Cell p.scheme.scheme} (hcap :
     {Θ : Cell p.scheme.scheme} (hdΘ : GradedLe (p.scheme.scheme.cell d) (p.scheme.scheme.cell Θ))
     (hsc : p.scheme.scheme.scope Θ = Finset.univ) (hgr : p.scheme.scheme.grade Θ = p.topGrade)
     (_hΘ : p.label Θ = ⊤) :
-    ∃ Sg : p.scheme.scheme.below (p.scheme.scheme.cell Θ), p.label Sg.1 = ⊤ ∧
+    ∃ Sg : p.scheme.scheme.RowDomain Θ, p.label Sg.1 = ⊤ ∧
       extVisibilityReplace (p.scheme.rows.E Θ Sg) p.topGrade p.topGrade ≤
         p.scheme.rows.E Θ ⟨d, hdΘ⟩ := by
   obtain ⟨Θ', hdΘ', Sg', hsc', hgr', hΘ', hSg', hle⟩ := hcap
@@ -204,10 +198,9 @@ theorem ProvisionalCap.transport {p : S α n} {d : Cell p.scheme.scheme} (hcap :
     exact absurd haY (not_lt.mpr this)
 
 /-- Capped **at `Θ`**: some `∞`-cell below `Θ` caps `d` in the row of `Θ`. -/
-def CapAt (p : S α n) (Θ : Cell p.scheme.scheme) (d : p.scheme.scheme.below
-  (p.scheme.scheme.cell Θ)) :
+def CapAt (p : S α n) (Θ : Cell p.scheme.scheme) (d : p.scheme.scheme.RowDomain Θ) :
     Prop :=
-  ∃ Sg : p.scheme.scheme.below (p.scheme.scheme.cell Θ), p.label Sg.1 = ⊤ ∧
+  ∃ Sg : p.scheme.scheme.RowDomain Θ, p.label Sg.1 = ⊤ ∧
     extVisibilityReplace (p.scheme.rows.E Θ Sg) p.topGrade p.topGrade ≤ p.scheme.rows.E Θ d
 
 /-- **A capped row is at cap level**: with a non-cap `∞`-cell `d₀` of row `lam + j` (`j < K`)
@@ -216,10 +209,10 @@ the cap witness is either non-capped, hence in the active band, or capped with a
 a cell capping itself has finite part `≥ K` and limit part `≥ lam`, else it would cap `d₀`). -/
 theorem CapAt.row_ge {p : S α n} {Θ : Cell p.scheme.scheme}
     (hsc : p.scheme.scheme.scope Θ = Finset.univ) (hgr : p.scheme.scheme.grade Θ = p.topGrade)
-    (hΘ : p.label Θ = ⊤) {d₀ : p.scheme.scheme.below (p.scheme.scheme.cell Θ)}
+    (hΘ : p.label Θ = ⊤) {d₀ : p.scheme.scheme.RowDomain Θ}
     (hd₀ : p.label d₀.1 = ⊤) (hc₀ : ¬ p.ProvisionalCap d₀.1) {ν₀ : Ordinal.{0}}
     (hν₀ : p.scheme.rows.E Θ d₀ = ofOrd ν₀) :
-    ∀ (ν : Ordinal.{0}) (d : p.scheme.scheme.below (p.scheme.scheme.cell Θ)), p.label d.1 = ⊤ →
+    ∀ (ν : Ordinal.{0}) (d : p.scheme.scheme.RowDomain Θ), p.label d.1 = ⊤ →
       p.scheme.rows.E Θ d = ofOrd ν → CapAt p Θ d → limitPart ν₀ + p.topGrade ≤ ν := by
   set K := p.topGrade with hK
   have hfp₀ : finitePart ν₀ < K := by
@@ -234,7 +227,7 @@ theorem CapAt.row_ge {p : S α n} {Θ : Cell p.scheme.scheme}
   intro d hd hν ⟨Sg, hSg, hle⟩
   rw [hν] at hle
   rcases ExtOrd.cases (p.scheme.rows.E Θ Sg) with hb | ht | ⟨μ, hμ⟩
-  · exact absurd hb (row_ne_bot' p hΘ Sg hSg)
+  · exact absurd hb (row_ne_bot_of_label_top p hΘ Sg hSg)
   · rw [ht, extVisibilityReplace_top] at hle
     exact absurd hle (not_le.mpr (ofOrd_lt_top _))
   · rw [hμ, extVisibilityReplace_ofOrd, ofOrd_le_ofOrd] at hle
@@ -281,15 +274,6 @@ theorem CapAt.row_ge {p : S α n} {Θ : Cell p.scheme.scheme}
       rw [visibilityReplace_of_finitePart_lt hfpμ, hlp] at hle
       exact hle
 
-/-- Every `∞`-row below a top witness is `≥ K` at cap level: a capped cell's row dominates
-`E(Θ')(Σ) ⊔⁺_K K ≥ K` (via its own witness); here we only need the weak form for rows at our
-witness `Θ`: if `fp ν ≥ K` then `ν ≥ K`. -/
-theorem le_of_finitePart_ge {ν : Ordinal.{0}} {K : ℕ} (h : K ≤ finitePart ν) : (K :
-  Ordinal.{0}) ≤ ν :=
-  calc (K : Ordinal.{0}) ≤ finitePart ν := Nat.cast_le.mpr h
-    _ ≤ limitPart ν + finitePart ν := le_add_of_nonneg_left zero_le
-    _ = ν := decomposition ν
-
 /-- **The band bridge.**  Below a top witness `Θ` of a stage type `p` there is a multiple of
 `ω`, `lam`, such that every `∞`-cell `d` below `Θ` has row `≥ lam` and provisional value
 `bandMap α lam K^p (E(Θ)(d))`. -/
@@ -297,16 +281,16 @@ theorem exists_bandBridge (p : S α n) {Θ : Cell p.scheme.scheme}
     (hsc : p.scheme.scheme.scope Θ = Finset.univ) (hgr : p.scheme.scheme.grade Θ = p.topGrade)
     (hΘ : p.label Θ = ⊤) :
     ∃ lam : Ordinal.{0}, limitPart lam = lam ∧
-      ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Θ), p.label d.1 = ⊤ →
+      ∀ d : p.scheme.scheme.RowDomain Θ, p.label d.1 = ⊤ →
         ofOrd lam ≤ p.scheme.rows.E Θ d ∧
           p.IsProvisionalValue d.1 (bandMap α lam p.topGrade (p.scheme.rows.E Θ d)) := by
   classical
   set K := p.topGrade with hK
   -- the cap case is uniform; the band index at `Θ` is the finite part of the row
-  have hcapval : ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Θ), p.label d.1 = ⊤ →
+  have hcapval : ∀ d : p.scheme.scheme.RowDomain Θ, p.label d.1 = ⊤ →
       p.ProvisionalCap d.1 → p.IsProvisionalValue d.1 (ofOrd (α + K)) :=
     fun d hd hc => Or.inr (Or.inl ⟨hd, hc, rfl⟩)
-  have hbandval : ∀ (d : p.scheme.scheme.below (p.scheme.scheme.cell Θ)) (ν : Ordinal.{0}),
+  have hbandval : ∀ (d : p.scheme.scheme.RowDomain Θ) (ν : Ordinal.{0}),
       p.label d.1 = ⊤ → ¬ p.ProvisionalCap d.1 → p.scheme.rows.E Θ d = ofOrd ν →
       finitePart ν < K ∧ p.IsProvisionalValue d.1 (ofOrd (α + finitePart ν)) := by
     intro d ν hd hc hν
@@ -320,14 +304,14 @@ theorem exists_bandBridge (p : S α n) {Θ : Cell p.scheme.scheme}
     change p.scheme.rows.E Θ d = extVisibilityReplace (p.scheme.rows.E Θ d) K (finitePart ν)
     rw [hν, extVisibilityReplace_ofOrd, visibilityReplace_of_finitePart_lt hfp, decomposition]
   -- rows of `∞`-cells are `⊤` or ordinals
-  have hrow : ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Θ), p.label d.1 = ⊤ →
+  have hrow : ∀ d : p.scheme.scheme.RowDomain Θ, p.label d.1 = ⊤ →
       p.scheme.rows.E Θ d = ⊤ ∨ ∃ ν, p.scheme.rows.E Θ d = ofOrd ν := by
     intro d hd
     rcases ExtOrd.cases (p.scheme.rows.E Θ d) with hb | ht | ⟨ν, hν⟩
-    · exact absurd hb (row_ne_bot' p hΘ d hd)
+    · exact absurd hb (row_ne_bot_of_label_top p hΘ d hd)
     · exact Or.inl ht
     · exact Or.inr ⟨ν, hν⟩
-  by_cases hex : ∃ (d₀ : p.scheme.scheme.below (p.scheme.scheme.cell Θ)) (ν₀ : Ordinal.{0}),
+  by_cases hex : ∃ (d₀ : p.scheme.scheme.RowDomain Θ) (ν₀ : Ordinal.{0}),
       p.label d₀.1 = ⊤ ∧ ¬ p.ProvisionalCap d₀.1 ∧ p.scheme.rows.E Θ d₀ = ofOrd ν₀
   · obtain ⟨d₀, ν₀, hd₀, hc₀, hν₀⟩ := hex
     refine ⟨limitPart ν₀, limitPart_limitPart ν₀, fun d hd => ?_⟩
@@ -379,7 +363,7 @@ theorem exists_bandBridge (p : S α n) {Θ : Cell p.scheme.scheme}
         have hK : (0 : Ordinal.{0}) + K ≤ ν := by
           rw [zero_add]
           rcases ExtOrd.cases (p.scheme.rows.E Θ Sg₁) with hb | ht | ⟨μ, hμ⟩
-          · exact absurd hb (row_ne_bot' p hΘ Sg₁ h1)
+          · exact absurd hb (row_ne_bot_of_label_top p hΘ Sg₁ h1)
           · rw [ht, extVisibilityReplace_top] at h2
             change ⊤ ≤ p.scheme.rows.E Θ d at h2
             rw [hν] at h2
@@ -390,7 +374,7 @@ theorem exists_bandBridge (p : S α n) {Θ : Cell p.scheme.scheme}
             unfold visibilityReplace ordinalReplace
             split_ifs with hfp
             · exact le_add_of_nonneg_left zero_le
-            · exact le_of_finitePart_ge (not_lt.mp hfp)
+            · exact Trans.trans (Trans.trans (Nat.cast_le.mpr (not_lt.mp hfp)) (le_add_of_nonneg_left zero_le)) (decomposition μ)
         rw [bandMap_ofOrd_of_cap hK]
         exact hcapval d hd hc
 

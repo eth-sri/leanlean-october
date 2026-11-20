@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.SpectrumAssembly
-public import VaughtConjecture.Knight.BlockGeometry
 public import VaughtConjecture.Knight.NoTop
 
 /-! # Terminal models: the low-level definitions
@@ -43,12 +42,6 @@ reduct along the equality changes no label). -/
 noncomputable def liftBlockZero (W₀ : KnightRealization (blockStage 0) ℕ) :
     KnightRealization omegaStage ℕ :=
   W₀.reduct omegaStage_le_blockStage_zero
-
-theorem liftBlockZero_reduct (R : KnightRealization omegaStage ℕ) :
-    liftBlockZero (R.reduct blockStage_zero_le_omegaStage) = R := by
-  unfold liftBlockZero
-  rw [Realization.reduct_reduct]
-  exact Realization.reduct_refl R
 
 /-- The counted model underlying a terminal model: reduct to block `0`, lifted. -/
 noncomputable def TerminalModel.toNatModel {ρ : Ordinal.{0}} (W : TerminalModel ρ) :

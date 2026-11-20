@@ -5,7 +5,6 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.BlockStages
 public import VaughtConjecture.Knight.BlockReflection
 
 /-! # Successor stages and the next block

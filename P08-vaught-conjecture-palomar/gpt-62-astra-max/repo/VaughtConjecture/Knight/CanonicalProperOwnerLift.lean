@@ -1,5 +1,0 @@
-module
-public import VaughtConjecture.Knight.CanonicalProperOwnerAmbient
-public import VaughtConjecture.Knight.CanonicalProperOwnerPrefix
-public import VaughtConjecture.Knight.CanonicalOwnerBoundary
-public import VaughtConjecture.Knight.RetunedCutDecoding

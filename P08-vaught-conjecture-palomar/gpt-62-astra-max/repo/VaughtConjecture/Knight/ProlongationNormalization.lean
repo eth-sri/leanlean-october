@@ -37,13 +37,6 @@ namespace KnightRealization
 abbrev IsModelClass : ∀ {δ : LimitStage} {N : Type w}, KnightRealization δ N → Prop :=
   fun R => R.IsModel
 
-/-- The model class is closed under push-forward along a bijection of carriers
-(`IsModel.map`, `Knight/ModelMap.lean`; the missing lemma of the #73 audit): the map-closure
-hypothesis of `prolongsToIn_iff_prolongsToOnIn`, discharged once for Knight. -/
-theorem isModelClass_map {δ : LimitStage} {N N' : Type w} (e : N ≃ N')
-    (R' : KnightRealization δ N) (hR' : IsModelClass R') : IsModelClass (R'.map e) :=
-  hR'.map e
-
 /-- **Every certified link normalizes to a literal fixed-carrier reduct equation** (Knight's
 Def. 5.1.1 verbatim): `R` prolongs to `δ'` through actual models iff some actual model **on
 the carrier of `R` itself** reduces **exactly** to `R`.  Immediate from `IsModel.map` via the
@@ -54,7 +47,7 @@ theorem prolongsToIn_isModelClass_iff_on {δ δ' : LimitStage} {N : Type w}
     (R : KnightRealization δ N) (h : δ ≤ δ') :
     R.ProlongsToIn IsModelClass h ↔ R.ProlongsToOnIn IsModelClass h :=
   Realization.prolongsToIn_iff_prolongsToOnIn
-    (fun e R' hR' => isModelClass_map e R' hR') R h
+    (fun e R' hR' => hR'.map e) R h
 
 end KnightRealization
 

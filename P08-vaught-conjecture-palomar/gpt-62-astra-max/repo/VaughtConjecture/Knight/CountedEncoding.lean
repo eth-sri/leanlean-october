@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.FiniteBlockBridge
-public import VaughtConjecture.Knight.VisibilityAlgebra
 
 /-! # The counted encoding on keyed values, and transport of finite certificates
 
@@ -44,8 +43,6 @@ variable (l : ℕ) (S : Finset Ordinal.{0})
 noncomputable def encOrdK (v : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * (blockOf l S v : ℕ) + (min (finitePart v) l : ℕ)
 
-theorem encOrdK_eq_code (v : Ordinal.{0}) : encOrdK l S v = code l S v := rfl
-
 /-- The counted encoding on labels: `⊥`, `⊤` fixed, ordinals coded. -/
 noncomputable def encT : ExtOrd → ExtOrd
   | ⊥ => ⊥
@@ -60,9 +57,6 @@ theorem encT_ofOrd (α : Ordinal.{0}) : encT l S (ofOrd α) = ofOrd (encOrdK l S
 def Keyed (x : ExtOrd) : Prop := x = ⊥ ∨ x = ⊤ ∨ ∃ α, x = ofOrd α ∧ keyOrd l α ∈ keys l S
 
 theorem keyed_bot : Keyed l S ⊥ := Or.inl rfl
-theorem keyed_top : Keyed l S ⊤ := Or.inr (Or.inl rfl)
-theorem keyed_of_mem {v : Ordinal.{0}} (hv : v ∈ S) : Keyed l S (ofOrd v) :=
-  Or.inr (Or.inr ⟨v, rfl, keyOrd_mem_keys l S hv⟩)
 
 /-- Replacement at a threshold `≤ l` preserves the key. -/
 theorem keyOrd_visibilityReplace {k : ℕ} (hk : k ≤ l) (α : Ordinal.{0}) {i : ℕ} (hi : i ≤ k) :
@@ -79,7 +73,7 @@ theorem keyed_evr {k : ℕ} (hk : k ≤ l) {x : ExtOrd} (hx : Keyed l S x) {i : 
     Keyed l S (extVisibilityReplace x k i) := by
   rcases hx with rfl | rfl | ⟨α, rfl, hα⟩
   · exact keyed_bot l S
-  · exact keyed_top l S
+  · exact Or.inr (Or.inl rfl)
   · rw [extVisibilityReplace_ofOrd]
     exact Or.inr (Or.inr ⟨_, rfl, by rw [keyOrd_visibilityReplace l hk α hi]; exact hα⟩)
 

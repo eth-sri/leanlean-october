@@ -8,8 +8,6 @@ module
 public import VaughtConjecture.Knight.GrowthCarrierEvaluation
 public import VaughtConjecture.Knight.StableActualLabelling
 public import VaughtConjecture.Knight.GrowthStableSelectedInput
-public import VaughtConjecture.Knight.TopSupportReceiving
-public import VaughtConjecture.Knight.ActualOccurrence
 
 /-! # Actual growth receiving evaluated by lawful stable labels
 
@@ -25,7 +23,6 @@ In particular this does not construct the shorter encoding or donor template.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableCarrierReceiving
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 open Growth CellScheme.restrictFace
@@ -41,10 +38,6 @@ variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   (X : RelativeData C.scheme.scheme C.scheme.rows P.scheme P.rows)
   (T : RootAttachment Q Fin.castSuccEmb hvP hP e hvC hC X)
   (hsmall : n + 1 < X.req.N)
-
-local notation "E" => GrowthAttachedCarrier.semScheme C.scheme P Q e hvC hvP hC hP X T hsmall
-local notation "F" => GrowthAttachedCarrier.privateFace C.scheme P Q e hvC hvP hC hP X T hsmall
-local notation "G" => GrowthAttachedCarrier.donorFace C.scheme P Q e hvC hvP hC hP X T hsmall
 
 variable (hM : W.IsModel) {u : Fin J ↪ M} (hu : W.eval u = some C)
 

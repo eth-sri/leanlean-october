@@ -5,8 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.LowFrame
+public import VaughtConjecture.Knight.PaddedOwnerRepair
 public import VaughtConjecture.Knight.LowOnlyPaddedStepDecode
-public import VaughtConjecture.Knight.LowOnlyPaddedStepCharts
+public import VaughtConjecture.Knight.PaddedTowerChart
 public import VaughtConjecture.Knight.LowOnlyDonorOrderedLift
 
 /-! # Constructed higher donor owner-capped repair
@@ -18,20 +20,16 @@ retains every physical coordinate's external cap.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepDonorRepair
 open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
-open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
-open LowOnlyPaddedStepDecode LowOnlyPaddedStepCharts SharpWitnessComposition
+open LowOnlyPaddedContract PaddedTower.Step LowOnlyOrderedLadder
+open LowOnlyPaddedStepDecode PaddedTower.Step SharpWitnessComposition
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   {I : WholeDonorBoundary.Input A B C R m n n} {F : LowOnly.Family I.left I.right K}
-  {hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i}
-  {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
-  (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
+  {frame : I.LowFrame F} {k : ℕ}
+  (P : Layer frame k) (hk : 1 ≤ k) (hnext : k + 1 ≤ A.card)
 
 theorem donor_grade (d : I.left.scheme.below (effC n (k + 1))) :
     (carrier P hnext).grade (donorAt P hnext d).1 =
@@ -50,11 +48,9 @@ theorem owner_capped
     (hq : RespectsSemanticsBelow (rows P hk hnext) (A, (k + 1)) q)
     {γ : ExtOrd} (hγ : SelfVis (k + 1) γ) (hpos : ⊥ < γ) (hactive : γ < p c)
     (hag : ∀ d, min (q (donorAt P hnext d)) γ = min (p d) γ) :
-    ∃ u, RespectsSemanticsBelow (rows P hk hnext) (A, (k + 1)) u ∧
-      (∀ d, u (donorAt P hnext d) = min (p d) (p c)) ∧
-      (∀ d, min (u d) γ = min (q d) γ) ∧ (∀ d, u d ≤ p c) := by
+    (rows P hk hnext).FaceLift (donorAt P hnext) (fun d => min (p d) (p c)) q γ := by
   classical
-  obtain ⟨a, σ, H, hσ, hmax, hread⟩ := LowOnlyPaddedStepCharts.exists_chart P hk hnext hq
+  obtain ⟨a, σ, H, hσ, hmax, hread⟩ := PaddedTower.Step.exists_chart P hk hnext hq
   have hreach : γ ≤ H := by
     have he := hag c
     rw [min_eq_right hactive.le] at he
@@ -63,6 +59,7 @@ theorem owner_capped
   have hchart (d) : min (σ (source P hk hnext a d.1)) γ = min (q d) γ := by
     rw [hread, min_assoc, min_eq_right hreach]
   obtain ⟨S, hS, he⟩ := a.property.2
+  change S.profile = a.val at he
   have hcanon : S.profile ∈ CanonicalPairedProfiles.inventory (Field I.left I.right) (k + 1) :=
     he.symm ▸ a.property.1
   have ha : (⟨S.profile, hcanon, S, hS, rfl⟩ : F.Anchor (k + 1)) = a := Subtype.ext he
@@ -74,55 +71,12 @@ theorem owner_capped
     change a.val (LowOnlyOrderedLadder.field I (I.leftFace.map d.1)) = S.u d.1
     rw [← he]
     exact LowOnlyOrderedLadder.field_donor I S d.1
-  let toEff := CellScheme.below.mono (D := I.left.scheme)
-    (show GradedLe (I.left.scheme.cell c.1) (effC n (k + 1)) from by
-      rw [hc]; exact GradedLe.refl _)
-  let fromEff := CellScheme.below.mono (D := I.left.scheme)
-    (show GradedLe (effC n (k + 1)) (I.left.scheme.cell c.1) from by
-      rw [hc]; exact GradedLe.refl _)
-  let s := S.lowerP (k + 1) ∘ toEff
-  let p' := p ∘ toEff
-  have hs' : RespectsSemanticsBelow I.left.rows (I.left.scheme.cell c.1) s := hS.lawfulP.mono _
-  have hp' : RespectsSemanticsBelow I.left.rows (I.left.scheme.cell c.1) p' := hp.mono _
-  obtain ⟨δ, hδ, hδpos, _, _, ⟨fac⟩⟩ := PrivateRowFactorization.exists_factorization c.1
-    (Fintype.card (Field I.left I.right)) hs' hp'
-    (fun d => by
-      rw [hg]
-      exact CanonicalPairedProfiles.inventory_coded _ _ hcanon (.inl d.1))
-    (fun d => by
-      rw [hg]
-      exact CanonicalPairedProfiles.inventory_short _ _ hcanon (.inl d.1))
-    (by simpa only [hg] using hσ) (by simpa only [hg] using hγ) hpos hactive (fun d => by
-      change min (σ (S.lowerP (k + 1) (toEff d))) γ = min (p (toEff d)) γ
-      rw [← hdonor]
-      exact (hchart _).trans (hag _))
-  rw [hg] at hδ
-  rcases Finset.mem_insert.mp hδ with hz | hd
-  · exact False.elim (not_lt_of_ge (le_of_eq hz) hδpos)
-  obtain ⟨b, hb, hbδ⟩ := Finset.mem_image.mp hd
-  change CanonicalPairedInverse.grid (k + 1) b = δ at hbδ
-  subst δ
-  have hb' : b ≤ 2 * Fintype.card (Field I.left I.right) + 1 := by
-    have := Finset.mem_range.mp hb
-    omega
-  let v := fac.source ∘ fromEff
-  have hv : RespectsSemanticsBelow I.left.rows (effC n (k + 1)) v := fac.lawful.mono _
-  obtain ⟨w, hw, hwread, hwcap⟩ := donor_source_repair P hk hnext hS hcanon hb' hv
-    (fun d => fac.prefix_eq (fromEff d))
-  have hcap (d) : min (fac.outgoing (w d)) γ = min (q d) γ := by
-    have hpre := hwcap d
-    rw [ha] at hpre
-    have hs : Short (I.left.scheme.grade c.1) (source P hk hnext a d.1) := by
-      simpa only [hg] using source_short P hk hnext a d.1
-    exact (AmbientGradeCharts.map_cap_agreement fac.witness.mono hpre fac.reaches).trans
-      ((fac.caps _ hs).trans (hchart d))
-  have hν : Witness (gTop (k + 1)) fac.outgoing := by simpa only [hg] using fac.witness
-  refine ⟨fun d => fac.outgoing (w d),
-    map_respects_of_positive_cap_agreement hw hq (fun d => d.2.2)
-      (boundedMap_of_witness hν) (ne_of_gt hpos) hcap, ?_, hcap, fun _ => fac.bounded _⟩
-  intro d
-  exact (congrArg fac.outgoing (hwread d)).trans (fac.readback (fromEff d))
-
+  refine PrivateRowFactorization.repairOwner c hc hg _ hS.lawfulP hp hq hdonor
+    (fun d => CanonicalPairedProfiles.inventory_coded _ _ hcanon (.inl d.1))
+    (fun d => source_short P hk hnext a d.1) hσ hγ hpos hactive hchart hag ?_
+  intro b hb v hv heq
+  rw [← ha]
+  exact donor_source_repair P hk hnext hS hcanon hb hv heq
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedStepDonorRepair

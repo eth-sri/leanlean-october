@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.FinalGateApex
-public import VaughtConjecture.Knight.OrdinaryFinalStage
+public import VaughtConjecture.Knight.OrdinaryFinalDisplay
 public import VaughtConjecture.Knight.OrdinaryFinalReadback
 public import VaughtConjecture.Knight.OrderedFaceRestriction
 public import VaughtConjecture.Knight.CoatomRecursiveOrdered
@@ -26,7 +26,6 @@ or unconditional producer is asserted by this packaging.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalInstallation
 open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref SharpWitnessComposition
 open OrdinaryFinalCatalogue OrdinaryFinalReadback
@@ -39,7 +38,6 @@ variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Membe
 
 abbrev card_eq : (Finset.univ : Finset (Fin (N + 1))).card = N + 1 := Finset.card_fin _
 abbrev carrier := FinalGateApex.scheme F card_eq
-abbrev original (d : Cell D) : Cell (carrier R F) := FinalGateApex.old F card_eq (F.old d)
 abbrev marked (a : OrdinaryFinalCatalogue.Member R) : Cell (carrier R F) :=
   FinalGateApex.old F card_eq (F.added a true)
 
@@ -56,10 +54,9 @@ def semScheme (hcons : F.sem.IsConsistent) (hcode : F.sem.IsCoded)
     (hsupport : ∀ a d, D.grade d ≤ N →
       OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d)) :
     SemScheme (N + 1) := by
-  let seed := Classical.choose (exists_actual_member R)
   refine ⟨carrier R F, FinalGateApex.rows F hD card_eq, ?_,
     FinalGateApex.consistent F hD card_eq hcons, FinalGateApex.bountiful F hD card_eq hb,
-    FinalGateApex.complete F card_eq seed hcomplete⟩
+    FinalGateApex.complete F card_eq (seed R) hcomplete⟩
   apply FinalGateApex.coded F hD card_eq
   apply F.coded hcode (fun a f => hfields a f ▸ member_coded R a f) ?_ hsupport
   intro z hz
@@ -73,28 +70,20 @@ theorem exists_installed_raw_display
     (hsupport : ∀ a d, D.grade d ≤ N →
       OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d))
     (howners : ∀ a (c : D.below (Finset.univ, N)),
-      (∀ d : D.below (D.cell c.1), Short (D.grade c.1) (F.sem.E c.1 d)) ∨
-      (∀ d : D.below (D.cell c.1), ∃ f : Field P C, F.lower a d.1 = a.val f))
-    (req : Cell P.scheme ↪ Cell D) (priv : Cell C.scheme ↪ Cell D)
-    (hreq : ∀ a d, F.lower a (req d) = a.val (.req d))
-    (hpriv : ∀ a d, F.lower a (priv d) = a.val (.priv d)) :
-    ∃ (a : OrdinaryFinalCatalogue.Member R) (r : Cell (carrier R F) → ExtOrd),
+      (∀ d : D.RowDomain c.1, Short (D.grade c.1) (F.sem.E c.1 d)) ∨
+      (∀ d : D.RowDomain c.1, ∃ f : Field P C, F.lower a d.1 = a.val f))
+    (priv : Cell C.scheme ↪ Cell D) (hpriv : ∀ a d, F.lower a (priv d) = a.val (.priv d)) :
+    ∃ (a : OrdinaryFinalCatalogue.Member R) (r : (carrier R F).Labelling),
       RespectsSemantics (FinalGateApex.rows F hD card_eq) r ∧
-      (∀ d, r (original R F (req d)) = R.p d) ∧
-      (∀ d, r (original R F (priv d)) = R.vact d) ∧
-      r (marked R F a) = ⊤ ∧ r (FinalGateApex.apex F card_eq) = ⊥ := by
-  obtain ⟨a, δ, -, hlaw, hp, hc, hg, -⟩ :=
-    OrdinaryFinalDisplay.exists_actual_display R F hfields hgate hgrid hsupport howners
-      req priv hreq hpriv
-  let p := fun d : F.carrier.below (Finset.univ, N) => δ (F.source a d.1)
-  refine ⟨a, FinalGateApex.display F card_eq p,
-    FinalGateApex.display_lawful F hD card_eq hlaw, ?_, ?_, ?_,
-    FinalGateApex.display_apex F card_eq p⟩
-  · intro d
-    exact (FinalGateApex.display_old F card_eq p (oldAt R F (req d) (hD _))).trans (hp d)
-  · intro d
-    exact (FinalGateApex.display_old F card_eq p (oldAt R F (priv d) (hD _))).trans (hc d)
-  · exact (FinalGateApex.display_old F card_eq p (F.addedAt a true)).trans hg
+      (∀ d, r (FinalGateApex.old F card_eq (F.old (priv d))) = R.vact d) ∧ r (marked R F a) = ⊤ := by
+  obtain ⟨a,δ,hlaw,hr⟩ := OrdinaryFinalDisplay.display R F hfields hgrid hsupport howners (actual R)
+  let p := fun d : F.carrier.below (Finset.univ,N) => δ (F.source a d.1)
+  refine ⟨a,_,FinalGateApex.display_lawful F hD card_eq hlaw,fun d => (FinalGateApex.display_old F card_eq p
+    (oldAt R F (priv d) (hD _))).trans ?_,(FinalGateApex.display_old F card_eq p (F.addedAt a true)).trans ?_⟩
+  · change δ (F.source a (F.old (priv d))) = _
+    rw [F.source_old,hpriv]; exact hr _
+  · change δ (F.source a (F.added a true)) = _
+    rw [F.source_own_marked,hgate,hfields]; exact hr .gate
 
 /-- The original exact face survives both installations, in the same order. -/
 def originalFace {m : ℕ} (T : SemScheme m) (f : Fin m ↪ Fin (N + 1))
@@ -106,12 +95,6 @@ def originalFace {m : ℕ} (T : SemScheme m) (f : Fin m ↪ Fin (N + 1))
     (fun h => hne (Finset.Subset.antisymm (Finset.subset_univ _) h))
     (F.inheritedFace (Finset.subset_univ _) hne E)
 
-theorem originalFace_order {m : ℕ} (T : SemScheme m) (f : Fin m ↪ Fin (N + 1))
-    {B : Finset (Fin (N + 1))} (hB : Finset.univ.image f = B) (hne : B ≠ Finset.univ)
-    (E : ExactSemanticFace (PointImageSemantics.rows T.scheme f hB T.rows) F.sem)
-    (hE : StrictMono E.map) : StrictMono (originalFace R F hD T f hB hne E).map :=
-  (FinalGateApex.old_order F card_eq).comp (F.old_strictMono.comp hE)
-
 /-- Arbitrary lawful sections of the completed occurrence inventory retain
 the capped readback theorem. The apex creates no additional chart hypothesis. -/
 theorem capped_readback
@@ -121,26 +104,14 @@ theorem capped_readback
     (hprivGrade : ∀ d, D.grade (priv d) = C.scheme.grade d)
     (hreq : ∀ a d, F.lower a (req d) = a.val (.req d))
     (hpriv : ∀ a d, F.lower a (priv d) = a.val (.priv d))
-    {q : Cell (carrier R F) → ExtOrd}
+    {q : (carrier R F).Labelling}
     (hq : RespectsSemantics (FinalGateApex.rows F hD card_eq) q)
-    (hretain : ∀ d, q (original R F (priv d)) = R.vact d)
+    (hretain : ∀ d, q (FinalGateApex.old F card_eq (F.old (priv d))) = R.vact d)
     (b : OrdinaryFinalCatalogue.Member R) (hpositive : q (marked R F b) ≠ ⊥)
     (d : Cell P.scheme) :
-    min (q (original R F (req d))) (R.cut R.vactL) = min (R.p d) (R.cut R.vactL) :=
+    min (q (FinalGateApex.old F card_eq (F.old (req d)))) (R.cut R.vactL) = min (R.p d) (R.cut R.vactL) :=
   OrdinaryFinalReadback.capped_readback R F req priv hreqGrade hprivGrade hfields hgate hreq hpriv
     (FinalGateApex.restrict_lawful F hD card_eq hq) hretain b hpositive d
-
-section Packaging
-
-variable (hcons : F.sem.IsConsistent) (hcode : F.sem.IsCoded) (hb : F.rows.IsBountiful)
-variable (hcomplete : ∀ J ∈ Plan.gradedPlan D.plan, J.2 ≤ N →
-  J ≠ (Finset.univ, N) → ∃ d, D.cell d = J)
-variable (hfields : ∀ a f, F.fields a f = a.val f)
-variable (hgrid : F.grid = PairedSlotComparison.sourceGrid N (Fintype.card (Field P C)))
-variable (hsupport : ∀ a d, D.grade d ≤ N →
-  OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d))
-
-end Packaging
 
 end
 end VaughtConjecture.Knight.OrdinaryFinalInstallation

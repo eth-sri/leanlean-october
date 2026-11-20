@@ -38,14 +38,9 @@ keep the lane quarantined. -/
 variable {M : Type w}
 
 /-- Injective tuples on a countable carrier are countable. -/
-instance countable_emb [Countable M] (n : ℕ) : Countable (Fin n ↪ M) :=
+instance countable_emb [Countable M] n : Countable (Fin n ↪ M) :=
   Function.Injective.countable (f := fun f : Fin n ↪ M => (f : Fin n → M))
     DFunLike.coe_injective
-
-/-- The ordinals strictly below a countable ordinal are countable. -/
-theorem countable_lt (hβ : α.card ≤ Cardinal.aleph0) :
-    Countable {γ : Ordinal.{0} // γ < α} :=
-  ((Ordinal.countable_Iic_of_card_le_aleph0 hβ).mono Set.Iio_subset_Iic_self).to_subtype
 
 end FixedHeight
 end VaughtConjecture.Knight

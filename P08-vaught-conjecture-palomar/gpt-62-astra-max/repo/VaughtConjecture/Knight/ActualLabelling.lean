@@ -16,7 +16,6 @@ realizing a legal scheme in that realization does not realize chosen labels.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.KnightRealization
 open TypeTower StageType Value ExtOrd
 universe w
@@ -25,7 +24,7 @@ variable {M : Type w} {α : LimitStage} (W : KnightRealization α M)
 /-- An evaluator of actual finite occurrences, with lawful rows and literal face
 compatibility. No saturation, modelhood or stage bound is required of the evaluator. -/
 structure ActualLabelling where
-  label : {n : ℕ} → (Fin n ↪ M) → (p : S α.1 n) → Cell p.scheme.scheme → ExtOrd
+  label : {n : ℕ} → (Fin n ↪ M) → (p : S α.1 n) → p.scheme.scheme.Labelling
   lawful : ∀ {n : ℕ} {u : Fin n ↪ M} {p : S α.1 n}, W.eval u = some p →
     RespectsSemantics p.scheme.rows (label u p)
   mapCell : ∀ {n m : ℕ} {u : Fin n ↪ M} {p : S α.1 n}

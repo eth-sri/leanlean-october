@@ -76,11 +76,6 @@ def castLE (h : α ≤ β) (t : S α n) : S β n where
   label_bound d := (t.label_bound d).imp (fun hlt => hlt.trans_le (ofOrd_le_ofOrd.mpr h)) id
   respects := t.respects
 
-@[simp] theorem castLE_scheme (h : α ≤ β) (t : S α n) : (castLE h t).scheme = t.scheme := rfl
-
-@[simp] theorem castLE_label (h : α ≤ β) (t : S α n) (d : Cell t.scheme.scheme) :
-    (castLE h t).label d = t.label d := rfl
-
 /-- **Reduction undoes stage weakening**: reducing the lift of `t : S α n` to any intermediate
 limit stage `β` with `α ≤ β ≤ γ` is again the lift of `t` — the labels are already strictly
 bounded at `α` (`truncExt_id_of_bound`).  At `β = α` this is a one-sided inverse:
@@ -104,7 +99,7 @@ variable {α : Ordinal.{0}} {n : ℕ}
 `ext_of_scheme_label`). -/
 theorem label_congr {t₁ t₂ : S α n} (h : t₁ = t₂) (d : Cell t₁.scheme.scheme) :
     t₁.label d = t₂.label (SemScheme.castCell (congrArg StageType.scheme h) d) := by
-  subst h; rfl
+  aesop
 
 /-- `HEq`-free extensionality: two stage types are equal when their schemes are equal and
 their labels agree across the cell transport. -/
@@ -115,9 +110,7 @@ theorem ext_of_scheme_label {t₁ t₂ : S α n} (hs : t₁.scheme = t₂.scheme
   obtain ⟨X₂, l₂, b₂, r₂⟩ := t₂
   revert hl
   change X₁ = X₂ at hs
-  subst hs
-  intro hl
-  exact StageType.ext rfl (heq_of_eq (funext fun d => hl d))
+  aesop
 
 end StageType
 
@@ -152,10 +145,9 @@ theorem eq_of_forall_truncExt_eq {x y : ExtOrd} {δ : Ordinal.{0}} {c : ℕ → 
   have key : ∀ {z : ExtOrd}, z < ofOrd δ → ∃ i, z < ofOrd (c i) := by
     intro z hz
     rcases ExtOrd.cases z with rfl | rfl | ⟨β, rfl⟩
-    · exact ⟨0, bot_lt_ofOrd _⟩
-    · exact absurd hz (not_lt.mpr le_top)
-    · obtain ⟨i, hi⟩ := hcof β (ofOrd_lt_ofOrd.mp hz)
-      exact ⟨i, ofOrd_lt_ofOrd.mpr hi⟩
+    · simp
+    · simp_all
+    · simp_all
   rcases hx with hx | rfl
   · obtain ⟨i, hi⟩ := key hx
     have hxi := h i
@@ -163,11 +155,11 @@ theorem eq_of_forall_truncExt_eq {x y : ExtOrd} {δ : Ordinal.{0}} {c : ℕ → 
     rcases lt_or_ge y (ofOrd (c i)) with hyi | hyi
     · rwa [truncExt_id_of_lt hyi] at hxi
     · rw [truncExt_eq_top_of_ge hyi] at hxi
-      exact absurd (hxi ▸ hi) not_top_lt
+      simp_all
   · rcases hy with hy | rfl
     · obtain ⟨i, hi⟩ := key hy
       have hyi := h i
-      rw [truncExt_top, truncExt_id_of_lt hi] at hyi
+      rw [truncExt_id_of_lt hi] at hyi
       exact hyi
     · rfl
 
@@ -198,20 +190,18 @@ theorem IsReduceChain.scheme_eq (hp : IsReduceChain hc p) {i j : ℕ} (h : i ≤
 /-- A cell of the base entry, transported to stage `i` of the chain. -/
 noncomputable def IsReduceChain.cell (hp : IsReduceChain hc p) (i : ℕ)
     (d : Cell (p 0).scheme.scheme) : Cell (p i).scheme.scheme :=
-  SemScheme.castCell (hp.scheme_eq (Nat.zero_le i)).symm d
+  SemScheme.castCell (congrArg scheme (hp (Nat.zero_le i))).symm d
 
 /-- The label chain of one transported cell is a coherent label chain. -/
 theorem IsReduceChain.isTruncChain (hp : IsReduceChain hc p) (d : Cell (p 0).scheme.scheme) :
-    ExtOrd.IsTruncChain (fun i => (c i).1) (fun i => (p i).label (hp.cell i d)) := by
-  intro i j hij
-  exact (label_congr (hp hij) (hp.cell j d)).symm
+    ExtOrd.IsTruncChain (fun i => (c i).1) (fun i => (p i).label (hp.cell i d)) := fun i j hij => (label_congr (hp hij) (hp.cell j d)).symm
 
 open Classical in
 /-- A stage index past which every cell's label chain has stabilised: for each of the finitely
 many cells, an index witnessing a non-`⊤` value if there is one (the chain is constant from
 there on), joined over the cells. -/
 noncomputable def IsReduceChain.stabIndex (hp : IsReduceChain hc p) : ℕ :=
-  Finset.univ.sup fun d : Cell (p 0).scheme.scheme =>
+  Finset.univ.sup fun d =>
     if h : ∃ i, (p i).label (hp.cell i d) ≠ ⊤ then h.choose else 0
 
 /-- Past `stabIndex`, every cell's label agrees with its value at `stabIndex`. -/
@@ -222,22 +212,12 @@ theorem IsReduceChain.label_stab (hp : IsReduceChain hc p) (d : Cell (p 0).schem
   have hvc := hp.isTruncChain d
   by_cases hex : ∃ i, (p i).label (hp.cell i d) ≠ ⊤
   · have hle : hex.choose ≤ hp.stabIndex := by
-      refine le_trans ?_ (Finset.le_sup (f := fun d : Cell (p 0).scheme.scheme =>
-        if h : ∃ i, (p i).label (hp.cell i d) ≠ ⊤ then h.choose else 0) (Finset.mem_univ d))
+      refine le_trans ?_ (Finset.le_sup (Finset.mem_univ d))
       rw [dite_eq_left hex]
     have h1 := hvc.eq_of_ne_top hle hex.choose_spec
     have h2 := hvc.eq_of_ne_top (hle.trans hj) hex.choose_spec
-    exact h2.trans h1.symm
-  · push Not at hex
-    rw [hex j, hex hp.stabIndex]
-
-/-- **Finite-stage stabilization**: past `stabIndex`, the chain is literally constant modulo
-stage weakening. -/
-theorem IsReduceChain.eq_castLE_stab (hp : IsReduceChain hc p) {j : ℕ}
-    (hj : hp.stabIndex ≤ j) :
-    p j = castLE (stage_le hc hj) (p hp.stabIndex) := by
-  refine ext_of_scheme_label (hp.scheme_eq hj) fun d => ?_
-  exact hp.label_stab (SemScheme.castCell (hp.scheme_eq (Nat.zero_le j)) d) hj
+    simp_all
+  simp_all
 
 /-- **The limit of a coherent chain of stage types** at an upper bound `δ` of the stages: the
 stabilized entry, stage-weakened to `δ`.  Its scheme, labels and — decisively — its
@@ -251,30 +231,17 @@ noncomputable def limitOfChain (hp : IsReduceChain hc p) (δ : LimitStage)
 theorem limitOfChain_def (hp : IsReduceChain hc p) (δ : LimitStage) (hδ : ∀ i, c i ≤ δ) :
     limitOfChain hp δ hδ = castLE (hδ hp.stabIndex) (p hp.stabIndex) := rfl
 
-@[simp] theorem limitOfChain_scheme (hp : IsReduceChain hc p) (δ : LimitStage)
-    (hδ : ∀ i, c i ≤ δ) : (limitOfChain hp δ hδ).scheme = (p hp.stabIndex).scheme := rfl
-
-@[simp] theorem limitOfChain_label (hp : IsReduceChain hc p) (δ : LimitStage)
-    (hδ : ∀ i, c i ≤ δ) (d : Cell (p hp.stabIndex).scheme.scheme) :
-    (limitOfChain hp δ hδ).label d = (p hp.stabIndex).label d := rfl
-
 /-- **Lower reductions of the limit equal the chain entries** — the acceptance equation
 ("reductions equal stages"). -/
 theorem reduceType_limitOfChain (hp : IsReduceChain hc p) (δ : LimitStage)
     (hδ : ∀ i, c i ≤ δ) (i : ℕ) :
     reduceType (c i).2 (hδ i) (limitOfChain hp δ hδ) = p i := by
   rcases le_total i hp.stabIndex with hii | hii
-  · calc reduceType (c i).2 (hδ i) (limitOfChain hp δ hδ)
-        = reduceType (c i).2 (stage_le hc hii) (p hp.stabIndex) := rfl
-      _ = p i := hp hii
-  · rw [hp.eq_castLE_stab hii, limitOfChain_def]
-    exact reduceType_castLE (c i).2 (stage_le hc hii) (hδ hp.stabIndex) (hδ i)
-      (p hp.stabIndex)
-
-/-- The limit's scheme equals the scheme of every chain entry. -/
-theorem limitOfChain_scheme_eq (hp : IsReduceChain hc p) (δ : LimitStage)
-    (hδ : ∀ i, c i ≤ δ) (i : ℕ) : (limitOfChain hp δ hδ).scheme = (p i).scheme :=
-  congrArg StageType.scheme (reduceType_limitOfChain hp δ hδ i)
+  · solve_by_elim
+  · rw [show p i = castLE (stage_le hc hii) (p hp.stabIndex) from by
+          refine ext_of_scheme_label (hp.scheme_eq hii) fun d => ?_
+          exact hp.label_stab (SemScheme.castCell (hp.scheme_eq (Nat.zero_le i)) d) hii, limitOfChain_def]
+    grind [reduceType_castLE]
 
 /-- A stage of the sequence past which strict truncation fixes every label of a stage-`δ`
 type: finitely many cells, and cofinality supplies a stage above each non-`⊤` label. -/
@@ -282,18 +249,14 @@ theorem exists_truncExt_label_id (hc : Monotone c) {δ : LimitStage}
     (hcof : ∀ γ : Ordinal.{0}, γ < δ.1 → ∃ i, γ < (c i).1) (q : S δ.1 n) :
     ∃ i₀ : ℕ, ∀ d : Cell q.scheme.scheme, truncExt (c i₀).1 (q.label d) = q.label d := by
   classical
-  choose g hg using fun d : Cell q.scheme.scheme =>
+  choose g hg using fun d =>
     show ∃ i, q.label d = ⊤ ∨ q.label d < ofOrd (c i).1 from by
       rcases q.label_bound d with hlt | htop
-      · rcases ExtOrd.cases (q.label d) with hbot | htop' | ⟨β, hβ⟩
-        · exact ⟨0, Or.inr (by rw [hbot]; exact bot_lt_ofOrd _)⟩
-        · exact ⟨0, Or.inl htop'⟩
-        · obtain ⟨i, hi⟩ := hcof β (by rw [hβ] at hlt; exact ofOrd_lt_ofOrd.mp hlt)
-          exact ⟨i, Or.inr (by rw [hβ]; exact ofOrd_lt_ofOrd.mpr hi)⟩
-      · exact ⟨0, Or.inl htop⟩
+      · rcases ExtOrd.cases (q.label d) with hbot | htop' | ⟨β, hβ⟩ <;> simp_all
+      simp_all
   refine ⟨Finset.univ.sup g, fun d => ?_⟩
   rcases hg d with htop | hlt
-  · rw [htop, truncExt_top]
+  · simp_all
   · exact truncExt_id_of_lt (hlt.trans_le (ofOrd_le_ofOrd.mpr
       (stage_le hc (Finset.le_sup (Finset.mem_univ d)))))
 
@@ -306,12 +269,7 @@ theorem eq_of_forall_reduceType_eq {δ : LimitStage} {q₁ q₂ : S δ.1 n}
     (hδ : ∀ i, c i ≤ δ) (hcof : ∀ γ : Ordinal.{0}, γ < δ.1 → ∃ i, γ < (c i).1)
     (h : ∀ i, reduceType (c i).2 (hδ i) q₁ = reduceType (c i).2 (hδ i) q₂) : q₁ = q₂ := by
   have hs0 := congrArg StageType.scheme (h 0)
-  have hs : q₁.scheme = q₂.scheme := hs0
-  refine ext_of_scheme_label hs fun d => ?_
-  refine ExtOrd.eq_of_forall_truncExt_eq (c := fun i => (c i).1) hcof (q₁.label_bound d)
-    (q₂.label_bound (SemScheme.castCell hs d)) fun i => ?_
-  have hli := label_congr (h i) d
-  exact hli
+  exact ext_of_scheme_label hs0 fun d => eq_of_forall_truncExt_eq hcof (q₁.label_bound d) (q₂.label_bound (SemScheme.castCell hs0 d)) fun i => label_congr (h i) d
 
 end StageType
 
@@ -352,10 +310,8 @@ theorem IsReductChain.exists_eval_eq_some_iff (hR : IsReductChain hc R) {n : ℕ
     rw [hq] at heq
     cases hcase : (R b).eval t with
     | none => rw [hcase] at heq; exact absurd heq (Option.some_ne_none q)
-    | some r => exact ⟨r, rfl⟩
-  rcases le_total i j with h | h
-  · exact ⟨key2 h, key h⟩
-  · exact ⟨key h, key2 h⟩
+    | some r => simp
+  rcases le_total i j with h | h <;> grind
 
 theorem IsReductChain.forall_exists_of_eval_eq_some (hR : IsReductChain hc R) {n : ℕ}
     {t : Fin n ↪ M} {i : ℕ} {q : S (c i).1 n} (hq : (R i).eval t = some q) :
@@ -368,8 +324,7 @@ theorem IsReductChain.isReduceChain_choose (hR : IsReductChain hc R) {n : ℕ}
     StageType.IsReduceChain hc fun i => (ht i).choose := by
   intro i j hij
   have h := hR.eval_eq hij t
-  rw [(ht i).choose_spec, (ht j).choose_spec, Option.map_some] at h
-  exact (Option.some_inj.mp h).symm
+  grind
 
 open Classical in
 /-- **The limit of a coherent fixed-carrier chain of realizations**: on each tuple, `none` if
@@ -421,11 +376,7 @@ theorem IsReductChain.exists_eq_limit (hR : IsReductChain hc R) {δ : LimitStage
     (hp' : (limitOfChain hc R hR δ hδ).eval t = some p) :
     ∃ ht : ∀ j, ∃ q : S (c j).1 n, (R j).eval t = some q,
       p = StageType.limitOfChain (hR.isReduceChain_choose ht) δ hδ := by
-  by_cases ht : ∀ j, ∃ q : S (c j).1 n, (R j).eval t = some q
-  · rw [limitOfChain_eval_pos hR δ hδ ht] at hp'
-    exact ⟨ht, (Option.some_inj.mp hp').symm⟩
-  · rw [limitOfChain_eval_neg hR δ hδ ht] at hp'
-    exact absurd hp'.symm (Option.some_ne_none p)
+  grind [limitOfChain_eval_pos, limitOfChain_eval_neg]
 
 /-! ### Def. 3.2.1 at the limit, clause by clause -/
 
@@ -443,8 +394,8 @@ theorem IsReductChain.isExactParentConsistent_limit (hR : IsReductChain hc R)
   change (limitOfChain hc R hR δ hδ).eval (f.trans t) = typeMap f L
   by_cases hvis : Finset.univ.image f ∈ L.scheme.scheme.plan
   · -- the face is visible at every stage
-    have hvis_j : ∀ j, Finset.univ.image f ∈ ((ht j).choose).scheme.scheme.plan := fun j =>
-      StageType.limitOfChain_scheme_eq (hR.isReduceChain_choose ht) δ hδ j ▸ hvis
+    have hvis_j := fun j =>
+      congrArg StageType.scheme (StageType.reduceType_limitOfChain (hR.isReduceChain_choose ht) δ hδ j) ▸ hvis
     have htf : ∀ j, ∃ q' : S (c j).1 m, (R j).eval (f.trans t) = some q' := by
       intro j
       refine ⟨((ht j).choose).restrictFace f (hvis_j j), ?_⟩
@@ -456,7 +407,7 @@ theorem IsReductChain.isExactParentConsistent_limit (hR : IsReductChain hc R)
     -- compute the reduction of the restriction through `typeMap_reduceType_comm`
     have h1 := typeMap_reduceType_comm (c i).2 (hδ i) f L
     rw [StageType.reduceType_limitOfChain (hR.isReduceChain_choose ht) δ hδ i,
-      typeMap_eq_some f L hvis, Option.map_some] at h1
+      typeMap_eq_some f L hvis] at h1
     have h4 : (htf i).choose = ((ht i).choose).restrictFace f (hvis_j i) := by
       have hcomb := ((htf i).choose_spec).symm.trans (hcons i t _ f (ht i).choose_spec)
       exact Option.some_inj.mp (hcomb.trans (typeMap_eq_some f _ (hvis_j i)))
@@ -472,19 +423,7 @@ theorem IsReductChain.isExactParentConsistent_limit (hR : IsReductChain hc R)
       by_contra hno
       exact Option.some_ne_none q0 (h0.trans (typeMap_eq_none f _ hno))
     exact hvis
-      ((StageType.limitOfChain_scheme_eq (hR.isReduceChain_choose ht) δ hδ 0).symm ▸ hvis0)
-
-/-- **Initial-segment covering passes to the limit** (clause (3)): the covering witness of any
-one stage is everywhere defined, hence defined at the limit. -/
-theorem IsReductChain.isInitialSegmentCovering_limit (hR : IsReductChain hc R)
-    (hcov : (R 0).IsInitialSegmentCovering) (δ : LimitStage) (hδ : ∀ i, c i ≤ δ) :
-    (limitOfChain hc R hR δ hδ).IsInitialSegmentCovering := by
-  intro n t
-  obtain ⟨k, s, hst, hsome⟩ := hcov t
-  obtain ⟨q, hq⟩ := Option.isSome_iff_exists.mp hsome
-  refine ⟨k, s, hst, ?_⟩
-  rw [limitOfChain_eval_pos hR δ hδ (hR.forall_exists_of_eval_eq_some hq)]
-  rfl
+      (congrArg StageType.scheme (StageType.reduceType_limitOfChain (isReduceChain_choose hR ht) δ hδ 0).symm ▸ hvis0)
 
 /-- **Realized families lift to the limit**: a witness for the tuple `t` at one stage `i`
 of the chain is everywhere defined; the limit label of the extended tuple reduces at stage `i`
@@ -500,17 +439,16 @@ theorem IsReductChain.realizesSome_limit (hR : IsReductChain hc R) {δ : LimitSt
     (h : (R i).RealizesSome t (reduceType (c i).2 (hδ i) p) U) :
     RealizesSome (limitOfChain hc R hR δ hδ) t p U' := by
   obtain ⟨y, hy, q, hqU, hqc, hq⟩ := h
-  have hts : ∀ j, ∃ q', (R j).eval (snoc t y hy) = some q' :=
-    hR.forall_exists_of_eval_eq_some hq
-  have hq' : (limitOfChain hc R hR δ hδ).eval (snoc t y hy)
-      = some (StageType.limitOfChain (hR.isReduceChain_choose hts) δ hδ) :=
+  have hts :=
+    fun j => (hR.exists_eval_eq_some_iff (snoc t y hy) i j).mp ⟨q, hq⟩
+  have hq' :=
     limitOfChain_eval_pos hR δ hδ hts
   have hred : reduceType (c i).2 (hδ i)
       (StageType.limitOfChain (hR.isReduceChain_choose hts) δ hδ) = q := by
     rw [StageType.reduceType_limitOfChain (hR.isReduceChain_choose hts) δ hδ i]
     exact Option.some_inj.mp ((hts i).choose_spec.symm.trans hq)
   refine ⟨y, hy, StageType.limitOfChain (hR.isReduceChain_choose hts) δ hδ,
-    hU _ (by rw [hred]; exact hqU), ?_, hq'⟩
+    hU _ (by simp_all), ?_, hq'⟩
   exact isCoface_of_consistent hcons hpt hq'
 
 /-- **Modelhood passes to the limit of a coherent chain of models** whose stages are cofinal
@@ -525,28 +463,31 @@ theorem IsModel.limitOfChain (hc : Monotone c) {R : ∀ i, KnightRealization (c 
     (hR : IsReductChain hc R) (hmod : ∀ i, (R i).IsModel) (δ : LimitStage)
     (hδ : ∀ i, c i ≤ δ) (hcof : ∀ γ : Ordinal.{0}, γ < δ.1 → ∃ i, γ < (c i).1) :
     IsModel (KnightRealization.limitOfChain hc R hR δ hδ) := by
-  have hcons : (KnightRealization.limitOfChain hc R hR δ hδ).IsExactParentConsistent :=
+  have hcons :=
     hR.isExactParentConsistent_limit (fun i => (hmod i).consistent) δ hδ hcof
   refine ⟨(hmod 0).nonempty, hcons,
-    hR.isInitialSegmentCovering_limit (hmod 0).covering δ hδ, ?_, ?_, ?_, ?_⟩
+    by
+      intro n t
+      obtain ⟨k, s, hst, hsome⟩ := ((hmod 0).covering) t
+      obtain ⟨q, hq⟩ := Option.isSome_iff_exists.mp hsome
+      refine ⟨k, s, hst, ?_⟩
+      rw [limitOfChain_eval_pos hR δ hδ (hR.forall_exists_of_eval_eq_some hq)]
+      rfl, ?_, ?_, ?_, ?_⟩
   · -- (4)(a)(i) generalised saturation: scheme-only request, served at stage 0
     intro n t p hp' D hD
     obtain ⟨ht, rfl⟩ := hR.exists_eq_limit hp'
     set L := StageType.limitOfChain (hR.isReduceChain_choose ht) δ hδ with hLdef
-    have hred := StageType.reduceType_limitOfChain (hR.isReduceChain_choose ht) δ hδ 0
     have heval : (R 0).eval t = some (reduceType (c 0).2 (hδ 0) L) := by
-      rw [hred]; exact (ht 0).choose_spec
-    have hD0 : ExtendsDomain (reduceType (c 0).2 (hδ 0) L) D := ⟨hD.visible, hD.restrict⟩
+      rw [(StageType.reduceType_limitOfChain (hR.isReduceChain_choose ht) δ hδ 0)]; exact (ht 0).choose_spec
     exact hR.realizesSome_limit hcons (limitOfChain_eval_pos hR δ hδ ht) 0
-      (fun q' hq' => hq') ((hmod 0).genSat t _ heval D hD0)
+      (fun q' hq' => hq') ((hmod 0).genSat t _ heval D ⟨hD.visible, hD.restrict⟩)
   · -- (4)(a)(ii) prescribed `−∞`-pattern: served at a label-fixing stage
     intro n t p hp' D hD q' hq' hext
     obtain ⟨ht, rfl⟩ := hR.exists_eq_limit hp'
     set L := StageType.limitOfChain (hR.isReduceChain_choose ht) δ hδ with hLdef
     obtain ⟨i₀, hi₀⟩ := StageType.exists_truncExt_label_id hc hcof L
-    have hred := StageType.reduceType_limitOfChain (hR.isReduceChain_choose ht) δ hδ i₀
     have heval : (R i₀).eval t = some (reduceType (c i₀).2 (hδ i₀) L) := by
-      rw [hred]; exact (ht i₀).choose_spec
+      rw [(StageType.reduceType_limitOfChain (hR.isReduceChain_choose ht) δ hδ i₀)]; exact (ht i₀).choose_spec
     have hD0 : ExtendsDomain (reduceType (c i₀).2 (hδ i₀) L) D := ⟨hD.visible, hD.restrict⟩
     have hext0 : ∀ d, q' (hD0.cellOf d) = (reduceType (c i₀).2 (hδ i₀) L).label d := by
       intro d
@@ -563,28 +504,25 @@ theorem IsModel.limitOfChain (hc : Monotone c) {R : ∀ i, KnightRealization (c 
     obtain ⟨ht, rfl⟩ := hR.exists_eq_limit hp'
     set L := StageType.limitOfChain (hR.isReduceChain_choose ht) δ hδ with hLdef
     obtain ⟨i₁, hi₁⟩ := hcof γ hγδ
-    have hred := StageType.reduceType_limitOfChain (hR.isReduceChain_choose ht) δ hδ i₁
     have heval : (R i₁).eval t = some (reduceType (c i₁).2 (hδ i₁) L) := by
-      rw [hred]; exact (ht i₁).choose_spec
+      rw [(StageType.reduceType_limitOfChain (hR.isReduceChain_choose ht) δ hδ i₁)]; exact (ht i₁).choose_spec
     refine hR.realizesSome_limit hcons (limitOfChain_eval_pos hR δ hδ ht) i₁ ?_
       ((hmod i₁).uniformity t _ heval γ hγ hi₁)
     rintro q'' ⟨Sig, h1, h2⟩
     have h1' : ofOrd γ ≤ truncExt (c i₁).1 (q''.label Sig) := h1
     have h2' : truncExt (c i₁).1 (q''.label Sig) < ofOrd (γ + Ordinal.omega0) := h2
-    have hne : truncExt (c i₁).1 (q''.label Sig) ≠ ⊤ := ne_top_of_lt h2'
     have hlt : q''.label Sig < ofOrd (c i₁).1 := by
       by_contra hle
-      exact hne (truncExt_eq_top_of_ge (not_lt.mp hle))
+      exact (ne_top_of_lt h2') (truncExt_eq_top_of_ge (not_lt.mp hle))
     rw [truncExt_id_of_lt hlt] at h1' h2'
-    exact ⟨Sig, h1', h2'⟩
+    solve_by_elim
   · -- (4)(c) high-grade dominance: served at a stage above `γ`; truncation only raises labels
     intro n t p hp' γ hγδ
     obtain ⟨ht, rfl⟩ := hR.exists_eq_limit hp'
     set L := StageType.limitOfChain (hR.isReduceChain_choose ht) δ hδ with hLdef
     obtain ⟨i₁, hi₁⟩ := hcof γ hγδ
-    have hred := StageType.reduceType_limitOfChain (hR.isReduceChain_choose ht) δ hδ i₁
     have heval : (R i₁).eval t = some (reduceType (c i₁).2 (hδ i₁) L) := by
-      rw [hred]; exact (ht i₁).choose_spec
+      rw [(StageType.reduceType_limitOfChain (hR.isReduceChain_choose ht) δ hδ i₁)]; exact (ht i₁).choose_spec
     refine hR.realizesSome_limit hcons (limitOfChain_eval_pos hR δ hδ ht) i₁ ?_
       ((hmod i₁).highGradeDominance t _ heval γ hi₁)
     rintro q'' ⟨Sig, hg, hl⟩
@@ -592,7 +530,7 @@ theorem IsModel.limitOfChain (hc : Monotone c) {R : ∀ i, KnightRealization (c 
     have hl' : ofOrd γ < truncExt (c i₁).1 (q''.label Sig) := hl
     rcases lt_or_ge (q''.label Sig) (ofOrd (c i₁).1) with hlt | hge
     · rwa [truncExt_id_of_lt hlt] at hl'
-    · exact lt_of_lt_of_le (ofOrd_lt_ofOrd.mpr hi₁) hge
+    exact lt_of_lt_of_le (ofOrd_lt_ofOrd.mpr hi₁) hge
 
 end KnightRealization
 

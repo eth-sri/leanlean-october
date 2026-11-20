@@ -22,7 +22,7 @@ universe u v u' u'' uι w
 variable {L : Language.{u, v}} {ι : Type uι} {α : Type u'} {β : Type u''}
 
 /-- Relabelling the free variables of an infinitary formula along `g : α → β`. -/
-def relabelFree (g : α → β) : ∀ {n : ℕ}, L.BoundedFormulaInf ι α n → L.BoundedFormulaInf ι β n
+def relabelFree (g : α → β) : ∀ {n}, L.BoundedFormulaInf ι α n → L.BoundedFormulaInf ι β n
   | _, .falsum => .falsum
   | _, .equal t₁ t₂ => .equal (t₁.relabel (Sum.map g id)) (t₂.relabel (Sum.map g id))
   | _, .rel R ts => .rel R fun i => (ts i).relabel (Sum.map g id)
@@ -34,12 +34,12 @@ def relabelFree (g : α → β) : ∀ {n : ℕ}, L.BoundedFormulaInf ι α n →
 variable {M : Type w} [L.Structure M]
 
 /-- Relabelling free variables is realized along the composite valuation. -/
-theorem realize_relabelFree (g : α → β) :
-    ∀ {n : ℕ} (φ : L.BoundedFormulaInf ι α n) (v : β → M) (xs : Fin n → M),
+theorem realize_relabelFree g :
+    ∀ {n} (φ : L.BoundedFormulaInf ι α n) (v : β → M) xs,
       (relabelFree g φ).Realize v xs ↔ φ.Realize (v ∘ g) xs := by
   intro n φ
   induction φ with
-  | falsum => intro v xs; exact Iff.rfl
+  | falsum => aesop
   | equal t₁ t₂ =>
     intro v xs
     change (t₁.relabel (Sum.map g id)).realize (Sum.elim v xs) =
@@ -68,7 +68,7 @@ theorem realize_relabelFree (g : α → β) :
 
 /-- Relabelling free variables preserves the quantifier rank. -/
 theorem qrank_relabelFree (g : α → β) :
-    ∀ {n : ℕ} (φ : L.BoundedFormulaInf ι α n), (relabelFree g φ).qrank = φ.qrank := by
+    ∀ {n} (φ : L.BoundedFormulaInf ι α n), (relabelFree g φ).qrank = φ.qrank := by
   intro n φ
   induction φ with
   | falsum => rfl
@@ -76,15 +76,13 @@ theorem qrank_relabelFree (g : α → β) :
   | rel R ts => rfl
   | imp φ ψ ihφ ihψ =>
     change max (relabelFree g φ).qrank (relabelFree g ψ).qrank = max φ.qrank ψ.qrank
-    rw [ihφ, ihψ]
+    simp_all
   | all φ ih =>
     change Order.succ (relabelFree g φ).qrank = Order.succ φ.qrank
-    rw [ih]
+    simp_all
   | iSup φs ih =>
-    change (⨆ i, (relabelFree g (φs i)).qrank) = ⨆ i, (φs i).qrank
     exact iSup_congr ih
   | iInf φs ih =>
-    change (⨆ i, (relabelFree g (φs i)).qrank) = ⨆ i, (φs i).qrank
     exact iSup_congr ih
 
 end FirstOrder.Language.BoundedFormulaInf

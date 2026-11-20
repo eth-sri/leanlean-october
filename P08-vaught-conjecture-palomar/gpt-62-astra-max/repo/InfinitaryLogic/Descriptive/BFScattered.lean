@@ -229,16 +229,4 @@ theorem bfScattered_of_countable_bfObservations (C : Set (StructureSpace L))
     BFScattered C := fun η hη ↦
   countable_quotient_of_countable_range _ (obs η) (hc η hη) (hobs η hη)
 
-/-- **Thinness from countable back-and-forth observations**: `isThinOn_of_bfScattered` through
-`bfScattered_of_countable_bfObservations`.  Countability of the relation symbols enters only
-here, as in `isThinOn_of_bfScattered`: it makes the space of codes Polish, so that a perfect
-antichain yields a Cantor antichain.  The bridge and the Cantor-antichain conclusion need no
-countability. -/
-theorem isThinOn_of_countable_bfObservations [Countable (Σ l, L.Relations l)]
-    (C : Set (StructureSpace L)) {Q : Ordinal.{0} → Type w'} (obs : ∀ η, C → Q η)
-    (hc : ∀ η < Ordinal.omega 1, (Set.range (obs η)).Countable)
-    (hobs : ∀ η < Ordinal.omega 1, ∀ c d : C, obs η c = obs η d → CodeBFEquiv η c.1 d.1) :
-    IsThinOn (structureIsoSetoid L) C :=
-  isThinOn_of_bfScattered (bfScattered_of_countable_bfObservations C obs hc hobs)
-
 end FirstOrder.Language

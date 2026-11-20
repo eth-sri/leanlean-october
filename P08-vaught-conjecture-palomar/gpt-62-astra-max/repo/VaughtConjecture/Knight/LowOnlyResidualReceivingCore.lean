@@ -23,7 +23,6 @@ receiving; no realization covering or modelhood is needed. The growth branch is 
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyResidualReceiving
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly
 noncomputable section
@@ -31,12 +30,12 @@ universe w
 
 /-- In the residual finite-characteristic branch, every legal donor coface
 whose tops have grade at most the characteristic occurs exactly over its root. -/
-theorem receive_of_tail {M : Type w} {α : LimitStage} {W : KnightRealization α M}
-    (hcons : W.IsExactParentConsistent) (hFC : FiniteCutReceiving W) {K : ℕ}
+theorem receive_of_tail {M : Type w} {α} {W : KnightRealization α M}
+    (hcons : W.IsExactParentConsistent) (hFC : FiniteCutReceiving W) {K}
     (hcoin : KnightRealization.IsCoinitial {x : W.LabelledExt | x.type.topGrade = K}) (hKpos : 0 <
       K)
-    (hres : ∀ {k : ℕ} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore W B)
-    {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : W.eval t = some p)
+    (hres : ∀ {k} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore W B)
+    {n} t p (hp : W.eval t = some p)
     (q : S α.1 (n + 1)) (hq : IsCoface p q)
     (hqK : ∀ d, q.label d = ⊤ → q.scheme.scheme.grade d ≤ K) :
     ∃ (y : M) (hy : y ∉ Set.range t), W.eval (snoc t y hy) = some q := by
@@ -45,29 +44,24 @@ theorem receive_of_tail {M : Type w} {α : LimitStage} {W : KnightRealization α
   have hshared : F.root.Shared F.p CT.label := by
     rw [hFp]
     exact (hadm 0 ⊥ (selfVis_bot _)).shared
-  obtain ⟨v, hv, hroot⟩ := LowOnlyCofaceAttachment.receive_of_shared_of_receiving hQ hCT hcons hFC
-    u hu
-    F hFB hFp hshared hc hr
-  let v₀ : Fin (n + 1) ↪ M := (FixedHeight.extendFace e).trans v
-  have hval : W.eval v₀ = some q := (hcons v Q (FixedHeight.extendFace e) hv).trans hQe
+  obtain ⟨v, hv, hroot⟩ := LowOnlyCofaceAttachment.receive_of_receiving hQ hCT hcons (fun {n} => hFC) u hu (LowOnlyCofaceAttachment.rebase hQ hCT F hFB hFp hshared) rfl hFp hc hr
+  let v₀ := (FixedHeight.extendFace e).trans v
+  have hval := (hcons v Q (FixedHeight.extendFace e) hv).trans hQe
   have hprefix : Fin.castSuccEmb.trans v₀ = t := by
-    change Fin.castSuccEmb.trans ((FixedHeight.extendFace e).trans v) = t
     rw [← Function.Embedding.trans_assoc, FixedHeight.castSuccEmb_trans_extendFace,
       Function.Embedding.trans_assoc, hroot, ← Function.Embedding.trans_assoc, hut]
   have hy : v₀ (Fin.last n) ∉ Set.range t := by
     rintro ⟨i, hi⟩
-    have he : v₀ i.castSucc = v₀ (Fin.last n) :=
-      (congrArg (fun f : Fin n ↪ M => f i) hprefix).trans hi
-    exact (Fin.castSucc_lt_last i).ne (v₀.injective he)
+    exact (Fin.castSucc_lt_last i).ne (v₀.injective ((congrArg (fun f : Fin n ↪ M => f i) hprefix).trans hi))
   have heq : snoc t (v₀ (Fin.last n)) hy = v₀ := by
     apply Function.Embedding.ext
     intro i
     induction i using Fin.lastCases with
-    | last => exact snoc_apply_last _ _ _
+    | last => simp
     | cast j =>
       exact (snoc_apply_castSucc _ _ _ j).trans
-        (congrArg (fun f : Fin n ↪ M => f j) hprefix).symm
-  exact ⟨v₀ (Fin.last n), hy, heq.symm ▸ hval⟩
+        (congrArg (fun f => f j) hprefix).symm
+  grind
 
 end
 end VaughtConjecture.Knight.LowOnlyResidualReceiving

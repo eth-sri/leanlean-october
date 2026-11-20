@@ -54,10 +54,6 @@ theorem cofSeq_le_succ (β : Ordinal.{0}) (g : ℕ → Ordinal.{0}) (n : ℕ) :
     cofSeq β g n ≤ cofSeq β g (n + 1) :=
   le_max_left _ _
 
-theorem cofSeq_monotone (β : Ordinal.{0}) (g : ℕ → Ordinal.{0}) :
-    Monotone (cofSeq β g) :=
-  monotone_nat_of_le_succ (cofSeq_le_succ β g)
-
 theorem cofSeq_lt {β γ : Ordinal.{0}} (hβ : β < γ) {g : ℕ → Ordinal.{0}}
     (hg : ∀ n, g n < γ) (n : ℕ) : cofSeq β g n < γ := by
   induction n with

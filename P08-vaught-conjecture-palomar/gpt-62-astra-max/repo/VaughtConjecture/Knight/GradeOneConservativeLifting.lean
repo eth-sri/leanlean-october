@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.GradeOneGraphConservativity
-public import VaughtConjecture.Knight.GradeOneGraphPreservation

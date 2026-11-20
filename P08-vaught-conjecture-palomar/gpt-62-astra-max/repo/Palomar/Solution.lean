@@ -42,7 +42,7 @@ abbrev StructureSpace := Code R ℕ
 /-- Decode every relation coordinate. -/
 @[instance_reducible]
 def structureOfCode {M : Type} (c : Code R M) : (language R).Structure M where
-  funMap := fun f => isEmptyElim f
+  funMap := isEmptyElim
   RelMap := fun {n} r xs => c ⟨⟨n, r⟩, xs⟩ = true
 
 /-- Ordinary satisfaction in the decoded structure. -/
@@ -97,18 +97,14 @@ abbrev knightRelations := knightLang.Relations
 theorem isomorphic_iff_library (c d : Code knightRelations ℕ) :
     Isomorphic knightRelations c d ↔
       (structureIsoSetoid knightLang).r c d := by
-  change Isomorphic knightRelations c d ↔
-    Nonempty (@FirstOrder.Language.Equiv knightLang ℕ ℕ
-      (FirstOrder.Language.StructureSpaceOn.toStructure c)
-      (FirstOrder.Language.StructureSpaceOn.toStructure d))
   constructor
   · rintro ⟨e, h⟩
     refine ⟨@FirstOrder.Language.Equiv.mk knightLang ℕ ℕ
       (FirstOrder.Language.StructureSpaceOn.toStructure c)
       (FirstOrder.Language.StructureSpaceOn.toStructure d) e
-      (fun f => isEmptyElim f) (fun {n} r xs => ?_)⟩
+      (isEmptyElim) (fun {n} r xs => ?_)⟩
     change d ⟨⟨n, r⟩, e ∘ xs⟩ = true ↔ c ⟨⟨n, r⟩, xs⟩ = true
-    rw [h n r xs]
+    simp_all
   · rintro ⟨e⟩
     let σ := @FirstOrder.Language.Equiv.toEquiv knightLang ℕ ℕ
       (FirstOrder.Language.StructureSpaceOn.toStructure c)
@@ -117,9 +113,7 @@ theorem isomorphic_iff_library (c d : Code knightRelations ℕ) :
     have h := @FirstOrder.Language.Equiv.map_rel' knightLang ℕ ℕ
       (FirstOrder.Language.StructureSpaceOn.toStructure c)
       (FirstOrder.Language.StructureSpaceOn.toStructure d) e n r xs
-    change (d ⟨⟨n, r⟩, σ ∘ xs⟩ = true ↔ c ⟨⟨n, r⟩, xs⟩ = true) at h
-    cases hc : c ⟨⟨n, r⟩, xs⟩ <;>
-      cases hd : d ⟨⟨n, r⟩, σ ∘ xs⟩ <;> simp_all
+    simp_all <;> grind
 
 /-- The independently stated model relation is the one used by the proved endpoint. -/
 theorem knight_modelSetoid_eq :

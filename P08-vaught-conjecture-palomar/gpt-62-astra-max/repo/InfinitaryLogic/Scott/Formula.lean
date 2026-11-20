@@ -6,9 +6,7 @@ Authors: Cameron Freer
 module
 
 public import InfinitaryLogic.Scott.BackAndForth
-public import InfinitaryLogic.Util
 public import InfinitaryLogic.Lomega1omega.OpenBoundsSemantics
-public import Architect
 public import Mathlib.SetTheory.Cardinal.Aleph
 
 /-!
@@ -64,21 +62,16 @@ attribute [local instance] Encodable.ofCountable
 open FirstOrder Structure Fin Ordinal BoundedFormulaω
 
 /-- Existentially quantify over the last free variable of a formula. -/
-def existsLastVar {n : ℕ} (φ : L.Formulaω (Fin (n + 1))) : L.Formulaω (Fin n) :=
+def existsLastVar {n} (φ : L.Formulaω (Fin (n + 1))) : L.Formulaω (Fin n) :=
   (φ.relabel insertLastBound).ex
 
 /-- Universally quantify over the last free variable of a formula. -/
-def forallLastVar {n : ℕ} (φ : L.Formulaω (Fin (n + 1))) : L.Formulaω (Fin n) :=
+def forallLastVar {n} (φ : L.Formulaω (Fin (n + 1))) : L.Formulaω (Fin n) :=
   (φ.relabel insertLastBound).all
 
 section Semantics
 
 variable {N : Type w'} [L.Structure N]
-
-/-- Helper: snoc Fin.elim0 x evaluated at 0 gives x. -/
-private theorem snoc_elim0_zero {α : Type*} (x : α) :
-    (snoc (α := fun _ => α) Fin.elim0 x) 0 = x :=
-  congrFun (Fin.snoc_elim0_eq x) 0
 
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
 /-- Semantics of existsLastVar: existentially quantifies over the last variable.
@@ -87,24 +80,24 @@ Uses `realize_relabel_insertLastBound_zero` to show that:
 - `existsLastVar φ = (φ.relabel insertLastBound).ex`
 - This quantifies existentially over the last (n-th) free variable
 -/
-theorem realize_existsLastVar {n : ℕ} (φ : L.Formulaω (Fin (n + 1))) (v : Fin n → N) :
+theorem realize_existsLastVar {n} (φ : L.Formulaω (Fin (n + 1))) v :
     (existsLastVar φ).Realize v ↔ ∃ x : N, φ.Realize (snoc v x) := by
   -- keep the formula-level interface intact: apply the quantifier lemma at the empty tuple the
   -- sentence semantics actually supplies (`default`), rather than unfolding `Formulaω.Realize`
   have h := BoundedFormulaω.realize_ex (M := N) (v := v) (xs := (default : Fin 0 → N))
     (φ.relabel insertLastBound)
   refine h.trans (exists_congr fun x => ?_)
-  have hz : (snoc (α := fun _ => N) (default : Fin 0 → N) x) 0 = x := snoc_elim0_zero x
+  have hz : (snoc (α := fun _ => N) (default : Fin 0 → N) x) 0 = x := congrFun (snoc_elim0_eq x) 0
   rw [realize_relabel_insertLastBound_zero, hz]
 
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
 /-- Semantics of forallLastVar: universally quantifies over the last variable. -/
-theorem realize_forallLastVar {n : ℕ} (φ : L.Formulaω (Fin (n + 1))) (v : Fin n → N) :
+theorem realize_forallLastVar {n} (φ : L.Formulaω (Fin (n + 1))) v :
     (forallLastVar φ).Realize v ↔ ∀ x : N, φ.Realize (snoc v x) := by
   have h := BoundedFormulaω.realize_all (M := N) (v := v) (xs := (default : Fin 0 → N))
     (φ.relabel insertLastBound)
   refine h.trans (forall_congr' fun x => ?_)
-  have hz : (snoc (α := fun _ => N) (default : Fin 0 → N) x) 0 = x := snoc_elim0_zero x
+  have hz : (snoc (α := fun _ => N) (default : Fin 0 → N) x) 0 = x := congrFun (snoc_elim0_eq x) 0
   rw [realize_relabel_insertLastBound_zero, hz]
 
 end Semantics
@@ -128,7 +121,7 @@ tuples of different lengths in the recursion.
     ordinal $\alpha < \omegaone$: an $\Lomegaone$-formula mirroring the recursive
     definition of $\BFEquiv_\alpha$. -/)
   (uses := ["def:BFEquiv"])]
-noncomputable def scottFormula {n : ℕ} (a : Fin n → M) (α : Ordinal) : L.Formulaω (Fin n) :=
+noncomputable def scottFormula {n} (a : Fin n → M) (α : Ordinal) : L.Formulaω (Fin n) :=
   haveI : Encodable M := Encodable.ofCountable M
   Ordinal.limitRecOn (motive := fun _ => (k : ℕ) → (Fin k → M) → L.Formulaω (Fin k)) α
     -- Zero case: atomic diagram
@@ -164,12 +157,12 @@ noncomputable def scottFormula {n : ℕ} (a : Fin n → M) (α : Ordinal) : L.Fo
     n a
 
 omit [L.IsRelational] in
-theorem scottFormula_zero {n : ℕ} (a : Fin n → M) :
+theorem scottFormula_zero {n} (a : Fin n → M) :
     scottFormula (L := L) a 0 = atomicDiagram a := by
   simp only [scottFormula, Ordinal.limitRecOn_zero]
 
 omit [L.IsRelational] in
-theorem scottFormula_succ {n : ℕ} (a : Fin n → M) (α : Ordinal) :
+theorem scottFormula_succ {n} (a : Fin n → M) α :
     scottFormula (L := L) a (Order.succ α) =
       scottFormula a α ⊓
       einf (fun m : M => existsLastVar (scottFormula (snoc a m) α)) ⊓
@@ -199,8 +192,8 @@ The proof proceeds by ordinal induction using `limitRecOn`:
     the Scott formula, and the limit case uses countable infimum. -/)
   (uses := ["def:scottFormula", "def:BFEquiv"])]
 theorem realize_scottFormula_iff_BFEquiv
-    {N : Type w'} [L.Structure N] {n : ℕ}
-    (a : Fin n → M) (b : Fin n → N) (α : Ordinal) (hα : α < Ordinal.omega 1) :
+    {N : Type w'} [L.Structure N] {n}
+    (a : Fin n → M) (b : Fin n → N) α (hα : α < Ordinal.omega 1) :
     (scottFormula (L := L) a α).Realize b ↔ BFEquiv (L := L) α n a b := by
   induction α using Ordinal.limitRecOn generalizing n a b with
   | zero =>
@@ -245,9 +238,5 @@ theorem realize_scottFormula_iff_BFEquiv
 end Language
 
 /-! ### The Scott sentence of a structure at a level -/
-
-namespace Language
-
-end Language
 
 end FirstOrder

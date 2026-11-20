@@ -71,13 +71,6 @@ theorem RunState.master_extends {st st' : RunState β M} (h : Extends st.A st'.A
   rw [RunState.chart_eq] at hp ⊢
   exact h t p hp
 
-theorem RunState.extends_of_master {st st' : RunState β M} (h : st.master ≤ st'.master) :
-    Extends st.A st'.A := by
-  intro n t p hp
-  rw [← st.chart_eq] at hp
-  rw [← st'.chart_eq]
-  exact ((st.master.extends_iff st'.master).mp h) t p hp
-
 /-- Compatibility adapter from a finite master to the historical partial-state record. -/
 noncomputable def RunState.ofMaster (s : FiniteMaster knightTower β M) : RunState β M where
   A := s.chart

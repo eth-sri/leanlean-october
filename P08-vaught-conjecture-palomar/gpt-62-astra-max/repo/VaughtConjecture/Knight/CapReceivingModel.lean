@@ -61,7 +61,7 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
   · intro n t p ht γ hγ hγα
     obtain ⟨q, ⟨d, hlo, hhi⟩, hqp⟩ :=
       FixedHeight.exists_uniformity_coface (CanonicalCoatomSupply.supply α.2) p γ hγ hγα
-    obtain ⟨a, ha⟩ : ∃ a : Ordinal.{0}, q.label d = ofOrd a := by
+    obtain ⟨a, ha⟩ : ∃ a, q.label d = ofOrd a := by
       rcases ExtOrd.cases (q.label d) with hb | ht | h
       · rw [hb] at hlo
         exact False.elim ((not_le_of_gt (bot_lt_ofOrd γ)) hlo)
@@ -85,7 +85,7 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
       (bot_lt_ofOrd _) (ofOrd_lt_ofOrd.mpr (α.2.succ_lt hγα))
     refine ⟨y, hy, r, ⟨SemScheme.castCell he.symm d, ?_, ?_⟩,
       isCoface_of_consistent hcons ht hr, hr⟩
-    · have hgcast : ∀ {X Y : SemScheme (n + 1)} (e : X = Y) (d : Cell X.scheme),
+    · have hgcast : ∀ {X Y : SemScheme (n + 1)} (e : X = Y) d,
           Y.scheme.grade (SemScheme.castCell e d) = X.scheme.grade d := by
         intro X Y e d
         cases e

@@ -6,10 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.SameStageCalibration
-public import VaughtConjecture.Knight.ReferenceContext
 public import VaughtConjecture.Knight.SlackCutPasting
-public import VaughtConjecture.Knight.CountedEncoding
-public import VaughtConjecture.Knight.RestrictedComposition
 
 /-! # A finite stable top value is an anchor at infinity; hollow models have stable identity
 
@@ -141,7 +138,7 @@ theorem isInfinityAnchor_of_stable (hM : R.IsModel) {n : ℕ} {t : Fin n ↪ M} 
   -- the exact capped shifter of the stable locality at `Θ`
   have hvis : SelfVis (q.scheme.scheme.grade Θ) (R.stableValue s q Θ) := (hσr.orderly Θ).symm
   obtain ⟨τ, hbot, hmono, hread, hcomm, -⟩ := exists_exact_capped_shifter
-    (D := q.scheme.scheme.below (q.scheme.scheme.cell Θ))
+    (D := q.scheme.scheme.RowDomain Θ)
     (grade := fun d => q.scheme.scheme.grade d.1) (p := fun d => R.stableValue s q d.1)
     (c := ⟨Θ, GradedLe.refl _⟩) (fun d => d.2.2) hvis (hσr.locality Θ)
   have hτa : τ (q.scheme.rows.E Θ ⟨mapCell hpq Xi, hXi'⟩) = ofOrd (α.1 + j) := by

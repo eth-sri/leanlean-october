@@ -5,12 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ExpansionDomainUniform
 public import VaughtConjecture.Knight.BFBoundednessThinness
 public import VaughtConjecture.Knight.ConstructedTerminalCountability
 public import VaughtConjecture.Knight.ConstructedTerminalLoss
 public import VaughtConjecture.Knight.ExpansionDomainCertificate
-public import VaughtConjecture.Spectrum.Thinness
 
 /-! # Spectrum and thinness without global termination
 
@@ -36,7 +34,7 @@ open FirstOrder Language Cardinal Spectrum StoppingRankFiltration
 /-- All construction receipts for generic filtration counting and sentence separation. -/
 def certificate : FiltrationCertificate Classes knightLang.Sentenceω realizes :=
   ExpansionDomain.filtrationCertificate ConstructedSpectrumEndpoint.countableTerminalFibres
-    ExpansionDomain.cofinal_losses
+    fun η hη => Exists.intro η ⟨le_rfl, ⟨hη, ExpansionDomain.loss_nonempty hη⟩⟩
 
 /-- Direct boundedness thinness from uniform finite-cover comparison and countable
 terminal fibres. Neither sentence-minimality nor sentence recovery is used. -/

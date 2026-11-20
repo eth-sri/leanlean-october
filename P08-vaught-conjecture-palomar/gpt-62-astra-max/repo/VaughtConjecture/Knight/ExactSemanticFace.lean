@@ -17,8 +17,6 @@ lifts transport along its actual lower-domain equivalences.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open AmalgamationPlan Transform Value ExtOrd
@@ -32,14 +30,14 @@ structure ExactSemanticFace where
   map : Cell D ↪ Cell K
   index : ∀ d, K.cell (map d) = D.cell d
   exhaustive : ∀ z, K.scope z ⊆ B → ∃ d, map d = z
-  row : ∀ (c : Cell D) (d : D.below (D.cell c)),
+  row : ∀ (c : Cell D) (d : D.RowDomain c),
     semK.E (map c) ⟨map d.1, by rw [index, index]; exact d.2⟩ = semD.E c d
 
 namespace ExactSemanticFace
 
 variable {semD semK} (F : ExactSemanticFace semD semK)
 
-def belowMap (c : Cell D) (d : D.below (D.cell c)) : K.below (K.cell (F.map c)) :=
+def belowMap (c : Cell D) (d : D.RowDomain c) : K.RowDomain (F.map c) :=
   ⟨F.map d.1, by rw [F.index, F.index]; exact d.2⟩
 
 noncomputable def belowEquiv (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B) :
@@ -53,8 +51,8 @@ noncomputable def belowEquiv (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B) :
     exact ⟨⟨d, hh⟩, Subtype.ext hd⟩⟩
 
 theorem respects_below_iff (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B)
-    (q : K.below BJ → ExtOrd) :
-    RespectsSemanticsBelow semK BJ q ↔
+    (q : K.SectionAt BJ) :
+    semK.Lawful q ↔
       RespectsSemanticsBelow semD BJ (q ∘ F.belowEquiv BJ hB) := by
   have h := respects_iff_of_equiv (sem' := semD) (sem := semK)
     (F.belowEquiv BJ hB) (fun d => (congrArg Prod.snd (F.index d.1)).symm)
@@ -70,7 +68,7 @@ theorem respects_below_iff (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B)
   · exact (F.row c.1 d).symm
 
 /-- Restriction includes arbitrary whole ambient labellings. -/
-theorem restrict {q : Cell K → ExtOrd} (hq : RespectsSemantics semK q) :
+theorem restrict {q : K.Labelling} (hq : RespectsSemantics semK q) :
     RespectsSemantics semD (q ∘ F.map) where
   orderly d := by
     change q (F.map d) = extVisibilityReplace (q (F.map d)) (D.cell d).2 (D.cell d).2
@@ -98,7 +96,7 @@ theorem restrict {q : Cell K → ExtOrd} (hq : RespectsSemantics semK q) :
     simpa only [F.index] using hz
 
 noncomputable def ownerEquiv (c : Cell D) :
-    D.below (D.cell c) ≃ K.below (K.cell (F.map c)) :=
+    D.RowDomain c ≃ K.RowDomain (F.map c) :=
     Equiv.ofBijective (F.belowMap c) ⟨by
       intro d e h
       exact Subtype.ext (F.map.injective (congrArg Subtype.val h)), by
@@ -115,9 +113,9 @@ noncomputable def ownerEquiv (c : Cell D) :
 
 /-- Old locality is also sufficient at the copied owner, on its whole
 actual lower domain rather than only on named occurrences. -/
-theorem locality_of_restrict {q : Cell K → ExtOrd}
+theorem locality_of_restrict {q : K.Labelling}
     (hq : RespectsSemantics semD (q ∘ F.map)) (c : Cell D) :
-    TransformsTo (fun d : K.below (K.cell (F.map c)) => K.grade d.1)
+    TransformsTo (fun d : K.RowDomain (F.map c) => K.grade d.1)
       (semK.E (F.map c)) (fun d => min (q d.1) (q (F.map c))) := by
   exact TransformsTo.of_equiv (F.ownerEquiv c)
     (fun d => congrArg Prod.snd (F.index d.1))
@@ -126,7 +124,7 @@ theorem locality_of_restrict {q : Cell K → ExtOrd}
 /-- Consistency at an inherited owner is exactly old consistency transported
 through the occurrence equivalence. -/
 theorem consistent_at (hc : semD.IsConsistent) (c : Cell D) :
-    RespectsSemanticsBelow semK (K.cell (F.map c)) (semK.E (F.map c)) := by
+    semK.Lawful (semK.E (F.map c)) := by
   have h := respects_iff_of_equiv (sem' := semD) (sem := semK)
     (F.ownerEquiv c) (fun d => (congrArg Prod.snd (F.index d.1)).symm)
     (fun d e => ?_) (fun c d hd => ?_) (semD.E c)
@@ -143,7 +141,7 @@ theorem consistent_at (hc : semD.IsConsistent) (c : Cell D) :
   · exact (F.row c.1 d).symm
 
 theorem coded_at (hc : semD.IsCoded) (c : Cell D)
-    (d : K.below (K.cell (F.map c))) :
+    (d : K.RowDomain (F.map c)) :
     IsCodedLabel (K.grade (F.map c)) (semK.E (F.map c) d) := by
   obtain ⟨e, rfl⟩ := (F.ownerEquiv c).surjective d
   change IsCodedLabel (K.cell (F.map c)).2
@@ -154,7 +152,7 @@ theorem coded_at (hc : semD.IsCoded) (c : Cell D)
 
 /-- Availability toward an inherited index is supplied inside that same
 face; no witness from outside the target face is used. -/
-theorem availability_at {q : Cell K → ExtOrd}
+theorem availability_at {q : K.Labelling}
     (hq : RespectsSemantics semD (q ∘ F.map)) (z : Cell K) (c : Cell D)
     (hs : K.scope z ⊆ K.scope (F.map c)) (hg : K.grade z = K.grade (F.map c)) :
     ∃ d, K.cell d = K.cell (F.map c) ∧ q z ≤ q d := by
@@ -179,12 +177,12 @@ include F in
 theorem lift {CI BJ : Finset ι × ℕ} (hB : BJ.1 ⊆ B)
     (hCI : CI ∈ Plan.gradedPlan D.plan) (hBJ : BJ ∈ Plan.gradedPlan D.plan)
     (h : GradedLe CI BJ) (hne : CI ≠ BJ) (hb : semD.IsBountiful)
-    (p : K.below CI → ExtOrd) (q : K.below BJ → ExtOrd) (γ : ExtOrd)
-    (hp : RespectsSemanticsBelow semK CI p) (hq : RespectsSemanticsBelow semK BJ q)
+    (p : K.SectionAt CI) (q : K.SectionAt BJ) (γ : ExtOrd)
+    (hp : semK.Lawful p) (hq : semK.Lawful q)
     (hγ : extVisibilityReplace γ BJ.2 BJ.2 = γ)
-    (hc : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
-    ∃ q', RespectsSemanticsBelow semK BJ q' ∧
-      (∀ d, min (q' d) γ = min (q d) γ) ∧
+    (hc : CappedEq (q ∘ CellScheme.below.mono h) p γ) :
+    ∃ q', semK.Lawful q' ∧
+      CappedEq q' q γ ∧
       ∀ d, q' (CellScheme.below.mono h d) = p d := by
   let eB := F.belowEquiv BJ hB
   let eC := F.belowEquiv CI (h.1.trans hB)

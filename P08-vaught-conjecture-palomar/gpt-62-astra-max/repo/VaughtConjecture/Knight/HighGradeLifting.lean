@@ -30,10 +30,6 @@ def cut (BJ : Finset ι × ℕ) (k : ℕ) : Finset ι × ℕ := (BJ.1, min BJ.2 
 omit [DecidableEq ι] in
 theorem cut_le : GradedLe (cut BJ k) BJ := ⟨Finset.Subset.refl _, min_le_left _ _⟩
 
-omit [DecidableEq ι] in
-theorem cut_mono (h : GradedLe CI BJ) : GradedLe (cut CI k) (cut BJ k) :=
-  ⟨h.1, min_le_min h.2 le_rfl⟩
-
 theorem cut_mem (hk : 1 ≤ k) (h : BJ ∈ Plan.gradedPlan D.plan) :
     cut BJ k ∈ Plan.gradedPlan D.plan := by
   obtain ⟨hB, hJ, hcard⟩ := Plan.mem_gradedPlan.mp h
@@ -41,15 +37,15 @@ theorem cut_mem (hk : 1 ≤ k) (h : BJ ∈ Plan.gradedPlan D.plan) :
     (min_le_left _ _).trans hcard⟩
 
 theorem respects_of {r : D.below (cut BJ k) → ExtOrd} {q : D.below BJ → ExtOrd}
-    (hr : RespectsSemanticsBelow F.base (cut BJ k) r)
+    (hr : F.base.Lawful r)
     (hread : ∀ d : D.below BJ, ∀ hd : D.grade d.1 ≤ k,
       q d = r ⟨d.1, d.2.1, le_min d.2.2 hd⟩)
     (hvis : ∀ d, SelfVis (D.grade d.1) (q d))
     (hmute : ∀ d, ¬D.grade d.1 ≤ k → d.1 ≠ F.high → q d = ⊥)
     (hhigh : ∀ c : D.below BJ, c.1 = F.high →
-      TransformsTo (fun d : D.below (D.cell c.1) => D.grade d.1) (F.rows.E c.1)
+      TransformsTo (fun d : D.RowDomain c.1 => D.grade d.1) (F.rows.E c.1)
         (fun d => min (q (CellScheme.below.incl c d)) (q c))) :
-    RespectsSemanticsBelow F.rows BJ q where
+    F.rows.Lawful q where
   orderly d := (hvis d).symm
   locality c := by
     by_cases hc : D.grade c.1 ≤ k
@@ -62,7 +58,7 @@ theorem respects_of {r : D.below (cut BJ k) → ExtOrd} {q : D.below BJ → ExtO
     · by_cases he : c.1 = F.high
       · exact hhigh c he
       · simpa only [hmute c hc he, min_bot_right] using
-          (TransformsTo.to_bot (grade := fun d : D.below (D.cell c.1) => D.grade d.1)
+          (TransformsTo.to_bot (grade := fun d : D.RowDomain c.1 => D.grade d.1)
             (F.rows.E c.1))
   availability d e hs hg := by
     by_cases hd : D.grade d.1 ≤ k
@@ -80,31 +76,31 @@ theorem respects_of {r : D.below (cut BJ k) → ExtOrd} {q : D.below BJ → ExtO
         exact F.high_index (by simpa only [he] using hs) (by simpa only [he] using hg)
       · exact ⟨e, rfl, by rw [hmute d hd he]; exact bot_le⟩
 
-def fill (r : D.below (cut BJ k) → ExtOrd) (η : ExtOrd) (d : D.below BJ) : ExtOrd :=
+def fill (r : D.SectionAt (cut BJ k)) (η : ExtOrd) (d : D.below BJ) : ExtOrd :=
   if hd : D.grade d.1 ≤ k then r ⟨d.1, d.2.1, le_min d.2.2 hd⟩ else
     if d.1 = F.high then η else ⊥
 
-theorem fill_old {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
+theorem fill_old {r} {η}
     (d : D.below BJ) (hd : D.grade d.1 ≤ k) :
     F.fill r η d = r ⟨d.1, d.2.1, le_min d.2.2 hd⟩ := by
   simp only [fill, hd, ↓reduceDIte]
 
-theorem fill_high {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
+theorem fill_high {r} {η}
     (hc : GradedLe (D.cell F.high) BJ) : F.fill r η ⟨F.high, hc⟩ = η := by
   simp only [fill, not_le_of_gt F.above, ↓reduceDIte, ↓reduceIte]
 
-theorem fill_mute {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
+theorem fill_mute {r} {η}
     (d : D.below BJ) (hd : ¬D.grade d.1 ≤ k) (he : d.1 ≠ F.high) :
     F.fill r η d = ⊥ := by simp only [fill, hd, he, ↓reduceDIte, ↓reduceIte]
 
 private theorem base_lift (hb : F.base.IsBountiful)
     (hCI : CI ∈ Plan.gradedPlan D.plan) (hBJ : BJ ∈ Plan.gradedPlan D.plan)
-    (h : GradedLe CI BJ) (p : D.below CI → ExtOrd) (q : D.below BJ → ExtOrd) (γ : ExtOrd)
-    (hp : RespectsSemanticsBelow F.base CI p) (hq : RespectsSemanticsBelow F.base BJ q)
+    (h : GradedLe CI BJ) p q γ
+    (hp : F.base.Lawful p) (hq : F.base.Lawful q)
     (hγ : SelfVis BJ.2 γ)
-    (hag : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
-    ∃ out, RespectsSemanticsBelow F.base BJ out ∧
-      (∀ d, min (out d) γ = min (q d) γ) ∧
+    (hag : CappedEq (q ∘ CellScheme.below.mono h) p γ) :
+    ∃ out, F.base.Lawful out ∧
+      CappedEq out q γ ∧
       ∀ d, out (CellScheme.below.mono h d) = p d := by
   by_cases he : CI = BJ
   · subst BJ
@@ -121,7 +117,7 @@ theorem bountiful (hk : 1 ≤ k) (hb : F.base.IsBountiful) : F.rows.IsBountiful 
   intro CI BJ hCI hBJ hle _ p q γ hp hq hγ hag
   let i : GradedLe (cut CI k) CI := cut_le
   let j : GradedLe (cut BJ k) BJ := cut_le
-  let ij : GradedLe (cut CI k) (cut BJ k) := cut_mono hle
+  let ij : GradedLe (cut CI k) (cut BJ k) := ⟨hle.1, min_le_min hle.2 le_rfl⟩
   have hp1 := (F.old_respects_iff (min_le_right _ _)).mp (hp.mono i)
   have hq1 := (F.old_respects_iff (min_le_right _ _)).mp (hq.mono j)
   have hγJ : SelfVis BJ.2 γ := hγ
@@ -149,7 +145,7 @@ theorem bountiful (hk : 1 ≤ k) (hb : F.base.IsBountiful) : F.rows.IsBountiful 
         dsimp only [η]
         by_cases hi : GradedLe (D.cell F.high) CI
         · rw [dite_eq_left hi]
-          simpa only [CellScheme.below.mono, below_eta] using (hag ⟨F.high, hi⟩).symm
+          exact (hag ⟨F.high, hi⟩).symm
         · rw [dite_eq_right hi, dite_eq_left hdBJ]
           simp only [min_assoc, min_self]
       · simp only [out, F.fill_mute d hd he, F.mute_label hq d hd he]
@@ -183,7 +179,7 @@ theorem bountiful (hk : 1 ≤ k) (hb : F.base.IsBountiful) : F.rows.IsBountiful 
     dsimp only at he
     subst c
     by_cases hi : GradedLe (D.cell F.high) CI
-    · have read (e : D.below (D.cell F.high)) :
+    · have read (e : D.RowDomain F.high) :
           out ⟨e.1, e.2.trans hcBJ⟩ = p ⟨e.1, e.2.trans hi⟩ := outpres ⟨e.1, e.2.trans hi⟩
       have readc : out ⟨F.high, hcBJ⟩ = p ⟨F.high, hi⟩ := outpres ⟨F.high, hi⟩
       convert hp.locality ⟨F.high, hi⟩ using 1

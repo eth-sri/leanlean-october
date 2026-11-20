@@ -7,7 +7,6 @@ module
 
 public import VaughtConjecture.Knight.LowOnlyPaddedReceivingCore
 public import VaughtConjecture.Knight.FirstLossLowFamilyCore
-public import VaughtConjecture.Knight.CoatomBoundaryPresentation
 
 /-! # Exact LOW receiving for two cofaces of a literal root
 
@@ -18,7 +17,6 @@ literal common-root identification. No mixed scopes are added.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyCofaceAttachment
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly
 open CellScheme.restrictFace FirstLossLowFamily AmalgamationPlan
@@ -53,26 +51,7 @@ local notation "D" => data hP hC
 local notation "s" => CoatomBoundaryPresentation.Data.step (data hP hC)
 
 /-- The same ordered input in the general whole-boundary interface. -/
-def input : WholeDonorBoundary.Input Finset.univ
-    (Finset.univ.erase (s).a) (Finset.univ.erase (s).b) (s).plan k (k + 1) (k + 1) where
-  isPlan := AmalgamatedBoundaryPlan.isPlan s
-  left := P.scheme
-  right := C.scheme
-  common := p.scheme
-  placeLeft := (pair k).f₁
-  placeRight := (pair k).f₂
-  imageLeft := (D).input.imageLeft
-  imageRight := (D).input.imageRight
-  commonLeft := Fin.castSuccEmb
-  commonRight := Fin.castSuccEmb
-  visibleLeft := hP.extendsDomain.visible
-  visibleRight := hC.extendsDomain.visible
-  faceLeft := hP.extendsDomain.restrict
-  faceRight := hC.extendsDomain.restrict
-  commute := (pair k).comm
-  intersection := (D).input.intersection
-  planLeft := (AmalgamatedBoundaryPlan.restrict_left s).trans (D).input.planLeft.symm
-  planRight := (AmalgamatedBoundaryPlan.restrict_right s).trans (D).input.planRight.symm
+abbrev input := (D).input.toFaces
 
 local notation "I" => input hP hC
 
@@ -177,21 +156,6 @@ theorem receive_of_receiving {M : Type w} {W : KnightRealization α M} (hcons :
     exact ((hlabel (SemScheme.castCell heq.symm d)).trans (congrFun hp _)).trans
       (congrArg P.label (SemScheme.castCell_castCell_symm heq d))
   exact ⟨(I).placeLeft.trans v, htype ▸ heval, htuple⟩
-
-include hP hC in
-/-- The exported acquisition data suffice: only the private root scope and
-actual shared labels are needed, not equality of the hidden face map. -/
-theorem receive_of_shared_of_receiving {M : Type w} {W : KnightRealization α M} (hcons :
-    W.IsExactParentConsistent)
-    (hFC : FiniteCutReceiving W)
-    (u : Fin (k + 1) ↪ M) (hu : W.eval u = some C)
-    (F : LowOnly.Family P.scheme C.scheme K)
-    (hB : F.root.B = rootFace k) (hp : F.p = P.label)
-    (hshared : F.root.Shared F.p C.label)
-    (hc : C.label F.gap.c = ⊤) (hr : C.label F.gap.r.1 = ⊤) :
-    ∃ t : Fin (k + 1) ↪ M,
-      W.eval t = some P ∧ Fin.castSuccEmb.trans t = Fin.castSuccEmb.trans u :=
-  receive_of_receiving hP hC hcons hFC u hu (rebase hP hC F hB hp hshared) rfl hp hc hr
 
 end
 end VaughtConjecture.Knight.LowOnlyCofaceAttachment

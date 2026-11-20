@@ -5,8 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ControllerPrefixFamily
-public import VaughtConjecture.Knight.WitnessAlgebra
+public import VaughtConjecture.Knight.SlackCutPasting
 
 /-! # A free diagonal beyond a finite source inventory
 
@@ -30,7 +29,7 @@ namespace FreeDiagonal
 
 /-- With the normalized suppressor, clipping the shifter at a visible value preserves
 the full witness. This is not an assertion about arbitrary suppressors. -/
-theorem clip_witness {τ : ExtOrd → ExtOrd} {K : ℕ} {C : ExtOrd}
+theorem clip_witness {τ} {K} {C}
     (hτ : Witness (gTop K) τ) (hC : SelfVis K C) :
     Witness (gTop K) (fun x => min (τ x) C) where
   anti := hτ.anti
@@ -45,12 +44,10 @@ theorem clip_witness {τ : ExtOrd → ExtOrd} {K : ℕ} {C : ExtOrd}
         hm.map_min, evr_eq_self_of_selfVis (hC.mono hk)]
     · rw [gTop_of_gt (not_le.mp hk)] at hact
       by_cases hCb : C = ⊥
-      · simp only [hCb, min_bot_right, extVisibilityReplace_bot]
+      · simp_all
       · have hxb : τ x = ⊥ := by
-          rcases le_total (τ x) C with h | h
-          · rwa [min_eq_left h, le_bot_iff] at hact
-          · exact False.elim (hCb (le_bot_iff.mp (by rwa [min_eq_right h] at hact)))
-        rw [hτ.clause5 x k (by rw [hxb]; exact bot_le) i hi, hxb,
+          rcases le_total (τ x) C with h | h <;> grind [min_eq_left, min_eq_right]
+        rw [hτ.clause5 x k (by simp_all) i hi, hxb,
           extVisibilityReplace_bot, min_bot_left, extVisibilityReplace_bot]
 
 end FreeDiagonal

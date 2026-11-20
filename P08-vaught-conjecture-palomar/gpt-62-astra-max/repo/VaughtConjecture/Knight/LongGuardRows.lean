@@ -5,7 +5,6 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.VisibleOrderInterpolation
 public import VaughtConjecture.Knight.SlotControllerFamily
 
 /-! # Explicit grade-one long guards
@@ -22,8 +21,6 @@ It does not by itself install a support plan or prove lifting.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.LongGuardRows
 
@@ -77,18 +74,6 @@ theorem endpoint_visible (i : ℕ) : SelfVis 1 (endpoint i) := by
   rw [endpoint, selfVis_ofOrd_iff, finitePart_code]
   omega
 
-theorem source_visible (i k : ℕ) : SelfVis 1 (source i k) := by
-  unfold source
-  split_ifs
-  · exact SlotControllerFamily.value_visible k
-  · exact endpoint_visible i
-
-theorem source_coded (i k : ℕ) : IsCodedLabel 1 (source i k) := by
-  unfold source
-  split_ifs
-  · exact SlotControllerFamily.value_coded k
-  · exact Or.inr ⟨i, 2, le_rfl, rfl⟩
-
 @[simp] theorem source_zero (i : ℕ) : source i 0 = ⊥ := by
   simp [source, SlotControllerFamily.value]
 
@@ -99,7 +84,10 @@ theorem value_lt_endpoint {i k : ℕ} (hk : k ≤ i) :
   · rw [SlotControllerFamily.value, ite_eq_right h0, SeparatedGradeOne.band, endpoint,
       ofOrd_lt_ofOrd]
     rcases lt_or_eq_of_le hk with hk | rfl
-    · exact code_lt_code_of_lt (Nat.cast_lt.mpr hk) 1 2
+    · exact by
+          apply lt_of_limitPart_lt
+          rw [limitPart_code, limitPart_code]
+          exact (Ordinal.isNormal_mul_right Ordinal.omega0_pos).strictMono (Nat.cast_lt.mpr hk)
     · exact add_lt_add_right (Nat.cast_lt.mpr (by omega : (1 : ℕ) < 2)) _
 
 theorem source_le_iff (i k l : ℕ) :
@@ -120,9 +108,5 @@ theorem source_le_iff (i k l : ℕ) :
     · intro h; omega
   · simp only [source, ite_eq_right hk, ite_eq_right hl, le_refl,
       min_eq_right (by omega : i + 1 ≤ k), min_eq_right (by omega : i + 1 ≤ l)]
-
-namespace Regression
-
-end Regression
 
 end VaughtConjecture.Knight.LongGuardRows

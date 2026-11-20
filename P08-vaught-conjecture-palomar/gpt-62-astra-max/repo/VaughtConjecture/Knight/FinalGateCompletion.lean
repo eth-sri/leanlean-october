@@ -5,7 +5,6 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.FinalGateLayer
 public import VaughtConjecture.Knight.CanonicalCodingSupport
 public import VaughtConjecture.Knight.OrdinaryFinalCatalogue
 
@@ -19,7 +18,6 @@ ledger, and does not assume that the predecessor is already complete there.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
 open Transform Value ExtOrd AmalgamationPlan
 noncomputable section
@@ -28,12 +26,12 @@ variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
 variable {A : Finset ι} {D : CellScheme A} {N : ℕ} (F : Input D N X Q)
 
 theorem node_row (a : Q) (marked : Bool)
-    (d : F.carrier.below (F.carrier.cell (F.added a marked))) :
+    (d : F.carrier.RowDomain (F.added a marked)) :
     F.rows.E (F.added a marked) d = min (F.source a d.1) (F.nodeWeight (a, marked)) := by
   have hm : WeightedSourcePrefixLayer.master F.data F.weight (F.controller (a, marked)) d.1 =
       F.source a d.1 := by
     simp only [source, WeightedSourcePrefixLayer.master, ScopedSourcePrefixLayer.Data.profile,
-      data, member_controller]
+      data, SourceFamily.data, SourceFamily.member_controller, member_controller]
   exact (WeightedSourcePrefixLayer.row_new F.data F.weight F.weight_visible
     (F.controller (a, marked)) d).trans (by
       rw [hm]

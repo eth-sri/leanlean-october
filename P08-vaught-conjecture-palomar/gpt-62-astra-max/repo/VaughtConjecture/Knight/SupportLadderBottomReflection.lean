@@ -60,8 +60,8 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem :
 /-- **Lawfulness transports along a bounded map with finite bottom reflection**: if `ν` reflects
 bottom on the values of a lawful section `r`, then `ν ∘ r` is lawful — the source-block bottom
 law of `r` (long rows included) transfers by the same-pattern criterion. -/
-theorem map_respects_of_bottom_reflection {r : D.below BJ → ExtOrd}
-    (hr : RespectsSemanticsBelow sem BJ r) {K : ℕ} {ν : ExtOrd → ExtOrd}
+theorem map_respects_of_bottom_reflection {r : D.SectionAt BJ}
+    (hr : sem.Lawful r) {K : ℕ} {ν : ExtOrd → ExtOrd}
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) (hν : BoundedMap K ν)
     (hbot : ∀ d, ν (r d) = ⊥ ↔ r d = ⊥) :
     RespectsSemanticsBelow sem BJ (fun d => ν (r d)) :=
@@ -103,13 +103,6 @@ theorem component_iff (hH : 0 < H) (a : Q) (v : Point H X Q) :
     exact ⟨(cut_pos_iff hH _ _).mp (Nat.pos_of_ne_zero h1), h2⟩
   · rintro ⟨h1, h2⟩
     exact ⟨Nat.pos_iff_ne_zero.mp ((cut_pos_iff hH _ _).mpr h1), h2⟩
-
-/-- Agreeing anchors have the same component. -/
-theorem component_iff_of_agree (hH : 0 < H) {a b : Q} (h : Agree (profile a) (profile b) 1)
-    (v : Point H X Q) : Component profile a v ↔ Component profile b v := by
-  rw [component_iff hH, component_iff hH]
-  exact and_congr_left fun _ =>
-    ⟨fun ha => agree_trans (agree_symm h) ha, fun hb => agree_trans h hb⟩
 
 /-- The image of an anchor under a positive scalar table is positive exactly on its component. -/
 theorem image_ne_bot_iff (a : Q) {f : ℕ → ExtOrd} (h0 : f 0 = ⊥)
@@ -158,17 +151,6 @@ theorem spare_ne_bot : p (leaf hH (parent c)) ≠ ⊥ := by
   rw [hz, min_bot_left] at h1
   exact hh h1
 
-omit [Finite X] [Finite Q] [Nonempty Q] hbound hH hp hdiag in
-/-- Outside the row's component the ambient is bottom. -/
-theorem ambient_bot_of_not_component (v : Point H X Q) (hv : ¬ Component profile (parent c) v) :
-    p v = ⊥ := by
-  have hz : index profile (parent c) v = 0 := not_not.mp hv
-  have h1 := hread v
-  rw [row, hz, source_zero, hτ] at h1
-  rcases min_eq_bot.mp h1.symm with h2 | h2
-  · exact h2
-  · exact absurd h2 hh
-
 omit hτ in
 /-- **The ambient and the source occupy the same component**: the ambient's support is exactly
 the component of the row's anchor. -/
@@ -183,21 +165,20 @@ theorem Lawful.support_eq_of_chart (v : Point H X Q) :
     rw [component_iff hH] at hleaf
     exact hleaf.1
   rw [hb v]
-  exact component_iff_of_agree hH hagree v
-
-omit [Finite X] [Finite Q] [Nonempty Q] hbound hH hp hread in
-/-- The row's own ceiling is positive (its diagonal reads the positive height). -/
-theorem ceiling_ne_zero : ceiling profile c ≠ 0 := by
-  intro h0
-  have h1 := hdiag
-  rw [row, index, h0, Nat.min_zero, source_zero, hτ] at h1
-  exact hh h1.symm
+  exact by
+          rw [component_iff hH, component_iff hH]
+          exact and_congr_left fun _ =>
+            ⟨fun ha => agree_trans (agree_symm hagree) ha, fun hb => agree_trans hagree hb⟩
 
 /-- **Finite bottom reflection on the tracked source values**: at every ladder point, the chart
 reads bottom exactly at the bottom sources. -/
 theorem bottom_reflection (v : Point H X Q) :
     τ (row profile c v) = ⊥ ↔ row profile c v = ⊥ := by
-  have hc0 := ceiling_ne_zero c hτ hh hdiag
+  have hc0 := show ceiling profile c ≠ 0 from by
+          intro h0
+          have h1 := hdiag
+          rw [row, index, h0, Nat.min_zero, source_zero, hτ] at h1
+          exact hh h1.symm
   rw [hread v, row, source_bot_iff, Nat.min_eq_zero_iff, or_iff_left hc0]
   constructor
   · intro h1
@@ -209,7 +190,13 @@ theorem bottom_reflection (v : Point H X Q) :
     · exact hh h2
   · intro h1
     have hv : ¬ Component profile (parent c) v := fun hv => hv h1
-    rw [ambient_bot_of_not_component c hτ hh hread v hv, min_bot_left]
+    rw [show p v = ⊥ from by
+          have hz : index profile (parent c) v = 0 := not_not.mp hv
+          have h1 := hread v
+          rw [row, hz, source_zero, hτ] at h1
+          rcases min_eq_bot.mp h1.symm with h2 | h2
+          · exact h2
+          · exact absurd h2 hh, min_bot_left]
 
 end Chart
 
@@ -243,7 +230,10 @@ theorem support_eq_of_image_chart (v : Point H X Q) :
     (hb _).mp (spare_ne_bot_image hH a₀ hh hread hspare)
   rw [component_iff hH] at hleaf
   rw [hb v]
-  exact component_iff_of_agree hH hleaf.1 v
+  exact by
+          rw [component_iff hH, component_iff hH]
+          exact and_congr_left fun _ =>
+            ⟨fun ha => agree_trans (agree_symm hleaf.1) ha, fun hb => agree_trans hleaf.1 hb⟩
 
 /-- **Finite bottom reflection on the tracked values of any positive table.** -/
 theorem bottom_reflection_image (v : Point H X Q) :

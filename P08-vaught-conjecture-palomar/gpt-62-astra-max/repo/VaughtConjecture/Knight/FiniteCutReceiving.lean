@@ -25,11 +25,11 @@ variable {α : LimitStage} {M : Type w}
 over `p`, and a proper cutoff `δ` below the stage, some actual coface `q` over `t` on the exact
 scheme of `P` agrees with `P` below `δ`. -/
 def FiniteCutReceiving (R : KnightRealization α M) : Prop :=
-  ∀ {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n), R.eval t = some p →
-    ∀ (P : S α.1 (n + 1)), IsCoface p P →
+  ∀ {n} t p, R.eval t = some p →
+    ∀ P, IsCoface p P →
       ∀ δ : ExtOrd, ⊥ < δ → δ < ofOrd α.1 →
         ∃ (y : M) (hy : y ∉ Set.range t) (q : S α.1 (n + 1)), R.eval (snoc t y hy) = some q ∧
           ∃ h : q.scheme = P.scheme,
-            ∀ d, min (q.label d) δ = min (P.label (SemScheme.castCell h d)) δ
+            CappedEq q.label (P.label ∘ SemScheme.castCell h) δ
 
 end VaughtConjecture.Knight

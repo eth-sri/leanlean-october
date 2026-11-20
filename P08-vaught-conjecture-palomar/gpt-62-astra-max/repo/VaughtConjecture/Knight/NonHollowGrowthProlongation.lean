@@ -21,7 +21,6 @@ The historical theorem names are retained and reexported by
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.NonHollowGrowthReceiving
 open TypeTower KnightRealization
 universe w
@@ -43,7 +42,7 @@ theorem exists_nextBlock_model (hM : W.IsModel) (hh : ¬ W.IsHollow)
 /-- The same expansion at any target equal to the next block; the stage
 inequality proof does not affect the literal reduct equation. -/
 theorem prolongsToOnIn_of_eq_nextBlock (hM : W.IsModel) (hh : ¬ W.IsHollow)
-    (hg : W.HasTopGradeGrowth) {β : LimitStage} (hβ : β = α.nextBlock)
+    (hg : W.HasTopGradeGrowth) {β} (hβ : β = α.nextBlock)
     (hle : α ≤ β) : W.ProlongsToOnIn IsModelClass hle := by
   subst β
   exact exists_nextBlock_model hM hh hg

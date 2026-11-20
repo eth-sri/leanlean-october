@@ -28,7 +28,6 @@ and the reviewer's final-gate construction.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalCatalogue
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows
 open PairedSlotComparison SharpWitnessComposition
@@ -47,29 +46,13 @@ theorem member_short (a : Member R) (f : Field P C) : Short N (a.val f) :=
 theorem member_bound (a : Member R) (f : Field P C) :
     a.val f ≤ CanonicalFieldLayer.ceiling N (Field P C) := by
   apply (CanonicalPairedProfiles.inventory_bound _ _ a.property.1 f).trans
-  exact ofOrd_le_ofOrd.mpr (add_le_add (by gcongr; omega) le_rfl)
+  exact ofOrd_le_ofOrd.mpr (add_le_add (by simp) le_rfl)
 
-theorem member_gate_visible (a : Member R) : SelfVis N (a.val .gate) := by
-  obtain ⟨st, -, -, hg, he⟩ := a.property.2
-  rw [← he]
-  rw [st.sourceProfile_of_present (f := .gate) R.one_le_N]
-  exact hg
+theorem member_gate_visible (a : Member R) : SelfVis N (a.val .gate) := a.property.2.gate
 
 include R in
 theorem req_grade_le (d : Cell P.scheme) : P.scheme.grade d ≤ N :=
   (Ref.gradeP_le d).trans (R.arity_lt).le
-
-include R in
-theorem field_grade_le (f : Field P C) : f.grade ≤ N := by
-  cases f with
-  | req d => exact req_grade_le R d
-  | priv d => exact gradeC_le d
-  | gate => exact R.one_le_N
-
-/-- No future fields remain when the acquired context has arity `N`. -/
-theorem profile_present (st : R.State N) (f : Field P C) :
-    st.sourceProfile f = st.numeric f (field_grade_le R f) :=
-  st.sourceProfile_of_present (field_grade_le R f)
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
@@ -77,7 +60,7 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 semantics and source-section data are supplied; all new rows are constructed. -/
 def install (sem : Semantics D) (hA : N ≤ A.card)
     (hsep : ∀ d : Cell D, ¬ GradedLe (A, N) (D.cell d))
-    (lower : Member R → Cell D → ExtOrd)
+    (lower : Member R → D.Labelling)
     (hlaw : ∀ a, RespectsSemanticsBelow sem (A, N) (fun d => lower a d.1))
     (hbound : ∀ a d, D.grade d ≤ N →
       lower a d ≤ CanonicalFieldLayer.ceiling N (Field P C))
@@ -104,37 +87,17 @@ def install (sem : Semantics D) (hA : N ≤ A.card)
   gate_visible := member_gate_visible R
   gate_bound a := member_bound R a .gate
 
-/-- One catalogue member and one decoder recover the actual complete field
-vector. The gate is literally top after decoding, not merely positive. -/
-theorem exists_actual_member_reflecting :
-    ∃ (a : Member R) (δ : ExtOrd → ExtOrd), Witness (gTop N) δ ∧
-      (∀ d : Cell P.scheme, δ (a.val (.req d)) = R.p d) ∧
-      (∀ d : Cell C.scheme, δ (a.val (.priv d)) = R.vact d) ∧
-      δ (a.val .gate) = ⊤ ∧
-      ∀ f, δ (a.val f) = ⊥ ↔ a.val f = ⊥ := by
-  let st := resync (R.actualState N)
-  have hadm : R.Admitted st.sourceProfile :=
-    ⟨st, (R.actual_admissible N).resync, resync_synchronized (R.actual_admissible N),
-      TopSupport.selfVis_top_ext N, rfl⟩
-  obtain ⟨b, -, -, hprefix, -, hb, hcan, δ, hδ, hr⟩ := hadm.exists_terminal 0
-  refine ⟨⟨PairedSlotEncoding.normalize N b, hcan, hb⟩, δ, hδ, ?_, ?_, ?_, ?_⟩
-  · intro d
-    exact (hr (.req d)).trans (profile_present R st (.req d))
-  · intro d
-    exact (hr (.priv d)).trans (profile_present R st (.priv d))
-  · exact (hr .gate).trans (profile_present R st .gate)
-  · intro f
-    rw [hr, PairedSlotEncoding.normalize_bot_iff]
-    exact (bottom_pattern_of_cap_agreement (ofOrd_ne_bot 0) hprefix f).symm
+/-- A canonical all-bottom seed suffices for availability and completeness. -/
+def seed : Member R := ⟨_, (Admitted.zero R).normalize_mem_catalogue (fun _ => bot_ne_top)⟩
 
-/-- The field-level exact display, without its finite reflection receipt. -/
-theorem exists_actual_member :
-    ∃ (a : Member R) (δ : ExtOrd → ExtOrd), Witness (gTop N) δ ∧
-      (∀ d : Cell P.scheme, δ (a.val (.req d)) = R.p d) ∧
-      (∀ d : Cell C.scheme, δ (a.val (.priv d)) = R.vact d) ∧
-      δ (a.val .gate) = ⊤ := by
-  obtain ⟨a, δ, hw, hP, hC, hg, -⟩ := exists_actual_member_reflecting R
-  exact ⟨a, δ, hw, hP, hC, hg⟩
+theorem actual : R.Admitted (pack R.p R.vact ⊤) where
+  donor := R.p_respects
+  priv := R.vact_respects
+  face d := (R.face_actual d).symm
+  gate := TopSupport.selfVis_top_ext N
+  active _ _ := ⟨R.vactL_respects,R.cap_pos.ne',fun i => (R.vact_ref i).trans_ne (ofOrd_ne_bot _),
+    fun d hd => (R.face_actual d).trans hd⟩
+  relation _ _ d := (R.sel_actual d).symm
 
 end
 end VaughtConjecture.Knight.OrdinaryFinalCatalogue

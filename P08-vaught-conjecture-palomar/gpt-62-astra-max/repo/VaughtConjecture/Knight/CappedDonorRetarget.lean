@@ -57,30 +57,30 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem :
 
 open Classical in
 /-- The glued section: the lower section on the lower set, the full section above. -/
-noncomputable def glueSection {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
-    (q : D.below BJ → ExtOrd) (d : D.below BJ) : ExtOrd :=
+noncomputable def glueSection {CI BJ} (w : D.SectionAt CI)
+    (q : D.SectionAt BJ) (d : D.below BJ) : ExtOrd :=
   if hd : GradedLe (D.cell d.1) CI then w ⟨d.1, hd⟩ else q d
 
-theorem glueSection_of_le {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
-    (q : D.below BJ → ExtOrd) {d : D.below BJ} (hd : GradedLe (D.cell d.1) CI) :
+theorem glueSection_of_le {CI BJ} w
+    q {d : D.below BJ} (hd : GradedLe (D.cell d.1) CI) :
     glueSection w q d = w ⟨d.1, hd⟩ := by
   unfold glueSection; rw [dite_eq_left hd]
 
-theorem glueSection_of_not_le {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
-    (q : D.below BJ → ExtOrd) {d : D.below BJ} (hd : ¬ GradedLe (D.cell d.1) CI) :
+theorem glueSection_of_not_le {CI BJ} (w : D.SectionAt CI)
+    q {d : D.below BJ} (hd : ¬ GradedLe (D.cell d.1) CI) :
     glueSection w q d = q d := by
   unfold glueSection; rw [dite_eq_right hd]
 
 /-- **Vertical gluing**: with `CI` of the same scope as `BJ` and lower grade, a lawful section
 `w` on `CI` and a lawful section `q` on `BJ` glue to a lawful section on `BJ` provided that, at
 every owner `Sig` of `BJ` above `CI`, `w` reads like `q` below `Sig` capped at `q Sig`. -/
-theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI BJ)
-    (hscope : CI.1 = BJ.1) {q : D.below BJ → ExtOrd} (hq : RespectsSemanticsBelow sem BJ q)
-    {w : D.below CI → ExtOrd} (hw : RespectsSemanticsBelow sem CI w)
+theorem RespectsSemanticsBelow.glue {CI BJ} (h : GradedLe CI BJ)
+    (hscope : CI.1 = BJ.1) {q} (hq : sem.Lawful q)
+    {w} (hw : sem.Lawful w)
     (hcompat : ∀ Sig : D.below BJ, ¬ GradedLe (D.cell Sig.1) CI →
-      ∀ (d : D.below (D.cell Sig.1)) (hd : GradedLe (D.cell d.1) CI),
+      ∀ d (hd : GradedLe (D.cell d.1) CI),
         min (w ⟨d.1, hd⟩) (q Sig) = min (q (CellScheme.below.incl Sig d)) (q Sig)) :
-    RespectsSemanticsBelow sem BJ (glueSection w q) where
+    sem.Lawful (glueSection w q) where
   orderly d := by
     by_cases hd : GradedLe (D.cell d.1) CI
     · rw [glueSection_of_le w q hd]; exact hw.orderly ⟨d.1, hd⟩
@@ -88,7 +88,7 @@ theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI 
   locality Sig := by
     by_cases hS : GradedLe (D.cell Sig.1) CI
     · have key := hw.locality ⟨Sig.1, hS⟩
-      have heq : (fun d : D.below (D.cell Sig.1) =>
+      have heq : (fun d : D.RowDomain Sig.1 =>
           min (glueSection w q (CellScheme.below.incl Sig d)) (glueSection w q Sig)) =
           fun d => min (w (CellScheme.below.incl ⟨Sig.1, hS⟩ d)) (w ⟨Sig.1, hS⟩) := by
         funext d
@@ -96,7 +96,7 @@ theorem RespectsSemanticsBelow.glue {CI BJ : Finset ι × ℕ} (h : GradedLe CI 
         rfl
       rw [heq]; exact key
     · have key := hq.locality Sig
-      have heq : (fun d : D.below (D.cell Sig.1) =>
+      have heq : (fun d : D.RowDomain Sig.1 =>
           min (glueSection w q (CellScheme.below.incl Sig d)) (glueSection w q Sig)) =
           fun d => min (q (CellScheme.below.incl Sig d)) (q Sig) := by
         funext d
@@ -143,14 +143,14 @@ variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : Se
 
 section Retarget
 
-variable {K : ℕ} (L : R.LowRef K) {j : ℕ} {u : P.scheme.below (effP nP j) → ExtOrd}
+variable {K : ℕ} (L : R.LowRef K) {j : ℕ} {u : P.scheme.SectionAt (effP nP j)}
   {b η : ExtOrd}
 
 /-- The hypotheses of the retargeting lemma: a lawful section whose donor non-top values lie
 strictly below a positive `K`-visible `b` and whose donor-top values are at least `b`, and a
 `K`-visible target `η ≥ b`. -/
-structure RetargetData (u : P.scheme.below (effP nP j) → ExtOrd) (b η : ExtOrd) : Prop where
-  respects : RespectsSemanticsBelow P.rows (effP nP j) u
+structure RetargetData (u : P.scheme.SectionAt (effP nP j)) (b η : ExtOrd) : Prop where
+  respects : P.rows.Lawful u
   b_vis : SelfVis K b
   b_pos : ⊥ < b
   nonTop_lt : ∀ d, R.p d.1 ≠ ⊤ → u d < b
@@ -164,16 +164,16 @@ include L hj hu
 
 /-- The shifter at a donor-top owner: the old witness where it is bottom or below the rounded
 non-top sources, constantly `η` above. -/
-noncomputable def retargetShifter (τ : ExtOrd → ExtOrd) (a η : ExtOrd) (x : ExtOrd) : ExtOrd :=
+noncomputable def retargetShifter (τ : ExtOrd → ExtOrd) (a η x : ExtOrd) : ExtOrd :=
   if τ x = ⊥ then ⊥ else if x ≤ a then τ x else η
 
 omit L hj hu in
-theorem retargetShifter_of_bot {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x = ⊥) :
+theorem retargetShifter_of_bot {τ} {a η x} (h : τ x = ⊥) :
     retargetShifter τ a η x = ⊥ := by
   unfold retargetShifter; rw [ite_eq_left h]
 
 omit L hj hu in
-theorem retargetShifter_of_le {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (hx : x ≤ a) :
+theorem retargetShifter_of_le {τ} {a η x} (hx : x ≤ a) :
     retargetShifter τ a η x = τ x := by
   unfold retargetShifter
   by_cases h : τ x = ⊥
@@ -181,7 +181,7 @@ theorem retargetShifter_of_le {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (hx : x
   · rw [ite_eq_right h, ite_eq_left hx]
 
 omit L hj hu in
-theorem retargetShifter_of_lt {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x ≠ ⊥) (hx : a < x) :
+theorem retargetShifter_of_lt {τ} {a η x} (h : τ x ≠ ⊥) (hx : a < x) :
     retargetShifter τ a η x = η := by
   unfold retargetShifter; rw [ite_eq_right h, ite_eq_right (not_le.mpr hx)]
 
@@ -189,8 +189,8 @@ omit L hj hu in
 /-- The retargeting shifter is a normalized witness through `k` whenever the old witness is, the
 split point is `k`-visible with the old witness at most `b ≤ η` there, and `η` is `k`-visible and
 positive. -/
-theorem retargetShifter_witness {k : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop k) τ)
-    {a b η : ExtOrd} (ha : SelfVis k a) (hτa : τ a ≤ b) (hbη : b ≤ η) (hη : SelfVis k η)
+theorem retargetShifter_witness {k} {τ} (hτ : Witness (gTop k) τ)
+    {a b η} (ha : SelfVis k a) (hτa : τ a ≤ b) (hbη : b ≤ η) (hη : SelfVis k η)
     (hηpos : ⊥ < η) : Witness (gTop k) (retargetShifter τ a η) where
   anti := hτ.anti
   vis := hτ.vis

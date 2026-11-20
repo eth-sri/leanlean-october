@@ -50,7 +50,7 @@ universe w
 
 /-- Rows transport along an equality of schemes. -/
 theorem rows_castCell {n : ℕ} {X Y : SemScheme n} (h : X = Y) (Sig : Cell X.scheme)
-    (d : X.scheme.below (X.scheme.cell Sig))
+    (d : X.scheme.RowDomain Sig)
     (hd : GradedLe (Y.scheme.cell (SemScheme.castCell h d.1))
       (Y.scheme.cell (SemScheme.castCell h Sig))) :
     Y.rows.E (SemScheme.castCell h Sig) ⟨SemScheme.castCell h d.1, hd⟩ = X.rows.E Sig d := by
@@ -73,8 +73,8 @@ theorem scope_toCell_castCell {m n : ℕ} {X : SemScheme n} {f : Fin m ↪ Fin n
 
 /-- A row entry depends only on the owner and the underlying cell of the argument. -/
 theorem E_congr {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    (sem : Semantics D) {Sig Sig' : Cell D} (h : Sig = Sig') (d : D.below (D.cell Sig))
-    (d' : D.below (D.cell Sig')) (hd : d.1 = d'.1) : sem.E Sig d = sem.E Sig' d' := by
+    (sem : Semantics D) {Sig Sig' : Cell D} (h : Sig = Sig') (d : D.RowDomain Sig)
+    (d' : D.RowDomain Sig') (hd : d.1 = d'.1) : sem.E Sig d = sem.E Sig' d' := by
   subst h
   congr 1
   exact Subtype.ext hd
@@ -128,7 +128,7 @@ theorem scopeC (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
 
 /-- The rows of two cofaces agree on the root, through the identification. -/
 theorem row_of_cofaces (a : P.scheme.scheme.below (rootFace k, (rootFace k).card))
-    (d : P.scheme.scheme.below (P.scheme.scheme.cell a.1))
+    (d : P.scheme.scheme.RowDomain a.1)
     (hd : GradedLe (C.scheme.scheme.cell (faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1)
       (C.scheme.scheme.cell (faceOf hP hC a).1)) :
     P.scheme.rows.E a.1 d =
@@ -145,7 +145,7 @@ theorem row_of_cofaces (a : P.scheme.scheme.below (rootFace k, (rootFace k).card
     exact d.2
   have hle' := (gradedLe_restrictFace_iff P.scheme.scheme Fin.castSuccEmb
     hP.extendsDomain.visible).mpr hle
-  let dR : pR.scheme.scheme.below (pR.scheme.scheme.cell (rootCell hP a)) :=
+  let dR : pR.scheme.scheme.RowDomain (rootCell hP a) :=
     ⟨SemScheme.castCell hP.extendsDomain.restrict d'',
       gradedLe_castCell hP.extendsDomain.restrict hle'⟩
   -- the donor side, read through the root

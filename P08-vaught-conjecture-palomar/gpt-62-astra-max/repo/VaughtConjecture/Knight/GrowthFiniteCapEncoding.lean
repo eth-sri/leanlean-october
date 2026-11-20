@@ -17,7 +17,6 @@ No source encoding or source-strip separation is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthFiniteCapEncoding
 open Value ExtOrd SharpWitnessComposition
 noncomputable section

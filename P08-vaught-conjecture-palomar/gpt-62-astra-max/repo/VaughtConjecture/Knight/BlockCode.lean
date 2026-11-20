@@ -99,13 +99,6 @@ theorem off_le_N (a : Ordinal.{0}) : B.off a ≤ B.N := by
   · exact min_le_right _ _
   · exact le_rfl
 
-theorem off_of_listed {a : Ordinal.{0}} (h : B.listed (limitPart a)) :
-    B.off a = min (finitePart a) B.N := by
-  unfold off; exact ite_eq_left h
-
-theorem off_of_not_listed {a : Ordinal.{0}} (h : ¬ B.listed (limitPart a)) : B.off a = B.N := by
-  unfold off; exact ite_eq_right h
-
 /-- The top code. -/
 noncomputable def topCode : ExtOrd := ofOrd B.htop
 
@@ -138,12 +131,8 @@ same offset on the target strip. -/
 theorem code_listed {a l : Ordinal.{0}} (hl : B.listed (limitPart a))
     (h : B.Λ (limitPart a) = some l) (hfp : finitePart a ≤ B.N) :
     B.code (ofOrd a) = ofOrd (l + finitePart a) := by
-  rw [B.code_ofOrd_of_some h, B.off_of_listed hl, min_eq_left hfp]
-
-/-- Every strip value with offset at most `N` lies below the top code. -/
-theorem strip_le_topCode {μ l : Ordinal.{0}} (h : B.Λ μ = some l) {n : ℕ} (hn : n ≤ B.N) :
-    l + n ≤ B.htop :=
-  (add_le_add_right (Nat.cast_le.mpr hn) _).trans (B.Λ_le μ l h)
+  rw [B.code_ofOrd_of_some h, show B.off a = min (finitePart a) B.N from by
+          unfold off; exact ite_eq_left hl, min_eq_left hfp]
 
 /-! ## Monotonicity -/
 
@@ -159,7 +148,7 @@ theorem code_mono : Monotone B.code := by
     rcases h : B.Λ (limitPart a) with _ | l
     · rw [B.code_ofOrd_of_none h]; exact bot_le
     · rw [B.code_ofOrd_of_some h, topCode, ofOrd_le_ofOrd]
-      exact B.strip_le_topCode h (B.off_le_N a)
+      exact (add_le_add_right (Nat.cast_le.mpr (B.off_le_N a)) _).trans (B.Λ_le (limitPart a) l h)
   rw [ofOrd_le_ofOrd] at hxy
   have hlp : limitPart a ≤ limitPart b := limitPart_mono hxy
   rcases ha : B.Λ (limitPart a) with _ | l
@@ -177,7 +166,8 @@ theorem code_mono : Monotone B.code := by
     rcases hlp.lt_or_eq with hlt | heq
     · have hnl : ¬ B.listed (limitPart b) := fun hl =>
         lt_irrefl l (B.Λ_strict _ _ l l hlt hl ha hb)
-      rw [B.off_of_not_listed hnl]
+      rw [show B.off b = B.N from by
+          unfold off; exact ite_eq_right hnl]
       exact B.off_le_N a
     · have hfp : finitePart a ≤ finitePart b := finitePart_le_of_le_of_limitPart_eq hxy heq
       unfold off
@@ -218,7 +208,9 @@ theorem code_comm (x : ExtOrd) (k i : ℕ) (hk : k ≤ B.R) (hi : i ≤ k) :
       by_cases hl : B.listed (limitPart a)
       · have hl' : B.listed (limitPart (limitPart a + i)) := by
           rw [limitPart_limitPart_add_nat]; exact hl
-        rw [B.off_of_listed hl, B.off_of_listed hl', finitePart_limitPart_add_nat,
+        rw [show B.off a = min (finitePart a) B.N from by
+          unfold off; exact ite_eq_left hl, show B.off (limitPart a + ↑i) = min (finitePart (limitPart a + ↑i)) B.N from by
+          unfold off; exact ite_eq_left hl', finitePart_limitPart_add_nat,
           min_eq_left (hfp'.le.trans (hk.trans B.R_lt_N.le)),
           min_eq_left ((hi.trans hk).trans B.R_lt_N.le),
           extVisibilityReplace_of_finitePart_lt
@@ -226,7 +218,9 @@ theorem code_comm (x : ExtOrd) (k i : ℕ) (hk : k ≤ B.R) (hi : i ≤ k) :
           limitPart_add_nat_of_limit hlim]
       · have hl' : ¬ B.listed (limitPart (limitPart a + i)) := by
           rw [limitPart_limitPart_add_nat]; exact hl
-        rw [B.off_of_not_listed hl, B.off_of_not_listed hl',
+        rw [show B.off a = B.N from by
+          unfold off; exact ite_eq_right hl, show B.off (limitPart a + ↑i) = B.N from by
+          unfold off; exact ite_eq_right hl',
           extVisibilityReplace_of_le_finitePart
             (by rw [finitePart_add_nat_of_limit hlim]; exact hk.trans B.R_lt_N.le)]
 

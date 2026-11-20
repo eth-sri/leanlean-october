@@ -5,8 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.LowFrame
 public import VaughtConjecture.Knight.LowOnlyPaddedLegalCertificate
-public import VaughtConjecture.Knight.FiniteCoverReceivingCore
 public import VaughtConjecture.Knight.TopSupportReceiving
 public import VaughtConjecture.Knight.LowOnlyActualState
 
@@ -27,7 +27,6 @@ its rootwise attachment are separate adapters.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedModelReceiving
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly
 open CellScheme.restrictFace
@@ -36,9 +35,7 @@ universe w
 variable {l m n K : ℕ} {B C : Finset (Fin l)} {R : Finset (Finset (Fin l))}
   (I : WholeDonorBoundary.Input Finset.univ B C R m n n)
   (F : LowOnly.Family I.left I.right K)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
+  (hroot : I.RootAgreement F)
   (hA : 2 ≤ (Finset.univ : Finset (Fin l)).card)
   (hB : B ⊂ Finset.univ) (hC : C ⊂ Finset.univ)
   (hcover : ∀ S ∈ R, S ≠ Finset.univ → S ⊆ B ∨ S ⊆ C)
@@ -51,13 +48,13 @@ include hroot hA hB hC hcover in
 /-- Receive from a raw certificate by truncating the finished lawful display.
 Only the cutoff is bounded by the stage; the actual private face remains literal.
 The separator certificate, not cap cancellation alone, recovers donor tops. -/
-theorem receive_raw_of_receiving {M : Type w} {α : LimitStage} {W : KnightRealization α M}
-    (hcons : W.IsExactParentConsistent) (hFC : FiniteCutReceiving W) {S : State I.left I.right}
+theorem receive_raw_of_receiving {M : Type w} {α} {W : KnightRealization α M}
+    (hcons : W.IsExactParentConsistent) (hFC : FiniteCutReceiving W) {S}
     (hS : F.Admissible (Finset.univ : Finset (Fin l)).card S)
     (hdonor : S.u = F.p) (hc : S.v F.gap.c = ⊤) (hr : S.v F.gap.r.1 = ⊤)
     (hactive : LowSeparator.cutoffCut K (LowSeparator.donorField F) S.profile < S.b)
     (hb : S.b < ofOrd α.1)
-    (u : Fin n ↪ M) (pC : StageType α.1 n) (hu : W.eval u = some pC)
+    u pC (hu : W.eval u = some pC)
     (hCs : pC.scheme = I.right)
     (hCv : ∀ d, pC.label d = S.v (SemScheme.castCell hCs d)) :
     ∃ (v : Fin l ↪ M) (pD : StageType α.1 n),
@@ -89,7 +86,7 @@ theorem receive_raw_of_receiving {M : Type w} {α : LimitStage} {W : KnightReali
   obtain ⟨v, Q', hv, hev, hq, hcap⟩ :=
     FiniteCoverReceiving.finiteCoverReceiving_of_receiving hcons hFC Q I.placeRight u pC hp hu S.b
       (lt_of_le_of_lt bot_le hactive) hb
-  let q : Cell (E).scheme → ExtOrd := fun d => Q'.label (SemScheme.castCell hq.symm d)
+  let q : (E).scheme.Labelling := fun d => Q'.label (SemScheme.castCell hq.symm d)
   have hqLaw : RespectsSemantics (E).rows q := respects_castCell hq Q'.respects
   let T : StageType α.1 l := ⟨E, q, fun d => Q'.label_bound _, hqLaw⟩
   have hQT : Q' = T := StageType.eq_of_label hq (fun _ => rfl)
@@ -104,7 +101,7 @@ theorem receive_raw_of_receiving {M : Type w} {α : LimitStage} {W : KnightReali
       (hsC.trans hCs.symm)).mp hprivate (SemScheme.castCell hsC.symm d)
     rw [hoccC d, hCv] at h
     exact h
-  have hcaps : ∀ d, min (q d) S.b = min (w d) S.b := by
+  have hcaps : CappedEq q w S.b := by
     intro d
     have he := hcap (SemScheme.castCell hq.symm d)
     change min (q d) S.b = min (truncExt α.1 (w d)) S.b at he
@@ -127,9 +124,8 @@ theorem receive_raw_of_receiving {M : Type w} {α : LimitStage} {W : KnightReali
 include hroot hA hB hC hcover in
 /-- Exact receiving from the actual private tuple and a lawful donor sharing
 its root. The active state and cutoff are constructed, not supplied. -/
-theorem receive_of_shared_of_receiving {M : Type w} {α : LimitStage} {W : KnightRealization α M}
-    (hcons : W.IsExactParentConsistent) (hFC : FiniteCutReceiving W) (u : Fin n ↪ M) (pC :
-      StageType α.1 n)
+theorem receive_of_shared_of_receiving {M : Type w} {α} {W : KnightRealization α M}
+    (hcons : W.IsExactParentConsistent) (hFC : FiniteCutReceiving W) u pC
     (hu : W.eval u = some pC) (hCs : pC.scheme = I.right)
     (hshared : F.root.Shared F.p (fun d => pC.label (SemScheme.castCell hCs.symm d)))
     (hc : pC.label (SemScheme.castCell hCs.symm F.gap.c) = ⊤)
@@ -140,7 +136,7 @@ theorem receive_of_shared_of_receiving {M : Type w} {α : LimitStage} {W : Knigh
       I.commonLeft.trans (I.placeLeft.trans v) = I.commonRight.trans u ∧
       ∃ h : pD.scheme = I.left,
         ∀ d, pD.label d = F.p (SemScheme.castCell h d) := by
-  let v : Cell I.right.scheme → ExtOrd := fun d => pC.label (SemScheme.castCell hCs.symm d)
+  let v : I.right.scheme.Labelling := fun d => pC.label (SemScheme.castCell hCs.symm d)
   have hv : RespectsSemantics I.right.rows v := respects_castCell hCs pC.respects
   obtain ⟨b, hb, hadm, hactive, _hbound⟩ := LowOnlyActualState.exists_active F v hv hshared
     hpbound (fun d hd => (pC.label_bound _).resolve_right hd)

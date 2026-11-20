@@ -1,3 +1,0 @@
-module
-public import InfinitaryLogic.Methods.LocalEMTruth
-public import InfinitaryLogic.Methods.LocalSkolemUniversal

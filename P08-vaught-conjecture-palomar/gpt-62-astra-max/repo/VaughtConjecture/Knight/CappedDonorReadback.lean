@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CappedDonorLowHighFibres
+public import VaughtConjecture.Knight.CappedDonorRetarget
+public import VaughtConjecture.Knight.CappedDonorRelease
 
 /-! # The HIGH/LOW readback consumer from explicit chart receipts (newapproach2 §7 of new4)
 

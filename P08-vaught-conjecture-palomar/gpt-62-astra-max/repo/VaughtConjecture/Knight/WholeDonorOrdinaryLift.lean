@@ -7,7 +7,6 @@ module
 
 public import VaughtConjecture.Knight.WholeDonorOrdinarySections
 public import VaughtConjecture.Knight.CanonicalRecursiveFace
-public import VaughtConjecture.Knight.CanonicalRecursiveInitialized
 public import VaughtConjecture.Knight.CanonicalRecursiveCoding
 
 /-! # Ordinary scope lifting from the actual legal input faces
@@ -20,7 +19,6 @@ existential replacement carrier. It does not yet iterate over missing scopes.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.WholeDonorOrdinaryLift
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
 open WholeDonorOrdinarySections
@@ -36,9 +34,6 @@ theorem right_mem : C ∈ I.boundary.plan :=
   I.rightPlan_le I.rightScheme.isPlan.domain_mem
 
 variable (n : ℕ) (hA : n + 3 ≤ A.card)
-
-theorem coded : (rows I hBA hCA n hA).IsCoded :=
-  CanonicalRecursiveCoding.coded I.rows (proper_boundary I hBA hCA) I.coded n hA
 
 variable {CI BJ : Finset ι × ℕ}
 

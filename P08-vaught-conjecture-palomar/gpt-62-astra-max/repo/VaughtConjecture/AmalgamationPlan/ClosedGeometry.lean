@@ -22,7 +22,7 @@ namespace VaughtConjecture.AmalgamationPlan.Plan
 variable {α : Type*} [DecidableEq α]
 
 /-- Intersections of visible faces are visible. -/
-theorem IsPlan.inter_mem {A : Finset α} {P : Finset (Finset α)}
+theorem IsPlan.inter_mem {A} {P}
     (hP : IsPlan A P) {X Y : Finset α} (hX : X ∈ P) (hY : Y ∈ P) : X ∩ Y ∈ P := by
   induction hP generalizing X Y with
   | empty =>

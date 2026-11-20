@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.HighLayerBountiful
-public import VaughtConjecture.Knight.GradeTailRestoration
 
 /-! # Literal section supply with a zero high tail
 
@@ -16,7 +15,6 @@ It requires neither positive continuation nor a supported canonical encoding.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HighLayerBountiful
 open Transform Value ExtOrd CoatomBoundaryExtension SourceLayerCarrier GradeTailRestoration
 noncomputable section
@@ -39,7 +37,7 @@ theorem exists_zero_tail {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) 
   let e := equiv D Q l hl hlA (A, K) (fun h => (not_le_of_gt hKl) h.2)
   let v : (scheme D Q l hl hlA).below (A, K) → ExtOrd := fun d => p (e.symm d).1
   have hv : RespectsSemanticsBelow out (A, K) v :=
-    (respects_iff D Q l hl hlA K hK hKl sem out hrow (A, K)
+    (respects_iff D Q l hl hlA (separated D l K hK hKl) sem out hrow (A, K)
       (fun h => (not_le_of_gt hKl) h.2) _).mp (hp.toBelow _)
   let u : (scheme D Q l hl hlA).below (A, l) → ExtOrd := fun _ => ⊥
   have hu : RespectsSemanticsBelow out (A, l) u :=

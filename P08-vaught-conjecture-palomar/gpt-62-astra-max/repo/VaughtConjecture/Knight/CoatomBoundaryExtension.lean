@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.NormalForm
-public import VaughtConjecture.Knight.Repair
 public import VaughtConjecture.Knight.Domain
 public import VaughtConjecture.Knight.CappedLifting
 
@@ -23,8 +22,6 @@ producer, not yet a supported whole-section operator or an amalgam.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 
@@ -44,11 +41,11 @@ def right (d : D.below V) : Boundary D U V := ⟨d.1, Or.inr d.2⟩
 
 /-- Compatible lawful labellings on the two physically retained faces. -/
 structure Section (sem : Semantics D) (U V : Finset ι × ℕ) where
-  onLeft : D.below U → ExtOrd
-  onRight : D.below V → ExtOrd
-  left_lawful : RespectsSemanticsBelow sem U onLeft
-  right_lawful : RespectsSemanticsBelow sem V onRight
-  overlap : ∀ (d : Cell D) (hu : GradedLe (D.cell d) U) (hv : GradedLe (D.cell d) V),
+  onLeft : D.SectionAt U
+  onRight : D.SectionAt V
+  left_lawful : sem.Lawful onLeft
+  right_lawful : sem.Lawful onRight
+  overlap : ∀ d (hu : GradedLe (D.cell d) U) (hv : GradedLe (D.cell d) V),
     onLeft ⟨d, hu⟩ = onRight ⟨d, hv⟩
 
 namespace Section
@@ -60,11 +57,11 @@ noncomputable def value (d : Boundary D U V) : ExtOrd := by
   exact if h : GradedLe (D.cell d.1) U then a.onLeft ⟨d.1, h⟩
     else a.onRight ⟨d.1, d.2.resolve_left h⟩
 
-theorem value_left (d : D.below U) : a.value (left d) = a.onLeft d := by
+theorem value_left d : a.value (left d) = a.onLeft d := by
   simp only [value, left, d.2, ↓reduceDIte]
   rfl
 
-theorem value_right (d : D.below V) : a.value (right d) = a.onRight d := by
+theorem value_right d : a.value (right d) = a.onRight d := by
   classical
   by_cases h : GradedLe (D.cell d.1) U
   · simp only [value, right, h, ↓reduceDIte]
@@ -79,11 +76,11 @@ noncomputable def whole
 
 theorem whole_left
     (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
-    (d : D.below U) : a.whole hcover d.1 = a.onLeft d := a.value_left d
+    d : a.whole hcover d.1 = a.onLeft d := a.value_left d
 
 theorem whole_right
     (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
-    (d : D.below V) : a.whole hcover d.1 = a.onRight d := a.value_right d
+    d : a.whole hcover d.1 = a.onRight d := a.value_right d
 
 /-- Lawfulness glues on the actual old boundary. For availability choose
 the face containing the target; the requester and witness lie there too.
@@ -100,7 +97,7 @@ theorem whole_respects
   locality c := by
     rcases hcover c with hc | hc
     · have ht := a.left_lawful.locality ⟨c, hc⟩
-      have he : (fun d : D.below (D.cell c) =>
+      have he : (fun d : D.RowDomain c =>
           min (a.whole hcover d.1) (a.whole hcover c)) =
           (fun d => min (a.onLeft (CellScheme.below.incl ⟨c, hc⟩ d))
             (a.onLeft ⟨c, hc⟩)) := by
@@ -110,7 +107,7 @@ theorem whole_respects
       rw [he]
       exact ht
     · have ht := a.right_lawful.locality ⟨c, hc⟩
-      have he : (fun d : D.below (D.cell c) =>
+      have he : (fun d : D.RowDomain c =>
           min (a.whole hcover d.1) (a.whole hcover c)) =
           (fun d => min (a.onRight (CellScheme.below.incl ⟨c, hc⟩ d))
             (a.onRight ⟨c, hc⟩)) := by
@@ -134,7 +131,7 @@ theorem whole_respects
 end Section
 
 /-- A constructed ambient for bottom-cap boundary completion. -/
-def bottomSection (sem : Semantics D) (U V : Finset ι × ℕ) : Section sem U V where
+def bottomSection (sem : Semantics D) U V : Section sem U V where
   onLeft _ := ⊥
   onRight _ := ⊥
   left_lawful := {
@@ -156,17 +153,16 @@ theorem extend_left
     (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
       GradedLe (D.cell d) O)
     (hleft : CappedLift sem hIU) (hright : CappedLift sem hOV)
-    (a : Section sem U V) (p : D.below I → ExtOrd) (γ : ExtOrd)
-    (hp : RespectsSemanticsBelow sem I p) (hγU : SelfVis U.2 γ) (hγV : SelfVis V.2 γ)
-    (hag : ∀ d, min (a.onLeft (CellScheme.below.mono hIU d)) γ = min (p d) γ) :
+    (a : Section sem U V) p γ
+    (hp : sem.Lawful p) (hγU : SelfVis U.2 γ) (hγV : SelfVis V.2 γ)
+    (hag : CappedEq (a.onLeft ∘ CellScheme.below.mono hIU) p γ) :
     ∃ b : Section sem U V,
-      (∀ d, min (b.value d) γ = min (a.value d) γ) ∧
+      CappedEq b.value a.value γ ∧
       ∀ d, b.value (left (CellScheme.below.mono hIU d)) = p d := by
   obtain ⟨u, hu, hucap, hup⟩ := hleft p a.onLeft γ hp a.left_lawful hγU hag
-  let o : D.below O → ExtOrd := fun d => u (CellScheme.below.mono hOU d)
-  have ho : RespectsSemanticsBelow sem O o := hu.mono hOU
-  have hocap : ∀ d : D.below O,
-      min (a.onRight (CellScheme.below.mono hOV d)) γ = min (o d) γ := by
+  let o : D.SectionAt O := fun d => u (CellScheme.below.mono hOU d)
+  have ho : sem.Lawful o := hu.mono hOU
+  have hocap : CappedEq (a.onRight ∘ CellScheme.below.mono hOV) o γ := by
     intro d
     change min (a.onRight ⟨d.1, d.2.trans hOV⟩) γ =
       min (u (CellScheme.below.mono hOU d)) γ
@@ -204,7 +200,7 @@ theorem section_left
     (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
       GradedLe (D.cell d) O)
     (hleft : CappedLift sem hIU) (hright : CappedLift sem hOV)
-    (p : D.below I → ExtOrd) (hp : RespectsSemanticsBelow sem I p) :
+    p (hp : sem.Lawful p) :
     ∃ b : Section sem U V, ∀ d,
       b.value (left (CellScheme.below.mono hIU d)) = p d := by
   obtain ⟨b, _, hread⟩ := extend_left hIU hOU hOV hinter hleft hright
@@ -221,16 +217,18 @@ theorem extend_boundary
     (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
       GradedLe (D.cell d) O)
     (hleft : CappedLift sem hIU) (hright : CappedLift sem hOV)
-    (a : Section sem U V) (p : D.below I → ExtOrd) (γ : ExtOrd)
-    (hp : RespectsSemanticsBelow sem I p) (hγU : SelfVis U.2 γ) (hγV : SelfVis V.2 γ)
-    (hag : ∀ d, min (a.onLeft (CellScheme.below.mono hIU d)) γ = min (p d) γ) :
-    ∃ r : Cell D → ExtOrd, RespectsSemantics sem r ∧
-      (∀ d, min (r d) γ = min (a.whole hcover d) γ) ∧
-      ∀ d : D.below I, r d.1 = p d := by
+    {a : Cell D → ExtOrd} (ha : RespectsSemantics sem a) {p : D.SectionAt I} {γ : ExtOrd}
+    (hp : sem.Lawful p) (hγU : SelfVis U.2 γ) (hγV : SelfVis V.2 γ)
+    (hag : CappedEq p (a ∘ Subtype.val) γ) :
+    ∃ r, RespectsSemantics sem r ∧ CappedEq r a γ ∧ ∀ d : D.below I, r d.1 = p d := by
+  let s : Section sem U V := ⟨_,_,ha.toBelow U,ha.toBelow V,fun _ _ _ => rfl⟩
   obtain ⟨b, hcap, hread⟩ := extend_left hIU hOU hOV hinter hleft hright
-    a p γ hp hγU hγV hag
-  exact ⟨b.whole hcover, b.whole_respects hcover,
-    fun d => hcap ⟨d, hcover d⟩, hread⟩
+    s p γ hp hγU hγV (fun d => (hag d).symm)
+  refine ⟨b.whole hcover,b.whole_respects hcover,fun d => (hcap ⟨d,hcover d⟩).trans ?_,hread⟩
+  apply congrArg (fun x => min x γ)
+  rcases hcover d with hl | hr
+  · exact s.whole_left hcover ⟨d,hl⟩
+  · exact s.whole_right hcover ⟨d,hr⟩
 
 /-- Clamp the overlap's nominal grade to its actual cardinality before
 invoking an old face's graded-plan bountifulness clause. -/
@@ -244,7 +242,7 @@ theorem target_le_right : GradedLe (overlapTarget U V) V :=
   ⟨Finset.inter_subset_right, (min_le_left _ _).trans (min_le_right _ _)⟩
 
 /-- Clamping drops no occurrence, including any high-grade auxiliary. -/
-theorem below_target_iff (d : Cell D) :
+theorem below_target_iff d :
     GradedLe (D.cell d) (overlapTarget U V) ↔
       GradedLe (D.cell d) U ∧ GradedLe (D.cell d) V := by
   constructor

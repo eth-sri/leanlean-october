@@ -22,7 +22,6 @@ of the proposed hollow-growth receiver, not the receiver itself.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthContextSynchronization
 open TypeTower StageType KnightRealization Value ExtOrd
 noncomputable section

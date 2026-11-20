@@ -16,7 +16,6 @@ They do not change the refuted `PairedMixedGradeLayers` construction.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedEncoding
 open Transform Value ExtOrd PairedSlotEncoding
 noncomputable section
@@ -27,15 +26,15 @@ def codeOrd (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : Ordinal.{0} :
 def codedValues (j : ℕ) (S : Finset Ordinal.{0}) : Finset Ordinal.{0} :=
   S.image (codeOrd j S)
 
-theorem codeOrd_finitePart (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
+theorem codeOrd_finitePart j S a :
     finitePart (codeOrd j S a) = offset j S a := by
   exact finitePart_mul_add _ _
 
-theorem codeOrd_limitPart (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
+theorem codeOrd_limitPart j S a :
     limitPart (codeOrd j S a) = Ordinal.omega0 * block j S a := by
   exact limitPart_mul_add _ _
 
-theorem orbit_codeOrd_iff {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem orbit_codeOrd_iff {j} {S} {a}
     (ha : a ∈ S) : Orbit j (codedValues j S) (codeOrd j S a) ↔ Orbit j S a := by
   classical
   constructor
@@ -62,7 +61,7 @@ theorem orbit_codeOrd_iff {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
     · simpa only [codeOrd_finitePart, offset, ite_eq_left hob] using hbj
     · simp only [codeOrd_limitPart, block_eq_of_key_eq hb ha hk]
 
-theorem key_codeOrd_eq_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem key_codeOrd_eq_of_key_eq {j} {S} {a b}
     (ha : a ∈ S) (hb : b ∈ S) (hk : key j S a = key j S b) :
     key j (codedValues j S) (codeOrd j S a) =
       key j (codedValues j S) (codeOrd j S b) := by
@@ -76,7 +75,7 @@ theorem key_codeOrd_eq_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordin
     have hab : a = b := by simpa only [key, ite_eq_right hoa, ite_eq_right hob] using hk
     rw [hab]
 
-theorem key_codeOrd_lt_of_key_lt {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem key_codeOrd_lt_of_key_lt {j} {S} {a b}
     (ha : a ∈ S) (hk : key j S a < key j S b) :
     key j (codedValues j S) (codeOrd j S a) <
       key j (codedValues j S) (codeOrd j S b) := by
@@ -91,7 +90,7 @@ theorem key_codeOrd_lt_of_key_lt {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordin
   · exact le_rfl
   · exact limitPart_le _
 
-theorem key_codeOrd_lt_iff {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem key_codeOrd_lt_iff {j} {S} {a b}
     (ha : a ∈ S) (hb : b ∈ S) :
     key j (codedValues j S) (codeOrd j S a) <
       key j (codedValues j S) (codeOrd j S b) ↔ key j S a < key j S b := by
@@ -103,7 +102,7 @@ theorem key_codeOrd_lt_iff {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}
     · exact (lt_asymm h (key_codeOrd_lt_of_key_lt hb hgt)).elim
   · exact key_codeOrd_lt_of_key_lt ha
 
-theorem key_codeOrd_eq_iff {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem key_codeOrd_eq_iff {j} {S} {a b}
     (ha : a ∈ S) (hb : b ∈ S) :
     key j (codedValues j S) (codeOrd j S a) =
       key j (codedValues j S) (codeOrd j S b) ↔ key j S a = key j S b := by
@@ -115,7 +114,7 @@ theorem key_codeOrd_eq_iff {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}
     · exact ((key_codeOrd_lt_of_key_lt hb hgt).ne h.symm).elim
   · exact key_codeOrd_eq_of_key_eq ha hb
 
-theorem rank_codeOrd {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem rank_codeOrd {j} {S} {a}
     (ha : a ∈ S) : rank j (codedValues j S) (codeOrd j S a) = rank j S a := by
   classical
   let rep (x : Ordinal.{0}) (hx : x ∈ PairedSlotEncoding.keys j S) : Ordinal.{0} :=
@@ -148,7 +147,7 @@ theorem rank_codeOrd {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
     refine ⟨key j S b, hm, ?_⟩
     exact key_codeOrd_eq_of_key_eq (rep_spec _ hk).1 hb (rep_spec _ hk).2
 
-theorem encode_codeOrd {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem encode_codeOrd {j} {S} {a}
     (ha : a ∈ S) : encode j (codedValues j S) (codeOrd j S a) = encode j S a := by
   classical
   have hr := rank_codeOrd (j := j) ha
@@ -163,7 +162,7 @@ theorem encode_codeOrd {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
 section Profile
 variable {X : Type*} [Fintype X]
 
-theorem values_normalize (j : ℕ) (p : X → ExtOrd) :
+theorem values_normalize j (p : X → ExtOrd) :
     values (normalize j p) = codedValues j (values p) := by
   classical
   ext a
@@ -182,7 +181,7 @@ theorem values_normalize (j : ℕ) (p : X → ExtOrd) :
 
 /-- Paired normalization is a retraction, with no bound on the original ordinals.
 Literal top stays top; membership of the finite proper catalogue is separate. -/
-theorem normalize_idempotent (j : ℕ) (p : X → ExtOrd) :
+theorem normalize_idempotent j (p : X → ExtOrd) :
     normalize j (normalize j p) = normalize j p := by
   funext d
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩

@@ -27,7 +27,7 @@ open AmalgamationPlan Transform Value ExtOrd
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {k : ℕ}
   (base : Semantics D) (h : Cell D) (hh : k < D.grade h) (hfull : D.scope h = A)
-  (p : D.below (A, k) → ExtOrd) (hp : RespectsSemanticsBelow base (A, k) p)
+  (p : D.SectionAt (A, k)) (hp : base.Lawful p)
   (N : ExtOrd) (hN : SelfVis (D.grade h) N)
 
 noncomputable def sourceValues : Finset Ordinal := by
@@ -38,11 +38,6 @@ theorem supported_old (d : D.below (A, k)) : SourceCode.Supported (sourceValues 
   let _ : Fintype (D.below (A, k)) := Fintype.ofFinite _
   intro v hv
   exact Finset.mem_union_left _ (mem_primRange_of_eq hv)
-
-theorem supported_new : SourceCode.Supported (sourceValues p N) N := by
-  intro v hv
-  apply Finset.mem_union_right
-  exact mem_primRange_of_eq (target := fun _ : Unit => N) (d := ()) hv
 
 /-- The new high row is selected jointly with its selected labelling. -/
 noncomputable def adapted : Data D k where
@@ -78,9 +73,12 @@ theorem selected_supported (d : Cell D) :
   · by_cases he : d = h
     · subst d
       rw [selected_high h hh p N]
-      exact supported_new p N
+      exact by
+          intro v hv
+          apply Finset.mem_union_right
+          exact mem_primRange_of_eq (target := fun _ : Unit => N) (d := ()) hv
     · rw [selected_other h p N d hd he]
-      exact SourceCode.supported_bot _
+      exact fun v h => False.elim (ofOrd_ne_bot v (Eq.symm h))
 
 include hh hp hN in
 theorem selected_visible (d : Cell D) : SelfVis (D.grade d) (selected h p N d) := by
@@ -94,7 +92,7 @@ theorem selected_visible (d : Cell D) : SelfVis (D.grade d) (selected h p N d) :
     · rw [selected_other h p N d hd he]
       exact selfVis_bot _
 
-theorem source_read (d : D.below (D.cell h)) :
+theorem source_read (d : D.RowDomain h) :
     (adapted base h hh hfull p hp N hN).rows.E h d =
       SourceCode.encode (D.grade h) (sourceValues p N) (selected h p N d.1) := by
   simp only [Data.rows, adapted, not_le_of_gt hh, ↓reduceIte]
@@ -124,7 +122,7 @@ theorem selected_respects :
       rfl
     · by_cases he : c = h
       · subst c
-        have ht := SourceCode.outgoing (fun d : D.below (D.cell h) => D.grade d.1)
+        have ht := SourceCode.outgoing (fun d : D.RowDomain h => D.grade d.1)
           (fun d => selected h p N d.1) (D.grade h) (sourceValues p N)
           (fun d => d.2.2) (fun d => selected_supported h hh p N d.1) hN
         have hs : F.rows.E h = fun d =>
@@ -133,7 +131,7 @@ theorem selected_respects :
         rw [hs, selected_high h hh p N]
         exact ht
       · simpa only [selected_other h p N c hc he, min_bot_right] using
-          (TransformsTo.to_bot (grade := fun d : D.below (D.cell c) => D.grade d.1) (F.rows.E c))
+          (TransformsTo.to_bot (grade := fun d : D.RowDomain c => D.grade d.1) (F.rows.E c))
   availability d e hs hg := by
     by_cases hd : D.grade d ≤ k
     · have he : D.grade e ≤ k := hg ▸ hd
@@ -166,7 +164,7 @@ include hh hfull hp hN in
 section, consistency, and all unrestricted lifts are constructed. -/
 theorem exists_extension (hk : 1 ≤ k) (hc : base.IsConsistent)
     (hb : base.IsBountiful) (hcode : base.IsCoded) :
-    ∃ (rows : Semantics D) (q : Cell D → ExtOrd),
+    ∃ (rows : Semantics D) (q : D.Labelling),
       rows.IsConsistent ∧ rows.IsBountiful ∧ rows.IsCoded ∧ RespectsSemantics rows q ∧
       (∀ c, D.grade c ≤ k → rows.E c = base.E c) ∧
       (∀ d : D.below (A, k), q d.1 = p d) ∧ q h = N := by

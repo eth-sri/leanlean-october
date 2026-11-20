@@ -17,7 +17,6 @@ them in the same ambient inventory. No local operator is an input to the step.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryScopeIteration
 open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
 open SourcePrefixRows OrbitPrefixSupport
@@ -36,7 +35,7 @@ structure State (F : Finset (Finset ι)) where
   coded : rows.IsCoded
   original : Cell D₀ ↪o Cell carrier
   index : ∀ d, carrier.cell (original d) = D₀.cell d
-  row : ∀ (c : Cell D₀) (d : D₀.below (D₀.cell c)),
+  row : ∀ c d,
     rows.E (original c) ⟨original d.1, by rw [index, index]; exact d.2⟩ = sem₀.E c d
   exhaustive : ∀ d, carrier.scope d ∈ F₀ → ∃ c, original c = d
   occupied : ∀ d, carrier.scope d ∈ F
@@ -50,8 +49,8 @@ structure State (F : Finset (Finset ι)) where
   classification : OrderedScopeRelocation.OwnerClassification rows original
   mute : ∀ c, carrier.grade c = (carrier.scope c).card → carrier.scope c ∉ F₀ →
     rows.E c ⟨c, GradedLe.refl _⟩ = ⊥
-  render : ∀ {p : Cell D₀ → ExtOrd}, RespectsSemantics sem₀ p → (∀ d, p d ≤ θ) →
-    Cell carrier → ExtOrd
+  render : ∀ {p}, RespectsSemantics sem₀ p → (∀ d, p d ≤ θ) →
+    carrier.Labelling
   readback : ∀ {p} (hp : RespectsSemantics sem₀ p) (hb : ∀ d, p d ≤ θ) d,
     render hp hb (original d) = p d
   lawful : ∀ {p} (hp : RespectsSemantics sem₀ p) (hb : ∀ d, p d ≤ θ),
@@ -111,13 +110,6 @@ theorem ready : OrdinaryRawScope.Ready (restrictedRows X hB) where
 
 variable (k : ℕ) (hk : 0 < k) (hcard : B.card = k + 1)
 
-/-- The next operator is produced on the current carrier's literal restriction. -/
-def localOperator : OrdinaryScopeOperator.Core (restrictedRows X hB) (k + 1) :=
-  (OrdinaryRawScope.build _ (ready X hB hnew hready) k hk hcard).finish hk hcard
-
-theorem local_complete : (localOperator X hB hnew hready k hk hcard).carrier.IsComplete :=
-  (OrdinaryRawScope.build _ (ready X hB hnew hready) k hk hcard).finish_complete hk hcard
-
 /-- Execute one new scope on the actual ambient carrier. All local lifting and
 selected-section premises are derived above from the completed-target ledger. -/
 def step (hBA : B ≠ A) (hN : k + 1 ≤ N)
@@ -125,7 +117,7 @@ def step (hBA : B ≠ A) (hN : k + 1 ≤ N)
     State sem₀ F₀ N G θ (insert B F) := by
   classical
   let hBX : B ∈ X.carrier.plan := X.plan.symm ▸ hB
-  let L := localOperator X hB hnew hready k hk hcard
+  let L := (OrdinaryRawScope.build _ (ready X hB hnew hready) k hk hcard).finish hk hcard
   let sep := separated X hB hnew
   let K := OrderedScopeRelocation.carrier X.rows hBX L
   let ss := OrderedScopeRelocation.rows X.rows hBX L sep
@@ -133,7 +125,7 @@ def step (hBA : B ≠ A) (hN : k + 1 ≤ N)
   let r := OrderedScopeRelocation.localCell X.rows hBX L
   have hg : ∀ z ∈ G, SelfVis (k + 1) z := fun z hz => selfVis_mono (hG z hz) hN
   have hθ' : SelfVis (k + 1) θ := selfVis_mono hθ hN
-  let render' {p : Cell D₀ → ExtOrd} (hp : RespectsSemantics sem₀ p) (hb : ∀ d, p d ≤ θ) :=
+  let render' {p : D₀.Labelling} (hp : RespectsSemantics sem₀ p) (hb : ∀ d, p d ≤ θ) :=
     OrderedScopeRelocation.render X.rows hBX L (X.lawful hp hb)
       (fun d => ne_top_of_le_ne_top htθ (X.bound hp hb d)) G θ
   refine {
@@ -203,7 +195,7 @@ def step (hBA : B ≠ A) (hN : k + 1 ≤ N)
         rw [L.plan]
         exact Plan.mem_gradedPlan.mpr ⟨Finset.mem_inter.mpr
           ⟨X.plan.symm ▸ hm.1, Finset.mem_powerset.mpr (subset_of_eq hJB)⟩, hm.2⟩
-      obtain ⟨d, hd⟩ := local_complete X hB hnew hready k hk hcard J hJL
+      obtain ⟨d, hd⟩ := OrdinaryScopeOperator.Core.finish_complete (OrdinaryRawScope.build (restrictedRows X hB) (ready X hB hnew hready) k hk hcard) hk hcard J hJL
       exact ⟨r d, (OrderedScopeRelocation.local_index X.rows hBX L d).trans hd⟩
     · obtain ⟨d, hd⟩ := X.complete J hJ hJF
       exact ⟨l d, (OrderedScopeRelocation.old_index X.rows hBX L d).trans hd⟩
@@ -282,10 +274,10 @@ theorem exists_completed
     (hN : ∀ B ∈ D.plan, B ≠ A → B.card ≤ N)
     (hsmall : ∀ B ∈ D.plan, B.card ≤ 1 → B ∈ F₀)
     (hG : ∀ z ∈ G, SelfVis N z) (hθ : SelfVis N θ) (htθ : θ ≠ ⊤) (hθG : θ ∈ G)
-    {F : Finset (Finset ι)} (X : State sem F₀ N G θ F) :
+    {F} (X : State sem F₀ N G θ F) :
     ∃ F', Nonempty (State sem F₀ N G θ F') ∧ ∀ B ∈ D.plan, B ≠ A → B ∈ F' := by
   classical
-  suffices ∀ n, ∀ (F : Finset (Finset ι)), (D.plan \ insert A F).card = n →
+  suffices ∀ n, ∀ F, (D.plan \ insert A F).card = n →
       State sem F₀ N G θ F →
       ∃ F', Nonempty (State sem F₀ N G θ F') ∧ ∀ B ∈ D.plan, B ≠ A → B ∈ F' by
     exact this _ F rfl X

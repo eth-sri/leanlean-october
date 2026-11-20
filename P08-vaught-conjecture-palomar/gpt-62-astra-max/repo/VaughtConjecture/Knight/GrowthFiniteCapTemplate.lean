@@ -17,7 +17,6 @@ input. In particular, the encoding grade is not the marker offset.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthFiniteCapTemplate
 open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
 noncomputable section
@@ -29,10 +28,10 @@ variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
 actual block-reference readings. Neither an encoding nor root source
 alignment nor a replacement donor is an input. -/
 theorem exists_template (req : Requests DA DQ)
-    (e : DA.below (DA.cell req.C) → ExtOrd)
-    (he : RespectsSemanticsBelow semA (DA.cell req.C) e)
+    (e : DA.RowDomain req.C → ExtOrd)
+    (he : semA.Lawful e)
     (heproper : ∀ d, e d ≠ ⊤)
-    (w : Cell DA → ExtOrd) (hebot : ∀ d, e d = ⊥ ↔ w d.1 = ⊥)
+    (w : DA.Labelling) (hebot : ∀ d, e d = ⊥ ↔ w d.1 = ⊥)
     {τ : ExtOrd → ExtOrd} (hτ : BoundedMap req.N τ)
     (hchart : ∀ d, τ (e d) = min (w d.1) (w req.C))
     {α : Ordinal.{0}} (hα : limitPart α = α) {i : ℕ} (hi : i < req.N)
@@ -41,25 +40,25 @@ theorem exists_template (req : Requests DA DQ)
     (hcut : ofOrd (α + req.R) < w req.C)
     (S : Finset Ordinal.{0}) (hS : ∀ μ ∈ S, limitPart μ = μ)
     (hle : ∀ μ ∈ S, μ ≤ α)
-    (ref : Ordinal.{0} → DA.below (DA.cell req.C))
+    (ref : Ordinal.{0} → DA.RowDomain req.C)
     (off : Ordinal.{0} → ℕ) (hoff : ∀ μ ∈ S, off μ < req.N)
     (href : ∀ μ ∈ S, τ (e (ref μ)) = ofOrd (μ + off μ))
-    {P : Cell DQ → ExtOrd} (hP : RespectsSemantics semQ P)
+    {P : DQ.Labelling} (hP : RespectsSemantics semQ P)
     (hblocks : ∀ d p, P d = ofOrd p → limitPart p ∈ S ∧ finitePart p < req.R)
     (hproper : ∀ d, P d ≠ ⊤ → P d < ofOrd (α + req.R))
     {root top : Finset ιQ × ℕ}
     (root_mem : root ∈ Plan.gradedPlan DQ.plan) (top_mem : top ∈ Plan.gradedPlan DQ.plan)
     (root_le : GradedLe root top) (root_ne : root ≠ top)
     (below_top : ∀ d, GradedLe (DQ.cell d) top) (top_lt_R : top.2 < req.R)
-    (κ : DQ.below root → DA.below (DA.cell req.C))
-    (hroot : ∀ s : DA.below (DA.cell req.C) → ExtOrd,
-      RespectsSemanticsBelow semA (DA.cell req.C) s →
+    (κ : DQ.below root → DA.RowDomain req.C)
+    (hroot : ∀ s : DA.RowDomain req.C → ExtOrd,
+      semA.Lawful s →
         RespectsSemanticsBelow semQ root (fun d => s (κ d)))
     (bountiful : semQ.IsBountiful) (hlit : ∀ d, P d.1 = w (κ d).1)
     (hZ : ∀ z ∈ req.Z, P z = ⊥) (hT : ∀ y ∈ req.T, P y = ⊤)
     (hF : ∀ f ∈ req.F, ∃ p, P f = ofOrd p ∧ req.ρ f = ref (limitPart p) ∧
       req.off f = finitePart p) :
-    ∃ V : Cell DQ → ExtOrd, RespectsSemantics semQ V ∧ (∀ d, V d.1 = e (κ d)) ∧
+    ∃ V : DQ.Labelling, RespectsSemantics semQ V ∧ (∀ d, V d.1 = e (κ d)) ∧
       req.Correct e V ∧ (req.T.Nonempty → ∀ f ∈ req.F, req.tOf e f ≤ req.dOf e) ∧
       (∀ f ∈ req.F, V f = extVisibilityReplace (e (req.ρ f)) req.N (req.off f)) ∧
       (∀ y ∈ req.T, extVisibilityReplace (e req.a) req.N req.R ≤ V y) ∧
@@ -147,7 +146,7 @@ theorem exists_template (req : Requests DA DQ)
       (by rw [finitePart_limitPart_add_nat]; exact top_lt_R.le) _
   exact template_of_encoding_at_grade req e he hanb hP root_mem top_mem root_le root_ne
     below_top κ hroot bountiful B.boundedMap_code hbotP hvis
-    (by simpa only [hheight] using hrootcap) hZ hFenc
+    (by rw [hheight]; exact hrootcap) hZ hFenc
     (by simpa only [hheight] using hFlt)
     (fun y hy => (congrArg B.code (hT y hy)).trans (hBtop.trans hheight.symm))
 

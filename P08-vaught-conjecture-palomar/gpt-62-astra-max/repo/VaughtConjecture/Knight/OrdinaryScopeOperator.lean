@@ -5,7 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.WholeDonorSmallScopes
+public import VaughtConjecture.Knight.WholeDonorOrdinaryLift
+public import VaughtConjecture.Knight.CanonicalRecursiveInitialized
+public import VaughtConjecture.Knight.OrdinaryScopeMute
 
 /-! # A constructed ordinary scope operator at every positive height
 
@@ -17,7 +19,6 @@ The mute completion is separate, so no active maximal apex is introduced.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryScopeOperator
 open AmalgamationPlan Transform Value ExtOrd SourcePrefixRows OrbitPrefixSupport
 open WholeDonorOrdinarySections WholeDonorOrdinaryLift
@@ -32,7 +33,7 @@ structure Core (sem : Semantics D) (k : ℕ) where
   original : Cell D ↪o Cell carrier
   index : ∀ d, carrier.cell (original d) = D.cell d
   coverage : ∀ d, (∃ c, original c = d) ∨ carrier.scope d = A
-  row : ∀ (c : Cell D) (d : D.below (D.cell c)),
+  row : ∀ (c : Cell D) (d : D.RowDomain c),
     rows.E (original c) ⟨original d.1, by rw [index, index]; exact d.2⟩ = sem.E c d
   consistent : rows.IsConsistent
   coded : rows.IsCoded
@@ -41,8 +42,8 @@ structure Core (sem : Semantics D) (k : ℕ) where
   complete : ∀ J ∈ Plan.gradedPlan carrier.plan, J.2 ≤ k → ∃ d, carrier.cell d = J
   short : ∀ c, carrier.scope c = A → ∀ d,
     SharpWitnessComposition.Short (carrier.grade c) (rows.E c d)
-  render : ∀ {p : Cell D → ExtOrd}, RespectsSemantics sem p → (∀ d, p d ≠ ⊤) →
-    Finset ExtOrd → ExtOrd → Cell carrier → ExtOrd
+  render : ∀ {p : D.Labelling}, RespectsSemantics sem p → (∀ d, p d ≠ ⊤) →
+    Finset ExtOrd → ExtOrd → carrier.Labelling
   readback : ∀ {p} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
     {G θ}, (∀ z ∈ G, SelfVis k z) → SelfVis k θ → ∀ d, render hp ht G θ (original d) = p d
   lawful : ∀ {p} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)

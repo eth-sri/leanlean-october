@@ -32,8 +32,8 @@ structure Data (D : CellScheme A) (k : ℕ) where
   high : Cell D
   above : k < D.grade high
   full : D.scope high = A
-  profile : D.below (A, k) → ExtOrd
-  lawful : RespectsSemanticsBelow base (A, k) profile
+  profile : D.SectionAt (A, k)
+  lawful : base.Lawful profile
   diagonal : ExtOrd
   visible : SelfVis (D.grade high) diagonal
 
@@ -81,17 +81,17 @@ theorem row_old {c : Cell D} (hc : D.grade c ≤ k) : F.rows.E c = F.base.E c :=
   funext d
   simp only [rows, hc, ↓reduceIte]
 
-theorem row_high (d : D.below (D.cell F.high)) : F.rows.E F.high d = F.display d.1 := by
+theorem row_high (d : D.RowDomain F.high) : F.rows.E F.high d = F.display d.1 := by
   simp only [rows, not_le_of_gt F.above, ↓reduceIte]
 
 theorem rows_high : F.rows.E F.high = fun d => F.display d.1 := funext F.row_high
 
 theorem row_mute {c : Cell D} (hc : ¬D.grade c ≤ k) (he : c ≠ F.high)
-    (d : D.below (D.cell c)) : F.rows.E c d = ⊥ := by
+    (d : D.RowDomain c) : F.rows.E c d = ⊥ := by
   simp only [rows, hc, he, ↓reduceIte]
 
-theorem old_respects_iff (hJ : BJ.2 ≤ k) {p : D.below BJ → ExtOrd} :
-    RespectsSemanticsBelow F.rows BJ p ↔ RespectsSemanticsBelow F.base BJ p := by
+theorem old_respects_iff (hJ : BJ.2 ≤ k) {p : D.SectionAt BJ} :
+    F.rows.Lawful p ↔ F.base.Lawful p := by
   constructor <;> intro hp <;> refine ⟨hp.orderly, ?_, hp.availability⟩
   · intro c
     simpa only [F.row_old (c.2.2.trans hJ)] using hp.locality c
@@ -120,7 +120,7 @@ theorem consistent (hb : F.base.IsConsistent) : F.rows.IsConsistent := by
     · subst c
       by_cases hd : D.grade d.1 ≤ k
       · have ht := F.lawful.locality (oldCell d.1 hd)
-        have hlow (e : D.below (D.cell d.1)) : D.grade e.1 ≤ k := e.2.2.trans hd
+        have hlow (e : D.RowDomain d.1) : D.grade e.1 ≤ k := e.2.2.trans hd
         simpa only [F.row_old hd, F.rows_high, F.display_old d.1 hd,
           F.display_old _ (hlow _),
           CellScheme.below.incl, oldCell] using ht
@@ -129,14 +129,14 @@ theorem consistent (hb : F.base.IsConsistent) : F.rows.IsConsistent := by
           dsimp only at hdhi
           subst d
           have ht := (TransformsTo.refl
-            (grade := fun e : D.below (D.cell F.high) => D.grade e.1)
+            (grade := fun e : D.RowDomain F.high => D.grade e.1)
             (F.rows.E F.high)).cap (fun e => e.2.2) F.visible
           simpa only [F.rows_high, F.display_high, CellScheme.below.incl] using ht
         · simpa only [F.rows_high, F.display_other d.1 hd hdhi, min_bot_right] using
-            (TransformsTo.to_bot (grade := fun e : D.below (D.cell d.1) => D.grade e.1)
+            (TransformsTo.to_bot (grade := fun e : D.RowDomain d.1 => D.grade e.1)
               (F.rows.E d.1))
     · simpa only [rows, hc, he, ↓reduceIte, min_bot_right] using
-        (TransformsTo.to_bot (grade := fun e : D.below (D.cell d.1) => D.grade e.1)
+        (TransformsTo.to_bot (grade := fun e : D.RowDomain d.1 => D.grade e.1)
           (F.rows.E d.1))
   · intro d e hs hg
     by_cases he : c = F.high
@@ -158,8 +158,8 @@ theorem consistent (hb : F.base.IsConsistent) : F.rows.IsConsistent := by
           exact bot_le
     · exact ⟨e, rfl, by simp only [F.row_mute hc he, le_refl]⟩
 
-theorem mute_label {p : D.below BJ → ExtOrd}
-    (hp : RespectsSemanticsBelow F.rows BJ p) (c : D.below BJ)
+theorem mute_label {p : D.SectionAt BJ}
+    (hp : F.rows.Lawful p) (c : D.below BJ)
     (hc : ¬D.grade c.1 ≤ k) (hne : c.1 ≠ F.high) : p c = ⊥ := by
   rcases c with ⟨c, hcBJ⟩
   obtain ⟨g, σ, _, _, hbot, _, _, he⟩ := hp.locality ⟨c, hcBJ⟩

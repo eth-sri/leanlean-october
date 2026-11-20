@@ -46,26 +46,26 @@ theorem faceIndex_absent {A : Finset (Fin n)} {j : ℕ} (h : ¬ 0 < min A.card j
 /-- Restore an arbitrary lawful whole-root prescription after retargeting designated tops.
 No second scheme, receiving reference, or output bountifulness is an input. -/
 theorem RetargetData.exists_retarget_restore
-    {p : Cell P.scheme → ExtOrd} (hp : RespectsSemantics P.rows p)
+    {p : P.scheme.Labelling} (hp : RespectsSemantics P.rows p)
     {K j : ℕ} (hK : 0 < K) (hn : 0 < n) (hj : K ≤ j)
     (ht : ∀ d, p d = ⊤ → P.scheme.grade d ≤ K)
-    {u : P.scheme.below (effC n j) → ExtOrd} {b η : ExtOrd}
+    {u : P.ClippedCells j → ExtOrd} {b η : ExtOrd}
     (hu : RetargetData (p := p) (K := K) u b η)
     {A : Finset (Fin n)} (hA : A ∈ P.scheme.plan)
-    {v : P.scheme.below (faceIndex A j) → ExtOrd}
-    (hv : RespectsSemanticsBelow P.rows (faceIndex A j) v)
+    {v : P.scheme.SectionAt (faceIndex A j)}
+    (hv : P.rows.Lawful v)
     (hnon : ∀ a, p a.1 ≠ ⊤ → v a = u (CellScheme.below.mono (faceIndex_le A j) a))
     (htop : ∀ a, p a.1 = ⊤ → η ≤ v a) :
-    ∃ u' : P.scheme.below (effC n j) → ExtOrd,
-      RespectsSemanticsBelow P.rows (effC n j) u' ∧
+    ∃ u' : P.ClippedCells j → ExtOrd,
+      P.rows.Lawful u' ∧
       (∀ d, p d.1 ≠ ⊤ → u' d = u d) ∧ (∀ d, p d.1 = ⊤ → η ≤ u' d) ∧
       ∀ a, u' (CellScheme.below.mono (faceIndex_le A j) a) = v a := by
   have hw := hu.retargetTops_respects hp ht
   have hKj : GradedLe (effC n K) (effC n j) := ⟨le_rfl, min_le_min_right _ hj⟩
   have hwK := hw.mono hKj
   have hηK : SelfVis (effC n K).2 η := hu.η_vis.mono (min_le_left _ _)
-  have hrest : ∃ w : P.scheme.below (effC n K) → ExtOrd,
-      RespectsSemanticsBelow P.rows (effC n K) w ∧
+  have hrest : ∃ w : P.ClippedCells K → ExtOrd,
+      P.rows.Lawful w ∧
       (∀ d, min (w d) η = min (retargetTops (p := p) η u
         (CellScheme.below.mono hKj d)) η) ∧
       ∀ a : P.scheme.below (faceIndex A K),
@@ -75,6 +75,7 @@ theorem RetargetData.exists_retarget_restore
     · apply P.bountiful.extend (faceIndex_mem hA hk) (effC_mem hK hn) (faceIndex_le A K)
         (hv.mono (faceIndex_mono A hj)) hwK hηK
       intro a
+      change min (retargetTops η u (CellScheme.below.mono hKj (CellScheme.below.mono (faceIndex_le A K) a))) η = min (v (CellScheme.below.mono (faceIndex_mono A hj) a)) η
       by_cases hat : p a.1 = ⊤
       · rw [retargetTops_of_top η u hat, min_self]
         exact (min_eq_right (htop _ hat)).symm
@@ -83,18 +84,18 @@ theorem RetargetData.exists_retarget_restore
           (hnon (CellScheme.below.mono (faceIndex_mono A hj) a) hat).symm
     · exact ⟨_, hwK, fun _ => rfl, fun a => (faceIndex_absent hk a).elim⟩
   obtain ⟨w, hw, hcap, hface⟩ := hrest
-  have hlowNon : ∀ d : P.scheme.below (effC n K), p d.1 ≠ ⊤ →
+  have hlowNon : ∀ d : P.ClippedCells K, p d.1 ≠ ⊤ →
       w d = u (CellScheme.below.mono hKj d) := by
     intro d hd
     have h := hcap d
     rw [retargetTops_of_nonTop η u hd] at h
     exact eq_of_capAgree_of_lt h.symm ((hu.nonTop_lt _ hd).trans_le hu.b_le_η)
-  have hlowTop : ∀ d : P.scheme.below (effC n K), p d.1 = ⊤ → η ≤ w d := by
+  have hlowTop : ∀ d : P.ClippedCells K, p d.1 = ⊤ → η ≤ w d := by
     intro d hd
     have h := hcap d
     rw [retargetTops_of_top η u hd, min_self] at h
     exact h.symm ▸ min_le_left _ _
-  have hhighNon : ∀ d : P.scheme.below (effC n j),
+  have hhighNon : ∀ d : P.ClippedCells j,
       ¬ GradedLe (P.scheme.cell d.1) (effC n K) → p d.1 ≠ ⊤ := by
     intro d hd htop
     exact hd ⟨Finset.subset_univ _, le_min (ht d.1 htop) (gradeC_le d.1)⟩

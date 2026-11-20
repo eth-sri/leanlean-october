@@ -19,8 +19,6 @@ claims proof-dependency separation, not a wholly descriptive-free import cone.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ExpansionDomain
 
 open FirstOrder Language Cardinal StoppingRankFiltration

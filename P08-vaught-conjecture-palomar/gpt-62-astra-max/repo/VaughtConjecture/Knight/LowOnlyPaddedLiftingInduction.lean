@@ -5,7 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.LowOnlyPaddedStepLedger
+public import VaughtConjecture.Knight.LowFrame
+public import VaughtConjecture.Knight.LowOnlyPaddedPairLift
+public import VaughtConjecture.Knight.CappedLiftComposition
 
 /-! # Closed all-cap lifting induction on the installed padded tower
 
@@ -17,80 +19,63 @@ output is bountiful and complete.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLiftingInduction
 open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
-open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
-open LowOnlyPaddedDecode (grid_fixed_below)
+open LowOnlyPaddedContract PaddedTower.Step LowOnlyOrderedLadder
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
-  (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-  (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
+  {I : WholeDonorBoundary.Input A B C R m n n} {F : LowOnly.Family I.left I.right K}
+  (frame : I.LowFrame F)
   (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
 
-open LowOnlyPaddedIteration TargetGradeLifting AmalgamationPlan CoatomBoundaryExtension
+open LowOnlyPaddedIteration AmalgamationPlan CoatomBoundaryExtension
 include hcover
-
-/-- Closed induction on integration's actual installed recursion. -/
-theorem build_lifting (t : ℕ) (ht : t + 2 ≤ A.card) :
-    Through (build I F hroot hA hB hC t ht).rows (t + 2) := by
-  induction t with
-  | zero => exact LowOnlyPaddedLiftingReady.through_two I F hroot hA hB hC hcover
-  | succ t ih =>
-    exact LowOnlyPaddedStepLedger.through_successor
-      (build I F hroot hA hB hC t (by omega)) (by omega) (by omega)
-      (build_plan I F hroot hA hB hC t (by omega)) (ih (by omega)) hcover
 
 /-- Completeness is asserted only at filled grades. Proper original owners
 above this height are retained but no missing full owners are postulated. -/
-theorem complete_through (t : ℕ) (ht : t + 2 ≤ A.card) {J : Finset ι × ℕ}
+theorem complete_through t (ht : t + 2 ≤ A.card) {J}
     (hJ : J ∈ Plan.gradedPlan R) (hj : J.2 ≤ t + 2) :
-    ∃ d, (build I F hroot hA hB hC t ht).carrier.cell d = J := by
-  let L := build I F hroot hA hB hC t ht
+    ∃ d, (build frame t ht).carrier.cell d = J := by
+  let L := build frame t ht
   rcases J with ⟨T, j⟩
   by_cases he : T = A
   · subst T
-    obtain ⟨a, _⟩ := F.exists_rank_anchor (by omega : 1 ≤ t + 2)
-      (F.zero_admissible (t + 2))
-    obtain ⟨c, hc, _⟩ := L.ceiling_at le_rfl (state F a)
-      (state_admissible F a) (state_proper F a)
-      (G := PairedSlotComparison.sourceGrid (t + 2) (Fintype.card (Field I.left I.right)))
-      (H := CanonicalFieldLayer.ceiling (t + 2) (Field I.left I.right))
-      (fun _ hz => PairedSlotComparison.sourceGrid_visible hz)
-      (PairedSlotComparison.sourceGrid_visible
-        (PairedSlotComparison.sourceGrid_endpoint le_rfl))
-      (fun f => by rw [state_profile]; exact LowOnlyRecursiveCharts.anchor_bound F a f)
-      j (Plan.mem_gradedPlan.mp hJ).2.1 hj
-    exact ⟨c, hc⟩
+    exact L.occupied j (Plan.mem_gradedPlan.mp hJ).2.1 hj
   · obtain ⟨d, hd⟩ := (I.occupied_iff hJ).mpr (hcover T (Plan.mem_gradedPlan.mp hJ).1 he)
-    refine ⟨L.baseMap (RelativeLadderLayer.old I.boundary (by omega) d), ?_⟩
+    refine ⟨L.baseMap (RelativeLadderLayer.old I.boundary frame.positive d), ?_⟩
     exact (L.base_index _).trans
-      ((RelativeLadderLayer.old_index I.boundary (by omega) d).trans hd)
+      ((RelativeLadderLayer.old_index I.boundary frame.positive d).trans hd)
 
 /-- At the ambient height every permitted graded pair is covered. -/
 theorem full_bountiful :
-    (build I F hroot hA hB hC (A.card - 2) (by omega)).rows.IsBountiful := by
+    (build frame (A.card - 2) frame.fullHeight.le).rows.IsBountiful := by
   intro U V hU hV h _
   have hv : V.2 ≤ A.card - 2 + 2 := by
     have hV' := Plan.mem_gradedPlan.mp hV
     have hscope :=
-      (build I F hroot hA hB hC (A.card - 2) (by omega)).carrier.isPlan.subset_of_mem hV'.1
+      (build frame (A.card - 2) frame.fullHeight.le).carrier.isPlan.subset_of_mem hV'.1
     have hb := hV'.2.2.trans (Finset.card_le_card hscope)
     omega
-  exact build_lifting I F hroot hA hB hC hcover (A.card - 2) (by omega) hU hV h hv
+  let L := build frame (A.card - 2) frame.fullHeight.le
+  have hu : U ∈ Plan.gradedPlan R := by rwa [build_plan] at hU
+  have hv' : V ∈ Plan.gradedPlan R := by rwa [build_plan] at hV
+  have mem : (V.1,U.2) ∈ Plan.gradedPlan R := Plan.mem_gradedPlan.mpr
+    ⟨(Plan.mem_gradedPlan.mp hv').1, (Plan.mem_gradedPlan.mp hu).2.1, h.2.trans (Plan.mem_gradedPlan.mp hv').2.2⟩
+  obtain ⟨S,i⟩ := U
+  exact (I.liftViaFaces (L.face I.leftFace frame.leftProper.not_ge) (L.face I.rightFace frame.rightProper.not_ge)
+    frame.leftProper.subset frame.rightProper.subset hcover
+    (fun hn => LowOnlyPaddedPairLift.donor_clause frame _ _ (Plan.mem_gradedPlan.mp hu).2.1 hn (h.2.trans hv))
+    (fun hn => LowOnlyPaddedPairLift.private_clause frame _ _ (Plan.mem_gradedPlan.mp hu).2.1 hn (h.2.trans hv)) hu mem h.1).raise_target (h := h.1) h.2
 
 theorem full_complete :
-    (build I F hroot hA hB hC (A.card - 2) (by omega)).carrier.IsComplete := by
+    (build frame (A.card - 2) frame.fullHeight.le).carrier.IsComplete := by
   intro J hJ
   have hJ' := Plan.mem_gradedPlan.mp hJ
   have hscope :=
-    (build I F hroot hA hB hC (A.card - 2) (by omega)).carrier.isPlan.subset_of_mem hJ'.1
+    (build frame (A.card - 2) frame.fullHeight.le).carrier.isPlan.subset_of_mem hJ'.1
   have hb := hJ'.2.2.trans (Finset.card_le_card hscope)
-  apply complete_through I F hroot hA hB hC hcover (A.card - 2) (by omega) _ (by omega)
+  apply complete_through frame hcover (A.card - 2) frame.fullHeight.le _ (by omega)
   rwa [build_plan] at hJ
 
 end

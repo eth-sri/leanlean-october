@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.FullRowLifting
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import Mathlib.Data.Fintype.Lattice
 
 /-! # Interpolating a finite table of self-visible values
 

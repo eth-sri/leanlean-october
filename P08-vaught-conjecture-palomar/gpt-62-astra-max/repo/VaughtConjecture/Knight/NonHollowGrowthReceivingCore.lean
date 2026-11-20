@@ -23,7 +23,6 @@ occurrence supplies are downstream applications, not imports of this producer.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.NonHollowGrowthReceiving
 open TypeTower StageType KnightRealization Value ExtOrd
 noncomputable section
@@ -33,10 +32,10 @@ variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 /-- Stable receiving over a positive root, with no supplied calibration,
 template, admission or physical-correctness hypothesis. -/
 theorem receives_positive (hM : W.IsModel) (hh : ¬ W.IsHollow)
-    (hg : W.HasTopGradeGrowth) {n : ℕ} (hn : 0 < n)
-    (t : Fin n ↪ M) (p : S α.1 n) (hp : W.eval t = some p)
-    (q : S α.nextBlock.1 (n + 1)) (hq : IsCoface (stableLiftType hM t p hp) q)
-    (γ : Ordinal.{0}) (hγ : γ < α.nextBlock.1) :
+    (hg : W.HasTopGradeGrowth) {n} (hn : 0 < n)
+    t p (hp : W.eval t = some p)
+    q (hq : IsCoface (stableLiftType hM t p hp) q)
+    γ (hγ : γ < α.nextBlock.1) :
     ∃ (y : M) (hy : y ∉ Set.range t) (s : S α.1 (n + 1)),
       W.eval (snoc t y hy) = some s ∧ ∃ he : q.scheme = s.scheme,
         (∀ d, q.label d ≠ ⊤ →

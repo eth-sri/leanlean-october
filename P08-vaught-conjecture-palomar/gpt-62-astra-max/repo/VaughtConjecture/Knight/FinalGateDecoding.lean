@@ -23,7 +23,6 @@ remain outside this module; no bountifulness of the output is assumed or proved.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
 open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
 noncomputable section
@@ -34,7 +33,7 @@ variable {A : Finset ι} {D : CellScheme A} {N : ℕ} (I : Input D N X Q)
 theorem master_eq_source (q : SourcePrefixLayer.Controller I.carrier N) (d : Cell I.carrier) :
     WeightedSourcePrefixLayer.master I.data I.weight q d = I.source (I.member q).1 d := by
   unfold source WeightedSourcePrefixLayer.master ScopedSourcePrefixLayer.Data.profile
-  simp only [data, member_controller]
+  simp only [data, SourceFamily.data, SourceFamily.member_controller, member_controller]
 
 variable (hsupport : ∀ a d, D.grade d ≤ N →
   OrbitPrefixSupport.Supported N (I.grid : Set ExtOrd) (I.fields a) (I.lower a d))
@@ -69,7 +68,7 @@ theorem source_short (a : Q) (d : Cell I.carrier) (hd : I.carrier.grade d ≤ N)
 include hsupport hfields hgrid in
 /-- Shortness is asserted only for the new owners, at their own grade. -/
 theorem added_row_short (q : SourcePrefixLayer.Controller I.carrier N)
-    (d : I.carrier.below (I.carrier.cell q.1)) : Short N (I.rows.E q.1 d) := by
+    (d : I.carrier.RowDomain q.1) : Short N (I.rows.E q.1 d) := by
   rw [WeightedSourcePrefixLayer.row_new, I.master_eq_source]
   have hs := I.source_short hsupport hfields hgrid (I.member q).1 d.1
     (by simpa only [CellScheme.grade, q.2] using d.2.2)
@@ -96,8 +95,8 @@ theorem decoded_respects (a : Q) {ν : ExtOrd → ExtOrd} (hν : Witness (gTop N
   · intro c
     by_cases hc : I.carrier.cell c.1 = (A, N)
     · apply map_capped_locality
-        (X := I.carrier.below (I.carrier.cell c.1))
-        (c := (⟨c.1, GradedLe.refl _⟩ : I.carrier.below (I.carrier.cell c.1)))
+        (X := I.carrier.RowDomain c.1)
+        (c := (⟨c.1, GradedLe.refl _⟩ : I.carrier.RowDomain c.1))
         (grade := fun d => I.carrier.grade d.1) (E := I.rows.E c.1)
         (p := fun d => I.source a (CellScheme.below.incl c d).1)
         (fun d => d.2.2) c.2.2 _ (hr.orderly c).symm (hr.locality c) hν

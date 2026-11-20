@@ -26,9 +26,6 @@ open Classical in
 noncomputable def forcedSources (m : ℕ) (s : Finset ExtOrd) : Finset ExtOrd :=
   s ∪ (Finset.range (m + 1)).biUnion (fun i => s.image (fun x => extVisibilityReplace x m i))
 
-theorem subset_forcedSources (m : ℕ) (s : Finset ExtOrd) : s ⊆ forcedSources m s :=
-  Finset.subset_union_left
-
 theorem replace_mem_forcedSources {m : ℕ} {s : Finset ExtOrd} {x : ExtOrd}
     (hx : x ∈ s) {i : ℕ} (hi : i ≤ m) :
     extVisibilityReplace x m i ∈ forcedSources m s := by
@@ -41,14 +38,14 @@ theorem bounded_replace_mem {m : ℕ} {s : Finset ExtOrd} {x : ExtOrd}
     (hx : x ∈ s) {k i : ℕ} (hk : k ≤ m) (hi : i ≤ k) :
     extVisibilityReplace x k i ∈ forcedSources m s := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · exact subset_forcedSources m s hx
-  · exact subset_forcedSources m s hx
+  · exact Finset.subset_union_left hx
+  · exact Finset.subset_union_left hx
   · by_cases ha : finitePart a < k
     · rw [extVisibilityReplace_of_finitePart_lt ha]
       have h := replace_mem_forcedSources hx (hi.trans hk)
       rwa [extVisibilityReplace_of_finitePart_lt (ha.trans_le hk)] at h
     · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp ha)]
-      exact subset_forcedSources m s hx
+      exact Finset.subset_union_left hx
 
 /-- No further iterations of replacement add points. -/
 theorem forcedSources_closed (m : ℕ) (s : Finset ExtOrd) :
@@ -61,8 +58,8 @@ theorem forcedSources_closed (m : ℕ) (s : Finset ExtOrd) :
   · obtain ⟨j, hj, hjx⟩ := Finset.mem_biUnion.mp hx
     obtain ⟨y, hy, rfl⟩ := Finset.mem_image.mp hjx
     rcases ExtOrd.cases y with rfl | rfl | ⟨a, rfl⟩
-    · exact subset_forcedSources m s hy
-    · exact subset_forcedSources m s hy
+    · exact Finset.subset_union_left hy
+    · exact Finset.subset_union_left hy
     · by_cases ha : finitePart a < m
       · rw [extVisibilityReplace_of_finitePart_lt ha]
         by_cases hjk : j < k
@@ -137,7 +134,7 @@ theorem interpolate_closed (s : Finset ExtOrd)
   refine ⟨finiteLowerEnvelope (stripDomain m s) (f ∘ roundUp s),
     hg.finite_witness s (hg.floor_check_on_strip s hfloor), ?_⟩
   intro x hx
-  rw [hg.finite_read s hx]
+  rw [finiteLowerEnvelope_source (stripDomain m s) (fun x => (f ∘ roundUp s) x) (fun x x_1 x_2 x_3 h => hg.mono h) (subset_stripDomain m s hx)]
   simp only [Function.comp_apply, roundUp_of_mem hx]
 
 /-- Exact criterion: only original sources and the replacements they force are tested. -/
@@ -153,19 +150,9 @@ theorem interpolate_iff (s : Finset ExtOrd) :
   · intro hb
     obtain ⟨τ, hτ, hr⟩ := hf.interpolate_closed (forcedSources m s)
       (forcedSources_closed m s) hb
-    exact ⟨τ, hτ, fun x hx => hr x (subset_forcedSources m s hx)⟩
+    exact ⟨τ, hτ, fun x hx => hr x (Finset.subset_union_left hx)⟩
 
 end BoundedMap
-
-/-- Visibility replacement does not change a bottom flag. -/
-theorem replace_eq_bot_iff (x : ExtOrd) (k i : ℕ) :
-    extVisibilityReplace x k i = ⊥ ↔ x = ⊥ := by
-  constructor
-  · intro h
-    by_contra hx
-    exact extVisibilityReplace_ne_bot hx k i h
-  · intro h
-    rw [h, extVisibilityReplace_bot]
 
 namespace BoundedMap
 
@@ -184,14 +171,20 @@ theorem forcedSources_origin {s : Finset ExtOrd} {z : ExtOrd} (hz : z ∈ forced
     have hi' : i ≤ m := by have := Finset.mem_range.mp hi; omega
     refine ⟨x, hx, blockFloor_evr x m i, ?_⟩
     rw [hf.comm x m i le_rfl hi']
-    exact replace_eq_bot_iff (f x) m i
+    exact by
+          constructor
+          · intro h
+            by_contra hx
+            exact extVisibilityReplace_ne_bot hx m i h
+          · intro h
+            rw [h, extVisibilityReplace_bot]
 
 /-- The forced table adds no new bottom-pattern tests. -/
 theorem forcedSources_blockBottom_iff (s : Finset ExtOrd) :
     BlockBottom (forcedSources m s) f ↔ BlockBottom s f := by
   constructor
   · intro h x hx y hy hb hz
-    exact h x (subset_forcedSources m s hx) y (subset_forcedSources m s hy) hb hz
+    exact h x (Finset.subset_union_left hx) y (Finset.subset_union_left hy) hb hz
   · intro h x hx y hy hb hz
     obtain ⟨u, hu, hux, huf⟩ := hf.forcedSources_origin hx
     obtain ⟨v, hv, hvy, hvf⟩ := hf.forcedSources_origin hy

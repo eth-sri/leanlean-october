@@ -5,7 +5,6 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.SourcePrefixLayer
 public import VaughtConjecture.Knight.GradeCutLayerRows
 
 /-! # Prefix rows on their actual lower domain
@@ -18,7 +17,6 @@ other old rows. Construction of the selected profiles is a separate producer.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopedSourcePrefixLayer
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
 noncomputable section
@@ -26,7 +24,7 @@ noncomputable section
 variable {ι X : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {k : ℕ}
 
 theorem respects_below_of_lower (sem : Semantics D) (J : Finset ι × ℕ)
-    (p : Cell D → ExtOrd)
+    (p : D.Labelling)
     (hl : ∀ c : D.below J, RespectsSemanticsBelow sem (D.cell c.1) (fun d => p d.1)) :
     RespectsSemanticsBelow sem J (fun d => p d.1) where
   orderly d := (hl d).orderly ⟨d.1, GradedLe.refl _⟩
@@ -46,7 +44,7 @@ structure Data (D : CellScheme A) (k : ℕ) (X : Type*) where
   grid_bound : ∀ h ∈ grid, h ≤ ceiling
   grid_visible : ∀ h ∈ grid, SelfVis k h
   boundary : Controller D k → X → ExtOrd
-  lower : Controller D k → Cell D → ExtOrd
+  lower : Controller D k → D.Labelling
   lower_bound : ∀ q d, D.grade d ≤ k → D.cell d ≠ (A, k) → lower q d ≤ ceiling
   lower_lawful : ∀ q c, D.grade c ≤ k → D.cell c ≠ (A, k) →
     RespectsSemanticsBelow base (D.cell c) (fun d => lower q d.1)
@@ -57,7 +55,7 @@ namespace Data
 variable (F : Data D k X)
 
 include F in
-theorem below_old {c : Cell D} (hc : D.cell c ≠ (A, k)) (d : D.below (D.cell c)) :
+theorem below_old {c : Cell D} (hc : D.cell c ≠ (A, k)) (d : D.RowDomain c) :
     D.cell d.1 ≠ (A, k) := fun hd => F.separated c hc (hd ▸ d.2)
 
 def profile (q : Controller D k) (d : Cell D) : ExtOrd :=
@@ -124,13 +122,13 @@ theorem row_old {c : Cell D} (hc : D.cell c ≠ (A, k)) : F.rows.E c = F.base.E 
   funext d
   simp only [rows, hc, ↓reduceDIte]
 
-theorem row_new (q : Controller D k) (d : D.below (D.cell q.1)) :
+theorem row_new (q : Controller D k) (d : D.RowDomain q.1) :
     F.rows.E q.1 d = F.profile q d.1 := by simp only [rows, q.2, ↓reduceDIte]
 
 theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
-    {r : D.below (D.cell c) → ExtOrd} :
-    RespectsSemanticsBelow F.rows (D.cell c) r ↔
-      RespectsSemanticsBelow F.base (D.cell c) r := by
+    {r : D.RowDomain c → ExtOrd} :
+    F.rows.Lawful r ↔
+      F.base.Lawful r := by
   constructor <;> intro hr <;> refine ⟨hr.orderly, ?_, hr.availability⟩
   · intro d
     simpa only [F.row_old (F.below_old hc d)] using hr.locality d
@@ -139,14 +137,14 @@ theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
     exact hr.locality d
 
 theorem new_locality (q p : Controller D k) :
-    TransformsTo (fun d : D.below (D.cell p.1) => D.grade d.1)
+    TransformsTo (fun d : D.RowDomain p.1 => D.grade d.1)
       (F.rows.E p.1) (fun d => min (F.profile q d.1) (F.profile q p.1)) := by
-  have hb (d : D.below (D.cell p.1)) : D.grade d.1 ≤ k := by
+  have hb (d : D.RowDomain p.1) : D.grade d.1 ≤ k := by
     simpa only [CellScheme.grade, p.2] using d.2.2
   have ht := (TransformsTo.refl
-    (grade := fun d : D.below (D.cell p.1) => D.grade d.1) (F.rows.E p.1)).cap
+    (grade := fun d : D.RowDomain p.1 => D.grade d.1) (F.rows.E p.1)).cap
     hb (F.grid_visible _ (cut_mem F.bot_mem (F.boundary q) (F.boundary p)))
-  have he : (fun d : D.below (D.cell p.1) =>
+  have he : (fun d : D.RowDomain p.1 =>
       min (F.rows.E p.1 d) (cut F.grid (F.boundary q) (F.boundary p))) =
       (fun d => min (F.profile q d.1) (F.profile q p.1)) := by
     funext d
@@ -179,7 +177,7 @@ theorem decoded_respects (q : Controller D k) {K : ℕ} (hkK : k ≤ K)
     {ν : ExtOrd → ExtOrd} (hν : Witness (gTop K) ν)
     (hproper : ∀ c : D.below (A, k), D.scope c.1 ≠ A →
       RespectsSemanticsBelow F.base (D.cell c.1) (fun d => ν (F.lower q d.1)))
-    (hshort : ∀ c : D.below (A, k), D.scope c.1 = A → ∀ d : D.below (D.cell c.1),
+    (hshort : ∀ c : D.below (A, k), D.scope c.1 = A → ∀ d : D.RowDomain c.1,
       SharpWitnessComposition.Short (D.grade c.1) (F.rows.E c.1 d)) :
     RespectsSemanticsBelow F.rows (A, k) (fun d => ν (F.profile q d.1)) where
   orderly d := by
@@ -190,9 +188,9 @@ theorem decoded_respects (q : Controller D k) {K : ℕ} (hkK : k ≤ K)
   locality c := by
     by_cases hc : D.scope c.1 = A
     · exact SharpWitnessComposition.map_capped_locality
-        (grade := fun d : D.below (D.cell c.1) => D.grade d.1)
-        (c := (⟨c.1, GradedLe.refl _⟩ : D.below (D.cell c.1)))
-        (p := fun d : D.below (D.cell c.1) => F.profile q d.1) (fun d => d.2.2)
+        (grade := fun d : D.RowDomain c.1 => D.grade d.1)
+        (c := (⟨c.1, GradedLe.refl _⟩ : D.RowDomain c.1))
+        (p := fun d : D.RowDomain c.1 => F.profile q d.1) (fun d => d.2.2)
         (c.2.2.trans hkK) (hshort c hc) (F.profile_visible q c.1 c.2.2)
         ((F.profile_respects q).locality c) hν
     · have hc' : D.cell c.1 ≠ (A, k) := fun he => hc (congrArg Prod.fst he)
@@ -204,7 +202,7 @@ theorem decoded_respects (q : Controller D k) {K : ℕ} (hkK : k ≤ K)
     exact ⟨w, hw, hν.mono hle⟩
 
 theorem consistent (hbase : ∀ c : Cell D, D.cell c ≠ (A, k) →
-    RespectsSemanticsBelow F.base (D.cell c) (F.base.E c)) : F.rows.IsConsistent := by
+    F.base.Lawful (F.base.E c)) : F.rows.IsConsistent := by
   intro c
   by_cases hc : D.cell c = (A, k)
   · have hr := GradeCutLayerRows.cast_respects D F.rows hc.symm

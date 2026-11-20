@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.LowFrame
 public import VaughtConjecture.Knight.LowOnlyPaddedFiniteCertificate
 public import VaughtConjecture.Knight.LowOnlyPaddedLegal
 
@@ -18,7 +19,6 @@ No realization of a selected display is inferred from bottom patterns alone.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLegalCertificate
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 open LowOnlyPaddedIteration LowOnlyPaddedInstallation LowOnlyPaddedEndpoints
@@ -26,9 +26,7 @@ noncomputable section
 variable {l m n K : ℕ} {B C : Finset (Fin l)} {R : Finset (Finset (Fin l))}
   (I : WholeDonorBoundary.Input Finset.univ B C R m n n)
   (F : LowOnly.Family I.left I.right K)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
+  (hroot : I.RootAgreement F)
   (hA : 2 ≤ (Finset.univ : Finset (Fin l)).card)
   (hB : B ⊂ Finset.univ) (hC : C ⊂ Finset.univ)
   (hcover : ∀ S ∈ R, S ≠ Finset.univ → S ⊆ B ∨ S ⊆ C)
@@ -38,32 +36,32 @@ local notation "donor" => LowOnlyPaddedLegal.donor I F hroot hA hB hC hcover
 local notation "priv" => LowOnlyPaddedLegal.privateFace I F hroot hA hB hC hcover
 
 /-- A raw supported display and exact readback certificate, before imposing a stage bound. -/
-theorem exists_supported_certificate {S : State I.left I.right}
+theorem exists_supported_certificate {S}
     (hS : F.Admissible (Finset.univ : Finset (Fin l)).card S)
     (hdonor : S.u = F.p) (hc : S.v F.gap.c = ⊤) (hr : S.v F.gap.r.1 = ⊤)
     (hactive : LowSeparator.cutoffCut K (LowSeparator.donorField F) S.profile < S.b) :
-    ∃ w : Cell (E).scheme → ExtOrd,
+    ∃ w,
       RespectsSemantics (E).rows w ∧
       (∀ d, w ((donor).map d) = F.p d) ∧
       (∀ d, w ((priv).map d) = S.v d) ∧
       (∀ d, OrbitPrefixSupport.Supported (Finset.univ : Finset (Fin l)).card
         ({⊤} : Set ExtOrd) S.profile (w d)) ∧
-      ∀ q : Cell (E).scheme → ExtOrd,
+      ∀ q : (E).scheme.Labelling,
         RespectsSemantics (E).rows q →
         (∀ d, q ((priv).map d) = S.v d) →
         ∀ δ, LowSeparator.cutoffCut K (LowSeparator.donorField F) S.profile < δ →
-          (∀ d, min (q d) δ = min (w d) δ) →
+          CappedEq q w δ →
           ∀ d, q ((donor).map d) = F.p d := by
   obtain ⟨w, hw, ho, hsupp, hread⟩ :=
     LowOnlyPaddedFiniteCertificate.certificate I hA hB hC F hroot hS hdonor hc hactive
   have hdmap (d : Cell I.left.scheme) : (donor).map d =
-      original I F hroot hA hB hC ((Finset.univ : Finset (Fin l)).card - 2) (by omega)
+      original (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) ((Finset.univ : Finset (Fin l)).card - 2) (by omega)
         (I.leftFace.map d) :=
-    face_map I F hroot hA hB hC I.leftFace hB.not_ge _ _ d
+    rfl
   have hcmap (d : Cell I.right.scheme) : (priv).map d =
-      original I F hroot hA hB hC ((Finset.univ : Finset (Fin l)).card - 2) (by omega)
+      original (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) ((Finset.univ : Finset (Fin l)).card - 2) (by omega)
         (I.rightFace.map d) :=
-    face_map I F hroot hA hB hC I.rightFace hC.not_ge _ _ d
+    rfl
   refine ⟨w, hw, ?_, ?_, hsupp, ?_⟩
   · intro d
     exact (congrArg w (hdmap d)).trans ((ho (I.leftFace.map d)).trans

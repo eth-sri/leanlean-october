@@ -8,7 +8,6 @@ module
 public import VaughtConjecture.Knight.RootedExtension
 public import VaughtConjecture.Knight.TerminalBase
 public import VaughtConjecture.Knight.VisibleFaceOneStep
-public import VaughtConjecture.Knight.PairedTrace
 
 /-! # Literal one-point rooted transfer: interface, terminal dichotomy, iteration
 

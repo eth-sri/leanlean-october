@@ -21,8 +21,6 @@ new owners; it is not packaged as a legal receiving scheme.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.OrderedFaceBoundarySemantics
 
 open AmalgamationPlan OrderedFaceBoundary OrderedFaceBoundaryRows
@@ -95,17 +93,17 @@ theorem respects_iff (p : Cell K → ExtOrd) : RespectsSemantics sem p ↔
       · exact (leftFace D E w R hR hD hE semD semE hc).availability_at hpD c e hs hg
       · exact (rightFace D E w R hR hD hE semD semE hc).availability_at hpE c e hs hg
 
-noncomputable def paste (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) : Cell K → ExtOrd :=
+noncomputable def paste (p : D.Labelling) (q : E.Labelling) : Cell K → ExtOrd :=
   ProfileFaceUnion.paste w.g p q ∘ (enumeration D E w).symm
 
-theorem paste_left (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) (d : Cell D) :
+theorem paste_left (p : D.Labelling) (q : Cell E → ExtOrd) (d : Cell D) :
     paste D E w R hR hD hE p q (l d) = p d := by
   change ProfileFaceUnion.paste w.g p q ((enumeration D E w).symm
     (enumeration D E w (ProfileFaceUnion.left w.g d))) = p d
   rw [Equiv.symm_apply_apply]
   rfl
 
-theorem paste_right (p : Cell D → ExtOrd) (q : Cell E → ExtOrd)
+theorem paste_right (p : D.Labelling) (q : E.Labelling)
     (h : ∀ i, p (w.f i) = q (w.g i)) (e : Cell E) :
     paste D E w R hR hD hE p q (r e) = q e := by
   change ProfileFaceUnion.paste w.g p q ((enumeration D E w).symm

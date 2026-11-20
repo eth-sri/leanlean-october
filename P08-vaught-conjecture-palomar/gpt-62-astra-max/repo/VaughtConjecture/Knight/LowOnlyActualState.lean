@@ -7,7 +7,10 @@ module
 
 public import VaughtConjecture.Knight.LowSeparatorPaired
 public import VaughtConjecture.Knight.FiniteCoverReceivingCore
-public import VaughtConjecture.Knight.CappedDonorLowHighNormalization
+public import VaughtConjecture.Knight.CappedDonorRetarget
+public import VaughtConjecture.Knight.CappedDonorRelease
+public import VaughtConjecture.Knight.CappedDonorNormalization
+public import VaughtConjecture.Knight.TerminalBlock
 
 /-! # An active LOW state below a limit stage
 
@@ -19,7 +22,6 @@ Admission is proved at every grade, not transported upward from a catalogue.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyActualState
 open Transform Value ExtOrd CappedDonor LowOnly LowSeparator
 noncomputable section
@@ -44,7 +46,7 @@ theorem exists_visible_above {α : LimitStage} (K : ℕ) {x : ExtOrd}
 variable {n K : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C K)
 
 /-- The cutoff does not contribute to the designated non-top donor maximum. -/
-theorem cutoffCut_actual (v : Cell C.scheme → ExtOrd) (b : ExtOrd) :
+theorem cutoffCut_actual (v : C.scheme.Labelling) (b : ExtOrd) :
     cutoffCut K (donorField F) (State.profile (⟨F.p, v, b⟩ : State P C)) =
       cutoffCut K (donorField F) (State.profile (⟨F.p, v, ⊥⟩ : State P C)) := by
   unfold cutoffCut
@@ -58,7 +60,7 @@ theorem cutoffCut_actual (v : Cell C.scheme → ExtOrd) (b : ExtOrd) :
 
 /-- Construct the active state, with all original proper fields and the cutoff
 below the stage. This uses only the two original lawful labellings. -/
-theorem exists_active {α : LimitStage} (v : Cell C.scheme → ExtOrd)
+theorem exists_active {α : LimitStage} (v : C.scheme.Labelling)
     (hv : RespectsSemantics C.rows v) (hshared : F.root.Shared F.p v)
     (hpbound : ∀ d, F.p d ≠ ⊤ → F.p d < ofOrd α.1)
     (hvbound : ∀ d, v d ≠ ⊤ → v d < ofOrd α.1) :

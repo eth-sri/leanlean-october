@@ -41,8 +41,6 @@ Construction-private (not root-exported). -/
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd
@@ -55,11 +53,9 @@ namespace Value
 
 theorem le_finitePart_of_ge_of_lt {μ z : Ordinal.{0}} {K : ℕ}
     (h1 : limitPart μ + K ≤ z) {K' : ℕ} (h2 : z < limitPart μ + K') : K ≤ finitePart z := by
-  have hlp : limitPart μ ≤ z := (le_add_of_nonneg_right zero_le).trans h1
-  have hlim := limitPart_eq_of_le_of_lt hlp h2
-  have hz := decomposition z
-  rw [← hz, hlim] at h1
-  exact (Nat.cast_le (α := Ordinal.{0})).mp ((add_le_add_iff_left _).mp h1)
+  have hlim := limitPart_eq_of_le_of_lt ((le_add_of_nonneg_right zero_le).trans h1) h2
+  rw [← (decomposition z), hlim] at h1
+  simp_all
 
 /-- **Band position**: if `μ ⊔⁺_K K ≤ z < μ ⊔⁺_{K'} K'` with `K ≤ K'`, then `K ≤ finitePart z`. -/
 theorem le_finitePart_of_visReplace_le_of_lt {μ z : Ordinal.{0}} {K K' : ℕ} (hK : K ≤ K')
@@ -72,21 +68,13 @@ theorem le_finitePart_of_visReplace_le_of_lt {μ z : Ordinal.{0}} {K K' : ℕ} (
     · rw [ite_eq_left hμK] at hlo
       exact le_finitePart_of_ge_of_lt hlo hhi
     · rw [ite_eq_right hμK] at hlo
-      have hlp : limitPart μ ≤ z := (limitPart_le μ).trans hlo
-      have hlim := limitPart_eq_of_le_of_lt hlp hhi
-      exact (not_lt.mp hμK).trans (finitePart_le_of_le hlim.symm hlo)
-  · rw [ite_eq_right hμK'] at hhi
-    have hμK : ¬ finitePart μ < K := fun h => hμK' (h.trans_le hK)
-    rw [ite_eq_right hμK] at hlo
-    exact absurd (hlo.trans_lt hhi) (lt_irrefl μ)
+      exact LE.le.trans (not_lt.mp hμK) (finitePart_le_of_le (Eq.symm (limitPart_eq_of_le_of_lt (LE.le.trans (limitPart_le μ) hlo) hhi)) hlo)
+  grind
 
 /-- A self-visible label that is neither `-∞` nor `∞` is an ordinal with finite part `≥ K`. -/
 theorem exists_ordinal_of_selfVis {v : ExtOrd} {K : ℕ} (h : extVisibilityReplace v K K = v)
     (hbot : v ≠ ⊥) (htop : v ≠ ⊤) : ∃ μ : Ordinal.{0}, v = ofOrd μ ∧ K ≤ finitePart μ := by
-  rcases (extVisibilityReplace_self_iff v K).mp h with rfl | rfl | ⟨μ, rfl, hμ⟩
-  · exact absurd rfl hbot
-  · exact absurd rfl htop
-  · exact ⟨μ, rfl, hμ⟩
+  rcases (extVisibilityReplace_self_iff v K).mp h with rfl | rfl | ⟨μ, rfl, hμ⟩ <;> simp_all
 
 end Value
 
@@ -102,12 +90,6 @@ open CellScheme.restrictFace (toCell belowMap)
 
 variable {q : S α n} {f : Fin m ↪ Fin n} {hr : Finset.univ.image f ∈ q.scheme.scheme.plan}
 
-/-- A full-scope cell of the restriction has, in `q`, the scope `image f univ`. -/
-theorem scope_toCell_of_full (Ψ : Cell (q.scheme.scheme.restrictFace f hr))
-    (hsc : (q.scheme.scheme.restrictFace f hr).scope Ψ = Finset.univ) :
-    q.scheme.scheme.scope (toCell q.scheme.scheme f hr Ψ) = Finset.univ.image f := by
-  rw [← CellScheme.restrictFace.image_scope_restrictFace q.scheme.scheme f hr Ψ, hsc]
-
 /-- A full-scope witness of the restriction lies below a full-scope cell of `q` of at least
 its grade. -/
 theorem gradedLe_toCell_of_full (Ψ : Cell (q.scheme.scheme.restrictFace f hr))
@@ -115,11 +97,7 @@ theorem gradedLe_toCell_of_full (Ψ : Cell (q.scheme.scheme.restrictFace f hr))
     {Θ : Cell q.scheme.scheme} (hscΘ : q.scheme.scheme.scope Θ = Finset.univ)
     (hgr : (q.scheme.scheme.restrictFace f hr).grade Ψ ≤ q.scheme.scheme.grade Θ) :
     GradedLe (q.scheme.scheme.cell (toCell q.scheme.scheme f hr Ψ)) (q.scheme.scheme.cell Θ) := by
-  refine ⟨?_, ?_⟩
-  · change q.scheme.scheme.scope (toCell q.scheme.scheme f hr Ψ) ⊆ q.scheme.scheme.scope Θ
-    rw [scope_toCell_of_full Ψ hsc, hscΘ]
-    exact Finset.subset_univ _
-  · exact hgr
+  simp_all [GradedLe, S, Cell]
 
 /-- **The `y ≤ z` half**: the row of the `q`-witness `Θ` at the restricted witness `Ψ'` (self-
 visible at `K^p`) lies below `z`; `¬cap_q` at `Ψ'` then puts `z` in the band of `y` with finite
@@ -167,18 +145,16 @@ theorem locality_data {Θ Ψ' : Cell q.scheme.scheme}
       (∀ n m : ℕ, n < m → g m ≤ g n) ∧ Monotone σ ∧
       (∀ (a : ExtOrd) (k : ℕ), σ a ≤ g k → ∀ i : ℕ, i ≤ k →
         σ (extVisibilityReplace a k i) = extVisibilityReplace (σ a) k i) ∧
-      (∀ d : q.scheme.scheme.below (q.scheme.scheme.cell Ψ'),
+      (∀ d : q.scheme.scheme.RowDomain Ψ',
         min (q.scheme.rows.E Θ ⟨d.1, d.2.trans hΨ'Θ⟩) (q.scheme.rows.E Θ ⟨Ψ', hΨ'Θ⟩) =
           min (σ (q.scheme.rows.E Ψ' d)) (g (q.scheme.scheme.grade d.1))) ∧
       q.scheme.rows.E Θ ⟨Ψ', hΨ'Θ⟩ ≤ g (q.scheme.scheme.grade Ψ') := by
   obtain ⟨g, σ, hganti, -, -, hσmono, hσ5, hloc⟩ := (q.scheme.consistent Θ).locality ⟨Ψ', hΨ'Θ⟩
-  refine ⟨g, σ, hganti, hσmono, hσ5, fun d => hloc d, ?_⟩
+  refine ⟨g, σ, hganti, hσmono, hσ5, hloc, ?_⟩
   have h := hloc ⟨Ψ', GradedLe.refl _⟩
   change min (q.scheme.rows.E Θ ⟨Ψ', _⟩) (q.scheme.rows.E Θ ⟨Ψ', hΨ'Θ⟩) =
     min (σ (q.scheme.rows.E Ψ' ⟨Ψ', GradedLe.refl _⟩)) (g (q.scheme.scheme.grade Ψ')) at h
-  rw [min_self] at h
-  rw [h]
-  exact min_le_right _ _
+  simp_all
 
 /-- **Lemma 5.3.7, band/band core**: `p` in the band case with index `i`, `q` in the band case
 with index `j` (`¬cap` on both sides): `i = j` or `K^p ≤ j`. -/
@@ -191,18 +167,17 @@ theorem ratchet_core_band (Ξ : Cell (q.scheme.scheme.restrictFace f hr))
     i = j ∨ (q.restrictFace f hr).topGrade ≤ j := by
   obtain ⟨Ψ, hΞΨ, hscΨ, hgrΨ, hΨtop, heqp⟩ := hbandp
   obtain ⟨Θ, hΞ'Θ, hscΘ, hgrΘ, hΘtop, heqq⟩ := hbandq
-  have hKle : (q.restrictFace f hr).topGrade ≤ q.topGrade :=
+  have hKle :=
     topGrade_le_of_typeMap_eq_some (typeMap_eq_some f q hr)
   set K := (q.restrictFace f hr).topGrade with hK
   -- the restricted witness in q
   set Ψ' := toCell q.scheme.scheme f hr Ψ with hΨ'
   have hgrΨ' : q.scheme.scheme.grade Ψ' = K := hgrΨ
-  have hΨ'top : q.label Ψ' = ⊤ := hΨtop
+  have hΨ'top := hΨtop
   have hΨ'Θ : GradedLe (q.scheme.scheme.cell Ψ') (q.scheme.scheme.cell Θ) :=
     gradedLe_toCell_of_full Ψ hscΨ hscΘ (by rw [hgrΘ]; exact hgrΨ ▸ hKle)
-  have hΞ'Ψ' : GradedLe (q.scheme.scheme.cell (toCell q.scheme.scheme f hr Ξ))
-      (q.scheme.scheme.cell Ψ') := CellScheme.restrictFace.gradedLe_of_restrictFace _ f hr hΞΨ
-  obtain ⟨g, σ, hganti, hσmono, hσ5, hloc, hyg⟩ := locality_data (Θ := Θ) hΨ'Θ
+  have hΞ'Ψ' := CellScheme.restrictFace.gradedLe_of_restrictFace _ f hr hΞΨ
+  obtain ⟨g, σ, hganti, hσmono, hσ5, hloc, hyg⟩ := locality_data hΨ'Θ
   -- values
   set z := q.scheme.rows.E Θ ⟨toCell q.scheme.scheme f hr Ξ, hΞ'Θ⟩ with hz
   set y := q.scheme.rows.E Θ ⟨Ψ', hΨ'Θ⟩ with hy
@@ -228,35 +203,28 @@ theorem ratchet_core_band (Ξ : Cell (q.scheme.scheme.restrictFace f hr))
       exact h2
     have hgle : g K ≤ g (q.scheme.scheme.grade (toCell q.scheme.scheme f hr Ξ)) := by
       rcases hgrΞ.lt_or_eq with hlt | heq
-      · exact hganti _ _ hlt
-      · rw [heq]
+      · grind
+      · grind
     rw [min_eq_left hzy.le] at hloc_Ξ
     have hzσ : z = σ t := by
       rcases le_total (σ t) (g (q.scheme.scheme.grade (toCell q.scheme.scheme f hr Ξ))) with
         hle | hle
-      · rw [min_eq_left hle] at hloc_Ξ
-        exact hloc_Ξ
-      · rw [min_eq_right hle] at hloc_Ξ
-        exact absurd hloc_Ξ (lt_of_lt_of_le hzy (hyg.trans hgle)).ne
-    have hσt : σ t ≤ g K := hzσ ▸ (hzy.le.trans hyg)
-    have hiK : i ≤ K := (hi ▸ hfpτ).le
-    have h5 := hσ5 t K hσt i hiK
+      · grind
+      · grind
+    have hσt := hzσ ▸ (hzy.le.trans hyg)
+    have h5 := hσ5 t K hσt i (hi ▸ hfpτ).le
     rw [← heqp] at h5
     -- h5 : σ t = extVisibilityReplace (σ t) K i, i.e. z = z ⊔⁺_K i
     have hzβ' : z = ofOrd β' := hzβ
-    rw [← hzσ, hzβ', extVisibilityReplace_ofOrd] at h5
-    have hβ'eq : β' = visibilityReplace β' K i := ofOrd_inj.mp h5
+    rw [← hzσ, hzβ'] at h5
+    have hβ'eq := ofOrd_inj.mp h5
     by_cases hlt : finitePart β' < K
     · left
       unfold visibilityReplace ordinalReplace at hβ'eq
       rw [ite_eq_left hlt] at hβ'eq
-      have hcast : (i : Ordinal.{0}) = (finitePart β' : Ordinal.{0}) :=
-        add_left_cancel (hβ'eq.symm.trans (decomposition β').symm)
-      have : i = finitePart β' := by exact_mod_cast hcast
+      have : i = finitePart β' := by exact_mod_cast (add_left_cancel (hβ'eq.symm.trans (decomposition β').symm))
       omega
-    · right
-      rw [hj]
-      exact not_lt.mp hlt
+    omega
 
 /-- **Lemma 5.3.7, cap/band core**: `p` in the cap case, `q` in the band case with index `j`:
 `K^p ≤ j`. -/
@@ -268,26 +236,25 @@ theorem ratchet_core_cap (Ξ : Cell (q.scheme.scheme.restrictFace f hr))
     (q.restrictFace f hr).topGrade ≤ j := by
   obtain ⟨Ψ, hΞΨ, Sg, hscΨ, hgrΨ, hΨtop, hSgtop, hcapineq⟩ := hcapp
   obtain ⟨Θ, hΞ'Θ, hscΘ, hgrΘ, hΘtop, heqq⟩ := hbandq
-  have hKle : (q.restrictFace f hr).topGrade ≤ q.topGrade :=
+  have hKle :=
     topGrade_le_of_typeMap_eq_some (typeMap_eq_some f q hr)
   set K := (q.restrictFace f hr).topGrade with hK
   set Ψ' := toCell q.scheme.scheme f hr Ψ with hΨ'
   have hgrΨ' : q.scheme.scheme.grade Ψ' = K := hgrΨ
-  have hΨ'top : q.label Ψ' = ⊤ := hΨtop
+  have hΨ'top := hΨtop
   have hΨ'Θ : GradedLe (q.scheme.scheme.cell Ψ') (q.scheme.scheme.cell Θ) :=
     gradedLe_toCell_of_full Ψ hscΨ hscΘ (by rw [hgrΘ]; exact hgrΨ ▸ hKle)
-  have hΞ'Ψ' : GradedLe (q.scheme.scheme.cell (toCell q.scheme.scheme f hr Ξ))
-      (q.scheme.scheme.cell Ψ') := CellScheme.restrictFace.gradedLe_of_restrictFace _ f hr hΞΨ
+  have hΞ'Ψ' := CellScheme.restrictFace.gradedLe_of_restrictFace _ f hr hΞΨ
   -- the cap cell Σ, transported
-  set Sg' : q.scheme.scheme.below (q.scheme.scheme.cell Ψ') := belowMap q.scheme.scheme f hr Ψ Sg
+  set Sg' : q.scheme.scheme.RowDomain Ψ' := belowMap q.scheme.scheme f hr Ψ Sg
     with hSg'
-  have hSg'top : q.label Sg'.1 = ⊤ := hSgtop
+  have hSg'top := hSgtop
   have hgrSg : q.scheme.scheme.grade Sg'.1 ≤ K := by
     have h2 : (q.restrictFace f hr).scheme.scheme.grade Sg.1 ≤
         (q.restrictFace f hr).scheme.scheme.grade Ψ := Sg.2.2
     rw [hgrΨ] at h2
     exact h2
-  obtain ⟨g, σ, hganti, hσmono, hσ5, hloc, hyg⟩ := locality_data (Θ := Θ) hΨ'Θ
+  obtain ⟨g, σ, hganti, hσmono, hσ5, hloc, hyg⟩ := locality_data hΨ'Θ
   set z := q.scheme.rows.E Θ ⟨toCell q.scheme.scheme f hr Ξ, hΞ'Θ⟩ with hz
   set y := q.scheme.rows.E Θ ⟨Ψ', hΨ'Θ⟩ with hy
   set t := (q.restrictFace f hr).scheme.rows.E Ψ ⟨Ξ, hΞΨ⟩ with ht
@@ -312,55 +279,40 @@ theorem ratchet_core_cap (Ξ : Cell (q.scheme.scheme.restrictFace f hr))
       exact h2
     have hgle : g K ≤ g (q.scheme.scheme.grade (toCell q.scheme.scheme f hr Ξ)) := by
       rcases hgrΞ.lt_or_eq with hlt | heq
-      · exact hganti _ _ hlt
-      · rw [heq]
+      · grind
+      · grind
     have hgleS : g K ≤ g (q.scheme.scheme.grade Sg'.1) := by
       rcases hgrSg.lt_or_eq with hlt | heq
-      · exact hganti _ _ hlt
-      · rw [heq]
+      · grind
+      · grind
     rw [min_eq_left hzy.le] at hloc_Ξ
     have hzσ : z = σ t := by
       rcases le_total (σ t) (g (q.scheme.scheme.grade (toCell q.scheme.scheme f hr Ξ)))
           with hle | hle
-      · rw [min_eq_left hle] at hloc_Ξ
-        exact hloc_Ξ
-      · rw [min_eq_right hle] at hloc_Ξ
-        exact absurd hloc_Ξ (lt_of_lt_of_le hzy (hyg.trans hgle)).ne
+      · grind
+      · grind
     -- u ≤ t, hence σ u ≤ σ t = z
-    have hut : u ≤ t := (le_extVisibilityReplace_self u K).trans hcapineq
-    have hσu : σ u ≤ z := hzσ ▸ hσmono hut
-    have hσuK : σ u ≤ g K := hσu.trans (hzy.le.trans hyg)
+    have hσu : σ u ≤ z := hzσ ▸ hσmono ((le_extVisibilityReplace_self u K).trans hcapineq)
+    have hσuK := hσu.trans (hzy.le.trans hyg)
     -- s = σ u
     have hsσ : s = σ u := by
-      rcases le_total (σ u) (g (q.scheme.scheme.grade Sg'.1)) with hle | hle
-      · rw [min_eq_left hle] at hloc_Sg
-        rcases le_total s y with hsy | hys
-        · rw [min_eq_left hsy] at hloc_Sg
-          exact hloc_Sg
-        · rw [min_eq_right hys] at hloc_Sg
-          -- y = σ u ≤ z < y
-          exact absurd (hloc_Sg ▸ hσu) (not_le.mpr hzy)
-      · -- y ≤ g K ≤ g (grade Σ') ≤ σ u ≤ z < y
-        exact absurd (lt_of_le_of_lt ((hyg.trans hgleS).trans (hle.trans hσu)) hzy)
-          (lt_irrefl y)
+      rcases le_total (σ u) (g (q.scheme.scheme.grade Sg'.1)) with hle | hle <;> grind [min_eq_left, min_eq_right]
     -- clause 5 at (u, K, K): (σ u) ⊔⁺_K K ≤ z
-    have h5 := hσ5 u K hσuK K le_rfl
     have hlo : extVisibilityReplace (σ u) K K ≤ z := by
-      rw [← h5, hzσ]
+      rw [← (hσ5 u K hσuK K le_rfl), hzσ]
       exact hσmono hcapineq
     -- ¬cap_q at Sg: z < s ⊔⁺_{K^q} K^q
     have hnotcap : ¬ extVisibilityReplace s q.topGrade q.topGrade ≤ z := fun hle =>
       hcapq ⟨Θ, hΞ'Θ, ⟨Sg'.1, Sg'.2.trans hΨ'Θ⟩, hscΘ, hgrΘ, hΘtop, hSg'top, hle⟩
-    have hsbot : s ≠ ⊥ := row_ne_bot_of_label_top q hΘtop ⟨Sg'.1, Sg'.2.trans hΨ'Θ⟩ hSg'top
-    have hσubot : σ u ≠ ⊥ := hsσ ▸ hsbot
+    have hσubot : σ u ≠ ⊥ := hsσ ▸ (row_ne_bot_of_label_top q hΘtop ⟨Sg'.1, Sg'.2.trans hΨ'Θ⟩ hSg'top)
     have hzβ' : z = ofOrd β' := hzβ
     have hσutop : σ u ≠ ⊤ := by
       intro h
       rw [h, hzβ'] at hσu
       exact absurd hσu (by simp)
     rcases ExtOrd.cases (σ u) with hb | hT | ⟨μ, hμ⟩
-    · exact absurd hb hσubot
-    · exact absurd hT hσutop
+    · grind
+    · grind
     rw [hμ, hzβ', extVisibilityReplace_ofOrd, ofOrd_le_ofOrd] at hlo
     rw [hsσ, hμ, hzβ', extVisibilityReplace_ofOrd, ofOrd_le_ofOrd] at hnotcap
     rw [hj]
@@ -373,31 +325,21 @@ theorem provisional_ratchet (Ξ : Cell (q.scheme.scheme.restrictFace f hr)) {v w
     (hw : q.IsProvisionalValue (toCell q.scheme.scheme f hr Ξ) w) :
     v = w ∨ ofOrd (α + (q.restrictFace f hr).topGrade) ≤ w := by
   have hlab : q.label (toCell q.scheme.scheme f hr Ξ) = (q.restrictFace f hr).label Ξ := rfl
-  have hKle : (q.restrictFace f hr).topGrade ≤ q.topGrade :=
-    topGrade_le_of_typeMap_eq_some (typeMap_eq_some f q hr)
   have hKq : ofOrd (α + (q.restrictFace f hr).topGrade) ≤ ofOrd (α + q.topGrade) := by
     rw [ofOrd_le_ofOrd]
-    exact add_le_add (le_refl α) ((Nat.cast_le (α := Ordinal.{0})).mpr hKle)
+    exact add_le_add (le_refl α) ((Nat.cast_le (α := Ordinal.{0})).mpr (topGrade_le_of_typeMap_eq_some (typeMap_eq_some f q hr)))
   rcases hv with ⟨hne, rfl⟩ | ⟨htop, hcapp, rfl⟩ | ⟨htop, hcapp, i, hbandp, rfl⟩
-  · rcases hw with ⟨-, rfl⟩ | ⟨htop', -, -⟩ | ⟨htop', -, -⟩
-    · exact Or.inl rfl
-    · exact absurd (hlab ▸ htop') hne
-    · exact absurd (hlab ▸ htop') hne
+  · simp_all [S, Cell, ExtOrd, IsProvisionalValue]
   · rcases hw with ⟨hne', -⟩ | ⟨-, -, rfl⟩ | ⟨htop', hcapq, j, hbandq, rfl⟩
-    · exact absurd (hlab ▸ htop) hne'
-    · exact Or.inr hKq
+    · simp_all
+    · simp_all
     · right
       rw [ofOrd_le_ofOrd]
-      exact add_le_add (le_refl α) ((Nat.cast_le (α := Ordinal.{0})).mpr
-        (ratchet_core_cap Ξ htop hcapp hcapq hbandq))
+      exact add_le_add (le_refl α) (Nat.cast_le.mpr (ratchet_core_cap Ξ htop hcapp hcapq hbandq))
   · rcases hw with ⟨hne', -⟩ | ⟨-, -, rfl⟩ | ⟨htop', hcapq, j, hbandq, rfl⟩
-    · exact absurd (hlab ▸ htop) hne'
-    · exact Or.inr hKq
-    · rcases ratchet_core_band Ξ htop hcapp hbandp hcapq hbandq with hij | hK
-      · exact Or.inl (by rw [hij])
-      · right
-        rw [ofOrd_le_ofOrd]
-        exact add_le_add (le_refl α) ((Nat.cast_le (α := Ordinal.{0})).mpr hK)
+    · simp_all
+    · simp_all
+    · rcases ratchet_core_band Ξ htop hcapp hbandp hcapq hbandq with hij | hK <;> simp_all
 
 /-- **Lemma 5.3.7 (`typeMap` form)**: along `typeMap f q = some p`, provisional values of a
 cell `Ξ` of `p` and of `mapCell Ξ` in `q` agree or the latter is `≥ α + K^p`. -/
@@ -418,7 +360,7 @@ theorem IsProvisionalValue.le_of_typeMap {α : Ordinal.{0}} {n m : ℕ}
     (hv : p.IsProvisionalValue d v) (hv' : q.IsProvisionalValue (mapCell hf d) v') :
     v ≤ v' := by
   rcases provisional_ratchet' hf d hv hv' with h | h
-  · exact h.le
+  · simp_all
   · exact hv.le.trans h
 
 end StageType
@@ -439,7 +381,6 @@ theorem LabelledExt.emb_unique {x y : R.LabelledExt} {f f' : Fin x.arity ↪ Fin
   apply y.tuple.injective
   have h1 := DFunLike.congr_fun hf i
   have h2 := DFunLike.congr_fun hf' i
-  simp only [Function.Embedding.trans_apply] at h1 h2
   exact h1.trans h2.symm
 
 /-! ### Stable-value functionality from exact consistency alone
@@ -462,7 +403,7 @@ theorem StabilizesTo.provisional_le (hcons : R.IsExactParentConsistent)
     rw [hgz, hu] at h
     exact h.symm
   have hfg : (f.trans g).trans z = t := by
-    rw [Function.Embedding.trans_assoc, hgz, hf]
+    aesop
   have he : e = f.trans g := by
     apply Function.Embedding.ext
     intro i
@@ -480,20 +421,16 @@ theorem StabilizesTo.unique_of_consistent (hcons : R.IsExactParentConsistent)
     (h : R.StabilizesTo t p d γ) (h' : R.StabilizesTo t p d γ') : γ = γ' := by
   apply le_antisymm
   · obtain ⟨m, u, g, f, q, hpq, hu, _, hf, hv⟩ := h t
-    exact StabilizesTo.provisional_le hcons hu hf hpq hv h'
+    grind [StabilizesTo.provisional_le]
   · obtain ⟨m, u, g, f, q, hpq, hu, _, hf, hv⟩ := h' t
-    exact StabilizesTo.provisional_le hcons hu hf hpq hv h
+    grind [StabilizesTo.provisional_le]
 
 /-- **Functionality of `M⁺(Ξ)`** (the graph of Def. 5.3.9 is a function), from exact
 consistency alone. -/
 theorem HasStableValue.unique_of_consistent (hcons : R.IsExactParentConsistent)
     {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n} {d : Cell p.scheme.scheme} {γ γ' : ExtOrd}
     (h : R.HasStableValue t p d γ) (h' : R.HasStableValue t p d γ') : γ = γ' := by
-  rcases h with ⟨hlt, hs⟩ | ⟨rfl, hno⟩ <;> rcases h' with ⟨hlt', hs'⟩ | ⟨rfl, hno'⟩
-  · exact StabilizesTo.unique_of_consistent hcons @hs @hs'
-  · exact absurd @hs (hno' γ hlt)
-  · exact absurd @hs' (hno γ' hlt')
-  · rfl
+  rcases h with ⟨hlt, hs⟩ | ⟨rfl, hno⟩ <;> rcases h' with ⟨hlt', hs'⟩ | ⟨rfl, hno'⟩ <;> grind [StabilizesTo.unique_of_consistent]
 
 set_option linter.unusedVariables false in
 /-- **Functionality of `M⁺(Ξ)`** (the graph of Def. 5.3.9 is a function), in its original

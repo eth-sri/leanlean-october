@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.LowFrame
 public import VaughtConjecture.Knight.LowOnlyOrderedLadder
 public import VaughtConjecture.Knight.LowOnlyRecursiveCoverage
 
@@ -18,19 +19,16 @@ to a higher cutoff.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyOrderedSources
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
 noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
+  (hroot : I.RootAgreement F)
 
 include hroot in
-theorem boundary_lawful_at (j : ℕ) (S : State I.left I.right) (hs : F.Admissible j S) :
+theorem boundary_lawful_at j S (hs : F.Admissible j S) :
     RespectsSemanticsBelow I.rows (A, j) (fun d => S.profile (field I d.1)) := by
   let u := CellScheme.zeroAbove (S.lowerP j)
   let v := CellScheme.zeroAbove (S.lowerC j)
@@ -81,7 +79,7 @@ theorem boundary_lawful_at (j : ℕ) (S : State I.left I.right) (hs : F.Admissib
   exact he ▸ hl
 
 include hroot in
-theorem anchor_lawful (j : ℕ) (a : F.Anchor j) :
+theorem anchor_lawful j a :
     RespectsSemanticsBelow I.rows (A, j) (fun d => F.fields j a (field I d.1)) := by
   obtain ⟨S, hS, he⟩ := a.property.2
   have hv : (fun d : I.boundary.below (A, j) => F.fields j a (field I d.1)) =

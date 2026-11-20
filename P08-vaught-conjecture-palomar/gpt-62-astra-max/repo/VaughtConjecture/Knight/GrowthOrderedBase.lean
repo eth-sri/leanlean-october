@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.GrowthFrame
 public import VaughtConjecture.Knight.GrowthScalarLedger
 public import VaughtConjecture.Knight.WholeDonorBoundary
 public import VaughtConjecture.Knight.RelativeLadderRankRendering
@@ -18,14 +19,13 @@ rank table. Boundary lawfulness is derived from the literal root attachment.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthOrderedBase
 open Transform Value ExtOrd AmalgamationPlan Growth RelativeLadderLayer
 noncomputable section
 
-private theorem faceMap_eq {m n : ℕ} (D : SemScheme n) (F : SemScheme m)
+private theorem faceMap_eq {m n} D F
     (f : Fin m ↪ Fin n) (hv : Finset.univ.image f ∈ D.scheme.plan)
-    (hf : D.restrictFace f hv = F) (d : Cell F.scheme) :
+    (hf : D.restrictFace f hv = F) d :
     SemSchemeBoundaryInput.faceMap D F f hv hf d =
       CellScheme.restrictFace.toCell D.scheme f hv (SemScheme.castCell hf.symm d) := by
   subst F
@@ -34,16 +34,15 @@ private theorem faceMap_eq {m n : ℕ} (D : SemScheme n) (F : SemScheme m)
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
-  (X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows)
-  (T : RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X)
+  (X : I.GrowthData)
+  (T : I.Attachment X)
 
 def field (d : Cell I.boundary) : Field I.right.scheme I.left.scheme :=
   match (OrderedFaceBoundary.enumeration I.leftScheme I.rightScheme I.shared).symm d with
   | .inl c => .inr c
   | .inr c => .inl c.1
 
-theorem field_read (S : State I.right.scheme I.left.scheme) (d : Cell I.boundary) :
+theorem field_read (S : State I.right.scheme I.left.scheme) d :
     S.profile (field I d) = I.paste S.donorValues S.privateValues d := by
   unfold field WholeDonorBoundary.Input.paste OrderedFaceBoundarySemantics.paste
   change S.profile (match (OrderedFaceBoundary.enumeration
@@ -54,10 +53,10 @@ theorem field_read (S : State I.right.scheme I.left.scheme) (d : Cell I.boundary
   cases (OrderedFaceBoundary.enumeration I.leftScheme I.rightScheme I.shared).symm d <;> rfl
 
 include T in
-theorem shared {j : ℕ} {S : State I.right.scheme I.left.scheme} (hs : Admitted X j S)
-    (d : Cell I.common.scheme) :
+theorem shared {j} {S} (hs : Admitted X j S)
+    d :
     S.donorValues (I.shared.f d) = S.privateValues (I.shared.g d) := by
-  let d' : I.common.scheme.below (Finset.univ, m) :=
+  let d' : I.common.Native m :=
     ⟨d, Finset.subset_univ _, by
       have hd := I.common.scheme.grade_le_card_scope d
       have hc := Finset.card_le_univ (I.common.scheme.scope d)
@@ -87,37 +86,25 @@ theorem shared {j : ℕ} {S : State I.right.scheme I.left.scheme} (hs : Admitted
   rw [← T.at_occurrence a, ha, hb] at he
   exact he
 
-theorem field_donor (S : State I.right.scheme I.left.scheme) (d : Cell I.left.scheme) :
+theorem field_donor (S : State I.right.scheme I.left.scheme) d :
     S.profile (field I (I.leftFace.map d)) = S.donorValues d :=
   (field_read I S _).trans (I.paste_left _ _ d)
 
 include T in
-theorem field_private {j : ℕ} {S : State I.right.scheme I.left.scheme}
-    (hs : Admitted X j S) (d : Cell I.right.scheme) :
+theorem field_private {j} {S}
+    (hs : Admitted X j S) d :
     S.profile (field I (I.rightFace.map d)) = S.privateValues d :=
   (field_read I S _).trans (I.paste_right _ _ (shared I X T hs) d)
 
-theorem proper (hB : B ⊂ A) (hC : C ⊂ A) (d : Cell I.boundary) :
-    I.boundary.scope d ≠ A := by
-  rcases OrderedFaceBoundaryRows.covered I.leftScheme I.rightScheme I.shared R I.isPlan
-      I.leftPlan_le I.rightPlan_le d with ⟨d, rfl⟩ | ⟨d, rfl⟩
-  · have hs := I.leftScheme.isPlan.subset_of_mem (I.leftScheme.scope_mem_plan d)
-    change I.boundary.scope (I.leftFace.map d) ≠ A
-    rw [show I.boundary.scope (I.leftFace.map d) = I.leftScheme.scope d from
-      congrArg Prod.fst (I.leftFace.index d)]
-    exact fun he => hB.not_ge (he ▸ hs)
-  · have hs := I.rightScheme.isPlan.subset_of_mem (I.rightScheme.scope_mem_plan d)
-    change I.boundary.scope (I.rightFace.map d) ≠ A
-    rw [show I.boundary.scope (I.rightFace.map d) = I.rightScheme.scope d from
-      congrArg Prod.fst (I.rightFace.index d)]
-    exact fun he => hC.not_ge (he ▸ hs)
+theorem proper (hB : B ⊂ A) (hC : C ⊂ A) d :
+    I.boundary.scope d ≠ A := I.avoids hB hC d
 
 include T in
-theorem boundary_lawful {S : State I.right.scheme I.left.scheme} (hs : Admitted X 1 S) :
+theorem boundary_lawful {S} (hs : Admitted X 1 S) :
     RespectsSemanticsBelow I.rows (A, 1) (fun d => S.profile (field I d.1)) := by
-  let u := CellScheme.zeroAbove (fun d : I.left.scheme.below (Finset.univ, 1) => S.donorValues d.1)
+  let u := CellScheme.zeroAbove (fun d : I.left.Native 1 => S.donorValues d.1)
   let v := CellScheme.zeroAbove
-    (fun d : I.right.scheme.below (Finset.univ, 1) => S.privateValues d.1)
+    (fun d : I.right.Native 1 => S.privateValues d.1)
   have hshared (i : Cell I.common.scheme) : u (I.shared.f i) = v (I.shared.g i) := by
     have hg : I.left.scheme.grade (I.shared.f i) = I.right.scheme.grade (I.shared.g i) :=
       congrArg (fun x : Finset ι × ℕ => x.2) (I.shared.shared i)
@@ -145,7 +132,7 @@ theorem boundary_lawful {S : State I.right.scheme I.left.scheme} (hs : Admitted 
       rw [← hc]
       exact (I.paste_left _ _ c).trans
         ((CellScheme.zeroAbove_low
-          (fun d : I.left.scheme.below (Finset.univ, 1) => S.donorValues d.1)
+          (fun d : I.left.Native 1 => S.donorValues d.1)
           ⟨c, Finset.subset_univ _, hg⟩).symm.trans
           (I.paste_left u v c).symm)
     · have hg : I.right.scheme.grade c ≤ 1 := by
@@ -155,7 +142,7 @@ theorem boundary_lawful {S : State I.right.scheme I.left.scheme} (hs : Admitted 
       rw [← hc]
       exact (I.paste_right _ _ (shared I X T hs) c).trans
         ((CellScheme.zeroAbove_low
-          (fun d : I.right.scheme.below (Finset.univ, 1) => S.privateValues d.1)
+          (fun d : I.right.Native 1 => S.privateValues d.1)
           ⟨c, Finset.subset_univ _, hg⟩).symm.trans
           (I.paste_right u v hshared c).symm)
   exact he ▸ hl
@@ -169,11 +156,6 @@ theorem anchor_lawful (a : Catalogue X 1) :
   obtain ⟨S, hs, he⟩ := a.property.2
   rw [← he]
   exact boundary_lawful I X T hs
-
-include T in
-theorem consistent (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A) :
-    (rows I.boundary I.rows hA (field I) (fields I X) (proper I hB hC)).IsConsistent :=
-  RelativeLadderLayer.consistent _ _ _ _ _ _ I.consistent (anchor_lawful I X T)
 
 end
 end VaughtConjecture.Knight.GrowthOrderedBase

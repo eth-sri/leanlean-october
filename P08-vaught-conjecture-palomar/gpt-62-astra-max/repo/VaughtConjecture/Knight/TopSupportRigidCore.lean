@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.FiniteCoverReceiving
+public import VaughtConjecture.Knight.OrdinaryFiniteCutReceiving
+public import VaughtConjecture.Knight.BlockCode
 public import VaughtConjecture.Knight.TopSupportRigidCoreCap
 
 /-! # Classification from globally rigid top-support cores

@@ -47,17 +47,6 @@ theorem not_mem_range_trans_of_not_mem {e : M ≃ N} {t : Fin n ↪ N} {y : M}
   rintro ⟨i, hi⟩
   exact hy ⟨i, by simp [Function.Embedding.trans_apply, hi]⟩
 
-/-- Concatenation commutes with pulling back along `e⁻¹`:
-`(t⌢(e y)) ∘ e⁻¹ = (t ∘ e⁻¹)⌢y`. -/
-theorem snoc_trans_symm (e : M ≃ N) (t : Fin n ↪ N) {y : M}
-    (hy : y ∉ Set.range (t.trans e.symm.toEmbedding)) :
-    (snoc t (e y) (not_mem_range_trans_of_not_mem hy)).trans e.symm.toEmbedding =
-      snoc (t.trans e.symm.toEmbedding) y hy := by
-  ext i
-  refine Fin.lastCases ?_ (fun j => ?_) i
-  · simp
-  · simp
-
 /-- **Realized families push forward along a bijection of carriers**: if `R` realizes some
 member of `U` over the pulled-back tuple `t ∘ e⁻¹` as a coface of `p`, then `R.map e` realizes
 the same member over `t`.  The stage-type data (`q ∈ U`, `IsCoface p q`) is untouched: only
@@ -67,8 +56,14 @@ theorem RealizesSome.map {R : KnightRealization α M} (e : M ≃ N) {t : Fin n �
     (h : R.RealizesSome (t.trans e.symm.toEmbedding) p U) :
     RealizesSome (R.map e) t p U := by
   obtain ⟨y, hy, q, hqU, hqc, hq⟩ := h
-  refine ⟨e y, not_mem_range_trans_of_not_mem hy, q, hqU, hqc, ?_⟩
-  rw [Realization.map_eval, snoc_trans_symm e t hy, hq]
+  refine ⟨e y, by
+          rintro ⟨i, hi⟩
+          exact hy ⟨i, by simp [Function.Embedding.trans_apply, hi]⟩, q, hqU, hqc, ?_⟩
+  rw [Realization.map_eval, show (snoc t (e y) (not_mem_range_trans_of_not_mem hy)).trans e.symm.toEmbedding = snoc (t.trans e.symm.toEmbedding) y hy from by
+          ext i
+          refine Fin.lastCases ?_ (fun j => ?_) i
+          · simp
+          · simp, hq]
 
 /-- **Modelhood transports along a bijection of carriers** (the missing lemma of the #73
 audit; the prerequisite of the #46 limit probe): the push-forward `R.map e` of a model is a
@@ -80,7 +75,13 @@ theorem IsModel.map {R : KnightRealization α M} (h : R.IsModel) (e : M ≃ N) :
   consistent :=
     Realization.IsIso.isExactParentConsistent (Realization.isIso_map e R) h.consistent
   covering :=
-    Realization.IsIso.isInitialSegmentCovering (Realization.isIso_map e R) h.covering
+    by
+      intro n s
+      obtain ⟨k, u, hu, hsome⟩ := h.covering (s.trans e.symm.toEmbedding)
+      refine ⟨k, u.trans e.toEmbedding, ?_, by rwa [(Realization.isIso_map e R) u]⟩
+      ext i
+      have := congrArg (fun v : Fin n ↪ M => e (v i)) hu
+      simpa using this
   genSat t p hp D hD := by
     rw [Realization.map_eval] at hp
     exact (h.genSat _ p hp D hD).map e

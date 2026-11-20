@@ -5,10 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.GuardActivation
+public import VaughtConjecture.Knight.ReferenceContext
+public import VaughtConjecture.Knight.CountedEncoding
 public import VaughtConjecture.Knight.StableLiftCore
-public import VaughtConjecture.Knight.Directedness
-public import VaughtConjecture.Knight.FiniteOffset
 
 /-! # Same-stage calibration from an attained stable marker and top-grade growth
 
@@ -56,7 +55,7 @@ theorem limitPart_stage : limitPart α.1 = α.1 :=
   limitPart_eq_self_of_isNonSuccessor (Or.inr α.2)
 
 /-- A proper ordinal at least `α` (a limit) and `N`-visible is at least `α + N`. -/
-theorem stage_add_le_of_selfVis {γ : Ordinal.{0}} (hγ : α.1 ≤ γ) {N : ℕ}
+theorem stage_add_le_of_selfVis {γ} (hγ : α.1 ≤ γ) {N}
     (hN : SelfVis N (ofOrd γ)) : α.1 + N ≤ γ := by
   rw [selfVis_ofOrd_iff] at hN
   have h1 : α.1 ≤ limitPart γ := by
@@ -69,8 +68,8 @@ theorem stage_add_le_of_selfVis {γ : Ordinal.{0}} (hγ : α.1 ≤ γ) {N : ℕ}
 /-- **Stable values of top-labelled cells**: at a cell of grade `N` labelled `⊤`, the stable
 value is `⊤` or a proper ordinal at least `α + N` (at least `α`, and `N`-visible by lawfulness
 of the stable labelling). -/
-theorem stable_ge_of_top (hM : R.IsModel) {m : ℕ} {u : Fin m ↪ M} {q : S α.1 m}
-    (hu : R.eval u = some q) {Θ : Cell q.scheme.scheme} (hΘ : q.label Θ = ⊤) :
+theorem stable_ge_of_top (hM : R.IsModel) {m} {u} {q : S α.1 m}
+    (hu : R.eval u = some q) {Θ} (hΘ : q.label Θ = ⊤) :
     ofOrd (α.1 + q.scheme.scheme.grade Θ) ≤ R.stableValue u q Θ := by
   have hα := le_stableValue_of_top (R := R) hu hΘ
   have hvis : SelfVis (q.scheme.scheme.grade Θ) (R.stableValue u q Θ) :=

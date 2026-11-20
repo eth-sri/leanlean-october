@@ -69,7 +69,7 @@ def CommonChartStepSupply : Prop :=
 subclass.  This is the useful weak-amalgamation shape: no claim is made about
 arbitrary common charts outside `Good`. -/
 structure GoodCommonChartExtension
-    (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop)
+    (Good : CommonChartNode → Prop)
     (nd : CommonChartNode (A₁ := A₁) (A₂ := A₂))
     (z : M₁ ⊕ M₂) where
   extension : CommonChartExtension nd z
@@ -79,7 +79,7 @@ structure GoodCommonChartExtension
 nodes satisfying the invariant which defines the selected closed subcategory. -/
 def RestrictedCommonChartStepSupply
     (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop) : Prop :=
-  ∀ (nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)), Good nd →
+  ∀ (nd : CommonChartNode), Good nd →
     ∀ z : M₁ ⊕ M₂, Nonempty (GoodCommonChartExtension Good nd z)
 
 end KnightRealization

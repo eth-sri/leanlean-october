@@ -67,7 +67,7 @@ theorem bot_of_mute (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
     (hmute : ∀ x : Cell D, D.grade x = N → D.scope x ≠ S →
       F.sem.E x ⟨x, GradedLe.refl _⟩ = ⊥)
     {B : Finset ι} (hBA : B ⊆ A) (hBne : B ≠ A) (hBS : B ≠ S)
-    {p : F.carrier.below (B, N) → ExtOrd} (hp : RespectsSemanticsBelow F.rows (B, N) p)
+    {p : F.carrier.SectionAt (B, N)} (hp : F.rows.Lawful p)
     (e : F.carrier.below (B, N)) (he : F.carrier.grade e.1 = N) : p e = ⊥ := by
   obtain ⟨x, hx⟩ := F.proper_occurrence hBA hBne e
   have hxg : D.grade x.1 = N := by
@@ -91,13 +91,13 @@ theorem bot_of_mute (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
 whose target excludes the added index, the all-cap private-face lift, the coatom geometry and the
 mute diagonals at non-private proper grade-`N` owners. -/
 theorem bountiful
-    (hfields : ∀ a f, F.fields a f = a.val f) (hgate : F.gate = .gate)
+    (hfields : ∀ a f, F.fields a f = a.val f)
     (hgrid : F.grid = PairedSlotComparison.sourceGrid N (Fintype.card (Field P C)))
     (hsupport : ∀ a d, D.grade d ≤ N →
       OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d))
     (howners : ∀ a (c : D.below (A, N)),
-      (∀ d : D.below (D.cell c.1), Short (D.grade c.1) (F.sem.E c.1 d)) ∨
-      (∀ d : D.below (D.cell c.1), ∃ f : Field P C, F.lower a d.1 = a.val f))
+      (∀ d : D.RowDomain c.1, Short (D.grade c.1) (F.sem.E c.1 d)) ∨
+      (∀ d : D.RowDomain c.1, ∃ f : Field P C, F.lower a d.1 = a.val f))
     (hpriv : ∀ a d, F.lower a (E.map d) = a.val (.priv d))
     (hcard : A.card = N + 1)
     (hmute : ∀ x : Cell D, D.grade x = N → D.scope x ≠ S →
@@ -131,7 +131,7 @@ theorem bountiful
         ⟨hsub, le_rfl⟩ (fun h => by have := h.2; omega)
     by_cases hBS : S = B
     · subst hBS
-      exact OrdinaryFinalPrivateLift.private_lift R F place hS hsub hBB E hfields hgate hgrid
+      exact OrdinaryFinalPrivateLift.private_lift R F place hS hsub hBB E hfields hgrid
         hsupport howners hpriv hlift
     · intro p q γ hp hq hγ hag
       exact F.lift_inactive hsub hlift hp hq hγ hag

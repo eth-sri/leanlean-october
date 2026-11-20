@@ -6,10 +6,7 @@ Authors: Cameron Freer
 module
 
 public import InfinitaryLogic.OrdinalCountability
-public import Mathlib.SetTheory.Cardinal.Aleph
-public import Mathlib.SetTheory.Ordinal.Arithmetic
 public import Mathlib.SetTheory.Cardinal.Arithmetic
-public import Mathlib.SetTheory.Cardinal.Regular
 
 /-! # Countable successor losses and limit continuity give countable complements
 

@@ -24,19 +24,7 @@ namespace VaughtConjecture.AmalgamationPlan.Plan
 
 variable {α : Type*} [DecidableEq α]
 
-private theorem restrict_restrict {P : Finset (Finset α)} {A B : Finset α}
-    (hBA : B ⊆ A) : restrictPlan (restrictPlan P A) B = restrictPlan P B := by
-  ext S
-  simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
-  exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hBA⟩, h.2⟩⟩
-
-private theorem restrict_self {A : Finset α} {P : Finset (Finset α)}
-    (hP : IsPlan A P) : restrictPlan P A = P := by
-  ext S
-  simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
-  exact ⟨And.left, fun h => ⟨h, hP.subset_of_mem h⟩⟩
-
-private theorem coatom_over_face {A B : Finset α} {P : Finset (Finset α)}
+private theorem coatom_over_face {A B} {P : Finset (Finset α)}
     (hP : IsPlan A P) (hB : B ∈ P) (hne : B ≠ A) :
     ∃ a ∈ A, A.erase a ∈ P ∧ B ⊆ A.erase a := by
   cases hP with
@@ -55,7 +43,7 @@ private theorem coatom_over_face {A B : Finset α} {P : Finset (Finset α)}
     · exact ⟨b, hb, by simp [hR.domain_mem], hR.subset_of_mem hB⟩
     · exact (hne hB).elim
 
-private theorem restrict_glue_left {A B : Finset α} {P Q : Finset (Finset α)}
+private theorem restrict_glue_left {A B} {P Q}
     (hP : IsPlan A P) (hQ : IsPlan B Q)
     (hres : restrictPlan P (A ∩ B) = restrictPlan Q (A ∩ B))
     {x : α} (hxB : x ∈ B) (hxA : x ∉ A) :
@@ -77,7 +65,7 @@ private theorem restrict_glue_left {A B : Finset α} {P Q : Finset (Finset α)}
   · intro hS
     exact ⟨Or.inl (Or.inl hS), hP.subset_of_mem hS⟩
 
-private theorem attach_coatom {A : Finset α} {P Q : Finset (Finset α)}
+private theorem attach_coatom {A} {P Q}
     {a x : α} (hP : IsPlan A P) (ha : a ∈ A) (hx : x ∉ A)
     (hface : A.erase a ∈ P) (hQ : IsPlan (A.erase a ∪ {x}) Q)
     (hfaceQ : A.erase a ∈ Q)
@@ -124,7 +112,7 @@ private theorem attach_coatom {A : Finset α} {P Q : Finset (Finset α)}
 
 /-- Attach a prescribed one-point plan over any visible old face. Both the
 old whole and the candidate face retain their plans literally. -/
-theorem IsPlan.attach_one_over_face {A B : Finset α} {P Q : Finset (Finset α)}
+theorem IsPlan.attach_one_over_face {A B} {P Q}
     {x : α} (hP : IsPlan A P) (hB : B ∈ P) (hx : x ∉ A)
     (hQ : IsPlan (B ∪ {x}) Q) (hBQ : B ∈ Q)
     (hres : restrictPlan Q B = restrictPlan P B) :
@@ -134,12 +122,21 @@ theorem IsPlan.attach_one_over_face {A B : Finset α} {P Q : Finset (Finset α)}
   | _ A ih =>
     by_cases hBA : B = A
     · subst B
-      exact ⟨Q, hQ, hBQ, hres.trans (restrict_self hP), hQ.domain_mem, restrict_self hQ⟩
+      exact ⟨Q, hQ, hBQ, hres.trans (by
+          ext S
+          simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
+          exact ⟨And.left, fun h => ⟨h, hP.subset_of_mem h⟩⟩), hQ.domain_mem, by
+          ext S
+          simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
+          exact ⟨And.left, fun h => ⟨h, hQ.subset_of_mem h⟩⟩⟩
     · obtain ⟨a, ha, hface, hBsub⟩ := coatom_over_face hP hB hBA
       have hBe : B ∈ restrictPlan P (A.erase a) :=
         Finset.mem_inter.mpr ⟨hB, Finset.mem_powerset.mpr hBsub⟩
       have hres' : restrictPlan Q B = restrictPlan (restrictPlan P (A.erase a)) B := by
-        rw [restrict_restrict hBsub, hres]
+        rw [show restrictPlan (restrictPlan P (A.erase a)) B = restrictPlan P B from by
+          ext S
+          simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
+          exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hBsub⟩, h.2⟩⟩, hres]
       obtain ⟨E, hE, hAE, hEA, hBE, hEB⟩ := ih (A.erase a)
         (Finset.erase_ssubset ha) (restrict_isPlan hP hface) hBe
         (fun h => hx (Finset.mem_of_mem_erase h)) hQ hBQ hres'
@@ -155,7 +152,10 @@ theorem IsPlan.attach_one_over_face {A B : Finset α} {P Q : Finset (Finset α)}
       refine ⟨R, hR, hAR, hRA, hBR, ?_⟩
       calc restrictPlan R (B ∪ {x})
           = restrictPlan (restrictPlan R (A.erase a ∪ {x})) (B ∪ {x}) :=
-            (restrict_restrict hBEx).symm
+            (show restrictPlan (restrictPlan R (A.erase a ∪ {x})) (B ∪ {x}) = restrictPlan R (B ∪ {x}) from by
+          ext S
+          simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
+          exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hBEx⟩, h.2⟩⟩).symm
         _ = Q := by rw [hRE, hEB]
 
 -- Non-vacuous regression at both ends of a three-point old domain. These

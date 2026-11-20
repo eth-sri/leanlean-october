@@ -5,7 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.PairedBoundarySections
+public import VaughtConjecture.Knight.SeparatedSourceLayerCarrier
+public import VaughtConjecture.Knight.PairedSlotComparison
+public import VaughtConjecture.Knight.CoatomBoundaryExtension
 
 /-! # Coupling paired controller layers on their actual carriers
 
@@ -17,8 +19,6 @@ remain literal. This is a two-layer construction, not arbitrary-ambient lifting.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.PairedCoupledSections
 
@@ -48,7 +48,7 @@ theorem supported_short {X : Type*} {k : ℕ} {G : Finset ExtOrd} {p : X → Ext
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ j)
+variable (hproper : D.AvoidsScope A) (hg : ∀ d : Cell D, D.grade d ≤ j)
 
 variable (k : ℕ) (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
 

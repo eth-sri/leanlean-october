@@ -20,8 +20,6 @@ This constructs no mixed owners and does not claim bountifulness of the union.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.WholeDonorBoundary
 
 open AmalgamationPlan Transform Value ExtOrd
@@ -145,6 +143,25 @@ def rightFace : ExactSemanticFace I.rightRows I.rows :=
   OrderedFaceBoundarySemantics.rightFace I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows I.compatible
 
+theorem covered (d : Cell I.boundary) :
+    (∃ c, I.leftFace.map c = d) ∨ ∃ c, I.rightFace.map c = d :=
+  OrderedFaceBoundaryRows.covered I.leftScheme I.rightScheme I.shared
+    R I.isPlan I.leftPlan_le I.rightPlan_le d
+
+theorem avoids (hB : B ⊂ A) (hC : C ⊂ A) (d : Cell I.boundary) :
+    I.boundary.scope d ≠ A := by
+  rcases I.covered d with ⟨d, rfl⟩ | ⟨d, rfl⟩
+  · have hs := I.leftScheme.isPlan.subset_of_mem (I.leftScheme.scope_mem_plan d)
+    change I.boundary.scope (I.leftFace.map d) ≠ A
+    rw [show I.boundary.scope (I.leftFace.map d) = I.leftScheme.scope d from
+      congrArg Prod.fst (I.leftFace.index d)]
+    exact fun he => hB.not_ge (he ▸ hs)
+  · have hs := I.rightScheme.isPlan.subset_of_mem (I.rightScheme.scope_mem_plan d)
+    change I.boundary.scope (I.rightFace.map d) ≠ A
+    rw [show I.boundary.scope (I.rightFace.map d) = I.rightScheme.scope d from
+      congrArg Prod.fst (I.rightFace.index d)]
+    exact fun he => hC.not_ge (he ▸ hs)
+
 theorem consistent : I.rows.IsConsistent :=
   OrderedFaceBoundarySemantics.consistent I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le I.leftRows I.rightRows I.compatible
@@ -166,7 +183,7 @@ theorem right_order : StrictMono I.rightFace.map :=
     R I.isPlan I.leftPlan_le I.rightPlan_le
 
 /-- A complete target vector is lawful precisely when both literal inputs are. -/
-theorem respects_iff (p : Cell I.boundary → ExtOrd) :
+theorem respects_iff (p : I.boundary.Labelling) :
     RespectsSemantics I.rows p ↔
       RespectsSemantics I.left.rows (p ∘ I.leftFace.map) ∧
       RespectsSemantics I.right.rows (p ∘ I.rightFace.map) := by
@@ -175,24 +192,24 @@ theorem respects_iff (p : Cell I.boundary → ExtOrd) :
     (PointImageSemantics.respects_iff _ _ _ _ _)
     (PointImageSemantics.respects_iff _ _ _ _ _)
 
-def paste (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOrd) :
-    Cell I.boundary → ExtOrd :=
+def paste (p : I.left.scheme.Labelling) (q : I.right.scheme.Labelling) :
+    I.boundary.Labelling :=
   OrderedFaceBoundarySemantics.paste I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le p q
 
-theorem paste_left (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOrd)
+theorem paste_left (p : I.left.scheme.Labelling) (q : I.right.scheme.Labelling)
     (d : Cell I.left.scheme) : I.paste p q (I.leftFace.map d) = p d :=
   OrderedFaceBoundarySemantics.paste_left I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le p q d
 
-theorem paste_right (p : Cell I.left.scheme → ExtOrd) (q : Cell I.right.scheme → ExtOrd)
+theorem paste_right (p : I.left.scheme.Labelling) (q : I.right.scheme.Labelling)
     (h : ∀ i, p (I.shared.f i) = q (I.shared.g i)) (d : Cell I.right.scheme) :
     I.paste p q (I.rightFace.map d) = q d :=
   OrderedFaceBoundarySemantics.paste_right I.leftScheme I.rightScheme I.shared
     R I.isPlan I.leftPlan_le I.rightPlan_le p q h d
 
 /-- The selected inherited display needs agreement only on the literal common face. -/
-theorem paste_respects {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
+theorem paste_respects {p : I.left.scheme.Labelling} {q : I.right.scheme.Labelling}
     (hp : RespectsSemantics I.left.rows p) (hq : RespectsSemantics I.right.rows q)
     (h : ∀ i, p (I.shared.f i) = q (I.shared.g i)) :
     RespectsSemantics I.rows (I.paste p q) := by
@@ -238,26 +255,6 @@ theorem occupied_iff {J : Finset ι × ℕ} (hJ : J ∈ Plan.gradedPlan R) :
       (pointImage_complete _ _ _ I.left.complete)
       (pointImage_complete _ _ _ I.right.complete)
     exact h.imp (I.left_mem hJ) (I.right_mem hJ)
-
-/-- Every lifting problem whose upper scope stays inside either original face
-is inherited at the original cap, for arbitrary lawful target-local ambients. -/
-theorem inherited_lift {CI BJ : Finset ι × ℕ}
-    (hCI : CI ∈ Plan.gradedPlan R) (hBJ : BJ ∈ Plan.gradedPlan R)
-    (h : GradedLe CI BJ) (hne : CI ≠ BJ) (hscope : BJ.1 ⊆ B ∨ BJ.1 ⊆ C)
-    (p : I.boundary.below CI → ExtOrd) (q : I.boundary.below BJ → ExtOrd) (γ : ExtOrd)
-    (hp : RespectsSemanticsBelow I.rows CI p) (hq : RespectsSemanticsBelow I.rows BJ q)
-    (hγ : extVisibilityReplace γ BJ.2 BJ.2 = γ)
-    (ha : ∀ d, min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
-    ∃ q', RespectsSemanticsBelow I.rows BJ q' ∧
-      (∀ d, min (q' d) γ = min (q d) γ) ∧
-      ∀ d, q' (CellScheme.below.mono h d) = p d := by
-  rcases hscope with hl | hr
-  · exact I.leftFace.lift hl (I.left_mem hCI (h.1.trans hl)) (I.left_mem hBJ hl) h hne
-      (PointImageSemantics.bountiful _ _ _ _ I.left.complete I.left.bountiful)
-      p q γ hp hq hγ ha
-  · exact I.rightFace.lift hr (I.right_mem hCI (h.1.trans hr)) (I.right_mem hBJ hr) h hne
-      (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
-      p q γ hp hq hγ ha
 
 end Input
 end

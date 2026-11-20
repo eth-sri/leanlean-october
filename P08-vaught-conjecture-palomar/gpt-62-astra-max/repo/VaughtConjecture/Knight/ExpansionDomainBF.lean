@@ -8,7 +8,6 @@ module
 public import VaughtConjecture.Knight.ExpansionDomain
 public import VaughtConjecture.Knight.ProjectedChartComparison
 public import VaughtConjecture.Knight.ClassPresentation
-public import InfinitaryLogic.ModelTheory.MorleyCounting
 
 /-! # Back-and-forth equivalence on an expansion domain, and countable `≡_η` quotients
 
@@ -48,8 +47,7 @@ private theorem bfEquiv_reduct_stage_eq {δ ε ζ : LimitStage}
       N (stageStructureOf (V.reduct hδ)) η n a b) ↔
     (@BFEquiv (stageLang ε) M (stageStructureOf (W.reduct hε))
       N (stageStructureOf (V.reduct hε)) η n a b) := by
-  cases h
-  rfl
+  grind
 
 /-- Transport the projected comparison from block zero to the sentence's `ω` language.
 The stage equality is eliminated explicitly; no additional comparison or rank loss occurs. -/
@@ -67,7 +65,7 @@ there is only one label of the empty tuple. -/
 theorem hasCommonChart_elim0 {α : LimitStage} {M N : Type}
     {W : KnightRealization α M} {V : KnightRealization α N} (hW : W.IsModel)
     (hV : V.IsModel) :
-    HasCommonChart W V (Fin.elim0 : Fin 0 → M) (Fin.elim0 : Fin 0 → N) := by
+    HasCommonChart W V Fin.elim0 Fin.elim0 := by
   obtain ⟨p, hp⟩ := exists_eval_empty_at hW
   obtain ⟨p', hp'⟩ := exists_eval_empty_at hV
   refine ⟨0, Function.Embedding.ofIsEmpty, Function.Embedding.ofIsEmpty, Fin.elim0, p, hp, ?_,
@@ -92,7 +90,7 @@ lie in `domain η` are related by `bfEquivSetoid knightSentence η`. -/
 theorem bfEquivSetoid_r_of_mem_domain {η : Ordinal.{0}} {c d : ModelsOf knightSentence}
     (hc : modelClass c ∈ domain η) (hd : modelClass d ∈ domain η) :
     (bfEquivSetoid knightSentence η).r c d := by
-  have h := bfEquiv_of_mem_domain (R := realizationOfCode c) (S := realizationOfCode d) hc hd
+  have h := bfEquiv_of_mem_domain hc hd
   have hc' := @equiv_implies_BFEquiv knightLang ℕ ℕ c.1.toStructure
     (structureOf (realizationOfCode c).1)
     (@Language.Equiv.symm knightLang ℕ ℕ (structureOf (realizationOfCode c).1)
@@ -114,26 +112,23 @@ The classes outside `domain η` are countable, and the classes inside it project
 theorem mk_bfEquivSetoid_quotient_le_aleph0 (hct : CountableTerminalFibres)
     {η : Ordinal.{0}} (hη : η < (aleph 1).ord) :
     #(Quotient (bfEquivSetoid knightSentence η)) ≤ ℵ₀ := by
-  let π : Classes → Quotient (bfEquivSetoid knightSentence η) :=
+  let π :=
     fun q => bfProj knightSentence η (isoClassEquiv.symm q)
   have hπ (c : ModelsOf knightSentence) : π (modelClass c) = Quotient.mk _ c := by
     change bfProj knightSentence η (isoClassEquiv.symm (isoClassEquiv _)) = _
     rw [Equiv.symm_apply_apply, bfProj_mk]
-  have hcover : (Set.univ : Set (Quotient (bfEquivSetoid knightSentence η))) ⊆
+  have hcover : Set.univ ⊆
       π '' (domain η)ᶜ ∪ π '' domain η := by
     rintro x -
     induction x using Quotient.inductionOn with
     | h c =>
-      by_cases hc : modelClass c ∈ domain η
-      · exact Or.inr ⟨_, hc, hπ c⟩
-      · exact Or.inl ⟨_, hc, hπ c⟩
+      grind
   have hsub : (π '' domain η).Subsingleton := by
     rintro _ ⟨q, hq, rfl⟩ _ ⟨s, hs, rfl⟩
     obtain ⟨c, rfl⟩ := modelClass_surjective q
     obtain ⟨d, rfl⟩ := modelClass_surjective s
     rw [hπ, hπ]
     exact Quotient.sound (bfEquivSetoid_r_of_mem_domain hq hs)
-  have hcount := (((compl_countable hct hη).image π).union hsub.countable).mono hcover
-  exact mk_le_aleph0_iff.mpr (Set.countable_univ_iff.mp hcount)
+  exact mk_le_aleph0_iff.mpr (Set.countable_univ_iff.mp ((((compl_countable hct hη).image π).union hsub.countable).mono hcover))
 
 end VaughtConjecture.Knight.ExpansionDomain

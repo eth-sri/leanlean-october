@@ -16,7 +16,6 @@ needs no repair and the conclusion is literal equality of stage types.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyResidualReceiving
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor
 noncomputable section
@@ -29,11 +28,11 @@ variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 include hcons hFC hcoin hKpos hres
 
 /-- Exact receiving along a specified finite number of one-point face steps. -/
-theorem receive_cover_steps_of_tail (r : ℕ) :
-    ∀ {n m : ℕ} (Q : S α.1 m),
+theorem receive_cover_steps_of_tail r :
+    ∀ {n m} Q,
       (∀ d, Q.label d = ⊤ → Q.scheme.scheme.grade d ≤ K) →
-      ∀ (f : Fin n ↪ Fin m), n + r = m →
-      ∀ (t : Fin n ↪ M) (p : S α.1 n), typeMap f Q = some p → W.eval t = some p →
+      ∀ f, n + r = m →
+      ∀ t (p : S α.1 n), typeMap f Q = some p → W.eval t = some p →
         ∃ u : Fin m ↪ M, f.trans u = t ∧ W.eval u = some Q := by
   induction r with
   | zero =>
@@ -98,9 +97,9 @@ theorem receive_cover_steps_of_tail (r : ℕ) :
 
 /-- Every finite legal donor with top grades bounded by the characteristic is
 received exactly over any literal realized face. -/
-theorem receive_cover_of_tail {n m : ℕ} (Q : S α.1 m)
+theorem receive_cover_of_tail {n m} Q
     (hQK : ∀ d, Q.label d = ⊤ → Q.scheme.scheme.grade d ≤ K)
-    (f : Fin n ↪ Fin m) (t : Fin n ↪ M) (p : S α.1 n)
+    f t (p : S α.1 n)
     (hp : typeMap f Q = some p) (ht : W.eval t = some p) :
     ∃ u : Fin m ↪ M, f.trans u = t ∧ W.eval u = some Q := by
   have hnm : n ≤ m := by

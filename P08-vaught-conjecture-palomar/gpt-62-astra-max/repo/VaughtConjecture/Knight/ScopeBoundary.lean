@@ -16,7 +16,6 @@ installing a full-scope source layer on a proper mixed scope of a larger carrier
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeBoundary
 open AmalgamationPlan Transform Value ExtOrd
 noncomputable section
@@ -70,14 +69,14 @@ def rows : Semantics (scheme D B hB) where
   orderly c _d := sem.orderly (toCell D B hB c) _
 
 theorem respects_iff (BJ : Finset ι × ℕ) (hBJ : BJ.1 ⊆ B)
-    (p : (scheme D B hB).below BJ → ExtOrd) :
+    (p : (scheme D B hB).SectionAt BJ) :
     RespectsSemanticsBelow (rows D B hB sem) BJ p ↔
       RespectsSemanticsBelow sem BJ (p ∘ (belowEquiv D B hB BJ hBJ).symm) :=
   respects_iff_of_equiv (belowEquiv D B hB BJ hBJ) (fun _ => rfl) (fun _ _ => Iff.rfl)
     (fun _ _ _ => rfl) p
 
 theorem pullback_respects {BJ : Finset ι × ℕ} (hBJ : BJ.1 ⊆ B)
-    {p : D.below BJ → ExtOrd} (hp : RespectsSemanticsBelow sem BJ p) :
+    {p : D.SectionAt BJ} (hp : sem.Lawful p) :
     RespectsSemanticsBelow (rows D B hB sem) BJ (p ∘ belowEquiv D B hB BJ hBJ) := by
   apply (respects_iff D B hB sem BJ hBJ _).mpr
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using hp

@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.LowFrame
 public import VaughtConjecture.Knight.LowOnlyGradeOneLift
 public import VaughtConjecture.Knight.WholeDonorBoundary
 
@@ -18,7 +19,6 @@ the installed ladder rows or discard future fields from its catalogue.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyOrderedLadder
 open Transform Value ExtOrd AmalgamationPlan CappedDonor
 open LowOnly RelativeLadderLayer
@@ -26,16 +26,14 @@ noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
+  (hroot : I.RootAgreement F)
 
 def field (d : Cell I.boundary) : Field I.left I.right :=
   match (OrderedFaceBoundary.enumeration I.leftScheme I.rightScheme I.shared).symm d with
   | .inl c => .inl c
   | .inr c => .inr (.inl c.1)
 
-theorem field_read (S : State I.left I.right) (d : Cell I.boundary) :
+theorem field_read (S : State I.left I.right) d :
     S.profile (field I d) = I.paste S.u S.v d := by
   unfold field WholeDonorBoundary.Input.paste OrderedFaceBoundarySemantics.paste
   change S.profile (match (OrderedFaceBoundary.enumeration
@@ -47,36 +45,24 @@ theorem field_read (S : State I.left I.right) (d : Cell I.boundary) :
 
 include hroot in
 theorem shared {S : State I.left I.right} (hs : F.root.Shared S.u S.v)
-    (i : Cell I.common.scheme) : S.u (I.shared.f i) = S.v (I.shared.g i) := by
+    i : S.u (I.shared.f i) = S.v (I.shared.g i) := by
   obtain ⟨a, ha, hb⟩ := hroot i
   exact ha ▸ hb ▸ hs a
 
 include hroot in
-theorem field_private {S : State I.left I.right} (hs : F.Admissible 1 S)
-    (d : Cell I.right.scheme) : S.profile (field I (I.rightFace.map d)) = S.v d := by
+theorem field_private {S} (hs : F.Admissible 1 S)
+    d : S.profile (field I (I.rightFace.map d)) = S.v d := by
   rw [field_read]
   exact I.paste_right S.u S.v (shared I F hroot hs.shared) d
 
 /-- The boundary has no ambient-full owner; no global bound on retained grades
 is imposed. -/
-theorem proper (hB : B ⊂ A) (hC : C ⊂ A) (d : Cell I.boundary) : I.boundary.scope d ≠ A := by
-  rcases OrderedFaceBoundaryRows.covered I.leftScheme I.rightScheme I.shared R I.isPlan
-      I.leftPlan_le I.rightPlan_le d with ⟨d, rfl⟩ | ⟨d, rfl⟩
-  · have hs := I.leftScheme.isPlan.subset_of_mem (I.leftScheme.scope_mem_plan d)
-    change I.boundary.scope (I.leftFace.map d) ≠ A
-    rw [show I.boundary.scope (I.leftFace.map d) = I.leftScheme.scope d from
-      congrArg Prod.fst (I.leftFace.index d)]
-    exact fun he => hB.not_ge (he ▸ hs)
-  · have hs := I.rightScheme.isPlan.subset_of_mem (I.rightScheme.scope_mem_plan d)
-    change I.boundary.scope (I.rightFace.map d) ≠ A
-    rw [show I.boundary.scope (I.rightFace.map d) = I.rightScheme.scope d from
-      congrArg Prod.fst (I.rightFace.index d)]
-    exact fun he => hC.not_ge (he ▸ hs)
+theorem proper (hB : B ⊂ A) (hC : C ⊂ A) d : I.boundary.scope d ≠ A := I.avoids hB hC d
 
 include hroot in
 /-- Every admitted grade-one vector is lawful on the actual inherited boundary.
 The proof uses its two original lawful restrictions and literal root equations. -/
-theorem boundary_lawful (S : State I.left I.right) (hs : F.Admissible 1 S) :
+theorem boundary_lawful S (hs : F.Admissible 1 S) :
     RespectsSemanticsBelow I.rows (A, 1) (fun d => S.profile (field I d.1)) := by
   have hn : 1 ≤ n := (Nat.succ_le_of_lt F.gap.K_pos).trans F.gap.K_le
   let u := CellScheme.zeroAbove (S.lowerP 1)
@@ -131,7 +117,7 @@ theorem boundary_lawful (S : State I.left I.right) (hs : F.Admissible 1 S) :
           (I.paste_right u v hshared c).symm)
   exact he ▸ hl
 
-def privateIncl (d : I.right.scheme.below (effC n 1)) : I.boundary.below (A, 1) :=
+def privateIncl (d : I.right.ClippedCells 1) : I.boundary.below (A, 1) :=
   ⟨I.rightFace.map d.1,
     I.boundary.isPlan.subset_of_mem (I.boundary.scope_mem_plan _), by
       have hg := congrArg Prod.snd (I.rightFace.index d.1)
@@ -139,34 +125,19 @@ def privateIncl (d : I.right.scheme.below (effC n 1)) : I.boundary.below (A, 1) 
       exact hg.le.trans (d.2.2.trans (min_le_left _ _))⟩
 
 include hroot in
-/-- Consistency is constructed on these same rows, independently of lifting. -/
-theorem consistent (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A) :
-    (rows I.boundary I.rows hA (field I) (F.fields 1) (proper I hB hC)).IsConsistent := by
-  apply RelativeLadderLayer.consistent _ _ _ _ _ _ I.consistent
-  intro a
-  obtain ⟨S, hs, he⟩ := a.property.2
-  have hvalues : (fun d : I.boundary.below (A, 1) => F.fields 1 a (field I d.1)) =
-      (fun d => S.profile (field I d.1)) := funext (fun d => (congrFun he _).symm)
-  exact hvalues ▸ boundary_lawful I F hroot S hs
-
-include hroot in
 /-- A complete positive-cap physical lift on the actual ordered two-face ladder.
 All semantic producer premises of `private_positive_lift` are discharged here.
 The remaining inputs are the legal cofaces, their literal root correspondence,
 proper placement, and the arbitrary lawful query. -/
 theorem private_positive_lift (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A)
-    {p : I.right.scheme.below (effC n 1) → ExtOrd}
+    {p}
     {q : (RelativeLadderLayer.carrier I.boundary hA
-      (X := Field I.left I.right) (Q := F.Anchor 1)).below (A, 1) → ExtOrd}
-    (hp : RespectsSemanticsBelow I.right.rows (effC n 1) p)
-    (hq : RespectsSemanticsBelow
-      (rows I.boundary I.rows hA (field I) (F.fields 1) (proper I hB hC)) (A, 1) q)
-    {γ : ExtOrd} (hγ : SelfVis 1 γ) (hpos : ⊥ < γ)
-    (hag : ∀ d, min (q (Family.privateAt F I.boundary hA (privateIncl I) d)) γ = min (p d) γ) :
-    ∃ w, RespectsSemanticsBelow
-      (rows I.boundary I.rows hA (field I) (F.fields 1) (proper I hB hC)) (A, 1) w ∧
-      (∀ d, w (Family.privateAt F I.boundary hA (privateIncl I) d) = p d) ∧
-      ∀ d, min (w d) γ = min (q d) γ :=
+      (X := Field I.left I.right) (Q := F.Anchor 1)).SectionAt (A, 1)}
+    (hp : I.right.rows.Lawful p)
+    (hq : (rows I.boundary I.rows hA (field I) (F.fields 1) (proper I hB hC)).Lawful q)
+    {γ} (hγ : SelfVis 1 γ) (hpos : ⊥ < γ)
+    (hag : CappedEq (q ∘ Family.privateAt F I.boundary hA (privateIncl I)) p γ) :
+    (rows I.boundary I.rows hA (field I) (F.fields 1) (proper I hB hC)).FaceLift (Family.privateAt F I.boundary hA (privateIncl I)) p q γ :=
   Family.private_positive_lift F I.boundary I.rows hA (field I) (proper I hB hC)
     (boundary_lawful I F hroot) (privateIncl I)
     (fun _ hs d => field_private I F hroot hs d.1) hp hq hγ hpos hag

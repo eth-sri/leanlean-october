@@ -17,14 +17,13 @@ sections with raw receiving fields.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingRankLift
 open Transform Value ExtOrd SharpWitnessComposition FullRowLifting
 open LadderScalarRendering
 noncomputable section
 
 /-- Every occupied rank has an actual field representative. -/
-theorem exists_field_rank {X : Type*} [Fintype X] (a : X → ExtOrd) {i : ℕ}
+theorem exists_field_rank {X : Type*} [Fintype X] (a : X → ExtOrd) {i}
     (hi : 0 < i) (hic : i ≤ (values a).card) : ∃ f, fieldRank a f = i := by
   classical
   let S := values a
@@ -54,12 +53,12 @@ def table {X : Type*} [Fintype X] (r : X → ℕ) (p : X → ExtOrd)
 /-- Ordered private requirements have a literal extension of the frozen rank
 prefix. Every high rank stays above the original cap. -/
 theorem exists_table {X : Type*} [Finite X] (a b : X → ℕ) (p : X → ExtOrd)
-    (f : ℕ → ExtOrd) {k : ℕ} {γ : ExtOrd}
+    f {k} {γ}
     (hk : 0 < k) (hf : Monotone f) (h0 : f 0 = ⊥)
     (hfv : ∀ i, SelfVis 1 (f i)) (hpv : ∀ d, SelfVis 1 (p d)) (hγ : SelfVis 1 γ)
     (hlow : ∀ i, i < k → f i < γ) (hreach : γ ≤ f k)
-    (hprefix : ∀ d, min (a d) k = min (b d) k)
-    (hag : ∀ d, min (f (a d)) γ = min (p d) γ)
+    (hprefix : CappedEq a b k)
+    (hag : CappedEq (f ∘ a) p γ)
     (horder : ∀ d e, b d ≤ b e → p d ≤ p e) :
     ∃ g, Monotone g ∧ g 0 = ⊥ ∧ (∀ i, SelfVis 1 (g i)) ∧
       (∀ i, i < k → g i = f i) ∧ γ ≤ g k ∧ ∀ d, g (b d) = p d := by
@@ -108,7 +107,7 @@ theorem exists_table {X : Type*} [Finite X] (a b : X → ℕ) (p : X → ExtOrd)
 /-- A bounded grade-one map reads every actual rung, including the long tip.
 Lawfulness of its physical image is subsequently obtained by positive-cap
 transport, not by claiming arbitrary faithful composition. -/
-theorem exists_rank_decoder (H : ℕ) (g : ℕ → ExtOrd) (hg : Monotone g)
+theorem exists_rank_decoder H g (hg : Monotone g)
     (h0 : g 0 = ⊥) (hv : ∀ i, SelfVis 1 (g i)) :
     ∃ τ, BoundedMap 1 τ ∧ ∀ i, i ≤ H → τ (SupportLadderRows.source H i) = g i := by
   let s : Fin (H + 1) → ExtOrd := fun i => SupportLadderRows.source H i

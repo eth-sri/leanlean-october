@@ -5,7 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.RelabelWitness
+public import VaughtConjecture.Knight.ReferenceOrbitRow
+public import VaughtConjecture.Knight.MixedRows
+public import VaughtConjecture.Knight.PositiveNormalization
+public import VaughtConjecture.Knight.RestrictedComposition
 
 /-! # The orbit-block witness
 
@@ -27,7 +30,7 @@ open Transform Value ExtOrd
 
 /-! ## Replacement orbits of a grade-one self-visible value -/
 
-theorem evr_eq_bot_iff {a : ExtOrd} (k i : ℕ) : extVisibilityReplace a k i = ⊥ ↔ a = ⊥ := by
+theorem evr_eq_bot_iff {a} k i : extVisibilityReplace a k i = ⊥ ↔ a = ⊥ := by
   constructor
   · intro h; by_contra ha; exact extVisibilityReplace_ne_bot ha k i h
   · rintro rfl; exact extVisibilityReplace_bot _ _

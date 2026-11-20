@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.StableAnchor
-public import VaughtConjecture.Knight.ProvisionalOffset
 
 /-! # Anchors at infinity are exactly the finite stable top values
 

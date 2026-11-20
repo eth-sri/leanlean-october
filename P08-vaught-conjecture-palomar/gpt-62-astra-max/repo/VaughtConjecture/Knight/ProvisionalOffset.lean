@@ -38,8 +38,6 @@ here, not strengthened. -/
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd StageType Filter
@@ -76,11 +74,6 @@ theorem emb_trans (y : RootedCover x) : (emb y).trans y.1.tuple = x.tuple := y.2
 theorem emb_typeMap (y : RootedCover x) : typeMap (emb y) y.1.type = some x.type :=
   y.2.choose_spec.2
 
-/-- The embedding is determined by the tuples. -/
-theorem emb_eq (y : RootedCover x) {f : Fin x.arity ↪ Fin y.1.arity}
-    (hf : f.trans y.1.tuple = x.tuple) : emb y = f :=
-  LabelledExt.emb_unique (emb_trans y) hf
-
 /-- The actual transport of a cell of `x` into a rooted cover. -/
 noncomputable def cell (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) :
     Cell y.1.type.scheme.scheme :=
@@ -94,7 +87,7 @@ theorem cell_eq (y : RootedCover x) {f : Fin x.arity ↪ Fin y.1.arity}
       g = f → mapCell hg Xi = mapCell hf Xi := by
     rintro g hg rfl
     rfl
-  exact h (emb y) (emb_typeMap y) (emb_eq y hft)
+  exact h (emb y) (emb_typeMap y) (LabelledExt.emb_unique (emb_trans y) hft)
 
 /-- Transport composes along rooted covers. -/
 theorem cell_trans {y z : RootedCover x} {g : Fin y.1.arity ↪ Fin z.1.arity}
@@ -132,11 +125,6 @@ theorem value_mono (Xi : Cell x.type.scheme.scheme) :
     z.1.type.someProvisionalValue (cell z Xi)
   rw [cell_trans hgt hg Xi]
   exact provisional_le_mapCell_of_least α.2 hg (cell y Xi)
-
-/-- A rooted cover whose transported provisional value is `γ` lies in the stable set. -/
-theorem mem_stableSet (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) :
-    y.1 ∈ stableSet x Xi (value y Xi) :=
-  ⟨emb y, emb_trans y, emb_typeMap y, isProvisionalValue_value y Xi⟩
 
 /-! ### Top cells: the natural offset -/
 
@@ -190,7 +178,7 @@ theorem stabilizesTo_of_eventually {k : ℕ} (h : ∀ᶠ y in atTop, offset Xi h
   let w' : RootedCover x := ⟨w, i.2.trans hiw⟩
   have hw : value w' Xi = ofOrd (α.1 + k) := by
     rw [value_eq_offset Xi htop w', hi w' hiw]
-  exact ⟨w, hw ▸ mem_stableSet w' Xi, haw⟩
+  exact ⟨w, hw ▸ ⟨emb w', emb_trans w', emb_typeMap w', isProvisionalValue_value w' Xi⟩, haw⟩
 
 include hcons hcov in
 /-- Escaping offsets stabilize to no proper value. -/

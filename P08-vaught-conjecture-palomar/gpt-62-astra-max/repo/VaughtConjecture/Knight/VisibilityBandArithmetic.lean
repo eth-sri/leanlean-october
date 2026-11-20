@@ -15,8 +15,6 @@ ratchet. Public declarations retain their original statements and proofs.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Value ExtOrd

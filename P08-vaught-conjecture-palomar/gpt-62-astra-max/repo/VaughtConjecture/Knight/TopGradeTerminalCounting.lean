@@ -7,9 +7,8 @@ module
 
 public import VaughtConjecture.Knight.LowOnlyResidualClassificationCore
 public import VaughtConjecture.Knight.TopSupportRigidCore
-public import VaughtConjecture.Knight.TopGradeDichotomy
 public import VaughtConjecture.Knight.CountableTerminalFibres
-public import VaughtConjecture.CountableCover
+public import Mathlib.Data.Set.Countable
 
 /-! # Counting terminal classes directly from top-grade behaviour
 
@@ -32,7 +31,6 @@ as hypotheses here and supplied in `ConstructedTerminalCountability`.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.TopGradeTerminalCounting
 open TypeTower StageType KnightRealization Value ExtOrd TopSupport Cardinal
 noncomputable section
@@ -43,7 +41,11 @@ variable {α : LimitStage} {M : Type w} {W : KnightRealization α M}
 covering it, make the family countable. -/
 theorem countable_of_cover {ι κ : Type*} [Countable κ] (P : κ → ι → Prop)
     (hsub : ∀ c i j, P c i → P c j → i = j) (hcover : ∀ i, ∃ c, P c i) : Countable ι :=
-  CountableCover.countable_of_cover P hsub hcover
+  by
+    choose c hc using hcover
+    refine Function.Injective.countable (f := c) fun i j h => hsub (c i) i j (hc i) ?_
+    rw [h]
+    exact hc j
 
 /-- **Eventual top grade zero gives a rigid core**: every actual top grade is then zero,
 so no actual cover has a top cell, and every tuple (in particular the empty one) is a
@@ -58,15 +60,6 @@ theorem rigidCore_of_isCoinitial_zero
     (le_csSup c.topGrades_bddAbove (grade_mem_topGrades (mem_topSet.mp hd))).trans
       (topGrade_le_of_isCoinitial hcoin ⟨m, C, c, hc⟩)
   exact ((c.scheme.scheme.grade_pos d).ne' (Nat.le_zero.mp hg)).elim
-
-/-- Without a globally rigid core, an eventual top grade is positive. -/
-theorem pos_of_isCoinitial {K : ℕ}
-    (hcoin : KnightRealization.IsCoinitial {x : W.LabelledExt | x.type.topGrade = K})
-    (hres : ∀ {k : ℕ} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore W B) : 0 < K := by
-  rcases Nat.eq_zero_or_pos K with rfl | hK
-  · exact (hres (Function.Embedding.ofIsEmpty : Fin 0 ↪ M)
-      (rigidCore_of_isCoinitial_zero hcoin _)).elim
-  · exact hK
 
 /-- **At most one coreless class per eventual top grade**: two countable models at the
 same stage without globally rigid cores, whose top grades are eventually the same `K`,
@@ -84,7 +77,11 @@ theorem nonempty_iso_of_isCoinitial {M₁ M₂ : Type w} [Countable M₁] [Count
   exact LowOnlyResidualClassification.nonempty_iso_of_receiving hM₁.consistent hM₁.covering
     (OrdinaryModelReceiving.finiteCutReceiving hM₁) hM₂.consistent hM₂.covering
     (OrdinaryModelReceiving.finiteCutReceiving hM₂) hcoin₁ hcoin₂
-    (pos_of_isCoinitial hcoin₁ hres₁) hres₁ hres₂
+    (by
+       rcases Nat.eq_zero_or_pos K with rfl | hK
+       · exact ((fun {k} => hres₁) (Function.Embedding.ofIsEmpty : Fin 0 ↪ M₁)
+           (rigidCore_of_isCoinitial_zero hcoin₁ _)).elim
+       · exact hK) hres₁ hres₂
 
 /-- **Counting by top-grade conditions.** At a countable stage, a pairwise non-isomorphic
 family of countable models is countable when its growth members are hollow and hollow

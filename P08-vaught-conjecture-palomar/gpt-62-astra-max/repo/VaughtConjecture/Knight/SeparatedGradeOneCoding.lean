@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.SeparatedGradeOneMute
+public import VaughtConjecture.Knight.VisibleOrderInterpolation
+public import Mathlib.Logic.Relation
 public import VaughtConjecture.Knight.SourceCode
 
 /-! # Producing separated source profiles by one common codebook

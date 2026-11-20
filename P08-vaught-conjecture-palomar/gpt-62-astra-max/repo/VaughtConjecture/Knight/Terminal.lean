@@ -245,7 +245,7 @@ itself, an `∞`-cell `Σ` with `E(Θ)(Σ) ⊔⁺_{K^p} K^p ≤ E(Θ)(Ξ)` — t
 def ProvisionalCap (p : S α n) (Xi : Cell p.scheme.scheme) : Prop :=
   ∃ (Θ : Cell p.scheme.scheme)
     (hXi : GradedLe (p.scheme.scheme.cell Xi) (p.scheme.scheme.cell Θ))
-    (Sig : p.scheme.scheme.below (p.scheme.scheme.cell Θ)),
+    (Sig : p.scheme.scheme.RowDomain Θ),
     p.scheme.scheme.scope Θ = Finset.univ ∧ p.scheme.scheme.grade Θ = p.topGrade ∧
     p.label Θ = ⊤ ∧ p.label Sig.1 = ⊤ ∧
     extVisibilityReplace (p.scheme.rows.E Θ Sig) p.topGrade p.topGrade ≤
@@ -403,14 +403,6 @@ theorem isProvisionalValue_someProvisionalValue (p : S α n) (Xi : Cell p.scheme
       exact Or.inr (Or.inr ⟨htop, hcap, i, hband, hval⟩)
   · exact Or.inl ⟨htop, someProvisionalValue_of_ne_top htop⟩
 
-/-- No provisional value is `∞` — the paper's codomain `{-∞} ∪ [0, α + ω)` of Def. 5.3.1. -/
-theorem IsProvisionalValue.ne_top {p : S α n} {Xi : Cell p.scheme.scheme} {v : ExtOrd}
-    (h : p.IsProvisionalValue Xi v) : v ≠ ⊤ := by
-  rcases h with ⟨hne, rfl⟩ | ⟨-, -, rfl⟩ | ⟨-, -, i, -, rfl⟩
-  · exact hne
-  · exact ofOrd_ne_top _
-  · exact ofOrd_ne_top _
-
 /-- Every provisional value is `≤ α + K^p` (the conservative-estimate reading after
 Def. 5.3.1). -/
 theorem IsProvisionalValue.le {p : S α n} {Xi : Cell p.scheme.scheme} {v : ExtOrd}
@@ -477,30 +469,7 @@ def HasStableValue (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M) (p :
   (γ < ofOrd (α.1 + Ordinal.omega0) ∧ R.StabilizesTo t p Xi γ) ∨
   (γ = ⊤ ∧ ∀ δ : ExtOrd, δ < ofOrd (α.1 + Ordinal.omega0) → ¬ R.StabilizesTo t p Xi δ)
 
-/-- The stabilized values realized in `R`: all values `M⁺(Ξ)`, over all cells `Ξ` of all
-realized types (the index set of the supremum in Def. 5.4.1). -/
-def stableSpectrum (R : KnightRealization α M) : Set ExtOrd :=
-  {γ | ∃ (n : ℕ) (t : Fin n ↪ M) (p : S α.1 n), R.eval t = some p ∧
-    ∃ Xi : Cell p.scheme.scheme, R.HasStableValue t p Xi γ}
-
 /-! ### Characteristic arity (Def. 5.4.1) -/
-
-/-- **Def. 5.4.1, fixed `K`**: `α + K` is the supremum of all stabilized values `M⁺(Ξ)`
-(`IsLUB`: no completeness of `ExtOrd` is invoked, and "is the supremum" is read as "is the
-least upper bound", not "is attained").  This is **not** Knight-VC's `charArity`
-(distinguishing arity) — banned identification 2. -/
-def IsCharacteristicArity (R : KnightRealization α M) (K : ℕ) : Prop :=
-  IsLUB R.stableSpectrum (ofOrd (α.1 + K))
-
-/-- **The characteristic arity** `K ∈ ω ∪ {∞}` of `R` (Def. 5.4.1): the finite `K` with
-`α + K` the supremum of the stabilized values, and `∞` when there is none.
-
-**† provisional** (`docs/TERMINOLOGY.md`): a faithful transcription of Def. 5.4.1, but not
-presented as settled until stabilized-value functionality (#51) and occurrence/witness-choice
-independence (#31/#47/#57) are proved. -/
-noncomputable def characteristicArity (R : KnightRealization α M) : ℕ∞ :=
-  open Classical in
-  if h : ∃ K : ℕ, R.IsCharacteristicArity K then (Nat.find h : ℕ∞) else ⊤
 
 /-! ### Anchors at infinity and hollowness (Def. 5.4.2) -/
 
@@ -520,7 +489,7 @@ def IsInfinityAnchor (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M) (p
     f.trans s = t → R.eval s = some q →
     ∀ (hpq : typeMap f q = some p) (Θ : Cell q.scheme.scheme),
       K' ≤ q.scheme.scheme.grade Θ → q.label Θ = ⊤ →
-      ∀ Sig : q.scheme.scheme.below (q.scheme.scheme.cell Θ), q.label Sig.1 = ⊤ →
+      ∀ Sig : q.scheme.scheme.RowDomain Θ, q.label Sig.1 = ⊤ →
       ∀ hXi : GradedLe (q.scheme.scheme.cell (mapCell hpq Xi)) (q.scheme.scheme.cell Θ),
         q.scheme.rows.E Θ ⟨mapCell hpq Xi, hXi⟩ ≤
           extVisibilityReplace (q.scheme.rows.E Θ Sig) K' K' ∧
@@ -549,41 +518,12 @@ together; isomorphism transport is proved once, for the profile.  Core data (Def
 is owned by the linked stop / terminal realization (#31); `TerminalCode` (#57) encodes the
 classified branch from this profile together with that core information. -/
 
-/-- The **terminal profile** of a realization: its characteristic arity (Def. 5.4.1) and its
-hollowness (Def. 5.4.2), derived together from the one underlying realization.  `TerminalCode`
-(#57) encodes the *classified branch*: it is built from this profile together with the core
-information owned by the linked stop / terminal realization (#31) — no promise that a chosen
-core becomes a further field here. -/
-structure TerminalProfile : Type where
-  /-- The characteristic arity `K ∈ ω ∪ {∞}` (Def. 5.4.1). -/
-  charArity : ℕ∞
-  /-- Hollowness (Def. 5.4.2): no anchor at infinity. -/
-  hollow : Prop
-
-/-- The terminal profile of `R`: the single function producing all terminal invariants of the
-one datum `R`. -/
-noncomputable def terminalProfile (R : KnightRealization α M) : TerminalProfile :=
-  { charArity := R.characteristicArity
-    hollow := R.IsHollow }
-
-@[simp] theorem terminalProfile_charArity (R : KnightRealization α M) :
-    R.terminalProfile.charArity = R.characteristicArity := rfl
-
-@[simp] theorem terminalProfile_hollow (R : KnightRealization α M) :
-    R.terminalProfile.hollow = R.IsHollow := rfl
-
 /-! ### Isomorphism transport (the acceptance test of #48)
 
 An isomorphism `e : M ≃ N` of realizations moves labelled tuples bijectively and preserves
 labels *on the nose* (`Realization.IsIso`), so every invariant of this module — each an
 intrinsic statement over the labelled tuples of the one datum — transports.  The bundled
 transport is `IsIso.terminalProfile_eq`; the invariant-level statements are its projections. -/
-
-section Iso
-
-variable {N : Type w'} {R : KnightRealization α M} {R₂ : KnightRealization α N} {e : M ≃ N}
-
-end Iso
 
 end KnightRealization
 

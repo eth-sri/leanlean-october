@@ -21,8 +21,6 @@ the incomplete boundary, or of a future mixed completion, is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.OrderedFaceRestriction
 
 open AmalgamationPlan Transform Value ExtOrd
@@ -75,13 +73,13 @@ theorem scheme_eq : K.restrictFace f (visible D K f hB hplan) = D.scheme := by
     · change K.grade (F.map c) = D.scheme.grade c
       exact congrArg Prod.snd (F.index c)
 
-private theorem E_congr {c c' : Cell K} (h : c = c') (x : K.below (K.cell c)) :
+private theorem E_congr {c c' : Cell K} (h : c = c') (x : K.RowDomain c) :
     sem.E c x = sem.E c' ⟨x.1, h ▸ x.2⟩ := by
   subst h
   rfl
 
 /-- Every restricted row argument is exactly the corresponding original argument. -/
-theorem row_eq (c : Cell D.scheme) (d : D.scheme.below (D.scheme.cell c)) :
+theorem row_eq (c : Cell D.scheme) (d : D.scheme.RowDomain c) :
     (sem.restrictFace f (visible D K f hB hplan)).E
       (Fin.cast (card_face D K sem f hB F hmono hplan).symm c)
       ⟨Fin.cast (card_face D K sem f hB F hmono hplan).symm d.1, by
@@ -95,11 +93,3 @@ theorem row_eq (c : Cell D.scheme) (d : D.scheme.below (D.scheme.cell c)) :
 
 end VaughtConjecture.Knight.OrderedFaceRestriction
 
-namespace VaughtConjecture.Knight.WholeDonorBoundary.Input
-
-open AmalgamationPlan
-
-variable {n m nL nR : ℕ} {B C : Finset (Fin n)}
-  {R : Finset (Finset (Fin n))} (I : Input Finset.univ B C R m nL nR)
-
-end VaughtConjecture.Knight.WholeDonorBoundary.Input

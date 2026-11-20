@@ -25,11 +25,11 @@ variable {n K : ℕ} {C : SemScheme n} (L : SourceGap C K)
 
 /-- A positive-cap frontier release on the unchanged private scheme. The root may have
 arbitrarily high grades; only its low part passes through the owner's cap. -/
-theorem exists_release {j : ℕ} (hj : K ≤ j)
-    {v : C.scheme.below (effC n j) → ExtOrd}
-    (hv : RespectsSemanticsBelow C.rows (effC n j) v) {γ : ExtOrd}
+theorem exists_release {j} (hj : K ≤ j)
+    {v}
+    (hv : C.rows.Lawful v) {γ}
     (hγ : SelfVis (effC n j).2 γ) (hγpos : γ ≠ ⊥) (he : γ < L.eC hj v)
-    {A : Finset (Fin n)} (hA : A ∈ C.scheme.plan) (hAc : A ⊆ C.scheme.scope L.c)
+    {A} (hA : A ∈ C.scheme.plan) (hAc : A ⊆ C.scheme.scope L.c)
     (T : Cell C.scheme → Prop)
     (htop : ∀ a : C.scheme.below (faceIndex A j), T a.1 → C.scheme.grade a.1 ≤ K)
     (hgap : ∀ (a : C.scheme.below (faceIndex A K))
@@ -37,22 +37,26 @@ theorem exists_release {j : ℕ} (hj : K ≤ j)
       T a.1 → L.h < C.rows.E L.c ⟨a.1, ha⟩)
     (hshield : ∀ a : C.scheme.below (faceIndex A j), ¬ T a.1 →
       v (CellScheme.below.mono (faceIndex_le A j) a) < γ) :
-    ∃ v' : C.scheme.below (effC n j) → ExtOrd,
-      RespectsSemanticsBelow C.rows (effC n j) v' ∧
+    ∃ v',
+      C.rows.Lawful v' ∧
       (∀ a : C.scheme.below (faceIndex A j),
         v' (CellScheme.below.mono (faceIndex_le A j) a) =
           v (CellScheme.below.mono (faceIndex_le A j) a)) ∧
-      (∀ d, min (v' d) γ = min (v d) γ) ∧
+      CappedEq v' v γ ∧
       v' (L.rC hj) = γ ∧ v (L.cC hj) ≤ v' (L.cC hj) ∧ L.eC hj v' = γ := by
   have hγK : SelfVis K γ := hγ.mono (le_min hj L.K_le)
   set w₀ := L.lowD hj v
   have hw₀ := L.lowD_respects hj hv
   have hLvis := L.c_selfVis hw₀
-  have hγL : γ < w₀ L.cL := he.trans_le (L.e_le_c _)
-  have hγr : γ ≤ w₀ L.r := L.le_r_of_lt_e hγK he
+  have hγL : γ < w₀ L.cL := he.trans_le (min_le_left _ _)
+  have hγr : γ ≤ w₀ L.r := by
+          by_contra hlt
+          have h1 : extVisibilityReplace (w₀ L.r) K K ≤ γ :=
+            evr_le_of_le_selfVis hγK le_rfl le_rfl (not_le.mp hlt).le
+          exact absurd ((he.trans_le (min_le_right _ _)).trans_le h1) (lt_irrefl _)
   obtain ⟨τ, hτ, -, hread⟩ := L.exists_witness hw₀
   have hν : Witness (gTop K) (releaseShifter τ L.h γ) :=
-    releaseShifter_witness hτ L.h_selfVis hγK hγpos
+    releaseShifter_witness hτ (TopSupport.selfVis_evr_self K _) hγK hγpos
   set w : L.Dom → ExtOrd := fun d => releaseShifter τ L.h γ (C.rows.E L.c d)
   have hE := C.consistent L.c
   have hcapL : SelfVis (C.scheme.cell L.c).2 (w₀ L.cL) := by
@@ -63,8 +67,8 @@ theorem exists_release {j : ℕ} (hj : K ≤ j)
     have heq : (fun d : L.Dom => τ (C.rows.E L.c d)) =
         fun d => min (w₀ d) (w₀ L.cL) := funext hread
     rw [heq]; exact hw₀.cap hcapL
-  have hw : RespectsSemanticsBelow C.rows (C.scheme.cell L.c) w := by
-    refine (map_respects_iff_rowBlockBottom hE L.grade_dom (boundedMap_of_witness hν)).mpr ?_
+  have hw : C.rows.Lawful w := by
+    refine (map_respects_iff_rowBlockBottom hE (fun d => LE.le.trans_eq d.property.right L.c_grade) (boundedMap_of_witness hν)).mpr ?_
     refine rowBlockBottom_of_same_pattern (rowBlockBottom_of_respects ht) fun d => ?_
     exact releaseShifter_eq_bot_iff hγpos _
   have hwc : w L.cL = w₀ L.cL := by
@@ -74,7 +78,7 @@ theorem exists_release {j : ℕ} (hj : K ≤ j)
     change releaseShifter τ L.h γ (C.rows.E L.c L.r) = _
     rw [releaseShifter_of_le L.srcE_r_le_h, hread]
     exact min_eq_right (le_min hγr hγL.le)
-  have hwcap : ∀ d, min (w d) γ = min (w₀ d) γ := by
+  have hwcap : CappedEq w w₀ γ := by
     intro d
     change min (releaseShifter τ L.h γ (C.rows.E L.c d)) γ = _
     unfold releaseShifter
@@ -98,15 +102,16 @@ theorem exists_release {j : ℕ} (hj : K ≤ j)
       split_ifs
       · rw [hread, min_eq_left ((min_le_left _ _).trans hlt.le)]
       · rw [hread]
-  have hrest : ∃ w' : L.Dom → ExtOrd,
-      RespectsSemanticsBelow C.rows (C.scheme.cell L.c) w' ∧
-      (∀ d, min (w' d) (w₀ L.cL) = min (w d) (w₀ L.cL)) ∧
+  have hrest : ∃ w',
+      C.rows.Lawful w' ∧
+      CappedEq w' w (w₀ L.cL) ∧
       ∀ a : C.scheme.below (faceIndex A K),
         w' (CellScheme.below.mono hfaceLe a) = w₀ (CellScheme.below.mono hfaceLe a) := by
     by_cases hk : 0 < min A.card K
     · apply C.bountiful.extend (faceIndex_mem hA hk) (C.scheme.cell_mem L.c)
         hfaceLe (hw₀.mono hfaceLe) hw hcapL
       intro a
+      change min (w (CellScheme.below.mono hfaceLe a)) _ = _
       rw [hwface, min_assoc, min_self]
     · exact ⟨w, hw, fun _ => rfl, fun a => (faceIndex_absent hk a).elim⟩
   obtain ⟨w', hw', hcap', hface'⟩ := hrest
@@ -118,7 +123,7 @@ theorem exists_release {j : ℕ} (hj : K ≤ j)
     have h := hcap' L.cL
     rw [hwc, min_self] at h
     exact h.symm ▸ min_le_left _ _
-  have hw'cap : ∀ d, min (w' d) γ = min (w₀ d) γ := by
+  have hw'cap : CappedEq w' w₀ γ := by
     intro d
     calc min (w' d) γ = min (min (w' d) (w₀ L.cL)) γ := by
             rw [min_assoc, min_eq_right hγL.le]

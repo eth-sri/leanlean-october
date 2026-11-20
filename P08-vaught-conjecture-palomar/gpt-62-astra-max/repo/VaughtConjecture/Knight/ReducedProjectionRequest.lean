@@ -5,8 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReductReferenceContext
-public import VaughtConjecture.Knight.EntailmentDomainCashout
+public import VaughtConjecture.Knight.ReferenceContext
 
 /-! # One requested reduced projection over the actual context: what the request forces
 
@@ -88,12 +87,6 @@ universe w
 
 /-! ## Exact below `β`, at least `β` above -/
 
-section LabelSplit
-
-variable {β : Ordinal.{0}}
-
-end LabelSplit
-
 /-! ## The required domain and visible face -/
 
 section RequiredFace
@@ -135,27 +128,6 @@ end RequiredFace
 
 /-! ## The root part of every projection is the realized reduced root -/
 
-section RootPart
-
-variable {M : Type w} {α β : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
-  {reqs : List BlockRequest} (C : ReferenceContext R t reqs) (hβ : β ≤ α)
-
-end RootPart
-
 /-! ## Geometry: the request face forces a pivot of the context's plan outside the root -/
-
-section Geometry
-
-variable {m : ℕ}
-
-theorem image_castSuccEmb_univ :
-    (Finset.univ : Finset (Fin m)).image Fin.castSuccEmb =
-      (Finset.univ : Finset (Fin (m + 1))).erase (Fin.last m) := by
-  ext x
-  simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_erase, and_true,
-    Fin.castSuccEmb_apply]
-  exact Fin.exists_castSucc_eq
-
-end Geometry
 
 end VaughtConjecture.Knight

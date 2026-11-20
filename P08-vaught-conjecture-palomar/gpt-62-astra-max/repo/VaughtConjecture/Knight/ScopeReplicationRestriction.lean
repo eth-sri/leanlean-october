@@ -17,7 +17,6 @@ or hidden-original completion is assumed in this generic lemma.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationRestriction
 open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier
 open ScopeReplicationSemantics ScopeReplicationAuxExtension
@@ -31,13 +30,13 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (hUV : U ⊆ V)
 
 include hU hmU hjU hV hmV hjV in
-theorem auxiliary_eq {p q : (scheme D B C).below (V, j) → ExtOrd}
-    (hp : RespectsSemanticsBelow (rows D B C hcover sem) (V, j) p)
-    (hq : RespectsSemanticsBelow (rows D B C hcover sem) (V, j) q)
+theorem auxiliary_eq {p q}
+    (hp : (rows D B C hcover sem).Lawful p)
+    (hq : (rows D B C hcover sem).Lawful q)
     (hag : ∀ d : (scheme D B C).below (U, j),
       p (CellScheme.below.mono (show GradedLe (U, j) (V, j) from ⟨hUV, le_rfl⟩) d) =
       q (CellScheme.below.mono (show GradedLe (U, j) (V, j) from ⟨hUV, le_rfl⟩) d))
-    (z : (scheme D B C).below (V, j)) (hz : D.scope (erase D B C z.1) = A) :
+    z (hz : D.scope (erase D B C z.1) = A) :
     p z = q z := by
   let p₀ := p ∘ CellScheme.below.mono (show GradedLe (U, j) (V, j) from ⟨hUV, le_rfl⟩)
   have hpz := cap D B C hcover sem hU hmU hjU hV hmV hjV hUV p₀ hp

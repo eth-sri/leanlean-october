@@ -46,7 +46,7 @@ namespace Value
 
 /-- An ordinal in the band `[lam, lam + K)` of a multiple `lam` of `ω` has limit part `lam`
 and finite part `< K`. -/
-theorem limitPart_eq_and_finitePart_lt_of_band {lam ν : Ordinal.{0}}
+theorem limitPart_eq_and_finitePart_lt_of_band {lam ν}
     (hlam : limitPart lam = lam) {K : ℕ} (h₁ : lam ≤ ν) (h₂ : ν < lam + K) :
     limitPart ν = lam ∧ finitePart ν < K := by
   have hle : lam ≤ limitPart ν := by have := limitPart_mono h₁; rwa [hlam] at this
@@ -65,7 +65,7 @@ theorem limitPart_eq_and_finitePart_lt_of_band {lam ν : Ordinal.{0}}
   exact Nat.cast_lt.mp ((add_lt_add_iff_left lam).mp h₂)
 
 /-- Below cap level, visibility replacement at `k ≤ K` with `j ≤ k` stays at or below cap. -/
-theorem visibilityReplace_le_cap_of_lt {lam ρ : Ordinal.{0}} (hlam : limitPart lam = lam)
+theorem visibilityReplace_le_cap_of_lt {lam ρ} (hlam : limitPart lam = lam)
     {K k j : ℕ} (hρ : ρ < lam + K) (hk : k ≤ K) (hj : j ≤ k) :
     visibilityReplace ρ k j ≤ lam + K := by
   unfold visibilityReplace ordinalReplace
@@ -79,18 +79,8 @@ theorem visibilityReplace_le_cap_of_lt {lam ρ : Ordinal.{0}} (hlam : limitPart 
     exact add_le_add hlim ((Nat.cast_le (α := Ordinal.{0})).mpr (hj.trans hk))
   · exact hρ.le
 
-/-- Visibility replacement does not drop below a multiple of `ω` that bounds the input. -/
-theorem le_visibilityReplace_of_le_of_limitPart_eq {lam ν : Ordinal.{0}}
-    (hlam : limitPart lam = lam) (hν : lam ≤ ν) (k i : ℕ) : lam ≤ visibilityReplace ν k i := by
-  unfold visibilityReplace ordinalReplace
-  split_ifs with h
-  · have := limitPart_mono hν
-    rw [hlam] at this
-    exact this.trans (le_add_of_nonneg_right zero_le)
-  · exact hν
-
 /-- Replacing the finite part downwards (`i < fp ν < k`) is undone by replacing it back. -/
-theorem visibilityReplace_visibilityReplace_finitePart {ν : Ordinal.{0}} {k i : ℕ}
+theorem visibilityReplace_visibilityReplace_finitePart {ν} {k i}
     (hfp : finitePart ν < k) (hi : i < k) :
     visibilityReplace (visibilityReplace ν k i) k (finitePart ν) = ν := by
   have h1 : visibilityReplace ν k i = limitPart ν + i := by
@@ -105,7 +95,7 @@ end Value
 namespace ExtOrd
 
 /-- The band map commutes with `min` at or above `lam`. -/
-theorem bandMap_min {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (K : ℕ) {x y : ExtOrd}
+theorem bandMap_min {α lam} (hlam : limitPart lam = lam) K {x y}
     (hx : ofOrd lam ≤ x) (hy : ofOrd lam ≤ y) :
     bandMap α lam K (min x y) = min (bandMap α lam K x) (bandMap α lam K y) := by
   rcases le_total x y with h | h
@@ -113,7 +103,7 @@ theorem bandMap_min {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (K : ℕ
   · rw [min_eq_right h, min_eq_right (bandMap_mono_of_le hlam K hy h)]
 
 /-- At or above cap level the band map is the cap `α + K`. -/
-theorem bandMap_of_cap_le {α lam : Ordinal.{0}} {K : ℕ} {x : ExtOrd}
+theorem bandMap_of_cap_le {α lam} {K : ℕ} {x}
     (hx : ofOrd (lam + K) ≤ x) : bandMap α lam K x = ofOrd (α + K) := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
   · exact absurd hx (not_le.mpr (bot_lt_ofOrd _))
@@ -122,8 +112,8 @@ theorem bandMap_of_cap_le {α lam : Ordinal.{0}} {K : ℕ} {x : ExtOrd}
 
 /-- Two values at or above `lam`, strictly ordered, with the same band-map value, are both at
 cap level (the band map is injective on the band `[lam, lam + K)`). -/
-theorem cap_of_bandMap_eq_of_lt {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (K : ℕ)
-    {x y : ExtOrd} (hx : ofOrd lam ≤ x) (hxy : x < y)
+theorem cap_of_bandMap_eq_of_lt {α lam} (hlam : limitPart lam = lam) K
+    {x y} (hx : ofOrd lam ≤ x) (hxy : x < y)
     (h : bandMap α lam K x = bandMap α lam K y) : ofOrd (lam + K) ≤ x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
   · exact absurd hx (not_le.mpr (bot_lt_ofOrd _))
@@ -162,11 +152,11 @@ open Transform in
 `g₁ k ≥ lam + K` stays at cap level under every visibility replacement at `k`: if the
 replacement lowers `a` (`i < fp a < k`), clause 5 of `σ₁` at the lowered point `⊔⁺_k i a`
 (which `⊔⁺_k (fp a)` sends back to `a`) would otherwise pin `σ₁ a ≤ lam + K`. -/
-theorem cap_le_of_witness {g₁ : ℕ → ExtOrd} {σ₁ : ExtOrd → ExtOrd} (hσ₁mono : Monotone σ₁)
-    (hσ₁5 : ∀ (a : ExtOrd) (k : ℕ), σ₁ a ≤ g₁ k → ∀ i : ℕ, i ≤ k →
+theorem cap_le_of_witness {g₁ : ℕ → ExtOrd} {σ₁} (hσ₁mono : Monotone σ₁)
+    (hσ₁5 : ∀ a k, σ₁ a ≤ g₁ k → ∀ i : ℕ, i ≤ k →
       σ₁ (extVisibilityReplace a k i) = extVisibilityReplace (σ₁ a) k i)
-    {lam : Ordinal.{0}} (hlam : limitPart lam = lam) {K k i : ℕ} (hk : k ≤ K) (_hi : i ≤ k)
-    {a : ExtOrd} (hcap : ofOrd (lam + K) ≤ g₁ k) (hlt : g₁ k < σ₁ a) :
+    {lam} (hlam : limitPart lam = lam) {K k i : ℕ} (hk : k ≤ K) (_hi : i ≤ k)
+    {a} (hcap : ofOrd (lam + K) ≤ g₁ k) (hlt : g₁ k < σ₁ a) :
     ofOrd (lam + K) ≤ σ₁ (extVisibilityReplace a k i) := by
   have hcapa : ofOrd (lam + K) ≤ σ₁ a := hcap.trans hlt.le
   rcases ExtOrd.cases a with rfl | rfl | ⟨ν, rfl⟩
@@ -210,21 +200,21 @@ open Transform in
 `⟨g, σ⟩ : p ⇒ q` with `g = ⊤` up to `J` and `q` valued below `α` or `⊤`; `⟨g₁, σ₁⟩ : p ⇒ r`
 arbitrary; `q'` keeps `q` where `q < α` and is the band map of `r` (a value `≥ lam`) where
 `q = ⊤`.  Then `p ⇒ q'`.  (`comp_bandMap` is the instance `r = p`.) -/
-theorem TransformsTo.merge_bandMap {D : Type*} [Finite D] {grade : D → ℕ}
+theorem TransformsTo.merge_bandMap {D : Type*} [Finite D] {grade}
     {p q r q' : D → ExtOrd}
-    (g : ℕ → ExtOrd) (σ : ExtOrd → ExtOrd)
+    (g : ℕ → ExtOrd) σ
     (hσbot : σ ⊥ = ⊥) (hσmono : Monotone σ)
-    (hσ5 : ∀ (a : ExtOrd) (k : ℕ), σ a ≤ g k → ∀ i : ℕ, i ≤ k →
+    (hσ5 : ∀ a k, σ a ≤ g k → ∀ i : ℕ, i ≤ k →
       σ (extVisibilityReplace a k i) = extVisibilityReplace (σ a) k i)
     (heq : ∀ d, q d = min (σ (p d)) (g (grade d)))
-    (g₁ : ℕ → ExtOrd) (σ₁ : ExtOrd → ExtOrd)
+    (g₁ : ℕ → ExtOrd) σ₁
     (hg₁anti : ∀ n m : ℕ, n < m → g₁ m ≤ g₁ n)
     (hg₁self : ∀ n : ℕ, g₁ n = extVisibilityReplace (g₁ n) n n)
     (hσ₁mono : Monotone σ₁)
-    (hσ₁5 : ∀ (a : ExtOrd) (k : ℕ), σ₁ a ≤ g₁ k → ∀ i : ℕ, i ≤ k →
+    (hσ₁5 : ∀ a k, σ₁ a ≤ g₁ k → ∀ i : ℕ, i ≤ k →
       σ₁ (extVisibilityReplace a k i) = extVisibilityReplace (σ₁ a) k i)
     (heq₁ : ∀ d, r d = min (σ₁ (p d)) (g₁ (grade d)))
-    {α lam : Ordinal.{0}} (hα : Order.IsSuccLimit α) (hlam : limitPart lam = lam) (K J : ℕ)
+    {α lam} (hα : Order.IsSuccLimit α) (hlam : limitPart lam = lam) K J
     (hJK : J ≤ K) (hgr : ∀ d, grade d ≤ J) (hgJ : ∀ k, k ≤ J → g k = ⊤)
     (hbound : ∀ d, q d < ofOrd α ∨ q d = ⊤)
     (hlow : ∀ d, q d < ofOrd α → q' d = q d)
@@ -299,7 +289,7 @@ theorem TransformsTo.merge_bandMap {D : Type*} [Finite D] {grade : D → ℕ}
       rw [ofOrd_le_ofOrd]
       exact hxS.trans hSc₁
   -- region closure
-  have hlowreg : ∀ (a : ExtOrd) (k i : ℕ), k ≤ J → i ≤ k → σ a < ofOrd α →
+  have hlowreg : ∀ a k i, k ≤ J → i ≤ k → σ a < ofOrd α →
       σ (extVisibilityReplace a k i) = extVisibilityReplace (σ a) k i ∧
         σ (extVisibilityReplace a k i) < ofOrd α := by
     intro a k i hk hi ha
@@ -312,7 +302,7 @@ theorem TransformsTo.merge_bandMap {D : Type*} [Finite D] {grade : D → ℕ}
     · rw [hν] at ha ⊢
       rw [extVisibilityReplace_ofOrd, ofOrd_lt_ofOrd]
       exact visibilityReplace_lt_of_lt hα (ofOrd_lt_ofOrd.mp ha) k i
-  have hhighreg : ∀ (a : ExtOrd) (k i : ℕ), k ≤ J → i ≤ k → ¬ σ a < ofOrd α →
+  have hhighreg : ∀ a k i, k ≤ J → i ≤ k → ¬ σ a < ofOrd α →
       ¬ σ (extVisibilityReplace a k i) < ofOrd α := by
     intro a k i hk hi ha
     have h5 := hσ5 a k (by rw [hgJ k hk]; exact le_top) i hi
@@ -445,7 +435,13 @@ theorem TransformsTo.merge_bandMap {D : Type*} [Finite D] {grade : D → ℕ}
               · rw [hν] at hla₀ ⊢
                 rw [extVisibilityReplace_ofOrd]
                 exact not_lt.mpr (ofOrd_le_ofOrd.mpr
-                  (le_visibilityReplace_of_le_of_limitPart_eq hlam (ofOrd_le_ofOrd.mp hla₀) k i))
+                  (by
+          unfold visibilityReplace ordinalReplace
+          split_ifs with h
+          · have := limitPart_mono (ofOrd_le_ofOrd.mp hla₀)
+            rw [hlam] at this
+            exact this.trans (le_add_of_nonneg_right zero_le)
+          · exact (ofOrd_le_ofOrd.mp hla₀)))
             rw [hσ'band _ hhi hla', hσ'band a ha hla, h5]
             exact bandMap_extVisibilityReplace hα hlam hkK hik hla₀
           · -- `g₁ k < σ₁ a` with equal band-map values: both at cap level
@@ -511,8 +507,8 @@ witness of `E(Σ)` handles the finite cells, the row-consistency witness `E(Σ) 
 min (E(Θ)↾, E(Θ)(Σ))` post-composed with the band map of `Θ` handles the `∞`-cells
 (`exists_bandBridge`), and `TransformsTo.merge_bandMap` merges the two. -/
 theorem topController_locality_provisional (p : S α n) (hα : Order.IsSuccLimit α)
-    {Sg : Cell p.scheme.scheme} (hSg : p.label Sg = ⊤) :
-    TransformsTo (fun d : p.scheme.scheme.below (p.scheme.scheme.cell Sg) =>
+    {Sg} (hSg : p.label Sg = ⊤) :
+    TransformsTo (fun d : p.scheme.scheme.RowDomain Sg =>
         p.scheme.scheme.grade d.1)
       (p.scheme.rows.E Sg)
       (fun d => min (p.someProvisionalValue d.1) (p.someProvisionalValue Sg)) := by
@@ -521,7 +517,7 @@ theorem topController_locality_provisional (p : S α n) (hα : Order.IsSuccLimit
   obtain ⟨g₁, σ₁, hg₁anti, hg₁self, _hσ₁bot, hσ₁mono, hσ₁5, heq₁⟩ :=
     (p.scheme.consistent Θ).locality ⟨Sg, hSgΘ⟩
   obtain ⟨lam, hlam, hbridge⟩ := exists_bandBridge p hsc hgr hΘ
-  have heq' : ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Sg),
+  have heq' : ∀ d : p.scheme.scheme.RowDomain Sg,
       p.label d.1 = min (σ (p.scheme.rows.E Sg d)) (g (p.scheme.scheme.grade d.1)) := by
     intro d
     have := heq d

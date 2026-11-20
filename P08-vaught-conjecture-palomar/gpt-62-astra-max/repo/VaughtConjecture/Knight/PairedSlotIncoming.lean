@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.PairedSlotDecoder
-public import VaughtConjecture.Knight.SourceBlockLocalityTransport
 
 /-! # Incoming lawfulness for paired point/orbit normalization
 
@@ -22,7 +21,6 @@ transformation or transitivity of faithful transformations is used.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PairedSlotIncoming
 open Transform Value ExtOrd PairedSlotEncoding SharpWitnessComposition
 noncomputable section

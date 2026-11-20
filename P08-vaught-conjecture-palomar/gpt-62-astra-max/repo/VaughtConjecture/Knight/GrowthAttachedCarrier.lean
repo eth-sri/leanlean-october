@@ -21,7 +21,6 @@ assert a stage-bounded selected display or a model receiving theorem.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthAttachedCarrier
 open AmalgamationPlan Transform Value ExtOrd Growth
 open CellScheme.restrictFace
@@ -69,19 +68,15 @@ theorem threshold_le_arity : X.req.N ≤ J := by
   simpa only [Finset.card_univ, Fintype.card_fin] using hg.trans hc
 
 include hsmall in
-theorem donor_arity_lt : n + 1 < J :=
-  hsmall.trans_le (threshold_le_arity C P X)
-
-include hsmall in
 theorem height : 2 ≤ (Finset.univ : Finset (Fin (J + 1))).card := by
-  have := donor_arity_lt C P X hsmall
+  have := hsmall.trans_le (threshold_le_arity C P X)
   simp only [Finset.card_univ, Fintype.card_fin]
   omega
 
 include hsmall in
 theorem donor_proper : WholeDonorAttachment.donorScope e ⊂ Finset.univ :=
   Finset.ssubset_iff_subset_ne.mpr ⟨Finset.subset_univ _,
-    WholeDonorAttachment.donor_proper e (donor_arity_lt C P X hsmall)⟩
+    WholeDonorAttachment.donor_proper e (hsmall.trans_le (threshold_le_arity C P X))⟩
 
 theorem private_proper : WholeDonorAttachment.privateScope (N := J) ⊂ Finset.univ :=
   Finset.ssubset_iff_subset_ne.mpr ⟨Finset.subset_univ _, WholeDonorAttachment.private_proper⟩
@@ -114,13 +109,13 @@ theorem restrict_private :
     (E).restrictFace Fin.castSuccEmb (private_visible C P Q e hvC hvP hC hP X T hsmall) = C :=
   GrowthReplicatedLegal.restrict_private I X T hA hB hD hsmall
 
-theorem donor_occurrence (d : Cell P.scheme) :
+theorem donor_occurrence d :
     toCell (E).scheme (onePointProj e) (donor_visible C P Q e hvC hvP hC hP X T hsmall)
       (SemScheme.castCell (restrict_donor C P Q e hvC hvP hC hP X T hsmall).symm d) =
       (donorFace C P Q e hvC hvP hC hP X T hsmall).map d :=
   GrowthReplicatedLegal.donor_occurrence I X T hA hB hD hsmall d
 
-theorem private_occurrence (d : Cell C.scheme) :
+theorem private_occurrence d :
     toCell (E).scheme Fin.castSuccEmb (private_visible C P Q e hvC hvP hC hP X T hsmall)
       (SemScheme.castCell (restrict_private C P Q e hvC hvP hC hP X T hsmall).symm d) =
       (privateFace C P Q e hvC hvP hC hP X T hsmall).map d :=

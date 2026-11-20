@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.GrowthFrame
 public import VaughtConjecture.Knight.GrowthLeafRecognition
 public import VaughtConjecture.Knight.GradePrefixProjection
 public import VaughtConjecture.Knight.RelativeLadderAmbient
@@ -45,47 +46,31 @@ touched. -/
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.GrowthSpareRecognition
 
-open Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedSuccessor GrowthLeafRecognition
+open Transform Value ExtOrd Growth GrowthHigherSources GrowthLeafRecognition
 open SupportLadderRows LadderScalarRendering SharpWitnessComposition CappedDonor.Ref
 
 noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
-  (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
-  (X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows)
-  (T : RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X)
-  (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
+  {I : WholeDonorBoundary.Input A B C R m (n + 1) J}
+  {X : I.GrowthData}
+  (frame : I.GrowthFrame X) (hA : 2 ≤ A.card)
 
 local notation "Fld" => Field I.right.scheme I.left.scheme
-local notation "Ωc" => carrier I X T hA hB hC
-local notation "Occ" => CellScheme.below (carrier I X T hA hB hC) (A, 2)
-local notation "cellΩ" => CellScheme.cell (carrier I X T hA hB hC)
-local notation "gradeΩ" => CellScheme.grade (carrier I X T hA hB hC)
-local notation "Eρ" => Semantics.E (rows I X T hA hB hC)
-local notation "Rows" => rows I X T hA hB hC
-local notation "Pt" => RelativeLadderLayer.Point (X := Fld) (Q := Catalogue X 1)
 local notation "ranks₁" => RelativeLadderLayer.ranks (fields X 1)
 local notation "rungs" => RelativeLadderLayer.rungs (X := Fld)
-local notation "lowerΩ" => LadderWeightedSuccessor.Input.lower (input I X T hA hB hC)
-local notation "BaseRows" => LadderWeightedSuccessor.Input.lowerRows (input I X T hA hB hC)
-local notation "Low" =>
-  CellScheme.below (LadderWeightedSuccessor.Input.lower (input I X T hA hB hC)) (A, 1)
 local notation "spare" => SupportLadderRows.leaf (rungs_pos I)
 
 /-! ## The base restriction of an arbitrary lawful section -/
 
-variable {p : CellScheme.below (carrier I X T hA hB hC) (A, 2) → ExtOrd}
-
 /-! ## The maximal spare chart -/
 
+variable (I X) in
 /-- The ladder row of a spare at a padded point is the actual ladder row. -/
-theorem ladderRow_spare_added (a : Catalogue X 1) (v : Pt) :
+theorem ladderRow_spare_added a v :
     RelativeLadderLayer.ladderRow I.boundary (card_pos hA) (GrowthOrderedBase.field I) (fields X 1)
       (spare a) (RelativeLadderLayer.added I.boundary (card_pos hA) v) =
       SupportLadderRows.row ranks₁ (spare a) v := by
@@ -96,8 +81,9 @@ theorem ladderRow_spare_added (a : Catalogue X 1) (v : Pt) :
   rw [RelativeLadderLayer.rankIndex_added]
   rfl
 
+variable (I X) in
 /-- The ladder row of a spare at an original is the rank-coded source of its field. -/
-theorem ladderRow_spare_old (a : Catalogue X 1) (d : Cell I.boundary) :
+theorem ladderRow_spare_old a d :
     RelativeLadderLayer.ladderRow I.boundary (card_pos hA) (GrowthOrderedBase.field I) (fields X 1)
       (spare a) (RelativeLadderLayer.old I.boundary (card_pos hA) d) =
       SupportLadderRows.source rungs (ranks₁ a (GrowthOrderedBase.field I d)) := by
@@ -108,39 +94,17 @@ theorem ladderRow_spare_old (a : Catalogue X 1) (d : Cell I.boundary) :
   rw [RelativeLadderLayer.rankIndex_old, SupportLadderRows.ceiling_leaf]
   rfl
 
+variable (I X) in
 /-- The spare's row at a padded point is the rank-coded source at the point's index. -/
-theorem row_spare (a : Catalogue X 1) (v : Pt) :
+theorem row_spare a v :
     SupportLadderRows.row ranks₁ (spare a) v =
       SupportLadderRows.source rungs (SupportLadderRows.index ranks₁ a v) := by
   rw [SupportLadderRows.row, SupportLadderRows.ceiling_leaf]
   rfl
 
-/-! ## Uncapped recognition of the complete shadow vector -/
-
-section Chart
-
-variable {a : Catalogue X 1} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hτ
-
-end Chart
-
-/-! ## Lawfulness and admission of the uncapped vector at grade one -/
-
-section Admission
-
-variable (hp : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) p) {a : Catalogue X 1}
-  {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hp hτ
-
-end Admission
-
-/-! ## The two-grade hidden-original projection -/
-
 /-- Lawfulness below grade zero is vacuous: every cell has positive grade. -/
 theorem respectsBelow_zero {ιS : Type*} [DecidableEq ιS] {S : Finset ιS} {DS : CellScheme S}
-    (semS : Semantics DS) (r : DS.below (S, 0) → ExtOrd) :
+    semS (r : DS.SectionAt (S, 0)) :
     RespectsSemanticsBelow semS (S, 0) r := by
   have hno (d : DS.below (S, 0)) : False := by
     have h1 := d.2.2
@@ -148,24 +112,6 @@ theorem respectsBelow_zero {ιS : Type*} [DecidableEq ιS] {S : Finset ιS} {DS 
     change DS.grade d.1 ≤ 0 at h1
     omega
   exact ⟨fun d => (hno d).elim, fun d => (hno d).elim, fun d => (hno d).elim⟩
-
-/-! ## On the whole ordered boundary
-
-The same conclusions on `I.rows`, the native catalogue's whole ordered boundary, without
-reconstructing and gluing the two faces: the anchor's boundary lawfulness
-(`GrowthOrderedBase.anchor_lawful`, `GrowthHigherSources.boundary_lawful_at`) feeds the generic
-transports directly.  Root agreement of the grade-dependent projection follows from the uncapped
-root agreement and root-grade preservation (`RootAttachment.grade`).  None of this uses the
-admission hypothesis `1 < X.req.N`. -/
-
-section Boundary
-
-variable (hp : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) p) {a : Catalogue X 1}
-  {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hp hτ
-
-end Boundary
 
 end
 end VaughtConjecture.Knight.GrowthSpareRecognition

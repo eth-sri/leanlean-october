@@ -32,8 +32,6 @@ noncomputable def trim (m : ℕ) : ExtOrd → ExtOrd
   | some ⊤ => ⊤
   | some (some a) => ofOrd (limitPart a + (min (finitePart a) m : ℕ))
 
-@[simp] theorem trim_bot (m : ℕ) : trim m ⊥ = ⊥ := rfl
-@[simp] theorem trim_top (m : ℕ) : trim m ⊤ = ⊤ := rfl
 @[simp] theorem trim_ofOrd (m : ℕ) (a : Ordinal.{0}) :
     trim m (ofOrd a) = ofOrd (limitPart a + (min (finitePart a) m : ℕ)) := rfl
 
@@ -135,12 +133,6 @@ end BoundedMap
 def Short (m : ℕ) (x : ExtOrd) : Prop :=
   x = ⊥ ∨ x = ⊤ ∨ ∃ a : Ordinal.{0}, x = ofOrd a ∧ finitePart a ≤ m
 
-theorem trim_of_short {m : ℕ} {x : ExtOrd} (hx : Short m x) : trim m x = x := by
-  rcases hx with rfl | rfl | ⟨a, rfl, ha⟩
-  · rfl
-  · rfl
-  · exact trim_eq ha
-
 /-- The function composite has bounded commutation, even without bottom reflection. -/
 theorem bounded_comp {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
     (hσ : Witness (gTop m) σ) (hν : Witness (gTop K) ν) (hmK : m ≤ K) :
@@ -160,7 +152,11 @@ theorem comp_read {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
       ∀ x, Short m x → τ x = ν (σ x) := by
   refine ⟨(ν ∘ σ) ∘ trim m, (bounded_comp hσ hν hmK).witness, ?_⟩
   intro x hx
-  simp only [Function.comp_apply, trim_of_short hx]
+  simp only [Function.comp_apply, show trim m x = x from by
+          rcases hx with rfl | rfl | ⟨a, rfl, ha⟩
+          · rfl
+          · rfl
+          · exact trim_eq ha]
 
 /-- A source-short controller locality survives any normalized outer shifter of
 at least its grade. The witness is repaired, not the semantic source row. -/

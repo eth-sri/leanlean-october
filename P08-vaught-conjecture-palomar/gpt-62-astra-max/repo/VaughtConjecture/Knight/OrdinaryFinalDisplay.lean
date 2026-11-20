@@ -24,7 +24,6 @@ vectors literal and a top marked gate, does not establish unrestricted lifting.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalDisplay
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition
 open OrdinaryFinalCatalogue
@@ -37,25 +36,19 @@ variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Membe
 
 /-- Decode the selected complete source on the **actual** installed carrier.
 The long-row alternative only concerns values at its real arguments. -/
-theorem exists_actual_display
-    (hfields : ∀ a f, F.fields a f = a.val f) (hgate : F.gate = .gate)
+theorem display
+    (hfields : ∀ a f, F.fields a f = a.val f)
     (hgrid : ∀ z ∈ F.grid, Short N z)
     (hsupport : ∀ a d, D.grade d ≤ N →
       OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d))
     (howners : ∀ a (c : D.below (A, N)),
-      (∀ d : D.below (D.cell c.1), Short (D.grade c.1) (F.sem.E c.1 d)) ∨
-      (∀ d : D.below (D.cell c.1), ∃ f : Field P C, F.lower a d.1 = a.val f))
-    (req : Cell P.scheme ↪ Cell D) (priv : Cell C.scheme ↪ Cell D)
-    (hreq : ∀ a d, F.lower a (req d) = a.val (.req d))
-    (hpriv : ∀ a d, F.lower a (priv d) = a.val (.priv d)) :
+      (∀ d : D.RowDomain c.1, Short (D.grade c.1) (F.sem.E c.1 d)) ∨
+      (∀ d : D.RowDomain c.1, ∃ f : Field P C, F.lower a d.1 = a.val f))
+    {v : Field P C → ExtOrd} (hv : R.Admitted v) :
     ∃ (a : OrdinaryFinalCatalogue.Member R) (δ : ExtOrd → ExtOrd),
-      Witness (gTop N) δ ∧
-      RespectsSemanticsBelow F.rows (A, N) (fun d => δ (F.source a d.1)) ∧
-      (∀ d : Cell P.scheme, δ (F.source a (F.old (req d))) = R.p d) ∧
-      (∀ d : Cell C.scheme, δ (F.source a (F.old (priv d))) = R.vact d) ∧
-      δ (F.source a (F.added a true)) = ⊤ ∧
-      δ (F.source a (F.added a false)) = ⊤ := by
-  obtain ⟨a, δ, hδ, hP, hC, hg, hreflect⟩ := exists_actual_member_reflecting R
+      F.rows.Lawful (fun d : F.carrier.below (A,N) => δ (F.source a d.1)) ∧
+      ∀ f, δ (a.val f) = v f := by
+  obtain ⟨a,δ,hδ,hr,hreflect⟩ := hv.display
   have hlower : RespectsSemanticsBelow F.sem (A, N) (fun d => δ (F.lower a d.1)) := by
     apply map_respects_of_short_or_reflecting (F.lower_lawful a) (fun d => d.2.2) hδ
     intro c
@@ -71,20 +64,7 @@ theorem exists_actual_display
     intro b f
     rw [hfields]
     exact member_short R b f
-  refine ⟨a, δ, hδ, F.decoded_respects hsupport hshort hgrid a hδ hlower, ?_, ?_, ?_, ?_⟩
-  · intro d
-    rw [F.source_old, hreq]
-    exact hP d
-  · intro d
-    rw [F.source_old, hpriv]
-    exact hC d
-  · rw [F.source_own_marked, hgate, hfields]
-    exact hg
-  · rw [F.source_own_leaf]
-    apply top_le_iff.mp
-    have hb := hδ.mono (F.gate_bound a)
-    rw [hgate, hfields, hg] at hb
-    exact hb
+  exact ⟨a,δ,F.decoded_respects hsupport hshort hgrid a hδ hlower,hr⟩
 
 end
 end VaughtConjecture.Knight.OrdinaryFinalDisplay

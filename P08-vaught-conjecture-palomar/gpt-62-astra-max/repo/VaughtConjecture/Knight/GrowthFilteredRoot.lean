@@ -8,7 +8,6 @@ module
 public import VaughtConjecture.Knight.GrowthCompleteFields
 public import VaughtConjecture.Knight.CappedDonorFace
 public import VaughtConjecture.Knight.CappedDonorReceiving
-public import VaughtConjecture.Knight.PartialSections
 
 /-! # Filtered literal common roots for growth repairs
 
@@ -19,7 +18,6 @@ occurrence identity, not an assumption of filtered lawfulness.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan CappedDonor
 noncomputable section
@@ -27,7 +25,7 @@ noncomputable section
 section Nominal
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
-def cutoffEquiv (B : Finset ι) (j : ℕ) :
+def cutoffEquiv B j :
     D.below (B, min j B.card) ≃ D.below (B, j) where
   toFun d := ⟨d.1, d.2.1, (le_min_iff.mp d.2.2).1⟩
   invFun d := ⟨d.1, d.2.1, le_min d.2.2
@@ -35,26 +33,24 @@ def cutoffEquiv (B : Finset ι) (j : ℕ) :
   left_inv _ := rfl
   right_inv _ := rfl
 
-theorem cutoff_respects {sem : Semantics D} (B : Finset ι) (j : ℕ)
-    (p : D.below (B, min j B.card) → ExtOrd) :
-    RespectsSemanticsBelow sem (B, min j B.card) p ↔
+theorem cutoff_respects {sem} B j
+    (p : D.SectionAt (B, min j B.card)) :
+    sem.Lawful p ↔
       RespectsSemanticsBelow sem (B, j) (p ∘ (cutoffEquiv B j).symm) :=
   respects_iff_of_equiv (cutoffEquiv B j) (fun _ => rfl) (fun _ _ => Iff.rfl)
     (fun _ _ _ => rfl) p
 
 /-- Original-scheme lifting at a nominal cutoff, including an empty filtered
 root. The output remains on the actual full original lower domain. -/
-theorem extend_cutoff {sem : Semantics D} (hb : sem.IsBountiful)
-    {B : Finset ι} (hB : B ∈ D.plan) {j : ℕ}
-    {p : D.below (B, j) → ExtOrd} {q : D.below (A, j) → ExtOrd}
+theorem extend_cutoff {sem} (hb : sem.IsBountiful)
+    {B} (hB : B ∈ D.plan) {j}
+    {p} {q : D.SectionAt (A, j)}
     (hp : RespectsSemanticsBelow sem (B, j) p)
     (hq : RespectsSemanticsBelow sem (A, j) q)
-    {γ : ExtOrd} (hγ : SelfVis j γ)
-    (hag : ∀ d, min (q (CellScheme.below.mono
-      (show GradedLe (B, j) (A, j) from ⟨D.isPlan.subset_of_mem hB, le_rfl⟩) d)) γ =
-        min (p d) γ) :
+    {γ} (hγ : SelfVis j γ)
+    (hag : CappedEq (q ∘ CellScheme.below.mono (show GradedLe (B, j) (A, j) from ⟨D.isPlan.subset_of_mem hB, le_rfl⟩)) p γ) :
     ∃ q', RespectsSemanticsBelow sem (A, j) q' ∧
-      (∀ d, min (q' d) γ = min (q d) γ) ∧
+      CappedEq q' q γ ∧
       ∀ d, q' (CellScheme.below.mono
         (show GradedLe (B, j) (A, j) from ⟨D.isPlan.subset_of_mem hB, le_rfl⟩) d) = p d := by
   by_cases hz : 0 < min j B.card
@@ -84,27 +80,23 @@ variable {n J r : ℕ} {P : SemScheme (n + 1)} {C : SemScheme J}
 
 abbrev rootMap (j : ℕ) := commonFace fP hvP hP fC hvC hC j
 
-theorem rootMap_grade (j : ℕ) (a : P.scheme.below (Finset.univ.image fP, j)) :
-    C.scheme.grade (rootMap F fP hvP hP fC hvC hC j a).1 = P.scheme.grade a.1 :=
-  commonFace_grade fP hvP hP fC hvC hC j a
-
-theorem rootMap_lawful (j : ℕ) (p : C.scheme.below (Finset.univ.image fC, j) → ExtOrd) :
-    RespectsSemanticsBelow C.rows (Finset.univ.image fC, j) p ↔
+theorem rootMap_lawful j p :
+    C.rows.Lawful p ↔
       RespectsSemanticsBelow P.rows (Finset.univ.image fP, j)
         (fun a => p (rootMap F fP hvP hP fC hvC hC j a)) :=
   commonFace_respects fP hvP hP fC hvC hC j p
 
 /-- The actual relative-data occurrence map, constructed from literal face
 restrictions and containment of the private root in the cap's lower domain. -/
-def literalKappa (c : Cell C.scheme)
+def literalKappa c
     (hc : GradedLe (Finset.univ.image fC, r) (C.scheme.cell c)) :
-    P.scheme.below (Finset.univ.image fP, r) → C.scheme.below (C.scheme.cell c) :=
+    P.scheme.below (Finset.univ.image fP, r) → C.scheme.RowDomain c :=
   fun a => CellScheme.below.mono hc (rootMap F fP hvP hP fC hvC hC r a)
 
-theorem literalKappa_lawful (c : Cell C.scheme)
+theorem literalKappa_lawful c
     (hc : GradedLe (Finset.univ.image fC, r) (C.scheme.cell c))
-    {s : C.scheme.below (C.scheme.cell c) → ExtOrd}
-    (hs : RespectsSemanticsBelow C.rows (C.scheme.cell c) s) :
+    {s}
+    (hs : C.rows.Lawful s) :
     RespectsSemanticsBelow P.rows (Finset.univ.image fP, r)
       (fun a => s (literalKappa F fP hvP hP fC hvC hC c hc a)) :=
   (rootMap_lawful F fP hvP hP fC hvC hC r _).mp (hs.mono hc)
@@ -123,11 +115,11 @@ variable {F fP hvP hP fC hvC hC}
   (R : RootAttachment F fP hvP hP fC hvC hC X)
 
 include R in
-theorem grade (a : P.scheme.below X.root) : C.scheme.grade (X.κ a).1 = P.scheme.grade a.1 := by
+theorem grade a : C.scheme.grade (X.κ a).1 = P.scheme.grade a.1 := by
   rw [R.occurrence a]
-  exact rootMap_grade _ _ _ _ _ _ _ _ _
+  exact commonFace_grade _ _ _ _ _ _ _ _
 
-def full {j : ℕ} (a : P.scheme.below (Finset.univ.image fP, j)) :
+def full {j} (a : P.scheme.below (Finset.univ.image fP, j)) :
     P.scheme.below X.root :=
   ⟨a.1, R.root_eq.symm ▸ show GradedLe (P.scheme.cell a.1)
       (Finset.univ.image fP, r) from ⟨a.2.1, by
@@ -136,12 +128,12 @@ def full {j : ℕ} (a : P.scheme.below (Finset.univ.image fP, j)) :
     simpa only [Finset.card_image_of_injective _ fP.injective, Finset.card_univ,
       Fintype.card_fin] using h⟩⟩
 
-theorem at_occurrence {j : ℕ} (a : P.scheme.below (Finset.univ.image fP, j)) :
+theorem at_occurrence {j} a :
     (rootMap F fP hvP hP fC hvC hC j a).1 = (X.κ (R.full a)).1 := by
   rw [R.occurrence]
   exact commonFace_val_congr _ _ _ _ _ _ _ _ _ rfl
 
-def filtered {j : ℕ} (a : P.scheme.below X.root) (hj : P.scheme.grade a.1 ≤ j) :
+def filtered {j} (a : P.scheme.below X.root) (hj : P.scheme.grade a.1 ≤ j) :
     P.scheme.below (Finset.univ.image fP, j) :=
   ⟨a.1, (show GradedLe (P.scheme.cell a.1) (Finset.univ.image fP, r) from
     R.root_eq ▸ a.2).1, hj⟩

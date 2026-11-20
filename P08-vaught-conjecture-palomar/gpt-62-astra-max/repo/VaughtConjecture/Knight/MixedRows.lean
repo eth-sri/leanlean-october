@@ -5,10 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.MixedOwnValues
-public import VaughtConjecture.Knight.CrossGradeRecoding
-public import VaughtConjecture.Knight.PartialSections
-public import VaughtConjecture.Knight.MixedIndexConstraints
+public import VaughtConjecture.Knight.RequestFaceIdentification
+public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import VaughtConjecture.Knight.CoupledGradeOne
 
 /-! # The mixed rows over the actual context: consistency from the recodings
 
@@ -49,12 +48,6 @@ open CellScheme.restrictFace (pushGraded)
 
 /-! ## The recoding at a grade, generically -/
 
-section Recode
-
-variable (l : ℕ) (S : Finset Ordinal.{0})
-
-end Recode
-
 /-! ## The inventory over the actual context -/
 
 section Inventory
@@ -68,7 +61,7 @@ variable {m n : ℕ} {X : CellScheme (ι := Fin m) Finset.univ}
     Y.plan.image (Finset.image (onePointProj e))}
   (hvX : Finset.univ.image e ∈ X.plan) (hvY : Finset.univ.image Fin.castSuccEmb ∈ Y.plan)
   (hroot : X.restrictFace e hvX = Y.restrictFace Fin.castSuccEmb hvY)
-  (rowsX : Semantics X) (rowsY : Semantics Y) (labX : Cell X → ExtOrd) (labY : Cell Y → ExtOrd)
+  (rowsX : Semantics X) (rowsY : Semantics Y) (labX : X.Labelling) (labY : Y.Labelling)
 
 /-! ### The rows -/
 

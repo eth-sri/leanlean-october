@@ -44,10 +44,10 @@ variable {I : Type u} {Q : Type v} {S : Type w}
 this core is empty. -/
 theorem persistent_subsingleton_of_separation
     (D : I → Q → Prop) (holds : S → Q → Prop)
-    (separates : ∀ p q : Q, p ≠ q → ∃ s : S, ¬ (holds s p ↔ holds s q))
-    (homogeneous : ∀ s : S, ∃ i : I,
+    (separates : ∀ p q : Q, p ≠ q → ∃ s, ¬ (holds s p ↔ holds s q))
+    (homogeneous : ∀ s : S, ∃ i,
       ∀ p : Q, D i p → ∀ q : Q, D i q → (holds s p ↔ holds s q))
-    (p q : Q) (hp : ∀ i : I, D i p) (hq : ∀ i : I, D i q) : p = q := by
+    p q (hp : ∀ i : I, D i p) (hq : ∀ i : I, D i q) : p = q := by
   classical
   by_contra hne
   obtain ⟨s, hs⟩ := separates p q hne

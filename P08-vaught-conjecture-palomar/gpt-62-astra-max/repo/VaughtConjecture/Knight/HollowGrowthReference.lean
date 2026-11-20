@@ -18,7 +18,6 @@ No receiving scheme or stable model is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthReference
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
 noncomputable section
@@ -38,12 +37,12 @@ structure Data {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
   cap_grade : context.type.scheme.scheme.grade cap = context.type.topGrade
   cap_top : context.type.label cap = ⊤
   large : max (max n R) Nmin < context.type.topGrade
-  marker : context.type.scheme.scheme.below (context.type.scheme.scheme.cell cap)
+  marker : context.type.scheme.scheme.RowDomain cap
   marker_top : context.type.label marker.1 = ⊤
   root_below : ∀ d : Cell p.scheme.scheme,
     GradedLe (context.type.scheme.scheme.cell (mapCell face_type d))
       (context.type.scheme.scheme.cell cap)
-  ref : Ordinal.{0} → context.type.scheme.scheme.below (context.type.scheme.scheme.cell cap)
+  ref : Ordinal.{0} → context.type.scheme.scheme.RowDomain cap
   off : Ordinal.{0} → ℕ
   ref_label : ∀ r ∈ reqs, context.type.label (ref r.block).1 = ofOrd (r.block + off r.block)
   ref_off_lt : ∀ r ∈ reqs, off r.block < context.type.topGrade
@@ -114,7 +113,7 @@ theorem exists_data (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow
   intro d hd
   obtain ⟨hbelow, hle⟩ := hroot (mapCell hpc d) (by rw [label_mapCell hpc, hd])
   have heq : (⟨mapCell hpy d, rootBelow d⟩ :
-      y.type.scheme.scheme.below (y.type.scheme.scheme.cell c)) =
+      y.type.scheme.scheme.RowDomain c) =
       ⟨mapCell hcy (mapCell hpc d), hbelow⟩ :=
     Subtype.ext (mapCell_trans hcy hpc hpy d)
   rw [heq]

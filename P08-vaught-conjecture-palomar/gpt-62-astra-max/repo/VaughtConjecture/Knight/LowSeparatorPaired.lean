@@ -88,12 +88,6 @@ def cutoffCut (s : X → ExtOrd) : ExtOrd := extVisibilityReplace (donorMax N s)
 theorem donorMax_le_cutoffCut (s : X → ExtOrd) : donorMax N s ≤ cutoffCut K N s :=
   TopSupport.le_evr_self _ _
 
-theorem cutoffCut_selfVis (s : X → ExtOrd) : SelfVis K (cutoffCut K N s) :=
-  TopSupport.selfVis_evr_self K _
-
-theorem cutoffCut_ne_top {s : X → ExtOrd} (hs : ∀ d, s d ≠ ⊤) : cutoffCut K N s ≠ ⊤ :=
-  TopSupport.evr_ne_top (donorMax_ne_top N hs) K K
-
 /-- The partner: lower only the cutoff field to the rounded frontier, then normalize. -/
 def partner [DecidableEq X] (s : X → ExtOrd) : X → ExtOrd :=
   PairedSlotEncoding.normalize K (Function.update s b (cutoffCut K N s))
@@ -113,7 +107,7 @@ theorem cutoffCut_eq_endpoint {s : X → ExtOrd}
     unfold cutoffCut
     rw [hM]
     rfl
-  · exact absurd hM (donorMax_ne_top N hs.2)
+  · exact absurd hM (ne_of_lt ((Finset.sup_lt_iff bot_lt_top).mpr fun d _ => lt_top_iff_ne_top.mpr (hs.2 d)))
   · right
     obtain ⟨d₀, hd₀, hd₀M⟩ : ∃ d, N d ∧ s d = donorMax N s := by
       rcases donorMax_cases N s with h | h
@@ -281,8 +275,6 @@ end Partner
 /-- The paired source grid of the complete field type. -/
 abbrev grid : Finset ExtOrd := sourceGrid K (Fintype.card X)
 
-theorem grid_bot : (⊥ : ExtOrd) ∈ grid (X := X) K := sourceGrid_bot _ _
-
 /-! ## The partner: canonical, cutoff `h`, prefix agreement, common cut `h` -/
 
 section PartnerProfile
@@ -297,7 +289,7 @@ theorem partner_mem : partner K N b s ∈ CanonicalPairedProfiles.inventory X K 
   by_cases hdb : d = b
   · subst hdb
     rw [Function.update_self]
-    exact cutoffCut_ne_top K N hs.2
+    exact TopSupport.evr_ne_top (donorMax_ne_top N hs.2) K K
   · rw [Function.update_of_ne hdb]
     exact hs.2 d
 
@@ -333,7 +325,7 @@ omit [DecidableEq X] in
 include hs in
 theorem cutoffCut_mem_grid : cutoffCut K N s ∈ grid (X := X) K := by
   rcases cutoffCut_eq_endpoint K N hs with h0 | ⟨m₀, d₀, -, hm₀, -, -, hend⟩
-  · rw [h0]; exact grid_bot K
+  · rw [h0]; exact sourceGrid_bot _ _
   · rw [hend]
     apply sourceGrid_endpoint
     have h1 := block_le_twice_card (j := K) (mem_values.mpr ⟨d₀, hm₀⟩)
@@ -346,7 +338,7 @@ theorem cut_partner : cut (grid (X := X) K) s (partner K N b s) = cutoffCut K N 
   apply le_antisymm
   · apply le_of_not_gt
     intro hgt
-    have hag := agree_cut (grid_bot (X := X) K) s (partner K N b s) b
+    have hag := agree_cut (sourceGrid_bot K (Fintype.card X)) s (partner K N b s) b
     rw [partner_cutoff K N b hs hlt, min_eq_left hgt.le] at hag
     have : cutoffCut K N s < min (s b) (cut (grid (X := X) K) s (partner K N b s)) := lt_min hlt hgt
     rw [hag] at this
@@ -370,10 +362,10 @@ theorem cut_partner_eq_of_lt {a : X → ExtOrd}
     cut (grid (X := X) K) a (partner K N b s) = cutoffCut K N s ∧
       cutoffCut K N s < cut (grid (X := X) K) a s := by
   have hst := cut_partner K N b hs hlt
-  have h1 := cut_triangle (grid_bot (X := X) K) a s (partner K N b s)
-  have h2 := cut_triangle (grid_bot (X := X) K) s a (partner K N b s)
+  have h1 := cut_triangle (sourceGrid_bot K (Fintype.card X)) a s (partner K N b s)
+  have h2 := cut_triangle (sourceGrid_bot K (Fintype.card X)) s a (partner K N b s)
   rw [hst] at h1 h2
-  rw [cut_symm (grid_bot (X := X) K) s a] at h2
+  rw [(fun {X} {G} hbot a b => le_antisymm (le_cut (cut_mem hbot a b) fun x => Eq.symm (agree_cut hbot a b x)) (le_cut (cut_mem hbot b a) fun x => Eq.symm (agree_cut hbot b a x))) (sourceGrid_bot _ _) s a] at h2
   have hcu : cutoffCut K N s < cut (grid (X := X) K) a s := by
     by_contra hn
     rw [min_eq_left (not_lt.mp hn)] at h1
@@ -391,7 +383,7 @@ theorem activation_of_cut_lt {a : X → ExtOrd}
     (h : cut (grid (X := X) K) a (partner K N b s) < cut (grid (X := X) K) a s) :
     donorMax N a = donorMax N s ∧ cutoffCut K N s < a b := by
   obtain ⟨-, hu⟩ := cut_partner_eq_of_lt K N b hs hlt h
-  have hag := agree_cut (grid_bot (X := X) K) a s
+  have hag := agree_cut (sourceGrid_bot K (Fintype.card X)) a s
   refine ⟨donorMax_congr N (fun d hd => ?_), ?_⟩
   · have hsd : s d < cut (grid (X := X) K) a s :=
       ((le_donorMax N s hd).trans (donorMax_le_cutoffCut K N s)).trans_lt hu
@@ -400,13 +392,6 @@ theorem activation_of_cut_lt {a : X → ExtOrd}
     have hgt : cutoffCut K N s < min (s b) (cut (grid (X := X) K) a s) := lt_min hlt hu
     rw [← hb'] at hgt
     exact hgt.trans_le (min_le_left _ _)
-
-include hs hlt in
-/-- A monotone chart reading the partner cut strictly below the diagonal cut activates LOW. -/
-theorem activation_of_chart_lt {a : X → ExtOrd} {σ : ExtOrd → ExtOrd} (hσ : Monotone σ)
-    (h : σ (cut (grid (X := X) K) a (partner K N b s)) < σ (cut (grid (X := X) K) a s)) :
-    donorMax N a = donorMax N s ∧ cutoffCut K N s < a b :=
-  activation_of_cut_lt K N b hs hlt (lt_of_not_ge fun hle => not_lt.mpr (hσ hle) h)
 
 end Activation
 
@@ -465,12 +450,6 @@ theorem partnerState_profile (S : State P C) :
   · rfl
   · rfl
 
-theorem partnerState_mem {S : State P C} (hcan : S.profile ∈
-      CanonicalPairedProfiles.inventory (LowOnly.Field P C) K) :
-    (partnerState F S).profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K := by
-  rw [partnerState_profile]
-  exact partner_mem K (donorField F) cutoffField hcan
-
 /-- **The partner state is admitted**: lowering the cutoff keeps both original sections and the
 root; if the new LOW premise is active the old one was (the frontier bounds the maximum and lies
 below the old cutoff), and the old bound dominates the new one; normalization preserves
@@ -480,7 +459,7 @@ theorem partnerState_admissible {S : State P C} (hS : F.Admissible K S)
     F.Admissible K (partnerState F S) := by
   have hm : F.maximum S < S.b := by
     rw [maximum_eq_donorMax]
-    exact (donorMax_le_cutoffCut K (donorField F) S.profile).trans_lt hlt
+    exact (TopSupport.le_evr_self _ _).trans_lt hlt
   have hS' : F.Admissible K (⟨S.u, S.v, cutoffCut K (donorField F) S.profile⟩ : State P C) :=
     { lawfulP := hS.lawfulP
       lawfulC := hS.lawfulC
@@ -489,7 +468,7 @@ theorem partnerState_admissible {S : State P C} (hS : F.Admissible K S)
       futureC := hS.futureC
       cutoff := by
         rw [min_self]
-        exact cutoffCut_selfVis K (donorField F) S.profile
+        exact TopSupport.selfVis_evr_self K _
       low := fun hj _ d hd => (max_le_max hlt.le le_rfl).trans (hS.low hj hm d hd) }
   exact F.normalize_admissible hK hS'
 
@@ -514,22 +493,9 @@ theorem activation_of_serving {S A : State P C}
       σ (cut (grid (X := LowOnly.Field P C) K) A.profile S.profile)) :
     F.maximum A < A.b := by
   rw [partnerState_profile] at h
-  obtain ⟨heq, hab⟩ := activation_of_chart_lt K (donorField F) cutoffField hcan hlt hσ h
+  obtain ⟨heq, hab⟩ := activation_of_cut_lt K (donorField F) cutoffField hcan hlt (lt_of_not_ge fun hle => not_lt.mpr (hσ hle) h)
   rw [maximum_eq_donorMax, heq]
-  exact (donorMax_le_cutoffCut K (donorField F) S.profile).trans_lt hab
-
-/-- **The separator readback**: at an admitted serving state whose chart reads the partner cut
-strictly below the diagonal cut and reads the private owner and low source as `⊤`, every
-designated donor top reads `⊤`. -/
-theorem serving_readback {S A : State P C} (hA : F.Admissible K A)
-    (hcan : S.profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K)
-    (hlt : cutoffCut K (donorField F) S.profile < S.b) {σ : ExtOrd → ExtOrd}
-    (hσ : Witness (gTop K) σ)
-    (h : σ (cut (grid (X := LowOnly.Field P C) K) A.profile (partnerState F S).profile) <
-      σ (cut (grid (X := LowOnly.Field P C) K) A.profile S.profile))
-    (hc : σ (A.v F.gap.c) = ⊤) (hr : σ (A.v F.gap.r.1) = ⊤) (d : Cell P.scheme)
-    (hd : F.p d = ⊤) : σ (A.u d) = ⊤ :=
-  donor_top_readback F hA (activation_of_serving F hcan hlt hσ.mono h) hσ hc hr d hd
+  exact (TopSupport.le_evr_self _ _).trans_lt hab
 
 end Family
 

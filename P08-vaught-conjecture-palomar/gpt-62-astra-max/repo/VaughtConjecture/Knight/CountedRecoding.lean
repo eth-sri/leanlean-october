@@ -6,12 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.RowCorrectness
-public import VaughtConjecture.Knight.VisibilityAlgebra
-public import VaughtConjecture.Knight.SemScheme
-public import VaughtConjecture.Knight.Repair
+public import VaughtConjecture.Knight.Reduction
 public import VaughtConjecture.Knight.NormalForm
-public import Mathlib.Data.Finset.Max
-public import Mathlib.Order.Interval.Finset.Nat
 
 /-! # The counted recoding of a finite row at a target grade
 
@@ -215,24 +211,8 @@ theorem keyOrd_mem_keys {v : Ordinal.{0}} (hv : v ∈ S) : keyOrd l v ∈ keys l
 noncomputable def code (v : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * (blockOf l S v : ℕ) + (min (finitePart v) l : ℕ)
 
-theorem code_isCoded (v : Ordinal.{0}) : IsCodedLabel l (ofOrd (code l S v)) :=
-  Or.inr ⟨blockOf l S v, min (finitePart v) l, by omega, rfl⟩
-
-theorem code_selfVis {v : Ordinal.{0}} {a : ℕ} (ha : a ≤ finitePart v) (hal : a ≤ l) :
-    SelfVis a (ofOrd (code l S v)) := by
-  rw [selfVis_ofOrd_iff]
-  unfold code
-  rw [finitePart_mul_add]
-  exact le_min ha hal
-
 /-- The cap code: one block past every key, finite part `l`. -/
 noncomputable def capCode : Ordinal.{0} := Ordinal.omega0 * (((keys l S).card + 1 : ℕ) : Ordinal) + l
-
-theorem capCode_selfVis : SelfVis l (ofOrd (capCode l S)) := by
-  rw [selfVis_ofOrd_iff]; unfold capCode; rw [finitePart_mul_add]
-
-theorem capCode_isCoded : IsCodedLabel l (ofOrd (capCode l S)) :=
-  Or.inr ⟨(keys l S).card + 1, l, by omega, rfl⟩
 
 theorem code_le_capCode (v : Ordinal.{0}) : code l S v ≤ capCode l S := by
   unfold code capCode
@@ -333,12 +313,6 @@ theorem shift_code {v : Ordinal.{0}} (hv : v ∈ S) : shift l S γ (ofOrd (code 
     split_ifs at hl ⊢ with hfp
     · rw [finitePart_limitPart] at hl; omega
     · rfl
-
-/-- **Cap decoding**: the cap code decodes to `γ`. -/
-theorem shift_capCode : shift l S γ (ofOrd (capCode l S)) = γ := by
-  rw [shift_ofOrd]
-  unfold capCode
-  rw [blockIdx_mul_add, if_pos le_rfl]
 
 /-! ### Monotonicity -/
 
@@ -645,11 +619,5 @@ theorem transformsTo_of_shift {D : Type*} (grade : D → ℕ) (hγ : SelfVis l �
 end Recoding
 
 /-! ## Integration bridges: nothing here is a construction hypothesis -/
-
-/-- A coded label is never `⊤`. -/
-theorem ExtOrd.IsCodedLabel.ne_top {k : ℕ} {x : ExtOrd} (h : IsCodedLabel k x) : x ≠ ⊤ := by
-  rcases h with rfl | ⟨i, j, -, rfl⟩
-  · exact bot_ne_top
-  · exact ofOrd_ne_top _
 
 end VaughtConjecture.Knight

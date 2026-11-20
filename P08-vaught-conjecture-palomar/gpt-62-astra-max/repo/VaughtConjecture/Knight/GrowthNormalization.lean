@@ -5,6 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.SupportLadderBottomReflection
+
+public import VaughtConjecture.Knight.ReceivingCatalogueRanks
+
 public import VaughtConjecture.Knight.GrowthCompleteFields
 public import VaughtConjecture.Knight.CappedDonorNormalization
 public import VaughtConjecture.Knight.CanonicalPairedProfiles
@@ -18,7 +22,6 @@ there is no assertion that an earlier source survives later activation.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan CappedDonor.Ref SharpWitnessComposition
 noncomputable section
@@ -32,7 +35,7 @@ def encoder (j : ℕ) (S : State DA DQ) : ExtOrd → ExtOrd :=
 
 def normalize (j : ℕ) (S : State DA DQ) : State DA DQ := S.map (S.encoder j)
 
-theorem profile_normalize (j : ℕ) (S : State DA DQ) (f : Field DA DQ) :
+theorem profile_normalize j (S : State DA DQ) f :
     (S.normalize j).profile f = PairedSlotEncoding.normalize j S.profile f := by
   rw [normalize, profile_map]
   exact PairedSlotIncoming.encoder_profile j S.profile f
@@ -40,13 +43,21 @@ end State
 
 variable (X : RelativeData DA semA DQ semQ)
 
-theorem Admitted.map {j : ℕ} {S : State DA DQ} (hS : Admitted X j S)
-    {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop j) σ) (hj : 1 ≤ j)
-    (hbot : ∀ x, σ x = ⊥ → x = ⊥) : Admitted X j (S.map σ) where
-  private_lawful := map_respects_of_bottom_reflecting hS.private_lawful
-    (fun d => d.2.2) (boundedMap_of_witness hσ) hbot
-  donor_lawful := map_respects_of_bottom_reflecting hS.donor_lawful
-    (fun d => d.2.2) (boundedMap_of_witness hσ) hbot
+/-- Finite reflection on the complete source vector suffices. No global
+bottom-reflection property is asserted of the actual local chart. -/
+theorem Admitted.map_on_profile {j} {S} (hS : Admitted X j S)
+    {σ} (hσ : Witness (gTop j) σ) (hj : 1 ≤ j)
+    (hbot : ∀ f : Field DA DQ, σ (S.profile f) = ⊥ → S.profile f = ⊥) : Admitted X j (S.map σ) where
+  private_lawful := map_respects_of_bottom_reflection hS.private_lawful
+    (fun d => d.2.2) (boundedMap_of_witness hσ) (fun d => by
+      constructor
+      · exact hbot (.inl d.1)
+      · intro hz; rw [hz, hσ.bot])
+  donor_lawful := map_respects_of_bottom_reflection hS.donor_lawful
+    (fun d => d.2.2) (boundedMap_of_witness hσ) (fun d => by
+      constructor
+      · exact hbot (.inr d.1)
+      · intro hz; rw [hz, hσ.bot])
   visible f := by
     rw [State.profile_map]
     exact selfVis_map hσ hj (hS.visible f)
@@ -60,7 +71,7 @@ theorem Admitted.map {j : ℕ} {S : State DA DQ} (hS : Admitted X j S)
         change σ (S.privateValues d.1) = ⊥
         rw [hd, hσ.bot]
       · intro hd
-        exact hbot _ ((hc d).mpr hd)
+        exact hbot (.inl d.1) ((hc d).mpr hd)
     obtain ⟨hz, hf, ht⟩ := hS.correct hN hc'
     refine ⟨?_, ?_, ?_⟩
     · intro z hZ
@@ -82,41 +93,48 @@ theorem Admitted.map {j : ℕ} {S : State DA DQ} (hS : Admitted X j S)
         ← hσ.mono.map_min]
       exact hσ.mono (ht y hT)
 
-theorem normalize_admitted {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
+theorem Admitted.map {j : ℕ} {S : State DA DQ} (hS : Admitted X j S)
+    {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop j) σ) (hj : 1 ≤ j)
+    (hbot : ∀ x, σ x = ⊥ → x = ⊥) : Admitted X j (S.map σ) :=
+  hS.map_on_profile X hσ hj (fun _ => hbot _)
+
+theorem normalize_admitted {j} (hj : 1 ≤ j) {S}
     (hS : Admitted X j S) : Admitted X j (S.normalize j) :=
   hS.map X (PairedSlotIncoming.encoder_witness j _) hj
     (PairedSlotIncoming.encoder_reflects_bottom j _)
 
-theorem normalize_inventory (j : ℕ) {S : State DA DQ} (hp : ∀ f, S.profile f ≠ ⊤) :
+theorem normalize_inventory j {S : State DA DQ} (hp : ∀ f, S.profile f ≠ ⊤) :
     (S.normalize j).profile ∈ CanonicalPairedProfiles.inventory (Field DA DQ) j := by
   rw [show (S.normalize j).profile = PairedSlotEncoding.normalize j S.profile from
     funext (State.profile_normalize j S)]
   exact CanonicalPairedProfiles.normalize_mem_inventory _ _ hp
 
+/-- Passing a state through a visible cap and then the canonical encoder preserves admission. -/
+def profileFamily (j : ℕ) : ProfileCatalogue.Family (State DA DQ) (Field DA DQ) j where
+  profile := State.profile
+  admitted := Admitted X j
+  realize := by
+    intro s hj hs h
+    let β := TerminalProfile.bound s.profile j h
+    let v := s.map (fun x => min x β)
+    have hv := hs.map X (capWitness (TerminalProfile.visible s.profile j h) (ofOrd_ne_bot _)) hj
+      (capWitness_reflects_bottom (ofOrd_ne_bot _))
+    refine ⟨v.normalize j,normalize_admitted X hj hv,?_⟩
+    have he : v.profile = TerminalProfile.capped s.profile j h := funext (State.profile_map _ s)
+    exact (funext (State.profile_normalize j v)).trans (congrArg _ he)
+
 /-- The fixed catalogue is the whole canonical admitted family, before any
 lifting request. It does not depend on a proposed replacement. -/
-def Catalogue (j : ℕ) :=
-  {a : Field DA DQ → ExtOrd //
-    a ∈ CanonicalPairedProfiles.inventory (Field DA DQ) j ∧
-    ∃ S : State DA DQ, Admitted X j S ∧ S.profile = a}
+def Catalogue (j : ℕ) := ProfileCatalogue.Member (profileFamily X j)
 
-instance catalogueFinite (j : ℕ) : Finite (Catalogue X j) := by
-  classical
-  let := (CanonicalPairedProfiles.inventory_finite (Field DA DQ) j).fintype
-  apply Finite.of_injective (fun a : Catalogue X j => (⟨a.1, a.2.1⟩ :
-    ↥(CanonicalPairedProfiles.inventory (Field DA DQ) j)))
-  intro a b h
-  apply Subtype.ext
-  exact congrArg (fun z : ↥(CanonicalPairedProfiles.inventory (Field DA DQ) j) => z.1) h
-
-def normalizedMember {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
-    (hS : Admitted X j S) (hp : ∀ f, S.profile f ≠ ⊤) : Catalogue X j :=
-  ⟨(S.normalize j).profile, normalize_inventory j hp,
-    S.normalize j, normalize_admitted X hj hS, rfl⟩
+instance catalogueFinite (j) : Finite (Catalogue X j) := by
+  letI : Fintype (Catalogue X j) := ProfileCatalogue.memberFintype (profileFamily X j)
+  infer_instance
 
 /-- A catalogue seed obtained directly from the admitted zero state. -/
-def zeroMember (j : ℕ) (hj : 1 ≤ j) : Catalogue X j :=
-  normalizedMember X hj (zero_admitted X j) (fun f => by cases f <;> exact bot_ne_top)
+def zeroMember j (hj : 1 ≤ j) : Catalogue X j :=
+  ⟨(zero.normalize j).profile, normalize_inventory j (fun f => by cases f <;> exact bot_ne_top),
+    zero.normalize j, normalize_admitted X hj (zero_admitted X j), rfl⟩
 
 end
 end VaughtConjecture.Knight.Growth

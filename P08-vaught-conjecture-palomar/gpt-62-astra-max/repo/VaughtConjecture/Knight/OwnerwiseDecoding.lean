@@ -17,8 +17,6 @@ of the whole decoded section, bottom reflection, or a particular catalogue.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.SharpWitnessComposition
 
 open Transform Value ExtOrd
@@ -29,12 +27,12 @@ reflection, or shortness of the inherited long rows is assumed. -/
 theorem map_respects_of_short_or_local
     {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
     {sem : Semantics D} {BJ : Finset ι × ℕ}
-    {r : D.below BJ → ExtOrd}
-    (hr : RespectsSemanticsBelow sem BJ r) {K : ℕ} {ν : ExtOrd → ExtOrd}
+    {r : D.SectionAt BJ}
+    (hr : sem.Lawful r) {K : ℕ} {ν : ExtOrd → ExtOrd}
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) (hν : Witness (gTop K) ν)
     (hc : ∀ c : D.below BJ,
-      (∀ d : D.below (D.cell c.1), Short (D.grade c.1) (sem.E c.1 d)) ∨
-      TransformsTo (fun d : D.below (D.cell c.1) => D.grade d.1)
+      (∀ d : D.RowDomain c.1, Short (D.grade c.1) (sem.E c.1 d)) ∨
+      TransformsTo (fun d => D.grade d.1)
         (sem.E c.1)
         (fun d => min (ν (r (CellScheme.below.incl c d))) (ν (r c)))) :
     RespectsSemanticsBelow sem BJ (fun d => ν (r d)) where
@@ -45,10 +43,10 @@ theorem map_respects_of_short_or_local
   locality c := by
     rcases hc c with hs | hl
     · exact map_capped_locality
-        (c := (⟨c.1, GradedLe.refl _⟩ : D.below (D.cell c.1)))
-        (p := fun d => r (CellScheme.below.incl c d))
+        (c := (⟨c.1, GradedLe.refl _⟩ : D.RowDomain c.1))
+        
         (fun d => d.2.2) (hK c) hs (hr.orderly c).symm (hr.locality c) hν
-    · exact hl
+    exact hl
   availability d c hs hg := by
     obtain ⟨e, he, hde⟩ := hr.availability d c hs hg
     exact ⟨e, he, hν.mono hde⟩

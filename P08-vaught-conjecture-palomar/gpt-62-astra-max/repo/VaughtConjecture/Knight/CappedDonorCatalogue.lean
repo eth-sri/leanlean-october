@@ -5,37 +5,40 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CappedDonorAdmission
+public import VaughtConjecture.Knight.ReceivingCatalogueRanks
+
+public import VaughtConjecture.Knight.CappedDonorRetarget
+public import VaughtConjecture.Knight.CappedDonorRelease
 public import VaughtConjecture.Knight.CappedDonorNormalization
-public import VaughtConjecture.Knight.CappedDonorLowHighNormalization
+public import VaughtConjecture.Knight.TerminalBlock
 public import VaughtConjecture.Knight.CanonicalPairedProfiles
 
-/-! # The ordinary final catalogue at the threshold cutoff
+/-! # Whole-inventory admission at the final receiving threshold
 
-The final weighted layer of the upper-only receiver (newapproach16 new31 §4) indexes its
-controllers by **ordinary** admitted sources at cutoff `N`: complete `Field` vectors that are
-source profiles of synchronized `R.Admissible` states with an `N`-visible gate.  This is not the
-two-threshold (`LowRef`) catalogue: no stored cutoff and no LOW clause appear, and gate-off states
-are included.  This file defines that family and banks its closure properties from the existing
-normalization and fibre results, with complete-field receipts:
-
-* `Admitted`: the predicate; `one_le_N`.
-* `Admitted.normalize`, `Admitted.cap` (positive `N`-visible caps), `Admitted.zero`.
-* `Admitted.private_repair`: the ordinary private fibre at a positive `N`-visible cap keeps the
-  gate literally (hence `N`-visible), installs the prescription exactly, and retains every
-  complete-field `γ`-cap — present fields numerically, future fields persistently.
-* `Admitted.exists_terminal`: **terminal insertion** — cap the literal tops into a fresh proper
-  terminal block above every proper value and above a prescribed cut, so the capped source is
-  admitted, proper, prefix-preserving below the cut and literal on every proper field; its
-  canonical normalization is an admitted
-  member of the finite canonical inventory, and one witness through `N` (the right-filled decoder
-  followed by whole-block collapse) reads every original field back exactly, literal tops
-  included.
-* `Catalogue`, `catalogue_finite`: the canonical admitted family is finite.
-
-Nothing here asserts admission of an arbitrary physical section or any upward admission. -/
+Here the context has arity exactly `N`. All request and private fields are present, so the
+catalogue can be defined on the labels themselves. No shadow fields or synchronization
+receipts are needed. Only the selected equation and the activity of the private cap matter
+when the gate is on.
+-/
 
 @[expose] public section
+
+namespace VaughtConjecture.Knight
+
+/-- Compatible prescriptions at two caps can be met by using the witness at the larger cap. -/
+theorem CappedEq.combine {X α : Type*} [LinearOrder α] {p q : X → α} {c h : α}
+    {Q : (X → α) → Prop} (hpq : CappedEq p q (min c h))
+    (u : ∃ r, Q r ∧ CappedEq r p c) (v : ∃ r, Q r ∧ CappedEq r q h) :
+    ∃ r, Q r ∧ CappedEq r p c ∧ CappedEq r q h := by
+  rcases le_total c h with hl | hl
+  · rw [min_eq_left hl] at hpq
+    obtain ⟨r,hr,he⟩ := v
+    exact ⟨r,hr,fun d => (he.mono hl d).trans (hpq d).symm,he⟩
+  · rw [min_eq_right hl] at hpq
+    obtain ⟨r,hr,he⟩ := u
+    exact ⟨r,hr,he,fun d => (he.mono hl d).trans (hpq d)⟩
+
+end VaughtConjecture.Knight
 
 namespace VaughtConjecture.Knight.CappedDonor.Ref
 
@@ -45,239 +48,121 @@ noncomputable section
 variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
   {R : Ref I nP N J P C}
 
-variable (R) in
-/-- **Ordinary admission at the threshold cutoff**: the complete source vectors of synchronized
-admissible states at cutoff `N` whose gate is `N`-visible. -/
-def Admitted (a : Field P C → ExtOrd) : Prop :=
-  ∃ st : R.State N, R.Admissible st ∧ Synchronized st ∧ SelfVis N st.gate ∧ st.sourceProfile = a
-
 theorem one_le_N (R : Ref I nP N J P C) : 1 ≤ N := by
   have := R.arity_lt
   omega
 
-/-! ## Closure -/
+variable {C : SemScheme N} {R : Ref I nP N N P C}
 
-/-- Canonical normalization preserves admission. -/
-theorem Admitted.normalize {a : Field P C → ExtOrd} (h : R.Admitted a) :
-    R.Admitted (PairedSlotEncoding.normalize N a) := by
-  obtain ⟨st, hst, hs, hg, rfl⟩ := h
-  exact ⟨normalizeState st, normalizeState_admissible R.one_le_N hst,
-    normalizeState_synchronized R.one_le_N hs, selfVis_map st.encoder_witness le_rfl hg,
-    funext fun f => sourceProfile_normalizeState st f⟩
+abbrev low (R : Ref I nP N N P C) (v : Cell C.scheme → ExtOrd) (d : R.Low) := v d.1
 
-/-- Positive `N`-visible caps preserve admission. -/
-theorem Admitted.cap {a : Field P C → ExtOrd} (h : R.Admitted a) {β : ExtOrd}
-    (hβ : SelfVis N β) (hβbot : β ≠ ⊥) : R.Admitted (fun f => min (a f) β) := by
-  obtain ⟨st, hst, hs, hg, rfl⟩ := h
-  exact ⟨mapState (fun x => min x β) st,
-    hst.map (capWitness hβ hβbot) (min_le_left _ _) R.one_le_N (capWitness_reflects_bottom hβbot),
-    hs.map (capWitness hβ hβbot) R.one_le_N, selfVis_map (capWitness hβ hβbot) le_rfl hg,
-    funext fun f => sourceProfile_map _ st f⟩
+/-- Combine the two literal sections and the gate into the complete field inventory. -/
+def pack (u : Cell P.scheme → ExtOrd) (v : Cell C.scheme → ExtOrd) (g : ExtOrd) : Field P C → ExtOrd
+  | .req d => u d
+  | .priv d => v d
+  | .gate => g
 
 variable (R) in
-/-- The zero vector is admitted (the all-bottom state, gate off). -/
-theorem Admitted.zero : R.Admitted (fun _ => ⊥) :=
-  ⟨zeroState R N, zeroState_admissible N, zeroState_synchronized N,
-    extVisibilityReplace_bot _ _, funext (zeroState_sourceProfile N)⟩
+structure Admitted (a : Field P C → ExtOrd) : Prop where
+  donor : RespectsSemantics P.rows (a ∘ Field.req)
+  priv : RespectsSemantics C.rows (a ∘ Field.priv)
+  face : ∀ d : P.scheme.below (R.A,R.KA), a (.req d.1) = a (.priv (R.face d).1)
+  gate : SelfVis N (a .gate)
+  active : a .gate ≠ ⊥ → a (.priv R.cap) ≠ ⊥ → R.Active (R.low (a ∘ Field.priv))
+  relation : a .gate ≠ ⊥ → a (.priv R.cap) ≠ ⊥ → ∀ d,
+    min (a (.req d)) (R.cut (R.low (a ∘ Field.priv))) = R.sel (R.low (a ∘ Field.priv)) d
 
-/-- **Private-repair closure with complete-field receipts.**  A lawful private prescription
-agreeing with an admitted source below a positive `N`-visible cap is installed exactly in an
-admitted source that keeps every complete-field `γ`-cap: present fields numerically, future
-fields persistently, the gate literally. -/
-theorem Admitted.private_repair {a : Field P C → ExtOrd} (h : R.Admitted a)
-    {v₁ : C.scheme.below (effC J N) → ExtOrd} (hv₁ : RespectsSemanticsBelow C.rows (effC J N) v₁)
-    {γ : ExtOrd} (hγ : SelfVis N γ) (hγbot : γ ≠ ⊥)
-    (hagree : ∀ d, min (v₁ d) γ = min (a (.priv d.1)) γ) :
-    ∃ b : Field P C → ExtOrd, R.Admitted b ∧
-      (∀ d : C.scheme.below (effC J N), b (.priv d.1) = v₁ d) ∧
-      ∀ f, min (b f) γ = min (a f) γ := by
-  obtain ⟨st, hst, hs, hg, rfl⟩ := h
-  have hγ' : SelfVis (effC J N).2 γ := selfVis_mono hγ (min_le_left _ _)
-  have hagree' : ∀ d, min (v₁ d) γ = min (st.v d) γ := fun d => by
-    rw [hagree d, st.sourceProfile_of_present (f := .priv d.1) ((present_priv_iff N d.1).mp d.2)]
-    rfl
-  obtain ⟨st₁, hst₁, hv, hu, hrec, hlit⟩ := R.exists_private_lift hst hv₁ hγ' hagree'
-  obtain ⟨hgate, -, -⟩ := hlit hγbot
-  have hrec' := resync_capReceipts (R := R) hs hγ' hu (fun d => by rw [hv]; exact hagree' d) hrec
-  refine ⟨(resync st₁).sourceProfile,
-    ⟨resync st₁, hst₁.resync, resync_synchronized hst₁, ?_, rfl⟩, ?_, ?_⟩
-  · change SelfVis N st₁.gate
-    rw [hgate]
-    exact hg
-  · intro d
-    rw [State.sourceProfile_of_present _ ((present_priv_iff N d.1).mp d.2)]
-    change st₁.v ⟨d.1, _⟩ = v₁ d
-    rw [hv]
-    exact congrArg v₁ (Subtype.ext rfl)
-  · intro f
-    by_cases hf : f.grade ≤ N
-    · rw [State.sourceProfile_of_present _ hf, State.sourceProfile_of_present _ hf]
-      cases f with
-      | req d => exact hu _
-      | priv d =>
-          change min (st₁.v _) γ = min (st.v _) γ
-          rw [hv]
-          exact hagree' _
-      | gate =>
-          change min st₁.gate γ = min st.gate γ
-          rw [hgate]
-    · rw [State.sourceProfile_of_future _ hf, State.sourceProfile_of_future _ hf]
-      exact (capReceipts_iff γ st (resync st₁)).mp hrec' f
+private theorem map_full {n : ℕ} {S : SemScheme n} {p : Cell S.scheme → ExtOrd}
+    (hp : RespectsSemantics S.rows p) (hn : n ≤ N) {σ} (hw : Witness (gTop N) σ)
+    (hb : ∀ x, σ x = ⊥ → x = ⊥) : RespectsSemantics S.rows (σ ∘ p) :=
+  (FiniteOrbitEmbedding.map_respects (hp.toBelow (Finset.univ,n))
+    (fun d => d.2.2.trans hn) hw hb).toRespects (fun d => ⟨Finset.subset_univ _,gradeC_le d⟩)
 
-/-! ## Switching the gate off -/
+theorem Admitted.map {a} (h : R.Admitted a) {σ} (hw : Witness (gTop N) σ)
+    (hb : ∀ x, σ x = ⊥ → x = ⊥) : R.Admitted (σ ∘ a) := by
+  have hv := map_full h.priv le_rfl hw hb
+  have pos := map_ne_bot_iff hw hb
+  refine ⟨map_full h.donor R.arity_lt.le hw hb,hv,fun d => congrArg σ (h.face d),
+    selfVis_map hw le_rfl h.gate,?_,?_⟩
+  · intro hg hc
+    have H := h.active ((pos _).mp hg) ((pos _).mp hc)
+    exact ⟨hv.toBelow _,hc,fun i => (pos _).mpr (H.ref_pos i),fun d hd => (congrArg σ (H.face_bot d hd)).trans hw.bot⟩
+  · intro hg hc d
+    change min (σ _) (R.cut (fun e => σ (a (.priv e.1)))) = R.sel (fun e => σ (a (.priv e.1))) d
+    rw [cut_map hw le_rfl,sel_map hw le_rfl,← hw.mono.map_min]
+    exact congrArg σ (h.relation ((pos _).mp hg) ((pos _).mp hc) d)
 
-/-- The state with its gate switched off. -/
-def gateOff {j : ℕ} (st : R.State j) : R.State j := { st with gate := ⊥ }
+theorem Admitted.normalize {a} (h : R.Admitted a) : R.Admitted (PairedSlotEncoding.normalize N a) := by
+  simpa only [Function.comp_def,PairedSlotIncoming.encoder_profile] using h.map
+    (PairedSlotIncoming.encoder_witness N (PairedSlotEncoding.values a)) (PairedSlotIncoming.encoder_reflects_bottom _ _)
 
-/-- Switching the gate off preserves admissibility: the support guard and the relation have a
-positive-gate antecedent, and nothing else reads the gate. -/
-theorem Admissible.gateOff {j : ℕ} {st : R.State j} (hst : R.Admissible st) :
-    R.Admissible (Ref.gateOff st) where
-  u_respects := hst.u_respects
-  v_respects := hst.v_respects
-  face := hst.face
-  gate_vis := extVisibilityReplace_bot _ _
-  shadowP_vis := hst.shadowP_vis
-  shadowC_vis := hst.shadowC_vis
-  shadowP_iff := hst.shadowP_iff
-  shadowC_iff := hst.shadowC_iff
-  support hg := absurd rfl hg
-  relation _ hg := absurd rfl hg
+theorem Admitted.cap {a} (h : R.Admitted a) {β} (hv : SelfVis N β) (hb : β ≠ ⊥) :
+    R.Admitted (fun f => min (a f) β) := h.map (capWitness hv hb) (capWitness_reflects_bottom hb)
 
-/-- Switching the gate off preserves synchronization. -/
-theorem Synchronized.gateOff {j : ℕ} (hj : 1 ≤ j) {st : R.State j} (hs : Synchronized st) :
-    Synchronized (Ref.gateOff st) := by
-  intro f
-  cases f with
-  | gate =>
-      change (⊥ : ExtOrd) = extVisibilityReplace ((Ref.gateOff st).sourceProfile .gate) 1 1
-      rw [State.sourceProfile_of_present _ (by exact hj)]
-      rfl
-  | req d =>
-      change st.shadowP d = _
-      have h := hs (.req d)
-      change st.shadowP d = _ at h
-      rw [h]
-      congr 1
-  | priv d =>
-      change st.shadowC d = _
-      have h := hs (.priv d)
-      change st.shadowC d = _ at h
-      rw [h]
-      congr 1
+variable (R) in
+theorem Admitted.zero : R.Admitted (fun _ => ⊥) := ⟨RespectsSemantics.bot _, RespectsSemantics.bot _,
+  fun _ => rfl,selfVis_bot N,fun h => (h rfl).elim,fun h => (h rfl).elim⟩
 
-/-! ## Terminal insertion -/
+/-- Bountifulness installs the whole common face into a full lawful request section. -/
+private theorem install {u : Cell P.scheme → ExtOrd} {v : Cell C.scheme → ExtOrd}
+    (hu : RespectsSemantics P.rows u) (hv : RespectsSemantics C.rows v) {γ} (hγ : SelfVis N γ)
+    (hc : ∀ e : P.scheme.below (R.A,R.KA), min (u e.1) γ = min (v (R.face e).1) γ) :
+    ∃ w, (RespectsSemantics P.rows w ∧ ∀ e : P.scheme.below (R.A,R.KA), w e.1 = v (R.face e).1) ∧
+      CappedEq w u γ := by
+  obtain ⟨w,hw,hpre,hread⟩ := R.exists_installP (j := N) (hu.toBelow _) (hv.toBelow _)
+    (R.selfVis_effP_of_N N hγ) (fun e _ => hc e)
+  let hall := fun d : Cell P.scheme => (present_req_iff N d).mpr ((gradeP_le d).trans R.arity_lt.le)
+  exact ⟨_,⟨hw.toRespects hall,fun e => hread e ((gradeP_le e.1).trans R.arity_lt.le)⟩,fun d => hpre ⟨d,hall d⟩⟩
 
-/-- A fresh limit block floor above every proper value of the source vector and above a given
-ordinal. -/
-noncomputable def State.freshFloor {j : ℕ} (st : R.State j) (h : Ordinal.{0}) : Ordinal.{0} :=
-  Ordinal.omega0 * ((insert h st.inventory).sup id + 1)
+/-- Repair even at bottom: switch the gate off there. At a positive cap the active private
+pattern is unchanged and the selector and the old request agree below the smaller cut. -/
+theorem Admitted.private_repair {a} (h : R.Admitted a) {v₁ : C.ClippedCells N → ExtOrd}
+    (hv₁ : C.rows.Lawful v₁) {γ} (hγ : SelfVis N γ)
+    (he : ∀ d, min (v₁ d) γ = min (a (.priv d.1)) γ) :
+    ∃ b, R.Admitted b ∧ (∀ d, b (.priv d.1) = v₁ d) ∧ CappedEq b a γ := by
+  let v := fun d => v₁ (privCell d (gradeC_le d))
+  have hv : RespectsSemantics C.rows v := hv₁.toRespects (fun d => (present_priv_iff N d).mpr (gradeC_le d))
+  have hp (d) : min (v d) γ = min (a (.priv d)) γ := he _
+  have old := install (R := R) h.donor hv hγ (fun e =>
+    (congrArg (min · γ) (h.face e)).trans (hp _).symm)
+  by_cases hz : γ = ⊥
+  · obtain ⟨w,⟨hw,hf⟩,_⟩ := old
+    exact ⟨pack w v ⊥,⟨hw,hv,hf,selfVis_bot N,fun hn => (hn rfl).elim,fun hn => (hn rfl).elim⟩,
+      fun _ => rfl,fun _ => by simp [hz]⟩
+  have pat := SharpWitnessComposition.bottom_pattern_of_cap_agreement hz hp
+  have act (hg : a .gate ≠ ⊥) (hc : v R.cap ≠ ⊥) : R.Active (R.low v) := by
+    have H := h.active hg (fun x => hc ((pat _).mpr x))
+    exact ⟨hv.toBelow _,hc,fun i hh => H.ref_pos i ((pat _).mp hh),fun d hd => (pat _).mpr (H.face_bot d hd)⟩
+  let β := R.cut (R.low v)
+  let sel := R.sel (R.low v)
+  suffices ∃ w, (RespectsSemantics P.rows w ∧ ∀ e : P.scheme.below (R.A,R.KA), w e.1 = v (R.face e).1) ∧
+      CappedEq w (a ∘ Field.req) γ ∧ (a .gate ≠ ⊥ → v R.cap ≠ ⊥ → ∀ d, min (w d) β = sel d) by
+    obtain ⟨w,⟨hw,hf⟩,hpre,hrel⟩ := this
+    refine ⟨pack w v (a .gate),⟨hw,hv,hf,h.gate,act,hrel⟩,fun _ => rfl,?_⟩
+    rintro (d|d|_) <;> first | exact hpre d | exact hp d | rfl
+  by_cases on : a .gate ≠ ⊥ ∧ v R.cap ≠ ⊥
+  · have H := act on.1 on.2
+    have hvis := R.selfVis_cut (Active.selfVis_cap R H)
+    have hs := install (R := R) (Active.sel_respects R H) hv hvis (fun d => by
+      rw [Active.sel_face R H d,min_assoc,min_self]; rfl)
+    let u := R.low (a ∘ Field.priv)
+    have heq : (fun e => min (R.low v e) γ) = (fun e => min (u e) γ) := funext fun _ => hp _
+    have hcut : min β γ = min (R.cut u) γ := by rw [← R.cut_min hγ,← R.cut_min hγ,heq]
+    have hsel d : min (sel d) γ = min (R.sel u d) γ := by rw [← R.sel_min hγ,← R.sel_min hγ,heq]
+    have hag : CappedEq (a ∘ Field.req) sel (min γ β) := by
+      intro d
+      change min (a (.req d)) _ = _
+      rw [min_comm γ β, hcut, ← min_assoc,h.relation on.1 (fun h0 => on.2 ((pat _).mpr h0)),← hsel,
+        ← hcut,← min_assoc,min_eq_left (R.sel_le_cut _ _)]
+    obtain ⟨w,hw,hpre,hrel⟩ := hag.combine old hs
+    exact ⟨w,hw,hpre,fun _ _ d => (hrel d).trans (min_eq_left (R.sel_le_cut _ _))⟩
+  · obtain ⟨w,hw,heq⟩ := old
+    exact ⟨w,hw,heq,fun hg hc => (on ⟨hg,hc⟩).elim⟩
 
-theorem State.freshFloor_limit {j : ℕ} (st : R.State j) (h : Ordinal.{0}) :
-    limitPart (st.freshFloor h) = st.freshFloor h :=
-  limitPart_omega0_mul _
-
-theorem State.lt_freshFloor {j : ℕ} (st : R.State j) (h : Ordinal.{0}) {a : Ordinal.{0}}
-    (ha : a ∈ insert h st.inventory) : a < st.freshFloor h := by
-  unfold State.freshFloor
-  set m : Ordinal.{0} := (insert h st.inventory).sup id with hm
-  have h1 : a ≤ m := Finset.le_sup (f := id) ha
-  have h2 : m + 1 ≤ Ordinal.omega0 * (m + 1) := Ordinal.le_mul_right _ Ordinal.omega0_pos
-  have h3 : a < m + 1 := Order.lt_add_one_iff.mpr h1
-  exact h3.trans_le h2
-
-theorem State.profile_lt_freshFloor {j : ℕ} (st : R.State j) (h : Ordinal.{0}) (f : Field P C) :
-    st.sourceProfile f < ofOrd (st.freshFloor h) ∨ st.sourceProfile f = ⊤ := by
-  rcases ExtOrd.cases (st.sourceProfile f) with hb | ht | ⟨a, ha⟩
-  · exact Or.inl (hb ▸ bot_lt_iff_ne_bot.mpr (ofOrd_ne_bot _))
-  · exact Or.inr ht
-  · refine Or.inl ?_
-    rw [ha, ofOrd_lt_ofOrd]
-    exact st.lt_freshFloor h (Finset.mem_insert_of_mem
-      (PairedSlotEncoding.mem_values.mpr ⟨f, ha⟩))
-
-theorem State.h_lt_freshFloor {j : ℕ} (st : R.State j) (h : Ordinal.{0}) :
-    h < st.freshFloor h :=
-  st.lt_freshFloor h (Finset.mem_insert_self _ _)
-
-/-- **Terminal insertion, with a supported decoder.**  Capping an admitted source at `β = λ + N`
-for the fresh limit floor `λ` above every proper value and above a prescribed cut `h` gives an
-admitted **proper** source `b₀` with the same prefix below `h` and literal on every proper field;
-its canonical normalization `b` is an admitted member of the finite canonical inventory, and one
-normalized witness through `N` (the right-filled decoder over the grid `{β}`, then whole-block
-collapse) reads every original field back exactly, literal tops included, and sends **every**
-value — represented or not, unused grid points and the terminal region included — to a value
-supported by the original field vector `a`, with bottom and top allowed. -/
-theorem Admitted.exists_terminal' {a : Field P C → ExtOrd} (h : R.Admitted a)
-    (hh : Ordinal.{0}) :
-    ∃ b₀ : Field P C → ExtOrd, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
-      (∀ f, min (b₀ f) (ofOrd hh) = min (a f) (ofOrd hh)) ∧ (∀ f, a f ≠ ⊤ → b₀ f = a f) ∧
-      R.Admitted (PairedSlotEncoding.normalize N b₀) ∧
-      PairedSlotEncoding.normalize N b₀ ∈ CanonicalPairedProfiles.inventory (Field P C) N ∧
-      ∃ δ : ExtOrd → ExtOrd, Witness (gTop N) δ ∧
-        (∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f) ∧
-        ∀ x, OrbitPrefixSupport.Supported N ({⊤} : Set ExtOrd) a (δ x) := by
-  obtain ⟨st, hst, hs, hg, rfl⟩ := h
-  set l := st.freshFloor hh with hl
-  have hlim : limitPart l = l := st.freshFloor_limit hh
-  set β : ExtOrd := ofOrd (l + N) with hβdef
-  have hβfp : finitePart (l + N) = N := by
-    have := finitePart_limitPart_add_nat l N
-    rwa [hlim] at this
-  have hβvis : SelfVis N β := by
-    rw [hβdef, selfVis_ofOrd_iff, hβfp]
-  have hβbot : β ≠ ⊥ := ofOrd_ne_bot _
-  have hlβ : ofOrd l ≤ β := ofOrd_le_ofOrd.mpr le_self_add
-  have hcap : R.Admitted (fun f => min (st.sourceProfile f) β) :=
-    Admitted.cap ⟨st, hst, hs, hg, rfl⟩ hβvis hβbot
-  have hproper : ∀ f, min (st.sourceProfile f) β ≠ ⊤ := fun f ht =>
-    ofOrd_ne_top _ ((min_eq_top.mp ht).2)
-  refine ⟨fun f => min (st.sourceProfile f) β, hcap, hproper, ?_, ?_, hcap.normalize,
-    CanonicalPairedProfiles.normalize_mem_inventory _ _ hproper, ?_⟩
-  · intro f
-    rw [min_assoc, min_eq_right ((ofOrd_le_ofOrd.mpr (st.h_lt_freshFloor hh).le).trans hlβ)]
-  · intro f hf
-    rcases st.profile_lt_freshFloor hh f with hlt | ht
-    · exact min_eq_left (hlt.le.trans hlβ)
-    · exact absurd ht hf
-  · have hG : ∀ z ∈ ({β} : Finset ExtOrd), SelfVis N z := fun z hz => by
-      rw [Finset.mem_singleton.mp hz]; exact hβvis
-    have hC : β ∈ ({β} : Finset ExtOrd) := Finset.mem_singleton_self β
-    refine ⟨collapseBlock l ∘ PairedSlotDecoder.decode N
-      (PairedSlotEncoding.values (fun f => min (st.sourceProfile f) β)) {β} β,
-      Witness.comp_of_bottom_reflecting (PairedSlotDecoder.decode_witness hG hβvis)
-        (collapseBlock_witness N hlim) le_rfl (collapseBlock_reflects_bottom l), ?_, ?_⟩
-    · intro f
-      rw [Function.comp_apply, PairedSlotDecoder.decode_normalize hG hβvis hproper f]
-      exact collapseBlock_min hlβ (st.profile_lt_freshFloor hh f)
-    · intro x
-      rw [Function.comp_apply]
-      rcases PairedSlotDecoder.decode_supported (j := N) (K := N)
-        (p := fun f => min (st.sourceProfile f) β) le_rfl hC x with hz | hβ' | ⟨f, i, hi, he⟩
-      · rw [hz]
-        exact Or.inl (collapseBlock_witness N hlim).bot
-      · rw [Finset.mem_singleton.mp (Finset.mem_coe.mp hβ'), collapseBlock_of_le hlβ]
-        exact Or.inr (Or.inl (Set.mem_singleton _))
-      · rw [he]
-        change OrbitPrefixSupport.Supported N ({⊤} : Set ExtOrd) st.sourceProfile
-          (collapseBlock l (extVisibilityReplace (min (st.sourceProfile f) β) N i))
-        rcases st.profile_lt_freshFloor hh f with hlt | ht
-        · rw [min_eq_left (hlt.le.trans hlβ),
-            collapseBlock_of_lt (evr_lt_of_lt_limit hlim hlt N i)]
-          exact Or.inr (Or.inr ⟨f, i, hi, rfl⟩)
-        · rw [ht, min_top_left, evr_eq_self_of_selfVis hβvis i, collapseBlock_of_le hlβ]
-          exact Or.inr (Or.inl (Set.mem_singleton _))
-
-/-- **Terminal insertion** (the decoder's support conjunct dropped). -/
-theorem Admitted.exists_terminal {a : Field P C → ExtOrd} (h : R.Admitted a) (hh : Ordinal.{0}) :
-    ∃ b₀ : Field P C → ExtOrd, R.Admitted b₀ ∧ (∀ f, b₀ f ≠ ⊤) ∧
-      (∀ f, min (b₀ f) (ofOrd hh) = min (a f) (ofOrd hh)) ∧ (∀ f, a f ≠ ⊤ → b₀ f = a f) ∧
-      R.Admitted (PairedSlotEncoding.normalize N b₀) ∧
-      PairedSlotEncoding.normalize N b₀ ∈ CanonicalPairedProfiles.inventory (Field P C) N ∧
-      ∃ δ : ExtOrd → ExtOrd, Witness (gTop N) δ ∧
-        ∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f := by
-  obtain ⟨b₀, h1, h2, h3, h4, h5, h6, δ, hδ, hread, -⟩ := h.exists_terminal' hh
-  exact ⟨b₀, h1, h2, h3, h4, h5, h6, δ, hδ, hread⟩
+def profiles (R : Ref I nP N N P C) : ProfileCatalogue.Family (Field P C → ExtOrd) (Field P C) N where
+  profile := id
+  admitted := R.Admitted
+  realize := fun {s} _ hs h => ⟨_, (hs.cap (TerminalProfile.visible s N h) (ofOrd_ne_bot _)).normalize, rfl⟩
 
 /-! ## The finite canonical catalogue -/
 
@@ -291,9 +176,15 @@ theorem catalogue_finite : (R.Catalogue).Finite :=
   (CanonicalPairedProfiles.inventory_finite (Field P C) N).subset fun _ h => h.1
 
 /-- The normalization of a proper admitted source is in the catalogue. -/
-theorem Admitted.normalize_mem_catalogue {a : Field P C → ExtOrd} (h : R.Admitted a)
+theorem Admitted.normalize_mem_catalogue {a} (h : R.Admitted a)
     (hproper : ∀ f, a f ≠ ⊤) : PairedSlotEncoding.normalize N a ∈ R.Catalogue :=
   ⟨CanonicalPairedProfiles.normalize_mem_inventory _ _ hproper, h.normalize⟩
+
+theorem Admitted.display {a : Field P C → ExtOrd} (ha : R.Admitted a) :
+    ∃ (b : ↥R.Catalogue) (δ : ExtOrd → ExtOrd), Witness (gTop N) δ ∧
+      (∀ f, δ (b.val f) = a f) ∧ ∀ f, δ (b.val f) = ⊥ ↔ b.val f = ⊥ := by
+  obtain ⟨z,hz,hcan,δ,hw,hr,hb,_⟩ := ProfileCatalogue.supported_decoder R.profiles R.one_le_N ha
+  exact ⟨⟨z,hcan,hz⟩,δ,hw,hr,fun f => ⟨hb f, fun he => he ▸ hw.bot⟩⟩
 
 end
 end VaughtConjecture.Knight.CappedDonor.Ref

@@ -17,7 +17,6 @@ encoded template. There is no physical-receiving assertion here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableTemplate
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 open CellScheme.restrictFace
@@ -32,11 +31,11 @@ theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
     (q : S α.nextBlock.1 (n + 1)) (hq : IsCoface (stableLiftType hM t p hp) q)
     (c : Cell C.scheme.scheme) (hsc : C.scheme.scheme.scope c = Finset.univ)
     (hc : C.label c = ⊤) (L : ℕ) (hnL : n + 1 < L) (hLN : L < C.scheme.scheme.grade c)
-    (a : C.scheme.scheme.below (C.scheme.scheme.cell c)) {i : ℕ}
+    (a : C.scheme.scheme.RowDomain c) {i : ℕ}
     (hi : i < C.scheme.scheme.grade c) (ha : W.stableValue u C a.1 = ofOrd (α.1 + i))
     (hai : ofOrd (α.1 + i) < W.stableValue u C c)
     (hcut : ofOrd (α.1 + L) < W.stableValue u C c)
-    (ref : Ordinal.{0} → C.scheme.scheme.below (C.scheme.scheme.cell c))
+    (ref : Ordinal.{0} → C.scheme.scheme.RowDomain c)
     (off : Ordinal.{0} → ℕ)
     (href : ∀ μ ∈ blocks q, off μ < C.scheme.scheme.grade c ∧
       W.stableValue u C (ref μ).1 = ofOrd (μ + off μ) ∧
@@ -52,16 +51,15 @@ theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
       X.top = (Finset.univ, n + 1) ∧
       Nonempty (Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP f hvC hF X) ∧
       (∀ j, Growth.Admitted X j (GrowthStableSelectedInput.state
-        (W := W) (u := u) (C := C) (q := q))) ∧
-      HEq X.ZA {d : C.scheme.scheme.below (C.scheme.scheme.cell c) | C.label d.1 = ⊥} := by
+        (W := W) (u := u))) ∧
+      HEq X.ZA {d : C.scheme.scheme.RowDomain c | C.label d.1 = ⊥} := by
   classical
   obtain ⟨hvP, hvC, hP, hF⟩ := GrowthStableSelectedInput.common_faces hM hp hf hq
   let root : Finset (Fin (n + 1)) × ℕ := (Finset.univ.image Fin.castSuccEmb, n)
   let top : Finset (Fin (n + 1)) × ℕ := (Finset.univ, n + 1)
   have hbelow : GradedLe (Finset.univ.image f, n) (C.scheme.scheme.cell c) := by
     constructor
-    · change Finset.univ.image f ⊆ C.scheme.scheme.scope c
-      rw [hsc]; exact Finset.subset_univ _
+    · aesop
     · exact (Nat.le_succ n).trans (hnL.le.trans hLN.le)
   let κ := Growth.literalKappa p.scheme Fin.castSuccEmb hvP hP f hvC hF c hbelow
   have hlit (d : q.scheme.scheme.below root) : q.label d.1 = W.stableValue u C (κ d).1 := by
@@ -73,7 +71,7 @@ theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
     exact ((StageType.label_castCell hC'.symm _).trans
       ((StageType.label_castCell hP' _).trans
         (congrArg q.label (toCell_belowEquiv_symm_val _ _ _ _ d)))).symm
-  have hroot : ∀ s, RespectsSemanticsBelow C.scheme.rows (C.scheme.scheme.cell c) s →
+  have hroot : ∀ s, C.scheme.rows.Lawful s →
       RespectsSemanticsBelow q.scheme.rows root (fun d => s (κ d)) :=
     fun _ hs => Growth.literalKappa_lawful _ _ _ _ _ _ _ _ _ hs
   have hrmem : root ∈ Plan.gradedPlan q.scheme.scheme.plan :=
@@ -94,18 +92,18 @@ theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
     GrowthStableSelectedInput.exists_cleaned_source_chart hM hC c hc
   have heproper (d) : e d ≠ ⊤ := by
     by_cases hb : C.label d.1 = ⊥
-    · rw [(hebot d).mpr hb]; exact bot_ne_top
+    · grind
     · rw [heeq d hb]
       rcases C.scheme.rows_coded c d with h | ⟨i, j, _, h⟩
-      · rw [h]; exact bot_ne_top
-      · rw [h]; exact ofOrd_ne_top _
-  have hebot' (d) : e d = ⊥ ↔ W.stableValue u C d.1 = ⊥ :=
+      · grind
+      · rw [h]; simp
+  have hebot' (d) :=
     (hebot d).trans (GrowthStableSelectedInput.private_bottom hM hC d.1).symm
   have hblocks (d β) (hd : q.label d = ofOrd β) :
       limitPart β ∈ blocks q ∧ finitePart β < L :=
     ⟨mem_blocks.mpr ⟨_, mem_donorRequests.mpr ⟨d, β, hd, rfl⟩, rfl⟩, hfp d β hd⟩
   have hread (μ) (hμ : μ ∈ blocks q) : τ (e (ref μ)) = ofOrd (μ + off μ) := by
-    rw [hchart, (href μ hμ).2.1, min_eq_left (href μ hμ).2.2.le]
+    grind
   have hfields (d) (hd : d ∈ req.F) : ∃ β, q.label d = ofOrd β ∧
       req.ρ d = ref (limitPart β) ∧ req.off d = finitePart β := by
     rcases ExtOrd.cases (q.label d) with hb | ht | ⟨β, hβ⟩
@@ -128,7 +126,7 @@ theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
     req := req
     grade_C := rfl
     ZA := {d | C.label d.1 = ⊥}
-    C_notin := by change C.label c ≠ ⊥; rw [hc]; exact top_ne_bot
+    C_notin := by change C.label c ≠ ⊥; grind
     a_notin := by
       intro hb
       have h := (GrowthStableSelectedInput.private_bottom hM hC a.1).mpr hb
@@ -159,7 +157,7 @@ theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
     bountiful := q.scheme.bountiful
     cover := fun d => by
       by_cases hb : q.label d = ⊥
-      · exact Or.inl hb
+      · solve_by_elim
       by_cases ht : q.label d = ⊤
       · exact Or.inr (Or.inr (Or.inl ht))
       exact Or.inr (Or.inl ⟨hb, ht⟩)
@@ -174,12 +172,9 @@ theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
   · intro d
     cases d with
     | inl d =>
-      have hv : SelfVis (C.scheme.scheme.grade d) (W.stableValue u C d) :=
-        ((stableLiftRespects hM hC).orderly d).symm
-      exact hv.mono (C.scheme.scheme.grade_pos d)
+      exact SelfVis.mono (Eq.symm ((stableLiftRespects hM hC).orderly d)) (CellScheme.grade_pos C.scheme.scheme d)
     | inr d =>
-      have hv : SelfVis (q.scheme.scheme.grade d) (q.label d) := (q.respects.orderly d).symm
-      exact hv.mono (q.scheme.scheme.grade_pos d)
+      exact SelfVis.mono (Eq.symm (q.respects.orderly d)) (CellScheme.grade_pos q.scheme.scheme d)
   · intro _ _
     exact GrowthFiniteCapRequests.correct c L hLN a ref q.label (W.stableValue u C) off href'
 
@@ -210,36 +205,36 @@ theorem exists_input (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
           Nonempty (Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP f hvC hF X) ∧
           X.ZA = {d | C.label d.1 = ⊥} ∧
           (∀ j, Growth.Admitted X j (GrowthStableSelectedInput.state
-            (W := W) (u := u) (C := C) (q := q))) ∧
-          (∀ v : Cell q.scheme.scheme → ExtOrd,
+            (W := W) (u := u))) ∧
+          (∀ v : q.scheme.scheme.Labelling,
             X.req.Correct (X.req.sec (W.stableValue u C)) v →
               (∀ d, q.label d ≠ ⊤ → v d = q.label d) ∧
               (∀ d, q.label d = ⊤ → ofOrd γ < v d)) := by
   classical
   have hfloor : ∃ b : ℕ, γ < α.1 + b := by
     rcases lt_or_ge γ α.1 with h | h
-    · exact ⟨0, by simpa using h⟩
+    · exact ⟨0, by simp_all⟩
     · obtain ⟨b, rfl⟩ := exists_nat_of_lt_add_omega h hγ
       exact ⟨b + 1, add_lt_add_right (Nat.cast_lt.mpr (Nat.lt_succ_self b)) _⟩
   obtain ⟨b, hb⟩ := hfloor
   obtain ⟨L, hbL, hnL, hfp, hproper⟩ := GrowthFiniteCapRequests.exists_cut q b
-  have hγL : ofOrd γ < ofOrd (α.1 + L) :=
+  have hγL :=
     ofOrd_lt_ofOrd.mpr (hb.trans (add_lt_add_right (Nat.cast_lt.mpr hbL) _))
   obtain ⟨J, u, C, hC, f, g, hfu, -, hf, hg₀, c, hsc, hc, hLN, hi,
     hab, ha, hcut, hai, ref, off, href, -, -⟩ :=
     GrowthStableCalibration.exists_calibration hM hg hs a₀ hatop ha₀ t p hp (blocks q)
       (GrowthFiniteCapRequests.blocks_limit q) (GrowthFiniteCapRequests.blocks_le q) L
-  let a : C.scheme.scheme.below (C.scheme.scheme.cell c) := ⟨mapCell hg₀ a₀, hab⟩
+  let a : C.scheme.scheme.RowDomain c := ⟨mapCell hg₀ a₀, hab⟩
   obtain ⟨hvP, hP, hvC, hF, X, hreq, htop, hattach, hadmit, hclass⟩ :=
     exists_input_at hM hn hp hC hfu hf q hq c hsc hc L hnL hLN a hi ha hai hcut
       ref off href hfp hproper
-  have hcap : X.req.C = c := congrArg Requests.C hreq
+  have hcap := congrArg Requests.C hreq
   have hN : X.req.N = C.scheme.scheme.grade c := congrArg Requests.N hreq
   refine ⟨J, u, C, hC, f, hfu, hf, hvP, hP, hvC, hF, X, htop,
-    by rw [hN]; exact hnL.trans hLN, hcap.symm ▸ hsc, hcap.symm ▸ hc, hattach,
+    by omega, hcap.symm ▸ hsc, hcap.symm ▸ hc, hattach,
     ?_, hadmit, ?_⟩
   · cases hcap
-    exact eq_of_heq hclass
+    grind
   · intro v hv
     rw [hreq] at hv
     have href' (d β) (hd : q.label d = ofOrd β) :
@@ -251,11 +246,8 @@ theorem exists_input (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     · intro d hnt
       by_cases hb : q.label d = ⊥
       · have he := hv.1 d hb
-        change min (v d) (W.stableValue u C c) = ⊥ at he
-        have hcb : W.stableValue u C c ≠ ⊥ := ne_of_gt ((bot_lt_ofOrd _).trans hcut)
-        exact ((min_eq_bot.mp he).resolve_right hcb).trans hb.symm
-      · exact GrowthFiniteCapRequests.proper_readback c L hLN a ref q.label
-          (W.stableValue u C) hcut off href' hproper hv ⟨hb, hnt⟩
+        exact ((min_eq_bot.mp he).resolve_right (ne_of_gt ((bot_lt_ofOrd _).trans hcut))).trans hb.symm
+      exact GrowthFiniteCapRequests.proper_readback c L hLN a ref q.label (W.stableValue u C) hcut off href' hproper hv ⟨hb, hnt⟩
     · intro d hd
       exact hγL.trans_le (GrowthFiniteCapRequests.high_readback c L hLN a ref q.label
         (W.stableValue u C) (limitPart_eq_self_of_isNonSuccessor (Or.inr α.2))

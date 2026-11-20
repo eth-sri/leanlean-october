@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import InfinitaryLogic.Lomega1omega.Operations
-public import InfinitaryLogic.Util
 
 /-!
 # Semantics of `openBounds` and of relabeling by `insertLastBound`
@@ -38,7 +37,7 @@ variable {L : Language.{u, v}} {N : Type w} [L.Structure N] {n : ℕ}
 open FirstOrder Structure Fin BoundedFormulaω
 
 /-- Maps `j : Fin k` to `⟨j.val + 1, ...⟩ : Fin (1 + k)`. Used for bound variable shifting. -/
-private def finSuccShift {k : ℕ} : Fin k → Fin (1 + k) :=
+private def finSuccShift {k} : Fin k → Fin (1 + k) :=
   fun j => ⟨j.val + 1, by omega⟩
 
 /-- Helper lemma: the composition of `Sum.elim v xs` with `relabelAux insertLastBound k`
@@ -99,8 +98,8 @@ private lemma snoc_zero_eq {k : ℕ} (xs : Fin (1 + k) → N) (y : N) :
 
 This handles all cases including `all`, which appears in Scott formulas due to
 `forallLastVar` applications at earlier stages. -/
-private theorem realize_relabel_insertLastBound {n : ℕ} :
-    ∀ {k : ℕ} (φ : L.BoundedFormulaω (Fin (n + 1)) k) (v : Fin n → N) (xs : Fin (1 + k) → N),
+private theorem realize_relabel_insertLastBound {n} :
+    ∀ {k} (φ : L.BoundedFormulaω (Fin (n + 1)) k) v (xs : Fin (1 + k) → N),
     (φ.relabel insertLastBound).Realize v xs ↔ φ.Realize (snoc v (xs 0)) (xs ∘ finSuccShift) := by
   intro k φ
   induction φ with
@@ -137,78 +136,11 @@ For `φ : L.Formulaω (Fin (n+1))` (a formula with n+1 free vars and 0 bound var
 - When we evaluate with free var assignment `v : Fin n → N` and bound var assignment
   `xs : Fin 1 → N`, this corresponds to evaluating the original formula with
   `snoc v (xs 0) : Fin (n+1) → N` -/
-theorem realize_relabel_insertLastBound_zero {n : ℕ} (φ : L.Formulaω (Fin (n + 1)))
-    (v : Fin n → N) (xs : Fin 1 → N) :
+theorem realize_relabel_insertLastBound_zero {n} (φ : L.Formulaω (Fin (n + 1)))
+    v (xs : Fin 1 → N) :
     (φ.relabel insertLastBound).Realize v xs ↔ φ.Realize (snoc v (xs 0)) := by
   have h := realize_relabel_insertLastBound (k := 0) φ v xs
   rwa [show (xs ∘ finSuccShift : Fin 0 → N) = Fin.elim0 from Fin.eq_elim0 _] at h
-
-
-/-- Term-level semantic roundtrip: evaluating a relabeled term with `Sum.elim xs Fin.elim0`
-equals evaluating the original term with `Sum.elim Empty.elim xs`. -/
-private theorem term_realize_openBounds {M : Type*} [L.Structure M]
-    (t : L.Term (Empty ⊕ Fin n)) (xs : Fin n → M) :
-    (t.relabel (Sum.elim Empty.elim Sum.inl)).realize (Sum.elim xs Fin.elim0) =
-    t.realize (Sum.elim Empty.elim xs) := by
-  simp only [Term.realize_relabel]
-  congr 1
-  funext x; rcases x with e | i
-  · exact Empty.elim e
-  · simp [Sum.elim, Function.comp]
-
-/-- Helper: `snoc Fin.elim0 x` evaluated at `0 : Fin 1` gives `x`. -/
-lemma snoc_elim0_zero_eq {M : Type*} (x : M) :
-    (Fin.snoc (α := fun _ => M) Fin.elim0 x) (0 : Fin 1) = x :=
-  congrFun (Fin.snoc_elim0_eq x) 0
-
-/-- Semantic roundtrip: `openBounds` preserves semantics.
-For `φ : BoundedFormulaω Empty n`, evaluating `openBounds φ` with free variable assignment
-`xs : Fin n → M` is equivalent to evaluating `φ` with bound variable assignment `xs`. -/
-theorem realize_openBounds {M : Type*} [L.Structure M] :
-    ∀ {n : ℕ} (φ : L.BoundedFormulaω Empty n) (xs : Fin n → M),
-    Formulaω.Realize (φ.openBounds) xs ↔ φ.Realize Empty.elim xs := by
-  intro n φ
-  induction φ with
-  | falsum => intro xs; rfl
-  | equal t₁ t₂ =>
-    intro xs
-    show (t₁.relabel (Sum.elim Empty.elim Sum.inl)).realize (Sum.elim xs Fin.elim0) =
-         (t₂.relabel (Sum.elim Empty.elim Sum.inl)).realize (Sum.elim xs Fin.elim0) ↔
-         t₁.realize (Sum.elim Empty.elim xs) = t₂.realize (Sum.elim Empty.elim xs)
-    rw [term_realize_openBounds, term_realize_openBounds]
-  | rel R ts =>
-    intro xs
-    show (Structure.RelMap R fun i =>
-         (Term.relabel (Sum.elim Empty.elim Sum.inl) (ts i)).realize (Sum.elim xs Fin.elim0)) ↔
-         Structure.RelMap R fun i => (ts i).realize (Sum.elim Empty.elim xs)
-    simp_rw [term_realize_openBounds]
-  | imp φ ψ ihφ ihψ =>
-    intro xs
-    simp only [BoundedFormulaω.openBounds, Formulaω.realize_def, BoundedFormulaω.realize_imp]
-    exact Iff.imp (ihφ xs) (ihψ xs)
-  | iSup φs ih =>
-    intro xs
-    simp only [BoundedFormulaω.openBounds, Formulaω.realize_def, BoundedFormulaω.realize_iSup]
-    exact exists_congr (fun i => ih i xs)
-  | iInf φs ih =>
-    intro xs
-    simp only [BoundedFormulaω.openBounds, Formulaω.realize_def, BoundedFormulaω.realize_iInf]
-    exact forall_congr' (fun i => ih i xs)
-  | all φ ih =>
-    intro xs
-    -- `φ` is induction-bound, so it carries the inductive type and needs the qualified name
-    show Formulaω.Realize (((BoundedFormulaω.openBounds φ).relabel insertLastBound).all) xs ↔
-         (BoundedFormulaω.all φ).Realize Empty.elim xs
-    -- `FormulaInf.Realize` is a plain definition upstream, not a reducible abbreviation, so a
-    -- lemma stated at the bounded-formula level cannot be `rw`-keyed against this goal; both
-    -- sides are `all`-quantified, so bridge the bodies by application instead
-    refine forall_congr' fun x => ?_
-    have hz : (Fin.snoc (α := fun _ => M) (default : Fin 0 → M) x) (0 : Fin 1) = x :=
-      snoc_elim0_zero_eq x
-    refine (realize_relabel_insertLastBound_zero (BoundedFormulaω.openBounds φ) xs
-      (Fin.snoc default x)).trans ?_
-    rw [hz]
-    exact ih (Fin.snoc xs x)
 
 end Language
 

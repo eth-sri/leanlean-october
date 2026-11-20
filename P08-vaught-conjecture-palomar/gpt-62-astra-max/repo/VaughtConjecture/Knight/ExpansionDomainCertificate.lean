@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.ExpansionDomainUniform
-public import VaughtConjecture.Knight.ClassScottDefinitions
+public import VaughtConjecture.Knight.ClassPresentation
+public import InfinitaryLogic.Descriptive.ScottDefinability
 public import VaughtConjecture.FiltrationCertificate
 
 /-! # Construction receipts for the generic filtration certificate
@@ -35,7 +36,8 @@ def filtrationCertificate (hct : CountableTerminalFibres)
   limit := fun _ hl h => iInter_subset_domain hl h
   cofinal_losses := hloss
   separates := fun p q hpq => by
-    obtain ⟨φ, hφ⟩ := exists_isolating_sentence p
+    obtain ⟨φ, hφ⟩ := (isolatedPresentation_of_surjective (fun c : ModelsOf knightSentence => c.1) modelClass
+    modelClass_surjective (fun _ _ h => modelClass_eq_of_iso h) realizes realizes_modelClass p)
     exact ⟨φ, fun h => hpq (((hφ q).mp (h.mp ((hφ p).mpr rfl))).symm)⟩
   homogeneous := fun φ =>
     ⟨φ.qrank, qrank_lt_ord_aleph_one φ,

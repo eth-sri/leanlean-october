@@ -39,7 +39,9 @@ theorem KnightRealization.hasTopGradeGrowth_or_coinitial_constant
   let := labelledExt_isDirectedOrder hcons hcov
   rcases DirectedNat.eventually_constant_or_tendsto
       (f := fun x : R.LabelledExt => x.type.topGrade)
-      (fun _ _ h => LabelledExt.topGrade_mono h) with ⟨K, hK⟩ | hg
+      (fun _ _ h => by
+          obtain ⟨f, -, hpq⟩ := h
+          exact StageType.topGrade_le_of_typeMap_eq_some hpq) with ⟨K, hK⟩ | hg
   · exact Or.inr ⟨K, (isCoinitial_iff_eventually hcons hcov _).mpr hK⟩
   · left
     intro K x

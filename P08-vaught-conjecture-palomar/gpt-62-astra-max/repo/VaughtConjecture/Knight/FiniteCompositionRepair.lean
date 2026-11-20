@@ -33,8 +33,8 @@ variable {m : ℕ} {f : ExtOrd → ExtOrd} (hf : BoundedMap m f)
 include hf
 
 /-- A killed block floor already forces every low strip slot to bottom. -/
-theorem bot_on_strip {a : Ordinal.{0}} (ha : f (ofOrd (limitPart a)) = ⊥)
-    {i : ℕ} (hi : i ≤ m) : f (ofOrd (limitPart a + i)) = ⊥ := by
+theorem bot_on_strip {a} (ha : f (ofOrd (limitPart a)) = ⊥)
+    {i} (hi : i ≤ m) : f (ofOrd (limitPart a + i)) = ⊥ := by
   by_cases hm : m = 0
   · have hi0 : i = 0 := Nat.eq_zero_of_le_zero (hm ▸ hi)
     simpa only [hi0, Nat.cast_zero, add_zero] using ha
@@ -45,7 +45,7 @@ theorem bot_on_strip {a : Ordinal.{0}} (ha : f (ofOrd (limitPart a)) = ⊥)
   exact he
 
 /-- Only the original sources need testing: added low strip slots are automatic. -/
-theorem floor_check_on_strip (s : Finset ExtOrd)
+theorem floor_check_on_strip s
     (hfloor : ∀ x ∈ s, f (blockFloor x) = ⊥ → f x = ⊥) :
     ∀ x ∈ stripDomain m s, f (blockFloor x) = ⊥ → f x = ⊥ := by
   intro x hx hb
@@ -61,7 +61,7 @@ theorem floor_check_on_strip (s : Finset ExtOrd)
 
 /-- On a finite full-strip table, the floor-support check is the missing
 higher-threshold obligation. The existing bridge builds the witness explicitly. -/
-theorem finite_witness (s : Finset ExtOrd)
+theorem finite_witness s
     (hfloor : ∀ x ∈ stripDomain m s, f (blockFloor x) = ⊥ → f x = ⊥) :
     Witness (gTop m) (finiteLowerEnvelope (stripDomain m s) f) := by
   let t := stripDomain m s
@@ -91,35 +91,30 @@ theorem finite_witness (s : Finset ExtOrd)
     fun x k hact i hi => finiteLowerEnvelope_visibility_eq t f (gTop m)
       horbit hbridge x k i hi hact⟩
 
-/-- Every original table value is retained, not just its value below some cap. -/
-theorem finite_read (s : Finset ExtOrd) {x : ExtOrd} (hx : x ∈ s) :
-    finiteLowerEnvelope (stripDomain m s) f x = f x :=
-  finiteLowerEnvelope_source _ _ (fun _ _ _ _ h => hf.mono h) (subset_stripDomain m s hx)
-
 end BoundedMap
 
 section Scheme
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd}
+  {sem : Semantics D} {BJ : Finset ι × ℕ} {r : D.SectionAt BJ}
 
 /-- Actual normalized local witnesses of an already respecting labelling. The
 source-floor values are auxiliary witness data, not new semantic occurrences. -/
-structure LocalCharts (sem : Semantics D) (BJ : Finset ι × ℕ)
-    (r : D.below BJ → ExtOrd) where
+structure LocalCharts (sem : Semantics D) BJ
+    (r : D.SectionAt BJ) where
   shift : D.below BJ → ExtOrd → ExtOrd
   witness : ∀ c, Witness (gTop (D.grade c.1)) (shift c)
-  read : ∀ (c : D.below BJ) (d : D.below (D.cell c.1)),
+  read : ∀ c d,
     shift c (sem.E c.1 d) = min (r (CellScheme.below.incl c d)) (r c)
 
 /-- Existence is extracted from the old localities; it is not a new producer assumption. -/
-theorem exists_localCharts (hr : RespectsSemanticsBelow sem BJ r) :
+theorem exists_localCharts (hr : sem.Lawful r) :
     Nonempty (LocalCharts sem BJ r) := by
   have h (c : D.below BJ) : ∃ σ, Witness (gTop (D.grade c.1)) σ ∧
-      ∀ d : D.below (D.cell c.1),
+      ∀ d : D.RowDomain c.1,
         σ (sem.E c.1 d) = min (r (CellScheme.below.incl c d)) (r c) := by
     obtain ⟨σ, hw, _, he⟩ := exists_bounded_exact_capped_witness
-      (c := (⟨c.1, GradedLe.refl _⟩ : D.below (D.cell c.1)))
+      (c := (⟨c.1, GradedLe.refl _⟩ : D.RowDomain c.1))
       (p := fun d => r (CellScheme.below.incl c d))
       (fun d => d.2.2) (hr.orderly c).symm (hr.locality c)
     exact ⟨σ, hw, he⟩

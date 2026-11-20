@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.RootedKarp
-public import VaughtConjecture.Knight.PairedTrace
 
 /-! # The core-rooted extension property and its back-and-forth consumer
 
@@ -60,25 +59,5 @@ def RootedExtensionOver (W : KnightRealization α M) {c : ℕ} (core : Fin c ↪
     W.eval t = some p →
     ∀ {N : ℕ} (f : Fin n ↪ Fin N) (P : S α.1 N), typeMap f P = some p → Adm f p P →
       ∃ u : Fin N ↪ M, f.trans u = t ∧ W.eval u = some P
-
-/-- The rooted embedding of a chart into a covering of its one-point extension. -/
-theorem trans_snoc_cover {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.range t}
-    {s : Fin (n + 1 + k) ↪ M} (hst : (Fin.castAddEmb k).trans s = snoc t x hx) :
-    (Fin.castSuccEmb.trans (Fin.castAddEmb k)).trans s = t := by
-  ext i
-  have h := DFunLike.congr_fun hst (Fin.castSucc i)
-  simp only [Function.Embedding.trans_apply, Fin.castAddEmb_apply] at h
-  change s (Fin.castAdd k (Fin.castSucc i)) = t i
-  rw [h]
-  exact snoc_apply_castSucc t x hx i
-
-theorem cover_mem_range {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.range t}
-    {s : Fin (n + 1 + k) ↪ M} (hst : (Fin.castAddEmb k).trans s = snoc t x hx) :
-    ∃ i, s i = x := by
-  refine ⟨Fin.castAdd k (Fin.last n), ?_⟩
-  have h := DFunLike.congr_fun hst (Fin.last n)
-  simp only [Function.Embedding.trans_apply, Fin.castAddEmb_apply] at h
-  rw [h]
-  exact snoc_apply_last t x hx
 
 end VaughtConjecture.Knight

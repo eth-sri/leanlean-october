@@ -33,10 +33,9 @@ theorem exists_topCell_of_topGrade_pos (p : S α n) (hpos : 0 < p.topGrade) :
       p.scheme.scheme.grade Θ = p.topGrade ∧ p.label Θ = ⊤ := by
   have hne : p.topGrades.Nonempty := by
     by_contra hn
-    have hempty : p.topGrades = ∅ := Set.not_nonempty_iff_eq_empty.mp hn
     have : p.topGrade = 0 := by
       unfold topGrade
-      rw [hempty, csSup_empty]
+      rw [(Set.not_nonempty_iff_eq_empty.mp hn), csSup_empty]
       rfl
     omega
   exact Nat.sSup_mem hne p.topGrades_bddAbove

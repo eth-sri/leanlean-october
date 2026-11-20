@@ -26,22 +26,22 @@ open Transform Value ExtOrd
 /-- Self-visibility of a label at threshold `k`, spelled with `extVisibilityReplace`. -/
 abbrev SelfVis (k : ℕ) (x : ExtOrd) : Prop := extVisibilityReplace x k k = x
 
-theorem selfVis_mono {k k' : ℕ} {x : ExtOrd} (h : SelfVis k x) (hk : k' ≤ k) :
+theorem selfVis_mono {k k'} {x} (h : SelfVis k x) (hk : k' ≤ k) :
     SelfVis k' x :=
   extVisReplace_self_of_le h hk
 
-theorem selfVis_min {k : ℕ} {x y : ExtOrd} (hx : SelfVis k x) (hy : SelfVis k y) :
+theorem selfVis_min {k} {x y} (hx : SelfVis k x) (hy : SelfVis k y) :
     SelfVis k (min x y) := by
   rcases le_total x y with h | h
   · rwa [min_eq_left h]
   · rwa [min_eq_right h]
 
-theorem selfVis_bot (k : ℕ) : SelfVis k ⊥ := extVisibilityReplace_bot k k
+theorem selfVis_bot k : SelfVis k ⊥ := extVisibilityReplace_bot k k
 
-theorem SelfVis.mono {k k' : ℕ} {x : ExtOrd} (h : SelfVis k x) (hle : k' ≤ k) : SelfVis k' x :=
+theorem SelfVis.mono {k k'} {x} (h : SelfVis k x) (hle : k' ≤ k) : SelfVis k' x :=
   selfVis_mono h hle
 
-theorem evr_eq_self_of_selfVis {k : ℕ} {x : ExtOrd} (h : SelfVis k x) (i : ℕ) :
+theorem evr_eq_self_of_selfVis {k} {x} (h : SelfVis k x) i :
     extVisibilityReplace x k i = x := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · simp
@@ -59,22 +59,22 @@ theorem evr_eq_self_of_selfVis {k : ℕ} {x : ExtOrd} (h : SelfVis k x) (i : ℕ
       omega
     · rfl
 
-theorem extVisibilityReplace_of_le_finitePart {α : Ordinal.{0}} {k : ℕ} (h : k ≤ finitePart α)
-    (i : ℕ) :
+theorem extVisibilityReplace_of_le_finitePart {α} {k} (h : k ≤ finitePart α)
+    i :
     extVisibilityReplace (ofOrd α) k i = ofOrd α := by
   rw [extVisibilityReplace_ofOrd, visibilityReplace, ite_eq_right (not_lt.mpr h)]
 
-theorem extVisibilityReplace_of_finitePart_lt {α : Ordinal.{0}} {k : ℕ} (h : finitePart α < k)
-    (i : ℕ) :
+theorem extVisibilityReplace_of_finitePart_lt {α} {k} (h : finitePart α < k)
+    i :
     extVisibilityReplace (ofOrd α) k i = ofOrd (limitPart α + i) := by
   rw [extVisibilityReplace_ofOrd, visibilityReplace, ite_eq_left h]; rfl
 
-theorem limitPart_add_finitePart (α : Ordinal.{0}) : limitPart α + finitePart α = α :=
+theorem limitPart_add_finitePart α : limitPart α + finitePart α = α :=
   decomposition α
 
 /-- Visibility replacement at threshold `N` with offset `i ≤ N` does not push a label above a
 self-visible-at-`N` bound it lies below. -/
-theorem extVisibilityReplace_le_of_le_selfVis {x y : ExtOrd} {N i : ℕ} (hi : i ≤ N)
+theorem extVisibilityReplace_le_of_le_selfVis {x y} {N i} (hi : i ≤ N)
     (hy : extVisibilityReplace y N N = y) (hxy : x ≤ y) :
     extVisibilityReplace x N i ≤ y := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
@@ -93,13 +93,13 @@ theorem extVisibilityReplace_le_of_le_selfVis {x y : ExtOrd} {N i : ℕ} (hi : i
 
 /-- The antitone suppressor is bounded below at grade `≤ N` by its value at `N`. -/
 theorem suppressor_le_of_grade_le {g : ℕ → ExtOrd} (hanti : ∀ n m : ℕ, n < m → g m ≤ g n)
-    {k N : ℕ} (hk : k ≤ N) : g N ≤ g k := by
+    {k N} (hk : k ≤ N) : g N ≤ g k := by
   rcases hk.lt_or_eq with hlt | heq
   · exact hanti _ _ hlt
   · rw [heq]
 
 /-- Between distinct limit parts there is room for a whole block. -/
-theorem lt_limitPart_of_limitPart_lt {ξ α : Ordinal.{0}} (h : limitPart ξ < limitPart α) :
+theorem lt_limitPart_of_limitPart_lt {ξ α} (h : limitPart ξ < limitPart α) :
     ξ < limitPart α := by
   unfold limitPart at h ⊢
   have hq : ξ / Ordinal.omega0 < α / Ordinal.omega0 := by
@@ -116,7 +116,7 @@ theorem lt_limitPart_of_limitPart_lt {ξ α : Ordinal.{0}} (h : limitPart ξ < l
 
 /-! ## Visibility replacement is monotone -/
 
-theorem visibilityReplace_mono {α β : Ordinal.{0}} (h : α ≤ β) {k i : ℕ} (hi : i ≤ k) :
+theorem visibilityReplace_mono {α β} (h : α ≤ β) {k i} (hi : i ≤ k) :
     visibilityReplace α k i ≤ visibilityReplace β k i := by
   unfold visibilityReplace
   split_ifs with ha hb hb
@@ -144,7 +144,7 @@ theorem visibilityReplace_mono {α β : Ordinal.{0}} (h : α ≤ β) {k i : ℕ}
     exact le_trans (le_of_lt (lt_limitPart_of_limitPart_lt hlt)) le_self_add
   · exact h
 
-theorem evr_mono {x y : ExtOrd} (h : x ≤ y) {k i : ℕ} (hi : i ≤ k) :
+theorem evr_mono {x y} (h : x ≤ y) {k i} (hi : i ≤ k) :
     extVisibilityReplace x k i ≤ extVisibilityReplace y k i := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · rw [extVisibilityReplace_bot]; exact bot_le
@@ -155,14 +155,14 @@ theorem evr_mono {x y : ExtOrd} (h : x ≤ y) {k i : ℕ} (hi : i ≤ k) :
     · rw [extVisibilityReplace_ofOrd, extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
       exact visibilityReplace_mono (ofOrd_le_ofOrd.mp h) hi
 
-theorem extVisibilityReplace_max (x y : ExtOrd) {k i : ℕ} (hi : i ≤ k) :
+theorem extVisibilityReplace_max x y {k i} (hi : i ≤ k) :
     extVisibilityReplace (max x y) k i =
       max (extVisibilityReplace x k i) (extVisibilityReplace y k i) := by
   have hm : Monotone (fun z : ExtOrd => extVisibilityReplace z k i) := fun a b h => evr_mono h hi
   exact hm.map_max
 
 /-- A self-visible-at-`N` lower bound survives visibility replacement at threshold `N`. -/
-theorem le_extVisibilityReplace_of_selfVis_le {x y : ExtOrd} {N i : ℕ}
+theorem le_extVisibilityReplace_of_selfVis_le {x y} {N i}
     (hy : extVisibilityReplace y N N = y) (hyx : y ≤ x) : y ≤ extVisibilityReplace x N i := by
   rcases ExtOrd.cases y with rfl | rfl | ⟨δ, rfl⟩
   · exact bot_le
@@ -215,7 +215,7 @@ theorem le_extVisibilityReplace_of_selfVis_le {x y : ExtOrd} {N i : ℕ}
       · exact hβδ
 
 /-- Visibility replacement of a nonbottom label is nonbottom. -/
-theorem extVisibilityReplace_ne_bot {a : ExtOrd} (ha : a ≠ ⊥) (k i : ℕ) :
+theorem extVisibilityReplace_ne_bot {a} (ha : a ≠ ⊥) k i :
     extVisibilityReplace a k i ≠ ⊥ := by
   rcases ExtOrd.cases a with rfl | rfl | ⟨α, rfl⟩
   · exact absurd rfl ha
@@ -223,7 +223,7 @@ theorem extVisibilityReplace_ne_bot {a : ExtOrd} (ha : a ≠ ⊥) (k i : ℕ) :
   · rw [extVisibilityReplace_ofOrd]; exact ofOrd_ne_bot _
 
 /-- Visibility replacement above a `k`-visible ordinal cutoff stays strictly above it. -/
-theorem visReplace_gt_of_gt {ξ α : Ordinal.{0}} {k i : ℕ} (hk : k ≤ finitePart ξ) (hα : ξ < α) :
+theorem visReplace_gt_of_gt {ξ α} {k i} (hk : k ≤ finitePart ξ) (hα : ξ < α) :
     ξ < visibilityReplace α k i := by
   unfold visibilityReplace
   split_ifs with hfp
@@ -242,7 +242,7 @@ theorem visReplace_gt_of_gt {ξ α : Ordinal.{0}} {k i : ℕ} (hk : k ≤ finite
       exact absurd hα (not_lt.mpr h3.le)
   · exact hα
 
-theorem visReplace_eq (α : Ordinal.{0}) (k i : ℕ) :
+theorem visReplace_eq α k i :
     visibilityReplace α k i =
       limitPart α + ((if finitePart α < k then i else finitePart α : ℕ) : Ordinal) := by
   unfold visibilityReplace

@@ -5,9 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.HollowGrowthReadback
 public import VaughtConjecture.Knight.HollowGrowthPadding
-public import VaughtConjecture.Knight.TopSupportReceiving
 public import VaughtConjecture.Knight.GrowthCarrierEvaluation
 
 /-! # Exact receiving in hollow growth models
@@ -21,7 +19,6 @@ the empty root included. No display or stage-bound premise is added.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
 noncomputable section
@@ -41,10 +38,14 @@ theorem receives_exactly (hM : W.IsModel) :
       W.eval (snoc t y hyRoot) = some q := by
   obtain ⟨y, hy, hyRoot, s, heval, he, hc⟩ :=
     GrowthCarrierEvaluation.exists_correct_donor D.context.type q.scheme p.scheme D.face
-      I.hvC I.hvP I.hC I.hP I.relative I.attachment I.donor_arity_lt
-      W.actualLabelling hM D.context.eval_eq I.actual_inClass
+      I.hvC I.hvP I.hC I.hP I.relative I.attachment (by
+          rw [I.req_eq]
+          exact (requests q D).R_lt_N)
+      W.actualLabelling hM D.context.eval_eq ((inClass_iff I D.context.type.label).mpr fun x => Iff.rfl)
   have hlabel : ∀ d, s.label (SemScheme.castCell he.symm d) = q.label d :=
-    congrFun (I.exact_of_correct hc)
+    congrFun (by
+          rw [I.req_eq] at hc
+          exact (correct_iff_eq_actual q D (fun d => s.label (SemScheme.castCell (Eq.symm he) d))).mp hc)
   have hsq : s = q := StageType.eq_of_label he hlabel
   have hr : ∃ hyRoot : y ∉ Set.range (D.face.trans D.context.tuple),
       W.eval (snoc (D.face.trans D.context.tuple) y hyRoot) = some q :=

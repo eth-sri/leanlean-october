@@ -156,9 +156,9 @@ def GenSatFamily (D : SemScheme (n + 1)) : Set (S α (n + 1)) :=
 respecting the semantics of `D` (faithfully, with **no stage bound**) and extending `p`, the
 cofaces `q` with domain `D` whose `−∞`-pattern on `D^{≤ n} = D⟨A, n⟩` — the cells of grade
 `≤ n`, `D.scheme.below (univ, n)` — is that of `q'`: `q Θ = ⊥ ↔ q' Θ = ⊥`. -/
-def BottomPatternFamily (D : SemScheme (n + 1)) (q' : Cell D.scheme → ExtOrd) :
+def BottomPatternFamily (D : SemScheme (n + 1)) (q' : D.scheme.Labelling) :
     Set (S α (n + 1)) :=
-  {q | ∃ h : q.scheme = D, ∀ Θ : D.scheme.below (Finset.univ, n),
+  {q | ∃ h : q.scheme = D, ∀ Θ : D.Native n,
     q.label (SemScheme.castCell h.symm Θ.1) = ⊥ ↔ q' Θ.1 = ⊥}
 
 /-- **(b) Uniformity**: for a non-successor `γ` with `0 ≤ γ < α`, the cofaces with a cell
@@ -207,7 +207,7 @@ structure IsModel : Prop where
   of the initial face, some coface of `p` with domain `D` and the `−∞`-pattern of `q'` on
   `D^{≤ n}` is realized over `t`. -/
   bottomPattern : ∀ {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n), R.eval t = some p →
-    ∀ (D : SemScheme (n + 1)) (hD : ExtendsDomain p D) (q' : Cell D.scheme → ExtOrd),
+    ∀ (D : SemScheme (n + 1)) (hD : ExtendsDomain p D) (q' : D.scheme.Labelling),
       RespectsSemantics D.rows q' → (∀ d, q' (hD.cellOf d) = p.label d) →
       R.RealizesSome t p (BottomPatternFamily D q')
   /-- Clause (4)(b), uniformity: for every non-successor `γ` (zero or a limit) below `α`, some

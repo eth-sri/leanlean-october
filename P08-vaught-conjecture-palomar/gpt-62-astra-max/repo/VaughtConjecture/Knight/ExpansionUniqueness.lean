@@ -7,8 +7,7 @@ module
 
 public import VaughtConjecture.Knight.ProvisionalRatchet
 public import VaughtConjecture.Knight.FiniteBandReadback
-public import VaughtConjecture.Knight.ReductModel
-public import VaughtConjecture.Knight.BlockGeometry
+public import VaughtConjecture.Knight.Rank
 
 /-!
 # Direct successor-expansion uniqueness (Lemma 5.5.2: "target labels are source stable
@@ -84,7 +83,6 @@ theorem topGrade_eq_of_top_fullGrade {q : S β n} {Θ : Cell q.scheme.scheme}
   rw [← hgr']
   refine (q.scheme.scheme.grade_le_card_scope Θ').trans ?_
   rw [hsc, Finset.card_univ, Fintype.card_fin]
-
 
 /-- `mapCell` does not see the reduction (the schemes agree definitionally). -/
 theorem mapCell_reduceType (hα : Order.IsSuccLimit α) (h : α ≤ β) {q : S β n} {p : S β m}
@@ -492,11 +490,5 @@ theorem eq_of_reduct_eq (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal.omega0)
     refine StageType.ext rfl (heq_of_eq (funext fun Xi => ?_))
     have := hlab Xi
     rwa [SemScheme.castCell_self] at this
-
-/-- The block form: two models at block `ξ + 1` with the same reduct to block `ξ` are equal. -/
-theorem eq_of_reduct_eq_blockStage {ξ : Ordinal.{0}}
-    {N N' : KnightRealization (blockStage (ξ + 1)) M} (hN : N.IsModel) (hN' : N'.IsModel)
-    (hred : N.reduct (blockStage_le_succ ξ) = N'.reduct (blockStage_le_succ ξ)) : N = N' :=
-  eq_of_reduct_eq (blockStage_le_succ ξ) (blockStage_succ_toOrdinal ξ) hN hN' hred
 
 end VaughtConjecture.Knight.KnightRealization

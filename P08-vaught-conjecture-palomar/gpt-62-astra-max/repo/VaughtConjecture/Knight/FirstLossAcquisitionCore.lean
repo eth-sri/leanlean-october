@@ -62,8 +62,8 @@ variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 support form an admissible support (availability preserves the grade; an omitted top below a
 retained owner of grade at most `K` has grade at most `K`, so it was already omitted). -/
 theorem admissible_gradeTrunc {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {P : Cell D → ExtOrd} {H : Set (Cell D)} (hH : Admissible sem P H)
-    (K : ℕ) : Admissible sem P {d | d ∈ H ∧ D.grade d ≤ K} where
+    {sem} {P} {H} (hH : Admissible sem P H)
+    K : Admissible sem P {d | d ∈ H ∧ D.grade d ≤ K} where
   subset d hd := hH.subset hd.1
   available := by
     intro d hd Xi₀ hsc hgr
@@ -80,7 +80,7 @@ theorem admissible_gradeTrunc {ι : Type*} [DecidableEq ι] {A : Finset ι} {D :
 
 /-- The support `H` is **full on the face `f`**: every top cell of the cover's type whose scope
 lies in the face is in `H`. -/
-def Full {m : ℕ} (Q : S α.1 m) (H : Set (Cell Q.scheme.scheme)) {n : ℕ} (f : Fin n ↪ Fin m) :
+def Full {m} (Q : S α.1 m) (H : Set (Cell Q.scheme.scheme)) {n} (f : Fin n ↪ Fin m) :
     Prop :=
   ∀ x : Cell Q.scheme.scheme, Q.scheme.scheme.scope x ⊆ Finset.univ.image f → Q.label x = ⊤ →
     x ∈ H
@@ -88,8 +88,8 @@ def Full {m : ℕ} (Q : S α.1 m) (H : Set (Cell Q.scheme.scheme)) {n : ℕ} (f 
 /-! A maximal full face gives the required adjacent loss without choosing a chain. -/
 
 /-- An adjacent full/nonfull pair above the protected root, chosen by finite maximality. -/
-theorem exists_adjacent_loss {α : LimitStage} {m n : ℕ} (Q : S α.1 m)
-    {H : Set (Cell Q.scheme.scheme)} (hsub : H ⊆ topSet Q.label)
+theorem exists_adjacent_loss {α : LimitStage} {m n} (Q : S α.1 m)
+    {H} (hsub : H ⊆ topSet Q.label)
     (hne : H ≠ topSet Q.label) (f : Fin n ↪ Fin m)
     (hvis : Finset.univ.image f ∈ Q.scheme.scheme.plan) (hfull : Full Q H f) :
     ∃ (k : ℕ) (g : Fin k ↪ Fin m) (c : Fin m) (hc : c ∉ Set.range g) (e : Fin n ↪ Fin k),
@@ -137,8 +137,8 @@ theorem exists_adjacent_loss {α : LimitStage} {m n : ℕ} (Q : S α.1 m)
   omega
 
 /-- The tops of a visible face of a type have grade at most the type's top grade. -/
-theorem face_top_grade_le {m n : ℕ} {Q : S α.1 m} {f : Fin n ↪ Fin m} {p : S α.1 n}
-    (h : typeMap f Q = some p) (d : Cell p.scheme.scheme) (hd : p.label d = ⊤) :
+theorem face_top_grade_le {m n} {Q} {f : Fin n ↪ Fin m} {p : S α.1 n}
+    (h : typeMap f Q = some p) d (hd : p.label d = ⊤) :
     p.scheme.scheme.grade d ≤ Q.topGrade := by
   have hv : Finset.univ.image f ∈ Q.scheme.scheme.plan :=
     (typeMap_isSome_iff f Q).mp (by rw [h]; rfl)
@@ -161,23 +161,23 @@ cover above the root, with `H` full on `g` and a lost top `x` of the larger face
 surviving full-scope grade-`K` owner `o ∈ H` of the larger face, the lost top in `o`'s lower
 domain, and the strict source gaps `evr (E o x) K K < E o a` at every retained top `a` below
 `o`. -/
-theorem first_loss_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
+theorem first_loss_of_tail (hcons : R.IsExactParentConsistent) {K}
     (hcoin : KnightRealization.IsCoinitial {x : R.LabelledExt | x.type.topGrade = K})
     (hKpos : 0 < K)
-    (hres : ∀ {k : ℕ} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore R B)
-    {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n) (hp : R.eval t = some p) :
+    (hres : ∀ {k} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore R B)
+    {n} t p (hp : R.eval t = some p) :
     ∃ (m : ℕ) (C : Fin m ↪ M) (Q : S α.1 m), R.eval C = some Q ∧ Q.topGrade = K ∧
       ∃ (k : ℕ) (g : Fin k ↪ Fin m) (c : Fin m) (hc : c ∉ Set.range g) (e : Fin n ↪ Fin k),
         (e.trans g).trans C = t ∧
         Finset.univ.image g ∈ Q.scheme.scheme.plan ∧
         Finset.univ.image (snoc g c hc) ∈ Q.scheme.scheme.plan ∧
-        ∃ H : Set (Cell Q.scheme.scheme), Admissible Q.scheme.rows Q.label H ∧
+        ∃ H, Admissible Q.scheme.rows Q.label H ∧
           Full Q H g ∧
           ∃ (x o : Cell Q.scheme.scheme),
             Q.scheme.scheme.scope x ⊆ Finset.univ.image (snoc g c hc) ∧ Q.label x = ⊤ ∧
             x ∉ H ∧ o ∈ H ∧ Q.scheme.scheme.cell o = (Finset.univ.image (snoc g c hc), K) ∧
             ∃ hxo : GradedLe (Q.scheme.scheme.cell x) (Q.scheme.scheme.cell o),
-              ∀ a : Q.scheme.scheme.below (Q.scheme.scheme.cell o), a.1 ∈ H →
+              ∀ a : Q.scheme.scheme.RowDomain o, a.1 ∈ H →
                 extVisibilityReplace (Q.scheme.rows.E o ⟨x, hxo⟩) K K < Q.scheme.rows.E o a := by
   -- the context past which every cover has top grade `K`
   let x₀ : LabelledExt R := ⟨n, t, p, hp⟩
@@ -205,7 +205,7 @@ theorem first_loss_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
       ← Function.Embedding.trans_assoc e' g C, he', he]
     exact hf₀
   -- the lost top
-  obtain ⟨x, hxs, hxtop, hxH⟩ : ∃ x : Cell Q.scheme.scheme,
+  obtain ⟨x, hxs, hxtop, hxH⟩ : ∃ x,
       Q.scheme.scheme.scope x ⊆ Finset.univ.image (snoc g c hc) ∧ Q.label x = ⊤ ∧ x ∉ H := by
     by_contra hall
     apply hnot
@@ -270,8 +270,8 @@ of `pR` restricting to `q` along `extendFace e`, all of whose tops have grade at
 pinned-coface consumer of the constructed coatom supplier enlarges the donor, and the uniform
 lowering at a cap visible at the enlarged arity removes the tops above `K`, the support of tops
 of grade at most `K` being admissible. -/
-theorem exists_enlarged_donor {n k : ℕ} (pR : S α.1 k) (e : Fin n ↪ Fin k) (p : S α.1 n)
-    (hep : typeMap e pR = some p) {K : ℕ}
+theorem exists_enlarged_donor {n k} pR e p
+    (hep : typeMap e pR = some p) {K}
     (hR : ∀ d, pR.label d = ⊤ → pR.scheme.scheme.grade d ≤ K)
     (q : S α.1 (n + 1)) (hq : IsCoface p q)
     (hqK : ∀ d, q.label d = ⊤ → q.scheme.scheme.grade d ≤ K) :

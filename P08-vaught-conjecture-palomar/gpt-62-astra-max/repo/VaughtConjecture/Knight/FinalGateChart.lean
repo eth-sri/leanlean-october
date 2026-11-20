@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.FinalGateLayer
-public import VaughtConjecture.Knight.FreeDiagonal
 
 /-! # Actual serving charts and activation at the final grade
 
@@ -19,7 +18,6 @@ every physical coordinate at any external cap below its height.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
 noncomputable section
@@ -31,8 +29,8 @@ abbrev addedAt (a : Q) (marked : Bool) : I.carrier.below (A, N) :=
   ⟨I.added a marked, by rw [I.added_index]; exact GradedLe.refl _⟩
 
 /-- The bound is forced by locality at the actual node, even at zero weight. -/
-theorem node_le_leaf {v : I.carrier.below (A, N) → ExtOrd}
-    (hv : RespectsSemanticsBelow I.rows (A, N) v) (a : Q) (marked : Bool) :
+theorem node_le_leaf {v}
+    (hv : I.rows.Lawful v) a marked :
     v (I.addedAt a marked) ≤ v (I.addedAt a false) := by
   apply WeightedSourcePrefixLayer.le_parent I.data I.weight I.weight_visible I.weight_bound
     (GradedLe.refl _) hv (I.controller (a, marked)) (I.controller (a, false))
@@ -43,33 +41,33 @@ theorem node_le_leaf {v : I.carrier.below (A, N) → ExtOrd}
     rfl
 
 /-- Normalize the locality of one actual ceiling leaf over its whole domain. -/
-theorem leaf_chart {v : I.carrier.below (A, N) → ExtOrd}
-    (hv : RespectsSemanticsBelow I.rows (A, N) v) (a : Q) :
-    ∃ τ : ExtOrd → ExtOrd, Witness (gTop N) τ ∧
+theorem leaf_chart {v}
+    (hv : I.rows.Lawful v) a :
+    ∃ τ, Witness (gTop N) τ ∧
       (∀ x, τ x ≤ v (I.addedAt a false)) ∧
       ∀ d : I.carrier.below (A, N),
         τ (I.source a d.1) = min (v d) (v (I.addedAt a false)) := by
   let c := I.addedAt a false
-  let self : I.carrier.below (I.carrier.cell c.1) := ⟨c.1, GradedLe.refl _⟩
-  let qloc : I.carrier.below (I.carrier.cell c.1) → ExtOrd :=
+  let self : I.carrier.RowDomain c.1 := ⟨c.1, GradedLe.refl _⟩
+  let qloc : I.carrier.RowDomain c.1 → ExtOrd :=
     fun d => v (CellScheme.below.incl c d)
-  have hm : ∀ d : I.carrier.below (I.carrier.cell c.1),
+  have hm : ∀ d : I.carrier.RowDomain c.1,
       I.carrier.grade d.1 ≤ I.carrier.grade self.1 := fun d => d.2.2
   have hv' : SelfVis (I.carrier.grade self.1) (qloc self) := (hv.orderly c).symm
   have hg : I.carrier.grade self.1 = N := congrArg Prod.snd (I.added_index a false)
   obtain ⟨τ, hτ, hb, hr⟩ := exists_bounded_exact_capped_witness hm hv' (hv.locality c)
   refine ⟨τ, hg ▸ hτ, hb, ?_⟩
   intro d
-  let e : I.carrier.below (I.carrier.cell (I.added a false)) :=
+  let e : I.carrier.RowDomain (I.added a false) :=
     ⟨d.1, by rw [I.added_index]; exact d.2⟩
   exact (congrArg τ (I.leaf_row a e)).symm.trans (hr e)
 
 /-- Serving one retained owner is sufficient; no global maximum is required. -/
-theorem exists_serving_chart {v : I.carrier.below (A, N) → ExtOrd}
-    (hv : RespectsSemanticsBelow I.rows (A, N) v)
-    (c : I.carrier.below (A, N)) (hc : I.carrier.grade c.1 = N) (seed : Q) :
-    ∃ a : Q, v c ≤ v (I.addedAt a false) ∧
-      ∃ τ : ExtOrd → ExtOrd, Witness (gTop N) τ ∧
+theorem exists_serving_chart {v}
+    (hv : I.rows.Lawful v)
+    c (hc : I.carrier.grade c.1 = N) (seed : Q) :
+    ∃ a, v c ≤ v (I.addedAt a false) ∧
+      ∃ τ, Witness (gTop N) τ ∧
         (∀ x, τ x ≤ v (I.addedAt a false)) ∧
         ∀ d : I.carrier.below (A, N),
           τ (I.source a d.1) = min (v d) (v (I.addedAt a false)) := by
@@ -91,8 +89,8 @@ theorem exists_serving_chart {v : I.carrier.below (A, N) → ExtOrd}
   exact I.node_le_leaf hv a marked
 
 /-- The marked reading detects source activation on every serving leaf. -/
-theorem gate_pos_of_chart (a b : Q) {v : I.carrier.below (A, N) → ExtOrd}
-    {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop N) τ)
+theorem gate_pos_of_chart a b {v : I.carrier.SectionAt (A, N)}
+    {τ} (hτ : Witness (gTop N) τ)
     (hr : ∀ d : I.carrier.below (A, N),
       τ (I.source a d.1) = min (v d) (v (I.addedAt a false)))
     (hh : v (I.addedAt a false) ≠ ⊥) (hz : v (I.addedAt b true) ≠ ⊥) :
@@ -102,15 +100,18 @@ theorem gate_pos_of_chart (a b : Q) {v : I.carrier.below (A, N) → ExtOrd}
     le_bot_iff.mp ((I.source_marked_le a b).trans_eq hzero)
   have he := hr (I.addedAt b true)
   rw [show I.source a (I.addedAt b true).1 = ⊥ from hs, hτ.bot] at he
-  exact (min_ne_bot hz hh) he.symm
+  exact (show min (v (I.addedAt b true)) (v (I.addedAt a false)) ≠ ⊥ from by
+          rcases le_total (v (I.addedAt b true)) (v (I.addedAt a false)) with h | h
+          · rw [min_eq_left h]; exact hz
+          · rw [min_eq_right h]; exact hh) he.symm
 
 /-- One positive installed node activates a chart serving the retained cap. -/
-theorem exists_active_chart {v : I.carrier.below (A, N) → ExtOrd}
-    (hv : RespectsSemanticsBelow I.rows (A, N) v)
-    (c : I.carrier.below (A, N)) (hc : I.carrier.grade c.1 = N)
-    (hpos : v c ≠ ⊥) (b : Q) (hz : v (I.addedAt b true) ≠ ⊥) :
-    ∃ a : Q, v c ≤ v (I.addedAt a false) ∧ I.fields a I.gate ≠ ⊥ ∧
-      ∃ τ : ExtOrd → ExtOrd, Witness (gTop N) τ ∧
+theorem exists_active_chart {v}
+    (hv : I.rows.Lawful v)
+    c (hc : I.carrier.grade c.1 = N)
+    (hpos : v c ≠ ⊥) b (hz : v (I.addedAt b true) ≠ ⊥) :
+    ∃ a, v c ≤ v (I.addedAt a false) ∧ I.fields a I.gate ≠ ⊥ ∧
+      ∃ τ, Witness (gTop N) τ ∧
         (∀ x, τ x ≤ v (I.addedAt a false)) ∧
         ∀ d : I.carrier.below (A, N),
           τ (I.source a d.1) = min (v d) (v (I.addedAt a false)) := by
@@ -120,10 +121,10 @@ theorem exists_active_chart {v : I.carrier.below (A, N) → ExtOrd}
   exact ⟨a, hca, I.gate_pos_of_chart a b hτ hr hh hz, τ, hτ, hb, hr⟩
 
 /-- External-cap representation includes all nodes and every predecessor auxiliary. -/
-theorem exists_cap_chart {v : I.carrier.below (A, N) → ExtOrd}
-    (hv : RespectsSemanticsBelow I.rows (A, N) v)
-    (c : I.carrier.below (A, N)) (hc : I.carrier.grade c.1 = N) (seed : Q)
-    {γ : ExtOrd} (hγ : SelfVis N γ) (hreach : γ ≤ v c) :
+theorem exists_cap_chart {v}
+    (hv : I.rows.Lawful v)
+    c (hc : I.carrier.grade c.1 = N) (seed : Q)
+    {γ} (hγ : SelfVis N γ) (hreach : γ ≤ v c) :
     ∃ a τ, Witness (gTop N) τ ∧ (∀ x, τ x ≤ γ) ∧
       ∀ d : I.carrier.below (A, N), τ (I.source a d.1) = min (v d) γ := by
   obtain ⟨a, hca, τ, hτ, -, hr⟩ := I.exists_serving_chart hv c hc seed

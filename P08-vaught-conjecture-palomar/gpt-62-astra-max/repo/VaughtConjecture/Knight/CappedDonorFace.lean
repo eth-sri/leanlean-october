@@ -29,47 +29,43 @@ namespace VaughtConjecture.Knight
 open CellScheme.restrictFace
 
 /-- Labels transport along an equality of stage types. -/
-theorem StageType.label_castCell {α : Ordinal.{0}} {n : ℕ} {X Y : S α n} (h : X = Y)
-    (c : Cell X.scheme.scheme) :
+theorem StageType.label_castCell {α} {n} {X Y : S α n} (h : X = Y)
+    c :
     Y.label (SemScheme.castCell (congrArg StageType.scheme h) c) = X.label c := by
-  subst h; rfl
+  aesop
 
 namespace CappedDonor
 
 /-- Transport of a lower set along an equality of domains. -/
-def castBelow {n : ℕ} {X Y : SemScheme n} (h : X = Y) (BJ : Finset (Fin n) × ℕ) :
+def castBelow {n} {X Y : SemScheme n} (h : X = Y) BJ :
     X.scheme.below BJ ≃ Y.scheme.below BJ :=
-  Equiv.cast (congrArg (fun Z : SemScheme n => Z.scheme.below BJ) h)
+  Equiv.cast (congrArg (fun Z => Z.scheme.below BJ) h)
 
-theorem castBelow_val {n : ℕ} {X Y : SemScheme n} (h : X = Y) (BJ : Finset (Fin n) × ℕ)
-    (d : X.scheme.below BJ) : (castBelow h BJ d).1 = SemScheme.castCell h d.1 := by
-  subst h; rfl
+theorem castBelow_val {n} {X Y} (h : X = Y) (BJ : Finset (Fin n) × ℕ)
+    d : (castBelow h BJ d).1 = SemScheme.castCell h d.1 := by
+  aesop
 
-theorem castBelow_castBelow_symm {n : ℕ} {X Y : SemScheme n} (h : X = Y)
-    (BJ : Finset (Fin n) × ℕ) (d : Y.scheme.below BJ) :
+theorem castBelow_castBelow_symm {n} {X Y} (h : X = Y)
+    (BJ : Finset (Fin n) × ℕ) d :
     castBelow h BJ (castBelow h.symm BJ d) = d := by
-  subst h; rfl
+  aesop
 
-theorem castBelow_symm_castBelow {n : ℕ} {X Y : SemScheme n} (h : X = Y)
-    (BJ : Finset (Fin n) × ℕ) (d : X.scheme.below BJ) :
+theorem castBelow_symm_castBelow {n} {X Y} (h : X = Y)
+    (BJ : Finset (Fin n) × ℕ) d :
     castBelow h.symm BJ (castBelow h BJ d) = d := by
-  subst h; rfl
-
-theorem castBelow_symm {n : ℕ} {X Y : SemScheme n} (h : X = Y) (BJ : Finset (Fin n) × ℕ) :
-    (castBelow h BJ).symm = castBelow h.symm BJ := by
-  subst h; rfl
+  aesop
 
 /-- Restricted lawfulness transports along an equality of domains. -/
-theorem castBelow_respects {n : ℕ} {X Y : SemScheme n} (h : X = Y) (BJ : Finset (Fin n) × ℕ)
-    (r : Y.scheme.below BJ → ExtOrd) :
+theorem castBelow_respects {n} {X Y} (h : X = Y) (BJ : Finset (Fin n) × ℕ)
+    r :
     RespectsSemanticsBelow Y.rows BJ r ↔
       RespectsSemanticsBelow X.rows BJ (fun d => r (castBelow h BJ d)) := by
   subst h; exact Iff.rfl
 
 /-- Transport of a cell along an equality of domains keeps its grade. -/
-theorem castCell_grade {n : ℕ} {X Y : SemScheme n} (h : X = Y) (c : Cell X.scheme) :
+theorem castCell_grade {n} {X Y : SemScheme n} (h : X = Y) c :
     Y.scheme.grade (SemScheme.castCell h c) = X.scheme.grade c := by
-  subst h; rfl
+  aesop
 
 section CommonFace
 
@@ -81,15 +77,15 @@ variable {n nP J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J} {F : SemSchem
 
 /-- The face bijection on the request side. -/
 noncomputable abbrev bP :
-    (P.restrictFace fP hvP).scheme.below (Finset.univ, KA) ≃
+    (P.restrictFace fP hvP).Native KA ≃
       P.scheme.below (Finset.univ.image fP, KA) :=
-  belowEquiv P.scheme fP hvP (BJ' := (Finset.univ, KA)) (BJ := (Finset.univ.image fP, KA)) rfl
+  belowEquiv P.scheme fP hvP (BJ' := (Finset.univ, KA)) rfl
 
 /-- The face bijection on the private side. -/
 noncomputable abbrev bC :
-    (C.restrictFace fC hvC).scheme.below (Finset.univ, KA) ≃
+    (C.restrictFace fC hvC).Native KA ≃
       C.scheme.below (Finset.univ.image fC, KA) :=
-  belowEquiv C.scheme fC hvC (BJ' := (Finset.univ, KA)) (BJ := (Finset.univ.image fC, KA)) rfl
+  belowEquiv C.scheme fC hvC (BJ' := (Finset.univ, KA)) rfl
 
 /-- **The identification of the two copies of a literally common face**: through the common
 restriction `F`, along the bijections `belowEquiv` of the face restrictions. -/
@@ -99,19 +95,18 @@ noncomputable def commonFace :
     ((castBelow hP (Finset.univ, KA)).trans
       ((castBelow hC.symm (Finset.univ, KA)).trans (bC fC hvC KA)))
 
-theorem commonFace_apply (a : P.scheme.below (Finset.univ.image fP, KA)) :
+theorem commonFace_apply a :
     commonFace fP hvP hP fC hvC hC KA a =
       bC fC hvC KA (castBelow hC.symm (Finset.univ, KA)
         (castBelow hP (Finset.univ, KA) ((bP fP hvP KA).symm a))) := rfl
 
-theorem commonFace_symm_apply (e : C.scheme.below (Finset.univ.image fC, KA)) :
+theorem commonFace_symm_apply e :
     (commonFace fP hvP hP fC hvC hC KA).symm e =
       bP fP hvP KA (castBelow hP.symm (Finset.univ, KA)
-        (castBelow hC (Finset.univ, KA) ((bC fC hvC KA).symm e))) := by
-  simp only [commonFace, Equiv.symm_trans_apply, Equiv.symm_symm, castBelow_symm]
+        (castBelow hC (Finset.univ, KA) ((bC fC hvC KA).symm e))) := rfl
 
 /-- The underlying cell of the identification. -/
-theorem commonFace_val (a : P.scheme.below (Finset.univ.image fP, KA)) :
+theorem commonFace_val a :
     (commonFace fP hvP hP fC hvC hC KA a).1 =
       toCell C.scheme fC hvC (SemScheme.castCell hC.symm (SemScheme.castCell hP
         ((bP fP hvP KA).symm a).1)) := by
@@ -120,7 +115,7 @@ theorem commonFace_val (a : P.scheme.below (Finset.univ.image fP, KA)) :
   rw [castBelow_val, castBelow_val]
 
 /-- The identification preserves grades. -/
-theorem commonFace_grade (a : P.scheme.below (Finset.univ.image fP, KA)) :
+theorem commonFace_grade a :
     C.scheme.grade (commonFace fP hvP hP fC hvC hC KA a).1 = P.scheme.grade a.1 := by
   rw [commonFace_val]
   change (C.restrictFace fC hvC).scheme.grade (SemScheme.castCell hC.symm
@@ -130,8 +125,8 @@ theorem commonFace_grade (a : P.scheme.below (Finset.univ.image fP, KA)) :
     (BJ' := (Finset.univ, KA)) (BJ := (Finset.univ.image fP, KA)) rfl a)
 
 /-- The identifications at two grades agree on a common cell. -/
-theorem commonFace_val_congr {KA' : ℕ} (a : P.scheme.below (Finset.univ.image fP, KA))
-    (a' : P.scheme.below (Finset.univ.image fP, KA')) (h : a.1 = a'.1) :
+theorem commonFace_val_congr {KA'} a
+    a' (h : a.1 = a'.1) :
     (commonFace fP hvP hP fC hvC hC KA a).1 = (commonFace fP hvP hP fC hvC hC KA' a').1 := by
   have e1 : toCell P.scheme fP hvP ((bP fP hvP KA).symm a).1 = a.1 :=
     toCell_belowEquiv_symm_val P.scheme fP hvP (BJ' := (Finset.univ, KA))
@@ -144,8 +139,8 @@ theorem commonFace_val_congr {KA' : ℕ} (a : P.scheme.below (Finset.univ.image 
   rw [commonFace_val, commonFace_val, e]
 
 /-- **Restricted lawfulness transports along the identification**, in both directions. -/
-theorem commonFace_respects (r : C.scheme.below (Finset.univ.image fC, KA) → ExtOrd) :
-    RespectsSemanticsBelow C.rows (Finset.univ.image fC, KA) r ↔
+theorem commonFace_respects r :
+    C.rows.Lawful r ↔
       RespectsSemanticsBelow P.rows (Finset.univ.image fP, KA)
         (fun a => r (commonFace fP hvP hP fC hvC hC KA a)) := by
   constructor

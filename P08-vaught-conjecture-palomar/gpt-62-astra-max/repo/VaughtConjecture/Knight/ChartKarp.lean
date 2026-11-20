@@ -73,22 +73,15 @@ noncomputable def potentialIsoOfCommonCharts
         Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family) :
     @PotentialIso (stageLang α) (stageLang.isRelational α) M N
       (stageStructureOf R) (stageStructureOf R') := by
-  letI instM : (stageLang α).Structure M := stageStructureOf R
-  letI instN : (stageLang α).Structure N := stageStructureOf R'
+  letI instM := stageStructureOf R
+  letI instN := stageStructureOf R'
   exact PotentialIso.ofExtensionFamily
     (fun n a b => (⟨n, a, b⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ family)
     empty_mem
     (fun h => sameAtomicType_of_commonChart hR hR' (commonChart _ h))
-    (fun h => forth _ h)
-    (fun h => back _ h)
+    (forth _)
+    (back _)
 
 end Constructor
-
-section Countable
-
-variable {M N : Type w}
-variable {R : KnightRealization α M} {R' : KnightRealization α N}
-
-end Countable
 
 end VaughtConjecture.Knight

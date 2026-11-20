@@ -145,10 +145,6 @@ def IsExactParentConsistent (R : T.Realization α M) : Prop :=
   ∀ ⦃m n : ℕ⦄ (t : Fin n ↪ M) (q : T.Ty α n) (f : Fin m ↪ Fin n),
     R.eval t = some q → R.eval (f.trans t) = T.pull f q
 
-theorem IsExactParentConsistent.isVisibleFaceConsistent {R : T.Realization α M}
-    (hR : R.IsExactParentConsistent) : R.IsVisibleFaceConsistent :=
-  fun _ _ t q f _p hq hp => (hR t q f hq).trans hp
-
 /-- **Covering** (generic): every injective finite tuple is a face of some labelled tuple. -/
 def IsCovering (R : T.Realization α M) : Prop :=
   ∀ ⦃n : ℕ⦄ (t : Fin n ↪ M),
@@ -232,10 +228,6 @@ The four predicates above take their leading `ℕ` binders strict-implicitly (`�
 dot-notation projections elaborate (with plain implicit binders Lean eagerly instantiates the
 metavariables and the projections fail).  One `example` per predicate, as tests only. -/
 
-section DotNotationTests
-
-end DotNotationTests
-
 /-! ### Isomorphisms of realizations
 
 A bijection of carriers is an isomorphism of realizations when it transports labels: the label
@@ -258,9 +250,6 @@ def IsIso (R : T.Realization α M) (R' : T.Realization α N) (e : M ≃ N) : Pro
 def Iso (R : T.Realization α M) (R' : T.Realization α N) : Type (max w w') :=
   {e : M ≃ N // R.IsIso R' e}
 
-theorem IsIso.refl (R : T.Realization α M) : R.IsIso R (Equiv.refl M) := fun t => by
-  congr 1
-
 theorem IsIso.symm {R : T.Realization α M} {R' : T.Realization α N} {e : M ≃ N}
     (h : R.IsIso R' e) : R'.IsIso R e.symm := fun t => by
   rw [← h (t.trans e.symm.toEmbedding)]
@@ -275,7 +264,8 @@ theorem IsIso.trans {R : T.Realization α M} {R' : T.Realization α N} {R'' : T.
   congr 1
 
 /-- The identity isomorphism. -/
-def Iso.refl (R : T.Realization α M) : R.Iso R := ⟨Equiv.refl M, IsIso.refl R⟩
+def Iso.refl (R : T.Realization α M) : R.Iso R := ⟨Equiv.refl M, fun t => by
+  congr 1⟩
 
 /-- The inverse of an isomorphism. -/
 def Iso.symm {R : T.Realization α M} {R' : T.Realization α N} (i : R.Iso R') : R'.Iso R :=
@@ -353,33 +343,16 @@ def Iso.reduct (h : α ≤ β) {R : T.Realization β M} {R' : T.Realization β N
 Each of the four predicates of `Realization` is invariant under isomorphism: the one-directional
 transports `IsIso.isVisibleFaceConsistent` etc. and the `iff` forms. -/
 
-/-- Under `h : R.IsIso R' e`, a tuple of `N` pulled back along `e⁻¹` and pushed forward again is
-itself; this is the computation behind every transport below. -/
-theorem IsIso.eval_trans_symm {R : T.Realization α M} {R' : T.Realization α N} {e : M ≃ N}
-    (h : R.IsIso R' e) {n : ℕ} (s : Fin n ↪ N) :
-    R.eval (s.trans e.symm.toEmbedding) = R'.eval s :=
-  h.symm s
-
 theorem IsIso.isExactParentConsistent {R : T.Realization α M} {R' : T.Realization α N}
     {e : M ≃ N} (h : R.IsIso R' e) (hR : R.IsExactParentConsistent) :
     R'.IsExactParentConsistent := by
   intro m n s q f hq
-  have hs : R.eval (s.trans e.symm.toEmbedding) = some q := by rw [h.eval_trans_symm, hq]
+  have hs : R.eval (s.trans e.symm.toEmbedding) = some q := by rw [symm h, hq]
   have := hR (s.trans e.symm.toEmbedding) q f hs
-  rw [← h.eval_trans_symm]
+  rw [← symm h]
   convert this using 2
   ext i
   simp
-
-theorem IsIso.isInitialSegmentCovering {R : T.Realization α M} {R' : T.Realization α N}
-    {e : M ≃ N} (h : R.IsIso R' e) (hR : R.IsInitialSegmentCovering) :
-    R'.IsInitialSegmentCovering := by
-  intro n s
-  obtain ⟨k, u, hu, hsome⟩ := hR (s.trans e.symm.toEmbedding)
-  refine ⟨k, u.trans e.toEmbedding, ?_, by rwa [h u]⟩
-  ext i
-  have := congrArg (fun v : Fin n ↪ M => e (v i)) hu
-  simpa using this
 
 end Iso
 

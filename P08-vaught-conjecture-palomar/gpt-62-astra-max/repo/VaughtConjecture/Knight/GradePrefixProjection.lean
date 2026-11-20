@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CoherentGradeCaps
+public import VaughtConjecture.Knight.ReferenceOrbitRow
 
 /-! # Lawful projection from lawful grade-capped prefixes
 
@@ -17,11 +17,10 @@ grade. This is the finite semantic observation of new72 §5.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradePrefixProjection
 open Transform Value ExtOrd AmalgamationPlan
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {BJ : Finset ι × ℕ} {ρ : Cell D → ExtOrd} {H : ℕ → ExtOrd}
+  {sem : Semantics D} {BJ : Finset ι × ℕ} {ρ : D.Labelling} {H : ℕ → ExtOrd}
 
 /-- At an owner the projected locality target is exactly the target of its
 lawful grade prefix; availability also stays within that single grade. -/

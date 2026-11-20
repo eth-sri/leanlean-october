@@ -5,7 +5,11 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.TwoContextCoupled
+public import VaughtConjecture.Knight.OnePointSuccessor
+public import Mathlib.Tactic.DeriveFintype
+public import VaughtConjecture.Knight.PartialSections
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.WitnessSplice
 
 /-! # Bountifulness of the coupled semantics, reduced by scope
 
@@ -45,26 +49,11 @@ Not done: the obligation `ProperToFull₃Low` itself (the retuning at grades one
 Construction-private (not root-exported). -/
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open AmalgamationPlan Transform Value ExtOrd
-open CellScheme.restrictFace (toCell belowMap pushGraded)
-
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
-
-section Reduction
-
-end Reduction
 
 /-! ## The smallest scope-changing case: grade one -/
-
-section GradeOne
-
-variable {q : D₂.below (Finset.univ, 1) → ExtOrd}
-
-end GradeOne
 
 /-! ## A step witness at a limit cutoff -/
 

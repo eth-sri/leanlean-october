@@ -7,8 +7,6 @@ module
 
 public import VaughtConjecture.Knight.TopSupport
 public import VaughtConjecture.Knight.FiniteCutReceiving
-public import VaughtConjecture.Knight.RowReadback
-public import VaughtConjecture.Knight.PositiveNormalization
 
 /-! # Receiving corollaries of the top-support criterion, conditional on finite-cut receiving
 
@@ -54,12 +52,12 @@ variable {α : LimitStage} {M : Type w} {m n : ℕ}
 
 /-! ## Transport along equal domains -/
 
-theorem SemScheme.castCell_castCell_symm {X Y : SemScheme n} (h : X = Y) (d : Cell Y.scheme) :
+theorem SemScheme.castCell_castCell_symm {X Y : SemScheme n} (h : X = Y) d :
     SemScheme.castCell h (SemScheme.castCell h.symm d) = d := by
   subst h; rfl
 
 /-- Respect transports along an equality of domains. -/
-theorem respects_castCell {X Y : SemScheme n} (h : X = Y) {l : Cell X.scheme → ExtOrd}
+theorem respects_castCell {X Y : SemScheme n} (h : X = Y) {l}
     (hl : RespectsSemantics X.rows l) :
     RespectsSemantics Y.rows (fun d => l (SemScheme.castCell h.symm d)) := by
   subst h; exact hl
@@ -83,9 +81,9 @@ theorem read_of_min_eq_of_lt {x y δ : ExtOrd} (h : min x δ = y) (hy : y < δ) 
     exact absurd (h ▸ hy) (lt_irrefl _)
 
 /-- A label below the cutoff is read back literally from agreement below the cutoff. -/
-theorem label_eq_of_agree {q P : S α.1 m} (h : q.scheme = P.scheme) {δ : ExtOrd}
-    (hagree : ∀ d, min (q.label d) δ = min (P.label (SemScheme.castCell h d)) δ)
-    (d : Cell P.scheme.scheme) (hd : P.label d < δ) :
+theorem label_eq_of_agree {q P : S α.1 m} (h : q.scheme = P.scheme) {δ}
+    (hagree : CappedEq q.label (P.label ∘ SemScheme.castCell h) δ)
+    d (hd : P.label d < δ) :
     q.label (SemScheme.castCell h.symm d) = P.label d := by
   obtain ⟨sq, lq, bq, rq⟩ := q
   obtain ⟨sP, lP, bP, rP⟩ := P
@@ -95,14 +93,8 @@ theorem label_eq_of_agree {q P : S α.1 m} (h : q.scheme = P.scheme) {δ : ExtOr
   rw [min_eq_left hd.le] at this
   exact read_of_min_eq_of_lt this hd
 
-/-- Every cell of a stage type on `n + 1` points has grade at most `n + 1`. -/
-theorem grade_le_succ (P : S α.1 (n + 1)) (d : Cell P.scheme.scheme) :
-    P.scheme.scheme.grade d ≤ n + 1 :=
-  (CellScheme.grade_le_card_scope _ d).trans
-    ((Finset.card_le_univ _).trans_eq (Fintype.card_fin _))
-
 /-- The retained root tops of a coface: the root cells whose label is `⊤`. -/
-def rootTops {p : S α.1 n} {P : S α.1 (n + 1)} (hP : IsCoface p P) : Set (Cell P.scheme.scheme) :=
+def rootTops {p} {P : S α.1 (n + 1)} (hP : IsCoface p P) : Set (Cell P.scheme.scheme) :=
   {c | ∃ d, c = hP.extendsDomain.cellOf d ∧ P.label c = ⊤}
 
 /-! ## A proper cutoff above the proper labels always exists -/
@@ -121,7 +113,7 @@ theorem ordOf_top : ordOf (⊤ : ExtOrd) = 0 := by
 
 /-- A proper cutoff below the stage and strictly above every proper label of a stage type. -/
 theorem exists_proper_cutoff (P : S α.1 m) :
-    ∃ δ : ExtOrd, ⊥ < δ ∧ δ < ofOrd α.1 ∧ ∀ d, P.label d ≠ ⊤ → P.label d < δ := by
+    ∃ δ, ⊥ < δ ∧ δ < ofOrd α.1 ∧ ∀ d, P.label d ≠ ⊤ → P.label d < δ := by
   classical
   have h0 : (0 : Ordinal.{0}) < α.1 := by
     rw [← Ordinal.bot_eq_zero]; exact bot_lt_iff_ne_bot.mpr α.2.ne_bot
@@ -152,8 +144,8 @@ theorem exists_proper_cutoff (P : S α.1 m) :
 
 /-- The uniform lowering of a stage type, for `b < α` with `ofOrd b` visible at the point count
 and above every proper label, and an admissible support. -/
-noncomputable def lowerType (P : S α.1 (n + 1)) (H : Set (Cell P.scheme.scheme))
-    {b : Ordinal.{0}} (hb : b < α.1) (hβ : SelfVis (n + 1) (ofOrd b))
+noncomputable def lowerType (P : S α.1 (n + 1)) H
+    {b} (hb : b < α.1) (hβ : SelfVis (n + 1) (ofOrd b))
     (hβgt : ∀ d, P.label d ≠ ⊤ → P.label d < ofOrd b)
     (hH : Admissible P.scheme.rows P.label H) : S α.1 (n + 1) where
   scheme := P.scheme
@@ -164,11 +156,11 @@ noncomputable def lowerType (P : S α.1 (n + 1)) (H : Set (Cell P.scheme.scheme)
       · right; exact lower_of_mem hd hdH
       · left; rw [lower_of_not_mem hd hdH, ofOrd_lt_ofOrd]; exact hb
     · rw [lower_of_ne_top hd]; exact P.label_bound d
-  respects := respects_lower P.respects (grade_le_succ P) hβ (ofOrd_ne_bot b) hβgt hH
+  respects := respects_lower P.respects (fun d => LE.le.trans (CellScheme.grade_le_card_scope P.scheme.scheme d) (LE.le.trans_eq (Finset.card_le_univ (P.scheme.scheme.scope d)) (Fintype.card_fin (n + 1)))) hβ (ofOrd_ne_bot b) hβgt hH
 
 /-- The lowering is a coface of the root when the root's tops are retained. -/
-theorem isCoface_lowerType {p : S α.1 n} {P : S α.1 (n + 1)} (hP : IsCoface p P)
-    {H : Set (Cell P.scheme.scheme)} {b : Ordinal.{0}} (hb : b < α.1)
+theorem isCoface_lowerType {p} {P} (hP : IsCoface p P)
+    {H} {b} (hb : b < α.1)
     (hβ : SelfVis (n + 1) (ofOrd b)) (hβgt : ∀ d, P.label d ≠ ⊤ → P.label d < ofOrd b)
     (hH : Admissible P.scheme.rows P.label H) (hroot : rootTops hP ⊆ H) :
     IsCoface p (lowerType P H hb hβ hβgt hH) := by

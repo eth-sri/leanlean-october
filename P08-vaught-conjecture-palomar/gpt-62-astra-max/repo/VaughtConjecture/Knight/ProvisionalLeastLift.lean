@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.ProvisionalLift
-public import VaughtConjecture.Knight.FiniteBandReadback
 
 /-! # The provisional vector is the least lawful lift
 
@@ -21,8 +20,6 @@ pointwise minima is asserted.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.StageType
 
@@ -59,19 +56,10 @@ theorem label_eq_provisional_or_threshold_le (hα : Order.IsSuccLimit α) (hαβ
     rw [someProvisionalValue_of_ne_top htop]
     exact (truncExt_id_of_lt hlt).symm
 
-/-- The provisional value is a lower bound for every lawful higher lift of its
-literal reduct, coordinate by coordinate in the common scalar value space. -/
-theorem provisional_reduct_le_label (hα : Order.IsSuccLimit α) (hαβ : α ≤ β)
-    (q : S β n) (d : Cell q.scheme.scheme) :
-    (reduceType hα hαβ q).someProvisionalValue d ≤ q.label d := by
-  rcases label_eq_provisional_or_threshold_le hα hαβ q d with h | h
-  · exact h.ge
-  · exact (someProvisionalValue_le _ _).trans h
-
 /-- Fixed-scheme form: every lawful bounded vector reducing to `p` dominates its
 provisional vector. Rows and cells are literally those of `p`. -/
 theorem provisional_le_of_lawful_lift (p : S α n) (hα : Order.IsSuccLimit α)
-    (hαβ : α ≤ β) (v : Cell p.scheme.scheme → ExtOrd)
+    (hαβ : α ≤ β) (v : p.scheme.scheme.Labelling)
     (hbound : ∀ d, v d < ofOrd β ∨ v d = ⊤)
     (hlawful : RespectsSemantics p.scheme.rows v)
     (hreduce : ∀ d, truncExt α (v d) = p.label d) :
@@ -82,7 +70,10 @@ theorem provisional_le_of_lawful_lift (p : S α n) (hα : Order.IsSuccLimit α)
   have he : (reduceType hα hαβ q).someProvisionalValue = p.someProvisionalValue :=
     eq_of_heq (congr_arg_heq (fun t : S α n => t.someProvisionalValue) hred)
   intro d
-  simpa only [he] using provisional_reduct_le_label hα hαβ q d
+  simpa only [he] using show someProvisionalValue (reduceType hα hαβ q) d ≤ q.label d from by
+          rcases label_eq_provisional_or_threshold_le hα hαβ q d with h | h
+          · exact h.ge
+          · exact (someProvisionalValue_le _ _).trans h
 
 /-- Restricting a larger provisional lift gives a lawful lift of the face.
 Leastness therefore proves provisional monotonicity without invoking the
@@ -96,7 +87,9 @@ theorem provisional_le_restrict_of_least {m : ℕ} (q : S α n)
   apply provisional_le_of_lawful_lift (q.restrictFace f hr) hα
     (β := α + Ordinal.omega0) (le_add_of_nonneg_right zero_le)
   · intro d
-    exact Or.inl (q.someProvisionalValue_lt_add_omega _)
+    exact Or.inl (by
+          refine (q.someProvisionalValue_le _).trans_lt (ofOrd_lt_ofOrd.mpr ?_)
+          exact (add_lt_add_iff_left α).mpr (Ordinal.natCast_lt_omega0 q.topGrade))
   · exact ((q.provisionalLift hα).restrictFace f hr).respects
   · intro d
     exact q.truncExt_someProvisionalValue _

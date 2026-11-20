@@ -5,10 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import InfinitaryLogic.Lomega1omega.Semantics
 public import InfinitaryLogic.Lomega1omega.Operations
 public import PalomarProof.Infinitary.QuantifierRank
-public import Mathlib.SetTheory.Ordinal.Family
 public import Mathlib.SetTheory.Cardinal.Regular
 
 /-!
@@ -83,77 +81,6 @@ rather than a parallel recursive copy that happens to agree. -/
 
 /-! ### Quantifier Rank Lemmas -/
 
-namespace BoundedFormulaω
-
-variable {α : Type*} {n : ℕ}
-
-@[simp]
-theorem qrank_falsum : (falsum : L.BoundedFormulaω α n).qrank = 0 := rfl
-
-@[simp]
-theorem qrank_bot : (⊥ : L.BoundedFormulaω α n).qrank = 0 := rfl
-
-@[simp]
-theorem qrank_equal (t₁ t₂ : L.Term (α ⊕ Fin n)) : (equal t₁ t₂).qrank = 0 := rfl
-
-@[simp]
-theorem qrank_rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ Fin n)) :
-    (rel R ts).qrank = 0 := rfl
-
-@[simp]
-theorem qrank_imp (φ ψ : L.BoundedFormulaω α n) :
-    (imp φ ψ).qrank = max φ.qrank ψ.qrank := rfl
-
-/-- Universal quantification adds 1. Kept in `+ 1` form: upstream states it with
-`Order.succ`, and the two agree for ordinals. -/
-@[simp]
-theorem qrank_all (φ : L.BoundedFormulaω α (n + 1)) :
-    (all φ).qrank = φ.qrank + 1 :=
-  BoundedFormulaInf.qrank_all.trans (Order.succ_eq_add_one _)
-
-@[simp]
-theorem qrank_iSup (φs : ℕ → L.BoundedFormulaω α n) :
-    (iSup φs).qrank = ⨆ k, (φs k).qrank := rfl
-
-@[simp]
-theorem qrank_iInf (φs : ℕ → L.BoundedFormulaω α n) :
-    (iInf φs).qrank = ⨆ k, (φs k).qrank := rfl
-
-/-- The top formula has rank 0. -/
-@[simp]
-theorem qrank_top : (⊤ : L.BoundedFormulaω α n).qrank = 0 := by
-  simp only [Top.top, BoundedFormulaInf.verum, BoundedFormulaInf.not, qrank_imp,
-    qrank_falsum, max_self]
-
-/-- Negation preserves quantifier rank. -/
-@[simp]
-theorem qrank_not (φ : L.BoundedFormulaω α n) : φ.not.qrank = φ.qrank := by
-  simp [BoundedFormulaInf.not]
-
-/-- Conjunction takes max of ranks. -/
-theorem qrank_and (φ ψ : L.BoundedFormulaω α n) :
-    (φ.and ψ).qrank = max φ.qrank ψ.qrank := by
-  simp only [BoundedFormulaω.and, qrank_not, qrank_imp, max_comm φ.qrank ψ.qrank]
-
-/-- Disjunction takes max of ranks. -/
-theorem qrank_or (φ ψ : L.BoundedFormulaω α n) :
-    (φ.or ψ).qrank = max φ.qrank ψ.qrank := by
-  simp only [BoundedFormulaω.or, qrank_not, qrank_imp]
-
-/-- `qrank_and` for the lattice notation `⊓`. -/
-@[simp]
-theorem qrank_inf (φ ψ : L.BoundedFormulaω α n) :
-    (φ ⊓ ψ).qrank = max φ.qrank ψ.qrank :=
-  qrank_and φ ψ
-
-/-- `qrank_or` for the lattice notation `⊔`. -/
-@[simp]
-theorem qrank_sup (φ ψ : L.BoundedFormulaω α n) :
-    (φ ⊔ ψ).qrank = max φ.qrank ψ.qrank :=
-  qrank_or φ ψ
-
-end BoundedFormulaω
-
 /-! ### The first-order image has finite rank -/
 
 /-! ### The rank is countable -/
@@ -167,33 +94,15 @@ theorem BoundedFormulaω.qrank_lt_omega1 {α : Type*} :
   | _, .equal _ _ => Ordinal.omega_pos 1
   | _, .rel _ _ => Ordinal.omega_pos 1
   | _, .imp φ ψ => by
-    rw [qrank_imp]
     exact max_lt (qrank_lt_omega1 φ) (qrank_lt_omega1 ψ)
   | _, .all φ => by
-    rw [qrank_all]
     exact (Cardinal.isSuccLimit_omega 1).add_one_lt (qrank_lt_omega1 φ)
   | _, .iSup φs => by
-    rw [qrank_iSup]
     exact Ordinal.iSup_lt_omega_one fun k ↦ qrank_lt_omega1 (φs k)
   | _, .iInf φs => by
-    rw [qrank_iInf]
     exact Ordinal.iSup_lt_omega_one fun k ↦ qrank_lt_omega1 (φs k)
 
-/-- **Every `Lω₁ω` sentence has countable quantifier rank**: `BoundedFormulaω.qrank_lt_omega1`
-for sentences. -/
-theorem Sentenceω.qrank_lt_omega1 (φ : L.Sentenceω) : φ.qrank < Ordinal.omega 1 :=
-  BoundedFormulaω.qrank_lt_omega1 φ
-
 /-! ### Equivalence up to Quantifier Rank -/
-
-namespace EquivQRω
-
-variable {L : Language.{u, v}}
-variable {M : Type w} [L.Structure M]
-variable {N : Type w} [L.Structure N]
-variable {P : Type w} [L.Structure P]
-
-end EquivQRω
 
 end Language
 

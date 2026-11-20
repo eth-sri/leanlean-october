@@ -117,6 +117,21 @@ theorem RespectsSemantics.bot {ι : Type*} [DecidableEq ι] {A : Finset ι} {D :
   locality c := TransformsTo.to_bot (sem.E c)
   availability _ Xi₀ _ _ := ⟨Xi₀, rfl, le_rfl⟩
 
+/-- Labellings of the entire occurrence set and of a graded lower domain. -/
+abbrev CellScheme.Labelling (D : CellScheme A) := Cell D → ExtOrd
+abbrev CellScheme.SectionAt (D : CellScheme A) (U : Finset ι × ℕ) := D.below U → ExtOrd
+abbrev CellScheme.RowDomain (D : CellScheme A) (d : Cell D) := D.below (D.cell d)
+
+/-- No old occurrence has the specified scope. -/
+abbrev CellScheme.AvoidsScope (D : CellScheme A) (B : Finset ι) := ∀ d : Cell D, D.scope d ≠ B
+
+/-- Pointwise agreement of two labellings up to a cap. -/
+abbrev CappedEq {X α : Type*} [Min α] (p q : X → α) (h : α) := ∀ d, min (p d) h = min (q d) h
+
+theorem CappedEq.mono {X α : Type*} [LinearOrder α] {p q : X → α} {c h : α}
+    (hpq : CappedEq p q h) (hle : c ≤ h) : CappedEq p q c := fun d => by
+  simpa only [min_assoc, min_eq_right hle] using congrArg (min · c) (hpq d)
+
 /-! ### Restricted semantics and consistent semantics -/
 
 /-- The row of `sem` at a cell `Sig` of the lower set `D.below BJ` has domain
@@ -145,6 +160,15 @@ structure RespectsSemanticsBelow (sem : Semantics D) (BJ : Finset ι × ℕ)
   availability :
     ∀ Sig Xi₀ : D.below BJ, D.scope Sig.1 ⊆ D.scope Xi₀.1 → D.grade Sig.1 = D.grade Xi₀.1 →
       ∃ Xi : D.below BJ, D.cell Xi.1 = D.cell Xi₀.1 ∧ r Sig ≤ r Xi
+
+/-- The section type determines the lower domain on which it is lawful. -/
+abbrev Semantics.Lawful (sem : Semantics D) {BJ : Finset ι × ℕ} (p : D.SectionAt BJ) :=
+  RespectsSemanticsBelow sem BJ p
+
+/-- A lawful lift reads the entire face literally, keeping the ambient below the cap. -/
+abbrev Semantics.FaceLift (sem : Semantics D) {BJ : Finset ι × ℕ} {Y : Type*}
+    (incl : Y → D.below BJ) (p : Y → ExtOrd) (q : D.SectionAt BJ) (γ : ExtOrd) :=
+  ∃ w, sem.Lawful w ∧ (∀ d, w (incl d) = p d) ∧ CappedEq w q γ
 
 /-- A labelling respecting the semantics of the whole scheme (Def. 2.5.4) respects the
 restricted semantics `E⟨B,j⟩` on every lower set (the converse of

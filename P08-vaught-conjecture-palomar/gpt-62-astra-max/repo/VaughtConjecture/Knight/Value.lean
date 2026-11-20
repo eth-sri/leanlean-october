@@ -221,17 +221,6 @@ theorem extVisReplace_self_of_le {v : ExtOrd} {k k' : ℕ}
   · exact Or.inr (Or.inl rfl)
   · exact Or.inr (Or.inr ⟨α, rfl, hle.trans hfp⟩)
 
-/-- For a limit ordinal `α`, visibility replacement of an ordinal `≥ α` stays `≥ α`:
-`limitPart δ ≥ α`, so `ordinalReplace δ i = limitPart δ + i ≥ α`. -/
-theorem visReplace_ge_of_ge_limit {α : Ordinal.{0}}
-    (hα : Order.IsSuccLimit α)
-    {δ : Ordinal.{0}} (hδ : α ≤ δ) (k i : ℕ) :
-    α ≤ visibilityReplace δ k i := by
-  unfold visibilityReplace
-  split_ifs with hfp
-  · exact le_trans (succLimit_le_limitPart hα hδ) le_self_add
-  · exact hδ
-
 /-- For a limit ordinal `α`, visibility replacement of an ordinal `< α` stays `< α`
 (`β < α → β + 1 < α`, iterated finitely often). -/
 theorem visReplace_lt_of_lt_limit {α : Ordinal.{0}}
@@ -258,7 +247,11 @@ theorem extVisReplace_ge_of_ge_limit {α : Ordinal.{0}} (hα : Order.IsSuccLimit
   · exact absurd hx (not_ofOrd_le_bot α)
   · exact le_top
   · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
-    exact visReplace_ge_of_ge_limit hα (ofOrd_le_ofOrd.mp hx) k i
+    exact by
+          unfold visibilityReplace
+          split_ifs with hfp
+          · exact le_trans (succLimit_le_limitPart hα (ofOrd_le_ofOrd.mp hx)) le_self_add
+          · exact (ofOrd_le_ofOrd.mp hx)
 
 /-- For a limit ordinal `α`, visibility replacement on labels preserves `· < ofOrd α`
 (`visReplace_lt_of_lt_limit` on ordinal labels; `⊥` is fixed). -/
@@ -286,17 +279,6 @@ theorem visReplace_le_of_le_selfVis {γ δ : Ordinal.{0}} {k i : ℕ}
       _ ≤ limitPart δ + (finitePart δ : Ordinal) := add_le_add_right hk' (limitPart δ)
       _ = δ := decomposition δ
   · exact hγδ
-
-/-- `extVisibilityReplace` stays `≤ ofOrd δ` when `x ≤ ofOrd γ`, `γ ≤ δ`, `δ` is self-visible
-at `k`, and the replacement value is `≤ k`. -/
-theorem extVisReplace_le_of_le {γ δ : Ordinal.{0}} {k i : ℕ} {x : ExtOrd}
-    (hx : x ≤ ofOrd γ) (hγδ : γ ≤ δ) (hδ_sv : k ≤ finitePart δ) (hi : i ≤ k) :
-    extVisibilityReplace x k i ≤ ofOrd δ := by
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · exact bot_le
-  · exact absurd hx (not_top_le_ofOrd γ)
-  · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
-    exact visReplace_le_of_le_selfVis ((ofOrd_le_ofOrd.mp hx).trans hγδ) hδ_sv hi
 
 /-! ### Vertical truncation of labels -/
 
@@ -459,7 +441,11 @@ theorem truncExt_evr_comm {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
     · rw [truncExt_ofOrd_of_lt hδ, extVisibilityReplace_ofOrd,
         truncExt_ofOrd_of_lt (visReplace_lt_of_lt_limit hα hδ k i)]
     · rw [truncExt_ofOrd_of_le hδ, extVisibilityReplace_ofOrd,
-        truncExt_ofOrd_of_le (visReplace_ge_of_ge_limit hα hδ k i), extVisibilityReplace_top]
+        truncExt_ofOrd_of_le (by
+          unfold visibilityReplace
+          split_ifs with hfp
+          · exact le_trans (succLimit_le_limitPart hα hδ) le_self_add
+          · exact hδ), extVisibilityReplace_top]
 
 /-! ### Non-successor stages and canonical block levels -/
 
@@ -478,20 +464,8 @@ theorem blockLevel_succ (ξ : Ordinal.{0}) :
   unfold blockLevel
   rw [Ordinal.mul_succ, add_assoc]
 
-theorem blockLevel_strictMono : StrictMono blockLevel := by
-  intro ξ η h
-  unfold blockLevel
-  exact add_lt_add_right ((Ordinal.isNormal_mul_right Ordinal.omega0_pos).strictMono h) _
-
 @[simp] theorem blockLevel_zero : blockLevel 0 = Ordinal.omega0 := by
   simp [blockLevel]
-
-/-- Every canonical block level is a limit ordinal. -/
-theorem isSuccLimit_blockLevel (ξ : Ordinal.{0}) : Order.IsSuccLimit (blockLevel ξ) := by
-  unfold blockLevel
-  rw [Ordinal.isSuccLimit_iff, Ordinal.isSuccPrelimit_iff_omega0_dvd]
-  exact ⟨(Ordinal.omega0_pos.trans_le le_self_add).ne',
-    (Ordinal.dvd_add_iff dvd_rfl).mpr (dvd_mul_right _ _)⟩
 
 end Value
 

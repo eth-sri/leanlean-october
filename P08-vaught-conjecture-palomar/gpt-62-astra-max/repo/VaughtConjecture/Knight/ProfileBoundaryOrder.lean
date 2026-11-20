@@ -7,7 +7,6 @@ module
 
 public import VaughtConjecture.Knight.ProfileFaceGluing
 public import Mathlib.Data.Prod.Lex
-public import Mathlib.Data.Finset.Sort
 
 /-! # Simultaneous ordering of arbitrary finite face inventories
 
@@ -19,8 +18,6 @@ No inventory size or initial prefix is fixed.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ProfileBoundaryOrder
 
 open ProfileFaceUnion
@@ -29,13 +26,6 @@ variable {c n m : ℕ}
 
 def rank (f : Fin c ↪ Fin n) (x : Fin n) : ℕ :=
   (Finset.univ.filter (fun i => f i ≤ x)).card
-
-theorem rank_mono (f : Fin c ↪ Fin n) : Monotone (rank f) := by
-  intro x y hxy
-  apply Finset.card_le_card
-  intro i hi
-  exact Finset.mem_filter.mpr ⟨Finset.mem_univ _,
-    (Finset.mem_filter.mp hi).2.trans hxy⟩
 
 theorem rank_lt_at_shared (f : Fin c ↪ Fin n) {x y : Fin n}
     (hxy : x < y) (hy : y ∈ Set.range f) : rank f x < rank f y := by
@@ -51,14 +41,6 @@ theorem rank_lt_at_shared (f : Fin c ↪ Fin n) {x y : Fin n}
     rw [← he] at hi
     exact (not_le_of_gt hxy) (Finset.mem_filter.mp hi).2
 
-theorem rank_shared (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
-    (hf : StrictMono f) (hg : StrictMono g) (i : Fin c) :
-    rank f (f i) = rank g (g i) := by
-  unfold rank
-  congr 1
-  ext j
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and, hf.le_iff_le, hg.le_iff_le]
-
 noncomputable def faceKey (f : Fin c ↪ Fin n) (tag : ℕ) (x : Fin n) : ℕ ×ₗ ℕ := by
   classical
   exact toLex (rank f x, if x ∈ Set.range f then 0 else tag + x.val)
@@ -71,7 +53,7 @@ theorem faceKey_strict (f : Fin c ↪ Fin n) {tag : ℕ} (htag : 0 < tag) :
   rw [Prod.Lex.toLex_lt_toLex]
   by_cases hr : rank f x < rank f y
   · exact Or.inl hr
-  · have he : rank f x = rank f y := le_antisymm (rank_mono f hxy.le) (le_of_not_gt hr)
+  · have he : rank f x = rank f y := le_antisymm (Finset.card_le_card fun ⦃i⦄ hi => Finset.mem_filter.mpr ⟨Finset.mem_univ i, LE.le.trans (Finset.mem_filter.mp hi).right (LT.lt.le hxy)⟩) (le_of_not_gt hr)
     refine Or.inr ⟨he, ?_⟩
     have hy : y ∉ Set.range f := fun hy => hr (rank_lt_at_shared f hxy hy)
     rw [ite_eq_right hy]
@@ -85,7 +67,11 @@ theorem faceKey_shared (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
     (hf : StrictMono f) (hg : StrictMono g) (i : Fin c) :
     faceKey f 1 (f i) = faceKey g (n + 1) (g i) := by
   classical
-  simp only [faceKey, Set.mem_range_self, ite_true, rank_shared f g hf hg i]
+  simp only [faceKey, Set.mem_range_self, ite_true, show rank f (f i) = rank g (g i) from by
+          unfold rank
+          congr 1
+          ext j
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and, hf.le_iff_le, hg.le_iff_le]]
 
 theorem faceKey_overlap (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
     (hf : StrictMono f) (hg : StrictMono g) (x : Fin n) (y : Fin m) :

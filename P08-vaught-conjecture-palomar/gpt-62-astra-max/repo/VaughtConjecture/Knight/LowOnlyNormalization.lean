@@ -5,6 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.ReceivingCatalogueRanks
+
 public import VaughtConjecture.Knight.LowOnlyFibres
 public import VaughtConjecture.Knight.CappedDonorNormalization
 public import VaughtConjecture.Knight.CanonicalPairedProfiles
@@ -55,12 +57,12 @@ theorem profile_injective : Function.Injective (profile (P := P) (C := C)) := by
 def map (σ : ExtOrd → ExtOrd) (S : State P C) : State P C :=
   ⟨fun d => σ (S.u d), fun d => σ (S.v d), σ S.b⟩
 
-theorem profile_map (σ : ExtOrd → ExtOrd) (S : State P C) (d : Field P C) :
+theorem profile_map σ (S : State P C) d :
     (S.map σ).profile d = σ (S.profile d) := by
   rcases d with d | d | d <;> rfl
 
-theorem capEq_iff_profile {S S' : State P C} {γ : ExtOrd} :
-    S.CapEq γ S' ↔ ∀ d, min (S'.profile d) γ = min (S.profile d) γ := by
+theorem capEq_iff_profile {S S' : State P C} {γ} :
+    S.CapEq γ S' ↔ CappedEq S'.profile S.profile γ := by
   constructor
   · rintro ⟨hu, hv, hb⟩ (d | d | d)
     · exact hu d
@@ -74,7 +76,7 @@ def encoder (j : ℕ) (S : State P C) : ExtOrd → ExtOrd :=
 
 def normalize (j : ℕ) (S : State P C) : State P C := S.map (S.encoder j)
 
-theorem profile_normalize (j : ℕ) (S : State P C) (d : Field P C) :
+theorem profile_normalize j (S : State P C) d :
     (S.normalize j).profile d = PairedSlotEncoding.normalize j S.profile d := by
   rw [normalize, profile_map]
   exact PairedSlotIncoming.encoder_profile j S.profile d
@@ -85,16 +87,16 @@ namespace Family
 
 variable (F : Family P C K)
 
-theorem maximum_map {j : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop j) σ)
-    (S : State P C) : F.maximum (S.map σ) = σ (F.maximum S) := by
+theorem maximum_map {j} {σ} (hσ : Witness (gTop j) σ)
+    S : F.maximum (S.map σ) = σ (F.maximum S) := by
   classical
   unfold maximum nonTopMax
   rw [Finset.apply_sup_eq_sup_comp σ (fun _ _ => hσ.mono.map_max) hσ.bot]
   rfl
 
 /-- Current-grade, bottom-reflecting maps preserve the gate-free relation. -/
-theorem Admissible.map {j : ℕ} {S : State P C} (hS : F.Admissible j S)
-    {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop j) σ) (hj : 1 ≤ j)
+theorem Admissible.map {j} {S} (hS : F.Admissible j S)
+    {σ} (hσ : Witness (gTop j) σ) (hj : 1 ≤ j)
     (hbot : ∀ x, σ x = ⊥ → x = ⊥) : F.Admissible j (S.map σ) where
   lawfulP := map_respects_of_bottom_reflecting hS.lawfulP
     (fun d => d.2.2.trans (min_le_left _ _)) (boundedMap_of_witness hσ) hbot
@@ -112,18 +114,32 @@ theorem Admissible.map {j : ℕ} {S : State P C} (hS : F.Admissible j S)
     rw [← map_comm hσ hK _ le_rfl, ← hσ.mono.map_min, ← hσ.mono.map_max]
     exact hσ.mono (hS.low hK hm' d hd)
 
-theorem normalize_admissible {j : ℕ} (hj : 1 ≤ j) {S : State P C}
+theorem normalize_admissible {j} (hj : 1 ≤ j) {S}
     (hS : F.Admissible j S) : F.Admissible j (S.normalize j) :=
   hS.map F (PairedSlotIncoming.encoder_witness j _) hj
     (PairedSlotIncoming.encoder_reflects_bottom j _)
 
 /-- Proper normalized sources belong to the unchanged canonical complete-field inventory. -/
-theorem normalize_inventory (j : ℕ) {S : State P C} (hp : ∀ d, S.profile d ≠ ⊤) :
+theorem normalize_inventory j {S : State P C} (hp : ∀ d, S.profile d ≠ ⊤) :
     (S.normalize j).profile ∈ CanonicalPairedProfiles.inventory (Field P C) j := by
   have he : (S.normalize j).profile = PairedSlotEncoding.normalize j S.profile :=
     funext (State.profile_normalize j S)
   rw [he]
   exact CanonicalPairedProfiles.normalize_mem_inventory _ _ hp
+
+/-- Passing a state through a visible cap and then the canonical encoder preserves admission. -/
+def profileFamily (j : ℕ) : ProfileCatalogue.Family (State P C) (Field P C) j where
+  profile := State.profile
+  admitted := F.Admissible j
+  realize := by
+    intro s hj hs h
+    let β := TerminalProfile.bound s.profile j h
+    let v := s.map (fun x => min x β)
+    have hv := hs.map F (capWitness (TerminalProfile.visible s.profile j h) (ofOrd_ne_bot _)) hj
+      (capWitness_reflects_bottom (ofOrd_ne_bot _))
+    refine ⟨v.normalize j,F.normalize_admissible hj hv,?_⟩
+    have he : v.profile = TerminalProfile.capped s.profile j h := funext (State.profile_map _ s)
+    exact (funext (State.profile_normalize j v)).trans (congrArg _ he)
 
 end Family
 end

@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.ProvisionalLocality
-public import VaughtConjecture.Knight.Reduction
 
 /-! # Proposition 5.3.3: the provisional labelling respects the semantics
 
@@ -45,12 +44,6 @@ open TypeTower Value ExtOrd
 namespace StageType
 
 variable {α : Ordinal.{0}} {n : ℕ}
-
-/-- Every provisional value lies strictly below the end of the next `ω`-block. -/
-theorem someProvisionalValue_lt_add_omega (p : S α n) (Xi : Cell p.scheme.scheme) :
-    p.someProvisionalValue Xi < ofOrd (α + Ordinal.omega0) := by
-  refine (p.someProvisionalValue_le Xi).trans_lt (ofOrd_lt_ofOrd.mpr ?_)
-  exact (add_lt_add_iff_left α).mpr (Ordinal.natCast_lt_omega0 p.topGrade)
 
 /-- The provisional value of an `∞`-cell is at least `α`. -/
 theorem le_someProvisionalValue_of_top {p : S α n} {Xi : Cell p.scheme.scheme}
@@ -131,10 +124,10 @@ theorem someProvisionalValue_orderly (p : S α n) (hα : Order.IsSuccLimit α) :
 theorem exists_monotone_label_of_row (p : S α n) {Θ : Cell p.scheme.scheme}
     (hgr : p.scheme.scheme.grade Θ = p.topGrade) (hΘ : p.label Θ = ⊤) :
     ∃ σ : ExtOrd → ExtOrd, Monotone σ ∧
-      ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Θ),
+      ∀ d : p.scheme.scheme.RowDomain Θ,
         p.label d.1 = σ (p.scheme.rows.E Θ d) := by
   obtain ⟨g, σ, hganti, _, _, hσmono, _, heq⟩ := p.respects.locality Θ
-  have heq' : ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Θ),
+  have heq' : ∀ d : p.scheme.scheme.RowDomain Θ,
       p.label d.1 = min (σ (p.scheme.rows.E Θ d)) (g (p.scheme.scheme.grade d.1)) := by
     intro d
     have := heq d
@@ -160,14 +153,14 @@ theorem exists_monotone_label_of_row (p : S α n) {Θ : Cell p.scheme.scheme}
 /-- **Lemma 5.3.5 (locality of `p⁺`)** at every controller. -/
 theorem provisional_locality (p : S α n) (hα : Order.IsSuccLimit α)
     (Sig : Cell p.scheme.scheme) :
-    Transform.TransformsTo (fun d : p.scheme.scheme.below (p.scheme.scheme.cell Sig) =>
+    Transform.TransformsTo (fun d : p.scheme.scheme.RowDomain Sig =>
         p.scheme.scheme.grade d.1)
       (p.scheme.rows.E Sig)
       (fun d => min (p.someProvisionalValue d.1) (p.someProvisionalValue Sig)) := by
   by_cases htop : p.label Sig = ⊤
   · exact topController_locality_provisional p hα htop
   · have hlt : p.label Sig < ofOrd α := (p.label_bound Sig).resolve_right htop
-    have hfun : (fun d : p.scheme.scheme.below (p.scheme.scheme.cell Sig) =>
+    have hfun : (fun d : p.scheme.scheme.RowDomain Sig =>
         min (p.someProvisionalValue d.1) (p.someProvisionalValue Sig)) =
         fun d => min (p.label d.1) (p.label Sig) := by
       funext d
@@ -227,7 +220,7 @@ noncomputable def provisionalLift (p : S α n) (hα : Order.IsSuccLimit α) :
     S (α + Ordinal.omega0) n where
   scheme := p.scheme
   label := p.someProvisionalValue
-  label_bound Xi := Or.inl (p.someProvisionalValue_lt_add_omega Xi)
+  label_bound Xi := Or.inl (LE.le.trans_lt (someProvisionalValue_le p Xi) (ofOrd_lt_ofOrd.mpr ((add_lt_add_iff_left α).mpr (Ordinal.natCast_lt_omega0 (topGrade p)))))
   respects := provisionalLift_respects p hα
 
 /-- Provisional values reduce literally to the source labels. -/

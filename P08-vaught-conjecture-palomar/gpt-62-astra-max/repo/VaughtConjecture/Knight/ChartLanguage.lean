@@ -55,23 +55,23 @@ def stageLang (α : LimitStage) : Language.{0, 1} where
   Functions _ := Empty
   Relations n := S α.1 n
 
-instance stageLang.isRelational (α : LimitStage) : (stageLang α).IsRelational :=
+instance stageLang.isRelational α : (stageLang α).IsRelational :=
   fun _ => inferInstanceAs (IsEmpty Empty)
 
 /-- The relation `P_p` holds of a tuple in a stage chart structure. -/
-abbrev StageHolds {α : LimitStage} {M : Type w} [(stageLang α).Structure M] {n : ℕ}
+abbrev StageHolds {α} {M : Type w} [(stageLang α).Structure M] {n}
     (p : S α.1 n) (xs : Fin n → M) : Prop :=
   RelMap (L := stageLang α) (n := n) p xs
 
 /-- The chart-language structure associated to a Knight realization: `P_p(x̄)` means that
 `x̄` is injective and the realization labels it by `p`. -/
-@[instance_reducible] noncomputable def stageStructureOf {α : LimitStage} {M : Type w}
+@[instance_reducible] noncomputable def stageStructureOf {α} {M : Type w}
     (R : KnightRealization α M) : (stageLang α).Structure M where
   funMap f := isEmptyElim f
   RelMap p xs := ∃ h : Function.Injective xs, R.eval ⟨xs, h⟩ = some p
 
-theorem stageHolds_stageStructureOf {α : LimitStage} {M : Type w}
-    (R : KnightRealization α M) {n : ℕ} (p : S α.1 n) (xs : Fin n → M) :
+theorem stageHolds_stageStructureOf {α} {M : Type w}
+    R {n} p xs :
     @StageHolds α M (stageStructureOf R) n p xs ↔
       ∃ h : Function.Injective xs, R.eval ⟨xs, h⟩ = some p :=
   Iff.rfl
@@ -79,8 +79,8 @@ theorem stageHolds_stageStructureOf {α : LimitStage} {M : Type w}
 /-- The stage chart encoding reflects isomorphisms: an isomorphism of chart structures already
 transports every `Option`-valued realization label.  No modelhood or transfer hypothesis is
 needed. -/
-theorem isIsoOfStageStructureEquiv {α : LimitStage} {M : Type w} {N : Type w'}
-    {R : KnightRealization α M} {R' : KnightRealization α N}
+theorem isIsoOfStageStructureEquiv {α} {M : Type w} {N : Type w'}
+    {R} {R'}
     (e : @Language.Equiv (stageLang α) M N (stageStructureOf R) (stageStructureOf R')) :
     R.IsIso R'
       (@Language.Equiv.toEquiv (stageLang α) M N (stageStructureOf R) (stageStructureOf R') e) := by
@@ -115,10 +115,10 @@ theorem isIsoOfStageStructureEquiv {α : LimitStage} {M : Type w} {N : Type w'}
 subtuple of a labelled injective tuple.  A visible face gives its unique pulled-back label;
 an invisible face gives no label (a *negative* atomic fact), and a repeated subtuple satisfies
 no chart relation.  Visible-face consistency alone would not prove the negative facts. -/
-theorem stageHolds_comp_iff_of_eval {α : LimitStage} {M : Type w}
-    {R : KnightRealization α M} (hR : R.IsExactParentConsistent)
-    {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n} (ht : R.eval t = some p)
-    {m : ℕ} (q : S α.1 m) (f : Fin m → Fin n) :
+theorem stageHolds_comp_iff_of_eval {α} {M : Type w}
+    {R} (hR : R.IsExactParentConsistent)
+    {n} {t : Fin n ↪ M} {p} (ht : R.eval t = some p)
+    {m} q f :
     @StageHolds α M (stageStructureOf R) m q (t ∘ f) ↔
       ∃ hf : Function.Injective f, typeMap ⟨f, hf⟩ p = some q := by
   rw [stageHolds_stageStructureOf]
@@ -144,10 +144,10 @@ theorem stageHolds_comp_iff_of_eval {α : LimitStage} {M : Type w}
 
 /-- Two labelled tuples carrying the same full chart have the same atomic chart-language type.
 This includes equality atoms, repeated relation tuples, and invisible faces. -/
-theorem sameAtomicType_of_eval_eq_some {α : LimitStage} {M : Type w} {N : Type w'}
-    {R : KnightRealization α M} {R' : KnightRealization α N}
+theorem sameAtomicType_of_eval_eq_some {α} {M : Type w} {N : Type w'}
+    {R} {R'}
     (hR : R.IsExactParentConsistent) (hR' : R'.IsExactParentConsistent)
-    {n : ℕ} {a : Fin n ↪ M} {b : Fin n ↪ N} {p : S α.1 n}
+    {n} {a : Fin n ↪ M} {b : Fin n ↪ N} {p}
     (ha : R.eval a = some p) (hb : R'.eval b = some p) :
     @SameAtomicType (stageLang α) M (stageStructureOf R) n N (stageStructureOf R') a b := by
   intro idx
@@ -164,17 +164,17 @@ theorem sameAtomicType_of_eval_eq_some {α : LimitStage} {M : Type w} {N : Type 
 /-- A common projected chart for two tuples: each tuple is the same coordinate projection of
 an injective tuple carrying one common full chart.  The selector may repeat coordinates, so this
 also covers arbitrary finite tuples rather than only embeddings. -/
-def HasCommonChart {α : LimitStage} {M : Type w} {N : Type w'}
-    (R : KnightRealization α M) (R' : KnightRealization α N) {n : ℕ}
+def HasCommonChart {α} {M : Type w} {N : Type w'}
+    (R : KnightRealization α M) (R' : KnightRealization α N) {n}
     (a : Fin n → M) (b : Fin n → N) : Prop :=
   ∃ (m : ℕ) (ta : Fin m ↪ M) (tb : Fin m ↪ N) (σ : Fin n → Fin m) (p : S α.1 m),
     R.eval ta = some p ∧ R'.eval tb = some p ∧ ta ∘ σ = a ∧ tb ∘ σ = b
 
 /-- Common projected charts determine the complete atomic diagram in the chart language. -/
-theorem sameAtomicType_of_commonChart {α : LimitStage} {M : Type w} {N : Type w'}
-    {R : KnightRealization α M} {R' : KnightRealization α N}
+theorem sameAtomicType_of_commonChart {α} {M : Type w} {N : Type w'}
+    {R} {R'}
     (hR : R.IsExactParentConsistent) (hR' : R'.IsExactParentConsistent)
-    {n : ℕ} {a : Fin n → M} {b : Fin n → N} (h : HasCommonChart R R' a b) :
+    {n} {a} {b} (h : HasCommonChart R R' a b) :
     @SameAtomicType (stageLang α) M (stageStructureOf R) n N (stageStructureOf R') a b := by
   let instM : (stageLang α).Structure M := stageStructureOf R
   let instN : (stageLang α).Structure N := stageStructureOf R'

@@ -19,7 +19,6 @@ face. No growth physical receiver or stable occurrence is asserted.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor
 universe w
@@ -41,7 +40,7 @@ theorem acquire_padded (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHol
   obtain ⟨Q, hQ, hkeep⟩ := FixedHeight.pinnedCofaceLift (CanonicalCoatomSupply.supply α.2)
     1 (by omega) pR Fin.castSuccEmb p hco q hq
   obtain ⟨D, hD⟩ := acquire Q hM hg hh (Nat.succ_pos n) heval hQ floor
-  exact ⟨z, hz, pR, heval, hco, Q, hQ, hkeep, D, hD⟩
+  grind
 
 /-- The donor restriction after padding still has the original public root
 and the same new donor point. This is the tuple equation a later model
@@ -55,8 +54,7 @@ theorem donor_tuple {n : ℕ} (t : Fin n ↪ M) (z : M) (hz : z ∉ Set.range t)
   apply Function.Embedding.ext
   intro i
   refine Fin.lastCases ?_ (fun k => ?_) i
-  · simp only [Function.Embedding.trans_apply, FixedHeight.extendFace_last, snoc_apply_last]
-  · simp only [Function.Embedding.trans_apply, FixedHeight.extendFace_castSucc,
-      Fin.castSuccEmb_apply, snoc_apply_castSucc]
+  · simp
+  simp
 
 end VaughtConjecture.Knight.HollowGrowthTemplate

@@ -7,6 +7,7 @@ module
 
 public import VaughtConjecture.Knight.CountedEncoding
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+
 /-! # Paired point/orbit slots and literal lower-prefix stability
 
 An orbit is hosted only when the inventory contains an occurrence invisible at
@@ -26,7 +27,6 @@ alphabet theorem. The coupled construction's bounded profiles have no top.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PairedSlotEncoding
 open Transform Value ExtOrd
 noncomputable section
@@ -39,17 +39,17 @@ def keys (j : ℕ) (S : Finset Ordinal.{0}) : Finset Ordinal.{0} := S.image (key
 def rank (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : ℕ :=
   ((keys j S).filter fun b => b < key j S a).card
 
-theorem key_le (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : key j S a ≤ a := by
+theorem key_le j S a : key j S a ≤ a := by
   unfold key
   split_ifs
   · exact limitPart_le a
   · exact le_rfl
 
-theorem orbit_of_invisible {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem orbit_of_invisible {j} {S} {a}
     (ha : a ∈ S) (h : finitePart a < j) : Orbit j S a :=
   ⟨h.le, a, ha, h, rfl⟩
 
-theorem invisible_lt_cut {j : ℕ} {a h : Ordinal.{0}}
+theorem invisible_lt_cut {j} {a h : Ordinal.{0}}
     (ha : finitePart a < j) (hh : j ≤ finitePart h) (hl : limitPart a < h) : a < h := by
   by_contra hn
   have hha := not_lt.mp hn
@@ -62,7 +62,7 @@ theorem invisible_lt_cut {j : ℕ} {a h : Ordinal.{0}}
   have := finitePart_le_of_le_of_limitPart_eq hha hlp
   omega
 
-theorem orbit_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{0}}
+theorem orbit_congr_below {j} {S T} {a h : Ordinal.{0}}
     (hh : j ≤ finitePart h)
     (heq : ∀ b, b < h → (b ∈ S ↔ b ∈ T))
     (ha : limitPart a < h) : Orbit j S a ↔ Orbit j T a := by
@@ -72,7 +72,7 @@ theorem orbit_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{0
   · rintro ⟨hfp, b, hb, hbj, hba⟩
     exact ⟨hfp, b, (heq b (invisible_lt_cut hbj hh (hba ▸ ha))).mpr hb, hbj, hba⟩
 
-theorem key_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{0}}
+theorem key_congr_below {j} {S T} {a h : Ordinal.{0}}
     (hh : j ≤ finitePart h)
     (heq : ∀ b, b < h → (b ∈ S ↔ b ∈ T)) (ha : a < h) :
     key j S a = key j T a := by
@@ -81,13 +81,13 @@ theorem key_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{0}}
   · simp only [key, ite_eq_left hs, ite_eq_left (ho.mp hs)]
   · simp only [key, ite_eq_right hs, ite_eq_right (fun ht => hs (ho.mpr ht))]
 
-theorem orbit_witness_key {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem orbit_witness_key {j} {S} {a}
     (ha : Orbit j S a) :
     ∃ b ∈ S, finitePart b < j ∧ key j S b = key j S a := by
   obtain ⟨b, hb, hbj, hba⟩ := ha.2
   exact ⟨b, hb, hbj, by simp only [key, ite_eq_left ha,
     ite_eq_left (orbit_of_invisible hb hbj), hba]⟩
-theorem exists_low_key {j : ℕ} {S : Finset Ordinal.{0}} {a h : Ordinal.{0}}
+theorem exists_low_key {j} {S} {a h : Ordinal.{0}}
     (hh : j ≤ finitePart h) (ha : a ∈ S) (hk : key j S a < h) :
     ∃ b ∈ S, b < h ∧ key j S b = key j S a := by
   by_cases ho : Orbit j S a
@@ -99,7 +99,7 @@ theorem exists_low_key {j : ℕ} {S : Finset Ordinal.{0}} {a h : Ordinal.{0}}
       simp only [key, ite_eq_left ho, ite_eq_left (orbit_of_invisible hb hbj), hba]⟩
   · exact ⟨a, ha, by simpa only [key, ite_eq_right ho] using hk, rfl⟩
 
-theorem keys_prefix {j : ℕ} {S T : Finset Ordinal.{0}} {h : Ordinal.{0}}
+theorem keys_prefix {j} {S T} {h : Ordinal.{0}}
     (hh : j ≤ finitePart h) (heq : ∀ b, b < h → (b ∈ S ↔ b ∈ T)) :
     (keys j S).filter (· < h) = (keys j T).filter (· < h) := by
   have transfer (S T : Finset Ordinal.{0})
@@ -115,7 +115,7 @@ theorem keys_prefix {j : ℕ} {S T : Finset Ordinal.{0}} {h : Ordinal.{0}}
   exact ⟨fun hx => ⟨transfer S T heq x hx.1 hx.2, hx.2⟩,
     fun hx => ⟨transfer T S (fun b hb => (heq b hb).symm) x hx.1 hx.2, hx.2⟩⟩
 
-theorem rank_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{0}}
+theorem rank_congr_below {j} {S T} {a h : Ordinal.{0}}
     (hh : j ≤ finitePart h) (heq : ∀ b, b < h → (b ∈ S ↔ b ∈ T)) (ha : a < h) :
     rank j S a = rank j T a := by
   have hk := key_congr_below hh heq ha
@@ -140,19 +140,19 @@ def offset (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : ℕ := by
 def encode (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : ExtOrd :=
   ofOrd (Ordinal.omega0 * block j S a + offset j S a)
 
-theorem offset_le (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
+theorem offset_le j S a :
     offset j S a ≤ j := by
   unfold offset
   split_ifs with ho
   · exact ho.1
   · exact le_rfl
 
-theorem block_pos (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
+theorem block_pos j S a :
     0 < block j S a := by
   unfold block
   split_ifs <;> omega
 
-theorem encode_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{0}}
+theorem encode_congr_below {j} {S T} {a h : Ordinal.{0}}
     (hh : j ≤ finitePart h) (heq : ∀ b, b < h → (b ∈ S ↔ b ∈ T)) (ha : a < h) :
     encode j S a = encode j T a := by
   have hr := rank_congr_below hh heq ha
@@ -162,7 +162,7 @@ theorem encode_congr_below {j : ℕ} {S T : Finset Ordinal.{0}} {a h : Ordinal.{
   · simp only [encode, block, offset, hr, ite_eq_right hs,
       ite_eq_right (fun ht => hs (ho.mpr ht))]
 
-theorem rank_lt_of_key_lt {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem rank_lt_of_key_lt {j} {S} {a b}
     (ha : a ∈ S) (hab : key j S a < key j S b) : rank j S a < rank j S b := by
   apply Finset.card_lt_card
   apply Finset.ssubset_iff_of_subset
@@ -172,14 +172,14 @@ theorem rank_lt_of_key_lt {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
     ⟨Finset.mem_image_of_mem _ ha, hab⟩, ?_⟩
   simp only [Finset.mem_filter, lt_self_iff_false, and_false, not_false_eq_true]
 
-theorem rank_lt_card {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem rank_lt_card {j} {S} {a}
     (ha : a ∈ S) : rank j S a < S.card := by
   apply lt_of_lt_of_le (b := (keys j S).card) _ Finset.card_image_le
   apply Finset.card_lt_card
   apply (Finset.ssubset_iff_of_subset (Finset.filter_subset _ _)).mpr
   exact ⟨key j S a, Finset.mem_image_of_mem _ ha, by simp⟩
 
-theorem encode_mem_sharp {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem encode_mem_sharp {j} {S} {a}
     (ha : a ∈ S) : encode j S a ∈ codedAlphabet (2 * S.card) j := by
   have hr := rank_lt_card (j := j) ha
   have hb : block j S a ≤ 2 * S.card := by
@@ -188,7 +188,7 @@ theorem encode_mem_sharp {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
   exact mem_codedAlphabet_iff.mpr (Or.inr
     ⟨block j S a, offset j S a, hb, (offset_le j S a).trans (Nat.le_succ j), rfl⟩)
 
-theorem encode_visible {j k : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
+theorem encode_visible {j k} {S} {a}
     (hk : k ≤ j) (ha : k ≤ finitePart a) : SelfVis k (encode j S a) := by
   rw [encode, selfVis_ofOrd_iff, finitePart_mul_add]
   unfold offset
@@ -196,7 +196,7 @@ theorem encode_visible {j k : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
   · exact ha
   · exact hk
 
-theorem key_mono (j : ℕ) (S : Finset Ordinal.{0}) :
+theorem key_mono j S :
     Monotone (key j S) := by
   intro a b hab
   by_cases hb : Orbit j S b
@@ -214,7 +214,7 @@ theorem key_mono (j : ℕ) (S : Finset Ordinal.{0}) :
       simpa only [key, ite_eq_right ha, ite_eq_left hb] using hh
   · simpa only [key, ite_eq_right hb] using (key_le j S a).trans hab
 
-theorem encode_strictMonoOn (j : ℕ) (S : Finset Ordinal.{0}) :
+theorem encode_strictMonoOn j S :
     StrictMonoOn (encode j S) S := by
   intro a ha b hb hab
   rcases lt_or_eq_of_le (key_mono j S hab.le) with hkey | hkey
@@ -244,7 +244,7 @@ theorem encode_strictMonoOn (j : ℕ) (S : Finset Ordinal.{0}) :
     · simp only [key, ite_eq_right hoa, ite_eq_right hob] at hkey
       exact (hab.ne hkey).elim
 
-theorem orbit_iff_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem orbit_iff_of_key_eq {j} {S} {a b}
     (ha : a ∈ S) (hb : b ∈ S) (hk : key j S a = key j S b) :
     Orbit j S a ↔ Orbit j S b := by
   have one (a b : Ordinal.{0}) (hb : b ∈ S)
@@ -256,7 +256,7 @@ theorem orbit_iff_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0
     exact hn (orbit_of_invisible hb (hf ▸ hj))
   exact ⟨one a b hb hk, one b a ha hk.symm⟩
 
-theorem block_eq_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem block_eq_of_key_eq {j} {S} {a b}
     (ha : a ∈ S) (hb : b ∈ S) (hk : key j S a = key j S b) :
     block j S a = block j S b := by
   have hr : rank j S a = rank j S b := by simp only [rank, hk]
@@ -265,7 +265,7 @@ theorem block_eq_of_key_eq {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}
   · simp only [block, hr, ite_eq_left hoa, ite_eq_left (ho.mp hoa)]
   · simp only [block, hr, ite_eq_right hoa, ite_eq_right (fun h => hoa (ho.mpr h))]
 
-theorem block_lt_of_key_lt {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem block_lt_of_key_lt {j} {S} {a b}
     (ha : a ∈ S) (hk : key j S a < key j S b) : block j S a < block j S b := by
   have hr := rank_lt_of_key_lt ha hk
   unfold block
@@ -275,7 +275,7 @@ def ceiling (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : Ordinal.{0} :
   classical
   exact if Orbit j S a then limitPart a + j else a
 
-theorem ceiling_le_of_key_lt {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
+theorem ceiling_le_of_key_lt {j} {S} {a b}
     (hk : key j S a < key j S b) : ceiling j S a ≤ b := by
   have hab : a < b := by
     by_contra hn
@@ -302,7 +302,7 @@ def ordValues : ExtOrd → Finset Ordinal.{0}
   | some ⊤ => ∅
   | some (some a) => {a}
 
-theorem mem_ordValues {x : ExtOrd} {a : Ordinal.{0}} :
+theorem mem_ordValues {x} {a} :
     a ∈ ordValues x ↔ x = ofOrd a := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨b, rfl⟩
   · simp [ordValues, ofOrd]
@@ -316,7 +316,7 @@ variable {X : Type*} [Fintype X]
 def values (p : X → ExtOrd) : Finset Ordinal.{0} :=
   Finset.univ.biUnion (fun d => ordValues (p d))
 
-theorem mem_values {p : X → ExtOrd} {a : Ordinal.{0}} :
+theorem mem_values {p : X → ExtOrd} {a} :
     a ∈ values p ↔ ∃ d, p d = ofOrd a := by
   simp only [values, Finset.mem_biUnion, Finset.mem_univ, true_and, mem_ordValues]
 
@@ -338,7 +338,7 @@ theorem eq_of_cap_eq_lt {x y h : ExtOrd} (he : min x h = min y h) (hx : x < h) :
   simpa only [min_eq_left hx.le, min_eq_left hy.le] using he
 
 theorem values_prefix {p q : X → ExtOrd} {h : Ordinal.{0}}
-    (hpq : ∀ d, min (p d) (ofOrd h) = min (q d) (ofOrd h)) :
+    (hpq : CappedEq p q (ofOrd h)) :
     ∀ a, a < h → (a ∈ values p ↔ a ∈ values q) := by
   intro a ha
   rw [mem_values, mem_values]
@@ -356,11 +356,11 @@ def normalize (j : ℕ) (p : X → ExtOrd) (d : X) : ExtOrd :=
   | some ⊤ => ⊤
   | some (some a) => encode j (values p) a
 
-theorem normalize_ofOrd {j : ℕ} {p : X → ExtOrd} {d : X} {a : Ordinal.{0}}
+theorem normalize_ofOrd {j} {p} {d : X} {a}
     (hd : p d = ofOrd a) : normalize j p d = encode j (values p) a := by
   simp only [normalize, hd, ofOrd]
 
-theorem normalize_bot_iff (j : ℕ) (p : X → ExtOrd) (d : X) :
+theorem normalize_bot_iff j p (d : X) :
     normalize j p d = ⊥ ↔ p d = ⊥ := by
   rcases ExtOrd.cases (p d) with hd | hd | ⟨a, hd⟩
   · simp only [normalize, hd]
@@ -368,7 +368,7 @@ theorem normalize_bot_iff (j : ℕ) (p : X → ExtOrd) (d : X) :
   · rw [normalize_ofOrd hd]
     exact iff_of_false (ofOrd_ne_bot _) (hd ▸ ofOrd_ne_bot a)
 
-theorem normalize_mem (j : ℕ) (p : X → ExtOrd) (d : X) (hd : p d ≠ ⊤) :
+theorem normalize_mem j p (d : X) (hd : p d ≠ ⊤) :
     normalize j p d ∈ codedAlphabet (2 * Fintype.card X) j := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
   · simp only [normalize, hb]
@@ -381,9 +381,9 @@ theorem normalize_mem (j : ℕ) (p : X → ExtOrd) (d : X) (hd : p d ≠ ⊤) :
     · exact mem_codedAlphabet_iff.mpr (Or.inr
         ⟨b, i, hb.trans (Nat.mul_le_mul_left 2 (values_card_le p)), hi, he⟩)
 
-theorem normalize_prefix {j : ℕ} {p q : X → ExtOrd} {h : Ordinal.{0}}
+theorem normalize_prefix {j} {p q} {h : Ordinal.{0}}
     (hh : j ≤ finitePart h)
-    (hpq : ∀ d, min (p d) (ofOrd h) = min (q d) (ofOrd h))
+    (hpq : CappedEq p q (ofOrd h))
     (d : X) (hd : p d < ofOrd h) : normalize j p d = normalize j q d := by
   have he := eq_of_cap_eq_lt (hpq d) hd
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩

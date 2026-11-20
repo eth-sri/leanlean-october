@@ -24,17 +24,17 @@ open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CellSch
 variable {α : LimitStage}
 
 /-- Every cell of a scheme on `m` points has grade at most `m`. -/
-theorem grade_le_points {m : ℕ} (D : SemScheme m) (d : Cell D.scheme) : D.scheme.grade d ≤ m :=
+theorem grade_le_points {m} (D : SemScheme m) d : D.scheme.grade d ≤ m :=
   (CellScheme.grade_le_card_scope _ d).trans
     ((Finset.card_le_univ _).trans_eq (Fintype.card_fin _))
 
 /-- Every cell lies below the full index `(univ, m)`. -/
-theorem gradedLe_full {m : ℕ} (D : SemScheme m) (d : Cell D.scheme) :
+theorem gradedLe_full {m} (D : SemScheme m) d :
     GradedLe (D.scheme.cell d) (Finset.univ, m) :=
   ⟨Finset.subset_univ _, grade_le_points D d⟩
 
 /-- Strict truncation below the stage does not change caps below the stage. -/
-theorem min_truncExt_of_lt {γ : ExtOrd} (hγ : γ < ofOrd α.1) (x : ExtOrd) :
+theorem min_truncExt_of_lt {γ} (hγ : γ < ofOrd α.1) x :
     min (truncExt α.1 x) γ = min x γ :=
   min_truncExt_of_le hγ.le x
 
@@ -45,7 +45,7 @@ theorem le_add_nat (ν : Ordinal.{0}) (m : ℕ) : ν ≤ ν + m := by
     | exact le_self_add
 
 /-- Adding a finite offset stays below a nonzero limit stage. -/
-theorem add_nat_lt_limitStage {ν : Ordinal.{0}} (hν : ν < α.1) (m : ℕ) : ν + m < α.1 := by
+theorem add_nat_lt_limitStage {ν} (hν : ν < α.1) (m : ℕ) : ν + m < α.1 := by
   induction m with
   | zero => simpa using hν
   | succ m ih =>
@@ -53,7 +53,7 @@ theorem add_nat_lt_limitStage {ν : Ordinal.{0}} (hν : ν < α.1) (m : ℕ) : �
     exact α.2.succ_lt ih
 
 /-- `ofOrd (ν + m)` is self-visible at `m`. -/
-theorem selfVis_ofOrd_add_nat (ν : Ordinal.{0}) (m : ℕ) : SelfVis m (ofOrd (ν + m)) := by
+theorem selfVis_ofOrd_add_nat ν m : SelfVis m (ofOrd (ν + m)) := by
   rw [selfVis_ofOrd_iff]
   have h : ν + (m : Ordinal.{0}) = limitPart ν + ((finitePart ν + m : ℕ) : Ordinal.{0}) := by
     conv_lhs => rw [← limitPart_add_finitePart ν]
@@ -66,13 +66,13 @@ type `q'` on the face `g` agreeing with `Q` below a cap `γ` self-visible at `D`
 joined by a lawful labelling of `D` restricting to `q'` literally and agreeing with `Q` below
 `γ`.  For a proper face this is `D.bountiful` on the pair `(g[univ], k) ≺ (univ, m)`; for the
 full face the transported `q'` itself serves. -/
-theorem exists_respects_extends_capped_emb {k m : ℕ} (hk : 0 < k) (D : SemScheme m)
+theorem exists_respects_extends_capped_emb {k m} (hk : 0 < k) (D : SemScheme m)
     (g : Fin k ↪ Fin m) (hv : Finset.univ.image g ∈ D.scheme.plan) (q' : S α.1 k)
-    (hs : D.restrictFace g hv = q'.scheme) {Q : Cell D.scheme → ExtOrd}
-    (hQ : RespectsSemantics D.rows Q) {γ : ExtOrd} (hγ : SelfVis m γ)
-    (hcap : ∀ i, min (Q (toCell D.scheme g hv i)) γ = min (q'.label (SemScheme.castCell hs i)) γ) :
-    ∃ l : Cell D.scheme → ExtOrd, RespectsSemantics D.rows l ∧
-      (∀ d, min (l d) γ = min (Q d) γ) ∧
+    (hs : D.restrictFace g hv = q'.scheme) {Q}
+    (hQ : RespectsSemantics D.rows Q) {γ} (hγ : SelfVis m γ)
+    (hcap : CappedEq (Q ∘ toCell D.scheme g hv) (q'.label ∘ SemScheme.castCell hs) γ) :
+    ∃ l, RespectsSemantics D.rows l ∧
+      CappedEq l Q γ ∧
       ∀ i, l (toCell D.scheme g hv i) = q'.label (SemScheme.castCell hs i) := by
   obtain ⟨Ps, pl, pb, pr⟩ := q'
   dsimp only at hs hcap ⊢
@@ -92,13 +92,12 @@ theorem exists_respects_extends_capped_emb {k m : ℕ} (hk : 0 < k) (D : SemSche
       rw [Finset.card_univ, Fintype.card_fin]⟩
   have hle : GradedLe CI BJ := ⟨Finset.subset_univ _, hkm⟩
   have hpush : pushGraded g ((Finset.univ : Finset (Fin k)), k) = CI := rfl
-  let pC : D.scheme.below CI → ExtOrd :=
+  let pC : D.scheme.SectionAt CI :=
     (fun d => pl d.1) ∘ (belowEquiv D.scheme g hv hpush).symm
-  have hpC : RespectsSemanticsBelow D.rows CI pC :=
+  have hpC : D.rows.Lawful pC :=
     (pr.toBelow (Finset.univ, k)).of_restrictFace hpush
   have hall : ∀ d : Cell D.scheme, GradedLe (D.scheme.cell d) BJ := gradedLe_full D
-  have hcapC : ∀ d : D.scheme.below CI,
-      min (Q (CellScheme.below.mono hle d).1) γ = min (pC d) γ := by
+  have hcapC : CappedEq (fun d => Q (CellScheme.below.mono hle d).1) pC γ := by
     intro d
     have h := hcap ((belowEquiv D.scheme g hv hpush).symm d).1
     change min (Q (toCell D.scheme g hv ((belowEquiv D.scheme g hv hpush).symm d).1)) γ =
@@ -124,17 +123,16 @@ theorem exists_respects_extends_capped_emb {k m : ℕ} (hk : 0 < k) (D : SemSche
     _ = pl c := hface c
 
 /-- Stage-valued capped repair on any visible face, including the empty and full face. -/
-theorem exists_stage_extends_capped_emb {k m : ℕ} (D : SemScheme m)
-    (g : Fin k ↪ Fin m) (hv : Finset.univ.image g ∈ D.scheme.plan) (p : S α.1 k)
-    (hs : D.restrictFace g hv = p.scheme) {v : Cell D.scheme → ExtOrd}
-    (hlaw : RespectsSemantics D.rows v) {γ : ExtOrd} (hγ : SelfVis m γ)
+theorem exists_stage_extends_capped_emb {k m} D
+    (g : Fin k ↪ Fin m) (hv : Finset.univ.image g ∈ D.scheme.plan) p
+    (hs : D.restrictFace g hv = p.scheme) {v}
+    (hlaw : RespectsSemantics D.rows v) {γ} (hγ : SelfVis m γ)
     (hγα : γ < ofOrd α.1)
-    (hcap : ∀ i, min (v (toCell D.scheme g hv i)) γ =
-      min (p.label (SemScheme.castCell hs i)) γ) :
+    (hcap : CappedEq (v ∘ toCell D.scheme g hv) (p.label ∘ SemScheme.castCell hs) γ) :
     ∃ Q : S α.1 m, ∃ he : Q.scheme = D, typeMap g Q = some p ∧
-      ∀ d, min (Q.label d) γ = min (v (SemScheme.castCell he d)) γ := by
-  have raw : ∃ l : Cell D.scheme → ExtOrd, RespectsSemantics D.rows l ∧
-      (∀ d, min (l d) γ = min (v d) γ) ∧
+      CappedEq Q.label (v ∘ SemScheme.castCell he) γ := by
+  have raw : ∃ l, RespectsSemantics D.rows l ∧
+      CappedEq l v γ ∧
       ∀ i, l (toCell D.scheme g hv i) = p.label (SemScheme.castCell hs i) := by
     by_cases hk : 0 < k
     · exact exists_respects_extends_capped_emb hk D g hv p hs hlaw hγ hcap

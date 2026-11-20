@@ -8,7 +8,6 @@ module
 public import VaughtConjecture.Knight.TopFreePinnedExtension
 public import VaughtConjecture.Knight.FiniteMasterState
 public import VaughtConjecture.Knight.FiniteRequestData
-public import VaughtConjecture.Knight.FixedHeightChain
 public import VaughtConjecture.Knight.CapReceivingModel
 public import VaughtConjecture.Knight.TopFreeTerminal
 public import VaughtConjecture.TypeTower.FiniteMasterScheduler
@@ -60,7 +59,11 @@ theorem install (st : State β M) {y : M} (hy : y ∉ Set.range st.tup)
   let st' : State β M := ⟨RunState.ofMaster ⟨_, snoc st.tup y hy, Q⟩, hproper⟩
   have hm : st.toRunState.master ≤ st'.toRunState.master :=
     ⟨Fin.castSuccEmb, castSuccEmb_trans_snoc st.tup y hy, hQ⟩
-  exact ⟨st', RunState.extends_of_master hm, hm.range_mono, st'.htup,
+  exact ⟨st', by
+          intro n t p hp
+          rw [← st.toRunState.chart_eq] at hp
+          rw [← st'.toRunState.chart_eq]
+          exact ((st.toRunState.master.extends_iff st'.toRunState.master).mp hm) t p hp, hm.range_mono, st'.htup,
     ⟨Fin.last _, snoc_apply_last st.tup y hy⟩⟩
 
 abbrev Request (β : LimitStage) (M : Type w) :=
@@ -74,8 +77,7 @@ def Serves (A : KnightRealization β M) : Request β M → Prop
   | ⟨n, t, _, q, ν⟩ =>
     ∃ (y : M) (hy : y ∉ Set.range t) (r : S β.1 (n + 1)),
       A.eval (snoc t y hy) = some r ∧ ∃ he : r.scheme = q.1.scheme,
-        ∀ d, min (r.label d) (ofOrd ν.1) =
-          min (q.1.label (SemScheme.castCell he d)) (ofOrd ν.1)
+        CappedEq r.label (q.1.label ∘ SemScheme.castCell he) (ofOrd ν.1)
 
 theorem service [Infinite M] (st : State β M) (r : Request β M)
     (hr : Applicable st.A r) :
@@ -89,7 +91,10 @@ theorem service [Infinite M] (st : State β M) (r : Request β M)
     exact hh.symm.trans hr
   obtain ⟨Q, hQP, hQtop, q', hQq, he, hcap⟩ := TopFreePinnedExtension.exists_pinned
     st.P st.proper f p hface q.1 q.2 (ofOrd ν.1) (ofOrd_lt_ofOrd.mpr ν.2)
-  obtain ⟨y, hy, _⟩ := exists_fresh st.hA.finite st.tup
+  obtain ⟨y, hy, _⟩ := show ∃ y ∉ Set.range ⇑st.tup, FreshFor st.A y from by
+          obtain ⟨y, hy⟩ := (st.hA.finite.union (Set.finite_range st.tup)).infinite_compl.nonempty
+          simp only [Set.mem_compl_iff, Set.mem_union, not_or] at hy
+          exact ⟨y, hy.2, hy.1⟩
   obtain ⟨st', hext, hrange, hQ, _⟩ := install st hy Q hQP hQtop
   have hyt : y ∉ Set.range t := by
     rintro ⟨i, rfl⟩
@@ -112,16 +117,12 @@ theorem absorb (st : State β M) {x : M} (hx : x ∉ Set.range st.tup) :
   obtain ⟨st', hext, hrange, _, hx'⟩ := install st hx Q hQ hproper
   exact ⟨st', hext, hrange, hx'⟩
 
-/-- A serviced observation is a literal finite evaluation, so it persists. -/
-theorem Serves.mono {A B : KnightRealization β M} (h : Extends A B)
-    {r : Request β M} (hr : Serves A r) : Serves B r := by
-  obtain ⟨n, t, p, q, ν⟩ := r
-  obtain ⟨y, hy, s, hs, he, hcap⟩ := hr
-  exact ⟨y, hy, s, h _ _ hs, he, hcap⟩
-
 /-- The cutoff belongs to the task's answer predicate, not to master extension. -/
 def task : Request β M → RootedTask knightTower β M
-  | r@⟨n, t, p, _, _⟩ => ⟨n, t, p, fun A => Serves A r, fun h hs => hs.mono h⟩
+  | r@⟨n, t, p, _, _⟩ => ⟨n, t, p, fun A => Serves A r, fun h hs => by
+          obtain ⟨n, t, p, q, ν⟩ := r
+          obtain ⟨y, hy, s, hs, he, hcap⟩ := hs
+          exact ⟨y, hy, s, h _ _ hs, he, hcap⟩⟩
 
 /-- At every countable limit stage there is a top-free model on any countable
 infinite carrier. The request alphabet is countable, not asserted computable. -/
@@ -130,7 +131,7 @@ theorem exists_topFree_model [Countable M] [Infinite M]
     ∃ R : KnightRealization β M, R.IsModel ∧
       ∀ {n} (t : Fin n ↪ M) (p : S β.1 n), R.eval t = some p → ∀ d, p.label d ≠ ⊤ := by
   have : ∀ n : ℕ, Countable (S β.1 n) := StageType.countable_S hβ
-  have : Countable {ν : Ordinal.{0} // ν < β.1} := countable_lt hβ
+  have : Countable {ν : Ordinal.{0} // ν < β.1} := Set.Countable.to_subtype (Set.Countable.mono Set.Iio_subset_Iic_self (Ordinal.countable_Iic_of_card_le_aleph0 hβ))
   have : Countable (Request β M) := by unfold Request; infer_instance
   let master : State β M → FiniteMaster knightTower β M := fun s => s.toRunState.master
   have habs : ∀ s x, ∃ t, master s ≤ master t ∧ x ∈ Set.range (master t).tuple := by
@@ -148,7 +149,13 @@ theorem exists_topFree_model [Countable M] [Infinite M]
     obtain ⟨s', hext, _, hs'⟩ := service s ⟨n, t, p, q, ν⟩ hr
     exact ⟨s', RunState.master_extends hext, s'.toRunState.chart_eq.symm ▸ hs'⟩
   obtain ⟨R, hc, hcover, _, hs, hfinite⟩ :=
-    FiniteMasterScheduler.exists_realization master habs task hserve (initial β M)
+    FiniteMasterScheduler.exists_realization master habs task hserve ({ initState β M with
+    proper := by
+      intro d
+      have hp := (initState β M).P.scheme.scheme.grade_pos d
+      have h := FiniteCoverReceiving.grade_le_points (initState β M).P.scheme d
+      change (initState β M).P.scheme.scheme.grade d ≤ 0 at h
+      omega })
   have hreceiving : FiniteCutReceiving R := by
     intro n t p hp q hq δ hδ hδβ
     obtain ⟨ν, rfl, hν⟩ : ∃ ν : Ordinal.{0}, δ = ofOrd ν ∧ ν < β.1 := by
@@ -158,7 +165,11 @@ theorem exists_topFree_model [Countable M] [Infinite M]
       · exact ⟨ν, rfl, ofOrd_lt_ofOrd.mp hδβ⟩
     exact hs ⟨n, t, p, ⟨q, hq⟩, ⟨ν, hν⟩⟩ hp
   refine ⟨R, hreceiving.isModel inferInstance hc
-    (hcover.toInitialSegment knightTower_permTotal hc.isVisibleFaceConsistent), ?_⟩
+    (hcover.toInitialSegment (by
+          intro α n σ q
+          refine typeMap_isSome_of_mem _ q ?_
+          rw [Equiv.coe_toEmbedding, Finset.image_univ_equiv]
+          exact q.scheme.scheme.isPlan.domain_mem) fun x x_1 t q f _p hq hp => Eq.trans (hc t q f hq) hp), ?_⟩
   intro n t p hp
   obtain ⟨s, hs⟩ := hfinite t p hp
   exact s.topFree t p (s.toRunState.chart_eq ▸ hs)

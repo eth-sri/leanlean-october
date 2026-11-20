@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.TwoPointSlotPatterns
+public import VaughtConjecture.Knight.SourceBlockPadding
+public import VaughtConjecture.Knight.FiniteProfileControllers
 
 /-! # Refining the proper boundary across a source cut
 
@@ -16,11 +17,7 @@ closed under this operation when lower prescribed values precede upper ones.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.SlotPatternRefinement
-
-open Transform Value ExtOrd SlotControllerFamily ThreePointSlotBoundary
 
 def mix {X : Type*} (q b : X → ℕ) (a : ℕ) (d : X) : ℕ :=
   if q d < a then q d else a + b d

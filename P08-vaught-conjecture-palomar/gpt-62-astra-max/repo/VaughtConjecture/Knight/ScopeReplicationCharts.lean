@@ -16,7 +16,6 @@ full-scope prototype, and reads the original prototype row through erasure.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationCharts
 open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier
 open ScopeReplicationSemantics AmbientGradeCharts
@@ -44,7 +43,7 @@ theorem erase_index {U : Finset ι} {j : ℕ} (hm : U = A ∨ Mixed B C U)
   · change D.grade (erase D B C c) = j
     exact (erase_grade D B C c).trans (congrArg Prod.snd hc)
 
-variable {U : Finset ι} {j : ℕ} {p : (scheme D B C).below (U, j) → ExtOrd}
+variable {U : Finset ι} {j : ℕ} {p : (scheme D B C).SectionAt (U, j)}
   (Ch : Chart (rows D B C hcover sem) (U, j) p j)
 
 end

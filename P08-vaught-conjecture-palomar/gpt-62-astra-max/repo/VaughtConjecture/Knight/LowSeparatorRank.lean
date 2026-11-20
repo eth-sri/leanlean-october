@@ -66,7 +66,7 @@ def rankCut (s : X → ExtOrd) : ℕ := LadderScalarRendering.rank (values s) (d
 theorem donorMax_mem_values {s : X → ExtOrd} (hne : donorMax N s ≠ ⊥) :
     donorMax N s ∈ values s := by
   rcases donorMax_cases N s with h | ⟨d, -, hd⟩
-  · exact absurd h hne
+  · simp_all
   · exact mem_values.mpr ⟨hne, d, hd⟩
 
 theorem rankCut_le (s : X → ExtOrd) : rankCut N s ≤ Fintype.card X :=
@@ -98,15 +98,13 @@ theorem values_rankPartner_below :
     by_cases hdb : d = b
     · rw [hdb, rankPartner_apply_self N b] at hd
       obtain ⟨_, e, he⟩ := mem_values.mp (donorMax_mem_values N (hd ▸ hz))
-      exact ⟨e, he.trans hd⟩
-    · rw [rankPartner_apply_of_ne N b s hdb] at hd
-      exact ⟨d, hd⟩
+      grind
+    grind [rankPartner_apply_of_ne]
   · rintro ⟨hz, d, hd⟩
     refine ⟨hz, ?_⟩
     by_cases hdb : d = b
-    · subst hdb
-      exact absurd (hd ▸ hy) (lt_irrefl _)
-    · exact ⟨d, by rw [rankPartner_apply_of_ne N b s hdb]; exact hd⟩
+    · simp_all
+    · exact ⟨d, by simp_all [rankPartner_apply_of_ne]⟩
 
 include hlt in
 /-- **The partner's cutoff rank is `k`.** -/
@@ -127,7 +125,7 @@ theorem rankPartner_agree :
     rw [rankPartner_apply_of_ne N b s hdb]
     by_cases hsd : s d < s b
     · rw [rank_congr_below (values_rankPartner_below N b hlt) hsd]
-    · have h1 : rankCut N s ≤ LadderScalarRendering.rank (values s) (s d) :=
+    · have h1 :=
         (rankCut_lt_cutoff N b hlt).le.trans (rank_mono _ (not_lt.mp hsd))
       have h2 : rankCut N s ≤ LadderScalarRendering.rank (values (rankPartner N b s)) (s d) := by
         have h := rank_mono (values (rankPartner N b s)) (hlt.le.trans (not_lt.mp hsd))
@@ -139,7 +137,7 @@ theorem rankPartner_agree :
           exact this
         rw [← hk]
         exact h
-      rw [min_eq_right h1, min_eq_right h2]
+      omega
 
 include hlt in
 /-- **The common rank cut is `k`.** -/
@@ -149,11 +147,8 @@ theorem cut_rankPartner {H : ℕ} (hH : Fintype.card X ≤ H) :
   · apply le_of_not_gt
     intro hgt
     have hag := agree_cut H (fieldRank s) (fieldRank (rankPartner N b s)) b
-    rw [rankPartner_cutoff N b hlt, min_eq_left hgt.le] at hag
+    rw [rankPartner_cutoff N b hlt] at hag
     have h1 := rankCut_lt_cutoff N b hlt
-    have : rankCut N s <
-        min (fieldRank s b) (cut H (fieldRank s) (fieldRank (rankPartner N b s))) :=
-      lt_min h1 hgt
     omega
   · exact le_cut ((rankCut_le N s).trans hH) (rankPartner_agree N b hlt)
 
@@ -203,25 +198,14 @@ theorem activation_of_source {k : ℕ} (a : X → ExtOrd)
     omega
   apply (Finset.sup_lt_iff hab).mpr
   intro d hd
-  have hd' : N d := (Finset.mem_filter.mp hd).2
+  have hd' := (Finset.mem_filter.mp hd).2
   by_contra hn
   have := rank_mono (values a) (not_lt.mp hn)
-  have := hlow d hd'
-  unfold fieldRank at *
-  omega
+  grind [fieldRank]
 
 end Scalar
 
 /-! ## The two-spare-tip separator on the actual ladder -/
-
-section Ladder
-
-variable {X : Type*} [Fintype X] (N : X → Prop) [DecidablePred N] (b : X)
-  {Q : Type*} [Finite Q] {H : ℕ} (profile : Q → X → ℕ)
-  (hbound : ∀ a d, profile a d ≤ H) (hH : 0 < H)
-  (src : Q → X → ExtOrd) (hsrc : ∀ a, profile a = fieldRank (src a))
-
-end Ladder
 
 /-! ## The selected rendered readings -/
 
@@ -242,7 +226,7 @@ theorem render_tip_partner [DecidableEq X] {s : X → ExtOrd} (hlt : donorMax N 
   by_cases hM : donorMax N s = ⊥
   · unfold rankCut
     rw [hM, rank_bot (bot_not_values s), level_zero]
-  · exact level_rank (donorMax_mem_values N hM) C
+  exact level_rank (donorMax_mem_values N hM) C
 
 omit [DecidablePred N] [Finite Q] in
 include hH in
@@ -274,8 +258,7 @@ theorem low_min_le {A : State P C} (hA : F.Admissible 1 A) (hm : F.maximum A < A
     have h := (hA.lawfulC.orderly (CellScheme.below.mono (F.gap.domLe le_rfl) F.gap.r)).symm
     change SelfVis (C.scheme.grade F.gap.r.1) (A.v F.gap.r.1) at h
     exact h.mono (C.scheme.grade_pos _)
-  rw [evr_eq_self_of_selfVis hvis] at hlow
-  exact (le_max_right _ _).trans hlow
+  simp_all
 
 end Family
 

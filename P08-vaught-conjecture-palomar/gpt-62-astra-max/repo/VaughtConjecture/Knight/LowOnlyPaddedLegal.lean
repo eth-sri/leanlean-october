@@ -5,6 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
+public import VaughtConjecture.Knight.LowFrame
 public import VaughtConjecture.Knight.LowOnlyPaddedLiftingInduction
 public import VaughtConjecture.Knight.LowOnlyPaddedEndpoints
 public import VaughtConjecture.Knight.OrderedFaceRestriction
@@ -22,15 +23,14 @@ assert stage bounds, separator realization or an exact receiving theorem.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLegal
 open Transform Value ExtOrd AmalgamationPlan LowOnly
 open LowOnlyPaddedIteration LowOnlyPaddedInstallation
 noncomputable section
 
 /-- An ordered exact face of a legal output is the literal semantic restriction. -/
-theorem restrict_eq_of_face {a b : ℕ} (D : SemScheme a) (E : SemScheme b)
-    (f : Fin a ↪ Fin b) {T : Finset (Fin b)} (hf : Finset.univ.image f = T)
+theorem restrict_eq_of_face {a b} D (E : SemScheme b)
+    (f : Fin a ↪ Fin b) {T} (hf : Finset.univ.image f = T)
     (G : ExactSemanticFace (PointImageSemantics.rows D.scheme f hf D.rows) E.rows)
     (hm : StrictMono G.map)
     (hp : Plan.restrictPlan E.scheme.plan T = D.scheme.plan.image (Finset.image f)) :
@@ -44,33 +44,31 @@ variable {l m n K : ℕ} {B C : Finset (Fin l)}
   {R : Finset (Finset (Fin l))}
   (I : WholeDonorBoundary.Input Finset.univ B C R m n n)
   (F : LowOnly.Family I.left I.right K)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
+  (hroot : I.RootAgreement F)
   (hA : 2 ≤ (Finset.univ : Finset (Fin l)).card)
   (hB : B ⊂ Finset.univ) (hC : C ⊂ Finset.univ)
   (hcover : ∀ S ∈ R, S ≠ Finset.univ → S ⊆ B ∨ S ⊆ C)
 
 /-- The actual completed carrier, with no supplied output lifting premise. -/
 def semScheme : SemScheme l where
-  scheme := (build I F hroot hA hB hC
-    ((Finset.univ : Finset (Fin l)).card - 2) (by omega)).carrier
-  rows := (build I F hroot hA hB hC
-    ((Finset.univ : Finset (Fin l)).card - 2) (by omega)).rows
-  rows_coded := build_coded I F hroot hA hB hC _ _
-  consistent := build_consistent I F hroot hA hB hC _ _
-  bountiful := LowOnlyPaddedLiftingInduction.full_bountiful I F hroot hA hB hC hcover
-  complete := LowOnlyPaddedLiftingInduction.full_complete I F hroot hA hB hC hcover
+  scheme := (build (⟨hroot, hA, hB, hC⟩ : I.LowFrame F)
+    (Finset.univ.card - 2) (by omega)).carrier
+  rows := (build (⟨hroot, hA, hB, hC⟩ : I.LowFrame F)
+    (Finset.univ.card - 2) (by omega)).rows
+  rows_coded := build_coded (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) _ _
+  consistent := build_consistent (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) _ _
+  bountiful := LowOnlyPaddedLiftingInduction.full_bountiful (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) hcover
+  complete := LowOnlyPaddedLiftingInduction.full_complete (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) hcover
 
 local notation "E" => semScheme I F hroot hA hB hC hcover
 
-theorem plan : (E).scheme.plan = R := build_plan I F hroot hA hB hC _ _
+theorem plan : (E).scheme.plan = R := build_plan (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) _ (by omega)
 
 def donor : ExactSemanticFace I.leftRows (E).rows :=
-  donorFace I F hroot hA hB hC _ _
+  donorFace (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) _ _
 
 def privateFace : ExactSemanticFace I.rightRows (E).rows :=
-  LowOnlyPaddedInstallation.privateFace I F hroot hA hB hC _ _
+  LowOnlyPaddedInstallation.privateFace (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) _ _
 
 theorem donor_plan : Plan.restrictPlan (E).scheme.plan B =
     I.left.scheme.plan.image (Finset.image I.placeLeft) := by
@@ -92,34 +90,34 @@ theorem private_visible : Finset.univ.image I.placeRight ∈ (E).scheme.plan :=
 theorem restrict_donor :
     (E).restrictFace I.placeLeft (donor_visible I F hroot hA hB hC hcover) = I.left :=
   restrict_eq_of_face I.left (E) I.placeLeft I.imageLeft
-    (donor I F hroot hA hB hC hcover) (donor_order I F hroot hA hB hC _ _)
+    (donor I F hroot hA hB hC hcover) (donor_order (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) _ _)
     (donor_plan I F hroot hA hB hC hcover)
 
 theorem restrict_private :
     (E).restrictFace I.placeRight (private_visible I F hroot hA hB hC hcover) = I.right :=
   restrict_eq_of_face I.right (E) I.placeRight I.imageRight
-    (privateFace I F hroot hA hB hC hcover) (private_order I F hroot hA hB hC _ _)
+    (privateFace I F hroot hA hB hC hcover) (private_order (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) _ _)
     (private_plan I F hroot hA hB hC hcover)
 
 /-- The restriction's canonical enumeration is the installed donor map. -/
-theorem donor_occurrence (d : Cell I.left.scheme) :
+theorem donor_occurrence d :
     CellScheme.restrictFace.toCell (E).scheme I.placeLeft
       (donor_visible I F hroot hA hB hC hcover)
-      (Fin.cast (congrArg (fun D : SemScheme n => D.scheme.card)
+      (Fin.cast (congrArg (fun D => D.scheme.card)
         (restrict_donor I F hroot hA hB hC hcover)).symm d) =
       (donor I F hroot hA hB hC hcover).map d :=
   OrderedFaceRestriction.toCell_eq I.left (E).scheme (E).rows I.placeLeft I.imageLeft
-    (donor I F hroot hA hB hC hcover) (donor_order I F hroot hA hB hC _ _)
+    (donor I F hroot hA hB hC hcover) (donor_order (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) _ _)
     (donor_plan I F hroot hA hB hC hcover) d
 
-theorem private_occurrence (d : Cell I.right.scheme) :
+theorem private_occurrence d :
     CellScheme.restrictFace.toCell (E).scheme I.placeRight
       (private_visible I F hroot hA hB hC hcover)
-      (Fin.cast (congrArg (fun D : SemScheme n => D.scheme.card)
+      (Fin.cast (congrArg (fun D => D.scheme.card)
         (restrict_private I F hroot hA hB hC hcover)).symm d) =
       (privateFace I F hroot hA hB hC hcover).map d :=
   OrderedFaceRestriction.toCell_eq I.right (E).scheme (E).rows I.placeRight I.imageRight
-    (privateFace I F hroot hA hB hC hcover) (private_order I F hroot hA hB hC _ _)
+    (privateFace I F hroot hA hB hC hcover) (private_order (⟨hroot, hA, hB, hC⟩ : I.LowFrame F) _ _)
     (private_plan I F hroot hA hB hC hcover) d
 
 end

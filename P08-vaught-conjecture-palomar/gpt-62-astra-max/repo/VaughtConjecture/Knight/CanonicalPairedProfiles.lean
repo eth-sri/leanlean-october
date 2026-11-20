@@ -20,7 +20,6 @@ The ordinary exact decoder below is deliberately not claimed to fix unused grids
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedProfiles
 open Transform Value ExtOrd PairedSlotEncoding PairedSlotProfiles SharpWitnessComposition
 noncomputable section
@@ -32,7 +31,7 @@ variable (X : Type*) [Fintype X] (j : ℕ)
 def inventory : Set (X → ExtOrd) :=
   {p | PairedSlotEncoding.normalize j p = p ∧ ∀ d, p d ≠ ⊤}
 
-theorem inventory_coded {p : X → ExtOrd} (hp : p ∈ inventory X j) (d : X) :
+theorem inventory_coded {p} (hp : p ∈ inventory X j) d :
     p d ∈ ExtOrd.codedAlphabet (2 * Fintype.card X) j := by
   rw [← congrFun hp.1 d]
   exact normalize_mem j p d (hp.2 d)
@@ -41,17 +40,17 @@ theorem inventory_finite : (inventory X j).Finite :=
   (ExtOrd.codedLabellings_finite X (2 * Fintype.card X) j).subset
     (fun _ hp => inventory_coded X j hp)
 
-theorem inventory_short {p : X → ExtOrd} (hp : p ∈ inventory X j) (d : X) :
+theorem inventory_short {p} (hp : p ∈ inventory X j) d :
     Short j (p d) := by
   rw [← congrFun hp.1 d]
   exact normalize_short j p d
 
-theorem inventory_bound {p : X → ExtOrd} (hp : p ∈ inventory X j) (d : X) :
+theorem inventory_bound {p} (hp : p ∈ inventory X j) d :
     p d ≤ sourceCeiling j X := by
   rw [← congrFun hp.1 d]
   exact normalize_le_ceiling hp.2 d
 
-theorem normalize_mem_inventory {p : X → ExtOrd} (hp : ∀ d, p d ≠ ⊤) :
+theorem normalize_mem_inventory {p} (hp : ∀ d, p d ≠ ⊤) :
     PairedSlotEncoding.normalize j p ∈ inventory X j := by
   refine ⟨CanonicalPairedEncoding.normalize_idempotent j p, ?_⟩
   intro d
@@ -64,20 +63,14 @@ theorem normalize_mem_inventory {p : X → ExtOrd} (hp : ∀ d, p d ≠ ⊤) :
 
 /-- The relative prefix theorem applies coordinatewise to the full field vector,
 including auxiliary fields, and uses the original grid cut. -/
-theorem normalize_cap {a p : X → ExtOrd} {B : ℕ}
+theorem normalize_cap {a p} {B : ℕ}
     (ha : a ∈ inventory X j)
-    (hag : ∀ d, min (a d) (ofOrd (Ordinal.omega0 * B + j)) =
-      min (p d) (ofOrd (Ordinal.omega0 * B + j))) (d : X) :
+    (hag : CappedEq a p (ofOrd (Ordinal.omega0 * B + j))) d :
     min (PairedSlotEncoding.normalize j p d) (ofOrd (Ordinal.omega0 * B + j)) =
       min (a d) (ofOrd (Ordinal.omega0 * B + j)) :=
   CanonicalPairedPrefix.normalize_cap ha.1 ha.2 hag d
 
 end Inventory
 
-section Scheme
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  (sem : Semantics D) (BJ : Finset ι × ℕ) [Fintype (D.below BJ)] (j : ℕ)
-
-end Scheme
 end
 end VaughtConjecture.Knight.CanonicalPairedProfiles

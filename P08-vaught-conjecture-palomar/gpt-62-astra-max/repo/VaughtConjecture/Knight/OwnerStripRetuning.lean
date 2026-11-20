@@ -5,7 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.PairedMixedAmbient
+public import VaughtConjecture.Knight.GradeCutLayerRows
+public import VaughtConjecture.Knight.PairedCoupledSections
+public import VaughtConjecture.Knight.SourcePrefixAmbient
 
 /-! # Retuning a saturated strip from its owner's actual witness
 
@@ -17,8 +19,6 @@ faithful transformations is assumed.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.OwnerStripRetuning
 
@@ -113,15 +113,6 @@ theorem endpoint_reflects {K : ℕ} {α : ExtOrd → ExtOrd} (hα : Witness (gTo
     rw [hv n hnK.le, ofOrd_le_ofOrd] at he
     exact not_lt_of_ge he (add_lt_add_right ht (limitPart u))
 
-theorem invisible_readback {K n : ℕ} {α : ExtOrd → ExtOrd}
-    (hα : Witness (gTop K) α) {u v : Ordinal.{0}}
-    (hv : ∀ m ≤ K, α (ofOrd (limitPart v + m)) = ofOrd (limitPart u + m))
-    {z : ExtOrd} (hn : n < K) (hz : α z = ofOrd (limitPart u + n)) :
-    z = ofOrd (limitPart v + n) := by
-  obtain ⟨w, hw, hwo⟩ := invisible_preimage hα hn hz
-  have he := strip_unique hα (Nat.zero_le n |>.trans_lt hn) hv hwo
-  simpa only [he] using hw
-
 private theorem ray_cases (K : ℕ) (u v : Ordinal.{0}) (x : ExtOrd) :
     FiniteOrbitEmbedding.ray K (limitPart u) (limitPart v) x = ⊥ ∨
       ofOrd (limitPart u) ≤ x ∧ ofOrd (limitPart v) ≤
@@ -164,7 +155,11 @@ theorem exists_retuning {K i : ℕ} {α β τ : ExtOrd → ExtOrd}
   let κ := (β ∘ η) ∘ trim K
   have hκ : Witness (gTop K) κ := (bounded_comp hη hβ le_rfl).witness
   have hκread (z : ExtOrd) (hz : Short K z) : κ z = β (η z) := by
-    simp only [κ, Function.comp_apply, trim_of_short hz]
+    simp only [κ, Function.comp_apply, show trim K z = z from by
+          rcases hz with rfl | rfl | ⟨a, rfl, ha⟩
+          · rfl
+          · rfl
+          · exact trim_eq ha]
   let ρ := fun z => max (τ z) (κ z)
   let δ := β (ofOrd (limitPart v + K))
   have hδ : γ ≤ δ := hbf.trans (hβ.mono (ofOrd_le_ofOrd.mpr le_self_add))
@@ -227,7 +222,10 @@ theorem exists_retuning_with_transfer {K i : ℕ} {α β τ : ExtOrd → ExtOrd}
     simpa only [he] using hwo n hn
   refine ⟨ρ, δ, hρ, hγδ, hδM, hδvis, hend, ?_, ?_, hcap, hbound⟩
   · intro z n hn hz
-    have hread := invisible_readback hα horbit hn hz
+    have hread := show z = ofOrd (limitPart v + ↑n) from by
+          obtain ⟨w, hw, hwo⟩ := invisible_preimage hα hn hz
+          have he := strip_unique hα (Nat.zero_le n |>.trans_lt hn) horbit hwo
+          simpa only [he] using hw
     exact (congrArg ρ hz).trans ((hstrip n hn.le).trans (congrArg β hread).symm)
   · intro z hz
     have hlow := endpoint_reflects hα (Nat.zero_le i |>.trans_lt hi) horbit hz

@@ -18,7 +18,6 @@ domain. This operation does not impose a grade bound on the ambient scheme.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrderedScopeRelocation
 open AmalgamationPlan Transform Value ExtOrd
 noncomputable section
@@ -124,7 +123,7 @@ theorem old_exhaustive (c : Cell D) (z : Cell (carrier sem hB S))
   · exact False.elim (hsep c (h ▸ hz))
 
 def oldBelow (c : Cell D) :
-    D.below (D.cell c) ≃ (carrier sem hB S).below ((carrier sem hB S).cell (old sem hB S c)) :=
+    D.RowDomain c ≃ (carrier sem hB S).RowDomain (old sem hB S c) :=
   Equiv.ofBijective (fun d => ⟨old sem hB S d.1, by
     rw [old_index, old_index]; exact d.2⟩) ⟨by
       intro d e h
@@ -138,8 +137,8 @@ def oldBelow (c : Cell D) :
       simpa only [← hd, old_index] using h⟩
 
 def localBelow (c : Cell S.carrier) :
-    S.carrier.below (S.carrier.cell c) ≃
-      (carrier sem hB S).below ((carrier sem hB S).cell (localCell sem hB S c)) :=
+    S.carrier.RowDomain c ≃
+      (carrier sem hB S).RowDomain (localCell sem hB S c) :=
   Equiv.ofBijective (fun d => ⟨localCell sem hB S d.1, by
     rw [local_index, local_index]; exact d.2⟩) ⟨by
       intro d e h
@@ -212,7 +211,7 @@ theorem table_local (c d : Cell S.carrier) :
   exact pushRow_at r (local_order sem hB S).injective S.rows c d
 
 include hsep in
-theorem table_orderly (c : Cell K) (d : (K).below ((K).cell c)) :
+theorem table_orderly (c : Cell K) (d : (K).RowDomain c) :
     table sem hB S c d.1 = extVisibilityReplace (table sem hB S c d.1)
       ((K).grade d.1) ((K).grade d.1) := by
   rcases covered sem hB S c with ⟨c, rfl⟩ | ⟨c, rfl⟩
@@ -231,7 +230,7 @@ def rows : Semantics K where
   E c d := table sem hB S c d.1
   orderly := table_orderly sem hB S hsep
 
-theorem row_old (c : Cell D) (d : D.below (D.cell c)) :
+theorem row_old (c : Cell D) (d : D.RowDomain c) :
     (rows sem hB S hsep).E (l c) (oldBelow sem hB S hsep c d) = sem.E c d :=
   (table_old sem hB S c d.1).trans (total_below sem c d)
 

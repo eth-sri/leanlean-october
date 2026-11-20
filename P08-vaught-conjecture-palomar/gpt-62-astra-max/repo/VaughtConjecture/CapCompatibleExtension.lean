@@ -22,22 +22,16 @@ namespace VaughtConjecture.CapCompatibleExtension
 variable {X Y Γ : Type*} (restrict : X → Y)
   (capX : Γ → X → X) (capY : Γ → Y → Y)
 
-/-- Any extension preserves all compatible caps against all ambients. -/
-theorem preserves_all (hinj : Function.Injective restrict)
-    (hcomm : ∀ γ x, restrict (capX γ x) = capY γ (restrict x))
-    {p : Y} {z : X} (hz : restrict z = p) :
-    ∀ γ q, capY γ p = capY γ (restrict q) → capX γ z = capX γ q := by
-  intro γ q hq
-  apply hinj
-  rw [hcomm, hcomm, hz]
-  exact hq
-
 /-- Choose the extension once, independently of both the cap and the ambient. -/
 theorem exists_extension (hr : Function.Bijective restrict)
-    (hcomm : ∀ γ x, restrict (capX γ x) = capY γ (restrict x)) (p : Y) :
-    ∃ z : X, restrict z = p ∧
+    (hcomm : ∀ γ x, restrict (capX γ x) = capY γ (restrict x)) p :
+    ∃ z, restrict z = p ∧
       ∀ γ q, capY γ p = capY γ (restrict q) → capX γ z = capX γ q := by
   obtain ⟨z, hz⟩ := hr.2 p
-  exact ⟨z, hz, preserves_all restrict capX capY hr.1 hcomm hz⟩
+  exact ⟨z, hz, by
+          intro γ q hq
+          apply hr.1
+          rw [hcomm, hcomm, hz]
+          exact hq⟩
 
 end VaughtConjecture.CapCompatibleExtension
