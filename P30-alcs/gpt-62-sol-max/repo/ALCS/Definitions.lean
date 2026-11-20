@@ -32,19 +32,15 @@ public import ALCS.Background.Lp
 open MeasureTheory Filter Topology
 open scoped ENNReal
 
-variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
-variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
-variable {U : Type*} [NormedAddCommGroup U] [NormedSpace 𝕜 U]
+variable (𝕜 X U : Type*) [NontriviallyNormedField 𝕜]
+  [NormedAddCommGroup X] [NormedSpace 𝕜 X] [NormedAddCommGroup U] [NormedSpace 𝕜 U]
 
 /-- **Definition 1.1** (abstract linear control system).
 An abstract linear control system with state space `X`, input space `U` and exponent
 `p ∈ [1, ∞]` is a strongly continuous semigroup `T` on `X` (the parent structure
 `C0Semigroup`) together with bounded linear input maps `Φ t : L^p(ℝ₊; U) → X`
 satisfying the composition property `eq:composition`. -/
-structure ALCS (𝕜 : Type*) (X : Type*) (U : Type*) [NontriviallyNormedField 𝕜]
-    [NormedAddCommGroup X] [NormedSpace 𝕜 X]
-    [NormedAddCommGroup U] [NormedSpace 𝕜 U]
-    (p : ℝ≥0∞) [Fact (1 ≤ p)] extends C0Semigroup 𝕜 X where
+structure ALCS (p : ℝ≥0∞) [Fact (1 ≤ p)] extends C0Semigroup 𝕜 X where
   /-- the input maps `Φ t : L^p(ℝ₊; U) → X` -/
   Φ : ℝ → Lp U p muPlus →L[𝕜] X
   /-- composition property `eq:composition`: `Φ (τ + t) (u ⋄_τ v) = T t (Φ τ u) + Φ t v`,
@@ -54,7 +50,7 @@ structure ALCS (𝕜 : Type*) (X : Type*) (U : Type*) [NontriviallyNormedField �
 
 namespace ALCS
 
-variable {p : ℝ≥0∞} [Fact (1 ≤ p)] (S : ALCS 𝕜 X U p)
+variable {𝕜 X U} {p : ℝ≥0∞} [Fact (1 ≤ p)] (S : ALCS 𝕜 X U p)
 
 /-- **Definition 1.4** (zero-class system): `κ(t) = ‖Φ t‖ → 0` as `t → 0⁺`
 (equation `eq:kappa-0`). -/
@@ -65,52 +61,35 @@ def IsZeroClass : Prop :=
 
 /-- `Φ 0 = 0` (§ 1.2): composition with `τ = t = 0` and `u = v`, since `u ⋄_0 u = u`. -/
 theorem Phi_zero : S.Φ 0 = 0 := by
-  refine ContinuousLinearMap.ext (fun u => ?_)
-  -- `u ⋄_0 u = u` everywhere
-  have hw : ⇑u =ᵐ[muPlus] concat 0 ⇑u ⇑u :=
-    Filter.Eventually.of_forall (fun s => by simp [concat])
-  -- `Φ 0 u = T 0 (Φ 0 u) + Φ 0 u = Φ 0 u + Φ 0 u`
-  have h := S.composition 0 0 le_rfl le_rfl u u u hw
-  simpa [S.T_zero] using h
+  ext u
+  simpa [S.T_zero] using S.composition 0 0 le_rfl le_rfl u u u
+    (.of_forall fun t => by simp [concat])
 
-/-- **Lemma 2.1** (`lem:Phi-properties`), causality `eq:causality`:
-`Φ τ (u ⋄_τ v) = Φ τ u`, i.e. `Φ τ u` only depends on the restriction of `u` to `[0, τ)`.
-(Composition with `t = 0`.) -/
-theorem causality (τ : ℝ) (hτ : 0 ≤ τ) (u v w : Lp U p muPlus)
-    (hw : ⇑w =ᵐ[muPlus] concat τ ⇑u ⇑v) :
-    S.Φ τ w = S.Φ τ u := by
-  have h := S.composition τ 0 hτ le_rfl u v w hw
-  simpa [S.T_zero, S.Phi_zero] using h
+variable {s t : ℝ} {u v w : Lp U p muPlus}
 
-/-- **Lemma 2.1** (`lem:Phi-properties`), delay `eq:delay`:
-`Φ (s + t) (0 ⋄_s v) = Φ t v`, i.e. an initial period of zero input has no effect.
-(Composition with `u = 0`.) -/
-theorem delay (s t : ℝ) (hs : 0 ≤ s) (ht : 0 ≤ t) (v w : Lp U p muPlus)
-    (hw : ⇑w =ᵐ[muPlus] concat s ⇑(0 : Lp U p muPlus) ⇑v) :
+/-- **Lemma 2.1**, causality: only the input before time `τ` contributes. -/
+theorem causality (hs : 0 ≤ s) (hw : ⇑w =ᵐ[muPlus] concat s ⇑u ⇑v) : S.Φ s w = S.Φ s u := by
+  simpa [S.T_zero, S.Phi_zero] using S.composition s 0 hs le_rfl u v w hw
+
+/-- **Lemma 2.1**, delay: an initial period of zero input has no effect. -/
+theorem delay (hs : 0 ≤ s) (ht : 0 ≤ t)
+    (hw : ⇑w =ᵐ[muPlus] concat s 0 ⇑v) :
     S.Φ (s + t) w = S.Φ t v := by
-  have h := S.composition s t hs ht 0 v w hw
-  simpa using h
+  simpa using S.composition s t hs ht 0 v w
+    (hw.trans (concat_congr s (Lp.coeFn_zero U p muPlus) .rfl).symm)
 
-/-- **Lemma 2.1** (`lem:Phi-properties`), free evolution `eq:free`:
-`Φ (τ + t) (u ⋄_τ 0) = T t (Φ τ u)`, i.e. once the input is switched off, the state evolves
-freely. (Composition with `v = 0`.) -/
-theorem free (τ t : ℝ) (hτ : 0 ≤ τ) (ht : 0 ≤ t) (u w : Lp U p muPlus)
-    (hw : ⇑w =ᵐ[muPlus] concat τ ⇑u ⇑(0 : Lp U p muPlus)) :
-    S.Φ (τ + t) w = S.T t (S.Φ τ u) := by
-  have h := S.composition τ t hτ ht u 0 w hw
-  simpa using h
+/-- **Lemma 2.1**, free evolution: after the input stops, the state evolves by `T`. -/
+theorem free (hs : 0 ≤ s) (ht : 0 ≤ t)
+    (hw : ⇑w =ᵐ[muPlus] concat s ⇑u 0) :
+    S.Φ (s + t) w = S.T t (S.Φ s u) := by
+  simpa using S.composition s t hs ht u 0 w
+    (hw.trans (concat_congr s .rfl (Lp.coeFn_zero U p muPlus)).symm)
 
-/-- Monotonicity of `κ(t) = ‖Φ t‖`, equation `eq:Phi-monotone`:
-`‖Φ s‖ ≤ ‖Φ t‖` for `0 ≤ s ≤ t`. Indeed `Φ s u = Φ t (0 ⋄_{t-s} u)` by `delay`. -/
+/-- The input-map norm is nondecreasing, by delaying the input. -/
 theorem norm_Phi_mono {s t : ℝ} (hs : 0 ≤ s) (hst : s ≤ t) : ‖S.Φ s‖ ≤ ‖S.Φ t‖ := by
-  apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _)
-  intro u
+  refine (S.Φ s).opNorm_le_bound (norm_nonneg _) fun u => ?_
   obtain ⟨w, hw, hcat⟩ := exists_delay (t - s) u
-  have heq := S.delay (t - s) s (sub_nonneg.2 hst) hs u w hcat
-  rw [sub_add_cancel] at heq
-  calc
-    ‖S.Φ s u‖ = ‖S.Φ t w‖ := congrArg norm heq.symm
-    _ ≤ ‖S.Φ t‖ * ‖w‖ := (S.Φ t).le_opNorm w
-    _ ≤ ‖S.Φ t‖ * ‖u‖ := mul_le_mul_of_nonneg_left hw (norm_nonneg _)
+  rw [← S.delay (sub_nonneg.2 hst) hs hcat, sub_add_cancel]
+  exact (S.Φ t).le_opNorm_of_le hw
 
 end ALCS
