@@ -1,0 +1,7 @@
+module
+public import Mathlib.Analysis.InnerProductSpace.Adjoint
+public import Mathlib.LinearAlgebra.FiniteDimensional.Basic
+public import Mathlib.LinearAlgebra.Dimension.Finrank
+public import RequestProject.NeumannTraceInjective
+public import RequestProject.NeumannResonanceDimension
+public import RequestProject.NeumannConstantTrace

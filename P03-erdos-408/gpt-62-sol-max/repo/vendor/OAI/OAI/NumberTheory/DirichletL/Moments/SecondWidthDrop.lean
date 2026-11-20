@@ -1,0 +1,26 @@
+module
+
+public import OAI.NumberTheory.DirichletL.Moments.SecondActualWidth
+
+set_option linter.privateModule false
+
+@[expose] public section
+
+namespace OAI
+
+noncomputable section
+open scoped Classical BigOperators
+
+namespace SevenEighths.CenteredMomentSecondWidthDrop
+open HeckeFamily CenteredMomentSecondActualWidth CenteredMomentSecondRadicalBudget
+open CanonicalQuadraticSieve CompletedGauss
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst
+open CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization CenteredMomentSupport
+open CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
+local notation "O" => HeckeFamily.O
+
+end SevenEighths.CenteredMomentSecondWidthDrop
+
+end
+
+end OAI

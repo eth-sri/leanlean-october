@@ -1,0 +1,3 @@
+module
+public import Glennie.Compact.NativeWordRawGramR01
+public import Glennie.Compact.NativeWordProductTableR01

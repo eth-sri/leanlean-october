@@ -1,0 +1,3 @@
+module
+public import NearlyMinimax.GridProjection
+public import NearlyMinimax.ProjectionRates

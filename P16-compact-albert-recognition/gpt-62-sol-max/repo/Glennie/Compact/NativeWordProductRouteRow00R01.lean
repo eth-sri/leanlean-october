@@ -1,0 +1,2 @@
+module
+public import Glennie.Compact.NativeWordProductRow00R01

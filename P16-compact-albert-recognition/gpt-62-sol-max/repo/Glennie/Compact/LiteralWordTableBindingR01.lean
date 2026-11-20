@@ -1,0 +1,4 @@
+module
+public import Glennie.Compact.GeneratedRecognitionR01
+public import Glennie.Compact.NativeWordProductTableR01
+public import Glennie.Compact.NativeWordMomentAggregationR01

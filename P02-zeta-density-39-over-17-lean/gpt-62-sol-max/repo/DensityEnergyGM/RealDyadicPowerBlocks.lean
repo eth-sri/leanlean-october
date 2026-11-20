@@ -1,0 +1,3 @@
+module
+public import DensityEnergyGM.FiniteSupportPowering
+public import DensityEnergyGM.PolynomialHeightSecondEnergy
