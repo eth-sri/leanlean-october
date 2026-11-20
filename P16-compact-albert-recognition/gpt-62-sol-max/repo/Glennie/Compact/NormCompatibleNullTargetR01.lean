@@ -4,7 +4,6 @@ public import Glennie.Compact.CyclicTraceNullR01
 public import Glennie.Hilbert
 public import Mathlib.Analysis.InnerProductSpace.PiL2
 public import Mathlib.Tactic.Positivity
-
 @[expose] public section
 namespace Glennie.Compact.NormCompatibleNullTargetR01
 noncomputable section
@@ -48,25 +47,6 @@ end RepresentedBounds
 
 /- This concrete target has dimension27, actual positive Hilbert metric,
    a unit, bilinear commutative product, and compatible cyclic trace. -/
-abbrev Diagonal27 := EuclideanSpace ℝ (Fin 27)
-
-def diagonalProduct (a b : Diagonal27) : Diagonal27 :=
-  WithLp.toLp 2 (fun i => a i * b i)
-
-theorem diagonal_product_comm (a b : Diagonal27) :
-    diagonalProduct a b = diagonalProduct b a := by
-  ext i
-  exact mul_comm (a i) (b i)
-
-theorem diagonal_product_add_left (a b c : Diagonal27) :
-    diagonalProduct (a+b) c = diagonalProduct a c + diagonalProduct b c := by
-  ext i
-  exact add_mul (a i) (b i) (c i)
-
-theorem diagonal_product_smul_left (r : ℝ) (a b : Diagonal27) :
-    diagonalProduct (r • a) b = r • diagonalProduct a b := by
-  ext i
-  exact mul_assoc r (a i) (b i)
 
 end
 end Glennie.Compact.NormCompatibleNullTargetR01

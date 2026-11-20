@@ -4,21 +4,23 @@ three complex upper entries; it is not the split Albert model. -/
 module
 public import Glennie.SectorSubspace
 public import Mathlib.LinearAlgebra.Matrix.Adjugate
-
+public import Mathlib.Tactic.Module
 @[expose] public section
 namespace Glennie
 noncomputable section
 
 set_option maxHeartbeats 2000000
 
+abbrev SectorMatrix := Matrix (Fin 3) (Fin 3) ℂ
+
 abbrev ComplexHermitianCoordinates := ComplexCoordinates
 
-def complexHermitianMatrix (q : ComplexHermitianCoordinates) : Matrix (Fin 3) (Fin 3) ℂ :=
+def complexHermitianMatrix (q : ComplexHermitianCoordinates) : SectorMatrix :=
   !![(q.1.1:ℂ),q.2.1,q.2.2.1;
      star q.2.1,(q.1.2.1:ℂ),q.2.2.2;
      star q.2.2.1,star q.2.2.2,(q.1.2.2:ℂ)]
 
-def matrixComplexCoordinates (H : Matrix (Fin 3) (Fin 3) ℂ) : ComplexHermitianCoordinates :=
+def matrixComplexCoordinates (H : SectorMatrix) : ComplexHermitianCoordinates :=
   (((H 0 0).re,(H 1 1).re,(H 2 2).re),(H 0 1,H 0 2,H 1 2))
 
 theorem complexHermitianMatrix_isHermitian (q : ComplexHermitianCoordinates) :
@@ -28,11 +30,9 @@ theorem complexHermitianMatrix_isHermitian (q : ComplexHermitianCoordinates) :
     simp [complexHermitianMatrix, Matrix.conjTranspose_apply]
 
 theorem matrixComplexCoordinates_inverse (q : ComplexHermitianCoordinates) :
-    matrixComplexCoordinates (complexHermitianMatrix q)=q := by
-  rcases q with ⟨⟨a,b,c⟩,⟨u,v,w⟩⟩
-  simp [matrixComplexCoordinates,complexHermitianMatrix]
+    matrixComplexCoordinates (complexHermitianMatrix q) = q := rfl
 
-theorem complexHermitianMatrix_inverse (H : Matrix (Fin 3) (Fin 3) ℂ)
+theorem complexHermitianMatrix_inverse (H : SectorMatrix)
     (hH : H.IsHermitian) : complexHermitianMatrix (matrixComplexCoordinates H)=H := by
   have hs (i j : Fin 3) : star (H j i)=H i j := congrFun (congrFun hH i) j
   have hd (i : Fin 3) : ((H i i).re:ℂ)=H i i := by
@@ -45,7 +45,7 @@ theorem complexHermitianMatrix_inverse (H : Matrix (Fin 3) (Fin 3) ℂ)
   fin_cases i <;> fin_cases j <;>
     simp [complexHermitianMatrix,matrixComplexCoordinates,hd,hs]
 
-def sectorHiddenLinear : Albert →ₗ[ℝ] Matrix (Fin 3) (Fin 3) ℂ where
+def sectorHiddenLinear : Albert →ₗ[ℝ] SectorMatrix where
   toFun := hiddenMatrix
   map_add' x y := by
     ext i j
@@ -57,7 +57,7 @@ def sectorHiddenLinear : Albert →ₗ[ℝ] Matrix (Fin 3) (Fin 3) ℂ where
     fin_cases i <;> fin_cases j <;> apply Complex.ext <;>
       simp [hiddenMatrix,hiddenColumn,smul_eq_mul,Complex.mul_re,Complex.mul_im]
 
-theorem hiddenMatrix_hiddenAlbert (M : Matrix (Fin 3) (Fin 3) ℂ) :
+theorem hiddenMatrix_hiddenAlbert (M : SectorMatrix) :
     hiddenMatrix (hiddenAlbert M)=M := by
   ext i j
   fin_cases i <;> fin_cases j <;> apply Complex.ext <;>
@@ -69,18 +69,20 @@ theorem hiddenMatrix_complexAlbert (q : ComplexCoordinates) :
   fin_cases i <;> fin_cases j <;> apply Complex.ext <;>
     simp [hiddenMatrix,complexAlbertLinear,complexAlbert,hiddenColumn,complexOct]
 
-theorem complexCoordinates_hiddenAlbert (M : Matrix (Fin 3) (Fin 3) ℂ) :
+theorem hiddenMatrix_of_inComplex (x : Albert) (hx : InComplexSector x) : hiddenMatrix x = 0 := by
+  rw [← complexProjection_eq_self x hx]
+  exact hiddenMatrix_complexAlbert (complexCoordinatesLinear x)
+
+theorem complexCoordinates_hiddenAlbert (M : SectorMatrix) :
     complexCoordinatesLinear (hiddenAlbert M)=0 := by
   simp [complexCoordinatesLinear,hiddenAlbert,complexPart,hiddenOct,Complex.ext_iff]
 
 /-- The actual full real-linear sector equivalence. -/
 def compactSectorEquiv : Albert ≃ₗ[ℝ]
-    ComplexHermitianCoordinates × Matrix (Fin 3) (Fin 3) ℂ where
+    ComplexHermitianCoordinates × SectorMatrix where
   toFun x := (complexCoordinatesLinear x,sectorHiddenLinear x)
   invFun p := complexAlbertLinear p.1+hiddenAlbert p.2
-  left_inv x := by
-    change complexProjection x+hiddenAlbert (hiddenMatrix x)=x
-    exact complex_hidden_decomposition x
+  left_inv := complex_hidden_decomposition
   right_inv p := by
     apply Prod.ext
     · change complexCoordinatesLinear (complexAlbertLinear p.1+hiddenAlbert p.2)=p.1
@@ -92,31 +94,59 @@ def compactSectorEquiv : Albert ≃ₗ[ℝ]
   map_add' x y := by simp only [map_add,Prod.mk_add_mk]
   map_smul' r x := by simp only [map_smul,Prod.smul_mk,RingHom.id_apply]
 
-def sectorComplexMatrix (x : Albert) : Matrix (Fin 3) (Fin 3) ℂ :=
+def sectorComplexMatrix (x : Albert) : SectorMatrix :=
   complexHermitianMatrix (complexCoordinatesLinear x)
 
 theorem sectorComplexMatrix_isHermitian (x : Albert) :
     (sectorComplexMatrix x).IsHermitian :=
   complexHermitianMatrix_isHermitian (complexCoordinatesLinear x)
 
-def sectorDecode (H : Matrix (Fin 3) (Fin 3) ℂ)
-    (M : Matrix (Fin 3) (Fin 3) ℂ) : Albert :=
-  complexAlbertLinear (matrixComplexCoordinates H)+hiddenAlbert M
+theorem sector_ext {x y : Albert} (hC : sectorComplexMatrix x = sectorComplexMatrix y)
+    (hH : hiddenMatrix x = hiddenMatrix y) : x = y := by
+  apply compactSectorEquiv.injective
+  refine Prod.ext ?_ hH
+  change complexCoordinatesLinear x = complexCoordinatesLinear y
+  simpa only [sectorComplexMatrix, matrixComplexCoordinates_inverse] using congrArg matrixComplexCoordinates hC
 
-def sectorAdjointAdjugate (M : Matrix (Fin 3) (Fin 3) ℂ) := M.adjugate.conjTranspose
+def sectorAdjointAdjugate (M : SectorMatrix) := M.adjugate.conjTranspose
 
-def sectorPolarAdjugate (M N : Matrix (Fin 3) (Fin 3) ℂ) :=
+def sectorPolarAdjugate (M N : SectorMatrix) :=
   sectorAdjointAdjugate (M+N)-sectorAdjointAdjugate M-sectorAdjointAdjugate N
 
-def sectorProductComplex (H M K N : Matrix (Fin 3) (Fin 3) ℂ) :=
+def sectorProductComplex (H M K N : SectorMatrix) :=
   (1/2:ℂ) • (H*K+K*H-M.conjTranspose*N-N.conjTranspose*M)+
-    ((M.conjTranspose*N).trace.re:ℂ) • (1 : Matrix (Fin 3) (Fin 3) ℂ)
+    ((M.conjTranspose*N).trace.re:ℂ) • (1 : SectorMatrix)
 
-def sectorProductHidden (H M K N : Matrix (Fin 3) (Fin 3) ℂ) :=
-  (1/2:ℂ) • (M*(K.trace • (1 : Matrix (Fin 3) (Fin 3) ℂ)-K)+
-    N*(H.trace • (1 : Matrix (Fin 3) (Fin 3) ℂ)-H)+sectorPolarAdjugate M N)
+def sectorComplement (B : SectorMatrix) : SectorMatrix := B.trace • 1 - B
 
-/-- The complex component of the complete bilinear product, in the 
+theorem sectorHermitian_trace {B : SectorMatrix} (h : B.IsHermitian) : star B.trace = B.trace := by
+  rw [← Matrix.trace_conjTranspose, h.eq]
+
+theorem sectorComplement_hermitian {B : SectorMatrix} (h : B.IsHermitian) :
+    (sectorComplement B).IsHermitian := by
+  show (sectorComplement B).conjTranspose = sectorComplement B
+  simp [sectorComplement, Matrix.conjTranspose_smul, h.eq, sectorHermitian_trace h]
+
+@[simp] theorem trace_sectorComplement (B : SectorMatrix) : (sectorComplement B).trace = 2*B.trace := by
+  simp [sectorComplement, Matrix.trace_sub, Matrix.trace_smul, smul_eq_mul]
+  ring
+
+theorem sectorComplement_injective : Function.Injective sectorComplement := by
+  intro A B h
+  have ht := congrArg Matrix.trace h
+  simp only [trace_sectorComplement, mul_right_inj' (two_ne_zero : (2 : ℂ) ≠ 0)] at ht
+  simpa [sectorComplement, ht] using h
+
+theorem sectorProductComplex_square (K M : SectorMatrix) :
+    sectorProductComplex K M K M = K*K + sectorComplement (M.conjTranspose*M) := by
+  rw [sectorProductComplex, Complex.conj_eq_iff_re.mp
+    (sectorHermitian_trace (Matrix.isHermitian_conjTranspose_mul_self M)), sectorComplement]
+  module
+
+def sectorProductHidden (H M K N : SectorMatrix) :=
+  (1/2:ℂ) • (M*sectorComplement K + N*sectorComplement H + sectorPolarAdjugate M N)
+
+/-- The complex component of the complete bilinear product, in the
 column gauge. Both arguments range over all 27 real coordinates. -/
 theorem sectorComplexMatrix_jordan (x y : Albert) :
     sectorComplexMatrix (jordan x y) =
@@ -124,15 +154,10 @@ theorem sectorComplexMatrix_jordan (x y : Albert) :
         (sectorComplexMatrix y) (hiddenMatrix y) := by
   ext i j
   fin_cases i <;> fin_cases j <;> apply Complex.ext
-  all_goals simp [sectorComplexMatrix, complexHermitianMatrix,
-    complexCoordinatesLinear, complexPart, hiddenMatrix, hiddenColumn,
-    sectorProductComplex, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, octDot_coordinates,
-    octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul, smul_eq_mul,
-    Matrix.mul_apply, Matrix.conjTranspose_apply, Matrix.trace,
-    Matrix.diag, Matrix.one_apply, Fin.sum_univ_three,
-    Complex.mul_re, Complex.mul_im]
+  all_goals simp [sectorComplexMatrix, complexHermitianMatrix, complexCoordinatesLinear, complexPart,
+    hiddenMatrix, hiddenColumn, sectorProductComplex, jordan_coord, oct_coord, smul_eq_mul,
+    Matrix.mul_apply, Matrix.conjTranspose_apply, Matrix.trace, Matrix.diag, 
+    Fin.sum_univ_three, Complex.mul_re, Complex.mul_im]
   all_goals ring
 
 /-- The hidden component includes the full polarized adjoint-adjugate term.
@@ -143,15 +168,11 @@ theorem hiddenMatrix_jordan (x y : Albert) :
         (sectorComplexMatrix y) (hiddenMatrix y) := by
   ext i j
   fin_cases i <;> fin_cases j <;> apply Complex.ext
-  all_goals simp [hiddenMatrix, hiddenColumn, sectorComplexMatrix,
-    complexHermitianMatrix, complexCoordinatesLinear, complexPart,
-    sectorProductHidden, sectorPolarAdjugate, sectorAdjointAdjugate,
-    jordan_o01, jordan_o02, jordan_o12, octMul, octConj,
-    Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-    Quaternion.imK_mul, smul_eq_mul, Matrix.adjugate_fin_three,
-    Matrix.mul_apply, Matrix.conjTranspose_apply, Matrix.trace,
-    Matrix.diag, Matrix.one_apply, Fin.sum_univ_three,
-    Complex.mul_re, Complex.mul_im]
+  all_goals simp [hiddenMatrix, hiddenColumn, sectorComplexMatrix, complexHermitianMatrix,
+    complexCoordinatesLinear, complexPart, sectorProductHidden, sectorComplement, sectorPolarAdjugate,
+    sectorAdjointAdjugate, jordan_o01, jordan_o02, jordan_o12, oct_coord, smul_eq_mul,
+    Matrix.adjugate_fin_three, Matrix.mul_apply, Matrix.conjTranspose_apply, Matrix.trace,
+    Matrix.diag, Matrix.one_apply, Fin.sum_univ_three, Complex.mul_re, Complex.mul_im]
   all_goals ring
 
 /-- Raw trace normalization T(1)=3 is preserved by the complex matrix component. -/
@@ -169,33 +190,10 @@ theorem inner_sector_model (x y : Albert) :
     complexHermitianMatrix, complexCoordinatesLinear, complexPart,
     hiddenMatrix, hiddenColumn, Matrix.trace, Matrix.diag,
     Matrix.mul_apply, Matrix.conjTranspose_apply, Fin.sum_univ_three,
-    Complex.mul_re, Complex.mul_im]
+    Complex.mul_re]
   ring
 
-@[simp] theorem sectorDecode_encode (x : Albert) :
-    sectorDecode (sectorComplexMatrix x) (hiddenMatrix x) = x := by
-  unfold sectorDecode sectorComplexMatrix
-  rw [matrixComplexCoordinates_inverse]
-  exact complex_hidden_decomposition x
-
-/-- Decoding arbitrary complex matrices is an inverse only on the stated
-Hermitian component; there is no silent extension to non-Hermitian inputs. -/
-theorem sectorComplexMatrix_decode (H M : Matrix (Fin 3) (Fin 3) ℂ)
-    (hH : H.IsHermitian) : sectorComplexMatrix (sectorDecode H M) = H := by
-  simp only [sectorDecode, sectorComplexMatrix, map_add,
-    complexCoordinates_albert, complexCoordinates_hiddenAlbert, add_zero]
-  exact complexHermitianMatrix_inverse H hH
-
-theorem hiddenMatrix_decode (H M : Matrix (Fin 3) (Fin 3) ℂ) :
-    hiddenMatrix (sectorDecode H M) = M := by
-  change sectorHiddenLinear (complexAlbertLinear (matrixComplexCoordinates H) +
-    hiddenAlbert M) = M
-  rw [map_add]
-  change hiddenMatrix (complexAlbertLinear (matrixComplexCoordinates H)) +
-    hiddenMatrix (hiddenAlbert M) = M
-  rw [hiddenMatrix_complexAlbert, hiddenMatrix_hiddenAlbert, zero_add]
-
-def sectorComplexLinear : Albert →ₗ[ℝ] Matrix (Fin 3) (Fin 3) ℂ where
+def sectorComplexLinear : Albert →ₗ[ℝ] SectorMatrix where
   toFun := sectorComplexMatrix
   map_add' x y := by
     ext i j
@@ -204,11 +202,11 @@ def sectorComplexLinear : Albert →ₗ[ℝ] Matrix (Fin 3) (Fin 3) ℂ where
         complexCoordinatesLinear, complexPart]
     all_goals ring
   map_smul' r x := by
-    ext i j
-    fin_cases i <;> fin_cases j <;> apply Complex.ext <;>
-      simp [sectorComplexMatrix, complexHermitianMatrix,
-        complexCoordinatesLinear, complexPart, smul_eq_mul,
-        Complex.mul_re, Complex.mul_im]
+    simp [sectorComplexMatrix, complexHermitianMatrix, complexCoordinatesLinear, complexPart,
+      smul_eq_mul]
+
+@[simp] theorem sectorComplexLinear_apply (x : Albert) :
+    sectorComplexLinear x = sectorComplexMatrix x := rfl
 
 end
 end Glennie

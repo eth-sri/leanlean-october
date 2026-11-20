@@ -3,81 +3,40 @@ No generation/span premise. -/
 module
 public import Glennie.NativeGenerationEndpointR01
 public import Glennie.Compact.InnerDerivation
-public import Glennie.Compact.LocalReconstruction
-
+public import Mathlib.Algebra.Module.Submodule.EqLocus
 @[expose] public section
 namespace Glennie.NativeGenerationStabilizersR01
 noncomputable section
 open Glennie.NativeGenerationEndpointR01
 open Glennie.Compact
-open Glennie.Compact.Affine20
-open Glennie.Compact.Sections
 
-/-- Actual native automorphisms are determined by their linear equivalence. -/
-theorem automorphism_ext {g h : CompactAutomorphism} (he : g.equiv = h.equiv) : g = h := by
-  cases g
-  cases h
-  cases he
-  rfl
+section Equalizers
+variable {E : Type*} [AddCommGroup E] [Module ℝ E] (j : E → E → E)
 
-def fixedSubmodule (g : CompactAutomorphism) : Submodule ℝ Albert where
-  carrier := {t | g.equiv t = t}
-  zero_mem' := by simp
-  add_mem' := by
-    intro p q hp hq
-    simp only [Set.mem_setOf_eq] at hp hq ⊢
-    rw [map_add, hp, hq]
-  smul_mem' := by
-    intro r p hp
-    simp only [Set.mem_setOf_eq] at hp ⊢
-    rw [map_smul, hp]
+/-- An equalizer of product-preserving maps is product-closed. -/
+theorem eqLocus_closed (f g : E →ₗ[ℝ] E)
+    (hf : ∀ x y, f (j x y) = j (f x) (f y)) (hg : ∀ x y, g (j x y) = j (g x) (g y)) :
+    ∀ x ∈ f.eqLocus g, ∀ y ∈ f.eqLocus g, j x y ∈ f.eqLocus g := by simp_all
 
-theorem automorphism_fixes_all_of_phi_ne_zero
-    (g : CompactAutomorphism) (x y z : Albert)
-    (hphi : phi x y z ≠ 0)
-    (hx : g.equiv x = x) (hy : g.equiv y = y) (hz : g.equiv z = z) :
-    ∀ t : Albert, g.equiv t = t := by
-  have hK : fixedSubmodule g = ⊤ := eq_top_of_phi_ne_zero (fixedSubmodule g)
-    g.map_unit
-    (by
-      intro p hp q hq
-      change g.equiv p = p at hp
-      change g.equiv q = q at hq
-      change g.equiv (jordan p q) = jordan p q
-      rw [g.map_jordan, hp, hq])
+/-- The kernel of a derivation is product-closed. -/
+theorem derivation_ker_closed (D : E →ₗ[ℝ] E)
+    (h : ∀ x y, D (j x y) = j (D x) y + j x (D y))
+    (h₁ : ∀ x, j 0 x = 0) (h₂ : ∀ x, j x 0 = 0) :
+    ∀ x ∈ D.ker, ∀ y ∈ D.ker, j x y ∈ D.ker := by simp_all
+end Equalizers
+
+theorem automorphism_eq_refl_of_phi_ne_zero (g : CompactAutomorphism) (x y z : Albert)
+    (hphi : phi x y z ≠ 0) (hx : g.equiv x = x) (hy : g.equiv y = y) (hz : g.equiv z = z) :
+    g.equiv = LinearEquiv.refl ℝ Albert := by
+  apply LinearEquiv.toLinearMap_injective
+  apply LinearMap.eqLocus_eq_top.mp
+  exact eq_top_of_phi_ne_zero _ g.map_unit (eqLocus_closed jordan g.equiv.toLinearMap LinearMap.id g.map_jordan (by simp))
     x y z hx hy hz hphi
-  intro t
-  have ht : t ∈ fixedSubmodule g := by rw [hK]; trivial
-  exact ht
 
-theorem automorphism_eq_refl_of_phi_ne_zero
-    (g : CompactAutomorphism) (x y z : Albert)
-    (hphi : phi x y z ≠ 0)
-    (hx : g.equiv x = x) (hy : g.equiv y = y) (hz : g.equiv z = z) :
-    g = CompactAutomorphism.refl := by
-  apply automorphism_ext
-  apply LinearEquiv.ext
-  exact automorphism_fixes_all_of_phi_ne_zero g x y z hphi hx hy hz
-
-/-- No trace-free condition is needed for this derivation consequence. -/
-theorem derivation_eq_zero_of_phi_ne_zero
-    (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D)
-    (x y z : Albert) (hphi : phi x y z ≠ 0)
-    (hx : D x = 0) (hy : D y = 0) (hz : D z = 0) : D = 0 := by
-  have hK : LinearMap.ker D = ⊤ := eq_top_of_phi_ne_zero (LinearMap.ker D)
-    hD.map_one
-    (by
-      intro p hp q hq
-      change D p = 0 at hp
-      change D q = 0 at hq
-      change D (jordan p q) = 0
-      rw [hD p q, hp, hq]
-      simp)
-    x y z hx hy hz hphi
-  apply LinearMap.ext
-  intro t
-  have ht : t ∈ LinearMap.ker D := by rw [hK]; trivial
-  exact ht
+theorem derivation_eq_zero_of_phi_ne_zero (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D)
+    (x y z : Albert) (hphi : phi x y z ≠ 0) (hx : D x = 0) (hy : D y = 0) (hz : D z = 0) : D = 0 :=
+  LinearMap.ker_eq_top.mp (eq_top_of_phi_ne_zero _ hD.map_one
+    (derivation_ker_closed jordan D hD jordan_zero_left jordan_zero_right) x y z hx hy hz hphi)
 
 end
 end Glennie.NativeGenerationStabilizersR01

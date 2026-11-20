@@ -6,7 +6,6 @@ public import Mathlib.Analysis.InnerProductSpace.Spectrum
 public import Mathlib.Analysis.InnerProductSpace.GramMatrix
 public import Mathlib.Analysis.Matrix.PosDef
 public import Mathlib.LinearAlgebra.Dimension.Constructions
-
 @[expose] public section
 namespace Glennie
 noncomputable section
@@ -18,10 +17,6 @@ def Albert.coordinateLinearEquiv : Albert ≃ₗ[ℝ] Albert.Coordinates where
 instance : FiniteDimensional ℝ Albert := by
   letI : FiniteDimensional ℝ Albert.Coordinates := Module.Finite.prod
   exact Albert.coordinateLinearEquiv.symm.finiteDimensional
-
-theorem albert_finrank : Module.finrank ℝ Albert = 27 := by
-  rw [Albert.coordinateLinearEquiv.finrank_eq]
-  simp [Albert.Coordinates, Octonion, Quaternion.finrank_eq_four]
 
 instance : Inner ℝ Albert := ⟨Glennie.inner⟩
 

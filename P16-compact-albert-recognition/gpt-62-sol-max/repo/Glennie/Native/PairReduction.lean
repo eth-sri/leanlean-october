@@ -6,8 +6,8 @@ module
 
 public import Glennie.Diagonalization
 public import Glennie.Native.PairNormalization
+public import Glennie.Sector
 public import Glennie.Theorems.OctonionAutomorphisms
-
 @[expose] public section
 
 namespace Glennie
@@ -30,38 +30,50 @@ theorem diagonalOctTriple_scalar (g : OctRelatedTriple) (hg : DiagonalOctTriple 
 /-- Every octonion, including real elements and zero, is transported into the
 standard complex line by a genuine scalar-fixing octonion automorphism. -/
 theorem exists_octAutomorphism_to_complex (v : Octonion) :
-    ∃ g : OctRelatedTriple, DiagonalOctTriple g ∧ OctInComplex (g.C v) := by
-  obtain ⟨I, hi, hn, z, hz⟩ := exists_octComplexLine v
+    ∃ g : OctRelatedTriple, DiagonalOctTriple g ∧ OctInComplex (g.C v) ∧ 0 ≤ (complexPart (g.C v)).im := by
+  obtain ⟨I, hi, hn, z, hzi, hz⟩ := exists_octComplexLine v
   obtain ⟨g, hg, hI⟩ := exists_octAutomorphism_to_i I hi hn
   have hv : g.A v = octComplexLine octI z := by
     simp only [← hz, octComplexLine, map_add, map_smul, hg.2.2, hI]
   refine ⟨g, hg, ?_⟩
   rw [hg.2.1, hv]
-  exact octInComplex_standardLine z
+  exact ⟨octInComplex_standardLine z, by simpa [octComplexLine, complexPart, octI, quatI, octScalar] using hzi⟩
 
-/-- Any actual related-triple Albert map preserves the entire diagonal subspace. -/
-theorem relatedTriple_isDiagonal (g : OctRelatedTriple) (x : Albert)
-    (hx : IsDiagonal x) : IsDiagonal (g.compactAutomorphism.equiv x) := by
-  change g.A x.o01 = 0 ∧ g.C x.o02 = 0 ∧ g.B x.o12 = 0
-  simp only [hx.1, hx.2.1, hx.2.2, map_zero, and_self]
+/-- Related triples fix every diagonal element. -/
+theorem relatedTriple_fixes_diagonal (g : OctRelatedTriple) (x : Albert)
+    (hx : IsDiagonal x) : g.compactAutomorphism.equiv x = x := by
+  apply Albert.ext <;> try rfl
+  · change g.A x.o01 = x.o01
+    rw [hx.1, map_zero]
+  · change g.C x.o02 = x.o02
+    rw [hx.2.1, map_zero]
+  · change g.B x.o12 = x.o12
+    rw [hx.2.2, map_zero]
 
-/-- Unrestricted native compact pair reduction, including zero slots and repeated
-spectra. Its dependencies are actual complete diagonalization and constructed maps. -/
+/-- The gauge used to compare normalized pairs. -/
+structure PositiveNormal (y : Albert) : Prop where
+  complex : InComplexSector y
+  slot01 : ∃ a ≥ 0, y.o01 = octScalar a
+  slot12 : ∃ b ≥ 0, y.o12 = octScalar b
+  imag_nonneg : 0 ≤ (complexPart y.o02).im
+
+theorem positive_complex_reduction (y : Albert) :
+    ∃ g : OctRelatedTriple, PositiveNormal (g.compactAutomorphism.equiv y) := by
+  obtain ⟨t,a,b,ha,hb,hA,hB⟩ := octTwoSlotsReal y.o01 y.o12
+  obtain ⟨k,hk,hC,hzi⟩ := exists_octAutomorphism_to_complex (t.C y.o02)
+  have h01 : k.A (t.A y.o01) = octScalar a := by rw [hA, diagonalOctTriple_scalar _ hk]
+  have h12 : k.B (t.B y.o12) = octScalar b := by rw [hB, hk.1, diagonalOctTriple_scalar _ hk]
+  refine ⟨k.comp t, ?_, ⟨a, ha, h01⟩, ⟨b, hb, h12⟩, hzi⟩
+  change OctInComplex (k.A (t.A y.o01)) ∧ OctInComplex (k.C (t.C y.o02)) ∧
+    OctInComplex (k.B (t.B y.o12))
+  rw [h01, h12]
+  exact ⟨octInComplex_scalar a, hC, octInComplex_scalar b⟩
+
 theorem universal_pair_reduction : UniversalPairReduction := by
   intro x y
-  obtain ⟨d, hdx⟩ := native_diagonalization x
-  let y' := d.equiv y
-  obtain ⟨t,a,b,ha,hb,h01,h12⟩ := octTwoSlotsReal y'.o01 y'.o12
-  obtain ⟨k,hk,h02⟩ := exists_octAutomorphism_to_complex (t.C y'.o02)
-  refine ⟨k.compactAutomorphism.comp (t.compactAutomorphism.comp d), ?_, ?_⟩
-  · change IsDiagonal (k.compactAutomorphism.equiv
-      (t.compactAutomorphism.equiv (d.equiv x)))
-    exact relatedTriple_isDiagonal k _ (relatedTriple_isDiagonal t _ hdx)
-  · change OctInComplex (k.A (t.A y'.o01)) ∧
-      OctInComplex (k.C (t.C y'.o02)) ∧ OctInComplex (k.B (t.B y'.o12))
-    rw [h01, h12, diagonalOctTriple_scalar k hk a, hk.1,
-      diagonalOctTriple_scalar k hk b]
-    exact ⟨octInComplex_scalar a, h02, octInComplex_scalar b⟩
+  obtain ⟨d, hd⟩ := native_diagonalization x
+  obtain ⟨g, hg⟩ := positive_complex_reduction (d.equiv y)
+  exact ⟨g.compactAutomorphism.comp d, relatedTriple_fixes_diagonal g _ hd ▸ hd, hg.complex⟩
 
 end
 end Glennie

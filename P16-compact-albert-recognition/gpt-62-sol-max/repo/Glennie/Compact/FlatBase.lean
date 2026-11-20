@@ -1,28 +1,44 @@
-/- The flat base, read through the dictionary, gives actual native frames
-  P = projectorFrame x,  Q = projectorFrame y,  R = projectorFrame z,
-with x = -witnessX, y = s * Y1, z = s * witnessZ and s = 1/sqrt 3. Here
-witnessX and witnessZ are the literals of Native/Statements, and Y1
-is the flat y at s = 1.
-  * phi(P, Q, R) = -4/27. The first-frame reversal P' = projectorFrame witnessX
-    (proved equal to reverseFrame P) has phi(P', Q, R) = +4/27.
-  * Both triples have the uniform ledger (all 27 raw triple traces 1/9), by
-    the `frame_equality`, and all 27 pair overlaps 1/3. So the two
-    opposite-sign triples share the same complete 54-entry ledger.
-The literal computation, phi(witnessX, Y1, witnessZ) = 4, follows the
-Theorems/Witness.lean pattern. -/
 module
-
-public import Glennie.Compact.NativeDictionaryLiteral
+public import Glennie.Compact.ObservationData
+public import Glennie.ExactCoordinates
+meta import Glennie.ExactCoordinates
 public import Glennie.Theorems.ProjectorFrame
+public import Glennie.Compact.Affine20.Relabel
 public import Glennie.Theorems.Frames
-public import Glennie.Theorems.FrameEquality
+public import Mathlib.Analysis.Real.Sqrt
+public import Mathlib.Algebra.QuadraticAlgebra.Basic
+meta import Mathlib.Algebra.QuadraticAlgebra.Basic
 public import Glennie.BasicLaws
-
+public import Glennie.SectorFactor
+public import Mathlib.Data.Rat.Cast.Defs
+meta import Mathlib.Data.Rat.Defs
 @[expose] public section
+namespace Glennie.ExactCoordinates
+open scoped Quaternion
+
+variable {R : Type*} [CommRing R]
+
+def flatX : Coords R := ⟨1, 0, -1, 0, 0, 0⟩
+def flatY : Coords R := ⟨0, 0, 0, (1, 0), (⟨0,-1,0,0⟩, 0), (1, 0)⟩
+
+noncomputable section
+
+variable (f : R →+* ℝ)
+
+@[simp] theorem realize_flatX : realize f flatX = ⟨1, 0, -1, 0, 0, 0⟩ := by
+  ext <;> simp [realize, flatX, rq, ro]
+
+@[simp] theorem realize_flatY : realize f flatY = ⟨0, 0, 0, octScalar 1, -octI, octScalar 1⟩ := by
+  ext <;> norm_num [realize, flatY, rq, ro, octScalar, octI, quatI]
+
+
+end
+end Glennie.ExactCoordinates
 
 namespace Glennie.Compact.FlatBase
 
-open Glennie.Compact.NativeDictionary
+open Glennie.ExactCoordinates
+open scoped QuadraticAlgebra Quaternion
 
 noncomputable section
 
@@ -32,208 +48,129 @@ set_option linter.unusedSimpArgs false
 
 /-! ## The flat elements and their coordinates -/
 
-/-- s = theta^-1 = 1/sqrt 3. -/
-def flatScale : ℝ := 1 / Real.sqrt 3
+export Glennie.SubmissionR03 (flatBase flatScale flatXN flatY1)
 
-theorem flatScale_sq : flatScale ^ 2 = 1 / 3 := by
-  dsimp [flatScale]
-  rw [div_pow, Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 3)]
-  norm_num
+theorem flatScale_sq : flatScale ^ 2 = 1 / 3 := by simp [flatScale]
 
-/-- The flat x = diag(1, 0, -1). -/
-def flatXN : Albert := ⟨1, 0, -1, 0, 0, 0⟩
 
-/-- The flat y at s = 1. -/
-def flatY1 : Albert := ⟨0, 0, 0, octScalar 1, -octI, octScalar 1⟩
+private theorem phi_flat_unscaled : phi flatXN flatY1 witnessZ = -4 := by
+  have h := phi_diagonal_complex_factor 1 0 (-1) 0 0 0 1 (-Complex.I) 1 witnessZ
+  norm_num [flatXN, flatY1, diagonalAlbert, complexAlbert, complexOct, octI, quatI, octScalar,
+    hiddenMatrix, hiddenColumn, witnessZ, octJL, octL, octK, quatJ, quatK,
+    Matrix.det_fin_three, Complex.mul_re, Complex.mul_im, Complex.star_def] at h ⊢
+  exact h
 
-theorem flatXN_eq : flatXN = (-1 : ℝ) • witnessX := by
-  refine Albert.ext ?_ ?_ ?_ ?_ ?_ ?_
-  · rw [Albert.smul_d0]
-    norm_num [flatXN, witnessX]
-  · rw [Albert.smul_d1]
-    norm_num [flatXN, witnessX]
-  · rw [Albert.smul_d2]
-    norm_num [flatXN, witnessX]
-  · rw [Albert.smul_o01]
-    simp [flatXN, witnessX]
-  · rw [Albert.smul_o02]
-    simp [flatXN, witnessX]
-  · rw [Albert.smul_o12]
-    simp [flatXN, witnessX]
-
-/-! ## Literal invariants (Witness.lean pattern) -/
-
-theorem flat_traces :
-    trace flatXN = 0 ∧ trace witnessX = 0 ∧ trace flatY1 = 0 ∧ trace witnessZ = 0 := by
-  norm_num [trace, flatXN, witnessX, flatY1, witnessZ]
-
-theorem flat_norms : inner flatXN flatXN = 2 ∧ inner witnessX witnessX = 2 ∧
-    inner flatY1 flatY1 = 6 ∧ inner witnessZ witnessZ = 6 := by
-  norm_num [inner_self_coordinates, flatXN, witnessX, flatY1, witnessZ, octNormSq,
-    Quaternion.normSq_def', octScalar, octI, octJL, octL, octK, quatI, quatJ, quatK]
-
-theorem flat_cubic_norms : newtonCubicNorm flatXN = 0 ∧ newtonCubicNorm witnessX = 0 ∧
-    newtonCubicNorm flatY1 = 0 ∧ newtonCubicNorm witnessZ = 0 := by
-  norm_num [newtonCubicNorm_coordinates, flatXN, witnessX, flatY1, witnessZ, octNormSq,
-    Quaternion.normSq_def', octScalar, octI, octJL, octL, octK, quatI, quatJ, quatK,
-    octMul, octConj, octRe, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul]
-  all_goals (try norm_num [QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat,
-    QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat])
-
-/-- witnessX o Y1 (equal to the private witnessXY). -/
-def flatBaseXY : Albert := ⟨0, 0, 0,
-  ((⟨(-1/2 : ℝ), 0, 0, 0⟩ : Quaternion ℝ), 0), 0,
-  ((⟨(1/2 : ℝ), 0, 0, 0⟩ : Quaternion ℝ), 0)⟩
-
-/-- U witnessX (U Y1 witnessZ). -/
-def flatBaseFirstU : Albert := ⟨0, 0, 0, 0,
-  ((⟨0, 0, -1, 0⟩ : Quaternion ℝ), (⟨-1, 0, 0, -1⟩ : Quaternion ℝ)), 0⟩
-
-/-- U Y1 (U witnessX witnessZ). -/
-def flatBaseSecondU : Albert := ⟨0, 0, 0,
-  (0, (⟨0, 1, 0, 0⟩ : Quaternion ℝ)),
-  (0, (⟨-1, 0, 0, 0⟩ : Quaternion ℝ)),
-  (0, (⟨0, -1, 0, 0⟩ : Quaternion ℝ))⟩
-
-/-- U witnessZ (witnessX o Y1). -/
-def flatBaseThirdU : Albert := ⟨0, 0, 0,
-  ((⟨(1/2 : ℝ), 0, 0, 0⟩ : Quaternion ℝ), (⟨0, (-1/2 : ℝ), 0, 0⟩ : Quaternion ℝ)),
-  ((⟨0, 0, (-1/2 : ℝ), 0⟩ : Quaternion ℝ), (⟨0, 0, 0, (-1/2 : ℝ)⟩ : Quaternion ℝ)),
-  ((⟨(-1/2 : ℝ), 0, 0, 0⟩ : Quaternion ℝ), (⟨0, (1/2 : ℝ), 0, 0⟩ : Quaternion ℝ))⟩
-
-theorem flat_xy : jordan witnessX flatY1 = flatBaseXY := by
-  ext <;> norm_num [flatBaseXY, witnessX, flatY1, octI, quatI, octScalar,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul, octNormSq, Quaternion.normSq_def']
-  all_goals (try norm_num [QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat,
-    QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat])
-  all_goals (try ring)
-
-theorem flat_first_u : U witnessX (U flatY1 witnessZ) = flatBaseFirstU := by
-  ext <;> norm_num [U, flatBaseFirstU, witnessX, flatY1, witnessZ,
-    octI, octJ, octK, octL, octJL, quatI, quatJ, quatK, octScalar,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul, octNormSq, Quaternion.normSq_def']
-  all_goals (try norm_num [QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat,
-    QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat])
-  all_goals (try ring)
-
-theorem flat_second_u : U flatY1 (U witnessX witnessZ) = flatBaseSecondU := by
-  ext <;> norm_num [U, flatBaseSecondU, witnessX, flatY1, witnessZ,
-    octI, octJ, octK, octL, octJL, quatI, quatJ, quatK, octScalar,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul, octNormSq, Quaternion.normSq_def']
-  all_goals (try norm_num [QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat,
-    QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat])
-  all_goals (try ring)
-
-theorem flat_third_u : U witnessZ (jordan witnessX flatY1) = flatBaseThirdU := by
-  rw [flat_xy]
-  ext <;> norm_num [U, flatBaseXY, flatBaseThirdU, witnessZ,
-    octJ, octK, octL, octJL, quatI, quatJ, quatK, octScalar,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul, octNormSq, Quaternion.normSq_def']
-  all_goals (try norm_num [QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat,
-    QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat])
-  all_goals (try ring)
-
-/-- The one new scalar: phi(witnessX, Y1, witnessZ) = 4. -/
-theorem phi_witnessX_flatY1_witnessZ : phi witnessX flatY1 witnessZ = 4 := by
-  rw [phi, flat_first_u, flat_second_u, flat_third_u]
-  norm_num [inner_coordinates, octDot_coordinates, flatBaseFirstU, flatBaseSecondU,
-    flatBaseThirdU]
-
-/-! ## Frames, first-frame reversal and the shared complete ledger -/
-
-/-- First-frame reversal of an ordered frame. -/
-def reverseFrame (p : Fin 3 → Albert) : Fin 3 → Albert := ![p 2, p 1, p 0]
-
-theorem reverseFrame_reverseFrame (p : Fin 3 → Albert) :
-    reverseFrame (reverseFrame p) = p := by
-  funext i
-  fin_cases i <;> rfl
-
-theorem projectorFrame_neg_one_smul (x : Albert) :
-    projectorFrame ((-1 : ℝ) • x) = reverseFrame (projectorFrame x) := by
-  have hxx : jordan ((-1 : ℝ) • x) ((-1 : ℝ) • x) = jordan x x := by
-    rw [jordan_smul_left, jordan_smul_right, smul_smul, neg_one_mul, neg_neg, one_smul]
-  funext i
-  fin_cases i
-  · show (1 / 2 : ℝ) • (jordan ((-1 : ℝ) • x) ((-1 : ℝ) • x) - (-1 : ℝ) • x) =
-      (1 / 2 : ℝ) • (jordan x x + x)
-    rw [hxx]
-    module
-  · show (1 : Albert) - jordan ((-1 : ℝ) • x) ((-1 : ℝ) • x) = 1 - jordan x x
-    rw [hxx]
-  · show (1 / 2 : ℝ) • (jordan ((-1 : ℝ) • x) ((-1 : ℝ) • x) + (-1 : ℝ) • x) =
-      (1 / 2 : ℝ) • (jordan x x - x)
-    rw [hxx]
-    module
-
-def flatFrameP : Fin 3 → Albert := projectorFrame flatXN
-def flatFrameQ : Fin 3 → Albert := projectorFrame (flatScale • flatY1)
-def flatFrameR : Fin 3 → Albert := projectorFrame (flatScale • witnessZ)
-/-- The opposite-sign partner: first-frame reversal of flatFrameP. -/
-def flatFramePRev : Fin 3 → Albert := projectorFrame witnessX
-
-theorem flatFramePRev_eq_reverse : flatFramePRev = reverseFrame flatFrameP := by
-  show projectorFrame witnessX = reverseFrame (projectorFrame flatXN)
-  rw [flatXN_eq, projectorFrame_neg_one_smul, reverseFrame_reverseFrame]
-
-theorem flatFrameP_frame : Frame flatFrameP :=
-  projectorFrame_is_frame flatXN flat_traces.1 flat_norms.1 flat_cubic_norms.1
-
-theorem flatFramePRev_frame : Frame flatFramePRev :=
-  projectorFrame_is_frame witnessX flat_traces.2.1 flat_norms.2.1 flat_cubic_norms.2.1
-
-theorem flatFrameQ_frame : Frame flatFrameQ := by
-  apply projectorFrame_is_frame
-  · rw [trace_smul, flat_traces.2.2.1, mul_zero]
-  · rw [inner_smul_left, inner_smul_right, flat_norms.2.2.1]
-    linear_combination 6 * flatScale_sq
-  · rw [newtonCubicNorm_smul, flat_cubic_norms.2.2.1, mul_zero]
-
-theorem flatFrameR_frame : Frame flatFrameR := by
-  apply projectorFrame_is_frame
-  · rw [trace_smul, flat_traces.2.2.2, mul_zero]
-  · rw [inner_smul_left, inner_smul_right, flat_norms.2.2.2]
-    linear_combination 6 * flatScale_sq
-  · rw [newtonCubicNorm_smul, flat_cubic_norms.2.2.2, mul_zero]
-
+abbrev flatFrameP := flatBase 0
+abbrev flatFrameQ := flatBase 1
+abbrev flatFrameR := flatBase 2
 theorem flatFrameP_encoder : encoder flatFrameP = flatXN := projectorFrame_encoder _
-theorem flatFramePRev_encoder : encoder flatFramePRev = witnessX := projectorFrame_encoder _
 theorem flatFrameQ_encoder : encoder flatFrameQ = flatScale • flatY1 := projectorFrame_encoder _
 theorem flatFrameR_encoder : encoder flatFrameR = flatScale • witnessZ := projectorFrame_encoder _
 
 theorem flat_phi :
     phi (encoder flatFrameP) (encoder flatFrameQ) (encoder flatFrameR) = -4 / 27 := by
-  rw [flatFrameP_encoder, flatFrameQ_encoder, flatFrameR_encoder, flatXN_eq,
-    phi_smul_first, phi_smul_second, phi_smul_third, phi_witnessX_flatY1_witnessZ]
+  rw [flatFrameP_encoder, flatFrameQ_encoder, flatFrameR_encoder,
+    phi_smul_second, phi_smul_third, phi_flat_unscaled]
   calc
     _ = -4 * (flatScale ^ 2) ^ 3 := by ring
     _ = -4 / 27 := by rw [flatScale_sq]; norm_num
 
-theorem flatRev_phi :
-    phi (encoder flatFramePRev) (encoder flatFrameQ) (encoder flatFrameR) = 4 / 27 := by
-  rw [flatFramePRev_encoder, flatFrameQ_encoder, flatFrameR_encoder,
-    phi_smul_second, phi_smul_third, phi_witnessX_flatY1_witnessZ]
-  calc
-    _ = 4 * (flatScale ^ 2) ^ 3 := by ring
-    _ = 4 / 27 := by rw [flatScale_sq]; norm_num
+abbrev FlatScalar := QuadraticAlgebra ℤ 3 0
 
-/-- All 27 raw triple traces are 1/9, by the audited frame equality. -/
-theorem flat_uniform : UniformLedger flatFrameP flatFrameQ flatFrameR :=
-  (frame_equality flatFrameP flatFrameQ flatFrameR flatFrameP_frame flatFrameQ_frame
-    flatFrameR_frame).mp (by rw [flat_phi, abs_of_neg (by norm_num : (-4 / 27 : ℝ) < 0)]; norm_num)
+noncomputable def sqrt3Map : FlatScalar →+* ℝ :=
+  (QuadraticAlgebra.lift ⟨Real.sqrt 3, by simp⟩).toRingHom
 
-theorem flatRev_uniform : UniformLedger flatFramePRev flatFrameQ flatFrameR :=
-  (frame_equality flatFramePRev flatFrameQ flatFrameR flatFramePRev_frame flatFrameQ_frame
-    flatFrameR_frame).mp (by rw [flatRev_phi, abs_of_pos (by norm_num : (0 : ℝ) < 4 / 27)])
+@[simp] theorem sqrt3Map_omega : sqrt3Map ω = Real.sqrt 3 := by simp [sqrt3Map]
+
+
+-- These frames are scaled by 36 so their coordinates lie in ℤ[√3].
+def scaledProject {R : Type*} [CommRing R] (x : Coords R) : Fin 3 → Coords R :=
+  let x2 := doubled x x
+  ![x2 - (6 : R) • x, (36 : R) • 1 - (2 : R) • x2, x2 + (6 : R) • x]
+def scaledFrame {R : Type*} [CommRing R] (s : R) : Fin 3 → Fin 3 → Coords R :=
+  ![scaledProject ((3 : R) • flatX),
+    scaledProject (s • flatY),
+    scaledProject (s • marks R 2)]
+
+private theorem realize_project (x : Coords FlatScalar) (y : Albert) (i : Fin 3)
+    (h : realize sqrt3Map x = (3 : ℝ) • y) :
+    realize sqrt3Map (scaledProject x i) = (36 : ℝ) • projectorFrame y i := by
+  fin_cases i <;>
+    norm_num [scaledProject, projectorFrame, h, jordan_smul_left, jordan_smul_right, smul_smul,
+      smul_add, smul_sub, map_ofNat]
+
+private theorem scale_eq : (3 : ℝ) * flatScale = Real.sqrt 3 := by unfold flatScale <;> grind
+
+@[simp] theorem realize_scaledFrame (a i : Fin 3) :
+    realize sqrt3Map (scaledFrame ω a i) = (36 : ℝ) • flatBase a i := by
+  fin_cases a <;> apply realize_project
+  all_goals simp [smul_smul, scale_eq, map_ofNat, flatXN, flatY1, SubmissionR03.nativeMarks]
+
+private theorem trace_check (a i : Fin 3) : tr (scaledFrame (ω : FlatScalar) a i) = 36 := by
+  fin_cases a <;> fin_cases i <;> decide +kernel
+
+private theorem product_check (a i j : Fin 3) :
+    doubled (scaledFrame (ω : FlatScalar) a i) (scaledFrame ω a j) =
+      (if i = j then (72 : FlatScalar) else 0) • scaledFrame ω a i := by
+  fin_cases a <;> fin_cases i <;> fin_cases j <;> decide +kernel
+
+private theorem unit_check (a : Fin 3) :
+    scaledFrame (ω : FlatScalar) a 0 + scaledFrame ω a 1 + scaledFrame ω a 2 = (36 : FlatScalar) • 1 := by
+  fin_cases a <;> decide +kernel
+
+theorem flatBase_frames (a : Fin 3) : Frame (flatBase a) := by
+  let p := flatBase a
+  change Frame p
+  have hj (i j : Fin 3) : jordan (p i) (p j) = (if i = j then (1 : ℝ) else 0) • p i := by
+    have h := congrArg (realize sqrt3Map) (product_check a i j)
+    apply smul_right_injective Albert (by norm_num : (2592 : ℝ) ≠ 0)
+    by_cases he : i = j <;>
+      norm_num [p, he, apply_ite, jordan_smul_left, jordan_smul_right, smul_smul, map_ofNat] at h ⊢ <;> assumption
+  refine ⟨?_, fun i => by simpa [p] using hj i i, fun i j h => by simpa [p, h] using hj i j, ?_⟩
+  · intro i
+    have h := congrArg sqrt3Map (trace_check a i)
+    norm_num [p, map_ofNat, trace_smul] at h ⊢
+    exact h
+  · apply smul_right_injective Albert (by norm_num : (36 : ℝ) ≠ 0)
+    simpa [p, ← smul_add, map_ofNat] using congrArg (realize sqrt3Map) (unit_check a)
+
+theorem flatFrameP_frame : Frame flatFrameP := flatBase_frames 0
+theorem flatFrameQ_frame : Frame flatFrameQ := flatBase_frames 1
+theorem flatFrameR_frame : Frame flatFrameR := flatBase_frames 2
+
+section
+variable {R S : Type*} [CommRing R] [CommRing S] (f : R →+* S)
+
+@[simp] theorem map_scaledProject (x : Coords R) (i : Fin 3) :
+    coeffMap f (scaledProject x i) = scaledProject (coeffMap f x) i := by
+  fin_cases i <;> simp [scaledProject, map_ofNat]
+
+@[simp] theorem map_scaledFrame (s : R) (a i : Fin 3) :
+    coeffMap f (scaledFrame s a i) = scaledFrame (f s) a i := by
+  fin_cases a <;> change coeffMap f (scaledProject _ i) = scaledProject _ i
+  all_goals simp only [map_scaledProject, coeffMap_smul, map_ofNat]
+  all_goals
+    apply congrArg (fun v => scaledProject (_ • v) i)
+    apply Coords.ext
+    all_goals try simp [coeffMap, marks, flatX, flatY]
+    all_goals ext <;> simp [ rq, ro,  ]
+
+end
+
+private def tripleNumerator (i j k : Fin 3) : FlatScalar :=
+  tr (doubled (doubled (scaledFrame ω 0 i) (scaledFrame ω 1 j)) (scaledFrame ω 2 k))
+
+set_option maxRecDepth 20000 in
+set_option maxHeartbeats 6000000 in
+theorem flat_uniform : UniformLedger flatFrameP flatFrameQ flatFrameR := by
+  intro i j k
+  have h (i j k : Fin 3) : tripleNumerator i j k = 20736 := by
+    fin_cases i <;> fin_cases j <;> fin_cases k <;> decide +kernel
+  have hh := congrArg sqrt3Map (h i j k)
+  norm_num [map_ofNat, tripleNumerator, trace_smul, jordan_smul_left, jordan_smul_right, smul_smul] at hh
+  unfold ledger
+  linarith
+
 
 /-- The three 9-entry pair-overlap blocks of a uniform frame triple are all 1/3. -/
 theorem uniform_pair_blocks (p q r : Fin 3 → Albert) (hp : Frame p) (hq : Frame q)

@@ -1,6 +1,0 @@
-module
-public import Glennie.Compact.NativeWordProductRow00R01
-public import Glennie.Compact.NativeWordProductRow01R01
-public import Glennie.Compact.NativeWordProductRow02R01
-public import Glennie.Compact.NativeWordProductRow03R01
-public import Glennie.Compact.NativeWordProductRow04R01

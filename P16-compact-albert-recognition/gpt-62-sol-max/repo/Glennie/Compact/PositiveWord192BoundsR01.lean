@@ -1,3 +1,0 @@
-module
-public import Glennie.Compact.PositiveWord16BoundsR01
-public import Glennie.Compact.PositiveWordDefinitionR01

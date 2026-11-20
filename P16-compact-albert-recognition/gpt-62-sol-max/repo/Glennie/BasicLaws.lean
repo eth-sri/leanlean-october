@@ -2,34 +2,22 @@
 module
 public import Glennie.Native.AlgebraLaws
 public import Mathlib.Tactic.Abel
-
 @[expose] public section
 namespace Glennie
 noncomputable section
 
 @[simp] theorem trace_zero : trace (0 : Albert) = 0 := by simp [trace]
 
-@[simp] theorem inner_zero_left (x : Albert) : inner 0 x = 0 := by simp [inner]
-@[simp] theorem inner_zero_right (x : Albert) : inner x 0 = 0 := by simp [inner]
 @[simp] theorem inner_unit_left (x : Albert) : inner 1 x = trace x := by simp [inner]
 @[simp] theorem inner_unit_right (x : Albert) : inner x 1 = trace x := by simp [inner]
 
-theorem U_smul_argument (a : ℝ) (x z : Albert) : U x (a • z) = a • U x z := by
-  simp only [U, jordan_smul_right, smul_sub, smul_smul]
-  congr 1
-  rw [mul_comm]
+theorem U_smul_argument (a : ℝ) (x z : Albert) : U x (a • z) = a • U x z := by simp [U, jordan_smul_right, smul_sub, smul_smul] <;> ring
 
-theorem U_smul_base (a : ℝ) (x z : Albert) : U (a • x) z = a^2 • U x z := by
-  simp only [U, jordan_smul_left, jordan_smul_right, smul_smul, smul_sub]
-  congr 1 <;> congr 1 <;> ring
+theorem U_smul_base (a : ℝ) (x z : Albert) : U (a • x) z = a^2 • U x z := by simp [U, jordan_smul_left, jordan_smul_right, smul_smul, smul_sub] <;> ring
 
-theorem U_sub_argument (x y z : Albert) : U x (y-z) = U x y - U x z := by
-  simp only [U, jordan_sub_right, smul_sub]
-  abel
+theorem U_sub_argument (x y z : Albert) : U x (y-z) = U x y - U x z := by grind [U, jordan_sub_right, smul_sub]
 
-theorem U_add_argument (x y z : Albert) : U x (y+z) = U x y + U x z := by
-  simp only [U, jordan_add_right, smul_add]
-  abel
+theorem U_add_argument (x y z : Albert) : U x (y+z) = U x y + U x z := by grind [U, jordan_add_right, smul_add]
 
 /-- The cross term in the quadratic base variable of U. -/
 def crossU (x y z : Albert) : Albert :=
@@ -48,22 +36,18 @@ theorem crossU_smul_second (t : ℝ) (x y z : Albert) :
   module
 
 theorem U_line (x y z : Albert) (t : ℝ) :
-    U (x + t • y) z = U x z + t • crossU x y z + t^2 • U y z := by
-  rw [U_add_base, U_smul_base, crossU_smul_second]
-  abel
+    U (x + t • y) z = U x z + t • crossU x y z + t^2 • U y z := by grind [U_add_base, U_smul_base, crossU_smul_second]
 
 /-- Exact cubic restriction in the first input, with native coefficients. -/
-theorem phi_line_first (x y z w : Albert) (t : ℝ) :
-    phi (x + t • z) y w =
-      phi x y w +
-      t * (inner (crossU x z (U y w) - U y (crossU x z w)) (U w (jordan x y)) +
-        inner (U x (U y w) - U y (U x w)) (U w (jordan z y))) +
-      t^2 * (inner (U z (U y w) - U y (U z w)) (U w (jordan x y)) +
-        inner (crossU x z (U y w) - U y (crossU x z w)) (U w (jordan z y))) +
-      t^3 * phi z y w := by
+theorem phi_line_first (x y z w : Albert) :
+    ∃ b c : ℝ, ∀ t : ℝ, phi (x + t • z) y w = phi x y w + b*t + c*t^2 + t^3 * phi z y w := by
+  refine ⟨inner (crossU x z (U y w) - U y (crossU x z w)) (U w (jordan x y)) +
+      inner (U x (U y w) - U y (U x w)) (U w (jordan z y)),
+    inner (U z (U y w) - U y (U z w)) (U w (jordan x y)) +
+      inner (crossU x z (U y w) - U y (crossU x z w)) (U w (jordan z y)), fun t => ?_⟩
   simp only [phi, U_line, jordan_add_left, jordan_smul_left, U_add_argument,
     U_smul_argument, inner_add_left, inner_add_right, inner_sub_left,
-    inner_sub_right, inner_smul_left, inner_smul_right]
+     inner_smul_left, inner_smul_right]
   ring
 
 theorem phi_smul_first (a : ℝ) (x y z : Albert) :
@@ -84,12 +68,7 @@ theorem phi_smul_third (a : ℝ) (x y z : Albert) :
     inner_smul_left, inner_smul_right]
   ring
 
-theorem phi_swap_first_two (x y z : Albert) : phi y x z = -phi x y z := by
-  rw [phi, phi, jordan_comm y x, inner_sub_left, inner_sub_left]
-  ring
-
-@[simp] theorem phi_repeated_first_two (x z : Albert) : phi x x z = 0 := by
-  simp [phi]
+theorem phi_swap_first_two (x y z : Albert) : phi y x z = -phi x y z := by simp [phi, phi, jordan_comm y x, inner_sub_left, inner_sub_left]
 
 end
 end Glennie

@@ -4,8 +4,7 @@ concrete frame step uses native reference vanishing identities.  This is an
 algebraic prerequisite, not the log-Hessian/Levi-Civita recognition endpoint. -/
 module
 
-public import AlbertRecognition.FixedFrame.BlockSeparation
-
+public import AlbertRecognition.FixedFrame.ReferenceBlocks
 @[expose] public section
 namespace AlbertRecognition
 noncomputable section
@@ -14,10 +13,7 @@ noncomputable section
     operatorComm P Q v = P (Q v) - Q (P v) := rfl
 
 @[simp] theorem operatorComm_zero_right (P : V →ₗ[ℝ] V) :
-    operatorComm P 0 = 0 := by
-  apply LinearMap.ext
-  intro v
-  simp only [operatorComm_apply, LinearMap.zero_apply, map_zero, sub_self]
+    operatorComm P 0 = 0 := by aesop
 
 theorem operatorComm_add_right (P Q R : V →ₗ[ℝ] V) :
     operatorComm P (Q + R) = operatorComm P Q + operatorComm P R := by
@@ -27,35 +23,18 @@ theorem operatorComm_add_right (P Q R : V →ₗ[ℝ] V) :
   module
 
 theorem operatorComm_swap (P Q : V →ₗ[ℝ] V) :
-    operatorComm P Q = -operatorComm Q P := by
-  apply LinearMap.ext
-  intro v
-  simp only [operatorComm_apply, LinearMap.neg_apply, neg_sub]
+    operatorComm P Q = -operatorComm Q P := by apply LinearMap.ext <;> simp
 
 theorem wedge_swap (x y : V) : wedge x y = -wedge y x := by
-  apply LinearMap.ext
-  intro v
-  change gA y v • x - gA x v • y = -(gA x v • y - gA y v • x)
-  exact (neg_sub _ _).symm
+  simp [wedge, neg_sub]
 
 /-- Total cubic symmetry cancels the entire wedge Jacobi term.  KB symmetry
 and self-adjointness are the derived metric-dual identities, not hypotheses. -/
 theorem A_wedge_eq_zero (B : SymmetricCubic) : A wedge B = 0 := by
   funext x y z
-  apply LinearMap.ext
-  intro v
-  change
-    ((KB B x) (gA z v • y - gA y v • z) -
-      (gA z (KB B x v) • y - gA y (KB B x v) • z)) +
-    ((KB B y) (gA x v • z - gA z v • x) -
-      (gA x (KB B y v) • z - gA z (KB B y v) • x)) +
-    ((KB B z) (gA y v • x - gA x v • y) -
-      (gA y (KB B z v) • x - gA x (KB B z v) • y)) = 0
-  simp only [map_sub, map_smul]
-  rw [← KB_selfadjoint B x z v, ← KB_selfadjoint B x y v,
-    ← KB_selfadjoint B y x v, ← KB_selfadjoint B y z v,
-    ← KB_selfadjoint B z y v, ← KB_selfadjoint B z x v]
-  rw [KB_comm B x y, KB_comm B x z, KB_comm B y z]
+  ext v : 1
+  simp only [A, LinearMap.add_apply, Pi.zero_apply, LinearMap.zero_apply, operatorComm_apply, wedge_apply, map_sub, map_smul,
+    ← KB_selfadjoint B _ _ v, KB_comm B]
   module
 
 /-- The actual cyclic commutator is additive in its reference tensor. -/
@@ -100,15 +79,6 @@ theorem h0_frame_commutes_of_A_q_zero (B : SymmetricCubic)
     operatorComm (KB B (h 0)) (frameAction a) = 0 := by
   exact commutes_of_A_D_zero_of_vanishing B (A_D_zero_of_A_q_zero B hB)
     (h 0) (h 1) (X12 a) D_h0_h1_zero (D_h0_X12_zero a)
-
-/-- Application form used by the subsequent native block-commutant argument. -/
-theorem h0_frame_action_intertwines_of_A_q_zero (B : SymmetricCubic)
-    (hB : A (q referenceCubic) B = 0) (a : Glennie.Octonion) (v : V) :
-    KB B (h 0) (frameAction a v) = frameAction a (KB B (h 0) v) := by
-  have hcomm := congrArg (fun P : V →ₗ[ℝ] V => P v)
-    (h0_frame_commutes_of_A_q_zero B hB a)
-  change KB B (h 0) (frameAction a v) - frameAction a (KB B (h 0) v) = 0 at hcomm
-  exact sub_eq_zero.mp hcomm
 
 end FixedFrame
 end

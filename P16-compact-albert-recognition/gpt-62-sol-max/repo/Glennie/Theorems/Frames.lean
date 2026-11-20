@@ -1,9 +1,11 @@
 module
 
 public import Glennie.Native.AlgebraLaws
-public import Glennie.Theorems.ScalarEstimates
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Basic.Complex.Basic
 public import Mathlib.Tactic.Module
-
 /- Native frame encoder and marginal identities, without spectral assumptions. -/
 
 public section
@@ -33,23 +35,6 @@ theorem frame_encoder_norm (p : Fin 3 → Albert) (hp : Frame p) :
   rw [inner, frame_encoder_square p hp, trace_add, hp.trace_one, hp.trace_one]
   norm_num
 
-theorem frame_projector_first (p : Fin 3 → Albert) (hp : Frame p) :
-    (1 / 2 : ℝ) • (jordan (encoder p) (encoder p) - encoder p) = p 0 := by
-  rw [frame_encoder_square p hp]
-  unfold encoder
-  module
-
-theorem frame_projector_middle (p : Fin 3 → Albert) (hp : Frame p) :
-    1 - jordan (encoder p) (encoder p) = p 1 := by
-  rw [frame_encoder_square p hp, ← hp.sum_unit]
-  abel
-
-theorem frame_projector_last (p : Fin 3 → Albert) (hp : Frame p) :
-    (1 / 2 : ℝ) • (jordan (encoder p) (encoder p) + encoder p) = p 2 := by
-  rw [frame_encoder_square p hp]
-  unfold encoder
-  module
-
 theorem ledger_cyclic (p q r : Fin 3 → Albert) (i j k : Fin 3) :
     ledger p q r i j k = ledger q r p j k i := by
   change inner (jordan (p i) (q j)) (r k) = inner (jordan (q j) (r k)) (p i)
@@ -67,7 +52,7 @@ theorem uniformLedger_pair_overlap (p q r : Fin 3 → Albert)
     inner (p i) (q j) = 1 / 3 := by
   rw [← ledger_last_marginal p q r hr i j]
   simp only [UniformLedger] at hu
-  simp [hu, Fin.sum_univ_three]
+  simp [hu]
   norm_num
 
 theorem uniformLedger_cyclic (p q r : Fin 3 → Albert)

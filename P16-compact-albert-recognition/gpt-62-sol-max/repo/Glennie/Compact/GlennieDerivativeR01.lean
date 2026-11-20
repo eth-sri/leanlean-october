@@ -15,7 +15,6 @@ public import Mathlib.Analysis.Calculus.Deriv.Mul
 public import Mathlib.Analysis.Calculus.Gradient.Basic
 public import Mathlib.Tactic.Module
 public import Mathlib.Tactic.Ring
-
 @[expose] public section
 namespace Glennie.Compact.GlennieDerivativeR01
 
@@ -67,10 +66,7 @@ def UBaseDerivative (z p : Albert) : Albert →L[ℝ] Albert :=
 
 theorem UBaseDerivative_eq_triple (z p h : Albert) :
     UBaseDerivative z p h = doubledTriple h p z := by
-  simp only [UBaseDerivative_apply, doubledTriple,
-    jordan_comm z p, jordan_comm p h, jordan_comm (jordan p z) h,
-    jordan_comm z (jordan h p), jordan_comm z h,
-    jordan_comm p (jordan h z)]
+  simp only [UBaseDerivative_apply, doubledTriple, jordan_comm]
 
 /-! ## Actual Frechet differentiation of the native quadratic map -/
 
@@ -81,86 +77,37 @@ theorem hasFDerivAt_jordan
     HasFDerivAt (fun w => jordan (f w) (g w))
       ((jordanContinuous (f z)).comp g' +
         (jordanContinuous (g z)).comp f') z := by
-  have hp := jordanContinuous.hasFDerivAt_of_bilinear hf hg
-  change HasFDerivAt (fun w => jordan (f w) (g w)) _ z at hp
-  refine hp.congr_fderiv ?_
-  apply ContinuousLinearMap.ext
-  intro h
-  change jordan (f z) (g' h) + jordan (f' h) (g z) =
-    jordan (f z) (g' h) + jordan (g z) (f' h)
-  rw [jordan_comm (f' h) (g z)]
+  refine (jordanContinuous.hasFDerivAt_of_bilinear hf hg).congr_fderiv ?_
+  ext h : 1
+  exact congrArg (jordan (f z) (g' h) + ·) (jordan_comm (f' h) (g z))
 
 /-- This differentiates w |-> U w p on the full native Albert space.
 No frame, nonzero, generation, or spectral assumption occurs. -/
 theorem hasFDerivAt_U_base (z p : Albert) :
     HasFDerivAt (fun w : Albert => U w p) (UBaseDerivative z p) z := by
-  have hid : HasFDerivAt (fun w : Albert => w)
-      (ContinuousLinearMap.id ℝ Albert) z := hasFDerivAt_id z
-  have hp : HasFDerivAt (fun w : Albert => jordan w p)
-      (jordanContinuous p) z := by
-    have hfun : (fun w : Albert => jordan w p) =
-        (jordanContinuous p : Albert → Albert) := by
-      funext w
-      rw [jordanContinuous_apply, jordan_comm]
-    rw [hfun]
-    exact (jordanContinuous p).hasFDerivAt (x := z)
-  have hfirst := hasFDerivAt_jordan hid hp
-  have hsquare := hasFDerivAt_jordan hid hid
-  have hsecond : HasFDerivAt (fun w : Albert => jordan (jordan w w) p)
-      ((jordanContinuous p).comp
-        ((jordanContinuous z).comp (ContinuousLinearMap.id ℝ Albert) +
-          (jordanContinuous z).comp (ContinuousLinearMap.id ℝ Albert))) z := by
-    simpa only [Function.comp_def, jordanContinuous_apply, jordan_comm p] using
-      (jordanContinuous p).hasFDerivAt.comp z hsquare
-  have hU := (hfirst.const_smul (2 : ℝ)).sub hsecond
-  have hfun :
-      ((2 : ℝ) • (fun w : Albert => jordan w (jordan w p)) -
-        (fun w : Albert => jordan (jordan w w) p)) =
-      (fun w : Albert => U w p) := by
-    funext w
-    simp only [Pi.sub_apply, Pi.smul_apply, U]
-  rw [hfun] at hU
-  refine hU.congr_fderiv ?_
-  apply ContinuousLinearMap.ext
-  intro h
-  simp only [sub_apply, smul_apply, add_apply, ContinuousLinearMap.comp_apply,
-    ContinuousLinearMap.id_apply, jordanContinuous_apply, UBaseDerivative_apply]
-  rw [jordan_add_right]
-  have halgebra (a b c : Albert) :
-      (2 : ℝ) • (a + b) - (c + c) = (2 : ℝ) • (b + a - c) := by
-    rw [smul_sub, add_comm b a, two_smul ℝ c]
-  exact halgebra (jordan z (jordan p h)) (jordan (jordan z p) h)
-    (jordan p (jordan z h))
+  have hi := hasFDerivAt_id (𝕜 := ℝ) z
+  have hp := (jordanContinuous p).hasFDerivAt (x := z)
+  have hd := ((hasFDerivAt_jordan hi hp).const_smul (2 : ℝ)).sub
+    ((jordanContinuous p).hasFDerivAt.comp z (hasFDerivAt_jordan hi hi))
+  have hh := hd.congr_of_eventuallyEq (f₁ := fun w : Albert => U w p)
+    (Filter.Eventually.of_forall fun w => by simp [U, Function.comp_def, jordanContinuous_apply, jordan_comm p])
+  refine hh.congr_fderiv ?_
+  ext h : 1
+  simp only [UBaseDerivative_apply, ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply,
+    add_apply, sub_apply, smul_apply, id_eq, jordanContinuous_apply,  jordan_add_left, jordan_comm p]
+  module
 
 /-! ## Trace adjunction identifies the derivative with native G8 -/
 
 /-- The precise adjunction needed for the variable-base U derivative. -/
 theorem doubledTriple_adjoint (a h p z : Albert) :
     inner a (doubledTriple h p z) = inner h (doubledTriple a z p) := by
-  have h1 : inner a (jordan h (jordan p z)) =
-      inner h (jordan a (jordan z p)) := by
-    rw [← inner_jordan_associative, jordan_comm a h,
-      inner_jordan_associative, jordan_comm p z]
-  have h2 : inner a (jordan (jordan h p) z) =
-      inner h (jordan (jordan a z) p) := by
-    calc
-      inner a (jordan (jordan h p) z) =
-          inner (jordan h p) (jordan z a) := by
-        rw [inner_comm a, inner_jordan_associative]
-      _ = inner h (jordan (jordan a z) p) := by
-        rw [inner_jordan_associative, jordan_comm z a,
-          jordan_comm p (jordan a z)]
-  have h3 : inner a (jordan (jordan h z) p) =
-      inner h (jordan (jordan a p) z) := by
-    calc
-      inner a (jordan (jordan h z) p) =
-          inner (jordan h z) (jordan p a) := by
-        rw [inner_comm a, inner_jordan_associative]
-      _ = inner h (jordan (jordan a p) z) := by
-        rw [inner_jordan_associative, jordan_comm p a,
-          jordan_comm z (jordan a p)]
-  simp only [doubledTriple, inner_smul_right, inner_sub_right,
-    inner_add_right, h1, h2, h3]
+  have swap (u v w : Albert) : inner u (jordan v w) = inner v (jordan u w) := by
+    rw [← inner_jordan_associative, jordan_comm u v, inner_jordan_associative]
+  have cross (u v : Albert) : inner a (jordan (jordan h u) v) = inner h (jordan (jordan a v) u) := by
+    rw [jordan_comm (jordan h u), ← inner_jordan_associative, swap]
+  simp only [doubledTriple, inner_smul_right, inner_add_right, inner_sub_right, cross]
+  rw [swap a h, jordan_comm p z]
 
 /-- Actual native Frechet derivative of Phi in its third argument.
 The derivative is proved from the bilinear product rule, not supplied as a field. -/
@@ -177,8 +124,7 @@ theorem hasFDerivAt_phi_third (x y z : Albert) :
     simp only [pairingContinuous_apply, commUContinuous_apply, phi, commU]
   rw [hfun] at hp
   refine hp.congr_fderiv ?_
-  apply ContinuousLinearMap.ext
-  intro h
+  ext h : 1
   simp only [add_apply, ContinuousLinearMap.precompL_apply,
     ContinuousLinearMap.precompR, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.compL_apply, pairingContinuous_apply, commUContinuous_apply]
@@ -190,24 +136,13 @@ theorem hasFDerivAt_phi_third (x y z : Albert) :
 
 /-! ## Metric scaling and useful derivative consequences -/
 
-/-- Chain rule for an actual differentiable curve in the third argument. -/
-theorem hasDerivAt_phi_third_comp (x y : Albert)
-    {c : ℝ → Albert} {c' : Albert} {t : ℝ} (hc : HasDerivAt c c' t) :
-    HasDerivAt (fun s : ℝ => phi x y (c s))
-      (inner c' (glennieVector x y (c t))) t := by
-  simpa only [Function.comp_def, pairingContinuous_apply,
-    inner_comm (glennieVector x y (c t)) c'] using
-    (hasFDerivAt_phi_third x y (c t)).comp_hasDerivAt t hc
-
-/-- The directional derivative is the derivative of the literal affine curve. -/
+/-- Differentiate the literal affine line through the third argument. -/
 theorem hasDerivAt_phi_third_affine (x y z h : Albert) :
     HasDerivAt (fun t : ℝ => phi x y (z + t • h))
       (inner h (glennieVector x y z)) 0 := by
-  have hlinear : HasDerivAt (fun t : ℝ => t • h) h 0 := by
-    simpa only [id_eq, one_smul] using (hasDerivAt_id (0 : ℝ)).smul_const h
-  have hc : HasDerivAt (fun t : ℝ => z + t • h) h 0 :=
-    HasDerivAt.const_add z hlinear
-  simpa only [zero_smul, add_zero] using hasDerivAt_phi_third_comp x y hc
+  have hc : HasDerivAt (fun t : ℝ => z + t • h) h 0 := by
+    simpa using (((hasDerivAt_id (0 : ℝ)).smul_const h).const_add z)
+  simpa [Function.comp_def, inner_comm] using (hasFDerivAt_phi_third x y (z + (0 : ℝ) • h)).comp_hasDerivAt 0 hc
 
 end
 end Glennie.Compact.GlennieDerivativeR01

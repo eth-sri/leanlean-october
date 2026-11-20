@@ -6,7 +6,6 @@ module
 public import Glennie.Native.AlgebraLaws
 public import Glennie.Obligations
 public import Mathlib.Data.Real.Sqrt
-
 @[expose] public section
 
 namespace Glennie
@@ -17,7 +16,7 @@ set_option linter.unusedSimpArgs false
 
 theorem octNormSq_add (x y : Octonion) :
     octNormSq (x+y) = octNormSq x+octNormSq y+2*octDot x y := by
-  simp [octNormSq, Quaternion.normSq_def', octDot_coordinates]
+  simp [oct_coord]
   ring
 
 theorem octDot_sub_left (x y z : Octonion) :
@@ -27,14 +26,12 @@ theorem octDot_sub_left (x y z : Octonion) :
 
 theorem octDot_mul_right (x y z : Octonion) :
     octDot (octMul x y) z = octDot x (octMul z (octConj y)) := by
-  simp [octDot_coordinates, octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
+  simp [oct_coord]
   ring
 
 theorem octDot_mul_left (x y z : Octonion) :
     octDot (octMul x y) z = octDot y (octMul (octConj x) z) := by
-  simp [octDot_coordinates, octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
+  simp [oct_coord]
   ring
 
 theorem octDot_ext (x y : Octonion) (h : ∀ z, octDot x z = octDot y z) : x = y := by
@@ -42,12 +39,9 @@ theorem octDot_ext (x y : Octonion) (h : ∀ z, octDot x z = octDot y z) : x = y
     rw [← octDot_self, octDot_sub_left, h (x-y), sub_self]
   exact sub_eq_zero.mp ((octNormSq_eq_zero (x-y)).mp hz)
 
-@[simp] theorem octNormSq_conj (x : Octonion) : octNormSq (octConj x) = octNormSq x := by
-  simp [octNormSq, octConj, Quaternion.normSq_def']
-
 theorem octNormSq_smul (r : ℝ) (x : Octonion) :
     octNormSq (r • x) = r^2 * octNormSq x := by
-  simp [octNormSq, Quaternion.normSq_def', smul_eq_mul]
+  simp [oct_coord, smul_eq_mul]
   ring
 
 theorem octMul_self_eq (x : Octonion) :
@@ -79,9 +73,7 @@ theorem octUnit_decomposition (x : Octonion) (hx : x ≠ 0) :
 /-- The inverse property is proved for the declared native multiplication. -/
 theorem octMul_conj_left_cancel (a x : Octonion) :
     octMul (octConj a) (octMul a x) = octNormSq a • x := by
-  ext <;> simp [octMul, octConj, octNormSq, Quaternion.normSq_def',
-    Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-    Quaternion.imK_mul, smul_eq_mul] <;> ring
+  ext <;> simp [oct_coord, smul_eq_mul] <;> ring
 
 theorem octMul_left_conj_cancel (a x : Octonion) :
     octMul a (octMul (octConj a) x) = octNormSq a • x := by
@@ -90,9 +82,7 @@ theorem octMul_left_conj_cancel (a x : Octonion) :
 
 theorem octMul_conj_right_cancel (a x : Octonion) :
     octMul (octMul x a) (octConj a) = octNormSq a • x := by
-  ext <;> simp [octMul, octConj, octNormSq, Quaternion.normSq_def',
-    Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-    Quaternion.imK_mul, smul_eq_mul] <;> ring
+  ext <;> simp [oct_coord, smul_eq_mul] <;> ring
 
 theorem octMul_right_conj_cancel (a x : Octonion) :
     octMul (octMul x (octConj a)) a = octNormSq a • x := by
@@ -160,15 +150,6 @@ theorem octDot_of_norm_preserving (A : Octonion ≃ₗ[ℝ] Octonion)
 
 namespace OctRelatedTriple
 
-@[simp] theorem middle_A (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
-    (octMiddleTriple a ha).A x = octMul a x := rfl
-
-@[simp] theorem middle_B (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
-    (octMiddleTriple a ha).B x = octMul x a := rfl
-
-@[simp] theorem middle_C (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
-    (octMiddleTriple a ha).C x = octMul (octMul a x) a := rfl
-
 theorem dot_A (g : OctRelatedTriple) (x y : Octonion) :
     octDot (g.A x) (g.A y) = octDot x y := octDot_of_norm_preserving g.A g.norm_A x y
 
@@ -203,9 +184,7 @@ def comp (g h : OctRelatedTriple) : OctRelatedTriple where
   norm_A x := (g.norm_A (h.A x)).trans (h.norm_A x)
   norm_B x := (g.norm_B (h.B x)).trans (h.norm_B x)
   norm_C x := (g.norm_C (h.C x)).trans (h.norm_C x)
-  product x y := by
-    change octMul (g.A (h.A x)) (g.B (h.B y)) = g.C (h.C (octMul x y))
-    rw [g.product, h.product]
+  product x y := by simp [g.product, h.product]
 
 /-- A proved triality reflection, using native Frobenius nondegeneracy. -/
 def swap12 (g : OctRelatedTriple) : OctRelatedTriple where
@@ -236,25 +215,9 @@ theorem unitStabilizer_B (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
   change octMul (octMul (octMul a x) a) a = _
   rw [octMul_flexible, octMul_flexible]
 
-theorem unitStabilizer_C (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
-    (unitStabilizerTriple a ha).C x = octMul a (octMul (octMul x a) a) := by
-  change octMul (octMul a (octMul x a)) a = _
-  rw [octMul_flexible]
-
 theorem unitStabilizer_fix_unit (a : Octonion) (ha : octNormSq a = 1) :
     (unitStabilizerTriple a ha).A (octScalar 1) = octScalar 1 := by
   rw [unitStabilizer_A, octMul_scalar_left, one_smul, octMul_self_conj, ha]
-
-/-- Order-three units give a genuine octonion automorphism in all three slots. -/
-theorem unitStabilizer_B_eq_A (a : Octonion) (ha : octNormSq a = 1)
-    (hsq : octMul a a = octConj a) (x : Octonion) :
-    (unitStabilizerTriple a ha).B x = (unitStabilizerTriple a ha).A x := by
-  rw [unitStabilizer_B, unitStabilizer_A, octMul_right_alternative, hsq]
-
-theorem unitStabilizer_C_eq_A (a : Octonion) (ha : octNormSq a = 1)
-    (hsq : octMul a a = octConj a) (x : Octonion) :
-    (unitStabilizerTriple a ha).C x = (unitStabilizerTriple a ha).A x := by
-  rw [unitStabilizer_C, unitStabilizer_A, octMul_right_alternative, hsq]
 
 /-- Fixed diagonal and upper-slot action (01,02,12) ↦ (A,C,B). -/
 def albertEquiv (g : OctRelatedTriple) : Albert ≃ₗ[ℝ] Albert where
@@ -268,9 +231,8 @@ def albertEquiv (g : OctRelatedTriple) : Albert ≃ₗ[ℝ] Albert where
 theorem albertEquiv_jordan (g : OctRelatedTriple) (x y : Albert) :
     g.albertEquiv (jordan x y) = jordan (g.albertEquiv x) (g.albertEquiv y) := by
   apply Albert.ext
-  all_goals simp [albertEquiv, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, g.dot_A, g.dot_B, g.dot_C,
-    g.cross01, g.cross12, g.product, map_add, map_smul]
+  all_goals simp [albertEquiv, jordan_coord, g.dot_A, g.dot_B, g.dot_C, g.cross01, g.cross12, g.product,
+    map_add, map_smul]
 
 /-- Actual native product- and trace-preserving automorphism from a related triple. -/
 def compactAutomorphism (g : OctRelatedTriple) : CompactAutomorphism where

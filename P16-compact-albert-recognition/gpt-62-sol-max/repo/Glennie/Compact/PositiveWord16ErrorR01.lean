@@ -1,2 +1,0 @@
-module
-public import Glennie.Compact.PositiveWord16EqualityR01

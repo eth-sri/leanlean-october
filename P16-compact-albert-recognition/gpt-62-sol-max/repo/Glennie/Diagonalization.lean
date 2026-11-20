@@ -5,7 +5,6 @@ public import Glennie.Compactness
 public import Glennie.ScalarRotation
 public import Glennie.Native.Triality
 public import Glennie.Native.RealConjugation
-
 @[expose] public section
 namespace Glennie
 noncomputable section
@@ -28,43 +27,31 @@ theorem maximalDiagonalEnergy_slot12_zero (x : Albert) (hx : HasMaximalDiagonalE
   have hmax := hx ((realRotation12Automorphism c s hcs).comp g)
   change diagonalEnergy (realConjugateAlbert (realRotation12 c s) (g.equiv x)) ≤
     diagonalEnergy x at hmax
-  unfold diagonalEnergy at hmax
-  rw [realRotation12_d0, realRotation12_d1, realRotation12_d2,
-    h0, h1, h2, hslot, octRe_scalar] at hmax
+  have hD := realRotation12_diag c s (g.equiv x)
+  have hx0 := hD 0
+  have hx1 := hD 1
+  have hx2 := hD 2
+  simp [toMatrix, h0, h1, h2, hslot] at hx0 hx1 hx2
+  rw [diagonalEnergy, hx0, hx1, hx2, diagonalEnergy] at hmax
   nlinarith [he]
 
-theorem realSwap01_diagonalEnergy (x : Albert) :
-    diagonalEnergy (realSwap01Automorphism.equiv x) = diagonalEnergy x := by
-  change diagonalEnergy (realConjugateAlbert realSwap01 x) = _
-  rw [realSwap01_coordinates]
-  simp only [diagonalEnergy]
-  ring
-
-theorem realSwap02_diagonalEnergy (x : Albert) :
-    diagonalEnergy (realSwap02Automorphism.equiv x) = diagonalEnergy x := by
-  change diagonalEnergy (realConjugateAlbert realSwap02 x) = _
-  rw [realSwap02_coordinates]
-  simp only [diagonalEnergy]
-  ring
+private theorem permutation_diagonalEnergy (s : Equiv.Perm (Fin 3)) (x : Albert) :
+    diagonalEnergy ((permutationAutomorphism s).equiv x) = diagonalEnergy x := by
+  have h (y : Albert) : diagonalEnergy y = ∑ i, octRe (toMatrix y i i) ^ 2 := by
+    simp [diagonalEnergy, Fin.sum_univ_three, toMatrix]
+  simp only [h, toMatrix_permutation]
+  exact Equiv.sum_comp s (fun i => octRe (toMatrix x i i) ^ 2)
 
 theorem maximalDiagonalEnergy_isDiagonal (x : Albert) (hx : HasMaximalDiagonalEnergy x) :
     IsDiagonal x := by
-  have h12 := maximalDiagonalEnergy_slot12_zero x hx
-  have h02 := maximalDiagonalEnergy_slot12_zero (realSwap01Automorphism.equiv x)
-    (maximalDiagonalEnergy_after x hx _ (realSwap01_diagonalEnergy x))
-  have h01 := maximalDiagonalEnergy_slot12_zero (realSwap02Automorphism.equiv x)
-    (maximalDiagonalEnergy_after x hx _ (realSwap02_diagonalEnergy x))
-  change (realConjugateAlbert realSwap01 x).o12 = 0 at h02
-  change (realConjugateAlbert realSwap02 x).o12 = 0 at h01
-  rw [realSwap01_coordinates] at h02
-  rw [realSwap02_coordinates] at h01
-  have h01' : x.o01 = 0 := by
-    have h := congrArg octConj h01
-    have hz : octConj (0 : Octonion) = 0 := by
-      change (star (0 : Quaternion ℝ), -(0 : Quaternion ℝ)) = (0,0)
-      simp only [star_zero, neg_zero]
-    simpa only [octConj_conj, hz] using h
-  exact ⟨h01', h02, h12⟩
+  have h (s : Equiv.Perm (Fin 3)) : toMatrix x (s 1) (s 2) = 0 := by
+    rw [← toMatrix_permutation]
+    exact maximalDiagonalEnergy_slot12_zero _
+      (maximalDiagonalEnergy_after x hx _ (permutation_diagonalEnergy s x))
+  refine ⟨?_, ?_, maximalDiagonalEnergy_slot12_zero x hx⟩
+  · exact h (Equiv.subRight 1)
+  · change toMatrix x 0 2 = 0
+    simpa only [Equiv.swap_apply_left, Equiv.swap_apply_of_ne_of_ne (by decide : (2 : Fin 3) ≠ 1) (by decide : (2 : Fin 3) ≠ 0)] using h (Equiv.swap 1 0)
 
 /-- Diagonalization in the genuine native product/trace automorphism group. -/
 theorem native_diagonalization (x : Albert) :

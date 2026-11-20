@@ -4,7 +4,6 @@ All unit roots are supplied by the proved native complex-line construction.
 module
 
 public import Glennie.ComplexLine
-
 @[expose] public section
 
 namespace Glennie

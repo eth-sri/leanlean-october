@@ -1,7 +1,6 @@
 /- Exact unproved dependency propositions. Definitions here assert no theorem. -/
 module
 public import Glennie.Native
-
 @[expose] public section
 namespace Glennie
 noncomputable section

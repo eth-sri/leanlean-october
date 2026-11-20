@@ -10,7 +10,6 @@ module
 public import Mathlib.Algebra.Module.LinearMap.Defs
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.Tactic.Module
-
 @[expose] public section
 
 namespace Glennie.CubicJordan
@@ -47,9 +46,8 @@ theorem linearResidual_eq_zero
     linearResidual mul T e x y = (1 / 6 : ℝ) •
         (residual mul T e (x + y) - residual mul T e (x - y) -
           (2 : ℝ) • residual mul T e y) := by
-      simp only [linearResidual, residual, map_add, map_sub, map_smul,
-        LinearMap.add_apply, LinearMap.sub_apply, LinearMap.smul_apply,
-        smul_eq_mul]
+      simp only [linearResidual, residual, map_add, map_sub, 
+        LinearMap.add_apply, LinearMap.sub_apply, ]
       simp only [comm y x, comm y (mul x x), ← assocTrace x x y]
       module
     _ = 0 := by rw [char, char, char]; simp

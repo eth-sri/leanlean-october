@@ -3,7 +3,6 @@ no Euclidean coefficient identification is assumed here. -/
 module
 
 public import AlbertRecognition.FixedFrame.KernelLine
-
 @[expose] public section
 namespace AlbertRecognition
 noncomputable section
@@ -12,10 +11,11 @@ open FixedFrame Glennie
 /-- An explicit native witness for nonzero quadratic reference curvature. -/
 theorem q_reference_h0_h1_h0 :
     q referenceCubic (h 0) (h 1) (h 0) = h 0 + (2 : ℝ) • h 1 := by
-  simp only [q, KB_referenceCubic, operatorComm_apply]
-  simp only [KA_h_cross 1 0 (by decide), KA_h_cross 0 1 (by decide),
-    KA_h_self, map_add, map_smul]
-  module
+  have hzero : octNormSq 0 = 0 := (octNormSq_eq_zero 0).mpr rfl
+  apply Subtype.ext
+  apply Albert.ext <;> norm_num [q, KB_referenceCubic, operatorComm_apply, KA_apply,
+    project_coe, traceless, trace, h, e, unit, jordan_d0, jordan_d1, jordan_d2,
+    jordan_o01, jordan_o02, jordan_o12, octDot_coordinates, octMul, octConj, hzero]
 
 theorem q_reference_ne_zero : q referenceCubic ≠ 0 := by
   intro hz
@@ -25,32 +25,14 @@ theorem q_reference_ne_zero : q referenceCubic ≠ 0 := by
   have hd := congrArg (fun x : V => (x : Albert).d1) hv
   norm_num [h, e, unit] at hd
 
-/-- Every competitor is constrained solely by equality of the actual native q.
-Universal operator Jacobi supplies kernel membership; the true reference
-kernel line and nonzero witness force the only possible scales to be ±1. -/
-theorem q_fiber_reference (B : SymmetricCubic) :
-    q B = q referenceCubic ↔
-      B = referenceCubic ∨ B = scalarCubic (-1) referenceCubic := by
-  constructor
-  · intro hq
-    have hB : A (q referenceCubic) B = 0 := by
-      rw [← hq]
-      exact A_q_self B
-    obtain ⟨b,hb⟩ := (reference_nativeKernelLine B).mp hB
-    have hs : b^2 • q referenceCubic = (1 : ℝ) • q referenceCubic := by
-      rw [one_smul, ← q_scalarCubic, ← hb]
-      exact hq
-    have hb2 : b^2 = 1 := smul_left_injective ℝ q_reference_ne_zero hs
-    rcases sq_eq_one_iff.mp hb2 with hb1 | hbm1
-    · left
-      rw [hb1, scalarCubic_one] at hb
-      exact hb
-    · right
-      simpa only [hbm1] using hb
-  · rintro (rfl | rfl)
-    · rfl
-    · rw [q_scalarCubic]
-      norm_num
+/-- Universal Jacobi puts a curvature match on the reference cubic line;
+its nonzero curvature fixes the square of the scale. -/
+theorem q_fiber_reference (B : SymmetricCubic) (hq : q B = q referenceCubic) :
+    ∃ b : ℝ, b * b = 1 ∧ B = scalarCubic b referenceCubic := by
+  obtain ⟨b,rfl⟩ := reference_nativeKernelLine B (hq ▸ A_q_self B)
+  have hs : (b * b) • q referenceCubic = (1 : ℝ) • q referenceCubic := by
+    simpa [q_scalarCubic, pow_two] using hq
+  exact ⟨b, smul_left_injective ℝ q_reference_ne_zero hs, rfl⟩
 
 end
 end AlbertRecognition

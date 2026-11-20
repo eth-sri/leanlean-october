@@ -3,7 +3,6 @@ The hidden columns are (-extract(o12), +extract(o02), -extract(o01)). -/
 module
 public import Glennie.Native.AlgebraLaws
 public import Mathlib.Basic.Complex.Basic
-
 @[expose] public section
 namespace Glennie
 noncomputable section
@@ -37,65 +36,37 @@ def diagonalAlbert (a b c : ℝ) : Albert := ⟨a,b,c,0,0,0⟩
 def complexAlbert (a b c : ℝ) (u v w : ℂ) : Albert :=
   ⟨a,b,c,complexOct u,complexOct v,complexOct w⟩
 
-theorem oct_complex_hidden_decomposition (x : Octonion) :
-    complexOct (complexPart x) + hiddenOct (hiddenColumn x) = x := by
-  apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [complexOct, complexPart, hiddenOct, hiddenColumn]
-
 theorem complex_hidden_decomposition (z : Albert) :
     complexProjection z + hiddenAlbert (hiddenMatrix z) = z := by
   apply Albert.ext
   all_goals simp [complexProjection, hiddenAlbert, hiddenMatrix, hiddenColumn,
     hiddenOct, complexPart, complexOct]
-  all_goals apply Prod.ext <;> apply Quaternion.ext <;> simp
 
 theorem complex_hidden_orthogonal (x : Albert) (M : Matrix (Fin 3) (Fin 3) ℂ) :
     inner (complexProjection x) (hiddenAlbert M) = 0 := by
   simp [inner_coordinates, octDot_coordinates, complexProjection, hiddenAlbert,
     complexOct, hiddenOct]
 
-theorem hiddenAlbert_norm (M : Matrix (Fin 3) (Fin 3) ℂ) :
-    inner (hiddenAlbert M) (hiddenAlbert M) =
-      2 * ∑ i, ∑ j, Complex.normSq (M i j) := by
-  simp [inner_coordinates, octDot_coordinates, octNormSq, Quaternion.normSq_def',
-    hiddenAlbert, hiddenOct, Complex.normSq_apply,
-    Fin.sum_univ_three]
-  ring
-
 def sectorColumnGram (M : Matrix (Fin 3) (Fin 3) ℂ) : Matrix (Fin 3) (Fin 3) ℂ :=
   M.conjTranspose * M
 
-def sectorFrobeniusSq (M : Matrix (Fin 3) (Fin 3) ℂ) : ℝ :=
-  ∑ i, ∑ j, Complex.normSq (M i j)
-
-/-- The full complex projection of the square, in the actual hidden-column gauge. -/
-theorem hidden_square_complexProjection (M : Matrix (Fin 3) (Fin 3) ℂ) :
-    complexProjection (jordan (hiddenAlbert M) (hiddenAlbert M)) =
-      complexAlbert
-        (sectorFrobeniusSq M - (sectorColumnGram M 0 0).re)
-        (sectorFrobeniusSq M - (sectorColumnGram M 1 1).re)
-        (sectorFrobeniusSq M - (sectorColumnGram M 2 2).re)
-        (-sectorColumnGram M 0 1) (-sectorColumnGram M 0 2)
-        (-sectorColumnGram M 1 2) := by
-  ext
-  all_goals simp [complexProjection, complexAlbert, complexOct, complexPart,
-    hiddenAlbert, hiddenOct, jordan_d0, jordan_d1, jordan_d2, jordan_o01,
-    jordan_o02, jordan_o12, octDot_coordinates, octNormSq, Quaternion.normSq_def',
-    octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-    Quaternion.imK_mul, smul_eq_mul, sectorColumnGram, sectorFrobeniusSq,
-    Matrix.mul_apply, Matrix.conjTranspose_apply, Fin.sum_univ_three,
-    Complex.normSq_apply, Complex.mul_re, Complex.mul_im]
-  all_goals ring
+/-- A diagonal element scales the six Peirce blocks separately. -/
+theorem diagonal_jordan (a b c : ℝ) (x : Albert) :
+    jordan (diagonalAlbert a b c) x =
+      ⟨a*x.d0,b*x.d1,c*x.d2,((a+b)/2) • x.o01,((a+c)/2) • x.o02,((b+c)/2) • x.o12⟩ := by
+  apply Albert.ext <;> simp [diagonalAlbert, jordan_d0, jordan_d1, jordan_d2,
+    jordan_o01, jordan_o02, jordan_o12, octDot_zero_left, octMul_zero_left,
+    octMul_zero_right, octConj_zero, smul_smul] <;> congr 1 <;> ring
 
 theorem U_diagonal (a b c : ℝ) (z : Albert) :
     U (diagonalAlbert a b c) z =
       ⟨a^2*z.d0,b^2*z.d1,c^2*z.d2,(a*b) • z.o01,
         (a*c) • z.o02,(b*c) • z.o12⟩ := by
-  ext
-  all_goals simp [U, diagonalAlbert, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, octDot_coordinates, octMul,
-    octConj, octNormSq, Quaternion.normSq_def', smul_smul, smul_eq_mul]
-  all_goals ring
+  have h : jordan (diagonalAlbert a b c) (diagonalAlbert a b c) =
+      diagonalAlbert (a*a) (b*b) (c*c) := by rw [diagonal_jordan]; simp [diagonalAlbert]
+  rw [U, h]
+  simp only [diagonal_jordan]
+  apply Albert.ext <;> simp [smul_smul, ← sub_smul] <;> congr 1 <;> ring
 
 end
 end Glennie

@@ -11,7 +11,6 @@ module
 
 public import Glennie.Native.CubicIdentity
 public import Mathlib.Tactic.LinearCombination
-
 @[expose] public section
 
 namespace Glennie.Compact.InnerDerivation
@@ -50,9 +49,7 @@ theorem polar_eq_half (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul
 
 theorem polar_eq_zero (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x y = mul y x)
     (hJ : ∀ x y, defect mul x y = 0) (x₁ x₂ x₃ y : V) :
-    polar mul x₁ x₂ x₃ y = 0 := by
-  rw [polar_eq_half mul comm]
-  simp [hJ]
+    polar mul x₁ x₂ x₃ y = 0 := by simp_all [polar_eq_half mul comm]
 
 /-- Leibniz law for D_{a,b}: the difference of two polarized Jordan identities. -/
 theorem der_leibniz (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x y = mul y x)
@@ -150,11 +147,7 @@ theorem IsJordanDerivation.sum {ι : Type*} (s : Finset ι) (D : ι → Albert �
 theorem IsJordanDerivation.map_one {D : Albert →ₗ[ℝ] Albert} (hD : IsJordanDerivation D) :
     D 1 = 0 := by
   have h := hD 1 1
-  simp only [jordan_unit_left, jordan_unit_right] at h
-  have h2 : D 1 + D 1 = D 1 + 0 := by
-    rw [add_zero]
-    exact h.symm
-  exact add_left_cancel h2
+  simp_all
 
 theorem TraceFree.zero : TraceFree 0 := by
   intro x
