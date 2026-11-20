@@ -6,36 +6,42 @@ Authors: Yongxi Lin
 module
 
 public import BergmanWeakType.Definitions
+public import BergmanWeakType.Kernel
 
 /-! # Comparison and test functions for weak type constants -/
 
-@[expose] public section
+public section
 
-noncomputable section
-
-open MeasureTheory
+open MeasureTheory Set Filter
 open scoped ENNReal
 
 namespace BergmanWeakType
 
-variable {μ : Measure ℂ} {T S : (ℂ → ℂ) → ℂ → ℝ≥0∞} {C D : ℝ≥0∞}
+variable {μ : Measure ℂ} {T : (ℂ → ℂ) → ℂ → ℝ≥0∞} {C : ℝ≥0∞}
 
-/-- Pointwise domination transfers a weak type estimate. -/
-theorem isWeakTypeBound_mono (h : ∀ f, Integrable f μ → ∀ z, T f z ≤ S f z)
-    (hS : IsWeakTypeBound μ S C) : IsWeakTypeBound μ T C := by
-  intro f hf t ht
-  apply le_trans (mul_le_mul_right (measure_mono ?_) _) (hS f hf t ht)
-  exact fun z hz ↦ hz.trans_le (h f hf z)
+theorem IsWeakTypeBound.test_le (hC : IsWeakTypeBound μ T C) {f : ℂ → ℂ}
+    (hf : Integrable f μ) {E : Set ℂ} {l : ℝ}
+    (h : ∀ᵐ z ∂μ, z ∈ E → ENNReal.ofReal l ≤ T f z) :
+    ENNReal.ofReal l * μ E ≤ C * ∫⁻ z, ‖f z‖ₑ ∂μ := by
+  by_cases hl : l ≤ 0
+  · simp [ENNReal.ofReal_eq_zero.mpr hl]
+  have hp := lt_of_not_ge hl
+  apply le_of_tendsto (ENNReal.Tendsto.mul_const
+    (ENNReal.continuous_ofReal.continuousWithinAt (s := Iio l)) (Or.inl (by positivity)))
+  filter_upwards [Ioo_mem_nhdsLT hp] with t ht
+  refine (mul_le_mul_right (measure_mono_ae (h.mono fun z hz hzE ↦ ?_)) _).trans (hC f hf t ht.1)
+  exact ((ENNReal.ofReal_lt_ofReal_iff hp).mpr ht.2).trans_le (hz hzE)
 
-/-- Every valid bound bounds the optimal constant from above. -/
-theorem weakTypeConstant_le_of_bound (hC : IsWeakTypeBound μ T C) :
-    weakTypeConstant μ T ≤ C := sInf_le hC
-
-/-- Pointwise domination orders the optimal weak type constants. -/
-theorem weakTypeConstant_mono (h : ∀ f, Integrable f μ → ∀ z, T f z ≤ S f z) :
-    weakTypeConstant μ T ≤ weakTypeConstant μ S := by
-  apply le_sInf
-  intro C hC
-  exact weakTypeConstant_le_of_bound (isWeakTypeBound_mono h hC)
+/-- Test on an indicator and cancel its positive finite input mass. -/
+theorem IsWeakTypeBound.test_indicator [IsFiniteMeasure μ] (hC : IsWeakTypeBound μ T C)
+    {s E : Set ℂ} (hs : MeasurableSet s) (hpos : μ s ≠ 0) {l : ℝ} (hl : 0 ≤ l)
+    (hout : ∀ᵐ z ∂μ, z ∈ E → ENNReal.ofReal (l * μ.real s) ≤ T (s.indicator (fun _ ↦ 1)) z) :
+    ENNReal.ofReal l * μ E ≤ C := by
+  have h := hC.test_le ((integrable_const (1 : ℂ)).indicator hs) hout
+  have hmass : (∫⁻ z, ‖s.indicator (fun _ ↦ (1 : ℂ)) z‖ₑ ∂μ) = μ s := by
+    simp [enorm_indicator_eq_indicator_enorm, hs]
+  rw [hmass, ENNReal.ofReal_mul hl, measureReal_def,
+    ENNReal.ofReal_toReal (measure_ne_top μ s), mul_right_comm] at h
+  exact (ENNReal.mul_le_mul_iff_left hpos (measure_ne_top μ s)).mp h
 
 end BergmanWeakType

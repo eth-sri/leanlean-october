@@ -5,121 +5,63 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Definitions
 public import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
+public import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 
 /-! # Real beta integrals for the weighted boundary constants -/
 
-@[expose] public section
-
-noncomputable section
-
-open MeasureTheory
+public section
 
 namespace BergmanWeakType
 
-theorem integral_real_beta {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
-    (∫ x in (0 : ℝ)..1, x ^ (a - 1) * (1 - x) ^ (b - 1)) =
-      Real.Gamma a * Real.Gamma b / Real.Gamma (a + b) := by
-  apply Complex.ofReal_injective
-  rw [← intervalIntegral.integral_ofReal]
-  calc
-    _ = Complex.betaIntegral (a : ℂ) (b : ℂ) := by
-      unfold Complex.betaIntegral
-      apply intervalIntegral.integral_congr_Ioo_of_le (by norm_num)
-      intro x hx
-      simp only [Complex.ofReal_mul, Complex.ofReal_cpow hx.1.le,
-        Complex.ofReal_cpow (sub_nonneg.mpr hx.2.le), Complex.ofReal_sub, Complex.ofReal_one]
-    _ = _ := by
-      rw [Complex.betaIntegral_eq_Gamma_mul_div _ _ (by simpa using ha) (by simpa using hb)]
-      rw [← Complex.ofReal_add]
-      simp only [Complex.Gamma_ofReal, Complex.ofReal_div, Complex.ofReal_mul]
-
-theorem beta_sin_substitution_integrand (α : ℝ) {x y : ℝ} (hx : 0 < x) (hy : 0 < y) :
-    (x ^ 2) ^ ((α - 1) / 2) * (y ^ 2) ^ (-(1 / 2 : ℝ)) * (2 * x * y) = 2 * x ^ α := by
-  rw [← Real.rpow_natCast x 2, ← Real.rpow_mul hx.le,
-    ← Real.rpow_natCast y 2, ← Real.rpow_mul hy.le]
-  norm_num only [Nat.cast_ofNat]
-  have ha : (2 : ℝ) * ((α - 1) / 2) = α - 1 := by ring
-  rw [ha, Real.rpow_neg_one]
-  have hc : x ^ (α - 1) * x = x ^ α := by
-    calc
-      _ = x ^ (α - 1) * x ^ (1 : ℝ) := by rw [Real.rpow_one]
-      _ = x ^ ((α - 1) + 1) := (Real.rpow_add hx _ _).symm
-      _ = x ^ α := by congr 1; ring
-  calc
-    _ = 2 * (x ^ (α - 1) * x) * (y⁻¹ * y) := by ring
-    _ = _ := by rw [hc, inv_mul_cancel₀ hy.ne', mul_one]
-
-theorem integral_sin_rpow_half {α : ℝ} (hα : -1 < α) :
-    (∫ x in (0 : ℝ)..Real.pi / 2, Real.sin x ^ α) =
-      Real.sqrt Real.pi * Real.Gamma ((α + 1) / 2) /
-        (2 * Real.Gamma (1 + α / 2)) := by
-  have hp : 0 ≤ Real.pi / 2 := by positivity
+/-- The substitution `t = (1 - cos θ)/2` sends the whole half-turn to the beta interval. -/
+theorem gammaConstant_eq_sineIntegral {α : ℝ} (hα : -1 < α) :
+    gammaConstant α = 2 ^ α * (∫ θ in (0 : ℝ)..Real.pi, Real.sin θ ^ α) / Real.pi := by
+  let a := (α + 1) / 2
+  have ha : 0 < a := by grind +revert
+  have h2a : 2 * a = α + 1 := by dsimp [a]; ring
+  let u x := (1 - Real.cos x) / 2
+  let g (t : ℝ) := (t * (1 - t)) ^ (a - 1)
   have hsub := intervalIntegral.integral_comp_mul_deriv_of_deriv_nonneg
-    (a := (0 : ℝ)) (b := Real.pi / 2)
-    (f := fun x ↦ Real.sin x ^ 2) (f' := fun x ↦ 2 * Real.sin x * Real.cos x)
-    (g := fun t ↦ t ^ ((α - 1) / 2) * (1 - t) ^ (-(1 / 2 : ℝ)))
-    (by fun_prop)
-    (fun x _ ↦ by simpa [Pi.pow_apply] using! (Real.hasDerivAt_sin x).pow 2)
+    (a := (0 : ℝ)) (b := Real.pi) (f := u) (f' := fun x ↦ Real.sin x / 2) (g := g)
+    (by unfold u; fun_prop)
+    (fun x _ ↦ by simpa [u] using ((Real.hasDerivAt_cos x).const_sub 1).div_const 2)
     (fun x hx ↦ by
-      rw [min_eq_left hp, max_eq_right hp] at hx
-      exact mul_nonneg (mul_nonneg (by norm_num)
-        (Real.sin_nonneg_of_nonneg_of_le_pi hx.1.le (by linarith [hx.2])))
-        (Real.cos_nonneg_of_mem_Icc ⟨by linarith [hx.1], hx.2.le⟩))
-  simp only [Real.sin_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true,
-    zero_pow, Real.sin_pi_div_two, one_pow] at hsub
-  have heq : (∫ x in (0 : ℝ)..Real.pi / 2,
-      ((Real.sin x ^ 2) ^ ((α - 1) / 2) *
-        (1 - Real.sin x ^ 2) ^ (-(1 / 2 : ℝ))) *
-          (2 * Real.sin x * Real.cos x)) =
-        2 * (∫ x in (0 : ℝ)..Real.pi / 2, Real.sin x ^ α) := by
-    rw [← intervalIntegral.integral_const_mul]
-    apply intervalIntegral.integral_congr_Ioo_of_le hp
+      simp only [min_eq_left Real.pi_pos.le, max_eq_right Real.pi_pos.le] at hx
+      positivity [Real.sin_nonneg_of_nonneg_of_le_pi hx.1.le hx.2.le])
+  have heq (x : ℝ) (hx : x ∈ Set.Ioo 0 Real.pi) :
+      (g ∘ u) x * (Real.sin x / 2) = Real.sin x ^ α / 2 ^ α := by
+    have hs := Real.sin_pos_of_pos_of_lt_pi hx.1 hx.2
+    have hp : 0 < Real.sin x / 2 := by positivity
+    have hm : u x * (1 - u x) = (Real.sin x / 2) ^ 2 := by
+      dsimp [u]
+      nlinarith [Real.sin_sq_add_cos_sq x]
+    dsimp only [Function.comp_apply, g]
+    rw [hm, ← Real.rpow_natCast_mul hp.le 2, ← Real.rpow_add_one hp.ne',
+      show (↑(2 : ℕ) : ℝ) * (a - 1) + 1 = α by dsimp [a]; ring, Real.div_rpow hs.le (by norm_num)]
+  have hbeta : (∫ t in (0 : ℝ)..1, g t) = Real.Gamma a ^ 2 / Real.Gamma (α + 1) := by
+    apply Complex.ofReal_injective
+    rw [← intervalIntegral.integral_ofReal]
+    simp only [Complex.ofReal_div, pow_two, Complex.ofReal_mul, ← Complex.Gamma_ofReal]
+    rw [← h2a, two_mul, Complex.ofReal_add, ← Complex.betaIntegral_eq_Gamma_mul_div a a (by simpa using ha) (by simpa using ha)]
+    apply intervalIntegral.integral_congr_Ioo_of_le zero_le_one
     intro x hx
-    have hs : 0 < Real.sin x := Real.sin_pos_of_pos_of_lt_pi hx.1 (by linarith [hx.2])
-    have hc : 0 < Real.cos x := Real.cos_pos_of_mem_Ioo ⟨by linarith [hx.1], hx.2⟩
-    dsimp only
-    rw [show 1 - Real.sin x ^ 2 = Real.cos x ^ 2 by
-      nlinarith [Real.sin_sq_add_cos_sq x]]
-    exact beta_sin_substitution_integrand α hs hc
-  dsimp only [Function.comp_def] at hsub
-  rw [heq] at hsub
-  have hbeta := integral_real_beta
-    (a := (α + 1) / 2) (b := (1 / 2 : ℝ)) (by linarith) (by norm_num)
-  have harg : (α + 1) / 2 - 1 = (α - 1) / 2 := by ring
-  have hsum : (α + 1) / 2 + 1 / 2 = 1 + α / 2 := by ring
-  rw [harg, hsum, Real.Gamma_one_half_eq] at hbeta
-  norm_num only [show (1 / 2 : ℝ) - 1 = -(1 / 2 : ℝ) by norm_num] at hbeta
-  rw [hbeta] at hsub
-  calc
-    _ = (Real.Gamma ((α + 1) / 2) * Real.sqrt Real.pi /
-        Real.Gamma (1 + α / 2)) / 2 := by linarith
-    _ = _ := by ring
+    simp [g, Real.mul_rpow hx.1.le (sub_nonneg.mpr hx.2.le), Complex.ofReal_cpow hx.1.le, Complex.ofReal_cpow (sub_nonneg.mpr hx.2.le)]
+  rw [intervalIntegral.integral_congr_Ioo_of_le Real.pi_pos.le heq, intervalIntegral.integral_div,
+    show u 0 = 0 by simp [u], show u Real.pi = 1 by norm_num [u]] at hsub
+  have hp : (2 : ℝ) ^ α ≠ 0 := (Real.rpow_pos_of_pos (by norm_num) _).ne'
+  rw [gammaConstant, (div_eq_iff hp).mp (hsub.trans hbeta)]
+  have hG := Real.Gamma_mul_Gamma_add_half_of_pos ha
+  rw [show a + 1 / 2 = 1 + α / 2 by linarith, h2a, show 1 - (α + 1) = -α by ring,
+    Real.rpow_neg zero_le_two] at hG
+  have h := (Real.Gamma_pos_of_pos (show 0 < α + 1 by linarith)).ne'
+  have h' := (Real.Gamma_pos_of_pos (show 0 < 1 + α / 2 by linarith)).ne'
+  rw [← eq_div_iff h'] at hG
+  rw [hG, div_pow, mul_pow, mul_pow, Real.sq_sqrt Real.pi_pos.le]
+  field_simp [h, h', hp, Real.pi_ne_zero]
 
-theorem intervalIntegrable_sin_rpow_half {α : ℝ} (hα : -1 < α) :
-    IntervalIntegrable (fun x ↦ Real.sin x ^ α) volume 0 (Real.pi / 2) := by
-  apply intervalIntegral.intervalIntegrable_of_integral_ne_zero
-  rw [integral_sin_rpow_half hα]
-  apply ne_of_gt
-  apply div_pos
-  · exact mul_pos (Real.sqrt_pos.mpr Real.pi_pos) (Real.Gamma_pos_of_pos (by linarith))
-  · exact mul_pos (by norm_num) (Real.Gamma_pos_of_pos (by linarith))
 
-theorem integral_sin_rpow {α : ℝ} (hα : -1 < α) :
-    (∫ x in (0 : ℝ)..Real.pi, Real.sin x ^ α) =
-      Real.sqrt Real.pi * Real.Gamma ((α + 1) / 2) / Real.Gamma (1 + α / 2) := by
-  have hh := intervalIntegrable_sin_rpow_half hα
-  have hr : IntervalIntegrable (fun x ↦ Real.sin x ^ α) volume (Real.pi / 2) Real.pi := by
-    simpa only [Real.sin_pi_sub, sub_zero, show Real.pi - Real.pi / 2 = Real.pi / 2 by ring]
-      using (hh.comp_sub_left Real.pi).symm
-  have heq : (∫ x in Real.pi / 2..Real.pi, Real.sin x ^ α) =
-      ∫ x in (0 : ℝ)..Real.pi / 2, Real.sin x ^ α := by
-    conv_lhs => arg 1; intro x; rw [← Real.sin_pi_sub x]
-    rw [intervalIntegral.integral_comp_sub_left (fun x ↦ Real.sin x ^ α), sub_self,
-      show Real.pi - Real.pi / 2 = Real.pi / 2 by ring]
-  rw [← intervalIntegral.integral_add_adjacent_intervals hh hr, heq,
-    integral_sin_rpow_half hα]
-  ring
 
 end BergmanWeakType
