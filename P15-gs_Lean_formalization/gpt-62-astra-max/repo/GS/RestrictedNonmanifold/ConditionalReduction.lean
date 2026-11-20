@@ -1,5 +1,0 @@
-module
-public import GS.NonmanifoldFinal.FiniteCoordinates
-public import GS.NonmanifoldFinal.EuclideanTransport
-public import GS.RestrictedNonmanifold.Specification
-public import GS.RestrictedNonmanifold.SkewDimension

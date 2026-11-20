@@ -1,64 +1,22 @@
 module
-
-public import GS.Unitary.FourFactor
-
+public import GS.M4Certificate
+public import GS.M4Necessary
+public import GS.Unitary.RealEmbedding
 @[expose] public section
-
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
-
-/-!
-# Exact complex four-factor counterexample
-
-The certified real matrix is embedded entrywise into the complex matrices.
-Its determinant-modulus table is unchanged, so the universal unitary
-obstruction rules out complex factors as well as real factors.
--/
-
 noncomputable section
-open Matrix
-namespace GS.UnitaryFour
-open GS.UnitaryGeometry
-
-theorem ofRealMatrix_inA4 {n : ℕ} {b₁ b₂ b₃ b₄ : ℕ} {P₁ P₂ P₃ A : Mat n}
-    (h : InA4 b₁ b₂ b₃ b₄ P₁ P₂ P₃ A) :
-    CInA4 b₁ b₂ b₃ b₄ (ofRealMatrix P₁) (ofRealMatrix P₂)
-      (ofRealMatrix P₃) (ofRealMatrix A) := by
-  rcases h with ⟨B₁,B₂,B₃,B₄,hb₁,hb₂,hb₃,hb₄,he⟩
-  refine ⟨ofRealMatrix B₁,ofRealMatrix B₂,ofRealMatrix B₃,ofRealMatrix B₄,
-    ofRealMatrix_blockDiagonal hb₁,ofRealMatrix_blockDiagonal hb₂,
-    ofRealMatrix_blockDiagonal hb₃,ofRealMatrix_blockDiagonal hb₄,?_⟩
-  simpa only [GS.product4, GS.UnitaryGeometry.product4, ofRealMatrix_mul] using
-    congrArg ofRealMatrix he
-
-@[simp] theorem normDetBlock_ofRealMatrix (A : Mat 6) :
-    normDetBlock (ofRealMatrix A) = GS.M4.absDetBlock A := by
-  funext i j
-  simp only [normDetBlock, detBlock, ofRealMatrix_apply, ← Complex.ofReal_mul,
-    ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
-  rfl
-
-/-- The explicit algebraic matrix, now considered over ℂ. -/
-def Q : CMat 6 := ofRealMatrix GS.M4.Q
-
-theorem Q_unitary : Unitary Q := ofRealMatrix_unitary GS.M4.Q_orthogonal
-
-theorem Q_mem_A4 : CInA4 2 2 2 2 P P P Q :=
-  ofRealMatrix_inA4 GS.M4.Q_mem_A4
-
-theorem Q_not_mem_A4Unitary : ¬ CInA4Unitary 2 2 2 2 P P P Q := by
-  intro h
-  have hden : normDetBlock Q 2 1 * normDetBlock Q 1 0 * normDetBlock Q 1 1 ≠ 0 := by
-    simpa only [Q, normDetBlock_ofRealMatrix] using GS.M4.obstruction_denominator_nonzero
-  have hn := necessaryCondition Q h hden
-  have hr : GS.M4.determinantObstruction GS.M4.Q := by
-    simpa only [determinantObstruction, Q, normDetBlock_ofRealMatrix,
-      GS.M4.determinantObstruction] using hn
-  exact GS.M4.Q_violates_determinantObstruction hr
-
-/-- Unconditional insufficiency of four unitary block factors in the fixed GS family. -/
-theorem counterexample : CInA4 2 2 2 2 P P P Q ∧ Unitary Q ∧
-    ¬ CInA4Unitary 2 2 2 2 P P P Q :=
-  ⟨Q_mem_A4, Q_unitary, Q_not_mem_A4Unitary⟩
-
-end GS.UnitaryFour
+open Matrix GS.Isometric
+namespace GS.M4
+variable (𝕜 : Type*) [RCLike 𝕜]
+/-- The same real certificate works after any scalar extension: packing,
+products and the four determinant moduli are preserved. -/
+theorem counterexample : let p := wiring 𝕜; let q := extendReal 𝕜 Q
+    In₄ 2 2 2 2 p p p q ∧ IsU q ∧ ¬In₄U 2 2 2 2 p p p q := by
+  refine ⟨?_,extend_unitary 𝕜 Q_orthogonal,?_⟩
+  · obtain ⟨R,Y,W,L,r,y,w,l,e⟩ := Q_mem_A4
+    have side (A : Mat 6) (h : BlockDiagonal 2 A) : DiagonalBlocks 2 (extendReal 𝕜 A) := fun i j h' => by simp [extendReal,h i j h']
+    exact ⟨_,_,_,_,side _ r,side _ y,side _ w,side _ l,by simpa [product4,chain4,map_mul] using congrArg (extendReal 𝕜) e⟩
+  · rintro ⟨R,Y,W,L,r,y,w,l,ur,uy,uw,ul,e⟩
+    have h : minors (extendReal 𝕜 Q) = minors Q := by
+      funext i j; simp only [minors,minor_apply,extendReal,RingHom.mapMatrix_apply,Matrix.map_apply,← map_mul,← map_sub]; exact RCLike.norm_ofReal _
+    apply violates; rw [← h,e]; exact necessary l w y r ul uw uy ur
+end GS.M4

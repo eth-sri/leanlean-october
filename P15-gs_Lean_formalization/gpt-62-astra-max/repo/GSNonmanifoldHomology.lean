@@ -1,11 +1,10 @@
 module
 
-public import GS.NonmanifoldFinal.HomologyApplication
-
-@[expose] public section
-
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
-
-/-! Actual induced homology maps for the constructed retract. No sphere homology
-computation and no unconditional NonManifoldGoal are asserted. -/
+public import GS.M4Necessary
+public import GS.OriginalLocalModel
+public import Mathlib.Algebra.Category.ModuleCat.Abelian
+public import Mathlib.Algebra.Category.ModuleCat.Colimits
+public import Mathlib.AlgebraicTopology.SingularHomology.Basic
+public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
+public import Mathlib.Analysis.SpecialFunctions.Exponential
+public import Mathlib.Topology.ContinuousMap.Basic

@@ -1,11 +1,10 @@
 module
 
-public import GS.LieAction.LocalSheets
-
-@[expose] public section
-
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
-
-/-! Compact matrix groups, their actions, and stabilizer quotients.
-This entry point supplies the topological group-action construction. -/
+public import GS.CompactFibres
+public import GS.Core
+public import Mathlib.GroupTheory.GroupAction.Quotient
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.MulAction
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Order.Compact

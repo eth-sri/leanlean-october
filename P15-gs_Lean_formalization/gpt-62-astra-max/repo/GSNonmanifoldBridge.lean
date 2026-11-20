@@ -1,10 +1,9 @@
 module
 
-public import GS.NonmanifoldFinal.ConditionalGS
-
-@[expose] public section
-
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
-
-/-! CONDITIONAL bridge only. The standalone cone theorem is still an argument. -/
+public import GS.Isometric.ShuffledCS
+public import GS.M4Necessary
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
+public import Mathlib.Analysis.SpecialFunctions.Exponential
+public import Mathlib.Analysis.SpecialFunctions.Sqrt
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Inverse

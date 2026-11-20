@@ -1,11 +1,9 @@
 module
 
-public import GS.NonmanifoldCompletion.NeighbourhoodModel
-
-@[expose] public section
-
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
-
-/-! Full-family pointed neighbourhood model.
-The final topological obstruction is available through GSNonmanifoldTopology. -/
+public import GS.Isometric.ShuffledCS
+public import GS.M4Necessary
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
+public import Mathlib.Analysis.SpecialFunctions.Exponential
+public import Mathlib.Analysis.SpecialFunctions.Sqrt
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Inverse

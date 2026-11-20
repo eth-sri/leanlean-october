@@ -1,8 +1,5 @@
 module
 
-public import GS.NonmanifoldClosure.DifferentiableObstruction
-
-@[expose] public section
-
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
+public import GS.OriginalLocalModel
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Slope

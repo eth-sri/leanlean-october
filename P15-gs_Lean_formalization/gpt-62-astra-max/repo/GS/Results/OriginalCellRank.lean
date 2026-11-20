@@ -22,113 +22,75 @@ open Matrix
 open scoped BigOperators
 
 namespace GS.Results.OriginalCellRank
+open Isometric
 
-section Coordinates
+variable {α β ι κ τ : Type*} [DecidableEq α] [DecidableEq β] [Fintype ι] [Fintype κ] [Fintype τ]
 
-variable {α β ι κ τ : Type*}
-variable [DecidableEq α] [DecidableEq β] [Fintype ι] [Fintype κ] [Fintype τ]
-
-/-- Add explicit block labels to the row and column coordinates, with zero
-entries on every copy whose label disagrees with the original coordinate. -/
-def labelledMatrix (row : ι → α) (col : κ → β) (A : Matrix ι κ ℝ) :
-    Matrix (α × ι) (β × κ) ℝ :=
-  fun ai bj => if ai.1 = row ai.2 ∧ bj.1 = col bj.2 then A ai.2 bj.2 else 0
-
-/-- A factorization of the original matrix with prescribed coordinate support. -/
-def CoordinateFactorable (row : ι → α) (col : κ → β)
-    (left : τ → α) (right : τ → β) (A : Matrix ι κ ℝ) : Prop :=
-  ∃ L : Matrix ι τ ℝ, ∃ R : Matrix τ κ ℝ,
-    (∀ i t, row i ≠ left t → L i t = 0) ∧
-    (∀ t j, col j ≠ right t → R t j = 0) ∧ A = L * R
-
-theorem coordinate_iff_labelled (row : ι → α) (col : κ → β)
-    (left : τ → α) (right : τ → β) (A : Matrix ι κ ℝ) :
-    CoordinateFactorable row col left right A ↔
-      Revision.Cells.GloballyFactorable left right (labelledMatrix row col A) := by
-  classical
-  constructor
-  · rintro ⟨L, R, hL, hR, hA⟩
-    let L' : Matrix (α × ι) τ ℝ := fun ai t =>
-      if ai.1 = row ai.2 then L ai.2 t else 0
-    let R' : Matrix τ (β × κ) ℝ := fun t bj =>
-      if bj.1 = col bj.2 then R t bj.2 else 0
-    refine ⟨L', R', ?_, ?_, ?_⟩
-    · intro a i t h
-      by_cases ha : a = row i
-      · simpa [L', ha] using hL i t (fun hi => h (ha.trans hi))
-      · simp [L', ha]
-    · intro t b j h
-      by_cases hb : b = col j
-      · simpa [R', hb] using hR t j (fun hj => h (hb.trans hj))
-      · simp [R', hb]
-    · ext ⟨a, i⟩ ⟨b, j⟩
-      by_cases ha : a = row i <;> by_cases hb : b = col j <;>
-        simp [labelledMatrix, L', R', ha, hb, hA, Matrix.mul_apply]
-  · rintro ⟨L', R', hL', hR', hA⟩
-    let L : Matrix ι τ ℝ := fun i t => L' (row i, i) t
-    let R : Matrix τ κ ℝ := fun t j => R' t (col j, j)
-    refine ⟨L, R, ?_, ?_, ?_⟩
-    · intro i t h
-      exact hL' (row i) i t h
-    · intro t j h
-      exact hR' t (col j) j h
-    · ext i j
-      have h := congrArg (fun B => B (row i, i) (col j, j)) hA
-      simpa [labelledMatrix, L, R, Matrix.mul_apply] using h
+/-- Sum over the linking slots, extending by zero off the cell. -/
+private lemma extend_sum {p : τ → Prop} [DecidablePred p] {f : Subtype p → ℝ} {g : τ → ℝ}
+    (inside : ∀ t, f t = g t.val) (outside : ∀ t, ¬p t → g t = 0) : ∑ t, f t = ∑ t, g t := by
+  rw [← Fintype.sum_subtype_add_sum_subtype p g,show (∑ t : {t // ¬p t}, g t.val) = 0 from Finset.sum_eq_zero fun t _ => outside _ t.property,add_zero]
+  exact Finset.sum_congr rfl fun t _ => inside t
 
 /-- A support factorization exists exactly when every zero-padded output
 block has rank at most the number of available intermediate slots. -/
 theorem coordinate_iff_block_rank (row : ι → α) (col : κ → β)
     (left : τ → α) (right : τ → β) (A : Matrix ι κ ℝ) :
-    CoordinateFactorable row col left right A ↔
-      ∀ a b, (Matrix.of fun i j => if a = row i ∧ b = col j then A i j else 0).rank ≤
-        Fintype.card (CellRank.Cell left right a b) := by
-  rw [coordinate_iff_labelled, CellRank.global_iff_block_rank]
-  rfl
+    (∃ (L : Matrix ι τ ℝ) (R : Matrix τ κ ℝ), (∀ i t, row i ≠ left t → L i t = 0) ∧
+      (∀ t j, col j ≠ right t → R t j = 0) ∧ A = L*R) ↔
+    ∀ a b, (Matrix.of fun i j => if a = row i ∧ b = col j then A i j else 0).rank ≤
+        Fintype.card {t // a = left t ∧ b = right t} := by
+  classical
+  simp_rw [CellRank.rank_le_card_iff_factorization]
+  let slots a b := {t // a = left t ∧ b = right t}
+  constructor
+  · rintro ⟨L,R,hL,hR,rfl⟩ a b
+    refine ⟨L.submatrix id Subtype.val, R.submatrix Subtype.val id, ?_⟩
+    ext i j
+    simp only [of_apply, mul_apply, submatrix_apply, id_eq]
+    split_ifs with h
+    · exact (extend_sum (p := fun t => a = left t ∧ b = right t) (fun _ => rfl) (by grind)).symm
+    · symm; apply Finset.sum_eq_zero
+      rintro ⟨t,ht⟩ _; grind
+  · intro h
+    choose U V eq using h
+    let L : Matrix ι τ ℝ := fun i t => if row i = left t then U _ _ i ⟨t,rfl,rfl⟩ else 0
+    let R : Matrix τ κ ℝ := fun t j => if col j = right t then V _ _ ⟨t,rfl,rfl⟩ j else 0
+    refine ⟨L,R,by simp_all [L],by simp_all [R],?_⟩
+    ext i j
+    have hij := congrFun (congrFun (eq (row i) (col j)) i) j
+    simp only [of_apply, and_self, ite_true] at hij
+    refine hij.trans ?_
+    apply extend_sum (p := fun t => row i = left t ∧ col j = right t)
+    · have same a b (s : slots a b) : U a b i s * V a b s j = U _ _ i ⟨s.val,rfl,rfl⟩ * V _ _ ⟨s.val,rfl,rfl⟩ j := by rcases s with ⟨t,rfl,rfl⟩; rfl
+      exact fun t => by simpa [L,R,t.property.1,t.property.2] using same _ _ t
+    · dsimp [L,R]; grind
 
-end Coordinates
+end GS.Results.OriginalCellRank
 
-/-- One original output block, represented without choosing local indices. -/
-def block {n : ℕ} (b₁ b₂ : ℕ) (A : Mat n) (a b : ℕ) : Mat n :=
-  fun i j => if a = i.val / b₂ ∧ b = j.val / b₁ then A i j else 0
+namespace GSPalomar
+open GS GS.Isometric
 
-/-- Slots linking the chosen original output row block to its column block. -/
-abbrev Slots {n : ℕ} (b₁ b₂ : ℕ) (σ : Equiv.Perm (Fin n)) (a b : ℕ) :=
-  CellRank.Cell (fun t : Fin n => (σ t).val / b₂) (fun t : Fin n => t.val / b₁) a b
-
-theorem inA2_iff_coordinate {n : ℕ} (b₁ b₂ : ℕ)
-    (σ : Equiv.Perm (Fin n)) (A : Mat n) :
-    InA2 b₁ b₂ (permMatrix σ) A ↔
-      CoordinateFactorable (fun i : Fin n => i.val / b₂)
-        (fun j : Fin n => j.val / b₁)
-        (fun t : Fin n => (σ t).val / b₂)
-        (fun t : Fin n => t.val / b₁) A := by
+/-- Exact cell-rank criterion, including singular matrices and empty cells. -/
+theorem two_factor_rank_criterion {n : ℕ} (b₁ b₂ : ℕ)
+    (σ : Equiv.Perm (Fin n)) (A : GS.Mat n) :
+    GS.InA2 b₁ b₂ (GS.permMatrix σ) A ↔
+      ∀ a b : ℕ,
+        (Matrix.of fun i j : Fin n =>
+          if a = i.val / b₂ ∧ b = j.val / b₁ then A i j else 0).rank ≤
+        Fintype.card {t : Fin n // a = (σ t).val / b₂ ∧ b = t.val / b₁} := by
+  rw [← GS.Results.OriginalCellRank.coordinate_iff_block_rank (left := fun t => (σ t).val / b₂) (right := fun t : Fin n => t.val / b₁)]
   constructor
   · rintro ⟨B₁, B₂, hb₁, hb₂, hA⟩
     refine ⟨B₂ * permMatrix σ, B₁, ?_, ?_, hA⟩
-    · intro i t h
-      rw [mul_perm_apply]
-      exact hb₂ i (σ t) h
-    · intro t j h
-      exact hb₁ t j h.symm
+    · intro i t h; change (B₂ * perm ℝ σ) i t = 0; simpa using hb₂ i (σ t) h
+    solve_by_elim
   · rintro ⟨L, R, hL, hR, hA⟩
-    refine ⟨R, L * (permMatrix σ)ᵀ, ?_, ?_, ?_⟩
+    refine ⟨R, L * (perm ℝ σ)ᴴ, ?_, ?_, ?_⟩
+    · solve_by_elim
     · intro i j h
-      exact hR i j h.symm
-    · intro i j h
-      rw [perm_transpose, mul_perm_apply]
-      apply hL i (σ.symm j)
-      simpa only [Equiv.apply_symm_apply] using h
-    · simpa only [product2, Matrix.mul_assoc, (perm_orthogonal σ).1,
-        Matrix.one_mul] using hA
+      change (L * (perm ℝ σ)ᴴ) i j = 0
+      simp only [perm_star,mul_perm_apply]; apply hL; simpa using h
+    · change A = L * (perm ℝ σ)ᴴ * perm ℝ σ * R; simpa only [Matrix.mul_assoc,(perm_isU (𝕜 := ℝ) σ).star_cancel] using hA
 
-/-- Exact rank criterion for `GS.InA2`, with its actual permutation and original
-coordinates. There are no factorization hypotheses on the right-hand side. -/
-theorem inA2_iff_block_rank {n : ℕ} (b₁ b₂ : ℕ)
-    (σ : Equiv.Perm (Fin n)) (A : Mat n) :
-    InA2 b₁ b₂ (permMatrix σ) A ↔
-      ∀ a b, (block b₁ b₂ A a b).rank ≤ Fintype.card (Slots b₁ b₂ σ a b) := by
-  rw [inA2_iff_coordinate, coordinate_iff_block_rank]
-  rfl
-
-end GS.Results.OriginalCellRank
+end GSPalomar

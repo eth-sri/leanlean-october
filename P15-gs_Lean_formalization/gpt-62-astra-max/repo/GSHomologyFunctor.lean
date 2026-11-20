@@ -1,10 +1,6 @@
 module
 
-public import GS.NonmanifoldFinal.HomologyRetracts
-
-@[expose] public section
-
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
-
-/-! Standalone categorical homology step; no GS matrix-geometry imports. -/
+public import Mathlib.Algebra.Category.ModuleCat.Abelian
+public import Mathlib.Algebra.Category.ModuleCat.Colimits
+public import Mathlib.AlgebraicTopology.SingularHomology.Basic
+public import Mathlib.Topology.ContinuousMap.Basic
