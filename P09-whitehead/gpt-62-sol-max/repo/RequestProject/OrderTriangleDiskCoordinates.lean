@@ -34,9 +34,7 @@ def parametrization : C(Square, Triangle) where
       ring⟩
   continuous_toFun := by
     apply Continuous.subtype_mk
-    apply continuous_pi
-    intro i
-    fin_cases i <;> dsimp <;> fun_prop
+    fun_prop
 
 theorem coordinate_sum (z : Triangle) : z.val 0 + z.val 1 + z.val 2 = 1 :=
   (Fin.sum_univ_three z.val).symm.trans z.property.2
@@ -92,14 +90,14 @@ theorem parametrization_positive_iff (z : Square) :
   constructor
   · intro h
     have h₀ : 0 < 1 - (z 1 : ℝ) := h 0
-    have h₁ : 0 < (z 1 : ℝ) * (1 - (z 0 : ℝ)) := h 1
-    have h₂ : 0 < (z 1 : ℝ) * (z 0 : ℝ) := h 2
-    have hxy : 0 < (z 1 : ℝ) ∧ 0 < (z 0 : ℝ) :=
+    have h₁  := h 1
+    have h₂  := h 2
+    have hxy  :=
       (mul_pos_iff.mp h₂).resolve_right
         (fun hneg => (not_lt_of_ge (z 1).property.1) hneg.1)
     have hy := hxy.1
     have hx := hxy.2
-    have hx' : 0 < 1 - (z 0 : ℝ) := (mul_pos_iff_of_pos_left hy).mp h₁
+    have hx'  := (mul_pos_iff_of_pos_left hy).mp h₁
     intro i
     fin_cases i <;> dsimp <;> constructor <;> linarith
   · intro h i
@@ -110,13 +108,13 @@ theorem parametrization_positive_iff (z : Square) :
 
 theorem parametrization_injective_off_collapsed_side {z w : Square}
     (hz : (z 1 : ℝ) ≠ 0) (h : parametrization z = parametrization w) : z = w := by
-  have hy : (z 1 : ℝ) = (w 1 : ℝ) := by
+  have hy : (z 1) = (w 1 : ℝ) := by
     have he := congrArg (fun t : Triangle => t.val 0) h
-    change 1 - (z 1 : ℝ) = 1 - (w 1 : ℝ) at he
+    change 1 - (z 1) = 1 - (w 1 : ℝ) at he
     linarith
-  have hx : (z 0 : ℝ) = (w 0 : ℝ) := by
+  have hx : (z 0) = (w 0 : ℝ) := by
     have he := congrArg (fun t : Triangle => t.val 2) h
-    change (z 1 : ℝ) * (z 0 : ℝ) = (w 1 : ℝ) * (w 0 : ℝ) at he
+    change (z 1) * (z 0) = (w 1 : ℝ) * (w 0) at he
     rw [← hy] at he
     exact (mul_left_cancel₀ hz) he
   funext i
@@ -133,11 +131,7 @@ def squareBallHomeomorph : ClosedUnitBall (Fin 2 → ℝ) ≃ₜ Square where
     constructor <;> linarith⟩
   invFun z := ⟨fun i => 2 * (z i : ℝ) - 1, by
     apply (pi_norm_le_iff_of_nonneg zero_le_one).mpr
-    intro i
-    rw [Real.norm_eq_abs]
-    apply abs_le.mpr
-    have hi := (z i).property
-    constructor <;> linarith [hi.1, hi.2]⟩
+    grind [Real.norm_eq_abs]⟩
   left_inv x := by
     apply Subtype.ext
     funext i
@@ -166,7 +160,7 @@ theorem squareBallHomeomorph_interior (x : ClosedUnitBall (Fin 2 → ℝ)) :
     change 0 < (x.val i + 1) / 2 ∧ (x.val i + 1) / 2 < 1 at hi
     constructor <;> linarith [hi.1, hi.2]
   · intro h i
-    have hi := abs_lt.mp (by simpa only [Real.norm_eq_abs] using h i)
+    have hi := abs_lt.mp (by tauto)
     change 0 < (x.val i + 1) / 2 ∧ (x.val i + 1) / 2 < 1
     constructor <;> linarith [hi.1, hi.2]
 

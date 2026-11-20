@@ -14,9 +14,6 @@ group classes. Pending Lean verification. -/
 noncomputable section
 open scoped Classical unitInterval Topology
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ContinuousEdgeWords
 
@@ -98,13 +95,10 @@ theorem concat_homotopic_realize_ofFn (n : ℕ)
   induction n with
   | zero =>
     rw [Path.concat_zero]
-    have he : List.ofFn g = ([] : List (E × Bool)) := by simp only [List.ofFn_zero]
-    rw [realize_congr_list src tgt v edge (Comb.isPath_ofFn src tgt 0 a g hs ht)
-      (show Comb.IsPath src tgt [] (a 0) (a (Fin.last 0)) from rfl) he]
-    exact Path.Homotopic.refl _
+    tauto
   | succ n ih =>
     rw [Path.concat_succ]
-    have he : List.ofFn g = List.ofFn (fun i : Fin n => g i.castSucc) ++ [g (Fin.last n)] := by
+    have he : List.ofFn g = List.ofFn (fun i  => g i.castSucc) ++ [g (Fin.last n)] := by
       rw [List.ofFn_succ', List.concat_eq_append]
     rw [realize_congr_list src tgt v edge (Comb.isPath_ofFn src tgt (n + 1) a g hs ht)
       ((Comb.isPath_ofFn src tgt n (a ∘ Fin.castSucc) (fun i => g i.castSucc)
@@ -116,7 +110,7 @@ theorem concat_homotopic_realize_ofFn (n : ℕ)
       (fun i => hs i.castSucc) (fun i => ht i.castSucc)
       (fun i => F i.castSucc) (fun i => hF i.castSucc)).hcomp (hF (Fin.last n))).trans
       (realize_append src tgt v edge
-        (List.ofFn (fun i : Fin n => g i.castSucc)) [g (Fin.last n)]
+        (List.ofFn (fun i  => g i.castSucc)) [g (Fin.last n)]
         (Comb.isPath_ofFn src tgt n (a ∘ Fin.castSucc) (fun i => g i.castSucc)
           (fun i => hs i.castSucc) (fun i => ht i.castSucc))
         ⟨hs (Fin.last n), ht (Fin.last n)⟩)

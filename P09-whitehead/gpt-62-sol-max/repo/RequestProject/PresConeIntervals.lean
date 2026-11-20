@@ -37,17 +37,14 @@ theorem presPos_le_apex_iff (j : J) (p : PresPos w) :
   constructor
   · intro h
     cases p with
-    | inr j' => exact Or.inl (congrArg Sum.inr h)
+    | inr j' => tauto
     | inl p =>
       obtain ⟨r, ⟨k, t, hk, rfl⟩, hpr⟩ := h
       cases p with
       | inl r => exact hpr.elim
       | inr c =>
         have hc := tCirc_valid_down w hpr hk
-        obtain ⟨j', k', t'⟩ := c
-        change j' = j ∧ k' < (w j).length at hc
-        obtain ⟨rfl, hc⟩ := hc
-        exact Or.inr ⟨k', t', hc, rfl⟩
+        aesop
   · rintro (rfl | ⟨k, t, hk, rfl⟩)
     · exact le_refl _
     · exact iCirc_le_apexOf w t hk
@@ -64,10 +61,7 @@ theorem presPos_lt_apex_iff (j : J) (p : PresPos w) :
     exact Sum.inl_ne_inr
 
 theorem iCirc_strictMono : StrictMono (iCirc w) := by
-  intro x y h
-  apply lt_of_le_of_ne ((iCirc_monotone w) h.le)
-  intro he
-  exact (ne_of_lt h) (Sum.inr.inj (Sum.inl.inj he))
+  solve_by_elim
 
 /-- The only strict circle edges are the four incidences for a valid letter position. -/
 theorem tCirc_strict_edge_cases (e : StrictOrdEdge (TCirc w)) :
@@ -85,14 +79,6 @@ theorem tCirc_strict_edge_cases (e : StrictOrdEdge (TCirc w)) :
   obtain ⟨hj, hk', htags⟩ := hl
   subst j'
   refine ⟨j, k', hk', ?_⟩
-  rcases htags with ⟨hs, hs', hk⟩ | ⟨hs, hs', hk⟩ | ⟨hs, hs', hk⟩ | ⟨hs, hs', hk⟩
-  · subst s; subst s'; subst k
-    exact Or.inl rfl
-  · subst s; subst s'; subst k
-    exact Or.inr (Or.inl rfl)
-  · subst s; subst s'; subst k
-    exact Or.inr (Or.inr (Or.inl rfl))
-  · subst s; subst s'; subst k
-    exact Or.inr (Or.inr (Or.inr rfl))
+  aesop
 
 end FiniteChains.PresModel

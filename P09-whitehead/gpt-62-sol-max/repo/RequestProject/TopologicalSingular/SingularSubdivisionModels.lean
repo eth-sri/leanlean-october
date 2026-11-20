@@ -62,7 +62,6 @@ theorem homotopyModel_identity (n : ℕ) :
   have he := congrArg (realize (convex_stdSimplex ℝ (Fin (n + 2))) (n + 1))
     (VertexChains.subdivideHomotopy_identity_succ
       (center (convex_stdSimplex ℝ (Fin (n + 2)))) n (generator (n + 1)))
-  rw [map_add, map_sub, realize_boundary, homotopy_on_boundary] at he
-  simpa only [homotopyModel, model, generator, realize_single, affineEval_standardVertices] using he
+  grind [realize_boundary, homotopy_on_boundary, homotopyModel, model, generator, realize_single, affineEval_standardVertices]
 
 end FiniteChains.SingularSubdivision

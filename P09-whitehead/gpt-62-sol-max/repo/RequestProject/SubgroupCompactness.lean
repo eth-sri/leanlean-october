@@ -48,9 +48,6 @@ def toSubgroup (f : G → Bool) (hf : f ∈ NSSet G) : Subgroup G where
   mul_mem' ha hb := hf.2.1 _ _ ha hb
   inv_mem' ha := hf.2.2.1 _ ha
 
-theorem mem_toSubgroup {f : G → Bool} (hf : f ∈ NSSet G) (g : G) :
-    g ∈ toSubgroup f hf ↔ f g = true := Iff.rfl
-
 theorem toSubgroup_normal {f : G → Bool} (hf : f ∈ NSSet G) :
     (toSubgroup f hf).Normal :=
   ⟨fun n hn g => hf.2.2.2 g n hn⟩
@@ -63,47 +60,28 @@ theorem isClosed_of_finite_determination (P : (G → Bool) → Prop) (F : Finset
   rw [← isOpen_compl_iff, isOpen_iff_forall_mem_open]
   intro f hf
   refine ⟨{f' | ∀ g ∈ F, f' g = f g}, ?_, ?_, fun g _ => rfl⟩
-  · intro f' hf' hP
-    exact hf (hF f' f hf' hP)
+  · tauto
   · have hset : {f' : G → Bool | ∀ g ∈ F, f' g = f g}
-        = ⋂ g ∈ F, (fun h : G → Bool => h g) ⁻¹' {f g} := by
+        = ⋂ g ∈ F, (fun h  => h g) ⁻¹' {f g} := by
       ext f'; simp
     rw [hset]
     exact isOpen_biInter_finset fun g _ => (isOpen_discrete _).preimage (continuous_apply g)
 
 theorem isClosed_NSSet : IsClosed (NSSet G) := by
   classical
-  have h1 : IsClosed {f : G → Bool | f 1 = true} :=
-    isClosed_of_finite_determination _ {1} (by
-      intro f f' hff' hf
-      simpa [← hff' 1 (by simp)] using hf)
-  have h2 : ∀ a b : G, IsClosed {f : G → Bool | f a = true → f b = true → f (a * b) = true} := by
-    intro a b
-    refine isClosed_of_finite_determination _ {a, b, a * b} ?_
-    intro f f' hff' hf ha hb
-    rw [← hff' _ (by simp)]
-    exact hf (by rw [hff' _ (by simp)]; exact ha) (by rw [hff' _ (by simp)]; exact hb)
-  have h3 : ∀ a : G, IsClosed {f : G → Bool | f a = true → f a⁻¹ = true} := by
-    intro a
-    refine isClosed_of_finite_determination _ {a, a⁻¹} ?_
-    intro f f' hff' hf ha
-    rw [← hff' _ (by simp)]
-    exact hf (by rw [hff' _ (by simp)]; exact ha)
-  have h4 : ∀ g a : G, IsClosed {f : G → Bool | f a = true → f (g * a * g⁻¹) = true} := by
-    intro g a
-    refine isClosed_of_finite_determination _ {a, g * a * g⁻¹} ?_
-    intro f f' hff' hf ha
-    rw [← hff' _ (by simp)]
-    exact hf (by rw [hff' _ (by simp)]; exact ha)
-  have hset : NSSet G = {f : G → Bool | f 1 = true}
-      ∩ ((⋂ p : G × G, {f : G → Bool | f p.1 = true → f p.2 = true → f (p.1 * p.2) = true})
-      ∩ ((⋂ a : G, {f : G → Bool | f a = true → f a⁻¹ = true})
-      ∩ (⋂ p : G × G, {f : G → Bool | f p.2 = true → f (p.1 * p.2 * p.1⁻¹) = true}))) := by
-    ext f
-    simp only [NSSet, Set.mem_setOf_eq, Set.mem_inter_iff, Set.mem_iInter, Prod.forall]
-  rw [hset]
-  exact h1.inter ((isClosed_iInter fun p : G × G => h2 p.1 p.2).inter
-    ((isClosed_iInter fun a => h3 a).inter (isClosed_iInter fun p : G × G => h4 p.1 p.2)))
+  have hImp (a b : G) : IsClosed {f : G → Bool | f a = true → f b = true} := by
+    apply isClosed_of_finite_determination _ {a, b}
+    intro f f' he h
+    simpa only [he a (by simp), he b (by simp)] using h
+  have hMul (a b : G) : IsClosed {f : G → Bool | f a = true → f b = true → f (a * b) = true} := by
+    apply isClosed_of_finite_determination _ {a, b, a * b}
+    intro f f' he h
+    simpa only [he a (by simp), he b (by simp), he (a * b) (by simp)] using h
+  simp only [NSSet, Set.ofPred_and, Set.ofPred_forall]
+  exact (isClosed_eq (continuous_apply 1) continuous_const).inter
+    ((isClosed_iInter fun a => isClosed_iInter (hMul a)).inter
+      ((isClosed_iInter fun a => hImp a a⁻¹).inter
+        (isClosed_iInter fun g => isClosed_iInter fun a => hImp a (g * a * g⁻¹))))
 
 /-- **The compactness step of Section 2.**  If every finite family of finitely determined
 requirements is satisfied by some normal subgroup, then all requirements are satisfied
@@ -114,65 +92,22 @@ theorem exists_normal_subgroup_forall {ι : Type*} (Sat : Subgroup G → ι → 
     ∃ N : Subgroup G, N.Normal ∧ ∀ v, Sat N v := by
   classical
   choose F hF using hdet
-  -- the closed set of indicator functions satisfying the requirement `v`
-  set B : ι → Set (G → Bool) := fun v =>
-    NSSet G ∩ {f | ∀ N : Subgroup G, (∀ g, g ∈ N ↔ f g = true) → Sat N v} with hB
-  have hBclosed : ∀ v, IsClosed (B v) := by
-    intro v
-    rw [← isOpen_compl_iff, isOpen_iff_forall_mem_open]
-    intro f hf
-    by_cases hfZ : f ∈ NSSet G
-    · have hnot : ¬ ∀ N : Subgroup G, (∀ g, g ∈ N ↔ f g = true) → Sat N v := fun h => hf ⟨hfZ, h⟩
-      push Not at hnot
-      obtain ⟨N, hNmem, hNsat⟩ := hnot
-      refine ⟨{f' | ∀ g ∈ F v, f' g = f g}, ?_, ?_, fun g _ => rfl⟩
-      · intro f' hf' hf'B
-        obtain ⟨hf'Z, hf'sat⟩ := hf'B
-        have hNN' : Sat N v ↔ Sat (toSubgroup f' hf'Z) v := by
-          refine hF v N (toSubgroup f' hf'Z) ?_
-          intro g hg
-          rw [hNmem g, mem_toSubgroup hf'Z g, hf' g hg]
-        exact hNsat (hNN'.mpr (hf'sat _ (mem_toSubgroup hf'Z)))
-      · have hset : {f' : G → Bool | ∀ g ∈ F v, f' g = f g}
-            = ⋂ g ∈ F v, (fun h : G → Bool => h g) ⁻¹' {f g} := by
-          ext f'; simp
-        rw [hset]
-        exact isOpen_biInter_finset fun g _ => (isOpen_discrete _).preimage (continuous_apply g)
-    · exact ⟨(NSSet G)ᶜ, fun f' hf' hf'B => hf' hf'B.1, isClosed_NSSet.isOpen_compl, hfZ⟩
-  -- the indicator function of a normal subgroup lies in the corresponding closed sets
-  have hmemZ : ∀ N : Subgroup G, N.Normal → (fun g => decide (g ∈ N)) ∈ NSSet G := by
-    intro N hN
-    refine ⟨by simp, ?_, ?_, ?_⟩
-    · intro a b ha hb
-      simp only [decide_eq_true_eq] at ha hb ⊢
-      exact N.mul_mem ha hb
-    · intro a ha
-      simp only [decide_eq_true_eq] at ha ⊢
-      exact N.inv_mem ha
-    · intro g a ha
-      simp only [decide_eq_true_eq] at ha ⊢
-      exact hN.conj_mem a ha g
-  have hmemB : ∀ (N : Subgroup G), N.Normal → ∀ v, Sat N v →
-      (fun g => decide (g ∈ N)) ∈ B v := by
-    intro N hN v hNv
-    refine ⟨hmemZ N hN, ?_⟩
-    intro N' hN'
-    have : N' = N := by
-      ext g
-      simpa using hN' g
-    rwa [this]
-  -- compactness
-  have hne : (NSSet G ∩ ⋂ v, B v).Nonempty := by
-    by_contra hempty
-    rw [Set.not_nonempty_iff_eq_empty, ← Set.disjoint_iff_inter_eq_empty] at hempty
-    obtain ⟨u, hu⟩ := isClosed_NSSet.isCompact.elim_finite_subfamily_closed B hBclosed hempty
-    obtain ⟨N, hN, hNu⟩ := hfin u
-    have hmem : (fun g => decide (g ∈ N)) ∈ NSSet G ∩ ⋂ v ∈ u, B v :=
-      ⟨hmemZ N hN, Set.mem_iInter₂.mpr fun v hv => hmemB N hN v (hNu v hv)⟩
-    exact absurd hmem.2 (Set.disjoint_left.mp hu hmem.1)
-  obtain ⟨f, hfZ, hfB⟩ := hne
-  refine ⟨toSubgroup f hfZ, toSubgroup_normal hfZ, fun v => ?_⟩
-  exact (Set.mem_iInter.mp hfB v).2 _ (mem_toSubgroup hfZ)
+  -- Extend each requirement to all indicator functions by testing only its finite coordinates.
+  let B (v : ι) : Set (G → Bool) := {f | ∃ N : Subgroup G,
+    (∀ g ∈ F v, g ∈ N ↔ f g = true) ∧ Sat N v}
+  have hB (v : ι) : IsClosed (B v) := by
+    apply isClosed_of_finite_determination _ (F v)
+    rintro f f' he ⟨N, hN, hs⟩
+    exact ⟨N, fun g hg => he g hg ▸ hN g hg, hs⟩
+  obtain ⟨f, hf, hBf⟩ := isClosed_NSSet.isCompact.inter_iInter_nonempty B hB (fun U => by
+    obtain ⟨N, hN, hU⟩ := hfin U
+    refine ⟨fun g => decide (g ∈ N), ?_, Set.mem_iInter₂.mpr (fun v hv => ?_)⟩
+    · simp only [NSSet, Set.mem_setOf_eq, decide_eq_true_eq]
+      exact ⟨N.one_mem, fun _ _ => N.mul_mem, fun _ => N.inv_mem, fun g a ha => hN.conj_mem a ha g⟩
+    · exact ⟨N, by simp, hU v hv⟩)
+  refine ⟨toSubgroup f hf, toSubgroup_normal hf, fun v => ?_⟩
+  obtain ⟨N, hN, hs⟩ := Set.mem_iInter.mp hBf v
+  exact (hF v N (toSubgroup f hf) hN).1 hs
 
 end Compactness
 

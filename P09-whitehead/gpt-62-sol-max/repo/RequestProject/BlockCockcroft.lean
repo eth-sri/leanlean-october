@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.CockcroftExtStep
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -25,9 +26,6 @@ retraction, so the base change statement of `RequestProject/BaseChangeCycles.lea
 block coordinates as a combination of images of Fox cycles of `ρ`, whose augmentations vanish.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -50,7 +48,7 @@ structure IsBlock : Prop where
   /-- an old relator is read as the same word -/
   rel_eq : ∀ j, τ (g j) = FreeGroup.map f (ρ j)
   /-- no relator outside the block involves a generator of the block -/
-  fox_outside : ∀ (i : α) (l : L), l ∉ Set.range g → @fox γ _ (f i) (τ l) = 0
+  fox_outside : ∀ (i : α) (l : L), l ∉ Set.range g → fox (f i) (τ l) = 0
   /-- the retraction restricts to the identity on the block -/
   retract_map : ∀ w : FreeGroup α, r (FreeGroup.map f w) = w
   /-- the retraction carries relators to relators -/
@@ -63,16 +61,12 @@ include hb
 theorem IsBlock.relSub_le_comap : relSub ρ ≤ (relSub τ).comap (FreeGroup.map f) := by
   refine Subgroup.normalClosure_le_normal ?_
   rintro _ ⟨j, rfl⟩
-  refine Subgroup.mem_comap.2 ?_
-  rw [← hb.rel_eq j]
-  exact Subgroup.subset_normalClosure (Set.mem_range_self _)
+  simpa [← hb.rel_eq j] using! Subgroup.subset_normalClosure (Set.mem_range_self _)
 
 /-- The map of fundamental groups induced by the inclusion of the block. -/
 def IsBlock.hom : PresGroup ρ →* PresGroup τ :=
   QuotientGroup.map _ _ (FreeGroup.map f) hb.relSub_le_comap
 
-@[simp] theorem IsBlock.hom_mk (w : FreeGroup α) :
-    hb.hom (QuotientGroup.mk w) = QuotientGroup.mk (FreeGroup.map f w) := rfl
 
 theorem IsBlock.relSub_le_comap_retract : relSub τ ≤ (relSub ρ).comap r := by
   refine Subgroup.normalClosure_le_normal ?_
@@ -89,19 +83,8 @@ noncomputable def IsBlock.ringHom :
   MonoidAlgebra.mapDomainRingHom ℤ hb.hom
 
 theorem IsBlock.quot_freeRingMap (x : FreeGroupRing α) :
-    quotRingHom ℤ (relSub τ) (freeRingMap f x) = hb.ringHom (quotRingHom ℤ (relSub ρ) x) := by
-  induction x using MonoidAlgebra.induction_linear with
-  | zero => simp
-  | add x y hx hy => simp only [map_add, hx, hy]
-  | single w m =>
-      show quotRingHom ℤ (relSub τ)
-          (MonoidAlgebra.mapDomain (FreeGroup.map f) (MonoidAlgebra.single w m)) = _
-      rw [MonoidAlgebra.mapDomain_single, quotRingHom_single]
-      show _ = MonoidAlgebra.mapDomain hb.hom (quotRingHom ℤ (relSub ρ) (MonoidAlgebra.single w m))
-      rw [quotRingHom_single, MonoidAlgebra.mapDomain_single, IsBlock.hom_mk]
-
-/-- The image of the block group inside the ambient group. -/
-abbrev IsBlock.range : Subgroup (PresGroup τ) := hb.hom.range
+    quotRingHom ℤ (relSub τ) (freeRingMap f x) = hb.ringHom (quotRingHom ℤ (relSub ρ) x) :=
+  (quotRingHom_natural (relSub τ) (FreeGroup.map f) hb.hom rfl x).symm
 
 section FoxMatrix
 
@@ -110,14 +93,14 @@ variable [DecidableEq α]
 /-- Inside the block the Fox matrix of `τ` is the image of the Fox matrix of `ρ`. -/
 theorem IsBlock.foxMatrix_block (i : α) (j : J) :
     foxMatrixPres τ (f i) (g j) = hb.ringHom (foxMatrixPres ρ i j) := by
-  have hfox : @fox γ _ (f i) (τ (g j)) = freeRingMap f (fox i (ρ j)) := by
+  have hfox : fox (f i) (τ (g j)) = freeRingMap f (fox i (ρ j)) := by
     rw [hb.rel_eq j]
     exact fox_map f hb.gen_injective i (ρ j)
   show quotRingHom ℤ (relSub τ) (fox (f i) (τ (g j))) = _
   rw [hfox, hb.quot_freeRingMap]
   rfl
 
-variable [Fintype J] [Fintype L]
+
 
 end FoxMatrix
 

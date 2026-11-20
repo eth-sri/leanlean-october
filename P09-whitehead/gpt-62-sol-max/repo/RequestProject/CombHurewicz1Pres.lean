@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.FinsuppBasis
+
 public import RequestProject.CombPresPi1
 
 @[expose] public section
@@ -39,12 +41,9 @@ variable {α : Type u} [DecidableEq α] {J : Type u}
 
 /-- The exponent-sum vector of a word in the free group. -/
 noncomputable def expVec : FreeGroup α →* Multiplicative (α →₀ ℤ) :=
-  FreeGroup.lift fun a => Multiplicative.ofAdd (Finsupp.single a (1 : ℤ))
+  FreeGroup.lift fun a => Multiplicative.ofAdd (Finsupp.single a 1)
 
-omit [DecidableEq α] in
-@[simp] theorem expVec_of (a : α) :
-    expVec (FreeGroup.of a) = Multiplicative.ofAdd (Finsupp.single a (1 : ℤ)) := by
-  simp [expVec]
+
 
 omit [DecidableEq α] in
 theorem pathChain_append (l l' : List (α × Bool)) :
@@ -56,14 +55,8 @@ theorem expVec_single_germ (x : α × Bool) :
     expVec (FreeGroup.mk [x]) = Multiplicative.ofAdd (pathChain [x]) := by
   obtain ⟨a, b⟩ := x
   cases b
-  · have h1 : FreeGroup.mk [(a, false)] = (FreeGroup.of a)⁻¹ := rfl
-    rw [h1, map_inv, expVec_of]
-    show Multiplicative.ofAdd (-Finsupp.single a (1 : ℤ)) = _
-    rw [pathChain_cons]
-    simp
-  · have h1 : FreeGroup.mk [(a, true)] = FreeGroup.of a := rfl
-    rw [h1, expVec_of, pathChain_cons]
-    simp
+  · rfl
+  · rfl
 
 omit [DecidableEq α] in
 /-- The exponent-sum vector of a word is the one-chain carried by the edge path spelling
@@ -83,10 +76,9 @@ variable (ρ : J → FreeGroup α)
 
 @[simp] theorem bdry1_presComplex (c : α →₀ ℤ) : bdry1 (presComplex ρ) c = 0 := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c₁ c₂ h₁ h₂ => rw [map_add, h₁, h₂, add_zero]
-  | single a n => simp [bdry1]
+  finsupp_basis c
+  intro a
+  simp [bdry1]
 
 theorem bdry2_pres_single (j : J) :
     bdry2 (presComplex ρ) (Finsupp.single j (1 : ℤ))

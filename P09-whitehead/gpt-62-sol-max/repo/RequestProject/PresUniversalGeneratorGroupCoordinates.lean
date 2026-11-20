@@ -32,15 +32,9 @@ noncomputable def presUniversalMidpointGroupEquiv :
     ⟨(p.val, q.2), p.property⟩
   left_inv p := by
     apply Subtype.ext
-    apply Prod.ext
-    · exact congrArg Subtype.val
-        ((presUniversalRoseMidpointFibreEquiv ρ w hw hpos p.val.2).symm_apply_apply
-          ⟨p.val.1, p.property⟩)
-    · rfl
+    simp
   right_inv q := by
-    apply Prod.ext
-    · exact (presUniversalRoseMidpointFibreEquiv ρ w hw hpos q.2).apply_symm_apply q.1
-    · rfl
+    grind
 
 /-- Selected actual universal rose edges have the same genuine group-generator coordinates. -/
 noncomputable def presUniversalGeneratorGroupEquiv :

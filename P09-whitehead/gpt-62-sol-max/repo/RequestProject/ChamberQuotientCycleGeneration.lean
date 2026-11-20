@@ -9,9 +9,7 @@ public import RequestProject.StrictChamberInjection
 @[expose] public section
 
 /-! Genuine universal-cover two-cycle generation in the quotient chamber model. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

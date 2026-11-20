@@ -12,9 +12,6 @@ original-cell models. The input is exactly connectedness of the given
 CW subcomplexes. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment
@@ -30,7 +27,6 @@ The unseeded construction obtains one from connectedness. -/
 class TreeChoice where
   initial : Option (Comb.SpanningTree (subcomplexGraph (C 0)))
 
-instance (priority := low) defaultTreeChoice : TreeChoice K C := ⟨none⟩
 
 variable [TreeChoice K C]
 
@@ -81,13 +77,10 @@ theorem boundedGraphs_have_compatible_trees :
   let v : (boundedGraph K C 0).V := Classical.choice inferInstance
   obtain ⟨R₀, hroot⟩ := Comb.SpanningTree.exists_of_isConnected
     (graph_connected K C hC hconn (boundedStage n 0)) v
-  let T₀ : Comb.SpanningTree (boundedGraph K C 0) :=
+  let T₀  :=
     (TreeChoice.initial (K := K) (C := C)).getD R₀
   have hseed : ∀ S, TreeChoice.initial (K := K) (C := C) = some S → T₀ = S := by
-    intro S hS
-    dsimp only [T₀]
-    rw [hS]
-    rfl
+    intro S hS; simp [T₀, hS, Option.getD]
   obtain ⟨T, hT₀, hT⟩ := Comb.SpanningTree.exists_compatible_trees
     (boundedGraph K C) (boundedGraphInclusion K C hC)
     (fun r => graph_connected K C hC hconn (boundedStage n r))

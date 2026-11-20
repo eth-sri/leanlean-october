@@ -46,12 +46,10 @@ theorem boundary_pathSimplex {a b : X} (γ : Path a b) (r : ℤ) :
       Finsupp.single (ContinuousMap.const _ b) r - Finsupp.single (ContinuousMap.const _ a) r := by
   rw [boundary_single]
   rw [Fin.sum_univ_two]
-  change (1 : ℤ) • Finsupp.single (face 0 (pathSimplex γ)) r +
-    (-1 : ℤ) • Finsupp.single (face 1 (pathSimplex γ)) r = _
-  rw [one_smul, neg_smul, one_smul, face_pathSimplex_zero, face_pathSimplex_one, sub_eq_add_neg]
+  aesop
 
 noncomputable def pathCone [PathConnectedSpace X] (root : X) : Chain X 0 →ₗ[ℤ] Chain X 1 :=
-  Finsupp.linearCombination ℤ (fun σ : Simplex X 0 =>
+  Finsupp.linearCombination ℤ (fun σ  =>
     Finsupp.single (pathSimplex (PathConnectedSpace.somePath root (zeroSimplexEquiv σ))) 1)
 
 theorem pathCone_single [PathConnectedSpace X] (root : X) (σ : Simplex X 0) (a : ℤ) :
@@ -76,9 +74,9 @@ theorem ker_augmentation_eq_range_boundary [PathConnectedSpace X] :
     LinearMap.ker (augmentation (X := X)) = LinearMap.range (boundary 0) := by
   apply le_antisymm
   · intro c hc
-    let root : X := Classical.arbitrary X
+    let root  := Classical.arbitrary X
     refine ⟨pathCone root c, ?_⟩
-    rw [boundary_pathCone, show augmentation c = 0 from hc, zero_smul, sub_zero]
+    rw [boundary_pathCone, hc, zero_smul, sub_zero]
   · rintro c ⟨d, rfl⟩
     exact augmentation_boundary d
 

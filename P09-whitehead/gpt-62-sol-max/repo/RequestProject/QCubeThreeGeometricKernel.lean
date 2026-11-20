@@ -21,7 +21,6 @@ theorem qThreeFace_cycle_coefficients (c : QCube A) (u v w : V)
   apply Finsupp.mapDomain_injective
     (qThreeEdge_injective c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
       (Ne.symm hvw.ne) hs)
-  rw [Finsupp.mapDomain_zero]
   exact (qThreeFace_boundary_naturality c u v w huv hvw hs r).symm.trans hr
 
 end FiniteChains.Davis

@@ -8,13 +8,22 @@ public import RequestProject.NamedPresentationRelativeBoundary
 @[expose] public section
 
 /-! Exact relative boundary of a genuinely substituted finite genus spine. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb BlockFamily
 open scoped Classical
+
+section
+variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
+  (q : ℕ) [NeZero q] (u : Fin q × Bool → FreeGroup α)
+
+/-- The relative cycle condition: the substituted boundary vanishes on the internal generators. -/
+noncomputable abbrev SpineInternalCycle (β : SpineCoefficients ρ q u) : Prop :=
+  ∀ z : SpinePresentationGen q,
+    (∑ m, β m * foxMatrixPres (spineReplacementPres ρ q u)
+      (Sum.inr ⟨PUnit.unit, z⟩) (Sum.inr ⟨PUnit.unit, m⟩)) = 0
+
+end
 
 variable (q₀ : ℕ) [NeZero q₀]
 
@@ -36,7 +45,7 @@ theorem spineReorderHom_coeff (x : FreeGroupRing (NamedSpineGen q₀)) :
         (QuotientGroup.mk' (relSub (namedSpinePresentation q₀))) x) =
     MonoidAlgebra.mapDomainRingHom ℤ (QuotientGroup.mk' (relSub (markedSpineBeta q₀)))
       (MonoidAlgebra.mapDomainRingHom ℤ (FreeGroup.map Sum.swap) x)
-  simp only [BlockMor.mapDomainRingHom_comp']
+  simp only [MonoidAlgebra.mapDomainRingHom_apply_comp]
   congr 1
 
 theorem spineReorderHom_fox_internal (z : SpinePresentationGen q₀) (m : NamedSpineRel q₀) :
@@ -54,29 +63,28 @@ variable {A Jr S : Type} (ρ : Jr ⊕ S → FreeGroup A)
 /-- The constructed receiver from the genuine named spine into the actual
 simultaneously substituted group. No injectivity of this receiver is asserted. -/
 noncomputable def familySpineHom (s : S) : PresGroup (namedSpinePresentation (q s)) →*
-    PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u)) :=
+    PresGroup (spineFamilyPres ρ q u) :=
   (markedBlockHom ρ u (fun s => markedSpineBeta (q s)) s).comp (spineReorderHom (q s))
 
 set_option maxHeartbeats 500000 in
 theorem familySpine_matrix_internal (s : S) (z : SpinePresentationGen (q s))
     (m : NamedSpineRel (q s)) :
-    foxMatrixPres (substPresF ρ (familyFiniteSpineWordBlock q u))
+    foxMatrixPres (spineFamilyPres ρ q u)
       (Sum.inr ⟨s, z⟩) (Sum.inr ⟨s, m⟩) =
     MonoidAlgebra.mapDomainRingHom ℤ (familySpineHom ρ q u s)
       (foxMatrixPres (namedSpinePresentation (q s)) (Sum.inl z) m) := by
   have h := foxMatrix_markedBlock_internal (Z := fun s => SpinePresentationGen (q s))
     ρ u (fun s => markedSpineBeta (q s)) s z m
-  rw [← spineReorderHom_fox_internal, BlockMor.mapDomainRingHom_comp'] at h
-  convert h using 1 <;>
-    simp only [familyFiniteSpineWordBlock, finiteSpineWordBlock, blockSubst, familySpineHom] <;> rfl
+  rw [← spineReorderHom_fox_internal, MonoidAlgebra.mapDomainRingHom_apply_comp] at h
+  solve_by_elim
 
 /-- The actual internal Fox boundary equals the boundary of the named spine
 over precisely the group ring of the simultaneous substitution. -/
 theorem familySpine_internalBoundary (s : S)
     (β : NamedSpineRel (q s) → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u))))
+      (PresGroup (spineFamilyPres ρ q u)))
     (z : SpinePresentationGen (q s)) :
-    (∑ m, β m * foxMatrixPres (substPresF ρ (familyFiniteSpineWordBlock q u))
+    (∑ m, β m * foxMatrixPres (spineFamilyPres ρ q u)
       (Sum.inr ⟨s, z⟩) (Sum.inr ⟨s, m⟩)) =
     NamedPresentation.receivedFoxBoundary (spinePresentation (q s))
       (spinePresentationMarkedWord (q s)) (familySpineHom ρ q u s) β (Sum.inl z) := by
@@ -88,9 +96,9 @@ theorem familySpine_internalBoundary (s : S)
 in its original spine presentation, with the full group-ring coefficients. -/
 theorem familySpine_internal_zero_iff (s : S)
     (β : NamedSpineRel (q s) → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u)))) :
+      (PresGroup (spineFamilyPres ρ q u))) :
     (∀ z : SpinePresentationGen (q s),
-      (∑ m, β m * foxMatrixPres (substPresF ρ (familyFiniteSpineWordBlock q u))
+      (∑ m, β m * foxMatrixPres (spineFamilyPres ρ q u)
         (Sum.inr ⟨s, z⟩) (Sum.inr ⟨s, m⟩)) = 0) ↔
     ∀ z : SpinePresentationGen (q s),
       (∑ j, β (Sum.inl j) * NamedPresentation.receivedWordCoefficientMap

@@ -32,8 +32,6 @@ open scoped Topology Topology.Homotopy unitInterval
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
@@ -45,18 +43,8 @@ variable {d : ℕ} {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
 def cubeFace {d : ℕ} (i : Fin (d + 1)) (a : I) : C(I^Fin d, I^Fin (d + 1)) where
   toFun t := i.insertNth a t
   continuous_toFun := by
-    apply continuous_pi
-    intro j
-    refine Fin.succAboveCases i ?_ (fun k => ?_) j
-    · simp only [Fin.insertNth_apply_same]
-      exact continuous_const
-    · simp only [Fin.insertNth_apply_succAbove]
-      exact continuous_apply k
+    fun_prop
 
-@[simp]
-theorem cubeFace_apply {d : ℕ} (i : Fin (d + 1)) (a : I) (t : I^Fin d) :
-    cubeFace i a t = i.insertNth a t :=
-  rfl
 
 @[simp]
 theorem cubeFace_apply_same {d : ℕ} (i : Fin (d + 1)) (a : I) (t : I^Fin d) :
@@ -78,55 +66,24 @@ theorem cubeFace_mem_cubeCodimTwo {d : ℕ} (i : Fin (d + 1)) (a : I)
     cubeFace i a t ∈ cubeCodimTwo (d + 1) := by
   obtain ⟨j, hj⟩ := ht
   refine ⟨i, i.succAbove j, (Fin.succAbove_ne i j).symm, ?_, ?_⟩
-  · simpa using ha
-  · simpa using hj
+  · aesop
+  · aesop
 
-/-- Insert a varying coordinate into a cube. -/
-def cubeFaceVary {d : ℕ} (i : Fin (d + 1)) : C(I × (I^Fin d), I^Fin (d + 1)) where
-  toFun p := i.insertNth p.1 p.2
-  continuous_toFun := by
-    apply continuous_pi
-    intro j
-    refine Fin.succAboveCases i ?_ (fun k ↦ ?_) j
-    · simpa only [Fin.insertNth_apply_same] using (continuous_fst :
-        Continuous fun p : I × (I^Fin d) ↦ p.1)
-    · simpa only [Fin.insertNth_apply_succAbove]
-        using (by fun_prop : Continuous fun p : I × (I^Fin d) ↦ p.2 k)
 
-@[simp]
-theorem cubeFaceVary_apply {d : ℕ} (i : Fin (d + 1)) (a : I) (t : I^Fin d) :
-    cubeFaceVary i (a, t) = cubeFace i a t :=
-  rfl
 
 /-! ### The two routes around a square -/
 
 /-- The bottom edge of the unit square, directed from left to right. -/
-def squareBottom : Path ((0, 0) : I × I) (1, 0) where
-  toFun t := (t, 0)
-  continuous_toFun := by fun_prop
-  source' := rfl
-  target' := rfl
+def squareBottom : Path ((0, 0) : I × I) (1, 0) := Path.id.prod (.refl 0)
 
 /-- The right edge of the unit square, directed from bottom to top. -/
-def squareRight : Path ((1, 0) : I × I) (1, 1) where
-  toFun t := (1, t)
-  continuous_toFun := by fun_prop
-  source' := rfl
-  target' := rfl
+def squareRight : Path ((1, 0) : I × I) (1, 1) := (Path.refl 1).prod Path.id
 
 /-- The left edge of the unit square, directed from bottom to top. -/
-def squareLeft : Path ((0, 0) : I × I) (0, 1) where
-  toFun t := (0, t)
-  continuous_toFun := by fun_prop
-  source' := rfl
-  target' := rfl
+def squareLeft : Path ((0, 0) : I × I) (0, 1) := (Path.refl 0).prod Path.id
 
 /-- The top edge of the unit square, directed from left to right. -/
-def squareTop : Path ((0, 1) : I × I) (1, 1) where
-  toFun t := (t, 1)
-  continuous_toFun := by fun_prop
-  source' := rfl
-  target' := rfl
+def squareTop : Path ((0, 1) : I × I) (1, 1) := Path.id.prod (.refl 1)
 
 /-- The bottom-then-right route around the unit square. -/
 def squareBottomRight : Path ((0, 0) : I × I) (1, 1) :=
@@ -144,14 +101,11 @@ noncomputable def squareBoundaryHomotopy :
     (Set.Icc.convexComb (squareBottomRight p.2).1 (squareLeftTop p.2).1 p.1,
       Set.Icc.convexComb (squareBottomRight p.2).2 (squareLeftTop p.2).2 p.1)
   continuous_toFun := by
-    apply Continuous.prodMk
-    all_goals
-      apply Continuous.subtype_mk
-      fun_prop
+    fun_prop
   map_zero_left t := by
-    ext <;> simp [squareBottomRight, squareLeftTop]
+    simp
   map_one_left t := by
-    ext <;> simp [squareBottomRight, squareLeftTop]
+    simp
   prop' s t ht := by
     rcases ht with rfl | ht
     · simp [squareBottomRight, squareLeftTop, Set.Icc.convexComb]
@@ -171,13 +125,12 @@ theorem cubeFace_penultimate_snoc {m : ℕ} (a b : I) (t : I^Fin m) :
   induction j using Fin.lastCases with
   | last =>
       have hlast : (Fin.last m).castSucc.succAbove (Fin.last m) = Fin.last (m + 1) := by
-        apply Fin.ext
-        simp
+        aesop
       rw [← hlast, cubeFace_apply_succAbove]
       simp
   | cast j =>
       induction j using Fin.lastCases with
-      | last => simp [cubeFace]
+      | last => aesop
       | cast j => simp [cubeFace, Fin.insertNth_apply_below, Fin.snoc]
 
 @[simp]
@@ -194,20 +147,7 @@ noncomputable def squareSweepCube (m : ℕ) :
     Fin.snoc (Fin.snoc (Fin.init st.2) (squareBoundaryHomotopy (st.1, st.2 (Fin.last m))).1)
       (squareBoundaryHomotopy (st.1, st.2 (Fin.last m))).2
   continuous_toFun := by
-    have hc : Continuous (fun st : I × (I^Fin (m + 1)) =>
-        squareBoundaryHomotopy (st.1, st.2 (Fin.last m))) :=
-      squareBoundaryHomotopy.continuous.comp (by fun_prop)
-    apply continuous_pi
-    intro j
-    refine Fin.lastCases ?_ (fun k => ?_) j
-    · simp only [Fin.snoc_last]
-      exact hc.snd
-    · simp only [Fin.snoc_castSucc]
-      refine Fin.lastCases ?_ (fun l => ?_) k
-      · simp only [Fin.snoc_last]
-        exact hc.fst
-      · simp only [Fin.snoc_castSucc, Fin.init_def]
-        fun_prop
+    fun_prop
 
 /-- Pointwise concatenation formula with the unclamped half-interval coordinates exposed. -/
 theorem genLoop_transAt_apply_path {N : Type*} [DecidableEq N] (i : N)
@@ -245,11 +185,6 @@ noncomputable def faceLoop (S : CubicalShell d X x) (i : Fin (d + 1)) (a : I)
   ⟨S.map.comp (cubeFace i a), fun t ht ↦ S.codimTwo _
     (cubeFace_mem_cubeCodimTwo i a ha t ht)⟩
 
-@[simp]
-theorem faceLoop_apply (S : CubicalShell d X x) (i : Fin (d + 1)) (a : I)
-    (ha : a = 0 ∨ a = 1) (t : I^Fin d) :
-    (S.faceLoop i a ha).val t = S.map (cubeFace i a t) :=
-  rfl
 
 /-- The lower facet loop. -/
 noncomputable def lowerFaceLoop (S : CubicalShell d X x) (i : Fin (d + 1)) :
@@ -261,17 +196,7 @@ noncomputable def upperFaceLoop (S : CubicalShell d X x) (i : Fin (d + 1)) :
     Ω^ (Fin d) X x :=
   S.faceLoop i 1 (Or.inr rfl)
 
-@[simp]
-theorem lowerFaceLoop_apply (S : CubicalShell d X x) (i : Fin (d + 1))
-    (t : I^Fin d) :
-    (S.lowerFaceLoop i).val t = S.map (cubeFace i 0 t) :=
-  rfl
 
-@[simp]
-theorem upperFaceLoop_apply (S : CubicalShell d X x) (i : Fin (d + 1))
-    (t : I^Fin d) :
-    (S.upperFaceLoop i).val t = S.map (cubeFace i 1 t) :=
-  rfl
 
 /-- The sweep starts at the concatenation of the last lower face with the penultimate upper
 face. -/
@@ -280,21 +205,11 @@ theorem squareSweepCube_zero {m : ℕ} (S : CubicalShell (m + 1) X x)
     S.map (squareSweepCube m (0, t)) =
       (GenLoop.transAt (Fin.last m) (S.lowerFaceLoop (Fin.last (m + 1)))
         (S.upperFaceLoop (Fin.last m).castSucc)).val t := by
-  change S.map (Fin.snoc (Fin.snoc (Fin.init t)
-    (squareBoundaryHomotopy (0, t (Fin.last m))).1)
-    (squareBoundaryHomotopy (0, t (Fin.last m))).2) = _
+  simp only [squareSweepCube, ContinuousMap.coe_mk]
   rw [ContinuousMap.HomotopyWith.apply_zero, squareBottomRight]
-  simp only [Path.coe_toContinuousMap]
-  rw [Path.trans_apply, genLoop_transAt_apply_path]
-  split_ifs with h
-  · change S.map _ = S.map (cubeFace (Fin.last (m + 1)) 0 _)
-    apply congrArg S.map
-    rw [cubeFace_last_eq_snoc, update_last_eq_snoc_init]
-    rfl
-  · change S.map _ = S.map (cubeFace (Fin.last m).castSucc 1 _)
-    apply congrArg S.map
-    rw [update_last_eq_snoc_init, cubeFace_penultimate_snoc]
-    rfl
+  simp only [Path.coe_toContinuousMap, Path.trans_apply, genLoop_transAt_apply_path]
+  split_ifs <;> apply congrArg S.map <;>
+    simp [squareBottom, squareRight]
 
 /-- The sweep ends at the concatenation of the penultimate lower face with the last upper
 face. -/
@@ -303,21 +218,11 @@ theorem squareSweepCube_one {m : ℕ} (S : CubicalShell (m + 1) X x)
     S.map (squareSweepCube m (1, t)) =
       (GenLoop.transAt (Fin.last m) (S.lowerFaceLoop (Fin.last m).castSucc)
         (S.upperFaceLoop (Fin.last (m + 1)))).val t := by
-  change S.map (Fin.snoc (Fin.snoc (Fin.init t)
-    (squareBoundaryHomotopy (1, t (Fin.last m))).1)
-    (squareBoundaryHomotopy (1, t (Fin.last m))).2) = _
+  simp only [squareSweepCube, ContinuousMap.coe_mk]
   rw [ContinuousMap.HomotopyWith.apply_one, squareLeftTop]
-  simp only [Path.coe_toContinuousMap]
-  rw [Path.trans_apply, genLoop_transAt_apply_path]
-  split_ifs with h
-  · change S.map _ = S.map (cubeFace (Fin.last m).castSucc 0 _)
-    apply congrArg S.map
-    rw [update_last_eq_snoc_init, cubeFace_penultimate_snoc]
-    rfl
-  · change S.map _ = S.map (cubeFace (Fin.last (m + 1)) 1 _)
-    apply congrArg S.map
-    rw [cubeFace_last_eq_snoc, update_last_eq_snoc_init]
-    rfl
+  simp only [Path.coe_toContinuousMap, Path.trans_apply, genLoop_transAt_apply_path]
+  split_ifs <;> apply congrArg S.map <;>
+    simp [squareLeft, squareTop]
 
 /-- A facet of the ambient cube is constant at the shell basepoint. -/
 def IsConstantFace (S : CubicalShell d X x) (i : Fin (d + 1)) (a : I) : Prop :=
@@ -379,12 +284,12 @@ theorem lastTwoFaceLoops_homotopic {m : ℕ} (S : CubicalShell (m + 1) X x)
 /-- The additive homotopy class of a lower facet. -/
 noncomputable def lowerFaceClass (S : CubicalShell d X x) (i : Fin (d + 1)) :
     Additive (HomotopyGroup (Fin d) X x) :=
-  Additive.ofMul (⟦S.lowerFaceLoop i⟧ : HomotopyGroup (Fin d) X x)
+  Additive.ofMul (⟦S.lowerFaceLoop i⟧)
 
 /-- The additive homotopy class of an upper facet. -/
 noncomputable def upperFaceClass (S : CubicalShell d X x) (i : Fin (d + 1)) :
     Additive (HomotopyGroup (Fin d) X x) :=
-  Additive.ofMul (⟦S.upperFaceLoop i⟧ : HomotopyGroup (Fin d) X x)
+  Additive.ofMul (⟦S.upperFaceLoop i⟧)
 
 theorem lowerFaceClass_eq_zero [Nonempty (Fin d)] (S : CubicalShell d X x)
     (i : Fin (d + 1)) (h : S.IsConstantFace i 0) :

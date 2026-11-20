@@ -10,18 +10,15 @@ public import Mathlib.Topology.Path
 The interval parametrization uses the original sup-norm characteristic disks. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
 open scoped unitInterval Topology Classical
 
 theorem finOne_norm (x : Fin 1 → ℝ) : ‖x‖ = |x 0| := by
-  have hx : x = fun _ => x 0 := funext fun i => congrArg x (Subsingleton.elim i 0)
+  have hx  := funext fun i => congrArg x (Subsingleton.elim i 0)
   calc
-    ‖x‖ = ‖fun _ : Fin 1 => x 0‖ := congrArg norm hx
+    ‖x‖ = ‖fun _  => x 0‖ := congrArg norm hx
     _ = |x 0| := by rw [pi_norm_const, Real.norm_eq_abs]
 
 def graphBoundaryNeg : UnitBoundary (Fin 1 → ℝ) :=
@@ -32,7 +29,7 @@ def graphBoundaryPos : UnitBoundary (Fin 1 → ℝ) :=
 
 theorem graphBoundary_cases (a : UnitBoundary (Fin 1 → ℝ)) :
     a = graphBoundaryNeg ∨ a = graphBoundaryPos := by
-  have ha : |a.val 0| = 1 := (finOne_norm a.val).symm.trans a.property
+  have ha  := (finOne_norm a.val).symm.trans a.property
   by_cases h : 0 ≤ a.val 0
   · right
     apply Subtype.ext
@@ -50,12 +47,9 @@ theorem graphBoundary_cases (a : UnitBoundary (Fin 1 → ℝ)) :
 
 def graphDiskHomeomorph : I ≃ₜ ClosedUnitBall (Fin 1 → ℝ) where
   toFun s := ⟨fun _ => 2 * (s : ℝ) - 1, by
-    rw [pi_norm_const, Real.norm_eq_abs]
-    exact abs_le.mpr ⟨by linarith [s.property.1], by linarith [s.property.2]⟩⟩
+    simpa using abs_le.mpr ⟨by linarith [s.property.1], by linarith [s.property.2]⟩⟩
   invFun d := ⟨(d.val 0 + 1) / 2, by
-    have hd : |d.val 0| ≤ 1 := by simpa only [finOne_norm] using d.property
-    obtain ⟨hl, hu⟩ := abs_le.mp hd
-    constructor <;> linarith⟩
+    grind [finOne_norm]⟩
   left_inv s := by
     apply Subtype.ext
     dsimp

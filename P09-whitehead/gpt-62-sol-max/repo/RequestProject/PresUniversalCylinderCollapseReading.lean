@@ -22,7 +22,7 @@ theorem presUniversalCylinderCollapse_reading
   let f := uOrderEnd (P := PresPos w) (a := ptBase w)
   let hf := presUniversalEnd_isPosetCover w hpos
   let q := presCoverCylinderCollapse w f hf p
-  have hle : p.val ≤ q.val :=
+  have hle  :=
     (coneAdjCoverBaseEnd_isPosetCover f hf).le_upTransform
       (cylCollapse (aHom w)) (le_cylIn_cylRetr (aHom w)) p
   change (presCoc w gen hrel).readVertex (ptBase w) q.val = _

@@ -1,12 +1,11 @@
 module
 
 public import RequestProject.NormalizedStrictBoundary
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.StrictNormalized
 universe u
@@ -28,12 +27,10 @@ theorem mapOne_single (f : P → Q) (hf : Monotone f) (e : StrictOrdEdge P) (n :
 theorem mapOne_strict (f : P → Q) (hf : StrictMono f) (c : StrictOrdEdge P →₀ ℤ) :
     mapOne f hf.monotone c = chain1 (strictOrderCxMap f hf) c := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
-  | single e n =>
-    rw [mapOne_single]
-    simp [normalizeOrdEdge, (hf e.2).ne, chain1, strictOrderCxMap]
+  finsupp_basis c
+  intro e
+  rw [mapOne_single]
+  simp [normalizeOrdEdge, (hf e.2).ne, chain1, strictOrderCxMap]
 
 theorem mapOne_id (c : StrictOrdEdge P →₀ ℤ) : mapOne id monotone_id c = c :=
   normalizedStrictChain1_id c
@@ -42,18 +39,16 @@ theorem mapOne_comp (f : P → Q) (hf : Monotone f) (g : Q → R) (hg : Monotone
     (c : StrictOrdEdge P →₀ ℤ) :
     mapOne g hg (mapOne f hf c) = mapOne (g ∘ f) (hg.comp hf) c := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
-  | single e n =>
-    rw [mapOne_single, map_smul]
-    by_cases h : f e.1.1 = f e.1.2
-    · simp [normalizeOrdEdge, h, mapOne_single, Function.comp_def]
-    · rw [show normalizeOrdEdge (⟨(f e.1.1, f e.1.2), hf e.2.le⟩ : OrdEdge Q) =
-        Finsupp.single ⟨(f e.1.1, f e.1.2), lt_of_le_of_ne (hf e.2.le) h⟩ 1 by
-          simp [normalizeOrdEdge, h]]
-      rw [mapOne_single, one_smul, mapOne_single]
-      rfl
+  finsupp_basis c
+  intro e
+  rw [mapOne_single, map_smul]
+  by_cases h : f e.1.1 = f e.1.2
+  · simp [normalizeOrdEdge, h, mapOne_single, Function.comp_def]
+  · rw [show normalizeOrdEdge ⟨(f e.1.1, f e.1.2), hf e.2.le⟩ =
+      Finsupp.single ⟨(f e.1.1, f e.1.2), lt_of_le_of_ne (hf e.2.le) h⟩ 1 by
+        simp [normalizeOrdEdge, h]]
+    rw [mapOne_single, one_smul, mapOne_single]
+    rfl
 
 /-- Exact naturality of normalization under a strict change of coordinates. -/
 theorem mapOne_semiconj (e : P → Q) (he : StrictMono e)
@@ -64,7 +59,7 @@ theorem mapOne_semiconj (e : P → Q) (he : StrictMono e)
   change chain1 (strictOrderCxMap e he) (mapOne g hg c) =
     mapOne h hh (chain1 (strictOrderCxMap e he) c)
   rw [← mapOne_strict e he, ← mapOne_strict e he, mapOne_comp, mapOne_comp]
-  have heq : e ∘ g = h ∘ e := funext hs
+  have heq  := funext hs
   have mapEq (f g : P → Q) (hf : Monotone f) (hg : Monotone g) (he : f = g) :
       mapOne f hf c = mapOne g hg c := by
     subst g

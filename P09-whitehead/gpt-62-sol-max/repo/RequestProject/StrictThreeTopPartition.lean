@@ -22,8 +22,6 @@ theorem strictThreeChain_top_partition (y : StrictOrdTet (QCube A) →₀ ℤ) :
     · simp
     · intro c _ hne
       simp [Ne.symm hne]
-    · intro hnot
-      exact False.elim (hnot (Finset.mem_image.mpr
-        ⟨t, Finsupp.mem_support_iff.mpr ht, rfl⟩))
+    grind
 
 end FiniteChains.Davis

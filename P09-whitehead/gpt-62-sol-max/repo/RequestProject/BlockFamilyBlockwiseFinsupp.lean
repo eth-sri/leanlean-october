@@ -62,13 +62,11 @@ def fsFillBlocks (c : ∀ s, Mt s →₀ R) (w : Sx →₀ R) : (Σ s, Mt s) →
   constructor
   · apply Finsupp.mem_support_iff.mpr
     intro hw
-    exact hp (by change w p.1 * c p.1 p.2 = 0; rw [hw, zero_mul])
+    simp_all
   · apply Finsupp.mem_support_iff.mpr
     intro hc
-    exact hp (by change w p.1 * c p.1 p.2 = 0; rw [hc, mul_zero])
+    simp_all
 
-@[simp] theorem fsFillBlocks_apply (c : ∀ s, Mt s →₀ R) (w : Sx →₀ R)
-    (p : Σ s, Mt s) : fsFillBlocks c w p = w p.1 * c p.1 p.2 := rfl
 
 /-- The substituted two-chain map after extending coefficients to the target
 ring: retain old cells and replace each polygon by its chosen surface chain. -/
@@ -97,6 +95,9 @@ def fsCellsBase (c : ∀ s, Mt s →₀ R) :
     (y : (Jr ⊕ Sx) →₀ R) (j : Jr) :
     fsCellsBase c y (Sum.inl j) = y (Sum.inl j) := rfl
 
+
+
+
 @[simp] theorem fsCellsBase_inr (c : ∀ s, Mt s →₀ R)
     (y : (Jr ⊕ Sx) →₀ R) (s : Sx) (m : Mt s) :
     fsCellsBase c y (Sum.inr ⟨s, m⟩) = y (Sum.inr s) * c s m := rfl
@@ -111,17 +112,16 @@ theorem exists_fsBlockCoefficients (c : ∀ s, Mt s →₀ R)
       ∀ s m, x (Sum.inr ⟨s, m⟩) = w s * c s m := by
   classical
   choose a ha using h
-  let w : Sx →₀ R := Finsupp.onFinset (fsBlockSupport x)
+  let w  := Finsupp.onFinset (fsBlockSupport x)
     (fun s => if s ∈ fsBlockSupport x then a s else 0)
     (by intro s hs; by_contra hn; exact hs (if_neg hn))
   refine ⟨w, Finsupp.support_onFinset_subset, ?_⟩
   intro s m
   by_cases hs : s ∈ fsBlockSupport x
   · simpa only [w, Finsupp.onFinset_apply, if_pos hs] using ha s m
-  · have hz := congrArg (fun b : Mt s →₀ R => b m)
+  · have hz := congrArg (fun b  => b m)
       (fsBlockSlice_eq_zero_of_not_mem x hs)
-    simpa only [fsBlockSlice_apply, Finsupp.zero_apply, w,
-      Finsupp.onFinset_apply, if_neg hs, zero_mul] using hz
+    aesop
 
 /-- Assemble the local surface coefficients and the retained coefficients into
 an actual preimage of the full substituted two-chain. -/
@@ -132,18 +132,14 @@ theorem exists_fsCellsBase_preimage (c : ∀ s, Mt s →₀ R)
       (∀ j, y (Sum.inl j) = x (Sum.inl j)) ∧
       (y.comapDomain Sum.inr Sum.inr_injective.injOn).support ⊆ fsBlockSupport x := by
   obtain ⟨w, hw, he⟩ := exists_fsBlockCoefficients c x h
-  let y : (Jr ⊕ Sx) →₀ R :=
+  let y  :=
     Finsupp.sumElim (x.comapDomain Sum.inl Sum.inl_injective.injOn) w
   refine ⟨y, ?_, fun _ => rfl, ?_⟩
   · ext k
     cases k with
     | inl j => rfl
     | inr p => exact (he p.1 p.2).symm
-  · have hy : y.comapDomain Sum.inr Sum.inr_injective.injOn = w := by
-      ext s
-      rfl
-    rw [hy]
-    exact hw
+  aesop
 
 end Chains
 
@@ -194,7 +190,7 @@ theorem fsCoverSecondBoundary_inr
       rfl
     _ = blocks.sum (fun p a => a *
         foxMatrixPres (substPresF ρ bsub) (Sum.inr ⟨s, z⟩) (Sum.inr p)) := by
-      rw [ho, zero_add]
+      simp_all
     _ = (fsBlockSlice x s).sum (fun m a => a *
         foxMatrixPres (substPresF ρ bsub) (Sum.inr ⟨s, z⟩) (Sum.inr ⟨s, m⟩)) := by
       rw [Finsupp.sigma_sum]
@@ -263,16 +259,7 @@ def fsCellsF (hfill : FilledF ρ bsub) (c : ∀ s, Mt s →₀ R')
     (Jr ⊕ (Σ s, Mt s)) →₀ R' :=
   fsCellsBase c (y.mapRange (coeffF ρ bsub hfill) (map_zero _))
 
-omit [DecidableEq α] [DecidableEq Sx] [∀ s, DecidableEq (Zt s)] in
-@[simp] theorem fsCellsF_inl (hfill : FilledF ρ bsub) (c : ∀ s, Mt s →₀ R')
-    (y : (Jr ⊕ Sx) →₀ MonoidAlgebra ℤ (PresGroup ρ)) (j : Jr) :
-    fsCellsF ρ bsub hfill c y (Sum.inl j) = coeffF ρ bsub hfill (y (Sum.inl j)) := rfl
 
-omit [DecidableEq α] [DecidableEq Sx] [∀ s, DecidableEq (Zt s)] in
-@[simp] theorem fsCellsF_inr (hfill : FilledF ρ bsub) (c : ∀ s, Mt s →₀ R')
-    (y : (Jr ⊕ Sx) →₀ MonoidAlgebra ℤ (PresGroup ρ)) (s : Sx) (m : Mt s) :
-    fsCellsF ρ bsub hfill c y (Sum.inr ⟨s, m⟩) =
-      coeffF ρ bsub hfill (y (Sum.inr s)) * c s m := rfl
 
 end Fox
 

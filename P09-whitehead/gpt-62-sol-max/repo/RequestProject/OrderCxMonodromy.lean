@@ -26,8 +26,6 @@ Both are used to build the comparison of a presentation with the order complex o
 model of its presentation complex.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -87,17 +85,14 @@ def readPath (l : List ((orderCx P).E × Bool)) : G := (l.map c.readGerm).prod
   obtain ⟨⟨a, b, d⟩, hab, hbd⟩ := t
   show c.readGerm (ordPos hab) * (c.readGerm (ordPos hbd) *
     (c.readGerm (ordNeg (hab.trans hbd)) * 1)) = 1
-  rw [readGerm_ordPos, readGerm_ordPos, readGerm_ordNeg, mul_one, ← mul_assoc, c.comp hab hbd,
-    mul_inv_cancel]
+  simp_all [readGerm_ordPos, readGerm_ordNeg, ← mul_assoc, c.comp hab hbd, mul_inv_cancel]
 
 /-- An elementary cancellation does not change the value of a path. -/
 theorem readPath_cancels {l l' : List ((orderCx P).E × Bool)}
     (h : Cancels (orderCx P) l l') : c.readPath l = c.readPath l' := by
   rcases h with ⟨p, q, g, hl, hl'⟩ | ⟨p, q, t, hl, hl'⟩
-  · subst hl; subst hl'
-    simp only [c.readPath_append, c.readPath_cons, c.readGerm_revGerm, mul_inv_cancel_left]
-  · subst hl; subst hl'
-    simp only [c.readPath_append, c.readPath_att, one_mul, mul_one]
+  · simp_all
+  · simp_all
 
 /-- Homotopic paths have the same value. -/
 theorem readPath_htpy {a b : P} {l l' : List ((orderCx P).E × Bool)}
@@ -119,8 +114,6 @@ def monodromy (x : P) : Pi1 (orderCx P) x →* G where
     rintro ⟨p⟩ ⟨q⟩
     exact c.readPath_append p.1 q.1
 
-@[simp] theorem monodromy_mk (x : P) (p : Loop (orderCx P) x) :
-    c.monodromy x (Pi1.mk p) = c.readPath p.1 := rfl
 
 end OrdCocycle
 
@@ -133,7 +126,7 @@ theorem htpy_nil_of_pathIn_le_top {A : P → Prop} {d : P} (hd : A d)
     (hp : IsPath (orderCx P).src (orderCx P).tgt l v v) (hl : PathIn A l) :
     Htpy (orderCx P) v v l [] := by
   refine htpy_nil_of_pathIn ?_ hv hp hl
-  refine simplyConnected_orderCx (P := {p : P // A p}) ⟨d, hd⟩ id (fun x => le_refl x)
+  refine simplyConnected_orderCx (P := {p : P // A p}) ⟨d, hd⟩ id le_refl
     (fun x => hAd x.1 x.2) ?_
   intro x y h
   exact h

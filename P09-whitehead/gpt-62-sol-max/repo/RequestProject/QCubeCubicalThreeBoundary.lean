@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.QCubeThreeBoundaryRecovery
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -26,13 +27,8 @@ theorem qThreeCubicalFaceBoundary_subdivision (c : QThreeCube A) :
 
 theorem qThreeCubicalBoundary_subdivision (r : QThreeCube A →₀ ℤ) :
     qSquareChainSubdivision (qThreeCubicalBoundary r) = qThreeChainBoundary r := by
-  induction r using Finsupp.induction_linear with
-  | zero => simp
-  | add r s hr hs => rw [map_add, map_add, hr, hs, map_add]
-  | single c n =>
-      rw [qThreeCubicalBoundary, Finsupp.linearCombination_single, map_smul,
-        qThreeCubicalFaceBoundary_subdivision, qThreeChainBoundary,
-        Finsupp.linearCombination_single]
+  finsupp_basis r
+  simp [qThreeCubicalBoundary, Finsupp.linearCombination_single, qThreeCubicalFaceBoundary_subdivision, qThreeChainBoundary]
 
 /-- Every strict three-boundary with the stated actual dimension bounds is the subdivision
 of an actual finite cubical three-boundary, and coefficient recovery gives that boundary. -/

@@ -17,9 +17,6 @@ The simplicial identities give the chain relation through Mathlib's
 alternating-face complex. No exactness or homotopy comparison is assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 
@@ -88,17 +85,15 @@ theorem boundary_single (n : ℕ) (σ : Simplex X (n + 1)) (a : ℤ) :
     Finsupp.mapDomain_single]
 
 theorem boundary_squared (n : ℕ) :
-    (boundary (X := X) n).comp (boundary (n + 1)) = 0 := by
-  exact congrArg ModuleCat.Hom.hom (AlternatingFaceMapComplex.d_squared (modules X) n)
+    (boundary (X := X) n).comp (boundary (n + 1)) = 0 := congrArg ModuleCat.Hom.hom (AlternatingFaceMapComplex.d_squared (modules X) n)
 
 theorem boundary_boundary (n : ℕ) (c : Chain X (n + 2)) : boundary n (boundary (n + 1) c) = 0 :=
   DFunLike.congr_fun (boundary_squared n) c
 
-theorem complex_d (n : ℕ) : (complex X).d (n + 1) n = ModuleCat.ofHom (boundary n) := by
-  exact AlternatingFaceMapComplex.obj_d_eq (modules X) n
+theorem complex_d (n : ℕ) : (complex X).d (n + 1) n = ModuleCat.ofHom (boundary n) := AlternatingFaceMapComplex.obj_d_eq (modules X) n
 
 noncomputable def augmentation : Chain X 0 →ₗ[ℤ] ℤ :=
-  Finsupp.linearCombination ℤ (fun _ : Simplex X 0 => (1 : ℤ))
+  Finsupp.linearCombination ℤ (fun _  => 1)
 
 @[simp] theorem augmentation_single (σ : Simplex X 0) (a : ℤ) :
     augmentation (Finsupp.single σ a) = a := by
@@ -111,8 +106,8 @@ theorem augmentation_boundary (c : Chain X 1) : augmentation (boundary 0 c) = 0 
     change augmentation (boundary 0 (Finsupp.single σ a)) = 0
     rw [boundary_single]
     rw [Fin.sum_univ_two]
-    change augmentation ((1 : ℤ) • Finsupp.single (face 0 σ) a +
-      (-1 : ℤ) • Finsupp.single (face 1 σ) a) = 0
+    change augmentation (1 • Finsupp.single (face 0 σ) a +
+      (-1) • Finsupp.single (face 1 σ) a) = 0
     rw [one_smul, neg_smul, one_smul, map_add, map_neg,
       augmentation_single, augmentation_single, add_neg_cancel]
   exact DFunLike.congr_fun he c

@@ -28,13 +28,13 @@ def attachmentQuotientHomeomorph : Space r i ≃ₜ Y := by
   have hcomp : F ∘ quotientMap r i = Sum.elim f g := by
     funext z
     rcases z with b | d
-    · exact desc_old r i f g hbd b
+    · tauto
     · exact desc_cell r i f g hbd d
-  have hFq : IsQuotientMap F := IsQuotientMap.of_comp
+  have hFq  := IsQuotientMap.of_comp
     (quotientMap_continuous r i) F.continuous (hcomp.symm ▸ hq)
   have hFi : Function.Injective F := by
     rintro (b | d) (c | e) he
-    · exact congrArg Sum.inl (hf he)
+    · tauto
     · have hd : g e.val ∈ Set.range f := ⟨b, he⟩
       exact (e.property ((hsep e.val).mp hd)).elim
     · have hd : g d.val ∈ Set.range f := ⟨c, he.symm⟩

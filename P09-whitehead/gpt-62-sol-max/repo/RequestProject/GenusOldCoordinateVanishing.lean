@@ -23,14 +23,13 @@ theorem markedSpineSquareCoefficients_zero_of_collapse (d : (markedSpineCx q).F 
     exact congrFun hfun f
   have hcoord : markedSpineCoordinateChain q d = 0 := by
     apply Finsupp.mapDomain_injective
-      (Sum.inl_injective : Function.Injective
-        (Sum.inl : Cube (GenusVertex q) → Cube (GenusVertex q) ⊕ Finset (GenusVertex q)))
+      Sum.inl_injective
     change markedSpineExtendedCoordinateChain q d = Finsupp.mapDomain _ 0
     rw [Finsupp.mapDomain_zero]
     exact hfin
   apply Finsupp.mapDomain_injective
     (show Function.Injective
-      (fun s : QSquare (cmpRel (GenusVertex q)) => qCubeToCoordinate s.1) from
+      (fun s  => qCubeToCoordinate s.1) from
       fun _ _ h => Subtype.ext (qCubeToCoordinate_injective h))
   change markedSpineCoordinateChain q d = Finsupp.mapDomain _ 0
   rw [Finsupp.mapDomain_zero]
@@ -44,7 +43,7 @@ theorem markedSpine_normalized_image_zero_of_coefficients (d : (markedSpineCx q)
     normalizeOrdChain2 (chain2 (markedSpineToFullCube q) d) = 0 := by
   have hcycle : Comb.bdry2 (orderCx (QCube (cmpRel (GenusVertex q))))
       (chain2 (markedSpineToFullCube q) d) = 0 := by
-    rw [bdry2_chain2, hd, map_zero]
+    exact chain2_cycle _ hd
   have he := qCube_twoCycle_reconstruction _
     (markedSpineToFullCube_normalized_dimension q d) (normalizeOrdChain2_cycle _ hcycle)
   change qSquareChainSubdivision (markedSpineSquareCoefficients q d) = _ at he

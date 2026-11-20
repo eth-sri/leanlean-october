@@ -13,35 +13,66 @@ namespace IsPosetCover
 variable (hf : IsPosetCover f)
 include hf
 
+/-- Within one sheet above a fixed vertex, the projection reflects the order. -/
+theorem le_of_le_above {a b v : P} (ha : v ≤ a) (hb : v ≤ b) (h : f a ≤ f b) : a ≤ b := by
+  obtain ⟨c, ⟨hac, hfc⟩, _⟩ := hf.up a (f b) h
+  exact hf.up_inj (ha.trans hac) hb hfc ▸ hac
+
+theorem le_of_le_below {a b v : P} (ha : a ≤ v) (hb : b ≤ v) (h : f a ≤ f b) : a ≤ b :=
+  hf.dual.le_of_le_above hb ha h
+
 /-- A comparability interval lifts inside the specified interval upstairs. -/
 theorem exists_interval_lift {a b : P} (hab : a ≤ b) (q : Q)
     (haq : f a ≤ q) (hqb : q ≤ f b) :
     ∃ c : P, a ≤ c ∧ c ≤ b ∧ f c = q := by
   obtain ⟨c, ⟨hac, hfc⟩, _⟩ := hf.up a q haq
-  obtain ⟨d, ⟨hcd, hfd⟩, _⟩ := hf.up c (f b) (hfc ▸ hqb)
-  have hd : d = b := hf.up_inj (hac.trans hcd) hab hfd
-  exact ⟨c, hac, hd ▸ hcd, hfc⟩
+  exact ⟨c, hac, hf.le_of_le_above hac hab (hfc.symm ▸ hqb), hfc⟩
 
-noncomputable def downTransform (g : Q → Q) (hg : ∀ q, g q ≤ q) (a : P) : P :=
-  Classical.choose (hf.down a (g (f a)) (hg (f a)))
+section Maps
+variable {R : Type*}
+
+noncomputable def lowerMapLift (a : R → P) (b : R → Q)
+    (hab : ∀ x, b x ≤ f (a x)) (x : R) : P :=
+  (hf.dual.liftUp (a x) (b x) (hab x)).1
+
+theorem lowerMapLift_spec (a : R → P) (b : R → Q)
+    (hab : ∀ x, b x ≤ f (a x)) (x : R) :
+    hf.lowerMapLift a b hab x ≤ a x ∧ f (hf.lowerMapLift a b hab x) = b x :=
+  (hf.dual.liftUp (a x) (b x) (hab x)).2
+
+theorem lowerMapLift_monotone [Preorder R] (a : R → P) (b : R → Q)
+    (ha : Monotone a) (hb : Monotone b) (hab : ∀ x, b x ≤ f (a x)) :
+    Monotone (hf.lowerMapLift a b hab) := by
+  intro x y hxy
+  obtain ⟨hx, hfx⟩ := hf.lowerMapLift_spec a b hab x
+  obtain ⟨hy, hfy⟩ := hf.lowerMapLift_spec a b hab y
+  exact hf.le_of_le_below (hx.trans (ha hxy)) hy (hfx.symm ▸ hfy.symm ▸ hb hxy)
+
+noncomputable def upperMapLift (a : R → P) (b : R → Q)
+    (hab : ∀ x, f (a x) ≤ b x) : R → P := hf.dual.lowerMapLift a b hab
+
+theorem upperMapLift_spec (a : R → P) (b : R → Q) (hab : ∀ x, f (a x) ≤ b x) (x : R) :
+    a x ≤ hf.upperMapLift a b hab x ∧ f (hf.upperMapLift a b hab x) = b x :=
+  hf.dual.lowerMapLift_spec a b hab x
+
+theorem upperMapLift_monotone [Preorder R] (a : R → P) (b : R → Q)
+    (ha : Monotone a) (hb : Monotone b) (hab : ∀ x, f (a x) ≤ b x) :
+    Monotone (hf.upperMapLift a b hab) :=
+  (hf.dual.lowerMapLift_monotone (R := Rᵒᵈ) a b ha.dual hb.dual hab).dual
+
+end Maps
+
+noncomputable def downTransform (g : Q → Q) (hg : ∀ q, g q ≤ q) : P → P :=
+  hf.lowerMapLift id (g ∘ f) (fun a => hg (f a))
 
 theorem downTransform_spec (g : Q → Q) (hg : ∀ q, g q ≤ q) (a : P) :
     hf.downTransform g hg a ≤ a ∧ f (hf.downTransform g hg a) = g (f a) :=
-  (Classical.choose_spec (hf.down a (g (f a)) (hg (f a)))).1
+  hf.lowerMapLift_spec _ _ _ a
 
-/-- The canonical downward lift is monotone; uniqueness of interval lifts supplies
-the comparison between its values, without any choice-coherence hypothesis. -/
-theorem downTransform_monotone (g : Q → Q) (hmono : Monotone g) (hg : ∀ q, g q ≤ q) :
-    Monotone (hf.downTransform g hg) := by
-  intro a b hab
-  have ha := hf.downTransform_spec g hg a
-  have hb := hf.downTransform_spec g hg b
-  obtain ⟨c, hxc, hcb, hfc⟩ := hf.exists_interval_lift (ha.1.trans hab) (g (f b))
-    (ha.2 ▸ hmono (hf.mono hab)) (hg (f b))
-  have he : c = hf.downTransform g hg b := hf.down_inj hcb hb.1 (hfc.trans hb.2.symm)
-  exact he ▸ hxc
+theorem downTransform_monotone (g : Q → Q) (hm : Monotone g) (hg : ∀ q, g q ≤ q) :
+    Monotone (hf.downTransform g hg) :=
+  hf.lowerMapLift_monotone _ _ monotone_id (hm.comp hf.mono) _
 
-/-- The lifted transformation lies below the identity, exactly as its original does. -/
 theorem downTransform_le (g : Q → Q) (hg : ∀ q, g q ≤ q) (a : P) :
     hf.downTransform g hg a ≤ a := (hf.downTransform_spec g hg a).1
 

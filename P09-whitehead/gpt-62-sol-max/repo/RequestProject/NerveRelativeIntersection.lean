@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.NerveIntersectionGeneration
+public import RequestProject.NerveDegreeGluing
 
 @[expose] public section
 
@@ -22,18 +22,13 @@ theorem relative_filling_intersection_of_ambient {A B U : P → Prop} {n : ℕ}
         z = t + bdry y := by
   have hdd : lengthProjection n (bdry z) = bdry z := by
     rw [lengthProjection_bdry, hd]
-  obtain ⟨v₀, hv₀, hdv₀⟩ := hfill (bdry z) hdz hdd (bdry_bdry z)
-  let v := lengthProjection (n + 1) v₀
-  have hv : v ∈ IncOn B := lengthProjection_mem_incOn _ hv₀
-  have hvd : lengthProjection (n + 1) v = v := lengthProjection_idempotent _ _
-  have hdv : bdry v = bdry z := by
-    rw [← lengthProjection_bdry, hdv₀, hdd]
+  obtain ⟨v, hv, hvd, hdv⟩ := homogeneous_filling hdd (hfill _ hdz hdd (bdry_bdry _))
   obtain ⟨c, hc, y, hy, _, he⟩ := hgen (z - v)
     (AddSubgroup.sub_mem _ (incOn_mono hAU hz) (incOn_mono hBU hv))
     (by rw [map_sub, hd, hvd]) (by rw [map_sub, hdv, sub_self])
   obtain ⟨a, ha, b, hb, hyab⟩ := exists_split_of_unmixed hmix hy
   let t₀ := z - bdry a
-  have htA : t₀ ∈ IncOn A := AddSubgroup.sub_mem _ hz (bdry_mem_incOn ha)
+  have htA  := AddSubgroup.sub_mem _ hz (bdry_mem_incOn ha)
   have htB : t₀ ∈ IncOn B := by
     have ht : t₀ = v + c + bdry b := by
       rw [hyab, map_add] at he

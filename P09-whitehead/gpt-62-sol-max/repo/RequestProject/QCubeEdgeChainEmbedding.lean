@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.QCubeEdgeSubdivision
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -44,19 +45,17 @@ theorem qEdgeChainSubdivision_filter_top (r : QEdge A →₀ ℤ) (c : QEdge A) 
     (qEdgeChainSubdivision r).filter
       (fun e : (strictOrderCx (QCube A)).E => e.1.2 = c.1) = r c • qEdgeSubdivision c := by
   classical
-  induction r using Finsupp.induction_linear with
-  | zero => simp [Finsupp.filter_zero]
-  | add r s hr hs => rw [map_add, Finsupp.filter_add, hr, hs, Finsupp.add_apply, add_smul]
-  | single d n =>
-      rw [qEdgeChainSubdivision, Finsupp.linearCombination_single, Finsupp.filter_smul]
-      change n • (cubeEdgeSubdivision d.1 (qEdgeDirection d)
-        (by rw [qEdge_free_direction]; simp)).filter _ = _
-      rw [cubeEdgeSubdivision_filter_tgt]
-      by_cases hd : d = c
-      · subst d
-        simp [qEdgeSubdivision, oneCubeSubdivision]
-      · have hdc : d.1 ≠ c.1 := fun h => hd (Subtype.ext h)
-        simp [hd, hdc]
+  finsupp_basis r [ Finsupp.filter_add, add_smul ]
+  intro d
+  rw [qEdgeChainSubdivision, Finsupp.linearCombination_single, Finsupp.filter_smul]
+  change 1 • (cubeEdgeSubdivision d.1 (qEdgeDirection d)
+    (by rw [qEdge_free_direction]; simp)).filter _ = _
+  rw [cubeEdgeSubdivision_filter_tgt]
+  by_cases hd : d = c
+  · subst d
+    simp [qEdgeSubdivision, oneCubeSubdivision]
+  · have hdc : d.1 ≠ c.1 := fun h => hd (Subtype.ext h)
+    simp [hd, hdc]
 
 theorem qEdgeChainSubdivision_injective : Function.Injective (qEdgeChainSubdivision (A := A)) := by
   classical
@@ -65,7 +64,7 @@ theorem qEdgeChainSubdivision_injective : Function.Injective (qEdgeChainSubdivis
   have hr : r - s = 0 := by
     ext c
     have he := congrArg (Finsupp.filter
-      (fun e : (strictOrderCx (QCube A)).E => e.1.2 = c.1)) hz
+      (fun e  => e.1.2 = c.1)) hz
     rw [qEdgeChainSubdivision_filter_top, Finsupp.filter_zero] at he
     exact (smul_eq_zero.mp he).resolve_right (qEdgeSubdivision_ne_zero c)
   exact sub_eq_zero.mp hr

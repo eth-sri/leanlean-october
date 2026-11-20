@@ -20,9 +20,6 @@ theorem presUniversalEnd_isPosetCover :
     IsPosetCover (uOrderEnd (P := PresPos w) (a := ptBase w)) := by
   apply uOrderEnd_isPosetCover
   apply presPos_isConnected w
-  intro j he
-  have h := hpos j
-  rw [he, List.length_nil] at h
-  omega
+  grind
 
 end FiniteChains.PresModel

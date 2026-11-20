@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.OrderNerveSmallChainMapAll
+public import RequestProject.OrderNerveSmallChainMapLow
 
 @[expose] public section
 
@@ -28,10 +28,10 @@ theorem orderNerveTightCarrier_acyclic {n : ℕ} (σ : OrderSmallSimplex P n) :
     Nerve.AcyclicIn (orderNerveTightCarrier σ.val) := by
   obtain ⟨v, hv⟩ := σ.property
   have hv' := orderNerveStarIndices_subset_tight σ.val hv
-  apply Nerve.acyclicIn_of_subtype _ ⟨v, hv'⟩
+  apply Nerve.acyclicIn_of_subtype _
   intro c hc hz
   exact orderNerve_cycle_bounds_of_comparable
-    (⟨v, hv'⟩ : orderNerveTightCarrier σ.val) (fun p => p.property.2 v hv) hc hz
+    ⟨v, hv'⟩ (fun p => p.property.2 v hv) hc hz
 
 theorem orderNerveTightCarrier_subset {n : ℕ} (σ : Simplex (orderNerveRealization P) n)
     (A : Set P) (hσ : ∀ z, σ z ∈ orderNerveRealizationSubcomplex P A) :
@@ -40,8 +40,7 @@ theorem orderNerveTightCarrier_subset {n : ℕ} (σ : Simplex (orderNerveRealiza
   by_contra hp
   have he := hσ z p hp
   change 0 < orderNerveRealizationCoordinates P (σ z) p at hz
-  rw [he] at hz
-  exact lt_irrefl _ hz
+  simp_all
 
 theorem orderSmallToNerve0_tight (σ : OrderSmallSimplex P 0) :
     orderSmallToNerve0 (orderSmallSingle σ 1) ∈ Nerve.IncOn (orderNerveTightCarrier σ.val) := by

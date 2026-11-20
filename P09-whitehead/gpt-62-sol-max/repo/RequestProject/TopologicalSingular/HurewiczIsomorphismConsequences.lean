@@ -1,13 +1,14 @@
 module
 
-public import RequestProject.TopologicalSingular.HurewiczIsomorphism
+public import RequestProject.TopologicalSingular.HurewiczInjectivity
+public import RequestProject.TopologicalSingular.TetrahedronGeneralFaceRelation
+public import RequestProject.TopologicalSingular.CoherentSimplexExtension
+public import RequestProject.TopologicalSingular.StationaryTriangleNormalization
+public import RequestProject.TopologicalSingular.HurewiczSurjectivity
 public import RequestProject.TopologicalSingular.HurewiczSurjectivityConsequences
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology

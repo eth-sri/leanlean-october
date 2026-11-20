@@ -4,9 +4,6 @@ public import RequestProject.OrderNerveRealizationSubcomplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -17,21 +14,9 @@ theorem orderNerveAffineRealization_natural {P Q : Type} [PartialOrder P] [Parti
     (f : P → Q) (hf : Monotone f) (v : Q → ℝ) (x : orderNerveRealization P) :
     orderNerveAffineRealization v (orderNerveRealizationMap f hf x) =
       orderNerveAffineRealization (v ∘ f) x := by
-  obtain ⟨n, s, z, hx⟩ := orderNerveRealizationSimplex_jointly_surjective P x
-  subst x
-  have hn := congrArg (fun k => k z) (orderNerveRealizationSimplex_natural f hf s)
-  change orderNerveRealizationMap f hf (orderNerveRealizationSimplex P s z) =
-    orderNerveRealizationSimplex Q ((nerveMap hf.functor).app _ s) z at hn
-  rw [hn]
-  have hq := congrArg (fun k => k z)
-    (orderNerveAffineRealization_simplex v ((nerveMap hf.functor).app _ s))
-  have hp := congrArg (fun k => k z) (orderNerveAffineRealization_simplex (v ∘ f) s)
-  change orderNerveAffineRealization v
-      (orderNerveRealizationSimplex Q ((nerveMap hf.functor).app _ s) z) =
-    orderNerveAffineSimplex v ((nerveMap hf.functor).app _ s) z at hq
-  change orderNerveAffineRealization (v ∘ f) (orderNerveRealizationSimplex P s z) =
-    orderNerveAffineSimplex (v ∘ f) s z at hp
-  rw [hq, hp]
+  obtain ⟨n, s, z, rfl⟩ := orderNerveRealizationSimplex_jointly_surjective P x
+  rw [orderNerveRealizationSimplex_natural, orderNerveAffineRealization_simplex,
+    orderNerveAffineRealization_simplex]
   rfl
 
 /-- An injective monotone map preserves each actual barycentric coordinate at its image vertex. -/
@@ -43,10 +28,10 @@ theorem orderNerveRealizationCoordinates_map_injective {P Q : Type}
   change orderNerveAffineRealization (fun q => if q = f p then 1 else 0)
     (orderNerveRealizationMap f hf x) = _
   rw [orderNerveAffineRealization_natural]
-  have hv : ((fun q : Q => if q = f p then (1 : ℝ) else 0) ∘ f) =
-      (fun q : P => if q = p then 1 else 0) := by
+  have hv : ((fun q  => if q = f p then (1 : ℝ) else 0) ∘ f) =
+      (fun q  => if q = p then 1 else 0) := by
     funext q
-    simp only [Function.comp_apply, hi.eq_iff]
+    simp_all [hi.eq_iff]
   rw [hv]
   rfl
 
@@ -68,16 +53,10 @@ theorem orderNerveRealizationCoordinates_map_outside {P Q : Type}
   change orderNerveAffineRealization (fun r => if r = q then 1 else 0)
     (orderNerveRealizationMap f hf x) = 0
   rw [orderNerveAffineRealization_natural]
-  obtain ⟨n, s, z, hx⟩ := orderNerveRealizationSimplex_jointly_surjective P x
-  subst x
-  have he := congrArg (fun k => k z)
-    (orderNerveAffineRealization_simplex ((fun r : Q => if r = q then (1 : ℝ) else 0) ∘ f) s)
-  change orderNerveAffineRealization _ (orderNerveRealizationSimplex P s z) =
-    orderNerveAffineSimplex _ s z at he
-  rw [he]
+  obtain ⟨n, s, z, rfl⟩ := orderNerveRealizationSimplex_jointly_surjective P x
+  rw [orderNerveAffineRealization_simplex]
   have hn : ∀ p : P, f p ≠ q := by
-    intro p hp
-    exact hq ⟨p, hp⟩
+    tauto
   simp [orderNerveAffineSimplex, hn]
 
 /-- The image of a realized monotone map lies in the genuine CW subcomplex
@@ -104,9 +83,9 @@ theorem orderNerveRealizationSubtype_range {P : Type} [PartialOrder P] (A : Set 
       (orderNerveRealizationSubcomplex P A : Set (orderNerveRealization P)) := by
   apply Set.Subset.antisymm
   · rintro x ⟨y, rfl⟩
-    have h := orderNerveRealizationMap_mem_subcomplex (Subtype.val : A → P)
+    have h := orderNerveRealizationMap_mem_subcomplex Subtype.val
       (fun _ _ h => h) y
-    simpa only [Subtype.range_coe_subtype, Set.setOf_mem_eq] using h
+    simp_all [Subtype.range_coe_subtype]
   · intro x hx
     change x ∈ orderNerveRealizationSupported P A at hx
     rw [← orderNerveRealizationSupported_union P A] at hx
@@ -119,12 +98,7 @@ theorem orderNerveRealizationSubtype_range {P : Type} [PartialOrder P] (A : Set 
     have ht : (nerveMap (show Monotone (Subtype.val : A → P) from
         fun _ _ h => h).functor).app _ t = s.val.val := by
       exact CategoryTheory.Functor.ext (fun _ => rfl)
-    have he := congrArg (fun k => k z)
-      (orderNerveRealizationSimplex_natural (Subtype.val : A → P)
-        (fun _ _ h => h) t)
-    change orderNerveRealizationMap _ _ (orderNerveRealizationSimplex A t z) =
-      orderNerveRealizationSimplex P ((nerveMap _).app _ t) z at he
-    rw [ht] at he
-    exact he.trans hz
+    erw [orderNerveRealizationSimplex_natural, ht]
+    exact hz
 
 end FiniteChains.Comb

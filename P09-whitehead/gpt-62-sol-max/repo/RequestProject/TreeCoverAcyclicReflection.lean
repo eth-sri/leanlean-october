@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.FinsuppBasis
+
 public import RequestProject.TreeCoverRelativeBoundary
 
 @[expose] public section
@@ -9,9 +11,7 @@ No finiteness assumption on the original cells or cover is used.
 Pending final Lean verification. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.SpanningTree
 universe u
@@ -22,23 +22,20 @@ variable {K : Complex2.{u}} (T : SpanningTree K)
 theorem piE_sectionE (z : (CovQ T N × NonTree T) →₀ ℤ) :
     piE T N (sectionE T N z) = z := by
   classical
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, map_add, hz, hw]
-  | single a n =>
-      rcases a with ⟨q, e⟩
-      rw [sectionE, Finsupp.linearCombination_single, map_smul, piE_pathChain_liftK]
-      have hl : FreeGroup.mk (letters T (loopPath T e)) = FreeGroup.mk [(e, true)] :=
-        (mk_letters (loopPath T e)).trans (pathWord_loopPath e)
-      rw [pathChain_liftPath_congr (T := T) (N := N) hl]
-      simp [liftPath_cons_true, pathChain_cons, pathChain_nil]
+  finsupp_basis z
+  intro a
+  rcases a with ⟨q, e⟩
+  rw [sectionE, Finsupp.linearCombination_single, map_smul, piE_pathChain_liftK]
+  have hl  :=
+    (mk_letters (loopPath T e)).trans (pathWord_loopPath e)
+  rw [pathChain_liftPath_congr (T := T) (N := N) hl]
+  simp [liftPath_cons_true, PathVoltage.liftPath, pathChain_cons]
 
 omit [N.Normal] [DecidableEq (NonTree T)] in
 theorem piV_iotaV (z : CovQ T N →₀ ℤ) : piV T N (iotaV T N z) = z := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, map_add, hz, hw]
-  | single q n => rw [iotaV_single, piV_single]
+  finsupp_singles z
+  intro q n
+  simp
 
 theorem coverComplex_isAcyclic_of_treeCover
     (h : IsAcyclic (treeCover T N hN)) : IsAcyclic (coverComplex N (treeRel T) hN) := by

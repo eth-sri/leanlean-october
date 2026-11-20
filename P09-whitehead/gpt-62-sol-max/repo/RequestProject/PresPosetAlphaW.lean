@@ -21,8 +21,6 @@ This file repeats the two halves of the comparison for such a prescribed `w`:
   the model being a left inverse.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -57,7 +55,7 @@ theorem alphaHomW_gen (i : α) :
 def readingPresW : Pi1 (orderCx (PresPos w)) (ptBase w) →* PresGroup ρ :=
   reading w (fun i => QuotientGroup.mk (FreeGroup.of i)) (by
     intro j
-    have hlift : (FreeGroup.lift fun i : α => (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ))
+    have hlift : (FreeGroup.lift fun i  => (QuotientGroup.mk (FreeGroup.of i)))
         = QuotientGroup.mk' (relSub ρ) := by
       refine FreeGroup.ext_hom _ _ fun i => ?_
       simp
@@ -73,10 +71,7 @@ theorem readingPresW_alphaHomW (x : PresGroup ρ) :
       have key : ((readingPresW ρ w hw).comp (alphaHomW ρ w hw)).comp
           (QuotientGroup.mk' (relSub ρ)) = QuotientGroup.mk' (relSub ρ) := by
         refine FreeGroup.ext_hom _ _ fun i => ?_
-        show readingPresW ρ w hw (alphaHomW ρ w hw (QuotientGroup.mk (FreeGroup.of i)))
-          = QuotientGroup.mk (FreeGroup.of i)
-        rw [alphaHomW_gen]
-        exact reading_genClass _ _ _ i
+        solve_by_elim
       exact DFunLike.congr_fun key y
 
 /-- **The presentation group embeds into the fundamental group of the model built on the

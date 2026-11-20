@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.FoxCommutator
+public import RequestProject.MonoidAlgebraMapDomain
 
 @[expose] public section
 
@@ -41,9 +42,6 @@ requirements that hypothesis is now a theorem about the cell-level data of the
 chain.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -52,18 +50,6 @@ open MonoidAlgebra
 universe u
 
 variable {G : Type u} [Group G] {I J : Type u}
-
-/-! ### Reduction of coefficients along a group homomorphism -/
-
-/-- Reduction of coefficients is functorial. -/
-theorem mapDomainRingHom_comp_apply {A B C : Type*} [Group A] [Group B] [Group C]
-    (f : A →* B) (g : B →* C) (x : MonoidAlgebra ℤ A) :
-    MonoidAlgebra.mapDomainRingHom ℤ g (MonoidAlgebra.mapDomainRingHom ℤ f x)
-      = MonoidAlgebra.mapDomainRingHom ℤ (g.comp f) x := by
-  apply MonoidAlgebra.coeff_injective
-  change Finsupp.mapDomain _ (Finsupp.mapDomain _ x.coeff) = Finsupp.mapDomain _ x.coeff
-  rw [← Finsupp.mapDomain_comp]
-  rfl
 
 /-! ### The cell-level data of a chain of two-complexes -/
 
@@ -127,7 +113,7 @@ theorem oldVec_support_subset (r : ℕ) [DecidableEq (Cell r)] (v : J →₀ Mon
     (h.oldVec r v).support ⊆ v.support.image (h.cellIncl r) := by
   classical
   refine Finsupp.mapDomain_support.trans ?_
-  exact Finset.image_subset_image (Finsupp.support_mapRange)
+  exact Finset.image_subset_image Finsupp.support_mapRange
 
 end ChainInput
 

@@ -13,9 +13,6 @@ No van Kampen or factor-injection hypothesis is introduced. Unverified. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -51,7 +48,8 @@ theorem relative_edge_core (i : Hom D L) (hi : Function.Injective i.onV)
   rw [i.src_onE, i.tgt_onE, relative_path, relative_path]
   have h := ht d₀ ((choose hD d₀).conjugate [(e, true)] (D.src e) (D.tgt e))
     ((choose hD d₀).conjugate_valid (isPath_single (e, true)))
-  simpa [conjugate, mapPath, revPath, revGerm, List.map_map, Function.comp_def] using h
+  simp only [conjugate, mapPath_append, mapPath_revPath] at h
+  exact h
 end RootPaths
 
 namespace PushoutFundamental
@@ -84,8 +82,7 @@ theorem read_pushPath (l : List (L.E × Bool)) :
   | cons e l ih =>
       simp only [List.map_cons, EdgeLabels.read_cons, ih]
       congr 1
-      rcases e with ⟨e, b⟩
-      cases b <;> simp [EdgeLabels.germ, labels_pushE p i hiV hiE hD hL d₀ ht]
+      simp_all [EdgeLabels.germ, labels_pushE p i hiV hiE hD hL d₀ ht]
 
 include ht in
 theorem labels_rel (f : (pushoutComplex p i hiV hiE).F) :

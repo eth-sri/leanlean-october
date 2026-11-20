@@ -2,8 +2,12 @@ module
 
 public import RequestProject.CoverChainComplex
 public import RequestProject.SchreierTransversal
+public import RequestProject.FinsuppBasis
+public import Mathlib.Algebra.Module.NatInt
 
 @[expose] public section
+
+open scoped Classical
 
 /-!
 # The Magnus/Blanchfield theorem: the kernel of the Fox vector map is `[Ñ, Ñ]`
@@ -29,49 +33,46 @@ The proof is the elementary one, via the Schreier transversal `T` of
   be injective on `Ñ/[Ñ, Ñ]` (`FiniteChains.foxVec_eq_zero_iff`).
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
 open MonoidAlgebra FreeGroup
 
-variable {α : Type*} [DecidableEq α] (Nsub : Subgroup (FreeGroup α)) [Nsub.Normal]
+variable {α : Type*}  (Nsub : Subgroup (FreeGroup α)) [Nsub.Normal]
 
 /-! ### Elementary computations with Fox vectors -/
 
-omit [DecidableEq α] in
+
 theorem qgrp_mul (u v : FreeGroup α) :
     qgrp Nsub (u * v) = qgrp Nsub u * qgrp Nsub v := by
   rw [qgrp, qgrp, qgrp, MonoidAlgebra.single_mul_single, QuotientGroup.mk_mul, mul_one]
 
 /-- The coefficient of the coset of `s` in an element of `ℤ[Q]`. -/
 def coefAt (s : FreeGroup α) (z : CoverRing Nsub) : ℤ :=
-  z.coeff (QuotientGroup.mk s : FreeGroup α ⧸ Nsub)
+  z.coeff (QuotientGroup.mk s)
 
-omit [DecidableEq α] in
+
 @[simp] theorem coefAt_zero (s : FreeGroup α) : coefAt Nsub s 0 = 0 := rfl
 
-omit [DecidableEq α] in
+
 theorem coefAt_add (s : FreeGroup α) (z w : CoverRing Nsub) :
     coefAt Nsub s (z + w) = coefAt Nsub s z + coefAt Nsub s w := rfl
 
-omit [DecidableEq α] in
+
 omit [Nsub.Normal] in
 theorem coefAt_neg (s : FreeGroup α) (z : CoverRing Nsub) :
     coefAt Nsub s (-z) = -coefAt Nsub s z := rfl
 
-omit [DecidableEq α] in
+
 theorem coefAt_sub (s : FreeGroup α) (z w : CoverRing Nsub) :
     coefAt Nsub s (z - w) = coefAt Nsub s z - coefAt Nsub s w := rfl
 
-omit [DecidableEq α] in
+
 omit [Nsub.Normal] in
 theorem coefAt_qgrp_self (u : FreeGroup α) : coefAt Nsub u (qgrp Nsub u) = 1 :=
   Finsupp.single_eq_same
 
-omit [DecidableEq α] in
+
 omit [Nsub.Normal] in
 theorem coefAt_qgrp_of_ne {s u : FreeGroup α}
     (h : (QuotientGroup.mk u : FreeGroup α ⧸ Nsub) ≠ QuotientGroup.mk s) :
@@ -93,8 +94,7 @@ theorem foxVec_inv' (u : FreeGroup α) (x : α) :
 @[simp] theorem foxVec_of (x y : α) :
     foxVec Nsub (FreeGroup.of y) x = if x = y then 1 else 0 := by
   show proj Nsub (fox x (FreeGroup.of y)) = _
-  rw [fox_of]
-  split <;> simp
+  simp
 
 /-! ### Triangularity of the Fox vectors of the Schreier generators -/
 
@@ -114,8 +114,7 @@ theorem coefAt_foxVec_rep (q : FreeGroup α ⧸ Nsub) {s : FreeGroup α} (hs : s
     | succ n ih =>
         intro q hq
         by_cases h : clen Nsub q = 0
-        · rw [rep_of_clen_eq_zero Nsub h, foxVec_one]
-          rfl
+        · simp_all
         · have hlt := parentData_clen Nsub h
           have hIH : coefAt Nsub s (foxVec Nsub (rep Nsub (parentData Nsub h).1) x) = 0 :=
             ih _ (by omega)
@@ -134,7 +133,7 @@ theorem coefAt_foxVec_rep (q : FreeGroup α ⧸ Nsub) {s : FreeGroup α} (hs : s
                 rw [foxVec_of, if_pos rfl, mul_one]
                 by_cases hst : (QuotientGroup.mk t' : FreeGroup α ⧸ Nsub) = QuotientGroup.mk s
                 · exfalso
-                  have hts : s = t' := eq_of_mk_eq Nsub hs ht'mem hst.symm
+                  have hts  := eq_of_mk_eq Nsub hs ht'mem hst.symm
                   rw [hts] at hsx
                   exact hsx (by rw [← hqrep]; exact rep_mem_repSet Nsub q)
                 · exact coefAt_qgrp_of_ne Nsub hst
@@ -152,7 +151,7 @@ theorem coefAt_foxVec_rep (q : FreeGroup α ⧸ Nsub) {s : FreeGroup α} (hs : s
                 · exfalso
                   have hmem : t' * (FreeGroup.of x)⁻¹ ∈ repSet Nsub := by
                     rw [← hqrep]; exact rep_mem_repSet Nsub q
-                  have hts : s = t' * (FreeGroup.of x)⁻¹ := eq_of_mk_eq Nsub hs hmem hst.symm
+                  have hts  := eq_of_mk_eq Nsub hs hmem hst.symm
                   rw [hts] at hsx
                   refine hsx ?_
                   rw [inv_mul_cancel_right]
@@ -160,7 +159,7 @@ theorem coefAt_foxVec_rep (q : FreeGroup α ⧸ Nsub) {s : FreeGroup α} (hs : s
                 · rw [coefAt_qgrp_of_ne Nsub hst, neg_zero]
               · rw [foxVec_inv' Nsub, foxVec_of, if_neg hxy, mul_zero, neg_zero, mul_zero]
                 exact coefAt_zero Nsub s
-  exact key (clen Nsub q) q le_rfl
+  tauto
 
 /-- **Claim B.**  Triangularity of the Fox vectors of the Schreier generators: at the
 "leading" coefficient of its own Schreier pair a generator has coefficient `1`, and at the
@@ -196,7 +195,7 @@ theorem coefAt_foxVec_schreierGen {t : FreeGroup α} (ht : t ∈ repSet Nsub) (y
 
 /-! ### The Schreier generators of the proper pairs -/
 
-omit [DecidableEq α] in
+
 /-- A Schreier generator attached to a pair with `t·x ∈ T` is trivial. -/
 theorem schreierGen_eq_one {t : FreeGroup α} (x : α)
     (h : t * FreeGroup.of x ∈ repSet Nsub) : schreierGen Nsub t x = 1 := by
@@ -208,12 +207,12 @@ def properSchreierSet : Set (FreeGroup α) :=
   {g | ∃ (q : FreeGroup α ⧸ Nsub) (x : α),
     rep Nsub q * FreeGroup.of x ∉ repSet Nsub ∧ g = schreierGen Nsub (rep Nsub q) x}
 
-omit [DecidableEq α] in
+
 theorem properSchreierSet_subset : properSchreierSet Nsub ⊆ (Nsub : Set (FreeGroup α)) := by
   rintro g ⟨q, x, -, rfl⟩
   exact schreierGen_mem Nsub _ _
 
-omit [DecidableEq α] in
+
 theorem closure_properSchreierSet : Subgroup.closure (properSchreierSet Nsub) = Nsub := by
   refine le_antisymm ?_ ?_
   · rw [Subgroup.closure_le]
@@ -224,7 +223,7 @@ theorem closure_properSchreierSet : Subgroup.closure (properSchreierSet Nsub) = 
       by_cases h : rep Nsub q * FreeGroup.of x ∈ repSet Nsub
       · show schreierGen Nsub (rep Nsub q) x ∈ _
         rw [schreierGen_eq_one Nsub x h]
-        exact Subgroup.one_mem _
+        aesop
       · exact Subgroup.subset_closure ⟨q, x, h, rfl⟩
     intro w hw
     refine hle ?_
@@ -241,60 +240,30 @@ theorem eq_zero_of_forall_coefHom {M : Type*} [AddCommGroup M] {Idx : Type*} (g 
     (hoff : ∀ i j, j ≠ i → c i (g j) = 0)
     {a : M} (ha : ∀ i, c i a = 0) : a = 0 := by
   classical
-  have key : ∀ b ∈ AddSubgroup.closure (Set.range g),
-      ∃ d : Idx →₀ ℤ, b = d.sum fun i n => n • g i := by
-    intro b hb
-    induction hb using AddSubgroup.closure_induction with
-    | mem x hx =>
-        obtain ⟨i, rfl⟩ := hx
-        exact ⟨Finsupp.single i 1, by simp⟩
-    | zero => exact ⟨0, by simp⟩
-    | add x y _ _ ihx ihy =>
-        obtain ⟨d₁, h₁⟩ := ihx
-        obtain ⟨d₂, h₂⟩ := ihy
-        refine ⟨d₁ + d₂, ?_⟩
-        rw [h₁, h₂, Finsupp.sum_add_index' (by simp) (fun i n m => by rw [add_smul])]
-    | neg x _ ih =>
-        obtain ⟨d, hd⟩ := ih
-        refine ⟨-d, ?_⟩
-        rw [hd, Finsupp.sum_neg_index (by simp)]
-        simp [neg_smul, Finsupp.sum_neg]
-  obtain ⟨d, rfl⟩ := key a (hgen a)
-  have hd : ∀ i, d i = 0 := by
-    intro i
-    have h0 := ha i
-    rw [map_finsuppSum] at h0
-    have hterm : ∀ j : Idx, ∀ n : ℤ, c i (n • g j) = if j = i then n else 0 := by
-      intro j n
-      rw [map_zsmul]
-      by_cases hji : j = i
-      · subst hji
-        rw [hdiag j, if_pos rfl, smul_eq_mul, mul_one]
-      · rw [hoff i j hji, if_neg hji, smul_zero]
-    rw [Finsupp.sum_congr (g2 := fun j n => if j = i then n else 0)
-      (fun j _ => hterm j (d j))] at h0
-    rw [Finsupp.sum_ite_eq' d i (fun _ n => n)] at h0
-    by_cases hi : i ∈ d.support
-    · rwa [if_pos hi] at h0
-    · exact Finsupp.notMem_support_iff.1 hi
-  have hzero : d = 0 := Finsupp.ext hd
-  rw [hzero]
-  simp
+  have hm : a ∈ Submodule.span ℤ (Set.range g) := by
+    have h := hgen a
+    rwa [← Submodule.span_int_eq_addSubgroupClosure] at h
+  rw [← Finsupp.range_linearCombination] at hm
+  obtain ⟨d, rfl⟩ := hm
+  have hc (i : Idx) (z : Idx →₀ ℤ) : c i (Finsupp.linearCombination ℤ g z) = z i := by
+    finsupp_basis z
+    intro j
+    by_cases h : j = i
+    · subst j
+      simp [hdiag]
+    · simp [h, hoff i j h]
+  have hd : d = 0 := Finsupp.ext (fun i => (hc i d).symm.trans (ha i))
+  simp [hd]
 
 /-! ### The Fox vector map on `Ñ` and its kernel -/
 
 /-- The Fox vector map, as a homomorphism on `Ñ`. -/
 noncomputable def foxHomNsub : Nsub →* Multiplicative (α → CoverRing Nsub) where
   toFun w := Multiplicative.ofAdd (foxVec Nsub (w : FreeGroup α))
-  map_one' := by
-    show Multiplicative.ofAdd (foxVec Nsub (1 : FreeGroup α)) = 1
-    rw [foxVec_one]
-    rfl
+  map_one' := rfl
 
   map_mul' := fun a b => by
-    show Multiplicative.ofAdd (foxVec Nsub ((a : FreeGroup α) * (b : FreeGroup α))) = _
-    rw [foxVec_mul a.2]
-    rfl
+    simp_all [foxVec_mul a.2]
 
 /-- The Fox vector map on the abelianization of `Ñ`. -/
 noncomputable def foxAb : Abelianization Nsub →* Multiplicative (α → CoverRing Nsub) :=
@@ -303,20 +272,13 @@ noncomputable def foxAb : Abelianization Nsub →* Multiplicative (α → CoverR
 /-- The Fox vector map on the abelianization of `Ñ`, written additively. -/
 noncomputable def foxAbAdd : Additive (Abelianization Nsub) →+ (α → CoverRing Nsub) where
   toFun a := Multiplicative.toAdd (foxAb Nsub (Additive.toMul a))
-  map_zero' := by
-    show Multiplicative.toAdd (foxAb Nsub 1) = 0
-    rw [_root_.map_one]
-    rfl
+  map_zero' := rfl
   map_add' := fun a b => by
-    show Multiplicative.toAdd (foxAb Nsub (Additive.toMul a * Additive.toMul b)) = _
-    rw [_root_.map_mul]
-    rfl
+    simp
 
 theorem foxAbAdd_of (w : Nsub) :
     foxAbAdd Nsub (Additive.ofMul (Abelianization.of w)) = foxVec Nsub (w : FreeGroup α) := by
-  show Multiplicative.toAdd (foxAb Nsub (Abelianization.of w)) = _
-  rw [foxAb, Abelianization.lift_apply_of]
-  rfl
+  tauto
 
 /-- The index set of the Schreier generators: pairs `(q, x)` with `rep q · x ∉ T`. -/
 def SchreierIdx : Type _ :=
@@ -330,9 +292,9 @@ noncomputable def schreierClass (i : SchreierIdx Nsub) : Additive (Abelianizatio
 /-- The functional reading off the leading coefficient of a Schreier pair. -/
 noncomputable def schreierCoef (i : SchreierIdx Nsub) :
     Additive (Abelianization Nsub) →+ ℤ :=
-  (Finsupp.applyAddHom (QuotientGroup.mk (rep Nsub i.1.1) : FreeGroup α ⧸ Nsub)).comp
-    ((MonoidAlgebra.coeffAddEquiv).toAddMonoidHom.comp
-      ((Pi.evalAddMonoidHom (fun _ : α => CoverRing Nsub) i.1.2).comp (foxAbAdd Nsub)))
+  (Finsupp.applyAddHom (QuotientGroup.mk (rep Nsub i.1.1))).comp
+    (MonoidAlgebra.coeffAddEquiv.toAddMonoidHom.comp
+      ((Pi.evalAddMonoidHom (fun _  => CoverRing Nsub) i.1.2).comp (foxAbAdd Nsub)))
 
 theorem schreierCoef_apply (i : SchreierIdx Nsub) (a : Additive (Abelianization Nsub)) :
     schreierCoef Nsub i a = coefAt Nsub (rep Nsub i.1.1) (foxAbAdd Nsub a i.1.2) := rfl
@@ -354,33 +316,31 @@ theorem schreierCoef_schreierClass_of_ne (i j : SchreierIdx Nsub) (hij : j ≠ i
   rintro ⟨h1, h2⟩
   refine hij ?_
   have hq : i.1.1 = j.1.1 := by
-    have := congrArg (fun t : FreeGroup α => (QuotientGroup.mk t : FreeGroup α ⧸ Nsub)) h1
+    have := congrArg (fun t  => (QuotientGroup.mk t : FreeGroup α ⧸ Nsub)) h1
     simpa [mk_rep] using this
   exact Subtype.ext (Prod.ext hq.symm h2.symm)
 
-omit [DecidableEq α] in
+
 /-- The Schreier classes generate the abelianization of `Ñ`. -/
 theorem closure_schreierClass (a : Additive (Abelianization Nsub)) :
     a ∈ AddSubgroup.closure (Set.range (schreierClass Nsub)) := by
   obtain ⟨u, hu⟩ := Quotient.exists_rep (Additive.toMul a)
   have ha : a = Additive.ofMul (Abelianization.of u) := by
-    apply Additive.toMul.injective
-    exact hu.symm
+    tauto
   subst ha
-  have hmem : u ∈ Subgroup.closure ((Nsub.subtype) ⁻¹' properSchreierSet Nsub) := by
+  have hmem : u ∈ Subgroup.closure (Nsub.subtype ⁻¹' properSchreierSet Nsub) := by
     have hmap : Subgroup.map Nsub.subtype
-        (Subgroup.closure ((Nsub.subtype) ⁻¹' properSchreierSet Nsub)) = Nsub := by
+        (Subgroup.closure (Nsub.subtype ⁻¹' properSchreierSet Nsub)) = Nsub := by
       have hsub : properSchreierSet Nsub ⊆ Set.range ⇑Nsub.subtype := fun g hg =>
         ⟨⟨g, properSchreierSet_subset Nsub hg⟩, rfl⟩
       rw [MonoidHom.map_closure, Set.image_preimage_eq_inter_range,
         Set.inter_eq_self_of_subset_left hsub]
       exact closure_properSchreierSet Nsub
-    have htop : Subgroup.map Nsub.subtype (⊤ : Subgroup Nsub) = Nsub := by
+    have htop : Subgroup.map Nsub.subtype (⊤) = Nsub := by
       ext x
       simp [Subgroup.mem_map]
     have := Subgroup.map_injective (f := Nsub.subtype) Subtype.val_injective (hmap.trans htop.symm)
-    rw [this]
-    trivial
+    simp_all
   clear hu
   induction hmem using Subgroup.closure_induction with
   | mem v hv =>
@@ -388,27 +348,19 @@ theorem closure_schreierClass (a : Additive (Abelianization Nsub)) :
       refine AddSubgroup.subset_closure (Set.mem_range.2 ⟨⟨(q, x), hnot⟩, ?_⟩)
       unfold schreierClass
       congr 2
-      exact Subtype.ext hval.symm
+      aesop
   | one =>
-      have : Additive.ofMul (Abelianization.of (1 : Nsub)) = 0 := by
-        show Additive.ofMul (Abelianization.of (1 : Nsub)) = Additive.ofMul 1
-        rw [_root_.map_one]
+      have : Additive.ofMul (Abelianization.of (1 : Nsub)) = 0 := rfl
       rw [this]
       exact AddSubgroup.zero_mem _
   | mul v w _ _ ihv ihw =>
       have : Additive.ofMul (Abelianization.of (v * w))
-          = Additive.ofMul (Abelianization.of v) + Additive.ofMul (Abelianization.of w) := by
-        show Additive.ofMul (Abelianization.of (v * w))
-          = Additive.ofMul (Abelianization.of v * Abelianization.of w)
-        rw [_root_.map_mul]
+          = Additive.ofMul (Abelianization.of v) + Additive.ofMul (Abelianization.of w) := rfl
       rw [this]
       exact AddSubgroup.add_mem _ ihv ihw
   | inv v _ ihv =>
       have : Additive.ofMul (Abelianization.of v⁻¹)
-          = -Additive.ofMul (Abelianization.of v) := by
-        show Additive.ofMul (Abelianization.of v⁻¹)
-          = Additive.ofMul (Abelianization.of v)⁻¹
-        rw [_root_.map_inv]
+          = -Additive.ofMul (Abelianization.of v) := rfl
       rw [this]
       exact AddSubgroup.neg_mem _ ihv
 
@@ -424,13 +376,10 @@ theorem foxVec_eq_zero_iff {w : FreeGroup α} (hw : w ∈ Nsub) :
         (schreierCoef_schreierClass_of_ne Nsub) ?_
       intro i
       rw [schreierCoef_apply, foxAbAdd_of]
-      show coefAt Nsub (rep Nsub i.1.1) (foxVec Nsub w i.1.2) = 0
-      rw [h0]
-      rfl
-    have hcomm : (⟨w, hw⟩ : Nsub) ∈ commutator Nsub := by
+      simp_all
+    have hcomm : ⟨w, hw⟩ ∈ commutator Nsub := by
       have h1 : Abelianization.of (⟨w, hw⟩ : Nsub) = 1 := by
-        apply Additive.ofMul.injective
-        exact hzero
+        tauto
       rw [Abelianization.of] at h1
       exact (QuotientGroup.eq_one_iff _).1 h1
     rw [← Subgroup.map_subtype_commutator Nsub]
@@ -440,8 +389,8 @@ theorem foxVec_eq_zero_iff {w : FreeGroup α} (hw : w ∈ Nsub) :
       rw [← Subgroup.map_subtype_commutator Nsub]
       exact Subgroup.map_mono (Abelianization.commutator_subset_ker (foxHomNsub Nsub))
     obtain ⟨u, hu, huw⟩ := hker hcomm
-    have hu' : (foxHomNsub Nsub) u = 1 := hu
-    have hzero : foxVec Nsub (u : FreeGroup α) = 0 := hu'
+    have hu'  := hu
+    have hzero  := hu'
     rw [← huw]
     exact hzero
 

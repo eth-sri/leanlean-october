@@ -50,10 +50,7 @@ def graphRoseHomotopyEquiv :
       (treeHomotopyEquivPUnit r T)
       (partitionRegroup r T.isTree (cell r (boundaryFamilyInclusion J _) ⟨d.1.val, d.2⟩)) = _
   rw [partitionRegroup_firstCell r T.isTree d]
-  exact diskAttachmentBaseChangeHomotopyEquiv_old (nonTreeAttaching r hr T)
-    (treeHomotopyEquivPUnit r T)
-    (cell (partitionFirstAttaching r T.isTree)
-      (boundaryFamilyInclusion {j : J // T.isTree j} (Fin 1 → ℝ)) d)
+  tauto
 
 @[simp] theorem graphRoseHomotopyEquiv_nonTreeCell
     (d : DiskFamily {j : J // ¬T.isTree j} (Fin 1 → ℝ)) :

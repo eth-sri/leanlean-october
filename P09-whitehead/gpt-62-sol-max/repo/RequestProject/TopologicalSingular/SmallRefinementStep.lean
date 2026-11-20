@@ -22,15 +22,13 @@ structure SmallRefinementStage (U : ι → Set X) (n : ℕ) where
 
 theorem all_zero_chains_small (U : ι → Set X) (hcover : ∀ x, ∃ i, x ∈ U i)
     (c : Chain X 0) : c ∈ smallChains U 0 := by
-  induction c using Finsupp.induction_linear with
-  | zero => exact Submodule.zero_mem _
-  | add c d hc hd => exact Submodule.add_mem _ hc hd
-  | single σ r =>
-    obtain ⟨i, hi⟩ := hcover (σ (stdSimplex.vertex 0))
-    apply single_mem_small U 0 σ r
-    refine ⟨i, fun z => ?_⟩
-    letI : Subsingleton (Domain 0) := inferInstanceAs (Subsingleton (stdSimplex ℝ (Fin 1)))
-    rwa [show z = stdSimplex.vertex 0 from Subsingleton.elim _ _]
+  apply Finsupp.map_mem_of_basis _ LinearMap.id _ c
+  intro σ
+  obtain ⟨i, hi⟩ := hcover (σ (stdSimplex.vertex 0))
+  apply single_mem_small U 0 σ 1
+  refine ⟨i, fun z => ?_⟩
+  haveI : Subsingleton (Domain 0) := inferInstanceAs (Subsingleton (stdSimplex ℝ (Fin 1)))
+  rwa [Subsingleton.elim z (stdSimplex.vertex 0)]
 
 noncomputable def smallRefinementStageZero (U : ι → Set X) (hcover : ∀ x, ∃ i, x ∈ U i) :
     SmallRefinementStage U 0 where
@@ -51,7 +49,7 @@ theorem smallRefinementStep_exists (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
       h ∈ subChains (Set.range σ) (n + 2) ∧
       boundary (n + 1) h = Finsupp.single σ 1 - d - s.homotopyMap (boundary n (Finsupp.single σ 1)) := by
   let c := Finsupp.single σ 1 - s.homotopyMap (boundary n (Finsupp.single σ 1))
-  have hc : c ∈ subChains (Set.range σ) (n + 1) :=
+  have hc  :=
     Submodule.sub_mem _ (single_mem_range_subChains σ 1)
       (carried_linearMap_mem_subChains s.homotopyMap s.homotopy_support _
         (boundary_mem_subChains _ n (single_mem_range_subChains σ 1)))

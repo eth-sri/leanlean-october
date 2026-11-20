@@ -19,9 +19,6 @@ calculation or property (B2).
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.BlockFamily
 
@@ -33,7 +30,7 @@ variable {α Jr Sx : Type} {Zt Mt : Sx → Type}
 
 /-- Replace only the selected original relator, retaining all other entries. -/
 abbrev IndividualGroup (s : Sx) :=
-  PresGroup (substPresF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
+  PresGroup (substPresF (oneRel ρ s) (fun _  => bsub s))
 
 /-- The actual inclusion of the generators of one individual substitution. -/
 def individualGenEmb (s : Sx) :
@@ -47,9 +44,7 @@ theorem individualGenEmb_old (s : Sx) (w : FreeGroup α) :
   have h : (FreeGroup.map (individualGenEmb (α := α) (Zt := Zt) s)).comp
       (FreeGroup.map (Sum.inl (β := Σ _ : PUnit.{1}, Zt s))) =
       FreeGroup.map (Sum.inl (β := Σ t : Sx, Zt t)) := by
-    apply FreeGroup.ext_hom
-    intro a
-    simp [individualGenEmb]
+    aesop
   exact DFunLike.congr_fun h w
 
 theorem individualGenEmb_block (s : Sx) (w : FreeGroup (α ⊕ Zt s)) :
@@ -57,10 +52,10 @@ theorem individualGenEmb_block (s : Sx) (w : FreeGroup (α ⊕ Zt s)) :
         (FreeGroup.map (genEmb (Zt := fun _ : PUnit.{1} => Zt s) PUnit.unit) w) =
       FreeGroup.map (genEmb (Zt := Zt) s) w := by
   have h : (FreeGroup.map (individualGenEmb (α := α) (Zt := Zt) s)).comp
-      (FreeGroup.map (genEmb (Zt := fun _ : PUnit.{1} => Zt s) PUnit.unit)) =
+      (FreeGroup.map (genEmb (Zt := fun _  => Zt s) PUnit.unit)) =
       FreeGroup.map (genEmb (Zt := Zt) s) := by
     apply FreeGroup.ext_hom
-    rintro (a | z) <;> simp [individualGenEmb, genEmb]
+    aesop
   exact DFunLike.congr_fun h w
 
 /-- The canonical map of an individual substituted factor to the simultaneous group.
@@ -73,7 +68,7 @@ def factorToFamily (hfill : FilledF ρ bsub) (s : Sx) :
     refine Subgroup.normalClosure_le_normal ?_
     rintro _ ⟨k, rfl⟩
     change (QuotientGroup.mk (FreeGroup.map (individualGenEmb (Zt := Zt) s)
-      (substPresF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s) k)) :
+      (substPresF (oneRel ρ s) (fun _  => bsub s) k)) :
       PresGroup (substPresF ρ bsub)) = 1
     rcases k with (r | ⟨p, m⟩)
     · rw [substPresF_inl, individualGenEmb_old]
@@ -86,43 +81,21 @@ def factorToFamily (hfill : FilledF ρ bsub) (s : Sx) :
       exact (QuotientGroup.eq_one_iff _).2
         (Subgroup.subset_normalClosure ⟨Sum.inr ⟨s, m⟩, rfl⟩))
 
-@[simp] theorem factorToFamily_mk (hfill : FilledF ρ bsub) (s : Sx)
-    (w : FreeGroup (α ⊕ (Σ _ : PUnit.{1}, Zt s))) :
-    factorToFamily ρ bsub hfill s (QuotientGroup.mk w) =
-      QuotientGroup.mk (FreeGroup.map (individualGenEmb (Zt := Zt) s) w) := rfl
 
 /-- The original group maps to an individual factor by the single substitution,
 with the original relator indexing restored. -/
 def individualBase
     (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
     (s : Sx) : PresGroup ρ →* IndividualGroup ρ bsub s :=
-  (substHomF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s) (hone s)).comp
+  (substHomF (oneRel ρ s) (fun _  => bsub s) (hone s)).comp
     (oneEquiv ρ s).toMonoidHom
 
-@[simp] theorem individualBase_mk
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
-    (s : Sx) (w : FreeGroup α) :
-    individualBase ρ bsub hone s (QuotientGroup.mk w) =
-      QuotientGroup.mk (FreeGroup.map (Sum.inl (β := Σ _ : PUnit.{1}, Zt s)) w) := rfl
 
-/-- Compatibility of the actual factor maps with the common original group. -/
-theorem factorToFamily_comp_individualBase (hfill : FilledF ρ bsub)
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s)) (s : Sx) :
-    (factorToFamily ρ bsub hfill s).comp (individualBase ρ bsub hone s) =
-      substHomF ρ bsub hfill := by
-  apply MonoidHom.ext
-  intro x
-  induction x using QuotientGroup.induction_on with
-  | _ w =>
-      change factorToFamily ρ bsub hfill s
-        (individualBase ρ bsub hone s (QuotientGroup.mk w)) =
-          substHomF ρ bsub hfill (QuotientGroup.mk w)
-      rw [individualBase_mk, factorToFamily_mk, individualGenEmb_old, substHomF_mk]
 
 /-- The block free group maps to its own individual substituted factor. -/
 def individualBlockFree (s : Sx) : FreeGroup (α ⊕ Zt s) →* IndividualGroup ρ bsub s :=
   (QuotientGroup.mk' _).comp
-    (FreeGroup.map (genEmb (Zt := fun _ : PUnit.{1} => Zt s) PUnit.unit))
+    (FreeGroup.map (genEmb (Zt := fun _  => Zt s) PUnit.unit))
 
 theorem individualBlockFree_mark
     (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
@@ -155,20 +128,9 @@ def familyToAmalgam
     (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s)) (a : α) :
     familyToAmalgam ρ bsub hone (QuotientGroup.mk (FreeGroup.of (Sum.inl a))) =
       Monoid.PushoutI.base (individualBase ρ bsub hone)
-        (QuotientGroup.mk (FreeGroup.of a)) := by
-  change FreeGroup.lift (familyAmalgamMaps ρ bsub hone).gen (FreeGroup.of _) = _
-  rw [FreeGroup.lift_apply_of]
-  rfl
+        (QuotientGroup.mk (FreeGroup.of a)) := rfl
 
-@[simp] theorem familyToAmalgam_internal
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
-    (s : Sx) (z : Zt s) :
-    familyToAmalgam ρ bsub hone
-        (QuotientGroup.mk (FreeGroup.of (Sum.inr ⟨s, z⟩))) =
-      Monoid.PushoutI.of s (individualBlockFree ρ bsub s (FreeGroup.of (Sum.inr z))) := by
-  change FreeGroup.lift (familyAmalgamMaps ρ bsub hone).gen (FreeGroup.of _) = _
-  rw [FreeGroup.lift_apply_of]
-  rfl
+
 
 /-- The factor comparison triangle identifies the composite with the genuine pushout injection. -/
 theorem familyToAmalgam_comp_factor (hfill : FilledF ρ bsub)
@@ -186,34 +148,11 @@ theorem familyToAmalgam_comp_factor (hfill : FilledF ρ bsub)
           Monoid.PushoutI.of s
             (individualBase ρ bsub hone s (QuotientGroup.mk (FreeGroup.of a)))
       rw [familyToAmalgam_old, Monoid.PushoutI.of_apply_eq_base]
-    · cases p
-      exact familyToAmalgam_internal ρ bsub hone s z
-  apply MonoidHom.ext
-  intro x
-  induction x using QuotientGroup.induction_on with
-  | _ w => exact DFunLike.congr_fun hw w
+    · tauto
+  aesop
 
-/-- The inverse comparison, obtained from the wide pushout universal property. -/
-def amalgamToFamily (hfill : FilledF ρ bsub)
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s)) :
-    Monoid.PushoutI (individualBase ρ bsub hone) →* PresGroup (substPresF ρ bsub) :=
-  Monoid.PushoutI.lift (factorToFamily ρ bsub hfill) (substHomF ρ bsub hfill)
-    (factorToFamily_comp_individualBase ρ bsub hfill hone)
 
-@[simp] theorem amalgamToFamily_of (hfill : FilledF ρ bsub)
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
-    (s : Sx) (x : IndividualGroup ρ bsub s) :
-    amalgamToFamily ρ bsub hfill hone (Monoid.PushoutI.of s x) =
-      factorToFamily ρ bsub hfill s x := by
-  simp [amalgamToFamily]
 
-@[simp] theorem amalgamToFamily_base (hfill : FilledF ρ bsub)
-    (hone : ∀ s, FilledF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
-    (x : PresGroup ρ) :
-    amalgamToFamily ρ bsub hfill hone
-        (Monoid.PushoutI.base (individualBase ρ bsub hone) x) =
-      substHomF ρ bsub hfill x := by
-  simp [amalgamToFamily]
 
 /-- Each individual factor embeds when every individual substitution embeds the original group.
 The only injectivity input concerns the already constructed individual base maps. -/

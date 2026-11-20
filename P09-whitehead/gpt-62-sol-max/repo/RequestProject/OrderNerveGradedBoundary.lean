@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.OrderNerveGradedDictionary
+public import RequestProject.FinsuppBasis
 public import RequestProject.OrderNerveExplicitSingularMap
 public import RequestProject.TopologicalSingular.SupportedFillings
 
@@ -29,18 +30,16 @@ theorem orderNerveGradedEncode_boundary (n : ℕ) (c : ComposableArrows P (n + 1
     orderNerveGradedEncode n ((AlternatingFaceMapComplex.objD
       (mathlibOrderNerveModule P) n).hom c) =
       Nerve.bdry (orderNerveGradedEncode (n + 1) c) := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
-  | single s r =>
-    rw (config := { transparency := .default }) [mathlibOrderNerve_d_single, map_sum, orderNerveGradedEncode_single,
-      map_zsmul, Nerve.bdry_of]
-    unfold orderNerveVertexList
-    rw (config := { transparency := .default }) [Nerve.bdryOn_ofFn, Finset.smul_sum]
-    apply Finset.sum_congr rfl
-    intro i _
-    rw (config := { transparency := .default }) [map_smul, orderNerveGradedEncode_single, smul_comm]
-    rfl
+  finsupp_singles c
+  intro s r
+  erw [mathlibOrderNerve_d_single, map_sum, orderNerveGradedEncode_single,
+    map_zsmul, Nerve.bdry_of]
+  unfold orderNerveVertexList
+  erw [Nerve.bdryOn_ofFn, Finset.smul_sum]
+  apply Finset.sum_congr rfl
+  intro i _
+  erw [map_smul, orderNerveGradedEncode_single, smul_comm]
+  rfl
 
 /-- Realize a homogeneous part of the augmented nerve by the canonical unit. -/
 noncomputable def orderNerveGradedRealize (P : Type) [PartialOrder P] (n : ℕ) :
@@ -53,41 +52,27 @@ theorem orderNerveGradedRealize_boundary (n : ℕ) {c : Nerve.Ch P} (hc : c ∈ 
   have hd : (AlternatingFaceMapComplex.objD (mathlibOrderNerveModule P) n).hom
       (orderNerveGradedDecode (n + 1) c) = orderNerveGradedDecode n (Nerve.bdry c) := by
     apply orderNerveGradedEncode_injective n
-    rw (config := { transparency := .default }) [orderNerveGradedEncode_boundary, orderNerveGradedEncode_decode _ hc,
+    erw [orderNerveGradedEncode_boundary, orderNerveGradedEncode_decode _ hc,
       orderNerveGradedEncode_decode _ (Nerve.bdry_mem_inc hc), Nerve.lengthProjection_bdry]
   have he := congrArg (fun f => f (orderNerveGradedDecode (n + 1) c))
     ((orderNerveExplicitSingularMap P).comm (n + 1) n)
-  rw (config := { transparency := .default }) [complex_d, AlternatingFaceMapComplex.obj_d_eq] at he
+  erw [complex_d, AlternatingFaceMapComplex.obj_d_eq] at he
   change (boundary n) ((orderNerveExplicitSingularMap P).f (n + 1)
       (orderNerveGradedDecode (n + 1) c)) =
     (orderNerveExplicitSingularMap P).f n (orderNerveGradedDecode n (Nerve.bdry c))
-  rw (config := { transparency := .default }) [← hd]
+  erw [← hd]
   exact he
 
 theorem orderNerveGradedRealize_supported (n : ℕ) (A : Set P)
     {c : Nerve.Ch P} (hc : c ∈ Nerve.IncOn A) :
     orderNerveGradedRealize P n c ∈
       subChains (orderNerveRealizationSubcomplex P A : Set (orderNerveRealization P)) n := by
-  classical
-  induction hc using AddSubgroup.closure_induction with
-  | mem x hx =>
-    rcases hx with ⟨l, hl, rfl⟩
-    change (orderNerveExplicitSingularMap P).f n (orderNerveGradedDecode n
-      (FreeAbelianGroup.of l)) ∈ _
-    rw (config := { transparency := .default }) [orderNerveGradedDecode_of]
-    by_cases h : ∃ s : ComposableArrows P n, orderNerveVertexList s = l
-    · rw (config := { transparency := .default }) [orderNerveGradedDecodeList, dif_pos h, orderNerveExplicitSingularMap_single]
-      apply single_mem_subChains
-      intro z
-      apply orderNerveSingularSimplex_supported
-      intro i
-      apply hl.2
-      have hs : h.choose.obj i ∈ orderNerveVertexList h.choose := List.mem_ofFn.mpr ⟨i, rfl⟩
-      exact (congrArg (fun L => h.choose.obj i ∈ L) h.choose_spec).mp hs
-    · rw (config := { transparency := .default }) [orderNerveGradedDecodeList, dif_neg h, map_zero]
-      exact Submodule.zero_mem _
-  | zero => simp
-  | add x y _ _ hx hy => simpa only [map_add] using Submodule.add_mem _ hx hy
-  | neg x _ hx => simpa only [map_neg] using Submodule.neg_mem _ hx
+  refine Nerve.map_decode_mem (orderNerveVertexEmbedding n)
+    ((orderNerveExplicitSingularMap P).f n).hom _ (fun t ht => ?_) hc
+  erw [orderNerveExplicitSingularMap_single]
+  apply single_mem_subChains
+  intro z
+  apply orderNerveSingularSimplex_supported
+  exact fun i => ht _ (List.mem_ofFn.mpr ⟨i, rfl⟩)
 
 end FiniteChains.Comb

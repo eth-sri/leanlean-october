@@ -52,13 +52,13 @@ theorem eq_posCube_of_negSet_empty {f : Cube V} (h : negSet f = ∅) :
   · have hvn : f v ≠ CubeCoord.neg := by
       intro hn
       have : v ∈ negSet f := by simpa using hn
-      simp [h] at this
+      simp_all
     have hvp : f v = CubeCoord.pos := by
       cases hfv : f v with
-      | free => exact absurd hfv hv
+      | free => aesop
       | pos => rfl
-      | neg => exact absurd hfv hvn
-    have : v ∉ freeSet f := by simpa using hv
+      | neg => aesop
+    have : v ∉ freeSet f := by aesop
     simp [posCube, this, hvp]
 
 /-- An elementary move of the adjacency graph: free the coordinate `c'` and fix the
@@ -72,8 +72,7 @@ def Move (L : ASC V) (f g : Cube V) : Prop :=
 omit [LinearOrder V] in
 omit [DecidableEq V] in
 theorem Move.symm {L : ASC V} {f g : Cube V} (h : Move L f g) : Move L g f := by
-  obtain ⟨c, c', hcc, hfc, hfc', hgc, hgc', hagree, hfL, hgL⟩ := h
-  exact ⟨c', c, hcc.symm, hgc', hgc, hfc', hfc, fun v hv hv' => (hagree v hv' hv).symm, hgL, hfL⟩
+  grind +locals
 
 omit [LinearOrder V] in
 /-- Two cubes joined by a move share a codimension one face: the cube obtained by fixing
@@ -85,19 +84,9 @@ theorem Move.shares_square {L : ASC V} {f g : Cube V} (h : Move L f g) :
   refine ⟨fun v => if v = c then g c else if v = c' then f c' else f v, ⟨c, ?_, ?_⟩,
     ⟨c', ?_, ?_⟩⟩
   · simpa using hgc
-  · funext v
-    by_cases hv : v = c
-    · subst hv; simp [hfc]
-    · by_cases hv' : v = c'
-      · subst hv'; simp [hv]
-      · simp [hv, hv']
+  · grind
   · simp [hcc.symm, hfc']
-  · funext v
-    by_cases hv : v = c'
-    · subst hv; simp [hgc']
-    · by_cases hvc : v = c
-      · subst hvc; simp [hv]
-      · simp [hv, hvc, hagree v hvc hv]
+  · grind
 
 /-- The result of a single move which frees `c'` and gives the sign `+1` to `c`. -/
 def moveTo (f : Cube V) (c c' : V) : Cube V := fun v =>
@@ -118,26 +107,14 @@ theorem freeSet_moveTo {f : Cube V} {c c' : V} (hcc : c ≠ c') (hfc : f c = Cub
 omit [LinearOrder V] in
 theorem negSet_moveTo_subset (f : Cube V) (c c' : V) : negSet (moveTo f c c') ⊆ negSet f := by
   intro v hv
-  simp only [mem_negSet, moveTo] at hv ⊢
-  by_cases hvc : v = c
-  · simp [hvc] at hv
-  · by_cases hvc' : v = c'
-    · have hne : c' ≠ c := by
-        rintro rfl
-        exact hvc hvc'
-      simp [hvc', hne] at hv
-    · simpa [hvc, hvc'] using hv
+  simp only [mem_negSet, moveTo] at hv ⊢ <;> grind
 
 omit [LinearOrder V] in
 /-- An elementary move along an edge of the dual graph of `L`. -/
 theorem move_moveTo {L : ASC V} {f : Cube V} {c c' : V} (hcc : c ≠ c')
     (hfc : f c = CubeCoord.free) (hfc' : f c' ≠ CubeCoord.free) (hfL : freeSet f ∈ L.faces)
     (hgL : freeSet (moveTo f c c') ∈ L.faces) : Move L f (moveTo f c c') := by
-  refine ⟨c, c', hcc, hfc, hfc', ?_, ?_, ?_, hfL, hgL⟩
-  · simp [moveTo]
-  · simp [moveTo, hcc.symm]
-  · intro v hv hv'
-    simp [moveTo, hv, hv']
+  grind +locals
 
 omit [Fintype V] [LinearOrder V] in
 /-- Two triangles sharing an edge differ in exactly one vertex each. -/
@@ -145,35 +122,29 @@ theorem exists_pair_of_triAdj {L : ASC V} {σ σ' : Finset V} (h : TriAdj L σ �
     ∃ c c', c ≠ c' ∧ c ∈ σ ∧ c ∉ σ' ∧ c' ∈ σ' ∧ c' ∉ σ ∧ σ' = insert c' (σ.erase c) := by
   obtain ⟨⟨-, hcard⟩, ⟨-, hcard'⟩, hint⟩ := h
   have hdiff : (σ \ σ').card = 1 := by
-    have := Finset.card_sdiff_add_card_inter σ σ'
-    omega
+    grind
   have hdiff' : (σ' \ σ).card = 1 := by
-    have := Finset.card_sdiff_add_card_inter σ' σ
-    rw [Finset.inter_comm] at this
-    omega
+    grind
   obtain ⟨c, hc⟩ := Finset.card_eq_one.1 hdiff
   obtain ⟨c', hc'⟩ := Finset.card_eq_one.1 hdiff'
-  have hcmem : c ∈ σ \ σ' := by rw [hc]; simp
-  have hc'mem : c' ∈ σ' \ σ := by rw [hc']; simp
+  have hcmem : c ∈ σ \ σ' := by simp_all
+  have hc'mem : c' ∈ σ' \ σ := by simp_all
   simp only [Finset.mem_sdiff] at hcmem hc'mem
   refine ⟨c, c', ?_, hcmem.1, hcmem.2, hc'mem.1, hc'mem.2, ?_⟩
   · rintro rfl
-    exact hcmem.2 hc'mem.1
+    aesop
   · apply Finset.eq_of_subset_of_card_le
     · intro z hz
       simp only [Finset.mem_insert, Finset.mem_erase]
       by_cases hzc' : z = c'
-      · exact Or.inl hzc'
+      · aesop
       · refine Or.inr ⟨?_, ?_⟩
         · rintro rfl
-          exact hcmem.2 hz
+          aesop
         · by_contra hzσ
-          have : z ∈ σ' \ σ := Finset.mem_sdiff.2 ⟨hz, hzσ⟩
-          rw [hc'] at this
-          exact hzc' (Finset.mem_singleton.1 this)
-    · have h1 : (insert c' (σ.erase c)).card ≤ (σ.erase c).card + 1 := Finset.card_insert_le _ _
-      have h2 : (σ.erase c).card = σ.card - 1 := Finset.card_erase_of_mem hcmem.1
-      omega
+          have  := Finset.mem_sdiff.2 ⟨hz, hzσ⟩
+          simp_all
+    · simp_all
 
 omit [LinearOrder V] in
 /-- **Moving along a path in the dual graph of `L`.**  A cube over the triangle `σ` can be
@@ -190,13 +161,13 @@ theorem exists_move_path {L : ASC V} {σ σ' : Finset V}
       obtain ⟨g, hgfree, hgneg, hgpath⟩ := ih f hf
       obtain ⟨c, c', hcc, hcτ, hcτ', hc'τ', hc'τ, hτ'⟩ := exists_pair_of_triAdj hstep
       have hgc : g c = CubeCoord.free := by
-        have : c ∈ freeSet g := by rw [hgfree]; exact hcτ
+        have : c ∈ freeSet g := by rw [hgfree]; assumption
         simpa using this
       have hgc' : g c' ≠ CubeCoord.free := by
         intro hcon
-        have : c' ∈ freeSet g := by simpa using hcon
+        have : c' ∈ freeSet g := by aesop
         rw [hgfree] at this
-        exact hc'τ this
+        aesop
       have hfreeNew : freeSet (moveTo g c c') = τ' := by
         rw [freeSet_moveTo hcc hgc, hgfree, hτ']
       refine ⟨moveTo g c c', hfreeNew, (negSet_moveTo_subset g c c').trans hgneg, ?_⟩
@@ -213,10 +184,10 @@ theorem reflTransGen_move_posCube {L : ASC V} (hdual : ∀ σ σ', IsTri L σ �
     ∀ (n : ℕ) (f : Cube V), IsTri L (freeSet f) → (negSet f).card ≤ n →
       Relation.ReflTransGen (Move L) f (posCube σ₀)
   | 0, f, hf, hn => by
-      have hempty : negSet f = ∅ := Finset.card_eq_zero.1 (Nat.le_zero.1 hn)
+      have hempty  := Finset.card_eq_zero.1 (Nat.le_zero.1 hn)
       obtain ⟨g, hgfree, hgneg, hgpath⟩ :=
         exists_move_path (hdual _ _ hf hσ₀) f rfl
-      have hgempty : negSet g = ∅ := Finset.subset_empty.1 (hempty ▸ hgneg)
+      have hgempty  := Finset.subset_empty.1 (hempty ▸ hgneg)
       have : g = posCube σ₀ := by
         rw [eq_posCube_of_negSet_empty hgempty, hgfree]
       rwa [this] at hgpath
@@ -226,14 +197,8 @@ theorem reflTransGen_move_posCube {L : ASC V} (hdual : ∀ σ σ', IsTri L σ �
       · obtain ⟨τ, hτ, hvτ⟩ := hcover v
         obtain ⟨g, hgfree, hgneg, hgpath⟩ := exists_move_path (hdual _ _ hf hτ) f rfl
         have hvg : v ∉ negSet g := by
-          intro hcon
-          have hvfree : g v = CubeCoord.free := by
-            have : v ∈ freeSet g := by rw [hgfree]; exact hvτ
-            simpa using this
-          rw [mem_negSet] at hcon
-          rw [hvfree] at hcon
-          exact CubeCoord.noConfusion hcon
-        have hstrict : (negSet g).card < (negSet f).card :=
+          aesop
+        have hstrict  :=
           Finset.card_lt_card ⟨hgneg, fun hcon => hvg (hcon hv)⟩
         have hgtri : IsTri L (freeSet g) := by rw [hgfree]; exact hτ
         have : (negSet g).card ≤ n := by omega
@@ -250,8 +215,7 @@ theorem reflTransGen_move {L : ASC V} (hdual : ∀ σ σ', IsTri L σ → IsTri 
     Relation.ReflTransGen (Move L) f g := by
   have hfp := reflTransGen_move_posCube hdual hcover hf (negSet f).card f hf le_rfl
   have hgp := reflTransGen_move_posCube hdual hcover hf (negSet g).card g hg le_rfl
-  have hgp_rev : Relation.ReflTransGen (Move L) (posCube (freeSet f)) g := by
-    exact Relation.ReflTransGen.mono (fun _ _ (step : Move L _ _) => step.symm) _ _
+  have hgp_rev := Relation.ReflTransGen.mono (fun _ _ step => step.symm) _ _
       (Relation.ReflTransGen.swap _ _ hgp)
   exact hfp.trans hgp_rev
 

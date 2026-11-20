@@ -26,11 +26,7 @@ theorem relatorCircleEnumeration_natural (j : J)
     h.relatorCircleMap j (relatorCircleEnumeration w j hw i) =
       relatorCircleEnumeration v (h.cell j) hv
         (Fin.cast (congrArg (fun n => n + 2) (h.relatorCircleSize_eq j)) i) := by
-  apply (relatorCircleIndexEquiv v (h.cell j)).injective
-  apply Fin.ext
-  rw [h.relatorCircleMap_index, relatorCircleEnumeration_index,
-    relatorCircleEnumeration_index]
-  rfl
+  solve_by_elim
 
 /-- The actual boundary coordinates of every retained cell commute with
 the literal presentation inclusion. -/
@@ -39,8 +35,7 @@ theorem relatorCircleBoundaryHomeomorph_natural (j : J)
     (x : orderNerveRealization (RelatorCircle w j)) :
     relatorCircleBoundaryHomeomorph v (h.cell j) hv
       (h.relatorCircleRealizationMap j x) =
-        relatorCircleBoundaryHomeomorph w j hw x := by
-  exact (relatorCircleCycle w j hw).boundaryHomeomorph_natural_cast
+        relatorCircleBoundaryHomeomorph w j hw x := (relatorCircleCycle w j hw).boundaryHomeomorph_natural_cast
     (relatorCircleCycle v (h.cell j) hv) (h.relatorCircleSize_eq j)
     (h.relatorCircleMap j) (h.relatorCircleMap j).monotone
     (h.relatorCircleEnumeration_natural j hw hv) x

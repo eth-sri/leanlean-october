@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.GenusQuotientReceiver
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -53,30 +54,18 @@ theorem quotientOldBasedInclusion_surface (s : NeSpx A)
       pi1Map (orderCxMap (qNew (att := att)) qNew_monotone) (att s)
         (Pi1.mk ⟨mapPath (orderCxMap att att.monotone) p.1,
           isPath_mapPath _ p.2⟩) := by
-  let z := pi1Map (orderCxMap (qNew (att := att)) qNew_monotone) (att s)
-    (Pi1.mk ⟨mapPath (orderCxMap att att.monotone) p.1, isPath_mapPath _ p.2⟩)
-  have hpos := isPath_ordPos (qNew_att_le_qOldIncl (att := att) s)
-  have hneg := isPath_ordNeg (qNew_att_le_qOldIncl (att := att) s)
-  have hnat := htpy_loop_mapPath_le
-    (qNew_monotone.comp att.monotone)
-    (qOldIncl_monotone.comp posQCube_monotone)
-    (fun t => qNew_att_le_qOldIncl (att := att) t) p.2
-  have he : pi1Map (orderCxMap (qOldIncl (att := att)) qOldIncl_monotone) (posQCube s)
-      (Pi1.mk ⟨mapPath (surfCx A) p.1, isPath_mapPath (surfCx A) p.2⟩) =
-        pi1Conj hneg z := by
-    apply Quotient.sound
-    change Htpy (orderCx (Qpos A X att)) (qOldIncl (att := att) (posQCube s))
-      (qOldIncl (att := att) (posQCube s)) _ _
-    convert hnat using 1 <;>
-      simp [z, conjLoop, mapPath, surfCx, orderCxMap, List.map_map, Function.comp_def]
-  have he' : quotientOldBasedInclusion (att := att) s
-      (Pi1.mk ⟨mapPath (surfCx A) p.1, isPath_mapPath (surfCx A) p.2⟩) =
-      pi1Conj hpos (pi1Conj hneg z) := congrArg (pi1Conj hpos) he
-  rw (config := { transparency := .default }) [he', pi1Conj_pi1Conj]
-  calc
-    pi1Conj (hpos.append hneg) z = pi1Conj (isPath_nil' (qNew (att s))) z :=
-      pi1Conj_congr _ _ (htpy_ordPos_ordNeg (qNew_att_le_qOldIncl (att := att) s)) z
-    _ = z := pi1Conj_empty_apply _ z
+  let i := orderCxMap (qNew (att := att)) qNew_monotone
+  let j := orderCxMap (qOldIncl (att := att)) qOldIncl_monotone
+  let a := orderCxMap att att.monotone
+  let z := Pi1.mk p
+  let h := qNew_att_le_qOldIncl (att := att)
+  change pi1Conj (isPath_ordPos (h s)) (pi1Map j _ (pi1Map (surfCx A) s z)) =
+    pi1Map i _ (pi1Map a s z)
+  erw [← pi1Map_comp_apply (surfCx A) j s z, ← pi1Map_comp_apply a i s z,
+    pi1Map_orderCx_le (qNew_monotone.comp att.monotone)
+      (qOldIncl_monotone.comp posQCube_monotone) h z,
+    pi1Conj_pi1Conj, pi1Conj_congr _ (isPath_nil' (qNew (att s))) (htpy_ordPos_ordNeg (h s))]
+  exact pi1Conj_empty_apply _ _
 
 end FiniteChains.Davis
 
@@ -84,7 +73,7 @@ namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily
 variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (q : ℕ) [NeZero q] (u : Fin q × Bool → FreeGroup α)
-  (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
+  (hrho : IsSpineRelator ρ q u)
 
 noncomputable abbrev namedBasePos :=
   PresPos (genusNonemptyW (namedPres ρ q u) (namedA (α := α) q) (namedB (α := α) q) q)
@@ -104,12 +93,12 @@ noncomputable def namedBaseAlpha : PresGroup (namedPres ρ q u) →*
         (mk_genusNonemptyW _ _ _ _ (namedPres_surface ρ q u)))
 
 noncomputable def namedBaseIntoQuotient : PresGroup (namedPres ρ q u) →*
-    Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) :=
+    NamedQuotientGroup ρ q u :=
   (pi1Map (orderCxMap (qNew (att := namedAtt ρ q u)) qNew_monotone)
     (namedAtt ρ q u (gBase q))).comp (namedBaseAlpha ρ q u)
 
 noncomputable def sourceIntoNamedQuotient : PresGroup ρ →*
-    Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) :=
+    NamedQuotientGroup ρ q u :=
   (namedBaseIntoQuotient ρ q u).comp
     (SurfaceWordExpansion.inclusion ρ u (finitePairs q) hrho)
 
@@ -121,20 +110,20 @@ theorem namedBaseAlpha_marked (x : Fin q × Bool) :
   let w := genusNonemptyW (namedPres ρ q u) (namedA (α := α) q) (namedB (α := α) q) q
   let p : Loop (orderCx (namedBasePos ρ q u)) (namedAtt ρ q u (gBase q)) :=
     ⟨genLoop w (Sum.inr x), by
-      rw (config := { transparency := .default }) [show namedAtt ρ q u (gBase q) = ptBase w from genusNonemptyAtt_base _ _ _ _]
+      erw [genusNonemptyAtt_base _ _ _ _]
       exact isPath_genLoop w (Sum.inr x)⟩
   have hp : namedBaseAlpha ρ q u (QuotientGroup.mk (FreeGroup.of (Sum.inr x))) =
       Pi1.mk p := by
-    rw (config := { transparency := .default }) [namedBaseAlpha, MonoidHom.comp_apply, alphaHomW_gen]
+    erw [namedBaseAlpha, MonoidHom.comp_apply, alphaHomW_gen]
     exact pi1BaseEqEquiv_mk _ ⟨genLoop w (Sum.inr x), isPath_genLoop w (Sum.inr x)⟩ p rfl
-  rw (config := { transparency := .default }) [hp]
+  erw [hp]
   apply Quotient.sound
   have hh := genusNonempty_hread (namedPres ρ q u) (namedA (α := α) q)
     (namedB (α := α) q) q PUnit.unit.{1} (x.1.val, x.2)
   simp only [List.nil_append, revPath_nil, List.append_nil] at hh
   have hl : genusLw (namedA (α := α) q) (namedB (α := α) q) q
       PUnit.unit.{1} (x.1.val, x.2) = [(Sum.inr x, true)] := namedLw_eq q PUnit.unit x
-  rw (config := { transparency := .default }) [hl] at hh
+  erw [hl] at hh
   change Htpy (orderCx (namedBasePos ρ q u)) (namedAtt ρ q u (gBase q))
     (namedAtt ρ q u (gBase q)) (genLoop w (Sum.inr x))
     (mapPath (orderCxMap (namedAtt ρ q u) (namedAtt ρ q u).monotone)
@@ -146,10 +135,10 @@ theorem namedSpineIntoQuotient_marked (x : Fin q × Bool) :
       sourceIntoNamedQuotient ρ q u hrho (QuotientGroup.mk (u x)) := by
   change quotientOldBasedInclusion (att := namedAtt ρ q u) (gBase q)
     (namedSpineToOldEquiv q (QuotientGroup.mk (FreeGroup.of (Sum.inr x)))) = _
-  rw (config := { transparency := .default }) [namedSpineToOld_marked, spineMarkedLoop_toOld_class,
+  erw [namedSpineToOld_marked, spineMarkedLoop_toOld_class,
     quotientOldBasedInclusion_surface (att := namedAtt ρ q u) (gBase q)
       ⟨gSig q (x.1.val, x.2), isPath_gSig q (x.1.val, x.2)⟩]
-  rw (config := { transparency := .default }) [← namedBaseAlpha_marked]
+  erw [← namedBaseAlpha_marked]
   change namedBaseIntoQuotient ρ q u (QuotientGroup.mk (FreeGroup.of (Sum.inr x))) =
     namedBaseIntoQuotient ρ q u
       (SurfaceWordExpansion.inclusion ρ u (finitePairs q) hrho (QuotientGroup.mk (u x)))
@@ -160,9 +149,9 @@ theorem namedBaseCocycle_alpha {G : Type} [Group G] (j : PresGroup ρ →* G)
     (z : PresGroup (namedPres ρ q u)) :
     (namedBaseCocycle ρ q u hrho j).monodromy (namedAtt ρ q u (gBase q))
       (namedBaseAlpha ρ q u z) = namedBaseReceiver ρ q u hrho j z := by
-  rw (config := { transparency := .default }) [namedBaseAlpha, MonoidHom.comp_apply, MulEquiv.coe_toMonoidHom,
+  erw [namedBaseAlpha, MonoidHom.comp_apply, MulEquiv.coe_toMonoidHom,
     OrdCocycle.monodromy_baseEq]
-  rw (config := { transparency := .default }) [namedBaseCocycle, OrdCocycle.postcompose_monodromy,
+  erw [namedBaseCocycle, OrdCocycle.postcompose_monodromy,
     presGroupCocycle_monodromy, MonoidHom.comp_apply, readingPresW_alphaHomW]
 
 /-- The reverse receiver constructed on Q is a left inverse on the whole
@@ -171,7 +160,7 @@ theorem exists_namedQuotientReading_both {G : Type} [Group G]
     (j : PresGroup ρ →* G) (φ : PresGroup (namedSpinePresentation q) →* G)
     (hm : ∀ x : Fin q × Bool,
       φ (QuotientGroup.mk (FreeGroup.of (Sum.inr x))) = j (QuotientGroup.mk (u x))) :
-    ∃ ψ : Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) →* G,
+    ∃ ψ : NamedQuotientGroup ρ q u →* G,
       ψ.comp (namedSpineIntoQuotient ρ q u) = φ ∧
       ψ.comp (sourceIntoNamedQuotient ρ q u hrho) = j := by
   obtain ⟨ψ, ho, hb⟩ := exists_namedQuotientReading ρ q u hrho j φ hm
@@ -181,14 +170,11 @@ theorem exists_namedQuotientReading_both {G : Type} [Group G]
   have hh := DFunLike.congr_fun hb
     (namedBaseAlpha ρ q u (SurfaceWordExpansion.inclusion ρ u (finitePairs q) hrho z))
   change ψ (sourceIntoNamedQuotient ρ q u hrho z) = j z
-  rw (config := { transparency := .default }) [show ψ (sourceIntoNamedQuotient ρ q u hrho z) =
-    (namedBaseCocycle ρ q u hrho j).monodromy (namedAtt ρ q u (gBase q))
-      (namedBaseAlpha ρ q u (SurfaceWordExpansion.inclusion ρ u (finitePairs q) hrho z))
-      from hh]
-  rw (config := { transparency := .default }) [namedBaseCocycle_alpha]
+  erw [hh]
+  erw [namedBaseCocycle_alpha]
   change j (SurfaceWordExpansion.elimination ρ u (finitePairs q) hrho
     (SurfaceWordExpansion.inclusion ρ u (finitePairs q) hrho z)) = j z
-  rw (config := { transparency := .default }) [SurfaceWordExpansion.elimination_inclusion]
+  erw [SurfaceWordExpansion.elimination_inclusion]
 
 section ComparisonMaps
 variable {H : Type} [Group H] (j : PresGroup ρ →* H)
@@ -220,7 +206,7 @@ theorem finiteSpineComparisonFree_substitution (s : PUnit.{1}) :
   · simp [finiteSpineComparisonFree]
   · simp only [MonoidHom.comp_apply, FreeGroup.map.of, Sum.swap_inr,
       blockSubst_of_inl]
-    rw (config := { transparency := .default }) [finiteSpineComparisonFree_old]
+    erw [finiteSpineComparisonFree_old]
     exact (hm x).symm
 
 noncomputable def finiteSpineComparisonMaps :
@@ -231,43 +217,37 @@ noncomputable def finiteSpineComparisonMaps :
     have h := DFunLike.congr_fun
       (finiteSpineComparisonFree_substitution ρ q u j φ hm s) (namedSpinePresentation q m)
     change finiteSpineComparisonFree ρ q j φ
-      (blockSubst (Zt := fun _ : PUnit.{1} => SpinePresentationGen q) (fun _ => u) s
+      (blockSubst (Zt := fun _  => SpinePresentationGen q) (fun _ => u) s
         (FreeGroup.map Sum.swap (namedSpinePresentation q m))) = 1
     simp only [MonoidHom.comp_apply] at h
-    rw (config := { transparency := .default }) [h]
+    erw [h]
     have hz : (QuotientGroup.mk (namedSpinePresentation q m) :
         PresGroup (namedSpinePresentation q)) = 1 :=
       (QuotientGroup.eq_one_iff _).mpr (Subgroup.subset_normalClosure ⟨m, rfl⟩)
     change φ (QuotientGroup.mk (namedSpinePresentation q m)) = 1
-    rw (config := { transparency := .default }) [hz, map_one]
+    erw [hz, map_one]
 
 end ComparisonMaps
 
 noncomputable def finiteSpineToQuotient :
-    PresGroup (substPresF ρ (finiteSpineWordBlock q u)) →*
-      Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) :=
+    SpineReplacementGroup ρ q u →*
+      NamedQuotientGroup ρ q u :=
   (finiteSpineComparisonMaps ρ q u (sourceIntoNamedQuotient ρ q u hrho)
     (namedSpineIntoQuotient ρ q u) (namedSpineIntoQuotient_marked ρ q u hrho)).psi
 
 noncomputable def singleSpineNamedReceiver : PresGroup (namedSpinePresentation q) →*
-    PresGroup (substPresF ρ (finiteSpineWordBlock q u)) :=
-  familySpineHom ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit
+    SpineReplacementGroup ρ q u :=
+  familySpineHom ρ (fun _  => q) (fun _ => u) PUnit.unit
 
 theorem singleSpineNamedReceiver_marked (x : Fin q × Bool) :
     singleSpineNamedReceiver ρ q u (QuotientGroup.mk (FreeGroup.of (Sum.inr x))) =
       substHomF ρ (finiteSpineWordBlock q u) (finiteSpineWordBlock_filled ρ q u hrho)
-        (QuotientGroup.mk (u x)) := by
-  exact familySpineHom_marked ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit x
+        (QuotientGroup.mk (u x)) := familySpineHom_marked ρ (fun _  => q) (fun _ => u) PUnit.unit x
 
 theorem singleSpineNamedReceiver_internal (z : SpinePresentationGen q) :
     singleSpineNamedReceiver ρ q u (QuotientGroup.mk (FreeGroup.of (Sum.inl z))) =
       QuotientGroup.mk (FreeGroup.of (Sum.inr ⟨PUnit.unit, z⟩)) := by
-  change QuotientGroup.mk (FreeGroup.map
-    (genEmb (α := α) (Zt := fun _ : PUnit.{1} => SpinePresentationGen q) PUnit.unit)
-    (blockSubst (Zt := fun _ : PUnit.{1} => SpinePresentationGen q) (fun _ => u) PUnit.unit
-      (FreeGroup.map Sum.swap (FreeGroup.of (Sum.inl z))))) = _
-  simp only [FreeGroup.map.of, Sum.swap_inl, blockSubst_of_inr, genEmb_inr]
-  rfl
+  tauto
 
 theorem finiteSpineToQuotient_source :
     (finiteSpineToQuotient ρ q u hrho).comp
@@ -295,11 +275,11 @@ theorem finiteSpineToQuotient_spine :
     rintro (z | x)
     · change finiteSpineToQuotient ρ q u hrho
         (singleSpineNamedReceiver ρ q u (QuotientGroup.mk (FreeGroup.of (Sum.inl z)))) = _
-      rw (config := { transparency := .default }) [singleSpineNamedReceiver_internal, finiteSpineToQuotient_internal]
+      erw [singleSpineNamedReceiver_internal, finiteSpineToQuotient_internal]
       rfl
     · change finiteSpineToQuotient ρ q u hrho
         (singleSpineNamedReceiver ρ q u (QuotientGroup.mk (FreeGroup.of (Sum.inr x)))) = _
-      rw (config := { transparency := .default }) [singleSpineNamedReceiver_marked ρ q u hrho]
+      erw [singleSpineNamedReceiver_marked ρ q u hrho]
       have hs := DFunLike.congr_fun (finiteSpineToQuotient_source ρ q u hrho)
         (QuotientGroup.mk (u x))
       exact hs.trans (namedSpineIntoQuotient_marked ρ q u hrho x).symm
@@ -313,8 +293,8 @@ theorem finiteSpineToQuotient_spine :
 comparison. In particular no extra injectivity premise is needed for the map
 used to transport the full group-ring coefficients into the universal cover. -/
 theorem finiteSpineToQuotient_has_leftInverse :
-    ∃ ψ : Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) →*
-        PresGroup (substPresF ρ (finiteSpineWordBlock q u)),
+    ∃ ψ : NamedQuotientGroup ρ q u →*
+        SpineReplacementGroup ρ q u,
       ψ.comp (finiteSpineToQuotient ρ q u hrho) = MonoidHom.id _ := by
   let j := substHomF ρ (finiteSpineWordBlock q u) (finiteSpineWordBlock_filled ρ q u hrho)
   let φ := singleSpineNamedReceiver ρ q u
@@ -322,22 +302,20 @@ theorem finiteSpineToQuotient_has_leftInverse :
     (singleSpineNamedReceiver_marked ρ q u hrho)
   refine ⟨ψ, ?_⟩
   have hfree : ((ψ.comp (finiteSpineToQuotient ρ q u hrho)).comp
-      (QuotientGroup.mk' (relSub (substPresF ρ (finiteSpineWordBlock q u))))) =
-      QuotientGroup.mk' (relSub (substPresF ρ (finiteSpineWordBlock q u))) := by
+      (QuotientGroup.mk' (relSub (spineReplacementPres ρ q u)))) =
+      QuotientGroup.mk' (relSub (spineReplacementPres ρ q u)) := by
     apply FreeGroup.ext_hom
     rintro (a | ⟨s, z⟩)
     · have hs := DFunLike.congr_fun (finiteSpineToQuotient_source ρ q u hrho)
         (QuotientGroup.mk (FreeGroup.of a))
       change ψ (finiteSpineToQuotient ρ q u hrho
         (j (QuotientGroup.mk (FreeGroup.of a)))) = j (QuotientGroup.mk (FreeGroup.of a))
-      rw (config := { transparency := .default }) [show finiteSpineToQuotient ρ q u hrho
-        (j (QuotientGroup.mk (FreeGroup.of a))) =
-        sourceIntoNamedQuotient ρ q u hrho (QuotientGroup.mk (FreeGroup.of a)) from hs]
+      erw [hs]
       exact DFunLike.congr_fun hb (QuotientGroup.mk (FreeGroup.of a))
     · cases s
       change ψ (finiteSpineToQuotient ρ q u hrho
         (QuotientGroup.mk (FreeGroup.of (Sum.inr ⟨PUnit.unit, z⟩)))) = _
-      rw (config := { transparency := .default }) [finiteSpineToQuotient_internal]
+      erw [finiteSpineToQuotient_internal]
       change ψ (namedSpineIntoQuotient ρ q u
         (QuotientGroup.mk (FreeGroup.of (Sum.inl z)))) =
           QuotientGroup.mk (FreeGroup.of (Sum.inr ⟨PUnit.unit, z⟩))
@@ -352,41 +330,39 @@ theorem finiteSpineToQuotient_has_leftInverse :
   exact DFunLike.congr_fun hfree w
 
 noncomputable def finiteSpineCoefficientMap :
-    MonoidAlgebra ℤ (PresGroup (substPresF ρ (finiteSpineWordBlock q u))) →+*
-      MonoidAlgebra ℤ (Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)) :=
+    MonoidAlgebra ℤ (SpineReplacementGroup ρ q u) →+*
+      MonoidAlgebra ℤ (NamedQuotientGroup ρ q u) :=
   MonoidAlgebra.mapDomainRingHom ℤ (finiteSpineToQuotient ρ q u hrho)
 
 /-- A polygon multiple found in the geometric group ring reflects back to
 the original substituted group ring. The proved reverse group homomorphism
 supplies the coefficient retraction; no flatness of coinvariants is assumed. -/
 theorem finiteSpineCoefficientMap_reflect_multiple {I : Type}
-    (β γ : I → MonoidAlgebra ℤ (PresGroup (substPresF ρ (finiteSpineWordBlock q u))))
+    (β γ : I → MonoidAlgebra ℤ (SpineReplacementGroup ρ q u))
     (w : MonoidAlgebra ℤ
-      (Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)))
+      (NamedQuotientGroup ρ q u))
     (hβ : ∀ i, finiteSpineCoefficientMap ρ q u hrho (β i) =
       w * finiteSpineCoefficientMap ρ q u hrho (γ i)) :
-    ∃ a : MonoidAlgebra ℤ (PresGroup (substPresF ρ (finiteSpineWordBlock q u))),
+    ∃ a : MonoidAlgebra ℤ (SpineReplacementGroup ρ q u),
       ∀ i, β i = a * γ i := by
   obtain ⟨ψ, hψ⟩ := finiteSpineToQuotient_has_leftInverse ρ q u hrho
   let r := MonoidAlgebra.mapDomainRingHom ℤ ψ
   have hr : ∀ z, r (finiteSpineCoefficientMap ρ q u hrho z) = z := by
     intro z
-    induction z using MonoidAlgebra.induction_linear with
-    | zero => simp
-    | add x y hx hy => simp only [map_add, hx, hy]
-    | single g n =>
-      apply MonoidAlgebra.coeff_injective
-      change Finsupp.mapDomain ψ
-        (Finsupp.mapDomain (finiteSpineToQuotient ρ q u hrho) (Finsupp.single g n)) = _
-      rw (config := { transparency := .default }) [Finsupp.mapDomain_single, Finsupp.mapDomain_single]
-      have hg := DFunLike.congr_fun hψ g
-      change ψ (finiteSpineToQuotient ρ q u hrho g) = g at hg
-      rw (config := { transparency := .default }) [hg]
-      rfl
+    group_ring_singles z
+    intro g n
+    apply MonoidAlgebra.coeff_injective
+    change Finsupp.mapDomain ψ
+      (Finsupp.mapDomain (finiteSpineToQuotient ρ q u hrho) (Finsupp.single g n)) = _
+    erw [Finsupp.mapDomain_single, Finsupp.mapDomain_single]
+    have hg := DFunLike.congr_fun hψ g
+    change ψ (finiteSpineToQuotient ρ q u hrho g) = g at hg
+    erw [hg]
+    rfl
   refine ⟨r w, ?_⟩
   intro i
   have h := congrArg r (hβ i)
-  rw (config := { transparency := .default }) [hr, map_mul, hr] at h
+  erw [hr, map_mul, hr] at h
   exact h
 
 end FiniteChains.Davis.Genus

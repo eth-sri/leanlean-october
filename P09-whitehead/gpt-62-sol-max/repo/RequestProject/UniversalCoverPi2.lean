@@ -1,6 +1,12 @@
 module
 
-public import RequestProject.CoverComplexPres
+public import RequestProject.CoverComplex
+public import RequestProject.PresentationDictionary
+public import RequestProject.ChainFormula
+public import RequestProject.FinitelyDeterminedInf
+public import RequestProject.Pigeonhole
+public import RequestProject.CoverChainComplex
+public import RequestProject.FoxCommutator
 
 @[expose] public section
 
@@ -51,15 +57,14 @@ theorem univCover_bdry2_eq_zero_iff (u : ((FreeGroup α ⧸ relSub ρ) × J) →
       rw [coverComplex_bdry2 (rel_mem_relSub ρ), h, map_zero]
     intro i
     have := congrFun h' i
-    simpa [_root_.FiniteChains.bdry2, foxMatrixPres, proj_eq_quotRingHom] using this
+    tauto
   · intro h
     have h' : _root_.FiniteChains.bdry2 (relSub ρ) ρ (coords (relSub ρ) J u) = 0 := by
       funext i
-      simpa [_root_.FiniteChains.bdry2, foxMatrixPres, proj_eq_quotRingHom] using h i
+      tauto
     rw [coverComplex_bdry2 (rel_mem_relSub ρ)] at h'
     refine (coords (relSub ρ) α).injective ?_
-    rw [h']
-    exact (map_zero _).symm
+    tauto
 
 end Comb
 end FiniteChains

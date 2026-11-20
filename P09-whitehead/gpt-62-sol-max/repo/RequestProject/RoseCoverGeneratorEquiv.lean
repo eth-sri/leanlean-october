@@ -4,8 +4,6 @@ public import RequestProject.RoseCoverCycleCoordinates
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
@@ -24,22 +22,13 @@ noncomputable def roseCoverMidpointEdge (p : roseCoverMidpoints f) :
 
 theorem roseCoverMidpointEdge_injective : Function.Injective (roseCoverMidpointEdge f hf) := by
   intro p q h
-  have he := congrArg Subtype.val h
-  apply Subtype.ext
-  apply Prod.ext
-  · exact congrArg (fun e : StrictOrdEdge P => e.val.1) he
-  · have hp := congrArg ((strictOrderCxMap f hf.strictMono).onE) he
-    change (strictOrderCxMap f hf.strictMono).onE
-      (hf.strictEdgeLiftFrom (roseMidEdge p.val.2 true) p.val.1 p.property) =
-      (strictOrderCxMap f hf.strictMono).onE
-        (hf.strictEdgeLiftFrom (roseMidEdge q.val.2 true) q.val.1 q.property) at hp
-    rw [hf.strictEdgeLiftFrom_projection, hf.strictEdgeLiftFrom_projection] at hp
-    exact Rose.mid.inj (congrArg (fun e : StrictOrdEdge (Rose α) => e.val.1) hp)
+  have he : p.val.1 = q.val.1 := congrArg (fun e => e.val.val.1) h
+  exact Subtype.ext (Prod.ext he (Rose.mid.inj (p.property.symm.trans ((congrArg f he).trans q.property))))
 
 theorem roseCoverMidpointEdge_surjective : Function.Surjective (roseCoverMidpointEdge f hf) := by
   rintro ⟨e, i, he⟩
-  have hv : f e.val.1 = Rose.mid i :=
-    congrArg (fun r : StrictOrdEdge (Rose α) => r.val.1) he
+  have hv  :=
+    congrArg (·.val.1) he
   refine ⟨⟨(e.val.1, i), hv⟩, ?_⟩
   apply Subtype.ext
   exact (hf.strictEdgeLiftFrom_unique (roseMidEdge i true) e.val.1 hv e he rfl).symm

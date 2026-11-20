@@ -2,6 +2,7 @@ module
 
 public import RequestProject.VertexPunctureAcyclic
 public import RequestProject.PositiveBoundaryCoordinates
+public import RequestProject.NerveOrderHomotopy
 
 @[expose] public section
 
@@ -23,21 +24,11 @@ theorem positiveCutPuncturedBoundary_acyclic (t : QOld A)
     (hne : t.1.spx.Nonempty) (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3) :
     ∀ c ∈ Inc (CutPuncturedBoundary t hne), Nerve.bdry c = 0 →
       ∃ y ∈ Inc (CutPuncturedBoundary t hne), Nerve.bdry y = c := by
-  let r := cutBoundaryRetraction t hne
-  let s := cutBoundarySection t hne
-  have hr := cutBoundaryRetraction_monotone t hne
-  have hs := cutBoundarySection_monotone t hne
   intro c hc hcyc
-  obtain ⟨y, hy, hdy⟩ := positiveRetainedBoundary_acyclic t ht hcard
-    (cmap r c) (cmap_mem_inc_of_monotone hr hc)
+  refine boundary_reflection_of_section _ _ (cutBoundaryRetraction_monotone t hne)
+    (cutBoundarySection_monotone t hne) (Or.inl (cutBoundary_le_section_retraction t hne)) c hc hcyc ?_
+  exact positiveRetainedBoundary_acyclic t ht hcard _
+    (cmap_mem_inc_of_monotone (cutBoundaryRetraction_monotone t hne) hc)
     (by rw [← cmap_bdry, hcyc, map_zero])
-  have hp := bdry_prism_add_prism_bdry id (s ∘ r) c
-  rw [hcyc, map_zero, add_zero, cmap_id] at hp
-  refine ⟨cmap s y - prism id (s ∘ r) c,
-    AddSubgroup.sub_mem _ (cmap_mem_inc_of_monotone hs hy)
-      (prism_mem_inc monotone_id (hs.comp hr)
-        (cutBoundary_le_section_retraction t hne) hc), ?_⟩
-  rw [map_sub, ← cmap_bdry, hdy, cmap_comp, hp]
-  abel
 
 end FiniteChains.Davis

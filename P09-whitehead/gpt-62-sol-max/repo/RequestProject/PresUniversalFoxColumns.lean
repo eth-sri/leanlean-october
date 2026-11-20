@@ -1,14 +1,12 @@
 module
 
 public import RequestProject.PresUniversalGroupRingBoundary
+public import RequestProject.FinsuppBasis
 public import RequestProject.CoverFoxTranslatedPrefixSum
 public import RequestProject.FoxFinsupp
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -56,21 +54,17 @@ theorem presUniversalGroupRingBoundary_eq_fox :
       (coverSecondBoundary (relSub ρ) ρ).restrictScalars ℤ := by
   apply Finsupp.lhom_ext
   intro j r
-  induction r using MonoidAlgebra.induction_linear with
-  | zero => simp
-  | add r s hr hs => simp only [Finsupp.single_add, map_add, hr, hs]
-  | single g n =>
-    have hn : MonoidAlgebra.single g n = n • MonoidAlgebra.single g (1 : ℤ) := by
-      simp [MonoidAlgebra.smul_single]
-    change presUniversalGroupRingBoundary ρ w hw hpos
-      (Finsupp.single j (MonoidAlgebra.single g n)) =
-      (coverSecondBoundary (relSub ρ) ρ).restrictScalars ℤ
-        (Finsupp.single j (MonoidAlgebra.single g n))
-    rw [hn, ← Finsupp.smul_single, map_smul, map_smul]
-    congr 1
-    ext i
-    rw [presUniversalGroupRingBoundary_fox_single]
-    simp [coverSecondBoundary, coverFoxGradient, foxGradient_apply,
-      Finsupp.linearCombination_single, Finsupp.smul_apply, smul_eq_mul]
+  group_ring_singles r
+  intro g n
+  have hn : MonoidAlgebra.single g n = n • MonoidAlgebra.single g 1 := by
+    simp [MonoidAlgebra.smul_single]
+  change presUniversalGroupRingBoundary ρ w hw hpos
+    (Finsupp.single j (MonoidAlgebra.single g n)) =
+    (coverSecondBoundary (relSub ρ) ρ).restrictScalars ℤ
+      (Finsupp.single j (MonoidAlgebra.single g n))
+  rw [hn, ← Finsupp.smul_single, map_smul, map_smul]
+  congr 1
+  ext i
+  simp [presUniversalGroupRingBoundary_fox_single, coverSecondBoundary, coverFoxGradient, foxGradient_apply, Finsupp.linearCombination_single, Finsupp.smul_apply, smul_eq_mul]
 
 end FiniteChains.PresModel

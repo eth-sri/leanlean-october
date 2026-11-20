@@ -5,9 +5,6 @@ public import Mathlib.Order.WellFounded
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -32,9 +29,7 @@ theorem orderNerveAffineSimplex_indicator_pos_iff {P : Type} [PartialOrder P]
       (f := fun j => z.down.weights j * (if s.obj j = s.obj i then 1 else 0))
       (fun j _ => mul_nonneg (le_of_lt (hz j)) (by split_ifs <;> norm_num))
       (Finset.mem_univ i)
-    have hi : z.down.weights i ≤ ∑ j, z.down.weights j * (if s.obj j = s.obj i then 1 else 0) := by
-      simpa using hsum
-    exact (hz i).trans_le hi
+    grind
 
 /-- Two actual simplex interiors meeting in the realization have the same vertex set. -/
 theorem orderNerveRealizationSimplex_interior_range_eq {P : Type} [PartialOrder P]
@@ -45,48 +40,21 @@ theorem orderNerveRealizationSimplex_interior_range_eq {P : Type} [PartialOrder 
     (h : orderNerveRealizationSimplex P s z = orderNerveRealizationSimplex P t w) :
     Set.range s.obj = Set.range t.obj := by
   ext p
-  let v : P → ℝ := fun q => if q = p then 1 else 0
-  have hf := congrArg (orderNerveAffineRealization v) h
-  have hc := congrArg (fun k => k z) (orderNerveAffineRealization_simplex v s)
-  have hd := congrArg (fun k => k w) (orderNerveAffineRealization_simplex v t)
-  change orderNerveAffineRealization v (orderNerveRealizationSimplex P s z) =
-    orderNerveAffineSimplex v s z at hc
-  change orderNerveAffineRealization v (orderNerveRealizationSimplex P t w) =
-    orderNerveAffineSimplex v t w at hd
-  rw [hc, hd] at hf
   rw [← orderNerveAffineSimplex_indicator_pos_iff s z hz p,
-    ← orderNerveAffineSimplex_indicator_pos_iff t w hw p]
-  exact congrArg (fun r : ℝ => 0 < r) hf ▸ Iff.rfl
+    ← orderNerveAffineSimplex_indicator_pos_iff t w hw p,
+    ← orderNerveAffineRealization_simplex, ← orderNerveAffineRealization_simplex, h]
 
-/-- Nondegenerate simplices in the same dimension with meeting interiors are equal. -/
-theorem orderNerveRealization_nonDegenerate_interior_eq {P : Type} [PartialOrder P]
-    {n : ℕ} (s t : (nerve P).nonDegenerate n)
-    (z w : SimplexCategory.toTop.obj (SimplexCategory.mk n))
-    (hz : ∀ i, 0 < z.down.weights i) (hw : ∀ i, 0 < w.down.weights i)
-    (h : orderNerveRealizationSimplex P s.val z = orderNerveRealizationSimplex P t.val w) :
-    s = t := by
-  have hrange := orderNerveRealizationSimplex_interior_range_eq s.val t.val z w hz hw h
+/-- An increasing nondegenerate simplex is determined by its vertex set. -/
+theorem orderNerveNondegenerate_eq_of_range {P : Type} [PartialOrder P]
+    {n m : ℕ} (s : (nerve P).nonDegenerate n) (t : (nerve P).nonDegenerate m)
+    (h : Set.range s.val.obj = Set.range t.val.obj) : ∃ e : n = m, e ▸ s = t := by
   have hs := (PartialOrder.mem_nerve_nonDegenerate_iff_strictMono s.val).mp s.property
   have ht := (PartialOrder.mem_nerve_nonDegenerate_iff_strictMono t.val).mp t.property
-  have he := (hs.range_inj ht).mp hrange
-  apply Subtype.ext
-  exact CategoryTheory.Functor.ext (fun i => congrFun he i)
-
-/-- Nondegenerate simplex interiors in different dimensions cannot meet. -/
-theorem orderNerveRealization_nonDegenerate_interior_dimension_eq {P : Type}
-    [PartialOrder P] {n m : ℕ} (s : (nerve P).nonDegenerate n)
-    (t : (nerve P).nonDegenerate m)
-    (z : SimplexCategory.toTop.obj (SimplexCategory.mk n))
-    (w : SimplexCategory.toTop.obj (SimplexCategory.mk m))
-    (hz : ∀ i, 0 < z.down.weights i) (hw : ∀ i, 0 < w.down.weights i)
-    (h : orderNerveRealizationSimplex P s.val z = orderNerveRealizationSimplex P t.val w) :
-    n = m := by
-  have hrange := orderNerveRealizationSimplex_interior_range_eq s.val t.val z w hz hw h
-  have hs := (PartialOrder.mem_nerve_nonDegenerate_iff_injective s.val).mp s.property
-  have ht := (PartialOrder.mem_nerve_nonDegenerate_iff_injective t.val).mp t.property
-  have hc := Nat.card_congr ((Equiv.ofInjective s.val.obj hs).trans
-    ((Set.equivOfEq hrange).trans (Equiv.ofInjective t.val.obj ht).symm))
-  simp only [Nat.card_eq_fintype_card, Fintype.card_fin, SimplexCategory.len_mk] at hc
-  omega
+  have hc := Nat.card_congr ((Equiv.ofInjective s.val.obj hs.injective).trans
+    ((Set.equivOfEq h).trans (Equiv.ofInjective t.val.obj ht.injective).symm))
+  simp only [Nat.card_eq_fintype_card, Fintype.card_fin] at hc
+  have e : n = m := by omega
+  subst m
+  exact ⟨rfl, Subtype.ext (CategoryTheory.Functor.ext (congrFun ((hs.range_inj ht).mp h)))⟩
 
 end FiniteChains.Comb

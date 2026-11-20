@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.CellularHomotopyChain
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -37,46 +38,42 @@ theorem loop_bounds_of_mem_commutator (a : X.V) (p : Loop X a)
     (hp : Pi1.mk p ∈ commutator (Pi1 X a)) :
     ∃ d : X.F →₀ ℤ, bdry2 X d = pathChain p.val := by
   have hz := Abelianization.commutator_subset_ker (loopBoundaryClass X a) hp
-  change Multiplicative.ofAdd (Submodule.Quotient.mk (pathChain p.val) :
-    EdgeBoundaryQuotient X) = 1 at hz
-  have he : (Submodule.Quotient.mk (pathChain p.val) : EdgeBoundaryQuotient X) = 0 :=
+  change Multiplicative.ofAdd (Submodule.Quotient.mk (pathChain p.val)) = 1 at hz
+  have he  :=
     congrArg Multiplicative.toAdd hz
   exact (Submodule.Quotient.mk_eq_zero _).mp he
+
+/-- Use one root and a path to each vertex in each component. The filled
+loops along the edges give a chain contraction on one-cycles. -/
+theorem oneCycle_filling_of_root_paths (r : X.V → X.V) (p : X.V → List (X.E × Bool))
+    (hp : ∀ v, IsPath X.src X.tgt (p v) (r v) v)
+    (hr : ∀ e, r (X.src e) = r (X.tgt e))
+    (hloop : ∀ v (l : Loop X (r v)), ∃ d, bdry2 X d = pathChain l.val)
+    (c : X.E →₀ ℤ) (hc : bdry1 X c = 0) :
+    ∃ d, bdry2 X d = c := by
+  have hface (e : X.E) : ∃ y, bdry2 X y =
+      Finsupp.single e 1 + pathChain (p (X.src e)) - pathChain (p (X.tgt e)) := by
+    have he : IsPath X.src X.tgt [(e, true)] (X.src e) (X.tgt e) := ⟨rfl, rfl⟩
+    obtain ⟨y, hy⟩ := hloop (X.src e) ⟨_, ((hp _).append he).append ((hr e).symm ▸ isPath_revPath (hp _))⟩
+    refine ⟨y, ?_⟩
+    simpa [pathChain_append, pathChain_cons, pathChain_revPath, sub_eq_add_neg, add_left_comm, add_assoc, add_comm] using hy
+  choose f hf using hface
+  let s := Finsupp.linearCombination ℤ (fun v => pathChain (p v))
+  let t := Finsupp.linearCombination ℤ f
+  have ht (z : X.E →₀ ℤ) : bdry2 X (t z) = z - s (bdry1 X z) := by
+    finsupp_basis z
+    intro e
+    simp [t, s, hf, bdry1_single]
+    abel
+  exact ⟨t c, by rw [ht, hc, map_zero, sub_zero]⟩
 
 /-- Actual loop fillings give actual finite one-cycle fillings in a connected complex. -/
 theorem oneCycle_filling_of_loop_fillings (a : X.V) (hX : IsConnected X)
     (hloop : ∀ p : Loop X a, ∃ d : X.F →₀ ℤ, bdry2 X d = pathChain p.val)
     (c : X.E →₀ ℤ) (hc : bdry1 X c = 0) :
     ∃ d : X.F →₀ ℤ, bdry2 X d = c := by
-  classical
   choose p hp using hX a
-  have hface (e : X.E) : ∃ y : X.F →₀ ℤ,
-      bdry2 X y = Finsupp.single e 1 + pathChain (p (X.src e)) -
-        pathChain (p (X.tgt e)) := by
-    let l := p (X.src e) ++ [(e, true)] ++ revPath (p (X.tgt e))
-    have hl : IsPath X.src X.tgt l a a :=
-      ((hp _).append (show IsPath X.src X.tgt [(e, true)] (X.src e) (X.tgt e)
-        from ⟨rfl, rfl⟩)).append (isPath_revPath (hp _))
-    obtain ⟨y, hy⟩ := hloop ⟨l, hl⟩
-    refine ⟨y, ?_⟩
-    simpa [l, pathChain_append, pathChain_cons, pathChain_revPath,
-      sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using hy
-  choose f hf using hface
-  let s : (X.V →₀ ℤ) →ₗ[ℤ] (X.E →₀ ℤ) :=
-    Finsupp.linearCombination ℤ (fun v => pathChain (p v))
-  let t : (X.E →₀ ℤ) →ₗ[ℤ] (X.F →₀ ℤ) := Finsupp.linearCombination ℤ f
-  have hs (v : X.V) : s (Finsupp.single v 1) = pathChain (p v) := by simp [s]
-  have ht (z : X.E →₀ ℤ) : bdry2 X (t z) = z - s (bdry1 X z) := by
-    induction z using Finsupp.induction_linear with
-    | zero => simp
-    | add z w hz hw => rw [map_add, map_add, hz, hw, map_add, map_add]; abel
-    | single e n =>
-      change bdry2 X (Finsupp.linearCombination ℤ f (Finsupp.single e n)) = _
-      rw [Finsupp.linearCombination_single, map_smul, hf, bdry1_single,
-        map_smul, map_sub, hs, hs, smul_sub, smul_add, smul_sub]
-      simp only [Finsupp.smul_single, smul_eq_mul, mul_one]
-      abel
-  exact ⟨t c, by rw [ht, hc, map_zero, sub_zero]⟩
+  exact oneCycle_filling_of_root_paths X (fun _ => a) p hp (fun _ => rfl) (fun _ => hloop) c hc
 
 /-- Perfect fundamental group kills every actual finite one-cycle. -/
 theorem oneCycle_filling_of_perfect_pi1 (a : X.V) (hX : IsConnected X)

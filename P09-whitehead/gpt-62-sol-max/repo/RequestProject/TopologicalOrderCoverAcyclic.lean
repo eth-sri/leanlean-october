@@ -68,6 +68,6 @@ theorem reconstructed_cover_conclusions [ConnectedSpace E] [(nerve P).HasDimensi
 
 end TopologicalOrderCover
 
-open CategoryTheory Topology
+
 
 end FiniteChains.Comb

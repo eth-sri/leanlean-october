@@ -15,11 +15,7 @@ theorem qSquare_positive_flag_origin (c : QSquare A) (hsgn : c.1.sgn = 0) :
       (qSquare_free_directions c) (false, 0, true)).1.1.spx = ∅ ∧
     (squareFlag c.1 (qSquareLeft c) (qSquareRight c) (qSquare_directions_ne c)
       (qSquare_free_directions c) (false, 0, true)).1.1.sgn = 0 := by
-  constructor
-  · rfl
-  · funext x
-    simp [squareFlag, squareEndpointFlag, squarePositiveFlag, cubePositiveVertex,
-      qCubeFacet, hsgn]
+  simp_all [squareFlag, squareEndpointFlag, squarePositiveFlag, cubePositiveVertex, qCubeFacet]
 
 /-- Actual positive-square coefficients vanish for every dimension-two cycle whose
 coefficients at flags through the removed positive origin vanish. -/

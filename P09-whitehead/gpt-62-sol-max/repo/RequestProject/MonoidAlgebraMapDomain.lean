@@ -18,4 +18,11 @@ theorem mapDomain_comp (f : M → N) (g : N → P) (x : MonoidAlgebra R M) :
   apply coeff_injective
   exact Finsupp.mapDomain_id
 
+/-- Pushing coefficients along group homomorphisms is functorial. -/
+theorem mapDomainRingHom_apply_comp {R G H K : Type*} [Semiring R]
+    [Monoid G] [Monoid H] [Monoid K] (f : G →* H) (g : H →* K) (x : MonoidAlgebra R G) :
+    MonoidAlgebra.mapDomainRingHom R g (MonoidAlgebra.mapDomainRingHom R f x) =
+      MonoidAlgebra.mapDomainRingHom R (g.comp f) x :=
+  DFunLike.congr_fun (MonoidAlgebra.mapDomainRingHom_comp (R := R) g f).symm x
+
 end MonoidAlgebra

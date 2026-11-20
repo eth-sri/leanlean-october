@@ -48,8 +48,6 @@ noncomputable def homInv : Hom E L where
     rw [surjInv_apply_apply hF, ι.att_onF]
     exact (map_surjInv_map ι hE (L.att f')).symm
 
-@[simp] theorem homInv_onV_apply (y : E.V) : ι.onV ((homInv ι hV hE hF).onV y) = y :=
-  Function.surjInv_eq hV.2 y
 
 @[simp] theorem homInv_onE_apply (e : E.E) : ι.onE ((homInv ι hV hE hF).onE e) = e :=
   Function.surjInv_eq hE.2 e

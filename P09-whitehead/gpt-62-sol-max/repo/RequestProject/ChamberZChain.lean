@@ -54,8 +54,7 @@ omit [Fintype V] in
 theorem not_isMarkedApex_apex {w : CayGroup A} (hw : ¬ M w) :
     ¬ IsMarkedApex M (chamberPt w (isSimplex_empty (A := A))) := by
   rintro ⟨-, h⟩
-  rw [chamberPt_empty_rep] at h
-  exact hw h
+  simp_all [chamberPt_empty_rep]
 
 /-- The apex of an unmarked chamber, as a cell of `Z`. -/
 noncomputable def zApex {w : CayGroup A} (hw : ¬ M w) : Zpos A X M att :=
@@ -91,11 +90,8 @@ noncomputable def zJSetOrderIso (w : CayGroup A) :
     | ⟨Sum.inr _, h⟩ => h.elim
   invFun q :=
     ⟨zOld q.1 (by
-        rintro ⟨hemp, -⟩
-        obtain ⟨s, hs⟩ := q.2.2
-        rw [hemp] at hs
-        simp at hs),
-      show JSet w q.1 from jSet_iff.2 ⟨q.2.1, q.2.2⟩⟩
+        rintro ⟨hemp, -⟩ <;> grind),
+      jSet_iff.2 ⟨q.2.1, q.2.2⟩⟩
   left_inv z := by
     rcases z with ⟨p | wx, h⟩
     · rfl
@@ -113,19 +109,14 @@ noncomputable def zJSetOrderIso (w : CayGroup A) :
 /-- The union of the chambers of `Z` of length at most `n`. -/
 def ZUpto (n : ℕ) (z : Zpos A X M att) : Prop := ∃ y : CayGroup A, RACG.clen A y ≤ n ∧ InZChamber y z
 
-omit [Fintype V] in
-theorem zUpto_up {n : ℕ} {z z' : Zpos A X M att} (h : z ≤ z') (hz : ZUpto n z) : ZUpto n z' := by
-  obtain ⟨y, hy, hyz⟩ := hz
-  exact ⟨y, hy, inZChamber_of_le h hyz⟩
-
-omit [Fintype V] in
-theorem zUpto_zero_iff (z : Zpos A X M att) : ZUpto 0 z ↔ InZChamber (1 : CayGroup A) z := by
-  constructor
-  · rintro ⟨y, hy, hyz⟩
-    have : y = 1 := (RACG.clen_eq_zero_iff A).1 (Nat.le_zero.1 hy)
-    rwa [this] at hyz
-  · intro h
-    exact ⟨1, by simp, h⟩
+/-- The same level overlap formula for the modified chambers. -/
+theorem zUpto_overlap {n : ℕ} {S : Set (CayGroup A)} {x : CayGroup A}
+    (hx : x ∉ S) (hl : RACG.clen A x = n + 1) (hs : ∀ y ∈ S, RACG.clen A y ≤ RACG.clen A x)
+    (p : Zpos A X M att) :
+    (chamberUnion InZChamber (chamberBall A n ∪ S) p ∧ InZChamber x p) ↔ ZJSet x p := by
+  simpa only [chamberUnion, chamberBall, Set.mem_union, Set.mem_ofPred_eq, or_and_right, exists_or] using
+    chamber_overlap (C := fun y => InZChamber y p) hx hl hs mem_shorter_zchamber_iff
+    (fun h => (mem_earlier_zchamber_iff h).mp) zJSet_imp_inZChamber
 
 /-! ### The whole complex -/
 

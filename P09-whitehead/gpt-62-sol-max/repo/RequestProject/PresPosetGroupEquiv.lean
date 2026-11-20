@@ -6,8 +6,6 @@ public import RequestProject.PresPosetReadingSurjective
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
@@ -20,11 +18,7 @@ theorem roseLoopHom_inclusion :
     (pi1Map (orderCxMap (iRose w) (iRose_monotone w)) Rose.base).comp
       (loopHom (roseGeneratorLoop (α := α))) = alphaFree w := by
   apply FreeGroup.ext_hom
-  intro i
-  rw [MonoidHom.comp_apply, loopHom_of]
-  exact (show (pi1Map (orderCxMap (iRose w) (iRose_monotone w)) Rose.base)
-    (Pi1.mk (roseGeneratorLoop i)) = genClass w i from rfl).trans
-      (alphaFree_of w i).symm
+  tauto
 
 /-- The actual free-group marking surjects onto the presentation fundamental group. -/
 theorem alphaFree_surjective (hpos : ∀ j, 0 < (w j).length) :

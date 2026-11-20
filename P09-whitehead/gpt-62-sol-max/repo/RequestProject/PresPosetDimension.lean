@@ -5,8 +5,6 @@ public import RequestProject.OrderThreeNormalization
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
@@ -81,7 +79,7 @@ theorem cylinderDimension_strictMono (w : J → List (α × Bool)) :
     cases q with
     | inl q =>
       exact roseDimension_strictMono (lt_of_le_of_ne hl (by
-        intro he; exact hn (congrArg Sum.inl he)))
+        tauto))
     | inr q => exact hl.elim
   | inr p =>
     cases q with
@@ -89,7 +87,7 @@ theorem cylinderDimension_strictMono (w : J → List (α × Bool)) :
       exact (circleDimension_lt_aFun w p).trans_le (roseDimension_monotone hl)
     | inr q =>
       exact circleDimension_strictMono w (lt_of_le_of_ne hl (by
-        intro he; exact hn (congrArg Sum.inr he)))
+        tauto))
 
 noncomputable def presPosDimension (w : J → List (α × Bool)) : PresPos w → ℕ :=
   Sum.elim (cylinderDimension w) (fun _ => 2)
@@ -99,7 +97,7 @@ theorem presPosDimension_le_two (w : J → List (α × Bool)) (p : PresPos w) :
   cases p with
   | inl p =>
     cases p with
-    | inl r => cases r <;> simp [presPosDimension, cylinderDimension, roseDimension]
+    | inl r => cases r <;> tauto
     | inr c => exact (circleDimension_le_one w c).trans (by decide)
   | inr j => exact le_refl _
 
@@ -112,8 +110,7 @@ theorem presPosDimension_strictMono (w : J → List (α × Bool)) :
   | inl p =>
     cases q with
     | inl q =>
-      exact cylinderDimension_strictMono w (lt_of_le_of_ne hl (by
-        intro he; exact hn (congrArg Sum.inl he)))
+      exact cylinderDimension_strictMono w (lt_of_le_of_ne hl (fun he => hn (congrArg Sum.inl he)))
     | inr j =>
       obtain ⟨r, hr, hpr⟩ := hl
       obtain ⟨k, t, _, he⟩ := hr
@@ -126,6 +123,6 @@ theorem presPosDimension_strictMono (w : J → List (α × Bool)) :
   | inr j =>
     cases q with
     | inl q => exact hl.elim
-    | inr k => exact (hn (congrArg Sum.inr hl)).elim
+    | inr k => tauto
 
 end FiniteChains.PresModel

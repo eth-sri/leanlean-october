@@ -30,7 +30,7 @@ theorem coverV_injective (hcov : IsCovering p) (hsc : SimplyConnected D) :
       obtain ⟨m, hm, hmq⟩ := coverV_spec hcov rfl q
       obtain ⟨n, hn, hnr⟩ := coverV_spec hcov rfl r
       rw [← he] at hn
-      have htriv : Pi1Trivial p := fun a l hl => mapPath_htpy p (hsc a l hl)
+      have htriv  := fun a l hl => mapPath_htpy p (hsc a l hl)
       have hh := htpy_mapPath_of_pi1Trivial htriv hm hn
       rw [hmq, hnr] at hh
       apply UV.sound
@@ -44,15 +44,15 @@ theorem coverF_injective (hcov : IsCovering p) (hsc : SimplyConnected D) :
   apply Subtype.ext
   apply Prod.ext
   · apply coverV_injective hcov hsc
-    rw [← base_coverF, ← base_coverF, he]
-  · rw [← onF_coverF hcov rfl c, ← onF_coverF hcov rfl d, he]
+    simp [← base_coverF, he]
+  simp_all [← onF_coverF hcov rfl c, ← onF_coverF hcov rfl d]
 
 /-- Identify a lifted face by its projected cell and its lifted base vertex. -/
 theorem coverF_eq_of_base_and_image (hcov : IsCovering p) (c : UF K (p.onV d₀))
     (g : D.F) (himage : p.onF g = c.1.2)
     (hbase : D.base g = coverV hcov (d₀ := d₀) rfl c.1.1) :
     coverF hcov (d₀ := d₀) rfl c = g := by
-  obtain ⟨w, -, hw⟩ := exists_unique_liftCell hcov c.1.2
+  obtain ⟨w, -, hw⟩ := exists_unique_liftCell hcov.uniqueLifts c.1.2
     (v := coverV hcov (d₀ := d₀) rfl c.1.1) (coverF_cond hcov rfl c)
   exact (hw _ ⟨onF_coverF hcov rfl c, base_coverF hcov rfl c⟩).trans
     (hw g ⟨himage, hbase⟩).symm

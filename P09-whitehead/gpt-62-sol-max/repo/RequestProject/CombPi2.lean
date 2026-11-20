@@ -40,12 +40,12 @@ theorem endpt_mapPath (h : Hom X Y) : ∀ (q : List (X.E × Bool)) (a : X.V),
     endpt Y (h.onV a) (mapPath h q) = h.onV (endpt X a q) := by
   intro q
   induction q with
-  | nil => intro a; rfl
+  | nil => aesop
   | cons eb t ih =>
       intro a
       show endpt Y (germTgt Y.src Y.tgt (h.onE eb.1, eb.2)) (mapPath h t) = _
       rw [germTgt_onE h eb]
-      exact ih (germTgt X.src X.tgt eb)
+      tauto
 
 variable (x₀ : X.V)
 
@@ -83,7 +83,7 @@ theorem univLiftV_extend (h : Hom X Y) {eb : X.E × Bool} {c : UV X x₀}
   induction c using UV.ind with
   | h p =>
       have hpos : endpt X x₀ p.1 = germSrc X.src X.tgt eb := hc
-      have hgerm : germSrc Y.src Y.tgt (h.onE eb.1, eb.2) = h.onV (germSrc X.src X.tgt eb) :=
+      have hgerm  :=
         germSrc_onE h eb
       have hpos' : endpt Y (h.onV x₀) (mapPathFrom x₀ h p).1
           = germSrc Y.src Y.tgt (h.onE eb.1, eb.2) := by
@@ -110,37 +110,39 @@ def univLiftF (h : Hom X Y) (F : UF X x₀) : UF Y (h.onV x₀) :=
   ⟨(univLiftV x₀ h F.1.1, h.onF F.1.2), by
     rw [endV_univLiftV, F.2, h.base_onF]⟩
 
-theorem univLiftV_liftGerm (h : Hom X Y) {c : UV X x₀} {eb : X.E × Bool}
-    (hc : endV c = germSrc X.src X.tgt eb)
-    (hc' : endV (univLiftV x₀ h c) = germSrc Y.src Y.tgt (h.onE eb.1, eb.2)) :
-    liftGerm (univLiftV x₀ h c) (h.onE eb.1, eb.2) hc'
-      = (univLiftE x₀ h (liftGerm c eb hc).1, (liftGerm c eb hc).2) := by
-  obtain ⟨e, b⟩ := eb
-  cases b with
-  | true => rfl
-  | false =>
-      refine Prod.ext ?_ rfl
-      refine Subtype.ext (Prod.ext ?_ rfl)
-      exact (univLiftV_extend x₀ h (eb := (e, false)) hc).symm
+/-- A map on anchored cells is injective if it separates lifted vertices and cells at each vertex. -/
+private theorem anchoredCell_injective {A B C E F : Type*} {end₀ : A → C} {base : E → C}
+    {g : A → B} {f : E → F} (hg : Function.Injective g)
+    (hf : ∀ ⦃e e'⦄, base e = base e' → f e = f e' → e = e') :
+    Function.Injective (fun x : {p : A × E // end₀ p.1 = base p.2} => (g x.1.1, f x.1.2)) := by
+  intro x y h
+  have hv := hg (congrArg Prod.fst h)
+  aesop
+
+variable {x₀} in
+theorem univLiftE_injective (f : Hom X Y) (hv : Function.Injective (univLiftV x₀ f))
+    (he : ∀ ⦃e e'⦄, X.src e = X.src e' → f.onE e = f.onE e' → e = e') :
+    Function.Injective (univLiftE x₀ f) :=
+  fun _ _ h => anchoredCell_injective (end₀ := endV) hv he (congrArg Subtype.val h)
+
+variable {x₀} in
+theorem univLiftF_injective (f : Hom X Y) (hv : Function.Injective (univLiftV x₀ f))
+    (hf : ∀ ⦃e e'⦄, X.base e = X.base e' → f.onF e = f.onF e' → e = e') :
+    Function.Injective (univLiftF x₀ f) :=
+  fun _ _ h => anchoredCell_injective (end₀ := endV) hv hf (congrArg Subtype.val h)
 
 theorem uLiftPath_univLiftV (h : Hom X Y) : ∀ (q : List (X.E × Bool)) (c : UV X x₀) (w : X.V),
     IsPath X.src X.tgt q (endV c) w →
       uLiftPath (mapPath h q) (univLiftV x₀ h c)
         = (uLiftPath q c).map (fun Eb => (univLiftE x₀ h Eb.1, Eb.2)) := by
-  intro q
-  induction q with
-  | nil => intro c w _; rfl
-  | cons eb t ih =>
-      intro c w hq
-      have hc : endV c = germSrc X.src X.tgt eb := hq.1
-      have hc' : endV (univLiftV x₀ h c) = germSrc Y.src Y.tgt (h.onE eb.1, eb.2) := by
-        rw [endV_univLiftV, germSrc_onE h eb, hc]
-      have hnext : IsPath X.src X.tgt t (endV (extend eb c)) w := by
-        rw [endV_extend hc]; exact hq.2
-      show uLiftPath ((h.onE eb.1, eb.2) :: mapPath h t) (univLiftV x₀ h c) = _
-      rw [uLiftPath_cons hc', uLiftPath_cons hc, List.map_cons,
-        univLiftV_liftGerm x₀ h hc hc', ← univLiftV_extend x₀ h hc,
-        ih (extend eb c) w hnext]
+  intro q c w hq
+  have he := map_eq_uLiftPath (K := uCover X x₀) (univLiftV x₀ h) (univLiftE x₀ h)
+    (fun _ => rfl) (fun E => (univLiftV_extend x₀ h (eb := (E.1.2, true)) E.2).symm)
+    (isPath_uLiftPath q c w hq)
+  change _ = uLiftPath ((uLiftPath q c).map fun d => (h.onE d.1.1.2, d.2)) _ at he
+  refine (he.trans (congrArg (fun l => uLiftPath l (univLiftV x₀ h c)) ?_)).symm
+  simpa only [List.map_map, Function.comp_def, mapPath] using
+    congrArg (List.map fun d : X.E × Bool => (h.onE d.1, d.2)) (map_uLiftPath _ _ _ hq)
 
 variable (X) in
 /-- **The lift of a cellular map to the universal covers.** -/
@@ -152,15 +154,13 @@ noncomputable def univLift (h : Hom X Y) (x₀ : X.V) :
   src_onE := fun _ => rfl
   tgt_onE := by
     intro E
-    show extend (h.onE E.1.2, true) (univLiftV x₀ h E.1.1)
-      = univLiftV x₀ h (extend (E.1.2, true) E.1.1)
     exact (univLiftV_extend x₀ h (eb := (E.1.2, true)) E.2).symm
   base_onF := fun _ => rfl
   att_onF := by
     intro F
-    have hbase : endV F.1.1 = X.base F.1.2 := F.2
+    have hbase  := F.2
     have hatt : IsPath X.src X.tgt (X.att F.1.2) (endV F.1.1) (X.base F.1.2) := by
-      rw [hbase]; exact X.att_isLoop F.1.2
+      simpa [hbase] using X.att_isLoop F.1.2
     show uLiftPath (Y.att (h.onF F.1.2)) (univLiftV x₀ h F.1.1) = _
     rw [h.att_onF F.1.2]
     exact uLiftPath_univLiftV x₀ h (X.att F.1.2) F.1.1 (X.base F.1.2) hatt
@@ -180,10 +180,6 @@ complex. -/
 noncomputable def hurewicz (x₀ : X.V) : ((uCover X x₀).F →₀ ℤ) →ₗ[ℤ] (X.F →₀ ℤ) :=
   chain2 (univProj X x₀)
 
-variable (X) in
-/-- **The Cockcroft property**: the Hurewicz map `π₂(X) → H₂(X)` vanishes. -/
-def IsCockcroft : Prop :=
-  ∀ (x₀ : X.V) (c : (uCover X x₀).F →₀ ℤ), c ∈ Pi2 X x₀ → hurewicz X x₀ c = 0
 
 /-- **A cellular map is zero on `π₂`**: the induced map of two-chains of the universal covers
 kills every two-cycle. -/
@@ -194,7 +190,7 @@ def ZeroPi2 (h : Hom X Y) : Prop :=
 theorem mem_pi2_chain2_univLift (h : Hom X Y) {x₀ : X.V} {c : (uCover X x₀).F →₀ ℤ}
     (hc : c ∈ Pi2 X x₀) : chain2 (univLift X h x₀) c ∈ Pi2 Y (h.onV x₀) := by
   have hchain := bdry2_chain2 (univLift X h x₀) c
-  have hzero : bdry2 (uCover X x₀) c = 0 := hc
+  have hzero  := hc
   show bdry2 (uCover Y (h.onV x₀)) (chain2 (univLift X h x₀) c) = 0
   rw [hchain, hzero, map_zero]
 

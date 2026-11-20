@@ -18,11 +18,9 @@ theorem orderNerveRealization_cycle_nerveRepresentative (n : ℕ)
   let d' : smallChains (orderNerveRealizationOpenStar P) (n + 1) := ⟨d, hd⟩
   have hd' : smallBoundary (orderNerveRealizationOpenStar P) n d' = 0 := Subtype.ext hz
   obtain ⟨b, hb⟩ := orderSmallSingularApproximation_homologous n d' hd'
-  refine ⟨orderSmallToNerve P (n + 1) d', orderSmallToNerve_mem_inc _ _,
-    orderSmallToNerve_length _ _, ?_, b - a, ?_⟩
-  · rw [orderSmallToNerve_boundary, hd', map_zero]
-  · rw [map_sub, hb, ha]
-    change d - orderNerveGradedRealize P (n + 1) (orderSmallToNerve P (n + 1) d') - (d - c) = _
-    abel
+  refine ⟨orderTightToNerve P (n + 1) d', orderTightToNerve_mem_inc _ _,
+    orderTightToNerve_length _ _, ?_, b - a, ?_⟩
+  · rw [orderTightToNerve_boundary, hd', map_zero]
+  · aesop
 
 end FiniteChains.Comb

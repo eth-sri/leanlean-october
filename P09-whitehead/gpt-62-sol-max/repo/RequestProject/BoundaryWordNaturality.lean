@@ -1,6 +1,8 @@
 module
 
-public import RequestProject.CombData
+public import RequestProject.CombPi2
+public import RequestProject.Pigeonhole
+public import RequestProject.SubgroupCompactness
 public import RequestProject.ClassicalGraphBoundaryWords
 
 @[expose] public section
@@ -9,9 +11,7 @@ public import RequestProject.ClassicalGraphBoundaryWords
 their four-side parametrizations. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 open scoped Classical unitInterval

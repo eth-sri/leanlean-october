@@ -1,7 +1,9 @@
 module
 
 public import RequestProject.TopologicalSingular.SquareSingularChains
-public import RequestProject.TopologicalSingular.RelativeSingularPrism
+public import RequestProject.FinsuppBasis
+public import RequestProject.TopologicalSingular.SingularPrism
+public import RequestProject.TopologicalSingular.RelativeSingularMaps
 public import RequestProject.TopologicalCoverPi2
 
 @[expose] public section
@@ -20,19 +22,15 @@ theorem prism_one_single_eq_zero_of_constant (tau : Simplex X 1) (r : ℤ) (y : 
     intro z
     exact h _ _
   rw [prism_single, altSum, Fin.sum_univ_two]
-  simp only [hs, Fin.val_zero, Fin.val_one, pow_zero, pow_one, one_smul, neg_smul]
-  exact add_neg_cancel _
+  simp_all
 
 theorem prism_one_eq_zero_of_constant_on (A : Set X) (y : Y)
     (hH : ∀ t : I, ∀ a ∈ A, H (t, a) = y) {c : Chain X 1} (hc : c ∈ subChains A 1) :
     prism H 1 c = 0 := by
   obtain ⟨b, rfl⟩ := hc
-  induction b using Finsupp.induction_linear with
-  | zero => simp
-  | add b c hb hc => simp only [map_add, hb, hc, add_zero]
-  | single tau r =>
-    rw [TopologicalSingular.map_single]
-    exact prism_one_single_eq_zero_of_constant H _ r y (fun t z => hH t _ (tau z).property)
+  finsupp_basis b
+  intro tau
+  simpa using prism_one_single_eq_zero_of_constant H _ 1 y (fun t z => hH t _ (tau z).property)
 
 end FiniteChains.SingularPrism
 

@@ -33,8 +33,7 @@ theorem folded_relator_eq_one (j : J ⊕ I) :
     (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (rel ρ w j)) : PresGroup ρ) = 1 := by
   cases j with
   | inl j =>
-    change (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (FreeGroup.map Sum.inl (ρ j))) :
-      PresGroup ρ) = 1
+    change (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (FreeGroup.map Sum.inl (ρ j)))) = 1
     rw [SurfaceWordExpansion.foldNames_map_inl]
     exact (QuotientGroup.eq_one_iff _).mpr (Subgroup.subset_normalClosure ⟨j, rfl⟩)
   | inr i =>
@@ -54,8 +53,7 @@ theorem elimination_inclusion (g : PresGroup ρ) :
     elimination ρ w (inclusion ρ w g) = g := by
   induction g using QuotientGroup.induction_on with
   | H v =>
-    change (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (FreeGroup.map Sum.inl v)) :
-      PresGroup ρ) = _
+    change (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (FreeGroup.map Sum.inl v))) = _
     rw [SurfaceWordExpansion.foldNames_map_inl]
 
 theorem inclusion_elimination (g : PresGroup (rel ρ w)) :

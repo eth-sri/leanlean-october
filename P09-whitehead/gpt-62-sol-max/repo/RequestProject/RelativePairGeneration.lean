@@ -16,27 +16,8 @@ All cell and coefficient chains are finitely supported. Unverified source.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
-
-theorem fox_subst_weighted_coordinate {I K : Type} [DecidableEq I] [DecidableEq K]
-    (φ : FreeGroup I →* FreeGroup K)
-    (a : I) (b : K) (d : FreeGroupRing K)
-    (h : ∀ i, fox b (φ (FreeGroup.of i)) = if a = i then d else 0)
-    (w : FreeGroup I) :
-    fox b (φ w) = MonoidAlgebra.mapDomainRingHom ℤ φ (fox a w) * d := by
-  induction w using FreeGroup.induction_on with
-  | one => simp
-  | of i => rw [h, fox_of]; split_ifs <;> simp
-  | inv_of i ih =>
-      rw [map_inv, fox_inv, fox_inv, map_neg, map_mul, ih, groupRingMap_grp, map_inv]
-      noncomm_ring
-  | mul v w hv hw =>
-      rw [map_mul, fox_mul, fox_mul, map_add, map_mul, groupRingMap_grp, hv, hw]
-      noncomm_ring
 
 namespace RelativeNormalForm
 open BlockFamily
@@ -53,21 +34,19 @@ theorem pairSubstitution_generator_fox (i : PairGen A Z) (j : A ⊕ Z) :
     fox i (pairSubstitution (FreeGroup.of j)) =
       if pairOldCoordinate i = j then pairFoxWeight i else 0 := by
   by_cases h : pairOldCoordinate i = j
-  · subst j
-    rw [if_pos rfl]
-    rfl
+  · aesop
   · rw [if_neg h]
     cases i with
     | inl a =>
         cases j with
         | inl b =>
             have hab : a ≠ b := by simpa [pairOldCoordinate] using h
-            simp [fox_of, hab]
+            simp_all
         | inr z =>
             simp [commutatorElement_def, fox_mul, fox_inv, fox_of]
     | inr p =>
         cases j with
-        | inl a => simp [fox_of]
+        | inl a => aesop
         | inr z =>
             have hpz : p.1 ≠ z := by simpa [pairOldCoordinate] using h
             obtain ⟨p, b⟩ := p
@@ -99,18 +78,8 @@ def pairCoefficients := MonoidAlgebra.mapDomainRingHom ℤ (pairSubGroupHom ρ)
 
 theorem pairCoefficients_proj (x : FreeGroupRing (A ⊕ Z)) :
     pairCoefficients ρ (proj (relSub ρ) x) =
-      proj (relSub (pairRel ρ)) (MonoidAlgebra.mapDomainRingHom ℤ pairSubstitution x) := by
-  induction x using MonoidAlgebra.induction_linear with
-  | zero => simp [pairCoefficients]
-  | add x y hx hy => simp only [map_add, hx, hy]
-  | single w a =>
-      apply MonoidAlgebra.coeff_injective
-      change Finsupp.mapDomain (pairSubGroupHom ρ)
-        (Finsupp.mapDomain (QuotientGroup.mk' (relSub ρ)) (Finsupp.single w a)) =
-        Finsupp.mapDomain (QuotientGroup.mk' (relSub (pairRel ρ)))
-          (Finsupp.mapDomain pairSubstitution (Finsupp.single w a))
-      simp only [Finsupp.mapDomain_single]
-      rfl
+      proj (relSub (pairRel ρ)) (MonoidAlgebra.mapDomainRingHom ℤ pairSubstitution x) :=
+  quotRingHom_natural (relSub (pairRel ρ)) pairSubstitution (pairSubGroupHom ρ) rfl x
 
 def pairOldBoundary := fsRingMapBoundary (pairCoefficients ρ)
   (fun j => coverFoxGradient (relSub ρ) (ρ j))
@@ -144,7 +113,7 @@ theorem pairConjugate_infinite_order (z : Z) :
     ¬ IsOfFinOrder (QuotientGroup.mk (pairConjugate (A := A) z) : PresGroup (pairRel ρ)) := by
   apply not_isOfFinOrder_of_map (pairExponent ρ z)
   have he : pairExponent ρ z (QuotientGroup.mk (pairConjugate z)) =
-      Multiplicative.ofAdd (1 : ℤ) := by
+      Multiplicative.ofAdd 1 := by
     change expSum (Sum.inr (z, true)) (pairConjugate z) = _
     simp [pairConjugate, expSum]
   rw [he]
@@ -169,29 +138,19 @@ theorem pair_cycle_reflection
 
 def pairStructuralMap : PresMorFS ρ (pairRel ρ) where
   hom := pairSubGroupHom ρ
-  cells := fun x => x.mapRange (pairCoefficients ρ) (map_zero _)
-  cells_add := by
-    intro x y
-    ext j : 1
-    simp only [Finsupp.mapRange_apply, Finsupp.add_apply]
-    exact map_add _ _ _
-  cells_smul := by
-    intro a x
-    ext j : 1
-    simp only [Finsupp.mapRange_apply, Finsupp.smul_apply, smul_eq_mul]
-    exact map_mul _ _ _
+  cells := Finsupp.mapRange.linearMap (pairCoefficients ρ).toSemilinearMap
   cells_cycle := by
     intro x hx
     change coverSecondBoundary _ _ _ = 0
     ext i : 1
     rw [pair_boundary_coordinate]
-    change fsRingMapBoundary (pairCoefficients ρ) _ (x.mapRange _ _) _ * _ = 0
+    change fsRingMapBoundary (pairCoefficients ρ) _
+      (x.mapRange _ (map_zero (pairCoefficients ρ))) _ * _ = 0
     rw [fsRingMapBoundary_mapRange]
     erw [hx]
     simp
   cells_aug := by
     intro x hx j
-    change augPres (pairRel ρ) (MonoidAlgebra.mapDomainRingHom ℤ (pairSubGroupHom ρ) (x j)) = 0
     exact (augQ_mapDomain (pairSubGroupHom ρ) (x j)).trans (hx j)
 
 /-- Equation (3.3) for simultaneous rule 1 with every input discharged. -/

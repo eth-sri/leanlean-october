@@ -35,8 +35,6 @@ coefficients of `x` add up to zero. -/
 def VanishesMod (N : Subgroup G) (x : G →₀ ℤ) : Prop :=
   ∀ g : G, ∑ h ∈ x.support.filter (fun h => h * g⁻¹ ∈ N), x h = 0
 
-@[simp] theorem vanishesMod_zero (N : Subgroup G) : VanishesMod N (0 : G →₀ ℤ) := by
-  intro g; simp
 
 variable {I J : Type*}
 

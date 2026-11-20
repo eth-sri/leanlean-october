@@ -22,7 +22,7 @@ noncomputable instance relatorCircle_fintype : Fintype (RelatorCircle w j) :=
 
 def presConeBallHomeomorph :
     orderNerveRealization (Set.Iic (apexOf w j)) ≃ₜ ClosedUnitBall (Fin 2 → ℝ) := by
-  letI : Nonempty (RelatorCircle w j) := relatorCircle_nonempty w j (List.ne_nil_of_length_pos hn)
+  letI  := relatorCircle_nonempty w j (List.ne_nil_of_length_pos hn)
   exact lowerConeBallHomeomorph (apexOf w j) (relatorCircleOrderIso w j)
     (relatorCircleBoundaryHomeomorph w j hn)
 

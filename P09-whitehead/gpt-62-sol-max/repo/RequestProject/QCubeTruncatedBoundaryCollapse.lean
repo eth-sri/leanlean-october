@@ -13,10 +13,7 @@ theorem qThreeTruncatedCoordinateBoundary_apply (r : QThreeCube A →₀ ℤ)
     (f : Cube V ⊕ Finset V) :
     qThreeTruncatedCoordinateBoundary r f =
       ∑ c ∈ r.support, r c * cubeBdry (qCubeToCoordinate c.1) f := by
-  classical
-  simp only [qThreeTruncatedCoordinateBoundary, Finsupp.linearCombination_apply,
-    Finsupp.sum, Finsupp.finset_sum_apply, Finsupp.smul_apply,
-    qCubeTruncatedCoordinateBoundary_apply, smul_eq_mul]
+  simp [qThreeTruncatedCoordinateBoundary, Finsupp.linearCombination_apply, Finsupp.sum, Finsupp.finset_sum_apply, Finsupp.smul_apply, qCubeTruncatedCoordinateBoundary_apply]
 
 /-- A geometric chain collapse kills every genuine finite truncated boundary whose
 three-cubes occur in the actual collapse sequence. -/
@@ -32,10 +29,10 @@ theorem qThreeTruncatedBoundary_collapse_zero
     { toFun := CollapseChain.cmap (cubeBdry (V := V)) lp
       map_zero' := CollapseChain.cmap_zero lp
       map_add' := CollapseChain.cmap_add lp }
-  have he : (qThreeTruncatedCoordinateBoundary r : (Cube V ⊕ Finset V) → ℤ) =
+  have he : (qThreeTruncatedCoordinateBoundary r) =
       ∑ c ∈ r.support, (fun f => r c * cubeBdry (qCubeToCoordinate c.1) f) := by
     funext f
-    simp only [Finset.sum_apply, qThreeTruncatedCoordinateBoundary_apply]
+    simp [qThreeTruncatedCoordinateBoundary_apply]
   change L (qThreeTruncatedCoordinateBoundary r) = 0
   rw [he, map_sum]
   apply Finset.sum_eq_zero

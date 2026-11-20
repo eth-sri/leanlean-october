@@ -19,7 +19,7 @@ noncomputable def stationaryPi2Chain (x : X) :
 theorem stationaryPi2Chain_single_of_based (x : X) (a : PointedSingularTriangle X x) (r : ℤ) :
     stationaryPi2Chain x (Finsupp.single a.map r) = r • a.pi2 := by
   rw [stationaryPi2Chain, Finsupp.linearCombination_single]
-  apply congrArg (fun v : Additive (HomotopyGroup (Fin 2) X x) => r • v)
+  apply congrArg (fun v  => r • v)
   apply PointedSingularTriangle.pi2_congr
   exact stationaryTriangle_eq_of_based x a.map a.based
 
@@ -27,9 +27,7 @@ theorem stationaryPi2Chain_basedTriangleCycle (x : X) (a : PointedSingularTriang
     stationaryPi2Chain x (basedTriangleCycle a.map x) = a.pi2 := by
   rw [basedTriangleCycle, map_sub, stationaryPi2Chain_single_of_based x a 1]
   have hc := stationaryPi2Chain_single_of_based x (PointedSingularTriangle.constant x) 1
-  change stationaryPi2Chain x (Finsupp.single (ContinuousMap.const (Domain 2) x) 1) =
-    (1 : ℤ) • (PointedSingularTriangle.constant x).pi2 at hc
-  rw [hc, PointedSingularTriangle.constant_pi2, one_smul, smul_zero, sub_zero]
+  aesop
 
 theorem stationaryPi2Chain_boundary_single (x : X) (tau : Simplex X 3) :
     stationaryPi2Chain x (boundary 2 (Finsupp.single tau 1)) = 0 := by
@@ -45,7 +43,7 @@ theorem stationaryPi2Chain_boundary_single (x : X) (tau : Simplex X 3) :
   intro i _
   rw [map_smul]
   simp only [stationaryPi2Chain, Finsupp.linearCombination_single, one_smul]
-  apply congrArg (fun v : Additive (HomotopyGroup (Fin 2) X x) => (-1 : ℤ) ^ (i : ℕ) • v)
+  apply congrArg (fun v : Additive (HomotopyGroup (Fin 2) X x) => (-1) ^ (i : ℕ) • v)
   exact (PointedSingularTriangle.tetrahedron_face_pi2 T hedge i
     (stationaryPointedTriangle x (face i tau)) (hT i)).symm
 
@@ -54,7 +52,7 @@ theorem stationaryPi2Chain_comp_boundary (x : X) :
   apply Finsupp.lhom_ext
   intro tau r
   change stationaryPi2Chain x (boundary 2 (Finsupp.single tau r)) = 0
-  have hs : Finsupp.single tau r = r • Finsupp.single tau (1 : ℤ) := by simp
+  have hs : Finsupp.single tau r = r • Finsupp.single tau 1 := by simp
   rw [hs, map_smul, map_smul, stationaryPi2Chain_boundary_single, smul_zero]
 
 theorem stationaryPi2Chain_boundary (x : X) (b : Chain X 3) :

@@ -10,9 +10,6 @@ arbitrary substitutions. Pending final Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 universe u
@@ -23,24 +20,17 @@ forward its full group-ring coefficient, including coincident sheets. -/
 theorem cellCoefficient_mapSheets (e : E) (c : (G × E) →₀ ℤ) :
     cellCoefficient e (Finsupp.mapDomain (fun x : G × E => (φ x.1, x.2)) c) =
       MonoidAlgebra.mapDomainRingHom ℤ φ (cellCoefficient e c) := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [Finsupp.mapDomain_add, map_add, hc, hd]
-  | single x n =>
-    obtain ⟨g, j⟩ := x
-    rw (config := { transparency := .default }) [Finsupp.mapDomain_single, cellCoefficient_single, cellCoefficient_single]
-    by_cases hj : j = e
-    · rw [if_pos hj, if_pos hj]
-      change MonoidAlgebra.single (φ g) n = MonoidAlgebra.mapDomain φ (MonoidAlgebra.single g n)
-      exact MonoidAlgebra.mapDomain_single.symm
-    · rw [if_neg hj, if_neg hj, map_zero]
+  finsupp_basis c [MonoidAlgebra.mapDomain_add]
+  rintro ⟨g, j⟩
+  erw [Finsupp.mapDomain_single, cellCoefficient_single, cellCoefficient_single]
+  by_cases hj : j = e <;> simp_all
 
 theorem cellCoordinates_symm_mapSheets [Fintype E] (v : E → MonoidAlgebra ℤ G) :
     (cellCoordinates E).symm (fun e => MonoidAlgebra.mapDomainRingHom ℤ φ (v e)) =
       Finsupp.mapDomain (fun x : G × E => (φ x.1, x.2)) ((cellCoordinates E).symm v) := by
   apply (cellCoordinates E).injective
   funext e
-  rw (config := { transparency := .default }) [LinearEquiv.apply_symm_apply, ← cellCoefficient_eq_coordinates,
+  erw [LinearEquiv.apply_symm_apply, ← cellCoefficient_eq_coordinates,
     cellCoefficient_mapSheets, cellCoefficient_coordinates_symm]
 
 end FiniteChains.Comb.ReceivedTree
@@ -56,7 +46,7 @@ theorem finiteSpineFamilyFilling_named_coeff (s : S) (m : NamedSpineRel (q s)) :
         (normalizedNamedSpineVector (q s) (normalizedSpineReference (q s)) m) := by
   change MonoidAlgebra.mapDomainRingHom ℤ (finiteSpineFamilyMarkedHom ρ q u s)
     (markedSpineFilling (q s) m) = _
-  rw (config := { transparency := .default }) [markedSpineFilling_named_coeff, BlockMor.mapDomainRingHom_comp']
+  erw [markedSpineFilling_named_coeff, MonoidAlgebra.mapDomainRingHom_apply_comp]
   rfl
 
 theorem finiteSpineFamilyFilling_faceChain (s : S) :
@@ -66,7 +56,7 @@ theorem finiteSpineFamilyFilling_faceChain (s : S) :
           (familySpineHom ρ q u s x.1, x.2)) (normalizedSpineReference (q s)) := by
   apply (ReceivedTree.cellCoordinates (SpinePresentationRel (q s))).injective
   funext j
-  rw (config := { transparency := .default }) [← ReceivedTree.cellCoefficient_eq_coordinates,
+  erw [← ReceivedTree.cellCoefficient_eq_coordinates,
     receivedSpineFaceChain_coefficient, ← ReceivedTree.cellCoefficient_eq_coordinates,
     ReceivedTree.cellCoefficient_mapSheets, finiteSpineFamilyFilling_named_coeff]
   rfl

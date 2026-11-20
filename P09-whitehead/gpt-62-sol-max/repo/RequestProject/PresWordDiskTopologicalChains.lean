@@ -15,11 +15,7 @@ input is a homotopy equivalence of spaces; no homeomorphism of the original
 CW structure with a canonical presentation model is required. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-set_option maxHeartbeats 200000
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment
@@ -58,8 +54,7 @@ theorem original_hasChain_of_word_embeddings (K : Whitehead.TwoComplex)
   apply Whitehead.hasChain_of_diskExtensionModels M K e₀ n ?_ ?_ finite ?_
   · intro i hi
     rcases hp i hi with ⟨a, ha⟩ | ⟨j, hj⟩
-    · exact Or.inl ((e i).classicalDiskExtension_nonempty_of_generator
-        (hne i) (hne (i + 1)) a ha)
+    · solve_by_elim
     · exact Or.inr ((e i).classicalDiskExtension_nonempty_of_relator
         (hne i) (hne (i + 1)) j hj)
   · intro i hi
@@ -72,12 +67,12 @@ theorem original_hasChain_of_word_embeddings (K : Whitehead.TwoComplex)
     obtain ⟨hK, hA, hJ⟩ := hfin hf
     refine ⟨hK, ?_⟩
     intro i hi
-    letI : Finite (α n) := hA
-    letI : Finite (J n) := hJ
-    letI : Finite (α (i + 1)) := Finite.of_injective
+    letI  := hA
+    letI  := hJ
+    letI  := Finite.of_injective
       (successiveEmbedding (fun i => (e i).gen) (i + 1) n hi)
       (successiveEmbedding (fun i => (e i).gen) (i + 1) n hi).injective
-    letI : Finite (J (i + 1)) := Finite.of_injective
+    letI  := Finite.of_injective
       (successiveEmbedding (fun i => (e i).cell) (i + 1) n hi)
       (successiveEmbedding (fun i => (e i).cell) (i + 1) n hi).injective
     exact (e i).classicalDiskExtension_finite (hne i) (hne (i + 1))
@@ -105,14 +100,17 @@ theorem hasOriginalTopologicalChain (K : Whitehead.TwoComplex) (a : c.gen 0)
     (finite : Bool)
     (hfin : finite = true → Whitehead.FiniteCells K ∧ Finite (c.gen n) ∧ Finite (c.cell n)) :
     Whitehead.HasChain K n finite := by
-  letI : ∀ i, DecidableEq (c.gen i) := c.decGen
+  letI  := c.decGen
   let f (i : ℕ) : c.gen i ↪ c.gen (i + 1) := ⟨c.genIncl i, c.genIncl_injective i⟩
   let g (i : ℕ) : c.cell i ↪ c.cell (i + 1) := ⟨c.cellIncl i, c.cellIncl_injective i⟩
-  exact original_hasChain_of_word_embeddings
+  refine original_hasChain_of_word_embeddings
     (fun i => presCanonicalWords (c.rel i) (presentationMarkedGenerator f a i))
     (canonicalPresentationStep c.rel f g c.rel_incl a) c.rel
     (fun i => mk_presCanonicalWords (c.rel i) (presentationMarkedGenerator f a i))
     (fun i => presCanonicalWords_positive (c.rel i) (presentationMarkedGenerator f a i))
-    K e₀ n hp c.zero_pi2 finite hfin
+    K e₀ n hp ?_ finite hfin
+  intro i hi
+  exact (Comb.zeroPi2_presInclHom_iff (c.rel i) (c.genIncl i) (c.genIncl_injective i)
+    (c.cellIncl i) (c.rel_incl i)).mp (c.zero_pi2 i hi)
 
 end FiniteChains.PresChainFS

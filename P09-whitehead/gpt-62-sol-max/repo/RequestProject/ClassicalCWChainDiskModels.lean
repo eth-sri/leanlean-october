@@ -20,7 +20,7 @@ theorem subcomplex_mem_skeleton_three (C : CWComplex.Subcomplex (Set.univ : Set 
     (x : (C : Set K)) : x.val ∈ CWComplex.skeletonLT (C : Set K) (3 : ℕ∞) := by
   have hx := x.property
   have hx' := (CWComplex.iUnion_openCell_eq_complex (C := (C : Set K))).symm
-  have hmem := congrArg (fun S : Set K => x.val ∈ S) hx'
+  have hmem := congrArg (fun S  => x.val ∈ S) hx'
   have hx := Eq.mp hmem hx
   obtain ⟨n, j, hj⟩ := by simpa only [Set.mem_iUnion] using hx
   have hn : n < 3 := by
@@ -28,7 +28,7 @@ theorem subcomplex_mem_skeleton_three (C : CWComplex.Subcomplex (Set.univ : Set 
     have hn2 : 2 < n := by omega
     letI := K.dimension n hn2
     exact isEmptyElim j.val
-  change x.val ∈ (CWComplex.skeletonLT (C : Set K) (3 : ℕ∞) : Set K)
+  change x.val ∈ (CWComplex.skeletonLT (C : Set K) 3 : Set K)
   rw [← CWComplex.iUnion_openCell_eq_skeletonLT]
   exact Set.mem_iUnion.mpr ⟨n, Set.mem_iUnion.mpr ⟨by exact_mod_cast hn,
     Set.mem_iUnion.mpr ⟨j, hj⟩⟩⟩

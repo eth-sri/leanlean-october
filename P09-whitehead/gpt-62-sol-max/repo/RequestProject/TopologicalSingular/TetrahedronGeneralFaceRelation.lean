@@ -34,7 +34,7 @@ theorem tetrahedron_relation (a b c d : PointedSingularTriangle X x)
     · rfl
     · exact hU 2 (by decide)
     · exact hU 3 (by decide)
-  have he : e.pi2 + d.pi2 = c.pi2 := first_face_constant_relation e c d U hUfaces
+  have he  := first_face_constant_relation e c d U hUfaces
   obtain ⟨W, h0, h1, h2, h3⟩ := singular_four_horn_missing_one
     (singularDegeneracy 0 a.map) tau U (singularDegeneracy 2 d.map)
     (by simp [degeneracy_zero_faces, hfaces])
@@ -47,7 +47,7 @@ theorem tetrahedron_relation (a b c d : PointedSingularTriangle X x)
       face i W = ![a.map, b.map, e.map, (constant x).map] i := by
     intro i
     fin_cases i <;> simp_all [degeneracy_zero_faces, degeneracy_two_faces]
-  have hab : a.pi2 + e.pi2 = b.pi2 := last_face_constant_relation a b e W hWfaces
+  have hab  := last_face_constant_relation a b e W hWfaces
   calc
     a.pi2 + c.pi2 = a.pi2 + (e.pi2 + d.pi2) := by rw [he]
     _ = (a.pi2 + e.pi2) + d.pi2 := (add_assoc _ _ _).symm
@@ -71,7 +71,7 @@ theorem tetrahedron_pi2_alternating_sum_eq_zero (tau : Simplex X 3)
       face j (face i tau) = ContinuousMap.const (Domain 1) x) :
     ∑ i : Fin 4, (-1 : ℤ) ^ (i : ℕ) • tetrahedronFacePi2Class tau hedge i = 0 := by
   have hsum {A : Type} [AddCommGroup A] (f : Fin 4 → A) :
-      ∑ i : Fin 4, (-1 : ℤ) ^ (i : ℕ) • f i = (f 0 + f 2) - (f 1 + f 3) := by
+      ∑ i : Fin 4, (-1) ^ (i : ℕ) • f i = (f 0 + f 2) - (f 1 + f 3) := by
     norm_num [Fin.sum_univ_four]
     abel
   rw [hsum (tetrahedronFacePi2Class tau hedge),

@@ -6,9 +6,6 @@ public import RequestProject.GenusFullCubeMarking
 @[expose] public section
 
 /-! Concrete cap fillings split into an old-block marking correction and a positive cone fan. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb

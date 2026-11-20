@@ -1,8 +1,11 @@
 module
 
+public import RequestProject.FinsuppBasis
 public import RequestProject.PresSubcomplex
 
 @[expose] public section
+
+open scoped Classical
 
 /-!
 # The inclusion of two universal covers, and the chain map it induces
@@ -32,21 +35,29 @@ universe u
 
 variable {X Y : Complex2.{u}}
 
-/-- The one-chains carried by the image of an edge path. -/
-theorem pathChain_map (p : Hom X Y) (l : List (X.E × Bool)) :
-    pathChain (l.map (fun eb => (p.onE eb.1, eb.2)))
-      = Finsupp.mapDomain p.onE (pathChain l) := by
+theorem pathChain_apply_zero_of_edge_absent {E : Type u} (p : List (E × Bool))
+    (e : E) (hp : ∀ b ∈ p, b.1 ≠ e) : pathChain p e = 0 := by
+  classical
+  induction p with
+  | nil => simp
+  | cons b p ih =>
+      have hb  := hp b (List.mem_cons_self ..)
+      have ht  := fun c hc => hp c (List.mem_cons_of_mem b hc)
+      rw [pathChain_cons, Finsupp.add_apply, ih ht]
+      cases b.2 <;> simp [hb]
+
+/-- Pushing forward edge coefficients commutes with taking a path chain. -/
+theorem pathChain_map_edges {E F : Type*} (f : E → F) (l : List (E × Bool)) :
+    pathChain (l.map (fun e => (f e.1, e.2))) = Finsupp.mapDomain f (pathChain l) := by
   induction l with
   | nil => simp
   | cons e l ih =>
-      rw [List.map_cons, pathChain_cons, pathChain_cons, ih, Finsupp.mapDomain_add]
-      congr 1
-      by_cases hb : e.2
-      · simp [hb]
-      · have hneg : Finsupp.mapDomain p.onE (-Finsupp.single e.1 (1 : ℤ))
-            = -Finsupp.mapDomain p.onE (Finsupp.single e.1 (1 : ℤ)) := by
-          simpa using (Finsupp.lmapDomain ℤ ℤ p.onE).map_neg (Finsupp.single e.1 (1 : ℤ))
-        simp [hb, hneg]
+    rcases e with ⟨e, b⟩
+    cases b <;> simp [pathChain_cons, ih, Finsupp.mapDomain_add, ← zero_sub, Finsupp.mapDomain_sub]
+
+theorem pathChain_map (p : Hom X Y) (l : List (X.E × Bool)) :
+    pathChain (l.map (fun eb => (p.onE eb.1, eb.2))) = Finsupp.mapDomain p.onE (pathChain l) :=
+  pathChain_map_edges p.onE l
 
 /-- The map of one-chains induced by a cellular map. -/
 noncomputable def chain1 (p : Hom X Y) : (X.E →₀ ℤ) →ₗ[ℤ] (Y.E →₀ ℤ) :=
@@ -56,27 +67,43 @@ noncomputable def chain1 (p : Hom X Y) : (X.E →₀ ℤ) →ₗ[ℤ] (Y.E →�
 noncomputable def chain2 (p : Hom X Y) : (X.F →₀ ℤ) →ₗ[ℤ] (Y.F →₀ ℤ) :=
   Finsupp.lmapDomain ℤ ℤ p.onF
 
+theorem chain1_comp_apply (f : Hom X Y) (g : Hom Y Z) (c : X.E →₀ ℤ) :
+    chain1 (g.comp f) c = chain1 g (chain1 f c) := by
+  change Finsupp.mapDomain (g.onE ∘ f.onE) c =
+    Finsupp.mapDomain g.onE (Finsupp.mapDomain f.onE c)
+  erw [Finsupp.mapDomain_comp]
+
+theorem chain2_comp_apply (f : Hom X Y) (g : Hom Y Z) (c : X.F →₀ ℤ) :
+    chain2 (g.comp f) c = chain2 g (chain2 f c) := by
+  change Finsupp.mapDomain (g.onF ∘ f.onF) c =
+    Finsupp.mapDomain g.onF (Finsupp.mapDomain f.onF c)
+  erw [Finsupp.mapDomain_comp]
+
 @[simp] theorem chain2_apply (p : Hom X Y) (u : X.F →₀ ℤ) :
     chain2 p u = Finsupp.mapDomain p.onF u := rfl
 
 /-- **A cellular map is a chain map**: it commutes with the second boundary. -/
 theorem bdry2_chain2 (p : Hom X Y) (u : X.F →₀ ℤ) :
     bdry2 Y (chain2 p u) = chain1 p (bdry2 X u) := by
-  classical
-  induction u using Finsupp.induction_linear with
-  | zero => simp
-  | add u₁ u₂ h₁ h₂ => rw [map_add, map_add, h₁, h₂, map_add, map_add]
-  | single f n =>
-      show bdry2 Y (Finsupp.mapDomain p.onF (Finsupp.single f n))
-        = Finsupp.mapDomain p.onE (bdry2 X (Finsupp.single f n))
-      rw [Finsupp.mapDomain_single, bdry2_single, bdry2_single, p.att_onF f, pathChain_map,
-        Finsupp.mapDomain_smul]
+  finsupp_singles u
+  intro f n
+  simp [chain1, bdry2_single, p.att_onF, pathChain_map]
+
+/-- A cellular map sends two-cycles to two-cycles. -/
+theorem chain2_cycle (f : Hom X Y) {z : X.F →₀ ℤ} (h : bdry2 X z = 0) :
+    bdry2 Y (chain2 f z) = 0 := by rw [bdry2_chain2, h, map_zero]
+
+/-- The boundary of an image face uses only image edges. -/
+theorem bdry2_single_image_zero (f : Hom X Y) (t : X.F) (e : Y.E)
+    (he : e ∉ Set.range f.onE) : bdry2 Y (Finsupp.single (f.onF t) 1) e = 0 := by
+  rw [bdry2_single, one_smul, f.att_onF, pathChain_map]
+  exact Finsupp.mapDomain_of_notMem_range _ e he
 
 /-! ### The lift of an inclusion of presentations to the universal covers -/
 
-variable {α β : Type u} [DecidableEq α] [DecidableEq β] {J K : Type u}
+variable {α β : Type u}   {J K : Type u}
 
-omit [DecidableEq α] [DecidableEq β] in
+
 /-- The lift of an edge path is natural in the generating set. -/
 theorem liftPath_map {Nsub : Subgroup (FreeGroup α)} [Nsub.Normal]
     {Msub : Subgroup (FreeGroup β)} [Msub.Normal] (f : α → β)
@@ -85,18 +112,13 @@ theorem liftPath_map {Nsub : Subgroup (FreeGroup α)} [Nsub.Normal]
     (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
     liftPath (L.map (fun p => (f p.1, p.2))) (Ψ q)
       = (liftPath L q).map (fun eb => ((Ψ eb.1.1, f eb.1.2), eb.2)) := by
-  induction L generalizing q with
-  | nil => rfl
-  | cons a L ih =>
-      obtain ⟨i, b⟩ := a
-      cases b
-      · have hq : Ψ (q * (qof Nsub i)⁻¹) = Ψ q * (qof Msub (f i))⁻¹ := by
-          rw [map_mul, map_inv, hΨ]
-        simp only [List.map_cons, liftPath_cons_false]
-        rw [← hq, ih (q * (qof Nsub i)⁻¹)]
-      · have hq : Ψ (q * qof Nsub i) = Ψ q * qof Msub (f i) := by rw [map_mul, hΨ]
-        simp only [List.map_cons, liftPath_cons_true]
-        rw [← hq, ih (q * qof Nsub i)]
+  refine (PathVoltage.liftPath_map (presentationVoltage Nsub) (presentationVoltage Msub)
+    f Ψ ?_ L q).symm
+  rintro g ⟨i, b⟩
+  cases b
+  · change Ψ (g * (qof Nsub i)⁻¹) = Ψ g * (qof Msub (f i))⁻¹
+    rw [map_mul, map_inv, hΨ]
+  aesop
 
 /-- The map of fundamental groups induced by an inclusion of presentations. -/
 def presInclGroupHom (f : α → β) (ρ : J → FreeGroup α) (σ : K → FreeGroup β) (g : J → K)
@@ -104,15 +126,10 @@ def presInclGroupHom (f : α → β) (ρ : J → FreeGroup α) (σ : K → FreeG
   QuotientGroup.map _ _ (FreeGroup.map f) (by
     refine Subgroup.normalClosure_le_normal ?_
     rintro _ ⟨j, rfl⟩
-    refine Subgroup.mem_comap.2 ?_
-    rw [← hg j]
-    exact Subgroup.subset_normalClosure (Set.mem_range_self _))
+    simpa [← hg j] using! Subgroup.subset_normalClosure (Set.mem_range_self _))
 
-omit [DecidableEq α] [DecidableEq β] in
-@[simp] theorem presInclGroupHom_mk (f : α → β) (ρ : J → FreeGroup α) (σ : K → FreeGroup β)
-    (g : J → K) (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) (w : FreeGroup α) :
-    presInclGroupHom f ρ σ g hg (QuotientGroup.mk w) =
-      QuotientGroup.mk (FreeGroup.map f w) := rfl
+
+
 
 /-- **The inclusion of presentations lifts to the universal covers**: the cellular map of
 the universal covers whose action on cells is `(q, c) ↦ (Ψ q, c)`. -/
@@ -124,10 +141,7 @@ def univCoverInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → Fre
   onF := Prod.map (presInclGroupHom f ρ σ g hg) g
   src_onE _ := rfl
   tgt_onE e := by
-    show (presInclGroupHom f ρ σ g hg) e.1 * qof (relSub σ) (f e.2)
-      = presInclGroupHom f ρ σ g hg (e.1 * qof (relSub ρ) e.2)
-    rw [map_mul]
-    rfl
+    aesop
   base_onF _ := rfl
   att_onF c := by
     obtain ⟨q, j⟩ := c
@@ -137,18 +151,14 @@ def univCoverInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → Fre
     rw [hg j, toWord_map f hf]
     exact liftPath_map f (presInclGroupHom f ρ σ g hg) (fun _ => rfl) _ q
 
-@[simp] theorem univCoverInclHom_onF (f : α → β) (hf : Function.Injective f)
-    (ρ : J → FreeGroup α) (σ : K → FreeGroup β) (g : J → K)
-    (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
-    (univCoverInclHom f hf ρ σ g hg).onF = Prod.map (presInclGroupHom f ρ σ g hg) g := rfl
 
 end Comb
 
-namespace PresChain
 
-universe u
 
-variable {α J : Type u} {ρ : J → FreeGroup α} {n : ℕ} (h : PresChain ρ n)
 
-end PresChain
+
+
+
+
 end FiniteChains

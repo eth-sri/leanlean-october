@@ -13,9 +13,6 @@ singular simplex. The operator commutes with boundary and is naturally
 chain homotopic to the identity. No mesh or excision conclusion is assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.SingularSubdivision
 
@@ -25,7 +22,7 @@ universe u v
 variable {X : Type u} {Y : Type v} [TopologicalSpace X] [TopologicalSpace Y]
 
 noncomputable def fromModel {k l : ℕ} (m : Chain (Domain k) l) : Chain X k →ₗ[ℤ] Chain X l :=
-  Finsupp.linearCombination ℤ (fun σ : Simplex X k => TopologicalSingular.map σ l m)
+  Finsupp.linearCombination ℤ (fun σ  => TopologicalSingular.map σ l m)
 
 theorem fromModel_single {k l : ℕ} (m : Chain (Domain k) l) (σ : Simplex X k) (r : ℤ) :
     fromModel m (Finsupp.single σ r) = r • TopologicalSingular.map σ l m :=

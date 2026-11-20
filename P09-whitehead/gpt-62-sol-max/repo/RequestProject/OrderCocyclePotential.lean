@@ -4,9 +4,6 @@ public import RequestProject.OrderCxMonodromy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
 universe u v
@@ -15,11 +12,7 @@ variable {P : Type u} [Preorder P] {G : Type v} [Group G]
 
 @[simp] theorem readPath_revPath (p : List ((orderCx P).E × Bool)) :
     c.readPath (revPath p) = (c.readPath p)⁻¹ := by
-  induction p with
-  | nil => simp [revPath, readPath]
-  | cons e p ih =>
-    rw [revPath_cons, readPath_append, readPath_cons, readPath_nil,
-      readGerm_revGerm, ih, mul_one, readPath_cons, mul_inv_rev]
+  induction p <;> aesop
 
 /-- On a combinatorially simply connected order complex, a cocycle reads one
 on every closed edge path. -/
@@ -46,7 +39,7 @@ theorem exists_potential_of_simplyConnected (hconn : IsConnected (orderCx P))
     ∃ k : P → G, k a = 1 ∧ ∀ {p q : P}, p ≤ q → k p * c.val p q = k q := by
   classical
   choose paths hpaths using hconn a
-  let k : P → G := fun p => c.readPath (paths p)
+  let k  := fun p => c.readPath (paths p)
   refine ⟨k, c.readPath_eq_one_of_simplyConnected hsc (hpaths a), ?_⟩
   intro p q hpq
   have h := c.readPath_eq_of_simplyConnected hsc

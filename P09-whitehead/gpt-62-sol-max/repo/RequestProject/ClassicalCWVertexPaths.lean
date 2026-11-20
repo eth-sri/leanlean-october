@@ -45,17 +45,17 @@ theorem closedCell_joined_vertex (n : ℕ)
         simpa only [RelCWComplex.closedCell_zero_eq_singleton, Set.mem_singleton_iff,
           vertexPoint] using hx
       simpa only [he] using (Joined.refl (vertexPoint j))
-    · have hnpos : 0 < n := Nat.pos_of_ne_zero hn
+    · have hnpos  := Nat.pos_of_ne_zero hn
       letI : Nonempty (Fin n) := ⟨⟨0, hnpos⟩⟩
       let a : Fin n → ℝ := fun _ => 1
-      have ha : a ∈ sphere (0 : Fin n → ℝ) 1 := by
+      have ha : a ∈ sphere 0 1 := by
         simp only [Metric.mem_sphere, dist_zero_right, a, pi_norm_const, norm_one]
-      obtain ⟨I, hI⟩ := Topology.CWComplex.mapsTo' (C := (Set.univ : Set X)) n j
+      obtain ⟨I, hI⟩ := Topology.CWComplex.mapsTo' (C := Set.univ) n j
       obtain ⟨m, hmn, k, _, hk⟩ := by
         simpa only [Set.mem_iUnion] using hI ha
       obtain ⟨v, hv⟩ := ih m hmn k hk
       refine ⟨v, ?_⟩
-      have hp : Joined x (RelCWComplex.map n j a) :=
+      have hp  :=
         (closedCell_joined n j hx
           ⟨a, Metric.sphere_subset_closedBall ha, rfl⟩).joined
       exact hp.trans hv
@@ -64,7 +64,7 @@ theorem closedCell_joined_vertex (n : ℕ)
 zero-cell. The CW complex need not be finite or connected. -/
 theorem point_joined_vertex (x : X) :
     ∃ v : RelCWComplex.cell (Set.univ : Set X) 0, Joined x (vertexPoint v) := by
-  have hx : x ∈ ⋃ n, ⋃ j : RelCWComplex.cell (Set.univ : Set X) n,
+  have hx : x ∈ ⋃ n, ⋃ j : RelCWComplex.cell Set.univ n,
       RelCWComplex.closedCell n j := by rw [CWComplex.union]; trivial
   obtain ⟨n, j, hx⟩ := by simpa only [Set.mem_iUnion] using hx
   exact closedCell_joined_vertex n j hx

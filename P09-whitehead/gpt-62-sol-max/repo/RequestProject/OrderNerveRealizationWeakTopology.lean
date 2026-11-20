@@ -23,11 +23,7 @@ theorem orderNerveRealization_nonDegenerate_isClosed_iff (P : Type) [PartialOrde
       have hc := (h m t).preimage (SimplexCategory.toTop.map a).hom.continuous
       convert hc using 1
       ext z
-      have ha := congrArg (fun k => k z) (orderNerveRealizationSimplex_operator P a t.val)
-      change orderNerveRealizationSimplex P t.val (SimplexCategory.toTop.map a z) =
-        orderNerveRealizationSimplex P ((nerve P).map a.op t.val) z at ha
-      rw [← ht] at ha
-      exact iff_of_eq (congrArg (fun x => x ∈ A) ha.symm)
+      simp only [Set.mem_preimage, orderNerveRealizationSimplex_operator, ← ht]
 
 /-- The actual realization has weak topology with respect to its nondegenerate
 closed simplex images, in the form required by the CW constructor. -/
@@ -43,8 +39,6 @@ theorem orderNerveRealization_isClosed_iff_inter_simplex_range (P : Type) [Parti
     intro n s
     have hc := (h n s).preimage (orderNerveRealizationSimplex P s.val).hom.continuous
     convert hc using 1
-    ext z
-    simp only [Set.mem_preimage, Set.mem_inter_iff]
-    exact ⟨fun hz => ⟨hz, ⟨z, rfl⟩⟩, fun hz => hz.1⟩
+    simp
 
 end FiniteChains.Comb

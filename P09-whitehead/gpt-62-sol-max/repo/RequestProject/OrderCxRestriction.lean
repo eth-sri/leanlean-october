@@ -10,9 +10,7 @@ vertex support. The other face vertices are recovered from the attaching path.
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -39,7 +37,7 @@ theorem orderCxRestrict_face_support (t : K.F) :
     intro e he
     rw [k.att_onF] at he
     obtain ⟨eb, _, heb⟩ := List.mem_map.mp he
-    have ht := congrArg (fun z : OrdEdge P × Bool => z.1.1.2) heb
+    have ht := congrArg (·.1.1.2) heb
     change (k.onE eb.1).1.2 = e.1.2 at ht
     rw [← ht]
     exact (orderCxRestrict_edge_support k S hk eb.1).2
@@ -49,8 +47,7 @@ theorem orderCxRestrict_face_support (t : K.F) :
     exact hk _
   · exact he ⟨((k.onF t).1.1, (k.onF t).1.2.1), (k.onF t).2.1⟩
       (by simp [orderCx])
-  · exact he ⟨((k.onF t).1.2.1, (k.onF t).1.2.2), (k.onF t).2.2⟩
-      (by simp [orderCx])
+  simp_all [orderCx]
 
 def orderCxRestrictEdge (e : K.E) : OrdEdge {p : P // S p} :=
   ⟨(⟨(k.onE e).1.1, (orderCxRestrict_edge_support k S hk e).1⟩,
@@ -65,13 +62,13 @@ theorem orderCxRestrict_germ_injective :
     Function.Injective (fun eb : (orderCx {p : P // S p}).E × Bool =>
       ((subposetHom S).onE eb.1, eb.2)) := by
   intro x y h
-  refine Prod.ext ?_ (congrArg (fun e : OrdEdge P × Bool => e.2) h)
+  refine Prod.ext ?_ (congrArg (·.2) h)
   apply Subtype.ext
   apply Prod.ext
   · apply Subtype.ext
-    exact congrArg (fun e : OrdEdge P × Bool => e.1.1.1) h
+    exact congrArg (·.1.1.1) h
   · apply Subtype.ext
-    exact congrArg (fun e : OrdEdge P × Bool => e.1.1.2) h
+    exact congrArg (·.1.1.2) h
 
 /-- The actual codomain restriction; no edge or face support premise is added. -/
 def orderCxRestrict : Hom K (orderCx {p : P // S p}) where
@@ -90,15 +87,9 @@ def orderCxRestrict : Hom K (orderCx {p : P // S p}) where
     rw [List.map_map, k.att_onF]
     congr 1
 
-@[simp] theorem orderCxRestrict_onV (v : K.V) :
-    (orderCxRestrict k S hk).onV v = ⟨k.onV v, hk v⟩ := rfl
 
 /-- Forgetting the support proofs recovers the original cellular map on every cell. -/
 theorem orderCxRestrict_projects :
-    (orderCxMap Subtype.val (fun _ _ h => h)).comp (orderCxRestrict k S hk) = k := by
-  apply Hom.ext'
-  · rfl
-  · rfl
-  · rfl
+    (orderCxMap Subtype.val (fun _ _ h => h)).comp (orderCxRestrict k S hk) = k := rfl
 
 end FiniteChains.Comb

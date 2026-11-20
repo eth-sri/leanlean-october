@@ -57,25 +57,11 @@ theorem surfWord_getElem? (n k : ℕ) (hk : k < 4 * n) :
   | zero => omega
   | succ n ih =>
       rcases Nat.lt_or_ge k (4 * n) with hlt | hge
-      · have hlen : k < (surfWord a b n).length := by rw [surfWord_length]; exact hlt
+      · have hlen : k < (surfWord a b n).length := by simp_all
         show (surfWord a b n ++ _)[k]? = _
-        rw [List.getElem?_append_left hlen]
-        exact ih hlt
-      · have hlen : (surfWord a b n).length = 4 * n := surfWord_length a b n
-        show (surfWord a b n ++
-          [(a n, true), (b n, true), (a n, false), (b n, false)])[k]? = _
-        rw [List.getElem?_append_right (by omega), hlen]
-        have hdiv : k / 4 = n := by omega
-        have hk4 : k - 4 * n < 4 := by omega
-        interval_cases h : (k - 4 * n)
-        · have hmod : k % 4 = 0 := by omega
-          simp [sLet, hmod, hdiv]
-        · have hmod : k % 4 = 1 := by omega
-          simp [sLet, hmod, hdiv]
-        · have hmod : k % 4 = 2 := by omega
-          simp [sLet, hmod, hdiv]
-        · have hmod : k % 4 = 3 := by omega
-          simp [sLet, hmod, hdiv]
+        grind
+      · have hlen  := surfWord_length a b n
+        grind +locals
 
 /-! ### The surface word as a product of commutators -/
 
@@ -124,7 +110,6 @@ abbrev IEdg : Type := Fin q × Bool × Bool
 
 omit [NeZero q] in
 theorem genus_hlt (p : Fin (8 * q)) : p.val / 2 / 4 < q := by
-  have := p.isLt
   omega
 
 /-- **The identification of the vertices of the polygon**: all corners become one vertex, the
@@ -152,43 +137,30 @@ theorem genus_hM : 8 * q = 2 * (surfWord a b q).length := by
   rw [surfWord_length]; omega
 
 omit [NeZero q] in
+private theorem sLet_formula (k : ℕ) :
+    sLet a b k = (if (decide (k % 4 % 2 = 1)) then b (k / 4) else a (k / 4),
+      !(decide (2 ≤ k % 4))) := by
+  have h : k % 4 = 0 ∨ k % 4 = 1 ∨ k % 4 = 2 ∨ k % 4 = 3 := by omega
+  rcases h with h | h | h | h <;> norm_num [sLet, h]
+
+omit [NeZero q] in
 /-- **The boundary of the polygon reads the surface word, on the vertices.** -/
 theorem genus_hvlab (p : Fin (8 * q)) :
     gvlab a b q (gvc q p) = vertLab (surfWord a b q) p.val := by
-  have hlt := p.isLt
-  set k := p.val with hk
-  by_cases hpar : k % 2 = 0
-  · rw [gvc, if_pos hpar]
-    rw [vertLab_of_even hpar]
-    rfl
-  · have hodd : k % 2 = 1 := by omega
-    have hs : k / 2 < 4 * q := by omega
-    have hget : (surfWord a b q)[k / 2]? = some (sLet a b (k / 2)) :=
-      surfWord_getElem? a b q (k / 2) hs
-    rw [gvc, if_neg hpar, vertLab_of_odd hodd hget]
-    have hr : k / 2 % 4 = 0 ∨ k / 2 % 4 = 1 ∨ k / 2 % 4 = 2 ∨ k / 2 % 4 = 3 := by omega
-    show Rose.mid (if (decide (k / 2 % 4 % 2 = 1) : Bool) then b (k / 2 / 4) else a (k / 2 / 4))
-      = Rose.mid (sLet a b (k / 2)).1
-    rcases hr with h | h | h | h <;> simp [sLet, h]
+  by_cases h : p.val % 2 = 0
+  · rw [vertLab_of_even h]; simp [gvc, gvlab, h]
+  · have ho : p.val % 2 = 1 := by omega
+    rw [vertLab_of_odd ho (surfWord_getElem? a b q _ (by omega)), sLet_formula]
+    simp [gvc, gvlab, h]
 
 omit [NeZero q] in
 /-- **The boundary of the polygon reads the surface word, on the edges.** -/
 theorem genus_helb (p : Fin (8 * q)) :
     gelb a b q (gec q p) = edgeLab (surfWord a b q) p.val := by
-  have hlt := p.isLt
-  set k := p.val with hk
-  have hs : k / 2 < 4 * q := by omega
-  have hget : (surfWord a b q)[k / 2]? = some (sLet a b (k / 2)) :=
-    surfWord_getElem? a b q (k / 2) hs
-  rw [edgeLab_eq hget]
-  have hr : k / 2 % 4 = 0 ∨ k / 2 % 4 = 1 ∨ k / 2 % 4 = 2 ∨ k / 2 % 4 = 3 := by omega
-  have hpar : k % 2 = 0 ∨ k % 2 = 1 := by omega
-  show Rose.edg (if (decide (k / 2 % 4 % 2 = 1) : Bool) then b (k / 2 / 4) else a (k / 2 / 4))
-      (xor (decide (k % 2 = 1)) (decide (2 ≤ k / 2 % 4)))
-    = Rose.edg (sLet a b (k / 2)).1 (if k % 2 = 0 then !(sLet a b (k / 2)).2
-        else (sLet a b (k / 2)).2)
-  rcases hr with h | h | h | h <;> rcases hpar with h2 | h2 <;>
-    simp [sLet, h, h2]
+  rw [edgeLab_eq (surfWord_getElem? a b q _ (by omega)), sLet_formula]
+  have h : p.val % 2 = 0 ∨ p.val % 2 = 1 := by omega
+  rcases h with h | h <;> cases k : (decide (2 ≤ p.val / 2 % 4)) <;>
+    simp [gelb, gec, h, k]
 
 /-- **The identification is consistent**: two positions of the polygon carrying the same edge of
 the surface carry the same pair of endpoints. -/
@@ -199,76 +171,38 @@ theorem genus_compat : Compat (gvc q) (gec q) := by
   -- the three components of the equality of the edge labels
   have h1 : i.val / 2 / 4 = j.val / 2 / 4 := congrArg Fin.val (congrArg Prod.fst hij)
   have h2 : (decide (i.val / 2 % 4 % 2 = 1) : Bool) = decide (j.val / 2 % 4 % 2 = 1) :=
-    congrArg (fun x => x.2.1) hij
+    congrArg (·.2.1) hij
   have h3 : xor (decide (i.val % 2 = 1)) (decide (2 ≤ i.val / 2 % 4))
       = xor (decide (j.val % 2 = 1)) (decide (2 ≤ j.val / 2 % 4)) :=
-    congrArg (fun x => x.2.2) hij
+    congrArg (·.2.2) hij
   have h2' : i.val / 2 % 4 % 2 = j.val / 2 % 4 % 2 := by
-    by_cases hA : i.val / 2 % 4 % 2 = 1 <;> by_cases hB : j.val / 2 % 4 % 2 = 1 <;>
-      simp [hA, hB] at h2 ⊢ <;> omega
-  have hsucci : (i + 1).val = (i.val + 1) % (8 * q) := fin_succ_val i
-  have hsuccj : (j + 1).val = (j.val + 1) % (8 * q) := fin_succ_val j
+    rw [decide_eq_decide] at h2
+    omega
   by_cases hsame : i.val / 2 % 4 = j.val / 2 % 4
-  · -- the same side of the polygon: the same position
-    have hpar : i.val % 2 = j.val % 2 := by
-      rw [hsame] at h3
-      by_cases hA : i.val % 2 = 1 <;> by_cases hB : j.val % 2 = 1 <;>
-        simp [hA, hB] at h3 ⊢
-      all_goals omega
-    have hij' : i.val = j.val := by omega
-    have : i = j := Fin.ext hij'
-    subst this
+  · rw [hsame, Bool.xor_left_inj, decide_eq_decide] at h3
+    have he : i = j := Fin.ext (by omega)
+    subst j
     exact Or.inl ⟨rfl, rfl⟩
-  · -- the two paired sides: the positions are mirrored
-    have hpar : i.val % 2 ≠ j.val % 2 := by
+  · have hpar : i.val % 2 ≠ j.val % 2 := by
       intro hp
-      rw [hp] at h3
-      by_cases hA : 2 ≤ i.val / 2 % 4 <;> by_cases hB : 2 ≤ j.val / 2 % 4 <;>
-        simp [hA, hB] at h3 <;> omega
-    refine Or.inr ⟨?_, ?_⟩
-    · -- `vc i = vc (j+1)`
-      rcases Nat.lt_or_ge (i.val % 2) 1 with hI | hI
-      · -- `i` is a corner, `j` is a midpoint, so `j+1` is a corner
-        have hIe : i.val % 2 = 0 := by omega
-        have hJo : j.val % 2 = 1 := by omega
-        have hJ1 : (j + 1).val % 2 = 0 := by
-          rw [hsuccj]
-          rcases Nat.lt_or_ge (j.val + 1) (8 * q) with hlt | hge
-          · rw [Nat.mod_eq_of_lt hlt]; omega
-          · have : j.val + 1 = 8 * q := by omega
-            rw [this, Nat.mod_self]
-        rw [gvc, gvc, if_pos hIe, if_pos hJ1]
-      · -- `i` is a midpoint, `j` is a corner, so `j+1` is a midpoint of the same pair
-        have hIo : i.val % 2 = 1 := by omega
-        have hJe : j.val % 2 = 0 := by omega
-        have hJlt : j.val + 1 < 8 * q := by omega
-        have hJ1v : (j + 1).val = j.val + 1 := by rw [hsuccj, Nat.mod_eq_of_lt hJlt]
-        have hJ1o : (j + 1).val % 2 = 1 := by rw [hJ1v]; omega
-        have hJ1h : (j + 1).val / 2 = j.val / 2 := by rw [hJ1v]; omega
-        rw [gvc, gvc, if_neg (by omega), if_neg (by omega)]
-        simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide]
+      rw [hp, Bool.xor_right_inj, decide_eq_decide] at h3
+      omega
+    have parity (p : Fin (8 * q)) : (p + 1).val % 2 = (p.val + 1) % 2 := by
+      rw [fin_succ_val]
+      exact Nat.mod_mod_of_dvd _ ⟨4 * q, by omega⟩
+    have swap (x y : Fin (8 * q)) (hp : x.val % 2 ≠ y.val % 2)
+        (h1 : x.val / 2 / 4 = y.val / 2 / 4) (h2 : x.val / 2 % 4 % 2 = y.val / 2 % 4 % 2) :
+        gvc q x = gvc q (y + 1) := by
+      have hy := y.isLt
+      unfold gvc
+      by_cases h : x.val % 2 = 0
+      · rw [if_pos h, if_pos (by rw [parity]; omega)]
+      · have hval : (y + 1).val = y.val + 1 := by
+          rw [fin_succ_val, Nat.mod_eq_of_lt (by omega)]
+        rw [if_neg h, if_neg (by rw [hval]; omega)]
+        simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide, hval]
         omega
-    · -- `vc (i+1) = vc j`
-      rcases Nat.lt_or_ge (i.val % 2) 1 with hI | hI
-      · -- `i+1` is a midpoint of the same pair as `j`
-        have hIe : i.val % 2 = 0 := by omega
-        have hJo : j.val % 2 = 1 := by omega
-        have hIlt : i.val + 1 < 8 * q := by omega
-        have hI1v : (i + 1).val = i.val + 1 := by rw [hsucci, Nat.mod_eq_of_lt hIlt]
-        have hI1h : (i + 1).val / 2 = i.val / 2 := by rw [hI1v]; omega
-        rw [gvc, gvc, if_neg (by omega), if_neg (by omega)]
-        simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide]
-        omega
-      · -- `i+1` is a corner, and so is `j`
-        have hIo : i.val % 2 = 1 := by omega
-        have hJe : j.val % 2 = 0 := by omega
-        have hI1 : (i + 1).val % 2 = 0 := by
-          rw [hsucci]
-          rcases Nat.lt_or_ge (i.val + 1) (8 * q) with hlt | hge
-          · rw [Nat.mod_eq_of_lt hlt]; omega
-          · have : i.val + 1 = 8 * q := by omega
-            rw [this, Nat.mod_self]
-        rw [gvc, gvc, if_pos hI1, if_pos hJe]
+    exact Or.inr ⟨swap i j hpar h1 h2', (swap j i (Ne.symm hpar) h1.symm h2'.symm).symm⟩
 
 end GenusData
 

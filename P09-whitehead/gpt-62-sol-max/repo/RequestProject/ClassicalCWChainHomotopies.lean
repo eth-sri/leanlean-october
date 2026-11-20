@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.SigmaHomotopy
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalCWChainWords
 public import RequestProject.DiskFamilyHomotopyBaseChange
@@ -67,17 +68,9 @@ def wordAttaching (i : Fin (n + 1)) :
   ⟨fun a => (word C hC i a.1).boundaryMap a.2,
     continuous_sigma (fun j => (word C hC i j).boundaryMap.continuous)⟩
 
-def attachingHomotopy (i : Fin (n + 1)) : (rawAttaching C i).Homotopy (wordAttaching C hC i) := by
-  let H j := wordHomotopy C hC i j
-  let F : C(BoundaryFamily (RelCWComplex.cell (C i : Set X) 2) (Fin 2 → ℝ),
-      C(I, DiskAttachment (skeletonAttachingMap (C i : Set X) 1))) :=
-    ⟨fun a => ((H a.1).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry a.2,
-      continuous_sigma (fun j =>
-        ((H j).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry.continuous)⟩
-  exact {
-    toContinuousMap := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
-    map_zero_left := fun a => (H a.1).apply_zero a.2
-    map_one_left := fun a => (H a.1).apply_one a.2 }
+def attachingHomotopy (i : Fin (n + 1)) : (rawAttaching C i).Homotopy (wordAttaching C hC i) :=
+  .sigmaFamily (wordHomotopy C hC i)
+
 
 theorem attachingHomotopy_natural {i k : Fin (n + 1)} (hik : i ≤ k)
     (j : RelCWComplex.cell (C i : Set X) 2) (t : I) (a : UnitBoundary (Fin 2 → ℝ)) :

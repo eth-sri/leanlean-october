@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.SigmaHomotopy
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalCWChainCanonicalWords
 public import RequestProject.NaturalDiskAttachingEquiv
@@ -12,9 +13,7 @@ appears, and pushed through the later generator inclusions. Consequently
 the actual disk-model comparisons form commuting squares. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment PresModel
@@ -81,13 +80,13 @@ def canonicalCellHomotopy (i : Fin (n + 1)) (j : CanonicalRel K C i) :
       (canonicalBirthHomotopy K C hC hconn (canonicalTopCell K C hC i j)).toContinuousMap
   map_zero_left a := by
     change diskRoseMap _ (canonicalBirthHomotopy K C hC hconn _ (0, a)) = _
-    rw (config := { transparency := .default }) [(canonicalBirthHomotopy K C hC hconn _).apply_zero]
+    erw [(canonicalBirthHomotopy K C hC hconn _).apply_zero]
     have H := congrArg (fun f => f a) (stabilizedCellBoundary_natural K C hC hconn
       (canonicalBirth_le K C hC i j) (canonicalBirthCell K C (canonicalTopCell K C hC i j)))
     rwa [canonicalBirthCell_image] at H
   map_one_left a := by
     change diskRoseMap _ (canonicalBirthHomotopy K C hC hconn _ (1, a)) = _
-    rw (config := { transparency := .default }) [(canonicalBirthHomotopy K C hC hconn _).apply_one]
+    erw [(canonicalBirthHomotopy K C hC hconn _).apply_one]
     have H := congrArg (fun f => f a) (canonicalCellBoundary_natural K C hC hconn
       (canonicalBirth_le K C hC i j) (canonicalBirthCell K C (canonicalTopCell K C hC i j)))
     rwa [canonicalBirthCell_image] at H
@@ -109,25 +108,15 @@ theorem canonicalCellHomotopy_natural {i k : Fin (n + 1)} (hik : i ≤ k)
   have H := congrArg (fun f => f (canonicalBirthHomotopy K C hC hconn
     (canonicalTopCell K C hC i j) (t, a)))
       ((diskRoseMap_comp _ _).trans (congrArg diskRoseMap he))
-  cases j with
-  | inl j => exact H
-  | inr u => exact H
+  aesop
 
 def canonicalAttaching (i : Fin (n + 1)) :=
   classicalPresWordAttaching (canonicalWords K C hC hconn i) (canonicalWords_ne_nil K C hC hconn i)
 
 def canonicalAttachingHomotopy (i : Fin (n + 1)) :
-    (stabilizedAttaching K C hC hconn i).Homotopy (canonicalAttaching K C hC hconn i) := by
-  let H j := canonicalCellHomotopy K C hC hconn i j
-  let F : C(BoundaryFamily (CanonicalRel K C i) (Fin 2 → ℝ),
-      C(I, ClassicalGraphModel.Rose (CanonicalGen K C hC hconn i))) :=
-    ⟨fun a => ((H a.1).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry a.2,
-      continuous_sigma (fun j =>
-        ((H j).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry.continuous)⟩
-  exact {
-    toContinuousMap := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
-    map_zero_left := fun a => (H a.1).apply_zero a.2
-    map_one_left := fun a => (H a.1).apply_one a.2 }
+    (stabilizedAttaching K C hC hconn i).Homotopy (canonicalAttaching K C hC hconn i) :=
+  .sigmaFamily (canonicalCellHomotopy K C hC hconn i)
+
 
 def canonicalDiskChange (i : Fin (n + 1)) :
     DiskAttachment (stabilizedAttaching K C hC hconn i) ≃ₕ
@@ -157,17 +146,7 @@ theorem canonicalDiskChange_natural {i k : Fin (n + 1)} (hik : i ≤ k) :
     (fun j a => congrArg (fun f => f a) (stabilizedCellBoundary_natural K C hC hconn hik j))
     (fun j a => congrArg (fun f => f a) (canonicalCellBoundary_natural K C hC hconn hik j))
     (fun t j a => canonicalCellHomotopy_natural K C hC hconn hik j t a)
-  have he : diskFamilyMap (canonicalAttaching K C hC hconn i) (canonicalAttaching K C hC hconn k)
-      (diskRoseMap (canonicalGenInclusion K C hC hconn hik)) (canonicalCellInclusion K C hC hik)
-      (fun j a => congrArg (fun f => f a) (canonicalCellBoundary_natural K C hC hconn hik j)) =
-      canonicalDiskInclusion K C hC hconn hik := by
-    apply hom_ext _ (boundaryFamilyInclusion (CanonicalRel K C i) (Fin 2 → ℝ))
-    · intro x
-      rfl
-    · intro d
-      rw (config := { transparency := .default }) [diskFamilyMap_cell]
-  rw (config := { transparency := .default }) [he] at H
-  exact H
+  tauto
 
 theorem canonicalDiskInclusion_killsPi2_iff {i k : Fin (n + 1)} (hik : i ≤ k) :
     Whitehead.KillsPi2 (canonicalDiskInclusion K C hC hconn hik) ↔
@@ -177,17 +156,12 @@ theorem canonicalDiskInclusion_killsPi2_iff {i k : Fin (n + 1)} (hik : i ≤ k) 
       Whitehead.KillsPi2 (stabilizedDiskInclusion K C hC hconn hik) := by
     apply Whitehead.killsPi2_homotopyEquiv_square_iff
       (canonicalDiskChange K C hC hconn i) (canonicalDiskChange K C hC hconn k)
-    rw (config := { transparency := .default }) [canonicalDiskChange_natural]
+    erw [canonicalDiskChange_natural]
   have he : DiskPresentationExtension.sourceMap (roseGenInclusion K C hC hconn hik)
       (subcomplexCellInclusion (hC hik) 2) (collapsedAttaching K C hC hconn i)
       (collapsedAttaching K C hC hconn k)
       (fun z => collapsedAttaching_natural K C hC hconn hik z.1 z.2) =
-      collapsedDiskInclusion K C hC hconn hik := by
-    apply hom_ext _ (boundaryFamilyInclusion (RelCWComplex.cell (C i : Set K) 2) (Fin 2 → ℝ))
-    · intro x
-      rfl
-    · intro d
-      rw (config := { transparency := .default }) [DiskPresentationExtension.sourceMap_cell]
+      collapsedDiskInclusion K C hC hconn hik := rfl
   exact h₁.trans ((StabilizedDiskPresentation.map_killsPi2_iff _ _ _ _ _).trans
     (he ▸ collapsedDiskInclusion_killsPi2_iff K C hC hconn hik))
 

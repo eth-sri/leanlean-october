@@ -32,8 +32,7 @@ theorem simplexMap_inclusion_injective (A : Set X) (n : ℕ) :
   apply Subtype.ext
   exact DFunLike.congr_fun he z
 
-theorem map_inclusion_injective (A : Set X) (n : ℕ) : Function.Injective (map (inclusion A) n) := by
-  exact Finsupp.mapDomain_injective (simplexMap_inclusion_injective A n)
+theorem map_inclusion_injective (A : Set X) (n : ℕ) : Function.Injective (map (inclusion A) n) := Finsupp.mapDomain_injective (simplexMap_inclusion_injective A n)
 
 noncomputable def subChains (A : Set X) (n : ℕ) : Submodule ℤ (Chain X n) :=
   LinearMap.range (map (inclusion A) n)

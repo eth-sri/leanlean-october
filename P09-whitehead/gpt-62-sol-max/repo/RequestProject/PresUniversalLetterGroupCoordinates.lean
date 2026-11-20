@@ -27,7 +27,7 @@ theorem presUniversalLetter_midpoint_coordinates
         ((w p.val.2)[k.val]).1) := by
   apply Prod.ext
   · exact presUniversalRelator_collapsed_midpoint_reading w hpos
-      (fun i => (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ))
+      (fun i => (QuotientGroup.mk (FreeGroup.of i)))
       (presGroup_wordVal_eq_one ρ w hw) p k
   · rfl
 

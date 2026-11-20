@@ -42,10 +42,7 @@ theorem exists_lower_bound_of_chain {C : Set (Subgroup G)} (hC : IsChain (· ≤
             rcases Finset.mem_insert.mp hx with rfl | hx'
             · exact hle
             · exact hN x hx'⟩
-        · exact ⟨a, haC, fun x hx => by
-            rcases Finset.mem_insert.mp hx with rfl | hx'
-            · exact le_rfl
-            · exact hle.trans (hN x hx')⟩
+        grind
 
 /-- **The requirements pass to intersections of decreasing chains.**  If every requirement
 depends on finitely many membership decisions, and if every member of a nonempty chain of
@@ -60,21 +57,13 @@ theorem sat_sInf_of_finitelyDetermined {ι : Type*} (Sat : Subgroup G → ι →
     intro g
     by_cases hg : g ∈ sInf C
     · obtain ⟨N, hN⟩ := hne
-      exact ⟨N, hN, fun h => absurd hg h⟩
-    · have : ∃ N ∈ C, g ∉ N := by
-        by_contra hcon
-        push_neg at hcon
-        exact hg (Subgroup.mem_sInf.mpr hcon)
-      obtain ⟨N, hNC, hgN⟩ := this
-      exact ⟨N, hNC, fun _ => hgN⟩
+      exact ⟨N, hN, (absurd hg)⟩
+    · simp_all
   choose wit hwitC hwit using hchoice
   obtain ⟨N, hNC, hNle⟩ :=
     exists_lower_bound_of_chain hC hne (F.image wit)
       (by
-        intro x hx
-        simp only [Finset.coe_image, Set.mem_image, Finset.mem_coe] at hx
-        obtain ⟨g, -, rfl⟩ := hx
-        exact hwitC g)
+        grind)
   have hagree : ∀ g ∈ F, (g ∈ sInf C ↔ g ∈ N) := by
     intro g hg
     refine ⟨fun hmem => (sInf_le hNC) hmem, fun hmem => ?_⟩

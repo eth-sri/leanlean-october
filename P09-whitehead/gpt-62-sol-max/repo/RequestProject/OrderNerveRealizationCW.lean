@@ -31,7 +31,7 @@ noncomputable instance orderNerveRealization_cwComplex (P : Type) [PartialOrder 
       norm_num at he
     | succ n =>
       obtain ⟨I, hI⟩ := orderNerveCharacteristicMap_boundary s
-      let J : ∀ m, Finset ((nerve P).nonDegenerate m) := fun m =>
+      let J  := fun m =>
         if h : m = n then h.symm ▸ I else ∅
       refine ⟨J, ?_⟩
       intro x hx

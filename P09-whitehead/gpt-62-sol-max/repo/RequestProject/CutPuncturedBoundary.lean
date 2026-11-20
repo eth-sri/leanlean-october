@@ -6,8 +6,6 @@ public import RequestProject.OrderCxNullTransfer
 @[expose] public section
 
 /-! Retraction of the actual boundary with its cut facet deleted onto retained proper faces. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
@@ -28,7 +26,7 @@ instance (t : QOld A) : PartialOrder (RetainedProperBoundary t) := Subtype.parti
 
 def cutBoundaryRetraction (t : QOld A) (hne : t.1.spx.Nonempty)
     (c : CutPuncturedBoundary t hne) : RetainedProperBoundary t := by
-  have hle : truncatedCellRetraction c.1 ≤ t :=
+  have hle  :=
     truncatedCellRetraction_monotone c.2.1.le
   refine ⟨truncatedCellRetraction c.1, lt_of_le_of_ne hle ?_⟩
   intro he
@@ -36,7 +34,7 @@ def cutBoundaryRetraction (t : QOld A) (hne : t.1.spx.Nonempty)
   cases c with
   | inl d => exact hc.1.ne (congrArg Sum.inl he)
   | inr σ =>
-    have hs : σ.1 = t.1.spx := congrArg (fun d : QOld A => d.1.spx) he
+    have hs  := congrArg (·.1.spx) he
     exact hc.2 (congrArg Sum.inr (Subtype.ext hs))
 
 def cutBoundarySection (t : QOld A) (hne : t.1.spx.Nonempty)

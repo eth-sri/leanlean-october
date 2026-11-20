@@ -9,9 +9,7 @@ public import RequestProject.UniversalOrderChainBridge
 deck translation and conversion to nerve chains. Pending final Lean verification.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -49,12 +47,11 @@ open RACG Mirror Comb PresModel BlockFamily Nerve
 open scoped Classical
 variable (q : ℕ) [NeZero q] {α Jr : Type}
   (ρ : Jr ⊕ PUnit.{1} → FreeGroup α) (u : Fin q × Bool → FreeGroup α)
-  (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
+  (hrho : IsSpineRelator ρ q u)
 
 theorem receivedSpineToQuotient_face_old (t : (singleReceivedSpineCover q ρ u).F) :
     ((receivedSpineToQuotient q ρ u hrho).onF t).1.2 ∈ ordTriOn InQOld := by
-  change (markedSpineToNamedQuotient q ρ u).onF t.2 ∈ ordTriOn InQOld
-  exact ⟨trivial, trivial, trivial⟩
+  tauto
 
 theorem receivedSpineToQuotient_chain_old
     (c : (singleReceivedSpineCover q ρ u).F →₀ ℤ) :
@@ -66,7 +63,7 @@ theorem oldCoverToNamedQuotient_face_old
     (t : (uCover (spineOldCx q) (spineOldBase q)).F) :
     ((oldCoverToNamedQuotient q ρ u).onF t).1.2 ∈ ordTriOn InQOld := by
   change (oldIntoNamedQuotient q ρ u).onF t.1.2 ∈ ordTriOn InQOld
-  exact ⟨trivial, trivial, trivial⟩
+  tauto
 
 theorem oldCoverToNamedQuotient_chain_old
     (c : (uCover (spineOldCx q) (spineOldBase q)).F →₀ ℤ) :
@@ -75,55 +72,49 @@ theorem oldCoverToNamedQuotient_chain_old
     (oldCoverToNamedQuotient_face_old q ρ u) c
 
 theorem quotientMarkingCorrection_old
-    (g : PresGroup (substPresF ρ (finiteSpineWordBlock q u))) (i : Fin q × Bool) :
+    (g : SpineReplacementGroup ρ q u) (i : Fin q × Bool) :
     quotientMarkingCorrection q ρ u hrho g i ∈ supportedUniversalFaces InQOld :=
   deck_mem_supportedUniversalFaces InQOld (finiteSpineToQuotient ρ q u hrho g)
     (chain2 (oldCoverToNamedQuotient q ρ u) (spineOldMarkingCorrection q i))
     (oldCoverToNamedQuotient_chain_old q ρ u (spineOldMarkingCorrection q i))
 
 theorem quotientMarkingCorrections_old
-    (c : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ) :
+    (c : (SpineReplacementGroup ρ q u × (Fin q × Bool)) →₀ ℤ) :
     quotientMarkingCorrections q ρ u hrho c ∈ supportedUniversalFaces InQOld := by
   induction c using Finsupp.induction_linear with
   | zero => simp
   | add c d hc hd => simpa only [map_add] using Submodule.add_mem _ hc hd
   | single x n =>
-      rw (config := { transparency := .default }) [quotientMarkingCorrections, Finsupp.linearCombination_single]
+      erw [quotientMarkingCorrections, Finsupp.linearCombination_single]
       exact Submodule.smul_mem _ n (quotientMarkingCorrection_old q ρ u hrho x.1 x.2)
 
 /-- Both the received faces and the explicit marking correction are supported on old faces. -/
 theorem quotientCorrectedRelativeChain_old
-    (β : NamedSpineRel q → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (finiteSpineWordBlock q u)))) :
+    (β : SpineCoefficients ρ q u) :
     quotientCorrectedRelativeChain q ρ u hrho β ∈ supportedUniversalFaces InQOld :=
   Submodule.sub_mem _
     (receivedSpineToQuotient_chain_old q ρ u hrho _)
     (quotientMarkingCorrections_old q ρ u hrho _)
 
 theorem quotientCorrectedRelativeChain_face_support
-    (β : NamedSpineRel q → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (finiteSpineWordBlock q u)))) :
+    (β : SpineCoefficients ρ q u) :
     ∀ t ∈ (quotientCorrectedRelativeChain q ρ u hrho β).support,
       t.1.2 ∈ ordTriOn InQOld :=
   (mem_supportedUniversalFaces_iff InQOld _).mp
     (quotientCorrectedRelativeChain_old q ρ u hrho β)
 
 noncomputable def quotientCorrectedRelativeNerveChain
-    (β : NamedSpineRel q → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (finiteSpineWordBlock q u)))) :
+    (β : SpineCoefficients ρ q u) :
     Ch (UOrder (namedQuotientPos ρ q u) (namedQuotientBase ρ q u)) :=
   universalNerveChain2 (quotientCorrectedRelativeChain q ρ u hrho β)
 
 theorem quotientCorrectedRelativeNerveChain_boundary
-    (β : NamedSpineRel q → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (finiteSpineWordBlock q u))))
-    (hβ : ∀ z : SpinePresentationGen q,
-      (∑ m, β m * foxMatrixPres (substPresF ρ (finiteSpineWordBlock q u))
-        (Sum.inr ⟨PUnit.unit, z⟩) (Sum.inr ⟨PUnit.unit, m⟩)) = 0) :
+    (β : SpineCoefficients ρ q u)
+    (hβ : SpineInternalCycle ρ q u β) :
     Nerve.bdry (quotientCorrectedRelativeNerveChain q ρ u hrho β) =
       universalNerveChain1 (quotientSurfaceMarkingChains q ρ u hrho
-        ((ReceivedTree.cellCoordinates (Fin q × Bool)).symm (fun i => β (Sum.inr i)))) := by
-  rw (config := { transparency := .default }) [quotientCorrectedRelativeNerveChain, universalNerveChain2_bdry,
+        (singleReceivedSpineMarkingChain q ρ u β)) := by
+  erw [quotientCorrectedRelativeNerveChain, universalNerveChain2_bdry,
     quotientCorrectedRelativeChain_boundary q ρ u hrho β hβ]
 
 end FiniteChains.Davis.Genus

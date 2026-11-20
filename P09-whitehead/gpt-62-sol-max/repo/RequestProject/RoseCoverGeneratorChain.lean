@@ -1,12 +1,11 @@
 module
 
-public import RequestProject.RoseCoverBaseCoordinates
+public import RequestProject.PosetCoverStrictEdgeLift
+public import RequestProject.RoseCoverGeneratorEquiv
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -21,7 +20,7 @@ noncomputable def roseCoverMidpointEndEdge (p : roseCoverMidpoints f) (b : Bool)
 noncomputable def roseCoverMidpointBaseEdge (p : roseCoverMidpoints f) (b : Bool) :
     StrictOrdEdge P := hf.strictEdgeLiftTo (roseBaseEdge p.val.2 b)
       (roseCoverMidpointEndEdge f hf p b).val.2
-      (congrArg (fun e : StrictOrdEdge (Rose α) => e.val.2)
+      (congrArg (·.val.2)
         (hf.strictEdgeLiftFrom_projection (roseMidEdge p.val.2 b) p.val.1 p.property))
 
 /-- The genuine four-incidence lift of a rose generator. -/
@@ -63,14 +62,14 @@ theorem roseCoverGeneratorChain_coordinates (p : roseCoverMidpoints f) :
     have hp := (hf.strictEdgeLiftTo_projection (roseBaseEdge p.val.2 b)
       (roseCoverMidpointEndEdge f hf p b).val.2 _).symm.trans
         ((congrArg ((strictOrderCxMap f hf.strictMono).onE) he).trans hi)
-    have hs := congrArg (fun r : StrictOrdEdge (Rose α) => r.val.1) hp
+    have hs := congrArg (·.val.1) hp
     cases hs
   have hm : roseCoverMidpointEndEdge f hf p false ≠ e.val := by
     intro he
     have hp := (hf.strictEdgeLiftFrom_projection (roseMidEdge p.val.2 false)
       p.val.1 p.property).symm.trans
         ((congrArg ((strictOrderCxMap f hf.strictMono).onE) he).trans hi)
-    have ht := congrArg (fun r : StrictOrdEdge (Rose α) => r.val.2) hp
+    have ht := congrArg (·.val.2) hp
     exact Bool.noConfusion (Rose.edg.inj ht).2
   change (roseCoverGeneratorChain f hf p) e.val =
     (Finsupp.single (roseCoverMidpointEdge f hf p) 1) e

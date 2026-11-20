@@ -25,13 +25,12 @@ theorem descInc_freshLoopOrFace (i : ℕ) (h : FreshLoopOrFace (R.inc i)) :
     cases i with
     | zero =>
         have hoff : ∀ d, (inclFrom c R.inc 1).onE d ≠ e := by
-          intro d hd
-          exact he ⟨d, hd⟩
+          tauto
         let w : OffE (inclFrom c R.inc 1) := ⟨e, hoff⟩
         refine ⟨Sum.inr w, ?_, ?_⟩
         · change pushV p (inclFrom c R.inc 1) ((c 1).src e) =
             pushV p (inclFrom c R.inc 1) ((c 1).tgt e)
-          exact congrArg (pushV p (inclFrom c R.inc 1)) hloop
+          tauto
         · rintro ⟨d, hd⟩
           exact Sum.inl_ne_inr hd
     | succ i =>
@@ -42,7 +41,7 @@ theorem descInc_freshLoopOrFace (i : ℕ) (h : FreshLoopOrFace (R.inc i)) :
         refine ⟨Sum.inr w, ?_, ?_⟩
         · change pushV p (inclFrom c R.inc (i + 2)) ((c (i + 2)).src e) =
             pushV p (inclFrom c R.inc (i + 2)) ((c (i + 2)).tgt e)
-          exact congrArg (pushV p (inclFrom c R.inc (i + 2))) hloop
+          solve_by_elim
         · rintro ⟨d, hd⟩
           cases d with
           | inl d => exact Sum.inl_ne_inr hd
@@ -53,9 +52,8 @@ theorem descInc_freshLoopOrFace (i : ℕ) (h : FreshLoopOrFace (R.inc i)) :
     cases i with
     | zero =>
         have hoff : ∀ d, (inclFrom c R.inc 1).onF d ≠ f := by
-          intro d hd
-          exact hf ⟨d, hd⟩
-        refine ⟨Sum.inr (⟨f, hoff⟩ : OffF (inclFrom c R.inc 1)), ?_⟩
+          tauto
+        refine ⟨Sum.inr ⟨f, hoff⟩, ?_⟩
         rintro ⟨d, hd⟩
         exact Sum.inl_ne_inr hd
     | succ i =>

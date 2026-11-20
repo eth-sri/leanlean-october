@@ -39,11 +39,7 @@ theorem freeSingularChainComplexIso_natural {X Y : TopCat} (f : X ⟶ Y) :
       (AlgebraicTopology.alternatingFaceMapComplex (ModuleCat ℤ)).map _ =
     (AlgebraicTopology.alternatingFaceMapComplex (ModuleCat ℤ)).map _ ≫
       (AlgebraicTopology.alternatingFaceMapComplex (ModuleCat ℤ)).map _
-  rw [← Functor.map_comp, ← Functor.map_comp]
-  congr 1
-  apply NatTrans.ext
-  funext i
-  exact freeIntegerCoproductNatIso.hom.naturality ((TopCat.toSSet.map f).app i)
+  aesop
 
 /-- Naturality of the identification with integral singular homology in every degree. -/
 theorem freeSingularHomologyIso_natural {X Y : TopCat} (f : X ⟶ Y) (n : ℕ) :

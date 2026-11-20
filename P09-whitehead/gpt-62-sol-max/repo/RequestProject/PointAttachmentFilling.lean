@@ -26,11 +26,11 @@ def pointFillAttaching : C(S, PointAttachment x c) := (pointCell x c).comp b.toC
 abbrev FilledPointAttachment := Space (pointFillAttaching x c b) i
 
 def pointFillBase : C(X, FilledPointAttachment x c b i) :=
-  (⟨old (pointFillAttaching x c b) i, old_continuous _ _⟩ :
+  ((Space.oldMap (pointFillAttaching x c b) i) :
     C(PointAttachment x c, _)).comp (pointOld x c)
 
 def pointFillDisk : C(D, FilledPointAttachment x c b i) :=
-  ⟨cell (pointFillAttaching x c b) i, cell_continuous _ _⟩
+  (Space.cellMap (pointFillAttaching x c b) i)
 
 include hi in
 theorem pointFillDisk_boundary (a : S) :
@@ -40,7 +40,7 @@ theorem pointFillDisk_boundary (a : S) :
 include hi in
 theorem pointFillDisk_circle (y : C) :
     pointFillDisk x c b i (i (b.symm y)) = old (pointFillAttaching x c b) i (pointCell x c y) := by
-  rw [pointFillDisk_boundary x c b i hi, Homeomorph.apply_symm_apply]
+  simp [pointFillDisk_boundary x c b i hi]
 
 include hi in
 theorem pointFillDisk_mark :
@@ -71,9 +71,8 @@ theorem pointFillDisk_mem_base_iff (d : D) :
   rw [cell_preimage_old_image _ _ hi]
   constructor
   · rintro ⟨a, ha, had⟩
-    have hac : b a = c := (pointCell_mem_old_iff x c (b a)).mp ha
-    have he : a = b.symm c := b.injective (hac.trans (b.apply_symm_apply c).symm)
-    exact had.symm.trans (congrArg i he)
+    have hac  := (pointCell_mem_old_iff x c (b a)).mp ha
+    aesop
   · intro hd
     refine ⟨b.symm c, ?_, hd.symm⟩
     apply (pointCell_mem_old_iff x c (b (b.symm c))).mpr
@@ -88,9 +87,9 @@ theorem pointFill_piece_isQuotientMap :
     obtain ⟨z, rfl⟩ := quotientMap_surjective (pointFillAttaching x c b) i z
     cases z with
     | inl y =>
-        obtain ⟨y, rfl⟩ := quotientMap_surjective (fun _ : PUnit => x) (fun _ : PUnit => c) y
+        obtain ⟨y, rfl⟩ := quotientMap_surjective (fun _  => x) (fun _  => c) y
         cases y with
-        | inl t => exact ⟨Sum.inl t, rfl⟩
+        | inl t => tauto
         | inr a => exact ⟨Sum.inr (i (b.symm a)), pointFillDisk_circle x c b i hi a⟩
     | inr d => exact ⟨Sum.inr d, rfl⟩
   · intro T
@@ -98,8 +97,8 @@ theorem pointFill_piece_isQuotientMap :
     · exact fun hT => hT.preimage ((pointFillBase x c b i).continuous.sumElim
         (pointFillDisk x c b i).continuous)
     · intro hT
-      have hX := hT.preimage (continuous_inl : Continuous (Sum.inl : X → X ⊕ D))
-      have hD := hT.preimage (continuous_inr : Continuous (Sum.inr : D → X ⊕ D))
+      have hX := hT.preimage continuous_inl
+      have hD := hT.preimage continuous_inr
       apply isClosed_coinduced.mpr
       apply isClosed_sum_iff.mpr
       constructor
@@ -118,26 +117,18 @@ theorem pointFill_piece_isQuotientMap :
 at one point, with exact base and disk formulas. -/
 def pointAttachmentFillingHomeomorph :
     PointAttachment x (i (b.symm c)) ≃ₜ FilledPointAttachment x c b i :=
-  attachmentQuotientHomeomorph (fun _ : PUnit => x) (fun _ : PUnit => i (b.symm c))
+  attachmentQuotientHomeomorph (fun _  => x) (fun _  => i (b.symm c))
     (pointFillBase x c b i) (pointFillDisk x c b i)
     (fun _ => (pointFillDisk_mark x c b i hi).symm)
     (pointFillBase_injective x c b i)
     (fun d => by
       rw [pointFillDisk_mem_base_iff x c b i hi]
-      constructor
-      · exact fun hd => ⟨PUnit.unit, hd.symm⟩
-      · rintro ⟨a, ha⟩
-        exact ha.symm)
+      simp)
     (fun _ _ _ _ h => pointFillDisk_injective x c b i h)
     (pointFill_piece_isQuotientMap x c b i hi)
 
-@[simp] theorem pointAttachmentFillingHomeomorph_old (y : X) :
-    pointAttachmentFillingHomeomorph x c b i hi (pointOld x (i (b.symm c)) y) =
-      pointFillBase x c b i y := attachmentQuotientHomeomorph_old ..
 
-@[simp] theorem pointAttachmentFillingHomeomorph_cell (d : D) :
-    pointAttachmentFillingHomeomorph x c b i hi (pointCell x (i (b.symm c)) d) =
-      pointFillDisk x c b i d := attachmentQuotientHomeomorph_cell ..
+
 
 variable {E : Type u} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
@@ -146,10 +137,8 @@ def pointBoundaryFillingHomotopyEquiv (b : UnitBoundary E ≃ₜ C) :
       (FilledPointAttachment x c b (unitBoundaryInclusion E)) :=
   (pointBallAttachmentHomotopyEquiv x (unitBoundaryInclusion E (b.symm c))).trans
     (pointAttachmentFillingHomeomorph x c b (unitBoundaryInclusion E)
-      (fun _ _ h => Subtype.ext (congrArg (fun z : ClosedUnitBall E => z.val) h))).toHomotopyEquiv
+      (fun _ _ h => Subtype.ext (congrArg (·.val) h))).toHomotopyEquiv
 
-@[simp] theorem pointBoundaryFillingHomotopyEquiv_old (b : UnitBoundary E ≃ₜ C) (y : X) :
-    pointBoundaryFillingHomotopyEquiv x c b y = pointFillBase x c b (unitBoundaryInclusion E) y :=
-  pointAttachmentFillingHomeomorph_old ..
+
 
 end FiniteChains.RelativeAttachment

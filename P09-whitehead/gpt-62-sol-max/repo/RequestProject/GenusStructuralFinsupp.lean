@@ -30,15 +30,8 @@ variable {α Jr S : Type u} {Z M : S → Type u}
 replacement, with exactly the original coefficient map and surface fillings. -/
 def substMorFS (hc : IsFillingFS ρ b hfill c) : PresMorFS ρ (substPresF ρ b) where
   hom := substHomF ρ b hfill
-  cells := fsCellsF ρ b hfill c
-  cells_add := by
-    intro y z
-    ext k : 1
-    exact congrFun (cellsF_add ρ b hfill (fun s => c s) y z) k
-  cells_smul := by
-    intro a y
-    ext k : 1
-    exact congrFun (cellsF_smul ρ b hfill (fun s => c s) a y) k
+  cells := (fsCellsBase c).comp
+    (Finsupp.mapRange.linearMap (coeffF ρ b hfill).toSemilinearMap)
   cells_cycle := by
     intro y hy
     change coverSecondBoundary _ _ (fsCellsF ρ b hfill c y) = 0
@@ -81,18 +74,12 @@ variable {α Jr S : Type} (σ : Jr ⊕ S → FreeGroup α)
 /-- Rule 3 with all its geometric inputs supplied, including for an
 infinite family over an infinite fixed core. -/
 def finiteSpineFamilyStructuralMap :
-    PresMorFS σ (substPresF σ (familyFiniteSpineWordBlock q u)) :=
+    PresMorFS σ (spineFamilyPres σ q u) :=
   substMorFS σ (familyFiniteSpineWordBlock q u)
     (familyFiniteSpineWordBlock_filled σ q u hσ)
     (finiteSpineFamilyFilling σ q u)
     (finiteSpineFamilyFilling_isFilling σ q u hσ)
 
-@[simp] theorem finiteSpineFamilyStructuralMap_cells
-    (y : (Jr ⊕ S) →₀ MonoidAlgebra ℤ (PresGroup σ)) :
-    (finiteSpineFamilyStructuralMap σ q u hσ).cells y =
-      fsCellsF σ (familyFiniteSpineWordBlock q u)
-        (familyFiniteSpineWordBlock_filled σ q u hσ)
-        (finiteSpineFamilyFilling σ q u) y := rfl
 
 /-- Actual equation (3.3) for the simultaneous genus replacement. -/
 theorem finiteSpineFamilyStructuralMap_generates :
@@ -114,10 +101,10 @@ theorem finiteSpineFamilyStructuralMap_core_cell
     (finiteSpineFamilyFilling σ q u)
     (finiteSpineFamilyFilling_isFilling σ q u hσ) j a
 
-section Finite
 
-variable [Fintype α] [Fintype Jr] [Fintype S]
 
-end Finite
+
+
+
 
 end FiniteChains.Davis.Genus

@@ -2,7 +2,7 @@ module
 
 public import Mathlib.Analysis.Normed.Module.Basic
 public import Mathlib.Topology.Homotopy.Basic
-public import Mathlib.Topology.ContinuousOn
+public import RequestProject.CylinderPasting
 public import Mathlib.Tactic
 
 @[expose] public section
@@ -26,12 +26,12 @@ def unitBoundaryInclusion : C(UnitBoundary E, ClosedUnitBall E) :=
   ⟨fun x => ⟨x.val, x.property.le⟩, continuous_subtype_val.subtype_mk _⟩
 
 abbrev BallCylinderBoundary :=
-  {z : I × ClosedUnitBall E // z.1 = 0 ∨ ‖z.2.val‖ = 1}
+  CylinderSubspace ({0} : Set I) {x : ClosedUnitBall E | ‖x.val‖ = 1}
 
 variable {E}
 
 def cylinderDenominator (z : I × ClosedUnitBall E) : ℝ :=
-  max (2 - (z.1 : ℝ)) (2 * ‖z.2.val‖)
+  max (2 - (z.1)) (2 * ‖z.2.val‖)
 
 theorem cylinderDenominator_pos (z : I × ClosedUnitBall E) :
     0 < cylinderDenominator z := by
@@ -42,10 +42,8 @@ theorem cylinderDenominator_pos (z : I × ClosedUnitBall E) :
 theorem cylinderDenominator_le_two (z : I × ClosedUnitBall E) :
     cylinderDenominator z ≤ 2 := by
   apply max_le
-  · have h := z.1.2.1
-    linarith
-  · have h := z.2.2
-    linarith
+  · grind
+  · grind
 
 def cylinderScale (z : I × ClosedUnitBall E) : ℝ :=
   2 / cylinderDenominator z
@@ -71,7 +69,7 @@ theorem cylinderScale_continuous :
   · exact fun z => ne_of_gt (cylinderDenominator_pos z)
 
 def cylinderTime (z : I × ClosedUnitBall E) : I :=
-  ⟨2 - cylinderScale z * (2 - (z.1 : ℝ)), by
+  ⟨2 - cylinderScale z * (2 - (z.1)), by
     have hscale := cylinderScale_nonneg z
     have hmul := cylinderScale_mul_denominator z
     have hden : 2 - (z.1 : ℝ) ≤ cylinderDenominator z := le_max_left _ _
@@ -104,12 +102,12 @@ theorem cylinderPoint_continuous :
 
 theorem cylinderTime_or_point_boundary (z : I × ClosedUnitBall E) :
     cylinderTime z = 0 ∨ ‖(cylinderPoint z).val‖ = 1 := by
-  by_cases h : 2 * ‖z.2.val‖ ≤ 2 - (z.1 : ℝ)
+  by_cases h : 2 * ‖z.2.val‖ ≤ 2 - (z.1)
   · left
     apply Subtype.ext
     have he := cylinderScale_mul_denominator z
     rw [cylinderDenominator, max_eq_left h] at he
-    change 2 - cylinderScale z * (2 - (z.1 : ℝ)) = 0
+    change 2 - cylinderScale z * (2 - (z.1)) = 0
     linarith
   · right
     have he := cylinderScale_mul_denominator z
@@ -130,19 +128,17 @@ theorem cylinderScale_eq_one (z : I × ClosedUnitBall E)
     apply le_antisymm (cylinderDenominator_le_two z)
     rcases hz with ht | hx
     · have h : 2 - (z.1 : ℝ) ≤ cylinderDenominator z := le_max_left _ _
-      rw [ht] at h
-      change 2 - (0 : ℝ) ≤ cylinderDenominator z at h
-      simpa only [sub_zero] using h
+      simp_all
     · have h : 2 * ‖z.2.val‖ ≤ cylinderDenominator z := le_max_right _ _
-      simpa only [hx, mul_one] using h
-  simp only [cylinderScale, hden, div_self (by norm_num : (2 : ℝ) ≠ 0)]
+      simp_all
+  simp [cylinderScale, hden]
 
 theorem ballCylinderRetraction_fixed (z : BallCylinderBoundary E) :
     ballCylinderRetraction z.val = z := by
   apply Subtype.ext
   apply Prod.ext
   · apply Subtype.ext
-    change 2 - cylinderScale z.val * (2 - (z.val.1 : ℝ)) = (z.val.1 : ℝ)
+    change 2 - cylinderScale z.val * (2 - (z.val.1)) = (z.val.1)
     rw [cylinderScale_eq_one z.val z.property]
     ring
   · apply Subtype.ext
@@ -151,59 +147,19 @@ theorem ballCylinderRetraction_fixed (z : BallCylinderBoundary E) :
 
 variable {Z : Type v} [TopologicalSpace Z]
 
-def ballBoundaryPastingFun (f : C(ClosedUnitBall E, Z))
-    (H : C(I × UnitBoundary E, Z)) (z : BallCylinderBoundary E) : Z :=
-  if ht : z.val.1 = 0 then f z.val.2
-  else H (z.val.1, ⟨z.val.2.val, z.property.resolve_left ht⟩)
-
-omit [NormedSpace ℝ E] in
-theorem ballBoundaryPastingFun_bottom (f : C(ClosedUnitBall E, Z))
-    (H : C(I × UnitBoundary E, Z)) (z : BallCylinderBoundary E) (hz : z.val.1 = 0) :
-    ballBoundaryPastingFun f H z = f z.val.2 := by
-  simp only [ballBoundaryPastingFun]; rw [dite_eq_left hz]
-
-omit [NormedSpace ℝ E] in
-theorem ballBoundaryPastingFun_side (f : C(ClosedUnitBall E, Z))
-    (H : C(I × UnitBoundary E, Z))
-    (h₀ : ∀ x, H (0, x) = f (unitBoundaryInclusion E x))
-    (z : BallCylinderBoundary E) (hz : ‖z.val.2.val‖ = 1) :
-    ballBoundaryPastingFun f H z = H (z.val.1, ⟨z.val.2.val, hz⟩) := by
-  by_cases ht : z.val.1 = 0
-  · rw [ballBoundaryPastingFun_bottom f H z ht, ht, h₀]
-    rfl
-  · simp only [ballBoundaryPastingFun]; rw [dite_eq_right ht]
-
-/-- The supplied disk map and its boundary homotopy paste continuously on
-the closed bottom and side of the cylinder. -/
+/-- Paste the disk map and its boundary homotopy on the bottom and side. -/
 def ballBoundaryPasting (f : C(ClosedUnitBall E, Z))
     (H : C(I × UnitBoundary E, Z))
     (h₀ : ∀ x, H (0, x) = f (unitBoundaryInclusion E x)) :
-    C(BallCylinderBoundary E, Z) where
-  toFun := ballBoundaryPastingFun f H
-  continuous_toFun := by
-    let B : Set (BallCylinderBoundary E) := {z | z.val.1 = 0}
-    let S : Set (BallCylinderBoundary E) := {z | ‖z.val.2.val‖ = 1}
-    have hB : IsClosed B := isClosed_eq (by fun_prop) continuous_const
-    have hS : IsClosed S := isClosed_eq (by fun_prop) continuous_const
-    have hcover : B ∪ S = Set.univ := by
-      apply Set.eq_univ_of_forall
-      exact fun z => z.property
-    have hf : ContinuousOn (ballBoundaryPastingFun f H) B := by
-      apply ((f.continuous.comp (continuous_snd.comp continuous_subtype_val)).continuousOn).congr
-      intro z hz
-      exact ballBoundaryPastingFun_bottom f H z hz
-    have hh : ContinuousOn (ballBoundaryPastingFun f H) S := by
-      rw [continuousOn_iff_continuous_domRestrict]
-      let k : C(S, I × UnitBoundary E) := {
-        toFun := fun z => (z.val.val.1, ⟨z.val.val.2.val, z.property⟩)
-        continuous_toFun := by fun_prop }
-      have he : S.domRestrict (ballBoundaryPastingFun f H) = H ∘ k := by
-        funext z
-        exact ballBoundaryPastingFun_side f H h₀ z.val z.property
-      rw [he]
-      exact H.continuous.comp k.continuous
-    rw [← continuousOn_univ, ← hcover]
-    exact hf.union_of_isClosed hh hB hS
+    C(BallCylinderBoundary E, Z) :=
+  cylinderPasting (T := {0}) (S := {x : ClosedUnitBall E | ‖x.val‖ = 1})
+    ⟨fun z => f z.2, f.continuous.comp continuous_snd⟩
+    ⟨fun z => H (z.1, ⟨z.2.val.val, z.2.property⟩), by fun_prop⟩
+    isClosed_singleton (isClosed_eq (by fun_prop) continuous_const) (by
+      rintro ⟨t, ht⟩ x
+      change t = 0 at ht
+      subst t
+      exact (h₀ ⟨x.val.val, x.property⟩).symm)
 
 /-- Explicit homotopy extension across a closed disk. -/
 def ballHomotopyExtension (f : C(ClosedUnitBall E, Z))
@@ -217,8 +173,10 @@ def ballHomotopyExtension (f : C(ClosedUnitBall E, Z))
     (h₀ : ∀ x, H (0, x) = f (unitBoundaryInclusion E x)) (x : ClosedUnitBall E) :
     ballHomotopyExtension f H h₀ (0, x) = f x := by
   change ballBoundaryPasting f H h₀ (ballCylinderRetraction (0, x)) = f x
-  rw [ballCylinderRetraction_fixed (⟨(0, x), Or.inl rfl⟩ : BallCylinderBoundary E)]
-  exact ballBoundaryPastingFun_bottom f H _ rfl
+  rw [ballCylinderRetraction_fixed ⟨(0, x), Or.inl rfl⟩]
+  unfold ballBoundaryPasting
+  rw [cylinderPasting_slice _ (Set.mem_singleton 0)]
+  rfl
 
 @[simp] theorem ballHomotopyExtension_boundary (f : C(ClosedUnitBall E, Z))
     (H : C(I × UnitBoundary E, Z))
@@ -228,7 +186,9 @@ def ballHomotopyExtension (f : C(ClosedUnitBall E, Z))
   change ballBoundaryPasting f H h₀
     (ballCylinderRetraction (t, unitBoundaryInclusion E x)) = H (t, x)
   rw [ballCylinderRetraction_fixed
-    (⟨(t, unitBoundaryInclusion E x), Or.inr x.property⟩ : BallCylinderBoundary E)]
-  exact ballBoundaryPastingFun_side f H h₀ _ x.property
+    ⟨(t, unitBoundaryInclusion E x), Or.inr x.property⟩]
+  unfold ballBoundaryPasting
+  apply cylinderPasting_side
+  exact x.property
 
 end FiniteChains.RelativeAttachment

@@ -80,28 +80,19 @@ theorem collapsible_erase (hcard : ∀ f, (inc f).card ≤ 2) {S : Finset T}
   · -- the shared face becomes free
     obtain ⟨c, hcC, hne', f, htf, hcf⟩ := hadj
     refine ⟨c, hcC, f, ?_⟩
-    have hsub : ({t, c} : Finset T) ⊆ inc f := by
+    have hsub : ({t, c}) ⊆ inc f := by
       intro z hz
       simp only [Finset.mem_insert, Finset.mem_singleton] at hz
       rcases hz with rfl | rfl <;> assumption
     have hcard2 : ({t, c} : Finset T).card = 2 := by
       rw [Finset.card_pair]
       exact fun hh => hne' hh.symm
-    have hfeq : inc f = {t, c} :=
+    have hfeq  :=
       (Finset.eq_of_subset_of_card_le hsub (by rw [hcard2]; exact hcard f)).symm
-    have hcS : c ∈ S.erase t := hCS hcC
-    ext z
-    simp only [hfeq, Finset.mem_inter, Finset.mem_insert, Finset.mem_singleton,
-      Finset.mem_erase]
-    constructor
-    · rintro ⟨hz | hz, hzS⟩
-      · exact absurd hz hzS.1
-      · exact hz
-    · rintro rfl
-      exact ⟨Or.inr rfl, Finset.mem_erase.1 hcS⟩
+    grind +locals
   · -- `C` was already closed in `S`, so the invariant applies directly
     push_neg at hadj
-    have hCS' : C ⊆ S := hCS.trans (Finset.erase_subset _ _)
+    have hCS'  := hCS.trans (Finset.erase_subset _ _)
     have hclosed' : ∀ c ∈ C, ∀ u ∈ S, Adj inc c u → u ∈ C := by
       intro c hc u huS hcu
       have hut : u ≠ t := by
@@ -110,12 +101,12 @@ theorem collapsible_erase (hcard : ∀ f, (inc f).card ≤ 2) {S : Finset T}
       exact hclosed c hc u (Finset.mem_erase.2 ⟨hut, huS⟩) hcu
     obtain ⟨c, hcC, f, hf⟩ := hS C hCS' hne hclosed'
     refine ⟨c, hcC, f, ?_⟩
-    have hct : c ≠ t := (Finset.mem_erase.1 (hCS hcC)).1
+    have hct  := (Finset.mem_erase.1 (hCS hcC)).1
     ext z
     constructor
     · intro hz
       simp only [Finset.mem_inter, Finset.mem_erase] at hz
-      have : z ∈ inc f ∩ S := Finset.mem_inter.2 ⟨hz.1, hz.2.2⟩
+      have  := Finset.mem_inter.2 ⟨hz.1, hz.2.2⟩
       rwa [hf] at this
     · intro hz
       simp only [Finset.mem_singleton] at hz
@@ -143,7 +134,7 @@ theorem collapsible_of_connected {S : Finset T} (hconn : Connected inc S)
     {t₀ : T} (ht₀ : t₀ ∈ S) (hfree : HasFreeFace inc S t₀) : Collapsible inc S := by
   intro C hCS hne hclosed
   obtain ⟨c, hcC⟩ := hne
-  have hcS : c ∈ S := hCS hcC
+  have hcS  := hCS hcC
   have key : ∀ x, Relation.ReflTransGen (fun a b => a ∈ S ∧ b ∈ S ∧ Adj inc a b) c x →
       x ∈ C := by
     intro x hx
@@ -162,12 +153,6 @@ theorem exists_isCollapse_of_connected (hcard : ∀ f, (inc f).card ≤ 2) {S : 
 
 /-! ### A nonempty instance -/
 
-/-- Two top cells glued along one face, with a free face on each side: the smallest
-instance of the collapse theorem. -/
-def exInc : Fin 3 → Finset (Fin 2)
-  | 0 => {0}
-  | 1 => {0, 1}
-  | 2 => {1}
 
 end Collapse
 end FiniteChains

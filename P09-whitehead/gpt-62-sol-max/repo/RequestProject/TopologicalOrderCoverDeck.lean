@@ -12,9 +12,6 @@ ordered cover and its strict cells. Compatibility holds on vertices,
 edges and faces, not only on vertices. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.TopologicalOrderCover
 open CategoryTheory Topology
@@ -54,10 +51,10 @@ theorem monodromy_deck (g : deckSubgroup p)
     {x y : orderNerveRealization P} (γ : Path.Homotopic.Quotient x y) (e : p ⁻¹' {x}) :
     hp.monodromy γ (deckFibre p g x e) = deckFibre p g y (hp.monodromy γ e) := by
   obtain ⟨γ⟩ := γ
-  have h₀ : γ 0 = p e.val := γ.source.trans e.property.symm
-  have h₁ : γ 0 = p (g.val e.val) := h₀.trans (g.property.2.2 e.val).symm
+  have h₀  := γ.source.trans e.property.symm
+  have h₁  := h₀.trans (g.property.2.2 e.val).symm
   let L := hp.liftPath γ e.val h₀
-  let M : C(unitInterval, E) := (deckHomeomorph p g).toContinuousMap.comp L
+  let M  := (deckHomeomorph p g).toContinuousMap.comp L
   have hM : M = hp.liftPath γ (g.val e.val) h₁ := by
     apply (hp.eq_liftPath_iff' h₁).mpr
     constructor
@@ -68,17 +65,13 @@ theorem monodromy_deck (g : deckSubgroup p)
     · change g.val (hp.liftPath γ e.val h₀ 0) = g.val e.val
       rw [hp.liftPath_zero]
   apply Subtype.ext
-  exact (congrArg (fun k : C(unitInterval, E) => k 1) hM).symm
+  exact (congrArg (fun k  => k 1) hM).symm
 
 def deck (g : deckSubgroup p) : Cover p hp ≃o Cover p hp where
   toFun v := ⟨v.1, deckFibre p g (orderNerveRealizationVertex v.1) v.2⟩
   invFun v := ⟨v.1, (deckFibre p g (orderNerveRealizationVertex v.1)).symm v.2⟩
-  left_inv v := by
-    refine Sigma.ext rfl ?_
-    exact heq_of_eq ((deckFibre p g _).symm_apply_apply v.2)
-  right_inv v := by
-    refine Sigma.ext rfl ?_
-    exact heq_of_eq ((deckFibre p g _).apply_symm_apply v.2)
+  left_inv v := congrArg (Sigma.mk v.1) (Equiv.symm_apply_apply _ _)
+  right_inv v := congrArg (Sigma.mk v.1) (Equiv.apply_symm_apply _ _)
   map_rel_iff' := by
     intro v w
     constructor
@@ -94,13 +87,11 @@ def deck (g : deckSubgroup p) : Cover p hp ≃o Cover p hp where
         (congrArg (deckFibre p g (orderNerveRealizationVertex w.1)) hval)
 
 theorem deck_one (v : Cover p hp) : deck p hp 1 v = v := by
-  refine Sigma.ext rfl ?_
-  exact heq_of_eq (Subtype.ext rfl)
+  tauto
 
 theorem deck_mul (g h : deckSubgroup p) (v : Cover p hp) :
     deck p hp (g * h) v = deck p hp g (deck p hp h v) := by
-  refine Sigma.ext rfl ?_
-  exact heq_of_eq (Subtype.ext rfl)
+  tauto
 
 def strictDeckAction : DeckAction (strictOrderCx (Cover p hp)) (deckSubgroup p) where
   smulV := fun g => deck p hp g
@@ -139,7 +130,7 @@ theorem strictProjection_isRegular [ConnectedSpace E] (hs : Function.Surjective 
     (hr : Whitehead.Regular p) : IsRegular (strictProjection p hp hs) (strictDeckAction p hp) := by
   refine ⟨fun _ _ => rfl, ?_⟩
   intro v w hvw
-  have hproj : p (point p hp v) = p (point p hp w) :=
+  have hproj  :=
     (point_projection p hp v).trans
       ((congrArg (orderNerveRealizationVertex (P := P)) hvw).trans (point_projection p hp w).symm)
   obtain ⟨e, he, hev⟩ := hr (point p hp v) (point p hp w) hproj
@@ -153,7 +144,7 @@ theorem strictProjection_isRegular [ConnectedSpace E] (hs : Function.Surjective 
     exact heq_of_eq (Subtype.ext hev)
   refine ⟨g, hgv, ?_⟩
   intro h hh
-  have hpoint : h.val (point p hp v) = g.val (point p hp v) :=
+  have hpoint  :=
     (congrArg (point p hp) hh).trans (congrArg (point p hp) hgv).symm
   apply Subtype.ext
   apply Equiv.ext

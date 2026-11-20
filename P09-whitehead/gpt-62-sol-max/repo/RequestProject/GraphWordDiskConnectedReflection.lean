@@ -11,9 +11,6 @@ Thus connectedness of an actual word-disk model supplies connectedness
 of its labelled combinatorial graph. No finiteness is required. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
@@ -48,8 +45,7 @@ def graphComponentMap : C(DiskAttachment r, GraphComponents r) :=
       rcases graphBoundary_cases a with rfl | rfl
       · rfl
       · apply Eq.symm
-        exact Quotient.sound (show Comb.Reach (graphCx r) (graphSrc r j) (graphTgt r j)
-          from ⟨[(j, true)], rfl, rfl⟩))
+        exact Quotient.sound (⟨[(j, true)], rfl, rfl⟩))
 
 theorem graphComponentMap_path {x y : V}
     (p : Path (old r (boundaryFamilyInclusion J _) x)
@@ -57,7 +53,7 @@ theorem graphComponentMap_path {x y : V}
     graphComponentMap r (p t) = Quotient.mk (graphComponentSetoid r) x := by
   have h := TotallyDisconnectedSpace.eq_of_continuous
     (fun t => graphComponentMap r (p t)) ((graphComponentMap r).continuous.comp p.continuous) t 0
-  simpa [p.source, graphComponentMap] using h
+  simp_all [p.source, graphComponentMap]
 
 theorem graphComponentMap_boundaryWord (W : BoundaryWords r)
     (a : UnitBoundary (Fin 2 → ℝ)) :
@@ -88,7 +84,7 @@ theorem graphComponentMap_boundaryWord (W : BoundaryWords r)
         apply Subtype.ext
         funext i
         fin_cases i <;> rfl
-      exact congrArg (fun z => Quotient.mk (graphComponentSetoid r) (W.vertex z)) h₀
+      solve_by_elim
     · have h₀ : squareSideMap (1, true) 0 = squareSideMap (0, false) 1 := by
         apply Subtype.ext
         funext i

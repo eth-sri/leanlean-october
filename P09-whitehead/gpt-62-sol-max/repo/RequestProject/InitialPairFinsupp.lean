@@ -25,13 +25,12 @@ def chosenOrder (A : Type) : LinearOrder A :=
 abbrev ExtraGen (A : Type) := (A × Bool) ⊕ PUnit
 
 def ExtraCell (A : Type) : Type :=
-  letI : LinearOrder A := chosenOrder A
+  letI  := chosenOrder A
   A ⊕ CrossY A
 
 /-- A canonical genuinely new generator, independent of whether `A` is empty. -/
 def fresh (A : Type) : ExtraGen A := Sum.inr PUnit.unit
 
-instance (A : Type) : Nonempty (ExtraGen A) := ⟨fresh A⟩
 
 def generatorEmbedding : GenY A → A ⊕ ExtraGen A
   | Sum.inl a => Sum.inl a
@@ -43,11 +42,9 @@ theorem generatorEmbedding_injective :
   cases x <;> cases y <;> simp_all [generatorEmbedding]
 
 def baseRel (core : M → FreeGroup A) : M ⊕ ExtraCell A → FreeGroup (GenY A) :=
-  letI : LinearOrder A := chosenOrder A
+  letI  := chosenOrder A
   relY core
 
-@[simp] theorem baseRel_core (core : M → FreeGroup A) (m : M) :
-    baseRel core (Sum.inl m) = FreeGroup.map Sum.inl (core m) := rfl
 
 def extra (core : M → FreeGroup A) : ExtraCell A → FreeGroup (A ⊕ ExtraGen A) :=
   fun c => FreeGroup.map generatorEmbedding (baseRel core (Sum.inr c))
@@ -60,7 +57,7 @@ theorem generatorEmbedding_map_core (w : FreeGroup A) :
     apply FreeGroup.ext_hom
     intro a
     simp [generatorEmbedding]
-  exact congrArg (fun f : FreeGroup A →* FreeGroup (A ⊕ ExtraGen A) => f w) h
+  exact congrArg (fun f  => f w) h
 
 theorem rawPresentation_eq_padding (core : M → FreeGroup A) :
     rawPresentation core (extra core) = FreePadding.rel (baseRel core) generatorEmbedding := by
@@ -71,15 +68,14 @@ theorem rawPresentation_eq_padding (core : M → FreeGroup A) :
 
 theorem baseRel_isCockcroft (core : M → FreeGroup A)
     (hcore : Function.Bijective (expMatrix core)) : FSIsCockcroft (baseRel core) := by
-  letI : LinearOrder A := chosenOrder A
-  letI : DecidableEq A := Classical.decEq A
+  letI  := chosenOrder A
+  letI  := Classical.decEq A
   exact fsIsCockcroft_relY_of_expMatrix_bijective core hcore
 
 theorem baseRel_core_trivial (core : M → FreeGroup A)
     (hcore : Function.Surjective (expMatrix core)) (a : A) :
     (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (baseRel core)) = 1 := by
-  letI : LinearOrder A := chosenOrder A
-  letI : DecidableEq A := Classical.decEq A
+  letI  := chosenOrder A
   exact xEl_eq_one (r := core) (expSurjective_of_expMatrix_surjective core hcore) a
 
 /-- The explicit initial pair is Cockcroft for arbitrary supported core
@@ -102,10 +98,6 @@ theorem core_trivial (core : M → FreeGroup A)
   rw [rawPresentation_eq_padding]
   have h := congrArg (FreePadding.groupHom (baseRel core) generatorEmbedding)
     (baseRel_core_trivial core hcore a)
-  rw [map_one] at h
-  change (QuotientGroup.mk
-    (FreeGroup.map generatorEmbedding (FreeGroup.of (Sum.inl a))) :
-      PresGroup (FreePadding.rel (baseRel core) generatorEmbedding)) = 1 at h
-  simpa only [FreeGroup.map.of, generatorEmbedding] using h
+  solve_by_elim
 
 end FiniteChains.InitialFS

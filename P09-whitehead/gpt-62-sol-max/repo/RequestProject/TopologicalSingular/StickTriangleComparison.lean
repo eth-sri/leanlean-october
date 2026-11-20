@@ -1,7 +1,9 @@
 module
 
 public import RequestProject.TopologicalSingular.StickSimplex
-public import RequestProject.TopologicalSingular.BasedTriangleHomotopy
+public import RequestProject.TopologicalSingular.BasedTriangleHurewicz
+public import RequestProject.TopologicalSingular.SimplexLinearHomotopy
+public import RequestProject.TopologicalSingular.SimplexPrismRetraction
 public import RequestProject.TopologicalSingular.TriangleBasedNormalization
 
 @[expose] public section
@@ -12,12 +14,8 @@ universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 theorem simplex_face_eq_faceMap {n : ℕ} (i : Fin (n + 2)) (z : Domain n) :
-    stdSimplex.map (SimplexCategory.δ i) z = faceMap i z := by
-  apply Subtype.ext
-  funext j
-  refine Fin.succAboveCases i ?_ (fun k => ?_) j
-  · exact (simplex_face_coordinate_zero i z).trans (faceMap_coe_same i z).symm
-  · exact (simplex_face_coordinate_succAbove i z k).trans (faceMap_coe_succAbove i z k).symm
+    stdSimplex.map (SimplexCategory.δ i) z = faceMap i z :=
+  Subtype.ext (simplex_map_succAbove i z)
 
 theorem stickSimplex_two_coordinates (z : Fin 2 → I) :
     (stickSimplex 2 z).val =
@@ -25,10 +23,8 @@ theorem stickSimplex_two_coordinates (z : Fin 2 → I) :
   funext i
   fin_cases i
   · exact stickSimplex_succ_zero 1 z
-  · change (z 0 : ℝ) * stickSimplex 1 (fun j => z j.succ) 0 = _
-    rw [stickSimplex_succ_zero]
-    rfl
-  · change (z 0 : ℝ) * ((z 1 : ℝ) * (stdSimplex.vertex (0 : Fin 1) : Domain 0).val 0) = _
+  · tauto
+  · change (z 0) * ((z 1) * (stdSimplex.vertex 0 : Domain 0).val 0) = _
     simp
 
 /-- The triangulation and stick-coordinate parametrizations have exactly the

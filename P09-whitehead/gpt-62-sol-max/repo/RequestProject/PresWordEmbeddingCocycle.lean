@@ -7,9 +7,6 @@ public import RequestProject.CombPi2
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
@@ -85,8 +82,7 @@ theorem presCoc_map (p q : PresPos w) :
       change roseVal b (cylRetr (aHom v) (h.cylinderFun p))
         (cylRetr (aHom v) (h.cylinderFun q)) =
           φ (roseVal a (cylRetr (aHom w) p) (cylRetr (aHom w) q))
-      rw [h.cylinderFun_retraction, h.cylinderFun_retraction]
-      exact h.roseVal_map a b φ hb _ _
+      simpa [h.cylinderFun_retraction] using h.roseVal_map a b φ hb _ _
     | inr j =>
       cases p with
       | inl r => exact (map_one φ).symm

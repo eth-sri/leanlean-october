@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.CmpNerve
+public import Mathlib.Tactic.DeriveFintype
 
 @[expose] public section
 
@@ -66,7 +67,7 @@ inductive Cell (κ ι : Type u) (M : ℕ) : Type u
   | rad (p : Fin M) : Cell κ ι M
   /-- The triangle of the fan on the collar edge at `p`. -/
   | inn (p : Fin M) : Cell κ ι M
-  deriving DecidableEq
+  deriving DecidableEq, Fintype
 
 namespace Cell
 
@@ -86,16 +87,6 @@ def rk : Cell κ ι M → ℕ
   | rad _ => 1
   | inn _ => 2
 
-instance [Fintype κ] [Fintype ι] [DecidableEq κ] [DecidableEq ι] :
-    Fintype (Cell κ ι M) where
-  elems :=
-    (Finset.univ.image vtx) ∪ (Finset.univ.image bed) ∪ (Finset.univ.image cvx) ∪
-      (Finset.univ.image ced) ∪ (Finset.univ.image dia) ∪ (Finset.univ.image gdi) ∪
-      (Finset.univ.image tr1) ∪ (Finset.univ.image tr2) ∪ {ctr} ∪
-      (Finset.univ.image rad) ∪ (Finset.univ.image inn)
-  complete := by
-    intro x
-    cases x <;> simp
 
 end Cell
 
@@ -134,15 +125,13 @@ def plt (vc : Fin M → κ) (ec : Fin M → ι) : Cell κ ι M → Cell κ ι M 
 variable {vc : Fin M → κ} {ec : Fin M → ι}
 
 theorem rk_lt_of_plt {x y : Cell κ ι M} (h : plt vc ec x y) : x.rk < y.rk := by
-  cases x <;> cases y <;> simp_all [plt, rk]
+  cases x <;> cases y <;> tauto
 
 theorem plt_irrefl (x : Cell κ ι M) : ¬ plt vc ec x x := fun h => absurd (rk_lt_of_plt h) (by omega)
 
-theorem not_plt_of_rk_le {x y : Cell κ ι M} (h : y.rk ≤ x.rk) : ¬ plt vc ec x y :=
-  fun hh => absurd (rk_lt_of_plt hh) (by omega)
 
 omit [NeZero M] in
-theorem rk_le_two (x : Cell κ ι M) : x.rk ≤ 2 := by cases x <;> simp [rk]
+theorem rk_le_two (x : Cell κ ι M) : x.rk ≤ 2 := by cases x <;> tauto
 
 theorem plt_asymm {x y : Cell κ ι M} (h : plt vc ec x y) : ¬ plt vc ec y x := by
   intro h'
@@ -159,113 +148,9 @@ def Compat (vc : Fin M → κ) (ec : Fin M → ι) : Prop :=
 
 theorem plt_trans (hc : Compat vc ec) {x y z : Cell κ ι M} (hxy : plt vc ec x y)
     (hyz : plt vc ec y z) : plt vc ec x z := by
-  cases y with
-  | vtx _ => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
-  | cvx _ => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
-  | ctr => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
-  | tr1 _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
-  | tr2 _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
-  | inn _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
-  | bed e =>
-      cases x with
-      | vtx v =>
-          cases z with
-          | tr1 p =>
-              obtain ⟨i, hi, hv⟩ := hxy
-              have hep : ec i = ec p := by rw [hi]; exact hyz
-              rcases hc i p hep with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hv with rfl | rfl
-              · exact Or.inl h1.symm
-              · exact Or.inr h2.symm
-              · exact Or.inr h1.symm
-              · exact Or.inl h2.symm
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
-  | ced r =>
-      cases x with
-      | cvx q =>
-          cases z with
-          | tr2 p =>
-              have h : r = p := hyz
-              subst h
-              exact hxy
-          | inn p =>
-              have h : r = p := hyz
-              subst h
-              exact hxy
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
-  | dia r =>
-      cases x with
-      | vtx v =>
-          cases z with
-          | tr1 p =>
-              have hr : r = p + 1 := hyz
-              subst hr
-              exact Or.inr hxy
-          | tr2 p =>
-              have hr : r = p := hyz
-              subst hr
-              exact hxy
-          | _ => simp [plt] at hyz
-      | cvx q =>
-          cases z with
-          | tr1 p =>
-              have hr : r = p + 1 := hyz
-              have hq : q = r := hxy
-              show q = p + 1
-              rw [hq, hr]
-          | tr2 p =>
-              have hr : r = p := hyz
-              have hq : q = r := hxy
-              show q = p ∨ q = p + 1
-              exact Or.inl (by rw [hq, hr])
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
-  | gdi r =>
-      cases x with
-      | vtx v =>
-          cases z with
-          | tr1 p =>
-              have hr : r = p := hyz
-              subst hr
-              exact Or.inl hxy
-          | tr2 p =>
-              have hr : r = p := hyz
-              subst hr
-              exact hxy
-          | _ => simp [plt] at hyz
-      | cvx q =>
-          cases z with
-          | tr1 p =>
-              have hr : r = p := hyz
-              have hq : q = r + 1 := hxy
-              show q = p + 1
-              rw [hq, hr]
-          | tr2 p =>
-              have hr : r = p := hyz
-              have hq : q = r + 1 := hxy
-              show q = p ∨ q = p + 1
-              exact Or.inr (by rw [hq, hr])
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
-  | rad r =>
-      cases x with
-      | cvx q =>
-          cases z with
-          | inn p =>
-              have hq : q = r := hxy
-              show q = p ∨ q = p + 1
-              rcases hyz with hr | hr
-              · exact Or.inl (by rw [hq, hr])
-              · exact Or.inr (by rw [hq, hr])
-          | _ => simp [plt] at hyz
-      | ctr =>
-          cases z with
-          | inn p => trivial
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
-
-/-! ### The face poset -/
+  unfold Compat at hc
+  cases y <;> cases x <;> simp only [plt] at hxy <;>
+    cases z <;> simp only [plt] at hyz ⊢ <;> grind only
 
 /-- **The face poset of the polygon with identified boundary.** -/
 def SCell (_vc : Fin M → κ) (_ec : Fin M → ι) (_hc : Compat vc ec) : Type u := Cell κ ι M
@@ -281,7 +166,7 @@ instance instPartialOrderSCell (hc : Compat vc ec) : PartialOrder (SCell vc ec h
     rcases hab with rfl | h1
     · exact hbc
     rcases hbc with rfl | h2
-    · exact Or.inr h1
+    · tauto
     exact Or.inr (plt_trans hc h1 h2)
   le_antisymm a b hab hba := by
     rcases hab with rfl | h1

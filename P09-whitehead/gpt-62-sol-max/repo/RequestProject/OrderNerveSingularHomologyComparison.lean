@@ -6,9 +6,7 @@ public import RequestProject.MathlibOrderNerveComplexNaturality
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -63,10 +61,7 @@ theorem orderCellSingularH2Map_natural {P Q : Type} [PartialOrder P] [PartialOrd
     ((((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
       (ModuleCat.of ℤ ℤ)).map (orderNerveRealizationMap f hf)).hom
         (orderCellSingularH2Map P z)) = orderCellSingularH2Map Q (orderNerveH2Map f hf z) := by
-  have h := congrArg (fun k :
-      (AlgebraicTopology.AlternatingFaceMapComplex.obj (mathlibOrderNerveModule P)).homology 2 ⟶
-        (((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
-          (ModuleCat.of ℤ ℤ)).obj (orderNerveRealization Q)) =>
+  have h := congrArg (fun k  =>
       k (mathlibOrderNerveComplexH2Equiv P z))
     (orderNerveSingularH2Comparison_natural f hf)
   change (orderNerveSingularH2Comparison Q).hom

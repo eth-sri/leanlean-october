@@ -17,6 +17,10 @@ theorem uOrderStep_le (v : UOrder P a) (q : P) (h : uOrderEnd v ≤ q) :
   simp only [uOrderStep_end]
   exact ⟨h, trivial⟩
 
+noncomputable def uOrderLiftUp (v : UOrder P a) (q : P) (h : uOrderEnd v ≤ q) :
+    {w // v ≤ w ∧ uOrderEnd w = q} :=
+  ⟨uOrderStep v q h, uOrderStep_le v q h, uOrderStep_end v q h⟩
+
 theorem uOrderStep_eq_of_target_eq (v : UOrder P a) {q r : P}
     (hq : uOrderEnd v ≤ q) (hr : uOrderEnd v ≤ r) (he : q = r) :
     uOrderStep v q hq = uOrderStep v r hr := by
@@ -25,7 +29,7 @@ theorem uOrderStep_eq_of_target_eq (v : UOrder P a) {q r : P}
 
 theorem uOrder_unique_up (v : UOrder P a) (q : P) (h : uOrderEnd v ≤ q) :
     ∃! w : UOrder P a, v ≤ w ∧ uOrderEnd w = q := by
-  refine ⟨uOrderStep v q h, ⟨uOrderStep_le v q h, uOrderStep_end v q h⟩, ?_⟩
+  refine ⟨(uOrderLiftUp v q h).1, (uOrderLiftUp v q h).2, ?_⟩
   intro w hw
   obtain ⟨hle, he⟩ := hw.1
   exact he.symm.trans (uOrderStep_eq_of_target_eq v hle h hw.2)
@@ -38,7 +42,7 @@ theorem uOrderBack_end (v : UOrder P a) (q : P) (h : q ≤ uOrderEnd v) :
 
 theorem uOrderBack_le (v : UOrder P a) (q : P) (h : q ≤ uOrderEnd v) :
     uOrderBack v q h ≤ v := by
-  let hb : uOrderEnd (uOrderBack v q h) ≤ uOrderEnd v :=
+  let hb  :=
     (uOrderBack_end v q h).le.trans h
   refine ⟨hb, ?_⟩
   have hg : ordPos hb = revGerm (ordNeg h) := by

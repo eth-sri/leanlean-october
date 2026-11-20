@@ -19,12 +19,24 @@ structure OrderSmallHomotopyStage (P : Type) [PartialOrder P] (n : ℕ) where
       boundary n c.val - orderSmallSingularApproximation P n
         (smallBoundary (orderNerveRealizationOpenStar P) n c)
 
+noncomputable def orderSmallHomotopyZeroLift :
+    CarriedLift (orderSmallBasis P 0) (fun σ b => b ∈ orderSingularCarrierChains σ.val 1)
+      (boundary 0) ((smallChains (orderNerveRealizationOpenStar P) 0).subtype -
+        orderSmallSingularApproximation P 0) := by
+  apply CarriedLift.ofExists
+  intro σ
+  rw [orderSmallBasis_apply, LinearMap.sub_apply]
+  apply orderSingularCarrierChains_zero_bounds σ.val σ.property
+  · exact Submodule.sub_mem _ (orderSingularCarrierChains_single σ.val 1)
+      (orderSmallSingularApproximation_carrier 0 σ)
+  · change augmentation (Finsupp.single σ.val 1 - _) = 0
+    rw [orderSmallSingularApproximation_zero]
+    simp only [map_sub, augmentation_single, sub_self]
+
 noncomputable def orderSmallHomotopyStageZero : OrderSmallHomotopyStage P 0 where
-  map := orderSmallHomotopy0
-  carrier := orderSmallHomotopy0_carrier
-  on_boundary c := by
-    rw [orderSmallHomotopy0_boundary, orderSmallSingularApproximation_zero]
-    rfl
+  map := orderSmallHomotopyZeroLift.map
+  carrier σ := by simpa only [orderSmallBasis_apply] using orderSmallHomotopyZeroLift.carried σ
+  on_boundary c := orderSmallHomotopyZeroLift.boundary _
 
 theorem orderSmallHomotopyStage_fill {n : ℕ} (s : OrderSmallHomotopyStage P n)
     (σ : OrderSmallSimplex P (n + 1)) :
@@ -41,51 +53,24 @@ theorem orderSmallHomotopyStage_fill {n : ℕ} (s : OrderSmallHomotopyStage P n)
   · rw [map_sub, map_sub, orderSmallSingularApproximation_boundary, s.on_boundary]
     exact sub_self _
 
-noncomputable def orderSmallHomotopyStageNextMap {n : ℕ} (s : OrderSmallHomotopyStage P n) :
-    smallChains (orderNerveRealizationOpenStar P) (n + 1) →ₗ[ℤ]
-      Chain (orderNerveRealization P) (n + 2) :=
-  (Finsupp.linearCombination ℤ (fun σ => (orderSmallHomotopyStage_fill s σ).choose)).comp
-    (orderSmallChainEquiv P (n + 1)).toLinearMap
-
-theorem orderSmallHomotopyStageNextMap_single {n : ℕ} (s : OrderSmallHomotopyStage P n)
-    (σ : OrderSmallSimplex P (n + 1)) :
-    orderSmallHomotopyStageNextMap s (orderSmallSingle σ 1) =
-      (orderSmallHomotopyStage_fill s σ).choose := by
-  have he := (orderSmallChainEquiv P (n + 1)).apply_symm_apply (Finsupp.single σ 1)
-  rw [orderSmallChainEquiv_symm_single] at he
-  change (Finsupp.linearCombination ℤ (fun τ : OrderSmallSimplex P (n + 1) =>
-    (orderSmallHomotopyStage_fill s τ).choose))
-      ((orderSmallChainEquiv P (n + 1)) (orderSmallSingle σ 1)) = _
-  rw [he, Finsupp.linearCombination_single, one_smul]
-
-theorem orderSmallHomotopyStageNextMap_boundary {n : ℕ} (s : OrderSmallHomotopyStage P n)
-    (c : smallChains (orderNerveRealizationOpenStar P) (n + 1)) :
-    boundary (n + 1) (orderSmallHomotopyStageNextMap s c) =
-      c.val - orderSmallSingularApproximation P (n + 1) c -
-        s.map (smallBoundary (orderNerveRealizationOpenStar P) n c) := by
-  have he : (boundary (n + 1)).comp (orderSmallHomotopyStageNextMap s) =
-      (smallChains (orderNerveRealizationOpenStar P) (n + 1)).subtype -
+noncomputable def orderSmallHomotopyStageLift {n : ℕ} (s : OrderSmallHomotopyStage P n) :
+    CarriedLift (orderSmallBasis P (n + 1))
+      (fun σ b => b ∈ orderSingularCarrierChains σ.val (n + 2)) (boundary (n + 1))
+      ((smallChains (orderNerveRealizationOpenStar P) (n + 1)).subtype -
         orderSmallSingularApproximation P (n + 1) -
-        s.map.comp (smallBoundary (orderNerveRealizationOpenStar P) n) := by
-    apply orderSmallSingle_spans
-    intro σ
-    simp only [LinearMap.comp_apply, LinearMap.sub_apply, orderSmallHomotopyStageNextMap_single]
-    exact (orderSmallHomotopyStage_fill s σ).choose_spec.2
-  exact DFunLike.congr_fun he c
+        s.map.comp (smallBoundary (orderNerveRealizationOpenStar P) n)) :=
+  .ofExists fun σ => by
+    simpa only [orderSmallBasis_apply, LinearMap.sub_apply, LinearMap.comp_apply, Submodule.subtype_apply]
+      using! orderSmallHomotopyStage_fill s σ
 
 noncomputable def orderSmallHomotopyStageNext {n : ℕ} (s : OrderSmallHomotopyStage P n) :
     OrderSmallHomotopyStage P (n + 1) where
-  map := orderSmallHomotopyStageNextMap s
-  carrier σ := by
-    rw [orderSmallHomotopyStageNextMap_single]
-    exact (orderSmallHomotopyStage_fill s σ).choose_spec.1
+  map := (orderSmallHomotopyStageLift s).map
+  carrier σ := by simpa only [orderSmallBasis_apply] using (orderSmallHomotopyStageLift s).carried σ
   on_boundary c := by
-    rw [orderSmallHomotopyStageNextMap_boundary]
+    have h := (orderSmallHomotopyStageLift s).boundary (smallBoundary (orderNerveRealizationOpenStar P) (n + 1) c)
     have hd := DFunLike.congr_fun (smallBoundary_squared (orderNerveRealizationOpenStar P) n) c
-    change smallBoundary (orderNerveRealizationOpenStar P) n
-      (smallBoundary (orderNerveRealizationOpenStar P) (n + 1) c) = 0 at hd
-    rw [hd, map_zero, sub_zero]
-    rfl
+    aesop
 
 noncomputable def orderSmallHomotopyStage (P : Type) [PartialOrder P] :
     (n : ℕ) → OrderSmallHomotopyStage P n
@@ -103,7 +88,7 @@ theorem orderSmallHomotopy_boundary (n : ℕ)
     boundary (n + 1) (orderSmallHomotopy P (n + 1) c) =
       c.val - orderSmallSingularApproximation P (n + 1) c -
         orderSmallHomotopy P n (smallBoundary (orderNerveRealizationOpenStar P) n c) :=
-  orderSmallHomotopyStageNextMap_boundary (orderSmallHomotopyStage P n) c
+  (orderSmallHomotopyStageLift (orderSmallHomotopyStage P n)).boundary c
 
 theorem orderSmallSingularApproximation_homologous (n : ℕ)
     (c : smallChains (orderNerveRealizationOpenStar P) (n + 1))

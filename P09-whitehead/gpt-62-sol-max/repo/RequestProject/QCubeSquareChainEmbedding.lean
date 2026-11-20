@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.QCubeSquareSupport
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -23,17 +24,14 @@ theorem squareChainSubdivision_filter_top (hcell : Function.Injective cell)
       (fun t : (strictOrderCx (QCube A)).F => t.1.2.2 = cell i) =
       z i • cubeSquareSubdivision (cell i) (left i) (right i) (hne i) (hspx i) := by
   classical
-  induction z using Finsupp.induction_linear with
-  | zero => simp [Finsupp.filter_zero]
-  | add z w hz hw =>
-      rw [map_add, Finsupp.filter_add, hz, hw, Finsupp.add_apply, add_smul]
-  | single j n =>
-      rw [squareChainSubdivision, Finsupp.linearCombination_single,
-        Finsupp.filter_smul, cubeSquareSubdivision_filter_top]
-      by_cases hji : j = i
-      · subst j
-        simp
-      · have hci : cell j ≠ cell i := fun h => hji (hcell h)
-        simp [hci, hji]
+  finsupp_basis z [ Finsupp.filter_add, add_smul ]
+  intro j
+  rw [squareChainSubdivision, Finsupp.linearCombination_single,
+    Finsupp.filter_smul, cubeSquareSubdivision_filter_top]
+  by_cases hji : j = i
+  · subst j
+    simp
+  · have hci : cell j ≠ cell i := fun h => hji (hcell h)
+    simp [hci, hji]
 
 end FiniteChains.Davis

@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.PresentationInclusionFinsupp
+public import RequestProject.FinsuppBasis
 public import RequestProject.RelativeNormalizedRestrictions
 
 @[expose] public section
@@ -14,9 +15,7 @@ actual inclusion of stage groups. No commuting-square hypothesis is used.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.BlockFamily
 
@@ -63,10 +62,7 @@ theorem blockInclusion_structural_group_square :
     (restrictedStructuralMap core hcore extra t).hom.comp
       (normalizedInclusion core hcore extra hpt).hom := by
   ext a
-  change QuotientGroup.mk (FreeGroup.map (blockGenIncl core hcore extra hpt)
-      (FreeGroup.map Sum.inl (FreeGroup.of a))) =
-    QuotientGroup.mk (FreeGroup.map Sum.inl (FreeGroup.map id (FreeGroup.of a)))
-  simp [blockGenIncl]
+  rfl
 
 theorem blockInclusion_marked_group_square (s : {s // p s}) :
     (blockInclusion core hcore extra hpt).hom.comp
@@ -100,7 +96,7 @@ theorem blockInclusion_filling (s : {s // p s}) :
         (finiteSpineFamilyMarkedHom (restrictedPresentation core hcore extra p)
           (restrictedGenus core hcore extra p) (restrictedLoops core hcore extra p) s)
         (markedSpineFilling (restrictedGenus core hcore extra p s) m)) = _
-  erw [BlockMor.mapDomainRingHom_comp']
+  erw [MonoidAlgebra.mapDomainRingHom_apply_comp]
   erw [blockInclusion_marked_group_square]
   rfl
 
@@ -112,17 +108,11 @@ theorem blockInclusion_surface_chain (s : {s // p s})
     Finsupp.mapDomain (fun m => Sum.inr ⟨labelIncl hpt s, m⟩)
       (x.mapRange (MonoidAlgebra.mapDomainRingHom ℤ
         (blockInclusion core hcore extra hpt).hom) (map_zero _)) := by
-  induction x using Finsupp.induction_linear with
-  | zero => simp
-  | add x y hx hy =>
-      rw [Finsupp.mapDomain_add, PresMorFS.cells_add, hx, hy,
-        Finsupp.mapRange_add', Finsupp.mapDomain_add]
-  | single m a =>
-      simp only [Finsupp.mapDomain_single, Finsupp.mapRange_single]
-      change Finsupp.mapDomain (blockCellIncl core hcore extra hpt)
-        ((Finsupp.single (Sum.inr ⟨s, m⟩) a).mapRange _ _) = _
-      rw [Finsupp.mapRange_single, Finsupp.mapDomain_single]
-      rfl
+  change Finsupp.mapDomain (blockCellIncl core hcore extra hpt)
+    ((Finsupp.mapDomain (fun m => Sum.inr ⟨s, m⟩) x).mapRange
+      (MonoidAlgebra.mapDomainRingHom ℤ (blockInclusion core hcore extra hpt).hom) (map_zero _)) = _
+  rw [← Finsupp.mapDomain_mapRange _ _ _ _ (map_add _), ← Finsupp.mapDomain_comp]
+  rfl
 
 /-- The actual two-chain square commutes. This supplies the square required
 by zero-map propagation in the fixed-core induction. -/
@@ -138,45 +128,41 @@ theorem blockInclusion_structural_chain_square
         (MonoidAlgebra.mapDomainRingHom ℤ (restrictedStructuralMap core hcore extra p).hom a) =
       MonoidAlgebra.mapDomainRingHom ℤ (restrictedStructuralMap core hcore extra t).hom
         (MonoidAlgebra.mapDomainRingHom ℤ (normalizedInclusion core hcore extra hpt).hom a) := by
-    rw [BlockMor.mapDomainRingHom_comp', BlockMor.mapDomainRingHom_comp',
+    rw [MonoidAlgebra.mapDomainRingHom_apply_comp, MonoidAlgebra.mapDomainRingHom_apply_comp,
       blockInclusion_structural_group_square]
-  induction x using Finsupp.induction_linear with
-  | zero => simp
-  | add x y hx hy =>
-      rw [PresMorFS.cells_add, PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
-  | single k a =>
-      have hi := PresInclusionFS.cells_single
-        (restrictedPresentation core hcore extra p) (restrictedPresentation core hcore extra t)
-        id (oldCellIncl hpt)
-        (fun j => by simpa only [FreeGroup.map.id] using
-          restrictedPresentation_incl core hcore extra hpt j) k a
-      change (normalizedInclusion core hcore extra hpt).cells (Finsupp.single k a) = _ at hi
-      rw [hi]
-      cases k with
-      | inl c =>
-          dsimp only [oldCellIncl, Sum.map_inl, id]
-          rw [show (restrictedStructuralMap core hcore extra p).cells
-              (Finsupp.single (Sum.inl c) a) = _ from
-            finiteSpineFamilyStructuralMap_core_cell _ _ _
-              (restrictedPresentation_surface core hcore extra p) c a]
-          rw [show (blockInclusion core hcore extra hpt).cells (Finsupp.single (Sum.inl c) _) =
-              Finsupp.single (Sum.inl c) _ from
-            PresInclusionFS.cells_single _ _ _ _ _ _ _]
-          rw [show (restrictedStructuralMap core hcore extra t).cells
-              (Finsupp.single (Sum.inl c) _) = _ from
-            finiteSpineFamilyStructuralMap_core_cell _ _ _
-              (restrictedPresentation_surface core hcore extra t) c _]
-          exact congrArg (Finsupp.single (Sum.inl c)) (hcoeff a)
-      | inr s =>
-          dsimp only [oldCellIncl, Sum.map_inr]
-          change (blockInclusion core hcore extra hpt).cells (fsCellsF _ _ _ _ _) =
-            fsCellsF _ _ _ _ _
-          rw [fsCellsF_single_extra, fsCellsF_single_extra, PresMorFS.cells_smul]
-          change _ • (blockInclusion core hcore extra hpt).cells
-            (Finsupp.mapDomain (fun m => Sum.inr ⟨s, m⟩) _) = _
-          rw [blockInclusion_surface_chain, blockInclusion_filling]
-          exact congrArg (fun a => a • _) (hcoeff a)
+  finsupp_singles x
+  intro k a
+  have hi := PresInclusionFS.cells_single
+    (restrictedPresentation core hcore extra p) (restrictedPresentation core hcore extra t)
+    id (oldCellIncl hpt)
+    (fun j => by simpa only [FreeGroup.map.id] using
+      restrictedPresentation_incl core hcore extra hpt j) k a
+  change (normalizedInclusion core hcore extra hpt).cells (Finsupp.single k a) = _ at hi
+  rw [hi]
+  cases k with
+  | inl c =>
+      dsimp only [oldCellIncl, Sum.map_inl, id]
+      rw [show (restrictedStructuralMap core hcore extra p).cells
+          (Finsupp.single (Sum.inl c) a) = _ from
+        finiteSpineFamilyStructuralMap_core_cell _ _ _
+          (restrictedPresentation_surface core hcore extra p) c a]
+      rw [show (blockInclusion core hcore extra hpt).cells (Finsupp.single (Sum.inl c) _) =
+          Finsupp.single (Sum.inl c) _ from
+        PresInclusionFS.cells_single _ _ _ _ _ _ _]
+      rw [show (restrictedStructuralMap core hcore extra t).cells
+          (Finsupp.single (Sum.inl c) _) = _ from
+        finiteSpineFamilyStructuralMap_core_cell _ _ _
+          (restrictedPresentation_surface core hcore extra t) c _]
+      exact congrArg (Finsupp.single (Sum.inl c)) (hcoeff a)
+  | inr s =>
+      dsimp only [oldCellIncl, Sum.map_inr]
+      change (blockInclusion core hcore extra hpt).cells (fsCellsF _ _ _ _ _) =
+        fsCellsF _ _ _ _ _
+      rw [fsCellsF_single_extra, fsCellsF_single_extra, PresMorFS.cells_smul]
+      change _ • (blockInclusion core hcore extra hpt).cells
+        (Finsupp.mapDomain (fun m => Sum.inr ⟨s, m⟩) _) = _
+      rw [blockInclusion_surface_chain, blockInclusion_filling]
+      exact congrArg (fun a => a • _) (hcoeff a)
 
 /-- Actual rule-3 replacement preserves every old zero inclusion. -/
 theorem blockInclusion_preserves_zero

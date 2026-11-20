@@ -75,8 +75,7 @@ theorem htpy_alph (p : Fin M) :
   refine htpy_of_loop_nil ((isPath_alph hc p).append (isPath_gam hc p))
     (isPath_alph hc (p + 1)) ?_
   refine htpy_nil_of_star (cI hc p) (starCh_spx1 (cC_le_cI hc p)) ?_ ?_
-  · exact ((isPath_alph hc p).append (isPath_gam hc p)).append
-      (isPath_revPath (isPath_alph hc (p + 1)))
+  · trivial
   · exact pathIn_append' (pathIn_append' (pathIn_alph_I hc p) (pathIn_gam_I hc p))
       (pathIn_revPath (pathIn_alph1_I hc p))
 
@@ -87,42 +86,19 @@ edge at `p`, is homotopic to the ray to the boundary vertex at `p+1`. -/
 theorem htpy_ray_step (p : Fin M) :
     Htpy (sdCx hc) (spx1 (cC hc)) (spx1 (cV hc (p + 1)))
       (ray hc p ++ bdEdge hc p) (ray hc (p + 1)) := by
-  have hA := htpy_bdEdge hc p
-  have hB := htpy_gg hc p
-  have hC := htpy_alph hc p
-  -- the collar edge replaces the diagonal
+  have hd := isPath_delta hc p
+  have he := isPath_delta hc (p + 1)
+  have ha := isPath_alph hc p
+  have hg := isPath_gam hc p
   have hD : Htpy (sdCx hc) (spx1 (cW hc p)) (spx1 (cW hc (p + 1)))
-      (delta hc p ++ gg hc p) (gam hc p) := by
-    have h1 : Htpy (sdCx hc) (spx1 (cW hc p)) (spx1 (cW hc (p + 1)))
-        (delta hc p ++ gg hc p) (delta hc p ++ (revPath (delta hc p) ++ gam hc p)) :=
-      htpy_append_left (isPath_delta hc p) (isPath_gg hc p) hB.symm
-    have h3 : Htpy (sdCx hc) (spx1 (cW hc p)) (spx1 (cW hc (p + 1)))
-        ((delta hc p ++ revPath (delta hc p)) ++ gam hc p) ([] ++ gam hc p) :=
-      htpy_append_right ((isPath_delta hc p).append (isPath_revPath (isPath_delta hc p)))
-        (isPath_gam hc p) (htpy_append_revPath (isPath_delta hc p))
-    refine h1.trans ?_
-    simpa [List.append_assoc] using h3
-  have e1 : Htpy (sdCx hc) (spx1 (cC hc)) (spx1 (cV hc (p + 1)))
-      (ray hc p ++ bdEdge hc p)
-      (alph hc p ++ (delta hc p ++ (gg hc p ++ delta hc (p + 1)))) := by
-    simpa [ray, List.append_assoc] using
-      htpy_append_left (isPath_ray hc p) (isPath_bdEdge hc p) hA
-  have e2 : Htpy (sdCx hc) (spx1 (cC hc)) (spx1 (cV hc (p + 1)))
-      (alph hc p ++ (delta hc p ++ (gg hc p ++ delta hc (p + 1))))
-      (alph hc p ++ (gam hc p ++ delta hc (p + 1))) := by
-    have inner : Htpy (sdCx hc) (spx1 (cW hc p)) (spx1 (cV hc (p + 1)))
-        ((delta hc p ++ gg hc p) ++ delta hc (p + 1)) (gam hc p ++ delta hc (p + 1)) :=
-      htpy_append_right ((isPath_delta hc p).append (isPath_gg hc p))
-        (isPath_delta hc (p + 1)) hD
-    simpa [List.append_assoc] using
-      htpy_append_left (isPath_alph hc p)
-        (((isPath_delta hc p).append (isPath_gg hc p)).append (isPath_delta hc (p + 1))) inner
-  have e3 : Htpy (sdCx hc) (spx1 (cC hc)) (spx1 (cV hc (p + 1)))
-      (alph hc p ++ (gam hc p ++ delta hc (p + 1))) (ray hc (p + 1)) := by
-    simpa [ray, List.append_assoc] using
-      htpy_append_right ((isPath_alph hc p).append (isPath_gam hc p))
-        (isPath_delta hc (p + 1)) hC
-  exact e1.trans (e2.trans e3)
+      (delta hc p ++ gg hc p) (gam hc p) :=
+    (htpy_append_left hd (isPath_gg hc p) (htpy_gg hc p).symm).trans
+      (htpy_append_right (hd.append (isPath_revPath hd)) hg (htpy_append_revPath hd))
+  have h₁ := htpy_append_left (isPath_ray hc p) (isPath_bdEdge hc p) (htpy_bdEdge hc p)
+  have h₂ := hD.congr_append ha he
+  have h₃ := htpy_append_right (ha.append hg) he (htpy_alph hc p)
+  simp only [ray, List.append_assoc] at h₁ h₂ h₃ ⊢
+  exact h₁.trans (h₂.trans h₃)
 
 /-! ### The boundary loop -/
 
@@ -132,12 +108,12 @@ def cyc (M : ℕ) [NeZero M] (n : ℕ) : Fin M := ⟨n % M, Nat.mod_lt _ (NeZero
 theorem cyc_succ (n : ℕ) : cyc M (n + 1) = cyc M n + 1 := by
   apply Fin.ext
   show (n + 1) % M = (n % M + 1 % M) % M
-  rw [← Nat.add_mod]
+  simp
 
 theorem cyc_self : cyc M M = cyc M 0 := by
   apply Fin.ext
   show M % M = 0 % M
-  rw [Nat.mod_self, Nat.zero_mod]
+  simp
 
 /-- **The boundary path**: the first `n` edges of the boundary of the polygon. -/
 def bdPath : ℕ → List ((sdCx hc).E × Bool)
@@ -161,13 +137,9 @@ theorem htpy_bdPath (n : ℕ) :
   induction n with
   | zero => exact (htpy_revPath_append (isPath_ray hc (cyc M 0))).symm
   | succ n ih =>
-      have h1 : Htpy (sdCx hc) (spx1 (cV hc (cyc M 0))) (spx1 (cV hc (cyc M n + 1)))
-          (bdPath hc n ++ bdEdge hc (cyc M n))
-          ((revPath (ray hc (cyc M 0)) ++ ray hc (cyc M n)) ++ bdEdge hc (cyc M n)) :=
+      have h1  :=
         htpy_append_right (isPath_bdPath hc n) (isPath_bdEdge hc (cyc M n)) ih
-      have h2 : Htpy (sdCx hc) (spx1 (cV hc (cyc M 0))) (spx1 (cV hc (cyc M n + 1)))
-          (revPath (ray hc (cyc M 0)) ++ (ray hc (cyc M n) ++ bdEdge hc (cyc M n)))
-          (revPath (ray hc (cyc M 0)) ++ ray hc (cyc M n + 1)) :=
+      have h2  :=
         htpy_append_left (isPath_revPath (isPath_ray hc (cyc M 0)))
           ((isPath_ray hc (cyc M n)).append (isPath_bdEdge hc (cyc M n)))
           (htpy_ray_step hc (cyc M n))

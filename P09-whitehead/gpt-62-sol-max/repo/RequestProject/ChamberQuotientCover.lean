@@ -25,8 +25,6 @@ projection identifies the cells above `z` with the cells above `zProj z`, and li
   supplied by the construction, not assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -42,155 +40,93 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V} {X : Type u} [
 /-! ### The unique element of `Γ` in a coset with vanishing outer signs -/
 
 omit [Fintype V] in
-/-- **A coset whose signs outside its type vanish contains exactly one element of `Γ`.** -/
+/-- The sign map is an affine bijection on each spherical coset, with the outer signs fixed. -/
+theorem existsUnique_inChamber_phi {p : Sph A} (t : V → ZMod 2)
+    (h : ∀ v, v ∉ p.spx → t v = phi A p.rep v) :
+    ∃! g : CayGroup A, InChamber g p ∧ phi A g = t := by
+  obtain ⟨u, hu, hφ⟩ := exists_mem_specialSub_phi_eq A p.spx (t - phi A p.rep)
+    (fun v hv => sub_eq_zero.mpr (h v hv))
+  have hgu : InChamber (p.rep * u) p := by simpa [InChamber]
+  have hgt : phi A (p.rep * u) = t := by rw [phi_mul, hφ]; abel
+  refine ⟨p.rep * u, ⟨hgu, hgt⟩, fun g hg => ?_⟩
+  apply mul_left_cancel (a := p.rep⁻¹)
+  apply phi_injOn_specialSub A (commuting_of_isSimplex p.isSimplex) hg.1 hgu
+  rw [phi_mul, phi_mul, hg.2, hgt]
+
+omit [Fintype V] in
 theorem existsUnique_isGamma_inChamber {p : Sph A}
     (h : ∀ v, v ∉ p.spx → phi A p.rep v = 0) :
-    ∃! g : CayGroup A, IsGamma A g ∧ InChamber g p := by
-  obtain ⟨u, hu, hphiu⟩ := exists_mem_specialSub_phi_eq A p.spx
-    (fun v => if v ∈ p.spx then phi A p.rep v else 0) (fun v hv => by simp [hv])
-  refine ⟨p.rep * u, ⟨?_, ?_⟩, ?_⟩
-  · show phi A (p.rep * u) = 0
-    funext v
-    simp only [phi_mul, Pi.add_apply, Pi.zero_apply, hphiu]
-    by_cases hv : v ∈ p.spx
-    · rw [if_pos hv, zmod2_add_self]
-    · rw [if_neg hv, add_zero, h v hv]
-  · show p.rep⁻¹ * (p.rep * u) ∈ specialSub A (p.spx : Set V)
-    rw [inv_mul_cancel_left]
-    exact hu
-  · rintro g ⟨hg, hgp⟩
-    have hmem : (p.rep * u)⁻¹ * g ∈ specialSub A (p.spx : Set V) := by
-      have h1 : (p.rep * u)⁻¹ * g = u⁻¹ * (p.rep⁻¹ * g) := by group
-      rw [h1]
-      exact Subgroup.mul_mem _ (Subgroup.inv_mem _ hu) hgp
-    have hzero : phi A ((p.rep * u)⁻¹ * g) = 0 := by
-      funext v
-      have hpu : phi A (p.rep * u) = 0 := by
-        funext w
-        simp only [phi_mul, Pi.add_apply, Pi.zero_apply, hphiu]
-        by_cases hw : w ∈ p.spx
-        · rw [if_pos hw, zmod2_add_self]
-        · rw [if_neg hw, add_zero, h w hw]
-      simp only [phi_mul, phi_inv, Pi.add_apply, Pi.zero_apply, hpu,
-        show phi A g = 0 from hg]
-      simp
-    have := eq_one_of_mem_specialSub_of_phi_eq_zero A
-      (commuting_of_isSimplex p.isSimplex) hmem hzero
-    exact (inv_mul_eq_one.mp this).symm
-
-/-! ### Unique lifts of the cofaces and the faces of an old cell -/
+    ∃! g : CayGroup A, IsGamma A g ∧ InChamber g p :=
+  (existsUnique_congr fun _ => and_comm).mp (existsUnique_inChamber_phi 0 fun v hv => (h v hv).symm)
 
 omit [Fintype V] in
-/-- **Unique lift of a coface of an old cell.** -/
+private theorem qProj_chamberPt (g : CayGroup A) (c : QCube A)
+    (h : ∀ v, v ∉ c.spx → phi A g v = c.sgn v) : qProjCube (chamberPt g c.isSimplex) = c :=
+  qProjCube_eq_iff.2 ⟨rfl, fun v hv => (phi_rep_eq_of_inChamber (chamberPt_inChamber _ _) hv).trans (h v hv)⟩
+
+omit [Fintype V] in
+private theorem existsUnique_chamber_lift {g : CayGroup A} {c : QCube A}
+    (h : ∀ v, v ∉ c.spx → phi A g v = c.sgn v) :
+    ∃! r : Sph A, InChamber g r ∧ qProjCube r = c :=
+  ⟨chamberPt g c.isSimplex, ⟨chamberPt_inChamber _ _, qProj_chamberPt _ _ h⟩,
+    fun r hr => eq_of_inChamber_spx_eq hr.1 (chamberPt_inChamber _ _) (qProjCube_eq_iff.1 hr.2).1⟩
+
+omit [Fintype V] in
 theorem existsUnique_up_old {p : Sph A} {c : QCube A} (hle : qProjCube p ≤ c) :
     ∃! r : Sph A, p ≤ r ∧ qProjCube r = c := by
-  refine ⟨chamberPt p.rep c.isSimplex, ⟨⟨hle.1, ?_⟩, ?_⟩, ?_⟩
-  · have hin : InChamber p.rep (chamberPt p.rep c.isSimplex) :=
-      chamberPt_inChamber p.rep c.isSimplex
-    have := Subgroup.inv_mem _ hin
-    rw [mul_inv_rev, inv_inv] at this
-    exact this
-  · rw [qProjCube_eq_iff]
-    refine ⟨rfl, fun v hv => ?_⟩
-    have hv' : v ∉ (chamberPt p.rep c.isSimplex).spx := by simpa using hv
-    rw [phi_rep_eq_of_inChamber (chamberPt_inChamber p.rep c.isSimplex) hv']
-    have hvp : v ∉ p.spx := fun hc => hv (hle.1 hc)
-    rw [← qProjCube_sgn_of_not_mem hvp]
-    exact hle.2 v hv
-  · rintro r ⟨hpr, hrc⟩
-    refine eq_of_inChamber_spx_eq (x := p.rep) (inChamber_rep_of_le hpr)
-      (chamberPt_inChamber p.rep c.isSimplex) ?_
-    rw [(qProjCube_eq_iff.1 hrc).1]
-    rfl
+  have h := existsUnique_chamber_lift (g := p.rep) (c := c) fun v hv =>
+    (qProjCube_sgn_of_not_mem (fun hp => hv (hle.1 hp))).symm.trans (hle.2 v hv)
+  refine (existsUnique_congr fun r => ?_).mp h
+  constructor
+  · rintro ⟨hr, hc⟩
+    exact ⟨le_of_inChamber (inChamber_rep p) hr ((qProjCube_eq_iff.1 hc).1.symm ▸ hle.1), hc⟩
+  · rintro ⟨hr, hc⟩
+    exact ⟨inChamber_rep_of_le hr, hc⟩
 
 omit [Fintype V] in
-/-- **Unique lift of a cube inside a chamber**: a cube of the quotient with vanishing signs has
-exactly one lift in the chamber of a given element of `Γ`. -/
 theorem existsUnique_up_inChamber {w : CayGroup A} (hw : IsGamma A w) {c : QCube A}
-    (hsgn : c.sgn = 0) :
-    ∃! r : Sph A, InChamber w r ∧ qProjCube r = c := by
-  refine ⟨chamberPt w c.isSimplex, ⟨chamberPt_inChamber w c.isSimplex, ?_⟩, ?_⟩
-  · rw [qProjCube_eq_iff]
-    refine ⟨rfl, fun v hv => ?_⟩
-    have hv' : v ∉ (chamberPt w c.isSimplex).spx := by simpa using hv
-    rw [phi_rep_eq_of_inChamber (chamberPt_inChamber w c.isSimplex) hv']
-    rw [show phi A w v = 0 from by simpa using congrFun (show phi A w = 0 from hw) v]
-    exact (congrFun hsgn v).symm
-  · rintro r ⟨hwr, hrc⟩
-    refine eq_of_inChamber_spx_eq (x := w) hwr (chamberPt_inChamber w c.isSimplex) ?_
-    rw [(qProjCube_eq_iff.1 hrc).1]
-    rfl
+    (hsgn : c.sgn = 0) : ∃! r : Sph A, InChamber w r ∧ qProjCube r = c :=
+  existsUnique_chamber_lift fun v _ => congrFun ((show phi A w = 0 from hw).trans hsgn.symm) v
 
 omit [Fintype V] in
-/-- **Unique lift of a face of an old cell.**  The face directions fix the element of `W_T`
-modulo the special subgroup of the face, by the parity description of `W_T`. -/
 theorem existsUnique_down_old {p : Sph A} {c : QCube A} (hle : c ≤ qProjCube p) :
     ∃! r : Sph A, r ≤ p ∧ qProjCube r = c := by
-  classical
-  have hUT : c.spx ⊆ p.spx := hle.1
-  have hout : ∀ v, v ∉ p.spx → c.sgn v = phi A p.rep v := by
-    intro v hv
-    rw [hle.2 v hv, qProjCube_sgn_of_not_mem hv]
-  -- the element of `W_T` correcting the parities inside `T`
-  obtain ⟨u, hu, hphiu⟩ := exists_mem_specialSub_phi_eq A p.spx
-    (fun v => if v ∈ p.spx then c.sgn v + phi A p.rep v else 0) (fun v hv => by simp [hv])
-  set r : Sph A := chamberPt (p.rep * u) c.isSimplex with hrdef
-  have hinr : InChamber (p.rep * u) r := chamberPt_inChamber _ _
-  have hrspx : r.spx = c.spx := rfl
-  have hrc : qProjCube r = c := by
-    rw [qProjCube_eq_iff]
-    refine ⟨hrspx, fun v hv => ?_⟩
-    have hv' : v ∉ r.spx := by rw [hrspx]; exact hv
-    rw [phi_rep_eq_of_inChamber hinr hv']
-    simp only [phi_mul, Pi.add_apply, hphiu]
-    by_cases hvT : v ∈ p.spx
-    · rw [if_pos hvT]
-      have hre : phi A p.rep v + (c.sgn v + phi A p.rep v)
-          = c.sgn v + (phi A p.rep v + phi A p.rep v) := by ring
-      rw [hre, zmod2_add_self, add_zero]
-    · rw [if_neg hvT, add_zero, hout v hvT]
-  have hrp : r ≤ p := by
-    refine ⟨by rw [hrspx]; exact hUT, ?_⟩
-    have h1 : r.rep⁻¹ * (p.rep * u) ∈ specialSub A (r.spx : Set V) := hinr
-    have h2 : r.rep⁻¹ * (p.rep * u) ∈ specialSub A (p.spx : Set V) :=
-      specialSub_mono (by exact_mod_cast (show r.spx ⊆ p.spx by rw [hrspx]; exact hUT)) h1
-    have h3 : r.rep⁻¹ * p.rep = (r.rep⁻¹ * (p.rep * u)) * u⁻¹ := by group
-    rw [h3]
-    exact Subgroup.mul_mem _ h2 (Subgroup.inv_mem _ hu)
-  refine ⟨r, ⟨hrp, hrc⟩, ?_⟩
-  rintro r' ⟨hr'p, hr'c⟩
-  have hspx : r.spx = r'.spx := by rw [hrspx, (qProjCube_eq_iff.1 hr'c).1]
-  -- the two lifts differ by an element of `W_T` with parity supported in the face
-  set k : CayGroup A := r.rep⁻¹ * r'.rep with hkdef
-  have hkT : k ∈ specialSub A (p.spx : Set V) := by
-    have h1 : r.rep⁻¹ * p.rep ∈ specialSub A (p.spx : Set V) := hrp.2
-    have h2 : p.rep⁻¹ * r'.rep ∈ specialSub A (p.spx : Set V) := by
-      have := Subgroup.inv_mem _ hr'p.2
-      rwa [mul_inv_rev, inv_inv] at this
-    have h3 : k = (r.rep⁻¹ * p.rep) * (p.rep⁻¹ * r'.rep) := by rw [hkdef]; group
-    rw [h3]
-    exact Subgroup.mul_mem _ h1 h2
-  have hkout : ∀ v, v ∉ c.spx → phi A k v = 0 := by
-    intro v hv
-    have h1 : phi A r.rep v = c.sgn v := (qProjCube_eq_iff.1 hrc).2 v hv
-    have h2 : phi A r'.rep v = c.sgn v := (qProjCube_eq_iff.1 hr'c).2 v hv
-    have : phi A k v = phi A r.rep v + phi A r'.rep v := by
-      rw [hkdef]
-      simp only [phi_mul, phi_inv, Pi.add_apply]
-    rw [this, h1, h2, zmod2_add_self]
-  obtain ⟨k0, hk0U, hk0⟩ := exists_mem_specialSub_phi_eq A c.spx (phi A k)
-    (fun v hv => hkout v hv)
-  have hk0T : k0 ∈ specialSub A (p.spx : Set V) :=
-    specialSub_mono (by exact_mod_cast hUT) hk0U
-  have hkk0 : k = k0 :=
-    phi_injOn_specialSub A (commuting_of_isSimplex p.isSimplex) hkT hk0T hk0.symm
-  have hinr' : InChamber r'.rep r := by
-    show r.rep⁻¹ * r'.rep ∈ specialSub A (r.spx : Set V)
-    rw [← hkdef, hkk0, hrspx]
-    exact hk0U
-  exact (eq_of_inChamber_spx_eq (x := r'.rep) hinr' (inChamber_rep r') hspx).symm
+  obtain ⟨g, ⟨hg, hgt⟩, huniq⟩ := existsUnique_inChamber_phi (p := p) c.sgn
+    (fun v hv => (hle.2 v hv).trans (qProjCube_sgn_of_not_mem hv))
+  obtain ⟨r, ⟨hr, hrc⟩, hruniq⟩ := existsUnique_chamber_lift (c := c) (g := g) fun v _ => congrFun hgt v
+  refine ⟨r, ⟨le_of_inChamber hr hg ((qProjCube_eq_iff.1 hrc).1.symm ▸ hle.1), hrc⟩, ?_⟩
+  rintro r' ⟨hrp, hr'c⟩
+  obtain ⟨g', ⟨hg', hgt'⟩, -⟩ := existsUnique_inChamber_phi (p := r') c.sgn
+    (fun v hv => ((qProjCube_eq_iff.1 hr'c).2 v ((qProjCube_eq_iff.1 hr'c).1 ▸ hv)).symm)
+  have he : g' = g := huniq g' ⟨inChamber_of_le hrp hg', hgt'⟩
+  exact hruniq r' ⟨he ▸ hg', hr'c⟩
 
 /-! ### The projection is a covering of posets -/
+
+omit [Fintype V] in
+private theorem lift_old {c : QCube A} (hc : ¬ (c.spx = ∅ ∧ c.sgn = 0))
+    (P : Zpos A X (IsGamma A) att → Prop) (R : Sph A → Prop)
+    (h : ∀ r hr, qProjCube r = c → (R r ↔ P (zOld r hr)))
+    (hu : ∃! r, R r ∧ qProjCube r = c) :
+    ∃! b, P b ∧ zProj b = qOld c hc := by
+  obtain ⟨r, ⟨hr, he⟩, huniq⟩ := hu
+  let hr' := not_isMarkedApex_of_qProjCube_eq hc he
+  refine ⟨zOld r hr', ⟨(h r hr' he).1 hr, congrArg Sum.inl (Subtype.ext he)⟩, ?_⟩
+  rintro (s | _) ⟨hs, hp⟩
+  · have he' := congrArg Subtype.val (Sum.inl.inj hp)
+    exact congrArg Sum.inl (Subtype.ext (huniq s.1 ⟨(h s.1 s.2 he').2 hs, he'⟩))
+  · cases hp
+
+omit [Fintype V] in
+private theorem lift_new (y : X) (P : Zpos A X (IsGamma A) att → Prop)
+    (hu : ∃! w, P (zNew w y)) : ∃! b, P b ∧ zProj b = qNew y := by
+  obtain ⟨w, hw, huniq⟩ := hu
+  refine ⟨zNew w y, ⟨hw, rfl⟩, ?_⟩
+  rintro (_ | ⟨v, x⟩) ⟨hv, he⟩
+  · cases he
+  · have hxy : x = y := Sum.inr.inj he
+    subst x
+    exact congrArg (fun w => zNew w y) (huniq _ hv)
 
 omit [Fintype V] in
 /-- **Unique lifting of the cells above a cell of `Z`.** -/
@@ -199,42 +135,19 @@ theorem zProj_up (z : Zpos A X (IsGamma A) att) (q : Qpos A X att)
   cases z with
   | inl p =>
       cases q with
-      | inl cc =>
-          obtain ⟨c, hc⟩ := cc
-          obtain ⟨r, ⟨hpr, hrc⟩, huniq⟩ := existsUnique_up_old (p := p.1) (c := c) h
-          refine ⟨zOld r (not_isMarkedApex_of_qProjCube_eq hc hrc), ⟨hpr, ?_⟩, ?_⟩
-          · exact congrArg Sum.inl (Subtype.ext hrc)
-          · rintro (r' | ⟨v, y⟩) ⟨hle, hproj⟩
-            · have hr'c : qProjCube r'.1 = c := congrArg Subtype.val (Sum.inl.inj hproj)
-              have : r'.1 = r := huniq r'.1 ⟨hle, hr'c⟩
-              exact congrArg Sum.inl (Subtype.ext this)
-            · exact absurd hproj (fun hcon => by cases hcon)
-      | inr y => exact h.elim
+      | inl c => exact lift_old c.2 _ _ (fun _ _ _ => Iff.rfl) (existsUnique_up_old h)
+      | inr _ => exact h.elim
   | inr wx =>
       cases q with
-      | inl cc =>
-          obtain ⟨c, hc⟩ := cc
+      | inl c =>
           obtain ⟨hsgn, hne, hx⟩ := h
-          obtain ⟨r, ⟨hwr, hrc⟩, huniq⟩ :=
-            existsUnique_up_inChamber (w := wx.1.1) wx.1.2 (c := c) hsgn
-          have hspx : r.spx = c.spx := (qProjCube_eq_iff.1 hrc).1
-          refine ⟨zOld r (not_isMarkedApex_of_qProjCube_eq hc hrc), ⟨⟨hwr, ?_⟩, ?_⟩, ?_⟩
-          · refine ⟨by rw [hspx]; exact hne, ?_⟩
-            refine le_trans hx (le_of_eq (congrArg att (Subtype.ext ?_)))
-            exact hspx.symm
-          · exact congrArg Sum.inl (Subtype.ext hrc)
-          · rintro (r' | ⟨v, y⟩) ⟨hle, hproj⟩
-            · have hr'c : qProjCube r'.1 = c := congrArg Subtype.val (Sum.inl.inj hproj)
-              have : r'.1 = r := huniq r'.1 ⟨hle.1, hr'c⟩
-              exact congrArg Sum.inl (Subtype.ext this)
-            · exact absurd hproj (fun hcon => by cases hcon)
+          refine lift_old c.2 _ _ (fun r _ he => ?_)
+            (existsUnique_up_inChamber wx.1.2 hsgn)
+          have hs := (qProjCube_eq_iff.1 he).1
+          exact ⟨fun hw => ⟨hw, hs.symm ▸ hne, hx.trans
+            (le_of_eq (congrArg att (Subtype.ext hs.symm)))⟩, And.left⟩
       | inr y =>
-          refine ⟨zNew wx.1 y, ⟨⟨rfl, h⟩, rfl⟩, ?_⟩
-          rintro (r' | ⟨v, y'⟩) ⟨hle, hproj⟩
-          · exact absurd hproj (fun hcon => by cases hcon)
-          · have hy : y' = y := Sum.inr.inj hproj
-            refine congrArg Sum.inr (Prod.ext ?_ hy)
-            exact hle.1.symm
+          exact lift_new y _ ⟨wx.1, ⟨rfl, h⟩, fun _ hw => hw.1.symm⟩
 
 omit [Fintype V] in
 /-- **Unique lifting of the cells below a cell of `Z`.** -/
@@ -243,39 +156,17 @@ theorem zProj_down (z : Zpos A X (IsGamma A) att) (q : Qpos A X att)
   cases z with
   | inl p =>
       cases q with
-      | inl cc =>
-          obtain ⟨c, hc⟩ := cc
-          obtain ⟨r, ⟨hrp, hrc⟩, huniq⟩ := existsUnique_down_old (p := p.1) (c := c) h
-          refine ⟨zOld r (not_isMarkedApex_of_qProjCube_eq hc hrc), ⟨hrp, ?_⟩, ?_⟩
-          · exact congrArg Sum.inl (Subtype.ext hrc)
-          · rintro (r' | ⟨v, y⟩) ⟨hle, hproj⟩
-            · have hr'c : qProjCube r'.1 = c := congrArg Subtype.val (Sum.inl.inj hproj)
-              have : r'.1 = r := huniq r'.1 ⟨hle, hr'c⟩
-              exact congrArg Sum.inl (Subtype.ext this)
-            · exact absurd hproj (fun hcon => by cases hcon)
+      | inl c => exact lift_old c.2 _ _ (fun _ _ _ => Iff.rfl) (existsUnique_down_old h)
       | inr y =>
           obtain ⟨hsgn, hne, hy⟩ := h
-          have hzero : ∀ v, v ∉ p.1.spx → phi A p.1.rep v = 0 := by
-            intro v hv
-            rw [← qProjCube_sgn_of_not_mem hv]
-            simpa using congrFun hsgn v
-          obtain ⟨g, ⟨hg, hgp⟩, huniq⟩ := existsUnique_isGamma_inChamber hzero
-          refine ⟨zNew ⟨g, hg⟩ y, ⟨⟨hgp, hne, hy⟩, rfl⟩, ?_⟩
-          rintro (r' | ⟨v, y'⟩) ⟨hle, hproj⟩
-          · exact absurd hproj (fun hcon => by cases hcon)
-          · have hy' : y' = y := Sum.inr.inj hproj
-            refine congrArg Sum.inr (Prod.ext (Subtype.ext ?_) hy')
-            exact huniq v.1 ⟨v.2, hle.1⟩
+          obtain ⟨g, ⟨hg, hgp⟩, huniq⟩ := existsUnique_isGamma_inChamber (p := p.1) fun v hv =>
+            (qProjCube_sgn_of_not_mem hv).symm.trans (congrFun hsgn v)
+          exact lift_new y _ ⟨⟨g, hg⟩, ⟨hgp, hne, hy⟩,
+            fun w hw => Subtype.ext (huniq w.1 ⟨w.2, hw.1⟩)⟩
   | inr wx =>
       cases q with
-      | inl cc => exact h.elim
-      | inr y =>
-          refine ⟨zNew wx.1 y, ⟨⟨rfl, h⟩, rfl⟩, ?_⟩
-          rintro (r' | ⟨v, y'⟩) ⟨hle, hproj⟩
-          · exact absurd hproj (fun hcon => by cases hcon)
-          · have hy : y' = y := Sum.inr.inj hproj
-            refine congrArg Sum.inr (Prod.ext ?_ hy)
-            exact hle.1
+      | inl _ => exact h.elim
+      | inr y => exact lift_new y _ ⟨wx.1, ⟨rfl, h⟩, fun _ hw => hw.1⟩
 
 /-- **The projection `Z → Q` is a covering of posets.** -/
 theorem zProj_isPosetCover :
@@ -293,20 +184,6 @@ theorem isCovering_orderCxMap_zProj :
 /-! ### The copy of the base is injective in `π₁(Q)` -/
 
 omit [Fintype V] in
-theorem mapPath_zProj_zNew (w : {w : CayGroup A // IsGamma A w})
-    (l : List ((orderCx X).E × Bool)) :
-    Comb.mapPath (orderCxMap (zProj (A := A) (X := X) (att := att)) zProj_monotone)
-        (Comb.mapPath (orderCxMap (zNew (A := A) (X := X) (M := IsGamma A) (att := att) w)
-          (zNew_monotone w)) l)
-      = Comb.mapPath (orderCxMap (qNew (A := A) (X := X) (att := att)) qNew_monotone) l := by
-  induction l with
-  | nil => rfl
-  | cons a t ih =>
-      simp only [Comb.mapPath, List.map_cons] at ih ⊢
-      rw [ih]
-      congr 1
-
-omit [Fintype V] in
 /-- The inclusion of the base in the quotient factors as the inclusion of a copy of the base in
 `Z` followed by the covering projection. -/
 theorem pi1Map_qNew_eq_comp (w : {w : CayGroup A // IsGamma A w}) (x : X) :
@@ -316,17 +193,8 @@ theorem pi1Map_qNew_eq_comp (w : {w : CayGroup A // IsGamma A w}) (x : X) :
         (Comb.pi1Map (orderCxMap (zNew (A := A) (X := X) (M := IsGamma A) (att := att) w)
           (zNew_monotone w)) x) := by
   ext g
-  induction g using Quotient.inductionOn with
-  | h l =>
-      refine Quotient.sound ?_
-      show Comb.Htpy (orderCx (Qpos A X att)) (qNew (A := A) (att := att) x)
-        (qNew (A := A) (att := att) x)
-        (Comb.mapPath (orderCxMap (qNew (A := A) (X := X) (att := att)) qNew_monotone) l.1)
-        (Comb.mapPath (orderCxMap (zProj (A := A) (X := X) (att := att)) zProj_monotone)
-          (Comb.mapPath (orderCxMap (zNew (A := A) (X := X) (M := IsGamma A) (att := att) w)
-            (zNew_monotone w)) l.1))
-      rw [mapPath_zProj_zNew w l.1]
-      exact Comb.Htpy.refl _
+  exact Comb.pi1Map_comp_apply (orderCxMap _ (zNew_monotone (att := att) w))
+    (orderCxMap _ zProj_monotone) x g
 
 /-- **The inclusion of the base poset in the quotient is injective on fundamental groups.**
 The covering datum comes from the construction: `Z → Q` is the covering

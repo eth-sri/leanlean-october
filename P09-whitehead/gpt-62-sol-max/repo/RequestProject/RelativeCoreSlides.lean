@@ -89,14 +89,8 @@ theorem ringMap_quotient_word {G H : Subgroup (FreeGroup (PairGen A Z))}
     (hf : ∀ w, f (QuotientGroup.mk w) = QuotientGroup.mk w)
     (x : FreeGroupRing (PairGen A Z)) :
     MonoidAlgebra.mapDomainRingHom ℤ f (proj G x) = proj H x := by
-  induction x using MonoidAlgebra.induction_linear with
-  | zero => simp
-  | add x y hx hy => rw [map_add, map_add, hx, hy, map_add]
-  | single w a =>
-      apply MonoidAlgebra.coeff_injective
-      change Finsupp.mapDomain f (Finsupp.mapDomain (QuotientGroup.mk' G)
-        (Finsupp.single w a)) = Finsupp.mapDomain (QuotientGroup.mk' H) (Finsupp.single w a)
-      simp only [Finsupp.mapDomain_single, QuotientGroup.mk'_apply, hf]
+  simp only [proj, MonoidAlgebra.mapDomainRingHom_apply_comp]
+  exact congrArg (fun g => MonoidAlgebra.mapDomainRingHom ℤ g x) (MonoidHom.ext hf)
 
 theorem gradient_groupMap {G H : Subgroup (FreeGroup (PairGen A Z))}
     [G.Normal] [H.Normal] (f : (FreeGroup (PairGen A Z) ⧸ G) →*
@@ -182,25 +176,12 @@ theorem normalizationSlide_boundary
 def normalizationSlideMap : PresMorFS (beforeCorrection core extra)
     (normalizedPresentation core hcore extra) where
   hom := slideGroupHom core hcore extra
-  cells := fun x => coreSlideForward (slideColumns core hcore extra)
-    (x.mapRange (slideCoefficients core hcore extra) (map_zero _))
-  cells_add := by
-    intro x y
-    rw [Finsupp.mapRange_add, map_add]
-    exact map_add _
-  cells_smul := by
-    intro a x
-    have h : (a • x).mapRange (slideCoefficients core hcore extra) (map_zero _) =
-        (slideCoefficients core hcore extra a) •
-          x.mapRange (slideCoefficients core hcore extra) (map_zero _) := by
-      ext k : 1
-      simp only [Finsupp.mapRange_apply, Finsupp.smul_apply, smul_eq_mul]
-      exact map_mul _ _ _
-    rw [h, map_smul]
-    rfl
+  cells := (coreSlideForward (slideColumns core hcore extra)).comp
+    (Finsupp.mapRange.linearMap (slideCoefficients core hcore extra).toSemilinearMap)
   cells_cycle := by
     intro x hx
-    change coverSecondBoundary _ _ _ = 0
+    change coverSecondBoundary _ _ (coreSlideForward (slideColumns core hcore extra)
+      (x.mapRange (slideCoefficients core hcore extra) (map_zero _))) = 0
     rw [normalizationSlide_boundary, coreSlideReverse_forward]
     change fsRingMapBoundary (slideCoefficients core hcore extra) _
       (x.mapRange _ _) = 0
@@ -221,7 +202,7 @@ theorem normalizationSlideMap_generates :
     FSGenerates (normalizationSlideMap core hcore extra) := by
   intro x hx
   let y := coreSlideReverse (slideColumns core hcore extra) x
-  have hy : slideOldBoundary core hcore extra y = 0 :=
+  have hy  :=
     (normalizationSlide_boundary core hcore extra x).symm.trans hx
   have hspan := fs_cycle_mem_span_groupMap_cycles (slideGroupHom core hcore extra)
     (slideGroupHom_injective core hcore extra)
@@ -230,15 +211,9 @@ theorem normalizationSlideMap_generates :
   have he : coreSlideForward (slideColumns core hcore extra) y = x :=
     coreSlideForward_reverse _ _
   rw [← he]
-  clear hx hy he
-  generalize y = z at hspan ⊢
-  clear y x
-  induction hspan using Submodule.span_induction with
-  | mem z hz =>
-      obtain ⟨a, ha, rfl⟩ := hz
-      exact Submodule.subset_span ⟨a, ha, rfl⟩
-  | zero => rw [map_zero]; exact Submodule.zero_mem _
-  | add z w _ _ hz hw => rw [map_add]; exact Submodule.add_mem _ hz hw
-  | smul a z _ hz => rw [map_smul]; exact Submodule.smul_mem _ a hz
+  refine Submodule.span_mono ?_
+    (Submodule.apply_mem_span_image_of_mem_span (coreSlideForward (slideColumns core hcore extra)) hspan)
+  rintro _ ⟨_, ⟨a, ha, rfl⟩, rfl⟩
+  exact ⟨a, ha, rfl⟩
 
 end FiniteChains.RelativeNormalForm

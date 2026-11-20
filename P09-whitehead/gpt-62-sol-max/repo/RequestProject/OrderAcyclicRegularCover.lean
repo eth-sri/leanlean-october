@@ -1,12 +1,15 @@
 module
 
-public import RequestProject.OrderUniversalRealizationAcyclicity
+public import RequestProject.OrderTwoDimensionalAcyclicity
+public import RequestProject.OrderUniversalRealizationCover
+public import RequestProject.OrderNerveCoverDimension
+public import RequestProject.TopologicalCoverPi2
+public import RequestProject.OrderUniversalRealizationSimplyConnected
+public import RequestProject.TopologicalSingular.HurewiczIsomorphismConsequences
+public import RequestProject.OrderNerveTwoComplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular Topology
@@ -19,7 +22,7 @@ theorem orderRealization_oneCycle_bounds_of_strict_fillings
     (c : Chain (orderNerveRealization P) 1) (hc : boundary 0 c = 0) :
     ∃ b : Chain (orderNerveRealization P) 2, boundary 1 b = c := by
   obtain ⟨z, hz, hd, hz0, b, hb⟩ := orderNerveRealization_cycle_nerveRepresentative 0 c hc
-  obtain ⟨a, ha, ha0⟩ := nerve_oneCycle_filling_of_strict hfill z hz hd hz0
+  obtain ⟨a, ha, ha0⟩ := nerve_oneCycle_filling_of_weak (weak_oneCycle_filling_of_strict hfill) z hz hd hz0
   refine ⟨b + orderNerveGradedRealize P 2 a, ?_⟩
   rw [map_add, hb, orderNerveGradedRealize_boundary 1 ha, ha0]
   abel

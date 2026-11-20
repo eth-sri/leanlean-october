@@ -2,7 +2,7 @@ module
 
 public import RequestProject.ClassicalCWChainCanonicalHomotopies
 public import RequestProject.PresWordEmbeddingCombPi2
-public import RequestProject.PresChainTopologicalFinsupp
+public import RequestProject.PresentationChainFinsupp
 
 @[expose] public section
 
@@ -40,11 +40,11 @@ theorem canonicalInclusion_zeroPi2_iff {i k : Fin (n + 1)} (hik : i ≤ k) :
     (canonicalWords_ne_nil K C hC hconn i) (canonicalWords_ne_nil K C hC hconn k)
   exact h₁.symm.trans (h₂.symm.trans (canonicalDiskInclusion_killsPi2_iff K C hC hconn hik))
 
-def canonicalPresChainTopFS
+def canonicalPresChainFS
     (hkill : ∀ i : Fin n, Whitehead.KillsPi2
-      (⟨Set.inclusion (hC (show i.castSucc ≤ i.succ from Nat.le_succ i.val)),
+      (⟨Set.inclusion (hC (Nat.le_succ i.val)),
         continuous_inclusion _⟩ : C((C i.castSucc : Set K), (C i.succ : Set K)))) :
-    PresChainTopFS (canonicalRelators K C hC hconn 0) n where
+    PresChainFS (canonicalRelators K C hC hconn 0) n where
   gen r := CanonicalGen K C hC hconn (boundedStage n r)
   cell r := CanonicalRel K C (boundedStage n r)
   decGen _ := inferInstance
@@ -65,7 +65,7 @@ def canonicalPresChainTopFS
     intro r hr
     let i : Fin n := ⟨r, hr⟩
     have H := (canonicalInclusion_zeroPi2_iff K C hC hconn
-      (show i.castSucc ≤ i.succ from Nat.le_succ r)).mpr (hkill i)
+      (Nat.le_succ r)).mpr (hkill i)
     have hleft : boundedStage n r = i.castSucc := Fin.ext (Nat.min_eq_left (Nat.le_of_lt hr))
     have hright : boundedStage n (r + 1) = i.succ := Fin.ext (Nat.min_eq_left (Nat.succ_le_of_lt hr))
     change Comb.ZeroPi2 (Comb.presInclHom

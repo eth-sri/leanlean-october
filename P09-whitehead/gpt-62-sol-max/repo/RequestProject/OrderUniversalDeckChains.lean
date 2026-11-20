@@ -1,29 +1,33 @@
 module
 
 public import RequestProject.StrictOrderNormalizationMaps
-public import RequestProject.OrderUniversalChainNormalization
+public import RequestProject.OrderUniversalPosetConnected
+public import RequestProject.OrderComplexExt
+public import RequestProject.ComponentComplex
+public import RequestProject.DeckChainTransport
+public import RequestProject.StrictOrderChains
 public import RequestProject.OrderUniversalDeck
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
-/-- Actual lifted-order face coordinates commute with the actual path-class deck action. -/
-theorem uOrderFace_deck (g : Pi1 (orderCx P) a) (t : OrdTri (UOrder P a)) :
-    uOrderFace ((orderCxMap (uOrderDeckOrderIso g) (uOrderDeckOrderIso g).monotone).onF t) =
-      deckF g (uOrderFace t) := by
-  apply Subtype.ext
-  apply Prod.ext
-  · rfl
-  · apply Subtype.ext
-    change (endV (deckV g t.1.1), endV (deckV g t.1.2.1), endV (deckV g t.1.2.2)) =
-      (endV t.1.1, endV t.1.2.1, endV t.1.2.2)
-    simp only [endV_deckV]
+/-- In lifted order coordinates the deck action is the induced order map. -/
+theorem uOrderHomInv_deck_square (g : Pi1 (orderCx P) a) :
+    uOrderHomInv.comp ((univDeck (orderCx P) a).cellHom g) =
+      (orderCxMap (uOrderDeck g) (uOrderDeckOrderIso g).monotone).comp uOrderHomInv := by
+  apply Hom.ext_orderCx
+  funext v
+  change uOrderHomInv.onV (uOrderDeck g v) = uOrderDeck g (uOrderHomInv.onV v)
+  rw [uOrderHomInv_vertex, uOrderHomInv_vertex]
+
+theorem uOrderHom_deck_square (g : Pi1 (orderCx P) a) :
+    uOrderHom.comp (orderCxMap (uOrderDeck g) (uOrderDeckOrderIso g).monotone) =
+      ((univDeck (orderCx P) a).cellHom g).comp uOrderHom := by
+  exact Hom.ext_uCover_orderCx rfl
 
 end FiniteChains.Comb

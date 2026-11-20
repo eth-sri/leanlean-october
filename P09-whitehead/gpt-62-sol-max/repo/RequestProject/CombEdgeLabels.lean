@@ -11,9 +11,6 @@ Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u v
@@ -23,7 +20,6 @@ namespace EdgeLabels
 def germ (w : X.E → G) (e : X.E × Bool) : G := if e.2 then w e.1 else (w e.1)⁻¹
 def read (w : X.E → G) (p : List (X.E × Bool)) : G := (p.map (germ w)).prod
 
-@[simp] theorem read_nil (w : X.E → G) : read w [] = 1 := rfl
 @[simp] theorem read_cons (w : X.E → G) (e : X.E × Bool) (p : List (X.E × Bool)) :
     read w (e :: p) = germ w e * read w p := rfl
 theorem read_append (w : X.E → G) (p q : List (X.E × Bool)) :
@@ -68,7 +64,7 @@ theorem read_potential (w : X.E → G) (v : X.V → G)
     rcases e with ⟨e, b⟩
     cases b <;> simp [germ, germSrc, germTgt, hw, mul_inv_rev]
   induction p generalizing a with
-  | nil => cases hp; simp
+  | nil => cases hp; simp [read]
   | cons e p ih =>
       obtain ⟨ha, hp⟩ := hp
       subst ha
@@ -89,7 +85,7 @@ def choose (hc : IsConnected X) (a : X.V) : RootPaths X a where
   path b := if b = a then [] else Classical.choose (hc a b)
   valid b := by
     split
-    · rename_i h; cases h; rfl
+    · tauto
     · exact Classical.choose_spec (hc a b)
   at_root := by simp
 
@@ -136,7 +132,6 @@ theorem germ_classOf (e : X.E × Bool) : EdgeLabels.germ r.edge e = r.classOf (i
   cases b with
   | true => rfl
   | false =>
-      change (r.classOf (isPath_single (e, true)))⁻¹ = r.classOf (isPath_single (e, false))
       exact (r.classOf_rev (isPath_single (e, true))).symm
 
 theorem read_classOf {p : List (X.E × Bool)} {b c : X.V} (hp : IsPath X.src X.tgt p b c) :
@@ -156,10 +151,9 @@ theorem edge_rel (f : X.F) : EdgeLabels.read r.edge (X.att f) = 1 := by
   exact (r.classOf_htpy (q := []) (X.att_isLoop f) rfl h).trans (r.classOf_nil _)
 
 theorem read_loop (p : Loop X a) : EdgeLabels.read r.edge p.val = Pi1.mk p := by
-  rw [r.read_classOf p.property]
-  apply Quotient.sound
-  simp only [conjugate, r.at_root, List.nil_append, revPath_nil, List.append_nil]
-  exact Htpy.refl _
+  rw [r.read_classOf p.property, classOf]
+  congr 1
+  exact Subtype.ext (by simp [conjugate, r.at_root, revPath_nil])
 
 end RootPaths
 end FiniteChains.Comb

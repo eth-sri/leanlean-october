@@ -26,7 +26,7 @@ noncomputable def orderFunctorCocycle (F : P ⥤ C) (a : P)
       d p ≫ F.map (homOfLE (hpq.trans hqr)) ≫ Groupoid.inv (d r)
     have hc : homOfLE (hpq.trans hqr) = homOfLE hpq ≫ homOfLE hqr := rfl
     rw [hc, F.map_comp]
-    simp only [Category.assoc, Groupoid.inv_eq_inv, IsIso.inv_hom_id_assoc]
+    simp
 
 /-- Combinatorial simple connectivity makes the arrows to all vertices coherent
 with every order morphism, in an arbitrary target groupoid. -/
@@ -43,7 +43,6 @@ theorem orderFunctor_exists_coherent_arrows (F : P ⥤ C) (a : P)
   have h₁ := congrArg MulOpposite.unop (hk (leOfHom h))
   simp only [orderFunctorCocycle, dif_pos (leOfHom h), MulOpposite.unop_mul,
     MulOpposite.unop_op, End.mul_def, he] at h₁
-  have h₂ := congrArg (fun e : End (F.obj a) => e ≫ d q) h₁
-  simpa only [Category.assoc, Groupoid.inv_eq_inv, IsIso.inv_hom_id, Category.comp_id] using h₂
+  grind [Groupoid.inv_eq_inv]
 
 end FiniteChains.Comb

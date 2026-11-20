@@ -3,7 +3,7 @@ module
 public import RequestProject.GenusFaithfulComparison
 public import RequestProject.ChamberQuotientAttachingCover
 public import RequestProject.PosetCoverPullback
-public import RequestProject.PosetCoverComparableLifts
+public import RequestProject.PosetCoverUpTransform
 public import RequestProject.OrderNormalizationNaturality
 public import RequestProject.GenusReceivedPolygonCoefficient
 public import RequestProject.NerveDegree
@@ -53,7 +53,7 @@ variable {P X : Type u} [PartialOrder P] [DecidableEq P]
 /-- The cover of the original cell poset retains actual universal-cover sheets. -/
 abbrev AttachingSurfaceCover := PosetCoverPullback
   (uOrderEnd (P := Qpos (cmpRel P) X (nerveAtt g)) (a := a))
-  (fun p : P => qNew (att := nerveAtt g) (g p))
+  (fun p  => qNew (att := nerveAtt g) (g p))
 
 abbrev attachingSurfaceProjection : AttachingSurfaceCover g a → P :=
   posetPullbackProjection _ _
@@ -73,14 +73,12 @@ theorem qAttachingCoverEnd_monotone :
       uOrderEnd_monotone hpr)
 
 theorem qAttachingCoverEnd_oldPoint (p : QLiftedAttaching a) :
-    qOldIncl (att := nerveAtt g) (posQCube (qAttachingCoverEnd a p)) = uOrderEnd p.1 := by
-  exact congrArg Subtype.val
+    qOldIncl (att := nerveAtt g) (posQCube (qAttachingCoverEnd a p)) = uOrderEnd p.1 := congrArg Subtype.val
     (qPositiveOldOrderIso.symm_apply_apply ⟨uOrderEnd p.1, p.2⟩)
 
 theorem attachingSurface_lower_comparison (p : QLiftedAttaching a) :
     qNew (att := nerveAtt g) (nerveAtt g (qAttachingCoverEnd a p)) ≤ uOrderEnd p.1 := by
-  rw (config := { transparency := .default }) [← qAttachingCoverEnd_oldPoint g a p]
-  exact qNew_att_le_qOldIncl (qAttachingCoverEnd a p)
+  simpa [← qAttachingCoverEnd_oldPoint g a p] using qNew_att_le_qOldIncl (qAttachingCoverEnd a p)
 
 /-- Move to the actual lower base lift in the same universal-cover sheet. -/
 def attachingSurfaceLowerLift (p : QLiftedAttaching a) :
@@ -98,7 +96,7 @@ theorem attachingSurfaceLowerLift_spec (p : QLiftedAttaching a) :
 theorem attachingSurfaceLowerLift_monotone :
     Monotone (attachingSurfaceLowerLift g a hc) :=
   (uOrderEnd_isPosetCover hc).lowerMapLift_monotone
-    (Subtype.val : QLiftedAttaching a → UOrder (Qpos (cmpRel P) X (nerveAtt g)) a)
+    Subtype.val
     (fun p => qNew (att := nerveAtt g) (nerveAtt g (qAttachingCoverEnd a p)))
     (fun _ _ h => h)
     (qNew_monotone.comp ((nerveAtt g).monotone.comp (qAttachingCoverEnd_monotone g a)))
@@ -115,9 +113,6 @@ theorem attachingToSurfaceCover_monotone :
   exact ⟨attachingSurfaceLowerLift_monotone g a hc hpr,
     chainMax_monotone (qAttachingCoverEnd_monotone g a hpr)⟩
 
-@[simp] theorem attachingToSurfaceCover_projection (p : QLiftedAttaching a) :
-    attachingSurfaceProjection g a (attachingToSurfaceCover g a hc p) =
-      chainMax (qAttachingCoverEnd a p) := rfl
 
 def attachingSurfaceChain1 : (StrictOrdEdge (QLiftedAttaching a) →₀ ℤ) →ₗ[ℤ]
     (StrictOrdEdge (AttachingSurfaceCover g a) →₀ ℤ) :=
@@ -127,30 +122,21 @@ def attachingSurfaceChain1 : (StrictOrdEdge (QLiftedAttaching a) →₀ ℤ) →
 /-- The barycentric pullback cover, before applying its last-vertex map. -/
 abbrev AttachingSurfaceSubdivision := PosetCoverPullback
   (uOrderEnd (P := Qpos (cmpRel P) X (nerveAtt g)) (a := a))
-  (fun σ : NeSpx (cmpRel P) => qNew (att := nerveAtt g) (nerveAtt g σ))
+  (fun σ  => qNew (att := nerveAtt g) (nerveAtt g σ))
 
-def attachingToSurfaceSubdivision (p : QLiftedAttaching a) :
-    AttachingSurfaceSubdivision g a :=
-  ⟨(attachingSurfaceLowerLift g a hc p, qAttachingCoverEnd a p),
-    (attachingSurfaceLowerLift_spec g a hc p).2⟩
 
-def surfaceSubdivisionLastVertex (p : AttachingSurfaceSubdivision g a) :
-    AttachingSurfaceCover g a := ⟨(p.1.1, chainMax p.1.2), p.2⟩
 
-@[simp] theorem surfaceSubdivisionLastVertex_attaching (p : QLiftedAttaching a) :
-    surfaceSubdivisionLastVertex g a (attachingToSurfaceSubdivision g a hc p) =
-      attachingToSurfaceCover g a hc p := rfl
 
 theorem surfaceSubdivision_upper_comparison (p : AttachingSurfaceSubdivision g a) :
     uOrderEnd p.1.1 ≤ qOldIncl (att := nerveAtt g) (posQCube p.1.2) := by
-  rw (config := { transparency := .default }) [p.2]
+  erw [p.2]
   exact qNew_att_le_qOldIncl p.1.2
 
 /-- The inverse cover comparison is an actual upper interval lift in the
 same sheet, rather than a selected homotopy equivalence of presentations. -/
 def surfaceSubdivisionUpperLift (p : AttachingSurfaceSubdivision g a) :
     UOrder (Qpos (cmpRel P) X (nerveAtt g)) a :=
-  (uOrderEnd_isPosetCover hc).upperMapLift (fun p => p.1.1)
+  (uOrderEnd_isPosetCover hc).upperMapLift (·.1.1)
     (fun p => qOldIncl (att := nerveAtt g) (posQCube p.1.2))
     (surfaceSubdivision_upper_comparison g a) p
 
@@ -159,7 +145,7 @@ theorem surfaceSubdivisionUpperLift_spec (p : AttachingSurfaceSubdivision g a) :
       uOrderEnd (surfaceSubdivisionUpperLift g a hc p) =
         qOldIncl (att := nerveAtt g) (posQCube p.1.2) :=
   (uOrderEnd_isPosetCover hc).upperMapLift_spec
-    (fun p : AttachingSurfaceSubdivision g a => p.1.1)
+    (·.1.1)
     (fun p => qOldIncl (att := nerveAtt g) (posQCube p.1.2))
     (surfaceSubdivision_upper_comparison g a) p
 
@@ -171,28 +157,17 @@ theorem surfaceSubdivisionUpperLift_monotone :
     ?_ ?_ (surfaceSubdivision_upper_comparison g a)
   · exact fun _ _ h => h.1
   · intro p r hpr
-    exact qOldIncl_monotone (show posQCube p.1.2 ≤ posQCube r.1.2 from
-      ⟨hpr.2, fun _ _ => rfl⟩)
+    exact qOldIncl_monotone (⟨hpr.2, fun _ _ => rfl⟩)
 
 def surfaceSubdivisionToAttaching (p : AttachingSurfaceSubdivision g a) :
     QLiftedAttaching a :=
   ⟨surfaceSubdivisionUpperLift g a hc p, by
-    rw (config := { transparency := .default }) [(surfaceSubdivisionUpperLift_spec g a hc p).2]
-    exact ⟨trivial, rfl⟩⟩
+    simpa [(surfaceSubdivisionUpperLift_spec g a hc p).2] using ⟨trivial, rfl⟩⟩
 
 theorem surfaceSubdivisionToAttaching_monotone :
     Monotone (surfaceSubdivisionToAttaching g a hc) :=
   surfaceSubdivisionUpperLift_monotone g a hc
 
-@[simp] theorem surfaceSubdivisionToAttaching_endpoint (p : AttachingSurfaceSubdivision g a) :
-    qAttachingCoverEnd a (surfaceSubdivisionToAttaching g a hc p) = p.1.2 := by
-  apply (qPositiveOldOrderIso (att := nerveAtt g)).symm.injective
-  apply Subtype.ext
-  change qOldIncl (att := nerveAtt g)
-      (posQCube (qAttachingCoverEnd a (surfaceSubdivisionToAttaching g a hc p))) =
-    qOldIncl (att := nerveAtt g) (posQCube p.1.2)
-  rw (config := { transparency := .default }) [qAttachingCoverEnd_oldPoint]
-  exact (surfaceSubdivisionUpperLift_spec g a hc p).2
 
 end FiniteChains.Davis
 
@@ -209,10 +184,8 @@ def namedSurfaceLabel : GenusVertex q →o namedBasePos ρ q u :=
     (genus_hvlab (namedA (α := α) q) (namedB (α := α) q) q)
     (genus_helb (namedA (α := α) q) (namedB (α := α) q) q) (gc q)
 
-@[simp] theorem namedAtt_eq_nerveAtt :
-    namedAtt ρ q u = nerveAtt (namedSurfaceLabel ρ q u) := rfl
 
-theorem namedQuotientPos_isConnected : IsConnected (orderCx (namedQuotientPos ρ q u)) := by
+theorem namedQuotientPos_isConnected : IsConnected (namedQuotientCx ρ q u) := by
   letI : Nonempty (namedBasePos ρ q u) := ⟨namedAtt ρ q u (gBase q)⟩
   exact qpos_isConnected_of_zpos (zpos_isConnected (namedBasePos_isConnected ρ q u))
 

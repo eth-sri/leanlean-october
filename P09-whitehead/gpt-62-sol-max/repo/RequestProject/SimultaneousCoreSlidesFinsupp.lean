@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.BlockFamilyB1Finsupp
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ variable {C S I R : Type u} [Ring R]
 def coreSlideCorrection (lam : S → C →₀ R) :
     ((C ⊕ S) →₀ R) →ₗ[R] ((C ⊕ S) →₀ R) :=
   Finsupp.linearCombination R
-    (Sum.elim (fun _ : C => 0) (fun s => fsOldOneIncl (lam s)))
+    (Sum.elim (fun _  => 0) (fun s => fsOldOneIncl (lam s)))
 
 @[simp] theorem coreSlideCorrection_single_inl (lam : S → C →₀ R) (c : C) (a : R) :
     coreSlideCorrection lam (Finsupp.single (Sum.inl c) a) = 0 := by
@@ -40,21 +41,14 @@ def coreSlideCorrection (lam : S → C →₀ R) :
 
 theorem coreSlideCorrection_core (lam : S → C →₀ R) (x : C →₀ R) :
     coreSlideCorrection lam (fsOldOneIncl x) = 0 := by
-  induction x using Finsupp.induction_linear with
-  | zero => simp
-  | add x y hx hy => rw [map_add, map_add, hx, hy, add_zero]
-  | single c a => rw [fsOldOneIncl_single, coreSlideCorrection_single_inl]
+  finsupp_singles x
+  intro c a
+  rw [fsOldOneIncl_single, coreSlideCorrection_single_inl]
 
 theorem coreSlideCorrection_square (lam : S → C →₀ R) (x : (C ⊕ S) →₀ R) :
     coreSlideCorrection lam (coreSlideCorrection lam x) = 0 := by
-  induction x using Finsupp.induction_linear with
-  | zero => simp
-  | add x y hx hy => rw [map_add, map_add, hx, hy, add_zero]
-  | single c a =>
-      cases c with
-      | inl c => simp
-      | inr s =>
-          rw [coreSlideCorrection_single_inr, map_smul, coreSlideCorrection_core, smul_zero]
+  finsupp_singles x
+  simp [coreSlideCorrection_core]
 
 def coreSlideForward (lam : S → C →₀ R) :
     ((C ⊕ S) →₀ R) →ₗ[R] ((C ⊕ S) →₀ R) :=
@@ -66,15 +60,11 @@ def coreSlideReverse (lam : S → C →₀ R) :
 
 @[simp] theorem coreSlideForward_reverse (lam : S → C →₀ R) (x : (C ⊕ S) →₀ R) :
     coreSlideForward lam (coreSlideReverse lam x) = x := by
-  simp only [coreSlideForward, coreSlideReverse, LinearMap.add_apply,
-    LinearMap.sub_apply, LinearMap.id_apply, map_add, coreSlideCorrection_square]
-  abel
+  simp [coreSlideForward, coreSlideReverse, LinearMap.add_apply, LinearMap.sub_apply, LinearMap.id_apply, coreSlideCorrection_square]
 
 @[simp] theorem coreSlideReverse_forward (lam : S → C →₀ R) (x : (C ⊕ S) →₀ R) :
     coreSlideReverse lam (coreSlideForward lam x) = x := by
-  simp only [coreSlideForward, coreSlideReverse, LinearMap.add_apply,
-    LinearMap.sub_apply, LinearMap.id_apply, map_sub, coreSlideCorrection_square]
-  abel
+  simp [coreSlideForward, coreSlideReverse, LinearMap.add_apply, LinearMap.sub_apply, LinearMap.id_apply, coreSlideCorrection_square]
 
 /-- A column calculation suffices for the simultaneous boundary identity. -/
 theorem coreSlide_boundary (lam : S → C →₀ R)

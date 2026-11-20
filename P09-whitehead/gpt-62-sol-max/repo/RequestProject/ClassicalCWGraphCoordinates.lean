@@ -23,7 +23,7 @@ variable {X : Type} [TopologicalSpace X] [T2Space X] [CWComplex (Set.univ : Set 
 theorem isClosed_of_closedCell_constant (S : Set X)
     (hS : ∀ n (j : RelCWComplex.cell (Set.univ : Set X) n),
       CWComplex.closedCell n j ⊆ S ∨ Disjoint (CWComplex.closedCell n j) S) : IsClosed S := by
-  apply (CWComplex.closed (Set.univ : Set X) S (Set.subset_univ _)).mpr
+  apply (CWComplex.closed Set.univ S (Set.subset_univ _)).mpr
   intro n j
   rcases hS n j with h | h
   · rw [Set.inter_eq_right.mpr h]
@@ -32,7 +32,7 @@ theorem isClosed_of_closedCell_constant (S : Set X)
     exact isClosed_empty
 
 theorem cw_pathComponent_isClopen (x : X) : IsClopen (pathComponent x) := by
-  have hcell (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set X) n) :
+  have hcell (n : ℕ) (j : RelCWComplex.cell Set.univ n) :
       CWComplex.closedCell n j ⊆ pathComponent x ∨
         Disjoint (CWComplex.closedCell n j) (pathComponent x) := by
     by_cases h : (CWComplex.closedCell n j ∩ pathComponent x).Nonempty
@@ -42,15 +42,7 @@ theorem cw_pathComponent_isClopen (x : X) : IsClopen (pathComponent x) := by
       exact hxy.trans ((closedCell_joined n j hy hz).joined)
     · exact Or.inr (Set.disjoint_iff_inter_eq_empty.mpr (Set.not_nonempty_iff_eq_empty.mp h))
   refine ⟨isClosed_of_closedCell_constant (pathComponent x) hcell, ?_⟩
-  apply isClosed_compl_iff.mp
-  apply isClosed_of_closedCell_constant
-  intro n j
-  rcases hcell n j with h | h
-  · right
-    exact Set.disjoint_left.mpr (fun _ hy hz => hz (h hy))
-  · left
-    intro y hy hz
-    exact Set.disjoint_left.mp h hy hz
+  grind [isClosed_compl_iff.mp, isClosed_of_closedCell_constant, Set.disjoint_left.mpr, Set.disjoint_left.mp]
 
 /-- Connected classical CW complexes are actually path connected. -/
 theorem cw_pathConnectedSpace [ConnectedSpace X] : PathConnectedSpace X where
@@ -65,11 +57,10 @@ theorem zeroSkeleton_cellSeparated :
   by_cases hn : n = 0
   · subst n
     exact (Set.subsingleton_singleton (a := RelCWComplex.map 0 j ![])).anti (by
-      intro x hx
-      simpa only [CWComplex.openCell_zero_eq_singleton] using hx.2)
+      simp_all [CWComplex.openCell_zero_eq_singleton])
   · intro x hx y hy
     exact False.elim (Set.disjoint_left.mp
-      (CWComplex.disjoint_skeletonLT_openCell (C := (Set.univ : Set X)) (j := j)
+      (CWComplex.disjoint_skeletonLT_openCell (C := Set.univ) (j := j)
         (by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hn)) hx.1 hx.2)
 
 theorem zeroSkeleton_discrete :
@@ -96,7 +87,7 @@ theorem zeroCellPoint_bijective : Function.Bijective (zeroCellPoint (X := X)) :=
     exact eq_of_heq (Sigma.mk.inj_iff.mp hlabel).2
   · intro x
     have hx := x.property
-    change x.val ∈ (CWComplex.skeletonLT (Set.univ : Set X) (1 : ℕ∞) : Set X) at hx
+    change x.val ∈ (CWComplex.skeletonLT (Set.univ : Set X) 1 : Set X) at hx
     rw [← CWComplex.iUnion_openCell_eq_skeletonLT] at hx
     obtain ⟨n, hn, j, hj⟩ := by simpa only [Set.mem_iUnion] using hx
     have hn' : n < 1 := by exact_mod_cast hn
@@ -116,7 +107,7 @@ variable (K : Whitehead.TwoComplex)
 theorem oneSkeleton_nonempty : Nonempty (OneSkeleton K) := by
   let x : K := Classical.choice inferInstance
   let j := pointVertex x
-  exact ⟨skeletonInclusion (Set.univ : Set K) 1 (zeroCellPoint j)⟩
+  exact ⟨skeletonInclusion Set.univ 1 (zeroCellPoint j)⟩
 
 theorem oneSkeleton_pathConnectedSpace : PathConnectedSpace (OneSkeleton K) where
   nonempty := oneSkeleton_nonempty K
@@ -135,7 +126,7 @@ theorem originalGraph_isConnected : Comb.IsConnected (originalGraph K) := by
   letI : PathConnectedSpace (SkeletonCarrier (Set.univ : Set K) 2) :=
     oneSkeleton_pathConnectedSpace K
   let e := skeletonAsDiskAttachment (Set.univ : Set K) 1
-  letI : PathConnectedSpace (DiskAttachment (originalGraphAttaching K)) :=
+  letI  :=
     e.surjective.pathConnectedSpace e.continuous
   exact graphCx_isConnected (originalGraphAttaching K) (originalGraphAttaching K).continuous
 

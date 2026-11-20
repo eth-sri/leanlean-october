@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.TopologicalSingular.TetrahedronSquareDisks
+public import RequestProject.TopologicalSingular.SimplexFaceIntersections
 public import RequestProject.TopologicalSingular.SimplexLinearHomotopy
 
 @[expose] public section

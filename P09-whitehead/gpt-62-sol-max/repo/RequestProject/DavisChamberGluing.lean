@@ -42,7 +42,7 @@ variable {V : Type u} [DecidableEq V] {A : CommRel V}
 /-- **Chambers are upward closed**: a cell above a cell of `F_x` lies in `F_x`. -/
 theorem inChamber_of_le {x : CayGroup A} {p q : Sph A} (hpq : p ≤ q) (hp : InChamber x p) :
     InChamber x q := by
-  have h1 : p.rep⁻¹ * x ∈ specialSub A (q.spx : Set V) :=
+  have h1  :=
     specialSub_mono (by exact_mod_cast hpq.1) hp
   have h2 : q.rep⁻¹ * x = (p.rep⁻¹ * q.rep)⁻¹ * (p.rep⁻¹ * x) := by group
   rw [InChamber, h2]
@@ -77,10 +77,9 @@ theorem nullIn_union_chamber {x : CayGroup A} (hx : x ≠ 1) (Prev : Sph A → P
       (InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty)) :
     NullIn (fun p => Prev p ∨ InChamber x p) ∧
       ConnectedIn (fun p => Prev p ∨ InChamber x p) := by
-  have hjmem : InChamber x (interTop hx).1 ∧
-      (((interTop hx).1).spx ∩ rdescFinset A x).Nonempty := (interTop hx).2
-  have hj : Prev (interTop hx).1 ∧ InChamber x (interTop hx).1 := (hinter _).2 hjmem
-  have hJconn : ConnectedIn (fun p : Sph A => Prev p ∧ InChamber x p) :=
+  have hjmem  := (interTop hx).2
+  have hj  := (hinter _).2 hjmem
+  have hJconn  :=
     connectedIn_congr (fun p => (hinter p).symm) (connectedIn_chamberInter hx)
   have hmix : ∀ a b : Sph A, a ≤ b → (Prev a ∨ InChamber x a) → (Prev b ∨ InChamber x b) →
       ((Prev a ∧ Prev b) ∨ (InChamber x a ∧ InChamber x b)) := by

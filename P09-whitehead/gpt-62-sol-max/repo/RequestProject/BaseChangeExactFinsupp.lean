@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.BaseChangeCycles
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -22,21 +23,18 @@ theorem fs_slice_extendedBoundary (A : J → α →₀ MonoidAlgebra ℤ H)
       Finsupp.linearCombination (MonoidAlgebra ℤ H) A
         (c.mapRange (slice H g) (map_zero _)) := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd =>
-    rw [map_add, Finsupp.mapRange_add, Finsupp.mapRange_add, map_add, hc, hd] <;> exact fun x y => map_add _ x y
-  | single j x =>
-    simp only [fsExtendedBoundary, Finsupp.linearCombination_single, Finsupp.mapRange_single]
-    apply Finsupp.ext
-    intro i
-    exact slice_mul H g x (A j i)
+  finsupp_singles c [ Finsupp.mapRange_add ]
+  intro j x
+  simp only [fsExtendedBoundary, Finsupp.linearCombination_single, Finsupp.mapRange_single]
+  apply Finsupp.ext
+  intro i
+  exact slice_mul H g x (A j i)
 
 /-- A finite-support vector has only finitely many occupied subgroup cosets. -/
 noncomputable def fsCosetSupport (c : J →₀ MonoidAlgebra ℤ G) : Finset (G ⧸ H) := by
   classical
   exact c.support.biUnion fun j =>
-    (c j).coeff.support.image (fun g => (QuotientGroup.mk g : G ⧸ H))
+    (c j).coeff.support.image (fun g => (QuotientGroup.mk g))
 
 /-- Reassemble the finitely many coset slices of a chain. -/
 theorem fs_sum_cosetSlices (c : J →₀ MonoidAlgebra ℤ G) :
@@ -48,12 +46,12 @@ theorem fs_sum_cosetSlices (c : J →₀ MonoidAlgebra ℤ G) :
   apply Finsupp.ext
   intro j
   rw [Finsupp.finset_sum_apply]
-  change (∑ C ∈ fsCosetSupport H c, single (Quotient.out C) (1 : ℤ) *
+  change (∑ C ∈ fsCosetSupport H c, single (Quotient.out C) 1 *
     subRingHom H (slice H (Quotient.out C) (c j))) = c j
   apply sum_cosetPieces_of_subset
   by_cases hj : j ∈ c.support
   · exact Finset.subset_biUnion_of_mem
-      (fun j => (c j).coeff.support.image (fun g => (QuotientGroup.mk g : G ⧸ H))) hj
+      (fun j => (c j).coeff.support.image (fun g => (QuotientGroup.mk g))) hj
   · have hz : c j = 0 := by simpa using hj
     simp [hz]
 

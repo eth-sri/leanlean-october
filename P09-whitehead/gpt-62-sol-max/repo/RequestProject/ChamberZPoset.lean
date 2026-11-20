@@ -112,41 +112,19 @@ protected def Zle : Zpos A X M att → Zpos A X M att → Prop
 
 instance zposPreorder : Preorder (Zpos A X M att) where
   le := Davis.Zle
-  le_refl z := by
-    cases z with
-    | inl p => exact le_refl p.1
-    | inr wx => exact ⟨rfl, le_refl wx.2⟩
-  le_trans z z' z'' hzz' hz'z'' := by
-    cases z with
-    | inl p =>
-        cases z' with
-        | inl q =>
-            cases z'' with
-            | inl r => exact le_trans hzz' hz'z''
-            | inr wy => exact hz'z''.elim
-        | inr wy => exact hzz'.elim
-    | inr wx =>
-        cases z' with
-        | inl q =>
-            cases z'' with
-            | inl r =>
-                obtain ⟨hne, hx⟩ := hzz'.2
-                refine ⟨inChamber_of_le hz'z'' hzz'.1,
-                  Finset.Nonempty.mono hz'z''.1 hne, ?_⟩
-                exact le_trans hx (att.monotone (show (⟨q.1.spx, hne, q.1.isSimplex⟩ : NeSpx A) ≤
-                  ⟨r.1.spx, Finset.Nonempty.mono hz'z''.1 hne, r.1.isSimplex⟩ from hz'z''.1))
-            | inr wy => exact hz'z''.elim
-        | inr wy =>
-            cases z'' with
-            | inl r =>
-                obtain ⟨hne, hy⟩ := hz'z''.2
-                exact ⟨hzz'.1 ▸ hz'z''.1, hne, le_trans hzz'.2 hy⟩
-            | inr wz =>
-                exact ⟨hzz'.1.trans hz'z''.1, le_trans hzz'.2 hz'z''.2⟩
+  le_refl z := by cases z <;> first | exact le_rfl | exact ⟨rfl, le_rfl⟩
+  le_trans z z' z'' h k := by
+    change Davis.Zle z z' at h
+    change Davis.Zle z' z'' at k
+    show Davis.Zle z z''
+    cases z <;> cases z' <;> cases z'' <;> simp only [Davis.Zle] at * <;>
+      (try solve | contradiction | exact le_trans h k)
+    · obtain ⟨hne, hx⟩ := h.2
+      exact ⟨inChamber_of_le k h.1, hne.mono k.1, hx.trans (att.monotone k.1)⟩
+    · obtain ⟨hne, hy⟩ := k.2
+      exact ⟨h.1 ▸ k.1, hne, h.2.trans hy⟩
+    · exact ⟨h.1.trans k.1, h.2.trans k.2⟩
 
-section Order
-
-end Order
 
 /-! ### The chambers of `Z` -/
 
@@ -190,7 +168,7 @@ theorem inZChamber_of_le {w : CayGroup A} {z z' : Zpos A X M att}
 theorem exists_inZChamber (z : Zpos A X M att) : ∃ w : CayGroup A, InZChamber w z := by
   cases z with
   | inl p => exact ⟨p.1.rep, inChamber_rep p.1⟩
-  | inr wx => exact ⟨wx.1.1, rfl⟩
+  | inr wx => tauto
 
 /-! ### Intersections of chambers -/
 
@@ -233,8 +211,7 @@ theorem mem_earlier_zchamber_iff {w : CayGroup A} {z : Zpos A X M att} (hz : InZ
       constructor
       · rintro ⟨v, hvw, -, hv⟩
         exact absurd (eq_of_inZChamber_new hv hz) hvw
-      · intro h
-        exact h.elim
+      · tauto
 
 /-- The same intersection formula with strictly shorter chambers. -/
 theorem mem_shorter_zchamber_iff {w : CayGroup A} {z : Zpos A X M att} (hz : InZChamber w z) :
@@ -249,11 +226,9 @@ theorem mem_shorter_zchamber_iff {w : CayGroup A} {z : Zpos A X M att} (hz : InZ
   | inr wx =>
       constructor
       · rintro ⟨v, hlen, hv⟩
-        have : v = w := eq_of_inZChamber_new hv hz
-        subst this
-        omega
-      · intro h
-        exact h.elim
+        have  := eq_of_inZChamber_new hv hz
+        aesop
+      · tauto
 
 end Fintype
 
@@ -282,26 +257,22 @@ def zChamberRetr (hw : M w) : ZChamber M att w → ZChamber M att w := fun z =>
 theorem zChamberRetr_mem (hw : M w) (z : ZChamber M att w) :
     ∃ x : X, (zChamberRetr hw z).1 = zNew (att := att) ⟨w, hw⟩ x := by
   rcases z with ⟨p | ⟨u, x⟩, hz⟩
-  · exact ⟨att ⟨p.1.spx, spx_nonempty_of_marked hw p.2 hz, p.1.isSimplex⟩, rfl⟩
+  · tauto
   · refine ⟨x, ?_⟩
-    show Sum.inr (u, x) = Sum.inr ((⟨w, hw⟩ : {w : CayGroup A // M w}), x)
-    have hu : u = (⟨w, hw⟩ : {w : CayGroup A // M w}) := Subtype.ext hz
-    rw [hu]
+    grind +locals
 
 /-- **The retraction lies below the identity**: this is the mapping cylinder identity `i r ≤ id`
 of the chosen orientation, and it turns the prism operator into a chain homotopy. -/
 theorem zChamberRetr_le (hw : M w) (z : ZChamber M att w) : zChamberRetr hw z ≤ z := by
   rcases z with ⟨p | wx, hz⟩
   · exact ⟨hz, spx_nonempty_of_marked hw p.2 hz, le_refl _⟩
-  · exact ⟨rfl, le_refl _⟩
+  · tauto
 
 /-- The retraction is monotone. -/
 theorem zChamberRetr_monotone (hw : M w) :
     Monotone (zChamberRetr (att := att) hw) := by
   rintro ⟨p | ⟨u, x⟩, hz⟩ ⟨q | ⟨v, y⟩, hz'⟩ h
-  · exact ⟨rfl, att.monotone (show (⟨p.1.spx, spx_nonempty_of_marked hw p.2 hz,
-      p.1.isSimplex⟩ : NeSpx A) ≤
-      ⟨q.1.spx, spx_nonempty_of_marked hw q.2 hz', q.1.isSimplex⟩ from h.1)⟩
+  · exact ⟨rfl, att.monotone (h.1)⟩
   · exact h.elim
   · obtain ⟨hne, hx⟩ := h.2
     exact ⟨Subtype.ext hz, hx⟩

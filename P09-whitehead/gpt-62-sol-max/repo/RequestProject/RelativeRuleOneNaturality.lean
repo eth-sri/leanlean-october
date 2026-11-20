@@ -14,6 +14,20 @@ open scoped Classical
 
 namespace FiniteChains.RelativeNormalForm
 
+theorem coefficient_square {G H K L I J : Type*}
+    [Group G] [Group H] [Group K] [Group L]
+    {a : G →* H} {b : G →* K} {c : H →* L} {d : K →* L}
+    (h : c.comp a = d.comp b) (f : I → J) (x : I →₀ MonoidAlgebra ℤ G) :
+    Finsupp.mapDomain f
+      ((x.mapRange (MonoidAlgebra.mapDomainRingHom ℤ a) (map_zero _)).mapRange
+        (MonoidAlgebra.mapDomainRingHom ℤ c) (map_zero _)) =
+      (Finsupp.mapDomain f (x.mapRange (MonoidAlgebra.mapDomainRingHom ℤ b) (map_zero _))).mapRange
+        (MonoidAlgebra.mapDomainRingHom ℤ d) (map_zero _) := by
+  rw [← Finsupp.mapDomain_mapRange _ _ _ _ (map_add _)]
+  congr 1
+  ext i : 1
+  simp only [Finsupp.mapRange_apply, MonoidAlgebra.mapDomainRingHom_apply_comp, h]
+
 variable {A C Z S : Type} (core : C → FreeGroup A)
   (extra : S → FreeGroup (A ⊕ Z))
   {p t : S → Prop} (hpt : ∀ s, p s → t s)
@@ -23,14 +37,12 @@ def restrictedExtra (p : S → Prop) (s : {s // p s}) := extra s.val
 def rawInclusion : PresMorFS (rawPresentation core (restrictedExtra extra p))
     (rawPresentation core (restrictedExtra extra t)) :=
   PresInclusionFS.mor _ _ id (oldCellIncl hpt) Function.injective_id
-    (oldCellIncl_injective hpt) (by intro j; cases j <;> simp [rawPresentation, oldCellIncl,
-      restrictedExtra, labelIncl])
+    (oldCellIncl_injective hpt) (by aesop)
 
 def pairInclusion : PresMorFS (beforeCorrection core (restrictedExtra extra p))
     (beforeCorrection core (restrictedExtra extra t)) :=
   PresInclusionFS.mor _ _ id (oldCellIncl hpt) Function.injective_id
-    (oldCellIncl_injective hpt) (by intro j; cases j <;> simp [beforeCorrection, oldCellIncl,
-      restrictedExtra, labelIncl])
+    (oldCellIncl_injective hpt) (by aesop)
 
 theorem ruleOne_group_square :
     (pairInclusion core extra hpt).hom.comp
@@ -54,28 +66,8 @@ theorem ruleOne_chain_square
       ((relativeRuleOneMap core (restrictedExtra extra p)).cells x) =
     (relativeRuleOneMap core (restrictedExtra extra t)).cells
       ((rawInclusion core extra hpt).cells x) := by
-  induction x using Finsupp.induction_linear with
-  | zero => simp
-  | add x y hx hy =>
-      rw [PresMorFS.cells_add, PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
-  | single j a =>
-      rw [relativeRuleOneMap_cells, Finsupp.mapRange_single]
-      change Finsupp.mapDomain (oldCellIncl hpt)
-        ((Finsupp.single j _).mapRange _ _) = _
-      rw [Finsupp.mapRange_single, Finsupp.mapDomain_single]
-      rw [relativeRuleOneMap_cells]
-      change _ = (Finsupp.mapDomain (oldCellIncl hpt)
-        ((Finsupp.single j a).mapRange _ _)).mapRange _ _
-      rw [Finsupp.mapRange_single, Finsupp.mapDomain_single, Finsupp.mapRange_single]
-      congr 1
-      change MonoidAlgebra.mapDomainRingHom ℤ (pairInclusion core extra hpt).hom
-          (MonoidAlgebra.mapDomainRingHom ℤ
-            (relativeRuleOneMap core (restrictedExtra extra p)).hom a) =
-        MonoidAlgebra.mapDomainRingHom ℤ (relativeRuleOneMap core (restrictedExtra extra t)).hom
-          (MonoidAlgebra.mapDomainRingHom ℤ (rawInclusion core extra hpt).hom a)
-      rw [BlockMor.mapDomainRingHom_comp', BlockMor.mapDomainRingHom_comp',
-        ruleOne_group_square]
+  rw [relativeRuleOneMap_cells, relativeRuleOneMap_cells]
+  exact coefficient_square (ruleOne_group_square core extra hpt) (oldCellIncl hpt) x
 
 theorem ruleOne_preserves_zero
     (hzero : ∀ x, FSIsFoxCycle (rawPresentation core (restrictedExtra extra p)) x →

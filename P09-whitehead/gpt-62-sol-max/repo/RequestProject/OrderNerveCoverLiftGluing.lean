@@ -10,9 +10,6 @@ The gluing uses the realization quotient topology, with no finiteness
 assumption on the family. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
@@ -30,16 +27,16 @@ include hp hl hv in
 theorem orderNerveCoverLifts_agree (j k : J)
     (z : orderNerveRealization (A j)) (w : orderNerveRealization (A k))
     (he : orderNervePieceMap A j z = orderNervePieceMap A k w) : l j z = l k w := by
-  let B : Set S := A j ∩ A k
+  let B  := A j ∩ A k
   let bj : B → A j := fun b => ⟨b.val, b.property.1⟩
   let bk : B → A k := fun b => ⟨b.val, b.property.2⟩
   have hj : Monotone bj := fun _ _ h => h
   have hk : Monotone bk := fun _ _ h => h
   have hz : orderNervePieceMap A j z ∈ orderNerveRealizationSupported S B := by
-    rw (config := { transparency := .default }) [orderNerveRealizationSupported_inter]
+    erw [orderNerveRealizationSupported_inter]
     constructor
     · exact (orderNerveRealizationSubtypeHomeomorph (A j) z).property
-    · rw (config := { transparency := .default }) [he]
+    · erw [he]
       exact (orderNerveRealizationSubtypeHomeomorph (A k) w).property
   let t := (orderNerveRealizationSubtypeHomeomorph B).symm
     ⟨orderNervePieceMap A j z, hz⟩
@@ -47,19 +44,19 @@ theorem orderNerveCoverLifts_agree (j k : J)
       orderNervePieceMap A j z := by
     exact congrArg Subtype.val ((orderNerveRealizationSubtypeHomeomorph B).apply_symm_apply _)
   have htj : orderNerveRealizationMap bj hj t = z := by
-    apply orderNerveRealizationMap_injective (Subtype.val : A j → S)
+    apply orderNerveRealizationMap_injective Subtype.val
       (fun _ _ h => h) Subtype.val_injective
-    rw (config := { transparency := .default }) [orderNerveRealizationMap_comp]
+    erw [orderNerveRealizationMap_comp]
     exact ht
   have htk : orderNerveRealizationMap bk hk t = w := by
-    apply orderNerveRealizationMap_injective (Subtype.val : A k → S)
+    apply orderNerveRealizationMap_injective Subtype.val
       (fun _ _ h => h) Subtype.val_injective
-    rw (config := { transparency := .default }) [orderNerveRealizationMap_comp]
+    erw [orderNerveRealizationMap_comp]
     exact ht.trans he
   obtain ⟨n, s, r, hr⟩ := orderNerveRealizationSimplex_jointly_surjective B t
-  let f : SimplexCategory.toTop.obj n → E := fun a =>
+  let f  := fun a =>
     l j (orderNerveRealizationMap bj hj (orderNerveRealizationSimplex B s a))
-  let g : SimplexCategory.toTop.obj n → E := fun a =>
+  let g  := fun a =>
     l k (orderNerveRealizationMap bk hk (orderNerveRealizationSimplex B s a))
   have hf : Continuous f := (l j).continuous.comp
     ((orderNerveRealizationMap bj hj).hom.continuous.comp
@@ -70,21 +67,21 @@ theorem orderNerveCoverLifts_agree (j k : J)
   have hfg : p ∘ f = p ∘ g := by
     funext a
     dsimp [f, g]
-    rw (config := { transparency := .default }) [hl, hl]
+    erw [hl, hl]
     congr 1
-    change orderNerveRealizationMap (Subtype.val : A j → S) _
+    change orderNerveRealizationMap Subtype.val _
       (orderNerveRealizationMap bj hj _) =
-      orderNerveRealizationMap (Subtype.val : A k → S) _
+      orderNerveRealizationMap Subtype.val _
         (orderNerveRealizationMap bk hk _)
-    rw (config := { transparency := .default }) [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
+    erw [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
     rfl
   obtain ⟨a, ha⟩ := orderNerveRealizationVertex_mem_simplex s 0
   have hbase : f a = g a := by
-    have hleft : f a = v (s.obj 0).val :=
-      (congrArg (fun u : orderNerveRealization B => l j (orderNerveRealizationMap bj hj u)) ha).trans
+    have hleft  :=
+      (congrArg (fun u  => l j (orderNerveRealizationMap bj hj u)) ha).trans
         ((congrArg (l j) (orderNerveRealizationMap_vertex bj hj (s.obj 0))).trans (hv j (bj (s.obj 0))))
-    have hright : g a = v (s.obj 0).val :=
-      (congrArg (fun u : orderNerveRealization B => l k (orderNerveRealizationMap bk hk u)) ha).trans
+    have hright  :=
+      (congrArg (fun u  => l k (orderNerveRealizationMap bk hk u)) ha).trans
         ((congrArg (l k) (orderNerveRealizationMap_vertex bk hk (s.obj 0))).trans (hv k (bk (s.obj 0))))
     exact hleft.trans hright.symm
   have h := congrFun (hp.eq_of_comp_eq hf hg hfg a hbase) r
@@ -112,7 +109,7 @@ def orderNerveCoverLift : C(orderNerveRealization S, E) where
         fun y => l y.1 y.2 := by
       funext y
       exact coverLiftValue_piece p hp A F l v hl hv hc y.1 y.2
-    rw (config := { transparency := .default }) [he]
+    erw [he]
     exact continuous_sigma (fun j => (l j).continuous)
 
 theorem orderNerveCoverLift_piece (j : J) (z : orderNerveRealization (A j)) :
@@ -122,7 +119,7 @@ theorem orderNerveCoverLift_piece (j : J) (z : orderNerveRealization (A j)) :
 theorem orderNerveCoverLift_projection (x : orderNerveRealization S) :
     p (orderNerveCoverLift p hp A F l v hl hv hc x) = F x := by
   obtain ⟨⟨j, z⟩, rfl⟩ := orderNervePieceQuotient_surjective A hc x
-  rw (config := { transparency := .default }) [show orderNervePieceQuotient A ⟨j, z⟩ = orderNervePieceMap A j z from rfl,
+  erw [show orderNervePieceQuotient A ⟨j, z⟩ = orderNervePieceMap A j z from rfl,
     orderNerveCoverLift_piece]
   exact hl j z
 

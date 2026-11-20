@@ -5,8 +5,6 @@ public import RequestProject.MathlibOrderNerveCycleNaturality
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -41,9 +39,7 @@ noncomputable def mathlibOrderNerveLeftHomologyMapData (f : P → Q) (hf : Monot
     apply ModuleCat.hom_ext
     ext c
     apply Subtype.ext
-    have h := congrArg (fun m :
-      ModuleCat.of ℤ (ComposableArrows P 3 →₀ ℤ) ⟶
-        ModuleCat.of ℤ (ComposableArrows Q 2 →₀ ℤ) => m c)
+    have h := congrArg (fun m  => m c)
       (mathlibOrderNerveShortComplexMap f hf).comm₁₂
     exact h.symm
   commπ := by
@@ -65,8 +61,7 @@ theorem mathlibOrderNerve_homologyMap_zero (f : P → Q) (hf : Monotone f)
     ShortComplex.homologyMap (mathlibOrderNerveShortComplexMap f hf) = 0 := by
   rw [mathlibOrderNerve_homologyMap_eq,
     mathlibOrderNerveQuotientH2Map_zero f hf hzero]
-  change _ ≫ (0 : (mathlibOrderNerveShortComplex P).moduleCatLeftHomologyData.H ⟶
-    (mathlibOrderNerveShortComplex Q).moduleCatLeftHomologyData.H) ≫ _ = 0
+  change _ ≫ 0 ≫ _ = 0
   rw [zero_comp, comp_zero]
 
 /-- The categorical homology comparison commutes with the actual monotone-map homology map. -/

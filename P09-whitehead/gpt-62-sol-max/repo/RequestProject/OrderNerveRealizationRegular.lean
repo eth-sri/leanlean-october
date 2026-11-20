@@ -45,11 +45,9 @@ theorem realizationMap_regular (hf : IsPosetCover f)
         (orderNerveRealizationMap f hf.mono).hom.continuous⟩ := by
   intro x y hxy
   obtain ⟨v, hxv⟩ := orderNerveRealizationOpenStar_cover P x
-  have hx : orderNerveRealizationMap f hf.mono x ∈
-      orderNerveRealizationOpenStar Q (f v) :=
+  have hx  :=
     (orderNerveRealizationMap_mem_openStar_iff f hf.mono x (f v)).mpr ⟨v, rfl, hxv⟩
-  have hy : orderNerveRealizationMap f hf.mono y ∈
-      orderNerveRealizationOpenStar Q (f v) := hxy ▸ hx
+  have hy  := hxy ▸ hx
   obtain ⟨w, hw, hyw⟩ :=
     (orderNerveRealizationMap_mem_openStar_iff f hf.mono y (f v)).mp hy
   obtain ⟨e, he, hev⟩ := hdeck v w hw.symm

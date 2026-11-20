@@ -9,9 +9,6 @@ an actual quotient cover, even for infinitely many pieces. This is a
 weak-topology assertion, not a finite closed-cover argument. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
@@ -20,8 +17,8 @@ open scoped Classical
 variable {P : Type} [PartialOrder P] {J : Type} (A : J → Set P)
 
 def orderNervePieceMap (j : J) : C(orderNerveRealization (A j), orderNerveRealization P) :=
-  ⟨orderNerveRealizationMap (Subtype.val : A j → P) (fun _ _ h => h),
-    (orderNerveRealizationMap (Subtype.val : A j → P) (fun _ _ h => h)).hom.continuous⟩
+  ⟨orderNerveRealizationMap Subtype.val (fun _ _ h => h),
+    (orderNerveRealizationMap Subtype.val (fun _ _ h => h)).hom.continuous⟩
 
 def orderNervePieceQuotient : C((Σ j, orderNerveRealization (A j)), orderNerveRealization P) :=
   ⟨fun x => orderNervePieceMap A x.1 x.2,
@@ -84,9 +81,7 @@ theorem orderNerveRealizationSubtype_preimage_supported (B C : Set P) :
     by_cases hb : p ∈ B
     · have h := hx ⟨p, hb⟩ hp
       exact (orderNerveRealizationCoordinates_map_injective
-        (Subtype.val : B → P) (fun _ _ h => h) Subtype.val_injective x ⟨p, hb⟩).trans h
-    · exact orderNerveRealizationCoordinates_map_outside
-        (Subtype.val : B → P) (fun _ _ h => h) x p (by
-          simpa only [Subtype.range_coe_subtype, Set.setOf_mem_eq] using hb)
+        Subtype.val (fun _ _ h => h) Subtype.val_injective x ⟨p, hb⟩).trans h
+    grind [orderNerveRealizationCoordinates_map_outside]
 
 end FiniteChains.Comb

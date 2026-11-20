@@ -17,17 +17,10 @@ variable {J K E X Y : Type} [NormedAddCommGroup E] [NormedSpace ℝ E]
   (h : ∀ j a, f (r ⟨j, a⟩) = s ⟨i j, a⟩)
 
 def diskFamilyMap : C(DiskAttachment r, DiskAttachment s) :=
-  desc r (boundaryFamilyInclusion J E)
-    ((⟨old s (boundaryFamilyInclusion K E), old_continuous _ _⟩ : C(Y, DiskAttachment s)).comp f)
-    ⟨fun d => cell s (boundaryFamilyInclusion K E) ⟨i d.1, d.2⟩,
-      (cell_continuous _ _).comp (continuous_sigma (fun j =>
-        continuous_sigmaMk (σ := fun _ : K => ClosedUnitBall E) (i := i j)))⟩
-    (fun a => by
-      change old s (boundaryFamilyInclusion K E) (f (r a)) =
-        cell s (boundaryFamilyInclusion K E) ⟨i a.1, unitBoundaryInclusion E a.2⟩
-      rw [h]
-      exact (cell_boundary s _ (boundaryFamilyInclusion_isClosedEmbedding K E).injective
-        ⟨i a.1, a.2⟩).symm)
+  desc r (boundaryFamilyInclusion J E) ((DiskAttachment.oldMap s).comp f)
+    ((DiskAttachment.cellMap s).comp (reindexFamily i)) (fun a => by
+      rcases a with ⟨j, a⟩
+      exact (congrArg (old s _) (h j a)).trans (diskCell_boundary s ⟨i j, a⟩).symm)
 
 omit [NormedSpace ℝ E] in
 @[simp] theorem diskFamilyMap_old (x : X) :

@@ -16,10 +16,7 @@ instance : PartialOrder (RelatorCircle w j) := Subtype.partialOrder _
 def relatorCircleToBelow (x : RelatorCircle w j) : StrictBelow (apexOf w j) :=
   ⟨iCirc w x.1, (presPos_lt_apex_iff w j _).mpr
     ⟨x.1.2.1, x.1.2.2, x.2.2, by
-      rcases x with ⟨⟨j', k, t⟩, hj, hk⟩
-      change j' = j at hj
-      subst j'
-      rfl⟩⟩
+      rcases x with ⟨⟨j', k, t⟩, hj, hk⟩ <;> aesop⟩⟩
 
 theorem relatorCircleToBelow_injective : Function.Injective (relatorCircleToBelow w j) := by
   intro a b h

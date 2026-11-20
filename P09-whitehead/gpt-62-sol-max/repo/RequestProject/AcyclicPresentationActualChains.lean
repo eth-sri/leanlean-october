@@ -12,25 +12,13 @@ topological presentation realization all supplied. Unverified source. -/
 noncomputable section
 open scoped Classical
 
-namespace FiniteChains
-
-theorem FSIsCockcroft.redecide {A J : Type} [dA : DecidableEq A]
-    {ρ : J → FreeGroup A} (h : FSIsCockcroft ρ) (dA' : DecidableEq A) :
-    @FSIsCockcroft A J dA' ρ := by
-  have hd : dA' = dA := Subsingleton.elim _ _
-  subst dA'
-  exact h
-
-end FiniteChains
-
 namespace FiniteChains.RelativeNormalForm
 variable {A C : Type} (core : C → FreeGroup A)
   (hcore : Function.Bijective (expMatrix core))
 
-def actualInitial : AmbientChain core 0 := by
-  refine AmbientChain.initial (core := core) (InitialFS.fresh A) (InitialFS.extra core)
-    ?_ (InitialFS.core_trivial core hcore.2)
-  exact @FSIsCockcroft.redecide _ _ _ _ (InitialFS.isCockcroft core hcore) _
+def actualInitial : AmbientChain core 0 :=
+  AmbientChain.initial (core := core) (InitialFS.fresh A) (InitialFS.extra core)
+    (InitialFS.isCockcroft core hcore) (InitialFS.core_trivial core hcore.2)
 
 def actualAmbientChain (n : ℕ) : AmbientChain core n :=
   ambientChains core hcore (actualInitial core hcore) n

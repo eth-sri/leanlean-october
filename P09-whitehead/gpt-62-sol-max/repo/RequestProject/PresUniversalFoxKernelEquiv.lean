@@ -29,10 +29,7 @@ theorem presUniversalFox_coordinates_commute
       coverSecondBoundary (relSub ρ) ρ (presUniversalRelatorRingEquiv ρ w hw hpos c) := by
   have h := LinearMap.congr_fun (presUniversalGroupRingBoundary_eq_fox ρ w hw hpos)
     (presUniversalRelatorRingEquiv ρ w hw hpos c)
-  simpa only [presUniversalGroupRingBoundary, presUniversalGroupBoundary,
-    presUniversalRelatorRingEquiv, presUniversalGeneratorRingEquiv,
-    LinearEquiv.trans_apply, LinearMap.comp_apply, LinearEquiv.coe_coe,
-    LinearEquiv.symm_apply_apply, LinearMap.restrictScalars_apply] using h
+  simp_all [presUniversalGroupRingBoundary, presUniversalGroupBoundary, presUniversalRelatorRingEquiv, presUniversalGeneratorRingEquiv, LinearEquiv.trans_apply, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply, LinearMap.restrictScalars_apply]
 
 /-- The genuine universal geometric generator-boundary kernel is the actual Fox kernel. -/
 noncomputable def presUniversalGeneratorFoxKernelEquiv :
@@ -40,9 +37,7 @@ noncomputable def presUniversalGeneratorFoxKernelEquiv :
       w uOrderEnd (presUniversalEnd_isPosetCover w hpos)) ≃ₗ[ℤ]
     LinearMap.ker ((coverSecondBoundary (relSub ρ) ρ).restrictScalars ℤ) where
   toFun c := ⟨presUniversalRelatorRingEquiv ρ w hw hpos c.val, by
-    change coverSecondBoundary (relSub ρ) ρ _ = 0
-    rw [← presUniversalFox_coordinates_commute]
-    rw [c.property, map_zero]⟩
+    simp_all [← presUniversalFox_coordinates_commute]⟩
   invFun c := ⟨(presUniversalRelatorRingEquiv ρ w hw hpos).symm c.val, by
     apply (presUniversalGeneratorRingEquiv ρ w hw hpos).injective
     rw [map_zero, presUniversalFox_coordinates_commute, LinearEquiv.apply_symm_apply]

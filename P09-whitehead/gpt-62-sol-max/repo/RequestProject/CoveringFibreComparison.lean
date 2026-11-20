@@ -33,7 +33,7 @@ theorem fibreMap_monodromy {x x' : X} (γ : Path x x') (y : r ⁻¹' {x}) :
     · change f (Γ 0) = f y.val
       rw [hr.liftPath_zero]
   apply Subtype.ext
-  exact congrArg (fun k : C(unitInterval, E) => k 1) hΓ
+  exact congrArg (fun k  => k 1) hΓ
 
 include hr hp in
 theorem fibreMap_bijective_of_joined {x x' : X} (hxx' : Joined x x')
@@ -61,7 +61,7 @@ theorem bijective_of_fibrewise
     (hfib : ∀ x, Function.Bijective (fibreMap r p f hover x)) : Function.Bijective f := by
   constructor
   · intro y z hyz
-    have hz : r z = r y := (hover z).symm.trans
+    have hz  := (hover z).symm.trans
       ((congrArg p hyz).symm.trans (hover y))
     exact congrArg Subtype.val ((hfib (r y)).1
       (show fibreMap r p f hover (r y) ⟨y, rfl⟩ =

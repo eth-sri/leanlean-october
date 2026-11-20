@@ -19,11 +19,7 @@ omit [DecidableEq α] in
 theorem fox_mk_single_letter (p : α × Bool) :
     FreeGroup.mk [p] = foxWordLetter p := by
   obtain ⟨a, b⟩ := p
-  cases b
-  · change FreeGroup.mk [(a, false)] = (FreeGroup.of a)⁻¹
-    rw [show FreeGroup.of a = FreeGroup.mk [(a, true)] from rfl, FreeGroup.inv_mk]
-    rfl
-  · rfl
+  cases b <;> rfl
 
 theorem fox_letter_incidence (i : α) (p : α × Bool) :
     fox i (foxWordLetter p) = foxWordIncidence i p := by
@@ -46,14 +42,13 @@ theorem foxWordPathBoundary_eq (i : α) (g : FreeGroup α) (l : List (α × Bool
   | nil => simp [foxWordPathBoundary, ← FreeGroup.one_eq_mk]
   | cons p l ih =>
     have hm : FreeGroup.mk (p :: l) = foxWordLetter p * FreeGroup.mk l := by
-      rw [← fox_mk_single_letter, FreeGroup.mul_mk]
-      rfl
+      simp [← fox_mk_single_letter]
     rw [foxWordPathBoundary, ih, hm, fox_mul, fox_letter_incidence, grp_mul,
       mul_add, mul_assoc]
 
 /-- At the identity vertex, the word edge sum is exactly the Fox boundary entry. -/
 theorem foxWordPathBoundary_one (i : α) (l : List (α × Bool)) :
     foxWordPathBoundary i 1 l = fox i (FreeGroup.mk l) := by
-  rw [foxWordPathBoundary_eq, grp_one, one_mul]
+  simp [foxWordPathBoundary_eq]
 
 end FiniteChains

@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.ChamberQuotientStarRetraction
-public import RequestProject.PosetCoverComparableLifts
+public import RequestProject.PosetCoverUpTransform
 
 @[expose] public section
 
@@ -25,10 +25,10 @@ variable (a : Qpos A X att) (hc : IsConnected (orderCx (Qpos A X att)))
 
 noncomputable def qLiftedStarRetraction (p : QLiftedBaseStar a) : QLiftedBase a :=
   ⟨(uOrderEnd_isPosetCover hc).lowerMapLift Subtype.val
-    (fun p : QLiftedBaseStar a => qBaseStarRetraction ⟨uOrderEnd p.1, p.2⟩)
+    (fun p  => qBaseStarRetraction ⟨uOrderEnd p.1, p.2⟩)
     (fun p => qBaseStarRetraction_le ⟨uOrderEnd p.1, p.2⟩) p, by
       have h := (uOrderEnd_isPosetCover hc).lowerMapLift_spec Subtype.val
-        (fun p : QLiftedBaseStar a => qBaseStarRetraction ⟨uOrderEnd p.1, p.2⟩)
+        (fun p  => qBaseStarRetraction ⟨uOrderEnd p.1, p.2⟩)
         (fun p => qBaseStarRetraction_le ⟨uOrderEnd p.1, p.2⟩) p
       rw [h.2]
       exact qBaseStarRetraction_mem_base _⟩
@@ -36,14 +36,14 @@ noncomputable def qLiftedStarRetraction (p : QLiftedBaseStar a) : QLiftedBase a 
 theorem qLiftedStarRetraction_monotone : Monotone (qLiftedStarRetraction a hc) := by
   intro p r h
   exact (uOrderEnd_isPosetCover hc).lowerMapLift_monotone Subtype.val
-    (fun p : QLiftedBaseStar a => qBaseStarRetraction ⟨uOrderEnd p.1, p.2⟩)
+    (fun p  => qBaseStarRetraction ⟨uOrderEnd p.1, p.2⟩)
     monotone_subtypeVal (fun _ _ h => qBaseStarRetraction_monotone (uOrderEnd_monotone h))
     (fun p => qBaseStarRetraction_le ⟨uOrderEnd p.1, p.2⟩) h
 
 theorem qLiftedStarRetraction_le (p : QLiftedBaseStar a) :
     qBaseIntoStar a (qLiftedStarRetraction a hc p) ≤ p :=
   ((uOrderEnd_isPosetCover hc).lowerMapLift_spec Subtype.val
-    (fun p : QLiftedBaseStar a => qBaseStarRetraction ⟨uOrderEnd p.1, p.2⟩)
+    (fun p  => qBaseStarRetraction ⟨uOrderEnd p.1, p.2⟩)
     (fun p => qBaseStarRetraction_le ⟨uOrderEnd p.1, p.2⟩) p).1
 
 end FiniteChains.Davis

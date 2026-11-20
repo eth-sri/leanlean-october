@@ -26,11 +26,8 @@ def cellInclusion (i : ℕ) : Hom (c.cellComplex i) (c.cellComplex (i + 1)) :=
     (c.chainRel i) (c.chainRel (i + 1)) (c.chainCellIncl i) (c.chainRel_incl i)
 
 theorem cellInclusion_zero (hinj : Function.Injective (expMatrix core))
-    (i : ℕ) (hi : i < n + 1) : ZeroPi2 (c.cellInclusion i) := by
-  apply (zeroPi2_presInclHom_iff (ρ := c.chainRel i) (σ := c.chainRel (i + 1))
-    (c.chainGenIncl i) (c.chainGenIncl_injective i)
-    (c.chainCellIncl i) (c.chainRel_incl i)).mpr
-  exact (c.toPresChainFS hinj).zero_pi2 i hi
+    (i : ℕ) (hi : i < n + 1) : ZeroPi2 (c.cellInclusion i) :=
+  (c.toPresChainFS hinj).zero_pi2 i hi
 
 theorem first_cellInclusion_pi1Trivial : Pi1Trivial (c.cellInclusion 0) := by
   apply (pi1Trivial_presInclHom_iff (ρ := c.chainRel 0) (σ := c.chainRel 1)
@@ -39,7 +36,7 @@ theorem first_cellInclusion_pi1Trivial : Pi1Trivial (c.cellInclusion 0) := by
   intro w
   induction w using QuotientGroup.induction_on with
   | H w =>
-      let f : FreeGroup A →* PresGroup (c.chainRel 1) :=
+      let f  :=
         (QuotientGroup.mk' (relSub (c.chainRel 1))).comp (FreeGroup.map Sum.inl)
       have hf : f = 1 := by
         apply FreeGroup.ext_hom
@@ -51,10 +48,3 @@ theorem first_cellInclusion_pi1Trivial : Pi1Trivial (c.cellInclusion 0) := by
       exact DFunLike.congr_fun hf w
 
 end FiniteChains.RelativeNormalForm.AmbientChain
-
-namespace FiniteChains.RelativeNormalForm
-open Comb
-variable {A C : Type} (core : C → FreeGroup A)
-  (hcore : Function.Bijective (expMatrix core))
-
-end FiniteChains.RelativeNormalForm

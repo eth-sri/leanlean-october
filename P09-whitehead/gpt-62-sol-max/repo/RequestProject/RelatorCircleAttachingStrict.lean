@@ -22,19 +22,19 @@ theorem relatorCircleAttaching_strictMono :
     · change aFun w (TCirc.pt w j k.val CPos.cor) <
         aFun w (TCirc.pt w j k.val CPos.cedgL)
       rw [aFun_pt_cor, aFun_pt_cedgL_of_get w ha]
-      exact (roseBaseEdge a.1 (!a.2)).property
+      tauto
     · change aFun w (TCirc.pt w j k.val CPos.cmid) <
         aFun w (TCirc.pt w j k.val CPos.cedgL)
       rw [aFun_pt_cmid_of_get w ha, aFun_pt_cedgL_of_get w ha]
-      exact (roseMidEdge a.1 (!a.2)).property
+      tauto
     · change aFun w (TCirc.pt w j k.val CPos.cmid) <
         aFun w (TCirc.pt w j k.val CPos.cedgR)
       rw [aFun_pt_cmid_of_get w ha, aFun_pt_cedgR_of_get w ha]
-      exact (roseMidEdge a.1 a.2).property
+      tauto
     · change aFun w (TCirc.pt w j (relatorCircleNext w j k).val CPos.cor) <
         aFun w (TCirc.pt w j k.val CPos.cedgR)
       rw [aFun_pt_cor, aFun_pt_cedgR_of_get w ha]
-      exact (roseBaseEdge a.1 a.2).property
+      tauto
   intro x y h
   exact he ⟨(x, y), h⟩
 

@@ -22,7 +22,7 @@ theorem coordinateFix_face_mono (j : V) (z : CubeCoord) {c d : Cube V}
   by_cases hv : v = j
   · subst v
     right
-    simp only [coordinateFix, Function.update_self]
+    simp [coordinateFix]
   · simpa only [coordinateFix, Function.update_of_ne hv] using h v
 
 theorem coordinateOpen_face_mono (j : V) (z : CubeCoord) (hz : z ≠ CubeCoord.free)
@@ -57,13 +57,7 @@ theorem coordinate_face_open (j : V) (z : CubeCoord) (c : Cube V) :
     CoordinateFace c (coordinateOpen j z c) := by
   intro v
   unfold coordinateOpen
-  split
-  · exact Or.inr rfl
-  · by_cases hv : v = j
-    · subst v
-      exact Or.inl (Function.update_self _ _ _)
-    · right
-      rw [Function.update_of_ne hv]
+  grind
 
 theorem coordinate_fix_face_open (j : V) (z : CubeCoord) (c : Cube V) :
     CoordinateFace (coordinateFix j z c) (coordinateOpen j z c) := by
@@ -74,7 +68,7 @@ theorem coordinate_fix_face_open (j : V) (z : CubeCoord) (c : Cube V) :
     · right
       simp [coordinateFix, coordinateOpen, hc, Function.update_self]
     · left
-      simp only [coordinateOpen, if_neg hc, Function.update_self]
+      simp [coordinateOpen, if_neg hc, Function.update_self]
   · have ho : coordinateOpen j z c v = c v := by
       unfold coordinateOpen
       split
@@ -138,15 +132,13 @@ theorem coordinateFix_ne_top (j : V) (z : CubeCoord) (hz : z ≠ CubeCoord.free)
     {c t : Cube V} (ht : t j = CubeCoord.free) : coordinateFix j z c ≠ t := by
   intro he
   have hh := congrFun he j
-  simp only [coordinateFix, Function.update_self, ht] at hh
-  exact hz hh
+  simp_all [coordinateFix, Function.update_self]
 
 theorem coordinateFix_ne_facet (j : V) (b z : CubeCoord) (hbz : b ≠ z)
     (c t : Cube V) : coordinateFix j z c ≠ coordinateFix j b t := by
   intro he
   have hh := congrFun he j
-  simp only [coordinateFix, Function.update_self] at hh
-  exact hbz hh.symm
+  simp_all [coordinateFix, Function.update_self]
 
 theorem coordinateOpen_ne_facet (j : V) (b z : CubeCoord)
     (hb : b ≠ CubeCoord.free) (hbz : b ≠ z) (c t : Cube V) :
@@ -156,7 +148,6 @@ theorem coordinateOpen_ne_facet (j : V) (b z : CubeCoord)
   by_cases hc : c j = z
   · simp only [coordinateOpen, if_pos hc, coordinateFix, Function.update_self] at hh
     exact hbz (hh.symm.trans hc)
-  · simp only [coordinateOpen, if_neg hc, coordinateFix, Function.update_self] at hh
-    exact hb hh.symm
+  simp_all [coordinateOpen, coordinateFix, Function.update_self]
 
 end FiniteChains.Davis

@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.TopologicalSingular.SimplexPrismRetraction
-public import RequestProject.TopologicalSingular.SingularChainH1
+public import RequestProject.TopologicalSingular.SingularPathHomotopy
+public import Mathlib.LinearAlgebra.Quotient.Basic
 
 @[expose] public section
 
@@ -12,7 +13,7 @@ variable {X : Type u} [TopologicalSpace X]
 
 theorem simplexOne_boundary_endpoints (z : Domain 1) (hz : z ∈ simplexBoundary 1) :
     stdSimplexHomeomorphUnitInterval z = 0 ∨ stdSimplexHomeomorphUnitInterval z = 1 := by
-  have hs : z.val 0 + z.val 1 = 1 := (Fin.sum_univ_two z.val).symm.trans z.property.2
+  have hs  := (Fin.sum_univ_two z.val).symm.trans z.property.2
   obtain ⟨i, hi⟩ := hz
   fin_cases i
   · right
@@ -53,10 +54,10 @@ theorem singularEdge_nullhomotopic [SimplyConnectedSpace X] (x : X) (tau : Simpl
   · intro t z hz
     change G (t, stdSimplexHomeomorphUnitInterval z) = tau z
     rcases simplexOne_boundary_endpoints z hz with he | he
-    · have hv : z = stdSimplex.vertex 0 := stdSimplexHomeomorphUnitInterval.injective
+    · have hv  := stdSimplexHomeomorphUnitInterval.injective
         (he.trans stdSimplexHomeomorphUnitInterval_zero.symm)
       rw [he, G.source, hv, h0]
-    · have hv : z = stdSimplex.vertex 1 := stdSimplexHomeomorphUnitInterval.injective
+    · have hv  := stdSimplexHomeomorphUnitInterval.injective
         (he.trans stdSimplexHomeomorphUnitInterval_one.symm)
       rw [he, G.target, hv, h1]
 

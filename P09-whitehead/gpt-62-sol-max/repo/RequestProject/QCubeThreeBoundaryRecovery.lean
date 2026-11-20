@@ -16,14 +16,12 @@ theorem qCube_three_boundary_reconstruction (y : StrictOrdTet (QCube A) →₀ �
     (hb : ∀ s ∈ (strictOrdBoundary3 y).support, s.1.2.2.spx.card ≤ 2) :
     ∃ r : QThreeCube A →₀ ℤ, qThreeChainBoundary r = strictOrdBoundary3 y := by
   classical
-  let S := y.support.image (fun t => t.1.2.2.2)
+  let S := y.support.image (·.1.2.2.2)
   have hc (c : QCube A) (hmem : c ∈ S) : c.spx.card = 3 := by
     obtain ⟨t, ht, rfl⟩ := Finset.mem_image.mp hmem
     exact (qCube_tetrahedron_dimensions t (hy t ht)).2.2.2
   let C : {c : QCube A // c ∈ S} → QThreeCube A := fun c => ⟨c.1, hc c.1 c.2⟩
-  have hex (a : {c : QCube A // c ∈ S}) : ∃ k : ℤ,
-      strictOrdBoundary3 (y.filter (fun t => t.1.2.2.2 = a.1)) =
-        k • qThreeCubeBoundary (C a) := qThreeCube_component_boundary (C a) y hy hb
+  have hex (a : {c : QCube A // c ∈ S})  := qThreeCube_component_boundary (C a) y hy hb
   choose k hk using hex
   refine ⟨∑ a ∈ S.attach, Finsupp.single (C a) (k a), ?_⟩
   rw [map_sum]

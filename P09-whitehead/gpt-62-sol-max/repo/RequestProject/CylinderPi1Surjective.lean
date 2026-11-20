@@ -5,9 +5,6 @@ public import RequestProject.OrderReflexiveConjugation
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -22,15 +19,9 @@ theorem cylinder_loop_retraction (x : X)
         (mapPath (orderCxMap (cylRetr a) (cylRetr_monotone a)) p)) := by
   have h := htpy_loop_mapPath_le_fixed monotone_id (cylCollapse_monotone a)
     (le_cylIn_cylRetr a) (a := cylIn a x) rfl p hp
-  have hid : mapPath (orderCxMap id monotone_id) p = p := by
-    clear hp h
-    induction p with
-    | nil => rfl
-    | cons e p ih =>
-      simp only [mapPath, List.map_cons] at ih ⊢
-      exact congrArg (List.cons e) ih
-  rw [hid] at h
-  simpa only [mapPath, List.map_map, Function.comp_def, orderCxMap, cylCollapse, cylIn, cylRetr, id] using h
+  rw [orderCxMap_id, mapPath_id] at h
+  rw [mapPath_comp, orderCxMap_comp]
+  exact h
 
 /-- The actual base inclusion surjects onto the cylinder fundamental group. -/
 theorem cylinder_pi1_surjective (x : X) :

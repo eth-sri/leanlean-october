@@ -10,8 +10,6 @@ actual maps of disk models, retaining every original vertex and edge.
 This is the simultaneous graph datum for necessity. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW
@@ -24,7 +22,7 @@ variable {X : Type} [TopologicalSpace X] [T2Space X] [CWComplex (Set.univ : Set 
 
 theorem subcomplex_cell_mono (h : (C : Set X) ⊆ D) (n : ℕ) : C.I n ⊆ D.I n := by
   intro j hj
-  have hx := CWComplex.map_zero_mem_openCell (C := (Set.univ : Set X)) n j
+  have hx := CWComplex.map_zero_mem_openCell (C := Set.univ) n j
   have hxD := h (C.openCell_subset_of_mem hj hx)
   by_contra hn
   exact Set.disjoint_left.mp (D.disjoint_openCell_subcomplex_of_not_mem hn) hx hxD
@@ -32,7 +30,7 @@ theorem subcomplex_cell_mono (h : (C : Set X) ⊆ D) (n : ℕ) : C.I n ⊆ D.I n
 def subcomplexCellInclusion (h : (C : Set X) ⊆ D) (n : ℕ) :
     RelCWComplex.cell (C : Set X) n ↪ RelCWComplex.cell (D : Set X) n :=
   ⟨fun j => ⟨j.val, subcomplex_cell_mono h n j.property⟩,
-    fun _ _ he => Subtype.ext (congrArg (fun z : RelCWComplex.cell (D : Set X) n => z.val) he)⟩
+    fun _ _ he => Subtype.ext (congrArg (·.val) he)⟩
 
 theorem subcomplex_skeleton_mono (h : (C : Set X) ⊆ D) (n : ℕ) :
     (CWComplex.skeletonLT (C : Set X) (n : ℕ∞) : Set X) ⊆
@@ -50,7 +48,7 @@ def subcomplexSkeletonInclusion (h : (C : Set X) ⊆ D) (n : ℕ) :
 
 theorem subcomplexSkeletonInclusion_injective (h : (C : Set X) ⊆ D) (n : ℕ) :
     Function.Injective (subcomplexSkeletonInclusion h n) :=
-  fun _ _ he => Subtype.ext (congrArg (fun z : SkeletonCarrier (D : Set X) n => z.val) he)
+  fun _ _ he => Subtype.ext (congrArg (·.val) he)
 
 def subcomplexGraph (C : CWComplex.Subcomplex (Set.univ : Set X)) : Comb.Complex2 :=
   graphCx (skeletonAttachingMap (C : Set X) 1)
@@ -81,12 +79,12 @@ theorem subcomplexGraphInclusion_comp (h : (C : Set X) ⊆ D)
   · rfl
   · rfl
   · funext f
-    exact Empty.elim f
+    trivial
 
 theorem subcomplexZeroSkeleton_discrete (C : CWComplex.Subcomplex (Set.univ : Set X)) :
     DiscreteTopology (SkeletonCarrier (C : Set X) 1) := by
-  have hs : (CWComplex.skeletonLT (C : Set X) (1 : ℕ∞) : Set X) ⊆
-      (CWComplex.skeletonLT (Set.univ : Set X) (1 : ℕ∞) : Set X) := by
+  have hs : (CWComplex.skeletonLT (C : Set X) 1 : Set X) ⊆
+      (CWComplex.skeletonLT (Set.univ : Set X) 1 : Set X) := by
     intro x hx
     rw [← CWComplex.iUnion_openCell_eq_skeletonLT] at hx ⊢
     obtain ⟨n, hn, j, hj⟩ := by simpa only [Set.mem_iUnion] using hx
@@ -145,8 +143,7 @@ theorem subcomplexGraphDiskMap_old (h : (C : Set X) ⊆ D)
       old (skeletonAttachingMap (D : Set X) 1) _ ((subcomplexGraphInclusion h).onV v) := by
   apply (skeletonAttachmentHomeomorph (D : Set X) 1).injective
   rw [subcomplexGraphDiskMap_skeleton]
-  apply Subtype.ext
-  rfl
+  aesop
 
 theorem subcomplexGraphDiskMap_edge (h : (C : Set X) ⊆ D)
     (j : (subcomplexGraph C).E) (t : I) :
@@ -158,7 +155,7 @@ theorem subcomplexGraphDiskMap_edge (h : (C : Set X) ⊆ D)
   apply Subtype.ext
   change (skeletonAttachmentHomeomorph (C : Set X) 1
     (cell _ _ ⟨j, graphDiskHomeomorph t⟩)).val =
-    (skeletonAttachmentHomeomorph (D : Set X) 1
+    (skeletonAttachmentHomeomorph D 1
       (cell _ _ ⟨subcomplexCellInclusion h 1 j, graphDiskHomeomorph t⟩)).val
   rw [skeletonAttachmentHomeomorph_cell, skeletonAttachmentHomeomorph_cell]
   rfl

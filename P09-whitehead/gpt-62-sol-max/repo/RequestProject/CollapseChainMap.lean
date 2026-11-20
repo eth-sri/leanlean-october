@@ -87,12 +87,12 @@ theorem retr_add (t : T) (f : F) (x y : F → R) :
 theorem retr_leftMul (a : R) (t : T) (f : F) (x : F → R) :
     retr d t f (fun g => a * x g) = fun g => a * retr d t f x g := by
   funext g
-  simp only [retr, mul_sub, mul_assoc]
+  simp [retr, mul_sub, mul_assoc]
 
 @[simp] theorem cmap_zero (l : List (T × F)) : cmap d l 0 = 0 := by
   induction l with
   | nil => rfl
-  | cons p l ih => obtain ⟨t, f⟩ := p; simp [cmap, ih]
+  | cons p l ih => simp [cmap, ih]
 
 theorem cmap_add (l : List (T × F)) (x y : F → R) :
     cmap d l (x + y) = cmap d l x + cmap d l y := by
@@ -123,7 +123,7 @@ theorem retr_of_notMem {t t' : T} {f : F} (h : d t' f = 0) : retr d t f (d t') =
 theorem cmap_bdry_eq_zero {l : List (T × F)} (hl : IsChainCollapse d l) :
     ∀ p ∈ l, cmap d l (d p.1) = 0 := by
   induction l with
-  | nil => intro p hp; exact absurd hp List.not_mem_nil
+  | nil => tauto
   | cons p l ih =>
       obtain ⟨t, f⟩ := p
       obtain ⟨hunit, hfree, hrest⟩ := hl
@@ -133,7 +133,7 @@ theorem cmap_bdry_eq_zero {l : List (T × F)} (hl : IsChainCollapse d l) :
         rw [retr_self hunit, cmap_zero]
       · show cmap d l (retr d t f (d r.1)) = 0
         rw [retr_of_notMem (hfree r hrl)]
-        exact ih hrest r hrl
+        tauto
 
 /-- The chain map of a collapse, applied to a combination of boundaries of top cells. -/
 theorem cmap_sum (l : List (T × F)) [DecidableEq T] (s : Finset T) (c : T → R) :
@@ -141,10 +141,9 @@ theorem cmap_sum (l : List (T × F)) [DecidableEq T] (s : Finset T) (c : T → R
   classical
   induction s using Finset.induction with
   | empty =>
-      have hz : (fun g => ∑ t ∈ (∅ : Finset T), c t * d t g) = (0 : F → R) := by
-        funext g; simp
-      rw [hz, cmap_zero]
-      funext g; simp
+      have hz : (fun g => ∑ t ∈ (∅), c t * d t g) = 0 := by
+        aesop
+      simp_all
   | insert t s ht ih =>
       have hsplit : (fun g => ∑ u ∈ insert t s, c u * d u g)
           = (fun g => c t * d t g) + (fun g => ∑ u ∈ s, c u * d u g) := by
@@ -177,7 +176,7 @@ theorem cmap_of_forall_eq_zero {l : List (T × F)} (x : F → R) (hx : ∀ p ∈
   | nil => rfl
   | cons p l ih =>
       obtain ⟨t, f⟩ := p
-      have hf : x f = 0 := hx (t, f) List.mem_cons_self
+      have hf  := hx (t, f) List.mem_cons_self
       have hretr : retr d t f x = x := by
         funext g; simp [retr, hf]
       show cmap d l (retr d t f x) = x
@@ -191,7 +190,7 @@ theorem cmap_eq_zero_of_isBoundary {l : List (T × F)} (hl : IsChainCollapse d l
     [DecidableEq T] {s : Finset T} {c : T → R} (hs : ∀ t ∈ s, ∃ f, (t, f) ∈ l)
     {x : F → R} (hx : ∀ g, x g = ∑ t ∈ s, c t * d t g) :
     cmap d l x = 0 := by
-  have hxe : x = fun g => ∑ t ∈ s, c t * d t g := funext hx
+  have hxe  := funext hx
   rw [hxe]
   exact cmap_sum_eq_zero hl s c hs
 

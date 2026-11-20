@@ -47,13 +47,12 @@ omit [DecidableEq α] in
 omit [DecidableEq α] in
 theorem presWord_append (l l' : List (α × Bool)) :
     presWord ρ (l ++ l') = presWord ρ l * presWord ρ l' := by
-  unfold presWord
-  rw [← FreeGroup.mul_mk, QuotientGroup.mk_mul]
+  tauto
 
 theorem presWord_att (j : J) : presWord ρ ((presComplex ρ).att j) = 1 := by
   have h : presWord ρ ((presComplex ρ).att j) = QuotientGroup.mk (ρ j) := by
     unfold presWord
-    rw [show (presComplex ρ).att j = (ρ j).toWord from rfl, FreeGroup.mk_toWord]
+    simp [FreeGroup.mk_toWord]
   rw [h, QuotientGroup.eq_one_iff]
   exact Subgroup.subset_normalClosure ⟨j, rfl⟩
 
@@ -63,7 +62,6 @@ theorem presWord_cancels {l l' : List (α × Bool)} (h : Cancels (presComplex ρ
   rcases h with ⟨p, q, eb, hl, hl'⟩ | ⟨p, q, j, hl, hl'⟩
   · obtain ⟨x, b⟩ := eb
     subst hl; subst hl'
-    unfold presWord
     exact congrArg QuotientGroup.mk (Quot.sound FreeGroup.Red.Step.not)
   · subst hl; subst hl'
     rw [presWord_append, presWord_append, presWord_append, presWord_att, mul_one]
@@ -95,12 +93,10 @@ def loopClass (l : List (α × Bool)) : Pi1 (presComplex ρ) PUnit.unit :=
 theorem loopClass_append (l l' : List (α × Bool)) :
     loopClass ρ (l ++ l') = loopClass ρ l * loopClass ρ l' := rfl
 
-@[simp] theorem loopClass_nil : loopClass ρ [] = 1 := rfl
 
 /-- The edge loop of a generator. -/
 def genLoop (i : α) : Pi1 (presComplex ρ) PUnit.unit := loopClass ρ [(i, true)]
 
-theorem loopClass_inv_gen (i : α) : loopClass ρ [(i, false)] = (genLoop ρ i)⁻¹ := rfl
 
 /-- Attaching words are null-homotopic, so they give the trivial loop class. -/
 theorem loopClass_att (j : J) : loopClass ρ ((presComplex ρ).att j) = 1 := by
@@ -115,7 +111,6 @@ theorem freeToPi1_mk (l : List (α × Bool)) :
     freeToPi1 ρ (FreeGroup.mk l) = loopClass ρ l := by
   induction l with
   | nil =>
-      simp only [freeToPi1, FreeGroup.lift_mk, List.map_nil, List.prod_nil]
       rfl
   | cons eb l ih =>
       obtain ⟨i, b⟩ := eb
@@ -123,8 +118,7 @@ theorem freeToPi1_mk (l : List (α × Bool)) :
       rw [hsplit, ← FreeGroup.mul_mk, map_mul, ih, loopClass_append]
       congr 1
       cases b
-      · rw [loopClass_inv_gen]
-        simp [freeToPi1]
+      · tauto
       · simp [freeToPi1, genLoop]
 
 theorem freeToPi1_relator (j : J) : freeToPi1 ρ (ρ j) = 1 := by
@@ -160,9 +154,7 @@ theorem pi1ToPres_presToPi1 (g : PresGroup ρ) : pi1ToPres ρ (presToPi1 ρ g) =
   induction g using QuotientGroup.induction_on with
   | H w =>
       rw [presToPi1_mk, ← FreeGroup.mk_toWord (x := w), freeToPi1_mk]
-      show presWord ρ w.toWord = _
-      rw [show presWord ρ w.toWord = QuotientGroup.mk (FreeGroup.mk w.toWord) from rfl,
-        FreeGroup.mk_toWord]
+      rfl
 
 /-- **The fundamental group of a presentation complex is the presented group**: the edge-path
 group of `presComplex ρ` at its unique vertex is `F/⟪r_j⟫`. -/

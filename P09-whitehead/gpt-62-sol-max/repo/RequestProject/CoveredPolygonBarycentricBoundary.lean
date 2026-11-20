@@ -10,9 +10,7 @@ public import RequestProject.BarycentricTwoChains
 boundary path, with all sheets retained. Pending final Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.CoveredPolygon
 open RACG Mirror Comb Cell
@@ -49,9 +47,8 @@ theorem barycentricChain1_boundaryEdges :
       pathChain (D.subdivisionBoundaryPath hc f M) := by
   have hstep (p : Fin M) :
       pathChain (D.subdivisionBoundaryEdge hc f p) =
-        barycentricChain1 (Finsupp.single ⟨(D.V p, D.E p), D.ve p⟩ 1 -
-          Finsupp.single ⟨(D.V (p + 1), D.E p), D.v1e p⟩ 1) := by
-    rw [subdivisionBoundaryEdge, pathChain_append, pathChain_revPath, map_sub]
+        barycentricChain1 (flagEdge (D.ve p) (D.v1e p)) := by
+    rw [subdivisionBoundaryEdge, pathChain_append, pathChain_revPath, flagEdge, map_sub]
     simp [edgeHop, hop, pathChain, ordPos, ordNeg, barycentricChain1,
       barycentricEdge, sub_eq_add_neg]
   have hpath (n : ℕ) : pathChain (D.subdivisionBoundaryPath hc f n) =
@@ -63,8 +60,7 @@ theorem barycentricChain1_boundaryEdges :
   rw [hpath]
   rw [← Fin.sum_univ_eq_sum_range]
   simp only [hcyc]
-  rw [boundaryEdges, map_sum]
-  exact Finset.sum_congr rfl (fun p _ => (hstep p).symm)
+  simp_all [boundaryEdges, map_sum]
 
 theorem subdivisionBoundaryEdge_projection (p : Fin M) :
     mapPath (orderCxMap (barycentricMap f hf.mono) (barycentricMap_monotone f hf.mono))
@@ -87,9 +83,9 @@ theorem subdivisionBoundaryPath_projection (n : ℕ) :
       D.subdivisionBoundaryEdge_projection hc f hf, bdPath]
 
 theorem subdivisionFundamental_boundary :
-    Comb.bdry2 (orderCx (NeSpx (cmpRel P))) (barycentricChain2 (decodeOrdNerve2 D.fundamental)) =
+    Comb.bdry2 (orderCx (NeSpx (cmpRel P))) (barycentricChain2 (D.fundamental)) =
       pathChain (D.subdivisionBoundaryPath hc f M) := by
-  rw [barycentricChain2_boundary, D.decodedFundamental_boundary,
+  rw [barycentricChain2_boundary, D.fundamental_boundary,
     D.barycentricChain1_boundaryEdges hc f]
 
 end FiniteChains.Davis.CoveredPolygon

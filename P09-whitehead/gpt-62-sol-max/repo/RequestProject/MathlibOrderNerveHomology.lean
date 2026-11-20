@@ -48,8 +48,8 @@ noncomputable def mathlibOrderNerveShortComplexIso :
           (mathlibOrderNerveModule P)).sc' 3 2 1) ≪≫
     ((AlgebraicTopology.AlternatingFaceMapComplex.obj
       (mathlibOrderNerveModule P)).isoSc' 3 2 1
-        ((ComplexShape.down ℕ).prev_eq' (by decide : (ComplexShape.down ℕ).Rel 3 2))
-        ((ComplexShape.down ℕ).next_eq' (by decide : (ComplexShape.down ℕ).Rel 2 1))).symm
+        ((ComplexShape.down ℕ).prev_eq' (by decide))
+        ((ComplexShape.down ℕ).next_eq' (by decide))).symm
 
 /-- The order-cell quotient is the actual degree-two categorical homology of
 Mathlib's alternating-face chain complex. -/

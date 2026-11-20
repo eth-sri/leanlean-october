@@ -42,8 +42,8 @@ theorem regularCover_cycle_mem_pi2FromSub_span
   have hT := isConnected_pushoutComplex p i hiV hiE
     (isConnected_of_covering p hp hDconn) hL d₀
   obtain ⟨l, hl⟩ := hT x ((pushoutMap p i hiV hiE hiF).onV (i.onV d₀))
-  apply pi2Generated_changeBase (pushoutMap p i hiV hiE hiF) hl _ c hc
-  exact PushoutRelativeCopies.cycle_mem_span_at_core p hp a hr he hf i hiV hiE hiF
-    hDconn hL d₀ ht hD hT
+  exact pi2Generated_changeBase _ hl
+    (PushoutRelativeCopies.cycle_mem_span_at_core ⟨p, i, hiV, hiE, hiF⟩ hp a hr he hf
+      hDconn hL d₀ ht hD hT) c hc
 
 end FiniteChains.Comb

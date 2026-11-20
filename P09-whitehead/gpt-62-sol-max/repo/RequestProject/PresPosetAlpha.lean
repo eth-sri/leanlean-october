@@ -24,8 +24,6 @@ Injectivity of `alphaHom` is proved in `RequestProject/PresPosetReading.lean` by
 left inverse.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -51,13 +49,11 @@ theorem isPath_circPath (j : J) : ∀ {m : ℕ}, m ≤ (w j).length →
   intro m
   induction m with
   | zero =>
-      intro _
-      show TCirc.pt w j 0 CPos.cor = TCirc.pt w j (0 % (w j).length) CPos.cor
-      rw [Nat.zero_mod]
+      aesop
   | succ m ih =>
       intro hm
-      have hlt : m < (w j).length := lt_of_lt_of_le (Nat.lt_succ_self m) hm
-      have hmod : m % (w j).length = m := Nat.mod_eq_of_lt hlt
+      have hlt  := lt_of_lt_of_le (Nat.lt_succ_self m) hm
+      have hmod  := Nat.mod_eq_of_lt hlt
       have hprev := ih (le_of_lt hlt)
       rw [hmod] at hprev
       show IsPath _ _ (circPath w j m ++ segAt w j m) _ _
@@ -68,7 +64,7 @@ theorem isPath_circLoop (j : J) :
     IsPath (orderCx (TCirc w)).src (orderCx (TCirc w)).tgt (circLoop w j)
       (TCirc.pt w j 0 CPos.cor) (TCirc.pt w j 0 CPos.cor) := by
   have h := isPath_circPath w j (le_refl (w j).length)
-  rwa [Nat.mod_self] at h
+  aesop
 
 /-! ### The attaching circle lies under the two-cell -/
 
@@ -92,10 +88,10 @@ theorem pathIn_mapPath_circPath (j : J) : ∀ {m : ℕ}, m ≤ (w j).length →
       (mapPath (orderCxMap (iCirc w) (iCirc_monotone w)) (circPath w j m)) := by
   intro m
   induction m with
-  | zero => intro _; exact pathIn_nil _
+  | zero => tauto
   | succ m ih =>
       intro hm
-      have hlt : m < (w j).length := lt_of_lt_of_le (Nat.lt_succ_self m) hm
+      have hlt  := lt_of_lt_of_le (Nat.lt_succ_self m) hm
       show PathIn _ (mapPath _ (circPath w j m ++ segAt w j m))
       rw [mapPath_append]
       intro e he
@@ -105,55 +101,86 @@ theorem pathIn_mapPath_circPath (j : J) : ∀ {m : ℕ}, m ≤ (w j).length →
 
 /-! ### The attaching circle is carried onto the loop of its word -/
 
-theorem mapPath_segAt (j : J) {k : ℕ} (hk : k < (w j).length) :
-    mapPath (orderCxMap (fun x => iRose w (aFun w x)) (iRose_aFun_monotone w)) (segAt w j k)
-      = letterLoop w (w j)[k] := by
-  have hp : (w j)[k]? = some (w j)[k] := List.getElem?_eq_getElem hk
-  have hcor : iRose w (aFun w (TCirc.pt w j k CPos.cor)) = iRose w Rose.base := rfl
-  have hcorS : iRose w (aFun w (TCirc.pt w j (TCirc.csucc w j k) CPos.cor))
-      = iRose w Rose.base := rfl
-  have hmid : iRose w (aFun w (TCirc.pt w j k CPos.cmid))
-      = iRose w (Rose.mid (w j)[k].1) := by rw [aFun_pt_cmid_of_get w hp]
-  have hL : iRose w (aFun w (TCirc.pt w j k CPos.cedgL))
-      = iRose w (Rose.edg (w j)[k].1 (!(w j)[k].2)) := by rw [aFun_pt_cedgL_of_get w hp]
-  have hR : iRose w (aFun w (TCirc.pt w j k CPos.cedgR))
-      = iRose w (Rose.edg (w j)[k].1 (w j)[k].2) := by rw [aFun_pt_cedgR_of_get w hp]
-  rw [segAt, dif_pos hk]
-  show [ordPos ((iRose_aFun_monotone w) (TCirc.cor_le_cedgL w hk)),
-      ordNeg ((iRose_aFun_monotone w) (TCirc.cmid_le_cedgL w hk)),
-      ordPos ((iRose_aFun_monotone w) (TCirc.cmid_le_cedgR w hk)),
-      ordNeg ((iRose_aFun_monotone w) (TCirc.cor_csucc_le_cedgR w hk))]
-    = letterLoop w (w j)[k]
-  rcases hpair : (w j)[k] with ⟨i, b⟩
-  rw [hpair] at hmid hL hR
-  cases b with
-  | true =>
-      show _ = genLoop w i
-      simp only [genLoop, List.cons.injEq, and_true]
-      exact ⟨ordPos_congr hcor hL _ _, ordNeg_congr hmid hL _ _, ordPos_congr hmid hR _ _,
-        ordNeg_congr hcorS hR _ _⟩
-  | false =>
-      show _ = genLoopRev w i
-      simp only [genLoopRev, List.cons.injEq, and_true]
-      exact ⟨ordPos_congr hcor hL _ _, ordNeg_congr hmid hL _ _, ordPos_congr hmid hR _ _,
-        ordNeg_congr hcorS hR _ _⟩
+def roseGeneratorWord (a : α) : List ((orderCx (Rose α)).E × Bool) :=
+  [ordPos (Rose.base_le_edg a false), ordNeg (Rose.mid_le_edg a false),
+    ordPos (Rose.mid_le_edg a true), ordNeg (Rose.base_le_edg a true)]
 
-theorem mapPath_circPath (j : J) : ∀ {m : ℕ}, m ≤ (w j).length →
-    mapPath (orderCxMap (fun x => iRose w (aFun w x)) (iRose_aFun_monotone w)) (circPath w j m)
-      = wordLoop w ((w j).take m) := by
+theorem roseGeneratorWord_valid (a : α) :
+    IsPath (orderCx (Rose α)).src (orderCx (Rose α)).tgt (roseGeneratorWord a) .base .base :=
+  ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+def roseLetterWord (p : α × Bool) : List ((orderCx (Rose α)).E × Bool) :=
+  if p.2 then roseGeneratorWord p.1 else revPath (X := orderCx (Rose α)) (roseGeneratorWord p.1)
+
+def roseWord (l : List (α × Bool)) : List ((orderCx (Rose α)).E × Bool) := l.flatMap roseLetterWord
+
+theorem roseLetterWord_valid (p : α × Bool) :
+    IsPath (orderCx (Rose α)).src (orderCx (Rose α)).tgt (roseLetterWord p) .base .base := by
+  rcases p with ⟨a, b⟩
+  cases b
+  · exact isPath_revPath (roseGeneratorWord_valid a)
+  · trivial
+
+theorem roseWord_valid (l : List (α × Bool)) :
+    IsPath (orderCx (Rose α)).src (orderCx (Rose α)).tgt (roseWord l) .base .base := by
+  induction l with
+  | nil => rfl
+  | cons p l ih => exact (roseLetterWord_valid p).append ih
+
+theorem mapPath_aFun_segAt (j : J) {k : ℕ} (hk : k < (w j).length) :
+    mapPath (orderCxMap (aFun w) (aFun_monotone w)) (segAt w j k) = roseLetterWord (w j)[k] := by
+  have hp  := List.getElem?_eq_getElem hk
+  have hmid : aFun w (TCirc.pt w j k CPos.cmid) = Rose.mid (w j)[k].1 := by
+    rw [aFun_pt_cmid_of_get w hp]
+  have hL : aFun w (TCirc.pt w j k CPos.cedgL) = Rose.edg (w j)[k].1 (!(w j)[k].2) := by
+    rw [aFun_pt_cedgL_of_get w hp]
+  have hR : aFun w (TCirc.pt w j k CPos.cedgR) = Rose.edg (w j)[k].1 (w j)[k].2 := by
+    rw [aFun_pt_cedgR_of_get w hp]
+  rw [segAt, dif_pos hk]
+  change [ordPos ((aFun_monotone w) (TCirc.cor_le_cedgL w hk)),
+    ordNeg ((aFun_monotone w) (TCirc.cmid_le_cedgL w hk)),
+    ordPos ((aFun_monotone w) (TCirc.cmid_le_cedgR w hk)),
+    ordNeg ((aFun_monotone w) (TCirc.cor_csucc_le_cedgR w hk))] = _
+  rcases he : (w j)[k] with ⟨a, b⟩
+  rw [he] at hmid hL hR
+  cases b
+  · aesop
+  · aesop
+
+theorem mapPath_aFun_circPath (j : J) : ∀ {m : ℕ}, m ≤ (w j).length →
+    mapPath (orderCxMap (aFun w) (aFun_monotone w)) (circPath w j m) = roseWord ((w j).take m) := by
   intro m
   induction m with
-  | zero => intro _; rfl
+  | zero => aesop
   | succ m ih =>
-      intro hm
-      have hlt : m < (w j).length := lt_of_lt_of_le (Nat.lt_succ_self m) hm
-      have hsplit : (w j).take (m + 1) = (w j).take m ++ [(w j)[m]] := by
-        rw [List.take_add_one, List.getElem?_eq_getElem hlt]
-        rfl
-      show mapPath _ (circPath w j m ++ segAt w j m) = _
-      rw [mapPath_append, ih (le_of_lt hlt), mapPath_segAt w j hlt, hsplit, wordLoop_append]
-      congr 1
-      simp [wordLoop]
+    intro hm
+    have hlt : m < (w j).length := by omega
+    have hsplit : (w j).take (m + 1) = (w j).take m ++ [(w j)[m]] := by
+      simp
+    change mapPath _ (circPath w j m ++ segAt w j m) = _
+    rw [mapPath_append, ih (Nat.le_of_lt hlt), mapPath_aFun_segAt w j hlt, hsplit]
+    simp only [roseWord, List.flatMap_append, List.flatMap_cons, List.flatMap_nil, List.append_nil]
+
+theorem mapPath_aFun_circLoop (j : J) :
+    mapPath (orderCxMap (aFun w) (aFun_monotone w)) (circLoop w j) = roseWord (w j) := by
+  simpa only [List.take_length, circLoop] using mapPath_aFun_circPath w j (le_refl (w j).length)
+
+private theorem mapPath_iRose_letter (p : α × Bool) :
+    mapPath (orderCxMap (iRose w) (iRose_monotone w)) (roseLetterWord p) = letterLoop w p := by
+  rcases p with ⟨i, b⟩
+  cases b <;> rfl
+
+private theorem mapPath_circPath (j : J) {m : ℕ} (hm : m ≤ (w j).length) :
+    mapPath (orderCxMap (fun x => iRose w (aFun w x)) (iRose_aFun_monotone w)) (circPath w j m)
+      = wordLoop w ((w j).take m) := by
+  change mapPath ((orderCxMap (iRose w) (iRose_monotone w)).comp
+    (orderCxMap (aFun w) (aFun_monotone w))) _ = _
+  rw [← mapPath_comp, mapPath_aFun_circPath w j hm]
+  induction (w j).take m with
+  | nil => rfl
+  | cons e l ih =>
+      change mapPath _ (roseLetterWord e ++ roseWord l) = letterLoop w e ++ wordLoop w l
+      rw [mapPath_append, mapPath_iRose_letter, ih]
 
 /-! ### The loop of a relator word is null-homotopic in the model -/
 
@@ -161,37 +188,32 @@ theorem htpy_wordLoop_nil (j : J) :
     Htpy (orderCx (PresPos w)) (ptBase w) (ptBase w) (wordLoop w (w j)) [] := by
   by_cases h0 : 0 < (w j).length
   case neg =>
-    have hnil : w j = [] := List.length_eq_zero_iff.mp (Nat.eq_zero_of_not_pos h0)
+    have hnil  := List.length_eq_zero_iff.mp (Nat.eq_zero_of_not_pos h0)
     rw [hnil]
-    exact Htpy.refl _
+    tauto
   case pos =>
   set u : TCirc w := TCirc.pt w j 0 CPos.cor with hu
-  have hloop : IsPath (orderCx (TCirc w)).src (orderCx (TCirc w)).tgt (circLoop w j) u u :=
+  have hloop  :=
     isPath_circLoop w j
-  have hfg : ∀ x : TCirc w, iCirc w x ≤ iRose w (aFun w x) := iCirc_le_iRose_aFun w
+  have hfg  := iCirc_le_iRose_aFun w
   -- the image of the attaching circle in the base copy is the loop of the word
   have himg : mapPath (orderCxMap (fun x => iRose w (aFun w x)) (iRose_aFun_monotone w))
       (circLoop w j) = wordLoop w (w j) := by
     have h := mapPath_circPath w j (le_refl (w j).length)
     rwa [List.take_length] at h
   -- the attaching circle itself dies under the cone point of the two-cell
-  have hcone : Htpy (orderCx (PresPos w)) (iCirc w u) (iCirc w u)
-      (mapPath (orderCxMap (iCirc w) (iCirc_monotone w)) (circLoop w j)) [] :=
+  have hcone  :=
     htpy_nil_of_pathIn_le (apexOf w j) (iCirc_le_apexOf w CPos.cor h0)
       (isPath_mapPath (orderCxMap (iCirc w) (iCirc_monotone w)) hloop)
       (pathIn_mapPath_circPath w j (le_refl (w j).length))
   -- the naturality homotopy relates the two images
   have hnat := htpy_loop_mapPath_le (iCirc_monotone w) (iRose_aFun_monotone w) hfg hloop
   rw [himg] at hnat
-  have h1 : Htpy (orderCx (PresPos w)) (ptBase w) (ptBase w)
-      ([ordNeg (hfg u)] ++ mapPath (orderCxMap (iCirc w) (iCirc_monotone w)) (circLoop w j)
-        ++ [ordPos (hfg u)])
-      ([ordNeg (hfg u)] ++ [] ++ [ordPos (hfg u)]) :=
+  have h1  :=
     hcone.congr_append (isPath_ordNeg (hfg u)) (isPath_ordPos (hfg u))
-  have h2 : Htpy (orderCx (PresPos w)) (ptBase w) (ptBase w)
-      [ordNeg (hfg u), ordPos (hfg u)] [] := htpy_ordNeg_ordPos (hfg u)
+  have h2  := htpy_ordNeg_ordPos (hfg u)
   refine hnat.trans (h1.trans ?_)
-  simpa using h2
+  aesop
 
 /-! ### The comparison homomorphism -/
 
@@ -205,38 +227,27 @@ def genClass (i : α) : Pi1 (orderCx (PresPos w)) (ptBase w) :=
 
 theorem wordClass_append (l l' : List (α × Bool)) :
     wordClass w (l ++ l') = wordClass w l * wordClass w l' := by
-  refine Quotient.sound ?_
-  show Htpy (orderCx (PresPos w)) (ptBase w) (ptBase w) (wordLoop w (l ++ l'))
-    (wordLoop w l ++ wordLoop w l')
-  rw [wordLoop_append]
-  exact Htpy.refl _
+  refine Quotient.sound ?_ <;> simp
 
-theorem wordClass_single_true (i : α) : wordClass w [(i, true)] = genClass w i := rfl
 
-theorem wordClass_single_false (i : α) : wordClass w [(i, false)] = (genClass w i)⁻¹ := rfl
 
 /-- The homomorphism of the free group into the fundamental group of the model. -/
 def alphaFree : FreeGroup α →* Pi1 (orderCx (PresPos w)) (ptBase w) :=
   FreeGroup.lift (genClass w)
 
 theorem alphaFree_of (i : α) : alphaFree w (FreeGroup.of i) = genClass w i := by
-  simp [alphaFree]
+  aesop
 
 theorem alphaFree_mk (l : List (α × Bool)) : alphaFree w (FreeGroup.mk l) = wordClass w l := by
   induction l with
   | nil =>
-      simp only [alphaFree, FreeGroup.lift_mk, List.map_nil, List.prod_nil]
       rfl
   | cons eb l ih =>
       obtain ⟨i, b⟩ := eb
       have hsplit : ((i, b) :: l) = [(i, b)] ++ l := rfl
       rw [hsplit, ← FreeGroup.mul_mk, map_mul, ih, wordClass_append]
       congr 1
-      cases b
-      · rw [wordClass_single_false]
-        simp [alphaFree, FreeGroup.lift_mk]
-      · rw [wordClass_single_true]
-        simp [alphaFree, FreeGroup.lift_mk]
+      cases b <;> rfl
 
 /-- **The relators die in the model.** -/
 theorem alphaFree_relator (j : J) : alphaFree w (FreeGroup.mk (w j)) = 1 := by
@@ -251,21 +262,8 @@ noncomputable def presWords (ρ : J → FreeGroup α) : J → List (α × Bool) 
 theorem mk_presWords (ρ : J → FreeGroup α) (j : J) :
     FreeGroup.mk (presWords ρ j) = ρ j := Quot.out_eq _
 
-/-- **The poset model of the presentation complex of `ρ`.** -/
-noncomputable abbrev presModelPos (ρ : J → FreeGroup α) : Type u := PresPos (presWords ρ)
 
-/-- **The marked comparison homomorphism** of the presentation `ρ` with its poset model: the
-class of a generator goes to the loop of that generator. -/
-noncomputable def alphaHom (ρ : J → FreeGroup α) :
-    PresGroup ρ →* Pi1 (orderCx (presModelPos ρ)) (ptBase (presWords ρ)) :=
-  QuotientGroup.lift _ (alphaFree (presWords ρ)) (by
-    refine Subgroup.normalClosure_le_normal ?_
-    rintro _ ⟨j, rfl⟩
-    have h := alphaFree_relator (presWords ρ) j
-    rwa [mk_presWords ρ j] at h)
 
-@[simp] theorem alphaHom_mk (ρ : J → FreeGroup α) (x : FreeGroup α) :
-    alphaHom ρ (QuotientGroup.mk x) = alphaFree (presWords ρ) x := rfl
 
 end PresModel
 end FiniteChains

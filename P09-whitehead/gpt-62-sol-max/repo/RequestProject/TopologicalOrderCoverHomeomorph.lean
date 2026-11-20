@@ -34,7 +34,7 @@ theorem realizedProjection_vertex_fibre (q : P)
   have hvq : v.1 = q := by
     rw [hx] at himg
     by_contra h
-    have h' : q ≠ v.1 := Ne.symm h
+    have h'  := Ne.symm h
     simp only [orderNerveRealizationOpenStar, Set.mem_setOf_eq,
       orderNerveRealizationCoordinates_vertex, if_neg h'] at himg
     exact lt_irrefl _ himg
@@ -64,7 +64,7 @@ theorem comparison_vertex_fibre_bijective (q : P) :
         cases w with
         | mk b e' =>
           dsimp at hv hw
-          have hab : a = b := hv.trans hw.symm
+          have hab  := hv.trans hw.symm
           clear hv hw
           subst b
           refine Sigma.ext rfl ?_
@@ -84,7 +84,7 @@ theorem comparison_fibre_bijective (x : orderNerveRealization P) :
       (CoveringComparison.fibreMap (realizedProjection p hp) p
         (realizationComparison p hp) (realizationComparison_projection p hp) x) := by
   obtain ⟨n, s, z, hz⟩ := orderNerveRealizationSimplex_jointly_surjective P x
-  have hj := orderNerveRealizationSimplex_joined_vertex s z (0 : Fin (n.len + 1))
+  have hj := orderNerveRealizationSimplex_joined_vertex s z 0
   rw [hz] at hj
   exact CoveringComparison.fibreMap_bijective_of_joined (realizedProjection p hp) p
     (realizedProjection_isCoveringMap p hp hs) hp (realizationComparison p hp)

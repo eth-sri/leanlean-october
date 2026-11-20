@@ -14,14 +14,13 @@ variable (hf : IsPosetCover f) (g : Q → Q) (hg : ∀ q, g q ≤ q)
 /-- Lift the upper leg from the canonical lower lift, rather than independently
 choosing a lift of the endpoint. -/
 noncomputable def roofTransform (a : P) : P :=
-  Classical.choose (hf.up (hf.downTransform g hg a) b
-    ((hf.downTransform_spec g hg a).2 ▸ hb (f a)))
+  hf.upperMapLift (hf.downTransform g hg) (fun _ => b)
+    (fun a => (hf.downTransform_spec g hg a).2 ▸ hb (f a)) a
 
 theorem roofTransform_spec (a : P) :
     hf.downTransform g hg a ≤ hf.roofTransform g hg b hb a ∧
       f (hf.roofTransform g hg b hb a) = b :=
-  (Classical.choose_spec (hf.up (hf.downTransform g hg a) b
-    ((hf.downTransform_spec g hg a).2 ▸ hb (f a)))).1
+  hf.upperMapLift_spec _ _ _ a
 
 /-- Comparable vertices have exactly the same lifted endpoint. -/
 theorem roofTransform_comparable_equal (hmono : Monotone g)

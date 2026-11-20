@@ -16,9 +16,6 @@ open scoped Topology
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 
@@ -113,8 +110,8 @@ def simplexHornFiller (i : Fin (d + 2))
     C(stdSimplex ℝ (Fin (d + 2)), X) where
   toFun := simplexHornFillFun i g
   continuous_toFun := by
-    let S : Fin (d + 1) → Set (stdSimplex ℝ (Fin (d + 2))) :=
-      fun j ↦ simplexHornFillRegion i j
+    let S  :=
+      (simplexHornFillRegion i)
     refine (locallyFinite_of_finite S).continuous ?_ (fun j ↦ ?_) (fun j ↦ ?_)
     · refine Set.eq_univ_of_forall fun z ↦ ?_
       obtain ⟨j, hj⟩ := exists_mem_simplexHornFillRegion i z
@@ -122,7 +119,7 @@ def simplexHornFiller (i : Fin (d + 2))
     · exact isClosed_simplexHornFillRegion i j
     · rw [continuousOn_iff_continuous_restrict]
       have heq : (S j).domRestrict (simplexHornFillFun i g) =
-          fun z : S j ↦ g j (simplexHornFillFaceMap i j z) := by
+          fun z  ↦ g j (simplexHornFillFaceMap i j z) := by
         funext z
         exact simplexHornFillFun_eq i g hg z.1 j z.2
       rw [heq]

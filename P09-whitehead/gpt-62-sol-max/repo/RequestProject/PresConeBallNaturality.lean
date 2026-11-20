@@ -11,9 +11,6 @@ public import RequestProject.RelatorCircleBoundaryNaturality
 each old cone disk as soon as its circle parametrization is preserved. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb RelativeAttachment
@@ -45,10 +42,7 @@ theorem coneLowerMap_realization_withTop (x : orderNerveRealization (WithTop (Re
   change orderNerveRealizationMap _ _ (orderNerveRealizationMap _ _ x) =
     orderNerveRealizationMap _ _ (orderNerveRealizationMap _ _ x)
   rw [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
-  have hf : (h.coneLowerMap j ∘
-      lowerConeOrderIso (apexOf w j) (PresModel.relatorCircleOrderIso w j)) =
-      (lowerConeOrderIso (apexOf v (h.cell j)) (PresModel.relatorCircleOrderIso v (h.cell j)) ∘
-        (h.relatorCircleOrderIso j).withTopCongr) :=
+  have hf  :=
     funext (h.coneLowerMap_withTop j)
   exact orderNerveRealizationMap_congr _ _ hf x
 
@@ -64,8 +58,8 @@ theorem presConeBallHomeomorph_natural_of_boundary
     presConeBallHomeomorph v (h.cell j) hn'
       (orderNerveRealizationMap (h.coneLowerMap j) (h.coneLowerMap j).monotone x) =
       presConeBallHomeomorph w j hn x := by
-  letI : Nonempty (RelatorCircle w j) := relatorCircle_nonempty w j (List.ne_nil_of_length_pos hn)
-  letI : Nonempty (RelatorCircle v (h.cell j)) :=
+  letI  := relatorCircle_nonempty w j (List.ne_nil_of_length_pos hn)
+  letI  :=
     relatorCircle_nonempty v (h.cell j) (List.ne_nil_of_length_pos hn')
   let e₀ := orderNerveRealizationOrderIso
     (lowerConeOrderIso (apexOf w j) (PresModel.relatorCircleOrderIso w j))

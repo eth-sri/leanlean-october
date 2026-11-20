@@ -50,7 +50,7 @@ theorem lengthProjection_bdryOn (n : ℕ) (l : List P) :
       simp only [bdryOn_cons, map_sub, lengthProjection_of, lengthProjection_consMap_zero,
         sub_zero, List.length_cons, Nat.add_right_cancel_iff]
       split_ifs with h
-      · have hl : l = [] := List.eq_nil_of_length_eq_zero h
+      · have hl  := List.eq_nil_of_length_eq_zero h
         subst l
         simp [bdryOn]
       · rfl
@@ -85,29 +85,16 @@ variable [Preorder P]
 theorem lengthProjection_mem_incOn (n : ℕ) {A : P → Prop} {c : Ch P}
     (hc : c ∈ IncOn A) : lengthProjection n c ∈ IncOn A := by
   classical
-  induction hc using AddSubgroup.closure_induction with
-  | mem x hx =>
-    rcases hx with ⟨l, hl, rfl⟩
-    rw [lengthProjection_of]
-    split_ifs
-    · exact of_mem_incOn hl.1 hl.2
-    · exact AddSubgroup.zero_mem _
-  | zero => simp
-  | add x y _ _ hx hy => simpa using AddSubgroup.add_mem _ hx hy
-  | neg x _ hx => simpa using AddSubgroup.neg_mem _ hx
+  apply map_mem_of_mem_closure (lengthProjection n) ?_ hc
+  rintro _ ⟨l, hl, rfl⟩
+  rw [lengthProjection_of]
+  split_ifs
+  · exact of_mem_incOn hl.1 hl.2
+  · exact AddSubgroup.zero_mem _
 
 theorem lengthProjection_mem_inc (n : ℕ) {c : Ch P} (hc : c ∈ Inc P) :
     lengthProjection n c ∈ Inc P := by
-  classical
-  induction hc using AddSubgroup.closure_induction with
-  | mem x hx =>
-    rcases hx with ⟨l, hl, rfl⟩
-    rw [lengthProjection_of]
-    split_ifs
-    · exact of_mem_inc hl
-    · exact AddSubgroup.zero_mem _
-  | zero => simp
-  | add x y _ _ hx hy => simpa using AddSubgroup.add_mem _ hx hy
-  | neg x _ hx => simpa using AddSubgroup.neg_mem _ hx
+  rw [← incOn_true] at hc ⊢
+  exact lengthProjection_mem_incOn n hc
 
 end FiniteChains.Nerve

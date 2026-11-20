@@ -70,7 +70,6 @@ def gen : α ⊕ (Σ s : Sx, Zt s) → H :=
   Sum.elim (fun a => j (QuotientGroup.mk (FreeGroup.of a)))
     (fun p => B.b p.1 (FreeGroup.of (Sum.inr p.2)))
 
-@[simp] theorem gen_inl (a : α) : B.gen (Sum.inl a) = j (QuotientGroup.mk (FreeGroup.of a)) := rfl
 
 @[simp] theorem gen_inr (s : Sx) (z : Zt s) :
     B.gen (Sum.inr ⟨s, z⟩) = B.b s (FreeGroup.of (Sum.inr z)) := rfl
@@ -91,8 +90,8 @@ theorem lift_gen_map_genEmb (s : Sx) (w : FreeGroup (α ⊕ Zt s)) :
   have key : (FreeGroup.lift B.gen).comp (FreeGroup.map (genEmb (Zt := Zt) s)) = B.b s := by
     refine FreeGroup.ext_hom _ _ ?_
     rintro (a | z)
-    · simpa [gen] using (B.mark s a).symm
-    · simp [gen]
+    · simpa [gen, genEmb] using (B.mark s a).symm
+    · aesop
   exact DFunLike.congr_fun key w
 
 /-- Every relator of the substituted presentation dies under the lift of `gen`. -/
@@ -124,12 +123,7 @@ def psi : PresGroup (substPresF ρ bsub) →* H :=
 `ψ` is the given homomorphism `j`. -/
 theorem psi_comp_substHomF (hfill : FilledF ρ bsub) :
     B.psi.comp (substHomF ρ bsub hfill) = j := by
-  refine MonoidHom.ext ?_
-  intro x
-  induction x using QuotientGroup.induction_on with
-  | _ w =>
-      show B.psi (substHomF ρ bsub hfill (QuotientGroup.mk w)) = j (QuotientGroup.mk w)
-      rw [substHomF_mk, psi_mk, lift_gen_map_inl]
+  aesop
 
 include B in
 /-- **The one-way comparison proves `hinj`.**  If the marked block maps exist over an injective
@@ -164,8 +158,7 @@ def blockSubst (u : ∀ s : Sx, Su s → FreeGroup α) (s : Sx) :
   simp [blockSubst]
 
 @[simp] theorem blockSubst_of_inr (u : ∀ s : Sx, Su s → FreeGroup α) (s : Sx) (z : Zt s) :
-    blockSubst (Zt := Zt) u s (FreeGroup.of (Sum.inr z)) = FreeGroup.of (Sum.inr z) := by
-  simp [blockSubst]
+    blockSubst (Zt := Zt) u s (FreeGroup.of (Sum.inr z)) = FreeGroup.of (Sum.inr z) := rfl
 
 /-- **The one-way comparison in the marked form of the article.**  The block at `s` is given by
 its own presentation with distinguished generators `Su s` and internal generators `Zt s`, and
@@ -188,8 +181,8 @@ theorem injective_substHomF_of_markedBlock {H : Type v} [Group H]
   -- the block map on the substituted generators: old generators go to their `j`-images,
   -- internal generators to their images under the marked block map
   set bb : ∀ s : Sx, FreeGroup (α ⊕ Zt s) →* H := fun s => FreeGroup.lift (Sum.elim
-      (fun a : α => j (QuotientGroup.mk (FreeGroup.of a)))
-      (fun z : Zt s => bq s (FreeGroup.of (Sum.inr z)))) with hbb
+      (fun a  => j (QuotientGroup.mk (FreeGroup.of a)))
+      (fun z  => bq s (FreeGroup.of (Sum.inr z)))) with hbb
   -- the block map factors the substitution: both sides agree on the generators of the block
   have key : ∀ s : Sx, (bb s).comp (blockSubst (Zt := Zt) u s) = bq s := by
     intro s

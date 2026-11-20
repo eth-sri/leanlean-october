@@ -27,9 +27,6 @@ presentation, and the homotopy-theoretic half of Lemma 3.1 (Cockcroftness of
 `Y_D` and the vanishing on `π₂`), are not.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -50,9 +47,9 @@ theorem commute_pairComm (a b : I → G) (hab : CrossCommuting a b) (i k : I) :
   by_cases hik : i = k
   · subst hik; exact Commute.refl _
   · obtain ⟨haa, hab', hba, hbb⟩ := hab i k hik
-    have ha : Commute (a i) (pairComm a b k) :=
+    have ha  :=
       ((haa.mul_right hab').mul_right haa.inv_right).mul_right hab'.inv_right
-    have hb : Commute (b i) (pairComm a b k) :=
+    have hb  :=
       ((hba.mul_right hbb).mul_right hba.inv_right).mul_right hbb.inv_right
     exact ((ha.mul_left hb).mul_left ha.inv_left).mul_left hb.inv_left
 

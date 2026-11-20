@@ -58,7 +58,7 @@ theorem iteratedHomotopy_identity_succ (k n : ℕ) (c : Chain X (n + 1)) :
 theorem iteratedHomotopy_mem_small (U : ι → Set X) (k n : ℕ) {c : Chain X n}
     (hc : c ∈ smallChains U n) : iteratedHomotopy n k c ∈ smallChains U (n + 1) := by
   induction k with
-  | zero => rw [iteratedHomotopy_zero]; exact Submodule.zero_mem _
+  | zero => tauto
   | succ k ih =>
     rw [iteratedHomotopy_succ]
     exact Submodule.add_mem _ (homotopy_mem_small U n (iterated_subdivide_mem_small U k n hc)) ih

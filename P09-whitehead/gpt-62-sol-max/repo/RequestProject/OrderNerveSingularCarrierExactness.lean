@@ -11,8 +11,7 @@ open TopologicalSingular
 noncomputable def orderSingularCarrierChains {P : Type} [PartialOrder P] {n : ℕ}
     (σ : Simplex (orderNerveRealization P) n) (k : ℕ) :
     Submodule ℤ (Chain (orderNerveRealization P) k) :=
-  subChains (orderNerveRealizationSubcomplex P (orderNerveSingularCarrier σ) :
-    Set (orderNerveRealization P)) k
+  subChains (orderNerveRealizationSubcomplex P (orderNerveSingularCarrier σ)) k
 
 theorem orderSingularCarrierChains_face {P : Type} [PartialOrder P] {n : ℕ}
     (σ : Simplex (orderNerveRealization P) (n + 1)) (i : Fin (n + 2)) (k : ℕ) :

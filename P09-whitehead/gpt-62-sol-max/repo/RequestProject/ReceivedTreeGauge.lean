@@ -6,9 +6,6 @@ public import RequestProject.UniversalTreeGauge
 @[expose] public section
 
 /-! Exact geometric reference paths for the cover over a receiving group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -50,8 +47,7 @@ theorem receiverEdge_tgt (g : G) (e : K.E) :
     uTgt (receiverEdge T f ψ g e) =
       receiverVertex T f ψ (g * germValue T φ (e, true)) (K.tgt e) := by
   have h := receiverVertex_path T f φ ψ hψ g (isPath_single (X := K) (e, true))
-  simpa only [mapPath, List.map_cons, List.map_nil, extendList_cons, extendList_nil,
-    wordValue_cons, wordValue_nil, mul_one, receiverEdge, uTgt, germSrc, germTgt, if_true] using h
+  simp_all [mapPath, extendList_cons, extendList_nil, wordValue_cons, wordValue_nil, receiverEdge, uTgt, germSrc, germTgt]
 
 noncomputable def receiverFace (g : G) (t : K.F) : UF Y (f.onV T.root) :=
   ⟨(receiverVertex T f ψ g (K.base t), f.onF t), by

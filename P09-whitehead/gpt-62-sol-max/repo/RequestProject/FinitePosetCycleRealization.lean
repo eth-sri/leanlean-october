@@ -140,18 +140,18 @@ theorem support_pair [Fintype P] (x : orderNerveRealization P) :
     by_contra hn
     push_neg at hn
     have hs : ∑ a, c a ≤ 0 := Finset.sum_nonpos (fun a _ => hn a)
-    have he : ∑ a, c a = 1 := orderNerveRealizationCoordinates_sum x
+    have he  := orderNerveRealizationCoordinates_sum x
     linarith
   obtain ⟨a, ha⟩ := hpositive
   have hc := orderNerveRealizationCoordinates_support_chain x
   by_cases hb : ∃ b, b ≠ a ∧ 0 < c b
   · obtain ⟨b, hba, hb⟩ := hb
-    have hab : a ≤ b ∨ b ≤ a := hc ha hb hba.symm
+    have hab  := hc ha hb hba.symm
     refine ⟨a, b, hba.symm, hab, ?_⟩
     intro p hpa hpb
     apply le_antisymm _ (orderNerveRealizationCoordinates_nonneg x p)
     by_contra hp
-    have hp' : 0 < c p := lt_of_not_ge hp
+    have hp'  := lt_of_not_ge hp
     have h₁ := C.height_ne hba.symm hab
     have h₂ := C.height_ne hpa (hc hp' ha hpa)
     have h₃ := C.height_ne hpb (hc hp' hb hpb)
@@ -165,7 +165,7 @@ theorem support_pair [Fintype P] (x : orderNerveRealization P) :
       exact le_of_not_gt (fun hp => hb ⟨p, hpa, hp⟩)
     let k := C.vertex.symm a
     by_cases hk : k = Fin.last (n + 1)
-    · have he : C.vertex (Fin.last (n + 1)) = a :=
+    · have he  :=
         (congrArg C.vertex hk).symm.trans (C.vertex.apply_symm_apply a)
       refine ⟨a, C.vertex 0, ?_, ?_, fun p hpa _ => hz p hpa⟩
       · rw [← he]
@@ -173,7 +173,7 @@ theorem support_pair [Fintype P] (x : orderNerveRealization P) :
       · rw [← he]
         exact C.closing
     · obtain ⟨i, hi⟩ := Fin.exists_castSucc_eq.mpr hk
-      have he : C.vertex i.castSucc = a :=
+      have he  :=
         (congrArg C.vertex hi).trans (C.vertex.apply_symm_apply a)
       refine ⟨a, C.vertex i.succ, ?_, ?_, fun p hpa _ => hz p hpa⟩
       · rw [← he]
@@ -182,7 +182,7 @@ theorem support_pair [Fintype P] (x : orderNerveRealization P) :
         exact C.consecutive i
 
 theorem traversal_surjective : Function.Surjective C.traversal := by
-  letI : Fintype P := Fintype.ofEquiv (Fin (n + 2)) C.vertex
+  letI  := Fintype.ofEquiv (Fin (n + 2)) C.vertex
   intro x
   obtain ⟨a, b, hne, hab, hs⟩ := C.support_pair x
   rcases C.edges a b hne hab with ⟨i, ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩

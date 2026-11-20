@@ -25,20 +25,9 @@ theorem relatorCircle_corner_component_zero (hpos : 0 < (w j).length)
     (k : Fin (w j).length) :
     orderComponentLabel (RelatorCircle w j) (relatorCirclePoint w j k CPos.cor) =
       orderComponentLabel (RelatorCircle w j) (relatorCirclePoint w j ⟨0, hpos⟩ CPos.cor) := by
-  have h : ∀ n (hn : n < (w j).length),
-      orderComponentLabel (RelatorCircle w j) (relatorCirclePoint w j ⟨n, hn⟩ CPos.cor) =
-        orderComponentLabel (RelatorCircle w j) (relatorCirclePoint w j ⟨0, hpos⟩ CPos.cor) := by
-    intro n
-    induction n with
-    | zero => intro _; rfl
-    | succ n ih =>
-      intro hn
-      have hn' : n < (w j).length := by omega
-      have he : relatorCircleNext w j ⟨n, hn'⟩ = ⟨n + 1, hn⟩ := by
-        apply Fin.ext
-        exact Nat.mod_eq_of_lt hn
-      exact (he ▸ relatorCircle_corner_component_next w j ⟨n, hn'⟩).trans (ih hn')
-  exact h k.val k.isLt
+  exact relatorCircle_successor_invariant_constant w j
+    (fun l => orderComponentLabel (RelatorCircle w j) (relatorCirclePoint w j l CPos.cor))
+    (relatorCircle_corner_component_next w j) hpos k
 
 /-- Each nonempty genuine relator circle is connected by actual order-complex edge paths. -/
 theorem relatorCircle_isConnected (hpos : 0 < (w j).length) :

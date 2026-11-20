@@ -7,9 +7,6 @@ public import Mathlib.Topology.Homeomorph.Lemmas
 
 namespace FiniteChains.TopologicalSingular
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 /-- The finite-support simplex and the barycentric-coordinate simplex have the same topology. -/
 noncomputable def simplexCoordinates (n : ℕ) :
@@ -37,8 +34,24 @@ theorem simplexCoordinates_map {n m : ℕ} (f : Fin (n + 1) → Fin (m + 1))
 
 @[simp] theorem simplexCoordinates_symm_weights_apply (n : ℕ)
     (z : stdSimplex ℝ (Fin (n + 1))) (i : Fin (n + 1)) :
-    ((simplexCoordinates n).symm z).weights i = z.val i := by
-  exact congrArg (fun w : stdSimplex ℝ (Fin (n + 1)) => w.val i)
+    ((simplexCoordinates n).symm z).weights i = z.val i := congrArg (fun w  => w.val i)
     ((simplexCoordinates n).apply_symm_apply z)
+
+/-- In barycentric coordinates a face inclusion inserts one zero coordinate. -/
+theorem simplex_map_succAbove {n : ℕ} (i : Fin (n + 2)) (z : stdSimplex ℝ (Fin (n + 1))) :
+    (stdSimplex.map i.succAbove z).val = i.insertNth (0 : ℝ) z.val := by
+  funext j
+  change (FunOnFinite.linearMap ℝ ℝ i.succAbove z.val) j = _
+  rw [FunOnFinite.linearMap_apply_apply]
+  exact Fin.succAboveCases i (by simp) (fun k => by simp [Finset.sum_filter]) j
+
+theorem exists_simplex_map_succAbove {n : ℕ} (z : stdSimplex ℝ (Fin (n + 2)))
+    (i : Fin (n + 2)) (hi : z.val i = 0) :
+    ∃ w : stdSimplex ℝ (Fin (n + 1)), stdSimplex.map i.succAbove w = z := by
+  refine ⟨⟨Fin.removeNth i z.val, fun j => z.2.1 _, ?_⟩, Subtype.ext ?_⟩
+  · have h := z.2.2
+    rwa [Fin.sum_univ_succAbove z.val i, hi, zero_add] at h
+  · rw [simplex_map_succAbove]
+    simpa only [hi] using Fin.insertNth_self_removeNth i z.val
 
 end FiniteChains.TopologicalSingular

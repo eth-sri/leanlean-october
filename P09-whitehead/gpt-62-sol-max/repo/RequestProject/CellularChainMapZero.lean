@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.UnivCoverIncl
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -15,12 +16,13 @@ noncomputable def chain0 (f : Hom X Y) : (X.V →₀ ℤ) →ₗ[ℤ] (Y.V →�
 /-- Actual cellular maps commute with the edge-to-vertex boundary. -/
 theorem bdry1_chain1 (f : Hom X Y) (z : X.E →₀ ℤ) :
     bdry1 Y (chain1 f z) = chain0 f (bdry1 X z) := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, map_add, hz, hw, map_add, map_add]
-  | single e n =>
-      change bdry1 Y (Finsupp.mapDomain f.onE (Finsupp.single e n)) = _
-      rw [Finsupp.mapDomain_single, bdry1_single, bdry1_single, map_smul, map_sub]
-      simp [chain0, f.src_onE, f.tgt_onE]
+  finsupp_basis z
+  intro e
+  change bdry1 Y (Finsupp.mapDomain f.onE (Finsupp.single e 1)) = _
+  simp_all [Finsupp.mapDomain_single, bdry1_single, map_sub, chain0, f.src_onE, f.tgt_onE]
+
+/-- A cellular map sends one-cycles to one-cycles. -/
+theorem chain1_cycle (f : Hom X Y) {z : X.E →₀ ℤ} (h : bdry1 X z = 0) :
+    bdry1 Y (chain1 f z) = 0 := by rw [bdry1_chain1, h, map_zero]
 
 end FiniteChains.Comb

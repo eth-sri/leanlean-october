@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.UnivCoverCopies
+public import RequestProject.Pi2GenerationDescent
 public import RequestProject.DeckChainTransport
 
 @[expose] public section
@@ -46,38 +46,18 @@ def label (v : UV E (f.onV a) × L.V) : Set (UV E (f.onV a) × L.V) :=
 theorem identified_of_meet (hE : IsConnected E)
     (g h : Pi1 E (f.onV a)) (v w : UV L a)
     (hm : vertexPair f a g v = vertexPair f a h w) :
-    ∃ k : Pi1 L a,
-      (∀ x, (map f a g).onV x = (map f a h).onV (deckV k x)) ∧
-      (∀ e, (map f a g).onE e = (map f a h).onE (deckE k e)) ∧
-      (∀ t, (map f a g).onF t = (map f a h).onF (deckF k t)) := by
-  have hend : endV v = endV w := congrArg Prod.snd hm
-  obtain ⟨k, hk, _⟩ := (isRegular_univProj (X := L) (x₀ := a)).simply_transitive v w hend
-  let F := map f a g
-  let H := (map f a h).comp ((univDeck L a).cellHom k)
-  have hprojE : ∀ e, (univProj E (f.onV a)).onE (F.onE e) =
-      (univProj E (f.onV a)).onE (H.onE e) := fun _ => rfl
-  have hprojF : ∀ t, (univProj E (f.onV a)).onF (F.onF t) =
-      (univProj E (f.onV a)).onF (H.onF t) := fun _ => rfl
-  have hb : F.onV v = H.onV v := by
-    change (map f a g).onV v = (map f a h).onV (deckV k v)
-    change deckV k v = w at hk
-    rw [hk]
-    exact congrArg Prod.fst hm
-  have hV := lift_onV_eq (isCovering_univProj hE) isConnected_univCover hprojE hb
-  exact ⟨k, hV, lift_onE_eq (isCovering_univProj hE) hprojE hV,
-    lift_onF_eq (isCovering_univProj hE) hprojF hV⟩
+    ∃ k : Pi1 L a, map f a g = (map f a h).comp ((univDeck L a).cellHom k) :=
+  lifts_identified isRegular_univProj (isCovering_univProj hE) isConnected_univCover
+    (fun _ _ => rfl) (fun _ _ => rfl) (congrArg Prod.snd hm) (congrArg Prod.fst hm)
 
 theorem vertices_eq_of_meet (hE : IsConnected E)
     (g h : Pi1 E (f.onV a)) (v w : UV L a)
     (hm : vertexPair f a g v = vertexPair f a h w) : vertices f a g = vertices f a h := by
-  obtain ⟨k, hV, _, _⟩ := identified_of_meet f a hE g h v w hm
-  ext z
-  constructor
-  · rintro ⟨x, rfl⟩
-    refine ⟨deckV k x, Prod.ext (hV x).symm (endV_deckV k x)⟩
-  · rintro ⟨x, rfl⟩
-    refine ⟨deckV k⁻¹ x, Prod.ext ?_ (endV_deckV k⁻¹ x)⟩
-    simpa only [← deckV_mul, mul_inv_cancel, deckV_one, vertexPair, map] using hV (deckV k⁻¹ x)
+  obtain ⟨k, hk⟩ := identified_of_meet f a hE g h v w hm
+  have hpair : vertexPair f a g = vertexPair f a h ∘ deckV k := by
+    funext x
+    exact Prod.ext (congrArg (·.onV x) hk) (endV_deckV k x).symm
+  exact (congrArg Set.range hpair).trans ((univDeck L a).smulV_surjective k |>.range_comp _)
 
 theorem label_on_pair (hE : IsConnected E) (g : Pi1 E (f.onV a)) (v : UV L a) :
     label f a (vertexPair f a g v) = vertices f a g := by
@@ -110,8 +90,8 @@ theorem faces_covered (hL : IsConnected L) (t : UF E (f.onV a)) (l : L.F)
   refine ⟨g, t', ?_, rfl⟩
   apply Subtype.ext
   change ((map f a g).onV x, f.onF l) = t.val
-  have hv' : (map f a g).onV x = t.val.1 :=
-    congrArg (fun z : UV E (f.onV a) × L.V => z.1) hx
+  have hv'  :=
+    congrArg (·.1) hx
   exact Prod.ext hv' ht.symm
 
 theorem face_range_of_label (hE : IsConnected E) (hL : IsConnected L)
@@ -122,7 +102,7 @@ theorem face_range_of_label (hE : IsConnected E) (hL : IsConnected L)
   obtain ⟨h, x, hx, hxl⟩ := faces_covered f a hL t l ht
   have hp : vertexPair f a h x.val.1 = (t.val.1, L.base l) := by
     apply Prod.ext
-    · exact congrArg (fun t : UF E (f.onV a) => t.val.1) hx
+    · exact congrArg (·.val.1) hx
     · exact x.property.trans (congrArg L.base hxl)
   have hvg : vertices f a h = vertices f a g := by
     rw [← label_on_pair f a hE h x.val.1, hp]
@@ -131,30 +111,16 @@ theorem face_range_of_label (hE : IsConnected E) (hL : IsConnected L)
     rw [← hvg]
     exact ⟨x.val.1, rfl⟩
   obtain ⟨y, hy⟩ := hmem
-  obtain ⟨k, _, _, hkF⟩ := identified_of_meet f a hE h g x.val.1 y hy.symm
-  exact ⟨deckF k x, (hkF x).symm.trans hx⟩
+  obtain ⟨k, hk⟩ := identified_of_meet f a hE h g x.val.1 y hy.symm
+  exact ⟨deckF k x, (congrArg (·.onF x) hk).symm.trans hx⟩
 
 theorem map_injective_E (hE : Function.Injective (univLift L f a).onE)
-    (g : Pi1 E (f.onV a)) : Function.Injective (map f a g).onE := by
-  intro e t h
-  apply hE
-  have hh := congrArg ((univDeck E (f.onV a)).smulE g⁻¹) h
-  change (univDeck E (f.onV a)).smulE g⁻¹
-      ((univDeck E (f.onV a)).smulE g ((univLift L f a).onE e)) =
-    (univDeck E (f.onV a)).smulE g⁻¹
-      ((univDeck E (f.onV a)).smulE g ((univLift L f a).onE t)) at hh
-  simpa only [← DeckAction.mul_smulE, inv_mul_cancel, DeckAction.one_smulE] using hh
+    (g : Pi1 E (f.onV a)) : Function.Injective (map f a g).onE :=
+  ((univDeck E (f.onV a)).smulE_injective g).comp hE
 
 theorem map_injective_F (hF : Function.Injective (univLift L f a).onF)
-    (g : Pi1 E (f.onV a)) : Function.Injective (map f a g).onF := by
-  intro e t h
-  apply hF
-  have hh := congrArg ((univDeck E (f.onV a)).smulF g⁻¹) h
-  change (univDeck E (f.onV a)).smulF g⁻¹
-      ((univDeck E (f.onV a)).smulF g ((univLift L f a).onF e)) =
-    (univDeck E (f.onV a)).smulF g⁻¹
-      ((univDeck E (f.onV a)).smulF g ((univLift L f a).onF t)) at hh
-  simpa only [← DeckAction.mul_smulF, inv_mul_cancel, DeckAction.one_smulF] using hh
+    (g : Pi1 E (f.onV a)) : Function.Injective (map f a g).onF :=
+  ((univDeck E (f.onV a)).smulF_injective g).comp hF
 
 theorem cycle_image_mem (g : Pi1 E (f.onV a)) (c : UF L a →₀ ℤ)
     (hc : bdry2 (uCover L a) c = 0) : chain2 (map f a g) c ∈ Pi2FromSub f (f.onV a) :=

@@ -24,7 +24,7 @@ theorem squareSweep_common_prism (p : GenLoop (Fin 2) X x) :
   apply Finset.sum_congr rfl
   intro i _
   congr 1
-  apply congrArg (fun tau => Finsupp.single tau (1 : ℤ))
+  apply congrArg (fun tau => Finsupp.single tau 1)
   apply ContinuousMap.ext
   intro z
   change p (leftRectangle ((SingularPrism.prismMap i z).1 * squareHalf)

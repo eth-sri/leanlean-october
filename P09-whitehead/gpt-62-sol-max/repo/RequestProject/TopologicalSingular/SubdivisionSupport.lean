@@ -14,15 +14,13 @@ theorem subChains_eq_supported (A : Set X) (n : ℕ) :
     subChains A n = Finsupp.supported ℤ ℤ {σ : Simplex X n | ∀ z, σ z ∈ A} := by
   apply le_antisymm
   · rintro c ⟨b, rfl⟩
-    induction b using Finsupp.induction_linear with
-    | zero => simp
-    | add b c hb hc => simpa only [map_add] using Submodule.add_mem _ hb hc
-    | single σ r =>
-      rw [map_single]
-      exact Finsupp.single_mem_supported ℤ r (fun z => (σ z).property)
+    apply Finsupp.map_mem_of_basis _ _ _ b
+    intro σ
+    rw [map_single]
+    exact Finsupp.single_mem_supported ℤ 1 (fun z => (σ z).property)
   · intro c hc
-    have he := VertexChains.map_mem_of_supported
-      {σ : Simplex X n | ∀ z, σ z ∈ A} (subChains A n) (LinearMap.id : Chain X n →ₗ[ℤ] _) 
+    have he := Finsupp.map_mem_of_supported
+      {σ : Simplex X n | ∀ z, σ z ∈ A} (subChains A n) LinearMap.id 
       (fun σ hσ => single_mem_subChains A n σ 1 hσ) hc
     exact he
 
@@ -35,7 +33,7 @@ theorem carried_linearMap_mem_subChains {n k : ℕ} (f : Chain X n →ₗ[ℤ] C
     (hf : ∀ σ : Simplex X n, f (Finsupp.single σ 1) ∈ subChains (Set.range σ) k)
     (A : Set X) {c : Chain X n} (hc : c ∈ subChains A n) : f c ∈ subChains A k := by
   rw [subChains_eq_supported] at hc
-  apply VertexChains.map_mem_of_supported _ _ f ?_ hc
+  apply Finsupp.map_mem_of_supported _ _ f ?_ hc
   intro σ hσ
   exact subChains_mono (by rintro _ ⟨z, rfl⟩; exact hσ z) k (hf σ)
 
@@ -64,7 +62,7 @@ theorem iteratedHomotopy_mem_subChains (A : Set X) (k n : ℕ)
     {c : Chain X n} (hc : c ∈ subChains A n) :
     iteratedHomotopy n k c ∈ subChains A (n + 1) := by
   induction k with
-  | zero => rw [iteratedHomotopy_zero]; exact Submodule.zero_mem _
+  | zero => exact Submodule.zero_mem _
   | succ k ih =>
     rw [iteratedHomotopy_succ]
     exact Submodule.add_mem _

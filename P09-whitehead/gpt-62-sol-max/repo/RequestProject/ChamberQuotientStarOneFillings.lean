@@ -4,7 +4,8 @@ public import RequestProject.ChamberQuotientLiftedStarRetraction
 public import RequestProject.ChamberQuotientBaseSimplyConnected
 public import RequestProject.ChamberZConnected
 public import RequestProject.OrderSimplyConnectedOneFillings
-public import RequestProject.NerveLowerMapFillings
+public import RequestProject.NerveOrderHomotopy
+public import RequestProject.NerveDegreeTransfer
 
 @[expose] public section
 
@@ -19,12 +20,13 @@ theorem qLiftedBaseStar_oneCycle_filling (a : Qpos A X att)
     (hc : IsConnected (orderCx (Qpos A X att)))
     (c : Ch (QLiftedBaseStar a)) (hi : c ∈ Inc _)
     (hd : lengthProjection 2 c = c) (hcyc : Nerve.bdry c = 0) :
-    ∃ y ∈ Inc (QLiftedBaseStar a), Nerve.bdry y = c :=
-  filling_of_lower_composite (qLiftedStarRetraction a hc) (qBaseIntoStar a)
-    (qLiftedStarRetraction_monotone a hc) (qBaseIntoStar_monotone a)
-    (qLiftedStarRetraction_le a hc) 2
-    (nerve_oneCycle_filling_of_simplyConnected (qLiftedBase_simplyConnected a hc))
-    c hi hd hcyc
+    ∃ y ∈ Inc (QLiftedBaseStar a), Nerve.bdry y = c := by
+  refine boundary_reflection_of_section _ _ (qLiftedStarRetraction_monotone a hc)
+    (qBaseIntoStar_monotone a) (Or.inr (qLiftedStarRetraction_le a hc)) c hi hcyc ?_
+  exact nerve_oneCycle_filling_of_weak
+    (order_oneCycle_filling_of_simplyConnected (qLiftedBase_simplyConnected a hc)) _
+    (cmap_mem_inc_of_monotone (qLiftedStarRetraction_monotone a hc) hi)
+    (by rw [lengthProjection_cmap, hd]) (by rw [← cmap_bdry, hcyc, map_zero])
 
 theorem qUniversal_baseStar_fillsDegree_two (x : X) (hx : IsConnected (orderCx X)) :
     FillsDegreeIn
@@ -32,9 +34,6 @@ theorem qUniversal_baseStar_fillsDegree_two (x : X) (hx : IsConnected (orderCx X
   letI : Nonempty X := ⟨x⟩
   have hc : IsConnected (orderCx (Qpos A X att)) :=
     qpos_isConnected_of_zpos (zpos_isConnected hx)
-  apply fillsDegreeIn_of_subtype
-  · obtain ⟨p, hp⟩ := (uOrderEnd_isPosetCover (a := qNew x) hc).surj (qNew x)
-    exact ⟨p, by rw [hp]; trivial⟩
-  · exact qLiftedBaseStar_oneCycle_filling (qNew x) hc
+  exact fillsDegreeIn_of_subtype (qLiftedBaseStar_oneCycle_filling (qNew x) hc)
 
 end FiniteChains.Davis

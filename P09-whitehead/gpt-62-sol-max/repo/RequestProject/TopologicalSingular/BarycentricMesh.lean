@@ -48,7 +48,7 @@ theorem subdivide_single_mem_mesh (n : ℕ) (v : Vertices A n) (D : ℝ) (hD₀ 
     apply Submodule.sum_mem
     intro i _
     apply Submodule.smul_mem
-    apply map_mem_of_supported
+    apply Finsupp.map_mem_of_supported
       {w : Vertices A n | (∀ j, (w j).val ∈ convexHull ℝ (Set.range (fun j => (v j).val))) ∧
         MeshBound w (shrink n * D)} _ (cone (center hA (n + 1) v) n) ?_ ?_
     · intro w hw
@@ -72,7 +72,7 @@ theorem subdivide_single_mem_mesh (n : ℕ) (v : Vertices A n) (D : ℝ) (hD₀ 
 
 theorem subdivide_mem_mesh (n : ℕ) (D : ℝ) (hD₀ : 0 ≤ D) {c : VertexChains.Chain A n}
     (hc : c ∈ meshChains n D) : subdivide (center hA) n c ∈ meshChains n (shrink n * D) :=
-  map_mem_of_supported _ _ (subdivide (center hA) n)
+  Finsupp.map_mem_of_supported _ _ (subdivide (center hA) n)
     (fun v hv => subdivide_single_mem_mesh hA n v D hD₀ hv) hc
 
 theorem iterated_subdivide_mem_mesh (k n : ℕ) (D : ℝ) (hD₀ : 0 ≤ D) {c : VertexChains.Chain A n}

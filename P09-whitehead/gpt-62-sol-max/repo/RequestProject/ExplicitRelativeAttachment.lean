@@ -16,7 +16,6 @@ noncomputable section
 open scoped Classical
 open Set Topology TopologicalSpace
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 
 namespace FiniteChains.RelativeAttachment
@@ -48,20 +47,27 @@ theorem old_injective (r : A → X) (i : A → D) : Function.Injective (old r i)
 @[simp] theorem cell_of_not_mem (r : A → X) (i : A → D) (d : D)
     (hd : d ∉ Set.range i) : cell r i d = Sum.inr ⟨d, hd⟩ := by
   unfold cell
-  rw [dite_eq_right hd]
+  simp_all
 
 theorem cell_boundary (r : A → X) (i : A → D) (hi : Function.Injective i) (a : A) :
     cell r i (i a) = old r i (r a) := by
   have h : i a ∈ Set.range i := ⟨a, rfl⟩
   simp only [cell, old]
-  rw [dite_eq_left h]
-  exact congrArg Sum.inl (congrArg r (hi (Classical.choose_spec h)))
+  grind
 
 theorem quotientMap_surjective (r : A → X) (i : A → D) :
     Function.Surjective (quotientMap r i) := by
   rintro (x | d)
-  · exact ⟨Sum.inl x, rfl⟩
+  · tauto
   · exact ⟨Sum.inr d.val, cell_of_not_mem r i d.val d.property⟩
+
+/-- Prove a property of an attachment on the old space and on each disk. -/
+@[elab_as_elim]
+theorem attachment_induction {r : A → X} {i : A → D} {p : Space r i → Prop}
+    (z : Space r i) (onOld : ∀ x, p (old r i x)) (onCell : ∀ d, p (cell r i d)) : p z := by
+  obtain ⟨x | d, rfl⟩ := quotientMap_surjective r i z
+  · exact onOld x
+  · exact onCell d
 
 variable [TopologicalSpace X] [TopologicalSpace D]
 
@@ -78,6 +84,13 @@ theorem old_continuous (r : A → X) (i : A → D) : Continuous (old r i) :=
 
 theorem cell_continuous (r : A → X) (i : A → D) : Continuous (cell r i) :=
   (quotientMap_continuous r i).comp continuous_inr
+
+/-- The original base and the attached disks as bundled continuous maps. -/
+abbrev Space.oldMap (r : A → X) (i : A → D) : C(X, Space r i) :=
+  ⟨old r i, old_continuous r i⟩
+
+abbrev Space.cellMap (r : A → X) (i : A → D) : C(D, Space r i) :=
+  ⟨cell r i, cell_continuous r i⟩
 
 theorem fresh_continuous (r : A → X) (i : A → D) : Continuous (fresh r i) := by
   have he : fresh r i = cell r i ∘ Subtype.val := by
@@ -106,17 +119,15 @@ theorem cell_preimage_fresh_image (r : A → X) (i : A → D)
     by_cases hd : d ∈ Set.range i
     · have he' : Sum.inr v = Sum.inl (r (Classical.choose hd)) := by
         simp only [fresh, cell] at he
-        rw [dite_eq_left hd] at he
-        exact he
-      exact (Sum.inr_ne_inl he').elim
+        simp_all
+      tauto
     · have hvd : v = ⟨d, hd⟩ := by
         apply Sum.inr_injective
         simp only [fresh, cell] at he
         rw [dite_eq_right hd] at he
         exact he
       exact ⟨v, hv, congrArg Subtype.val hvd⟩
-  · rintro ⟨v, hv, rfl⟩
-    exact ⟨v, hv, (cell_of_not_mem r i v.val v.property).symm⟩
+  aesop
 
 /-- The new interiors have their original topology and form an open subset
 of the attachment whenever the boundary is closed. -/
@@ -129,8 +140,7 @@ theorem fresh_isOpenEmbedding (r : A → X) (i : A → D)
   apply isOpen_sum_iff.mpr
   constructor
   · change IsOpen ((old r i) ⁻¹' ((fresh r i) '' S))
-    rw [old_preimage_fresh_image]
-    exact isOpen_empty
+    simp [old_preimage_fresh_image]
   · change IsOpen ((cell r i) ⁻¹' ((fresh r i) '' S))
     rw [cell_preimage_fresh_image]
     exact hi.isOpen_compl.isOpenEmbedding_subtypeVal.isOpenMap _ hS
@@ -149,10 +159,7 @@ def descFun (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z)) :
 
 theorem descFun_cell (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z))
     (h : ∀ a, f (r a) = g (i a)) (d : D) : descFun r i f g (cell r i d) = g d := by
-  simp only [cell, descFun]
-  split_ifs with hd
-  · simp only [Sum.elim_inl]; rw [h, Classical.choose_spec hd]
-  · simp only [Sum.elim_inr]
+  simp only [cell, descFun] <;> grind
 
 /-- The actual continuous pushout map determined by compatible maps on the
 base and the disks. -/
@@ -167,7 +174,7 @@ def desc (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z))
       | inl x => rfl
       | inr d => exact descFun_cell r i f g h d
     rw [he]
-    exact f.continuous.sumElim g.continuous
+    fun_prop
 
 @[simp] theorem desc_old (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z))
     (h : ∀ a, f (r a) = g (i a)) (x : X) : desc r i f g h (old r i x) = f x := rfl
@@ -178,13 +185,8 @@ def desc (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z))
 
 theorem hom_ext (r : A → X) (i : A → D) {f g : C(Space r i, Z)}
     (hOld : ∀ x, f (old r i x) = g (old r i x))
-    (hCell : ∀ d, f (cell r i d) = g (cell r i d)) : f = g := by
-  apply ContinuousMap.ext
-  intro z
-  obtain ⟨z, rfl⟩ := quotientMap_surjective r i z
-  cases z with
-  | inl x => exact hOld x
-  | inr d => exact hCell d
+    (hCell : ∀ d, f (cell r i d) = g (cell r i d)) : f = g :=
+  ContinuousMap.ext fun z => attachment_induction z hOld hCell
 
 variable [TopologicalSpace A]
 
@@ -204,11 +206,10 @@ theorem cell_preimage_old_image (r : A → X) (i : A → D)
         simp only [old, cell] at he
         rw [dite_eq_left hd] at he
         exact he
-      change r (Classical.choose hd) ∈ S
-      rwa [← hr]
+      simp_all
     · have he' := he
       rw [cell_of_not_mem r i d hd] at he'
-      exact (Sum.inl_ne_inr he').elim
+      tauto
   · rintro ⟨a, ha, rfl⟩
     exact ⟨r a, ha, (cell_boundary r i hi a).symm⟩
 

@@ -4,9 +4,6 @@ public import RequestProject.OrderNerveCharacteristicMap
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -45,7 +42,7 @@ theorem orderNerveCharacteristicMap_openCell {P : Type} [PartialOrder P]
     · exact (orderNerveCharacteristicFunction_closedBall s v).symm
   · rintro ⟨z, hz, rfl⟩
     let u := orderNerveSimplexClosedBallHomeomorph n z.down
-    have hu : u.val ∈ Metric.ball 0 1 :=
+    have hu  :=
       (orderNerveSimplexClosedBallHomeomorph_positive_iff n z.down).mp hz
     refine ⟨u.val, hu, ?_⟩
     rw [show orderNerveCharacteristicMap s u.val = orderNerveClosedBallChart s u from
@@ -69,11 +66,8 @@ theorem orderNerveCharacteristicMap_pairwiseDisjoint (P : Type) [PartialOrder P]
   rw [orderNerveCharacteristicMap_openCell] at hxa hxb
   obtain ⟨z, hz, hx⟩ := hxa
   obtain ⟨w, hw, hy⟩ := hxb
-  have he := hx.trans hy.symm
-  have hnm := orderNerveRealization_nonDegenerate_interior_dimension_eq s t z w hz hw he
-  subst m
-  have hst := orderNerveRealization_nonDegenerate_interior_eq s t z w hz hw he
-  subst t
+  obtain ⟨rfl, rfl⟩ := orderNerveNondegenerate_eq_of_range s t
+    (orderNerveRealizationSimplex_interior_range_eq s.val t.val z w hz hw (hx.trans hy.symm))
   exact hab rfl
 
 /-- The actual closed characteristic cells cover the entire realization. -/
@@ -107,7 +101,7 @@ theorem orderNerveCharacteristicMap_boundary {P : Type} [PartialOrder P]
   obtain ⟨I, hI⟩ := orderNerveRealizationSimplex_boundary_finite_faces s
   refine ⟨I, ?_⟩
   intro x hx
-  have hxc : x ∈ Metric.closedBall 0 1 := Metric.sphere_subset_closedBall hx
+  have hxc  := Metric.sphere_subset_closedBall hx
   let u : (Metric.closedBall 0 1 : Set (Fin (n + 1) → ℝ)) := ⟨x, hxc⟩
   let z := (orderNerveSimplexClosedBallHomeomorph (n + 1)).symm u
   have hz : ¬ ∀ i, 0 < z.weights i := by

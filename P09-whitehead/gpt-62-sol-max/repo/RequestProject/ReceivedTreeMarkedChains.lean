@@ -1,13 +1,12 @@
 module
 
 public import RequestProject.ReceivedTreeRootedChainFaithfulness
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
 /-! Exact marked relative boundaries in the actual receiving-group cover. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -32,21 +31,19 @@ theorem markedChainMap_boundary_off_root (p : I → Loop K T.root)
     (c : (G × I) →₀ ℤ) (g : G) (v : K.V) (hv : v ≠ T.root) :
     bdry1 (cover T φ) (markedChainMap T φ (fun i => (p i).1) c) (g, v) = 0 := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd, add_zero]
-  | single x n =>
-    obtain ⟨h, i⟩ := x
-    rw [markedChainMap_single, map_smul,
-      bdry1_pathChain_of_isPath (liftPath_isPath T φ (p i).2 h)]
-    have h₁ : (g, v) ≠ (h * wordValue T φ (p i).1, T.root) :=
-      fun he => hv (congrArg Prod.snd he)
-    have h₂ : (g, v) ≠ (h, T.root) := fun he => hv (congrArg Prod.snd he)
-    rw [Finsupp.smul_apply, Finsupp.sub_apply]
-    change n • ((Finsupp.single (h * wordValue T φ (p i).1, T.root) (1 : ℤ)) (g, v) -
-      (Finsupp.single (h, T.root) (1 : ℤ)) (g, v)) = 0
-    rw [Finsupp.single_eq_of_ne h₁,
-      Finsupp.single_eq_of_ne h₂, sub_self, smul_zero]
+  finsupp_basis c
+  intro x
+  obtain ⟨h, i⟩ := x
+  rw [markedChainMap_single, map_smul,
+    bdry1_pathChain_of_isPath (liftPath_isPath T φ (p i).2 h)]
+  have h₁ : (g, v) ≠ (h * wordValue T φ (p i).1, T.root) :=
+    fun he => hv (congrArg Prod.snd he)
+  have h₂ : (g, v) ≠ (h, T.root) := fun he => hv (congrArg Prod.snd he)
+  rw [Finsupp.smul_apply, Finsupp.sub_apply]
+  change 1 • ((Finsupp.single (h * wordValue T φ (p i).1, T.root) 1) (g, v) -
+    (Finsupp.single (h, T.root) 1) (g, v)) = 0
+  rw [Finsupp.single_eq_of_ne h₁,
+    Finsupp.single_eq_of_ne h₂, sub_self, smul_zero]
 
 variable [Fintype I] [DecidableEq (NonTree T)]
 
@@ -55,14 +52,12 @@ theorem cellCoefficient_markedChainMap (p : I → List (K.E × Bool))
     cellCoefficient z.1 (markedChainMap T φ p c) =
       ∑ i, cellCoefficient i c * coefficientMap T φ (fox z (pathWord T (p i))) := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd, add_mul, Finset.sum_add_distrib]
-  | single x n =>
-    obtain ⟨g, i⟩ := x
-    rw [markedChainMap_single, map_smul, cellCoefficient_liftPath,
-      ← smul_mul_assoc, MonoidAlgebra.smul_single]
-    simp [cellCoefficient_single]
+  finsupp_basis c
+  intro x
+  obtain ⟨g, i⟩ := x
+  rw [markedChainMap_single, map_smul, cellCoefficient_liftPath,
+    ← smul_mul_assoc, MonoidAlgebra.smul_single]
+  simp [cellCoefficient_single]
 
 /-- Assemble the full group-ring marked coefficients into genuine edge chains. -/
 noncomputable def markedChain (p : I → Loop K T.root) (γ : I → MonoidAlgebra ℤ G) :

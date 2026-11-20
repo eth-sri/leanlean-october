@@ -58,13 +58,13 @@ variable {Cm : V → V → Prop}
 theorem Swap.symm' (hs : ∀ {a b : V}, Cm a b → Cm b a) {l l' : List V} (h : Swap Cm l l') :
     Swap Cm l' l := by
   induction h with
-  | head h q => exact Swap.head (hs h) q
+  | head h q => tauto
   | cons x _ ih => exact Swap.cons x ih
 
 theorem Swap.length_eq {l l' : List V} (h : Swap Cm l l') : l.length = l'.length := by
   induction h with
   | head h q => simp
-  | cons x _ ih => simp [ih]
+  | cons x _ ih => aesop
 
 theorem CEq.refl (l : List V) : CEq Cm l l := Relation.ReflTransGen.refl
 
@@ -87,7 +87,7 @@ theorem CEq.length_eq {l l' : List V} (h : CEq Cm l l') : l.length = l'.length :
 
 theorem CEq.cons (x : V) {l l' : List V} (h : CEq Cm l l') : CEq Cm (x :: l) (x :: l') := by
   induction h with
-  | refl => exact CEq.refl _
+  | refl => tauto
   | tail _ hstep ih => exact ih.tail (Swap.cons x hstep)
 
 /-- `canStart Cm s l` : the letter `s` occurs in `l`, and all letters before its first
@@ -96,7 +96,7 @@ def canStart (Cm : V → V → Prop) (s : V) : List V → Prop
   | [] => False
   | a :: t => a = s ∨ (Cm s a ∧ canStart Cm s t)
 
-@[simp] theorem canStart_nil (s : V) : ¬ canStart Cm s ([] : List V) := id
+
 
 @[simp] theorem canStart_cons {s a : V} {t : List V} :
     canStart Cm s (a :: t) ↔ a = s ∨ (Cm s a ∧ canStart Cm s t) := Iff.rfl
@@ -106,7 +106,6 @@ def popStart [DecidableEq V] (s : V) : List V → List V
   | [] => []
   | a :: t => if a = s then t else a :: popStart s t
 
-@[simp] theorem popStart_nil [DecidableEq V] (s : V) : popStart s ([] : List V) = [] := rfl
 
 @[simp] theorem popStart_cons [DecidableEq V] (s a : V) (t : List V) :
     popStart s (a :: t) = if a = s then t else a :: popStart s t := rfl
@@ -132,7 +131,7 @@ theorem canStart_swap {s : V} {l l' : List V} (h : Swap Cm l l') :
     canStart Cm s l ↔ canStart Cm s l' := by
   induction h with
   | @head a b hab q =>
-      have hba : Cm b a := hsymm hab
+      have hba  := hsymm hab
       simp only [canStart_cons]
       constructor
       · rintro (rfl | ⟨hsa, rfl | ⟨hsb, hq⟩⟩) <;> tauto
@@ -150,20 +149,12 @@ theorem canStart_ceq {s : V} {l l' : List V} (h : CEq Cm l l') :
 theorem isRed_swap {l l' : List V} (h : Swap Cm l l') : IsRed Cm l ↔ IsRed Cm l' := by
   induction h with
   | @head a b hab q =>
-      have hba : Cm b a := hsymm hab
+      have hba  := hsymm hab
       have hne : a ≠ b := by rintro rfl; exact hirr _ hab
       simp only [isRed_cons, canStart_cons]
       constructor
-      · rintro ⟨⟨hq, hbq⟩, hstart⟩
-        refine ⟨⟨hq, fun hc => hstart (Or.inr ⟨hab, hc⟩)⟩, ?_⟩
-        rintro (h' | ⟨_, h'⟩)
-        · exact hne h'
-        · exact hbq h'
-      · rintro ⟨⟨hq, haq⟩, hstart⟩
-        refine ⟨⟨hq, fun hc => hstart (Or.inr ⟨hba, hc⟩)⟩, ?_⟩
-        rintro (h' | ⟨_, h'⟩)
-        · exact hne h'.symm
-        · exact haq h'
+      · simp_all
+      · tauto
   | @cons x l₀ l₀' hstep ih =>
       simp only [isRed_cons, ih, canStart_swap (s := x) hsymm hstep]
 
@@ -179,7 +170,7 @@ omit hirr in
 theorem ceq_popStart {s : V} {l : List V} (h : canStart Cm s l) :
     CEq Cm l (s :: popStart s l) := by
   induction l with
-  | nil => exact absurd h (canStart_nil s)
+  | nil => tauto
   | cons a t ih =>
       by_cases hat : a = s
       · subst hat
@@ -187,10 +178,10 @@ theorem ceq_popStart {s : V} {l : List V} (h : canStart Cm s l) :
         exact CEq.refl _
       · rcases h with h | ⟨hsa, ht⟩
         · exact absurd h hat
-        · have h1 : CEq Cm (a :: t) (a :: s :: popStart s t) := CEq.cons a (ih ht)
+        · have h1  := CEq.cons a (ih ht)
           have h2 : Swap Cm (a :: s :: popStart s t) (s :: a :: popStart s t) :=
             Swap.head (hsymm hsa) _
-          have h3 : CEq Cm (a :: t) (s :: a :: popStart s t) := h1.trans (CEq.of_swap h2)
+          have h3  := h1.trans (CEq.of_swap h2)
           simpa [hat] using h3
 
 omit hirr in
@@ -205,7 +196,7 @@ theorem popStart_swap {s : V} {l l' : List V} (h : Swap Cm l l') :
     CEq Cm (popStart s l) (popStart s l') := by
   induction h with
   | @head a b hab q =>
-      have hne : a ≠ b := by rintro rfl; exact hirr _ hab
+      have hne : a ≠ b := by rintro rfl; aesop
       by_cases hs : a = s
       · subst hs
         have hbs : b ≠ a := fun h => hne h.symm
@@ -253,7 +244,7 @@ theorem canStart_two {s r : V} (hsr : s ≠ r) {l : List V}
     (hs : canStart Cm s l) (hr : canStart Cm r l) :
     Cm s r ∧ canStart Cm r (popStart s l) := by
   induction l with
-  | nil => exact absurd hs (canStart_nil s)
+  | nil => tauto
   | cons a t ih =>
       by_cases has : a = s
       · subst has

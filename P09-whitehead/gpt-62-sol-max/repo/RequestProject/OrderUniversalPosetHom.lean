@@ -6,8 +6,6 @@ public import RequestProject.UnivCoverIncl
 @[expose] public section
 
 /-! The cellular identification of the genuine universal-cover order complex. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -26,7 +24,7 @@ theorem uOrderFace_att (t : OrdTri (UOrder P a)) :
   have hvz' : extend (ordPos (uOrderEnd_monotone (hvw.trans hwz))) v = z :=
     (hvw.trans hwz).2
   have hback : extend (ordNeg (uOrderEnd_monotone (hvw.trans hwz))) z = v := by
-    have h := extend_revGerm (c := (v : UV (orderCx P) a))
+    have h := extend_revGerm (c := v)
       (eb := ordPos (uOrderEnd_monotone (hvw.trans hwz))) rfl
     change extend (ordNeg (uOrderEnd_monotone (hvw.trans hwz)))
       (extend (ordPos (uOrderEnd_monotone (hvw.trans hwz))) v) = v at h
@@ -71,9 +69,7 @@ theorem uOrderHom_cycle_iff (c : OrdTri (UOrder P a) →₀ ℤ) :
   constructor
   · intro h
     apply Finsupp.mapDomain_injective uOrderEdge_injective
-    change chain1 uOrderHom (bdry2 (orderCx (UOrder P a)) c) = Finsupp.mapDomain _ 0
-    rw [Finsupp.mapDomain_zero]
-    exact h
+    tauto
   · intro h
     rw [h, map_zero]
 

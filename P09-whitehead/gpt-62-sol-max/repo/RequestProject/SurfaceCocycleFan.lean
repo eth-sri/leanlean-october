@@ -35,19 +35,16 @@ theorem radialValue_step (p : Fin M) : radialValue hc c rv p = radialValue hc c 
     w_f hc c rv re (rv (vc p)) p
   have h₁ : c.val (cW hc (p + 1)) (cF hc p) • f = collarValue hc c rv (p + 1) :=
     w1_f hc c rv re (rv (vc p)) hb p
-  have left : radialValue hc c rv p =
-      (c.val (cC hc) (cI hc p) * (c.val (cF hc p) (cI hc p))⁻¹) • f := by
+  have eq (j : Fin M) (hR : cR hc j ≤ cI hc p) (hF : cW hc j ≤ cF hc p)
+      (hw : c.val (cW hc j) (cF hc p) • f = collarValue hc c rv j) :
+      radialValue hc c rv j =
+        (c.val (cC hc) (cI hc p) * (c.val (cF hc p) (cI hc p))⁻¹) • f := by
     rw [radialValue, ← mul_smul,
-      bridge_to_top hc c (cC_le_cR hc p) (cW_le_cR hc p) (cR_le_cI hc p),
-      ← h₀, ← c.comp (cW_le_cF hc p) (cF_le_cI hc p), mul_inv_rev]
+      bridge_to_top hc c (cC_le_cR hc j) (cW_le_cR hc j) hR,
+      ← hw, ← c.comp hF (cF_le_cI hc p), mul_inv_rev]
     simp only [mul_smul, inv_smul_smul]
-  have right : radialValue hc c rv (p + 1) =
-      (c.val (cC hc) (cI hc p) * (c.val (cF hc p) (cI hc p))⁻¹) • f := by
-    rw [radialValue, ← mul_smul,
-      bridge_to_top hc c (cC_le_cR hc (p + 1)) (cW_le_cR hc (p + 1)) (cR1_le_cI hc p),
-      ← h₁, ← c.comp (cW1_le_cF hc p) (cF_le_cI hc p), mul_inv_rev]
-    simp only [mul_smul, inv_smul_smul]
-  exact left.trans right.symm
+  exact (eq p (cR_le_cI hc p) (cW_le_cF hc p) h₀).trans
+    (eq (p + 1) (cR1_le_cI hc p) (cW1_le_cF hc p) h₁).symm
 
 def centreValue : Ω := radialValue hc c rv (cyc M 0)
 
@@ -65,18 +62,14 @@ theorem radialValue_eq_centre (p : Fin M) : radialValue hc c rv p = centreValue 
 
 local notation "s" => surfaceSection hc c rv re (centreValue hc c rv)
 
-theorem c_r (p : Fin M) : c.val (cC hc) (cR hc p) • s (cR hc p) = s (cC hc) := by
-  change c.val _ _ • ((c.val _ _)⁻¹ • centreValue hc c rv) = centreValue hc c rv
-  exact smul_inv_smul _ _
+theorem c_r (p : Fin M) : c.val (cC hc) (cR hc p) • s (cR hc p) = s (cC hc) := smul_inv_smul _ _
 
 include hb in
 theorem w_r (p : Fin M) : c.val (cW hc p) (cR hc p) • s (cR hc p) = s (cW hc p) := by
   change c.val _ _ • ((c.val _ _)⁻¹ • centreValue hc c rv) = collarValue hc c rv p
   rw [← radialValue_eq_centre hc c rv re hb p, radialValue, inv_smul_smul, smul_inv_smul]
 
-theorem c_i (p : Fin M) : c.val (cC hc) (cI hc p) • s (cI hc p) = s (cC hc) := by
-  change c.val _ _ • ((c.val _ _)⁻¹ • centreValue hc c rv) = centreValue hc c rv
-  exact smul_inv_smul _ _
+theorem c_i (p : Fin M) : c.val (cC hc) (cI hc p) • s (cI hc p) = s (cC hc) := smul_inv_smul _ _
 
 theorem r_i (p : Fin M) : c.val (cR hc p) (cI hc p) • s (cI hc p) = s (cR hc p) :=
   c.flat_edge_of_bottom s (cC_le_cR hc p) (cR_le_cI hc p)

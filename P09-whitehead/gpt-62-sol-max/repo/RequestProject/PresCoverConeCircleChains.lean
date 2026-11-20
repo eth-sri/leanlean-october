@@ -8,8 +8,6 @@ public import RequestProject.CellularChainMapZero
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
@@ -46,8 +44,7 @@ theorem presCoverConeCircleChain_apply (c : StrictOrdTri P →₀ ℤ)
     (e : StrictOrdEdge (StrictBelow v)) :
     presCoverConeCircleChain w f hf v j hv c
       ((presCoverConeCircleHom w f hf v j hv).onE e) =
-        c (strictConeTriangle v e) := by
-  exact (strictOrderCxMap_chain1_apply
+        c (strictConeTriangle v e) := (strictOrderCxMap_chain1_apply
     (presCoverConeCircleOrderIso w f hf v j hv)
     (presCoverConeCircleOrderIso w f hf v j hv).strictMono
     (presCoverConeCircleOrderIso w f hf v j hv).injective

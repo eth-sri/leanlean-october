@@ -1,6 +1,7 @@
 module
 
 public import Mathlib
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -67,9 +68,7 @@ def IsPath (src tgt : E → V) : List (E × Bool) → V → V → Prop
 
 theorem IsPath.append {src tgt : E → V} {p q : List (E × Bool)} {a b c : V}
     (hp : IsPath src tgt p a b) (hq : IsPath src tgt q b c) : IsPath src tgt (p ++ q) a c := by
-  induction p generalizing a with
-  | nil => cases hp; exact hq
-  | cons e p ih => exact ⟨hp.1, ih hp.2⟩
+  induction p generalizing a <;> aesop
 
 /-! ### Combinatorial two-complexes -/
 
@@ -102,7 +101,7 @@ def IsConnected : Prop := ∀ a b : X.V, ∃ p, IsPath X.src X.tgt p a b
 
 /-- The one-chain carried by an edge path: the signed sum of its edges. -/
 noncomputable def pathChain (p : List (E × Bool)) : E →₀ ℤ :=
-  (p.map (fun e => if e.2 then Finsupp.single e.1 (1 : ℤ) else -Finsupp.single e.1 (1 : ℤ))).sum
+  (p.map (fun e => if e.2 then Finsupp.single e.1 1 else -Finsupp.single e.1 1)).sum
 
 @[simp] theorem pathChain_nil : pathChain ([] : List (E × Bool)) = 0 := rfl
 
@@ -110,12 +109,12 @@ theorem pathChain_cons (e : E × Bool) (p : List (E × Bool)) :
     pathChain (e :: p) =
       (if e.2 then Finsupp.single e.1 (1 : ℤ) else -Finsupp.single e.1 (1 : ℤ)) +
         pathChain p := by
-  simp [pathChain]
+  aesop
 
 /-- The first boundary `∂₁ e = tgt e - src e`. -/
 noncomputable def bdry1 : (X.E →₀ ℤ) →ₗ[ℤ] (X.V →₀ ℤ) :=
-  Finsupp.linearCombination ℤ (fun e => Finsupp.single (X.tgt e) (1 : ℤ)
-    - Finsupp.single (X.src e) (1 : ℤ))
+  Finsupp.linearCombination ℤ (fun e => Finsupp.single (X.tgt e) 1
+    - Finsupp.single (X.src e) 1)
 
 /-- The second boundary: the signed sum of the edges of the attaching path. -/
 noncomputable def bdry2 : (X.F →₀ ℤ) →ₗ[ℤ] (X.E →₀ ℤ) :=
@@ -123,7 +122,7 @@ noncomputable def bdry2 : (X.F →₀ ℤ) →ₗ[ℤ] (X.E →₀ ℤ) :=
 
 /-- The augmentation `C₀ → ℤ`. -/
 noncomputable def augC : (X.V →₀ ℤ) →ₗ[ℤ] ℤ :=
-  Finsupp.linearCombination ℤ (fun _ => (1 : ℤ))
+  Finsupp.linearCombination ℤ (fun _ => 1)
 
 variable {X}
 
@@ -145,8 +144,7 @@ theorem bdry1_pathChain_of_isPath {p : List (X.E × Bool)} {a b : X.V}
     bdry1 X (pathChain p) = Finsupp.single b (1 : ℤ) - Finsupp.single a (1 : ℤ) := by
   induction p generalizing a with
   | nil =>
-      cases hp
-      simp
+      aesop
   | cons e p ih =>
       obtain ⟨ha, hrest⟩ := hp
       have h := ih hrest
@@ -158,12 +156,10 @@ theorem bdry1_pathChain_of_isPath {p : List (X.E × Bool)} {a b : X.V}
 /-- The chain complex condition `∂₁ ∘ ∂₂ = 0`. -/
 theorem bdry1_bdry2 (c : X.F →₀ ℤ) : bdry1 X (bdry2 X c) = 0 := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c₁ c₂ h₁ h₂ => rw [map_add, map_add, h₁, h₂, add_zero]
-  | single f n =>
-      rw [bdry2_single, map_smul, bdry1_pathChain_of_isPath (X.att_isLoop f)]
-      simp
+  finsupp_basis c
+  intro f
+  rw [bdry2_single, map_smul, bdry1_pathChain_of_isPath (X.att_isLoop f)]
+  simp
 
 /-- Acyclicity of a combinatorial two-complex: `H₂ = H₁ = H̃₀ = 0`. -/
 structure IsAcyclic (X : Complex2.{u}) : Prop where
@@ -173,6 +169,22 @@ structure IsAcyclic (X : Complex2.{u}) : Prop where
   h1 : ∀ c : X.E →₀ ℤ, bdry1 X c = 0 → ∃ u : X.F →₀ ℤ, bdry2 X u = c
   /-- `H̃₀ = 0`: every zero-chain of augmentation `0` is a boundary. -/
   h0 : ∀ c : X.V →₀ ℤ, augC X c = 0 → ∃ u : X.E →₀ ℤ, bdry1 X u = c
+
+/-- A map of graphs takes edge paths to edge paths. -/
+theorem isPath_map {V E V' E' : Type*} {src tgt : E → V} {src' tgt' : E' → V'}
+    (fV : V → V') (fE : E → E') (hs : ∀ e, src' (fE e) = fV (src e))
+    (ht : ∀ e, tgt' (fE e) = fV (tgt e)) :
+    ∀ {q : List (E × Bool)} {a b : V}, IsPath src tgt q a b →
+      IsPath src' tgt' (q.map fun eb => (fE eb.1, eb.2)) (fV a) (fV b) := by
+  intro q
+  induction q with
+  | nil => tauto
+  | cons eb q ih =>
+      rintro a b ⟨h1, h2⟩
+      refine ⟨?_, ?_⟩
+      · obtain ⟨e, s⟩ := eb
+        cases s <;> simp [germSrc, hs, ht] at h1 ⊢ <;> exact congrArg fV h1
+      · grind +locals
 
 /-! ### Cellular maps and coverings -/
 
@@ -189,12 +201,37 @@ structure Hom (X Y : Complex2.{u}) where
   base_onF : ∀ f, Y.base (onF f) = onV (X.base f)
   att_onF : ∀ f, Y.att (onF f) = (X.att f).map (fun eb => (onE eb.1, eb.2))
 
+/-! ### Identity and composition of cellular maps -/
+
+/-- The identity cellular map. -/
+def Hom.id (X : Complex2.{u}) : Hom X X where
+  onV := _root_.id
+  onE := _root_.id
+  onF := _root_.id
+  src_onE := fun _ => rfl
+  tgt_onE := fun _ => rfl
+  base_onF := fun _ => rfl
+  att_onF := fun f => by simp
+
+/-- The composition of cellular maps. -/
+def Hom.comp {X Y Z : Complex2.{u}} (g : Hom Y Z) (h : Hom X Y) : Hom X Z where
+  onV := g.onV ∘ h.onV
+  onE := g.onE ∘ h.onE
+  onF := g.onF ∘ h.onF
+  src_onE := fun e => by
+    simp [g.src_onE, h.src_onE]
+  tgt_onE := fun e => by
+    simp [g.tgt_onE, h.tgt_onE]
+  base_onF := fun f => by
+    simp [g.base_onF, h.base_onF]
+  att_onF := fun f => by
+    simp [g.att_onF, h.att_onF]
+
 variable {X Y : Complex2.{u}}
 
 theorem germSrc_onE (p : Hom X Y) (eb : X.E × Bool) :
     germSrc Y.src Y.tgt (p.onE eb.1, eb.2) = p.onV (germSrc X.src X.tgt eb) := by
-  obtain ⟨e, b⟩ := eb
-  cases b <;> simp [germSrc, p.src_onE, p.tgt_onE]
+  grind [germSrc, p.src_onE, p.tgt_onE]
 
 /-- The germs of oriented edges at a vertex. -/
 def Germ (X : Complex2.{u}) (a : X.V) : Type u :=

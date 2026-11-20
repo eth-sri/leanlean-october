@@ -18,7 +18,7 @@ theorem retainedBoundary_coordinate_outside (t : QOld A) (ht : t.1.sgn = 0)
     (c : RetainedProperBoundary t) {v : V} (hv : v ∉ t.1.spx) :
     qCubeToCoordinate c.1.1 v = CubeCoord.pos := by
   have hc : v ∉ c.1.1.spx := fun h => hv (c.2.le.1 h)
-  have hs : c.1.1.sgn v = 0 := (c.2.le.2 v hv).trans (congrFun ht v)
+  have hs  := (c.2.le.2 v hv).trans (congrFun ht v)
   simp [qCubeToCoordinate, hc, hs]
 
 theorem old_coordinate_not_all_positive (c : QOld A) :
@@ -33,14 +33,13 @@ theorem old_coordinate_not_all_positive (c : QOld A) :
   have hs : c.1.sgn = 0 := by
     funext v
     have hh := qCubeToCoordinate_parity c.1 v
-    rw [he] at hh
-    exact hh.symm
+    simp_all
   exact c.2 ⟨hspx, hs⟩
 
 def positiveBoundaryRestriction (t : QOld A) (ht : t.1.sgn = 0)
     (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) (c : RetainedProperBoundary t) :
     VertexPuncturedCube := by
-  let f : Cube (Fin 3) := fun i => qCubeToCoordinate c.1.1 (e i).1
+  let f  := fun i => qCubeToCoordinate c.1.1 (e i).1
   refine ⟨f, ?_, ?_⟩
   · intro he
     have hc : qCubeToCoordinate c.1.1 = qCubeToCoordinate t.1 := by
@@ -48,7 +47,7 @@ def positiveBoundaryRestriction (t : QOld A) (ht : t.1.sgn = 0)
       by_cases hv : v ∈ t.1.spx
       · obtain ⟨i, hi⟩ := e.surjective ⟨v, hv⟩
         have hh := congrFun he i
-        have hiv : (e i).1 = v := congrArg Subtype.val hi
+        have hiv  := congrArg Subtype.val hi
         change qCubeToCoordinate c.1.1 (e i).1 = CubeCoord.free at hh
         rw [hiv] at hh
         simpa only [qCubeToCoordinate, if_pos hv] using hh
@@ -61,9 +60,9 @@ def positiveBoundaryRestriction (t : QOld A) (ht : t.1.sgn = 0)
     by_cases hv : v ∈ t.1.spx
     · obtain ⟨i, hi⟩ := e.surjective ⟨v, hv⟩
       have hh := congrFun he i
-      have hiv : (e i).1 = v := congrArg Subtype.val hi
+      have hiv  := congrArg Subtype.val hi
       change qCubeToCoordinate c.1.1 (e i).1 = CubeCoord.pos at hh
-      rwa [hiv] at hh
+      simp_all
     · exact retainedBoundary_coordinate_outside t ht c hv
 
 def extendPositiveCoordinates (t : QOld A)
@@ -87,7 +86,7 @@ def positiveBoundaryExtension (t : QOld A) (ht : t.1.sgn = 0)
     have hh := mem_freeSet.mp hv
     simp only [f, extendPositiveCoordinates, dif_neg hn] at hh
     cases hh
-  let d : QCube A := coordinateToQCube ⟨f, isSimplex_subset A hsub t.1.isSimplex⟩
+  let d  := coordinateToQCube ⟨f, isSimplex_subset A hsub t.1.isSimplex⟩
   have hd : qCubeToCoordinate d = f := coordinateToQCube_toCoordinate _
   have hdt : d ≤ t.1 := by
     apply (qCubeToCoordinate_face_iff d t.1).mpr
@@ -123,8 +122,7 @@ def positiveBoundaryExtension (t : QOld A) (ht : t.1.sgn = 0)
 theorem positiveBoundaryExtension_coordinates (t : QOld A) (ht : t.1.sgn = 0)
     (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) (c : VertexPuncturedCube) :
     qCubeToCoordinate (positiveBoundaryExtension t ht e c).1.1 =
-      extendPositiveCoordinates t e c.1 := by
-  exact coordinateToQCube_toCoordinate _
+      extendPositiveCoordinates t e c.1 := coordinateToQCube_toCoordinate _
 
 def positiveBoundaryOrderIso (t : QOld A) (ht : t.1.sgn = 0)
     (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) :
@@ -162,7 +160,7 @@ def positiveBoundaryOrderIso (t : QOld A) (ht : t.1.sgn = 0)
       by_cases hv : v ∈ t.1.spx
       · obtain ⟨i, hi⟩ := e.surjective ⟨v, hv⟩
         have hh := h i
-        have hiv : (e i).1 = v := congrArg Subtype.val hi
+        have hiv  := congrArg Subtype.val hi
         change qCubeToCoordinate d.1.1 (e i).1 = CubeCoord.free ∨
           qCubeToCoordinate c.1.1 (e i).1 = qCubeToCoordinate d.1.1 (e i).1 at hh
         rwa [hiv] at hh

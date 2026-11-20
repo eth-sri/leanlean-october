@@ -7,8 +7,6 @@ public import RequestProject.StrictOrderComplex
 @[expose] public section
 
 /-! Based path comparison for the actual truncated face poset, before collapse. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
@@ -33,8 +31,7 @@ theorem truncatedRetraction_pi1_injective_at (a : TruncatedCell A) :
   have hg : Monotone g := oldCellIncl_monotone.comp truncatedCellRetraction_monotone
   have hnat := htpy_loop_mapPath_le (f := id) monotone_id hg
     truncatedCell_le_retraction p.2
-  have hnull : Htpy (orderCx (QOld A)) (truncatedCellRetraction a)
-      (truncatedCellRetraction a) (mapPath truncatedRetractionHom p.1) [] :=
+  have hnull  :=
     Quotient.exact hp
   have hsec := mapPath_htpy truncatedSectionHom hnull
   have hgnil : Htpy (orderCx (TruncatedCell A)) (g a) (g a)
@@ -60,12 +57,7 @@ theorem truncatedRetraction_pi1_injective_at (a : TruncatedCell A) :
           [ordPos (truncatedCell_le_retraction a)]) ++
         [ordNeg (truncatedCell_le_retraction a)]) p.1 := by
     simpa [List.append_assoc] using hA.trans (by simpa using hB)
-  have hkill : Htpy (orderCx (TruncatedCell A)) a a
-      ([ordPos (truncatedCell_le_retraction a)] ++
-        ([ordNeg (truncatedCell_le_retraction a)] ++ p.1 ++
-          [ordPos (truncatedCell_le_retraction a)]) ++
-        [ordNeg (truncatedCell_le_retraction a)]) [] := by
-    exact hstep.trans (by simpa using hc)
+  have hkill := hstep.trans (by simpa using hc)
   exact Quotient.sound (hstrip.symm.trans hkill)
 
 theorem truncatedRetraction_pi1_surjective_at (a : TruncatedCell A) :
@@ -87,6 +79,6 @@ theorem truncatedRetraction_pi1_surjective_at (a : TruncatedCell A) :
   simp only [List.nil_append, List.append_nil, revPath_nil] at hA hB
   have hh := hA.trans hB
   simpa [loopSetoid, ordPos, ordNeg, lp, e, truncatedRetractionHom, truncatedSectionHom, mapPath, orderCxMap,
-    List.map_map, Function.comp_def, revPath, revGerm] using hh
+    List.map_map, Function.comp_def, revPath, revGerm, truncatedCellRetraction, oldCellIncl] using hh
 
 end FiniteChains.Davis

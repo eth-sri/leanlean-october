@@ -31,15 +31,14 @@ theorem uniqueSums_of_isAddTorsionFree (A : Type*) [AddCommGroup A] [IsAddTorsio
   constructor
   intro S T hS hT
   -- the finitely generated subgroup containing both finite sets
-  set G : AddSubgroup A := AddSubgroup.closure ((S ∪ T : Finset A) : Set A) with hG
-  haveI : AddGroup.FG G := by
-    rw [hG]; exact AddGroup.closure_finset_fg (S ∪ T)
+  set G : AddSubgroup A := AddSubgroup.closure (S ∪ T) with hG
+  haveI  := AddGroup.closure_finset_fg (S ∪ T)
   haveI : Module.Finite ℤ G := inferInstance
-  haveI : IsAddTorsionFree G := Function.Injective.isAddTorsionFree
+  haveI  := Function.Injective.isAddTorsionFree
     (f := (AddSubgroup.subtype G)) Subtype.val_injective
   haveI : Module.IsTorsionFree ℤ G := inferInstance
-  haveI : Module.Free ℤ G := Module.free_of_finite_type_torsion_free' (R := ℤ) (M := G)
-  haveI : TwoUniqueSums G :=
+  haveI  := Module.free_of_finite_type_torsion_free' (R := ℤ) (M := G)
+  haveI  :=
     TwoUniqueSums.of_injective_addHom
       ((Module.Free.chooseBasis ℤ G).repr.toLinearMap.toAddMonoidHom.toAddHom)
       (Module.Free.chooseBasis ℤ G).repr.injective inferInstance
@@ -58,11 +57,11 @@ theorem uniqueSums_of_isAddTorsionFree (A : Type*) [AddCommGroup A] [IsAddTorsio
     obtain ⟨b, hb⟩ := hT
     exact ⟨⟨b, hTG b hb⟩, by simpa [hT', Finset.mem_subtype] using hb⟩
   obtain ⟨a0, ha0, b0, hb0, huniq⟩ := UniqueSums.uniqueAdd_of_nonempty hS'ne hT'ne
-  refine ⟨(a0 : A), by simpa [hS', Finset.mem_subtype] using ha0,
-    (b0 : A), by simpa [hT', Finset.mem_subtype] using hb0, ?_⟩
+  refine ⟨a0, by simpa [hS', Finset.mem_subtype] using ha0,
+    b0, by simpa [hT', Finset.mem_subtype] using hb0, ?_⟩
   intro a b ha hb hab
-  have ha' : (⟨a, hSG a ha⟩ : G) ∈ S' := by simpa [hS', Finset.mem_subtype] using ha
-  have hb' : (⟨b, hTG b hb⟩ : G) ∈ T' := by simpa [hT', Finset.mem_subtype] using hb
+  have ha' : ⟨a, hSG a ha⟩ ∈ S' := by simpa [hS', Finset.mem_subtype] using ha
+  have hb' : ⟨b, hTG b hb⟩ ∈ T' := by simpa [hT', Finset.mem_subtype] using hb
   have : ((⟨a, hSG a ha⟩ : G) + ⟨b, hTG b hb⟩) = a0 + b0 := Subtype.ext (by simpa using hab)
   obtain ⟨h1, h2⟩ := huniq ha' hb' this
   exact ⟨congrArg Subtype.val h1, congrArg Subtype.val h2⟩
@@ -71,11 +70,9 @@ theorem uniqueSums_of_isAddTorsionFree (A : Type*) [AddCommGroup A] [IsAddTorsio
 theorem uniqueProds_of_isMulTorsionFree (H : Type*) [CommGroup H] [IsMulTorsionFree H] :
     UniqueProds H := by
   haveI : IsAddTorsionFree (Additive H) := inferInstance
-  haveI : UniqueSums (Additive H) := uniqueSums_of_isAddTorsionFree (Additive H)
+  haveI  := uniqueSums_of_isAddTorsionFree (Additive H)
   haveI : UniqueProds (Multiplicative (Additive H)) := inferInstance
-  exact UniqueProds.of_injective_mulHom
-    (MulEquiv.multiplicativeAdditive H).symm.toMonoidHom.toMulHom
-    (MulEquiv.multiplicativeAdditive H).symm.injective inferInstance
+  tauto
 
 /-- **The group ring of a torsion-free abelian group over an integral domain is an integral
 domain.**  This is the hypothesis on the coefficient ring `k[H]` used in Lemma 2.1, for
@@ -83,7 +80,7 @@ domain.**  This is the hypothesis on the coefficient ring `k[H]` used in Lemma 2
 theorem monoidAlgebra_isDomain (k : Type*) [CommRing k] [IsDomain k]
     (H : Type*) [CommGroup H] [IsMulTorsionFree H] :
     IsDomain (MonoidAlgebra k H) := by
-  haveI : UniqueProds H := uniqueProds_of_isMulTorsionFree H
+  haveI  := uniqueProds_of_isMulTorsionFree H
   infer_instance
 
 end FiniteChains

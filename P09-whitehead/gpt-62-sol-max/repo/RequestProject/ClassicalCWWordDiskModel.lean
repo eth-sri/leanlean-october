@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.SigmaHomotopy
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalCWGraphCoordinates
 public import RequestProject.ClassicalGraphBoundaryWords
@@ -23,19 +24,19 @@ open ClassicalSkeletonAttachment RelativeAttachment ClassicalGraphModel
 variable (K : Whitehead.TwoComplex)
 
 def originalGraphRoot : SkeletonCarrier (Set.univ : Set K) 1 :=
-  zeroCellPoint (pointVertex (Classical.choice (inferInstance : Nonempty K)))
+  zeroCellPoint (pointVertex (Classical.choice inferInstance))
 
 def originalGraphTree : Comb.SpanningTree (originalGraph K) :=
   Classical.choose (originalGraph_exists_spanningTree K (originalGraphRoot K))
 
 abbrev OriginalRoseGen :=
-  {j : RelCWComplex.cell (Set.univ : Set K) 1 // ¬(originalGraphTree K).isTree j}
+  {j : RelCWComplex.cell Set.univ 1 // ¬(originalGraphTree K).isTree j}
 
 abbrev OriginalRoseRel := RelCWComplex.cell (Set.univ : Set K) 2
 
 def originalOneSkeletonRoseEquiv : OneSkeleton K ≃ₕ Rose (OriginalRoseGen K) := by
   letI := zeroSkeleton_discrete (X := K)
-  exact (skeletonAsDiskAttachment (Set.univ : Set K) 1).toHomotopyEquiv.trans
+  exact (skeletonAsDiskAttachment Set.univ 1).toHomotopyEquiv.trans
     (graphRoseHomotopyEquiv (originalGraphAttaching K)
       (originalGraphAttaching K).continuous (originalGraphTree K))
 
@@ -51,22 +52,21 @@ def originalTopSkeletonHomeomorph : K ≃ₜ SkeletonCarrier (Set.univ : Set K) 
 def originalAsDiskAttachment :
     K ≃ₜ DiskAttachment (skeletonAttachingMap (Set.univ : Set K) 2) :=
   (originalTopSkeletonHomeomorph K).trans
-    (skeletonAsDiskAttachment (Set.univ : Set K) 2)
+    (skeletonAsDiskAttachment Set.univ 2)
 
 def originalRoseAttaching :
     C(BoundaryFamily (OriginalRoseRel K) (Fin 2 → ℝ), Rose (OriginalRoseGen K)) :=
-  (originalOneSkeletonRoseEquiv K).toFun.comp (skeletonAttachingMap (Set.univ : Set K) 2)
+  (originalOneSkeletonRoseEquiv K).toFun.comp (skeletonAttachingMap Set.univ 2)
 
 def originalRoseDiskEquiv : K ≃ₕ DiskAttachment (originalRoseAttaching K) :=
   (originalAsDiskAttachment K).toHomotopyEquiv.trans
-    (diskAttachmentBaseChangeHomotopyEquiv (skeletonAttachingMap (Set.univ : Set K) 2)
+    (diskAttachmentBaseChangeHomotopyEquiv (skeletonAttachingMap Set.univ 2)
       (originalOneSkeletonRoseEquiv K))
 
 theorem originalRoseWords_exists (j : OriginalRoseRel K) :
     ∃ W : BoundaryWords (roseAttaching (OriginalRoseGen K)),
       ((originalRoseAttaching K).comp
-        (⟨fun a => ⟨j, a⟩, by
-          exact continuous_sigmaMk («σ» := fun _ : OriginalRoseRel K => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩ : C(UnitBoundary (Fin 2 → ℝ),
+        (⟨fun a => ⟨j, a⟩, continuous_sigmaMk («σ» := fun _ : OriginalRoseRel K => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩ : C(UnitBoundary (Fin 2 → ℝ),
           BoundaryFamily (OriginalRoseRel K) (Fin 2 → ℝ)))).Homotopic W.boundaryMap :=
   boundaryMap_homotopic_boundaryWords (roseAttaching (OriginalRoseGen K))
     (roseAttaching (OriginalRoseGen K)).continuous _
@@ -77,8 +77,7 @@ def originalRoseWords (j : OriginalRoseRel K) :
 
 theorem originalRoseWords_spec (j : OriginalRoseRel K) :
     ((originalRoseAttaching K).comp
-      (⟨fun a => ⟨j, a⟩, by
-          exact continuous_sigmaMk («σ» := fun _ : OriginalRoseRel K => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩ : C(UnitBoundary (Fin 2 → ℝ),
+      (⟨fun a => ⟨j, a⟩, continuous_sigmaMk («σ» := fun _ : OriginalRoseRel K => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩ : C(UnitBoundary (Fin 2 → ℝ),
         BoundaryFamily (OriginalRoseRel K) (Fin 2 → ℝ)))).Homotopic
       (originalRoseWords K j).boundaryMap :=
   Classical.choose_spec (originalRoseWords_exists K j)
@@ -91,16 +90,9 @@ def originalRoseWordAttaching :
 /-- The cellwise homotopies are jointly continuous for arbitrary disk
 families, using their disjoint union topology. -/
 def originalRoseAttachingHomotopy :
-    (originalRoseAttaching K).Homotopy (originalRoseWordAttaching K) := by
-  let H (j : OriginalRoseRel K) := Classical.choice (originalRoseWords_spec K j)
-  let F : C(BoundaryFamily (OriginalRoseRel K) (Fin 2 → ℝ), C(I, Rose (OriginalRoseGen K))) :=
-    ⟨fun a => ((H a.1).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry a.2,
-      continuous_sigma (fun j =>
-        ((H j).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry.continuous)⟩
-  exact {
-    toContinuousMap := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
-    map_zero_left := fun a => (H a.1).apply_zero a.2
-    map_one_left := fun a => (H a.1).apply_one a.2 }
+    (originalRoseAttaching K).Homotopy (originalRoseWordAttaching K) :=
+  .sigmaFamily fun j => Classical.choice (originalRoseWords_spec K j)
+
 
 abbrev OriginalWordDiskModel := DiskAttachment (originalRoseWordAttaching K)
 

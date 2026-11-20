@@ -14,8 +14,6 @@ statements hold after every actual deck translation. Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -54,7 +52,7 @@ theorem embedded_two_cycle_zero (z : X.F →₀ ℤ)
     change chain1 f (bdry2 D c) = Finsupp.mapDomain f.onE 0
     rw [← bdry2_chain2, hz]
     rfl
-  have hc0 : c = 0 := hD.h2 (hc.trans (map_zero _).symm)
+  have hc0  := hD.h2 (hc.trans (map_zero _).symm)
   rw [hc0, Finsupp.mapDomain_zero]
 end EmbeddedHomology
 
@@ -105,23 +103,18 @@ theorem oldLift_injective_V : Function.Injective (oldLift p i hiV hiE hiF hconn 
 include hp hr he in
 theorem oldLift_injective_E : Function.Injective (oldLift p i hiV hiE hiF hconn d₀ ht).onE := by
   intro e f h
-  have hs : D.src e = D.src f := oldLift_injective_V p hp a hr he i hiV hiE hiF hconn d₀ ht
-    (congrArg (fun e : UE (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀)) => e.val.1) h)
-  have hp' : p.onE e = p.onE f := Sum.inl.inj
-    (congrArg (fun e : UE (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀)) => e.val.2) h)
-  have hg := liftGerm_unique hp (x := (e, true)) (y := (f, true)) rfl hs.symm
-    (congrArg (fun e => (e, true)) hp')
-  exact congrArg Prod.fst hg
+  exact hp.uniqueLifts.edge_eq
+    (oldLift_injective_V p hp a hr he i hiV hiE hiF hconn d₀ ht
+      (congrArg (fun e : UE _ _ => e.1.1) h))
+    (Sum.inl.inj (congrArg (fun e : UE _ _ => e.1.2) h))
 
 include hp hr he in
 theorem oldLift_injective_F : Function.Injective (oldLift p i hiV hiE hiF hconn d₀ ht).onF := by
   intro e f h
-  have hs : D.base e = D.base f := oldLift_injective_V p hp a hr he i hiV hiE hiF hconn d₀ ht
-    (congrArg (fun e : UF (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀)) => e.val.1) h)
-  have hp' : p.onF e = p.onF f := Sum.inl.inj
-    (congrArg (fun e : UF (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀)) => e.val.2) h)
-  apply hp.cell.1
-  exact Subtype.ext (Prod.ext hp' hs)
+  exact hp.uniqueLifts.face_eq
+    (oldLift_injective_V p hp a hr he i hiV hiE hiF hconn d₀ ht
+      (congrArg (fun e : UF _ _ => e.1.1) h))
+    (Sum.inl.inj (congrArg (fun e : UF _ _ => e.1.2) h))
 
 def translatedOldLift (g : Pi1 (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) :
     Hom D (uCover (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) :=
@@ -129,31 +122,15 @@ def translatedOldLift (g : Pi1 (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀
 
 include hp hr he in
 theorem translatedOldLift_injective_E (g : Pi1 (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) :
-    Function.Injective (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onE := by
-  intro x y h
-  apply oldLift_injective_E p hp a hr he i hiV hiE hiF hconn d₀ ht
-  have h' := congrArg ((univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulE g⁻¹) h
-  change (univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulE g⁻¹
-      ((univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulE g
-        ((oldLift p i hiV hiE hiF hconn d₀ ht).onE x)) =
-    (univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulE g⁻¹
-      ((univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulE g
-        ((oldLift p i hiV hiE hiF hconn d₀ ht).onE y)) at h'
-  simpa only [← DeckAction.mul_smulE, inv_mul_cancel, DeckAction.one_smulE] using h'
+    Function.Injective (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onE :=
+  ((univDeck _ _).smulE_injective g).comp
+    (oldLift_injective_E p hp a hr he i hiV hiE hiF hconn d₀ ht)
 
 include hp hr he in
 theorem translatedOldLift_injective_F (g : Pi1 (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) :
-    Function.Injective (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onF := by
-  intro x y h
-  apply oldLift_injective_F p hp a hr he i hiV hiE hiF hconn d₀ ht
-  have h' := congrArg ((univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulF g⁻¹) h
-  change (univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulF g⁻¹
-      ((univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulF g
-        ((oldLift p i hiV hiE hiF hconn d₀ ht).onF x)) =
-    (univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulF g⁻¹
-      ((univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulF g
-        ((oldLift p i hiV hiE hiF hconn d₀ ht).onF y)) at h'
-  simpa only [← DeckAction.mul_smulF, inv_mul_cancel, DeckAction.one_smulF] using h'
+    Function.Injective (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onF :=
+  ((univDeck _ _).smulF_injective g).comp
+    (oldLift_injective_F p hp a hr he i hiV hiE hiF hconn d₀ ht)
 
 end PushoutOldCover
 end FiniteChains.Comb

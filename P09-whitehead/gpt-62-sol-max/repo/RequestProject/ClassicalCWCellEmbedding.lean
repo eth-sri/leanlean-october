@@ -58,21 +58,19 @@ def imageSubcomplex (e : CWCellEmbedding K L) : CWComplex.Subcomplex (Set.univ :
       rw [← e.openCell_image] at hz
       exact Set.image_subset_range _ _ hz
     · rintro ⟨x, rfl⟩
-      have hx : x ∈ ⋃ m, ⋃ j : RelCWComplex.cell (Set.univ : Set K) m,
-          CWComplex.openCell (C := (Set.univ : Set K)) m j := by
+      have hx : x ∈ ⋃ m, ⋃ j : RelCWComplex.cell Set.univ m,
+          CWComplex.openCell (C := Set.univ) m j := by
         rw [CWComplex.iUnion_openCell_eq_complex]
         trivial
       obtain ⟨m, j, hj⟩ := by simpa only [Set.mem_iUnion] using hx
       apply Set.mem_iUnion.mpr
       refine ⟨m, Set.mem_iUnion.mpr ⟨⟨e.cellIndex m j, ⟨j, rfl⟩⟩, ?_⟩⟩
       rw [← e.openCell_image]
-      exact ⟨x, hj, rfl⟩
+      tauto
 
 def imageHomeomorph (e : CWCellEmbedding K L) : K ≃ₜ (e.imageSubcomplex : Set L) :=
   e.closedEmbedding.isEmbedding.toHomeomorph
 
-@[simp] theorem imageHomeomorph_val (e : CWCellEmbedding K L) (x : K) :
-    (e.imageHomeomorph x).val = e.map x := rfl
 
 def imageCellEquiv (e : CWCellEmbedding K L) (m : ℕ) :
     RelCWComplex.cell (Set.univ : Set K) m ≃
@@ -121,7 +119,7 @@ theorem hasChain_of_cellEmbeddings {n : ℕ} (K : Fin (n + 1) → TwoComplex) (L
   intro i
   have hs : Set.range (e i.castSucc).map ⊆ Set.range (e i.succ).map := by
     rintro _ ⟨x, rfl⟩
-    exact ⟨f i x, congrArg (fun g : C(K i.castSucc, L) => g x) (he i)⟩
+    exact ⟨f i x, congrArg (fun g  => g x) (he i)⟩
   refine ⟨hs, ?_, ?_⟩
   · obtain ⟨x, hx⟩ := hp i
     intro heq
@@ -142,7 +140,7 @@ theorem hasChain_of_cellEmbeddings {n : ℕ} (K : Fin (n + 1) → TwoComplex) (L
       apply ContinuousMap.ext
       intro x
       apply Subtype.ext
-      exact (congrArg (fun g : C(K i.castSucc, L) => g x) (he i)).symm
+      exact (congrArg (fun g  => g x) (he i)).symm
     exact hsq ▸ ContinuousMap.Homotopic.refl _
 
 end Whitehead

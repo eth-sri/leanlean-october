@@ -17,7 +17,7 @@ theorem presGroup_wordVal (l : List (α × Bool)) :
     wordVal (fun i => (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ)) l =
       QuotientGroup.mk (FreeGroup.mk l) := by
   have h : (FreeGroup.lift fun i : α =>
-      (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ)) = QuotientGroup.mk' (relSub ρ) := by
+      (QuotientGroup.mk (FreeGroup.of i))) = QuotientGroup.mk' (relSub ρ) := by
     apply FreeGroup.ext_hom
     intro i
     simp
@@ -28,7 +28,7 @@ include hw in
 theorem presGroup_wordVal_eq_one (j : J) :
     wordVal (fun i => (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ)) (w j) = 1 := by
   have hlift : (FreeGroup.lift fun i : α =>
-      (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ)) = QuotientGroup.mk' (relSub ρ) := by
+      (QuotientGroup.mk (FreeGroup.of i))) = QuotientGroup.mk' (relSub ρ) := by
     apply FreeGroup.ext_hom
     intro i
     simp

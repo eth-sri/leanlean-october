@@ -2,7 +2,10 @@ module
 
 public import RequestProject.CombCoveringLift
 public import RequestProject.CombPi2
-public import RequestProject.MinimalGap
+public import RequestProject.ComponentComplex
+public import RequestProject.TreeChainTopological
+public import RequestProject.Pigeonhole
+public import RequestProject.SubgroupCompactness
 
 @[expose] public section
 
@@ -27,9 +30,7 @@ is well defined by the homotopy lifting property of
   the paper, and it was previously carried as a hypothesis.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -48,14 +49,14 @@ def LiftsTo (q : List (K.E × Bool)) (v : D.V) : Prop :=
 theorem exists_liftsTo (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (q : PathFrom K x₀) :
     ∃ v, LiftsTo p d₀ q.1 v := by
   obtain ⟨m, c, hm, hmap⟩ :=
-    exists_liftPathAt hcov q.1 d₀ (endpt K x₀ q.1) (by rw [hd]; exact q.2)
-  exact ⟨c, m, hm, hmap⟩
+    exists_liftPathAt hcov.uniqueLifts q.1 d₀ (endpt K x₀ q.1) (by grind)
+  tauto
 
 theorem liftsTo_unique (hcov : IsCovering p) {q : List (K.E × Bool)} {v w : D.V}
     (hv : LiftsTo p d₀ q v) (hw : LiftsTo p d₀ q w) : v = w := by
   obtain ⟨m, hm, hmap⟩ := hv
   obtain ⟨m', hm', hmap'⟩ := hw
-  have hmm : m = m' := liftPath_unique hcov m m' d₀ v w hm hm' (by rw [hmap, hmap'])
+  have hmm  := liftPath_unique hcov.uniqueLifts m m' d₀ v w hm hm' (by simp_all)
   subst hmm
   exact isPath_endpoint_eq hm hm'
 
@@ -64,12 +65,12 @@ theorem liftsTo_htpy (hcov : IsCovering p) (hd : p.onV d₀ = x₀) {q q' : List
     {v : D.V} (hv : LiftsTo p d₀ q v) (h : Htpy K x₀ (endpt K x₀ q) q q') :
     LiftsTo p d₀ q' v := by
   obtain ⟨m, hm, hmap⟩ := hv
-  have hpath : IsPath K.src K.tgt (mapPath p m) (p.onV d₀) (p.onV v) := isPath_mapPath p hm
+  have hpath  := isPath_mapPath p hm
   rw [hmap, hd] at hpath
-  have hb : endpt K x₀ q = p.onV v := endpt_eq_of_isPath hpath
+  have hb  := endpt_eq_of_isPath hpath
   rw [hb, ← hd] at h
-  obtain ⟨m', hm', hmap', -⟩ := lift_htpy hcov hm (by rw [hmap]; exact h)
-  exact ⟨m', hm', hmap'⟩
+  obtain ⟨m', hm', hmap', -⟩ := lift_htpy hcov.uniqueLifts hm (by rw [hmap]; exact h)
+  tauto
 
 /-! ### The lift on vertices -/
 
@@ -100,7 +101,7 @@ theorem onV_coverV (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (c : UV K x₀
   induction c using UV.ind with
   | h q =>
       obtain ⟨m, hm, hmap⟩ := coverV_spec hcov hd q
-      have hpath : IsPath K.src K.tgt (mapPath p m) (p.onV d₀) (p.onV (coverV hcov hd (UV.mk q))) :=
+      have hpath  :=
         isPath_mapPath p hm
       rw [hmap, hd] at hpath
       exact (endpt_eq_of_isPath hpath).symm
@@ -112,13 +113,13 @@ theorem coverV_extend (hcov : IsCovering p) (hd : p.onV d₀ = x₀) {c : UV K x
     coverV hcov hd (extend eb c) = germTgt D.src D.tgt x := by
   induction c using UV.ind with
   | h q =>
-      have h' : endpt K x₀ q.1 = germSrc K.src K.tgt eb := h
+      have h'  := h
       obtain ⟨m, hm, hmap⟩ := coverV_spec hcov hd q
       rw [extend_mk]
       refine coverV_eq hcov hd ⟨m ++ [x], hm.append ⟨hx1.symm, rfl⟩, ?_⟩
       rw [extendP_pos h', mapPath_append, hmap]
       show q.1 ++ [(p.onE x.1, x.2)] = q.1 ++ [eb]
-      rw [hx2]
+      aesop
 
 /-! ### The lift on edges -/
 
@@ -131,13 +132,13 @@ theorem coverE_cond (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (ce : UE K x�
 the universal cover. -/
 noncomputable def coverGerm (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (ce : UE K x₀) :
     D.E × Bool :=
-  Classical.choose (exists_unique_liftGerm hcov (coverV hcov hd ce.1.1) (coverE_cond hcov hd ce))
+  Classical.choose (exists_unique_liftGerm hcov.uniqueLifts (coverV hcov hd ce.1.1) (coverE_cond hcov hd ce))
 
 theorem coverGerm_spec (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (ce : UE K x₀) :
     germSrc D.src D.tgt (coverGerm hcov hd ce) = coverV hcov hd ce.1.1 ∧
       (p.onE (coverGerm hcov hd ce).1, (coverGerm hcov hd ce).2) = (ce.1.2, true) :=
   (Classical.choose_spec
-    (exists_unique_liftGerm hcov (coverV hcov hd ce.1.1) (coverE_cond hcov hd ce))).1
+    (exists_unique_liftGerm hcov.uniqueLifts (coverV hcov hd ce.1.1) (coverE_cond hcov hd ce))).1
 
 theorem coverGerm_snd (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (ce : UE K x₀) :
     (coverGerm hcov hd ce).2 = true :=
@@ -162,7 +163,7 @@ theorem src_coverE (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (ce : UE K x�
 
 theorem tgt_coverE (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (ce : UE K x₀) :
     D.tgt (coverE hcov hd ce) = coverV hcov hd (extend (ce.1.2, true) ce.1.1) := by
-  have hcond : endV ce.1.1 = germSrc K.src K.tgt (ce.1.2, true) := ce.2
+  have hcond  := ce.2
   have h := coverV_extend hcov hd (c := ce.1.1) (eb := (ce.1.2, true)) hcond
     (x := coverGerm hcov hd ce) (coverGerm_spec hcov hd ce).1 (coverGerm_spec hcov hd ce).2
   rw [h, coverGerm_eq hcov hd ce, germTgt_true]
@@ -176,15 +177,15 @@ theorem coverF_cond (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (cf : UF K x�
 
 /-- The lift of the universal cover on two-cells. -/
 noncomputable def coverF (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (cf : UF K x₀) : D.F :=
-  Classical.choose (exists_unique_liftCell hcov cf.1.2 (coverF_cond hcov hd cf))
+  Classical.choose (exists_unique_liftCell hcov.uniqueLifts cf.1.2 (coverF_cond hcov hd cf))
 
 theorem onF_coverF (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (cf : UF K x₀) :
     p.onF (coverF hcov hd cf) = cf.1.2 :=
-  (Classical.choose_spec (exists_unique_liftCell hcov cf.1.2 (coverF_cond hcov hd cf))).1.1
+  (Classical.choose_spec (exists_unique_liftCell hcov.uniqueLifts cf.1.2 (coverF_cond hcov hd cf))).1.1
 
 theorem base_coverF (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (cf : UF K x₀) :
     D.base (coverF hcov hd cf) = coverV hcov hd cf.1.1 :=
-  (Classical.choose_spec (exists_unique_liftCell hcov cf.1.2 (coverF_cond hcov hd cf))).1.2
+  (Classical.choose_spec (exists_unique_liftCell hcov.uniqueLifts cf.1.2 (coverF_cond hcov hd cf))).1.2
 
 /-! ### Paths -/
 
@@ -193,35 +194,11 @@ noncomputable def mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (L : List
     List (D.E × Bool) :=
   L.map (fun x => (coverE hcov hd x.1, x.2))
 
-theorem germSrc_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (x : UE K x₀ × Bool) :
-    germSrc D.src D.tgt (coverE hcov hd x.1, x.2)
-      = coverV hcov hd (germSrc (uCover K x₀).src (uCover K x₀).tgt x) := by
-  obtain ⟨ce, b⟩ := x
-  cases b with
-  | true => exact src_coverE hcov hd ce
-  | false => exact tgt_coverE hcov hd ce
-
-theorem germTgt_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (x : UE K x₀ × Bool) :
-    germTgt D.src D.tgt (coverE hcov hd x.1, x.2)
-      = coverV hcov hd (germTgt (uCover K x₀).src (uCover K x₀).tgt x) := by
-  obtain ⟨ce, b⟩ := x
-  cases b with
-  | true => exact tgt_coverE hcov hd ce
-  | false => exact src_coverE hcov hd ce
-
-theorem isPath_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) :
-    ∀ (L : List (UE K x₀ × Bool)) (a b : UV K x₀),
-      IsPath (uCover K x₀).src (uCover K x₀).tgt L a b →
-        IsPath D.src D.tgt (mapUP hcov hd L) (coverV hcov hd a) (coverV hcov hd b) := by
-  intro L
-  induction L with
-  | nil => intro a b h; exact congrArg (coverV hcov hd) h
-  | cons x L ih =>
-      intro a b h
-      refine ⟨?_, ?_⟩
-      · rw [germSrc_mapUP hcov hd x, h.1]
-      · have := ih (germTgt (uCover K x₀).src (uCover K x₀).tgt x) b h.2
-        rwa [← germTgt_mapUP hcov hd x] at this
+theorem isPath_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀)
+    (L : List (UE K x₀ × Bool)) (a b : UV K x₀)
+    (h : IsPath (uCover K x₀).src (uCover K x₀).tgt L a b) :
+    IsPath D.src D.tgt (mapUP hcov hd L) (coverV hcov hd a) (coverV hcov hd b) :=
+  isPath_map (coverV hcov hd) (coverE hcov hd) (src_coverE hcov hd) (tgt_coverE hcov hd) h
 
 theorem mapPath_mapUP (hcov : IsCovering p) (hd : p.onV d₀ = x₀) (L : List (UE K x₀ × Bool)) :
     mapPath p (mapUP hcov hd L) = mapPath (univProj K x₀) L := by
@@ -242,12 +219,11 @@ noncomputable def coverHom (hcov : IsCovering p) (hd : p.onV d₀ = x₀) :
   base_onF := fun cf => base_coverF hcov hd cf
   att_onF := fun cf => by
     have hloop := uAtt_isLoop (X := K) (x₀ := x₀) cf
-    have hA : IsPath D.src D.tgt (mapUP hcov hd (uAtt cf)) (coverV hcov hd cf.1.1)
-        (coverV hcov hd cf.1.1) := isPath_mapUP hcov hd _ _ _ hloop
+    have hA  := isPath_mapUP hcov hd _ _ _ hloop
     have hproj : mapPath p (mapUP hcov hd (uAtt cf)) = K.att (p.onF (coverF hcov hd cf)) := by
       rw [mapPath_mapUP, onF_coverF]
       exact ((univProj K x₀).att_onF cf).symm
-    exact (eq_att_of_lift hcov hA (base_coverF hcov hd cf) hproj).symm
+    exact (eq_att_of_lift hcov.uniqueLifts hA (base_coverF hcov hd cf) hproj).symm
 
 /-! ### Acyclic covers force the Cockcroft property -/
 

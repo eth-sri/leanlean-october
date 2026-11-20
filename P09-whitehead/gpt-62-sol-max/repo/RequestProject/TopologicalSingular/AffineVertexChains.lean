@@ -18,9 +18,6 @@ the genuine equally weighted barycenters.
 -/
 
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.AffineVertexChains
 
@@ -120,7 +117,7 @@ theorem realize_naturality (f : E →L[ℝ] F) (hf : MapsTo f A B) (n : ℕ)
   exact DFunLike.congr_fun he c
 
 noncomputable def standardVertices (d : ℕ) : Vertices (TopologicalSingular.Domain d) d :=
-  fun i => stdSimplex.vertex i
+  (stdSimplex.vertex)
 
 theorem affineEval_standardVertices (d : ℕ) :
     affineEval (convex_stdSimplex ℝ (Fin (d + 1))) (standardVertices d) =

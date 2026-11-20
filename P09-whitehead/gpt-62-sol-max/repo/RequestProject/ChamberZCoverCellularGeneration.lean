@@ -6,9 +6,6 @@ public import RequestProject.OrderNormalizationSupport
 @[expose] public section
 
 /-! Genuine finite cellular two-cycle generation in the actual covering poset. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve

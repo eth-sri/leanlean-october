@@ -13,9 +13,7 @@ paths. Original vertices, edges and two-cells are retained literally.
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.RelativeTreeExtension
 open SpanningTree
@@ -42,8 +40,8 @@ theorem oldPath_isPath {l : List (D.E × Bool)} {a b : D.V}
     (hl : IsPath D.src D.tgt l a b) :
     IsPath (source T) (target T) (oldPath (Z := Z) l) a b :=
   FiniteChains.Comb.isPath_map (src := D.src) (tgt := D.tgt)
-    (src' := source T) (tgt' := target T) (fun x : D.V => x)
-    (Sum.inl : D.E → D.E ⊕ Z) (fun _ => rfl) (fun _ => rfl) hl
+    (src' := source T) (tgt' := target T) (fun x  => x)
+    Sum.inl (fun _ => rfl) (fun _ => rfl) hl
 
 def generatorLoop : NonTree T ⊕ Z → List ((D.E ⊕ Z) × Bool)
   | Sum.inl e => oldPath (conjPath T [(e.val, true)] (D.src e.val) (D.tgt e.val))
@@ -164,7 +162,7 @@ theorem readWord_collapsed (l : List ((NonTree T ⊕ Z) × Bool)) :
     FreeGroup.map (generatorEquiv T extra)
       (pathWord (tree T extra) (readWord T l)) = FreeGroup.mk l := by
   induction l with
-  | nil => change FreeGroup.map _ (pathWord (tree T extra) []) = FreeGroup.mk []; rw [pathWord_nil, map_one]; rfl
+  | nil => tauto
   | cons e l ih =>
       rcases e with ⟨a, b⟩
       cases b

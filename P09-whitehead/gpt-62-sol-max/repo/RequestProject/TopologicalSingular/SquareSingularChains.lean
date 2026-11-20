@@ -38,32 +38,32 @@ theorem cubeTriangle_faces :
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · apply ContinuousMap.ext
     intro z
-    change squareCoordinates (squareTriangle0 (stdSimplex.map (SimplexCategory.δ (0 : Fin 3)) z)) = _
+    change squareCoordinates (squareTriangle0 (stdSimplex.map (SimplexCategory.δ 0) z)) = _
     rw [(squareTriangle0_faces z).1]
     funext i
-    fin_cases i <;> simp [squareCoordinates, cubeEdge, Whitehead.squareEdge]
+    fin_cases i <;> rfl
   · apply ContinuousMap.ext
     intro z
-    change squareCoordinates (squareTriangle0 (stdSimplex.map (SimplexCategory.δ (2 : Fin 3)) z)) = _
+    change squareCoordinates (squareTriangle0 (stdSimplex.map (SimplexCategory.δ 2) z)) = _
     rw [(squareTriangle0_faces z).2.2]
     funext i
-    fin_cases i <;> simp [squareCoordinates, cubeEdge, Whitehead.squareEdge]
+    fin_cases i <;> rfl
   · apply ContinuousMap.ext
     intro z
-    change squareCoordinates (squareTriangle1 (stdSimplex.map (SimplexCategory.δ (0 : Fin 3)) z)) = _
+    change squareCoordinates (squareTriangle1 (stdSimplex.map (SimplexCategory.δ 0) z)) = _
     rw [(squareTriangle1_faces z).1]
     funext i
-    fin_cases i <;> simp [squareCoordinates, cubeEdge, Whitehead.squareEdge]
+    fin_cases i <;> rfl
   · apply ContinuousMap.ext
     intro z
-    change squareCoordinates (squareTriangle1 (stdSimplex.map (SimplexCategory.δ (2 : Fin 3)) z)) = _
+    change squareCoordinates (squareTriangle1 (stdSimplex.map (SimplexCategory.δ 2) z)) = _
     rw [(squareTriangle1_faces z).2.2]
     funext i
-    fin_cases i <;> simp [squareCoordinates, cubeEdge, Whitehead.squareEdge]
+    fin_cases i <;> rfl
   · apply ContinuousMap.ext
     intro z
-    change squareCoordinates (squareTriangle0 (stdSimplex.map (SimplexCategory.δ (1 : Fin 3)) z)) =
-      squareCoordinates (squareTriangle1 (stdSimplex.map (SimplexCategory.δ (1 : Fin 3)) z))
+    change squareCoordinates (squareTriangle0 (stdSimplex.map (SimplexCategory.δ 1) z)) =
+      squareCoordinates (squareTriangle1 (stdSimplex.map (SimplexCategory.δ 1) z))
     rw [(squareTriangle0_faces z).2.1, (squareTriangle1_faces z).2.1]
 
 /-- The two oriented triangles making up the parameter square. -/

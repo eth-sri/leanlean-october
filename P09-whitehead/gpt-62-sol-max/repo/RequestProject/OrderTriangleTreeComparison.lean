@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.StabilizedWordComparison
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.OrderTriangleBoundaryWords
 public import RequestProject.ClassicalGraphTreeBoundaryWords
@@ -17,9 +18,7 @@ Pending the final Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology ContinuousMap
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrderTriangleWords
 open RelativeAttachment ClassicalGraphModel PresModel SpanningTree
@@ -51,9 +50,7 @@ def graphTree : SpanningTree (graphCx (graphAttaching P)) where
   ht v := T.ht ((vertexEquiv P).symm v)
   isTree := T.isTree
   up v hv := T.up ((vertexEquiv P).symm v) (by
-    intro h
-    apply hv
-    simpa only [Equiv.apply_symm_apply] using congrArg (vertexEquiv P) h)
+    grind)
   ht_root := by simpa only [Equiv.symm_apply_apply] using T.ht_root
   ht_eq_zero := by
     intro v hv
@@ -75,9 +72,7 @@ def graphTree : SpanningTree (graphCx (graphAttaching P)) where
       simpa only [Equiv.symm_apply_apply] using he
     · rintro ⟨v, hv, he⟩
       refine (T.isTree_iff e).mpr ⟨(vertexEquiv P).symm v, ?_, he⟩
-      intro h
-      apply hv
-      simpa only [Equiv.apply_symm_apply] using congrArg (vertexEquiv P) h
+      grind
 
 theorem graphTree_pathWord (l : List (StrictOrdEdge P × Bool)) :
     pathWord (graphTree P T) l = pathWord T l := rfl
@@ -102,8 +97,8 @@ def collapsedAttaching :
 def collapsedCellBoundary (t : StrictOrdTri P) :
     C(UnitBoundary (Fin 2 → ℝ), ClassicalGraphModel.Rose (NonTree T)) :=
   (collapsedAttaching P T).comp
-    ⟨Sigma.mk (β := fun _ : StrictOrdTri P => UnitBoundary (Fin 2 → ℝ)) t,
-      by exact continuous_sigmaMk⟩
+    ⟨Sigma.mk (β := fun _  => UnitBoundary (Fin 2 → ℝ)) t,
+      continuous_sigmaMk⟩
 
 theorem collapsedCellBoundary_homotopic_words (t : StrictOrdTri P) :
     (collapsedCellBoundary P T t).Homotopic (collapsedWords P T t).boundaryMap := by
@@ -119,30 +114,17 @@ theorem collapsedCellBoundary_homotopic_canonical (t : StrictOrdTri P) :
     (collapsedCellBoundary P T t).Homotopic
       (classicalPresCellBoundary (presCanonicalWords (treeRel T) a) t
         (presCanonicalWords_ne_nil (treeRel T) a)) := by
-  have he : FreeGroup.mk (collapsedWords P T t).loopWord =
-      FreeGroup.mk (presCanonicalWords (treeRel T) a t) :=
+  have he  :=
     (collapsedWords_mk P T t).trans (mk_presCanonicalWords (treeRel T) a t).symm
-  exact (collapsedCellBoundary_homotopic_words P T t).trans
-    ((boundaryWords_homotopic_classicalWord (collapsedWords P T t)).trans
-      ((classicalRoseWordBoundary_homotopic_of_mk_eq he).trans
-        (classicalPresWordAttaching_homotopic_read (presCanonicalWords (treeRel T) a) t
-          (presCanonicalWords_ne_nil (treeRel T) a)).symm))
+  exact classicalPresCellBoundary_of_word ((collapsedCellBoundary_homotopic_words P T t).trans
+    (boundaryWords_homotopic_classicalWord (collapsedWords P T t))) he
 
 def collapsedAttachingCanonicalHomotopy :
     (collapsedAttaching P T).Homotopy
       (classicalPresWordAttaching (presCanonicalWords (treeRel T) a)
-        (presCanonicalWords_ne_nil (treeRel T) a)) := by
-  let H (t : StrictOrdTri P) := Classical.choice
-    (collapsedCellBoundary_homotopic_canonical P T a t)
-  let F : C(BoundaryFamily (StrictOrdTri P) (Fin 2 → ℝ),
-      C(I, ClassicalGraphModel.Rose (NonTree T))) :=
-    ⟨fun z => ((H z.1).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry z.2,
-      continuous_sigma (fun t =>
-        ((H t).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry.continuous)⟩
-  exact {
-    toContinuousMap := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
-    map_zero_left := fun z => (H z.1).apply_zero z.2
-    map_one_left := fun z => (H z.1).apply_one z.2 }
+        (presCanonicalWords_ne_nil (treeRel T) a)) :=
+  .sigmaFamily fun t => Classical.choice (collapsedCellBoundary_homotopic_canonical P T a t)
+
 
 /-- The comparison uses the actual CW attaching maps of every triangle,
 not a homology or fundamental-group surrogate for a homotopy equivalence. -/

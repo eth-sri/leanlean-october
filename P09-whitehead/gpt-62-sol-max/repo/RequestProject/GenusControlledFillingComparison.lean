@@ -7,9 +7,7 @@ public import RequestProject.DavisFillingIndependence
 @[expose] public section
 
 /-! Comparison of the controlled and chosen cap fillings modulo actual three-boundaries. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -28,16 +26,14 @@ theorem rootedBaseCapFilling_hurewicz_eq (x : Fin q × Bool) :
     subst a
     rfl
   unfold rootedBaseCapFilling SpanningTree.mappedTreeReference
-  simp only [← markedSpineTree_root q, SpanningTree.treePath_root, mapPath,
-    List.map_nil, extendList_nil]
-  exact haux _ _
+  simp_all [← markedSpineTree_root q, SpanningTree.treePath_root, mapPath, extendList_nil]
 
 theorem chosenCap_controlled_difference_boundary3 (x : Fin q × Bool) :
     ∃ y : OrdTet (QCube (cmpRel (GenusVertex q))) →₀ ℤ,
       ordBoundary3 y = hurewicz _ (fullCubeMarkBase q) (fullCubeBaseCapChain q x) -
         hurewicz _ (fullCubeMarkBase q) (controlledCoverCap q x) := by
   apply projected_fillings_difference_boundary3
-  rw (config := { transparency := .default }) [fullCubeBaseCapChain, fullCubeCoverCapChain_boundary, controlledCoverCap_boundary]
+  erw [fullCubeBaseCapChain, fullCubeCoverCapChain_boundary, controlledCoverCap_boundary]
 
 theorem rootedCap_controlled_difference_boundary3 (x : Fin q × Bool) :
     ∃ y : OrdTet (QCube (cmpRel (GenusVertex q))) →₀ ℤ,
@@ -46,7 +42,7 @@ theorem rootedCap_controlled_difference_boundary3 (x : Fin q × Bool) :
   change ∃ y, ordBoundary3 y =
     hurewicz _ ((markedSpineToFullCube q).onV (markedSpineTree q).root)
       (rootedBaseCapFilling q x) - _
-  rw (config := { transparency := .default }) [rootedBaseCapFilling_hurewicz_eq]
+  erw [rootedBaseCapFilling_hurewicz_eq]
   exact chosenCap_controlled_difference_boundary3 q x
 
 noncomputable def controlledAugmentedFace : (cappedSpineCx q).F →
@@ -64,24 +60,17 @@ only by an ordinary three-boundary. -/
 theorem augmentedComparison_difference_boundary3 (c : (cappedSpineCx q).F →₀ ℤ) :
     ∃ y : OrdTet (QCube (cmpRel (GenusVertex q))) →₀ ℤ,
       ordBoundary3 y = rootedAugmentedChain2 q c - controlledAugmentedChain2 q c := by
-  induction c using Finsupp.induction_linear with
-  | zero => exact ⟨0, by simp⟩
-  | add c d hc hd =>
-      obtain ⟨y, hy⟩ := hc
-      obtain ⟨z, hz⟩ := hd
-      refine ⟨y + z, ?_⟩
-      rw (config := { transparency := .default }) [map_add, hy, hz, map_add, map_add]
-      abel
-  | single f n =>
-      obtain f | x := f
-      · refine ⟨0, ?_⟩
-        simp [rootedAugmentedChain2, controlledAugmentedChain2,
-          rootedAugmentedFace, controlledAugmentedFace]
-      · obtain ⟨y, hy⟩ := rootedCap_controlled_difference_boundary3 q x
-        refine ⟨n • y, ?_⟩
-        rw (config := { transparency := .default }) [map_smul, hy, rootedAugmentedChain2, controlledAugmentedChain2,
-          Finsupp.linearCombination_single, Finsupp.linearCombination_single, smul_sub]
-        rfl
+  change _ ∈ LinearMap.range ordBoundary3
+  apply Finsupp.map_mem_of_basis _ (rootedAugmentedChain2 q - controlledAugmentedChain2 q) _ c
+  intro f
+  obtain f | x := f
+  · exact ⟨0, by simp [rootedAugmentedChain2, controlledAugmentedChain2,
+      rootedAugmentedFace, controlledAugmentedFace]⟩
+  · obtain ⟨y, hy⟩ := rootedCap_controlled_difference_boundary3 q x
+    refine ⟨y, ?_⟩
+    erw [LinearMap.sub_apply, rootedAugmentedChain2, controlledAugmentedChain2,
+      Finsupp.linearCombination_single, Finsupp.linearCombination_single, one_smul, one_smul]
+    exact hy
 
 /-- The controlled comparison of every actual capped-cover cycle is a three-boundary. -/
 theorem controlledAugmentedCycle_boundary3 (c : (cappedTreeCover q).F →₀ ℤ)
@@ -92,7 +81,7 @@ theorem controlledAugmentedCycle_boundary3 (c : (cappedTreeCover q).F →₀ ℤ
   obtain ⟨z, hz⟩ := augmentedComparison_difference_boundary3 q
     (Finsupp.mapDomain Prod.snd c)
   refine ⟨y - z, ?_⟩
-  rw (config := { transparency := .default }) [map_sub, hy, hz]
+  erw [map_sub, hy, hz]
   abel
 
 end FiniteChains.Davis.Genus

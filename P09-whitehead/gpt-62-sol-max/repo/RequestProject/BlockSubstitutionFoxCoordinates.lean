@@ -23,9 +23,6 @@ def markedBlockHom (s : S) : PresGroup (β s) →*
     exact (QuotientGroup.eq_one_iff _).mpr
       (Subgroup.subset_normalClosure ⟨Sum.inr ⟨s, m⟩, rfl⟩))
 
-@[simp] theorem markedBlockHom_mk (s : S) (w : FreeGroup (I s ⊕ Z s)) :
-    markedBlockHom ρ u β s (QuotientGroup.mk w) =
-      QuotientGroup.mk (FreeGroup.map (genEmb s) (blockSubst u s w)) := rfl
 
 theorem markedBlockHom_coeff (s : S) (x : FreeGroupRing (I s ⊕ Z s)) :
     MonoidAlgebra.mapDomainRingHom ℤ (markedBlockHom ρ u β s)
@@ -38,7 +35,7 @@ theorem markedBlockHom_coeff (s : S) (x : FreeGroupRing (I s ⊕ Z s)) :
       (QuotientGroup.mk' (relSub (substPresF ρ (fun s m => blockSubst u s (β s m)))))
       (MonoidAlgebra.mapDomainRingHom ℤ (FreeGroup.map (genEmb s))
         (MonoidAlgebra.mapDomainRingHom ℤ (blockSubst u s) x))
-  simp only [BlockMor.mapDomainRingHom_comp']
+  simp only [MonoidAlgebra.mapDomainRingHom_apply_comp]
   congr 1
 
 variable [DecidableEq A] [DecidableEq S]

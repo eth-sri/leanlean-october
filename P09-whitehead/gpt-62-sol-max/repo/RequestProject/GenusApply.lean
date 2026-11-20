@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.GenusLoops
-public import RequestProject.BlockSurfaceApplyW
+public import RequestProject.BlockSpinePresW
+public import RequestProject.BlockSurfaceFilling
 
 @[expose] public section
 
@@ -30,9 +31,6 @@ side `4h+1` reads `b_h`; the polygon itself is filled by the triangles of the su
   injective.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis
@@ -75,7 +73,7 @@ def genusLw (_ : PUnit) (x : ℕ × Bool) : List (α × Bool) :=
 
 theorem genusAtt_base :
     genusAtt ρ a b q (gBase q) = ptBase (genusW ρ a b q) := by
-  rw (config := { transparency := .default }) [gBase, att_V, vertLab_of_even (by rw [cyc_mod_two])]
+  erw [gBase, att_V, vertLab_of_even (by rw [cyc_mod_two])]
   rfl
 
 theorem genus_hcb :
@@ -89,25 +87,36 @@ omit [NeZero q] in
 theorem genus_index (x : ℕ × Bool) :
     8 * (x.1 % q) + (if x.2 then 2 else 0)
       = 2 * (4 * (x.1 % q) + (if x.2 then 1 else 0)) := by
-  rcases x with ⟨n, i⟩
-  cases i
-  · show 8 * (n % q) + 0 = 2 * (4 * (n % q) + 0)
-    ring
-  · show 8 * (n % q) + 2 = 2 * (4 * (n % q) + 1)
-    ring
+  grind
 
 theorem genus_index_lt (x : ℕ × Bool) :
     4 * (x.1 % q) + (if x.2 then 1 else 0) < (surfWord a b q).length := by
   have hq : x.1 % q < q := Nat.mod_lt _ (Nat.pos_of_neZero q)
-  rw [surfWord_length]
-  rcases x with ⟨n, i⟩
-  cases i
-  · show 4 * (n % q) + 0 < 4 * q
-    simp at hq ⊢
-    omega
-  · show 4 * (n % q) + 1 < 4 * q
-    simp at hq ⊢
-    omega
+  grind [surfWord_length]
+
+/-- The marking reads the generator letter for any presentation with this surface relator. -/
+theorem genus_read_surface_word {J : Type} {w : J → List (α × Bool)} {j : J}
+    (hw : w j = surfWord a b q) (s : PUnit) (x : ℕ × Bool) :
+    let att := surfAtt (w := w) (j₀ := j) (hw.symm ▸ genus_hM a b q)
+      (hw.symm ▸ genus_hvlab a b q) (hw.symm ▸ genus_helb a b q) (gc q)
+    Htpy (orderCx (PresPos w)) (ptBase w) (ptBase w)
+      ([] ++ mapPath (orderCxMap att att.monotone) (gSig q x) ++ revPath [])
+      (wordLoop w (genusLw a b q s x)) := by
+  dsimp only
+  let k := 4 * (x.1 % q) + (if x.2 then 1 else 0)
+  have hk : k < (w j).length := by simpa [hw] using genus_index_lt a b q x
+  have hsig : gSig q x = bdEdge (gc q) (cyc (8 * q) (2 * k)) ++
+      bdEdge (gc q) (cyc (8 * q) (2 * k + 1)) := by
+    rw [gSig_eq, genus_index]
+    tauto
+  have hget : (w j)[k]? = some (sLet a b k) := by
+    rw [hw]
+    apply surfWord_getElem?
+    simp_all [surfWord_length]
+  rw [List.getElem?_eq_getElem hk] at hget
+  have h := htpy_mapPath_letter (w := w) (j₀ := j) (hw.symm ▸ genus_hM a b q)
+    (hw.symm ▸ genus_hvlab a b q) (hw.symm ▸ genus_helb a b q) (gc q) k hk
+  simp_all [genusLw, wordLoop, k]
 
 /-- **The loop of the distinguished generator reads its letter.** -/
 theorem genus_hread (s : PUnit) (x : ℕ × Bool) :
@@ -115,34 +124,7 @@ theorem genus_hread (s : PUnit) (x : ℕ × Bool) :
       (ptBase (genusW ρ a b q))
       ([] ++ mapPath (orderCxMap (genusAtt ρ a b q) (genusAtt ρ a b q).monotone) (gSig q x)
         ++ revPath [])
-      (wordLoop (genusW ρ a b q) (genusLw a b q s x)) := by
-  set k : ℕ := 4 * (x.1 % q) + (if x.2 then 1 else 0) with hkdef
-  have hk : k < (genusW ρ a b q (Sum.inr PUnit.unit)).length := genus_index_lt a b q x
-  -- the loop of the generator is the side of the polygon carrying the letter `k`
-  have hsig : gSig q x
-      = bdEdge (gc q) (cyc (8 * q) (2 * k)) ++ bdEdge (gc q) (cyc (8 * q) (2 * k + 1)) := by
-    have h1 : gSig q x = gPath q (2 * k) := by
-      rw [gSig_eq, genus_index]
-    rw [h1]
-    exact pPath_eq (gc q) (2 * k)
-  -- the letter read is the letter `k` of the surface word
-  have hlet : (genusW ρ a b q (Sum.inr PUnit.unit))[k]'hk = sLet a b k := by
-    have h := surfWord_getElem? a b q k (by
-      have := genus_index_lt a b q x
-      rw [surfWord_length] at this
-      exact this)
-    have h' : (genusW ρ a b q (Sum.inr PUnit.unit))[k]? = some (sLet a b k) := h
-    rw [List.getElem?_eq_getElem hk] at h'
-    exact Option.some.inj h'
-  have hmain := htpy_mapPath_letter (w := genusW ρ a b q) (j₀ := Sum.inr PUnit.unit)
-    (genus_hM a b q) (genus_hvlab a b q) (genus_helb a b q) (gc q) k hk
-  rw [hlet] at hmain
-  rw [hsig]
-  have hword : wordLoop (genusW ρ a b q) (genusLw a b q s x)
-      = letterLoop (genusW ρ a b q) (sLet a b k) := by
-    simp [genusLw, wordLoop, hkdef]
-  rw [hword]
-  simpa using hmain
+      (wordLoop (genusW ρ a b q) (genusLw a b q s x)) := genus_read_surface_word a b q (w := genusW ρ a b q) (j := Sum.inr PUnit.unit) rfl s x
 
 /-! ### The relator of the block -/
 

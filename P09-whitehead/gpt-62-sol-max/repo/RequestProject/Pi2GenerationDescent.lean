@@ -29,138 +29,12 @@ statement (3.5) itself.
   classes coming from `L`, then `j` is zero on `π₂`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
 
 universe u
-
-/-! ### Changing the base vertex of the universal cover -/
-
-section Shift
-
-variable {X : Complex2.{u}} {y₀ w₀ : X.V} {q : List (X.E × Bool)}
-
-/-- Prepending a fixed path to a path issued from its endpoint. -/
-def shiftP (hq : IsPath X.src X.tgt q y₀ w₀) (p : PathFrom X w₀) : PathFrom X y₀ :=
-  ⟨q ++ p.1, by
-    have hend : endpt X y₀ (q ++ p.1) = endpt X w₀ p.1 := by
-      rw [endpt_append, endpt_eq_of_isPath hq]
-    rw [hend]
-    exact isPath_append_iff.mpr ⟨w₀, hq, p.2⟩⟩
-
-theorem endpt_shiftP (hq : IsPath X.src X.tgt q y₀ w₀) (p : PathFrom X w₀) :
-    endpt X y₀ (shiftP hq p).1 = endpt X w₀ p.1 := by
-  show endpt X y₀ (q ++ p.1) = endpt X w₀ p.1
-  rw [endpt_append, endpt_eq_of_isPath hq]
-
-/-- Changing the base vertex of the universal cover, on vertices. -/
-def shiftV (hq : IsPath X.src X.tgt q y₀ w₀) (c : UV X w₀) : UV X y₀ :=
-  Quotient.map (shiftP hq) (by
-    intro p p' hpp
-    show Htpy X y₀ (endpt X y₀ (shiftP hq p).1) (shiftP hq p).1 (shiftP hq p').1
-    rw [endpt_shiftP]
-    exact Htpy.append_congr hq p.2 (Htpy.refl q) hpp) c
-
-@[simp] theorem shiftV_mk (hq : IsPath X.src X.tgt q y₀ w₀) (p : PathFrom X w₀) :
-    shiftV hq (UV.mk p) = UV.mk (shiftP hq p) := rfl
-
-@[simp] theorem endV_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) (c : UV X w₀) :
-    endV (shiftV hq c) = endV c := by
-  induction c using UV.ind with
-  | h p => exact endpt_shiftP hq p
-
-theorem shiftV_base (hq : IsPath X.src X.tgt q y₀ w₀) :
-    shiftV hq (UV.base X w₀) = UV.mk ⟨q, by rw [endpt_eq_of_isPath hq]; exact hq⟩ := by
-  refine congrArg UV.mk (Subtype.ext ?_)
-  show q ++ [] = q
-  exact List.append_nil q
-
-theorem extend_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) (eb : X.E × Bool) (c : UV X w₀) :
-    extend eb (shiftV hq c) = shiftV hq (extend eb c) := by
-  induction c using UV.ind with
-  | h p =>
-      have hl : (extendP eb (shiftP hq p)).1 = (shiftP hq (extendP eb p)).1 := by
-        by_cases h : endpt X w₀ p.1 = germSrc X.src X.tgt eb
-        · have h' : endpt X y₀ (shiftP hq p).1 = germSrc X.src X.tgt eb := by
-            rw [endpt_shiftP]; exact h
-          rw [extendP_pos h']
-          show (q ++ p.1) ++ [eb] = q ++ (extendP eb p).1
-          rw [extendP_pos h]
-          simp
-        · have h' : ¬ endpt X y₀ (shiftP hq p).1 = germSrc X.src X.tgt eb := by
-            rw [endpt_shiftP]; exact h
-          rw [extendP_neg h']
-          show (shiftP hq p).1 = q ++ (extendP eb p).1
-          rw [extendP_neg h]
-          rfl
-      refine Quotient.sound ?_
-      show Htpy X y₀ (endpt X y₀ (extendP eb (shiftP hq p)).1) (extendP eb (shiftP hq p)).1
-        (shiftP hq (extendP eb p)).1
-      rw [hl]
-      exact Htpy.refl _
-
-/-- Changing the base vertex of the universal cover, on edges. -/
-def shiftE (hq : IsPath X.src X.tgt q y₀ w₀) (E : UE X w₀) : UE X y₀ :=
-  ⟨(shiftV hq E.1.1, E.1.2), by rw [endV_shiftV]; exact E.2⟩
-
-/-- Changing the base vertex of the universal cover, on two-cells. -/
-def shiftF (hq : IsPath X.src X.tgt q y₀ w₀) (F : UF X w₀) : UF X y₀ :=
-  ⟨(shiftV hq F.1.1, F.1.2), by rw [endV_shiftV]; exact F.2⟩
-
-theorem liftGerm_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) {c : UV X w₀} {eb : X.E × Bool}
-    (h : endV c = germSrc X.src X.tgt eb) (h' : endV (shiftV hq c) = germSrc X.src X.tgt eb) :
-    liftGerm (shiftV hq c) eb h' = (shiftE hq (liftGerm c eb h).1, (liftGerm c eb h).2) := by
-  obtain ⟨e, b⟩ := eb
-  cases b with
-  | true => rfl
-  | false =>
-      refine Prod.ext ?_ rfl
-      refine Subtype.ext (Prod.ext ?_ rfl)
-      exact extend_shiftV hq (e, false) c
-
-theorem uLiftPath_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) :
-    ∀ (l : List (X.E × Bool)) (c : UV X w₀) (v : X.V), IsPath X.src X.tgt l (endV c) v →
-      uLiftPath l (shiftV hq c) = (uLiftPath l c).map (fun Eb => (shiftE hq Eb.1, Eb.2)) := by
-  intro l
-  induction l with
-  | nil => intro c v _; rfl
-  | cons eb t ih =>
-      intro c v hl
-      have h : endV c = germSrc X.src X.tgt eb := hl.1
-      have h' : endV (shiftV hq c) = germSrc X.src X.tgt eb := by rw [endV_shiftV]; exact h
-      rw [uLiftPath_cons h', uLiftPath_cons h, List.map_cons, liftGerm_shiftV hq h h',
-        extend_shiftV hq eb c, ih (extend eb c) v (by rw [endV_extend h]; exact hl.2)]
-
-/-- **Change of base vertex of the universal cover.**  A path from `y₀` to `w₀` induces a
-cellular map `Ũ(X, w₀) → Ũ(X, y₀)` over `X`; it sends the base vertex to the class of the
-path.  For a loop this is the deck transformation attached to its class. -/
-noncomputable def shiftHom (hq : IsPath X.src X.tgt q y₀ w₀) :
-    Hom (uCover X w₀) (uCover X y₀) where
-  onV := shiftV hq
-  onE := shiftE hq
-  onF := shiftF hq
-  src_onE := fun _ => rfl
-  tgt_onE := fun E => extend_shiftV hq (E.1.2, true) E.1.1
-  base_onF := fun _ => rfl
-  att_onF := by
-    intro F
-    have hbase : endV F.1.1 = X.base F.1.2 := F.2
-    have hatt : IsPath X.src X.tgt (X.att F.1.2) (endV F.1.1) (X.base F.1.2) := by
-      rw [hbase]; exact X.att_isLoop F.1.2
-    show uLiftPath (X.att F.1.2) (shiftV hq F.1.1) = _
-    exact uLiftPath_shiftV hq (X.att F.1.2) F.1.1 (X.base F.1.2) hatt
-
-@[simp] theorem onE_shiftHom (hq : IsPath X.src X.tgt q y₀ w₀) (E : UE X w₀) :
-    ((shiftHom hq).onE E).1.2 = E.1.2 := rfl
-
-@[simp] theorem onF_shiftHom (hq : IsPath X.src X.tgt q y₀ w₀) (F : UF X w₀) :
-    ((shiftHom hq).onF F).1.2 = F.1.2 := rfl
-
-end Shift
 
 /-! ### Spherical classes coming from a subcomplex -/
 
@@ -184,7 +58,7 @@ theorem zeroPi2_chain_of_generated (ι : Hom L E) (k : Hom L L') (ι' : Hom L' E
     (hsq : j.comp ι = ι'.comp k) (hconnE' : IsConnected E') (hzero : ZeroPi2 k) {x₀ : E.V}
     {c : (uCover E x₀).F →₀ ℤ} (hgen : c ∈ Submodule.span ℤ (Pi2FromSub ι x₀)) :
     chain2 (univLift E j x₀) c = 0 := by
-  have hsub : Pi2FromSub ι x₀ ≤ (LinearMap.ker (chain2 (univLift E j x₀)) : Submodule ℤ _) := by
+  have hsub : Pi2FromSub ι x₀ ≤ (LinearMap.ker (chain2 (univLift E j x₀))) := by
     rintro d ⟨l₀, φ, hφV, hφE, hφF, z, hz, rfl⟩
     show chain2 (univLift E j x₀) (chain2 φ z) = 0
     -- the two maps of universal covers to be compared
@@ -195,7 +69,7 @@ theorem zeroPi2_chain_of_generated (ι : Hom L E) (k : Hom L L') (ι' : Hom L' E
     have hbaseV : endV (A.onV (UV.base L l₀)) = ι'.onV (k.onV l₀) := by
       show endV (univLiftV x₀ j (φ.onV (UV.base L l₀))) = ι'.onV (k.onV l₀)
       rw [endV_univLiftV, hφV]
-      exact congrArg (fun h : Hom L E' => h.onV l₀) hsq
+      exact congrArg (fun h  => h.onV l₀) hsq
     obtain ⟨tp, htp⟩ := Quotient.exists_rep (A.onV (UV.base L l₀))
     have hqpath : IsPath E'.src E'.tgt tp.1 (j.onV x₀) (ι'.onV (k.onV l₀)) := by
       have h := tp.2
@@ -213,36 +87,21 @@ theorem zeroPi2_chain_of_generated (ι : Hom L E) (k : Hom L L') (ι' : Hom L' E
       intro e
       show j.onE ((φ.onE e).1).2 = ι'.onE (k.onE (e.1.2))
       rw [hφE e]
-      exact congrArg (fun h : Hom L E' => h.onE e.1.2) hsq
+      exact congrArg (fun h  => h.onE e.1.2) hsq
     have hF : ∀ f, (univProj E' (j.onV x₀)).onF (A.onF f)
         = (univProj E' (j.onV x₀)).onF (B.onF f) := by
       intro f
       show j.onF ((φ.onF f).1).2 = ι'.onF (k.onF (f.1.2))
       rw [hφF f]
-      exact congrArg (fun h : Hom L E' => h.onF f.1.2) hsq
+      exact congrArg (fun h  => h.onF f.1.2) hsq
     have hbase : A.onV (UV.base L l₀) = B.onV (UV.base L l₀) := by
-      show A.onV (UV.base L l₀) = shiftV hqpath ((univLift L' ι' (k.onV l₀)).onV
-        (kappa.onV (UV.base L l₀)))
-      have hk : kappa.onV (UV.base L l₀) = UV.base L' (k.onV l₀) := rfl
-      have hi : (univLift L' ι' (k.onV l₀)).onV (UV.base L' (k.onV l₀))
-          = UV.base E' (ι'.onV (k.onV l₀)) := rfl
-      rw [hk, hi, shiftV_base]
+      change A.onV (UV.base L l₀) = shiftV hqpath (UV.base E' (ι'.onV (k.onV l₀)))
+      rw [shiftV_base]
       exact htp.symm
-    have hV := lift_onV_eq hqcov isConnected_univCover hE hbase
-    have hFeq := lift_onF_eq hqcov hF hV
-    -- the upper arrow kills `z`
-    have hkz : chain2 kappa z = 0 := hzero l₀ z hz
-    have hAB : chain2 A z = chain2 B z :=
-      congrArg (fun m => Finsupp.mapDomain m z) (funext hFeq)
-    have hBz : chain2 B z = chain2 chi (chain2 kappa z) := by
-      show Finsupp.mapDomain (chi.onF ∘ kappa.onF) z
-        = Finsupp.mapDomain chi.onF (Finsupp.mapDomain kappa.onF z)
-      rw [← Finsupp.mapDomain_comp]
-    have hAz : chain2 (univLift E j x₀) (chain2 φ z) = chain2 A z := by
-      show Finsupp.mapDomain J.onF (Finsupp.mapDomain φ.onF z)
-        = Finsupp.mapDomain (J.onF ∘ φ.onF) z
-      rw [← Finsupp.mapDomain_comp]
-    rw [hAz, hAB, hBz, hkz, map_zero]
+    obtain ⟨hv, he, hf⟩ := lift_cells_eq hqcov isConnected_univCover hE hF hbase
+    have hAB : A = B := Hom.ext' (funext hv) (funext he) (funext hf)
+    erw [← chain2_comp_apply φ J, show J.comp φ = A from rfl, hAB,
+      show B = chi.comp kappa from rfl, chain2_comp_apply, hzero l₀ z hz, map_zero]
   exact Submodule.span_le.2 hsub hgen
 
 /-- **The arrows of the descended chain are zero on `π₂` once `π₂` is generated from
@@ -264,7 +123,7 @@ variable {D K M : Complex2.{u}}
 theorem hom_ext {X Y : Complex2.{u}} : ∀ a b : Hom X Y,
     a.onV = b.onV → a.onE = b.onE → a.onF = b.onF → a = b := by
   rintro ⟨a1, a2, a3, p1, p2, p3, p4⟩ ⟨b1, b2, b3, q1, q2, q3, q4⟩ hV hE hF
-  cases hV; cases hE; cases hF; rfl
+  aesop
 
 /-- The factorization through the pushout restricts to the given map on the term upstairs. -/
 theorem pushoutLift_comp_pushoutMap (p : Hom D K) (i : Hom D L) (hiV : Function.Injective i.onV)
@@ -274,21 +133,21 @@ theorem pushoutLift_comp_pushoutMap (p : Hom D K) (i : Hom D L) (hiV : Function.
     (hF : ∀ d, g.onF (i.onF d) = f.onF (p.onF d)) :
     (pushoutLift p i hiV hiE f g hV hE).comp (pushoutMap p i hiV hiE hiF) = g := by
   refine hom_ext _ _ (funext fun v => ?_) (funext fun e => ?_) (funext fun c => ?_)
-  · show Sum.elim f.onV (fun w : OffV i => g.onV w.1) (pushV p i v) = g.onV v
+  · show Sum.elim f.onV (fun w  => g.onV w.1) (pushV p i v) = g.onV v
     by_cases h : ∃ d, i.onV d = v
     · obtain ⟨d, rfl⟩ := h
       rw [pushV_of_mem p hiV d]
       exact (hV d).symm
     · rw [pushV_of_off p i ⟨v, fun d hd => h ⟨d, hd⟩⟩]
       rfl
-  · show Sum.elim f.onE (fun w : OffE i => g.onE w.1) (pushE p i e) = g.onE e
+  · show Sum.elim f.onE (fun w  => g.onE w.1) (pushE p i e) = g.onE e
     by_cases h : ∃ d, i.onE d = e
     · obtain ⟨d, rfl⟩ := h
       rw [pushE_of_mem p hiE d]
       exact (hE d).symm
     · rw [pushE_of_off p i ⟨e, fun d hd => h ⟨d, hd⟩⟩]
       rfl
-  · show Sum.elim f.onF (fun w : OffF i => g.onF w.1) (pushF p i c) = g.onF c
+  · show Sum.elim f.onF (fun w  => g.onF w.1) (pushF p i c) = g.onF c
     by_cases h : ∃ d, i.onF d = c
     · obtain ⟨d, rfl⟩ := h
       rw [pushF_of_mem p hiF d]

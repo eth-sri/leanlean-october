@@ -4,9 +4,6 @@ public import RequestProject.TopologicalSingular.SingularChains
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -20,9 +17,7 @@ noncomputable def simplexLinearHomotopy (f g : C(Y, Domain n)) : f.Homotopy g wh
     · intro i
       exact add_nonneg (mul_nonneg (sub_nonneg.mpr w.1.property.2) ((f w.2).property.1 i))
         (mul_nonneg w.1.property.1 ((g w.2).property.1 i))
-    · rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum,
-        (f w.2).property.2, (g w.2).property.2]
-      ring⟩
+    simp_all [Finset.sum_add_distrib, ← Finset.mul_sum, (f w.2).property.2, (g w.2).property.2]⟩
   continuous_toFun := by
     apply Continuous.subtype_mk
     apply continuous_pi
@@ -44,7 +39,7 @@ theorem simplexLinearHomotopy_fixed (f g : C(Y, Domain n)) (z : Y)
     (h : f z = g z) (t : I) : simplexLinearHomotopy f g (t, z) = f z := by
   apply Subtype.ext
   funext i
-  change (1 - (t : ℝ)) * (f z).val i + (t : ℝ) * (g z).val i = (f z).val i
+  change (1 - t) * (f z).val i + t * (g z).val i = (f z).val i
   rw [h]
   ring
 

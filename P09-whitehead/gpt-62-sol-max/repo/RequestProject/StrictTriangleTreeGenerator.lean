@@ -36,9 +36,9 @@ theorem nonempty_nonTree_of_strictTriangle (T : SpanningTree (strictOrderCx P))
         change (T.ht t.val.1 + 1 = T.ht t.val.2.2 ∨
           T.ht t.val.2.2 + 1 = T.ht t.val.1) at h₃
         omega
-      · exact ⟨⟨e₀₂, h₀₂⟩⟩
-    · exact ⟨⟨e₁₂, h₁₂⟩⟩
-  · exact ⟨⟨e₀₁, h₀₁⟩⟩
+      · tauto
+    · tauto
+  · tauto
 
 end FiniteChains.Comb.SpanningTree
 

@@ -7,7 +7,8 @@ public import RequestProject.TopologicalSingular.CoherentSimplexExtension
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-variable {X : Type} [TopologicalSpace X] [SimplyConnectedSpace X]
+universe u
+variable {X : Type u} [TopologicalSpace X] [SimplyConnectedSpace X]
 
 theorem stationaryEdgeHomotopies_coherent (x : X) (tau : Simplex X 2)
     (i j : Fin 3) (t : I) (z w : Domain 1)
@@ -36,7 +37,7 @@ theorem stationaryTriangle_exists (x : X) (tau : Simplex X 2) :
     change tau (stdSimplex.map (SimplexCategory.δ i) z) =
       stationaryEdgeHomotopy x (face i tau) (t, z)
     rw [htau i, stationaryEdgeHomotopy_constant]
-    exact congrArg (fun f : Simplex X 1 => f z) (htau i)
+    exact congrArg (fun f  => f z) (htau i)
   · obtain ⟨g, F, hF⟩ := simplex_face_homotopy_extension tau
       (fun i => (stationaryEdgeHomotopy x (face i tau)).toContinuousMap)
       (stationaryEdgeHomotopies_coherent x tau)
@@ -61,9 +62,7 @@ theorem stationaryTriangle_face (x : X) (tau : Simplex X 2) (i : Fin 3) :
   apply ContinuousMap.ext
   intro z
   have h := stationaryTriangleHomotopy_face x tau i 1 z
-  rw [(stationaryTriangleHomotopy x tau).apply_one,
-    (stationaryEdgeHomotopy x (face i tau)).apply_one] at h
-  exact h
+  aesop
 
 theorem stationaryTriangle_eq_of_based (x : X) (tau : Simplex X 2)
     (h : ∀ i : Fin 3, face i tau = ContinuousMap.const (Domain 1) x) :

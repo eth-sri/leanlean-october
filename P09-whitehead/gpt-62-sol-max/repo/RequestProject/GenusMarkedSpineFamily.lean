@@ -1,7 +1,12 @@
 module
 
 public import RequestProject.GenusMarkedSpineInjection
-public import RequestProject.BlockFamilyBlockwise
+public import RequestProject.BlockFamilySubst
+public import Mathlib
+public import RequestProject.Pi2Extension
+public import RequestProject.BaseChangeCycles
+public import RequestProject.UniversalCoverPi2
+public import RequestProject.CoverChainComplex
 
 @[expose] public section
 
@@ -13,9 +18,8 @@ variable {α Jr Sx : Type} (ρ : Jr ⊕ Sx → FreeGroup α)
   (q : Sx → ℕ) [∀ s, NeZero (q s)]
   (u : ∀ s, Fin (q s) × Bool → FreeGroup α)
 
-noncomputable def familyFiniteSpineWordBlock (s : Sx) :
-    NamedSpineRel (q s) → FreeGroup (α ⊕ SpinePresentationGen (q s)) :=
-  finiteSpineWordBlock (q s) (u s) PUnit.unit
+/-- Simultaneous replacement of a family by marked genus spines. -/
+noncomputable abbrev spineFamilyPres := substPresF ρ (familyFiniteSpineWordBlock q u)
 
 variable (hrho : ∀ s, ρ (Sum.inr s) = commWord (u s) (finitePairs (q s)))
 
@@ -24,13 +28,12 @@ include hrho in
 theorem familyFiniteSpineWordBlock_consequence (s : Sx) :
     FreeGroup.map (Sum.inl (β := SpinePresentationGen (q s))) (ρ (Sum.inr s)) ∈
       Subgroup.normalClosure (Set.range (familyFiniteSpineWordBlock q u s)) := by
-  let φ := blockSubst (Zt := fun _ : PUnit.{1} => SpinePresentationGen (q s))
+  let φ := blockSubst (Zt := fun _  => SpinePresentationGen (q s))
     (fun _ => u s) PUnit.unit
   have hv : φ (commWord (fun x => FreeGroup.of (Sum.inl x)) (finitePairs (q s))) =
       FreeGroup.map (Sum.inl (β := SpinePresentationGen (q s))) (ρ (Sum.inr s)) := by
     rw [map_commWord]
-    simp only [φ, blockSubst_of_inl]
-    rw [← map_commWord, hrho s]
+    simp [φ, blockSubst_of_inl, ← map_commWord, hrho s]
   rw [← hv]
   apply map_mem_normalClosure φ ?_ (markedSpine_surface_mem (q s))
   rintro v ⟨m, rfl⟩

@@ -16,9 +16,6 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -77,37 +74,16 @@ theorem orderNerveComparablePath_coordinates {a b : P} (h : a ≤ b ∨ b ≤ a)
       (1 - (t : ℝ)) * (if a = p then 1 else 0) + (t : ℝ) * (if b = p then 1 else 0) := by
   by_cases hab : a ≤ b
   · simpa only [orderNerveComparablePath, dif_pos hab] using orderNerveAffineEdgePath_coordinates hab t p
-  · simp only [orderNerveComparablePath, dif_neg hab, Path.symm_apply, Function.comp_apply,
-      orderNerveAffineEdgePath_coordinates, unitInterval.coe_symm_eq]
-    ring
-
-theorem orderNerveAffineRealization_vertex (v : P → ℝ) (p : P) :
-    orderNerveAffineRealization v (orderNerveRealizationVertex p) = v p := by
-  have h := congrArg (fun k => k (default : SimplexCategory.toTop.{0}.obj ⦋0⦌))
-    (orderNerveAffineRealization_simplex v (n := ⦋0⦌) (ComposableArrows.mk₀ p))
-  change orderNerveAffineRealization v (orderNerveRealizationVertex p) =
-    orderNerveAffineSimplex.{0} v (n := ⦋0⦌) (ComposableArrows.mk₀ p) default at h
-  rw [h]
-  haveI : Unique (Fin (⦋0⦌.len + 1)) := by
-    simpa only [SimplexCategory.len_mk] using (inferInstance : Unique (Fin 1))
-  simp only [orderNerveAffineSimplex, ContinuousMap.coe_mk, ComposableArrows.mk₀,
-    Fintype.sum_unique, Functor.const_obj_obj]
-  have hone := (default : SimplexCategory.toTop.{0}.obj ⦋0⦌).down.total_of_fintype
-  simp only [Fintype.sum_unique] at hone
-  exact (congrArg (fun a : ℝ => a * v p) hone).trans (one_mul _)
+  simp_all [orderNerveComparablePath, Path.symm_apply, orderNerveAffineEdgePath_coordinates, unitInterval.coe_symm_eq] <;> abel
 
 theorem orderNerveAffineEdgePath_affine (v : P → ℝ) {a b : P}
     (h : a ≤ b) (t : I) :
     orderNerveAffineRealization v (orderNerveAffineEdgePath h t) =
       (1 - (t : ℝ)) * v a + (t : ℝ) * v b := by
-  have hs (z : SimplexCategory.toTop.obj ⦋1⦌) := congrArg (fun k => k z)
-    (orderNerveAffineRealization_simplex v (affineEdgeSimplex h))
-  change ∀ z, orderNerveAffineRealization v
-    (orderNerveRealizationSimplex P (affineEdgeSimplex h) z) =
-      orderNerveAffineSimplex v (affineEdgeSimplex h) z at hs
   change orderNerveAffineRealization v (orderNerveRealizationSimplex P (affineEdgeSimplex h)
     (topologicalSimplexBlend t (affineEdgeEndpoint h 0) (affineEdgeEndpoint h 1))) = _
-  rw [hs, orderNerveAffineSimplex_blend, ← hs, ← hs,
+  rw [orderNerveAffineRealization_simplex, orderNerveAffineSimplex_blend,
+    ← orderNerveAffineRealization_simplex, ← orderNerveAffineRealization_simplex,
     affineEdgeEndpoint_spec, affineEdgeEndpoint_spec,
     orderNerveAffineRealization_vertex, orderNerveAffineRealization_vertex]
   rfl
@@ -153,16 +129,13 @@ theorem orderNerveComparablePath_of_support [Fintype P] {a b : P}
   let c := orderNerveRealizationCoordinates P x
   have hsum : c a + c b = 1 := by
     calc
-      c a + c b = ∑ p ∈ ({a, b} : Finset P), c p := by simp [hne]
+      c a + c b = ∑ p ∈ ({a, b}), c p := by simp [hne]
       _ = ∑ p : P, c p := by
-        apply Finset.sum_subset (Finset.subset_univ _)
-        intro p _ hp
-        simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hp
-        exact hx p hp.1 hp.2
+        grind [Finset.sum_subset]
       _ = 1 := orderNerveRealizationCoordinates_sum x
   have ha := orderNerveRealizationCoordinates_nonneg x a
   have hb := orderNerveRealizationCoordinates_nonneg x b
-  let t : I := ⟨c b, hb, by dsimp [c] at hsum ⊢; linarith⟩
+  let t : I := ⟨c b, hb, by linarith⟩
   refine ⟨t, ?_⟩
   apply orderNerveRealizationCoordinates_injective P
   funext p
@@ -170,7 +143,6 @@ theorem orderNerveComparablePath_of_support [Fintype P] {a b : P}
   by_cases hpa : p = a
   · subst p
     simp only [ite_true, if_neg hne.symm, mul_one, mul_zero, add_zero]
-    change 1 - c b = c a
     linarith
   · by_cases hpb : p = b
     · subst p

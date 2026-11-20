@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.CombData
+public import RequestProject.ComponentComplex
 
 @[expose] public section
 
@@ -44,83 +44,117 @@ universe u
 
 variable {K D L : Complex2.{u}}
 
-/-! ### Transport of edge paths along a map of graphs -/
+/-! ### The pushout of types along an embedding -/
 
-/-- A map of graphs takes edge paths to edge paths. -/
-theorem isPath_map {V E V' E' : Type*} {src tgt : E → V} {src' tgt' : E' → V'}
-    (fV : V → V') (fE : E → E') (hs : ∀ e, src' (fE e) = fV (src e))
-    (ht : ∀ e, tgt' (fE e) = fV (tgt e)) :
-    ∀ {q : List (E × Bool)} {a b : V}, IsPath src tgt q a b →
-      IsPath src' tgt' (q.map fun eb => (fE eb.1, eb.2)) (fV a) (fV b) := by
-  intro q
-  induction q with
-  | nil => intro a b h; exact congrArg fV h
-  | cons eb q ih =>
-      rintro a b ⟨h1, h2⟩
-      refine ⟨?_, ?_⟩
-      · obtain ⟨e, s⟩ := eb
-        cases s <;> simp [germSrc, hs, ht] at h1 ⊢ <;> exact congrArg fV h1
-      · obtain ⟨e, s⟩ := eb
-        cases s
-        · simpa [germTgt, hs, ht] using ih h2
-        · simpa [germTgt, hs, ht] using ih h2
-
-/-! ### The cells of `L` off `D` -/
-
-/-- The vertices of `L` which do not come from `D`. -/
-def OffV (i : Hom D L) : Type u := {v : L.V // ∀ d, i.onV d ≠ v}
-
-/-- The edges of `L` which do not come from `D`. -/
-def OffE (i : Hom D L) : Type u := {e : L.E // ∀ d, i.onE d ≠ e}
-
-/-- The two-cells of `L` which do not come from `D`. -/
-def OffF (i : Hom D L) : Type u := {f : L.F // ∀ d, i.onF d ≠ f}
+/-- Elements outside the image of the gluing map. -/
+abbrev OffRange {α β : Type*} (i : α → β) := {x : β // ∀ a, i a ≠ x}
 
 open Classical in
-/-- The vertex map `L → E`: a vertex coming from `D` goes to its image in `K`, any other
-vertex survives. -/
-noncomputable def pushV (p : Hom D K) (i : Hom D L) (v : L.V) : K.V ⊕ OffV i :=
-  if h : ∃ d, i.onV d = v then Sum.inl (p.onV h.choose) else Sum.inr ⟨v, fun d hd => h ⟨d, hd⟩⟩
+/-- The pushout consists of the left type and the part of the right type outside the overlap. -/
+noncomputable def glueCell {α β γ : Type*} (p : α → γ) (i : α → β) (x : β) : γ ⊕ OffRange i :=
+  if h : ∃ a, i a = x then Sum.inl (p h.choose) else Sum.inr ⟨x, fun a ha => h ⟨a, ha⟩⟩
 
-open Classical in
-/-- The edge map `L → E`. -/
-noncomputable def pushE (p : Hom D K) (i : Hom D L) (e : L.E) : K.E ⊕ OffE i :=
-  if h : ∃ d, i.onE d = e then Sum.inl (p.onE h.choose) else Sum.inr ⟨e, fun d hd => h ⟨d, hd⟩⟩
+section GlueCell
+variable {α β γ : Type*} {i : α → β} (p : α → γ)
 
-open Classical in
-/-- The two-cell map `L → E`. -/
-noncomputable def pushF (p : Hom D K) (i : Hom D L) (f : L.F) : K.F ⊕ OffF i :=
-  if h : ∃ d, i.onF d = f then Sum.inl (p.onF h.choose) else Sum.inr ⟨f, fun d hd => h ⟨d, hd⟩⟩
+theorem glueCell_of_mem (hi : Function.Injective i) (a : α) :
+    glueCell p i (i a) = Sum.inl (p a) := by
+  classical
+  have h : ∃ b, i b = i a := ⟨a, rfl⟩
+  rw [glueCell, dite_eq_left h, hi h.choose_spec]
 
-theorem pushV_of_mem (p : Hom D K) {i : Hom D L} (hi : Function.Injective i.onV) (d : D.V) :
-    pushV p i (i.onV d) = Sum.inl (p.onV d) := by
-  have h : ∃ d', i.onV d' = i.onV d := ⟨d, rfl⟩
-  rw [pushV, dif_pos h, hi h.choose_spec]
+theorem glueCell_of_off (x : OffRange i) : glueCell p i x.1 = Sum.inr x := by
+  classical
+  rw [glueCell, dite_eq_right (by rintro ⟨a, ha⟩; exact x.2 a ha)]
 
-theorem pushE_of_mem (p : Hom D K) {i : Hom D L} (hi : Function.Injective i.onE) (d : D.E) :
-    pushE p i (i.onE d) = Sum.inl (p.onE d) := by
-  have h : ∃ d', i.onE d' = i.onE d := ⟨d, rfl⟩
-  rw [pushE, dif_pos h, hi h.choose_spec]
+/-- To check a property of a right-hand cell and its image, check the overlap and its complement. -/
+theorem glueCell_cases (hi : Function.Injective i) {R : β → γ ⊕ OffRange i → Prop}
+    (h₁ : ∀ a, R (i a) (Sum.inl (p a))) (h₂ : ∀ x : OffRange i, R x.1 (Sum.inr x))
+    (x : β) : R x (glueCell p i x) := by
+  by_cases h : x ∈ Set.range i
+  · obtain ⟨a, rfl⟩ := h
+    rw [glueCell_of_mem p hi]
+    exact h₁ a
+  · let y : OffRange i := ⟨x, fun a ha => h ⟨a, ha⟩⟩
+    change R y.1 (glueCell p i y.1)
+    rw [glueCell_of_off p y]
+    exact h₂ y
 
-theorem pushF_of_mem (p : Hom D K) {i : Hom D L} (hi : Function.Injective i.onF) (d : D.F) :
-    pushF p i (i.onF d) = Sum.inl (p.onF d) := by
-  have h : ∃ d', i.onF d' = i.onF d := ⟨d, rfl⟩
-  rw [pushF, dif_pos h, hi h.choose_spec]
+/-- A compatible pair of maps out of the two types agrees with the right inclusion. -/
+theorem glueCell_elim {δ : Type*} (hi : Function.Injective i) (f : γ → δ) (g : β → δ)
+    (h : ∀ a, f (p a) = g (i a)) (x : β) :
+    (Sum.elim f fun t : OffRange i => g t.1) (glueCell p i x) = g x :=
+  glueCell_cases p hi (R := fun t z => (Sum.elim f fun u  => g u.1) z = g t)
+    h (fun _ => rfl) x
 
-theorem pushV_of_off (p : Hom D K) (i : Hom D L) (v : OffV i) :
-    pushV p i v.1 = Sum.inr v := by
-  rw [pushV, dif_neg (by rintro ⟨d, hd⟩; exact v.2 d hd)]
-  rfl
+theorem glueCell_inl_iff (hi : Function.Injective i) (x : β) :
+    (∃ y, glueCell p i x = Sum.inl y) ↔ x ∈ Set.range i := by
+  apply glueCell_cases p hi (R := fun t z => (∃ y, z = Sum.inl y) ↔ t ∈ Set.range i)
+  · exact fun a => iff_of_true ⟨p a, rfl⟩ ⟨a, rfl⟩
+  · intro t
+    simp [Set.mem_range, show ¬ ∃ a, i a = t.1 from fun ⟨a, ha⟩ => t.2 a ha]
 
-theorem pushE_of_off (p : Hom D K) (i : Hom D L) (e : OffE i) :
-    pushE p i e.1 = Sum.inr e := by
-  rw [pushE, dif_neg (by rintro ⟨d, hd⟩; exact e.2 d hd)]
-  rfl
+/-- Only two cells in the glued part can be identified by the right inclusion. -/
+theorem glueCell_eq (hi : Function.Injective i) {x y : β} (h : glueCell p i x = glueCell p i y) :
+    x = y ∨ ∃ a b, x = i a ∧ y = i b ∧ p a = p b := by
+  revert h
+  refine glueCell_cases p hi (R := fun x z => z = glueCell p i y →
+    x = y ∨ ∃ a b, x = i a ∧ y = i b ∧ p a = p b) (fun a => ?_) (fun x => ?_) x
+  · refine glueCell_cases p hi (R := fun y z => Sum.inl (p a) = z →
+      i a = y ∨ ∃ a' b, i a = i a' ∧ y = i b ∧ p a' = p b) (fun b h => ?_) (by simp) y
+    exact Or.inr ⟨a, b, rfl, rfl, Sum.inl.inj h⟩
+  · refine glueCell_cases p hi (R := fun y z => Sum.inr x = z →
+      x.1 = y ∨ ∃ a b, x.1 = i a ∧ y = i b ∧ p a = p b) (by simp) (fun y h => ?_) y
+    exact Or.inl (congrArg Subtype.val (Sum.inr.inj h))
 
-theorem pushF_of_off (p : Hom D K) (i : Hom D L) (f : OffF i) :
-    pushF p i f.1 = Sum.inr f := by
-  rw [pushF, dif_neg (by rintro ⟨d, hd⟩; exact f.2 d hd)]
-  rfl
+theorem glueCell_eq_inr_val (hi : Function.Injective i) {x : β} {y : OffRange i}
+    (h : glueCell p i x = Sum.inr y) : x = y.val := by
+  revert h
+  refine glueCell_cases p hi (R := fun x z => z = Sum.inr y → x = y.val) (by simp) ?_ x
+  exact fun _ h => congrArg Subtype.val (Sum.inr.inj h)
+
+/-- An embedding of right-hand types over the same overlap induces an embedding of pushouts. -/
+theorem glueCell_functor_injective {δ : Type*} {j : α → δ} {k : β → δ}
+    {F : γ ⊕ OffRange i → γ ⊕ OffRange j} (hk : Function.Injective k) (h : k ∘ i = j)
+    (hL : ∀ a, F (Sum.inl a) = Sum.inl a)
+    (hR : ∀ x : OffRange i, F (Sum.inr x) = glueCell p j (k x.1)) : Function.Injective F := by
+  let g (x : OffRange i) : OffRange j :=
+    ⟨k x.1, fun a ha => x.2 a (hk ((congrFun h a).trans ha))⟩
+  have hF : F = Sum.map id g := by
+    funext x
+    rcases x with a | x
+    · exact hL a
+    · exact (hR x).trans (glueCell_of_off p (g x))
+  rw [hF]
+  exact Sum.map_injective.mpr ⟨fun _ _ h => h, fun _ _ h => Subtype.ext (hk (congrArg Subtype.val h))⟩
+
+end GlueCell
+
+abbrev OffV (i : Hom D L) := OffRange i.onV
+abbrev OffE (i : Hom D L) := OffRange i.onE
+abbrev OffF (i : Hom D L) := OffRange i.onF
+
+noncomputable abbrev pushV (p : Hom D K) (i : Hom D L) := glueCell p.onV i.onV
+noncomputable abbrev pushE (p : Hom D K) (i : Hom D L) := glueCell p.onE i.onE
+noncomputable abbrev pushF (p : Hom D K) (i : Hom D L) := glueCell p.onF i.onF
+
+theorem pushV_of_mem (p : Hom D K) {i : Hom D L} (hi : Function.Injective i.onV) (a : D.V) :
+    pushV p i (i.onV a) = Sum.inl (p.onV a) := glueCell_of_mem p.onV hi a
+
+theorem pushV_of_off (p : Hom D K) (i : Hom D L) (x : OffV i) :
+    pushV p i x.1 = Sum.inr x := glueCell_of_off p.onV x
+
+theorem pushE_of_mem (p : Hom D K) {i : Hom D L} (hi : Function.Injective i.onE) (a : D.E) :
+    pushE p i (i.onE a) = Sum.inl (p.onE a) := glueCell_of_mem p.onE hi a
+
+theorem pushE_of_off (p : Hom D K) (i : Hom D L) (x : OffE i) :
+    pushE p i x.1 = Sum.inr x := glueCell_of_off p.onE x
+
+theorem pushF_of_mem (p : Hom D K) {i : Hom D L} (hi : Function.Injective i.onF) (a : D.F) :
+    pushF p i (i.onF a) = Sum.inl (p.onF a) := glueCell_of_mem p.onF hi a
+
+theorem pushF_of_off (p : Hom D K) (i : Hom D L) (x : OffF i) :
+    pushF p i x.1 = Sum.inr x := glueCell_of_off p.onF x
 
 /-! ### The pushout complex -/
 
@@ -136,26 +170,14 @@ noncomputable def ptgt : K.E ⊕ OffE i → K.V ⊕ OffV i :=
   Sum.elim (fun e => Sum.inl (K.tgt e)) (fun e => pushV p i (L.tgt e.1))
 
 include hiV hiE in
-theorem psrc_pushE (e : L.E) : psrc p i (pushE p i e) = pushV p i (L.src e) := by
-  by_cases h : ∃ d, i.onE d = e
-  · obtain ⟨d, rfl⟩ := h
-    rw [pushE_of_mem p hiE d]
-    show Sum.inl (K.src (p.onE d)) = _
-    rw [p.src_onE, i.src_onE, pushV_of_mem p hiV]
-  · have he : (⟨e, fun d hd => h ⟨d, hd⟩⟩ : OffE i).1 = e := rfl
-    rw [pushE_of_off p i ⟨e, fun d hd => h ⟨d, hd⟩⟩]
-    show pushV p i (L.src e) = pushV p i (L.src e)
-    rfl
+theorem psrc_pushE (e : L.E) : psrc p i (pushE p i e) = pushV p i (L.src e) :=
+  glueCell_elim p.onE hiE (Sum.inl ∘ K.src) (pushV p i ∘ L.src)
+    (fun d => by simp [p.src_onE, i.src_onE, pushV_of_mem p hiV]) e
 
 include hiV hiE in
-theorem ptgt_pushE (e : L.E) : ptgt p i (pushE p i e) = pushV p i (L.tgt e) := by
-  by_cases h : ∃ d, i.onE d = e
-  · obtain ⟨d, rfl⟩ := h
-    rw [pushE_of_mem p hiE d]
-    show Sum.inl (K.tgt (p.onE d)) = _
-    rw [p.tgt_onE, i.tgt_onE, pushV_of_mem p hiV]
-  · rw [pushE_of_off p i ⟨e, fun d hd => h ⟨d, hd⟩⟩]
-    rfl
+theorem ptgt_pushE (e : L.E) : ptgt p i (pushE p i e) = pushV p i (L.tgt e) :=
+  glueCell_elim p.onE hiE (Sum.inl ∘ K.tgt) (pushV p i ∘ L.tgt)
+    (fun d => by simp [p.tgt_onE, i.tgt_onE, pushV_of_mem p hiV]) e
 
 /-- **The cellular pushout `E = K ∪_p L`.**  Its vertices, edges and two-cells are those of
 `K` together with those of `L` which do not come from `D`; a cell of `L` coming from `D` is
@@ -176,11 +198,7 @@ noncomputable def pushoutComplex : Complex2.{u} where
     · exact isPath_map (src := L.src) (tgt := L.tgt) (pushV p i) (pushE p i)
         (psrc_pushE p i hiV hiE) (ptgt_pushE p i hiV hiE) (L.att_isLoop f.1)
 
-@[simp] theorem pushoutComplex_src_inl (e : K.E) :
-    (pushoutComplex p i hiV hiE).src (Sum.inl e) = Sum.inl (K.src e) := rfl
 
-@[simp] theorem pushoutComplex_tgt_inl (e : K.E) :
-    (pushoutComplex p i hiV hiE).tgt (Sum.inl e) = Sum.inl (K.tgt e) := rfl
 
 theorem pushoutComplex_src_pushE (e : L.E) :
     (pushoutComplex p i hiV hiE).src (pushE p i e) = pushV p i (L.src e) :=
@@ -203,26 +221,16 @@ noncomputable def pushoutInl : Hom K (pushoutComplex p i hiV hiE) where
 include hiV hiE in
 theorem att_pushF (hiF : Function.Injective i.onF) (f : L.F) :
     (pushoutComplex p i hiV hiE).att (pushF p i f) =
-      (L.att f).map fun eb => (pushE p i eb.1, eb.2) := by
-  by_cases h : ∃ d, i.onF d = f
-  · obtain ⟨d, rfl⟩ := h
-    rw [pushF_of_mem p hiF d]
-    show (K.att (p.onF d)).map (fun eb => (Sum.inl eb.1, eb.2)) = _
-    rw [p.att_onF, i.att_onF]
-    simp [Function.comp, pushE_of_mem p hiE]
-  · rw [pushF_of_off p i ⟨f, fun d hd => h ⟨d, hd⟩⟩]
-    rfl
+      (L.att f).map fun eb => (pushE p i eb.1, eb.2) :=
+  glueCell_elim (δ := List ((K.E ⊕ OffE i) × Bool)) p.onF hiF (fun t => (K.att t).map fun (eb : K.E × Bool) => (Sum.inl eb.1, eb.2))
+    (fun t => (L.att t).map fun (eb : L.E × Bool) => (pushE p i eb.1, eb.2))
+    (fun d => by simp [p.att_onF, i.att_onF, Function.comp, pushE_of_mem p hiE]) f
 
 include hiV hiE in
 theorem base_pushF (hiF : Function.Injective i.onF) (f : L.F) :
-    (pushoutComplex p i hiV hiE).base (pushF p i f) = pushV p i (L.base f) := by
-  by_cases h : ∃ d, i.onF d = f
-  · obtain ⟨d, rfl⟩ := h
-    rw [pushF_of_mem p hiF d]
-    show Sum.inl (K.base (p.onF d)) = _
-    rw [p.base_onF, i.base_onF, pushV_of_mem p hiV]
-  · rw [pushF_of_off p i ⟨f, fun d hd => h ⟨d, hd⟩⟩]
-    rfl
+    (pushoutComplex p i hiV hiE).base (pushF p i f) = pushV p i (L.base f) :=
+  glueCell_elim p.onF hiF (Sum.inl ∘ K.base) (pushV p i ∘ L.base)
+    (fun d => by simp [p.base_onF, i.base_onF, pushV_of_mem p hiV]) f
 
 /-- The cellular map `L → E`. -/
 noncomputable def pushoutMap (hiF : Function.Injective i.onF) :
@@ -238,15 +246,8 @@ noncomputable def pushoutMap (hiF : Function.Injective i.onF) :
 /-- **The pushout square commutes**: a cell of `D` has the same image in `E` whether it is
 pushed into `L` or mapped into `K`. -/
 theorem pushout_comm (hiF : Function.Injective i.onF) :
-    (pushoutMap p i hiV hiE hiF).comp i = (pushoutInl p i hiV hiE).comp p := by
-  have hV : ∀ d, pushV p i (i.onV d) = Sum.inl (p.onV d) := pushV_of_mem p hiV
-  have hE : ∀ d, pushE p i (i.onE d) = Sum.inl (p.onE d) := pushE_of_mem p hiE
-  have hF : ∀ d, pushF p i (i.onF d) = Sum.inl (p.onF d) := pushF_of_mem p hiF
-  have : ∀ (X Y : Complex2.{u}) (f g : Hom X Y), f.onV = g.onV → f.onE = g.onE →
-      f.onF = g.onF → f = g := by
-    rintro X Y ⟨a, b, c, _, _, _, _⟩ ⟨a', b', c', _, _, _, _⟩ h1 h2 h3
-    cases h1; cases h2; cases h3; rfl
-  exact this _ _ _ _ (funext hV) (funext hE) (funext hF)
+    (pushoutMap p i hiV hiE hiF).comp i = (pushoutInl p i hiV hiE).comp p := Hom.ext' (funext (pushV_of_mem p hiV)) (funext (pushE_of_mem p hiE))
+    (funext (pushF_of_mem p hiF))
 
 /-! ### The universal property -/
 
@@ -256,26 +257,12 @@ variable {M : Complex2.{u}}
 noncomputable def pushoutLift (f : Hom K M) (g : Hom L M)
     (hV : ∀ d, g.onV (i.onV d) = f.onV (p.onV d))
     (hE : ∀ d, g.onE (i.onE d) = f.onE (p.onE d)) : Hom (pushoutComplex p i hiV hiE) M := by
-  have lV : ∀ v : L.V, Sum.elim f.onV (fun w : OffV i => g.onV w.1) (pushV p i v) = g.onV v := by
-    intro v
-    by_cases h : ∃ d, i.onV d = v
-    · obtain ⟨d, rfl⟩ := h
-      rw [pushV_of_mem p hiV d]
-      exact (hV d).symm
-    · rw [pushV_of_off p i ⟨v, fun d hd => h ⟨d, hd⟩⟩]
-      rfl
-  have lE : ∀ e : L.E, Sum.elim f.onE (fun w : OffE i => g.onE w.1) (pushE p i e) = g.onE e := by
-    intro e
-    by_cases h : ∃ d, i.onE d = e
-    · obtain ⟨d, rfl⟩ := h
-      rw [pushE_of_mem p hiE d]
-      exact (hE d).symm
-    · rw [pushE_of_off p i ⟨e, fun d hd => h ⟨d, hd⟩⟩]
-      rfl
+  have lV := glueCell_elim p.onV hiV f.onV g.onV (fun d => (hV d).symm)
+  have lE := glueCell_elim p.onE hiE f.onE g.onE (fun d => (hE d).symm)
   exact
-    { onV := Sum.elim f.onV (fun w : OffV i => g.onV w.1)
-      onE := Sum.elim f.onE (fun w : OffE i => g.onE w.1)
-      onF := Sum.elim f.onF (fun w : OffF i => g.onF w.1)
+    { onV := Sum.elim f.onV (fun w  => g.onV w.1)
+      onE := Sum.elim f.onE (fun w  => g.onE w.1)
+      onF := Sum.elim f.onF (fun w  => g.onF w.1)
       src_onE := by
         rintro (e | e)
         · exact f.src_onE e
@@ -301,20 +288,8 @@ noncomputable def pushoutLift (f : Hom K M) (g : Hom L M)
           simp only [List.map_map]
           exact List.map_congr_left (fun eb _ => by simp [Function.comp, lE eb.1]) }
 
-@[simp] theorem pushoutLift_onV (f : Hom K M) (g : Hom L M)
-    (hV : ∀ d, g.onV (i.onV d) = f.onV (p.onV d))
-    (hE : ∀ d, g.onE (i.onE d) = f.onE (p.onE d)) :
-    (pushoutLift p i hiV hiE f g hV hE).onV = Sum.elim f.onV (fun w : OffV i => g.onV w.1) := rfl
 
-@[simp] theorem pushoutLift_onE (f : Hom K M) (g : Hom L M)
-    (hV : ∀ d, g.onV (i.onV d) = f.onV (p.onV d))
-    (hE : ∀ d, g.onE (i.onE d) = f.onE (p.onE d)) :
-    (pushoutLift p i hiV hiE f g hV hE).onE = Sum.elim f.onE (fun w : OffE i => g.onE w.1) := rfl
 
-@[simp] theorem pushoutLift_onF (f : Hom K M) (g : Hom L M)
-    (hV : ∀ d, g.onV (i.onV d) = f.onV (p.onV d))
-    (hE : ∀ d, g.onE (i.onE d) = f.onE (p.onE d)) :
-    (pushoutLift p i hiV hiE f g hV hE).onF = Sum.elim f.onF (fun w : OffF i => g.onF w.1) := rfl
 
 /-! ### Finiteness -/
 
@@ -353,27 +328,8 @@ noncomputable def pushoutFunctor (p : Hom D K) (j : Hom D L) (j' : Hom D L') (k 
   pushoutLift p j hjV hjE (pushoutInl p j' hj'V hj'E) ((pushoutMap p j' hj'V hj'E hj'F).comp k)
     (functor_hV p j j' k hj'V hj'E hj'F hkj) (functor_hE p j j' k hj'V hj'E hj'F hkj)
 
-/-- A cell of `L` off `D` stays off `D` in a larger term `L'`. -/
-theorem off_map_V {j : Hom D L} {j' : Hom D L'} {k : Hom L L'}
-    (hkV : Function.Injective k.onV) (hkj : k.comp j = j') (w : OffV j) :
-    ∀ d, j'.onV d ≠ k.onV w.1 := by
-  intro d hd
-  refine w.2 d (hkV ?_)
-  rw [show k.onV (j.onV d) = j'.onV d from congrFun (congrArg Hom.onV hkj) d, hd]
 
-theorem off_map_E {j : Hom D L} {j' : Hom D L'} {k : Hom L L'}
-    (hkE : Function.Injective k.onE) (hkj : k.comp j = j') (w : OffE j) :
-    ∀ d, j'.onE d ≠ k.onE w.1 := by
-  intro d hd
-  refine w.2 d (hkE ?_)
-  rw [show k.onE (j.onE d) = j'.onE d from congrFun (congrArg Hom.onE hkj) d, hd]
 
-theorem off_map_F {j : Hom D L} {j' : Hom D L'} {k : Hom L L'}
-    (hkF : Function.Injective k.onF) (hkj : k.comp j = j') (w : OffF j) :
-    ∀ d, j'.onF d ≠ k.onF w.1 := by
-  intro d hd
-  refine w.2 d (hkF ?_)
-  rw [show k.onF (j.onF d) = j'.onF d from congrFun (congrArg Hom.onF hkj) d, hd]
 
 end Functor
 
@@ -386,31 +342,20 @@ theorem isConnected_pushoutComplex (p : Hom D K) (i : Hom D L)
     (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
     (hK : IsConnected K) (hL : IsConnected L) (d₀ : D.V) :
     IsConnected (pushoutComplex p i hiV hiE) := by
-  set E := pushoutComplex p i hiV hiE
-  set b : E.V := Sum.inl (p.onV d₀)
-  have key : ∀ x : E.V, (∃ q, IsPath E.src E.tgt q x b) ∧ ∃ q, IsPath E.src E.tgt q b x := by
-    rintro (a | w)
-    · obtain ⟨q₁, hq₁⟩ := hK a (p.onV d₀)
-      obtain ⟨q₂, hq₂⟩ := hK (p.onV d₀) a
-      exact ⟨⟨_, isPath_map (src := K.src) (tgt := K.tgt) Sum.inl Sum.inl (fun _ => rfl)
-          (fun _ => rfl) hq₁⟩,
-        ⟨_, isPath_map (src := K.src) (tgt := K.tgt) Sum.inl Sum.inl (fun _ => rfl)
-          (fun _ => rfl) hq₂⟩⟩
-    · have hw : pushV p i w.1 = Sum.inr w := pushV_of_off p i w
-      have hd : pushV p i (i.onV d₀) = b := pushV_of_mem p hiV d₀
-      obtain ⟨q₁, hq₁⟩ := hL w.1 (i.onV d₀)
-      obtain ⟨q₂, hq₂⟩ := hL (i.onV d₀) w.1
-      have h₁ := isPath_map (src := L.src) (tgt := L.tgt) (pushV p i) (pushE p i)
-        (pushoutComplex_src_pushE p i hiV hiE) (pushoutComplex_tgt_pushE p i hiV hiE) hq₁
-      have h₂ := isPath_map (src := L.src) (tgt := L.tgt) (pushV p i) (pushE p i)
-        (pushoutComplex_src_pushE p i hiV hiE) (pushoutComplex_tgt_pushE p i hiV hiE) hq₂
-      rw [hw, hd] at h₁
-      rw [hw, hd] at h₂
-      exact ⟨⟨_, h₁⟩, ⟨_, h₂⟩⟩
+  have key (x : (pushoutComplex p i hiV hiE).V) :
+      ∃ q, IsPath (psrc p i) (ptgt p i) q (Sum.inl (p.onV d₀)) x := by
+    rcases x with x | x
+    · obtain ⟨q, hq⟩ := hK (p.onV d₀) x
+      exact ⟨_, isPath_mapPath (pushoutInl p i hiV hiE) hq⟩
+    · obtain ⟨q, hq⟩ := hL (i.onV d₀) x.1
+      have h := isPath_map (src := L.src) (tgt := L.tgt) (pushV p i) (pushE p i)
+        (psrc_pushE p i hiV hiE) (ptgt_pushE p i hiV hiE) hq
+      rw [pushV_of_mem p hiV, pushV_of_off p i] at h
+      exact ⟨_, h⟩
   intro x y
-  obtain ⟨⟨q₁, hq₁⟩, -⟩ := key x
-  obtain ⟨-, ⟨q₂, hq₂⟩⟩ := key y
-  exact ⟨q₁ ++ q₂, hq₁.append hq₂⟩
+  obtain ⟨pₓ, hx⟩ := key x
+  obtain ⟨pᵧ, hy⟩ := key y
+  exact ⟨_, (isPath_revPath (X := pushoutComplex p i hiV hiE) hx).append hy⟩
 
 end Connected
 

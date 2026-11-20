@@ -15,7 +15,7 @@ variable {X : Complex2} {a b : X.V}
  theorem pi1BaseEqEquiv_mk (h : a = b) (p : Loop X a) (q : Loop X b)
     (hpq : p.1 = q.1) : pi1BaseEqEquiv h (Pi1.mk p) = Pi1.mk q := by
   subst b
-  have he : p = q := Subtype.ext hpq
+  have he  := Subtype.ext hpq
   subst q
   rfl
 end FiniteChains.Comb
@@ -38,8 +38,7 @@ noncomputable def treeMarkedSpineLoop (x : Fin q × Bool) :
 
 theorem namedSpinePi1Equiv_marked (x : Fin q × Bool) :
     namedSpinePi1Equiv q (Pi1.mk (treeMarkedSpineLoop q x)) =
-      (QuotientGroup.mk (FreeGroup.of (Sum.inr x)) : PresGroup (namedSpinePresentation q)) := by
-  exact (namedSpine_generator q x).symm
+      (QuotientGroup.mk (FreeGroup.of (Sum.inr x)) : PresGroup (namedSpinePresentation q)) := (namedSpine_generator q x).symm
 
 /-- The distinguished names correspond exactly to the verified old block marking. -/
 theorem namedSpineToOld_marked (x : Fin q × Bool) :

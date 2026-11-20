@@ -19,9 +19,9 @@ variable (K : TwoComplex) {P J₁ J₂ : Type} [TopologicalSpace P]
   (r₂ : C(BoundaryFamily J₂ (Fin 2 → ℝ), DiskAttachment r₁))
 
 def oneTwoAttachmentMap : C(P, DiskAttachment r₂) :=
-  (⟨old r₂ (boundaryFamilyInclusion J₂ (Fin 2 → ℝ)), old_continuous _ _⟩ :
+  ((DiskAttachment.oldMap r₂) :
     C(DiskAttachment r₁, DiskAttachment r₂)).comp
-      ⟨old r₁ (boundaryFamilyInclusion J₁ (Fin 1 → ℝ)), old_continuous _ _⟩
+      (DiskAttachment.oldMap r₁)
 
 structure OneTwoDiskTransfer where
   target : TwoComplex
@@ -42,12 +42,7 @@ def oneTwoDiskTransfer : OneTwoDiskTransfer K e r₁ r₂ := by
     square := ?_
     finite := fun hK hJ₁ hJ₂ => T₂.finite (T₁.finite hK hJ₁) hJ₂
     proper := ?_ }
-  · apply ContinuousMap.ext
-    intro p
-    have h₂ := congrArg (fun f : C(DiskAttachment r₁, T₂.target) =>
-      f (old r₁ (boundaryFamilyInclusion J₁ (Fin 1 → ℝ)) p)) T₂.square
-    have h₁ := congrArg (fun f : C(P, T₁.target) => f p) T₁.square
-    exact h₂.trans (congrArg T₂.oldEmbedding.map h₁)
+  · tauto
   · intro hJ
     rcases hJ with hJ | hJ
     · obtain ⟨z, hz⟩ := T₁.proper hJ

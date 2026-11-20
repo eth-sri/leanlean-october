@@ -5,9 +5,7 @@ public import RequestProject.TreeCoverAcyclic
 @[expose] public section
 
 /-! Prescribed nonzero boundaries survive the actual spanning-tree collapse. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.SpanningTree
 universe u
@@ -27,6 +25,6 @@ theorem piE_injective_of_same_boundary (c d : (CovQ T N × K.E) →₀ ℤ)
     rw [map_sub, he, sub_self]
   · rw [map_sub, hb, sub_self]
 
-variable [DecidableEq (NonTree T)]
+
 
 end FiniteChains.Comb.SpanningTree

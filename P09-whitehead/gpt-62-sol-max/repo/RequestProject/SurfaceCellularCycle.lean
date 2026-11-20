@@ -39,8 +39,7 @@ theorem surfacePath_class (f : ι → Loop X a) (ps : List (ι × ι)) :
 theorem surfacePath_nullhomotopic (f : ι → Loop X a) (ps : List (ι × ι))
     (hf : commWord (fun i => Pi1.mk (f i)) ps = 1) :
     Htpy X a a (surfacePath f ps) [] := by
-  have he : Pi1.mk ⟨surfacePath f ps, surfacePath_isLoop f ps⟩ =
-      Pi1.mk (⟨[], rfl⟩ : Loop X a) := (surfacePath_class f ps).trans hf
+  have he  := (surfacePath_class f ps).trans hf
   exact Quotient.exact he
 
 namespace Genus

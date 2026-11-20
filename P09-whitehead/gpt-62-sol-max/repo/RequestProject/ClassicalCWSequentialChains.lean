@@ -20,9 +20,9 @@ def chain (i j : ℕ) (hij : i ≤ j) : CWCellEmbedding (K i) (K j) :=
     (fun {k} e => (f k).comp e) (refl (K i))
 
 theorem chain_map_self (i : ℕ) : (chain f i i le_rfl).map = ContinuousMap.id (K i) := by
-  have he : chain f i i le_rfl = refl (K i) :=
+  have he  :=
     Nat.leRecOn_self (next := fun {k} e => (f k).comp e) (refl (K i))
-  exact congrArg (fun q : CWCellEmbedding (K i) (K i) => q.map) he
+  exact congrArg (·.map) he
 
 theorem chain_map_succ_right (i j : ℕ) (hij : i ≤ j) :
     (chain f i (j + 1) (Nat.le_trans hij (Nat.le_succ j))).map =
@@ -30,7 +30,7 @@ theorem chain_map_succ_right (i j : ℕ) (hij : i ≤ j) :
   have he : chain f i (j + 1) (Nat.le_trans hij (Nat.le_succ j)) =
       (f j).comp (chain f i j hij) :=
     Nat.leRecOn_succ (next := fun {k} e => (f k).comp e) hij (refl (K i))
-  exact congrArg (fun q : CWCellEmbedding (K i) (K (j + 1)) => q.map) he
+  exact congrArg (·.map) he
 
 theorem chain_map_step (i j : ℕ) (hij : i + 1 ≤ j) :
     (chain f i j (Nat.le_trans (Nat.le_succ i) hij)).map =
@@ -52,9 +52,9 @@ theorem hasChain_of_successive_cellEmbeddings {K : ℕ → TwoComplex}
     (hk : ∀ i, i < n → KillsPi2 (f i).map)
     (finite : Bool) (hfin : finite = true → FiniteCells (K n)) :
     HasChain (K 0) n finite := by
-  let e (i : Fin (n + 1)) : CWCellEmbedding (K i.val) (K n) :=
+  let e (i : Fin (n + 1))  :=
     CWCellEmbedding.chain f i.val n (Nat.le_of_lt_succ i.isLt)
-  apply hasChain_of_cellEmbeddings (fun i : Fin (n + 1) => K i.val) (K n)
+  apply hasChain_of_cellEmbeddings (fun i  => K i.val) (K n)
     e (fun i => (f i.val).map) ?_ ?_ (fun i => hk i.val i.isLt) finite hfin
   · intro i
     exact (CWCellEmbedding.chain_map_step f i.val n i.isLt).symm
@@ -64,7 +64,7 @@ theorem hasChain_of_successive_cellEmbeddings {K : ℕ → TwoComplex}
     rintro ⟨y, hy⟩
     apply hx
     refine ⟨y, (e i.succ).closedEmbedding.injective ?_⟩
-    have hs := congrArg (fun g : C(K i.val, K n) => g y)
+    have hs := congrArg (fun g  => g y)
       (CWCellEmbedding.chain_map_step f i.val n i.isLt)
     exact hs.symm.trans hy
 

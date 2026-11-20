@@ -31,24 +31,20 @@ omit [Preorder Q] in
 theorem posetPullbackOriginal_monotone (f : P → Q) (g : R → Q) :
     Monotone (posetPullbackOriginal f g) := fun _ _ h => h.1
 
+private theorem posetPullback_up {f : P → Q} (hf : IsPosetCover f)
+    (g : R → Q) (hg : Monotone g) (a : PosetCoverPullback f g) (r : R) (h : a.1.2 ≤ r) :
+    ∃! b : PosetCoverPullback f g, a ≤ b ∧ b.1.2 = r := by
+  obtain ⟨b, hb, huniq⟩ := hf.up a.1.1 (g r) (a.2 ▸ hg h)
+  refine ⟨⟨(b, r), hb.2⟩, ⟨⟨hb.1, h⟩, rfl⟩, ?_⟩
+  intro c hc
+  exact Subtype.ext (Prod.ext (huniq c.1.1 ⟨hc.1.1, c.2.trans (congrArg g hc.2)⟩) hc.2)
+
 /-- No injectivity assumption on the map used to pull back the covering is needed. -/
 theorem IsPosetCover.pullback {f : P → Q} (hf : IsPosetCover f)
-    (g : R → Q) (hg : Monotone g) : IsPosetCover (posetPullbackProjection f g) := by
-  refine ⟨posetPullbackProjection_monotone f g, ?_, ?_, ?_⟩
-  · intro r
+    (g : R → Q) (hg : Monotone g) : IsPosetCover (posetPullbackProjection f g) :=
+  ⟨posetPullbackProjection_monotone f g, fun r => by
     obtain ⟨p, hp⟩ := hf.surj (g r)
-    exact ⟨⟨(p, r), hp⟩, rfl⟩
-  · intro a r h
-    obtain ⟨b, hb, huniq⟩ := hf.up a.1.1 (g r) (a.2 ▸ hg h)
-    refine ⟨⟨(b, r), hb.2⟩, ⟨⟨hb.1, h⟩, rfl⟩, ?_⟩
-    intro c hc
-    apply Subtype.ext
-    exact Prod.ext (huniq c.1.1 ⟨hc.1.1, c.2.trans (congrArg g hc.2)⟩) hc.2
-  · intro a r h
-    obtain ⟨b, hb, huniq⟩ := hf.down a.1.1 (g r) (a.2 ▸ hg h)
-    refine ⟨⟨(b, r), hb.2⟩, ⟨⟨hb.1, h⟩, rfl⟩, ?_⟩
-    intro c hc
-    apply Subtype.ext
-    exact Prod.ext (huniq c.1.1 ⟨hc.1.1, c.2.trans (congrArg g hc.2)⟩) hc.2
+    exact ⟨⟨(p, r), hp⟩, rfl⟩,
+    posetPullback_up hf g hg, posetPullback_up (R := Rᵒᵈ) hf.dual g hg.dual⟩
 
 end FiniteChains.Comb

@@ -5,9 +5,6 @@ public import RequestProject.QCubeSquareFlags
 @[expose] public section
 
 /-! Faithful indexing of the actual square flags by their signs and endpoints. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -20,9 +17,9 @@ def squareEndpointFlag (c : QCube A) (a b : V) (hne : a ≠ b)
 theorem squareEndpointFlag_injective (c : QCube A) (a b : V) (hne : a ≠ b)
     (hs : c.spx = {a, b}) : Function.Injective (squareEndpointFlag c a b hne hs) := by
   intro ⟨s, e⟩ ⟨t, f⟩ h
-  have hm := congrArg (fun z : (strictOrderCx (QCube A)).F => z.1.2.1.sgn a) h
-  have hv := congrArg (fun z : (strictOrderCx (QCube A)).F => z.1.1.sgn b) h
-  have hb (r : ZMod 2) : (qCubeFacet c a r).sgn b = 0 :=
+  have hm := congrArg (fun z  => z.1.2.1.sgn a) h
+  have hv := congrArg (fun z  => z.1.1.sgn b) h
+  have hb (r : ZMod 2)  :=
     (qCubeFacet c a r).sgn_eq_zero b (by rw [squareFacet_w_spx c hne hs r]; simp)
   cases e <;> cases f
   · have hst : s = t := by simpa [squareEndpointFlag, squareNegativeFlag] using hm
@@ -53,7 +50,7 @@ theorem squareFlag_injective (c : QCube A) (a b : V) (hne : a ≠ b)
       squareEndpointFlag c a b hne hs i ≠
         squareEndpointFlag c b a (Ne.symm hne) (by simpa [Finset.pair_comm] using hs) j := by
     intro he
-    have hm := congrArg (fun t : (strictOrderCx (QCube A)).F => t.1.2.1.spx) he
+    have hm := congrArg (·.1.2.1.spx) he
     rw [squareEndpointFlag_middle, squareEndpointFlag_middle,
       squareFacet_w_spx c hne hs, squareFacet_v_spx c hne hs] at hm
     exact hne (Finset.singleton_inj.mp hm).symm
@@ -61,8 +58,8 @@ theorem squareFlag_injective (c : QCube A) (a b : V) (hne : a ≠ b)
   · have hij := squareEndpointFlag_injective c b a (Ne.symm hne)
       (by simpa [Finset.pair_comm] using hs) h
     exact Prod.ext rfl hij
-  · exact False.elim (hcross j i h.symm)
-  · exact False.elim (hcross i j h)
+  · tauto
+  · tauto
   · exact Prod.ext rfl (squareEndpointFlag_injective c a b hne hs h)
 
 /-- The finite index covers every strict triangle topped by the chosen square. -/

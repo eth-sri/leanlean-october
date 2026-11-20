@@ -2,9 +2,11 @@ module
 
 public import RequestProject.GenusChainCollapse
 public import RequestProject.TruncatedCellDimension
-public import RequestProject.ChamberQuotientFinite
+public import RequestProject.BlockSpinePres
 public import RequestProject.StrictOrderComplex
-public import RequestProject.CombData
+public import RequestProject.CombPi2
+public import RequestProject.Pigeonhole
+public import RequestProject.SubgroupCompactness
 
 @[expose] public section
 
@@ -26,7 +28,7 @@ def GenusSpineCell := {c : GenusTruncatedCell q // c ∈ genusSpineCellSet q}
 instance : PartialOrder (GenusSpineCell q) := Subtype.partialOrder _
 
 instance : Finite (GenusSpineCell q) :=
-  Finite.of_injective (fun c : GenusSpineCell q => truncatedFaceIndex c.1)
+  Finite.of_injective (fun c  => truncatedFaceIndex c.1)
     (fun _ _ h => Subtype.ext (truncatedFaceIndex_injective h))
 
 theorem genus_removedFace_dimension (c : GenusTruncatedCell q)
@@ -132,7 +134,6 @@ theorem genusSpineCellDimension_strictMono :
 /-- The genuine finite simplicial two-complex associated with the surviving cells. -/
 def genusSpineCx : Comb.Complex2 := Comb.strictOrderCx (GenusSpineCell q)
 
-instance : Finite (genusSpineCx q).V := inferInstanceAs (Finite (GenusSpineCell q))
 instance : Finite (genusSpineCx q).E :=
   inferInstanceAs (Finite (Comb.strictOrderCx (GenusSpineCell q)).E)
 instance : Finite (genusSpineCx q).F :=
@@ -156,11 +157,6 @@ def genusSpineCutCell (σ : NeSpx (cmpRel (GenusVertex q))) (hσ : σ.1.card ≤
     change σ.1.card - 1 < 2
     omega)⟩
 
-@[simp] theorem genusSpineCellToOld_cutCell (σ : NeSpx (cmpRel (GenusVertex q)))
-    (hσ : σ.1.card ≤ 2) :
-    genusSpineCellToOld q (genusSpineCutCell q σ hσ) = posQCube σ := rfl
 
-instance : Nonempty (GenusSpineCell q) :=
-  ⟨genusSpineCutCell q (spx1 (cC (gc q))) (by simp [spx1_val])⟩
 
 end FiniteChains.Davis.Genus

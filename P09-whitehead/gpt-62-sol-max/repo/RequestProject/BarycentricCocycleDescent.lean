@@ -34,7 +34,7 @@ noncomputable def barycentricCocycle : OrdCocycle P G where
 
 theorem barycentricCocycle_val {a b : P} (h : a ≤ b) :
     (barycentricCocycle c).val a b = c.readPath (edgeHop h) := by
-  simp only [barycentricCocycle, dif_pos h]
+  simp_all [barycentricCocycle]
 
 theorem edgeHop_read_via {a b : P} (hab : a ≤ b) (σ : NeSpx (cmpRel P))
     (ha : a ∈ σ.1) (hb : b ∈ σ.1) :
@@ -46,9 +46,7 @@ theorem edgeHop_read_via {a b : P} (hab : a ≤ b) (σ : NeSpx (cmpRel P))
     exacts [ha, hb]
   rw [← c.comp (spx1_le_spx2_left hab) hσ,
     ← c.comp (spx1_le_spx2_right hab) hσ]
-  simp only [edgeHop, hop, OrdCocycle.readPath_cons, OrdCocycle.readPath_nil,
-    OrdCocycle.readGerm_ordPos, OrdCocycle.readGerm_ordNeg, mul_one]
-  group
+  simp [edgeHop, hop, OrdCocycle.readPath_cons, OrdCocycle.readPath_nil, OrdCocycle.readGerm_ordPos, OrdCocycle.readGerm_ordNeg]
 
 variable {Ω : Type w} [MulAction G Ω]
 

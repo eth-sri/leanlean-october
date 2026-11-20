@@ -1,8 +1,9 @@
 module
 
-public import RequestProject.CoverAcyclic
-public import RequestProject.HurewiczDictionary
-public import RequestProject.HurewiczIso
+public import RequestProject.CoverChainComplex
+public import RequestProject.FoxCommutator
+public import RequestProject.MagnusKernel
+public import RequestProject.UniversalCoefficients
 public import RequestProject.PresentationDictionary
 
 @[expose] public section
@@ -26,40 +27,23 @@ free, hence `w = ∂₂z` and `u - m·z` is a cycle congruent to `u` modulo `m`.
 `ChainInput`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
 open MonoidAlgebra
 
-variable {β : Type*} [Fintype β] [DecidableEq β]
-variable {K : Type*} [Fintype K] [DecidableEq K] (σ : K → FreeGroup β)
+variable {β : Type*}
+variable {K : Type*}   (σ : K → FreeGroup β)
 
-omit [Fintype β] [DecidableEq β] [Fintype K] [DecidableEq K] in
+
 /-- The relators lie in the relator subgroup. -/
 theorem rel_mem_relSub' (j : K) : σ j ∈ relSub σ :=
   Subgroup.subset_normalClosure (Set.mem_range_self j)
 
-omit [Fintype β] [DecidableEq β] [Fintype K] [DecidableEq K] in
+
 /-- A group ring over `ℤ` has no additive torsion. -/
 theorem nsmul_eq_zero_iff_of_ne {G : Type*} (m : ℕ) (hm : m ≠ 0) (x : MonoidAlgebra ℤ G) :
     m • x = 0 ↔ x = 0 := by
-  constructor
-  · intro h
-    apply MonoidAlgebra.coeff_injective
-    refine Finsupp.ext fun g => ?_
-    have hg : m • x.coeff g = 0 := by
-      have := congrArg (fun y : MonoidAlgebra ℤ G => y.coeff g) h
-      simpa only [MonoidAlgebra.coeff_smul_apply, MonoidAlgebra.coeff_zero, Finsupp.zero_apply] using this
-    have : (m : ℤ) * x.coeff g = 0 := by
-      rw [← nsmul_eq_mul]
-      exact hg
-    rcases mul_eq_zero.1 this with h' | h'
-    · exact absurd (Nat.cast_eq_zero.1 h') hm
-    · simpa using h'
-  · rintro rfl
-    simp
+  simp_all
 
 end FiniteChains

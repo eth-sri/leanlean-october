@@ -1,8 +1,11 @@
 module
 
 public import RequestProject.PresCocycleCoverCoordinates
+public import RequestProject.FinsuppBasis
 public import RequestProject.CoverFoxPrefixSum
-public import RequestProject.CoverComplexFinsupp
+public import RequestProject.CoverComplex
+public import RequestProject.CrowellFinsupp
+public import RequestProject.PresentationNecessityFinsupp
 
 @[expose] public section
 
@@ -44,39 +47,37 @@ theorem quotient_relator_boundary_coordinates
         (fsCoords N J (relatorCoordinates w (qof N)
           (quotient_relators_close w N hword) c)) := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
-  | single p n =>
-    have hone : fsCoords N α
-        (generatorCoordinates w (qof N) (quotient_relators_close w N hword)
-          (presCoverRelatorGeneratorBoundary w (quotientProjection w N hword)
-            (quotientCovering w N hword) (Finsupp.single p 1))) =
-        coverSecondBoundary N (fun j => FreeGroup.mk (w j))
-          (fsCoords N J (relatorCoordinates w (qof N)
-            (quotient_relators_close w N hword) (Finsupp.single p 1))) := by
-      rw [presCoverRelatorGeneratorBoundary_single]
-      simp only [map_sum, map_smul, generatorCoordinates_single, relatorCoordinates_single,
-        relatorLetterMidpoint_sheet, fsCoords_single]
-      rw [coverSecondBoundary_single]
-      apply Finsupp.ext
-      intro i
-      simp only [Finsupp.finset_sum_apply, Finsupp.smul_apply,
-        coe_coverFoxGradient, foxVec, smul_eq_mul]
-      rw [coverFox_mk_prefix_sum, Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro k _
-      have hp : prefixVal w (qof N) p.val.2 k.val =
-          (QuotientGroup.mk (FreeGroup.mk ((w p.val.2).take k.val)) : FreeGroup α ⧸ N) :=
-        quotient_wordVal N _
-      rw [hp]
-      by_cases hi : i = ((w p.val.2)[k.val]).1
-      · cases hb : ((w p.val.2)[k.val]).2 <;>
-          simp [hi, qof, MonoidAlgebra.single_mul_single, ← mul_assoc]
-      · simp [hi]
-    have hs : Finsupp.single p n = n • Finsupp.single p (1 : ℤ) := by simp
-    rw [hs]
-    simpa only [map_smul, map_zsmul] using congrArg (fun z => n • z) hone
+  finsupp_singles c
+  intro p n
+  have hone : fsCoords N α
+      (generatorCoordinates w (qof N) (quotient_relators_close w N hword)
+        (presCoverRelatorGeneratorBoundary w (quotientProjection w N hword)
+          (quotientCovering w N hword) (Finsupp.single p 1))) =
+      coverSecondBoundary N (fun j => FreeGroup.mk (w j))
+        (fsCoords N J (relatorCoordinates w (qof N)
+          (quotient_relators_close w N hword) (Finsupp.single p 1))) := by
+    rw [presCoverRelatorGeneratorBoundary_single]
+    simp only [map_sum, map_smul, generatorCoordinates_single, relatorCoordinates_single,
+      relatorLetterMidpoint_sheet, fsCoords_single]
+    rw [coverSecondBoundary_single]
+    apply Finsupp.ext
+    intro i
+    simp only [Finsupp.finset_sum_apply, Finsupp.smul_apply,
+      coe_coverFoxGradient, foxVec, smul_eq_mul]
+    rw [coverFox_mk_prefix_sum, Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro k _
+    have hp : prefixVal w (qof N) p.val.2 k.val =
+        (QuotientGroup.mk (FreeGroup.mk ((w p.val.2).take k.val)) : FreeGroup α ⧸ N) :=
+      quotient_wordVal N _
+    rw [hp]
+    by_cases hi : i = ((w p.val.2)[k.val]).1
+    · cases hb : ((w p.val.2)[k.val]).2 <;>
+        simp [hi, qof, MonoidAlgebra.single_mul_single, ← mul_assoc]
+    · simp [hi]
+  have hs : Finsupp.single p n = n • Finsupp.single p 1 := by simp
+  rw [hs]
+  simpa only [map_smul, map_zsmul] using congrArg (fun z => n • z) hone
 
 /-- Injectivity of the actual Fox boundary annihilates actual strict cover two-cycles. -/
 theorem quotient_two_cycle_zero (hpos : ∀ j, 0 < (w j).length)
@@ -85,8 +86,7 @@ theorem quotient_two_cycle_zero (hpos : ∀ j, 0 < (w j).length)
     (hc : Comb.bdry2 (strictOrderCx (QuotientCover w N hword)) c = 0) : c = 0 := by
   let r := presCoverRelatorChain w (quotientProjection w N hword)
     (quotientCovering w N hword) hpos c
-  have hr : presCoverRelatorGeneratorBoundary w (quotientProjection w N hword)
-      (quotientCovering w N hword) r = 0 :=
+  have hr  :=
     (presCoverCollapsedRelatorBoundary_eq_zero_iff_generator w
       (quotientProjection w N hword) (quotientCovering w N hword) r).mp
       (presCover_cycle_collapsed_relator_boundary_zero w (quotientProjection w N hword)

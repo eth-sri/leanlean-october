@@ -3,6 +3,7 @@ module
 public import RequestProject.CombPi2
 public import RequestProject.CombPresPi1
 public import RequestProject.UnivCoverIncl
+public import RequestProject.UniversalCoverVoltage
 
 @[expose] public section
 
@@ -26,8 +27,6 @@ This file constructs an isomorphism between them and deduces that the two readin
 condition (1) of Theorem A coincide.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -42,7 +41,7 @@ variable {α J : Type u} [DecidableEq α] (ρ : J → FreeGroup α)
 /-- The class in `G = F/R` of the word spelled by (any representative of) a vertex of the
 homotopy-theoretic universal cover. -/
 def uvWord : UV (presComplex ρ) PUnit.unit → PresGroup ρ :=
-  Quotient.lift (fun p : PathFrom (presComplex ρ) PUnit.unit => presWord ρ p.1)
+  Quotient.lift (fun p  => presWord ρ p.1)
     (fun _ _ h => presWord_htpy ρ h)
 
 @[simp] theorem uvWord_mk (p : PathFrom (presComplex ρ) PUnit.unit) :
@@ -67,43 +66,26 @@ theorem uvWord_injective : Function.Injective (uvWord ρ) := by
   | h p =>
     induction d using UV.ind with
     | h q =>
-      have hl : pi1ToPres ρ (Pi1.mk ⟨p.1, isPath_of_subsingleton _ _ _ _ _⟩)
-          = pi1ToPres ρ (Pi1.mk ⟨q.1, isPath_of_subsingleton _ _ _ _ _⟩) := h
+      have hl  := h
       have hpi : (Pi1.mk ⟨p.1, isPath_of_subsingleton _ _ _ _ _⟩ :
             Pi1 (presComplex ρ) PUnit.unit)
           = Pi1.mk ⟨q.1, isPath_of_subsingleton _ _ _ _ _⟩ :=
         (pi1PresEquiv ρ).injective hl
-      exact Quotient.sound (Quotient.exact hpi)
+      tauto
 
-theorem uvWord_bijective : Function.Bijective (uvWord ρ) :=
-  ⟨uvWord_injective ρ, uvWord_surjective ρ⟩
 
-/-- The identification of the vertices of the two universal covers. -/
-noncomputable def uvEquiv : UV (presComplex ρ) PUnit.unit ≃ PresGroup ρ :=
-  Equiv.ofBijective _ (uvWord_bijective ρ)
 
-@[simp] theorem uvEquiv_apply (c : UV (presComplex ρ) PUnit.unit) :
-    uvEquiv ρ c = uvWord ρ c := rfl
 
 /-! ### Extending a class by an edge multiplies its word by a generator -/
 
-theorem uvWord_extend_true (i : α) (c : UV (presComplex ρ) PUnit.unit) :
-    uvWord ρ (extend (i, true) c) = uvWord ρ c * qof (relSub ρ) i := by
+theorem uvWord_extend (e : α × Bool) (c : UV (presComplex ρ) PUnit.unit) :
+    uvWord ρ (extend e c) = uvWord ρ c * presentationVoltage (relSub ρ) e := by
   induction c using UV.ind with
   | h p =>
-      have h : endpt (presComplex ρ) PUnit.unit p.1
-          = germSrc (presComplex ρ).src (presComplex ρ).tgt (i, true) := Subsingleton.elim _ _
-      rw [extend_mk, uvWord_mk, extendP_pos h, uvWord_mk, presWord_append]
-      rfl
-
-theorem uvWord_extend_false (i : α) (c : UV (presComplex ρ) PUnit.unit) :
-    uvWord ρ (extend (i, false) c) = uvWord ρ c * (qof (relSub ρ) i)⁻¹ := by
-  induction c using UV.ind with
-  | h p =>
-      have h : endpt (presComplex ρ) PUnit.unit p.1
-          = germSrc (presComplex ρ).src (presComplex ρ).tgt (i, false) := Subsingleton.elim _ _
-      rw [extend_mk, uvWord_mk, extendP_pos h, uvWord_mk, presWord_append]
-      congr 1
+    have h : endpt (presComplex ρ) PUnit.unit p.1 = germSrc (presComplex ρ).src (presComplex ρ).tgt e :=
+      Subsingleton.elim _ _
+    rw [extend_mk, uvWord_mk, extendP_pos h, uvWord_mk, presWord_append]
+    rfl
 
 /-! ### The isomorphism of complexes -/
 
@@ -117,25 +99,9 @@ def uvFace (F : UF (presComplex ρ) PUnit.unit) : (univCover ρ).F := (uvWord ρ
 /-- **The lift of a word in the two models agree.** -/
 theorem map_uLiftPath_pres : ∀ (L : List (α × Bool)) (c : UV (presComplex ρ) PUnit.unit),
     (uLiftPath L c).map (fun Eb => (uvEdge ρ Eb.1, Eb.2)) = liftPath L (uvWord ρ c) := by
-  intro L
-  induction L with
-  | nil => intro _; rfl
-  | cons eb t ih =>
-      intro c
-      obtain ⟨i, b⟩ := eb
-      have h : endV c = germSrc (presComplex ρ).src (presComplex ρ).tgt (i, b) :=
-        Subsingleton.elim _ _
-      rw [uLiftPath_cons h]
-      cases b
-      · rw [liftPath_cons_false, List.map_cons, ih (extend (i, false) c),
-          uvWord_extend_false]
-        have hhead : (uvEdge ρ (liftGerm c (i, false) h).1, (liftGerm c (i, false) h).2)
-            = (((uvWord ρ c * (qof (relSub ρ) i)⁻¹, i) : (univCover ρ).E), false) := by
-          show ((uvWord ρ (extend (i, false) c), i), false) = _
-          rw [uvWord_extend_false]
-        rw [hhead]
-      · rw [liftPath_cons_true, List.map_cons, ih (extend (i, true) c), uvWord_extend_true]
-        rfl
+  intro L c
+  exact map_uLiftPath_voltage _ (uvWord ρ) (fun c e _ => uvWord_extend ρ e c)
+    (b := PUnit.unit) (isPath_of_subsingleton _ _ L _ _)
 
 /-- **The homotopy-theoretic universal cover of a presentation complex is the algebraic
 one.**  The cellular map sending the class of a path to the element of `G = F/R` it spells. -/
@@ -144,9 +110,7 @@ noncomputable def presUnivHom : Hom (uCover (presComplex ρ) PUnit.unit) (univCo
   onE := uvEdge ρ
   onF := uvFace ρ
   src_onE _ := rfl
-  tgt_onE E := by
-    show uvWord ρ E.1.1 * qof (relSub ρ) E.1.2 = uvWord ρ (extend (E.1.2, true) E.1.1)
-    rw [uvWord_extend_true]
+  tgt_onE E := (uvWord_extend ρ (E.1.2, true) E.1.1).symm
   base_onF _ := rfl
   att_onF F := by
     show liftPath (FreeGroup.toWord (ρ F.1.2)) (uvWord ρ F.1.1)
@@ -155,27 +119,16 @@ noncomputable def presUnivHom : Hom (uCover (presComplex ρ) PUnit.unit) (univCo
 
 /-! ### The cellular map is an isomorphism -/
 
-theorem uvEdge_bijective : Function.Bijective (uvEdge ρ) := by
-  constructor
-  · rintro ⟨⟨c, i⟩, hc⟩ ⟨⟨d, i'⟩, hd⟩ hEq
-    have h1 : uvWord ρ c = uvWord ρ d := congrArg Prod.fst hEq
-    have h2 : i = i' := congrArg Prod.snd hEq
-    subst h2
-    exact Subtype.ext (Prod.ext (uvWord_injective ρ h1) rfl)
-  · rintro ⟨q, i⟩
-    obtain ⟨c, hc⟩ := uvWord_surjective ρ q
-    exact ⟨⟨(c, i), Subsingleton.elim _ _⟩, by simp [uvEdge, hc]⟩
+private theorem uvCell_bijective {B : Type u} {p : UV (presComplex ρ) PUnit.unit × B → Prop}
+    (hp : ∀ x, p x) : Function.Bijective (fun x : Subtype p => (uvWord ρ x.1.1, x.1.2)) :=
+  ((show Function.Bijective (uvWord ρ) from ⟨uvWord_injective ρ, uvWord_surjective ρ⟩).prodMap
+    Function.bijective_id).comp (Equiv.subtypeUnivEquiv hp).bijective
 
-theorem uvFace_bijective : Function.Bijective (uvFace ρ) := by
-  constructor
-  · rintro ⟨⟨c, j⟩, hc⟩ ⟨⟨d, j'⟩, hd⟩ hEq
-    have h1 : uvWord ρ c = uvWord ρ d := congrArg Prod.fst hEq
-    have h2 : j = j' := congrArg Prod.snd hEq
-    subst h2
-    exact Subtype.ext (Prod.ext (uvWord_injective ρ h1) rfl)
-  · rintro ⟨q, j⟩
-    obtain ⟨c, hc⟩ := uvWord_surjective ρ q
-    exact ⟨⟨(c, j), Subsingleton.elim _ _⟩, by simp [uvFace, hc]⟩
+theorem uvEdge_bijective : Function.Bijective (uvEdge ρ) :=
+  uvCell_bijective ρ fun _ => Subsingleton.elim _ _
+
+theorem uvFace_bijective : Function.Bijective (uvFace ρ) :=
+  uvCell_bijective ρ fun _ => Subsingleton.elim _ _
 
 /-- The two-chains of the two models are identified. -/
 theorem chain2_presUnivHom_surjective :
@@ -183,7 +136,7 @@ theorem chain2_presUnivHom_surjective :
   intro v
   classical
   obtain ⟨u, hu⟩ := Finsupp.mapDomain_surjective (M := ℤ) (uvFace_bijective ρ).2 v
-  exact ⟨u, hu⟩
+  tauto
 
 /-- **A two-chain of the homotopy-theoretic universal cover is a cycle exactly when its image
 in the algebraic model is.** -/
@@ -191,18 +144,13 @@ theorem mem_pi2_iff_bdry2_eq_zero (u : (uCover (presComplex ρ) PUnit.unit).F �
     u ∈ Pi2 (presComplex ρ) PUnit.unit ↔ bdry2 (univCover ρ) (chain2 (presUnivHom ρ) u) = 0 := by
   rw [bdry2_chain2]
   constructor
-  · intro hu
-    have : bdry2 (uCover (presComplex ρ) PUnit.unit) u = 0 := hu
-    rw [this, map_zero]
+  · solve_by_elim
   · intro hu
     show bdry2 (uCover (presComplex ρ) PUnit.unit) u = 0
     have hinj : Function.Injective (chain1 (presUnivHom ρ)) :=
       Finsupp.mapDomain_injective (uvEdge_bijective ρ).1
-    exact hinj (by rw [hu, map_zero])
+    simp_all
 
-@[simp] theorem presUnivHom_onV : (presUnivHom ρ).onV = uvWord ρ := rfl
-@[simp] theorem presUnivHom_onE : (presUnivHom ρ).onE = uvEdge ρ := rfl
-@[simp] theorem presUnivHom_onF : (presUnivHom ρ).onF = uvFace ρ := rfl
 
 /-! ### Naturality in an inclusion of presentations -/
 
@@ -218,10 +166,6 @@ theorem uvWord_univLiftV (c : UV (presComplex ρ) PUnit.unit) :
       = presInclGroupHom f ρ σ g hg (uvWord ρ c) := by
   induction c using UV.ind with
   | h p =>
-      show presWord σ (mapPath (presInclHom f hf ρ σ g hg) p.1)
-        = presInclGroupHom f ρ σ g hg (presWord ρ p.1)
-      rw [show presWord ρ p.1 = QuotientGroup.mk (FreeGroup.mk p.1) from rfl,
-        presInclGroupHom_mk]
       rfl
 
 /-- The identification of the two models is natural: it carries the lift of an inclusion of
@@ -229,25 +173,14 @@ presentation complexes to the universal covers to the algebraic one. -/
 theorem uvFace_univLiftF (F : UF (presComplex ρ) PUnit.unit) :
     uvFace σ (univLiftF (x₀ := PUnit.unit) (presInclHom f hf ρ σ g hg) F)
       = (univCoverInclHom f hf ρ σ g hg).onF (uvFace ρ F) := by
-  show ((uvWord σ (univLiftV PUnit.unit (presInclHom f hf ρ σ g hg) F.1.1), g F.1.2) :
-      (univCover σ).F) = Prod.map (presInclGroupHom f ρ σ g hg) g (uvWord ρ F.1.1, F.1.2)
-  rw [uvWord_univLiftV]
-  rfl
+  show (uvWord σ (univLiftV PUnit.unit (presInclHom f hf ρ σ g hg) F.1.1), g F.1.2) = Prod.map (presInclGroupHom f ρ σ g hg) g (uvWord ρ F.1.1, F.1.2)
+  simp [uvWord_univLiftV]
 
 /-- The two lifts agree on two-chains. -/
 theorem chain2_presUnivHom_square (u : (uCover (presComplex ρ) PUnit.unit).F →₀ ℤ) :
     chain2 (presUnivHom σ)
         (chain2 (univLift (presComplex ρ) (presInclHom f hf ρ σ g hg) PUnit.unit) u)
-      = chain2 (univCoverInclHom f hf ρ σ g hg) (chain2 (presUnivHom ρ) u) := by
-  classical
-  show Finsupp.mapDomain (uvFace σ)
-      (Finsupp.mapDomain ((univLift (presComplex ρ) (presInclHom f hf ρ σ g hg) PUnit.unit).onF) u)
-    = Finsupp.mapDomain (univCoverInclHom f hf ρ σ g hg).onF
-      (Finsupp.mapDomain (uvFace ρ) u)
-  rw [← Finsupp.mapDomain_comp, ← Finsupp.mapDomain_comp]
-  refine congrArg (fun h => Finsupp.mapDomain h u) ?_
-  funext F
-  exact uvFace_univLiftF ρ f hf g hg F
+      = chain2 (univCoverInclHom f hf ρ σ g hg) (chain2 (presUnivHom ρ) u) := Finsupp.mapDomain_square (uvFace_univLiftF ρ f hf g hg) u
 
 /-- **The topological and the algebraic readings of "the inclusion is zero on `π₂`" agree.**
 On the left the definition used by the interface of Theorem A (the induced map of two-chains of
@@ -261,7 +194,7 @@ theorem zeroPi2_presInclHom_iff :
   constructor
   · intro hzero v hv
     obtain ⟨u, rfl⟩ := chain2_presUnivHom_surjective ρ v
-    have hu : u ∈ Pi2 (presComplex ρ) PUnit.unit := (mem_pi2_iff_bdry2_eq_zero ρ u).2 hv
+    have hu  := (mem_pi2_iff_bdry2_eq_zero ρ u).2 hv
     rw [← chain2_presUnivHom_square ρ f hf g hg u, hzero PUnit.unit u hu, map_zero]
   · intro hzero x₀ u hu
     have hinj : Function.Injective (chain2 (presUnivHom σ)) :=
@@ -276,8 +209,7 @@ theorem zeroPi2_presInclHom_iff :
 theorem presWord_mapPath (l : List (α × Bool)) :
     presWord σ (mapPath (presInclHom f hf ρ σ g hg) l)
       = presInclGroupHom f ρ σ g hg (presWord ρ l) := by
-  rw [show presWord ρ l = QuotientGroup.mk (FreeGroup.mk l) from rfl, presInclGroupHom_mk]
-  rfl
+  solve_by_elim
 
 /-- An edge loop of a presentation complex spelling the trivial element of the presented group
 is null-homotopic. -/
@@ -286,8 +218,7 @@ theorem htpy_of_presWord_eq_one {l : List (β × Bool)} (h : presWord σ l = 1) 
   have hone :
       (Pi1.mk ⟨l, isPath_of_subsingleton _ _ _ _ _⟩ : Pi1 (presComplex σ) PUnit.unit) = 1 := by
     refine (pi1PresEquiv σ).injective ?_
-    rw [map_one]
-    exact h
+    assumption
   exact Quotient.exact hone
 
 /-- **The topological and the algebraic readings of "the inclusion kills `π₁`" agree.**  The
@@ -305,12 +236,12 @@ theorem pi1Trivial_presInclHom_iff :
         rw [presWord_mapPath, presWord_nil] at hw
         rw [← hw]
         congr 1
-        show (QuotientGroup.mk x : PresGroup ρ) = QuotientGroup.mk (FreeGroup.mk x.toWord)
+        show (QuotientGroup.mk x) = QuotientGroup.mk (FreeGroup.mk x.toWord)
         rw [FreeGroup.mk_toWord]
   · intro hw _ p _
     refine htpy_of_presWord_eq_one (σ := σ) ?_
     rw [presWord_mapPath]
-    exact hw _
+    aesop
 
 end Incl
 

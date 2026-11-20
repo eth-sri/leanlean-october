@@ -5,9 +5,6 @@ public import RequestProject.OrderConstructionPartialOrder
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -32,7 +29,7 @@ instance tCirc_partialOrder (w : J → List (α × Bool)) : PartialOrder (TCirc 
       · exact h'.symm
       have hl := TCirc.lt_left_tag w h
       have hr := TCirc.lt_right_tag w h'
-      rcases hl with hl | hl <;> rcases hr with hr | hr <;> simp_all }
+      aesop }
 
 instance presPos_partialOrder (w : J → List (α × Bool)) : PartialOrder (PresPos w) :=
   inferInstanceAs (PartialOrder (ConeAdj (circSet w)))

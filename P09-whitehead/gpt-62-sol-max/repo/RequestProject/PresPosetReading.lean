@@ -26,8 +26,6 @@ Composed with the comparison homomorphism of `RequestProject/PresPosetAlpha.lean
 the presentation group embeds in the fundamental group of the model, marked by the generators.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -47,16 +45,14 @@ def letterVal (p : α × Bool) : G := if p.2 then gen p.1 else (gen p.1)⁻¹
 /-- The value of a word. -/
 def wordVal (l : List (α × Bool)) : G := FreeGroup.lift gen (FreeGroup.mk l)
 
-@[simp] theorem wordVal_nil : wordVal (gen := gen) [] = 1 := by
-  simp [wordVal]
+
 
 theorem wordVal_append (l l' : List (α × Bool)) :
     wordVal gen (l ++ l') = wordVal gen l * wordVal gen l' := by
   rw [wordVal, wordVal, wordVal, ← FreeGroup.mul_mk, map_mul]
 
 theorem wordVal_single (p : α × Bool) : wordVal gen [p] = letterVal gen p := by
-  obtain ⟨i, b⟩ := p
-  cases b <;> simp [wordVal, letterVal, FreeGroup.lift_mk]
+  simp_all [wordVal, letterVal, FreeGroup.lift_mk]
 
 /-! ### The cocycle of the rose -/
 
@@ -82,7 +78,7 @@ def roseCoc : OrdCocycle (Rose α) G where
     cases b with
     | base =>
         cases a with
-        | base => rw [roseVal_self, one_mul]
+        | base => simp
         | mid i => exact hab.elim
         | edg i b => exact hab.elim
     | mid i =>
@@ -90,8 +86,7 @@ def roseCoc : OrdCocycle (Rose α) G where
         | base => exact hab.elim
         | mid i' =>
             have hii : i' = i := hab
-            subst hii
-            rw [roseVal_self, one_mul]
+            simp_all
         | edg i' b => exact hab.elim
     | edg i bb =>
         cases c with
@@ -99,9 +94,7 @@ def roseCoc : OrdCocycle (Rose α) G where
         | mid i' => exact hbc.elim
         | edg i' b' =>
             obtain ⟨hi, hb⟩ := hbc
-            subst hi
-            subst hb
-            rw [roseVal_self, mul_one]
+            simp_all
 
 /-- The cocycle of the mapping cylinder: the cocycle of the rose read through the retraction. -/
 def cylCoc : OrdCocycle (CylBase w) G :=
@@ -112,14 +105,12 @@ def cylCoc : OrdCocycle (CylBase w) G :=
 /-- The prefix product of the first `k` letters of the relator `j`. -/
 def prefixVal (j : J) (k : ℕ) : G := wordVal gen ((w j).take k)
 
-@[simp] theorem prefixVal_zero (j : J) : prefixVal w gen j 0 = 1 := by
-  simp [prefixVal]
+@[simp] theorem prefixVal_zero (j : J) : prefixVal w gen j 0 = 1 := rfl
 
 theorem prefixVal_succ (j : J) {k : ℕ} (hk : k < (w j).length) :
     prefixVal w gen j (k + 1) = prefixVal w gen j k * letterVal gen (w j)[k] := by
   have hsplit : (w j).take (k + 1) = (w j).take k ++ [(w j)[k]] := by
-    rw [List.take_add_one, List.getElem?_eq_getElem hk]
-    rfl
+    simp
   rw [prefixVal, prefixVal, hsplit, wordVal_append, wordVal_single]
 
 /-- The value of the trivialisation at a point of a circle. -/
@@ -149,15 +140,15 @@ theorem trivVal_step (hrel : ∀ j : J, wordVal gen (w j) = 1) {x y : TCirc w} (
     roseVal gen (aFun w x) (aFun w y) * trivVal w gen y.1 y.2.1 y.2.2
       = trivVal w gen x.1 x.2.1 x.2.2 := by
   rcases h with rfl | hlt
-  · rw [roseVal_self, one_mul]
+  · simp
   obtain ⟨j, k, t⟩ := x
   obtain ⟨j', k', t'⟩ := y
   obtain ⟨hj, hk', hcase⟩ := hlt
   subst hj
   obtain ⟨p, hp⟩ := exists_get_of_lt w hk'
-  have hL : aFun w (j, k', CPos.cedgL) = Rose.edg p.1 (!p.2) := aFun_cedgL_of_get w hp
-  have hR : aFun w (j, k', CPos.cedgR) = Rose.edg p.1 p.2 := aFun_cedgR_of_get w hp
-  have hM : aFun w (j, k', CPos.cmid) = Rose.mid p.1 := aFun_cmid_of_get w hp
+  have hL  := aFun_cedgL_of_get w hp
+  have hR  := aFun_cedgR_of_get w hp
+  have hM  := aFun_cmid_of_get w hp
   rcases hcase with ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩
   · -- corner ≤ left half
     show roseVal gen (aFun w (j, k, CPos.cor)) (aFun w (j, k, CPos.cedgL))
@@ -165,17 +156,11 @@ theorem trivVal_step (hrel : ∀ j : J, wordVal gen (w j) = 1) {x y : TCirc w} (
     show roseVal gen Rose.base (aFun w (j, k, CPos.cedgL))
         * ((roseVal gen Rose.base (aFun w (j, k, CPos.cedgL)))⁻¹
           * (prefixVal w gen j k)⁻¹) = (prefixVal w gen j k)⁻¹
-    rw [← mul_assoc, mul_inv_cancel, one_mul]
+    simp
   · -- midpoint ≤ left half
-    show roseVal gen (aFun w (j, k, CPos.cmid)) (aFun w (j, k, CPos.cedgL))
-        * trivVal w gen j k CPos.cedgL = trivVal w gen j k CPos.cmid
-    rw [hM, hL, roseVal_mid_edg, one_mul]
-    rfl
+    aesop
   · -- midpoint ≤ right half
-    show roseVal gen (aFun w (j, k, CPos.cmid)) (aFun w (j, k, CPos.cedgR))
-        * trivVal w gen j k CPos.cedgR = trivVal w gen j k CPos.cmid
-    rw [hM, hR, roseVal_mid_edg, one_mul]
-    rfl
+    aesop
   · -- the corner in front of the next letter ≤ right half: here the letter is read
     show roseVal gen (aFun w (j, TCirc.csucc w j k', CPos.cor)) (aFun w (j, k', CPos.cedgR))
         * trivVal w gen j k' CPos.cedgR = trivVal w gen j (TCirc.csucc w j k') CPos.cor
@@ -186,8 +171,7 @@ theorem trivVal_step (hrel : ∀ j : J, wordVal gen (w j) = 1) {x y : TCirc w} (
       roseVal_base_edg, roseVal_base_edg]
     have hpk : (w j)[k'] = p := by
       have := List.getElem?_eq_getElem hk'
-      rw [hp] at this
-      exact (Option.some.injEq _ _ ▸ this.symm) ▸ rfl
+      grind
     rw [hpk, letterVal]
     cases hp2 : p.2 with
     | true => simp [mul_inv_rev]
@@ -218,7 +202,6 @@ def reading (hrel : ∀ j : J, wordVal gen (w j) = 1) :
 /-- **The reading homomorphism reads the generators.** -/
 theorem reading_genClass (hrel : ∀ j : J, wordVal gen (w j) = 1) (i : α) :
     reading w gen hrel (genClass w i) = gen i := by
-  show (presCoc w gen hrel).readPath (genLoop w i) = gen i
   show roseVal gen Rose.base (Rose.edg i false) *
       ((roseVal gen (Rose.mid i) (Rose.edg i false))⁻¹ *
         (roseVal gen (Rose.mid i) (Rose.edg i true) *

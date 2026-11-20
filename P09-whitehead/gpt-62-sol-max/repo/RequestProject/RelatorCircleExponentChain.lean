@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.RelatorCircleFundamentalChain
+public import RequestProject.FinsuppBasis
 public import RequestProject.StrictNormalizedOneMaps
 public import RequestProject.ExponentCorrection
 public import RequestProject.CombHurewicz1Pres
@@ -13,9 +14,7 @@ is injective and consists of genuine one-cycles. No genus modules or
 topological classification hypotheses are used. Pending Lean verification. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -43,32 +42,28 @@ theorem roseIntegerGeneratorChain_selected (a b : A) :
   classical
   have hb (s : Bool) : roseIntegerBaseEdge a s ≠ roseIntegerMidEdge b true := by
     intro h
-    have he := congrArg (fun e : StrictOrdEdge (Rose A) => e.val.1) h
-    change Rose.base = Rose.mid b at he
-    cases he
+    have he := congrArg (·.val.1) h
+    trivial
   have hm : roseIntegerMidEdge a false ≠ roseIntegerMidEdge b true := by
     intro h
-    have he := congrArg (fun e : StrictOrdEdge (Rose A) => e.val.2) h
+    have he := congrArg (·.val.2) h
     change Rose.edg a false = Rose.edg b true at he
     cases he
   have he : roseIntegerMidEdge a true = roseIntegerMidEdge b true ↔ a = b := by
     constructor
     · intro h
-      exact Rose.mid.inj (congrArg (fun e : StrictOrdEdge (Rose A) => e.val.1) h)
-    · rintro rfl
-      rfl
+      exact Rose.mid.inj (congrArg (·.val.1) h)
+    · aesop
   simp [roseIntegerGeneratorChain, Finsupp.single_apply, hb, hm, he]
 
 theorem roseIntegerRealize_selected (c : A →₀ ℤ) (a : A) :
     roseIntegerRealize c (roseIntegerMidEdge a true) = c a := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]
-  | single b n =>
-    simp only [roseIntegerRealize, Finsupp.linearCombination_single, Finsupp.smul_apply,
-      roseIntegerGeneratorChain_selected, Finsupp.single_apply]
-    split_ifs <;> simp_all
+  finsupp_basis c
+  intro b
+  simp only [roseIntegerRealize, Finsupp.linearCombination_single, Finsupp.smul_apply,
+    roseIntegerGeneratorChain_selected, Finsupp.single_apply]
+  simp
 
 theorem roseIntegerRealize_injective : Function.Injective (roseIntegerRealize (A := A)) := by
   intro c d h
@@ -80,7 +75,7 @@ theorem roseIntegerRealize_injective : Function.Injective (roseIntegerRealize (A
 theorem roseIntegerGeneratorChain_cycle (a : A) :
     Comb.bdry1 (strictOrderCx (Rose A)) (roseIntegerGeneratorChain a) = 0 := by
   simp only [roseIntegerGeneratorChain, map_sub, map_add, Comb.bdry1_single (X := strictOrderCx (Rose A)),
-    Finsupp.linearCombination_single, one_smul]
+    one_smul]
   change (Finsupp.single (Rose.edg a false) 1 - Finsupp.single Rose.base 1) -
       (Finsupp.single (Rose.edg a false) 1 - Finsupp.single (Rose.mid a) 1) +
       (Finsupp.single (Rose.edg a true) 1 - Finsupp.single (Rose.mid a) 1) -
@@ -89,25 +84,20 @@ theorem roseIntegerGeneratorChain_cycle (a : A) :
 
 theorem roseIntegerRealize_cycle (c : A →₀ ℤ) :
     Comb.bdry1 (strictOrderCx (Rose A)) (roseIntegerRealize c) = 0 := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd, add_zero]
-  | single a n =>
-    rw (config := { transparency := .default }) [roseIntegerRealize, Finsupp.linearCombination_single, map_smul,
-      roseIntegerGeneratorChain_cycle, smul_zero]
+  finsupp_basis c
+  intro a
+  erw [roseIntegerRealize, Finsupp.linearCombination_single, map_smul,
+    roseIntegerGeneratorChain_cycle, smul_zero]
 
 theorem mapOne_single_of_endpoints {P Q : Type u} [PartialOrder P] [PartialOrder Q]
     (f : P → Q) (hf : Monotone f) (e : StrictOrdEdge P) (d : StrictOrdEdge Q)
     (he : (f e.val.1, f e.val.2) = d.val) :
     StrictNormalized.mapOne f hf (Finsupp.single e 1) = Finsupp.single d 1 := by
-  rw (config := { transparency := .default }) [StrictNormalized.mapOne_single, one_smul]
+  erw [StrictNormalized.mapOne_single, one_smul]
   have hn : f e.val.1 ≠ f e.val.2 := by
-    intro h
-    exact d.property.ne ((congrArg Prod.fst he).symm.trans (h.trans (congrArg Prod.snd he)))
+    grind
   unfold normalizeOrdEdge
-  rw (config := { transparency := .default }) [dif_neg hn]
-  congr 1
-  exact Subtype.ext he
+  simp_all
 
 variable (w : J → List (A × Bool)) (j : J)
 
@@ -118,12 +108,12 @@ theorem relatorCircleLetterChain_exponent (k : Fin (w j).length) :
           else -roseIntegerGeneratorChain (w j)[k.val].1 := by
   let f := fun x : RelatorCircle w j => aFun w x.val
   let hf : Monotone f := (aFun_monotone w).comp (fun _ _ h => h)
-  have hp : (w j)[k.val]? = some (w j)[k.val] := List.getElem?_eq_getElem k.isLt
-  have hmid : f (relatorCirclePoint w j k .cmid) = Rose.mid (w j)[k.val].1 :=
+  have hp  := List.getElem?_eq_getElem k.isLt
+  have hmid  :=
     aFun_pt_cmid_of_get w hp
-  have hL : f (relatorCirclePoint w j k .cedgL) = Rose.edg (w j)[k.val].1 (!(w j)[k.val].2) :=
+  have hL  :=
     aFun_pt_cedgL_of_get w hp
-  have hR : f (relatorCirclePoint w j k .cedgR) = Rose.edg (w j)[k.val].1 (w j)[k.val].2 :=
+  have hR  :=
     aFun_pt_cedgR_of_get w hp
   have h₀ := mapOne_single_of_endpoints f hf (relatorCircleEdge0 w j k)
     (roseIntegerBaseEdge (w j)[k.val].1 (!(w j)[k.val].2)) (Prod.ext rfl hL)
@@ -134,7 +124,7 @@ theorem relatorCircleLetterChain_exponent (k : Fin (w j).length) :
   have h₃ := mapOne_single_of_endpoints f hf (relatorCircleEdge3 w j k)
     (roseIntegerBaseEdge (w j)[k.val].1 (w j)[k.val].2) (Prod.ext rfl hR)
   change StrictNormalized.mapOne f hf (relatorCircleLetterChain w j k) = _
-  rw (config := { transparency := .default }) [relatorCircleLetterChain, map_sub, map_add, map_sub, h₀, h₁, h₂, h₃]
+  erw [relatorCircleLetterChain, map_sub, map_add, map_sub, h₀, h₁, h₂, h₃]
   cases (w j)[k.val].2 <;> simp only [Bool.not_false, Bool.not_true,
     Bool.false_eq_true, if_false, if_true, roseIntegerGeneratorChain]
   abel
@@ -145,13 +135,13 @@ theorem pathChain_eq_sum_get (l : List (A × Bool)) :
   induction l with
   | nil => simp
   | cons p l ih =>
-    rw (config := { transparency := .default }) [pathChain_cons]
+    erw [pathChain_cons]
     change _ = ∑ k : Fin (l.length + 1),
-      if (p :: l)[k.val].2 then Finsupp.single (p :: l)[k.val].1 (1 : ℤ)
+      if (p :: l)[k.val].2 then Finsupp.single (p :: l)[k.val].1 1
         else -Finsupp.single (p :: l)[k.val].1 1
-    rw (config := { transparency := .default }) [Fin.sum_univ_succ]
+    erw [Fin.sum_univ_succ]
     simpa only [Fin.val_zero, Fin.val_succ, List.getElem_cons_zero, List.getElem_cons_succ] using
-      congrArg (fun z => (if p.2 then Finsupp.single p.1 (1 : ℤ) else -Finsupp.single p.1 1) + z) ih
+      congrArg (fun z => (if p.2 then Finsupp.single p.1 1 else -Finsupp.single p.1 1) + z) ih
 
 theorem expVec_mk_eq_pathChain (l : List (A × Bool)) :
     FiniteChains.expVec (FreeGroup.mk l) = pathChain l := by
@@ -164,9 +154,9 @@ theorem relatorCircleFundamentalChain_exponent :
     StrictNormalized.mapOne (fun x : RelatorCircle w j => aFun w x.val)
       ((aFun_monotone w).comp (fun _ _ h => h)) (relatorCircleFundamentalChain w j) =
         roseIntegerRealize (FiniteChains.expVec (FreeGroup.mk (w j))) := by
-  rw (config := { transparency := .default }) [relatorCircleFundamentalChain, map_sum]
+  erw [relatorCircleFundamentalChain, map_sum]
   simp_rw [relatorCircleLetterChain_exponent]
-  rw (config := { transparency := .default }) [expVec_mk_eq_pathChain, pathChain_eq_sum_get, map_sum]
+  erw [expVec_mk_eq_pathChain, pathChain_eq_sum_get, map_sum]
   apply Finset.sum_congr rfl
   intro k _
   cases (w j)[k.val].2 <;>

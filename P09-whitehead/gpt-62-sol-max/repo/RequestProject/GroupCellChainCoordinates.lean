@@ -5,9 +5,22 @@ public import Mathlib.Algebra.MonoidAlgebra.Basic
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
+namespace MonoidAlgebra
+
+variable {G M N : Type*} [AddCommGroup M] [AddCommGroup N]
+
+/-- Linear extension of a family indexed by the basis of an integral group ring. -/
+noncomputable def linearCombination (f : G → M) : MonoidAlgebra ℤ G →ₗ[ℤ] M :=
+  (Finsupp.linearCombination ℤ f).comp (MonoidAlgebra.coeffLinearEquiv ℤ).toLinearMap
+
+
+theorem apply_linearCombination (L : M →ₗ[ℤ] N) (f : G → M) (w : MonoidAlgebra ℤ G) :
+    L (linearCombination f w) = linearCombination (L ∘ f) w :=
+  Finsupp.apply_linearCombination ℤ L f w.coeff
+
+
+end MonoidAlgebra
 
 namespace FiniteChains
 universe u v
@@ -20,14 +33,16 @@ noncomputable def groupCellChainEquiv :
     (Finsupp.curryLinearEquiv ℤ)).trans
     (Finsupp.mapRange.linearEquiv (MonoidAlgebra.coeffLinearEquiv (S := ℤ) (M := G) ℤ).symm)
 
+theorem groupCellChainEquiv_apply (c : (G × I) →₀ ℤ) (i : I) (g : G) :
+    (groupCellChainEquiv c i).coeff g = c (g, i) := by
+  aesop
+
 /-- Actual individual incidences keep their group coefficient and cell label under reindexing. -/
 theorem groupCellChainEquiv_single (g : G) (i : I) (n : ℤ) :
     groupCellChainEquiv (Finsupp.single (g, i) n) =
       Finsupp.single i (MonoidAlgebra.single g n) := by
   simp only [groupCellChainEquiv, LinearEquiv.trans_apply, Finsupp.domLCongr_single,
     Finsupp.mapRange.linearEquiv_apply]
-  change Finsupp.mapRange _ _ (Finsupp.single (i, g) n).curry = _
-  rw [Finsupp.curry_single (i, g) n]
-  simp [Finsupp.mapRange_single, MonoidAlgebra.coeffLinearEquiv_symm_apply]
+  simp_all
 
 end FiniteChains

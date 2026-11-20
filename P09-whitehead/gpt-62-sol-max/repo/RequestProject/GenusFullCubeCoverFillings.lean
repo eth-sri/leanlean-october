@@ -7,9 +7,7 @@ public import RequestProject.CellularHomotopyChain
 @[expose] public section
 
 /-! Genuine cap fillings in the path-class universal cover of the full cube quotient. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

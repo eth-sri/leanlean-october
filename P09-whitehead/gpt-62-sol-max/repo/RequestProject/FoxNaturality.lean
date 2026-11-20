@@ -4,6 +4,8 @@ public import RequestProject.Fox
 
 @[expose] public section
 
+open scoped Classical
+
 /-!
 # Naturality of the Fox derivative under an inclusion of generators
 
@@ -24,16 +26,15 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-variable {α β : Type*} [DecidableEq α] [DecidableEq β]
+variable {α β : Type*}
 
 /-- The ring homomorphism of group rings induced by a map of generating sets. -/
 noncomputable def freeRingMap (f : α → β) : FreeGroupRing α →+* FreeGroupRing β :=
   MonoidAlgebra.mapDomainRingHom ℤ (FreeGroup.map f)
 
-omit [DecidableEq α] [DecidableEq β] in
+
 @[simp] theorem freeRingMap_grp (f : α → β) (w : FreeGroup α) :
-    freeRingMap f (grp w) = grp (FreeGroup.map f w) := by
-  exact MonoidAlgebra.mapDomain_single
+    freeRingMap f (grp w) = grp (FreeGroup.map f w) := MonoidAlgebra.mapDomain_single
 
 
 /-- **Naturality of the Fox derivative.**  For an injective map of generating sets the
@@ -49,7 +50,7 @@ theorem fox_map (f : α → β) (hf : Function.Injective f) (i : α) (w : FreeGr
   | mul u v hu hv =>
       rw [map_mul, fox_mul, fox_mul, map_add, hu, hv, map_mul, freeRingMap_grp]
 
-omit [DecidableEq α] in
+
 /-- The derivative of an old word with respect to a new generator vanishes. -/
 theorem fox_map_of_not_mem_range (f : α → β) {b : β} (hb : ∀ i, b ≠ f i) (w : FreeGroup α) :
     fox b (FreeGroup.map f w) = 0 := by

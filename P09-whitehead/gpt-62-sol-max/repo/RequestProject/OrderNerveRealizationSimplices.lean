@@ -4,9 +4,7 @@ public import RequestProject.OrderNerveRealizationComparison
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -18,12 +16,21 @@ noncomputable def orderNerveRealizationSimplex (P : Type) [PartialOrder P]
     SimplexCategory.toTop.obj n ⟶ orderNerveRealization P :=
   SSet.toTopSimplex.inv.app n ≫ SSet.toTop.map (SSet.yonedaEquiv.symm s)
 
+private theorem realizationSimplex_comp_hom (P : Type) [PartialOrder P]
+    {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n)) :
+    SSet.toTopSimplex.hom.app n ≫ orderNerveRealizationSimplex P s =
+      SSet.toTop.map (SSet.yonedaEquiv.symm s) := by
+  simp only [orderNerveRealizationSimplex, ← Category.assoc, Iso.hom_inv_id_app, Category.id_comp]
+
 /-- Realized simplex maps commute with actual monotone maps of posets. -/
 theorem orderNerveRealizationSimplex_natural {P Q : Type} [PartialOrder P]
     [PartialOrder Q] (f : P → Q) (hf : Monotone f) {n : SimplexCategory}
-    (s : (nerve P).obj (Opposite.op n)) :
-    orderNerveRealizationSimplex P s ≫ orderNerveRealizationMap f hf =
-      orderNerveRealizationSimplex Q ((nerveMap hf.functor).app _ s) := by
+    (s : (nerve P).obj (Opposite.op n)) (z : SimplexCategory.toTop.obj n) :
+    orderNerveRealizationMap f hf (orderNerveRealizationSimplex P s z) =
+      orderNerveRealizationSimplex Q ((nerveMap hf.functor).app _ s) z := by
+  suffices h : orderNerveRealizationSimplex P s ≫ orderNerveRealizationMap f hf =
+      orderNerveRealizationSimplex Q ((nerveMap hf.functor).app _ s) by
+    exact congrArg (fun k => k z) h
   unfold orderNerveRealizationSimplex orderNerveRealizationMap
   rw [Category.assoc, ← Functor.map_comp]
   congr 2
@@ -31,9 +38,13 @@ theorem orderNerveRealizationSimplex_natural {P Q : Type} [PartialOrder P]
 /-- Canonical realized simplices respect every simplex operator, including faces
 and degeneracies. This is the attaching-map compatibility for the realization. -/
 theorem orderNerveRealizationSimplex_operator (P : Type) [PartialOrder P]
-    {m n : SimplexCategory} (a : m ⟶ n) (s : (nerve P).obj (Opposite.op n)) :
-    SimplexCategory.toTop.map a ≫ orderNerveRealizationSimplex P s =
-      orderNerveRealizationSimplex P ((nerve P).map a.op s) := by
+    {m n : SimplexCategory} (a : m ⟶ n) (s : (nerve P).obj (Opposite.op n))
+    (z : SimplexCategory.toTop.obj m) :
+    orderNerveRealizationSimplex P s (SimplexCategory.toTop.map a z) =
+      orderNerveRealizationSimplex P ((nerve P).map a.op s) z := by
+  suffices h : SimplexCategory.toTop.map a ≫ orderNerveRealizationSimplex P s =
+      orderNerveRealizationSimplex P ((nerve P).map a.op s) by
+    exact congrArg (fun k => k z) h
   unfold orderNerveRealizationSimplex
   rw [← Category.assoc, SSet.toTopSimplex.inv.naturality a, Category.assoc,
     Functor.comp_map, ← Functor.map_comp]
@@ -50,13 +61,8 @@ theorem orderNerveRealizationSimplex_jointly_surjective (P : Type) [PartialOrder
   have ht := CategoryTheory.Limits.isColimitOfPreserves (CategoryTheory.forget TopCat) hc
   obtain ⟨j, y, hy⟩ := CategoryTheory.Limits.Types.jointly_surjective_of_isColimit ht x
   refine ⟨j.unop.1.unop, j.unop.2, SSet.toTopSimplex.hom.app _ y, ?_⟩
-  change SSet.toTop.map (SSet.yonedaEquiv.symm j.unop.2)
-      (SSet.toTopSimplex.inv.app _ (SSet.toTopSimplex.hom.app _ y)) = x
-  have hi := congrArg (fun k => k y) (SSet.toTopSimplex.hom_inv_id_app j.unop.1.unop)
-  change SSet.toTopSimplex.inv.app j.unop.1.unop
-    (SSet.toTopSimplex.hom.app j.unop.1.unop y) = y at hi
-  rw [hi]
-  exact hy
+  change (SSet.toTopSimplex.hom.app _ ≫ orderNerveRealizationSimplex P j.unop.2) y = x
+  rwa [realizationSimplex_comp_hom]
 
 /-- Continuity on the actual realization is detected by its canonical continuous simplices. -/
 theorem orderNerveRealization_continuous_iff (P : Type) [PartialOrder P]
@@ -72,19 +78,9 @@ theorem orderNerveRealization_continuous_iff (P : Type) [PartialOrder P]
       (CategoryTheory.Presheaf.colimitOfRepresentable (nerve P))
     apply (TopCat.continuous_iff_of_isColimit _ hc f).mpr
     intro j
-    have hj := (h j.unop.1.unop j.unop.2).comp
-      (SSet.toTopSimplex.hom.app j.unop.1.unop).hom.continuous
-    convert hj using 1
-    all_goals try rfl
-    funext y
-    change f (SSet.toTop.map (SSet.yonedaEquiv.symm j.unop.2) y) =
-      f (SSet.toTop.map (SSet.yonedaEquiv.symm j.unop.2)
-        (SSet.toTopSimplex.inv.app j.unop.1.unop
-          (SSet.toTopSimplex.hom.app j.unop.1.unop y)))
-    have hi := congrArg (fun k => k y) (SSet.toTopSimplex.hom_inv_id_app j.unop.1.unop)
-    change SSet.toTopSimplex.inv.app j.unop.1.unop
-      (SSet.toTopSimplex.hom.app j.unop.1.unop y) = y at hi
-    rw [hi]
+    change Continuous (f ∘ SSet.toTop.map (SSet.yonedaEquiv.symm j.unop.2))
+    rw [← realizationSimplex_comp_hom, TopCat.coe_comp, ← Function.comp_assoc]
+    exact (h _ _).comp (SSet.toTopSimplex.hom.app j.unop.1.unop).hom.continuous
 
 /-- The actual realization has the weak topology defined by its canonical simplices. -/
 theorem orderNerveRealization_isOpen_iff (P : Type) [PartialOrder P]
@@ -100,19 +96,9 @@ theorem orderNerveRealization_isOpen_iff (P : Type) [PartialOrder P]
       (CategoryTheory.Presheaf.colimitOfRepresentable (nerve P))
     apply (TopCat.isOpen_iff_of_isColimit _ hc U).mpr
     intro j
-    have hj := (h j.unop.1.unop j.unop.2).preimage
-      (SSet.toTopSimplex.hom.app j.unop.1.unop).hom.continuous
-    convert hj using 1
-    all_goals try rfl
-    ext y
-    change SSet.toTop.map (SSet.yonedaEquiv.symm j.unop.2) y ∈ U ↔
-      SSet.toTop.map (SSet.yonedaEquiv.symm j.unop.2)
-        (SSet.toTopSimplex.inv.app j.unop.1.unop
-          (SSet.toTopSimplex.hom.app j.unop.1.unop y)) ∈ U
-    have hi := congrArg (fun k => k y) (SSet.toTopSimplex.hom_inv_id_app j.unop.1.unop)
-    change SSet.toTopSimplex.inv.app j.unop.1.unop
-      (SSet.toTopSimplex.hom.app j.unop.1.unop y) = y at hi
-    rw [hi]
+    change IsOpen (SSet.toTop.map (SSet.yonedaEquiv.symm j.unop.2) ⁻¹' U)
+    rw [← realizationSimplex_comp_hom, TopCat.coe_comp, Set.preimage_comp]
+    exact (h _ _).preimage (SSet.toTopSimplex.hom.app j.unop.1.unop).hom.continuous
 
 /-- Closedness on the actual realization is detected simplex by simplex. -/
 theorem orderNerveRealization_isClosed_iff (P : Type) [PartialOrder P]

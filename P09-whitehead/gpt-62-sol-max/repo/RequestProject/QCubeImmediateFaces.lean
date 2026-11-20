@@ -18,7 +18,7 @@ theorem qCube_spx_ne_of_lt {d c : QCube A} (h : d < c) : d.spx ≠ c.spx := by
   exact h.le.2 v hv
 
 theorem qCube_card_lt_of_lt {d c : QCube A} (h : d < c) : d.spx.card < c.spx.card :=
-  Finset.card_lt_card ((Finset.ssubset_iff_subset_ne).mpr
+  Finset.card_lt_card (Finset.ssubset_iff_subset_ne.mpr
     ⟨h.le.1, qCube_spx_ne_of_lt h⟩)
 
 /-- Fixing the only removed direction reconstructs the actual face, including its sign. -/
@@ -55,7 +55,7 @@ theorem exists_qCube_facet_of_card (d c : QCube A) (h : d ≤ c)
   · intro hw
     obtain ⟨hwv, hwc⟩ := Finset.mem_erase.mp hw
     by_contra hwd
-    have hm : w ∈ c.spx \ d.spx := Finset.mem_sdiff.mpr ⟨hwc, hwd⟩
+    have hm  := Finset.mem_sdiff.mpr ⟨hwc, hwd⟩
     rw [hv, Finset.mem_singleton] at hm
     exact hwv hm
 

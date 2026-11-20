@@ -35,21 +35,21 @@ theorem normBallHomeomorph_zero : (normBallHomeomorph (E := E) 0).val = 0 :=
 
 theorem puncturedNormBall_pathConnected (hdim : 1 < Module.rank ℝ E) :
     IsPathConnected {x : OpenNormBall E | x.val ≠ 0} := by
-  have hp := (isPathConnected_compl_singleton_of_one_lt_rank hdim (0 : E)).image
+  have hp := (isPathConnected_compl_singleton_of_one_lt_rank hdim 0).image
     (normBallHomeomorph (E := E)).continuous
-  have he : normBallHomeomorph (E := E) '' ({0} : Set E)ᶜ =
+  have he : normBallHomeomorph (E := E) '' ({0})ᶜ =
       {x : OpenNormBall E | x.val ≠ 0} := by
     ext x
     constructor
     · rintro ⟨y, hy, rfl⟩ heq
-      have hy0 : y = 0 := (normBallHomeomorph (E := E)).injective
+      have hy0  := (normBallHomeomorph (E := E)).injective
         (Subtype.ext (heq.trans normBallHomeomorph_zero.symm))
       exact hy (Set.mem_singleton_iff.mpr hy0)
     · intro hx
       refine ⟨(normBallHomeomorph (E := E)).symm x, ?_,
         (normBallHomeomorph (E := E)).apply_symm_apply x⟩
       intro hzero
-      have hz : (normBallHomeomorph (E := E)).symm x = 0 := hzero
+      have hz  := hzero
       have h := congrArg (fun z => (normBallHomeomorph (E := E) z).val) hz
       change (normBallHomeomorph (E := E) ((normBallHomeomorph (E := E)).symm x)).val =
         (normBallHomeomorph (E := E) 0).val at h
@@ -82,8 +82,8 @@ theorem openDisk_pairwiseDisjoint (r : BoundaryFamily J E → X) :
   intro i j hij
   apply Set.disjoint_left.mpr
   rintro _ ⟨x, rfl⟩ ⟨y, he⟩
-  have h : interiorDiskPoint j y = interiorDiskPoint i x := Sum.inr_injective he
-  exact hij (congrArg (fun d => d.val.1) h).symm
+  have h  := Sum.inr_injective he
+  exact hij (congrArg (·.val.1) h).symm
 
 omit [TopologicalSpace X] in
 theorem puncturedAttachment_union_openDisk (r : BoundaryFamily J E → X) :
@@ -92,7 +92,7 @@ theorem puncturedAttachment_union_openDisk (r : BoundaryFamily J E → X) :
   rintro (x | d)
   · exact Or.inl trivial
   · apply Or.inr
-    have hd : ‖d.val.2.val‖ < 1 := lt_of_le_of_ne d.val.2.property
+    have hd  := lt_of_le_of_ne d.val.2.property
       (fun h => d.property ((boundaryFamilyInclusion_range J E _).mpr h))
     exact Set.mem_iUnion.mpr ⟨d.val.1, ⟨⟨d.val.2.val, hd⟩, rfl⟩⟩
 
@@ -107,7 +107,7 @@ theorem openDisk_simplyConnected (r : BoundaryFamily J E → X) (j : J) :
     ext x
     change dist x 0 < 1 ↔ ‖x‖ < 1
     rw [dist_zero_right])
-  letI : SimplyConnectedSpace (OpenNormBall E) := e.symm.toHomotopyEquiv.simplyConnectedSpace
+  letI  := e.symm.toHomotopyEquiv.simplyConnectedSpace
   exact (openDiskMap_isOpenEmbedding r j).isEmbedding.toHomeomorph.symm.toHomotopyEquiv.simplyConnectedSpace
 
 omit [TopologicalSpace X] in

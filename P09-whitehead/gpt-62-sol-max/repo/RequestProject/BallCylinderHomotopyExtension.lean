@@ -9,9 +9,6 @@ public import Mathlib.Analysis.Normed.Group.Constructions
 ends. The cylinder is the unit ball for the product supremum norm. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
@@ -31,13 +28,8 @@ def ballCylinderForward (z : ClosedUnitBall (ℝ × E)) : I × ClosedUnitBall E 
    ⟨z.val.2, (norm_snd_le z.val).trans z.property⟩)
 
 def ballCylinderInverse (z : I × ClosedUnitBall E) : ClosedUnitBall (ℝ × E) :=
-  ⟨(2 * (z.1 : ℝ) - 1, z.2.val), by
-    rw [Prod.norm_mk, Real.norm_eq_abs]
-    apply max_le _ z.2.property
-    rw [abs_le]
-    have hl := z.1.2.1
-    have hu := z.1.2.2
-    constructor <;> linarith⟩
+  ⟨(2 * (z.1) - 1, z.2.val), by
+    simp_all <;> grind⟩
 
 /-- The cylinder is literally a ball in the product norm, after rescaling
 its interval coordinate from `[-1,1]` to `[0,1]`. -/
@@ -51,11 +43,7 @@ def ballCylinderHomeomorph : ClosedUnitBall (ℝ × E) ≃ₜ I × ClosedUnitBal
       ring
     · rfl
   right_inv z := by
-    apply Prod.ext
-    · apply Subtype.ext
-      change ((2 * (z.1 : ℝ) - 1) + 1) / 2 = (z.1 : ℝ)
-      ring
-    · rfl
+    grind +locals
   continuous_toFun := by
     unfold ballCylinderForward
     fun_prop
@@ -70,26 +58,23 @@ theorem ballCylinderForward_boundary (z : UnitBoundary (ℝ × E)) :
     ‖(ballCylinderHomeomorph E (unitBoundaryInclusion (ℝ × E) z)).2.val‖ = 1 := by
   have he : max |z.val.1| ‖z.val.2‖ = 1 := by
     have hz := z.property
-    change ‖(z.val : ℝ × E)‖ = 1 at hz
-    rw [Prod.norm_mk, Real.norm_eq_abs] at hz
-    exact hz
+    assumption
   by_cases hs : ‖z.val.2‖ = 1
   · exact Or.inr (Or.inr hs)
   have hf : |z.val.1| = 1 := by
     by_cases hle : |z.val.1| ≤ ‖z.val.2‖
-    · rw [max_eq_right hle] at he
-      exact (hs he).elim
+    · simp_all
     · simpa only [max_eq_left (le_of_not_ge hle)] using he
   by_cases hz : 0 ≤ z.val.1
   · right
     left
     apply Subtype.ext
-    change (z.val.1 + 1) / 2 = (1 : ℝ)
+    change (z.val.1 + 1) / 2 = 1
     rw [abs_of_nonneg hz] at hf
     linarith
   · left
     apply Subtype.ext
-    change (z.val.1 + 1) / 2 = (0 : ℝ)
+    change (z.val.1 + 1) / 2 = 0
     rw [abs_of_nonpos (le_of_not_ge hz)] at hf
     linarith
 
@@ -116,10 +101,7 @@ def ballCylinderBoundaryHomeomorph : UnitBoundary (ℝ × E) ≃ₜ FullBallCyli
   invFun z := ⟨((ballCylinderHomeomorph E).symm z.val).val,
     ballCylinderInverse_boundary E z⟩
   left_inv z := by
-    apply Subtype.ext
-    exact congrArg (fun w : ClosedUnitBall (ℝ × E) => w.val)
-      ((ballCylinderHomeomorph E).symm_apply_apply
-      (unitBoundaryInclusion (ℝ × E) z))
+    aesop
   right_inv z := by
     apply Subtype.ext
     exact (ballCylinderHomeomorph E).apply_symm_apply z.val

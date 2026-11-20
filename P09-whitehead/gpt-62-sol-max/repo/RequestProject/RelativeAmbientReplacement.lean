@@ -14,9 +14,7 @@ All algebraic chain assertions retain finite support. Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeNormalForm
 open Davis Davis.Genus BlockFamily
@@ -53,10 +51,7 @@ def nextPredicate (p : S → Prop) : NextExtraCell core hcore extra → Prop
 
 theorem nextPredicate_mono {p t : S → Prop} (h : ∀ s, p s → t s) :
     ∀ s, nextPredicate core hcore extra p s → nextPredicate core hcore extra t s := by
-  intro s hs
-  cases s with
-  | inl m => exact h m.1 hs
-  | inr k => exact hs.elim
+  aesop
 
 def stageNextGen (p : S → Prop) :
     (PairGen A Z ⊕ (Σ s : {s // p s}, SpinePresentationGen
@@ -69,15 +64,11 @@ theorem stageNextGen_injective (p : S → Prop) :
     Function.Injective (stageNextGen core hcore extra p) := by
   rintro (a | ⟨s, x⟩) (b | ⟨t, y⟩) h
   · cases a <;> cases b <;> simp_all [stageNextGen, NextExtraGen]
-  · cases a <;> simp [stageNextGen] at h <;> cases h
-  · cases b <;> simp [stageNextGen] at h <;> cases h
-  · have hh : (⟨s.val, x⟩ : Σ s, SpinePresentationGen
-        (normalizedGenus core hcore extra s)) = ⟨t.val, y⟩ := Sum.inr.inj (Sum.inr.inj h)
-    have hs : s = t := Subtype.ext (congrArg Sigma.fst hh)
-    subst t
-    have hx : x = y := eq_of_heq (Sigma.mk.inj hh).2
-    subst y
-    rfl
+  · cases a <;> simp [stageNextGen] at h
+  · cases b <;> simp [stageNextGen] at h
+  · have hh  := Sum.inr.inj (Sum.inr.inj h)
+    have hs  := Subtype.ext (congrArg Sigma.fst hh)
+    simp_all
 
 def stageNextCell (p : S → Prop) :
     (C ⊕ (Σ s : {s // p s}, NamedSpineRel (restrictedGenus core hcore extra p s))) ≃
@@ -107,9 +98,6 @@ theorem stageNext_rel (p : S → Prop)
         (restrictedBlockPresentation core hcore extra p j) := by
   cases j with
   | inl c =>
-      change FreeGroup.map Sum.inl (core c) =
-        FreeGroup.map (stageNextGen core hcore extra p)
-          (FreeGroup.map Sum.inl (FreeGroup.map Sum.inl (core c)))
       have hm : ((FreeGroup.map (stageNextGen core hcore extra p)).comp
           (FreeGroup.map Sum.inl)).comp (FreeGroup.map Sum.inl) = FreeGroup.map Sum.inl := by
         apply FreeGroup.ext_hom
@@ -162,8 +150,8 @@ theorem nextStage_square
       (nextPredicate_mono core hcore extra hpt)).cells ((stageNextMap core hcore extra p).cells x) =
     (stageNextMap core hcore extra t).cells ((blockInclusion core hcore extra hpt).cells x) := by
   apply PresInclusionFS.square_cells
-  · rintro ((a | z) | s) <;> rfl
-  · rintro (c | s) <;> rfl
+  · aesop
+  · aesop
 
 theorem nextStage_preserves_zero
     (hzero : ∀ x, FSIsFoxCycle (rawPresentation core (restrictedExtra extra p)) x →
@@ -182,7 +170,7 @@ theorem nextStage_strict (s : S) (hs : t s) (hsp : ¬ p s) :
     ∃ m, nextPredicate core hcore extra t m ∧ ¬ nextPredicate core hcore extra p m := by
   have hq := (surfaceChoice core hcore (extra s)).genus_ge_two
   let m : NamedSpineRel (normalizedGenus core hcore extra s) :=
-    Sum.inr (⟨0, by change 0 < (surfaceChoice core hcore (extra s)).genus; omega⟩, false)
+    Sum.inr (⟨0, by positivity⟩, false)
   exact ⟨Sum.inl ⟨s, m⟩, hs, hsp⟩
 
 end FiniteChains.RelativeNormalForm

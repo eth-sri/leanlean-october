@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.QCubeSquareChainEmbedding
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -20,12 +21,7 @@ theorem squareChainSubdivision_boundary (z : C →₀ ℤ) :
     Comb.bdry2 (strictOrderCx (QCube A))
       (squareChainSubdivision cell left right hne hspx z) =
       squareChainEdgeBoundary cell left right hne hspx z := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, map_add, hz, hw, map_add]
-  | single i n =>
-      rw [squareChainSubdivision, Finsupp.linearCombination_single, map_smul,
-        cubeSquareSubdivision_boundary, squareChainEdgeBoundary,
-        Finsupp.linearCombination_single]
+  finsupp_basis z
+  simp [squareChainSubdivision, Finsupp.linearCombination_single, cubeSquareSubdivision_boundary, squareChainEdgeBoundary]
 
 end FiniteChains.Davis

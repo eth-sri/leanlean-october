@@ -36,8 +36,6 @@ The conclusion is `FiniteChains.Davis.pi1Map_zNew_injective_uncond`: for every m
 injectivity itself.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -130,134 +128,33 @@ theorem injIn_zchamber_base {w : CayGroup A} (hw : M w) :
 
 /-! ### The filtration by word length -/
 
-omit [Fintype V] in
-theorem inZBaseAt_imp_zUpto {w : CayGroup A} {n : ℕ} (hn : RACG.clen A w ≤ n)
-    {z : Zpos A X M att} (h : InZBaseAt w z) : ZUpto n z :=
-  ⟨w, hn, inZBaseAt_imp_inZChamber h⟩
 
-/-- **One chamber of the filtration is added.** -/
-theorem injIn_zupto_insert {w0 : CayGroup A} (hw0 : M w0) (n : ℕ)
-    (hprev : RACG.clen A w0 ≤ n → InjIn (ZUpto (A := A) (X := X) (M := M) (att := att) n)
-      (InZBaseAt w0)) :
-    ∀ S : Set (CayGroup A), S.Finite → (∀ y ∈ S, RACG.clen A y = n + 1) →
-      (RACG.clen A w0 ≤ n ∨ w0 ∈ S) →
-      InjIn (fun z : Zpos A X M att => ZUpto n z ∨ ∃ y ∈ S, InZChamber y z) (InZBaseAt w0) := by
-  intro S hS
-  induction S, hS using Set.Finite.induction_on with
-  | empty =>
-      intro _ hbase
-      have hn : RACG.clen A w0 ≤ n := by
-        rcases hbase with h | h
-        · exact h
-        · exact absurd h (Set.notMem_empty w0)
-      exact injIn_congr_left (fun z => by simp) (hprev hn)
-  | @insert x S hxS hSfin ih =>
-      intro hlen hbase
-      have hxlen : RACG.clen A x = n + 1 := hlen x (Set.mem_insert _ _)
-      have hx1 : x ≠ 1 := by
-        intro h
-        rw [h, clen_one] at hxlen
-        omega
-      set Prev : Zpos A X M att → Prop :=
-        fun z => ZUpto n z ∨ ∃ y ∈ S, InZChamber y z with hPrevDef
-      have hup : ∀ z z' : Zpos A X M att, z ≤ z' → Prev z → Prev z' := by
-        rintro z z' hzz' (h | ⟨y, hy, hyz⟩)
-        · exact Or.inl (zUpto_up hzz' h)
-        · exact Or.inr ⟨y, hy, inZChamber_of_le hzz' hyz⟩
-      have hinter : ∀ z : Zpos A X M att, (Prev z ∧ InZChamber x z) ↔ ZJSet x z := by
-        intro z
-        constructor
-        · rintro ⟨hprev', hzx⟩
-          rcases hprev' with ⟨y, hy, hyz⟩ | ⟨y, hyS, hyz⟩
-          · exact (mem_shorter_zchamber_iff hzx).1 ⟨y, by omega, hyz⟩
-          · refine (mem_earlier_zchamber_iff hzx).1 ⟨y, ?_, ?_, hyz⟩
-            · intro hxy
-              exact hxS (hxy ▸ hyS)
-            · rw [hlen y (Set.mem_insert_of_mem _ hyS), hxlen]
-        · intro hJ
-          have hzx : InZChamber x z := zJSet_imp_inZChamber hJ
-          obtain ⟨y, hylt, hyz⟩ := (mem_shorter_zchamber_iff hzx).2 hJ
-          exact ⟨Or.inl ⟨y, by omega, hyz⟩, hzx⟩
-      obtain ⟨j0, hj0⟩ := exists_zJSet (X := X) (M := M) (att := att) hx1
-      have hmixPrev : ∀ a b : Zpos A X M att, a ≤ b →
-          (fun z => Prev z ∨ InZChamber x z) a → (fun z => Prev z ∨ InZChamber x z) b →
-          (Prev a ∧ Prev b) ∨ (InZChamber x a ∧ InZChamber x b) := by
-        rintro a b hab (ha | ha) _
-        · exact Or.inl ⟨ha, hup a b hab ha⟩
-        · exact Or.inr ⟨ha, inZChamber_of_le hab ha⟩
-      have hmain : InjIn (fun z : Zpos A X M att => Prev z ∨ InZChamber x z) (InZBaseAt w0) := by
-        by_cases hin : RACG.clen A w0 ≤ n ∨ w0 ∈ S
-        · -- the copy of the base is already inside the earlier union
-          have hPrevInj : InjIn Prev (InZBaseAt w0) := ih (fun y hy =>
-            hlen y (Set.mem_insert_of_mem _ hy)) hin
-          have hcopy : ∀ z : Zpos A X M att, InZBaseAt w0 z → Prev z := by
-            intro z hz
-            rcases hin with h | h
-            · exact Or.inl (inZBaseAt_imp_zUpto h hz)
-            · exact Or.inr ⟨w0, h, inZBaseAt_imp_inZChamber hz⟩
-          refine injIn_trans hcopy ?_ hPrevInj
-          exact injIn_union_of_unmixed (B := InZChamber x) (J := ZJSet x) hmixPrev
-            (fun z => (hinter z).symm) (connectedIn_zJSet hx1) (simplyConnectedIn_zJSet hx1) hj0
-        · -- the chamber added now is the marked chamber carrying the copy
-          have hw0x : w0 = x := by
-            rcases hbase with h | h
-            · exact absurd (Or.inl h) hin
-            · rcases Set.mem_insert_iff.1 h with rfl | h
-              · rfl
-              · exact absurd (Or.inr h) hin
-          subst hw0x
-          have hchamber : InjIn (fun z : Zpos A X M att => Prev z ∨ InZChamber w0 z)
-              (InZChamber w0) := by
-            refine injIn_union_of_unmixed (B := Prev) (J := ZJSet w0) ?_
-              (fun z => by
-                rw [← hinter z]
-                exact and_comm)
-              (connectedIn_zJSet hx1) (simplyConnectedIn_zJSet hx1) hj0
-            rintro a b hab (ha | ha) _
-            · exact Or.inr ⟨ha, hup a b hab ha⟩
-            · exact Or.inl ⟨ha, inZChamber_of_le hab ha⟩
-          exact injIn_trans (fun z hz => inZBaseAt_imp_inZChamber hz) hchamber
-            (injIn_zchamber_base hw0)
-      refine injIn_congr_left (fun z => ?_) hmain
-      constructor
-      · rintro ((h | ⟨y, hy, hyz⟩) | h)
-        · exact Or.inl h
-        · exact Or.inr ⟨y, Set.mem_insert_of_mem _ hy, hyz⟩
-        · exact Or.inr ⟨x, Set.mem_insert _ _, h⟩
-      · rintro (h | ⟨y, hy, hyz⟩)
-        · exact Or.inl (Or.inl h)
-        · rcases Set.mem_insert_iff.1 hy with rfl | hy
-          · exact Or.inr hyz
-          · exact Or.inl (Or.inr ⟨y, hy, hyz⟩)
-
-/-- **A copy of the base is injective on path classes inside every initial union of chambers.** -/
+/-- A copy of the base is injective on path classes inside every initial union of chambers. -/
 theorem injIn_zupto {w0 : CayGroup A} (hw0 : M w0) :
     ∀ n : ℕ, RACG.clen A w0 ≤ n →
       InjIn (ZUpto (A := A) (X := X) (M := M) (att := att) n) (InZBaseAt w0) := by
-  intro n
-  induction n with
-  | zero =>
-      intro h
-      have hw1 : w0 = 1 := (RACG.clen_eq_zero_iff A).1 (Nat.le_zero.1 h)
-      subst hw1
-      exact injIn_congr_left (fun z => (zUpto_zero_iff z).symm) (injIn_zchamber_base hw0)
-  | succ n ih =>
-      intro h
-      have hcond : RACG.clen A w0 ≤ n ∨ w0 ∈ {x : CayGroup A | RACG.clen A x = n + 1} := by
-        rcases Nat.lt_or_ge (RACG.clen A w0) (n + 1) with h' | h'
-        · exact Or.inl (by omega)
-        · exact Or.inr (by simp only [Set.mem_setOf_eq]; omega)
-      have hstep := injIn_zupto_insert hw0 n ih {x : CayGroup A | RACG.clen A x = n + 1}
-        (level_finite A (n + 1)) (fun _ hy => hy) hcond
-      refine injIn_congr_left (fun z => ?_) hstep
-      constructor
-      · rintro (⟨y, hy, hyz⟩ | ⟨y, hy, hyz⟩)
-        · exact ⟨y, by omega, hyz⟩
-        · exact ⟨y, le_of_eq hy, hyz⟩
-      · rintro ⟨y, hy, hyz⟩
-        rcases Nat.lt_or_ge (RACG.clen A y) (n + 1) with h' | h'
-        · exact Or.inl ⟨y, by omega, hyz⟩
-        · exact Or.inr ⟨y, le_antisymm hy h', hyz⟩
+  apply chamberInduction A (fun S => w0 ∈ S → InjIn (chamberUnion InZChamber S) (InZBaseAt w0))
+  · intro h
+    have hw  := Set.mem_singleton_iff.mp h
+    subst w0
+    simpa only [chamberUnion_singleton] using injIn_zchamber_base hw0
+  · intro n S x hx hl hs hne ih hw
+    rw [chamberUnion_insert]
+    let Prev : Zpos A X M att → Prop := chamberUnion InZChamber (chamberBall A n ∪ S)
+    have hup : IsUpperSet (Prev : Set (Zpos A X M att)) := chamberUnion_up (C := InZChamber) (fun _ _ _ h => inZChamber_of_le h)
+    obtain ⟨j, hj⟩ := exists_zJSet (X := X) (M := M) (att := att) hne
+    have hconn := connectedIn_zJSet (X := X) (M := M) (att := att) hne
+    have hsc := simplyConnectedIn_zJSet (X := X) (M := M) (att := att) hne
+    have hov (z : Zpos A X M att)  := (zUpto_overlap hx hl hs z).symm
+    rcases Set.mem_insert_iff.mp hw with hw | hw
+    · subst w0
+      exact injIn_trans (fun _ hz => inZBaseAt_imp_inZChamber hz)
+        (injIn_union_of_unmixed (B := Prev) (fun _ _ h hp _ =>
+          unmixed_of_upper (B := InZChamber x) (fun _ _ h => inZChamber_of_le h) hup h (or_comm.mp hp))
+          (fun z => (hov z).trans and_comm) hconn hsc hj) (injIn_zchamber_base hw0)
+    · exact injIn_trans (fun z hz => ⟨w0, hw, inZBaseAt_imp_inZChamber hz⟩)
+        (injIn_union_of_unmixed (B := InZChamber x) (fun _ _ h hp _ =>
+          unmixed_of_upper (C := InZChamber x) hup (fun _ _ hz => inZChamber_of_le hz) h hp) hov hconn hsc hj) (ih hw)
 
 /-- **A copy of the base is injective on path classes inside the whole of `Z`.**  A homotopy is a
 finite derivation, so it involves only finitely many cells and therefore lies in some initial
@@ -266,7 +163,7 @@ theorem injIn_zpos {w0 : CayGroup A} (hw0 : M w0) :
     InjIn (fun _ : Zpos A X M att => True) (InZBaseAt w0) := by
   intro v l hv hp hl hnull
   obtain ⟨n, hn⟩ := exists_htpyIn_of_htpy
-    (D := fun n => ZUpto (A := A) (X := X) (M := M) (att := att) n)
+    (D := (ZUpto (A := A) (X := X) (M := M) (att := att)))
     (fun m n hmn z hz => by
       obtain ⟨y, hy, hyz⟩ := hz
       exact ⟨y, le_trans hy hmn, hyz⟩)
@@ -290,9 +187,9 @@ theorem pi1Map_zNew_injective_uncond (w : {w : CayGroup A // M w}) (x : X) :
       (Comb.pi1Map (orderCxMap (zNew (A := A) (X := X) (M := M) (att := att) w)
         (zNew_monotone w)) x) :=
   pi1Map_injective_of_injIn (Bp := InZBaseAt w.1) (injIn_zpos w.2)
-    (zNew_monotone w) (fun y => inZBaseAt_zNew w y)
+    (zNew_monotone w) (inZBaseAt_zNew w)
     (zBaseRetr_monotone (A := A) (X := X) (M := M) (att := att) w.1)
-    (fun y => zBaseRetr_zNew w y) x
+    (zBaseRetr_zNew w) x
 
 /-- **Composing with a covering.**  If `Z` covers a complex `W`, the copy of the base is still
 injective on fundamental groups after pushing down to `W`, because a covering is injective on

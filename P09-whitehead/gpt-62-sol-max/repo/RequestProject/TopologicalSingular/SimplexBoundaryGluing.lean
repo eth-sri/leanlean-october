@@ -5,9 +5,6 @@ public import RequestProject.TopologicalSingular.TriangleSquareGeometry
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -17,8 +14,7 @@ variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 theorem simplex_face_coordinate_zero (i : Fin (n + 2)) (z : Domain n) :
     (stdSimplex.map (SimplexCategory.δ i) z).val i = 0 := by
   change (FunOnFinite.linearMap ℝ ℝ i.succAbove z.val) i = 0
-  rw [FunOnFinite.linearMap_apply_apply]
-  simp [Fin.succAbove_ne]
+  simp [FunOnFinite.linearMap_apply_apply]
 
 noncomputable def simplexFaceBoundary (i : Fin (n + 2)) : C(Domain n, simplexBoundary (n + 1)) where
   toFun z := ⟨stdSimplex.map (SimplexCategory.δ i) z, ⟨i, simplex_face_coordinate_zero i z⟩⟩
@@ -50,23 +46,23 @@ theorem simplex_boundary_glue (H : Fin (n + 2) → C(I × Domain n, X))
       ∀ (i : Fin (n + 2)) (t : I) (z : Domain n), F (t, simplexFaceBoundary i z) = H i (t, z) := by
   classical
   let q := simplexBoundaryPrismCover n
-  have hq : Function.Surjective q := simplexBoundaryPrismCover_surjective n
+  have hq  := simplexBoundaryPrismCover_surjective n
   obtain ⟨r, hr⟩ := hq.hasRightInverse
-  let F : I × simplexBoundary (n + 1) → X := fun w => H (r w).1 (r w).2
+  let F  := fun w => H (r w).1 (r w).2
   have he : ∀ w : (Σ _ : Fin (n + 2), I × Domain n), F (q w) = H w.1 w.2 := by
     intro w
     have htime := congrArg Prod.fst (hr (q w))
-    have hpoint := congrArg (fun v : I × simplexBoundary (n + 1) => v.2.val) (hr (q w))
+    have hpoint := congrArg (·.2.val) (hr (q w))
     change (r (q w)).2.1 = w.2.1 at htime
     change stdSimplex.map (SimplexCategory.δ (r (q w)).1) (r (q w)).2.2 =
       stdSimplex.map (SimplexCategory.δ w.1) w.2.2 at hpoint
     change H (r (q w)).1 ((r (q w)).2.1, (r (q w)).2.2) = H w.1 (w.2.1, w.2.2)
     rw [htime]
-    exact hH _ _ _ _ _ hpoint
+    tauto
   have hc : Continuous F := by
     apply (Topology.IsQuotientMap.of_surjective_continuous hq q.continuous).continuous_iff.mpr
     have h : Continuous (fun w : (Σ _ : Fin (n + 2), I × Domain n) => H w.1 w.2) :=
-      continuous_sigma (fun i : Fin (n + 2) => (H i).continuous)
+      continuous_sigma (fun i  => (H i).continuous)
     convert h using 1
     funext w
     exact he w

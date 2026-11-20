@@ -2,7 +2,7 @@ module
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologyPaths.PathSubdivision
+public import Mathlib.Topology.Subpath
 
 @[expose] public section
 
@@ -16,7 +16,7 @@ claim about the relations between those generators.
 
 namespace FiniteChains.OpenCoverPaths
 
-open Set Topology CategoryTheory
+open Set
 open scoped unitInterval
 
 universe u v
@@ -37,18 +37,19 @@ theorem path_induction {ι : Type v} (U : ι → Set X)
     (hhomotopy : ∀ {a b} {p q : Path a b}, p.Homotopic q → P p → P q)
     (hlocal : ∀ {a b} (p : Path a b), (∃ i, Set.range p ⊆ U i) → P p)
     {a b : X} (p : Path a b) : P p := by
-  obtain ⟨t,N,ht0,htN,_,ht⟩ := PathSubdivision.exists_subdivision p U hU
-    (fun s => hcover (p s))
-  have hall : ∀ k ≤ N, P (PathSubdivision.concatenateCuts p t k) := by
-    intro k
+  obtain ⟨t, h₀, ht, ⟨n, h₁⟩, hU'⟩ := exists_monotone_Icc_subset_open_cover_unitInterval
+    (fun i => (hU i).preimage p.continuous) (fun s _ => mem_iUnion.mpr (hcover (p s)))
+  have h (k : ℕ) : P (p.subpath (t 0) (t k)) := by
     induction k with
-    | zero => intro _; exact hrefl _
+    | zero => simpa using hrefl (p (t 0))
     | succ k ih =>
-      intro hk
-      exact htrans _ _ (ih (by omega)) (hlocal _ (ht k (by omega)))
-  have hend := hhomotopy (PathSubdivision.concatenateCuts_homotopic p t N) (hall N le_rfl)
-  rw [ht0,htN] at hend
-  have hp := hhomotopy (PathSubdivision.cut_zero_one_homotopic p) hend
-  exact (property_cast_iff P p p.source p.target).mp hp
+      apply hhomotopy (Path.Homotopic.subpath_trans_subpath p _ _ _) (htrans _ _ ih ?_)
+      obtain ⟨i, hi⟩ := hU' k
+      exact hlocal _ ⟨i, by
+        rw [p.range_subpath_of_le _ _ (ht (Nat.le_succ k)), image_subset_iff]
+        exact hi⟩
+  have hn := h n
+  rw [h₀, h₁ n le_rfl, Path.subpath_zero_one] at hn
+  exact (property_cast_iff P p p.source p.target).mp hn
 
 end FiniteChains.OpenCoverPaths

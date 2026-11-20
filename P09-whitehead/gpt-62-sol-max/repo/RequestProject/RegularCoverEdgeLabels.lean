@@ -13,9 +13,6 @@ of a genuine topological covering has both properties. Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.RegularCoverLabels
 universe u v
@@ -49,20 +46,20 @@ theorem sheet_fibre_injective {d e : D.V} (hf : p.onV d = p.onV e)
   rw [← sheet_spec p hp a hr d, ← sheet_spec p hp a hr e, hf, hs]
 
 def liftGerm (e : K.E) : D.E × Bool := Classical.choose
-  (exists_unique_liftGerm hp (sectionV p hp (K.src e))
+  (exists_unique_liftGerm hp.uniqueLifts (sectionV p hp (K.src e))
     (eb := (e, true)) (sectionV_spec p hp (K.src e)).symm)
 
 theorem liftGerm_spec (e : K.E) :
     germSrc D.src D.tgt (liftGerm p hp e) = sectionV p hp (K.src e) ∧
       (p.onE (liftGerm p hp e).1, (liftGerm p hp e).2) = (e, true) :=
-  (Classical.choose_spec (exists_unique_liftGerm hp (sectionV p hp (K.src e))
+  (Classical.choose_spec (exists_unique_liftGerm hp.uniqueLifts (sectionV p hp (K.src e))
     (eb := (e, true)) (sectionV_spec p hp (K.src e)).symm)).1
 
 def liftEdge (e : K.E) : D.E := (liftGerm p hp e).1
 theorem liftEdge_source (e : K.E) : D.src (liftEdge p hp e) = sectionV p hp (K.src e) := by
   have h := (liftGerm_spec p hp e).1
-  have hb : (liftGerm p hp e).2 = true := congrArg Prod.snd (liftGerm_spec p hp e).2
-  simpa only [liftEdge, germSrc, hb, if_true] using h
+  have hb  := congrArg Prod.snd (liftGerm_spec p hp e).2
+  simp_all [liftEdge, germSrc]
 theorem liftEdge_projection (e : K.E) : p.onE (liftEdge p hp e) = e :=
   congrArg Prod.fst (liftGerm_spec p hp e).2
 
@@ -71,11 +68,10 @@ def edge (e : K.E) : Q := sheet p hp a hr (D.tgt (liftEdge p hp e))
 include he in
 theorem lifted_edge_deck (e : D.E) :
     a.smulE (sheet p hp a hr (D.src e)) (liftEdge p hp (p.onE e)) = e := by
-  have h := liftGerm_unique hp
+  have h := liftGerm_unique hp.uniqueLifts
     (x := (a.smulE (sheet p hp a hr (D.src e)) (liftEdge p hp (p.onE e)), true))
     (y := (e, true)) (by
-      change D.src _ = D.src e
-      rw [a.src_smul, liftEdge_source, p.src_onE, sheet_spec]) rfl (by
+      simp [a.src_smul, liftEdge_source, p.src_onE, sheet_spec]) rfl (by
       rw [he, liftEdge_projection])
   exact congrArg Prod.fst h
 
@@ -99,7 +95,7 @@ theorem read_projected_path {l : List (D.E × Bool)} {d e : D.V}
 
 include he in
 theorem edge_rel (f : K.F) : EdgeLabels.read (edge p hp a hr) (K.att f) = 1 := by
-  obtain ⟨g, ⟨hg, hb⟩, _⟩ := exists_unique_liftCell hp f
+  obtain ⟨g, ⟨hg, hb⟩, _⟩ := exists_unique_liftCell hp.uniqueLifts f
     (sectionV_spec p hp (K.base f)).symm
   have h := read_projected_path p hp a hr he (D.att_isLoop g)
   rw [mapPath_att, hg] at h

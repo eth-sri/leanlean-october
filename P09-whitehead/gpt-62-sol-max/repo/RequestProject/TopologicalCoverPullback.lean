@@ -31,7 +31,7 @@ theorem coveringChart_inverse_projection {F : Type} [TopologicalSpace F]
     (he : ∀ d, (e d).1.val = p d.val) (u : U) (i : F) :
     p (e.symm (u, i)).val = u.val :=
   (he (e.symm (u, i))).symm.trans
-    (congrArg (fun w : U × F => w.1.val) (e.apply_symm_apply (u, i)))
+    (congrArg (·.1.val) (e.apply_symm_apply (u, i)))
 
 def coverPullbackLocalChart {F : Type} [TopologicalSpace F]
     (f : C(X, Y)) (p : C(D, Y)) (U : Set Y) (e : p ⁻¹' U ≃ₜ U × F)
@@ -48,20 +48,10 @@ def coverPullbackLocalChart {F : Type} [TopologicalSpace F]
   left_inv z := by
     apply Subtype.ext
     apply Subtype.ext
-    refine Prod.ext rfl ?_
-    let d : p ⁻¹' U := ⟨z.val.val.2, by
-      change p z.val.val.2 ∈ U
-      rw [← z.val.property]
-      exact z.property⟩
-    have hd : (⟨f z.val.val.1, z.property⟩, (e d).2) = e d := by
-      refine Prod.ext ?_ rfl
-      apply Subtype.ext
-      exact z.val.property.trans (he d).symm
-    change (e.symm (⟨f z.val.val.1, z.property⟩, (e d).2)).val = d.val
-    rw [hd, e.symm_apply_apply]
+    grind [e.symm_apply_apply]
   right_inv w := by
     refine Prod.ext rfl ?_
-    exact congrArg (fun v : U × F => v.2)
+    exact congrArg (·.2)
       (e.apply_symm_apply (⟨f w.1.val, w.1.property⟩, w.2))
   continuous_toFun := by fun_prop
   continuous_invFun := by fun_prop
@@ -88,8 +78,7 @@ def coverPullbackDeck (f : C(X, Y)) (p : C(D, Y))
   toFun z := ⟨(z.val.1, h z.val.2), z.property.trans (hh z.val.2).symm⟩
   invFun z := ⟨(z.val.1, h.symm z.val.2), z.property.trans (by
     have he := hh (h.symm z.val.2)
-    rw [h.apply_symm_apply] at he
-    exact he)⟩
+    simpa using he)⟩
   left_inv z := by
     apply Subtype.ext
     exact Prod.ext rfl (h.symm_apply_apply z.val.2)
@@ -102,7 +91,7 @@ def coverPullbackDeck (f : C(X, Y)) (p : C(D, Y))
 theorem coverPullbackProjection_regular (f : C(X, Y)) (p : C(D, Y))
     (hp : Regular p) : Regular (coverPullbackProjection f p) := by
   intro a b hab
-  have hpab : p a.val.2 = p b.val.2 :=
+  have hpab  :=
     a.property.symm.trans ((congrArg f hab).trans b.property)
   obtain ⟨h, hh, he⟩ := hp a.val.2 b.val.2 hpab
   refine ⟨coverPullbackDeck f p h hh, fun _ => rfl, ?_⟩
@@ -134,10 +123,5 @@ def coverPullbackComposition {Z : Type} [TopologicalSpace Z]
   continuous_toFun := by fun_prop
   continuous_invFun := by fun_prop
 
-@[simp] theorem coverPullbackComposition_map {Z : Type} [TopologicalSpace Z]
-    (f : C(X, Y)) (g : C(Y, Z)) (p : C(D, Z))
-    (z : CoverPullback f (coverPullbackProjection g p)) :
-    coverPullbackMap (g.comp f) p (coverPullbackComposition f g p z) =
-      coverPullbackMap g p (coverPullbackMap f (coverPullbackProjection g p) z) := rfl
 
 end Whitehead

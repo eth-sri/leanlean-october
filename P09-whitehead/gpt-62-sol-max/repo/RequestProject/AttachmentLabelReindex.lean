@@ -45,10 +45,7 @@ def diskAttachmentReindexHomeomorph (r : C(BoundaryFamily J E, X)) (e : J ≃ K)
     (boundaryFamilyInclusion_isClosedEmbedding K E).injective
     (boundaryFamilyInclusion_isClosedEmbedding J E).injective
 
-@[simp] theorem diskAttachmentReindexHomeomorph_old
-    (r : C(BoundaryFamily J E, X)) (e : J ≃ K) (x : X) :
-    diskAttachmentReindexHomeomorph r e (old r (boundaryFamilyInclusion J E) x) =
-      old (reindexedDiskAttaching r e) (boundaryFamilyInclusion K E) x := rfl
+
 
 @[simp] theorem diskAttachmentReindexHomeomorph_cell
     (r : C(BoundaryFamily J E, X)) (e : J ≃ K) (d : DiskFamily J E) :

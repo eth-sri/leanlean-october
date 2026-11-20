@@ -6,9 +6,6 @@ public import RequestProject.BlockFamilyAmalgamation
 @[expose] public section
 
 /-! Genuine finite spine relators in the distinguished/internal order used by substitution. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -22,9 +19,9 @@ noncomputable def markedSpineBeta (m : NamedSpineRel q) : FreeGroup (MarkedSpine
 theorem freeGroup_map_swap_swap {α β : Type} (z : FreeGroup (α ⊕ β)) :
     FreeGroup.map Sum.swap (FreeGroup.map Sum.swap z) = z := by
   have h : (FreeGroup.map (Sum.swap : β ⊕ α → α ⊕ β)).comp
-      (FreeGroup.map (Sum.swap : α ⊕ β → β ⊕ α)) = MonoidHom.id _ := by
+      (FreeGroup.map Sum.swap) = MonoidHom.id _ := by
     apply FreeGroup.ext_hom
-    rintro (a | b) <;> simp
+    simp
   exact DFunLike.congr_fun h z
 
 noncomputable def markedSpineToOldHom :
@@ -49,18 +46,14 @@ theorem markedSpineToOldHom_rel (m : NamedSpineRel q) :
 /-- The distinguished generators have exactly the actual geometric marking. -/
 theorem markedSpineToOldHom_mark (x : Fin q × Bool) :
     markedSpineToOldHom q (FreeGroup.of (Sum.inl x)) =
-      pi1Map (genusSpineToOld q) (spineBase q) (Pi1.mk (spineMarkedLoop q x)) := by
-  change namedSpineToOldEquiv q
-    (QuotientGroup.mk (FreeGroup.map Sum.swap (FreeGroup.of (Sum.inl x)))) = _
-  simp only [FreeGroup.map.of, Sum.swap_inl]
-  exact namedSpineToOld_marked q x
+      pi1Map (genusSpineToOld q) (spineBase q) (Pi1.mk (spineMarkedLoop q x)) := namedSpineToOld_marked q x
 
 /-- The surface word is a consequence of the actual reordered finite spine relators. -/
 theorem markedSpine_surface_mem :
     commWord (fun x : Fin q × Bool => FreeGroup.of (Sum.inl x : MarkedSpineGen q))
       (finitePairs q) ∈ relSub (markedSpineBeta q) := by
-  have h : commWord (fun x : Fin q × Bool =>
-      FreeGroup.of (Sum.inr x : NamedSpineGen q)) (finitePairs q) ∈
+  have h : commWord (fun x  =>
+      FreeGroup.of (Sum.inr x)) (finitePairs q) ∈
       relSub (namedSpinePresentation q) := by
     apply (QuotientGroup.eq_one_iff _).mp
     change (QuotientGroup.mk' (relSub (namedSpinePresentation q)))
@@ -89,10 +82,7 @@ theorem markedSpine_filled {α Jr Sx : Type}
     (fun z hz => by
       obtain ⟨m, rfl⟩ := hz
       exact Subgroup.subset_normalClosure ⟨m, rfl⟩) (markedSpine_surface_mem q)
-  rw [map_commWord] at h
-  simp only [BlockFamily.blockSubst_of_inl] at h
-  rw [hrho s, map_commWord]
-  exact h
+  simp_all [map_commWord, BlockFamily.blockSubst_of_inl, hrho s]
 
 /-- The actual geometric block map supplies the relator checks for substitution.
 Only the receiver inclusion and the reading of the prescribed words remain inputs. -/

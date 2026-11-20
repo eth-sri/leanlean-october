@@ -11,9 +11,7 @@ not assume that the induced map on attachments is an equivalence. -/
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
@@ -25,14 +23,10 @@ variable [TopologicalSpace K] [TopologicalSpace Z]
 
 def attachmentBaseMap (a : A → P) (i : A → D) (hi : Function.Injective i)
     (e : C(P, K)) : C(Space a i, Space (e ∘ a) i) :=
-  desc a i ((⟨old (e ∘ a) i, old_continuous (e ∘ a) i⟩ : C(K, Space (e ∘ a) i)).comp e)
-    ⟨cell (e ∘ a) i, cell_continuous (e ∘ a) i⟩
+  desc a i ((Space.oldMap (e ∘ a) i).comp e)
+    (Space.cellMap (e ∘ a) i)
     (fun b => (cell_boundary (e ∘ a) i hi b).symm)
 
-omit [TopologicalSpace A] in
-@[simp] theorem attachmentBaseMap_old (a : A → P) (i : A → D)
-    (hi : Function.Injective i) (e : C(P, K)) (p : P) :
-    attachmentBaseMap a i hi e (old a i p) = old (e ∘ a) i (e p) := rfl
 
 omit [TopologicalSpace A] in
 @[simp] theorem attachmentBaseMap_cell (a : A → P) (i : A → D)
@@ -60,26 +54,29 @@ in the compact time coordinate, so the base need not be locally compact. -/
 def attachmentHomotopyPasting (a : A → P) (i : A → D)
     (H : C(I × P, Z)) (G : C(I × D, Z))
     (h : ∀ t b, H (t, a b) = G (t, i b)) : C(I × Space a i, Z) :=
-  (desc a i ((H.comp ⟨Prod.swap, continuous_swap⟩).curry)
-    ((G.comp ⟨Prod.swap, continuous_swap⟩).curry)
-    (fun b => ContinuousMap.ext (fun t => h t b))).uncurry.comp
-      ⟨Prod.swap, continuous_swap⟩
+  (desc a i (H.comp .prodSwap).curry
+    (G.comp .prodSwap).curry
+    (fun b => ContinuousMap.ext (fun t => h t b))).uncurry.comp .prodSwap
 
-omit [TopologicalSpace A] in
-@[simp] theorem attachmentHomotopyPasting_old (a : A → P) (i : A → D)
-    (H : C(I × P, Z)) (G : C(I × D, Z))
-    (h : ∀ t b, H (t, a b) = G (t, i b)) (t : I) (p : P) :
-    attachmentHomotopyPasting a i H G h (t, old a i p) = H (t, p) := rfl
 
 omit [TopologicalSpace A] in
 @[simp] theorem attachmentHomotopyPasting_cell (a : A → P) (i : A → D)
     (H : C(I × P, Z)) (G : C(I × D, Z))
     (h : ∀ t b, H (t, a b) = G (t, i b)) (t : I) (d : D) :
     attachmentHomotopyPasting a i H G h (t, cell a i d) = G (t, d) := by
-  dsimp only [attachmentHomotopyPasting, ContinuousMap.comp_apply,
-    ContinuousMap.uncurry_apply, ContinuousMap.coe_mk, Function.uncurry, Prod.swap]
-  change desc (Z := C(I, Z)) a i _ _ _ (cell a i d) t = _
-  rw [desc_cell]
-  rfl
+  simp [attachmentHomotopyPasting, ContinuousMap.comp_apply, ContinuousMap.uncurry_apply, desc_cell]
+
+/-- Compatible homotopies on the base and the new cell paste to a homotopy on the attachment. -/
+def attachmentHomotopy (a : A → P) (i : A → D) {f g : C(Space a i, Z)}
+    (H : C(I × P, Z)) (G : C(I × D, Z)) (h : ∀ t b, H (t, a b) = G (t, i b))
+    (h₀ : (∀ p, H (0, p) = f (old a i p)) ∧ ∀ d, G (0, d) = f (cell a i d))
+    (h₁ : (∀ p, H (1, p) = g (old a i p)) ∧ ∀ d, G (1, d) = g (cell a i d)) : f.Homotopy g where
+  toContinuousMap := attachmentHomotopyPasting a i H G h
+  map_zero_left z := by
+    exact attachment_induction z h₀.1 fun d =>
+      (attachmentHomotopyPasting_cell a i H G h 0 d).trans (h₀.2 d)
+  map_one_left z := by
+    exact attachment_induction z h₁.1 fun d =>
+      (attachmentHomotopyPasting_cell a i H G h 1 d).trans (h₁.2 d)
 
 end FiniteChains.RelativeAttachment

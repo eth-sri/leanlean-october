@@ -7,9 +7,7 @@ public import Mathlib.Algebra.Category.ModuleCat.Abelian
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -50,6 +48,13 @@ noncomputable def orderNerveRealizationMap (f : P → Q) (hf : Monotone f) :
     orderNerveRealization P ⟶ orderNerveRealization Q :=
   SSet.toTop.map (nerveMap hf.functor)
 
+/-- Identity vertex maps induce identity maps of the actual realization. -/
+theorem orderNerveRealizationMap_id (P : Type) [PartialOrder P]
+    (x : orderNerveRealization P) : orderNerveRealizationMap id monotone_id x = x := by
+  change SSet.toTop.map (𝟙 (nerve P)) x = x
+  rw [CategoryTheory.Functor.map_id]
+  rfl
+
 /-- The canonical realization-unit comparison is natural under actual monotone maps. -/
 theorem orderNerveRealizationUnit_natural (f : P → Q) (hf : Monotone f) :
     nerveMap hf.functor ≫ orderNerveRealizationUnit Q =
@@ -74,10 +79,7 @@ theorem orderNerveRealizationChainComparison_natural (f : P → Q) (hf : Monoton
       (AlgebraicTopology.alternatingFaceMapComplex (ModuleCat ℤ)).map _ =
     (AlgebraicTopology.alternatingFaceMapComplex (ModuleCat ℤ)).map _ ≫
       (AlgebraicTopology.alternatingFaceMapComplex (ModuleCat ℤ)).map _
-  dsimp only [mathlibOrderNerveModuleMap]
-  rw [← CategoryTheory.Functor.map_comp, ← CategoryTheory.Functor.map_comp,
-    ← CategoryTheory.Functor.whiskerRight_comp,
-    ← CategoryTheory.Functor.whiskerRight_comp, orderNerveRealizationUnit_natural]
+  simp [mathlibOrderNerveModuleMap, ← CategoryTheory.Functor.map_comp, ← CategoryTheory.Functor.whiskerRight_comp, orderNerveRealizationUnit_natural]
 
 /-- Naturality also holds on actual categorical second homology. -/
 theorem orderNerveRealizationH2Comparison_natural (f : P → Q) (hf : Monotone f) :

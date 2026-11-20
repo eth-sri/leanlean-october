@@ -1,14 +1,12 @@
 module
 
 public import RequestProject.QCubeCoordinateBoundaryChain
+public import RequestProject.FinsuppBasis
 public import RequestProject.QCubeCubicalThreeBoundary
 
 @[expose] public section
 
 /-! The six-face coefficient orientation agrees with the collapse's actual incidences. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -82,12 +80,10 @@ theorem qThreeCubicalBoundary_coordinate (r : QThreeCube A →₀ ℤ) :
     Finsupp.lmapDomain ℤ ℤ (fun s : QSquare A => qCubeToCoordinate s.1)
       (qThreeCubicalBoundary r) =
       Finsupp.linearCombination ℤ (fun c : QThreeCube A => qCubeCoordinateFacetChain c.1) r := by
-  induction r using Finsupp.induction_linear with
-  | zero => simp
-  | add r s hr hs => rw [map_add, map_add, hr, hs, map_add]
-  | single c n =>
-      rw [qThreeCubicalBoundary, Finsupp.linearCombination_single, map_smul,
-        qThreeCubicalFaceBoundary_coordinate, Finsupp.linearCombination_single]
+  finsupp_basis r
+  intro c
+  rw [qThreeCubicalBoundary, Finsupp.linearCombination_single, map_smul,
+    qThreeCubicalFaceBoundary_coordinate, Finsupp.linearCombination_single]
 
 /-- Ordinary coordinate transport of every dimension-bounded strict three-boundary is
 an actual finite combination of the cube boundaries used by the collapse. -/

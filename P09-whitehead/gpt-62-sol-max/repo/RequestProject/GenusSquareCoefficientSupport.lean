@@ -46,12 +46,9 @@ theorem markedSpine_square_coefficient_support (d : (markedSpineCx q).F →₀ �
   change normalizeOrdChain2 (chain2 (markedSpineToFullCube q) d)
     (squareFlag s.1 (qSquareLeft s) (qSquareRight s) (qSquare_directions_ne s)
       (qSquare_free_directions s) (false, 0, false)) ≠ 0 at hs
-  obtain ⟨t, ht, he⟩ := normalizeOrdChain2_support _ _ (Finsupp.mem_support_iff.mpr hs)
-  change t ∈ (Finsupp.mapDomain (markedSpineToFullCube q).onF d).support at ht
-  obtain ⟨f, _, hf⟩ := Finset.mem_image.mp (Finsupp.mapDomain_support ht)
-  have htop := congrArg (fun t => t.2.2) he
+  obtain ⟨f, _, he⟩ := normalizeOrdChain2_image_support _ _ (Finsupp.mem_support_iff.mpr hs)
+  have htop := congrArg (·.2.2) he
   simp only [squareFlag_top] at htop
-  rw [← hf] at htop
   obtain ⟨a, ha⟩ := markedSpineFace_top_old q f
   have hmem := f.1.1.2.2.2
   rw [ha] at hmem

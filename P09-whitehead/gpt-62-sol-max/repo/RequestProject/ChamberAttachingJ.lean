@@ -56,9 +56,7 @@ theorem jSet_iff {w : CayGroup A} {p : Sph A} :
   constructor
   · rintro ⟨s, hs, hp, hsp⟩
     exact ⟨hp, ⟨s, Finset.mem_inter.2 ⟨hsp, hs⟩⟩⟩
-  · rintro ⟨hp, s, hs⟩
-    obtain ⟨hsp, hsd⟩ := Finset.mem_inter.1 hs
-    exact ⟨s, hsd, hp, hsp⟩
+  grind +locals
 
 /-- **The corrected intersection formula.**  For a cell of the chamber `F_w`, lying in some
 other chamber `F_v` with `ℓ(v) ≤ ℓ(w)` — ties included — is equivalent to lying in
@@ -87,7 +85,7 @@ theorem mem_shorter_chamber_iff_jSet {w : CayGroup A} {p : Sph A} (hp : InChambe
 
 omit [Fintype V] in
 theorem specialSub_empty : specialSub A (∅ : Set V) = ⊥ := by
-  rw [specialSub, Set.image_empty, Subgroup.closure_empty]
+  simp [specialSub]
 
 omit [Fintype V] in
 /-- The apex of the chamber `F_g` is the cell `{g}`: its representative is `g` itself. -/
@@ -103,9 +101,7 @@ theorem chamberPt_empty_rep (g : CayGroup A) :
 
 omit [DecidableEq V] [Fintype V] in
 theorem isSimplex_singleton (s : V) : IsSimplex A {s} := by
-  intro a ha b hb hab
-  rw [Finset.mem_singleton] at ha hb
-  exact absurd (ha.trans hb.symm) hab
+  intro a ha b hb hab <;> simp_all
 
 end Davis
 end FiniteChains

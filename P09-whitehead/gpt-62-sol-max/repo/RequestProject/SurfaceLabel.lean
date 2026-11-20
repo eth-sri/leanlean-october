@@ -45,8 +45,7 @@ variable {α J : Type u} {w : J → List (α × Bool)} {j₀ : J}
 
 theorem fin_succ_val (p : Fin M) : (p + 1).val = (p.val + 1) % M := by
   show (p.val + (1 : Fin M).val) % M = (p.val + 1) % M
-  have h1 : (1 : Fin M).val = 1 % M := rfl
-  rw [h1, Nat.add_mod_mod]
+  simp
 
 /-! ### The circle of the relator -/
 
@@ -68,22 +67,21 @@ include hM
 
 omit [NeZero M] in
 theorem half_lt (p : Fin M) : p.val / 2 < (w j₀).length := by
-  have := p.isLt
   omega
 
 omit [NeZero M] in
 theorem aFun_cVtx (p : Fin M) : aFun w (cVtx w j₀ p) = vertLab (w j₀) p.val := by
-  obtain ⟨q, hq⟩ := getElem?_half (l := w j₀) (p := p.val) (by have := p.isLt; omega)
+  obtain ⟨q, hq⟩ := getElem?_half (l := w j₀) (p := p.val) (by omega)
   by_cases h : p.val % 2 = 0
   · rw [cVtx, if_pos h, aFun_pt_cor, vertLab_of_even h]
   · rw [cVtx, if_neg h, aFun_pt_cmid_of_get w hq, vertLab_of_odd (by omega) hq]
 
 omit [NeZero M] in
 theorem aFun_cEdg (p : Fin M) : aFun w (cEdg w j₀ p) = edgeLab (w j₀) p.val := by
-  obtain ⟨q, hq⟩ := getElem?_half (l := w j₀) (p := p.val) (by have := p.isLt; omega)
+  obtain ⟨q, hq⟩ := getElem?_half (l := w j₀) (p := p.val) (by omega)
   by_cases h : p.val % 2 = 0
   · rw [cEdg, if_pos h, aFun_pt_cedgL_of_get w hq, edgeLab_eq hq, if_pos h]
-  · rw [cEdg, if_neg h, aFun_pt_cedgR_of_get w hq, edgeLab_eq hq, if_neg h]
+  simp_all [cEdg, aFun_pt_cedgR_of_get w hq, edgeLab_eq hq]
 
 omit [NeZero M] in
 theorem cVtx_le_cEdg (p : Fin M) : cVtx w j₀ p ≤ cEdg w j₀ p := by
@@ -94,54 +92,30 @@ theorem cVtx_le_cEdg (p : Fin M) : cVtx w j₀ p ≤ cEdg w j₀ p := by
     exact TCirc.cmid_le_cedgR w (half_lt hM p)
 
 theorem cVtx_succ_le_cEdg (p : Fin M) : cVtx w j₀ (p + 1) ≤ cEdg w j₀ p := by
-  have hlt := p.isLt
-  have hsucc := fin_succ_val p
+  have hp := p.isLt
+  have hmod : (p.val + 1) % M % 2 = (p.val + 1) % 2 := by
+    exact Nat.mod_mod_of_dvd _ (hM.symm ▸ dvd_mul_right 2 _)
+  simp only [cVtx, cEdg, fin_succ_val, hmod]
   by_cases h : p.val % 2 = 0
-  · -- the next position is the midpoint of the same letter
-    have hlt1 : p.val + 1 < M := by omega
-    have hval : (p + 1).val = p.val + 1 := by rw [hsucc, Nat.mod_eq_of_lt hlt1]
-    have hodd : (p + 1).val % 2 ≠ 0 := by rw [hval]; omega
-    have hhalf : (p + 1).val / 2 = p.val / 2 := by rw [hval]; omega
-    rw [cVtx, cEdg, if_neg hodd, if_pos h, hhalf]
+  · rw [if_neg (by omega), if_pos h, Nat.mod_eq_of_lt (by omega),
+      show (p.val + 1) / 2 = p.val / 2 by omega]
     exact TCirc.cmid_le_cedgL w (half_lt hM p)
-  · -- the next position is the corner in front of the next letter
-    rw [cVtx, cEdg, if_neg h]
-    rcases Nat.lt_or_ge (p.val + 1) M with hlt1 | hge
-    · have hval : (p + 1).val = p.val + 1 := by rw [hsucc, Nat.mod_eq_of_lt hlt1]
-      have heven : (p + 1).val % 2 = 0 := by rw [hval]; omega
-      have hhalf : (p + 1).val / 2 = p.val / 2 + 1 := by rw [hval]; omega
-      have hcs : TCirc.csucc w j₀ (p.val / 2) = p.val / 2 + 1 := by
-        rw [TCirc.csucc, Nat.mod_eq_of_lt (by omega)]
-      rw [if_pos heven, hhalf, ← hcs]
-      exact TCirc.cor_csucc_le_cedgR w (half_lt hM p)
-    · have hval : (p + 1).val = 0 := by
-        rw [hsucc, show p.val + 1 = M by omega, Nat.mod_self]
-      have heven : (p + 1).val % 2 = 0 := by rw [hval]
-      have hhalf : (p + 1).val / 2 = 0 := by rw [hval]
-      have hcs : TCirc.csucc w j₀ (p.val / 2) = 0 := by
-        rw [TCirc.csucc, show p.val / 2 + 1 = (w j₀).length by omega, Nat.mod_self]
-      rw [if_pos heven, hhalf, ← hcs]
-      exact TCirc.cor_csucc_le_cedgR w (half_lt hM p)
-
-/-! ### The labels of the boundary -/
+  · rw [if_pos (by omega), if_neg h,
+      show (p.val + 1) % M / 2 = TCirc.csucc w j₀ (p.val / 2) by
+        rw [congrArg (fun m => (p.val + 1) % m) hM, Nat.mod_mul_right_div_self, TCirc.csucc,
+          show (p.val + 1) / 2 = p.val / 2 + 1 by omega]]
+    exact TCirc.cor_csucc_le_cedgR w (half_lt hM p)
 
 omit [NeZero M] in
 theorem vertLab_le_edgeLab' (p : Fin M) :
-    vertLab (w j₀) p.val ≤ edgeLab (w j₀) p.val :=
-  vertLab_le_edgeLab (by have := p.isLt; omega)
+    vertLab (w j₀) p.val ≤ edgeLab (w j₀) p.val := by
+  rw [← aFun_cVtx hM, ← aFun_cEdg hM]
+  exact aFun_monotone w (cVtx_le_cEdg hM p)
 
 theorem vertLab_succ_le_edgeLab' (p : Fin M) :
     vertLab (w j₀) (p + 1).val ≤ edgeLab (w j₀) p.val := by
-  have hlt := p.isLt
-  have hsucc := fin_succ_val p
-  rcases Nat.lt_or_ge (p.val + 1) M with hlt1 | hge
-  · have hval : (p + 1).val = p.val + 1 := by rw [hsucc, Nat.mod_eq_of_lt hlt1]
-    rw [hval]
-    exact vertLab_succ_le_edgeLab (by omega)
-  · have hval : (p + 1).val = 0 := by
-      rw [hsucc, show p.val + 1 = M by omega, Nat.mod_self]
-    rw [hval, vertLab_of_even rfl]
-    exact base_le_edgeLab (by omega)
+  rw [← aFun_cVtx hM, ← aFun_cEdg hM]
+  exact aFun_monotone w (cVtx_succ_le_cEdg hM p)
 
 /-! ### The marking -/
 
@@ -204,7 +178,6 @@ theorem iCirc_cVtx_succ_le_bed (p : Fin M) :
 
 omit [NeZero M] [DecidableEq κ] [DecidableEq ι] in
 theorem vlab_le_elb (p : Fin M) : iRose w (vlab (vc p)) ≤ iRose w (elb (ec p)) := by
-  refine (iRose_monotone w) ?_
   rw [hvlab p, helb p]
   exact vertLab_le_edgeLab' hM p
 
@@ -219,124 +192,18 @@ omit [DecidableEq κ] [DecidableEq ι] in
 /-- **The marking is monotone on strict faces.** -/
 theorem gLab_le_of_plt {x y : Cell κ ι M} (h : plt vc ec x y) :
     gLab w j₀ vc ec vlab elb x ≤ gLab w j₀ vc ec vlab elb y := by
-  cases x with
-  | vtx v =>
-      cases y with
-      | bed e =>
-          obtain ⟨i, hi, hv⟩ := h
-          show iRose w (vlab v) ≤ iRose w (elb e)
-          rw [← hi]
-          rcases hv with rfl | rfl
-          · exact vlab_le_elb hM hvlab helb i
-          · exact vlab_succ_le_elb hM hvlab helb i
-      | dia p =>
-          have hv : vc p = v := h
-          show iRose w (vlab v) ≤ iRose w (vlab (vc p))
-          rw [hv]
-      | gdi p =>
-          have hv : vc p = v := h
-          show iRose w (vlab v) ≤ iRose w (elb (ec p))
-          rw [← hv]
-          exact vlab_le_elb hM hvlab helb p
-      | tr1 p =>
-          show iRose w (vlab v) ≤ iRose w (elb (ec p))
-          rcases h with hv | hv
-          · rw [← hv]; exact vlab_le_elb hM hvlab helb p
-          · rw [← hv]; exact vlab_succ_le_elb hM hvlab helb p
-      | tr2 p =>
-          have hv : vc p = v := h
-          show iRose w (vlab v) ≤ iRose w (elb (ec p))
-          rw [← hv]
-          exact vlab_le_elb hM hvlab helb p
-      | _ => simp [plt] at h
-  | cvx q =>
-      cases y with
-      | ced r =>
-          show iCirc w (cVtx w j₀ q) ≤ iCirc w (cEdg w j₀ r)
-          rcases h with rfl | rfl
-          · exact (iCirc_monotone w) (cVtx_le_cEdg hM q)
-          · exact (iCirc_monotone w) (cVtx_succ_le_cEdg hM r)
-      | dia r =>
-          have hq : q = r := h
-          show iCirc w (cVtx w j₀ q) ≤ iRose w (vlab (vc r))
-          rw [hq]
-          exact iCirc_cVtx_le_dia hM hvlab r
-      | gdi r =>
-          have hq : q = r + 1 := h
-          show iCirc w (cVtx w j₀ q) ≤ iRose w (elb (ec r))
-          rw [hq]
-          exact iCirc_cVtx_succ_le_bed hM helb r
-      | rad r =>
-          show iCirc w (cVtx w j₀ q) ≤ apexOf w j₀
-          exact iCirc_cVtx_le_apex hM q
-      | tr1 p =>
-          have hq : q = p + 1 := h
-          show iCirc w (cVtx w j₀ q) ≤ iRose w (elb (ec p))
-          rw [hq]
-          exact iCirc_cVtx_succ_le_bed hM helb p
-      | tr2 p =>
-          show iCirc w (cVtx w j₀ q) ≤ iRose w (elb (ec p))
-          rcases h with rfl | rfl
-          · exact iCirc_cVtx_le_bed hM helb q
-          · exact iCirc_cVtx_succ_le_bed hM helb p
-      | inn p =>
-          show iCirc w (cVtx w j₀ q) ≤ apexOf w j₀
-          exact iCirc_cVtx_le_apex hM q
-      | _ => simp [plt] at h
-  | ctr =>
-      cases y with
-      | rad p => exact le_refl _
-      | inn p => exact le_refl _
-      | _ => simp [plt] at h
-  | bed e =>
-      cases y with
-      | tr1 p =>
-          have he : e = ec p := h
-          show iRose w (elb e) ≤ iRose w (elb (ec p))
-          rw [he]
-      | _ => simp [plt] at h
-  | ced r =>
-      cases y with
-      | tr2 p =>
-          have hr : r = p := h
-          show iCirc w (cEdg w j₀ r) ≤ iRose w (elb (ec p))
-          rw [hr]
-          exact iCirc_cEdg_le_bed hM helb p
-      | inn p =>
-          show iCirc w (cEdg w j₀ r) ≤ apexOf w j₀
-          exact iCirc_cEdg_le_apex hM r
-      | _ => simp [plt] at h
-  | dia r =>
-      cases y with
-      | tr1 p =>
-          have hr : r = p + 1 := h
-          show iRose w (vlab (vc r)) ≤ iRose w (elb (ec p))
-          rw [hr]
-          exact vlab_succ_le_elb hM hvlab helb p
-      | tr2 p =>
-          have hr : r = p := h
-          show iRose w (vlab (vc r)) ≤ iRose w (elb (ec p))
-          rw [hr]
-          exact vlab_le_elb hM hvlab helb p
-      | _ => simp [plt] at h
-  | gdi r =>
-      cases y with
-      | tr1 p =>
-          have hr : r = p := h
-          show iRose w (elb (ec r)) ≤ iRose w (elb (ec p))
-          rw [hr]
-      | tr2 p =>
-          have hr : r = p := h
-          show iRose w (elb (ec r)) ≤ iRose w (elb (ec p))
-          rw [hr]
-      | _ => simp [plt] at h
-  | rad r =>
-      cases y with
-      | inn p => exact le_refl _
-      | _ => simp [plt] at h
-  | tr1 p => simp [plt] at h
-  | tr2 p => simp [plt] at h
-  | inn p => simp [plt] at h
+  have hvl := vlab_le_elb hM hvlab helb
+  have hvs := vlab_succ_le_elb hM hvlab helb
+  have hd := iCirc_cVtx_le_dia hM hvlab
+  have hb := iCirc_cVtx_le_bed hM helb
+  have hbs := iCirc_cVtx_succ_le_bed hM helb
+  have he := iCirc_cEdg_le_bed hM helb
+  have hva := iCirc_cVtx_le_apex hM
+  have hea := iCirc_cEdg_le_apex hM
+  have hce p := iCirc_monotone w (cVtx_le_cEdg hM p)
+  have hces p := iCirc_monotone w (cVtx_succ_le_cEdg hM p)
+  cases x <;> cases y <;> simp only [plt, gLab] at h ⊢ <;>
+    grind only [le_refl]
 
 variable (hc : Compat vc ec)
 
@@ -345,12 +212,9 @@ def gHom : SCell vc ec hc →o PresPos w where
   toFun x := gLab w j₀ vc ec vlab elb x
   monotone' := by
     rintro x y (rfl | h)
-    · exact le_refl _
+    · aesop
     · exact gLab_le_of_plt hM hvlab helb h
 
-omit [DecidableEq κ] [DecidableEq ι] in
-@[simp] theorem gHom_apply (x : Cell κ ι M) :
-    gHom hM hvlab helb hc (toS vc ec hc x) = gLab w j₀ vc ec vlab elb x := rfl
 
 /-- **The attaching map of the surface block**: the marking, read on the chains of the
 barycentric subdivision. -/

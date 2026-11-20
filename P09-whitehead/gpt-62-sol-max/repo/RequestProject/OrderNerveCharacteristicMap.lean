@@ -5,9 +5,6 @@ public import Mathlib.Logic.Equiv.PartialEquiv
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -29,11 +26,11 @@ noncomputable def orderNerveCharacteristicFunction {P : Type} [PartialOrder P]
     {n : ℕ} (s : (nerve P).nonDegenerate n) :
     ContinuousOn (orderNerveCharacteristicFunction s) (Metric.closedBall 0 1) := by
   apply continuousOn_iff_continuous_restrict.mpr
-  have h : (Metric.closedBall 0 1 : Set (Fin n → ℝ)).domRestrict
+  have h : (Metric.closedBall 0 1).domRestrict
       (orderNerveCharacteristicFunction s) = orderNerveClosedBallChart s := by
     funext x
     exact orderNerveCharacteristicFunction_closedBall s x
-  rw (config := { transparency := .default }) [h]
+  erw [h]
   exact (orderNerveClosedBallChart s).continuous
 
  theorem orderNerveCharacteristicFunction_injOn {P : Type} [PartialOrder P]
@@ -70,19 +67,18 @@ theorem orderNerveCharacteristicMap_continuousOn_symm {P : Type} [PartialOrder P
   let g : e.target → (Metric.closedBall 0 1 : Set (Fin n → ℝ)) := fun x =>
     ⟨e.symm x.val, Metric.ball_subset_closedBall (by
       have h := e.map_target x.property
-      change e.symm x.val ∈ Metric.ball 0 1 at h
-      exact h)⟩
-  have hc : Topology.IsEmbedding (orderNerveClosedBallChart s) :=
+      assumption)⟩
+  have hc  :=
     ((orderNerveClosedBallChart s).continuous.isClosedEmbedding
       (orderNerveClosedBallChart_injective s)).isEmbedding
   have hg : Continuous g := by
     apply hc.isInducing.continuous_iff.mpr
-    have he : orderNerveClosedBallChart s ∘ g = (Subtype.val : e.target → orderNerveRealization P) := by
+    have he : orderNerveClosedBallChart s ∘ g = Subtype.val := by
       funext x
       have h := orderNerveCharacteristicFunction_closedBall s (g x)
       change e (e.symm x.val) = orderNerveClosedBallChart s (g x) at h
       exact h.symm.trans (e.right_inv x.property)
-    rw (config := { transparency := .default }) [he]
+    erw [he]
     exact continuous_subtype_val
   apply continuousOn_iff_continuous_restrict.mpr
   exact continuous_subtype_val.comp hg

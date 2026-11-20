@@ -91,7 +91,7 @@ theorem vertexPuncture_intersection_connected :
 
 theorem vertexPuncturedCube_simplyConnected : SimplyConnected (orderCx VertexPuncturedCube) := by
   have hnull := htpy_nil_of_pathIn_union
-    (U := fun _ : VertexPuncturedCube => True)
+    (U := fun _  => True)
     (A := vertexPunctureLeft) (B := vertexPunctureRight)
     (fun c => ⟨fun _ => vertexPuncture_cover c, fun _ => trivial⟩)
     (fun c d h _ _ => vertexPuncture_unmixed c d h)

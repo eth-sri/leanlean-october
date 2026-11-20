@@ -12,9 +12,6 @@ public import RequestProject.TopologicalSingular.BasedTetrahedronDisks
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -28,13 +25,13 @@ theorem stickSimplex_mem_codimTwo_of_mem_cubeCodimTwo {d : ℕ} (t : Fin d → I
   | zero => exact Fin.elim0 i
   | succ m =>
       obtain ⟨k, hk⟩ := Fin.exists_succAbove_eq hij.symm
-      let v : Fin m → I := Fin.removeNth i t
+      let v  := Fin.removeNth i t
       have hv : v ∈ Cube.boundary (Fin m) := by
         refine ⟨k, ?_⟩
         change t (i.succAbove k) = 0 ∨ t (i.succAbove k) = 1
         rw [hk]
         exact hj
-      have hrep : t = cubeFace i (t i) v :=
+      have hrep  :=
         (Fin.insertNth_self_removeNth i t).symm
       rw [hrep]
       exact stickSimplex_cubeFace_mem_codimTwo i (t i) hi v hv
@@ -78,8 +75,7 @@ theorem tetrahedronStickShell_lower_constant (tau : Simplex X 3)
   intro t ht
   have hrep : t = cubeFace i 0 (Fin.removeNth i t) := by
     change t = i.insertNth 0 (Fin.removeNth i t)
-    rw [← ht]
-    exact (Fin.insertNth_self_removeNth i t).symm
+    simp_all [← ht]
   rw [hrep]
   obtain ⟨j, k, hjk, hj, hk⟩ :=
     stickSimplex_cubeFace_zero_mem_codimTwo i hi (Fin.removeNth i t)
@@ -93,12 +89,11 @@ theorem tetrahedronStickShell_upper_constant (tau : Simplex X 3)
   intro t ht
   have hrep : t = cubeFace i 1 (Fin.removeNth i t) := by
     change t = i.insertNth 1 (Fin.removeNth i t)
-    rw [← ht]
-    exact (Fin.insertNth_self_removeNth i t).symm
+    simp_all [← ht]
   rw [hrep]
   change tau (stickSimplex 3 (cubeFace i 1 (Fin.removeNth i t))) = x
   rw [stickSimplex_cubeFace_one, ← simplex_face_eq_faceMap]
-  exact congrArg (fun f : Simplex X 2 => f (stickSimplex 2 (Fin.removeNth i t))) hi
+  exact congrArg (fun f  => f (stickSimplex 2 (Fin.removeNth i t))) hi
 
 noncomputable def tetrahedronFacePi2Class (tau : Simplex X 3)
     (hedge : ∀ (i : Fin 4) (j : Fin 3),
@@ -133,18 +128,18 @@ theorem tetrahedronStickShell_face_relation (tau : Simplex X 3)
   let S := tetrahedronStickShell tau hedge
   have hleading : S.LeadingFacesConstant := by
     intro i
-    have hi : i = 0 := Fin.eq_zero i
+    have hi  := Fin.eq_zero i
     subst i
     exact ⟨tetrahedronStickShell_lower_constant tau hedge 0 (by decide),
       tetrahedronStickShell_upper_constant tau hedge 0 hzero⟩
   have h := S.lastTwoFaceClass_relation hleading
   change S.upperFaceClass 1 + S.lowerFaceClass 2 = S.upperFaceClass 2 + S.lowerFaceClass 1 at h
-  have hlower : S.lowerFaceClass 1 = 0 :=
+  have hlower  :=
     S.lowerFaceClass_eq_zero 1 (tetrahedronStickShell_lower_constant tau hedge 1 (by decide))
   rw [hlower, add_zero] at h
   simpa only [S, tetrahedronStickShell_upperFaceClass,
     tetrahedronStickShell_lowerLastFaceClass,
-    show (1 : Fin 3).castSucc = (1 : Fin 4) by decide,
-    show (2 : Fin 3).castSucc = (2 : Fin 4) by decide] using h
+    show (1 : Fin 3).castSucc = 1 by decide,
+    show (2 : Fin 3).castSucc = 2 by decide] using h
 
 end FiniteChains.TopologicalSingular

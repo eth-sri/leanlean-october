@@ -6,9 +6,6 @@ public import RequestProject.OrderNerveRealizationNondegenerate
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -19,28 +16,13 @@ theorem topologicalSimplex_zero_coordinate_face {n : ℕ}
     (hi : z.down.weights i = 0) :
     ∃ w : SimplexCategory.toTop.obj ⦋n⦌, SimplexCategory.toTop.map (SimplexCategory.δ i) w = z := by
   let zold := TopologicalSingular.simplexCoordinates (n + 1) z.down
-  have hiold : zold.val i = 0 := hi
-  let w : stdSimplex ℝ (Fin (n + 1)) :=
-    ⟨fun j => zold.val (i.succAbove j), fun j => zold.property.1 _, by
-      have hs := zold.property.2
-      rw [Fin.sum_univ_succAbove (fun j : Fin (n + 2) => zold.val j) i,
-        hiold, zero_add] at hs
-      exact hs⟩
+  obtain ⟨w, hw⟩ := TopologicalSingular.exists_simplex_map_succAbove zold i hi
   refine ⟨ULift.up ((TopologicalSingular.simplexCoordinates n).symm w), ?_⟩
   apply ULift.ext
   apply (TopologicalSingular.simplexCoordinates (n + 1)).injective
   change TopologicalSingular.simplexCoordinates (n + 1)
     (Convexity.StdSimplex.map i.succAbove ((TopologicalSingular.simplexCoordinates n).symm w)) = zold
-  rw [TopologicalSingular.simplexCoordinates_map, Homeomorph.apply_symm_apply]
-  apply Subtype.ext
-  funext k
-  change (FunOnFinite.linearMap ℝ ℝ i.succAbove w.val) k = zold.val k
-  rw [FunOnFinite.linearMap_apply_apply]
-  by_cases hk : k = i
-  · subst k
-    simp [Fin.succAbove_ne, hiold]
-  · obtain ⟨j, rfl⟩ := Fin.exists_succAbove_eq hk
-    simp [w, Finset.sum_filter]
+  rwa [TopologicalSingular.simplexCoordinates_map, Homeomorph.apply_symm_apply]
 
 /-- Every point on a nondegenerate simplex belongs to the interior of a
 nondegenerate face of no larger dimension. -/
@@ -53,22 +35,13 @@ theorem orderNerveRealizationSimplex_interior_representative (P : Type) [Partial
   induction n with
   | zero =>
     refine ⟨0, le_rfl, s, z, ?_, rfl⟩
-    intro i
-    haveI : Subsingleton (Fin (⦋0⦌.len + 1)) := by
-      simpa only [SimplexCategory.len_mk] using (inferInstance : Subsingleton (Fin 1))
-    have h := z.down.total_of_fintype
-    change (∑ j : Fin 1, z.down.weights j) = 1 at h
-    simp only [Fintype.sum_unique] at h
-    have he : z.down.weights i = 1 :=
-      (congrArg z.down.weights (Subsingleton.elim i default)).trans h
-    rw [he]
-    norm_num
+    simp
   | succ n ih =>
     by_cases hz : ∀ i, 0 < z.down.weights i
     · exact ⟨n + 1, le_rfl, s, z, hz, rfl⟩
     · push_neg at hz
       obtain ⟨i, hi⟩ := hz
-      have hi0 : z.down.weights i = 0 := le_antisymm hi (z.down.weights_nonneg i)
+      have hi0  := le_antisymm hi (z.down.weights_nonneg i)
       obtain ⟨w, hw⟩ := topologicalSimplex_zero_coordinate_face z i hi0
       have hs := (PartialOrder.mem_nerve_nonDegenerate_iff_injective s.val).mp s.property
       have ht : (nerve P).map (SimplexCategory.δ i).op s.val ∈
@@ -78,12 +51,7 @@ theorem orderNerveRealizationSimplex_interior_representative (P : Type) [Partial
         exact hs.comp Fin.succAbove_right_injective
       obtain ⟨m, hm, t, u, hu, he⟩ := ih ⟨_, ht⟩ w
       refine ⟨m, hm.trans (Nat.le_succ n), t, u, hu, he.trans ?_⟩
-      have h := congrArg (fun k => k w)
-        (orderNerveRealizationSimplex_operator P (SimplexCategory.δ i) s.val)
-      change orderNerveRealizationSimplex P s.val
-        (SimplexCategory.toTop.map (SimplexCategory.δ i) w) = _ at h
-      rw [hw] at h
-      exact h.symm
+      rw [← orderNerveRealizationSimplex_operator, hw]
 
 /-- Every actual realization point lies in an actual nondegenerate simplex interior. -/
 theorem orderNerveRealization_interior_cover (P : Type) [PartialOrder P]
@@ -105,15 +73,10 @@ theorem orderNerveRealizationSimplex_boundary_face {P : Type} [PartialOrder P]
         orderNerveRealizationSimplex P s z := by
   push_neg at hz
   obtain ⟨i, hi⟩ := hz
-  have hi0 : z.down.weights i = 0 := le_antisymm hi (z.down.weights_nonneg i)
+  have hi0  := le_antisymm hi (z.down.weights_nonneg i)
   obtain ⟨w, hw⟩ := topologicalSimplex_zero_coordinate_face z i hi0
   refine ⟨i, w, ?_⟩
-  have h := congrArg (fun k => k w)
-    (orderNerveRealizationSimplex_operator P (SimplexCategory.δ i) s)
-  change orderNerveRealizationSimplex P s
-    (SimplexCategory.toTop.map (SimplexCategory.δ i) w) = _ at h
-  rw [hw] at h
-  exact h.symm
+  rw [← orderNerveRealizationSimplex_operator, hw]
 
 /-- Every face of an actual nondegenerate poset-nerve simplex remains nondegenerate. -/
 theorem orderNerve_nonDegenerate_face {P : Type} [PartialOrder P]

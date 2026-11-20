@@ -1,14 +1,13 @@
 module
 
 public import RequestProject.RelatorCircleAttachingStrict
+public import RequestProject.FinsuppBasis
 public import RequestProject.PresCylinderCollapsedRoseLinear
 public import RequestProject.RoseCoverLetterChain
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -27,7 +26,7 @@ theorem cylinderCoverCollapsedCircle_projection (x : RelatorCircle w j) :
     cylinderCoverRoseEnd w f (cylinderCoverCollapsedCircle w j f hf m x) = aFun w x.val := by
   have h := cylinderCoverRoseEnd_projection w f (cylinderCoverCollapsedCircle w j f hf m x)
   change cylIn (aHom w) _ = f (cylinderCoverCollapse w hf (m x)) at h
-  rw (config := { transparency := .default }) [cylinderCoverCollapse_projection w hf (m x), hp x] at h
+  erw [cylinderCoverCollapse_projection w hf (m x), hp x] at h
   exact Sum.inl.inj h
 
 include hm hp in
@@ -39,7 +38,7 @@ theorem cylinderCoverCollapsedCircle_strictMono :
   intro he
   have hs : cylinderCoverCollapsedCircle w j f hf m x = cylinderCoverCollapsedCircle w j f hf m y := Subtype.ext he
   have hp' := congrArg (cylinderCoverRoseEnd w f) hs
-  rw (config := { transparency := .default }) [cylinderCoverCollapsedCircle_projection w j f hf m hp,
+  erw [cylinderCoverCollapsedCircle_projection w j f hf m hp,
     cylinderCoverCollapsedCircle_projection w j f hf m hp] at hp'
   exact (relatorCircleAttaching_strictMono w j h).ne hp'
 
@@ -53,23 +52,21 @@ theorem cylinderCoverCollapsedCircle_chain_inclusion
       normalizedStrictChain1 (cylinderCoverCollapse w hf) (cylinderCoverCollapse_monotone w hf)
         (chain1 (strictOrderCxMap m hm) c) := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
-  | single e n =>
-    change Finsupp.mapDomain (strictSubposetIncl (cylinderCoverRoseSet w f)).onE
-      (Finsupp.mapDomain (strictOrderCxMap (cylinderCoverCollapsedCircle w j f hf m)
-        (cylinderCoverCollapsedCircle_strictMono w j f hf m hm hp)).onE (Finsupp.single e n)) =
-      normalizedStrictChain1 _ _ (Finsupp.mapDomain (strictOrderCxMap m hm).onE (Finsupp.single e n))
-    rw (config := { transparency := .default }) [Finsupp.mapDomain_single, Finsupp.mapDomain_single, Finsupp.mapDomain_single,
-      normalizedStrictChain1_single]
-    have hn : cylinderCoverCollapse w hf (m e.val.1) ≠ cylinderCoverCollapse w hf (m e.val.2) :=
-      fun he => (cylinderCoverCollapsedCircle_strictMono w j f hf m hm hp e.property).ne
-        (Subtype.ext he)
-    change Finsupp.single _ n = n • normalizeOrdEdge
-      ⟨(cylinderCoverCollapse w hf (m e.val.1), cylinderCoverCollapse w hf (m e.val.2)), _⟩
-    simp only [normalizeOrdEdge, dif_neg hn, Finsupp.smul_single, smul_eq_mul, mul_one]
-    rfl
+  finsupp_basis c
+  intro e
+  change Finsupp.mapDomain (strictSubposetIncl (cylinderCoverRoseSet w f)).onE
+    (Finsupp.mapDomain (strictOrderCxMap (cylinderCoverCollapsedCircle w j f hf m)
+      (cylinderCoverCollapsedCircle_strictMono w j f hf m hm hp)).onE (Finsupp.single e 1)) =
+    normalizedStrictChain1 _ _ (Finsupp.mapDomain (strictOrderCxMap m hm).onE (Finsupp.single e 1))
+  erw [Finsupp.mapDomain_single, Finsupp.mapDomain_single, Finsupp.mapDomain_single,
+    normalizedStrictChain1_single]
+  have hn : cylinderCoverCollapse w hf (m e.val.1) ≠ cylinderCoverCollapse w hf (m e.val.2) :=
+    fun he => (cylinderCoverCollapsedCircle_strictMono w j f hf m hm hp e.property).ne
+      (Subtype.ext he)
+  change Finsupp.single _ 1 = 1 • normalizeOrdEdge
+    ⟨(cylinderCoverCollapse w hf (m e.val.1), cylinderCoverCollapse w hf (m e.val.2)), _⟩
+  simp only [normalizeOrdEdge, dif_neg hn, Finsupp.smul_single, smul_eq_mul, mul_one]
+  rfl
 
 include hm hp in
 /-- The actual linear rose pullback equals the actual collapsed circle chain map. -/

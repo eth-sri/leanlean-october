@@ -9,45 +9,42 @@ open scoped unitInterval Topology
 universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
+private theorem update_rectangle {z w : Fin 2 → I} (h : w 1 = z 1) {r : ℝ}
+    (hr : r = z 0) : Function.update w 0 (Set.projIcc 0 1 zero_le_one r) = z := by
+  rw [hr]
+  funext i
+  fin_cases i <;> simp [h]
+
+private theorem transAt_comp_apply (p q : GenLoop (Fin 2) X x)
+    (F : C((Fin 2 → I), Fin 2 → I)) (z : Fin 2 → I) :
+    ((GenLoop.transAt 0 p q).val.comp F) z =
+      if (F z 0 : ℝ) ≤ 1 / 2 then
+        p (Function.update (F z) 0 (Set.projIcc 0 1 zero_le_one (2 * F z 0)))
+      else q (Function.update (F z) 0 (Set.projIcc 0 1 zero_le_one (2 * F z 0 - 1))) := rfl
+
 theorem transAt_leftRectangle (p q : GenLoop (Fin 2) X x) :
     (GenLoop.transAt 0 p q).val.comp (leftRectangle squareHalf) = p.val := by
   apply ContinuousMap.ext
   intro z
-  change (if ((leftRectangle squareHalf z) 0 : ℝ) ≤ 1 / 2
-    then p (Function.update (leftRectangle squareHalf z) 0
-      (Set.projIcc 0 1 zero_le_one (2 * (leftRectangle squareHalf z) 0)))
-    else q (Function.update (leftRectangle squareHalf z) 0
-      (Set.projIcc 0 1 zero_le_one (2 * (leftRectangle squareHalf z) 0 - 1)))) = p z
+  rw [transAt_comp_apply]
   have hh : ((leftRectangle squareHalf z) 0 : ℝ) ≤ 1 / 2 := by
-    change (1 / 2 : ℝ) * (z 0 : ℝ) ≤ 1 / 2
+    change (1 / 2 : ℝ) * (z 0) ≤ 1 / 2
     nlinarith [(z 0).property.2]
   rw [if_pos hh]
-  apply congrArg p
-  funext i
-  fin_cases i
-  · simp only [Function.update_apply]
-    rw [if_pos (by rfl)]
-    have he : 2 * ((leftRectangle squareHalf z) 0 : ℝ) = (z 0 : ℝ) := by
-      change 2 * ((1 / 2 : ℝ) * (z 0 : ℝ)) = _
-      ring
-    rw [he, Set.projIcc_of_mem zero_le_one (z 0).property]
-    exact Subtype.ext rfl
-  · simp [leftRectangle]
+  apply congrArg p (update_rectangle (z := z) (w := leftRectangle squareHalf z) rfl ?_)
+  change 2 * ((1 / 2) * (z 0 : ℝ)) = _
+  ring
 
 theorem rightRectangle_half_coordinate (z : Fin 2 → I) :
     ((rightRectangle squareHalf z) 0 : ℝ) = (1 + (z 0 : ℝ)) / 2 := by
-  change 1 - ((1 - (1 / 2 : ℝ)) * (1 - (z 0 : ℝ))) = _
+  change 1 - ((1 - (1 / 2 : ℝ)) * (1 - (z 0))) = _
   ring
 
 theorem transAt_rightRectangle (p q : GenLoop (Fin 2) X x) :
     (GenLoop.transAt 0 p q).val.comp (rightRectangle squareHalf) = q.val := by
   apply ContinuousMap.ext
   intro z
-  change (if ((rightRectangle squareHalf z) 0 : ℝ) ≤ 1 / 2
-    then p (Function.update (rightRectangle squareHalf z) 0
-      (Set.projIcc 0 1 zero_le_one (2 * (rightRectangle squareHalf z) 0)))
-    else q (Function.update (rightRectangle squareHalf z) 0
-      (Set.projIcc 0 1 zero_le_one (2 * (rightRectangle squareHalf z) 0 - 1)))) = q z
+  rw [transAt_comp_apply]
   split_ifs with h
   · have hz : z 0 = 0 := by
       apply Subtype.ext
@@ -55,24 +52,13 @@ theorem transAt_rightRectangle (p q : GenLoop (Fin 2) X x) :
       change (z 0 : ℝ) = 0
       nlinarith [(z 0).property.1]
     have he : 2 * ((rightRectangle squareHalf z) 0 : ℝ) = 1 := by
-      rw [rightRectangle_half_coordinate, hz]
-      norm_num
+      simp [rightRectangle_half_coordinate, hz]
     calc
       _ = x := GenLoop.boundary p _ ⟨0, Or.inr (by
-        simp only [Function.update_self]
-        rw [he]
-        exact Set.projIcc_right _ )⟩
+        simp [he] )⟩
       _ = q z := (GenLoop.boundary q z ⟨0, Or.inl hz⟩).symm
-  · apply congrArg q
-    funext i
-    fin_cases i
-    · simp only [Function.update_apply]
-      rw [if_pos (by rfl)]
-      have he : 2 * ((rightRectangle squareHalf z) 0 : ℝ) - 1 = (z 0 : ℝ) := by
-        rw [rightRectangle_half_coordinate]
-        ring
-      rw [he, Set.projIcc_of_mem zero_le_one (z 0).property]
-      exact Subtype.ext rfl
-    · simp [rightRectangle]
+  · apply congrArg q (update_rectangle (z := z) (w := rightRectangle squareHalf z) rfl ?_)
+    rw [rightRectangle_half_coordinate]
+    ring
 
 end FiniteChains.TopologicalSingular

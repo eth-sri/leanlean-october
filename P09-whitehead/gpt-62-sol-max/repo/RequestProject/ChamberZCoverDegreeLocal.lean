@@ -18,27 +18,14 @@ omit [Fintype V] in
 theorem fillsDegreeIn_cover_unmarked_chamber (hf : IsPosetCover f)
     (w : CayGroup A) (hw : ¬ M w) :
     FillsDegreeIn (fun p : P => InZChamber w (f p)) 3 := by
-  have hne : ∃ p : P, InZChamber w (f p) := by
-    obtain ⟨p, hp⟩ := hf.surj (zApex (X := X) (att := att) hw)
-    refine ⟨p, ?_⟩
-    rw [hp]
-    exact inZChamber_zApex (X := X) (att := att) hw
-  apply fillsDegreeIn_of_subtype hne
-  intro c hi hd hc
-  exact nerve_twoCycle_filling_of_strict
-    (strict_twoCycle_cover_unmarked_chamber hf w hw) c hi hd hc
+  exact fillsDegreeIn_of_subtype (nerve_twoCycle_filling_of_strict
+    (strict_twoCycle_cover_unmarked_chamber hf w hw))
 
 theorem fillsDegreeIn_cover_attaching_intersection (hf : IsPosetCover f)
     (w : CayGroup A) (hw : w ≠ 1) :
     FillsDegreeIn (fun p : P => ZJSet w (f p)) 2 := by
-  let q := (zJSetOrderIso (A := A) (X := X) (M := M) (att := att) w).symm (interTop hw)
-  have hne : ∃ p : P, ZJSet w (f p) := by
-    obtain ⟨p, hp⟩ := hf.surj q.1
-    exact ⟨p, hp.symm ▸ q.2⟩
-  apply fillsDegreeIn_of_subtype hne
-  intro c hi hd hc
-  exact nerve_oneCycle_filling_of_strict
-    (strict_oneCycle_cover_attaching_intersection hf w hw) c hi hd hc
+  exact fillsDegreeIn_of_subtype (nerve_oneCycle_filling_of_weak
+    (weak_oneCycle_filling_of_strict (strict_oneCycle_cover_attaching_intersection hf w hw)))
 
 omit [Fintype V] in
 theorem generatesDegreeIn_cover_chamber [Nonempty X] (hf : IsPosetCover f)

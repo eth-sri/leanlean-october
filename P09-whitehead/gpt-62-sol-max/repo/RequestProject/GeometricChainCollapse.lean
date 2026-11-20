@@ -87,14 +87,13 @@ theorem IsPairCollapse.prefix_faces_avoid_suffix_tops {left right : List (T × F
 theorem IsPairCollapse.covers {lp : List (T × F)} {S : Finset T}
     (h : IsPairCollapse inc lp S) {t : T} (ht : t ∈ S) : ∃ f, (t, f) ∈ lp := by
   have hm := mem_list_of_isCollapse h.map_fst t ht
-  obtain ⟨p, hp, he⟩ := List.mem_map.mp hm
-  exact ⟨p.2, by simpa only [← he, Prod.eta] using hp⟩
+  grind
 
 /-- Choose the free faces without losing their geometric certificates. -/
 theorem exists_pairCollapse {l : List T} {S : Finset T} (h : IsCollapse inc l S) :
     ∃ lp : List (T × F), lp.map Prod.fst = l ∧ IsPairCollapse inc lp S := by
   induction l generalizing S with
-  | nil => exact ⟨[], rfl, h⟩
+  | nil => tauto
   | cons t l ih =>
     obtain ⟨ht, ⟨f, hf⟩, hr⟩ := h
     obtain ⟨lp, hm, hp⟩ := ih hr
@@ -110,44 +109,28 @@ theorem IsPairCollapse.chainCollapse {R : Type*} [Ring R]
   induction lp generalizing S with
   | nil => trivial
   | cons p lp ih =>
-    have hpinc : p.1 ∈ inc p.2 := by
-      have hm : p.1 ∈ inc p.2 ∩ S := by
-        rw [h.2.1]
-        exact Finset.mem_singleton_self _
-      exact (Finset.mem_inter.mp hm).1
-    refine ⟨hunit p.1 (hS h.1) p.2 hpinc, ?_,
+    refine ⟨hunit _ (hS h.1) _ (h.pair_inc (List.mem_cons_self ..)), ?_,
       ih (fun t ht => hS (Finset.mem_of_mem_erase ht)) h.2.2⟩
     intro q hq
-    have hqS := h.2.2.top_mem hq
-    apply hzero q.1 (hS (Finset.mem_of_mem_erase hqS)) p.2
-    intro hqi
-    have hqt : q.1 = p.1 := by
-      have hm : q.1 ∈ inc p.2 ∩ S :=
-        Finset.mem_inter.mpr ⟨hqi, Finset.mem_of_mem_erase hqS⟩
-      rw [h.2.1] at hm
-      exact Finset.mem_singleton.mp hm
-    exact (Finset.mem_erase.mp hqS).1 hqt
+    exact hzero _ (hS (h.top_mem (List.mem_cons_of_mem _ hq))) _ (h.later_top_not_inc hq)
 
 end FiniteChains.Collapse
 
 namespace FiniteChains
 variable {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
 
-/-- Both geometric and chain certificates for the very same chosen cubical collapse. -/
-theorem exists_geometric_chainCollapse {L : ASC V} {l : List (Cube V)}
-    {S : Finset (Cube V)} (hS : S ⊆ topCubes L)
-    (h : Collapse.IsCollapse (spineInc L) l S) :
-    ∃ lp : List (Cube V × (Cube V ⊕ Finset V)), lp.map Prod.fst = l ∧
-      Collapse.IsPairCollapse (spineInc L) lp S ∧
-      CollapseChain.IsChainCollapse (cubeBdry (V := V)) lp := by
-  obtain ⟨lp, hm, hp⟩ := Collapse.exists_pairCollapse h
-  refine ⟨lp, hm, hp, hp.chainCollapse ?_ ?_ hS⟩
+/-- The oriented chain certificate is determined by the actual free-face incidences. -/
+theorem spine_pair_chainCollapse {L : ASC V}
+    {lp : List (Cube V × (Cube V ⊕ Finset V))} {S : Finset (Cube V)}
+    (hS : S ⊆ topCubes L) (h : Collapse.IsPairCollapse (spineInc L) lp S) :
+    CollapseChain.IsChainCollapse (cubeBdry (V := V)) lp := by
+  apply h.chainCollapse (tops := topCubes L) ?_ ?_ hS
   · intro t ht f htf
     cases f with
     | inl g =>
       by_cases hg : (freeSet g).card = 2
       · rw [spineInc, if_pos hg] at htf
-        rcases cubeBdry_inl_eq_unit htf with h | h <;> rw [h] <;> simp
+        rcases cubeBdry_inl_eq_unit htf with hh | hh <;> rw [hh] <;> simp
       · simp [spineInc, hg] at htf
     | inr σ =>
       by_cases hσ : IsTri L σ
@@ -167,13 +150,22 @@ theorem exists_geometric_chainCollapse {L : ASC V} {l : List (Cube V)}
           rw [he]
           exact freeSet_update_free g j
         have htop := (mem_topCubes.mp ht).2
-        rw [hfree, Finset.card_insert_of_notMem (by simpa [mem_freeSet] using hj)] at htop
-        omega
+        aesop
       exact htf (by simpa [spineInc, hcard] using hg)
     | inr σ =>
       apply cubeBdry_inr_eq_zero
       intro he
       have hσ : IsTri L σ := by simpa [he] using mem_topCubes.mp ht
       exact htf (by simp [spineInc, hσ, he])
+
+/-- Both geometric and chain certificates for the very same chosen cubical collapse. -/
+theorem exists_geometric_chainCollapse {L : ASC V} {l : List (Cube V)}
+    {S : Finset (Cube V)} (hS : S ⊆ topCubes L)
+    (h : Collapse.IsCollapse (spineInc L) l S) :
+    ∃ lp : List (Cube V × (Cube V ⊕ Finset V)), lp.map Prod.fst = l ∧
+      Collapse.IsPairCollapse (spineInc L) lp S ∧
+      CollapseChain.IsChainCollapse (cubeBdry (V := V)) lp := by
+  obtain ⟨lp, hm, hp⟩ := Collapse.exists_pairCollapse h
+  exact ⟨lp, hm, hp, spine_pair_chainCollapse hS hp⟩
 
 end FiniteChains

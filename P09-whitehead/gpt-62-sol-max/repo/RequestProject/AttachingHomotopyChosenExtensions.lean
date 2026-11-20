@@ -22,18 +22,16 @@ variable {D P : Type u} [TopologicalSpace D] [TopologicalSpace P]
   (hs₁ : ∀ t a, L₁ (t, a.val) = old a₁ Subtype.val (H.symm (t, a)))
 
 def chosenAttachingBackward : C(Space a₁ Subtype.val, Space a₀ Subtype.val) :=
-  desc a₁ Subtype.val ⟨old a₀ Subtype.val, old_continuous _ _⟩
+  desc a₁ Subtype.val (Space.oldMap a₀ Subtype.val)
     (L₀.comp ⟨fun d => (1, d), continuous_const.prodMk continuous_id⟩)
     (fun a => by
-      change old a₀ Subtype.val (a₁ a) = L₀ (1, a.val)
-      rw [hs₀, H.apply_one])
+      simp [hs₀])
 
 def chosenAttachingForward : C(Space a₀ Subtype.val, Space a₁ Subtype.val) :=
-  desc a₀ Subtype.val ⟨old a₁ Subtype.val, old_continuous _ _⟩
+  desc a₀ Subtype.val (Space.oldMap a₁ Subtype.val)
     (L₁.comp ⟨fun d => (1, d), continuous_const.prodMk continuous_id⟩)
     (fun a => by
-      change old a₁ Subtype.val (a₀ a) = L₁ (1, a.val)
-      rw [hs₁, H.symm.apply_one])
+      simp [hs₁])
 
 @[simp] theorem chosenAttachingBackward_cell (d : D) :
     chosenAttachingBackward S a₀ a₁ H L₀ hs₀ (cell a₁ Subtype.val d) = L₀ (1, d) := by

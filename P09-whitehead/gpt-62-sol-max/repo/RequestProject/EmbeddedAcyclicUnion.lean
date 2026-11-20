@@ -36,15 +36,7 @@ def label (v : X.V) : Set X.V :=
 include hmeet in
 theorem label_on_vertex (g : G) (d : D.V) :
     label φ ((φ g).onV d) = vertexSet φ g := by
-  ext w
-  constructor
-  · rintro ⟨h, ⟨e, he⟩, hw⟩
-    have hv := (hmeet g h d e he.symm).1
-    change w ∈ Set.range (φ g).onV
-    rw [hv]
-    exact hw
-  · intro hw
-    exact ⟨g, ⟨d, rfl⟩, hw⟩
+  grind +locals
 
 include hmeet in
 theorem label_on_edge (g : G) (e : D.E) :
@@ -59,30 +51,25 @@ theorem label_on_face (g : G) (f : D.F) :
   exact label_on_vertex φ hmeet g (D.base f)
 
 include hmeet in
+private theorem ranges_eq_of_vertexSet {g h : G} (hv : vertexSet φ g = vertexSet φ h)
+    (d : D.V) : Set.range (φ g).onE = Set.range (φ h).onE ∧
+      Set.range (φ g).onF = Set.range (φ h).onF := by
+  obtain ⟨e, he⟩ := hv ▸ (show (φ g).onV d ∈ vertexSet φ g from ⟨d, rfl⟩)
+  exact (hmeet g h d e he.symm).2
+
+include hmeet in
 theorem edge_range_of_label (g : G) (e : X.E) (he : oldEdge φ e)
     (hl : label φ (X.src e) = vertexSet φ g) : e ∈ Set.range (φ g).onE := by
   obtain ⟨h, d, rfl⟩ := he
-  have hv : vertexSet φ h = vertexSet φ g :=
-    (label_on_edge φ hmeet h d).symm.trans hl
-  have hm : (φ h).onV (D.src d) ∈ vertexSet φ g := by
-    rw [← hv]
-    exact ⟨D.src d, rfl⟩
-  obtain ⟨v, hvg⟩ := hm
-  rw [← (hmeet h g (D.src d) v hvg.symm).2.1]
-  exact ⟨d, rfl⟩
+  rw [label_on_edge φ hmeet] at hl
+  exact (ranges_eq_of_vertexSet φ hmeet hl (D.src d)).1 ▸ Set.mem_range_self d
 
 include hmeet in
 theorem face_range_of_label (g : G) (f : X.F) (hf : oldFace φ f)
     (hl : label φ (X.base f) = vertexSet φ g) : f ∈ Set.range (φ g).onF := by
   obtain ⟨h, d, rfl⟩ := hf
-  have hv : vertexSet φ h = vertexSet φ g :=
-    (label_on_face φ hmeet h d).symm.trans hl
-  have hm : (φ h).onV (D.base d) ∈ vertexSet φ g := by
-    rw [← hv]
-    exact ⟨D.base d, rfl⟩
-  obtain ⟨v, hvg⟩ := hm
-  rw [← (hmeet h g (D.base d) v hvg.symm).2.2]
-  exact ⟨d, rfl⟩
+  rw [label_on_face φ hmeet] at hl
+  exact (ranges_eq_of_vertexSet φ hmeet hl (D.base d)).2 ▸ Set.mem_range_self d
 
 include hmeet in
 theorem boundary1_label (e : X.E) (he : oldEdge φ e) (v : X.V)
@@ -92,11 +79,7 @@ theorem boundary1_label (e : X.E) (he : oldEdge φ e) (v : X.V)
   by_cases ht : v = X.tgt ((φ g).onE d)
   · rw [ht, (φ g).tgt_onE, label_on_vertex φ hmeet,
       label_on_edge φ hmeet]
-  · by_cases hs : v = X.src ((φ g).onE d)
-    · rw [hs]
-    · exfalso
-      apply hv
-      simp [bdry1_single, Ne.symm ht, Ne.symm hs]
+  simp_all <;> grind
 
 include hmeet in
 theorem boundary2_label (f : X.F) (hf : oldFace φ f) (e : X.E)
@@ -106,8 +89,7 @@ theorem boundary2_label (f : X.F) (hf : oldFace φ f) (e : X.E)
   have hm : e ∈ Set.range (φ g).onE := by
     by_contra hn
     apply he
-    rw [bdry2_single, one_smul, (φ g).att_onF, pathChain_map]
-    exact Finsupp.mapDomain_notin_range (pathChain (D.att d)) e hn
+    exact bdry2_single_image_zero (φ g) d e hn
   obtain ⟨l, rfl⟩ := hm
   rw [label_on_edge φ hmeet, label_on_face φ hmeet]
 
@@ -139,16 +121,8 @@ theorem edge_filter_filling (c : X.E →₀ ℤ)
   have hsg : s = vertexSet φ g := by
     rw [← hes, ← hd]
     exact label_on_edge φ hmeet g d
-  have hsupp : ∀ e ∉ Set.range (φ g).onE,
-      (c.filter (fun e => label φ (X.src e) = s)) e = 0 := by
-    intro e hn
-    by_cases he : c e = 0
-    · simp [Finsupp.filter_apply, he]
-    · have hold := hc e (Finsupp.mem_support_iff.mpr he)
-      have hl : label φ (X.src e) ≠ s := by
-        intro hl
-        exact hn (edge_range_of_label φ hmeet g e hold (hl.trans hsg))
-      simp [hl]
+  have hsupp := filter_supported (p := fun e => label φ (X.src e) = s) c hc (fun e he hl =>
+    edge_range_of_label φ hmeet g e he (hl.trans hsg))
   have hcycle : bdry1 X (c.filter (fun e => label φ (X.src e) = s)) = 0 := by
     rw [boundary1_filter φ hmeet c hc, hz, Finsupp.filter_zero]
   obtain ⟨y, hy, hb⟩ := embedded_one_cycle_filling (φ g) (hV g) (hE g) hD _ hsupp hcycle
@@ -169,17 +143,11 @@ theorem one_cycle_filling (c : X.E →₀ ℤ)
     edge_filter_filling φ hV hE hD hmeet c hc hz s.1 s.2
   refine ⟨∑ s : {s : Set X.V // s ∈ S}, y s, ?_, ?_⟩
   · intro f hf
-    by_contra hn
-    have hz' : (∑ s : {s : Set X.V // s ∈ S}, y s) f = 0 := by
-      simp only [Finsupp.finset_sum_apply]
-      apply Finset.sum_eq_zero
-      intro s _
-      by_contra hs
-      exact hn (hy s f (Finsupp.mem_support_iff.mpr hs))
-    exact (Finsupp.mem_support_iff.mp hf) hz'
+    obtain ⟨s, _, hsf⟩ := Finset.mem_biUnion.mp (Finsupp.support_finsetSum hf)
+    exact hy s f hsf
   · rw [map_sum]
     simp_rw [hb]
-    exact (Finset.sum_coe_sort S (fun s : Set X.V =>
+    exact (Finset.sum_coe_sort S (fun s  =>
       c.filter (fun e => label φ (X.src e) = s))).trans
         (finsupp_sum_label_filters (fun e => label φ (X.src e)) c)
 
@@ -192,22 +160,15 @@ theorem two_cycle_zero (c : X.F →₀ ℤ)
   · exact hf
   · obtain ⟨g, d, hd⟩ := hc f (Finsupp.mem_support_iff.mpr hf)
     let c' := c.filter (fun f => label φ (X.base f) = vertexSet φ g)
-    have hsupp : ∀ f ∉ Set.range (φ g).onF, c' f = 0 := by
-      intro f hn
-      by_cases hf : c f = 0
-      · simp [c', Finsupp.filter_apply, hf]
-      · have hold := hc f (Finsupp.mem_support_iff.mpr hf)
-        have hl : label φ (X.base f) ≠ vertexSet φ g :=
-          fun hl => hn (face_range_of_label φ hmeet g f hold hl)
-        simp [c', hl]
+    have hsupp := filter_supported (p := fun f => label φ (X.base f) = vertexSet φ g)
+      c hc (face_range_of_label φ hmeet g)
     have hcycle : bdry2 X c' = 0 := by
-      rw [show c' = c.filter (fun f => label φ (X.base f) = vertexSet φ g) from rfl,
-        boundary2_filter φ hmeet c hc, hz, Finsupp.filter_zero]
+      simp [c', boundary2_filter φ hmeet c hc, hz, Finsupp.filter_zero]
     have hc' := embedded_two_cycle_zero (φ g) (hE g) (hF g) hD c' hsupp hcycle
     have hl : label φ (X.base f) = vertexSet φ g := by
       rw [← hd]
       exact label_on_face φ hmeet g d
-    have hcoeff := congrArg (fun z : X.F →₀ ℤ => z f) hc'
+    have hcoeff := congrArg (fun z  => z f) hc'
     simpa [c', Finsupp.filter_apply, hl] using hcoeff
 
 end FiniteChains.Comb.AcyclicCopies

@@ -20,11 +20,9 @@ theorem orderNerveRealization_continuous_prod_iff (P : Type) [PartialOrder P]
       Continuous (fun p : T × SimplexCategory.toTop.obj n =>
         f (p.1, orderNerveRealizationSimplex P s p.2)) := by
   constructor
-  · intro h n s
-    exact h.comp (continuous_fst.prodMk
-      ((orderNerveRealizationSimplex P s).hom.continuous.comp continuous_snd))
+  · fun_prop
   · intro h
-    have ht : ∀ x, Continuous (fun t : T => f (t, x)) := by
+    have ht : ∀ x, Continuous (fun t  => f (t, x)) := by
       intro x
       obtain ⟨n, s, z, rfl⟩ := orderNerveRealizationSimplex_jointly_surjective P x
       exact (h n s).comp (continuous_id.prodMk continuous_const)
@@ -36,49 +34,34 @@ theorem orderNerveRealization_continuous_prod_iff (P : Type) [PartialOrder P]
       exact (h n s).comp continuous_swap
     exact (ContinuousMap.continuous_uncurry_of_continuous ⟨g, hg⟩).comp continuous_swap
 
-/-- Adjoining a vertex comparable with every vertex of a simplex gives a larger
-simplex, together with a simplex operator containing the original one. -/
-theorem orderNerveSimplex_extend_vertex {P : Type} [PartialOrder P]
-    {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n)) (v : P)
-    (hv : ∀ i, s.obj i ≤ v ∨ v ≤ s.obj i) :
+/-- Two simplices whose vertices are pairwise cross-comparable lie in an actual
+common simplex, with explicit simplex operators for both inclusions. -/
+theorem orderNerveSimplex_common {P : Type} [PartialOrder P] {n k : SimplexCategory}
+    (s : (nerve P).obj (Opposite.op n)) (t : (nerve P).obj (Opposite.op k))
+    (hc : ∀ i j, s.obj i ≤ t.obj j ∨ t.obj j ≤ s.obj i) :
     ∃ (m : SimplexCategory) (u : (nerve P).obj (Opposite.op m))
-      (a : n ⟶ m) (j : Fin (m.len + 1)),
-      (nerve P).map a.op u = s ∧ u.obj j = v := by
+      (a : n ⟶ m) (b : k ⟶ m),
+      (nerve P).map a.op u = s ∧ (nerve P).map b.op u = t := by
   classical
-  let A : Set P := insert v (Set.range s.obj)
-  have hA : IsChain (· ≤ ·) A := by
-    intro x hx y hy _
-    rcases hx with rfl | ⟨i, rfl⟩
-    · rcases hy with rfl | ⟨j, rfl⟩
-      · exact Or.inl le_rfl
-      · exact (hv j).symm
-    · rcases hy with rfl | ⟨j, rfl⟩
-      · exact hv i
-      · rcases le_total i j with h | h
-        · exact Or.inl (leOfHom (s.map (homOfLE h)))
-        · exact Or.inr (leOfHom (s.map (homOfLE h)))
-  letI : Fintype A := (Set.finite_range s.obj |>.insert v).fintype
-  letI : LinearOrder A :=
-    { Subtype.partialOrder _ with
-      le_total := fun x y => hA.total x.property y.property
-      toDecidableLE := Subtype.decidableLE
-      toDecidableLT := Subtype.decidableLT
-      toDecidableEq := Subtype.instDecidableEq }
-  let av : A := ⟨v, Set.mem_insert v _⟩
-  letI : Nonempty A := ⟨av⟩
-  obtain ⟨k, hk⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt (Fintype.card_pos (α := A)))
-  let e : A ≃o Fin (k + 1) := (Fintype.orderIsoFinOfCardEq A hk).symm
-  let u : (nerve P).obj (Opposite.op ⦋k⦌) :=
-    (show Monotone (fun i : Fin (k + 1) => (e.symm i).val) from
-      fun _ _ h => e.symm.monotone h).functor
-  let a : n ⟶ ⦋k⦌ := SimplexCategory.mkHom
-    ⟨fun i => e ⟨s.obj i, Set.mem_insert_of_mem _ ⟨i, rfl⟩⟩,
-      fun _ _ h => e.monotone (leOfHom (s.map (homOfLE h)))⟩
-  refine ⟨⦋k⦌, u, a, e av, ?_, ?_⟩
-  · exact CategoryTheory.Functor.ext (fun i =>
-      congrArg Subtype.val (e.symm_apply_apply
-        ⟨s.obj i, Set.mem_insert_of_mem _ ⟨i, rfl⟩⟩))
-  · exact congrArg Subtype.val (e.symm_apply_apply av)
+  let A := Set.range s.obj ∪ Set.range t.obj
+  have mono {d : SimplexCategory} (r : (nerve P).obj (Opposite.op d)) : Monotone r.obj :=
+    fun _ _ h => leOfHom (r.map (homOfLE h))
+  have hA : IsChain (· ≤ ·) A := isChain_union.mpr
+    ⟨(mono s).isChain_range, (mono t).isChain_range, by rintro _ ⟨i, rfl⟩ _ ⟨j, rfl⟩ _; exact hc i j⟩
+  letI := ((Set.finite_range s.obj).union (Set.finite_range t.obj)).fintype
+  letI := hA.lt_of_le.linearOrder
+  letI : Nonempty A := ⟨⟨s.obj 0, Or.inl ⟨0, rfl⟩⟩⟩
+  obtain ⟨r, hr⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt (Fintype.card_pos (α := A)))
+  let e := Fintype.orderIsoFinOfCardEq A hr
+  let u := (monotone_subtypeVal.comp e.monotone).functor
+  have factor {d : SimplexCategory} (v : (nerve P).obj (Opposite.op d)) (h : ∀ i, v.obj i ∈ A) :
+      ∃ a : d ⟶ ⦋r⦌, (nerve P).map a.op u = v :=
+    ⟨SimplexCategory.mkHom ⟨fun i => e.symm ⟨v.obj i, h i⟩,
+      fun _ _ hle => e.symm.monotone (mono v hle)⟩,
+      CategoryTheory.Functor.ext fun i => congrArg Subtype.val (e.apply_symm_apply ⟨v.obj i, h i⟩)⟩
+  obtain ⟨a, ha⟩ := factor s (fun i => Or.inl ⟨i, rfl⟩)
+  obtain ⟨b, hb⟩ := factor t (fun i => Or.inr ⟨i, rfl⟩)
+  exact ⟨⦋r⦌, u, a, b, ha, hb⟩
 
 /-- Straight-line interpolation inside a topological simplex. -/
 noncomputable def topologicalSimplexBlend {n : SimplexCategory}
@@ -102,10 +85,7 @@ theorem orderNerveAffineSimplex_blend {P : Type} [PartialOrder P] (v : P → ℝ
     orderNerveAffineSimplex v s (topologicalSimplexBlend t z w) =
       (1 - (t : ℝ)) * orderNerveAffineSimplex v s z +
         (t : ℝ) * orderNerveAffineSimplex v s w := by
-  simp only [orderNerveAffineSimplex, ContinuousMap.coe_mk, topologicalSimplexBlend,
-    TopologicalSingular.simplexCoordinates_symm_weights_apply,
-    TopologicalSingular.simplexCoordinates_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul, add_mul, Finset.sum_add_distrib,
-    mul_assoc, ← Finset.mul_sum]
+  simp [orderNerveAffineSimplex, ContinuousMap.coe_mk, topologicalSimplexBlend, TopologicalSingular.simplexCoordinates_symm_weights_apply, TopologicalSingular.simplexCoordinates_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul, add_mul, Finset.sum_add_distrib, mul_assoc, ← Finset.mul_sum]
 
 /-- The affine interpolation formula in global coordinates. -/
 theorem orderNerveRealizationCoordinates_blend {P : Type} [PartialOrder P]
@@ -117,95 +97,137 @@ theorem orderNerveRealizationCoordinates_blend {P : Type} [PartialOrder P]
         (orderNerveRealizationSimplex P s z) p +
       (t : ℝ) * orderNerveRealizationCoordinates P
         (orderNerveRealizationSimplex P s w) p := by
-  have h (z : SimplexCategory.toTop.obj n) := congrArg (fun k => k z)
-    (orderNerveAffineRealization_simplex (fun q => if q = p then 1 else 0) s)
-  change ∀ z, orderNerveAffineRealization (fun q => if q = p then 1 else 0)
-    (orderNerveRealizationSimplex P s z) =
-    orderNerveAffineSimplex (fun q => if q = p then 1 else 0) s z at h
-  change orderNerveAffineRealization _ (orderNerveRealizationSimplex P s _) =
-    (1 - (t : ℝ)) * orderNerveAffineRealization _ (orderNerveRealizationSimplex P s z) +
-    (t : ℝ) * orderNerveAffineRealization _ (orderNerveRealizationSimplex P s w)
-  rw [h, h, h, orderNerveAffineSimplex_blend]
+  simp only [orderNerveRealizationCoordinates_simplex, orderNerveAffineSimplex_blend]
 
-/-- A vertex comparable with the whole poset can be joined affinely to every
-realization point, with a uniquely prescribed global coordinate vector. -/
-theorem orderNerveRealization_cone_exists {P : Type} [PartialOrder P]
-    (v : P) (hv : ∀ p, p ≤ v ∨ v ≤ p) (t : I) (x : orderNerveRealization P) :
-    ∃ y : orderNerveRealization P, ∀ p,
-      orderNerveRealizationCoordinates P y p =
-        (1 - (t : ℝ)) * orderNerveRealizationCoordinates P x p +
-        (t : ℝ) * (if v = p then 1 else 0) := by
+section Contiguous
+
+variable {P Q : Type} [PartialOrder P] [PartialOrder Q]
+variable (f : P → Q) (hf : Monotone f) (g : P → Q) (hg : Monotone g)
+variable (hc : ∀ p q, p ≤ q ∨ q ≤ p → f p ≤ g q ∨ g q ≤ f p)
+include hc
+
+/-- Cross-comparability gives a common target simplex for both actual maps
+on each source simplex. This is stronger than pointwise comparison. -/
+theorem orderNerveSimplex_common_maps {n : SimplexCategory}
+    (s : (nerve P).obj (Opposite.op n)) :
+    ∃ (m : SimplexCategory) (u : (nerve Q).obj (Opposite.op m))
+      (a b : n ⟶ m),
+      (∀ z, orderNerveRealizationSimplex Q u (SimplexCategory.toTop.map a z) =
+        orderNerveRealizationMap f hf (orderNerveRealizationSimplex P s z)) ∧
+      (∀ z, orderNerveRealizationSimplex Q u (SimplexCategory.toTop.map b z) =
+        orderNerveRealizationMap g hg (orderNerveRealizationSimplex P s z)) := by
+  have hcross : ∀ i j, f (s.obj i) ≤ g (s.obj j) ∨ g (s.obj j) ≤ f (s.obj i) := by
+    intro i j
+    apply hc
+    rcases le_total i j with h | h
+    · exact Or.inl (leOfHom (s.map (homOfLE h)))
+    · exact Or.inr (leOfHom (s.map (homOfLE h)))
+  obtain ⟨m, u, a, b, ha, hb⟩ := orderNerveSimplex_common
+    ((nerveMap hf.functor).app _ s) ((nerveMap hg.functor).app _ s) hcross
+  have factor (k : P → Q) (hk : Monotone k) (c : n ⟶ m)
+      (h : (nerve Q).map c.op u = (nerveMap hk.functor).app _ s) (z : SimplexCategory.toTop.obj n) :
+      orderNerveRealizationSimplex Q u (SimplexCategory.toTop.map c z) =
+        orderNerveRealizationMap k hk (orderNerveRealizationSimplex P s z) := by
+    rw [orderNerveRealizationSimplex_operator, h, orderNerveRealizationSimplex_natural]
+  exact ⟨m, u, a, b, factor f hf a ha, factor g hg b hb⟩
+
+theorem orderNerveRealization_blend_exists (t : I) (x : orderNerveRealization P) :
+    ∃ y : orderNerveRealization Q, ∀ q,
+      orderNerveRealizationCoordinates Q y q =
+        (1 - (t : ℝ)) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap f hf x) q +
+        (t : ℝ) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap g hg x) q := by
   obtain ⟨n, s, z, rfl⟩ := orderNerveRealizationSimplex_jointly_surjective P x
-  obtain ⟨m, u, a, j, hs, hj⟩ := orderNerveSimplex_extend_vertex s v (fun i => hv (s.obj i))
-  obtain ⟨w, hw⟩ := orderNerveRealizationVertex_mem_simplex u j
-  rw [hj] at hw
-  have hz := congrArg (fun k => k z) (orderNerveRealizationSimplex_operator P a u)
-  change orderNerveRealizationSimplex P u (SimplexCategory.toTop.map a z) =
-    orderNerveRealizationSimplex P ((nerve P).map a.op u) z at hz
-  rw [hs] at hz
-  refine ⟨orderNerveRealizationSimplex P u
-    (topologicalSimplexBlend t (SimplexCategory.toTop.map a z) w), fun p => ?_⟩
-  rw [orderNerveRealizationCoordinates_blend, hz, hw,
-    orderNerveRealizationCoordinates_vertex]
+  obtain ⟨m, u, a, b, ha, hb⟩ := orderNerveSimplex_common_maps f hf g hg hc s
+  refine ⟨orderNerveRealizationSimplex Q u
+    (topologicalSimplexBlend t (SimplexCategory.toTop.map a z) (SimplexCategory.toTop.map b z)),
+    fun q => ?_⟩
+  rw [orderNerveRealizationCoordinates_blend, ha, hb]
 
-/-- The affine cone towards a universally comparable vertex. -/
-noncomputable def orderNerveRealizationCone {P : Type} [PartialOrder P]
-    (v : P) (hv : ∀ p, p ≤ v ∨ v ≤ p) (t : I) (x : orderNerveRealization P) :
-    orderNerveRealization P := (orderNerveRealization_cone_exists v hv t x).choose
+/-- The unique affine interpolation, defined in global barycentric coordinates. -/
+noncomputable def orderNerveRealizationBlend (t : I) (x : orderNerveRealization P) :
+    orderNerveRealization Q := (orderNerveRealization_blend_exists f hf g hg hc t x).choose
 
-theorem orderNerveRealizationCone_coordinates {P : Type} [PartialOrder P]
-    (v : P) (hv : ∀ p, p ≤ v ∨ v ≤ p) (t : I) (x : orderNerveRealization P) (p : P) :
-    orderNerveRealizationCoordinates P (orderNerveRealizationCone v hv t x) p =
-      (1 - (t : ℝ)) * orderNerveRealizationCoordinates P x p +
-      (t : ℝ) * (if v = p then 1 else 0) :=
-  (orderNerveRealization_cone_exists v hv t x).choose_spec p
+theorem orderNerveRealizationBlend_coordinates (t : I) (x : orderNerveRealization P) (q : Q) :
+    orderNerveRealizationCoordinates Q (orderNerveRealizationBlend f hf g hg hc t x) q =
+      (1 - (t : ℝ)) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap f hf x) q +
+      (t : ℝ) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap g hg x) q :=
+  (orderNerveRealization_blend_exists f hf g hg hc t x).choose_spec q
 
-/-- The affine cone is jointly continuous in the weak CW topology, without any
-local finiteness hypothesis on the poset. -/
-theorem orderNerveRealizationCone_continuous {P : Type} [PartialOrder P]
-    (v : P) (hv : ∀ p, p ≤ v ∨ v ≤ p) :
+/-- Joint continuity holds in the actual weak CW topology, including infinite posets. -/
+theorem orderNerveRealizationBlend_continuous :
     Continuous (fun tx : I × orderNerveRealization P =>
-      orderNerveRealizationCone v hv tx.1 tx.2) := by
+      orderNerveRealizationBlend f hf g hg hc tx.1 tx.2) := by
   apply (orderNerveRealization_continuous_prod_iff P _).mpr
   intro n s
-  obtain ⟨m, u, a, j, hs, hj⟩ := orderNerveSimplex_extend_vertex s v (fun i => hv (s.obj i))
-  obtain ⟨w, hw⟩ := orderNerveRealizationVertex_mem_simplex u j
-  rw [hj] at hw
-  have hz (z : SimplexCategory.toTop.obj n) := congrArg (fun k => k z)
-    (orderNerveRealizationSimplex_operator P a u)
+  obtain ⟨m, u, a, b, ha, hb⟩ := orderNerveSimplex_common_maps f hf g hg hc s
   have he : (fun tx : I × SimplexCategory.toTop.obj n =>
-      orderNerveRealizationCone v hv tx.1 (orderNerveRealizationSimplex P s tx.2)) =
-      (fun tx => orderNerveRealizationSimplex P u
-        (topologicalSimplexBlend tx.1 (SimplexCategory.toTop.map a tx.2) w)) := by
+      orderNerveRealizationBlend f hf g hg hc tx.1 (orderNerveRealizationSimplex P s tx.2)) =
+      (fun tx => orderNerveRealizationSimplex Q u
+        (topologicalSimplexBlend tx.1 (SimplexCategory.toTop.map a tx.2)
+          (SimplexCategory.toTop.map b tx.2))) := by
     funext tx
-    apply orderNerveRealizationCoordinates_injective P
-    funext p
-    rw [orderNerveRealizationCone_coordinates, orderNerveRealizationCoordinates_blend, hw,
-      orderNerveRealizationCoordinates_vertex]
-    have hz' := hz tx.2
-    change orderNerveRealizationSimplex P u (SimplexCategory.toTop.map a tx.2) =
-      orderNerveRealizationSimplex P ((nerve P).map a.op u) tx.2 at hz'
-    rw [hs] at hz'
-    rw [hz']
+    apply orderNerveRealizationCoordinates_injective Q
+    funext q
+    rw [orderNerveRealizationBlend_coordinates, orderNerveRealizationCoordinates_blend, ha, hb]
   rw [he]
-  exact (orderNerveRealizationSimplex P u).hom.continuous.comp
+  exact (orderNerveRealizationSimplex Q u).hom.continuous.comp
     (topologicalSimplexBlend_continuous.comp
-      (continuous_fst.prodMk (((SimplexCategory.toTop.map a).hom.continuous.comp
-        continuous_snd).prodMk continuous_const)))
+      (continuous_fst.prodMk
+        (((SimplexCategory.toTop.map a).hom.continuous.comp continuous_snd).prodMk
+          ((SimplexCategory.toTop.map b).hom.continuous.comp continuous_snd))))
 
-@[simp] theorem orderNerveRealizationCone_zero {P : Type} [PartialOrder P]
-    (v : P) (hv : ∀ p, p ≤ v ∨ v ≤ p) (x : orderNerveRealization P) :
+@[simp] theorem orderNerveRealizationBlend_zero (x : orderNerveRealization P) :
+    orderNerveRealizationBlend f hf g hg hc 0 x = orderNerveRealizationMap f hf x := by
+  apply orderNerveRealizationCoordinates_injective Q
+  funext q
+  simp [orderNerveRealizationBlend_coordinates]
+
+@[simp] theorem orderNerveRealizationBlend_one (x : orderNerveRealization P) :
+    orderNerveRealizationBlend f hf g hg hc 1 x = orderNerveRealizationMap g hg x := by
+  apply orderNerveRealizationCoordinates_injective Q
+  funext q
+  simp [orderNerveRealizationBlend_coordinates]
+
+/-- A concrete topological homotopy between maps with cross-comparable images. -/
+noncomputable def orderNerveRealizationContiguousHomotopy :
+    ContinuousMap.Homotopy
+      (⟨orderNerveRealizationMap f hf, (orderNerveRealizationMap f hf).hom.continuous⟩ :
+        C(orderNerveRealization P, orderNerveRealization Q))
+      ⟨orderNerveRealizationMap g hg, (orderNerveRealizationMap g hg).hom.continuous⟩ where
+  toFun tx := orderNerveRealizationBlend f hf g hg hc tx.1 tx.2
+  continuous_toFun := orderNerveRealizationBlend_continuous f hf g hg hc
+  map_zero_left := orderNerveRealizationBlend_zero f hf g hg hc
+  map_one_left := orderNerveRealizationBlend_one f hf g hg hc
+
+end Contiguous
+
+section Cone
+variable {P : Type} [PartialOrder P] (v : P) (hv : ∀ p, p ≤ v ∨ v ≤ p)
+
+/-- The cone is the affine interpolation from the identity to a constant vertex. -/
+noncomputable def orderNerveRealizationCone : I → orderNerveRealization P → orderNerveRealization P :=
+  orderNerveRealizationBlend id monotone_id (fun _ => v) monotone_const (fun p _ _ => hv p)
+
+theorem orderNerveRealizationCone_coordinates (t : I) (x : orderNerveRealization P) (p : P) :
+    orderNerveRealizationCoordinates P (orderNerveRealizationCone v hv t x) p =
+      (1 - (t : ℝ)) * orderNerveRealizationCoordinates P x p +
+      (t : ℝ) * (if v = p then 1 else 0) := by
+  simp [orderNerveRealizationCone, orderNerveRealizationBlend_coordinates,
+    orderNerveRealizationMap_id, orderNerveRealizationCoordinates_vertex]
+
+theorem orderNerveRealizationCone_continuous :
+    Continuous (fun tx : I × orderNerveRealization P => orderNerveRealizationCone v hv tx.1 tx.2) :=
+  orderNerveRealizationBlend_continuous _ _ _ _ _
+
+@[simp] theorem orderNerveRealizationCone_zero (x : orderNerveRealization P) :
     orderNerveRealizationCone v hv 0 x = x := by
-  apply orderNerveRealizationCoordinates_injective P
-  funext p
-  simp [orderNerveRealizationCone_coordinates]
+  simp [orderNerveRealizationCone, orderNerveRealizationMap_id]
 
-@[simp] theorem orderNerveRealizationCone_one {P : Type} [PartialOrder P]
-    (v : P) (hv : ∀ p, p ≤ v ∨ v ≤ p) (x : orderNerveRealization P) :
+@[simp] theorem orderNerveRealizationCone_one (x : orderNerveRealization P) :
     orderNerveRealizationCone v hv 1 x = orderNerveRealizationVertex v := by
-  apply orderNerveRealizationCoordinates_injective P
-  funext p
-  simp [orderNerveRealizationCone_coordinates, orderNerveRealizationCoordinates_vertex]
+  simp [orderNerveRealizationCone]
+
+end Cone
 
 /-- A poset with a universally comparable vertex has contractible realization. -/
 theorem orderNerveRealization_contractible_of_comparable {P : Type} [PartialOrder P]
@@ -215,7 +237,7 @@ theorem orderNerveRealization_contractible_of_comparable {P : Type} [PartialOrde
   exact
     { toFun := fun tx => orderNerveRealizationCone v hv tx.1 tx.2
       continuous_toFun := orderNerveRealizationCone_continuous v hv
-      map_zero_left := fun x => orderNerveRealizationCone_zero v hv x
-      map_one_left := fun x => orderNerveRealizationCone_one v hv x }
+      map_zero_left := (orderNerveRealizationCone_zero v hv)
+      map_one_left := (orderNerveRealizationCone_one v hv) }
 
 end FiniteChains.Comb

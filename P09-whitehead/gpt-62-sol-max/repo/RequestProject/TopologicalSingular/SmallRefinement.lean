@@ -42,23 +42,14 @@ noncomputable def smallRefinementStageNext (U : ι → Set X) (hU : ∀ i, IsOpe
     SmallRefinementStage U (n + 1) where
   smallMap := smallRefinementNextMap U hU hcover s
   homotopyMap := smallRefinementNextHomotopy U hU hcover s
-  small c := by
-    induction c using Finsupp.induction_linear with
-    | zero => simp only [map_zero, Submodule.zero_mem]
-    | add c d hc hd => simpa only [map_add] using Submodule.add_mem _ hc hd
-    | single σ r =>
-      dsimp only [smallRefinementNextMap]
-      rw [Finsupp.linearCombination_single]
-      exact Submodule.smul_mem _ r
-        (smallRefinementStep_exists U hU hcover s σ).choose_spec.choose_spec.1
+  small c := Finsupp.linearCombination_mem
+    (fun σ => (smallRefinementStep_exists U hU hcover s σ).choose_spec.choose_spec.1) c
   small_support σ := by
     dsimp only [smallRefinementNextMap]
-    rw [Finsupp.linearCombination_single, one_smul]
-    exact (smallRefinementStep_exists U hU hcover s σ).choose_spec.choose_spec.2.1
+    simpa using (smallRefinementStep_exists U hU hcover s σ).choose_spec.choose_spec.2.1
   homotopy_support σ := by
     dsimp only [smallRefinementNextHomotopy]
-    rw [Finsupp.linearCombination_single, one_smul]
-    exact (smallRefinementStep_exists U hU hcover s σ).choose_spec.choose_spec.2.2.1
+    simpa using (smallRefinementStep_exists U hU hcover s σ).choose_spec.choose_spec.2.2.1
   on_boundary c := by
     rw [smallRefinementNextHomotopy_identity, boundary_boundary, map_zero, sub_zero]
 

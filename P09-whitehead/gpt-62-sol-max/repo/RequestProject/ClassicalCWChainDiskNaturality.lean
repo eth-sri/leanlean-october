@@ -9,8 +9,6 @@ the original subcomplex inclusions. Thus original topological pi2
 vanishing transfers to the constructed model inclusions. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW

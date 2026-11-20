@@ -25,7 +25,6 @@ theorem readVertex_of_le (p q : UOrder P a) (h : p ≤ q) :
 /-- Reading down a genuine lifted comparability multiplies by the inverse cocycle value. -/
 theorem readVertex_lower_of_le (p q : UOrder P a) (h : p ≤ q) :
     c.readVertex a p = c.readVertex a q * (c.val (uOrderEnd p) (uOrderEnd q))⁻¹ := by
-  rw [c.readVertex_of_le a p q h]
-  simp
+  simp_all [c.readVertex_of_le a p q h]
 
 end FiniteChains.Comb.OrdCocycle

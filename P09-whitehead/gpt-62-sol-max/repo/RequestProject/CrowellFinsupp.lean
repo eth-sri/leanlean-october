@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.FoxFinsupp
-public import RequestProject.CoverHomologyOne
+public import RequestProject.CoverChainComplex
 public import RequestProject.MagnusKernel
 
 @[expose] public section
@@ -56,9 +56,9 @@ theorem exists_mem_of_coverFirstBoundary_eq_zero (c : α →₀ CoverRing N)
     (hc : coverFirstBoundary N c = 0) :
     ∃ r ∈ N, c = coverFoxGradient N r := by
   classical
-  let a : α → FreeGroupRing α := fun i => liftQ N (c i)
-  let b : FreeGroupRing α := ∑ i ∈ c.support, a i * (grp (FreeGroup.of i) - 1)
-  have hproja : ∀ i, proj N (a i) = c i := fun i => proj_liftQ N (c i)
+  let a  := fun i => liftQ N (c i)
+  let b  := ∑ i ∈ c.support, a i * (grp (FreeGroup.of i) - 1)
+  have hproja  := fun i => proj_liftQ N (c i)
   have hprojb : proj N b = 0 := by
     change proj N (∑ i ∈ c.support, a i * (grp (FreeGroup.of i) - 1)) = 0
     rw [map_sum]
@@ -70,14 +70,14 @@ theorem exists_mem_of_coverFirstBoundary_eq_zero (c : α →₀ CoverRing N)
       intro i hi
       rw [map_mul, map_sub, proj_grp, map_one, hproja]
     rw [he, hc]
-  have hfoxb : foxProj N b = (c : α → CoverRing N) := by
+  have hfoxb : foxProj N b = c := by
     funext j
     have hterm : ∀ i, foxLin j (a i * (grp (FreeGroup.of i) - 1)) =
         a i * (if j = i then 1 else 0) := by
       intro i
       rw [foxLin_mul, map_sub, aug_grp, map_one, sub_self,
         zero_smul, zero_add, map_sub]
-      have h1 : foxLin j (1 : FreeGroupRing α) = 0 := by
+      have h1 : foxLin j 1 = 0 := by
         rw [← grp_one, foxLin_grp, fox_one]
       rw [h1, foxLin_grp, fox_of, sub_zero]
     change proj N (foxLin j b) = c j
@@ -122,7 +122,7 @@ theorem exists_coverSecondBoundary_of_mem_normalClosure (hρ : ∀ j, ρ j ∈ N
     rintro w ⟨hw, c, hc⟩ f
     refine ⟨Subgroup.Normal.conj_mem ‹N.Normal› w hw f, qgrp N f • c, ?_⟩
     rw [map_smul, hc, coverFoxGradient_conj N hw]
-  have hrange : Set.range ρ ⊆ (T : Set (FreeGroup α)) := by
+  have hrange : Set.range ρ ⊆ T := by
     rintro _ ⟨j, rfl⟩
     exact ⟨hρ j, Finsupp.single j 1, by rw [coverSecondBoundary_single, one_smul]⟩
   exact ((Subgroup.normalClosure_le_normal hrange) hw).2

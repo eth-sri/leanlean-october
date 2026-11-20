@@ -32,9 +32,6 @@ topological input that is not formalized here — this is the hypothesis
 `RequestProject/FoxCommutator.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -42,13 +39,7 @@ open Function
 
 variable {U V : Type*} [AddCommGroup U] [AddCommGroup V]
 
-/-- Multiplication by `n` on an additive commutative group, as a homomorphism. -/
-def nsmulHom (n : ℕ) (U : Type*) [AddCommGroup U] : U →+ U where
-  toFun u := n • u
-  map_zero' := smul_zero n
-  map_add' a b := smul_add n a b
 
-@[simp] theorem nsmulHom_apply (n : ℕ) (u : U) : nsmulHom n U u = n • u := rfl
 
 /-- `f` is *injective modulo `n`*: whenever `f u` is divisible by `n`, already `u` is.
 For maps between free modules this is injectivity of the reduction `f ⊗ ℤ/n`. -/
@@ -68,10 +59,9 @@ theorem mem_range_of_nsmul_mem_range (f : U →+ V) [IsAddTorsionFree V]
     · simpa using hx
     · obtain ⟨p, hp, m, rfl⟩ : ∃ p, p.Prime ∧ ∃ m, n = p * m := by
         obtain ⟨p, hp, hdvd⟩ := Nat.exists_prime_and_dvd hn1
-        obtain ⟨m, rfl⟩ := hdvd
-        exact ⟨p, hp, m, rfl⟩
+        tauto
       have hm : m ≠ 0 := by rintro rfl; simp at hn
-      have hpos : p ≠ 0 := hp.ne_zero
+      have hpos  := hp.ne_zero
       obtain ⟨u, hu⟩ := hx
       -- `p` divides `f u`, hence `u`
       obtain ⟨u', hu'⟩ := hmod p hp u ⟨m • x, by rw [hu, mul_smul]⟩
@@ -94,11 +84,7 @@ theorem mem_range_of_nsmul_mem_range (f : U →+ V) [IsAddTorsionFree V]
 /-- Finitely supported functions into a torsion-free group are torsion free. -/
 instance isAddTorsionFree_finsupp {α : Type*} {A : Type*} [AddCommGroup A]
     [IsAddTorsionFree A] : IsAddTorsionFree (α →₀ A) := by
-  constructor
-  intro n hn a b hab
-  refine Finsupp.ext fun i => ?_
-  have : (n • a) i = (n • b) i := congrArg (fun v : α →₀ A => v i) hab
-  simpa using IsAddTorsionFree.nsmul_right_injective hn (by simpa using this)
+  infer_instance
 
 /-- Group rings over `ℤ` are torsion free as additive groups. -/
 instance isAddTorsionFree_monoidAlgebra {Q : Type*} [Monoid Q] :
@@ -107,25 +93,18 @@ instance isAddTorsionFree_monoidAlgebra {Q : Type*} [Monoid Q] :
     constructor
     intro n hn a b hab
     let e := (MonoidAlgebra.coeffAddEquiv (R := ℤ) (M := Q)).toAddMonoidHom
-    have hc : n • a.coeff = n • b.coeff := calc
+    have hc  := calc
       _ = e (n • a) := (map_nsmul e n a).symm
       _ = e (n • b) := congrArg e hab
       _ = _ := map_nsmul e n b
     apply MonoidAlgebra.coeff_injective
     exact IsAddTorsionFree.nsmul_right_injective hn hc
 
-variable {G : Type*} [Group G] {I J : Type*}
+
 
 /-!
 ## Removing the torsion-freeness hypothesis from the application of Lemma 2.1
 -/
 
-/-- A group written multiplicatively out of a torsion-free additive group is torsion free. -/
-instance isMulTorsionFree_multiplicative {A : Type*} [AddMonoid A] [IsAddTorsionFree A] :
-    IsMulTorsionFree (Multiplicative A) := by
-  constructor
-  intro n hn a b hab
-  have h : n • (Multiplicative.toAdd a) = n • (Multiplicative.toAdd b) := hab
-  exact IsAddTorsionFree.nsmul_right_injective (M := A) hn h
 
 end FiniteChains

@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.RACGMedian
+public import RequestProject.RACGDescent
 
 @[expose] public section
 
@@ -58,7 +58,7 @@ def IsRDesc (x : CayGroup A) (s : V) : Prop := clen A (x * gen A s) < clen A x
 theorem clen_mul_gen (x : CayGroup A) (s : V) :
     clen A (x * gen A s) = clen A (gen A s * x⁻¹) := by
   have h : (x * gen A s)⁻¹ = gen A s * x⁻¹ := by
-    rw [mul_inv_rev, gen_inv]
+    tauto
   rw [← clen_inv A (x * gen A s), h]
 
 /-- Right descents of `x` are the left descents of `x⁻¹`. -/
@@ -73,7 +73,7 @@ theorem rdesc_rel {x : CayGroup A} {s r : V} (hsr : s ≠ r) (hs : IsRDesc A x s
 
 /-- **The descent set is nonempty** for `x ≠ 1`. -/
 theorem exists_rdesc {x : CayGroup A} (hx : x ≠ 1) : ∃ s : V, IsRDesc A x s := by
-  obtain ⟨s, hs⟩ := exists_desc A (x := x⁻¹) (by simpa using hx)
+  obtain ⟨s, hs⟩ := exists_desc A (x := x⁻¹) (by aesop)
   exact ⟨s, (isRDesc_iff_isDesc A x s).2 hs⟩
 
 /-! ### Simplices of `L` and their special subgroups -/
@@ -88,13 +88,6 @@ noncomputable def specialSub (T : Set V) : Subgroup (CayGroup A) :=
 
 theorem gen_mem_specialSub {T : Set V} {s : V} (hs : s ∈ T) : gen A s ∈ specialSub A T :=
   Subgroup.subset_closure ⟨s, hs, rfl⟩
-
-/-- Two commuting generators commute in the group. -/
-theorem gen_comm {s r : V} (h : A.rel s r) : gen A s * gen A r = gen A r * gen A s := by
-  have h1 : gen A s * gen A r = cword A [s, r] := by simp
-  have h2 : gen A r * gen A s = cword A [r, s] := by simp
-  rw [h1, h2]
-  exact cword_ceq A (CEq.of_swap (Swap.head h []))
 
 theorem cword_mem_specialSub {T : Set V} {l : List V} (hl : ∀ a ∈ l, a ∈ T) :
     cword A l ∈ specialSub A T := by
@@ -112,7 +105,7 @@ theorem exists_cword_of_mem_specialSub {T : Set V} {u : CayGroup A} (hu : u ∈ 
   refine Subgroup.closure_induction (p := fun v _ => ∃ l : List V, (∀ a ∈ l, a ∈ T) ∧
     cword A l = v) ?_ ?_ ?_ ?_ hu
   · rintro v ⟨s, hs, rfl⟩
-    exact ⟨[s], by simpa using hs, by simp⟩
+    exact ⟨[s], by aesop, by simp⟩
   · exact ⟨[], by simp, by simp⟩
   · rintro v w _ _ ⟨l, hl, rfl⟩ ⟨m, hm, rfl⟩
     refine ⟨l ++ m, ?_, ?_⟩
@@ -125,30 +118,24 @@ theorem exists_cword_of_mem_specialSub {T : Set V} {u : CayGroup A} (hu : u ∈ 
     · intro a ha; exact hl a (List.mem_reverse.1 ha)
     · exact Subtype.ext (by simpa using wordPerm_reverse A l)
 
-/-- Cancelling a generator inside a duplicate-free word of pairwise commuting letters. -/
-theorem gen_mul_cword_erase {T : Set V} (hT : Commuting A T) {s : V} (hs : s ∈ T) :
-    ∀ l : List V, (∀ a ∈ l, a ∈ T) → l.Nodup → s ∈ l →
-      gen A s * cword A l = cword A (l.erase s) := by
-  intro l
-  induction l with
-  | nil => intro _ _ h; exact absurd h (by simp)
-  | cons a t ih =>
-      intro hl hnd hmem
-      by_cases hat : a = s
-      · subst hat
-        simp [cword_cons, ← mul_assoc, gen_mul_gen]
-      · have hst : s ∈ t := by
-          rcases List.mem_cons.1 hmem with h | h
-          · exact absurd h.symm hat
-          · exact h
-        have hrel : A.rel s a := hT hs (hl a (by simp)) (fun h => hat h.symm)
-        have iht := ih (fun b hb => hl b (by simp [hb])) hnd.of_cons hst
-        calc gen A s * cword A (a :: t)
-            = (gen A s * gen A a) * cword A t := by rw [cword_cons, mul_assoc]
-          _ = gen A a * (gen A s * cword A t) := by rw [gen_comm A hrel, mul_assoc]
-          _ = gen A a * cword A (t.erase s) := by rw [iht]
-          _ = cword A (a :: t.erase s) := (cword_cons A _ _).symm
-          _ = cword A ((a :: t).erase s) := by rw [List.erase_cons_tail (by simpa using hat)]
+/-- Cancelling a generator inside a word of pairwise commuting letters. -/
+theorem gen_mul_cword_erase {T : Set V} (hT : Commuting A T) {s : V} (hs : s ∈ T)
+    (l : List V) (hl : ∀ a ∈ l, a ∈ T) (hm : s ∈ l) :
+    gen A s * cword A l = cword A (l.erase s) := by
+  have hc : canStart A.rel s l := by
+    induction l with
+    | nil => cases hm
+    | cons a l ih =>
+      by_cases h : a = s
+      · exact Or.inl h
+      · exact Or.inr ⟨hT hs (hl a (by simp)) (Ne.symm h),
+          ih (fun b hb => hl b (by simp [hb])) ((List.mem_cons.mp hm).resolve_left (Ne.symm h))⟩
+  have he : popStart s l = l.erase s := by
+    clear hc hm hl
+    induction l with
+    | nil => rfl
+    | cons a l ih => by_cases h : a = s <;> simp_all [popStart]
+  rw [gen_mul_cword_popStart A hc, he]
 
 /-- **Normal form in `W_T ≅ (ℤ/2)^T`**: every element of the special subgroup of a simplex is
 the product of a duplicate-free list of its generators. -/
@@ -159,13 +146,13 @@ theorem exists_nodup_cword {T : Set V} (hT : Commuting A T) {u : CayGroup A}
   obtain ⟨l, hl, rfl⟩ := exists_cword_of_mem_specialSub A hu
   clear hu
   induction l with
-  | nil => exact ⟨[], by simp, by simp, rfl⟩
+  | nil => tauto
   | cons a t ih =>
       obtain ⟨m, hm, hnd, hmt⟩ := ih fun b hb => hl b (by simp [hb])
-      have ha : a ∈ T := hl a (by simp)
+      have ha  := hl a (by simp)
       by_cases hmem : a ∈ m
       · refine ⟨m.erase a, fun b hb => hm b (List.mem_of_mem_erase hb), hnd.erase a, ?_⟩
-        rw [← gen_mul_cword_erase A hT ha m hm hnd hmem, hmt, cword_cons]
+        rw [← gen_mul_cword_erase A hT ha m hm hmem, hmt, cword_cons]
       · refine ⟨a :: m, ?_, by simpa using ⟨hmem, hnd⟩, by rw [cword_cons, hmt, cword_cons]⟩
         intro b hb
         rcases List.mem_cons.1 hb with h | h
@@ -181,11 +168,11 @@ theorem not_isDesc_cword_mul {T : Set V} (hT : Commuting A T) {x : CayGroup A}
     ∀ l : List V, (∀ a ∈ l, a ∈ T) → s ∉ l → ¬ IsDesc A (cword A l * x) s := by
   intro l
   induction l with
-  | nil => intro _ _; simpa using hx s hs
+  | nil => intro _ _; tauto
   | cons a t ih =>
       intro hl hsl
       have hat : a ≠ s := fun h => hsl (by simp [h])
-      have hrel : A.rel s a := hT hs (hl a (by simp)) (fun h => hat h.symm)
+      have hrel  := hT hs (hl a (by simp)) (fun h => hat h.symm)
       have iht := ih (fun b hb => hl b (by simp [hb])) (fun h => hsl (by simp [h]))
       intro hcon
       rw [cword_cons, mul_assoc] at hcon
@@ -199,11 +186,11 @@ theorem clen_cword_mul {T : Set V} (hT : Commuting A T) {x : CayGroup A}
       clen A (cword A l * x) = l.length + clen A x := by
   intro l
   induction l with
-  | nil => intro _ _; simp
+  | nil => simp
   | cons a t ih =>
       intro hl hnd
       have iht := ih (fun b hb => hl b (by simp [hb])) hnd.of_cons
-      have hnot : ¬ IsDesc A (cword A t * x) a :=
+      have hnot  :=
         not_isDesc_cword_mul A hT hx (hl a (by simp)) t
           (fun b hb => hl b (by simp [hb])) (by simpa using (List.nodup_cons.1 hnd).1)
       have hstep := clen_gen_mul_of_not_desc A hnot
@@ -216,9 +203,9 @@ theorem clen_lt_of_mem_specialSub_left {T : Set V} (hT : Commuting A T) {x : Cay
   obtain ⟨l, hl, hnd, rfl⟩ := exists_nodup_cword A hT hu
   have hlen : l ≠ [] := by
     rintro rfl
-    exact hu1 (cword_nil A)
+    tauto
   have hsum := clen_cword_mul A hT hx l hl hnd
-  have hpos : 0 < l.length := List.length_pos_iff.2 hlen
+  have hpos  := List.length_pos_iff.2 hlen
   omega
 
 /-- The right-handed form: if no generator of the simplex `T` shortens `x` from the right, then
@@ -226,10 +213,10 @@ every nontrivial `u ∈ W_T` lengthens `x` on the right. -/
 theorem clen_lt_of_mem_specialSub {T : Set V} (hT : Commuting A T) {x : CayGroup A}
     (hx : ∀ s ∈ T, ¬ IsRDesc A x s) {u : CayGroup A} (hu : u ∈ specialSub A T) (hu1 : u ≠ 1) :
     clen A x < clen A (x * u) := by
-  have hx' : ∀ s ∈ T, ¬ IsDesc A x⁻¹ s := fun s hs hcon =>
+  have hx'  := fun s hs hcon =>
     hx s hs ((isRDesc_iff_isDesc A x s).2 hcon)
-  have hu' : u⁻¹ ∈ specialSub A T := Subgroup.inv_mem _ hu
-  have hu1' : u⁻¹ ≠ 1 := inv_ne_one.2 hu1
+  have hu'  := Subgroup.inv_mem _ hu
+  have hu1'  := inv_ne_one.2 hu1
   have h := clen_lt_of_mem_specialSub_left A hT hx' hu' hu1'
   have heq : clen A (u⁻¹ * x⁻¹) = clen A (x * u) := by
     rw [← clen_inv A (x * u), mul_inv_rev]
@@ -244,7 +231,7 @@ theorem exists_rdesc_of_earlier {T : Set V} (hT : Commuting A T) {x y : CayGroup
     ∃ s ∈ T, IsRDesc A x s := by
   by_contra hcon
   push_neg at hcon
-  have hu1 : x⁻¹ * y ≠ 1 := fun h => hne (inv_mul_eq_one.1 h).symm
+  have hu1  := fun h => hne (inv_mul_eq_one.1 h).symm
   have hlt := clen_lt_of_mem_specialSub A hT hcon hy hu1
   rw [mul_inv_cancel_left] at hlt
   omega
@@ -258,8 +245,7 @@ theorem earlier_of_rdesc {T : Set V} {x : CayGroup A} {s : V} (hs : s ∈ T)
   have hlt : clen A (x * gen A s) < clen A x := h
   refine ⟨by simpa using gen_mem_specialSub A hs, ?_, hlt⟩
   intro hcon
-  rw [hcon] at hlt
-  omega
+  simp_all
 
 /-- **The chamber intersection formula.**  For a simplex `T` of `L`, the chamber `F_x` meets an
 earlier chamber (one of length at most `ℓ(x)`, and different from `F_x`) in a point of mirror
@@ -287,7 +273,7 @@ theorem shortest_iff_no_rdesc {T : Set V} (hT : Commuting A T) (x : CayGroup A) 
   · intro h y hy
     by_cases hxy : y = x
     · simp [hxy]
-    · have hu1 : x⁻¹ * y ≠ 1 := fun hc => hxy (inv_mul_eq_one.1 hc).symm
+    · have hu1  := fun hc => hxy (inv_mul_eq_one.1 hc).symm
       have hlt := clen_lt_of_mem_specialSub A hT h hy hu1
       rw [mul_inv_cancel_left] at hlt
       omega
@@ -319,18 +305,18 @@ theorem existsUnique_shortest_coset {T : Set V} (hT : Commuting A T) (x : CayGro
     refine ⟨y, hy, fun z hz => ?_⟩
     have hfind : Nat.find hne ≤ clen A z := Nat.find_le ⟨z, hz, rfl⟩
     omega
-  have hyd : ∀ s ∈ T, ¬ IsRDesc A y s :=
+  have hyd  :=
     (shortest_iff_no_rdesc A hT y).1
       (fun z hz => hymin z ((mem_coset_congr A hyc z).1 hz))
   refine ⟨y, ⟨hyc, hyd⟩, ?_⟩
   rintro z ⟨hzc, hzd⟩
-  have hyz : y⁻¹ * z ∈ specialSub A T := (mem_coset_congr A hyc z).2 hzc
+  have hyz  := (mem_coset_congr A hyc z).2 hzc
   have hzy : z⁻¹ * y ∈ specialSub A T := by
     have := Subgroup.inv_mem _ hyz
-    rwa [mul_inv_rev, inv_inv] at this
+    assumption
   by_contra hne'
-  have h1 : y⁻¹ * z ≠ 1 := fun hc => hne' (inv_mul_eq_one.1 hc).symm
-  have h2 : z⁻¹ * y ≠ 1 := fun hc => hne' (inv_mul_eq_one.1 hc)
+  have h1  := fun hc => hne' (inv_mul_eq_one.1 hc).symm
+  have h2  := fun hc => hne' (inv_mul_eq_one.1 hc)
   have hlt1 := clen_lt_of_mem_specialSub A hT hyd hyz h1
   have hlt2 := clen_lt_of_mem_specialSub A hT hzd hzy h2
   rw [mul_inv_cancel_left] at hlt1 hlt2

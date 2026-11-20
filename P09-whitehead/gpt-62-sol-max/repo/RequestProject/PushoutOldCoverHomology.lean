@@ -32,30 +32,12 @@ theorem copy_ranges_eq_of_meet
       Set.range (translatedOldLift p i hiV hiE hiF hconn d₀ ht h).onE ∧
     Set.range (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onF =
       Set.range (translatedOldLift p i hiV hiE hiF hconn d₀ ht h).onF := by
-  obtain ⟨q, hV, hE, hF⟩ :=
+  obtain ⟨q, hq⟩ :=
     copies_identified_of_meet p a hr he hf i hiV hiE hiF hconn d₀ ht hEconn g h d e hmeet
-  refine ⟨?_, ?_, ?_⟩
-  · ext v
-    constructor
-    · rintro ⟨d, rfl⟩
-      exact ⟨a.smulV q d, (hV d).symm⟩
-    · rintro ⟨d, rfl⟩
-      refine ⟨a.smulV q⁻¹ d, ?_⟩
-      simpa only [← a.mul_smulV, mul_inv_cancel, a.one_smulV] using hV (a.smulV q⁻¹ d)
-  · ext e
-    constructor
-    · rintro ⟨d, rfl⟩
-      exact ⟨a.smulE q d, (hE d).symm⟩
-    · rintro ⟨d, rfl⟩
-      refine ⟨a.smulE q⁻¹ d, ?_⟩
-      simpa only [← a.mul_smulE, mul_inv_cancel, a.one_smulE] using hE (a.smulE q⁻¹ d)
-  · ext f
-    constructor
-    · rintro ⟨d, rfl⟩
-      exact ⟨a.smulF q d, (hF d).symm⟩
-    · rintro ⟨d, rfl⟩
-      refine ⟨a.smulF q⁻¹ d, ?_⟩
-      simpa only [← a.mul_smulF, mul_inv_cancel, a.one_smulF] using hF (a.smulF q⁻¹ d)
+  let F := translatedOldLift p i hiV hiE hiF hconn d₀ ht h
+  rw [hq]
+  exact ⟨(a.smulV_surjective q).range_comp F.onV, (a.smulE_surjective q).range_comp F.onE,
+    (a.smulF_surjective q).range_comp F.onF⟩
 
 include hp hr he hf hiF hconn ht hEconn in
 theorem old_two_cycle_zero (hD : IsAcyclic D)

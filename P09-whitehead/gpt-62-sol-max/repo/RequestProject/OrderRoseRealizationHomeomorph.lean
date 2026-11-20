@@ -34,9 +34,7 @@ def roseFourCycle : FinitePosetCycle (Rose PUnit) 2 where
       Rose.le (roseFourVertex i.succ) (roseFourVertex i.castSucc)
     fin_cases i <;> simp [roseFourVertex, Rose.le]
   closing := by
-    change Rose.le (roseFourVertex (Fin.last 3)) (roseFourVertex 0) ∨
-      Rose.le (roseFourVertex 0) (roseFourVertex (Fin.last 3))
-    simp [roseFourVertex, Rose.le]
+    tauto
   edges a b hne hab := by
     obtain ⟨i, rfl⟩ := roseFourVertex_surjective a
     obtain ⟨j, rfl⟩ := roseFourVertex_surjective b

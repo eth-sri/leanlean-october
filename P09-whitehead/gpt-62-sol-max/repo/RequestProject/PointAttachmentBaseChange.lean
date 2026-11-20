@@ -37,21 +37,19 @@ theorem attachmentBaseMap_injective (r : A → P) (i : A → D) (hi : Function.I
     rw [cell_of_not_mem _ _ _ d.property, cell_of_not_mem _ _ _ u.property] at h
     exact congrArg Sum.inr (Sum.inr.inj h)
 
-abbrev SingletonAttachment (i : A → D) := Space (fun _ : A => (PUnit.unit : PUnit)) i
+abbrev SingletonAttachment (i : A → D) := Space (fun _  => PUnit.unit) i
 
 def singletonAttachmentPoint (i : A → D) : SingletonAttachment i :=
-  old (fun _ : A => (PUnit.unit : PUnit)) i PUnit.unit
+  old (fun _  => PUnit.unit) i PUnit.unit
 
 def singletonAttachmentInto (x : X) (i : A → D) (hi : Function.Injective i) :
     C(SingletonAttachment i, Space (fun _ : A => x) i) :=
-  attachmentBaseMap (fun _ : A => (PUnit.unit : PUnit)) i hi (ContinuousMap.const PUnit x)
+  attachmentBaseMap (fun _  => PUnit.unit) i hi (ContinuousMap.const PUnit x)
 
 theorem singletonAttachmentInto_injective (x : X) (i : A → D) (hi : Function.Injective i) :
     Function.Injective (singletonAttachmentInto x i hi) :=
   attachmentBaseMap_injective _ _ hi _ (fun _ _ _ => Subsingleton.elim _ _)
 
-@[simp] theorem singletonAttachmentInto_point (x : X) (i : A → D) (hi : Function.Injective i) :
-    singletonAttachmentInto x i hi (singletonAttachmentPoint i) = old (fun _ : A => x) i x := rfl
 
 @[simp] theorem singletonAttachmentInto_cell (x : X) (i : A → D) (hi : Function.Injective i) (d : D) :
     singletonAttachmentInto x i hi (cell (fun _ : A => (PUnit.unit : PUnit)) i d) =
@@ -62,26 +60,22 @@ theorem singletonAttachmentInto_mem_old_iff (x : X) (i : A → D) (hi : Function
     singletonAttachmentInto x i hi z ∈ Set.range (old (fun _ : A => x) i) ↔
       z = singletonAttachmentPoint i := by
   rcases z with p | d
-  · have hp : p = PUnit.unit := Subsingleton.elim _ _
-    subst p
-    exact iff_of_true ⟨x, rfl⟩ rfl
+  · tauto
   · constructor
     · rintro ⟨y, hy⟩
-      change Sum.inl y = cell (fun _ : A => x) i d.val at hy
-      rw [cell_of_not_mem _ _ _ d.property] at hy
-      exact (Sum.inl_ne_inr hy).elim
-    · intro hz
-      exact (Sum.inr_ne_inl hz).elim
+      change Sum.inl y = cell (fun _  => x) i d.val at hy
+      aesop
+    · tauto
 
 theorem singletonAttachment_piece_isQuotientMap (x : X) (i : A → D) (hi : Function.Injective i) :
     IsQuotientMap (Sum.elim (old (fun _ : A => x) i) (singletonAttachmentInto x i hi)) := by
   let F : C(X ⊕ D, X ⊕ SingletonAttachment i) :=
-    ⟨Sum.elim Sum.inl (fun d => Sum.inr (cell (fun _ : A => (PUnit.unit : PUnit)) i d)),
+    ⟨Sum.elim Sum.inl (fun d => Sum.inr (cell (fun _  => PUnit.unit) i d)),
       continuous_inl.sumElim (continuous_inr.comp (cell_continuous _ _))⟩
-  let Q : C(X ⊕ SingletonAttachment i, Space (fun _ : A => x) i) :=
-    ⟨Sum.elim (old (fun _ : A => x) i) (singletonAttachmentInto x i hi),
+  let Q : C(X ⊕ SingletonAttachment i, Space (fun _  => x) i) :=
+    ⟨Sum.elim (old (fun _  => x) i) (singletonAttachmentInto x i hi),
       (old_continuous _ _).sumElim (singletonAttachmentInto x i hi).continuous⟩
-  have hf : Q ∘ F = quotientMap (fun _ : A => x) i := by
+  have hf : Q ∘ F = quotientMap (fun _  => x) i := by
     funext z
     cases z with
     | inl y => rfl
@@ -92,24 +86,15 @@ theorem singletonAttachment_piece_isQuotientMap (x : X) (i : A → D) (hi : Func
 
 def pointAttachmentBaseChangeHomeomorph (x : X) (i : A → D) (hi : Function.Injective i) :
     PointAttachment x (singletonAttachmentPoint i) ≃ₜ Space (fun _ : A => x) i :=
-  attachmentQuotientHomeomorph (fun _ : PUnit => x) (fun _ : PUnit => singletonAttachmentPoint i)
-    ⟨old (fun _ : A => x) i, old_continuous _ _⟩ (singletonAttachmentInto x i hi)
+  attachmentQuotientHomeomorph (fun _  => x) (fun _  => singletonAttachmentPoint i)
+    (Space.oldMap (fun _  => x) i) (singletonAttachmentInto x i hi)
     (fun _ => rfl) (old_injective _ _)
     (fun z => by
-      change singletonAttachmentInto x i hi z ∈ Set.range (old (fun _ : A => x) i) ↔
-        z ∈ Set.range (fun _ : PUnit.{u + 1} => singletonAttachmentPoint i)
-      rw [singletonAttachmentInto_mem_old_iff x i hi]
-      constructor
-      · exact fun hz => ⟨PUnit.unit, hz.symm⟩
-      · rintro ⟨a, ha⟩
-        exact ha.symm)
+      simp_all [singletonAttachmentInto_mem_old_iff x i hi])
     (fun _ _ _ _ h => singletonAttachmentInto_injective x i hi h)
     (singletonAttachment_piece_isQuotientMap x i hi)
 
-@[simp] theorem pointAttachmentBaseChangeHomeomorph_old
-    (x : X) (i : A → D) (hi : Function.Injective i) (y : X) :
-    pointAttachmentBaseChangeHomeomorph x i hi (pointOld x (singletonAttachmentPoint i) y) =
-      old (fun _ : A => x) i y := attachmentQuotientHomeomorph_old ..
+
 
 @[simp] theorem pointAttachmentBaseChangeHomeomorph_cell
     (x : X) (i : A → D) (hi : Function.Injective i) (y : SingletonAttachment i) :
@@ -120,7 +105,7 @@ def sigmaSingletonHomeomorph (Y : Type u) [TopologicalSpace Y] :
     (Σ _ : PUnit.{u + 1}, Y) ≃ₜ Y where
   toFun z := z.2
   invFun y := ⟨PUnit.unit, y⟩
-  left_inv := by rintro ⟨u, y⟩; cases u; rfl
+  left_inv := by tauto
   right_inv _ := rfl
   continuous_toFun := continuous_sigma (fun _ => continuous_id)
   continuous_invFun := continuous_sigmaMk (σ := fun _ : PUnit.{u + 1} => Y) (i := PUnit.unit)
@@ -136,17 +121,10 @@ def singletonDiskAttachmentHomeomorph (r : C(UnitBoundary E, X)) :
     r (unitBoundaryInclusion E) (sigmaSingletonHomeomorph (UnitBoundary E)).toEquiv
     (Homeomorph.refl X) (sigmaSingletonHomeomorph (ClosedUnitBall E))
     (fun _ => rfl) (fun _ => rfl)
-    (fun _ _ h => Subtype.ext (congrArg (fun z : ClosedUnitBall E => z.val) h))
+    (fun _ _ h => Subtype.ext (congrArg (·.val) h))
     (boundaryFamilyInclusion_isClosedEmbedding PUnit E).injective
 
-@[simp] theorem singletonDiskAttachmentHomeomorph_old (r : C(UnitBoundary E, X)) (x : X) :
-    singletonDiskAttachmentHomeomorph r (old (singletonDiskAttaching r) (boundaryFamilyInclusion PUnit E) x) =
-      old r (unitBoundaryInclusion E) x := rfl
 
-@[simp] theorem singletonDiskAttachmentHomeomorph_cell
-    (r : C(UnitBoundary E, X)) (d : DiskFamily PUnit E) :
-    singletonDiskAttachmentHomeomorph r
-      (cell (singletonDiskAttaching r) (boundaryFamilyInclusion PUnit E) d) =
-      cell r (unitBoundaryInclusion E) d.2 := attachmentDiagramHomeomorph_cell ..
+
 
 end FiniteChains.RelativeAttachment

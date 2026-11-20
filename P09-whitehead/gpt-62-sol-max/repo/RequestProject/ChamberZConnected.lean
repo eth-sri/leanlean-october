@@ -36,11 +36,7 @@ theorem zChamber_reachable (hc : IsConnected (orderCx X)) (w : CayGroup A)
         (zNew (att := att) ⟨w, hw⟩ x) (zNew (att := att) ⟨w, hw⟩ y) :=
       ⟨_, isPath_mapPath (orderCxMap _ hm) hl⟩
     have hxy := (orderComponentLabel_eq_iff _ _).mpr hr
-    have hx' : rp.1 = zNew (att := att) ⟨w, hw⟩ x := hx
-    have hy' : rq.1 = zNew (att := att) ⟨w, hw⟩ y := hy
-    rw [hx'] at hpx
-    rw [hy'] at hqy
-    exact hpx.symm.trans (hxy.trans hqy)
+    grind
   · exact (orderComponentLabel_eq_of_le (zApex_le hw hp)).symm.trans
       (orderComponentLabel_eq_of_le (zApex_le hw hq))
 

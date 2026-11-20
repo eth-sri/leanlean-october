@@ -48,88 +48,88 @@ variable {f : P → Q} (hf : IsPosetCover f)
 
 include hf
 
+/-- Reversing both orders exchanges the two interval lifting properties. -/
+theorem dual : @IsPosetCover Pᵒᵈ Qᵒᵈ _ _ f :=
+  ⟨hf.mono.dual, hf.surj, hf.down, hf.up⟩
+
+/-- The vertex in the upper sheet with the given projection. -/
+noncomputable def liftUp (a : P) (b : Q) (h : f a ≤ b) : {p // a ≤ p ∧ f p = b} :=
+  ⟨Classical.choose (hf.up a b h), (Classical.choose_spec (hf.up a b h)).1⟩
+
+theorem liftUp_strict (a : P) (b : Q) (h : f a < b) : a < (hf.liftUp a b h.le).1 :=
+  lt_of_le_not_ge (hf.liftUp a b h.le).2.1
+    (fun e => h.not_ge ((hf.liftUp a b h.le).2.2 ▸ hf.mono e))
+
 /-- Two elements above `a` with the same image agree. -/
-theorem up_inj {a b b' : P} (hb : a ≤ b) (hb' : a ≤ b') (h : f b = f b') : b = b' := by
-  obtain ⟨c, -, huniq⟩ := hf.up a (f b) (hf.mono hb)
-  rw [huniq b ⟨hb, rfl⟩, huniq b' ⟨hb', h.symm⟩]
+theorem up_inj {a b b' : P} (hb : a ≤ b) (hb' : a ≤ b') (h : f b = f b') : b = b' :=
+  (hf.up a (f b) (hf.mono hb)).unique ⟨hb, rfl⟩ ⟨hb', h.symm⟩
 
 /-- Two elements below `a` with the same image agree. -/
-theorem down_inj {a b b' : P} (hb : b ≤ a) (hb' : b' ≤ a) (h : f b = f b') : b = b' := by
-  obtain ⟨c, -, huniq⟩ := hf.down a (f b) (hf.mono hb)
-  rw [huniq b ⟨hb, rfl⟩, huniq b' ⟨hb', h.symm⟩]
+theorem down_inj {a b b' : P} (hb : b ≤ a) (hb' : b' ≤ a) (h : f b = f b') : b = b' :=
+  (hf.down a (f b) (hf.mono hb)).unique ⟨hb, rfl⟩ ⟨hb', h.symm⟩
+
+/-- Covering of two-skeleta for a pair of compatible transitive relations.
+The relations refine the order; the target relation lifts on comparable pairs. -/
+theorem isCovering_chainCxMap {r : P → P → Prop} {s : Q → Q → Prop}
+    {hr : IsTrans P r} {hs : IsTrans Q s}
+    (hP : ∀ {a b}, r a b → a ≤ b) (hQ : ∀ {a b}, s a b → a ≤ b)
+    (hmap : ∀ {a b}, r a b → s (f a) (f b))
+    (hlift : ∀ {a b}, a ≤ b → s (f a) (f b) → r a b) :
+    IsCovering (chainCxMap (hr := hr) (hs := hs) f hmap) := by
+  refine ⟨hf.surj, fun a => ⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
+  · rintro ⟨⟨e, b⟩, he⟩ ⟨⟨e', b'⟩, he'⟩ h
+    have hb : b = b' := congrArg (·.val.2) h
+    subst b'
+    have h₁  := congrArg (·.val.1.val.1) h
+    have h₂  := congrArg (·.val.1.val.2) h
+    have heq : e = e' := by
+      clear h
+      apply Subtype.ext
+      cases b with
+      | false =>
+          have he : e.val.2 = a := he
+          have he'  := he'
+          exact Prod.ext (hf.down_inj (he ▸ hP e.2) (he' ▸ hP e'.2) h₁) (he.trans he'.symm)
+      | true =>
+          have he  := he
+          have he' : e'.val.1 = a := he'
+          exact Prod.ext (he.trans he'.symm) (hf.up_inj (he ▸ hP e.2) (he' ▸ hP e'.2) h₂)
+    exact Subtype.ext (Prod.ext heq rfl)
+  · rintro ⟨⟨d, b⟩, hd⟩
+    cases b
+    · have hd : d.val.2 = f a := hd
+      obtain ⟨c, ⟨hc, hfc⟩, -⟩ := hf.down a d.val.1 (hd ▸ hQ d.2)
+      have hca  := hlift hc (hfc.symm ▸ hd ▸ d.2)
+      exact ⟨⟨(⟨(c, a), hca⟩, false), rfl⟩,
+        Subtype.ext (Prod.ext (Subtype.ext (Prod.ext hfc hd.symm)) rfl)⟩
+    · have hd : d.val.1 = f a := hd
+      obtain ⟨c, ⟨hc, hfc⟩, -⟩ := hf.up a d.val.2 (hd ▸ hQ d.2)
+      have hac  := hlift hc (hfc.symm ▸ hd ▸ d.2)
+      exact ⟨⟨(⟨(a, c), hac⟩, true), rfl⟩,
+        Subtype.ext (Prod.ext (Subtype.ext (Prod.ext hd.symm hfc)) rfl)⟩
+  · intro t t' h
+    have ha : t.val.1 = t'.val.1 := congrArg (·.val.2) h
+    have hb  := congrArg (·.val.1.val.2.1) h
+    have hc  := congrArg (·.val.1.val.2.2) h
+    have he := hf.up_inj (hP t.2.1) (ha.symm ▸ hP t'.2.1) hb
+    exact Subtype.ext (Prod.ext ha (Prod.ext he
+      (hf.up_inj (hP t.2.2) (he.symm ▸ hP t'.2.2) hc)))
+  · rintro ⟨⟨t, a⟩, ha⟩
+    have ha' : t.val.1 = f a := ha
+    obtain ⟨b, ⟨hab, hb⟩, -⟩ := hf.up a t.val.2.1 (ha' ▸ hQ t.2.1)
+    obtain ⟨c, ⟨hbc, hc⟩, -⟩ := hf.up b t.val.2.2 (hb.symm ▸ hQ t.2.2)
+    exact ⟨⟨(a, b, c), hlift hab (hb.symm ▸ ha' ▸ t.2.1),
+      hlift hbc (hc.symm ▸ hb.symm ▸ t.2.2)⟩,
+      Subtype.ext (Prod.ext (Subtype.ext (Prod.ext ha'.symm (Prod.ext hb hc))) rfl)⟩
 
 end IsPosetCover
 
-/-- **The criterion.**  A covering of preorders induces a combinatorial covering of the
-two-skeletons of the order complexes. -/
+/-- A covering of preorders induces a covering of their order complexes. -/
 theorem isCovering_orderCxMap {f : P → Q} (hf : IsPosetCover f) :
-    IsCovering (orderCxMap f hf.mono) := by
-  refine ⟨hf.surj, ?_, ?_⟩
-  · -- germs
-    intro a
-    constructor
-    · rintro ⟨⟨e, b⟩, he⟩ ⟨⟨e', b'⟩, he'⟩ hEq
-      have hb : b = b' := congrArg (fun g : Germ (orderCx Q) _ => g.1.2) hEq
-      subst hb
-      have hE : ((f e.1.1, f e.1.2) : Q × Q) = (f e'.1.1, f e'.1.2) :=
-        congrArg (fun g : Germ (orderCx Q) _ => (g.1.1.1.1, g.1.1.1.2)) hEq
-      have h1 : f e.1.1 = f e'.1.1 := congrArg Prod.fst hE
-      have h2 : f e.1.2 = f e'.1.2 := congrArg Prod.snd hE
-      refine Subtype.ext (Prod.ext ?_ rfl)
-      cases b with
-      | false =>
-          -- both edges end at `a`
-          have hae : e.1.2 = a := he
-          have hae' : e'.1.2 = a := he'
-          have hfst : e.1.1 = e'.1.1 :=
-            hf.down_inj (a := a) (by rw [← hae]; exact e.2) (by rw [← hae']; exact e'.2) h1
-          exact Subtype.ext (Prod.ext hfst (hae.trans hae'.symm))
-      | true =>
-          have hae : e.1.1 = a := he
-          have hae' : e'.1.1 = a := he'
-          have hsnd : e.1.2 = e'.1.2 :=
-            hf.up_inj (a := a) (by rw [← hae]; exact e.2) (by rw [← hae']; exact e'.2) h2
-          exact Subtype.ext (Prod.ext (hae.trans hae'.symm) hsnd)
-    · rintro ⟨⟨d, b⟩, hd⟩
-      cases b with
-      | true =>
-          have hfa : f a = d.1.1 := hd.symm
-          have hle : f a ≤ d.1.2 := by rw [hfa]; exact d.2
-          obtain ⟨c, ⟨hac, hfc⟩, -⟩ := hf.up a d.1.2 hle
-          refine ⟨⟨(⟨(a, c), hac⟩, true), rfl⟩, ?_⟩
-          refine Subtype.ext (Prod.ext ?_ rfl)
-          exact Subtype.ext (Prod.ext hfa hfc)
-      | false =>
-          have hfa : f a = d.1.2 := hd.symm
-          have hle : d.1.1 ≤ f a := by rw [hfa]; exact d.2
-          obtain ⟨c, ⟨hca, hfc⟩, -⟩ := hf.down a d.1.1 hle
-          refine ⟨⟨(⟨(c, a), hca⟩, false), rfl⟩, ?_⟩
-          refine Subtype.ext (Prod.ext ?_ rfl)
-          exact Subtype.ext (Prod.ext hfc hfa)
-  · -- two-cells
-    constructor
-    · rintro t t' hEq
-      have hbase : t.1.1 = t'.1.1 :=
-        congrArg (fun g : {gv : (orderCx Q).F × (orderCx P).V //
-          (orderCx Q).base gv.1 = f gv.2} => g.1.2) hEq
-      have hT : ((f t.1.1, f t.1.2.1, f t.1.2.2) : Q × Q × Q)
-          = (f t'.1.1, f t'.1.2.1, f t'.1.2.2) :=
-        congrArg (fun g : {gv : (orderCx Q).F × (orderCx P).V //
-          (orderCx Q).base gv.1 = f gv.2} => g.1.1.1) hEq
-      have h2 : f t.1.2.1 = f t'.1.2.1 := congrArg (fun z : Q × Q × Q => z.2.1) hT
-      have h3 : f t.1.2.2 = f t'.1.2.2 := congrArg (fun z : Q × Q × Q => z.2.2) hT
-      have hmid : t.1.2.1 = t'.1.2.1 :=
-        hf.up_inj t.2.1 (by rw [hbase]; exact t'.2.1) h2
-      have htop : t.1.2.2 = t'.1.2.2 :=
-        hf.up_inj (t.2.1.trans t.2.2) (by rw [hbase]; exact t'.2.1.trans t'.2.2) h3
-      exact Subtype.ext (Prod.ext hbase (Prod.ext hmid htop))
-    · rintro ⟨⟨s, a⟩, hs⟩
-      have hfa : f a = s.1.1 := hs.symm
-      obtain ⟨b, ⟨hab, hfb⟩, -⟩ := hf.up a s.1.2.1 (by rw [hfa]; exact s.2.1)
-      obtain ⟨c, ⟨hbc, hfc⟩, -⟩ := hf.up b s.1.2.2 (by rw [hfb]; exact s.2.2)
-      refine ⟨⟨(a, b, c), hab, hbc⟩, ?_⟩
-      refine Subtype.ext (Prod.ext ?_ rfl)
-      exact Subtype.ext (Prod.ext hfa (Prod.ext hfb hfc))
+    IsCovering (orderCxMap f hf.mono) :=
+  hf.isCovering_chainCxMap (r := (· ≤ ·)) (s := (· ≤ ·))
+    (hr := ⟨fun _ _ _ => le_trans⟩) (hs := ⟨fun _ _ _ => le_trans⟩)
+    (fun h => h) (fun h => h) (fun h => hf.mono h) (fun h _ => h)
 
 end Comb
 end FiniteChains

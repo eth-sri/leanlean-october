@@ -16,11 +16,9 @@ theorem squareFacet_v_spx (c : QCube A) {v w : V} (hne : v ≠ w)
   ext x
   simp only [qCubeFacet, hs, Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
   constructor
-  · rintro ⟨hx, hxv | hxw⟩
-    · exact hxv
-    · exact False.elim (hx hxw)
+  · simp_all
   · rintro rfl
-    exact ⟨hne, Or.inl rfl⟩
+    tauto
 
 theorem squareFacet_w_spx (c : QCube A) {v w : V} (hne : v ≠ w)
     (hs : c.spx = {v, w}) (s : ZMod 2) : (qCubeFacet c v s).spx = {w} := by

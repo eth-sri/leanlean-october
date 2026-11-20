@@ -18,7 +18,7 @@ variable {α J : Type} [DecidableEq α] (w : J → List (α × Bool))
 
 def coveredPresentationTwoComplex : Whitehead.TwoComplex := by
   letI : Nonempty (PresPos w) := ⟨ptBase w⟩
-  letI : (nerve (PresPos w)).HasDimensionLE 2 :=
+  letI  :=
     orderNerve_hasDimensionLE (presPosDimension w) (presPosDimension_strictMono w) 2
       (presPosDimension_le_two w)
   exact orderNerveTwoComplex (PresPos w)
@@ -31,7 +31,7 @@ theorem coveredPresentation_hasAcyclicRegularCover_of_perfect
     (hperf : ⁅H, H⁆ = H) :
     Whitehead.HasAcyclicRegularCover (coveredPresentationTwoComplex w hpos) := by
   letI : Nonempty (PresPos w) := ⟨ptBase w⟩
-  letI : (nerve (PresPos w)).HasDimensionLE 2 :=
+  letI  :=
     orderNerve_hasDimensionLE (presPosDimension w) (presPosDimension_strictMono w) 2
       (presPosDimension_le_two w)
   let N := subgroupPreimage ρ H

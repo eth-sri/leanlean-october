@@ -1,14 +1,13 @@
 module
 
 public import RequestProject.PositiveCornerLink
+public import RequestProject.FinsuppBasis
 public import RequestProject.MinimalCornerChains
 public import RequestProject.SurfaceFullCubeConeChains
 
 @[expose] public section
 
 /-! Actual surface chains extracted from the restored positive corner. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
@@ -39,23 +38,19 @@ theorem cornerSurfaceChain2_ordBoundary3 (c : OrdTet (QCube A) →₀ ℤ) :
 /-- Extracting the explicit cone fan recovers exactly its input surface edge chain. -/
 theorem cornerSurfaceChain2_surfaceCornerFan (c : (orderCx (NeSpx A)).E →₀ ℤ) :
     cornerSurfaceChain2 A (surfaceCornerFan A c) = c := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => rw [map_add, map_add, hc, hd]
-  | single e n =>
-      have hlt : positiveCorner A < surfaceFullCube A e.1.1 :=
-        (positiveCorner_lt_iff A _).mpr ⟨e.1.1.2.1, rfl⟩
-      rw [surfaceCornerFan, coneEdgeChain, Finsupp.linearCombination_single, map_smul]
-      change n • chain1 (cornerSurfaceMap A)
-        (cornerChain2 (positiveCorner A)
-          (Finsupp.single (coneEdgeTriangle (surfaceFullCube A)
-            (surfaceFullCube_monotone A) (positiveCorner A)
-            (positiveCorner_le_surface A) e) 1)) = _
-      rw [cornerChain2, Finsupp.linearCombination_single, one_smul]
-      have h : positiveCorner A = positiveCorner A ∧
-          positiveCorner A < surfaceFullCube A e.1.1 := ⟨rfl, hlt⟩
-      simp only [coneEdgeTriangle, cornerTriangleEdge, dif_pos h]
-      simp [chain1, cornerSurfaceMap, orderCxMap, positiveCornerLinkEquiv,
-        surfaceFullCube, posQCube]
+  finsupp_basis c
+  intro e
+  have hlt : positiveCorner A < surfaceFullCube A e.1.1 :=
+    (positiveCorner_lt_iff A _).mpr ⟨e.1.1.2.1, rfl⟩
+  rw [surfaceCornerFan, coneEdgeChain, Finsupp.linearCombination_single, map_smul]
+  change 1 • chain1 (cornerSurfaceMap A)
+    (cornerChain2 (positiveCorner A)
+      (Finsupp.single (coneEdgeTriangle (surfaceFullCube A)
+        (surfaceFullCube_monotone A) (positiveCorner A)
+        (positiveCorner_le_surface A) e) 1)) = _
+  rw [cornerChain2, Finsupp.linearCombination_single, one_smul]
+  have h : positiveCorner A = positiveCorner A ∧
+      positiveCorner A < surfaceFullCube A e.1.1 := ⟨rfl, hlt⟩
+  simp_all [coneEdgeTriangle, cornerTriangleEdge, chain1, cornerSurfaceMap, orderCxMap, positiveCornerLinkEquiv, surfaceFullCube, posQCube]
 
 end FiniteChains.Davis

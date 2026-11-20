@@ -4,9 +4,6 @@ public import RequestProject.TopologicalSingular.SingularSimplicialHelpers
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 variable {X : Type} [TopologicalSpace X]
@@ -23,7 +20,7 @@ theorem singular_four_horn_missing_one (T0 T2 T3 T4 : Simplex X 3)
     ∃ W : Simplex X 3,
       face 0 W = face 0 T0 ∧ face 1 W = face 1 T2 ∧
       face 2 W = face 1 T3 ∧ face 3 W = face 1 T4 := by
-  let g : Fin 5 → Simplex X 3 := ![T0, T0, T2, T3, T4]
+  let g  := ![T0, T0, T2, T3, T4]
   have hg : ∀ (j : Fin 5) (k : Fin 4) (hj : j ≠ 1) (hk : j.succAbove k ≠ 1),
       face k (g j) = face (k.predAbove j) (g (j.succAbove k)) := by
     intro j k hj hk

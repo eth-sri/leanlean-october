@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.WedgeSigma
+public import RequestProject.FinsuppBasis
 public import RequestProject.GenerationStepFinsupp
 public import RequestProject.BlockFamilyBlockwiseFinsupp
 
@@ -14,9 +15,6 @@ Pending Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -31,7 +29,7 @@ omit [DecidableEq A] [Fintype J] in
 theorem IsBlock.retract_hom_apply (x : PresGroup ρ) : hb.retract (hb.hom x) = x := by
   induction x using QuotientGroup.induction_on with
   | H w =>
-      change (QuotientGroup.mk (r (FreeGroup.map f w)) : PresGroup ρ) = QuotientGroup.mk w
+      change (QuotientGroup.mk (r (FreeGroup.map f w))) = QuotientGroup.mk w
       rw [hb.retract_map]
 
 def IsBlock.retractCoefficient :
@@ -41,37 +39,30 @@ def IsBlock.retractCoefficient :
 omit [DecidableEq A] [Fintype J] in
 theorem IsBlock.retractCoefficient_ringHom (x : MonoidAlgebra ℤ (PresGroup ρ)) :
     hb.retractCoefficient (hb.ringHom x) = x := by
-  induction x using MonoidAlgebra.induction_linear with
-  | zero => simp
-  | add x y hx hy => simp only [map_add, hx, hy]
-  | single a n =>
-      change MonoidAlgebra.mapDomain hb.retract (MonoidAlgebra.mapDomain hb.hom (MonoidAlgebra.single a n)) = _
-      rw [MonoidAlgebra.mapDomain_single, MonoidAlgebra.mapDomain_single, hb.retract_hom_apply]
+  group_ring_singles x
+  intro a n
+  change MonoidAlgebra.mapDomain hb.retract (MonoidAlgebra.mapDomain hb.hom (MonoidAlgebra.single a n)) = _
+  simp [hb.retract_hom_apply]
 
 /-- Reading a factor's coefficients through its actual retraction commutes
 with the boundary at every generator in that factor. -/
 theorem IsBlock.fsRetract_boundary (v : L →₀ MonoidAlgebra ℤ (PresGroup τ)) (a : A) :
     (∑ j : J, hb.retractCoefficient (v (g j)) * foxMatrixPres ρ a j) =
       hb.retractCoefficient (coverSecondBoundary (relSub τ) τ v (f a)) := by
-  induction v using Finsupp.induction_linear with
-  | zero => simp
-  | add v w hv hw =>
-      simp only [Finsupp.add_apply, map_add, add_mul, Finset.sum_add_distrib, hv, hw]
-  | single l c =>
-      by_cases hl : l ∈ Set.range g
-      · obtain ⟨j, rfl⟩ := hl
-        simp only [Finsupp.single_apply, hb.cell_injective.eq_iff,
-          apply_ite hb.retractCoefficient, map_zero, ite_mul, zero_mul]
-        rw [Fintype.sum_ite_eq]
-        simp only [fsCoverSecondBoundary_apply, Finsupp.sum_single_index, zero_mul,
-          map_mul, hb.foxMatrix_block, hb.retractCoefficient_ringHom]
-      · have hn (j : J) : l ≠ g j := fun he => hl ⟨j, he.symm⟩
-        have hz : foxMatrixPres τ (f a) l = 0 := by
-          change quotRingHom ℤ _ (fox (f a) (τ l)) = 0
-          rw [hb.fox_outside a l hl, map_zero]
-        rw [fsCoverSecondBoundary_apply, Finsupp.sum_single_index (zero_mul _), hz,
-          mul_zero, map_zero]
-        simp [hn]
+  finsupp_singles v
+  intro l c
+  by_cases hl : l ∈ Set.range g
+  · obtain ⟨j, rfl⟩ := hl
+    simp only [Finsupp.single_apply, hb.cell_injective.eq_iff,
+      apply_ite hb.retractCoefficient, map_zero, ite_mul, zero_mul]
+    simp_all [fsCoverSecondBoundary_apply, Finsupp.sum_single_index, hb.foxMatrix_block, hb.retractCoefficient_ringHom]
+  · have hn (j : J) : l ≠ g j := fun he => hl ⟨j, he.symm⟩
+    have hz : foxMatrixPres τ (f a) l = 0 := by
+      change quotRingHom ℤ _ (fox (f a) (τ l)) = 0
+      rw [hb.fox_outside a l hl, map_zero]
+    rw [fsCoverSecondBoundary_apply, Finsupp.sum_single_index (zero_mul _), hz,
+      mul_zero, map_zero]
+    simp [hn]
 
 /-- The actual finitely supported ambient cycle gives a cycle of the finite
 factor after applying the actual group retraction. -/
@@ -87,7 +78,6 @@ theorem IsBlock.fsAugmentation_zero (hρ : IsCockcroft ρ)
     (v : L →₀ MonoidAlgebra ℤ (PresGroup τ)) (hv : FSIsFoxCycle τ v) (j : J) :
     augPres τ (v (g j)) = 0 := by
   have h := hρ _ (hb.fsRetract_cycle v hv) j
-  change augPres ρ (MonoidAlgebra.mapDomainRingHom ℤ hb.retract (v (g j))) = 0 at h
   exact (augQ_mapDomain hb.retract (v (g j))).symm.trans h
 
 variable {S : Type} {X C : S → Type} [DecidableEq S]

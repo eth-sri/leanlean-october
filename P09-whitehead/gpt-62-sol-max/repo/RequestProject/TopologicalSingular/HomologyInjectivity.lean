@@ -18,7 +18,7 @@ theorem shortComplex_homologyMap_injective_of_reflects_boundaries
   have hzero : ∀ q : S.homology, (ShortComplex.homologyMap φ) q = 0 → q = 0 := by
     intro q hq
     obtain ⟨y, rfl⟩ := (ModuleCat.epi_iff_surjective S.homologyπ).mp inferInstance q
-    have hy : S.g (S.iCycles y) = 0 := congrArg (fun f => f y) S.iCycles_g
+    have hy  := congrArg (fun f => f y) S.iCycles_g
     have ht : T.pOpcycles (φ.τ₂ (S.iCycles y)) = 0 := by
       have he := congrArg (fun f => f y) (ShortComplex.π_homologyMap_ι φ)
       change T.homologyι ((ShortComplex.homologyMap φ) (S.homologyπ y)) =

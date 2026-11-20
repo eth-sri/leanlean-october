@@ -2,6 +2,8 @@ module
 
 public import RequestProject.OpenCoverPathReplacement
 
+public import RequestProject.PathInSubset
+
 @[expose] public section
 
 /-! Paths can be moved into an open core when its complementary charts are
@@ -27,26 +29,6 @@ theorem range_symm_subset {x y : X} (p : Path x y) {A : Set X}
   rintro _ ⟨t, rfl⟩
   exact hp ⟨_, rfl⟩
 
-theorem homotopic_of_within_simplyConnected (U : Set X) (hU : IsSimplyConnected U)
-    {x y : X} (p q : Path x y) (hp : Set.range p ⊆ U) (hq : Set.range q ⊆ U) :
-    Path.Homotopic p q := by
-  letI : SimplyConnectedSpace U := hU
-  have hx : x ∈ U := hp p.source_mem_range
-  have hy : y ∈ U := hp p.target_mem_range
-  let P : Path (⟨x, hx⟩ : U) ⟨y, hy⟩ := {
-    toFun := fun t => ⟨p t, hp ⟨t, rfl⟩⟩
-    continuous_toFun := p.continuous.subtype_mk _
-    source' := Subtype.ext p.source
-    target' := Subtype.ext p.target }
-  let Q : Path (⟨x, hx⟩ : U) ⟨y, hy⟩ := {
-    toFun := fun t => ⟨q t, hq ⟨t, rfl⟩⟩
-    continuous_toFun := q.continuous.subtype_mk _
-    source' := Subtype.ext q.source
-    target' := Subtype.ext q.target }
-  have h := (SimplyConnectedSpace.paths_homotopic P Q).map
-    (⟨Subtype.val, continuous_subtype_val⟩ : C(U, X))
-  exact h
-
 variable (A : Set X) (U : ι → Set X)
   (hcover : A ∪ ⋃ i, U i = Set.univ)
   (hdisj : Pairwise (fun i j => Disjoint (U i) (U j)))
@@ -64,10 +46,7 @@ def corePoint (x : X) : X :=
   else Classical.choose (hpath (Classical.choose (exists_chart A U hcover hx))).nonempty
 
 theorem corePoint_mem (x : X) : corePoint A U hcover hpath x ∈ A := by
-  by_cases hx : x ∈ A
-  · simpa only [corePoint, dif_pos hx] using hx
-  · simpa only [corePoint, dif_neg hx] using (Classical.choose_spec
-      (hpath (Classical.choose (exists_chart A U hcover hx))).nonempty).1
+  grind +locals
 
 theorem corePoint_eq {x : X} (hx : x ∈ A) : corePoint A U hcover hpath x = x :=
   dif_pos hx
@@ -77,7 +56,7 @@ theorem point_joined_corePoint {x : X} (hx : x ∉ A) :
     JoinedIn (U (Classical.choose (exists_chart A U hcover hx))) x
       (corePoint A U hcover hpath x) := by
   let i := Classical.choose (exists_chart A U hcover hx)
-  have hi : x ∈ U i := Classical.choose_spec (exists_chart A U hcover hx)
+  have hi  := Classical.choose_spec (exists_chart A U hcover hx)
   have ha : corePoint A U hcover hpath x ∈ U i := by
     simpa only [corePoint, dif_neg hx] using (Classical.choose_spec (hpath i).nonempty).2
   exact (hsc i).isPathConnected.joinedIn _ hi _ ha
@@ -90,13 +69,11 @@ theorem coreConnector_cast {x : X} (hx : x ∈ A) :
     (coreConnector A U hcover hpath hsc x).cast rfl
       (corePoint_eq A U hcover hpath hx).symm = Path.refl x := by
   apply Path.ext
-  funext t
-  simp only [coreConnector, dif_pos hx, Path.cast_coe]
+  simp_all [coreConnector, Path.cast_coe]
 
 theorem coreConnector_range_of_mem {x : X} (hx : x ∈ A) :
     Set.range (coreConnector A U hcover hpath hsc x) ⊆ A := by
-  rintro _ ⟨t, rfl⟩
-  simpa only [coreConnector, dif_pos hx, Path.cast_coe, Path.refl_apply] using hx
+  simp_all [coreConnector, Path.cast_coe]
 
 include hdisj in
 theorem coreConnector_range_chart (i : ι) {x : X} (hx : x ∈ U i) :
@@ -105,14 +82,12 @@ theorem coreConnector_range_chart (i : ι) {x : X} (hx : x ∈ U i) :
   · rintro _ ⟨t, rfl⟩
     simpa only [coreConnector, dif_pos hxA, Path.cast_coe, Path.refl_apply] using hx
   · let k := Classical.choose (exists_chart A U hcover hxA)
-    have hk : x ∈ U k := Classical.choose_spec (exists_chart A U hcover hxA)
+    have hk  := Classical.choose_spec (exists_chart A U hcover hxA)
     have hki : k = i := by
       by_contra hne
       exact Set.disjoint_left.mp (hdisj hne) hk hx
     rintro _ ⟨t, rfl⟩
-    rw [coreConnector, dif_neg hxA]
-    simpa only [← hki] using
-      (point_joined_corePoint A U hcover hpath hsc hxA).somePath_mem t
+    simp [coreConnector, dif_neg hxA, ← hki]
 
 include hcover hdisj hpath hsc in
 theorem path_into_core (hA : IsOpen A) (hU : ∀ i, IsOpen (U i))
@@ -156,7 +131,7 @@ theorem path_into_core (hA : IsOpen A) (hU : ∀ i, IsOpen (U i))
       refine ⟨hw.somePath, ?_, ?_⟩
       · rintro _ ⟨t, rfl⟩
         exact (hw.somePath_mem t).1
-      · apply homotopic_of_within_simplyConnected (U i) (hsc i)
+      · apply Path.homotopic_of_range_subset (hsc i)
         · exact range_trans_subset _ _ (range_trans_subset _ _ (range_symm_subset _ hb) hv) hc
         · rintro _ ⟨t, rfl⟩
           exact (hw.somePath_mem t).2
@@ -171,7 +146,7 @@ theorem path_into_core (hA : IsOpen A) (hU : ∀ i, IsOpen (U i))
     Path.cast_trans _ _ hx'.symm rfl rfl, Path.cast_symm,
     coreConnector_cast A U hcover hpath hsc hx,
     coreConnector_cast A U hcover hpath hsc hy, Path.cast_rfl_rfl] at h
-  have hnorm : Path.Homotopic (((Path.refl x).symm.trans p).trans (Path.refl y)) p :=
+  have hnorm  :=
     (Path.Homotopic.trans_refl _).trans (Path.Homotopic.refl_trans p)
   exact hnorm.symm.trans h
 

@@ -54,7 +54,7 @@ omit [Fintype V] [LinearOrder V] in
 theorem update_posCube (σ : Finset V) (j : V) :
     Function.update (posCube σ) j CubeCoord.free = posCube (insert j σ) := by
   funext v
-  by_cases hv : v = j <;> simp [posCube, hv, Function.update_apply]
+  by_cases hv : v = j <;> simp [posCube, hv]
 
 omit [LinearOrder V] in
 @[simp] theorem cubeChain_posCube (o : Finset V → ℤ) (σ : Finset V) :
@@ -62,7 +62,7 @@ omit [LinearOrder V] in
   have : ∏ h ∈ univ \ σ, ((posCube σ) h).sgn = 1 := by
     refine Finset.prod_eq_one ?_
     intro h hh
-    have : h ∉ σ := (Finset.mem_sdiff.mp hh).2
+    have  := (Finset.mem_sdiff.mp hh).2
     simp [posCube, this, CubeCoord.sgn]
   simp [cubeChain, this]
 
@@ -89,8 +89,7 @@ theorem bdry_posCube (c : Cube V → ℤ) (τ : Finset V) :
   refine Finset.sum_congr rfl ?_
   intro j hj
   have hjτ : j ∉ τ := by simpa using hj
-  rw [update_posCube, incid, freeSet_posCube]
-  simp [posCube, hjτ, CubeCoord.sgn]
+  simp [update_posCube, incid, freeSet_posCube, posCube, hjτ, CubeCoord.sgn]
 
 /-- **Lemma 3.2 (iii): the cut surface bounds.**  Let `o` be the fundamental cycle of an
 oriented triangulated closed surface `L` (a simplicial cycle supported on the triangles).
@@ -104,7 +103,7 @@ theorem cutSurface_isBoundary {o : Finset V → ℤ} (hcyc : simpBdry o = 0)
   · exact cubeChain_cycle hcyc
   · funext τ
     show cutSign τ * cubeChain o (posCube τ) + simpBdry 0 τ = -o τ
-    have hzero : simpBdry (0 : Finset V → ℤ) τ = 0 := by simp [simpBdry]
+    have hzero : simpBdry 0 τ = 0 := by simp [simpBdry]
     rw [hzero, add_zero, cubeChain_posCube]
     by_cases h3 : τ.card = 3
     · simp [cutSign, h3]

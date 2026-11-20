@@ -1,15 +1,14 @@
 module
 
 public import RequestProject.OrderNormalizationHomotopy
+public import RequestProject.FinsuppBasis
 public import RequestProject.NervePrism
 
 @[expose] public section
 
 /-! The actual cellular boundary maps in degrees two and three agree with the full nerve. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -28,25 +27,21 @@ noncomputable def ordNerveChain3 : (OrdTet P →₀ ℤ) →ₗ[ℤ] Nerve.Ch P 
 /-- A triangle's attaching edge chain is its alternating simplicial boundary. -/
 theorem ordNerveChain1_bdry2 (c : OrdTri P →₀ ℤ) :
     ordNerveChain1 (bdry2 (orderCx P) c) = Nerve.bdry (ordNerveChain2 c) := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
-  | single t n =>
-    rw [bdry2_single]
-    simp [ordNerveChain1, ordNerveChain2, pathChain, orderCx, Nerve.bdryOn,
-      Nerve.consMap_of, smul_add, smul_sub]
-    abel
+  finsupp_basis c
+  intro t
+  rw [bdry2_single]
+  simp [ordNerveChain1, ordNerveChain2, pathChain, orderCx, Nerve.bdryOn,
+    Nerve.consMap_of, smul_add]
+  abel
 
 /-- The cellular three-boundary is exactly the full nerve three-boundary. -/
 theorem ordNerveChain2_ordBoundary3 (c : OrdTet P →₀ ℤ) :
     ordNerveChain2 (ordBoundary3 c) = Nerve.bdry (ordNerveChain3 c) := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
-  | single t n =>
-    simp [ordNerveChain2, ordNerveChain3, ordBoundary3, ordTetBoundary,
-      Nerve.bdryOn, Nerve.consMap_of, smul_add, smul_sub]
-    abel
+  finsupp_basis c
+  intro t
+  simp [ordNerveChain2, ordNerveChain3, ordBoundary3, ordTetBoundary, tetrahedronBoundary,
+    Nerve.bdryOn, Nerve.consMap_of, smul_add, smul_sub, ordTetFace, ChainTet.face]
+  abel
 
 /-- The normalized image of every weak two-cycle represents the same full-nerve class. -/
 theorem ordNerve_normalization_cycle (c : OrdTri P →₀ ℤ)

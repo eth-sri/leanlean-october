@@ -7,8 +7,6 @@ public import RequestProject.StrictNormalizedOneMaps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
@@ -17,28 +15,28 @@ variable {P G : Type u} [PartialOrder P] [Group G] (c : OrdCocycle P G)
 
 def coverBase (a : P) : c.Cover := ⟨a, 1⟩
 def coverHom : Hom (orderCx c.Cover) (orderCx P) :=
-  orderCxMap Cover.point c.coverProjection_isPosetCover.mono
+  orderCxMap Sigma.fst c.coverProjection_isPosetCover.mono
 
 theorem coverGerm_sheet (e : (orderCx c.Cover).E × Bool) :
-    (germSrc (orderCx c.Cover).src (orderCx c.Cover).tgt e).sheet *
+    (germSrc (orderCx c.Cover).src (orderCx c.Cover).tgt e).2 *
         c.readGerm ((c.coverHom).onE e.1, e.2) =
-      (germTgt (orderCx c.Cover).src (orderCx c.Cover).tgt e).sheet := by
+      (germTgt (orderCx c.Cover).src (orderCx c.Cover).tgt e).2 := by
   obtain ⟨e, b⟩ := e
   cases b with
-  | true => exact e.property.2
+  | true => exact e.property.choose_spec
   | false =>
-    change e.val.2.sheet * (c.val e.val.1.point e.val.2.point)⁻¹ = e.val.1.sheet
-    rw [← e.property.2]
-    simp only [mul_assoc, mul_inv_cancel, mul_one]
+    change e.val.2.2 * (c.val e.val.1.1 e.val.2.1)⁻¹ = e.val.1.2
+    rw [← show e.val.1.2 * c.val e.val.1.1 e.val.2.1 = e.val.2.2 from e.property.choose_spec]
+    simp
 
 theorem coverPath_sheet {a b : c.Cover} {p : List ((orderCx c.Cover).E × Bool)}
     (hp : IsPath (orderCx c.Cover).src (orderCx c.Cover).tgt p a b) :
-    a.sheet * c.readPath (mapPath c.coverHom p) = b.sheet := by
+    a.2 * c.readPath (mapPath c.coverHom p) = b.2 := by
   induction p generalizing a with
   | nil => cases hp; simp
   | cons e p ih =>
     obtain ⟨ha, hp⟩ := hp
-    change a.sheet * c.readPath (((c.coverHom).onE e.1, e.2) :: mapPath c.coverHom p) = _
+    change a.2 * c.readPath ((c.coverHom.onE e.1, e.2) :: mapPath c.coverHom p) = _
     rw [readPath_cons, ← mul_assoc, ha, c.coverGerm_sheet]
     exact ih hp
 
@@ -48,7 +46,7 @@ theorem coverPi1_reading (a : P) (g : Pi1 (orderCx c.Cover) (c.coverBase a)) :
   | h p =>
     have h := c.coverPath_sheet p.property
     change c.readPath (mapPath c.coverHom p.val) = 1
-    simpa only [coverBase, one_mul] using h
+    simp_all [coverBase]
 
 /-- The fundamental group of the honest cocycle cover maps to the monodromy kernel. -/
 def coverPi1KernelHom (a : P) :
@@ -73,24 +71,20 @@ theorem coverPi1KernelHom_surjective (a : P) :
     rw [hp]
     exact g.property
   obtain ⟨m, b, hm, he⟩ := exists_liftPathAt
-    (isCovering_orderCxMap c.coverProjection_isPosetCover)
+    (isCovering_orderCxMap c.coverProjection_isPosetCover).uniqueLifts
     p.val (c.coverBase a) a p.property
   change mapPath c.coverHom m = p.val at he
-  have hbpoint : b.point = a :=
+  have hbpoint  :=
     isPath_endpoint_eq (isPath_mapPath c.coverHom hm) (he.symm ▸ p.property)
-  have hbsheet : b.sheet = 1 := by
+  have hbsheet : b.2 = 1 := by
     have h := c.coverPath_sheet hm
     rw [he, hread] at h
     simpa only [coverBase, one_mul] using h.symm
-  have hb : b = c.coverBase a := by
-    cases b with
-    | mk bp bg => dsimp only at hbpoint hbsheet; cases hbpoint; cases hbsheet; rfl
+  have hb : b = c.coverBase a := Sigma.ext hbpoint (heq_of_eq hbsheet)
   refine ⟨Pi1.mk ⟨m, hb ▸ hm⟩, ?_⟩
   apply Subtype.ext
   change Pi1.mk ⟨mapPath c.coverHom m, _⟩ = g.val
-  rw [← hp]
-  apply congrArg Pi1.mk
-  exact Subtype.ext he
+  simp_all [← hp]
 
 noncomputable def coverPi1KernelEquiv (a : P) :
     Pi1 (orderCx c.Cover) (c.coverBase a) ≃* (c.monodromy a).ker :=

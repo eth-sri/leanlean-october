@@ -43,11 +43,11 @@ def ordinaryBoundaryToCoordinate {f t : QOld A} (ht : t.1.sgn ≠ 0)
     exact h
   refine ⟨qCubeToCoordinate d.1, (qCubeToCoordinate_face_iff d.1 t.1).mp hle, ?_, ?_⟩
   · intro he
-    have hdt : d = t := Subtype.ext
+    have hdt  := Subtype.ext
       (qCubeCoordinateEquiv.injective (Subtype.ext he))
     exact c.2.1.ne (hd.trans (congrArg Sum.inl hdt))
   · intro he
-    have hdf : d = f := Subtype.ext
+    have hdf  := Subtype.ext
       (qCubeCoordinateEquiv.injective (Subtype.ext (he.trans hf.symm)))
     exact c.2.2 (hd.trans (congrArg Sum.inl hdf))
 
@@ -62,23 +62,23 @@ def coordinateBoundaryToOrdinary {f t : QOld A} (ht : t.1.sgn ≠ 0)
       · exact mem_freeSet.mpr he
       · exact mem_freeSet.mpr (he.symm.trans hvc)
     simpa using hvt
-  let d : QCube A := coordinateToQCube ⟨c.1, isSimplex_subset A hs t.1.isSimplex⟩
+  let d  := coordinateToQCube ⟨c.1, isSimplex_subset A hs t.1.isSimplex⟩
   have hd : qCubeToCoordinate d = c.1 := coordinateToQCube_toCoordinate _
-  have hdt : d ≤ t.1 := (qCubeToCoordinate_face_iff d t.1).mpr (hd ▸ c.2.1)
+  have hdt  := (qCubeToCoordinate_face_iff d t.1).mpr (hd ▸ c.2.1)
   have hold : ¬ (d.spx = ∅ ∧ d.sgn = 0) := by
     rintro ⟨_, hz⟩
     exact ht (qCube_sgn_zero_of_face hdt hz)
   let w : QOld A := ⟨d, hold⟩
   refine ⟨Sum.inl w, lt_of_le_of_ne hdt ?_, ?_⟩
   · intro he
-    have hw : w = t := Sum.inl.inj he
-    have hh : c.1 = qCubeToCoordinate t.1 := hd.symm.trans
-      (congrArg (fun x : QOld A => qCubeToCoordinate x.1) hw)
+    have hw  := Sum.inl.inj he
+    have hh  := hd.symm.trans
+      (congrArg (fun x  => qCubeToCoordinate x.1) hw)
     exact c.2.2.1 hh
   · intro he
-    have hw : w = f := Sum.inl.inj he
-    have hh : c.1 = coordinateFix j b (qCubeToCoordinate t.1) := hd.symm.trans
-      ((congrArg (fun x : QOld A => qCubeToCoordinate x.1) hw).trans hf)
+    have hw  := Sum.inl.inj he
+    have hh  := hd.symm.trans
+      ((congrArg (fun x  => qCubeToCoordinate x.1) hw).trans hf)
     exact c.2.2.2 hh
 
 theorem coordinateBoundaryToOrdinary_coordinate {f t : QOld A} (ht : t.1.sgn ≠ 0)
@@ -140,11 +140,10 @@ theorem exists_facet_coordinates_of_inc {L : ASC V} (f t : QOld A)
     simp only [spineInc] at hi
     split at hi
     · exact hi
-    · simp at hi
+    · aesop
   obtain ⟨j, hj, _, he⟩ := mem_cofaces.mp hm
   refine ⟨j, qCubeToCoordinate f.1 j, hj, ?_, ?_⟩
-  · rw [he]
-    exact Function.update_self _ _ _
+  · simp_all
   · funext v
     by_cases hv : v = j
     · subst v

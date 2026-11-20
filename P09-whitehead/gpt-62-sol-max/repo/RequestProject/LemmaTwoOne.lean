@@ -1,6 +1,7 @@
 module
 
 public import Mathlib
+public import RequestProject.FinsuppBasis
 public import RequestProject.GroupRingReduction
 public import RequestProject.QuotientInjectivity
 public import RequestProject.TorsionFreeGroupRing
@@ -28,11 +29,7 @@ is the commutative-algebra core proved in
 `RequestProject/QuotientInjectivity.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-set_option maxHeartbeats 800000
 
 open scoped IsMulCommutative
 
@@ -105,9 +102,7 @@ theorem cosetBasis_repr_cosetRep [IsMulCommutative H] (c : RightCosets H) :
   have hc : Quotient.mk (QuotientGroup.rightRel H) (cosetRep H c) = c := Quotient.out_eq c
   simp only [hc]
   congr 1
-  have hone : (⟨cosetRep H c * (cosetRep H c)⁻¹, by simp⟩ : H) = 1 := Subtype.ext (by simp)
-  rw [hone]
-  rfl
+  aesop
 
 theorem vecCoords_symm_single [IsMulCommutative H] {ι : Type*} (i : ι) (c : RightCosets H) :
     (vecCoords k H ι).symm (Finsupp.single (i, c) 1) =
@@ -121,11 +116,8 @@ theorem vecCoords_symm_single [IsMulCommutative H] {ι : Type*} (i : ι) (c : Ri
   · subst hi
     rw [Finsupp.single_eq_same, cosetBasis_repr_cosetRep, Finsupp.single_apply,
       Finsupp.single_apply]
-    simp [Prod.ext_iff]
-  · have h0 : (Finsupp.single i (single (cosetRep H c) (1 : k)) : ι →₀ MonoidAlgebra k Q) i' = 0 :=
-      Finsupp.single_eq_of_ne hi
-    rw [h0, map_zero, Finsupp.coe_zero, Pi.zero_apply, Finsupp.single_apply,
-      if_neg (fun hcon => hi (congrArg Prod.fst hcon).symm)]
+    aesop
+  · aesop
 
 theorem redCoords_symm_single [H.Normal] {ι : Type*} (i : ι) (c : RightCosets H) (a : k) :
     (redCoords k H ι).symm (Finsupp.single (i, c) a) =
@@ -138,13 +130,8 @@ theorem redCoords_symm_single [H.Normal] {ι : Type*} (i : ι) (c : RightCosets 
   by_cases hi : i' = i
   · subst hi
     rw [Finsupp.single_eq_same, MonoidAlgebra.coeff_single, Finsupp.single_apply, Finsupp.single_apply]
-    have hiff : ((cosetQuotEquiv H) c = (cosetQuotEquiv H) c') ↔ ((i', c) = (i', c')) := by
-      simp [Prod.ext_iff, (cosetQuotEquiv H).injective.eq_iff]
-    simp [hiff]
-  · have h0 : (Finsupp.single i (single (cosetQuotEquiv H c) a) :
-        ι →₀ MonoidAlgebra k (Q ⧸ H)) i' = 0 := Finsupp.single_eq_of_ne hi
-    rw [h0, Finsupp.single_apply, if_neg (fun hcon => hi (congrArg Prod.fst hcon).symm)]
-    rfl
+    simp
+  · simp_all
 
 section Main
 
@@ -157,7 +144,7 @@ theorem injective_of_reduceLinQ_injective {ι κ : Type*}
     (f : (ι →₀ MonoidAlgebra k Q) →ₗ[MonoidAlgebra k Q] (κ →₀ MonoidAlgebra k Q))
     (hred : Function.Injective (reduceLinQ k H f)) : Function.Injective f := by
   classical
-  haveI : IsDomain (MonoidAlgebra k H) := monoidAlgebra_isDomain k H
+  haveI  := monoidAlgebra_isDomain k H
   -- `f` written in the `k[H]`-basis of coset representatives
   set F : ((ι × RightCosets H) →₀ MonoidAlgebra k H) →ₗ[MonoidAlgebra k H]
       ((κ × RightCosets H) →₀ MonoidAlgebra k H) :=
@@ -166,39 +153,33 @@ theorem injective_of_reduceLinQ_injective {ι κ : Type*}
   have hsquare : ∀ w, reduceMap (augH k H) F w =
       redCoords k H κ (reduceLinQ k H f ((redCoords k H ι).symm w)) := by
     intro w
-    induction w using Finsupp.induction_linear with
-    | zero => simp
-    | add w₁ w₂ h₁ h₂ => simp [h₁, h₂]
-    | single p a =>
-        obtain ⟨i, c⟩ := p
-        rw [reduceMap_single, hF]
-        simp only [LinearMap.comp_apply, LinearEquiv.coe_coe, vecCoords_symm_single,
-          restrictToH_apply]
-        have hsingle : (Finsupp.single i (single (cosetRep H c) (1 : k)) :
-            ι →₀ MonoidAlgebra k Q) =
-            (single (cosetRep H c) (1 : k) : MonoidAlgebra k Q) • Finsupp.single i 1 := by
-          ext j
-          by_cases hj : j = i <;> simp [hj, Finsupp.single_apply]
-        rw [hsingle, f.map_smul]
-        -- pass to the reduced side
-        rw [show (reduceVec (augH k H)
-              (vecCoords k H κ ((single (cosetRep H c) (1 : k) : MonoidAlgebra k Q) •
-                f (Finsupp.single i 1)))) =
-            redCoords k H κ (reduceVecQ k H
-              ((single (cosetRep H c) (1 : k) : MonoidAlgebra k Q) • f (Finsupp.single i 1)))
-          from mapRange_augH_vecCoords (k := k) (H := H) _]
-        rw [reduceVecQ_smul, quotRingHom_single, cosetQuotEquiv_cosetRep,
-          redCoords_symm_single, reduceLinQ_single, ← map_smul (redCoords k H κ)]
-        congr 1
-        rw [← smul_assoc]
-        congr 1
-        simp
+    finsupp_singles w
+    intro p a
+    obtain ⟨i, c⟩ := p
+    rw [reduceMap_single, hF]
+    simp only [LinearMap.comp_apply, LinearEquiv.coe_coe, vecCoords_symm_single,
+      restrictToH_apply]
+    have hsingle : (Finsupp.single i (single (cosetRep H c) (1 : k))) =
+        (single (cosetRep H c) (1 : k)) • Finsupp.single i 1 := by
+      simp
+    rw [hsingle, f.map_smul]
+    -- pass to the reduced side
+    rw [show (reduceVec (augH k H)
+          (vecCoords k H κ ((single (cosetRep H c) (1 : k) : MonoidAlgebra k Q) •
+            f (Finsupp.single i 1)))) =
+        redCoords k H κ (reduceVecQ k H
+          ((single (cosetRep H c) (1 : k) : MonoidAlgebra k Q) • f (Finsupp.single i 1)))
+      from mapRange_augH_vecCoords (k := k) (H := H) _]
+    rw [reduceVecQ_smul, quotRingHom_single, cosetQuotEquiv_cosetRep,
+      redCoords_symm_single, reduceLinQ_single, ← map_smul (redCoords k H κ)]
+    congr 1
+    rw [← smul_assoc]
+    aesop
   have hFinj : Function.Injective (reduceMap (augH k H) F) := by
-    have hfun : (reduceMap (augH k H) F : _ → _) =
-        (redCoords k H κ) ∘ (reduceLinQ k H f) ∘ (redCoords k H ι).symm := funext hsquare
+    have hfun  := funext hsquare
     rw [hfun]
     exact (redCoords k H κ).injective.comp (hred.comp (redCoords k H ι).symm.injective)
-  have hFinj' : Function.Injective F := injective_of_reduceMap_injective (augH k H) F hFinj
+  have hFinj'  := injective_of_reduceMap_injective (augH k H) F hFinj
   intro u v huv
   have h1 : F (vecCoords k H ι u) = F (vecCoords k H ι v) := by
     simp only [hF, LinearMap.comp_apply, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply,

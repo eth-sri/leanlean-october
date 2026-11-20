@@ -23,13 +23,11 @@ theorem exists_attachingDiskExtension (S : Set D)
       (∀ d, L (0, d) = cell a₀ Subtype.val d) ∧
       ∀ t a, L (t, a.val) = old a₀ Subtype.val (H (t, a)) := by
   apply hext (Space a₀ Subtype.val)
-    ⟨cell a₀ Subtype.val, cell_continuous _ _⟩
-    ((⟨old a₀ Subtype.val, old_continuous _ _⟩ : C(P, Space a₀ Subtype.val)).comp
+    (Space.cellMap a₀ Subtype.val)
+    ((Space.oldMap a₀ Subtype.val).comp
       H.toContinuousMap)
   intro a
-  change old a₀ Subtype.val (H (0, a)) = cell a₀ Subtype.val a.val
-  rw [H.apply_zero]
-  exact (cell_boundary a₀ Subtype.val Subtype.val_injective a).symm
+  simpa using (cell_boundary a₀ Subtype.val Subtype.val_injective a).symm
 
 def attachingDiskExtension (S : Set D)
     (hext : HasHomotopyExtension (Subtype.val : S → D))
@@ -52,12 +50,11 @@ def attachingBackwardMap (S : Set D)
     (hext : HasHomotopyExtension (Subtype.val : S → D))
     (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁) :
     C(Space a₁ Subtype.val, Space a₀ Subtype.val) :=
-  desc a₁ Subtype.val ⟨old a₀ Subtype.val, old_continuous _ _⟩
+  desc a₁ Subtype.val (Space.oldMap a₀ Subtype.val)
     ((attachingDiskExtension S hext a₀ a₁ H).comp
       ⟨fun d => (1, d), continuous_const.prodMk continuous_id⟩)
     (fun a => by
-      change old a₀ Subtype.val (a₁ a) = attachingDiskExtension S hext a₀ a₁ H (1, a.val)
-      rw [attachingDiskExtension_side, H.apply_one])
+      simp [attachingDiskExtension_side])
 
 @[simp] theorem attachingBackwardMap_old (S : Set D)
     (hext : HasHomotopyExtension (Subtype.val : S → D))

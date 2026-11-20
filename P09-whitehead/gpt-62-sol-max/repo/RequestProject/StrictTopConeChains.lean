@@ -1,14 +1,13 @@
 module
 
 public import RequestProject.CellularChainMapZero
+public import RequestProject.FinsuppBasis
 public import RequestProject.OrderThreeNormalization
 
 @[expose] public section
 
 /-! Upper cones in the genuine strict simplicial cell model. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -41,16 +40,14 @@ theorem strictTopConeEdgeChain_boundary (z : (strictOrderCx P).E →₀ ℤ) :
     bdry2 (strictOrderCx Q) (strictTopConeEdgeChain f hf c hc z) =
       chain1 (strictOrderCxMap f hf) z +
         strictTopConeRadialChain f c hc (bdry1 (strictOrderCx P) z) := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, map_add, hz, hw, map_add, map_add, map_add]; abel
-  | single e n =>
-      rw [strictTopConeEdgeChain, Finsupp.linearCombination_single, map_smul,
-        strictTopConeEdgeTriangle_boundary]
-      change _ = Finsupp.mapDomain (strictOrderCxMap f hf).onE (Finsupp.single e n) + _
-      rw [Finsupp.mapDomain_single]
-      simp [strictTopConeRadialChain, bdry1, smul_add, smul_sub]
-      abel
+  finsupp_basis z
+  intro e
+  rw [strictTopConeEdgeChain, Finsupp.linearCombination_single, map_smul,
+    strictTopConeEdgeTriangle_boundary]
+  change _ = Finsupp.mapDomain (strictOrderCxMap f hf).onE (Finsupp.single e 1) + _
+  rw [Finsupp.mapDomain_single]
+  simp [strictTopConeRadialChain, bdry1, smul_add, smul_sub]
+  abel
 
 /-- Every mapped strict edge cycle has an explicit nondegenerate upper-cone filling. -/
 theorem strictTopConeEdgeChain_cycle_boundary (z : (strictOrderCx P).E →₀ ℤ)
@@ -64,13 +61,11 @@ theorem strictTopConeEdgeChain_eq_zero_off_top (z : (strictOrderCx P).E →₀ �
     (t : (strictOrderCx Q).F) (ht : t.1.2.2 ≠ c) :
     strictTopConeEdgeChain f hf c hc z t = 0 := by
   classical
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => simp only [map_add, Finsupp.add_apply, hz, hw, add_zero]
-  | single e n =>
-      have hne : strictTopConeEdgeTriangle f hf c hc e ≠ t := by
-        intro h
-        exact ht (congrArg (fun a : (strictOrderCx Q).F => a.1.2.2) h).symm
-      simp [strictTopConeEdgeChain, hne]
+  finsupp_basis z
+  intro e
+  have hne : strictTopConeEdgeTriangle f hf c hc e ≠ t := by
+    intro h
+    exact ht (congrArg (·.1.2.2) h).symm
+  simp [strictTopConeEdgeChain, hne]
 
 end FiniteChains.Comb

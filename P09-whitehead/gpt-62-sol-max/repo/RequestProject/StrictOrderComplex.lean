@@ -6,28 +6,16 @@ public import RequestProject.OrderComplexGluing
 
 /-! The genuine simplicial two-skeleton of a partial order: no degenerate edges or triangles. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
 variable (P : Type u) [PartialOrder P]
 
-def StrictOrdEdge := {p : P × P // p.1 < p.2}
-def StrictOrdTri := {p : P × P × P // p.1 < p.2.1 ∧ p.2.1 < p.2.2}
+def StrictOrdEdge := ChainEdge (P := P) (· < ·)
+def StrictOrdTri := ChainTri (P := P) (· < ·)
 
-def strictOrderCx : Complex2.{u} where
-  V := P
-  E := StrictOrdEdge P
-  F := StrictOrdTri P
-  src e := e.1.1
-  tgt e := e.1.2
-  base t := t.1.1
-  att t := [((⟨(t.1.1, t.1.2.1), t.2.1⟩ : StrictOrdEdge P), true),
-    ((⟨(t.1.2.1, t.1.2.2), t.2.2⟩ : StrictOrdEdge P), true),
-    ((⟨(t.1.1, t.1.2.2), t.2.1.trans t.2.2⟩ : StrictOrdEdge P), false)]
-  att_isLoop := fun _ => ⟨rfl, rfl, rfl, rfl⟩
+def strictOrderCx : Complex2.{u} := chainCx (P := P) (· < ·) ⟨fun _ _ _ => lt_trans⟩
 
 /-- The inclusion of nondegenerate simplices into the unnormalized cellular model. -/
 def strictOrderIncl : Hom (strictOrderCx P) (orderCx P) where
@@ -93,7 +81,7 @@ theorem htpy_ordSelf_nil (a : P) :
   let e : Loop (orderCx P) a := ⟨[ordPos (le_refl a)], isPath_ordPos _⟩
   have hmul : Pi1.mk e * Pi1.mk e = Pi1.mk e :=
     Quotient.sound (htpy_orderCx_tri (le_refl a) (le_refl a))
-  have hone : Pi1.mk e = 1 := (mul_eq_left).mp hmul
+  have hone  := mul_eq_left.mp hmul
   exact Quotient.exact hone
 
 /-- The normalized single-germ path has the same homotopy class in the weak model. -/
@@ -120,7 +108,7 @@ theorem normalizeOrdPath_htpy {p : List ((orderCx P).E × Bool)} {a b : P}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) :
     Htpy (orderCx P) a b (mapPath (strictOrderIncl P) (normalizeOrdPath p)) p := by
   induction p generalizing a with
-  | nil => exact Htpy.refl _
+  | nil => tauto
   | cons e p ih =>
     obtain ⟨ha, hp⟩ := hp
     subst a
@@ -141,7 +129,7 @@ theorem normalizeOrdGerm_rev (e : (orderCx P).E × Bool) :
   classical
   unfold normalizeOrdGerm
   simp only [revGerm]
-  split_ifs <;> simp [revPath, revGerm]
+  split_ifs <;> tauto
 
 /-- Each unnormalized triangular relation becomes a genuine triangular relation or a backtrack. -/
 theorem normalizeOrdTri_nullhomotopic (f : (orderCx P).F) :
@@ -165,12 +153,12 @@ theorem normalizeOrdTri_nullhomotopic (f : (orderCx P).F) :
           [(⟨(a, b), lt_of_le_of_ne hab he⟩, true)] a b := ⟨rfl, rfl⟩
       simpa [orderCx, normalizeOrdPath, normalizeOrdGerm, he, revPath, revGerm] using
         htpy_append_revPath hg
-    · have hac : a ≠ c := (lt_of_le_of_ne hab he |>.trans (lt_of_le_of_ne hbc hf)).ne
+    · have hac  := (lt_of_le_of_ne hab he |>.trans (lt_of_le_of_ne hbc hf)).ne
       let t : (strictOrderCx P).F := ⟨(a, b, c), lt_of_le_of_ne hab he, lt_of_le_of_ne hbc hf⟩
       have ht : Htpy (strictOrderCx P) a a ((strictOrderCx P).att t) [] :=
         Htpy.of_step ⟨(strictOrderCx P).att_isLoop t, rfl,
           Or.inr ⟨[], [], t, rfl, rfl⟩⟩
-      simpa [t, strictOrderCx, orderCx, normalizeOrdPath, normalizeOrdGerm, he, hf, hac] using ht
+      simp_all [t, strictOrderCx, orderCx, normalizeOrdPath, normalizeOrdGerm]
 
 /-- Normalize an elementary cancellation while retaining its endpoints. -/
 theorem normalizeOrdPath_step {a b : P} {l l' : List ((orderCx P).E × Bool)}
@@ -183,30 +171,24 @@ theorem normalizeOrdPath_step {a b : P} {l l' : List ((orderCx P).E × Bool)}
     subst v
     have hq : IsPath (orderCx P).src (orderCx P).tgt q
         (germSrc (orderCx P).src (orderCx P).tgt e) b := by
-      simpa only [germTgt_revGerm (X := orderCx P)] using hr.2
+      simp_all
     have he := htpy_append_revPath (normalizeOrdGerm_isPath e)
     have ht := he.congr_append (normalizeOrdPath_isPath hp) (normalizeOrdPath_isPath hq)
-    simpa only [normalizeOrdPath_append, normalizeOrdPath, List.flatMap_append, List.flatMap_cons,
-      normalizeOrdGerm_rev, List.append_assoc, List.append_nil] using ht
+    simp_all [normalizeOrdPath, List.flatMap_append, List.flatMap_cons, normalizeOrdGerm_rev, List.append_assoc]
   · rw [List.append_assoc] at hl
     obtain ⟨v, hp, hh⟩ := isPath_append_iff.mp hl
-    have hv : v = (orderCx P).base f := hh.1
+    have hv  := hh.1
     subst v
     have hq : IsPath (orderCx P).src (orderCx P).tgt q ((orderCx P).base f) b := hh.2.2.2
     have ht := (normalizeOrdTri_nullhomotopic f).congr_append
       (normalizeOrdPath_isPath hp) (normalizeOrdPath_isPath hq)
-    simpa only [normalizeOrdPath_append (P := P), List.append_assoc, List.nil_append] using ht
+    simp_all
 
 /-- Normalization preserves edge-path homotopy. -/
 theorem normalizeOrdPath_homotopic {a b : P} {p q : List ((orderCx P).E × Bool)}
     (h : Htpy (orderCx P) a b p q) :
-    Htpy (strictOrderCx P) a b (normalizeOrdPath p) (normalizeOrdPath q) := by
-  induction h with
-  | refl => exact Htpy.refl _
-  | tail _ hs ih =>
-    rcases hs with hs | hs
-    · exact ih.trans (normalizeOrdPath_step hs)
-    · exact ih.trans (normalizeOrdPath_step hs).symm
+    Htpy (strictOrderCx P) a b (normalizeOrdPath p) (normalizeOrdPath q) :=
+  h.map_of_step normalizeOrdPath (fun _ _ => normalizeOrdPath_step)
 
 /-- Normalization on edge-loop classes. -/
 noncomputable def strictPi1Normalize (a : P) : Pi1 (orderCx P) a →* Pi1 (strictOrderCx P) a where
@@ -216,11 +198,7 @@ noncomputable def strictPi1Normalize (a : P) : Pi1 (orderCx P) a →* Pi1 (stric
   map_one' := rfl
   map_mul' := by
     rintro ⟨p⟩ ⟨q⟩
-    apply Quotient.sound
-    change Htpy (strictOrderCx P) _ _ (normalizeOrdPath (p.val ++ q.val))
-      (normalizeOrdPath p.val ++ normalizeOrdPath q.val)
-    rw [normalizeOrdPath_append]
-    exact Htpy.refl _
+    apply Quotient.sound <;> simp_all
 
 theorem normalizeOrdGerm_strict (e : (strictOrderCx P).E × Bool) :
     normalizeOrdGerm ((strictOrderIncl P).onE e.1, e.2) = [e] := by
@@ -248,11 +226,7 @@ noncomputable def strictOrderPi1Equiv (a : P) :
     intro z
     induction z using Quotient.inductionOn with
     | h p =>
-      apply Quotient.sound
-      change Htpy (strictOrderCx P) a a
-        (normalizeOrdPath (mapPath (strictOrderIncl P) p.1)) p.1
-      rw [normalizeOrdPath_map_strict]
-      exact Htpy.refl _
+      apply Quotient.sound <;> simp [normalizeOrdPath_map_strict]
   right_inv := by
     intro z
     induction z using Quotient.inductionOn with
@@ -264,14 +238,8 @@ variable {Q : Type u} [PartialOrder Q]
 
 /-- A strict monotone map induces a cellular map on genuine simplicial two-skeleta. -/
 def strictOrderCxMap (f : P → Q) (hf : StrictMono f) :
-    Hom (strictOrderCx P) (strictOrderCx Q) where
-  onV := f
-  onE e := ⟨(f e.1.1, f e.1.2), hf e.2⟩
-  onF t := ⟨(f t.1.1, f t.1.2.1, f t.1.2.2), hf t.2.1, hf t.2.2⟩
-  src_onE _ := rfl
-  tgt_onE _ := rfl
-  base_onF _ := rfl
-  att_onF _ := rfl
+    Hom (strictOrderCx P) (strictOrderCx Q) := chainCxMap (r := (· < ·)) (s := (· < ·))
+    (hr := ⟨fun _ _ _ => lt_trans⟩) (hs := ⟨fun _ _ _ => lt_trans⟩) f (fun h => hf h)
 
 end Maps
 end FiniteChains.Comb

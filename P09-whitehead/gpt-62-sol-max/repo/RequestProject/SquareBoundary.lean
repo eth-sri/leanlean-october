@@ -18,7 +18,7 @@ theorem squareEdge_continuous (i : Fin 2) (v : I) : Continuous (squareEdge i v) 
   apply continuous_pi
   intro j
   by_cases h : j = i
-  · simpa [squareEdge, h] using (continuous_const : Continuous (fun _ : I => v))
+  · simpa [squareEdge, h] using continuous_const
   · exact continuous_id.congr fun s => by simp [squareEdge, h]
 
 theorem square_boundary_eq : Cube.boundary (Fin 2) =
@@ -43,7 +43,7 @@ theorem square_boundary_eq : Cube.boundary (Fin 2) =
 /-- The boundary of the two-dimensional cube is preconnected. -/
 theorem square_boundary_isPreconnected : IsPreconnected (Cube.boundary (Fin 2)) := by
   rw [square_boundary_eq]
-  have he (i : Fin 2) (v : I) : IsPreconnected (Set.range (squareEdge i v)) :=
+  have he (i : Fin 2) (v : I)  :=
     isPreconnected_range (squareEdge_continuous i v)
   have h00 : squareEdge 0 0 0 = squareEdge 1 0 0 := by
     ext j; fin_cases j <;> simp [squareEdge]

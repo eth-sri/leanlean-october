@@ -45,10 +45,10 @@ theorem principal_cycles_baseChange (f : H →* G) (hf : Function.Injective f)
     ∃ r : MonoidAlgebra ℤ G,
       ∀ j, v j = r * MonoidAlgebra.mapDomainRingHom ℤ f (c j) := by
   classical
-  let e : H ≃* f.range := MonoidHom.ofInjective hf
-  let er : MonoidAlgebra ℤ H →+* MonoidAlgebra ℤ f.range :=
+  let e  := MonoidHom.ofInjective hf
+  let er  :=
     MonoidAlgebra.mapDomainRingHom ℤ e.toMonoidHom
-  let eri : MonoidAlgebra ℤ f.range →+* MonoidAlgebra ℤ H :=
+  let eri  :=
     MonoidAlgebra.mapDomainRingHom ℤ e.symm.toMonoidHom
   have hinc (z : MonoidAlgebra ℤ H) :
       subRingHom f.range (er z) = MonoidAlgebra.mapDomainRingHom ℤ f z := by
@@ -61,46 +61,24 @@ theorem principal_cycles_baseChange (f : H →* G) (hf : Function.Injective f)
     show MonoidAlgebra.mapDomain e.toMonoidHom
       (MonoidAlgebra.mapDomain e.symm.toMonoidHom z) = z
     rw [← MonoidAlgebra.mapDomain_comp]
-    have he : (e.toMonoidHom : H → f.range) ∘
-        (e.symm.toMonoidHom : f.range → H) = id := by
-      funext g
-      exact e.apply_symm_apply g
-    rw [he, MonoidAlgebra.mapDomain_id]
-  let Ar : I → J → MonoidAlgebra ℤ f.range := fun i j => er (A i j)
+    simp
+  let Ar  := fun i j => er (A i j)
   have hvr : ∀ i, ∑ j, v j * subRingHom f.range (Ar i j) = 0 := by
     intro i
     simpa only [Ar, hinc] using hv i
   have hspan := cycle_mem_span_subgroup_cycles f.range Ar v hvr
-  refine Submodule.span_induction
-    (p := fun z _ => ∃ r : MonoidAlgebra ℤ G,
-      ∀ j, z j = r * MonoidAlgebra.mapDomainRingHom ℤ f (c j))
-    ?_ ?_ ?_ ?_ hspan
-  · rintro z ⟨y, hy, rfl⟩
-    have hy' : ∀ i, ∑ j, eri (y j) * A i j = 0 := by
-      intro i
-      apply her_inj
-      rw [map_sum, map_zero]
-      rw [← hy i]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      rw [map_mul, her_eri]
-    obtain ⟨r, hr⟩ := hgen (fun j => eri (y j)) hy'
-    refine ⟨MonoidAlgebra.mapDomainRingHom ℤ f r, fun j => ?_⟩
-    calc
-      subRingHom f.range (y j) = MonoidAlgebra.mapDomainRingHom ℤ f (eri (y j)) := by
-        rw [← hinc, her_eri]
-      _ = MonoidAlgebra.mapDomainRingHom ℤ f (r * c j) :=
-        congrArg (MonoidAlgebra.mapDomainRingHom ℤ f) (hr j)
-      _ = MonoidAlgebra.mapDomainRingHom ℤ f r *
-          MonoidAlgebra.mapDomainRingHom ℤ f (c j) := map_mul _ _ _
-  · refine ⟨0, fun j => ?_⟩
-    simp
-  · rintro a b _ _ ⟨r, hr⟩ ⟨s, hs⟩
-    refine ⟨r + s, fun j => ?_⟩
-    change a j + b j = (r + s) * MonoidAlgebra.mapDomainRingHom ℤ f (c j)
-    rw [hr j, hs j, add_mul]
-  · rintro a z _ ⟨r, hr⟩
-    refine ⟨a * r, fun j => ?_⟩
-    change a * z j = (a * r) * MonoidAlgebra.mapDomainRingHom ℤ f (c j)
-    rw [hr j, mul_assoc]
+  let w : J → MonoidAlgebra ℤ G := fun j => MonoidAlgebra.mapDomainRingHom ℤ f (c j)
+  have hv' : v ∈ Submodule.span (MonoidAlgebra ℤ G) {w} := Submodule.span_le.2 ?_ hspan
+  · obtain ⟨r, hr⟩ := Submodule.mem_span_singleton.mp hv'
+    exact ⟨r, fun j => (congrFun hr j).symm⟩
+  rintro _ ⟨y, hy, rfl⟩
+  have hy' (i : I) : ∑ j, eri (y j) * A i j = 0 := by
+    apply her_inj
+    rw [map_sum, map_zero, ← hy i]
+    exact Finset.sum_congr rfl (fun j _ => by rw [map_mul, her_eri])
+  obtain ⟨r, hr⟩ := hgen (fun j => eri (y j)) hy'
+  refine Submodule.mem_span_singleton.mpr ⟨MonoidAlgebra.mapDomainRingHom ℤ f r, funext fun j => ?_⟩
+  change MonoidAlgebra.mapDomainRingHom ℤ f r * w j = subRingHom f.range (y j)
+  rw [← her_eri (y j), hinc, hr j, map_mul]
 
 end FiniteChains

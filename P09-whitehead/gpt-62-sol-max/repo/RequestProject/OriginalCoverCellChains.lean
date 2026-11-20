@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.ClassicalCWCanonicalPresentation
-public import RequestProject.TopologicalCoverCellChains
+public import RequestProject.TopologicalOrderCoverAcyclic
+public import RequestProject.RegularCoverAcyclicChains
 public import RequestProject.TopologicalAcyclicCoverHomotopy
 public import RequestProject.PresPosetConnected
 public import RequestProject.PresPosetDimension

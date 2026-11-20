@@ -1,6 +1,8 @@
 module
 
-public import RequestProject.ChamberQuotientOldGeneration
+public import RequestProject.ChamberQuotientOldStar
+public import RequestProject.ChamberQuotientNerveGeneration
+public import RequestProject.NerveDegreeGluing
 public import RequestProject.ChamberQuotientStarOneFillings
 public import RequestProject.NerveRelativeIntersection
 public import RequestProject.NerveBoundaryReflection

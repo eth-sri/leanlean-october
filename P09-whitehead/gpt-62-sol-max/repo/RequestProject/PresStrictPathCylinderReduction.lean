@@ -4,8 +4,6 @@ public import RequestProject.PresConeStrictExcursionReplacement
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
@@ -61,9 +59,9 @@ theorem exists_presStrictPath_cylinder_reduction (hpos : ∀ j, 0 < (w j).length
       | inr j =>
         cases p with
         | nil =>
-          have hbe : b = apexOf w j := hp.symm.trans ht
+          have hbe  := hp.symm.trans ht
           obtain ⟨t, htb⟩ := hb
-          have hn : (Sum.inl t : PresPos w) = Sum.inr j := htb.trans hbe
+          have hn  := htb.trans hbe
           cases hn
         | cons d p =>
           obtain ⟨hds, hp⟩ := hp
@@ -73,7 +71,7 @@ theorem exists_presStrictPath_cylinder_reduction (hpos : ∀ j, 0 < (w j).length
           rcases d with ⟨d, ds⟩
           obtain ⟨rfl, he⟩ := hed
           obtain ⟨rfl, hd⟩ := hdd
-          have hdc : d.val.1 ∈ coneAdjBaseSet (S := circSet w) := presCone_lower_mem_cylinder w j d.val.1 (hd ▸ d.property)
+          have hdc  := presCone_lower_mem_cylinder w j d.val.1 (hd ▸ d.property)
           obtain ⟨q, hq, hqc, hh⟩ := ih p (by change p.length < _; simp) d.val.1 b hdc hb hp
           obtain ⟨r, hr, hrc, hhr⟩ := exists_presCone_strictEdge_excursion_replacement w j (hpos j) e d he hd
           subst a

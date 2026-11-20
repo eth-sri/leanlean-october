@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.NerveDegree
+public import RequestProject.NerveCoordinates
 public import RequestProject.MathlibOrderNerveChainBoundary
 
 @[expose] public section
@@ -52,18 +52,15 @@ theorem orderNerveVertexList_length {n : ℕ} (s : ComposableArrows P n) :
 theorem orderNerveVertexList_injective (n : ℕ) :
     Function.Injective (orderNerveVertexList (P := P) (n := n)) := by
   intro s t h
-  exact CategoryTheory.Functor.ext (fun i => congrFun (List.ofFn_injective h) i)
+  exact CategoryTheory.Functor.ext (congrFun (List.ofFn_injective h))
 
 /-- Every increasing list of the required length is a genuine Mathlib simplex. -/
 def orderNerveOfVertexList (n : ℕ) (l : List P)
     (hl : List.IsChain (· ≤ ·) l) (hlen : l.length = n + 1) :
     ComposableArrows P n :=
-  (show Monotone (fun i : Fin (n + 1) => l[i.val]'(by omega)) from by
+  (show Monotone (fun i  => l[i.val]'(by omega)) from by
       intro i j hij
-      rcases hij.eq_or_lt with he | he
-      · exact le_of_eq (congrArg (fun k : Fin (n + 1) => l[k.val]'(by omega)) he)
-      · exact (List.pairwise_iff_getElem.mp (List.isChain_iff_pairwise.mp hl))
-          i.val j.val (by omega) (by omega) he).functor
+      grind [List.pairwise_iff_getElem.mp]).functor
 
 theorem orderNerveVertexList_ofVertexList (n : ℕ) (l : List P)
     (hl : List.IsChain (· ≤ ·) l) (hlen : l.length = n + 1) :
@@ -83,59 +80,23 @@ theorem orderNerveGradedEncode_single (n : ℕ) (s : ComposableArrows P n) (r : 
     orderNerveGradedEncode n (Finsupp.single s r) = r • of (orderNerveVertexList s) :=
   Finsupp.linearCombination_single ℤ r s
 
-noncomputable def orderNerveGradedDecodeList (n : ℕ) (l : List P) :
-    ComposableArrows P n →₀ ℤ := by
-  classical
-  exact if h : ∃ s : ComposableArrows P n, orderNerveVertexList s = l
-    then Finsupp.single h.choose 1 else 0
+def orderNerveVertexEmbedding (n : ℕ) : ComposableArrows P n ↪ List P :=
+  ⟨orderNerveVertexList, orderNerveVertexList_injective n⟩
 
 noncomputable def orderNerveGradedDecode (n : ℕ) :
-    Nerve.Ch P →ₗ[ℤ] (ComposableArrows P n →₀ ℤ) :=
-  (lift (orderNerveGradedDecodeList n)).toIntLinearMap
+    Nerve.Ch P →ₗ[ℤ] (ComposableArrows P n →₀ ℤ) := Nerve.decode (orderNerveVertexEmbedding n)
 
-theorem orderNerveGradedDecode_of (n : ℕ) (l : List P) :
-    orderNerveGradedDecode n (of l) = orderNerveGradedDecodeList n l :=
-  lift_apply_of _ _
-
-theorem orderNerveGradedDecodeList_vertexList (n : ℕ) (s : ComposableArrows P n) :
-    orderNerveGradedDecodeList n (orderNerveVertexList s) = Finsupp.single s 1 := by
-  classical
-  have h : ∃ t : ComposableArrows P n, orderNerveVertexList t = orderNerveVertexList s := ⟨s, rfl⟩
-  rw [orderNerveGradedDecodeList, dif_pos h]
-  rw [orderNerveVertexList_injective n h.choose_spec]
-
-theorem orderNerveGradedDecode_encode (n : ℕ) (c : ComposableArrows P n →₀ ℤ) :
-    orderNerveGradedDecode n (orderNerveGradedEncode n c) = c := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
-  | single s r =>
-    rw [orderNerveGradedEncode_single, map_smul, orderNerveGradedDecode_of,
-      orderNerveGradedDecodeList_vertexList]
-    simp
+theorem orderNerveGradedDecode_of_vertexList (n : ℕ) (s : ComposableArrows P n) :
+    orderNerveGradedDecode n (of (orderNerveVertexList s)) = Finsupp.single s 1 :=
+  Nerve.decode_of (orderNerveVertexEmbedding n) s
 
 theorem orderNerveGradedEncode_injective (n : ℕ) :
-    Function.Injective (orderNerveGradedEncode (P := P) n) := by
-  intro c d h
-  simpa only [orderNerveGradedDecode_encode] using congrArg (orderNerveGradedDecode n) h
+    Function.Injective (orderNerveGradedEncode (P := P) n) :=
+  Nerve.encode_injective (orderNerveVertexEmbedding n)
 
 theorem orderNerveGradedEncode_decode (n : ℕ) {c : Nerve.Ch P} (hc : c ∈ Nerve.Inc P) :
-    orderNerveGradedEncode n (orderNerveGradedDecode n c) = Nerve.lengthProjection (n + 1) c := by
-  classical
-  induction hc using AddSubgroup.closure_induction with
-  | mem x hx =>
-    rcases hx with ⟨l, hl, rfl⟩
-    rw [orderNerveGradedDecode_of, Nerve.lengthProjection_of]
-    by_cases hlen : l.length = n + 1
-    · have he := orderNerveVertexList_ofVertexList n l hl hlen
-      rw [if_pos hlen, ← he, orderNerveGradedDecodeList_vertexList,
-        orderNerveGradedEncode_single, one_smul]
-    · have he : ¬ ∃ s : ComposableArrows P n, orderNerveVertexList s = l := by
-        rintro ⟨s, rfl⟩
-        exact hlen (orderNerveVertexList_length s)
-      rw [if_neg hlen, orderNerveGradedDecodeList, dif_neg he, map_zero]
-  | zero => simp
-  | add x y _ _ hx hy => simp only [map_add, hx, hy]
-  | neg x _ hx => simp only [map_neg, hx]
+    orderNerveGradedEncode n (orderNerveGradedDecode n c) = Nerve.lengthProjection (n + 1) c :=
+  Nerve.encode_decode (orderNerveVertexEmbedding n) _ orderNerveVertexList_length
+    (fun l hl hn => ⟨orderNerveOfVertexList n l hl hn, orderNerveVertexList_ofVertexList n l hl hn⟩) hc
 
 end FiniteChains.Comb

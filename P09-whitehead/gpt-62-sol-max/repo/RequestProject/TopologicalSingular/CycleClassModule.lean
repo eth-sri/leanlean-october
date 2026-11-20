@@ -4,9 +4,7 @@ public import RequestProject.TopologicalSingular.CycleClasses
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory
@@ -22,7 +20,7 @@ theorem shortComplexCycleClass_smul (S : ShortComplex (ModuleCat.{u} ℤ))
 theorem shortComplexCycleClass_surjective (S : ShortComplex (ModuleCat.{u} ℤ))
     (q : S.homology) : ∃ (c : S.X₂) (hc : S.g c = 0), shortComplexCycleClass S c hc = q := by
   obtain ⟨y, hy⟩ := (ModuleCat.epi_iff_surjective S.homologyπ).mp inferInstance q
-  have hc : S.g (S.iCycles y) = 0 := congrArg (fun f => f y) S.iCycles_g
+  have hc  := congrArg (fun f => f y) S.iCycles_g
   refine ⟨S.iCycles y, hc, ?_⟩
   apply (ModuleCat.mono_iff_injective S.homologyι).mp inferInstance
   rw [shortComplexCycleClass_i, ← hy]
@@ -41,8 +39,7 @@ noncomputable def singularCycleClassLinear (n : ℕ) :
     LinearMap.ker (boundary (X := X) n) →ₗ[ℤ] (complex X).homology (n + 1) where
   toFun c := singularCycleClass n c.val c.property
   map_add' c d := singularCycleClass_add n c.val d.val c.property d.property
-  map_smul' r c := by
-    exact (singularCycleClass_smul n r c.val c.property).trans
+  map_smul' r c := (singularCycleClass_smul n r c.val c.property).trans
       (int_smul_eq_zsmul (inferInstance : Module ℤ ((complex X).homology (n + 1))) r _).symm
 
 theorem singularCycleClass_representative (n : ℕ) (q : (complex X).homology (n + 1)) :

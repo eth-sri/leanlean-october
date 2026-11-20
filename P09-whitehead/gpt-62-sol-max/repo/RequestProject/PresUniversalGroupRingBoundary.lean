@@ -34,7 +34,7 @@ theorem presUniversalGroupRingBoundary_actual_column
                     (QuotientGroup.mk (FreeGroup.of ((w p.val.2)[k.val]).1) : PresGroup ρ)⁻¹))) 1) := by
   classical
   have hs := groupCellChainEquiv_single
-    ((presGroupCocycle ρ w hw).readVertex (ptBase w) p.val.1) p.val.2 (1 : ℤ)
+    ((presGroupCocycle ρ w hw).readVertex (ptBase w) p.val.1) p.val.2 1
   rw [← hs]
   change groupCellChainEquiv (presUniversalGroupBoundary ρ w hw hpos
     (groupCellChainEquiv.symm (groupCellChainEquiv

@@ -9,8 +9,6 @@ public import RequestProject.CombLoopWord
 The equality is before passing to homotopy or to edge-chain augmentation.
  -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
@@ -25,13 +23,7 @@ def commutatorLetters {ι : Type u} (ps : List (ι × ι)) : List (ι × Bool) :
 
 theorem mk_commutatorLetterBlock {ι : Type u} (p : ι × ι) :
     FreeGroup.mk (commutatorLetterBlock p) =
-      FreeGroup.of p.1 * FreeGroup.of p.2 * (FreeGroup.of p.1)⁻¹ * (FreeGroup.of p.2)⁻¹ := by
-  calc
-    _ = FreeGroup.mk [(p.1, true)] * FreeGroup.mk [(p.2, true)] *
-        FreeGroup.mk [(p.1, false)] * FreeGroup.mk [(p.2, false)] := by
-      rw (config := { transparency := .default }) [FreeGroup.mul_mk]
-      rfl
-    _ = _ := rfl
+      FreeGroup.of p.1 * FreeGroup.of p.2 * (FreeGroup.of p.1)⁻¹ * (FreeGroup.of p.2)⁻¹ := rfl
 
 theorem mk_commutatorLetters {ι : Type u} (ps : List (ι × ι)) :
     FreeGroup.mk (commutatorLetters ps) = commWord FreeGroup.of ps := by
@@ -39,7 +31,7 @@ theorem mk_commutatorLetters {ι : Type u} (ps : List (ι × ι)) :
   | nil => rfl
   | cons p ps ih =>
       change FreeGroup.mk (commutatorLetterBlock p ++ commutatorLetters ps) = _
-      rw (config := { transparency := .default }) [← FreeGroup.mul_mk, mk_commutatorLetterBlock, ih, commWord_cons]
+      erw [← FreeGroup.mul_mk, mk_commutatorLetterBlock, ih, commWord_cons]
 
 theorem wordPath_commutatorLetters {X : Complex2.{u}} {a : X.V} {ι : Type u}
     (f : ι → Loop X a) (ps : List (ι × ι)) :
@@ -48,7 +40,7 @@ theorem wordPath_commutatorLetters {X : Complex2.{u}} {a : X.V} {ι : Type u}
   | nil => rfl
   | cons p ps ih =>
       change wordPath f (commutatorLetterBlock p ++ commutatorLetters ps) = _
-      rw (config := { transparency := .default }) [wordPath_append, ih]
+      erw [wordPath_append, ih]
       simp only [commutatorLetterBlock, wordPath_cons, wordPath_nil,
         germLoopPath_pos, germLoopPath_neg, List.append_nil, surfacePath,
         List.append_assoc]
@@ -71,11 +63,7 @@ theorem surfacePath_eq_flatMap {X : Complex2.{u}} {a : X.V} {ι : Type u}
 theorem wordPath_map_letters {X : Complex2.{u}} {a : X.V} {ι κ : Type v}
     (f : κ → Loop X a) (j : ι → κ) (l : List (ι × Bool)) :
     wordPath f (l.map (fun x => (j x.1, x.2))) = wordPath (fun i => f (j i)) l := by
-  induction l with
-  | nil => rfl
-  | cons x l ih =>
-      simp only [List.map_cons, wordPath_cons, ih]
-      rfl
+  induction l <;> aesop
 
 namespace Genus
 open RACG Mirror PresModel BlockFamily
@@ -102,8 +90,7 @@ theorem naturalSurfaceLoops_block {n : ℕ} (hn : n < q) :
       ↓reduceIte, Nat.add_zero]
   have hb : (naturalSurfaceLoops q (n, true)).1 = gPath q (8 * n + 2) := by
     simp only [naturalSurfaceLoops, gSig, Nat.mod_eq_of_lt hn, ↓reduceIte]
-  simp only [surfacePath, ha, hb, List.append_nil]
-  rw (config := { transparency := .default }) [← gPath_rev_a q hn, ← gPath_rev_b q hn]
+  simp_all [surfacePath, ← gPath_rev_a q hn, ← gPath_rev_b q hn]
 
 /-- Every initial string of complete handle blocks is the actual polygon
 boundary prefix, with its original edge order and signs. -/
@@ -115,7 +102,7 @@ theorem surfacePath_genPairs_eq_bdPath {n : ℕ} (hn : n ≤ q) :
       have hlt : n < q := by omega
       have hpairs : genPairs (n + 1) = genPairs n ++ [((n, false), (n, true))] := by
         simp only [genPairs, List.range_succ, List.map_append, List.map_singleton]
-      rw (config := { transparency := .default }) [hpairs, surfacePath_append, ih (by omega),
+      erw [hpairs, surfacePath_append, ih (by omega),
         naturalSurfaceLoops_block q hlt, bdPath_block]
 
 theorem finiteSurfacePath_eq_bdPath :
@@ -124,7 +111,7 @@ theorem finiteSurfacePath_eq_bdPath :
       surfacePath (naturalSurfaceLoops q) (genPairs q) := by
     simp only [surfacePath_eq_flatMap, finitePairs, genPairs, List.flatMap_map]
     have hrange := List.map_coe_finRange_eq_range (n := q)
-    rw (config := { transparency := .default }) [← hrange, List.flatMap_map]
+    erw [← hrange, List.flatMap_map]
     rfl
   exact hreindex.trans (surfacePath_genPairs_eq_bdPath q (le_refl q))
 
@@ -132,7 +119,7 @@ theorem finiteSurfacePath_eq_bdPath :
 theorem genusSurfaceLetters_wordPath :
     wordPath (finiteMarkedLoops q) (genusSurfaceLetters q) = bdPath (gc q) (8 * q) := by
   change wordPath (finiteMarkedLoops q) (commutatorLetters (finitePairs q)) = _
-  rw (config := { transparency := .default }) [wordPath_commutatorLetters, finiteSurfacePath_eq_bdPath]
+  erw [wordPath_commutatorLetters, finiteSurfacePath_eq_bdPath]
 
 variable {I : Type}
 
@@ -144,8 +131,7 @@ omit [NeZero q] in
 theorem genusNamedSurfaceLetters_mk :
     FreeGroup.mk (genusNamedSurfaceLetters (I := I) q) =
       commWord (fun i : Fin q × Bool => FreeGroup.of (Sum.inr (α := I) i)) (finitePairs q) := by
-  rw (config := { transparency := .default }) [genusNamedSurfaceLetters, ← FreeGroup.map.mk, genusSurfaceLetters_mk, map_commWord]
-  exact commWord_congr (fun i => FreeGroup.map.of) _
+  simp_all [genusNamedSurfaceLetters, ← FreeGroup.map.mk, genusSurfaceLetters_mk, map_commWord]
 
 end Genus
 end FiniteChains.Davis

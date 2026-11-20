@@ -57,7 +57,7 @@ def vertexStarContraction (r : BoundaryFamily J E → V) (hr : Continuous r) (v 
     apply Subtype.ext
     change H (1, j z) = old r (boundaryFamilyInclusion J E) v
     refine (H.map_one_left (j z)).trans ?_
-    have hz : radialCoreBack r (j z) ∈ ({v} : Set V) :=
+    have hz  :=
       (radialCoreBack_mem_iff r (j z) {v}).mpr z.property
     exact congrArg (old r (boundaryFamilyInclusion J E)) hz
 

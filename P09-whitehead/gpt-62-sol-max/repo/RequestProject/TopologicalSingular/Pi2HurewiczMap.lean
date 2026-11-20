@@ -6,9 +6,6 @@ public import RequestProject.TopologicalSingular.MathlibComparison
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology
@@ -27,7 +24,7 @@ theorem pi2CycleClass_mk (x : X) (p : GenLoop (Fin 2) X x) :
 
 theorem pi2CycleClass_one (x : X) : pi2CycleClass x 1 = 0 := by
   change singularCycleClass 1 (squareCycle (GenLoop.const (x := x))) (squareCycle_boundary _) = 0
-  simp only [squareCycle_const, singularCycleClass_zero]
+  simp [squareCycle_const, singularCycleClass_zero]
 
 theorem pi2CycleClass_natural (f : C(X, Y)) (x : X) (z : HomotopyGroup (Fin 2) X x) :
     (HomologicalComplex.homologyMap (chainMap f) 2) (pi2CycleClass x z) =

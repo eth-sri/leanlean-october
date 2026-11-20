@@ -4,9 +4,6 @@ public import RequestProject.PresStrictPathCylinderReduction
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -24,13 +21,12 @@ theorem presCylinder_pi1_surjective
     obtain ⟨q, hq, hqc, hh⟩ := exists_presPath_cylinder_reduction w hpos p.val a.val a.val
       a.property a.property p.property
     let r := liftPathIn q hqc
-    have hr : IsPath (orderCx (coneAdjBaseSet (S := circSet w))).src
-        (orderCx (coneAdjBaseSet (S := circSet w))).tgt r a a :=
+    have hr  :=
       isPath_liftPathIn q hqc a.property a.property hq
     refine ⟨Pi1.mk ⟨r, hr⟩, Quotient.sound ?_⟩
     change Htpy (orderCx (PresPos w)) a.val a.val
       (mapPath (subposetHom (coneAdjBaseSet (S := circSet w))) (liftPathIn q hqc)) p.val
-    rw (config := { transparency := .default }) [mapPath_liftPathIn]
+    erw [mapPath_liftPathIn]
     exact hh.symm
 
 end FiniteChains.PresModel

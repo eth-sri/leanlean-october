@@ -86,23 +86,12 @@ theorem relatorCircle_le_neighbors (a b : RelatorCircle w j) (hne : a ≠ b) (ha
   subst ja
   subst jb
   obtain ⟨_, _, ht⟩ := he
-  rcases ht with ⟨rfl, rfl, hk⟩ | ⟨rfl, rfl, hk⟩ |
-    ⟨rfl, rfl, hk⟩ | ⟨rfl, rfl, hk⟩
-  · subst kb
-    exact Or.inl rfl
-  · subst kb
-    exact Or.inr rfl
-  · subst kb
-    exact Or.inl rfl
-  · subst ka
-    exact Or.inr rfl
+  aesop
 
 theorem relatorCircle_neighbors (a b : RelatorCircle w j) (hne : a ≠ b)
     (hab : a ≤ b ∨ b ≤ a) :
     relatorCircleSuccessor w j hn a = b ∨ relatorCircleSuccessor w j hn b = a := by
-  rcases hab with hab | hba
-  · exact relatorCircle_le_neighbors w j hn a b hne hab
-  · exact (relatorCircle_le_neighbors w j hn b a hne.symm hba).symm
+  grind [relatorCircle_le_neighbors]
 
 theorem relatorCircleSuccessor_index (x : RelatorCircle w j) :
     (relatorCircleIndexEquiv w j (relatorCircleSuccessor w j hn x)).val =
@@ -124,9 +113,7 @@ theorem relatorCircleSuccessor_index (x : RelatorCircle w j) :
     by_cases hnext : k + 1 < (w j).length
     · rw [Nat.mod_eq_of_lt hnext]
       split_ifs <;> omega
-    · have he : k + 1 = (w j).length := by omega
-      rw [he, Nat.mod_self]
-      split_ifs <;> omega
+    grind [Nat.mod_self]
 
 def relatorCircleSize : ℕ := (w j).length * 4 - 2
 
@@ -150,11 +137,7 @@ theorem relatorCircleEnumeration_next (i : Fin (relatorCircleSize w j + 1)) :
       relatorCircleEnumeration w j hn i.succ := by
   apply (relatorCircleIndexEquiv w j).injective
   apply Fin.ext
-  rw [relatorCircleSuccessor_index, relatorCircleEnumeration_index, relatorCircleEnumeration_index]
-  have hi := i.isLt
-  have hN := relatorCircleSize_add_two w j hn
-  change (if i.val + 1 < (w j).length * 4 then i.val + 1 else 0) = i.val + 1
-  rw [if_pos (by omega)]
+  grind [relatorCircleSuccessor_index, relatorCircleEnumeration_index]
 
 theorem relatorCircleEnumeration_last_next :
     relatorCircleSuccessor w j hn
@@ -163,9 +146,7 @@ theorem relatorCircleEnumeration_last_next :
   apply (relatorCircleIndexEquiv w j).injective
   apply Fin.ext
   rw [relatorCircleSuccessor_index, relatorCircleEnumeration_index, relatorCircleEnumeration_index]
-  have hN := relatorCircleSize_add_two w j hn
-  change (if relatorCircleSize w j + 1 + 1 < (w j).length * 4 then _ else 0) = 0
-  rw [if_neg (by omega)]
+  grind +locals
 
 theorem relatorCircle_next_edge (a : RelatorCircle w j) :
     (∃ i : Fin (relatorCircleSize w j + 1),

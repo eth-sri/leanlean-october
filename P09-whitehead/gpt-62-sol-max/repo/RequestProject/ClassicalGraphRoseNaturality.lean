@@ -10,8 +10,6 @@ square. The forward collapse is canonical on every characteristic
 interval even though its homotopy inverse uses tree paths. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
@@ -55,9 +53,7 @@ theorem graphRoseHomotopyEquiv_natural (f : C(DiskAttachment r, DiskAttachment s
     change graphRoseMap r s T U h ht (graphRoseHomotopyEquiv r hr T (old _ _ v)) =
       graphRoseHomotopyEquiv s hs U (f (old _ _ v))
     rw [graphRoseHomotopyEquiv_old, hv]
-    change _ = graphRoseHomotopyEquiv s hs U (old s _ (h.onV v))
-    rw [graphRoseHomotopyEquiv_old]
-    rfl
+    tauto
   · rintro ⟨j, x⟩
     change graphRoseMap r s T U h ht (graphRoseHomotopyEquiv r hr T (cell _ _ ⟨j, x⟩)) =
       graphRoseHomotopyEquiv s hs U (f (cell _ _ ⟨j, x⟩))
@@ -67,7 +63,7 @@ theorem graphRoseHomotopyEquiv_natural (f : C(DiskAttachment r, DiskAttachment s
       rw [graphRoseHomotopyEquiv_treeCell r hr T ⟨⟨j, hj⟩, x⟩,
         graphRoseHomotopyEquiv_treeCell s hs U ⟨⟨h.onE j, hk⟩, x⟩]
       rfl
-    · have hk : ¬U.isTree (h.onE j) := fun hk => hj ((ht j).mp hk)
+    · have hk  := fun hk => hj ((ht j).mp hk)
       rw [graphRoseHomotopyEquiv_nonTreeCell r hr T ⟨⟨j, hj⟩, x⟩,
         graphRoseHomotopyEquiv_nonTreeCell s hs U ⟨⟨h.onE j, hk⟩, x⟩]
       exact diskFamilyMap_cell (roseAttaching _) (roseAttaching _) (ContinuousMap.id PUnit)

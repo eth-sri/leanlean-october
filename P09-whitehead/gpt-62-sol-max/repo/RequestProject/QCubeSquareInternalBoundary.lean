@@ -1,12 +1,11 @@
 module
 
 public import RequestProject.QCubeSquareRadialIndex
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
 /-! The actual internal radial boundary matrix of the eight square flags. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
@@ -64,7 +63,7 @@ theorem squareRadialCoordinates_off_top (c : QCube A) (a b : V) (hne : a ≠ b)
   change Finsupp.single e n (squareRadialEdge c a b hne hs i) = 0
   have hne : e ≠ squareRadialEdge c a b hne hs i := by
     intro h
-    exact he (congrArg (fun e : (strictOrderCx (QCube A)).E => e.1.2) h)
+    exact he (congrArg (·.1.2) h)
   simp [hne]
 
 noncomputable def squareInternalBoundary : ((Bool × ZMod 2 × Bool) →₀ ℤ) →ₗ[ℤ]
@@ -111,14 +110,12 @@ theorem squareInternalBoundary_naturality (c : QCube A) (a b : V) (hne : a ≠ b
     squareRadialCoordinates c a b hne hs
       (Comb.bdry2 (strictOrderCx (QCube A))
         (Finsupp.mapDomain (squareFlag c a b hne hs) z)) = squareInternalBoundary z := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [Finsupp.mapDomain_add, map_add, map_add, hz, hw, map_add]
-  | single i n =>
-      rw [Finsupp.mapDomain_single]
-      have hn : Finsupp.single (squareFlag c a b hne hs i) n =
-          n • Finsupp.single (squareFlag c a b hne hs i) 1 := by simp
-      rw [hn, map_smul, map_smul, squareFlag_internal_boundary, squareInternalBoundary,
-        Finsupp.linearCombination_single]
+  finsupp_singles z
+  intro i n
+  rw [Finsupp.mapDomain_single]
+  have hn : Finsupp.single (squareFlag c a b hne hs i) n =
+      n • Finsupp.single (squareFlag c a b hne hs i) 1 := by simp
+  rw [hn, map_smul, map_smul, squareFlag_internal_boundary, squareInternalBoundary,
+    Finsupp.linearCombination_single]
 
 end FiniteChains.Davis

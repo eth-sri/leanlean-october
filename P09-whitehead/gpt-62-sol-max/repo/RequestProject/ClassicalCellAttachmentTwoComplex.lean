@@ -14,8 +14,6 @@ noncomputable section
 open scoped Classical Topology
 open Set Topology Metric
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
@@ -23,7 +21,7 @@ namespace FiniteChains.RelativeAttachment
 theorem closedUnitBall_connectedSpace {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] : ConnectedSpace (ClosedUnitBall E) := by
   apply isConnected_iff_connectedSpace.mp
-  convert isConnected_closedBall (E := E) (x := (0 : E)) (r := (1 : ℝ)) zero_le_one using 1
+  convert isConnected_closedBall (E := E) (x := 0) (r := 1) zero_le_one using 1
   ext x
   simp only [Metric.mem_closedBall, dist_zero_right]
   rfl
@@ -43,14 +41,14 @@ theorem diskAttachment_connectedSpace {X J E : Type}
   apply connectedSpace_iff_connectedComponent.mpr
   refine ⟨o x₀, Set.eq_univ_of_forall ?_⟩
   rintro (x | d)
-  · exact ho ⟨x, rfl⟩
-  · let f : ClosedUnitBall E → DiskAttachment r :=
+  · tauto
+  · let f  :=
       fun v => cell r (boundaryFamilyInclusion J E) ⟨d.val.1, v⟩
     have hf : Continuous f := (cell_continuous r _).comp continuous_sigmaMk
-    have hb : f (unitBoundaryInclusion E a) = o (r ⟨d.val.1, a⟩) :=
+    have hb  :=
       cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J E).injective
         ⟨d.val.1, a⟩
-    have hc : Sum.inr d ∈ connectedComponent (o (r ⟨d.val.1, a⟩)) :=
+    have hc  :=
       (isConnected_range hf).subset_connectedComponent
         ⟨unitBoundaryInclusion E a, hb⟩
         ⟨d.val.2, cell_of_not_mem r _ d.val d.property⟩

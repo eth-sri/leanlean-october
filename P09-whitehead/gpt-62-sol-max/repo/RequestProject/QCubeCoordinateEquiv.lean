@@ -66,8 +66,7 @@ theorem qCubeToCoordinate_sgn_zero (c : QCube A) (hc : c.sgn = 0) :
 /-- Recover the parity sign from the actual fixed coordinate. -/
 theorem qCubeToCoordinate_parity (c : QCube A) (v : V) :
     (match qCubeToCoordinate c v with | CubeCoord.neg => (1 : ZMod 2) | _ => 0) =
-      c.sgn v := by
-  exact congrArg (fun d : QCube A => d.sgn v) (qCubeCoordinateEquiv.left_inv c)
+      c.sgn v := congrArg (fun d  => d.sgn v) (qCubeCoordinateEquiv.left_inv c)
 
 /-- A coordinate cube is a face of another when each coordinate of the larger cube is
  free or agrees with the smaller cube. -/
@@ -88,45 +87,23 @@ theorem qCubeToCoordinate_face_iff (c d : QCube A) :
     · intro v hv
       have hc : qCubeToCoordinate c v = CubeCoord.free := by
         simp [qCubeToCoordinate, hv]
-      have hd : qCubeToCoordinate d v = CubeCoord.free := by
-        rcases h v with hd | hd
-        · exact hd
-        · exact hd.symm.trans hc
-      have hm : v ∈ freeSet (qCubeToCoordinate d) := mem_freeSet.mpr hd
-      simpa using hm
+      grind +locals
     · intro v hv
       have hd : qCubeToCoordinate d v ≠ CubeCoord.free := by
         intro he
         have hm := mem_freeSet.mpr he
         rw [freeSet_qCubeToCoordinate] at hm
         exact hv hm
-      have he : qCubeToCoordinate c v = qCubeToCoordinate d v := (h v).resolve_left hd
+      have he  := (h v).resolve_left hd
       rw [← qCubeToCoordinate_parity c v, ← qCubeToCoordinate_parity d v, he]
 
-instance : PartialOrder (CoordinateCube A) where
-  le c d := CoordinateFace c.1 d.1
-  le_refl c v := Or.inr rfl
-  le_trans c d e hcd hde v := by
-    rcases hde v with he | he
-    · exact Or.inl he
-    · rcases hcd v with hd | hd
-      · exact Or.inl (he.symm.trans hd)
-      · exact Or.inr (hd.trans he)
-  le_antisymm c d hcd hdc := by
-    apply Subtype.ext
-    funext v
-    rcases hcd v with hd | hd
-    · rcases hdc v with hc | hc
-      · exact hc.trans hd.symm
-      · exact hc.symm
-    · exact hd
 
 end FiniteChains.Davis
 
-namespace FiniteChains.Davis
 
-open RACG Mirror
 
-variable {P : Type} [PartialOrder P] [DecidableEq P] [Fintype P]
 
-end FiniteChains.Davis
+
+
+
+

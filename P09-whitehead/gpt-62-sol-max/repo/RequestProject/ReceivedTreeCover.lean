@@ -5,8 +5,6 @@ public import RequestProject.ReceivedTreePaths
 @[expose] public section
 
 /-! A genuine regular cover on all sheets of the receiving group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
@@ -17,26 +15,11 @@ variable {K : Complex2.{u}} (T : SpanningTree K) {G : Type u} [Group G]
 
 /-- This cover has precisely the coefficient group's sheets. It can be
 disconnected when the receiver is not surjective; no connectedness is asserted. -/
-noncomputable def cover : Complex2.{u} where
-  V := G × K.V
-  E := G × K.E
-  F := G × K.F
-  src := src
-  tgt := tgt T φ
-  base f := (f.1, K.base f.2)
-  att f := liftPath T φ (K.att f.2) f.1
-  att_isLoop f := by
-    have h := liftPath_isPath T φ (K.att_isLoop f.2) f.1
-    rwa [wordValue_att, mul_one] at h
+noncomputable def cover : Complex2.{u} :=
+  TreeVoltage.cover T (freeReceiver T φ) (wordValue_att T φ)
 
-noncomputable def projection : Hom (cover T φ) K where
-  onV := Prod.snd
-  onE := Prod.snd
-  onF := Prod.snd
-  src_onE _ := rfl
-  tgt_onE _ := rfl
-  base_onF _ := rfl
-  att_onF f := (liftPath_projection T φ (K.att f.2) f.1).symm
+noncomputable def projection : Hom (cover T φ) K :=
+  TreeVoltage.projection T (freeReceiver T φ) (wordValue_att T φ)
 
 noncomputable def deck : DeckAction (cover T φ) G where
   smulV h x := (h * x.1, x.2)

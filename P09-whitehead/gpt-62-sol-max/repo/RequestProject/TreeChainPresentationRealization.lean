@@ -15,7 +15,7 @@ noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb.TopChainFS
 open SpanningTree
-variable {K : Complex2} {n : ℕ} (c : TopChainFS K n)
+variable {n : ℕ} (c : TopChainFS n)
   (T₀ : SpanningTree (c.X 0))
 
 def stageTree (i : ℕ) : SpanningTree (c.X i) :=
@@ -29,7 +29,7 @@ theorem stageTree_compatible (i : ℕ) (e : (c.X i).E) :
   (exists_extension (c.inc i) (c.conn (i + 1)) (c.stageTree T₀ i).root
     (c.stageTree T₀ i) (c.incV i) (c.incE i)).choose_spec.2 e
 
-def treePresentationTopChain : PresChainTopFS (treeRel T₀) n where
+def treePresentationChain : PresChainFS (treeRel T₀) n where
   gen i := NonTree (c.stageTree T₀ i)
   cell i := (c.X i).F
   decGen _ := inferInstance
@@ -48,9 +48,6 @@ def treePresentationTopChain : PresChainTopFS (treeRel T₀) n where
     rw [FreeGroup.map.id]
   zero_pi2 i hi := zeroPi2_presInclHom_of_zeroPi2
     (c.stageTree_compatible T₀ i) (c.incE i) (c.zero_pi2 i hi)
-
-def treePresentationChain : PresChainFS (treeRel T₀) n :=
-  (c.treePresentationTopChain T₀).toPresChainFS
 
 theorem treePresentationChain_proper
     (hp : ∀ i, i < n → FreshLoopOrFace (c.inc i)) (i : ℕ) (hi : i < n) :

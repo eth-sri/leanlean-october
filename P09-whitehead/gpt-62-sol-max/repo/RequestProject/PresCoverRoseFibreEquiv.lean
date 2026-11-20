@@ -23,7 +23,7 @@ noncomputable def presCoverRoseFibreEquiv (x : Rose α) :
   invFun p := by
     let b : {p : P // f p ∈ coneAdjBaseSet (S := circSet w)} :=
       ⟨p.val, cylIn (aHom w) x, p.property.symm⟩
-    have hb : coneAdjCoverBaseEnd f b = cylIn (aHom w) x :=
+    have hb  :=
       Sum.inl.inj ((coneAdjCoverBaseEnd_spec f b).trans p.property)
     let q : cylinderCoverRoseSet w (coneAdjCoverBaseEnd f) := ⟨b, x, hb⟩
     refine ⟨q, ?_⟩

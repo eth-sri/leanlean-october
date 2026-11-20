@@ -1,6 +1,8 @@
 module
 
-public import RequestProject.SubstOneWayQuotient
+public import RequestProject.SubstOneWay
+public import RequestProject.PresPosetReading
+public import RequestProject.ChamberQuotientCover
 public import RequestProject.PresPosetAlphaW
 
 @[expose] public section
@@ -17,8 +19,6 @@ quotient `Q = Z/Γ` is injective on fundamental groups
 (`FiniteChains.Davis.pi1Map_qNew_injective`).
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains

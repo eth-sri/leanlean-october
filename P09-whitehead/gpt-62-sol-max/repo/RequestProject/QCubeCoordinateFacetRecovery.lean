@@ -23,8 +23,7 @@ theorem qCubeFacet_coordinate_free (c : QCube A) (v : V) (hv : v ∈ c.spx)
       qCubeToCoordinate c := by
   funext x
   by_cases hx : x = v
-  · subst x
-    simp [qCubeToCoordinate, hv]
+  · simp_all [qCubeToCoordinate]
   · simp [qCubeToCoordinate, qCubeFacet, hx]
 
 /-- A nonfree coordinate that frees to a given cube lies in that cube's free set. -/
@@ -78,12 +77,11 @@ theorem cubeBdry_actual_facet (c : QCube A) (v : V) (hv : v ∈ c.spx) (s : ZMod
   rw [cubeBdry_inl, Finset.sum_eq_single v]
   · rw [he, if_pos rfl, mul_one]
   · intro k hk hkv
-    have hkfixed : g k ≠ CubeCoord.free := (Finset.mem_filter.mp hk).2
+    have hkfixed  := (Finset.mem_filter.mp hk).2
     rw [if_neg, mul_zero]
     intro hkfree
     exact hkv (update_free_injective hkfixed (hkfree.trans he.symm))
-  · intro hnot
-    exact False.elim (hnot hmem)
+  · tauto
 
 /-- The collapse's ordinary cubical boundary has no coefficient outside actual facets. -/
 theorem cubeBdry_zero_off_actual_facets (c : QCube A) (g : Cube V)

@@ -84,10 +84,10 @@ theorem chartedInitialChoices_old (j : RelCWComplex.cell (Set.univ : Set D) 2) :
 
 def chartedFixedPresChainFS
     (hkill : ∀ i : Fin n, Whitehead.KillsPi2
-      (⟨Set.inclusion (hC (show i.castSucc ≤ i.succ from Nat.le_succ i.val)),
+      (⟨Set.inclusion (hC (Nat.le_succ i.val)),
         continuous_inclusion _⟩ : C((C i.castSucc : Set K), (C i.succ : Set K)))) :
     PresChainFS (fixedRelators D T) n := by
-  letI : Choices C := chartedInitialChoices D K C e hchart h₀
+  letI  := chartedInitialChoices D K C e hchart h₀
   let g := chartedInitialGraph D K C e hchart h₀
   let htree := SpanningTree.exists_extension g
     (graph_connected K C hC hconn 0) T.root T
@@ -95,7 +95,7 @@ def chartedFixedPresChainFS
     (chartedInitialGraph_injective_E D K C e hchart h₀)
   let U := Classical.choose htree
   have hU := (Classical.choose_spec htree).2
-  letI : TreeChoice K C := seededTreeChoice K C U
+  letI  := seededTreeChoice K C U
   have ht : ∀ a, (chainTree K C hC hconn 0).isTree (g.onE a) ↔ T.isTree a := by
     rw [chainTree_zero K C hC hconn U rfl]
     exact hU
@@ -118,20 +118,18 @@ theorem fixedPresChainFS_of_hasChain {n : ℕ} {finite : Bool} (h : HasChain K n
   have hC : Monotone C := Fin.monotone_iff_le_succ.mpr (fun i => (hstep i).choose)
   let f := initialCellEmbedding (C 0) e he
   let L' := f.recharacterizedComplex
-  let C' (i : Fin (n + 1)) : CWComplex.Subcomplex (Set.univ : Set L') := f.recharacterizedSubcomplex (C i)
-  have hC' : Monotone C' := hC
-  have hconn' : ∀ i, ConnectedSpace (C' i : Set L') := hconn
-  let f' : CWCellEmbedding K L' := f.recharacterizedEmbedding
+  let C' (i : Fin (n + 1))  := f.recharacterizedSubcomplex (C i)
+  have hC'  := hC
+  have hconn'  := hconn
+  let f'  := f.recharacterizedEmbedding
   have h₀ : C' 0 = f'.imageSubcomplex := by
     apply SetLike.coe_injective
     exact (initialCellEmbedding_range (C 0) e he).symm
-  have hchart : ∀ m (j : RelCWComplex.cell (Set.univ : Set K) m) (x : Fin m → ℝ),
-      RelCWComplex.map (C := (Set.univ : Set L')) m (f'.cellIndex m j) x =
-        f'.map (RelCWComplex.map (C := (Set.univ : Set K)) m j x) :=
+  have hchart  :=
     f.recharacterizedEmbedding_characteristic
   have hz : ∀ i : Fin n, KillsPi2
-      (⟨Set.inclusion (hC' (show i.castSucc ≤ i.succ from Nat.le_succ i.val)),
-        continuous_inclusion _⟩ : C((C' i.castSucc : Set L'), (C' i.succ : Set L'))) := by
+      (⟨Set.inclusion (hC' (Nat.le_succ i.val)),
+        continuous_inclusion _⟩ : C((C' i.castSucc), (C' i.succ))) := by
     intro i
     exact (hstep i).choose_spec.2
   exact ⟨chartedFixedPresChainFS K L' C' hC' hconn' T f' hchart h₀ hz⟩
@@ -145,7 +143,7 @@ theorem fixedPresChainsFS_of_original_chains
   | zero =>
       obtain ⟨L, C, e, he, hf, hc, _hs⟩ := h 1 le_rfl
       apply fixedPresChainFS_of_hasChain K T (finite := false)
-      refine ⟨L, (fun _ : Fin 1 => C 0), e, he, hf, (fun _ => hc 0), ?_⟩
+      refine ⟨L, (fun _  => C 0), e, he, hf, (fun _ => hc 0), ?_⟩
       intro i
       exact Fin.elim0 i
   | succ n => exact fixedPresChainFS_of_hasChain K T (h (n + 1) (Nat.succ_pos n))

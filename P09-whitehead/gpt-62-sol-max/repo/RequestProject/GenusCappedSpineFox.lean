@@ -1,14 +1,12 @@
 module
 
-public import RequestProject.GenusCappedSpineHurewicz
+public import RequestProject.GenusCappedSpine
+public import RequestProject.TreeUnivCoverIso
 public import RequestProject.PresCockcroftDictionary
 
 @[expose] public section
 
 /-! The actual capped spine and the Fox complex of its genuine presentation agree. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open scoped Classical

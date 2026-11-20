@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.CarriedLinearLift
 public import RequestProject.OrderNerveRealizationSmallChains
 public import RequestProject.OrderNerveSingularCarrierFillings
 
@@ -23,7 +24,7 @@ noncomputable def orderSmallSimplexFace {P : Type} [PartialOrder P] {n : ℕ}
     (i : Fin (n + 2)) (σ : OrderSmallSimplex P (n + 1)) : OrderSmallSimplex P n :=
   ⟨TopologicalSingular.face i σ.val, by
     obtain ⟨v, hv⟩ := σ.property
-    exact ⟨v, orderNerveSingularStarIndices_face σ.val i hv⟩⟩
+    tauto⟩
 
 noncomputable def orderSmallSingle {P : Type} [PartialOrder P] {n : ℕ}
     (σ : OrderSmallSimplex P n) (r : ℤ) : smallChains (orderNerveRealizationOpenStar P) n :=
@@ -45,28 +46,19 @@ theorem orderSmallSingle_boundary {P : Type} [PartialOrder P] {n : ℕ}
   simp only [TopologicalSingular.boundary_single, Submodule.coe_sum, Submodule.coe_smul]
   rfl
 
+noncomputable def orderSmallBasis (P : Type) [PartialOrder P] (n : ℕ) :
+    Module.Basis (OrderSmallSimplex P n) ℤ (smallChains (orderNerveRealizationOpenStar P) n) :=
+  .ofRepr (orderSmallChainEquiv P n)
+
+@[simp] theorem orderSmallBasis_apply {P : Type} [PartialOrder P] {n : ℕ}
+    (σ : OrderSmallSimplex P n) : orderSmallBasis P n σ = orderSmallSingle σ 1 :=
+  orderSmallChainEquiv_symm_single σ 1
+
 theorem orderSmallSingle_spans {P : Type} [PartialOrder P] {n : ℕ}
     {M : Type*} [AddCommMonoid M] [Module ℤ M]
     (f g : smallChains (orderNerveRealizationOpenStar P) n →ₗ[ℤ] M)
     (h : ∀ σ : OrderSmallSimplex P n, f (orderSmallSingle σ 1) = g (orderSmallSingle σ 1)) :
-    f = g := by
-  apply LinearMap.ext
-  intro c
-  obtain ⟨d, rfl⟩ := (orderSmallChainEquiv P n).symm.surjective c
-  have he : f.comp (orderSmallChainEquiv P n).symm.toLinearMap =
-      g.comp (orderSmallChainEquiv P n).symm.toLinearMap := by
-    apply Finsupp.lhom_ext
-    intro σ r
-    have hs : Finsupp.single σ r = r • Finsupp.single σ 1 := by simp
-    rw [hs, map_smul, map_smul]
-    congr 1
-    simpa only [LinearMap.comp_apply, LinearEquiv.coe_coe, orderSmallChainEquiv_symm_single] using h σ
-  exact DFunLike.congr_fun he d
+    f = g := (orderSmallBasis P n).ext fun σ => by simpa using h σ
 
-/-- The basis carriers decrease along every face. -/
-theorem orderSmallSimplexFace_carrier {P : Type} [PartialOrder P] {n : ℕ}
-    (i : Fin (n + 2)) (σ : OrderSmallSimplex P (n + 1)) :
-    orderNerveSingularCarrier (orderSmallSimplexFace i σ).val ⊆ orderNerveSingularCarrier σ.val :=
-  orderNerveSingularCarrier_face σ.val i
 
 end FiniteChains.Comb

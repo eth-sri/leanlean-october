@@ -71,11 +71,7 @@ theorem Sph.no_rdesc (p : Sph A) : ∀ s ∈ p.spx, ¬ IsRDesc A p.rep s := p.2.
 
 theorem Sph.ext' {p q : Sph A} (hr : p.rep = q.rep) (hs : p.spx = q.spx) : p = q := by
   obtain ⟨⟨a, s⟩, hp⟩ := p
-  obtain ⟨⟨b, t⟩, hq⟩ := q
-  simp only [Sph.rep, Sph.spx] at hr hs
-  subst hr
-  subst hs
-  rfl
+  aesop
 
 omit [DecidableEq V] in
 /-- A simplex of `L` is a commuting set of generators. -/
@@ -91,22 +87,22 @@ instance : PartialOrder (Sph A) where
   le_refl p := ⟨Finset.Subset.refl _, by rw [inv_mul_cancel]; exact Subgroup.one_mem _⟩
   le_trans p q r hpq hqr := by
     refine ⟨hpq.1.trans hqr.1, ?_⟩
-    have h1 : p.rep⁻¹ * q.rep ∈ specialSub A (r.spx : Set V) :=
+    have h1  :=
       specialSub_mono (by exact_mod_cast hqr.1) hpq.2
     have h2 : p.rep⁻¹ * r.rep = (p.rep⁻¹ * q.rep) * (q.rep⁻¹ * r.rep) := by group
     rw [h2]
     exact Subgroup.mul_mem _ h1 hqr.2
   le_antisymm p q hpq hqp := by
-    have hspx : p.spx = q.spx := Finset.Subset.antisymm hpq.1 hqp.1
-    have hT : Commuting A (p.spx : Set V) := commuting_of_isSimplex p.isSimplex
+    have hspx  := Finset.Subset.antisymm hpq.1 hqp.1
+    have hT  := commuting_of_isSimplex p.isSimplex
     have huniq := existsUnique_shortest_coset A hT p.rep
-    have hp : p.rep⁻¹ * p.rep ∈ specialSub A (p.spx : Set V) ∧
-        ∀ s ∈ (p.spx : Set V), ¬ IsRDesc A p.rep s := by
+    have hp : p.rep⁻¹ * p.rep ∈ specialSub A p.spx ∧
+        ∀ s ∈ p.spx, ¬ IsRDesc A p.rep s := by
       refine ⟨by rw [inv_mul_cancel]; exact Subgroup.one_mem _, ?_⟩
       intro s hs
       exact p.no_rdesc s (Finset.mem_coe.1 hs)
-    have hq : p.rep⁻¹ * q.rep ∈ specialSub A (p.spx : Set V) ∧
-        ∀ s ∈ (p.spx : Set V), ¬ IsRDesc A q.rep s := by
+    have hq : p.rep⁻¹ * q.rep ∈ specialSub A p.spx ∧
+        ∀ s ∈ p.spx, ¬ IsRDesc A q.rep s := by
       refine ⟨by rw [hspx]; exact hpq.2, ?_⟩
       intro s hs
       exact q.no_rdesc s (hspx ▸ Finset.mem_coe.1 hs)
@@ -118,25 +114,23 @@ instance : PartialOrder (Sph A) where
 /-- The coset `p` contains the group element `x`: the corresponding cell of the Davis complex
 lies in the chamber `F_x`. -/
 def InChamber (x : CayGroup A) (p : Sph A) : Prop :=
-  p.rep⁻¹ * x ∈ specialSub A (p.spx : Set V)
+  p.rep⁻¹ * x ∈ specialSub A p.spx
 
 /-- **The chamber `F_x`** as a subposet of the Davis poset. -/
 def Chamber (A : CommRel V) (x : CayGroup A) : Type u := {p : Sph A // InChamber x p}
 
 instance (x : CayGroup A) : PartialOrder (Chamber A x) := Subtype.partialOrder _
 
-@[simp] theorem Chamber.le_def {x : CayGroup A} (p q : Chamber A x) :
-    p ≤ q ↔ p.1 ≤ q.1 := Iff.rfl
 
 /-- Inside one chamber the order is just inclusion of simplices. -/
 theorem le_of_inChamber {x : CayGroup A} {p q : Sph A} (hp : InChamber x p) (hq : InChamber x q)
     (h : p.spx ⊆ q.spx) : p ≤ q := by
   refine ⟨h, ?_⟩
-  have h1 : p.rep⁻¹ * x ∈ specialSub A (q.spx : Set V) :=
+  have h1  :=
     specialSub_mono (by exact_mod_cast h) hp
-  have h2 : x⁻¹ * q.rep ∈ specialSub A (q.spx : Set V) := by
+  have h2 : x⁻¹ * q.rep ∈ specialSub A q.spx := by
     have := Subgroup.inv_mem _ hq
-    rwa [mul_inv_rev, inv_inv] at this
+    assumption
   have h3 : p.rep⁻¹ * q.rep = (p.rep⁻¹ * x) * (x⁻¹ * q.rep) := by group
   rw [h3]
   exact Subgroup.mul_mem _ h1 h2
@@ -154,29 +148,14 @@ theorem chamberPt_inChamber (x : CayGroup A) {σ : Finset V} (hσ : IsSimplex A 
     InChamber x (chamberPt x hσ) := by
   have h := (existsUnique_shortest_coset A (commuting_of_isSimplex hσ) x).choose_spec.1.1
   have := Subgroup.inv_mem _ h
-  rw [mul_inv_rev, inv_inv] at this
-  exact this
+  assumption
 
-/-- **Uniqueness of the cell of a given type in a chamber.** -/
-theorem eq_chamberPt {x : CayGroup A} {p : Sph A} (hp : InChamber x p) :
-    p = chamberPt x p.isSimplex := by
-  have hT : Commuting A (p.spx : Set V) := commuting_of_isSimplex p.isSimplex
-  have huniq := existsUnique_shortest_coset A hT x
-  have h1 : x⁻¹ * p.rep ∈ specialSub A (p.spx : Set V) ∧
-      ∀ s ∈ (p.spx : Set V), ¬ IsRDesc A p.rep s := by
-    refine ⟨?_, fun s hs => p.no_rdesc s (Finset.mem_coe.1 hs)⟩
-    have := Subgroup.inv_mem _ hp
-    rwa [mul_inv_rev, inv_inv] at this
-  have h2 := (existsUnique_shortest_coset A hT x).choose_spec.1
-  refine Sph.ext' ?_ rfl
-  exact huniq.unique h1 h2
 
 /-! ### The chamber is a cone -/
 
 omit [DecidableEq V] in
 theorem isSimplex_empty : IsSimplex A (∅ : Finset V) := by
-  intro s hs
-  exact absurd hs (by simp)
+  tauto
 
 /-- The apex of the chamber `F_x`: the cell `x W_∅ = {x}`. -/
 noncomputable def chamberApex (x : CayGroup A) : Chamber A x :=
@@ -189,13 +168,13 @@ theorem chamberApex_le {x : CayGroup A} (p : Chamber A x) : chamberApex x ≤ p 
 theorem chamber_simplyConnected (x : CayGroup A) :
     Comb.SimplyConnected (Comb.orderCx (Chamber A x)) :=
   Comb.simplyConnected_orderCx (chamberApex x) (fun _ => chamberApex x)
-    (fun p => chamberApex_le p) (fun _ => le_refl _) (fun _ => le_refl _)
+    chamberApex_le (fun _ => le_refl _) (fun _ => le_refl _)
 
 /-- The chamber is connected. -/
 theorem chamber_isConnected (x : CayGroup A) :
     Comb.IsConnected (Comb.orderCx (Chamber A x)) :=
   Comb.isConnected_orderCx (chamberApex x) (fun _ => chamberApex x)
-    (fun p => chamberApex_le p) (fun _ => le_refl _)
+    chamberApex_le (fun _ => le_refl _)
 
 /-- **The chamber is acyclic in all degrees**: every increasing cycle of its simplicial chain
 complex, in every degree including the augmentation degree, is a boundary. -/
@@ -203,7 +182,7 @@ theorem chamber_exists_bdry_eq_of_cycle (x : CayGroup A) {c : Nerve.Ch (Chamber 
     (hc : c ∈ Nerve.Inc (Chamber A x)) (hcyc : Nerve.bdry c = 0) :
     ∃ y ∈ Nerve.Inc (Chamber A x), Nerve.bdry y = c :=
   Nerve.exists_bdry_eq_of_cycle (fun _ => chamberApex x) (chamberApex x)
-    (fun _ _ _ => le_refl _) (fun p => chamberApex_le p) (fun _ => le_refl _) hc hcyc
+    (fun _ _ _ => le_refl _) chamberApex_le (fun _ => le_refl _) hc hcyc
 
 /-! ### The intersection with the earlier chambers -/
 
@@ -218,14 +197,14 @@ type meets the descent set `D(x)`; that is,
 theorem mem_earlier_chamber_iff {x : CayGroup A} {p : Sph A} (hp : InChamber x p) :
     (∃ y : CayGroup A, y ≠ x ∧ RACG.clen A y ≤ RACG.clen A x ∧ InChamber y p) ↔
       (p.spx ∩ rdescFinset A x).Nonempty := by
-  have hT : Commuting A (p.spx : Set V) := commuting_of_isSimplex p.isSimplex
+  have hT  := commuting_of_isSimplex p.isSimplex
   have hkey := exists_rdesc_iff_exists_earlier A hT x
   constructor
   · rintro ⟨y, hne, hlen, hy⟩
-    have hxy : x⁻¹ * y ∈ specialSub A (p.spx : Set V) := by
-      have h1 : x⁻¹ * p.rep ∈ specialSub A (p.spx : Set V) := by
+    have hxy : x⁻¹ * y ∈ specialSub A p.spx := by
+      have h1 : x⁻¹ * p.rep ∈ specialSub A p.spx := by
         have := Subgroup.inv_mem _ hp
-        rwa [mul_inv_rev, inv_inv] at this
+        assumption
       have h2 : x⁻¹ * y = (x⁻¹ * p.rep) * (p.rep⁻¹ * y) := by group
       rw [h2]
       exact Subgroup.mul_mem _ h1 hy
@@ -262,20 +241,13 @@ noncomputable def interRho (p : ChamberInter A x) : ChamberInter A x :=
   let hsimplex := isSimplex_subset A hsubset p.1.isSimplex
   ⟨chamberPt x hsimplex,
     chamberPt_inChamber x hsimplex, by
-      have hspx : (chamberPt x hsimplex).spx = p.1.spx ∩ rdescFinset A x :=
-        chamberPt_spx x hsimplex
-      rw [hspx]
-      rw [Finset.inter_assoc, Finset.inter_self]
-      exact p.2.2⟩
+      simpa using p.2.2⟩
 
 theorem interRho_spx (p : ChamberInter A x) :
-    (interRho p).1.spx = p.1.spx ∩ rdescFinset A x := by
-  dsimp only [interRho]
-  exact chamberPt_spx x _
+    (interRho p).1.spx = p.1.spx ∩ rdescFinset A x := rfl
 
 theorem interRho_le (p : ChamberInter A x) : interRho p ≤ p := by
   refine le_of_inChamber (interRho p).2.1 p.2.1 ?_
-  rw [interRho_spx]
   exact Finset.inter_subset_left
 
 theorem interRho_le_top (hx : x ≠ 1) (p : ChamberInter A x) : interRho p ≤ interTop hx := by
@@ -284,7 +256,7 @@ theorem interRho_le_top (hx : x ≠ 1) (p : ChamberInter A x) : interRho p ≤ i
   exact Finset.inter_subset_right
 
 theorem interRho_mono {p q : ChamberInter A x} (h : p ≤ q) : interRho p ≤ interRho q := by
-  have h1 : p.1.spx ⊆ q.1.spx := h.1
+  have h1  := h.1
   refine le_of_inChamber (interRho p).2.1 (interRho q).2.1 ?_
   rw [interRho_spx, interRho_spx]
   exact fun a ha => Finset.mem_inter.2
@@ -295,7 +267,7 @@ the path contraction of `RequestProject/MirrorSimplyConnected.lean`. -/
 theorem chamberInter_simplyConnected (hx : x ≠ 1) :
     Comb.SimplyConnected (Comb.orderCx (ChamberInter A x)) :=
   Comb.simplyConnected_orderCx (interTop hx) interRho interRho_le (interRho_le_top hx)
-    (fun h => interRho_mono h)
+    interRho_mono
 
 /-- The attaching subcomplex is connected. -/
 theorem chamberInter_isConnected (hx : x ≠ 1) :

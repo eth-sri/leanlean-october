@@ -86,7 +86,7 @@ noncomputable def treePath (T : SpanningTree K) (a : K.V) : List (K.E × Bool) :
 theorem treePath_of_ne {a : K.V} (ha : a ≠ T.root) :
     T.treePath a = T.treePath (T.parent a ha) ++ [revGerm (T.up a ha)] := by
   rw [treePath]
-  simp [ha]
+  aesop
 
 /-- The tree path from the root to `a` is an edge path from the root to `a`. -/
 theorem treePath_isPath (a : K.V) : IsPath K.src K.tgt (T.treePath a) T.root a := by
@@ -95,7 +95,7 @@ theorem treePath_isPath (a : K.V) : IsPath K.src K.tgt (T.treePath a) T.root a :
       by_cases ha : a = T.root
       · subst ha
         simp
-      · have hp : T.ht (T.parent a ha) + 1 = T.ht a := T.ht_parent ha
+      · have hp  := T.ht_parent ha
         have hlt : T.ht (T.parent a ha) < n := by omega
         have hrest := ih _ hlt (T.parent a ha) rfl
         rw [T.treePath_of_ne ha]
@@ -112,13 +112,12 @@ theorem isTree_of_mem_treePath (a : K.V) {g : K.E × Bool} (hg : g ∈ T.treePat
   induction hn : T.ht a using Nat.strong_induction_on generalizing a g with
   | _ n ih =>
       by_cases ha : a = T.root
-      · subst ha
-        simp at hg
-      · have hp : T.ht (T.parent a ha) + 1 = T.ht a := T.ht_parent ha
+      · aesop
+      · have hp  := T.ht_parent ha
         have hlt : T.ht (T.parent a ha) < n := by omega
         rw [T.treePath_of_ne ha, List.mem_append] at hg
         rcases hg with hg | hg
-        · exact ih _ hlt (a := T.parent a ha) hg rfl
+        · tauto
         · simp only [List.mem_singleton] at hg
           subst hg
           exact T.isTree_up ha
@@ -145,7 +144,7 @@ theorem exists_of_isConnected (hconn : IsConnected K) (r : K.V) :
     Nat.sInf_mem (reach_nonempty hconn r a)
   have hle : ∀ (a : K.V) (p : List (K.E × Bool)), IsPath K.src K.tgt p r a → d a ≤ p.length :=
     fun a p hp => Nat.sInf_le ⟨p, rfl, hp⟩
-  have hd_root : d r = 0 := Nat.le_antisymm (hle r [] rfl) (Nat.zero_le _)
+  have hd_root  := Nat.le_antisymm (hle r [] rfl) (Nat.zero_le _)
   have hd_eq_zero : ∀ a, d a = 0 → a = r := by
     intro a ha
     obtain ⟨p, hlen, hp⟩ := hmem a
@@ -159,19 +158,19 @@ theorem exists_of_isConnected (hconn : IsConnected K) (r : K.V) :
     have hne : p ≠ [] := by
       intro h
       subst h
-      exact ha (hd_eq_zero a (by simpa using hlen.symm))
+      tauto
     obtain ⟨q, g, rfl⟩ : ∃ (q : List (K.E × Bool)) (g : K.E × Bool), p = q ++ [g] :=
       ⟨p.dropLast, p.getLast hne, (List.dropLast_append_getLast hne).symm⟩
     obtain ⟨m, hq, hg⟩ := isPath_append_iff.1 hp
-    have hgs : germSrc K.src K.tgt g = m := hg.1.symm
+    have hgs  := hg.1.symm
     have hgt : germTgt K.src K.tgt g = a := by
       have := hg.2
       simpa using this
     refine ⟨revGerm g, by simpa using hgt, ?_⟩
-    have h1 : d m ≤ q.length := hle m q hq
+    have h1  := hle m q hq
     have h2 : d a ≤ d m + 1 := by
       obtain ⟨q', hlen', hq'⟩ := hmem m
-      have hpath : IsPath K.src K.tgt (q' ++ [g]) r a :=
+      have hpath  :=
         isPath_append_iff.mpr ⟨m, hq', hg⟩
       have := hle a _ hpath
       simpa [hlen'] using this

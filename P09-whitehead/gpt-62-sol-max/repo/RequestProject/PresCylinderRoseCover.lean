@@ -42,7 +42,6 @@ theorem cylinderCoverRoseEnd_isPosetCover (hf : IsPosetCover f) :
 
 omit [PartialOrder P] in
 theorem cylinderCoverRoseEnd_projection (p : cylinderCoverRoseSet w f) :
-    cylIn (aHom w) (cylinderCoverRoseEnd w f p) = f p.val := by
-  exact congrArg Subtype.val ((cylinderRoseOrderIso w).apply_symm_apply ⟨f p.val, p.property⟩)
+    cylIn (aHom w) (cylinderCoverRoseEnd w f p) = f p.val := congrArg Subtype.val ((cylinderRoseOrderIso w).apply_symm_apply ⟨f p.val, p.property⟩)
 
 end FiniteChains.PresModel

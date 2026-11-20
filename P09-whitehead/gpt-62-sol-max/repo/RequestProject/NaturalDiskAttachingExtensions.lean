@@ -26,14 +26,9 @@ theorem ballHomotopyExtension_natural
     (t : I) (x : ClosedUnitBall E) :
     f (ballHomotopyExtension d H h₀ (t, x)) =
       ballHomotopyExtension d' H' h₀' (t, x) := by
-  let z := ballCylinderRetraction (t, x)
-  change f (if hz : z.val.1 = 0 then d z.val.2 else
-      H (z.val.1, ⟨z.val.2.val, z.property.resolve_left hz⟩)) =
-    if hz : z.val.1 = 0 then d' z.val.2 else
-      H' (z.val.1, ⟨z.val.2.val, z.property.resolve_left hz⟩)
-  split_ifs with hz
-  · exact hd _
-  · exact hH _ _
+  simp only [ballHomotopyExtension, ContinuousMap.comp_apply, ballBoundaryPasting,
+    cylinderPasting, cylinderPastingFun, ContinuousMap.coe_mk]
+  split_ifs <;> first | apply hd | apply hH
 
 variable (r₀ r₁ : C(BoundaryFamily J E, X)) (H : r₀.Homotopy r₁)
 
@@ -49,19 +44,19 @@ def naturalDiskExtensionAt (j : J) : C(I × ClosedUnitBall E, DiskAttachment r�
   ballHomotopyExtension
     ⟨fun x => cell r₀ (boundaryFamilyInclusion J E) ⟨j, x⟩,
       (cell_continuous _ _).comp
-        (continuous_sigmaMk («σ» := fun _ : J => ClosedUnitBall E) (i := j))⟩
+        (continuous_sigmaMk («σ» := fun _  => ClosedUnitBall E) (i := j))⟩
     ⟨fun ta => old r₀ (boundaryFamilyInclusion J E) (H (ta.1, ⟨j, ta.2⟩)),
       (old_continuous _ _).comp (H.continuous.comp
         (continuous_fst.prodMk
-          ((continuous_sigmaMk («σ» := fun _ : J => UnitBoundary E) (i := j)).comp
+          ((continuous_sigmaMk («σ» := fun _  => UnitBoundary E) (i := j)).comp
             continuous_snd)))⟩
     (naturalDiskBoundaryStart r₀ r₁ H j)
 
 def naturalDiskExtension : C(I × DiskFamily J E, DiskAttachment r₀) :=
-  (⟨fun z : Σ _ : J, I × ClosedUnitBall E => naturalDiskExtensionAt r₀ r₁ H z.1 z.2,
+  (⟨fun z  => naturalDiskExtensionAt r₀ r₁ H z.1 z.2,
     continuous_sigma (fun j => (naturalDiskExtensionAt r₀ r₁ H j).continuous)⟩ :
       C((Σ _ : J, I × ClosedUnitBall E), DiskAttachment r₀)).comp
-    (sigmaCylinderHomeomorph (D := fun _ : J => ClosedUnitBall E)).symm.toContinuousMap
+    (sigmaCylinderHomeomorph (D := fun _  => ClosedUnitBall E)).symm.toContinuousMap
 
 theorem naturalDiskExtension_zero (d : DiskFamily J E) :
     naturalDiskExtension r₀ r₁ H (0, d) = cell r₀ (boundaryFamilyInclusion J E) d := by
@@ -80,17 +75,12 @@ theorem naturalDiskExtension_boundary (t : I) (a : BoundaryFamily J E) :
 
 def naturalDiskBackward : C(DiskAttachment r₁, DiskAttachment r₀) :=
   desc r₁ (boundaryFamilyInclusion J E)
-    ⟨old r₀ (boundaryFamilyInclusion J E), old_continuous _ _⟩
+    (DiskAttachment.oldMap r₀)
     ((naturalDiskExtension r₀ r₁ H).comp
       ⟨fun d => (1, d), continuous_const.prodMk continuous_id⟩)
     (fun a => by
-      change old r₀ (boundaryFamilyInclusion J E) (r₁ a) =
-        naturalDiskExtension r₀ r₁ H (1, boundaryFamilyInclusion J E a)
-      rw [naturalDiskExtension_boundary, H.apply_one])
+      simp [naturalDiskExtension_boundary])
 
-@[simp] theorem naturalDiskBackward_old (x : X) :
-    naturalDiskBackward r₀ r₁ H (old r₁ (boundaryFamilyInclusion J E) x) =
-      old r₀ (boundaryFamilyInclusion J E) x := rfl
 
 @[simp] theorem naturalDiskBackward_cell (d : DiskFamily J E) :
     naturalDiskBackward r₀ r₁ H (cell r₁ (boundaryFamilyInclusion J E) d) =

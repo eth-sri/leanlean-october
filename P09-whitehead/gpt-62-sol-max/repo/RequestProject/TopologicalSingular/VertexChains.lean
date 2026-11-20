@@ -15,9 +15,6 @@ no acyclicity or subdivision identity is assumed.
 -/
 
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.VertexChains
 
@@ -37,10 +34,7 @@ variable {V : Type u} {W : Type v}
 
 theorem linearMap_ext_basis {ι M : Type*} [AddCommGroup M] [Module ℤ M]
     {f g : (ι →₀ ℤ) →ₗ[ℤ] M} (h : ∀ v, f (Finsupp.single v 1) = g (Finsupp.single v 1)) : f = g := by
-  apply Finsupp.lhom_ext
-  intro v r
-  have he : Finsupp.single v r = r • Finsupp.single v (1 : ℤ) := by simp
-  rw [he, f.map_smul, g.map_smul, h]
+  aesop
 
 def face {n : ℕ} (i : Fin (n + 2)) (v : Vertices V (n + 1)) : Vertices V n :=
   v ∘ i.succAbove
@@ -65,7 +59,7 @@ theorem boundary_boundary (n : ℕ) (c : Chain V (n + 2)) : boundary n (boundary
   exact DFunLike.congr_fun h c
 
 noncomputable def augmentation : Chain V 0 →ₗ[ℤ] ℤ :=
-  Finsupp.linearCombination ℤ (fun _ : Vertices V 0 => 1)
+  Finsupp.linearCombination ℤ (fun _  => 1)
 
 @[simp] theorem augmentation_single (v : Vertices V 0) (r : ℤ) :
     augmentation (Finsupp.single v r) = r := by simp [augmentation]

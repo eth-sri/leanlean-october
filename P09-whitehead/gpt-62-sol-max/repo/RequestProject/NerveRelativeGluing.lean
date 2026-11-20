@@ -45,42 +45,39 @@ theorem cmap_comp (f : P → Q) {R : Type u} (g : Q → R) (x : Ch P) :
   intro l
   simp [Function.comp_def]
 
-/-- The image of an increasing chain under a monotone map all of whose values satisfy `B` is
-supported on `B`. -/
+/-- Support of an increasing chain maps into the image of its support predicate. -/
+theorem cmap_mem_incOn {f : P → Q} (hf : Monotone f) {A : P → Prop} {B : Q → Prop}
+    (hB : ∀ p, A p → B (f p)) {x : Ch P} (hx : x ∈ IncOn A) : cmap f x ∈ IncOn B := by
+  apply map_mem_of_mem_closure (cmap f) ?_ hx
+  rintro _ ⟨l, ⟨hl, hA⟩, rfl⟩
+  rw [cmap_of]
+  refine of_mem_incOn (List.isChain_map_of_isChain f (fun _ _ h => hf h) hl) ?_
+  grind
+
+/-- A monotone map whose image lies in `B` sends increasing chains into `IncOn B`. -/
 theorem cmap_mem_incOn_of_maps {f : P → Q} (hf : Monotone f) {B : Q → Prop}
-    (hB : ∀ p : P, B (f p)) {x : Ch P} (hx : x ∈ Inc P) : cmap f x ∈ IncOn B := by
-  refine AddSubgroup.closure_induction (p := fun y _ => cmap f y ∈ IncOn B) ?_ ?_ ?_ ?_ hx
-  · rintro y ⟨l, hl, rfl⟩
-    rw [cmap_of]
-    refine of_mem_incOn (List.isChain_map_of_isChain f (fun _ _ h => hf h) hl) ?_
-    intro a ha
-    obtain ⟨b, -, rfl⟩ := List.mem_map.1 ha
-    exact hB b
-  · simp
-  · intro y z _ _ hy hz
-    simpa using AddSubgroup.add_mem _ hy hz
-  · intro y _ hy
-    simpa using AddSubgroup.neg_mem _ hy
+    (hB : ∀ p : P, B (f p)) {x : Ch P} (hx : x ∈ Inc P) : cmap f x ∈ IncOn B :=
+  cmap_mem_incOn hf (A := fun _ : P => True) (fun p _ => hB p) (by simpa only [incOn_true] using hx)
 
 /-- Pushforward along a monotone map of (possibly different) posets preserves increasing
 chains. -/
 theorem cmap_mem_inc_of_monotone {f : P → Q} (hf : Monotone f) {x : Ch P} (hx : x ∈ Inc P) :
     cmap f x ∈ Inc Q :=
   incOn_le_inc _
-    (cmap_mem_incOn_of_maps (B := fun _ : Q => True) hf (fun _ => trivial) hx)
+    (cmap_mem_incOn_of_maps (B := fun _  => True) hf (fun _ => trivial) hx)
 
 /-- Acyclicity is transported along an order isomorphism of posets. -/
 theorem exists_bdry_eq_of_cycle_of_orderIso (e : P ≃o Q)
     (h : ∀ x ∈ Inc Q, bdry x = 0 → ∃ y ∈ Inc Q, bdry y = x) :
     ∀ x ∈ Inc P, bdry x = 0 → ∃ y ∈ Inc P, bdry y = x := by
   intro x hx hcyc
-  have hx' : cmap e x ∈ Inc Q := cmap_mem_inc_of_monotone (f := (e : P → Q)) e.monotone hx
+  have hx'  := cmap_mem_inc_of_monotone (f := e) e.monotone hx
   have hcyc' : bdry (cmap e x) = 0 := by rw [← cmap_bdry, hcyc, map_zero]
   obtain ⟨y, hy, hdy⟩ := h _ hx' hcyc'
   refine ⟨cmap e.symm y,
-    cmap_mem_inc_of_monotone (f := (e.symm : Q → P)) e.symm.monotone hy, ?_⟩
+    cmap_mem_inc_of_monotone (f := e.symm) e.symm.monotone hy, ?_⟩
   rw [← cmap_bdry, hdy, cmap_comp]
-  have hcomp : ((e.symm : Q → P) ∘ (e : P → Q)) = id := by
+  have hcomp : (e.symm ∘ e) = id := by
     funext p
     simp
   rw [hcomp, cmap_id]
@@ -100,38 +97,28 @@ theorem acyclicRelIn_of_acyclicIn {U B : P → Prop} (hU : AcyclicIn U) : Acycli
   obtain ⟨y, hy, hdy⟩ := hU z hz hcyc
   exact ⟨0, AddSubgroup.zero_mem _, y, hy, by simp, by rw [hdy, zero_add]⟩
 
-/-- **A piece that retracts onto part of `Base`, below the identity, is acyclic relative to
-`Base`.**  This is the prism homotopy between the identity and the retraction: every cycle of
-the piece is its own image under the retraction plus a boundary, and that image is a cycle
-supported on `Base`.  It is exactly the situation of a modified chamber, which retracts onto its
-copy of the base poset. -/
-theorem acyclicRelIn_of_retraction {U Base : P → Prop} (hne : ∃ p : P, U p)
-    (ρ : {p : P // U p} → {p : P // U p}) (hmono : Monotone ρ) (hρle : ∀ q, ρ q ≤ q)
-    (hbase : ∀ q, Base (ρ q).1) :
-    AcyclicRelIn U Base := by
-  intro z hz hcyc
-  obtain ⟨z', hz', rfl⟩ := exists_preimage_of_mem_incOn U hz
-  have hcyc' : bdry z' = 0 := by
-    refine cmap_val_injective U hne ?_
-    rw [cmap_bdry, hcyc, map_zero]
-  have hid : bdry (prism ρ id z') + prism ρ id (bdry z') = cmap id z' - cmap ρ z' :=
-    bdry_prism_add_prism_bdry ρ id z'
-  rw [hcyc', map_zero, add_zero, cmap_id] at hid
-  have hyInc : prism ρ id z' ∈ Inc {p : P // U p} :=
-    prism_mem_inc hmono monotone_id hρle hz'
-  have hcInc : cmap ρ z' ∈ Inc {p : P // U p} := cmap_mem_inc hmono hz'
-  refine ⟨cmap Subtype.val (cmap ρ z'), ?_, cmap Subtype.val (prism ρ id z'),
-    cmap_val_mem_incOn U hyInc, ?_, ?_⟩
+/-- A monotone retraction comparable to the identity moves cycles by a prism boundary. -/
+theorem acyclicRelIn_of_comparable_retraction {U B : P → Prop}
+    (ρ : {p : P // U p} → {p : P // U p}) (hmono : Monotone ρ)
+    (hcmp : (∀ p, ρ p ≤ p) ∨ (∀ p, p ≤ ρ p)) (hbase : ∀ p, B (ρ p).1) :
+    AcyclicRelIn U B := by
+  intro c hc hcyc
+  obtain ⟨c', hc', rfl⟩ := exists_preimage_of_mem_incOn U hc
+  have hc₀ : bdry c' = 0 := cmap_val_injective U (by rw [cmap_bdry, hcyc, map_zero])
+  have hp (f g : {p : P // U p} → {p : P // U p}) :
+      bdry (prism f g c') = cmap g c' - cmap f c' := by
+    simpa only [hc₀, map_zero, add_zero] using bdry_prism_add_prism_bdry f g c'
+  have he : ∃ y ∈ Inc {p : P // U p}, bdry y = c' - cmap ρ c' := by
+    rcases hcmp with hl | hr
+    · exact ⟨_, prism_mem_inc hmono monotone_id hl hc', by simpa only [cmap_id] using hp ρ id⟩
+    · exact ⟨_, (Inc _).neg_mem (prism_mem_inc monotone_id hmono hr hc'),
+        by rw [map_neg, hp, cmap_id, neg_sub]⟩
+  obtain ⟨y, hy, hdy⟩ := he
+  refine ⟨cmap Subtype.val (cmap ρ c'), ?_, cmap Subtype.val y, cmap_val_mem_incOn U hy, ?_, ?_⟩
   · rw [cmap_comp]
-    exact cmap_mem_incOn_of_maps
-      (f := (Subtype.val : {p : P // U p} → P) ∘ ρ) (fun _ _ h => hmono h)
-      (fun q => hbase q) hz'
-  · rw [← cmap_bdry, ← cmap_bdry, hcyc', map_zero, map_zero]
-  · have h : z' = cmap ρ z' + bdry (prism ρ id z') := by
-      rw [hid]
-      abel
-    rw [← cmap_bdry]
-    rw [← map_add, ← h]
+    exact cmap_mem_incOn_of_maps (f := Subtype.val ∘ ρ) hmono hbase hc'
+  · simp only [← cmap_bdry, hc₀, map_zero]
+  · rw [← cmap_bdry, hdy, map_sub, add_sub_cancel]
 
 end Nerve
 end FiniteChains

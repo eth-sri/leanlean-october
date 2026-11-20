@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.RelativeRuleOneNaturality
+public import RequestProject.FinsuppBasis
 public import RequestProject.RelativeCoreSlides
 
 @[expose] public section
@@ -13,9 +14,7 @@ relator labels. This completes actual zero-arrow preservation for rules
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeNormalForm
 open BlockFamily
@@ -34,8 +33,7 @@ theorem slide_group_square :
   intro g
   induction g using QuotientGroup.induction_on with
   | H w =>
-      change (QuotientGroup.mk (FreeGroup.map id w) :
-        PresGroup (restrictedPresentation core hcore extra t)) =
+      change (QuotientGroup.mk (FreeGroup.map id w)) =
           QuotientGroup.mk (FreeGroup.map id w)
       rfl
 
@@ -59,7 +57,7 @@ theorem slide_columns_natural (s : {s // p s}) :
   change MonoidAlgebra.mapDomainRingHom ℤ (normalizedInclusion core hcore extra hpt).hom
     (MonoidAlgebra.mapDomainRingHom ℤ (pairCoreToNormalized core hcore (restrictedExtra extra p))
       (pairCorrectionFilling core hcore (extra s.val) c)) = _
-  erw [BlockMor.mapDomainRingHom_comp']
+  erw [MonoidAlgebra.mapDomainRingHom_apply_comp]
   erw [slide_core_group_square]
   rfl
 
@@ -68,16 +66,10 @@ theorem normalizedInclusion_core_chain
     (normalizedInclusion core hcore extra hpt).cells (fsOldOneIncl x) =
       fsOldOneIncl (x.mapRange (MonoidAlgebra.mapDomainRingHom ℤ
         (normalizedInclusion core hcore extra hpt).hom) (map_zero _)) := by
-  induction x using Finsupp.induction_linear with
-  | zero => simp
-  | add x y hx hy =>
-      rw [map_add, PresMorFS.cells_add, hx, hy, Finsupp.mapRange_add', map_add]
-  | single c a =>
-      rw [fsOldOneIncl_single, Finsupp.mapRange_single, fsOldOneIncl_single]
-      change Finsupp.mapDomain (oldCellIncl hpt)
-        ((Finsupp.single (Sum.inl c) a).mapRange _ _) = _
-      rw [Finsupp.mapRange_single, Finsupp.mapDomain_single]
-      rfl
+  simp only [normalizedInclusion, PresInclusionFS.mor_cells, PresInclusionFS.cellTransport, fsOldOneIncl,
+    LinearMap.coe_mk, AddHom.coe_mk, Finsupp.sumElim_eq_add, Finsupp.mapDomain_zero, add_zero]
+  rw [← Finsupp.mapDomain_mapRange _ _ _ _ (map_add _), ← Finsupp.mapDomain_comp]
+  rfl
 
 theorem slide_correction_natural
     (x : (C ⊕ {s // p s}) →₀ MonoidAlgebra ℤ
@@ -86,30 +78,20 @@ theorem slide_correction_natural
       (coreSlideCorrection (slideColumns core hcore (restrictedExtra extra p)) x) =
     coreSlideCorrection (slideColumns core hcore (restrictedExtra extra t))
       ((normalizedInclusion core hcore extra hpt).cells x) := by
-  induction x using Finsupp.induction_linear with
-  | zero => simp
-  | add x y hx hy =>
-      rw [map_add, PresMorFS.cells_add, PresMorFS.cells_add, map_add, hx, hy]
-  | single k a =>
-      have hi : (normalizedInclusion core hcore extra hpt).cells (Finsupp.single k a) =
-          Finsupp.single (oldCellIncl hpt k)
-            (MonoidAlgebra.mapDomainRingHom ℤ (normalizedInclusion core hcore extra hpt).hom a) := by
-        change Finsupp.mapDomain _ ((Finsupp.single k a).mapRange _ _) = _
-        rw [Finsupp.mapRange_single, Finsupp.mapDomain_single]
-        rfl
-      rw [hi]
-      cases k with
-      | inl c => simp [oldCellIncl]
-      | inr s =>
-          rw [coreSlideCorrection_single_inr, PresMorFS.cells_smul]
-          change _ = coreSlideCorrection _ (Finsupp.single (Sum.inr (labelIncl hpt s)) _)
-          rw [coreSlideCorrection_single_inr]
-          exact congrArg (fun z => MonoidAlgebra.mapDomainRingHom ℤ
-              (normalizedInclusion core hcore extra hpt).hom a • z)
-            ((normalizedInclusion_core_chain core hcore extra hpt
-                (slideColumns core hcore (restrictedExtra extra p) s)).trans
-              (congrArg (fsOldOneIncl (Z := {s // t s}))
-                (slide_columns_natural core hcore extra hpt s)))
+  let i := normalizedInclusion core hcore extra hpt
+  let L := coreSlideCorrection (slideColumns core hcore (restrictedExtra extra p))
+  let R := coreSlideCorrection (slideColumns core hcore (restrictedExtra extra t))
+  change (i.cells.comp L) x = (R.comp i.cells) x
+  refine LinearMap.congr_fun (Finsupp.lhom_ext' fun k => LinearMap.ext_ring ?_) x
+  have hi : i.cells (Finsupp.single k 1) = Finsupp.single (oldCellIncl hpt k) 1 := by
+    simp [i, normalizedInclusion, PresInclusionFS.mor_cells, PresInclusionFS.cellTransport]
+  change i.cells (L (Finsupp.single k 1)) = R (i.cells (Finsupp.single k 1))
+  rw [hi]
+  cases k with
+  | inl c => simp [L, R, oldCellIncl]
+  | inr s =>
+    simp only [L, R, oldCellIncl, Sum.map_inr, coreSlideCorrection_single_inr, one_smul]
+    erw [normalizedInclusion_core_chain, slide_columns_natural] <;> rfl
 
 theorem slide_forward_natural
     (x : (C ⊕ {s // p s}) →₀ MonoidAlgebra ℤ
@@ -128,30 +110,8 @@ theorem slide_coefficient_chain_square
     (normalizedInclusion core hcore extra hpt).cells
       (x.mapRange (slideCoefficients core hcore (restrictedExtra extra p)) (map_zero _)) =
     ((pairInclusion core extra hpt).cells x).mapRange
-      (slideCoefficients core hcore (restrictedExtra extra t)) (map_zero _) := by
-  induction x using Finsupp.induction_linear with
-  | zero => simp
-  | add x y hx hy =>
-      have hp := Finsupp.mapRange_add'
-        (f := slideCoefficients core hcore (restrictedExtra extra p)) x y
-      have ht := Finsupp.mapRange_add'
-        (f := slideCoefficients core hcore (restrictedExtra extra t))
-        ((pairInclusion core extra hpt).cells x) ((pairInclusion core extra hpt).cells y)
-      rw [hp, PresMorFS.cells_add, PresMorFS.cells_add, ht, hx, hy]
-  | single j a =>
-      rw [Finsupp.mapRange_single]
-      change Finsupp.mapDomain (oldCellIncl hpt) ((Finsupp.single j _).mapRange _ _) =
-        (Finsupp.mapDomain (oldCellIncl hpt) ((Finsupp.single j a).mapRange _ _)).mapRange _ _
-      rw [Finsupp.mapRange_single, Finsupp.mapDomain_single,
-        Finsupp.mapRange_single, Finsupp.mapDomain_single, Finsupp.mapRange_single]
-      congr 1
-      change MonoidAlgebra.mapDomainRingHom ℤ (normalizedInclusion core hcore extra hpt).hom
-          (MonoidAlgebra.mapDomainRingHom ℤ
-            (slideGroupHom core hcore (restrictedExtra extra p)) a) =
-        MonoidAlgebra.mapDomainRingHom ℤ (slideGroupHom core hcore (restrictedExtra extra t))
-          (MonoidAlgebra.mapDomainRingHom ℤ (pairInclusion core extra hpt).hom a)
-      erw [BlockMor.mapDomainRingHom_comp', BlockMor.mapDomainRingHom_comp', slide_group_square]
-      rfl
+      (slideCoefficients core hcore (restrictedExtra extra t)) (map_zero _) :=
+  coefficient_square (slide_group_square core hcore extra hpt) (oldCellIncl hpt) x
 
 theorem slide_chain_square
     (x : (C ⊕ {s // p s}) →₀ MonoidAlgebra ℤ

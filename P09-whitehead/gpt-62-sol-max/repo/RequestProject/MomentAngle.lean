@@ -117,11 +117,7 @@ theorem bdry_cubeChain (o : Finset V → ℤ) :
       (Function.update g j CubeCoord.free h).sgn
       = ∏ h ∈ univ \ insert j (freeSet g), (g h).sgn := by
     refine Finset.prod_congr rfl ?_
-    intro h hh
-    have hhj : h ≠ j := by
-      intro hhj; subst hhj
-      simp at hh
-    simp [hhj]
+    grind
   -- split off the `j`-th factor
   have hsplit : ∏ h ∈ univ \ freeSet g, (g h).sgn
       = (g j).sgn * ∏ h ∈ univ \ insert j (freeSet g), (g h).sgn := by
@@ -150,12 +146,7 @@ omit [LinearOrder V] in
 theorem mem_cofaces {L : ASC V} {g f : Cube V} :
     f ∈ cofaces L g ↔ ∃ j, g j ≠ CubeCoord.free ∧ insert j (freeSet g) ∈ L.faces ∧
       f = Function.update g j CubeCoord.free := by
-  simp only [cofaces, Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and]
-  constructor
-  · rintro ⟨j, ⟨hj, hjL⟩, rfl⟩
-    exact ⟨j, hj, hjL, rfl⟩
-  · rintro ⟨j, hj, hjL, rfl⟩
-    exact ⟨j, ⟨hj, hjL⟩, rfl⟩
+  grind +locals
 
 omit [LinearOrder V] in
 /-- **Counting the cubes above a given face.**  The number of cubes of `C(L)` having `g` as
@@ -172,10 +163,8 @@ theorem card_cofaces (L : ASC V) (g : Cube V) :
   · intro j hj k hk hjk
     simp only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and] at hj hk
     by_contra hne
-    have hval : Function.update g j CubeCoord.free j
-        = Function.update g k CubeCoord.free j := congrFun hjk j
-    simp only [Function.update_apply, if_neg hne] at hval
-    exact hj.1 hval.symm
+    have hval  := congrFun hjk j
+    simp_all
 
 end Incidence
 
@@ -185,7 +174,7 @@ omit [LinearOrder V] in
 theorem freeSet_update_free (g : Cube V) (j : V) :
     freeSet (Function.update g j CubeCoord.free) = insert j (freeSet g) := by
   ext i
-  by_cases hij : i = j <;> simp [hij]
+  by_cases hij : i = j <;> aesop
 
 /-- **A simplicial cycle gives a cubical cycle.**  For a triangulated closed oriented
 surface `L` with orientation coefficients `o` the hypothesis says that `Σ_σ o(σ)·σ` is a

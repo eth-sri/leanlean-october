@@ -5,18 +5,13 @@ public import RequestProject.Statement
 public import RequestProject.TopologicalSingular.SingularChainHomotopy
 public import RequestProject.TopologicalSingular.ContractibleSingularChains
 public import RequestProject.FreeSingularChainComparison
+public import Mathlib.AlgebraicTopology.SingularHomology.HomotopyInvariance
 
 @[expose] public section
 
 open scoped ContinuousMap
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-set_option maxSynthPendingDepth 3
-set_option synthInstance.maxHeartbeats 40000
-set_option maxHeartbeats 800000
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology
@@ -89,28 +84,27 @@ theorem homologyMathlibIso_natural {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ) :
       (HomologicalComplex.homologyFunctor (ModuleCat.{0} ℤ) (ComplexShape.down ℕ) n).map _
   rw [← Functor.map_comp, ← Functor.map_comp, complexMathlibIso_natural]
 
-/-- Homotopy equivalent spaces have isomorphic actual integral singular homology. -/
-noncomputable def mathlibHomologyIsoOfHomotopyEquiv {X Y : Type}
-    [TopologicalSpace X] [TopologicalSpace Y] (e : X ≃ₕ Y) (n : ℕ) :
-    ((singularHomologyFunctor (ModuleCat.{0} ℤ) n).obj (ModuleCat.of ℤ ℤ)).obj (TopCat.of X) ≅
-      ((singularHomologyFunctor (ModuleCat.{0} ℤ) n).obj (ModuleCat.of ℤ ℤ)).obj (TopCat.of Y) :=
-  (homologyMathlibIso (TopCat.of X) n).symm ≪≫ homologyIsoOfHomotopyEquiv e n ≪≫
-    homologyMathlibIso (TopCat.of Y) n
-
 end FiniteChains.TopologicalSingular
 
 namespace Whitehead
-open CategoryTheory
+open CategoryTheory AlgebraicTopology Limits
 
-/-- Acyclicity in the original statement is invariant under homotopy equivalence. -/
+private theorem acyclic_of_homotopyEquiv {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
+    (e : X ≃ₕ Y) (h : Acyclic Y) : Acyclic X := by
+  intro n hn
+  let R := ModuleCat.of ℤ ℤ
+  let F := (singularHomologyFunctor (ModuleCat.{0} ℤ) n).obj R
+  let f  := TopCat.ofHom e.toFun
+  let g  := TopCat.ofHom e.invFun
+  have H : TopCat.Homotopy (f ≫ g) (𝟙 _) := e.left_inv.some
+  have eq : F.map (f ≫ g) = F.map (𝟙 _) := H.congr_homologyMap_singularChainComplexFunctor R n
+  apply (IsZero.iff_id_eq_zero _).2
+  change 𝟙 (F.obj (TopCat.of X)) = 0
+  rw [← F.map_id, ← eq, F.map_comp, (h n hn).eq_of_tgt (F.map f) 0, zero_comp]
+
+/-- Acyclicity is invariant under homotopy equivalence. -/
 theorem acyclic_iff_of_homotopyEquiv {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
-    (e : X ≃ₕ Y) : Acyclic X ↔ Acyclic Y := by
-  constructor
-  · intro h n hn
-    exact (h n hn).of_iso
-      (FiniteChains.TopologicalSingular.mathlibHomologyIsoOfHomotopyEquiv e n).symm
-  · intro h n hn
-    exact (h n hn).of_iso
-      (FiniteChains.TopologicalSingular.mathlibHomologyIsoOfHomotopyEquiv e n)
+    (e : X ≃ₕ Y) : Acyclic X ↔ Acyclic Y :=
+  ⟨acyclic_of_homotopyEquiv e.symm, acyclic_of_homotopyEquiv e⟩
 
 end Whitehead

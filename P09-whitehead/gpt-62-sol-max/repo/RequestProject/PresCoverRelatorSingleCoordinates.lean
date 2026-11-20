@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.PresCoverFirstTriangleFibreEquiv
+public import RequestProject.PresCoverRelatorNaturality
 
 @[expose] public section
 
@@ -13,8 +13,7 @@ variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
 /-- An actual single coordinate triangle has exactly its single lifted-apex coefficient. -/
 theorem presCoverRelatorChain_single_triangle (p : PresCoverRelator w f) (n : ℤ) :
     presCoverRelatorChain w f hf hpos
-      (Finsupp.single (presCoverRelatorTriangle w f hf hpos p) n) = Finsupp.single p n := by
-  exact Finsupp.comapDomain_single (presCoverRelatorTriangle w f hf hpos) p n
+      (Finsupp.single (presCoverRelatorTriangle w f hf hpos p) n) = Finsupp.single p n := Finsupp.comapDomain_single (presCoverRelatorTriangle w f hf hpos) p n
     (presCoverRelatorTriangle_injective w f hf hpos).injOn
 
 /-- Actual triangles outside all coordinate-triangle fibres contribute no relator coefficients. -/

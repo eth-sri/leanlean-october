@@ -9,30 +9,35 @@ retaining its unique coface. The resulting monotone retraction reflects homotopi
 namespace FiniteChains.Comb
 variable {P : Type} [PartialOrder P]
 
+/-- The closure operator that sends a free face to its unique coface. -/
+theorem exists_freeFace_upper_retraction {Q : Type*} [PartialOrder Q]
+    {C : Q → Prop} {s t : Q} (ht : C t) (hst : s ≤ t) (hne : t ≠ s)
+    (hunique : ∀ x, C x → s ≤ x → x ≠ s → x = t) :
+    ∃ r : {x : Q // C x} → {x : Q // C x}, Monotone r ∧
+      (∀ x, x ≤ r x) ∧ (∀ x, (r x).1 ≠ s) ∧ (∀ x, x.1 ≠ s → r x = x) := by
+  classical
+  let r : {x : Q // C x} → {x : Q // C x} := fun x => if x.1 = s then ⟨t, ht⟩ else x
+  refine ⟨r, ?_, ?_, ?_, fun x hx => ite_eq_right hx⟩
+  · intro x y hxy
+    change x.1 ≤ y.1 at hxy
+    by_cases hx : x.1 = s <;> by_cases hy : y.1 = s <;> simp [r, hx, hy]
+    · exact (hunique y.1 y.2 (hx ▸ hxy) hy).ge
+    · exact (hy ▸ hxy : x.1 ≤ s).trans hst
+    · exact hxy
+  · intro x
+    change x.1 ≤ (r x).1
+    by_cases hx : x.1 = s <;> simp [r, hx, hst]
+  · intro x
+    by_cases hx : x.1 = s <;> simp [r, hx, hne]
+
 theorem injIn_delete_free_face {C : P → Prop} {f t : P}
     (ht : C t) (hft : f ≤ t) (hne : t ≠ f)
     (hunique : ∀ x, C x → f ≤ x → x ≠ f → x = t) :
     InjIn C (fun x => C x ∧ x ≠ f) := by
-  classical
-  let r : {x : P // C x} → P := fun x => if x.1 = f then t else x.1
-  have hr : Monotone r := by
-    intro x y hxy
-    by_cases hx : x.1 = f
-    · by_cases hy : y.1 = f
-      · simp [r, hx, hy]
-      · have hyt : y.1 = t := hunique y.1 y.2 (hx ▸ hxy) hy
-        simp [r, hx, hyt]
-    · by_cases hy : y.1 = f
-      · have hxf : x.1 ≤ f := hy ▸ hxy
-        simpa [r, hx, hy] using hxf.trans hft
-      · simpa [r, hx, hy] using hxy
-  apply injIn_of_monotone_retraction (fun _ h => h.1) r hr
-  · intro x
-    by_cases hx : x.1 = f
-    · simpa [r, hx] using And.intro ht hne
-    · simpa [r, hx] using And.intro x.2 hx
-  · intro x hx
-    simp [r, hx.2]
+  obtain ⟨r, hr, -, hne, hfix⟩ := exists_freeFace_upper_retraction ht hft hne hunique
+  exact injIn_of_monotone_retraction (fun _ h => h.1) (Subtype.val ∘ r)
+    (monotone_subtypeVal.comp hr) (fun x => ⟨(r x).2, hne x⟩)
+    (fun x hx => congrArg Subtype.val (hfix x hx.2))
 
 /-- Deleting a maximal cell reflects homotopies when its remaining boundary is connected
 and simply connected. The boundary is the actual strict lower face poset in the stage. -/
@@ -46,14 +51,7 @@ theorem injIn_delete_maximal {C : P → Prop} {t : P}
   apply injIn_union_of_unmixed
     (B := fun x => C x ∧ x ≤ t) (J := fun x => C x ∧ x < t)
     (j0 := j) (hJconn := hconn) (hJsc := hsc) (hj0 := hj)
-  · intro a b hab ha hb
-    by_cases hbt : b = t
-    · right
-      exact ⟨⟨ha, hbt ▸ hab⟩, ⟨hb, hbt.le⟩⟩
-    · left
-      refine ⟨⟨ha, ?_⟩, ⟨hb, hbt⟩⟩
-      intro hat
-      exact hbt (hmax b hb (hat ▸ hab))
+  · grind
   · intro x
     constructor
     · rintro ⟨hx, hxt⟩

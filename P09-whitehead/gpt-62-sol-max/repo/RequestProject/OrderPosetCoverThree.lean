@@ -7,9 +7,7 @@ public import RequestProject.OrderNormalizationHomotopy
 
 /-! Three-simplex maps and their unique lifts through actual poset coverings. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -20,42 +18,33 @@ def ordTetMap (f : P → Q) (hf : Monotone f) (t : OrdTet P) : OrdTet Q :=
   ⟨(f t.1.1, f t.1.2.1, f t.1.2.2.1, f t.1.2.2.2),
     hf t.2.1, hf t.2.2.1, hf t.2.2.2⟩
 
-namespace IsPosetCover
-variable {f : P → Q} (hf : IsPosetCover f)
+theorem ordTetMap_face (f : P → Q) (hf : Monotone f) (t : OrdTet P) (i : Fin 4) :
+    (orderCxMap f hf).onF (ordTetFace t i) = ordTetFace (ordTetMap f hf t) i := by
+  fin_cases i <;> rfl
 
-/-- Every full-nerve three-cell lifts uniquely from a specified lift of its first vertex. -/
-theorem existsUnique_tetLift (s : OrdTet Q) (a : P) (ha : f a = s.1.1) :
-    ∃! t : OrdTet P, t.1.1 = a ∧ ordTetMap f hf.mono t = s := by
-  obtain ⟨b, ⟨hab, hfb⟩, -⟩ := hf.up a s.1.2.1 (by rw [ha]; exact s.2.1)
-  obtain ⟨c, ⟨hbc, hfc⟩, -⟩ := hf.up b s.1.2.2.1 (by rw [hfb]; exact s.2.2.1)
-  obtain ⟨d, ⟨hcd, hfd⟩, -⟩ := hf.up c s.1.2.2.2 (by rw [hfc]; exact s.2.2.2)
-  refine ⟨⟨(a, b, c, d), hab, hbc, hcd⟩, ⟨rfl, ?_⟩, ?_⟩
-  · exact Subtype.ext (Prod.ext ha (Prod.ext hfb (Prod.ext hfc hfd)))
-  · intro t ht
-    have hb : t.1.2.1 = b := hf.up_inj (by rw [← ht.1]; exact t.2.1) hab
-      ((congrArg (fun s : OrdTet Q => s.1.2.1) ht.2).trans hfb.symm)
-    have hc : t.1.2.2.1 = c := hf.up_inj
-      (by rw [← ht.1]; exact t.2.1.trans t.2.2.1) (hab.trans hbc)
-      ((congrArg (fun s : OrdTet Q => s.1.2.2.1) ht.2).trans hfc.symm)
-    have hd : t.1.2.2.2 = d := hf.up_inj
-      (by rw [← ht.1]; exact (t.2.1.trans t.2.2.1).trans t.2.2.2)
-      ((hab.trans hbc).trans hcd)
-      ((congrArg (fun s : OrdTet Q => s.1.2.2.2) ht.2).trans hfd.symm)
-    exact Subtype.ext (Prod.ext ht.1 (Prod.ext hb (Prod.ext hc hd)))
+/-- Lift a chain from a specified initial vertex by successive upward steps. -/
+def liftOrdTet {f : P → Q} (hf : Monotone f)
+    (up : ∀ a b, f a ≤ b → {p // a ≤ p ∧ f p = b})
+    (s : OrdTet Q) (a : P) (ha : f a = s.1.1) :
+    {t : OrdTet P // t.1.1 = a ∧ ordTetMap f hf t = s} :=
+  let b := up a s.1.2.1 (ha.symm ▸ s.2.1)
+  let c := up b.1 s.1.2.2.1 (b.2.2.symm ▸ s.2.2.1)
+  let d := up c.1 s.1.2.2.2 (c.2.2.symm ▸ s.2.2.2)
+  ⟨⟨(a, b.1, c.1, d.1), b.2.1, c.2.1, d.2.1⟩, rfl,
+    Subtype.ext (Prod.ext ha (Prod.ext b.2.2 (Prod.ext c.2.2 d.2.2)))⟩
 
-end IsPosetCover
+theorem IsPosetCover.tet_ext {f : P → Q} (hf : IsPosetCover f) {t s : OrdTet P}
+    (h : t.1.1 = s.1.1) (hm : ordTetMap f hf.mono t = ordTetMap f hf.mono s) : t = s := by
+  have h₁ := hf.up_inj t.2.1 (h ▸ s.2.1) (congrArg (·.1.2.1) hm)
+  have h₂ := hf.up_inj t.2.2.1 (h₁ ▸ s.2.2.1) (congrArg (·.1.2.2.1) hm)
+  have h₃ := hf.up_inj t.2.2.2 (h₂ ▸ s.2.2.2) (congrArg (·.1.2.2.2) hm)
+  exact Subtype.ext (Prod.ext h (Prod.ext h₁ (Prod.ext h₂ h₃)))
 
 /-- The full-nerve three-cell map commutes with the actual cellular three-boundary. -/
 theorem ordTetMap_boundary (f : P → Q) (hf : Monotone f) (t : OrdTet P) :
     Finsupp.mapDomain (orderCxMap f hf).onF (ordTetBoundary t) =
       ordTetBoundary (ordTetMap f hf t) := by
-  have hsub (x y : OrdTri P →₀ ℤ) :
-      Finsupp.mapDomain (orderCxMap f hf).onF (x - y) =
-        Finsupp.mapDomain (orderCxMap f hf).onF x -
-          Finsupp.mapDomain (orderCxMap f hf).onF y :=
-    (Finsupp.lmapDomain ℤ ℤ (orderCxMap f hf).onF).map_sub x y
-  simp only [ordTetBoundary, hsub, Finsupp.mapDomain_add,
-    Finsupp.mapDomain_single]
-  rfl
+  rw [ordTetBoundary, ordTetBoundary, mapDomain_tetrahedronBoundary]
+  exact congrArg tetrahedronBoundary (funext (ordTetMap_face f hf t))
 
 end FiniteChains.Comb

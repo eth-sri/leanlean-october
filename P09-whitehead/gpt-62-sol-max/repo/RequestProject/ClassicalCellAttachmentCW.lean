@@ -14,9 +14,6 @@ noncomputable section
 open scoped Classical
 open Set Topology Metric
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 
@@ -26,7 +23,7 @@ variable (n : ℕ) (r : BoundaryFamily J (Fin n → ℝ) → X) (hr : Continuous
 
 /-- The precise cellular condition on the attaching maps. -/
 def FiniteLowerBoundary : Prop := ∀ j : J,
-  ∃ I : ∀ m, Finset (RelCWComplex.cell (Set.univ : Set X) m),
+  ∃ I : ∀ m, Finset (RelCWComplex.cell Set.univ m),
     ∀ a : UnitBoundary (Fin n → ℝ),
       r ⟨j, a⟩ ∈ ⋃ (m < n) (k ∈ I m), RelCWComplex.closedCell m k
 
@@ -42,13 +39,6 @@ def attachmentCharacteristic (m : ℕ) : AttachmentCell (X := X) (J := J) n m �
       subst m
       exact diskCharacteristic r x₀ j
 
-@[simp] theorem attachmentCharacteristic_old (m : ℕ)
-    (j : RelCWComplex.cell (Set.univ : Set X) m) :
-    attachmentCharacteristic n r hr x₀ m (Sum.inl j) =
-      ClosedEmbeddingCW.imageCharacteristic
-        (old r (boundaryFamilyInclusion J (Fin n → ℝ)))
-        (old_isClosedEmbedding r _ hr (boundaryFamilyInclusion_isClosedEmbedding J (Fin n → ℝ)))
-        m j := rfl
 
 @[simp] theorem attachmentCharacteristic_new (j : J) :
     attachmentCharacteristic n r hr x₀ n (Sum.inr ⟨j, rfl⟩) =
@@ -97,10 +87,10 @@ theorem attachmentCharacteristic_pairwiseDisjoint :
     rintro _ ⟨a, ha, rfl⟩ ⟨b, hb, he⟩
     have he' := old_injective r (boundaryFamilyInclusion J (Fin n → ℝ)) he
     subst b
-    apply Set.disjoint_left.mp (RelCWComplex.disjoint_openCell_of_ne (C := (Set.univ : Set X)) ?_) ha hb
+    apply Set.disjoint_left.mp (RelCWComplex.disjoint_openCell_of_ne (C := Set.univ) ?_) ha hb
     intro h
     apply hne
-    exact congrArg (fun z : Σ m, RelCWComplex.cell (Set.univ : Set X) m =>
+    exact congrArg (fun z  =>
       (⟨z.1, Sum.inl z.2⟩ : Σ m, AttachmentCell (X := X) (J := J) n m)) h
   · subst k
     rw [attachmentCharacteristic_new, attachmentCharacteristic_old_image]
@@ -115,8 +105,7 @@ theorem attachmentCharacteristic_pairwiseDisjoint :
     rw [attachmentCharacteristic_new, attachmentCharacteristic_new]
     apply diskCharacteristic_disjoint r x₀
     intro h
-    subst j
-    exact hne rfl
+    simp_all
 
 theorem attachmentCharacteristic_mapsTo (hb : FiniteLowerBoundary n r)
     (m : ℕ) (j : AttachmentCell (X := X) (J := J) n m) :
@@ -124,7 +113,7 @@ theorem attachmentCharacteristic_mapsTo (hb : FiniteLowerBoundary n r)
       MapsTo (attachmentCharacteristic n r hr x₀ m j) (sphere 0 1)
         (⋃ (k < m) (i ∈ I k), attachmentCharacteristic n r hr x₀ k i '' closedBall 0 1) := by
   rcases j with j | ⟨j, hm⟩
-  · obtain ⟨I, hI⟩ := Topology.CWComplex.mapsTo' (C := (Set.univ : Set X)) m j
+  · obtain ⟨I, hI⟩ := Topology.CWComplex.mapsTo' (C := Set.univ) m j
     refine ⟨fun k => (I k).image Sum.inl, ?_⟩
     intro x hx
     obtain ⟨k, hk, i, hi, hx'⟩ := by
@@ -161,22 +150,22 @@ def attachmentCW (hb : FiniteLowerBoundary n r) : CWComplex (Set.univ : Set (Dis
   closed' := by
     intro S _ hS
     apply diskAttachment_isClosed r S
-    · apply (CWComplex.closed (Set.univ : Set X) _ (Set.subset_univ _)).mpr
+    · apply (CWComplex.closed Set.univ _ (Set.subset_univ _)).mpr
       intro m j
       have hs := (hS m (Sum.inl j)).preimage (old_continuous r (boundaryFamilyInclusion J (Fin n → ℝ)))
       rw [attachmentCharacteristic_old_image] at hs
       simpa only [Set.preimage_inter, Set.preimage_image_eq _ (old_injective r _), RelCWComplex.closedCell] using hs
     · intro j
       have hs := (hS n (Sum.inr ⟨j, rfl⟩)).preimage
-        (f := fun x : ClosedUnitBall (Fin n → ℝ) =>
+        (f := fun x  =>
           cell r (boundaryFamilyInclusion J (Fin n → ℝ)) ⟨j, x⟩)
         ((cell_continuous r (boundaryFamilyInclusion J (Fin n → ℝ))).comp continuous_sigmaMk)
       rw [attachmentCharacteristic_new, diskCharacteristic_closedCell] at hs
-      have he : (fun x : ClosedUnitBall (Fin n → ℝ) =>
+      have he : (fun x  =>
           cell r (boundaryFamilyInclusion J (Fin n → ℝ)) ⟨j, x⟩) ⁻¹'
-          (S ∩ Set.range (fun x : ClosedUnitBall (Fin n → ℝ) =>
+          (S ∩ Set.range (fun x  =>
             cell r (boundaryFamilyInclusion J (Fin n → ℝ)) ⟨j, x⟩)) =
-          (fun x : ClosedUnitBall (Fin n → ℝ) =>
+          (fun x  =>
             cell r (boundaryFamilyInclusion J (Fin n → ℝ)) ⟨j, x⟩) ⁻¹' S := by
         ext x
         exact and_iff_left ⟨x, rfl⟩
@@ -184,13 +173,13 @@ def attachmentCW (hb : FiniteLowerBoundary n r) : CWComplex (Set.univ : Set (Dis
   union' := by
     apply Set.eq_univ_of_forall
     rintro (x | d)
-    · have hx : x ∈ ⋃ m, ⋃ j : RelCWComplex.cell (Set.univ : Set X) m,
+    · have hx : x ∈ ⋃ m, ⋃ j : RelCWComplex.cell Set.univ m,
           RelCWComplex.closedCell m j := by rw [CWComplex.union]; trivial
       obtain ⟨m, j, hx⟩ := by simpa only [Set.mem_iUnion] using hx
       apply Set.mem_iUnion.mpr
       refine ⟨m, Set.mem_iUnion.mpr ⟨Sum.inl j, ?_⟩⟩
       rw [attachmentCharacteristic_old_image]
-      exact ⟨x, hx, rfl⟩
+      tauto
     · apply Set.mem_iUnion.mpr
       refine ⟨n, Set.mem_iUnion.mpr ⟨Sum.inr ⟨d.val.1, rfl⟩, ?_⟩⟩
       rw [attachmentCharacteristic_new, diskCharacteristic_closedCell]
@@ -217,14 +206,14 @@ def attachmentOldSubcomplex :
     obtain ⟨m, hz⟩ := Set.mem_iUnion.mp hz
     obtain ⟨j', hz⟩ := Set.mem_iUnion.mp hz
     obtain ⟨j, hj⟩ := j'.property
-    have hj' : (j'.1 : AttachmentCell (X := X) (J := J) n m) = Sum.inl j := hj.symm
+    have hj'  := hj.symm
     rw [hj'] at hz
     change z ∈ attachmentCharacteristic n r hr x₀ m (Sum.inl j) '' ball 0 1 at hz
     rw [attachmentCharacteristic_old_image] at hz
     obtain ⟨y, _, rfl⟩ := hz
-    exact ⟨y, rfl⟩
+    tauto
   · rintro ⟨x, rfl⟩
-    have hx : x ∈ ⋃ m, ⋃ j : RelCWComplex.cell (Set.univ : Set X) m,
+    have hx : x ∈ ⋃ m, ⋃ j : RelCWComplex.cell Set.univ m,
         RelCWComplex.openCell m j := by rw [CWComplex.iUnion_openCell_eq_complex]; trivial
     obtain ⟨m, hx⟩ := Set.mem_iUnion.mp hx
     obtain ⟨j, hx⟩ := Set.mem_iUnion.mp hx
@@ -232,7 +221,7 @@ def attachmentOldSubcomplex :
     refine ⟨m, Set.mem_iUnion.mpr ⟨⟨Sum.inl j, ⟨j, rfl⟩⟩, ?_⟩⟩
     change old r _ x ∈ attachmentCharacteristic n r hr x₀ m (Sum.inl j) '' ball 0 1
     rw [attachmentCharacteristic_old_image]
-    exact ⟨x, hx, rfl⟩
+    tauto
 
 def attachmentOldCellEquiv (m : ℕ) :
     RelCWComplex.cell (Set.univ : Set X) m ≃

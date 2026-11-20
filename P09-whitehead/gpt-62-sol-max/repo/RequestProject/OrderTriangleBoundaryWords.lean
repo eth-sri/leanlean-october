@@ -13,9 +13,7 @@ all four sides.  -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrderTriangleWords
 open RelativeAttachment ClassicalGraphModel ContinuousEdgeWords
@@ -49,8 +47,7 @@ def words (t : StrictOrdTri P) : BoundaryWords (graphAttaching P) where
 
 theorem words_loopWord (t : StrictOrdTri P) :
     (words P t).loopWord = (strictOrderCx P).att t := by
-  simp [BoundaryWords.loopWord, words, sideWord, revPath, revGerm,
-    edge01, edge12, edge02, strictOrderCx]
+  tauto
 
 def graphAttachingTriangles :
     C(BoundaryFamily (StrictOrdTri P) (Fin 2 → ℝ), DiskAttachment (graphAttaching P)) :=
@@ -59,8 +56,8 @@ def graphAttachingTriangles :
 def graphBoundary (t : StrictOrdTri P) :
     C(UnitBoundary (Fin 2 → ℝ), DiskAttachment (graphAttaching P)) :=
   (graphAttachingTriangles P).comp
-    ⟨Sigma.mk (β := fun _ : StrictOrdTri P => UnitBoundary (Fin 2 → ℝ)) t,
-      by exact continuous_sigmaMk⟩
+    ⟨Sigma.mk (β := fun _  => UnitBoundary (Fin 2 → ℝ)) t,
+      continuous_sigmaMk⟩
 
 def graphSquare (t : StrictOrdTri P) : C(SquareBoundary, DiskAttachment (graphAttaching P)) :=
   (graphBoundary P t).comp unitBoundarySquareHomeomorph.symm.toContinuousMap
@@ -166,34 +163,22 @@ so they agree at corners throughout the deformation. -/
 theorem graphSquare_homotopic_words (t : StrictOrdTri P) :
     (graphSquare P t).Homotopic (words P t).squareMap := by
   let H := Classical.choice ((Path.Homotopic.trans_refl intervalPath).symm)
-  let F (s : SquareSide) : C(I × I, DiskAttachment (graphAttaching P)) :=
+  let F (s : SquareSide)  :=
     (graphSquare P t).comp ((squareSideMap s).comp H.toHomotopy.toContinuousMap)
   have hend : ∀ s τ u, u = 0 ∨ u = 1 → F s (τ, u) = graphSquare P t (squareSideMap s u) := by
     intro s τ u hu
     rcases hu with rfl | rfl
     · exact congrArg (fun u => graphSquare P t (squareSideMap s u)) (H.source τ)
     · exact congrArg (fun u => graphSquare P t (squareSideMap s u)) (H.target τ)
-  let G := squareBoundaryHomotopyPasting F (fun _ => graphSquare P t) hend
-  exact ⟨{
-    toContinuousMap := G
-    map_zero_left := by
-      intro z
-      obtain ⟨⟨s, u⟩, rfl⟩ := squareSideQuotient_surjective z
-      change squareBoundaryHomotopyPasting F (fun _ => graphSquare P t) hend
-        (0, squareSideMap s u) = graphSquare P t (squareSideMap s u)
-      rw [squareBoundaryHomotopyPasting_side]
-      change graphSquare P t (squareSideMap s (H (0, u))) = _
-      rw [H.apply_zero]
-      rfl
-    map_one_left := by
-      intro z
-      obtain ⟨⟨s, u⟩, rfl⟩ := squareSideQuotient_surjective z
-      change squareBoundaryHomotopyPasting F (fun _ => graphSquare P t) hend
-        (1, squareSideMap s u) = (words P t).squareMap (squareSideMap s u)
-      rw [squareBoundaryHomotopyPasting_side, BoundaryWords.squareMap_side]
-      change graphSquare P t (squareSideMap s (H (1, u))) = _
-      rw [H.apply_one]
-      exact (words_side_paused P t s u).symm }⟩
+  refine ⟨squareBoundaryHomotopy F (fun _ => graphSquare P t) hend ?_ ?_⟩
+  · intro s u
+    change graphSquare P t (squareSideMap s (H (0, u))) = _
+    rw [H.apply_zero]
+    rfl
+  · intro s u
+    change graphSquare P t (squareSideMap s (H (1, u))) = _
+    rw [H.apply_one, BoundaryWords.squareMap_side]
+    exact (words_side_paused P t s u).symm
 
 theorem graphBoundary_homotopic_words (t : StrictOrdTri P) :
     (graphBoundary P t).Homotopic (words P t).boundaryMap := by

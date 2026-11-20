@@ -13,8 +13,6 @@ Pending final Lean verification. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -30,7 +28,7 @@ def universalSpineOldReceiverEquiv :
 
 theorem universalSpineOldBase_eq : universalSpineOldBase q = posQCube (gBase q) := by
   change (genusSpineToOld q).onV ((markedSpineTree q).root).1 = _
-  rw (config := { transparency := .default }) [markedSpineTree_root]
+  erw [markedSpineTree_root]
   rfl
 
 theorem exists_universalOldCocycle :
@@ -52,8 +50,7 @@ theorem universalOldCocycle_monodromy :
 
 theorem universalOldCocycle_monodromy_bijective :
     Function.Bijective ((universalOldCocycle q).monodromy (universalSpineOldBase q)) := by
-  rw (config := { transparency := .default }) [universalOldCocycle_monodromy]
-  exact (universalSpineOldReceiverEquiv q).symm.bijective
+  simpa [universalOldCocycle_monodromy] using (universalSpineOldReceiverEquiv q).symm.bijective
 
 abbrev UniversalPolygonCover :=
   DescendedSurfaceCover (posQCube (A := cmpRel (GenusVertex q)))
@@ -73,7 +70,7 @@ def universalPolygonRaw := coveredPolygon (gc q) (universalPolygonProjection q)
 
 def universalPolygonShift : UniversalPolygonCover q ≃o UniversalPolygonCover q :=
   (descendedSurfaceCocycle posQCube posQCube_monotone (universalOldCocycle q)).coverDeck
-    ((universalPolygonRaw q).V (cyc (8 * q) 0)).sheet⁻¹
+    ((universalPolygonRaw q).V (cyc (8 * q) 0)).2⁻¹
 
 def universalPolygonPole : PolygonCoverPole (gc q) (universalPolygonProjection q) :=
   CoveredPolygon.mapPole (gc q) (universalPolygonProjection q) (universalPolygonProjection q)
@@ -88,10 +85,7 @@ def universalPolygon : CoveredPolygon (gc q) (universalPolygonProjection q)
     (universalPolygonShift q).monotone (fun _ => rfl)
 
 theorem universalPolygon_initial_sheet :
-    ((universalPolygon q).V (cyc (8 * q) 0)).sheet = 1 := by
-  change ((universalPolygonRaw q).V (cyc (8 * q) 0)).sheet⁻¹ *
-    ((universalPolygonRaw q).V (cyc (8 * q) 0)).sheet = 1
-  exact inv_mul_cancel _
+    ((universalPolygon q).V (cyc (8 * q) 0)).2 = 1 := inv_mul_cancel _
 
 def universalPolygonRealization :
     NeSpx (cmpRel (UniversalPolygonCover q)) → universalOldOrder q :=
@@ -124,18 +118,7 @@ theorem universalPolygonLift_projects :
         (orderCxMap (barycentricMap (universalPolygonProjection q)
           (universalPolygonProjection_isPosetCover q).mono)
           (barycentricMap_monotone _ (universalPolygonProjection_isPosetCover q).mono)) := by
-  apply Hom.ext'
-  · funext σ
-    exact universalPolygonRealization_end q σ
-  · funext e
-    apply Subtype.ext
-    exact Prod.ext (universalPolygonRealization_end q e.1.1)
-      (universalPolygonRealization_end q e.1.2)
-  · funext t
-    apply Subtype.ext
-    exact Prod.ext (universalPolygonRealization_end q t.1.1)
-      (Prod.ext (universalPolygonRealization_end q t.1.2.1)
-        (universalPolygonRealization_end q t.1.2.2))
+  exact Hom.ext_orderCx (funext (universalPolygonRealization_end q))
 
 theorem universalPolygonLift_initial :
     (universalPolygonLift q).onV (spx1 ((universalPolygon q).V (cyc (8 * q) 0))) =
@@ -143,46 +126,43 @@ theorem universalPolygonLift_initial :
   apply (universalOldCocycle q).readVertex_fibre_injective (universalSpineOldBase q)
     (universalOldCocycle_monodromy_bijective q).1
   · change uOrderEnd (universalPolygonRealization q _) = _
-    rw (config := { transparency := .default }) [universalPolygonRealization_end, barycentricMap_spx1,
+    erw [universalPolygonRealization_end, barycentricMap_spx1,
       (universalPolygon q).projV, endV_base, universalSpineOldBase_eq]
     rfl
   · change (universalOldCocycle q).readVertex (universalSpineOldBase q)
       (barycentricCoverRealization posQCube posQCube_monotone (universalOldCocycle q)
         (universalSpineOldBase q) isConnected_orderCx_qOld
         (universalOldCocycle_monodromy_bijective q) _) = _
-    rw (config := { transparency := .default }) [barycentricCoverRealization_read]
-    simp only [barycentricCoverReading, chainMax_spx1, descendedSurfaceSimplex,
-      barycentricMap_spx1, descendedSurfaceProjection, OrdCocycle.val_refl, mul_one,
-      universalPolygon_initial_sheet, OrdCocycle.readVertex_base]
+    simp [barycentricCoverRealization_read, barycentricCoverReading, chainMax_spx1, descendedSurfaceSimplex, barycentricMap_spx1, descendedSurfaceProjection, OrdCocycle.val_refl, universalPolygon_initial_sheet, OrdCocycle.readVertex_base]
 
 /-- The subdivided source polygon, now in actual old universal-cover cells. -/
 def universalOldPolygonChain :
     (uCover (orderCx (QOld (cmpRel (GenusVertex q)))) (universalSpineOldBase q)).F →₀ ℤ :=
   chain2 (universalPolygonLift q)
-    (barycentricChain2 (decodeOrdNerve2 (universalPolygon q).fundamental))
+    (barycentricChain2 (universalPolygon q).fundamental)
 
 theorem universalOldPolygonChain_boundary :
     Comb.bdry2 _ (universalOldPolygonChain q) =
       pathChain (uLiftPath (mapPath (surfCx (cmpRel (GenusVertex q))) (bdPath (gc q) (8 * q)))
         (UV.base _ (universalSpineOldBase q))) := by
-  rw (config := { transparency := .default }) [universalOldPolygonChain, bdry2_chain2,
+  erw [universalOldPolygonChain, bdry2_chain2,
     (universalPolygon q).subdivisionFundamental_boundary (gc q) (universalPolygonProjection q)]
   change Finsupp.mapDomain (universalPolygonLift q).onE (pathChain _) = _
-  rw (config := { transparency := .default }) [← pathChain_map]
+  erw [← pathChain_map]
   apply congrArg pathChain
   have hp := isPath_mapPath (universalPolygonLift q)
     ((universalPolygon q).subdivisionBoundaryPath_isPath (gc q) (universalPolygonProjection q) (8 * q))
-  rw (config := { transparency := .default }) [universalPolygonLift_initial] at hp
+  erw [universalPolygonLift_initial] at hp
   have he := eq_uLiftPath_of_isPath _ _ _ hp
   have hproj : mapPath (univProj (orderCx (QOld (cmpRel (GenusVertex q)))) (universalSpineOldBase q))
       (mapPath (universalPolygonLift q)
         ((universalPolygon q).subdivisionBoundaryPath (gc q) (universalPolygonProjection q) (8 * q))) =
       mapPath (surfCx (cmpRel (GenusVertex q))) (bdPath (gc q) (8 * q)) := by
-    rw (config := { transparency := .default }) [mapPath_comp, universalPolygonLift_projects, ← mapPath_comp,
+    erw [mapPath_comp, universalPolygonLift_projects, ← mapPath_comp,
       (universalPolygon q).subdivisionBoundaryPath_projection (gc q)
         (universalPolygonProjection q) (universalPolygonProjection_isPosetCover q)]
     congr 2 <;> exact Subsingleton.elim _ _
-  rw (config := { transparency := .default }) [hproj] at he
+  erw [hproj] at he
   exact he
 
 end FiniteChains.Davis.Genus

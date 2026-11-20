@@ -14,9 +14,6 @@ geometric spine construction, rather than required as new hypotheses.
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 
@@ -39,15 +36,10 @@ theorem finiteSpineIndividualFillings :
 /-- The concrete map of an individual spine substitution into the simultaneous one. -/
 def finiteSpineFactorToFamily (s : Sx) :
     IndividualGroup ρ (familyFiniteSpineWordBlock q u) s →*
-      PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u)) :=
+      PresGroup (spineFamilyPres ρ q u) :=
   factorToFamily ρ (familyFiniteSpineWordBlock q u)
     (familyFiniteSpineWordBlock_filled ρ q u hrho) s
 
-@[simp] theorem finiteSpineFactorToFamily_mk (s : Sx)
-    (w : FreeGroup (α ⊕ (Σ _ : PUnit.{1}, SpinePresentationGen (q s)))) :
-    finiteSpineFactorToFamily ρ q u hrho s (QuotientGroup.mk w) =
-      QuotientGroup.mk (FreeGroup.map
-        (individualGenEmb (Zt := fun t => SpinePresentationGen (q t)) s) w) := rfl
 
 /-- Every actual individual spine factor embeds, for an arbitrary family of genera. -/
 theorem finiteSpineFactorToFamily_injective (s : Sx) :
@@ -60,7 +52,7 @@ theorem finiteSpineFactorToFamily_injective (s : Sx) :
 /-- The coefficient inclusion of an actual individual spine factor. -/
 def finiteSpineFactorRingHom (s : Sx) :
     MonoidAlgebra ℤ (IndividualGroup ρ (familyFiniteSpineWordBlock q u) s) →+*
-      MonoidAlgebra ℤ (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u))) :=
+      MonoidAlgebra ℤ (PresGroup (spineFamilyPres ρ q u)) :=
   MonoidAlgebra.mapDomainRingHom ℤ (finiteSpineFactorToFamily ρ q u hrho s)
 
 end

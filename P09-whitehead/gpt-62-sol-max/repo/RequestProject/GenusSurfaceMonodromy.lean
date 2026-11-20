@@ -73,8 +73,6 @@ theorem genus_exists_flat_section
     (boundarySection_compatible q d x₀ hd)
   refine ⟨barycentricSection c s, barycentricSection_flat c s hs, ?_⟩
   rw [gBase, barycentricSection_spx1]
-  change s (toS (gvc q) (gec q) (gc q) (.vtx (gvc q (cyc (8 * q) 0)))) = x₀
-  rw [gvc_even q (k := 0) rfl]
-  exact hv none
+  tauto
 
 end FiniteChains.Davis.Genus

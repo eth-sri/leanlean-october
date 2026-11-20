@@ -24,7 +24,7 @@ def subcomplexCellBoundary (C : CWComplex.Subcomplex (Set.univ : Set X))
   let a : C(UnitBoundary (Fin 2 → ℝ),
       BoundaryFamily (RelCWComplex.cell (C : Set X) 2) (Fin 2 → ℝ)) :=
     ⟨fun x => ⟨j, x⟩, continuous_sigmaMk
-      (σ := fun _ : RelCWComplex.cell (C : Set X) 2 => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩
+      (σ := fun _  => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩
   exact (skeletonAsDiskAttachment (C : Set X) 1).toContinuousMap.comp
     ((skeletonAttachingMap (C : Set X) 2).comp a)
 

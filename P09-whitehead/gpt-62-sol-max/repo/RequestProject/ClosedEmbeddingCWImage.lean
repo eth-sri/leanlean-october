@@ -27,22 +27,21 @@ def basePartial : PartialEquiv X Y :=
 
 def imageCharacteristic (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set X) n) :
     PartialEquiv (Fin n → ℝ) Y :=
-  (RelCWComplex.map (C := (Set.univ : Set X)) n j).trans (basePartial f hf)
+  (RelCWComplex.map (C := Set.univ) n j).trans (basePartial f hf)
 
 theorem imageCharacteristic_image (n : ℕ)
     (j : RelCWComplex.cell (Set.univ : Set X) n) (S : Set (Fin n → ℝ)) :
     imageCharacteristic f hf n j '' S =
       f '' (RelCWComplex.map (C := (Set.univ : Set X)) n j '' S) := by
-  change (f ∘ RelCWComplex.map (C := (Set.univ : Set X)) n j) '' S = _
-  exact Set.image_comp _ _ _
+  aesop
 
 theorem imageCharacteristic_source (n : ℕ)
     (j : RelCWComplex.cell (Set.univ : Set X) n) :
     (imageCharacteristic f hf n j).source = ball 0 1 := by
   rw [imageCharacteristic, PartialEquiv.trans_source]
-  change (RelCWComplex.map (C := (Set.univ : Set X)) n j).source ∩
-    (RelCWComplex.map (C := (Set.univ : Set X)) n j) ⁻¹' Set.univ = _
-  simp only [Set.preimage_univ, Set.inter_univ, RelCWComplex.source_eq]
+  change (RelCWComplex.map (C := Set.univ) n j).source ∩
+    (RelCWComplex.map (C := Set.univ) n j) ⁻¹' Set.univ = _
+  simp [RelCWComplex.source_eq]
 
 theorem imageCharacteristic_continuousOn (n : ℕ)
     (j : RelCWComplex.cell (Set.univ : Set X) n) :
@@ -55,27 +54,27 @@ theorem imageCharacteristic_continuousOn_symm (n : ℕ)
       (imageCharacteristic f hf n j).target := by
   rw [imageCharacteristic, PartialEquiv.trans_target'']
   change ContinuousOn
-    ((RelCWComplex.map (C := (Set.univ : Set X)) n j).symm ∘ (basePartial f hf).symm)
-    (f '' (Set.univ ∩ (RelCWComplex.map (C := (Set.univ : Set X)) n j).target))
+    ((RelCWComplex.map (C := Set.univ) n j).symm ∘ (basePartial f hf).symm)
+    (f '' (Set.univ ∩ (RelCWComplex.map (C := Set.univ) n j).target))
   rw [Set.univ_inter]
   apply hf.isEmbedding.isInducing.continuousOn_image_iff.mpr
-  have he : ((RelCWComplex.map (C := (Set.univ : Set X)) n j).symm ∘
+  have he : ((RelCWComplex.map (C := Set.univ) n j).symm ∘
       (basePartial f hf).symm) ∘ f =
-      (RelCWComplex.map (C := (Set.univ : Set X)) n j).symm := by
+      (RelCWComplex.map (C := Set.univ) n j).symm := by
     funext x
-    exact congrArg (RelCWComplex.map (C := (Set.univ : Set X)) n j).symm
-      ((basePartial f hf).left_inv (show x ∈ (basePartial f hf).source from trivial))
+    exact congrArg (RelCWComplex.map (C := Set.univ) n j).symm
+      ((basePartial f hf).left_inv trivial)
   rw [he]
   exact RelCWComplex.continuousOn_symm n j
 
-variable [T2Space X]
+
 
 end FiniteChains.ClosedEmbeddingCW
 
-namespace FiniteChains.RelativeAttachment
 
-universe u
-variable {A X D : Type u} [TopologicalSpace A] [TopologicalSpace X] [TopologicalSpace D]
-  [T2Space X] [Nonempty X] [CWComplex (Set.univ : Set X)]
 
-end FiniteChains.RelativeAttachment
+
+
+
+
+

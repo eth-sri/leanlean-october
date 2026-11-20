@@ -19,11 +19,8 @@ variable {A B : Type} (f : A → B)
 def diskRoseMap : C(Rose A, Rose B) :=
   desc (roseAttaching A) (boundaryFamilyInclusion A (Fin 1 → ℝ))
     (ContinuousMap.const _ (roseVertex B))
-    ⟨fun d => cell (roseAttaching B) (boundaryFamilyInclusion B _) ⟨f d.1, d.2⟩,
-      continuous_sigma (fun a => (cell_continuous _ _).comp
-        (continuous_sigmaMk («σ» := fun _ : B => ClosedUnitBall (Fin 1 → ℝ)) (i := f a)))⟩
-    (fun a => (cell_boundary (roseAttaching B) _
-      (boundaryFamilyInclusion_isClosedEmbedding B _).injective ⟨f a.1, a.2⟩).symm)
+    ((DiskAttachment.cellMap (roseAttaching B)).comp (reindexFamily f))
+    (fun a => (diskCell_boundary (roseAttaching B) ⟨f a.1, a.2⟩).symm)
 
 @[simp] theorem diskRoseMap_vertex : diskRoseMap f (roseVertex A) = roseVertex B := rfl
 
@@ -46,14 +43,10 @@ theorem roseMapRealization_copy (a : A) (x : orderNerveRealization (Rose PUnit))
   change orderNerveRealizationMap h.roseMap h.roseMap.monotone
     (orderNerveRealizationMap (roseCopy a) (roseCopy a).monotone x) = _
   rw [orderNerveRealizationMap_comp]
-  have he : h.roseMap ∘ roseCopy a = (roseCopy (h.gen a) : Rose PUnit → Rose B) := by
+  have he : h.roseMap ∘ roseCopy a = (roseCopy (h.gen a)) := by
     funext p
     cases p <;> rfl
-  have mapEq (f g : Rose PUnit → Rose B) (hf : Monotone f) (hg : Monotone g)
-      (he : f = g) : orderNerveRealizationMap f hf x = orderNerveRealizationMap g hg x := by
-    subst g
-    rfl
-  exact mapEq _ _ _ _ he
+  aesop
 
 theorem orderRoseRealizationHomeomorph_natural (x : orderNerveRealization (Rose A)) :
     orderRoseRealizationHomeomorph B (orderNerveRealizationMap h.roseMap h.roseMap.monotone x) =
@@ -62,10 +55,9 @@ theorem orderRoseRealizationHomeomorph_natural (x : orderNerveRealization (Rose 
   · change orderRoseRealizationHomeomorph B
         (orderNerveRealizationMap h.roseMap h.roseMap.monotone
           (orderNerveRealizationVertex Rose.base)) = _
-    rw [realizedMap_vertex]
+    rw [orderNerveRealizationMap_vertex]
     change orderRoseRealizationHomeomorph B (orderRoseBase B) = _
-    rw [orderRoseRealizationHomeomorph_base, orderRoseRealizationHomeomorph_base,
-      diskRoseMap_vertex]
+    simp
   · obtain ⟨t, rfl⟩ := orderRoseTraversal_surjective u
     rw [roseMapRealization_copy, orderRoseRealizationHomeomorph_interval,
       orderRoseRealizationHomeomorph_interval, diskRoseMap_cell]

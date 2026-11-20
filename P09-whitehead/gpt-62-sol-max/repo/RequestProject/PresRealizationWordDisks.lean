@@ -13,9 +13,6 @@ exactly the realized letter-reading map with the specified circle
 parametrization. No presentation-to-CW comparison is assumed. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment
@@ -36,7 +33,7 @@ def presOldRoseHomotopyEquiv :
 
 def presCircleWordMap (j : J) :
     C(orderNerveRealization (RelatorCircle w j), orderNerveRealization (Rose A)) :=
-  ⟨orderNerveRealizationMap (fun c : RelatorCircle w j => aFun w c.val)
+  ⟨orderNerveRealizationMap (fun c  => aFun w c.val)
       (fun _ _ h => aFun_monotone w h),
     (orderNerveRealizationMap (fun c : RelatorCircle w j => aFun w c.val)
       (fun _ _ h => aFun_monotone w h)).hom.continuous⟩
@@ -66,11 +63,11 @@ theorem presOldRoseHomotopyEquiv_link (j : J)
             (coneAdjLinkOrderIso (circSet w) (RelatorCircle w) (relatorCircleOrderIso w) j)
             (coneAdjLinkOrderIso (circSet w) (RelatorCircle w)
               (relatorCircleOrderIso w) j).monotone x))) = _
-  rw (config := { transparency := .default }) [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp,
+  erw [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp,
     orderNerveRealizationMap_comp]
   have hf : (cylRetr (aHom w) ∘ coneAdjBaseOrderIso ∘ coneAdjBoundaryToBase (circSet w) j ∘
       coneAdjLinkOrderIso (circSet w) (RelatorCircle w) (relatorCircleOrderIso w) j) =
-        (fun c : RelatorCircle w j => aFun w c.val) := by
+        (fun c  => aFun w c.val) := by
     funext c
     simp only [Function.comp_apply, hp]
     rfl
@@ -91,7 +88,7 @@ theorem presRoseDiskAttaching_link (j : J) (x : orderNerveRealization (RelatorCi
     presRoseDiskAttaching w b ⟨j, b j x⟩ = presCircleWordMap w j x := by
   change presOldRoseHomotopyEquiv w
     (coneAdjDiskAttaching (circSet w) (RelatorCircle w) (relatorCircleOrderIso w) b ⟨j, b j x⟩) = _
-  rw (config := { transparency := .default }) [coneAdjDiskAttaching_link]
+  erw [coneAdjDiskAttaching_link]
   exact presOldRoseHomotopyEquiv_link w j x
 
 omit [NormedSpace ℝ E] [ProperSpace E] in
@@ -106,7 +103,7 @@ maps; this equivalence has no unproved CW-model comparison as an input. -/
 def presRealizationRoseDiskHomotopyEquiv :
     ContinuousMap.HomotopyEquiv (orderNerveRealization (PresPos w))
       (DiskAttachment (presRoseDiskAttaching w b)) := by
-  letI : ∀ j, Nonempty (RelatorCircle w j) := fun j => relatorCircle_nonempty w j (hw j)
+  letI  := fun j => relatorCircle_nonempty w j (hw j)
   exact (coneAdjRealizationDiskHomeomorph (circSet w) (RelatorCircle w)
     (relatorCircleOrderIso w) b).toHomotopyEquiv.trans
       (diskAttachmentBaseChangeHomotopyEquiv (presCylinderDiskAttaching w b)
@@ -117,10 +114,10 @@ def presRealizationRoseDiskHomotopyEquiv :
     presRealizationRoseDiskHomotopyEquiv w hw b (coneAdjRealizationOld (circSet w) x) =
       old (presRoseDiskAttaching w b) (boundaryFamilyInclusion J E)
         (presOldRoseHomotopyEquiv w x) := by
-  letI : ∀ j, Nonempty (RelatorCircle w j) := fun j => relatorCircle_nonempty w j (hw j)
+  letI  := fun j => relatorCircle_nonempty w j (hw j)
   change diskAttachmentBaseChangeHomotopyEquiv _ _
     (coneAdjRealizationDiskHomeomorph _ _ _ _ (coneAdjRealizationOld _ x)) = _
-  rw (config := { transparency := .default }) [coneAdjRealizationDiskHomeomorph_old, diskAttachmentBaseChangeHomotopyEquiv_old]
+  erw [coneAdjRealizationDiskHomeomorph_old, diskAttachmentBaseChangeHomotopyEquiv_old]
   rfl
 
 end FiniteChains.PresModel

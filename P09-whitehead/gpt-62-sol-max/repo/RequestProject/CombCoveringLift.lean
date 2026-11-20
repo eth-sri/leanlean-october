@@ -22,8 +22,8 @@ file develops the elementary covering theory that these axioms are designed for:
 * `FiniteChains.Comb.pi1Map_injective_of_isCovering` — the induced map on fundamental groups
   of a covering is injective.
 
-Everything is proved from the three axioms of `IsCovering`; no finiteness or connectivity
-hypothesis is used.
+Only the local bijections are needed for path and homotopy lifting.
+In particular, lifting does not require surjectivity on vertices.
 -/
 
 namespace FiniteChains
@@ -36,21 +36,26 @@ universe u
 theorem isPath_start_eq {V E : Type*} {src tgt : E → V} {l : List (E × Bool)} {a a' b b' : V}
     (h : IsPath src tgt l a b) (h' : IsPath src tgt l a' b') (hl : l ≠ []) : a = a' := by
   cases l with
-  | nil => exact absurd rfl hl
-  | cons eb l => exact h.1.trans h'.1.symm
+  | nil => aesop
+  | cons eb l => aesop
 
 theorem isPath_endpoint_eq {V E : Type*} {src tgt : E → V} {l : List (E × Bool)} {a b b' : V}
     (h : IsPath src tgt l a b) (h' : IsPath src tgt l a b') : b = b' := by
-  induction l generalizing a with
-  | nil => exact h.symm.trans h'
-  | cons eb l ih => exact ih h.2 h'.2
+  induction l generalizing a <;> aesop
 
 variable {X Y : Complex2.{u}} {p : Hom X Y}
+
+/-- The local lifting axioms, without surjectivity on vertices. -/
+structure HasUniqueLifts (p : Hom X Y) : Prop where
+  germ : ∀ a, Function.Bijective (germMap p a)
+  cell : Function.Bijective (cellMap p)
+
+theorem IsCovering.uniqueLifts (h : IsCovering p) : HasUniqueLifts p := ⟨h.germ, h.cell⟩
 
 /-! ### Lifting germs -/
 
 /-- Unique lifting of an oriented edge issued from a vertex of the base. -/
-theorem exists_unique_liftGerm (hcov : IsCovering p) (a : X.V) {eb : Y.E × Bool}
+theorem exists_unique_liftGerm (hcov : HasUniqueLifts p) (a : X.V) {eb : Y.E × Bool}
     (h : germSrc Y.src Y.tgt eb = p.onV a) :
     ∃! x : X.E × Bool, germSrc X.src X.tgt x = a ∧ (p.onE x.1, x.2) = eb := by
   obtain ⟨hinj, hsurj⟩ := hcov.germ a
@@ -64,13 +69,21 @@ theorem exists_unique_liftGerm (hcov : IsCovering p) (a : X.V) {eb : Y.E × Bool
   exact congrArg Subtype.val (hinj hmap)
 
 /-- Two germs at the same vertex with the same image agree. -/
-theorem liftGerm_unique (hcov : IsCovering p) {a : X.V} {x y : X.E × Bool}
+theorem liftGerm_unique (hcov : HasUniqueLifts p) {a : X.V} {x y : X.E × Bool}
     (hx : germSrc X.src X.tgt x = a) (hy : germSrc X.src X.tgt y = a)
-    (h : (p.onE x.1, x.2) = (p.onE y.1, y.2)) : x = y := by
-  have hs : germSrc Y.src Y.tgt (p.onE x.1, x.2) = p.onV a := by
-    rw [germSrc_onE p x, hx]
-  obtain ⟨z, -, hz⟩ := exists_unique_liftGerm hcov a hs
-  rw [hz x ⟨hx, rfl⟩, hz y ⟨hy, h.symm⟩]
+    (h : (p.onE x.1, x.2) = (p.onE y.1, y.2)) : x = y :=
+  congrArg Subtype.val ((hcov.germ a).1 (a₁ := ⟨x, hx⟩) (a₂ := ⟨y, hy⟩) (Subtype.ext h))
+
+/-- A lifted edge is determined by its projection and source. -/
+theorem HasUniqueLifts.edge_eq (h : HasUniqueLifts p) {e f : X.E}
+    (hs : X.src e = X.src f) (he : p.onE e = p.onE f) : e = f :=
+  congrArg Prod.fst (liftGerm_unique h (x := (e, true)) (y := (f, true))
+    rfl hs.symm (Prod.ext he rfl))
+
+/-- A lifted face is determined by its projection and base vertex. -/
+theorem HasUniqueLifts.face_eq (h : HasUniqueLifts p) {e f : X.F}
+    (hs : X.base e = X.base f) (he : p.onF e = p.onF f) : e = f :=
+  h.cell.1 (Subtype.ext (Prod.ext he hs))
 
 /-- The projection of the reverse of a germ is the reverse of its projection. -/
 theorem onE_revGerm (p : Hom X Y) (x : X.E × Bool) :
@@ -80,16 +93,13 @@ theorem onE_revGerm (p : Hom X Y) (x : X.E × Bool) :
 /-! ### Lifting two-cells -/
 
 /-- Unique lifting of a two-cell with a prescribed lift of its basepoint. -/
-theorem exists_unique_liftCell (hcov : IsCovering p) (f : Y.F) {v : X.V}
+theorem exists_unique_liftCell (hcov : HasUniqueLifts p) (f : Y.F) {v : X.V}
     (hv : Y.base f = p.onV v) : ∃! g : X.F, p.onF g = f ∧ X.base g = v := by
   obtain ⟨hinj, hsurj⟩ := hcov.cell
   obtain ⟨g, hg⟩ := hsurj ⟨(f, v), hv⟩
   have hg' : (p.onF g, X.base g) = (f, v) := congrArg Subtype.val hg
   refine ⟨g, ⟨congrArg Prod.fst hg', congrArg Prod.snd hg'⟩, ?_⟩
-  rintro g' ⟨h1, h2⟩
-  refine hinj (Subtype.ext ?_)
-  show (p.onF g', X.base g') = (p.onF g, X.base g)
-  rw [hg', h1, h2]
+  aesop
 
 theorem mapPath_att (g : X.F) : mapPath p (X.att g) = Y.att (p.onF g) := (p.att_onF g).symm
 
@@ -97,7 +107,7 @@ theorem mapPath_att (g : X.F) : mapPath p (X.att g) = Y.att (p.onF g) := (p.att_
 
 /-- **Path lifting**: every edge path of the base issued from `p a` lifts to an edge path
 issued from `a`. -/
-theorem exists_liftPathAt (hcov : IsCovering p) :
+theorem exists_liftPathAt (hcov : HasUniqueLifts p) :
     ∀ (l : List (Y.E × Bool)) (a : X.V) (b : Y.V), IsPath Y.src Y.tgt l (p.onV a) b →
       ∃ (m : List (X.E × Bool)) (c : X.V), IsPath X.src X.tgt m a c ∧ mapPath p m = l := by
   intro l
@@ -116,7 +126,7 @@ theorem exists_liftPathAt (hcov : IsCovering p) :
 
 /-- **Uniqueness of lifts**: two lifts of the same edge path with the same initial vertex
 coincide. -/
-theorem liftPath_unique (hcov : IsCovering p) :
+theorem liftPath_unique (hcov : HasUniqueLifts p) :
     ∀ (m m' : List (X.E × Bool)) (a b b' : X.V), IsPath X.src X.tgt m a b →
       IsPath X.src X.tgt m' a b' → mapPath p m = mapPath p m' → m = m' := by
   intro m
@@ -127,21 +137,21 @@ theorem liftPath_unique (hcov : IsCovering p) :
   | cons x m ih =>
       intro m' a b b' hm hm' hmap
       cases m' with
-      | nil => exact absurd hmap (by simp [mapPath])
+      | nil => trivial
       | cons y m' =>
           have hxy : (p.onE x.1, x.2) = (p.onE y.1, y.2) := by
             have h := congrArg List.head? hmap
             simpa [mapPath] using h
-          have hx : x = y := liftGerm_unique hcov hm.1.symm hm'.1.symm hxy
+          have hx  := liftGerm_unique hcov hm.1.symm hm'.1.symm hxy
           subst hx
           have htail : mapPath p m = mapPath p m' := by
             have h := congrArg List.tail hmap
-            simpa [mapPath] using h
+            assumption
           rw [ih m' (germTgt X.src X.tgt x) b b' hm.2 hm'.2 htail]
 
 /-- The lift of the attaching path of a two-cell issued from a lift of its basepoint is the
 attaching path of the lifted two-cell. -/
-theorem eq_att_of_lift (hcov : IsCovering p) {A : List (X.E × Bool)} {v w : X.V} {g : X.F}
+theorem eq_att_of_lift (hcov : HasUniqueLifts p) {A : List (X.E × Bool)} {v w : X.V} {g : X.F}
     (hA : IsPath X.src X.tgt A v w) (hg : X.base g = v)
     (hmap : mapPath p A = Y.att (p.onF g)) : A = X.att g := by
   refine liftPath_unique hcov A (X.att g) v w (X.base g) hA (hg ▸ X.att_isLoop g) ?_
@@ -149,156 +159,81 @@ theorem eq_att_of_lift (hcov : IsCovering p) {A : List (X.E × Bool)} {v w : X.V
 
 /-! ### Lifting elementary cancellations -/
 
-theorem lift_cancels (hcov : IsCovering p) {a c : X.V} {m : List (X.E × Bool)}
-    (hm : IsPath X.src X.tgt m a c) {l' : List (Y.E × Bool)}
-    (hc : Cancels Y (mapPath p m) l') :
-    ∃ m', IsPath X.src X.tgt m' a c ∧ mapPath p m' = l' ∧ Htpy X a c m m' := by
-  rcases hc with ⟨P, Q, x, hl, hl'⟩ | ⟨P, Q, f, hl, hl'⟩
-  · -- deleting a backtrack
-    obtain ⟨M₁, M₂, hsplit, hM₁, hM₂⟩ := List.map_eq_append_iff.mp hl
-    obtain ⟨u, M₃, hM₂eq, hu, hM₃⟩ := List.map_eq_cons_iff.mp hM₂
-    obtain ⟨w, Q', hM₃eq, hw, hQ'⟩ := List.map_eq_cons_iff.mp hM₃
-    subst hM₃eq; subst hM₂eq; subst hsplit
-    have hM₁' : mapPath p M₁ = P := hM₁
-    have hQ'' : mapPath p Q' = Q := hQ'
-    obtain ⟨v, hP, hu1, hw1, hQpath⟩ :
-        ∃ v, IsPath X.src X.tgt M₁ a v ∧ v = germSrc X.src X.tgt u ∧
-          germTgt X.src X.tgt u = germSrc X.src X.tgt w ∧
-          IsPath X.src X.tgt Q' (germTgt X.src X.tgt w) c := by
-      obtain ⟨v, hP, hrest⟩ := isPath_append_iff.mp hm
-      exact ⟨v, hP, hrest.1, hrest.2.1, hrest.2.2⟩
-    have hwrev : w = revGerm u := by
-      refine liftGerm_unique hcov hw1.symm (by rw [germSrc_revGerm]) ?_
-      rw [hw, onE_revGerm, ← hu]
-    have hQstart : germTgt X.src X.tgt w = v := by
-      rw [hwrev, germTgt_revGerm, ← hu1]
-    have hpath' : IsPath X.src X.tgt (M₁ ++ Q') a c :=
-      isPath_append_iff.mpr ⟨v, hP, by rw [← hQstart]; exact hQpath⟩
-    refine ⟨M₁ ++ Q', hpath', ?_, ?_⟩
-    · rw [hl', mapPath_append, hM₁', hQ'']
-    · refine Htpy.of_step ⟨hm, hpath', Or.inl ⟨M₁, Q', u, ?_, rfl⟩⟩
-      rw [hwrev]
-  · -- deleting the attaching path of a two-cell
-    obtain ⟨W, Q', hsplit, hW, hQ'⟩ := List.map_eq_append_iff.mp hl
-    obtain ⟨M₁, A, hWeq, hM₁, hA⟩ := List.map_eq_append_iff.mp hW
-    subst hWeq; subst hsplit
-    have hM₁' : mapPath p M₁ = P := hM₁
-    have hA' : mapPath p A = Y.att f := hA
-    have hQ'' : mapPath p Q' = Q := hQ'
-    obtain ⟨w, hWpath, hQpath⟩ := isPath_append_iff.mp hm
-    obtain ⟨v, hM₁path, hApath⟩ := isPath_append_iff.mp hWpath
-    rcases eq_or_ne A [] with hA0 | hA0
-    · subst hA0
-      have hvw : v = w := hApath
-      subst hvw
-      refine ⟨M₁ ++ Q', isPath_append_iff.mpr ⟨v, hM₁path, hQpath⟩, ?_, ?_⟩
-      · rw [hl', mapPath_append, hM₁', hQ'']
-      · have hmeq : M₁ ++ [] ++ Q' = M₁ ++ Q' := by simp
-        rw [hmeq]
-        exact Htpy.refl _
-    · have hattne : Y.att f ≠ [] := by
-        rw [← hA']
-        simpa [mapPath] using hA0
-      have himg : IsPath Y.src Y.tgt (Y.att f) (p.onV v) (p.onV w) := by
-        have h := isPath_mapPath p hApath
-        rwa [hA'] at h
-      have hbase : Y.base f = p.onV v := isPath_start_eq (Y.att_isLoop f) himg hattne
-      obtain ⟨g, ⟨hg1, hg2⟩, -⟩ := exists_unique_liftCell hcov f hbase
-      have hAg : A = X.att g := by
-        refine eq_att_of_lift hcov hApath hg2 ?_
-        rw [hA', hg1]
-      have hwv : w = v := by
-        have hloop : IsPath X.src X.tgt A v v := by
-          rw [hAg]
-          exact hg2 ▸ X.att_isLoop g
-        exact (isPath_endpoint_eq hApath hloop)
-      subst hwv
-      have hpath' : IsPath X.src X.tgt (M₁ ++ Q') a c :=
-        isPath_append_iff.mpr ⟨w, hM₁path, hQpath⟩
-      refine ⟨M₁ ++ Q', hpath', ?_, ?_⟩
-      · rw [hl', mapPath_append, hM₁', hQ'']
-      · refine Htpy.of_step ⟨hm, hpath', Or.inr ⟨M₁, Q', g, ?_, rfl⟩⟩
-        rw [hAg]
+private theorem lift_loopInsertion {a c : X.V} {m : List (X.E × Bool)}
+    (hm : IsPath X.src X.tgt m a c) {r s u : List (Y.E × Bool)}
+    (hmap : mapPath p m = r ++ s) {b : Y.V} (hu : IsPath Y.src Y.tgt u b b)
+    (hp : IsPath Y.src Y.tgt (r ++ u ++ s) (p.onV a) (p.onV c))
+    (lift : ∀ v, p.onV v = b → ∃ w, IsPath X.src X.tgt w v v ∧
+      mapPath p w = u ∧ Htpy X v v w []) :
+    ∃ m', IsPath X.src X.tgt m' a c ∧ mapPath p m' = r ++ u ++ s ∧ Htpy X a c m m' := by
+  by_cases he : u = []
+  · exact ⟨m, hm, by simpa [he] using hmap, Htpy.refl _⟩
+  obtain ⟨r', s', rfl, hr, hs⟩ := List.map_eq_append_iff.mp hmap
+  change mapPath p r' = r at hr
+  change mapPath p s' = s at hs
+  obtain ⟨v, hv, hvs⟩ := isPath_append_iff.mp hm
+  obtain ⟨_, hru, _⟩ := isPath_append_iff.mp hp
+  obtain ⟨z, hrz, hzu⟩ := isPath_append_iff.mp hru
+  have h₁ := isPath_endpoint_eq hrz (hr ▸ isPath_mapPath p hv)
+  have h₂ := isPath_start_eq hzu hu he
+  obtain ⟨w, hw, hwmap, hW⟩ := lift v (h₁.symm.trans h₂)
+  exact ⟨r' ++ w ++ s', (hv.append hw).append hvs,
+    by simp [hr, hs, hwmap], by simpa using (hW.congr_append hv hvs).symm⟩
 
-theorem lift_uncancels (hcov : IsCovering p) {a c : X.V} {m : List (X.E × Bool)}
+theorem lift_uncancels (hcov : HasUniqueLifts p) {a c : X.V} {m : List (X.E × Bool)}
     (hm : IsPath X.src X.tgt m a c) {l : List (Y.E × Bool)}
     (hpath : IsPath Y.src Y.tgt l (p.onV a) (p.onV c))
     (hc : Cancels Y l (mapPath p m)) :
     ∃ m', IsPath X.src X.tgt m' a c ∧ mapPath p m' = l ∧ Htpy X a c m m' := by
-  rcases hc with ⟨P, Q, x, hl, hl'⟩ | ⟨P, Q, f, hl, hl'⟩
-  · -- inserting a backtrack
-    obtain ⟨M₁, Q', hsplit, hM₁, hQ'⟩ := List.map_eq_append_iff.mp hl'
-    subst hsplit
-    have hM₁' : mapPath p M₁ = P := hM₁
-    have hQ'' : mapPath p Q' = Q := hQ'
-    obtain ⟨v, hM₁path, hQpath⟩ := isPath_append_iff.mp hm
-    have hPimg : IsPath Y.src Y.tgt P (p.onV a) (p.onV v) := by
-      have h := isPath_mapPath p hM₁path
-      rwa [hM₁'] at h
-    have hxsrc : germSrc Y.src Y.tgt x = p.onV v := by
-      subst hl
-      obtain ⟨b₁, hPpath, hrest⟩ := isPath_append_iff.mp hpath
-      have hb₁ : b₁ = p.onV v := isPath_endpoint_eq hPpath hPimg
-      rw [← hb₁]
-      exact hrest.1.symm
-    obtain ⟨u, ⟨hu1, hu2⟩, -⟩ := exists_unique_liftGerm hcov v hxsrc
-    have hQstart : germTgt X.src X.tgt (revGerm (X := X) u) = v := by
-      rw [germTgt_revGerm, hu1]
-    have hpath' : IsPath X.src X.tgt (M₁ ++ u :: revGerm (X := X) u :: Q') a c := by
-      refine isPath_append_iff.mpr ⟨v, hM₁path, ?_, ?_, ?_⟩
-      · exact hu1.symm
-      · rw [germSrc_revGerm]
-      · rw [hQstart]; exact hQpath
-    refine ⟨M₁ ++ u :: revGerm (X := X) u :: Q', hpath', ?_, ?_⟩
-    · have hmid : mapPath p (u :: revGerm (X := X) u :: Q') = x :: revGerm x :: Q := by
-        show (p.onE u.1, u.2) ::
-          (p.onE (revGerm (X := X) u).1, (revGerm (X := X) u).2) :: mapPath p Q' = _
-        rw [hQ'', hu2, onE_revGerm, hu2]
-      rw [hl, mapPath_append, hM₁', hmid]
-    · refine (Htpy.of_step ⟨hpath', hm, Or.inl ⟨M₁, Q', u, rfl, rfl⟩⟩).symm
-  · -- inserting the attaching path of a two-cell
-    obtain ⟨M₁, Q', hsplit, hM₁, hQ'⟩ := List.map_eq_append_iff.mp hl'
-    subst hsplit
-    have hM₁' : mapPath p M₁ = P := hM₁
-    have hQ'' : mapPath p Q' = Q := hQ'
-    obtain ⟨v, hM₁path, hQpath⟩ := isPath_append_iff.mp hm
-    have hPimg : IsPath Y.src Y.tgt P (p.onV a) (p.onV v) := by
-      have h := isPath_mapPath p hM₁path
-      rwa [hM₁'] at h
-    rcases eq_or_ne (Y.att f) [] with hA0 | hA0
-    · refine ⟨M₁ ++ Q', hm, ?_, Htpy.refl _⟩
-      rw [hl, hA0, mapPath_append, hM₁', hQ'']
-      simp
-    · have hbase : Y.base f = p.onV v := by
-        subst hl
-        obtain ⟨b₂, hPA, -⟩ := isPath_append_iff.mp hpath
-        obtain ⟨b₁, hPpath, hattpath⟩ := isPath_append_iff.mp hPA
-        have hb₁ : b₁ = p.onV v := isPath_endpoint_eq hPpath hPimg
-        rw [← hb₁]
-        exact isPath_start_eq (Y.att_isLoop f) hattpath hA0
-      obtain ⟨g, ⟨hg1, hg2⟩, -⟩ := exists_unique_liftCell hcov f hbase
-      have hgloop : IsPath X.src X.tgt (X.att g) v v := hg2 ▸ X.att_isLoop g
-      have hpath' : IsPath X.src X.tgt (M₁ ++ X.att g ++ Q') a c :=
-        isPath_append_iff.mpr ⟨v, isPath_append_iff.mpr ⟨v, hM₁path, hgloop⟩, hQpath⟩
-      refine ⟨M₁ ++ X.att g ++ Q', hpath', ?_, ?_⟩
-      · rw [hl, mapPath_append, mapPath_append, hM₁', hQ'', mapPath_att, hg1]
-      · exact (Htpy.of_step ⟨hpath', hm, Or.inr ⟨M₁, Q', g, rfl, rfl⟩⟩).symm
+  rcases hc with ⟨r, s, x, rfl, hmap⟩ | ⟨r, s, f, rfl, hmap⟩
+  · have hx := (isPath_single x).append (isPath_revPath (isPath_single x))
+    have hp : IsPath Y.src Y.tgt (r ++ ([x, revGerm x] : List _) ++ s) (p.onV a) (p.onV c) := by
+      simpa [List.append_assoc] using hpath
+    have h := lift_loopInsertion hm hmap hx hp fun v hv => by
+      obtain ⟨y, ⟨hy, hymap⟩, _⟩ := exists_unique_liftGerm hcov v hv.symm
+      have hy' := hy ▸ isPath_single y
+      refine ⟨[y, revGerm y], hy'.append (isPath_revPath hy'), ?_, htpy_append_revPath hy'⟩
+      change (p.onE y.1, y.2) :: (p.onE (revGerm y).1, (revGerm y).2) :: [] = _
+      rw [hymap, onE_revGerm, hymap]
+      rfl
+    simpa [List.append_assoc] using h
+  · refine lift_loopInsertion hm hmap (Y.att_isLoop f) hpath ?_
+    intro v hv
+    obtain ⟨g, ⟨hg, hvg⟩, _⟩ := exists_unique_liftCell hcov f hv.symm
+    have hl := hvg ▸ X.att_isLoop g
+    exact ⟨X.att g, hl, by rw [mapPath_att, hg],
+      Htpy.of_step ⟨hl, rfl, Or.inr ⟨[], [], g, by simp, rfl⟩⟩⟩
+
+/-- A deletion is lifted by lifting the shorter path and using uniqueness
+on the insertion which recovers the original path. -/
+theorem lift_cancels (hcov : HasUniqueLifts p) {a c : X.V} {m : List (X.E × Bool)}
+    (hm : IsPath X.src X.tgt m a c) {l' : List (Y.E × Bool)}
+    (hl' : IsPath Y.src Y.tgt l' (p.onV a) (p.onV c)) (hc : Cancels Y (mapPath p m) l') :
+    ∃ m', IsPath X.src X.tgt m' a c ∧ mapPath p m' = l' ∧ Htpy X a c m m' := by
+  obtain ⟨m', c', hm', hmap⟩ := exists_liftPathAt hcov l' a (p.onV c) hl'
+  have hv := isPath_endpoint_eq (isPath_mapPath p hm') (hmap.symm ▸ hl')
+  obtain ⟨L, hL, hLmap, hLhtpy⟩ := lift_uncancels hcov hm' (hv.symm ▸ isPath_mapPath p hm) (hmap.symm ▸ hc)
+  have he := liftPath_unique hcov L m a c' c hL hm hLmap
+  subst L
+  have hv' := isPath_endpoint_eq hm hL
+  subst c'
+  exact ⟨m', hm', hmap, hLhtpy.symm⟩
 
 /-! ### Homotopy lifting -/
 
 /-- **Homotopy lifting**: a homotopy of the projection of a lifted path is covered by a
 homotopy of the lift, with the same endpoints. -/
-theorem lift_htpy (hcov : IsCovering p) {a c : X.V} {m : List (X.E × Bool)}
+theorem lift_htpy (hcov : HasUniqueLifts p) {a c : X.V} {m : List (X.E × Bool)}
     (hm : IsPath X.src X.tgt m a c) {l' : List (Y.E × Bool)}
     (h : Htpy Y (p.onV a) (p.onV c) (mapPath p m) l') :
     ∃ m', IsPath X.src X.tgt m' a c ∧ mapPath p m' = l' ∧ Htpy X a c m m' := by
   induction h with
-  | refl => exact ⟨m, hm, rfl, Htpy.refl m⟩
+  | refl => tauto
   | tail _ hstep ih =>
       obtain ⟨m₁, hm₁, hmap₁, hhtpy₁⟩ := ih
       rcases hstep with hs | hs
       · obtain ⟨m₂, hm₂, hmap₂, hhtpy₂⟩ :=
-          lift_cancels hcov hm₁ (by rw [hmap₁]; exact hs.2.2)
+          lift_cancels hcov hm₁ hs.2.1 (hmap₁.symm ▸ hs.2.2)
         exact ⟨m₂, hm₂, hmap₂, hhtpy₁.trans hhtpy₂⟩
       · obtain ⟨m₂, hm₂, hmap₂, hhtpy₂⟩ :=
           lift_uncancels hcov hm₁ hs.1 (by rw [hmap₁]; exact hs.2.2)
@@ -309,9 +244,9 @@ theorem pi1Map_injective_of_isCovering (hcov : IsCovering p) (a : X.V) :
     Function.Injective (pi1Map p a) := by
   rw [injective_iff_map_eq_one]
   rintro ⟨q⟩ hq
-  have hnull : Htpy Y (p.onV a) (p.onV a) (mapPath p q.1) [] := Quotient.exact hq
-  obtain ⟨m', hm', hmap', hhtpy⟩ := lift_htpy hcov q.2 hnull
-  have hnil : m' = [] := List.map_eq_nil_iff.mp hmap'
+  have hnull  := Quotient.exact hq
+  obtain ⟨m', hm', hmap', hhtpy⟩ := lift_htpy hcov.uniqueLifts q.2 hnull
+  have hnil  := List.map_eq_nil_iff.mp hmap'
   subst hnil
   exact Quotient.sound hhtpy
 

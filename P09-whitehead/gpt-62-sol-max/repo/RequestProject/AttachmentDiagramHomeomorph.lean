@@ -25,15 +25,12 @@ variable {A A' P P' D D' : Type u}
 
 def attachmentDiagramMap : C(Space r i, Space r' i') :=
   desc r i
-    ((⟨old r' i', old_continuous r' i'⟩ : C(P', Space r' i')).comp eP.toContinuousMap)
-    ((⟨cell r' i', cell_continuous r' i'⟩ : C(D', Space r' i')).comp eD.toContinuousMap)
+    ((Space.oldMap r' i').comp eP.toContinuousMap)
+    ((Space.cellMap r' i').comp eD.toContinuousMap)
     (fun a => by
-      change old r' i' (eP (r a)) = cell r' i' (eD (i a))
-      rw [hr a, hi a, cell_boundary r' i' hi'])
+      simp_all [hr a, hi a, cell_boundary r' i' hi'])
 
-@[simp] theorem attachmentDiagramMap_old (p : P) :
-    attachmentDiagramMap r i r' i' eA eP eD hr hi hi' (old r i p) =
-      old r' i' (eP p) := rfl
+
 
 @[simp] theorem attachmentDiagramMap_cell (d : D) :
     attachmentDiagramMap r i r' i' eA eP eD hr hi hi' (cell r i d) =
@@ -43,13 +40,13 @@ include hr in
 theorem attachmentDiagram_inverse_old (a' : A') :
     eP.symm (r' a') = r (eA.symm a') := by
   apply eP.injective
-  rw [eP.apply_symm_apply, hr, eA.apply_symm_apply]
+  simp [hr]
 
 include hi in
 theorem attachmentDiagram_inverse_boundary (a' : A') :
     eD.symm (i' a') = i (eA.symm a') := by
   apply eD.injective
-  rw [eD.apply_symm_apply, hi, eA.apply_symm_apply]
+  simp [hi]
 
 def attachmentDiagramHomeomorph (hi₀ : Function.Injective i) : Space r i ≃ₜ Space r' i' where
   toFun := attachmentDiagramMap r i r' i' eA eP eD hr hi hi'
@@ -59,25 +56,19 @@ def attachmentDiagramHomeomorph (hi₀ : Function.Injective i) : Space r i ≃�
   left_inv z := by
     obtain ⟨z, rfl⟩ := quotientMap_surjective r i z
     cases z with
-    | inl p =>
-        change attachmentDiagramMap _ _ _ _ _ _ _ _ _ _
-          (attachmentDiagramMap _ _ _ _ _ _ _ _ _ _ (old r i p)) = old r i p
-        simp only [attachmentDiagramMap_old, Homeomorph.symm_apply_apply]
+    | inl p => exact congrArg (old r i) (eP.symm_apply_apply p)
     | inr d =>
-        change attachmentDiagramMap _ _ _ _ _ _ _ _ _ _
-          (attachmentDiagramMap _ _ _ _ _ _ _ _ _ _ (cell r i d)) = cell r i d
-        simp only [attachmentDiagramMap_cell, Homeomorph.symm_apply_apply]
+      change attachmentDiagramMap _ _ _ _ _ _ _ _ _ _
+        (attachmentDiagramMap _ _ _ _ _ _ _ _ _ _ (cell r i d)) = cell r i d
+      simp only [attachmentDiagramMap_cell, Homeomorph.symm_apply_apply]
   right_inv z := by
     obtain ⟨z, rfl⟩ := quotientMap_surjective r' i' z
     cases z with
-    | inl p =>
-        change attachmentDiagramMap _ _ _ _ _ _ _ _ _ _
-          (attachmentDiagramMap _ _ _ _ _ _ _ _ _ _ (old r' i' p)) = old r' i' p
-        simp only [attachmentDiagramMap_old, Homeomorph.apply_symm_apply]
+    | inl p => exact congrArg (old r' i') (eP.apply_symm_apply p)
     | inr d =>
-        change attachmentDiagramMap _ _ _ _ _ _ _ _ _ _
-          (attachmentDiagramMap _ _ _ _ _ _ _ _ _ _ (cell r' i' d)) = cell r' i' d
-        simp only [attachmentDiagramMap_cell, Homeomorph.apply_symm_apply]
+      change attachmentDiagramMap _ _ _ _ _ _ _ _ _ _
+        (attachmentDiagramMap _ _ _ _ _ _ _ _ _ _ (cell r' i' d)) = cell r' i' d
+      simp only [attachmentDiagramMap_cell, Homeomorph.apply_symm_apply]
   continuous_toFun := (attachmentDiagramMap r i r' i' eA eP eD hr hi hi').continuous
   continuous_invFun := (attachmentDiagramMap r' i' r i eA.symm eP.symm eD.symm
     (attachmentDiagram_inverse_old r r' eA eP hr)

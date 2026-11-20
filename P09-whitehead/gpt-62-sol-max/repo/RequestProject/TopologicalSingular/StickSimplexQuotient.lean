@@ -4,9 +4,6 @@ public import RequestProject.TopologicalSingular.PointedSingularTriangle
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -31,11 +28,11 @@ theorem genLoop_constant_on_stick_fiber (d : ℕ) (p : GenLoop (Fin d) X x)
 triangle, exactly rather than merely up to free homotopy. -/
 theorem pointed_triangle_stick_represents_square (p : GenLoop (Fin 2) X x) :
     ∃ a : PointedSingularTriangle X x, basedTriangleStickSquare a.map a.based = p := by
-  let f : Domain 2 → X := fun z => p (stickSimplex_surjective 2 z).choose
-  have hf (t : Fin 2 → I) : f (stickSimplex 2 t) = p t :=
+  let f  := fun z => p (stickSimplex_surjective 2 z).choose
+  have hf (t : Fin 2 → I)  :=
     genLoop_constant_on_stick_fiber 2 p _ t
       (stickSimplex_surjective 2 (stickSimplex 2 t)).choose_spec
-  have hc : Continuous f := (stickSimplex_isQuotientMap 2).continuous_iff.mpr (by
+  have hc  := (stickSimplex_isQuotientMap 2).continuous_iff.mpr (by
     have he : f ∘ stickSimplex 2 = p := funext hf
     rw [he]
     exact p.val.continuous)
@@ -60,7 +57,7 @@ theorem pointed_triangle_represents_pi2 (p : GenLoop (Fin 2) X x) :
   refine ⟨a, ?_⟩
   have h := basedTriangleStickSquare_pi2_eq a.map a.based
   rw [ha] at h
-  exact congrArg Additive.ofMul h.symm
+  aesop
 
 theorem pointed_triangle_pi2_surjective :
     Function.Surjective (PointedSingularTriangle.pi2 (X := X) (x := x)) := by

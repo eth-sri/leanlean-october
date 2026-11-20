@@ -15,7 +15,7 @@ theorem reducedSimplex_interior_eq (n : ℕ) :
     constructor
     · intro i
       have hi := interior_mono (show reducedSimplex n ⊆
-          (Function.eval i : (Fin n → ℝ) → ℝ) ⁻¹' Set.Ici 0 from fun _ h => h.1 i) hx
+          (Function.eval i) ⁻¹' Set.Ici 0 from fun _ h => h.1 i) hx
       have ht := (isOpenMap_eval i).interior_preimage_subset_preimage_interior hi
       simpa only [Set.mem_preimage, interior_Ici, Set.mem_Ioi, Function.eval] using ht
     · cases n with
@@ -28,13 +28,12 @@ theorem reducedSimplex_interior_eq (n : ℕ) :
             cont := continuous_finset_sum _ (fun i _ => continuous_apply i) }
         have hs : Function.Surjective L := by
           intro r
-          refine ⟨Pi.single (0 : Fin (n + 1)) r, ?_⟩
+          refine ⟨Pi.single 0 r, ?_⟩
           simp [L, Pi.single_apply, Finset.sum_ite_eq']
         have hi := interior_mono (show reducedSimplex (n + 1) ⊆
             L ⁻¹' Set.Iic 1 from fun _ h => h.2) hx
         have ht := (L.isOpenMap hs).interior_preimage_subset_preimage_interior hi
-        have ht' : L x < 1 := by simpa only [Set.mem_preimage, interior_Iic, Set.mem_Iio] using ht
-        exact ht'
+        aesop
   · exact interior_maximal (reducedSimplexPositive_subset n) (reducedSimplexPositive_isOpen n)
 
 /-- Reinserted barycentric coordinates are all positive exactly on the reduced simplex interior. -/

@@ -48,9 +48,6 @@ theorem simplex_face_intersection_factor (i j : Fin (n + 3)) (hij : i ≠ j)
   obtain ⟨q, hq⟩ := domain_zero_coordinate_face z k hz
   have he (a : Domain n) := simplex_double_face_swap i k a
   rw [hk] at he
-  refine ⟨k, k.predAbove i, q, hq.symm, ?_, he⟩
-  apply simplex_face_injective j
-  rw [← h, ← hq]
-  exact he q
+  grind [simplex_face_injective]
 
 end FiniteChains.TopologicalSingular

@@ -18,9 +18,9 @@ theorem presNonemptyWords_ne_nil (ρ : J → FreeGroup α) (a : α) (j : J) :
 
 theorem mk_presNonemptyWords (ρ : J → FreeGroup α) (a : α) (j : J) :
     FreeGroup.mk (presNonemptyWords ρ a j) = ρ j := by
-  have hc : FreeGroup.mk [(a, true), (a, false)] = (1 : FreeGroup α) := by
+  have hc : FreeGroup.mk [(a, true), (a, false)] = 1 := by
     change FreeGroup.of a * (FreeGroup.of a)⁻¹ = 1
     exact mul_inv_cancel _
-  rw [presNonemptyWords, ← FreeGroup.mul_mk, hc, mul_one, mk_presWords]
+  simp [presNonemptyWords, ← FreeGroup.mul_mk, hc, mk_presWords]
 
 end FiniteChains.PresModel

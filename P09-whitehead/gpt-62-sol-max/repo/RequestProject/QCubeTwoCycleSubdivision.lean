@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.QCubeSquareCycleRecovery
+public import RequestProject.FinsuppBasis
 public import RequestProject.QCubeSquareChainBoundary
 
 @[expose] public section
@@ -18,9 +19,8 @@ def squareCoefficientFlag (i : C) : (strictOrderCx (QCube A)).F :=
 theorem squareCoefficientFlag_injective (hcell : Function.Injective cell) :
     Function.Injective (squareCoefficientFlag cell left right hne hspx) := by
   intro i j h
-  have ht := congrArg (fun t : (strictOrderCx (QCube A)).F => t.1.2.2) h
-  simp only [squareCoefficientFlag, squareFlag_top] at ht
-  exact hcell ht
+  have ht := congrArg (·.1.2.2) h
+  tauto
 
 noncomputable def squareCycleCoefficients (hcell : Function.Injective cell) :
     ((strictOrderCx (QCube A)).F →₀ ℤ) →ₗ[ℤ] (C →₀ ℤ) :=
@@ -30,12 +30,10 @@ noncomputable def squareCycleCoefficients (hcell : Function.Injective cell) :
 theorem squareChainSubdivision_off_cells (r : C →₀ ℤ)
     (t : (strictOrderCx (QCube A)).F) (ht : ∀ i, t.1.2.2 ≠ cell i) :
     squareChainSubdivision cell left right hne hspx r t = 0 := by
-  induction r using Finsupp.induction_linear with
-  | zero => simp
-  | add r s hr hs => simp only [map_add, Finsupp.add_apply, hr, hs, add_zero]
-  | single i n =>
-      rw [squareChainSubdivision, Finsupp.linearCombination_single, Finsupp.smul_apply,
-        cubeSquareSubdivision_eq_zero_off_top _ _ _ _ _ _ (ht i), smul_zero]
+  finsupp_basis r
+  intro i
+  rw [squareChainSubdivision, Finsupp.linearCombination_single, Finsupp.smul_apply,
+    cubeSquareSubdivision_eq_zero_off_top _ _ _ _ _ _ (ht i), smul_zero]
 
 /-- Every actual strict two-cycle of dimension at most two is the subdivision of its
 finite recovered cubical coefficient chain. -/
@@ -50,11 +48,11 @@ theorem cubeTwoCycle_is_squareSubdivision (hcell : Function.Injective cell)
   ext t
   by_cases hdim : t.1.2.2.spx.card = 2
   · obtain ⟨i, hi⟩ := hcover t.1.2.2 hdim
-    have hti : t.1.2.2 = cell i := hi.symm
-    have hl := congrArg (fun w : (strictOrderCx (QCube A)).F →₀ ℤ => w t)
+    have hti  := hi.symm
+    have hl := congrArg (fun w  => w t)
       (cubeTwoCycle_square_component (cell i) (left i) (right i) (hne i) (hspx i)
         z hz hcycle)
-    have hr := congrArg (fun w : (strictOrderCx (QCube A)).F →₀ ℤ => w t)
+    have hr := congrArg (fun w  => w t)
       (squareChainSubdivision_filter_top cell left right hne hspx hcell
         (squareCycleCoefficients cell left right hne hspx hcell z) i)
     simp only [Finsupp.filter_apply, hti, Finsupp.smul_apply] at hl hr
@@ -65,10 +63,7 @@ theorem cubeTwoCycle_is_squareSubdivision (hcell : Function.Injective cell)
     rw [hzt]
     symm
     apply squareChainSubdivision_off_cells
-    intro i he
-    apply hdim
-    rw [he, hspx i]
-    simp [hne i]
+    grind
 
 /-- The recovered cubical coefficients are genuine cycles for the facet boundary map. -/
 theorem cubeTwoCycle_coefficients_cycle (hcell : Function.Injective cell)

@@ -33,12 +33,12 @@ theorem squareFacetIndex_injective (c : QCube A) (a b : V) (hne : a ≠ b)
   have hf := congrArg QCube.spx h
   rw [squareFacetIndex_spx c a b hne hs, squareFacetIndex_spx c a b hne hs] at hf
   cases e <;> cases f
-  · have he := congrArg (fun d : QCube A => d.sgn b) h
+  · have he := congrArg (fun d  => d.sgn b) h
     have hst : s = t := by simpa [squareFacetIndex] using he
     exact Prod.ext rfl hst
   · exact False.elim (hne (Finset.singleton_inj.mp hf))
   · exact False.elim (hne (Finset.singleton_inj.mp hf).symm)
-  · have he := congrArg (fun d : QCube A => d.sgn a) h
+  · have he := congrArg (fun d  => d.sgn a) h
     have hst : s = t := by simpa [squareFacetIndex] using he
     exact Prod.ext rfl hst
 
@@ -51,7 +51,7 @@ def squareRadialCell (c : QCube A) (a b : V) : SquareRadialIndex → QCube A
 theorem squareRadialCell_injective (c : QCube A) (a b : V) (hne : a ≠ b)
     (hs : c.spx = {a, b}) : Function.Injective (squareRadialCell c a b) := by
   intro i j h
-  have hf := congrArg (fun d : QCube A => d.spx.card) h
+  have hf := congrArg (·.spx.card) h
   cases i with
   | inl i =>
     cases j with
@@ -79,6 +79,6 @@ theorem squareRadialEdge_injective (c : QCube A) (a b : V) (hne : a ≠ b)
     (hs : c.spx = {a, b}) : Function.Injective (squareRadialEdge c a b hne hs) := by
   intro i j h
   exact squareRadialCell_injective c a b hne hs
-    (congrArg (fun e : (strictOrderCx (QCube A)).E => e.1.1) h)
+    (congrArg (·.1.1) h)
 
 end FiniteChains.Davis

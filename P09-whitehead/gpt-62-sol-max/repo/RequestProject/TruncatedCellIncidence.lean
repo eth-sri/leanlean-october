@@ -23,9 +23,9 @@ theorem mem_cofaces_of_coordinateFace {L : ASC V} {c d : Cube V}
   have hcard : (freeSet d \ freeSet c).card = 1 := by
     rw [Finset.card_sdiff, Finset.inter_eq_left.mpr hsub, hc, hd]
   obtain ⟨j, hj⟩ := Finset.card_eq_one.mp hcard
-  have hjd : j ∈ freeSet d := (Finset.mem_sdiff.mp
+  have hjd  := (Finset.mem_sdiff.mp
     (hj ▸ Finset.mem_singleton_self j)).1
-  have hjc : j ∉ freeSet c := (Finset.mem_sdiff.mp
+  have hjc  := (Finset.mem_sdiff.mp
     (hj ▸ Finset.mem_singleton_self j)).2
   have hset : freeSet d = insert j (freeSet c) := by
     ext v
@@ -33,7 +33,7 @@ theorem mem_cofaces_of_coordinateFace {L : ASC V} {c d : Cube V}
     · intro hv
       by_cases hvc : v ∈ freeSet c
       · exact Finset.mem_insert_of_mem hvc
-      · have hm : v ∈ freeSet d \ freeSet c := Finset.mem_sdiff.mpr ⟨hv, hvc⟩
+      · have hm  := Finset.mem_sdiff.mpr ⟨hv, hvc⟩
         rw [hj] at hm
         exact Finset.mem_insert.mpr (Or.inl (Finset.mem_singleton.mp hm))
     · intro hv
@@ -69,15 +69,15 @@ theorem truncatedCell_inc_of_le {L : ASC V} (c : TruncatedCell A) (d : QOld A)
       mem_cofaces_of_coordinateFace hf hdim
         (by simpa using hd) (by simpa using hL)
   | inr σ =>
-    have hsub : σ.1 ⊆ d.1.spx := hcd.1
+    have hsub  := hcd.1
     have hσ : σ.1.card = 3 := by
       have hp := Finset.card_pos.mpr σ.2.1
       change σ.1.card - 1 = 2 at hc
       omega
-    have he : σ.1 = d.1.spx :=
+    have he  :=
       Finset.eq_of_subset_of_card_le hsub (by omega)
     have ht : IsTri L σ.1 := ⟨he ▸ hL, hσ⟩
-    have ht' : IsTri L d.1.spx := he ▸ ht
+    have ht'  := he ▸ ht
     have hz := qCubeToCoordinate_sgn_zero d.1 hcd.2
     simp [spineInc, truncatedFaceIndex, ht', hz, he]
 

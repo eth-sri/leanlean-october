@@ -5,8 +5,6 @@ public import RequestProject.CombPi2
 @[expose] public section
 
 /-! Deck transformations act on genuine cellular chains and preserve their boundary. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -22,6 +20,28 @@ def DeckAction.cellHom (D : DeckAction X G) (g : G) : Hom X X where
   tgt_onE := D.tgt_smul g
   base_onF := D.base_smul g
   att_onF := D.att_smul g
+
+theorem DeckAction.smulE_injective (D : DeckAction X G) (g : G) :
+    Function.Injective (D.smulE g) :=
+  Function.LeftInverse.injective (g := D.smulE g⁻¹)
+    (fun x => by rw [← D.mul_smulE, inv_mul_cancel, D.one_smulE])
+
+theorem DeckAction.smulF_injective (D : DeckAction X G) (g : G) :
+    Function.Injective (D.smulF g) :=
+  Function.LeftInverse.injective (g := D.smulF g⁻¹)
+    (fun x => by rw [← D.mul_smulF, inv_mul_cancel, D.one_smulF])
+
+theorem DeckAction.smulV_surjective (D : DeckAction X G) (g : G) :
+    Function.Surjective (D.smulV g) := fun x =>
+  ⟨D.smulV g⁻¹ x, by rw [← D.mul_smulV, mul_inv_cancel, D.one_smulV]⟩
+
+theorem DeckAction.smulE_surjective (D : DeckAction X G) (g : G) :
+    Function.Surjective (D.smulE g) := fun x =>
+  ⟨D.smulE g⁻¹ x, by rw [← D.mul_smulE, mul_inv_cancel, D.one_smulE]⟩
+
+theorem DeckAction.smulF_surjective (D : DeckAction X G) (g : G) :
+    Function.Surjective (D.smulF g) := fun x =>
+  ⟨D.smulF g⁻¹ x, by rw [← D.mul_smulF, mul_inv_cancel, D.one_smulF]⟩
 
 noncomputable def DeckAction.faceChains (D : DeckAction X G) (g : G) :
     (X.F →₀ ℤ) →ₗ[ℤ] (X.F →₀ ℤ) := chain2 (D.cellHom g)

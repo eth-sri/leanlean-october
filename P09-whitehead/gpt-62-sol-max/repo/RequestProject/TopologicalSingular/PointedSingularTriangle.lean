@@ -2,13 +2,12 @@ module
 
 public import RequestProject.TopologicalSingular.SingularSimplicialHelpers
 public import RequestProject.TopologicalSingular.TetrahedronStickShell
-public import RequestProject.TopologicalSingular.BasedTriangleHomotopy
+public import RequestProject.TopologicalSingular.BasedTriangleHurewicz
+public import RequestProject.TopologicalSingular.SimplexLinearHomotopy
+public import RequestProject.TopologicalSingular.SimplexPrismRetraction
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 variable {X : Type} [TopologicalSpace X] {x : X}
@@ -28,9 +27,7 @@ def constant (x : X) : PointedSingularTriangle X x :=
   ⟨ContinuousMap.const (Domain 2) x, fun _ => rfl⟩
 
 @[simp] theorem constant_pi2 (x : X) : (constant x).pi2 = 0 := by
-  unfold pi2 constant
-  rw [basedTriangleSquare_const, ← HomotopyGroup.one_def]
-  rfl
+  tauto
 
 theorem pi2_congr (a b : PointedSingularTriangle X x) (h : a.map = b.map) :
     a.pi2 = b.pi2 := by
@@ -90,7 +87,7 @@ theorem first_face_constant_relation (a b c : PointedSingularTriangle X x)
       face j (face i tau) = ContinuousMap.const (Domain 1) x := by
     intro i j
     rw [hfaces]
-    fin_cases i <;> simp [a.based, b.based, c.based, constant]
+    fin_cases i <;> first | rfl | simp [a.based, b.based, c.based, constant]
   have h := tetrahedronStickShell_face_relation tau hedge (hfaces 0)
   rw [tetrahedron_face_pi2 tau hedge 1 a (hfaces 1),
     tetrahedron_face_pi2 tau hedge 3 c (hfaces 3),

@@ -21,20 +21,16 @@ theorem open_iff_of_sheet {E X : Type*}
   · intro h
     exact (h.preimage f.continuous).inter hU
   · intro h
-    have hp : IsOpen (e ⁻¹' ((Subtype.val : V → X) ⁻¹' W)) := by
+    have hp : IsOpen (e ⁻¹' (Subtype.val ⁻¹' W)) := by
       have hh := h.preimage (continuous_subtype_val : Continuous (Subtype.val : U → E))
       convert hh using 1
-      ext z
-      change (e z).val ∈ W ↔ f z.val ∈ W ∧ z.val ∈ U
-      rw [he z]
-      simp only [z.property, and_true]
+      ext z <;> simp [he z]
     have hv := e.isOpen_preimage.mp hp
     have hi := hV.isOpenMap_subtype_val _ hv
     have hr : (Subtype.val : V → X) '' (Subtype.val ⁻¹' W) = W := by
       ext x
       constructor
-      · rintro ⟨z, hz, rfl⟩
-        exact hz
+      · simp
       · intro hx
         exact ⟨⟨x, hW hx⟩, hx, rfl⟩
     rwa [hr] at hi
@@ -70,7 +66,7 @@ theorem realizationMap_evenlyCovered (hf : IsPosetCover f) (q : Q)
     ⟨orderNerveRealizationMap f hf.mono, (orderNerveRealizationMap f hf.mono).hom.continuous⟩
   let U : I → Set (orderNerveRealization P) := fun i => orderNerveRealizationOpenStar P i.val
   let V := orderNerveRealizationOpenStar Q q
-  let e : ∀ i : I, U i ≃ₜ V := hf.realizationSheetHomeomorph q
+  let e  := hf.realizationSheetHomeomorph q
   have he : ∀ (i : I) (z : U i), (e i z).val = F z.val :=
     hf.realizationSheetHomeomorph_coe q
   let t := IsOpen.trivializationDiscrete (f := F) U V
@@ -79,7 +75,7 @@ theorem realizationMap_evenlyCovered (hf : IsPosetCover f) (q : Q)
       (orderNerveRealizationOpenStar_isOpen Q q) (e i) (he i) hW)
     (by
       intro i a ha b hb hab
-      have hh : e i ⟨a, ha⟩ = e i ⟨b, hb⟩ :=
+      have hh  :=
         Subtype.ext ((he i ⟨a, ha⟩).trans (hab.trans (he i ⟨b, hb⟩).symm))
       exact congrArg Subtype.val ((e i).injective hh))
     (by

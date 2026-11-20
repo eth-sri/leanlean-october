@@ -22,7 +22,7 @@ variable {J E X : Type u} [NormedAddCommGroup E] [NormedSpace ℝ E]
 def annulusBoundary (c : ℝ) (hc : 0 ≤ c)
     (x : {x : ClosedUnitBall E // c < ‖x.val‖}) : UnitBoundary E :=
   ⟨‖x.val.val‖⁻¹ • x.val.val, by
-    have hx : ‖x.val.val‖ ≠ 0 := ne_of_gt (lt_of_le_of_lt hc x.property)
+    have hx  := ne_of_gt (lt_of_le_of_lt hc x.property)
     rw [norm_smul, norm_inv, norm_norm, inv_mul_cancel₀ hx]⟩
 
 theorem annulusBoundary_continuous (c : ℝ) (hc : 0 ≤ c) :
@@ -56,19 +56,14 @@ theorem cell_mem_oldCollar (r : BoundaryFamily J E → X)
       ∃ h : c < ‖x.val‖, r ⟨j, annulusBoundary c hc ⟨x, h⟩⟩ ∈ U := by
   by_cases hx : ‖x.val‖ = 1
   · let a : UnitBoundary E := ⟨x.val, hx⟩
-    have hx' : c < ‖x.val‖ := by simpa only [hx] using hcone
+    have hx' : c < ‖x.val‖ := by simp_all
     have hb : cell r (boundaryFamilyInclusion J E) ⟨j, x⟩ =
         old r (boundaryFamilyInclusion J E) (r ⟨j, a⟩) :=
       cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J E).injective ⟨j, a⟩
     rw [hb, old_mem_oldCollar]
     have he (h : c < ‖x.val‖) : annulusBoundary c hc ⟨x, h⟩ = a := by
-      apply Subtype.ext
-      simp only [annulusBoundary, hx, inv_one, one_smul, a]
-    constructor
-    · intro ha
-      exact ⟨hx', by simpa only [he hx'] using ha⟩
-    · rintro ⟨h, ha⟩
-      simpa only [he h] using ha
+      simp [annulusBoundary, hx, inv_one, a]
+    grind
   · have hx' : (⟨j, x⟩ : DiskFamily J E) ∉ Set.range (boundaryFamilyInclusion J E) :=
       fun h => hx ((boundaryFamilyInclusion_range J E _).mp h)
     rw [cell_of_not_mem r _ _ hx']
@@ -84,9 +79,9 @@ theorem oldCollar_isOpen (r : BoundaryFamily J E → X) (hr : Continuous r)
   intro j
   let A : Set (ClosedUnitBall E) := {x | c < ‖x.val‖}
   have hA : IsOpen A := isOpen_lt continuous_const (continuous_norm.comp continuous_subtype_val)
-  have he : (fun x : ClosedUnitBall E => cell r (boundaryFamilyInclusion J E) ⟨j, x⟩) ⁻¹'
+  have he : (fun x  => cell r (boundaryFamilyInclusion J E) ⟨j, x⟩) ⁻¹'
       oldCollar r c hc U =
-      Subtype.val '' ((fun x : A => r ⟨j, annulusBoundary c hc x⟩) ⁻¹' U) := by
+      Subtype.val '' ((fun x  => r ⟨j, annulusBoundary c hc x⟩) ⁻¹' U) := by
     ext x
     rw [Set.mem_preimage, cell_mem_oldCollar r c hc hcone U j x]
     constructor
@@ -94,7 +89,7 @@ theorem oldCollar_isOpen (r : BoundaryFamily J E → X) (hr : Continuous r)
       exact ⟨⟨x, h⟩, hh, rfl⟩
     · rintro ⟨x', hx', rfl⟩
       exact ⟨x'.property, hx'⟩
-  change IsOpen ((fun x : ClosedUnitBall E => cell r (boundaryFamilyInclusion J E) ⟨j, x⟩) ⁻¹'
+  change IsOpen ((fun x  => cell r (boundaryFamilyInclusion J E) ⟨j, x⟩) ⁻¹'
     oldCollar r c hc U)
   rw [he]
   apply hA.isOpenEmbedding_subtypeVal.isOpenMap
@@ -116,10 +111,10 @@ theorem separate_old_fresh (r : BoundaryFamily J E → X) (hr : Continuous r)
     ∃ U V : Set (DiskAttachment r), IsOpen U ∧ IsOpen V ∧
       old r (boundaryFamilyInclusion J E) x ∈ U ∧
       fresh r (boundaryFamilyInclusion J E) d ∈ V ∧ Disjoint U V := by
-  have hdlt : ‖d.val.2.val‖ < 1 :=
+  have hdlt  :=
     lt_of_le_of_ne d.val.2.property
       (fun h => d.property ((boundaryFamilyInclusion_range J E _).mpr h))
-  let c : ℝ := (‖d.val.2.val‖ + 1) / 2
+  let c  := (‖d.val.2.val‖ + 1) / 2
   have hc : 0 ≤ c := by dsimp [c]; positivity
   have hcone : c < 1 := by dsimp [c]; linarith
   have hdc : ‖d.val.2.val‖ < c := by dsimp [c]; linarith
@@ -148,7 +143,7 @@ theorem diskAttachment_t2Space [T2Space X]
     (r : BoundaryFamily J E → X) (hr : Continuous r) : T2Space (DiskAttachment r) where
   t2 := by
     rintro (x | d) (y | e) hne
-    · have hxy : x ≠ y := fun h => hne (congrArg Sum.inl h)
+    · have hxy  := fun h => hne (congrArg Sum.inl h)
       obtain ⟨U, V, hU, hV, hx, hy, hUV⟩ := t2_separation hxy
       exact ⟨oldCollar r 0 le_rfl U, oldCollar r 0 le_rfl V,
         oldCollar_isOpen r hr 0 le_rfl zero_lt_one U hU,
@@ -157,7 +152,7 @@ theorem diskAttachment_t2Space [T2Space X]
     · exact separate_old_fresh r hr x e
     · obtain ⟨U, V, hU, hV, hx, hy, hUV⟩ := separate_old_fresh r hr y d
       exact ⟨V, U, hV, hU, hy, hx, hUV.symm⟩
-    · have hde : d ≠ e := fun h => hne (congrArg Sum.inr h)
+    · have hde  := fun h => hne (congrArg Sum.inr h)
       obtain ⟨U, V, hU, hV, hd, he, hUV⟩ := t2_separation hde
       have hf := fresh_isOpenEmbedding r (boundaryFamilyInclusion J E)
         (boundaryFamilyInclusion_isClosedEmbedding J E).isClosed_range

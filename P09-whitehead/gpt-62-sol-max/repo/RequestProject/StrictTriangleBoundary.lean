@@ -4,9 +4,7 @@ public import RequestProject.StrictOrderChains
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -27,8 +25,6 @@ theorem strictTriangle_bdry2_single (t : StrictOrdTri P) (n : ℤ) :
   simp only [strictOrderCx, pathChain_cons, pathChain_nil, if_true, Bool.false_eq_true,
     if_false, add_zero]
   rw [smul_add, smul_add, smul_neg]
-  simp only [Finsupp.smul_single, smul_eq_mul, mul_one]
-  rw [sub_eq_add_neg, add_assoc]
-  rfl
+  simp_all [Finsupp.smul_single, sub_eq_add_neg, add_assoc] <;> abel
 
 end FiniteChains.Comb

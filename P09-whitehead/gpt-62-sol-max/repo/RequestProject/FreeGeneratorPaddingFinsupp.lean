@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.RelativeStructuralOperation
+public import RequestProject.FinsuppBasis
 public import RequestProject.FoxNaturality
 
 @[expose] public section
@@ -41,7 +42,7 @@ theorem wordRetraction_map (w : FreeGroup A) :
     simp only [MonoidHom.comp_apply, FreeGroup.map.of, wordRetraction,
       FreeGroup.lift_apply_of, dif_pos he, MonoidHom.id_apply]
     exact congrArg FreeGroup.of (hf he.choose_spec)
-  exact congrArg (fun h : FreeGroup A →* FreeGroup A => h w) hmap
+  exact congrArg (fun h  => h w) hmap
 
 def groupRetraction : PresGroup (rel ρ f) →* PresGroup ρ :=
   QuotientGroup.lift _ ((QuotientGroup.mk' _).comp (wordRetraction f)) (by
@@ -64,18 +65,8 @@ def coefficients := MonoidAlgebra.mapDomainRingHom ℤ (groupHom ρ f)
 
 theorem coefficients_proj (x : FreeGroupRing A) :
     coefficients ρ f (proj (relSub ρ) x) =
-      proj (relSub (rel ρ f)) (freeRingMap f x) := by
-  induction x using MonoidAlgebra.induction_linear with
-  | zero => simp [coefficients]
-  | add x y hx hy => simp only [map_add, hx, hy]
-  | single w a =>
-      apply MonoidAlgebra.coeff_injective
-      change Finsupp.mapDomain (groupHom ρ f)
-        (Finsupp.mapDomain (QuotientGroup.mk' (relSub ρ)) (Finsupp.single w a)) =
-        Finsupp.mapDomain (QuotientGroup.mk' (relSub (rel ρ f)))
-          (Finsupp.mapDomain (FreeGroup.map f) (Finsupp.single w a))
-      simp only [Finsupp.mapDomain_single]
-      rfl
+      proj (relSub (rel ρ f)) (freeRingMap f x) :=
+  quotRingHom_natural (relSub (rel ρ f)) (FreeGroup.map f) (groupHom ρ f) rfl x
 
 variable [DecidableEq A] [DecidableEq B]
 
@@ -109,17 +100,7 @@ theorem boundary_retained
 
 def structuralMap : PresMorFS ρ (rel ρ f) where
   hom := groupHom ρ f
-  cells := fun x => x.mapRange (coefficients ρ f) (map_zero _)
-  cells_add := by
-    intro x y
-    ext j : 1
-    simp only [Finsupp.mapRange_apply, Finsupp.add_apply]
-    exact map_add _ _ _
-  cells_smul := by
-    intro a x
-    ext j : 1
-    simp only [Finsupp.mapRange_apply, Finsupp.smul_apply, smul_eq_mul]
-    exact map_mul _ _ _
+  cells := Finsupp.mapRange.linearMap (coefficients ρ f).toSemilinearMap
   cells_cycle := by
     intro x hx
     change coverSecondBoundary _ _ _ = 0
@@ -127,7 +108,7 @@ def structuralMap : PresMorFS ρ (rel ρ f) where
     by_cases hb : b ∈ Set.range f
     · obtain ⟨a, rfl⟩ := hb
       rw [boundary_retained ρ f hf]
-      change fsRingMapBoundary (coefficients ρ f) _ (x.mapRange _ _) a = 0
+      change fsRingMapBoundary (coefficients ρ f) _ (x.mapRange _ (map_zero (coefficients ρ f))) a = 0
       rw [fsRingMapBoundary_mapRange]
       erw [hx]
       rfl

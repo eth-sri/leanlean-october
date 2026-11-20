@@ -21,15 +21,14 @@ theorem simplexPrismBoundaryValue_bottom (f : C(Domain n, X))
   unfold simplexPrismBoundaryValue
   split_ifs with h
   · rw [hw]
-    exact hH ⟨w.val.2, h⟩
+    tauto
   · rfl
 
 theorem simplexPrismBoundaryValue_side (f : C(Domain n, X))
     (H : C(I × simplexBoundary n, X)) (w : simplexPrismSide n)
     (hw : w.val.2 ∈ simplexBoundary n) :
     simplexPrismBoundaryValue f H w = H (w.val.1, ⟨w.val.2, hw⟩) := by
-  classical
-  simp only [simplexPrismBoundaryValue, dif_pos hw]
+  simp_all [simplexPrismBoundaryValue]
 
 theorem simplexPrismBoundaryValue_continuous (f : C(Domain n, X))
     (H : C(I × simplexBoundary n, X)) (hH : ∀ z : simplexBoundary n, H (0, z) = f z) :
@@ -75,22 +74,16 @@ theorem simplexHomotopyExtension_zero (f : C(Domain n, X))
     (z : Domain n) : simplexHomotopyExtension f H hH (0, z) = f z := by
   have he := simplexPrismRetraction_fixes (0, z) (Or.inl rfl)
   change simplexPrismBoundaryValue f H (simplexPrismRetraction n (0, z)) = _
-  rw [simplexPrismBoundaryValue_bottom f H hH _ (congrArg Prod.fst he)]
-  rw [congrArg Prod.snd he]
+  simp [simplexPrismBoundaryValue_bottom f H hH _ (congrArg Prod.fst he), congrArg Prod.snd he]
 
 theorem simplexHomotopyExtension_boundary (f : C(Domain n, X))
     (H : C(I × simplexBoundary n, X)) (hH : ∀ z : simplexBoundary n, H (0, z) = f z)
     (t : I) (z : simplexBoundary n) : simplexHomotopyExtension f H hH (t, z.val) = H (t, z) := by
   have he := simplexPrismRetraction_fixes (t, z.val) (Or.inr z.property)
   have hz : (simplexPrismRetraction n (t, z.val)).val.2 ∈ simplexBoundary n := by
-    rw [congrArg Prod.snd he]
-    exact z.property
+    simp [congrArg Prod.snd he]
   change simplexPrismBoundaryValue f H (simplexPrismRetraction n (t, z.val)) = _
-  rw [simplexPrismBoundaryValue_side f H _ hz]
-  apply congrArg H
-  apply Prod.ext
-  · exact congrArg (fun w : I × Domain n => w.1) he
-  · exact Subtype.ext (congrArg (fun w : I × Domain n => w.2) he)
+  grind +locals
 
 /-- The standard topological simplex has the homotopy extension property
 relative to its entire boundary, with no restriction on the target space. -/

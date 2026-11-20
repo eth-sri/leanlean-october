@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.OrderConstructionPartialOrder
-public import RequestProject.OrderNerveContiguousHomotopy
+public import RequestProject.OrderNerveRealizationContraction
 public import Mathlib.Topology.Homotopy.Equiv
 
 @[expose] public section
@@ -13,8 +13,6 @@ contiguous homotopies; pointwise order comparison is not mistaken for
 cross-comparability. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -25,8 +23,7 @@ theorem orderNerveRealizationMap_congr {P Q : Type} [PartialOrder P] [PartialOrd
     {f g : P → Q} (hf : Monotone f) (hg : Monotone g) (he : f = g)
     (x : orderNerveRealization P) :
     orderNerveRealizationMap f hf x = orderNerveRealizationMap g hg x := by
-  subst g
-  rfl
+  aesop
 
 variable {X S : Type} [PartialOrder X] [PartialOrder S]
   (a : S →o X) (d : S → ℕ) (hd : StrictMono d) (hd₁ : ∀ s, d s ≤ 1)
@@ -60,8 +57,7 @@ theorem cylinderHalfCollapse_monotone : Monotone (cylinderHalfCollapse a d) := b
   · change s ≤ t at hpq
     by_cases hs : d s = 1
     · have he := rankOne_maximal d hd hd₁ hs hpq
-      subst t
-      exact le_rfl
+      simp_all
     · by_cases ht : d t = 1
       · change ((if d s = 1 then Sum.inl (a s) else Sum.inr s) : CylP a) ≤
           (if d t = 1 then Sum.inl (a t) else Sum.inr t)
@@ -79,9 +75,7 @@ theorem cylinderHalfCollapse_cross :
   · exact hpq
   · by_cases ht : d t = 1
     · rw [cylinderHalfCollapse, if_pos ht]
-      rcases hpq with h | h
-      · exact h.elim
-      · exact Or.inr h
+      tauto
     · simpa only [cylinderHalfCollapse, CylP.le, if_neg ht] using hpq
   · exact hpq
   · by_cases ht : d t = 1
@@ -101,20 +95,17 @@ theorem cylinderCollapse_half_cross :
   intro p q hpq
   rcases p with x | s <;> rcases q with y | t
   · exact hpq
-  · rcases hpq with h | h
-    · exact h.elim
-    · exact Or.inr h
+  · tauto
   · rcases hpq with h | h
     · by_cases hs : d s = 1
       · change CylP.le a (cylinderHalfCollapse a d (Sum.inr s)) (cylCollapse a (Sum.inl y)) ∨
           CylP.le a (cylCollapse a (Sum.inl y)) (cylinderHalfCollapse a d (Sum.inr s))
         simpa only [cylinderHalfCollapse, if_pos hs, cylCollapse, cylRetr, cylIn, Sum.elim_inl, id_eq, CylP.le] using
           (Or.inl h : a s ≤ y ∨ y ≤ a s)
-      · apply Or.inl
-        simpa only [cylinderHalfCollapse, CylP.le, if_neg hs, cylCollapse, cylRetr, cylIn, Sum.elim_inl, id_eq] using h
+      simp_all [cylinderHalfCollapse, cylCollapse, cylRetr, cylIn, Sum.elim_inl]
     · exact h.elim
   · by_cases hs : d s = 1
-    · simp only [cylinderHalfCollapse, CylP.le, if_pos hs, cylCollapse, cylRetr, cylIn, Sum.elim_inl, id_eq]
+    · simp only [cylinderHalfCollapse, if_pos hs, cylCollapse, cylRetr, cylIn]
       exact hpq.elim (fun h => Or.inl (a.monotone h)) (fun h => Or.inr (a.monotone h))
     · have hs₀ : d s = 0 := by have := hd₁ s; omega
       apply Or.inl

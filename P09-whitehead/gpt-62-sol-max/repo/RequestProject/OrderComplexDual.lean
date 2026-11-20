@@ -34,11 +34,11 @@ namespace ASC
 
 open Relation
 
-variable {P : Type} [PartialOrder P] [Fintype P] [DecidableEq P]
+variable {P : Type} [PartialOrder P] [DecidableEq P]
 
 /-! ### Flags -/
 
-omit [Fintype P] [DecidableEq P] in
+omit [DecidableEq P] in
 /-- The ranks of a two-step chain in a two-dimensional cell poset are `0, 1, 2`. -/
 theorem SurfaceRank.rk_flag (S : SurfaceRank P) {x y z : P} (hxy : x < y) (hyz : y < z) :
     S.rk x = 0 ∧ S.rk y = 1 ∧ S.rk z = 2 := by
@@ -47,32 +47,25 @@ theorem SurfaceRank.rk_flag (S : SurfaceRank P) {x y z : P} (hxy : x < y) (hyz :
   have h3 := S.rk_le_two z
   omega
 
-omit [Fintype P] in
 /-- A flag spans a triangle of the order complex. -/
 theorem isTri_of_flag {v e f : P} (hve : v < e) (hef : e < f) :
     IsTri (orderComplex P) ({v, e, f} : Finset P) := by
   refine ⟨?_, ?_⟩
   · rw [mem_orderComplex]
-    have : IsChain (· ≤ ·) ({v, e, f} : Set P) :=
+    have  :=
       isChain_triple (Or.inl hve.le) (Or.inl (hve.trans hef).le) (Or.inl hef.le)
-    simpa [Finset.coe_insert] using this
-  · have h1 : v ≠ e := hve.ne
-    have h2 : v ≠ f := (hve.trans hef).ne
-    have h3 : e ≠ f := hef.ne
-    rw [Finset.card_insert_of_notMem (by simp [h1, h2]),
-      Finset.card_insert_of_notMem (by simp [h3])]
-    simp
+    simp_all
+  · grind
 
-omit [Fintype P] in
 /-- **Every triangle of the order complex is a flag.** -/
 theorem orderComplex_exists_flag_of_isTri {σ : Finset P}
     (h : IsTri (orderComplex P) σ) :
     ∃ v e f : P, v < e ∧ e < f ∧ σ = ({v, e, f} : Finset P) := by
   obtain ⟨hface, hcard⟩ := h
-  have hchain : IsChain (· ≤ ·) (σ : Set P) := (mem_orderComplex).1 hface
+  have hchain  := mem_orderComplex.1 hface
   obtain ⟨a, b, c, hab, hac, hbc, rfl⟩ := Finset.card_eq_three.1 hcard
-  have hmem : ∀ x ∈ ({a, b, c} : Finset P), x ∈ (({a, b, c} : Finset P) : Set P) := by
-    intro x hx; exact_mod_cast hx
+  have hmem : ∀ x ∈ ({a, b, c} : Finset P), x ∈ ({a, b, c} : Finset P) := by
+    simp
   have cmp : ∀ x ∈ ({a, b, c} : Finset P), ∀ y ∈ ({a, b, c} : Finset P), x ≠ y →
       x < y ∨ y < x := by
     intro x hx y hy hxy
@@ -98,64 +91,39 @@ theorem orderComplex_exists_flag_of_isTri {σ : Finset P}
 
 /-! ### Adjacent flags -/
 
-omit [PartialOrder P] [Fintype P] in
+omit [PartialOrder P] in
 /-- Two triples which agree outside one entry meet in a pair. -/
 theorem card_inter_insert {x y z z' : P} (hxy : x ≠ y) (hz : z ∉ ({x, y} : Finset P))
     (hz' : z' ∉ ({x, y} : Finset P)) (hne : z ≠ z') :
     ((insert z ({x, y} : Finset P)) ∩ (insert z' ({x, y} : Finset P))).card = 2 := by
-  have hset : (insert z ({x, y} : Finset P)) ∩ (insert z' ({x, y} : Finset P))
-      = ({x, y} : Finset P) := by
-    ext w
-    simp only [Finset.mem_inter, Finset.mem_insert, Finset.mem_singleton] at *
-    constructor
-    · rintro ⟨hw1, hw2⟩
-      rcases hw1 with rfl | hw1
-      · rcases hw2 with rfl | hw2
-        · exact absurd rfl hne
-        · exact hw2
-      · exact hw1
-    · intro hw
-      exact ⟨Or.inr hw, Or.inr hw⟩
-  rw [hset, Finset.card_insert_of_notMem (by simpa using hxy), Finset.card_singleton]
+  have hset : (insert z ({x, y})) ∩ (insert z' ({x, y} : Finset P))
+      = ({x, y}) := by
+    simp_all
+  rw [hset, Finset.card_insert_of_notMem (by aesop), Finset.card_singleton]
 
-omit [Fintype P] in
 /-- Two flags over the same edge and face, with different vertices, are adjacent. -/
 theorem triAdj_vtx {v v' e f : P} (hve : v < e) (hef : e < f) (hv'e : v' < e) (hvv' : v ≠ v') :
     TriAdj (orderComplex P) ({v, e, f} : Finset P) ({v', e, f} : Finset P) := by
-  refine ⟨isTri_of_flag hve hef, isTri_of_flag hv'e hef, ?_⟩
-  have h1 : ({v, e, f} : Finset P) = insert v ({e, f} : Finset P) := rfl
-  have h2 : ({v', e, f} : Finset P) = insert v' ({e, f} : Finset P) := rfl
-  rw [h1, h2]
-  refine card_inter_insert hef.ne ?_ ?_ hvv'
-  · simp [hve.ne, (hve.trans hef).ne]
-  · simp [hv'e.ne, (hv'e.trans hef).ne]
+  exact ⟨isTri_of_flag hve hef, isTri_of_flag hv'e hef,
+    card_inter_insert hef.ne (by simp [hve.ne, (hve.trans hef).ne])
+      (by simp [hv'e.ne, (hv'e.trans hef).ne]) hvv'⟩
 
-omit [Fintype P] in
 /-- Two flags over the same vertex and face, with different edges, are adjacent. -/
 theorem triAdj_edge {v e e' f : P} (hve : v < e) (hef : e < f) (hve' : v < e') (he'f : e' < f)
     (hee' : e ≠ e') :
     TriAdj (orderComplex P) ({v, e, f} : Finset P) ({v, e', f} : Finset P) := by
   refine ⟨isTri_of_flag hve hef, isTri_of_flag hve' he'f, ?_⟩
-  have h1 : ({v, e, f} : Finset P) = insert e ({v, f} : Finset P) := Finset.insert_comm _ _ _
-  have h2 : ({v, e', f} : Finset P) = insert e' ({v, f} : Finset P) := Finset.insert_comm _ _ _
-  rw [h1, h2]
-  refine card_inter_insert (hve.trans hef).ne ?_ ?_ hee'
-  · simp [hve.ne', hef.ne]
-  · simp [hve'.ne', he'f.ne]
+  simpa only [Finset.insert_comm e v, Finset.insert_comm e' v] using
+    card_inter_insert (hve.trans hef).ne (by simp [hve.ne', hef.ne])
+      (by simp [hve'.ne', he'f.ne]) hee'
 
-omit [Fintype P] in
 /-- Two flags over the same vertex and edge, with different faces, are adjacent. -/
 theorem triAdj_face {v e f f' : P} (hve : v < e) (hef : e < f) (hef' : e < f') (hff' : f ≠ f') :
     TriAdj (orderComplex P) ({v, e, f} : Finset P) ({v, e, f'} : Finset P) := by
   refine ⟨isTri_of_flag hve hef, isTri_of_flag hve hef', ?_⟩
-  have h1 : ({v, e, f} : Finset P) = insert f ({v, e} : Finset P) := by
-    ext x; simp; tauto
-  have h2 : ({v, e, f'} : Finset P) = insert f' ({v, e} : Finset P) := by
-    ext x; simp; tauto
-  rw [h1, h2]
-  refine card_inter_insert hve.ne ?_ ?_ hff'
-  · simp [hef.ne', (hve.trans hef).ne']
-  · simp [hef'.ne', (hve.trans hef').ne']
+  simpa only [Finset.insert_comm f v, Finset.insert_comm f' v, Finset.pair_comm f e, Finset.pair_comm f' e] using
+    card_inter_insert hve.ne (by simp [hef.ne', (hve.trans hef).ne'])
+      (by simp [hef'.ne', (hve.trans hef').ne']) hff'
 
 /-! ### The two global conditions -/
 
@@ -176,7 +144,7 @@ namespace SurfaceRank
 
 variable (S : SurfaceRank P)
 
-omit [Fintype P] [DecidableEq P] in
+omit [DecidableEq P] in
 /-- A face of rank two carries a flag. -/
 theorem exists_flag_of_rk_two {f : P} (hf : S.rk f = 2) :
     ∃ v e : P, S.rk v = 0 ∧ v < e ∧ e < f := by
@@ -184,7 +152,6 @@ theorem exists_flag_of_rk_two {f : P} (hf : S.rk f = 2) :
   obtain ⟨e, -, -, ⟨hve, hef⟩, -, -⟩ := S.two_edges v f hv hf hvf
   exact ⟨v, e, hv, hve, hef⟩
 
-omit [Fintype P] in
 /-- **The flags of a fixed face are connected in the dual graph.** -/
 theorem conn_in_face (hfe : FaceEdges S) {f v e v' e' : P} (hf : S.rk f = 2)
     (hv : S.rk v = 0) (hve : v < e) (hef : e < f)
@@ -193,26 +160,24 @@ theorem conn_in_face (hfe : FaceEdges S) {f v e v' e' : P} (hf : S.rk f = 2)
   by_cases hvv' : v = v'
   · subst hvv'
     by_cases hee' : e = e'
-    · subst hee'; exact ReflTransGen.refl
+    · aesop
     · exact ReflTransGen.single (triAdj_edge hve hef hv'e' he'f hee')
   · obtain ⟨e'', hve'', hv'e'', he''f⟩ :=
       hfe v v' f hv hv' hf (hve.trans hef) (hv'e'.trans he'f) hvv'
-    have s1 : ReflTransGen (TriAdj (orderComplex P)) ({v, e, f} : Finset P)
-        ({v, e'', f} : Finset P) := by
+    have s1 : ReflTransGen (TriAdj (orderComplex P)) ({v, e, f})
+        ({v, e'', f}) := by
       by_cases h : e = e''
-      · subst h; exact ReflTransGen.refl
+      · aesop
       · exact ReflTransGen.single (triAdj_edge hve hef hve'' he''f h)
-    have s2 : ReflTransGen (TriAdj (orderComplex P)) ({v, e'', f} : Finset P)
-        ({v', e'', f} : Finset P) :=
+    have s2  :=
       ReflTransGen.single (triAdj_vtx hve'' he''f hv'e'' hvv')
-    have s3 : ReflTransGen (TriAdj (orderComplex P)) ({v', e'', f} : Finset P)
-        ({v', e', f} : Finset P) := by
+    have s3 : ReflTransGen (TriAdj (orderComplex P)) ({v', e'', f})
+        ({v', e', f}) := by
       by_cases h : e'' = e'
       · subst h; exact ReflTransGen.refl
       · exact ReflTransGen.single (triAdj_edge hv'e'' he''f hv'e' he'f h)
     exact (s1.trans s2).trans s3
 
-omit [Fintype P] in
 /-- Crossing a shared edge: any flag of `f` is connected to any flag of an adjacent face `f'`. -/
 theorem conn_face_step (hfe : FaceEdges S) {f f' v e v' e' : P} (hadj : FaceAdj S f f')
     (hv : S.rk v = 0) (hve : v < e) (hef : e < f)
@@ -223,18 +188,15 @@ theorem conn_face_step (hfe : FaceEdges S) {f f' v e v' e' : P} (hadj : FaceAdj 
   have hf' : S.rk f' = 2 := by have := S.rk_lt_of_lt hdf'; have := S.rk_le_two f'; omega
   obtain ⟨w, -, -, hwd, -, -⟩ := S.two_vertices d hd
   have hw : S.rk w = 0 := by have := S.rk_lt_of_lt hwd; omega
-  have s1 : ReflTransGen (TriAdj (orderComplex P)) ({v, e, f} : Finset P)
-      ({w, d, f} : Finset P) := S.conn_in_face hfe hf hv hve hef hw hwd hdf
-  have s2 : ReflTransGen (TriAdj (orderComplex P)) ({w, d, f} : Finset P)
-      ({w, d, f'} : Finset P) := by
+  have s1  := S.conn_in_face hfe hf hv hve hef hw hwd hdf
+  have s2 : ReflTransGen (TriAdj (orderComplex P)) ({w, d, f})
+      ({w, d, f'}) := by
     by_cases hff' : f = f'
     · subst hff'; exact ReflTransGen.refl
     · exact ReflTransGen.single (triAdj_face hwd hdf hdf' hff')
-  have s3 : ReflTransGen (TriAdj (orderComplex P)) ({w, d, f'} : Finset P)
-      ({v', e', f'} : Finset P) := S.conn_in_face hfe hf' hw hwd hdf' hv' hv'e' he'f'
+  have s3  := S.conn_in_face hfe hf' hw hwd hdf' hv' hv'e' he'f'
   exact (s1.trans s2).trans s3
 
-omit [Fintype P] in
 /-- Flags over faces joined by a chain of adjacent faces are connected. -/
 theorem conn_along_faces (hfe : FaceEdges S) {f f' : P} (hchain : ReflTransGen (FaceAdj S) f f')
     (hf : S.rk f = 2) {v e v' e' : P}
@@ -242,7 +204,7 @@ theorem conn_along_faces (hfe : FaceEdges S) {f f' : P} (hchain : ReflTransGen (
     (hv' : S.rk v' = 0) (hv'e' : v' < e') (he'f' : e' < f') :
     ReflTransGen (TriAdj (orderComplex P)) ({v, e, f} : Finset P) ({v', e', f'} : Finset P) := by
   have key : ∀ {b : P}, ReflTransGen (FaceAdj S) f b → ∀ x y : P, S.rk x = 0 → x < y → y < b →
-      ReflTransGen (TriAdj (orderComplex P)) ({v, e, f} : Finset P) ({x, y, b} : Finset P) := by
+      ReflTransGen (TriAdj (orderComplex P)) ({v, e, f}) ({x, y, b}) := by
     intro b hb
     induction hb with
     | refl =>
@@ -258,9 +220,8 @@ theorem conn_along_faces (hfe : FaceEdges S) {f f' : P} (hchain : ReflTransGen (
         obtain ⟨w, d', hw, hwd', hd'c⟩ := S.exists_flag_of_rk_two hc
         exact (ih w d' hw hwd' hd'c).trans
           (S.conn_face_step hfe hcd hw hwd' hd'c hx hxy hyd)
-  exact key hchain v' e' hv' hv'e' he'f'
+  tauto
 
-omit [Fintype P] in
 /-- **The dual graph of the order complex is connected.** -/
 theorem dual_connected (hfe : FaceEdges S) (hfc : FacesConnected S) :
     ∀ σ σ' : Finset P, IsTri (orderComplex P) σ → IsTri (orderComplex P) σ' →

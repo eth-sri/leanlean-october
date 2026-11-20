@@ -2,7 +2,7 @@ module
 
 public import RequestProject.Collapse
 public import RequestProject.BarycentricSurface
-public import RequestProject.MomentAngleExample
+public import RequestProject.MomentAngleConnected
 
 @[expose] public section
 
@@ -37,9 +37,6 @@ surface used in the paper: every edge lies in at most two triangles, the dual gr
 connected, and every vertex lies in a triangle.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -102,24 +99,12 @@ theorem mem_topCubes_of_move {L : ASC V} {f g : Cube V} (h : Move L f g)
     ext v
     simp only [mem_freeSet, Finset.mem_insert, Finset.mem_erase]
     constructor
-    · intro hv
-      by_cases hvc' : v = c'
-      · exact Or.inl hvc'
-      · have hvc : v ≠ c := by
-          rintro rfl
-          exact hgc hv
-        exact Or.inr ⟨hvc, by rw [hagree v hvc hvc']; exact hv⟩
-    · rintro (rfl | ⟨hvc, hv⟩)
-      · exact hgc'
-      · by_cases hvc' : v = c'
-        · subst hvc'
-          exact absurd hv hfc'
-        · rw [← hagree v hvc hvc']; exact hv
+    · grind
+    · grind
   have hc : c ∈ freeSet f := by simpa using hfc
   have hc' : c' ∉ (freeSet f).erase c := by
     simp only [Finset.mem_erase, mem_freeSet, not_and]
-    intro _
-    exact hfc'
+    tauto
   rw [hset, Finset.card_insert_of_notMem hc', Finset.card_erase_of_mem hc, hf.2]
 
 /-- **A move is an adjacency of the collapse**: the two cubes are distinct and share a
@@ -131,16 +116,14 @@ theorem adj_of_move {L : ASC V} {f g : Cube V} (h : Move L f g)
   obtain ⟨s, ⟨j, hsj, hfs⟩, ⟨k, hsk, hgs⟩⟩ := h.shares_square
   have hfree : freeSet f = insert j (freeSet s) := by
     rw [hfs, freeSet_update_free]
-  have hjs : j ∉ freeSet s := by simpa using hsj
+  have hjs : j ∉ freeSet s := by aesop
   have hcard : (freeSet s).card = 2 := by
     have := (mem_topCubes.1 hf).2
-    rw [hfree, Finset.card_insert_of_notMem hjs] at this
-    omega
+    simp_all
   have hne : f ≠ g := by
     obtain ⟨c, c', hcc, hfc, hfc', hgc, hgc', -, -, -⟩ := h
     intro hfg
-    rw [hfg] at hfc
-    exact hgc hfc
+    simp_all
   refine ⟨hne, Sum.inl s, ?_, ?_⟩
   · simp only [spineInc, if_pos hcard]
     exact mem_cofaces.2 ⟨j, hsj, by rw [← hfree]; exact (mem_topCubes.1 hf).1, hfs⟩
@@ -158,7 +141,7 @@ theorem connected_topCubes {L : ASC V}
     Collapse.Connected (spineInc L) (topCubes L) := by
   classical
   intro f hf g hg
-  have hpath : Relation.ReflTransGen (Move L) f g :=
+  have hpath  :=
     reflTransGen_move hdual hcover (mem_topCubes.1 hf) (mem_topCubes.1 hg)
   -- transport the path to the relation restricted to the three-cubes
   have key : ∀ {a b : Cube V}, Relation.ReflTransGen (Move L) a b → a ∈ topCubes L →
@@ -166,7 +149,7 @@ theorem connected_topCubes {L : ASC V}
         (fun x y => x ∈ topCubes L ∧ y ∈ topCubes L ∧ Collapse.Adj (spineInc L) x y) a b := by
     intro a b hab ha
     induction hab with
-    | refl => exact ⟨ha, Relation.ReflTransGen.refl⟩
+    | refl => tauto
     | tail hxy hyz ih =>
         obtain ⟨hy, hpath'⟩ := ih
         have hz := mem_topCubes_of_move hyz hy
@@ -179,15 +162,7 @@ theorem hasFreeFace_posCube {L : ASC V} {σ : Finset V} (hσ : IsTri L σ) :
     Collapse.HasFreeFace (spineInc L) (topCubes L) (posCube σ) := by
   classical
   refine ⟨Sum.inr σ, ?_⟩
-  have hmem : posCube σ ∈ topCubes L := by
-    rw [mem_topCubes, freeSet_posCube]
-    exact hσ
-  simp only [Collapse.IsFree, spineInc, if_pos hσ]
-  ext x
-  simp only [Finset.mem_inter, Finset.mem_singleton]
-  constructor
-  · rintro ⟨rfl, -⟩; rfl
-  · rintro rfl; exact ⟨rfl, hmem⟩
+  grind [mem_topCubes, freeSet_posCube, Collapse.IsFree, spineInc, Finset.mem_inter, Finset.mem_singleton]
 
 open scoped Classical in
 /-- **Lemma 3.2 (ii) in the explicit model.**  For a simplicial complex `L` each of whose
@@ -221,11 +196,9 @@ theorem hedge_of_edgeInTwoTriangles {L : ASC V} (h : ASC.EdgeInTwoTriangles L)
   classical
   by_cases hef : e ∈ L.faces
   · obtain ⟨v₁, v₂, -, -, -, huniq⟩ := h e hef he
-    refine le_trans (Finset.card_le_card (?_ : _ ⊆ ({v₁, v₂} : Finset V))) (by
+    refine le_trans (Finset.card_le_card (?_)) (by
       simpa only [Finset.card_singleton] using Finset.card_insert_le v₁ {v₂})
-    intro j hj
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
-    rcases huniq j ⟨hj.1, hj.2⟩ with rfl | rfl <;> simp
+    grind
   · have : ((univ.filter fun j => j ∉ e).filter fun j => insert j e ∈ L.faces) = ∅ := by
       refine Finset.filter_eq_empty_iff.2 ?_
       intro j _ hcon

@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.TopologicalSingular.CoherentTriangleNormalization
+public import RequestProject.TopologicalSingular.StationaryTriangleNormalization
 public import RequestProject.TopologicalSingular.CoherentPrism
 public import RequestProject.TopologicalSingular.BasedTriangleHurewicz
 
@@ -12,32 +12,32 @@ universe u
 variable {X : Type u} [TopologicalSpace X] [SimplyConnectedSpace X]
 
 noncomputable def normalizedTriangleChain (x : X) : Chain X 2 →ₗ[ℤ] Chain X 2 :=
-  simplexFamilyMap 2 (normalizedTriangle x)
+  simplexFamilyMap 2 (stationaryTriangle x)
 
 theorem normalizedTriangleChain_single (x : X) (tau : Simplex X 2) (r : ℤ) :
-    normalizedTriangleChain x (Finsupp.single tau r) = Finsupp.single (normalizedTriangle x tau) r :=
-  simplexFamilyMap_single 2 (normalizedTriangle x) tau r
+    normalizedTriangleChain x (Finsupp.single tau r) = Finsupp.single (stationaryTriangle x tau) r :=
+  simplexFamilyMap_single 2 (stationaryTriangle x) tau r
 
 theorem normalizedTriangleChain_difference_bounds (x : X) (c : Chain X 2) (hc : boundary 1 c = 0) :
     normalizedTriangleChain x c - c ∈ LinearMap.range (boundary 2) :=
   coherentPrism_cycle_difference_bounds 1 (fun _ => ContinuousMap.const (Domain 1) x)
-    (normalizedTriangle x) (normalizedEdgeHomotopy x) (normalizedTriangleHomotopy x)
-    (normalizedTriangleHomotopy_face x) c hc
+    (stationaryTriangle x) (stationaryEdgeHomotopy x) (stationaryTriangleHomotopy x)
+    (stationaryTriangleHomotopy_face x) c hc
 
 theorem normalizedTriangleChain_cycle (x : X) (c : Chain X 2) (hc : boundary 1 c = 0) :
     boundary 1 (normalizedTriangleChain x c) = 0 :=
   coherentPrism_preserves_cycles 1 (fun _ => ContinuousMap.const (Domain 1) x)
-    (normalizedTriangle x) (normalizedEdgeHomotopy x) (normalizedTriangleHomotopy x)
-    (normalizedTriangleHomotopy_face x) c hc
+    (stationaryTriangle x) (stationaryEdgeHomotopy x) (stationaryTriangleHomotopy x)
+    (stationaryTriangleHomotopy_face x) c hc
 
 noncomputable def normalizedCycleMap (x : X) : Chain X 2 →ₗ[ℤ] LinearMap.ker (boundary (X := X) 1) :=
   Finsupp.linearCombination ℤ (fun tau =>
-    ⟨basedTriangleCycle (normalizedTriangle x tau) x,
-      basedTriangleCycle_boundary _ (normalizedTriangle_face x tau)⟩)
+    ⟨basedTriangleCycle (stationaryTriangle x tau) x,
+      basedTriangleCycle_boundary _ (stationaryTriangle_face x tau)⟩)
 
 theorem normalizedCycleMap_single (x : X) (tau : Simplex X 2) (r : ℤ) :
     (normalizedCycleMap x (Finsupp.single tau r)).val =
-      r • basedTriangleCycle (normalizedTriangle x tau) x := by
+      r • basedTriangleCycle (stationaryTriangle x tau) x := by
   rw [normalizedCycleMap, Finsupp.linearCombination_single]
   rfl
 
@@ -50,9 +50,9 @@ theorem constantTriangleFromEdge_single (x : X) (tau : Simplex X 1) (r : ℤ) :
   simp [constantTriangleFromEdge, Finsupp.smul_single]
 
 theorem boundary_normalizedTriangle_single (x : X) (tau : Simplex X 2) (r : ℤ) :
-    boundary 1 (Finsupp.single (normalizedTriangle x tau) r) =
+    boundary 1 (Finsupp.single (stationaryTriangle x tau) r) =
       Finsupp.single (ContinuousMap.const (Domain 1) x) r := by
-  rw [boundary_two_single, normalizedTriangle_face, normalizedTriangle_face, normalizedTriangle_face]
+  rw [boundary_two_single, stationaryTriangle_face, stationaryTriangle_face, stationaryTriangle_face]
   abel
 
 /-- For a cycle, the constant-triangle correction has zero total coefficient.

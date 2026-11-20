@@ -1,14 +1,14 @@
 module
 
 public import RequestProject.Pi2Dictionary
+public import RequestProject.FinsuppBasis
 public import RequestProject.CycleLiftingFinsupp
-public import RequestProject.CoverComplexFinsupp
+public import RequestProject.CoverComplex
+public import RequestProject.CrowellFinsupp
+public import RequestProject.PresentationNecessityFinsupp
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open MonoidAlgebra
@@ -21,26 +21,18 @@ theorem fs_mapDomain_prodMap_id_apply (Φ : (FreeGroup α ⧸ Nsub) →* Q)
     Finsupp.mapDomain (Prod.map (⇑Φ) (id : J → J)) u (q, j)
       = (MonoidAlgebra.mapDomainRingHom ℤ Φ (fsCoords Nsub J u j)).coeff q := by
   classical
-  induction u using Finsupp.induction_linear with
-  | zero => simp
-  | add u₁ u₂ h₁ h₂ =>
-      rw [Finsupp.mapDomain_add, Finsupp.add_apply, h₁, h₂]
-      simp [map_add]
-  | single p n =>
-      obtain ⟨q₀, j₀⟩ := p
-      rw [Finsupp.mapDomain_single, fsCoords_single]
-      show (Finsupp.single (Φ q₀, j₀) n : ((Q × J) →₀ ℤ)) (q, j)
-        = (MonoidAlgebra.mapDomain Φ ((Finsupp.single j₀ (MonoidAlgebra.single q₀ n) : J →₀ CoverRing Nsub) j)).coeff q
-      by_cases hj : j = j₀
-      · subst hj
-        rw [Finsupp.single_eq_same, MonoidAlgebra.mapDomain_single, MonoidAlgebra.coeff_single, Finsupp.single_apply,
-          Finsupp.single_apply]
-        by_cases hq : Φ q₀ = q
-        · simp [hq]
-        · simp [hq, Prod.ext_iff]
-      · have hne : ((Φ q₀, j₀) : Q × J) ≠ (q, j) := fun hEq => hj (congrArg Prod.snd hEq).symm
-        rw [Finsupp.single_eq_of_ne hj, Finsupp.single_apply, if_neg hne]
-        simp
+  finsupp_basis u
+  intro p
+  obtain ⟨q₀, j₀⟩ := p
+  rw [Finsupp.mapDomain_single, fsCoords_single]
+  show (Finsupp.single (Φ q₀, j₀) 1) (q, j)
+    = (MonoidAlgebra.mapDomain Φ ((Finsupp.single j₀ (MonoidAlgebra.single q₀ 1)) j)).coeff q
+  by_cases hj : j = j₀
+  · subst hj
+    rw [Finsupp.single_eq_same, MonoidAlgebra.mapDomain_single, MonoidAlgebra.coeff_single, Finsupp.single_apply,
+      Finsupp.single_apply]
+    simp_all
+  · simp_all
 
 /-- **Pushing a two-chain of the cover to the next stage is zero iff its Fox coordinates
 die.**  Here `Φ` is the map of deck groups and `g` the (injective) inclusion of the sets of
@@ -50,14 +42,14 @@ theorem fs_mapDomain_prodMap_eq_zero_iff (Φ : (FreeGroup α ⧸ Nsub) →* Q) (
     Finsupp.mapDomain (Prod.map (⇑Φ) g) u = 0 ↔
       ∀ j, MonoidAlgebra.mapDomainRingHom ℤ Φ (fsCoords Nsub J u j) = 0 := by
   classical
-  have hfac : (Prod.map (⇑Φ) g) = (Prod.map (id : Q → Q) g) ∘ (Prod.map (⇑Φ) (id : J → J)) := by
+  have hfac : (Prod.map (⇑Φ) g) = (Prod.map id g) ∘ (Prod.map (⇑Φ) id) := by
     funext p; rfl
   have hinj : Function.Injective (Prod.map (id : Q → Q) g) :=
     Function.Injective.prodMap Function.injective_id hg
   rw [hfac, Finsupp.mapDomain_comp]
   constructor
   · intro h j
-    have h0 : Finsupp.mapDomain (Prod.map (⇑Φ) (id : J → J)) u = 0 := by
+    have h0 : Finsupp.mapDomain (Prod.map (⇑Φ) id) u = 0 := by
       refine Finsupp.mapDomain_injective hinj ?_
       rw [h, Finsupp.mapDomain_zero]
     apply MonoidAlgebra.coeff_injective
@@ -65,7 +57,7 @@ theorem fs_mapDomain_prodMap_eq_zero_iff (Φ : (FreeGroup α ⧸ Nsub) →* Q) (
     rw [← fs_mapDomain_prodMap_id_apply Φ u q j, h0]
     simp
   · intro h
-    have h0 : Finsupp.mapDomain (Prod.map (⇑Φ) (id : J → J)) u = 0 := by
+    have h0 : Finsupp.mapDomain (Prod.map (⇑Φ) id) u = 0 := by
       refine Finsupp.ext fun p => ?_
       obtain ⟨q, j⟩ := p
       rw [fs_mapDomain_prodMap_id_apply Φ u q j, h j]

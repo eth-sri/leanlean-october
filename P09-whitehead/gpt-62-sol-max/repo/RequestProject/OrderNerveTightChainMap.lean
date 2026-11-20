@@ -55,57 +55,26 @@ theorem orderTightNerveStage_fill {n : ℕ} (s : OrderTightNerveStage P n)
   rw [← Nerve.lengthProjection_bdry, he]
   exact s.homogeneous _
 
-noncomputable def orderTightNerveStageNextMap {n : ℕ} (s : OrderTightNerveStage P n) :
-    smallChains (orderNerveRealizationOpenStar P) (n + 1) →ₗ[ℤ] Nerve.Ch P :=
-  (Finsupp.linearCombination ℤ (fun σ => (orderTightNerveStage_fill s σ).choose)).comp
-    (orderSmallChainEquiv P (n + 1)).toLinearMap
-
-theorem orderTightNerveStageNextMap_single {n : ℕ} (s : OrderTightNerveStage P n)
-    (σ : OrderSmallSimplex P (n + 1)) :
-    orderTightNerveStageNextMap s (orderSmallSingle σ 1) =
-      (orderTightNerveStage_fill s σ).choose := by
-  have he := (orderSmallChainEquiv P (n + 1)).apply_symm_apply (Finsupp.single σ 1)
-  rw [orderSmallChainEquiv_symm_single] at he
-  change (Finsupp.linearCombination ℤ (fun τ : OrderSmallSimplex P (n + 1) =>
-    (orderTightNerveStage_fill s τ).choose))
-      ((orderSmallChainEquiv P (n + 1)) (orderSmallSingle σ 1)) = _
-  rw [he, Finsupp.linearCombination_single, one_smul]
-
-theorem orderTightNerveStageNextMap_boundary {n : ℕ} (s : OrderTightNerveStage P n)
-    (c : smallChains (orderNerveRealizationOpenStar P) (n + 1)) :
-    Nerve.bdry (orderTightNerveStageNextMap s c) =
-      s.map (smallBoundary (orderNerveRealizationOpenStar P) n c) := by
-  have he : Nerve.bdry.toIntLinearMap.comp (orderTightNerveStageNextMap s) =
-      s.map.comp (smallBoundary (orderNerveRealizationOpenStar P) n) := by
-    apply orderSmallSingle_spans
-    intro σ
-    change Nerve.bdry (orderTightNerveStageNextMap s (orderSmallSingle σ 1)) = _
-    rw [orderTightNerveStageNextMap_single]
-    exact (orderTightNerveStage_fill s σ).choose_spec.2.2
-  exact DFunLike.congr_fun he c
+noncomputable def orderTightNerveStageLift {n : ℕ} (s : OrderTightNerveStage P n) :
+    CarriedLift (orderSmallBasis P (n + 1))
+      (fun σ b => b ∈ Nerve.IncOn (orderNerveTightCarrier σ.val) ∧
+        Nerve.lengthProjection (n + 2) b = b)
+      Nerve.bdry.toIntLinearMap (s.map.comp (smallBoundary (orderNerveRealizationOpenStar P) n)) :=
+  .ofExists fun σ => by
+    simpa only [orderSmallBasis_apply, LinearMap.comp_apply, AddMonoidHom.coe_toIntLinearMap, and_assoc]
+      using orderTightNerveStage_fill s σ
 
 noncomputable def orderTightNerveStageNext {n : ℕ} (s : OrderTightNerveStage P n) :
     OrderTightNerveStage P (n + 1) where
-  map := orderTightNerveStageNextMap s
-  carrier σ := by
-    rw [orderTightNerveStageNextMap_single]
-    exact (orderTightNerveStage_fill s σ).choose_spec.1
-  homogeneous c := by
-    have he : (Nerve.lengthProjection (n + 2)).toIntLinearMap.comp
-        (orderTightNerveStageNextMap s) = orderTightNerveStageNextMap s := by
-      apply orderSmallSingle_spans
-      intro σ
-      change Nerve.lengthProjection (n + 2)
-        (orderTightNerveStageNextMap s (orderSmallSingle σ 1)) = _
-      rw [orderTightNerveStageNextMap_single]
-      exact (orderTightNerveStage_fill s σ).choose_spec.2.1
-    exact DFunLike.congr_fun he c
+  map := (orderTightNerveStageLift s).map
+  carrier σ := by simpa only [orderSmallBasis_apply] using ((orderTightNerveStageLift s).carried σ).1
+  homogeneous := (orderTightNerveStageLift s).fixed (Nerve.lengthProjection (n + 2)).toIntLinearMap fun _ _ h => h.2
   closed_boundary c := by
-    rw [orderTightNerveStageNextMap_boundary]
+    rw [show Nerve.bdry _ = s.map (smallBoundary (orderNerveRealizationOpenStar P) n
+        (smallBoundary (orderNerveRealizationOpenStar P) (n + 1) c)) from
+      (orderTightNerveStageLift s).boundary _]
     have hd := DFunLike.congr_fun (smallBoundary_squared (orderNerveRealizationOpenStar P) n) c
-    change smallBoundary (orderNerveRealizationOpenStar P) n
-      (smallBoundary (orderNerveRealizationOpenStar P) (n + 1) c) = 0 at hd
-    rw [hd, map_zero]
+    simp_all
 
 /-- A carried approximation exists simultaneously in all dimensions. -/
 noncomputable def orderTightNerveStage (P : Type) [PartialOrder P] :
@@ -131,20 +100,18 @@ theorem orderTightToNerve_boundary (n : ℕ)
     (c : smallChains (orderNerveRealizationOpenStar P) (n + 1)) :
     Nerve.bdry (orderTightToNerve P (n + 1) c) =
       orderTightToNerve P n (smallBoundary (orderNerveRealizationOpenStar P) n c) :=
-  orderTightNerveStageNextMap_boundary (orderTightNerveStage P n) c
+  (orderTightNerveStageLift (orderTightNerveStage P n)).boundary c
 
 theorem orderTightToNerve_mem_inc (n : ℕ)
     (c : smallChains (orderNerveRealizationOpenStar P) n) :
     orderTightToNerve P n c ∈ Nerve.Inc P := by
   obtain ⟨d, rfl⟩ := (orderSmallChainEquiv P n).symm.surjective c
-  induction d using Finsupp.induction_linear with
-  | zero => simp
-  | add d e hd he => simpa only [map_add] using (Nerve.Inc P).add_mem hd he
-  | single σ r =>
-    have hr : Finsupp.single σ r = r • Finsupp.single σ 1 := by simp
-    rw [hr, map_smul, map_smul, orderSmallChainEquiv_symm_single]
-    exact (Nerve.Inc P).zsmul_mem
-      (Nerve.incOn_le_inc _ (orderTightToNerve_carrier n σ)) r
+  apply Finsupp.map_mem_of_basis (Nerve.Inc P).toIntSubmodule
+    ((orderTightToNerve P n).comp (orderSmallChainEquiv P n).symm.toLinearMap) _ d
+  intro σ
+  change (orderTightToNerve P n) ((orderSmallChainEquiv P n).symm (Finsupp.single σ 1)) ∈ Nerve.Inc P
+  simpa only [orderSmallChainEquiv_symm_single] using
+    Nerve.incOn_le_inc _ (orderTightToNerve_carrier n σ)
 
 /-- The tightened approximation respects every induced vertex subcomplex. -/
 theorem orderTightToNerve_supported (n : ℕ) (A : Set P)
@@ -160,11 +127,11 @@ theorem orderTightToNerve_supported (n : ℕ) (A : Set P)
     intro σ hσ
     apply hc
     rw [Finset.mem_coe, Finsupp.mem_support_iff] at hσ ⊢
-    have he := congrArg (fun e : OrderSmallSimplex P n →₀ ℤ => e σ)
+    have he := congrArg (fun e  => e σ)
       ((orderSmallChainEquiv P n).apply_symm_apply d)
     change ((orderSmallChainEquiv P n).symm d).val σ.val = d σ at he
     rwa [he]
-  exact VertexChains.map_mem_of_supported _ (Nerve.IncOn A).toIntSubmodule
+  exact Finsupp.map_mem_of_supported _ (Nerve.IncOn A).toIntSubmodule
     ((orderTightToNerve P n).comp (orderSmallChainEquiv P n).symm.toLinearMap)
     (by
       intro σ hσ

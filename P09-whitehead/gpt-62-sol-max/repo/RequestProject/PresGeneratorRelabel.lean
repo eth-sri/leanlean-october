@@ -23,8 +23,7 @@ omit [DecidableEq A] [DecidableEq B] in
 include hrel in
 theorem inverse_rel (j : J) : ρ j = FreeGroup.map e.symm (σ j) := by
   rw [hrel j, FreeGroup.map.comp]
-  have h : (e.symm : B → A) ∘ e = id := funext e.symm_apply_apply
-  rw [h, FreeGroup.map.id]
+  simp
 
 def backward : Hom (presComplex σ) (presComplex ρ) :=
   presInclHom e.symm e.symm.injective σ ρ id (inverse_rel e ρ σ hrel)

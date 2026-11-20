@@ -30,15 +30,14 @@ theorem boundaryFamilyInclusion_range (d : DiskFamily J E) :
   constructor
   · rintro ⟨⟨j, a⟩, rfl⟩
     exact a.property
-  · intro hd
-    exact ⟨⟨d.1, ⟨d.2.val, hd⟩⟩, by cases d; rfl⟩
+  aesop
 
 theorem boundaryFamilyInclusion_isClosedEmbedding :
     IsClosedEmbedding (boundaryFamilyInclusion J E) := by
   constructor
   · change IsEmbedding (Sigma.map
-      (β₁ := fun _ : J => UnitBoundary E) (β₂ := fun _ : J => ClosedUnitBall E) id
-      (fun _ : J => (unitBoundaryInclusion E : UnitBoundary E → ClosedUnitBall E)))
+      (β₁ := fun _  => UnitBoundary E) (β₂ := fun _  => ClosedUnitBall E) id
+      (fun _  => (unitBoundaryInclusion E)))
     apply (isEmbedding_sigmaMap Function.injective_id).mpr
     intro j
     exact IsEmbedding.inclusion (fun _ h => h.le)
@@ -56,6 +55,27 @@ variable {X : Type u} [TopologicalSpace X]
   (r : BoundaryFamily J E → X) (x₀ : X)
 
 abbrev DiskAttachment := Space r (boundaryFamilyInclusion J E)
+
+/-- Reindex a topological sum without changing the fiber coordinates. -/
+def reindexFamily {J K F : Type*} [TopologicalSpace F] (f : J → K) :
+    C((Σ _ : J, F), (Σ _ : K, F)) :=
+  ContinuousMap.sigma fun j => ContinuousMap.sigmaMk (X := fun _ => F) (f j)
+
+abbrev DiskAttachment.oldMap : C(X, DiskAttachment r) :=
+  Space.oldMap r (boundaryFamilyInclusion J E)
+
+abbrev DiskAttachment.cellMap : C(DiskFamily J E, DiskAttachment r) :=
+  Space.cellMap r (boundaryFamilyInclusion J E)
+
+/-- The characteristic map restricted to one closed disk. -/
+abbrev DiskAttachment.cellAt (j : J) : C(ClosedUnitBall E, DiskAttachment r) :=
+  (DiskAttachment.cellMap r).comp (ContinuousMap.sigmaMk (X := fun _ => ClosedUnitBall E) j)
+
+omit [TopologicalSpace X] in
+theorem diskCell_boundary (a : BoundaryFamily J E) :
+    cell r (boundaryFamilyInclusion J E) ⟨a.1, unitBoundaryInclusion E a.2⟩ =
+      old r (boundaryFamilyInclusion J E) (r a) :=
+  cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J E).injective a
 
 /-- A total characteristic function; only its values on the closed ball
 are used. Outside the disk it takes the chosen old value. -/
@@ -76,19 +96,15 @@ def interiorDiskPoint (j : J) (x : {x : E // ‖x‖ < 1}) :
 
 theorem interiorDiskPoint_isEmbedding (j : J) : IsEmbedding (interiorDiskPoint (E := E) j) := by
   apply IsEmbedding.subtypeVal.of_comp_iff.mp
-  change IsEmbedding (fun x : {x : E // ‖x‖ < 1} =>
-    (⟨j, ⟨x.val, x.property.le⟩⟩ : DiskFamily J E))
   exact IsEmbedding.sigmaMk.comp (IsEmbedding.inclusion
-    (fun (x : E) (h : ‖x‖ < 1) => le_of_lt h))
+    (fun x (h : ‖x‖ < 1) => le_of_lt h))
 
 theorem interiorDiskPoint_isOpenEmbedding (j : J) :
     IsOpenEmbedding (interiorDiskPoint (E := E) j) := by
   apply IsOpenEmbedding.of_comp (interiorDiskPoint (E := E) j)
     (boundaryFamilyInclusion_isClosedEmbedding J E).isClosed_range.isOpen_compl.isOpenEmbedding_subtypeVal
-  change IsOpenEmbedding (fun x : {x : E // ‖x‖ < 1} =>
-    (⟨j, ⟨x.val, x.property.le⟩⟩ : DiskFamily J E))
   exact IsOpenEmbedding.sigmaMk.comp (IsOpenEmbedding.inclusion
-    (fun (x : E) (h : ‖x‖ < 1) => le_of_lt h)
+    (fun x (h : ‖x‖ < 1) => le_of_lt h)
     (isOpen_lt (continuous_norm.comp continuous_subtype_val) continuous_const))
 
 omit [TopologicalSpace X] in
@@ -100,7 +116,7 @@ theorem diskCharacteristicFun_interior (j : J) (x : {x : E // ‖x‖ < 1}) :
 
 theorem diskCharacteristicFun_restrict_isEmbedding (j : J) :
     IsEmbedding (fun x : {x : E // ‖x‖ < 1} => diskCharacteristicFun r x₀ j x.val) := by
-  have he : (fun x : {x : E // ‖x‖ < 1} => diskCharacteristicFun r x₀ j x.val) =
+  have he : (fun x  => diskCharacteristicFun r x₀ j x.val) =
       fresh r (boundaryFamilyInclusion J E) ∘ interiorDiskPoint j := by
     funext x
     exact diskCharacteristicFun_interior r x₀ j x
@@ -124,15 +140,13 @@ def diskCharacteristic (j : J) : PartialEquiv E (DiskAttachment r) :=
 
 theorem diskCharacteristic_source (j : J) :
     (diskCharacteristic r x₀ j).source = Metric.ball 0 1 := by
-  ext x
-  simp only [diskCharacteristic, Set.InjOn.toPartialEquiv,
-    Set.BijOn.toPartialEquiv, Metric.mem_ball, dist_zero_right, Set.mem_setOf_eq]
+  aesop
 
 theorem diskCharacteristic_continuousOn (j : J) :
     ContinuousOn (diskCharacteristic r x₀ j) (Metric.closedBall 0 1) := by
   apply continuousOn_iff_continuous_restrict.mpr
   change Continuous (fun x : Metric.closedBall (0 : E) 1 => diskCharacteristic r x₀ j x.val)
-  have he : (fun x : Metric.closedBall (0 : E) 1 => diskCharacteristic r x₀ j x.val) =
+  have he : (fun x  => diskCharacteristic r x₀ j x.val) =
       fun x : Metric.closedBall (0 : E) 1 =>
         cell r (boundaryFamilyInclusion J E)
           ⟨j, ⟨x.val, by simpa only [Metric.mem_closedBall, dist_zero_right] using x.property⟩⟩ := by
@@ -157,7 +171,7 @@ theorem diskCharacteristic_continuousOn_symm (j : J) :
   apply (diskCharacteristicFun_restrict_isEmbedding r x₀ j).isInducing.continuousOn_image_iff.mpr
   have he : (diskCharacteristic r x₀ j).symm ∘
       (fun x : {x : E // ‖x‖ < 1} => diskCharacteristicFun r x₀ j x.val) =
-      (Subtype.val : {x : E // ‖x‖ < 1} → E) := by
+      Subtype.val := by
     funext x
     exact (diskCharacteristic r x₀ j).left_inv x.property
   rw [he]
@@ -179,7 +193,7 @@ theorem diskCharacteristic_openCell (j : J) :
   constructor
   · rintro ⟨x, hx, rfl⟩
     have hx' : ‖x‖ < 1 := by
-      simpa only [Metric.mem_ball, dist_zero_right] using hx
+      simp_all
     exact ⟨⟨x, hx'⟩, (diskCharacteristicFun_interior r x₀ j ⟨x, hx'⟩).symm⟩
   · rintro ⟨x, rfl⟩
     refine ⟨x.val, ?_, diskCharacteristicFun_interior r x₀ j x⟩
@@ -192,7 +206,7 @@ theorem diskCharacteristic_closedCell (j : J) :
   constructor
   · rintro ⟨x, hx, rfl⟩
     have hx' : ‖x‖ ≤ 1 := by
-      simpa only [Metric.mem_closedBall, dist_zero_right] using hx
+      simp_all
     exact ⟨⟨x, hx'⟩, (diskCharacteristicFun_closed r x₀ j x hx').symm⟩
   · rintro ⟨x, rfl⟩
     refine ⟨x.val, ?_, diskCharacteristicFun_closed r x₀ j x.val x.property⟩
@@ -203,8 +217,7 @@ theorem diskCharacteristic_disjoint_old (j : J) :
       (Set.range (old r (boundaryFamilyInclusion J E))) := by
   rw [diskCharacteristic_openCell]
   apply (old_fresh_disjoint r (boundaryFamilyInclusion J E)).symm.mono_left
-  rintro _ ⟨x, rfl⟩
-  exact ⟨interiorDiskPoint j x, rfl⟩
+  rintro _ ⟨x, rfl⟩ <;> grind
 
 theorem diskCharacteristic_disjoint {j k : J} (hjk : j ≠ k) :
     Disjoint (diskCharacteristic r x₀ j '' Metric.ball 0 1)
@@ -212,8 +225,8 @@ theorem diskCharacteristic_disjoint {j k : J} (hjk : j ≠ k) :
   rw [diskCharacteristic_openCell, diskCharacteristic_openCell]
   apply Set.disjoint_left.mpr
   rintro _ ⟨x, rfl⟩ ⟨y, hy⟩
-  have hd : interiorDiskPoint k y = interiorDiskPoint j x := Sum.inr_injective hy
-  exact hjk (congrArg (fun d => d.val.1) hd).symm
+  have hd  := Sum.inr_injective hy
+  exact hjk (congrArg (·.val.1) hd).symm
 
 /-- The weak topology is exactly the topology of the old part and the
 individual attached closed disks, including infinitely many disks. -/

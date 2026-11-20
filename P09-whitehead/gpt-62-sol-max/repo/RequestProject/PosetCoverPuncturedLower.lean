@@ -6,8 +6,6 @@ public import RequestProject.PosetCoverTargetIso
 @[expose] public section
 
 /-! A punctured lower link stays in the sheet of its specified lifted top cell. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.IsPosetCover
@@ -29,14 +27,5 @@ noncomputable def puncturedLowerOrderIso (v : P) (a : Q) :
   map_rel_iff' {a b} :=
     ⟨fun h => hf.le_of_le_below a.2.1.le b.2.1.le h, fun h => hf.mono h⟩
 
-/-- Unlike the full inverse image, this interval cover is one fixed sheet. -/
-theorem puncturedLower_isPosetCover (v : P) (a : Q) :
-    IsPosetCover (fun p : {p : P // p < v ∧ f p ≠ a} =>
-      (⟨f p.1, hf.strictMono p.2.1, p.2.2⟩ : {q : Q // q < f v ∧ q ≠ a})) := by
-  let hi : IsPosetCover (id : {p : P // p < v ∧ f p ≠ a} → _) :=
-    ⟨monotone_id, Function.surjective_id,
-      fun x y h => ⟨y, ⟨h, rfl⟩, fun z hz => hz.2⟩,
-      fun x y h => ⟨y, ⟨h, rfl⟩, fun z hz => hz.2⟩⟩
-  exact hi.postcompose_orderIso (hf.puncturedLowerOrderIso v a)
 
 end FiniteChains.Comb.IsPosetCover

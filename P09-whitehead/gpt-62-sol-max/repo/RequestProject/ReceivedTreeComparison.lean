@@ -7,9 +7,6 @@ public import RequestProject.ComponentComplex
 @[expose] public section
 
 /-! A constructed cellular comparison, including the lifted attaching paths. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -23,53 +20,18 @@ noncomputable def receiverGerm (e : (G × K.E) × Bool) : UE Y (f.onV T.root) ×
   (receiverEdge T f ψ e.1.1 e.1.2, e.2)
 
 include hψ in
-theorem comparison_liftGerm (g : G) (e : K.E × Bool) :
-    receiverGerm T f ψ (liftGerm T φ g e) =
-      Comb.liftGerm (receiverVertex T f ψ g (germSrc K.src K.tgt e))
-        (f.onE e.1, e.2) (by rw [receiverVertex_end, germSrc_onE]) := by
-  obtain ⟨e, b⟩ := e
-  cases b with
-  | true => rfl
-  | false =>
-    have h := receiverVertex_path T f φ ψ hψ g (isPath_single (X := K) (e, false))
-    have he : extend (f.onE e, false) (receiverVertex T f ψ g (K.tgt e)) =
-        receiverVertex T f ψ (g * germValue T φ (e, false)) (K.src e) := by
-      simpa only [mapPath, List.map_cons, List.map_nil, extendList_cons, extendList_nil,
-        wordValue_cons, wordValue_nil, mul_one, germSrc, germTgt, Bool.false_eq_true, if_false] using h
-    apply Prod.ext
-    · apply Subtype.ext
-      apply Prod.ext
-      · exact he.symm
-      · rfl
-    · rfl
-
-include hψ in
 /-- Every actual lifted edge path has the claimed geometric image. -/
 theorem comparison_liftPath (g : G) {a b : K.V} {p : List (K.E × Bool)}
     (hp : IsPath K.src K.tgt p a b) :
     (liftPath T φ p g).map (receiverGerm T f ψ) =
       uLiftPath (mapPath f p) (receiverVertex T f ψ g a) := by
-  induction p generalizing a g with
-  | nil => rfl
-  | cons e p ih =>
-    obtain ⟨ha, hp⟩ := hp
-    subst a
-    have hs : endV (receiverVertex T f ψ g (germSrc K.src K.tgt e)) =
-        germSrc Y.src Y.tgt (f.onE e.1, e.2) := by
-      rw [receiverVertex_end, germSrc_onE]
-    have he : extend (f.onE e.1, e.2)
-        (receiverVertex T f ψ g (germSrc K.src K.tgt e)) =
-        receiverVertex T f ψ (g * germValue T φ e) (germTgt K.src K.tgt e) := by
-      have h := receiverVertex_path T f φ ψ hψ g (isPath_single (X := K) e)
-      simpa only [mapPath, List.map_cons, List.map_nil, extendList_cons, extendList_nil,
-        wordValue_cons, wordValue_nil, mul_one, germSrc, germTgt, Bool.false_eq_true, if_false] using h
-    rw [liftPath_cons, List.map_cons]
-    change receiverGerm T f ψ (liftGerm T φ g e) :: _ =
-      uLiftPath ((f.onE e.1, e.2) :: mapPath f p) _
-    rw [uLiftPath_cons hs, he]
-    apply congrArg₂ List.cons
-    · exact comparison_liftGerm T f φ ψ hψ g e
-    · exact ih _ hp
+  have he := map_eq_uLiftPath (K := cover T φ) (fun x => receiverVertex T f ψ x.1 x.2)
+    (fun x => receiverEdge T f ψ x.1 x.2) (fun _ => rfl)
+    (fun x => receiverEdge_tgt T f φ ψ hψ x.1 x.2) (liftPath_isPath T φ hp g)
+  change _ = uLiftPath ((liftPath T φ p g).map fun e => (f.onE e.1.2, e.2)) _ at he
+  refine he.trans (congrArg (fun l => uLiftPath l _) ?_)
+  simpa only [List.map_map, Function.comp_def, mapPath] using
+    congrArg (List.map fun d : K.E × Bool => (f.onE d.1, d.2)) (liftPath_projection T φ p g)
 
 /-- The comparison is an actual cellular map, not a postulated chain map. -/
 noncomputable def comparison : Hom (cover T φ) (uCover Y (f.onV T.root)) where

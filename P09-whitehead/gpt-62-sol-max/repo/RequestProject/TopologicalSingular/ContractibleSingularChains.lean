@@ -35,8 +35,8 @@ theorem constantCone_identity_single (y : Y) (n : ℕ) (σ : Simplex X (n + 1)) 
       constantCone y n (boundary n (Finsupp.single σ r)) =
         map (ContinuousMap.const X y) (n + 1) (Finsupp.single σ r) := by
   simp only [constantCone_single, boundary_single, face_constant, map_sum, map_zsmul, map_single]
-  change altSum (fun _ : Fin (n + 3) => Finsupp.single (ContinuousMap.const (Domain (n + 1)) y) r) +
-    altSum (fun _ : Fin (n + 2) => Finsupp.single (ContinuousMap.const (Domain (n + 1)) y) r) =
+  change altSum (fun _  => Finsupp.single (ContinuousMap.const (Domain (n + 1)) y) r) +
+    altSum (fun _  => Finsupp.single (ContinuousMap.const (Domain (n + 1)) y) r) =
       Finsupp.single (ContinuousMap.const (Domain (n + 1)) y) r
   rw [altSum_succ]
   exact sub_add_cancel _ _

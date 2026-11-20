@@ -7,9 +7,7 @@ public import RequestProject.QCubeThreeBaseCycles
 
 /-! Recovery of the actual cubical boundary of an isolated strict three-cube component. -/
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -36,7 +34,6 @@ theorem qCube_three_component_boundary_scalar (c : QCube A) (u v w : V)
   obtain ⟨k, hk⟩ := qThreeFacetCycle_subdivision c u v w huv hvw hs r hr
     ((qSquareCubicalBoundary_zero_iff r).mpr hcycle)
   refine ⟨-k, ?_⟩
-  have hn := congrArg Neg.neg (he.symm.trans hk)
-  simpa only [neg_neg, neg_smul] using hn
+  aesop
 
 end FiniteChains.Davis

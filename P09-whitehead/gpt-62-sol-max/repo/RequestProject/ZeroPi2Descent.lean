@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.UniversalToCover
-public import RequestProject.PushoutChain
+public import RequestProject.CombPushout
+public import RequestProject.DeckChainTransport
 
 @[expose] public section
 
@@ -46,10 +47,6 @@ section Unique
 
 variable {X Z W : Complex2.{u}}
 
-theorem mapPath_comp (g : Hom Z W) (h : Hom X Z) (l : List (X.E × Bool)) :
-    mapPath g (mapPath h l) = mapPath (g.comp h) l := by
-  simp [mapPath, List.map_map, Function.comp_def, Hom.comp]
-
 variable {q : Hom Z W} {A B : Hom X Z}
 
 /-- **Uniqueness of lifts, on vertices.**  Two cellular maps of a connected complex into a
@@ -60,13 +57,13 @@ theorem lift_onV_eq (hq : IsCovering q) (hX : IsConnected X)
     ∀ v, A.onV v = B.onV v := by
   intro v
   obtain ⟨m, hm⟩ := hX x v
-  have hA : IsPath Z.src Z.tgt (mapPath A m) (A.onV x) (A.onV v) := isPath_mapPath A hm
+  have hA  := isPath_mapPath A hm
   have hB : IsPath Z.src Z.tgt (mapPath B m) (A.onV x) (B.onV v) := by
     rw [hx]; exact isPath_mapPath B hm
   have hmap : mapPath q (mapPath A m) = mapPath q (mapPath B m) := by
-    simp only [mapPath, List.map_map, Function.comp_def]
-    exact List.map_congr_left fun eb _ => by rw [hE eb.1]
-  have hlists := liftPath_unique hq (mapPath A m) (mapPath B m) (A.onV x) _ _ hA hB hmap
+    rw [mapPath_comp, mapPath_comp]
+    exact mapPath_congr hE m
+  have hlists := liftPath_unique hq.uniqueLifts (mapPath A m) (mapPath B m) (A.onV x) _ _ hA hB hmap
   rw [← hlists] at hB
   exact isPath_endpoint_eq hA hB
 
@@ -78,8 +75,8 @@ theorem lift_onE_eq (hq : IsCovering q) (hE : ∀ e, q.onE (A.onE e) = q.onE (B.
   have h2 : germSrc Z.src Z.tgt (B.onE e, true) = A.onV (X.src e) := by
     rw [germSrc_true, B.src_onE e, hV]
   have h3 : (q.onE (A.onE e, true).1, (A.onE e, true).2)
-      = (q.onE (B.onE e, true).1, (B.onE e, true).2) := by rw [hE e]
-  exact congrArg Prod.fst (liftGerm_unique hq h1 h2 h3)
+      = (q.onE (B.onE e, true).1, (B.onE e, true).2) := by tauto
+  exact congrArg Prod.fst (liftGerm_unique hq.uniqueLifts h1 h2 h3)
 
 /-- **Uniqueness of lifts, on two-cells.** -/
 theorem lift_onF_eq (hq : IsCovering q) (hF : ∀ f, q.onF (A.onF f) = q.onF (B.onF f))
@@ -87,11 +84,35 @@ theorem lift_onF_eq (hq : IsCovering q) (hF : ∀ f, q.onF (A.onF f) = q.onF (B.
   intro f
   have hv : W.base (q.onF (A.onF f)) = q.onV (A.onV (X.base f)) := by
     rw [q.base_onF, A.base_onF]
-  obtain ⟨g, -, huniq⟩ := exists_unique_liftCell hq (q.onF (A.onF f)) hv
+  obtain ⟨g, -, huniq⟩ := exists_unique_liftCell hq.uniqueLifts (q.onF (A.onF f)) hv
   rw [huniq (A.onF f) ⟨rfl, A.base_onF f⟩,
     huniq (B.onF f) ⟨(hF f).symm, by rw [B.base_onF f, hV]⟩]
 
+/-- Lifts of a connected complex with the same projected cells agree once they meet
+at a vertex. -/
+theorem lift_cells_eq (hq : IsCovering q) (hX : IsConnected X)
+    (hE : ∀ e, q.onE (A.onE e) = q.onE (B.onE e))
+    (hF : ∀ f, q.onF (A.onF f) = q.onF (B.onF f))
+    {x : X.V} (hx : A.onV x = B.onV x) :
+    (∀ v, A.onV v = B.onV v) ∧ (∀ e, A.onE e = B.onE e) ∧
+      (∀ f, A.onF f = B.onF f) :=
+  let hV := lift_onV_eq hq hX hE hx
+  ⟨hV, lift_onE_eq hq hE hV, lift_onF_eq hq hF hV⟩
+
 end Unique
+
+/-- Two lifts which meet over the same source fibre differ only by a deck transformation. -/
+theorem lifts_identified {D K Y Z : Complex2.{u}} {Q : Type v} [Group Q]
+    {p : Hom D K} {a : DeckAction D Q} {q : Hom Y Z} {F G : Hom D Y}
+    (hr : IsRegular p a) (hq : IsCovering q) (hD : IsConnected D)
+    (hE : ∀ k e, q.onE (F.onE e) = q.onE (G.onE (a.smulE k e)))
+    (hF : ∀ k f, q.onF (F.onF f) = q.onF (G.onF (a.smulF k f)))
+    {d e : D.V} (he : p.onV d = p.onV e) (hm : F.onV d = G.onV e) :
+    ∃ k, F = G.comp (a.cellHom k) := by
+  obtain ⟨k, hk, _⟩ := hr.simply_transitive d e he
+  have h : F.onV d = (G.comp (a.cellHom k)).onV d := hm.trans (congrArg G.onV hk).symm
+  obtain ⟨hv, he, hf⟩ := lift_cells_eq hq hD (hE k) (hF k) h
+  exact ⟨k, Hom.ext' (funext hv) (funext he) (funext hf)⟩
 
 /-! ### The lifting criterion -/
 
@@ -99,37 +120,27 @@ section Lift
 
 variable {D Y : Complex2.{u}}
 
-theorem mapPath_revPath (f : Hom D Y) (m : List (D.E × Bool)) :
-    mapPath f (revPath m) = revPath (mapPath f m) := by
-  simp [mapPath, revPath, revGerm, List.map_map, Function.comp_def, List.map_reverse]
-
 /-- A map which kills `π₁` sends any two paths with the same endpoints to homotopic paths. -/
 theorem htpy_mapPath_of_pi1Trivial {f : Hom D Y} (htriv : Pi1Trivial f)
     {m m' : List (D.E × Bool)} {a b : D.V} (hm : IsPath D.src D.tgt m a b)
     (hm' : IsPath D.src D.tgt m' a b) :
     Htpy Y (f.onV a) (f.onV b) (mapPath f m) (mapPath f m') := by
-  have hP : IsPath Y.src Y.tgt (mapPath f m) (f.onV a) (f.onV b) := isPath_mapPath f hm
-  have hQ : IsPath Y.src Y.tgt (mapPath f m') (f.onV a) (f.onV b) := isPath_mapPath f hm'
-  have hQrev : IsPath Y.src Y.tgt (revPath (mapPath f m')) (f.onV b) (f.onV a) :=
+  have hP  := isPath_mapPath f hm
+  have hQ  := isPath_mapPath f hm'
+  have hQrev  :=
     isPath_revPath hQ
   have h0 : Htpy Y (f.onV a) (f.onV a) (mapPath f m ++ revPath (mapPath f m')) [] := by
-    have hloop : IsPath D.src D.tgt (m ++ revPath m') a a :=
+    have hloop  :=
       isPath_append_iff.mpr ⟨b, hm, isPath_revPath hm'⟩
     have h := htriv a (m ++ revPath m') hloop
     rwa [mapPath_append, mapPath_revPath] at h
-  have hrev : Htpy Y (f.onV b) (f.onV b) (revPath (mapPath f m') ++ mapPath f m') [] :=
+  have hrev  :=
     htpy_revPath_append hQ
-  have step1 : Htpy Y (f.onV a) (f.onV b)
-      (mapPath f m ++ (revPath (mapPath f m') ++ mapPath f m')) (mapPath f m ++ []) :=
+  have step1  :=
     Htpy.append_congr hP (isPath_append_iff.mpr ⟨f.onV a, hQrev, hQ⟩) (Htpy.refl _) hrev
-  have step2 : Htpy Y (f.onV a) (f.onV b)
-      (mapPath f m ++ revPath (mapPath f m') ++ mapPath f m') ([] ++ mapPath f m') :=
+  have step2  :=
     Htpy.append_congr (isPath_append_iff.mpr ⟨f.onV b, hP, hQrev⟩) hQ h0 (Htpy.refl _)
-  have hcomb : Htpy Y (f.onV a) (f.onV b) (mapPath f m ++ []) ([] ++ mapPath f m') := by
-    refine step1.symm.trans ?_
-    rw [← List.append_assoc]
-    exact step2
-  simpa using hcomb
+  grind [step1.symm.trans]
 
 variable (f : Hom D Y) (hconn : IsConnected D) (d₀ : D.V)
 
@@ -174,8 +185,8 @@ theorem liftV_extend (htriv : Pi1Trivial f) (eb : D.E × Bool) :
     liftV f hconn d₀ (germTgt D.src D.tgt eb)
       = extend (f.onE eb.1, eb.2) (liftV f hconn d₀ (germSrc D.src D.tgt eb)) := by
   set v := germSrc D.src D.tgt eb with hv
-  have hm : IsPath D.src D.tgt (cPath hconn d₀ v) d₀ v := cPath_isPath hconn d₀ v
-  have hstep : IsPath D.src D.tgt (cPath hconn d₀ v ++ [eb]) d₀ (germTgt D.src D.tgt eb) :=
+  have hm  := cPath_isPath hconn d₀ v
+  have hstep  :=
     isPath_append_iff.mpr ⟨v, hm, isPath_single eb⟩
   rw [liftV_eq hconn htriv hstep, liftV_eq hconn htriv hm, extend_mk]
   refine congrArg UV.mk (Subtype.ext ?_)
@@ -203,35 +214,6 @@ theorem uTgt_liftE (htriv : Pi1Trivial f) (e : D.E) :
     uTgt (liftE f hconn d₀ e) = liftV f hconn d₀ (D.tgt e) :=
   (liftV_extend hconn htriv (e, true)).symm
 
-/-- The lift sends edge paths to edge paths of the universal cover. -/
-theorem isPath_map_liftE (htriv : Pi1Trivial f) :
-    ∀ (m : List (D.E × Bool)) (a b : D.V), IsPath D.src D.tgt m a b →
-      IsPath (uCover Y (f.onV d₀)).src (uCover Y (f.onV d₀)).tgt
-        (m.map fun eb => (liftE f hconn d₀ eb.1, eb.2))
-        (liftV f hconn d₀ a) (liftV f hconn d₀ b) := by
-  intro m
-  induction m with
-  | nil => intro a b hab; exact congrArg _ hab
-  | cons eb t ih =>
-      intro a b hab
-      obtain ⟨ha, hrest⟩ := hab
-      refine ⟨?_, ?_⟩
-      · obtain ⟨e, s⟩ := eb
-        cases s with
-        | true => rw [ha]; rfl
-        | false =>
-            show liftV f hconn d₀ a = uTgt (liftE f hconn d₀ e)
-            rw [uTgt_liftE hconn htriv, ha]
-            rfl
-      · have hgerm : germTgt (uCover Y (f.onV d₀)).src (uCover Y (f.onV d₀)).tgt
-            (liftE f hconn d₀ eb.1, eb.2) = liftV f hconn d₀ (germTgt D.src D.tgt eb) := by
-          obtain ⟨e, s⟩ := eb
-          cases s with
-          | true => exact uTgt_liftE hconn htriv e
-          | false => rfl
-        rw [hgerm]
-        exact ih _ b hrest
-
 /-- **The lifting criterion.**  A cellular map of a connected complex which kills `π₁` lifts
 to the universal cover of its target. -/
 noncomputable def liftHom (htriv : Pi1Trivial f) : Hom D (uCover Y (f.onV d₀)) where
@@ -242,28 +224,13 @@ noncomputable def liftHom (htriv : Pi1Trivial f) : Hom D (uCover Y (f.onV d₀))
   tgt_onE := fun e => uTgt_liftE hconn htriv e
   base_onF := fun _ => rfl
   att_onF := fun g => by
-    have hbase : endV (liftV f hconn d₀ (D.base g)) = Y.base (f.onF g) := by
-      rw [endV_liftV, f.base_onF]
-    have hpath : IsPath (uCover Y (f.onV d₀)).src (uCover Y (f.onV d₀)).tgt
-        ((D.att g).map fun eb => (liftE f hconn d₀ eb.1, eb.2))
-        (liftV f hconn d₀ (D.base g)) (liftV f hconn d₀ (D.base g)) :=
-      isPath_map_liftE hconn htriv (D.att g) _ _ (D.att_isLoop g)
-    have hproj : mapPath (univProj Y (f.onV d₀))
-        ((D.att g).map fun eb => (liftE f hconn d₀ eb.1, eb.2)) = Y.att (f.onF g) := by
-      rw [f.att_onF g]
-      simp [mapPath, List.map_map, Function.comp_def, univProj, liftE]
-    have := eq_uLiftPath_of_isPath _ _ _ hpath
-    rw [hproj] at this
-    exact this.symm
+    change uLiftPath (Y.att (f.onF g)) (liftV f hconn d₀ (D.base g)) = _
+    rw [show Y.att (f.onF g) = mapPath f (D.att g) from f.att_onF g]
+    exact (map_eq_uLiftPath (liftV f hconn d₀) (liftE f hconn d₀) (fun _ => rfl)
+      (uTgt_liftE hconn htriv) (D.att_isLoop g)).symm
 
-theorem univProj_liftHom_onV (htriv : Pi1Trivial f) (v : D.V) :
-    (univProj Y (f.onV d₀)).onV ((liftHom hconn htriv).onV v) = f.onV v := endV_liftV hconn v
 
-theorem univProj_liftHom_onE (htriv : Pi1Trivial f) (e : D.E) :
-    (univProj Y (f.onV d₀)).onE ((liftHom hconn htriv).onE e) = f.onE e := rfl
 
-theorem univProj_liftHom_onF (htriv : Pi1Trivial f) (g : D.F) :
-    (univProj Y (f.onV d₀)).onF ((liftHom hconn htriv).onF g) = f.onF g := rfl
 
 theorem liftHom_base (htriv : Pi1Trivial f) :
     (liftHom hconn htriv).onV d₀ = UV.base Y (f.onV d₀) := liftV_base hconn htriv
@@ -312,13 +279,12 @@ theorem zeroPi2_of_pi1Trivial_comp {p : Hom D K} (hcov : IsCovering p) (hD : IsA
     show UV.mk (mapPathFrom (p.onV d₀) f ⟨[], rfl⟩) = psi.onV (F.onV (UV.base K (p.onV d₀)))
     rw [hFbase, hpsi, liftHom_base hconnD htriv]
     rfl
-  have hV := lift_onV_eq hq isConnected_univCover hqE hbase
-  have hFeq := lift_onF_eq hq hqF hV
+  obtain ⟨_, _, hFeq⟩ := lift_cells_eq hq isConnected_univCover hqE hqF hbase
   have hcycle : bdry2 D (chain2 F c) = 0 := by
     rw [bdry2_chain2 F c]
-    have h : bdry2 (uCover K (p.onV d₀)) c = 0 := hc
+    have h  := hc
     rw [h, map_zero]
-  have hzero : chain2 F c = 0 := hD.h2 (by rw [hcycle, map_zero])
+  have hzero : chain2 F c = 0 := hD.h2 (by tauto)
   have hcomp : chain2 A c = chain2 psi (chain2 F c) := by
     show Finsupp.mapDomain A.onF c = Finsupp.mapDomain psi.onF (Finsupp.mapDomain F.onF c)
     rw [← Finsupp.mapDomain_comp]
@@ -340,9 +306,9 @@ theorem zeroPi2_pushoutInl {p : Hom D K} (i : Hom D L) (hiV : Function.Injective
     ZeroPi2 (pushoutInl p i hiV hiE) := by
   intro x₀ c hc
   obtain ⟨d₀, -⟩ := hcov.surjV x₀
-  have hconnE : IsConnected (pushoutComplex p i hiV hiE) :=
+  have hconnE  :=
     isConnected_pushoutComplex p i hiV hiE hconnK hconnL d₀
-  have hcomm : (pushoutInl p i hiV hiE).comp p = (pushoutMap p i hiV hiE hiF).comp i :=
+  have hcomm  :=
     (pushout_comm p i hiV hiE hiF).symm
   have htriv : Pi1Trivial ((pushoutInl p i hiV hiE).comp p) := by
     rw [hcomm]
@@ -351,7 +317,7 @@ theorem zeroPi2_pushoutInl {p : Hom D K} (i : Hom D L) (hiV : Function.Injective
 
 /-! ### The first arrow of the descended chain -/
 
-variable {c : ℕ → Complex2.{u}}
+
 
 end Comb
 end FiniteChains

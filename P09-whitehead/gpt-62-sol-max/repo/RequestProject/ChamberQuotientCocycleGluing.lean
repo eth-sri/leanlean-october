@@ -15,8 +15,6 @@ presentation of its fundamental group. This is the geometric construction
 needed for the reverse substituted-group comparison.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
@@ -30,9 +28,8 @@ theorem eq_of_val_eq {c d : OrdCocycle P G} (h : ∀ a b, c.val a b = d.val a b)
   | mk cv cc =>
     cases d with
     | mk dv dc =>
-      have he : cv = dv := funext (fun a => funext (h a))
-      cases he
-      rfl
+      have he  := funext (fun a => funext (h a))
+      aesop
 
 theorem comap_readPath (c : OrdCocycle Q G) (f : P → Q) (hf : Monotone f)
     (p : List ((orderCx P).E × Bool)) :
@@ -52,7 +49,7 @@ theorem postcompose_readPath (c : OrdCocycle P G) (φ : G →* H)
     (p : List ((orderCx P).E × Bool)) :
     (c.postcompose φ).readPath p = φ (c.readPath p) := by
   induction p with
-  | nil => exact (map_one φ).symm
+  | nil => simp
   | cons e p ih =>
     rw [readPath_cons, readPath_cons, map_mul, ih]
     congr 1
@@ -78,14 +75,12 @@ theorem posQCube_positiveOldSimplex (d : QOld A) (hd : d.1.sgn = 0) :
   apply Subtype.ext
   apply QCube.ext'
   · rfl
-  · intro z _
-    exact (congrFun hd z).symm
+  · tauto
 
 omit [DecidableEq V] in
 theorem positiveOldSimplex_posQCube (s : NeSpx A) :
     positiveOldSimplex (posQCube s) rfl = s := by
-  apply Subtype.ext
-  rfl
+  aesop
 
 theorem positiveOld_upward {d e : QOld A} (hde : d ≤ e) (hd : d.1.sgn = 0) :
     e.1.sgn = 0 := by
@@ -94,7 +89,7 @@ theorem positiveOld_upward {d e : QOld A} (hde : d ≤ e) (hd : d.1.sgn = 0) :
   by_cases hz : z ∈ e.1.spx
   · exact e.1.sgn_eq_zero z hz
   · rw [← hde.2 z hz]
-    exact congrFun hd z
+    aesop
 
 theorem new_le_positiveOld {x : X} {d : QOld A}
     (h : qNew (A := A) (att := att) x ≤ qOldIncl d) :
@@ -116,8 +111,7 @@ noncomputable def quotientCocycleValue : Qpos A X att → Qpos A X att → G
 theorem quotientCocycleValue_mixed (x : X) (e : QOld A) (he : e.1.sgn = 0) :
     quotientCocycleValue (att := att) old base k (.inr x) (.inl e) =
       base.val x (att (positiveOldSimplex e he)) * (k (positiveOldSimplex e he))⁻¹ := by
-  classical
-  simp only [quotientCocycleValue, dif_pos he]
+  simp [quotientCocycleValue, dif_pos he]
 
 variable (hk : ∀ {s t : NeSpx A}, s ≤ t →
   old.val (posQCube s) (posQCube t) * k t = k s * base.val (att s) (att t))
@@ -133,18 +127,18 @@ theorem quotientCocycleValue_comp {a b c : Qpos A X att} (hab : a ≤ b) (hbc : 
     | inl e =>
       cases c with
       | inl f => exact old.comp hab hbc
-      | inr z => exact False.elim hbc
-    | inr y => exact False.elim hab
+      | inr z => trivial
+    | inr y => trivial
   | inr x =>
     cases b with
     | inl e =>
       cases c with
-      | inr z => exact False.elim hbc
+      | inr z => trivial
       | inl f =>
-        have he : e.1.sgn = 0 := hab.1
-        have hf : f.1.sgn = 0 := positiveOld_upward hbc he
+        have he  := hab.1
+        have hf  := positiveOld_upward hbc he
         have hef : positiveOldSimplex e he ≤ positiveOldSimplex f hf := hbc.1
-        have hx : x ≤ att (positiveOldSimplex e he) := new_le_positiveOld hab
+        have hx  := new_le_positiveOld hab
         have hg := hk hef
         rw [posQCube_positiveOldSimplex, posQCube_positiveOldSimplex] at hg
         have ht : (k (positiveOldSimplex e he))⁻¹ * old.val e f =
@@ -164,8 +158,8 @@ theorem quotientCocycleValue_comp {a b c : Qpos A X att} (hab : a ≤ b) (hbc : 
       cases c with
       | inr z => exact base.comp hab hbc
       | inl f =>
-        have hf : f.1.sgn = 0 := hbc.1
-        have hy : y ≤ att (positiveOldSimplex f hf) := new_le_positiveOld hbc
+        have hf  := hbc.1
+        have hy  := new_le_positiveOld hbc
         rw [quotientCocycleValue_mixed old base k y f hf,
           quotientCocycleValue_mixed old base k x f hf]
         change base.val x y * (base.val y (att (positiveOldSimplex f hf)) * _) = _
@@ -175,13 +169,7 @@ noncomputable def gluedQuotientCocycle : OrdCocycle (Qpos A X att) G where
   val := quotientCocycleValue old base k
   comp := quotientCocycleValue_comp old base k hk
 
-theorem gluedQuotientCocycle_old (d e : QOld A) :
-    (gluedQuotientCocycle old base k hk).val
-      (qOldIncl (att := att) d) (qOldIncl e) = old.val d e := rfl
 
-theorem gluedQuotientCocycle_base (x y : X) :
-    (gluedQuotientCocycle old base k hk).val
-      (qNew (att := att) x) (qNew y) = base.val x y := rfl
 
 theorem gluedQuotientCocycle_cylinder (s : NeSpx A) :
     (gluedQuotientCocycle old base k hk).val
@@ -213,10 +201,7 @@ theorem monodromy_quotientOldBasedInclusion (s : NeSpx A)
     (([ordPos (qNew_att_le_qOldIncl (att := att) s)] ++
       mapPath (orderCxMap (qOldIncl (att := att)) qOldIncl_monotone) p.1) ++
       revPath [ordPos (qNew_att_le_qOldIncl (att := att) s)]) = _
-  simp only [OrdCocycle.readPath_append, OrdCocycle.readPath_revPath,
-    OrdCocycle.readPath_cons, OrdCocycle.readPath_nil,
-    OrdCocycle.readGerm_ordPos, hcyl, one_mul, mul_one, inv_one]
-  exact hread p
+  aesop
 
 theorem monodromy_quotientBaseInclusion (x : X)
     (c : OrdCocycle (Qpos A X att) G) (d : OrdCocycle X G)
@@ -257,13 +242,12 @@ theorem exists_quotientCocycle_of_marked
   have hm' : ∀ x : Fin q × Bool,
       (old.comap posQCube posQCube_monotone).readPath (gSig q (x.1.val, x.2)) =
       (base.comap att att.monotone).readPath (gSig q (x.1.val, x.2)) := by
-    intro x
-    simpa only [OrdCocycle.comap_readPath, surfCx] using hm x
+    assumption
   obtain ⟨k, hb, hk⟩ := genus_cocycle_gauge_of_marked q
     (old.comap posQCube posQCube_monotone) (base.comap att att.monotone) hm'
   refine ⟨gluedQuotientCocycle old base k hk, ?_, ?_, ?_⟩
-  · exact gluedQuotientCocycle_old old base k hk
-  · exact gluedQuotientCocycle_base old base k hk
+  · tauto
+  · tauto
   · rw [gluedQuotientCocycle_cylinder, hb, inv_one]
 
 end FiniteChains.Davis.Genus

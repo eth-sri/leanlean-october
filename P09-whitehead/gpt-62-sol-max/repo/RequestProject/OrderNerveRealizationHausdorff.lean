@@ -5,9 +5,6 @@ public import Mathlib.Topology.Separation.Hausdorff
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -20,6 +17,13 @@ noncomputable def orderNerveRealizationCoordinates (P : Type) [PartialOrder P] :
   continuous_toFun := continuous_pi (fun p =>
     (orderNerveAffineRealization (fun q => if q = p then 1 else 0)).hom.continuous)
 
+theorem orderNerveRealizationCoordinates_simplex {P : Type} [PartialOrder P]
+    {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n))
+    (z : SimplexCategory.toTop.obj n) (p : P) :
+    orderNerveRealizationCoordinates P (orderNerveRealizationSimplex P s z) p =
+      orderNerveAffineSimplex (fun q => if q = p then 1 else 0) s z :=
+  orderNerveAffineRealization_simplex _ s z
+
 /-- Global barycentric coordinates separate all points of the actual realization. -/
 theorem orderNerveRealizationCoordinates_injective (P : Type) [PartialOrder P] :
     Function.Injective (orderNerveRealizationCoordinates P) := by
@@ -30,39 +34,20 @@ theorem orderNerveRealizationCoordinates_injective (P : Type) [PartialOrder P] :
   have hv : ∀ p, orderNerveAffineSimplex (fun q => if q = p then 1 else 0) s.val z =
       orderNerveAffineSimplex (fun q => if q = p then 1 else 0) t.val w := by
     intro p
-    have hc := congrArg (fun k => k z)
-      (orderNerveAffineRealization_simplex (fun q => if q = p then 1 else 0) s.val)
-    have hd := congrArg (fun k => k w)
-      (orderNerveAffineRealization_simplex (fun q => if q = p then 1 else 0) t.val)
-    change orderNerveAffineRealization (fun q => if q = p then 1 else 0)
-      (orderNerveRealizationSimplex P s.val z) = _ at hc
-    change orderNerveAffineRealization (fun q => if q = p then 1 else 0)
-      (orderNerveRealizationSimplex P t.val w) = _ at hd
-    rw [hx] at hc
-    rw [hy] at hd
-    exact hc.symm.trans ((congrFun h p).trans hd)
+    simpa only [← hx, ← hy, orderNerveRealizationCoordinates_simplex] using congrFun h p
   have hrange : Set.range s.val.obj = Set.range t.val.obj := by
     ext p
     rw [← orderNerveAffineSimplex_indicator_pos_iff s.val z hz p,
       ← orderNerveAffineSimplex_indicator_pos_iff t.val w hw p, hv p]
-  have hs := (PartialOrder.mem_nerve_nonDegenerate_iff_strictMono s.val).mp s.property
-  have ht := (PartialOrder.mem_nerve_nonDegenerate_iff_strictMono t.val).mp t.property
-  have hc := Nat.card_congr ((Equiv.ofInjective s.val.obj hs.injective).trans
-    ((Set.equivOfEq hrange).trans (Equiv.ofInjective t.val.obj ht.injective).symm))
-  simp only [Nat.card_eq_fintype_card, Fintype.card_fin, SimplexCategory.len_mk] at hc
-  have hnm : n = m := by omega
-  subst m
-  have hst : s = t := by
-    apply Subtype.ext
-    exact CategoryTheory.Functor.ext (fun i => congrFun ((hs.range_inj ht).mp hrange) i)
-  subst t
+  obtain ⟨rfl, rfl⟩ := orderNerveNondegenerate_eq_of_range s t hrange
+  have hs := (PartialOrder.mem_nerve_nonDegenerate_iff_injective s.val).mp s.property
   have hzw : z = w := by
     apply ULift.ext
     apply Convexity.StdSimplex.ext
     apply Finsupp.ext
     intro i
-    exact (orderNerveAffineSimplex_indicator s.val hs.injective i z).symm.trans
-      ((hv (s.val.obj i)).trans (orderNerveAffineSimplex_indicator s.val hs.injective i w))
+    exact (orderNerveAffineSimplex_indicator s.val hs i z).symm.trans
+      ((hv (s.val.obj i)).trans (orderNerveAffineSimplex_indicator s.val hs i w))
   exact hx.symm.trans ((congrArg (orderNerveRealizationSimplex P s.val) hzw).trans hy)
 
 /-- The actual geometric realization of every poset nerve is Hausdorff. -/

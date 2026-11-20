@@ -19,7 +19,7 @@ variable {E X J : Type} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [TopologicalSpace X]
 
 def radialDiskPoint (t : I) (x : ClosedUnitBall E) : ClosedUnitBall E :=
-  ⟨((1 - (t : ℝ)) + (t : ℝ) / ‖x.val‖) • x.val, by
+  ⟨((1 - t) + t / ‖x.val‖) • x.val, by
     have ht0 := t.property.1
     have ht1 := t.property.2
     have hr := x.property
@@ -77,14 +77,14 @@ theorem radialCoreBack_mem_iff (r : BoundaryFamily J E → X)
   · rfl
   · change r ⟨d.val.1, annulusBoundary 0 le_rfl ⟨d.val.2, Classical.choose hz⟩⟩ ∈ U ↔
       ∃ h : 0 < ‖d.val.2.val‖, r ⟨d.val.1, annulusBoundary 0 le_rfl ⟨d.val.2, h⟩⟩ ∈ U
-    exact ⟨fun h => ⟨Classical.choose hz, h⟩, fun ⟨_, h⟩ => h⟩
+    tauto
 
 theorem radialCoreBack_continuous (r : BoundaryFamily J E → X) (hr : Continuous r) :
     Continuous (radialCoreBack r) := by
   apply continuous_def.mpr
   intro U hU
   have he : radialCoreBack r ⁻¹' U =
-      (Subtype.val : puncturedAttachment r → DiskAttachment r) ⁻¹' oldCollar r 0 le_rfl U := by
+      Subtype.val ⁻¹' oldCollar r 0 le_rfl U := by
     ext z
     exact radialCoreBack_mem_iff r z U
   rw [he]
@@ -139,8 +139,8 @@ theorem radialFamily_continuousOn (r : BoundaryFamily J E → X) (hr : Continuou
     rw [he]
     rcases d with ⟨j, x⟩
     apply IsOpenEmbedding.sigmaMk.continuousAt_iff.mp
-    change ContinuousAt (fun x : ClosedUnitBall E => radialDiskPath r j x) x
-    have hx : 0 < ‖x.val‖ :=
+    change ContinuousAt (radialDiskPath r j) x
+    have hx  :=
       ((cell_mem_oldCollar r 0 le_rfl zero_lt_one Set.univ j x).mp hz).choose
     have ho : IsOpen {x : ClosedUnitBall E | 0 < ‖x.val‖} :=
       isOpen_lt continuous_const (continuous_norm.comp continuous_subtype_val)
@@ -148,7 +148,7 @@ theorem radialFamily_continuousOn (r : BoundaryFamily J E → X) (hr : Continuou
         (fun z : {x : ClosedUnitBall E // 0 < ‖x.val‖} => radialDiskPath r j z.val)
         ⟨x, hx⟩ := (radialDiskPath_continuous_positive r j).continuousAt
     exact (ho.isOpenEmbedding_subtypeVal.continuousAt_iff
-      (g := fun x : ClosedUnitBall E => radialDiskPath r j x) (x := ⟨x, hx⟩)).mp hh
+      (g := (radialDiskPath r j)) (x := ⟨x, hx⟩)).mp hh
 
 /-- The radial homotopy lands in the actual attachment and fixes every
 old point at every time. This is the part needed to cellularize paths. -/
@@ -175,38 +175,32 @@ def radialCoreHomotopy (r : BoundaryFamily J E → X) (hr : Continuous r) :
       exact cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J E).injective
         ⟨d.val.1, annulusBoundary 0 le_rfl ⟨d.val.2, Classical.choose hz⟩⟩
 
-theorem radialCoreHomotopy_old (r : BoundaryFamily J E → X) (hr : Continuous r)
-    (t : I) (x : X) :
-    radialCoreHomotopy r hr (t, ⟨old r (boundaryFamilyInclusion J E) x, trivial⟩) =
-      old r (boundaryFamilyInclusion J E) x := rfl
 
 theorem radialDiskPoint_positive (t : I) (x : ClosedUnitBall E)
     (hx : 0 < ‖x.val‖) : 0 < ‖(radialDiskPoint t x).val‖ := by
-  have hs : 0 < (1 - (t : ℝ)) + (t : ℝ) / ‖x.val‖ := by
-    by_cases ht : (t : ℝ) < 1
+  have hs : 0 < (1 - t) + t / ‖x.val‖ := by
+    by_cases ht : t < 1
     · exact add_pos_of_pos_of_nonneg (sub_pos.mpr ht)
         (div_nonneg t.property.1 hx.le)
-    · have ht' : (t : ℝ) = 1 := le_antisymm t.property.2 (le_of_not_gt ht)
-      rw [ht']
-      positivity
-  change 0 < ‖((1 - (t : ℝ)) + (t : ℝ) / ‖x.val‖) • x.val‖
+    · have ht'  := le_antisymm t.property.2 (le_of_not_gt ht)
+      simp_all
+  change 0 < ‖((1 - t) + t / ‖x.val‖) • x.val‖
   rw [norm_smul, Real.norm_of_nonneg hs.le]
-  exact mul_pos hs hx
+  aesop
 
 theorem radialDiskPoint_normalize (t : I) (x : ClosedUnitBall E)
     (hx : 0 < ‖x.val‖) :
     annulusBoundary 0 le_rfl ⟨radialDiskPoint t x, radialDiskPoint_positive t x hx⟩ =
       annulusBoundary 0 le_rfl ⟨x, hx⟩ := by
-  have hs : 0 < (1 - (t : ℝ)) + (t : ℝ) / ‖x.val‖ := by
-    by_cases ht : (t : ℝ) < 1
+  have hs : 0 < (1 - t) + t / ‖x.val‖ := by
+    by_cases ht : t < 1
     · exact add_pos_of_pos_of_nonneg (sub_pos.mpr ht)
         (div_nonneg t.property.1 hx.le)
-    · have ht' : (t : ℝ) = 1 := le_antisymm t.property.2 (le_of_not_gt ht)
-      rw [ht']
-      positivity
+    · have ht'  := le_antisymm t.property.2 (le_of_not_gt ht)
+      simp_all
   apply Subtype.ext
-  change ‖((1 - (t : ℝ)) + (t : ℝ) / ‖x.val‖) • x.val‖⁻¹ •
-      (((1 - (t : ℝ)) + (t : ℝ) / ‖x.val‖) • x.val) = ‖x.val‖⁻¹ • x.val
+  change ‖((1 - t) + t / ‖x.val‖) • x.val‖⁻¹ •
+      (((1 - t) + t / ‖x.val‖) • x.val) = ‖x.val‖⁻¹ • x.val
   rw [norm_smul, Real.norm_of_nonneg hs.le, smul_smul]
   congr 1
   rw [mul_inv_rev, mul_assoc, inv_mul_cancel₀ (ne_of_gt hs), mul_one]
@@ -235,12 +229,8 @@ theorem diskAttachment_path_into_old (r : BoundaryFamily J E → X) (hr : Contin
     (x := old r (boundaryFamilyInclusion J E) x)
     (y := old r (boundaryFamilyInclusion J E) y) trivial trivial p
   let Q : Path (⟨old r (boundaryFamilyInclusion J E) x, trivial⟩ : puncturedAttachment r)
-      ⟨old r (boundaryFamilyInclusion J E) y, trivial⟩ := {
-    toFun := fun t => ⟨q t, hq ⟨t, rfl⟩⟩
-    continuous_toFun := q.continuous.subtype_mk _
-    source' := Subtype.ext q.source
-    target' := Subtype.ext q.target }
-  let v : Path x y := Q.map (radialCoreBack_continuous r hr)
+      ⟨old r (boundaryFamilyInclusion J E) y, trivial⟩ := q.inSubset hq
+  let v  := Q.map (radialCoreBack_continuous r hr)
   let H := radialCoreHomotopy r hr
   have hqv : Path.Homotopic q (v.map (old_continuous r (boundaryFamilyInclusion J E))) := by
     refine ⟨{
@@ -254,12 +244,12 @@ theorem diskAttachment_path_into_old (r : BoundaryFamily J E → X) (hr : Contin
     · subst s
       change H (t, Q 0) = q 0
       rw [Q.source, q.source]
-      exact radialCoreHomotopy_old r hr t x
-    · have hs' : s = 1 := hs
+      tauto
+    · have hs'  := hs
       subst s
       change H (t, Q 1) = q 1
       rw [Q.target, q.target]
-      exact radialCoreHomotopy_old r hr t y
+      tauto
   exact ⟨v, hpq.trans hqv⟩
 
 theorem twoCellAttachment_path_into_old
@@ -269,7 +259,6 @@ theorem twoCellAttachment_path_into_old
     ∃ q : Path x y, Path.Homotopic p
       (q.map (old_continuous r (boundaryFamilyInclusion J (Fin 2 → ℝ)))) := by
   apply diskAttachment_path_into_old r hr _ x y p
-  rw [rank_fun']
   norm_num
 
 end FiniteChains.RelativeAttachment

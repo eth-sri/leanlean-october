@@ -6,8 +6,6 @@ public import RequestProject.OrderNerveCellMaps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -43,15 +41,7 @@ theorem mathlibOrderNerveChainMap_two (f : P → Q) (hf : Monotone f)
     (c : OrdTri P →₀ ℤ) :
     ((mathlibOrderNerveChainMap f hf).f 2).hom
       (Finsupp.mapDomain (ordTriNerveEquiv P) c) =
-        Finsupp.mapDomain (ordTriNerveEquiv Q) (chain2 (orderCxMap f hf) c) := by
-  change Finsupp.mapDomain ((nerveMap hf.functor).app (op ⦋2⦌))
-    (Finsupp.mapDomain (ordTriNerveEquiv P) c) =
-      Finsupp.mapDomain (ordTriNerveEquiv Q)
-        (Finsupp.mapDomain (orderCxMap f hf).onF c)
-  rw [← Finsupp.mapDomain_comp, ← Finsupp.mapDomain_comp]
-  apply Finsupp.mapDomain_congr
-  intro t _
-  exact (ordTriNerveEquiv_map f hf t).symm
+        Finsupp.mapDomain (ordTriNerveEquiv Q) (chain2 (orderCxMap f hf) c) := Finsupp.mapDomain_square (fun t => (ordTriNerveEquiv_map f hf t).symm) c
 
 /-- The actual three-chain dictionary also commutes with the actual Mathlib chain map. -/
 theorem mathlibOrderNerveChainMap_three (f : P → Q) (hf : Monotone f)
@@ -59,14 +49,6 @@ theorem mathlibOrderNerveChainMap_three (f : P → Q) (hf : Monotone f)
     ((mathlibOrderNerveChainMap f hf).f 3).hom
       (Finsupp.mapDomain (ordTetNerveEquiv P) c) =
         Finsupp.mapDomain (ordTetNerveEquiv Q)
-          (Finsupp.mapDomain (ordTetMap f hf) c) := by
-  change Finsupp.mapDomain ((nerveMap hf.functor).app (op ⦋3⦌))
-    (Finsupp.mapDomain (ordTetNerveEquiv P) c) =
-      Finsupp.mapDomain (ordTetNerveEquiv Q)
-        (Finsupp.mapDomain (ordTetMap f hf) c)
-  rw [← Finsupp.mapDomain_comp, ← Finsupp.mapDomain_comp]
-  apply Finsupp.mapDomain_congr
-  intro t _
-  exact (ordTetNerveEquiv_map f hf t).symm
+          (Finsupp.mapDomain (ordTetMap f hf) c) := Finsupp.mapDomain_square (fun t => (ordTetNerveEquiv_map f hf t).symm) c
 
 end FiniteChains.Comb

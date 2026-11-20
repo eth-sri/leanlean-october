@@ -2,6 +2,7 @@ module
 
 public import Mathlib
 public import RequestProject.LemmaTwoOne
+public import RequestProject.ChainLinearNaturality
 
 @[expose] public section
 
@@ -21,9 +22,6 @@ The case `k = ℤ` is the integral half of the argument, the case `k = 𝔽ₚ` 
 prime.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -47,10 +45,7 @@ noncomputable def boundaryColK (b : I → J → MonoidAlgebra k G)
     (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal] (j : J) :
     I →₀ MonoidAlgebra k (G ⧸ M) :=
   Finsupp.onFinset (hcol j).toFinset (fun i => quotRingHom k M (b i j)) (by
-    intro i hi
-    simp only [ne_eq] at hi
-    have hb : b i j ≠ 0 := fun h => hi (by rw [h, map_zero])
-    simpa using hb)
+    aesop)
 
 @[simp] theorem boundaryColK_apply (b : I → J → MonoidAlgebra k G)
     (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal] (j : J) (i : I) :
@@ -70,7 +65,7 @@ theorem boundaryMapK_apply_coord (b : I → J → MonoidAlgebra k G)
     boundaryMapK k b hcol M u i = ∑ j ∈ u.support, u j * quotRingHom k M (b i j) := by
   classical
   rw [boundaryMapK, Finsupp.linearCombination_apply, Finsupp.sum, Finsupp.finset_sum_apply]
-  exact Finset.sum_congr rfl fun j _ => rfl
+  tauto
 
 theorem boundaryMapK_single (b : I → J → MonoidAlgebra k G)
     (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal] (j : J) :
@@ -88,18 +83,11 @@ theorem boundaryMapK_redVecK (b : I → J → MonoidAlgebra k G)
     (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal]
     (v : J →₀ MonoidAlgebra k G) (i : I) :
     boundaryMapK k b hcol M (redVecK k M v) i = quotRingHom k M (foxBoundaryK k b v i) := by
-  classical
-  have hsupp : (redVecK k M v).support ⊆ v.support := by
-    intro j hj
-    simp only [Finsupp.mem_support_iff, redVecK_apply] at hj ⊢
-    intro h
-    exact hj (by rw [h, map_zero])
-  rw [boundaryMapK_apply_coord, foxBoundaryK, map_sum,
-    Finset.sum_congr rfl (fun j (_ : j ∈ v.support) => map_mul (quotRingHom k M) (v j) (b i j))]
-  refine Finset.sum_subset hsupp ?_
-  intro j _ hj
-  simp only [Finsupp.mem_support_iff, not_not, redVecK_apply] at hj
-  rw [redVecK_apply, hj, zero_mul]
+  rw [boundaryMapK_apply_coord]
+  change ((v.mapRange (quotRingHom k M) (map_zero _)).sum
+    fun j a => a * quotRingHom k M (b i j)) = quotRingHom k M (v.sum fun j a => a * b i j)
+  rw [Finsupp.sum_mapRange_index (fun j => zero_mul _), map_finsuppSum]
+  simp only [map_mul]
 
 /-- Reduction of coefficient vectors is surjective. -/
 theorem quotRingHomK_surjective (M : Subgroup G) [M.Normal] :
@@ -110,13 +98,8 @@ theorem quotRingHomK_surjective (M : Subgroup G) [M.Normal] :
 
 /-- Every vector over `k[G/M]` lifts to a vector over `k[G]`. -/
 theorem exists_liftK (M : Subgroup G) [M.Normal] (u : J →₀ MonoidAlgebra k (G ⧸ M)) :
-    ∃ v : J →₀ MonoidAlgebra k G, redVecK k M v = u := by
-  classical
-  choose lift hlift using quotRingHomK_surjective (k := k) (G := G) M
-  refine ⟨Finsupp.mapRange (fun y => if y = 0 then 0 else lift y) (by simp) u, ?_⟩
-  refine Finsupp.ext fun j => ?_
-  simp only [redVecK_apply, Finsupp.mapRange_apply]
-  by_cases h : u j = 0 <;> simp [h, hlift]
+    ∃ v : J →₀ MonoidAlgebra k G, redVecK k M v = u :=
+  Finsupp.mapRange_surjective _ (map_zero _) (quotRingHomK_surjective M) u
 
 /-- **Lemma 2.1 for a pair of normal subgroups, over an arbitrary domain of
 coefficients.**  If `C ≤ N` are normal subgroups of `G` with `N/C` torsion-free abelian,
@@ -134,60 +117,28 @@ theorem injective_boundaryMapK_of_injective [IsDomain k] (b : I → J → Monoid
   set e : ((G ⧸ C) ⧸ H) ≃* (G ⧸ N) := QuotientGroup.quotientQuotientEquivQuotient C N hCN with he
   set E : MonoidAlgebra k ((G ⧸ C) ⧸ H) →+* MonoidAlgebra k (G ⧸ N) :=
     MonoidAlgebra.mapDomainRingHom k e.toMonoidHom with hE
-  -- the two reductions of `k[G]` agree
-  have L1 : ∀ x : MonoidAlgebra k G,
+  have L1 (x : MonoidAlgebra k G) :
       E (quotRingHom k H (quotRingHom k C x)) = quotRingHom k N x := by
-    intro x
-    have key : (E.comp ((quotRingHom k H).comp (quotRingHom k C)) : MonoidAlgebra k G →+* _)
-        = quotRingHom k N := by
-      apply MonoidAlgebra.ringHom_ext
-      · intro r
-        simp [hE, quotRingHom, MonoidAlgebra.mapDomainRingHom, Finsupp.mapDomain_single]
-      · intro g
-        simp [hE, quotRingHom, MonoidAlgebra.mapDomainRingHom, Finsupp.mapDomain_single, he]
-        rfl
-    exact congrArg (fun f : MonoidAlgebra k G →+* MonoidAlgebra k (G ⧸ N) => f x) key
+    simp only [hE, quotRingHom, ← RingHom.comp_apply, ← MonoidAlgebra.mapDomainRingHom_comp]
+    rfl
   have hEinj : Function.Injective E :=
     fun _ _ h => MonoidAlgebra.coeff_injective (Finsupp.mapDomain_injective (M := k) e.injective (congrArg MonoidAlgebra.coeff h))
   have hEv : Function.Injective (Finsupp.mapRange (α := J) E (map_zero _)) :=
     Finsupp.mapRange_injective E (map_zero _) hEinj
-  -- the columns correspond
-  have hcolumn : ∀ j : J,
+  have hcolumn (j : J) :
       Finsupp.mapRange E (map_zero _)
           (reduceVecQ k H (boundaryMapK k b hcol C (Finsupp.single j 1))) =
         boundaryColK k b hcol N j := by
-    intro j
-    refine Finsupp.ext fun i => ?_
-    rw [Finsupp.mapRange_apply, reduceVecQ_apply, boundaryColK_apply,
-      boundaryMapK_single, boundaryColK_apply]
-    exact L1 (b i j)
-  -- the square: reduction over `k[Q]` corresponds to reduction modulo `N`
-  have hsq : ∀ w : J →₀ MonoidAlgebra k ((G ⧸ C) ⧸ H),
+    ext i : 1
+    simp only [Finsupp.mapRange_apply, reduceVecQ_apply, boundaryMapK_single, boundaryColK_apply, L1]
+  have hsq (w : J →₀ MonoidAlgebra k ((G ⧸ C) ⧸ H)) :
       Finsupp.mapRange E (map_zero _) (reduceLinQ k H (boundaryMapK k b hcol C) w) =
-        boundaryMapK k b hcol N (Finsupp.mapRange E (map_zero _) w) := by
-    intro w
-    induction w using Finsupp.induction_linear with
-    | zero => simp
-    | add w₁ w₂ h₁ h₂ =>
-        rw [map_add, Finsupp.mapRange_add (by simp) (f := E), h₁, h₂,
-          Finsupp.mapRange_add (by simp) (f := E), map_add]
-    | single j y =>
-        have hsmul : Finsupp.mapRange E (map_zero _)
-            (y • reduceVecQ k H (boundaryMapK k b hcol C (Finsupp.single j 1))) =
-            E y • Finsupp.mapRange E (map_zero _)
-              (reduceVecQ k H (boundaryMapK k b hcol C (Finsupp.single j 1))) := by
-          refine Finsupp.ext fun i => ?_
-          simp only [Finsupp.mapRange_apply, Finsupp.smul_apply, smul_eq_mul, map_mul]
-        rw [reduceLinQ_single, Finsupp.mapRange_single, hsmul, hcolumn j]
-        conv_rhs => rw [boundaryMapK, Finsupp.linearCombination_single]
-  -- the reduced map is injective, so Lemma 2.1 applies
+        boundaryMapK k b hcol N (Finsupp.mapRange E (map_zero _) w) :=
+    (Finsupp.linearCombination_semilinear (Finsupp.mapRange.linearMap E.toSemilinearMap) hcolumn w).symm
   have hred : Function.Injective (reduceLinQ k H (boundaryMapK k b hcol C)) := by
     intro w z hwz
-    refine hEv ?_
-    have h1 : boundaryMapK k b hcol N (Finsupp.mapRange E (map_zero _) w) =
-        boundaryMapK k b hcol N (Finsupp.mapRange E (map_zero _) z) := by
-      rw [← hsq w, ← hsq z, hwz]
-    exact h h1
+    apply hEv (h ?_)
+    rw [← hsq w, ← hsq z, hwz]
   exact injective_of_reduceLinQ_injective (boundaryMapK k b hcol C) hred
 
 end FiniteChains

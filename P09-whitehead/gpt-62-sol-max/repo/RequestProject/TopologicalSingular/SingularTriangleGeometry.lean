@@ -3,6 +3,7 @@ module
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
 public import RequestProject.TopologicalSingular.SingularChainH0
+public import RequestProject.TopologicalSingular.SimplexCoordinates
 
 @[expose] public section
 
@@ -23,35 +24,28 @@ noncomputable def coordinate (n : ℕ) (i : Fin (n + 1)) : C(Domain n, unitInter
 
 theorem triangle_face_zero (z : Domain 1) :
     (stdSimplex.map (SimplexCategory.δ (0 : Fin 3)) z).val = ![0, z.val 0, z.val 1] := by
+  erw [simplex_map_succAbove (0 : Fin 3) z]
   funext j
-  simp only [stdSimplex.map, FunOnFinite.linearMap_apply_apply]
-  change (∑ k : Fin 2 with (0 : Fin 3).succAbove k = j, z.val k) = _
-  rw [Finset.sum_filter, Fin.sum_univ_two]
-  fin_cases j <;> norm_num [Fin.succAbove, Fin.ext_iff, Fin.lt_def, Fin.le_def]
+  fin_cases j <;> rfl
 
 theorem triangle_face_one (z : Domain 1) :
     (stdSimplex.map (SimplexCategory.δ (1 : Fin 3)) z).val = ![z.val 0, 0, z.val 1] := by
+  erw [simplex_map_succAbove (1 : Fin 3) z]
   funext j
-  simp only [stdSimplex.map, FunOnFinite.linearMap_apply_apply]
-  change (∑ k : Fin 2 with (1 : Fin 3).succAbove k = j, z.val k) = _
-  rw [Finset.sum_filter, Fin.sum_univ_two]
-  fin_cases j <;> norm_num [Fin.succAbove, Fin.ext_iff, Fin.lt_def, Fin.le_def]
+  fin_cases j <;> rfl
 
 theorem triangle_face_two (z : Domain 1) :
     (stdSimplex.map (SimplexCategory.δ (2 : Fin 3)) z).val = ![z.val 0, z.val 1, 0] := by
+  erw [simplex_map_succAbove (2 : Fin 3) z]
   funext j
-  simp only [stdSimplex.map, FunOnFinite.linearMap_apply_apply]
-  change (∑ k : Fin 2 with (2 : Fin 3).succAbove k = j, z.val k) = _
-  rw [Finset.sum_filter, Fin.sum_univ_two]
-  fin_cases j <;> norm_num [Fin.succAbove, Fin.ext_iff, Fin.lt_def, Fin.le_def]
+  fin_cases j <;> rfl
 
 noncomputable def squareTriangle0 : C(Domain 2, unitInterval × unitInterval) :=
   ⟨fun z => (coordinate 2 2 z, unitInterval.symm (coordinate 2 0 z)),
     (coordinate 2 2).continuous.prodMk (unitInterval.continuous_symm.comp (coordinate 2 0).continuous)⟩
 
 noncomputable def squareTriangle1 : C(Domain 2, unitInterval × unitInterval) :=
-  ⟨fun z => (unitInterval.symm (coordinate 2 0 z), coordinate 2 2 z),
-    (unitInterval.continuous_symm.comp (coordinate 2 0).continuous).prodMk (coordinate 2 2).continuous⟩
+  (⟨Prod.swap, continuous_swap⟩ : C(_, _)).comp squareTriangle0
 
 theorem squareTriangle0_faces (z : Domain 1) :
     squareTriangle0 (stdSimplex.map (SimplexCategory.δ (0 : Fin 3)) z) =
@@ -77,14 +71,7 @@ theorem squareTriangle1_faces (z : Domain 1) :
         (stdSimplexHomeomorphUnitInterval z, stdSimplexHomeomorphUnitInterval z) ∧
     squareTriangle1 (stdSimplex.map (SimplexCategory.δ (2 : Fin 3)) z) =
         (stdSimplexHomeomorphUnitInterval z, 0) := by
-  have hz := z.property.2
-  rw [Fin.sum_univ_two] at hz
-  refine ⟨?_, ?_, ?_⟩ <;>
-    (apply Prod.ext <;> apply Subtype.ext <;>
-      change _ = _ <;>
-      simp only [squareTriangle1, ContinuousMap.coe_mk, coordinate, unitInterval.coe_symm_eq,
-        triangle_face_zero, triangle_face_one, triangle_face_two,
-        stdSimplexHomeomorphUnitInterval] <;>
-      (dsimp [Matrix.vecHead, Matrix.vecTail]; all_goals linarith))
+  obtain ⟨h₀, h₁, h₂⟩ := squareTriangle0_faces z
+  simp [squareTriangle1, h₀, h₁, h₂]
 
 end FiniteChains.TopologicalSingular

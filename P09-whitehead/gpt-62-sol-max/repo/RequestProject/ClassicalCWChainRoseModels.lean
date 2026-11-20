@@ -12,9 +12,6 @@ trees are constructed from connectedness, not supplied as a new input.
 Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment
@@ -61,10 +58,9 @@ theorem finiteGraphs_have_compatible_trees :
     subst k
     exact boundedTrees_compatible K C hC T hT hab
   refine ⟨U, ?_, ?_⟩
-  · intro S hS
-    exact hT₀ S hS
+  · tauto
   · intro i k hik e
-    exact transport i.val k.val (show i.val ≤ k.val from hik) i k (hs i) (hs k) hik e
+    exact transport i.val k.val hik i k (hs i) (hs k) hik e
 
 def chainTree (i : Fin (n + 1)) : Comb.SpanningTree (subcomplexGraph (C i)) :=
   Classical.choose (finiteGraphs_have_compatible_trees K C hC hconn) i
@@ -111,17 +107,8 @@ theorem graphCollapse_natural {i k : Fin (n + 1)} (hik : i ≤ k) :
     (chainTree K C hC hconn i) (chainTree K C hC hconn k)
     (subcomplexGraphInclusion (hC hik)) (chainTree_compatible K C hC hconn hik)
     (subcomplexGraphDiskMap (hC hik)) (subcomplexGraphDiskMap_old (hC hik))
-    (fun j x => subcomplexDiskMap_cell (hC hik) 1 j x)
-  have he : graphRoseMap _ _ (chainTree K C hC hconn i) (chainTree K C hC hconn k)
-      (subcomplexGraphInclusion (hC hik)) (chainTree_compatible K C hC hconn hik) =
-      diskRoseMap (roseGenInclusion K C hC hconn hik) := by
-    apply hom_ext (roseAttaching _) (boundaryFamilyInclusion _ (Fin 1 → ℝ))
-    · intro u
-      cases u
-      rfl
-    · rintro ⟨e, x⟩
-      rw (config := { transparency := .default }) [graphRoseMap, diskFamilyMap_cell]
-  rwa [he] at H
+    (subcomplexDiskMap_cell (hC hik) 1)
+  tauto
 
 def collapsedAttaching (i : Fin (n + 1)) :
     C(BoundaryFamily (RelCWComplex.cell (C i : Set K) 2) (Fin 2 → ℝ),
@@ -136,7 +123,7 @@ theorem collapsedAttaching_natural {i k : Fin (n + 1)} (hik : i ≤ k)
     (graphCollapse_natural K C hC hconn hik)
   change _ = graphCollapse K C hC hconn k
     (subcomplexGraphDiskMap (hC hik) (wordAttaching C hC i ⟨j, a⟩)) at H
-  rw (config := { transparency := .default }) [wordAttaching_natural] at H
+  erw [wordAttaching_natural] at H
   exact H
 
 def collapsedDiskInclusion {i k : Fin (n + 1)} (hik : i ≤ k) :=
@@ -168,7 +155,7 @@ theorem collapsedDiskChange_natural {i k : Fin (n + 1)} (hik : i ≤ k) :
     have hmid := congrArg (old (collapsedAttaching K C hC hconn k)
       (boundaryFamilyInclusion (RelCWComplex.cell (C k : Set K) 2) (Fin 2 → ℝ)))
       (congrArg (fun f => f x) (graphCollapse_natural K C hC hconn hik))
-    exact hleft.trans (hmid.trans hright.symm)
+    tauto
   · rintro ⟨j, x⟩
     have hleft := (congrArg (collapsedDiskInclusion K C hC hconn hik)
       (diskAttachmentBaseChangeHomotopyEquiv_cell (wordAttaching C hC i)
@@ -188,9 +175,9 @@ theorem collapsedDiskInclusion_killsPi2_iff {i k : Fin (n + 1)} (hik : i ≤ k) 
     Whitehead.KillsPi2 (collapsedDiskInclusion K C hC hconn hik) ↔
       Whitehead.KillsPi2 (⟨Set.inclusion (hC hik), continuous_inclusion (hC hik)⟩ :
         C((C i : Set K), (C k : Set K))) := by
-  rw (config := { transparency := .default }) [← wordDiskInclusion_killsPi2_iff K C hC hik]
+  erw [← wordDiskInclusion_killsPi2_iff K C hC hik]
   apply Whitehead.killsPi2_homotopyEquiv_square_iff
     (collapsedDiskChange K C hC hconn i) (collapsedDiskChange K C hC hconn k)
-  rw (config := { transparency := .default }) [collapsedDiskChange_natural]
+  erw [collapsedDiskChange_natural]
 
 end FiniteChains.ClassicalCW.ChainWords

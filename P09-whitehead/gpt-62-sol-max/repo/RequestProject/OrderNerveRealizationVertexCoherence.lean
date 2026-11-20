@@ -19,7 +19,7 @@ theorem orderNerveRealization_exists_vertex_coherence (P : Type) [PartialOrder P
   letI : Nonempty P := ⟨a⟩
   letI := orderNerveRealization_pathConnectedSpace P hconn
   let F := orderNerveRealizationFundamentalFunctor P
-  let d : ∀ p : P, F.obj a ⟶ F.obj p := fun p =>
+  let d  := fun p =>
     Path.Homotopic.Quotient.mk (PathConnectedSpace.somePath
       (orderNerveRealizationVertex a) (orderNerveRealizationVertex p))
   obtain ⟨k, hk⟩ := orderFunctor_exists_coherent_arrows F a d hconn hsc
@@ -38,7 +38,7 @@ theorem orderNerveRealization_exists_radial {P : Type} [PartialOrder P]
   obtain ⟨w, hw⟩ := orderNerveRealizationVertex_mem_simplex s.val 0
   let r₀ := (PathConnectedSpace.joined w z).somePath.map
     (orderNerveRealizationSimplex P s.val).hom.continuous
-  let r : Path (orderNerveRealizationVertex (s.val.obj 0)) x := r₀.cast hw.symm hx.symm
+  let r  := r₀.cast hw.symm hx.symm
   refine ⟨s.val.obj 0, r, ?_⟩
   intro v hv
   rw [← hx] at hv

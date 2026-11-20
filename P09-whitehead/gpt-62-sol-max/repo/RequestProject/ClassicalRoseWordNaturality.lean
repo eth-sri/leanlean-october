@@ -15,9 +15,7 @@ Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment ClassicalGraphModel ContinuousEdgeWords
@@ -27,17 +25,10 @@ variable {A B : Type}
 theorem classicalRoseRead_map (f : A → B) (l : List (A × Bool)) (t : I) :
     diskRoseMap f (classicalRoseRead l t) =
       classicalRoseRead (l.map (fun p => (f p.1, p.2))) t := by
-  induction l generalizing t with
-  | nil => exact diskRoseMap_vertex f
-  | cons p l ih =>
-    rcases p with ⟨a, b⟩
-    by_cases ht : (t : ℝ) ≤ 1 / 2
-    · simp only [List.map_cons, classicalRoseRead, Path.trans_apply, dif_pos ht, if_pos ht]
-      cases b <;> simp only [Bool.false_eq_true, ↓reduceIte,
-        Path.symm_apply]
-      all_goals exact diskRoseMap_cell f _
-    · simp only [List.map_cons, classicalRoseRead, Path.trans_apply, dif_neg ht, if_neg ht]
-      exact ih _
+  exact readLoopWord_map (diskRoseMap f) f
+    (fun a => (graphEdgePath (roseAttaching A) a : Path (roseVertex A) (roseVertex A)))
+    (fun b => (graphEdgePath (roseAttaching B) b : Path (roseVertex B) (roseVertex B)))
+    (diskRoseMap_vertex f) (fun a t => diskRoseMap_cell f ⟨a, graphDiskHomeomorph t⟩) l t
 
 theorem classicalRoseWordBoundary_map (f : A → B) (l : List (A × Bool)) :
     (diskRoseMap f).comp (classicalRoseWordBoundary l) =
@@ -51,10 +42,7 @@ theorem classicalRoseRead_eq_realize_apply (l : List (A × Bool))
     (hl : IsPath (graphSrc (roseAttaching A)) (graphTgt (roseAttaching A)) l a b) (t : I) :
     classicalRoseRead l t = realize (graphSrc (roseAttaching A)) (graphTgt (roseAttaching A))
       (old (roseAttaching A) (boundaryFamilyInclusion A (Fin 1 → ℝ)))
-      (graphEdgePath (roseAttaching A)) l hl t := by
-  cases a
-  cases b
-  exact congrArg (fun p => p t) (classicalRoseRead_eq_realize l hl)
+      (graphEdgePath (roseAttaching A)) l hl t := congrArg (fun p => p t) (classicalRoseRead_eq_realize l hl)
 
 theorem boundaryWords_homotopic_classicalWord (W : BoundaryWords (roseAttaching A)) :
     W.boundaryMap.Homotopic (classicalRoseWordBoundary W.loopWord) := by
@@ -77,11 +65,7 @@ theorem roseCopyRealization_unit (x : orderNerveRealization (Rose PUnit)) :
     | base => rfl
     | mid u => cases u; rfl
     | edg u b => cases u; rfl
-  have mapEq (g : Rose PUnit → Rose PUnit) (hg : Monotone g) (he : g = id) :
-      orderNerveRealizationMap g hg x = x := by
-    subst g
-    exact orderNerveRealizationMap_id _ _
-  exact mapEq (roseCopy PUnit.unit) (roseCopy PUnit.unit).monotone hf
+  grind [orderNerveRealizationMap_id]
 
 theorem dummyCircleBoundaryHomeomorph_traversal (t : I) :
     dummyCircleBoundaryHomeomorph
@@ -109,8 +93,7 @@ theorem dummyCircleBoundaryHomeomorph_eq :
     (unitBoundarySquareHomeomorph.symm (squareBoundaryTraversal t)) =
       squareLoopDesc (graphEdgePath (roseAttaching PUnit) PUnit.unit)
     (unitBoundarySquareHomeomorph (unitBoundarySquareHomeomorph.symm (squareBoundaryTraversal t)))
-  rw [Homeomorph.apply_symm_apply, squareLoopDesc_traversal]
-  exact dummyCircleBoundaryHomeomorph_traversal t
+  simpa using dummyCircleBoundaryHomeomorph_traversal t
 
 theorem dummyCircleBoundaryHomeomorph_homotopic_word :
     dummyCircleBoundaryHomeomorph.toContinuousMap.Homotopic
@@ -118,7 +101,6 @@ theorem dummyCircleBoundaryHomeomorph_homotopic_word :
   have H := (squareLoopDesc_homotopic
     (Path.Homotopic.trans_refl (graphEdgePath (roseAttaching PUnit) PUnit.unit)).symm).comp
       (ContinuousMap.Homotopic.refl unitBoundarySquareHomeomorph.toContinuousMap)
-  rw [← dummyCircleBoundaryHomeomorph_eq] at H
-  exact H
+  simpa [← dummyCircleBoundaryHomeomorph_eq] using! H
 
 end FiniteChains.PresModel

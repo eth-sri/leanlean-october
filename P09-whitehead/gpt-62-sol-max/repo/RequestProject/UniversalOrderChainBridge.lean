@@ -11,8 +11,6 @@ The conversion preserves coefficients, boundaries, projection, and subposet supp
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -29,19 +27,10 @@ noncomputable def universalNerveChain2 :
     (UF (orderCx P) a →₀ ℤ) →ₗ[ℤ] Nerve.Ch (UOrder P a) :=
   ordNerveChain2.comp (chain2 uOrderHomInv)
 
-theorem uOrderHomInv_edge_projection (e : UE (orderCx P) a) :
-    (orderCxMap uOrderEnd uOrderEnd_monotone).onE (uOrderHomInv.onE e) = e.1.2 := by
-  exact congrArg (fun e : UE (orderCx P) a => e.1.2)
-    (homInv_onE_apply uOrderHom Function.bijective_id
-      ⟨uOrderEdge_injective, uOrderEdge_surjective⟩
-      ⟨uOrderFace_injective, uOrderFace_surjective⟩ e)
 
 theorem uOrderHomInv_face_projection (t : UF (orderCx P) a) :
-    (orderCxMap uOrderEnd uOrderEnd_monotone).onF (uOrderHomInv.onF t) = t.1.2 := by
-  exact congrArg (fun t : UF (orderCx P) a => t.1.2)
-    (homInv_onF_apply uOrderHom Function.bijective_id
-      ⟨uOrderEdge_injective, uOrderEdge_surjective⟩
-      ⟨uOrderFace_injective, uOrderFace_surjective⟩ t)
+    (orderCxMap uOrderEnd uOrderEnd_monotone).onF (uOrderHomInv.onF t) = t.1.2 := congrArg (·.1.2)
+    (uOrderHomInv_face_apply t)
 
 /-- This is an equality for arbitrary chains, including relative chains. -/
 theorem universalNerveChain2_bdry (c : UF (orderCx P) a →₀ ℤ) :
@@ -80,12 +69,7 @@ theorem universalNerveChain2_single_mem_incOn (S : P → Prop)
     change S (uOrderEnd (uOrderHomInv.onF t).1.1) ∧
       S (uOrderEnd (uOrderHomInv.onF t).1.2.1) ∧
       S (uOrderEnd (uOrderHomInv.onF t).1.2.2) at ht
-    intro v hv
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at hv
-    rcases hv with rfl | rfl | rfl
-    · exact ht.1
-    · exact ht.2.1
-    · exact ht.2.2
+    simp_all
 
 /-- Finite cellular support over a subposet becomes nerve support over that same subposet.
 No cycle or connectedness hypothesis is required. -/

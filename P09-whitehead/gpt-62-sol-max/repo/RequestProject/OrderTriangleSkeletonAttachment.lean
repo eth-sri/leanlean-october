@@ -19,9 +19,6 @@ Awaiting final Lean verification. -/
 
 noncomputable section
 open scoped Classical Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrderTriangleAttachment
 open RelativeAttachment ClassicalSkeletonAttachment CategoryTheory Topology
@@ -70,11 +67,10 @@ def boundaryReparametrization : C(UnitBoundary (Fin 2 → ℝ), UnitBoundary (Fi
     have h' := (diskReparametrization_interior (unitBoundaryInclusion _ z)).mp h
     change ‖z.val‖ < 1 at h'
     rw [z.property] at h'
-    exact (lt_irrefl _ h')⟩
+    simp_all⟩
   continuous_toFun := by
     apply Continuous.subtype_mk
-    exact (continuous_subtype_val.comp diskReparametrization.continuous).comp
-      (unitBoundaryInclusion (Fin 2 → ℝ)).continuous
+    fun_prop
 
 theorem diskReparametrization_boundary (z : UnitBoundary (Fin 2 → ℝ)) :
     diskReparametrization (unitBoundaryInclusion _ z) =
@@ -106,7 +102,7 @@ theorem characteristicDisk_simplex (n : ℕ) (s : (nerve P).nonDegenerate n)
     (ULift.up ((TopologicalSingular.simplexCoordinates n).symm
       ((standardSimplexClosedBallHomeomorph n).symm
       (standardSimplexClosedBallHomeomorph n z)))) = _
-  rw [Homeomorph.symm_apply_apply]
+  aesop
 
 theorem triangleDiskMap_characteristic (t : StrictOrdTri P)
     (x : ClosedUnitBall (Fin 2 → ℝ)) :
@@ -124,7 +120,7 @@ def triangleAttaching : C(BoundaryFamily (StrictOrdTri P) (Fin 2 → ℝ), OneSk
     have hs : Continuous (Sigma.mk
         (β := fun _ : (nerve P).nonDegenerate 2 => UnitBoundary (Fin 2 → ℝ))
         (strictTriNerveEquiv P t)) := continuous_sigmaMk
-    exact (skeletonAttachingMap (Set.univ : Set (orderNerveRealization P)) 2).continuous.comp
+    exact (skeletonAttachingMap Set.univ 2).continuous.comp
       (hs.comp boundaryReparametrization.continuous)
 
 theorem triangleAttaching_val (t : StrictOrdTri P) (z : UnitBoundary (Fin 2 → ℝ)) :
@@ -144,23 +140,9 @@ def triangleReparametrizationHomeomorph :
 
 def triangleAttachmentHomeomorph : DiskAttachment (triangleAttaching P) ≃ₜ TwoSkeleton P :=
   (triangleReparametrizationHomeomorph P).trans
-    (skeletonAttachmentHomeomorph (Set.univ : Set (orderNerveRealization P)) 2)
+    (skeletonAttachmentHomeomorph Set.univ 2)
 
-@[simp] theorem triangleAttachmentHomeomorph_old (x : OneSkeleton P) :
-    (triangleAttachmentHomeomorph P
-      (old (triangleAttaching P) (boundaryFamilyInclusion (StrictOrdTri P) _) x)).val = x.val := rfl
 
-@[simp] theorem triangleAttachmentHomeomorph_cell (t : StrictOrdTri P)
-    (x : ClosedUnitBall (Fin 2 → ℝ)) :
-    (triangleAttachmentHomeomorph P
-      (cell (triangleAttaching P) (boundaryFamilyInclusion (StrictOrdTri P) _) ⟨t, x⟩)).val =
-        triangleDiskMap P t x := by
-  change (skeletonAttachmentHomeomorph (Set.univ : Set (orderNerveRealization P)) 2
-    (triangleReparametrizationHomeomorph P (cell _ _ ⟨t, x⟩))).val = _
-  rw [triangleReparametrizationHomeomorph]
-  erw [diskAttachmentQuotientReparametrization_cell]
-  rw [skeletonAttachmentHomeomorph_cell]
-  exact triangleDiskMap_characteristic P t x
 
 /-- When the nerve is two-dimensional, these are all the cells of the
 actual realization, not just an auxiliary finite or truncated space. -/

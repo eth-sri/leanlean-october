@@ -33,7 +33,7 @@ variable {d : ℕ}
 
 /-- The least barycentric coordinate away from `i`. -/
 def simplexHornMin (i : Fin (d + 2)) (z : stdSimplex ℝ (Fin (d + 2))) : ℝ :=
-  Finset.univ.inf' Finset.univ_nonempty fun j : Fin (d + 1) ↦ z.1 (i.succAbove j)
+  Finset.univ.inf' Finset.univ_nonempty fun j  ↦ z.1 (i.succAbove j)
 
 theorem simplexHornMin_nonneg (i : Fin (d + 2))
     (z : stdSimplex ℝ (Fin (d + 2))) : 0 ≤ simplexHornMin i z := by
@@ -50,7 +50,7 @@ theorem exists_simplexHornMin_eq (i : Fin (d + 2))
     (z : stdSimplex ℝ (Fin (d + 2))) :
     ∃ j : Fin (d + 1), simplexHornMin i z = z.1 (i.succAbove j) := by
   obtain ⟨j, -, hj⟩ := Finset.exists_mem_eq_inf'
-    (s := (Finset.univ : Finset (Fin (d + 1)))) Finset.univ_nonempty
+    (s := Finset.univ) Finset.univ_nonempty
     (fun j ↦ z.1 (i.succAbove j))
   exact ⟨j, hj⟩
 
@@ -63,7 +63,7 @@ theorem continuous_simplexHornMin (i : Fin (d + 2)) :
 /-- Barycentric coordinates of the retraction onto the horn opposite face `i`. -/
 def simplexHornRetractCoords (i : Fin (d + 2))
     (z : stdSimplex ℝ (Fin (d + 2))) : Fin (d + 2) → ℝ :=
-  i.insertNth (z.1 i + (d + 1 : ℝ) * simplexHornMin i z)
+  i.insertNth (z.1 i + (d + 1) * simplexHornMin i z)
     (fun j ↦ z.1 (i.succAbove j) - simplexHornMin i z)
 
 @[simp]
@@ -84,7 +84,7 @@ theorem simplexHornRetractCoords_nonneg (i : Fin (d + 2))
     0 ≤ simplexHornRetractCoords i z k := by
   refine Fin.succAboveCases i ?_ (fun j ↦ ?_) k
   · rw [simplexHornRetractCoords_same]
-    have hd : (0 : ℝ) ≤ (d : ℝ) + 1 := by positivity
+    have hd : (0 : ℝ) ≤ d + 1 := by positivity
     exact add_nonneg (z.2.1 i)
       (mul_nonneg hd (simplexHornMin_nonneg i z))
   · rw [simplexHornRetractCoords_succAbove]
@@ -145,6 +145,6 @@ theorem simplexHornRetract_eq_self_of_mem (i : Fin (d + 2))
   funext k
   refine Fin.succAboveCases i ?_ (fun j ↦ ?_) k
   · simp [simplexHornRetractCoords, simplexHornMin_eq_zero_of_mem i hz]
-  · simp [simplexHornRetractCoords, simplexHornMin_eq_zero_of_mem i hz]
+  · simp [simplexHornMin_eq_zero_of_mem i hz]
 
 end FiniteChains.TopologicalSingular

@@ -14,8 +14,6 @@ hypothesis from the original InitialIdentification. Unverified source. -/
 noncomputable section
 open scoped Classical
 open Set Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace Whitehead.CWCellEmbedding
@@ -33,14 +31,14 @@ theorem skeleton_image (n : ℕ) :
     obtain ⟨m, hm, j, hj⟩ := by simpa only [Set.mem_iUnion] using hx
     apply Set.mem_iUnion.mpr
     refine ⟨m, Set.mem_iUnion.mpr ⟨hm, Set.mem_iUnion.mpr ⟨e.imageCellEquiv m j, ?_⟩⟩⟩
-    change e.map x ∈ CWComplex.openCell (C := (Set.univ : Set L)) m (e.cellIndex m j)
+    change e.map x ∈ CWComplex.openCell (C := Set.univ) m (e.cellIndex m j)
     rw [← e.openCell_image]
-    exact ⟨x, hj, rfl⟩
+    tauto
   · intro hy
     rw [← CWComplex.iUnion_openCell_eq_skeletonLT] at hy
     obtain ⟨m, hm, j, hj⟩ := by simpa only [Set.mem_iUnion] using hy
     obtain ⟨a, ha⟩ := j.property
-    change y ∈ CWComplex.openCell (C := (Set.univ : Set L)) m j.val at hj
+    change y ∈ CWComplex.openCell (C := Set.univ) m j.val at hj
     rw [← ha, ← e.openCell_image] at hj
     obtain ⟨x, hx, rfl⟩ := hj
     refine ⟨x, ?_, rfl⟩
@@ -64,8 +62,7 @@ theorem skeletonMap_surjective (n : ℕ) : Function.Surjective (skeletonMap e n)
   intro y
   have hy : y.val ∈ (CWComplex.skeletonLT (e.imageSubcomplex : Set L) (n : ℕ∞) : Set L) := y.property
   rw [← skeleton_image] at hy
-  obtain ⟨x, hx, hxy⟩ := hy
-  exact ⟨⟨x, hx⟩, Subtype.ext hxy⟩
+  aesop
 
 def skeletonHomeomorph (n : ℕ) :
     SkeletonCarrier (Set.univ : Set K) n ≃ₜ SkeletonCarrier (e.imageSubcomplex : Set L) n :=
@@ -92,7 +89,7 @@ theorem graphHom_injective_E : Function.Injective (graphHom e hchart).onE :=
 
 def graphDiskHomeomorph : DiskAttachment (originalGraphAttaching K) ≃ₜ
     DiskAttachment (skeletonAttachingMap (e.imageSubcomplex : Set L) 1) :=
-  ((skeletonAttachmentHomeomorph (Set.univ : Set K) 1).trans (skeletonHomeomorph e 2)).trans
+  ((skeletonAttachmentHomeomorph Set.univ 1).trans (skeletonHomeomorph e 2)).trans
     (skeletonAsDiskAttachment (e.imageSubcomplex : Set L) 1)
 
 theorem graphDiskHomeomorph_skeleton (x : DiskAttachment (originalGraphAttaching K)) :
@@ -105,8 +102,7 @@ theorem graphDiskHomeomorph_old (v : (originalGraph K).V) :
       old (skeletonAttachingMap (e.imageSubcomplex : Set L) 1) _ ((graphHom e hchart).onV v) := by
   apply (skeletonAttachmentHomeomorph (e.imageSubcomplex : Set L) 1).injective
   rw [graphDiskHomeomorph_skeleton]
-  apply Subtype.ext
-  rfl
+  aesop
 
 theorem graphDiskHomeomorph_cell (j : (originalGraph K).E) (x : ClosedUnitBall (Fin 1 → ℝ)) :
     graphDiskHomeomorph e (cell (originalGraphAttaching K) _ ⟨j, x⟩) =
@@ -114,8 +110,8 @@ theorem graphDiskHomeomorph_cell (j : (originalGraph K).E) (x : ClosedUnitBall (
   apply (skeletonAttachmentHomeomorph (e.imageSubcomplex : Set L) 1).injective
   rw [graphDiskHomeomorph_skeleton]
   apply Subtype.ext
-  change e.map ((skeletonAttachmentHomeomorph (Set.univ : Set K) 1 (cell _ _ ⟨j, x⟩)).val) =
-    (skeletonAttachmentHomeomorph (e.imageSubcomplex : Set L) 1 (cell _ _ ⟨e.imageCellEquiv 1 j, x⟩)).val
+  change e.map ((skeletonAttachmentHomeomorph Set.univ 1 (cell _ _ ⟨j, x⟩)).val) =
+    (skeletonAttachmentHomeomorph e.imageSubcomplex 1 (cell _ _ ⟨e.imageCellEquiv 1 j, x⟩)).val
   rw [skeletonAttachmentHomeomorph_cell, skeletonAttachmentHomeomorph_cell]
   exact (hchart 1 j x.val).symm
 
@@ -133,9 +129,8 @@ open ClassicalGraphModel ClassicalSkeletonAttachment RelativeAttachment
 def originalGraphCellBoundary (K : Whitehead.TwoComplex)
     (j : RelCWComplex.cell (Set.univ : Set K) 2) :
     C(UnitBoundary (Fin 2 → ℝ), DiskAttachment (originalGraphAttaching K)) :=
-  (skeletonAsDiskAttachment (Set.univ : Set K) 1).toContinuousMap.comp
-    ((skeletonAttachingMap (Set.univ : Set K) 2).comp ⟨fun a => ⟨j, a⟩, by
-      exact continuous_sigmaMk (σ := fun _ : RelCWComplex.cell (Set.univ : Set K) 2 => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩)
+  (skeletonAsDiskAttachment Set.univ 1).toContinuousMap.comp
+    ((skeletonAttachingMap Set.univ 2).comp ⟨fun a => ⟨j, a⟩, continuous_sigmaMk (σ := fun _  => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩)
 
 theorem originalGraphCellBoundary_word_exists (K : Whitehead.TwoComplex)
     (j : RelCWComplex.cell (Set.univ : Set K) 2) :
@@ -174,8 +169,8 @@ theorem originalGraphCellBoundary_natural (j : RelCWComplex.cell (Set.univ : Set
     (graphDiskHomeomorph e (originalGraphCellBoundary K j a)) = _
   rw [graphDiskHomeomorph_skeleton]
   change skeletonMap e 2
-      (skeletonAttachmentHomeomorph (Set.univ : Set K) 1
-        ((skeletonAttachmentHomeomorph (Set.univ : Set K) 1).symm _)) =
+      (skeletonAttachmentHomeomorph Set.univ 1
+        ((skeletonAttachmentHomeomorph Set.univ 1).symm _)) =
     skeletonAttachmentHomeomorph (e.imageSubcomplex : Set L) 1
       ((skeletonAttachmentHomeomorph (e.imageSubcomplex : Set L) 1).symm _)
   rw [Homeomorph.apply_symm_apply, Homeomorph.apply_symm_apply]
@@ -193,6 +188,6 @@ theorem fixedGraphWord_transport (j : RelCWComplex.cell (Set.univ : Set K) 2) :
   have he := BoundaryWords.boundaryMap_map (graphHom e hchart)
     (graphDiskHomeomorph e).toContinuousMap (graphDiskHomeomorph_old e hchart)
     (graphDiskHomeomorph_edge e hchart) (fixedGraphWord K j)
-  rwa [he] at H
+  simp_all
 
 end Whitehead.CWCellEmbedding

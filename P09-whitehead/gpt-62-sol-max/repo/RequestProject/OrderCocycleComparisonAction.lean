@@ -15,9 +15,8 @@ structure ComparisonPoint (G : Type v) where
 instance : MulAction (G × G) (ComparisonPoint G) where
   smul g x := ⟨g.1 * x.val * g.2⁻¹⟩
   one_smul x := by
-    change (⟨(1 : G) * x.val * (1 : G)⁻¹⟩ : ComparisonPoint G) = x
-    cases x
-    simp only [one_mul, inv_one, mul_one]
+    change ⟨(1 : G) * x.val * (1 : G)⁻¹⟩ = x
+    simp
   mul_smul g h x := by
     change (⟨(g.1 * h.1) * x.val * (g.2 * h.2)⁻¹⟩ : ComparisonPoint G) =
       ⟨g.1 * (h.1 * x.val * h.2⁻¹) * g.2⁻¹⟩

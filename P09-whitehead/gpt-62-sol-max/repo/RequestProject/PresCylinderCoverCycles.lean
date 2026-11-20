@@ -1,12 +1,11 @@
 module
 
 public import RequestProject.PresCylinderCycles
+public import RequestProject.FinsuppBasis
 public import RequestProject.PosetCoverUpTransform
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
@@ -25,12 +24,6 @@ theorem cylinderCoverCollapse_monotone : Monotone (cylinderCoverCollapse w hf) :
 theorem cylinderCoverCollapse_projection (p : P) :
     f (cylinderCoverCollapse w hf p) = cylCollapse (aHom w) (f p) :=
   (hf.upTransform_spec _ _ p).2
-
-theorem cylinderCover_strict_three_flags_empty : IsEmpty (StrictOrdTet P) := by
-  refine ⟨fun t => ?_⟩
-  exact (cylinder_strict_three_flags_empty w).false (⟨(f t.1.1, f t.1.2.1, f t.1.2.2.1, f t.1.2.2.2),
-    hf.strictMono t.2.1, hf.strictMono t.2.2.1, hf.strictMono t.2.2.2⟩ :
-    StrictOrdTet (CylBase w))
 
 theorem cylinderCover_normalized_collapse_triangle_zero (t : OrdTri P) :
     normalizeOrdTriangle
@@ -55,12 +48,10 @@ theorem cylinderCover_normalized_collapse_triangle_zero (t : OrdTri P) :
 theorem cylinderCover_normalized_collapse_zero (c : StrictOrdTri P →₀ ℤ) :
     normalizedStrictChain2 (cylinderCoverCollapse w hf)
       (cylinderCoverCollapse_monotone w hf) c = 0 := by
-  induction c using Finsupp.induction_linear with
-  | zero => exact map_zero _
-  | add c d hc hd => rw [map_add, hc, hd, add_zero]
-  | single t n =>
-    rw [normalizedStrictChain2_single, cylinderCover_normalized_collapse_triangle_zero,
-      smul_zero]
+  finsupp_basis c
+  intro t
+  rw [normalizedStrictChain2_single, cylinderCover_normalized_collapse_triangle_zero,
+    smul_zero]
 
 /-- The genuine preimage of the presentation cylinder has no strict two-cycles
 in any actual covering poset. -/
@@ -69,12 +60,9 @@ theorem cylinderCover_two_cycle_zero (c : StrictOrdTri P →₀ ℤ)
   obtain ⟨y, hy⟩ := strict_cycle_comparable_boundary id (cylinderCoverCollapse w hf)
     monotone_id (cylinderCoverCollapse_monotone w hf)
     (hf.le_upTransform (cylCollapse (aHom w)) (le_cylIn_cylRetr (aHom w))) c hc
-  haveI := cylinderCover_strict_three_flags_empty w hf
-  have hy0 : y = 0 := by
-    ext t
-    exact isEmptyElim t
-  rw [hy0, map_zero, cylinderCover_normalized_collapse_zero, normalizedStrictChain2_id,
-    zero_sub] at hy
-  exact neg_eq_zero.mp hy.symm
+  haveI := strictOrdTet_isEmpty_of_rank _ ((cylinderDimension_strictMono w).comp hf.strictMono)
+    (fun x => presPosDimension_le_two w (ConeAdj.inc (S := circSet w) (f x)))
+  have hy0 : y = 0 := Subsingleton.elim _ _
+  simp_all [cylinderCover_normalized_collapse_zero, normalizedStrictChain2_id, zero_sub]
 
 end FiniteChains.PresModel

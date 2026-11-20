@@ -1,6 +1,8 @@
 module
 
-public import RequestProject.Pi2ExtensionInjective
+public import RequestProject.Pi2Extension
+public import RequestProject.BaseChangeCycles
+public import RequestProject.HNNEmbedding
 
 @[expose] public section
 
@@ -23,9 +25,6 @@ integer combination of the augmentations of those cycles, hence zero.  Together 
   no hypothesis on the fundamental groups beyond the infinite-order condition of the paper.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -33,21 +32,18 @@ open MonoidAlgebra
 
 universe u
 
-variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
+variable {α : Type u}   {J : Type u}
 variable (ρ : J → FreeGroup α) (w₀ : FreeGroup (Option α))
 
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
+
 /-- The augmentation is unchanged by pushing coefficients along a homomorphism of groups. -/
 theorem augQ_mapDomain {G G' : Type*} [Group G] [Group G'] (f : G →* G')
     (x : MonoidAlgebra ℤ G) :
     (MonoidAlgebra.lift ℤ ℤ G' 1).toRingHom (MonoidAlgebra.mapDomainRingHom ℤ f x)
       = (MonoidAlgebra.lift ℤ ℤ G 1).toRingHom x := by
-  induction x using MonoidAlgebra.induction_linear with
-  | zero => simp
-  | add x y hx hy => simp only [map_add, hx, hy]
-  | single g m =>
-      show (MonoidAlgebra.lift ℤ ℤ G' 1).toRingHom (MonoidAlgebra.mapDomain f (single g m)) = _
-      rw [MonoidAlgebra.mapDomain_single]
-      simp [MonoidAlgebra.lift_apply]
+  have h : (MonoidAlgebra.lift ℤ ℤ G' 1).toRingHom.comp (MonoidAlgebra.mapDomainRingHom ℤ f) =
+      (MonoidAlgebra.lift ℤ ℤ G 1).toRingHom := by
+    apply MonoidAlgebra.ringHom_ext <;> simp
+  exact DFunLike.congr_fun h x
 
 end FiniteChains

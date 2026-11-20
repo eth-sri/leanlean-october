@@ -12,9 +12,7 @@ public import RequestProject.ZeroPi2Descent
 identity of edge chains, not merely of homology classes. Unverified source. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -28,22 +26,20 @@ def loopCoefficientVertex (g : FreeGroup I ⧸ N) : UV X a :=
 
 theorem loopCoefficientVertex_end (g : FreeGroup I ⧸ N) :
     endV (loopCoefficientVertex N ψ g) = a := by
-  rw [loopCoefficientVertex, endV_deckV, endV_base]
+  simp [loopCoefficientVertex]
 
 include hψ in
 theorem extendList_loopCoefficientVertex (i : I) (g : FreeGroup I ⧸ N) :
     extendList (p i).1 (loopCoefficientVertex N ψ g) =
       loopCoefficientVertex N ψ (g * qof N i) := by
-  rw [loopCoefficientVertex, extendList_deckV, ← deckV_loop_base, ← hψ,
-    ← deckV_mul, ← map_mul]
-  rfl
+  simp_all [loopCoefficientVertex, extendList_deckV, ← deckV_loop_base, ← hψ, ← deckV_mul, ← map_mul]
 
 include hψ in
 theorem extendList_rev_loopCoefficientVertex (i : I) (g : FreeGroup I ⧸ N) :
     extendList (revPath (p i).1) (loopCoefficientVertex N ψ g) =
       loopCoefficientVertex N ψ (g * (qof N i)⁻¹) := by
   rw [loopCoefficientVertex, extendList_deckV]
-  rw [← deckV_loop_base (⟨revPath (p i).1, isPath_revPath (p i).2⟩ : Loop X a)]
+  rw [← deckV_loop_base ⟨revPath (p i).1, isPath_revPath (p i).2⟩]
   change deckV (ψ g) (deckV ((Pi1.mk (p i))⁻¹) (UV.base X a)) = _
   rw [← hψ, ← map_inv, ← deckV_mul, ← map_mul]
   rfl
@@ -78,7 +74,7 @@ theorem loopCoefficientChainMap_liftPath (l : List (I × Bool)) (g : FreeGroup I
     loopCoefficientChainMap N p ψ (pathChain (liftPath (Nsub := N) l g)) =
       pathChain (uLiftPath (wordPath p l) (loopCoefficientVertex N ψ g)) := by
   induction l generalizing g with
-  | nil => simp [wordPath_nil]
+  | nil => simp [wordPath_nil, PathVoltage.liftPath]
   | cons ib l ih =>
       obtain ⟨i, b⟩ := ib
       cases b with
@@ -115,7 +111,7 @@ theorem lifted_wordPath_fox (l : List (I × Bool)) :
   have hcoords : coords N I (pathChain (liftPath (Nsub := N) l 1)) =
       fun i => proj N (fox i (FreeGroup.mk l)) := by
     simpa only [show (MonoidAlgebra.single (1 : FreeGroup I ⧸ N) (1 : ℤ)) = 1 from rfl,
-      one_mul] using coords_pathChain_liftPath (Nsub := N) l (1 : FreeGroup I ⧸ N)
+      one_mul] using coords_pathChain_liftPath (Nsub := N) l 1
   have hc := congrArg (coords N I).symm hcoords
   rw [LinearEquiv.symm_apply_apply] at hc
   rw [← hc, loopCoefficientChainMap_liftPath N p ψ hψ]

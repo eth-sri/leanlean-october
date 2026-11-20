@@ -1,12 +1,11 @@
 module
 
 public import RequestProject.RoseCoverGeneratorChain
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -25,7 +24,7 @@ theorem roseCover_chain_eq_zero_of_boundary_off_base (c : StrictOrdEdge P →₀
     | true => exact hz e i he
     | false =>
       have hv : f e.1.1 = Rose.mid i :=
-        congrArg (fun r : StrictOrdEdge (Rose α) => r.1.1) he
+        congrArg (·.1.1) he
       have hl := hf.strictEdgeLiftFrom_unique (roseMidEdge i false) e.1.1 hv e he rfl
       have hr := hz (hf.strictEdgeLiftFrom (roseMidEdge i true) e.1.1 hv) i
         (hf.strictEdgeLiftFrom_projection _ _ _)
@@ -37,14 +36,12 @@ theorem roseCover_chain_eq_zero_of_boundary_off_base (c : StrictOrdEdge P →₀
   obtain ⟨i, b, he⟩ := rose_strict_edge_cases ((strictOrderCxMap f hf.strictMono).onE e)
   rcases he with he | he
   · have hq : f e.1.2 = Rose.edg i b :=
-      congrArg (fun r : StrictOrdEdge (Rose α) => r.1.2) he
+      congrArg (·.1.2) he
     have hl := hf.strictEdgeLiftTo_unique (roseBaseEdge i b) e.1.2 hq e he rfl
     have hr := hm (hf.strictEdgeLiftTo (roseMidEdge i b) e.1.2 hq) i b
       (hf.strictEdgeLiftTo_projection _ _ _)
     have hb := roseCover_boundary_end f hf e.1.2 i b hq c
-    have hn : f e.1.2 ≠ Rose.base := by rw [hq]; intro h; cases h
-    rw [hc e.1.2 hn, ← hl, hr] at hb
-    simpa using hb.symm
+    grind
   · exact hm e i b he
 
 /-- Realize arbitrary finite selected coefficients by genuine generator chains. -/
@@ -58,42 +55,37 @@ theorem roseCoverRealizeGeneratorCoordinates_coordinates
     (c : roseCoverGeneratorEdges f hf →₀ ℤ) :
     roseCoverGeneratorCoordinates f hf (roseCoverRealizeGeneratorCoordinates f hf c) = c := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd]
-  | single e n =>
-    rw [roseCoverRealizeGeneratorCoordinates, Finsupp.linearCombination_single, map_smul,
-      roseCoverGeneratorChain_coordinates]
-    change n • Finsupp.single ((roseCoverMidpointEdgeEquiv f hf)
-      ((roseCoverMidpointEdgeEquiv f hf).symm e)) (1 : ℤ) = _
-    rw [Equiv.apply_symm_apply, Finsupp.smul_single]
-    simp
+  finsupp_basis c
+  intro e
+  rw [roseCoverRealizeGeneratorCoordinates, Finsupp.linearCombination_single, map_smul,
+    roseCoverGeneratorChain_coordinates]
+  change 1 • Finsupp.single ((roseCoverMidpointEdgeEquiv f hf)
+    ((roseCoverMidpointEdgeEquiv f hf).symm e)) 1 = _
+  simp
 
 /-- Every realized finite generator chain has zero boundary outside the actual base fibre. -/
 theorem roseCoverRealizeGeneratorCoordinates_boundary_off_base
     (c : roseCoverGeneratorEdges f hf →₀ ℤ) (v : P) (hv : f v ≠ Rose.base) :
     FiniteChains.Comb.bdry1 (strictOrderCx P) (roseCoverRealizeGeneratorCoordinates f hf c) v = 0 := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd, add_zero]
-  | single e n =>
-    rw [roseCoverRealizeGeneratorCoordinates, Finsupp.linearCombination_single, map_smul,
-      roseCoverGeneratorChain_boundary]
-    let p := (roseCoverMidpointEdgeEquiv f hf).symm e
-    have hn : ∀ b, v ≠ (roseCoverMidpointBaseEdge f hf p b).val.1 := by
-      intro b he
-      apply hv
-      have hp := hf.strictEdgeLiftTo_projection (roseBaseEdge p.val.2 b)
-        (roseCoverMidpointEndEdge f hf p b).val.2
-        (congrArg (fun r : StrictOrdEdge (Rose α) => r.val.2)
-          (hf.strictEdgeLiftFrom_projection (roseMidEdge p.val.2 b) p.val.1 p.property))
-      exact (congrArg f he).trans (congrArg (fun r : StrictOrdEdge (Rose α) => r.val.1) hp)
-    simp only [Finsupp.smul_apply, Finsupp.sub_apply]
-    change n • ((Finsupp.single (roseCoverMidpointBaseEdge f hf p true).val.1 (1 : ℤ)) v -
-      (Finsupp.single (roseCoverMidpointBaseEdge f hf p false).val.1 (1 : ℤ)) v) = 0
-    rw [Finsupp.single_eq_of_ne (hn true), Finsupp.single_eq_of_ne (hn false)]
-    simp
+  finsupp_basis c
+  intro e
+  rw [roseCoverRealizeGeneratorCoordinates, Finsupp.linearCombination_single, map_smul,
+    roseCoverGeneratorChain_boundary]
+  let p := (roseCoverMidpointEdgeEquiv f hf).symm e
+  have hn : ∀ b, v ≠ (roseCoverMidpointBaseEdge f hf p b).val.1 := by
+    intro b he
+    apply hv
+    have hp := hf.strictEdgeLiftTo_projection (roseBaseEdge p.val.2 b)
+      (roseCoverMidpointEndEdge f hf p b).val.2
+      (congrArg (·.val.2)
+        (hf.strictEdgeLiftFrom_projection (roseMidEdge p.val.2 b) p.val.1 p.property))
+    exact (congrArg f he).trans (congrArg (·.val.1) hp)
+  simp only [Finsupp.smul_apply, Finsupp.sub_apply]
+  change 1 • ((Finsupp.single (roseCoverMidpointBaseEdge f hf p true).val.1 1) v -
+    (Finsupp.single (roseCoverMidpointBaseEdge f hf p false).val.1 1) v) = 0
+  rw [Finsupp.single_eq_of_ne (hn true), Finsupp.single_eq_of_ne (hn false)]
+  simp
 
 /-- Every finite chain with boundary supported on the base fibre is reconstructed from its actual coordinates. -/
 theorem roseCover_chain_reconstruct (c : StrictOrdEdge P →₀ ℤ)
@@ -105,7 +97,7 @@ theorem roseCover_chain_reconstruct (c : StrictOrdEdge P →₀ ℤ)
     rw [map_sub, Finsupp.sub_apply,
       roseCoverRealizeGeneratorCoordinates_boundary_off_base f hf _ v hv, hc v hv, sub_self]
   · intro e i he
-    have h := congrArg (fun z : roseCoverGeneratorEdges f hf →₀ ℤ => z ⟨e, i, he⟩)
+    have h := congrArg (fun z  => z ⟨e, i, he⟩)
       (roseCoverRealizeGeneratorCoordinates_coordinates f hf (roseCoverGeneratorCoordinates f hf c))
     rw [Finsupp.sub_apply]
     exact sub_eq_zero.mpr h

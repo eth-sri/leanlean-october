@@ -11,9 +11,7 @@ Awaiting final Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeNormalForm
 open Davis Davis.Genus BlockFamily
@@ -109,28 +107,7 @@ theorem nextTerminal_square
           (flattenBlockGen core hcore extra) w)) =
           QuotientGroup.mk (FreeGroup.map (flattenBlockGen core hcore extra) w)
         simp
-  induction x using Finsupp.induction_linear with
-  | zero => simp
-  | add x y hx hy =>
-      rw [PresMorFS.cells_add, PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
-  | single j a =>
-      change PresInclusionFS.cells _ _ _ _ _
-        (PresInclusionFS.cells _ _ _ _ _ (Finsupp.single j a)) =
-        PresInclusionFS.cells _ _ _ _ _ (addRelsCellsFS _ _ (Finsupp.single j a))
-      rw [PresInclusionFS.cells_single, PresInclusionFS.cells_single,
-        addRelsCellsFS_single, PresInclusionFS.cells_single]
-      have hj : Sum.map id Subtype.val (fullNextCell core hcore extra j) =
-          terminalNextCell core hcore extra (Sum.inl j) := by cases j <;> rfl
-      rw [hj]
-      congr 1
-      change MonoidAlgebra.mapDomainRingHom ℤ
-        (stageIntoFull core (nextExtra core hcore extra)
-          (nextPredicate core hcore extra (fun _ => True))).hom
-        (MonoidAlgebra.mapDomainRingHom ℤ (fullNextMap core hcore extra).hom a) =
-        MonoidAlgebra.mapDomainRingHom ℤ (terminalNextMap core hcore extra).hom
-          (MonoidAlgebra.mapDomainRingHom ℤ (relativeTerminalMap core hcore extra).hom a)
-      erw [BlockMor.mapDomainRingHom_comp', BlockMor.mapDomainRingHom_comp', hgroup]
+  exact PresInclusionFS.cellTransport_square hgroup (fun j => by cases j <;> rfl) x
 
 /-- The next ambient presentation is Cockcroft and the last replaced
 stage maps to it by zero on every actual supported two-cycle. -/
@@ -161,11 +138,7 @@ theorem block_core_trivial
       PresGroup (blockPresentation core hcore extra)) = 1 := by
   have hn := normalized_core_trivial core hcore extra htriv a
   have h := congrArg (blockStructuralMap core hcore extra).hom hn
-  change (QuotientGroup.mk (FreeGroup.map Sum.inl (FreeGroup.of (Sum.inl a))) :
-      PresGroup (blockPresentation core hcore extra)) =
-    (blockStructuralMap core hcore extra).hom 1 at h
-  simp only [FreeGroup.map.of, map_one] at h
-  convert h using 1 <;> rfl
+  assumption
 
 theorem nextStage_core_trivial (p : S → Prop)
     (htriv : ∀ a : A,
@@ -174,9 +147,7 @@ theorem nextStage_core_trivial (p : S → Prop)
     (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (nextStage core hcore extra p)) = 1 := by
   have h := congrArg (stageNextMap core hcore extra p).hom
     (block_core_trivial core hcore (restrictedExtra extra p) htriv a)
-  change QuotientGroup.mk (FreeGroup.map (stageNextGen core hcore extra p)
-    (FreeGroup.of (Sum.inl (Sum.inl a)))) = (stageNextMap core hcore extra p).hom 1 at h
-  simpa only [FreeGroup.map.of, stageNextGen, map_one] using h
+  assumption
 
 theorem nextFull_core_trivial
     (htriv : ∀ a : A,
@@ -186,11 +157,7 @@ theorem nextFull_core_trivial
       PresGroup (rawPresentation core (nextExtra core hcore extra))) = 1 := by
   have h := congrArg ((terminalNextMap core hcore extra).hom.comp
     (relativeTerminalMap core hcore extra).hom) (block_core_trivial core hcore extra htriv a)
-  change QuotientGroup.mk (FreeGroup.map (flattenBlockGen core hcore extra)
-    (FreeGroup.of (Sum.inl (Sum.inl a)))) =
-      ((terminalNextMap core hcore extra).hom.comp (relativeTerminalMap core hcore extra).hom) 1 at h
-  simp only [FreeGroup.map.of, map_one] at h
-  convert h using 1 <;> rfl
+  assumption
 
 /-- Acyclicity of the core is used through its actual supported exponent
 matrix. It does not assert that the core has trivial second homotopy group. -/

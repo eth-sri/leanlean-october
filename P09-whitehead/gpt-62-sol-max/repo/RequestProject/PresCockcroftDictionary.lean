@@ -1,8 +1,9 @@
 module
 
 public import RequestProject.PresUnivCoverIso
+public import RequestProject.FinsuppBasis
 public import RequestProject.Cockcroft
-public import RequestProject.CockcroftExtension
+public import RequestProject.Pi2Dictionary
 
 @[expose] public section
 
@@ -23,9 +24,6 @@ Using the identification of the two models of the universal cover
 presentation the two agree: `FiniteChains.Comb.isCockcroft_presComplex_iff`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -44,19 +42,11 @@ coordinate vector. -/
 theorem augQ_coords (v : ((FreeGroup α ⧸ relSub ρ) × J) →₀ ℤ) (j : J) :
     augQ (relSub ρ) (coords (relSub ρ) J v j) = Finsupp.mapDomain Prod.snd v j := by
   classical
-  induction v using Finsupp.induction_linear with
-  | zero => simp
-  | add v w hv hw =>
-      rw [map_add, Finsupp.mapDomain_add]
-      simp only [Finsupp.add_apply, Pi.add_apply, map_add] at *
-      rw [hv, hw]
-  | single qj n =>
-      obtain ⟨q, j₀⟩ := qj
-      rw [coords_single, Finsupp.mapDomain_single]
-      by_cases h : j = j₀
-      · subst h
-        simp
-      · rw [Pi.single_eq_of_ne h, Finsupp.single_apply, if_neg (Ne.symm h), map_zero]
+  finsupp_basis v
+  intro qj
+  obtain ⟨q, j₀⟩ := qj
+  rw [coords_single, Finsupp.mapDomain_single]
+  by_cases h : j = j₀ <;> simp_all
 
 end Comb
 end FiniteChains

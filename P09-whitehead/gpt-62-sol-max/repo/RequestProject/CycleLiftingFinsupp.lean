@@ -16,11 +16,7 @@ theorem fs_coverSecondBoundary_apply (u : J →₀ CoverRing (relSub ρ)) (i : �
       ∑ j ∈ u.support, u j * foxMatrixPres ρ i j := by
   classical
   rw [coverSecondBoundary, Finsupp.linearCombination_apply, Finsupp.sum_apply]
-  apply Finset.sum_congr rfl
-  intro j hj
-  simp only [Finsupp.smul_apply, smul_eq_mul]
-  change u j * proj (relSub ρ) (fox i (ρ j)) = _
-  rw [foxMatrixPres, proj_eq_quotRingHom]
+  solve_by_elim
 
 /-- A finitely supported chain whose boundary is divisible by `m` differs from a cycle
 by `m` times a finitely supported chain. -/
@@ -32,7 +28,7 @@ theorem fs_exists_cycle_of_boundary_nsmul (m : ℕ)
       ∃ z : J →₀ CoverRing (relSub ρ), u = u' + m • z := by
   classical
   let d := coverSecondBoundary (relSub ρ) ρ
-  have hρ : ∀ j, ρ j ∈ relSub ρ := rel_mem_relSub' ρ
+  have hρ  := rel_mem_relSub' ρ
   by_cases hm : m = 0
   · subst m
     refine ⟨u, ?_, 0, by simp⟩
@@ -46,13 +42,12 @@ theorem fs_exists_cycle_of_boundary_nsmul (m : ℕ)
     intro i hi
     by_contra hn
     have hz : d u i = 0 := by simpa using hn
-    have he : m • w i = 0 := (hw i).symm.trans hz
+    have he  := (hw i).symm.trans hz
     exact hi ((nsmul_eq_zero_iff_of_ne m hm (w i)).mp he)
-  let wf : α →₀ CoverRing (relSub ρ) := Finsupp.ofSupportFinite w hs
+  let wf  := Finsupp.ofSupportFinite w hs
   have hd : d u = m • wf := by
     apply Finsupp.ext
-    intro i
-    simpa [wf] using hw i
+    assumption
   have hwc : coverFirstBoundary (relSub ρ) wf = 0 := by
     have hz := coverFirstBoundary_coverSecondBoundary (relSub ρ) ρ hρ u
     change coverFirstBoundary (relSub ρ) (d u) = 0 at hz

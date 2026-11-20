@@ -1,27 +1,45 @@
 module
 
 public import RequestProject.StrictOrderChains
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
 /-! Explicit degree-two normalization homotopy in the full weak order nerve. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
 variable {P : Type u} [PartialOrder P]
 
-def OrdTet (P : Type u) [PartialOrder P] :=
-  {t : P × P × P × P // t.1 ≤ t.2.1 ∧ t.2.1 ≤ t.2.2.1 ∧ t.2.2.1 ≤ t.2.2.2}
+/-- Four vertices and the three consecutive incidences, for weak or strict chains. -/
+abbrev ChainTet {P : Type u} (r : P → P → Prop) :=
+  {t : P × P × P × P // r t.1 t.2.1 ∧ r t.2.1 t.2.2.1 ∧ r t.2.2.1 t.2.2.2}
+
+abbrev ChainTet.face {P : Type u} {r : P → P → Prop} (h : IsTrans P r)
+    (t : ChainTet r) (i : Fin 4) : ChainTri r :=
+  match i.val with
+  | 0 => ⟨(t.1.2.1, t.1.2.2.1, t.1.2.2.2), t.2.2⟩
+  | 1 => ⟨(t.1.1, t.1.2.2.1, t.1.2.2.2), h.trans _ _ _ t.2.1 t.2.2.1, t.2.2.2⟩
+  | 2 => ⟨(t.1.1, t.1.2.1, t.1.2.2.2), t.2.1, h.trans _ _ _ t.2.2.1 t.2.2.2⟩
+  | _ => ⟨(t.1.1, t.1.2.1, t.1.2.2.1), t.2.1, t.2.2.1⟩
+
+noncomputable def tetrahedronBoundary {E : Type u} (f : Fin 4 → E) : E →₀ ℤ :=
+  Finsupp.single (f 0) 1 - Finsupp.single (f 1) 1 +
+    Finsupp.single (f 2) 1 - Finsupp.single (f 3) 1
+
+theorem mapDomain_tetrahedronBoundary {E F : Type u} (f : E → F) (v : Fin 4 → E) :
+    Finsupp.mapDomain f (tetrahedronBoundary v) = tetrahedronBoundary (f ∘ v) := by
+  simp [tetrahedronBoundary, Finsupp.mapDomain_sub, Finsupp.mapDomain_add]
+
+def OrdTet (P : Type u) [PartialOrder P] := ChainTet ((· ≤ ·) : P → P → Prop)
+
+abbrev ordTetFace (t : OrdTet P) : Fin 4 → OrdTri P :=
+  ChainTet.face ⟨fun _ _ _ => le_trans⟩ t
 
 noncomputable def ordTetBoundary (t : OrdTet P) : OrdTri P →₀ ℤ :=
-  Finsupp.single ⟨(t.1.2.1, t.1.2.2.1, t.1.2.2.2), t.2.2⟩ 1 -
-  Finsupp.single ⟨(t.1.1, t.1.2.2.1, t.1.2.2.2), t.2.1.trans t.2.2.1, t.2.2.2⟩ 1 +
-  Finsupp.single ⟨(t.1.1, t.1.2.1, t.1.2.2.2), t.2.1, t.2.2.1.trans t.2.2.2⟩ 1 -
-  Finsupp.single ⟨(t.1.1, t.1.2.1, t.1.2.2.1), t.2.1, t.2.2.1⟩ 1
+  tetrahedronBoundary (ordTetFace t)
 
 noncomputable def ordBoundary3 : (OrdTet P →₀ ℤ) →ₗ[ℤ] (OrdTri P →₀ ℤ) :=
   Finsupp.linearCombination ℤ ordTetBoundary
@@ -29,18 +47,16 @@ noncomputable def ordBoundary3 : (OrdTet P →₀ ℤ) →ₗ[ℤ] (OrdTri P →
 /-- The alternating three-simplex boundary is a genuine cellular two-cycle. -/
 theorem bdry2_ordTetBoundary (t : OrdTet P) :
     bdry2 (orderCx P) (ordTetBoundary t) = 0 := by
-  simp only [ordTetBoundary, map_sub, map_add, bdry2_single (X := orderCx P), one_smul]
+  simp only [ordTetBoundary, tetrahedronBoundary, map_sub, map_add, bdry2_single (X := orderCx P), one_smul, ordTetFace, ChainTet.face]
   simp [orderCx, pathChain]
   all_goals abel
 
 theorem bdry2_ordBoundary3 (c : OrdTet P →₀ ℤ) :
     bdry2 (orderCx P) (ordBoundary3 c) = 0 := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd, add_zero]
-  | single t n =>
-    simp only [ordBoundary3, Finsupp.linearCombination_single, map_smul,
-      bdry2_ordTetBoundary, smul_zero]
+  finsupp_basis c
+  intro t
+  simp only [ordBoundary3, Finsupp.linearCombination_single, map_smul,
+    bdry2_ordTetBoundary, smul_zero]
 
 noncomputable def ordNormalizationHomotopy1 : (OrdEdge P →₀ ℤ) →ₗ[ℤ]
     (OrdTri P →₀ ℤ) := by
@@ -75,15 +91,15 @@ theorem ordNormalization_triangle_identity (t : OrdTri P) :
     by_cases hac : a = c
     · subst c
       simp [normalizeOrdTriangle, ordNormalizationHomotopy1, pathChain, orderCx,
-        ordNormalizationTriangleHomotopy, ordBoundary3, ordTetBoundary]
+        ordNormalizationTriangleHomotopy, ordBoundary3, ordTetBoundary, tetrahedronBoundary, ordTetFace, ChainTet.face]
     · simp [normalizeOrdTriangle, ordNormalizationHomotopy1, pathChain, orderCx,
-        ordNormalizationTriangleHomotopy, ordBoundary3, ordTetBoundary]
+        ordNormalizationTriangleHomotopy, ordBoundary3, ordTetBoundary, tetrahedronBoundary, ordTetFace, ChainTet.face]
   · by_cases hebc : b = c
     · subst c
       simp [normalizeOrdTriangle, ordNormalizationHomotopy1, pathChain, orderCx,
-        ordNormalizationTriangleHomotopy, ordBoundary3, ordTetBoundary, heab]
-    · have hab' : a < b := lt_of_le_of_ne hab heab
-      have hbc' : b < c := lt_of_le_of_ne hbc hebc
+        ordNormalizationTriangleHomotopy, ordBoundary3, ordTetBoundary, heab, tetrahedronBoundary, ordTetFace, ChainTet.face]
+    · have hab'  := lt_of_le_of_ne hab heab
+      have hbc'  := lt_of_le_of_ne hbc hebc
       simp [normalizeOrdTriangle, strictOrderIncl, ordNormalizationHomotopy1,
         pathChain, orderCx, ordNormalizationTriangleHomotopy, ordBoundary3,
         hab', hbc', heab, hebc, (hab'.trans hbc').ne]
@@ -97,18 +113,13 @@ theorem ordNormalization_chain_identity (c : OrdTri P →₀ ℤ) :
     c - ordStrictInclusion2 (normalizeOrdChain2 c) =
     ordNormalizationHomotopy1 (bdry2 (orderCx P) c) +
       ordBoundary3 (ordNormalizationHomotopy2 c) := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd =>
-    simp only [map_add]
-    rw [add_sub_add_comm, hc, hd]
-    abel
-  | single t n =>
-    rw [bdry2_single]
-    have h := congrArg (fun x : OrdTri P →₀ ℤ => n • x)
-      (ordNormalization_triangle_identity t)
-    simpa [ordStrictInclusion2, ordNormalizationHomotopy2, smul_sub,
-      smul_add, Finsupp.smul_single] using h
+  finsupp_basis c
+  intro t
+  rw [bdry2_single]
+  have h := congrArg (fun x  => 1 • x)
+    (ordNormalization_triangle_identity t)
+  simpa [ordStrictInclusion2, ordNormalizationHomotopy2, smul_sub,
+    smul_add, Finsupp.smul_single] using h
 
 /-- A cellular two-cycle differs from its normalized image by an explicit three-boundary
 in the full order nerve. No identification of the truncated second homotopy groups is used. -/

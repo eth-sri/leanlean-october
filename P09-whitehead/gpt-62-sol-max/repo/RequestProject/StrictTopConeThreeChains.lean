@@ -1,13 +1,12 @@
 module
 
 public import RequestProject.StrictTopConeChains
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
 /-! Genuine strict tetrahedron fans, with their alternating boundary. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -28,10 +27,10 @@ theorem strictTopConeTriangleTetrahedron_boundary (t : (strictOrderCx P).F) :
   rw [bdry2_single (X := strictOrderCx P)]
   simp only [one_smul]
   simp only [pathChain, strictOrderCx, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
-  simp [map_add, map_neg, Finsupp.linearCombination_single, strictOrdTetBoundary, strictTopConeTriangleTetrahedron, strictTopConeEdgeChain, strictTopConeEdgeTriangle,
-    bdry2, strictOrderCx, strictOrderCxMap, pathChain]
-  rw (config := { transparency := .default }) [map_add, map_add, map_neg]
-  rw (config := { transparency := .default }) [Finsupp.linearCombination_single,
+  simp [strictOrdTetBoundary, tetrahedronBoundary, strictTopConeTriangleTetrahedron, strictTopConeEdgeChain, strictTopConeEdgeTriangle,
+    strictOrderCx, strictOrderCxMap, ChainTet.face]
+  erw [map_add, map_add, map_neg]
+  erw [Finsupp.linearCombination_single,
     Finsupp.linearCombination_single, Finsupp.linearCombination_single]
   simp only [one_smul]
   abel
@@ -39,16 +38,12 @@ theorem strictTopConeTriangleTetrahedron_boundary (t : (strictOrderCx P).F) :
 theorem strictTopConeTriangleChain_boundary (z : (strictOrderCx P).F →₀ ℤ) :
     strictOrdBoundary3 (strictTopConeTriangleChain f hf c hc z) =
       strictTopConeEdgeChain f hf c hc (bdry2 (strictOrderCx P) z) - chain2 (strictOrderCxMap f hf) z := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, map_add, hz, hw, map_add, map_add, map_add]; abel
-  | single t n =>
-      change strictOrdBoundary3 (Finsupp.mapDomain (strictTopConeTriangleTetrahedron f hf c hc)
-        (Finsupp.single t n)) = _
-      rw [Finsupp.mapDomain_single, strictOrdBoundary3, Finsupp.linearCombination_single,
-        strictTopConeTriangleTetrahedron_boundary, smul_sub]
-      change _ = _ - Finsupp.mapDomain (strictOrderCxMap f hf).onF (Finsupp.single t n)
-      rw [Finsupp.mapDomain_single]
-      simp [bdry2]
+  finsupp_basis z
+  intro t
+  change strictOrdBoundary3 (Finsupp.mapDomain (strictTopConeTriangleTetrahedron f hf c hc)
+    (Finsupp.single t 1)) = _
+  rw [Finsupp.mapDomain_single, strictOrdBoundary3, Finsupp.linearCombination_single,
+    strictTopConeTriangleTetrahedron_boundary, smul_sub]
+  simp
 
 end FiniteChains.Comb

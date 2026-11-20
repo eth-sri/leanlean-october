@@ -24,18 +24,17 @@ theorem presCanonicalWords_positive (ρ : J → FreeGroup α) (a : α) (j : J) :
 
 theorem mk_presCanonicalWords (ρ : J → FreeGroup α) (a : α) (j : J) :
     FreeGroup.mk (presCanonicalWords ρ a j) = ρ j := by
-  have hc : FreeGroup.mk [(a, true), (a, false)] = (1 : FreeGroup α) := by
+  have hc : FreeGroup.mk [(a, true), (a, false)] = 1 := by
     change FreeGroup.of a * (FreeGroup.of a)⁻¹ = 1
     exact mul_inv_cancel _
-  rw [presCanonicalWords, ← FreeGroup.mul_mk, hc, mul_one, FreeGroup.mk_toWord]
+  simp [presCanonicalWords, ← FreeGroup.mul_mk, hc, FreeGroup.mk_toWord]
 
 theorem presCanonicalWords_map (ρ : J → FreeGroup α) (σ : K → FreeGroup β)
     (f : α ↪ β) (g : J ↪ K) (h : ∀ j, σ (g j) = FreeGroup.map f (ρ j))
     (a : α) (j : J) :
     presCanonicalWords σ (f a) (g j) =
       (presCanonicalWords ρ a j).map (fun p => (f p.1, p.2)) := by
-  simp only [presCanonicalWords, h, FiniteChains.toWord_map f f.injective,
-    List.map_append, List.map_cons, List.map_nil]
+  simp [presCanonicalWords, h, FiniteChains.toWord_map f f.injective]
 
 /-- A labelled inclusion of group presentations now gives a literal word embedding,
 with no independent compatibility assumption on the representatives. -/

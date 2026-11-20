@@ -25,14 +25,12 @@ def qCubeDoubleFacet (c : QCube A) (a b : V) (s t : ZMod 2) : QCube A :=
 theorem qCubeDoubleFacet_signs_injective (c : QCube A) (a b : V) (hne : a ≠ b) :
     Function.Injective (fun i : ZMod 2 × ZMod 2 => qCubeDoubleFacet c a b i.1 i.2) := by
   intro ⟨s, t⟩ ⟨u, v⟩ h
-  have hs := congrArg (fun d : QCube A => d.sgn a) h
-  have ht := congrArg (fun d : QCube A => d.sgn b) h
+  have hs := congrArg (fun d  => d.sgn a) h
+  have ht := congrArg (fun d  => d.sgn b) h
   simp only [qCubeDoubleFacet_sgn_first _ _ _ hne] at hs
   simp only [qCubeDoubleFacet_sgn_second] at ht
   exact Prod.ext hs ht
 
-theorem qCubeDoubleFacet_spx (c : QCube A) (a b : V) (s t : ZMod 2) :
-    (qCubeDoubleFacet c a b s t).spx = (c.spx.erase a).erase b := rfl
 
 def qThreeEdgeCell (c : QCube A) (u v w : V) (i : Fin 3 × ZMod 2 × ZMod 2) : QCube A :=
   if i.1 = 0 then qCubeDoubleFacet c u v i.2.1 i.2.2
@@ -57,10 +55,10 @@ theorem qThreeEdgeCell_spx (c : QCube A) (u v w : V)
     aesop
   obtain ⟨e, s, t⟩ := i
   fin_cases e
-  · simpa [qThreeEdgeCell, qCubeDoubleFacet_spx] using h0
-  · simpa [qThreeEdgeCell, qCubeDoubleFacet_spx] using h1
-  · have h21 : (2 : Fin 3) ≠ 1 := by decide
-    simpa [qThreeEdgeCell, qCubeDoubleFacet_spx, h21] using h2
+  · tauto
+  · tauto
+  · have h21 : 2 ≠ 1 := by decide
+    tauto
 
 theorem qThreeEdgeCell_injective (c : QCube A) (u v w : V)
     (huv : u ≠ v) (huw : u ≠ w) (hvw : v ≠ w) (hs : c.spx = {u, v, w}) :
@@ -69,7 +67,7 @@ theorem qThreeEdgeCell_injective (c : QCube A) (u v w : V)
   have he := congrArg QCube.spx h
   rw [qThreeEdgeCell_spx c u v w huv huw hvw hs,
     qThreeEdgeCell_spx c u v w huv huw hvw hs] at he
-  have h21 : (2 : Fin 3) ≠ 1 := by decide
+  have h21 : 2 ≠ 1 := by decide
   fin_cases e <;> fin_cases f
   · have hp := qCubeDoubleFacet_signs_injective c u v huv h
     exact Prod.ext rfl hp
@@ -87,8 +85,8 @@ theorem qThreeEdgeCell_injective (c : QCube A) (u v w : V)
     exact False.elim (huw huw')
   · have huv' : u = v := by simpa [h21] using he
     exact False.elim (huv huv')
-  · have hp : (s, t) = (a, b) := qCubeDoubleFacet_signs_injective c v w hvw
-      (by simpa [qThreeEdgeCell, h21] using h)
+  · have hp  := qCubeDoubleFacet_signs_injective c v w hvw
+      (by tauto)
     exact Prod.ext rfl hp
 
 /-- Each indexed codimension-two face is an actual edge cube. -/

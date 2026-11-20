@@ -9,9 +9,6 @@ public import RequestProject.TopologicalSingular.PrismIndices
 /-! # Continuous prism simplices and all their face identities -/
 
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.SingularPrism
 
@@ -38,15 +35,13 @@ theorem prismMap_left {n : ℕ} (i : Fin (n + 1)) (j : Fin (n + 2)) (h : j ≤ i
     (z : Domain (n + 1)) :
     prismMap i.succ (stdSimplex.map j.castSucc.succAbove z) =
       ((prismMap i z).1, stdSimplex.map j.succAbove (prismMap i z).2) := by
-  simp only [prismMap, ContinuousMap.coe_mk, stdSimplex.map_comp_apply]
-  rw [cut_left i j h, base_left i j h]
+  simp only [prismMap, ContinuousMap.coe_mk, stdSimplex.map_comp_apply, cut_left i j h, base_left i j h]
 
 theorem prismMap_right {n : ℕ} (i : Fin (n + 1)) (j : Fin (n + 2)) (h : i.castSucc < j)
     (z : Domain (n + 1)) :
     prismMap i.castSucc (stdSimplex.map j.succ.succAbove z) =
       ((prismMap i z).1, stdSimplex.map j.succAbove (prismMap i z).2) := by
-  simp only [prismMap, ContinuousMap.coe_mk, stdSimplex.map_comp_apply]
-  rw [cut_right i j h, base_right i j h]
+  simp only [prismMap, ContinuousMap.coe_mk, stdSimplex.map_comp_apply, cut_right i j h, base_right i j h]
 
 theorem prismMap_middle {n : ℕ} (i : Fin n) (z : Domain n) :
     prismMap i.castSucc (stdSimplex.map i.succ.castSucc.succAbove z) =
@@ -128,8 +123,8 @@ theorem simplex_first (n : ℕ) (σ : Simplex X n) :
     face 0 (simplex H σ 0) = simplexMap g n σ := by
   apply ContinuousMap.ext
   intro z
-  change H ((prismMap (0 : Fin (n + 1)) (stdSimplex.map (0 : Fin (n + 2)).succAbove z)).1,
-      σ (prismMap (0 : Fin (n + 1)) (stdSimplex.map (0 : Fin (n + 2)).succAbove z)).2) = _
+  change H ((prismMap 0 (stdSimplex.map (0 : Fin (n + 2)).succAbove z)).1,
+      σ (prismMap 0 (stdSimplex.map (0 : Fin (n + 2)).succAbove z)).2) = _
   rw [prismMap_first]
   exact H.apply_one _
 

@@ -6,9 +6,7 @@ public import RequestProject.CombUniversalCover
 @[expose] public section
 
 /-! Actual reference vertices for lifting the explicit cone fan. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -30,7 +28,7 @@ theorem coneCoverReference_edge (e : (orderCx P).E) :
     extend ((orderCxMap f hf).onE e, true) (coneCoverReference f c hc k e.1.1) =
       coneCoverReference f c hc k e.1.2 := by
   let t := coneEdgeTriangle f hf c hc e
-  have ht : endV k = (orderCx Q).base t := hk
+  have ht  := hk
   have hloop := extendList_att (c := k) (f := t) ht
   change extend (coneRadial f c hc e.1.2, false)
     (extend ((orderCxMap f hf).onE e, true)
@@ -39,9 +37,7 @@ theorem coneCoverReference_edge (e : (orderCx P).E) :
       germSrc (orderCx Q).src (orderCx Q).tgt ((orderCxMap f hf).onE e, true) := by
     rw [coneCoverReference_end f c hc k hk]
     rfl
-  have hend : endV (extend ((orderCxMap f hf).onE e, true)
-      (coneCoverReference f c hc k e.1.1)) =
-      germSrc (orderCx Q).src (orderCx Q).tgt (coneRadial f c hc e.1.2, false) :=
+  have hend  :=
     endV_extend hsrc
   have h := congrArg (extend (coneRadial f c hc e.1.2, true)) hloop
   have hcancel := extend_revGerm (eb := (coneRadial f c hc e.1.2, false)) hend

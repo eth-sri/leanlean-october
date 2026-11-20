@@ -45,8 +45,8 @@ theorem coverPullbackTransport_symm_apply {f₀ f₁ : C(X, Y)} (p : C(D, Y))
     (hp : IsCoveringMap p) (H : f₀.Homotopy f₁) (z : CoverPullback f₀ p) :
     coverPullbackTransport p hp H.symm (coverPullbackTransport p hp H z) = z := by
   let z₁ := coverPullbackTransport p hp H z
-  let R : I → D := fun t => coverPullbackHomotopyLift p hp H (unitInterval.symm t, z)
-  let T : I → D := fun t => coverPullbackHomotopyLift p hp H.symm (t, z₁)
+  let R  := fun t => coverPullbackHomotopyLift p hp H (unitInterval.symm t, z)
+  let T  := fun t => coverPullbackHomotopyLift p hp H.symm (t, z₁)
   have hR : Continuous R := (coverPullbackHomotopyLift p hp H).continuous.comp
     (unitInterval.continuous_symm.prodMk continuous_const)
   have hT : Continuous T := (coverPullbackHomotopyLift p hp H.symm).continuous.comp
@@ -64,11 +64,7 @@ theorem coverPullbackTransport_symm_apply {f₀ f₁ : C(X, Y)} (p : C(D, Y))
     rfl
   have he := congrFun (hp.eq_of_comp_eq hR hT hproj 0 hzero) 1
   apply Subtype.ext
-  refine Prod.ext rfl ?_
-  change coverPullbackHomotopyLift p hp H.symm (1, z₁) = z.val.2
-  change coverPullbackHomotopyLift p hp H (unitInterval.symm 1, z) =
-    coverPullbackHomotopyLift p hp H.symm (1, z₁) at he
-  simpa only [unitInterval.symm_one, coverPullbackHomotopyLift_zero] using he.symm
+  aesop
 
 def coverPullbackHomotopyHomeomorph {f₀ f₁ : C(X, Y)} (p : C(D, Y))
     (hp : IsCoveringMap p) (H : f₀.Homotopy f₁) : CoverPullback f₀ p ≃ₜ CoverPullback f₁ p where
@@ -122,8 +118,5 @@ def coverPullbackMapHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y)
   have hF : F.toFun = h.comp g := rfl
   exact ContinuousMap.HomotopyEquiv.twoOfSixRight f g h E hE F hF
 
-@[simp] theorem coverPullbackMapHomotopyEquiv_toFun (e : ContinuousMap.HomotopyEquiv X Y)
-    (p : C(D, Y)) (hp : IsCoveringMap p) :
-    (coverPullbackMapHomotopyEquiv e p hp).toFun = coverPullbackMap e.toFun p := rfl
 
 end Whitehead

@@ -33,6 +33,25 @@ theorem generatesDegreeIn_of_fillsDegreeIn {U Base : P → Prop} {n : ℕ}
   obtain ⟨y, hy, hdy⟩ := h z hz hd hc
   exact ⟨0, AddSubgroup.zero_mem _, y, hy, by simp, by rw [hdy, zero_add]⟩
 
+/-- A homogeneous boundary admits a homogeneous filling with the same support. -/
+theorem homogeneous_filling {U : P → Prop} {n : ℕ} {c : Ch P}
+    (hc : lengthProjection n c = c) (h : ∃ y ∈ IncOn U, bdry y = c) :
+    ∃ y ∈ IncOn U, lengthProjection (n + 1) y = y ∧ bdry y = c := by
+  obtain ⟨y, hy, rfl⟩ := h
+  exact ⟨lengthProjection (n + 1) y, lengthProjection_mem_incOn _ hy,
+    lengthProjection_idempotent _ _, (lengthProjection_bdry _ _).symm.trans hc⟩
+
+/-- A split can be made in the same degree as the original chain. -/
+theorem exists_split_homogeneous_of_unmixed {A B U : P → Prop} {n : ℕ} {z : Ch P}
+    (hmix : ∀ a b : P, a ≤ b → U a → U b → (A a ∧ A b) ∨ (B a ∧ B b))
+    (hz : z ∈ IncOn U) (hd : lengthProjection n z = z) :
+    ∃ a ∈ IncOn A, lengthProjection n a = a ∧
+      ∃ b ∈ IncOn B, lengthProjection n b = b ∧ z = a + b := by
+  obtain ⟨a, ha, b, hb, rfl⟩ := exists_split_of_unmixed hmix hz
+  exact ⟨_, lengthProjection_mem_incOn n ha, lengthProjection_idempotent _ _,
+    _, lengthProjection_mem_incOn n hb, lengthProjection_idempotent _ _,
+    hd.symm.trans (map_add _ _ _)⟩
+
 theorem generatesDegreeIn_union_of_unmixed {A B U Base : P → Prop} {n : ℕ}
     (hU : ∀ p, U p ↔ (A p ∨ B p))
     (hmix : ∀ a b : P, a ≤ b → U a → U b → (A a ∧ A b) ∨ (B a ∧ B b))
@@ -41,43 +60,13 @@ theorem generatesDegreeIn_union_of_unmixed {A B U Base : P → Prop} {n : ℕ}
     (hJ : FillsDegreeIn (fun p => A p ∧ B p) n) :
     GeneratesDegreeIn U Base (n + 1) := by
   intro z hz hdeg hcyc
-  obtain ⟨a₀, ha₀, b₀, hb₀, hsplit⟩ := exists_split_of_unmixed hmix hz
-  let a := lengthProjection (n + 1) a₀
-  let b := lengthProjection (n + 1) b₀
-  have ha : a ∈ IncOn A := lengthProjection_mem_incOn _ ha₀
-  have hb : b ∈ IncOn B := lengthProjection_mem_incOn _ hb₀
-  have had : lengthProjection (n + 1) a = a := lengthProjection_idempotent _ _
-  have hbd : lengthProjection (n + 1) b = b := lengthProjection_idempotent _ _
-  have hab : z = a + b := by
-    rw [← hdeg, hsplit, map_add]
-  have hda : bdry a ∈ IncOn A := bdry_mem_incOn ha
-  have hdb : bdry b ∈ IncOn B := bdry_mem_incOn hb
-  have hsum : bdry a + bdry b = 0 := by rw [← map_add, ← hab]; exact hcyc
-  have hdaB : bdry a ∈ IncOn B := by
-    have h : bdry a = -bdry b := by linear_combination (norm := abel) hsum
-    rw [h]
-    exact AddSubgroup.neg_mem _ hdb
-  have htJ : bdry a ∈ IncOn (fun p => A p ∧ B p) := by
-    rw [← incOn_inf]
-    exact ⟨hda, hdaB⟩
-  have hdad : lengthProjection n (bdry a) = bdry a := by
-    rw [lengthProjection_bdry, had]
-  obtain ⟨u₀, hu₀, hdu₀⟩ := hJ (bdry a) htJ hdad (by simp [bdry_bdry])
-  let t := lengthProjection (n + 1) u₀
-  have ht : t ∈ IncOn (fun p => A p ∧ B p) := lengthProjection_mem_incOn _ hu₀
-  have htd : lengthProjection (n + 1) t = t := lengthProjection_idempotent _ _
-  have hdt : bdry t = bdry a := by
-    dsimp only [t]
-    rw [← lengthProjection_bdry, hdu₀, hdad]
-  have htA : t ∈ IncOn A := incOn_mono (fun _ h => h.1) ht
-  have htB : t ∈ IncOn B := incOn_mono (fun _ h => h.2) ht
-  obtain ⟨c₁, hc₁, y₁, hy₁, hdc₁, he₁⟩ := hA (a - t)
-    (AddSubgroup.sub_mem _ ha htA) (by rw [map_sub, had, htd])
-    (by rw [map_sub, hdt, sub_self])
-  obtain ⟨c₂, hc₂, y₂, hy₂, hdc₂, he₂⟩ := hB (b + t)
-    (AddSubgroup.add_mem _ hb htB) (by rw [map_add, hbd, htd]) (by
-      rw [map_add, hdt]
-      linear_combination (norm := abel) hsum)
+  obtain ⟨a, ha, had, b, hb, hbd, rfl⟩ := exists_split_homogeneous_of_unmixed hmix hz hdeg
+  obtain ⟨htJ, hsum⟩ := split_boundary ha hb hcyc
+  have hdad : lengthProjection n (bdry a) = bdry a := by rw [lengthProjection_bdry, had]
+  obtain ⟨t, ht, htd, hdt⟩ := homogeneous_filling hdad (hJ _ htJ hdad (bdry_bdry _))
+  obtain ⟨ha, hda, hb, hdb⟩ := split_cycles_of_filling ha hb ht hdt hsum
+  obtain ⟨c₁, hc₁, y₁, hy₁, hdc₁, he₁⟩ := hA _ ha (by rw [map_sub, had, htd]) hda
+  obtain ⟨c₂, hc₂, y₂, hy₂, hdc₂, he₂⟩ := hB _ hb (by rw [map_add, hbd, htd]) hdb
   refine ⟨c₁ + c₂, AddSubgroup.add_mem _ hc₁ hc₂, y₁ + y₂,
     AddSubgroup.add_mem _ ?_ ?_, ?_, ?_⟩
   · exact incOn_mono (fun r hr => (hU r).2 (Or.inl hr)) hy₁
@@ -85,7 +74,7 @@ theorem generatesDegreeIn_union_of_unmixed {A B U Base : P → Prop} {n : ℕ}
   · rw [map_add, hdc₁, hdc₂, add_zero]
   · have h : (a - t) + (b + t) = a + b := by abel
     rw [he₁, he₂] at h
-    rw [hab, ← h, map_add]
+    rw [← h, map_add]
     abel
 
 end FiniteChains.Nerve

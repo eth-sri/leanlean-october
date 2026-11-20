@@ -41,8 +41,7 @@ theorem positiveCorner_lt_iff (c : QCube A) :
     apply hn
     symm
     apply QCube.ext' he
-    intro v _
-    exact congrFun hs v
+    tauto
   · rintro ⟨hne, hs⟩
     refine ⟨hs, ?_⟩
     intro he

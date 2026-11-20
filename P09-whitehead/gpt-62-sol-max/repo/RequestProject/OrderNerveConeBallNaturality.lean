@@ -27,10 +27,7 @@ theorem orderNerveRadialCone_natural (r : I) (x : orderNerveRealization P) :
   rw [orderNerveRealizationCoordinates_map_injective _ _ e.withTopCongr.injective]
   induction p using WithTop.recTopCoe with
   | top =>
-      change orderNerveRealizationCoordinates (WithTop P) (orderNerveRadialCone P (r, x)) ⊤ =
-        orderNerveRealizationCoordinates (WithTop Q)
-          (orderNerveRadialCone Q (r, orderNerveRealizationOrderIso e x)) ⊤
-      rw [orderNerveRadialCone_top, orderNerveRadialCone_top]
+      simp_all
   | coe p =>
       change orderNerveRealizationCoordinates (WithTop P) (orderNerveRadialCone P (r, x)) p =
         orderNerveRealizationCoordinates (WithTop Q)

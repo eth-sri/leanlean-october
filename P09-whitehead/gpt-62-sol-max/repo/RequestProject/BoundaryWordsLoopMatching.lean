@@ -12,9 +12,7 @@ continuous realization of its based edge word. This retains a homotopy
 of circle maps, not merely equality in the fundamental group. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel.BoundaryWords
 open RelativeAttachment ContinuousEdgeWords
@@ -43,17 +41,6 @@ theorem corner00Eq : squareSideMap (1, false) 0 = squareSideMap (0, false) 0 := 
   funext i
   fin_cases i <;> rfl
 
-theorem realize_cast_eq {V E X : Type} [TopologicalSpace X]
-    (src tgt : E → V) (v : V → X) (edge : ∀ e, Path (v (src e)) (v (tgt e)))
-    (l : List (E × Bool)) {a b a' b' : V}
-    (hl : Comb.IsPath src tgt l a b) (hl' : Comb.IsPath src tgt l a' b')
-    (ha : a' = a) (hb : b' = b) :
-    (realize src tgt v edge l hl).cast (congrArg v ha) (congrArg v hb) =
-      realize src tgt v edge l hl' := by
-  cases ha
-  cases hb
-  rfl
-
 def loopRealization :
     Path (old r (boundaryFamilyInclusion J _) (W.vertex squareCorner00))
       (old r (boundaryFamilyInclusion J _) (W.vertex squareCorner00)) :=
@@ -79,12 +66,12 @@ theorem basedTraversal_homotopic_loopRealization : W.basedTraversal.Homotopic W.
   let a₁ := W.vertex squareCorner01
   let a₂ := W.vertex squareCorner11
   let a₃ := W.vertex squareCorner10
-  have e₀ : vG a₀ = W.squareMap squareCorner00 := W.baseEquality
-  have e₁ : vG a₁ = W.squareMap squareCorner01 :=
+  have e₀  := W.baseEquality
+  have e₁  :=
     (corner_value W (0, false) 1 (Or.inr rfl)).symm
-  have e₂ : vG a₂ = W.squareMap squareCorner11 :=
+  have e₂  :=
     (corner_value W (0, true) 1 (Or.inr rfl)).symm
-  have e₃ : vG a₃ = W.squareMap squareCorner10 :=
+  have e₃  :=
     (corner_value W (0, true) 0 (Or.inl rfl)).symm
   let D₀ := (squareTraversalLeft.map W.squareMap.continuous).cast e₀ e₁
   let D₁ := (squareTraversalTop.map W.squareMap.continuous).cast e₁ e₂
@@ -98,80 +85,52 @@ theorem basedTraversal_homotopic_loopRealization : W.basedTraversal.Homotopic W.
   let l₁ := W.word (1, true)
   let l₂ := Comb.revPath (X := graphCx r) (W.word (0, true))
   let l₃ := Comb.revPath (X := graphCx r) (W.word (1, false))
-  have hw₀ : Comb.IsPath (graphSrc r) (graphTgt r) l₀ a₀ a₁ := W.isPath (0, false)
+  have hw₀  := W.isPath (0, false)
   have hw₁ : Comb.IsPath (graphSrc r) (graphTgt r) l₁ a₁ a₂ := by
     have hh := W.isPath (1, true)
     rw [← corner01Eq, corner11Eq] at hh
     exact hh
-  have hw₂ : Comb.IsPath (graphSrc r) (graphTgt r) l₂ a₂ a₃ :=
+  have hw₂  :=
     Comb.isPath_revPath (X := graphCx r) (W.isPath (0, true))
   have hw₃ : Comb.IsPath (graphSrc r) (graphTgt r) l₃ a₃ a₀ := by
     have hh := Comb.isPath_revPath (X := graphCx r) (W.isPath (1, false))
     rw [← corner10Eq, corner00Eq] at hh
     exact hh
-  let R₀ := realize (graphSrc r) (graphTgt r) vG (graphEdgePath r) l₀ hw₀
-  let R₁ := realize (graphSrc r) (graphTgt r) vG (graphEdgePath r) l₁ hw₁
-  let R₂ := realize (graphSrc r) (graphTgt r) vG (graphEdgePath r) l₂ hw₂
-  let R₃ := realize (graphSrc r) (graphTgt r) vG (graphEdgePath r) l₃ hw₃
-  have H₀ : D₀.Homotopic R₀ := by
-    have he : D₀ = R₀ := by
-      apply Path.ext
-      funext t
-      exact W.squareMap_side (0, false) t
-    simpa only [he] using Path.Homotopic.refl R₀
-  have H₁ : D₁.Homotopic R₁ := by
-    have ha : a₁ = W.vertex (squareSideMap (1, true) 0) := congrArg W.vertex corner01Eq
-    have hb : a₂ = W.vertex (squareSideMap (1, true) 1) := congrArg W.vertex corner11Eq.symm
-    have hd : D₁ = (W.sidePath (1, true)).cast (congrArg vG ha) (congrArg vG hb) := by
-      apply Path.ext
-      funext t
-      exact W.squareMap_side (1, true) t
-    have he : D₁ = R₁ := hd.trans (realize_cast_eq (graphSrc r) (graphTgt r) vG
-      (graphEdgePath r) l₁ (W.isPath (1, true)) hw₁ ha hb)
-    simpa only [he] using Path.Homotopic.refl R₁
-  have H₂ : D₂.Homotopic R₂ := by
-    have hd : D₂ = (W.sidePath (0, true)).symm := by
-      apply Path.ext
-      funext t
-      exact W.squareMap_side (0, true) (unitInterval.symm t)
-    rw [hd]
-    exact realize_revPath (K := graphCx r) vG (graphEdgePath r)
-      (W.word (0, true)) (W.isPath (0, true))
-  have H₃ : D₃.Homotopic R₃ := by
-    have ha : a₃ = W.vertex (squareSideMap (1, false) 1) := congrArg W.vertex corner10Eq
-    have hb : a₀ = W.vertex (squareSideMap (1, false) 0) := congrArg W.vertex corner00Eq.symm
-    have hd : (W.sidePath (1, false)).symm.cast (congrArg vG ha) (congrArg vG hb) = D₃ := by
-      apply Path.ext
-      funext t
-      exact (W.squareMap_side (1, false) (unitInterval.symm t)).symm
-    have HH := (realize_revPath (K := graphCx r) vG (graphEdgePath r)
-      (W.word (1, false)) (W.isPath (1, false))).pathCast (congrArg vG ha) (congrArg vG hb)
-    have hr : (realize (graphSrc r) (graphTgt r) vG (graphEdgePath r) l₃
-        (Comb.isPath_revPath (X := graphCx r) (W.isPath (1, false)))).cast
-          (congrArg vG ha) (congrArg vG hb) = R₃ :=
-      realize_cast_eq (graphSrc r) (graphTgt r) vG (graphEdgePath r) l₃ _ hw₃ ha hb
-    change ((W.sidePath (1, false)).symm.cast (congrArg vG ha) (congrArg vG hb)).Homotopic
-      ((realize (graphSrc r) (graphTgt r) vG (graphEdgePath r) l₃
-        (Comb.isPath_revPath (X := graphCx r) (W.isPath (1, false)))).cast
-          (congrArg vG ha) (congrArg vG hb)) at HH
-    rw [hd, hr] at HH
-    exact HH
-  have Hs : W.basedTraversal.Homotopic ((R₀.trans R₁).trans (R₂.trans R₃)) := by
-    rw [ht]
-    exact (H₀.hcomp H₁).hcomp (H₂.hcomp H₃)
+  have hside (s : SquareSide) (rev : Bool) {a b : V}
+      (h : Comb.IsPath (graphSrc r) (graphTgt r)
+        (if rev then Comb.revPath (X := graphCx r) (W.word s) else W.word s) a b)
+      (ha : a = W.vertex (squareSideMap s (if rev then 1 else 0)))
+      (hb : b = W.vertex (squareSideMap s (if rev then 0 else 1)))
+      (D : Path (vG a) (vG b))
+      (hD : ∀ t : I, D t = W.squareMap (squareSideMap s (if rev then unitInterval.symm t else t))) :
+      D.Homotopic (realize (graphSrc r) (graphTgt r) vG (graphEdgePath r) _ h) := by
+    subst a b
+    cases rev
+    · have he : D = W.sidePath s := Path.ext (funext fun t => (hD t).trans (W.squareMap_side s t))
+      rw [he]
+      exact Path.Homotopic.refl _
+    · have he : D = (W.sidePath s).symm := Path.ext (funext fun t =>
+        (hD t).trans (W.squareMap_side s (unitInterval.symm t)))
+      rw [he]
+      exact realize_revPath (K := graphCx r) vG (graphEdgePath r) (W.word s) (W.isPath s)
+  have H₀ := hside (0, false) false hw₀ rfl rfl D₀ (fun _ => rfl)
+  have H₁ := hside (1, true) false hw₁ (congrArg W.vertex corner01Eq)
+    (congrArg W.vertex corner11Eq.symm) D₁ (fun _ => rfl)
+  have H₂ := hside (0, true) true hw₂ rfl rfl D₂ (fun _ => rfl)
+  have H₃ := hside (1, false) true hw₃ (congrArg W.vertex corner10Eq)
+    (congrArg W.vertex corner00Eq.symm) D₃ (fun _ => rfl)
   have Hleft := realize_append (graphSrc r) (graphTgt r) vG (graphEdgePath r) l₀ l₁ hw₀ hw₁
   have Hright := realize_append (graphSrc r) (graphTgt r) vG (graphEdgePath r) l₂ l₃ hw₂ hw₃
   have Happend := realize_append (graphSrc r) (graphTgt r) vG (graphEdgePath r)
     (l₀ ++ l₁) (l₂ ++ l₃) (hw₀.append hw₁) (hw₂.append hw₃)
-  have Hall := Hs.trans ((Hleft.hcomp Hright).trans Happend)
+  rw [ht]
+  have Hall := ((H₀.hcomp H₁).hcomp (H₂.hcomp H₃)).trans ((Hleft.hcomp Hright).trans Happend)
   simpa only [loopRealization, loopWord, l₀, l₁, l₂, l₃, List.append_eq, List.append_assoc] using Hall
 
 theorem squareLoopDesc_basedTraversal : squareLoopDesc W.basedTraversal = W.squareMap := by
   have hc : squareLoopDesc W.basedTraversal =
       squareLoopDesc (squareBoundaryTraversal.map W.squareMap.continuous) := by
-    apply ContinuousMap.ext
-    intro z
-    rfl
+    tauto
   exact hc.trans (squareLoopDesc_map W.squareMap)
 
 def loopBoundaryMap : C(UnitBoundary (Fin 2 → ℝ), DiskAttachment r) :=

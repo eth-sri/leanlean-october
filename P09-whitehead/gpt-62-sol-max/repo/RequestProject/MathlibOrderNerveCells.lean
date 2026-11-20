@@ -5,9 +5,7 @@ public import Mathlib.AlgebraicTopology.SimplicialSet.NerveNondegenerate
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -50,26 +48,11 @@ theorem ordTetBoundary_nerve_faces (t : OrdTet P) :
       Finsupp.single ((nerve P).δ (1 : Fin 4) (ordTetNerveEquiv P t)) 1 +
       Finsupp.single ((nerve P).δ (2 : Fin 4) (ordTetNerveEquiv P t)) 1 -
       Finsupp.single ((nerve P).δ (3 : Fin 4) (ordTetNerveEquiv P t)) 1 := by
-  change (Finsupp.lmapDomain ℤ ℤ (ordTriNerveEquiv P)) (ordTetBoundary t) = _
-  simp only [ordTetBoundary, map_sub, map_add, Finsupp.lmapDomain_apply,
-    Finsupp.mapDomain_single]
-  have h0 : ordTriNerveEquiv P
-      ⟨(t.1.2.1, t.1.2.2.1, t.1.2.2.2), t.2.2⟩ =
-      (nerve P).δ (0 : Fin 4) (ordTetNerveEquiv P t) := by
-    apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
-  have h1 : ordTriNerveEquiv P
-      ⟨(t.1.1, t.1.2.2.1, t.1.2.2.2), t.2.1.trans t.2.2.1, t.2.2.2⟩ =
-      (nerve P).δ (1 : Fin 4) (ordTetNerveEquiv P t) := by
-    apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
-  have h2 : ordTriNerveEquiv P
-      ⟨(t.1.1, t.1.2.1, t.1.2.2.2), t.2.1, t.2.2.1.trans t.2.2.2⟩ =
-      (nerve P).δ (2 : Fin 4) (ordTetNerveEquiv P t) := by
-    apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
-  have h3 : ordTriNerveEquiv P
-      ⟨(t.1.1, t.1.2.1, t.1.2.2.1), t.2.1, t.2.2.1⟩ =
-      (nerve P).δ (3 : Fin 4) (ordTetNerveEquiv P t) := by
-    apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
-  rw [h0, h1, h2, h3]
+  rw [ordTetBoundary, mapDomain_tetrahedronBoundary]
+  have h (i : Fin 4) : ordTriNerveEquiv P (ordTetFace t i) =
+      (nerve P).δ i (ordTetNerveEquiv P t) := by
+    fin_cases i <;> exact CategoryTheory.Functor.ext (fun j => by fin_cases j <;> rfl)
+  simp only [tetrahedronBoundary, Function.comp_apply, h]
 
 /-- The actual two-cell boundary agrees with Mathlib's alternating nerve faces. -/
 theorem ordTriangleBoundary_nerve_faces (t : OrdTri P) :
@@ -79,18 +62,17 @@ theorem ordTriangleBoundary_nerve_faces (t : OrdTri P) :
       Finsupp.single ((nerve P).δ (1 : Fin 3) (ordTriNerveEquiv P t)) 1 +
       Finsupp.single ((nerve P).δ (2 : Fin 3) (ordTriNerveEquiv P t)) 1 := by
   have h0 : ordEdgeNerveEquiv P ⟨(t.1.2.1, t.1.2.2), t.2.2⟩ =
-      (nerve P).δ (0 : Fin 3) (ordTriNerveEquiv P t) := by
-    apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
+      (nerve P).δ 0 (ordTriNerveEquiv P t) := rfl
   have h1 : ordEdgeNerveEquiv P ⟨(t.1.1, t.1.2.2), t.2.1.trans t.2.2⟩ =
-      (nerve P).δ (1 : Fin 3) (ordTriNerveEquiv P t) := by
+      (nerve P).δ 1 (ordTriNerveEquiv P t) := by
     apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
   have h2 : ordEdgeNerveEquiv P ⟨(t.1.1, t.1.2.1), t.2.1⟩ =
-      (nerve P).δ (2 : Fin 3) (ordTriNerveEquiv P t) := by
+      (nerve P).δ 2 (ordTriNerveEquiv P t) := by
     apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
   have hb : bdry2 (orderCx P) (Finsupp.single t 1) =
-      Finsupp.single (⟨(t.1.1, t.1.2.1), t.2.1⟩ : OrdEdge P) 1 +
-      Finsupp.single (⟨(t.1.2.1, t.1.2.2), t.2.2⟩ : OrdEdge P) 1 -
-      Finsupp.single (⟨(t.1.1, t.1.2.2), t.2.1.trans t.2.2⟩ : OrdEdge P) 1 := by
+      Finsupp.single ⟨(t.1.1, t.1.2.1), t.2.1⟩ 1 +
+      Finsupp.single ⟨(t.1.2.1, t.1.2.2), t.2.2⟩ 1 -
+      Finsupp.single ⟨(t.1.1, t.1.2.2), t.2.1.trans t.2.2⟩ 1 := by
     simp [bdry2, orderCx, pathChain]
     abel
   change (Finsupp.lmapDomain ℤ ℤ (ordEdgeNerveEquiv P))

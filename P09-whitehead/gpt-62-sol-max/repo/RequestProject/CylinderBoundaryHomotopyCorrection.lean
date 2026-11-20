@@ -26,52 +26,33 @@ theorem homotopyRel_of_boundaryContraction (S : Set D) (hS : IsClosed S)
     (hJl : ∀ s a, J (s, (0, a)) = f₀ a.val)
     (hJr : ∀ s a, J (s, (1, a)) = f₁ a.val) :
     f₀.HomotopicRel f₁ S := by
-  let P₀ : C(D, C(I, Z)) := {
-    toFun := fun d => ContinuousMap.const I (f₀ d)
-    continuous_toFun := ContinuousMap.continuous_const'.comp f₀.continuous }
-  let P₁ : C(D, C(I, Z)) := {
-    toFun := fun d => ContinuousMap.const I (f₁ d)
-    continuous_toFun := ContinuousMap.continuous_const'.comp f₁.continuous }
-  let PS : C(I × S, C(I, Z)) :=
-    (J.comp ⟨fun z : (I × S) × I => (z.2, z.1), continuous_swap⟩).curry
-  have hP₀ : ∀ a, PS (0, a) = P₀ a.val := by
-    intro a
-    apply ContinuousMap.ext
-    exact fun s => hJl s a
-  have hP₁ : ∀ a, PS (1, a) = P₁ a.val := by
-    intro a
-    apply ContinuousMap.ext
-    exact fun s => hJr s a
-  let PB : C(FullCylinderBoundary S, C(I, Z)) :=
-    fullCylinderPasting S hS P₀ P₁ PS hP₀ hP₁
-  let HB : C(I × FullCylinderBoundary S, Z) :=
-    PB.uncurry.comp ⟨Prod.swap, continuous_swap⟩
-  have hBleft (s : I) (d : D) :
-      HB (s, ⟨(0, d), Or.inl rfl⟩) = f₀ d := by
-    exact congrArg (fun f : C(I, Z) => f s)
-      (fullCylinderPasting_zero S hS P₀ P₁ PS hP₀ hP₁ d)
-  have hBright (s : I) (d : D) :
-      HB (s, ⟨(1, d), Or.inr (Or.inl rfl)⟩) = f₁ d := by
-    exact congrArg (fun f : C(I, Z) => f s)
-      (fullCylinderPasting_one S hS P₀ P₁ PS hP₀ hP₁ d)
-  have hBside (s t : I) (a : S) :
-      HB (s, ⟨(t, a.val), Or.inr (Or.inr a.property)⟩) = J (s, (t, a)) := by
-    exact congrArg (fun f : C(I, Z) => f s)
-      (fullCylinderPasting_side S hS P₀ P₁ PS hP₀ hP₁ t a)
+  let endpoint (f : C(D, Z)) := (f.comp (ContinuousMap.fst : C(D × I, D))).curry
+  let PS := (J.comp ⟨Prod.swap, continuous_swap⟩).curry
+  have hP₀ : ∀ a, PS (0, a) = endpoint f₀ a.val := fun a => ContinuousMap.ext fun s => hJl s a
+  have hP₁ : ∀ a, PS (1, a) = endpoint f₁ a.val := fun a => ContinuousMap.ext fun s => hJr s a
+  let PB := fullCylinderPasting S hS (endpoint f₀) (endpoint f₁) PS hP₀ hP₁
+  let HB := PB.uncurry.comp ⟨Prod.swap, continuous_swap⟩
+  have hend (s t : I) (ht : t = 0 ∨ t = 1) (d : D) :
+      HB (s, ⟨(t, d), ht.imp id Or.inl⟩) = (if t = 0 then f₀ d else f₁ d) := by
+    have h := congrArg (fun f : C(I, Z) => f s)
+      (fullCylinderPasting_end S hS (endpoint f₀) (endpoint f₁) PS hP₀ hP₁ t ht d)
+    change HB (s, ⟨(t, d), _⟩) = _ at h
+    split_ifs at h ⊢ <;> exact h
+  have hBleft (s : I) (d : D) : HB (s, ⟨(0, d), Or.inl rfl⟩) = f₀ d := by
+    simpa only [ite_eq_left rfl, if_true] using hend s 0 (Or.inl rfl) d
+  have hBright (s : I) (d : D) : HB (s, ⟨(1, d), Or.inr (Or.inl rfl)⟩) = f₁ d := by
+    simpa only [ite_eq_right one_ne_zero] using hend s 1 (Or.inr rfl) d
+  have hBside (s t : I) (a : S) := congrArg (fun f  => f s)
+      (fullCylinderPasting_side S hS (endpoint f₀) (endpoint f₁) PS hP₀ hP₁ t a)
   have hB₀ : ∀ b : FullCylinderBoundary S, HB (0, b) = F b.val := by
-    intro b
-    rcases b.property with hb | hb | hb
-    · have he : b = ⟨(0, b.val.2), Or.inl rfl⟩ := by
-        apply Subtype.ext
-        exact Prod.ext hb rfl
-      rw [he, hBleft]
-      exact (F.apply_zero _).symm
-    · have he : b = ⟨(1, b.val.2), Or.inr (Or.inl rfl)⟩ := by
-        apply Subtype.ext
-        exact Prod.ext hb rfl
-      rw [he, hBright]
-      exact (F.apply_one _).symm
-    · exact (hBside 0 b.val.1 ⟨b.val.2, hb⟩).trans (hJ₀ _ _)
+    rintro ⟨⟨t, d⟩, ht | ht | hd⟩
+    · change t = 0 at ht
+      subst t
+      exact (hBleft 0 d).trans (F.apply_zero d).symm
+    · change t = 1 at ht
+      subst t
+      exact (hBright 0 d).trans (F.apply_one d).symm
+    · exact (hBside 0 t ⟨d, hd⟩).trans (hJ₀ _ _)
   obtain ⟨G, _, hGB⟩ := hext Z F.toContinuousMap HB hB₀
   refine ⟨{
     toFun := fun td => G (1, td)

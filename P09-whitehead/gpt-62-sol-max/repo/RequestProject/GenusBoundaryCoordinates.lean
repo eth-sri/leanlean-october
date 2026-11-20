@@ -6,9 +6,6 @@ public import RequestProject.BarycentricCocycleDescent
 @[expose] public section
 
 /-! Exact boundary incidences and cocycle values of the genuine marked loops. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Cell
@@ -16,26 +13,22 @@ variable (q : ℕ) [NeZero q]
 
 def markedBoundaryPos (x : Fin q × Bool) (b : Bool) : Fin (8 * q) :=
   ⟨8 * x.1.val + (if x.2 then 2 else 0) + (if b then 1 else 0), by
-    have := x.1.isLt
-    cases x.2 <;> cases b <;> simp only [Bool.false_eq_true, ↓reduceIte] <;> omega⟩
+    grind⟩
 
 omit [NeZero q] in
 theorem markedBoundaryPos_div (x : Fin q × Bool) (b : Bool) :
     (markedBoundaryPos q x b).val / 2 / 4 = x.1.val := by
-  obtain ⟨h, t⟩ := x
-  cases t <;> cases b <;> simp only [markedBoundaryPos, Bool.false_eq_true, ↓reduceIte] <;> omega
+  grind +locals
 
 omit [NeZero q] in
 theorem markedBoundaryPos_mod (x : Fin q × Bool) (b : Bool) :
     (markedBoundaryPos q x b).val / 2 % 4 = if x.2 then 1 else 0 := by
-  obtain ⟨h, t⟩ := x
-  cases t <;> cases b <;> simp only [markedBoundaryPos, Bool.false_eq_true, ↓reduceIte] <;> omega
+  grind +locals
 
 omit [NeZero q] in
 theorem markedBoundaryPos_par (x : Fin q × Bool) (b : Bool) :
     (markedBoundaryPos q x b).val % 2 = if b then 1 else 0 := by
-  obtain ⟨h, t⟩ := x
-  cases t <;> cases b <;> simp only [markedBoundaryPos, Bool.false_eq_true, ↓reduceIte] <;> omega
+  grind +locals
 
 omit [NeZero q] in
 theorem gvc_markedBoundaryPos_false (x : Fin q × Bool) :
@@ -160,9 +153,6 @@ def boundaryMarkValue (d : OrdCocycle (SCell (gvc q) (gec q) (gc q)) G) (x : Fin
 
 theorem read_gSig_boundaryMarkValue (x : Fin q × Bool) :
     c.readPath (gSig q (x.1.val, x.2)) = boundaryMarkValue q (barycentricCocycle c) x := by
-  rw [gSig_boundary_path, OrdCocycle.readPath_append, read_bdEdge, read_bdEdge,
-    markedBoundaryPos_succ]
-  simp only [cV, cE, gvc_markedBoundaryPos_false, gvc_markedBoundaryPos_true,
-    gvc_markedBoundaryPos_end, gec_markedBoundaryPos, boundaryMarkValue, toS]
+  simp [gSig_boundary_path, OrdCocycle.readPath_append, read_bdEdge, markedBoundaryPos_succ, cV, cE, gvc_markedBoundaryPos_false, gvc_markedBoundaryPos_true, gvc_markedBoundaryPos_end, gec_markedBoundaryPos, boundaryMarkValue, toS]
 
 end FiniteChains.Davis.Genus

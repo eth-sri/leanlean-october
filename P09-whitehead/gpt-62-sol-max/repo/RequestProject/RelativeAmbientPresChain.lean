@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.RelativeAmbientChain
-public import RequestProject.PresChainRealization
+public import RequestProject.CanonicalPresentationTopologicalChains
+public import RequestProject.PresentationChainFinsupp
 
 @[expose] public section
 
@@ -18,11 +19,11 @@ variable {A B J K : Type} [DecidableEq A] [DecidableEq B]
   (g : A → B) (f : J → K) (hg : Function.Injective g) (hf : Function.Injective f)
   (hrel : ∀ j, τ (f j) = FreeGroup.map g (ρ j))
 
-theorem zero_universal_chains
-    (hz : ∀ x, FSIsFoxCycle ρ x → (mor ρ τ g f hg hf hrel).cells x = 0)
-    (u : PresGroup ρ × J →₀ ℤ) (hu : Comb.bdry2 (Comb.univCover ρ) u = 0) :
-    Finsupp.mapDomain (Prod.map (groupHom ρ τ g f hrel) f) u = 0 := by
-  apply (Comb.fs_univCover_zero_pi2_iff ρ (groupHom ρ τ g f hrel) f hf).2 ?_ u hu
+theorem zeroPi2
+    (hz : ∀ x, FSIsFoxCycle ρ x → (mor ρ τ g f hg hf hrel).cells x = 0) :
+    Comb.ZeroPi2 (Comb.presInclHom g hg ρ τ f hrel) := by
+  apply (Comb.zeroPi2_presInclHom_iff ρ g hg f hrel).2
+  apply (Comb.fs_univCover_zero_pi2_iff ρ (groupHom ρ τ g f hrel) f hf).2
   intro v hv
   apply hz v
   change coverSecondBoundary (relSub ρ) ρ v = 0
@@ -104,12 +105,11 @@ def toPresChainFS (hinj : Function.Injective (expMatrix core)) : PresChainFS cor
   baseGen_injective := Function.injective_id
   baseCell := id
   baseCell_injective := Function.injective_id
-  rel_base := by intro j; exact (FreeGroup.map.id (core j)).symm
-  zero_pi2 := by
-    intro i hi u hu
-    exact PresInclusionFS.zero_universal_chains (c.chainRel i) (c.chainRel (i + 1))
+  rel_base := fun j => (FreeGroup.map.id (core j)).symm
+  zero_pi2 i hi :=
+    PresInclusionFS.zeroPi2 (c.chainRel i) (c.chainRel (i + 1))
       (c.chainGenIncl i) (c.chainCellIncl i) (c.chainGenIncl_injective i)
-      (c.chainCellIncl_injective i) (c.chainRel_incl i) (c.chainMor_zero hinj i hi) u hu
+      (c.chainCellIncl_injective i) (c.chainRel_incl i) (c.chainMor_zero hinj i hi)
 
 theorem chain_proper (i : ℕ) (hi : i < n + 1) :
     (∃ a : c.chainGen (i + 1), a ∉ Set.range (c.chainGenIncl i)) ∨
@@ -117,7 +117,7 @@ theorem chain_proper (i : ℕ) (hi : i < n + 1) :
   cases i with
   | zero =>
       left
-      exact ⟨Sum.inr c.fresh, by rintro ⟨a, h⟩; exact Sum.inl_ne_inr h⟩
+      exact ⟨Sum.inr c.fresh, fun ⟨a, h⟩ => Sum.inl_ne_inr h⟩
   | succ i =>
       obtain ⟨s, hs, hsp⟩ := c.strict i (by omega)
       right

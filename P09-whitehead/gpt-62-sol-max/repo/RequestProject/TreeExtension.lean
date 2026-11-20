@@ -77,7 +77,7 @@ theorem exists_pre {a : Y.V} (hz : imDist h a = 0) : ∃ x : X.V, a = h.onV x :=
   obtain ⟨p, hlen, x, hp⟩ := imDist_mem h hconn x₀ a
   rw [hz, List.length_eq_zero_iff] at hlen
   subst hlen
-  exact ⟨x, hp⟩
+  tauto
 
 /-- A choice of preimage of a vertex at distance zero from the image. -/
 noncomputable def imPre {a : Y.V} (hz : imDist h a = 0) : X.V :=
@@ -94,24 +94,21 @@ theorem imDist_step {a : Y.V} (ha : imDist h a ≠ 0) :
       imDist h (germTgt Y.src Y.tgt g) + 1 = imDist h a := by
   obtain ⟨p, hlen, x, hp⟩ := imDist_mem h hconn x₀ a
   have hne : p ≠ [] := by
-    intro hp0
-    subst hp0
-    exact ha (by simpa using hlen.symm)
+    grind
   obtain ⟨g, q, rfl⟩ : ∃ (g : Y.E × Bool) (q : List (Y.E × Bool)), p = g :: q := by
     cases p with
-    | nil => exact absurd rfl hne
-    | cons g q => exact ⟨g, q, rfl⟩
+    | nil => aesop
+    | cons g q => tauto
   obtain ⟨hgs, hq⟩ := hp
   refine ⟨g, hgs.symm, ?_⟩
-  have h1 : imDist h (germTgt Y.src Y.tgt g) ≤ q.length := imDist_le h hq
+  have h1  := imDist_le h hq
   have h2 : imDist h a ≤ imDist h (germTgt Y.src Y.tgt g) + 1 := by
     obtain ⟨q', hlen', x', hq'⟩ := imDist_mem h hconn x₀ (germTgt Y.src Y.tgt g)
     have hpath : IsPath Y.src Y.tgt (g :: q') a (h.onV x') := ⟨hgs, hq'⟩
     have := imDist_le h hpath
-    simpa [hlen'] using this
+    simp_all
   have h3 : q.length + 1 = imDist h a := by
-    simp only [List.length_cons] at hlen
-    omega
+    assumption
   omega
 
 /-- The edge towards the image chosen at a vertex outside the image. -/
@@ -148,15 +145,15 @@ theorem extHt_of_ne {a : Y.V} (hz : imDist h a ≠ 0) :
     extHt h hconn x₀ T a =
       extHt h hconn x₀ T (germTgt Y.src Y.tgt (upChoice h hconn x₀ hz)) + 1 := by
   rw [extHt]
-  exact dif_neg hz
+  aesop
 
 include hconn x₀ in
 theorem extHt_image (hV : Function.Injective h.onV) (x : X.V) :
     extHt h hconn x₀ T (h.onV x) = T.ht x := by
-  have hz : imDist h (h.onV x) = 0 := imDist_image h x
+  have hz  := imDist_image h x
   rw [extHt_of_zero h hconn x₀ T hz]
   have := (imPre_spec h hconn x₀ hz).symm
-  rw [hV this]
+  tauto
 
 theorem imPre_ne_root {a : Y.V} (ha : a ≠ h.onV T.root) (hz : imDist h a = 0) :
     imPre h hconn x₀ hz ≠ T.root := fun hr =>
@@ -176,9 +173,7 @@ theorem extUp_of_zero {a : Y.V} (ha : a ≠ h.onV T.root) (hz : imDist h a = 0) 
   rw [extUp, dif_pos hz]
 
 theorem extUp_of_ne {a : Y.V} (ha : a ≠ h.onV T.root) (hz : imDist h a ≠ 0) :
-    extUp h hconn x₀ T a ha = upChoice h hconn x₀ hz := by
-  rw [extUp]
-  exact dif_neg hz
+    extUp h hconn x₀ T a ha = upChoice h hconn x₀ hz := dif_neg hz
 
 /-- The extension of a spanning tree of a subcomplex to the ambient complex. -/
 noncomputable def extend (hV : Function.Injective h.onV) : SpanningTree Y where
@@ -238,9 +233,9 @@ theorem exists_extension (hV : Function.Injective h.onV) (hE : Function.Injectiv
       exact imDist_image h _
   · intro he
     obtain ⟨x, hx, hxe⟩ := (T.isTree_iff e).1 he
-    have hne : h.onV x ≠ h.onV T.root := fun hc => hx (hV hc)
+    have hne  := fun hc => hx (hV hc)
     refine ⟨h.onV x, hne, ?_⟩
-    have hz : imDist h (h.onV x) = 0 := imDist_image h x
+    have hz  := imDist_image h x
     rw [extUp_of_zero h hconn x₀ T hne hz]
     have key : ∀ (y : X.V) (hy : y ≠ T.root), y = x → (T.up y hy).1 = e := by
       rintro y hy rfl
@@ -261,7 +256,6 @@ spanning tree of `Y` meets `X` exactly in the spanning tree of `X`. -/
 def nonTreeIncl (e : NonTree T) : NonTree T' :=
   ⟨h.onE e.1, fun hc => e.2 ((hiff e.1).1 hc)⟩
 
-@[simp] theorem nonTreeIncl_coe (e : NonTree T) : (nonTreeIncl hiff e : Y.E) = h.onE e.1 := rfl
 
 theorem nonTreeIncl_injective (hE : Function.Injective h.onE) :
     Function.Injective (nonTreeIncl hiff) := by
@@ -274,7 +268,7 @@ theorem germWord_onE (g : X.E × Bool) :
   classical
   obtain ⟨e, b⟩ := g
   by_cases hT : T.isTree e
-  · have hT' : T'.isTree (h.onE e) := (hiff e).2 hT
+  · have hT'  := (hiff e).2 hT
     simp [germWord, hT, hT']
   · have hT' : ¬ T'.isTree (h.onE e) := fun hc => hT ((hiff e).1 hc)
     cases b <;> simp [germWord, hT, hT', nonTreeIncl]
@@ -283,7 +277,7 @@ theorem germWord_onE (g : X.E × Bool) :
 theorem pathWord_mapPath (l : List (X.E × Bool)) :
     pathWord T' (mapPath h l) = FreeGroup.map (nonTreeIncl hiff) (pathWord T l) := by
   induction l with
-  | nil => simp [mapPath]
+  | nil => aesop
   | cons g l ih =>
       have hcons : mapPath h (g :: l) = (h.onE g.1, g.2) :: mapPath h l := rfl
       rw [hcons, pathWord_cons, ih, germWord_onE hiff g, pathWord_cons, map_mul]
@@ -294,7 +288,7 @@ subpresentation of the collapse of `Y`, in the sense used by `FiniteChains.PresC
 theorem treeRel_onF (f : X.F) :
     treeRel T' (h.onF f) = FreeGroup.map (nonTreeIncl hiff) (treeRel T f) := by
   have hatt : Y.att (h.onF f) = mapPath h (X.att f) := h.att_onF f
-  rw [treeRel, hatt, pathWord_mapPath hiff, treeRel]
+  simp [treeRel, hatt, pathWord_mapPath hiff]
 
 end Presentation
 

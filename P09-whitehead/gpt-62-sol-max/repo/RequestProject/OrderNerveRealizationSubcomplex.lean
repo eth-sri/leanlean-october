@@ -5,8 +5,6 @@ public import Mathlib.Topology.CWComplex.Classical.Subcomplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -24,11 +22,7 @@ theorem orderNerveRealizationSimplex_supported {P : Type} [PartialOrder P] (A : 
     (hs : ∀ i, s.obj i ∈ A) :
     Set.range (orderNerveRealizationSimplex P s) ⊆ orderNerveRealizationSupported P A := by
   rintro x ⟨z, rfl⟩ p hp
-  have h := congrArg (fun k => k z)
-    (orderNerveAffineRealization_simplex (fun q => if q = p then 1 else 0) s)
-  change orderNerveRealizationCoordinates P (orderNerveRealizationSimplex P s z) p =
-    orderNerveAffineSimplex (fun q => if q = p then 1 else 0) s z at h
-  rw [h]
+  rw [orderNerveRealizationCoordinates_simplex]
   have hn : ∀ i, s.obj i ≠ p := fun i he => hp (he ▸ hs i)
   simp [orderNerveAffineSimplex, hn]
 
@@ -49,62 +43,39 @@ theorem orderNerveRealizationSupported_union (P : Type) [PartialOrder P] (A : Se
       intro i
       by_contra hi
       have hc := hx (s.val.obj i) hi
-      have hf := congrArg (fun k => k z)
-        (orderNerveAffineRealization_simplex (fun q => if q = s.val.obj i then 1 else 0) s.val)
-      change orderNerveRealizationCoordinates P (orderNerveRealizationSimplex P s.val z)
-        (s.val.obj i) =
-        orderNerveAffineSimplex (fun q => if q = s.val.obj i then 1 else 0) s.val z at hf
-      rw [he, hc] at hf
+      rw [← he, orderNerveRealizationCoordinates_simplex] at hc
       have hp := (orderNerveAffineSimplex_indicator_pos_iff s.val z hz (s.val.obj i)).mpr ⟨i, rfl⟩
-      rw [← hf] at hp
-      exact lt_irrefl _ hp
+      exact (ne_of_gt hp) hc
     apply Set.mem_iUnion.mpr
     refine ⟨n, Set.mem_iUnion.mpr ⟨⟨s, hs⟩, ?_⟩⟩
     rw [orderNerveCharacteristicMap_openCell]
-    exact ⟨z, hz, he⟩
+    tauto
 
 /-- A genuine Mathlib CW subcomplex selecting all simplices supported on a vertex subset. -/
 noncomputable def orderNerveRealizationSubcomplex (P : Type) [PartialOrder P] (A : Set P) :
     CWComplex.Subcomplex (Set.univ : Set (orderNerveRealization P)) :=
   CWComplex.Subcomplex.mk' Set.univ (orderNerveRealizationSupported P A)
-    (fun n => (setOf fun s : (nerve P).nonDegenerate n => ∀ i, s.val.obj i ∈ A))
+    (fun n => (setOf fun s  => ∀ i, s.val.obj i ∈ A))
     (by
       intro n s
       change orderNerveCharacteristicMap s.val '' Metric.closedBall 0 1 ⊆ _
       rw [orderNerveCharacteristicMap_closedCell]
       exact orderNerveRealizationSimplex_supported A s.val.val s.property)
     (by
-      change (⋃ (n : ℕ) (s : {s : (nerve P).nonDegenerate n // ∀ i, s.val.obj i ∈ A}),
-        orderNerveCharacteristicMap s.val '' Metric.ball 0 1) = _
-      exact orderNerveRealizationSupported_union P A)
+      solve_by_elim [orderNerveRealizationSupported_union])
 
 /-- Selecting more vertices enlarges the actual supported subcomplex. -/
 theorem orderNerveRealizationSubcomplex_mono {P : Type} [PartialOrder P]
     {A B : Set P} (h : A ⊆ B) :
     (orderNerveRealizationSubcomplex P A : Set (orderNerveRealization P)) ⊆
       orderNerveRealizationSubcomplex P B := by
-  intro x hx p hp
-  exact hx p (fun ha => hp (h ha))
+  tauto
 
 /-- The actual realization vertices have the expected indicator barycentric coordinates. -/
 theorem orderNerveRealizationCoordinates_vertex {P : Type} [PartialOrder P] (p q : P) :
     orderNerveRealizationCoordinates P (orderNerveRealizationVertex p) q =
-      if p = q then 1 else 0 := by
-  have h := congrArg (fun k => k (default : SimplexCategory.toTop.{0}.obj ⦋0⦌))
-    (orderNerveAffineRealization_simplex (fun r => if r = q then 1 else 0)
-      (n := ⦋0⦌) (ComposableArrows.mk₀ p))
-  change orderNerveRealizationCoordinates P (orderNerveRealizationVertex p) q =
-    orderNerveAffineSimplex.{0} (fun r => if r = q then 1 else 0)
-      (n := ⦋0⦌) (ComposableArrows.mk₀ p) default at h
-  rw [h]
-  haveI : Unique (Fin (⦋0⦌.len + 1)) := by
-    simpa only [SimplexCategory.len_mk] using (inferInstance : Unique (Fin 1))
-  simp only [orderNerveAffineSimplex, ContinuousMap.coe_mk, ComposableArrows.mk₀]
-  simp only [Fintype.sum_unique, Functor.const_obj_obj, mul_ite, mul_one, mul_zero]
-  split_ifs
-  · simpa only [Fintype.sum_unique] using
-      (default : SimplexCategory.toTop.{0}.obj ⦋0⦌).down.total_of_fintype
-  · rfl
+      if p = q then 1 else 0 :=
+  orderNerveAffineRealization_vertex _ p
 
 /-- A realization vertex belongs to the supported subcomplex exactly when it is selected. -/
 theorem orderNerveRealizationVertex_mem_subcomplex {P : Type} [PartialOrder P]
@@ -114,8 +85,7 @@ theorem orderNerveRealizationVertex_mem_subcomplex {P : Type} [PartialOrder P]
   · intro hx
     by_contra hp
     have h := hx p hp
-    rw [orderNerveRealizationCoordinates_vertex] at h
-    simp at h
+    simp_all [orderNerveRealizationCoordinates_vertex]
   · intro hp q hq
     have hne : p ≠ q := fun he => hq (he ▸ hp)
     rw [orderNerveRealizationCoordinates_vertex, if_neg hne]

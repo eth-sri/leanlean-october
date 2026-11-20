@@ -16,14 +16,6 @@ namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
 open scoped unitInterval Classical
 
-theorem orderNerveRealizationMap_vertex {P Q : Type} [PartialOrder P] [PartialOrder Q]
-    (f : P → Q) (hf : Monotone f) (v : P) :
-    orderNerveRealizationMap f hf (orderNerveRealizationVertex v) =
-      orderNerveRealizationVertex (f v) := by
-  exact congrArg (fun k : TopCat.of (SimplexCategory.toTop.obj ⦋0⦌) ⟶
-      orderNerveRealization Q => k default)
-    (orderNerveRealizationSimplex_natural f hf (ComposableArrows.mk₀ v))
-
 theorem orderNerveRealizationCone_vertex {P : Type} [PartialOrder P]
     (v : P) (hv : ∀ p, p ≤ v ∨ v ≤ p) (t : I) :
     orderNerveRealizationCone v hv t (orderNerveRealizationVertex v) =
@@ -44,7 +36,7 @@ theorem star_comparable (q : P) (v : orderNerveVertexStar P q) :
 
 def starBaseMap (q : P) : C(orderNerveRealization (orderNerveVertexStar P q), orderNerveRealization P) :=
   ⟨orderNerveRealizationMap Subtype.val (fun _ _ h => h),
-    (orderNerveRealizationMap (Subtype.val : orderNerveVertexStar P q → P)
+    (orderNerveRealizationMap Subtype.val
       (fun _ _ h => h)).hom.continuous⟩
 
 def starContraction (q : P) :
@@ -85,7 +77,7 @@ theorem starLift_projection (v : Cover p hp)
 theorem starLift_center (v : Cover p hp) :
     starLift p hp v (orderNerveRealizationVertex (starCenter v.1)) = point p hp v := by
   let c := orderNerveRealizationVertex (starCenter v.1)
-  let L : C(I, E) := (starLiftHomotopy p hp v).comp
+  let L  := (starLiftHomotopy p hp v).comp
     ⟨fun t => (t, c), continuous_id.prodMk continuous_const⟩
   have hproj : ∀ t t', p (L t) = p (L t') := by
     intro t t'

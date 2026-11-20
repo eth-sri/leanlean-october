@@ -37,10 +37,10 @@ theorem fibreFunctor_map_bijective {a b : P} (h : a ≤ b) :
 
 theorem projection_isPosetCover (hs : Function.Surjective p) : IsPosetCover (projection p hp) := by
   apply LocalSystem.projection_isPosetCover (fibreFunctor p hp)
-  · exact fun h => fibreFunctor_map_bijective p hp h
+  · exact (fibreFunctor_map_bijective p hp)
   · intro a
     obtain ⟨x, hx⟩ := hs (orderNerveRealizationVertex a)
-    exact ⟨⟨x, hx⟩⟩
+    tauto
 
 /-- The defining incidence square retains the actual covering lift. -/
 theorem comparable_transport {v w : Cover p hp} (h : v ≤ w) :

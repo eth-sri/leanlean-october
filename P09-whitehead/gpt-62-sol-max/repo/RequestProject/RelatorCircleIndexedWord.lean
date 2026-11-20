@@ -11,9 +11,6 @@ successive letter. This is a list identity, including the final closing
 edge, not merely an equality of free-group elements. Pending verification. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -51,8 +48,7 @@ theorem circleIndexedGerm_tgt (hn : 0 < (w j).length) (i : Fin ((w j).length * 4
 
 theorem circleSegmentGerm_ofFn (k : Fin (w j).length) :
     List.ofFn (circleSegmentGerm w j k) = segAt w j k.val := by
-  rw [segAt, dif_pos k.isLt]
-  simp [circleSegmentGerm, List.ofFn_succ]
+  simp [segAt, circleSegmentGerm, List.ofFn_succ]
 
 theorem circleSegments_flatten (m : ℕ) :
     (List.ofFn (fun k : Fin m => segAt w j k.val)).flatten = circPath w j m := by
@@ -60,8 +56,7 @@ theorem circleSegments_flatten (m : ℕ) :
   | zero => rfl
   | succ m ih =>
     rw [List.ofFn_succ', List.concat_eq_append, List.flatten_append]
-    simpa only [List.flatten_cons, List.flatten_nil, List.append_nil, circPath, Fin.val_castSucc, Fin.val_last] using
-      congrArg (fun l => l ++ segAt w j m) ih
+    simp_all [List.flatten_cons, List.flatten_nil, circPath, Fin.val_castSucc, Fin.val_last]
 
 theorem circleIndexedGerm_ofFn : List.ofFn (circleIndexedGerm w j) = circLoop w j := by
   rw [List.ofFn_mul]
@@ -69,7 +64,7 @@ theorem circleIndexedGerm_ofFn : List.ofFn (circleIndexedGerm w j) = circLoop w 
       List.ofFn (fun t : Fin 4 => circleIndexedGerm w j
         ⟨k.val * 4 + t.val, by omega⟩) = segAt w j k.val := by
     have he (t : Fin 4) :
-        (⟨k.val * 4 + t.val, by omega⟩ : Fin ((w j).length * 4)) =
+        ⟨k.val * 4 + t.val, by omega⟩ =
           finProdFinEquiv (k, t) := by
       apply Fin.ext
       change k.val * 4 + t.val = t.val + 4 * k.val

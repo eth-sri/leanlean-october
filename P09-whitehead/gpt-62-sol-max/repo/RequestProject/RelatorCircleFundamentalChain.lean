@@ -4,9 +4,7 @@ public import RequestProject.RelatorCircleBoundary
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -53,7 +51,7 @@ theorem relatorCircleFundamentalChain_cycle :
   rw [relatorCircleFundamentalChain, map_sum]
   simp_rw [relatorCircleLetterChain_boundary]
   rw [Finset.sum_sub_distrib]
-  let e : Fin (w j).length ≃ Fin (w j).length := Equiv.ofBijective
+  let e  := Equiv.ofBijective
     (relatorCircleNext w j) ⟨relatorCircleNext_injective w j,
       Finite.surjective_of_injective (relatorCircleNext_injective w j)⟩
   have he := e.sum_comp (fun k =>

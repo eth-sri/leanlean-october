@@ -29,8 +29,8 @@ theorem qCubeFacet_lt (c : QCube A) (v : V) (s : ZMod 2) (hv : v ∈ c.spx) :
     qCubeFacet c v s < c := by
   apply lt_of_le_of_ne (qCubeFacet_le c v s hv)
   intro h
-  have hs : c.spx.erase v = c.spx := congrArg QCube.spx h
-  have hm : v ∈ c.spx.erase v := hs.symm ▸ hv
+  have hs  := congrArg QCube.spx h
+  have hm  := hs.symm ▸ hv
   exact (Finset.notMem_erase v c.spx) hm
 
 @[simp] theorem qCubeFacet_sgn_self (c : QCube A) (v : V) (s : ZMod 2) :
@@ -47,13 +47,7 @@ theorem qCubeFacet_comm (c : QCube A) {v w : V} (hne : v ≠ w) (s t : ZMod 2) :
   · intro x _
     change Function.update (Function.update c.sgn v s) w t x =
       Function.update (Function.update c.sgn w t) v s x
-    by_cases hxv : x = v
-    · subst x
-      simp [hne]
-    · by_cases hxw : x = w
-      · subst x
-        simp [Ne.symm hne]
-      · simp [hxv, hxw]
+    grind
 
 theorem qCubeFacet_zero_of_singleton (c : QCube A) (v : V) (hs : c.spx = {v}) :
     qCubeFacet c v 0 = cubePositiveVertex c := by
@@ -63,16 +57,12 @@ theorem qCubeFacet_zero_of_singleton (c : QCube A) (v : V) (hs : c.spx = {v}) :
     change Function.update c.sgn v 0 w = c.sgn w
     by_cases h : w = v
     · subst w
-      rw [Function.update_self]
-      exact (c.sgn_eq_zero v (by rw [hs]; simp)).symm
+      simpa using (c.sgn_eq_zero v (by rw [hs]; simp)).symm
     · exact Function.update_of_ne h _ _
 
 theorem qCubeFacet_one_of_singleton (c : QCube A) (v : V) (hs : c.spx = {v}) :
     qCubeFacet c v 1 = cubeNegativeVertex c v := by
-  apply QCube.ext'
-  · simp [qCubeFacet, cubeNegativeVertex, hs]
-  · intro _ _
-    rfl
+  simp [qCubeFacet, cubeNegativeVertex, hs]
 
 /-- The strict one-cell subdivision agrees with the actual oriented cubical facets. -/
 theorem oneCubeSubdivision_facet_boundary (c : QCube A) (v : V) (hs : c.spx = {v}) :

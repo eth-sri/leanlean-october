@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.QCubeEdgeChainEmbedding
+public import RequestProject.FinsuppBasis
 public import RequestProject.QCubeSquareFrameUniqueness
 
 @[expose] public section
@@ -12,13 +13,11 @@ variable {V : Type} [DecidableEq V] [LinearOrder V] {A : CommRel V}
 
 noncomputable def qSquareSmallFacet (c : QSquare A) (s : ZMod 2) : QEdge A :=
   ⟨qCubeFacet c.1 (qSquareRight c) s, by
-    rw [squareFacet_v_spx c.1 (qSquare_directions_ne c) (qSquare_free_directions c) s]
-    simp⟩
+    simp_all [squareFacet_v_spx c.1 (qSquare_directions_ne c) (qSquare_free_directions c) s]⟩
 
 noncomputable def qSquareLargeFacet (c : QSquare A) (s : ZMod 2) : QEdge A :=
   ⟨qCubeFacet c.1 (qSquareLeft c) s, by
-    rw [squareFacet_w_spx c.1 (qSquare_directions_ne c) (qSquare_free_directions c) s]
-    simp⟩
+    simp_all [squareFacet_w_spx c.1 (qSquare_directions_ne c) (qSquare_free_directions c) s]⟩
 
 noncomputable def qSquareCubicalFaceBoundary (c : QSquare A) : QEdge A →₀ ℤ :=
   Finsupp.single (qSquareSmallFacet c 0) 1 - Finsupp.single (qSquareSmallFacet c 1) 1 -
@@ -56,13 +55,8 @@ theorem qSquareCubicalFaceBoundary_subdivision (c : QSquare A) :
 /-- The actual cubical boundary commutes with the proved edge and square subdivisions. -/
 theorem qSquareCubicalBoundary_subdivision (r : QSquare A →₀ ℤ) :
     qEdgeChainSubdivision (qSquareCubicalBoundary r) = qSquareFacetBoundary r := by
-  induction r using Finsupp.induction_linear with
-  | zero => simp
-  | add r s hr hs => rw [map_add, map_add, hr, hs, map_add]
-  | single c n =>
-      rw [qSquareCubicalBoundary, Finsupp.linearCombination_single, map_smul,
-        qSquareCubicalFaceBoundary_subdivision, qSquareFacetBoundary,
-        squareChainEdgeBoundary, Finsupp.linearCombination_single]
+  finsupp_basis r
+  simp_all [qSquareCubicalBoundary, Finsupp.linearCombination_single, qSquareCubicalFaceBoundary_subdivision, qSquareFacetBoundary, squareChainEdgeBoundary]
 
 /-- Faithful edge subdivision reflects the actual cubical square-cycle equations. -/
 theorem qSquareCubicalBoundary_zero_iff (r : QSquare A →₀ ℤ) :

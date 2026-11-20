@@ -26,8 +26,7 @@ theorem foxWordPathBoundary_prefix_sum (i : α) (g : FreeGroup α)
     intro k _
     have hm : FreeGroup.mk (p :: l.take k.val) =
         foxWordLetter p * FreeGroup.mk (l.take k.val) := by
-      rw [← fox_mk_single_letter, FreeGroup.mul_mk]
-      rfl
+      simp [← fox_mk_single_letter]
     rw [hm, mul_assoc]
 
 /-- The actual Fox derivative is the finite signed-prefix sum at the identity. -/

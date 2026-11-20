@@ -22,8 +22,7 @@ namespace FiniteChains.Davis.Genus
 
 open BlockFamily
 
-variable {A K M S : Type} [Fintype A] [Fintype K] [Fintype M] [Fintype S]
-  [DecidableEq A] [DecidableEq K] [DecidableEq S]
+variable {A K M S : Type}
   (core : M → FreeGroup A) (q : S → ℕ) [∀ s, NeZero (q s)]
   (u : ∀ s, Fin (q s) × Bool → FreeGroup (A ⊕ K))
 
@@ -52,10 +51,10 @@ def terminalSpinePres : (M ⊕ K) ⊕ (Σ s, NamedSpineRel (q s)) →
 def terminalNamedWordMap (s : S) : FreeGroup (NamedSpineGen (q s)) →*
     FreeGroup ((A ⊕ K) ⊕ (Σ s, SpinePresentationGen (q s))) :=
   (FreeGroup.map (genEmb (Zt := fun s => SpinePresentationGen (q s)) s)).comp
-    ((blockSubst (Zt := fun _ : PUnit.{1} => SpinePresentationGen (q s))
+    ((blockSubst (Zt := fun _  => SpinePresentationGen (q s))
       (fun _ => u s) PUnit.unit).comp (FreeGroup.map Sum.swap))
 
-omit [Fintype A] [Fintype K] [Fintype S] [DecidableEq A] [DecidableEq K] [DecidableEq S] in
+
 theorem terminalNamedWordMap_old (s : S)
     (w : FreeGroup (SpinePresentationGen (q s))) :
     terminalNamedWordMap q u s (FreeGroup.map Sum.inl w) =
@@ -63,28 +62,25 @@ theorem terminalNamedWordMap_old (s : S)
   have h : (terminalNamedWordMap q u s).comp (FreeGroup.map Sum.inl) =
       FreeGroup.map (terminalSpineGen (A := A) (K := K) q s) := by
     apply FreeGroup.ext_hom
-    intro z
-    simp [terminalNamedWordMap, terminalSpineGen]
+    aesop
   exact DFunLike.congr_fun h w
 
-omit [Fintype A] [Fintype K] [Fintype S] [DecidableEq A] [DecidableEq K] [DecidableEq S] in
+
 theorem terminalNamedWordMap_mark (s : S) (x : Fin (q s) × Bool) :
     terminalNamedWordMap q u s (FreeGroup.of (Sum.inr x)) =
       FreeGroup.map Sum.inl (u s x) := by
   change FreeGroup.map (genEmb (Zt := fun s => SpinePresentationGen (q s)) s)
-    (blockSubst (Zt := fun _ : PUnit.{1} => SpinePresentationGen (q s))
+    (blockSubst (Zt := fun _  => SpinePresentationGen (q s))
       (fun _ => u s) PUnit.unit (FreeGroup.map Sum.swap (FreeGroup.of (Sum.inr x)))) = _
   simp only [FreeGroup.map.of, Sum.swap_inr, blockSubst_of_inl]
   have h : (FreeGroup.map (genEmb (Zt := fun s => SpinePresentationGen (q s)) s)).comp
       (FreeGroup.map (Sum.inl : A ⊕ K → (A ⊕ K) ⊕ SpinePresentationGen (q s))) =
-      FreeGroup.map (Sum.inl : A ⊕ K → (A ⊕ K) ⊕ (Σ s, SpinePresentationGen (q s))) := by
+      FreeGroup.map Sum.inl := by
     apply FreeGroup.ext_hom
-    intro a
-    simp
+    tauto
   exact DFunLike.congr_fun h (u s x)
 
-omit [Fintype A] [Fintype K] [Fintype M] [Fintype S]
-  [DecidableEq A] [DecidableEq K] [DecidableEq S] in
+
 /-- The explicit terminal words are exactly the words used in actual B1/B2,
 not a different block presentation. -/
 theorem terminalSpineExtra_eq_family (s : S) (m : NamedSpineRel (q s)) :
@@ -113,7 +109,7 @@ def terminalSpineReverse : (Σ s, NamedSpineRel (q s)) → Bool
   | ⟨_, .inl _⟩ => false
   | ⟨_, .inr _⟩ => true
 
-omit [Fintype A] [Fintype K] [Fintype S] [DecidableEq A] [DecidableEq K] [DecidableEq S] in
+
 theorem terminalSpineGen_drop (s : S)
     (w : FreeGroup (SpinePresentationGen (q s))) :
     CoreSignedCollapse.dropCore
@@ -123,12 +119,10 @@ theorem terminalSpineGen_drop (s : S)
       (FreeGroup.map (terminalSpineGen (A := A) (K := K) q s)) =
       FreeGroup.map (Sigma.mk (β := fun s => SpinePresentationGen (q s)) s) := by
     apply FreeGroup.ext_hom
-    intro z
-    simp [terminalSpineGen]
+    tauto
   exact DFunLike.congr_fun h w
 
-omit [Fintype A] [Fintype K] [Fintype M] [Fintype S]
-  [DecidableEq A] [DecidableEq K] [DecidableEq S] in
+
 theorem terminalSpine_collapse_word (p : Σ s, NamedSpineRel (q s)) :
     CoreSignedCollapse.dropCore (terminalSpineExtra q u p) =
       if terminalSpineReverse q p then (terminalSpineWedge q p)⁻¹
@@ -177,27 +171,23 @@ def terminalCapReindex {J : Type} : (M ⊕ J) ⊕ K ≃ (M ⊕ K) ⊕ J where
   left_inv := by rintro ((m | j) | k) <;> rfl
   right_inv := by rintro ((m | k) | j) <;> rfl
 
-omit [Fintype A] [Fintype K] [Fintype M] [Fintype S]
-  [DecidableEq A] [DecidableEq K] [DecidableEq S] in
+
 theorem terminalSpineQ_reindex
     (j : (M ⊕ (Σ s, NamedSpineRel (q s))) ⊕ K) :
     terminalSpinePres core q u (terminalCapReindex j) = terminalSpineQ core q u j := by
   rcases j with (m | ⟨s, f⟩) | k
   · rfl
   · exact terminalSpineExtra_eq_family q u s f
-  · change FreeGroup.map Sum.inl (FreeGroup.of (Sum.inr k)) =
-      FreeGroup.of (Sum.inl (Sum.inr k))
-    simp
+  · tauto
 
-omit [Fintype A] [Fintype K] [Fintype M] [Fintype S]
-  [DecidableEq A] [DecidableEq K] [DecidableEq S] in
+
 /-- The terminal presentation depends only on retained core relators: the
 replaced source entries no longer occur in the result of rule 3. -/
 theorem terminalSpineQ_eq_actual
     (ρ : M ⊕ S → FreeGroup (A ⊕ K))
     (hcore : ∀ m, ρ (Sum.inl m) = FreeGroup.map Sum.inl (core m)) :
     terminalSpineQ core q u =
-      addRels (substPresF ρ (familyFiniteSpineWordBlock q u))
+      addRels (spineFamilyPres ρ q u)
         (terminalSpineCaps (A := A) (K := K) q) := by
   funext j
   rcases j with (m | p) | k

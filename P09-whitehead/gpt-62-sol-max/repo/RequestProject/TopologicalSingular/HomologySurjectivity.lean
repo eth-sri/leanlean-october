@@ -17,10 +17,9 @@ theorem shortComplex_homologyMap_surjective_of_representatives
     Function.Surjective (ShortComplex.homologyMap φ) := by
   intro q
   obtain ⟨y, hy⟩ := (ModuleCat.epi_iff_surjective T.homologyπ).mp inferInstance q
-  have hyz : T.g (T.iCycles y) = 0 := by
-    exact congrArg (fun f => f y) T.iCycles_g
+  have hyz := congrArg (fun f => f y) T.iCycles_g
   obtain ⟨z, hz, b, hb⟩ := h (T.iCycles y) hyz
-  let z' : S.cycles := S.moduleCatCyclesIso.inv ⟨z, hz⟩
+  let z'  := S.moduleCatCyclesIso.inv ⟨z, hz⟩
   have hzi : S.iCycles z' = z := by
     exact congrArg (fun f => f ⟨z, hz⟩) S.moduleCatCyclesIso_inv_iCycles
   refine ⟨S.homologyπ z', ?_⟩

@@ -45,12 +45,11 @@ def wordDiskCellMap : C(DiskFamily J (Fin 2 → ℝ), ActualPresWordDisks v hv) 
   (⟨RelativeAttachment.cell (actualPresWordAttaching v hv) (boundaryFamilyInclusion K (Fin 2 → ℝ)),
     cell_continuous _ _⟩ : C(DiskFamily K (Fin 2 → ℝ), _)).comp
       ⟨fun d => ⟨h.cell d.1, d.2⟩, continuous_sigma (fun j => continuous_sigmaMk
-          (σ := fun _ : K => ClosedUnitBall (Fin 2 → ℝ)) (i := h.cell j))⟩
+          (σ := fun _  => ClosedUnitBall (Fin 2 → ℝ)) (i := h.cell j))⟩
 
 def wordDiskMap : C(ActualPresWordDisks w hw, ActualPresWordDisks v hv) :=
   desc (actualPresWordAttaching w hw) (boundaryFamilyInclusion J (Fin 2 → ℝ))
-    ((⟨old (actualPresWordAttaching v hv) (boundaryFamilyInclusion K (Fin 2 → ℝ)),
-      old_continuous _ _⟩ : C(orderNerveRealization (PresModel.Rose B), _)).comp
+    (((DiskAttachment.oldMap (actualPresWordAttaching v hv)) : C(orderNerveRealization (PresModel.Rose B), _)).comp
         h.orderRoseMapContinuous)
     (h.wordDiskCellMap hv)
     (fun a => by
@@ -73,12 +72,11 @@ def wordDiskMap : C(ActualPresWordDisks w hw, ActualPresWordDisks v hv) :=
 
 def classicalWordDiskMap : C(ClassicalPresWordDisks w hw, ClassicalPresWordDisks v hv) :=
   desc (classicalPresWordAttaching w hw) (boundaryFamilyInclusion J (Fin 2 → ℝ))
-    ((⟨old (classicalPresWordAttaching v hv) (boundaryFamilyInclusion K (Fin 2 → ℝ)),
-      old_continuous _ _⟩ : C(ClassicalGraphModel.Rose B, _)).comp (diskRoseMap h.gen))
+    (((DiskAttachment.oldMap (classicalPresWordAttaching v hv)) : C(ClassicalGraphModel.Rose B, _)).comp (diskRoseMap h.gen))
     ((⟨RelativeAttachment.cell (classicalPresWordAttaching v hv) (boundaryFamilyInclusion K (Fin 2 → ℝ)),
       cell_continuous _ _⟩ : C(DiskFamily K (Fin 2 → ℝ), _)).comp
         ⟨fun d => ⟨h.cell d.1, d.2⟩, continuous_sigma (fun j => continuous_sigmaMk
-          (σ := fun _ : K => ClosedUnitBall (Fin 2 → ℝ)) (i := h.cell j))⟩)
+          (σ := fun _  => ClosedUnitBall (Fin 2 → ℝ)) (i := h.cell j))⟩)
     (fun a => by
       change old (classicalPresWordAttaching v hv) (boundaryFamilyInclusion K (Fin 2 → ℝ))
         (diskRoseMap h.gen (classicalPresWordAttaching w hw a)) =

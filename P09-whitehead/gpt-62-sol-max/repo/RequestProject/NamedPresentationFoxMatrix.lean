@@ -7,9 +7,6 @@ public import RequestProject.PresentationDictionary
 @[expose] public section
 
 /-! The actual Fox matrix after adjoining names for the marked words. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.NamedPresentation
 variable {α J I : Type} [DecidableEq α] [DecidableEq I]

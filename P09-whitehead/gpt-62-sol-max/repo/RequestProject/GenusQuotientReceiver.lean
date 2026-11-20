@@ -12,9 +12,7 @@ then glue it to a base receiver using only the genuine marked readings.
 This source is part of the pending reverse-comparison proof.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
 open SpanningTree
@@ -135,8 +133,8 @@ theorem exists_quotientReceiver {X : Type} [Preorder X]
   rw [← OrdCocycle.comap_readPath, he]
   exact hread p
 
-variable {A Jr S : Type} (ρ : Jr ⊕ S → FreeGroup A)
-  (q : S → ℕ) [∀ s, NeZero (q s)] (u : ∀ s, Fin (q s) × Bool → FreeGroup A)
+
+
 
 end FiniteChains.Davis.Genus
 
@@ -145,7 +143,7 @@ open RACG Mirror Comb PresModel BlockFamily
 universe v
 variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (q : ℕ) [NeZero q] (u : Fin q × Bool → FreeGroup α)
-  (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
+  (hrho : IsSpineRelator ρ q u)
   {G : Type v} [Group G] (j : PresGroup ρ →* G)
 
 /-- The receiver on the named base presentation is the original receiver
@@ -189,7 +187,7 @@ theorem namedBaseCocycle_marked (x : Fin q × Bool) :
   change (namedBaseCocycle ρ q u hrho j).readPath (genLoop w (Sum.inr x)) = _
   rw [namedBaseCocycle, OrdCocycle.postcompose_readPath]
   change namedBaseReceiver ρ q u hrho j
-    (reading w (fun a => (QuotientGroup.mk (FreeGroup.of a) : PresGroup ep))
+    (reading w (fun a => (QuotientGroup.mk (FreeGroup.of a)))
       (presGroup_wordVal_eq_one ep w (mk_genusNonemptyW _ _ _ _ (namedPres_surface ρ q u)))
       (genClass w (Sum.inr x))) = _
   rw [reading_genClass]
@@ -227,9 +225,15 @@ noncomputable abbrev namedQuotientBase : namedQuotientPos ρ q u :=
   qNew (genusNonemptyAtt (namedPres ρ q u) (namedA (α := α) q) (namedB (α := α) q) q
     (gBase q))
 
+/-! The cellular model of the named quotient, with its chosen base vertex. -/
+noncomputable abbrev namedQuotientCx := orderCx (namedQuotientPos ρ q u)
+noncomputable abbrev NamedQuotientGroup := Pi1 (namedQuotientCx ρ q u) (namedQuotientBase ρ q u)
+noncomputable abbrev namedQuotientCover := uCover (namedQuotientCx ρ q u) (namedQuotientBase ρ q u)
+noncomputable abbrev namedQuotientDeck := univDeck (namedQuotientCx ρ q u) (namedQuotientBase ρ q u)
+
 noncomputable def namedSpineIntoQuotient :
     PresGroup (namedSpinePresentation q) →*
-      Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) :=
+      NamedQuotientGroup ρ q u :=
   (quotientOldBasedInclusion (gBase q)).comp (namedSpineToOldEquiv q).toMonoidHom
 
 /-- A reverse homomorphism on the actual geometric fundamental group, with
@@ -239,7 +243,7 @@ theorem exists_namedQuotientReading
     (φ : PresGroup (namedSpinePresentation q) →* G)
     (hm : ∀ x : Fin q × Bool,
       φ (QuotientGroup.mk (FreeGroup.of (Sum.inr x))) = j (QuotientGroup.mk (u x))) :
-    ∃ ψ : Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) →* G,
+    ∃ ψ : NamedQuotientGroup ρ q u →* G,
       ψ.comp (namedSpineIntoQuotient ρ q u) = φ ∧
       ψ.comp
         (pi1Map (orderCxMap (qNew (att := genusNonemptyAtt (namedPres ρ q u)

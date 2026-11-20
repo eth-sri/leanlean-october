@@ -2,12 +2,12 @@ module
 
 public import RequestProject.OrderUniversalPosetHom
 public import RequestProject.CombCellularIso
+public import RequestProject.OrderComplexExt
+public import RequestProject.ComponentComplex
 
 @[expose] public section
 
 /-! Connectivity of the actual path-class universal-cover order complex. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -23,6 +23,27 @@ theorem uOrderHomInv_vertex (v : UOrder P a) : uOrderHomInv.onV v = v :=
   homInv_onV_comp uOrderHom Function.bijective_id
     ⟨uOrderEdge_injective, uOrderEdge_surjective⟩
     ⟨uOrderFace_injective, uOrderFace_surjective⟩ v
+
+@[simp] theorem uOrderHomInv_face_apply (t : UF (orderCx P) a) :
+    uOrderHom.onF (uOrderHomInv.onF t) = t := by simp [uOrderHomInv]
+
+theorem uOrderHom_comp_inv : uOrderHom.comp (uOrderHomInv (P := P) (a := a)) = Hom.id _ := by
+  apply Hom.ext' <;> funext x
+  · exact uOrderHomInv_vertex x
+  · simp [Hom.comp, Hom.id, uOrderHomInv]
+  · exact uOrderHomInv_face_apply x
+
+theorem uOrderHomInv_comp : uOrderHomInv.comp (uOrderHom (P := P) (a := a)) = Hom.id _ := by
+  apply Hom.ext' <;> funext x <;> simp [Hom.comp, Hom.id, uOrderHomInv]
+
+/-- The cellular order model makes a map into the lifted cover determined by its vertices. -/
+theorem Hom.ext_uCover_orderCx {X : Complex2.{u}} {f g : Hom X (uCover (orderCx P) a)}
+    (hv : f.onV = g.onV) : f = g := by
+  have h : uOrderHomInv.comp f = uOrderHomInv.comp g :=
+    Hom.ext_orderCx (congrArg (uOrderHomInv.onV ∘ ·) hv)
+  have h' : (uOrderHom.comp uOrderHomInv).comp f = (uOrderHom.comp uOrderHomInv).comp g :=
+    congrArg uOrderHom.comp h
+  rwa [uOrderHom_comp_inv] at h'
 
 theorem uOrderHomInv_path (p : List ((orderCx (UOrder P a)).E × Bool)) :
     mapPath uOrderHomInv (mapPath uOrderHom p) = p :=

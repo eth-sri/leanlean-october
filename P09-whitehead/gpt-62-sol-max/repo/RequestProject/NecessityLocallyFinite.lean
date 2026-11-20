@@ -11,29 +11,8 @@ namespace FiniteChains
 
 /-- A Fox derivative has finite support in the generator index even when the generator
 type is infinite: a free-group element contains only finitely many letters. -/
-theorem fox_generator_support_finite {α : Type*} [DecidableEq α] (w : FreeGroup α) :
-    {i : α | fox i w ≠ 0}.Finite := by
-  induction w using FreeGroup.induction_on with
-  | one => simp
-  | of k =>
-      apply (Set.finite_singleton k).subset
-      intro i hi
-      by_contra hn
-      simp only [Set.mem_singleton_iff] at hn
-      simp [fox_of, hn] at hi
-  | inv_of k hk =>
-      apply hk.subset
-      intro i hi
-      by_contra hz
-      simp only [Set.mem_setOf_eq, not_not] at hz
-      rw [Set.mem_setOf_eq, fox_inv, hz, mul_zero, neg_zero] at hi
-      exact hi rfl
-  | mul a b ha hb =>
-      apply (ha.union hb).subset
-      intro i hi
-      by_contra hz
-      simp only [Set.mem_union, Set.mem_setOf_eq, not_or, not_not] at hz
-      simp [fox_mul, hz.1, hz.2] at hi
+theorem fox_generator_support_finite {α : Type*} (w : FreeGroup α) :
+    {i : α | fox i w ≠ 0}.Finite := (foxGradient w).finite_support
 
 variable {G I J : Type*} [Group G] (b : I → J → MonoidAlgebra ℤ G)
 

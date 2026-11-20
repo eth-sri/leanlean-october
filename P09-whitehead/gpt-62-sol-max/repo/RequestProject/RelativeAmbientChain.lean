@@ -25,8 +25,7 @@ def stageCellEquivFull {S : Type} (p : S → Prop) (hall : ∀ s, p s) :
   right_inv := by rintro (c | s) <;> rfl
 
 theorem stageIntoFull_generates {Z S : Type} (extra : S → FreeGroup (A ⊕ Z))
-    (p : S → Prop) (hall : ∀ s, p s) : FSGenerates (stageIntoFull core extra p) := by
-  exact PresInclusionFS.relabel_generates _ _ (Equiv.refl _)
+    (p : S → Prop) (hall : ∀ s, p s) : FSGenerates (stageIntoFull core extra p) := PresInclusionFS.relabel_generates _ _ (Equiv.refl _)
     (stageCellEquivFull (C := C) p hall) (by
       intro j
       cases j <;> simp [rawPresentation, restrictedExtra, stageCellEquivFull])
@@ -40,8 +39,7 @@ def fullIntoStage {Z S : Type} (extra : S → FreeGroup (A ⊕ Z))
       cases j <;> simp [rawPresentation, restrictedExtra, stageCellEquivFull])
 
 theorem fullIntoStage_generates {Z S : Type} (extra : S → FreeGroup (A ⊕ Z))
-    (p : S → Prop) (hall : ∀ s, p s) : FSGenerates (fullIntoStage core extra p hall) := by
-  exact PresInclusionFS.relabel_generates _ _ (Equiv.refl _)
+    (p : S → Prop) (hall : ∀ s, p s) : FSGenerates (fullIntoStage core extra p hall) := PresInclusionFS.relabel_generates _ _ (Equiv.refl _)
     (stageCellEquivFull (C := C) p hall).symm (by
       intro j
       cases j <;> simp [rawPresentation, restrictedExtra, stageCellEquivFull])
@@ -54,27 +52,18 @@ theorem rawInclusion_factor_full {Z S : Type} (extra : S → FreeGroup (A ⊕ Z)
       (fullIntoStage core extra t hall).cells ((stageIntoFull core extra p).cells x) := by
   have hg : (rawInclusion core extra hpt).hom =
       (fullIntoStage core extra t hall).hom.comp (stageIntoFull core extra p).hom := by
-    apply MonoidHom.ext
-    intro z
-    induction z using QuotientGroup.induction_on with
-    | H w => change QuotientGroup.mk (FreeGroup.map id w) =
-        QuotientGroup.mk (FreeGroup.map id (FreeGroup.map id w)); simp
-  induction x using Finsupp.induction_linear with
-  | zero => simp
-  | add x y hx hy =>
-      rw [PresMorFS.cells_add, PresMorFS.cells_add, PresMorFS.cells_add, hx, hy]
-  | single j a =>
-      change PresInclusionFS.cells _ _ _ _ _ (Finsupp.single j a) =
-        PresInclusionFS.cells _ _ _ _ _ (PresInclusionFS.cells _ _ _ _ _ (Finsupp.single j a))
-      rw [PresInclusionFS.cells_single, PresInclusionFS.cells_single, PresInclusionFS.cells_single]
-      have hj : oldCellIncl hpt j = (stageCellEquivFull (C := C) t hall).symm
-          (Sum.map id Subtype.val j) := by cases j <;> rfl
-      rw [hj]
-      congr 1
-      change MonoidAlgebra.mapDomainRingHom ℤ (rawInclusion core extra hpt).hom a =
-        MonoidAlgebra.mapDomainRingHom ℤ (fullIntoStage core extra t hall).hom
-          (MonoidAlgebra.mapDomainRingHom ℤ (stageIntoFull core extra p).hom a)
-      rw [BlockMor.mapDomainRingHom_comp', ← hg]
+    apply QuotientGroup.monoidHom_ext
+    apply FreeGroup.ext_hom
+    intro a
+    simp [rawInclusion, fullIntoStage, stageIntoFull, PresInclusionFS.mor]
+  have hf : oldCellIncl hpt = (stageCellEquivFull (C := C) t hall).symm ∘ Sum.map id Subtype.val := by
+    funext j
+    cases j <;> rfl
+  change PresInclusionFS.cellTransport (rawInclusion core extra hpt).hom (oldCellIncl hpt) x =
+    PresInclusionFS.cellTransport (fullIntoStage core extra t hall).hom
+      (stageCellEquivFull t hall).symm
+      (PresInclusionFS.cellTransport (stageIntoFull core extra p).hom (Sum.map id Subtype.val) x)
+  rw [PresInclusionFS.cellTransport_comp, ← hg, ← hf]
 
 /-- There are `n+1` positive stages after the unchanged core. The last
 stage contains every ambient extra relator. All alphabets may be infinite. -/
@@ -105,9 +94,7 @@ theorem full_cockcroft : FSIsCockcroft (rawPresentation core c.rel) :=
 theorem full_core_trivial (a : A) :
     (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (rawPresentation core c.rel)) = 1 := by
   have h := congrArg (stageIntoFull core c.rel (c.stage n)).hom (c.core_trivial n a)
-  change QuotientGroup.mk (FreeGroup.map id (FreeGroup.of (Sum.inl a))) =
-    (stageIntoFull core c.rel (c.stage n)).hom 1 at h
-  simpa only [FreeGroup.map.id, map_one] using h
+  assumption
 
 /-- A literal initial pair, such as the actual FS `relY`, seeds the
 induction. No replacement or terminal hypotheses are part of this input. -/
@@ -129,9 +116,7 @@ def initial {Z S : Type} (z : Z) (extra : S → FreeGroup (A ⊕ Z))
   core_trivial := by
     intro i a
     have h := congrArg (fullIntoStage core extra (fun _ => True) (fun _ => trivial)).hom (ht a)
-    change QuotientGroup.mk (FreeGroup.map id (FreeGroup.of (Sum.inl a))) =
-      (fullIntoStage core extra (fun _ => True) (fun _ => trivial)).hom 1 at h
-    simpa only [FreeGroup.map.id, map_one] using h
+    assumption
   zero := by intro i hi; omega
 
 variable (hcore : Function.Surjective (expMatrix core))
@@ -177,7 +162,7 @@ theorem stepStage_zero (hinj : Function.Injective (expMatrix core))
     (hx : FSIsFoxCycle (rawPresentation core (restrictedExtra
       (nextExtra core hcore c.rel) (c.stepStage hcore i))) x) :
     (rawInclusion core (nextExtra core hcore c.rel) (c.stepStage_mono hcore i)).cells x = 0 := by
-  let P (p t : NextExtraCell core hcore c.rel → Prop) : Prop :=
+  let P (p t : NextExtraCell core hcore c.rel → Prop)  :=
     ∀ (hpt : ∀ s, p s → t s)
       (y : (C ⊕ {s // p s}) →₀ MonoidAlgebra ℤ
         (PresGroup (rawPresentation core (restrictedExtra (nextExtra core hcore c.rel) p)))),
@@ -215,7 +200,7 @@ def step (hinj : Function.Injective (expMatrix core)) : AmbientChain core (n + 1
   strict := c.stepStage_strict hcore
   cockcroft := by
     intro i
-    let P (p : NextExtraCell core hcore c.rel → Prop) : Prop :=
+    let P (p : NextExtraCell core hcore c.rel → Prop)  :=
       FSIsCockcroft (rawPresentation core (restrictedExtra (nextExtra core hcore c.rel) p))
     change P (c.stepStage hcore i)
     by_cases hi : i ≤ n
@@ -228,7 +213,7 @@ def step (hinj : Function.Injective (expMatrix core)) : AmbientChain core (n + 1
         (nextTerminal_conclusions core hcore c.rel hinj c.full_cockcroft c.full_core_trivial).1
   core_trivial := by
     intro i a
-    let P (p : NextExtraCell core hcore c.rel → Prop) : Prop :=
+    let P (p : NextExtraCell core hcore c.rel → Prop)  :=
       (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup
         (rawPresentation core (restrictedExtra (nextExtra core hcore c.rel) p))) = 1
     change P (c.stepStage hcore i)
@@ -239,11 +224,7 @@ def step (hinj : Function.Injective (expMatrix core)) : AmbientChain core (n + 1
       have h := congrArg (fullIntoStage core (nextExtra core hcore c.rel)
         (fun _ => True) (fun _ => trivial)).hom
         (nextFull_core_trivial core hcore c.rel c.full_core_trivial a)
-      change QuotientGroup.mk (FreeGroup.map id (FreeGroup.of (Sum.inl a))) =
-        (fullIntoStage core (nextExtra core hcore c.rel) (fun _ => True) (fun _ => trivial)).hom 1 at h
-      exact (show (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup
-        (rawPresentation core (restrictedExtra (nextExtra core hcore c.rel) (fun _ => True)))) = 1
-        from by simpa only [FreeGroup.map.id, map_one] using h)
+      assumption
   zero := c.stepStage_zero hcore hinj
 
 end AmbientChain

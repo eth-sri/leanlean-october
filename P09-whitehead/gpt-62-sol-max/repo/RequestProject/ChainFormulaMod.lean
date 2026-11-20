@@ -25,9 +25,6 @@ Taking `m = 0` the statement specializes to the integral one, since `CycleLiftsM
 trivially.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -49,10 +46,7 @@ theorem exists_nsmul_mapDomain_iff {A B : Type*} (psi : A → B) (hpsi : Functio
     rw [← dvd_coeff_iff_nsmul]
     intro q
     have hq : (MonoidAlgebra.mapDomain psi z).coeff (psi q) = z.coeff q := Finsupp.mapDomain_apply_of_injective hpsi z.coeff q
-    refine ⟨y.coeff (psi q), ?_⟩
-    rw [← hq, hy]
-    show ((m • y : MonoidAlgebra ℤ B).coeff (psi q) : ℤ) = (m : ℤ) * y.coeff (psi q)
-    rw [MonoidAlgebra.coeff_smul_apply, nsmul_eq_mul]
+    simp [← hq, hy]
   · rintro ⟨y, rfl⟩
     refine ⟨MonoidAlgebra.mapDomain psi y, ?_⟩
     exact map_nsmul ((MonoidAlgebra.mapDomainLinearMap ℤ ℤ psi).toAddMonoidHom) m y
@@ -108,7 +102,7 @@ theorem oldVec_isCycleMod {r : ℕ} (m : ℕ) (v : J →₀ MonoidAlgebra ℤ G)
     ∃ w, ∑ c ∈ (h.oldVec r v).support, h.oldVec r v c * h.bdry r a c = m • w := by
   classical
   set u := h.oldVec r v with hu
-  have hsub : u.support ⊆ v.support.image (h.cellIncl r) := h.oldVec_support_subset r v
+  have hsub  := h.oldVec_support_subset r v
   have hext : ∑ c ∈ u.support, u c * h.bdry r a c
       = ∑ c ∈ v.support.image (h.cellIncl r), u c * h.bdry r a c := by
     refine Finset.sum_subset hsub fun c _ hc => ?_
@@ -126,7 +120,6 @@ theorem oldVec_isCycleMod {r : ℕ} (m : ℕ) (v : J →₀ MonoidAlgebra ℤ G)
       rw [hu, h.oldVec_apply_cellIncl, h.bdry_old, ← map_mul]
     rw [Finset.sum_congr rfl hterm, ← map_sum]
     have hfox : ∑ j ∈ v.support, v j * b i j = foxBoundary b v i := rfl
-    rw [hfox]
     exact (vanishesModN_ker_iff (h.phi r) m _).1 (hv i)
   · push_neg at hex
     refine ⟨0, ?_⟩
@@ -148,13 +141,9 @@ theorem vanishesModN_succ {r : ℕ} (m : ℕ) (hlift : CycleLiftsMod h m) (hr : 
   have hcoord := DFunLike.congr_fun hstep (h.cellStep r (h.cellIncl r j))
   rw [stepHom_apply, Finsupp.mapDomain_apply_of_injective (h.cellStep_injective r)] at hcoord
   simp only [Finsupp.mapRange_apply] at hcoord
-  rw [h.oldVec_apply_cellIncl, mapDomainRingHom_comp_apply, h.phi_succ] at hcoord
+  rw [h.oldVec_apply_cellIncl, MonoidAlgebra.mapDomainRingHom_apply_comp, h.phi_succ] at hcoord
   exact ⟨(h.stepHom r z) (h.cellStep r (h.cellIncl r j)), by
-    rw [hcoord]
-    show ((m • h.stepHom r z : Cell (r + 1) →₀ MonoidAlgebra ℤ (Fund (r + 1)))
-        (h.cellStep r (h.cellIncl r j)) : MonoidAlgebra ℤ (Fund (r + 1)))
-      = m • (h.stepHom r z) (h.cellStep r (h.cellIncl r j))
-    rw [Finsupp.smul_apply]⟩
+    assumption⟩
 
 /-- Once a vector has died modulo `m` at some stage, it stays dead at all later stages. -/
 theorem vanishesModN_mono {r : ℕ} (m : ℕ) (x : MonoidAlgebra ℤ G)
@@ -163,19 +152,19 @@ theorem vanishesModN_mono {r : ℕ} (m : ℕ) (x : MonoidAlgebra ℤ G)
   have key : ∀ d : ℕ, ∃ y, MonoidAlgebra.mapDomainRingHom ℤ (h.phi (r + d)) x = m • y := by
     intro d
     induction d with
-    | zero => simpa using hx
+    | zero => assumption
     | succ d ih =>
         obtain ⟨y, hy⟩ := ih
         have hstep : MonoidAlgebra.mapDomainRingHom ℤ
             ((h.psi (r + d)).comp (h.phi (r + d))) x
             = m • MonoidAlgebra.mapDomain (h.psi (r + d)) y := by
-          rw [← mapDomainRingHom_comp_apply, hy]
+          rw [← MonoidAlgebra.mapDomainRingHom_apply_comp, hy]
           exact map_nsmul ((MonoidAlgebra.mapDomainRingHom ℤ (h.psi (r + d))).toAddMonoidHom) m y
         rw [h.phi_succ] at hstep
-        exact ⟨_, hstep⟩
+        tauto
   intro s hs
   obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hs
-  exact key d
+  tauto
 
 /-- **Formula (2.3) modulo `m`, in the shape of the hypothesis `chain_subgroups`.**  A
 requirement modulo `m` violated at stage `r` holds at every later stage. -/
@@ -186,7 +175,7 @@ theorem foxSatMod_of_not_foxSatMod (m : ℕ) (hlift : CycleLiftsMod h m)
   have hbdry : ∀ i : I, VanishesModN m (h.phi r).ker (foxBoundary b v i).coeff := by
     by_contra hcon
     exact hviol fun hb => absurd hb hcon
-  have hr : r < n := lt_of_lt_of_le hrs hsn
+  have hr  := lt_of_lt_of_le hrs hsn
   intro _ j
   have h1 := h.vanishesModN_succ m hlift hr v hbdry j
   exact (vanishesModN_ker_iff (h.phi s) m (v j)).2

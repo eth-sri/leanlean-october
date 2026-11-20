@@ -33,8 +33,8 @@ theorem squareCorner_lt (c : QCube A) (a b : V) (hne : a ≠ b)
 theorem squareCorner_injective (c : QCube A) (a b : V) (hne : a ≠ b) :
     Function.Injective (fun i : ZMod 2 × ZMod 2 => squareCorner c a b i.1 i.2) := by
   intro ⟨s, t⟩ ⟨u, v⟩ h
-  have hl := congrArg (fun x : QCube A => x.sgn a) h
-  have hr := congrArg (fun x : QCube A => x.sgn b) h
+  have hl := congrArg (fun x  => x.sgn a) h
+  have hr := congrArg (fun x  => x.sgn b) h
   simp only [squareCorner_sgn_left _ _ _ hne] at hl
   simp only [squareCorner_sgn_right] at hr
   exact Prod.ext hl hr

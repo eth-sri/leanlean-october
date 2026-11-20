@@ -51,7 +51,7 @@ theorem filledF_of_block_consequences
       FreeGroup.map (Sum.inl (α := α) (β := Σ s, Zt s)) := by
     apply FreeGroup.ext_hom
     intro a
-    simp
+    simp [genEmb]
   rw [← DFunLike.congr_fun hm (ρ (Sum.inr s))]
   apply Davis.map_mem_normalClosure (FreeGroup.map (genEmb s)) ?_ (h s)
   rintro w ⟨m, rfl⟩
@@ -67,11 +67,11 @@ theorem range_oneRel (s : Sx) : Set.range (oneRel ρ s) = Set.range ρ := by
   ext w
   constructor
   · rintro ⟨((r | t) | p), rfl⟩
-    · exact ⟨Sum.inl r, rfl⟩
+    · tauto
     · exact ⟨Sum.inr t.val, rfl⟩
     · exact ⟨Sum.inr s, rfl⟩
   · rintro ⟨(r | t), rfl⟩
-    · exact ⟨Sum.inl (Sum.inl r), rfl⟩
+    · tauto
     · by_cases h : t = s
       · subst t; exact ⟨Sum.inr PUnit.unit, rfl⟩
       · exact ⟨Sum.inl (Sum.inr ⟨t, h⟩), rfl⟩
@@ -79,11 +79,8 @@ theorem range_oneRel (s : Sx) : Set.range (oneRel ρ s) = Set.range ρ := by
 /-- The reindexing preserves the group and every old word. -/
 noncomputable def oneEquiv (s : Sx) : PresGroup ρ ≃* PresGroup (oneRel ρ s) :=
   QuotientGroup.congr _ _ (MulEquiv.refl _) (by
-    rw [MulEquiv.coe_monoidHom_refl, Subgroup.map_id]
-    simp only [relSub, range_oneRel])
+    simp [Subgroup.map_id, relSub, range_oneRel])
 
-@[simp] theorem oneEquiv_mk (s : Sx) (w : FreeGroup α) :
-    oneEquiv ρ s (QuotientGroup.mk w) = QuotientGroup.mk w := rfl
 
 /-- Injectivity of every individual substitution implies injectivity of their simultaneous
 substitution, even for an infinite or empty family of entries. -/
@@ -93,13 +90,13 @@ theorem injective_substHomF_of_individual
     (hinj : ∀ s, Function.Injective
       (substHomF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s) (hone s))) :
     Function.Injective (substHomF ρ bsub hfill) := by
-  let G s := PresGroup (substPresF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s))
-  let j : ∀ s, PresGroup ρ →* G s := fun s =>
-    (substHomF (oneRel ρ s) (fun _ : PUnit.{1} => bsub s) (hone s)).comp
+  let G s := PresGroup (substPresF (oneRel ρ s) (fun _  => bsub s))
+  let j  := fun s =>
+    (substHomF (oneRel ρ s) (fun _  => bsub s) (hone s)).comp
       (oneEquiv ρ s).toMonoidHom
   let b : ∀ s, FreeGroup (α ⊕ Zt s) →* G s := fun s =>
     (QuotientGroup.mk' _).comp
-      (FreeGroup.map (genEmb (Zt := fun _ : PUnit.{1} => Zt s) PUnit.unit))
+      (FreeGroup.map (genEmb (Zt := fun _  => Zt s) PUnit.unit))
   apply injective_substHomF_of_separate_receivers hfill j
     (fun s => (hinj s).comp (oneEquiv ρ s).injective) b
   · intro s a

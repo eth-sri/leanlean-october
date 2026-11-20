@@ -81,8 +81,7 @@ theorem fs_hkey_presSub
       FoxSatMod p (foxMatrixPres ρ) v (presSub ρ Nt)) (hρ : ∀ j, ρ j ∈ Nt) :
     ∀ g ∈ presSub ρ Nt, ∀ n : ℕ, n ≠ 0 →
       g ^ n ∈ ⁅presSub ρ Nt, presSub ρ Nt⁆ → g ∈ ⁅presSub ρ Nt, presSub ρ Nt⁆ := by
-  have hlift : ∀ p : ℕ, p.Prime →
-      LiftsMod (coverSecondBoundary Nt ρ).toAddMonoidHom p :=
+  have hlift  :=
     fun p hp => fs_liftsMod_of_foxSatMod ρ Nt hR p (hmod p hp)
   rintro _ ⟨w, hw, rfl⟩ n hn hpow
   have hcommmap : ⁅presSub ρ Nt, presSub ρ Nt⁆ =
@@ -120,7 +119,7 @@ theorem fs_isMulTorsionFree_of_foxSatMod_pres (N : Subgroup (PresGroup ρ)) [N.N
     exact N.one_mem
   have hNeq : presSub ρ Nt = N :=
     Subgroup.map_comap_eq_self_of_surjective (QuotientGroup.mk'_surjective _) N
-  have hρ : ∀ j, ρ j ∈ Nt := fun j =>
+  have hρ  := fun j =>
     hR (Subgroup.subset_normalClosure (Set.mem_range_self j))
   have hm : ∀ p : ℕ, p.Prime → ∀ v : J →₀ MonoidAlgebra ℤ (PresGroup ρ),
       FoxSatMod p (foxMatrixPres ρ) v (presSub ρ Nt) := by

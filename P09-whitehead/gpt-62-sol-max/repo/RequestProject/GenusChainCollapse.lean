@@ -18,7 +18,7 @@ abbrev GenusVertex := SCell (gvc q) (gec q) (gc q)
 
 noncomputable instance genusVertexLinearOrder : LinearOrder (GenusVertex q) := by
   classical
-  exact LinearOrder.lift' (toLinearExtension : GenusVertex q → LinearExtension (GenusVertex q))
+  exact LinearOrder.lift' toLinearExtension
     (fun _ _ h => h)
 
 /-- The actual sequence of oriented cellular cancellation pairs. -/
@@ -107,7 +107,6 @@ theorem genusChainCollapse_removes_cut_triangle (σ : Finset (GenusVertex q))
   obtain ⟨f, hf⟩ := (genusChainCollapse_isPairCollapse q).covers ht
   have he : f = Sum.inr σ := by
     simpa using genusChainCollapse_positive_pair q (posCube σ, f) hf (by simp)
-  subst f
-  exact List.mem_map.mpr ⟨(posCube σ, Sum.inr σ), hf, rfl⟩
+  grind
 
 end FiniteChains.Davis.Genus

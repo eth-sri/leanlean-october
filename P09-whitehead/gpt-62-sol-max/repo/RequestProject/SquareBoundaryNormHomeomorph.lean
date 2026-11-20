@@ -14,19 +14,16 @@ open scoped Topology unitInterval Classical
 
 theorem norm_coordinate_bounds {n : ℕ} (x : Fin n → ℝ)
     (hx : ‖x‖ ≤ 1) (i : Fin n) : -1 ≤ x i ∧ x i ≤ 1 := by
-  have hi : |x i| ≤ 1 := (Real.norm_eq_abs (x i)) ▸ (norm_le_pi_norm x i).trans hx
+  have hi  := (Real.norm_eq_abs (x i)) ▸ (norm_le_pi_norm x i).trans hx
   exact abs_le.mp hi
 
 theorem norm_one_coordinate {n : ℕ} (x : Fin n → ℝ) (hx : ‖x‖ = 1) :
     ∃ i, x i = 1 ∨ x i = -1 := by
   by_contra! h
-  have hl : ‖x‖ < 1 := (pi_norm_lt_iff zero_lt_one).mpr (fun i => by
-    have hu : ‖x i‖ ≤ 1 := (norm_le_pi_norm x i).trans hx.le
+  have hl  := (pi_norm_lt_iff zero_lt_one).mpr (fun i => by
+    have hu  := (norm_le_pi_norm x i).trans hx.le
     apply lt_of_le_of_ne hu
-    intro he
-    have hi : x i = 1 ∨ x i = -1 := (abs_eq zero_le_one).mp
-      (by simpa only [Real.norm_eq_abs] using he)
-    exact hi.elim (h i).1 (h i).2)
+    simp_all <;> grind)
   exact (not_lt_of_ge hx.ge) hl
 
 def unitBoundarySquareHomeomorph : UnitBoundary (Fin 2 → ℝ) ≃ₜ SquareBoundary where
@@ -46,9 +43,9 @@ def unitBoundarySquareHomeomorph : UnitBoundary (Fin 2 → ℝ) ≃ₜ SquareBou
       constructor <;> linarith [hi.1, hi.2]
     · obtain ⟨i, hi | hi⟩ := x.property
       · have h := norm_le_pi_norm (fun j => 2 * (x.val j : ℝ) - 1) i
-        simpa only [hi, Set.Icc.coe_zero, mul_zero, zero_sub, norm_neg, norm_one] using h
+        simp_all
       · have h := norm_le_pi_norm (fun j => 2 * (x.val j : ℝ) - 1) i
-        norm_num only [hi, Set.Icc.coe_one, mul_one, show (2 : ℝ) - 1 = 1 by norm_num,
+        norm_num only [hi, Set.Icc.coe_one, mul_one, show 2 - 1 = 1 by norm_num,
           norm_one] at h
         exact h⟩
   left_inv x := by
@@ -82,9 +79,7 @@ def oneBallIntervalHomeomorph : ClosedUnitBall (Fin 1 → ℝ) ≃ₜ I where
     constructor <;> linarith⟩
   invFun t := ⟨fun _ => 2 * (t : ℝ) - 1, by
     rw [pi_norm_const, Real.norm_eq_abs]
-    apply abs_le.mpr
-    have ht := t.property
-    constructor <;> linarith [ht.1, ht.2]⟩
+    grind⟩
   left_inv x := by
     apply Subtype.ext
     funext i
@@ -114,12 +109,12 @@ theorem oneBoundary_eq (a : UnitBoundary (Fin 1 → ℝ)) :
     apply Subtype.ext
     funext j
     have hj : j = i := Subsingleton.elim _ _
-    simpa [hj, oneBoundaryPoint] using hi
+    simp_all [oneBoundaryPoint]
   · apply Or.inl
     apply Subtype.ext
     funext j
     have hj : j = i := Subsingleton.elim _ _
-    simpa [hj, oneBoundaryPoint] using hi
+    simp_all [oneBoundaryPoint]
 
 @[simp] theorem oneBallIntervalHomeomorph_boundary (b : Bool) :
     oneBallIntervalHomeomorph (unitBoundaryInclusion _ (oneBoundaryPoint b)) =

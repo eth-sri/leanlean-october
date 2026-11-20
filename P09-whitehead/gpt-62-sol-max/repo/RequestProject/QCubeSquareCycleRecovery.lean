@@ -6,9 +6,7 @@ public import RequestProject.QCubeSquareBoundaryKernel
 
 /-! Local recovery of cubical coefficients from actual two-dimensional strict cycles. -/
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -40,7 +38,7 @@ theorem squareRadialBoundary_filter_top (c : QCube A) (a b : V) (hne : a ≠ b)
     squareRadialCoordinates c a b hne hs (Comb.bdry2 (strictOrderCx (QCube A))
       (z.filter (fun t => t.1.2.2 = c))) := by
   classical
-  have hc : c.spx.card = 2 := by rw [hs]; simp [hne]
+  have hc : c.spx.card = 2 := by simp [hs, hne]
   conv_lhs => rw [← z.sum_single]
   conv_rhs => rw [← z.sum_single]
   simp only [Finsupp.sum, map_sum, Finsupp.filter_sum]

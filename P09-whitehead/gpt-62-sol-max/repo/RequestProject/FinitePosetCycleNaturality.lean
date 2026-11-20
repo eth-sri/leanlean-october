@@ -12,9 +12,7 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 
@@ -29,10 +27,8 @@ theorem arcConcat_natural {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
   | succ n ih =>
     simp only [arcConcat, Path.trans_apply]
     split_ifs
-    · exact ih (v ∘ Fin.castSucc) (w ∘ Fin.castSucc)
-        (fun i => F i.castSucc) (fun i => G i.castSucc)
-        (fun i s => h i.castSucc s) _
-    · exact h (Fin.last (n + 1)) _
+    · solve_by_elim
+    · tauto
 
 end FiniteChains.RelativeAttachment
 
@@ -63,17 +59,15 @@ theorem vertex_map_bijective : Function.Bijective f := by
   · intro a b hab
     obtain ⟨i, rfl⟩ := C.vertex.surjective a
     obtain ⟨j, rfl⟩ := C.vertex.surjective b
-    rw [hv, hv] at hab
-    exact congrArg C.vertex (D.vertex.injective hab)
+    simp_all
   · intro q
     obtain ⟨i, rfl⟩ := D.vertex.surjective q
-    exact ⟨C.vertex i, hv i⟩
+    tauto
 
 include hv in
 theorem edge_natural (i : Fin (n + 1)) (t : I) :
     orderNerveRealizationMap f hf (C.edge i t) = D.edge i t := by
-  have h' : f (C.vertex i.castSucc) ≤ f (C.vertex i.succ) ∨
-      f (C.vertex i.succ) ≤ f (C.vertex i.castSucc) :=
+  have h'  :=
     (C.consecutive i).imp (fun h => hf h) (fun h => hf h)
   have h := orderNerveComparablePath_natural_bijective f hf
     (C.vertex_map_bijective D f hv) (C.consecutive i) h' t
@@ -85,8 +79,7 @@ theorem edge_natural (i : Fin (n + 1)) (t : I) :
 include hv in
 theorem lastEdge_natural (t : I) :
     orderNerveRealizationMap f hf (C.lastEdge t) = D.lastEdge t := by
-  have h' : f (C.vertex (Fin.last (n + 1))) ≤ f (C.vertex 0) ∨
-      f (C.vertex 0) ≤ f (C.vertex (Fin.last (n + 1))) :=
+  have h'  :=
     C.closing.imp (fun h => hf h) (fun h => hf h)
   have h := orderNerveComparablePath_natural_bijective f hf
     (C.vertex_map_bijective D f hv) C.closing h' t

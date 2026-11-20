@@ -1,6 +1,7 @@
 module
 
-public import RequestProject.TopologicalCoverCellChains
+public import RequestProject.TopologicalOrderCoverAcyclic
+public import RequestProject.RegularCoverAcyclicChains
 public import RequestProject.RegularCoverFreshCells
 public import RequestProject.TreeChainPresentationRealization
 public import RequestProject.StrictTriangleTreeGenerator
@@ -37,7 +38,7 @@ theorem hasChain_of_topological_cover_tree_comparison (X : Whitehead.TwoComplex)
   obtain ⟨T, -⟩ := SpanningTree.exists_of_isConnected hconnected d
   let c := regularCoverTopChain T hacyclic proj hcover action hregular hedge hface n
   exact c.hasOriginalChain_of_initial_tree_comparison T₀ X a e₀
-    (fun i hi => regularCoverChain_freshLoopOrFace T hacyclic proj n i hi)
+    (regularCoverChain_freshLoopOrFace T hacyclic proj n)
 
 end FiniteChains.Comb
 

@@ -29,15 +29,6 @@ theorem qUniversal_old_relative_chain_from_attaching (x : X)
   letI : Nonempty X := ⟨x⟩
   let J := fun p : UOrder (Qpos A X att) (qNew x) =>
     InQOld (uOrderEnd p) ∧ InQBaseStar (uOrderEnd p)
-  have hnonempty : ∃ p, J p := by
-    have hc : IsConnected (orderCx (Qpos A X att)) :=
-      qpos_isConnected_of_zpos (zpos_isConnected hx)
-    obtain ⟨p, hp⟩ := (uOrderEnd_isPosetCover (a := qNew x) hc).surj
-      (Sum.inl (posQCube σ))
-    refine ⟨p, ?_⟩
-    change InQOld (uOrderEnd p) ∧ InQBaseStar (uOrderEnd p)
-    rw [hp]
-    exact ⟨trivial, rfl⟩
   have hdz : Nerve.bdry z ∈ IncOn J := by
     rw [hbz]
     exact cmap_val_mem_incOn J hb
@@ -45,9 +36,9 @@ theorem qUniversal_old_relative_chain_from_attaching (x : X)
     qUniversal_old_relative_filling x hx z hz hd hdz
   obtain ⟨c, hc, hct⟩ := exists_preimage_of_mem_incOn J ht
   refine ⟨c, hc, ?_, ?_, y, hy, hyd, ?_⟩
-  · apply cmap_val_injective J hnonempty
+  · apply cmap_val_injective J
     rw [← lengthProjection_cmap, hct, htd]
-  · apply cmap_val_injective J hnonempty
+  · apply cmap_val_injective J
     rw [cmap_bdry, hct, hdt, hbz]
   · rw [hct]
     exact he

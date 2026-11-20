@@ -39,42 +39,18 @@ theorem orderReturnHomotopyZero_fill (s : ComposableArrows P 0) :
     exact orderSingularToNerve_length 0 _
   · rw [map_sub, orderNerveRoundTrip_zero_boundary, sub_self]
 
-noncomputable def orderReturnHomotopyZero : (ComposableArrows P 0 →₀ ℤ) →ₗ[ℤ] Nerve.Ch P :=
-  Finsupp.linearCombination ℤ (fun s => (orderReturnHomotopyZero_fill s).choose)
-
-theorem orderReturnHomotopyZero_single (s : ComposableArrows P 0) :
-    orderReturnHomotopyZero (Finsupp.single s 1) = (orderReturnHomotopyZero_fill s).choose := by
-  rw [orderReturnHomotopyZero, Finsupp.linearCombination_single, one_smul]
-
-theorem orderReturnHomotopyZero_identity (c : ComposableArrows P 0 →₀ ℤ) :
-    Nerve.bdry (orderReturnHomotopyZero c) = orderNerveGradedEncode 0 c - orderNerveRoundTrip P 0 c := by
-  have he : Nerve.bdry.toIntLinearMap.comp orderReturnHomotopyZero =
-      orderNerveGradedEncode 0 - orderNerveRoundTrip P 0 := by
-    apply Finsupp.lhom_ext'
-    intro s
-    apply LinearMap.ext_ring
-    simp only [LinearMap.comp_apply, Finsupp.lsingle_apply, LinearMap.sub_apply]
-    change Nerve.bdry (orderReturnHomotopyZero (Finsupp.single s 1)) = _
-    rw [orderReturnHomotopyZero_single]
-    exact (orderReturnHomotopyZero_fill s).choose_spec.2.2
-  exact DFunLike.congr_fun he c
+noncomputable def orderReturnHomotopyZeroLift :
+    CarriedLift (Finsupp.basisSingleOne : Module.Basis (ComposableArrows P 0) ℤ _)
+      (fun s b => b ∈ Nerve.IncOn (Set.range s.obj) ∧ Nerve.lengthProjection 2 b = b)
+      Nerve.bdry.toIntLinearMap (orderNerveGradedEncode 0 - orderNerveRoundTrip P 0) :=
+  .ofExists fun s => by
+    simpa only [Finsupp.coe_basisSingleOne, LinearMap.sub_apply, AddMonoidHom.coe_toIntLinearMap, and_assoc]
+      using orderReturnHomotopyZero_fill s
 
 noncomputable def orderReturnHomotopyStageZero : OrderReturnHomotopyStage P 0 where
-  map := orderReturnHomotopyZero
-  carrier s := by
-    rw [orderReturnHomotopyZero_single]
-    exact (orderReturnHomotopyZero_fill s).choose_spec.1
-  homogeneous c := by
-    have he : (Nerve.lengthProjection 2).toIntLinearMap.comp orderReturnHomotopyZero =
-        (orderReturnHomotopyZero : (ComposableArrows P 0 →₀ ℤ) →ₗ[ℤ] Nerve.Ch P) := by
-      apply Finsupp.lhom_ext'
-      intro s
-      apply LinearMap.ext_ring
-      simp only [LinearMap.comp_apply, Finsupp.lsingle_apply]
-      change Nerve.lengthProjection 2 (orderReturnHomotopyZero (Finsupp.single s 1)) = _
-      rw [orderReturnHomotopyZero_single]
-      exact (orderReturnHomotopyZero_fill s).choose_spec.2.1
-    exact DFunLike.congr_fun he c
-  on_boundary c := orderReturnHomotopyZero_identity _
+  map := orderReturnHomotopyZeroLift.map
+  carrier s := (orderReturnHomotopyZeroLift.carried s).1
+  homogeneous := orderReturnHomotopyZeroLift.fixed (Nerve.lengthProjection 2).toIntLinearMap fun _ _ h => h.2
+  on_boundary _ := orderReturnHomotopyZeroLift.boundary _
 
 end FiniteChains.Comb

@@ -31,7 +31,7 @@ theorem HasHomotopyExtension.homeomorph {A' D' : Type u}
     (h : HasHomotopyExtension i) (e : A ≃ₜ A') (d : D ≃ₜ D')
     (j : A' → D') (hsq : ∀ a, j (e a) = d (i a)) : HasHomotopyExtension j := by
   intro Z _ f H h₀
-  let f' : C(D, Z) := f.comp d.toContinuousMap
+  let f'  := f.comp d.toContinuousMap
   let H' : C(I × A, Z) := H.comp
     ⟨fun ta => (ta.1, e ta.2), continuous_fst.prodMk (e.continuous.comp continuous_snd)⟩
   have h'₀ : ∀ a, H' (0, a) = f' (i a) := by
@@ -48,7 +48,7 @@ theorem HasHomotopyExtension.homeomorph {A' D' : Type u}
   · intro t a
     have hs : d.symm (j a) = i (e.symm a) := by
       apply d.injective
-      rw [d.apply_symm_apply, ← hsq, e.apply_symm_apply]
+      simp [← hsq]
     change G (t, d.symm (j a)) = H (t, a)
     rw [hs, hGA]
     exact congrArg (fun b => H (t, b)) (e.apply_symm_apply a)

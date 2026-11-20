@@ -12,37 +12,16 @@ public import RequestProject.UniversalCoverPi1Injection
 /-! The received spine is mapped into the genuine pulled-back old-cover spine.
 
 -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-variable {K Y Z : Complex2}
-
-theorem Hom.comp_left_cancel_of_injective (f : Hom Y Z)
-    (hv : Function.Injective f.onV) (he : Function.Injective f.onE)
-    (hf : Function.Injective f.onF) (r s : Hom K Y)
-    (h : f.comp r = f.comp s) : r = s := by
-  apply Hom.ext'
-  · funext a
-    exact hv (congrArg (fun k : Hom K Z => k.onV a) h)
-  · funext e
-    exact he (congrArg (fun k : Hom K Z => k.onE e) h)
-  · funext t
-    exact hf (congrArg (fun k : Hom K Z => k.onF t) h)
-
 theorem uOrderHomInv_projection_square {P : Type} [PartialOrder P] (a : P) :
     (orderCxMap uOrderEnd (uOrderEnd_monotone (P := P) (a := a))).comp uOrderHomInv =
       univProj (orderCx P) a := by
-  apply Hom.ext'
-  · funext x
-    change uOrderEnd (uOrderHomInv.onV x) = endV x
-    rw (config := { transparency := .default }) [uOrderHomInv_vertex]
-    rfl
-  · funext e
-    exact uOrderHomInv_edge_projection e
-  · funext t
-    exact uOrderHomInv_face_projection t
+  apply Hom.ext_orderCx
+  funext x
+  change uOrderEnd (uOrderHomInv.onV x) = endV x
+  erw [uOrderHomInv_vertex]
+  rfl
 
 theorem deckV_injective_in_group {X : Complex2} (a : X.V) (v : UV X a) :
     Function.Injective (fun g : Pi1 X a => deckV g v) := by
@@ -65,16 +44,7 @@ theorem qOldCover_projection_square (a : Qpos A X att)
       (orderCxMap uOrderEnd uOrderEnd_monotone).comp
         (orderCxMap (Subtype.val : QLiftedOld a → UOrder (Qpos A X att) a)
           (fun _ _ h => h)) := by
-  apply Hom.ext'
-  · funext p
-    exact qOldCoverEnd_spec a p
-  · funext e
-    apply Subtype.ext
-    exact Prod.ext (qOldCoverEnd_spec a e.1.1) (qOldCoverEnd_spec a e.1.2)
-  · funext t
-    apply Subtype.ext
-    exact Prod.ext (qOldCoverEnd_spec a t.1.1)
-      (Prod.ext (qOldCoverEnd_spec a t.1.2.1) (qOldCoverEnd_spec a t.1.2.2))
+  exact Hom.ext_orderCx (funext (qOldCoverEnd_spec a))
 
 end FiniteChains.Davis
 
@@ -83,7 +53,7 @@ open RACG Mirror Comb PresModel BlockFamily Nerve
 open scoped Classical
 variable (q : ℕ) [NeZero q] {α Jr : Type}
   (ρ : Jr ⊕ PUnit.{1} → FreeGroup α) (u : Fin q × Bool → FreeGroup α)
-  (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
+  (hrho : IsSpineRelator ρ q u)
 
 noncomputable abbrev namedOldCover := QLiftedOld (namedQuotientBase ρ q u)
 
@@ -113,7 +83,7 @@ open RACG Mirror Comb PresModel BlockFamily Nerve
 open scoped Classical
 variable (q : ℕ) [NeZero q] {α Jr : Type}
   (ρ : Jr ⊕ PUnit.{1} → FreeGroup α) (u : Fin q × Bool → FreeGroup α)
-  (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
+  (hrho : IsSpineRelator ρ q u)
 
 noncomputable def coveredSpineToStrictSpine :
     Hom (strictOrderCx (OldCoveredSpine q (namedOldCoverProjection q ρ u)))

@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.FinsuppBasis
 public import RequestProject.OrderNerveCellMaps
 
 @[expose] public section
@@ -8,14 +9,15 @@ public import RequestProject.OrderNerveCellMaps
 source and target posets. Proof terms only; not compiled. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
   (f g : P → Q) (hf : Monotone f) (hg : Monotone g) (hfg : ∀ x, f x ≤ g x)
+
+def ordMapPrism0 : (P →₀ ℤ) →ₗ[ℤ] ((orderCx Q).E →₀ ℤ) :=
+  Finsupp.lmapDomain ℤ ℤ (fun x => ⟨(f x, g x), hfg x⟩)
 
 def ordMapPrismEdge (e : OrdEdge P) : OrdTri Q →₀ ℤ :=
   Finsupp.single ⟨(f e.1.1, g e.1.1, g e.1.2), hfg _, hg e.2⟩ 1 -
@@ -35,29 +37,38 @@ def ordMapPrism1 : (OrdEdge P →₀ ℤ) →ₗ[ℤ] (OrdTri Q →₀ ℤ) :=
 def ordMapPrism2 : (OrdTri P →₀ ℤ) →ₗ[ℤ] (OrdTet Q →₀ ℤ) :=
   Finsupp.linearCombination ℤ (ordMapPrismTriangle f g hf hg hfg)
 
+theorem ordMapPrism_oneCycle (c : OrdEdge P →₀ ℤ) (hc : bdry1 (orderCx P) c = 0) :
+    bdry2 (orderCx Q) (ordMapPrism1 f g hf hg hfg c) =
+      chain1 (orderCxMap g hg) c - chain1 (orderCxMap f hf) c := by
+  suffices he : ∀ z : OrdEdge P →₀ ℤ,
+      bdry2 (orderCx Q) (ordMapPrism1 f g hf hg hfg z) + ordMapPrism0 f g hfg (bdry1 (orderCx P) z) =
+        chain1 (orderCxMap g hg) z - chain1 (orderCxMap f hf) z by
+    simpa only [hc, map_zero, add_zero] using he c
+  intro z
+  finsupp_basis z
+  intro e
+  rw [ordMapPrism1, Finsupp.linearCombination_single, one_smul, ordMapPrismEdge,
+    map_sub, bdry1_single, one_smul, map_sub]
+  simp [ordMapPrism0, bdry2, orderCx, pathChain, chain1, orderCxMap]
+  abel
+
 theorem ordMapPrism_triangle_identity (t : OrdTri P) :
     ordBoundary3 (ordMapPrismTriangle f g hf hg hfg t) +
       ordMapPrism1 f g hf hg hfg (Comb.bdry2 (orderCx P) (Finsupp.single t 1)) =
     chain2 (orderCxMap g hg) (Finsupp.single t 1) -
       chain2 (orderCxMap f hf) (Finsupp.single t 1) := by
   simp [ordMapPrismTriangle, ordMapPrism1, ordMapPrismEdge, ordBoundary3,
-    ordTetBoundary, Comb.bdry2, orderCx, pathChain, chain2, orderCxMap]
+    ordTetBoundary, tetrahedronBoundary, ordTetFace, ChainTet.face, Comb.bdry2, orderCx, pathChain, chain2, orderCxMap]
   abel
 
 theorem ordMapPrism_identity (c : OrdTri P →₀ ℤ) :
     ordBoundary3 (ordMapPrism2 f g hf hg hfg c) +
       ordMapPrism1 f g hf hg hfg (Comb.bdry2 (orderCx P) c) =
     chain2 (orderCxMap g hg) c - chain2 (orderCxMap f hf) c := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd =>
-    simp only [map_add]
-    rw [add_add_add_comm, hc, hd]
-    abel
-  | single t n =>
-    have h := congrArg (fun z : OrdTri Q →₀ ℤ => n • z)
-      (ordMapPrism_triangle_identity f g hf hg hfg t)
-    simpa [ordMapPrism2, Comb.bdry2, smul_add, smul_sub, Finsupp.smul_single] using h
+  finsupp_basis c
+  intro t
+  simpa only [ordMapPrism2, Finsupp.linearCombination_single, one_smul] using
+    ordMapPrism_triangle_identity f g hf hg hfg t
 
 /-- Actual finite tetrahedra comparing the images of a cellular cycle. -/
 theorem ordMapPrism_cycle (c : OrdTri P →₀ ℤ) (hc : Comb.bdry2 (orderCx P) c = 0) :

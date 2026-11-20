@@ -56,16 +56,14 @@ theorem gvc_even {k : ℕ} (hk : k % 2 = 0) : gvc q (cyc (8 * q) k) = none := by
   have h : (cyc (8 * q) k).val % 2 = 0 := by rw [cyc_mod_two, hk]
   rw [gvc, if_pos h]
 
-theorem gvc_congr_lt {k k' : ℕ} (hk : k < 8 * q) (hk' : k' < 8 * q) (ho : k % 2 = 1)
-    (ho' : k' % 2 = 1) (h1 : k / 2 / 4 = k' / 2 / 4)
-    (h2 : (k / 2 % 4 % 2 = 1) ↔ (k' / 2 % 4 % 2 = 1)) :
+private theorem gvc_congr {k k' : ℕ} (h : k % 2 = k' % 2)
+    (ho : k % 2 = 1 → k < 8 * q ∧ k' < 8 * q ∧ k / 2 / 4 = k' / 2 / 4 ∧
+      k / 2 % 4 % 2 = k' / 2 % 4 % 2) :
     gvc q (cyc (8 * q) k) = gvc q (cyc (8 * q) k') := by
-  have v : (cyc (8 * q) k).val = k := cyc_val_of_lt q hk
-  have v' : (cyc (8 * q) k').val = k' := cyc_val_of_lt q hk'
-  rw [gvc, gvc, if_neg (by rw [v]; omega), if_neg (by rw [v']; omega)]
-  simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide]
-  rw [v, v']
-  exact ⟨h1, h2⟩
+  by_cases he : k % 2 = 0
+  · rw [gvc_even q he, gvc_even q (h ▸ he)]
+  · obtain ⟨hk, hk', h₁, h₂⟩ := ho (by omega)
+    simp [gvc, cyc_val_of_lt q hk, cyc_val_of_lt q hk', he, ← h, h₁, h₂]
 
 theorem gec_congr_lt {k k' : ℕ} (hk : k < 8 * q) (hk' : k' < 8 * q)
     (h1 : k / 2 / 4 = k' / 2 / 4)
@@ -73,12 +71,9 @@ theorem gec_congr_lt {k k' : ℕ} (hk : k < 8 * q) (hk' : k' < 8 * q)
     (h3 : xor (decide (k % 2 = 1)) (decide (2 ≤ k / 2 % 4))
       = xor (decide (k' % 2 = 1)) (decide (2 ≤ k' / 2 % 4))) :
     gec q (cyc (8 * q) k) = gec q (cyc (8 * q) k') := by
-  have v : (cyc (8 * q) k).val = k := cyc_val_of_lt q hk
-  have v' : (cyc (8 * q) k').val = k' := cyc_val_of_lt q hk'
-  rw [gec, gec]
-  simp only [Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide]
-  rw [v, v']
-  exact ⟨h1, h2, h3⟩
+  have v  := cyc_val_of_lt q hk
+  have v'  := cyc_val_of_lt q hk'
+  grind [gec]
 
 /-- All the corners of the polygon are one and the same cell. -/
 theorem cV_even {k : ℕ} (hk : k % 2 = 0) :
@@ -107,90 +102,39 @@ theorem isPath_bdPath8 (n : ℕ) :
   rw [cV_even q (k := 8 * n) (by omega)] at h
   exact h
 
-/-- The two sides of a pair are inverse edge paths: the first half. -/
-theorem bdEdge_rev_a {h : ℕ} (hh : h < q) :
-    bdEdge (gc q) (cyc (8 * q) (8 * h + 4))
-      = revPath (bdEdge (gc q) (cyc (8 * q) (8 * h + 1))) := by
-  refine bdEdge_rev (gc q) ?_ ?_ ?_
-  · refine gec_congr_lt q (by omega) (by omega) (by omega) (by omega) ?_
-    have e1 : (8 * h + 4) % 2 = 0 := by omega
-    have e2 : (8 * h + 4) / 2 % 4 = 2 := by omega
-    have e3 : (8 * h + 1) % 2 = 1 := by omega
-    have e4 : (8 * h + 1) / 2 % 4 = 0 := by omega
-    rw [e1, e2, e3, e4]
-    decide
-  · rw [← cyc_succ]
-    exact (gvc_even q (by omega)).trans (gvc_even q (k := 8 * h + 1 + 1) (by omega)).symm
-  · rw [← cyc_succ]
-    exact gvc_congr_lt q (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
+/-- For either generator in a commutator, the paired side has reverse orientation. -/
+private theorem gPath_rev {h i : ℕ} (hh : h < q) (hi : i < 2) :
+    gPath q (8 * h + 2 * i + 4) = revPath (gPath q (8 * h + 2 * i)) := by
+  let m := 8 * h + 2 * i
+  have hed (k : ℕ) (hk : k < 2) :
+      bdEdge (gc q) (cyc (8 * q) (m + 4 + k)) =
+        revPath (bdEdge (gc q) (cyc (8 * q) (m + (1 - k)))) := by
+    dsimp [m]
+    refine bdEdge_rev (gc q) (gec_congr_lt q (by omega) (by omega) (by omega) (by omega) ?_) ?_ ?_
+    · have h₁ : (8 * h + 2 * i + 4 + k) % 2 = k := by omega
+      have h₂ : (8 * h + 2 * i + (1 - k)) % 2 = 1 - k := by omega
+      have hn : 2 ≤ (8 * h + 2 * i + 4 + k) / 2 % 4 := by omega
+      have hp : ¬ 2 ≤ (8 * h + 2 * i + (1 - k)) / 2 % 4 := by omega
+      rw [h₁, h₂, decide_eq_true hn, decide_eq_false hp]
+      obtain rfl | rfl : k = 0 ∨ k = 1 := by omega
+      all_goals decide
+    all_goals
+      rw [← cyc_succ]
+      apply gvc_congr q (by omega)
+      intro ho
+      exact ⟨by omega, by omega, by omega, by omega⟩
+  change pPath (gc q) (m + 4) = revPath (pPath (gc q) m)
+  have h0 := hed 0 (by decide)
+  have h1 := hed 1 (by decide)
+  simp only [Nat.add_zero, Nat.sub_self, Nat.sub_zero] at h0 h1
+  rw [pPath_eq, pPath_eq, revPath_append, ← h0, ← h1]
 
-/-- The two sides of a pair are inverse edge paths: the second half. -/
-theorem bdEdge_rev_b {h : ℕ} (hh : h < q) :
-    bdEdge (gc q) (cyc (8 * q) (8 * h + 5))
-      = revPath (bdEdge (gc q) (cyc (8 * q) (8 * h))) := by
-  refine bdEdge_rev (gc q) ?_ ?_ ?_
-  · refine gec_congr_lt q (by omega) (by omega) (by omega) (by omega) ?_
-    have e1 : (8 * h + 5) % 2 = 1 := by omega
-    have e2 : (8 * h + 5) / 2 % 4 = 2 := by omega
-    have e3 : (8 * h) % 2 = 0 := by omega
-    have e4 : (8 * h) / 2 % 4 = 0 := by omega
-    rw [e1, e2, e3, e4]
-    decide
-  · rw [← cyc_succ]
-    exact gvc_congr_lt q (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  · rw [← cyc_succ]
-    exact (gvc_even q (k := 8 * h + 5 + 1) (by omega)).trans (gvc_even q (k := 8 * h) (by omega)).symm
-
-/-- The two sides of the second pair are inverse edge paths: the first half. -/
-theorem bdEdge_rev_c {h : ℕ} (hh : h < q) :
-    bdEdge (gc q) (cyc (8 * q) (8 * h + 6))
-      = revPath (bdEdge (gc q) (cyc (8 * q) (8 * h + 3))) := by
-  refine bdEdge_rev (gc q) ?_ ?_ ?_
-  · refine gec_congr_lt q (by omega) (by omega) (by omega) (by omega) ?_
-    have e1 : (8 * h + 6) % 2 = 0 := by omega
-    have e2 : (8 * h + 6) / 2 % 4 = 3 := by omega
-    have e3 : (8 * h + 3) % 2 = 1 := by omega
-    have e4 : (8 * h + 3) / 2 % 4 = 1 := by omega
-    rw [e1, e2, e3, e4]
-    decide
-  · rw [← cyc_succ]
-    exact (gvc_even q (k := 8 * h + 6) (by omega)).trans
-      (gvc_even q (k := 8 * h + 3 + 1) (by omega)).symm
-  · rw [← cyc_succ]
-    exact gvc_congr_lt q (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-
-/-- The two sides of the second pair are inverse edge paths: the second half. -/
-theorem bdEdge_rev_d {h : ℕ} (hh : h < q) :
-    bdEdge (gc q) (cyc (8 * q) (8 * h + 7))
-      = revPath (bdEdge (gc q) (cyc (8 * q) (8 * h + 2))) := by
-  refine bdEdge_rev (gc q) ?_ ?_ ?_
-  · refine gec_congr_lt q (by omega) (by omega) (by omega) (by omega) ?_
-    have e1 : (8 * h + 7) % 2 = 1 := by omega
-    have e2 : (8 * h + 7) / 2 % 4 = 3 := by omega
-    have e3 : (8 * h + 2) % 2 = 0 := by omega
-    have e4 : (8 * h + 2) / 2 % 4 = 1 := by omega
-    rw [e1, e2, e3, e4]
-    decide
-  · rw [← cyc_succ]
-    exact gvc_congr_lt q (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  · rw [← cyc_succ]
-    exact (gvc_even q (k := 8 * h + 7 + 1) (by omega)).trans
-      (gvc_even q (k := 8 * h + 2) (by omega)).symm
-
-/-- **The side `4h+2` of the polygon is the side `4h` reversed.** -/
 theorem gPath_rev_a {h : ℕ} (hh : h < q) :
-    gPath q (8 * h + 4) = revPath (gPath q (8 * h)) := by
-  show pPath (gc q) (8 * h + 4) = revPath (pPath (gc q) (8 * h))
-  have e : 8 * h + 4 + 1 = 8 * h + 5 := by omega
-  rw [pPath_eq, pPath_eq, e, revPath_append, ← bdEdge_rev_a q hh, ← bdEdge_rev_b q hh]
+    gPath q (8 * h + 4) = revPath (gPath q (8 * h)) := gPath_rev q hh (i := 0) (by decide)
 
-/-- **The side `4h+3` of the polygon is the side `4h+1` reversed.** -/
 theorem gPath_rev_b {h : ℕ} (hh : h < q) :
-    gPath q (8 * h + 6) = revPath (gPath q (8 * h + 2)) := by
-  show pPath (gc q) (8 * h + 6) = revPath (pPath (gc q) (8 * h + 2))
-  have e : 8 * h + 6 + 1 = 8 * h + 7 := by omega
-  have e' : 8 * h + 2 + 1 = 8 * h + 3 := by omega
-  rw [pPath_eq, pPath_eq, e, e', revPath_append, ← bdEdge_rev_c q hh, ← bdEdge_rev_d q hh]
+    gPath q (8 * h + 6) = revPath (gPath q (8 * h + 2)) := gPath_rev q hh (i := 1) (by decide)
+
 
 /-! ### The classes of the sides in the fundamental group -/
 
@@ -202,25 +146,19 @@ def gcl {m : ℕ} (hm : m % 2 = 0) : Pi1 (sdCx (gc q)) (gBase q) :=
 def bcl (n : ℕ) : Pi1 (sdCx (gc q)) (gBase q) :=
   Pi1.mk ⟨bdPath (gc q) (8 * n), isPath_bdPath8 q n⟩
 
-theorem gcl_congr {m m' : ℕ} (hm : m % 2 = 0) (hm' : m' % 2 = 0) (e : m = m') :
-    gcl q hm = gcl q hm' := by
-  subst e; rfl
 
 theorem gcl_inv {m m' : ℕ} (hm : m % 2 = 0) (hm' : m' % 2 = 0)
     (e : gPath q m' = revPath (gPath q m)) : gcl q hm' = (gcl q hm)⁻¹ := by
   rw [gcl, gcl]
-  exact (pi1_mk_congr _ (e ▸ isPath_gPath q hm') e).trans
-    (pi1_mk_rev (isPath_gPath q hm) _)
+  aesop
 
 /-- The generators of the block: the side `4h` (for `i = false`) and the side `4h+1`
 (for `i = true`) of the polygon. -/
 theorem gIdx_even (x : ℕ × Bool) : (8 * x.1 + (if x.2 then 2 else 0)) % 2 = 0 := by
   rcases x with ⟨n, i⟩
   cases i
-  · show (8 * n + 0) % 2 = 0
-    omega
-  · show (8 * n + 2) % 2 = 0
-    omega
+  · grind
+  · grind
 
 def gGen (x : ℕ × Bool) : Pi1 (sdCx (gc q)) (gBase q) :=
   gcl q (m := 8 * x.1 + (if x.2 then 2 else 0)) (gIdx_even x)
@@ -231,12 +169,7 @@ abbrev gBlock (n : ℕ) : List ((sdCx (gc q)).E × Bool) :=
 
 theorem bdPath_block (n : ℕ) :
     bdPath (gc q) (8 * (n + 1)) = bdPath (gc q) (8 * n) ++ gBlock q n := by
-  have e8 : 8 * (n + 1) = 8 * n + 2 + 2 + 2 + 2 := by ring
-  rw [e8, bdPath_add_two, bdPath_add_two, bdPath_add_two, bdPath_add_two]
-  have a2 : 8 * n + 2 + 2 + 2 = 8 * n + 6 := by omega
-  have a1 : 8 * n + 2 + 2 = 8 * n + 4 := by omega
-  rw [a2, a1]
-  simp [List.append_assoc]
+  grind [bdPath_add_two]
 
 theorem bcl_succ (n : ℕ) (hn : n < q) :
     bcl q (n + 1) = bcl q n * (gGen q (n, false) * gGen q (n, true)
@@ -245,26 +178,19 @@ theorem bcl_succ (n : ℕ) (hn : n < q) :
   have h2 : (8 * n + 2) % 2 = 0 := by omega
   have h4 : (8 * n + 4) % 2 = 0 := by omega
   have h6 : (8 * n + 6) % 2 = 0 := by omega
-  -- the four sides of the block
-  have e4 : gcl q h4 = (gcl q h0)⁻¹ := gcl_inv q h0 h4 (gPath_rev_a q hn)
-  have e6 : gcl q h6 = (gcl q h2)⁻¹ := gcl_inv q h2 h6 (gPath_rev_b q hn)
-  have eF : gGen q (n, false) = gcl q h0 := gcl_congr q _ _ (by norm_num)
-  have eT : gGen q (n, true) = gcl q h2 := gcl_congr q _ _ (by norm_num)
-  -- the class of the block is the commutator
-  have hblock : Pi1.mk (⟨gBlock q n, ((((isPath_gPath q h0).append (isPath_gPath q h2)).append
-        (isPath_gPath q h4)).append (isPath_gPath q h6))⟩ : Loop (sdCx (gc q)) (gBase q))
-      = gcl q h0 * gcl q h2 * gcl q h4 * gcl q h6 := by
-    rw [gcl, gcl, gcl, gcl]
-    rw [pi1_mk_append (((isPath_gPath q h0).append (isPath_gPath q h2)).append
-      (isPath_gPath q h4)) (isPath_gPath q h6)]
-    rw [pi1_mk_append ((isPath_gPath q h0).append (isPath_gPath q h2)) (isPath_gPath q h4)]
-    rw [pi1_mk_append (isPath_gPath q h0) (isPath_gPath q h2)]
-  rw [bcl, bcl]
-  rw [pi1_mk_congr (isPath_bdPath8 q (n + 1))
-    (((isPath_bdPath8 q n).append ((((isPath_gPath q h0).append (isPath_gPath q h2)).append
-      (isPath_gPath q h4)).append (isPath_gPath q h6)))) (bdPath_block q n)]
-  rw [pi1_mk_append (isPath_bdPath8 q n) ((((isPath_gPath q h0).append (isPath_gPath q h2)).append
-      (isPath_gPath q h4)).append (isPath_gPath q h6)), hblock, eF, eT, e4, e6]
+  have p0 := isPath_gPath q h0
+  have p2 := isPath_gPath q h2
+  have p4 := isPath_gPath q h4
+  have p6 := isPath_gPath q h6
+  have hp := (((p0.append p2).append p4).append p6)
+  have e4 := gcl_inv q h0 h4 (gPath_rev_a q hn)
+  have e6 := gcl_inv q h2 h6 (gPath_rev_b q hn)
+  rw [bcl, bcl, pi1_mk_congr _ ((isPath_bdPath8 q n).append hp) (bdPath_block q n),
+    pi1_mk_append (isPath_bdPath8 q n) hp, pi1_mk_append ((p0.append p2).append p4) p6,
+    pi1_mk_append (p0.append p2) p4, pi1_mk_append p0 p2]
+  change _ * (gcl q h0 * gcl q h2 * gcl q h4 * gcl q h6) = _
+  rw [e4, e6]
+  rfl
 
 /-- **The class of the first `n` blocks of the boundary is the product of the first `n`
 commutators.** -/
@@ -308,13 +234,13 @@ theorem genus_hfilling :
     commWord (fun x => Pi1.mk (⟨gSig q x, isPath_gSig q x⟩ : Loop (sdCx (gc q)) (gBase q)))
       (genPairs q) = 1 := by
   have hstep : ∀ p ∈ genPairs q,
-      Pi1.mk (⟨gSig q p.1, isPath_gSig q p.1⟩ : Loop (sdCx (gc q)) (gBase q)) = gGen q p.1 ∧
-      Pi1.mk (⟨gSig q p.2, isPath_gSig q p.2⟩ : Loop (sdCx (gc q)) (gBase q)) = gGen q p.2 := by
+      Pi1.mk ⟨gSig q p.1, isPath_gSig q p.1⟩ = gGen q p.1 ∧
+      Pi1.mk ⟨gSig q p.2, isPath_gSig q p.2⟩ = gGen q p.2 := by
     intro p hp
     simp only [genPairs, List.mem_map, List.mem_range] at hp
     obtain ⟨h, hh, rfl⟩ := hp
-    have hmod : h % q = h := Nat.mod_eq_of_lt hh
-    exact ⟨cls_gSig q (by exact hh), cls_gSig q (by exact hh)⟩
+    have hmod  := Nat.mod_eq_of_lt hh
+    exact ⟨cls_gSig q hh, cls_gSig q hh⟩
   rw [commWord_congr_on hstep, ← bcl_eq_commWord q (le_refl q), bcl]
   exact pi1_mk_eq_one _ (htpy_bdLoop_nil (gc q))
 

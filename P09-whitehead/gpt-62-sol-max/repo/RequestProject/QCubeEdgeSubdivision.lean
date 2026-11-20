@@ -8,9 +8,7 @@ public import RequestProject.StrictOrderChains
 /-! Actual oriented edge subdivisions of quotient cubes. -/
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -57,7 +55,7 @@ theorem cubeEdgeSubdivision_boundary (c : QCube A) (v : V) (hv : v ∈ c.spx) :
 theorem cubeEndpoints_ne (c : QCube A) (v : V) (hv : v ∈ c.spx) :
     cubeNegativeVertex c v ≠ cubePositiveVertex c := by
   intro h
-  have he := congrArg (fun d : QCube A => d.sgn v) h
+  have he := congrArg (fun d  => d.sgn v) h
   have hv0 := c.sgn_eq_zero v hv
   simp [cubeNegativeVertex, cubePositiveVertex, hv0] at he
 
@@ -77,8 +75,8 @@ theorem cubeEdgeSubdivision_ne_zero (c : QCube A) (v : V) (hv : v ∈ c.spx) :
   intro h
   have hb := congrArg (Comb.bdry1 (strictOrderCx (QCube A))) h
   rw [cubeEdgeSubdivision_boundary, map_zero] at hb
-  have he := congrArg (fun z : QCube A →₀ ℤ => z (cubePositiveVertex c)) hb
-  simp [cubeEndpoints_ne c v hv, Ne.symm (cubeEndpoints_ne c v hv)] at he
+  have he := congrArg (fun z  => z (cubePositiveVertex c)) hb
+  simp [Ne.symm (cubeEndpoints_ne c v hv)] at he
 
 theorem cubeEdgeSubdivision_filter_tgt (d c : QCube A) (v : V) (hv : v ∈ d.spx) :
     (cubeEdgeSubdivision d v hv).filter

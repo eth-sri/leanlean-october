@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.GenusSpineOriginAvoidance
+public import RequestProject.GenusSpineFullCubeDimension
 public import RequestProject.QCubePositiveSquareCoefficients
 public import RequestProject.GenusOldCubicalBoundaryRecovery
 
@@ -17,7 +17,7 @@ theorem markedSpineCycle_positive_square_zero (d : (markedSpineCx q).F →₀ �
     qSquareCycleCoefficients (normalizeOrdChain2 (chain2 (markedSpineToFullCube q) d)) s = 0 := by
   have hcycle : Comb.bdry2 (orderCx (QCube (cmpRel (GenusVertex q))))
       (chain2 (markedSpineToFullCube q) d) = 0 := by
-    rw [bdry2_chain2, hd, map_zero]
+    exact chain2_cycle _ hd
   exact qSquareCycleCoefficients_positive_zero _
     (markedSpineToFullCube_normalized_dimension q d)
     (normalizeOrdChain2_cycle _ hcycle)

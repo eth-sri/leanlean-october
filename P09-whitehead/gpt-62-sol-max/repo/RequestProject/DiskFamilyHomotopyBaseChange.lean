@@ -14,8 +14,6 @@ All extension inputs are discharged by the explicit ball/cylinder maps.
 The forward map retains the disk labels and is the given map on old points. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
@@ -25,7 +23,7 @@ universe u
 variable (J E : Type u) [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 def diskFamilyBoundarySet : Set (DiskFamily J E) :=
-  SigmaSubspace (fun _ : J => {d : ClosedUnitBall E | ‖d.val‖ = 1})
+  SigmaSubspace (fun _  => {d : ClosedUnitBall E | ‖d.val‖ = 1})
 
 omit [NormedSpace ℝ E] in
 theorem diskFamilyBoundarySet_isClosed : IsClosed (diskFamilyBoundarySet J E) :=
@@ -42,28 +40,25 @@ def diskFamilyBoundaryHomeomorph : BoundaryFamily J E ≃ₜ diskFamilyBoundaryS
   (boundaryFamilyInclusion_isClosedEmbedding J E).isEmbedding.toHomeomorph.trans
     (Homeomorph.setCongr (boundaryFamilyInclusion_range_eq J E))
 
-omit [NormedSpace ℝ E] in
-@[simp] theorem diskFamilyBoundaryHomeomorph_val (a : BoundaryFamily J E) :
-    (diskFamilyBoundaryHomeomorph J E a).val = boundaryFamilyInclusion J E a := rfl
 
 variable {J E}
 variable {P K : Type u} [TopologicalSpace P] [TopologicalSpace K]
+
+def diskAttachmentReparam (r : C(BoundaryFamily J E, P)) :=
+  attachmentBoundaryReparam r (boundaryFamilyInclusion J E)
+    (boundaryFamilyInclusion_isClosedEmbedding J E).injective
+    (diskFamilyBoundarySet J E) (diskFamilyBoundaryHomeomorph J E) (fun _ => rfl)
 
 /-- The actual homotopy equivalence after attaching an arbitrary family
 of disks along a homotopy equivalence of the old spaces. -/
 def diskAttachmentBaseChangeHomotopyEquiv (r : C(BoundaryFamily J E, P))
     (e : ContinuousMap.HomotopyEquiv P K) :
     ContinuousMap.HomotopyEquiv (DiskAttachment r) (DiskAttachment (e.toFun ∘ r)) := by
-  let S := diskFamilyBoundarySet J E
-  let b := diskFamilyBoundaryHomeomorph J E
-  have hb : ∀ a, (b a).val = boundaryFamilyInclusion J E a := fun _ => rfl
-  have hi := (boundaryFamilyInclusion_isClosedEmbedding J E).injective
-  let R₀ := attachmentBoundaryReparam r (boundaryFamilyInclusion J E) hi S b hb
-  let R₁ := attachmentBoundaryReparam (e.toFun ∘ r) (boundaryFamilyInclusion J E) hi S b hb
-  let a : C(S, P) := r.comp b.symm.toContinuousMap
-  let H := attachmentBaseChangeHomotopyEquiv S (diskFamilyBoundarySet_isClosed J E)
-    (diskFamilySubspace_hasHomotopyExtension E J)
-    (diskFamilyFullCylinder_hasHomotopyExtension E J) a e
+  let R₀ := diskAttachmentReparam r
+  let R₁ := diskAttachmentReparam (e.toFun.comp r)
+  let H := attachmentBaseChangeHomotopyEquiv _ (diskFamilyBoundarySet_isClosed J E)
+    (diskFamilySubspace_hasHomotopyExtension E J) (diskFamilyFullCylinder_hasHomotopyExtension E J)
+    (r.comp (diskFamilyBoundaryHomeomorph J E).symm.toContinuousMap) e
   exact (R₀.toHomotopyEquiv.trans H).trans R₁.symm.toHomotopyEquiv
 
 @[simp] theorem diskAttachmentBaseChangeHomotopyEquiv_old
@@ -76,47 +71,31 @@ def diskAttachmentBaseChangeHomotopyEquiv (r : C(BoundaryFamily J E, P))
     (d : DiskFamily J E) :
     diskAttachmentBaseChangeHomotopyEquiv r e (cell r (boundaryFamilyInclusion J E) d) =
       cell (e.toFun ∘ r) (boundaryFamilyInclusion J E) d := by
-  simp only [diskAttachmentBaseChangeHomotopyEquiv, ContinuousMap.HomotopyEquiv.trans,
-    ContinuousMap.comp_apply, ContinuousMap.coe_coe,
+  simp only [diskAttachmentBaseChangeHomotopyEquiv, diskAttachmentReparam,
+    ContinuousMap.HomotopyEquiv.trans, ContinuousMap.comp_apply, ContinuousMap.coe_coe,
     Homeomorph.toHomotopyEquiv, attachmentBoundaryReparam_cell,
     attachmentBaseChangeHomotopyEquiv_toFun]
-  let R := attachmentBoundaryReparam (e.toFun ∘ r) (boundaryFamilyInclusion J E)
-    (boundaryFamilyInclusion_isClosedEmbedding J E).injective
-    (diskFamilyBoundarySet J E) (diskFamilyBoundaryHomeomorph J E) (fun _ => rfl)
-  exact (congrArg R.symm
-    (attachmentBaseMap_cell (r.comp (diskFamilyBoundaryHomeomorph J E).symm.toContinuousMap)
-      Subtype.val Subtype.val_injective e.toFun d)).trans
-    (attachmentBoundaryReparam_symm_cell (e.toFun ∘ r) (boundaryFamilyInclusion J E)
-      (boundaryFamilyInclusion_isClosedEmbedding J E).injective
-      (diskFamilyBoundarySet J E) (diskFamilyBoundaryHomeomorph J E) (fun _ => rfl) d)
+  erw [attachmentBaseMap_cell, attachmentBoundaryReparam_symm_cell]
+  rfl
 
 /-- Moving all attaching maps through specified homotopies gives an actual
 equivalence which is the identity on the old space. This permits cellular
 representatives to be chosen after changing the base. -/
 def diskAttachingHomotopyEquiv (r₀ r₁ : C(BoundaryFamily J E, P))
     (H : r₀.Homotopy r₁) :
-    ContinuousMap.HomotopyEquiv (DiskAttachment r₀) (DiskAttachment r₁) := by
-  let S := diskFamilyBoundarySet J E
-  let b := diskFamilyBoundaryHomeomorph J E
-  have hb : ∀ a, (b a).val = boundaryFamilyInclusion J E a := fun _ => rfl
-  have hi := (boundaryFamilyInclusion_isClosedEmbedding J E).injective
-  let R₀ := attachmentBoundaryReparam r₀ (boundaryFamilyInclusion J E) hi S b hb
-  let R₁ := attachmentBoundaryReparam r₁ (boundaryFamilyInclusion J E) hi S b hb
-  let E' := attachingHomotopyEquiv S (diskFamilyBoundarySet_isClosed J E)
-    (diskFamilySubspace_hasHomotopyExtension E J)
-    (diskFamilyFullCylinder_hasHomotopyExtension E J)
-    (r₀.comp b.symm.toContinuousMap) (r₁.comp b.symm.toContinuousMap)
-    (H.compContinuousMap b.symm.toContinuousMap)
-  exact (R₀.toHomotopyEquiv.trans E').trans R₁.symm.toHomotopyEquiv
+    ContinuousMap.HomotopyEquiv (DiskAttachment r₀) (DiskAttachment r₁) :=
+  let b := (diskFamilyBoundaryHomeomorph J E).symm.toContinuousMap
+  ((diskAttachmentReparam r₀).toHomotopyEquiv.trans
+    (attachingHomotopyEquiv _ (diskFamilyBoundarySet_isClosed J E)
+      (diskFamilySubspace_hasHomotopyExtension E J) (diskFamilyFullCylinder_hasHomotopyExtension E J)
+      (r₀.comp b) (r₁.comp b) (H.compContinuousMap b))).trans
+    (diskAttachmentReparam r₁).symm.toHomotopyEquiv
 
-@[simp] theorem diskAttachingHomotopyEquiv_old (r₀ r₁ : C(BoundaryFamily J E, P))
-    (H : r₀.Homotopy r₁) (p : P) :
-    diskAttachingHomotopyEquiv r₀ r₁ H (old r₀ (boundaryFamilyInclusion J E) p) =
-      old r₁ (boundaryFamilyInclusion J E) p := rfl
+
 
 end FiniteChains.RelativeAttachment
 
-namespace Whitehead
-open FiniteChains.RelativeAttachment
 
-end Whitehead
+
+
+

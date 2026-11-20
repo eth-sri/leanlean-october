@@ -1,13 +1,11 @@
 module
 
 public import RequestProject.QCubeThreeCoordinateIncidence
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
 /-! Genuine finite truncated cube boundaries, including their cut-face coefficients. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -71,10 +69,10 @@ theorem qThreeCubeTruncatedCoordinateBoundary (c : QThreeCube A) :
 
 noncomputable def qThreeTruncatedCoordinateBoundary : (QThreeCube A →₀ ℤ) →ₗ[ℤ]
     ((Cube V ⊕ Finset V) →₀ ℤ) :=
-  Finsupp.linearCombination ℤ (fun c : QThreeCube A => qCubeTruncatedCoordinateBoundary c.1)
+  Finsupp.linearCombination ℤ (fun c  => qCubeTruncatedCoordinateBoundary c.1)
 
 noncomputable def qThreeCutFaceChain : (QThreeCube A →₀ ℤ) →ₗ[ℤ] (Finset V →₀ ℤ) :=
-  Finsupp.linearCombination ℤ (fun c : QThreeCube A =>
+  Finsupp.linearCombination ℤ (fun c  =>
     if c.1.sgn = 0 then Finsupp.single c.1.spx 1 else 0)
 
 /-- The finite truncated three-boundary is its proved ordinary coordinate boundary
@@ -85,17 +83,13 @@ theorem qThreeTruncatedCoordinateBoundary_split (r : QThreeCube A →₀ ℤ) :
         (Finsupp.linearCombination ℤ (fun c : QThreeCube A => qCubeCoordinateFacetChain c.1) r) -
       Finsupp.lmapDomain ℤ ℤ Sum.inr (qThreeCutFaceChain r) := by
   classical
-  induction r using Finsupp.induction_linear with
-  | zero => simp
-  | add r s hr hs =>
-      simp only [map_add, hr, hs]
-      abel
-  | single c n =>
-      rw [qThreeTruncatedCoordinateBoundary, Finsupp.linearCombination_single,
-        qThreeCubeTruncatedCoordinateBoundary, smul_sub,
-        Finsupp.linearCombination_single, map_smul,
-        qThreeCutFaceChain, Finsupp.linearCombination_single, map_smul]
-      by_cases hsgn : c.1.sgn = 0 <;>
-        simp [hsgn, Finsupp.lmapDomain_apply]
+  finsupp_basis r
+  intro c
+  rw [qThreeTruncatedCoordinateBoundary, Finsupp.linearCombination_single,
+    qThreeCubeTruncatedCoordinateBoundary, smul_sub,
+    Finsupp.linearCombination_single, map_smul,
+    qThreeCutFaceChain, Finsupp.linearCombination_single, map_smul]
+  by_cases hsgn : c.1.sgn = 0 <;>
+    simp [hsgn, Finsupp.lmapDomain_apply]
 
 end FiniteChains.Davis

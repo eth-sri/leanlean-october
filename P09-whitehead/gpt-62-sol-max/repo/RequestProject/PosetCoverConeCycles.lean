@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.OrderComparableCollapse
-public import RequestProject.OrderComparableEdgeFan
+public import RequestProject.StrictOrderChains
 public import RequestProject.PosetCoverDownTransform
 
 @[expose] public section
@@ -16,8 +16,8 @@ theorem strict_twoCycle_cover_lower_cone (hf : IsPosetCover f) (b : Q)
     (hc : bdry2 (strictOrderCx P) c = 0) :
     ∃ y : StrictOrdTet P →₀ ℤ, strictOrdBoundary3 y = c := by
   let g := hf.downTransform (fun _ => b) hb
-  have hg : Monotone g := hf.downTransform_monotone _ (fun _ _ _ => le_refl _) hb
-  have hgle : ∀ x, g x ≤ x := hf.downTransform_le _ hb
+  have hg  := hf.downTransform_monotone _ (fun _ _ _ => le_refl _) hb
+  have hgle  := hf.downTransform_le _ hb
   have he : ∀ {v w : P}, v ≤ w → g v = g w := by
     intro v w hvw
     have hv := hf.downTransform_spec (fun _ => b) hb v

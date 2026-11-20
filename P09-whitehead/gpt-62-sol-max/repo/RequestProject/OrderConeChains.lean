@@ -6,9 +6,6 @@ public import RequestProject.OrderComplexGluing
 @[expose] public section
 
 /-! Explicit finite cellular cone fillings, rather than unspecified null-homotopy witnesses. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u

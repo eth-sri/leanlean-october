@@ -11,9 +11,7 @@ monotone-map naturality. Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open ContinuousEdgeWords CategoryTheory Simplicial
@@ -53,17 +51,9 @@ theorem comparablePath_homotopic_single {a b : P} (h : a ≤ b ∨ b ≤ a)
     funext t
     apply orderNerveRealizationCoordinates_injective P
     funext p
-    rw (config := { transparency := .default }) [orderNerveComparablePath_coordinates, affineGermPath_coordinates]
-  rw (config := { transparency := .default }) [he]
+    erw [orderNerveComparablePath_coordinates, affineGermPath_coordinates]
+  erw [he]
   exact (Path.Homotopic.trans_refl _).symm
-
-theorem affineWord_map_vertex {Q : Type} [PartialOrder Q]
-    (f : P → Q) (hf : Monotone f) (p : P) :
-    orderNerveRealizationMap f hf (orderNerveRealizationVertex p) =
-      orderNerveRealizationVertex (f p) := by
-  exact congrArg (fun k : TopCat.of (SimplexCategory.toTop.obj ⦋0⦌) ⟶
-      orderNerveRealization Q => k default)
-    (orderNerveRealizationSimplex_natural f hf (ComposableArrows.mk₀ p))
 
 theorem affineGermPath_map {Q : Type} [PartialOrder Q]
     (f : P → Q) (hf : Monotone f) (g : (orderCx P).E × Bool) (t : I) :
@@ -95,7 +85,7 @@ theorem affineOrderWordPath_map {Q : Type} [PartialOrder Q]
   induction l generalizing a t with
   | nil =>
     cases hl
-    exact affineWord_map_vertex f hf b
+    exact orderNerveRealizationMap_vertex f hf b
   | cons g l ih =>
     obtain ⟨rfl, ht⟩ := hl
     simp only [affineOrderWordPath, realize, mapPath, List.map_cons, Path.trans_apply, Path.cast_coe]
@@ -103,6 +93,6 @@ theorem affineOrderWordPath_map {Q : Type} [PartialOrder Q]
     · exact affineGermPath_map f hf g _
     · rcases g with ⟨e, direction⟩
       cases direction <;> simpa only [affineOrderWordPath, mapPath] using
-        ih ht ⟨2 * (t : ℝ) - 1, by constructor <;> linarith [t.property.1, t.property.2]⟩
+        ih ht ⟨2 * t - 1, by constructor <;> linarith [t.property.1, t.property.2]⟩
 
 end FiniteChains.Comb

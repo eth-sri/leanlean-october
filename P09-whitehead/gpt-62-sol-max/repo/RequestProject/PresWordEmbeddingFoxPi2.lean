@@ -8,9 +8,6 @@ public import RequestProject.OrderNormalizationHomotopy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
@@ -29,33 +26,33 @@ theorem killsPi2_iff_strict_cycles_zero :
       ∀ c : StrictOrdTri (UOrder (PresPos w) (ptBase w)) →₀ ℤ,
         Comb.bdry2 (strictOrderCx (UOrder (PresPos w) (ptBase w))) c = 0 →
           chain2 (strictOrderCxMap h.universalMap h.universalMap_strictMono) c = 0 := by
-  rw (config := { transparency := .default }) [killsPi2_orderRealization_iff_universal_cycles_bound h.posMap h.posMap.monotone (ptBase w)
+  erw [killsPi2_orderRealization_iff_universal_cycles_bound h.posMap h.posMap.monotone (ptBase w)
     (presPos_isConnected w (fun j => List.length_pos_iff.mp (hw j)))
     (presPos_isConnected v (fun j => List.length_pos_iff.mp (hv j)))]
   constructor
   · intro hz c hc
     have hi : Comb.bdry2 (orderCx (UOrder (PresPos w) (ptBase w)))
         (chain2 (strictOrderIncl _) c) = 0 := by
-      rw (config := { transparency := .default }) [bdry2_chain2, hc, map_zero]
+      exact chain2_cycle _ hc
     obtain ⟨b, hb⟩ := hz (chain2 (strictOrderIncl _) c) hi
     have he := congrArg normalizeOrdChain2 hb
     change normalizeOrdChain2 (ordBoundary3 b) =
       normalizeOrdChain2 (chain2 (orderCxMap h.universalMap h.universalMap_strictMono.monotone)
         (chain2 (strictOrderIncl _) c)) at he
-    have hn : normalizeOrdChain2 (chain2 (strictOrderIncl _) c) = c :=
+    have hn  :=
       normalizeOrdChain2_inclusion c
-    rw (config := { transparency := .default }) [presPos_cover_normalized_three_boundary_zero,
+    erw [presPos_cover_normalized_three_boundary_zero,
       normalizeOrdChain2_strict_map h.universalMap h.universalMap_strictMono, hn] at he
     exact he.symm
   · intro hz c hc
     let d := chain2 (orderCxMap h.universalMap h.universalMap.monotone) c
     have hd : Comb.bdry2 (orderCx (UOrder (PresPos v) (ptBase v))) d = 0 := by
-      rw (config := { transparency := .default }) [bdry2_chain2, hc, map_zero]
+      exact chain2_cycle _ hc
     have hn : normalizeOrdChain2 d = 0 := by
-      rw (config := { transparency := .default }) [normalizeOrdChain2_strict_map h.universalMap h.universalMap_strictMono]
+      erw [normalizeOrdChain2_strict_map h.universalMap h.universalMap_strictMono]
       exact hz _ (normalizeOrdChain2_cycle c hc)
     have he := ordNormalization_cycle_boundary d hd
-    rw (config := { transparency := .default }) [hn, map_zero, sub_zero] at he
+    erw [hn, map_zero, sub_zero] at he
     exact ⟨ordNormalizationHomotopy2 d, he.symm⟩
 
 variable [DecidableEq α]
@@ -70,7 +67,7 @@ theorem foxCycle_coordinates
       presUniversalRelatorGroupChainEquiv ρ w hwm hw
         (presCoverRelatorChain w uOrderEnd (presUniversalEnd_isPosetCover w hw) hw c.val) := by
   change groupCellChainEquiv.symm (groupCellChainEquiv _) = _
-  rw (config := { transparency := .default }) [LinearEquiv.symm_apply_apply]
+  erw [LinearEquiv.symm_apply_apply]
   rfl
 
 include hw hv in
@@ -85,14 +82,14 @@ theorem strict_cycles_zero_iff_fox :
   constructor
   · intro hz z
     obtain ⟨c, rfl⟩ := (presUniversalTwoCycleFoxKernelEquiv ρ w hwm hw).surjective z
-    rw (config := { transparency := .default }) [foxCycle_coordinates hw ρ hwm c,
+    erw [foxCycle_coordinates hw ρ hwm c,
       ← h.universalRelatorChain_group_map ρ σ hwm hvm hw hv,
       hz c.val c.property, map_zero, map_zero]
   · intro hz c hc
     apply presCoverRelatorChain_cycle_injective v uOrderEnd (presUniversalEnd_isPosetCover v hv)
-      hv _ 0 (by rw (config := { transparency := .default }) [bdry2_chain2, hc, map_zero]) (map_zero _) _
+      hv _ 0 (by exact chain2_cycle _ hc) (map_zero _) _
     apply (presUniversalRelatorGroupChainEquiv σ v hvm hv).injective
-    rw (config := { transparency := .default }) [map_zero, map_zero, h.universalRelatorChain_group_map]
+    erw [map_zero, map_zero, h.universalRelatorChain_group_map]
     have he := hz (presUniversalTwoCycleFoxKernelEquiv ρ w hwm hw ⟨c, hc⟩)
     rwa [foxCycle_coordinates hw ρ hwm] at he
 

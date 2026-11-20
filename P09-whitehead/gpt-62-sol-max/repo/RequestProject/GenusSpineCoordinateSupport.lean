@@ -6,9 +6,6 @@ public import RequestProject.GenusOldCoordinateCollapse
 @[expose] public section
 
 /-! Actual recovered coordinate chains are supported on the surviving genus spine. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -21,7 +18,7 @@ noncomputable def markedSpineSquareCoefficients : ((markedSpineCx q).F →₀ �
 noncomputable def markedSpineCoordinateChain : ((markedSpineCx q).F →₀ ℤ) →ₗ[ℤ]
     (Cube (GenusVertex q) →₀ ℤ) :=
   (Finsupp.lmapDomain ℤ ℤ
-    (fun s : QSquare (cmpRel (GenusVertex q)) => qCubeToCoordinate s.1)).comp
+    (fun s  => qCubeToCoordinate s.1)).comp
       (markedSpineSquareCoefficients q)
 
 noncomputable def markedSpineExtendedCoordinateChain : ((markedSpineCx q).F →₀ ℤ) →ₗ[ℤ]
@@ -54,7 +51,7 @@ theorem markedSpineExtendedCoordinateChain_zero_on_removed_face
   cases f with
   | inl g =>
       change Finsupp.mapDomain
-        (Sum.inl : Cube (GenusVertex q) → Cube (GenusVertex q) ⊕ Finset (GenusVertex q))
+        Sum.inl
         (markedSpineCoordinateChain q d) (Sum.inl g) = 0
       rw [Finsupp.mapDomain_apply_of_injective Sum.inl_injective]
       exact markedSpineCoordinateChain_zero_on_removed_square q d g hf

@@ -19,98 +19,48 @@ def vertexIntersectionPoint (i : Fin 7) : VertexIntersection :=
 theorem vertexIntersectionPoint_injective : Function.Injective vertexIntersectionPoint := by
   have hi : Function.Injective vertexIntersectionCoordinates := by decide
   intro i j h
-  exact hi (congrArg (fun c : VertexIntersection => c.1.1) h)
+  exact hi (congrArg (·.1.1) h)
 
 theorem vertexIntersectionPoint_surjective : Function.Surjective vertexIntersectionPoint := by
   intro c
   obtain ⟨i, hi⟩ := vertexIntersection_classify c.1 c.2
   exact ⟨i, Subtype.ext hi.symm⟩
 
-noncomputable def vertexIntersectionIndex (c : VertexIntersection) : Fin 7 :=
-  Classical.choose (vertexIntersectionPoint_surjective c)
+noncomputable def vertexIntersectionEquiv : Fin 7 ≃ VertexIntersection :=
+  Equiv.ofBijective vertexIntersectionPoint ⟨vertexIntersectionPoint_injective, vertexIntersectionPoint_surjective⟩
 
-theorem vertexIntersectionPoint_index (c : VertexIntersection) :
-    vertexIntersectionPoint (vertexIntersectionIndex c) = c :=
-  Classical.choose_spec (vertexIntersectionPoint_surjective c)
+private def lower : Fin 7 → Fin 7 := ![0, 1, 2, 3, 4, 3, 2]
+private def upper : Fin 7 → Fin 7 := ![0, 1, 1, 4, 4, 4, 1]
 
-@[simp] theorem vertexIntersectionIndex_point (i : Fin 7) :
-    vertexIntersectionIndex (vertexIntersectionPoint i) = i :=
-  vertexIntersectionPoint_injective (vertexIntersectionPoint_index (vertexIntersectionPoint i))
+private noncomputable def move (f : Fin 7 → Fin 7) : VertexIntersection → VertexIntersection :=
+  vertexIntersectionEquiv ∘ f ∘ vertexIntersectionEquiv.symm
 
-def vertexIntersectionLowerIndex : Fin 7 → Fin 7 := ![0, 1, 2, 3, 4, 3, 2]
-def vertexIntersectionUpperIndex : Fin 7 → Fin 7 := ![0, 1, 1, 4, 4, 4, 1]
+@[simp] private theorem move_point (f : Fin 7 → Fin 7) (i : Fin 7) :
+    move f (vertexIntersectionEquiv i) = vertexIntersectionEquiv (f i) := by simp [move]
 
-noncomputable def vertexIntersectionLower (c : VertexIntersection) : VertexIntersection :=
-  vertexIntersectionPoint (vertexIntersectionLowerIndex (vertexIntersectionIndex c))
+private theorem move_monotone {f : Fin 7 → Fin 7}
+    (h : ∀ i j, CoordinateFace (vertexIntersectionCoordinates i) (vertexIntersectionCoordinates j) →
+      CoordinateFace (vertexIntersectionCoordinates (f i)) (vertexIntersectionCoordinates (f j))) :
+    Monotone (move f) := by
+  intro a b hab
+  obtain ⟨i, rfl⟩ := vertexIntersectionEquiv.surjective a
+  obtain ⟨j, rfl⟩ := vertexIntersectionEquiv.surjective b
+  simpa only [move_point] using (show vertexIntersectionEquiv (f i) ≤ vertexIntersectionEquiv (f j) from h i j hab)
 
-noncomputable def vertexIntersectionUpper (c : VertexIntersection) : VertexIntersection :=
-  vertexIntersectionPoint (vertexIntersectionUpperIndex (vertexIntersectionIndex c))
-
-@[simp] theorem vertexIntersectionLower_point (i : Fin 7) :
-    vertexIntersectionLower (vertexIntersectionPoint i) =
-      vertexIntersectionPoint (vertexIntersectionLowerIndex i) := by
-  simp [vertexIntersectionLower]
-
-@[simp] theorem vertexIntersectionUpper_point (i : Fin 7) :
-    vertexIntersectionUpper (vertexIntersectionPoint i) =
-      vertexIntersectionPoint (vertexIntersectionUpperIndex i) := by
-  simp [vertexIntersectionUpper]
-
-theorem vertexIntersectionLower_monotone : Monotone vertexIntersectionLower := by
-  have h : ∀ i j : Fin 7,
-      CoordinateFace (vertexIntersectionCoordinates i) (vertexIntersectionCoordinates j) →
-      CoordinateFace (vertexIntersectionCoordinates (vertexIntersectionLowerIndex i))
-        (vertexIntersectionCoordinates (vertexIntersectionLowerIndex j)) := by unfold CoordinateFace; decide
-  intro c d hcd
-  obtain ⟨i, rfl⟩ := vertexIntersectionPoint_surjective c
-  obtain ⟨j, rfl⟩ := vertexIntersectionPoint_surjective d
-  rw [vertexIntersectionLower_point, vertexIntersectionLower_point]
-  exact h i j hcd
-
-theorem vertexIntersectionUpper_monotone : Monotone vertexIntersectionUpper := by
-  have h : ∀ i j : Fin 7,
-      CoordinateFace (vertexIntersectionCoordinates i) (vertexIntersectionCoordinates j) →
-      CoordinateFace (vertexIntersectionCoordinates (vertexIntersectionUpperIndex i))
-        (vertexIntersectionCoordinates (vertexIntersectionUpperIndex j)) := by unfold CoordinateFace; decide
-  intro c d hcd
-  obtain ⟨i, rfl⟩ := vertexIntersectionPoint_surjective c
-  obtain ⟨j, rfl⟩ := vertexIntersectionPoint_surjective d
-  rw [vertexIntersectionUpper_point, vertexIntersectionUpper_point]
-  exact h i j hcd
-
-theorem vertexIntersectionLower_le (c : VertexIntersection) : vertexIntersectionLower c ≤ c := by
-  have h : ∀ i : Fin 7, CoordinateFace
-      (vertexIntersectionCoordinates (vertexIntersectionLowerIndex i))
-      (vertexIntersectionCoordinates i) := by unfold CoordinateFace; decide
-  obtain ⟨i, rfl⟩ := vertexIntersectionPoint_surjective c
-  rw [vertexIntersectionLower_point]
-  exact h i
-
-theorem vertexIntersectionLower_le_upper (c : VertexIntersection) :
-    vertexIntersectionLower c ≤ vertexIntersectionUpper c := by
-  have h : ∀ i : Fin 7, CoordinateFace
-      (vertexIntersectionCoordinates (vertexIntersectionLowerIndex i))
-      (vertexIntersectionCoordinates (vertexIntersectionUpperIndex i)) := by unfold CoordinateFace; decide
-  obtain ⟨i, rfl⟩ := vertexIntersectionPoint_surjective c
-  rw [vertexIntersectionLower_point, vertexIntersectionUpper_point]
-  exact h i
-
-theorem vertexIntersectionPoint_zero_le_upper (c : VertexIntersection) :
-    vertexIntersectionPoint 0 ≤ vertexIntersectionUpper c := by
-  have h : ∀ i : Fin 7, CoordinateFace (vertexIntersectionCoordinates 0)
-      (vertexIntersectionCoordinates (vertexIntersectionUpperIndex i)) := by unfold CoordinateFace; decide
-  obtain ⟨i, rfl⟩ := vertexIntersectionPoint_surjective c
-  rw [vertexIntersectionUpper_point]
-  exact h i
+private theorem move_le {f g : Fin 7 → Fin 7}
+    (h : ∀ i, CoordinateFace (vertexIntersectionCoordinates (f i)) (vertexIntersectionCoordinates (g i))) :
+    move f ≤ move g := fun a => h (vertexIntersectionEquiv.symm a)
 
 /-- The actual intersection is acyclic in all augmented nerve degrees. -/
 theorem vertexPuncture_intersection_acyclic :
     AcyclicIn (fun c : VertexPuncturedCube => vertexPunctureLeft c ∧ vertexPunctureRight c) := by
-  apply acyclicIn_of_subtype _ ⟨vertexIntersectionCell 0, vertexIntersectionCell_mem 0⟩
-  intro c hc hcyc
-  exact exists_bdry_eq_of_cycle_threeLeg vertexIntersectionLower vertexIntersectionUpper
-    (vertexIntersectionPoint 0) vertexIntersectionLower_monotone vertexIntersectionUpper_monotone
-    vertexIntersectionLower_le vertexIntersectionLower_le_upper
-    vertexIntersectionPoint_zero_le_upper c hc hcyc
+  apply acyclicIn_of_subtype _
+  have hl : move lower ≤ move id := move_le (by unfold CoordinateFace; decide)
+  have h0 : move (fun _ => 0) ≤ move upper := move_le (by unfold CoordinateFace; decide)
+  have hid : move id = id := funext fun x => vertexIntersectionEquiv.apply_symm_apply x
+  rw [hid] at hl
+  exact exists_bdry_eq_of_cycle_threeLeg _ _ (vertexIntersectionEquiv 0)
+    (move_monotone (by unfold CoordinateFace; decide)) (move_monotone (by unfold CoordinateFace; decide))
+    (Or.inr hl) (Or.inl (move_le (by unfold CoordinateFace; decide))) (Or.inr h0)
 
 end FiniteChains.Davis

@@ -5,9 +5,6 @@ public import RequestProject.GenusCutCoefficientCycles
 @[expose] public section
 
 /-! The actual recovered ordinary old-spine coefficients vanish under the genus collapse. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -30,10 +27,9 @@ theorem genus_oldCoordinate_collapse_zero_of_boundary (d : (markedSpineCx q).F �
   let x := Finsupp.lmapDomain ℤ ℤ
     (Sum.inl : Cube (GenusVertex q) → Cube (GenusVertex q) ⊕ Finset (GenusVertex q))
     (Finsupp.linearCombination ℤ
-      (fun t : QThreeCube (cmpRel (GenusVertex q)) => qCubeCoordinateFacetChain t.1) r)
-  have hsplit : (qThreeTruncatedCoordinateBoundary r :
-      (Cube (GenusVertex q) ⊕ Finset (GenusVertex q)) → ℤ) =
-      (x : (Cube (GenusVertex q) ⊕ Finset (GenusVertex q)) → ℤ) +
+      (fun t  => qCubeCoordinateFacetChain t.1) r)
+  have hsplit : (qThreeTruncatedCoordinateBoundary r) =
+      x +
         Sum.elim (0 : Cube (GenusVertex q) → ℤ) (fun σ => -qThreeCutFaceChain r σ) := by
     funext f
     rw [qThreeTruncatedCoordinateBoundary_split, Finsupp.sub_apply]

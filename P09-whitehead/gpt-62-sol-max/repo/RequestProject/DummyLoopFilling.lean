@@ -45,10 +45,7 @@ def dummyLoopPointHomeomorph :
   pointAttachmentBaseChangeHomeomorph x (boundaryFamilyInclusion PUnit (Fin 1 → ℝ))
     (boundaryFamilyInclusion_isClosedEmbedding PUnit (Fin 1 → ℝ)).injective
 
-@[simp] theorem dummyLoopPointHomeomorph_old (y : X) :
-    dummyLoopPointHomeomorph x (pointOld x (roseVertex PUnit) y) =
-      old (dummyOneAttaching x) (boundaryFamilyInclusion PUnit (Fin 1 → ℝ)) y :=
-  pointAttachmentBaseChangeHomeomorph_old ..
+
 
 @[simp] theorem dummyLoopPointHomeomorph_cell (y : Rose PUnit) :
     dummyLoopPointHomeomorph x (pointCell x (roseVertex PUnit) y) = dummyLoopMap x y :=
@@ -65,39 +62,14 @@ def dummyPointFillingHomeomorph :
     (Equiv.refl _) (dummyLoopPointHomeomorph x) (Homeomorph.refl _)
     (fun a => dummyLoopPointHomeomorph_cell x (dummyCircleBoundaryHomeomorph a))
     (fun _ => rfl)
-    (fun _ _ h => Subtype.ext (congrArg (fun z : ClosedUnitBall (Fin 2 → ℝ) => z.val) h))
-    (fun _ _ h => Subtype.ext (congrArg (fun z : ClosedUnitBall (Fin 2 → ℝ) => z.val) h))
+    (fun _ _ h => Subtype.ext (congrArg (·.val) h))
+    (fun _ _ h => Subtype.ext (congrArg (·.val) h))
 
 def dummyLoopFillingHomotopyEquiv : ContinuousMap.HomotopyEquiv X (DummyLoopFilled x) :=
   ((pointBoundaryFillingHomotopyEquiv x (roseVertex PUnit) dummyCircleBoundaryHomeomorph).trans
     (dummyPointFillingHomeomorph x).toHomotopyEquiv).trans
       (singletonDiskAttachmentHomeomorph (dummyFillingBoundary x)).symm.toHomotopyEquiv
 
-def dummyLoopFillingOld : C(X, DummyLoopFilled x) :=
-  (⟨old (dummyTwoAttaching x) (boundaryFamilyInclusion PUnit (Fin 2 → ℝ)),
-    old_continuous _ _⟩ : C(DiskAttachment (dummyOneAttaching x), _)).comp
-      ⟨old (dummyOneAttaching x) (boundaryFamilyInclusion PUnit (Fin 1 → ℝ)), old_continuous _ _⟩
 
-theorem dummyLoopFillingHomotopyEquiv_apply (y : X) :
-    dummyLoopFillingHomotopyEquiv x y = dummyLoopFillingOld x y := by
-  change (singletonDiskAttachmentHomeomorph (dummyFillingBoundary x)).symm
-    (dummyPointFillingHomeomorph x
-      (pointBoundaryFillingHomotopyEquiv x (roseVertex PUnit) dummyCircleBoundaryHomeomorph y)) = _
-  rw [pointBoundaryFillingHomotopyEquiv_old]
-  change (singletonDiskAttachmentHomeomorph (dummyFillingBoundary x)).symm
-    (dummyPointFillingHomeomorph x
-      (old (pointFillAttaching x (roseVertex PUnit) dummyCircleBoundaryHomeomorph)
-        (unitBoundaryInclusion (Fin 2 → ℝ)) (pointOld x (roseVertex PUnit) y))) = _
-  rw [show dummyPointFillingHomeomorph x
-      (old (pointFillAttaching x (roseVertex PUnit) dummyCircleBoundaryHomeomorph)
-        (unitBoundaryInclusion (Fin 2 → ℝ)) (pointOld x (roseVertex PUnit) y)) =
-      old (dummyFillingBoundary x) (unitBoundaryInclusion (Fin 2 → ℝ))
-        (dummyLoopPointHomeomorph x (pointOld x (roseVertex PUnit) y)) from
-          attachmentDiagramHomeomorph_old ..]
-  rw [dummyLoopPointHomeomorph_old]
-  apply (singletonDiskAttachmentHomeomorph (dummyFillingBoundary x)).injective
-  rw [Homeomorph.apply_symm_apply]
-  exact (singletonDiskAttachmentHomeomorph_old (dummyFillingBoundary x)
-    (old (dummyOneAttaching x) (boundaryFamilyInclusion PUnit (Fin 1 → ℝ)) y)).symm
 
 end FiniteChains.ClassicalGraphModel

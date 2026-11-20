@@ -1,6 +1,10 @@
 module
 
-public import RequestProject.NecessityAlgebraic
+public import RequestProject.ChainFormula
+public import RequestProject.FinitelyDeterminedInf
+public import RequestProject.Pigeonhole
+public import RequestProject.CoverChainComplex
+public import RequestProject.FoxCommutator
 public import RequestProject.ChainFormulaMod
 public import RequestProject.FoxCommutatorMod
 public import RequestProject.FoxRequirementMod
@@ -95,9 +99,9 @@ theorem exists_perfect_normal_foxSatMod (hchains : HasCellChainsLift b)
           (fun N hNmem => (hC N hNmem).2))
       M hMnormal hM
   haveI := hNnormal
-  have hmod : ∀ p : ℕ, p.Prime → ∀ v : J →₀ MonoidAlgebra ℤ G, FoxSatMod p b v N :=
+  have hmod  :=
     fun p hp v => hN (v, ⟨p, Or.inr hp⟩)
-  have hint : ∀ v : J →₀ MonoidAlgebra ℤ G, FoxSat b v N :=
+  have hint  :=
     fun v => (foxSatMod_zero_iff b v N).1 (hN (v, ⟨0, Or.inl rfl⟩))
   haveI := htf N hmod
   -- Lemma 2.1: the requirements pass to the commutator subgroup
@@ -106,8 +110,8 @@ theorem exists_perfect_normal_foxSatMod (hchains : HasCellChainsLift b)
     rcases hm with rfl | hp
     · exact (foxSatMod_zero_iff b v ⁅N, N⁆).2 (foxSat_commutator b hcol N hint v)
     · haveI := Fact.mk hp
-      exact foxSatMod_commutator m b hcol N (fun w => hmod m hp w) v
-  have hcomm : (⁅N, N⁆ : Subgroup G).Normal := inferInstance
+      exact foxSatMod_commutator m b hcol N (hmod m hp) v
+  have hcomm : (⁅N, N⁆).Normal := inferInstance
   exact ⟨N, hNnormal, hmod, hint,
     hNmin ⁅N, N⁆ (Subgroup.commutator_le_left N N) hcomm hsatcomm⟩
 

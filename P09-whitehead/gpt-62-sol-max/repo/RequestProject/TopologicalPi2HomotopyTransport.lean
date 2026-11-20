@@ -10,9 +10,6 @@ homotopies and homotopy equivalences. Base points need not be fixed by the homot
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace Whitehead
 open scoped unitInterval Topology
@@ -29,7 +26,7 @@ theorem killsPi2_postcompose (f : C(X, Y)) (g : C(Y, Z)) (hf : KillsPi2 f) :
     KillsPi2 (g.comp f) := by
   intro x p
   have h := mapSquare_homotopic g (hf x p)
-  simpa only [mapSquare_const, ← mapSquare_comp] using h
+  tauto
 
 /-- An ordinary homotopy preserves the vanishing of the induced second homotopy map. -/
 theorem killsPi2_of_homotopic {f g : C(X, Y)} (hfg : f.Homotopic g)
@@ -37,14 +34,13 @@ theorem killsPi2_of_homotopic {f g : C(X, Y)} (hfg : f.Homotopic g)
   obtain ⟨H⟩ := hfg
   intro x p
   obtain ⟨G⟩ := hg x p
-  have hz₀ : (fun _ : Fin 2 => (0 : I)) ∈ Cube.boundary (Fin 2) := ⟨0, Or.inl rfl⟩
+  have hz₀ : (fun _  => 0) ∈ Cube.boundary (Fin 2) := ⟨0, Or.inl rfl⟩
   let F : ContinuousMap.HomotopyWith (mapSquare f p).val (mapSquare g p).val
       SquareConstantBoundary := {
     toHomotopy := H.compContinuousMap p.val
     prop' := by
       intro t z hz
-      change H (t, p z) = H (t, p (fun _ => 0))
-      rw [GenLoop.boundary p z hz, GenLoop.boundary p _ hz₀] }
+      simp_all [GenLoop.boundary p z hz, GenLoop.boundary p _ hz₀] }
   let G' : ContinuousMap.HomotopyWith (mapSquare g p).val
       (ContinuousMap.const _ (g x)) SquareConstantBoundary := {
     toHomotopy := G.toHomotopy
@@ -92,8 +88,6 @@ theorem killsPi2_homotopyEquiv_square_iff {X' Y' : Type}
     (f : C(X, Y)) (g : C(X', Y'))
     (h : (g.comp e.toFun).Homotopic (d.toFun.comp f)) :
     KillsPi2 g ↔ KillsPi2 f := by
-  rw [← killsPi2_homotopyEquiv_precomp_iff e g]
-  rw [killsPi2_homotopic_iff h]
-  exact killsPi2_homotopyEquiv_postcomp_iff d f
+  simpa [← killsPi2_homotopyEquiv_precomp_iff e g, killsPi2_homotopic_iff h] using killsPi2_homotopyEquiv_postcomp_iff d f
 
 end Whitehead

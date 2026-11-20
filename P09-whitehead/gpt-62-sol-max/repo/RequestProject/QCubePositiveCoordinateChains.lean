@@ -6,9 +6,6 @@ public import RequestProject.QCubePositiveSquareCoefficients
 @[expose] public section
 
 /-! Ordinary positive boundary coefficients detect the simplicial cut cycle. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb

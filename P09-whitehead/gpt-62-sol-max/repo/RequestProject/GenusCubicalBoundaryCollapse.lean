@@ -44,11 +44,11 @@ theorem genusSpineCellToOld_dimension_le_two (c : GenusSpineCell q) :
   | inl d =>
       have hd := c.2.1
       rw [hc] at hd
-      simpa [genusSpineCellToOld, truncatedCellRetraction, hc, truncatedCellDimension] using hd
+      simp_all [genusSpineCellToOld, truncatedCellRetraction, truncatedCellDimension]
   | inr σ =>
       have hσ := c.2
       rw [hc] at hσ
       have hcard := genusSpine_cut_card_le_two q σ hσ
-      simpa [genusSpineCellToOld, truncatedCellRetraction, hc, posQCube] using hcard
+      simp_all [genusSpineCellToOld, truncatedCellRetraction, posQCube]
 
 end FiniteChains.Davis.Genus

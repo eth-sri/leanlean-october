@@ -37,16 +37,8 @@ universe u
 
 variable {V : Type u} [DecidableEq V]
 
-/-- The simplices of `L` that meet `D`: the poset `𝒫_D` whose order complex is the union of the
-mirrors `F_s`, `s ∈ D`. -/
-def MeetPoset (L : Finset V → Prop) (D : Finset V) : Type u :=
-  {σ : Finset V // L σ ∧ (σ ∩ D).Nonempty}
 
-instance (L : Finset V → Prop) (D : Finset V) : PartialOrder (MeetPoset L D) :=
-  Subtype.partialOrder _
 
-@[simp] theorem MeetPoset.le_def {L : Finset V → Prop} {D : Finset V} (σ τ : MeetPoset L D) :
-    σ ≤ τ ↔ σ.1 ⊆ τ.1 := Iff.rfl
 
 /-! ### The union of mirrors is the order complex of `𝒫_D` -/
 
@@ -54,9 +46,6 @@ instance (L : Finset V → Prop) (D : Finset V) : PartialOrder (MeetPoset L D) :
 
 variable {L : Finset V → Prop} {D : Finset V}
 
-/-- The vertex `D` of the poset `𝒫_D`. -/
-def top (hLD : L D) (hD : D.Nonempty) : MeetPoset L D :=
-  ⟨D, hLD, by simpa using hD⟩
 
 /-! ### The descent set of an element of a right-angled Coxeter group -/
 
@@ -69,7 +58,7 @@ variable [Fintype V] (A : CommRel V)
 /-- The descent set `D(x) = {s : ℓ(xs) < ℓ(x)}` as a finite set of generators. -/
 noncomputable def rdescFinset (x : CayGroup A) : Finset V := by
   classical
-  exact Finset.univ.filter fun s => IsRDesc A x s
+  exact Finset.univ.filter (IsRDesc A x)
 
 theorem mem_rdescFinset {x : CayGroup A} {s : V} :
     s ∈ rdescFinset A x ↔ IsRDesc A x s := by

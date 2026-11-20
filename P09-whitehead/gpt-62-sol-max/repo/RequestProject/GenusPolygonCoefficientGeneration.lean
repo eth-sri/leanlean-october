@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.GenusPolygonCoefficientBoundaryBridge
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -10,8 +11,6 @@ satisfying the internal B2 equations. Written, unverified proof terms. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -36,12 +35,10 @@ theorem normalizedWeakChain1To_paths_boundary_support
   have hzero : normalizedWeakChain1To f hf
       (Finsupp.linearCombination ℤ (fun i => pathChain (p i)) c) e = 0 := by
     clear he
-    induction c using Finsupp.induction_linear with
-    | zero => simp
-    | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd, add_zero]
-    | single i n =>
-        simp only [Finsupp.linearCombination_single, map_smul, Finsupp.smul_apply,
-          hz, smul_zero]
+    finsupp_basis c
+    intro i
+    simp only [Finsupp.linearCombination_single, map_smul, Finsupp.smul_apply,
+      hz, smul_zero]
   exact Finsupp.mem_support_iff.mp he hzero
 
 end FiniteChains.Comb
@@ -64,10 +61,10 @@ theorem gSig_lastEndpoints_boundary (i : Fin q × Bool)
 
 variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (u : Fin q × Bool → FreeGroup α)
-  (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
+  (hrho : IsSpineRelator ρ q u)
 
 theorem namedAttachingMarkingPath_surface_boundary
-    (g : PresGroup (substPresF ρ (finiteSpineWordBlock q u))) (i : Fin q × Bool)
+    (g : SpineReplacementGroup ρ q u) (i : Fin q × Bool)
     (a : OrdEdge (namedAttachingCover q ρ u) × Bool)
     (ha : a ∈ namedAttachingMarkingPath q ρ u hrho g i) :
     InPolygonBoundary (gc q)
@@ -80,16 +77,15 @@ theorem namedAttachingMarkingPath_surface_boundary
   exact gSig_lastEndpoints_boundary q i _ hm
 
 theorem namedSurfaceMarkingChains_boundary_support
-    (b : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ) :
+    (b : (SpineReplacementGroup ρ q u × (Fin q × Bool)) →₀ ℤ) :
     ∀ e ∈ (normalizedWeakChain1To (namedSurfaceForward q ρ u)
         (namedSurfaceForward_monotone q ρ u) (namedAttachingMarkingChains q ρ u hrho b)).support,
       InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.1) ∧
-        InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.2) := by
-  exact normalizedWeakChain1To_paths_boundary_support
+        InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.2) := normalizedWeakChain1To_paths_boundary_support
     (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)
-    (fun p : NamedSurfaceCover ρ q u =>
+    (fun p  =>
       InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u p))
-    (fun x : PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool) =>
+    (fun x : SpineReplacementGroup ρ q u × (Fin q × Bool) =>
       namedAttachingMarkingPath q ρ u hrho x.1 x.2)
     (fun x a ha => namedAttachingMarkingPath_surface_boundary q ρ u hrho x.1 x.2 a ha) b
 
@@ -98,7 +94,7 @@ not an additional geometric assumption on the arbitrary B2 input chain. -/
 theorem namedAttachingNerveSurfaceChain_polygonRelative
     (c : Ch (namedAttachingCover q ρ u)) (hc : c ∈ Inc _)
     (hd : lengthProjection 3 c = c)
-    (b : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ)
+    (b : (SpineReplacementGroup ρ q u × (Fin q × Bool)) →₀ ℤ)
     (hb : Nerve.bdry c = namedAttachingNerveBoundary q ρ u hrho b) :
     PolygonRelativeChain (gc q) (namedSurfaceProjection ρ q u)
       (namedAttachingNerveSurfaceChain ρ q u c) := by
@@ -114,11 +110,8 @@ an arbitrary coefficient vector are the original internal B2 equations.
 Its attaching filling and old correction are provided by the proved cover
 filling theorem, and polygon relativity is derived from its marked boundary. -/
 theorem finiteSpine_polygon_reference_generates
-    (γ : NamedSpineRel q → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (finiteSpineWordBlock q u))))
-    (hγ : ∀ z : SpinePresentationGen q,
-      (∑ m, γ m * foxMatrixPres (substPresF ρ (finiteSpineWordBlock q u))
-        (Sum.inr ⟨PUnit.unit, z⟩) (Sum.inr ⟨PUnit.unit, m⟩)) = 0)
+    (γ : SpineCoefficients ρ q u)
+    (hγ : SpineInternalCycle ρ q u γ)
     (d : Ch (namedAttachingCover q ρ u)) (hd : d ∈ Inc _)
     (hddegree : lengthProjection 3 d = d)
     (yD : Ch (UOrder (namedQuotientPos ρ q u) (namedQuotientBase ρ q u)))
@@ -127,12 +120,9 @@ theorem finiteSpine_polygon_reference_generates
       cmap Subtype.val d + Nerve.bdry yD)
     (v : NamedPolygonPole ρ q u)
     (hreference : namedAttachingNerveSurfaceChain ρ q u d = namedPolygonFillingAt ρ q u v) :
-    ∀ (β : NamedSpineRel q → MonoidAlgebra ℤ
-        (PresGroup (substPresF ρ (finiteSpineWordBlock q u)))),
-      (∀ z : SpinePresentationGen q,
-        (∑ m, β m * foxMatrixPres (substPresF ρ (finiteSpineWordBlock q u))
-          (Sum.inr ⟨PUnit.unit, z⟩) (Sum.inr ⟨PUnit.unit, m⟩)) = 0) →
-      ∃ a : MonoidAlgebra ℤ (PresGroup (substPresF ρ (finiteSpineWordBlock q u))),
+    ∀ (β : SpineCoefficients ρ q u),
+      (SpineInternalCycle ρ q u β) →
+      ∃ a : MonoidAlgebra ℤ (SpineReplacementGroup ρ q u),
         ∀ m, β m = a * γ m := by
   intro β hβ
   obtain ⟨c, hc, hcdegree, hcb, yC, hyC, _hyCdegree, hC⟩ :=

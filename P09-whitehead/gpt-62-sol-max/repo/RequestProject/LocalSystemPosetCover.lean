@@ -9,9 +9,6 @@ The construction retains the whole fibre; no choice of group coordinates
 or covering classification theorem is needed. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.LocalSystem
 open CategoryTheory
@@ -28,9 +25,7 @@ instance coverPartialOrder : PartialOrder (Cover F) where
     obtain ⟨hyz, hfy⟩ := hyz
     refine ⟨hxy.trans hyz, ?_⟩
     have hh := ConcreteCategory.congr_hom (F.map_comp (homOfLE hxy) (homOfLE hyz)) x.2
-    change F.map (homOfLE (hxy.trans hyz)) x.2 =
-      F.map (homOfLE hyz) (F.map (homOfLE hxy) x.2) at hh
-    rw [hh, hfx, hfy]
+    simp_all
   le_antisymm x y hxy hyx := by
     rcases x with ⟨p, x⟩
     rcases y with ⟨q, y⟩
@@ -55,7 +50,7 @@ theorem projection_isPosetCover
     rintro ⟨r, y⟩ ⟨⟨hxy, hy⟩, hr⟩
     change r = q at hr
     subst r
-    exact congrArg (Sigma.mk q) hy.symm
+    tauto
   · intro x q hqx
     obtain ⟨v, hv⟩ := (hF hqx).2 x.2
     refine ⟨⟨q, v⟩, ⟨⟨hqx, hv⟩, rfl⟩, ?_⟩

@@ -7,8 +7,6 @@ public import RequestProject.Pi2GenerationDescent
 /-! Change the base vertex in an actual spherical generation statement.
 Both directions are genuine universal-cover path transports. Unverified source. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -46,10 +44,7 @@ theorem pi2FromSub_shift {L : Complex2.{u}} (f : Hom L X)
   · intro v
     change endV (shiftV hp (φ.onV v)) = _
     rw [endV_shiftV, hV]
-  · change Finsupp.mapDomain (shiftF hp) (Finsupp.mapDomain φ.onF z) =
-      Finsupp.mapDomain ((shiftHom hp).comp φ).onF z
-    rw [← Finsupp.mapDomain_comp]
-    rfl
+  simp_all [← Finsupp.mapDomain_comp] <;> abel
 
 theorem pi2Generated_changeBase {L : Complex2.{u}} (f : Hom L X)
     (hp : IsPath X.src X.tgt p x y)
@@ -57,7 +52,7 @@ theorem pi2Generated_changeBase {L : Complex2.{u}} (f : Hom L X)
     (c : UF X x →₀ ℤ) (hc : bdry2 (uCover X x) c = 0) :
     c ∈ Submodule.span ℤ (Pi2FromSub f x) := by
   let d := chain2 (shiftHom (isPath_revPath hp)) c
-  have hd : bdry2 (uCover X y) d = 0 := by rw [bdry2_chain2, hc, map_zero]
+  have hd : bdry2 (uCover X y) d = 0 := by exact chain2_cycle _ hc
   have hg := hgen d hd
   have hm : chain2 (shiftHom hp) d ∈ Submodule.span ℤ (Pi2FromSub f x) := by
     have hle : Submodule.span ℤ (Pi2FromSub f y) ≤
@@ -66,7 +61,7 @@ theorem pi2Generated_changeBase {L : Complex2.{u}} (f : Hom L X)
       intro z hz
       exact Submodule.subset_span (pi2FromSub_shift f hp hz)
     exact hle hg
-  rw [show chain2 (shiftHom hp) d = c from chain2_shift_reverse_cancel hp c] at hm
+  rw [chain2_shift_reverse_cancel hp c] at hm
   exact hm
 
 end FiniteChains.Comb

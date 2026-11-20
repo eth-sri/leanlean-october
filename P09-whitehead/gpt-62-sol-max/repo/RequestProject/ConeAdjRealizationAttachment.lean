@@ -14,8 +14,6 @@ The family can be infinite: the quotient argument uses the simplexwise
 weak topology, not a finite closed-cover assertion. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -38,9 +36,9 @@ def coneAdjBoundaryOrderIso (j : J) : ConeAdjBoundary S j ≃o StrictBelow (Cone
   invFun x := ⟨⟨x.val, x.property.le⟩, by
     rcases x with ⟨q, hq⟩
     cases q with
-    | inl p => exact ⟨p, rfl⟩
+    | inl p => tauto
     | inr k =>
-        have hk : k = j := hq.le
+        have hk  := hq.le
         subst k
         exact (lt_irrefl _ hq).elim⟩
   left_inv x := rfl
@@ -65,7 +63,7 @@ def coneAdjRealizationBoundary :
   ⟨fun z => ⟨z.1, orderNerveRealizationMap Subtype.val (fun _ _ h => h) z.2⟩,
     continuous_sigma (fun j => (continuous_sigmaMk
       (σ := fun k => orderNerveRealization (ConeAdjDisk S k)) (i := j)).comp
-      (orderNerveRealizationMap (Subtype.val : ConeAdjBoundary S j → ConeAdjDisk S j)
+      (orderNerveRealizationMap Subtype.val
         (fun _ _ h => h)).hom.continuous)⟩
 
 def coneAdjBoundaryToBase (j : J) : ConeAdjBoundary S j → ConeAdjBase S :=
@@ -114,7 +112,7 @@ theorem coneAdjRealizationBoundary_range (j : J)
     subst k
     exact ⟨z, eq_of_heq (Sigma.mk.inj h).2⟩
   · rintro ⟨z, rfl⟩
-    exact ⟨⟨j, z⟩, rfl⟩
+    tauto
 
 theorem coneAdjRealizationCell_boundary_iff
     (z : Σ j, orderNerveRealization (ConeAdjDisk S j)) :
@@ -128,8 +126,8 @@ theorem coneAdjRealizationCell_boundary_iff
 theorem coneAdj_disks_inter_subset_base {j k : J} (hjk : j ≠ k) :
     ConeAdjDisk S j ∩ ConeAdjDisk S k ⊆ ConeAdjBase S := by
   rintro (p | l) ⟨hj, hk⟩
-  · exact ⟨p, rfl⟩
-  · exact (hjk ((show l = j from hj).symm.trans (show l = k from hk))).elim
+  · tauto
+  · exact (hjk (hj.symm.trans hk)).elim
 
 theorem coneAdjRealizationCell_inter_base {j k : J} (hjk : j ≠ k)
     (x : orderNerveRealization (ConeAdjDisk S j))
@@ -142,13 +140,13 @@ theorem coneAdjRealizationCell_inter_base {j k : J} (hjk : j ≠ k)
     change _ ∈ (orderNerveRealizationSubcomplex (ConeAdj S) (ConeAdjDisk S j) :
       Set (orderNerveRealization (ConeAdj S)))
     rw [← orderNerveRealizationSubtype_range (ConeAdjDisk S j)]
-    exact ⟨x, rfl⟩
+    tauto
   have hy : coneAdjRealizationCell S ⟨j, x⟩ ∈
       orderNerveRealizationSupported (ConeAdj S) (ConeAdjDisk S k) := by
     change _ ∈ (orderNerveRealizationSubcomplex (ConeAdj S) (ConeAdjDisk S k) :
       Set (orderNerveRealization (ConeAdj S)))
     rw [h, ← orderNerveRealizationSubtype_range (ConeAdjDisk S k)]
-    exact ⟨y, rfl⟩
+    tauto
   intro p hp
   by_cases hpj : p ∈ ConeAdjDisk S j
   · apply hy p
@@ -166,7 +164,7 @@ theorem coneAdjRealizationCell_injective_off_boundary
   by_cases hjk : j = k
   · subst k
     exact congrArg (Sigma.mk j) (orderNerveRealizationMap_injective
-      (Subtype.val : ConeAdjDisk S j → ConeAdj S) (fun _ _ h => h)
+      Subtype.val (fun _ _ h => h)
       Subtype.val_injective he)
   · exact (hz ((coneAdjRealizationCell_boundary_iff S ⟨j, x⟩).mp
       (coneAdjRealizationCell_inter_base S hjk x y he))).elim
@@ -176,17 +174,16 @@ theorem coneAdj_simplex_in_piece (n : SimplexCategory)
     (s : (nerve (ConeAdj S)).obj (Opposite.op n)) :
     (∀ i, s.obj i ∈ ConeAdjBase S) ∨
       ∃ j, ∀ i, s.obj i ∈ ConeAdjDisk S j := by
-  have hlast (i : Fin (n.len + 1)) : s.obj i ≤ s.obj (Fin.last n.len) :=
+  have hlast (i : Fin (n.len + 1))  :=
     leOfHom (s.map (homOfLE (Fin.le_last i)))
   cases he : s.obj (Fin.last n.len) with
   | inl p =>
       exact Or.inl (fun i => coneAdjBaseSet_down_closed
-        (show s.obj (Fin.last n.len) ∈ ConeAdjBase S by rw [he]; exact ⟨p, rfl⟩)
+        (show s.obj (Fin.last n.len) ∈ ConeAdjBase S by tauto)
         (hlast i))
   | inr j =>
       exact Or.inr ⟨j, fun i => by
-        change s.obj i ≤ ConeAdj.apex j
-        simpa only [he, ConeAdj.apex] using hlast i⟩
+        aesop⟩
 
 theorem coneAdjRealization_piece_isQuotientMap :
     IsQuotientMap (Sum.elim (coneAdjRealizationOld S) (coneAdjRealizationCell S)) := by
@@ -210,10 +207,7 @@ theorem coneAdjRealization_piece_isQuotientMap :
       apply (orderNerveRealization_isClosed_iff (ConeAdj S) T).mpr
       intro n s
       rcases coneAdj_simplex_in_piece S n s with h | ⟨j, h⟩
-      · have hb := hT.preimage (continuous_inl : Continuous
-          (Sum.inl : orderNerveRealization (ConeAdjBase S) →
-            orderNerveRealization (ConeAdjBase S) ⊕
-              (Σ j, orderNerveRealization (ConeAdjDisk S j))))
+      · have hb := hT.preimage continuous_inl
         have ht := hb.preimage
           (orderNerveRealizationSimplex (ConeAdjBase S)
             (orderNerveSimplexSubtype (ConeAdjBase S) s h)).hom.continuous
@@ -221,10 +215,7 @@ theorem coneAdjRealization_piece_isQuotientMap :
         ext z
         exact iff_of_eq (congrArg (fun y => y ∈ T)
           (orderNerveRealizationSimplex_subtype (ConeAdjBase S) s h z).symm)
-      · have hc := hT.preimage ((continuous_inr : Continuous
-          (Sum.inr : (Σ j, orderNerveRealization (ConeAdjDisk S j)) →
-            orderNerveRealization (ConeAdjBase S) ⊕
-              (Σ j, orderNerveRealization (ConeAdjDisk S j)))).comp
+      · have hc := hT.preimage (continuous_inr.comp
           (continuous_sigmaMk (σ := fun k => orderNerveRealization (ConeAdjDisk S k)) (i := j)))
         have ht := hc.preimage
           (orderNerveRealizationSimplex (ConeAdjDisk S j)

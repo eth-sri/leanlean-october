@@ -7,9 +7,7 @@ public import RequestProject.QCubeImmediateFaces
 
 /-! Top-cube isolation of actual strict tetrahedron boundaries in cube dimension three. -/
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -19,8 +17,8 @@ theorem strictTetBoundary_filter_off_top (c : QCube A) (t : StrictOrdTet (QCube 
     (hm : t.1.2.2.1 ≠ c) (ht : t.1.2.2.2 ≠ c) :
     (strictOrdTetBoundary t).filter
       (fun s : (strictOrderCx (QCube A)).F => s.1.2.2 = c) = 0 := by
-  simp only [strictOrdTetBoundary, Finsupp.filter_sub, Finsupp.filter_add]
-  rw (config := { transparency := .default }) [Finsupp.filter_single_of_neg (fun s : (strictOrderCx (QCube A)).F => s.1.2.2 = c) ht, Finsupp.filter_single_of_neg (fun s : (strictOrderCx (QCube A)).F => s.1.2.2 = c) ht,
+  simp only [strictOrdTetBoundary, tetrahedronBoundary, Finsupp.filter_sub, Finsupp.filter_add, ChainTet.face]
+  erw [Finsupp.filter_single_of_neg (fun s : (strictOrderCx (QCube A)).F => s.1.2.2 = c) ht, Finsupp.filter_single_of_neg (fun s : (strictOrderCx (QCube A)).F => s.1.2.2 = c) ht,
     Finsupp.filter_single_of_neg (fun s : (strictOrderCx (QCube A)).F => s.1.2.2 = c) ht, Finsupp.filter_single_of_neg (fun s : (strictOrderCx (QCube A)).F => s.1.2.2 = c) hm]
   simp
 
@@ -28,8 +26,7 @@ theorem strictOrdBoundary3_single_filter_off_top (c : QCube A)
     (t : StrictOrdTet (QCube A)) (hm : t.1.2.2.1 ≠ c) (ht : t.1.2.2.2 ≠ c) (n : ℤ) :
     (strictOrdBoundary3 (Finsupp.single t n)).filter
       (fun s : (strictOrderCx (QCube A)).F => s.1.2.2 = c) = 0 := by
-  rw (config := { transparency := .default }) [strictOrdBoundary3, Finsupp.linearCombination_single, Finsupp.filter_smul,
-    strictTetBoundary_filter_off_top c t hm ht, smul_zero]
+  simp [strictOrdBoundary3, Finsupp.linearCombination_single, Finsupp.filter_smul, strictTetBoundary_filter_off_top c t hm ht]
 
 /-- In dimension at most three, only tetrahedra topped by this cube contribute to its
 internal triangle boundary. -/
@@ -47,13 +44,13 @@ theorem qCube_boundary3_filter_top (c : QCube A) (hc : c.spx.card = 3)
   apply Finset.sum_congr rfl
   intro t ht
   by_cases he : t.1.2.2.2 = c
-  · rw (config := { transparency := .default }) [Finsupp.filter_single_of_pos (fun t : StrictOrdTet (QCube A) => t.1.2.2.2 = c) he]
-  · rw (config := { transparency := .default }) [Finsupp.filter_single_of_neg (fun t : StrictOrdTet (QCube A) => t.1.2.2.2 = c) he,
+  · erw [Finsupp.filter_single_of_pos (fun t : StrictOrdTet (QCube A) => t.1.2.2.2 = c) he]
+  · erw [Finsupp.filter_single_of_neg (fun t : StrictOrdTet (QCube A) => t.1.2.2.2 = c) he,
       map_zero, Finsupp.filter_zero]
     have hm : t.1.2.2.1 ≠ c := by
       intro hm
       have hd := (qCube_tetrahedron_dimensions t (hy t ht)).2.2.1
-      rw (config := { transparency := .default }) [hm, hc] at hd
+      erw [hm, hc] at hd
       omega
     exact strictOrdBoundary3_single_filter_off_top c t hm he _
 
@@ -64,12 +61,12 @@ theorem qCube_boundary3_internal_zero (c : QCube A) (hc : c.spx.card = 3)
     (hb : ∀ s ∈ (strictOrdBoundary3 y).support, s.1.2.2.spx.card ≤ 2) :
     (strictOrdBoundary3 (y.filter (fun t => t.1.2.2.2 = c))).filter
       (fun s : (strictOrderCx (QCube A)).F => s.1.2.2 = c) = 0 := by
-  rw (config := { transparency := .default }) [← qCube_boundary3_filter_top c hc y hy]
+  erw [← qCube_boundary3_filter_top c hc y hy]
   apply (Finsupp.filter_eq_zero_iff _ _).mpr
   intro s hs
   by_contra hsz
   have hd := hb s (Finsupp.mem_support_iff.mpr hsz)
-  rw (config := { transparency := .default }) [hs, hc] at hd
+  erw [hs, hc] at hd
   omega
 
 /-- Every three-cube component of such a chain is a fan over a proved actual lower two-cycle. -/

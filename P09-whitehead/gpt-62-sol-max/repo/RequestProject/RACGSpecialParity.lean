@@ -36,7 +36,7 @@ theorem phi_eq_zero_of_mem_specialSub {T : Set V} {u : CayGroup A} (hu : u ∈ s
     {v : V} (hv : v ∉ T) : phi A u v = 0 := by
   obtain ⟨l, hl, rfl⟩ := exists_cword_of_mem_specialSub A hu
   rw [phi_cword]
-  have : l.count v = 0 := List.count_eq_zero_of_not_mem (fun hmem => hv (hl v hmem))
+  have  := List.count_eq_zero_of_not_mem (fun hmem => hv (hl v hmem))
   simp [parList, this]
 
 /-- An element of `W_T` with trivial parity is trivial. -/
@@ -52,13 +52,13 @@ theorem eq_one_of_mem_specialSub_of_phi_eq_zero {T : Set V} (hT : Commuting A T)
         have h0 : phi A (cword A (a :: t)) a = 0 := congrFun hphi a
         rw [phi_cword] at h0
         simp only [parList, hcount, Nat.cast_one] at h0
-        exact absurd h0 (by decide)
+        tauto
   rw [hnil, cword_nil]
 
 /-- **`phi` is injective on the special subgroup of a simplex.** -/
 theorem phi_injOn_specialSub {T : Set V} (hT : Commuting A T) {u u' : CayGroup A}
     (hu : u ∈ specialSub A T) (hu' : u' ∈ specialSub A T) (h : phi A u = phi A u') : u = u' := by
-  have hmem : u⁻¹ * u' ∈ specialSub A T := Subgroup.mul_mem _ (Subgroup.inv_mem _ hu) hu'
+  have hmem  := Subgroup.mul_mem _ (Subgroup.inv_mem _ hu) hu'
   have hzero : phi A (u⁻¹ * u') = 0 := by
     rw [phi_mul, phi_inv, h]
     funext v
@@ -72,8 +72,8 @@ theorem exists_mem_specialSub_phi_eq (T : Finset V) (t : V → ZMod 2)
     (ht : ∀ v : V, v ∉ T → t v = 0) :
     ∃ u : CayGroup A, u ∈ specialSub A (T : Set V) ∧ phi A u = t := by
   classical
-  set l : List V := (T.filter (fun v : V => t v = 1)).toList with hldef
-  have hlmem : ∀ a ∈ l, a ∈ (T : Set V) := by
+  set l : List V := (T.filter (fun v  => t v = 1)).toList with hldef
+  have hlmem : ∀ a ∈ l, a ∈ T := by
     intro a ha
     rw [hldef, Finset.mem_toList, Finset.mem_filter] at ha
     exact ha.1

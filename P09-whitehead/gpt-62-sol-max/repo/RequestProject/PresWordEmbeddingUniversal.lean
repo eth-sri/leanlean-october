@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.PresWordEmbeddingRelators
+public import RequestProject.FinsuppBasis
 public import RequestProject.PresWordEmbeddingCocycle
 public import RequestProject.PresUniversalRelatorGroupCoordinates
 public import RequestProject.PresUniversalRelatorDeck
@@ -30,7 +31,7 @@ theorem universalMap_strictMono : StrictMono h.universalMap := by
   intro p q hpq
   apply lt_of_le_of_ne (h.universalMap.monotone hpq.le)
   intro he
-  have hh : h.posMap (uOrderEnd p) = h.posMap (uOrderEnd q) :=
+  have hh  :=
     (h.universalMap_end p).symm.trans ((congrArg uOrderEnd he).trans (h.universalMap_end q))
   exact (ne_of_lt (uOrderEnd_strictMono hpq)) (h.posMap.injective hh)
 
@@ -62,15 +63,13 @@ theorem relator_compat (j : J) : σ (h.cell j) = FreeGroup.map h.gen (ρ j) := b
 def groupHom : PresGroup ρ →* PresGroup σ :=
   presInclGroupHom h.gen ρ σ h.cell (h.relator_compat ρ σ hw hv)
 
-@[simp] theorem groupHom_mk (x : FreeGroup α) :
-    h.groupHom ρ σ hw hv (QuotientGroup.mk x) = QuotientGroup.mk (FreeGroup.map h.gen x) := rfl
 
 /-- The lifted path class has the actual induced group coordinate. -/
 theorem universal_reading_map (p : UOrder (PresPos w) (ptBase w)) :
     (presGroupCocycle σ v hv).readVertex (ptBase v) (h.universalMap p) =
       h.groupHom ρ σ hw hv ((presGroupCocycle ρ w hw).readVertex (ptBase w) p) :=
-  h.readVertex_map (fun i => (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ))
-    (fun i => (QuotientGroup.mk (FreeGroup.of i) : PresGroup σ)) (h.groupHom ρ σ hw hv)
+  h.readVertex_map (fun i => (QuotientGroup.mk (FreeGroup.of i)))
+    (fun i => (QuotientGroup.mk (FreeGroup.of i))) (h.groupHom ρ σ hw hv)
     (fun _ => rfl) (presGroup_wordVal_eq_one ρ w hw) (presGroup_wordVal_eq_one σ v hv)
     (ptBase w) p
 
@@ -92,13 +91,11 @@ theorem universalRelatorGroupChainEquiv_map (hwp : ∀ j, 0 < (w j).length)
       Finsupp.mapDomain (Prod.map (h.groupHom ρ σ hw hv) h.cell)
         (presUniversalRelatorGroupChainEquiv ρ w hw hwp c) := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [Finsupp.mapDomain_add, map_add, hc, hd]
-  | single p n =>
-    rw [Finsupp.mapDomain_single]
-    simp only [presUniversalRelatorGroupChainEquiv, Finsupp.domLCongr_single,
-      Finsupp.mapDomain_single, h.universalRelatorGroupEquiv_map ρ σ hw hv hwp hvp]
+  finsupp_basis c
+  intro p
+  rw [Finsupp.mapDomain_single]
+  simp only [presUniversalRelatorGroupChainEquiv, Finsupp.domLCongr_single,
+    Finsupp.mapDomain_single, h.universalRelatorGroupEquiv_map ρ σ hw hv hwp hvp]
 
 theorem universalRelatorChain_group_map (hwp : ∀ j, 0 < (w j).length)
     (hvp : ∀ j, 0 < (v j).length)

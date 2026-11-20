@@ -14,8 +14,7 @@ def orderNerveRealizationOpenStar (P : Type) [PartialOrder P] (v : P) :
 
 /-- Coordinate positivity defines an open subset of the actual realization. -/
 theorem orderNerveRealizationOpenStar_isOpen (P : Type) [PartialOrder P] (v : P) :
-    IsOpen (orderNerveRealizationOpenStar P v) := by
-  exact isOpen_Ioi.preimage ((continuous_apply v).comp
+    IsOpen (orderNerveRealizationOpenStar P v) := isOpen_Ioi.preimage ((continuous_apply v).comp
     (orderNerveRealizationCoordinates P).continuous)
 
 /-- On simplex interiors, open-star membership is exactly vertex membership. -/
@@ -24,13 +23,8 @@ theorem orderNerveRealizationSimplex_mem_openStar_iff {P : Type} [PartialOrder P
     (z : SimplexCategory.toTop.obj n) (hz : ∀ i, 0 < z.down.weights i) (v : P) :
     orderNerveRealizationSimplex P s z ∈ orderNerveRealizationOpenStar P v ↔
       v ∈ Set.range s.obj := by
-  have he := congrArg (fun k => k z)
-    (orderNerveAffineRealization_simplex (fun p => if p = v then 1 else 0) s)
-  change orderNerveRealizationCoordinates P (orderNerveRealizationSimplex P s z) v =
-    orderNerveAffineSimplex (fun p => if p = v then 1 else 0) s z at he
   change 0 < orderNerveRealizationCoordinates P (orderNerveRealizationSimplex P s z) v ↔ _
-  rw [he]
-  exact orderNerveAffineSimplex_indicator_pos_iff s z hz v
+  rw [orderNerveRealizationCoordinates_simplex, orderNerveAffineSimplex_indicator_pos_iff s z hz]
 
 /-- Actual open vertex stars cover the whole realization. -/
 theorem orderNerveRealizationOpenStar_cover (P : Type) [PartialOrder P]
@@ -83,10 +77,7 @@ theorem orderNerveRealizationMap_mem_openStar_iff {P Q : Type}
       ∃ p : P, f p = q ∧ x ∈ orderNerveRealizationOpenStar P p := by
   obtain ⟨n, s, z, hz, hx⟩ := orderNerveRealization_interior_cover P x
   rw [← hx]
-  have hn := congrArg (fun k => k z) (orderNerveRealizationSimplex_natural f hf s.val)
-  change orderNerveRealizationMap f hf (orderNerveRealizationSimplex P s.val z) =
-    orderNerveRealizationSimplex Q ((nerveMap hf.functor).app _ s.val) z at hn
-  rw [hn, orderNerveRealizationSimplex_mem_openStar_iff _ z hz]
+  rw [orderNerveRealizationSimplex_natural, orderNerveRealizationSimplex_mem_openStar_iff _ z hz]
   constructor
   · rintro ⟨i, hi⟩
     refine ⟨s.val.obj i, hi, ?_⟩

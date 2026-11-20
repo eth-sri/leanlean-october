@@ -1,13 +1,12 @@
 module
 
 public import RequestProject.OrderCxMonodromy
+public import RequestProject.FinsuppBasis
 public import RequestProject.UnivCoverIncl
 
 @[expose] public section
 
 /-! Integral cellular cocycles obtained from actual order cocycles. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
@@ -21,7 +20,7 @@ noncomputable def chain1 : ((orderCx P).E →₀ ℤ) →ₗ[ℤ] M :=
 theorem chain1_pathChain (p : List ((orderCx P).E × Bool)) :
     c.chain1 (pathChain p) = Multiplicative.toAdd (c.readPath p) := by
   induction p with
-  | nil => simp [chain1, readPath, pathChain]
+  | nil => rfl
   | cons eb p ih =>
       rw [pathChain_cons, map_add, ih, readPath_cons]
       change _ = Multiplicative.toAdd (c.readGerm eb) + _
@@ -30,10 +29,9 @@ theorem chain1_pathChain (p : List ((orderCx P).E × Bool)) :
       cases b <;> simp [chain1, readGerm]
 
 theorem chain1_bdry2 (d : (orderCx P).F →₀ ℤ) : c.chain1 (bdry2 (orderCx P) d) = 0 := by
-  induction d using Finsupp.induction_linear with
-  | zero => simp
-  | add d e hd he => rw [map_add, map_add, hd, he, add_zero]
-  | single t n => rw [bdry2_single, LinearMap.map_smul, chain1_pathChain, readPath_att]; simp
+  finsupp_basis d
+  intro t
+  rw [bdry2_single, LinearMap.map_smul, chain1_pathChain, readPath_att]; simp
 
 /-- Pull an actual order cocycle back along a monotone map. -/
 def pullback {Q : Type u} [Preorder Q] (f : Q → P) (hf : Monotone f) :

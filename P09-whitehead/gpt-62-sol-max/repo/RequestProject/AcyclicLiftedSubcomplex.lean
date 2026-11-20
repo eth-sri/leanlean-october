@@ -39,7 +39,7 @@ include hiE in
 theorem copy_injective_E (g : Pi1 X (i.onV d₀)) :
     Function.Injective (copy i hconn d₀ ht g).onE := by
   intro d e h
-  exact hiE (congrArg (fun e : UE X (i.onV d₀) => e.val.2) h)
+  exact hiE (congrArg (·.val.2) h)
 
 include hiV hX in
 theorem copy_ranges_eq_of_meet (g h : Pi1 X (i.onV d₀)) (d e : D.V)
@@ -56,12 +56,8 @@ theorem copy_ranges_eq_of_meet (g h : Pi1 X (i.onV d₀)) (d e : D.V)
       (univProj X (i.onV d₀)).onE ((copy i hconn d₀ ht h).onE e) := fun _ => rfl
   have hF : ∀ f, (univProj X (i.onV d₀)).onF ((copy i hconn d₀ ht g).onF f) =
       (univProj X (i.onV d₀)).onF ((copy i hconn d₀ ht h).onF f) := fun _ => rfl
-  have hV := lift_onV_eq (isCovering_univProj (X := X) (x₀ := i.onV d₀) hX) hconn hE hm
-  exact ⟨congrArg Set.range (funext hV),
-    congrArg Set.range (funext (lift_onE_eq (isCovering_univProj (X := X)
-      (x₀ := i.onV d₀) hX) hE hV)),
-    congrArg Set.range (funext (lift_onF_eq (isCovering_univProj (X := X)
-      (x₀ := i.onV d₀) hX) hF hV))⟩
+  obtain ⟨hV, he, hf⟩ := lift_cells_eq (isCovering_univProj hX) hconn hE hF hm
+  grind
 
 theorem vertices_covered (v : UV X (i.onV d₀)) (d : D.V) (hv : endV v = i.onV d) :
     ∃ g, (copy i hconn d₀ ht g).onV d = v := by
@@ -78,7 +74,7 @@ theorem edges_covered (e : UE X (i.onV d₀)) (d : D.E) (he : e.val.2 = i.onE d)
     rw [e.property, he, i.src_onE]
   obtain ⟨g, hg⟩ := vertices_covered i hconn d₀ ht e.val.1 (D.src d) hv
   refine ⟨g, Subtype.ext (Prod.ext ?_ he.symm)⟩
-  exact ((copy i hconn d₀ ht g).src_onE d).trans hg
+  solve_by_elim
 
 include hiV hiE hconn ht hX in
 theorem one_cycle_filling (hD : IsAcyclic D) (z : UE X (i.onV d₀) →₀ ℤ)

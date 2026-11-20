@@ -38,7 +38,7 @@ variable {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
 /-- The cellular boundary of the three-cube `t` in the truncated complex, as a coefficient
 function on the codimension one faces used by the collapse (squares and cut cells). -/
 noncomputable def cubeBdry (t : Cube V) : Cube V ⊕ Finset V → ℤ :=
-  Sum.elim (fun g => bdry (fun f => if f = t then 1 else 0) g)
+  Sum.elim (bdry (fun f => if f = t then 1 else 0))
     (fun τ => cutSign τ * (if posCube τ = t then 1 else 0))
 
 theorem cubeBdry_inl (t g : Cube V) :
@@ -56,8 +56,7 @@ theorem update_free_injective {g : Cube V} {j k : V} (hj : g j ≠ CubeCoord.fre
     (h : Function.update g j CubeCoord.free = Function.update g k CubeCoord.free) : j = k := by
   by_contra hjk
   have hval := congrFun h j
-  rw [Function.update_apply, if_pos rfl, Function.update_apply, if_neg hjk] at hval
-  exact hj hval.symm
+  simp_all
 
 omit [DecidableEq V] in
 /-- The incidence number of a cube with a codimension one face is a unit. -/
@@ -65,14 +64,14 @@ theorem incid_eq_unit {g : Cube V} {j : V} (hj : g j ≠ CubeCoord.free) :
     incid g j = 1 ∨ incid g j = -1 := by
   have hs : (g j).sgn = 1 ∨ (g j).sgn = -1 := by
     rcases h : g j with _ | _ | _
-    · exact absurd h hj
-    · exact Or.inl rfl
-    · exact Or.inr rfl
+    · aesop
+    · aesop
+    · aesop
   rcases Nat.even_or_odd ((freeSet g).filter (fun i => i < j)).card with he | ho
   · rw [incid, he.neg_one_pow, one_mul]
     exact hs
   · rw [incid, ho.neg_one_pow]
-    rcases hs with h | h <;> rw [h] <;> simp
+    omega
 
 /-- **The boundary of a three-cube on a square face is `±1` when the cube lies above that
 face.** -/
@@ -89,7 +88,7 @@ theorem cubeBdry_inl_eq_unit {L : ASC V} {g t : Cube V} (ht : t ∈ cofaces L g)
     rw [if_neg, mul_zero]
     intro hcon
     exact hkj (update_free_injective hk' hcon)
-  · intro hcon; exact absurd hmem hcon
+  · tauto
 
 /-- **A three-cube not lying above a square has zero boundary coefficient there.** -/
 theorem cubeBdry_inl_eq_zero {L : ASC V} {g t : Cube V} (htop : t ∈ topCubes L)
@@ -126,9 +125,7 @@ theorem Collapse.mem_list_of_isCollapse {T F : Type*} [DecidableEq T] {inc : F �
     {l : List T} {S : Finset T} (h : Collapse.IsCollapse inc l S) : ∀ t ∈ S, t ∈ l := by
   induction l generalizing S with
   | nil =>
-      intro t ht
-      rw [show S = ∅ from h] at ht
-      exact absurd ht (Finset.notMem_empty t)
+      simp [show S = ∅ from h]
   | cons u l ih =>
       obtain ⟨huS, -, hrest⟩ := h
       intro t ht
@@ -163,17 +160,11 @@ theorem bdryT_eq_sum {c : Cube V → ℤ} {S : Finset (Cube V)} (hc : ∀ t, c t
           · rw [if_neg htj, if_neg (fun hcon => htj hcon.symm), mul_zero, mul_zero]
         rw [Finset.sum_congr rfl this, Finset.sum_ite_eq' S
           (Function.update g j CubeCoord.free) (fun t => c t * incid g j)]
-        by_cases hmem : Function.update g j CubeCoord.free ∈ S
-        · rw [if_pos hmem, mul_comm]
-        · rw [if_neg hmem]
-          have : c (Function.update g j CubeCoord.free) = 0 := by
-            by_contra hcon
-            exact hmem (hc _ hcon)
-          rw [this, mul_zero]
+        grind
       rw [hswap]
   | inr τ =>
       show cutSign τ * c (posCube τ) + simpBdry 0 τ = _
-      have hz : simpBdry (0 : Finset V → ℤ) τ = 0 := by simp [simpBdry]
+      have hz : simpBdry 0 τ = 0 := by simp [simpBdry]
       rw [hz, add_zero]
       have : ∀ t ∈ S, c t * cubeBdry t (Sum.inr τ)
           = if t = posCube τ then cutSign τ * c t else 0 := by
@@ -185,12 +176,12 @@ theorem bdryT_eq_sum {c : Cube V → ℤ} {S : Finset (Cube V)} (hc : ∀ t, c t
       rw [Finset.sum_congr rfl this,
         Finset.sum_ite_eq' S (posCube τ) (fun t => cutSign τ * c t)]
       by_cases hmem : posCube τ ∈ S
-      · rw [if_pos hmem]
+      · simp [*]
       · rw [if_neg hmem]
         have : c (posCube τ) = 0 := by
           by_contra hcon
-          exact hmem (hc _ hcon)
-        rw [this, mul_zero]
+          tauto
+        simp [*]
 
 /-! ### Lemma 3.3 (iii) after the collapse -/
 
@@ -221,12 +212,10 @@ theorem cutSurface_cmap_eq_zero {L : ASC V} {o : Finset V → ℤ} (hcyc : simpB
         = ∑ t ∈ topCubes L, cubeChain o t * cubeBdry t f := by
     intro f
     rw [← bdryT_eq_sum hc f, cutSurface_isBoundary hcyc hsupp]
-    cases f with
-    | inl g => rfl
-    | inr τ => rfl
+    tauto
   have hsub : ∀ t ∈ topCubes L, ∃ f, (t, f) ∈ lp := by
     intro t ht
-    have htl : t ∈ l := Collapse.mem_list_of_isCollapse hl t ht
+    have htl  := Collapse.mem_list_of_isCollapse hl t ht
     rw [← hmap] at htl
     obtain ⟨p, hp, hp1⟩ := List.mem_map.1 htl
     exact ⟨p.2, by rw [← hp1]; simpa using hp⟩

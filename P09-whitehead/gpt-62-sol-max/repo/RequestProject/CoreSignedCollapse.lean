@@ -13,9 +13,6 @@ Written proof terms; not compiled in the current proof-first workflow. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.CoreSignedCollapse
 
@@ -41,14 +38,6 @@ def dropCore : FreeGroup (A ⊕ B) →* FreeGroup B :=
     simp
   exact DFunLike.congr_fun h w
 
-@[simp] theorem dropCore_map_inr (w : FreeGroup B) :
-    dropCore (A := A) (FreeGroup.map Sum.inr w) = w := by
-  have h : (dropCore (A := A) (B := B)).comp (FreeGroup.map Sum.inr) =
-      MonoidHom.id _ := by
-    apply FreeGroup.ext_hom
-    intro b
-    simp
-  exact DFunLike.congr_fun h w
 
 variable (core : M → FreeGroup A) (extra : J → FreeGroup (A ⊕ B))
   (target : J → FreeGroup B) (rev : J → Bool)
@@ -79,15 +68,8 @@ theorem coefficientMap_quot (x : FreeGroupRing (A ⊕ B)) :
     coefficientMap core extra target rev hword
       (quotRingHom ℤ (relSub (corePres core extra)) x) =
     quotRingHom ℤ (relSub target)
-      (MonoidAlgebra.mapDomainRingHom ℤ dropCore x) := by
-  induction x using MonoidAlgebra.induction_linear with
-  | zero => simp
-  | add x y hx hy => simp only [map_add, hx, hy]
-  | single g n =>
-      change MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ (MonoidAlgebra.single g n)) =
-        MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ (MonoidAlgebra.single g n))
-      simp only [MonoidAlgebra.mapDomain_single]
-      rfl
+      (MonoidAlgebra.mapDomainRingHom ℤ dropCore x) :=
+  quotRingHom_natural (relSub target) dropCore (groupMap core extra target rev hword) rfl x
 
 variable [DecidableEq A] [DecidableEq B]
 
@@ -130,6 +112,6 @@ theorem matrix_extra (b : B) (j : J) :
   · rfl
   · exact quotientFox_inv_relator target b j
 
-variable [Fintype M] [Fintype J]
+
 
 end FiniteChains.CoreSignedCollapse

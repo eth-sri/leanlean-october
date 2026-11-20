@@ -9,9 +9,6 @@ public import RequestProject.TopologicalSingular.VertexSubdivision
 /-! # The explicit chain homotopy for recursive vertex subdivision -/
 
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.VertexChains
 
@@ -79,7 +76,7 @@ theorem subdivideHomotopy_naturality (other : ∀ n, Vertices W n → W) (f : V 
     (map f (n + 1)).comp (subdivideHomotopy center n) =
       (subdivideHomotopy other n).comp (map f n) := by
   induction n with
-  | zero => ext c; simp only [LinearMap.comp_apply, subdivideHomotopy_zero, map_zero]
+  | zero => ext c; rfl
   | succ n ih =>
     apply linearMap_ext_basis
     intro v

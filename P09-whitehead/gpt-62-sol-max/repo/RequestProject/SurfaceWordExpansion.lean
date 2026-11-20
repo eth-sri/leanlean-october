@@ -43,10 +43,7 @@ def foldNames : FreeGroup (α ⊕ I) →* FreeGroup α :=
 
  theorem foldNames_formalSurface :
     foldNames w (formalSurface (α := α) ps) = Davis.commWord w ps := by
-  rw [formalSurface, Davis.map_commWord]
-  apply Davis.commWord_congr
-  intro i
-  simp [foldNames]
+  simp [formalSurface, Davis.map_commWord, foldNames]
 
 /-- The defining relators identify each new name with the prescribed old word. -/
  theorem name_eq_word (i : I) :
@@ -57,9 +54,6 @@ def foldNames : FreeGroup (α ⊕ I) →* FreeGroup α :=
         PresGroup (expandedRel ρ w ps)) = 1 :=
     (QuotientGroup.eq_one_iff _).2
       (Subgroup.subset_normalClosure ⟨Sum.inl (Sum.inr i), rfl⟩)
-  change (QuotientGroup.mk' (relSub (expandedRel ρ w ps)))
-    (FreeGroup.of (Sum.inr i) * (FreeGroup.map Sum.inl (w i))⁻¹) = 1 at h
-  rw [map_mul, map_inv] at h
   exact mul_inv_eq_one.mp h
 
 variable (hrho : ρ (Sum.inr PUnit.unit) = Davis.commWord w ps)
@@ -98,8 +92,7 @@ def inclusion : PresGroup ρ →* PresGroup (expandedRel ρ w ps) :=
     (QuotientGroup.mk (foldNames w (expandedRel ρ w ps j)) : PresGroup ρ) = 1 := by
   rcases j with j | s
   · rcases j with j | i
-    · change (QuotientGroup.mk (foldNames w (FreeGroup.map Sum.inl (ρ (Sum.inl j)))) :
-        PresGroup ρ) = 1
+    · change (QuotientGroup.mk (foldNames w (FreeGroup.map Sum.inl (ρ (Sum.inl j))))) = 1
       rw [foldNames_map_inl]
       exact (QuotientGroup.eq_one_iff _).2 (Subgroup.subset_normalClosure ⟨Sum.inl j, rfl⟩)
     · change (QuotientGroup.mk' (relSub ρ))
@@ -123,7 +116,7 @@ def elimination : PresGroup (expandedRel ρ w ps) →* PresGroup ρ :=
     elimination ρ w ps hrho (inclusion ρ w ps hrho g) = g := by
   induction g using QuotientGroup.induction_on with
   | H v =>
-    change (QuotientGroup.mk (foldNames w (FreeGroup.map Sum.inl v)) : PresGroup ρ) = _
+    change (QuotientGroup.mk (foldNames w (FreeGroup.map Sum.inl v))) = _
     rw [foldNames_map_inl]
 
  theorem inclusion_elimination (g : PresGroup (expandedRel ρ w ps)) :

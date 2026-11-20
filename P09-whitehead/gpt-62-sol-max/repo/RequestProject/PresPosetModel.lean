@@ -47,11 +47,11 @@ variable {α J : Type u}
 
 theorem ordPos_congr {P : Type u} [Preorder P] {a b a' b' : P} (ha : a = a') (hb : b = b')
     (h : a ≤ b) (h' : a' ≤ b') : ordPos h = ordPos h' := by
-  subst ha; subst hb; rfl
+  simp_all
 
 theorem ordNeg_congr {P : Type u} [Preorder P] {a b a' b' : P} (ha : a = a') (hb : b = b')
     (h : a ≤ b) (h' : a' ≤ b') : ordNeg h = ordNeg h' := by
-  subst ha; subst hb; rfl
+  simp_all
 
 /-! ### The subdivided rose -/
 
@@ -76,10 +76,7 @@ protected def le : Rose α → Rose α → Prop
 instance : Preorder (Rose α) where
   le := Rose.le
   le_refl x := by
-    cases x with
-    | base => exact trivial
-    | mid i => exact rfl
-    | edg i b => exact ⟨rfl, rfl⟩
+    cases x <;> tauto
   le_trans a b c hab hbc := by
     cases a <;> cases b <;> cases c <;> simp_all [Rose.le]
 
@@ -112,11 +109,8 @@ variable (w : J → List (α × Bool))
 /-- An element of a circle. -/
 def pt (j : J) (k : ℕ) (t : CPos) : TCirc w := (j, k, t)
 
-@[simp] theorem pt_fst (j : J) (k : ℕ) (t : CPos) : (pt w j k t).1 = j := rfl
 
-@[simp] theorem pt_snd_snd (j : J) (k : ℕ) (t : CPos) : (pt w j k t).2.2 = t := rfl
 
-@[simp] theorem pt_eq (j : J) (k : ℕ) (t : CPos) : pt w j k t = (j, k, t) := rfl
 
 /-- The cyclic successor of a position of the word of the relator `j`. -/
 def csucc (j : J) (k : ℕ) : ℕ := (k + 1) % (w j).length
@@ -136,15 +130,11 @@ protected def le (x y : TCirc w) : Prop := x = y ∨ TCirc.lt w x y
 
 theorem lt_left_tag {x y : TCirc w} (h : TCirc.lt w x y) :
     x.2.2 = CPos.cor ∨ x.2.2 = CPos.cmid := by
-  obtain ⟨-, -, h⟩ := h
-  rcases h with ⟨h, -, -⟩ | ⟨h, -, -⟩ | ⟨h, -, -⟩ | ⟨h, -, -⟩
-  exacts [Or.inl h, Or.inr h, Or.inr h, Or.inl h]
+  obtain ⟨-, -, h⟩ := h <;> grind
 
 theorem lt_right_tag {x y : TCirc w} (h : TCirc.lt w x y) :
     y.2.2 = CPos.cedgL ∨ y.2.2 = CPos.cedgR := by
-  obtain ⟨-, -, h⟩ := h
-  rcases h with ⟨-, h, -⟩ | ⟨-, h, -⟩ | ⟨-, h, -⟩ | ⟨-, h, -⟩
-  exacts [Or.inl h, Or.inl h, Or.inr h, Or.inr h]
+  obtain ⟨-, -, h⟩ := h <;> grind
 
 instance : Preorder (TCirc w) where
   le := TCirc.le w
@@ -153,13 +143,13 @@ instance : Preorder (TCirc w) where
     rcases hab with rfl | h1
     · exact hbc
     rcases hbc with rfl | h2
-    · exact Or.inr h1
+    · tauto
     exact absurd ((lt_left_tag w h2).elim (fun h => (lt_right_tag w h1).elim
-      (fun h' => by rw [h'] at h; exact absurd h (by decide))
-      (fun h' => by rw [h'] at h; exact absurd h (by decide)))
+      (fun h' => by simp_all)
+      (fun h' => by simp_all))
       (fun h => (lt_right_tag w h1).elim
-      (fun h' => by rw [h'] at h; exact absurd h (by decide))
-      (fun h' => by rw [h'] at h; exact absurd h (by decide)))) not_false
+      (fun h' => by simp_all)
+      (fun h' => by simp_all))) not_false
 
 /-- The corner of a letter lies under its left half. -/
 theorem cor_le_cedgL {j : J} {k : ℕ} (hk : k < (w j).length) :
@@ -209,24 +199,15 @@ def aFun : TCirc w → Rose α
 
 theorem aFun_cmid_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
     aFun w (j, k, CPos.cmid) = Rose.mid p.1 := by
-  show (match (w j)[k]? with
-    | some p => Rose.mid p.1
-    | none => Rose.base) = _
-  rw [h]
+  grind +locals
 
 theorem aFun_cedgL_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
     aFun w (j, k, CPos.cedgL) = Rose.edg p.1 (!p.2) := by
-  show (match (w j)[k]? with
-    | some p => Rose.edg p.1 (!p.2)
-    | none => Rose.base) = _
-  rw [h]
+  grind +locals
 
 theorem aFun_cedgR_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
     aFun w (j, k, CPos.cedgR) = Rose.edg p.1 p.2 := by
-  show (match (w j)[k]? with
-    | some p => Rose.edg p.1 p.2
-    | none => Rose.base) = _
-  rw [h]
+  grind +locals
 
 theorem aFun_pt_cmid_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
     aFun w (TCirc.pt w j k CPos.cmid) = Rose.mid p.1 := aFun_cmid_of_get w h
@@ -246,7 +227,7 @@ theorem exists_get_of_lt {j : J} {k : ℕ} (hk : k < (w j).length) :
 
 theorem aFun_monotone : Monotone (aFun w) := by
   rintro x y (rfl | h)
-  · exact le_refl _
+  · aesop
   obtain ⟨j, k, t⟩ := x
   obtain ⟨j', k', t'⟩ := y
   obtain ⟨hj, hk', hcase⟩ := h
@@ -254,13 +235,11 @@ theorem aFun_monotone : Monotone (aFun w) := by
   obtain ⟨p, hp⟩ := exists_get_of_lt w hk'
   rcases hcase with ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩
   · rw [aFun_cor, aFun_cedgL_of_get w hp]
-    exact Rose.base_le_edg _ _
-  · rw [aFun_cmid_of_get w hp, aFun_cedgL_of_get w hp]
-    exact Rose.mid_le_edg _ _
-  · rw [aFun_cmid_of_get w hp, aFun_cedgR_of_get w hp]
-    exact Rose.mid_le_edg _ _
+    aesop
+  · simp [aFun_cmid_of_get w hp, aFun_cedgL_of_get w hp]
+  · simp [aFun_cmid_of_get w hp, aFun_cedgR_of_get w hp]
   · rw [aFun_cor, aFun_cedgR_of_get w hp]
-    exact Rose.base_le_edg _ _
+    aesop
 
 /-- The attaching map as a monotone map. -/
 def aHom : TCirc w →o Rose α := ⟨aFun w, aFun_monotone w⟩
@@ -330,10 +309,6 @@ def genLoopRev (i : α) : List ((orderCx (PresPos w)).E × Bool) :=
    ordPos ((iRose_monotone w) (Rose.mid_le_edg i false)),
    ordNeg ((iRose_monotone w) (Rose.base_le_edg i false))]
 
-theorem isPath_genLoopRev (i : α) :
-    IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt (genLoopRev w i)
-      (ptBase w) (ptBase w) :=
-  ⟨rfl, rfl, rfl, rfl, rfl⟩
 
 /-- The loop of a letter: the loop of its generator, reversed for a negative letter. -/
 def letterLoop (p : α × Bool) : List ((orderCx (PresPos w)).E × Bool) :=
@@ -343,7 +318,6 @@ def letterLoop (p : α × Bool) : List ((orderCx (PresPos w)).E × Bool) :=
 def wordLoop (l : List (α × Bool)) : List ((orderCx (PresPos w)).E × Bool) :=
   l.flatMap (letterLoop w)
 
-@[simp] theorem wordLoop_nil : wordLoop w ([] : List (α × Bool)) = [] := rfl
 
 @[simp] theorem wordLoop_append (l l' : List (α × Bool)) :
     wordLoop w (l ++ l') = wordLoop w l ++ wordLoop w l' := by
@@ -354,8 +328,8 @@ theorem isPath_letterLoop (p : α × Bool) :
       (ptBase w) (ptBase w) := by
   obtain ⟨i, b⟩ := p
   cases b with
-  | true => exact isPath_genLoop w i
-  | false => exact isPath_genLoopRev w i
+  | true => trivial
+  | false => trivial
 
 theorem isPath_wordLoop (l : List (α × Bool)) :
     IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt (wordLoop w l)
@@ -363,8 +337,6 @@ theorem isPath_wordLoop (l : List (α × Bool)) :
   induction l with
   | nil => rfl
   | cons p l ih =>
-      have hsplit : wordLoop w (p :: l) = letterLoop w p ++ wordLoop w l := rfl
-      rw [hsplit]
       exact isPath_append_iff.mpr ⟨ptBase w, isPath_letterLoop w p, ih⟩
 
 /-! ### The loops of the attaching circles -/

@@ -11,9 +11,7 @@ is obtained by deleting the tree letters; the corresponding continuous
 path homotopy removes precisely the resulting constant pauses. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment ContinuousEdgeWords
@@ -33,8 +31,7 @@ theorem treeLetters_append (l m : List (J × Bool)) :
   induction l with
   | nil => rfl
   | cons g l ih =>
-    by_cases h : T.isTree g.1 <;> simp only [List.cons_append, treeLetters, h,
-      dite_true, dite_false, ih, List.cons_append]
+    by_cases h : T.isTree g.1 <;> simp_all [List.cons_append, treeLetters]
 
 omit [TopologicalSpace V] [DiscreteTopology V] in
 theorem treeLetters_revPath (l : List (J × Bool)) :
@@ -46,7 +43,7 @@ theorem treeLetters_revPath (l : List (J × Bool)) :
     rw [Comb.revPath_cons (X := graphCx r)]
     rw [treeLetters_append, ih]
     by_cases h : T.isTree g.1
-    · simp only [treeLetters, Comb.revGerm, h, dite_true, List.append_nil]
+    · simp [treeLetters, Comb.revGerm, h]
     · simp only [treeLetters, Comb.revGerm, h, dite_false, Comb.revPath,
         List.reverse_cons, List.map_cons]
 
@@ -57,8 +54,7 @@ theorem treeLetters_mk (l : List (J × Bool)) :
   | nil => rfl
   | cons g l ih =>
     by_cases h : T.isTree g.1
-    · rw [treeLetters, dif_pos h, Comb.SpanningTree.pathWord_cons T g l,
-        Comb.SpanningTree.germWord_of_isTree T h, one_mul, ih]
+    · simp_all [treeLetters, Comb.SpanningTree.pathWord_cons T g l, Comb.SpanningTree.germWord_of_isTree T h]
     · rw [treeLetters, dif_neg h, Comb.SpanningTree.pathWord_cons]
       change FreeGroup.mk ([(⟨g.1, h⟩, g.2)] ++ treeLetters r T l) = _
       rw [← FreeGroup.mul_mk, ih]
@@ -71,7 +67,7 @@ theorem rose_word_isPath {A : Type} (l : List (A × Bool)) :
       PUnit.unit PUnit.unit := by
   induction l with
   | nil => rfl
-  | cons g l ih => cases g with | mk e o => cases o <;> exact ⟨rfl, ih⟩
+  | cons g l ih => solve_by_elim
 
 def treeRoseWordPath (l : List (J × Bool)) :
     Path (roseVertex {j : J // ¬T.isTree j}) (roseVertex {j : J // ¬T.isTree j}) :=
@@ -132,7 +128,7 @@ theorem collapsedWordPath_homotopic_treeWord (l : List (J × Bool)) {a b : V}
     by_cases hg : T.isTree g.1
     · rw [collapsedGermPath_tree r hr T g hg]
       have ht : treeRoseWordPath r T (g :: l) = treeRoseWordPath r T l := by
-        simp only [treeRoseWordPath, treeLetters, dif_pos hg]
+        simp [treeRoseWordPath, treeLetters, dif_pos hg]
       rw [ht]
       exact ((Path.Homotopic.refl _).hcomp (ih hl.2)).trans (Path.Homotopic.refl_trans _)
     · rw [collapsedGermPath_nonTree r hr T g hg]

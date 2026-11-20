@@ -24,9 +24,6 @@ def inclusion : Hom (complex T extra) (complex T extra') where
   tgt_onE _ := rfl
   base_onF := by rintro (d | s) <;> rfl
   att_onF := by
-    intro s
-    cases s with
-    | inl d => simp [complex]
-    | inr s => simp [complex, hf]
+    simp [complex, hf]
 
 end FiniteChains.Comb.RelativeTreeExtension

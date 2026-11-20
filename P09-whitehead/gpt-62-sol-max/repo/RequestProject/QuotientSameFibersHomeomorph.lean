@@ -28,13 +28,9 @@ def quotientSameFibersHomeomorph : Y ≃ₜ Z where
   toFun := sameFiberForward f g hf
   invFun := sameFiberForward g f hg
   left_inv y := by
-    obtain ⟨x, rfl⟩ := hf.surjective y
-    rw [sameFiberForward_apply f g hf hfg]
-    exact sameFiberForward_apply g f hg (fun a b => (hfg a b).symm) x
+    grind +locals
   right_inv z := by
-    obtain ⟨x, rfl⟩ := hg.surjective z
-    rw [sameFiberForward_apply g f hg (fun a b => (hfg a b).symm)]
-    exact sameFiberForward_apply f g hf hfg x
+    grind +locals
   continuous_toFun := by
     apply hf.continuous_iff.mpr
     have he : sameFiberForward f g hf ∘ f = g :=

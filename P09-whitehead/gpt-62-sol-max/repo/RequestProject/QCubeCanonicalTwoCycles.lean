@@ -5,9 +5,6 @@ public import RequestProject.QCubeTwoCycleSubdivision
 @[expose] public section
 
 /-! The actual square cells and their unconditional finite two-cycle subdivision dictionary. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -76,7 +73,7 @@ theorem qSquare_coefficients_subdivision (r : QSquare A →₀ ℤ) :
   change qSquareChainSubdivision r
     (squareFlag c.1 (qSquareLeft c) (qSquareRight c) (qSquare_directions_ne c)
       (qSquare_free_directions c) (false, 0, false)) = r c
-  have he := congrArg (fun z : (strictOrderCx (QCube A)).F →₀ ℤ =>
+  have he := congrArg (fun z  =>
       z (squareFlag c.1 (qSquareLeft c) (qSquareRight c) (qSquare_directions_ne c)
         (qSquare_free_directions c) (false, 0, false)))
     (squareChainSubdivision_filter_top Subtype.val qSquareLeft qSquareRight

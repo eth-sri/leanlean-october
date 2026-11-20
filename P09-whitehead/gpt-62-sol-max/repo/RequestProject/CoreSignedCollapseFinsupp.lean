@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.CoreSignedCollapse
+public import RequestProject.FinsuppBasis
 public import RequestProject.GenerationStepFinsupp
 public import RequestProject.BlockFamilyBlockwiseFinsupp
 public import RequestProject.ExponentCorrection
@@ -30,33 +31,26 @@ theorem expMatrix_augmentation (ρ : J → FreeGroup A)
         x.mapRange (augPres ρ) (map_zero _) + y.mapRange (augPres ρ) (map_zero _) := by
     ext i : 1
     exact map_add (augPres ρ) _ _
-  induction v using Finsupp.induction_linear with
-  | zero => simp
-  | add v w hv hw => rw [hadd, map_add, hv, hw, map_add, hadd]
-  | single j a =>
-      simp only [Finsupp.mapRange_single, expMatrix, coverSecondBoundary,
-        Finsupp.linearCombination_single]
-      ext i : 1
-      change augPres ρ a * expVec (ρ j) i =
-        augPres ρ (a * foxMatrixPres ρ i j)
-      rw [map_mul, augPres_foxMatrixPres, expVec_apply]
-      rfl
+  finsupp_singles v [ hadd ]
+  intro j a
+  simp only [Finsupp.mapRange_single, expMatrix, coverSecondBoundary,
+    Finsupp.linearCombination_single]
+  ext i : 1
+  change augPres ρ a * expVec (ρ j) i =
+    augPres ρ (a * foxMatrixPres ρ i j)
+  rw [map_mul, augPres_foxMatrixPres, expVec_apply]
+  rfl
 
 /-- Core rows of a supported chain on retained core cells are unchanged. -/
 theorem corePres_expMatrix_retained (core : M → FreeGroup A)
     (extra : J → FreeGroup (A ⊕ B)) (c : M →₀ ℤ) (a : A) :
     expMatrix (corePres core extra) (Finsupp.mapDomain Sum.inl c) (Sum.inl a) =
       expMatrix core c a := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => simp only [Finsupp.mapDomain_add, map_add, Finsupp.add_apply, hc, hd]
-  | single m n =>
-      simp only [Finsupp.mapDomain_single, expMatrix, Finsupp.linearCombination_single,
-        Finsupp.smul_apply, smul_eq_mul, expVec_apply]
-      change n * Multiplicative.toAdd (expSum (Sum.inl a)
-          (FreeGroup.map Sum.inl (core m))) =
-        n * Multiplicative.toAdd (expSum a (core m))
-      rw [expSum_map_inl]
+  finsupp_basis c
+  intro m
+  simp only [Finsupp.mapDomain_single, expMatrix, Finsupp.linearCombination_single,
+    Finsupp.smul_apply, smul_eq_mul, expVec_apply]
+  solve_by_elim [expSum_map_inl]
 
 /-- Injectivity on supported core chains reflects vanishing when the extra
 coordinates vanish.  This is the actual H2 injection used by terminal B3. -/
@@ -68,14 +62,13 @@ theorem corePres_expMatrix_kernel_reflect (core : M → FreeGroup A)
   have he : Finsupp.mapDomain Sum.inl d = c := by
     apply Finsupp.mapDomain_comapDomain Sum.inl Sum.inl_injective c
     rintro (m | j) h
-    · exact ⟨m, rfl⟩
+    · tauto
     · exact False.elim ((Finsupp.mem_support_iff.mp h) (hextra j))
   have hd : expMatrix core d = 0 := by
     ext a
     rw [← corePres_expMatrix_retained core extra d a, he, hc]
     rfl
-  have hz : d = 0 := hcore (hd.trans (map_zero _).symm)
-  rw [← he, hz, Finsupp.mapDomain_zero]
+  aesop
 
 theorem corePres_fsAugmentation_reflect (core : M → FreeGroup A)
     (extra : J → FreeGroup (A ⊕ B)) (hcore : Function.Injective (expMatrix core))
@@ -90,7 +83,7 @@ theorem corePres_fsAugmentation_reflect (core : M → FreeGroup A)
     rw [hv, Finsupp.mapRange_zero]
   have hz := corePres_expMatrix_kernel_reflect core extra hcore c hc hextra
   intro j
-  exact congrArg (fun c : (M ⊕ J) →₀ ℤ => c j) hz
+  exact congrArg (fun c  => c j) hz
 
 namespace CoreSignedCollapse
 
@@ -108,9 +101,9 @@ def cellsFS (v : (M ⊕ J) →₀ MonoidAlgebra ℤ (PresGroup (corePres core ex
     intro j hj
     apply Finsupp.mem_support_iff.mpr
     intro hz
-    have hz' : v (Sum.inr j) = 0 := hz
+    have hz'  := hz
     apply hj
-    simp only [hz', map_zero, neg_zero, ite_self])
+    simp_all)
 
 omit [DecidableEq A] [DecidableEq B] in
 @[simp] theorem cellsFS_apply
@@ -119,10 +112,6 @@ omit [DecidableEq A] [DecidableEq B] in
       if rev j then -coefficientMap core extra target rev hword (v (Sum.inr j))
         else coefficientMap core extra target rev hword (v (Sum.inr j)) := rfl
 
-omit [DecidableEq A] [DecidableEq B] in
-@[simp] theorem cellsFS_zero : cellsFS core extra target rev hword 0 = 0 := by
-  ext j : 1
-  simp [cellsFS_apply]
 
 omit [DecidableEq A] [DecidableEq B] in
 theorem cellsFS_add (v w : (M ⊕ J) →₀ MonoidAlgebra ℤ (PresGroup (corePres core extra))) :
@@ -156,19 +145,17 @@ theorem cellsFS_boundary_apply
       coefficientMap core extra target rev hword
         (coverSecondBoundary (relSub (corePres core extra)) (corePres core extra) v
           (Sum.inr b)) := by
-  induction v using Finsupp.induction_linear with
-  | zero => simp only [cellsFS_zero, map_zero, Finsupp.zero_apply]
-  | add v w hv hw => simp only [cellsFS_add, map_add, Finsupp.add_apply, hv, hw]
-  | single j a =>
-      cases j with
-      | inl m =>
-          simp only [cellsFS_single_core, map_zero, Finsupp.zero_apply]
-          rw [fsCoverSecondBoundary_apply, Finsupp.sum_single_index (zero_mul _),
-            matrix_core, mul_zero, map_zero]
-      | inr j =>
-          simp only [cellsFS_single_extra, fsCoverSecondBoundary_apply,
-            Finsupp.sum_single_index, zero_mul, map_mul, matrix_extra]
-          cases rev j <;> simp
+  finsupp_singles v [ cellsFS_add ]
+  intro j a
+  cases j with
+  | inl m =>
+      simp only [cellsFS_single_core, map_zero, Finsupp.zero_apply]
+      rw [fsCoverSecondBoundary_apply, Finsupp.sum_single_index (zero_mul _),
+        matrix_core, mul_zero, map_zero]
+  | inr j =>
+      simp only [cellsFS_single_extra, fsCoverSecondBoundary_apply,
+        Finsupp.sum_single_index, zero_mul, map_mul, matrix_extra]
+      simp
 
 theorem cellsFS_cycle
     (v : (M ⊕ J) →₀ MonoidAlgebra ℤ (PresGroup (corePres core extra)))

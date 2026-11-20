@@ -59,29 +59,14 @@ protected def le : CylP a → CylP a → Prop
 
 instance : Preorder (CylP a) where
   le := CylP.le a
-  le_refl p := by
-    cases p with
-    | inl x => exact le_refl x
-    | inr s => exact le_refl s
+  le_refl p := by cases p <;> exact le_rfl
   le_trans p q r hpq hqr := by
-    cases p with
-    | inl x =>
-        cases q with
-        | inl y =>
-            cases r with
-            | inl z => exact le_trans hpq hqr
-            | inr t => exact hqr.elim
-        | inr t => exact hpq.elim
-    | inr s =>
-        cases q with
-        | inl y =>
-            cases r with
-            | inl z => exact le_trans hpq hqr
-            | inr t => exact hqr.elim
-        | inr t =>
-            cases r with
-            | inl z => exact le_trans (a.monotone hpq) hqr
-            | inr u => exact le_trans hpq hqr
+    change CylP.le _ p q at hpq
+    change CylP.le _ q r at hqr
+    show CylP.le _ p r
+    cases p <;> cases q <;> cases r <;> simp only [CylP.le] at * <;>
+      first | contradiction | exact hpq.trans hqr | exact (a.monotone hpq).trans hqr
+
 
 end CylP
 
@@ -96,25 +81,15 @@ def cylOuter (s : Sg) : CylP a := Sum.inr s
 /-- The retraction of the cylinder onto its base. -/
 def cylRetr : CylP a → X := Sum.elim id a
 
-@[simp] theorem cylRetr_cylIn (x : X) : cylRetr a (cylIn a x) = x := rfl
 
-@[simp] theorem cylRetr_cylOuter (s : Sg) : cylRetr a (cylOuter a s) = a s := rfl
 
 theorem cylIn_injective : Function.Injective (cylIn a) := fun _ _ h => Sum.inl_injective h
 
 theorem cylIn_monotone : Monotone (cylIn a) := fun _ _ h => h
 
 theorem cylRetr_monotone : Monotone (cylRetr a) := by
-  intro p q hpq
-  cases p with
-  | inl x =>
-      cases q with
-      | inl y => exact hpq
-      | inr t => exact hpq.elim
-  | inr s =>
-      cases q with
-      | inl y => exact hpq
-      | inr t => exact a.monotone hpq
+  rintro (x | s) (y | t) h
+  exacts [h, h.elim, h, a.monotone h]
 
 /-- The composite `ι ∘ r`, the "collapse the cylinder onto its base" map. -/
 def cylCollapse : CylP a → CylP a := fun p => cylIn a (cylRetr a p)

@@ -4,6 +4,8 @@ public import RequestProject.GenusNamedSurfaceCover
 public import RequestProject.SurfaceCoverPolygonEquivariance
 public import RequestProject.OrderUniversalDeck
 
+public import RequestProject.GroupCellChainCoordinates
+
 @[expose] public section
 
 /-!
@@ -15,8 +17,6 @@ Written proof terms; no Lean verification has been run.
 -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -26,7 +26,7 @@ variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (q : ℕ) [NeZero q] (u : Fin q × Bool → FreeGroup α)
 
 abbrev NamedPolygonDeckGroup :=
-  Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)
+  NamedQuotientGroup ρ q u
 
 /-- The genuine deck action on the first coordinate of the actual surface
 pullback cover; the surface cell itself remains fixed. -/
@@ -56,10 +56,6 @@ def namedSurfaceDeck (g : NamedPolygonDeckGroup ρ q u) :
     namedSurfaceProjection ρ q u (namedSurfaceDeck ρ q u g p) =
       namedSurfaceProjection ρ q u p := rfl
 
-@[simp] theorem namedSurfaceDeck_one (p : NamedSurfaceCover ρ q u) :
-    namedSurfaceDeck ρ q u 1 p = p := by
-  apply Subtype.ext
-  exact Prod.ext (deckV_one p.1.1) rfl
 
 theorem namedSurfaceDeck_mul (g h : NamedPolygonDeckGroup ρ q u)
     (p : NamedSurfaceCover ρ q u) :
@@ -85,23 +81,23 @@ theorem namedPolygonPoleOrbit_bijective :
     Function.Bijective (namedPolygonPoleOrbit ρ q u) := by
   constructor
   · intro g h he
-    have hfirst := congrArg (fun p : NamedPolygonPole ρ q u => p.1.1.1) he
+    have hfirst := congrArg (·.1.1.1) he
     change deckV g (namedPolygonPole ρ q u).1.1.1 =
       deckV h (namedPolygonPole ρ q u).1.1.1 at hfirst
     obtain ⟨d, _, hd⟩ := (isRegular_univProj
-      (X := orderCx (namedQuotientPos ρ q u)) (x₀ := namedQuotientBase ρ q u)).simply_transitive
+      (X := namedQuotientCx ρ q u) (x₀ := namedQuotientBase ρ q u)).simply_transitive
       (namedPolygonPole ρ q u).1.1.1
       (deckV g (namedPolygonPole ρ q u).1.1.1)
       (endV_deckV g (namedPolygonPole ρ q u).1.1.1).symm
     exact (hd g rfl).trans (hd h hfirst.symm).symm
   · intro v
     let v₀ := namedPolygonPole ρ q u
-    have hcell : v₀.1.1.2 = v.1.1.2 := v₀.2.trans v.2.symm
-    have hend : uOrderEnd v₀.1.1.1 = uOrderEnd v.1.1.1 :=
+    have hcell  := v₀.2.trans v.2.symm
+    have hend  :=
       v₀.1.2.trans ((congrArg (fun x =>
         qNew (att := namedAtt ρ q u) (namedSurfaceLabel ρ q u x)) hcell).trans v.1.2.symm)
     obtain ⟨g, hg, _⟩ := (isRegular_univProj
-      (X := orderCx (namedQuotientPos ρ q u)) (x₀ := namedQuotientBase ρ q u)).simply_transitive
+      (X := namedQuotientCx ρ q u) (x₀ := namedQuotientBase ρ q u)).simply_transitive
       v₀.1.1.1 v.1.1.1 hend
     refine ⟨g, ?_⟩
     apply Subtype.ext
@@ -117,10 +113,6 @@ def namedPolygonPoleEquiv : NamedPolygonDeckGroup ρ q u ≃ NamedPolygonPole ρ
     (namedPolygonPoleEquiv ρ q u g).1 =
       namedSurfaceDeck ρ q u g (namedPolygonPole ρ q u).1 := rfl
 
-@[simp] theorem namedPolygonPoleEquiv_one :
-    namedPolygonPoleEquiv ρ q u 1 = namedPolygonPole ρ q u := by
-  apply Subtype.ext
-  exact namedSurfaceDeck_one ρ q u _
 
 def namedPolygonFilling : StrictOrdTri (NamedSurfaceCover ρ q u) →₀ ℤ :=
   polygonCoverFilling (gc q) (namedSurfaceProjection ρ q u)
@@ -129,9 +121,9 @@ def namedPolygonFilling : StrictOrdTri (NamedSurfaceCover ρ q u) →₀ ℤ :=
 /-- The actual group-ring action obtained from the actual quotient deck maps. -/
 def namedPolygonMultiple : MonoidAlgebra ℤ (NamedPolygonDeckGroup ρ q u) →ₗ[ℤ]
     (StrictOrdTri (NamedSurfaceCover ρ q u) →₀ ℤ) :=
-  (Finsupp.linearCombination ℤ (fun g => chain2
+  MonoidAlgebra.linearCombination (fun g => chain2
     (strictOrderCxMap (namedSurfaceDeck ρ q u g) (namedSurfaceDeck ρ q u g).strictMono)
-    (namedPolygonFilling ρ q u))).comp (MonoidAlgebra.coeffLinearEquiv ℤ).toLinearMap
+    (namedPolygonFilling ρ q u))
 
 /-- Rebase the actual sheet coordinates at any prescribed actual pole. This
 allows the reference pole to be transported from the pre-substitution cover. -/
@@ -146,13 +138,8 @@ theorem namedPolygonPoleEquivAt_apply (v : NamedPolygonPole ρ q u)
   change (namedPolygonPoleEquiv ρ q u (g * (namedPolygonPoleEquiv ρ q u).symm v)).1 = _
   rw [namedPolygonPoleEquiv_apply, namedSurfaceDeck_mul]
   have he := congrArg Subtype.val ((namedPolygonPoleEquiv ρ q u).apply_symm_apply v)
-  rw [namedPolygonPoleEquiv_apply] at he
-  rw [he]
+  tauto
 
-@[simp] theorem namedPolygonPoleEquivAt_one (v : NamedPolygonPole ρ q u) :
-    namedPolygonPoleEquivAt ρ q u v 1 = v := by
-  apply Subtype.ext
-  rw [namedPolygonPoleEquivAt_apply, namedSurfaceDeck_one]
 
 def namedPolygonCoefficientAt (v : NamedPolygonPole ρ q u)
     (c : StrictOrdTri (NamedSurfaceCover ρ q u) →₀ ℤ) :
@@ -168,9 +155,9 @@ def namedPolygonFillingAt (v : NamedPolygonPole ρ q u) :
 def namedPolygonMultipleAt (v : NamedPolygonPole ρ q u) :
     MonoidAlgebra ℤ (NamedPolygonDeckGroup ρ q u) →ₗ[ℤ]
       (StrictOrdTri (NamedSurfaceCover ρ q u) →₀ ℤ) :=
-  (Finsupp.linearCombination ℤ (fun g => chain2
+  MonoidAlgebra.linearCombination (fun g => chain2
     (strictOrderCxMap (namedSurfaceDeck ρ q u g) (namedSurfaceDeck ρ q u g).strictMono)
-    (namedPolygonFillingAt ρ q u v))).comp (MonoidAlgebra.coeffLinearEquiv ℤ).toLinearMap
+    (namedPolygonFillingAt ρ q u v))
 
 /-- The actual scalar reconstruction can be based at the particular pole
 arising from the chosen pre-substitution geometric reference. -/

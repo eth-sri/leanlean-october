@@ -15,7 +15,7 @@ theorem basedTriangle_eq_of_zero_coordinate (tau : Simplex X 2)
     (h : ∀ i : Fin 3, face i tau = ContinuousMap.const (Domain 1) x)
     (z : Domain 2) (i : Fin 3) (hi : z.val i = 0) : tau z = x := by
   obtain ⟨w, hw⟩ := domain_zero_coordinate_face z i hi
-  have he := congrArg (fun f : Simplex X 1 => f w) (h i)
+  have he := congrArg (fun f  => f w) (h i)
   change tau (stdSimplex.map (SimplexCategory.δ i) w) = x at he
   rwa [hw] at he
 
@@ -56,9 +56,9 @@ theorem squareCycle_basedTriangleSquare (tau : Simplex X 2)
 
 end FiniteChains.TopologicalSingular
 
-namespace FiniteChains.TopologicalSingular
-open CategoryTheory AlgebraicTopology
-open scoped Topology
-variable {X : Type} [TopologicalSpace X] {x : X}
 
-end FiniteChains.TopologicalSingular
+
+
+
+
+

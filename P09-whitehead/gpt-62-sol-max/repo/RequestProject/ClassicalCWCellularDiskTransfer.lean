@@ -26,7 +26,7 @@ structure CellularDiskTransfer where
   oldEmbedding : CWCellEmbedding K target
   comparison : ContinuousMap.HomotopyEquiv (DiskAttachment r) target
   square : comparison.toFun.comp
-      (⟨old r (boundaryFamilyInclusion J (Fin n → ℝ)), old_continuous _ _⟩ :
+      ((DiskAttachment.oldMap r) :
         C(P, DiskAttachment r)) = oldEmbedding.map.comp e.toFun
   finite : FiniteCells K → Finite J → FiniteCells target
   proper : Nonempty J → ∃ z : target, z ∉ Set.range oldEmbedding.map
@@ -48,18 +48,13 @@ def cellularDiskTransferOfRepresentative (hn : 0 < n) (hn₂ : n ≤ 2)
     finite := ?_
     proper := ?_ }
   · apply ContinuousMap.ext
-    intro p
-    change diskAttachingHomotopyEquiv (e.toFun.comp r) q H
-      (diskAttachmentBaseChangeHomotopyEquiv r e (old r _ p)) = old q _ (e p)
-    exact (congrArg (diskAttachingHomotopyEquiv (e.toFun.comp r) q H)
-      (diskAttachmentBaseChangeHomotopyEquiv_old r e p)).trans
-        (diskAttachingHomotopyEquiv_old (e.toFun.comp r) q H (e p))
+    solve_by_elim
   · intro hK hJ
     letI := hJ
     exact diskAttachment_finiteCells K n hn hn₂ q x₀ hq hK
   · intro hJ
     letI := hJ
-    have hnrange : Set.range E.map ≠ Set.univ :=
+    have hnrange  :=
       diskAttachment_old_ne_univ K n hn hn₂ q x₀ hq
     by_contra! hall
     exact hnrange (Set.eq_univ_of_forall hall)
@@ -74,7 +69,7 @@ def cellularDiskTransfer (hn : n = 1 ∨ n = 2) : CellularDiskTransfer K e n r :
     exact cellularDiskTransferOfRepresentative K e 1 r zero_lt_one (by omega)
       (vertexBoundaryMap a) (vertexBoundaryHomotopy a)
       (vertexBoundaryMap_finiteLowerBoundary a)
-  · have h₂ : n = 2 := hn.resolve_left h₁
+  · have h₂  := hn.resolve_left h₁
     subst n
     let a := e.toFun.comp r
     let h := FiniteChains.ClassicalCW.boundaryFamily_into_oneSkeleton K a
@@ -83,7 +78,7 @@ def cellularDiskTransfer (hn : n = 1 ∨ n = 2) : CellularDiskTransfer K e n r :
     exact cellularDiskTransferOfRepresentative K e 2 r (by omega) le_rfl q
       (Classical.choice hq.1) hq.2
 
-namespace CellularDiskTransfer
 
-end CellularDiskTransfer
+
+
 end Whitehead

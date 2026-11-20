@@ -50,11 +50,10 @@ theorem mem_shorter_chamber_iff {x : CayGroup A} {p : Sph A} (hp : InChamber x p
   · rintro ⟨y, hlt, hy⟩
     refine (mem_earlier_chamber_iff hp).1 ⟨y, ?_, le_of_lt hlt, hy⟩
     intro hxy
-    rw [hxy] at hlt
-    omega
+    simp_all
   · rintro ⟨s, hs⟩
     obtain ⟨hsσ, hsd⟩ := Finset.mem_inter.1 hs
-    obtain ⟨h1, -, h3⟩ := earlier_of_rdesc A (T := (p.spx : Set V)) (Finset.mem_coe.2 hsσ)
+    obtain ⟨h1, -, h3⟩ := earlier_of_rdesc A (T := p.spx) (Finset.mem_coe.2 hsσ)
       ((mem_rdescFinset A).1 hsd)
     refine ⟨x * gen A s, h3, ?_⟩
     have h2 : p.rep⁻¹ * (x * gen A s) = (p.rep⁻¹ * x) * (x⁻¹ * (x * gen A s)) := by group
@@ -63,22 +62,33 @@ theorem mem_shorter_chamber_iff {x : CayGroup A} {p : Sph A} (hp : InChamber x p
 
 /-! ### The filtration by length -/
 
+/-- Union of chambers indexed by a set. -/
+abbrev chamberUnion {G P : Type*} (C : G → P → Prop) (S : Set G) (p : P) :=
+  ∃ y ∈ S, C y p
+
+/-- Chambers of length at most `n`. -/
+abbrev chamberBall (A : CommRel V) (n : ℕ) : Set (CayGroup A) := {y | RACG.clen A y ≤ n}
+
 /-- The union of the chambers `F_y` with `ℓ(y) ≤ n`. -/
 def Upto (n : ℕ) (p : Sph A) : Prop := ∃ y : CayGroup A, RACG.clen A y ≤ n ∧ InChamber y p
 
-omit [Fintype V] in
-theorem upto_up {n : ℕ} {p q : Sph A} (hpq : p ≤ q) (hp : Upto n p) : Upto n q := by
-  obtain ⟨y, hy, hyp⟩ := hp
-  exact ⟨y, hy, inChamber_of_le hpq hyp⟩
+@[simp] theorem chamberUnion_singleton {G P : Type*} (C : G → P → Prop) (x : G) :
+    chamberUnion C {x} = C x := by funext p; simp [chamberUnion]
 
-omit [Fintype V] in
-theorem upto_zero_iff (p : Sph A) : Upto 0 p ↔ InChamber 1 p := by
-  constructor
-  · rintro ⟨y, hy, hyp⟩
-    have : y = 1 := (RACG.clen_eq_zero_iff A).1 (Nat.le_zero.1 hy)
-    rwa [this] at hyp
-  · intro h
-    exact ⟨1, by simp, h⟩
+theorem chamberUnion_insert {G P : Type*} (C : G → P → Prop) (x : G) (S : Set G) :
+    chamberUnion C (insert x S) = fun p => chamberUnion C S p ∨ C x p := by
+  funext p
+  simp [chamberUnion, Set.mem_insert_iff, or_and_right, exists_or, or_comm]
+
+theorem chamberUnion_up {G P : Type*} [Preorder P] {C : G → P → Prop}
+    (hC : ∀ y, IsUpperSet (C y : Set P)) {S : Set G} : IsUpperSet (chamberUnion C S : Set P) := by
+  rintro p q hpq ⟨y, hy, hp⟩
+  exact ⟨y, hy, hC y hpq hp⟩
+
+theorem unmixed_of_upper {P : Type*} [Preorder P] {B C : Set P}
+    (hB : IsUpperSet B) (hC : IsUpperSet C) {p q : P} (h : p ≤ q)
+    (hp : B p ∨ C p) : (B p ∧ B q) ∨ (C p ∧ C q) :=
+  hp.elim (fun hb => Or.inl ⟨hb, hB h hb⟩) (fun hc => Or.inr ⟨hc, hC h hc⟩)
 
 /-- The ball of radius `n` in the word metric is finite. -/
 theorem ball_finite (A : CommRel V) (n : ℕ) : {x : CayGroup A | RACG.clen A x ≤ n}.Finite := by
@@ -87,8 +97,7 @@ theorem ball_finite (A : CommRel V) (n : ℕ) : {x : CayGroup A | RACG.clen A x 
   obtain ⟨l, hl, hlx⟩ := exists_cword A x
   refine ⟨l, ?_, hlx⟩
   have : l.length = RACG.clen A x := by rw [← hlx, clen_cword A hl]
-  simp only [Set.mem_setOf_eq, this]
-  exact hx
+  simp_all
 
 /-- The elements of length exactly `n` form a finite set. -/
 theorem level_finite (A : CommRel V) (n : ℕ) : {x : CayGroup A | RACG.clen A x = n}.Finite :=
@@ -96,91 +105,69 @@ theorem level_finite (A : CommRel V) (n : ℕ) : {x : CayGroup A | RACG.clen A x
 
 /-! ### Adding the chambers of one length level -/
 
-/-- Adding, one at a time, finitely many chambers of length `n + 1` to the union of the chambers
-of length at most `n`. -/
-theorem nullIn_upto_insert (n : ℕ) (hnull : NullIn (Upto (A := A) n))
-    (hconn : ConnectedIn (Upto (A := A) n)) :
-    ∀ (S : Set (CayGroup A)), S.Finite → (∀ y ∈ S, RACG.clen A y = n + 1) →
-      NullIn (fun p : Sph A => Upto n p ∨ ∃ y ∈ S, InChamber y p) ∧
-        ConnectedIn (fun p : Sph A => Upto n p ∨ ∃ y ∈ S, InChamber y p) := by
-  intro S hS
-  induction S, hS using Set.Finite.induction_on with
-  | empty =>
-      intro _
-      constructor
-      · exact nullIn_congr (fun p => by simp [Upto]) hnull
-      · exact connectedIn_congr (fun p => by simp [Upto]) hconn
-  | @insert x S hxS hSfin ih =>
-      intro hlen
-      obtain ⟨hprevNull, hprevConn⟩ := ih (fun y hy => hlen y (Set.mem_insert_of_mem _ hy))
-      have hxlen : RACG.clen A x = n + 1 := hlen x (Set.mem_insert _ _)
-      have hx1 : x ≠ 1 := by
-        intro h
-        rw [h] at hxlen
-        simp at hxlen
-      set Prev : Sph A → Prop := fun p => Upto n p ∨ ∃ y ∈ S, InChamber y p with hPrev
-      have hup : ∀ p q : Sph A, p ≤ q → Prev p → Prev q := by
-        rintro p q hpq (h | ⟨y, hy, hyp⟩)
-        · exact Or.inl (upto_up hpq h)
-        · exact Or.inr ⟨y, hy, inChamber_of_le hpq hyp⟩
-      have hinter : ∀ p : Sph A, (Prev p ∧ InChamber x p) ↔
-          (InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty) := by
-        intro p
-        constructor
-        · rintro ⟨hprev, hpx⟩
-          refine ⟨hpx, ?_⟩
-          rcases hprev with ⟨y, hy, hyp⟩ | ⟨y, hyS, hyp⟩
-          · exact (mem_shorter_chamber_iff hpx).1 ⟨y, by omega, hyp⟩
-          · refine (mem_earlier_chamber_iff hpx).1 ⟨y, ?_, ?_, hyp⟩
-            · intro hxy
-              exact hxS (hxy ▸ hyS)
-            · rw [hlen y (Set.mem_insert_of_mem _ hyS), hxlen]
-        · rintro ⟨hpx, hne⟩
-          obtain ⟨y, hylt, hyp⟩ := (mem_shorter_chamber_iff hpx).2 hne
-          refine ⟨Or.inl ⟨y, ?_, hyp⟩, hpx⟩
-          omega
-      obtain ⟨hN, hC⟩ := nullIn_union_chamber hx1 Prev hup hprevNull hprevConn hinter
-      have hiff : ∀ p : Sph A, (Prev p ∨ InChamber x p) ↔
-          (Upto n p ∨ ∃ y ∈ insert x S, InChamber y p) := by
-        intro p
-        constructor
-        · rintro ((h | ⟨y, hy, hyp⟩) | h)
-          · exact Or.inl h
-          · exact Or.inr ⟨y, Set.mem_insert_of_mem _ hy, hyp⟩
-          · exact Or.inr ⟨x, Set.mem_insert _ _, h⟩
-        · rintro (h | ⟨y, hy, hyp⟩)
-          · exact Or.inl (Or.inl h)
-          · rcases Set.mem_insert_iff.1 hy with rfl | hy
-            · exact Or.inr hyp
-            · exact Or.inl (Or.inr ⟨y, hy, hyp⟩)
-      exact ⟨nullIn_congr hiff hN, connectedIn_congr hiff hC⟩
-
-/-- **Every loop inside the first `n` length levels of chambers is null-homotopic, and these
-unions are connected.** -/
-theorem nullIn_upto (A : CommRel V) : ∀ n : ℕ,
-    NullIn (Upto (A := A) n) ∧ ConnectedIn (Upto (A := A) n) := by
+/-- Induction on word-length balls, adjoining a finite layer one chamber at a time. -/
+theorem chamberInduction (A : CommRel V) (F : Set (CayGroup A) → Prop)
+    (base : F {1})
+    (step : ∀ (n : ℕ) (S : Set (CayGroup A)) (x : CayGroup A), x ∉ S →
+      RACG.clen A x = n + 1 → (∀ y ∈ S, RACG.clen A y ≤ RACG.clen A x) →
+      x ≠ 1 → F (chamberBall A n ∪ S) → F (insert x (chamberBall A n ∪ S))) :
+    ∀ n, F (chamberBall A n) := by
   intro n
   induction n with
-  | zero =>
-      constructor
-      · exact nullIn_congr (fun p => (upto_zero_iff p).symm) (nullIn_chamber 1)
-      · exact connectedIn_congr (fun p => (upto_zero_iff p).symm) (connectedIn_chamber 1)
+  | zero => simpa [chamberBall, RACG.clen_eq_zero_iff A] using base
   | succ n ih =>
-      obtain ⟨hN, hC⟩ :=
-        nullIn_upto_insert n ih.1 ih.2 {x : CayGroup A | RACG.clen A x = n + 1} (level_finite A (n + 1))
-          (fun _ hy => hy)
-      have hiff : ∀ p : Sph A,
-          (Upto n p ∨ ∃ y ∈ {x : CayGroup A | RACG.clen A x = n + 1}, InChamber y p) ↔ Upto (n + 1) p := by
-        intro p
-        constructor
-        · rintro (⟨y, hy, hyp⟩ | ⟨y, hy, hyp⟩)
-          · exact ⟨y, by omega, hyp⟩
-          · exact ⟨y, le_of_eq hy, hyp⟩
-        · rintro ⟨y, hy, hyp⟩
-          rcases Nat.lt_or_ge (RACG.clen A y) (n + 1) with h | h
-          · exact Or.inl ⟨y, by omega, hyp⟩
-          · exact Or.inr ⟨y, le_antisymm hy h, hyp⟩
-      exact ⟨nullIn_congr hiff hN, connectedIn_congr hiff hC⟩
+    have layer (S : Set (CayGroup A)) (hS : S.Finite) (h : ∀ y ∈ S, RACG.clen A y = n + 1) :
+        F (chamberBall A n ∪ S) := by
+      induction S, hS using Set.Finite.induction_on with
+      | empty => simpa using ih
+      | @insert x S hxS hS ihS =>
+        have hlen := h x (Set.mem_insert _ _)
+        have hs  := fun y hy => h y (Set.mem_insert_of_mem _ hy)
+        rw [Set.union_insert]
+        exact step n S x hxS hlen (fun y hy => (hs y hy).le.trans hlen.ge)
+          (by rintro rfl; simp at hlen) (ihS hs)
+    have he : chamberBall A (n + 1) = chamberBall A n ∪ {x | RACG.clen A x = n + 1} := by
+      ext x
+      change RACG.clen A x ≤ n + 1 ↔ RACG.clen A x ≤ n ∨ RACG.clen A x = n + 1
+      omega
+    rw [he]
+    exact layer _ (level_finite A (n + 1)) fun _ hy => hy
+
+/-- An intersection with the next chamber is already present at a strictly shorter level. -/
+theorem chamber_overlap {G : Type*} {L : G → ℕ} {C : G → Prop} {J : Prop}
+    {x : G} {S : Set G} {n : ℕ} (hx : x ∉ S) (hl : L x = n + 1)
+    (hlen : ∀ y ∈ S, L y ≤ L x)
+    (hshort : C x → ((∃ y, L y < L x ∧ C y) ↔ J))
+    (hearlier : C x → (∃ y, y ≠ x ∧ L y ≤ L x ∧ C y) → J) (hJ : J → C x) :
+    (((∃ y, L y ≤ n ∧ C y) ∨ ∃ y ∈ S, C y) ∧ C x) ↔ J := by
+  constructor
+  · rintro ⟨⟨y, hy, hcy⟩ | ⟨y, hy, hcy⟩, hcx⟩
+    · exact (hshort hcx).mp ⟨y, by omega, hcy⟩
+    · exact hearlier hcx ⟨y, fun h => hx (h ▸ hy), hlen y hy, hcy⟩
+  · intro h
+    obtain ⟨y, hy, hcy⟩ := (hshort (hJ h)).mpr h
+    exact ⟨Or.inl ⟨y, by omega, hcy⟩, hJ h⟩
+
+theorem upto_overlap {n : ℕ} {S : Set (CayGroup A)} {x : CayGroup A}
+    (hx : x ∉ S) (hl : RACG.clen A x = n + 1) (hs : ∀ y ∈ S, RACG.clen A y ≤ RACG.clen A x)
+    (p : Sph A) :
+    (chamberUnion InChamber (chamberBall A n ∪ S) p ∧ InChamber x p) ↔
+      (InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty) := by
+  simpa only [chamberUnion, chamberBall, Set.mem_union, Set.mem_ofPred_eq, or_and_right, exists_or] using
+    chamber_overlap (C := fun y => InChamber y p) hx hl hs
+    (fun h => (mem_shorter_chamber_iff h).trans (and_iff_right h).symm)
+    (fun h hy => ⟨h, (mem_earlier_chamber_iff h).mp hy⟩) And.left
+
+/-- The unions of the first `n` length levels are simply connected. -/
+theorem nullIn_upto (A : CommRel V) : ∀ n : ℕ,
+    NullIn (Upto (A := A) n) ∧ ConnectedIn (Upto (A := A) n) := by
+  apply chamberInduction A (fun S => NullIn (chamberUnion InChamber S) ∧
+    ConnectedIn (chamberUnion InChamber S))
+  · simpa only [chamberUnion_singleton] using And.intro (nullIn_chamber (A := A) 1) (connectedIn_chamber 1)
+  · intro n S x hx hl hs hne h
+    rw [chamberUnion_insert]
+    exact nullIn_union_chamber hne _ (fun _ _ hpq => chamberUnion_up (C := InChamber) (fun _ _ _ h => inChamber_of_le h) hpq)
+      h.1 h.2 (upto_overlap hx hl hs)
 
 /-! ### Simple connectivity of the whole complex -/
 

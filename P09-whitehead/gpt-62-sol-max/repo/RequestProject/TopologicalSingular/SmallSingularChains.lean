@@ -35,7 +35,7 @@ theorem single_mem_small (U : ι → Set X) (n : ℕ) (σ : Simplex X n) (r : �
 
 theorem boundary_mem_small (U : ι → Set X) (n : ℕ) {c : Chain X (n + 1)}
     (hc : c ∈ smallChains U (n + 1)) : boundary n c ∈ smallChains U n := by
-  apply VertexChains.map_mem_of_supported _ _ (boundary n) ?_ hc
+  apply Finsupp.map_mem_of_supported _ _ (boundary n) ?_ hc
   rintro σ ⟨j, hj⟩
   rw [boundary_single]
   apply Submodule.sum_mem
@@ -48,14 +48,14 @@ theorem push_mem_small (U : ι → Set X) {k : ℕ} (σ : Simplex X k)
     TopologicalSingular.map σ l c ∈ smallChains U l := by
   obtain ⟨j, hj⟩ := hσ
   induction c using Finsupp.induction with
-  | zero => rw [map_zero]; exact Submodule.zero_mem _
+  | zero => tauto
   | single_add τ r c _ _ ih =>
     rw [map_add, map_single]
     exact Submodule.add_mem _ (single_mem_small U l _ r ⟨j, fun z => hj (τ z)⟩) ih
 
 theorem fromModel_mem_small (U : ι → Set X) {k l : ℕ} (m : Chain (Domain k) l)
     {c : Chain X k} (hc : c ∈ smallChains U k) : fromModel m c ∈ smallChains U l := by
-  apply VertexChains.map_mem_of_supported _ _ (fromModel m) ?_ hc
+  apply Finsupp.map_mem_of_supported _ _ (fromModel m) ?_ hc
   intro σ hσ
   rw [fromModel_single, one_smul]
   exact push_mem_small U σ hσ l m
@@ -93,16 +93,14 @@ theorem exists_subdivision_small_single (U : ι → Set X) (hU : ∀ i, IsOpen (
     ∃ k, ((subdivide n)^[k]) (Finsupp.single σ 1) ∈ smallChains U n := by
   classical
   obtain ⟨δ, hδ, hball⟩ := lebesgue_number_lemma_of_metric
-    (isCompact_univ : IsCompact (Set.univ : Set (Domain n)))
+    isCompact_univ
     (fun i => (hU i).preimage σ.continuous)
     (by
-      intro z _
-      obtain ⟨i, hi⟩ := hcover z
-      exact Set.mem_iUnion.mpr ⟨i, hi⟩)
+      aesop)
   obtain ⟨k, hk⟩ := exists_pow_lt_of_lt_one hδ (shrink_lt_one n)
   refine ⟨k, ?_⟩
   rw [iterated_subdivide_single_model]
-  apply VertexChains.map_mem_of_supported {v | MeshBound v ((shrink n) ^ k * 1)} (smallChains U n)
+  apply Finsupp.map_mem_of_supported {v | MeshBound v ((shrink n) ^ k * 1)} (smallChains U n)
     ((TopologicalSingular.map σ n).comp (realize (convex_stdSimplex ℝ (Fin (n + 1))) n)) ?_ ?_
   · intro v hv
     rw [LinearMap.comp_apply, realize_single, map_single]
@@ -110,8 +108,6 @@ theorem exists_subdivision_small_single (U : ι → Set X) (hU : ∀ i, IsOpen (
       (Set.mem_univ _)
     apply single_mem_small
     refine ⟨i, fun z => hi ?_⟩
-    change dist (affineEval (convex_stdSimplex ℝ (Fin (n + 1))) v z)
-      (affineEval (convex_stdSimplex ℝ (Fin (n + 1))) v (stdSimplex.vertex 0)) < δ
     exact (affineEval_dist_le _ v _ hv z (stdSimplex.vertex 0)).trans_lt (by simpa using hk)
   · exact iterated_subdivide_mem_mesh (convex_stdSimplex ℝ (Fin (n + 1))) k n 1 zero_le_one
       (Finsupp.single_mem_supported ℤ 1 (standardVertices_mesh n))
@@ -120,11 +116,11 @@ theorem exists_subdivision_small (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
     (hcover : ∀ x, ∃ i, x ∈ U i) (n : ℕ) (c : Chain X n) :
     ∃ k, ((subdivide n)^[k]) c ∈ smallChains U n := by
   classical
-  choose K hK using fun σ : Simplex X n => exists_subdivision_small_single U hU n σ (fun z => hcover (σ z))
+  choose K hK using fun σ  => exists_subdivision_small_single U hU n σ (fun z => hcover (σ z))
   let N := c.support.sup K
   refine ⟨N, ?_⟩
   rw [← Module.End.pow_apply]
-  apply VertexChains.map_mem_of_supported (c.support : Set (Simplex X n)) (smallChains U n)
+  apply Finsupp.map_mem_of_supported c.support (smallChains U n)
     ((subdivide n) ^ N) ?_ (fun _ h => h)
   intro σ hσ
   rw [Module.End.pow_apply]

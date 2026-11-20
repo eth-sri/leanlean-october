@@ -20,8 +20,7 @@ theorem starBaseMap_mem (q : P) (x : orderNerveRealization (orderNerveVertexStar
     starBaseMap q x ∈ (orderNerveRealizationSubcomplex P (orderNerveVertexStar P q) :
       Set (orderNerveRealization P)) := by
   have h := (orderNerveRealizationSubtypeHomeomorph (orderNerveVertexStar P q) x).property
-  rw [orderNerveRealizationSubtypeHomeomorph_coe] at h
-  exact h
+  assumption
 
 def starLiftFibre (v : Cover p hp) (w : orderNerveVertexStar P v.1) :
     p ⁻¹' {orderNerveRealizationVertex w.val} :=
@@ -34,7 +33,7 @@ theorem starLiftFibre_center (v : Cover p hp) :
 
 theorem starLiftFibre_transport (v : Cover p hp)
     (w z : orderNerveVertexStar P v.1) (hwz : w ≤ z) :
-    hp.monodromy (Path.Homotopic.Quotient.mk (orderNerveRealizationEdgePath (show w.val ≤ z.val from hwz)))
+    hp.monodromy (Path.Homotopic.Quotient.mk (orderNerveRealizationEdgePath (hwz)))
       (starLiftFibre p hp v w) = starLiftFibre p hp v z := by
   let γ := orderNerveRealizationEdgePath hwz
   let β : Path (orderNerveRealizationVertex w.val) (orderNerveRealizationVertex z.val) :=
@@ -42,21 +41,19 @@ theorem starLiftFibre_transport (v : Cover p hp)
       continuous_toFun := (starBaseMap v.1).continuous.comp γ.continuous
       source' := by rw [γ.source]; exact orderNerveRealizationMap_vertex _ _ w
       target' := by rw [γ.target]; exact orderNerveRealizationMap_vertex _ _ z }
-  have hβσ : β.Homotopic (orderNerveRealizationEdgePath (show w.val ≤ z.val from hwz)) := by
+  have hβσ : β.Homotopic (orderNerveRealizationEdgePath hwz) := by
     letI := orderNerveRealization_closedStar_contractible v.1
-    apply paths_homotopic_of_range_subset
-      (A := (orderNerveRealizationSubcomplex P (orderNerveVertexStar P v.1) :
-        Set (orderNerveRealization P))) (by
-        exact inferInstanceAs (SimplyConnectedSpace
-          (orderNerveRealizationSubcomplex P (orderNerveVertexStar P v.1) : Set (orderNerveRealization P))))
+    apply Path.homotopic_of_range_subset
+      (A := (orderNerveRealizationSubcomplex P (orderNerveVertexStar P v.1))) (inferInstanceAs (SimplyConnectedSpace
+          (orderNerveRealizationSubcomplex P (orderNerveVertexStar P v.1))))
     · rintro x ⟨t, rfl⟩
       exact starBaseMap_mem v.1 (γ t)
-    · exact orderNerveRealizationEdgePath_supported (P := P) (show w.val ≤ z.val from hwz) v.1 w.property z.property
+    · exact orderNerveRealizationEdgePath_supported (P := P) hwz v.1 w.property z.property
   rw [← show Path.Homotopic.Quotient.mk β =
     Path.Homotopic.Quotient.mk (orderNerveRealizationEdgePath (show w.val ≤ z.val from hwz))
       from Quotient.sound hβσ]
-  let Γ : C(I, E) := (starLift p hp v).comp γ.toContinuousMap
-  have h₀ : β 0 = p (starLiftFibre p hp v w).val :=
+  let Γ  := (starLift p hp v).comp γ.toContinuousMap
+  have h₀  :=
     β.source.trans (starLiftFibre p hp v w).property.symm
   have hΓ : Γ = hp.liftPath β (starLiftFibre p hp v w).val h₀ := by
     apply (hp.eq_liftPath_iff' h₀).mpr
@@ -89,7 +86,7 @@ theorem starLift_vertex (v w : Cover p hp) (hw : w ≤ v ∨ v ≤ w) :
       rw [starLiftFibre_transport p hp v z (starCenter v.1) hle,
         starLiftFibre_center]
       exact (comparable_transport p hp hwv).symm
-    · have hle : starCenter v.1 ≤ z := (projection_monotone p hp) hvw
+    · have hle  := (projection_monotone p hp) hvw
       have h := starLiftFibre_transport p hp v (starCenter v.1) z hle
       rw [starLiftFibre_center] at h
       exact h.symm.trans (comparable_transport p hp hvw)

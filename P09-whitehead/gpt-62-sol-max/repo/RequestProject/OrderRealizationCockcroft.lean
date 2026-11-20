@@ -1,14 +1,18 @@
 module
 
-public import RequestProject.TopologicalPi1Lifting
-public import RequestProject.OrderRealizationHurewicz
+public import RequestProject.TopologicalSingular.HurewiczIsomorphismConsequences
+public import Mathlib.Topology.Homotopy.Lifting
+public import RequestProject.TopologicalSingular.HurewiczInjectivity
+public import RequestProject.TopologicalSingular.TetrahedronGeneralFaceRelation
+public import RequestProject.TopologicalSingular.CoherentSimplexExtension
+public import RequestProject.TopologicalSingular.StationaryTriangleNormalization
+public import RequestProject.TopologicalSingular.HurewiczSurjectivity
+public import RequestProject.OrderNerveSingularH2Iso
+public import RequestProject.OrderUniversalRealizationSimplyConnected
 public import RequestProject.OrderUniversalRealizationCover
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology

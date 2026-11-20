@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.CellularChainMapZero
+public import RequestProject.FinsuppBasis
 
 @[expose] public section
 
@@ -12,10 +13,9 @@ universe u
 variable {X Y : Complex2.{u}} (f : Hom X Y)
 
 theorem augC_chain0 (z : X.V →₀ ℤ) : augC Y (chain0 f z) = augC X z := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, map_add, map_add, hz, hw]
-  | single v n => simp [chain0, augC_single]
+  finsupp_basis z
+  intro v
+  simp [chain0, augC_single]
 
 theorem isAcyclic_iff_of_cell_bijections
     (hV : Function.Bijective f.onV) (hE : Function.Bijective f.onE)
@@ -55,7 +55,7 @@ theorem isAcyclic_iff_of_cell_bijections
       rw [bdry2_chain2, bdry2_chain2, hab]
     · intro a ha
       have hcycle : bdry1 Y (chain1 f a) = 0 := by
-        rw [bdry1_chain1, ha, map_zero]
+        exact chain1_cycle _ ha
       obtain ⟨b, hb⟩ := h.h1 (chain1 f a) hcycle
       obtain ⟨b', rfl⟩ := sF b
       exact ⟨b', iE (by rwa [← bdry2_chain2])⟩

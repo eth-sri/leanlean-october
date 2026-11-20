@@ -4,9 +4,7 @@ public import RequestProject.OrderNerveRealizationSimplices
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -18,10 +16,7 @@ noncomputable def orderNerveAffineSimplex {P : Type} [PartialOrder P] (v : P →
     C(SimplexCategory.toTop.obj n, ℝ) where
   toFun z := ∑ i, z.down.weights i * v (s.obj i)
   continuous_toFun := by
-    apply continuous_finset_sum
-    intro i _
-    exact ((continuous_apply i).comp ((Convexity.StdSimplex.isEmbedding_toFun_comp_weights ℝ (Fin (n.len + 1))).continuous.comp continuous_uliftDown)).mul
-      continuous_const
+    fun_prop
 
 /-- Affine interpolation respects every actual topological simplex operator. -/
 theorem orderNerveAffineSimplex_operator {P : Type} [PartialOrder P] (v : P → ℝ)
@@ -32,12 +27,12 @@ theorem orderNerveAffineSimplex_operator {P : Type} [PartialOrder P] (v : P → 
   classical
   change (∑ j, (Finsupp.mapDomain a.toOrderHom z.down.weights) j * v (s.obj j)) =
     ∑ i, z.down.weights i * v (s.obj (a.toOrderHom i))
-  have hw : (fun j => (Finsupp.mapDomain a.toOrderHom z.down.weights) j) =
+  have hw : ((Finsupp.mapDomain a.toOrderHom z.down.weights)) =
       FunOnFinite.linearMap ℝ ℝ a.toOrderHom z.down.weights := by
     funext j
     simp [FunOnFinite.linearMap_apply_apply, Finsupp.mapDomain_apply, Finsupp.sum_fintype,
       Finsupp.single_apply, Finset.sum_filter, eq_comm]
-  change (∑ j, (fun j => (Finsupp.mapDomain a.toOrderHom z.down.weights) j) j * v (s.obj j)) = _
+  change (∑ j, ((Finsupp.mapDomain a.toOrderHom z.down.weights)) j * v (s.obj j)) = _
   rw [hw]
   simp only [FunOnFinite.linearMap_apply_apply, Finset.sum_mul]
   have h := Finset.sum_fiberwise Finset.univ a.toOrderHom
@@ -47,7 +42,7 @@ theorem orderNerveAffineSimplex_operator {P : Type} [PartialOrder P] (v : P → 
   intro j _
   apply Finset.sum_congr rfl
   intro i hi
-  have ha : a.toOrderHom i = j := (Finset.mem_filter.mp hi).2
+  have ha  := (Finset.mem_filter.mp hi).2
   rw [ha]
 
 /-- The compatible affine functions form an actual cocone on the realized
@@ -85,9 +80,13 @@ noncomputable def orderNerveAffineRealization {P : Type} [PartialOrder P] (v : P
 
 /-- The global affine function has the prescribed formula on each canonical simplex. -/
 theorem orderNerveAffineRealization_simplex {P : Type} [PartialOrder P] (v : P → ℝ)
-    {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n)) :
-    orderNerveRealizationSimplex P s ≫ orderNerveAffineRealization v =
-      TopCat.ofHom (orderNerveAffineSimplex v s) := by
+    {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n))
+    (z : SimplexCategory.toTop.obj n) :
+    orderNerveAffineRealization v (orderNerveRealizationSimplex P s z) =
+      orderNerveAffineSimplex v s z := by
+  suffices h : orderNerveRealizationSimplex P s ≫ orderNerveAffineRealization v =
+      TopCat.ofHom (orderNerveAffineSimplex v s) by
+    exact congrArg (fun k => k z) h
   letI := sSetTopAdj.leftAdjoint_preservesColimits
   have h := (CategoryTheory.Limits.isColimitOfPreserves SSet.toTop
     (Presheaf.colimitOfRepresentable (nerve P))).fac (orderNerveAffineCocone v)
@@ -119,13 +118,7 @@ theorem orderNerveRealizationSimplex_injective {P : Type} [PartialOrder P]
   intro i
   let v : P → ℝ := fun p => if p = s.obj i then 1 else 0
   have hf := congrArg (orderNerveAffineRealization v) h
-  have hc := congrArg (fun k => k z) (orderNerveAffineRealization_simplex v s)
-  have hd := congrArg (fun k => k w) (orderNerveAffineRealization_simplex v s)
-  change orderNerveAffineRealization v (orderNerveRealizationSimplex P s z) =
-    orderNerveAffineSimplex v s z at hc
-  change orderNerveAffineRealization v (orderNerveRealizationSimplex P s w) =
-    orderNerveAffineSimplex v s w at hd
-  rw [hc, hd] at hf
+  rw [orderNerveAffineRealization_simplex, orderNerveAffineRealization_simplex] at hf
   exact (orderNerveAffineSimplex_indicator s hs i z).symm.trans
     (hf.trans (orderNerveAffineSimplex_indicator s hs i w))
 

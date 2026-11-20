@@ -57,9 +57,9 @@ theorem arcConcat_range (n : ℕ) (v : Fin (n + 2) → X)
     constructor
     · rintro (⟨i, hi⟩ | hlast)
       · exact ⟨i.castSucc, hi⟩
-      · exact ⟨Fin.last (n + 1), hlast⟩
+      · tauto
     · rintro ⟨i, hi⟩
-      refine Fin.lastCases (fun hi => Or.inr hi)
+      refine Fin.lastCases Or.inr
         (fun j hj => Or.inl ⟨j, hj⟩) i hi
 
 theorem arcConcat_injective (n : ℕ) (v : Fin (n + 2) → X)
@@ -78,8 +78,8 @@ theorem arcConcat_injective (n : ℕ) (v : Fin (n + 2) → X)
     · intro s t h
       obtain ⟨i, u, hu⟩ := (arcConcat_range n (v ∘ Fin.castSucc)
         (fun i => F i.castSucc) _).mp ⟨s, rfl⟩
-      have ht : t = 0 := (hmeet i.castSucc (Fin.last (n + 1))
-        (by exact Fin.castSucc_lt_last i) u t (hu.trans h)).2
+      have ht  := (hmeet i.castSucc (Fin.last (n + 1))
+        (Fin.castSucc_lt_last i) u t (hu.trans h)).2
       rw [ht, (F (Fin.last (n + 1))).source] at h
       exact h
 

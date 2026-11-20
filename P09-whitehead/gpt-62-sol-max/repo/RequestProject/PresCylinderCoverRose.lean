@@ -41,7 +41,7 @@ theorem cylinderCoverCollapsedChain_support_rose (c : StrictOrdEdge P →₀ ℤ
       let r : StrictOrdEdge P := ⟨(cylinderCoverCollapse w hf t.1.1,
         cylinderCoverCollapse w hf t.1.2),
         lt_of_le_of_ne (cylinderCoverCollapse_monotone w hf t.2.le) h⟩
-      change e ∈ (n • Finsupp.single r (1 : ℤ)).support at he
+      change e ∈ (n • Finsupp.single r 1).support at he
       have hr : e = r := by
         by_contra hn
         have hz : (n • Finsupp.single r (1 : ℤ)) e = 0 := by simp [Ne.symm hn]

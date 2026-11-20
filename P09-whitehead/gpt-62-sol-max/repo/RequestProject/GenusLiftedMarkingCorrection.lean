@@ -6,8 +6,6 @@ public import RequestProject.GenusEquivariantCapFillings
 @[expose] public section
 
 /-! Genuine old-block cover chains correcting the surviving-spine marking to its surface loop. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -37,19 +35,7 @@ theorem exists_lifted_marking_correction (x : Fin q × Bool) :
     (mapPath (surfCx (cmpRel (GenusVertex q))) (gSig q (x.1.val, x.2)))
     (posQCube (gBase q)) hp (spineMarkedLoop_toOld_htpy q x)
   refine ⟨d, ?_⟩
-  have he1 : mapPath (oldToFullCube q)
-      (mapPath (genusSpineToOld q) (spineMarkedLoop q x).1) =
-      mapPath (markedSpineToFullCube q) (markedSpineLoop q x).1 := by
-    convert congrArg (fun p => mapPath (oldToFullCube q)
-      (mapPath (genusSpineToOld q) p)) (markedSpineLoop_inclusion q x).symm using 1 <;>
-      simp only [markedSpineToFullCube, mapPath, Hom.comp, List.map_map, Function.comp_def] <;> rfl
-  have he2 : mapPath (oldToFullCube q)
-      (mapPath (surfCx (cmpRel (GenusVertex q))) (gSig q (x.1.val, x.2))) =
-      mapPath (orderCxMap (surfaceFullCube (cmpRel (GenusVertex q)))
-        (surfaceFullCube_monotone _)) (gSig q (x.1.val, x.2)) := by
-    simp only [mapPath, List.map_map]
-    rfl
-  rw (config := { transparency := .default }) [he1, he2] at hd
+  erw [← markedSpineLoop_inclusion, mapPath_comp, mapPath_comp, mapPath_comp] at hd
   exact hd
 
 noncomputable def liftedMarkingCorrection (x : Fin q × Bool) :

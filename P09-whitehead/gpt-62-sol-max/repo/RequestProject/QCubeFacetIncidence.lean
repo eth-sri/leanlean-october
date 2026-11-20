@@ -39,8 +39,6 @@ theorem threeFacet_incidence_one (c : QCube A) {u v w : V}
     incid (qCubeToCoordinate (qCubeFacet c v 1)) v = 1 ∧
     incid (qCubeToCoordinate (qCubeFacet c u 1)) u = -1 := by
   obtain ⟨hw, hv, hu⟩ := threeFacet_incidence_zero c huv hvw hs
-  simp only [qCubeFacet_incidence_zero] at hw hv hu
-  simp only [qCubeFacet_incidence_one, hw, hv, hu]
-  norm_num
+  simp_all [qCubeFacet_incidence_zero, qCubeFacet_incidence_one]
 
 end FiniteChains.Davis

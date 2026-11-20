@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.WedgeCockcroft
+public import RequestProject.BlockCockcroft
 
 @[expose] public section
 
@@ -57,7 +57,7 @@ def killOther (s : S) : FreeGroup (Σ t, α t) →* FreeGroup (α s) :=
       : FreeGroup (α s) →* FreeGroup (α s)) = MonoidHom.id _ :=
     FreeGroup.ext_hom _ _ fun a => by
       simp [killOther]
-  exact congrArg (fun F : FreeGroup (α s) →* FreeGroup (α s) => F w) h
+  exact congrArg (fun F  => F w) h
 
 @[simp] theorem killOther_map_other {s t : S} (hst : t ≠ s) (w : FreeGroup (α t)) :
     killOther (α := α) s (FreeGroup.map (Sigma.mk t) w) = 1 := by
@@ -65,7 +65,7 @@ def killOther (s : S) : FreeGroup (Σ t, α t) →* FreeGroup (α s) :=
       : FreeGroup (α t) →* FreeGroup (α s)) = 1 :=
     FreeGroup.ext_hom _ _ fun a => by
       simp [killOther, hst]
-  exact congrArg (fun F : FreeGroup (α t) →* FreeGroup (α s) => F w) h
+  exact congrArg (fun F  => F w) h
 
 variable [∀ s, DecidableEq (α s)]
 
@@ -79,7 +79,7 @@ theorem isBlock_sigmaWedge (s : S) :
     obtain ⟨t, j⟩ := l
     have hts : t ≠ s := by
       rintro rfl
-      exact hl ⟨j, rfl⟩
+      tauto
     rw [sigmaWedgeRel_mk]
     refine fox_map_of_not_mem_range (Sigma.mk t) ?_ (ρ t j)
     intro a hcontra
@@ -91,9 +91,8 @@ theorem isBlock_sigmaWedge (s : S) :
     · subst hts
       rw [sigmaWedgeRel_mk, killOther_map_self]
       exact Subgroup.subset_normalClosure (Set.mem_range_self _)
-    · rw [sigmaWedgeRel_mk, killOther_map_other hts]
-      exact one_mem _
+    · simp [killOther_map_other hts]
 
-variable [Fintype S] [∀ s, Fintype (α s)] [∀ s, Fintype (J s)]
+
 
 end FiniteChains

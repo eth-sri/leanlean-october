@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.ChamberZPi1Base
-public import RequestProject.ChamberZAction
+public import RequestProject.ChamberZPoset
+public import RequestProject.CoverLevelComparison
 public import RequestProject.RACGSpecialParity
 
 @[expose] public section
@@ -46,9 +47,7 @@ variable {V : Type u} [DecidableEq V] {A : CommRel V} {X : Type u} [Preorder X]
 def IsGamma (A : CommRel V) (w : CayGroup A) : Prop := phi A w = 0
 
 theorem isGamma_one : IsGamma A (1 : CayGroup A) := by
-  show phi A 1 = 0
-  rw [← cword_nil A, phi_cword, parList_nil]
-  rfl
+  tauto
 
 /-! ### The cubes of `C(L)` -/
 
@@ -71,14 +70,10 @@ theorem QCube.ext' {c d : QCube A} (hs : c.spx = d.spx)
   have hsgn : c.sgn = d.sgn := by
     funext v
     by_cases h : v ∈ d.spx
-    · rw [c.sgn_eq_zero v (by rw [hs]; exact h), d.sgn_eq_zero v h]
+    · rw [c.sgn_eq_zero v (by simp_all), d.sgn_eq_zero v h]
     · exact hv v h
   obtain ⟨s, e, h1, h2⟩ := c
-  obtain ⟨s', e', h1', h2'⟩ := d
-  simp only at hs hsgn
-  subst hs
-  subst hsgn
-  rfl
+  simp_all
 
 /-- **The face order of the cubes**: a face has fewer directions and agrees with the signs of
 the bigger cube outside it. -/
@@ -120,43 +115,23 @@ protected def Qle : Qpos A X att → Qpos A X att → Prop
 
 instance qposPreorder : Preorder (Qpos A X att) where
   le := Davis.Qle
-  le_refl q := by
-    cases q with
-    | inl c => exact le_refl c.1
-    | inr x => exact le_refl x
-  le_trans q q' q'' hqq' hq'q'' := by
-    cases q with
-    | inl c =>
-        cases q' with
-        | inl d =>
-            cases q'' with
-            | inl e => exact le_trans hqq' hq'q''
-            | inr y => exact hq'q''.elim
-        | inr y => exact hqq'.elim
-    | inr x =>
-        cases q' with
-        | inl d =>
-            cases q'' with
-            | inl e =>
-                obtain ⟨hne, hx⟩ := hqq'.2
-                have hsgn : e.1.sgn = 0 := by
-                  funext v
-                  show e.1.sgn v = 0
-                  by_cases hv : v ∈ e.1.spx
-                  · exact e.1.sgn_eq_zero v hv
-                  · have hd : d.1.sgn v = 0 := by
-                      simpa using congrFun (show d.1.sgn = 0 from hqq'.1) v
-                    rw [← hq'q''.2 v hv, hd]
-                refine ⟨hsgn, Finset.Nonempty.mono hq'q''.1 hne, ?_⟩
-                exact le_trans hx (att.monotone (show (⟨d.1.spx, hne, d.1.isSimplex⟩ : NeSpx A) ≤
-                  ⟨e.1.spx, Finset.Nonempty.mono hq'q''.1 hne, e.1.isSimplex⟩ from hq'q''.1))
-            | inr y => exact hq'q''.elim
-        | inr y =>
-            cases q'' with
-            | inl e =>
-                obtain ⟨hne, hy⟩ := hq'q''.2
-                exact ⟨hq'q''.1, hne, le_trans hqq' hy⟩
-            | inr z => exact le_trans hqq' hq'q''
+  le_refl q := by cases q <;> exact le_rfl
+  le_trans q q' q'' h k := by
+    change Davis.Qle q q' at h
+    change Davis.Qle q' q'' at k
+    show Davis.Qle q q''
+    cases q <;> cases q' <;> cases q'' <;> simp only [Davis.Qle] at * <;>
+      (try solve | contradiction | exact le_trans h k)
+    · rename_i c d
+      obtain ⟨hne, hx⟩ := h.2
+      refine ⟨?_, hne.mono k.1, hx.trans (att.monotone k.1)⟩
+      funext v
+      by_cases hv : v ∈ d.1.spx
+      · exact d.1.sgn_eq_zero v hv
+      · rw [← k.2 v hv, h.1]
+    · obtain ⟨hne, hy⟩ := k.2
+      exact ⟨k.1, hne, h.trans hy⟩
+
 
 /-- The inclusion of the copy of the base poset in `Q` is monotone. -/
 theorem qNew_monotone : Monotone (qNew (A := A) (X := X) (att := att)) := fun _ _ h => h
@@ -168,30 +143,28 @@ theorem phi_rep_eq_of_inChamber {x : CayGroup A} {p : Sph A} (h : InChamber x p)
     (hv : v ∉ p.spx) : phi A p.rep v = phi A x v := by
   have hmul : phi A x = phi A p.rep + phi A (p.rep⁻¹ * x) := by
     have := phi_mul A p.rep (p.rep⁻¹ * x)
-    rwa [mul_inv_cancel_left] at this
-  have hzero : phi A (p.rep⁻¹ * x) v = 0 :=
+    simp_all
+  have hzero  :=
     phi_eq_zero_of_mem_specialSub A h (by simpa using hv)
-  rw [congrFun hmul v, Pi.add_apply, hzero, add_zero]
+  simp_all
 
 /-- `p ≤ q` puts the representative of `p` in the coset of `q`. -/
 theorem inChamber_rep_of_le {p q : Sph A} (h : p ≤ q) : InChamber p.rep q := by
   have := Subgroup.inv_mem _ h.2
-  rwa [mul_inv_rev, inv_inv] at this
+  assumption
 
 /-- **Two cells of one chamber with the same type coincide.** -/
 theorem eq_of_inChamber_spx_eq {x : CayGroup A} {r r' : Sph A} (hr : InChamber x r)
     (hr' : InChamber x r') (hs : r.spx = r'.spx) : r = r' := by
-  have hT : Commuting A (r.spx : Set V) := commuting_of_isSimplex r.isSimplex
+  have hT  := commuting_of_isSimplex r.isSimplex
   have huniq := existsUnique_shortest_coset A hT x
   refine Sph.ext' (huniq.unique ?_ ?_) hs
   · refine ⟨?_, fun s hs' => r.no_rdesc s (Finset.mem_coe.1 hs')⟩
     have := Subgroup.inv_mem _ hr
-    rwa [mul_inv_rev, inv_inv] at this
+    assumption
   · refine ⟨?_, fun s hs' => r'.no_rdesc s (Finset.mem_coe.1 (by rw [← hs]; exact hs'))⟩
     have := Subgroup.inv_mem _ hr'
-    rw [mul_inv_rev, inv_inv] at this
-    rw [show (r.spx : Set V) = (r'.spx : Set V) by rw [hs]]
-    exact this
+    simp_all
 
 /-! ### The projection -/
 
@@ -206,7 +179,6 @@ noncomputable def qProjCube (p : Sph A) : QCube A where
   isSimplex := p.isSimplex
   sgn_eq_zero v hv := by simp [qProjSgn, hv]
 
-@[simp] theorem qProjCube_spx (p : Sph A) : (qProjCube p).spx = p.spx := rfl
 
 theorem qProjCube_sgn_of_not_mem {p : Sph A} {v : V} (hv : v ∉ p.spx) :
     (qProjCube p).sgn v = phi A p.rep v := by simp [qProjCube, qProjSgn, hv]
@@ -219,7 +191,7 @@ theorem qProjCube_eq_iff {p : Sph A} {c : QCube A} :
     exact ⟨rfl, fun v hv => (qProjCube_sgn_of_not_mem hv).symm⟩
   · rintro ⟨hs, hv⟩
     refine QCube.ext' hs (fun v hvc => ?_)
-    rw [qProjCube_sgn_of_not_mem (show v ∉ p.spx by rw [hs]; exact hvc)]
+    rw [qProjCube_sgn_of_not_mem (show v ∉ p.spx by simp_all)]
     exact hv v hvc
 
 /-- A cell whose cube is retained is not a marked apex. -/
@@ -230,9 +202,9 @@ theorem not_isMarkedApex_of_qProjCube_eq {r : Sph A} {c : QCube A}
   refine hc ⟨by rw [← h]; exact hemp, ?_⟩
   funext v
   show c.sgn v = 0
-  have hv : v ∉ r.spx := by rw [show r.spx = ∅ from hemp]; simp
+  have hv : v ∉ r.spx := by simp_all
   rw [← h, qProjCube_sgn_of_not_mem hv]
-  simpa using congrFun (show phi A r.rep = 0 from hrep) v
+  simpa using congrFun hrep v
 
 theorem not_vplus_qProjCube {p : Sph A} (hp : ¬ IsMarkedApex (IsGamma A) p) :
     ¬ ((qProjCube p).spx = ∅ ∧ (qProjCube p).sgn = 0) := by
@@ -256,7 +228,7 @@ noncomputable def zProj : Zpos A X (IsGamma A) att → Qpos A X att
 theorem zProj_monotone : Monotone (zProj (A := A) (X := X) (att := att)) := by
   rintro (p | ⟨u, x⟩) (q | ⟨v, y⟩) h
   · refine ⟨h.1, fun w hw => ?_⟩
-    have hwp : w ∉ p.1.spx := fun hc => hw (h.1 hc)
+    have hwp  := fun hc => hw (h.1 hc)
     rw [qProjCube_sgn_of_not_mem hwp, qProjCube_sgn_of_not_mem hw]
     exact (phi_rep_eq_of_inChamber (inChamber_rep_of_le h) hw).symm
   · exact h.elim
@@ -267,7 +239,7 @@ theorem zProj_monotone : Monotone (zProj (A := A) (X := X) (att := att)) := by
     by_cases hw : w ∈ q.1.spx
     · exact (qProjCube q.1).sgn_eq_zero w hw
     · rw [qProjCube_sgn_of_not_mem hw, phi_rep_eq_of_inChamber h.1 hw]
-      simpa using congrFun (show phi A u.1 = 0 from u.2) w
+      simpa using congrFun (u.2) w
   · exact h.2
 
 /-! ### Surjectivity -/
@@ -283,22 +255,21 @@ theorem exists_zOld_qProjCube (c : QCube A) :
   refine ⟨chamberPt w c.isSimplex, ?_⟩
   rw [qProjCube_eq_iff]
   refine ⟨rfl, fun v hv => ?_⟩
-  rw [phi_rep_eq_of_inChamber (chamberPt_inChamber w c.isSimplex) (by simpa using hv), hw]
+  rw [phi_rep_eq_of_inChamber (chamberPt_inChamber w c.isSimplex) (by aesop), hw]
 
 /-- **The projection is onto.** -/
 theorem zProj_surjective : Function.Surjective (zProj (A := A) (X := X) (att := att)) := by
   rintro (⟨c, hc⟩ | x)
   · obtain ⟨p, hp⟩ := exists_zOld_qProjCube c
     refine ⟨zOld p (not_isMarkedApex_of_qProjCube_eq hc hp), ?_⟩
-    show qOld _ _ = qOld c hc
-    exact congrArg Sum.inl (Subtype.ext hp)
+    aesop
   · exact ⟨zNew ⟨1, isGamma_one⟩ x, rfl⟩
 
 end Surjective
 
 /-! ### `Γ`-invariance and the fibres -/
 
-variable {k : CayGroup A}
+
 
 end Davis
 end FiniteChains

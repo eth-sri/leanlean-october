@@ -47,15 +47,15 @@ the first and coming back along the second is null-homotopic. -/
 theorem htpy_of_loop_nil {a b : X.V} {p q : List (X.E × Bool)}
     (hp : IsPath X.src X.tgt p a b) (hq : IsPath X.src X.tgt q a b)
     (h : Htpy X a a (p ++ revPath q) []) : Htpy X a b p q := by
-  have hrq : IsPath X.src X.tgt (revPath q) b a := isPath_revPath hq
+  have hrq  := isPath_revPath hq
   have h1 : Htpy X a b (p ++ (revPath q ++ q)) q := by
-    have hh := h.congr_append (r := ([] : List (X.E × Bool))) (s := q) rfl hq
-    simpa using hh
-  have h2 : Htpy X a b (p ++ (revPath q ++ q)) (p ++ []) :=
+    have hh := h.congr_append (r := ([])) (s := q) rfl hq
+    aesop
+  have h2  :=
     Htpy.append_congr hp (isPath_append_iff.mpr ⟨a, hrq, hq⟩) (Htpy.refl p)
       (htpy_revPath_append hq)
   have h3 := h2.symm.trans h1
-  simpa using h3
+  aesop
 
 /-- Appending a fixed path on the right of a homotopy. -/
 theorem htpy_append_right {a b c : X.V} {p q r : List (X.E × Bool)}
@@ -82,8 +82,7 @@ def cmpRel (P : Type u) [PartialOrder P] : CommRel P where
     rintro a b ⟨h1, h2⟩
     exact ⟨h1.symm, h2.symm⟩
   rel_irrefl := by
-    rintro a ⟨h, -⟩
-    exact h rfl
+    simp
 
 /-- **The simplices of the comparability graph are the chains.** -/
 theorem isSimplex_cmpRel_iff {σ : Finset P} :
@@ -91,10 +90,10 @@ theorem isSimplex_cmpRel_iff {σ : Finset P} :
   constructor
   · intro h x hx y hy
     by_cases hxy : x = y
-    · exact Or.inl (le_of_eq hxy)
+    · simp_all
     · exact (h x hx y hy hxy).2
   · intro h x hx y hy hxy
-    exact ⟨hxy, h x hx y hy⟩
+    tauto
 
 /-- The chain with one element: a vertex of the barycentric subdivision. -/
 def spx1 (x : P) : NeSpx (cmpRel P) :=
@@ -107,22 +106,15 @@ omit [DecidableEq P] in
 def spx2 {x y : P} (h : x ≤ y) : NeSpx (cmpRel P) :=
   ⟨{x, y}, ⟨x, by simp⟩, by
     refine isSimplex_cmpRel_iff.2 ?_
-    intro a ha b hb
-    simp only [Finset.mem_insert, Finset.mem_singleton] at ha hb
-    rcases ha with rfl | rfl <;> rcases hb with rfl | rfl
-    exacts [Or.inl le_rfl, Or.inl h, Or.inr h, Or.inl le_rfl]⟩
+    simp_all⟩
 
 @[simp] theorem spx2_val {x y : P} (h : x ≤ y) : (spx2 h).1 = {x, y} := rfl
 
 theorem spx1_le_spx2_left {x y : P} (h : x ≤ y) : spx1 x ≤ spx2 h := by
-  intro a ha
-  simp only [spx1_val, Finset.mem_singleton] at ha
-  simp [ha]
+  intro a ha <;> simp_all
 
 theorem spx1_le_spx2_right {x y : P} (h : x ≤ y) : spx1 y ≤ spx2 h := by
-  intro a ha
-  simp only [spx1_val, Finset.mem_singleton] at ha
-  simp [ha]
+  intro a ha <;> simp_all
 
 /-! ### Paths crossing a chain -/
 
@@ -167,16 +159,11 @@ def StarCh (t : P) (σ : NeSpx (cmpRel P)) : Prop := ∀ x ∈ σ.1, x ≤ t
 
 omit [DecidableEq P] in
 theorem starCh_spx1 {t x : P} (h : x ≤ t) : StarCh t (spx1 x) := by
-  intro a ha
-  simp only [spx1_val, Finset.mem_singleton] at ha
-  exact ha ▸ h
+  intro a ha <;> aesop
 
 theorem starCh_spx2 {t x y : P} (hxy : x ≤ y) (hx : x ≤ t) (hy : y ≤ t) :
     StarCh t (spx2 hxy) := by
-  intro a ha
-  simp only [spx2_val, Finset.mem_insert, Finset.mem_singleton] at ha
-  rcases ha with rfl | rfl
-  exacts [hx, hy]
+  intro a ha <;> aesop
 
 /-- The chain obtained by adding the cell `t` to a chain of its star. -/
 def insCh (t : P) (σ : NeSpx (cmpRel P)) (hσ : StarCh t σ) : NeSpx (cmpRel P) :=
@@ -186,14 +173,12 @@ def insCh (t : P) (σ : NeSpx (cmpRel P)) (hσ : StarCh t σ) : NeSpx (cmpRel P)
     simp only [Finset.mem_insert] at ha hb
     rcases ha with rfl | ha
     · rcases hb with rfl | hb
-      · exact Or.inl le_rfl
-      · exact Or.inr (hσ b hb)
+      · aesop
+      · tauto
     · rcases hb with rfl | hb
-      · exact Or.inl (hσ a ha)
+      · tauto
       · exact isSimplex_cmpRel_iff.1 σ.2.2 a ha b hb⟩
 
-@[simp] theorem insCh_val (t : P) (σ : NeSpx (cmpRel P)) (hσ : StarCh t σ) :
-    (insCh t σ hσ).1 = insert t σ.1 := rfl
 
 /-- **The filling tool.**  A loop of the subdivision all of whose chains consist of faces of one
 fixed cell `t` is null-homotopic: the closed star of a cell is a cone. -/
@@ -216,8 +201,8 @@ omit [DecidableEq P] in
 /-- A two-edge path inside the star of `t`. -/
 theorem pathIn_hop {t : P} {a b c : NeSpx (cmpRel P)} (ha : a ≤ c) (hb : b ≤ c)
     (hc : StarCh t c) : PathIn (StarCh t) (hop ha hb) := by
-  have hA : StarCh t a := fun x hx => hc x (ha hx)
-  have hB : StarCh t b := fun x hx => hc x (hb hx)
+  have hA  := fun x hx => hc x (ha hx)
+  have hB  := fun x hx => hc x (hb hx)
   intro e he
   simp only [hop, List.mem_cons, List.not_mem_nil, or_false] at he
   rcases he with rfl | rfl
@@ -246,20 +231,10 @@ theorem exists_greatest_chain {σ : Finset P} (hne : σ.Nonempty)
     (hch : ∀ x ∈ σ, ∀ y ∈ σ, x ≤ y ∨ y ≤ x) : ∃ m, m ∈ σ ∧ ∀ x ∈ σ, x ≤ m := by
   classical
   induction σ using Finset.induction_on with
-  | empty => exact absurd hne (by simp)
+  | empty => simp_all
   | insert a s ha ih =>
       by_cases hs : s.Nonempty
-      · obtain ⟨m, hm, hmax⟩ := ih hs (fun x hx y hy =>
-          hch x (Finset.mem_insert_of_mem hx) y (Finset.mem_insert_of_mem hy))
-        rcases hch a (Finset.mem_insert_self _ _) m (Finset.mem_insert_of_mem hm) with h | h
-        · refine ⟨m, Finset.mem_insert_of_mem hm, ?_⟩
-          intro x hx
-          rcases Finset.mem_insert.1 hx with rfl | hx
-          exacts [h, hmax x hx]
-        · refine ⟨a, Finset.mem_insert_self _ _, ?_⟩
-          intro x hx
-          rcases Finset.mem_insert.1 hx with rfl | hx
-          exacts [le_rfl, le_trans (hmax x hx) h]
+      · grind
       · refine ⟨a, Finset.mem_insert_self _ _, ?_⟩
         intro x hx
         rcases Finset.mem_insert.1 hx with rfl | hx
@@ -285,14 +260,7 @@ theorem chainMax_monotone : Monotone (chainMax (P := P)) := by
   simpa using h
 
 @[simp] theorem chainMax_spx2 {x y : P} (h : x ≤ y) : chainMax (spx2 h) = y := by
-  have hmem := chainMax_mem (spx2 h)
-  have hy : y ≤ chainMax (spx2 h) := le_chainMax (spx2 h) (by simp)
-  simp only [spx2_val, Finset.mem_insert, Finset.mem_singleton] at hmem
-  rcases hmem with hx | hy'
-  · refine le_antisymm ?_ hy
-    rw [hx]
-    exact h
-  · exact hy'
+  grind +locals
 
 /-- **The attaching map induced by a monotone labelling of the cells.** -/
 noncomputable def nerveAtt {X : Type v} [Preorder X] (g : P →o X) : NeSpx (cmpRel P) →o X :=

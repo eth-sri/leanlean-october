@@ -43,9 +43,6 @@ theorem pi1_mk_append {p q : List (X.E × Bool)} (hp : IsPath X.src X.tgt p a a)
     (hq : IsPath X.src X.tgt q a a) (hpq : IsPath X.src X.tgt (p ++ q) a a) :
     Pi1.mk (⟨p ++ q, hpq⟩ : Loop X a) = Pi1.mk ⟨p, hp⟩ * Pi1.mk ⟨q, hq⟩ := rfl
 
-theorem pi1_mk_rev {p : List (X.E × Bool)} (hp : IsPath X.src X.tgt p a a)
-    (hr : IsPath X.src X.tgt (revPath p) a a) :
-    Pi1.mk (⟨revPath p, hr⟩ : Loop X a) = (Pi1.mk ⟨p, hp⟩)⁻¹ := rfl
 
 theorem pi1_mk_congr {p p' : List (X.E × Bool)} (hp : IsPath X.src X.tgt p a a)
     (hp' : IsPath X.src X.tgt p' a a) (e : p = p') :
@@ -93,9 +90,9 @@ variable {κ ι : Type u} {M : ℕ} [NeZero M] [DecidableEq κ] [DecidableEq ι]
 /-- **A side glued to another one with reversed orientation gives the reversed crossing.** -/
 theorem bdEdge_rev {p p' : Fin M} (he : ec p' = ec p) (hv : vc p' = vc (p + 1))
     (hv' : vc (p' + 1) = vc p) : bdEdge hc p' = revPath (bdEdge hc p) := by
-  have hE : cE hc p' = cE hc p := congrArg (fun k => toS vc ec hc (bed k)) he
-  have hV : cV hc p' = cV hc (p + 1) := congrArg (fun k => toS vc ec hc (vtx k)) hv
-  have hV' : cV hc (p' + 1) = cV hc p := congrArg (fun k => toS vc ec hc (vtx k)) hv'
+  have hE  := congrArg (fun k => toS vc ec hc (bed k)) he
+  have hV  := congrArg (fun k => toS vc ec hc (vtx k)) hv
+  have hV'  := congrArg (fun k => toS vc ec hc (vtx k)) hv'
   rw [bdEdge, bdEdge, revPath_append, revPath_edgeHop, revPath_edgeHopRev]
   refine congrArg₂ (· ++ ·) ?_ ?_
   · exact edgeHop_congr _ _ hV hE

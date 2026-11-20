@@ -45,7 +45,7 @@ variable {k H}
 
 theorem groupRingIncl_apply_mem (x : MonoidAlgebra k H) (q : Q) (hq : q ∈ H) :
     (groupRingIncl k H x).coeff q = x.coeff (⟨q, hq⟩ : H) :=
-  Finsupp.mapDomain_apply_of_injective Subtype.val_injective x.coeff (⟨q, hq⟩ : H)
+  Finsupp.mapDomain_apply_of_injective Subtype.val_injective x.coeff ⟨q, hq⟩
 
 theorem groupRingIncl_apply_notMem (x : MonoidAlgebra k H) (q : Q) (hq : q ∉ H) :
     (groupRingIncl k H x).coeff q = 0 := by
@@ -86,7 +86,7 @@ theorem mk_eq_iff {q r : Q} :
 chosen representative of the coset `c`. -/
 noncomputable def cosetCombination :
     (RightCosets H →₀ MonoidAlgebra k H) →ₗ[MonoidAlgebra k H] MonoidAlgebra k Q :=
-  Finsupp.linearCombination (MonoidAlgebra k H) fun c => single (cosetRep H c) (1 : k)
+  Finsupp.linearCombination (MonoidAlgebra k H) fun c => single (cosetRep H c) 1
 
 /-- The coefficients of `cosetCombination`: the `q`-th coefficient only sees the coset of
 `q`, at the position `q · (rep of its coset)⁻¹` of `H`. -/
@@ -98,7 +98,7 @@ theorem cosetCombination_apply (F : RightCosets H →₀ MonoidAlgebra k H) (q :
   classical
   rw [cosetCombination, Finsupp.linearCombination_apply, Finsupp.sum]
   have hterm : ∀ c ∈ F.support,
-      (F c • single (cosetRep H c) (1 : k) : MonoidAlgebra k Q).coeff q =
+      (F c • single (cosetRep H c) 1).coeff q =
         if Quotient.mk (QuotientGroup.rightRel H) q = c then
           (F (Quotient.mk (QuotientGroup.rightRel H) q)).coeff
             ⟨q * (cosetRep H (Quotient.mk (QuotientGroup.rightRel H) q))⁻¹,
@@ -120,8 +120,8 @@ theorem cosetCombination_apply (F : RightCosets H →₀ MonoidAlgebra k H) (q :
         simpa using (Subgroup.inv_mem _ hmem)
       rw [this]
       exact Quotient.out_eq c
-  have hsum : (∑ c ∈ F.support, F c • single (cosetRep H c) (1 : k) : MonoidAlgebra k Q).coeff q
-      = ∑ c ∈ F.support, (F c • single (cosetRep H c) (1 : k) : MonoidAlgebra k Q).coeff q := by
+  have hsum : (∑ c ∈ F.support, F c • single (cosetRep H c) (1 : k)).coeff q
+      = ∑ c ∈ F.support, (F c • single (cosetRep H c) 1).coeff q := by
     simp [MonoidAlgebra.coeff_sum]
   rw [hsum, Finset.sum_congr rfl hterm, Finset.sum_ite_eq F.support]
   by_cases hq : Quotient.mk (QuotientGroup.rightRel H) q ∈ F.support
@@ -139,11 +139,10 @@ noncomputable def cosetEquiv : Q ≃ (RightCosets H × H) where
   left_inv q := by simp
   right_inv p := by
     obtain ⟨c, h, hh⟩ := p
-    have hmk : Quotient.mk (QuotientGroup.rightRel H) ((h : Q) * cosetRep H c) = c := by
-      have : Quotient.mk (QuotientGroup.rightRel H) ((h : Q) * cosetRep H c) =
+    have hmk : Quotient.mk (QuotientGroup.rightRel H) (h * cosetRep H c) = c := by
+      have : Quotient.mk (QuotientGroup.rightRel H) (h * cosetRep H c) =
           Quotient.mk (QuotientGroup.rightRel H) (cosetRep H c) := by
-        rw [mk_eq_iff]
-        simpa using Subgroup.inv_mem _ hh
+        simp_all [mk_eq_iff]
       rw [this]; exact Quotient.out_eq c
     ext
     · exact hmk
@@ -156,17 +155,11 @@ theorem cosetCombination_bijective :
   constructor
   · intro F G hFG
     ext c h
-    have h1 := congrArg (fun f : MonoidAlgebra k Q => f.coeff ((h : Q) * cosetRep H c)) hFG
+    have h1 := congrArg (fun f  => f.coeff (h * cosetRep H c)) hFG
     simp only [cosetCombination_apply] at h1
     have hmk : Quotient.mk (QuotientGroup.rightRel H) ((h : Q) * cosetRep H c) = c :=
       congrArg Prod.fst ((cosetEquiv (H := H)).right_inv (c, h))
-    simp only [hmk] at h1
-    have heq : (⟨(h : Q) * cosetRep H c * (cosetRep H c)⁻¹,
-        show (h : Q) * cosetRep H c * (cosetRep H c)⁻¹ ∈ H by
-          simpa [hmk] using mul_cosetRep_inv_mem ((h : Q) * cosetRep H c)⟩ : H) = h := by
-      ext; simp
-    simp only [heq] at h1
-    exact h1
+    simp_all
   · intro f
     refine MonoidAlgebra.induction f ⟨0, map_zero _⟩ ?_
     rintro q a g - - ⟨G, hG⟩
@@ -184,8 +177,5 @@ noncomputable def cosetBasis :
     (LinearEquiv.ofBijective (cosetCombination (k := k) (H := H))
       cosetCombination_bijective).symm
 
-/-- **`k[Q]` is a free `k[H]`-module.** -/
-instance groupRing_free : Module.Free (MonoidAlgebra k H) (MonoidAlgebra k Q) :=
-  Module.Free.of_basis (cosetBasis (k := k) (H := H))
 
 end FiniteChains

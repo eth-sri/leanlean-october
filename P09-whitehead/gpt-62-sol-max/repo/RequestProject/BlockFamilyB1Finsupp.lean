@@ -1,6 +1,7 @@
 module
 
 public import RequestProject.BlockFamilyBlockwiseFinsupp
+public import RequestProject.FinsuppBasis
 public import RequestProject.BaseChangeExactFinsupp
 
 @[expose] public section
@@ -19,9 +20,6 @@ inputs. This source has not been compiled under the current workflow.
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -39,16 +37,12 @@ theorem fsRingMapBoundary_mapRange (φ : R →+* S) (A : J → I →₀ R)
     (y : J →₀ R) :
     fsRingMapBoundary φ A (y.mapRange φ (map_zero _)) =
       (Finsupp.linearCombination R A y).mapRange φ (map_zero _) := by
-  induction y using Finsupp.induction_linear with
-  | zero => simp [fsRingMapBoundary]
-  | add y z hy hz =>
-      rw [Finsupp.mapRange_add, map_add, map_add, Finsupp.mapRange_add, hy, hz] <;>
-        exact fun a b => map_add φ a b
-  | single j a =>
-      simp only [Finsupp.mapRange_single, fsRingMapBoundary,
-        Finsupp.linearCombination_single]
-      ext i
-      exact (map_mul φ a (A j i)).symm
+  finsupp_singles y [ Finsupp.mapRange_add ]
+  intro j a
+  simp only [Finsupp.mapRange_single, fsRingMapBoundary,
+    Finsupp.linearCombination_single]
+  ext i
+  exact (map_mul φ a (A j i)).symm
 
 end RingMap
 
@@ -67,12 +61,12 @@ theorem fs_cycle_mem_span_groupMap_cycles (f : G →* G') (hf : Function.Injecti
         v = y.mapRange (MonoidAlgebra.mapDomainRingHom ℤ f) (map_zero _)} := by
   classical
   let H := f.range
-  let e : G ≃* H := MonoidHom.ofInjective hf
-  let φ : MonoidAlgebra ℤ G →+* MonoidAlgebra ℤ H :=
+  let e  := MonoidHom.ofInjective hf
+  let φ  :=
     MonoidAlgebra.mapDomainRingHom ℤ e.toMonoidHom
-  let ψ : MonoidAlgebra ℤ H →+* MonoidAlgebra ℤ G :=
+  let ψ  :=
     MonoidAlgebra.mapDomainRingHom ℤ e.symm.toMonoidHom
-  let θ : MonoidAlgebra ℤ G →+* MonoidAlgebra ℤ G' :=
+  let θ  :=
     MonoidAlgebra.mapDomainRingHom ℤ f
   have hφ : ∀ a, subRingHom H (φ a) = θ a := by
     intro a
@@ -83,12 +77,11 @@ theorem fs_cycle_mem_span_groupMap_cycles (f : G →* G') (hf : Function.Injecti
     intro a
     change MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ a) = a
     rw [← MonoidAlgebra.mapDomain_comp]
-    have he : (e.toMonoidHom : G → H) ∘ (e.symm.toMonoidHom : H → G) = id := by
-      funext g
-      exact e.apply_symm_apply g
+    have he : e.toMonoidHom ∘ e.symm.toMonoidHom = id := by
+      simp
     rw [he, MonoidAlgebra.mapDomain_id]
   have hφinj : Function.Injective φ := fun _ _ h => MonoidAlgebra.coeff_injective (Finsupp.mapDomain_injective e.injective (congrArg MonoidAlgebra.coeff h))
-  let A' : J → I →₀ MonoidAlgebra ℤ H :=
+  let A'  :=
     fun j => (A j).mapRange φ (map_zero _)
   have hboundary : fsExtendedBoundary H A' = fsRingMapBoundary θ A := by
     apply Finsupp.lhom_ext
@@ -96,7 +89,7 @@ theorem fs_cycle_mem_span_groupMap_cycles (f : G →* G') (hf : Function.Injecti
     simp only [fsExtendedBoundary, fsRingMapBoundary, Finsupp.linearCombination_single]
     congr 1
     ext i : 1
-    exact hφ (A j i)
+    tauto
   have hx' : fsExtendedBoundary H A' x = 0 := by
     rw [hboundary]
     exact hx
@@ -118,7 +111,7 @@ theorem fs_cycle_mem_span_groupMap_cycles (f : G →* G') (hf : Function.Injecti
     apply Finsupp.ext
     intro i
     apply hφinj
-    have hi := congrArg (fun z : I →₀ MonoidAlgebra ℤ H => z i) hb
+    have hi := congrArg (fun z  => z i) hb
     simpa only [Finsupp.mapRange_apply, Finsupp.zero_apply, map_zero] using hi
   · apply Finsupp.ext
     intro j
@@ -141,29 +134,26 @@ def fsSurfaceChain (c : ∀ s, Mt s →₀ R) (s : Sx) : (Jr ⊕ (Σ s, Mt s)) �
 
 @[simp] theorem fsSurfaceChain_inl (c : ∀ s, Mt s →₀ R) (s : Sx) (j : Jr) :
     fsSurfaceChain c s (Sum.inl j) = 0 := by
-  apply Finsupp.mapDomain_notin_range
-  rintro ⟨m, h⟩
-  exact Sum.inr_ne_inl h
+  apply Finsupp.mapDomain_notin_range <;> simp
 
 @[simp] theorem fsSurfaceChain_inr (c : ∀ s, Mt s →₀ R) (s : Sx) (m : Mt s) :
     fsSurfaceChain (Jr := Jr) c s (Sum.inr ⟨s, m⟩) = c s m := by
   apply Finsupp.mapDomain_apply_of_injective
-  intro a b h
-  exact eq_of_heq (Sigma.mk.inj (Sum.inr_injective h)).2
+  intro a b h <;> simp_all
 
 theorem fsSurfaceChain_inr_of_ne (c : ∀ s, Mt s →₀ R) {s t : Sx}
     (hst : s ≠ t) (m : Mt t) :
     fsSurfaceChain (Jr := Jr) c s (Sum.inr ⟨t, m⟩) = 0 := by
   apply Finsupp.mapDomain_notin_range
   rintro ⟨a, h⟩
-  exact hst (congrArg Sigma.fst (Sum.inr_injective h))
+  simp_all
 
 @[simp] theorem fsCellsBase_single_inl (c : ∀ s, Mt s →₀ R) (j : Jr) :
     fsCellsBase c (Finsupp.single (Sum.inl j) 1) = Finsupp.single (Sum.inl j) 1 := by
   classical
   ext k
   cases k with
-  | inl i => simp only [fsCellsBase_inl, Finsupp.single_apply, Sum.inl.injEq]
+  | inl i => simp [fsCellsBase_inl, Finsupp.single_apply, Sum.inl.injEq]
   | inr p => obtain ⟨s, m⟩ := p; simp
 
 @[simp] theorem fsCellsBase_single_inr (c : ∀ s, Mt s →₀ R) (s : Sx) :
@@ -175,8 +165,7 @@ theorem fsSurfaceChain_inr_of_ne (c : ∀ s, Mt s →₀ R) {s t : Sx}
   | inr p =>
       obtain ⟨t, m⟩ := p
       by_cases hst : s = t
-      · subst t
-        simp
+      · aesop
       · simp [hst, fsSurfaceChain_inr_of_ne c hst m]
 
 /-- Include old generator chains by extension by zero on the internal ones. -/
@@ -195,7 +184,7 @@ theorem fsOldOneIncl_injective {α Z : Type u} :
     Function.Injective (fsOldOneIncl (α := α) (Z := Z) (R := R)) := by
   intro x y h
   ext i
-  exact congrArg (fun z : (α ⊕ Z) →₀ R => z (Sum.inl i)) h
+  exact congrArg (fun z  => z (Sum.inl i)) h
 
 end ChainColumns
 
@@ -351,21 +340,9 @@ theorem fsGenerates_familySubst (c : ∀ s, Mt s →₀ R')
   have hmem := fs_cycle_mem_span_groupMap_cycles (substHomF ρ bsub hfill) hinj
     (fun k => coverFoxGradient (relSub ρ) (ρ k)) y hy
   rw [← hxy]
-  clear hy hxy
-  induction hmem using Submodule.span_induction with
-  | mem v hv =>
-      obtain ⟨a, ha, rfl⟩ := hv
-      apply Submodule.subset_span
-      exact ⟨a, ha, rfl⟩
-  | zero =>
-      rw [map_zero]
-      exact Submodule.zero_mem _
-  | add v w hv hw hv' hw' =>
-      rw [map_add]
-      exact Submodule.add_mem _ hv' hw'
-  | smul a v hv hv' =>
-      rw [map_smul]
-      exact Submodule.smul_mem _ a hv'
+  refine Submodule.span_mono ?_ (Submodule.apply_mem_span_image_of_mem_span (fsCellsBase c) hmem)
+  rintro _ ⟨_, ⟨a, ha, rfl⟩, rfl⟩
+  exact ⟨a, ha, rfl⟩
 
 end Substitution
 

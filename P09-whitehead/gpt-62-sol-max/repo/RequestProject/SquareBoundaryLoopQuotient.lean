@@ -15,8 +15,6 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
@@ -60,7 +58,7 @@ theorem squareBoundaryTraversal_surjective : Function.Surjective squareBoundaryT
   simp only [squareBoundaryTraversal, Path.trans_range]
   rcases s with ⟨i, b⟩
   fin_cases i <;> cases b
-  · exact Or.inl (Or.inl ⟨t, rfl⟩)
+  · tauto
   · exact Or.inr (Or.inl ⟨unitInterval.symm t, by
       simp [squareTraversalRight]⟩)
   · exact Or.inr (Or.inr ⟨unitInterval.symm t, by
@@ -75,8 +73,8 @@ theorem squareBoundaryTraversal_fiber {s t : I}
       (((squareBoundaryTraversal u).val 0 : ℝ), ((squareBoundaryTraversal u).val 1 : ℝ)) =
         if (u : ℝ) ≤ 1 / 2 then
           if 2 * (u : ℝ) ≤ 1 / 2 then (0, 4 * (u : ℝ)) else (4 * (u : ℝ) - 1, 1)
-        else if 2 * (u : ℝ) - 1 ≤ 1 / 2 then (1, 3 - 4 * (u : ℝ))
-        else (4 - 4 * (u : ℝ), 0) := by
+        else if 2 * (u : ℝ) - 1 ≤ 1 / 2 then (1, 3 - 4 * u)
+        else (4 - 4 * u, 0) := by
     simp only [squareBoundaryTraversal, Path.trans_apply]
     by_cases hu : (u : ℝ) ≤ 1 / 2
     · rw [dif_pos hu, if_pos hu]
@@ -98,7 +96,7 @@ theorem squareBoundaryTraversal_fiber {s t : I}
           Path.symm_apply, Function.comp_apply, unitInterval.coe_symm_eq]
         ring
   have he := (coords s).symm.trans
-    ((congrArg (fun z : SquareBoundary => ((z.val 0 : ℝ), (z.val 1 : ℝ))) h).trans (coords t))
+    ((congrArg (fun z  => ((z.val 0 : ℝ), (z.val 1 : ℝ))) h).trans (coords t))
   have hs₀ := s.property.1
   have hs₁ := s.property.2
   have ht₀ := t.property.1
@@ -127,9 +125,9 @@ def squareLoopDesc {x : X} (p : Path x x) : C(SquareBoundary, X) where
       change p (Function.surjInv squareBoundaryTraversal_surjective (squareBoundaryTraversal t)) = p t
       have h := Function.surjInv_eq squareBoundaryTraversal_surjective (squareBoundaryTraversal t)
       rcases squareBoundaryTraversal_fiber h with h | ⟨h₀, h₁⟩ | ⟨h₀, h₁⟩
-      · exact congrArg p h
-      · rw [h₀, h₁, p.source, p.target]
-      · rw [h₀, h₁, p.source, p.target]
+      · aesop
+      · simp_all
+      · simp_all
     rw [he]
     exact p.continuous
 
@@ -139,22 +137,22 @@ def squareLoopDesc {x : X} (p : Path x x) : C(SquareBoundary, X) where
   rcases squareBoundaryTraversal_fiber h with h | ⟨h₀, h₁⟩ | ⟨h₀, h₁⟩
   · exact congrArg p h
   · change p _ = p t
-    rw [h₀, h₁, p.source, p.target]
+    simp_all
   · change p _ = p t
-    rw [h₀, h₁, p.source, p.target]
+    simp_all
 
 theorem squareLoopDesc_map (f : C(SquareBoundary, X)) :
     squareLoopDesc (squareBoundaryTraversal.map f.continuous) = f := by
   apply ContinuousMap.ext
   intro z
   obtain ⟨t, rfl⟩ := squareBoundaryTraversal_surjective z
-  exact squareLoopDesc_traversal _ t
+  aesop
 
 /-- A homotopy of based traversal loops gives a homotopy of the actual
 attaching maps; equality of group words is never used as a substitute. -/
 def squareLoopDescHomotopy {x : X} {p q : Path x x} (H : p.Homotopy q) :
     (squareLoopDesc p).Homotopy (squareLoopDesc q) := by
-  let F : C(I, C(I, X)) := (H.toHomotopy.toContinuousMap.comp
+  let F  := (H.toHomotopy.toContinuousMap.comp
     ⟨Prod.swap, continuous_swap⟩).curry
   let D : C(SquareBoundary, C(I, X)) := {
     toFun z := F (Function.surjInv squareBoundaryTraversal_surjective z)
@@ -167,11 +165,11 @@ def squareLoopDescHomotopy {x : X} {p q : Path x x} (H : p.Homotopy q) :
         intro τ
         have hs := Function.surjInv_eq squareBoundaryTraversal_surjective (squareBoundaryTraversal s)
         rcases squareBoundaryTraversal_fiber hs with hs | ⟨h₀, h₁⟩ | ⟨h₀, h₁⟩
-        · exact congrArg (fun z => H (τ, z)) hs
+        · simp_all
         · change H (τ, _) = H (τ, s)
-          rw [h₀, h₁, H.source, H.target]
+          simp_all
         · change H (τ, _) = H (τ, s)
-          rw [h₀, h₁, H.source, H.target]
+          simp_all
       rw [he]
       exact F.continuous }
   exact {

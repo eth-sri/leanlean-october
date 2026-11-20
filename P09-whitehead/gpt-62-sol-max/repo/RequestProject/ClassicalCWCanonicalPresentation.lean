@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.StabilizedWordComparison
 public import RequestProject.HomeomorphContinuousMap
 public import RequestProject.ClassicalCWWordDiskModel
 public import RequestProject.ClassicalRoseWordNaturality
@@ -43,67 +44,14 @@ theorem canonicalWords_mk (j : CanonicalRel K) :
     FreeGroup.mk (canonicalWords K j) = canonicalRelators K j :=
   mk_presCanonicalWords (canonicalRelators K) (canonicalDummy K) j
 
-def stabilizedOriginalCellBoundary (j : CanonicalRel K) :
-    C(UnitBoundary (Fin 2 → ℝ), ClassicalGraphModel.Rose (CanonicalGen K)) :=
-  (StabilizedDiskPresentation.attaching (originalRoseWordAttaching K)).comp
-    ⟨Sigma.mk (β := fun _ : CanonicalRel K => UnitBoundary (Fin 2 → ℝ)) j,
-      by exact continuous_sigmaMk⟩
-
-theorem stabilizedOriginalCellBoundary_old (j : OriginalRoseRel K) :
-    (stabilizedOriginalCellBoundary K (Sum.inl j)).Homotopic
-      (classicalPresCellBoundary (canonicalWords K) (Sum.inl j) (canonicalWords_ne_nil K)) := by
-  let f : OriginalRoseGen K → CanonicalGen K := Sum.inl
-  have H := (ContinuousMap.Homotopic.refl (diskRoseMap f)).comp
-    (boundaryWords_homotopic_classicalWord (originalRoseWords K j))
-  rw [classicalRoseWordBoundary_map] at H
-  have he : FreeGroup.mk (((originalRoseWords K j).loopWord).map (fun p => (f p.1, p.2))) =
-      FreeGroup.mk (canonicalWords K (Sum.inl j)) := by
-    calc
-      _ = canonicalRelators K (Sum.inl j) := rfl
-      _ = _ := (canonicalWords_mk K (Sum.inl j)).symm
-  have Hword := classicalRoseWordBoundary_homotopic_of_mk_eq he
-  have Hcanonical := classicalPresWordAttaching_homotopic_read
-    (canonicalWords K) (Sum.inl j) (canonicalWords_ne_nil K)
-  exact H.trans (Hword.trans Hcanonical.symm)
-
-theorem stabilizedOriginalCellBoundary_dummy (u : PUnit) :
-    (stabilizedOriginalCellBoundary K (Sum.inr u)).Homotopic
-      (classicalPresCellBoundary (canonicalWords K) (Sum.inr u) (canonicalWords_ne_nil K)) := by
-  cases u
-  let f : PUnit → CanonicalGen K := Sum.inr
-  have H := (ContinuousMap.Homotopic.refl (diskRoseMap f)).comp
-    dummyCircleBoundaryHomeomorph_homotopic_word
-  rw [classicalRoseWordBoundary_map] at H
-  have he : FreeGroup.mk ([(PUnit.unit, true)].map (fun p => (f p.1, p.2))) =
-      FreeGroup.mk (canonicalWords K (Sum.inr PUnit.unit)) :=
-    (canonicalWords_mk K (Sum.inr PUnit.unit)).symm
-  have Hword := classicalRoseWordBoundary_homotopic_of_mk_eq he
-  have Hcanonical := classicalPresWordAttaching_homotopic_read
-    (canonicalWords K) (Sum.inr PUnit.unit) (canonicalWords_ne_nil K)
-  exact H.trans (Hword.trans Hcanonical.symm)
-
-theorem stabilizedOriginalCellBoundary_homotopic (j : CanonicalRel K) :
-    (stabilizedOriginalCellBoundary K j).Homotopic
-      (classicalPresCellBoundary (canonicalWords K) j (canonicalWords_ne_nil K)) := by
-  cases j with
-  | inl j => exact stabilizedOriginalCellBoundary_old K j
-  | inr u => exact stabilizedOriginalCellBoundary_dummy K u
-
-/-- Disjoint-union topology assembles all the actual circle homotopies;
-the original cell family is allowed to be infinite. -/
+/-- Disjoint-union topology assembles the relator homotopies. -/
 def originalCanonicalAttachingHomotopy :
     (StabilizedDiskPresentation.attaching (originalRoseWordAttaching K)).Homotopy
-      (classicalPresWordAttaching (canonicalWords K) (canonicalWords_ne_nil K)) := by
-  let H (j : CanonicalRel K) := Classical.choice (stabilizedOriginalCellBoundary_homotopic K j)
-  let F : C(BoundaryFamily (CanonicalRel K) (Fin 2 → ℝ),
-      C(I, ClassicalGraphModel.Rose (CanonicalGen K))) :=
-    ⟨fun a => ((H a.1).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry a.2,
-      continuous_sigma (fun j =>
-        ((H j).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry.continuous)⟩
-  exact {
-    toContinuousMap := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
-    map_zero_left := fun a => (H a.1).apply_zero a.2
-    map_one_left := fun a => (H a.1).apply_one a.2 }
+      (classicalPresWordAttaching (canonicalWords K) (canonicalWords_ne_nil K)) :=
+  stabilizedPresAttachingHomotopy _ (fun j => (originalRoseWords K j).loopWord) _ _
+    (fun j => boundaryWords_homotopic_classicalWord (originalRoseWords K j))
+    (fun j => (canonicalWords_mk K (Sum.inl j)).symm)
+    (canonicalWords_mk K (Sum.inr PUnit.unit)).symm
 
 /-- The original space itself, with no replacement hypothesis, is
 homotopy equivalent to the literal canonical rose-and-word-disks model. -/

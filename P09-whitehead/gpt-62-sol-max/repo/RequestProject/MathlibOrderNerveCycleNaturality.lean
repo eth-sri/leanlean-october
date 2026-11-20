@@ -6,9 +6,7 @@ public import RequestProject.OrderNerveH2Maps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q]

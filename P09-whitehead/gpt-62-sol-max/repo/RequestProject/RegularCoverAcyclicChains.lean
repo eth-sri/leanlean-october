@@ -25,8 +25,6 @@ def regularCoverChainInclusion (n i : ℕ) :
     Hom (regularCoverChainStages T hD p n i) (regularCoverChainStages T hD p n (i + 1)) :=
   (acyclicRelativeCellChain T hD n).descInc p i
 
-@[simp] theorem regularCoverChainStages_zero (n : ℕ) :
-    regularCoverChainStages T hD p n 0 = K := rfl
 
 theorem regularCoverChainInclusion_V (n i : ℕ) :
     Function.Injective (regularCoverChainInclusion T hD p n i).onV :=
@@ -56,17 +54,13 @@ theorem regularCoverChain_zeroPi2 (n i : ℕ) (hi : i < n + 1) :
 
 /-- The actual descended inclusions form an arbitrary-length cellular
 chain beginning literally at K. Strictness is regularCoverChain_proper. -/
-def regularCoverTopChain (n : ℕ) : TopChainFS K (n + 1) where
+def regularCoverTopChain (n : ℕ) : TopChainFS (n + 1) where
   X := regularCoverChainStages T hD p n
   inc := regularCoverChainInclusion T hD p n
   incV := regularCoverChainInclusion_V T hD p n
   incE := regularCoverChainInclusion_E T hD p n
   incF := regularCoverChainInclusion_F T hD p n
   conn := regularCoverChain_connected T hD p hp n
-  base := Hom.id K
-  baseV := Function.injective_id
-  baseE := Function.injective_id
-  baseF := Function.injective_id
   zero_pi2 := regularCoverChain_zeroPi2 T hD p hp a hr he hf n
 
 end FiniteChains.Comb

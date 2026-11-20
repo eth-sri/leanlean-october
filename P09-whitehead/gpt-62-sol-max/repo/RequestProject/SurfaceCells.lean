@@ -82,117 +82,117 @@ variable (hc : Compat vc ec)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cV_le_cE (p : Fin M) : cV hc p ≤ cE hc p :=
-  le_of_plt hc (show plt vc ec (vtx (vc p)) (bed (ec p)) from ⟨p, rfl, Or.inl rfl⟩)
+  le_of_plt hc (⟨p, rfl, Or.inl rfl⟩)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cV1_le_cE (p : Fin M) : cV hc (p + 1) ≤ cE hc p :=
-  le_of_plt hc (show plt vc ec (vtx (vc (p + 1))) (bed (ec p)) from ⟨p, rfl, Or.inr rfl⟩)
+  le_of_plt hc (⟨p, rfl, Or.inr rfl⟩)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cV_le_cD (p : Fin M) : cV hc p ≤ cD hc p :=
-  le_of_plt hc (show plt vc ec (vtx (vc p)) (dia p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cW_le_cD (p : Fin M) : cW hc p ≤ cD hc p :=
-  le_of_plt hc (show plt vc ec (cvx p) (dia p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cV_le_cG (p : Fin M) : cV hc p ≤ cG hc p :=
-  le_of_plt hc (show plt vc ec (vtx (vc p)) (gdi p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cW1_le_cG (p : Fin M) : cW hc (p + 1) ≤ cG hc p :=
-  le_of_plt hc (show plt vc ec (cvx (p + 1)) (gdi p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cW_le_cF (p : Fin M) : cW hc p ≤ cF hc p :=
-  le_of_plt hc (show plt vc ec (cvx p) (ced p) from Or.inl rfl)
+  le_of_plt hc (Or.inl rfl)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cW1_le_cF (p : Fin M) : cW hc (p + 1) ≤ cF hc p :=
-  le_of_plt hc (show plt vc ec (cvx (p + 1)) (ced p) from Or.inr rfl)
+  le_of_plt hc (Or.inr rfl)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cC_le_cR (p : Fin M) : cC hc ≤ cR hc p :=
-  le_of_plt hc (show plt vc ec ctr (rad p) from trivial)
+  le_of_plt hc trivial
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cW_le_cR (p : Fin M) : cW hc p ≤ cR hc p :=
-  le_of_plt hc (show plt vc ec (cvx p) (rad p) from rfl)
+  le_of_plt hc rfl
 
 /-! ### The faces of the three triangles -/
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cE_le_cT1 (p : Fin M) : cE hc p ≤ cT1 hc p :=
-  le_of_plt hc (show plt vc ec (bed (ec p)) (tr1 p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cD1_le_cT1 (p : Fin M) : cD hc (p + 1) ≤ cT1 hc p :=
-  le_of_plt hc (show plt vc ec (dia (p + 1)) (tr1 p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cG_le_cT1 (p : Fin M) : cG hc p ≤ cT1 hc p :=
-  le_of_plt hc (show plt vc ec (gdi p) (tr1 p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cV_le_cT1 (p : Fin M) : cV hc p ≤ cT1 hc p :=
-  le_of_plt hc (show plt vc ec (vtx (vc p)) (tr1 p) from Or.inl rfl)
+  le_of_plt hc (Or.inl rfl)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cV1_le_cT1 (p : Fin M) : cV hc (p + 1) ≤ cT1 hc p :=
-  le_of_plt hc (show plt vc ec (vtx (vc (p + 1))) (tr1 p) from Or.inr rfl)
+  le_of_plt hc (Or.inr rfl)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cW1_le_cT1 (p : Fin M) : cW hc (p + 1) ≤ cT1 hc p :=
-  le_of_plt hc (show plt vc ec (cvx (p + 1)) (tr1 p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cD_le_cT2 (p : Fin M) : cD hc p ≤ cT2 hc p :=
-  le_of_plt hc (show plt vc ec (dia p) (tr2 p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cF_le_cT2 (p : Fin M) : cF hc p ≤ cT2 hc p :=
-  le_of_plt hc (show plt vc ec (ced p) (tr2 p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cG_le_cT2 (p : Fin M) : cG hc p ≤ cT2 hc p :=
-  le_of_plt hc (show plt vc ec (gdi p) (tr2 p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cV_le_cT2 (p : Fin M) : cV hc p ≤ cT2 hc p :=
-  le_of_plt hc (show plt vc ec (vtx (vc p)) (tr2 p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cW_le_cT2 (p : Fin M) : cW hc p ≤ cT2 hc p :=
-  le_of_plt hc (show plt vc ec (cvx p) (tr2 p) from Or.inl rfl)
+  le_of_plt hc (Or.inl rfl)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cW1_le_cT2 (p : Fin M) : cW hc (p + 1) ≤ cT2 hc p :=
-  le_of_plt hc (show plt vc ec (cvx (p + 1)) (tr2 p) from Or.inr rfl)
+  le_of_plt hc (Or.inr rfl)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cR_le_cI (p : Fin M) : cR hc p ≤ cI hc p :=
-  le_of_plt hc (show plt vc ec (rad p) (inn p) from Or.inl rfl)
+  le_of_plt hc (Or.inl rfl)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cR1_le_cI (p : Fin M) : cR hc (p + 1) ≤ cI hc p :=
-  le_of_plt hc (show plt vc ec (rad (p + 1)) (inn p) from Or.inr rfl)
+  le_of_plt hc (Or.inr rfl)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cF_le_cI (p : Fin M) : cF hc p ≤ cI hc p :=
-  le_of_plt hc (show plt vc ec (ced p) (inn p) from rfl)
+  le_of_plt hc rfl
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cC_le_cI (p : Fin M) : cC hc ≤ cI hc p :=
-  le_of_plt hc (show plt vc ec ctr (inn p) from trivial)
+  le_of_plt hc trivial
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cW_le_cI (p : Fin M) : cW hc p ≤ cI hc p :=
-  le_of_plt hc (show plt vc ec (cvx p) (inn p) from Or.inl rfl)
+  le_of_plt hc (Or.inl rfl)
 
 omit [DecidableEq κ] [DecidableEq ι] in
 theorem cW1_le_cI (p : Fin M) : cW hc (p + 1) ≤ cI hc p :=
-  le_of_plt hc (show plt vc ec (cvx (p + 1)) (inn p) from Or.inr rfl)
+  le_of_plt hc (Or.inr rfl)
 
 /-! ### The paths -/
 

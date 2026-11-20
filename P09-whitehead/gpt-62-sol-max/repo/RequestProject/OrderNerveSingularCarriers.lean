@@ -44,8 +44,7 @@ theorem orderNerveSingularStarIndices_face {P : Type} [PartialOrder P] {n : ℕ}
     (i : Fin (n + 2)) :
     orderNerveSingularStarIndices σ ⊆
       orderNerveSingularStarIndices (TopologicalSingular.face i σ) := by
-  intro v hv z
-  exact hv _
+  tauto
 
 /-- The common closed-star subposet of every star containing a singular simplex.
 Taking all such stars makes this carrier monotone under passage to faces. -/
