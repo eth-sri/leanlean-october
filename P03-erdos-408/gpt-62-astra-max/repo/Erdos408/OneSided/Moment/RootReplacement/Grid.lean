@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Scales
+
 public import Erdos408.OneSided.Moment.RootReplacement.Bonferroni
 
 /-!
@@ -79,8 +81,7 @@ theorem mem_positions_filter_not (d : Data K) {Y d₀ : ℝ} {P : ℕ × ℕ} :
         (d.Hn ≤ P.2 ∧ (P.2 : ℝ) < 2 * d.Hn) := by
   simp only [positions, mem_filter, mem_product, mem_Icc, not_or, not_le]
   constructor
-  · rintro ⟨⟨⟨⟨h₁, -⟩, h₂, -⟩, hc⟩, h₃, h₄⟩
-    exact ⟨hc, ⟨Nat.ceil_le.1 h₁, h₃⟩, Nat.ceil_le.1 h₂, h₄⟩
+  · aesop
   · rintro ⟨hc, ⟨h₁, h₃⟩, h₂, h₄⟩
     exact ⟨⟨⟨⟨Nat.ceil_le.2 h₁, Nat.le_floor h₃.le⟩, Nat.ceil_le.2 h₂, Nat.le_floor h₄.le⟩, hc⟩,
       h₃, h₄⟩
@@ -92,7 +93,7 @@ theorem sum_positions_eq (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) 
       ∑ i ∈ cubeIndices n, ∑ P ∈ cubeRoots (d₀ * Y * d.Hm) d.Hn n i, f P +
         ∑ P ∈ edgeRoots d Y d₀, f P := by
   classical
-  have hn₀ : 0 < n := hn
+  have hn₀ := hn
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
   -- step: split off the upper faces
   have hsplit : ∑ P ∈ positions d Y d₀, f P =
@@ -105,7 +106,7 @@ theorem sum_positions_eq (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) 
   -- step: the cube of a position
   set ι : ℕ × ℕ → ℕ × ℕ × ℕ := fun P => (⌊((P.1 : ℝ) / (d₀ * Y * d.Hm) - 1) * n⌋₊,
     ⌊((P.2 : ℝ) / d.Hn - 1) * n⌋₊, ⌊(rootC P.1 P.2 : ℝ) / P.1 * n⌋₊) with hι
-  have hιeq : ∀ (P : ℕ × ℕ) (i : ℕ × ℕ × ℕ), d₀ * Y * d.Hm ≤ P.1 → d.Hn ≤ P.2 →
+  have hιeq : ∀ P i, d₀ * Y * d.Hm ≤ P.1 → d.Hn ≤ P.2 →
       (ι P = i ↔
         ((1 + i.1 / n) * (d₀ * Y * d.Hm) ≤ P.1 ∧
           (P.1 : ℝ) < (1 + (i.1 + 1) / n) * (d₀ * Y * d.Hm)) ∧
@@ -134,7 +135,7 @@ theorem sum_positions_eq (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) 
     refine ⟨(Nat.floor_lt ?_).2 ?_, (Nat.floor_lt ?_).2 ?_, (Nat.floor_lt ?_).2 ?_⟩
     · exact mul_nonneg (sub_nonneg.2 ((one_le_div hU).2 hu₁)) hn'.le
     · push_cast
-      exact mul_lt_mul_of_pos_right h₁ hn'
+      gcongr
     · exact mul_nonneg (sub_nonneg.2 ((one_le_div hV).2 hv₁)) hn'.le
     · simpa using mul_lt_mul_of_pos_right h₂ hn'
     · positivity
@@ -157,16 +158,14 @@ theorem sum_positions_eq (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) 
     have hb₂ : ((i.2.1 : ℝ) + 1) / n ≤ 1 := by
       rw [div_le_iff₀ hn']
       exact_mod_cast (show i.2.1 + 1 ≤ 1 * n by omega)
-    have hu : d₀ * Y * d.Hm ≤ P.1 :=
+    have hu :=
       le_trans (le_mul_of_one_le_left hU.le (le_add_of_nonneg_right (by positivity))) hu₁
-    have hv : d.Hn ≤ P.2 :=
+    have hv :=
       le_trans (le_mul_of_one_le_left hV.le (le_add_of_nonneg_right (by positivity))) hv₁
     refine ⟨(mem_positions_filter_not d).2 ⟨hc, ⟨hu, ?_⟩, hv, ?_⟩,
       (hιeq P i hu hv).2 ⟨⟨hu₁, hu₂⟩, ⟨hv₁, hv₂⟩, h₃⟩⟩
-    · calc (P.1 : ℝ) < (1 + (i.1 + 1) / n) * (d₀ * Y * d.Hm) := hu₂
-        _ ≤ 16 * (d₀ * Y * d.Hm) := mul_le_mul_of_nonneg_right (by linarith) hU.le
-    · calc (P.2 : ℝ) < (1 + (i.2.1 + 1) / n) * d.Hn := hv₂
-        _ ≤ 2 * d.Hn := mul_le_mul_of_nonneg_right (by linarith) hV.le
+    · exact hu₂.trans_le (mul_le_mul_of_nonneg_right (by linarith) hU.le)
+    · exact hv₂.trans_le (mul_le_mul_of_nonneg_right (by linarith) hV.le)
 
 /-- The upper faces carry at most `16U + 2V + 2` positions. -/
 theorem card_edgeRoots_le (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) (hV : 0 < d.Hn) :
@@ -196,22 +195,21 @@ theorem card_edgeRoots_le (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm)
       linarith [Nat.floor_le hb, Nat.le_ceil a]
     · rw [Nat.sub_eq_zero_of_le h.le, Nat.cast_zero]
       linarith
-  have hcard := card_le_card hsub
   have hcard' : ((edgeRoots d Y d₀).card : ℝ) ≤
       ((Icc ⌈V⌉₊ ⌊2 * V⌋₊).card : ℝ) + (Icc ⌈U⌉₊ ⌊16 * U⌋₊).card := by
-    have := hcard.trans (card_union_le _ _)
+    have := (card_le_card hsub).trans (card_union_le _ _)
     rw [card_product, card_product, card_singleton, card_singleton, one_mul, mul_one] at this
     exact_mod_cast this
   linarith [hIcc (by linarith : V ≤ 2 * V) (by linarith : (0 : ℝ) ≤ 2 * V),
     hIcc (by linarith : U ≤ 16 * U) (by linarith : (0 : ℝ) ≤ 16 * U)]
 
 /-- The line average of a function bounded by `1` is bounded by `1`. -/
-theorem norm_lineAverage_le_one (x : ℝ) (d : Data K) {G : (ℕ → ℕ) → ℂ} (hG : ∀ ℓ, ‖G ℓ‖ ≤ 1) :
+theorem norm_lineAverage_le_one (x : ℝ) (d : Data K) {G : (ℕ → ℕ) → ℂ} (hG : OneBounded G) :
     ‖lineAverage x d G‖ ≤ 1 := by
   rw [lineAverage, norm_mul, norm_inv, Complex.norm_natCast]
   rcases Nat.eq_zero_or_pos (lineAssignments x d).card with h | h
   · simp [h]
-  · calc ((lineAssignments x d).card : ℝ)⁻¹ * ‖∑ ℓ ∈ lineAssignments x d, G ℓ‖
+  · calc _
         ≤ ((lineAssignments x d).card : ℝ)⁻¹ * ∑ _ℓ ∈ lineAssignments x d, (1 : ℝ) :=
           mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (sum_le_sum fun ℓ _ => hG ℓ))
             (by positivity)
@@ -231,21 +229,20 @@ theorem card_boxRoots_le {C₀ : ℝ} (hE : RootEquidist K C₀) (x : ℝ) (d : 
     (empty_subset _) (fun _ => 1) 1 (fun _ _ _ => rfl) (fun _ => by simp)
   simp only [sum_const, nsmul_eq_mul, mul_one, prod_empty, one_pow, one_mul] at h
   have hl := norm_lineAverage_le_one x d (G := fun _ => 1) (fun _ => by simp)
+  let densityAt := primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃)
   have hs := norm_sub_norm_le ((boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃).card : ℂ)
-    (((primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) : ℝ) : ℂ) *
+    (((densityAt : ℝ) : ℂ) *
       lineAverage x d fun _ => 1)
   rw [Complex.norm_natCast, norm_mul, Complex.norm_real, Real.norm_eq_abs] at hs
-  have hvol : 0 ≤ (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) :=
-    mul_nonneg (mul_nonneg (sub_nonneg.2 hab₁) (sub_nonneg.2 hab₂)) (sub_nonneg.2 hab₃)
-  have habs : |primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃)| =
+  have habs : |densityAt| =
       U * V * (|primitiveDensity| * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃))) := by
-    rw [show primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) =
+    rw [show densityAt =
       primitiveDensity * (U * V * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃))) by ring, abs_mul,
       abs_of_nonneg (by positivity : 0 ≤ U * V * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃)))]
     ring
   rw [habs] at hs
   have hX : U * V * (|primitiveDensity| * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃))) *
-      ‖lineAverage x d fun _ => (1 : ℂ)‖ ≤
+      ‖lineAverage x d fun _ => 1‖ ≤
         U * V * (|primitiveDensity| * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃))) :=
     mul_le_of_le_one_right (by positivity) hl
   linarith
@@ -283,20 +280,17 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
   rw [sum_positions_eq d hU₀ hV₀ hn]
   set U := d₀ * Y * d.Hm with hUdef
   set V := d.Hn with hVdef
-  set L := lineAverage x d (fun ℓ => ∏ p ∈ bandPrimes x d, (lam p (ℓ p) : ℂ)) with hLdef
+  set L := lineAverage x d (fun ℓ => ∏ p ∈ bandPrimes x d, (lam p (ℓ p))) with hLdef
   set m := min U V ^ (-(1 / 5 : ℝ)) with hm
-  have hm₀ : 0 ≤ m := Real.rpow_nonneg (le_min hU₀.le hV₀.le) _
   have hc₂ : |primitiveDensity| ≤ 2 := RootResidue.abs_primitiveDensity_le
-  have hUV : 0 < U * V := mul_pos hU₀ hV₀
-  have hn₃ : (0 : ℝ) < (n : ℝ) ^ 3 := by positivity
-  -- step: the factors are bounded by `1`
+  have hUV := mul_pos hU₀ hV₀
   have hF₁ : ∀ ℓ : ℕ → ℕ, ‖∏ p ∈ bandPrimes x d, (lam p (ℓ p) : ℂ)‖ ≤ 1 := fun ℓ => by
     rw [norm_prod]
     refine prod_le_one₀ (fun _ _ => norm_nonneg _) fun p hp => ?_
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hlam p hp (ℓ p)).1]
     exact (hlam p hp (ℓ p)).2
-  have hL₁ : ‖L‖ ≤ 1 := norm_lineAverage_le_one x d hF₁
-  have hsum₁ : ∀ s : Finset (ℕ × ℕ), ‖((U * V : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ s,
+  have hL₁ := norm_lineAverage_le_one x d hF₁
+  have hsum₁ : ∀ s, ‖((U * V : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ s,
       (A P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) : ℂ) *
         ∏ p ∈ bandPrimes x d, (lam p (rootLines P₀ p) : ℂ)‖ ≤ (U * V)⁻¹ * s.card := by
     intro s
@@ -304,9 +298,8 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
     refine mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans ?_) (inv_nonneg.2 hUV.le)
     calc _ ≤ ∑ _P₀ ∈ s, (1 : ℝ) := sum_le_sum fun P₀ _ => by
           rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-          calc _ ≤ 1 * 1 := mul_le_mul (hA _ _ _) (hF₁ _) (norm_nonneg _) zero_le_one
-            _ = 1 := one_mul 1
-      _ = s.card := by rw [sum_const, nsmul_eq_mul, mul_one]
+          bound
+      _ = _ := by simp
   -- step: the cubes are boxes of volume `n⁻³`
   have hvol : ∀ i : ℕ × ℕ × ℕ,
       (1 + ((i.1 : ℝ) + 1) / n - (1 + (i.1 : ℝ) / n)) *
@@ -336,8 +329,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
       rw [div_le_iff₀ hn']
       exact_mod_cast (show i.2.2 + 1 ≤ 1 * n by omega)
     have h₀ : ∀ k : ℕ, 0 ≤ (k : ℝ) / n := fun k => by positivity
-    refine ⟨by linarith [h₀ i.1], by linarith [hside i.1], by linarith, by linarith [h₀ i.2.1],
-      by linarith [hside i.2.1], by linarith, h₀ i.2.2, hside i.2.2, h₃⟩
+    grind
   -- step: the error of each cube
   obtain ⟨D, hD⟩ : ∃ D : ℕ × ℕ × ℕ → ℂ, D = fun i =>
       ((U * V : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ cubeRoots U V n i,
@@ -371,7 +363,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
     rw [hDi, norm_mul, Complex.norm_real, Real.norm_eq_abs]
     calc _ ≤ 1 * (4 * ((n : ℝ) ^ 3)⁻¹ * dampMass x d act lam ^ T / T.factorial +
           (((bandPrimes x d).card : ℝ) + 1) ^ T * C₀ * pmax ^ (6 * (act.card + T)) * m) :=
-          mul_le_mul (hA _ _ _) hb (norm_nonneg _) zero_le_one
+          by bound
       _ = _ := one_mul _
   have hbad' : ∀ i ∈ cubeIndices n, ‖D i‖ ≤ 4 / (n : ℝ) ^ 3 + C₀ * m := by
     intro i hi
@@ -379,26 +371,25 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
     have hc := card_boxRoots_le hE x d hU hV h₁ h₂ h₃ h₄ h₅ h₆ h₇ h₈ h₉
     rw [hvol i, ← hm] at hc
     have hroot : (U * V)⁻¹ * ((cubeRoots U V n i).card : ℝ) ≤ 2 * ((n : ℝ) ^ 3)⁻¹ + C₀ * m := by
-      calc (U * V)⁻¹ * ((cubeRoots U V n i).card : ℝ)
+      calc _
           ≤ (U * V)⁻¹ * (U * V * (|primitiveDensity| * ((n : ℝ) ^ 3)⁻¹ + C₀ * m)) :=
-            mul_le_mul_of_nonneg_left hc (inv_nonneg.2 hUV.le)
+            by bound
         _ = |primitiveDensity| * ((n : ℝ) ^ 3)⁻¹ + C₀ * m := by field_simp
-        _ ≤ 2 * ((n : ℝ) ^ 3)⁻¹ + C₀ * m := by gcongr
+        _ ≤ _ := by gcongr
     have hmain : ‖(primitiveDensity : ℂ) * (((n : ℂ) ^ 3)⁻¹ *
         ((A (U * (1 + i.1 / n)) (V * (1 + i.2.1 / n)) (i.2.2 / n) : ℂ) * L))‖ ≤
           2 * ((n : ℝ) ^ 3)⁻¹ := by
       rw [norm_mul, norm_mul, norm_mul, Complex.norm_real, Complex.norm_real, Real.norm_eq_abs,
         Real.norm_eq_abs, norm_inv, norm_pow, Complex.norm_natCast]
       have hAL : |A (U * (1 + i.1 / n)) (V * (1 + i.2.1 / n)) (i.2.2 / n)| * ‖L‖ ≤ 1 := by
-        calc _ ≤ 1 * 1 := mul_le_mul (hA _ _ _) hL₁ (norm_nonneg _) zero_le_one
-          _ = 1 := one_mul 1
+        exact (mul_le_mul (hA _ _ _) hL₁ (norm_nonneg _) zero_le_one).trans_eq (one_mul 1)
       calc _ ≤ 2 * (((n : ℝ) ^ 3)⁻¹ * 1) := by gcongr
         _ = _ := by ring
     rw [hD]
     calc _ ≤ _ := norm_sub_le _ _
       _ ≤ (U * V)⁻¹ * ((cubeRoots U V n i).card : ℝ) + 2 * ((n : ℝ) ^ 3)⁻¹ :=
           add_le_add (hsum₁ _) hmain
-      _ ≤ 4 / (n : ℝ) ^ 3 + C₀ * m := by
+      _ ≤ _ := by
           rw [div_eq_mul_inv]
           linarith
   -- step: assemble the cubes and the upper faces
@@ -422,7 +413,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
     have hB : 0 ≤ 4 * ((n : ℝ) ^ 3)⁻¹ * dampMass x d act lam ^ T / T.factorial +
         (((bandPrimes x d).card : ℝ) + 1) ^ T * C₀ * pmax ^ (6 * (act.card + T)) * m := by
       have := dampMass_nonneg (act := act) fun p hp l => (hlam p hp l).2
-      have : (0 : ℝ) ≤ pmax ^ (6 * (act.card + T)) := pow_nonneg (by linarith) _
+      have : (0 : ℝ) ≤ pmax ^ (6 * (act.card + T)) := by positivity
       positivity
     calc _ ≤ ∑ i ∈ cubeIndices n with i ∉ bad,
           (4 * ((n : ℝ) ^ 3)⁻¹ * dampMass x d act lam ^ T / T.factorial +
@@ -432,9 +423,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
           (4 * ((n : ℝ) ^ 3)⁻¹ * dampMass x d act lam ^ T / T.factorial +
             (((bandPrimes x d).card : ℝ) + 1) ^ T * C₀ * pmax ^ (6 * (act.card + T)) * m) :=
           sum_le_sum_of_subset_of_nonneg (filter_subset _ _) fun _ _ _ => hB
-      _ = 15 * (4 * dampMass x d act lam ^ T / T.factorial +
-          (n : ℝ) ^ 3 * (((bandPrimes x d).card : ℝ) + 1) ^ T * C₀ *
-            pmax ^ (6 * (act.card + T)) * m) := by
+      _ = _ := by
           rw [sum_const, nsmul_eq_mul, cubeIndices, card_product, card_product, card_range,
             card_range]
           push_cast
@@ -445,18 +434,14 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
           sum_le_sum fun i hi => hbad' i (mem_filter.1 hi).1
       _ = ((cubeIndices n).filter (· ∈ bad)).card * (4 / (n : ℝ) ^ 3 + C₀ * m) := by
           rw [sum_const, nsmul_eq_mul]
-      _ ≤ bad.card * (4 / (n : ℝ) ^ 3 + C₀ * m) := by
+      _ ≤ _ := by
           gcongr
           exact fun i hi => (mem_filter.1 hi).2
   have hedge' : (U * V)⁻¹ * ((edgeRoots d Y d₀).card : ℝ) ≤
       (16 * U + 2 * V + 2) / (U * V) := by
     rw [div_eq_inv_mul]
-    exact mul_le_mul_of_nonneg_left hedge (inv_nonneg.2 hUV.le)
-  calc _ ≤ ‖∑ i ∈ cubeIndices n, D i‖ + ‖((U * V : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ edgeRoots d Y d₀,
-          (A P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) : ℂ) *
-            ∏ p ∈ bandPrimes x d, (lam p (rootLines P₀ p) : ℂ)‖ := norm_add_le _ _
-    _ ≤ ∑ i ∈ cubeIndices n, ‖D i‖ + (U * V)⁻¹ * ((edgeRoots d Y d₀).card : ℝ) :=
-        add_le_add (norm_sum_le _ _) (hsum₁ _)
+    gcongr
+  calc _ ≤ ∑ i ∈ cubeIndices n, ‖D i‖ + (U * V)⁻¹ * ((edgeRoots d Y d₀).card : ℝ) := (norm_add_le _ _).trans (by bound)
     _ = ∑ i ∈ cubeIndices n with i ∈ bad, ‖D i‖ + ∑ i ∈ cubeIndices n with i ∉ bad, ‖D i‖ +
         (U * V)⁻¹ * ((edgeRoots d Y d₀).card : ℝ) := by
         rw [sum_filter_add_sum_filter_not]

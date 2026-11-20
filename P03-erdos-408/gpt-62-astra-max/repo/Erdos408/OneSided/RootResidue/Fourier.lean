@@ -45,7 +45,7 @@ noncomputable def transform {α : Type*} (f : α → ZMod m) (A : Finset α) (h 
 
 /-- `|e(x/m)| = 1`. -/
 theorem norm_stdAddChar (x : ZMod m) : ‖(ZMod.stdAddChar x : ℂ)‖ = 1 := by
-  rw [ZMod.stdAddChar_apply, Circle.norm_coe]
+  simp
 
 /-- Orthogonality: `∑_h e(h z/m) = m [z = 0]`. -/
 theorem sum_stdAddChar_mul (z : ZMod m) :
@@ -76,17 +76,7 @@ theorem indicator_eq_sum_pairSum (G : Finset (ZMod m × ZMod m)) (x y : ZMod m) 
   simp only [sum_stdAddChar_mul, sub_eq_zero, ite_zero_mul_ite_zero]
   rw [← sum_filter, sum_const, nsmul_eq_mul]
   have h₂ : ({p ∈ G | p.1 = x ∧ p.2 = y} : Finset _) = if (x, y) ∈ G then {(x, y)} else ∅ := by
-    ext p
-    split_ifs with hxy
-    · simp only [mem_filter, mem_singleton]
-      constructor
-      · rintro ⟨_, h₁, h₂⟩
-        exact Prod.ext h₁ h₂
-      · rintro rfl
-        exact ⟨hxy, rfl, rfl⟩
-    · simp only [mem_filter, notMem_empty, iff_false, not_and]
-      intro hp h₁ h₂
-      exact hxy (by rw [← h₁, ← h₂]; exact hp)
+    grind
   rw [h₂]
   split_ifs <;> field_simp <;> simp
 
@@ -118,8 +108,8 @@ theorem transform_id_univ (k : ZMod m) :
     transform id (univ : Finset (ZMod m)) k = if k = 0 then (m : ℂ) else 0 := by
   rw [transform]
   convert sum_stdAddChar_mul (-k) using 1
-  · exact sum_congr rfl fun y _ => by rw [id, mul_neg, mul_comm]
-  · simp only [neg_eq_zero]
+  · grind
+  simp
 
 /-- **The box identity.** With `Mc = #{(a, y) ∈ A × ℤ/m : (f a, y) ∈ G}`,
 `#{(a, b) ∈ A × B : (f a, g b) ∈ G} - (|B|/m) Mc = m⁻² ∑_h ∑_{k ≠ 0} Ŝ_G(h, k) Â(h) B̂(k)`. -/
@@ -130,13 +120,11 @@ theorem card_filter_mem_sub_eq_sum {α β : Type*} (G : Finset (ZMod m × ZMod m
       ((m : ℂ) ^ 2)⁻¹ * ∑ h : ZMod m, ∑ k ∈ univ.erase 0,
         pairSum G h k * transform f A h * transform g B k := by
   have hm : (m : ℂ) ≠ 0 := Nat.cast_ne_zero.2 (NeZero.ne m)
-  have hMc := card_filter_mem_eq_sum G f id A (univ : Finset (ZMod m))
+  have hMc := card_filter_mem_eq_sum G f id A univ
   simp only [id] at hMc
   -- split off `k = 0` in both expansions
   have hsplit : ∀ Φ : ZMod m → ZMod m → ℂ, ∑ h : ZMod m, ∑ k : ZMod m, Φ h k =
-      ∑ h : ZMod m, Φ h 0 + ∑ h : ZMod m, ∑ k ∈ univ.erase 0, Φ h k := fun Φ => by
-    rw [← sum_add_distrib]
-    exact sum_congr rfl fun h _ => (add_sum_erase _ _ (mem_univ 0)).symm
+      ∑ h : ZMod m, Φ h 0 + ∑ h : ZMod m, ∑ k ∈ univ.erase 0, Φ h k := by simp
   rw [card_filter_mem_eq_sum, hMc, hsplit, hsplit]
   have hz : ∑ h : ZMod m, ∑ k ∈ univ.erase 0,
       pairSum G h k * transform f A h * transform id univ k = 0 := by
@@ -158,12 +146,10 @@ theorem abs_card_filter_mem_sub_le {α β : Type*} (G : Finset (ZMod m × ZMod m
         (#B : ℝ) / m * #{p ∈ A ×ˢ (univ : Finset (ZMod m)) | (f p.1, p.2) ∈ G}| ≤
       ((m : ℝ) ^ 2)⁻¹ * (∑ h : ZMod m, ‖transform f A h‖) *
         ∑ k ∈ univ.erase 0, ‖transform g B k‖ * (X * Nat.gcd k.val m) := by
-  have hC := card_filter_mem_sub_eq_sum G f g A B
-  calc |(#{p ∈ A ×ˢ B | (f p.1, g p.2) ∈ G} : ℝ) -
-        (#B : ℝ) / m * #{p ∈ A ×ˢ (univ : Finset (ZMod m)) | (f p.1, p.2) ∈ G}|
+  calc _
       = ‖((m : ℂ) ^ 2)⁻¹ * ∑ h : ZMod m, ∑ k ∈ univ.erase 0,
           pairSum G h k * transform f A h * transform g B k‖ := by
-        rw [← hC, ← Real.norm_eq_abs, ← Complex.norm_real]
+        rw [← (card_filter_mem_sub_eq_sum G f g A B), ← Real.norm_eq_abs, ← Complex.norm_real]
         push_cast
         rfl
     _ ≤ ((m : ℝ) ^ 2)⁻¹ * ∑ h : ZMod m, ∑ k ∈ univ.erase 0,
@@ -173,10 +159,10 @@ theorem abs_card_filter_mem_sub_le {α β : Type*} (G : Finset (ZMod m × ZMod m
         refine (norm_sum_le _ _).trans (sum_le_sum fun h _ => ?_)
         refine (norm_sum_le _ _).trans (sum_le_sum fun k hk => ?_)
         rw [norm_mul, norm_mul]
-        calc ‖pairSum G h k‖ * ‖transform f A h‖ * ‖transform g B k‖
+        calc _
             ≤ (X * Nat.gcd k.val m) * ‖transform f A h‖ * ‖transform g B k‖ := by
               gcongr
-              exact hX h k (ne_of_mem_erase hk)
+              simp_all
           _ = _ := by ring
     _ = _ := by rw [mul_assoc, sum_mul_sum]
 
@@ -198,7 +184,7 @@ theorem le_norm_stdAddChar_sub_one (w : ZMod m) :
   have ht0 : 0 ≤ t := by positivity
   have ht1 : t ≤ 1 := (div_le_one hm).2 (by exact_mod_cast hw.le)
   -- `|e(t) - 1| = 2 sin(π t)`
-  have hnorm : ‖(ZMod.stdAddChar w : ℂ) - 1‖ = 2 * Real.sin (Real.pi * t) := by
+  have hnorm : ‖(ZMod.stdAddChar w) - 1‖ = 2 * Real.sin (Real.pi * t) := by
     rw [ZMod.stdAddChar_apply, ZMod.toCircle_apply]
     have : 2 * ↑Real.pi * Complex.I * (w.val : ℂ) / m =
         Complex.I * ((2 * Real.pi * t : ℝ) : ℂ) := by
@@ -217,16 +203,13 @@ theorem le_norm_stdAddChar_sub_one (w : ZMod m) :
     rw [min_eq_left hle]
     have hle' : (w.val : ℝ) ≤ m - w.val := by rw [← hsub]; exact_mod_cast hle
     have := two_mul_le_sin_pi_mul ht0 (by nlinarith)
-    rw [htm, mul_div_assoc, mul_div_cancel_right₀ _ hm.ne']
-    linarith
+    grind
   · -- `1 - t ≤ 1/2`, and `sin(π t) = sin(π (1 - t))`
     rw [min_eq_right hle, hsub]
     have hle' : (m : ℝ) - w.val ≤ w.val := by rw [← hsub]; exact_mod_cast hle
     have := two_mul_le_sin_pi_mul (s := 1 - t) (by linarith) (by nlinarith)
     rw [show Real.pi * (1 - t) = Real.pi - Real.pi * t by ring, Real.sin_pi_sub] at this
-    rw [htm, show (m : ℝ) - t * m = (1 - t) * m by ring, mul_div_assoc,
-      mul_div_cancel_right₀ _ hm.ne']
-    linarith
+    grind
 
 /-- A nonzero residue has `‖w‖ = min(w, m - w) ≥ 1`. -/
 theorem one_le_min_val {w : ZMod m} (hw : w ≠ 0) : 1 ≤ min w.val (m - w.val) := by
@@ -243,13 +226,14 @@ theorem norm_transform_image_le (q r α β : ℕ) {h : ZMod m} (hq : h * (q : ZM
     ‖transform (fun a : ℕ => (a : ZMod m)) ((Ico α β).image fun j => r + q * j) h‖ ≤
       freqWeight (-(h * (q : ZMod m))) := by
   have hq0 : q ≠ 0 := by rintro rfl; simp at hq
-  set z : ℂ := ZMod.stdAddChar (-(h * (q : ZMod m)))
+  let mod := h * (q : ZMod m)
+  set z : ℂ := ZMod.stdAddChar (-(mod))
   have hz1 : z ≠ 1 := by
     intro hz
     rw [← AddChar.map_zero_eq_one (ZMod.stdAddChar (N := m))] at hz
     exact hq (neg_eq_zero.1 (ZMod.injective_stdAddChar hz))
   have hz : ‖z‖ = 1 := norm_stdAddChar _
-  have hzs : 0 < ‖z - 1‖ := norm_pos_iff.2 (sub_ne_zero.2 hz1)
+  have hzs := norm_pos_iff.2 (sub_ne_zero.2 hz1)
   -- the transform is `e(-h r/m) z^α (z^n - 1)/(z - 1)`
   have hsum : transform (fun a : ℕ => (a : ZMod m)) ((Ico α β).image fun j => r + q * j) h =
       ZMod.stdAddChar (-(h * (r : ZMod m))) * (z ^ α * ((z ^ (β - α) - 1) / (z - 1))) := by
@@ -262,14 +246,14 @@ theorem norm_transform_image_le (q r α β : ℕ) {h : ZMod m} (hq : h * (q : ZM
     ring
   -- `|z^α| = 1`, `|z^n - 1| ≤ 2` and `|z - 1| ≥ 4 ‖h q‖/m`
   have hnum : ‖z ^ (β - α) - 1‖ ≤ 2 := by
-    calc ‖z ^ (β - α) - 1‖ ≤ ‖z ^ (β - α)‖ + ‖(1 : ℂ)‖ := norm_sub_le _ _
+    calc _ ≤ ‖z ^ (β - α)‖ + ‖(1 : ℂ)‖ := norm_sub_le _ _
       _ = 2 := by rw [norm_pow, hz, one_pow, norm_one]; norm_num
-  have hden := le_norm_stdAddChar_sub_one (-(h * (q : ZMod m)))
+  have hden := le_norm_stdAddChar_sub_one (-(mod))
   rw [hsum, norm_mul, norm_stdAddChar, one_mul, norm_mul, norm_pow, hz, one_pow, one_mul,
     norm_div, freqWeight]
   have hm : (0 : ℝ) < m := Nat.cast_pos.2 (NeZero.pos m)
-  calc ‖z ^ (β - α) - 1‖ / ‖z - 1‖ ≤ 2 / ‖z - 1‖ := by gcongr
-    _ ≤ 2 / (4 * ((min (-(h * (q : ZMod m))).val (m - (-(h * (q : ZMod m))).val) : ℕ) : ℝ) /
+  calc _ ≤ 2 / ‖z - 1‖ := by gcongr
+    _ ≤ 2 / (4 * ((min (-(mod)).val (m - (-(mod)).val) : ℕ) : ℝ) /
           m) := by
         refine div_le_div_of_nonneg_left two_pos.le ?_ hden
         have := one_le_min_val (neg_ne_zero.2 hq)
@@ -309,13 +293,12 @@ theorem sum_freqWeight_mul_le (g : ℕ → ℝ) (hg : ∀ j, 0 ≤ g j)
     rcases le_total w.val (m - w.val) with hle | hle
     · rw [min_eq_left hle]
       have : (0 : ℝ) ≤ g w.val / ((m - w.val : ℕ) : ℝ) := div_nonneg (hg _) hb.le
-      have hgw := hg w.val
       calc (m : ℝ) / (2 * (w.val : ℝ)) * g w.val = m / 2 * (g w.val / w.val) := by
             field_simp
         _ ≤ _ := by gcongr; linarith
     · rw [min_eq_right hle]
       have : (0 : ℝ) ≤ g w.val / w.val := div_nonneg (hg _) ha.le
-      calc (m : ℝ) / (2 * ((m - w.val : ℕ) : ℝ)) * g w.val =
+      calc _ =
             m / 2 * (g w.val / ((m - w.val : ℕ) : ℝ)) := by field_simp
         _ ≤ _ := by gcongr; linarith
   -- the reflection `w ↦ -w` turns `F₂` into `F₁`
@@ -331,8 +314,8 @@ theorem sum_freqWeight_mul_le (g : ℕ → ℝ) (hg : ∀ j, 0 ≤ g j)
     rw [hsym _ h₂]
   have hF₁ : ∑ w : ZMod m, F₁ w ≤ ∑ j ∈ Icc 1 m, g j / j :=
     sum_ite_val_le_sum_Icc (fun j => g j / j) fun j => div_nonneg (hg j) j.cast_nonneg
-  calc ∑ w : ZMod m, freqWeight w * g w.val ≤ ∑ w : ZMod m, m / 2 * (F₁ w + F₂ w) :=
-        sum_le_sum fun w _ => hpt w
+  calc _ ≤ ∑ w : ZMod m, m / 2 * (F₁ w + F₂ w) :=
+        by solve_by_elim [sum_le_sum]
     _ = m * ∑ w : ZMod m, F₁ w := by
         rw [← mul_sum, sum_add_distrib, hrefl]
         ring
@@ -343,7 +326,7 @@ theorem sum_freqWeight_mul_le (g : ℕ → ℝ) (hg : ∀ j, 0 ≤ g j)
 theorem sum_gcd_div_le :
     ∑ j ∈ Icc 1 m, (Nat.gcd j m : ℝ) / j ≤ m.divisors.card * (1 + Real.log m) := by
   have hm := NeZero.ne m
-  calc ∑ j ∈ Icc 1 m, (Nat.gcd j m : ℝ) / j
+  calc _
       ≤ ∑ j ∈ Icc 1 m, ∑ d ∈ m.divisors, if d ∣ j then (d : ℝ) / j else 0 := by
         refine sum_le_sum fun j _ => ?_
         have hmem : Nat.gcd j m ∈ m.divisors := Nat.mem_divisors.2 ⟨Nat.gcd_dvd_right _ _, hm⟩
@@ -355,33 +338,29 @@ theorem sum_gcd_div_le :
         exact sum_congr rfl fun d _ => (sum_filter _ _).symm
     _ ≤ ∑ d ∈ m.divisors, (1 + Real.log m) := by
         refine sum_le_sum fun d hd => ?_
-        have hdm := Nat.dvd_of_mem_divisors hd
-        have hd0 : 0 < d := Nat.pos_of_mem_divisors hd
+        have hd0 := Nat.pos_of_mem_divisors hd
         -- the multiples of `d` in `[1, m]` are `d i`, `1 ≤ i ≤ m/d`
-        have himg : ({j ∈ Icc 1 m | d ∣ j} : Finset ℕ) = (Icc 1 (m / d)).image (d * ·) := by
+        have himg : ({j ∈ Icc 1 m | d ∣ j}) = (Icc 1 (m / d)).image (d * ·) := by
           ext j
           simp only [mem_filter, mem_Icc, mem_image]
           constructor
           · rintro ⟨⟨h₁, h₂⟩, i, rfl⟩
-            refine ⟨i, ⟨?_, (Nat.le_div_iff_mul_le hd0).2 (by linarith [mul_comm d i])⟩, rfl⟩
-            rcases Nat.eq_zero_or_pos i with rfl | hi
-            · simp at h₁
-            · exact hi
+            refine ⟨i, ⟨?_, (Nat.le_div_iff_mul_le hd0).2 (by linarith)⟩, rfl⟩
+            nlinarith
           · rintro ⟨i, ⟨h₁, h₂⟩, rfl⟩
             refine ⟨⟨Nat.mul_pos hd0 h₁ |>.le |> fun h => by nlinarith, ?_⟩, dvd_mul_right _ _⟩
-            calc d * i ≤ d * (m / d) := Nat.mul_le_mul_left _ h₂
-              _ ≤ m := Nat.mul_div_le m d
+            exact (Nat.mul_le_mul_left _ h₂).trans (Nat.mul_div_le m d)
         rw [himg, sum_image fun a _ b _ hab => Nat.eq_of_mul_eq_mul_left hd0 hab]
-        calc ∑ i ∈ Icc 1 (m / d), (d : ℝ) / ((d * i : ℕ) : ℝ)
+        calc _
             = ∑ i ∈ Icc 1 (m / d), (i : ℝ)⁻¹ := by
               refine sum_congr rfl fun i _ => ?_
               have : (d : ℝ) ≠ 0 := by exact_mod_cast hd0.ne'
               push_cast
               field_simp
           _ ≤ 1 + Real.log (m / d : ℕ) := sum_Icc_inv_le _
-          _ ≤ 1 + Real.log m := by
+          _ ≤ _ := by
               have h₁ : (0 : ℝ) < (m / d : ℕ) := by
-                exact_mod_cast Nat.div_pos (Nat.le_of_dvd (Nat.pos_of_ne_zero hm) hdm) hd0
+                exact_mod_cast Nat.div_pos (Nat.le_of_dvd (Nat.pos_of_ne_zero hm) (Nat.dvd_of_mem_divisors hd)) hd0
               gcongr
               exact_mod_cast Nat.div_le_self m d
     _ = _ := by rw [sum_const, nsmul_eq_mul]
@@ -394,7 +373,7 @@ theorem gcd_val_mul_of_isUnit (k : ZMod m) {w : ZMod m} (hw : IsUnit w) :
     Nat.gcd (k * w).val m = Nat.gcd k.val m := by
   have hcop : w.val.Coprime m := by
     have := ZMod.val_coe_unit_coprime hw.unit
-    rwa [IsUnit.unit_spec] at this
+    assumption
   rw [ZMod.val_mul, ← Nat.gcd_rec, Nat.gcd_comm, Nat.Coprime.gcd_mul_right_cancel _ hcop]
 
 /-- `∑_h |Â(h)| ≤ m (2 + log m)` for a progression `A = {r + q j : α ≤ j < β}` with
@@ -414,25 +393,24 @@ theorem sum_norm_transform_image_le {q : ℕ} (hq : IsUnit (q : ZMod m)) (r α �
     intro h
     by_cases h0 : h = 0
     · rw [h0, transform_zero, Complex.norm_natCast, zero_mul, neg_zero]
-      simp only [ite_true]
-      linarith [hw0 0]
+      simp_all
     · rw [ite_eq_right_iff.2 fun h' => absurd h' h0, zero_add]
       exact norm_transform_image_le q r α β ((hq.mul_left_eq_zero).not.2 h0)
   -- `h ↦ -h q` permutes `ℤ/m`
   have hperm : ∑ h : ZMod m, freqWeight (-(h * (q : ZMod m))) = ∑ w : ZMod m, freqWeight w :=
     Fintype.sum_equiv ((Units.mulRight hq.unit).trans (Equiv.neg _)) _ _ fun h => by
-      simp [Units.mulRight]
+      rfl
   have hw : ∑ w : ZMod m, freqWeight w ≤ m * (1 + Real.log m) := by
     have := sum_freqWeight_mul_le (m := m) (fun _ => 1) (fun _ => zero_le_one) fun _ _ => rfl
     simp only [mul_one, one_div] at this
     exact this.trans (by gcongr; exact sum_Icc_inv_le m)
-  calc ∑ h : ZMod m, ‖transform (fun a : ℕ => (a : ZMod m)) A h‖
+  calc _
       ≤ ∑ h : ZMod m, ((if h = 0 then (#A : ℝ) else 0) + freqWeight (-(h * (q : ZMod m)))) :=
-        sum_le_sum fun h _ => hpt h
+        by solve_by_elim [sum_le_sum]
     _ = #A + ∑ w : ZMod m, freqWeight w := by
         rw [sum_add_distrib, sum_ite_eq', ite_eq_left_iff.2 fun h => absurd (mem_univ _) h, hperm]
-    _ ≤ m + m * (1 + Real.log m) := add_le_add hcard hw
-    _ = m * (2 + Real.log m) := by ring
+    _ ≤ m + m * (1 + Real.log m) := by gcongr
+    _ = _ := by ring
 
 /-- `∑_{k ≠ 0} |B̂(k)| (k, m) ≤ m τ(m) (1 + log m)` for a progression
 `B = {r + q j : α ≤ j < β}` with `q` a unit mod `m`, of any length. -/
@@ -442,27 +420,24 @@ theorem sum_norm_transform_image_mul_gcd_le {q : ℕ} (hq : IsUnit (q : ZMod m))
           Nat.gcd k.val m ≤
       m * m.divisors.card * (1 + Real.log m) := by
   have hw0 : ∀ w : ZMod m, 0 ≤ freqWeight w := fun w => by unfold freqWeight; positivity
-  have hnq : IsUnit (-(q : ZMod m)) := hq.neg
-  calc ∑ k ∈ univ.erase 0,
-        ‖transform (fun a : ℕ => (a : ZMod m)) ((Ico α β).image fun j => r + q * j) k‖ *
-          Nat.gcd k.val m
+  have hnq := hq.neg
+  calc _
       ≤ ∑ k ∈ univ.erase 0, freqWeight (-(k * (q : ZMod m))) *
           Nat.gcd (-(k * (q : ZMod m))).val m := by
         refine sum_le_sum fun k hk => ?_
         rw [← mul_neg, gcd_val_mul_of_isUnit k hnq]
         gcongr
         rw [mul_neg]
-        exact norm_transform_image_le q r α β ((hq.mul_left_eq_zero).not.2 (ne_of_mem_erase hk))
+        exact norm_transform_image_le q r α β (hq.mul_left_eq_zero.not.2 (ne_of_mem_erase hk))
     _ ≤ ∑ k : ZMod m, freqWeight (-(k * (q : ZMod m))) *
           Nat.gcd (-(k * (q : ZMod m))).val m :=
         sum_le_sum_of_subset_of_nonneg (subset_univ _) fun k _ _ => by
-          have := hw0 (-(k * (q : ZMod m)))
-          positivity
+          bound
     _ = ∑ w : ZMod m, freqWeight w * Nat.gcd w.val m :=
         Fintype.sum_equiv ((Units.mulRight hq.unit).trans (Equiv.neg _)) _
-          (fun w => freqWeight w * Nat.gcd w.val m) fun h => by simp [Units.mulRight]
+          (fun w => freqWeight w * Nat.gcd w.val m) fun h => by rfl
     _ ≤ m * ∑ j ∈ Icc 1 m, (Nat.gcd j m : ℝ) / j :=
-        sum_freqWeight_mul_le (fun j => (Nat.gcd j m : ℝ)) (fun _ => Nat.cast_nonneg _)
+        sum_freqWeight_mul_le (fun j => (Nat.gcd j m)) (fun _ => Nat.cast_nonneg _)
           fun j hj => by rw [Nat.gcd_self_sub_left hj.le]
     _ ≤ m * (m.divisors.card * (1 + Real.log m)) := by gcongr; exact sum_gcd_div_le
     _ = _ := by ring
@@ -481,8 +456,8 @@ theorem abs_card_filter_mem_prog_sub_le (G : Finset (ZMod m × ZMod m)) {q q' : 
             ((p.1 : ZMod m), p.2) ∈ G}| ≤
       X * m.divisors.card * (2 + Real.log m) ^ 2 := by
   have hm : (0 : ℝ) < m := Nat.cast_pos.2 (NeZero.pos m)
-  have hlog : 0 ≤ Real.log m := Real.log_nonneg (by exact_mod_cast NeZero.one_le)
-  refine (abs_card_filter_mem_sub_le G (fun a : ℕ => (a : ZMod m)) (fun a : ℕ => (a : ZMod m))
+  have hlog : 0 ≤ Real.log m := by positivity
+  refine (abs_card_filter_mem_sub_le G (fun a : ℕ => a) (fun a : ℕ => a)
     _ _ hX).trans ?_
   have h₁ := sum_norm_transform_image_le hq r α β hA
   have h₂ := sum_norm_transform_image_mul_gcd_le hq' r' γ δ
@@ -493,17 +468,14 @@ theorem abs_card_filter_mem_prog_sub_le (G : Finset (ZMod m × ZMod m)) {q q' : 
           ((Ico γ δ).image fun j => r' + q' * j) k‖ * Nat.gcd k.val m := by
           rw [mul_sum]
           exact sum_congr rfl fun k _ => by ring
-      _ ≤ _ := mul_le_mul_of_nonneg_left h₂ hX0
-  calc ((m : ℝ) ^ 2)⁻¹ * (∑ h : ZMod m, ‖transform (fun a : ℕ => (a : ZMod m))
-          ((Ico α β).image fun j => r + q * j) h‖) *
-        ∑ k ∈ univ.erase 0, ‖transform (fun a : ℕ => (a : ZMod m))
-          ((Ico γ δ).image fun j => r' + q' * j) k‖ * (X * Nat.gcd k.val m)
+      _ ≤ _ := by gcongr
+  calc _
       ≤ ((m : ℝ) ^ 2)⁻¹ * (m * (2 + Real.log m)) *
           (X * (m * m.divisors.card * (1 + Real.log m))) := by
         gcongr
     _ = X * m.divisors.card * ((2 + Real.log m) * (1 + Real.log m)) := by
         field_simp
-    _ ≤ X * m.divisors.card * (2 + Real.log m) ^ 2 := by
+    _ ≤ _ := by
         gcongr
         nlinarith
 

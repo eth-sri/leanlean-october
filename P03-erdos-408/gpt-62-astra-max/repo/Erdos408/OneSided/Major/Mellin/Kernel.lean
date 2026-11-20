@@ -49,13 +49,12 @@ theorem abs_exp_sub_one_le_mul (t : ℝ) : |exp t - 1| ≤ |t| * exp |t| := by
   rcases le_total 0 t with ht | ht
   · rw [abs_of_nonneg ht, abs_of_nonneg (by linarith [add_one_le_exp t])]
     have h := add_one_le_exp (-t)
-    have h' := exp_pos t
     rw [exp_neg] at h
     have : (-t + 1) * exp t ≤ 1 := by
-      calc (-t + 1) * exp t ≤ (exp t)⁻¹ * exp t := by gcongr
-        _ = 1 := inv_mul_cancel₀ h'.ne'
+      calc _ ≤ (exp t)⁻¹ * exp t := by gcongr
+        _ = 1 := inv_mul_cancel₀ (exp_pos t).ne'
     nlinarith
-  · rw [abs_of_nonpos ht, abs_of_nonpos (by linarith [exp_le_one_iff.2 ht])]
+  · rw [abs_of_nonpos ht, abs_of_nonpos (by simp_all)]
     nlinarith [add_one_le_exp t, one_le_exp (neg_nonneg.2 ht)]
 
 /-- The derivatives of `g(ζ) = X(e^{ζ/X} - 1)` are at most `20 e^{10}` for `|ζ| ≤ 20`. -/
@@ -75,27 +74,24 @@ theorem norm_iteratedDeriv_gap_le {X : ℝ} (hX : 2 ≤ X) (j : ℕ) {ζ : ℝ} 
     -- `g' = e^{ζ/X}`
     have hd : deriv (fun ζ => X * (exp (ζ / X) - 1)) = fun ζ => exp (X⁻¹ * ζ) := by
       funext ζ
-      have h := (((hasDerivAt_id' ζ).div_const X).exp.sub_const 1).const_mul X
-      rw [h.deriv]
+      rw [((((hasDerivAt_id' ζ).div_const X).exp.sub_const 1).const_mul X).deriv]
       field_simp
     rw [iteratedDeriv_succ', hd, iteratedDeriv_exp_const_mul, Real.norm_eq_abs, abs_mul,
       abs_of_pos (exp_pos _), abs_pow, abs_inv, abs_of_pos hX0]
-    have h1 : (X⁻¹) ^ m ≤ 1 := pow_le_one₀ (by positivity) (inv_le_one_of_one_le₀ (by linarith))
+    have h1 : (X⁻¹) ^ m ≤ 1 := by bound
     have h2 : exp (X⁻¹ * ζ) ≤ exp 10 := by
       refine exp_le_exp.2 ((le_abs_self _).trans ?_)
       rw [abs_mul, abs_inv, abs_of_pos hX0, inv_mul_eq_div]
       exact hq
-    calc (X⁻¹) ^ m * exp (X⁻¹ * ζ) ≤ 1 * exp 10 := by gcongr
-      _ ≤ 20 * exp 10 := by nlinarith [exp_pos 10]
+    calc _ ≤ 1 * exp 10 := by gcongr
+      _ ≤ _ := by nlinarith [exp_pos 10]
 
 /-- The derivatives of `y` are at most `A = 16 e^{20} (20 e^{10})` on the ball of radius `20`. -/
 theorem norm_iteratedFDeriv_logGap_le {X : ℝ} (hX : 2 ≤ X) {i : ℕ} (hi : i ≤ 4)
     {p : ℝ × ℝ} (hp : ‖p‖ ≤ 20) :
     ‖iteratedFDeriv ℝ i (logGap X) p‖ ≤ 16 * exp 20 * (20 * exp 10) := by
-  have h1 : ‖p.1‖ ≤ 20 := (le_max_left _ _).trans hp
-  have h2 : ‖p.2‖ ≤ 20 := (le_max_right _ _).trans hp
   have hg : ContDiff ℝ ∞ fun ζ => X * (exp (ζ / X) - 1) :=
-    contDiff_const.mul ((contDiff_exp.comp (contDiff_id.div_const X)).sub contDiff_const)
+    by fun_prop
   -- `y = (exp ∘ snd) (g ∘ fst)`
   have hy : logGap X = fun p => (exp ∘ ContinuousLinearMap.snd ℝ ℝ ℝ) p *
       ((fun ζ => X * (exp (ζ / X) - 1)) ∘ ContinuousLinearMap.fst ℝ ℝ ℝ) p := rfl
@@ -114,9 +110,9 @@ theorem norm_iteratedFDeriv_logGap_le {X : ℝ} (hX : 2 ≤ X) {i : ℕ} (hi : i
     · refine (norm_iteratedFDeriv_comp_clm_le (ContinuousLinearMap.norm_snd_le ℝ ℝ ℝ)
         contDiff_exp j p).trans ?_
       rw [iteratedDeriv_eq_iterate, iter_deriv_exp, Real.norm_eq_abs, abs_of_pos (exp_pos _)]
-      exact exp_le_exp.2 ((le_abs_self _).trans h2)
+      exact exp_le_exp.2 ((le_abs_self _).trans ((le_max_right _ _).trans hp))
     · exact (norm_iteratedFDeriv_comp_clm_le (ContinuousLinearMap.norm_fst_le ℝ ℝ ℝ) hg _ p).trans
-        (norm_iteratedDeriv_gap_le hX _ h1)
+        (norm_iteratedDeriv_gap_le hX _ ((le_max_left _ _).trans hp))
   refine (Finset.sum_le_sum hterm).trans ?_
   rw [← Finset.sum_mul, ← Nat.cast_sum, Nat.sum_range_choose]
   have h16 : (2 : ℝ) ^ i ≤ 16 := by
@@ -153,8 +149,8 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
     ContDiff ℝ ∞ φ → 2 ≤ X → (∀ i ≤ 4, ∀ y, ‖iteratedFDeriv ℝ i φ y‖ ≤ K) →
       ∀ n ≤ 4, ∀ p, ‖iteratedFDeriv ℝ n (gapKernel φ X) p‖ ≤ B * K := by
   -- the cutoff has bounded derivatives
-  set c : ℝ × ℝ → ℂ := fun p => ((plateau (p.1 / 4) * plateau (p.2 / 4) : ℝ) : ℂ) with hc
-  have hcd : ContDiff ℝ ∞ c := Complex.ofRealCLM.contDiff.comp
+  set c : ℝ × ℝ → ℂ := fun p => ((plateau (p.1 / 4) * plateau (p.2 / 4) : ℝ)) with hc
+  have hcd := Complex.ofRealCLM.contDiff.comp
     ((contDiff_plateau.comp (contDiff_fst.div_const 4)).mul
       (contDiff_plateau.comp (contDiff_snd.div_const 4)))
   have hcs : HasCompactSupport c := by
@@ -164,15 +160,12 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
     simp only [gapKernel, one_mul] at h
     exact h
   obtain ⟨Q, hQ⟩ := exists_norm_iteratedFDeriv_le hcd hcs 4
-  have hQ0 : 0 ≤ Q := (norm_nonneg _).trans (hQ 0 (Nat.zero_le _) 0)
+  have hQ0 := (norm_nonneg _).trans (hQ 0 (Nat.zero_le _) 0)
   set A : ℝ := 16 * exp 20 * (20 * exp 10) with hA
   have hA1 : 1 ≤ A := by
-    have h20 := add_one_le_exp 20
-    have h10 := add_one_le_exp 10
-    calc (1 : ℝ) ≤ 16 * 1 * (20 * 1) := by norm_num
-      _ ≤ 16 * exp 20 * (20 * exp 10) := by gcongr <;> linarith
+    bound
   refine ⟨16 * (24 * A ^ 4) * Q, by positivity, fun φ X K hφ hX hK n hn p => ?_⟩
-  have hK0 : 0 ≤ K := (norm_nonneg _).trans (hK 0 (Nat.zero_le _) 0)
+  have hK0 := (norm_nonneg _).trans (hK 0 (Nat.zero_le _) 0)
   rcases le_or_gt ‖p‖ 20 with hp | hp
   · -- Faà di Bruno for `φ ∘ y`
     have hcomp : ∀ j ≤ 4, ‖iteratedFDeriv ℝ j (φ ∘ logGap X) p‖ ≤ 24 * A ^ 4 * K := by
@@ -182,11 +175,11 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
         fun i hi1 hi => (norm_iteratedFDeriv_logGap_le hX (hi.trans hj) hp).trans
           (le_self_pow₀ hA1 (by omega))).trans ?_
       have hf : (j.factorial : ℝ) ≤ 24 := by
-        have : j.factorial ≤ (4 : ℕ).factorial := Nat.factorial_le hj
+        have := Nat.factorial_le hj
         exact_mod_cast this
-      have hAj : A ^ j ≤ A ^ 4 := pow_le_pow_right₀ hA1 hj
-      calc (j.factorial : ℝ) * K * A ^ j ≤ 24 * K * A ^ 4 := by gcongr
-        _ = 24 * A ^ 4 * K := by ring
+      have hAj := pow_le_pow_right₀ hA1 hj
+      calc _ ≤ 24 * K * A ^ 4 := by gcongr
+        _ = _ := by ring
     -- Leibniz for the product with the cutoff
     have hk : gapKernel φ X = fun p => (φ ∘ logGap X) p * c p := rfl
     rw [hk]
@@ -196,7 +189,7 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
         ‖iteratedFDeriv ℝ j (φ ∘ logGap X) p‖ *
         ‖iteratedFDeriv ℝ (n - j) c p‖ ≤ (n.choose j : ℝ) * (24 * A ^ 4 * K * Q) := by
       intro j hj
-      have hj' : j ≤ n := Nat.lt_succ_iff.1 (Finset.mem_range.1 hj)
+      have hj' := Nat.lt_succ_iff.1 (Finset.mem_range.1 hj)
       rw [mul_assoc]
       exact mul_le_mul_of_nonneg_left (mul_le_mul (hcomp j (hj'.trans hn))
         (hQ _ ((Nat.sub_le n j).trans hn) p) (norm_nonneg _) (by positivity)) (Nat.cast_nonneg _)
@@ -206,9 +199,9 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
       calc (2 : ℝ) ^ n ≤ 2 ^ 4 := pow_le_pow_right₀ (by norm_num) hn
         _ = 16 := by norm_num
     push_cast
-    calc (2 : ℝ) ^ n * (24 * A ^ 4 * K * Q) ≤ 16 * (24 * A ^ 4 * K * Q) :=
-          mul_le_mul_of_nonneg_right h16 (by positivity)
-      _ = 16 * (24 * A ^ 4) * Q * K := by ring
+    calc _ ≤ 16 * (24 * A ^ 4 * K * Q) :=
+          by gcongr
+      _ = _ := by ring
   · -- outside the ball `Φ` vanishes near `p`
     have h : gapKernel φ X =ᶠ[nhds p] fun _ => 0 :=
       Filter.eventually_of_mem ((isOpen_lt continuous_const continuous_norm).mem_nhds hp)
@@ -227,12 +220,7 @@ theorem abs_log_sub_log_le {w w' : ℝ} (hw : 1 ≤ w) (hw' : 1 ≤ w') :
     · rw [abs_of_nonneg hab]
       nlinarith
     · nlinarith [abs_nonneg (a - b)]
-  rw [abs_le]
-  constructor
-  · have := h w' w hw' hw
-    rw [abs_sub_comm] at this
-    linarith
-  · exact h w w' hw hw'
+  grind
 
 /-- For `w, w' ≥ 1` and `w' ≤ 16`, the cut-off kernel is `φ(X(w - w'))`, when `φ` vanishes
 outside `(-5, 5)`. -/
@@ -247,17 +235,15 @@ theorem gapKernel_log {φ : ℝ → ℂ} (hφ : ∀ y, 5 ≤ |y| → φ y = 0) {
     field_simp
   have hz : plateau (log w' / 4) = 1 := by
     refine plateau_eq_one ?_
-    have h0 : 0 ≤ log w' := log_nonneg hw'
+    have h0 := log_nonneg hw'
     have h1 : log w' ≤ w' - 1 := log_le_sub_one_of_pos (by positivity)
-    rw [abs_of_nonneg (by positivity)]
-    linarith
+    grind
   rw [gapKernel, hy, hz, mul_one]
   by_cases h : φ (X * (w - w')) = 0
   · rw [h, zero_mul]
   · -- `|ζ| ≤ X |w - w'| < 5`
     have h5 : |X * (w - w')| < 5 := by
-      by_contra h'
-      exact h (hφ _ (not_lt.1 h'))
+      grind
     have hζ : plateau (X * (log w - log w') / 4) = 1 := by
       refine plateau_eq_one ?_
       rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 4), abs_mul, abs_of_pos hX]

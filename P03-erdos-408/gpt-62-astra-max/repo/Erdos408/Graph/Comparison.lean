@@ -22,7 +22,7 @@ supremum (`sum_norm_termWeight_le`).
 namespace Erdos408.Graph
 
 open Erdos821.Blueprint.Graph
-open Erdos821.Blueprint.Analytic (cell charValue primitiveCharacters CharacterIndex)
+open Erdos821.Blueprint.Analytic (primitiveCharacters CharacterIndex)
 open scoped Classical
 
 variable {G : PrimeGroups} {J m : ℕ}
@@ -160,7 +160,7 @@ lemma sum_norm_termWeight_le (ν : Pattern G J 1 m) (block : G.BigGroup → Bool
         ‖ν.coefficient z.1 z.2.1 z.2.2‖) := by
     intro τ hτ
     simp only [terms, Finset.mem_product] at hτ
-    have hQ : 0 < Q := Fin.pos τ.2.1.1
+    have hQ  := Fin.pos τ.2.1.1
     rw [termWeight, norm_mul, norm_neg, norm_pow, norm_neg, norm_one, one_pow, one_mul,
       norm_mul, Complex.norm_real, Complex.norm_real,
       Real.norm_of_nonneg (inv_nonneg.mpr (selectedCellMass_nonneg _ _ _ _ _)),
@@ -175,9 +175,8 @@ lemma sum_norm_termWeight_le (ν : Pattern G J 1 m) (block : G.BigGroup → Bool
     exact_mod_cast card_primitiveCharacters_le Q
   simp only [terms, Finset.card_product]
   push_cast
-  calc ((goodCells ν block false h ξ).card : ℝ) * ((primitiveCharacters Q).card *
-        ((goodCells ν block true h ξ).card * (primitiveCharacters Q).card))
+  calc _
       ≤ ξ⁻¹ * ((Q : ℝ) ^ 2 * (ξ⁻¹ * (Q : ℝ) ^ 2)) := by gcongr
-    _ = ξ⁻¹ ^ 2 * (Q : ℝ) ^ 4 := by ring
+    _ = _ := by ring
 
 end Erdos408.Graph

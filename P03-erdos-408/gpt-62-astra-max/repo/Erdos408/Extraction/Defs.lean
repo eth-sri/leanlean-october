@@ -1,5 +1,6 @@
 module
 
+public import Erdos408.Scales
 public import Erdos408.Basic
 public import Erdos408.Hypotheses
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
@@ -39,17 +40,7 @@ iterations of Euler's function* (Plasma AI, 2026), §6.
 
 namespace Erdos408
 
-open Real
-
 noncomputable section
-
-/-- `T = log log x`. -/
-def logLog (x : ℝ) : ℝ :=
-  Real.log (Real.log x)
-
-/-- `s = log log log x`. -/
-def logLogLog (x : ℝ) : ℝ :=
-  Real.log (logLog x)
 
 /-! ### The slot statistic -/
 
@@ -145,7 +136,7 @@ def candidateStrip (x : ℝ) (n : ℕ) : ℕ :=
   stripPrimes (candidatePrimes x) n
 
 /-- The damped weight `g_j(n) = [n̄ is Y-rough] j^{-Ω_P(n)}`. -/
-def dampedWeight (x : ℝ) (j : ℕ) (n : ℕ) : ℝ :=
+def dampedWeight (x : ℝ) (j n : ℕ) : ℝ :=
   if ∀ p ∈ (candidateStrip x n).primeFactors, proxyCutoff x < p then
     ((j : ℝ)⁻¹) ^ candidateOmega x n
   else 0
@@ -157,11 +148,11 @@ def dampedDensity (x : ℝ) (j : ℕ) : ℝ :=
     ∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹
 
 /-- The unstripped proxy `[n > x^γ] g_j(n) / (D_j log n)`. -/
-def unstrippedProxy (x γ : ℝ) (j : ℕ) (n : ℕ) : ℝ :=
+def unstrippedProxy (x γ : ℝ) (j n : ℕ) : ℝ :=
   if x ^ γ < n then dampedWeight x j n / (dampedDensity x j * Real.log n) else 0
 
 /-- The stripped proxy `[n̄ > x^γ] g_j(n) / (D_j log n̄)`. -/
-def strippedProxy (x γ : ℝ) (j : ℕ) (n : ℕ) : ℝ :=
+def strippedProxy (x γ : ℝ) (j n : ℕ) : ℝ :=
   if x ^ γ < candidateStrip x n then
     dampedWeight x j n / (dampedDensity x j * Real.log (candidateStrip x n))
   else 0

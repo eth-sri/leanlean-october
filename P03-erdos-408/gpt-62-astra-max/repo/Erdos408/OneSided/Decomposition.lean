@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Hypotheses
+
 public import Erdos408.OneSided.Decomposition.Bound
 public import Erdos408.OneSided.Decomposition.Eventually
 
@@ -32,7 +34,7 @@ growth facts.
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 variable {K : ℕ}
 
@@ -68,7 +70,7 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
   have hY : 1 ≤ Y := one_le_pow₀ (by norm_num)
   have hY0 : 0 < Y := by linarith
   -- the band facts at `x`
-  have hdisj' : ∀ i i', i ≠ i' → Disjoint (band x (d.a i)) (band x (d.a i')) := by
+  have hdisj' : DisjointBands x d.a := by
     intro i i' hii
     rcases lt_or_gt_of_ne hii with h | h
     · exact hdisj _ _ (hd.gap i i' h)

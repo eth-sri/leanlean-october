@@ -39,11 +39,8 @@ private lemma sum_range_choose_ite_eq (n R : ℕ) :
       ∑ m ∈ range (n + R + 2), (n.choose m : ℝ) * (if m ≤ R then (-1 : ℝ) ^ m else 0) := by
     refine (sum_congr rfl fun m hm => ?_).trans
       (sum_subset (range_subset_range.2 (by omega)) fun m hm hm' => ?_)
-    · rw [mem_range] at hm
-      rw [ite_eq_left (by omega)]
-      ring
-    · rw [mem_range] at hm'
-      rw [ite_eq_right (by omega), mul_zero]
+    · grind
+    grind
   rw [h1, h2]
 
 /-- Pointwise Bonferroni: `|[s = ∅] - ∑_{u ⊆ s, |u| ≤ R} (-1)^{|u|}| ≤ #{u ⊆ s : |u| = R + 1}`. -/
@@ -55,7 +52,7 @@ lemma abs_ite_sub_sum_powerset_le (s : Finset α) (R : ℕ) :
   rw [sum_range_choose_ite_eq, card_powersetCard]
   rcases Nat.eq_zero_or_pos s.card with h | h
   · rw [card_eq_zero.1 h, ite_eq_left rfl, card_empty, sum_range_succ']
-    simp [Nat.choose_zero_succ]
+    simp
   · obtain ⟨n, hn⟩ : ∃ n, s.card = n + 1 := ⟨s.card - 1, by omega⟩
     rw [ite_eq_right (by rw [← card_eq_zero]; omega), hn]
     have h := Int.alternating_sum_range_choose_eq_choose (n := n) (m := R)
@@ -63,8 +60,7 @@ lemma abs_ite_sub_sum_powerset_le (s : Finset α) (R : ℕ) :
         (-1 : ℝ) ^ R * n.choose R := by exact_mod_cast h
     rw [h', zero_sub, abs_neg, abs_mul, abs_pow, abs_neg, abs_one, one_pow, one_mul,
       Nat.abs_cast, Nat.choose_succ_succ]
-    push_cast
-    linarith [(Nat.cast_nonneg (n.choose (R + 1)) : (0 : ℝ) ≤ _)]
+    simp
 
 /-! ### Averaging over the product measure -/
 
@@ -75,23 +71,16 @@ lemma sum_powerset_prod_mul_ite_subset (S u : Finset α) (hu : u ⊆ S) (x : α 
   have h := prod_add (fun i => x i) (fun i => (1 - x i) * (if i ∈ u then 0 else 1)) S
   have hl : ∏ i ∈ S, (x i + (1 - x i) * (if i ∈ u then 0 else 1)) =
       ∏ i ∈ S, (if i ∈ u then x i else 1) :=
-    prod_congr rfl fun i _ => by split_ifs <;> ring
+    by grind
   rw [hl, prod_ite_mem, inter_eq_right.2 hu] at h
   rw [h]
   refine sum_congr rfl fun T hT => ?_
   rw [prod_mul_distrib, mul_assoc]
   congr 2
-  rw [show (∏ i ∈ S \ T, if i ∈ u then (0 : ℝ) else 1) =
+  rw [(show (∏ i ∈ S \ T, if i ∈ u then (0 : ℝ) else 1) =
       ∏ i ∈ S \ T, if i ∉ u then (1 : ℝ) else 0 from prod_congr rfl fun i _ => by
-        split_ifs <;> simp_all, prod_ite_zero, prod_const_one]
-  congr 1
-  apply propext
-  constructor
-  · intro h' i hi hiu
-    exact (mem_sdiff.1 hi).2 (h' hiu)
-  · intro h' i hi
-    by_contra hiT
-    exact h' i (mem_sdiff.2 ⟨hu hi, hiT⟩) hi
+        split_ifs <;> simp_all), prod_ite_zero, prod_const_one]
+  grind
 
 /-- Bonferroni for products: with `0 ≤ x_i ≤ 1`,
 `|∏ (1 - x_i) - ∑_{u ⊆ S, |u| ≤ R} (-1)^{|u|} x^u| ≤ ∑_{|u| = R + 1} x^u`. -/
@@ -114,7 +103,7 @@ lemma abs_prod_one_sub_sub_sum_le (S : Finset α) (R : ℕ) (x : α → ℝ)
       ∑ u ∈ S.powerset with P u, f u * ∏ i ∈ u, x i =
         ∑ T ∈ S.powerset, w T * ∑ u ∈ T.powerset with P u, f u := by
     intro P _ f
-    calc ∑ u ∈ S.powerset with P u, f u * ∏ i ∈ u, x i
+    calc _
         = ∑ u ∈ S.powerset with P u, ∑ T ∈ S.powerset,
             f u * (w T * (if u ⊆ T then 1 else 0)) :=
           sum_congr rfl fun u hu => by rw [hav u (mem_filter.1 hu).1, mul_sum]
@@ -123,14 +112,11 @@ lemma abs_prod_one_sub_sub_sum_le (S : Finset α) (R : ℕ) (x : α → ℝ)
       _ = _ := sum_congr rfl fun T hT => by
           have hTS := mem_powerset.1 hT
           have hfilt : (S.powerset.filter P).filter (· ⊆ T) = T.powerset.filter P := by
-            ext u
-            simp only [mem_filter, mem_powerset]
-            exact ⟨fun h => ⟨h.2, h.1.2⟩, fun h => ⟨⟨h.1.trans hTS, h.2⟩, h.1⟩⟩
+            grind
           rw [← hfilt, Finset.sum_filter (fun u : Finset α => u ⊆ T), mul_sum]
-          refine sum_congr rfl fun u _ => ?_
-          split_ifs <;> ring
+          grind
   have h2 := hswap (fun u => u.card ≤ R) fun u => (-1 : ℝ) ^ u.card
-  have h3 := hswap (fun u => u.card = R + 1) fun _ => (1 : ℝ)
+  have h3 := hswap (fun u => u.card = R + 1) fun _ => 1
   simp only [one_mul, sum_const] at h3
   rw [powersetCard_eq_filter, h3, h1, h2, ← sum_sub_distrib]
   refine (abs_sum_le_sum_abs _ _).trans (sum_le_sum fun T hT => ?_)
@@ -147,11 +133,11 @@ lemma sum_powersetCard_prod_le (S : Finset α) (k : ℕ) {x : α → ℝ} (hx : 
     {z : ℝ} (hz : 0 < z) :
     ∑ u ∈ S.powersetCard k, ∏ i ∈ u, x i ≤ (∏ i ∈ S, (1 + z * x i)) / z ^ k := by
   rw [le_div_iff₀ (pow_pos hz k), prod_one_add, sum_mul]
-  calc ∑ u ∈ S.powersetCard k, (∏ i ∈ u, x i) * z ^ k
+  calc _
       = ∑ u ∈ S.powersetCard k, ∏ i ∈ u, z * x i := by
         refine sum_congr rfl fun u hu => ?_
         rw [prod_mul_distrib, prod_const, (mem_powersetCard.1 hu).2, mul_comm]
-    _ ≤ ∑ u ∈ S.powerset, ∏ i ∈ u, z * x i :=
+    _ ≤ _ :=
         sum_le_sum_of_subset_of_nonneg (fun u hu => mem_powerset.2 (mem_powersetCard.1 hu).1)
           fun u hu _ =>
           prod_nonneg fun i hi => mul_nonneg hz.le (hx i (mem_powerset.1 hu hi))
@@ -164,9 +150,9 @@ lemma sum_powersetCard_two_prod_le (S : Finset α) {x : α → ℝ} (hx : ∀ i 
     rw [powersetCard_eq_empty.2 (by simp)]
     simp
   | insert a S ha ih =>
-    have hxS : ∀ i ∈ S, 0 ≤ x i := fun i hi => hx i (mem_insert_of_mem hi)
-    have hxa : 0 ≤ x a := hx a (mem_insert_self a S)
-    have hS0 : 0 ≤ ∑ i ∈ S, x i := sum_nonneg hxS
+    have hxS := fun i hi => hx i (mem_insert_of_mem hi)
+    have hxa := hx a (mem_insert_self a S)
+    have hS0 := sum_nonneg hxS
     rw [powersetCard_succ_insert ha, sum_insert ha]
     have hu := sum_union_inter (s₁ := S.powersetCard 2)
       (s₂ := (S.powersetCard 1).image (insert a)) (f := fun u => ∏ i ∈ u, x i)
@@ -174,20 +160,15 @@ lemma sum_powersetCard_two_prod_le (S : Finset α) {x : α → ℝ} (hx : ∀ i 
       prod_nonneg fun i hi => hx i (mem_powerset.1 hu hi)
     have hinter : 0 ≤ ∑ u ∈ S.powersetCard 2 ∩ (S.powersetCard 1).image (insert a),
         ∏ i ∈ u, x i := sum_nonneg fun u hu => by
-      obtain ⟨-, hu⟩ := mem_inter.1 hu
-      obtain ⟨v, hv, rfl⟩ := mem_image.1 hu
-      exact hnn _ (mem_powerset.2 (insert_subset_insert a
-        (mem_powersetCard.1 hv).1))
+      grind
     have himg : ∑ u ∈ (S.powersetCard 1).image (insert a), ∏ i ∈ u, x i ≤
         x a * ∑ i ∈ S, x i := by
       refine (sum_image_le_of_nonneg fun u hu => ?_).trans (le_of_eq ?_)
-      · obtain ⟨v, hv, rfl⟩ := mem_image.1 hu
-        exact hnn _ (mem_powerset.2 (insert_subset_insert a
-          (mem_powersetCard.1 hv).1))
+      · grind
       · rw [powersetCard_one, sum_map, mul_sum]
         refine sum_congr rfl fun i hi => ?_
         simp only [Function.Embedding.coeFn_mk]
-        rw [prod_insert fun h => ha (by rwa [← mem_singleton.1 h] at hi), prod_singleton]
+        grind
     nlinarith [ih hxS]
 
 /-- `#{u ⊆ S : |u| ≤ m} ≤ (|S| + 1)^m`. -/
@@ -195,15 +176,13 @@ lemma card_filter_powerset_card_le (S : Finset α) (m : ℕ) :
     (S.powerset.filter (·.card ≤ m)).card ≤ (S.card + 1) ^ m := by
   have hsub : S.powerset.filter (·.card ≤ m) ⊆ (range (m + 1)).biUnion (S.powersetCard ·) := by
     intro u hu
-    obtain ⟨hu, hm⟩ := mem_filter.1 hu
-    exact mem_biUnion.2 ⟨u.card, mem_range.2 (by omega),
-      mem_powersetCard.2 ⟨mem_powerset.1 hu, rfl⟩⟩
+    aesop
   refine (card_le_card hsub).trans (card_biUnion_le.trans ?_)
   rw [add_pow]
   refine sum_le_sum fun k hk => ?_
   rw [card_powersetCard, one_pow, mul_one]
-  have h1 : 1 ≤ m.choose k := Nat.choose_pos (by have := mem_range.1 hk; omega)
+  have h1 : 1 ≤ m.choose k := Nat.choose_pos (by simp_all)
   calc S.card.choose k ≤ S.card ^ k := Nat.choose_le_pow _ _
-    _ ≤ S.card ^ k * m.choose k := Nat.le_mul_of_pos_right _ h1
+    _ ≤ _ := Nat.le_mul_of_pos_right _ h1
 
 end Erdos408

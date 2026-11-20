@@ -60,7 +60,7 @@ theorem addTwist_mod (h : ℤ) {k : ℕ} (hk : 0 < k) (w : ℕ) :
 theorem eq_sum_Icc_sub {f : ℕ → ℂ} (hf0 : f 0 = 0) (u : ℕ) :
     f u = ∑ m ∈ Icc 1 u, (f m - f (m - 1)) := by
   induction u with
-  | zero => simp [hf0]
+  | zero => assumption
   | succ u ih => rw [sum_Icc_succ_top (by omega), ← ih, Nat.add_sub_cancel]; ring
 
 /-- A sum over `[1, N]` restricted by a condition, through the increments of `f`. -/
@@ -68,17 +68,10 @@ theorem sum_filter_eq_sum_sub {f : ℕ → ℂ} (hf0 : f 0 = 0) (N : ℕ) (p : �
     [DecidablePred p] :
     ∑ u ∈ (Icc 1 N).filter p, f u =
       ∑ m ∈ Icc 1 N, (f m - f (m - 1)) * #((Icc m N).filter p) := by
-  rw [sum_congr rfl fun u _ => eq_sum_Icc_sub hf0 u]
-  rw [sum_comm' (t' := Icc 1 N) (s' := fun m => (Icc m N).filter p)]
+  rw [sum_congr rfl fun u _ => eq_sum_Icc_sub hf0 u, sum_comm' (t' := Icc 1 N) (s' := fun m => (Icc m N).filter p)]
   · refine sum_congr rfl fun m _ => ?_
     rw [sum_const, nsmul_eq_mul, mul_comm]
-  · intro u m
-    simp only [mem_filter, mem_Icc]
-    constructor
-    · rintro ⟨⟨⟨h1, h2⟩, h3⟩, h4, h5⟩
-      exact ⟨⟨⟨h5, h2⟩, h3⟩, h4, h5.trans h2⟩
-    · rintro ⟨⟨⟨h1, h2⟩, h3⟩, h4, h5⟩
-      exact ⟨⟨⟨h4.trans h1, h2⟩, h3⟩, h4, h1⟩
+  grind
 
 /-- A complex sum over a residue class modulo `q` in `[1, N]` is `1/q` of the full sum, up to
 the total variation. -/
@@ -87,11 +80,7 @@ theorem norm_sum_modEq_sub_le {q : ℕ} (hq : 0 < q) (v N : ℕ) {f : ℕ → �
       ∑ m ∈ Icc 1 N, ‖f m - f (m - 1)‖ := by
   have hfull : ∑ u ∈ Icc 1 N, f u =
       ∑ m ∈ Icc 1 N, (f m - f (m - 1)) * ((N + 1 - m : ℕ) : ℂ) := by
-    have := sum_filter_eq_sum_sub hf0 N (fun _ => True)
-    rw [filter_true_of_mem fun _ _ => trivial] at this
-    rw [this]
-    refine sum_congr rfl fun m _ => ?_
-    rw [filter_true_of_mem fun _ _ => trivial, Nat.card_Icc]
+    simpa using sum_filter_eq_sum_sub hf0 N (fun _ => True)
   rw [sum_filter_eq_sum_sub hf0, hfull, mul_sum, ← sum_sub_distrib]
   refine (norm_sum_le _ _).trans (sum_le_sum fun m hm => ?_)
   obtain ⟨hm1, hmN⟩ := mem_Icc.1 hm
@@ -147,30 +136,23 @@ theorem norm_sum_dvd_twist_sub_le {m k : ℕ} (hm : 0 < m) (hk : 0 < k) (hmk : N
   have hmain : twistMean h k * (∑ w ∈ Icc 1 N, f w) / m =
       ∑ a ∈ range k, addTwist h k a * ((1 / ((m * k : ℕ) : ℂ)) * ∑ w ∈ Icc 1 N, f w) := by
     rw [← sum_mul, twistMean]
-    have hm' : (m : ℂ) ≠ 0 := by exact_mod_cast hm.ne'
-    have hk' : (k : ℂ) ≠ 0 := by exact_mod_cast hk.ne'
-    push_cast
-    field_simp
+    grind
   rw [hsplit, hmain, ← sum_sub_distrib]
   refine (norm_sum_le _ _).trans ?_
-  calc ∑ a ∈ range k, ‖addTwist h k a *
-        ∑ w ∈ ((Icc 1 N).filter (m ∣ ·)).filter (fun w => w % k = a), f w -
-          addTwist h k a * ((1 / ((m * k : ℕ) : ℂ)) * ∑ w ∈ Icc 1 N, f w)‖
+  calc _
       ≤ ∑ _a ∈ range k, ∑ w ∈ Icc 1 N, ‖f w - f (w - 1)‖ := by
         refine sum_le_sum fun a ha => ?_
         obtain ⟨v, hv⟩ := hclass a ha
         rw [← mul_sub, norm_mul, norm_addTwist, one_mul, hv]
-        have := norm_sum_modEq_sub_le (Nat.mul_pos hm hk) v N hf0
-        push_cast at this ⊢
-        exact this
-    _ = k * ∑ w ∈ Icc 1 N, ‖f w - f (w - 1)‖ := by
-        rw [sum_const, card_range, nsmul_eq_mul]
+        simpa using norm_sum_modEq_sub_le (Nat.mul_pos hm hk) v N hf0
+    _ = _ := by
+        simp
 
 /-- `|v^{iτ} - u^{iτ}| ≤ |τ| (v - u)/u` for `0 < u ≤ v`. -/
 theorem norm_cpow_sub_cpow_le {u v : ℝ} (hu : 0 < u) (huv : u ≤ v) (τ : ℝ) :
     ‖(v : ℂ) ^ ((τ : ℂ) * Complex.I) - (u : ℂ) ^ ((τ : ℂ) * Complex.I)‖ ≤
       |τ| * (v - u) / u := by
-  have hv : 0 < v := hu.trans_le huv
+  have hv := hu.trans_le huv
   have hcpow : ∀ y : ℝ, 0 < y →
       (y : ℂ) ^ ((τ : ℂ) * Complex.I) = Complex.exp (Complex.I * ((τ * Real.log y : ℝ) : ℂ)) := by
     intro y hy
@@ -194,12 +176,11 @@ theorem norm_cpow_sub_cpow_le {u v : ℝ} (hu : 0 < u) (huv : u ≤ v) (τ : ℝ
   rw [Real.norm_eq_abs, ← mul_sub, abs_mul]
   have hlog : 0 ≤ Real.log v - Real.log u := by
     linarith [Real.log_le_log hu huv]
-  have hlog' : Real.log v - Real.log u ≤ (v - u) / u := by
+  rw [abs_of_nonneg hlog, mul_div_assoc]
+  exact mul_le_mul_of_nonneg_left (by
     rw [← Real.log_div hv.ne' hu.ne']
     refine (Real.log_le_sub_one_of_pos (div_pos hv hu)).trans_eq ?_
-    field_simp
-  rw [abs_of_nonneg hlog, mul_div_assoc]
-  exact mul_le_mul_of_nonneg_left hlog' (abs_nonneg τ)
+    field_simp) (abs_nonneg τ)
 
 /-- **The total variation of the smooth weight.** For `ψ₁` differentiable with
 `|ψ₁| ≤ M₁(0)`, `|ψ₁'| ≤ M₁(1)` and `ψ₁(y) ≠ 0 → y ≥ 1`, and `Y > 0`, the weight
@@ -214,9 +195,7 @@ theorem sum_norm_sub_le {ψ₁ : ℝ → ℂ} (hd : Differentiable ℝ ψ₁) {M
       ψ₁ ((w - 1 : ℕ) / Y) * ((w - 1 : ℕ) : ℂ) ^ ((τ : ℂ) * Complex.I)‖ ≤
         (M₁ + |τ| * M₀) / Y := by
     intro w hw
-    have hw1 := (mem_Icc.1 hw).1
-    have hcast : ((w - 1 : ℕ) : ℝ) = w - 1 := by rw [Nat.cast_sub hw1, Nat.cast_one]
-    have hw0 : (0 : ℝ) < w := by exact_mod_cast hw1
+    have hcast : ((w - 1 : ℕ) : ℝ) = w - 1 := by simp_all
     have hsplit : ψ₁ (w / Y) * (w : ℂ) ^ ((τ : ℂ) * Complex.I) -
         ψ₁ ((w - 1 : ℕ) / Y) * ((w - 1 : ℕ) : ℂ) ^ ((τ : ℂ) * Complex.I) =
         (ψ₁ (w / Y) - ψ₁ ((w - 1 : ℕ) / Y)) * (w : ℂ) ^ ((τ : ℂ) * Complex.I) +
@@ -227,10 +206,10 @@ theorem sum_norm_sub_le {ψ₁ : ℝ → ℂ} (hd : Differentiable ℝ ψ₁) {M
     -- the change of `ψ₁`
     have hA : ‖(ψ₁ (w / Y) - ψ₁ ((w - 1 : ℕ) / Y)) * (w : ℂ) ^ ((τ : ℂ) * Complex.I)‖ ≤
         M₁ / Y := by
-      rw [norm_mul, Complex.norm_natCast_cpow_of_pos hw1]
+      rw [norm_mul, Complex.norm_natCast_cpow_of_pos (mem_Icc.1 hw).1]
       simp only [Complex.mul_re, Complex.ofReal_re, Complex.I_re, mul_zero, Complex.ofReal_im,
         Complex.I_im, mul_one, sub_self, Real.rpow_zero, mul_one]
-      have := Convex.norm_image_sub_le_of_norm_deriv_le (s := Set.univ) (fun y _ => hd y)
+      have := Convex.norm_image_sub_le_of_norm_deriv_le  (fun y _ => hd y)
         (fun y _ => h₁ y) convex_univ (Set.mem_univ (((w - 1 : ℕ) : ℝ) / Y))
         (Set.mem_univ ((w : ℝ) / Y))
       refine this.trans_eq ?_
@@ -246,22 +225,18 @@ theorem sum_norm_sub_le {ψ₁ : ℝ → ℂ} (hd : Differentiable ℝ ψ₁) {M
         positivity
       · have h1 := hs _ h0
         rw [le_div_iff₀ hY, one_mul] at h1
-        have hu : (0 : ℝ) < ((w - 1 : ℕ) : ℝ) := hY.trans_le h1
-        have hle : ((w - 1 : ℕ) : ℝ) ≤ w := by rw [hcast]; linarith
+        have hle : ((w - 1 : ℕ) : ℝ) ≤ w := by simp
         rw [norm_mul]
-        have hc := norm_cpow_sub_cpow_le hu hle τ
+        have hc := norm_cpow_sub_cpow_le (hY.trans_le h1) hle τ
         rw [Complex.ofReal_natCast, Complex.ofReal_natCast] at hc
         have hdiff : |τ| * ((w : ℝ) - ((w - 1 : ℕ) : ℝ)) / ((w - 1 : ℕ) : ℝ) ≤ |τ| / Y := by
-          rw [hcast, sub_sub_cancel, mul_one, ← hcast]
-          exact div_le_div_of_nonneg_left (abs_nonneg τ) hY h1
-        calc ‖ψ₁ ((w - 1 : ℕ) / Y)‖ * ‖(w : ℂ) ^ ((τ : ℂ) * Complex.I) -
-              ((w - 1 : ℕ) : ℂ) ^ ((τ : ℂ) * Complex.I)‖ ≤ M₀ * (|τ| / Y) :=
+          bound
+        calc _ ≤ M₀ * (|τ| / Y) :=
               mul_le_mul (h₀ _) (hc.trans hdiff) (norm_nonneg _)
                 ((norm_nonneg (ψ₁ 0)).trans (h₀ 0))
-          _ = |τ| * M₀ / Y := by ring
-    calc _ ≤ M₁ / Y + |τ| * M₀ / Y := add_le_add hA hB
-      _ = (M₁ + |τ| * M₀) / Y := by ring
+          _ = _ := by ring
+    grind
   calc _ ≤ ∑ _w ∈ Icc 1 N, (M₁ + |τ| * M₀) / Y := sum_le_sum hterm
-    _ = N * ((M₁ + |τ| * M₀) / Y) := by rw [sum_const, Nat.card_Icc, nsmul_eq_mul]; simp
+    _ = _ := by simp
 
 end Erdos408.TwoSided.LowFreq

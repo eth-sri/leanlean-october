@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Hypotheses
+
 public import Erdos408.OneSided.Moment.Edge.RawRow
 
 /-!
@@ -27,7 +29,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 
@@ -57,7 +59,7 @@ private theorem edgeTgt_symm' (s : ChainState x d Y d₀ u v r B) (c : EdgeChoic
     (i : Fin K) (h : Fin (padCount x + 1)) :
     edgeTgt s c i ((c.2.2.2.2 i).symm h) =
       if h = Fin.last _ then (c.2.2.2.1 i).1 else edgeSrc s c i h := by
-  simp only [edgeTgt, Equiv.apply_symm_apply]
+  simp [edgeTgt]
 
 /-- The source lists of the reversed choice: the target lists reordered by `σ'^{-1}`, which
 are the source lists reordered by `σ` with the new label in the last slot. -/
@@ -79,19 +81,19 @@ theorem edgeTgt_revChoice {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice
   · change s.2.1.1 i (c.1 i (Fin.last _)) = _
     rw [← hh, Equiv.apply_symm_apply]
   · change s.2.1.1 i (c.1 i ((c.1 i).symm h)) = _
-    rw [Equiv.apply_symm_apply]
+    simp
 
 /-- The reversed choice has the same pad product. -/
 theorem edgePad_revChoice {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
     (h₂ : s'.2.1.1 = edgeTgt s c) : edgePad s' (revChoice s c) = edgePad s c := by
   unfold edgePad
-  simp only [edgeSrc_revChoice h₂, Fin.castSucc_ne_last, ↓reduceIte]
+  simp [edgeSrc_revChoice h₂]
 
 /-- The unshared source primes of the reversed choice are the new labels. -/
 theorem prod_edgeSrc_revChoice {s s' : ChainState x d Y d₀ u v r B}
     {c : EdgeChoice x d Y d₀ u v r} (h₂ : s'.2.1.1 = edgeTgt s c) :
     ∏ i, edgeSrc s' (revChoice s c) i (Fin.last _) = ∏ i, (c.2.2.2.1 i).1 := by
-  simp only [edgeSrc_revChoice h₂, ↓reduceIte]
+  simp [edgeSrc_revChoice h₂]
 
 /-- The reversed determinant is the negated determinant. -/
 theorem edgeDet_revChoice {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
@@ -121,18 +123,16 @@ private theorem mem_band_edgeSrc' (s : ChainState x d Y d₀ u v r B)
 
 /-- With disjoint bands, each particle is promoted by at most one group. -/
 private theorem card_promoted_le_one'
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : DisjointBands x d.a)
     {c : EdgeChoice x d Y d₀ u v r} (hc : c ∈ edgeChoices x d Y d₀ u v r) (xp : Particle x d) :
     (univ.filter fun i => (c.2.2.2.1 i).2 ∧ edgePromoted c i = xp.1).card ≤ 1 :=
   card_le_one.2 fun i hi j hj => by
     by_contra hij
-    have hij' := congrArg Prod.fst ((mem_filter.1 hi).2.2.trans (mem_filter.1 hj).2.2.symm)
-    change (c.2.2.2.1 i).1 = (c.2.2.2.1 j).1 at hij'
-    exact disjoint_left.1 (hdisj i j hij) (mem_band_lab hc i) (hij' ▸ mem_band_lab hc j)
+    exact disjoint_left.1 (hdisj i j hij) (mem_band_lab hc i) ((congrArg Prod.fst ((mem_filter.1 hi).2.2.trans (mem_filter.1 hj).2.2.symm)) ▸ mem_band_lab hc j)
 
 /-- With disjoint bands, each particle is stored by at most one group. -/
 private theorem card_stored_le_one'
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : DisjointBands x d.a)
     (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) (xp : Particle x d) :
     (c.2.1.filter fun i => edgeStored s c i = xp.1).card ≤ 1 :=
   card_le_one.2 fun i hi j hj => by
@@ -145,7 +145,7 @@ private theorem card_stored_le_one'
 /-- With disjoint bands, an admissible edge promotes each particle at most as often as it is
 pending. -/
 private theorem card_promoted_le'
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : DisjointBands x d.a)
     {s : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
     (hc : c ∈ edgeChoices x d Y d₀ u v r) (hv : EdgeValid x d Y d₀ u v r B s c)
     (xp : Particle x d) :
@@ -153,18 +153,16 @@ private theorem card_promoted_le'
   classical
   rcases Nat.eq_zero_or_pos
     (univ.filter fun i => (c.2.2.2.1 i).2 ∧ edgePromoted c i = xp.1).card with h0 | hpos
-  · rw [h0]
-    exact Nat.zero_le _
+  · omega
   · obtain ⟨i, hi⟩ := card_pos.1 hpos
     obtain ⟨hf, he⟩ := (mem_filter.1 hi).2
     obtain ⟨yp, hyp, hS1⟩ := hv.2.2.2.2.2.2.2.1 i hf
-    have hyx : yp = xp := Subtype.ext (hyp.trans he)
-    rw [← hyx]
+    rw [← (Subtype.ext (hyp.trans he))]
     exact (card_promoted_le_one' hdisj hc yp).trans hS1
 
 /-- The memory after the reversed choice is the source memory: the reversed edge stores the
 promoted particles back and promotes the stored particles. -/
-theorem edgeMem_revChoice (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem edgeMem_revChoice (hdisj : DisjointBands x d.a)
     {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
     (hc : c ∈ edgeChoices x d Y d₀ u v r) (hv : EdgeValid x d Y d₀ u v r B s c)
     (h₁ : s'.1 = c.2.2.1) (h₂ : s'.2.1.1 = edgeTgt s c) (h₃ : s'.2.2.1 = edgeMem s c) :
@@ -181,26 +179,22 @@ theorem edgeMem_revChoice (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)
     rw [mem_filter, mem_filter, edgePromoted_revChoice]
     simp only [mem_univ, true_and]
     change (decide (i ∈ c.2.1) = true ∧ _) ↔ _
-    rw [decide_eq_true_iff]
+    simp
   have hP' : ((revChoice s c).2.1.filter fun i => edgeStored s' (revChoice s c) i = xp.1).card =
       (univ.filter fun i => (c.2.2.2.1 i).2 ∧ edgePromoted c i = xp.1).card := by
     congr 1
     ext i
     simp only [mem_filter, mem_univ, true_and, edgeStored_revChoice h₁ h₂]
     change (i ∈ univ.filter (fun i => (c.2.2.2.1 i).2 = true) ∧ _) ↔ _
-    rw [mem_filter]
-    simp only [mem_univ, true_and]
-  unfold edgeMem
-  rw [hQ, hP', h₃]
-  unfold edgeMem
-  omega
+    simp
+  simp_all [edgeMem]
 
 /-- **The reversed choice is admissible**: its target lists are the source lists, the ban
 holds since the source lists are distinct and the new labels avoid them, the pad product is
 the same, both good-state tests swap, the stored particles are pending after the edge, and the
 promoted particles are particles. -/
 theorem edgeValid_revChoice
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : DisjointBands x d.a)
     {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
     (hc : c ∈ edgeChoices x d Y d₀ u v r) (hv : EdgeValid x d Y d₀ u v r B s c)
     (h₁ : s'.1 = c.2.2.1) (h₂ : s'.2.1.1 = edgeTgt s c) (h₃ : s'.2.2.1 = edgeMem s c) :
@@ -209,7 +203,7 @@ theorem edgeValid_revChoice
   obtain ⟨-, hban, hD₁, hD₂, hdvd, hgood, hgood', hprom, hstore, -⟩ := id hv
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [edgeTgt_revChoice h₂]
-    exact s.2.1.2
+    simp
   · -- the ban: `b_i` is no target label
     intro i i' h
     change edgeSrc s c i (Fin.last _) ≠ s'.2.1.1 i' h
@@ -248,16 +242,15 @@ theorem edgeValid_revChoice
     omega
   · -- the promoted particles are particles
     intro i hi
-    have hiI : (c.2.2.2.1 i).2 = true := (mem_filter.1 hi).2
-    obtain ⟨xp, hxp, -⟩ := hprom i hiI
+    obtain ⟨xp, hxp, -⟩ := hprom i (mem_filter.1 hi).2
     rw [edgeStored_revChoice h₁ h₂, ← hxp]
-    exact xp.2
+    simp
   · rw [edgeMem_revChoice hdisj hc hv h₁ h₂ h₃]
-    exact s.2.2.2
+    simp
 
 /-- The reversed choice leads back to the source. -/
 theorem chainEdgeOut_revChoice
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : DisjointBands x d.a)
     {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
     (hc : c ∈ edgeChoices x d Y d₀ u v r) (hv : EdgeValid x d Y d₀ u v r B s c)
     (h₁ : s'.1 = c.2.2.1) (h₂ : s'.2.1.1 = edgeTgt s c) (h₃ : s'.2.2.1 = edgeMem s c) :
@@ -265,7 +258,7 @@ theorem chainEdgeOut_revChoice
   rw [chainEdgeOut_of_valid' (edgeValid_revChoice hdisj hc hv h₁ h₂ h₃)]
   refine Prod.ext rfl (Prod.ext (Subtype.ext ?_) (Subtype.ext ?_))
   · exact edgeTgt_revChoice h₂
-  · exact edgeMem_revChoice hdisj hc hv h₁ h₂ h₃
+  · apply edgeMem_revChoice <;> assumption
 
 /-- The reversed choice solves the reversed raw determinant equation. -/
 theorem rawDet_revChoice {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
@@ -273,8 +266,8 @@ theorem rawDet_revChoice {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice 
     RawDet s' (revChoice s c) := by
   unfold RawDet at h ⊢
   rw [edgeDet_revChoice h₁, edgePad_revChoice h₂, prod_edgeSrc_revChoice h₂]
-  change -edgeDet s c = (edgePad s c : ℤ) * (((∏ i, (c.2.2.2.1 i).1 : ℕ) : ℤ) -
-    ((∏ i, edgeSrc s c i (Fin.last _) : ℕ) : ℤ))
+  change -edgeDet s c = (edgePad s c) * ((∏ i, (c.2.2.2.1 i).1 : ℕ) -
+    (∏ i, edgeSrc s c i (Fin.last _) : ℕ))
   linear_combination -h
 
 /-- Reversal exchanges the stored and the promoted groups. -/
@@ -289,9 +282,9 @@ theorem revChoice_mem_rawChoices {s : ChainState x d Y d₀ u v r B}
       ⟨mem_band_edgeSrc' s c i _, mem_univ _⟩
   · ext i
     rw [mem_filter, ← hS]
-    simp only [mem_univ, true_and]
+    simp
     change decide (i ∈ c.2.1) = true ↔ _
-    rw [decide_eq_true_iff]
+    simp
 
 /-! ### The adjoint calculation -/
 
@@ -299,8 +292,8 @@ theorem revChoice_mem_rawChoices {s : ChainState x d Y d₀ u v r B}
 and `P ≤ S`, then `y^S/S! · S^P · y^Q = y^{S'}/S'! · y^P · S'^Q`. -/
 private theorem pow_div_factorial_mul_eq' {a P Q : ℕ} (y : ℝ) (hP : P ≤ 1) (hQ : Q ≤ 1)
     (hPa : P ≤ a) :
-    y ^ a / (a.factorial : ℝ) * (a : ℝ) ^ P * y ^ Q =
-      y ^ (a - P + Q) / ((a - P + Q).factorial : ℝ) * y ^ P * ((a - P + Q : ℕ) : ℝ) ^ Q := by
+    y ^ a / a.factorial * a ^ P * y ^ Q =
+      y ^ (a - P + Q) / (a - P + Q).factorial * y ^ P * (a - P + Q : ℕ) ^ Q := by
   interval_cases P <;> interval_cases Q
   · simp
   · rw [Nat.sub_zero, Nat.factorial_succ]
@@ -334,20 +327,14 @@ private theorem prod_pow_card_filter' {α ι M : Type*} [DecidableEq α] [CommMo
     {T : Finset α} (F : Finset ι) (g : ι → α) (f : ↥T → M) :
     ∏ y : ↥T, f y ^ (F.filter fun i => g i = y.1).card =
       ∏ i ∈ F, ∏ y : ↥T with y.1 = g i, f y := by
-  calc ∏ y : ↥T, f y ^ (F.filter fun i => g i = y.1).card
-      = ∏ y : ↥T, ∏ i ∈ F, if g i = y.1 then f y else 1 :=
-        prod_congr rfl fun y _ => by rw [← prod_const, prod_filter]
-    _ = ∏ i ∈ F, ∏ y : ↥T, if g i = y.1 then f y else 1 := prod_comm
-    _ = ∏ i ∈ F, ∏ y : ↥T with y.1 = g i, f y :=
-        prod_congr rfl fun i _ => by
+  calc _ = _ := ((prod_congr rfl fun y _ => by rw [← prod_const, prod_filter]).trans prod_comm).trans (prod_congr rfl fun i _ => by
           rw [prod_filter]
-          exact prod_congr rfl fun y _ => by simp only [eq_comm]
+          grind)
 
 /-- The fiber of a point of a subtype is a singleton. -/
 private theorem filter_val_eq' {α : Type*} [DecidableEq α] {T : Finset α} {y : α} (z : ↥T)
-    (hz : z.1 = y) : (univ.filter fun w : ↥T => w.1 = y) = {z} := by
-  ext w
-  simp only [mem_filter, mem_univ, true_and, mem_singleton, ← hz, Subtype.ext_iff]
+    (hz : z.1 = y) : (univ.filter fun w => w.1 = y) = {z} := by
+  grind
 
 /-- **The list weights under an edge**: `∏ f(act) ∏_i f(a_i) = ∏ f(act') ∏_i f(b_i)`, since the
 source and target lists share their pads and differ by `b_i ↔ a_i`. -/
@@ -364,7 +351,7 @@ private theorem prod_edgeTgt_mul' (f : ℕ → ℝ) (s : ChainState x d Y d₀ u
   have h₂ : ∏ h, f (edgeTgt s c i h) =
       (∏ h : Fin (padCount x), f (edgeSrc s c i h.castSucc)) * f (c.2.2.2.1 i).1 := by
     rw [← Equiv.prod_comp (c.2.2.2.2 i).symm, Fin.prod_univ_castSucc]
-    simp only [edgeTgt_symm', Fin.castSucc_ne_last, ↓reduceIte]
+    simp [edgeTgt_symm']
   rw [h₁, h₂]
   ring
 
@@ -374,7 +361,7 @@ stored particle `y_i` and `ν(b_i)` otherwise. Removing a promoted particle `x_i
 its weight `S(x_i)` for `ν(a_i)`, which cancels the target label and leaves `1/V(a_i) ≤ 2`;
 storing `b_i` trades the source label `ν(b_i)` for the multiplicity `S'(y_i) ≤ S'(y_i)/V(b_i)`. -/
 theorem measure_mul_rawWeight_le
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : DisjointBands x d.a)
     (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) ∧ harmonicMass (band x (d.a i)) ≤ 1)
     (hν : ∀ p, 0 ≤ primeWeight q x d N p)
     (hνpos : ∀ i, ∀ p ∈ band x (d.a i), 0 < primeWeight q x d N p)
@@ -476,19 +463,19 @@ theorem measure_mul_rawWeight_le
     rw [hAdef, hEdef, ← prod_mul_distrib]
     refine prod_congr rfl fun i _ => ?_
     split_ifs
-    · rw [div_eq_mul_inv]
-    · rw [one_mul]
+    · rfl
+    ring
   have hBE : Bν * E = Na * G := by
     rw [hBdef, hEdef, hNa, hGdef, ← prod_mul_distrib, ← prod_mul_distrib]
     refine prod_congr rfl fun i _ => ?_
     split_ifs
     · rfl
-    · rw [one_mul, mul_one]
+    simp
   have hNbM : Nb * Mm = Cm * T := by
     rw [hNb, hMdef, hCm, hTdef, ← prod_mul_distrib, ← prod_mul_distrib]
     refine prod_congr rfl fun i _ => ?_
     split_ifs
-    · rw [mul_comm]
+    · ring
     · rfl
   have hG : G ≤ Two := by
     rw [hGdef, hTwo]
@@ -504,7 +491,7 @@ theorem measure_mul_rawWeight_le
     calc Two ≤ ∏ _i : Fin K, (2 : ℝ) :=
           prod_le_prod₀ (fun i _ => by split_ifs <;> norm_num) fun i _ => by
             split_ifs <;> norm_num
-      _ = 2 ^ K := by rw [prod_const, card_univ, Fintype.card_fin]
+      _ = 2 ^ K := by simp
   have hCmWr : Cm ≤ Wr := by
     refine prod_le_prod₀ (fun i _ => ?_) fun i _ => ?_
     · split_ifs
@@ -517,12 +504,8 @@ theorem measure_mul_rawWeight_le
   have hT : 0 < T := prod_pos fun i _ => by
     split_ifs
     exacts [hνpos i _ (mem_band_edgeSrc' s c i _), zero_lt_one]
-  have hΛ0 : 0 ≤ ∏ i, ∏ h, ν (s.2.1.1 i h) := prod_nonneg fun i _ => prod_nonneg fun h _ => hν _
   have hΛ'0 : 0 ≤ ∏ i, ∏ h, ν (edgeTgt s c i h) :=
     prod_nonneg fun i _ => prod_nonneg fun h _ => hν _
-  have hE0 : 0 ≤ E := prod_nonneg fun i _ => by
-    split_ifs
-    exacts [inv_nonneg.2 (by linarith [hVa i]), hν _]
   have hCm0 : 0 ≤ Cm := prod_nonneg fun i _ => by
     split_ifs
     exacts [Nat.cast_nonneg _, hν _]
@@ -532,7 +515,7 @@ theorem measure_mul_rawWeight_le
   have hmain : (∏ i, ∏ h, ν (s.2.1.1 i h)) * mW * (A * E) ≤
       (∏ i, ∏ h, ν (edgeTgt s c i h)) * mW' * (Cm * Two) := by
     refine le_of_mul_le_mul_right ?_ hT
-    calc (∏ i, ∏ h, ν (s.2.1.1 i h)) * mW * (A * E) * T
+    calc _
         = (∏ i, ∏ h, ν (s.2.1.1 i h)) * E * (mW * A * T) := by ring
       _ = (∏ i, ∏ h, ν (s.2.1.1 i h)) * E * (mW' * Bν * Mm) := by rw [hA]
       _ = (∏ i, ∏ h, ν (s.2.1.1 i h)) * mW' * Mm * (Bν * E) := by ring
@@ -542,11 +525,11 @@ theorem measure_mul_rawWeight_le
       _ ≤ (∏ i, ∏ h, ν (edgeTgt s c i h)) * mW' * Cm * T * Two :=
           mul_le_mul_of_nonneg_left hG
             (mul_nonneg (mul_nonneg (mul_nonneg hΛ'0 hmW'0) hCm0) hT.le)
-      _ = (∏ i, ∏ h, ν (edgeTgt s c i h)) * mW' * (Cm * Two) * T := by ring
+      _ = _ := by ring
   refine hmain.trans ?_
-  calc (∏ i, ∏ h, ν (edgeTgt s c i h)) * mW' * (Cm * Two)
+  calc _
       = Two * ((∏ i, ∏ h, ν (edgeTgt s c i h)) * mW' * Cm) := by ring
-    _ ≤ 2 ^ K * ((∏ i, ∏ h, ν (edgeTgt s c i h)) * mW' * Wr) := by
+    _ ≤ _ := by
         gcongr
 
 end Reversal
@@ -562,26 +545,26 @@ private theorem out_eq {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice x 
     (hv : EdgeValid x d Y d₀ u v r B s c) (hs' : chainEdgeOut x d Y d₀ u v r B s c = s') :
     s'.1 = c.2.2.1 ∧ s'.2.1.1 = edgeTgt s c ∧ s'.2.2.1 = edgeMem s c := by
   rw [← hs', chainEdgeOut_of_valid' hv]
-  exact ⟨rfl, rfl, rfl⟩
+  simp
 
 /-- The weight product of the reversed choice. -/
 theorem rawWeight_revChoice {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
     (h₃ : s'.2.2.1 = edgeMem s c) :
     rawWeight q N s' (revChoice s c) = ∏ i, if i ∈ c.2.1 then
-      (memAt x d (edgeMem s c) (edgeStored s c i) : ℝ) /
+      (memAt x d (edgeMem s c) (edgeStored s c i)) /
         primeMass x d (edgeSrc s c i (Fin.last _))
     else primeWeight q x d N (edgeSrc s c i (Fin.last _)) := by
   unfold rawWeight
   refine prod_congr rfl fun i _ => ?_
   change (if decide (i ∈ c.2.1) = true then _ else _) = _
   rw [edgePromoted_revChoice, sum_ite_eq_memAt, h₃]
-  simp only [decide_eq_true_eq]
+  simp
   rfl
 
 /-- **The adjoint calculation for the raw coefficients**: for an admissible raw edge `s → s'`,
 `μ(s) rawAmp(s, c) ≤ 2^K μ(s') rawAmp(s', c^rev)`. The pending factors swap, and
 `measure_mul_rawWeight_le` compares the rest. -/
-theorem measure_mul_rawAmp_le (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem measure_mul_rawAmp_le (hdisj : DisjointBands x d.a)
     (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) ∧ harmonicMass (band x (d.a i)) ≤ 1)
     (hν : ∀ p, 0 ≤ primeWeight q x d N p)
     (hνpos : ∀ i, ∀ p ∈ band x (d.a i), 0 < primeWeight q x d N p) (hq : 0 < q)
@@ -596,34 +579,25 @@ theorem measure_mul_rawAmp_le (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.
   have hdet' := rawDet_revChoice h₁ h₂ h.2
   have hmem := edgeMem_revChoice hdisj hc h.1 h₁ h₂ h₃
   have hadj := measure_mul_rawWeight_le hdisj hV hν hνpos hc h.1
-  rw [← rawWeight_revChoice (q := q) (N := N) h₃] at hadj
+  rw [← rawWeight_revChoice h₃] at hadj
   unfold rawAmp chainMeasure
   rw [ite_eq_left h, ite_eq_left ⟨hv', hdet'⟩, hmem, h₁, h₂, h₃]
-  change _ ≤ _ * ((∏ i, ∏ h, primeWeight q x d N (edgeTgt s c i h)) *
-    memWeight (fun xp : Particle x d => primeWeight q x d N xp.1.1) (edgeMem s c) *
-      ((((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
-        pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) *
-        pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 * rawWeight q N s' (revChoice s c)))
+  let count := (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
+    pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) *
+    pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1
+  let weight := (∏ i, ∏ h, primeWeight q x d N (edgeTgt s c i h)) *
+    memWeight (fun xp : Particle x d => primeWeight q x d N xp.1.1) (edgeMem s c)
+  change _ ≤ _ * (weight *
+      (count * rawWeight q N s' (revChoice s c)))
   have hρ0 := (pendingWeight_pos hq).le
-  have hk : 0 ≤ (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
-      pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) *
-      pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 := by positivity
-  calc (∏ i, ∏ h, primeWeight q x d N (s.2.1.1 i h)) *
-        memWeight (fun xp : Particle x d => primeWeight q x d N xp.1.1) s.2.2.1 *
-        ((((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
-          pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
-          pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) * rawWeight q N s c)
-      = ((((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
-          pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) *
-          pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1) *
+  have hk : 0 ≤ count := by positivity
+  calc _
+      = (count) *
           ((∏ i, ∏ h, primeWeight q x d N (s.2.1.1 i h)) *
-            memWeight (fun xp : Particle x d => primeWeight q x d N xp.1.1) s.2.2.1 *
+            memWeight (fun xp => primeWeight q x d N xp.1.1) s.2.2.1 *
             rawWeight q N s c) := by ring
-    _ ≤ ((((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
-          pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) *
-          pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1) *
-          (2 ^ K * ((∏ i, ∏ h, primeWeight q x d N (edgeTgt s c i h)) *
-            memWeight (fun xp : Particle x d => primeWeight q x d N xp.1.1) (edgeMem s c) *
+    _ ≤ (count) *
+          (2 ^ K * (weight *
             rawWeight q N s' (revChoice s c))) := mul_le_mul_of_nonneg_left hadj hk
     _ = _ := by ring
 
@@ -639,14 +613,11 @@ theorem eq_of_revChoice {s s' : ChainState x d Y d₀ u v r B} {c : EdgeChoice x
   obtain ⟨-, hS, hI⟩ := mem_filter.1 hc
   refine Prod.ext (funext fun i => ?_) (Prod.ext hS (Prod.ext h₁.symm
     (Prod.ext (funext fun i => ?_) (funext fun i => ?_))))
-  · exact (Equiv.symm_symm _).symm
+  · rfl
   · change c.2.2.2.1 i = (s'.2.1.1 i ((c.2.2.2.2 i).symm (Fin.last _)), decide (i ∈ I))
     rw [h₂, edgeTgt_symm', ite_eq_left rfl]
-    refine Prod.ext rfl ?_
-    change (c.2.2.2.1 i).2 = decide (i ∈ I)
-    rw [← hI]
-    cases hf : (c.2.2.2.1 i).2 <;> simp [hf]
-  · exact (Equiv.symm_symm _).symm
+    aesop
+  rfl
 
 open scoped Classical in
 /-- **The column bound by reversal** (PD §4, dirty raw edges): the measure-weighted raw
@@ -654,7 +625,7 @@ coefficients of the piece `(S, I)` reaching `s'` sum to at most `2^K μ(s')` tim
 the piece `(I, S)` at `s'`. Each admissible raw edge reaching `s'` is determined by its
 reversed choice, which lies in the piece `(I, S)` (`eq_of_revChoice`). -/
 theorem sum_col_rawAmp_le (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : DisjointBands x d.a)
     (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) ∧ harmonicMass (band x (d.a i)) ≤ 1)
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (S I : Finset (Fin K))
     (s' : ChainState x d Y d₀ u v r B) :
@@ -665,13 +636,14 @@ theorem sum_col_rawAmp_le (hq : 0 < q)
         ∑ c' ∈ rawChoices x d Y d₀ u v r I S, rawAmp q N s' c') := by
   classical
   have hV' : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) := fun i => (hV i).1
-  have hν := primeWeight_nonneg_of hV' hb (q := q) (N := N)
+  have hν := primeWeight_nonneg_of hV' hb
   have hνpos : ∀ i, ∀ p ∈ band x (d.a i), 0 < primeWeight q x d N p := fun i p hp =>
     (primeWeight_le_two hdisj hV' hb hp).1
-  have hμ0 : ∀ t : ChainState x d Y d₀ u v r B, 0 ≤ chainMeasure q x d Y d₀ u v r B N t :=
+  let measureAt := chainMeasure q x d Y d₀ u v r B N
+  have hμ0 : ∀ t, 0 ≤ measureAt t :=
     fun t => mul_nonneg (prod_nonneg fun i _ => prod_nonneg fun h _ => hν _)
       (memWeight_nonneg (fun xp => hν _) _)
-  set X := ((univ : Finset (ChainState x d Y d₀ u v r B)) ×ˢ
+  set X := (univ ×ˢ
     rawChoices x d Y d₀ u v r S I).filter fun p =>
       chainEdgeOut x d Y d₀ u v r B p.1 p.2 = s' ∧ EdgeValid x d Y d₀ u v r B p.1 p.2 ∧
         RawDet p.1 p.2 with hX
@@ -680,9 +652,9 @@ theorem sum_col_rawAmp_le (hq : 0 < q)
   -- only the admissible raw edges contribute
   have hLHS : ∑ s, ∑ c ∈ (rawChoices x d Y d₀ u v r S I).filter
       (fun c => chainEdgeOut x d Y d₀ u v r B s c = s'),
-        chainMeasure q x d Y d₀ u v r B N s * rawAmp q N s c =
-      ∑ p ∈ X, chainMeasure q x d Y d₀ u v r B N p.1 * rawAmp q N p.1 p.2 := by
-    rw [hX, sum_filter, sum_product]
+        measureAt s * rawAmp q N s c =
+      ∑ p ∈ X, measureAt p.1 * rawAmp q N p.1 p.2 := by
+    rw [sum_filter, sum_product]
     refine sum_congr rfl fun t _ => ?_
     rw [sum_filter]
     refine sum_congr rfl fun c _ => ?_
@@ -704,29 +676,26 @@ theorem sum_col_rawAmp_le (hq : 0 < q)
     simp only at heq
     obtain ⟨h₁, h₂, h₃⟩ := out_eq hv hout
     obtain ⟨h₁', h₂', h₃'⟩ := out_eq hv' hout'
-    have hs : p.1 = p'.1 := by
+    exact Prod.ext (by
       rw [← chainEdgeOut_revChoice hdisj hc hv h₁ h₂ h₃,
-        ← chainEdgeOut_revChoice hdisj hc' hv' h₁' h₂' h₃', heq]
-    have hcc : p.2 = p'.2 := by
-      rw [eq_of_revChoice (hrc p hp) hv hout, eq_of_revChoice (hrc p' hp') hv' hout', heq]
-    exact Prod.ext hs hcc
+        ← chainEdgeOut_revChoice hdisj hc' hv' h₁' h₂' h₃', heq]) (by
+      rw [eq_of_revChoice (hrc p hp) hv hout, eq_of_revChoice (hrc p' hp') hv' hout', heq])
   rw [hLHS]
-  calc ∑ p ∈ X, chainMeasure q x d Y d₀ u v r B N p.1 * rawAmp q N p.1 p.2
-      ≤ ∑ p ∈ X, 2 ^ K * (chainMeasure q x d Y d₀ u v r B N s' *
+  calc _
+      ≤ ∑ p ∈ X, 2 ^ K * (measureAt s' *
           rawAmp q N s' (revChoice p.1 p.2)) := by
         refine sum_le_sum fun p hp => ?_
         obtain ⟨hout, hvd⟩ := (mem_filter.1 hp).2
         exact measure_mul_rawAmp_le hdisj hV hν hνpos hq (mem_filter.1 (hrc p hp)).1 hvd hout
     _ ≤ ∑ c' ∈ rawChoices x d Y d₀ u v r I S,
-          2 ^ K * (chainMeasure q x d Y d₀ u v r B N s' * rawAmp q N s' c') := by
+          2 ^ K * (measureAt s' * rawAmp q N s' c') := by
         refine sum_le_sum_of_injOn (fun p => revChoice p.1 p.2) hinj (fun c' hc' => ?_)
           (fun p _ => le_rfl) fun c' hc' _ => ?_
         · obtain ⟨p, hp, rfl⟩ := mem_image.1 hc'
           exact revChoice_mem_rawChoices (hrc p hp)
         · exact mul_nonneg (by positivity) (mul_nonneg (hμ0 s')
             (rawAmp_nonneg hq hdisj hV' hν s' (mem_filter.1 hc').1))
-    _ = 2 ^ K * (chainMeasure q x d Y d₀ u v r B N s' *
-          ∑ c' ∈ rawChoices x d Y d₀ u v r I S, rawAmp q N s' c') := by
+    _ = _ := by
         rw [← mul_sum, ← mul_sum]
 
 end Column

@@ -253,7 +253,7 @@ theorem twistedPoly_eq_sum_boxSum (hδ : 0 ≤ δ) (hψ : ∀ y, ψ y ≠ 0 → 
       have : 2 ≤ w / p := (Nat.le_div_iff_mul_le hp0).2 (by linarith)
       omega
     · have hwG : w ≤ G := by
-        have : (w : ℝ) ≤ G :=
+        have  :=
           (show (w : ℝ) ≤ ⌊2 * Y⌋₊ by exact_mod_cast hw2).trans
             ((Nat.floor_le (by linarith)).trans hI)
         exact_mod_cast this
@@ -304,7 +304,7 @@ theorem boxSum_eq (hk : k ≠ 0) (j i : ℕ) (t : ℝ) :
     rw [hfilt]
     simp only [hZ, hX, mul_sum]
     refine sum_congr rfl fun n hn => ?_
-    have hnβ : n ≡ β [MOD k] := (mem_filter.1 hn).2
+    have hnβ  := (mem_filter.1 hn).2
     have htw : twist h k (p * n) = twist h k (p * β) :=
       exp_twist_eq_of_modEq h hk (hnβ.mul_left p)
     rw [htw, Nat.cast_mul, Complex.natCast_mul_natCast_cpow, Complex.natCast_mul_natCast_cpow]
@@ -380,8 +380,7 @@ theorem norm_boxSmall_le (j β : ℕ) (t : ℝ) :
     ‖boxSmall σ δ h k Ps j β t‖ ≤ (boxPrimes δ Ps j).card * (Real.exp (j * δ))⁻¹ := by
   rw [boxSmall]
   refine (norm_sum_le _ _).trans ?_
-  calc ∑ p ∈ boxPrimes δ Ps j, ‖(((Real.exp (j * δ))⁻¹ : ℝ) : ℂ) * twist h k (p * β) *
-        (p : ℂ) ^ ((σ : ℂ) * Complex.I) * (p : ℂ) ^ ((t : ℂ) * Complex.I)‖
+  calc _
       ≤ ∑ p ∈ boxPrimes δ Ps j, (Real.exp (j * δ))⁻¹ := by
         refine sum_le_sum fun p _ => ?_
         rw [norm_mul, norm_mul, norm_mul, Complex.norm_real, norm_twist, mul_one,
@@ -389,10 +388,9 @@ theorem norm_boxSmall_le (j β : ℕ) (t : ℝ) :
         have h1 := IntegerKernel.norm_natCast_cpow_I_mul_le σ p
         have h2 := IntegerKernel.norm_natCast_cpow_I_mul_le t p
         have h3 : 0 ≤ (Real.exp (j * δ))⁻¹ := by positivity
-        calc (Real.exp (j * δ))⁻¹ * ‖(p : ℂ) ^ ((σ : ℂ) * Complex.I)‖ *
-              ‖(p : ℂ) ^ ((t : ℂ) * Complex.I)‖ ≤ (Real.exp (j * δ))⁻¹ * 1 * 1 := by gcongr
-          _ = (Real.exp (j * δ))⁻¹ := by ring
-    _ = (boxPrimes δ Ps j).card * (Real.exp (j * δ))⁻¹ := by rw [sum_const, nsmul_eq_mul]
+        calc _ ≤ (Real.exp (j * δ))⁻¹ * 1 * 1 := by gcongr
+          _ = _ := by ring
+    _ = _ := by rw [sum_const, nsmul_eq_mul]
 
 /-- In the box `(j, i)`, `r < pn ≤ e^{2δ} r` for the corner `r = e^{jδ} e^{iδ}`. -/
 theorem corner_lt_mul {p n j i : ℕ} (hp : p ∈ gridPiece δ j) (hn : n ∈ gridPiece δ i) :
@@ -402,9 +400,9 @@ theorem corner_lt_mul {p n j i : ℕ} (hp : p ∈ gridPiece δ j) (hn : n ∈ gr
   obtain ⟨hn1, hn2⟩ := mem_gridPiece hn
   push_cast
   refine ⟨mul_lt_mul'' hp1 hn1 (Real.exp_pos _).le (Real.exp_pos _).le, ?_⟩
-  calc (p : ℝ) * n ≤ Real.exp ((j + 1 : ℕ) * δ) * Real.exp ((i + 1 : ℕ) * δ) :=
+  calc _ ≤ Real.exp ((j + 1 : ℕ) * δ) * Real.exp ((i + 1 : ℕ) * δ) :=
         mul_le_mul hp2 hn2 (by positivity) (by positivity)
-    _ = Real.exp (2 * δ) * (Real.exp (j * δ) * Real.exp (i * δ)) := by
+    _ = _ := by
         rw [← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
         push_cast
         ring_nf
@@ -443,7 +441,7 @@ theorem norm_corner_sub_le (hY : 0 < Y) (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
     (hM : ∀ y, ‖iteratedDeriv 1 ψ y‖ ≤ M) {j i p n : ℕ} (hp : p ∈ gridPiece δ j)
     (hn : n ∈ gridPiece δ i) :
     ‖ψ (((p * n : ℕ) : ℝ) / Y) - ψ (Real.exp (j * δ) * Real.exp (i * δ) / Y)‖ ≤ 12 * δ * M := by
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+  have hM0  := (norm_nonneg _).trans (hM 0)
   set r := Real.exp (j * δ) * Real.exp (i * δ) with hr
   obtain ⟨h1, h2⟩ := corner_lt_mul hp hn
   rw [← hr] at h1 h2
@@ -467,13 +465,13 @@ theorem norm_corner_sub_le (hY : 0 < Y) (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
     linarith
   refine (norm_sub_le_of_iteratedDeriv_one hψd hM _ _).trans ?_
   rw [← sub_div, abs_div, abs_of_pos hY, abs_of_pos (by linarith)]
-  calc M * ((((p * n : ℕ) : ℝ) - r) / Y) ≤ M * ((Real.exp (2 * δ) - 1) * r / Y) := by
+  calc _ ≤ M * ((Real.exp (2 * δ) - 1) * r / Y) := by
         gcongr
         linarith
     _ ≤ M * (4 * δ * (2 * Y) / Y) := by
         gcongr
     _ = 8 * δ * M := by field_simp; ring
-    _ ≤ 12 * δ * M := by nlinarith
+    _ ≤ _ := by nlinarith
 
 /-- **The corner error of a box (E6 separation).**
 `∫_a^b |E_{ji}|² ≤ #𝒫_j² (b - a + 8N(1 + log N)) #(n-interval) (‖κ‖ Y⁻¹ 12δM₁(1) H_max)²`
@@ -486,9 +484,9 @@ theorem integral_boxErr_le {a b : ℝ} (hab : a ≤ b) (hY : 0 < Y) (hδ0 : 0 �
       ((boxPrimes δ Ps j).card : ℝ) ^ 2 * ((b - a + 8 * grid δ (i + 1) *
         (1 + Real.log (grid δ (i + 1)))) * ((gridPiece δ i).card *
           (Kc * Y⁻¹ * (12 * δ * M) * Hc) ^ 2)) := by
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
-  have hKc : 0 ≤ Kc := (norm_nonneg _).trans hκ
-  have hHc : 0 ≤ Hc := (norm_nonneg _).trans (hH 0)
+  have hM0  := (norm_nonneg _).trans (hM 0)
+  have hKc  := (norm_nonneg _).trans hκ
+  have hHc  := (norm_nonneg _).trans (hH 0)
   set s := boxPrimes δ Ps j with hs
   set N := grid δ (i + 1) with hN
   set c : ℕ → ℕ → ℂ := fun p n => κ * (Y : ℂ)⁻¹ *
@@ -510,15 +508,14 @@ theorem integral_boxErr_le {a b : ℝ} (hab : a ≤ b) (hY : 0 < Y) (hδ0 : 0 �
     have hD := norm_corner_sub_le hY hδ0 hδ hψ hψd hM (mem_filter.1 hp).1 hn
     simp only [hc, norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hY.le, norm_twist,
       mul_one]
-    have hcp : ‖((p * n : ℕ) : ℂ) ^ ((σ : ℂ) * Complex.I)‖ ≤ 1 :=
+    have hcp  :=
       IntegerKernel.norm_natCast_cpow_I_mul_le σ (p * n)
-    calc ‖κ‖ * Y⁻¹ * ‖ψ (((p * n : ℕ) : ℝ) / Y) - ψ (Real.exp (j * δ) * Real.exp (i * δ) / Y)‖ *
-          ‖((p * n : ℕ) : ℂ) ^ ((σ : ℂ) * Complex.I)‖ * ‖H n‖
+    calc _
         ≤ Kc * Y⁻¹ * (12 * δ * M) * 1 * Hc := by
           gcongr
           · exact hH n
       _ = c₀ := by rw [hc₀, mul_one]
-  have hS : gridPiece δ i ⊆ Icc 1 N := gridPiece_subset_Icc δ i
+  have hS  := gridPiece_subset_Icc δ i
   have hN0 : 0 ≤ b - a + 8 * N * (1 + Real.log N) := by
     have : (1 : ℝ) ≤ N := by exact_mod_cast one_le_grid hδ0 (i + 1)
     have := Real.log_nonneg this
@@ -547,9 +544,9 @@ theorem integral_boxErr_le {a b : ℝ} (hab : a ≤ b) (hY : 0 < Y) (hδ0 : 0 �
       have h0 := sq_nonneg ‖∑ n ∈ gridPiece δ i, c p n * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖
       nlinarith
     · gcongr
-      calc ∑ n ∈ gridPiece δ i, ‖c p n‖ ^ 2 ≤ ∑ n ∈ gridPiece δ i, c₀ ^ 2 :=
+      calc _ ≤ ∑ n ∈ gridPiece δ i, c₀ ^ 2 :=
             sum_le_sum fun n hn => pow_le_pow_left₀ (norm_nonneg _) (hcn p hp n hn) 2
-        _ = (gridPiece δ i).card * c₀ ^ 2 := by rw [sum_const, nsmul_eq_mul]
+        _ = _ := by rw [sum_const, nsmul_eq_mul]
   calc (s.card : ℝ) * ∑ p ∈ s, ∫ t in a..b, ‖(p : ℂ) ^ ((t : ℂ) * Complex.I) *
         ∑ n ∈ gridPiece δ i, c p n * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2
       ≤ s.card * ∑ p ∈ s, (b - a + 8 * N * (1 + Real.log N)) *

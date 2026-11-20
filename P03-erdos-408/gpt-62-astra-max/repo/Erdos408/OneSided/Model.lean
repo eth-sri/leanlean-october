@@ -34,7 +34,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 open scoped Matrix
 
 variable {K : ℕ}
@@ -147,13 +147,10 @@ private theorem momentPow_apply_equiv_of_apply [DecidableEq α] [DecidableEq β]
     {A : Matrix α α ℂ} {A' : Matrix β β ℂ} (hA : ∀ i j, A' (σ i) (σ j) = A i j) (R : ℕ) (i j : α) :
     ((A' * A'ᴴ) ^ R) (σ i) (σ j) = ((A * Aᴴ) ^ R) i j := by
   -- `𝒜𝒜^*` agrees
-  have hAA : ∀ i j, (A' * A'ᴴ) (σ i) (σ j) = (A * Aᴴ) i j :=
-    mul_apply_equiv_of_apply σ hA fun i j => by simp [Matrix.conjTranspose_apply, hA]
   induction R generalizing i j with
   | zero => simp [Matrix.one_apply, σ.injective.eq_iff]
   | succ R ih =>
-    rw [pow_succ, pow_succ]
-    exact mul_apply_equiv_of_apply σ ih hAA i j
+    exact mul_apply_equiv_of_apply σ ih (mul_apply_equiv_of_apply σ hA fun i j => by simp [Matrix.conjTranspose_apply, hA]) i j
 
 end Reindex
 
@@ -161,7 +158,7 @@ end Reindex
 
 /-- The circle distance is invariant under adding an integer. -/
 theorem circleDist_add_intCast (t : ℝ) (n : ℤ) : circleDist (t + n) = circleDist t := by
-  simp [circleDist, round_add_intCast]
+  simp [circleDist]
 
 /-- `‖c (r + k)‖ = ‖c r‖` for integers `c` and `k`. -/
 theorem circleDist_intCast_mul_add_intCast (c k : ℤ) (r : ℝ) :
@@ -248,8 +245,7 @@ def stateEquiv (x : ℝ) (d : Data K) : M.State x d ≃ N.State x d where
     have hs := s.2
     simp only [PosModel.states, mem_filter, mem_product, mem_univ, true_and] at hs ⊢
     refine ⟨hs.1, fun i h => (e.firstDvd_iff _ (prime_of_mem_lists hs.1 i h) _).1 ?_⟩
-    rw [e.toEquiv.apply_symm_apply]
-    exact hs.2 i h⟩
+    grind⟩
   left_inv s := Subtype.ext (Prod.ext (e.toEquiv.symm_apply_apply _) rfl)
   right_inv s := Subtype.ext (Prod.ext (e.toEquiv.apply_symm_apply _) rfl)
 
@@ -269,7 +265,7 @@ theorem rowOp_stateEquiv (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) (s s' : M.
 /-- An isomorphism preserves the slot symmetrization. -/
 theorem symOp_stateEquiv (x : ℝ) (d : Data K) (s s' : M.State x d) :
     N.symOp x d (e.stateEquiv x d s) (e.stateEquiv x d s') = M.symOp x d s s' := by
-  simp only [PosModel.symOp, stateEquiv, Equiv.coe_fn_mk, e.toEquiv.apply_eq_iff_eq]
+  simp [PosModel.symOp, stateEquiv]
 
 open scoped Classical in
 /-- An isomorphism preserves the good-state projection, as the tests are invariant under
@@ -279,7 +275,6 @@ theorem goodOp_stateEquiv (x : ℝ) (d : Data K) (Y d₀ : ℝ) (s s' : M.State 
   obtain ⟨k, hk⟩ := e.ratio_sub s.1.1
   have hr : N.ratio (e.toEquiv s.1.1) = M.ratio s.1.1 + k := by linarith
   simp only [PosModel.goodOp, Matrix.diagonal_apply, Equiv.apply_eq_iff_eq]
-  refine if_congr Iff.rfl (if_congr ?_ rfl rfl) rfl
   simp only [stateEquiv, Equiv.coe_fn_mk, hr, goodFirst_add_intCast, goodSecond_add_intCast]
 
 /-- An isomorphism preserves `𝒜`. -/
@@ -302,7 +297,7 @@ theorem PosModel.Iso.moment_eq {M N : PosModel} (e : M.Iso N) (q A₀ x : ℝ) (
   refine sum_congr rfl fun s' _ => ?_
   -- the states and `(𝒜𝒜^*)^R` correspond
   rw [momentPow_apply_equiv_of_apply _ (e.edgeOp_stateEquiv q A₀ x d Y d₀)]
-  simp only [stateEquiv, Equiv.coe_fn_mk, e.toEquiv.apply_eq_iff_eq]
+  simp [stateEquiv]
 
 /-! ### The physical model -/
 
@@ -330,8 +325,7 @@ def physStateEquiv (x : ℝ) (d : Data K) (Y d₀ : ℝ) :
 theorem physModel_bandCount (x : ℝ) (d : Data K) (Y d₀ : ℝ) (P : (physModel d Y d₀).Pos) :
     (physModel d Y d₀).bandCount x d P = bandCount x d P.1.1 := by
   simp only [PosModel.bandCount, bandCount, primeCount, physModel]
-  refine sum_congr rfl fun i _ => ?_
-  exact congrArg card (filter_congr_decidable _ _ _)
+  linarith
 
 /-- The physical model's `𝒜` is the physical `𝒜`. -/
 theorem physModel_edgeOp_physStateEquiv (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ)

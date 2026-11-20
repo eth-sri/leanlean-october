@@ -56,21 +56,12 @@ theorem sum_exp_tail_le {B m : ℕ} {e : ℝ} (he : 0 ≤ e) :
   -- the shifted terms are a part of the exponential series
   have hshift : ∑ n ∈ range (B + 1), (if m ≤ n then 1 else 0) * g (n - m) ≤
       ∑ k ∈ range (B + 1), g k := by
-    simp only [ite_mul, one_mul, zero_mul]
-    rw [← sum_filter, ← sum_image (g := fun n => n - m) (f := g) fun n hn n' hn' h => by
-      rw [mem_coe, mem_filter] at hn hn'
-      simp only at h
-      omega]
+    simp
+    rw [← sum_filter, ← sum_image fun n hn n' hn' h => by
+      grind]
     refine sum_le_sum_of_subset_of_nonneg (fun k hk => ?_) fun k _ _ => hg0 k
-    obtain ⟨n, hn, rfl⟩ := mem_image.1 hk
-    simp only [mem_filter, mem_range] at hn ⊢
-    omega
-  calc ∑ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0)
-      ≤ ∑ n ∈ range (B + 1), e ^ m * ((if m ≤ n then 1 else 0) * g (n - m)) := sum_le_sum hpt
-    _ = e ^ m * ∑ n ∈ range (B + 1), (if m ≤ n then 1 else 0) * g (n - m) := (mul_sum _ _ _).symm
-    _ ≤ e ^ m * ∑ k ∈ range (B + 1), g k := mul_le_mul_of_nonneg_left hshift (by positivity)
-    _ ≤ e ^ m * Real.exp e :=
-        mul_le_mul_of_nonneg_left (Real.sum_le_exp_of_nonneg he _) (by positivity)
+    grind
+  calc _ ≤ _ := (((sum_le_sum hpt).trans_eq (mul_sum _ _ _).symm).trans (by gcongr)).trans (mul_le_mul_of_nonneg_left (Real.sum_le_exp_of_nonneg he _) (by positivity))
 
 omit [Fintype X] [DecidableEq X] in
 /-- The per-particle sum with at least `m` births: the binomial theorem in the first variable
@@ -92,32 +83,27 @@ theorem sum_binom_exp_req_le {B s m : ℕ} {a b e : ℝ} (P : Prop) [Decidable P
           ∑ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0) := by
       intro d _
       rw [mul_sum]
-      refine sum_congr rfl fun n _ => ?_
-      split_ifs <;> ring
+      simp
     rw [sum_congr rfl h₁, ← sum_mul]
     -- the binomial theorem
     have h₂ : ∑ d ∈ range (B + 1), (if d ≤ s then s.choose d * a ^ d * b ^ (s - d) else 0) =
         (a + b) ^ s := by
       rw [← sum_filter, add_pow]
       have : (range (B + 1)).filter (· ≤ s) = range (s + 1) := by
-        ext d; simp only [mem_filter, mem_range]; omega
-      rw [this]
-      exact sum_congr rfl fun d _ => by ring
+        grind
+      grind
     rw [h₂]
-    calc (a + b) ^ s * ∑ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0)
+    calc _
         ≤ 1 * (e ^ m * Real.exp e) :=
           mul_le_mul (pow_le_one₀ (add_nonneg ha hb) hab) (sum_exp_tail_le he)
             (sum_nonneg fun n _ => mul_nonneg (by positivity) (by split_ifs <;> norm_num))
             zero_le_one
-      _ = e ^ m * Real.exp e := one_mul _
+      _ = _ := one_mul _
   · -- the requirement only removes terms
-    have h := sum_binom_exp_le (B := B) P ha hb he hab hs hP
+    have h := sum_binom_exp_le  P ha hb he hab hs hP
     simp only [hP', ↓reduceIte] at h ⊢
     refine le_trans (sum_le_sum fun d _ => sum_le_sum fun n _ => ?_) h
-    refine mul_le_of_le_one_right ?_ (by split_ifs <;> norm_num)
-    split_ifs
-    · positivity
-    · exact le_rfl
+    bound
 
 variable {hit : X → Prop} [DecidablePred hit] {ν : X → ℝ} {del surv : ℝ} {cre : X → ℝ}
 
@@ -127,7 +113,7 @@ births of each particle `x`, the weighted row sums are at most
 theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (hv₀ : 0 < v₀)
     (hdel : surv + |del| / v₀ ≤ 1) (m : X → ℕ) {B : ℕ} (S : MemState X B) :
     ∑ c ∈ multBox B ×ˢ multBox B,
-        ‖ghostCoef hit ν del surv cre B S c‖ * (∏ x, if m x ≤ c.2 x then (1 : ℝ) else 0) *
+        ‖ghostCoef hit ν del surv cre B S c‖ * (∏ x, if m x ≤ c.2 x then 1 else 0) *
           v₀ ^ memSize (ghostOut hit B S c).1 ≤
       (∏ x, if hit x then (|cre x| * ν x * v₀) ^ m x else 1) *
         (Real.exp (v₀ * ∑ x with hit x, |cre x| * ν x) * v₀ ^ memSize S.1) := by
@@ -139,12 +125,7 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
     else 0) * (if m x ≤ n then 1 else 0) with hG
   have hG0 : ∀ x d n, 0 ≤ G x d n := by
     intro x d n
-    simp only [hG]
-    refine mul_nonneg ?_ (by split_ifs <;> norm_num)
-    split_ifs
-    · have := hν x
-      positivity
-    · exact le_rfl
+    bound
   -- each choice is bounded by `v₀^{size(S)} ∏_x G`
   have hterm : ∀ c ∈ multBox B ×ˢ multBox B,
       ‖ghostCoef hit ν del surv cre B S c‖ * (∏ x, if m x ≤ c.2 x then (1 : ℝ) else 0) *
@@ -161,7 +142,7 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
       have hn : hit x ∨ c.2 x = 0 := by
         by_cases hx : hit x
         · exact Or.inl hx
-        · exact Or.inr (hc.2.1 x hx)
+        · exact Or.inr (hc.right.left x hx)
       have hhs : hitPart hit S.1 x ≤ S.1 x := by
         unfold hitPart; split_ifs <;> omega
       rw [hG]
@@ -169,7 +150,6 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
       rw [ite_eq_left (show c.1 x ≤ hitPart hit S.1 x ∧ (hit x ∨ c.2 x = 0) from ⟨hd, hn⟩)]
       obtain ⟨r, hr⟩ : ∃ r, S.1 x = r + c.1 x := ⟨S.1 x - c.1 x, by omega⟩
       rw [hr, show r + c.1 x - c.1 x + c.2 x = r + c.2 x by omega, pow_add, pow_add]
-      have hv : v₀ ≠ 0 := hv₀.ne'
       simp only [div_pow, mul_pow]
       field_simp
     · rw [ghostCoef, ite_eq_right hc, norm_zero, zero_mul, zero_mul]
@@ -178,16 +158,13 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
   have hfac : ∀ x, ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1), G x d n ≤
       if hit x then (|cre x| * ν x * v₀) ^ m x * Real.exp (|cre x| * ν x * v₀) else 1 := by
     intro x
-    have hhB : hitPart hit S.1 x ≤ B := by
-      have := mem_memStates.1 S.2
-      have := le_memSize S.1 x
-      unfold hitPart; split_ifs <;> omega
     refine sum_binom_exp_req_le (hit x) (div_nonneg (abs_nonneg _) hv₀.le) hsurv
-      (by have := hν x; positivity) (by linarith) hhB fun hx => ?_
+      (by have := hν x; positivity) (by linarith) (by
+        have := mem_memStates.1 S.2
+        have := le_memSize S.1 x
+        unfold hitPart; split_ifs <;> omega) fun hx => ?_
     simp [hitPart, hx]
-  calc ∑ c ∈ multBox B ×ˢ multBox B,
-        ‖ghostCoef hit ν del surv cre B S c‖ * (∏ x, if m x ≤ c.2 x then (1 : ℝ) else 0) *
-          v₀ ^ memSize (ghostOut hit B S c).1
+  calc _
       ≤ ∑ c ∈ multBox B ×ˢ multBox B, v₀ ^ memSize S.1 * ∏ x, G x (c.1 x) (c.2 x) :=
         sum_le_sum hterm
     _ = v₀ ^ memSize S.1 * ∏ x, ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1), G x d n := by
@@ -207,9 +184,6 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
         simp only [hsplit, prod_mul_distrib]
         rw [prod_ite (fun x => Real.exp (|cre x| * ν x * v₀)), prod_const_one, mul_one,
           ← Real.exp_sum, mul_sum]
-        have hexp : ∑ x with hit x, |cre x| * ν x * v₀ = ∑ x with hit x, v₀ * (|cre x| * ν x) :=
-          sum_congr rfl fun x _ => by ring
-        rw [hexp]
         ring
 
 end Generic
@@ -221,29 +195,19 @@ times. -/
 theorem card_le_count_of_getElem {p : ℕ} :
     ∀ (l : List ℕ) (T : Finset ℕ), (∀ k ∈ T, l[k]? = some p) → T.card ≤ l.count p
   | [], T, hT => by
-    have hT0 : T = ∅ := eq_empty_of_forall_notMem fun k hk => by simpa using hT k hk
+    have hT0 := eq_empty_of_forall_notMem fun k hk => by simpa using hT k hk
     simp [hT0]
   | a :: l, T, hT => by
     -- the indices after the head shift down by one
     have hT' : ∀ k ∈ (T.erase 0).image (· - 1), l[k]? = some p := by
-      intro k hk
-      obtain ⟨k₀, hk₀, rfl⟩ := mem_image.1 hk
-      obtain ⟨hk₀0, hk₀T⟩ := mem_erase.1 hk₀
-      have := hT k₀ hk₀T
-      obtain ⟨j, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hk₀0
-      simpa using this
+      grind
     have hinj : Set.InjOn (· - 1) ((T.erase 0 : Finset ℕ) : Set ℕ) := fun k hk k' hk' h => by
-      rw [mem_coe, mem_erase] at hk hk'
-      simp only at h
-      omega
+      grind
     have ih := card_le_count_of_getElem l _ hT'
     rw [card_image_of_injOn hinj] at ih
     rw [List.count_cons]
     by_cases h0 : 0 ∈ T
-    · have ha : a = p := by simpa using hT 0 h0
-      have := card_erase_add_one h0
-      simp only [ha, beq_self_eq_true, ite_true]
-      omega
+    · grind
     · rw [erase_eq_of_notMem h0] at ih
       omega
 
@@ -278,14 +242,13 @@ theorem count_batchPrimes_of_valid {z : ℤ × ℤ} {S : Particle x d → ℕ}
   · obtain ⟨xp, hxp, rfl⟩ := hex
     refine Or.inr ⟨xp, hxp, rfl, ?_⟩
     rw [sum_eq_single xp]
-    · rw [ite_eq_left rfl]
+    · simp
     · intro yp _ hne
       refine ite_eq_right_iff.2 fun hp => ?_
       by_cases hyp : HitsAt x d z yp
       · exact absurd (hitsAt_eq_of_prime hyp hxp hp) hne
       · exact hc.2.1 yp hyp
-    · intro h
-      exact absurd (mem_univ _) h
+    simp
   · refine Or.inl (le_of_eq (sum_eq_zero fun yp _ => ite_eq_right_iff.2 fun hp => ?_))
     by_contra hne
     exact hex ⟨yp, by_contra fun hyp => hne (hc.2.1 yp hyp), hp⟩
@@ -319,30 +282,29 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
     mul_nonneg (prod_nonneg fun k _ => atomCost_nonneg hc₀0 hν _)
       (mul_nonneg (Real.exp_pos _).le (pow_nonneg hv₀.le _))
   -- the prescriptions met by a valid choice: each prescribed prime occurs with multiplicity
-  have hmet : ∀ c : GhostChoice x d, GhostValid (HitsAt x d z) B t.2.2.1 c →
+  have hmet : ∀ c, GhostValid (HitsAt x d z) B t.2.2.1 c →
       (∏ k : Fin B, presInd (π k) (batchPrimes x d c.2)[k.1]?) ≠ 0 →
-      ∀ p, (univ.filter fun k : Fin B => π k = some p).card ≤ (batchPrimes x d c.2).count p := by
+      ∀ p, (univ.filter fun k => π k = some p).card ≤ (batchPrimes x d c.2).count p := by
     intro c _ hW p
     rw [← card_image_of_injective _ Fin.val_injective]
     refine card_le_count_of_getElem _ _ fun k hk => ?_
     obtain ⟨k', hk', rfl⟩ := mem_image.1 hk
-    have hkp := (mem_filter.1 hk').2
     have hne := (prod_ne_zero_iff.1 hW) k' (mem_univ _)
     unfold presInd at hne
-    rw [hkp] at hne
+    rw [(mem_filter.1 hk').2] at hne
     by_contra h
     exact hne (ite_eq_right (by simp [h]))
   by_cases hall : ∀ k p, π k = some p → ∃ xp, HitsAt x d z xp ∧ xp.1.1 = p
   · -- the required multiplicities on the hitting particles
     set m : Particle x d → ℕ := fun xp =>
-      if HitsAt x d z xp then (univ.filter fun k : Fin B => π k = some xp.1.1).card else 0
+      if HitsAt x d z xp then (univ.filter fun k => π k = some xp.1.1).card else 0
       with hm
     have hle : ∀ c ∈ multBox B ×ˢ multBox B, ‖chainGhostCoef q x d Y d₀ u v r B N j t c‖ *
         (∏ k : Fin B, presInd (π k) (batchPrimes x d c.2)[k.1]?) *
         v₀ ^ memSize (chainGhostOut x d Y d₀ u v r B t c).2.2.1 ≤
-        ‖ghostCoef (HitsAt x d z) (fun xp : Particle x d => ν xp.1.1)
+        ‖ghostCoef (HitsAt x d z) (fun xp => ν xp.1.1)
             (-dampDefect q N j / pendingWeight q) ((1 - dampDefect q N j) / pendingWeight q ^ 2)
-            cre B t.2.2 c‖ * (∏ xp, if m xp ≤ c.2 xp then (1 : ℝ) else 0) *
+            cre B t.2.2 c‖ * (∏ xp, if m xp ≤ c.2 xp then 1 else 0) *
           v₀ ^ memSize (ghostOut (HitsAt x d z) B t.2.2 c).1 := by
       intro c _
       refine mul_le_mul_of_nonneg_right ?_ (pow_nonneg hv₀.le _)
@@ -353,7 +315,7 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
         · -- every requirement holds, and the prescriptions are at most one
           have hreq : ∀ xp, m xp ≤ c.2 xp := by
             intro xp
-            simp only [hm]
+            simp [hm]
             split_ifs with hxp
             · have h₁ := hmet c hc hW xp.1.1
               rcases count_batchPrimes_of_valid hc xp.1.1 with h₂ | ⟨yp, hyp, hp, h₂⟩
@@ -361,7 +323,7 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
               · have hxy := hitsAt_eq_of_prime hxp hyp hp.symm
                 subst hxy
                 omega
-            · exact Nat.zero_le _
+            positivity
           rw [prod_eq_one fun xp _ => ite_eq_left (hreq xp), mul_one]
           exact mul_le_of_le_one_right (norm_nonneg _)
             (prod_le_one₀ (fun k _ => presInd_nonneg _ _) fun k _ => presInd_le_one _ _)
@@ -382,8 +344,7 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
           · intro xp _ hne
             refine ite_eq_right fun h => absurd (hitsAt_eq_of_prime h.1 hx₀ ?_) hne
             exact (Option.some_injective _ h.2).symm
-          · intro h
-            exact absurd (mem_univ _) h
+          simp
       simp only [hk]
       rw [prod_comm]
       have he0 : ∀ xp : Particle x d, 0 ≤ |cre xp| * ν xp.1.1 * v₀ := fun xp =>
@@ -392,9 +353,9 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
         split_ifs
         exacts [pow_nonneg (he0 xp) _, zero_le_one]) fun xp _ => ?_
       by_cases hxp : HitsAt x d z xp
-      · simp only [hxp, true_and, ite_true, hm]
+      · simp [hxp, hm]
         rw [prod_ite, prod_const, prod_const_one, mul_one]
-        exact pow_le_pow_left₀ (he0 xp) (hc₀ xp) _
+        solve_by_elim [pow_le_pow_left₀]
       · simp [hxp]
     calc _ ≤ ∑ c ∈ multBox B ×ˢ multBox B,
           ‖ghostCoef (HitsAt x d z) (fun xp : Particle x d => ν xp.1.1)
@@ -405,9 +366,8 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
             (|cre xp| * ν xp.1.1 * v₀) ^ m xp else 1) *
           (Real.exp (v₀ * ∑ xp with HitsAt x d z xp, |cre xp| * ν xp.1.1) *
             v₀ ^ memSize t.2.2.1) :=
-          ghost_row_req (fun xp => hν _) hsurv hv₀ hdel m t.2.2
-      _ ≤ _ := mul_le_mul_of_nonneg_right hconv
-          (mul_nonneg (Real.exp_pos _).le (pow_nonneg hv₀.le _))
+          ghost_row_req (fun xp => hν _) hsurv hv₀ hdel m _
+      _ ≤ _ := by gcongr
   · -- some prescribed prime has no hitting particle, so every valid choice misses it
     push Not at hall
     obtain ⟨k₀, p, hk₀, hp⟩ := hall

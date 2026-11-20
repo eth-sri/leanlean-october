@@ -42,8 +42,8 @@ private theorem contDiff_plateauTwist (lam : ℝ) : ContDiff ℝ ∞ (plateauTwi
       (contDiff_const.mul contDiff_id))))
 
 /-- `‖D^i ψ_λ‖ ≪ Λ⁴` for `i ≤ 4` and `|λ| ≤ Λ`, `1 ≤ Λ`. -/
-private theorem exists_norm_iteratedFDeriv_plateauTwist_le : ∃ C : ℝ, 0 ≤ C ∧
-    ∀ Λ lam : ℝ, 1 ≤ Λ → |lam| ≤ Λ → ∀ i ≤ 4, ∀ y,
+private theorem exists_norm_iteratedFDeriv_plateauTwist_le : ∃ C, 0 ≤ C ∧
+    ∀ Λ lam, 1 ≤ Λ → |lam| ≤ Λ → ∀ i ≤ 4, ∀ y,
       ‖iteratedFDeriv ℝ i (plateauTwist lam) y‖ ≤ C * Λ ^ 4 := by
   -- the derivatives of `ψ` are bounded
   have hc : HasCompactSupport fun t => (plateau t : ℂ) := by
@@ -51,18 +51,19 @@ private theorem exists_norm_iteratedFDeriv_plateauTwist_le : ∃ C : ℝ, 0 ≤ 
     rw [plateau_eq_zero ht.le, Complex.ofReal_zero]
   obtain ⟨P, hP⟩ := exists_norm_iteratedFDeriv_le
     (Complex.ofRealCLM.contDiff.comp contDiff_plateau) hc 4
-  have hP0 : 0 ≤ P := (norm_nonneg _).trans (hP 0 (Nat.zero_le _) 0)
+  have hP0 := (norm_nonneg _).trans (hP 0 (Nat.zero_le _) 0)
   refine ⟨16 * P * (4 * π) ^ 4, by positivity, fun Λ lam hΛ hlam i hi y => ?_⟩
   refine (norm_iteratedFDeriv_twist_le (Complex.ofRealCLM.contDiff.comp contDiff_plateau)
     (fun j hj => hP j (hj.trans hi)) lam y).trans ?_
   -- `2π(1 + |λ|) ≤ 4πΛ`
-  have h1 : 1 ≤ 2 * π * (1 + |lam|) := by nlinarith [two_le_pi, abs_nonneg lam]
-  have h2 : 2 * π * (1 + |lam|) ≤ 4 * π * Λ := by nlinarith [pi_pos]
-  calc 2 ^ i * P * (2 * π * (1 + |lam|)) ^ i ≤ 2 ^ 4 * P * (2 * π * (1 + |lam|)) ^ 4 := by
+  let lamAt := 2 * π * (1 + |lam|)
+  have h1 : 1 ≤ lamAt := by nlinarith [two_le_pi, abs_nonneg lam]
+  have h2 : lamAt ≤ 4 * π * Λ := by nlinarith [pi_pos]
+  calc _ ≤ 2 ^ 4 * P * (lamAt) ^ 4 := by
         gcongr
         norm_num
     _ ≤ 2 ^ 4 * P * (4 * π * Λ) ^ 4 := by gcongr
-    _ = 16 * P * (4 * π) ^ 4 * Λ ^ 4 := by ring
+    _ = _ := by ring
 
 /-- The substitution `y = a x`: `∫ g(y) dy = a ∫ g(a x) dx` for `a > 0`. -/
 private theorem integral_eq_mul_integral_comp_mul (g : ℝ → ℂ) {a : ℝ} (ha : 0 < a) :
@@ -79,13 +80,13 @@ private theorem inv_one_add_div_two_pi_sq_le {a : ℝ} (ha : 0 ≤ a) :
     linarith
   rw [← div_eq_mul_inv, le_div_iff₀ (by positivity), inv_mul_eq_div, div_le_iff₀ (by positivity),
     ← mul_pow]
-  exact pow_le_pow_left₀ (by positivity) h 2
+  gcongr
 
 /-- `((1 + |u|)²)⁻¹` is integrable. -/
 private theorem integrable_inv_one_add_abs_sq :
     Integrable fun u : ℝ => ((1 + |u|) ^ 2)⁻¹ := by
   refine integrable_inv_one_add_sq.mono' ?_ (Filter.Eventually.of_forall fun u => ?_)
-  · exact (Continuous.inv₀ (by fun_prop) fun u => by positivity).aestronglyMeasurable
+  · fun_prop
   · rw [Real.norm_eq_abs, abs_of_pos (by positivity)]
     exact inv_anti₀ (by positivity) (by nlinarith [abs_nonneg u, sq_abs u])
 
@@ -108,8 +109,7 @@ theorem exists_plateauTwist_separation : ∃ C₀ : ℝ, ∀ Λ X lam : ℝ, 1 �
   have hΦc : ContDiff ℝ ∞ Φ := contDiff_gapKernel (contDiff_plateauTwist lam) X
   have hΦs : ∀ p : ℝ × ℝ, 20 < ‖p‖ → Φ p = 0 := fun p hp => gapKernel_eq_zero _ X hp
   have hΦM : ∀ n ≤ 4, ∀ p, ‖iteratedFDeriv ℝ n Φ p‖ ≤ B * C * Λ ^ 4 := fun n hn p => by
-    rw [mul_assoc]
-    exact hB _ X _ (contDiff_plateauTwist lam) hX (hC Λ lam hΛ hlam) n hn p
+    linarith [hB _ X _ (contDiff_plateauTwist lam) hX (hC Λ lam hΛ hlam) n hn p]
   set M : ℝ := 64 * 20 ^ 2 * (B * C * Λ ^ 4) with hM
   have hdec : ∀ v s, ‖ft2 Φ v s‖ ≤ M * ((1 + |v|) ^ 2)⁻¹ * ((1 + |s|) ^ 2)⁻¹ := fun v s => by
     have h := norm_ft2_mul_le hΦc (by norm_num) hΦs hΦM v s
@@ -131,7 +131,6 @@ theorem exists_plateauTwist_separation : ∃ C₀ : ℝ, ∀ Λ X lam : ℝ, 1 �
       rw [abs_div, abs_of_pos hpi]
     have hb1 := inv_one_add_div_two_pi_sq_le (by positivity : 0 ≤ |τ| / X)
     have hb2 := inv_one_add_div_two_pi_sq_le (abs_nonneg (τ + σ))
-    have hM0 : 0 ≤ M := by positivity
     simp only [hKf, hD, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc0]
     have h : ‖ft2 Φ (τ / (2 * π * X)) ((τ + σ) / (2 * π))‖ ≤
         M * ((2 * π) ^ 2 * ((1 + |τ| / X) ^ 2)⁻¹) * ((2 * π) ^ 2 * ((1 + |τ + σ|) ^ 2)⁻¹) := by
@@ -151,7 +150,7 @@ theorem exists_plateauTwist_separation : ∃ C₀ : ℝ, ∀ Λ X lam : ℝ, 1 �
       refine Integrable.const_mul ?_ _
       refine (integrable_inv_one_add_sq.comp_div hX0.ne').mono' ?_
         (Filter.Eventually.of_forall fun τ => ?_)
-      · exact (Continuous.inv₀ (by fun_prop) fun τ => by positivity).aestronglyMeasurable
+      · fun_prop
       · rw [Real.norm_eq_abs, abs_of_pos (by positivity)]
         refine inv_anti₀ (by positivity) ?_
         rw [div_pow, ← sq_abs τ]
@@ -187,7 +186,7 @@ theorem exists_plateauTwist_separation : ∃ C₀ : ℝ, ∀ Λ X lam : ℝ, 1 �
     push_cast
     ring
   simp only [hwE]
-  have hEc : Continuous E := Complex.continuous_exp.comp (by fun_prop)
+  have hEc : Continuous E := by fun_prop
   have hKE : Integrable (fun q => Kf q * E q) (volume.prod volume) := by
     refine hKi.norm.mono' (hKc.mul hEc).aestronglyMeasurable
       (Filter.Eventually.of_forall fun q => ?_)
@@ -222,7 +221,7 @@ theorem exists_plateauTwist_separation : ∃ C₀ : ℝ, ∀ Λ X lam : ℝ, 1 �
   field_simp
 
 /-- The Mellin form of `η(y) e(-λ y)`. -/
-theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ → ℂ, Integrable g ∧
+theorem exists_bumpTwist_mellin : ∃ C₀, ∀ lam, ∃ g : ℝ → ℂ, Integrable g ∧
     ∫ ξ, ‖g ξ‖ ≤ C₀ * (1 + |lam|) ^ 2 ∧
     ∀ y : ℝ, 0 < y →
       (dyadicBump y : ℂ) * Complex.exp (-(2 * π * Complex.I * ((lam * y : ℝ) : ℂ))) =
@@ -235,7 +234,7 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
     refine hasCompactSupport_of_lt_abs (R := 4) fun u hu => ?_
     by_contra h
     have h' := lt_of_dyadicBump_ne_zero fun h0 => h (by rw [h0, Complex.ofReal_zero])
-    exact absurd hu (not_lt.2 (abs_le.2 ⟨by linarith, h'.2.le⟩))
+    grind
   obtain ⟨P, hP⟩ := exists_norm_iteratedFDeriv_le (Complex.ofRealCLM.contDiff.comp hηd) hc 2
   have hP0 : 0 ≤ P := (norm_nonneg _).trans (hP 0 (Nat.zero_le _) 0)
   refine ⟨16 * (1 + 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2), fun lam => ?_⟩
@@ -252,12 +251,10 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
       (fun j hj => hP j (hj.trans hi)) (-lam) u).trans ?_
     have h1 : 1 ≤ 2 * π * (1 + |lam|) := by nlinarith [two_le_pi, abs_nonneg lam]
     rw [abs_neg]
-    calc 2 ^ i * P * (2 * π * (1 + |lam|)) ^ i ≤ 2 ^ 2 * P * (2 * π * (1 + |lam|)) ^ 2 := by
+    calc _ ≤ 2 ^ 2 * P * (2 * π * (1 + |lam|)) ^ 2 := by
           gcongr
           norm_num
       _ = K := by ring
-  have hK0 : 0 ≤ K := (norm_nonneg _).trans (hφM 0 (Nat.zero_le _) 0)
-  -- `F(z) = φ(e^z)` is supported in `[-4, 4]` with `|F| ≤ 1` and `|F''| ≤ 2 K e^8`
   set F : ℝ → ℂ := φ ∘ exp with hF
   have hFd : ContDiff ℝ ∞ F := hφd.comp contDiff_exp
   have hFs : ∀ z, 4 < |z| → F z = 0 := by
@@ -290,7 +287,7 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
           (le_self_pow₀ (one_le_exp (by norm_num)) (by omega))
       have h := norm_iteratedFDeriv_comp_le hφd contDiff_exp (by simp) z
         (fun i hi => hφM i hi _) hD
-      rwa [Nat.factorial_two, Nat.cast_ofNat] at h
+      assumption
   obtain ⟨hint, hI⟩ := integral_norm_ft_le (hFd.of_le (by simp)) (by norm_num) hFs hF0 hF2
   -- rescale: `g(ξ) = ft F (ξ/(2π)) / (2π)`
   have hpi : (0 : ℝ) < 2 * π := by positivity
@@ -303,21 +300,12 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
     rw [hg]
     refine hI.trans ?_
     have h1 : 1 ≤ (1 + |lam|) ^ 2 := by nlinarith [abs_nonneg lam]
-    have h8 : 0 ≤ 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2 := by positivity
-    calc 4 * 4 * (1 + 2 * K * exp 4 ^ 2) =
-        16 * (1 + 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2 * (1 + |lam|) ^ 2) := by
-          rw [hK]
-          ring
-      _ ≤ 16 * ((1 + 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2) * (1 + |lam|) ^ 2) := by
-          nlinarith
-      _ = _ := by ring
+    grind
   · -- `η(y) e(-λy) = F(log y)`, then invert and substitute `ξ = 2π t`
     have hF' : (dyadicBump y : ℂ) * Complex.exp (-(2 * π * Complex.I * ((lam * y : ℝ) : ℂ))) =
         F (log y) := by
       simp only [hF, hφ, Function.comp_apply, exp_log hy]
-      congr 2
-      push_cast
-      ring
+      simp
     rw [hF', ← ft_inversion (hFd.of_le (by simp)) hFs (log y)]
     conv_rhs => rw [integral_eq_mul_integral_comp_mul _ hpi]
     rw [← integral_const_mul]

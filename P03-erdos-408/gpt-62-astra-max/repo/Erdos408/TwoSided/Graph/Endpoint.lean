@@ -25,7 +25,7 @@ open Filter
 
 /-- The dyads `X = 2^m` with `√x ≤ X ≤ x²`. -/
 noncomputable def dyads (x : ℝ) : Finset ℕ :=
-  (Finset.range (⌊2 * Real.logb 2 x⌋₊ + 1)).filter fun m => √x ≤ 2 ^ m ∧ (2 : ℝ) ^ m ≤ x ^ 2
+  (Finset.range (⌊2 * Real.logb 2 x⌋₊ + 1)).filter fun m => √x ≤ 2 ^ m ∧ 2 ^ m ≤ x ^ 2
 
 /-- The source positions `S_X = [X, 2X)`. -/
 noncomputable def dyadSource (X : ℝ) : Finset ℕ :=
@@ -53,10 +53,10 @@ noncomputable def sourceEndpoint (x q₀ : ℝ) {ι : Type} [Fintype ι] (P : ι
 /-- The target endpoint `g_X(n') = G(n') h(n')` on `S'_X`. -/
 noncomputable def targetEndpoint (q₀ : ℝ) {ι : Type} [Fintype ι] (P : ι → Finset ℕ)
     (J : ℕ) (G : ℕ → ℝ) (X : ℝ) (n : ℕ) : ℂ :=
-  if n ∈ dyadTarget X then ((G n * physicalDamping q₀ P (J + 1) n : ℝ) : ℂ) else 0
+  if n ∈ dyadTarget X then (G n * physicalDamping q₀ P (J + 1) n : ℝ) else 0
 
 /-- The positions of `S_X` lie in `[X, 2X)`. -/
-theorem mem_dyadSource {X : ℝ} {n : ℕ} (hn : n ∈ dyadSource X) : X ≤ n ∧ (n : ℝ) < 2 * X := by
+theorem mem_dyadSource {X : ℝ} {n : ℕ} (hn : n ∈ dyadSource X) : X ≤ n ∧ n < 2 * X := by
   obtain ⟨h₁, h₂⟩ := Finset.mem_Ico.1 hn
   exact ⟨Nat.ceil_le.1 h₁, Nat.lt_ceil.1 h₂⟩
 
@@ -76,14 +76,12 @@ theorem norm_targetEndpoint_le {B₀ x q₀ : ℝ} (hx : 1 < x) (hq₀₁ : q₀
   unfold targetEndpoint
   split_ifs
   · rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (hG.2 n).1 hh0)]
-    calc G n * physicalDamping q₀ P (J + 1) n ≤ Real.log x ^ B₀ * 1 :=
-          mul_le_mul (hG.2 n).2 hh1 hh0 (Real.rpow_nonneg hL0.le _)
-      _ = Real.log x ^ B₀ := mul_one _
+    exact (mul_le_mul (hG.2 n).2 hh1 hh0 (Real.rpow_nonneg hL0.le _)).trans_eq (mul_one _)
   · rw [norm_zero]
     exact Real.rpow_nonneg hL0.le _
 
 /-- A dyad `X = 2^m` satisfies `√x ≤ X ≤ x²`. -/
-theorem mem_dyads {x : ℝ} {m : ℕ} (hm : m ∈ dyads x) : √x ≤ 2 ^ m ∧ (2 : ℝ) ^ m ≤ x ^ 2 :=
+theorem mem_dyads {x : ℝ} {m : ℕ} (hm : m ∈ dyads x) : √x ≤ 2 ^ m ∧ 2 ^ m ≤ x ^ 2 :=
   (Finset.mem_filter.1 hm).2
 
 /-- Eventually there are at most `4L` dyads. -/
@@ -94,13 +92,13 @@ theorem eventually_card_dyads_le : ∀ᶠ x : ℝ in atTop, ((dyads x).card : �
     rw [Real.logb, div_le_iff₀ (by linarith)]
     nlinarith
   have h0 : 0 ≤ Real.logb 2 x := div_nonneg (by linarith) (by linarith)
-  calc ((dyads x).card : ℝ) ≤ ((Finset.range (⌊2 * Real.logb 2 x⌋₊ + 1)).card : ℝ) := by
+  calc ((dyads x).card : ℝ) ≤ (Finset.range (⌊2 * Real.logb 2 x⌋₊ + 1)).card := by
         exact_mod_cast Finset.card_filter_le _ _
-    _ = ⌊2 * Real.logb 2 x⌋₊ + 1 := by rw [Finset.card_range]; push_cast; ring
+    _ = ⌊2 * Real.logb 2 x⌋₊ + 1 := by simp
     _ ≤ 2 * Real.logb 2 x + 1 := by
         gcongr
         exact Nat.floor_le (by positivity)
-    _ ≤ 4 * Real.log x := by linarith
+    _ ≤ _ := by linarith
 
 /-- **Lemma G1 (endpoint bounds).** Eventually, uniformly in the groups, the bands, the
 slots, `|B| ≤ 1` and the clipped core, for every dyad `X = 2^m` and frequency `ξ`:
@@ -113,7 +111,7 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     (d : ℕ) (B₀ : ℝ) (hq : 0 < q) (hq₁ : q < 1) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo)
     (halo : 1 / 10 < alo) (hc : 0 < c) (J : ℕ) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
+      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] P (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
         ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ)
           (G : ℕ → ℝ),
@@ -140,10 +138,10 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
   have hprime : ∀ g, ∀ p ∈ P g, p.Prime := by
     intro g p hp
     by_cases hg : g ∈ big
-    · exact (Finset.mem_filter.1 (hP.2.2.2.2.2.2.2.1 g hg hp)).2
-    · exact (Finset.mem_filter.1 (hP.2.2.2.2.2.2.1 g hg hp)).2
-  have hV : ∀ g, 0 < harmonicMass (P g) := fun g => hvlo.trans_le (hP.2.2.2.2.2.1 g).1
-  have hcount' : 2 * ∏ g, ((Finset.card (P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ (J + 1) ≤ X :=
+    · exact (Finset.mem_filter.mp (hP.right.right.right.right.right.right.right.left g hg hp)).right
+    · exact (Finset.mem_filter.mp (hP.right.right.right.right.right.right.left g hg hp)).right
+  have hV := fun g => LT.lt.trans_le hvlo (hP.right.right.right.right.right.left g).left
+  have hcount' :=
     (hcount P big hP).trans hX₁
   -- the damping `0 ≤ h ≤ 1`
   have hh : ∀ n, 0 ≤ physicalDamping q₀ P (J + 1) n ∧ physicalDamping q₀ P (J + 1) n ≤ 1 :=
@@ -157,18 +155,15 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     · obtain ⟨hXn, hn2⟩ := mem_dyadSource hn
       have hn0 : (0 : ℝ) < n := by linarith
       have hn1 : 1 ≤ n := by exact_mod_cast hX1.trans hXn
-      have hnx : (n : ℝ) ≤ x ^ 3 := by
+      have hFn := hF r a u v Bc ha hslot hB n hn1 (by
         have : x ^ 3 = x * x ^ 2 := by ring
-        nlinarith
-      have hFn := hF r a u v Bc ha hslot hB n hn1 hnx
+        nlinarith)
       rw [Complex.norm_conj, norm_mul, Complex.norm_real, Real.norm_eq_abs,
         Complex.norm_cpow_eq_rpow_re_of_pos (by positivity)]
-      simp only [Complex.mul_re, Complex.ofReal_re, Complex.I_re, mul_zero, Complex.ofReal_im,
-        Complex.I_im, mul_one, sub_self, Real.rpow_zero]
-      rw [show Real.log x = L from rfl, abs_mul, abs_mul, abs_mul, abs_of_nonneg (hh n).1,
-        abs_of_pos (inv_pos.2 hL0), abs_of_nonneg (div_nonneg (by linarith) hn0.le)]
-      have hXn' : X / n ≤ 1 := (div_le_one hn0).2 hXn
-      calc L⁻¹ * |centeredCore x q a u v Bc n| * (X / n) * physicalDamping q₀ P (J + 1) n
+      simp only [Complex.mul_re, Complex.I_re, mul_zero, Complex.ofReal_im, Complex.I_im, mul_one, sub_self, Real.rpow_zero]
+      rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg (hh n).1, abs_of_pos (inv_pos.2 hL0), abs_of_nonneg (div_nonneg (by linarith) hn0.le)]
+      have hXn' := (div_le_one hn0).2 hXn
+      calc _
           ≤ L⁻¹ * L * 1 * 1 := by
             refine mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_left hFn (by positivity)) hXn'
               (div_nonneg (by linarith) hn0.le) (by positivity)) (hh n).2 (hh n).1
@@ -185,7 +180,6 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     have h := GraphBounds.physicalNormSq_Ico_le hdisj hprime hV (J + 1) hab hba
       (fun n _ => hf n)
     unfold dyadSource
-    rw [one_pow, one_mul] at h
     linarith
   · -- the target norm: `L^{2B₀} (2X + 2 ∏ (|P| V⁻¹)^M) ≤ 3X L^{2B₀} ≤ X L^{2C₃}`
     have hab : ⌈X⌉₊ ≤ ⌈3 * X⌉₊ := Nat.ceil_mono (by linarith)
@@ -196,28 +190,25 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     have h := GraphBounds.physicalNormSq_Ico_le hdisj hprime hV (J + 1) hab hba
       fun n _ => norm_targetEndpoint_le (by linarith) hq₀₁ hG J X n
     unfold dyadTarget
-    have hL1 : 1 ≤ L := by linarith
     have hpow : (L ^ B₀) ^ 2 ≤ L ^ (2 * max B₀ 0) := by
       rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
-      refine Real.rpow_le_rpow_of_exponent_le hL1 ?_
-      rw [Nat.cast_ofNat]
-      linarith [le_max_left B₀ 0]
+      refine Real.rpow_le_rpow_of_exponent_le (by linarith) ?_
+      grind
     have hsplit : L ^ (2 * (max B₀ 0 + 1)) = L ^ (2 * max B₀ 0) * L ^ 2 := by
       rw [show 2 * (max B₀ 0 + 1) = 2 * max B₀ 0 + (2 : ℕ) by push_cast; ring,
         Real.rpow_add hL0, Real.rpow_natCast]
     have hL4 : 4 ≤ L ^ 2 := by nlinarith
-    have hP0 : 0 ≤ L ^ (2 * max B₀ 0) := Real.rpow_nonneg hL0.le _
+    have hP0 : 0 ≤ L ^ (2 * max B₀ 0) := by positivity
     have hprod0 : 0 ≤ ∏ g, ((Finset.card (P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ (J + 1) :=
       Finset.prod_nonneg fun g _ =>
         pow_nonneg (mul_nonneg (Nat.cast_nonneg _) (inv_nonneg.2 (hV g).le)) _
     refine h.trans ?_
     rw [hsplit]
-    calc (L ^ B₀) ^ 2 * (2 * X + 2 * ∏ g, ((Finset.card (P g) : ℝ) *
-          (harmonicMass (P g))⁻¹) ^ (J + 1))
+    calc _
         ≤ L ^ (2 * max B₀ 0) * (3 * X) :=
-          mul_le_mul hpow (by linarith) (by linarith [hprod0]) hP0
+          mul_le_mul hpow (by linarith) (by linarith) hP0
       _ ≤ L ^ (2 * max B₀ 0) * (L ^ 2 * X) :=
           mul_le_mul_of_nonneg_left (by nlinarith) hP0
-      _ = X * (L ^ (2 * max B₀ 0) * L ^ 2) := by ring
+      _ = _ := by ring
 
 end Erdos408.TwoSided

@@ -33,42 +33,24 @@ variable {ι : Type} [Fintype ι] [DecidableEq ι] {J : ℕ}
 omit [Fintype ι] [DecidableEq ι] in
 /-- The raw pattern has the final slot only. -/
 lemma unsharedSlots_empty (g : ι) :
-    unsharedSlots (fun _ => (∅ : Finset (Fin J))) g = {Fin.last J} := by
-  simp [unsharedSlots]
+    unsharedSlots (fun _ => (∅)) g = {Fin.last J} := by
+  rfl
 
 /-- The only auxiliary labels of the raw pattern are `1`. -/
 lemma auxLabels_empty (P : ι → Finset ℕ) :
     auxLabels P (fun _ => (∅ : Finset (Fin J))) = {fun _ _ => 1} := by
-  ext a
-  simp only [auxLabels, Fintype.mem_piFinset, notMem_empty, ite_false, mem_singleton,
-    funext_iff]
+  simp [auxLabels]
 
 /-- The represented lists of the raw pattern: one prime of each group. -/
 lemma card_slotLists_empty (P : ι → Finset ℕ) (n : ℕ) :
     (slotLists P (unsharedSlots (fun _ => (∅ : Finset (Fin J)))) n).card =
       ∏ g, primeCount (P g) n := by
-  have h : slotLists P (unsharedSlots (fun _ => (∅ : Finset (Fin J)))) n =
+  have h : slotLists P (unsharedSlots (fun _ => (∅))) n =
       Fintype.piFinset fun g => Fintype.piFinset fun j : Fin (J + 1) =>
         if j = Fin.last J then (P g).filter (· ∣ n) else {1} := by
     ext l
-    simp only [slotLists, unsharedSlots_empty, mem_filter, Fintype.mem_piFinset,
-      mem_singleton, coe_singleton, Set.injOn_singleton, true_and, forall_eq]
-    constructor
-    · rintro ⟨h₁, h₂⟩ g j
-      have := h₁ g j
-      split_ifs at this ⊢ with hj
-      · subst hj
-        exact mem_filter.2 ⟨this, h₂ g⟩
-      · exact this
-    · intro h
-      refine ⟨fun g j => ?_, fun g => ?_⟩
-      · have := h g j
-        split_ifs at this ⊢ with hj
-        · exact (mem_filter.1 this).1
-        · exact this
-      · have := h g (Fin.last J)
-        rw [ite_eq_left rfl] at this
-        exact (mem_filter.1 this).2
+    simp [slotLists, unsharedSlots_empty]
+    grind
   rw [h, Fintype.card_piFinset]
   refine prod_congr rfl fun g _ => ?_
   rw [Fintype.card_piFinset, Fintype.prod_eq_single (Fin.last J) fun j hj => by simp [hj]]
@@ -106,16 +88,15 @@ lemma stripSum_raw_eq {x q₀ κ : ℝ} (hx : 0 < x) (hκx : κ * x ≤ x ^ 2) (
   symm
   refine sum_subset (Icc_subset_Icc le_rfl (Nat.floor_le_floor hκx)) (fun w hw hw' => ?_)
     |>.trans (sum_congr rfl fun w _ => ?_)
-  · have hlt : ⌊κ * x⌋₊ < w := by
-      by_contra h
-      exact hw' (mem_Icc.2 ⟨(mem_Icc.1 hw).1, not_lt.1 h⟩)
-    have hw0 : (0 : ℝ) < w := by
+  · have hw0 : 0 < w := by
       have := (mem_Icc.1 hw).1
       exact_mod_cast (show 0 < w by omega)
     have hwx : κ < w / x := by
       rw [lt_div_iff₀ hx]
       rcases le_or_gt 0 (κ * x) with hκ0 | hκ0
-      · exact (Nat.floor_lt hκ0).1 hlt
+      · exact (Nat.floor_lt hκ0).1 (by
+        by_contra h
+        exact hw' (mem_Icc.2 ⟨(mem_Icc.1 hw).1, not_lt.1 h⟩))
       · linarith
     have hψ : Ψ (w / x) = 0 := by
       by_contra h
@@ -131,8 +112,8 @@ omit [Fintype ι] [DecidableEq ι] in
 /-- The raw kernel depends only on the unshared parts. -/
 lemma pad_invariant_one (p p' : ι → Fin (J + 1) → ℕ) (a : ι → Fin J → ℕ) :
     (fun _ _ _ => (1 : ℂ)) p p' a =
-      (fun _ _ _ => (1 : ℂ)) (pad (fun _ => (∅ : Finset (Fin J))) p)
-        (pad (fun _ => (∅ : Finset (Fin J))) p') a :=
+      (fun _ _ _ => (1 : ℂ)) (pad (fun _ => (∅)) p)
+        (pad (fun _ => (∅)) p') a :=
   rfl
 
 /-! ### The comparison patterns -/

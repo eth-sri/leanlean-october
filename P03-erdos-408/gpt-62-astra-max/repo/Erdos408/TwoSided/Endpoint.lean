@@ -86,7 +86,7 @@ theorem exists_endpoint_meanSquare
   simp only [Function.comp_apply] at hT
   set L := Real.log x with hLdef
   have hL0 : 0 < L := by linarith
-  have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hY₁
+  have hY0  := lt_of_lt_of_le (by positivity) hY₁
   -- a small group
   obtain ⟨gs, hgs⟩ : ∃ gs, gs ∉ big := by
     have hcard : 0 < (Finset.univ \ big).card := by
@@ -104,11 +104,11 @@ theorem exists_endpoint_meanSquare
     have : 1 ≤ L ^ (Cm + 2) := by
       have hCm : 0 ≤ Cm := by
         by_contra hneg
-        have : L ^ Cm < 1 := Real.rpow_lt_one_of_one_lt_of_neg hL (by linarith)
+        have  := Real.rpow_lt_one_of_one_lt_of_neg hL (by linarith)
         have : (1 : ℝ) ≤ k := by exact_mod_cast hk₁
         linarith
       exact Real.one_le_rpow hL.le (by linarith)
-    calc L ^ B' ≤ x := hxB
+    calc _ ≤ x := hxB
       _ = x * 1 := (mul_one x).symm
       _ ≤ T₀ := mul_le_mul_of_nonneg_left this hx0.le
   have hLB : 0 ≤ L ^ B' := by positivity
@@ -126,14 +126,14 @@ theorem exists_endpoint_meanSquare
     σ k h hY₁ hY₂ hσ hk₁ hk₂
   rw [one_mul] at he₁
   -- the remainder is at most `2 L^{-A₀}`
-  have hemar : Real.exp (-(c * L / Real.log L ^ 20)) ≤ L ^ (-(A₀ + CR)) := he₂
+  have hemar  := he₂
   have hR : ∫ t in -T₀..T₀, ‖twistedPoly Y Ue h k t‖ ^ 2 ≤ 2 * L ^ (-A₀) := by
     refine he.trans ?_
     rw [mul_add]
     have : L ^ CR * Real.exp (-(c * L / Real.log L ^ 20)) ≤ L ^ (-A₀) := by
-      calc L ^ CR * Real.exp (-(c * L / Real.log L ^ 20)) ≤ L ^ CR * L ^ (-(A₀ + CR)) := by
+      calc _ ≤ L ^ CR * L ^ (-(A₀ + CR)) := by
             gcongr
-        _ = L ^ (-A₀) := by rw [← Real.rpow_add hL0]; ring_nf
+        _ = _ := by rw [← Real.rpow_add hL0]; ring_nf
     linarith
   -- each high range
   have hhigh : ∀ t₁ t₂ : ℝ, -T₀ ≤ t₁ → t₁ ≤ t₂ → t₂ ≤ T₀ →

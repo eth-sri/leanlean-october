@@ -110,11 +110,10 @@ theorem norm_ft_mul_le {f : ℝ → ℂ} {k : ℕ} (hf : ContDiff ℝ k f) {R M 
     (hf.continuous_iteratedDeriv n (by exact_mod_cast hn)).integrable_of_hasCompactSupport
       (hasCompactSupport_of_lt_abs (iteratedDeriv_eq_zero_of_lt_abs hsupp n))
   -- differentiating `k` times multiplies the transform by `(2πiξ)^k`
-  have hk := congrFun (Real.fourier_iteratedDeriv (N := k) hf hint le_rfl) ξ
-  calc (2 * Real.pi * |ξ|) ^ k * ‖ft f ξ‖ = ‖ft (iteratedDeriv k f) ξ‖ := by
-        rw [ft_eq_fourier, ft_eq_fourier, hk, norm_smul, norm_pow]
-        simp [abs_of_pos Real.pi_pos]
-    _ ≤ 2 * R * M := norm_ft_le hR (iteratedDeriv_eq_zero_of_lt_abs hsupp k) hM ξ
+  calc _ = ‖ft (iteratedDeriv k f) ξ‖ := by
+        rw [ft_eq_fourier, ft_eq_fourier, (congrFun (Real.fourier_iteratedDeriv  hf hint le_rfl) ξ), norm_smul, norm_pow]
+        simp
+    _ ≤ _ := norm_ft_le hR (iteratedDeriv_eq_zero_of_lt_abs hsupp k) hM ξ
 
 /-- For `f` of class `C²` supported in `[-R, R]` with `|f| ≤ M₀` and `|f''| ≤ M₂`, the
 transform is integrable and `∫ |ft f| ≤ 4 R (M₀ + M₂)`. -/
@@ -128,7 +127,7 @@ theorem integral_norm_ft_le {f : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R M₀ M�
     add_nonneg ((norm_nonneg _).trans (hM₀ 0)) ((norm_nonneg _).trans (hM₂ 0))
   -- the comparison function `(1 + (2πξ)²)⁻¹`, whose integral is `1 / 2`
   have hpi : 2 * Real.pi ≠ 0 := by positivity
-  have hg : Integrable fun ξ : ℝ => (1 + (2 * Real.pi * ξ) ^ 2)⁻¹ :=
+  have hg :=
     integrable_inv_one_add_sq.comp_mul_left' hpi
   have hgI : ∫ ξ : ℝ, (1 + (2 * Real.pi * ξ) ^ 2)⁻¹ = 1 / 2 := by
     rw [Measure.integral_comp_mul_left (fun y => (1 + y ^ 2)⁻¹), integral_univ_inv_one_add_sq,
@@ -146,7 +145,7 @@ theorem integral_norm_ft_le {f : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R M₀ M�
   have hc : Continuous (ft f) := ft_eq_fourier f ▸
     VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
       (innerSL ℝ).continuous₂ hfi
-  have hi : Integrable (ft f) :=
+  have hi :=
     (hg.const_mul _).mono' hc.aestronglyMeasurable (Filter.Eventually.of_forall hb)
   refine ⟨hi, (integral_mono hi.norm (hg.const_mul _) hb).trans ?_⟩
   rw [integral_const_mul, hgI]
@@ -157,9 +156,7 @@ theorem ft_inversion {f : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R : ℝ}
     (hsupp : ∀ x, R < |x| → f x = 0) (x : ℝ) :
     ∫ ξ : ℝ, Complex.exp (2 * Real.pi * Complex.I * (x : ℂ) * (ξ : ℂ)) * ft f ξ = f x := by
   -- enlarge the support radius to make it nonnegative
-  have hsupp' : ∀ x, max R 0 < |x| → f x = 0 := fun x hx =>
-    hsupp x ((le_max_left R 0).trans_lt hx)
-  have hfc : Continuous f := hf.continuous
+  have hfc := hf.continuous
   have hfi : Integrable f :=
     hfc.integrable_of_hasCompactSupport (hasCompactSupport_of_lt_abs hsupp)
   -- `f` and `f''` are bounded, being continuous with compact support
@@ -167,7 +164,7 @@ theorem ft_inversion {f : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R : ℝ}
   obtain ⟨M₂, hM₂⟩ := (hf.continuous_iteratedDeriv 2 le_rfl).bounded_above_of_compact_support
     (hasCompactSupport_of_lt_abs (iteratedDeriv_eq_zero_of_lt_abs hsupp 2))
   -- so the transform is integrable, and Mathlib's inversion theorem applies
-  have hFi := (integral_norm_ft_le hf (le_max_right R 0) hsupp' hM₀ hM₂).1
+  have hFi := (integral_norm_ft_le hf (le_max_right R 0) (by grind) hM₀ hM₂).1
   rw [ft_eq_fourier] at hFi
   rw [← fourierInv_eq_integral, ft_eq_fourier, hfc.fourierInv_fourier_eq hfi hFi]
 

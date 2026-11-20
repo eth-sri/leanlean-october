@@ -139,11 +139,11 @@ theorem integral_constCoeff_side_le {q q₀ c₀ C₀ vlo vhi alo ahi : ℝ} {K�
     rw [mul_one] at h2
     exact nonneg_of_mul_nonneg_left h2 (Real.rpow_pos_of_pos hL0 _)
   have hcB : 4 ≤ Real.log x ^ B' := by
-    calc (4 : ℝ) ≤ Real.log x := hL4
+    calc _ ≤ Real.log x := hL4
       _ = Real.log x ^ (1 : ℝ) := (Real.rpow_one _).symm
-      _ ≤ Real.log x ^ B' := Real.rpow_le_rpow_of_exponent_le hL1 hB'1
+      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL1 hB'1
   have hσB : |σ| ≤ Real.log x ^ B' / 2 := by
-    have h1 : Real.log x ^ (Cm + 1) ≤ Real.log x ^ B' :=
+    have h1  :=
       Real.rpow_le_rpow_of_exponent_le hL1 hB'Cm
     rw [Real.rpow_add hL0, Real.rpow_one] at h1
     have h2 : 0 ≤ Real.log x ^ Cm := Real.rpow_nonneg hL0.le _
@@ -265,7 +265,7 @@ theorem exists_integral_const_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
   · refine ConstHigh.integral_constCoeff_side_le halo hD1 hB'1 hB'Cm eA eB eC eE eF hsc hE10x
       h𝒲x hκx hcopx hS16x hadm hgs hin hsl hBc hW hψ hψs hψd hY₁ hY₂ hσ hk₁ hk₂ hA hBT
       (fun t ht => ?_) (by linarith)
-    have h0 : 0 ≤ t := hLB.trans ht.1
+    have h0  := hLB.trans ht.1
     rw [abs_of_nonneg h0]
     exact ⟨ht.1, ht.2⟩
   · refine ConstHigh.integral_constCoeff_side_le halo hD1 hB'1 hB'Cm eA eB eC eE eF hsc hE10x

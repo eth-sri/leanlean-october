@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Hypotheses
+
 public import Erdos408.OneSided.Bands
 public import Erdos408.OneSided.Lift
 
@@ -23,7 +25,7 @@ The bookkeeping for the change of variables of PD Lemma 4.1
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 
@@ -40,19 +42,18 @@ def padList {J : ℕ} (z : Fin K × Fin J → ℕ) (p : Fin K → ℕ) : Lists K
 @[simp]
 theorem padList_castSucc {J : ℕ} (z : Fin K × Fin J → ℕ) (p : Fin K → ℕ) (i : Fin K)
     (h : Fin J) : padList z p i h.castSucc = z (i, h) :=
-  Fin.snoc_castSucc (α := fun _ => ℕ) _ _ _
+  Fin.snoc_castSucc  _ _ _
 
 @[simp]
 theorem padList_last {J : ℕ} (z : Fin K × Fin J → ℕ) (p : Fin K → ℕ) (i : Fin K) :
     padList z p i (Fin.last J) = p i :=
-  Fin.snoc_last (α := fun _ => ℕ) _ _
+  Fin.snoc_last  _ _
 
 /-- `padList z p = l` exactly when `z` and `p` are the slots of `l`. -/
 theorem padList_eq_iff {J : ℕ} {z : Fin K × Fin J → ℕ} {p : Fin K → ℕ} {l : Lists K J} :
     padList z p = l ↔ (∀ c, z c = l c.1 c.2.castSucc) ∧ ∀ i, p i = l i (Fin.last J) := by
   constructor
-  · rintro rfl
-    exact ⟨fun c => (padList_castSucc z p c.1 c.2).symm, fun i => (padList_last z p i).symm⟩
+  · aesop
   · rintro ⟨hz, hp⟩
     funext i h
     induction h using Fin.lastCases with
@@ -81,15 +82,11 @@ theorem listProd_pos {J : ℕ} {l : Lists K J} (hl : ∀ i h, (l i h).Prime) : 0
 /-- The labels of a list in `lists` are primes of their bands. -/
 theorem lists_slot_mem_band {x : ℝ} {d : Data K} {J : ℕ} {l : Lists K J}
     (hl : l ∈ lists x d J) (i : Fin K) (h : Fin (J + 1)) : l i h ∈ band x (d.a i) := by
-  unfold lists at hl
-  rw [mem_filter, Fintype.mem_piFinset] at hl
-  exact Fintype.mem_piFinset.1 (hl.1 i) h
+  simp_all [lists]
 
 /-- The lists in `lists` are injective in each group. -/
 theorem lists_group_injective {x : ℝ} {d : Data K} {J : ℕ} {l : Lists K J}
-    (hl : l ∈ lists x d J) (i : Fin K) : Function.Injective (l i) := by
-  unfold lists at hl
-  exact (mem_filter.1 hl).2 i
+    (hl : l ∈ lists x d J) (i : Fin K) : Function.Injective (l i) := (mem_filter.1 hl).2 i
 
 /-- A prime dividing a list product is one of the labels. -/
 theorem exists_eq_of_prime_dvd_listProd {J : ℕ} {l : Lists K J} (hl : ∀ i h, (l i h).Prime)
@@ -122,18 +119,17 @@ theorem listProd_dvd_of_mem_lists {x : ℝ} {d : Data K}
   refine Finset.prod_primes_dvd N (fun r hr => ?_) fun r hr => ?_
   · obtain ⟨c, -, rfl⟩ := mem_image.1 hr
     exact (hprime c.1 c.2).prime
-  · obtain ⟨c, -, rfl⟩ := mem_image.1 hr
-    exact hN c.1 c.2
+  grind
 
 /-- With disjoint bands whose primes divide no rough integer, the band count of
 `(list product) m` with `m` rough is `K (J + 1)`: in band `i` the primes dividing it are the
 labels of group `i`. -/
 theorem bandCount_listProd_mul {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m) {J : ℕ}
+    (hdisj : DisjointBands x d.a)
+    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m, m ≠ 0 → IsRough x m → ¬ r ∣ m) {J : ℕ}
     {l : Lists K J} (hl : l ∈ lists x d J) {m : ℕ} (hm : m ≠ 0) (hmr : IsRough x m) :
     bandCount x d (listProd l * m) = K * (J + 1) := by
-  have hprime : ∀ i h, (l i h).Prime := fun i h =>
+  have hprime := fun i h =>
     (mem_filter.1 (lists_slot_mem_band hl i h)).2
   have hband : ∀ i, primeCount (band x (d.a i)) (listProd l * m) = J + 1 := by
     intro i
@@ -143,20 +139,19 @@ theorem bandCount_listProd_mul {x : ℝ} {d : Data K}
       simp only [mem_filter, mem_image, mem_univ, true_and]
       constructor
       · rintro ⟨hr, hdvd⟩
-        have hrp : r.Prime := (mem_filter.1 hr).2
+        have hrp := (mem_filter.1 hr).2
         rcases (Nat.Prime.dvd_mul hrp).1 hdvd with hdl | hdm
         · obtain ⟨i', h, rfl⟩ := exists_eq_of_prime_dvd_listProd hprime hrp hdl
           by_cases hii : i = i'
-          · subst hii
-            exact ⟨h, rfl⟩
+          · grind
           · exact absurd (lists_slot_mem_band hl i' h) (disjoint_left.1 (hdisj i i' hii) hr)
-        · exact absurd hdm (hrough i r hr m hm hmr)
+        solve_by_elim
       · rintro ⟨h, rfl⟩
         refine ⟨lists_slot_mem_band hl i h, Dvd.dvd.mul_right ?_ _⟩
         exact (dvd_prod_of_mem _ (mem_univ h)).trans (dvd_prod_of_mem _ (mem_univ i))
     rw [hset, card_image_of_injective _ (lists_group_injective hl i), card_univ,
       Fintype.card_fin]
-  simp only [bandCount, hband, sum_const, card_univ, Fintype.card_fin, smul_eq_mul]
+  simp_all [bandCount]
 
 /-! ### Automatic primitivity -/
 
@@ -165,17 +160,15 @@ rough, and every common prime of `m` and `s` divides a nonzero `t` with `|t| < W
 (PD §3.2, after (3.18)). -/
 theorem coprime_mul_of_isRough {x : ℝ} {N m s : ℕ} (hN : ∀ r, r.Prime → r ∣ N → ¬ r ∣ s)
     (hs : s ≠ 0) (hsr : IsRough x s) {t : ℤ} (ht : t ≠ 0) (htW : |(t : ℝ)| < roughLevel x)
-    (hms : ∀ r : ℕ, r.Prime → r ∣ m → r ∣ s → (r : ℤ) ∣ t) : Nat.Coprime (N * m) s := by
+    (hms : ∀ r, r.Prime → r ∣ m → r ∣ s → (r : ℤ) ∣ t) : Nat.Coprime (N * m) s := by
   by_contra hcop
   obtain ⟨r, hr, hrNm, hrs⟩ := Nat.Prime.not_coprime_iff_dvd.1 hcop
   rcases (Nat.Prime.dvd_mul hr).1 hrNm with hrN | hrm
   · exact hN r hr hrN hrs
   -- a common prime of `m` and `s` exceeds `W > |t|` and divides `t`
-  have hW : roughLevel x < r := hsr r (Nat.mem_primeFactors.2 ⟨hr, hrs, hs⟩)
-  have hle : (r : ℤ) ≤ |t| := Int.le_of_dvd (abs_pos.2 ht) ((dvd_abs _ _).2 (hms r hr hrm hrs))
+  have hW := hsr r (Nat.mem_primeFactors.2 ⟨hr, hrs, hs⟩)
   have hle' : (r : ℝ) ≤ |(t : ℝ)| := by
-    rw [← Int.cast_abs]
-    exact_mod_cast hle
+    exact_mod_cast (Int.le_of_dvd (abs_pos.2 ht) ((dvd_abs _ _).2 (hms r hr hrm hrs)))
   linarith
 
 /-! ### Entries of the row operation -/

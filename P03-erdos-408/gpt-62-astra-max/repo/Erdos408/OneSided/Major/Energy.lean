@@ -66,7 +66,7 @@ private theorem natCast_cpow_mul_ofReal_div_cpow {n : ℕ} (hn : n ≠ 0) {Y : �
       Complex.exp (((-(ξ * Real.log Y) : ℝ) : ℂ) * Complex.I) *
         (n : ℂ) ^ (((τ + ξ : ℝ) : ℂ) * Complex.I) := by
   have hn' : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
-  have hnY : 0 < (n : ℝ) / Y := div_pos hn' hY
+  have hnY  := div_pos hn' hY
   rw [natCast_cpow_mul_I hn, natCast_cpow_mul_I hn,
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.2 hnY.ne'), ← Complex.ofReal_log hnY.le,
     Real.log_div hn'.ne' hY.ne', ← Complex.exp_add, ← Complex.exp_add]
@@ -120,11 +120,11 @@ private theorem sum_labels_succ (x : ℝ) (d : Data (K + 1)) (F : ℕ → ℂ) :
       ∑ q ∈ band x (d.a 0), ∑ r ∈ tailLabels x d, F (q * ∏ i, r i) := by
   have h := Finset.filter_piFinset_eq_map_consEquiv (fun i => band x (d.a i))
     (fun _ : Fin K → ℕ => True)
-  simp only [Finset.filter_true] at h
+  simp at h
   unfold Data.labels tailLabels
   rw [h, sum_map, sum_product]
   refine sum_congr rfl fun q _ => sum_congr rfl fun r _ => ?_
-  simp [Fin.prod_univ_succ]
+  simp
 
 /-- `B_λ` is continuous in `τ`, dyad by dyad. -/
 private theorem continuous_dyadPoly (x : ℝ) (d : Data (K + 1)) (Y lam : ℝ) {k : ℕ}
@@ -133,10 +133,8 @@ private theorem continuous_dyadPoly (x : ℝ) (d : Data (K + 1)) (Y lam : ℝ) {
   unfold dyadPoly
   refine continuous_const.mul (continuous_finsetSum _ fun q hq =>
     continuous_finsetSum _ fun r hr => ?_)
-  have hr0 : ∏ i, r i ≠ 0 := prod_ne_zero_iff.2 fun i _ =>
-    (TypeII.band_prime ((Fintype.mem_piFinset.1 hr) i)).ne_zero
+  have hr0 : ∏ i, r i ≠ 0 := prod_ne_zero_iff.mpr fun i x_1 => Nat.Prime.ne_zero (TypeII.band_prime (Fintype.mem_piFinset.mp hr i))
   have h := continuous_natCast_cpow_mul_I (Nat.mul_ne_zero (hPS q hq) hr0)
-  unfold labelTerm
   exact continuous_const.mul h
 
 /-- The Mellin form of one label term: if `η(y) e(-λy) = ∫ g(ξ) y^{iξ}` for `y > 0`, then the
@@ -177,16 +175,13 @@ private theorem norm_dyadPoly_le {x Y lam P : ℝ} {d : Data (K + 1)} (hY : 0 < 
   -- the masses: `V = V₀ ∏_{i ≥ 1} V_i` and `∑_{b'} 1/b' = ∏_{i ≥ 1} V_i`
   have hVi : ∀ i, 0 < harmonicMass (band x (d.a i)) := fun i => by linarith [hV i]
   set V' := ∏ i : Fin K, harmonicMass (band x (d.a i.succ))
-  have hV' : 0 < V' := prod_pos fun i _ => hVi _
+  have hV' : 0 < V' := by solve_by_elim [prod_pos]
   have hVeq : V = harmonicMass (band x (d.a 0)) * V' := Fin.prod_univ_succ _
-  have hV0 : 0 < V := by rw [hVeq]; exact mul_pos (hVi 0) hV'
+  have hV0 : 0 < V := by simp_all
   have hsum : ∑ r ∈ T', ((∏ i, r i : ℕ) : ℝ)⁻¹ = V' := by
     simp only [V', harmonicMass, T', tailLabels]
     rw [prod_univ_sum]
-    refine sum_congr rfl fun r _ => ?_
-    push_cast
-    rw [← prod_inv_distrib]
-    simp [one_div]
+    simp
   -- the indicator `[P b' ≤ 4Y]`
   set ind : (Fin K → ℕ) → ℂ := fun r => if P * (∏ i, r i : ℕ) ≤ 4 * Y then 1 else 0
   -- only `P b' ≤ 4Y` contributes
@@ -211,14 +206,14 @@ private theorem norm_dyadPoly_le {x Y lam P : ℝ} {d : Data (K + 1)} (hY : 0 < 
     ((q * ∏ i, r i : ℕ) : ℂ) ^ ((τ : ℂ) * Complex.I)
   set y : ℕ → (Fin K → ℕ) → ℝ := fun q r => ((q * ∏ i, r i : ℕ) : ℝ) / Y
   have hy : ∀ q ∈ PS, ∀ r ∈ T', 0 < y q r := fun q hq' r hr' =>
-    div_pos (by exact_mod_cast Nat.mul_pos (hq q hq') (hr r hr')) hY
+    div_pos (by bound) hY
   set W : ℝ → ℂ := fun ξ => (Y : ℂ)⁻¹ * ∑ q ∈ PS, ∑ r ∈ T',
     ind r * (c q r * ((y q r : ℝ) : ℂ) ^ ((ξ : ℂ) * Complex.I))
   have hW : dyadPoly x d Y lam χ PS τ = ∫ ξ, g ξ * W ξ := by
     have hint : ∀ q ∈ PS, ∀ r ∈ T', Integrable fun ξ : ℝ =>
         (Y : ℂ)⁻¹ * ind r * c q r * (g ξ * ((y q r : ℝ) : ℂ) ^ ((ξ : ℂ) * Complex.I)) :=
       fun q hq' r hr' => (integrable_mul_ofReal_cpow hg (hy q hq' r hr')).const_mul _
-    calc dyadPoly x d Y lam χ PS τ
+    calc _
         = ∑ q ∈ PS, ∑ r ∈ T', (Y : ℂ)⁻¹ * ind r * c q r *
             ∫ ξ, g ξ * ((y q r : ℝ) : ℂ) ^ ((ξ : ℂ) * Complex.I) := by
           unfold dyadPoly
@@ -227,7 +222,6 @@ private theorem norm_dyadPoly_le {x Y lam P : ℝ} {d : Data (K + 1)} (hY : 0 < 
           rw [mul_sum]
           refine sum_congr rfl fun r hr' => ?_
           rw [hind q hq' r, labelTerm_eq_integral hY hgm χ τ (Nat.mul_pos (hq q hq') (hr r hr'))]
-          simp only [c, y]
           ring
       _ = ∑ q ∈ PS, ∑ r ∈ T', ∫ ξ, (Y : ℂ)⁻¹ * ind r * c q r *
             (g ξ * ((y q r : ℝ) : ℂ) ^ ((ξ : ℂ) * Complex.I)) := by
@@ -238,10 +232,10 @@ private theorem norm_dyadPoly_le {x Y lam P : ℝ} {d : Data (K + 1)} (hY : 0 < 
             integrable_finsetSum _ fun r hr' => hint q hq' r hr']
           refine sum_congr rfl fun q hq' => ?_
           rw [integral_finsetSum _ fun r hr' => hint q hq' r hr']
-      _ = ∫ ξ, g ξ * W ξ := by
+      _ = _ := by
           congr 1
           ext ξ
-          simp only [W, mul_sum]
+          simp [W, mul_sum]
           refine sum_congr rfl fun q _ => sum_congr rfl fun r _ => ?_
           ring
   -- the inner polynomial factors, and is at most `8 |P_s|`
@@ -253,11 +247,11 @@ private theorem norm_dyadPoly_le {x Y lam P : ℝ} {d : Data (K + 1)} (hY : 0 < 
       ind r * (χ (∏ i, r i : ℕ) * ((∏ i, r i : ℕ) : ℂ) ^ (((τ + ξ : ℝ) : ℂ) * Complex.I))
     have hfac : W ξ = e * ((Y : ℂ)⁻¹ * (V : ℂ)⁻¹) * ((∑ q ∈ PS, A q) * ∑ r ∈ T', Bt r) := by
       rw [sum_mul_sum]
-      simp only [W, mul_sum]
+      simp [W, mul_sum]
       refine sum_congr rfl fun q hq' => sum_congr rfl fun r hr' => ?_
       show (Y : ℂ)⁻¹ * (ind r * (c q r * ((y q r : ℝ) : ℂ) ^ ((ξ : ℂ) * Complex.I))) =
         e * ((Y : ℂ)⁻¹ * (V : ℂ)⁻¹) * (A q * Bt r)
-      have hqr : q * ∏ i, r i ≠ 0 := (Nat.mul_pos (hq q hq') (hr r hr')).ne'
+      have hqr  := (Nat.mul_pos (hq q hq') (hr r hr')).ne'
       simp only [c, y, A, Bt, e]
       rw [mul_assoc ((V : ℂ)⁻¹ * χ _), natCast_cpow_mul_ofReal_div_cpow hqr hY,
         Nat.cast_mul (α := ZMod k), map_mul, Nat.cast_mul (α := ℂ),
@@ -290,7 +284,6 @@ private theorem norm_dyadPoly_le {x Y lam P : ℝ} {d : Data (K + 1)} (hY : 0 < 
     rw [hfac, hA]
     simp only [norm_mul, norm_inv, Complex.norm_real, he, Real.norm_of_nonneg hY.le,
       Real.norm_of_nonneg hV0.le, Real.norm_of_nonneg hP0.le]
-    have hPs := norm_nonneg (primePoly P PS χ ξ τ)
     calc _ ≤ 1 * (Y⁻¹ * V⁻¹) * (P * ‖primePoly P PS χ ξ τ‖ * (4 * Y / P * V')) := by gcongr
       _ = 4 * ‖primePoly P PS χ ξ τ‖ * (V' / V) := by
           field_simp
@@ -300,20 +293,19 @@ private theorem norm_dyadPoly_le {x Y lam P : ℝ} {d : Data (K + 1)} (hY : 0 < 
           gcongr
           rw [inv_le_comm₀ (hVi 0) two_pos]
           linarith [hV 0]
-      _ = 8 * ‖primePoly P PS χ ξ τ‖ := by ring
+      _ = _ := by ring
   -- integrate against `|g|`
   have hbd : Integrable fun ξ => 8 * (‖g ξ‖ * ‖primePoly P PS χ ξ τ‖) := by
     have hc : Continuous fun ξ => primePoly P PS χ ξ τ := by
-      have h := (continuous_primePoly (P := P) (fun q hq' => (hq q hq').ne') χ).comp
-        (continuous_id.prodMk (continuous_const (y := τ)))
-      exact h
+      exact (continuous_primePoly (P := P) (fun q hq' => (hq q hq').ne') χ).comp
+        (continuous_id.prodMk (continuous_const ))
     exact (hg.norm.mul_bdd (c := 2) hc.norm.aestronglyMeasurable (Eventually.of_forall fun ξ => by
-      rw [norm_norm]; exact norm_primePoly_le_two hP hPS χ ξ τ)).const_mul 8
+      simp; exact norm_primePoly_le_two hP hPS χ ξ τ)).const_mul 8
   rw [hW, ← integral_const_mul]
   refine norm_integral_le_of_norm_le hbd (Eventually.of_forall fun ξ => ?_)
   rw [norm_mul]
-  calc ‖g ξ‖ * ‖W ξ‖ ≤ ‖g ξ‖ * (8 * ‖primePoly P PS χ ξ τ‖) := by gcongr; exact hWle ξ
-    _ = 8 * (‖g ξ‖ * ‖primePoly P PS χ ξ τ‖) := by ring
+  calc _ ≤ ‖g ξ‖ * (8 * ‖primePoly P PS χ ξ τ‖) := by gcongr; exact hWle ξ
+    _ = _ := by ring
 
 /-! ### The mean value of `M_α N_β` -/
 
@@ -336,25 +328,23 @@ private theorem integral_norm_markedPoly_mul_sq_le {C CX alo ahi g x B : ℝ} {d
   have hX : 0 < d.X := mul_pos (by linarith) (by linarith)
   have hT : 0 ≤ T := by positivity
   -- the coefficients are at most `L^C`
-  have hLC : 0 ≤ L ^ C := Real.rpow_nonneg hL0.le _
+  have hLC : 0 ≤ L ^ C := by positivity
   have hu : ∀ m ∈ d.mRange, ‖d.α m * χ₂ m‖ ≤ L ^ C := by
     intro m _
-    rw [norm_mul]
+    simp
     by_cases h : d.α m = 0
-    · rw [h, norm_zero, zero_mul]
-      exact hLC
-    · calc ‖d.α m‖ * ‖χ₂ m‖ ≤ L ^ C * 1 := mul_le_mul (hd.α_supp m h).2.2.2
+    · simp_all
+    · calc _ ≤ L ^ C * 1 := mul_le_mul (hd.α_supp m h).2.2.2
             (DirichletCharacter.norm_le_one χ₂ _) (norm_nonneg _) hLC
-        _ = L ^ C := mul_one _
+        _ = _ := mul_one _
   have hv : ∀ n ∈ d.nRange, ‖d.β n * χ₃ n‖ ≤ L ^ C := by
     intro n _
-    rw [norm_mul]
+    simp
     by_cases h : d.β n = 0
-    · rw [h, norm_zero, zero_mul]
-      exact hLC
-    · calc ‖d.β n‖ * ‖χ₃ n‖ ≤ L ^ C * 1 := mul_le_mul (hd.β_supp n h).2.2.2
+    · simp_all
+    · calc _ ≤ L ^ C * 1 := mul_le_mul (hd.β_supp n h).2.2.2
             (DirichletCharacter.norm_le_one χ₃ _) (norm_nonneg _) hLC
-        _ = L ^ C := mul_one _
+        _ = _ := mul_one _
   -- the ranges lie in `[1, ⌊2H_m⌋]` and `[1, ⌊2H_n⌋]`
   set N₁ := ⌊2 * d.Hm⌋₊
   set N₂ := ⌊2 * d.Hn⌋₊
@@ -384,13 +374,12 @@ private theorem integral_norm_markedPoly_mul_sq_le {C CX alo ahi g x B : ℝ} {d
   have hN : ((N₁ * N₂ : ℕ) : ℝ) ≤ 4 * d.X := by
     push_cast
     unfold Data.X
-    calc (N₁ : ℝ) * N₂ ≤ (2 * d.Hm) * (2 * d.Hn) :=
-          mul_le_mul hN₁ hN₂ (Nat.cast_nonneg _) (by linarith)
-      _ = 4 * (d.Hm * d.Hn) := by ring
+    calc _ ≤ (2 * d.Hm) * (2 * d.Hn) :=
+          by gcongr
+      _ = _ := by ring
   have hN1 : (1 : ℝ) ≤ ((N₁ * N₂ : ℕ) : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
-  have hlogN0 : 0 ≤ Real.log ((N₁ * N₂ : ℕ) : ℝ) := Real.log_nonneg hN1
-  have hlogN : 1 + Real.log ((N₁ * N₂ : ℕ) : ℝ) ≤ 3 * L := by
+    bound
+  have hlogN : 1 + Real.log ((N₁ * N₂ : ℕ)) ≤ 3 * L := by
     have := Real.log_le_log (by linarith) hN
     linarith
   -- `L^B, L ≤ L^{B + 1}`
@@ -398,16 +387,15 @@ private theorem integral_norm_markedPoly_mul_sq_le {C CX alo ahi g x B : ℝ} {d
   have hL1 : L ≤ L ^ (B + 1) := by
     conv_lhs => rw [← Real.rpow_one L]
     exact Real.rpow_le_rpow_of_exponent_le hL (by linarith)
-  have h₁ : T - -T + 8 * ((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ) : ℝ)) ≤
+  have h₁ : T - -T + 8 * ((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ))) ≤
       98 * d.X * L ^ (B + 1) := by
-    have h : 8 * ((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ) : ℝ)) ≤
+    have h : 8 * ((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ))) ≤
         8 * (4 * d.X) * (3 * L) := by gcongr
-    have h' : d.X * L ^ B ≤ d.X * L ^ (B + 1) := mul_le_mul_of_nonneg_left hLB hX.le
-    have h'' : d.X * L ≤ d.X * L ^ (B + 1) := mul_le_mul_of_nonneg_left hL1 hX.le
-    simp only [T] at h' ⊢
+    have h' : d.X * L ^ B ≤ d.X * L ^ (B + 1) := by gcongr
+    have h'' : d.X * L ≤ d.X * L ^ (B + 1) := by gcongr
     linarith
   have h₂ : (L ^ C) ^ 2 * (L ^ C) ^ 2 *
-      (((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ) : ℝ)) ^ 3) ≤
+      (((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ))) ^ 3) ≤
       L ^ (4 * C) * (108 * d.X * L ^ 3) := by
     have e : (L ^ C) ^ 2 * (L ^ C) ^ 2 = L ^ (4 * C) := by
       rw [← pow_add, ← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
@@ -415,21 +403,19 @@ private theorem integral_norm_markedPoly_mul_sq_le {C CX alo ahi g x B : ℝ} {d
       ring_nf
     rw [e]
     refine mul_le_mul_of_nonneg_left ?_ (by positivity)
-    calc ((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ) : ℝ)) ^ 3
+    calc _
         ≤ (4 * d.X) * (3 * L) ^ 3 := by gcongr
-      _ = 108 * d.X * L ^ 3 := by ring
-  calc d.X⁻¹ ^ 2 * ∫ τ in -T..T, ‖(∑ m ∈ d.mRange, d.α m * χ₂ m *
-          (m : ℂ) ^ ((τ : ℂ) * Complex.I)) *
-        (∑ n ∈ d.nRange, d.β n * χ₃ n * (n : ℂ) ^ ((τ : ℂ) * Complex.I))‖ ^ 2
+      _ = _ := by ring
+  calc _
       ≤ d.X⁻¹ ^ 2 * ((98 * d.X * L ^ (B + 1)) * (L ^ (4 * C) * (108 * d.X * L ^ 3))) := by
         gcongr
         refine hmean.trans ?_
-        exact mul_le_mul h₁ h₂ (by positivity) (by positivity)
+        gcongr
     _ = 10584 * (L ^ (B + 1) * L ^ (4 * C) * L ^ (3 : ℝ)) := by
         rw [show (L ^ 3 : ℝ) = L ^ (3 : ℝ) by norm_cast]
         field_simp
         ring
-    _ = 10584 * L ^ (meanExp C + B) := by
+    _ = _ := by
         rw [← Real.rpow_add hL0, ← Real.rpow_add hL0, meanExp]
         ring_nf
 
@@ -438,7 +424,7 @@ theorem continuous_markedPoly {d : Data K} (hHm : 0 < d.Hm) {k : ℕ}
     (χ : DirichletCharacter ℂ k) : Continuous (markedPoly d χ) := by
   unfold markedPoly
   refine continuous_const.mul (continuous_finsetSum _ fun m hm => ?_)
-  have h : 0 < m := lt_of_lt_of_le (Nat.ceil_pos.2 hHm) (mem_Icc.1 hm).1
+  have h  := lt_of_lt_of_le (Nat.ceil_pos.2 hHm) (mem_Icc.1 hm).1
   exact continuous_const.mul (continuous_natCast_cpow_mul_I h.ne')
 
 /-! ### The energy -/
@@ -480,10 +466,10 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
   have hY : 0 < Y := by positivity
   -- the exponents are nonnegative
   have hA₀ : 0 ≤ A₀ := by
-    simp only [A₀, arcExp, edgePrec, momentPrec, squarePrec]
+    simp [A₀, arcExp, edgePrec, momentPrec, squarePrec]
     linarith
   have hB : 0 ≤ B := by
-    simp only [B, freqExp, majorPrec, meanExp, squarePrec, arcExp, edgePrec, momentPrec]
+    simp [B, freqExp, majorPrec, meanExp, squarePrec, arcExp, edgePrec, momentPrec]
     linarith
   -- the scales
   have hγ : 0 ≤ d.γ := (Real.rpow_nonneg hL0.le _).trans hd.γ_ge
@@ -492,8 +478,6 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
   have hX : 0 < d.X := mul_pos (by linarith) (by linarith)
   have hT : 0 ≤ T := by positivity
   have hT2 : T ≤ 2 * d.X * L ^ B := by
-    have h : 0 ≤ d.X * L ^ B := hT
-    rw [mul_assoc]
     linarith
   have hlog : Real.log (4 * d.X) ≤ 2 * L := by
     have h₁ : 4 * d.X ≤ (4 * CX) * x := by
@@ -528,7 +512,6 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
   -- the Mellin transform of `η(y) e(-λ y)`: `∫ |g| ≤ 9 |C_g| L^{2A₀}`
   obtain ⟨gm, hgi, hgn, hgm⟩ := hCg lam
   set Wg := ∫ ξ, ‖gm ξ‖
-  have hWg0 : 0 ≤ Wg := integral_nonneg fun _ => norm_nonneg _
   have hWg : Wg ≤ |Cg| * (9 * L ^ (2 * A₀)) := by
     have hLA : 1 ≤ L ^ A₀ := Real.one_le_rpow hL hA₀
     have h₁ : (1 + |lam|) ^ 2 ≤ 9 * L ^ (2 * A₀) := by
@@ -536,13 +519,13 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
         rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
         ring_nf
       rw [e]
-      calc (1 + |lam|) ^ 2 ≤ (3 * L ^ A₀) ^ 2 := by
+      calc _ ≤ (3 * L ^ A₀) ^ 2 := by
             gcongr
             linarith
-        _ = 9 * (L ^ A₀) ^ 2 := by ring
+        _ = _ := by ring
     calc Wg ≤ Cg * (1 + |lam|) ^ 2 := hgn
       _ ≤ |Cg| * (1 + |lam|) ^ 2 := by gcongr; exact le_abs_self Cg
-      _ ≤ |Cg| * (9 * L ^ (2 * A₀)) := by gcongr
+      _ ≤ _ := by gcongr
   -- the dyads `[P₀ 2^r, P₀ 2^{r + 1})` of the first band
   set a₀ := d.a 0
   set P₀ := Real.exp (L ^ a₀)
@@ -552,12 +535,12 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
   have ha₀ : alo ≤ a₀ ∧ a₀ ≤ ahi := hd.window 0
   have hlog2 : 0 < Real.log 2 := Real.log_pos one_lt_two
   have hP₀ : 0 < P₀ := Real.exp_pos _
-  have hLa : 0 ≤ L ^ a₀ := Real.rpow_nonneg hL0.le _
+  have hLa : 0 ≤ L ^ a₀ := by positivity
   have hR : (R : ℝ) * Real.log 2 ≤ L ^ a₀ :=
     (le_div_iff₀ hlog2).1 (Nat.floor_le (div_nonneg hLa hlog2.le))
   have hPS : ∀ r, ∀ q ∈ PS r, q.Prime ∧ P₀ * 2 ^ r ≤ q ∧ (q : ℝ) < 2 * (P₀ * 2 ^ r) := by
     intro r q hq
-    simp only [PS, mem_filter] at hq
+    simp [PS] at hq
     obtain ⟨hqb, hqr⟩ := hq
     have hq₁ : P₀ ≤ q := exp_le_of_mem_band hqb
     have hqP : 1 ≤ (q : ℝ) / P₀ := (one_le_div hP₀).2 hq₁
@@ -586,29 +569,29 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
     refine Nat.floor_le_floor ?_
     rw [Real.logb]
     refine div_le_div_of_nonneg_right ?_ hlog2.le
-    calc Real.log ((q : ℝ) / P₀) ≤ Real.log (Real.exp (L ^ a₀)) := Real.log_le_log hqP0 h
-      _ = L ^ a₀ := Real.log_exp _
+    calc _ ≤ Real.log (Real.exp (L ^ a₀)) := by gcongr
+      _ = _ := Real.log_exp _
   have hPr₁ : ∀ r : ℕ, Real.exp (L ^ alo) ≤ P₀ * 2 ^ r := fun r =>
     (Real.exp_le_exp.2 (Real.rpow_le_rpow_of_exponent_le hL ha₀.1)).trans
       (le_mul_of_one_le_right hP₀.le (one_le_pow₀ one_le_two))
   have hPr₂ : ∀ r ∈ range (R + 1), P₀ * 2 ^ r ≤ Real.exp (2 * L ^ ahi) := by
     intro r hr
-    have hr' : r ≤ R := Nat.lt_succ_iff.1 (mem_range.1 hr)
+    have hr' : r ≤ R := Nat.lt_succ_iff.mp (mem_range.mp hr)
     have h₁ : (2 : ℝ) ^ r ≤ Real.exp (L ^ a₀) :=
-      calc (2 : ℝ) ^ r ≤ 2 ^ R := pow_le_pow_right₀ one_le_two hr'
+      calc _ ≤ 2 ^ R := pow_le_pow_right₀ one_le_two hr'
         _ = Real.exp (R * Real.log 2) := by rw [Real.exp_nat_mul, Real.exp_log two_pos]
-        _ ≤ Real.exp (L ^ a₀) := Real.exp_le_exp.2 hR
+        _ ≤ _ := by gcongr
     have h₂ : L ^ a₀ ≤ L ^ ahi := Real.rpow_le_rpow_of_exponent_le hL ha₀.2
-    calc P₀ * 2 ^ r ≤ P₀ * Real.exp (L ^ a₀) := mul_le_mul_of_nonneg_left h₁ hP₀.le
+    calc _ ≤ P₀ * Real.exp (L ^ a₀) := by gcongr
       _ = Real.exp (2 * L ^ a₀) := by rw [← Real.exp_add]; ring_nf
-      _ ≤ Real.exp (2 * L ^ ahi) := Real.exp_le_exp.2 (by linarith)
+      _ ≤ _ := by gcongr
   have hR3 : (R : ℝ) + 1 ≤ 3 * L := by
     have h₁ : L ^ a₀ ≤ L := by
       conv_rhs => rw [← Real.rpow_one L]
       exact Real.rpow_le_rpow_of_exponent_le hL (by linarith)
     have h₂ : (1 : ℝ) / 2 < Real.log 2 := by linarith [Real.log_two_gt_d9]
     have h₃ : (R : ℝ) * (1 / 2) ≤ R * Real.log 2 :=
-      mul_le_mul_of_nonneg_left h₂.le (Nat.cast_nonneg _)
+      by gcongr
     linarith
   -- `B_λ` is the sum of its dyad pieces
   have hdecomp : ∀ τ, labelPoly x d Y lam χ₁ τ =
@@ -629,7 +612,7 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
         L ^ (-isolatedExp Dstar C - 2) := by
       rw [← Real.rpow_add hL0]
       congr 1
-      simp only [sparseExp, B]
+      simp [sparseExp, B]
       ring
     have e₂ : (L ^ (-twistExp Dstar C)) ^ 2 * L ^ (2 * C + 1) =
         L ^ (-isolatedExp Dstar C - 3) := by
@@ -642,9 +625,8 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
       Real.rpow_le_rpow_of_exponent_le hL (by linarith)
     have h₃ : L ^ (-isolatedExp Dstar C - 3) ≤ L ^ (-isolatedExp Dstar C) :=
       Real.rpow_le_rpow_of_exponent_le hL (by linarith)
-    have h₄ : 0 ≤ L ^ (-isolatedExp Dstar C - 3) := Real.rpow_nonneg hL0.le _
-    calc L ^ (-(2 * sparseExp Dstar C)) * (10584 * L ^ (meanExp C + B)) +
-          4 * (c₄ * L ^ (-twistExp Dstar C)) ^ 2 * (Ci * L ^ (2 * C + 1))
+    have h₄ : 0 ≤ L ^ (-isolatedExp Dstar C - 3) := by positivity
+    calc _
         = 10584 * (L ^ (-(2 * sparseExp Dstar C)) * L ^ (meanExp C + B)) +
             4 * c₄ ^ 2 * (Ci * ((L ^ (-twistExp Dstar C)) ^ 2 * L ^ (2 * C + 1))) := by ring
       _ = 10584 * L ^ (-isolatedExp Dstar C - 2) +
@@ -667,18 +649,17 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
       have h₁ := continuous_primePoly (P := P₀ * 2 ^ r) hPS0 χ₁
       have h₂ : Continuous fun z : ℝ × ℝ => M z.2 * N z.2 :=
         (hMc.comp continuous_snd).mul (hNc.comp continuous_snd)
-      have h₃ := h₁.norm.mul h₂.norm
-      exact h₃
+      exact h₁.norm.mul h₂.norm
     refine integral_sq_le_of_le_integral (by linarith) hgi.norm (fun ξ => norm_nonneg _) hcont
       (fun ξ τ => by positivity) (M := 2 * Mb) (fun ξ τ => ?_) (hiso r hr)
       (fun τ => by positivity) (fun τ => ?_)
     · exact mul_le_mul (norm_primePoly_le_two hP (hPS r) χ₁ ξ τ) (hMb τ) (norm_nonneg _)
         zero_le_two
     · have h := norm_dyadPoly_le hY hP hV' (hPS r) hgi hgm χ₁ τ
-      calc ‖dyadPoly x d Y lam χ₁ (PS r) τ‖ * ‖M τ * N τ‖
+      calc _
           ≤ (8 * ∫ ξ, ‖gm ξ‖ * ‖primePoly (P₀ * 2 ^ r) (PS r) χ₁ ξ τ‖) * ‖M τ * N τ‖ :=
-            mul_le_mul_of_nonneg_right h (norm_nonneg _)
-        _ = 8 * ∫ ξ, ‖gm ξ‖ * (‖primePoly (P₀ * 2 ^ r) (PS r) χ₁ ξ τ‖ * ‖M τ * N τ‖) := by
+            by gcongr
+        _ = _ := by
             rw [mul_assoc, ← integral_mul_const]
             congr 2
             ext ξ
@@ -686,36 +667,33 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
   -- sum over the dyads
   have hDc : ∀ r ∈ range (R + 1), Continuous (dyadPoly x d Y lam χ₁ (PS r)) := fun r _ =>
     continuous_dyadPoly x d Y lam χ₁ fun q hq => (hPS r q hq).1.ne_zero
-  have hMNc : Continuous fun τ => ‖M τ * N τ‖ := (hMc.mul hNc).norm
+  have hMNc : Continuous fun τ => ‖M τ * N τ‖ := by fun_prop
   have hpt : ∀ τ, ‖labelPoly x d Y lam χ₁ τ * M τ * N τ‖ ^ 2 ≤ (R + 1) *
       ∑ r ∈ range (R + 1), (‖dyadPoly x d Y lam χ₁ (PS r) τ‖ * ‖M τ * N τ‖) ^ 2 := by
     intro τ
     rw [mul_assoc, norm_mul, hdecomp τ]
-    calc (‖∑ r ∈ range (R + 1), dyadPoly x d Y lam χ₁ (PS r) τ‖ * ‖M τ * N τ‖) ^ 2
+    calc _
         ≤ (∑ r ∈ range (R + 1), ‖dyadPoly x d Y lam χ₁ (PS r) τ‖ * ‖M τ * N τ‖) ^ 2 := by
           rw [← sum_mul]
           gcongr
           exact norm_sum_le _ _
       _ ≤ #(range (R + 1)) * ∑ r ∈ range (R + 1),
             (‖dyadPoly x d Y lam χ₁ (PS r) τ‖ * ‖M τ * N τ‖) ^ 2 := sq_sum_le_card_mul_sum_sq
-      _ = (R + 1) * ∑ r ∈ range (R + 1),
-            (‖dyadPoly x d Y lam χ₁ (PS r) τ‖ * ‖M τ * N τ‖) ^ 2 := by
-          rw [card_range]
-          push_cast
-          ring
+      _ = _ := by
+          simp
   have hLHS : Continuous fun τ => ‖labelPoly x d Y lam χ₁ τ * M τ * N τ‖ ^ 2 := by
     have e : (fun τ => labelPoly x d Y lam χ₁ τ) =
         fun τ => ∑ r ∈ range (R + 1), dyadPoly x d Y lam χ₁ (PS r) τ := funext hdecomp
     have h : Continuous fun τ => labelPoly x d Y lam χ₁ τ := by
       rw [e]
-      exact continuous_finsetSum _ hDc
+      fun_prop
     exact ((h.mul hMc).mul hNc).norm.pow 2
   have hterm : ∀ r ∈ range (R + 1), Continuous fun τ =>
       (‖dyadPoly x d Y lam χ₁ (PS r) τ‖ * ‖M τ * N τ‖) ^ 2 := fun r hr =>
     ((hDc r hr).norm.mul hMNc).pow 2
   have hRHS : Continuous fun τ => ((R : ℝ) + 1) *
       ∑ r ∈ range (R + 1), (‖dyadPoly x d Y lam χ₁ (PS r) τ‖ * ‖M τ * N τ‖) ^ 2 :=
-    continuous_const.mul (continuous_finsetSum _ hterm)
+    by fun_prop
   have hpow : L ^ 2 * (L ^ (2 * A₀)) ^ 2 * L ^ (-isolatedExp Dstar C) ≤
       L ^ (-energyExp Dstar C) := by
     rw [← Real.rpow_natCast (L ^ (2 * A₀)) 2, ← Real.rpow_mul hL0.le, ← Real.rpow_natCast L 2,
@@ -724,7 +702,7 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
     simp only [isolatedExp, A₀]
     push_cast
     linarith
-  calc ∫ τ in (-T)..T, ‖labelPoly x d Y lam χ₁ τ * M τ * N τ‖ ^ 2
+  calc _
       ≤ ∫ τ in (-T)..T, ((R : ℝ) + 1) *
           ∑ r ∈ range (R + 1), (‖dyadPoly x d Y lam χ₁ (PS r) τ‖ * ‖M τ * N τ‖) ^ 2 :=
         intervalIntegral.integral_mono_on (by linarith) (hLHS.intervalIntegrable _ _)
@@ -745,7 +723,7 @@ private theorem eventually_energy_le_succ {C CX alo ahi Dstar g c₄ cG : ℝ} (
           (L ^ 2 * (L ^ (2 * A₀)) ^ 2 * L ^ (-isolatedExp Dstar C)) := by
         rw [mul_pow |Cg|, sq_abs]
         ring
-    _ ≤ 46656 * Cg ^ 2 * (10584 + 4 * c₄ ^ 2 * |Ci|) * L ^ (-energyExp Dstar C) := by
+    _ ≤ _ := by
         gcongr
 
 /-- The energy bound: under P4 and (G), for `|λ| ≤ 2L^{A₀}` and characters of modulus at most
@@ -766,15 +744,12 @@ theorem eventually_energy_le {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C) (
     -- with no bands the only label product is `1 ≤ Y`, where `η` vanishes
     refine ⟨0, Eventually.of_forall fun x d _ _ _ j lam _ k _ _ χ₁ χ₂ χ₃ => ?_⟩
     have hη : dyadicBump (1 / (2 : ℝ) ^ j) = 0 := by
-      have h : (1 : ℝ) / 2 ^ j ≤ 1 := div_le_one_of_le₀ (one_le_pow₀ one_le_two) (by positivity)
+      have h : (1 : ℝ) / 2 ^ j ≤ 1 := by bound
       unfold dyadicBump
       rw [smoothTransition.zero_of_nonpos (by linarith),
         smoothTransition.zero_of_nonpos (by linarith), sub_zero]
     have h : ∀ τ, labelPoly x d (2 ^ j) lam χ₁ τ = 0 := by
-      intro τ
-      unfold labelPoly
-      rw [sum_eq_zero fun p _ => ?_, mul_zero]
-      simp only [Fin.prod_univ_zero, Nat.cast_one, hη, zero_mul, Complex.ofReal_zero]
+      simp_all [labelPoly]
     simp [h]
   | succ K => exact eventually_energy_le_succ hC hD hCX halo hahi
 

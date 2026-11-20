@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Hypotheses
+
 public import Erdos408.OneSided.Moment.Lines
 public import Erdos408.OneSided.Moment.RootReplacement.Assembly
 public import Erdos408.OneSided.Moment.RootReplacement.Budget
@@ -33,7 +35,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 variable {K : ℕ}
 
@@ -57,15 +59,15 @@ theorem eventually_root_replacement {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
           (primitiveDensity : ℂ) * rootRiemannSum q A₀ x d (2 ^ j) (2 ^ k)‖ ≤
         Real.exp (-Real.log x ^ (76 / 100 : ℝ)) := by
   obtain ⟨C₀, hC₀, hE⟩ := exists_rootEquidist K
-  filter_upwards [eventually_sum_norm_confCoeff_le (K := K) (C := C) (CX := CX) (g := g)
+  filter_upwards [eventually_sum_norm_confCoeff_le
       halo hahi A₀,
-    eventually_card_badCubes_le (K := K) (C := C) (CX := CX) (alo := alo) (g := g) hahi A₀,
-    eventually_dampMass_le (K := K) (ahi := ahi) hq hq₁ halo, eventually_budget K hC₀,
+    eventually_card_badCubes_le      hahi A₀,
+    eventually_dampMass_le   hq hq₁ halo, eventually_budget K hC₀,
     eventually_band_disjoint hg, Real.tendsto_log_atTop.eventually_ge_atTop 1,
     eventually_gt_atTop 0] with x hmass hbad hdamp hbud hdisj hL hx0 d hd j k
   set L := Real.log x with hLdef
   have hL0 : 0 < L := by linarith
-  have hdisj' : ∀ i i', i ≠ i' → Disjoint (band x (d.a i)) (band x (d.a i')) := by
+  have hdisj' : DisjointBands x d.a := by
     intro i i' h
     rcases lt_or_gt_of_ne h with h | h
     · exact hdisj _ _ (hd.gap i i' h)

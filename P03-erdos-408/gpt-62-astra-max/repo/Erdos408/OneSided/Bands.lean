@@ -36,22 +36,22 @@ theorem mem_band_bounds {x a : ℝ} {p : ℕ} (hp : p ∈ band x a) :
 
 /-- Exponents at least `g` apart give `2 L^a < L^{a'}`, eventually. -/
 theorem eventually_two_mul_rpow_lt {g : ℝ} (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ a a' : ℝ, a + g ≤ a' → 2 * Real.log x ^ a < Real.log x ^ a' := by
-  have hLg := (tendsto_rpow_atTop hg).comp Real.tendsto_log_atTop
-  filter_upwards [hLg.eventually_gt_atTop 2, Real.tendsto_log_atTop.eventually_ge_atTop 1]
+    ∀ᶠ x : ℝ in atTop, ∀ a a', a + g ≤ a' → 2 * Real.log x ^ a < Real.log x ^ a' := by
+  filter_upwards [((tendsto_rpow_atTop hg).comp Real.tendsto_log_atTop).eventually_gt_atTop 2, Real.tendsto_log_atTop.eventually_ge_atTop 1]
     with x hx hL a a' h
-  have hx' : 2 < Real.log x ^ g := hx
-  have hLa : 0 < Real.log x ^ a := by positivity
+  let logAt := Real.log x
+  have hx' : 2 < logAt ^ g := hx
+  have hLa : 0 < logAt ^ a := by positivity
   -- `L^{a'} ≥ L^a L^g > 2 L^a`
-  calc 2 * Real.log x ^ a < Real.log x ^ a * Real.log x ^ g := by nlinarith
-    _ = Real.log x ^ (a + g) := (Real.rpow_add (by linarith) a g).symm
-    _ ≤ Real.log x ^ a' := Real.rpow_le_rpow_of_exponent_le hL h
+  calc 2 * logAt ^ a < logAt ^ a * logAt ^ g := by nlinarith
+    _ = logAt ^ (a + g) := (Real.rpow_add (by linarith) a g).symm
+    _ ≤ logAt ^ a' := by gcongr
 
 /-! ### B1: disjoint and ordered -/
 
 /-- Bands at least `g` apart are eventually disjoint. -/
 theorem eventually_band_disjoint {g : ℝ} (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ a a' : ℝ, a + g ≤ a' → Disjoint (band x a) (band x a') := by
+    ∀ᶠ x : ℝ in atTop, ∀ a a', a + g ≤ a' → Disjoint (band x a) (band x a') := by
   filter_upwards [eventually_two_mul_rpow_lt hg] with x hx a a' h
   refine disjoint_left.2 fun p hp hp' => ?_
   have := Real.exp_lt_exp.2 (hx a a' h)
@@ -81,11 +81,9 @@ theorem eventually_lt_roughLevel {ahi : ℝ} (hahi : ahi < 1 / 5) :
 /-- For exponents at most `ahi < 0.2`, band primes eventually divide no nonzero rough
 integer. -/
 theorem eventually_not_dvd_of_isRough {ahi : ℝ} (hahi : ahi < 1 / 5) :
-    ∀ᶠ x : ℝ in atTop, ∀ a ≤ ahi, ∀ p ∈ band x a, ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ p ∣ m := by
+    ∀ᶠ x : ℝ in atTop, ∀ a ≤ ahi, ∀ p ∈ band x a, ∀ m, m ≠ 0 → IsRough x m → ¬ p ∣ m := by
   filter_upwards [eventually_lt_roughLevel hahi] with x hx a ha p hp m hm hrough hdvd
-  have hpm : p ∈ m.primeFactors :=
-    Nat.mem_primeFactors.2 ⟨TypeII.band_prime hp, hdvd, hm⟩
-  linarith [hx a ha p hp, hrough p hpm]
+  linarith [hx a ha p hp, hrough p (Nat.mem_primeFactors.2 ⟨TypeII.band_prime hp, hdvd, hm⟩)]
 
 /-- For exponents at least `alo > 0`, band primes eventually exceed `L^A` for any fixed
 `A`. -/
@@ -97,9 +95,8 @@ theorem eventually_rpow_lt_of_mem_band {alo : ℝ} (halo : 0 < alo) (A : ℝ) :
     with x hx hL a ha p hp
   have hx' : 1 < Real.exp (Real.log x ^ alo) / (Real.log x ^ alo) ^ (A / alo) := hx
   -- `(L^{alo})^{A/alo} = L^A`
-  rw [← Real.rpow_mul (by linarith), mul_div_cancel₀ _ halo.ne'] at hx'
-  rw [one_lt_div (by positivity)] at hx'
-  have hle : Real.exp (Real.log x ^ alo) ≤ Real.exp (Real.log x ^ a) :=
+  rw [← Real.rpow_mul (by linarith), mul_div_cancel₀ _ halo.ne', one_lt_div (by positivity)] at hx'
+  have hle :=
     Real.exp_le_exp.2 (Real.rpow_le_rpow_of_exponent_le hL ha)
   linarith [exp_le_of_mem_band hp]
 
@@ -118,8 +115,8 @@ theorem eventually_harmonicMass_band {alo : ℝ} (halo : 1 / 10 ≤ alo) :
   have hL1 : 1 ≤ Real.log x := le_of_max_le_right hL
   refine ⟨hL₀ x a (le_of_max_le_left hL) (halo.trans ha), ?_⟩
   set u := Real.log x ^ a with hu
-  have hu5 : 5 + 4 * E ≤ u :=
-    (show 5 + 4 * E ≤ Real.log x ^ (1 / 10 : ℝ) from hx).trans
+  have hu5 :=
+    (hx).trans
       (Real.rpow_le_rpow_of_exponent_le hL1 (halo.trans ha))
   -- the band lies in `(exp(u - 1), exp(2u)]`
   have hsub : band x a ⊆ primesIoc (Real.exp (u - 1)) (Real.exp (2 * u)) := by
@@ -133,7 +130,7 @@ theorem eventually_harmonicMass_band {alo : ℝ} (halo : 1 / 10 ≤ alo) :
   -- Mertens: `log (2u / (u - 1)) ≤ log 2 + 1 / (u - 1)`
   have hu1 : 0 < u - 1 := by linarith
   have hlog : Real.log (2 * u / (u - 1)) ≤ Real.log 2 + 1 / (u - 1) := by
-    have hq : 0 < u / (u - 1) := div_pos (by linarith) hu1
+    have hq : 0 < u / (u - 1) := by positivity
     rw [mul_div_assoc, Real.log_mul two_ne_zero hq.ne']
     have h1 := Real.log_le_sub_one_of_pos hq
     have h2 : u / (u - 1) - 1 = 1 / (u - 1) := by field_simp; ring
@@ -155,22 +152,18 @@ theorem sum_band_inv_sq_le (x a : ℝ) :
   have hN1 : 1 ≤ N := Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (Real.exp_pos _)).ne'
   -- the band lies in `(N - 1, M + 1)`
   have hsub : band x a ⊆ Ioo (N - 1) (⌊Real.exp (2 * Real.log x ^ a)⌋₊ + 1) := by
-    intro p hp
-    unfold band at hp
-    rw [mem_filter, mem_Icc] at hp
-    rw [mem_Ioo]
-    omega
+    grind [band]
   have hcast : (((N - 1 : ℕ) : ℝ) + 1) = N := by
-    rw [Nat.cast_sub hN1, Nat.cast_one, sub_add_cancel]
-  calc ∑ p ∈ band x a, (1 : ℝ) / (p : ℝ) ^ 2
+    simp_all
+  calc _
       ≤ ∑ p ∈ Ioo (N - 1) (⌊Real.exp (2 * Real.log x ^ a)⌋₊ + 1), ((p : ℝ) ^ 2)⁻¹ := by
         simp_rw [one_div]
-        exact sum_le_sum_of_subset_of_nonneg hsub fun _ _ _ => by positivity
+        gcongr
     _ ≤ 2 / (((N - 1 : ℕ) : ℝ) + 1) := sum_Ioo_inv_sq_le _ _
     _ ≤ 2 / Real.exp (Real.log x ^ a) := by
         rw [hcast]
-        exact div_le_div_of_nonneg_left zero_le_two (Real.exp_pos _) (Nat.le_ceil _)
-    _ = 2 * Real.exp (-Real.log x ^ a) := by rw [Real.exp_neg, div_eq_mul_inv]
+        bound
+    _ = _ := by rw [Real.exp_neg, div_eq_mul_inv]
 
 /-- A band has at most `exp(2 L^a)` primes. -/
 theorem card_band_le (x a : ℝ) : ((band x a).card : ℝ) ≤ Real.exp (2 * Real.log x ^ a) := by

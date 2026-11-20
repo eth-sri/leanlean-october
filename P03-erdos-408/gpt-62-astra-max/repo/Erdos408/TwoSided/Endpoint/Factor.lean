@@ -127,7 +127,7 @@ theorem slotCount_eq_sum_sparePrimes {x : ℝ} (hx : 0 ≤ x) {d : ℕ} (u v : F
   · intro Q _
     rw [Fin.prod_univ_castSucc]
     refine if_congr ⟨fun h => ?_, fun h => ?_⟩ rfl rfl
-    · have hl : Q (Fin.last d) ∣ w := (dvd_mul_left _ _).trans h
+    · have hl  := (dvd_mul_left _ _).trans h
       refine ⟨hl, (Nat.dvd_div_iff_mul_dvd hl).2 ?_⟩
       rw [mul_comm]
       exact h
@@ -151,14 +151,14 @@ theorem abs_weightedSlotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {d : �
     exact Finset.mem_filter.2 ⟨Nat.mem_primeFactors.2 ⟨hp,
       (Finset.dvd_prod_of_mem _ (Finset.mem_univ i)).trans hdvd, hn.ne'⟩,
       lt_of_le_of_lt (Real.rpow_le_rpow_of_exponent_le hx.le (hu i.castSucc)) hlt⟩
-  calc |weightedSlotCount x u v Bc n| ≤ ∑ Q ∈ T.filter (fun Q => ∏ i, Q i ∣ n), |Bc Q| :=
+  calc _ ≤ ∑ Q ∈ T.filter (fun Q => ∏ i, Q i ∣ n), |Bc Q| :=
         Finset.abs_sum_le_sum_abs _ _
     _ ≤ ∑ Q ∈ T.filter (fun Q => ∏ i, Q i ∣ n), (1 : ℝ) := Finset.sum_le_sum fun _ _ => hB _
     _ ≤ (Fintype.piFinset fun _ : Fin d => F).card := by
         rw [Finset.sum_const, nsmul_one]
         exact_mod_cast Finset.card_le_card hsub
     _ = (F.card : ℝ) ^ d := by rw [Fintype.card_piFinset]; simp
-    _ ≤ (2 / ε) ^ d :=
+    _ ≤ _ :=
         pow_le_pow_left₀ (Nat.cast_nonneg _) (Sieve.card_primeFactors_gt_le hx hε hn hnx) _
 
 /-- **E3–E5 (exact factorization off the exceptional set).** Eventually, for groups as in
@@ -234,7 +234,7 @@ theorem eventually_endpointCoeff_eq_tuple_sub_const (q q₀ c₀ C₀ vlo vhi al
     refine markedWeight_congr _ _ _ fun i _ p hp => ?_
     refine FactorAux.dvd_div_iff_of_coprime (hplps ps hps' pl hpl')
       (FactorAux.coprime_of_prime_ne (hbandp i p hp) hplp (hne ?_))
-    calc (p : ℝ) < Real.exp (Real.log x ^ (0.27 : ℝ)) := hbandr i p hp
+    calc _ < Real.exp (Real.log x ^ (0.27 : ℝ)) := hbandr i p hp
       _ ≤ Real.exp (Real.log x ^ (0.46 : ℝ)) :=
         Real.exp_le_exp.2 (Real.rpow_le_rpow_of_exponent_le hL.le (by norm_num))
       _ < pl := hpl46
@@ -252,7 +252,7 @@ theorem eventually_endpointCoeff_eq_tuple_sub_const (q q₀ c₀ C₀ vlo vhi al
     intro ps hps' pl hpl'
     obtain ⟨hpsp, -, hps46, hdvd⟩ := hps ps hps'
     obtain ⟨hplp, hpl46, hpldvd⟩ := hpl pl hpl'
-    have hpsl : ps ∣ w / pl := (FactorAux.dvd_div_iff_of_coprime hpldvd
+    have hpsl  := (FactorAux.dvd_div_iff_of_coprime hpldvd
       (FactorAux.coprime_of_prime_ne hpsp hplp (hne (hps46.trans_lt hpl46)))).2 hdvd
     rw [Nat.div_div_eq_div_mul, mul_comm, ← Nat.div_div_eq_div_mul]
     unfold weightedSlotCount

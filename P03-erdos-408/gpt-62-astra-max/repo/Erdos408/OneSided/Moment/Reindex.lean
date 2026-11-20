@@ -107,8 +107,7 @@ theorem mul_tau_add_div (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) (z : ℤ
     exact_mod_cast mul_rootD hu hco
   simp only [tau, rootMap]
   push_cast
-  field_simp
-  linear_combination (-(z.2 : ℝ)) * h
+  grind
 
 /-! ### Divisibility and lines -/
 
@@ -122,10 +121,8 @@ theorem dvd_iff_lineOf_eq {p : ℕ} (hp : p.Prime) {a b : ℤ} (hab : IsCoprime 
     rintro ⟨hx, hy⟩
     obtain ⟨s, t, h⟩ := h
     have h' := congrArg (Int.cast : ℤ → ZMod p) h
-    push_cast at h'
-    rw [hx, hy] at h'
-    simp at h'
-  have hval (w : ZMod p) : w.val ≠ p := (ZMod.val_lt w).ne
+    grind
+  have hval (w : ZMod p) := (ZMod.val_lt w).ne
   have hz' := hne hz
   have hab' := hne hab
   rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
@@ -133,18 +130,10 @@ theorem dvd_iff_lineOf_eq {p : ℕ} (hp : p.Prime) {a b : ℤ} (hab : IsCoprime 
   push_cast
   by_cases h1 : (z.1 : ZMod p) = 0 <;> by_cases h2 : (b : ZMod p) = 0
   · simp [h1, h2]
-  · have h3 : (z.2 : ZMod p) ≠ 0 := fun h3 => hz' ⟨h1, h3⟩
-    simp [h1, h2, h3, (hval _).symm]
-  · have h3 : (a : ZMod p) ≠ 0 := fun h3 => hab' ⟨h3, h2⟩
-    simp [h1, h2, h3, hval]
+  · grind
+  · grind
   · simp only [h1, h2, ite_false, (ZMod.val_injective p).eq_iff]
-    constructor
-    · intro h
-      field_simp
-      linear_combination h
-    · intro h
-      field_simp at h
-      linear_combination h
+    grind
 
 /-! ### Ratios -/
 
@@ -153,20 +142,18 @@ theorem rootRatio_sub_div {n m : ℕ} (hn : 0 < n) {Q₁ Q₂ : ℤ} (h : n * Q�
     ∃ k : ℤ, rootRatio (n, m) - Q₁ / n = k := by
   have : NeZero n := ⟨hn.ne'⟩
   -- `-m⁻¹ = Q₁` modulo `n`
-  have hm : (m : ZMod n) * (-Q₁ : ℤ) = 1 := by
+  have hm : (m : ZMod n) * (-Q₁) = 1 := by
     have h' := congrArg (Int.cast : ℤ → ZMod n) h
     push_cast at h'
-    rw [ZMod.natCast_self] at h'
-    push_cast
-    linear_combination h'
-  have hQ : ((((-(m : ZMod n)⁻¹ : ZMod n).val : ℤ) - Q₁ : ℤ) : ZMod n) = 0 := by
+    aesop
+  have hQ : ((((-(m : ZMod n)⁻¹).val : ℤ) - Q₁ : ℤ) : ZMod n) = 0 := by
     push_cast
     rw [ZMod.natCast_zmod_val, ZMod.inv_eq_of_mul_eq_one _ _ _ hm]
     push_cast
     ring
   obtain ⟨k, hk⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 hQ
   refine ⟨k, ?_⟩
-  have hk' : ((-(m : ZMod n)⁻¹ : ZMod n).val : ℝ) - Q₁ = n * k := by exact_mod_cast hk
+  have hk' : ((-(m : ZMod n)⁻¹).val : ℝ) - Q₁ = n * k := by exact_mod_cast hk
   have hn' : (n : ℝ) ≠ 0 := by positivity
   rw [rootRatio]
   field_simp
@@ -242,22 +229,15 @@ theorem rootMapInv_mem_square (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn)
       nlinarith [rootC_lt hu P₀.2]
     exact_mod_cast Nat.le_of_mul_le_mul_left h hu
   have hB : 2 * (16 * U + 2 * V + 1) ^ 2 ≤ (rootBound U V : ℝ) := Nat.le_ceil _
-  have hP₁0 : (0 : ℝ) ≤ P.1 := by positivity
   have hP₂0 : (0 : ℝ) ≤ P.2 := by positivity
-  have hc0 : (0 : ℝ) ≤ rootC P₀.1 P₀.2 := by positivity
-  have hd0 : (0 : ℝ) ≤ rootD P₀.1 P₀.2 := by positivity
-  have hv0 : (0 : ℝ) ≤ P₀.2 := by positivity
-  have h₁ : (rootD P₀.1 P₀.2 : ℝ) * P.1 ≤ (1 + 2 * V) * (16 * U) :=
-    mul_le_mul (by linarith) hP₁' hP₁0 (by linarith)
-  have h₂ : (rootC P₀.1 P₀.2 : ℝ) * P.2 ≤ (16 * U) * (2 * V) :=
+  have h₂ :=
     mul_le_mul (by linarith) hP₂' hP₂0 (by linarith)
-  have h₃ : (P₀.2 : ℝ) * P.1 ≤ (2 * V) * (16 * U) := mul_le_mul hv₂ hP₁' hP₁0 (by linarith)
-  have h₄ : (P₀.1 : ℝ) * P.2 ≤ (16 * U) * (2 * V) := mul_le_mul hu₂ hP₂' hP₂0 (by linarith)
+  have h₃ := mul_le_mul hv₂ hP₁' (by positivity) (by linarith)
+  have h₄ := mul_le_mul hu₂ hP₂' hP₂0 (by linarith)
   have h₅ : 0 ≤ (rootD P₀.1 P₀.2 : ℝ) * P.1 := by positivity
   have h₆ : 0 ≤ (rootC P₀.1 P₀.2 : ℝ) * P.2 := by positivity
   have h₇ : 0 ≤ (P₀.2 : ℝ) * P.1 := by positivity
   have h₈ : 0 ≤ (P₀.1 : ℝ) * P.2 := by positivity
-  have hUV : 0 ≤ U * V := by positivity
   simp only [rootMapInv, mem_product, mem_Icc]
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
   all_goals
@@ -311,7 +291,6 @@ def rootEquiv (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hP₀ : P₀ ∈ pos
     simp only [Int.toNat_of_nonneg h₁.le, Int.toNat_of_nonneg h₂]
     exact rootMapInv_rootMap (pos_of_mem hU hV hP₀) (coprime_of_mem hP₀) z.1
   right_inv P := by
-    refine Subtype.ext ?_
     simp only [rootMap_rootMapInv (pos_of_mem hU hV hP₀) (coprime_of_mem hP₀), Int.toNat_natCast]
 
 /-- `z ↦ g z` is an isomorphism from the root model at the integer root of `P₀`, with lines
@@ -356,9 +335,7 @@ def rootIso (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hP₀ : P₀ ∈ posit
     rw [Int.toNat_of_nonneg h₁.le, Int.toNat_of_nonneg h₂, det_rootMap hu hco]
     -- `det(z, w_z) = gcd(z₁, z₂) = 1`
     have h := Int.gcd_eq_gcd_ab z.1 z.2
-    rw [hg, Nat.cast_one] at h
-    simp only [complement]
-    linear_combination -h
+    simp_all [complement]
 
 end Reindex
 
@@ -371,13 +348,12 @@ theorem detMoment_eq_sum_rootMoment (q A₀ x : ℝ) {d : Data K} {Y d₀ : ℝ}
         ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) (rootLines P₀) := by
   rw [detMoment_eq_sum_moment, ← sum_coe_sort (positions d Y d₀)]
   refine Fintype.sum_congr _ _ fun P₀ => ?_
-  have hu := Reindex.pos_of_mem hU hV P₀.2
   have hco := Reindex.coprime_of_mem P₀.2
   -- `e₁ = g⁻¹ P₀` is a root position
   have h : ((1 : ℤ), (0 : ℤ)) ∈
       rootPositions (d₀ * Y * d.Hm) d.Hn P₀.1.1 P₀.1.2 ((rootC P₀.1.1 P₀.1.2 : ℝ) / P₀.1.1) := by
     have h := Reindex.rootMapInv_mem hU hV P₀.2 P₀.2
-    rwa [Reindex.rootMapInv_self hu hco] at h
+    rwa [Reindex.rootMapInv_self (Reindex.pos_of_mem hU hV P₀.2) hco] at h
   rw [rootMoment, dite_eq_left_of_eq_true (eq_true h)]
   refine Eq.trans ?_ ((Reindex.rootIso hU hV P₀.2).moment_eq q A₀ x d Y d₀ _)
   congr 1

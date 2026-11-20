@@ -24,7 +24,7 @@ PD §3.3 (`blueprint/one_sided_type_ii.md` §5.1). A bound on the determinant mo
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 open scoped Matrix
 
 variable {K : ℕ}
@@ -32,7 +32,7 @@ variable {K : ℕ}
 /-- The bounds of a position: `U ≤ P₁ ≤ 16U` and `P` is primitive. -/
 theorem mem_positions_bounds {d : Data K} {Y d₀ : ℝ} (hU : 0 ≤ d₀ * Y * d.Hm) {P : ℕ × ℕ}
     (hP : P ∈ positions d Y d₀) :
-    d₀ * Y * d.Hm ≤ P.1 ∧ (P.1 : ℝ) ≤ 16 * (d₀ * Y * d.Hm) ∧ Nat.Coprime P.1 P.2 := by
+    d₀ * Y * d.Hm ≤ P.1 ∧ P.1 ≤ 16 * (d₀ * Y * d.Hm) ∧ Nat.Coprime P.1 P.2 := by
   unfold positions at hP
   rw [mem_filter, mem_product, mem_Icc] at hP
   exact ⟨Nat.ceil_le.1 hP.1.1.1, (Nat.le_floor_iff (by positivity)).1 hP.1.1.2, hP.2⟩
@@ -42,17 +42,17 @@ labels, each at most `exp(2 L^{a_hi})`, and `(J + 1) L^{a_hi} ≤ 2 L^{0.01 + a_
 theorem listProd_le_exp {C CX alo ahi g x : ℝ} {d : Data K} {Y d₀ : ℝ}
     (hd : Admissible C CX alo ahi g x d) (hahi : ahi < 1 / 5) (hL : 1 ≤ Real.log x)
     (t : State x d Y d₀) :
-    (listProd t.1.2 : ℝ) ≤ Real.exp (4 * K * Real.log x ^ (1 / 2 : ℝ)) := by
+    (listProd t.1.2) ≤ Real.exp (4 * K * Real.log x ^ (1 / 2 : ℝ)) := by
   obtain ⟨-, hband, -, -⟩ := state_props t
   set L := Real.log x
   set J := padCount x
   -- each label is at most `exp(2 L^{a_hi})`
-  have hlabel : ∀ i h, (t.1.2 i h : ℝ) ≤ Real.exp (2 * L ^ ahi) := by
+  have hlabel : ∀ i h, (t.1.2 i h) ≤ Real.exp (2 * L ^ ahi) := by
     intro i h
     have h₁ := Real.rpow_le_rpow_of_exponent_le hL (hd.window i).2
     exact (le_exp_of_mem_band (hband i h)).trans (Real.exp_le_exp.2 (by linarith))
   -- `(J + 1) L^{a_hi} ≤ 2 L^{1/2}`
-  have hJ : (J : ℝ) + 1 ≤ 2 * L ^ (1 / 100 : ℝ) := by
+  have hJ : J + 1 ≤ 2 * L ^ (1 / 100 : ℝ) := by
     have h₁ : (J : ℝ) ≤ L ^ (1 / 100 : ℝ) := Nat.floor_le (by positivity)
     have h₂ : 1 ≤ L ^ (1 / 100 : ℝ) := Real.one_le_rpow hL (by norm_num)
     linarith
@@ -63,7 +63,7 @@ theorem listProd_le_exp {C CX alo ahi g x : ℝ} {d : Data K} {Y d₀ : ℝ}
   have hJa : ((J : ℝ) + 1) * L ^ ahi ≤ 2 * L ^ (1 / 2 : ℝ) := by nlinarith
   unfold listProd
   push_cast
-  calc ∏ i, ∏ h, (t.1.2 i h : ℝ) ≤ ∏ _i : Fin K, ∏ _h : Fin (J + 1), Real.exp (2 * L ^ ahi) :=
+  calc _ ≤ ∏ _i : Fin K, ∏ _h : Fin (J + 1), Real.exp (2 * L ^ ahi) :=
         prod_le_prod₀ (fun i _ => prod_nonneg fun h _ => Nat.cast_nonneg _) fun i _ =>
           prod_le_prod₀ (fun h _ => Nat.cast_nonneg _) fun h _ => hlabel i h
     _ = Real.exp (K * ((J + 1 : ℕ) * (2 * L ^ ahi))) := by
@@ -71,7 +71,6 @@ theorem listProd_le_exp {C CX alo ahi g x : ℝ} {d : Data K} {Y d₀ : ℝ}
           ← Real.exp_nat_mul, ← Real.exp_nat_mul]
     _ ≤ Real.exp (4 * K * L ^ (1 / 2 : ℝ)) := by
         refine Real.exp_le_exp.2 ?_
-        have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg _
         push_cast
         nlinarith
 
@@ -103,10 +102,8 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
   set Y : ℝ := 2 ^ j with hY
   set d₀ : ℝ := 2 ^ k with hd₀
   have hY0 : 0 < Y := by positivity
-  have hd₀0 : 0 < d₀ := by positivity
   set H := d₀ * Y with hH
-  have hH1 : 1 ≤ H := one_le_mul_of_one_le_of_one_le (one_le_pow₀ one_le_two)
-    (one_le_pow₀ one_le_two)
+  have hH1 : 1 ≤ H := by bound
   set U := d₀ * Y * d.Hm with hU
   have hU0 : 0 < U := by positivity
   set Z : ℝ := 2 ^ k * 2 ^ j * d.X with hZ
@@ -140,7 +137,6 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
   obtain ⟨t, t', ht⟩ := hT
   -- `H ≤ exp(8 K M)`
   have hHexp : H ≤ Real.exp (8 * K * (R + 1)) := by
-    have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg _
     calc H ≤ listProd t.1.2 := le_listProd_of_rowOp_ne_zero hY0 ht
       _ ≤ Real.exp (4 * K * L ^ (1 / 2 : ℝ)) := listProd_le_exp hd hahi hL t
       _ ≤ _ := Real.exp_le_exp.2 (by nlinarith)
@@ -177,7 +173,7 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
   set ρ := ∑ s : State x d Y d₀, ∑ s' : State x d Y d₀, if s.1.1 = s'.1.1 then
     ((edgeOp q A₀ x d Y d₀ * (edgeOp q A₀ x d Y d₀)ᴴ) ^ (R + 1)) s s' else 0 with hρ
   have hpair : ‖pairing q A₀ x d Y d₀‖ = m * P := by
-    rw [hP, ← Real.norm_of_nonneg hm0, ← Complex.norm_real, ← norm_mul]
+    rw [← Real.norm_of_nonneg hm0, ← Complex.norm_real, ← norm_mul]
     rfl
   have hmoment : ‖detMoment q A₀ x d Y d₀‖ = m * ‖ρ‖ := by
     have h₁ : detMoment q A₀ x d Y d₀ = (m : ℂ) * ρ := by
@@ -194,59 +190,52 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
     rw [hZU]
     exact stateMass_mul_sqNorm_endVec_le hd hdisj hHm hHn (by positivity) hσ0
       fun s => norm_endVec_sq_le hd hL0 s
-  have hNH : (N : ℝ) ≤ 8721 * Real.exp (8 * K * (R + 1)) := by
+  have hNH : N ≤ 8721 * Real.exp (8 * K * (R + 1)) := by
     have h₁ : (N : ℝ) ≤ 17 * (512 * H + 1) := Nat.floor_le (by positivity)
     linarith
   -- `σ^{2M} L^{-2ME} = (L^{4C - E})^{2M}`
-  have hrpow : σ ^ n * L ^ (-(E * (n : ℝ))) = (L ^ (4 * C - E)) ^ n := by
-    rw [hσ, ← Real.rpow_mul_natCast hL0.le, ← Real.rpow_mul_natCast hL0.le,
-      ← Real.rpow_add hL0]
+  have hrpow : σ ^ n * L ^ (-(E * n)) = (L ^ (4 * C - E)) ^ n := by
+    rw [← Real.rpow_mul_natCast hL0.le, ← Real.rpow_mul_natCast hL0.le, ← Real.rpow_add hL0]
     congr 1
     ring
   -- `21^M 64^{2M - 1} N ≤ C₀^{2M}`, using `N ≪ H ≤ exp(8 K M)`
-  have hnum : (21 : ℝ) ^ (R + 1) * 64 ^ (2 * R + 1) * N ≤ C₀ ^ n := by
+  have hnum : 21 ^ (R + 1) * 64 ^ (2 * R + 1) * N ≤ C₀ ^ n := by
     have h₁ : (21 : ℝ) ^ (R + 1) ≤ 21 ^ n := pow_le_pow_right₀ (by norm_num) (by omega)
     have h₂ : (64 : ℝ) ^ (2 * R + 1) ≤ 64 ^ n := pow_le_pow_right₀ (by norm_num) (by omega)
-    have h₃ : (N : ℝ) ≤ 8721 ^ n * Real.exp (4 * K) ^ n := by
-      have h₄ : (8721 : ℝ) ≤ 8721 ^ n := le_self_pow₀ (by norm_num) hn0
+    have h₃ : N ≤ 8721 ^ n * Real.exp (4 * K) ^ n := by
       have h₅ : Real.exp (8 * K * (R + 1)) = Real.exp (4 * K) ^ n := by
         rw [← Real.exp_nat_mul, hn]
         push_cast
         ring_nf
       rw [← h₅]
-      exact hNH.trans (mul_le_mul_of_nonneg_right h₄ (Real.exp_pos _).le)
-    rw [hC₀, mul_pow, mul_pow, mul_pow]
-    calc (21 : ℝ) ^ (R + 1) * 64 ^ (2 * R + 1) * N
+      exact hNH.trans (mul_le_mul_of_nonneg_right (le_self_pow₀ (by norm_num) hn0) (Real.exp_pos _).le)
+    rw [mul_pow, mul_pow, mul_pow]
+    calc _
         ≤ 21 ^ n * 64 ^ n * (8721 ^ n * Real.exp (4 * K) ^ n) :=
           mul_le_mul (mul_le_mul h₁ h₂ (by positivity) (by positivity)) h₃ (Nat.cast_nonneg _)
             (by positivity)
       _ = _ := by ring
-  have hP0 : 0 ≤ P := norm_nonneg _
   have hS0 : 0 ≤ S := sqNorm_nonneg _
-  have hρ0 : 0 ≤ ‖ρ‖ := norm_nonneg _
   have hNσ : 0 ≤ (N : ℝ) * σ := mul_nonneg (Nat.cast_nonneg _) hσ0
   have hσZ : 0 ≤ 64 * σ * Z := mul_nonneg (mul_nonneg (by norm_num) hσ0) hZ0.le
   rw [hpair]
   refine le_of_pow_le_pow_left₀ hn0
     (mul_nonneg (mul_nonneg (by positivity) hZ0.le) (by positivity)) ?_
-  calc (m * P) ^ n = m ^ n * P ^ n := mul_pow _ _ _
-    _ ≤ m ^ n * ((2 * ((10 : ℕ) : ℝ) + 1) ^ (R + 1) * S ^ (2 * R + 1) * (N * σ) * ‖ρ‖) :=
+  calc _ = m ^ n * P ^ n := by ring
+    _ ≤ m ^ n * ((2 * (10 : ℕ) + 1) ^ (R + 1) * S ^ (2 * R + 1) * (N * σ) * ‖ρ‖) :=
         mul_le_mul_of_nonneg_left hcells (pow_nonneg hm0 _)
     _ = 21 ^ (R + 1) * (m * S) ^ (2 * R + 1) * (N * σ) * (m * ‖ρ‖) := by
-        rw [hn]
-        push_cast
         ring
-    _ ≤ 21 ^ (R + 1) * (64 * σ * Z) ^ (2 * R + 1) * (N * σ) * (Z * L ^ (-(E * (n : ℝ)))) :=
+    _ ≤ 21 ^ (R + 1) * (64 * σ * Z) ^ (2 * R + 1) * (N * σ) * (Z * L ^ (-(E * n))) :=
         mul_le_mul (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
           (pow_le_pow_left₀ (mul_nonneg hm0 hS0) hS' _) (by positivity)) hNσ) hmom'
-          (mul_nonneg hm0 hρ0) (mul_nonneg (mul_nonneg (by positivity) (pow_nonneg hσZ _)) hNσ)
-    _ = (21 ^ (R + 1) * 64 ^ (2 * R + 1) * N) * (σ ^ n * L ^ (-(E * (n : ℝ)))) * Z ^ n := by
-        rw [hn]
+          (mul_nonneg hm0 (norm_nonneg _)) (mul_nonneg (mul_nonneg (by positivity) (pow_nonneg hσZ _)) hNσ)
+    _ = (21 ^ (R + 1) * 64 ^ (2 * R + 1) * N) * (σ ^ n * L ^ (-(E * n))) * Z ^ n := by
         ring
-    _ ≤ C₀ ^ n * (σ ^ n * L ^ (-(E * (n : ℝ)))) * Z ^ n :=
+    _ ≤ C₀ ^ n * (σ ^ n * L ^ (-(E * n))) * Z ^ n :=
         mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hnum
           (mul_nonneg (pow_nonneg hσ0 _) (by positivity))) (pow_nonneg hZ0.le _)
-    _ = (C₀ * Z * L ^ (4 * C - E)) ^ n := by
+    _ = _ := by
         rw [hrpow]
         ring
 

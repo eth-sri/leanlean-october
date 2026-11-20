@@ -23,7 +23,7 @@ and `ψ(n) ≪ n`. This closes for `A = 2 (2 + C_ψ)` once `log Y ≥ 4E`.
 
 namespace Erdos408.TypeII
 
-open Finset Real ArithmeticFunction
+open Finset ArithmeticFunction
 
 /-- The number of `Y`-rough `b ≤ n`: those whose prime factors all exceed `Y`. -/
 noncomputable def roughCount (Y : ℝ) (n : ℕ) : ℕ :=
@@ -38,7 +38,7 @@ theorem roughCount_le_one {Y : ℝ} {n : ℕ} (h : (n : ℝ) < Y) : roughCount Y
   rw [mem_singleton]
   by_contra hne
   have hp := Nat.minFac_prime hne
-  have hmem : b.minFac ∈ b.primeFactors :=
+  have hmem :=
     Nat.mem_primeFactors.2 ⟨hp, Nat.minFac_dvd b, by omega⟩
   have hle : (b.minFac : ℝ) ≤ n := by exact_mod_cast (Nat.minFac_le (by omega)).trans hbn
   linarith [hrough _ hmem]
@@ -47,16 +47,15 @@ theorem roughCount_le_one {Y : ℝ} {n : ℕ} (h : (n : ℝ) < Y) : roughCount Y
 theorem sum_log_div_le (n : ℕ) : ∑ b ∈ Icc 1 n, Real.log ((n : ℝ) / b) ≤ 2 * n := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · simp
-  have hge := Mertens.sum_log_ge (x := (n : ℝ)) (by exact_mod_cast hn)
+  have hge := Mertens.sum_log_ge (x := n) (by exact_mod_cast hn)
   rw [Nat.floor_natCast] at hge
   have hIcc : Icc 1 n = Ioc 0 n := by
-    ext b; simp only [mem_Icc, mem_Ioc]; omega
+    rfl
   have hsplit : ∑ b ∈ Icc 1 n, Real.log ((n : ℝ) / b) =
       n * Real.log n - ∑ b ∈ Ioc 0 n, Real.log b := by
     rw [hIcc, Finset.sum_congr rfl fun b hb => Real.log_div (by positivity)
       (by have := (mem_Ioc.1 hb).1; positivity), sum_sub_distrib]
     simp
-  rw [hsplit]
   linarith
 
 /-- A rough multiple `b ≤ n` of `d ≥ 1` is `d c` with `c ≤ n / d` rough, so there are at
@@ -90,7 +89,7 @@ large. -/
 theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C₁ ≤ Real.log Y →
     ∀ n : ℕ, (roughCount Y n : ℝ) ≤ A * n / Real.log Y + 1 := by
   set E : ℝ := Real.log 4 + 4 with hE
-  have hE0 : 0 < E := by have := Real.log_nonneg (show (1 : ℝ) ≤ 4 by norm_num); linarith
+  have hE0 : 0 < E := by positivity
   refine ⟨2 * (2 + E), 4 * E + 1, by positivity, fun Y hY hlY n => ?_⟩
   have hℓ : 0 < Real.log Y := by linarith
   set A : ℝ := 2 * (2 + E) with hA
@@ -104,7 +103,6 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
   push Not at hnY
   have hn1 : (1 : ℝ) ≤ n := by linarith
   have hn0 : 0 < n := by exact_mod_cast (show (0 : ℝ) < n by linarith)
-  have hlogn : Real.log Y ≤ Real.log n := Real.log_le_log (by linarith) hnY
   set R := (Icc 1 n).filter fun b => ∀ p : ℕ, p ∈ b.primeFactors → Y < p with hR
   -- `log n · Φ(n) ≤ ∑_R log b + ∑_{b ≤ n} log(n/b)`
   have hsplit : Real.log n * (R.card : ℝ) ≤ ∑ b ∈ R, Real.log b + 2 * n := by
@@ -136,8 +134,7 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
       · rintro ⟨⟨⟨h1, hbn⟩, hr⟩, hdb, hb0⟩
         exact ⟨⟨⟨⟨h1, hbn⟩, hr⟩, hdb⟩, Nat.pos_of_dvd_of_pos hdb (by omega),
           (Nat.le_of_dvd (by omega) hdb).trans hbn⟩
-      · rintro ⟨⟨⟨⟨h1, hbn⟩, hr⟩, hdb⟩, -⟩
-        exact ⟨⟨⟨h1, hbn⟩, hr⟩, hdb, by omega⟩
+      grind
   -- each `d` contributes at most `Λ(d) (A n / (d log Y) + 1)`, and only for `d > Y`
   have hterm : ∀ d ∈ Icc 1 n, Λ d * ((R.filter (d ∣ ·)).card : ℝ) ≤
       if Y < d then Λ d * (A * n / (d * Real.log Y) + 1) else 0 := by
@@ -145,15 +142,15 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
     obtain ⟨hd1, hdn⟩ := mem_Icc.1 hd
     by_cases hΛ : Λ d = 0
     · rw [hΛ, zero_mul]; split_ifs <;> simp
-    have hpp : IsPrimePow d := vonMangoldt_ne_zero_iff.1 hΛ
-    have hd2 : d ≠ 1 := hpp.ne_one
+    have hpp := vonMangoldt_ne_zero_iff.1 hΛ
+    have hd2 := hpp.ne_one
     have hp := Nat.minFac_prime hd2
     by_cases hpY : (d.minFac : ℝ) ≤ Y
     · -- no rough number is divisible by `d`
       have hempty : R.filter (d ∣ ·) = ∅ := by
         refine filter_eq_empty_iff.2 fun b hb hdb => ?_
         obtain ⟨hb1, hr⟩ := mem_filter.1 hb
-        have hb0 : b ≠ 0 := by have := (mem_Icc.1 hb1).1; omega
+        have hb0 : b ≠ 0 := by grind
         have := hr _ (Nat.mem_primeFactors.2 ⟨hp, (Nat.minFac_dvd d).trans hdb, hb0⟩)
         linarith
       rw [hempty, card_empty, Nat.cast_zero, mul_zero]
@@ -168,18 +165,17 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
     have hcard := (card_rough_dvd_le (Y := Y) (n := n) (d := d) (by omega))
     have hih := ih (n / d) hdiv
     have hnd : ((n / d : ℕ) : ℝ) ≤ n / d := Nat.cast_div_le
-    have hd0 : (0 : ℝ) < d := by exact_mod_cast hd1
     calc ((R.filter (d ∣ ·)).card : ℝ) ≤ roughCount Y (n / d) := by exact_mod_cast hcard
       _ ≤ A * ((n / d : ℕ) : ℝ) / Real.log Y + 1 := hih
       _ ≤ A * (n / d) / Real.log Y + 1 := by gcongr
-      _ = A * n / (d * Real.log Y) + 1 := by field_simp
+      _ = _ := by field_simp
   -- Mertens: `∑_{Y < d ≤ n} Λ(d) / d ≤ log n - log Y + 2E`
   have hmert : ∑ d ∈ (Icc 1 n).filter (fun d : ℕ => Y < d), Λ d / d ≤
       Real.log n - Real.log Y + 2 * E := by
-    have hn := Mertens.sum_mangoldt_div_eq_log (x := (n : ℝ)) hn1
+    have hn := Mertens.sum_mangoldt_div_eq_log  hn1
     have hy := Mertens.sum_mangoldt_div_eq_log (x := Y) (by linarith)
     rw [Nat.floor_natCast] at hn
-    have hfl : ⌊Y⌋₊ ≤ n := Nat.floor_le_of_le hnY
+    have hfl := Nat.floor_le_of_le hnY
     have hsplit : ∑ d ∈ Ioc 0 n, Λ d / d =
         ∑ d ∈ Ioc 0 ⌊Y⌋₊, Λ d / d + ∑ d ∈ (Icc 1 n).filter (fun d : ℕ => Y < d), Λ d / d := by
       rw [← sum_Ioc_consecutive _ (Nat.zero_le _) hfl]
@@ -195,11 +191,9 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
     rw [abs_le] at hn hy
     linarith [hn.2, hy.1]
   have hpsi : ∑ d ∈ Icc 1 n, Λ d ≤ E * n := by
-    have := Chebyshev.psi_le_const_mul_self (x := (n : ℝ)) (by positivity)
+    have := Chebyshev.psi_le_const_mul_self (x := n) (by positivity)
     rw [Chebyshev.psi, Nat.floor_natCast] at this
-    have hIcc : Icc 1 n = Ioc 0 n := by ext b; simp only [mem_Icc, mem_Ioc]; omega
-    rw [hIcc]
-    linarith
+    assumption
   have hsum : ∑ b ∈ R, Real.log b ≤
       A * n / Real.log Y * (Real.log n - Real.log Y + 2 * E) + E * n := by
     rw [hswap]
@@ -209,9 +203,6 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
         A * n / Real.log Y * ∑ d ∈ (Icc 1 n).filter (fun d : ℕ => Y < d), Λ d / d +
           ∑ d ∈ (Icc 1 n).filter (fun d : ℕ => Y < d), Λ d := by
       rw [mul_sum, ← sum_add_distrib]
-      refine sum_congr rfl fun d hd => ?_
-      have : (0 : ℝ) < d := by
-        have := (mem_Icc.1 (mem_filter.1 hd).1).1; exact_mod_cast this
       field_simp
     rw [this]
     have h1 : ∑ d ∈ (Icc 1 n).filter (fun d : ℕ => Y < d), Λ d ≤ ∑ d ∈ Icc 1 n, Λ d :=
@@ -221,7 +212,7 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
     linarith
   -- close the induction
   have hfinal : (R.card : ℝ) ≤ A * n / Real.log Y := by
-    have hlogn0 : 0 < Real.log n := lt_of_lt_of_le hℓ hlogn
+    have hlogn0 := lt_of_lt_of_le hℓ (Real.log_le_log (by linarith) hnY)
     rw [← mul_le_mul_iff_of_pos_left hlogn0]
     have hkey : 2 * E * A ≤ A / 2 * Real.log Y := by
       have : 4 * E ≤ Real.log Y := by linarith
@@ -231,9 +222,6 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
       nlinarith
     have hAn : A * n / Real.log Y * Real.log Y = A * n := by field_simp
     nlinarith
-  show ((roughCount Y n : ℕ) : ℝ) ≤ _
-  unfold roughCount
-  rw [← hR]
-  linarith
+  grind [roughCount]
 
 end Erdos408.TypeII

@@ -17,7 +17,7 @@ every `loc p ≤ 1/2`.
 
 namespace Erdos408.TypeII
 
-open Finset Real
+open Finset
 
 /-- The completely multiplicative function `n ↦ ∏_{p^e ∥ n} loc(p)^e`, with
 value `0` at `0`. -/
@@ -39,7 +39,7 @@ theorem cmul_apply {loc : ℕ → ℝ} {n : ℕ} (hn : n ≠ 0) :
 theorem cmul_prime_pow (loc : ℕ → ℝ) {p : ℕ} (hp : p.Prime) (e : ℕ) :
     cmul loc (p ^ e) = loc p ^ e := by
   rw [cmul_apply (pow_ne_zero _ hp.ne_zero), hp.factorization_pow]
-  exact Finsupp.prod_single_index (pow_zero _)
+  simp
 
 theorem cmul_prime (loc : ℕ → ℝ) {p : ℕ} (hp : p.Prime) : cmul loc p = loc p := by
   simpa using cmul_prime_pow loc hp 1
@@ -59,15 +59,13 @@ theorem cmul_mul_loc (loc loc' : ℕ → ℝ) (n : ℕ) :
   by_cases hn : n = 0
   · simp [cmul, hn]
   rw [cmul_apply hn, cmul_apply hn, cmul_apply hn, ← Finsupp.prod_mul]
-  exact Finsupp.prod_congr fun p _ => mul_pow _ _ _
+  ring
 
 /-- `n = ∏_{p^e ∥ n} p^e` in `ℝ`. -/
 theorem natCast_eq_factorization_prod {n : ℕ} (hn : n ≠ 0) :
     (n : ℝ) = n.factorization.prod fun p e => (p : ℝ) ^ e := by
   conv_lhs => rw [← Nat.prod_factorization_pow_eq_self hn]
-  rw [Finsupp.prod, Finsupp.prod, Nat.cast_prod]
-  push_cast
-  rfl
+  simp
 
 /-- `n^θ` is completely multiplicative: `cmul (p ↦ p^θ) n = n^θ`. -/
 theorem cmul_rpow (θ : ℝ) {n : ℕ} (hn : n ≠ 0) :
@@ -95,17 +93,14 @@ theorem cmul_congr {loc loc' : ℕ → ℝ} {n : ℕ} (h : ∀ p ∈ n.primeFact
   · simp [cmul, hn]
   rw [cmul_apply hn, cmul_apply hn]
   exact Finsupp.prod_congr fun p hp => by
-    rw [h p (Nat.support_factorization n ▸ hp)]
+    simp_all
 
 /-- `cmul loc n = 0` when `loc` vanishes at a prime factor of `n`. -/
 theorem cmul_eq_zero {loc : ℕ → ℝ} {n p : ℕ} (hp : p ∈ n.primeFactors) (h : loc p = 0) :
     cmul loc n = 0 := by
-  have hn : n ≠ 0 := (Nat.mem_primeFactors.1 hp).2.2
-  rw [cmul_apply hn, Finsupp.prod]
+  rw [cmul_apply (Nat.mem_primeFactors.1 hp).2.2, Finsupp.prod]
   refine Finset.prod_eq_zero (Nat.support_factorization n ▸ hp) ?_
-  rw [h, zero_pow]
-  exact ((Nat.prime_of_mem_primeFactors hp).factorization_pos_of_dvd hn
-    (Nat.dvd_of_mem_primeFactors hp)).ne'
+  aesop
 
 /-- The Euler-product bound `∑_{m ≤ N} cmul loc m ≤ ∏_{p ≤ N} (1 - loc p)⁻¹`. -/
 theorem sum_cmul_le_prod {loc : ℕ → ℝ} (h0 : ∀ p, p.Prime → 0 ≤ loc p)
@@ -128,7 +123,7 @@ theorem sum_cmul_le_prod {loc : ℕ → ℝ} (h0 : ∀ p, p.Prime → 0 ≤ loc 
     omega
   let s : Finset (Nat.factoredNumbers (range (N + 1))) :=
     (Icc 1 N).attach.map ⟨fun m => ⟨m.1, hmem m.1 m.2⟩, fun a b h => by
-      exact Subtype.ext (congrArg Subtype.val h :)⟩
+      simp_all⟩
   have hs : ∑ m ∈ Icc 1 N, cmul loc m = ∑ m ∈ s, cmul loc m := by
     rw [sum_map, ← sum_attach]
     rfl
@@ -143,10 +138,9 @@ theorem prod_inv_one_sub_le_exp {ι : Type*} (S : Finset ι) (y : ι → ℝ)
   refine Finset.prod_le_prod₀ (fun i hi => inv_nonneg.2 (by linarith [h1 i hi])) fun i hi => ?_
   have hy0 := h0 i hi
   have hy1 := h1 i hi
-  have hpos : 0 < 1 - y i := by linarith
-  calc (1 - y i)⁻¹ ≤ 1 + 2 * y i := by
-        rw [inv_le_iff_one_le_mul₀ hpos]
+  calc _ ≤ 1 + 2 * y i := by
+        rw [inv_le_iff_one_le_mul₀ (by linarith)]
         nlinarith
-    _ ≤ Real.exp (2 * y i) := by linarith [Real.add_one_le_exp (2 * y i)]
+    _ ≤ _ := by linarith [Real.add_one_le_exp (2 * y i)]
 
 end Erdos408.TypeII

@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Hypotheses
+
 public import Erdos408.OneSided.Decomposition.Lists
 public import Erdos408.OneSided.Decomposition.Pair
 
@@ -25,7 +27,7 @@ the terms of the pad dyad `[2^k, 2^{k+1})` containing `D` with those of
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 
@@ -109,7 +111,7 @@ theorem mem_band_padList {x : ℝ} {d : Data K} {J : ℕ} {z : Fin K × Fin J �
     (h : Fin (J + 1)) : padList z p i h ∈ band x (d.a i) := by
   induction h using Fin.lastCases with
   | last => rw [padList_last]; exact mem_band_of_mem_labels hp i
-  | cast h => rw [padList_castSucc]; exact mem_band_of_mem_padSet hz (i, h)
+  | cast h => simpa using mem_band_of_mem_padSet hz (i, h)
 
 /-- Distinct pads differing from the last labels give lists in `lists`. -/
 theorem padList_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {z : Fin K × Fin J → ℕ}
@@ -119,16 +121,13 @@ theorem padList_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {z : Fin K × Fin J �
   refine mem_filter.2 ⟨Fintype.mem_piFinset.2 fun i => Fintype.mem_piFinset.2 fun h =>
     mem_band_padList hz hp i h, fun i => ?_⟩
   refine Fin.snoc_injective_iff.2 ⟨fun h h' hh => ?_, ?_⟩
-  · have := hzinj hh
-    simp only [Prod.mk.injEq, true_and] at this
-    exact this
-  · rintro ⟨h, hh⟩
-    exact hzp (i, h) hh
+  · grind
+  · grind
 
 /-- The coprime labels and rough `m, n`: `bmn ≠ ars` once `a > 1`, since `a` is coprime to
 `bmn`. -/
 theorem liftDet_ne_zero {x : ℝ} {d : Data K}
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
+    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m, m ≠ 0 → IsRough x m → ¬ r ∣ m)
     {p p' : Fin K → ℕ} (hp : p ∈ d.labels x) (hp' : p' ∈ d.labels x) (hU : Unshared p p')
     (ha : 1 < ∏ i, p i) {m n : ℕ} (hm : m ≠ 0) (hmr : IsRough x m) (hn : n ≠ 0)
     (hnr : IsRough x n) (r s : ℕ) : liftDet p p' m n r s ≠ 0 := by
@@ -145,36 +144,32 @@ theorem liftDet_ne_zero {x : ℝ} {d : Data K}
   intro h
   unfold liftDet at h
   have heq : (∏ i, p' i) * m * n = (∏ i, p i) * (r * s) := by
-    rw [sub_eq_zero] at h
-    rw [← mul_assoc]
-    exact_mod_cast h
-  have hdvd : (∏ i, p i) ∣ (∏ i, p' i) * m * n := ⟨r * s, heq⟩
-  have := Nat.Coprime.eq_one_of_dvd ((hab.mul_right (hcop m hm hmr)).mul_right (hcop n hn hnr)) hdvd
+    grind
+  have := Nat.Coprime.eq_one_of_dvd ((hab.mul_right (hcop m hm hmr)).mul_right (hcop n hn hnr)) ⟨r * s, heq⟩
   omega
 
 /-- A source or target state `((D b m, s), (z, p))` of the lift is a state at the dyad
 `2^k ∋ D`: its position lies in `Ω` by the supports, and it is primitive since every common
 prime of `m` and `s` divides `t ≠ 0` with `|t| < W`. -/
 theorem mem_states_of {C CX alo ahi g x : ℝ} {d : Data K} (hd : Admissible C CX alo ahi g x d)
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
+    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m, m ≠ 0 → IsRough x m → ¬ r ∣ m)
     (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) {Y : ℝ} (hY : 0 < Y) {k : ℕ}
     {z : Fin K × Fin (padCount x) → ℕ}
     (hz : z ∈ padSet x d (padCount x)) (hzinj : Function.Injective z)
     (hD : 2 ^ k ≤ ∏ c, z c ∧ ∏ c, z c < 2 ^ (k + 1)) {p : Fin K → ℕ} (hp : p ∈ d.labels x)
     (hzp : ∀ c, z c ≠ p c.1) (hpY : Y < (∏ i, p i : ℕ) ∧ ((∏ i, p i : ℕ) : ℝ) < 4 * Y)
     {m s : ℕ} (hm : d.α m ≠ 0) (hs : d.β s ≠ 0) (hsR : s ∈ d.nRange) {t : ℤ} (ht : t ≠ 0)
-    (htW : |(t : ℝ)| < roughLevel x) (hms : ∀ r : ℕ, r.Prime → r ∣ m → r ∣ s → (r : ℤ) ∣ t) :
+    (htW : |(t : ℝ)| < roughLevel x) (hms : ∀ r, r.Prime → r ∣ m → r ∣ s → (r : ℤ) ∣ t) :
     ((listProd (padList z p) * m, s), padList z p) ∈ states x d Y (2 ^ k) := by
   set l := padList z p
-  have hlb : ∀ i h, l i h ∈ band x (d.a i) := mem_band_padList hz hp
-  have hlprime : ∀ i h, (l i h).Prime := fun i h => (mem_filter.1 (hlb i h)).2
-  have hl : l ∈ lists x d (padCount x) := padList_mem_lists hz hzinj hp hzp
+  have hlb := mem_band_padList hz hp
+  have hlprime := fun i h => (mem_filter.1 (hlb i h)).2
+  have hl := padList_mem_lists hz hzinj hp hzp
   obtain ⟨hmH, hm2, hmr, -⟩ := hd.α_supp m hm
   obtain ⟨hsH, -, hsr, -⟩ := hd.β_supp s hs
   have hs0 : s ≠ 0 := by
     rintro rfl
-    rw [Nat.cast_zero] at hsH
-    linarith
+    grind
   -- the position: `D b m ∈ [2^k Y H_m, 16 · 2^k Y H_m]`
   have hP : ((listProd l * m : ℕ) : ℝ) = (∏ c, z c : ℕ) * (∏ i, p i : ℕ) * m := by
     rw [listProd_padList]
@@ -185,27 +180,25 @@ theorem mem_states_of {C CX alo ahi g x : ℝ} {d : Data K} (hd : Admissible C C
     have : ((∏ c, z c : ℕ) : ℝ) < 2 ^ (k + 1) := by exact_mod_cast hD.2
     rw [pow_succ] at this
     linarith
-  have hm2' : (m : ℝ) ≤ 2 * d.Hm := hm2
   unfold states positions
   refine mem_filter.2 ⟨mem_product.2 ⟨mem_filter.2 ⟨mem_product.2 ⟨mem_Icc.2 ⟨?_, ?_⟩, ?_⟩, ?_⟩,
     hl⟩, ?_⟩
   · rw [Nat.ceil_le, hP]
     gcongr
-    exact hpY.1.le
+    linarith
   · refine Nat.le_floor ?_
     rw [hP]
-    calc ((∏ c, z c : ℕ) : ℝ) * (∏ i, p i : ℕ) * m ≤ (2 * 2 ^ k) * (4 * Y) * (2 * d.Hm) := by
+    calc _ ≤ (2 * 2 ^ k) * (4 * Y) * (2 * d.Hm) := by
           gcongr
-          exact hpY.2.le
-      _ = 16 * (2 ^ k * Y * d.Hm) := by ring
+          linarith
+      _ = _ := by ring
   · exact hsR
   · refine coprime_mul_of_isRough (fun r hr hdvd => ?_) hs0 hsr ht htW hms
     obtain ⟨i, h, rfl⟩ := exists_eq_of_prime_dvd_listProd hlprime hr hdvd
-    exact hrough i _ (hlb i h) s hs0 hsr
+    solve_by_elim [hrough]
   · intro i h
     exact Dvd.dvd.mul_right ((dvd_prod_of_mem (l i) (mem_univ h)).trans
       (dvd_prod_of_mem (fun i => ∏ h, l i h) (mem_univ i))) _
-
 
 /-- `∏_c μ(z_c) = D⁻¹ ∏V_i^{-J}`. -/
 theorem padWeight_eq (x : ℝ) (d : Data K) {J : ℕ} (z : Fin K × Fin J → ℕ) :
@@ -244,8 +237,7 @@ theorem liftTerm_eq_stateTerm (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data 
   have hlpos' := listProd_pos fun i h => (mem_filter.1 (mem_band_padList hz hp i h)).2
   obtain ⟨hmH, -, hmr, -⟩ := hd.α_supp m hm
   obtain ⟨hrH, -, hrr, -⟩ := hd.α_supp r hr
-  have hm0 : m ≠ 0 := by rintro rfl; rw [Nat.cast_zero] at hmH; linarith
-  have hr0 : r ≠ 0 := by rintro rfl; rw [Nat.cast_zero] at hrH; linarith
+  have hr0 : r ≠ 0 := by rintro rfl; grind
   -- `det(P, Q) = D t`
   have hdet : det (listProd (padList z p') * m, s) (listProd (padList z p) * r, n) =
       ((∏ c, z c : ℕ) : ℤ) * liftDet p p' m n r s := by
@@ -271,15 +263,14 @@ theorem liftTerm_eq_stateTerm (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data 
     | cast h =>
       rw [padList_castSucc]
       by_cases hii : i = i'
-      · subst hii
-        exact fun h' => (hzp (i, h)).1 h'.symm
+      · grind
       · intro h'
         exact disjoint_left.1 (hdisj i i' hii) (mem_band_of_mem_labels hp i)
           (h' ▸ mem_band_of_mem_padSet hz (i', h))
   -- the damping is one
   have hq : (((bandCount x d (listProd (padList z p') * m) : ℝ) - K * (padCount x + 1)) / 2 +
       ((bandCount x d (listProd (padList z p) * r) : ℝ) - K * (padCount x + 1)) / 2) = 0 := by
-    rw [bandCount_listProd_mul hdisj hrough hl hm0 hmr,
+    rw [bandCount_listProd_mul hdisj hrough hl (by rintro rfl; grind) hmr,
       bandCount_listProd_mul hdisj hrough hl' hr0 hrr]
     push_cast
     ring
@@ -288,14 +279,10 @@ theorem liftTerm_eq_stateTerm (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data 
   rw [ite_eq_left_of_eq_true _ _ (eq_true hcond), hq, Real.rpow_zero,
     Nat.mul_div_cancel_left _ hlpos, Nat.mul_div_cancel_left _ hlpos']
   simp only [padProd_padList, lastProd_padList, hdiv, padWeight_eq, stateMass]
-  have hV0 : (d.bandMass x : ℂ) ≠ 0 := by exact_mod_cast hV.ne'
-  have hD0' : ((∏ c, z c : ℕ) : ℂ) ≠ 0 := by exact_mod_cast hD0.ne'
   simp only [star_mul', star_star]
   push_cast
   have h2 : (2 : ℂ) ^ k ≠ 0 := pow_ne_zero _ two_ne_zero
-  simp only [inv_pow]
-  field_simp
-  ring
+  grind
 
 /-- The dyad of the pad product: `2^k ≤ D < 2^{k+1}` for `k = ⌊log₂ D⌋`, `D ≥ 1`. -/
 theorem pow_le_and_lt_of_log_eq {D k : ℕ} (hD : 0 < D) (hk : Nat.log 2 D = k) :
@@ -342,14 +329,12 @@ theorem liftStates_mem {C CX alo ahi g x : ℝ} {d : Data K} (A₀ : ℝ)
     rw [div_lt_iff₀ hY0] at h₂
     exact ⟨h₁, h₂⟩
   have hpY := hab hηa
-  have hp'Y := hab hηb
   obtain ⟨hmH, -, hmr, -⟩ := hd.α_supp m hm
   obtain ⟨hnH, -, hnr, -⟩ := hd.β_supp n hn
-  have hm0 : m ≠ 0 := by rintro rfl; rw [Nat.cast_zero] at hmH; linarith
-  have hn0 : n ≠ 0 := by rintro rfl; rw [Nat.cast_zero] at hnH; linarith
+  have hn0 : n ≠ 0 := by rintro rfl; grind
   -- `t ≠ 0` and `|t| < 5Y ≤ W`
-  have ht : liftDet p p' m n r s ≠ 0 :=
-    liftDet_ne_zero hrough hp hp' hU (by exact_mod_cast hY.trans_lt hpY.1) hm0 hmr hn0 hnr r s
+  have ht :=
+    liftDet_ne_zero hrough hp hp' hU (by exact_mod_cast hY.trans_lt hpY.1) (by rintro rfl; grind) hmr hn0 hnr r s
   have htW : |(liftDet p p' m n r s : ℝ)| < roughLevel x := by
     have := abs_lt_of_plateau_ne_zero hψ
     rw [abs_div, abs_of_pos hY0, div_lt_iff₀ hY0] at this
@@ -357,7 +342,7 @@ theorem liftStates_mem {C CX alo ahi g x : ℝ} {d : Data K} (A₀ : ℝ)
   have hD := pow_le_and_lt_of_log_eq
     (prod_pos fun c _ => (mem_filter.1 (mem_band_of_mem_padSet hz c)).2.pos) hk
   refine mem_product.2 ⟨mem_states_of hd hrough hHm hHn hY0 hz hzinj hD hp'
-    (fun c => (hzp c).2) hp'Y hm hs hsR ht htW fun l _ hlm hls => ?_,
+    (fun c => (hzp c).2) (hab hηb) hm hs hsR ht htW fun l _ hlm hls => ?_,
     mem_states_of hd hrough hHm hHn hY0 hz hzinj hD hp (fun c => (hzp c).1) hpY hr hn hnR ht
       htW fun l _ hlr hln => ?_⟩
   · unfold liftDet
@@ -385,7 +370,7 @@ theorem liftStates_injOn {x : ℝ} {d : Data K} {a₁ a₂ : LiftIndex K (padCou
   subst hzz hpp hpp'
   have hpos := listProd_pos fun i h => (mem_filter.1 (mem_band_padList hz hp' i h)).2
   have hpos' := listProd_pos fun i h => (mem_filter.1 (mem_band_padList hz hp i h)).2
-  rw [Nat.eq_of_mul_eq_mul_left hpos hm, Nat.eq_of_mul_eq_mul_left hpos' hr]
+  aesop
 
 open scoped Classical in
 /-- The change of variables is onto the pairs of states with a nonzero term, and `α_m, α_r`
@@ -409,7 +394,7 @@ theorem exists_liftStates_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ
       (2 : ℝ) ^ k ≤ (padProd l : ℝ) ∧ (padProd l : ℝ) < 2 * 2 ^ k ∧
       (padProd l : ℤ) ∣ det (P₁, P₂) (Q₁, Q₂) := by
     by_contra hc
-    exact hne (by simp only [stateTerm, rowEntry]; rw [ite_eq_right hc]; simp)
+    exact hne (by simp_all [stateTerm, rowEntry])
   obtain ⟨hcopy, hban, hD₁, hD₂, -⟩ := hcond
   have hpad : ∏ c : Fin K × Fin (padCount x), l c.1 c.2.castSucc = padProd l := by
     rw [Fintype.prod_prod_type]
@@ -454,8 +439,8 @@ theorem exists_liftStates_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ
 with `D ∈ [2^k, 2^{k+1})` is `2^{-k} ⟨f, 𝒯 f⟩_{2^k}`. -/
 theorem sum_liftTerm_dyad_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
     (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
+    (hdisj : DisjointBands x d.a)
+    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m, m ≠ 0 → IsRough x m → ¬ r ∣ m)
     (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) (hV : 0 < d.bandMass x) {Y : ℝ} (hY : 1 ≤ Y)
     (hYW : ∀ p ∈ d.labels x, Y < (∏ i, p i : ℕ) → 5 * Y ≤ roughLevel x) (k : ℕ) :
     ∑ a ∈ (liftIndex x d).filter (fun a => Nat.log 2 (∏ c, a.2.1 c) = k),
@@ -480,8 +465,8 @@ coprime-pair error is `∑_{k ≤ N} 2^{-k} ⟨f, 𝒯 f⟩_{2^k}`: each pad pro
 dyad. -/
 theorem sum_liftTerm_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
     (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
+    (hdisj : DisjointBands x d.a)
+    (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m, m ≠ 0 → IsRough x m → ¬ r ∣ m)
     (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) (hV : 0 < d.bandMass x) {Y : ℝ} (hY : 1 ≤ Y)
     (hYW : ∀ p ∈ d.labels x, Y < (∏ i, p i : ℕ) → 5 * Y ≤ roughLevel x) {N : ℕ}
     (hN : ∀ z ∈ padSet x d (padCount x), ∏ c, z c < 2 ^ (N + 1)) :
@@ -491,9 +476,7 @@ theorem sum_liftTerm_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
     intro a ha
     simp only [liftIndex, mem_filter, mem_product] at ha
     have hz := ha.1.2.1
-    have hD : ∏ c, a.2.1 c ≠ 0 :=
-      (prod_pos fun c _ => (mem_filter.1 (mem_band_of_mem_padSet hz c)).2.pos).ne'
-    exact mem_range.2 ((Nat.log_lt_iff_lt_pow (by norm_num) hD).2 (hN _ hz))
+    exact mem_range.2 ((Nat.log_lt_iff_lt_pow (by norm_num) (prod_pos fun c _ => (mem_filter.1 (mem_band_of_mem_padSet hz c)).2.pos).ne').2 (hN _ hz))
   rw [← sum_fiberwise_of_maps_to hmaps]
   exact sum_congr rfl fun k _ =>
     sum_liftTerm_dyad_eq q A₀ hd hdisj hrough hHm hHn hV hY hYW k

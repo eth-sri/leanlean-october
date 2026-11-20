@@ -23,7 +23,7 @@ and the mean square of `M_α N_β` comes from `maj:product-mean`.
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real MeasureTheory
+open Filter Finset MeasureTheory
 
 variable {K : ℕ}
 
@@ -40,8 +40,7 @@ theorem continuous_unmarkedPoly {d : Data K} (hHn : 0 < d.Hn) {k : ℕ}
     (ψ : DirichletCharacter ℂ k) : Continuous (unmarkedPoly d ψ) := by
   unfold unmarkedPoly
   refine continuous_const.mul (continuous_finsetSum _ fun n hn => ?_)
-  have h : 0 < n := lt_of_lt_of_le (Nat.ceil_pos.2 hHn) (mem_Icc.1 hn).1
-  exact continuous_const.mul (continuous_natCast_cpow_mul_I h.ne')
+  exact continuous_const.mul (continuous_natCast_cpow_mul_I (lt_of_lt_of_le (Nat.ceil_pos.2 hHn) (mem_Icc.1 hn).1).ne')
 
 /-- `(ξ, t) ↦ P_s(t)` with shift `ξ` is continuous. -/
 theorem continuous_primePoly {P : ℝ} {PS : Finset ℕ} (hPS : ∀ p ∈ PS, p ≠ 0) {k : ℕ}
@@ -60,7 +59,7 @@ theorem norm_primePoly_le_two {P : ℝ} (hP : 1 ≤ P) {PS : Finset ℕ}
   have hP0 : 0 < P := by linarith
   -- `|PS| ≤ P + 1`
   have hcard : (#PS : ℝ) ≤ P + 1 := by
-    have hsub : PS ⊆ Ico ⌈P⌉₊ ⌈2 * P⌉₊ := fun p hp => by
+    have hsub := fun p hp => by
       obtain ⟨-, h₁, h₂⟩ := hPS p hp
       exact mem_Ico.2 ⟨Nat.ceil_le.2 h₁, Nat.lt_ceil.2 h₂⟩
     have h := card_le_card hsub
@@ -73,7 +72,7 @@ theorem norm_primePoly_le_two {P : ℝ} (hP : 1 ≤ P) {PS : Finset ℕ}
     linarith
   unfold primePoly
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hP0.le]
-  calc P⁻¹ * ‖∑ p ∈ PS, χ p * (p : ℂ) ^ (((t + ξ : ℝ) : ℂ) * Complex.I)‖
+  calc _
       ≤ P⁻¹ * ∑ p ∈ PS, (1 : ℝ) := by
         gcongr
         refine (norm_sum_le _ _).trans (sum_le_sum fun p hp => ?_)
@@ -82,11 +81,10 @@ theorem norm_primePoly_le_two {P : ℝ} (hP : 1 ≤ P) {PS : Finset ℕ}
           Complex.ofReal_im, Complex.I_im, mul_one, sub_self, Real.rpow_zero, mul_one]
         exact DirichletCharacter.norm_le_one χ _
     _ ≤ P⁻¹ * (P + 1) := by
-        rw [sum_const, nsmul_eq_mul, mul_one]
-        gcongr
+        simp_all
     _ ≤ 2 := by
         rw [mul_add, inv_mul_cancel₀ hP0.ne']
-        have : P⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hP
+        have := inv_le_one_of_one_le₀ hP
         linarith
 
 /-- `∫_{-T}^T 1_{[m, m + 1]} c ≤ c` for `c ≥ 0`. -/
@@ -95,9 +93,9 @@ theorem integral_indicator_Icc_le {T c : ℝ} (hT : 0 ≤ T) (hc : 0 ≤ c) (m :
   rw [intervalIntegral.integral_of_le (by linarith), integral_indicator_const _ measurableSet_Icc,
     measureReal_restrict_apply measurableSet_Icc, smul_eq_mul]
   have h : volume.real (Set.Icc m (m + 1) ∩ Set.Ioc (-T) T) ≤ 1 := by
-    calc volume.real (Set.Icc m (m + 1) ∩ Set.Ioc (-T) T) ≤ volume.real (Set.Icc m (m + 1)) :=
+    calc _ ≤ volume.real (Set.Icc m (m + 1)) :=
           measureReal_mono Set.inter_subset_left measure_Icc_lt_top.ne
-      _ = 1 := by rw [Real.volume_real_Icc_of_le (by linarith)]; ring
+      _ = 1 := by simp
   exact mul_le_of_le_one_left hc h
 
 /-! ### The isolated energy -/
@@ -126,13 +124,10 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
   set Z := 2 * d.X * L ^ B
   set S := sparseSet x Z As P PS χ ξ
   have hL0 : 0 ≤ L := Real.log_nonneg hx
-  have hHn : 0 < d.Hn := (Real.rpow_pos_of_pos (by linarith) _).trans_le hd.Hn_ge
-  have hN : Continuous N := continuous_unmarkedPoly hHn ψ
-  have hP : 1 ≤ P := (Real.one_le_exp (Real.rpow_nonneg hL0 _)).trans hP1
-  have hPS0 : ∀ p ∈ PS, p ≠ 0 := fun p hp => (hPS p hp).1.ne_zero
-  have hPc : Continuous fun τ => primePoly P PS χ ξ τ := by
-    have h := (continuous_primePoly (P := P) hPS0 χ).comp (Continuous.prodMk_right ξ)
-    exact h
+  have hN := continuous_unmarkedPoly ((Real.rpow_pos_of_pos (by linarith) _).trans_le hd.Hn_ge) ψ
+  have hP := (Real.one_le_exp (Real.rpow_nonneg hL0 _)).trans hP1
+  have hPS0 := fun p hp => (hPS p hp).1.ne_zero
+  have hPc : Continuous fun τ => primePoly P PS χ ξ τ := (continuous_primePoly (P := P) hPS0 χ).comp (Continuous.prodMk_right ξ)
   -- a maximizer `τ_m` of `|N_β|` on each unit interval `[m, m + 1]`
   have hmax : ∀ m : ℤ, ∃ t : ℝ, (m : ℝ) ≤ t ∧ t ≤ m + 1 ∧
       ∀ s, (m : ℝ) ≤ s → s ≤ m + 1 → ‖N s‖ ≤ ‖N t‖ := by
@@ -148,7 +143,7 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
   have hpt : ∀ τ ∈ Set.Icc (-T) T,
       (‖primePoly P PS χ ξ τ‖ * ‖M τ * N τ‖) ^ 2 ≤ G τ := by
     intro τ hτ
-    have hτT : |τ| ≤ T := abs_le.2 hτ
+    have hτT := abs_le.2 hτ
     have hind : 0 ≤ ∑ m ∈ S, Set.indicator (Set.Icc (m : ℝ) (m + 1))
         (fun _ => 4 * ε ^ 2 * ‖N (τm m)‖ ^ 2) τ :=
       sum_nonneg fun m _ => Set.indicator_nonneg (fun _ _ => by positivity) _
@@ -158,30 +153,30 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
         rw [← Real.rpow_natCast, ← Real.rpow_mul hL0]
         norm_num
         ring_nf
-      calc (‖primePoly P PS χ ξ τ‖ * ‖M τ * N τ‖) ^ 2
+      calc _
           = ‖primePoly P PS χ ξ τ‖ ^ 2 * ‖M τ * N τ‖ ^ 2 := by ring
         _ ≤ (L ^ (-As)) ^ 2 * ‖M τ * N τ‖ ^ 2 := by gcongr
         _ = L ^ (-(2 * As)) * ‖M τ * N τ‖ ^ 2 := by rw [h₁]
         _ ≤ G τ := le_add_of_nonneg_right hind
     -- where `P_s` is large, `⌊τ⌋` is in the sparse family
     · set m₀ := ⌊τ⌋
-      have hm₀ : (m₀ : ℝ) ≤ τ := Int.floor_le τ
-      have hm₀' : τ ≤ m₀ + 1 := (Int.lt_floor_add_one τ).le
-      have hTZ' : |τ| ≤ Z := hτT.trans hTZ
+      have hm₀ := Int.floor_le τ
+      have hm₀' := (Int.lt_floor_add_one τ).le
+      have hTZ' := hτT.trans hTZ
       have hmS : m₀ ∈ S := by
         simp only [S, sparseSet, mem_filter, mem_Icc]
         refine ⟨⟨?_, ?_⟩, τ, hm₀, hm₀', hTZ', hlarge⟩
         · have h₁ : -(⌈Z⌉ : ℝ) ≤ τ := by
             linarith [Int.le_ceil Z, (abs_le.1 hTZ').1]
-          have h₂ : -⌈Z⌉ ≤ m₀ := Int.le_floor.2 (by exact_mod_cast h₁)
+          have h₂ := Int.le_floor.2 (by exact_mod_cast h₁)
           linarith
         · have h₁ : τ ≤ (⌈Z⌉ : ℝ) := by linarith [Int.le_ceil Z, (abs_le.1 hTZ').2]
           exact Int.floor_le_iff.2 (by linarith)
-      have hε : ‖M τ‖ ≤ ε := hMε τ hτT
-      have hε0 : 0 ≤ ε := (norm_nonneg _).trans hε
-      have hNτ : ‖N τ‖ ≤ ‖N (τm m₀)‖ := hτmax m₀ τ hm₀ hm₀'
+      have hε := hMε τ hτT
+      have hε0 := (norm_nonneg _).trans hε
+      have hNτ := hτmax m₀ τ hm₀ hm₀'
       have hPs := norm_primePoly_le_two hP hPS χ ξ τ
-      calc (‖primePoly P PS χ ξ τ‖ * ‖M τ * N τ‖) ^ 2
+      calc _
           ≤ (2 * (ε * ‖N (τm m₀)‖)) ^ 2 := by
             rw [norm_mul]
             gcongr
@@ -197,7 +192,7 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
         _ ≤ G τ := le_add_of_nonneg_left (by positivity)
   -- integrate
   have hMN : Continuous fun τ => ‖M τ * N τ‖ ^ 2 := by fun_prop
-  have hind : ∀ m : ℤ, IntervalIntegrable (Set.indicator (Set.Icc (m : ℝ) (m + 1))
+  have hind : ∀ m : ℤ, IntervalIntegrable (Set.indicator (Set.Icc m (m + 1))
       (fun _ => 4 * ε ^ 2 * ‖N (τm m)‖ ^ 2)) volume (-T) T := fun m =>
     ⟨(intervalIntegrable_const (c := 4 * ε ^ 2 * ‖N (τm m)‖ ^ 2)).1.indicator measurableSet_Icc,
       (intervalIntegrable_const (c := 4 * ε ^ 2 * ‖N (τm m)‖ ^ 2)).2.indicator measurableSet_Icc⟩
@@ -205,14 +200,12 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
       (fun _ => 4 * ε ^ 2 * ‖N (τm m)‖ ^ 2) τ) volume (-T) T := by
     convert IntervalIntegrable.sum S fun m _ => hind m using 1
     ext τ
-    rw [Finset.sum_apply]
-  have hGi : IntervalIntegrable G volume (-T) T :=
-    ((hMN.intervalIntegrable _ _).const_mul _).add hsum
+    simp
   calc ∫ τ in (-T)..T, (‖primePoly P PS χ ξ τ‖ * ‖M τ * N τ‖) ^ 2
       ≤ ∫ τ in (-T)..T, G τ :=
         intervalIntegral.integral_mono_on (by linarith)
           ((by fun_prop : Continuous fun τ =>
-            (‖primePoly P PS χ ξ τ‖ * ‖M τ * N τ‖) ^ 2).intervalIntegrable _ _) hGi hpt
+            (‖primePoly P PS χ ξ τ‖ * ‖M τ * N τ‖) ^ 2).intervalIntegrable _ _) (((hMN.intervalIntegrable _ _).const_mul _).add hsum) hpt
     _ = L ^ (-(2 * As)) * (∫ τ in (-T)..T, ‖M τ * N τ‖ ^ 2) +
           ∑ m ∈ S, ∫ τ in (-T)..T, Set.indicator (Set.Icc (m : ℝ) (m + 1))
             (fun _ => 4 * ε ^ 2 * ‖N (τm m)‖ ^ 2) τ := by
@@ -224,6 +217,6 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
         gcongr with m
         exact integral_indicator_Icc_le hT0 (by positivity) _
     _ = L ^ (-(2 * As)) * E + 4 * ε ^ 2 * ∑ m ∈ S, ‖N (τm m)‖ ^ 2 := by rw [mul_sum]
-    _ ≤ L ^ (-(2 * As)) * E + 4 * ε ^ 2 * (C₀ * L ^ (2 * C + 1)) := by gcongr
+    _ ≤ _ := by gcongr
 
 end Erdos408.OneSided

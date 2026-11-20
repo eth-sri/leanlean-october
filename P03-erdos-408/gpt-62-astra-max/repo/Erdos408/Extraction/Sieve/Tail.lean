@@ -27,9 +27,8 @@ noncomputable section
 lemma presieved_eq_sum_rough {κ x z : ℝ} (hκx : 0 ≤ κ * x) (g : ℕ → ℝ) (hg0 : g 0 = 0) :
     presieved κ x z g = ∑ n ∈ (Icc 1 ⌊κ * x + 1⌋₊).filter (Rough z), g (n - 1) := by
   set A := (Icc 1 ⌊κ * x⌋₊).filter (fun u => ∀ p ∈ primesIcc 2 z, ¬ p ∣ u + 1)
-  have hinj : Set.InjOn (fun u : ℕ => u + 1) A := fun a _ b _ h => by simpa using h
   have h1 : presieved κ x z g = ∑ n ∈ A.image (· + 1), g (n - 1) := by
-    rw [sum_image hinj]
+    rw [sum_image (by simp)]
     rfl
   rw [h1, floor_add_one_eq hκx]
   refine sum_subset (fun n hn => ?_) fun n hn hnA => ?_
@@ -40,8 +39,7 @@ lemma presieved_eq_sum_rough {κ x z : ℝ} (hκx : 0 ≤ κ * x) (g : ℕ → �
   · obtain ⟨hn1, hnr⟩ := mem_filter.1 hn
     have hn1' := mem_Icc.1 hn1
     rcases Nat.lt_or_ge n 2 with h | h
-    · have : n = 1 := by omega
-      rw [this, Nat.sub_self, hg0]
+    · grind
     · exfalso
       refine hnA (mem_image.2 ⟨n - 1, mem_filter.2 ⟨mem_Icc.2 ⟨by omega, by omega⟩, ?_⟩, by omega⟩)
       rw [Nat.sub_add_cancel (by omega)]
@@ -63,8 +61,7 @@ lemma sum_rough_prime_eq {z Y : ℝ} (G : ℕ → ℝ) (hG : ∀ p : ℕ, p.Prim
       exact_mod_cast hp.two_le
   rw [hP]
   refine sum_subset (fun n hn => ?_) fun p hp hpr => ?_
-  · obtain ⟨h1, -, h2⟩ := mem_filter.1 hn
-    exact mem_filter.2 ⟨h1, h2⟩
+  · grind
   · obtain ⟨h1, hpp⟩ := mem_filter.1 hp
     refine hG p hpp ?_
     by_contra hlt
@@ -85,29 +82,21 @@ lemma sum_bad_le {z Y G₀ : ℝ} (hz : 1 ≤ z) (J : ℕ) (G : ℕ → ℝ) (hG
   set R := (Icc 1 ⌊Y⌋₊).filter (fun n => Rough z n ∧ ¬ (Squarefree n ∧ #n.primeFactors ≤ J))
   set R₁ := (Icc 1 ⌊Y⌋₊).filter (fun n => Rough z n ∧ ¬ Squarefree n)
   set R₂ := (Icc 1 ⌊Y⌋₊).filter (fun n => Rough z n ∧ J < #n.primeFactors)
-  have hsub : R ⊆ R₁ ∪ R₂ := by
-    intro n hn
-    obtain ⟨h1, hr, hbad⟩ := mem_filter.1 hn
-    by_cases hsq : Squarefree n
-    · exact mem_union_right _ (mem_filter.2 ⟨h1, hr, by
-        by_contra h
-        exact hbad ⟨hsq, not_lt.1 h⟩⟩)
-    · exact mem_union_left _ (mem_filter.2 ⟨h1, hr, hsq⟩)
   have hcard : (#R : ℝ) ≤ #R₁ + #R₂ := by
-    exact_mod_cast (card_le_card hsub).trans (card_union_le _ _)
+    exact_mod_cast (card_le_card (by
+      grind)).trans (card_union_le _ _)
   have h₁ := card_rough_not_squarefree_le hz ⌊Y⌋₊
   have h₂ : (#R₂ : ℝ) ≤ ((2 : ℝ) ^ J)⁻¹ *
       ∑ n ∈ (Icc 1 ⌊Y⌋₊).filter (Rough z), (2 : ℝ) ^ #n.primeFactors := by
     rw [le_inv_mul_iff₀ (by positivity)]
-    calc (2 : ℝ) ^ J * #R₂ = ∑ _n ∈ R₂, (2 : ℝ) ^ J := by rw [sum_const, nsmul_eq_mul, mul_comm]
+    calc _ = ∑ _n ∈ R₂, (2 : ℝ) ^ J := by rw [sum_const, nsmul_eq_mul, mul_comm]
       _ ≤ ∑ n ∈ R₂, (2 : ℝ) ^ #n.primeFactors := sum_le_sum fun n hn =>
           pow_le_pow_right₀ (by norm_num) (mem_filter.1 hn).2.2.le
       _ ≤ _ := sum_le_sum_of_subset_of_nonneg (fun n hn => by
-          obtain ⟨h1, hr, -⟩ := mem_filter.1 hn
-          exact mem_filter.2 ⟨h1, hr⟩) fun _ _ _ => by positivity
-  calc ∑ n ∈ R, |G n| ≤ ∑ _n ∈ R, G₀ := sum_le_sum fun n hn => hG n (mem_filter.1 hn).1
+          grind) fun _ _ _ => by positivity
+  calc _ ≤ ∑ _n ∈ R, G₀ := sum_le_sum fun n hn => hG n (mem_filter.1 hn).1
     _ = G₀ * #R := by rw [sum_const, nsmul_eq_mul, mul_comm]
-    _ ≤ _ := mul_le_mul_of_nonneg_left (by linarith) hG₀
+    _ ≤ _ := by nlinarith
 
 /-- The bookkeeping of E3. -/
 lemma tail_budget {x L T z Y γ D₀ E κ m N Z S Pr J : ℝ} (hx0 : 0 < x) (hL : 0 < L)
@@ -117,40 +106,33 @@ lemma tail_budget {x L T z Y γ D₀ E κ m N Z S Pr J : ℝ} (hx0 : 0 < x) (hL 
     (hJ : 0 ≤ J) :
     |m| * T ^ 62 * (N / Z + J * S) ≤
       |m| * (4 * κ + 6 * κ * D₀ * exp E) * (x / L) * (T ^ 62 * (L / z) + T ^ 62 * T ^ 44 * J) := by
-  have hz0 : 0 < z := by linarith
-  have hZ0 : 0 < Z := by linarith
-  have hT22 : 1 ≤ T ^ 22 := one_le_pow₀ hT
   have h1 : N / Z ≤ x / L * (4 * κ * (L / z)) := by
-    rw [div_le_iff₀ hZ0]
+    rw [div_le_iff₀ (by linarith)]
     have : x / L * (4 * κ * (L / z)) * (z / 2) = 2 * κ * x := by
       field_simp
       ring
-    calc N ≤ 2 * κ * x := hN.trans hY2
-      _ = x / L * (4 * κ * (L / z)) * (z / 2) := this.symm
-      _ ≤ _ := mul_le_mul_of_nonneg_left hZ (by positivity)
-  have hD : D₀ / (γ * L) ≤ D₀ * T ^ 22 / L := by
-    rw [div_le_div_iff₀ (by positivity) hL]
-    calc D₀ * L = D₀ * L * 1 := by ring
-      _ ≤ D₀ * L * (T ^ 22 * γ) := mul_le_mul_of_nonneg_left hγT (mul_nonneg hD₀ hL.le)
-      _ = D₀ * T ^ 22 * (γ * L) := by ring
+    exact ((hN.trans hY2).trans_eq this.symm).trans (mul_le_mul_of_nonneg_left hZ (by positivity))
   have hTE : 1 ≤ exp E * T ^ 22 := by
-    calc (1 : ℝ) = 1 * 1 := by ring
-      _ ≤ exp E * T ^ 22 := mul_le_mul (one_le_exp hE) hT22 zero_le_one (exp_pos E).le
-  have hPr1 : 0 ≤ 1 + Pr := by linarith
+    calc _ = 1 * 1 := by ring
+      _ ≤ _ := mul_le_mul (one_le_exp hE) (one_le_pow₀ hT) zero_le_one (exp_pos E).le
   have h2 : S ≤ x / L * (6 * κ * D₀ * exp E * T ^ 44) := by
     refine hS.trans ?_
-    calc D₀ / (γ * L) * Y * (1 + Pr)
+    calc _
         ≤ D₀ * T ^ 22 / L * (2 * κ * x) * (3 * exp E * T ^ 22) :=
-          mul_le_mul (mul_le_mul hD hY2 hY.le (by positivity)) (by linarith) hPr1
+          mul_le_mul (mul_le_mul (by
+            rw [div_le_div_iff₀ (by positivity) hL]
+            calc _ = D₀ * L * 1 := by ring
+              _ ≤ D₀ * L * (T ^ 22 * γ) := mul_le_mul_of_nonneg_left hγT (mul_nonneg hD₀ hL.le)
+              _ = _ := by ring) hY2 hY.le (by positivity)) (by linarith) (by linarith)
             (by positivity)
-      _ = x / L * (6 * κ * D₀ * exp E * T ^ 44) := by
+      _ = _ := by
           field_simp
           ring
   have ha : 0 ≤ |m| * (4 * κ) := by positivity
   have hb : 0 ≤ |m| * (6 * κ * D₀ * exp E) := by
     have := exp_pos E
     positivity
-  calc |m| * T ^ 62 * (N / Z + J * S)
+  calc _
       ≤ |m| * T ^ 62 * (x / L * (4 * κ * (L / z)) + J * (x / L * (6 * κ * D₀ * exp E * T ^ 44))) :=
         mul_le_mul_of_nonneg_left (add_le_add h1 (mul_le_mul_of_nonneg_left h2 hJ))
           (by positivity)
@@ -204,11 +186,11 @@ theorem eventually_composite (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : 
   have hzexp : z = exp (γ * Real.log x) := by rw [← hlz, exp_log hz0]
   have hz20 : 2 ^ 20 ≤ z := by
     rw [hzexp]
-    calc (2 : ℝ) ^ 20 ≤ exp 1 ^ 20 := pow_le_pow_left₀ (by norm_num)
+    calc _ ≤ exp 1 ^ 20 := pow_le_pow_left₀ (by norm_num)
           (by linarith [add_one_le_exp (1 : ℝ)]) 20
-      _ = exp 20 := by rw [← exp_nat_mul]; norm_num
-      _ ≤ exp (γ * Real.log x) := exp_le_exp.2 hγL
-  have hz1 : 1 ≤ z := le_trans (by norm_num) hz20
+      _ = exp 20 := by simp
+      _ ≤ _ := by gcongr
+  have hz1 : 1 ≤ z := by linarith
   have hzx : z < x := by nlinarith
   have hzY : z ≤ Y := by nlinarith
   have hYx : Y ≤ x ^ 2 := by nlinarith
@@ -223,7 +205,7 @@ theorem eventually_composite (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : 
     rw [hΦ0 0 (Or.inl (inv_pos.2 hκ0)), zero_mul]
   have hGY : ∀ n, ⌊Y⌋₊ < n → G n = 0 := by
     intro n hn
-    have h1 : Y < n := (Nat.floor_lt (by positivity)).1 hn
+    have h1 := (Nat.floor_lt (by positivity)).1 hn
     simp only [G]
     rw [hΦ0 _ (Or.inr (by rw [lt_div_iff₀ hx0]; linarith)), zero_mul]
   have hGz : ∀ p : ℕ, p.Prime → (p : ℝ) ≤ z → G p = 0 := by
@@ -231,8 +213,7 @@ theorem eventually_composite (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : 
     have h : ((p : ℝ) - 1) / x < κ⁻¹ := by
       rw [div_lt_iff₀ hx0, show κ⁻¹ * x = x / κ by ring, lt_div_iff₀ hκ0]
       nlinarith
-    simp only [G]
-    rw [hΦ0 _ (Or.inl h), zero_mul]
+    grind
   -- the uniform bound `|G| ≤ M₀ T⁶²`
   have hG₀ : ∀ n ∈ Icc 1 ⌊Y⌋₊, |G n| ≤ |M 0| * T ^ 62 := by
     intro n hn
@@ -242,12 +223,11 @@ theorem eventually_composite (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : 
       positivity
     have hm : 0 < n - 1 := by omega
     have hmx : ((n - 1 : ℕ) : ℝ) ≤ x ^ 2 := by
-      have : ((n - 1 : ℕ) : ℝ) ≤ n := by exact_mod_cast Nat.sub_le n 1
-      have : (n : ℝ) ≤ Y := (Nat.le_floor_iff (by positivity)).1 hnY
+      have : ((n - 1 : ℕ) : ℝ) ≤ n := by norm_num
+      have := (Nat.le_floor_iff (by positivity)).1 hnY
       linarith
     have hB' := hsize k hk u v B hslot hB
     have hf := hB'.1 (n - 1) hm hmx
-    have hC := hB'.2
     have hP1 : |inertPoly (1 / 2) (1 / 12) K CN x (n - 1)| ≤ 1 := by
       rw [abs_le]
       constructor <;> linarith [hP (n - 1)]
@@ -255,56 +235,47 @@ theorem eventually_composite (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : 
       have h61 : T ^ 4 ≤ T ^ 61 := pow_le_pow_right₀ (by linarith) (by norm_num)
       have h62 : 2 * T ^ 61 ≤ T ^ 62 := by
         have h0 : 0 ≤ T ^ 61 := by positivity
-        have : T ^ 62 = T ^ 61 * T := pow_succ T 61
+        have := pow_succ T 61
         nlinarith
       calc _ ≤ |slotCount x u v B (n - 1)| + |slotMean x u v B| := abs_sub _ _
-        _ ≤ T ^ 62 := by linarith
+        _ ≤ _ := by linarith
     simp only [G, endpoint, abs_mul]
-    calc |Φ (((n : ℝ) - 1) / x)| * (|inertPoly (1 / 2) (1 / 12) K CN x (n - 1)| *
-          |slotCount x u v B (n - 1) - slotMean x u v B|) ≤ |M 0| * (1 * T ^ 62) :=
+    calc _ ≤ |M 0| * (1 * T ^ 62) :=
           mul_le_mul ((abs_le_of_isCutoff hΦ _).trans (le_abs_self _))
             (mul_le_mul hP1 hfC (abs_nonneg _) zero_le_one) (by positivity) (abs_nonneg _)
-      _ = |M 0| * T ^ 62 := by ring
+      _ = _ := by ring
   -- the decomposition
   have hrough_eq : presieved κ x z
       (fun m => Φ (m / x) * endpoint (1 / 2) (1 / 12) K CN x u v B m) =
       ∑ n ∈ (Icc 1 ⌊Y⌋₊).filter (Rough z), G n := by
     rw [presieved_eq_sum_rough hκx _ (by
-      simp only [Nat.cast_zero, zero_div]
-      rw [hΦ0 0 (Or.inl (inv_pos.2 hκ0)), zero_mul])]
+      grind)]
     refine sum_congr rfl fun n hn => ?_
-    have hn1 : 1 ≤ n := (mem_Icc.1 (mem_filter.1 hn).1).1
+    have hn1 := (mem_Icc.1 (mem_filter.1 hn).1).1
     simp only [G, Nat.cast_sub hn1, Nat.cast_one]
   have hprime_eq := sum_rough_prime_eq (Y := Y) G hGz
   have hcomp_eq : ∀ j, compositeSum (1 / 2) (1 / 12) K CN x γ κ j Φ u v B =
       ∑ p ∈ Fintype.piFinset (fun _ : Fin j => primesIcc z Y),
         (if ∀ i, z < (p i : ℝ) then G (∏ i, p i) else 0) := fun j => rfl
-  have hdec := abs_sum_rough_sub_le (z := z) (Y := Y) J G hG1 hGY
+  have hdec := abs_sum_rough_sub_le (z := z)  J G hG1 hGY
   rw [hprime_eq] at hdec
   simp only [← hcomp_eq] at hdec
   rw [hrough_eq]
   refine hdec.trans ((sum_bad_le hz1 J G (by positivity) hG₀).trans ?_)
-  have hY0 : 0 < Y := hz0.trans_le hzY
+  have hY0 := hz0.trans_le hzY
   clear_value G J Y z γ T
   have hγT : 1 ≤ T ^ 22 * γ := by
     rw [one_div, inv_le_iff_one_le_mul₀ hγ0] at hγinv
     linarith
   -- Mertens for `∏_{z < p ≤ Y} (1 + 1/p)`
-  have hEz : E / Real.log z ≤ E := div_le_self hE (by rw [hlz]; linarith)
+  have hEz : E / Real.log z ≤ E := div_le_self hE (by linarith)
   have hlY : Real.log Y ≤ 2 * Real.log x := by
-    have := Real.log_le_log hY0 hYx
-    rw [Real.log_pow] at this
-    push_cast at this
-    exact this
+    simpa using Real.log_le_log hY0 hYx
   have hratio : Real.log Y / Real.log z ≤ 2 * T ^ 22 := by
     rw [hlz, div_le_iff₀ (by positivity)]
-    calc Real.log Y ≤ 2 * Real.log x * 1 := by rw [mul_one]; exact hlY
-      _ ≤ 2 * Real.log x * (T ^ 22 * γ) := mul_le_mul_of_nonneg_left hγT (by positivity)
-      _ = 2 * T ^ 22 * (γ * Real.log x) := by ring
-  have hratio0 : 0 < Real.log Y / Real.log z := by
-    have : 0 < Real.log Y := Real.log_pos (by linarith)
-    rw [hlz]
-    positivity
+    calc _ ≤ 2 * Real.log x * 1 := by linarith
+      _ ≤ 2 * Real.log x * (T ^ 22 * γ) := by gcongr
+      _ = _ := by ring
   have hprod : ∏ p ∈ primesIoc z Y, (1 + 1 / (p : ℝ)) ≤ 2 * exp E * T ^ 22 := by
     have h1 : ∏ p ∈ primesIoc z Y, (1 + 1 / (p : ℝ)) ≤
         exp (∑ p ∈ primesIoc z Y, (1 : ℝ) / p) := by
@@ -314,14 +285,16 @@ theorem eventually_composite (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : 
     have h2 := (abs_le.1 (hmert z Y (by linarith) hzY)).2
     refine h1.trans ((exp_le_exp.2 (show _ ≤ Real.log (Real.log Y / Real.log z) + E by
       linarith)).trans ?_)
-    rw [exp_add, exp_log hratio0]
-    calc Real.log Y / Real.log z * exp E ≤ 2 * T ^ 22 * exp E :=
-          mul_le_mul_of_nonneg_right hratio (exp_pos E).le
-      _ = 2 * exp E * T ^ 22 := by ring
+    rw [exp_add, exp_log (by
+      have : 0 < Real.log Y := Real.log_pos (by linarith)
+      rw [hlz]
+      positivity)]
+    calc _ ≤ 2 * T ^ 22 * exp E :=
+          by gcongr
+      _ = _ := by ring
   have hS := sum_two_pow_card_primeFactors_le (D := D₀ / Real.log z) hz0.le hzY
     fun Y' h1 h2 => by
-      rw [div_mul_eq_mul_div]
-      exact hrough z Y' hz20 h1
+      grind
   rw [hlz] at hS
   exact tail_budget hx0 hL hκ0 hD₀ hE hz1 (by linarith) hγ0 hγT hY0 hY2
     (Nat.floor_le hY0.le) (by have := Nat.lt_floor_add_one z; linarith)

@@ -34,7 +34,7 @@ theorem eventually_raw_add_comparison_le (hG : GraphTransference)
     (hc₀ : 0 < c₀) (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (_hal : alo ≤ ahi)
     (hahi : ahi < 1 / 5) (hc : 0 < c) (hκ : 1 < κ) :
     ∃ (m₀ J : ℕ) (C₁ CG : ℝ), ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
+      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] P big,
         GroupAdmissible c₀ C₀ vlo vhi x P big →
         ∃ (N : ℕ) (Aν Bν : Fin N → ι → Finset (Fin J)) (β : Fin N → ℂ)
           (φ φ' ψ ψ' : Fin N → ℕ → ℂ) (U U' : Fin N → ℝ),
@@ -73,30 +73,19 @@ theorem eventually_raw_add_comparison_le (hG : GraphTransference)
     (φ ν) (φ' ν) (ψ ν) (ψ' ν) (U ν) (U' ν) (hpat ν)
   rw [one_mul] at he₁ he₂
   -- `S_raw + ∑ β S_ν = (Π_raw + ∑ Π_ν) - (Π_raw - S_raw) - ∑ (Π_ν - β S_ν)`
-  have hid : (twoSidedSum x q q₀ κ a u v Bc P G Ψ : ℂ) +
+  have hid : (twoSidedSum x q q₀ κ a u v Bc P G Ψ) +
         ∑ ν, β ν * strippedComparison x q₀ P (Aν ν) (Bν ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν) F G Ψ =
       (cutoffPairing x q₀ P (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) F G Ψ +
           ∑ ν, cutoffPairing x q₀ P (fun h => Aν ν h ∪ Bν ν h)
             (comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν)) F G Ψ) -
         (cutoffPairing x q₀ P (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) F G Ψ -
-          (twoSidedSum x q q₀ κ a u v Bc P G Ψ : ℂ)) -
+          (twoSidedSum x q q₀ κ a u v Bc P G Ψ)) -
         ∑ ν, (cutoffPairing x q₀ P (fun h => Aν ν h ∪ Bν ν h)
             (comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν)) F G Ψ -
           β ν * strippedComparison x q₀ P (Aν ν) (Bν ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν) F G Ψ) := by
-    rw [Finset.sum_sub_distrib]
-    ring
+    simp
   rw [hid]
-  calc _ ≤ ‖cutoffPairing x q₀ P (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) F G Ψ +
-            ∑ ν, cutoffPairing x q₀ P (fun h => Aν ν h ∪ Bν ν h)
-              (comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν)) F G Ψ‖ +
-          ‖cutoffPairing x q₀ P (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) F G Ψ -
-            (twoSidedSum x q q₀ κ a u v Bc P G Ψ : ℂ)‖ +
-          ∑ ν, ‖cutoffPairing x q₀ P (fun h => Aν ν h ∪ Bν ν h)
-              (comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν)) F G Ψ -
-            β ν * strippedComparison x q₀ P (Aν ν) (Bν ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν) F G Ψ‖ :=
-        (norm_sub_le _ _).trans (add_le_add (norm_sub_le _ _) (norm_sum_le _ _))
-    _ ≤ Cres * L ^ (-A) + L ^ Cr * e + ∑ ν, ‖β ν‖ * L ^ Cr' * e :=
-        add_le_add (add_le_add h₀ h₁) (Finset.sum_le_sum fun ν _ => h₂ ν)
+  calc _ ≤ Cres * L ^ (-A) + L ^ Cr * e + ∑ ν, ‖β ν‖ * L ^ Cr' * e := ((norm_sub_le _ _).trans (add_le_add (norm_sub_le _ _) (norm_sum_le _ _))).trans (add_le_add (add_le_add h₀ h₁) (Finset.sum_le_sum fun ν _ => h₂ ν))
     _ = Cres * L ^ (-A) + L ^ Cr * e + (∑ ν, ‖β ν‖) * (L ^ Cr' * e) := by
         rw [Finset.sum_mul]
         exact congrArg _ (Finset.sum_congr rfl fun ν _ => by ring)
@@ -106,6 +95,6 @@ theorem eventually_raw_add_comparison_le (hG : GraphTransference)
         rw [Real.rpow_add hL]
         ring
     _ ≤ Cres * L ^ (-A) + L ^ (-A) + L ^ (-A) := by gcongr
-    _ = (Cres + 2) * L ^ (-A) := by ring
+    _ = _ := by ring
 
 end Erdos408.TwoSided

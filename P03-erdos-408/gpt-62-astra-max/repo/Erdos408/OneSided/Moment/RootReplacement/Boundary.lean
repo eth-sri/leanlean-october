@@ -32,7 +32,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 variable {K : ℕ}
 
@@ -42,13 +42,13 @@ lower corner. -/
 def badCubes (x : ℝ) (d : Data K) (Y d₀ : ℝ) (n : ℕ) (ω : Conf x d Y d₀) :
     Finset (ℕ × ℕ × ℕ) :=
   (cubeIndices n).filter fun i => ∃ P₀ ∈ cubeRoots (d₀ * Y * d.Hm) d.Hn n i,
-    confInd x d Y d₀ ω P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) ≠
+    confInd x d Y d₀ ω P₀.1 P₀.2 ((rootC P₀.1 P₀.2) / P₀.1) ≠
       confInd x d Y d₀ ω (d₀ * Y * d.Hm * (1 + i.1 / n)) (d.Hn * (1 + i.2.1 / n)) (i.2.2 / n)
 
 /-- The integer roots of a cube lie in the real cube. -/
 theorem inCube_of_mem_cubeRoots {U V : ℝ} {n : ℕ} {i : ℕ × ℕ × ℕ} {P₀ : ℕ × ℕ}
     (hP₀ : P₀ ∈ cubeRoots U V n i) :
-    InCube U V n i P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) := by
+    InCube U V n i P₀.1 P₀.2 ((rootC P₀.1 P₀.2) / P₀.1) := by
   unfold cubeRoots boxRoots at hP₀
   obtain ⟨hmem, -, h₂, h₄, h₅, h₆⟩ := mem_filter.1 hP₀
   obtain ⟨h₁, h₃⟩ := mem_product.1 hmem
@@ -60,11 +60,10 @@ theorem inCube_corner {U V : ℝ} (hU : 0 < U) (hV : 0 < V) {n : ℕ} (hn : 1 �
     InCube U V n i (U * (1 + i.1 / n)) (V * (1 + i.2.1 / n)) (i.2.2 / n) := by
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
   have h : ∀ a : ℝ, a / n < (a + 1) / n := fun a => div_lt_div_of_pos_right (by linarith) hn'
-  refine ⟨by rw [mul_comm], ?_, by rw [mul_comm], ?_, le_rfl, h _⟩
-  · rw [mul_comm]
-    exact mul_lt_mul_of_pos_right (by linarith [h i.1]) hU
-  · rw [mul_comm]
-    exact mul_lt_mul_of_pos_right (by linarith [h i.2.1]) hV
+  refine ⟨by linarith, ?_, by linarith, ?_, le_rfl, h _⟩
+  all_goals
+    rw [mul_comm]
+    simp_all
 
 open scoped Classical in
 /-- A bad cube is made bad by some visit: the indicator of one visit differs between a root
@@ -77,7 +76,7 @@ theorem badCubes_subset (x : ℝ) (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y
   unfold badCubes at hi
   obtain ⟨hi, P₀, hP₀, hne⟩ := mem_filter.1 hi
   -- step: some visit indicator differs
-  obtain ⟨j, hj⟩ : ∃ j, visitInd x d Y d₀ P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) (ω j) ≠
+  obtain ⟨j, hj⟩ : ∃ j, visitInd x d Y d₀ P₀.1 P₀.2 ((rootC P₀.1 P₀.2) / P₀.1) (ω j) ≠
       visitInd x d Y d₀ (d₀ * Y * d.Hm * (1 + i.1 / n)) (d.Hn * (1 + i.2.1 / n)) (i.2.2 / n)
         (ω j) := by
     by_contra h
@@ -108,16 +107,16 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
   have hHm : 1 ≤ d.Hm := (Real.one_le_rpow hx hγ).trans hd.Hm_ge
   have hHn : 1 ≤ d.Hn := (Real.one_le_rpow hx hγ).trans hd.Hn_ge
   have hU₁ : 1 ≤ 2 ^ k * 2 ^ j * d.Hm := by
-    have := mul_le_mul hd₁ hY₁ zero_le_one (by positivity)
-    nlinarith
+    bound
   have hU : 0 < (2 : ℝ) ^ k * 2 ^ j * d.Hm := by linarith
   have hV : 0 < d.Hn := by linarith
   have hUV : 1 ≤ 2 ^ k * 2 ^ j * d.Hm * d.Hn := by nlinarith
   have hR : 0 < momentPower x := Nat.ceil_pos.2 (by positivity)
   -- step: the labels, band primes and band sizes are at most `Λ = exp(2 L^{1/5})`
-  set Λ := Real.exp (2 * Real.log x ^ (1 / 5 : ℝ)) with hΛ_def
-  have hL5 : 1 ≤ Real.log x ^ (1 / 5 : ℝ) := Real.one_le_rpow hL (by norm_num)
-  have hΛ : 2 ≤ Λ := by linarith [Real.add_one_le_exp (2 * Real.log x ^ (1 / 5 : ℝ))]
+  let logAt := Real.log x ^ (1 / 5 : ℝ)
+  set Λ := Real.exp (2 * logAt) with hΛ_def
+  have hL5 : 1 ≤ logAt := Real.one_le_rpow hL (by norm_num)
+  have hΛ : 2 ≤ Λ := by linarith [Real.add_one_le_exp (2 * logAt)]
   have hexp : ∀ i, Real.exp (2 * Real.log x ^ d.a i) ≤ Λ := fun i =>
     Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hL
       (((hd.window i).2.trans hahi.le))) zero_le_two)
@@ -126,9 +125,9 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
   have hcard : ∀ i, ((band x (d.a i)).card : ℝ) ≤ Λ := fun i =>
     (card_band_le x (d.a i)).trans (hexp i)
   have hJ : (padCount x : ℝ) + 1 ≤ Λ := by
-    have hJL : (padCount x : ℝ) ≤ Real.log x ^ (1 / 5 : ℝ) :=
+    have hJL : (padCount x : ℝ) ≤ logAt :=
       (Nat.floor_le (by positivity)).trans (Real.rpow_le_rpow_of_exponent_le hL (by norm_num))
-    linarith [Real.add_one_le_exp (2 * Real.log x ^ (1 / 5 : ℝ))]
+    linarith [Real.add_one_le_exp (2 * logAt)]
   have hlab : ∀ (s : (squareModel d (2 ^ j) (2 ^ k)).State x d) i h,
       (s.1.2 i h : ℝ) ≤ Λ := fun s i h => by
     have hs := (mem_product.1 (mem_filter.1 s.2).1).2
@@ -136,13 +135,12 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
   -- step: the tube, with `d₀, Y ≤ ∏ labels ≤ Λ^{K(J+1)}`
   obtain ⟨-, -, hd₀le, hYle⟩ := confCoeff_ne_zero_imp (by positivity) (by positivity) hR hc
   have hM := listProd_le_pow (hlab (ω 0))
-  have hY : (2 : ℝ) ^ j ≤ Λ ^ (K * (padCount x + 1)) := hYle.le.trans hM
-  have hd₀ : (2 : ℝ) ^ k ≤ Λ ^ (K * (padCount x + 1)) := hd₀le.trans hM
+  have hY := hYle.le.trans hM
+  have hd₀ := hd₀le.trans hM
   have hMS : Λ ^ (K * (padCount x + 1)) ≤ Λ ^ (K * (padCount x + 2)) :=
     pow_le_pow_right₀ (by linarith) (by gcongr; omega)
   have hN : (1 : ℝ) ≤ ((2 * momentPower x : ℕ) : ℝ) := by
-    have : 1 ≤ 2 * momentPower x := by omega
-    exact_mod_cast this
+    bound
   have hz : ∀ j', |((ω j').1.1.1.2 : ℝ)| ≤
       2560 * ((2 * momentPower x : ℕ) : ℝ) * (Λ ^ (K * (padCount x + 2))) ^ 2 := by
     intro j'
@@ -152,7 +150,7 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
       exact mul_le_mul (hd₀.trans hMS) (hY.trans hMS) (by positivity) (by positivity)
     push_cast
     calc |((ω j').1.1.1.2 : ℝ)| ≤ 2560 * (2 * momentPower x) * (2 ^ k * 2 ^ j) := ht
-      _ ≤ 2560 * (2 * momentPower x) * (Λ ^ (K * (padCount x + 2))) ^ 2 := by gcongr
+      _ ≤ _ := by gcongr
   -- step: sum over the visits
   have hvisit : ∀ j' : Fin (2 * momentPower x + 1),
       (((cubeIndices n).filter (VisitBad x d (2 ^ j) (2 ^ k * 2 ^ j * d.Hm) d.Hn (ω j').1.2 n
@@ -160,7 +158,7 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
         (n : ℝ) ^ 2 * (10 ^ 7 * ((2 * momentPower x : ℕ) : ℝ) *
           (Λ ^ (K * (padCount x + 2))) ^ 9) := fun j' =>
     card_filter_visitBad_le_pow hU hV hUV hΛ (hlab (ω j')) hband hcard hJ hY₁ hY hn hN (hz j')
-  calc ((badCubes x d (2 ^ j) (2 ^ k) n ω).card : ℝ)
+  calc _
       ≤ ((univ.biUnion fun j' => (cubeIndices n).filter (VisitBad x d (2 ^ j)
           (2 ^ k * 2 ^ j * d.Hm) d.Hn (ω j').1.2 n (ω j').1.1.1)).card : ℝ) :=
         Nat.cast_le.2 (card_le_card (badCubes_subset x d hU hV hn ω))
@@ -175,7 +173,7 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
         rw [sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul]
         push_cast
         ring
-    _ ≤ (n : ℝ) ^ 2 * Real.exp (Real.log x ^ (1 / 2 : ℝ)) :=
-        mul_le_mul_of_nonneg_left hvis (by positivity)
+    _ ≤ _ :=
+        by gcongr
 
 end Erdos408.OneSided

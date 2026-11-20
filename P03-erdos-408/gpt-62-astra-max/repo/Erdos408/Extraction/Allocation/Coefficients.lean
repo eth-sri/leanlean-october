@@ -54,7 +54,7 @@ lemma candidateOmega_eq_cardFactors (x : ℝ) (n : ℕ) :
   rw [ArithmeticFunction.cardFactors_eq_sum_factorization, factorization_keepPrimes,
     Finsupp.sum, Finsupp.support_filter, Nat.support_factorization, candidateOmega]
   refine sum_congr rfl fun p hp => ?_
-  rw [Finsupp.filter_apply_pos _ _ (mem_filter.1 hp).2]
+  simp_all
 
 /-- `Ω_P(n) = Ω_P(n_P)`. -/
 lemma candidateOmega_keepPrimes (x : ℝ) (n : ℕ) :
@@ -72,8 +72,7 @@ lemma strippedProxy_eq (x γ : ℝ) (j m : ℕ) :
     strippedProxy x γ j m = coreFactor x γ j (candidateStrip x m) *
       ((j : ℝ)⁻¹) ^ candidateOmega x (keepPrimes (candidatePrimes x) m) := by
   rw [candidateOmega_keepPrimes]
-  unfold strippedProxy coreFactor dampedWeight
-  split_ifs with h₁ h₂ h₃ h₃ <;> first | (exfalso; tauto) | ring
+  grind [strippedProxy, coreFactor, dampedWeight]
 
 /-- `Ω` is additive over products of nonzero factors. -/
 lemma cardFactors_prod {ι : Type*} (s : Finset ι) {f : ι → ℕ} (hf : ∀ i ∈ s, f i ≠ 0) :
@@ -98,9 +97,8 @@ theorem proxyCoeff_eq (x γ : ℝ) (j : ℕ) {v : ℕ} (hv : v ≠ 0) :
   refine sum_congr rfl fun c hc => ?_
   rw [prod_pow_eq_pow_sum]
   congr 1
-  have hc0 := Nat.ne_zero_of_mem_finMulAntidiag hc
   simp_rw [candidateOmega_eq_cardFactors]
-  rw [← cardFactors_prod _ fun i _ => keepPrimes_ne_zero _ _, keepPrimes_prod hc0,
+  rw [← cardFactors_prod _ fun i _ => keepPrimes_ne_zero _ _, keepPrimes_prod (Nat.ne_zero_of_mem_finMulAntidiag hc),
     Nat.prod_eq_of_mem_finMulAntidiag hc, ← candidateOmega_eq_cardFactors,
     ← candidateOmega_eq_cardFactors, candidateOmega_keepPrimes]
 
@@ -125,8 +123,7 @@ lemma allocationFactor_eq_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) {v : ℕ}
   rw [allocationFactor, Nat.card_finMulAntidiag_of_squarefree hv,
     (ArithmeticFunction.cardDistinctFactors_eq_cardFactors_iff_squarefree
       (keepPrimes_ne_zero _ _)).2 hv, ← candidateOmega_eq_cardFactors]
-  push_cast
-  rw [← mul_pow, mul_inv_cancel₀ hj0, one_pow]
+  aesop
 
 /-- If the candidate part of `v ≠ 0` is not squarefree, then `p² ∣ v` for a
 candidate prime `p`. -/
@@ -156,8 +153,7 @@ lemma dampedDensity_pos (x : ℝ) {j : ℕ} (hj : 1 ≤ j) : 0 < dampedDensity x
   refine mul_pos (prod_pos fun p hp => ?_) (prod_pos fun p hp => inv_pos.2 ?_)
   · have hp2 : (2 : ℝ) ≤ p := by
       have := (mem_filter.1 hp).1
-      rw [mem_Icc, Nat.ceil_le] at this
-      exact this.1
+      aesop
     rw [sub_pos, div_lt_one (by linarith)]
     linarith
   · have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
@@ -170,7 +166,6 @@ lemma coreFactor_nonneg {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hxγ : 1 ≤ x ^ 
   unfold coreFactor
   split_ifs with h
   · have := dampedDensity_pos x hj
-    have : 0 < Real.log e := Real.log_pos (by linarith [h.1])
     positivity
   · exact le_rfl
 

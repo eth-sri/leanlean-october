@@ -77,18 +77,18 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
   obtain ⟨C₁, hR⟩ := exists_realized_history_le (K := K) (C := C) (CX := CX) (ahi := ahi)
     (g := g) (A₀ := arcExp Dstar C) hq hq₁ halo
   obtain ⟨C₀', hC₀'1, hC₀'⟩ : ∃ C₀' : ℝ, 1 ≤ C₀' ∧ |C₀| ≤ C₀' :=
-    ⟨|C₀| + 1, by linarith [abs_nonneg C₀], by linarith⟩
+    ⟨|C₀| + 1, by norm_num, by linarith⟩
   obtain ⟨Ce', hCe'0, hCe'⟩ : ∃ Ce' : ℝ, 0 ≤ Ce' ∧ Ce ≤ Ce' :=
     ⟨max Ce 0, le_max_right _ _, le_max_left _ _⟩
   obtain ⟨C₁', hC₁'1, hC₁'⟩ : ∃ C₁' : ℝ, 1 ≤ C₁' ∧ |C₁| ≤ C₁' :=
-    ⟨|C₁| + 1, by linarith [abs_nonneg C₁], by linarith⟩
+    ⟨|C₁| + 1, by norm_num, by linarith⟩
   have hlog := Real.tendsto_log_atTop
   filter_upwards [hG, hE, hR, eventually_chainEdge_normLe hq hq₁ hC hD hCX halo hahi hK hg,
     eventually_rpow_lt_of_mem_band (by linarith : (0 : ℝ) < alo) 1,
     eventually_harmonicMass_band halo.le,
     hlog.eventually (eventually_highRank_sum_le (C₁ := C₁') (E := momentPrec Dstar C)
       (by linarith) hE₀.le halo.le),
-    hlog.eventually (eventually_lowRank_sum_le K (E := momentPrec Dstar C) hC₀'1 hCe'0 hG₀ rfl),
+    hlog.eventually (eventually_lowRank_sum_le K  hC₀'1 hCe'0 hG₀ rfl),
     hlog.eventually (eventually_addrCount_le K), hlog.eventually_ge_atTop 16]
     with x hGx hEx hRx hE₀x hbig hV hhigh hlow haddr hL16 d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁
   set L := Real.log x with hLdef
@@ -100,31 +100,31 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
   -- `B ≤ L² + 1 ≤ L³`
   have hB : (B : ℝ) ≤ L ^ 2 + 1 := (Nat.ceil_lt_add_one (by positivity)).le
   have hB3 : (B : ℝ) ≤ L ^ 3 :=
-    calc (B : ℝ) ≤ L ^ 2 + 1 := hB
+    calc _ ≤ L ^ 2 + 1 := hB
       _ ≤ L ^ 2 + 15 * L ^ 2 := by linarith [one_le_pow₀ (n := 2) hL1]
       _ = 16 * L ^ 2 := by ring
-      _ ≤ L * L ^ 2 := mul_le_mul_of_nonneg_right hL16 (by positivity)
-      _ = L ^ 3 := by ring
+      _ ≤ L * L ^ 2 := by gcongr
+      _ = _ := by ring
   have hJ : (padCount x : ℝ) ≤ L ^ (1 / 100 : ℝ) := Nat.floor_le (by positivity)
   -- the number `Q` of birth addresses is at most `L⁴`
   set Q := Fintype.card (BirthAddr (K := K) x B N) with hQdef
   have hQ : (Q : ℝ) ≤ L ^ 4 := by
     have hQeq : Q = K * (padCount x + 1) + (N * K + (N + 1) * B) := by
-      simp [hQdef, BirthAddr, Fintype.card_sum, Fintype.card_prod, Fintype.card_fin]
+      simp [hQdef, BirthAddr, Fintype.card_sum, Fintype.card_fin]
     rw [hQeq]
-    exact haddr N (padCount x) B hN₂ hJ hB
+    apply haddr <;> assumption
   -- band primes exceed `L ≥ 2N + 1`
   have hpN : ∀ p ∈ bandPrimes x d, 2 * (N + 1) ≤ p + 1 := by
     intro p hp
     obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
     have hLp := hbig (d.a i) (hd.window i).1 p hpi
-    rw [Real.rpow_one] at hLp
+    simp at hLp
     have hs := four_le_rpow_half hL16
     have hss : L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ) = L := by
       rw [← Real.rpow_add hL0]
       norm_num
     have h4s : 4 * L ^ (1 / 2 : ℝ) ≤ L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ) :=
-      mul_le_mul_of_nonneg_right hs (by positivity)
+      by gcongr
     have : 2 * ((N : ℝ) + 1) ≤ p + 1 := by linarith
     exact_mod_cast this
   -- the birth weights, the chain measure and the boundary norm
@@ -154,7 +154,7 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
   have hEψ : ∀ ψ : Fin K → Option ℕ → ℂ, (∀ i o, ‖ψ i o‖ ≤ 1) →
       NormLe (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
         (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
-        (phasedEdge q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N ψ) (L ^ Ce') :=
+        (phasedEdge q (arcExp Dstar C) x d _ _ u v r B N ψ) (L ^ Ce') :=
     fun ψ hψ => NormLe.mono hμ (Real.rpow_nonneg hL0.le _)
       (Real.rpow_le_rpow_of_exponent_le hL1 hCe')
       (hEx d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁ B N hB3 rfl ψ hψ)
@@ -172,17 +172,15 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
       exact_mod_cast card_biUnion_le_two_mul_blockRank h𝒞'
     have hc0 : 0 ≤ C₀' ^ (N + 1) * L ^ (-edgePrec Dstar C * N +
         (Ce' + edgePrec Dstar C) * (𝒞.biUnion id).card) :=
-      mul_nonneg (pow_nonneg (by linarith) _) (Real.rpow_nonneg hL0.le _)
-    calc ‖blockSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N 𝒞‖
+      by positivity
+    calc _
         ≤ C₀' ^ (N + 1) * L ^ (-edgePrec Dstar C * N +
             (Ce' + edgePrec Dstar C) * (𝒞.biUnion id).card) *
           wnormSq (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
             (chainInit x d (2 ^ j) (2 ^ k) u v r B) :=
           norm_blockSum_le hμ h𝒞' (Nat.succ_pos _) hβ hc0 fun ψ hψ hψU =>
             normLe_phasedProduct hL1 (by linarith) (by linarith) hμ hGψ hEψ hE₀ hψ hψU
-      _ ≤ C₀' ^ (N + 1) * L ^ (-edgePrec Dstar C * N +
-            (Ce' + edgePrec Dstar C) * ((2 * blockRank 𝒞 : ℕ) : ℝ)) *
-          2 ^ (K * (padCount x + 1)) := by
+      _ ≤ _ := by
           refine mul_le_mul (mul_le_mul_of_nonneg_left ?_ (pow_nonneg (by linarith) _)) hW
             (wnormSq_nonneg hμ _) (mul_nonneg (pow_nonneg (by linarith) _)
               (Real.rpow_nonneg hL0.le _))
@@ -202,13 +200,13 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
     have hb : (C₁ * Real.exp (-L ^ alo)) ^ blockRank 𝒞 ≤
         (C₁' * Real.exp (-L ^ alo)) ^ blockRank 𝒞 := by
       refine (le_abs_self _).trans ?_
-      rw [abs_pow, abs_mul, abs_of_pos (Real.exp_pos _)]
+      simp
       exact pow_le_pow_left₀ (by positivity)
         (mul_le_mul_of_nonneg_right hC₁' (Real.exp_pos _).le) _
-    calc L ^ (C₁ * (N + 1)) * (C₁ * Real.exp (-L ^ alo)) ^ blockRank 𝒞
+    calc _
         ≤ L ^ (C₁ * (N + 1)) * (C₁' * Real.exp (-L ^ alo)) ^ blockRank 𝒞 :=
           mul_le_mul_of_nonneg_left hb (Real.rpow_nonneg hL0.le _)
-      _ ≤ L ^ (C₁' * (N + 1)) * (C₁' * Real.exp (-L ^ alo)) ^ blockRank 𝒞 :=
+      _ ≤ _ :=
           mul_le_mul_of_nonneg_right ha
             (pow_nonneg (mul_nonneg (by linarith) (Real.exp_pos _).le) _)
   -- split the rank expansion at `r₀`
@@ -227,20 +225,17 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
     (fun _ _ => mul_nonneg (Real.rpow_nonneg hL0.le _)
       (pow_nonneg (mul_nonneg (by linarith) (Real.exp_pos _).le) _)) hhi
   rw [distinctSum_eq_sum_blockSum, ← sum_filter_add_sum_filter_not _ (blockRank · < r₀)]
-  calc ‖∑ 𝒞 ∈ (blockSystems (BirthAddr (K := K) x B N)).filter (blockRank · < r₀),
-          (blockCoef 𝒞 : ℂ) * blockSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N 𝒞 +
-        ∑ 𝒞 ∈ (blockSystems (BirthAddr (K := K) x B N)).filter (¬blockRank · < r₀),
-          (blockCoef 𝒞 : ℂ) * blockSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N 𝒞‖
+  calc _
       ≤ L ^ (-((momentPrec Dstar C + 2) * N)) + L ^ (-((momentPrec Dstar C + 2) * N)) :=
         (norm_add_le _ _).trans (add_le_add
           (hlowsum.trans (hlow N (padCount x) Q hN₁ hJ hQ))
           (hhighsum.trans (hhigh N Q hN₂ hQ)))
-    _ = 2 * L ^ (-((momentPrec Dstar C + 2) * N)) := by ring
+    _ = _ := by ring
 
 /-- The damping defects are in `[0, 1]`. -/
 private theorem dampDefect_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
     0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
+  have hs  := Real.sqrt_le_one.2 hq₁.le
   unfold dampDefect
   split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
 
@@ -252,8 +247,8 @@ private theorem baseline_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {N p : �
   -- `0 ≤ ∑_{j ≤ N} η'_j ≤ N + 1 ≤ p + 1`
   have hsum₀ : 0 ≤ ∑ j ∈ range (N + 1), dampDefect q N j :=
     sum_nonneg fun j _ => (dampDefect_mem_Icc hq hq₁ N j).1
-  have hsum₁ : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (p : ℝ) + 1 :=
-    calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
+  have hsum₁  :=
+    calc _ ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
           sum_le_sum fun j _ => (dampDefect_mem_Icc hq hq₁ N j).2
       _ = (N : ℝ) + 1 := by simp
       _ ≤ (p : ℝ) + 1 := by gcongr
@@ -271,29 +266,24 @@ theorem two_le_rpow_half_of_four_le {L : ℝ} (hL : 4 ≤ L) :
   have hs0 : 0 ≤ s := by positivity
   -- `s² = L`
   have hss : s * s = L := by
-    rw [hs, ← Real.rpow_add (by linarith)]
+    rw [← Real.rpow_add (by linarith)]
     norm_num
   have hs2 : 2 ≤ s := by
-    by_contra h
-    push Not at h
-    have : s * s < 2 * 2 := mul_lt_mul'' h h hs0 hs0
-    linarith
+    nlinarith
   refine ⟨hs2, ?_⟩
-  calc 2 * s ≤ s * s := mul_le_mul_of_nonneg_right hs2 hs0
-    _ = L := hss
+  nlinarith
 
 /-- `N = 2R` is between `2` and `L^{1/2} + 2`. -/
 theorem two_mul_momentPower_bounds {x : ℝ} (hL : 0 < Real.log x) :
     2 ≤ ((2 * momentPower x : ℕ) : ℝ) ∧
       ((2 * momentPower x : ℕ) : ℝ) ≤ Real.log x ^ (1 / 2 : ℝ) + 2 := by
   have hpos : 0 < Real.log x ^ (1 / 2 : ℝ) / 2 := by positivity
-  have hR : 1 ≤ momentPower x := Nat.ceil_pos.2 hpos
+  have hR  := Nat.ceil_pos.2 hpos
   have hR' : (momentPower x : ℝ) < Real.log x ^ (1 / 2 : ℝ) / 2 + 1 :=
     Nat.ceil_lt_add_one hpos.le
   push_cast
   constructor
-  · have : (1 : ℝ) ≤ momentPower x := by exact_mod_cast hR
-    linarith
+  · bound
   · linarith
 
 /-- The final comparison: for `L ≥ 8E + 16` and `2 ≤ n ≤ L^{1/2} + 2`,
@@ -307,29 +297,27 @@ private theorem two_mul_rpow_add_exp_le {E L n : ℝ} (hE : 0 < E) (hL : 8 * E +
   set a := L ^ (-((E + 1) * n)) with ha
   -- the first term: `L^{-(E + 2) n} = a L^{-n} ≤ a / 4`
   have hLn : L ^ (-n) ≤ 1 / 4 :=
-    calc L ^ (-n) ≤ L ^ (-2 : ℝ) := Real.rpow_le_rpow_of_exponent_le hL1 (by linarith)
+    calc L ^ (-n) ≤ L ^ (-2 : ℝ) := by gcongr
       _ = 1 / (L * L) := by
           rw [Real.rpow_neg hL0.le, show (2 : ℝ) = (2 : ℕ) by norm_num, Real.rpow_natCast]
           ring
-      _ ≤ 1 / 4 := by
+      _ ≤ _ := by
           gcongr
-          calc (4 : ℝ) = 2 * 2 := by norm_num
-            _ ≤ L * L := mul_le_mul (by linarith) (by linarith) (by norm_num) hL0.le
+          nlinarith
   have h₁ : 2 * L ^ (-((E + 2) * n)) ≤ a / 2 := by
     have hsplit : L ^ (-((E + 2) * n)) = a * L ^ (-n) := by
-      rw [ha, ← Real.rpow_add hL0]
+      rw [← Real.rpow_add hL0]
       ring_nf
     rw [hsplit]
-    have ha0 : 0 ≤ a := by positivity
-    calc 2 * (a * L ^ (-n)) ≤ 2 * (a * (1 / 4)) := by gcongr
-      _ = a / 2 := by ring
+    calc _ ≤ 2 * (a * (1 / 4)) := by gcongr
+      _ = _ := by ring
   -- the second term: `(E + 1) n log L + log 2 ≤ 4 (E + 1) L + L ≤ L² / 2`
   have hlog : Real.log L ≤ 2 * L ^ (1 / 2 : ℝ) := by
     have := Real.log_le_rpow_div hL0.le (show (0 : ℝ) < 1 / 2 by norm_num)
     linarith
   have hn' : n ≤ 2 * L ^ (1 / 2 : ℝ) := by linarith
-  have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
-  have hprod : (E + 1) * n * Real.log L ≤ 4 * (E + 1) * L :=
+  have hlog0  := Real.log_nonneg hL1
+  have hprod  :=
     calc (E + 1) * n * Real.log L ≤ (E + 1) * (2 * L ^ (1 / 2 : ℝ)) * (2 * L ^ (1 / 2 : ℝ)) := by
           gcongr
       _ = 4 * (E + 1) * (L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ)) := by ring
@@ -339,7 +327,7 @@ private theorem two_mul_rpow_add_exp_le {E L n : ℝ} (hE : 0 < E) (hL : 8 * E +
   have hquad : 4 * (E + 1) * L + L ≤ L ^ 2 / 2 := by
     have : 4 * (E + 1) + 1 ≤ L / 2 := by linarith
     calc 4 * (E + 1) * L + L = (4 * (E + 1) + 1) * L := by ring
-      _ ≤ L / 2 * L := mul_le_mul_of_nonneg_right this hL0.le
+      _ ≤ L / 2 * L := by gcongr
       _ = L ^ 2 / 2 := by ring
   have h₂ : Real.exp (-(L ^ 2 / 2)) ≤ a / 2 := by
     have hlog2 : Real.log 2 < 1 := by linarith [Real.log_two_lt_d9]
@@ -363,7 +351,7 @@ theorem eventually_norm_lineAverage_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
   have hE : 0 < momentPrec Dstar C := by
     unfold momentPrec squarePrec
     linarith
-  filter_upwards [eventually_distinctSum_truncation (CX := CX) (g := g) hq hq₁ hC hD halo
+  filter_upwards [eventually_distinctSum_truncation   hq hq₁ hC hD halo
       hahi hK,
     eventually_norm_distinctSum_le hq hq₁ hC hD hCX halo hahi hK hg,
     eventually_band_disjoint hg, eventually_rpow_lt_of_mem_band (by linarith : 0 < alo) 1,
@@ -387,7 +375,7 @@ theorem eventually_norm_lineAverage_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
     intro p hp
     obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
     have hLp := hbig (d.a i) (hd.window i).1 p hpi
-    rw [Real.rpow_one] at hLp
+    simp at hLp
     -- `N ≤ L^{1/2} + 2 ≤ L < p`
     have hsL := (two_le_rpow_half_of_four_le (show 4 ≤ L by linarith)).2
     exact_mod_cast (show ((2 * momentPower x : ℕ) : ℝ) < p by linarith)
@@ -409,13 +397,10 @@ theorem eventually_norm_lineAverage_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
   have hS := hsum d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁
   have hT := htrunc d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁
   have hfin := two_mul_rpow_add_exp_le hE hL hn₂ hn
-  calc ‖(∏ p ∈ bandPrimes x d, (baseline q (2 * momentPower x) p : ℂ)) *
-        distinctSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r (memCap x d)
-          (2 * momentPower x)‖
+  calc _
       ≤ 1 * ‖distinctSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r (memCap x d)
           (2 * momentPower x)‖ := by
-        rw [norm_mul]
-        exact mul_le_mul_of_nonneg_right hb (norm_nonneg _)
+        simpa using mul_le_mul_of_nonneg_right hb (norm_nonneg _)
     _ ≤ Real.exp (-(L ^ 2 / 2)) + 2 * L ^ (-((momentPrec Dstar C + 2) *
           (2 * momentPower x : ℕ))) := by
         rw [one_mul]
@@ -425,6 +410,6 @@ theorem eventually_norm_lineAverage_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
           (distinctSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r (truncCap x)
             (2 * momentPower x))
         linarith
-    _ ≤ L ^ (-((momentPrec Dstar C + 1) * (2 * momentPower x : ℕ))) := by linarith
+    _ ≤ _ := by linarith
 
 end Erdos408.OneSided

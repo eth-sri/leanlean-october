@@ -40,8 +40,7 @@ open Finset Real
 
 /-- The cardinality of the box `|m₁| ≤ A`, `|m₂| ≤ B` is `(2A + 1)(2B + 1)`. -/
 theorem card_intBox (A B : ℕ) : ((intBox A B).card : ℝ) = (2 * A + 1) * (2 * B + 1) := by
-  rw [intBox, card_product, Int.card_Icc, Int.card_Icc]
-  rw [show (A : ℤ) + 1 - -(A : ℤ) = ((2 * A + 1 : ℕ) : ℤ) by push_cast; ring,
+  rw [intBox, card_product, Int.card_Icc, Int.card_Icc, show (A : ℤ) + 1 - -(A : ℤ) = ((2 * A + 1 : ℕ) : ℤ) by push_cast; ring,
     show (B : ℤ) + 1 - -(B : ℤ) = ((2 * B + 1 : ℕ) : ℤ) by push_cast; ring, Int.toNat_natCast,
     Int.toNat_natCast]
   push_cast
@@ -49,8 +48,7 @@ theorem card_intBox (A B : ℕ) : ((intBox A B).card : ℝ) = (2 * A + 1) * (2 *
 
 /-- `Y^{0.9} ≤ Y` for `Y ≥ 1`. -/
 private theorem rpow_nine_tenths_le {Y : ℝ} (hY : 1 ≤ Y) : Y ^ (9 / 10 : ℝ) ≤ Y := by
-  calc Y ^ (9 / 10 : ℝ) ≤ Y ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hY (by norm_num)
-    _ = Y := Real.rpow_one Y
+  exact (Real.rpow_le_rpow_of_exponent_le hY (by norm_num)).trans_eq (Real.rpow_one Y)
 
 /-- **The trivial bound** on a box `A' B' ≤ 6 c² Y`, `A', B' ≤ Y^{0.9}`: the determinant matrix
 has norm at most `(2A' + 1)(2B' + 1) ≤ (24 c² + 5) Y`. -/
@@ -58,7 +56,7 @@ theorem kerLe_detBox_triv {ϑ Y c : ℝ} {A' B' : ℕ} (hY : 1 ≤ Y) (hAB : (A'
     (hA : (A' : ℝ) ≤ Y ^ (9 / 10 : ℝ)) (hB : (B' : ℝ) ≤ Y ^ (9 / 10 : ℝ)) :
     KerLe (intBox A' B') (intBox A' B') (fun m m' => ephase (ϑ * (m.1 * m'.2 - m.2 * m'.1)))
       ((24 * c ^ 2 + 5) * Y) := by
-  have h := kerLe_of_norm_le (k := fun m m' : ℤ × ℤ => ephase (ϑ * (m.1 * m'.2 - m.2 * m'.1)))
+  have h := kerLe_of_norm_le (k := fun m m' => ephase (ϑ * (m.1 * m'.2 - m.2 * m'.1)))
     (S := intBox A' B') (S' := intBox A' B') zero_le_one fun m _ m' _ => (norm_ephase _).le
   refine h.mono (by positivity) ?_
   rw [one_mul, Real.sqrt_mul_self (Nat.cast_nonneg _), card_intBox]
@@ -75,11 +73,9 @@ private theorem gram_numeric {A B d Y P c Λ : ℝ} (hA0 : 0 ≤ A) (_hB0 : 0 �
       Y * Λ * ((192 * c ^ 2 + 8) / P + 54 * Y ^ (-(1 / 10 : ℝ))) := by
   have hd0 : 0 < d := by linarith
   have hY0 : 0 < Y := by linarith
-  have hP0 : 0 < P := by linarith
   set l := 1 + Real.log (2 * d) with hldef
   have hl1 : 1 ≤ l := by
-    have : 0 ≤ Real.log (2 * d) := Real.log_nonneg (by linarith)
-    linarith
+    bound
   have hΛ1 : 1 ≤ Λ := hl1.trans hl
   set Yt := Y ^ (9 / 10 : ℝ) with hYt
   have hYt1 : 1 ≤ Yt := Real.one_le_rpow hY (by norm_num)
@@ -92,14 +88,12 @@ private theorem gram_numeric {A B d Y P c Λ : ℝ} (hA0 : 0 ≤ A) (_hB0 : 0 �
     field_simp
     ring
   have t1 : A * B / d ≤ 6 * c ^ 2 * Y / P := by
-    calc A * B / d ≤ 6 * c ^ 2 * Y / d := div_le_div_of_nonneg_right hAB hd0.le
-      _ ≤ 6 * c ^ 2 * Y / P := div_le_div_of_nonneg_left (by positivity) hP0 hPd.le
+    gcongr
   have t2 : A / d ≤ A := div_le_self hA0 (by linarith)
   have t3 : 4 * d * l ≤ 8 * Y * Λ / P := by
-    have : d * l ≤ (2 * Y / P) * Λ := mul_le_mul hdY hl (by linarith) (by positivity)
-    rw [show 8 * Y * Λ / P = 4 * ((2 * Y / P) * Λ) by ring]
-    linarith
-  have t4 : A * l ≤ Yt * Λ := mul_le_mul hA hl (by linarith) (by linarith)
+    have := mul_le_mul hdY hl (by linarith) (by positivity)
+    grind
+  have t4 := mul_le_mul hA hl (by linarith) (by linarith)
   rw [e]
   have hR : Y * Λ * ((192 * c ^ 2 + 8) / P + 54 * Y ^ (-(1 / 10 : ℝ))) =
       192 * (c ^ 2 * Y * Λ / P) + 8 * Y * Λ / P + 54 * (Yt * Λ) := by
@@ -111,8 +105,8 @@ private theorem gram_numeric {A B d Y P c Λ : ℝ} (hA0 : 0 ≤ A) (_hB0 : 0 �
       rw [show 6 * (c ^ 2 * Y * Λ / P) = 6 * c ^ 2 * Y / P * Λ by ring]
       exact le_mul_of_one_le_right (by positivity) hΛ1
     linarith
-  have h2 : A ≤ Yt * Λ := hA.trans (le_mul_of_one_le_right (by linarith) hΛ1)
-  have h3 : B ≤ Yt * Λ := hB.trans (le_mul_of_one_le_right (by linarith) hΛ1)
+  have h2 := hA.trans (le_mul_of_one_le_right (by linarith) hΛ1)
+  have h3 := hB.trans (le_mul_of_one_le_right (by linarith) hΛ1)
   have h4 : (1 : ℝ) ≤ Yt * Λ := by nlinarith
   nlinarith
 
@@ -130,14 +124,12 @@ theorem kerLe_detBox_minor {ϑ Y P c : ℝ} {A' B' : ℕ} {cc : ℤ} {d Q : ℕ}
     have : (0 : ℝ) < d := by linarith
     exact_mod_cast this
   have hdr : (d : ℝ) ≤ 2 * Y / P := (Nat.cast_le.2 hdQ).trans hQ
-  have hY0 : 0 < Y := by linarith
-  have hP0 : 0 < P := by linarith
   have hlog : 1 + Real.log (2 * d) ≤ 1 + Real.log (4 * Y) := by
     have h2d : 2 * (d : ℝ) ≤ 4 * Y := by
       have : 2 * Y / P ≤ 2 * Y := div_le_self (by positivity) hP
       linarith
     have : Real.log (2 * d) ≤ Real.log (4 * Y) :=
-      Real.log_le_log (by have h0 : (0 : ℝ) < d := (by exact_mod_cast hd0); positivity) h2d
+      by gcongr
     linarith
   -- the two Gram bounds
   have happ' : |-ϑ - (-cc : ℤ) / d| ≤ 1 / (d * Q) := by
@@ -146,13 +138,11 @@ theorem kerLe_detBox_minor {ϑ Y P c : ℝ} {A' B' : ℕ} {cc : ℤ} {d Q : ℕ}
   have hcop' : Int.gcd (-cc) d = 1 := by rw [Int.neg_gcd]; exact hcop
   have hS₁ := sum_dirBound_le hd0 hdQ hcop' happ' (2 * A') (n := 2 * B' + 1) (by positivity)
   have hS₂ := sum_dirBound_le hd0 hdQ hcop happ (2 * B') (n := 2 * A' + 1) (by positivity)
-  have hG₁ := kerLe_phaseBox (-ϑ) B' A'
-  have hG₂ := kerLe_phaseBox ϑ A' B'
   set Γ₁sq := ∑ m ∈ Icc (-(2 * A' : ℤ)) (2 * A'), dirBound (2 * B' + 1) (m * -ϑ) with hΓ₁
   set Γ₂sq := ∑ m ∈ Icc (-(2 * B' : ℤ)) (2 * B'), dirBound (2 * A' + 1) (m * ϑ) with hΓ₂
   have hΓ₁0 : 0 ≤ Γ₁sq := sum_nonneg fun m _ => dirBound_nonneg (by positivity) _
   have hΓ₂0 : 0 ≤ Γ₂sq := sum_nonneg fun m _ => dirBound_nonneg (by positivity) _
-  have hE := kerLe_detPhase ϑ A' B' hG₁ hG₂
+  have hE := kerLe_detPhase ϑ A' B' (kerLe_phaseBox (-ϑ) B' A') (kerLe_phaseBox ϑ A' B')
   refine hE.mono (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)) ?_
   -- `√a √b ≤ (a + b)/2 ≤ max`
   have hcast1 : ((2 * A' : ℕ) : ℤ) = 2 * (A' : ℤ) := by push_cast; ring
@@ -160,15 +150,14 @@ theorem kerLe_detBox_minor {ϑ Y P c : ℝ} {A' B' : ℕ} {cc : ℤ} {d Q : ℕ}
   rw [hcast1] at hS₁
   rw [hcast2] at hS₂
   push_cast at hS₁ hS₂
-  have hb1 : Γ₁sq ≤ Y * (1 + Real.log (4 * Y)) * ((192 * c ^ 2 + 8) / P + 54 * Y ^ (-(1 / 10 : ℝ))) :=
+  have hb1 :=
     hS₁.trans (gram_numeric (Nat.cast_nonneg _) (Nat.cast_nonneg _) hAB hA hB hP hd hdr hlog hY)
   have hb2 : Γ₂sq ≤ Y * (1 + Real.log (4 * Y)) * ((192 * c ^ 2 + 8) / P + 54 * Y ^ (-(1 / 10 : ℝ))) :=
     hS₂.trans (gram_numeric (Nat.cast_nonneg _) (Nat.cast_nonneg _) (by linarith) hB hA hP hd hdr
       hlog hY)
   have hsq : Real.sqrt Γ₁sq * Real.sqrt Γ₂sq ≤ (Γ₁sq + Γ₂sq) / 2 := by
     have := two_mul_le_add_sq (Real.sqrt Γ₁sq) (Real.sqrt Γ₂sq)
-    rw [Real.sq_sqrt hΓ₁0, Real.sq_sqrt hΓ₂0] at this
-    linarith
+    grind
   linarith
 
 /-! ### Cells -/
@@ -198,7 +187,7 @@ theorem abs_rootCell_sub_le {Y d₀ U V u v r : ℝ} {D : ℕ} (hY : 0 < Y) (hd�
     exact_mod_cast (Int.mul_ediv_cancel' hdvd).symm
   have hdet' : |(zdet z z' : ℝ)| < 10 * (d₀ * Y) := by
     rw [hdet, abs_mul, abs_of_pos hD0']
-    have : (D : ℝ) * |((zdet z z' / D : ℤ) : ℝ)| ≤ D * (5 * Y) :=
+    have :=
       mul_le_mul_of_nonneg_left h5.le hD0'.le
     nlinarith
   -- `|z'₂/τ(z') - z₂/τ(z)| < 2560 d₀ Y`
@@ -223,8 +212,7 @@ theorem abs_rootCell_sub_le {Y d₀ U V u v r : ℝ} {D : ℕ} (hY : 0 < Y) (hd�
   have hgt : (-2561 : ℝ) < ((⌊a⌋ - ⌊b⌋ : ℤ) : ℝ) := by push_cast; linarith
   have hlt' : ⌊a⌋ - ⌊b⌋ < 2561 := by exact_mod_cast hlt
   have hgt' : -2561 < ⌊a⌋ - ⌊b⌋ := by exact_mod_cast hgt
-  rw [abs_le]
-  constructor <;> omega
+  grind
 
 /-- A term supported on cell shifts `|b - a| ≤ 2560` is the sum over the shifts `δ` of its
 restrictions to `b = a + δ`. -/
@@ -235,11 +223,9 @@ private theorem sum_shift_eq (c₁ c₂ : Prop) [Decidable c₁] [Decidable c₂
   by_cases hc : c₁ ∧ c₂
   · by_cases hg : g = 0
     · simp [hg]
-    · have hab := h hc.1 hc.2 hg
-      simp only [hc.1, hc.2, true_and, ↓reduceIte]
-      rw [sum_eq_single_of_mem (b - a) (mem_Icc.2 (abs_le.1 hab)) fun δ _ hne => by
-        have : ¬ b = a + δ := fun h' => hne (by rw [h']; ring)
-        simp only [this, ↓reduceIte, zero_mul]]
+    · simp only [hc.1, hc.2, true_and, ↓reduceIte]
+      rw [sum_eq_single_of_mem (b - a) (mem_Icc.2 (abs_le.1 (h hc.1 hc.2 hg))) fun δ _ hne => by
+        grind]
       simp
   · have hc' : ∀ δ : ℤ, ¬ (c₁ ∧ c₂ ∧ b = a + δ) := fun δ h' => hc ⟨h'.1, h'.2.1⟩
     simp only [hc, hc', ↓reduceIte, zero_mul, sum_const_zero]
@@ -251,38 +237,34 @@ private theorem core_numeric {Cψ K₁ Kt Y P Λ ε : ℝ} (hCψ : 0 ≤ Cψ) (h
     5121 * (Cψ / 2 * (Y * Λ * (K₁ / P + 54 * ε) + Kt * Y / (P / 2))) ≤
       (5121 * (Cψ / 2) * (K₁ + 54 + 2 * Kt) + 1) * Y * Λ * (P⁻¹ + ε) := by
   set S := Y * Λ * (P⁻¹ + ε) with hS
-  have hS0 : 0 ≤ S := mul_nonneg (mul_nonneg hY.le (by linarith)) (add_nonneg (inv_nonneg.2 hP.le) hε)
-  have hP' : 0 ≤ P⁻¹ := inv_nonneg.2 hP.le
-  have hYΛ : 0 ≤ Y * Λ := mul_nonneg hY.le (by linarith)
+  have hS0 : 0 ≤ S := by positivity
+  have hP' := inv_nonneg.2 hP.le
+  have hYΛ : 0 ≤ Y * Λ := by positivity
   have h1 : Y * Λ * (K₁ / P + 54 * ε) ≤ (K₁ + 54) * S := by
     rw [hS, div_eq_mul_inv]
     have : K₁ * P⁻¹ + 54 * ε ≤ (K₁ + 54) * (P⁻¹ + ε) := by nlinarith
     calc Y * Λ * (K₁ * P⁻¹ + 54 * ε) ≤ Y * Λ * ((K₁ + 54) * (P⁻¹ + ε)) :=
-          mul_le_mul_of_nonneg_left this hYΛ
+          by gcongr
       _ = (K₁ + 54) * (Y * Λ * (P⁻¹ + ε)) := by ring
   have h2 : Kt * Y / (P / 2) ≤ 2 * Kt * S := by
     rw [hS, div_div_eq_mul_div, div_eq_mul_inv]
-    have : Y ≤ Y * Λ := le_mul_of_one_le_right hY.le hΛ
+    have := le_mul_of_one_le_right hY.le hΛ
     have h3 : Y * P⁻¹ ≤ Y * Λ * (P⁻¹ + ε) := by
-      calc Y * P⁻¹ ≤ Y * Λ * P⁻¹ := mul_le_mul_of_nonneg_right this hP'
-        _ ≤ Y * Λ * (P⁻¹ + ε) := mul_le_mul_of_nonneg_left (by linarith) hYΛ
+      nlinarith
     calc Kt * Y * 2 * P⁻¹ = 2 * Kt * (Y * P⁻¹) := by ring
-      _ ≤ 2 * Kt * (Y * Λ * (P⁻¹ + ε)) := mul_le_mul_of_nonneg_left h3 (by linarith)
-  have hC : 0 ≤ Cψ / 2 := div_nonneg hCψ zero_le_two
-  calc 5121 * (Cψ / 2 * (Y * Λ * (K₁ / P + 54 * ε) + Kt * Y / (P / 2)))
+      _ ≤ 2 * Kt * (Y * Λ * (P⁻¹ + ε)) := by gcongr
+  calc _
       ≤ 5121 * (Cψ / 2 * ((K₁ + 54) * S + 2 * Kt * S)) := by
-        have := add_le_add h1 h2
-        have := mul_le_mul_of_nonneg_left this hC
-        linarith
+        gcongr
     _ = 5121 * (Cψ / 2) * (K₁ + 54 + 2 * Kt) * S := by ring
     _ ≤ (5121 * (Cψ / 2) * (K₁ + 54 + 2 * Kt) + 1) * S := by linarith
-    _ = (5121 * (Cψ / 2) * (K₁ + 54 + 2 * Kt) + 1) * Y * Λ * (P⁻¹ + ε) := by rw [hS]; ring
+    _ = _ := by ring
 
 open scoped Classical in
 /-- **The core kernel bound** (PD `mem:minor-decay`). For `L^{A₀} ≥ 2`, `Y ≥ 8 L^{3A₀}`,
 `Y^{0.1} ≥ 8 c₀`, a squarefree pad product `D ∈ [d₀, 2d₀)` and `U ≤ u ≤ 16U`, the core kernel on
 `𝒵 × X` has norm at most `C₀ Y (1 + log 4Y) (L^{-A₀} + Y^{-0.1})`. -/
-theorem exists_coreKer_bound : ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ {κ : Type} (X : Finset κ) (β : κ → ℤ),
+theorem exists_coreKer_bound : ∃ C₀, 0 < C₀ ∧ ∀ {κ : Type} (X : Finset κ) (β : κ → ℤ),
     Set.InjOn β X → ∀ (A₀ x Y d₀ U V u v r : ℝ) (D : ℕ),
     2 ≤ Real.log x ^ A₀ → 8 * (Real.log x ^ A₀) ^ 3 ≤ Y → 8 * latConst ≤ Y ^ (1 / 10 : ℝ) →
     0 < d₀ → d₀ ≤ D → (D : ℝ) < 2 * d₀ → Squarefree D → 0 < U → U ≤ u → u ≤ 16 * U →
@@ -306,36 +288,30 @@ theorem exists_coreKer_bound : ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ {κ : Type} (X :
   have hP3 : P ≤ P ^ 3 := le_self_pow₀ hP1 (by norm_num)
   have hY1 : 1 ≤ Y := by linarith
   have hY0 : 0 < Y := by linarith
-  have hYP : P ≤ Y := by linarith
   have hD0 : 0 < D := by
     have : (0 : ℝ) < D := hd₀.trans_le hD
     exact_mod_cast this
   set Λ := 1 + Real.log (4 * Y) with hΛ
   have hΛ1 : 1 ≤ Λ := by
-    have : 0 ≤ Real.log (4 * Y) := Real.log_nonneg (by linarith)
-    linarith
+    bound
   set nmin := Y * Λ * (K₁ / P + 54 * Y ^ (-(1 / 10 : ℝ))) with hnmin
   set ntriv := Kt * Y with hntriv
-  have hnmin0 : 0 ≤ nmin := mul_nonneg (mul_nonneg hY0.le (by linarith))
-    (add_nonneg (div_nonneg hK₁0 hP0.le) (mul_nonneg (by norm_num) (Real.rpow_nonneg hY0.le _)))
-  have hntriv0 : 0 ≤ ntriv := mul_nonneg hKt0 hY0.le
+  have hnmin0 : 0 ≤ nmin := by positivity
+  have hntriv0 : 0 ≤ ntriv := by positivity
   have hterm0 : 0 ≤ Cψ / 2 * (nmin + ntriv / (P / 2)) :=
-    mul_nonneg (div_nonneg hCψ zero_le_two) (add_nonneg hnmin0 (div_nonneg hntriv0 (by linarith)))
+    by bound
   set ε₁ := ∑ _δ ∈ Icc (-2560 : ℤ) 2560, Cψ / 2 * (nmin + ntriv / (P / 2)) with hε₁
   have hε₁0 : 0 ≤ ε₁ := sum_nonneg fun _ _ => hterm0
   set Z := rootPositions U V u v r with hZ
   set T : ℤ × ℤ → ℤ × ℤ → ℤ := fun z z' => zdet z z' / D with hT
   set G : ℤ × ℤ → ℤ × ℤ → ℂ := fun z z' =>
-    if GoodPad Y D (posRatio r z) ∧ (D : ℤ) ∣ zdet z z' then (plateau ((T z z' : ℝ) / Y) : ℂ)
+    if GoodPad Y D (posRatio r z) ∧ (D : ℤ) ∣ zdet z z' then (plateau ((T z z' : ℝ) / Y))
     else 0 with hG
   set Q := ⌈Y / P⌉₊ with hQ
   have hQ2 : (Q : ℝ) ≤ 2 * Y / P := by
-    have h1 : (Q : ℝ) < Y / P + 1 := Nat.ceil_lt_add_one (div_nonneg hY0.le hP0.le)
+    have h1 := Nat.ceil_lt_add_one (div_nonneg hY0.le hP0.le)
     have h2 : 1 ≤ Y / P := by rw [le_div_iff₀ hP0]; linarith
-    have : Y / P + 1 ≤ 2 * Y / P := by
-      rw [show 2 * Y / P = Y / P + Y / P by ring]
-      linarith
-    linarith
+    grind
   -- the fibers at minor `θ`
   have hfib : ∀ θ ∈ Set.Ioc (-(2 * arcRadius A₀ x Y)) (-(2 * arcRadius A₀ x Y) + 1),
       minorWeight A₀ x Y θ ≠ 0 → KerLe Z Z (fun z z' => G z z' * ephase (θ * T z z')) ε₁ := by
@@ -349,9 +325,9 @@ theorem exists_coreKer_bound : ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ {κ : Type} (X :
         (fun z z' => Hδ δ z z' * ((plateau (T z z' / Y) : ℂ) * ephase (θ * T z z')))
         (Cψ / 2 * (nmin + ntriv / (P / 2))) := by
       intro δ hδ
-      have hδ' : |δ| ≤ 2560 := abs_le.2 (mem_Icc.1 hδ)
+      have hδ' := abs_le.2 (mem_Icc.1 hδ)
       -- the twisted kernels at `ϑ = θ + ξ/Y`
-      have htw : ∀ (ϑ n : ℝ), 0 ≤ n → (∀ A' B' : ℕ, (A' : ℝ) * B' ≤ 6 * latConst ^ 2 * Y →
+      have htw : ∀ ϑ n, 0 ≤ n → (∀ A' B' : ℕ, (A' : ℝ) * B' ≤ 6 * latConst ^ 2 * Y →
           (A' : ℝ) ≤ Y ^ (9 / 10 : ℝ) → (B' : ℝ) ≤ Y ^ (9 / 10 : ℝ) →
           KerLe (intBox A' B') (intBox A' B')
             (fun m m' => ephase (ϑ * (m.1 * m'.2 - m.2 * m'.1))) n) →
@@ -359,8 +335,7 @@ theorem exists_coreKer_bound : ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ {κ : Type} (X :
         intro ϑ n hn hbox
         refine (kerLe_shiftKernel_of_box hδ' hY1 hYc hd₀ hD hDsq hU hUu hu hn hbox).congr
           fun z _ z' _ => ?_
-        simp only [hHδ, hT]
-        split_ifs <;> simp
+        grind
       refine hcut Z (Hδ δ) T θ Y (P / 2) nmin ntriv hY0 (by linarith) hnmin0 hntriv0
         (fun ξ hξ => ?_) (fun ξ => ?_)
       · obtain ⟨c, d, hcop, hPd, hdQ, happ⟩ := exists_dirichlet_minor hP0 hY0 hminor hξ
@@ -379,12 +354,9 @@ theorem exists_coreKer_bound : ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ {κ : Type} (X :
     (fun θ => (minorWeight_spec hP1 hY8 θ).1) (-(2 * arcRadius A₀ x Y)) hε₁0 hfib
   refine (hpar.congr fun q _ q' _ => ?_).mono hε₁0 ?_
   · rw [← sub_arcIntegral_eq hP1 hY8]
-    simp only [hG, hT]
-    split_ifs <;> simp
+    grind
   · -- the numerical bound
     rw [hε₁, sum_const, Int.card_Icc, nsmul_eq_mul]
-    have hcard : (((2560 : ℤ) + 1 - -2560).toNat : ℝ) = 5121 := by norm_num
-    rw [hcard]
     exact core_numeric hCψ hK₁0 hKt0 hY0 hP0 hΛ1 (Real.rpow_nonneg hY0.le _)
 
 end Erdos408.OneSided

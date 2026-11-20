@@ -48,7 +48,7 @@ def sideProd (u : (Fin K → ℕ) × ℕ × ℕ) : ℕ := sideLabel u * u.2.1 * 
 
 /-- The coefficient `η(a/Y) ∏ V_i⁻¹ α_m β_n` of a side, `a = ∏ p_i`. -/
 def sideCoeff (x : ℝ) (d : Data K) (Y : ℝ) (u : (Fin K → ℕ) × ℕ × ℕ) : ℂ :=
-  ((dyadicBump (sideLabel u / Y) * (d.bandMass x)⁻¹ : ℝ) : ℂ) * d.α u.2.1 * d.β u.2.2
+  (dyadicBump (sideLabel u / Y) * (d.bandMass x)⁻¹ : ℝ) * d.α u.2.1 * d.β u.2.2
 
 /-- The arcs `h/k`: `1 ≤ k ≤ L^{A₀}`, `0 ≤ h < k` and `(h, k) = 1`. -/
 def arcSet (A₀ x : ℝ) : Finset (Σ _ : ℕ, ℕ) :=
@@ -58,9 +58,9 @@ def arcSet (A₀ x : ℝ) : Finset (Σ _ : ℕ, ℕ) :=
 `∑_{v, u} c_u \bar c_v ψ((N_u - N_v)/Y) e((h/k + θ)(N_u - N_v - a_u + a_v))`. -/
 def arcTerm (x : ℝ) (d : Data K) (Y : ℝ) (k h : ℕ) (θ : ℝ) : ℂ :=
   ∑ v ∈ sideSet x d, ∑ u ∈ sideSet x d, sideCoeff x d Y u * star (sideCoeff x d Y v) *
-    ((plateau ((((sideProd u : ℤ) - sideProd v : ℤ) : ℝ) / Y) : ℂ) *
-      Complex.exp (2 * π * Complex.I * ((((h : ℝ) / k + θ) *
-        ((((sideProd u : ℤ) - sideProd v) - sideLabel u + sideLabel v : ℤ) : ℝ) : ℝ) : ℂ)))
+    ((plateau (((sideProd u : ℤ) - sideProd v : ℤ) / Y) : ℂ) *
+      Complex.exp (2 * π * Complex.I * (((h : ℝ) / k + θ) *
+        ((((sideProd u : ℤ) - sideProd v) - sideLabel u + sideLabel v : ℤ) : ℝ) : ℝ)))
 
 /-- The phase `e(h(abc - a)/k)` on `(ℤ/k)³`. -/
 def arcPhase (k h : ℕ) [NeZero k] (A B C : ZMod k) : ℂ :=
@@ -69,13 +69,13 @@ def arcPhase (k h : ℕ) [NeZero k] (A B C : ZMod k) : ℂ :=
 /-- The separated coefficient `φ_u = c_u e(-λ a/Y) e(h(a m n - a)/k)` of a side. -/
 def sidePhase (x : ℝ) (d : Data K) (Y lam : ℝ) (k h : ℕ) [NeZero k]
     (u : (Fin K → ℕ) × ℕ × ℕ) : ℂ :=
-  sideCoeff x d Y u * Complex.exp (-(2 * π * Complex.I * ((lam * sideLabel u / Y : ℝ) : ℂ))) *
+  sideCoeff x d Y u * Complex.exp (-(2 * π * Complex.I * (lam * sideLabel u / Y : ℝ))) *
     arcPhase k h (sideLabel u) u.2.1 u.2.2
 
 /-- The separated polynomial `G(τ) = ∑_u φ_u (N_u/(XY))^{iτ}`. -/
 def sidePoly (x : ℝ) (d : Data K) (Y lam : ℝ) (k h : ℕ) [NeZero k] (τ : ℝ) : ℂ :=
   ∑ u ∈ sideSet x d, sidePhase x d Y lam k h u *
-    ((sideProd u / (d.X * Y) : ℝ) : ℂ) ^ ((τ : ℂ) * Complex.I)
+    (sideProd u / (d.X * Y) : ℝ) ^ (τ * Complex.I)
 
 /-! ### The major sum as a sum over arcs -/
 
@@ -83,7 +83,7 @@ def sidePoly (x : ℝ) (d : Data K) (Y lam : ℝ) (k h : ℕ) [NeZero k] (τ : �
 theorem majorSquare_eq_sum_side (A₀ x : ℝ) (d : Data K) (Y : ℝ) :
     majorSquare A₀ x d Y = ∑ v ∈ sideSet x d, ∑ u ∈ sideSet x d,
       sideCoeff x d Y u * star (sideCoeff x d Y v) *
-        majorWeight A₀ x Y ((sideProd u : ℤ) - sideProd v) (sideLabel v) (sideLabel u) := by
+        majorWeight A₀ x Y ((sideProd u) - sideProd v) (sideLabel v) (sideLabel u) := by
   unfold majorSquare
   rw [Finset.mul_sum, sideSet, Finset.sum_product]
   refine Finset.sum_congr rfl fun p _ => ?_
@@ -102,7 +102,7 @@ private theorem sum_sum_mul_sum_integral {ι κ : Type*} (S : Finset ι) (P : Fi
     (c : ι → ι → ℂ) (f : ι → ι → κ → ℝ → ℂ) (hf : ∀ u v kh, Continuous (f u v kh)) (a b : ℝ) :
     ∑ v ∈ S, ∑ u ∈ S, c u v * ∑ kh ∈ P, ∫ θ in a..b, f u v kh θ =
       ∑ kh ∈ P, ∫ θ in a..b, ∑ v ∈ S, ∑ u ∈ S, c u v * f u v kh θ := by
-  calc ∑ v ∈ S, ∑ u ∈ S, c u v * ∑ kh ∈ P, ∫ θ in a..b, f u v kh θ
+  calc _
       = ∑ v ∈ S, ∑ u ∈ S, ∑ kh ∈ P, ∫ θ in a..b, c u v * f u v kh θ := by
         simp_rw [Finset.mul_sum, intervalIntegral.integral_const_mul]
     _ = ∑ kh ∈ P, ∑ v ∈ S, ∑ u ∈ S, ∫ θ in a..b, c u v * f u v kh θ := by
@@ -121,16 +121,15 @@ theorem majorSquare_eq_sum_arcs (A₀ x : ℝ) (d : Data K) (Y : ℝ) :
       ∫ θ in (-(2 * Real.log x ^ A₀ / Y))..(2 * Real.log x ^ A₀ / Y),
         arcTerm x d Y kh.1 kh.2 θ := by
   -- the major-arc kernel as a sum over arcs
-  have hW : ∀ t a b : ℤ, majorWeight A₀ x Y t a b = ∑ kh ∈ arcSet A₀ x,
+  have hW : ∀ t a b, majorWeight A₀ x Y t a b = ∑ kh ∈ arcSet A₀ x,
       ∫ θ in (-(2 * Real.log x ^ A₀ / Y))..(2 * Real.log x ^ A₀ / Y),
-        (plateau (t / Y) : ℂ) * Complex.exp (2 * π * Complex.I *
-          ((((kh.2 : ℝ) / kh.1 + θ) * ((t - b + a : ℤ) : ℝ) : ℝ) : ℂ)) := by
+        (plateau (t / Y)) * Complex.exp (2 * π * Complex.I *
+          (((kh.2 : ℝ) / kh.1 + θ) * ((t - b + a : ℤ) : ℝ) : ℝ)) := by
     intro t a b
     rw [majorWeight, arcIntegral, arcSet, Finset.sum_sigma, Finset.mul_sum]
     refine Finset.sum_congr rfl fun k _ => ?_
     rw [Finset.mul_sum]
-    refine Finset.sum_congr rfl fun h _ => ?_
-    rw [← intervalIntegral.integral_const_mul]
+    simp
   rw [majorSquare_eq_sum_side]
   simp only [hW]
   exact sum_sum_mul_sum_integral _ _ _ _ (fun u v kh => by fun_prop) _ _
@@ -139,20 +138,17 @@ theorem majorSquare_eq_sum_arcs (A₀ x : ℝ) (d : Data K) (Y : ℝ) :
 
 /-- `|w^{iτ}| = 1` for `w > 0`. -/
 private theorem norm_ofReal_cpow_mul_I {w : ℝ} (hw : 0 < w) (τ : ℝ) :
-    ‖(w : ℂ) ^ ((τ : ℂ) * Complex.I)‖ = 1 := by
+    ‖(w : ℂ) ^ (τ * Complex.I)‖ = 1 := by
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hw]
   simp
 
 /-- `\overline{w^{-iτ}} = w^{iτ}` for `w > 0`. -/
 private theorem star_ofReal_cpow_neg_mul_I {w : ℝ} (hw : 0 < w) (τ : ℝ) :
-    star ((w : ℂ) ^ (((-τ : ℝ) : ℂ) * Complex.I)) = (w : ℂ) ^ ((τ : ℂ) * Complex.I) := by
-  have hw' : (w : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 hw.ne'
+    star ((w : ℂ) ^ ((-τ : ℝ) * Complex.I)) = (w : ℂ) ^ (τ * Complex.I) := by
+  have hw' := Complex.ofReal_ne_zero.2 hw.ne'
   rw [Complex.cpow_def_of_ne_zero hw', Complex.cpow_def_of_ne_zero hw', Complex.star_def,
     ← Complex.exp_conj, ← Complex.ofReal_log hw.le]
-  congr 1
-  simp only [map_mul, Complex.conj_ofReal, Complex.conj_I]
-  push_cast
-  ring
+  simp
 
 /-- `t ↦ w^{iτ}` is continuous for `w > 0`. -/
 private theorem continuous_ofReal_cpow_mul_I {w : ℝ} (hw : 0 < w) :
@@ -162,7 +158,7 @@ private theorem continuous_ofReal_cpow_mul_I {w : ℝ} (hw : 0 < w) :
 
 /-- The phase at natural numbers: `e(h(a m n - a)/k)`. -/
 private theorem arcPhase_natCast (k h : ℕ) [NeZero k] {a m n N : ℕ} (hN : a * m * n = N) :
-    arcPhase k h a m n = Complex.exp (2 * π * Complex.I * ((h * ((N : ℤ) - a) : ℤ) : ℂ) / k) := by
+    arcPhase k h a m n = Complex.exp (2 * π * Complex.I * (h * ((N : ℤ) - a) : ℤ) / k) := by
   rw [arcPhase, ← ZMod.toCircle_intCast, ← hN]
   push_cast
   rfl
@@ -179,7 +175,7 @@ private theorem sidePhase_mul_star_mul_plateauTwist (x : ℝ) (d : Data K) {Y : 
             ((((sideProd u : ℤ) - sideProd v) - sideLabel u + sideLabel v : ℤ) : ℝ) : ℝ) :
               ℂ))) := by
   have hk : (k : ℂ) ≠ 0 := Nat.cast_ne_zero.2 (NeZero.ne k)
-  have hY' : (Y : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 hY
+  have hY' := Complex.ofReal_ne_zero.2 hY
   have hy : d.X * ((sideProd u : ℝ) / (d.X * Y) - (sideProd v : ℝ) / (d.X * Y)) =
       (((sideProd u : ℤ) - sideProd v : ℤ) : ℝ) / Y := by
     push_cast
@@ -187,11 +183,11 @@ private theorem sidePhase_mul_star_mul_plateauTwist (x : ℝ) (d : Data K) {Y : 
   unfold sidePhase plateauTwist
   rw [hy, arcPhase_natCast k h (N := sideProd u) rfl, arcPhase_natCast k h (N := sideProd v) rfl]
   -- the exponentials combine
-  have key : Complex.exp (-(2 * π * Complex.I * ((lam * sideLabel u / Y : ℝ) : ℂ))) *
-      star (Complex.exp (-(2 * π * Complex.I * ((lam * sideLabel v / Y : ℝ) : ℂ)))) *
-      Complex.exp (2 * π * Complex.I * ((h * ((sideProd u : ℤ) - sideLabel u) : ℤ) : ℂ) / k) *
+  have key : Complex.exp (-(2 * π * Complex.I * (lam * sideLabel u / Y : ℝ))) *
+      star (Complex.exp (-(2 * π * Complex.I * (lam * sideLabel v / Y : ℝ)))) *
+      Complex.exp (2 * π * Complex.I * (h * ((sideProd u : ℤ) - sideLabel u) : ℤ) / k) *
       star (Complex.exp (2 * π * Complex.I *
-        ((h * ((sideProd v : ℤ) - sideLabel v) : ℤ) : ℂ) / k)) *
+        (h * ((sideProd v : ℤ) - sideLabel v) : ℤ) / k)) *
       Complex.exp (2 * π * Complex.I *
         ((lam * ((((sideProd u : ℤ) - sideProd v : ℤ) : ℝ) / Y) : ℝ) : ℂ)) =
       Complex.exp (2 * π * Complex.I * ((((h : ℝ) / k + lam / Y) *
@@ -210,24 +206,24 @@ private theorem sidePhase_mul_star_mul_plateauTwist (x : ℝ) (d : Data K) {Y : 
 `K` separating `ψ_λ(X(w - w'))` on `[1, 16]²`. -/
 theorem arcTerm_eq_integral {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X) (k h : ℕ)
     [NeZero k] (lam : ℝ) {Kf : ℝ × ℝ → ℂ} (hKi : Integrable Kf)
-    (hK : ∀ w w' : ℝ, 1 ≤ w → w ≤ 16 → 1 ≤ w' → w' ≤ 16 →
+    (hK : ∀ w w', 1 ≤ w → w ≤ 16 → 1 ≤ w' → w' ≤ 16 →
       plateauTwist lam (d.X * (w - w')) =
-        ∫ q : ℝ × ℝ, Kf q * (w : ℂ) ^ ((q.1 : ℂ) * Complex.I) *
-          (w' : ℂ) ^ ((q.2 : ℂ) * Complex.I))
+        ∫ q : ℝ × ℝ, Kf q * w ^ (q.1 * Complex.I) *
+          w' ^ (q.2 * Complex.I))
     (hsupp : ∀ u ∈ sideSet x d, sideCoeff x d Y u ≠ 0 →
-      1 ≤ (sideProd u : ℝ) / (d.X * Y) ∧ (sideProd u : ℝ) / (d.X * Y) ≤ 16)
+      1 ≤ (sideProd u) / (d.X * Y) ∧ (sideProd u) / (d.X * Y) ≤ 16)
     (hpos : ∀ u ∈ sideSet x d, 0 < sideProd u) :
     arcTerm x d Y k h (lam / Y) =
       ∫ q : ℝ × ℝ, Kf q * (sidePoly x d Y lam k h q.1 * star (sidePoly x d Y lam k h (-q.2))) := by
   set w : (Fin K → ℕ) × ℕ × ℕ → ℝ := fun u => (sideProd u : ℝ) / (d.X * Y) with hw
-  have hw0 : ∀ u ∈ sideSet x d, 0 < w u := fun u hu =>
+  have hw0 := fun u hu =>
     div_pos (Nat.cast_pos.2 (hpos u hu)) (mul_pos hX hY)
   set φ := sidePhase x d Y lam k h with hφ
   -- the integrand is a double sum over pairs of sides
   set F : (Fin K → ℕ) × ℕ × ℕ → (Fin K → ℕ) × ℕ × ℕ → ℝ × ℝ → ℂ := fun u v q =>
-    Kf q * (φ u * (w u : ℂ) ^ ((q.1 : ℂ) * Complex.I) *
-      (star (φ v) * (w v : ℂ) ^ ((q.2 : ℂ) * Complex.I))) with hF
-  have hexp : ∀ q : ℝ × ℝ,
+    Kf q * (φ u * (w u) ^ (q.1 * Complex.I) *
+      (star (φ v) * (w v) ^ (q.2 * Complex.I))) with hF
+  have hexp : ∀ q,
       Kf q * (sidePoly x d Y lam k h q.1 * star (sidePoly x d Y lam k h (-q.2))) =
         ∑ v ∈ sideSet x d, ∑ u ∈ sideSet x d, F u v q := by
     intro q
@@ -237,18 +233,14 @@ theorem arcTerm_eq_integral {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X)
     refine Finset.sum_congr rfl fun u _ => ?_
     rw [Finset.mul_sum]
     refine Finset.sum_congr rfl fun v hv => ?_
-    rw [star_ofReal_cpow_neg_mul_I (w := (sideProd v : ℝ) / (d.X * Y)) (hw0 v hv)]
+    rw [star_ofReal_cpow_neg_mul_I  (hw0 v hv)]
   have hFi : ∀ u ∈ sideSet x d, ∀ v ∈ sideSet x d, Integrable (F u v) := by
     intro u hu v hv
     refine hKi.mul_bdd (c := ‖φ u‖ * ‖φ v‖) ?_ (Filter.Eventually.of_forall fun q => ?_)
-    · exact ((continuous_const.mul ((continuous_ofReal_cpow_mul_I (hw0 u hu)).comp
-        continuous_fst)).mul (continuous_const.mul ((continuous_ofReal_cpow_mul_I
-          (hw0 v hv)).comp continuous_snd))).aestronglyMeasurable
+    · fun_prop
     · rw [norm_mul, norm_mul, norm_mul, norm_ofReal_cpow_mul_I (hw0 u hu),
         norm_ofReal_cpow_mul_I (hw0 v hv), norm_star, mul_one, mul_one]
-  rw [show (fun q : ℝ × ℝ => Kf q * (sidePoly x d Y lam k h q.1 *
-      star (sidePoly x d Y lam k h (-q.2)))) = fun q => ∑ v ∈ sideSet x d,
-        ∑ u ∈ sideSet x d, F u v q from funext hexp,
+  rw [(funext hexp),
     integral_finsetSum _ fun v hv => integrable_finsetSum _ fun u hu => hFi u hu v hv]
   unfold arcTerm
   refine Finset.sum_congr rfl fun v hv => ?_
@@ -257,29 +249,24 @@ theorem arcTerm_eq_integral {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X)
   -- pull out the coefficients, then separate `ψ_λ`
   have hFc : ∀ q, F u v q = φ u * star (φ v) *
       (Kf q * (w u : ℂ) ^ ((q.1 : ℂ) * Complex.I) * (w v : ℂ) ^ ((q.2 : ℂ) * Complex.I)) :=
-    fun q => by simp only [hF]; ring
+    fun q => by ring
   simp only [hFc]
   rw [integral_const_mul]
   by_cases hc : sideCoeff x d Y u = 0 ∨ sideCoeff x d Y v = 0
   · have hφ0 : φ u * star (φ v) = 0 := by
-      rcases hc with hc | hc
-      · simp [hφ, sidePhase, hc]
-      · simp [hφ, sidePhase, hc]
-    have hc0 : sideCoeff x d Y u * star (sideCoeff x d Y v) = 0 := by
-      rcases hc with hc | hc <;> simp [hc]
-    rw [hφ0, hc0, zero_mul, zero_mul]
+      grind [sidePhase]
+    grind
   · push Not at hc
     obtain ⟨hu₁, hu₂⟩ := hsupp u hu hc.1
     obtain ⟨hv₁, hv₂⟩ := hsupp v hv hc.2
-    rw [← hK _ _ hu₁ hu₂ hv₁ hv₂, hφ,
-      sidePhase_mul_star_mul_plateauTwist x d hY.ne' hX.ne' lam k h u v]
+    rw [← hK _ _ hu₁ hu₂ hv₁ hv₂, sidePhase_mul_star_mul_plateauTwist x d hY.ne' hX.ne' lam k h u v]
 
 /-! ### The separated polynomial and characters -/
 
 /-- `(a/b)^{iτ} = a^{iτ} (b^{iτ})⁻¹` for `a, b > 0`. -/
 private theorem ofReal_div_cpow_mul_I {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (τ : ℝ) :
-    ((a / b : ℝ) : ℂ) ^ ((τ : ℂ) * Complex.I) =
-      (a : ℂ) ^ ((τ : ℂ) * Complex.I) * ((b : ℂ) ^ ((τ : ℂ) * Complex.I))⁻¹ := by
+    ((a / b : ℝ) : ℂ) ^ (τ * Complex.I) =
+      a ^ (τ * Complex.I) * ((b : ℂ) ^ (τ * Complex.I))⁻¹ := by
   rw [div_eq_mul_inv, Complex.ofReal_mul,
     Complex.mul_cpow_ofReal_nonneg ha.le (inv_nonneg.2 hb.le), Complex.ofReal_inv,
     Complex.inv_cpow _ _ (by rw [Complex.arg_ofReal_of_nonneg hb.le]; exact Real.pi_pos.ne)]
@@ -289,11 +276,11 @@ private theorem ofReal_div_cpow_mul_I {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (τ 
 private theorem sum_side_eq_mul (x : ℝ) (d : Data K) {Y : ℝ} (hY : Y ≠ 0) (hHm : d.Hm ≠ 0)
     (hHn : d.Hn ≠ 0) (lam : ℝ) {k : ℕ} (χ₁ χ₂ χ₃ : DirichletCharacter ℂ k) (τ : ℝ) :
     ∑ u ∈ sideSet x d, sideCoeff x d Y u *
-        Complex.exp (-(2 * π * Complex.I * ((lam * sideLabel u / Y : ℝ) : ℂ))) *
+        Complex.exp (-(2 * π * Complex.I * (lam * sideLabel u / Y : ℝ))) *
         (χ₁ (sideLabel u) * χ₂ u.2.1 * χ₃ u.2.2) *
-        ((sideProd u : ℕ) : ℂ) ^ ((τ : ℂ) * Complex.I) =
-      (Y : ℂ) * labelPoly x d Y lam χ₁ τ * ((d.Hm : ℂ) * markedPoly d χ₂ τ) *
-        ((d.Hn : ℂ) * unmarkedPoly d χ₃ τ) := by
+        (sideProd u : ℕ) ^ (τ * Complex.I) =
+      Y * labelPoly x d Y lam χ₁ τ * (d.Hm * markedPoly d χ₂ τ) *
+        (d.Hn * unmarkedPoly d χ₃ τ) := by
   simp only [labelPoly, markedPoly, unmarkedPoly]
   rw [mul_inv_cancel_left₀ (Complex.ofReal_ne_zero.2 hY),
     mul_inv_cancel_left₀ (Complex.ofReal_ne_zero.2 hHm),
@@ -322,7 +309,7 @@ theorem norm_sidePoly_le {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) 
         ‖labelPoly x d Y lam χ.1 τ * markedPoly d χ.2.1 τ * unmarkedPoly d χ.2.2 τ‖ := by
   have hXY : 0 < d.X * Y := mul_pos (mul_pos hHm hHn) hY
   obtain ⟨c, hc, hexp⟩ := exists_dirichletCharacter_expansion (arcPhase k h)
-    fun a b c' => by rw [arcPhase, Circle.norm_coe]
+    fun a b c' => by simp [arcPhase]
   set z : ℂ := (τ : ℂ) * Complex.I with hz
   -- factor out `(XY)^{-iτ}`
   have h₁ : sidePoly x d Y lam k h τ = (((d.X * Y : ℝ) : ℂ) ^ z)⁻¹ *
@@ -348,8 +335,7 @@ theorem norm_sidePoly_le {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) 
     refine Finset.sum_congr rfl fun χ₁ _ => Finset.sum_congr rfl fun χ₂ _ =>
       Finset.sum_congr rfl fun χ₃ _ => ?_
     ring
-  rw [h₁, h₂, norm_mul, norm_inv, hz, norm_ofReal_cpow_mul_I hXY, inv_one, one_mul,
-    Finset.mul_sum]
+  rw [h₁, h₂, norm_mul, norm_inv, norm_ofReal_cpow_mul_I hXY, inv_one, one_mul, Finset.mul_sum]
   refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun χ _ => ?_)
   -- `|c| ≤ 1` and `Y H_m H_n = XY`
   have hprod : (Y : ℂ) * labelPoly x d Y lam χ.1 τ * ((d.Hm : ℂ) * markedPoly d χ.2.1 τ) *

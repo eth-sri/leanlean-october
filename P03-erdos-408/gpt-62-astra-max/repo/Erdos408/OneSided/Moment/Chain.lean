@@ -44,7 +44,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 
@@ -83,7 +83,7 @@ abbrev ChainState :=
 /-- The measure of a chain state: `∏_{i,h} ν(act_{i,h})` times the memory weight. -/
 def chainMeasure (N : ℕ) (s : ChainState x d Y d₀ u v r B) : ℝ :=
   (∏ i, ∏ h, primeWeight q x d N (s.2.1.1 i h)) *
-    memWeight (fun xp : Particle x d => primeWeight q x d N xp.1.1) s.2.2.1
+    memWeight (fun xp => primeWeight q x d N xp.1.1) s.2.2.1
 
 /-- The number of pending particles hitting `z`, with multiplicity. -/
 def pendingHits (z : ℤ × ℤ) (S : Particle x d → ℕ) : ℕ :=
@@ -100,9 +100,9 @@ open scoped Classical in
 is admissible. -/
 def chainGhostCoef (N j : ℕ) (s : ChainState x d Y d₀ u v r B)
     (c : (Particle x d → ℕ) × (Particle x d → ℕ)) : ℂ :=
-  ghostCoef (HitsAt x d s.1.1) (fun xp : Particle x d => primeWeight q x d N xp.1.1)
+  ghostCoef (HitsAt x d s.1.1) (fun xp => primeWeight q x d N xp.1.1)
       (-dampDefect q N j / pendingWeight q) ((1 - dampDefect q N j) / pendingWeight q ^ 2)
-    (fun xp : Particle x d => -dampDefect q N j * primeMass x d xp.1.1 / pendingWeight q)
+    (fun xp => -dampDefect q N j * primeMass x d xp.1.1 / pendingWeight q)
     B s.2.2 c
 
 /-- The output of a ghost choice: delete `D` and create the batch. -/
@@ -178,7 +178,7 @@ def EdgeValid (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v
       GoodSecond x d d₀ (tau r (complement s.1.1) / tau r s.1.1) s.2.1.1) ∧
     (GoodFirst Y d₀ (tau r (complement c.2.2.1.1) / tau r c.2.2.1.1) (edgeTgt s c) ∧
       GoodSecond x d d₀ (tau r (complement c.2.2.1.1) / tau r c.2.2.1.1) (edgeTgt s c)) ∧
-    (∀ i, (c.2.2.2.1 i).2 = true → ∃ xp : Particle x d, xp.1 = edgePromoted c i ∧
+    (∀ i, (c.2.2.2.1 i).2 = true → ∃ xp, xp.1 = edgePromoted c i ∧
       1 ≤ s.2.2.1 xp) ∧
     (∀ i ∈ c.2.1, edgeStored s c i ∈ particles x d) ∧
     edgeMem s c ∈ memStates B

@@ -18,7 +18,7 @@ The coefficient `c(u) = 𝒲(u) 𝒜_B(u) W_{S'}^b(u)` of the tuple part (PD (6.
 
 namespace Erdos408.TwoSided.TupleHigh
 
-open Filter Finset
+open Finset
 
 /-! ### The weighted slot count (E5) -/
 
@@ -27,7 +27,7 @@ theorem card_primeFactors_le {n : ℕ} (hn : 1 ≤ n) :
     (#n.primeFactors : ℝ) ≤ 2 * Real.log n := by
   have h₁ : 2 ^ #n.primeFactors ≤ ∏ p ∈ n.primeFactors, p :=
     pow_card_le_prod _ _ _ fun p hp => (Nat.prime_of_mem_primeFactors hp).two_le
-  have h₂ : ∏ p ∈ n.primeFactors, p ≤ n := Nat.le_of_dvd hn (Nat.prod_primeFactors_dvd n)
+  have h₂ := Nat.le_of_dvd hn (Nat.prod_primeFactors_dvd n)
   have h : ((2 ^ #n.primeFactors : ℕ) : ℝ) ≤ n := by exact_mod_cast h₁.trans h₂
   have hlog := Real.log_le_log (by positivity) h
   rw [Nat.cast_pow, Real.log_pow, Nat.cast_ofNat] at hlog

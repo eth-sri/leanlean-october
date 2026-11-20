@@ -41,9 +41,9 @@ def choiceOp (cs : Finset γ) (a : ι → γ → ℂ) (out : ι → γ → κ) (
 theorem NormLe.comp {ρ : Type*} [Fintype ρ] {μ : ι → ℝ} {ν : κ → ℝ} {σ : ρ → ℝ}
     {S : (κ → ℂ) → ι → ℂ} {T : (ρ → ℂ) → κ → ℂ} {a b : ℝ} (hS : NormLe μ ν S a)
     (hT : NormLe ν σ T b) : NormLe μ σ (S ∘ T) (a * b) := fun f => by
-  calc wnormSq μ (S (T f)) ≤ a ^ 2 * wnormSq ν (T f) := hS _
+  calc _ ≤ a ^ 2 * wnormSq ν (T f) := hS _
     _ ≤ a ^ 2 * (b ^ 2 * wnormSq σ f) := by gcongr; exact hT f
-    _ = (a * b) ^ 2 * wnormSq σ f := by ring
+    _ = _ := by ring
 
 /-- **The weighted Schur test** for a choice operator. If, for weights `h` and `h' > 0`,
 `∑_c |a(i, c)| h'(out(i, c)) ≤ R h(i)` for every input `i`, and
@@ -63,13 +63,13 @@ theorem normLe_choiceOp [DecidableEq κ] {cs : Finset γ} {a : ι → γ → ℂ
     intro i
     have h1 : ‖choiceOp cs a out f i‖ ≤ ∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖ := by
       refine (norm_sum_le _ _).trans (le_of_eq ?_)
-      exact sum_congr rfl fun c _ => norm_mul _ _
+      simp
     have h2 : (∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖) ^ 2 ≤
         (∑ c ∈ cs, ‖a i c‖ * h' (out i c)) *
           ∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖ ^ 2 / h' (out i c) := by
       refine sum_sq_le_sum_mul_sum_of_sq_le_mul _ (fun c _ => ?_) (fun c _ => ?_)
         (fun c _ => ?_)
-      · exact mul_nonneg (norm_nonneg _) (hh' _).le
+      · simp_all
       · exact div_nonneg (mul_nonneg (norm_nonneg _) (sq_nonneg _)) (hh' _).le
       · rw [show ‖a i c‖ * h' (out i c) * (‖a i c‖ * ‖f (out i c)‖ ^ 2 / h' (out i c)) =
             (‖a i c‖ * ‖f (out i c)‖) ^ 2 by field_simp [(hh' (out i c)).ne']]
@@ -78,17 +78,16 @@ theorem normLe_choiceOp [DecidableEq κ] {cs : Finset γ} {a : ι → γ → ℂ
     calc ‖choiceOp cs a out f i‖ ^ 2 ≤ (∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖) ^ 2 := by
           gcongr
       _ ≤ _ := h2
-      _ ≤ R * h i * ∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖ ^ 2 / h' (out i c) := by
+      _ ≤ _ := by
           gcongr; exact hrow i
   -- regroup the choices by their output
-  calc wnormSq μ (choiceOp cs a out f)
+  calc _
       ≤ ∑ i, μ i * (R * h i * ∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖ ^ 2 / h' (out i c)) :=
         sum_le_sum fun i _ => mul_le_mul_of_nonneg_left (hpt i) (hμ i)
     _ = R * ∑ i, ∑ c ∈ cs, μ i * ‖a i c‖ * h i * (‖f (out i c)‖ ^ 2 / h' (out i c)) := by
         rw [Finset.mul_sum]
         refine sum_congr rfl fun i _ => ?_
         rw [Finset.mul_sum, Finset.mul_sum, Finset.mul_sum]
-        refine sum_congr rfl fun c _ => ?_
         ring
     _ = R * ∑ j, ‖f j‖ ^ 2 / h' j *
           ∑ i, ∑ c ∈ cs with out i c = j, μ i * ‖a i c‖ * h i := by
@@ -99,15 +98,13 @@ theorem normLe_choiceOp [DecidableEq κ] {cs : Finset γ} {a : ι → γ → ℂ
         rw [← sum_fiberwise cs (out i)
           (fun c => μ i * ‖a i c‖ * h i * (‖f (out i c)‖ ^ 2 / h' (out i c)))]
         refine sum_congr rfl fun j _ => sum_congr rfl fun c hc => ?_
-        rw [(mem_filter.1 hc).2]
-        ring
+        grind
     _ ≤ R * ∑ j, ‖f j‖ ^ 2 / h' j * (C * (ν j * h' j)) := by
         gcongr with j
         · exact div_nonneg (sq_nonneg _) (hh' j).le
         · exact hcol j
-    _ = R * C * wnormSq ν f := by
+    _ = _ := by
         rw [wnormSq, mul_sum, mul_sum]
-        refine sum_congr rfl fun j _ => ?_
-        field_simp [(hh' j).ne']
+        grind
 
 end Erdos408.OneSided

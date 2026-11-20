@@ -53,14 +53,14 @@ theorem exists_mellinCutoff (κ CΨ : ℝ) (M : ℕ → ℝ) (hκ : 1 < κ) :
   filter_upwards [hx, InsertionMellin.eventually_iteratedDeriv_bound CΨ M] with x hx hder
   intro Ψ hΨ
   obtain ⟨hsm, hsupp, hbd⟩ := hΨ
-  obtain ⟨a, hai, ha₁, harep, hat⟩ := hx (fun y => (Ψ y : ℂ)) ⟨
+  obtain ⟨a, hai, ha₁, harep, hat⟩ := hx (fun y => (Ψ y)) ⟨
     Complex.ofRealCLM.contDiff.comp hsm,
     fun y hy => by
       obtain ⟨h₁, h₂⟩ := hsupp y (by simpa using Function.mem_support.1 hy)
       exact ⟨h₁, h₂⟩,
     fun k y => by
       rw [InsertionMellin.norm_iteratedDeriv_ofReal hsm]
-      exact hder Ψ k y (hbd k y)⟩
+      bound⟩
   -- transport along `t ↦ (fun _ => t)`
   set e := (MeasurableEquiv.funUnique (Fin 1) ℝ).symm
   have hmp : MeasurePreserving e volume volume := (volume_preserving_funUnique (Fin 1) ℝ).symm
@@ -71,14 +71,13 @@ theorem exists_mellinCutoff (κ CΨ : ℝ) (M : ℕ → ℝ) (hκ : 1 < κ) :
   · intro y hy
     rw [harep y hy, ← hmp.integral_comp' (fun ξ => a ξ * Erdos821.Blueprint.Analytic.mellin y
       (2 * Real.pi * ξ 0))]
-    refine integral_congr_ae (Eventually.of_forall fun t => ?_)
     simp only [he₀, TupleHigh.mellin_eq_cpow hy]
   · have hpre : e ⁻¹' {ξ : Fin 1 → ℝ | Erdos821.Blueprint.Analytic.L x ^ Cf < ‖ξ‖} =
         {ξ : ℝ | Real.log x ^ Cf < |ξ|} := by
       ext t
       have : ‖e t‖ = |t| := by
         change ‖fun _ : Fin 1 => t‖ = |t|
-        rw [pi_norm_const, Real.norm_eq_abs]
+        simp
       change Real.log x ^ Cf < ‖e t‖ ↔ Real.log x ^ Cf < |t|
       rw [this]
     rw [← hpre, hmp.setIntegral_preimage_emb e.measurableEmbedding (fun ξ => ‖a ξ‖)]
@@ -98,15 +97,13 @@ theorem norm_comparisonKernel_le {ι : Type} [Fintype ι] {J : ℕ} {A B : ι �
     (p p' : ι → Fin (J + 1) → ℕ) (a : ι → Fin J → ℕ) :
     ‖comparisonKernel A B β φ φ' ψ ψ' p p' a‖ ≤ ‖β‖ := by
   unfold comparisonKernel
-  simp only [norm_mul]
+  simp
   have h₁ := (h (slotProduct A a)).1
   have h₂ := (h (slotProduct B a)).2.1
   have h₃ := (h (slotProduct A fun h i => p' h i.castSucc)).2.2.1
   have h₄ := (h (slotProduct B fun h i => p h i.castSucc)).2.2.2
-  calc ‖β‖ * ‖φ (slotProduct A a)‖ * ‖φ' (slotProduct B a)‖ *
-        ‖ψ (slotProduct A fun h i => p' h i.castSucc)‖ *
-        ‖ψ' (slotProduct B fun h i => p h i.castSucc)‖ ≤ ‖β‖ * 1 * 1 * 1 * 1 := by gcongr
-    _ = ‖β‖ := by ring
+  calc _ ≤ ‖β‖ * 1 * 1 * 1 * 1 := by gcongr
+    _ = _ := by ring
 
 /-- `Π_C^Ψ` of Lemma G2: the pattern pairing of `C` with kernel `K`, with the source endpoint
 `Ψ(n/(xD)) F(n) h(n)/n`, the target endpoint `G(n') h(n')` and `ζ = 0`, over positions
@@ -115,17 +112,7 @@ noncomputable def cutoffPairing (x q₀ : ℝ) {ι : Type} [Fintype ι] [Decidab
     (P : ι → Finset ℕ) {J : ℕ} (C : ι → Finset (Fin J))
     (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
     (F G : ℕ → ℝ) (Ψ : ℝ → ℝ) : ℂ :=
-  ∑ n ∈ Finset.Icc 1 ⌊x ^ 2⌋₊, ∑ p ∈ physicalLists P (J + 1) n, ∑ a ∈ auxLabels P C,
-    ∑ p' ∈ (physicalLists P (J + 1) (n + edgeProduct C p a)).filter (fun p' =>
-        ∀ h, (∀ i, i ∉ C h → p' h i.castSucc = p h i.castSucc) ∧
-          ∀ i ∈ C h, ∀ j, a h i ≠ p h j ∧ a h i ≠ p' h j),
-      ((∏ h, (harmonicMass (P h))⁻¹ ^ (J + 1) *
-          (∏ i ∈ C h, (harmonicMass (P h) * a h i)⁻¹) *
-          (harmonicMass (P h))⁻¹ ^ ((C h).card + 1) : ℝ) : ℂ) * K p p' a *
-        ((Ψ (n / (x * edgeProduct C p a)) / n * F n * G (n + edgeProduct C p a) *
-          q₀ ^ (groupPrimeCount P n - (J + 1) * Fintype.card ι) *
-          q₀ ^ (groupPrimeCount P (n + edgeProduct C p a) - (J + 1) * Fintype.card ι) : ℝ) :
-          ℂ)
+  ∑ n ∈ Finset.Icc 1 ⌊x ^ 2⌋₊, (InsertionIdentity.cutoffTerm x q₀ P C K F G Ψ n)
 
 /-- **Lemma G2 (insertion identity, exact).** Eventually, for groups as in (6.1), every
 family of patterns `(C_ν, K_ν)`, all `F, G` and every `Ψ` supported in `[κ⁻¹, κ]` with a
@@ -137,9 +124,9 @@ since `1 ≤ D ≤ x/κ` (U10); for such `n` every target `n + D` lies in `[X, 3
 theorem eventually_cutoffPairing_eq (q₀ c₀ C₀ vlo vhi κ : ℝ) (hq₀ : 0 < q₀) (hκ : 1 < κ)
     (J : ℕ) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
+      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] P big,
         GroupAdmissible c₀ C₀ vlo vhi x P big →
-        ∀ (N : ℕ) (C : Fin N → ι → Finset (Fin J))
+        ∀ N (C : Fin N → ι → Finset (Fin J))
           (K : Fin N → (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
           (F G : ℕ → ℝ) (Ψ : ℝ → ℝ) (a : ℝ → ℂ),
           (∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) → Integrable a →
@@ -154,7 +141,7 @@ theorem eventually_cutoffPairing_eq (q₀ c₀ C₀ vlo vhi κ : ℝ) (hq₀ : 0
                     (sourceEndpoint x q₀ P J F (2 ^ m) ξ) (targetEndpoint q₀ P J G (2 ^ m)) +
                   ∑ ν, patternPairing P q₀ (C ν) (K ν) (-(2 * Real.pi * ξ)) (dyadSource (2 ^ m))
                     (sourceEndpoint x q₀ P J F (2 ^ m) ξ) (targetEndpoint q₀ P J G (2 ^ m))) :=
-  InsertionIdentity.eventually_sum_cutoffTerm_eq q₀ c₀ C₀ vlo vhi κ hq₀ hκ J
+  by apply InsertionIdentity.eventually_sum_cutoffTerm_eq <;> assumption
 
 /-- **Lemma G3 (residual pairing).** There are `m₀, J, C₁` (from `GraphTransference` at
 `(E_G, C₃, C₄) = (A + 2C₃ + K_Ψ + 2, max B₀ 0 + 1, C_f + 3)`) and `C_res` such that,
@@ -219,8 +206,8 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
     rw [show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
     nlinarith [Real.pi_le_four, pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) hL 3]
   have hL2C : 2 ≤ L ^ (2 * C₃) := by
-    calc (2 : ℝ) ≤ L ^ (1 : ℝ) := by rw [Real.rpow_one]; exact hL
-      _ ≤ L ^ (2 * C₃) := Real.rpow_le_rpow_of_exponent_le hL1 (by
+    calc _ ≤ L ^ (1 : ℝ) := by simp; exact hL
+      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL1 (by
           have := le_max_right B₀ 0; linarith)
   -- the bound at one dyad
   set b₀ : ℝ := |Cgr| * L ^ (-A - 2) + 2 * KA * L ^ (-|A| - 4) with hb₀
@@ -253,9 +240,9 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
       obtain ⟨hf, hnf, hng⟩ := hend ξ
       have hζ : |-(2 * Real.pi * ξ)| ≤ L ^ (Cf + 3) := by
         rw [abs_neg, abs_mul, abs_of_pos Real.two_pi_pos, Real.rpow_add hL0]
-        calc 2 * Real.pi * |ξ| ≤ L ^ (3 : ℝ) * L ^ Cf :=
-              mul_le_mul hL3 hξ (abs_nonneg _) (by positivity)
-          _ = L ^ Cf * L ^ (3 : ℝ) := mul_comm _ _
+        calc _ ≤ L ^ (3 : ℝ) * L ^ Cf :=
+              by gcongr <;> positivity
+          _ = _ := by ring
       have h := hpair (-(2 * Real.pi * ξ)) hζ (2 ^ m) hX₁ hX₂ (dyadSource (2 ^ m))
         (dyadTarget (2 ^ m)) (sourceEndpoint x q₀ P J F (2 ^ m) ξ)
         (targetEndpoint q₀ P J G (2 ^ m)) (fun n hn => mem_dyadSource hn) hf
@@ -296,26 +283,25 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
         _ ≤ (L ^ |C₁| + L ^ |C₁|) * (2 ^ m * L ^ |Cabs|) := by
             gcongr
             exact hβ.trans hC₁
-        _ = 2 * L ^ |C₁| * 2 ^ m * L ^ |Cabs| := by ring
+        _ = _ := by ring
     have hsplit := norm_integral_mul_le_of_split hαi (by positivity) hin₁ hin₂
     rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hX.le]
-    calc (2 ^ m)⁻¹ * ‖∫ ξ, α ξ * _‖
+    calc _
         ≤ (2 ^ m)⁻¹ * (|Cgr| * 2 ^ m * L ^ (-A - 2 - KΨ) * L ^ KΨ +
             2 * L ^ |C₁| * 2 ^ m * L ^ |Cabs| * (KA * L ^ (-(|A| + |C₁| + |Cabs| + 4)))) := by
           gcongr
           refine hsplit.trans (add_le_add ?_ ?_)
           · exact mul_le_mul_of_nonneg_left hα₁ (by positivity)
-          · exact mul_le_mul_of_nonneg_left hαt (by positivity)
+          gcongr
       _ = |Cgr| * (L ^ (-A - 2 - KΨ) * L ^ KΨ) +
             2 * KA * (L ^ |C₁| * L ^ |Cabs| * L ^ (-(|A| + |C₁| + |Cabs| + 4))) := by
           field_simp
       _ = b₀ := by
           rw [← Real.rpow_add hL0, ← Real.rpow_add hL0, ← Real.rpow_add hL0, hb₀]
-          congr 3 <;> ring
+          ring
   rw [hG2 P big hadm N (fun ν h => Aν ν h ∪ Bν ν h)
     (fun ν => comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν)) F G Ψ α
     hcu.2.1 hαi hαrep]
-  have hb₀0 : 0 ≤ b₀ := by positivity
   have e₁ : L * L * L ^ (-A - 2) = L ^ (-A) := by
     have h := Real.rpow_add hL0 (-A - 2) 2
     rw [show -A - 2 + 2 = -A by ring, Real.rpow_two] at h
@@ -332,10 +318,10 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
         rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg hL0.le]
         gcongr
         exact (norm_sum_le _ _).trans (Finset.sum_le_sum hdy)
-    _ = L * (dyads x).card * b₀ := by rw [Finset.sum_const, nsmul_eq_mul]; ring
+    _ = L * (dyads x).card * b₀ := by simp; ring
     _ ≤ L * (4 * L) * b₀ := by gcongr
     _ = 4 * |Cgr| * (L * L * L ^ (-A - 2)) + 8 * KA * (L * L * L ^ (-|A| - 4)) := by
-        rw [hb₀]; ring
+        ring
     _ ≤ (4 * |Cgr| + 8 * KA) * L ^ (-A) := by
         rw [e₁, e₂]
         nlinarith [abs_nonneg Cgr]

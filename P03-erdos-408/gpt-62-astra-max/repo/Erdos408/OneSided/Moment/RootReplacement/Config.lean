@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Hypotheses
+
 public import Erdos408.OneSided.Moment.PathExpansion
 
 /-!
@@ -38,7 +40,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 open scoped Matrix
 
 variable {K : ℕ}
@@ -108,7 +110,7 @@ def confActive {x : ℝ} {d : Data K} {Y d₀ : ℝ} (ω : Conf x d Y d₀) : Fi
 `[U, 16U] × [V, 2V] × [0, 1]`. Only live configurations contribute to the root
 replacement. -/
 def ConfLive {x : ℝ} {d : Data K} {Y d₀ : ℝ} (ω : Conf x d Y d₀) : Prop :=
-  ∃ u v r : ℝ, d₀ * Y * d.Hm ≤ u ∧ u ≤ 16 * (d₀ * Y * d.Hm) ∧ d.Hn ≤ v ∧ v ≤ 2 * d.Hn ∧
+  ∃ u v r, d₀ * Y * d.Hm ≤ u ∧ u ≤ 16 * (d₀ * Y * d.Hm) ∧ d.Hn ≤ v ∧ v ≤ 2 * d.Hn ∧
     0 ≤ r ∧ r ≤ 1 ∧ confInd x d Y d₀ ω u v r ≠ 0
 
 /-! ### Elementary bounds -/
@@ -131,8 +133,8 @@ theorem confInd_mem_Icc (x : ℝ) (d : Data K) (Y d₀ : ℝ) (ω : Conf x d Y d
 theorem dampDefect_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
     0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
   unfold dampDefect
-  have h₁ : Real.sqrt q ≤ 1 := Real.sqrt_le_one.mpr hq₁.le
-  have h₀ : 0 ≤ Real.sqrt q := Real.sqrt_nonneg q
+  have h₁ := Real.sqrt_le_one.mpr hq₁.le
+  have h₀ := Real.sqrt_nonneg q
   split_ifs <;> constructor <;> linarith
 
 /-- The line factor lies in `[0, 1]` for `q ∈ (0, 1)`. -/
@@ -151,12 +153,13 @@ theorem confLineFactor_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {x : ℝ} 
     constructor <;> nlinarith
   unfold confLineFactor
   have hA := prod_le_one₀ (s := activeSet p ω) (fun j _ => (hind j).1) fun j _ => (hind j).2
-  have hB := prod_le_one₀ (s := (range (2 * momentPower x + 1)).filter (· ∉ activeSet p ω))
+  let power := (range (2 * momentPower x + 1)).filter (· ∉ activeSet p ω)
+  have hB := prod_le_one₀ (s := power)
     (fun j _ => (hfac j).1) fun j _ => (hfac j).2
-  have hB₀ := prod_nonneg (s := (range (2 * momentPower x + 1)).filter (· ∉ activeSet p ω))
+  have hB₀ := prod_nonneg (s := power)
     fun j _ => (hfac j).1
   refine ⟨mul_nonneg (prod_nonneg fun j _ => (hind j).1) hB₀,
-    (mul_le_mul_of_nonneg_right hA hB₀).trans (by rw [one_mul]; exact hB)⟩
+    (mul_le_mul_of_nonneg_right hA hB₀).trans (by linarith)⟩
 
 /-! ### The line-free states among the square states -/
 
@@ -283,10 +286,7 @@ theorem freeRootModel_edgeOp_eq (A₀ : ℝ) (s s' : (freeRootModel d Y d₀ u v
 /-- A visit indicator other than `1` is `0`. -/
 theorem visitInd_eq_zero_of_ne_one {t : (squareModel d Y d₀).State x d}
     (ht : visitInd x d Y d₀ u v r t ≠ 1) : visitInd x d Y d₀ u v r t = 0 := by
-  unfold visitInd at ht ⊢
-  split_ifs at ht ⊢ with h
-  · exact (ht rfl).elim
-  · rfl
+  simp_all [visitInd]
 
 /-- The line-free weight of a path is the kernel `𝒮 𝒯 𝒮` along the included path, times the
 visit indicators: every visit carries `g` once or twice, and `g² = g`. -/
@@ -305,12 +305,11 @@ theorem pathWeight_eq_prod_confKernel {A₀ : ℝ} {N : ℕ} (hN : 0 < N)
   rw [prod_eq_zero (mem_univ k) (by rw [hk₀, Complex.ofReal_zero]), mul_zero]
   by_cases hl : k = Fin.last N
   · have hk0 : k ≠ 0 := by
-      rw [hl]
-      exact Fin.ext_iff.not.2 (by simp; omega)
+      aesop
     obtain ⟨j, rfl⟩ := Fin.exists_succ_eq.2 hk0
-    exact prod_eq_zero (mem_univ j) (by rw [hk₀, Complex.ofReal_zero, mul_zero])
+    exact prod_eq_zero (mem_univ j) (by simp_all)
   · obtain ⟨j, rfl⟩ := Fin.exists_castSucc_eq.2 hl
-    exact prod_eq_zero (mem_univ j) (by rw [hk₀, Complex.ofReal_zero, zero_mul, zero_mul])
+    exact prod_eq_zero (mem_univ j) (by simp_all)
 
 end Square
 
@@ -322,7 +321,7 @@ configurations whose visits are all positions at `ϱ`; along them the edge opera
 `𝒢 (𝒮 𝒯 𝒮) 𝒢`, with `𝒮 𝒯 𝒮` independent of the root. -/
 theorem rootMoment_eq_sum_conf {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ : ℝ}
     (hR : 0 < momentPower x)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (u v r : ℝ)
+    (hdisj : DisjointBands x d.a) (u v r : ℝ)
     (ℓ : ℕ → ℕ) :
     rootMoment q A₀ x d Y d₀ u v r ℓ =
       ∑ ω : Conf x d Y d₀, confCoeff A₀ x d Y d₀ ω * (confInd x d Y d₀ ω u v r : ℂ) *
@@ -333,15 +332,12 @@ theorem rootMoment_eq_sum_conf {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d�
   refine Fintype.sum_of_injective (fun path => toSquare ∘ path)
     (fun _ _ h => funext fun j => hι (congrFun h j)) _ _ (fun ω hω => ?_) fun path => ?_
   · -- step: a configuration with a visit off the positions at the root has `A(ω, ϱ) = 0`
-    obtain ⟨j, hj⟩ : ∃ j, ω j ∉ Set.range (toSquare (d := d) (Y := Y) (d₀ := d₀) (u := u)
-        (v := v) (r := r) (x := x)) := by
+    obtain ⟨j, hj⟩ : ∃ j, ω j ∉ Set.range toSquare := by
       by_contra h
       push Not at h
       choose path hpath using h
       exact hω ⟨path, funext hpath⟩
-    have h0 : visitInd x d Y d₀ u v r (ω j) = 0 :=
-      ite_eq_right fun h => hj ((mem_range_toSquare_iff (ω j)).2 h.1)
-    rw [confInd, prod_eq_zero (mem_univ j) h0, Complex.ofReal_zero, mul_zero, zero_mul]
+    rw [confInd, prod_eq_zero (mem_univ j) (ite_eq_right fun h => hj ((mem_range_toSquare_iff (ω j)).2 h.1)), Complex.ofReal_zero, mul_zero, zero_mul]
   · -- step: along an included path, the weight splits into `c(ω)` and `A(ω, ϱ)`
     have hline : ∀ p, lineFactor q p path (ℓ p) = confLineFactor q p (toSquare ∘ path) (ℓ p) :=
       fun p => rfl

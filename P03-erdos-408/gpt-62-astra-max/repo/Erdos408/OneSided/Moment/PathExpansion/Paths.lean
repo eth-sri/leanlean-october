@@ -35,7 +35,7 @@ theorem sum_mul_pow_apply [DecidableEq α] (A : Matrix α α ℂ) (N : ℕ) (g :
     rw [← (Equiv.funUnique (Fin 1) α).symm.sum_comp]
     simp [Matrix.one_apply]
   | succ N ih =>
-    calc ∑ i, ∑ k, g i k * (A ^ (N + 1)) i k
+    calc _
         = ∑ m, ∑ k, (∑ i, g i k * A i m) * (A ^ N) m k := by
           -- step: the first edge `i → m`
           simp only [pow_succ', Matrix.mul_apply, mul_sum, sum_mul, mul_assoc]
@@ -69,9 +69,9 @@ theorem mul_apply_eq_restrict [DecidableEq β] {X Y : Matrix α α ℂ} {X' Y' :
     (X * Y) i j = (X' * Matrix.diagonal v * Y') (ι i) (ι j) := by
   rw [Matrix.mul_apply, Matrix.mul_apply]
   simp only [Matrix.mul_diagonal]
-  refine Fintype.sum_of_injective ι hι _ _ (fun k hk => by rw [hv₀ k hk, mul_zero, zero_mul])
+  refine Fintype.sum_of_injective ι hι _ _ (fun k hk => by simp_all)
     fun k => ?_
-  rw [hX, hY, hv, mul_one]
+  simp_all
 
 /-- Powers of the restriction of `B` along `ι` are the restrictions of the powers of `B` when
 the columns of `B` off the image of `ι` vanish. -/
@@ -83,7 +83,7 @@ theorem pow_apply_eq_restrict [DecidableEq α] [DecidableEq β] {A : Matrix α �
   | zero => simp only [pow_zero, Matrix.one_apply, hι.eq_iff]
   | succ n ih =>
     simp only [pow_succ', Matrix.mul_apply]
-    exact Fintype.sum_of_injective ι hι _ _ (fun k hk => by rw [hB k hk, zero_mul])
+    exact Fintype.sum_of_injective ι hι _ _ (fun k hk => by simp_all)
       fun k => by rw [hA, ih]
 
 /-- With `n ≥ 1` and `B` vanishing off the image of `ι` in both indices, the endpoint sums of
@@ -117,11 +117,6 @@ theorem edge_restrict_eq {R : Type*} [Semiring R] {G S T V W : R} (hGW : G * W =
     G * V * S * V * (W * T * W) * V * S * V * G = W * (G * S * T * S * G) * W := by
   simp only [mul_assoc]
   -- step: absorb the inner indicators into `W`
-  rw [← mul_assoc V W, hVW, ← mul_assoc W V, hWV]
-  -- step: move `W` out past `𝒮` and absorb the outer indicators
-  rw [← mul_assoc S W, hSW, mul_assoc W S, ← mul_assoc V W, hVW]
-  rw [← mul_assoc W S (V * G), ← hSW, mul_assoc S W]
-  -- step: move `W` out past `𝒢`
-  rw [← mul_assoc G W, hGW, mul_assoc W G, ← mul_assoc W V G, hWV, ← hGW]
+  rw [← mul_assoc V W, hVW, ← mul_assoc W V, hWV, ← mul_assoc S W, hSW, mul_assoc W S, ← mul_assoc V W, hVW, ← mul_assoc W S (V * G), ← hSW, mul_assoc S W, ← mul_assoc G W, hGW, mul_assoc W G, ← mul_assoc W V G, hWV, ← hGW]
 
 end Erdos408.OneSided

@@ -46,8 +46,8 @@ theorem slope_sub_slope {U H : ℝ} (hH : 0 < H) {P Q : ℕ × ℕ} (hP : 0 < (P
 theorem abs_slopeCell_sub_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) {P Q : ℕ × ℕ}
     (hP : U ≤ P.1) (hQ : U ≤ Q.1) (hdet : |(det P Q : ℝ)| ≤ 10 * H) :
     |slopeCell (U ^ 2 / H) P - slopeCell (U ^ 2 / H) Q| ≤ 10 := by
-  have hP₀ : 0 < (P.1 : ℝ) := hU.trans_le hP
-  have hQ₀ : 0 < (Q.1 : ℝ) := hU.trans_le hQ
+  have hP₀ := hU.trans_le hP
+  have hQ₀ := hU.trans_le hQ
   set a := (P.2 : ℝ) / P.1 * (U ^ 2 / H)
   set b := (Q.2 : ℝ) / Q.1 * (U ^ 2 / H)
   -- the scaled slopes differ by at most `10`
@@ -66,8 +66,7 @@ theorem abs_slopeCell_sub_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) {P Q : ℕ ×
   have h₁' : ⌊a⌋ - ⌊b⌋ < 11 := by exact_mod_cast h₁
   have h₂' : -11 < ⌊a⌋ - ⌊b⌋ := by exact_mod_cast h₂
   show |⌊a⌋ - ⌊b⌋| ≤ 10
-  rw [abs_le]
-  constructor <;> omega
+  grind
 
 /-- A slope cell holds at most `17 (512H + 1)` primitive positions with `P₁ ∈ [U, 16U]`. -/
 theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ × ℕ))
@@ -93,13 +92,12 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
   have hdet : ∀ P ∈ T, |det P₀ P| ≤ n := by
     intro P hP
     obtain ⟨hPU, hP16, -⟩ := hS P (mem_filter.1 hP).1
-    have hPpos : 0 < (P.1 : ℝ) := hU.trans_le hPU
+    have hPpos := hU.trans_le hPU
     have hs := hslope P hP
     have hs₀ := hslope P₀ hP₀
     have h := slope_sub_slope (U := U) hH hP₀pos hPpos
     have hlt : |(det P₀ P : ℝ) * U ^ 2 / (H * (P₀.1 * P.1))| < 1 := by
-      rw [← h, abs_sub_lt_iff]
-      constructor <;> linarith
+      grind
     rw [abs_div, abs_mul, abs_of_pos (by positivity : 0 < U ^ 2),
       abs_of_pos (by positivity : 0 < H * (P₀.1 * P.1)), div_lt_one (by positivity)] at hlt
     have hP₀16 := (hS P₀ hP₀S).2.1
@@ -107,7 +105,7 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
       by_contra hcon
       push Not at hcon
       have : 256 * H * U ^ 2 ≥ H * (P₀.1 * P.1) := by
-        have : (P₀.1 : ℝ) * P.1 ≤ 16 * U * (16 * U) :=
+        have :=
           mul_le_mul hP₀16 hP16 hPpos.le (by positivity)
         nlinarith
       nlinarith [abs_nonneg (det P₀ P : ℝ), sq_nonneg U]
@@ -122,9 +120,9 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
       have : (P.1 : ℝ) < 17 * P₀.1 := by linarith
       exact_mod_cast this
     rw [mem_product, mem_Icc, mem_range]
-    exact ⟨hd, Nat.div_lt_of_lt_mul (by rwa [mul_comm])⟩
+    exact ⟨hd, Nat.div_lt_of_lt_mul (by omega)⟩
   -- and is injective: equal determinants differ by multiples of the primitive pivot
-  have hinj : Set.InjOn (fun P : ℕ × ℕ => (det P₀ P, P.1 / P₀.1)) T := by
+  have hinj : Set.InjOn (fun P => (det P₀ P, P.1 / P₀.1)) T := by
     intro P _ P' _ h
     simp only [Prod.mk.injEq] at h
     obtain ⟨hd, hq⟩ := h
@@ -137,10 +135,8 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
     have hlin : (P₀.1 : ℤ) * (P.2 - P'.2) = (P.1 - P'.1) * P₀.2 := by
       unfold det at hd
       linarith
-    have hdvd : (P₀.1 : ℤ) ∣ P.1 - P'.1 :=
-      (Nat.isCoprime_iff_coprime.2 hP₀cop).dvd_of_dvd_mul_right ⟨P.2 - P'.2, hlin.symm⟩
-    have hmod : P'.1 % P₀.1 = P.1 % P₀.1 := Nat.modEq_iff_dvd.2 hdvd
-    have h1 : P.1 = P'.1 :=
+    have hmod := Nat.modEq_iff_dvd.2 ((Nat.isCoprime_iff_coprime.2 hP₀cop).dvd_of_dvd_mul_right ⟨P.2 - P'.2, hlin.symm⟩)
+    have h1 :=
       calc P.1 = P₀.1 * (P.1 / P₀.1) + P.1 % P₀.1 := (Nat.div_add_mod _ _).symm
         _ = P₀.1 * (P'.1 / P₀.1) + P'.1 % P₀.1 := by rw [hq, hmod]
         _ = P'.1 := Nat.div_add_mod _ _
@@ -154,7 +150,7 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
     show (n + 1 - -(n : ℤ)).toNat = 2 * n + 1 by omega] at hcard
   have hn : (n : ℝ) ≤ 256 * H := Nat.floor_le (by positivity)
   calc (T.card : ℝ) ≤ ((2 * n + 1) * 17 : ℕ) := by exact_mod_cast hcard
-    _ ≤ 17 * (512 * H + 1) := by push_cast; linarith
+    _ ≤ _ := by push_cast; linarith
 
 /-! ### Support of the operators -/
 
@@ -163,7 +159,7 @@ private theorem exists_ne_zero_of_mul_apply_ne_zero {ι : Type*} [Fintype ι]
     {M N : Matrix ι ι ℂ} {a c : ι} (h : (M * N) a c ≠ 0) : ∃ b, M a b ≠ 0 ∧ N b c ≠ 0 := by
   rw [Matrix.mul_apply] at h
   obtain ⟨b, -, hb⟩ := exists_ne_zero_of_sum_ne_zero h
-  exact ⟨b, left_ne_zero_of_mul hb, right_ne_zero_of_mul hb⟩
+  grind
 
 variable {q A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ}
 
@@ -176,9 +172,7 @@ private theorem eq_of_goodOp_ne_zero {s t : State x d Y d₀} (h : goodOp x d Y 
 /-- `𝒮` preserves positions. -/
 private theorem pos_eq_of_symOp_ne_zero {s t : State x d Y d₀} (h : symOp x d Y d₀ s t ≠ 0) :
     s.1.1 = t.1.1 := by
-  unfold symOp at h
-  by_contra hst
-  exact h (ite_eq_right fun hc => hst hc.1)
+  grind [symOp]
 
 /-- A nonzero entry of `𝒜` comes from a nonzero entry of `𝒯` between the same positions. -/
 theorem exists_rowOp_ne_zero {s s' : State x d Y d₀} (h : edgeOp q A₀ x d Y d₀ s s' ≠ 0) :
@@ -201,9 +195,7 @@ theorem rowOp_ne_zero {t t' : State x d Y d₀} (h : rowOp q A₀ x d Y d₀ t t
   rw [ne_eq, ite_eq_right_iff, not_imp] at h
   obtain ⟨hc, h⟩ := h
   have h₁ := Complex.ofReal_ne_zero.1 (left_ne_zero_of_mul h)
-  exact ⟨hc.2.2.1, hc.2.2.2.1, hc.2.2.2.2,
-    right_ne_zero_of_mul (left_ne_zero_of_mul (left_ne_zero_of_mul (left_ne_zero_of_mul h₁))),
-    right_ne_zero_of_mul (left_ne_zero_of_mul h₁)⟩
+  grind
 
 /-- A nonzero entry of `𝒯` has `|det(P, Q)| < 10 d₀ Y`: the plateau gives `|t| < 5Y` for
 `t = det(P, Q) / D`, and `D < 2 d₀`. -/
@@ -216,13 +208,11 @@ theorem abs_det_lt_of_rowOp_ne_zero (hY : 0 < Y) {t t' : State x d Y d₀}
   have hτ : |(τ : ℝ)| < 5 * Y := by
     have h₁ : |(τ : ℝ) / Y| < 5 := by
       by_contra hcon
-      push Not at hcon
       exact hψ (smoothTransition.zero_of_nonpos (by linarith))
     rwa [abs_div, abs_of_pos hY, div_lt_iff₀ hY] at h₁
   have hdet : (det t.1.1 t'.1.1 : ℝ) = D * τ := by
     exact_mod_cast (Int.mul_ediv_cancel' hdvd).symm
   rw [hdet, abs_mul, Nat.abs_cast]
-  have hD₀ : (0 : ℝ) ≤ D := Nat.cast_nonneg _
   nlinarith [abs_nonneg (τ : ℝ)]
 
 /-- The list product is the pad product times the product of the last slots. -/

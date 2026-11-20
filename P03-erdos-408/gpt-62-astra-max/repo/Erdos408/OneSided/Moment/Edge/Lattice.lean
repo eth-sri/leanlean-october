@@ -29,7 +29,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 /-- The squared length `(h + l α)² + (l/Y)²` of the image of `(h, l)`. -/
 private def latQ (α Y : ℝ) (h l : ℤ) : ℝ := (h + l * α) ^ 2 + (l / Y) ^ 2
@@ -39,27 +39,24 @@ private theorem latQ_pos {α Y : ℝ} (hY : 0 < Y) {h l : ℤ} (hne : (h, l) ≠
     0 < latQ α Y h l := by
   unfold latQ
   by_cases hl : l = 0
-  · have hh : h ≠ 0 := fun hh => hne (by rw [hh, hl])
-    subst hl
-    have : (h : ℝ) ≠ 0 := by exact_mod_cast hh
+  · subst hl
+    have : (h : ℝ) ≠ 0 := by exact_mod_cast (by simp_all)
     simp only [Int.cast_zero, zero_mul, add_zero, zero_div, ne_eq, OfNat.ofNat_ne_zero,
       not_false_eq_true, zero_pow]
     positivity
-  · have : (l : ℝ) / Y ≠ 0 := div_ne_zero (by exact_mod_cast hl) hY.ne'
-    positivity
+  positivity
 
 /-- A shortest nonzero vector exists. -/
 private theorem exists_latQ_min (α : ℝ) {Y : ℝ} (hY : 0 < Y) :
-    ∃ v : ℤ × ℤ, v ≠ (0, 0) ∧ ∀ w : ℤ × ℤ, w ≠ (0, 0) → latQ α Y v.1 v.2 ≤ latQ α Y w.1 w.2 := by
+    ∃ v, v ≠ (0, 0) ∧ ∀ w, w ≠ (0, 0) → latQ α Y v.1 v.2 ≤ latQ α Y w.1 w.2 := by
   set H : ℕ := ⌈1 + Y * |α|⌉₊
   set Lb : ℕ := ⌈Y⌉₊
   set S := ((Icc (-(H : ℤ)) H) ×ˢ (Icc (-(Lb : ℤ)) Lb)).erase (0, 0)
   have h10 : ((1 : ℤ), (0 : ℤ)) ∈ S := by
     refine mem_erase.2 ⟨by decide, mem_product.2 ⟨mem_Icc.2 ⟨by omega, ?_⟩, mem_Icc.2 ⟨by omega,
       by omega⟩⟩⟩
-    have : (1 : ℕ) ≤ H := Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by positivity)).ne'
-    show (1 : ℤ) ≤ H
-    exact_mod_cast this
+    have : 1 ≤ H := Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by positivity)).ne'
+    grind
   obtain ⟨v, hv, hmin⟩ := S.exists_min_image (fun w => latQ α Y w.1 w.2) ⟨_, h10⟩
   refine ⟨v, (mem_erase.1 hv).1, fun w hw => ?_⟩
   by_cases hwS : w ∈ S
@@ -88,14 +85,12 @@ private theorem exists_latQ_min (α : ℝ) {Y : ℝ} (hY : 0 < Y) :
           linarith
         · exact (div_le_iff₀ hY).1 this.2 |>.trans (by linarith)
       have hw1 : |(w.1 : ℝ)| ≤ 1 + Y * |α| := by
-        calc |(w.1 : ℝ)| = |(w.1 + w.2 * α) - w.2 * α| := by ring_nf
+        calc _ = |(w.1 + w.2 * α) - w.2 * α| := by ring_nf
           _ ≤ |(w.1 : ℝ) + w.2 * α| + |(w.2 : ℝ) * α| := abs_sub _ _
-          _ ≤ 1 + Y * |α| := by
+          _ ≤ _ := by
               rw [abs_mul]
-              have := mul_le_mul_of_nonneg_right hy' (abs_nonneg α)
-              linarith
-      have hH := Nat.le_ceil (1 + Y * |α|)
-      have : |(w.1 : ℝ)| ≤ H := hw1.trans hH
+              gcongr <;> positivity
+      have := hw1.trans (Nat.le_ceil (1 + Y * |α|))
       rw [abs_le] at this
       rw [mem_Icc]
       constructor <;> [exact_mod_cast (by linarith : -(H : ℝ) ≤ w.1);
@@ -111,7 +106,7 @@ private theorem exists_latQ_min (α : ℝ) {Y : ℝ} (hY : 0 < Y) :
         · have := (le_div_iff₀ hY).1 this.1
           linarith
         · exact (div_le_iff₀ hY).1 this.2 |>.trans (by linarith)
-      have : |(w.2 : ℝ)| ≤ Lb := hy'.trans (Nat.le_ceil Y)
+      have := hy'.trans (Nat.le_ceil Y)
       rw [abs_le] at this
       rw [mem_Icc]
       constructor <;> [exact_mod_cast (by linarith : -(Lb : ℝ) ≤ w.2);
@@ -120,7 +115,7 @@ private theorem exists_latQ_min (α : ℝ) {Y : ℝ} (hY : 0 < Y) :
 /-- An integer of absolute value at most `r` is at most `⌊r⌋₊` in absolute value. -/
 private theorem int_abs_le_floor {m : ℤ} {r : ℝ} (h : |(m : ℝ)| ≤ r) : |m| ≤ (⌊r⌋₊ : ℤ) := by
   have h1 : ((m.natAbs : ℕ) : ℝ) ≤ r := by rwa [Nat.cast_natAbs, Int.cast_abs]
-  have h2 : m.natAbs ≤ ⌊r⌋₊ := Nat.le_floor h1
+  have h2 := Nat.le_floor h1
   rw [Int.abs_eq_natAbs]
   exact_mod_cast h2
 
@@ -152,7 +147,7 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
     rw [← hpow 10]
     norm_num
   have ht2 : Y ^ (1 / 5 : ℝ) = t ^ 2 := by rw [← hpow 2]; norm_num
-  have ht9 : Y ^ (9 / 10 : ℝ) = t ^ 9 := by rw [← hpow 9]; norm_num
+  have ht9 : Y ^ (9 / 10 : ℝ) = t ^ 9 := by grind
   have ht7 : Y ^ (-(7 / 10 : ℝ)) = (t ^ 7)⁻¹ := by
     rw [Real.rpow_neg hY0.le, ← hpow 7]
     norm_num
@@ -167,11 +162,9 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
   -- `Λ ≤ 5/Y`, by Dirichlet's approximation
   have hΛup : Y * Λ ≤ 5 := by
     set n := ⌈Real.sqrt Y⌉₊
-    have hn : 0 < n := Nat.ceil_pos.2 (Real.sqrt_pos.2 hY0)
+    have hn := Nat.ceil_pos.2 (Real.sqrt_pos.2 hY0)
     obtain ⟨j, k, hk0, hkn, hjk⟩ := Real.exists_int_int_abs_mul_sub_le α hn
-    have hne : ((-j : ℤ), k) ≠ (0, 0) := fun h => by
-      simp only [Prod.mk.injEq] at h
-      omega
+    have hne : ((-j), k) ≠ (0, 0) := by grind
     have hle := hmin _ hne
     have hsY : Real.sqrt Y ≤ n := Nat.le_ceil _
     have hn1 : (n : ℝ) ≤ Real.sqrt Y + 1 := (Nat.ceil_lt_add_one (Real.sqrt_nonneg _)).le
@@ -186,21 +179,17 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
       have hb : 1 / ((n : ℝ) + 1) ≤ 1 / Real.sqrt Y :=
         one_div_le_one_div_of_le (by positivity) (by linarith)
       calc |(k : ℝ) * α - j| ^ 2 ≤ (1 / Real.sqrt Y) ^ 2 :=
-            pow_le_pow_left₀ (abs_nonneg _) (hjk.trans hb) 2
-        _ = 1 / Y := by rw [div_pow, hsq, one_pow]
+            by bound
+        _ = _ := by rw [div_pow, hsq, one_pow]
     have h2 : ((k : ℝ) / Y) ^ 2 ≤ 4 / Y := by
       rw [div_pow, div_le_div_iff₀ (by positivity) hY0]
       have : (k : ℝ) ^ 2 ≤ 4 * Y := by
-        calc (k : ℝ) ^ 2 ≤ (2 * Real.sqrt Y) ^ 2 := pow_le_pow_left₀ hk0'.le (by linarith) 2
-          _ = 4 * Y := by rw [mul_pow, hsq]; norm_num
+        calc _ ≤ (2 * Real.sqrt Y) ^ 2 := pow_le_pow_left₀ hk0'.le (by linarith) 2
+          _ = _ := by linarith
       have := mul_le_mul_of_nonneg_right this hY0.le
       linarith
     have : Λ ≤ 5 / Y := by
-      refine hle.trans ?_
-      unfold latQ
-      have : (5 : ℝ) / Y = 1 / Y + 4 / Y := by ring
-      rw [this]
-      exact add_le_add h1 h2
+      grind [latQ]
     rwa [le_div_iff₀ hY0, mul_comm] at this
   -- `Λ ≥ Y^{-1.6} = t^{-16}`, by test (i)
   have hΛlow : 1 ≤ t ^ 16 * Λ := by
@@ -208,9 +197,9 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
     push Not at hlt
     set x₁ := (h₁ : ℝ) + l₁ * α
     have hΛt : Λ < (t ^ 8)⁻¹ ^ 2 := by
-      have e : (t ^ 8)⁻¹ ^ 2 = 1 / t ^ 16 := by rw [inv_pow, ← pow_mul, one_div]
+      have e : (t ^ 8)⁻¹ ^ 2 = 1 / t ^ 16 := by ring
       rw [e, lt_div_iff₀ (by positivity)]
-      linarith [mul_comm Λ (t ^ 16)]
+      linarith
     have hx : x₁ ^ 2 < (t ^ 8)⁻¹ ^ 2 := by
       refine lt_of_le_of_lt ?_ hΛt
       have := sq_nonneg ((l₁ : ℝ) / Y)
@@ -221,8 +210,8 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
       have := sq_nonneg x₁
       simp only [hΛ, latQ, x₁] at this ⊢
       linarith
-    have hx' : |x₁| < (t ^ 8)⁻¹ := abs_lt_of_sq_lt_sq hx (by positivity)
-    have hy' : |(l₁ : ℝ) / Y| < (t ^ 8)⁻¹ := abs_lt_of_sq_lt_sq hy (by positivity)
+    have hx' := abs_lt_of_sq_lt_sq hx (by positivity)
+    have hy' := abs_lt_of_sq_lt_sq hy (by positivity)
     have hl₁ : |(l₁ : ℝ)| < t ^ 2 := by
       rw [abs_div, abs_of_pos hY0, div_lt_iff₀ hY0, hYt] at hy'
       have : (t ^ 8)⁻¹ * t ^ 10 = t ^ 2 := by
@@ -241,43 +230,37 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
         exact Int.abs_lt_one_iff.1 this
       exact hv0 (Prod.ext this hl0)
     · -- `l = |l₁|` violates test (i)
-      have hl : 1 ≤ l₁.natAbs := Int.natAbs_pos.2 hl0
+      have hl := Int.natAbs_pos.2 hl0
       have hlr : ((l₁.natAbs : ℕ) : ℝ) = |(l₁ : ℝ)| := by
-        rw [Nat.cast_natAbs, Int.cast_abs]
-      have hg := hgood l₁.natAbs hl (by rw [hlr]; exact hl₁.le)
+        simp
+      have hg := hgood l₁.natAbs hl (by linarith)
       have hcd : circleDist ((l₁.natAbs : ℝ) * α) ≤ |x₁| := by
         rcases le_or_gt 0 l₁ with hpos | hneg
         · have : ((l₁.natAbs : ℕ) : ℝ) = l₁ := by
             rw [hlr, abs_of_nonneg (by exact_mod_cast hpos)]
           rw [this]
-          calc circleDist (l₁ * α) ≤ |l₁ * α - ((-h₁ : ℤ) : ℝ)| := circleDist_le_abs_sub _ _
-            _ = |x₁| := by congr 1; push_cast; simp only [x₁]; ring
+          calc _ ≤ |l₁ * α - ((-h₁ : ℤ) : ℝ)| := circleDist_le_abs_sub _ _
+            _ = _ := by grind
         · have : ((l₁.natAbs : ℕ) : ℝ) = -l₁ := by
             rw [hlr, abs_of_neg (by exact_mod_cast hneg)]
           rw [this]
-          calc circleDist (-l₁ * α) ≤ |-l₁ * α - ((h₁ : ℤ) : ℝ)| := circleDist_le_abs_sub _ _
-            _ = |x₁| := by rw [← abs_neg]; congr 1; simp only [x₁]; ring
+          calc _ ≤ |-l₁ * α - ((h₁ : ℤ) : ℝ)| := circleDist_le_abs_sub _ _
+            _ = _ := by grind
       linarith
   -- `v₁` is primitive
   have hprim : Int.gcd h₁ l₁ = 1 := by
     set g := Int.gcd h₁ l₁
     obtain ⟨a, ha⟩ := Int.gcd_dvd_left (a := h₁) (b := l₁)
     obtain ⟨b, hb⟩ := Int.gcd_dvd_right (a := h₁) (b := l₁)
-    have hg0 : g ≠ 0 := fun h => hv0 (by
-      rw [Int.gcd_eq_zero_iff] at h
-      exact Prod.ext h.1 h.2)
+    have hg0 : g ≠ 0 := by grind
     by_contra hg1
     have hg2 : 2 ≤ g := by omega
-    have hab : (a, b) ≠ (0, 0) := fun h => by
-      simp only [Prod.mk.injEq] at h
-      exact hv0 (Prod.ext (by change h₁ = 0; rw [ha, h.1, mul_zero])
-        (by change l₁ = 0; rw [hb, h.2, mul_zero]))
+    have hab : (a, b) ≠ (0, 0) := by grind
     have hle := hmin _ hab
     have hscale : Λ = (g : ℝ) ^ 2 * latQ α Y a b := by
       simp only [hΛ, latQ]
       rw [show (h₁ : ℝ) = g * a by exact_mod_cast ha, show (l₁ : ℝ) = g * b by exact_mod_cast hb]
       ring
-    have hpos := latQ_pos hY0 hab (α := α)
     have : (4 : ℝ) ≤ (g : ℝ) ^ 2 := by
       have : (2 : ℝ) ≤ g := by exact_mod_cast hg2
       nlinarith
@@ -288,38 +271,28 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
   set l₂' := Int.gcdA h₁ l₁
   have hdet' : h₁ * l₂' - l₁ * h₂' = 1 := by
     have := Int.gcd_eq_gcd_ab h₁ l₁
-    rw [hprim] at this
-    simp only [h₂', l₂']
-    push_cast at this
     linarith
   set x₁ := (h₁ : ℝ) + l₁ * α with hx₁
   set y₁ := (l₁ : ℝ) / Y with hy₁
-  have hΛxy : Λ = x₁ ^ 2 + y₁ ^ 2 := by simp only [hΛ, latQ, x₁, y₁]
+  have hΛxy : Λ = x₁ ^ 2 + y₁ ^ 2 := by rfl
   -- reduce the second vector against the first
   set ip := x₁ * ((h₂' : ℝ) + l₂' * α) + y₁ * ((l₂' : ℝ) / Y) with hip
   set k := round (ip / Λ)
   set h₂ := h₂' - k * h₁
   set l₂ := l₂' - k * l₁
   have hdet : h₁ * l₂ - l₁ * h₂ = 1 := by
-    simp only [h₂, l₂]
     linear_combination hdet'
   set x₂ := (h₂ : ℝ) + l₂ * α with hx₂
   set y₂ := (l₂ : ℝ) / Y with hy₂
   have hip2 : |x₁ * x₂ + y₁ * y₂| ≤ Λ / 2 := by
     have e : x₁ * x₂ + y₁ * y₂ = Λ * (ip / Λ - k) := by
-      rw [mul_sub, mul_div_cancel₀ _ hΛ0.ne', hip, hΛxy]
-      simp only [x₂, y₂, h₂, l₂]
-      push_cast
-      ring
+      grind
     rw [e, abs_mul, abs_of_pos hΛ0]
     have := mul_le_mul_of_nonneg_left (abs_sub_round (ip / Λ)) hΛ0.le
     linarith
   have hdetR : x₁ * y₂ - y₁ * x₂ = 1 / Y := by
     have hd : ((h₁ * l₂ - l₁ * h₂ : ℤ) : ℝ) = 1 := by exact_mod_cast hdet
-    push_cast at hd
-    simp only [x₁, y₁, x₂, y₂]
-    field_simp
-    linear_combination hd
+    grind
   -- `Λ |v₂|² ≤ Λ²/4 + 1/Y²` (Lagrange's identity)
   have hv2 : Λ * (x₂ ^ 2 + y₂ ^ 2) ≤ Λ ^ 2 / 4 + 1 / Y ^ 2 := by
     have hL : Λ * (x₂ ^ 2 + y₂ ^ 2) = (x₁ * x₂ + y₁ * y₂) ^ 2 + (x₁ * y₂ - y₁ * x₂) ^ 2 := by
@@ -327,16 +300,17 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
       ring
     rw [hL, hdetR, div_pow, one_pow]
     have := sq_abs (x₁ * x₂ + y₁ * y₂)
-    have h2 : |x₁ * x₂ + y₁ * y₂| ^ 2 ≤ (Λ / 2) ^ 2 :=
+    have h2 :=
       pow_le_pow_left₀ (abs_nonneg _) hip2 2
     linarith
   -- the box sides
   set lam := Real.sqrt Λ with hlam
-  have hlam0 : 0 < lam := Real.sqrt_pos.2 hΛ0
+  have hlam0 : 0 < lam := by positivity
   have hlam2 : lam ^ 2 = Λ := Real.sq_sqrt hΛ0.le
-  refine ⟨h₁, l₁, h₂, l₂, hdet, ⌊4 * c / lam⌋₊, ⌊3 / 2 * c * Y * lam⌋₊, ?_, ?_, ?_, ?_⟩
+  let lamAt := 3 / 2 * c * Y * lam
+  refine ⟨h₁, l₁, h₂, l₂, hdet, ⌊4 * c / lam⌋₊, ⌊lamAt⌋₊, ?_, ?_, ?_, ?_⟩
   · -- `A' B' ≤ (4c/λ)(3cYλ/2) = 6c²Y`
-    calc (⌊4 * c / lam⌋₊ : ℝ) * ⌊3 / 2 * c * Y * lam⌋₊ ≤ (4 * c / lam) * (3 / 2 * c * Y * lam) :=
+    calc (⌊4 * c / lam⌋₊ : ℝ) * ⌊lamAt⌋₊ ≤ (4 * c / lam) * (lamAt) :=
           mul_le_mul (Nat.floor_le (by positivity)) (Nat.floor_le (by positivity))
             (Nat.cast_nonneg _) (by positivity)
       _ = 6 * c ^ 2 * Y := by field_simp; ring
@@ -347,7 +321,7 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
         have := pow_le_pow_left₀ (by positivity) hYc 2
         linarith
       have h2 : t ^ 2 * 1 ≤ t ^ 2 * (t ^ 16 * Λ) :=
-        mul_le_mul_of_nonneg_left hΛlow (by positivity)
+        by gcongr
       have e : (t ^ 9) ^ 2 * Λ = t ^ 2 * (t ^ 16 * Λ) := by ring
       rw [e]
       have : 0 ≤ t ^ 2 := by positivity
@@ -355,8 +329,8 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
     exact (Nat.floor_le (by positivity)).trans
       ((pow_le_pow_iff_left₀ (by positivity) (by positivity) two_ne_zero).1 hA)
   · -- `(3cYλ/2)² = 9c²Y²Λ/4 ≤ 45 c² Y/4 ≤ t^18`
-    have hB : (3 / 2 * c * Y * lam) ^ 2 ≤ (t ^ 9) ^ 2 := by
-      have e : (3 / 2 * c * Y * lam) ^ 2 = 9 / 4 * c ^ 2 * Y * (Y * Λ) := by
+    have hB : (lamAt) ^ 2 ≤ (t ^ 9) ^ 2 := by
+      have e : (lamAt) ^ 2 = 9 / 4 * c ^ 2 * Y * (Y * Λ) := by
         rw [← hlam2]
         ring
       rw [e]
@@ -364,10 +338,9 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
         have := pow_le_pow_left₀ (by positivity) hYc 2
         linarith
       have h2 : 9 / 4 * c ^ 2 * Y * (Y * Λ) ≤ 9 / 4 * c ^ 2 * Y * 5 :=
-        mul_le_mul_of_nonneg_left hΛup (by positivity)
+        by gcongr
       have h3 : 9 / 4 * c ^ 2 * Y * 5 ≤ 9 / 4 * (t ^ 2 / 64) * Y * 5 := by
-        have : 0 ≤ Y := hY0.le
-        gcongr
+        gcongr <;> positivity
       have h4 : t ^ 12 ≤ t ^ 18 := pow_le_pow_right₀ ht1 (by norm_num)
       have e2 : 9 / 4 * (t ^ 2 / 64) * Y * 5 = 45 / 256 * t ^ 12 := by rw [hYt]; ring
       have e3 : (t ^ 9) ^ 2 = t ^ 18 := by ring
@@ -383,7 +356,7 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
     have hP : X ^ 2 + Yc ^ 2 ≤ 2 * c ^ 2 := by
       have h1 : X ^ 2 ≤ c ^ 2 := by
         rw [← sq_abs]
-        exact pow_le_pow_left₀ (abs_nonneg _) hhl 2
+        gcongr
       have h2 : Yc ^ 2 ≤ c ^ 2 := by
         rw [← sq_abs, show |Yc| = |(l : ℝ)| / Y by rw [abs_div, abs_of_pos hY0]]
         exact pow_le_pow_left₀ (by positivity) ((div_le_iff₀ hY0).2 (by linarith)) 2
@@ -403,23 +376,22 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
       rw [hm₁, ← sq_le_sq₀ (abs_nonneg _) (by positivity), sq_abs, div_pow, hlam2,
         le_div_iff₀ hΛ0]
       have hcs := sq_det_le X Yc x₂ y₂
-      have hxy : 0 ≤ x₂ ^ 2 + y₂ ^ 2 := by positivity
-      calc (Y * (X * y₂ - Yc * x₂)) ^ 2 * Λ = Y ^ 2 * (X * y₂ - Yc * x₂) ^ 2 * Λ := by ring
+      calc _ = Y ^ 2 * (X * y₂ - Yc * x₂) ^ 2 * Λ := by ring
         _ ≤ Y ^ 2 * ((X ^ 2 + Yc ^ 2) * (x₂ ^ 2 + y₂ ^ 2)) * Λ := by gcongr
         _ ≤ Y ^ 2 * (2 * c ^ 2 * (x₂ ^ 2 + y₂ ^ 2)) * Λ := by gcongr
         _ = 2 * c ^ 2 * Y ^ 2 * (Λ * (x₂ ^ 2 + y₂ ^ 2)) := by ring
         _ ≤ 2 * c ^ 2 * Y ^ 2 * (Λ ^ 2 / 4 + 1 / Y ^ 2) := by gcongr
         _ = 2 * c ^ 2 * ((Y * Λ) ^ 2 / 4 + 1) := by field_simp
         _ ≤ 2 * c ^ 2 * (5 ^ 2 / 4 + 1) := by gcongr
-        _ ≤ (4 * c) ^ 2 := by linarith [sq_nonneg c]
+        _ ≤ _ := by linarith [sq_nonneg c]
     · refine int_abs_le_floor ?_
       rw [hm₂, ← sq_le_sq₀ (abs_nonneg _) (by positivity), sq_abs]
       have hcs := sq_det_le x₁ y₁ X Yc
-      calc (Y * (x₁ * Yc - y₁ * X)) ^ 2 = Y ^ 2 * (x₁ * Yc - y₁ * X) ^ 2 := by ring
+      calc _ = Y ^ 2 * (x₁ * Yc - y₁ * X) ^ 2 := by ring
         _ ≤ Y ^ 2 * ((x₁ ^ 2 + y₁ ^ 2) * (X ^ 2 + Yc ^ 2)) := by gcongr
         _ ≤ Y ^ 2 * (Λ * (2 * c ^ 2)) := by rw [← hΛxy]; gcongr
-        _ ≤ (3 / 2 * c * Y * lam) ^ 2 := by
-            rw [show (3 / 2 * c * Y * lam) ^ 2 = 9 / 4 * c ^ 2 * Y ^ 2 * lam ^ 2 by ring, hlam2]
+        _ ≤ _ := by
+            rw [show (lamAt) ^ 2 = 9 / 4 * c ^ 2 * Y ^ 2 * lam ^ 2 by ring, hlam2]
             have h0 : 0 ≤ c ^ 2 * Y ^ 2 * Λ := by positivity
             linarith
 

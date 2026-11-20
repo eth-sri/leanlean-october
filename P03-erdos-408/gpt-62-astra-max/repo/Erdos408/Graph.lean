@@ -3,8 +3,12 @@ module
 public import Erdos408.Graph.Assembly
 public import Erdos408.Graph.Family
 public import Erdos821.P3Final.Transference
-public import Erdos821.P3Rare.Proof
-public import Erdos821.S34.IdealInputs
+public import Erdos821.S34.ComparisonKernel
+public import Erdos821.P4Cancel.Proof
+public import Erdos821.P4Probe.Construction
+public import Erdos821.P4Probe.InvarianceTasks
+public import Erdos821.P4Count.ProbeCounting
+public import Erdos821.P4Proj.Invariance
 
 /-!
 # The graph transference input
@@ -32,20 +36,21 @@ residual family of WD Theorem 4.1 (`IdealConstruction`).
 namespace Erdos408
 
 open Filter _root_.Erdos408.Graph
-open Erdos821.Blueprint.Graph (FixedData PrimeGroups Family intervalBigGroups)
+open Erdos821.Blueprint.Graph (Family)
 open Erdos821.Blueprint.Analytic (cell)
 
 /-- WD Corollary 3.11, from the vendored P3 package. -/
 theorem transferencePairing : Erdos821.Blueprint.Graph.TransferencePairing :=
-  (Erdos821.S2Core.transference_inputs_of_remaining
-    Erdos821.S2Packet.AbsolutePhysicalPacketTask_proof
-    Erdos821.S2Ltrans.LocalTransferenceAssemblyTask_proof
-    (Erdos821.P3Final.remaining_of_rare Erdos821.S2Core.MemoryRareTask_proof)).pairing
+  Erdos821.S2Core.PairingFromMomentTask_proof Erdos821.S2Packet.AbsolutePhysicalPacketTask_proof
+    (Erdos821.S2Core.transferenceEstimate_of_local
+      (Erdos821.S2Ltrans.LocalTransferenceAssemblyTask_proof Erdos821.P3Final.memoryProofs))
 
-/-- WD Theorem 4.1, from the vendored P4 package. -/
+open Erdos821.P4Probe in
+/-- WD Theorem 4.1: apply the symmetric probe construction to the comparison estimate. -/
 theorem idealConstruction : Erdos821.Blueprint.Graph.IdealConstruction :=
-  (Erdos821.S34Core.ideal_inputs_of_cancellation_task
-    Erdos821.P4Probe.FiniteProbeCancellationTask_proof).construction
+  symmetricProbeTask_of_finite
+    (symmetricFullComponentTask_of_counting ProbeCountingTask_proof RowAnovaInvariantTask_proof)
+    FiniteProbeCancellationTask_proof (@Erdos821.Blueprint.Analytic.comparison_kernel_proof)
 
 /-- `√(L^{2C}) = L^C`. -/
 private lemma sqrt_rpow_two_mul {L : ℝ} (hL : 0 ≤ L) (C : ℝ) :
@@ -71,10 +76,9 @@ theorem graphTransference : GraphTransference := by
   show FamilyBound q₀ m (max J₀ J₀') (C₁ + 2 * ξexp + 4 * qexp) K E C₃ C₄ x P big
   refine FamilyBound.reindex (Fintype.equivFin ι) ?_
   -- the scales
-  have hx₀ : 0 < x := (Real.exp_pos 1).trans_le hx
-  have hL : 1 ≤ Real.log x := (Real.le_log_iff_exp_le hx₀).mpr hx
-  have hL₀ : 0 < Real.log x := one_pos.trans_le hL
-  have hT : 0 ≤ Real.log (Real.log x) := Real.log_nonneg hL
+  have hL : 1 ≤ Real.log x := (Real.le_log_iff_exp_le ((Real.exp_pos 1).trans_le hx)).mpr hx
+  have hL₀ := one_pos.trans_le hL
+  have hT := Real.log_nonneg hL
   -- the reindexed groups
   set e := Fintype.equivFin ι
   have hmem : ∀ k, k ∈ big.map e.toEmbedding ↔ e.symm k ∈ big := fun k => by
@@ -103,9 +107,9 @@ theorem graphTransference : GraphTransference := by
   set Q := ⌊Real.log x ^ qexp⌋₊
   set w := Real.log x ^ (-hexp)
   set ξ := Real.log x ^ (-ξexp) with hξdef
-  have hξ : 0 < ξ := Real.rpow_pos_of_pos hL₀ _
-  have hw₀ : 0 < w := Real.rpow_pos_of_pos hL₀ _
-  have hw₁ : w ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hL (neg_nonpos.mpr hhexp.le)
+  have hξ : 0 < ξ := by positivity
+  have hw₀ : 0 < w := by positivity
+  have hw₁ := Real.rpow_le_one_of_one_le_of_nonpos hL (neg_nonpos.mpr hhexp.le)
   have hcoef := fun v hv => (hcomp v hv).2.2
   have hne : ∀ v, v ≠ raw → ∃ g, ((B.pattern v).changed g).Nonempty := fun v hv => by
     obtain ⟨g, -, hg⟩ := (hcomp v hv).2.1 false
@@ -140,7 +144,7 @@ theorem graphTransference : GraphTransference := by
     exact ⟨h₁, h₂ ▸ (B.pattern _).bound g⟩
   · -- no changed slots in small groups
     have : (B.pattern (famPoint B raw block Q w ξ ν).1).changed g = ∅ :=
-      (B.pattern _).small g (by simpa [G, primeGroups] using hg)
+      (B.pattern _).small g (by simpa [G] using hg)
     simp [blockSlots, this]
   · -- both blocks are changed
     obtain ⟨g, hg, hg'⟩ := (hcomp _ (hpt ν)).2.1 false
@@ -152,32 +156,29 @@ theorem graphTransference : GraphTransference := by
   · -- the auxiliary tests live in log cells
     unfold cellTest at hn
     by_cases hc : 0 < n ∧ cell w n = (famPoint B raw block Q w ξ ν).2.1
-    · exact mem_cell hw₀ hw₁ hc.1 hc.2
+    · exact mem_cell hw₀ hw₁ hc.left hc.right
     · exact absurd (ite_eq_right hc) hn
   · unfold cellTest at hn
     by_cases hc : 0 < n ∧ cell w n = (famPoint B raw block Q w ξ ν).2.2.2.1
-    · exact mem_cell hw₀ hw₁ hc.1 hc.2
+    · exact mem_cell hw₀ hw₁ hc.left hc.right
     · exact absurd (ite_eq_right hc) hn
   · -- the term weights
     refine (sum_norm_termWeight_family_le B raw block Q hξ hcoef hne hGV).trans ?_
     have hQ : (Q : ℝ) ≤ Real.log x ^ qexp := Nat.floor_le (by positivity)
     have hξ' : ξ⁻¹ = Real.log x ^ ξexp := by
       rw [hξdef, Real.rpow_neg hL₀.le, inv_inv]
-    have hmass' : (B.model 1 0).patternMass ≤ Real.log x ^ C₁ := hmass
-    have hpm : 0 ≤ (B.model 1 0).patternMass :=
-      Finset.sum_nonneg fun v _ => sSup_norm_nonneg (B.pattern v)
-    calc ξ⁻¹ ^ 2 * (Q : ℝ) ^ 4 * (B.model 1 0).patternMass
+    calc _
         ≤ (Real.log x ^ ξexp) ^ 2 * (Real.log x ^ qexp) ^ 4 * Real.log x ^ C₁ := by
           rw [hξ']
           exact mul_le_mul (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (Nat.cast_nonneg _) hQ 4)
-            (by positivity)) hmass' hpm (by positivity)
-      _ = Real.log x ^ (C₁ + 2 * ξexp + 4 * qexp) := by
+            (by positivity)) hmass (Finset.sum_nonneg fun v _ => sSup_norm_nonneg (B.pattern v)) (by positivity)
+      _ = _ := by
           rw [← Real.rpow_natCast, ← Real.rpow_natCast, ← Real.rpow_mul hL₀.le,
             ← Real.rpow_mul hL₀.le, ← Real.rpow_add hL₀, ← Real.rpow_add hL₀]
           ring_nf
   · -- the transferred pairing
     intro ζ hζ X hX₁ hX₂ S S' f g hS hf hg hnf hng
-    have hX : 0 ≤ X := (Real.sqrt_nonneg x).trans hX₁
+    have hX := (Real.sqrt_nonneg x).trans hX₁
     have hbound := hTPx G (B.model 1 ζ) X (targets (B.model 1 ζ) S') (extend S f)
       (fun z => g z.1.toNat) hadm hmass (by simp [Family.model])
       (by simp [Family.model, Erdos821.Blueprint.Graph.L, hL])

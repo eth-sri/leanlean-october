@@ -59,7 +59,7 @@ theorem eventually_abs_slotMean_div_le (c vlo : ℝ) (d : ℕ) (hc : 0 < c) (hvl
         hC.trans (pow_le_pow_left₀ hs0 hsum _)
     _ = 2 ^ (d + 1) / vlo * L ^ (d + 1) * vlo := by field_simp; ring
     _ ≤ L ^ 2 * L ^ (d + 1) * V := by gcongr
-    _ = L ^ (d + 3) * V := by ring
+    _ = _ := by ring
 
 /-- Eventually, every `d ≠ 0` whose prime factors exceed `exp(L^{1/10})` is coprime to every
 modulus `k ≤ L^{C_m}`. -/
@@ -73,7 +73,7 @@ theorem eventually_coprime (Cm : ℝ) :
   intro d k hd hk1 hk hp
   set L := Real.log x with hL
   have hL0 : 0 < L := by linarith
-  have hlog0 : 0 < Real.log L := Real.log_pos hL1
+  have hlog0  := Real.log_pos hL1
   -- `L^{C_m} < exp(L^{1/10})`
   have hlt : L ^ Cm < Real.exp (L ^ (1 / 10 : ℝ)) := by
     rw [Real.rpow_def_of_pos hL0]

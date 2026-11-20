@@ -1,5 +1,6 @@
 module
 
+public import Erdos408.Scales
 public import Erdos408.Statement
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
@@ -69,6 +70,10 @@ def IsRough (x : ℝ) (n : ℕ) : Prop :=
 noncomputable def band (x a : ℝ) : Finset ℕ :=
   (Finset.Icc ⌈Real.exp (Real.log x ^ a)⌉₊ ⌊Real.exp (2 * Real.log x ^ a)⌋₊).filter Nat.Prime
 
+/-- No prime can serve as a label in two different slots. -/
+abbrev DisjointBands {ι : Type*} (x : ℝ) (a : ι → ℝ) : Prop :=
+  ∀ i j, i ≠ j → Disjoint (band x (a i)) (band x (a j))
+
 /-- The number of primes of `S` dividing `n`. -/
 def primeCount (S : Finset ℕ) (n : ℕ) : ℕ :=
   (S.filter (· ∣ n)).card
@@ -98,7 +103,7 @@ noncomputable def primesIcc (a b : ℝ) : Finset ℕ :=
 intervals `I ⊂ [H, 2H]` with `exp(L / T²²) ≤ H ≤ x`, for characters of
 modulus at most `L^{C_m}` and `L^E ≤ |u| ≤ x³`, are at most `κ L^{-A}`. -/
 def PrimeTwistBound (x A E Cm κ : ℝ) : Prop :=
-  ∀ H lo hi : ℝ, Real.exp (Real.log x / Real.log (Real.log x) ^ 22) ≤ H → H ≤ x →
+  ∀ H lo hi : ℝ, Real.exp (Real.log x / logLog x ^ 22) ≤ H → H ≤ x →
     H ≤ lo → hi ≤ 2 * H →
     ∀ (k : ℕ), 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm → ∀ (χ : DirichletCharacter ℂ k) (u : ℝ),
       Real.log x ^ E ≤ |u| → |u| ≤ x ^ 3 →
@@ -111,7 +116,7 @@ with `exp(L / T²²) ≤ H ≤ x`, residue classes of modulus at most `L^{C_m}`,
 `1 ≤ |u| ≤ x³`, the integer kernel satisfies
 `H⁻¹ |∑_{n ∈ I, n ≡ a} n^{iu}| ≤ κ ((1 + |u|)⁻¹ + exp(-L^{0.95}))`. -/
 def IntegerKernelBound (x Cm κ : ℝ) : Prop :=
-  ∀ H lo hi : ℝ, Real.exp (Real.log x / Real.log (Real.log x) ^ 22) ≤ H → H ≤ x →
+  ∀ H lo hi : ℝ, Real.exp (Real.log x / logLog x ^ 22) ≤ H → H ≤ x →
     H ≤ lo → hi ≤ 2 * H →
     ∀ (k a : ℕ), 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm → ∀ u : ℝ, 1 ≤ |u| → |u| ≤ x ^ 3 →
       H⁻¹ * ‖∑ n ∈ (Finset.Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter (· ≡ a [MOD k]),
@@ -144,8 +149,8 @@ def TwoSidedCorrelation : Prop :=
         (Bc : (Fin d → ℕ) → ℝ) (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
         -- active groups as in PD (6.1)
         Disjoint Sg Bg → (Sg ∪ Bg : Set (Finset ℕ)).PairwiseDisjoint id →
-        c₀ * Real.log (Real.log x) ≤ Sg.card → (Sg.card : ℝ) ≤ C₀ * Real.log (Real.log x) →
-        c₀ * Real.log (Real.log x) ≤ Bg.card → (Bg.card : ℝ) ≤ C₀ * Real.log (Real.log x) →
+        c₀ * logLog x ≤ Sg.card → (Sg.card : ℝ) ≤ C₀ * logLog x →
+        c₀ * logLog x ≤ Bg.card → (Bg.card : ℝ) ≤ C₀ * logLog x →
         (∀ P ∈ Sg ∪ Bg, vlo ≤ harmonicMass P ∧ harmonicMass P ≤ vhi) →
         (∀ P ∈ Sg, P ⊆ primesIcc (Real.exp (Real.log x ^ (0.27 : ℝ)))
           (Real.exp (Real.log x ^ (0.36 : ℝ)))) →
@@ -153,19 +158,19 @@ def TwoSidedCorrelation : Prop :=
           (Real.exp (Real.log x ^ (0.46 : ℝ)))) →
         (∀ P ∈ Bg, ∃ y z : ℝ, P = primesIcc y z) →
         -- inert bands
-        (r : ℝ) ≤ K₀ + CN * Real.log (Real.log (Real.log x)) →
+        (r : ℝ) ≤ K₀ + CN * logLogLog x →
         (∀ i, alo ≤ a i ∧ a i ≤ ahi) →
         (∀ i j, i ≠ j → Disjoint (band x (a i)) (band x (a j))) →
         -- slots, the last one spare
-        (∀ i, c / Real.log (Real.log x) ^ 20 ≤ u i) →
-        ∑ i, v i ≤ 1 - c / Real.log (Real.log x) ^ 20 →
+        (∀ i, c / logLog x ^ 20 ≤ u i) →
+        ∑ i, v i ≤ 1 - c / logLog x ^ 20 →
         (∀ Q, |Bc Q| ≤ 1) →
         -- the clipped invariant core
         (∀ n, G n = G (stripPrimes ((Sg ∪ Bg).biUnion id) n)) →
         (∀ n, 0 ≤ G n ∧ G n ≤ Real.log x ^ B₀) →
         -- the cutoff
         ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) Ψ → (∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) →
-        (∀ (k : ℕ) (y : ℝ), |iteratedDeriv k Ψ y| ≤ M k * Real.log (Real.log x) ^ (CΨ * k)) →
+        (∀ (k : ℕ) (y : ℝ), |iteratedDeriv k Ψ y| ≤ M k * logLog x ^ (CΨ * k)) →
         |∑ w ∈ Finset.Icc 1 ⌊κ * x⌋₊,
             Ψ (w / x) / w *
               (markedWeight Finset.univ q (fun i => band x (a i)) w *
@@ -197,11 +202,11 @@ def OneSidedTypeII : Prop :=
     1 / 10 < alo → alo ≤ ahi → ahi < 1 / 5 →
     ∃ (K₀ : ℕ) (A₀ B A : ℝ), ∀ K : ℕ, K₀ ≤ K → ∀ g c₄ cG : ℝ, 0 < g → ∃ C₁ : ℝ,
       ∀ᶠ x : ℝ in atTop,
-        ∀ (a : Fin K → ℝ) (γ Hm Hn : ℝ) (F : ℕ → ℂ) (α β : ℕ → ℂ),
+        ∀ (a : Fin K → ℝ) (γ Hm Hn : ℝ) (F α β : ℕ → ℂ),
           (∀ i, alo ≤ a i ∧ a i ≤ ahi) → (∀ i j : Fin K, i < j → a i + g ≤ a j) →
           Real.log x ^ (-(1 / 100 : ℝ)) ≤ γ → x ^ γ ≤ Hm → x ^ γ ≤ Hn →
           x / CX ≤ Hm * Hn → Hm * Hn ≤ CX * x →
-          (∀ h, ‖F h‖ ≤ 1) → (∀ i h, ∀ p ∈ band x (a i), F (p * h) = F h) →
+          (OneBounded F) → (∀ i h, ∀ p ∈ band x (a i), F (p * h) = F h) →
           (∀ m, α m ≠ 0 →
             Hm ≤ m ∧ (m : ℝ) ≤ 2 * Hm ∧ IsRough x m ∧ ‖α m‖ ≤ Real.log x ^ C) →
           (∀ (k : ℕ), 1 ≤ k → (k : ℝ) ≤ Real.log x ^ A₀ → ∀ (χ : DirichletCharacter ℂ k)
@@ -310,9 +315,9 @@ def GraphTransference : Prop :=
       ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
         -- active groups as in PD (6.1)
         (∀ g h, g ≠ h → Disjoint (P g) (P h)) →
-        c₀ * Real.log (Real.log x) ≤ (Finset.univ \ big).card →
-        ((Finset.univ \ big).card : ℝ) ≤ C₀ * Real.log (Real.log x) →
-        c₀ * Real.log (Real.log x) ≤ big.card → (big.card : ℝ) ≤ C₀ * Real.log (Real.log x) →
+        c₀ * logLog x ≤ (Finset.univ \ big).card →
+        ((Finset.univ \ big).card : ℝ) ≤ C₀ * logLog x →
+        c₀ * logLog x ≤ big.card → (big.card : ℝ) ≤ C₀ * logLog x →
         (∀ g, vlo ≤ harmonicMass (P g) ∧ harmonicMass (P g) ≤ vhi) →
         (∀ g ∉ big, P g ⊆ primesIcc (Real.exp (Real.log x ^ (0.27 : ℝ)))
           (Real.exp (Real.log x ^ (0.36 : ℝ)))) →
@@ -332,7 +337,7 @@ def GraphTransference : Prop :=
           -- the transferred pairing
           ∀ ζ : ℝ, |ζ| ≤ Real.log x ^ C₄ → ∀ X : ℝ, √x ≤ X → X ≤ x ^ 2 →
             ∀ (S S' : Finset ℕ) (f g : ℕ → ℂ), (∀ n ∈ S, X ≤ n ∧ (n : ℝ) < 2 * X) →
-              (∀ n, ‖f n‖ ≤ 1) → (∀ n ∉ S', g n = 0) →
+              (OneBounded f) → (∀ n ∉ S', g n = 0) →
               physicalNormSq P (J + 1) S f ≤ X * Real.log x ^ (2 * C₃) →
               physicalNormSq P (J + 1) S' g ≤ X * Real.log x ^ (2 * C₃) →
               ‖patternPairing P q₀ (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) ζ S f g +
@@ -361,10 +366,10 @@ def BlockSieve : Prop :=
       (∀ i ∈ objs, 0 ≤ wt i) → 1 ≤ z → (∀ p ∈ P, p.Prime ∧ (p : ℝ) ≤ z) → 0 ≤ X →
       (∀ p ∈ P, 0 ≤ g p ∧ g p ≤ 1 - η₀) →
       (∀ w : ℝ, 1 < w → ∑ p ∈ P.filter (fun p : ℕ => w < p ∧ (p : ℝ) ≤ w ^ 2), g p ≤ C₀) →
-      let S : Finset ℕ → ℝ := fun D => ∑ i ∈ objs with ∀ p ∈ D, bad p i, wt i
-      let rem : Finset ℕ → ℝ := fun D => S D - X * ∏ p ∈ D, g p
-      let sifted : ℝ := ∑ i ∈ objs with ∀ p ∈ P, ¬ bad p i, wt i
-      let main : ℝ := X * ∏ p ∈ P, (1 - g p)
+      let S := fun D => ∑ i ∈ objs with ∀ p ∈ D, bad p i, wt i
+      let rem := fun D => S D - X * ∏ p ∈ D, g p
+      let sifted := ∑ i ∈ objs with ∀ p ∈ P, ¬ bad p i, wt i
+      let main := X * ∏ p ∈ P, (1 - g p)
       (∀ h : ℕ, Even h → h₀ ≤ h →
         |sifted - main| ≤
           K * Real.exp (-(h : ℝ)) * main +

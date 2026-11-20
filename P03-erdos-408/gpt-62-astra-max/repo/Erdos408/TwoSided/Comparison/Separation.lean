@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Scales
+
 public import Erdos408.Extraction.Allocation.Groups
 public import Erdos408.TwoSided.Setup
 
@@ -38,13 +40,13 @@ noncomputable def comparisonBilinear (x q q₀ : ℝ) {r d : ℕ} (a : Fin r →
     (P : ι → Finset ℕ) {J : ℕ} (A B : ι → Finset (Fin J)) (φ φ' ψ ψ' : ℕ → ℂ) (G : ℕ → ℝ)
     (ψ₁ : ℝ → ℂ) (Y σ : ℝ) : ℂ :=
   ∑ l ∈ auxLabels P (fun g => A g ∪ B g),
-    ((∏ g, ∏ i ∈ A g ∪ B g, (harmonicMass (P g) * l g i)⁻¹ : ℝ) : ℂ) *
-      (φ (slotProduct A l) * (slotProduct A l : ℂ) ^ (-((σ : ℂ) * Complex.I))) *
-      (φ' (slotProduct B l) * (slotProduct B l : ℂ) ^ (-((σ : ℂ) * Complex.I))) *
+    (∏ g, ∏ i ∈ A g ∪ B g, (harmonicMass (P g) * l g i)⁻¹ : ℝ) *
+      (φ (slotProduct A l) * (slotProduct A l) ^ (-(σ * Complex.I))) *
+      (φ' (slotProduct B l) * (slotProduct B l) ^ (-(σ * Complex.I))) *
       ∑ w ∈ Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊,
         endpointCoeff x q q₀ a u v Bc P (fun g => A g ∪ B g)
             (fun p => ψ' (slotProduct B fun g i => p g i.castSucc)) ψ₁ Y σ w *
-          ((G (w + slotProduct (fun g => A g ∪ B g) l) : ℂ) *
+          ((G (w + slotProduct (fun g => A g ∪ B g) l)) *
             markedListWeight P q₀ (unsharedSlots fun g => A g ∪ B g)
               (fun p => ψ (slotProduct A fun g i => p g i.castSucc))
               (w + slotProduct (fun g => A g ∪ B g) l))
@@ -68,7 +70,7 @@ private noncomputable def partBump (a : ℝ) (m : ℕ) (z : ℝ) : ℝ :=
 
 /-- The piece `ψ_{1,m}(w) = η_m(y_m w)/(y_m w)`. -/
 private noncomputable def partPiece (a : ℝ) (m : ℕ) (w : ℝ) : ℂ :=
-  ((partBump a m (partPoint a m * w) * (partPoint a m * w)⁻¹ : ℝ) : ℂ)
+  (partBump a m (partPoint a m * w) * (partPoint a m * w)⁻¹ : ℝ)
 
 /-- `S_m(z) = 0` for `z ≤ y_m`. -/
 private theorem partStep_eq_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {z : ℝ} (hz : z ≤ partPoint a m) :
@@ -93,40 +95,32 @@ private theorem lt_of_partBump_ne_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {z : ℝ
   have hs := partPoint_succ a m
   by_contra h
   rcases not_and_or.1 h with h | h
-  · refine hz ?_
-    rw [partBump, partStep_eq_zero ha (not_lt.1 h), partStep_eq_zero ha (by linarith)]
+  all_goals refine hz ?_
+  · rw [partBump, partStep_eq_zero ha (not_lt.1 h), partStep_eq_zero ha (by linarith)]
     norm_num
-  · refine hz ?_
-    rw [partBump, partStep_eq_one ha (by linarith), partStep_eq_one ha (by linarith)]
+  · rw [partBump, partStep_eq_one ha (by linarith), partStep_eq_one ha (by linarith)]
     norm_num
 
 /-- `y_m ≥ a/2`. -/
 private theorem half_le_partPoint {a : ℝ} (ha : 0 < a) (m : ℕ) : a / 2 ≤ partPoint a m := by
-  unfold partPoint
-  have : 0 ≤ (m : ℝ) * (a / 4) := by positivity
-  linarith
+  simp_all [partPoint]
 
 /-- `ψ_{1,m}` lives in `[1, 2]`. -/
 private theorem le_of_partPiece_ne_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {w : ℝ}
     (hw : partPiece a m w ≠ 0) : 1 ≤ w ∧ w ≤ 2 := by
   have hy := half_le_partPoint ha m
-  have hy0 : 0 < partPoint a m := by linarith
   have hb : partBump a m (partPoint a m * w) ≠ 0 := by
     intro h
     apply hw
     simp [partPiece, h]
   obtain ⟨h₁, h₂⟩ := lt_of_partBump_ne_zero ha hb
   constructor
-  · by_contra h
-    have : partPoint a m * w < partPoint a m * 1 := mul_lt_mul_of_pos_left (not_le.1 h) hy0
-    linarith
-  · by_contra h
-    have : partPoint a m * 2 < partPoint a m * w := mul_lt_mul_of_pos_left (not_le.1 h) hy0
-    linarith
+  · nlinarith
+  nlinarith
 
 /-- The steps are smooth. -/
 private theorem contDiff_partStep {a : ℝ} (m : ℕ) :
-    ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (partStep a m) :=
+    ContDiff ℝ (⊤ : ℕ∞) (partStep a m) :=
   Real.smoothTransition.contDiff.comp ((contDiff_id.sub contDiff_const).div_const _)
 
 /-- The pieces are smooth: they vanish near `w ≤ 1`, and `w ↦ (y_m w)⁻¹` is smooth on
@@ -134,7 +128,7 @@ private theorem contDiff_partStep {a : ℝ} (m : ℕ) :
 private theorem contDiff_partPiece {a : ℝ} (ha : 0 < a) (m : ℕ) :
     ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (partPiece a m) := by
   have hy0 : 0 < partPoint a m := by linarith [half_le_partPoint ha m]
-  have hbump : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) fun w => partBump a m (partPoint a m * w) :=
+  have hbump : ContDiff ℝ ((⊤ : ℕ∞)) fun w => partBump a m (partPoint a m * w) :=
     ((contDiff_partStep m).sub (contDiff_partStep (m + 1))).comp (contDiff_const.mul contDiff_id)
   refine Complex.ofRealCLM.contDiff.comp ?_
   rw [contDiff_iff_contDiffAt]
@@ -143,28 +137,26 @@ private theorem contDiff_partPiece {a : ℝ} (ha : 0 < a) (m : ℕ) :
   · refine contDiffAt_const (c := (0 : ℝ)).congr_of_eventuallyEq ?_
     filter_upwards [Iio_mem_nhds hw] with w' hw'
     by_contra h
-    have h' : partPiece a m w' ≠ 0 := by
+    exact absurd (le_of_partPiece_ne_zero ha (by
       rw [partPiece, Ne, Complex.ofReal_eq_zero]
-      exact h
-    exact absurd (le_of_partPiece_ne_zero ha h').1 (not_le.2 hw')
+      exact h)).1 (not_le.2 hw')
   · refine hbump.contDiffAt.mul ((contDiff_const.mul contDiff_id).contDiffAt.inv ?_)
-    exact (mul_pos hy0 (show (0 : ℝ) < w by linarith)).ne'
+    positivity
 
 /-- A smooth function supported in `[1, 2]` has bounded derivatives of every order. -/
-private theorem exists_norm_iteratedDeriv_le {f : ℝ → ℂ} (hf : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) f)
+private theorem exists_norm_iteratedDeriv_le {f : ℝ → ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hs : ∀ z, f z ≠ 0 → 1 ≤ z ∧ z ≤ 2) (j : ℕ) :
     ∃ C, ∀ z, ‖iteratedDeriv j f z‖ ≤ C := by
-  have hc : HasCompactSupport f := HasCompactSupport.intro isCompact_Icc fun z hz => by
+  have hc := HasCompactSupport.intro isCompact_Icc fun z hz => by
     by_contra h
     exact hz (Set.mem_Icc.2 (hs z h))
-  have hcj : HasCompactSupport (iteratedDeriv j f) := by
-    rw [iteratedDeriv_eq_iterate]
-    clear hs
-    induction j with
-    | zero => exact hc
-    | succ j ih => rw [Function.iterate_succ_apply']; exact ih.deriv
   exact (hf.continuous_iteratedDeriv j (by exact_mod_cast le_top)).bounded_above_of_compact_support
-    hcj
+    (by
+      rw [iteratedDeriv_eq_iterate]
+      clear hs
+      induction j with
+      | zero => exact hc
+      | succ j ih => rw [Function.iterate_succ_apply']; exact ih.deriv)
 
 end Separation
 
@@ -178,23 +170,23 @@ smooth pieces `ψ_{1,m}` supported in `[1, 2]`, with derivative bounds `M₁`, a
 `ψ_{1,m}(z) = η_m(y_m z)/(y_m z)`; the derivative bounds hold by compact support. -/
 theorem exists_partition (κ : ℝ) (hκ : 1 < κ) :
     ∃ (n : ℕ) (ψ₁ : Fin n → ℝ → ℂ) (y : Fin n → ℝ) (M₁ : ℕ → ℝ),
-      (∀ m, ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (ψ₁ m) ∧
+      (∀ m, ContDiff ℝ (⊤ : ℕ∞) (ψ₁ m) ∧
         (∀ z, ψ₁ m z ≠ 0 → 1 ≤ z ∧ z ≤ 2) ∧
-        ∀ (j : ℕ) (z : ℝ), ‖iteratedDeriv j (ψ₁ m) z‖ ≤ M₁ j) ∧
+        ∀ j z, ‖iteratedDeriv j (ψ₁ m) z‖ ≤ M₁ j) ∧
       (∀ m, (4 * κ)⁻¹ ≤ y m ∧ y m ≤ 2 * κ * Real.exp 2) ∧
-      ∀ z : ℝ, κ⁻¹ ≤ z → z ≤ κ * Real.exp 2 → ∑ m, ψ₁ m (z / y m) = ((z⁻¹ : ℝ) : ℂ) := by
+      ∀ z, κ⁻¹ ≤ z → z ≤ κ * Real.exp 2 → ∑ m, ψ₁ m (z / y m) = ((z⁻¹ : ℝ) : ℂ) := by
   set a := κ⁻¹ with ha_def
   set b := κ * Real.exp 2 with hb_def
   have hκ0 : 0 < κ := by linarith
-  have ha : 0 < a := inv_pos.2 hκ0
+  have ha : 0 < a := by positivity
   have hab : a < b := by
-    have : a < 1 := inv_lt_one_of_one_lt₀ hκ
-    have : 1 < b := one_lt_mul_of_lt_of_le hκ (Real.one_le_exp (by norm_num))
+    have := inv_lt_one_of_one_lt₀ hκ
+    have : 1 < b := by bound
     linarith
   set n := ⌈4 * b / a⌉₊ with hn
   have hsm := fun m : Fin n => contDiff_partPiece ha m
   have hss := fun (m : Fin n) z (h : partPiece a m z ≠ 0) => le_of_partPiece_ne_zero ha h
-  choose C hC using fun (m : Fin n) j => exists_norm_iteratedDeriv_le (hsm m) (hss m) j
+  choose C hC using fun m j => exists_norm_iteratedDeriv_le (hsm m) (hss m) j
   refine ⟨n, fun m => partPiece a m, fun m => partPoint a m, fun j => ∑ m, C m j,
     fun m => ⟨hsm m, hss m, fun j z => (hC m j z).trans ?_⟩, fun m => ⟨?_, ?_⟩, ?_⟩
   · refine Finset.single_le_sum (f := fun m => C m j) (fun m' _ => ?_) (Finset.mem_univ m)
@@ -216,15 +208,14 @@ theorem exists_partition (κ : ℝ) (hκ : 1 < κ) :
     have : a / 2 ≤ b := by linarith
     nlinarith
   · intro z hz₁ hz₂
-    have hterm : ∀ m : Fin n, partPiece a m (z / partPoint a m) =
-        ((partBump a m z * z⁻¹ : ℝ) : ℂ) := by
+    have hterm : ∀ m, partPiece a m (z / partPoint a m) =
+        (partBump a m z * z⁻¹ : ℝ) := by
       intro m
-      have hy0 : partPoint a m ≠ 0 := by linarith [half_le_partPoint ha m]
-      rw [partPiece, mul_div_cancel₀ z hy0]
+      rw [partPiece, mul_div_cancel₀ z (by linarith [half_le_partPoint ha m])]
     simp only [hterm]
     rw [← Complex.ofReal_sum, ← Finset.sum_mul]
     congr 1
-    have htel : ∑ m : Fin n, partBump a m z = partStep a 0 z - partStep a n z :=
+    have htel :=
       (Fin.sum_univ_eq_sum_range (fun m => partBump a m z) n).trans
         (Finset.sum_range_sub' (fun m => partStep a m z) n)
     rw [htel, partStep_eq_one ha, partStep_eq_zero ha]
@@ -246,27 +237,26 @@ private theorem eventually_log_add_mul_le (κ K : ℝ) (hK : 0 ≤ K) :
     ∀ᶠ x : ℝ in atTop,
       Real.log κ + K * Real.log (Real.log x) * Real.log x ^ (0.46 : ℝ) ≤ Real.log x := by
   have ho := ((isLittleO_log_rpow_atTop (by norm_num : (0 : ℝ) < 0.54)).bound
-    (show (0 : ℝ) < 1 / (2 * (K + 1)) by positivity))
+    (show 0 < 1 / (2 * (K + 1)) by positivity))
   filter_upwards [Real.tendsto_log_atTop.eventually ho,
     Real.tendsto_log_atTop.eventually_ge_atTop (2 * |Real.log κ| + 1)] with x hx hL
   set L := Real.log x
   have hL1 : 1 ≤ L := by linarith [abs_nonneg (Real.log κ)]
   have hL0 : 0 < L := by linarith
-  have hlogL : 0 ≤ Real.log L := Real.log_nonneg hL1
+  have hlogL := Real.log_nonneg hL1
   rw [Real.norm_of_nonneg hlogL, Real.norm_of_nonneg (by positivity)] at hx
   have hsplit : L ^ (0.54 : ℝ) * L ^ (0.46 : ℝ) = L := by
     rw [← Real.rpow_add hL0]
     norm_num
-  have h46 : 0 ≤ L ^ (0.46 : ℝ) := by positivity
   have h₁ : K * Real.log L * L ^ (0.46 : ℝ) ≤ K * (1 / (2 * (K + 1))) * L := by
-    calc K * Real.log L * L ^ (0.46 : ℝ)
+    calc _
         ≤ K * (1 / (2 * (K + 1)) * L ^ (0.54 : ℝ)) * L ^ (0.46 : ℝ) := by gcongr
       _ = K * (1 / (2 * (K + 1))) * (L ^ (0.54 : ℝ) * L ^ (0.46 : ℝ)) := by ring
-      _ = K * (1 / (2 * (K + 1))) * L := by rw [hsplit]
+      _ = _ := by rw [hsplit]
   have h₂ : K * (1 / (2 * (K + 1))) ≤ 1 / 2 := by
     rw [mul_one_div, div_le_iff₀ (by positivity)]
     linarith
-  have h₃ : K * (1 / (2 * (K + 1))) * L ≤ 1 / 2 * L := mul_le_mul_of_nonneg_right h₂ hL0.le
+  have h₃ := mul_le_mul_of_nonneg_right h₂ hL0.le
   linarith [le_abs_self (Real.log κ)]
 
 /-- **U10 for the free labels.** Eventually, for groups as in (6.1) and free slots `C` with at
@@ -274,7 +264,7 @@ most `m₀` slots in each big group and none in the small ones, `κ D_C ≤ x` f
 auxiliary label. -/
 theorem eventually_mul_slotProduct_le (c₀ C₀ vlo vhi κ : ℝ) (hκ : 0 < κ) (m₀ : ℕ) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
+      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] P big,
         GroupAdmissible c₀ C₀ vlo vhi x P big →
         ∀ (J : ℕ) (C : ι → Finset (Fin J)), (∀ g, (C g).card ≤ m₀) → (∀ g ∉ big, C g = ∅) →
         ∀ l ∈ auxLabels P C, κ * slotProduct C l ≤ x := by
@@ -282,7 +272,7 @@ theorem eventually_mul_slotProduct_le (c₀ C₀ vlo vhi κ : ℝ) (hκ : 0 < κ
     eventually_gt_atTop 0, Real.tendsto_log_atTop.eventually_gt_atTop 0,
     (Real.tendsto_log_atTop.comp Real.tendsto_log_atTop).eventually_ge_atTop 0]
     with x hx hx0 hL0 hT0
-  simp only [Function.comp_apply] at hT0
+  simp at hT0
   intro ι _ _ P big hadm J C hC hCb l hl
   set E := Real.exp (Real.log x ^ (0.46 : ℝ)) with hE
   have hE1 : 1 ≤ E := Real.one_le_exp (by positivity)
@@ -293,11 +283,11 @@ theorem eventually_mul_slotProduct_le (c₀ C₀ vlo vhi κ : ℝ) (hκ : 0 < κ
     · calc ∏ i ∈ C g, (l g i : ℝ) ≤ ∏ _i ∈ C g, E := by
             refine Finset.prod_le_prod₀ (fun i _ => by positivity) fun i hi => ?_
             have h := Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 hl g) i
-            simp only [hi, ↓reduceIte] at h
+            simp [hi] at h
             exact (mem_primesIcc.1 (hadm.2.2.2.2.2.2.2.1 g hg h)).2.2
         _ = E ^ (C g).card := Finset.prod_const _
-        _ ≤ E ^ m₀ := pow_le_pow_right₀ hE1 (hC g)
-    · rw [hCb g hg, Finset.prod_empty]
+        _ ≤ E ^ m₀ := by solve_by_elim [pow_le_pow_right₀]
+    simp_all
   have hprod : (slotProduct C l : ℝ) ≤ (E ^ m₀) ^ big.card := by
     unfold slotProduct
     push_cast
@@ -305,23 +295,23 @@ theorem eventually_mul_slotProduct_le (c₀ C₀ vlo vhi κ : ℝ) (hκ : 0 < κ
           Finset.prod_le_prod₀ (fun g _ => Finset.prod_nonneg fun i _ => by positivity)
             fun g _ => hgi g
       _ = (E ^ m₀) ^ big.card := by
-          rw [Finset.prod_ite_mem, Finset.univ_inter, Finset.prod_const]
+          simp
   -- `E^{m₀ |big|} ≤ exp(m₀ |C₀| T L^{0.46}) ≤ x/κ`
   have hT : (big.card : ℝ) ≤ |C₀| * Real.log (Real.log x) := by
     have h := hadm.2.2.2.2.1
     exact h.trans (mul_le_mul_of_nonneg_right (le_abs_self C₀) hT0)
-  have hpow : (E ^ m₀) ^ big.card ≤ Real.exp (m₀ * |C₀| * Real.log (Real.log x) *
+  have hpow : (E ^ m₀) ^ big.card ≤ Real.exp (m₀ * |C₀| * logLog x *
       Real.log x ^ (0.46 : ℝ)) := by
-    rw [← pow_mul, hE, ← Real.exp_nat_mul, Real.exp_le_exp]
+    rw [← pow_mul, ← Real.exp_nat_mul, Real.exp_le_exp]
     push_cast
     have : 0 ≤ Real.log x ^ (0.46 : ℝ) := by positivity
-    calc ((m₀ : ℝ) * big.card) * Real.log x ^ (0.46 : ℝ)
-        ≤ ((m₀ : ℝ) * (|C₀| * Real.log (Real.log x))) * Real.log x ^ (0.46 : ℝ) := by gcongr
+    calc _
+        ≤ ((m₀ : ℝ) * (|C₀| * logLog x)) * Real.log x ^ (0.46 : ℝ) := by gcongr
       _ = _ := by ring
   have hxκ : Real.exp (m₀ * |C₀| * Real.log (Real.log x) * Real.log x ^ (0.46 : ℝ)) ≤ x / κ := by
     rw [le_div_iff₀ hκ, ← Real.exp_log hκ, ← Real.exp_add, ← Real.exp_log hx0]
     rw [Real.exp_log hx0]
-    calc Real.exp (_ + Real.log κ) ≤ Real.exp (Real.log x) := Real.exp_le_exp.2 (by linarith)
+    calc _ ≤ Real.exp (Real.log x) := Real.exp_le_exp.2 (by linarith)
       _ = x := Real.exp_log hx0
   have := hprod.trans (hpow.trans hxκ)
   rw [le_div_iff₀ hκ] at this
@@ -331,7 +321,7 @@ theorem eventually_mul_slotProduct_le (c₀ C₀ vlo vhi κ : ℝ) (hκ : 0 < κ
 private theorem cpow_div_mul_mul {x : ℝ} (hx : 0 < x) {DA DB w : ℕ} (hA : 0 < DA) (hB : 0 < DB)
     (hw : 0 < w) (s : ℂ) :
     ((((w : ℝ) / (x * ((DA * DB : ℕ) : ℝ)) : ℝ)) : ℂ) ^ s =
-      (x : ℂ) ^ (-s) * (DA : ℂ) ^ (-s) * (DB : ℂ) ^ (-s) * (w : ℂ) ^ s := by
+      x ^ (-s) * DA ^ (-s) * DB ^ (-s) * w ^ s := by
   have hA' : (0 : ℝ) < DA := by exact_mod_cast hA
   have hB' : (0 : ℝ) < DB := by exact_mod_cast hB
   have hw' : (0 : ℝ) < w := by exact_mod_cast hw
@@ -364,20 +354,20 @@ and `Y_m = y_m x U U'`. On the support, `D_C ∈ [UU', e²UU']` (the cells of `�
 theorem eventually_strippedComparison_eq (q q₀ c₀ C₀ vlo vhi κ : ℝ) (hκ : 1 < κ) (m₀ : ℕ)
     {n : ℕ} {ψ₁ : Fin n → ℝ → ℂ} {y : Fin n → ℝ} (hψ₁ : ∀ m z, ψ₁ m z ≠ 0 → 1 ≤ z ∧ z ≤ 2)
     (hy : ∀ m, (4 * κ)⁻¹ ≤ y m ∧ y m ≤ 2 * κ * Real.exp 2)
-    (hsum : ∀ z : ℝ, κ⁻¹ ≤ z → z ≤ κ * Real.exp 2 → ∑ m, ψ₁ m (z / y m) = ((z⁻¹ : ℝ) : ℂ)) :
+    (hsum : ∀ z, κ⁻¹ ≤ z → z ≤ κ * Real.exp 2 → ∑ m, ψ₁ m (z / y m) = (z⁻¹ : ℝ)) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
+      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] P (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
         ∀ {r d : ℕ} (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ)
-          (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
-        ∀ (J : ℕ) (A B : ι → Finset (Fin J)) (φ φ' ψ ψ' : ℕ → ℂ) (U U' : ℝ),
+          G Ψ,
+        ∀ J (A B : ι → Finset (Fin J)) φ φ' ψ ψ' (U U' : ℝ),
           ComparisonPattern m₀ big A B φ φ' ψ ψ' U U' →
-        ∀ α : ℝ → ℂ, Integrable α → (∀ z, Ψ z ≠ 0 → κ⁻¹ ≤ z ∧ z ≤ κ) →
+        ∀ α, Integrable α → (∀ z, Ψ z ≠ 0 → κ⁻¹ ≤ z ∧ z ≤ κ) →
           (∀ z : ℝ, 0 < z →
             (Ψ z : ℂ) = ∫ ξ, α ξ * (z : ℂ) ^ (((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I)) →
           strippedComparison x q₀ P A B φ φ' ψ ψ' (centeredCore x q a u v Bc) G Ψ =
-            ∫ ξ, α ξ * ((x : ℂ) ^ (-(((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I)) *
-              ∑ m, (y m : ℂ) * ((((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ *
+            ∫ ξ, α ξ * ((x : ℂ) ^ (-((2 * Real.pi * ξ : ℝ) * Complex.I)) *
+              ∑ m, (y m) * ((((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ *
                 comparisonBilinear x q q₀ a u v Bc P A B φ φ' ψ ψ' G (ψ₁ m)
                   (y m * (x * U * U')) (2 * Real.pi * ξ))) := by
   have hκ0 : 0 < κ := by linarith
@@ -387,32 +377,31 @@ theorem eventually_strippedComparison_eq (q q₀ c₀ C₀ vlo vhi κ : ℝ) (h�
   have hψ0 : ∀ m, ψ₁ m 0 = 0 := fun m => by
     by_contra h
     linarith [(hψ₁ m 0 h).1]
-  have hy0 : ∀ m, 0 < y m := fun m => lt_of_lt_of_le (by positivity) (hy m).1
+  have hy0 := fun m => lt_of_lt_of_le (by positivity) (hy m).1
   have hDAB := slotProduct_union (fun g => (hpat.1 g).1)
   have hDle : ∀ l ∈ auxLabels P (fun g => A g ∪ B g),
-      κ * slotProduct (fun g => A g ∪ B g) l ≤ x := fun l hl =>
-    hU10 P big hadm J (fun g => A g ∪ B g) (fun g => (hpat.1 g).2)
-      (fun g hg => by rw [(hpat.2.1 g hg).1, (hpat.2.1 g hg).2, Finset.empty_union]) l hl
+      κ * slotProduct (fun g => A g ∪ B g) l ≤ x := hU10 P big hadm J (fun g => A g ∪ B g) (fun g => (hpat.1 g).2)
+      (fun g hg => by rw [(hpat.2.1 g hg).1, (hpat.2.1 g hg).2, Finset.empty_union])
   -- names for the pieces
-  obtain ⟨z, hz⟩ : ∃ z : (ι → Fin J → ℕ) → ℕ → ℝ,
-      z = fun l (w : ℕ) => (w : ℝ) / (x * slotProduct (fun g => A g ∪ B g) l) := ⟨_, rfl⟩
-  obtain ⟨R, hR⟩ : ∃ R : (ι → Fin J → ℕ) → ℕ → ℂ, R = fun l w =>
+  obtain ⟨z, hz⟩ : ∃ z,
+      z = fun l w => w / (x * slotProduct (fun g => A g ∪ B g) l) := ⟨_, rfl⟩
+  obtain ⟨R, hR⟩ : ∃ R, R = fun l w =>
       ((∏ g, ∏ i ∈ A g ∪ B g, (harmonicMass (P g) * l g i)⁻¹ : ℝ) : ℂ) *
-        φ (slotProduct A l) * φ' (slotProduct B l) * (centeredCore x q a u v Bc w : ℂ) *
+        φ (slotProduct A l) * φ' (slotProduct B l) * (centeredCore x q a u v Bc w) *
         markedListWeight P q₀ (unsharedSlots fun g => A g ∪ B g)
           (fun p => ψ' (slotProduct B fun g i => p g i.castSucc)) w *
         ((G (w + slotProduct (fun g => A g ∪ B g) l) : ℂ) *
           markedListWeight P q₀ (unsharedSlots fun g => A g ∪ B g)
             (fun p => ψ (slotProduct A fun g i => p g i.castSucc))
             (w + slotProduct (fun g => A g ∪ B g) l)) := ⟨_, rfl⟩
-  obtain ⟨K, hK⟩ : ∃ K : Fin n → (ι → Fin J → ℕ) → ℕ → ℂ, K = fun m l (w : ℕ) =>
+  obtain ⟨K, hK⟩ : ∃ K, K = fun m l (w : ℕ) =>
       (y m : ℂ) * ((((y m * (x * U * U')) : ℝ) : ℂ))⁻¹ * ψ₁ m (w / (y m * (x * U * U'))) *
         R l w := ⟨_, rfl⟩
   have hK0 : ∀ m l, K m l 0 = 0 := fun m l => by simp [hK, hψ0]
   -- step 1: the integrand is a finite combination of `a(ξ) z^{iσ}`
-  have hexp : ∀ ξ : ℝ,
-      α ξ * ((x : ℂ) ^ (-(((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I)) *
-        ∑ m, (y m : ℂ) * ((((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ *
+  have hexp : ∀ ξ,
+      α ξ * (x ^ (-((2 * Real.pi * ξ : ℝ) * Complex.I)) *
+        ∑ m, (y m) * ((((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ *
           comparisonBilinear x q q₀ a u v Bc P A B φ φ' ψ ψ' G (ψ₁ m)
             (y m * (x * U * U')) (2 * Real.pi * ξ))) =
       ∑ m, ∑ l ∈ auxLabels P (fun g => A g ∪ B g),
@@ -467,8 +456,8 @@ theorem eventually_strippedComparison_eq (q q₀ c₀ C₀ vlo vhi κ : ℝ) (h�
   -- step 3: the pieces vanish off `[Y_m, 2Y_m]` and `Ψ` off `[κ⁻¹ x D_C, κ x D_C]`
   have hrange : ∀ m, ∀ l ∈ auxLabels P (fun g => A g ∪ B g),
       ∑ w ∈ Finset.Icc ⌈y m * (x * U * U')⌉₊ ⌊2 * (y m * (x * U * U'))⌋₊,
-          K m l w * (Ψ (z l w) : ℂ) =
-        ∑ w ∈ Finset.Icc 1 ⌊x ^ 2⌋₊, K m l w * (Ψ (z l w) : ℂ) := by
+          K m l w * (Ψ (z l w)) =
+        ∑ w ∈ Finset.Icc 1 ⌊x ^ 2⌋₊, K m l w * (Ψ (z l w)) := by
     intro m l hl
     have hsupp : ∀ w : ℕ, K m l w * (Ψ (z l w) : ℂ) ≠ 0 →
         w ∈ Finset.Icc ⌈y m * (x * U * U')⌉₊ ⌊2 * (y m * (x * U * U'))⌋₊ ∧
@@ -504,10 +493,10 @@ theorem eventually_strippedComparison_eq (q q₀ c₀ C₀ vlo vhi κ : ℝ) (h�
       · have : (0 : ℝ) < w := by linarith
         have : 0 < w := by exact_mod_cast this
         omega
-      · calc (w : ℝ) ≤ κ * (x * slotProduct (fun g => A g ∪ B g) l) := hzκ
+      · calc _ ≤ κ * (x * slotProduct (fun g => A g ∪ B g) l) := hzκ
           _ = x * (κ * slotProduct (fun g => A g ∪ B g) l) := by ring
           _ ≤ x * x := by gcongr
-          _ = x ^ 2 := by ring
+          _ = _ := by ring
     rw [← Finset.sum_subset Finset.inter_subset_left fun w _ hwn => by
       by_contra h
       exact hwn (Finset.mem_inter.2 (hsupp w h))]
@@ -528,7 +517,7 @@ theorem eventually_strippedComparison_eq (q q₀ c₀ C₀ vlo vhi κ : ℝ) (h�
               (fun p => ψ (slotProduct A fun g i => p g i.castSucc))
               (w + slotProduct (fun g => A g ∪ B g) l)) := by
     intro l hl w hw
-    have hw1 : 1 ≤ w := (Finset.mem_Icc.1 hw).1
+    have hw1 := (Finset.mem_Icc.1 hw).1
     have hfac : ∀ m, K m l w * (Ψ (z l w) : ℂ) =
         ((y m : ℂ) * (((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ * ψ₁ m (w / (y m * (x * U * U')))) *
           (R l w * Ψ (z l w)) := fun m => by
@@ -573,23 +562,23 @@ theorem eventually_strippedComparison_eq (q q₀ c₀ C₀ vlo vhi κ : ℝ) (h�
       positivity
     rw [le_div_iff₀ hD0] at hz1
     rw [div_le_iff₀ hD0] at hz2
-    have hw1' : κ⁻¹ ≤ (w : ℝ) / (x * U * U') := by
+    have hw1' : κ⁻¹ ≤ w / (x * U * U') := by
       rw [le_div_iff₀ hY₀]
-      calc κ⁻¹ * (x * U * U') = κ⁻¹ * x * (U * U') := by ring
+      calc _ = κ⁻¹ * x * (U * U') := by ring
         _ ≤ κ⁻¹ * x * ((slotProduct A l : ℝ) * slotProduct B l) := by
             gcongr
         _ = κ⁻¹ * (x * slotProduct (fun g => A g ∪ B g) l) := by rw [hD]; ring
         _ ≤ w := hz1
-    have hw2' : (w : ℝ) / (x * U * U') ≤ κ * Real.exp 2 := by
+    have hw2' : w / (x * U * U') ≤ κ * Real.exp 2 := by
       rw [div_le_iff₀ hY₀]
       have he2 : Real.exp 2 = Real.exp 1 * Real.exp 1 := by
         rw [← Real.exp_add]
         norm_num
-      calc (w : ℝ) ≤ κ * (x * slotProduct (fun g => A g ∪ B g) l) := hz2
+      calc _ ≤ κ * (x * slotProduct (fun g => A g ∪ B g) l) := hz2
         _ = κ * x * ((slotProduct A l : ℝ) * slotProduct B l) := by rw [hD]; ring
         _ ≤ κ * x * ((Real.exp 1 * U) * (Real.exp 1 * U')) := by
             gcongr
-        _ = κ * Real.exp 2 * (x * U * U') := by rw [he2]; ring
+        _ = _ := by rw [he2]; ring
     have hS : ∑ m, (y m : ℂ) * (((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ *
         ψ₁ m (w / (y m * (x * U * U'))) = (w : ℂ)⁻¹ := by
       have hm : ∀ m, (y m : ℂ) * (((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ *
@@ -598,11 +587,11 @@ theorem eventually_strippedComparison_eq (q q₀ c₀ C₀ vlo vhi κ : ℝ) (h�
         intro m
         rw [show (w : ℝ) / (y m * (x * U * U')) = w / (x * U * U') / y m by
           rw [div_div, mul_comm (x * U * U')]]
-        have h1 : (y m : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 (hy0 m).ne'
+        have h1 := Complex.ofReal_ne_zero.2 (hy0 m).ne'
         rw [Complex.ofReal_mul, mul_inv]
         field_simp
       rw [Finset.sum_congr rfl fun m _ => hm m, ← Finset.mul_sum, hsum _ hw1' hw2']
-      have h1 : (((x * U * U') : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 hY₀.ne'
+      have h1 := Complex.ofReal_ne_zero.2 hY₀.ne'
       have h2 : (w : ℂ) ≠ 0 := Nat.cast_ne_zero.2 (by omega)
       rw [Complex.ofReal_inv, Complex.ofReal_div, Complex.ofReal_natCast]
       field_simp
@@ -657,7 +646,6 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
               comparisonBilinear x q q₀ a u v Bc P A B φ φ' ψ ψ' G ψ₁ (y₀ * (x * U * U')) σ‖ ≤
             Real.log x ^ C₅ := by
   obtain ⟨CW, hW⟩ := exists_norm_markedListWeight_le_rpow q₀ c₀ C₀ vlo vhi hq₀ hq₀₁ hvlo m₀
-  have hκ0 : 0 < κ := by linarith
   refine ⟨2 + 2 * |CW| + |B₀|, ?_⟩
   filter_upwards [hW,
     eventually_abs_centeredCore_le_log q alo ahi K₀ CN c d hq hq₁ halo hc,
@@ -669,9 +657,9 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
   set L := Real.log x with hLdef
   have hL1 : 1 ≤ L := by linarith [abs_nonneg M₀]
   have hL0 : 0 < L := by linarith
-  have hx0 : 0 < x := lt_of_lt_of_le (by positivity) hx4
+  have hx0 := lt_of_lt_of_le (by positivity) hx4
   have hDAB := slotProduct_union (fun g => (hpat.1 g).1)
-  have hV : ∀ g, 0 < harmonicMass (P g) := fun g => lt_of_lt_of_le hvlo (hadm.2.2.2.2.2.1 g).1
+  have hV : ∀ g, 0 < harmonicMass (P g) := fun g => lt_of_lt_of_le hvlo (hadm.right.right.right.right.right.left g).left
   -- if no label meets the cells of `φ, φ'`, then `𝔅 = 0`
   by_cases hex : ∃ l ∈ auxLabels P (fun g => A g ∪ B g),
     φ (slotProduct A l) ≠ 0 ∧ φ' (slotProduct B l) ≠ 0
@@ -681,9 +669,7 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
         0 := by
       unfold comparisonBilinear
       refine Finset.sum_eq_zero fun l hl => ?_
-      by_cases h : φ (slotProduct A l) = 0
-      · simp [h]
-      · simp [hex l hl h]
+      grind +splitImp
     rw [h0, mul_zero, norm_zero]
     positivity
   obtain ⟨l₀, hl₀, hφ, hφ'⟩ := hex
@@ -729,20 +715,18 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
         rw [hDAB l₀]
         push_cast
         ring
-      rw [← this]
-      exact_mod_cast hD
-    calc 2 * Y = 2 * y₀ * x * (U * U') := by rw [hYdef]; ring
+      grind
+    calc _ = 2 * y₀ * x * (U * U') := by ring
       _ ≤ 2 * (2 * κ * Real.exp 2) * x * ((slotProduct A l₀ : ℝ) * slotProduct B l₀) := by
           gcongr
       _ = x * (4 * κ * Real.exp 2 * ((slotProduct A l₀ : ℝ) * slotProduct B l₀)) := by ring
       _ ≤ x * x := by gcongr
-      _ = x ^ 2 := by ring
+      _ = _ := by ring
   -- pointwise bounds on the endpoints (U7, U9)
   have hcard : ∀ g, (unsharedSlots (fun g => A g ∪ B g) g).card ≤ m₀ + 1 := by
     intro g
     refine (Finset.card_insert_le _ _).trans ?_
-    rw [Finset.card_map]
-    exact Nat.succ_le_succ (hpat.1 g).2
+    simpa using Nat.succ_le_succ (hpat.1 g).2
   have hb₁ : ∀ p : ι → Fin (J + 1) → ℕ, ‖ψ' (slotProduct B fun g i => p g i.castSucc)‖ ≤ 1 :=
     fun p => (hpat.2.2.2.1 _).2.2.2
   have hb₂ : ∀ p : ι → Fin (J + 1) → ℕ, ‖ψ (slotProduct A fun g i => p g i.castSucc)‖ ≤ 1 :=
@@ -767,16 +751,16 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
               (w + slotProduct (fun g => A g ∪ B g) l))‖ ≤ Bw := by
     intro l hl w hw
     obtain ⟨hw1, hw2⟩ := Finset.mem_Icc.1 hw
-    have hYw : Y ≤ w := Nat.ceil_le.1 hw1
+    have hYw := Nat.ceil_le.1 hw1
     have hw0 : 0 < w := by
       have : (0 : ℝ) < w := by linarith
       exact_mod_cast this
-    have hwx : (w : ℝ) ≤ x ^ 2 := le_trans (Nat.le_floor_iff (by linarith) |>.1 hw2) hY2
+    have hwx := le_trans (Nat.le_floor_iff (by linarith) |>.1 hw2) hY2
     unfold endpointCoeff
     rw [norm_mul, norm_mul, norm_mul, norm_mul, norm_mul, hcpow w σ hw0, Complex.norm_real,
       Complex.norm_real, Real.norm_eq_abs, Real.norm_eq_abs,
       abs_of_nonneg (hco.2 _).1]
-    have hx1 : 1 ≤ x :=
+    have hx1 :=
       (one_le_mul_of_one_le_of_one_le (by linarith) (Real.one_le_exp (by norm_num))).trans hx4
     have h₁ := hFx r a u v Bc hin hsl hBc w hw0 (hwx.trans (pow_le_pow_right₀ hx1 (by norm_num)))
     have h₂ := hWx P big hadm (J + 1) _ _ hcard hb₁ w
@@ -824,9 +808,9 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
     rw [← Finset.sum_mul, hμ, one_mul]
   -- `#[Y, 2Y] ≤ Y + 1 ≤ 2Y`
   have hcardI : ((Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊).card : ℝ) ≤ 2 * Y := by
-    rw [Nat.card_Icc]
+    simp
     have hf : (⌊2 * Y⌋₊ : ℝ) ≤ 2 * Y := Nat.floor_le (by linarith)
-    have hc : Y ≤ (⌈Y⌉₊ : ℝ) := Nat.le_ceil Y
+    have hc := Nat.le_ceil Y
     rcases le_total ⌈Y⌉₊ (⌊2 * Y⌋₊ + 1) with h | h
     · rw [Nat.cast_sub h]
       push_cast
@@ -838,20 +822,20 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
   have hBw : 2 * Bw ≤ L ^ (2 + 2 * |CW| + |B₀|) := by
     have e : L * (L * L ^ |CW| * (L ^ |B₀| * L ^ |CW|)) = L ^ (2 + 2 * |CW| + |B₀|) := by
       rw [show L * (L * L ^ |CW| * (L ^ |B₀| * L ^ |CW|)) =
-          L ^ (1 : ℝ) * (L ^ (1 : ℝ) * L ^ |CW| * (L ^ |B₀| * L ^ |CW|)) by rw [Real.rpow_one]]
+          L ^ (1 : ℝ) * (L ^ (1 : ℝ) * L ^ |CW| * (L ^ |B₀| * L ^ |CW|)) by simp]
       simp only [← Real.rpow_add hL0]
       congr 1
       ring
     rw [← e, hBw]
     have hCW : L ^ CW ≤ L ^ |CW| := Real.rpow_le_rpow_of_exponent_le hL1 (le_abs_self _)
     have hB₀ : L ^ B₀ ≤ L ^ |B₀| := Real.rpow_le_rpow_of_exponent_le hL1 (le_abs_self _)
-    calc 2 * (|M₀| * L * L ^ CW * (L ^ B₀ * L ^ CW))
+    calc _
         = (2 * |M₀|) * (L * L ^ CW * (L ^ B₀ * L ^ CW)) := by ring
-      _ ≤ L * (L * L ^ |CW| * (L ^ |B₀| * L ^ |CW|)) := by
+      _ ≤ _ := by
           gcongr
           linarith
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hY0.le]
-  calc Y⁻¹ * ‖comparisonBilinear x q q₀ a u v Bc P A B φ φ' ψ ψ' G ψ₁ Y σ‖
+  calc _
       ≤ Y⁻¹ * (2 * Y * Bw) := by
         gcongr
         exact hB.trans (mul_le_mul_of_nonneg_right hcardI hBw0)

@@ -31,17 +31,17 @@ lemma natCast_mul_zpow_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (n : ℕ) :
     (n : ℝ) * q ^ ((n : ℤ) - 1) ≤ 1 / (1 - q) := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · simp only [Nat.cast_zero, zero_mul]
-    exact (one_div_pos.2 (by linarith)).le
+    positivity
   have he : q ^ ((n : ℤ) - 1) = q ^ (n - 1) := by
     rw [show ((n : ℤ) - 1) = ((n - 1 : ℕ) : ℤ) by omega, zpow_natCast]
   rw [he]
-  calc (n : ℝ) * q ^ (n - 1) = ∑ _k ∈ range n, q ^ (n - 1) := by simp
+  calc _ = ∑ _k ∈ range n, q ^ (n - 1) := by simp
     _ ≤ ∑ k ∈ range n, q ^ k := sum_le_sum fun k hk =>
-        pow_le_pow_of_le_one hq.le hq₁.le (by have := mem_range.1 hk; omega)
+        pow_le_pow_of_le_one hq.le hq₁.le (by grind)
     _ = (1 - q ^ n) / (1 - q) := by
         rw [geom_sum_eq hq₁.ne, ← neg_div_neg_eq]
         ring_nf
-    _ ≤ 1 / (1 - q) :=
+    _ ≤ _ :=
         div_le_div_of_nonneg_right (by linarith [pow_pos hq n]) (by linarith)
 
 /-- `n 2^{1 - n} ≤ 1`. -/
@@ -69,9 +69,8 @@ lemma markedWeight_half_mem {g : Finset ℕ} (hg : 1 / 2 ≤ harmonicMass g) (n 
     0 ≤ markedWeight {g} (1 / 2) id n ∧ markedWeight {g} (1 / 2) id n ≤ 2 := by
   rw [markedWeight_singleton]
   simp only [id]
-  have hV : 0 < harmonicMass g := by linarith
   refine ⟨by positivity, ?_⟩
-  rw [div_le_iff₀ hV]
+  rw [div_le_iff₀ (by linarith)]
   have := natCast_mul_half_zpow_le (primeCount g n)
   linarith
 
@@ -111,9 +110,8 @@ lemma inertPoly_mem {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw)
         rw [div_mul_eq_mul_div, le_div_iff₀ (by linarith), one_div_mul_cancel (by linarith)]
         linarith
       linarith
-    have h1q : 0 < 1 - q := by linarith
     have : cw * (2 / (1 - q)) ≤ 1 := by
-      rw [mul_div_assoc', div_le_one h1q]
+      rw [mul_div_assoc', div_le_one (by linarith)]
       nlinarith
     constructor
     · nlinarith [mul_le_mul_of_nonneg_left hw hcw]
@@ -157,8 +155,8 @@ lemma abs_slotCount_sub_slotMean_le {x κ ε H : ℝ} (hx : 1 < x) (hκ : Real.l
   have hD : (D.card : ℝ) ≤ 2 / ε := by
     have hprod : ∏ p ∈ D, p ∣ n :=
       (prod_dvd_prod_of_subset _ _ _ (filter_subset _ _)).trans (Nat.prod_primeFactors_dvd n)
-    have hle : ((x ^ ε) ^ D.card : ℝ) ≤ n := by
-      calc ((x ^ ε) ^ D.card : ℝ) = ∏ _p ∈ D, x ^ ε := by rw [prod_const]
+    have hle : ((x ^ ε) ^ D.card) ≤ n := by
+      calc ((x ^ ε) ^ D.card) = ∏ _p ∈ D, x ^ ε := by simp
         _ ≤ ∏ p ∈ D, (p : ℝ) :=
             prod_le_prod₀ (fun _ _ => by positivity) fun p hp => (mem_filter.1 hp).2.le
         _ = ((∏ p ∈ D, p : ℕ) : ℝ) := by push_cast; rfl
@@ -173,7 +171,7 @@ lemma abs_slotCount_sub_slotMean_le {x κ ε H : ℝ} (hx : 1 < x) (hκ : Real.l
     calc slotCount x u v B n
         ≤ ((slotTuples x u v).filter fun Q => ∏ i, Q i ∣ n).card := by
           rw [slotCount, card_eq_sum_ones, Nat.cast_sum]
-          exact sum_le_sum fun Q _ => by simpa using (hB _).2
+          exact sum_le_sum fun Q _ => by simp_all
       _ ≤ ((Fintype.piFinset fun _ : Fin (k + 1) => D).card : ℝ) := by
           refine Nat.cast_le.2 (card_le_card fun Q hQ => ?_)
           obtain ⟨hQ, hdvd⟩ := mem_filter.1 hQ
@@ -183,9 +181,8 @@ lemma abs_slotCount_sub_slotMean_le {x κ ε H : ℝ} (hx : 1 < x) (hκ : Real.l
           · exact lt_of_le_of_lt (rpow_le_rpow_of_exponent_le hx.le (hu i))
               (mem_slotTuples hx.le hQ i).2.1
       _ = (D.card : ℝ) ^ (k + 1) := by simp
-      _ ≤ (2 / ε + 1) ^ (k + 1) := by gcongr; linarith
-      _ ≤ (2 / ε + 1) ^ 3 := pow_le_pow_right₀ (by linarith [div_pos two_pos hε])
-          (by omega)
+      _ ≤ (2 / ε + 1) ^ 3 := le_trans (by gcongr; linarith) (pow_le_pow_right₀ (by linarith)
+          (by omega))
   -- the harmonic mean
   have hC0 : 0 ≤ slotMean x u v B :=
     sum_nonneg fun Q hQ => div_nonneg (hB _).1 (prod_nonneg fun i _ => Nat.cast_nonneg _)
@@ -197,7 +194,7 @@ lemma abs_slotCount_sub_slotMean_le {x κ ε H : ℝ} (hx : 1 < x) (hκ : Real.l
           have : 0 < ∏ i, (Q i : ℝ) :=
             prod_pos fun i _ => by exact_mod_cast (mem_slotTuples hx.le hQ i).1.pos
           exact div_le_div_of_nonneg_right (hB _).2 this.le
-      _ ≤ ∑ Q ∈ Fintype.piFinset fun _ : Fin (k + 1) => primesIoc (x ^ ε) x,
+      _ ≤ ∑ Q ∈ Fintype.piFinset fun _ => primesIoc (x ^ ε) x,
             ∏ i, (1 : ℝ) / Q i := by
           refine sum_le_sum_of_subset_of_nonneg (fun Q hQ => Fintype.mem_piFinset.2 fun i => ?_)
             fun Q _ _ => prod_nonneg fun i _ => by positivity
@@ -209,17 +206,15 @@ lemma abs_slotCount_sub_slotMean_le {x κ ε H : ℝ} (hx : 1 < x) (hκ : Real.l
             have := hlo'.trans_le hhi'
             have := (rpow_lt_rpow_left_iff hx).1 this
             linarith [hu l]
-          have hvi : v i ≤ 1 := (single_le_sum (fun l _ => hvl l) (mem_univ i)).trans hv
+          have hvi := (single_le_sum (fun l _ => hvl l) (mem_univ i)).trans hv
           refine mem_primesIoc.2 ⟨hp, ?_, hhi.trans ?_⟩
           · exact lt_of_le_of_lt (rpow_le_rpow_of_exponent_le hx.le (hu i)) hlo
           · simpa using rpow_le_rpow_of_exponent_le hx.le hvi
       _ = (∑ p ∈ primesIoc (x ^ ε) x, (1 : ℝ) / p) ^ (k + 1) := by
           rw [← prod_univ_sum (t := fun _ => primesIoc (x ^ ε) x) (f := fun _ p => (1 : ℝ) / p),
             prod_const, card_univ, Fintype.card_fin]
-      _ ≤ H ^ (k + 1) := by gcongr
-      _ ≤ H ^ 3 := pow_le_pow_right₀ hH1 (by omega)
-  rw [abs_le]
-  constructor <;> nlinarith
+      _ ≤ _ := le_trans (by gcongr) (pow_le_pow_right₀ hH1 (by omega))
+  grind
 
 end
 
@@ -232,32 +227,27 @@ lemma eventually_sum_primesIoc_le {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atT
     eventually_le_logLog (4 * |Real.log c| + 4 * (E + 1) + c + 1),
     eventually_mul_logLogLog_le 20 (show (0 : ℝ) < 1 / 2 by norm_num), eventually_gt_atTop 1]
     with x hL hT hT' hs hx
-  have hT1 : 1 ≤ logLog x := (le_max_right _ _).trans hT
+  have hT1 := (le_max_right _ _).trans hT
   have hT0 : 0 < logLog x := by linarith
   have hx0 : 0 < x := by linarith
-  have hLpos : 0 < Real.log x := Real.log_pos hx
+  have hLpos := Real.log_pos hx
   rw [rpow_one, show (22 : ℝ) = ((22 : ℕ) : ℝ) by norm_num, rpow_natCast] at hL
   set T := logLog x
   set ε := c / T ^ 20
   have hT20 : 0 < T ^ 20 := by positivity
-  have hε : 0 < ε := div_pos hc hT20
-  -- `ε L ≥ T ≥ 1`
   have hεL : T ≤ ε * Real.log x := by
-    have hcT : 1 / c ≤ T := (le_max_left _ _).trans hT
+    have hcT := (le_max_left _ _).trans hT
     rw [div_le_iff₀ hc] at hcT
     rw [show ε * Real.log x = c * Real.log x / T ^ 20 by ring, le_div_iff₀ hT20]
-    calc T * T ^ 20 = T ^ 20 * T * 1 := by ring
-      _ ≤ T ^ 20 * T * (T * c) := by gcongr
-      _ = c * T ^ 22 := by ring
-      _ ≤ c * Real.log x := by gcongr
-  have hεx : Real.log (x ^ ε) = ε * Real.log x := Real.log_rpow hx0 ε
+    nlinarith
+  have hεx := Real.log_rpow hx0 ε
   have h2 : 2 ≤ x ^ ε := by
     rw [← exp_log (rpow_pos_of_pos hx0 ε), hεx]
     have := add_one_le_exp (ε * Real.log x)
     linarith
   have hε1 : ε ≤ 1 := by
     rw [div_le_one hT20]
-    have := le_self_pow₀ hT1 (show (20 : ℕ) ≠ 0 by norm_num)
+    have := le_self_pow₀ hT1 (show 20 ≠ 0 by norm_num)
     have := abs_nonneg (Real.log c)
     linarith
   have hxε : x ^ ε ≤ x := by
@@ -270,16 +260,14 @@ lemma eventually_sum_primesIoc_le {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atT
     push_cast
     ring
   have hEL : E / (ε * Real.log x) ≤ (E + 1) / T :=
-    div_le_div₀ (by linarith) (by linarith) hT0 hεL
+    by bound
   have hET : (E + 1) / T ≤ T / 4 := by
     rw [div_le_iff₀ hT0]
     have := abs_nonneg (Real.log c)
     nlinarith
   have hlc : -Real.log c ≤ T / 4 := by
     have h1 := neg_abs_le (Real.log c)
-    have h2 : 0 ≤ E := hE
     linarith
-  rw [hlog] at hm
   linarith
 
 end Erdos408

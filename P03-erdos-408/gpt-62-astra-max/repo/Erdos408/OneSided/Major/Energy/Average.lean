@@ -26,12 +26,12 @@ positive. -/
 theorem sq_integral_mul_le {w h : ℝ → ℝ} (hw : Integrable w) (hw0 : ∀ ξ, 0 ≤ w ξ)
     (hh : AEStronglyMeasurable h) {M : ℝ} (hM : ∀ ξ, |h ξ| ≤ M) :
     (∫ ξ, w ξ * h ξ) ^ 2 ≤ (∫ ξ, w ξ) * ∫ ξ, w ξ * h ξ ^ 2 := by
-  have h₁ : Integrable fun ξ => w ξ * h ξ :=
-    hw.mul_bdd hh (Filter.Eventually.of_forall fun ξ => by rw [Real.norm_eq_abs]; exact hM ξ)
+  have h₁ :=
+    hw.mul_bdd hh (Filter.Eventually.of_forall fun ξ => hM ξ)
   have h₂ : Integrable fun ξ => w ξ * h ξ ^ 2 :=
     hw.mul_bdd (hh.pow 2) (Filter.Eventually.of_forall fun ξ => by
       rw [Real.norm_eq_abs, abs_pow]
-      exact pow_le_pow_left₀ (abs_nonneg _) (hM ξ) 2)
+      bound)
   -- `s ↦ ∫ w (h - s)²` is a nonnegative quadratic
   have hq : ∀ s : ℝ, 0 ≤ (∫ ξ, w ξ) * (s * s) + (-2 * ∫ ξ, w ξ * h ξ) * s +
       ∫ ξ, w ξ * h ξ ^ 2 := by
@@ -49,9 +49,7 @@ theorem sq_integral_mul_le {w h : ℝ → ℝ} (hw : Integrable w) (hw0 : ∀ ξ
     rw [← hint]
     exact integral_nonneg fun ξ => mul_nonneg (hw0 ξ) (sq_nonneg _)
   have hd := discrim_le_zero hq
-  rw [discrim] at hd
-  have e : (-2 * ∫ ξ, w ξ * h ξ) ^ 2 = 4 * (∫ ξ, w ξ * h ξ) ^ 2 := by ring
-  linarith
+  grind [discrim]
 
 /-- The energy of an average: if `0 ≤ F(τ) ≤ c ∫ w(ξ) h(ξ, τ) dξ` with `w ≥ 0` integrable and
 `0 ≤ h ≤ M` continuous, and `∫_a^b h(ξ, ·)² ≤ E` for every `ξ`, then
@@ -75,30 +73,25 @@ theorem integral_sq_le_of_le_integral {a b c M E : ℝ} (hab : a ≤ b) {w : ℝ
         ((hh.comp continuous_swap).pow 2).aestronglyMeasurable
     · simp only [Function.uncurry, f, Real.norm_eq_abs]
       rw [abs_of_nonneg (mul_nonneg (hw0 _) (sq_nonneg _)), mul_comm (M ^ 2)]
-      gcongr
-      · exact hw0 _
-      · exact hh0 _ _
-      · exact hhM _ _
+      bound
   -- pointwise Cauchy–Schwarz in `ξ`
   have hCS : ∀ τ, F τ ^ 2 ≤ c ^ 2 * W * ∫ ξ, f τ ξ := by
     intro τ
-    have hM : ∀ ξ, |h ξ τ| ≤ M := fun ξ => by
-      rw [abs_of_nonneg (hh0 ξ τ)]
-      exact hhM ξ τ
+    have hM : ∀ ξ, |h ξ τ| ≤ M := by grind
     have h₁ := sq_integral_mul_le hw hw0
       (hh.comp (continuous_id.prodMk continuous_const)).aestronglyMeasurable hM
-    calc F τ ^ 2 ≤ (c * ∫ ξ, w ξ * h ξ τ) ^ 2 := pow_le_pow_left₀ (hF0 τ) (hF τ) 2
+    calc _ ≤ (c * ∫ ξ, w ξ * h ξ τ) ^ 2 := by bound
       _ = c ^ 2 * (∫ ξ, w ξ * h ξ τ) ^ 2 := by ring
       _ ≤ c ^ 2 * (W * ∫ ξ, w ξ * h ξ τ ^ 2) := by gcongr; exact h₁
-      _ = c ^ 2 * W * ∫ ξ, f τ ξ := by ring
+      _ = _ := by ring
   -- the inner energies are at most `w(ξ) E`
   have hin : ∀ ξ, ∫ τ in Set.Ioc a b, f τ ξ ≤ w ξ * E := by
     intro ξ
     simp only [f]
     rw [integral_const_mul, ← intervalIntegral.integral_of_le hab]
-    exact mul_le_mul_of_nonneg_left (hE ξ) (hw0 ξ)
+    bound
   rw [intervalIntegral.integral_of_le hab]
-  calc ∫ τ in Set.Ioc a b, F τ ^ 2 ≤ ∫ τ in Set.Ioc a b, c ^ 2 * W * ∫ ξ, f τ ξ :=
+  calc _ ≤ ∫ τ in Set.Ioc a b, c ^ 2 * W * ∫ ξ, f τ ξ :=
         integral_mono_of_nonneg (Filter.Eventually.of_forall fun τ => sq_nonneg _)
           (hf.integral_prod_left.const_mul _) (Filter.Eventually.of_forall hCS)
     _ = c ^ 2 * W * ∫ ξ, ∫ τ in Set.Ioc a b, f τ ξ := by
@@ -107,7 +100,7 @@ theorem integral_sq_le_of_le_integral {a b c M E : ℝ} (hab : a ≤ b) {w : ℝ
         mul_le_mul_of_nonneg_left (integral_mono_of_nonneg (Filter.Eventually.of_forall fun ξ =>
           integral_nonneg fun τ => mul_nonneg (hw0 ξ) (sq_nonneg _)) (hw.mul_const E)
           (Filter.Eventually.of_forall hin)) (by positivity)
-    _ = c ^ 2 * W ^ 2 * E := by
+    _ = _ := by
         rw [integral_mul_const]
         ring
 

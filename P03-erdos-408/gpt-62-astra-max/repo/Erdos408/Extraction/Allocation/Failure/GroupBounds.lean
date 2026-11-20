@@ -22,11 +22,10 @@ namespace Erdos408
 open Finset Filter Real
 
 /-- The reciprocal mass of a dyadic group at a large scale is at most `4/5`. -/
-lemma harmonicMass_dyadicGroup_le : ∃ Y₀ : ℝ, ∀ y : ℝ, Y₀ ≤ y →
+lemma harmonicMass_dyadicGroup_le : ∃ Y₀, ∀ y, Y₀ ≤ y →
     harmonicMass (dyadicGroup y) ≤ 4 / 5 := by
   obtain ⟨E, hE, hM⟩ := mertens_second
   refine ⟨10 * (E + 1) + 4, fun y hy => ?_⟩
-  have hy4 : 4 ≤ y := by linarith
   have hey : 2 ≤ Real.exp y - 1 := by
     have := add_one_le_exp y
     linarith
@@ -55,13 +54,13 @@ lemma harmonicMass_dyadicGroup_le : ∃ Y₀ : ℝ, ∀ y : ℝ, Y₀ ≤ y →
       rw [div_le_iff₀ (by linarith)]
       have : 2 * (1 + 1 / (y - 1)) * (y - 1) = 2 * y := by field_simp; ring
       nlinarith
-    calc Real.log (2 * y / Real.log (Real.exp y - 1)) ≤ Real.log (2 * (1 + 1 / (y - 1))) :=
-          log_le_log (div_pos (by linarith) (by linarith)) h1
+    calc _ ≤ Real.log (2 * (1 + 1 / (y - 1))) :=
+          by bound
       _ = Real.log 2 + Real.log (1 + 1 / (y - 1)) := log_mul (by norm_num) (by positivity)
-      _ ≤ Real.log 2 + 1 / (y - 1) := by
+      _ ≤ _ := by
           have := log_le_sub_one_of_pos (show 0 < 1 + 1 / (y - 1) by positivity)
           linarith
-  have hE' : E / Real.log (Real.exp y - 1) ≤ E / (y - 1) :=
+  have hE' :=
     div_le_div_of_nonneg_left hE hl0 hlog1
   have hsmall : 1 / (y - 1) + E / (y - 1) ≤ 1 / 10 := by
     rw [← add_div, div_le_iff₀ hl0]
@@ -83,7 +82,7 @@ lemma eventually_harmonicMass_le : ∀ᶠ x : ℝ in atTop,
 /-- A doubling family has at least `(b - a) T / log 2 - 1` groups, given that all its groups
 are nonempty. -/
 lemma card_doublingGroups_ge {x : ℝ} (hx : 1 ≤ Real.log x) {a b : ℝ} (hab : a ≤ b)
-    (hne : ∀ i : ℕ, 2 ^ (i + 1) * Real.log x ^ a ≤ Real.log x ^ b →
+    (hne : ∀ i, 2 ^ (i + 1) * Real.log x ^ a ≤ Real.log x ^ b →
       (dyadicGroup (2 ^ i * Real.log x ^ a)).Nonempty) :
     (b - a) * logLog x / Real.log 2 - 1 ≤ ((doublingGroups x a b).card : ℝ) := by
   set z := Real.logb 2 (Real.log x ^ (b - a)) with hz
@@ -109,12 +108,12 @@ lemma card_doublingGroups_ge {x : ℝ} (hx : 1 ≤ Real.log x) {a b : ℝ} (hab 
       ring_nf
     rw [h3]
     exact mul_le_mul_of_nonneg_right h2 (Real.rpow_pos_of_pos hL0 a).le
-  have hinj : Set.InjOn (fun i : ℕ => dyadicGroup (2 ^ i * Real.log x ^ a))
+  have hinj : Set.InjOn (fun i => dyadicGroup (2 ^ i * Real.log x ^ a))
       ((range ⌊z⌋₊).filter (fun i => 2 ^ (i + 1) * Real.log x ^ a ≤ Real.log x ^ b)) := by
     intro i hi i' hi' h
     by_contra hii'
-    have hLa : 0 < Real.log x ^ a := Real.rpow_pos_of_pos hL0 a
-    have key : ∀ i i' : ℕ, i < i' → 2 * (2 ^ i * Real.log x ^ a) ≤ 2 ^ i' * Real.log x ^ a := by
+    have hLa := Real.rpow_pos_of_pos hL0 a
+    have key : ∀ i i', i < i' → 2 * (2 ^ i * Real.log x ^ a) ≤ 2 ^ i' * Real.log x ^ a := by
       intro i i' hlt
       rw [← mul_assoc, ← pow_succ']
       gcongr
@@ -149,7 +148,7 @@ lemma eventually_card_families_ge : ∀ᶠ x : ℝ in atTop,
   have hne : ∀ a : ℝ, 28 / 100 ≤ a → ∀ i : ℕ, (dyadicGroup (2 ^ i * Real.log x ^ a)).Nonempty := by
     intro a ha i
     have h1 : Real.log x ^ (28 / 100 : ℝ) ≤ 2 ^ i * Real.log x ^ a := by
-      have : Real.log x ^ (28 / 100 : ℝ) ≤ Real.log x ^ a := Real.rpow_le_rpow_of_exponent_le hx ha
+      have := Real.rpow_le_rpow_of_exponent_le hx ha
       have h2 : (1 : ℝ) ≤ 2 ^ i := one_le_pow₀ (by norm_num)
       nlinarith [Real.rpow_pos_of_pos hL0 a]
     have hm := (hY₀ _ (hY.trans h1)).1
@@ -159,7 +158,6 @@ lemma eventually_card_families_ge : ∀ᶠ x : ℝ in atTop,
     linarith
   have hlog2 := log_two_lt_d9
   have hlog2' := log_two_gt_d9
-  have hT0 : 0 ≤ logLog x := by linarith
   constructor
   · have h := card_doublingGroups_ge hx (show (28 / 100 : ℝ) ≤ 35 / 100 by norm_num)
       fun i _ => hne _ (by norm_num) i

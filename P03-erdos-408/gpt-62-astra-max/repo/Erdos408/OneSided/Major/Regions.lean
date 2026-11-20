@@ -35,12 +35,11 @@ private theorem integrable_inv_one_add_abs_div_sq {X : ℝ} (hX : 0 < X) :
     Integrable fun τ : ℝ => ((1 + |τ| / X) ^ 2)⁻¹ := by
   refine (integrable_inv_one_add_sq.comp_div hX.ne').mono' ?_
     (Filter.Eventually.of_forall fun τ => ?_)
-  · exact (Continuous.inv₀ (by fun_prop) fun τ => by positivity).aestronglyMeasurable
+  · fun_prop
   · have ha : 0 ≤ |τ| / X := by positivity
     have hsq : (τ / X) ^ 2 = (|τ| / X) ^ 2 := by rw [div_pow, div_pow, sq_abs]
     rw [Real.norm_eq_abs, abs_of_pos (by positivity)]
     refine inv_anti₀ (by positivity) ?_
-    rw [hsq]
     nlinarith
 
 /-- `(1 + |u|)^{-2}` is integrable. -/
@@ -72,15 +71,14 @@ theorem integral_Ioi_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ τ,
   have hT : 0 < T := hX.trans_le hXT
   have hM0 : 0 ≤ M := by
     have h := hM T T le_rfl
-    rw [intervalIntegral.integral_same, sub_self, zero_div, add_zero, mul_one] at h
-    exact h
+    aesop
   set g : ℝ → ℝ := fun τ => ((1 + |τ| / X) ^ 2)⁻¹ * f τ with hg
   have hgc : Continuous g := (Continuous.inv₀ (by fun_prop) fun τ => by positivity).mul hf
   have hgi : Integrable g := by
     refine ((integrable_inv_one_add_abs_div_sq hX).mul_const F₀).mono'
       hgc.aestronglyMeasurable (Filter.Eventually.of_forall fun τ => ?_)
     rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (by positivity) (hf0 τ))]
-    exact mul_le_mul_of_nonneg_left (hfF τ) (by positivity)
+    bound
   -- the dyadic intervals `[2^j T, 2^{j+1} T)` partition `[T, ∞)`
   set s : ℕ → Set ℝ := fun j => Set.Ico (2 ^ j * T) (2 ^ (j + 1) * T) with hs
   have hcover : (⋃ j, s j) = Set.Ici T := by
@@ -102,14 +100,14 @@ theorem integral_Ioi_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ τ,
     · linarith [hle i j h, hi.2, hj.1]
     · linarith [hle j i h, hi.1, hj.2]
   have hsum := hasSum_integral_iUnion (fun j => measurableSet_Ico) hdisj
-    (by rw [hcover]; exact hgi.integrableOn)
+    (hgi.integrableOn)
   rw [hcover, integral_Ici_eq_integral_Ioi] at hsum
   refine hasSum_le (fun j => ?_) hsum (hasSum_geometric_two' (4 * M * X / T))
   -- on `[P, 2P)`, `P = 2^j T`, `(1 + |τ|/X)^{-2} ≤ (X / P)²`
   set P : ℝ := 2 ^ j * T with hP
   have hP0 : 0 < P := by positivity
   have hXP : X ≤ P := hXT.trans (le_mul_of_one_le_left hT.le (one_le_pow₀ one_le_two))
-  have hlen : 2 ^ (j + 1) * T - P = P := by rw [hP, pow_succ]; ring
+  have hlen : 2 ^ (j + 1) * T - P = P := by ring
   have hpt : ∀ τ ∈ s j, g τ ≤ (X / P) ^ 2 * f τ := by
     intro τ hτ
     have h1 : P / X ≤ 1 + |τ| / X := by
@@ -117,10 +115,10 @@ theorem integral_Ioi_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ τ,
       have := div_le_div_of_nonneg_right hτ.1 hX.le
       linarith
     refine mul_le_mul_of_nonneg_right ?_ (hf0 τ)
-    calc ((1 + |τ| / X) ^ 2)⁻¹ ≤ ((P / X) ^ 2)⁻¹ :=
-          inv_anti₀ (by positivity) (pow_le_pow_left₀ (by positivity) h1 2)
-      _ = (X / P) ^ 2 := by rw [← inv_pow, inv_div]
-  calc ∫ τ in s j, g τ ≤ ∫ τ in s j, (X / P) ^ 2 * f τ :=
+    calc _ ≤ ((P / X) ^ 2)⁻¹ :=
+          by gcongr
+      _ = _ := by rw [← inv_pow, inv_div]
+  calc _ ≤ ∫ τ in s j, (X / P) ^ 2 * f τ :=
         setIntegral_mono_on hgi.integrableOn
           ((hf.const_mul _).integrableOn_Icc.mono_set Set.Ico_subset_Icc_self) measurableSet_Ico
           hpt
@@ -129,14 +127,12 @@ theorem integral_Ioi_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ τ,
           intervalIntegral.integral_of_le (by linarith)]
     _ ≤ (X / P) ^ 2 * (M * (1 + P / X)) := by
         gcongr
-        have h := hM P (2 ^ (j + 1) * T) (by linarith)
-        rwa [hlen] at h
+        grind
     _ ≤ (X / P) ^ 2 * (M * (2 * P / X)) := by
         gcongr
-        have h1 : 1 ≤ P / X := (one_le_div hX).2 hXP
-        have h2 : 2 * P / X = P / X + P / X := by ring
-        linarith
-    _ = 4 * M * X / T / 2 / 2 ^ j := by
+        have h1 := (one_le_div hX).2 hXP
+        grind
+    _ = _ := by
         rw [hP]
         field_simp
         ring
@@ -152,34 +148,26 @@ theorem integral_compl_Icc_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : �
       ((Continuous.inv₀ (by fun_prop) fun τ => by positivity).mul hf).aestronglyMeasurable
       (Filter.Eventually.of_forall fun τ => ?_)
     rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (by positivity) (hf0 τ))]
-    exact mul_le_mul_of_nonneg_left (hfF τ) (by positivity)
+    bound
   have hcompl : (Set.Icc (-T) T)ᶜ = Set.Iio (-T) ∪ Set.Ioi T := by
-    ext τ
-    simp only [Set.mem_compl_iff, Set.mem_Icc, Set.mem_union, Set.mem_Iio, Set.mem_Ioi,
-      not_and_or, not_le]
+    grind
   have hdisj : Disjoint (Set.Iio (-T)) (Set.Ioi T) := by
-    rw [Set.disjoint_left]
-    intro τ h₁ h₂
-    rw [Set.mem_Iio] at h₁
-    rw [Set.mem_Ioi] at h₂
-    linarith [hX.trans_le hXT]
+    grind
   rw [hcompl, setIntegral_union hdisj measurableSet_Ioi hgi.integrableOn hgi.integrableOn]
   -- reflect the left tail
   have hl : ∫ τ in Set.Iio (-T), ((1 + |τ| / X) ^ 2)⁻¹ * f τ =
       ∫ τ in Set.Ioi T, ((1 + |τ| / X) ^ 2)⁻¹ * f (-τ) := by
     rw [← integral_Iic_eq_integral_Iio, ← integral_comp_neg_Ioi]
-    simp only [abs_neg]
+    simp
   have hM' : ∀ a b, a ≤ b → ∫ τ in a..b, f (-τ) ≤ M * (1 + (b - a) / X) := by
     intro a b hab
     rw [intervalIntegral.integral_comp_neg]
-    calc ∫ τ in -b..-a, f τ ≤ M * (1 + (-a - -b) / X) := hM _ _ (by linarith)
-      _ = M * (1 + (b - a) / X) := by ring
+    grind
   rw [hl]
-  have h₁ := integral_Ioi_mul_le (f := fun τ => f (-τ)) (hf.comp continuous_neg)
+  have h₁ := integral_Ioi_mul_le  (hf.comp continuous_neg)
     (fun τ => hf0 _) (fun τ => hfF _) hX hXT hM'
   have h₂ := integral_Ioi_mul_le hf hf0 hfF hX hXT hM
-  refine (add_le_add h₁ h₂).trans (le_of_eq ?_)
-  ring
+  grind
 
 /-! ### The two regions -/
 
@@ -201,13 +189,11 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
   have hki := integrable_inv_one_add_abs_div_sq hX
   -- the shifted function `g(τ - s)` has the same mean values
   set gs : ℝ → ℝ := fun τ => g (τ - s) with hgs
-  have hgsc : Continuous gs := hg.comp (continuous_id.sub continuous_const)
+  have hgsc : Continuous gs := by fun_prop
   have hMs : ∀ a b, a ≤ b → ∫ τ in a..b, gs τ ^ 2 ≤ M * (1 + (b - a) / X) := by
     intro a b hab
     rw [intervalIntegral.integral_comp_sub_right (fun τ => g τ ^ 2)]
-    calc ∫ τ in (a - s)..(b - s), g τ ^ 2 ≤ M * (1 + (b - s - (a - s)) / X) :=
-          hM _ _ (by linarith)
-      _ = M * (1 + (b - a) / X) := by ring
+    grind
   -- integrability of everything in sight
   have hdom : ∀ φ : ℝ → ℝ, Continuous φ → (∀ τ, 0 ≤ φ τ) → (∀ τ, φ τ ≤ B₀ ^ 2) →
       Integrable fun τ => k τ * φ τ := by
@@ -215,11 +201,11 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
     refine (hki.mul_const (B₀ ^ 2)).mono' (hkc.mul hφ).aestronglyMeasurable
       (Filter.Eventually.of_forall fun τ => ?_)
     rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (hk0 τ) (hφ0 τ))]
-    exact mul_le_mul_of_nonneg_left (hφB τ) (hk0 τ)
-  have hsqB : ∀ τ, g τ ^ 2 ≤ B₀ ^ 2 := fun τ => pow_le_pow_left₀ (hg0 τ) (hgB τ) 2
+    bound
+  have hsqB := fun τ => pow_le_pow_left₀ (hg0 τ) (hgB τ) 2
   have hhi : Integrable fun τ => k τ * (g τ * gs τ) :=
     hdom _ (hg.mul hgsc) (fun τ => mul_nonneg (hg0 _) (hg0 _)) fun τ => by
-      rw [sq]; exact mul_le_mul (hgB _) (hgB _) (hg0 _) hB₀
+      rw [sq]; bound
   have hi₁ : Integrable fun τ => k τ * g τ ^ 2 :=
     hdom _ (hg.pow 2) (fun τ => sq_nonneg _) hsqB
   have hi₂ : Integrable fun τ => k τ * gs τ ^ 2 :=
@@ -237,11 +223,11 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
         field_simp
         ring
       have := mul_nonneg (inv_nonneg.2 hε.le) (sq_nonneg (ε * g τ - gs τ))
-      calc k τ * (g τ * gs τ) ≤ 1 * (g τ * gs τ) := mul_le_mul_of_nonneg_right (hk1 τ) hgg
-        _ ≤ ε / 2 * g τ ^ 2 + ε⁻¹ / 2 * gs τ ^ 2 := by linarith
+      calc _ ≤ 1 * (g τ * gs τ) := by solve_by_elim [mul_le_mul_of_nonneg_right]
+        _ ≤ _ := by linarith
     have hc₁ : Continuous fun τ => g τ ^ 2 := hg.pow 2
     have hc₂ : Continuous fun τ => gs τ ^ 2 := hgsc.pow 2
-    calc ∫ τ in Set.Icc (-T) T, k τ * (g τ * gs τ)
+    calc _
         ≤ ∫ τ in Set.Icc (-T) T, (ε / 2 * g τ ^ 2 + ε⁻¹ / 2 * gs τ ^ 2) :=
           setIntegral_mono_on hhi.integrableOn
             ((hc₁.const_mul _).add (hc₂.const_mul _)).integrableOn_Icc measurableSet_Icc hpt
@@ -252,7 +238,7 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
       _ ≤ ε / 2 * E + ε⁻¹ / 2 * (M * (1 + (T - -T) / X)) :=
           add_le_add (mul_le_mul_of_nonneg_left hE (by positivity))
             (mul_le_mul_of_nonneg_left (hMs _ _ (by linarith)) (by positivity))
-      _ = (ε * E + ε⁻¹ * (M * (1 + 2 * T / X))) / 2 := by ring
+      _ = _ := by ring
   -- on `|τ| > T`: `2 g g' ≤ g² + g'²` and the tail twice
   have htail : ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * (g τ * gs τ) ≤ 8 * M * X / T := by
     have hpt : ∀ τ ∈ (Set.Icc (-T) T)ᶜ, k τ * (g τ * gs τ) ≤
@@ -264,7 +250,7 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
       integral_compl_Icc_mul_le (hg.pow 2) (fun τ => sq_nonneg _) hsqB hX hXT hM
     have h₂ : ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * gs τ ^ 2 ≤ 8 * M * X / T :=
       integral_compl_Icc_mul_le (hgsc.pow 2) (fun τ => sq_nonneg _) (fun τ => hsqB _) hX hXT hMs
-    calc ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * (g τ * gs τ)
+    calc _
         ≤ ∫ τ in (Set.Icc (-T) T)ᶜ, (k τ * g τ ^ 2 / 2 + k τ * gs τ ^ 2 / 2) :=
           setIntegral_mono_on hhi.integrableOn
             ((hi₁.div_const 2).add (hi₂.div_const 2)).integrableOn measurableSet_Icc.compl hpt
@@ -273,7 +259,7 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
           rw [integral_add (hi₁.div_const 2).integrableOn (hi₂.div_const 2).integrableOn,
             integral_div, integral_div]
       _ ≤ 8 * M * X / T / 2 + 8 * M * X / T / 2 := by gcongr
-      _ = 8 * M * X / T := by ring
+      _ = _ := by ring
   exact add_le_add hmain htail
 
 /-- The arc-term integral: for `g ≥ 0` with energy `E` on `[-T, T]` and mean values
@@ -289,12 +275,11 @@ theorem integral_kernel_mul_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ 
       ∫ q : ℝ × ℝ, ((1 + |q.1| / X) ^ 2)⁻¹ * ((1 + |q.1 + q.2|) ^ 2)⁻¹ * (g q.1 * g (-q.2)) ≤
         π * ((ε * E + ε⁻¹ * (M * (1 + 2 * T / X))) / 2 + 8 * M * X / T) := by
   have hT : 0 ≤ T := hX.le.trans hXT
-  have hB₀ : 0 ≤ B₀ := (hg0 0).trans (hgB 0)
+  have hB₀ := (hg0 0).trans (hgB 0)
   have hM0 : 0 ≤ M := by
     have h := hM T T le_rfl
-    rw [intervalIntegral.integral_same, sub_self, zero_div, add_zero, mul_one] at h
-    exact h
-  have hE0 : 0 ≤ E :=
+    aesop
+  have hE0 :=
     (intervalIntegral.integral_nonneg (by linarith) fun τ _ => sq_nonneg (g τ)).trans hE
   set k₁ : ℝ → ℝ := fun τ => ((1 + |τ| / X) ^ 2)⁻¹ with hk₁
   set k₂ : ℝ → ℝ := fun u => ((1 + |u|) ^ 2)⁻¹ with hk₂
@@ -303,14 +288,13 @@ theorem integral_kernel_mul_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ 
   have hk₁i := integrable_inv_one_add_abs_div_sq hX
   have hk₂i := integrable_inv_one_add_abs_sq
   have hgg : ∀ a b, g a * g b ≤ B₀ ^ 2 := fun a b => by
-    rw [sq]; exact mul_le_mul (hgB a) (hgB b) (hg0 b) hB₀
+    rw [sq]; bound
   -- the integrand is dominated by `B₀² k₁(τ) k₂(τ + σ)`, integrable after the shear
   set F : ℝ × ℝ → ℝ := fun q => k₁ q.1 * k₂ (q.1 + q.2) * (g q.1 * g (-q.2)) with hF
   have hFc : Continuous F := by
-    refine (hk₁c.comp continuous_fst).mul (hk₂c.comp (continuous_fst.add continuous_snd)) |>.mul
-      ((hg.comp continuous_fst).mul (hg.comp (continuous_snd.neg)))
+    fun_prop
   have hDi : Integrable (fun q : ℝ × ℝ => k₁ q.1 * k₂ (q.1 + q.2)) (volume.prod volume) := by
-    have hPc : Continuous fun q : ℝ × ℝ => k₁ q.1 * k₂ q.2 :=
+    have hPc :=
       (hk₁c.comp continuous_fst).mul (hk₂c.comp continuous_snd)
     exact ((measurePreserving_prod_add volume volume).integrable_comp
       hPc.aestronglyMeasurable).2 (hk₁i.mul_prod hk₂i)
@@ -319,38 +303,35 @@ theorem integral_kernel_mul_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ 
       (Filter.Eventually.of_forall fun q => ?_)
     have h0 : 0 ≤ k₁ q.1 * k₂ (q.1 + q.2) := by positivity
     rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg h0 (mul_nonneg (hg0 _) (hg0 _)))]
-    exact mul_le_mul_of_nonneg_left (hgg _ _) h0
+    solve_by_elim [mul_le_mul_of_nonneg_left]
   rw [Measure.volume_eq_prod]
   refine ⟨hFi, ?_⟩
   -- substitute `σ = s - τ`, then integrate in `τ` first
   set H : ℝ → ℝ → ℝ := fun τ s => k₂ s * (k₁ τ * (g τ * g (τ - s))) with hH
   have hinner : ∀ τ, ∫ σ, F (τ, σ) = ∫ s, H τ s := fun τ => by
     rw [← integral_sub_right_eq_self (fun σ => F (τ, σ)) τ]
-    congr 1 with s
-    simp only [hF, hH, add_sub_cancel, neg_sub]
-    ring
+    grind
   have hHi : Integrable (Function.uncurry H) (volume.prod volume) := by
-    have hHc : Continuous (Function.uncurry H) :=
+    have hHc :=
       (hk₂c.comp continuous_snd).mul ((hk₁c.comp continuous_fst).mul
         ((hg.comp continuous_fst).mul (hg.comp (continuous_fst.sub continuous_snd))))
     refine ((hk₁i.mul_prod hk₂i).mul_const (B₀ ^ 2)).mono' hHc.aestronglyMeasurable
       (Filter.Eventually.of_forall fun q => ?_)
     have h0 : 0 ≤ k₁ q.1 * k₂ q.2 := by positivity
     simp only [Function.uncurry, hH]
-    rw [Real.norm_eq_abs, abs_of_nonneg (by positivity [hg0 q.1, hg0 (q.1 - q.2)])]
-    calc k₂ q.2 * (k₁ q.1 * (g q.1 * g (q.1 - q.2))) =
+    rw [Real.norm_eq_abs, abs_of_nonneg (by bound)]
+    calc _ =
         (k₁ q.1 * k₂ q.2) * (g q.1 * g (q.1 - q.2)) := by ring
-      _ ≤ (k₁ q.1 * k₂ q.2) * B₀ ^ 2 := mul_le_mul_of_nonneg_left (hgg _ _) h0
+      _ ≤ _ := by solve_by_elim [mul_le_mul_of_nonneg_left]
   rw [integral_prod F hFi]
   simp only [hinner]
   rw [integral_integral_swap hHi]
   -- the inner integral is bounded uniformly in `s`
   set Bnd : ℝ := (ε * E + ε⁻¹ * (M * (1 + 2 * T / X))) / 2 + 8 * M * X / T with hBnd
-  have hBnd0 : 0 ≤ Bnd := by positivity
   have hJ : ∀ s, ∫ τ, H τ s = k₂ s * ∫ τ, k₁ τ * (g τ * g (τ - s)) := fun s =>
     integral_const_mul _ _
   simp only [hJ]
-  calc ∫ s, k₂ s * ∫ τ, k₁ τ * (g τ * g (τ - s)) ≤ ∫ s, k₂ s * Bnd := by
+  calc _ ≤ ∫ s, k₂ s * Bnd := by
         refine integral_mono_of_nonneg (Filter.Eventually.of_forall fun s => ?_)
           (hk₂i.mul_const Bnd) (Filter.Eventually.of_forall fun s => ?_)
         · exact mul_nonneg (by positivity) (integral_nonneg fun τ => by
@@ -358,6 +339,6 @@ theorem integral_kernel_mul_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ 
         · exact mul_le_mul_of_nonneg_left
             (integral_mul_shift_le hg hg0 hgB hX hXT hε hE hM s) (by positivity)
     _ = (∫ s, k₂ s) * Bnd := integral_mul_const _ _
-    _ ≤ π * Bnd := mul_le_mul_of_nonneg_right integral_inv_one_add_abs_sq_le hBnd0
+    _ ≤ _ := mul_le_mul_of_nonneg_right integral_inv_one_add_abs_sq_le (by positivity)
 
 end Erdos408.OneSided

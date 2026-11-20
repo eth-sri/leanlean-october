@@ -35,8 +35,7 @@ private lemma primesIoc_one (x : ℝ) : primesIoc 1 x = (Ioc 0 ⌊x⌋₊).filte
   ext p
   simp only [primesIoc, Nat.floor_one, mem_filter, mem_Ioc]
   constructor
-  · rintro ⟨⟨-, h⟩, hp⟩
-    exact ⟨⟨hp.pos, h⟩, hp⟩
+  · grind
   · rintro ⟨⟨-, h⟩, hp⟩
     exact ⟨⟨hp.one_lt, h⟩, hp⟩
 
@@ -47,10 +46,7 @@ theorem mertens_first : ∃ E : ℝ, 0 ≤ E ∧ ∀ y z : ℝ, 1 ≤ y → y �
   refine ⟨2 * c, by linarith, fun y z hy hyz ↦ ?_⟩
   rw [sum_primesIoc_eq _ hyz, Mertens.sum_log_prime_div_eq, Mertens.sum_log_prime_div_eq,
     log_div (by linarith) (by linarith)]
-  have hy' := hE y hy
-  have hz' := hE z (by linarith)
-  rw [abs_le] at *
-  constructor <;> linarith
+  grind
 
 /-- Mertens' second theorem on `(y, z]`. -/
 theorem mertens_second : ∃ E : ℝ, 0 ≤ E ∧ ∀ y z : ℝ, 2 ≤ y → y ≤ z →
@@ -58,25 +54,22 @@ theorem mertens_second : ∃ E : ℝ, 0 ≤ E ∧ ∀ y z : ℝ, 2 ≤ y → y �
       E / Real.log y := by
   have hK : 0 ≤ Real.log 4 + 6 + Mertens.E₁ := by
     have := Mertens.E₁.nonneg
-    have : 0 ≤ Real.log 4 := log_nonneg (by norm_num)
+    have : 0 ≤ Real.log 4 := by positivity
     linarith
   refine ⟨2 * (Real.log 4 + 6 + Mertens.E₁), by linarith, fun y z hy hyz ↦ ?_⟩
   have hly : 0 < Real.log y := log_pos (by linarith)
-  have hlyz : Real.log y ≤ Real.log z := log_le_log (by linarith) hyz
+  have hlyz : Real.log y ≤ Real.log z := by gcongr
   rw [sum_primesIoc_eq _ hyz, Mertens.sum_prime_div_eq, Mertens.sum_prime_div_eq,
     log_div (by linarith) hly.ne']
   have hy' := Mertens.E₂p.abs_le hy
   have hz' := (Mertens.E₂p.abs_le (hy.trans hyz)).trans
     (div_le_div_of_nonneg_left hK hly hlyz)
-  rw [mul_div_assoc, two_mul]
-  calc _ = |Mertens.E₂p z - Mertens.E₂p y| := by ring_nf
-    _ ≤ |Mertens.E₂p z| + |Mertens.E₂p y| := abs_sub _ _
-    _ ≤ _ := add_le_add hz' hy'
+  grind
 
 /-- Chebyshev's upper bound `π(x) ≪ x / log x`. -/
 theorem card_primesIoc_le : ∃ K : ℝ, 0 ≤ K ∧ ∀ x : ℝ, 2 ≤ x →
     ((primesIoc 1 x).card : ℝ) ≤ K * x / Real.log x := by
-  have h4 : 0 ≤ Real.log 4 := log_nonneg (by norm_num)
+  have h4 : 0 ≤ Real.log 4 := by positivity
   refine ⟨2 * Real.log 4 + 2, by linarith, fun x hx ↦ ?_⟩
   have hlx : 0 < Real.log x := log_pos (by linarith)
   have hcard : (primesIoc 1 x).card = Nat.primeCounting ⌊x⌋₊ := by
@@ -85,14 +78,13 @@ theorem card_primesIoc_le : ∃ K : ℝ, 0 ≤ K ∧ ∀ x : ℝ, 2 ≤ x →
     ext p
     simp only [mem_filter, mem_Ioc, Nat.primesLE, Nat.primesBelow, mem_range]
     constructor
-    · rintro ⟨⟨-, h⟩, hp⟩
-      exact ⟨by omega, hp⟩
+    · grind
     · rintro ⟨h, hp⟩
       exact ⟨⟨hp.pos, by omega⟩, hp⟩
   have hpi := Chebyshev.pi_le_log4_mul_div (x := x) (by linarith)
   rw [log_sqrt (by linarith)] at hpi
   -- `log x = 2 log √x ≤ 2 √x`, so `√x ≤ 2 x / log x`
-  have hsx : 0 < √x := sqrt_pos.mpr (by linarith)
+  have hsx : 0 < √x := by positivity
   have hlog : Real.log x ≤ 2 * √x := by
     have h := log_le_sub_one_of_pos hsx
     rw [log_sqrt (by linarith)] at h
@@ -102,7 +94,7 @@ theorem card_primesIoc_le : ∃ K : ℝ, 0 ≤ K ∧ ∀ x : ℝ, 2 ≤ x →
     have := mul_self_sqrt (show 0 ≤ x by linarith)
     nlinarith
   rw [hcard]
-  calc (Nat.primeCounting ⌊x⌋₊ : ℝ) ≤ Real.log 4 * x / (Real.log x / 2) + √x := hpi
+  calc _ ≤ Real.log 4 * x / (Real.log x / 2) + √x := hpi
     _ ≤ Real.log 4 * x / (Real.log x / 2) + 2 * x / Real.log x := by gcongr
     _ = _ := by field_simp
 
@@ -114,8 +106,7 @@ theorem sum_log_primesIoc_le {x : ℝ} (hx : 0 ≤ x) :
 
 /-- For `x ≥ 1` the dyad `(x, 2x]` contains a prime. -/
 theorem dyadicPrimes_card_pos {x : ℝ} (hx : 1 ≤ x) : 0 < (dyadicPrimes x).card := by
-  have hn : ⌊x⌋₊ ≠ 0 := (Nat.floor_pos.mpr hx).ne'
-  obtain ⟨p, hp, hlt, hle⟩ := Nat.exists_prime_lt_and_le_two_mul ⌊x⌋₊ hn
+  obtain ⟨p, hp, hlt, hle⟩ := Nat.exists_prime_lt_and_le_two_mul ⌊x⌋₊ (Nat.floor_pos.mpr hx).ne'
   have h2 : 2 * ⌊x⌋₊ ≤ ⌊2 * x⌋₊ := by
     apply Nat.le_floor
     push_cast

@@ -39,7 +39,7 @@ def sharedSlots (C : ι → Finset (Fin J)) (g : ι) : Finset (Fin J) :=
 /-- A slot of the first `J` is unshared exactly when it is free. -/
 lemma castSucc_mem_unsharedSlots {C : ι → Finset (Fin J)} {g : ι} {i : Fin J} :
     i.castSucc ∈ unsharedSlots C g ↔ i ∈ C g := by
-  simp [unsharedSlots, Fin.castSucc_ne_last]
+  simp [unsharedSlots]
 
 /-- The final slot is unshared. -/
 lemma last_mem_unsharedSlots (C : ι → Finset (Fin J)) (g : ι) :
@@ -90,7 +90,7 @@ variable [Fintype ι] [DecidableEq ι]
 
 /-- All lists of primes of the groups in `M` slots. -/
 noncomputable def allLists (P : ι → Finset ℕ) (M : ℕ) : Finset (ι → Fin M → ℕ) :=
-  Fintype.piFinset fun g => Fintype.piFinset fun _ : Fin M => P g
+  Fintype.piFinset fun g => Fintype.piFinset fun _ => P g
 
 /-- The unshared parts: a prime of `P g` in each unshared slot, `1` elsewhere. -/
 noncomputable def unsharedLists (P : ι → Finset ℕ) (C : ι → Finset (Fin J)) :
@@ -106,12 +106,12 @@ def sharedProduct (C : ι → Finset (Fin J)) (s : ι → Fin J → ℕ) : ℕ :
 lemma mem_unsharedLists {P : ι → Finset ℕ} {C : ι → Finset (Fin J)}
     {l : ι → Fin (J + 1) → ℕ} :
     l ∈ unsharedLists P C ↔ ∀ g j, l g j ∈ if j ∈ unsharedSlots C g then P g else {1} := by
-  simp only [unsharedLists, Fintype.mem_piFinset]
+  simp [unsharedLists]
 
 /-- Membership in `allLists`, slot by slot. -/
 lemma mem_allLists {P : ι → Finset ℕ} {M : ℕ} {p : ι → Fin M → ℕ} :
     p ∈ allLists P M ↔ ∀ g j, p g j ∈ P g := by
-  simp only [allLists, Fintype.mem_piFinset]
+  simp [allLists]
 
 /-- Shared labels are `1` in the free slots. -/
 lemma eq_one_of_mem_sharedLabels {P : ι → Finset ℕ} {C : ι → Finset (Fin J)}
@@ -164,25 +164,15 @@ lemma sum_allLists_eq {R : Type*} [AddCommMonoid R] (P : ι → Finset ℕ)
     (C : ι → Finset (Fin J)) (f : (ι → Fin (J + 1) → ℕ) → R) :
     ∑ p ∈ allLists P (J + 1), f p =
       ∑ s ∈ auxLabels P (sharedSlots C), ∑ l ∈ unsharedLists P C, f (merge C s l) := by
-  rw [← sum_product (f := fun sl : (ι → Fin J → ℕ) × (ι → Fin (J + 1) → ℕ) =>
+  rw [← sum_product (f := fun sl =>
     f (merge C sl.1 sl.2))]
   refine sum_nbij' (fun p => (shared C p, pad C p)) (fun sl => merge C sl.1 sl.2) ?_ ?_ ?_ ?_ ?_
   · intro p hp
     rw [mem_allLists] at hp
     refine (mem_product.2 ⟨mem_auxLabels.2 fun g i => ?_,
       mem_unsharedLists.2 fun g j => ?_⟩)
-    · dsimp only
-      by_cases hi : i ∈ C g
-      · rw [ite_eq_right (by simp [sharedSlots, hi]), shared, ite_eq_left hi]
-        exact mem_singleton_self 1
-      · rw [ite_eq_left (by simp [sharedSlots, hi]), shared, ite_eq_right hi]
-        exact hp g _
-    · dsimp only
-      by_cases hj : j ∈ unsharedSlots C g
-      · rw [ite_eq_left hj, pad, ite_eq_left hj]
-        exact hp g j
-      · rw [ite_eq_right hj, pad, ite_eq_right hj]
-        exact mem_singleton_self 1
+    · grind [sharedSlots, shared]
+    grind [pad]
   · rintro ⟨s, l⟩ hsl
     obtain ⟨hs, hl⟩ := mem_product.1 hsl
     refine mem_allLists.2 fun g j => ?_
@@ -204,7 +194,7 @@ lemma sum_allLists_eq {R : Type*} [AddCommMonoid R] (P : ι → Finset ℕ)
 lemma eq_of_merge_castSucc {P : ι → Finset ℕ} {C : ι → Finset (Fin J)}
     {s s' : ι → Fin J → ℕ} (hs : s ∈ auxLabels P (sharedSlots C))
     (hs' : s' ∈ auxLabels P (sharedSlots C)) {l l' : ι → Fin (J + 1) → ℕ}
-    (h : ∀ g, ∀ i, i ∉ C g → merge C s' l' g i.castSucc = merge C s l g i.castSucc) :
+    (h : ∀ g i, i ∉ C g → merge C s' l' g i.castSucc = merge C s l g i.castSucc) :
     s' = s := by
   funext g i
   by_cases hi : i ∈ C g
@@ -222,13 +212,12 @@ lemma sharedProduct_dvd {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, 
   have hmem : ∀ g, ∀ i ∈ sharedSlots C g, s g i ∈ P g := fun g i hi =>
     mem_of_mem_sharedLabels hs (by simpa [sharedSlots] using hi)
   have himg := prod_image (s := univ.sigma (sharedSlots C)) (g := fun x => s x.1 x.2)
-    (f := fun q : ℕ => q)
+    (f := fun q => q)
   rw [sharedProduct, prod_sigma', ← himg]
   · refine prod_primes_dvd n (fun q hq => ?_) fun q hq => ?_
     · obtain ⟨⟨g, i⟩, hx, rfl⟩ := mem_image.1 hq
       exact (hprime g _ (hmem g i (mem_sigma.1 hx).2)).prime
-    · obtain ⟨⟨g, i⟩, hx, rfl⟩ := mem_image.1 hq
-      exact hdvd g i (mem_sigma.1 hx).2
+    grind
   · rintro ⟨g, i⟩ hx ⟨g', i'⟩ hy heq
     have hx' := (mem_sigma.1 (mem_coe.1 hx)).2
     have hy' := (mem_sigma.1 (mem_coe.1 hy)).2
@@ -236,8 +225,7 @@ lemma sharedProduct_dvd {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, 
     obtain rfl : g = g' := by
       by_contra hne
       exact disjoint_left.1 (hdisj g g' hne) (hmem g i hx') (heq ▸ hmem g' i' hy')
-    have : i = i' := hinj g hx' hy' heq
-    rw [this]
+    solve_by_elim
 
 /-- Shared labels have a positive product. -/
 lemma sharedProduct_pos {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, p.Prime)
@@ -256,15 +244,11 @@ lemma sum_Icc_eq_sum_mul {R : Type*} [AddCommMonoid R] {D N : ℕ} (hD : 0 < D) 
   · obtain ⟨w, hw, rfl⟩ := mem_image.1 hn
     obtain ⟨hw, hwN⟩ := mem_filter.1 hw
     exact mem_Icc.2 ⟨Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero hD.ne' (by
-      have := (mem_Icc.1 hw).1; omega)), hwN⟩
+      grind)), hwN⟩
   · by_contra h
     obtain ⟨w, rfl⟩ := hf _ h
     refine hn' (mem_image.2 ⟨w, mem_filter.2 ⟨mem_Icc.2 ⟨?_, ?_⟩, (mem_Icc.1 hn).2⟩, rfl⟩)
-    · have := (mem_Icc.1 hn).1
-      rcases Nat.eq_zero_or_pos w with hw | hw
-      · rw [hw, mul_zero] at this
-        omega
-      · exact hw
+    · grind
     · exact (Nat.le_mul_of_pos_left w hD).trans (mem_Icc.1 hn).2
 
 /-! ### The cutoff pairing over all lists -/
@@ -324,13 +308,7 @@ lemma physSum_eq_sum_allLists (x q₀ : ℝ) (P : ι → Finset ℕ) (C : ι →
   · rw [ite_eq_left hp]
     refine sum_congr rfl fun a _ => ?_
     rw [filter_filter, sum_filter]
-    refine sum_congr rfl fun p' _ => ?_
-    unfold physTerm PhysCond
-    by_cases hp' : (∀ h, Function.Injective (p' h) ∧ ∀ i, p' h i ∣ n + edgeProduct C p a) ∧
-        ∀ h, (∀ i, i ∉ C h → p' h i.castSucc = p h i.castSucc) ∧
-          ∀ i ∈ C h, ∀ j, a h i ≠ p h j ∧ a h i ≠ p' h j
-    · rw [ite_eq_left hp', ite_eq_left ⟨hp, hp'⟩]
-    · rw [ite_eq_right hp', ite_eq_right fun h => hp' h.2]
+    grind [physTerm, PhysCond]
   · rw [ite_eq_right hp]
     exact (sum_eq_zero fun a _ => sum_eq_zero fun p' _ =>
       ite_eq_right fun h => hp h.1).symm
@@ -350,10 +328,7 @@ theorem physSum_eq_sum_strip (x q₀ : ℝ) {P : ι → Finset ℕ}
             physTerm x q₀ P C K F G Ψ (sharedProduct C s * w) (merge C s l) (merge C s l') a
           else 0 := by
   set T := physTerm x q₀ P C K F G Ψ
-  rw [physSum_eq_sum_allLists, sum_comm]
-  rw [sum_congr rfl fun p _ => sum_comm]
-  rw [sum_congr rfl fun p _ => sum_congr rfl fun a _ => sum_comm]
-  rw [sum_comm]
+  rw [physSum_eq_sum_allLists, sum_comm, sum_congr rfl fun p _ => sum_comm, sum_congr rfl fun p _ => sum_congr rfl fun a _ => sum_comm, sum_comm]
   refine sum_congr rfl fun a _ => ?_
   rw [sum_allLists_eq P C]
   refine sum_congr rfl fun s hs => sum_congr rfl fun l _ => ?_
@@ -364,14 +339,11 @@ theorem physSum_eq_sum_strip (x q₀ : ℝ) {P : ι → Finset ℕ}
       by_contra hc
       exact hn (ite_eq_right hc)
     refine sharedProduct_dvd hprime hdisj hs (fun g i hi j hj hij => ?_) fun g i hi => ?_
-    · have hi' : i ∉ C g := by simpa [sharedSlots] using hi
-      have hj' : j ∉ C g := by simpa [sharedSlots] using hj
-      have := (hc.1 g).1 (a₁ := i.castSucc) (a₂ := j.castSucc)
-        (by rw [merge_castSucc_of_notMem hi', merge_castSucc_of_notMem hj']; exact hij)
+    · have := (hc.1 g).1 (a₁ := i.castSucc) (a₂ := j.castSucc)
+        (by rw [merge_castSucc_of_notMem (by simpa [sharedSlots] using hi), merge_castSucc_of_notMem (by simpa [sharedSlots] using hj)]; exact hij)
       exact Fin.castSucc_injective _ this
-    · have hi' : i ∉ C g := by simpa [sharedSlots] using hi
-      have := (hc.1 g).2 i.castSucc
-      rwa [merge_castSucc_of_notMem hi'] at this
+    · have := (hc.1 g).2 i.castSucc
+      rwa [merge_castSucc_of_notMem (by simpa [sharedSlots] using hi)] at this
   · intro s' hs' hne
     refine sum_eq_zero fun l' _ => sum_eq_zero fun n _ => ite_eq_right fun hc => hne ?_
     exact eq_of_merge_castSucc hs hs' fun g i hi => (hc.2.2 g).1 i hi

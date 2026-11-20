@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Hypotheses
+
 public import Erdos408.OneSided.Moment.Chain
 public import Mathlib.Algebra.Field.ZMod
 
@@ -84,7 +86,7 @@ def FreeValid (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v
 variable (x d Y d₀ u v r B) in
 /-- The restrictions of `EdgeValid` that involve the memory. -/
 def MemValid (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) : Prop :=
-  (∀ i, (c.2.2.2.1 i).2 = true → ∃ xp : Particle x d, xp.1 = edgePromoted c i ∧
+  (∀ i, (c.2.2.2.1 i).2 = true → ∃ xp, xp.1 = edgePromoted c i ∧
       1 ≤ s.2.2.1 xp) ∧
     (∀ i ∈ c.2.1, edgeStored s c i ∈ particles x d) ∧
     edgeMem s c ∈ memStates B
@@ -174,7 +176,7 @@ theorem sum_freeSymOp_mul (a : FreeState x d Y d₀ u v r) (H : FreeState x d Y 
     funext i
     have h' := congrArg (fun b : FreeState x d Y d₀ u v r => b.1.2 i) h
     exact Equiv.ext fun k => injective_of_mem_lists ha i (congrFun h' k)
-  have himage : univ.filter (fun b : FreeState x d Y d₀ u v r => a.1.1 = b.1.1 ∧
+  have himage : univ.filter (fun b => a.1.1 = b.1.1 ∧
       ∃ σ : Fin K → Equiv.Perm (Fin (padCount x + 1)), ∀ i, b.1.2 i = a.1.2 i ∘ σ i) =
       univ.image (permFree a) := by
     ext b
@@ -219,7 +221,7 @@ theorem sum_rowOp_mul (A₀ : ℝ) (m : FreeState x d Y d₀ u v r)
     funext i h
     induction h using Fin.lastCases with
     | last => simp [replaceLast]
-    | cast h => simp [replaceLast, (Fin.castSucc_lt_last h).ne, hc i h]
+    | cast h => simp_all [replaceLast]
   rw [← sum_product']
   refine sum_bij_ne_zero (fun k _ _ => (k.1.1, fun i => k.1.2 i (Fin.last _))) ?_ ?_ ?_ ?_
   · intro k _ _
@@ -236,7 +238,7 @@ theorem sum_rowOp_mul (A₀ : ℝ) (m : FreeState x d Y d₀ u v r)
     by_cases h : replaceLast m.1.2 lab ∈ lists x d (padCount x)
     · refine ⟨mkFree z' _ h, mem_univ _, ?_, ?_⟩
       · simpa only [dite_eq_left h] using hne
-      · simp [mkFree, replaceLast]
+      simp [mkFree, replaceLast]
     · exact absurd (dite_eq_right h) hne
   · intro k _ hk
     have hk' := hpad k (left_ne_zero_of_mul hk)
@@ -254,8 +256,7 @@ theorem comp_perm_mem_lists_iff {J : ℕ} (l : Lists K J) (σ : Fin K → Equiv.
   constructor
   · rintro ⟨h₁, h₂⟩
     refine ⟨fun i h => by simpa using h₁ i ((σ i).symm h), fun i => ?_⟩
-    have := (h₂ i).comp (σ i).symm.injective
-    simpa [Function.comp_def] using this
+    aesop
   · rintro ⟨h₁, h₂⟩
     exact ⟨fun i h => h₁ i _, fun i => (h₂ i).comp (σ i).injective⟩
 
@@ -264,7 +265,7 @@ theorem sum_diagonal_sandwich_mul {ι : Type*} [Fintype ι] [DecidableEq ι] (g 
     (S T : Matrix ι ι ℂ) (F : ι → ℂ) (a : ι) :
     ∑ b, (Matrix.diagonal g * S * T * S * Matrix.diagonal g) a b * F b =
       g a * ∑ m, S a m * ∑ k, T m k * ∑ b, S k b * (g b * F b) := by
-  have hD : Matrix.diagonal g *ᵥ F = fun b => g b * F b :=
+  have hD :=
     funext fun b => Matrix.mulVec_diagonal g F b
   change ((Matrix.diagonal g * S * T * S * Matrix.diagonal g) *ᵥ F) a = _
   rw [← Matrix.mulVec_mulVec, hD, ← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec,
@@ -278,8 +279,6 @@ theorem goodOp_apply (a b : FreeState x d Y d₀ u v r) :
       if a = b then (if GoodFirst Y d₀ (tau r (complement a.1.1.1) / tau r a.1.1.1) a.1.2 ∧
         GoodSecond x d d₀ (tau r (complement a.1.1.1) / tau r a.1.1.1) a.1.2 then 1 else 0)
       else 0 := by
-  classical
-  simp only [PosModel.goodOp, Matrix.diagonal_apply]
   rfl
 
 /-- **The free expansion of `A⁰`**: `∑_{s'} A⁰(s, s') F(s') = ∑_c freeCoef(s, c) F(freeOut(s, c))`
@@ -293,8 +292,7 @@ theorem sum_edgeOp_mul_eq (s : ChainState x d Y d₀ u v r B) (F : FreeState x d
       GoodSecond x d d₀ (tau r (complement b.1.1.1) / tau r b.1.1.1) b.1.2 then 1 else 0 with hg
   -- step: `𝒢 𝒮 𝒯 𝒮 𝒢` with the diagonal `𝒢` at both ends
   have hG : (freeRootModel d Y d₀ u v r).goodOp x d Y d₀ = Matrix.diagonal g := by
-    ext b b'
-    rw [goodOp_apply, Matrix.diagonal_apply]
+    rfl
   have hexp := sum_diagonal_sandwich_mul g ((freeRootModel d Y d₀ u v r).symOp x d)
     ((freeRootModel d Y d₀ u v r).rowOp 1 A₀ x d Y d₀) F (chainFree s)
   rw [← hG] at hexp
@@ -332,7 +330,7 @@ theorem sum_edgeOp_mul_eq (s : ChainState x d Y d₀ u v r B) (F : FreeState x d
           else 0 := by
       have hpad : ∀ i (h : Fin (padCount x)), (mkFree z' _ hl).1.2 i h.castSucc =
           (permFree (chainFree s) σ).1.2 i h.castSucc := fun i h => by
-        simp [mkFree, replaceLast, (Fin.castSucc_lt_last h).ne]
+        simp [mkFree, replaceLast]
       have hlast : lastProd (mkFree z' _ hl).1.2 = ∏ i, (ec.2.2.2.1 i).1 := by
         simp [lastProd, mkFree, replaceLast, ec, toEdge]
       have hD : padProd (permFree (chainFree s) σ).1.2 = edgePad s ec := rfl
@@ -359,16 +357,11 @@ theorem sum_edgeOp_mul_eq (s : ChainState x d Y d₀ u v r B) (F : FreeState x d
         rw [freeOut, dite_eq_left hv]
         rfl
       obtain ⟨-, hb, hd₁, hd₂, hdvd, hga, hgt⟩ := hv
-      have hc : (∀ i i' h, (ec.2.2.2.1 i).1 ≠ s.2.1.1 i' h) ∧ d₀ ≤ (edgePad s ec : ℝ) ∧
-          (edgePad s ec : ℝ) < 2 * d₀ ∧ (edgePad s ec : ℤ) ∣ edgeDet s ec := ⟨hb, hd₁, hd₂, hdvd⟩
       have hv : FreeValid x d Y d₀ u v r B s ec := ⟨htgt_mem, hb, hd₁, hd₂, hdvd, hga, hgt⟩
-      have e₁ : (if GoodFirst Y d₀ (tau r (complement s.1.1) / tau r s.1.1) s.2.1.1 ∧
-          GoodSecond x d d₀ (tau r (complement s.1.1) / tau r s.1.1) s.2.1.1 then (1 : ℂ)
-          else 0) = 1 := ite_eq_left hga
       have e₂ : (if GoodFirst Y d₀ (tau r (complement z'.1) / tau r z'.1) (edgeTgt s ec) ∧
           GoodSecond x d d₀ (tau r (complement z'.1) / tau r z'.1) (edgeTgt s ec) then (1 : ℂ)
           else 0) = 1 := ite_eq_left hgt
-      rw [e₁, e₂, ite_eq_left hc, ite_eq_left hv, hout]
+      rw [(ite_eq_left hga), e₂, ite_eq_left ⟨hb, hd₁, hd₂, hdvd⟩, ite_eq_left hv, hout]
       push_cast
       ring
     · rw [ite_eq_right hv, zero_mul]
@@ -397,13 +390,13 @@ theorem sum_edgeOp_mul_eq (s : ChainState x d Y d₀ u v r B) (F : FreeState x d
 /-! ### The chain coefficient over the free coefficient -/
 
 /-- With disjoint bands, the mass `V(p)` of a prime of `𝒫_i` is `V_i`. -/
-theorem primeMass_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem primeMass_eq (hdisj : DisjointBands x d.a)
     {i : Fin K} {p : ℕ} (hp : p ∈ band x (d.a i)) :
     primeMass x d p = harmonicMass (band x (d.a i)) := by
   rw [primeMass, sum_eq_single i, ite_eq_left hp]
   · intro j _ hji
     exact ite_eq_right fun hpj => disjoint_left.1 (hdisj j i hji) hpj hp
-  · exact fun h => absurd (mem_univ i) h
+  simp
 
 variable (x d) in
 /-- The memory weight of the new label of group `i`, with its `V_i⁻¹` moved to the free
@@ -424,7 +417,7 @@ def memEdgeCoef (N : ℕ) (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x 
   else 0
 
 /-- The chain edge coefficient is the free coefficient times the memory part. -/
-theorem chainEdgeCoef_eq_mul (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem chainEdgeCoef_eq_mul (hdisj : DisjointBands x d.a)
     (N : ℕ) (s : ChainState x d Y d₀ u v r B)
     (c : FreeChoice x d Y d₀ u v r) (hc : c ∈ freeChoices x d Y d₀ u v r)
     (St : Finset (Fin K)) (fl : Fin K → Bool) :
@@ -447,7 +440,7 @@ theorem chainEdgeCoef_eq_mul (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a
         primeMass_eq hdisj (hlab i), one_div, mul_inv]
       ring
   have hV' : (d.bandMass x)⁻¹ = ∏ i, (harmonicMass (band x (d.a i)))⁻¹ := by
-    rw [Data.bandMass, prod_inv_distrib]
+    simp [Data.bandMass]
   rw [chainEdgeCoef, freeCoef, memEdgeCoef]
   by_cases hf : FreeValid x d Y d₀ u v r B s (toEdge₀ c)
   · by_cases hm : MemValid x d Y d₀ u v r B s (toEdge c St fl)
@@ -459,7 +452,7 @@ theorem chainEdgeCoef_eq_mul (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a
           else primeWeight q x d N ((toEdge c St fl).2.2.2.1 i).1) =
           (∏ i, memLabelWeight q x d N s.2.2.1 (toEdge c St fl) i) * (d.bandMass x)⁻¹ := by
         rw [hV', ← prod_mul_distrib]
-        exact prod_congr rfl fun i _ => hw i
+        solve_by_elim [prod_congr]
       have hk : freeKernel A₀ s (toEdge₀ c) = freeKernel A₀ s (toEdge c St fl) := rfl
       dsimp only
       rw [hprod, hk]
@@ -501,28 +494,10 @@ theorem lineOf_eq_of_dvd_det {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ} (hz : 
     rintro ⟨h₁, h₂⟩
     obtain ⟨a, b, hab⟩ := Int.isCoprime_iff_gcd_eq_one.2 h
     have h' := congrArg (Int.cast : ℤ → ZMod p) hab
-    push_cast at h'
-    rw [h₁, h₂] at h'
-    simp at h'
-  have hval (w : ZMod p) : w.val ≠ p := (ZMod.val_lt w).ne
+    grind
   have hd : (z.1 : ZMod p) * z'.2 - z.2 * z'.1 = 0 := by
-    have := (ZMod.intCast_zmod_eq_zero_iff_dvd _ p).2 hdvd
-    push_cast at this
-    exact this
-  simp only [lineOf]
-  by_cases h₁ : (z.1 : ZMod p) = 0 <;> by_cases h₁' : (z'.1 : ZMod p) = 0
-  · simp [h₁, h₁']
-  · -- `z₂ z'₁ = 0` with `z₂ ≠ 0` forces `z'₁ = 0`
-    have h₂ : (z.2 : ZMod p) ≠ 0 := fun h => hne hz ⟨h₁, h⟩
-    rw [h₁, zero_mul, zero_sub, neg_eq_zero] at hd
-    exact absurd ((mul_eq_zero.1 hd).resolve_left h₂) h₁'
-  · have h₂' : (z'.2 : ZMod p) ≠ 0 := fun h => hne hz' ⟨h₁', h⟩
-    rw [h₁', mul_zero, sub_zero] at hd
-    exact absurd ((mul_eq_zero.1 hd).resolve_right h₂') h₁
-  · simp only [h₁, h₁', ite_false]
-    congr 1
-    field_simp
-    linear_combination -hd
+    simpa using (ZMod.intCast_zmod_eq_zero_iff_dvd _ p).2 hdvd
+  grind [lineOf]
 
 /-- The target lists consist of the pads of the reordered source and the new labels. -/
 theorem mem_edgeTgt_iff (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)
@@ -532,11 +507,11 @@ theorem mem_edgeTgt_iff (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d 
   · rintro ⟨i, h, rfl⟩
     simp only [edgeTgt]
     induction hk : c.2.2.2.2 i h using Fin.lastCases with
-    | last => exact Or.inr ⟨i, by simp⟩
-    | cast k => exact Or.inl ⟨i, k, by simp [(Fin.castSucc_lt_last k).ne]⟩
+    | last => simp
+    | cast k => simp
   · rintro (⟨i, k, rfl⟩ | ⟨i, rfl⟩)
     · refine ⟨i, (c.2.2.2.2 i).symm k.castSucc, ?_⟩
-      simp [edgeTgt, (Fin.castSucc_lt_last k).ne]
+      simp [edgeTgt]
     · refine ⟨i, (c.2.2.2.2 i).symm (Fin.last _), ?_⟩
       simp [edgeTgt]
 
@@ -552,20 +527,18 @@ theorem lineOf_eq_of_stay {p : ℕ} (hp : p.Prime) (h₁ : ∃ i h, s.2.1.1 i h 
     (h₂ : ∃ i h, edgeTgt s c i h = p) : lineOf p s.1.1 = lineOf p c.2.2.1.1 := by
   rcases (mem_edgeTgt_iff s c p).1 h₂ with ⟨i, k, hk⟩ | ⟨i, hi⟩
   · -- `p` divides the pad product, hence the determinant
-    have hD : (p : ℤ) ∣ (edgePad s c : ℤ) := by
+    have hD : (p : ℤ) ∣ (edgePad s c) := by
       refine Int.natCast_dvd_natCast.2 ?_
       rw [edgePad, ← hk]
       exact (dvd_prod_of_mem (fun k => edgeSrc s c i k.castSucc) (mem_univ k)).trans
         (dvd_prod_of_mem (fun i => ∏ k : Fin (padCount x), edgeSrc s c i k.castSucc)
           (mem_univ i))
-    have hz := (mem_filter.1 s.1.2).2.1
-    have hz' := (mem_filter.1 c.2.2.1.2).2.1
-    exact lineOf_eq_of_dvd_det hp hz hz' (hD.trans hv.2.2.2.2.1)
+    exact lineOf_eq_of_dvd_det hp (mem_filter.1 s.1.2).2.1 (mem_filter.1 c.2.2.1.2).2.1 (hD.trans hv.2.2.2.2.1)
   · obtain ⟨i', h', hp'⟩ := h₁
     exact absurd (hi.trans hp'.symm) (hv.2.1 i i' h')
 
 /-- The primes leaving activity are the unshared slots of the reordered source. -/
-theorem leave_iff (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (p : ℕ) :
+theorem leave_iff (hdisj : DisjointBands x d.a) (p : ℕ) :
     ((∃ i h, s.2.1.1 i h = p) ∧ ¬∃ i h, edgeTgt s c i h = p) ↔
       ∃ i, edgeSrc s c i (Fin.last _) = p := by
   have hs := s.2.1.2
@@ -588,8 +561,7 @@ theorem leave_iff (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band 
         by_contra hne
         exact disjoint_left.1 (hdisj i' i hne) h₁ (mem_band_of_mem_lists hs i _)
       subst hii
-      have := (c.1 i').injective (injective_of_mem_lists hs i' hk)
-      exact (Fin.castSucc_lt_last k).ne this
+      simpa using (c.1 i').injective (injective_of_mem_lists hs i' hk)
     · exact hv.2.1 i' i _ hi'
 
 /-- The primes entering activity are the new labels. -/

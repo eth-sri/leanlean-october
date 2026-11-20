@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Scales
+
 public import Erdos408.Extraction.Allocation.Groups
 public import Erdos408.TwoSided.Setup
 
@@ -45,7 +47,6 @@ lemma groupAdmissible_facts {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι]
     · obtain ⟨hpr, h₁, h₂⟩ := mem_primesIcc.1 (hSm g hg hp)
       exact ⟨hpr, h₁, h₂.trans (hexp (by norm_num))⟩
   · have hcard : ((univ \ big).card : ℝ) + big.card = Fintype.card ι := by
-      rw [← card_univ]
       exact_mod_cast card_sdiff_add_card_eq_card (subset_univ big)
     linarith
 
@@ -55,7 +56,7 @@ lemma groupAdmissible_facts {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι]
 lemma eventually_band_lt_and_le_slot {c : ℝ} (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop, 1 ≤ Real.log x ∧
       2 * Real.log x ^ (1 / 5 : ℝ) < Real.log x ^ (0.27 : ℝ) ∧
-      Real.exp (Real.log x ^ (0.46 : ℝ)) ≤ x ^ (c / Real.log (Real.log x) ^ 20) := by
+      Real.exp (Real.log x ^ (0.46 : ℝ)) ≤ x ^ (c / logLog x ^ 20) := by
   have h₁ := (tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 0.07)).comp Real.tendsto_log_atTop
   have h₂ := (tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 0.14)).comp Real.tendsto_log_atTop
   filter_upwards [Real.tendsto_log_atTop.eventually_ge_atTop 3, h₁.eventually_gt_atTop 2,
@@ -64,29 +65,29 @@ lemma eventually_band_lt_and_le_slot {c : ℝ} (hc : 0 < c) :
   set L := Real.log x
   have hL0 : 0 < L := by linarith
   refine ⟨by linarith, ?_, ?_⟩
-  · calc 2 * L ^ (1 / 5 : ℝ) < L ^ (0.07 : ℝ) * L ^ (1 / 5 : ℝ) :=
-          mul_lt_mul_of_pos_right h₁ (by positivity)
-      _ = L ^ (0.27 : ℝ) := by rw [← Real.rpow_add hL0]; norm_num
+  · calc _ < L ^ (0.07 : ℝ) * L ^ (1 / 5 : ℝ) :=
+          by gcongr
+      _ = _ := by rw [← Real.rpow_add hL0]; norm_num
   · set T := Real.log L
     have hT0' : 0 < T := Real.log_pos (by linarith)
     -- `T ≤ 50 L^{0.02}`, so `T²⁰ L^{0.46} ≤ 50²⁰ L^{0.86} ≤ c L`
     have hT : T ≤ 50 * L ^ (0.02 : ℝ) := by
       have := Real.log_le_rpow_div hL0.le (by norm_num : (0 : ℝ) < 0.02)
       calc T ≤ L ^ (0.02 : ℝ) / 0.02 := this
-        _ = 50 * L ^ (0.02 : ℝ) := by norm_num [div_eq_mul_inv, mul_comm]
+        _ = _ := by ring
     have hT20 : T ^ 20 ≤ 50 ^ 20 * L ^ (0.4 : ℝ) := by
-      calc T ^ 20 ≤ (50 * L ^ (0.02 : ℝ)) ^ 20 := pow_le_pow_left₀ hT0'.le hT 20
-        _ = 50 ^ 20 * L ^ (0.4 : ℝ) := by
+      calc _ ≤ (50 * L ^ (0.02 : ℝ)) ^ 20 := by gcongr
+        _ = _ := by
           rw [mul_pow, ← Real.rpow_mul_natCast hL0.le]
           norm_num
     have key : T ^ 20 * L ^ (0.46 : ℝ) ≤ c * L := by
       have hc' : (50 : ℝ) ^ 20 ≤ c * L ^ (0.14 : ℝ) := by
         rw [div_le_iff₀ hc] at h₂
         linarith
-      calc T ^ 20 * L ^ (0.46 : ℝ) ≤ 50 ^ 20 * L ^ (0.4 : ℝ) * L ^ (0.46 : ℝ) :=
-            mul_le_mul_of_nonneg_right hT20 (by positivity)
+      calc _ ≤ 50 ^ 20 * L ^ (0.4 : ℝ) * L ^ (0.46 : ℝ) :=
+            by gcongr
         _ ≤ c * L ^ (0.14 : ℝ) * L ^ (0.4 : ℝ) * L ^ (0.46 : ℝ) := by gcongr
-        _ = c * L := by
+        _ = _ := by
             rw [mul_assoc, mul_assoc, ← Real.rpow_add hL0, ← Real.rpow_add hL0]
             norm_num
     rw [Real.rpow_def_of_pos hx0, Real.exp_le_exp, mul_div_assoc', le_div_iff₀ (pow_pos hT0' 20)]
@@ -97,7 +98,7 @@ primes lie above the bands and below the slots. -/
 theorem eventually_centeredCore_mul_prime (q c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ)
     (d : ℕ) (hahi : ahi < 1 / 5) (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
+      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] P (big : Finset ι),
         GroupAdmissible c₀ C₀ vlo vhi x P big →
         ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
           InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v →
@@ -113,7 +114,7 @@ theorem eventually_centeredCore_mul_prime (q c₀ C₀ vlo vhi alo ahi : ℝ) (K
     intro i hpb
     unfold band at hpb
     obtain ⟨hpb, -⟩ := mem_filter.1 hpb
-    have h₂ : (p : ℝ) ≤ Real.exp (2 * Real.log x ^ a i) :=
+    have h₂ :=
       (Nat.le_floor_iff (Real.exp_pos _).le).1 (mem_Icc.1 hpb).2
     have hai : Real.log x ^ a i ≤ Real.log x ^ (1 / 5 : ℝ) :=
       Real.rpow_le_rpow_of_exponent_le hL (by linarith [(ha.2.1 i).2])
@@ -133,7 +134,7 @@ lemma coreAdmissible_mul_prime {B₀ x : ℝ} {ι : Type} [Fintype ι] {P : ι �
     ∀ p ∈ Finset.univ.biUnion P, ∀ n, G (p * n) = G n := by
   intro p hp n
   rcases Nat.eq_zero_or_pos n with rfl | hn
-  · rw [mul_zero]
+  · rfl
   obtain ⟨g, -, hpg⟩ := mem_biUnion.1 hp
   have hpr := hprime g p hpg
   rw [hG.1 (p * n), hG.1 n]
@@ -145,7 +146,7 @@ lemma coreAdmissible_mul_prime {B₀ x : ℝ} {ι : Type} [Fintype ι] {P : ι �
   by_cases hr : r ∈ Finset.univ.biUnion P
   · simp [hr]
   · have hrp : r ≠ p := fun h => hr (h ▸ hp)
-    simp [hr, Nat.Prime.factorization hpr, hrp.symm]
+    aesop
 
 end Restore
 

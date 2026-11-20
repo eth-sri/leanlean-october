@@ -97,10 +97,9 @@ theorem sum_Ioc_eq_sum_range {M : Type*} [AddCommMonoid M] (E : ℕ → ℕ) (hE
 theorem norm_sub_le_of_iteratedDeriv_one {ψ : ℝ → ℂ}
     (hψ : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ) {M : ℝ}
     (hM : ∀ y, ‖iteratedDeriv 1 ψ y‖ ≤ M) (y z : ℝ) : ‖ψ y - ψ z‖ ≤ M * |y - z| := by
-  have hd : Differentiable ℝ ψ := hψ.differentiable (by simp)
-  have h := convex_univ.norm_image_sub_le_of_norm_deriv_le (fun w _ => hd w)
+  have h := convex_univ.norm_image_sub_le_of_norm_deriv_le (fun w _ => (hψ.differentiable (by simp)) w)
     (fun w _ => by rw [← iteratedDeriv_one]; exact hM w) (Set.mem_univ z) (Set.mem_univ y)
-  simpa [Real.norm_eq_abs] using h
+  assumption
 
 /-- `∫_a^b t^{-2} ≤ 2/c` when `|t| ≥ c > 0` on `[a, b]`. -/
 theorem integral_inv_sq_le {a b c : ℝ} (hab : a ≤ b) (hc : 0 < c)
@@ -108,14 +107,11 @@ theorem integral_inv_sq_le {a b c : ℝ} (hab : a ≤ b) (hc : 0 < c)
   have hne : ∀ t ∈ Set.uIcc a b, t ≠ 0 := by
     intro t ht h0
     rw [Set.uIcc_of_le hab] at ht
-    have := h t ht
-    rw [h0, abs_zero] at this
-    linarith
-  have hderiv : ∀ t ∈ Set.uIcc a b, HasDerivAt (fun y : ℝ => -y⁻¹) ((t ^ 2)⁻¹) t := by
+    grind
+  have hderiv : ∀ t ∈ Set.uIcc a b, HasDerivAt (fun y => -y⁻¹) ((t ^ 2)⁻¹) t := by
     intro t ht
     have h1 := (hasDerivAt_inv (hne t ht)).neg
-    rw [neg_neg] at h1
-    exact h1
+    aesop
   have hint : IntervalIntegrable (fun t : ℝ => (t ^ 2)⁻¹) volume a b :=
     ContinuousOn.intervalIntegrable fun t ht =>
       ((continuous_pow 2).continuousAt.inv₀ (pow_ne_zero 2 (hne t ht))).continuousWithinAt
@@ -124,11 +120,10 @@ theorem integral_inv_sq_le {a b c : ℝ} (hab : a ≤ b) (hc : 0 < c)
   have hb := h b ⟨hab, le_rfl⟩
   have hia : |a⁻¹| ≤ 1 / c := by
     rw [abs_inv, ← one_div]
-    exact one_div_le_one_div_of_le hc ha
+    gcongr
   have hib : |b⁻¹| ≤ 1 / c := by
     rw [abs_inv, ← one_div]
-    exact one_div_le_one_div_of_le hc hb
-  calc -b⁻¹ - -a⁻¹ ≤ |b⁻¹| + |a⁻¹| := by linarith [neg_abs_le b⁻¹, le_abs_self a⁻¹]
-    _ ≤ 2 / c := by rw [show 2 / c = 1 / c + 1 / c by ring]; linarith
+    gcongr
+  grind
 
 end Erdos408.TwoSided.ConstHigh

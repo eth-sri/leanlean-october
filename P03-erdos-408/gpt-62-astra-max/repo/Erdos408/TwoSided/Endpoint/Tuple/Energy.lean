@@ -64,14 +64,13 @@ theorem exists_mellin_piece (M₁ : ℕ → ℝ) :
   · intro y hy
     rw [harep y hy, ← hmp.integral_comp' (fun ξ => a ξ * Erdos821.Blueprint.Analytic.mellin y
       (2 * Real.pi * ξ 0))]
-    refine integral_congr_ae (Eventually.of_forall fun t => ?_)
     simp only [he₀, mellin_eq_cpow hy]
   · have hpre : e ⁻¹' {ξ : Fin 1 → ℝ | Erdos821.Blueprint.Analytic.L x ^ Cf < ‖ξ‖} =
         {ξ : ℝ | Real.log x ^ Cf < |ξ|} := by
       ext t
       have : ‖e t‖ = |t| := by
-        change ‖fun _ : Fin 1 => t‖ = |t|
-        rw [pi_norm_const, Real.norm_eq_abs]
+        change ‖fun _ => t‖ = |t|
+        simp
       change Real.log x ^ Cf < ‖e t‖ ↔ Real.log x ^ Cf < |t|
       rw [this]
     rw [← hpre, hmp.setIntegral_preimage_emb e.measurableEmbedding (fun ξ => ‖a ξ‖)]
@@ -102,22 +101,17 @@ theorem integral_sq_le_of_le_integral_split {a b c M E₁ E₂ R : ℝ} (hab : a
         ((hh.comp continuous_swap).pow 2).aestronglyMeasurable
     · simp only [Function.uncurry, f, Real.norm_eq_abs]
       rw [abs_of_nonneg (mul_nonneg (hw0 _) (sq_nonneg _)), mul_comm (M ^ 2)]
-      gcongr
-      · exact hw0 _
-      · exact hh0 _ _
-      · exact hhM _ _
+      bound
   -- pointwise Cauchy–Schwarz in `ξ`
   have hCS : ∀ τ, F τ ^ 2 ≤ c ^ 2 * W * ∫ ξ, f τ ξ := by
     intro τ
-    have hM : ∀ ξ, |h ξ τ| ≤ M := fun ξ => by
-      rw [abs_of_nonneg (hh0 ξ τ)]
-      exact hhM ξ τ
+    have hM : ∀ ξ, |h ξ τ| ≤ M := by grind
     have h₁ := OneSided.sq_integral_mul_le hw hw0
       (hh.comp (continuous_id.prodMk continuous_const)).aestronglyMeasurable hM
-    calc F τ ^ 2 ≤ (c * ∫ ξ, w ξ * h ξ τ) ^ 2 := pow_le_pow_left₀ (hF0 τ) (hF τ) 2
+    calc _ ≤ (c * ∫ ξ, w ξ * h ξ τ) ^ 2 := by bound
       _ = c ^ 2 * (∫ ξ, w ξ * h ξ τ) ^ 2 := by ring
       _ ≤ c ^ 2 * (W * ∫ ξ, w ξ * h ξ τ ^ 2) := by gcongr; exact h₁
-      _ = c ^ 2 * W * ∫ ξ, f τ ξ := by ring
+      _ = _ := by ring
   -- the inner energies are at most `E₁ w(ξ) + E₂ 1_{|ξ| > R} w(ξ)`
   have hs : MeasurableSet {ξ : ℝ | R < |ξ|} :=
     measurableSet_lt measurable_const continuous_abs.measurable
@@ -131,10 +125,10 @@ theorem integral_sq_le_of_le_integral_split {a b c M E₁ E₂ R : ℝ} (hab : a
       nlinarith [mul_le_mul_of_nonneg_left (hE₂ ξ) (hw0 ξ), mul_nonneg hE₁0 (hw0 ξ)]
     · rw [Set.indicator_of_notMem (show ξ ∉ {ξ : ℝ | R < |ξ|} from hξ), mul_zero, add_zero]
       nlinarith [mul_le_mul_of_nonneg_left (hE₁ ξ (not_lt.1 hξ)) (hw0 ξ)]
-  have hi₂ : Integrable fun ξ => E₁ * w ξ + E₂ * ({ξ : ℝ | R < |ξ|}.indicator w ξ) :=
+  have hi₂ :=
     (hw.const_mul E₁).add ((hw.indicator hs).const_mul E₂)
   rw [intervalIntegral.integral_of_le hab]
-  calc ∫ τ in Set.Ioc a b, F τ ^ 2 ≤ ∫ τ in Set.Ioc a b, c ^ 2 * W * ∫ ξ, f τ ξ :=
+  calc _ ≤ ∫ τ in Set.Ioc a b, c ^ 2 * W * ∫ ξ, f τ ξ :=
         integral_mono_of_nonneg (Filter.Eventually.of_forall fun τ => sq_nonneg _)
           (hf.integral_prod_left.const_mul _) (Filter.Eventually.of_forall hCS)
     _ = c ^ 2 * W * ∫ ξ, ∫ τ in Set.Ioc a b, f τ ξ := by
@@ -143,7 +137,7 @@ theorem integral_sq_le_of_le_integral_split {a b c M E₁ E₂ R : ℝ} (hab : a
         mul_le_mul_of_nonneg_left (integral_mono_of_nonneg (Filter.Eventually.of_forall fun ξ =>
           integral_nonneg fun τ => mul_nonneg (hw0 ξ) (sq_nonneg _)) hi₂
           (Filter.Eventually.of_forall hin)) (by positivity)
-    _ = c ^ 2 * W * (E₁ * W + E₂ * ∫ ξ in {ξ : ℝ | R < |ξ|}, w ξ) := by
+    _ = _ := by
         rw [integral_add (hw.const_mul E₁) ((hw.indicator hs).const_mul E₂), integral_const_mul,
           integral_const_mul, integral_indicator hs]
 

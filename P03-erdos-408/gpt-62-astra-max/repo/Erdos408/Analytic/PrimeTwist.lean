@@ -7,7 +7,7 @@ public import Mathlib.NumberTheory.Chebyshev
 public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
 public import Mathlib.NumberTheory.LSeries.Dirichlet
 public import Mathlib.NumberTheory.LSeries.DirichletContinuation
-public import PrimeNumberTheoremAnd.PerronFormula
+public import Erdos408.Analytic.Perron
 
 /-!
 # Twisted prime sums at large heights
@@ -47,34 +47,13 @@ noncomputable def twistIntegrand {k : ℕ} [NeZero k] (χ : DirichletCharacter �
     (w : ℂ) : ℂ :=
   -(deriv (LFunction χ) (w - u * I) / LFunction χ (w - u * I)) * Perron.f y w
 
-/-- The terms of the L-series of `twistCoeff` are those of `χ Λ`, shifted by `iu`. -/
-theorem term_twistCoeff {k : ℕ} (χ : DirichletCharacter ℂ k) (u : ℝ) (w : ℂ) (n : ℕ) :
-    term (twistCoeff χ u) w n = term (↗χ * ↗Λ) (w - u * I) n := by
-  rcases eq_or_ne n 0 with rfl | hn
-  · simp
-  have hn' : (n : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr hn
-  have hu : (n : ℂ) ^ ((u : ℂ) * I) ≠ 0 := fun h ↦ hn' ((cpow_eq_zero_iff _ _).mp h).1
-  have hw : (n : ℂ) ^ w ≠ 0 := fun h ↦ hn' ((cpow_eq_zero_iff _ _).mp h).1
-  rw [term_of_ne_zero hn, term_of_ne_zero hn, cpow_sub _ _ hn', twistCoeff, Pi.mul_apply]
-  field_simp
-
-/-- On `re w > 1`, `-(L'/L)(w - iu, χ)` is the L-series of `twistCoeff`. -/
-theorem neg_logDeriv_LFunction_sub_eq {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ k)
-    (u : ℝ) {w : ℂ} (hw : 1 < w.re) :
-    -(deriv (LFunction χ) (w - u * I) / LFunction χ (w - u * I)) =
-      LSeries (twistCoeff χ u) w := by
-  have hs : 1 < (w - u * I).re := by simpa using hw
-  rw [deriv_LFunction_eq_deriv_LSeries χ hs, LFunction_eq_LSeries χ hs,
-    ← neg_div, ← LSeries_twist_vonMangoldt_eq χ hs, LSeries, LSeries]
-  exact tsum_congr fun n ↦ (term_twistCoeff χ u w n).symm
-
 /-- To the right of `1`, the terms of the L-series of `χ Λ` are dominated by those of `Λ`. -/
 theorem norm_term_twist_vonMangoldt_le {k : ℕ} (χ : DirichletCharacter ℂ k) (s : ℂ)
     (n : ℕ) : ‖term (↗χ * ↗Λ) s n‖ ≤ ‖term ↗Λ (s.re : ℂ) n‖ := by
   rw [norm_term_eq, norm_term_eq, ofReal_re]
   split_ifs
   · rfl
-  have hχ : ‖χ n‖ ≤ 1 := DirichletCharacter.norm_le_one χ n
+  have hχ  := DirichletCharacter.norm_le_one χ n
   gcongr
   simpa [norm_mul] using mul_le_of_le_one_left (abs_nonneg (Λ n)) hχ
 
@@ -126,37 +105,11 @@ theorem integrable_twistIntegrand {k : ℕ} [NeZero k] (χ : DirichletCharacter 
     refine ((differentiableAt_LFunction χ _ (Or.inl fun h ↦ ?_)).continuousAt).comp
       hline.continuousAt
     simpa using congrArg re h
-  have hmeas : AEStronglyMeasurable fun t : ℝ ↦ twistIntegrand χ u y ((2 : ℝ) + t * I) :=
+  have hmeas  :=
     ((((measurable_deriv (LFunction χ)).comp hline.measurable).div
       hL.measurable).neg.aestronglyMeasurable).mul hf.aestronglyMeasurable
   exact (hf.norm.const_mul _).mono' hmeas
     (Filter.Eventually.of_forall fun t ↦ norm_twistIntegrand_le χ u y t)
-
-/-- Each term of an L-series times `x^s / (s (s + 1))` is a Perron kernel at `x / n`. -/
-theorem term_mul_perron_f_eq (f : ℕ → ℂ) {x : ℝ} (hx : 0 < x) {n : ℕ} (hn : n ≠ 0) (s : ℂ) :
-    term f s n * Perron.f x s = f n * Perron.f (x / n) s := by
-  have h := Perron.f_mul_eq_f hx (Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn)) s
-  rw [ofReal_natCast, cpow_neg] at h
-  rw [term_of_ne_zero hn, ← h]
-  ring
-
-/-- The line integral of the Perron kernel at `y > 1` is `2π (1 - 1/y)`. -/
-theorem integral_perron_f_of_one_lt {y : ℝ} (hy : 1 < y) :
-    ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = 2 * Real.pi * (1 - 1 / y) := by
-  have h := Perron.formulaGtOne (σ := 2) hy (by norm_num)
-  rw [VerticalIntegral', VerticalIntegral, smul_eq_mul, smul_eq_mul] at h
-  have hπ : (2 * Real.pi : ℂ) ≠ 0 := by simp [Real.pi_ne_zero]
-  change 1 / (2 * Real.pi * I) * (I * ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I)) = _ at h
-  generalize ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = J at h ⊢
-  rw [← h]
-  field_simp
-
-/-- The line integral of the Perron kernel at `0 < y < 1` vanishes. -/
-theorem integral_perron_f_of_lt_one {y : ℝ} (hy0 : 0 < y) (hy : y < 1) :
-    ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = 0 := by
-  have h := Perron.formulaLtOne (σ := 2) hy0 hy (by norm_num)
-  rw [VerticalIntegral, smul_eq_mul] at h
-  simpa using h
 
 /-- The twisted Perron formula: the vertical integral of `twistIntegrand` on `re w = 2` is
 `2πi` times the Cesàro-weighted twisted sum. -/
@@ -164,62 +117,12 @@ theorem verticalIntegral_twistIntegrand {k : ℕ} [NeZero k] (χ : DirichletChar
     (u : ℝ) {y : ℝ} (hy : 1 < y) (hyN : ∀ m : ℕ, (m : ℝ) ≠ y) :
     VerticalIntegral (twistIntegrand χ u y) 2 =
       2 * Real.pi * I * ∑ m ∈ Finset.Icc 1 ⌊y⌋₊, twistCoeff χ u m * (1 - m / y) := by
-  have hy0 : 0 < y := by linarith
-  -- Expand the integrand as a Dirichlet series of Perron kernels.
-  set g : ℕ → ℝ → ℂ := fun n t ↦
-    term (twistCoeff χ u) ((2 : ℝ) + t * I) n * Perron.f y ((2 : ℝ) + t * I) with hg
-  have hsum : ∀ t : ℝ, twistIntegrand χ u y ((2 : ℝ) + t * I) = ∑' n, g n t := by
-    intro t
-    rw [twistIntegrand, neg_logDeriv_LFunction_sub_eq χ u (by simp), LSeries,
-      ← tsum_mul_right]
-  have hg_eq : ∀ n, n ≠ 0 → ∀ t,
-      g n t = twistCoeff χ u n * Perron.f (y / n) ((2 : ℝ) + t * I) :=
-    fun n hn t ↦ term_mul_perron_f_eq _ hy0 hn _
-  -- Each term is integrable, and the integrals of the norms are summable.
-  have hg_int : ∀ n, Integrable (g n) := by
-    intro n
-    rcases eq_or_ne n 0 with rfl | hn
-    · simp [hg]
-    · rw [funext (hg_eq n hn)]
-      have hyn : 0 < y / n := div_pos hy0 (Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn))
-      exact (Perron.isIntegrable hyn (by norm_num) (by norm_num)).const_mul _
-  have hg_norm : ∀ n, ∫ t, ‖g n t‖ =
-      ‖term (↗χ * ↗Λ) 2 n‖ * ∫ t : ℝ, ‖Perron.f y ((2 : ℝ) + t * I)‖ := by
-    intro n
-    rw [← integral_const_mul]
-    congr 1 with t
-    rw [hg, norm_mul, term_twistCoeff, norm_term_eq, norm_term_eq]
-    simp
-  have hg_sum : Summable fun n ↦ ∫ t, ‖g n t‖ := by
-    simp_rw [hg_norm]
-    have hχΛ : LSeriesSummable (↗χ * ↗Λ) 2 :=
-      LSeriesSummable_twist_vonMangoldt χ (by norm_num)
-    exact (summable_norm_iff.mpr hχΛ).mul_right _
-  -- Evaluate each term with the Perron formula.
-  have hg_val : ∀ n, ∫ t, g n t = if n ∈ Finset.Icc 1 ⌊y⌋₊ then
-      2 * Real.pi * (twistCoeff χ u n * (1 - n / y)) else 0 := by
-    intro n
-    rcases eq_or_ne n 0 with rfl | hn
-    · simp [hg]
-    have hn0 : (0 : ℝ) < n := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn)
-    rw [funext (hg_eq n hn), integral_const_mul]
-    split_ifs with hmem
-    · have hny : (n : ℝ) < y :=
-        lt_of_le_of_ne ((Nat.le_floor_iff hy0.le).mp (Finset.mem_Icc.mp hmem).2) (hyN n)
-      rw [integral_perron_f_of_one_lt ((one_lt_div hn0).mpr hny)]
-      push_cast
-      rw [one_div_div]
-      ring
-    · have hyn : y < n := (Nat.floor_lt hy0.le).mp (by
-        simp only [Finset.mem_Icc, not_and_or, not_le] at hmem
-        omega)
-      rw [integral_perron_f_of_lt_one (div_pos hy0 hn0) ((div_lt_one hn0).mpr hyn), mul_zero]
-  -- Interchange the sum and the integral.
-  rw [VerticalIntegral, smul_eq_mul, funext hsum,
-    ← integral_tsum_of_summable_integral_norm hg_int hg_sum, tsum_congr hg_val,
-    tsum_eq_sum (s := Finset.Icc 1 ⌊y⌋₊) (fun n hn ↦ ite_eq_right hn),
-    Finset.sum_congr rfl (fun n hn ↦ ite_eq_left hn), ← Finset.mul_sum]
-  ring
+  apply SmoothedPerron.formula (↗χ * ↗Λ) u (by linarith) hyN
+    (LSeriesSummable_twist_vonMangoldt χ (by norm_num))
+  intro t
+  have hr : 1 < (((2 : ℝ) : ℂ) + t * I - u * I).re := by simp
+  rw [twistIntegrand, deriv_LFunction_eq_deriv_LSeries χ hr, LFunction_eq_LSeries χ hr,
+    LSeries_twist_vonMangoldt_eq χ hr, neg_div]
 
 /-- A function bounded by `B / t²` on `(T, ∞)` has integral there of norm at most `B / T`. -/
 theorem norm_setIntegral_Ioi_le {g : ℝ → ℂ} {B T : ℝ} (hT : 0 < T)
@@ -229,14 +132,14 @@ theorem norm_setIntegral_Ioi_le {g : ℝ → ℂ} {B T : ℝ} (hT : 0 < T)
     integrableOn_Ioi_rpow_of_lt (by norm_num) hT
   have hle : ∀ t ∈ Ioi T, ‖g t‖ ≤ B * t ^ (-2 : ℝ) := by
     intro t ht
-    have ht0 : 0 < t := hT.trans ht
+    have ht0  := hT.trans ht
     rw [Real.rpow_neg ht0.le, Real.rpow_two, ← div_eq_mul_inv]
     exact hgB t ht
-  calc ‖∫ t in Ioi T, g t‖
+  calc _
       ≤ ∫ t in Ioi T, ‖g t‖ := norm_integral_le_integral_norm _
     _ ≤ ∫ t in Ioi T, B * t ^ (-2 : ℝ) :=
         setIntegral_mono_on hg.norm (hrpow.const_mul B) measurableSet_Ioi hle
-    _ = B / T := by
+    _ = _ := by
         rw [integral_const_mul, integral_Ioi_rpow_of_lt (by norm_num) hT]
         norm_num [Real.rpow_neg_one, div_eq_mul_inv]
 
@@ -250,7 +153,7 @@ theorem exists_norm_verticalIntegral_twist_sub_le :
   have hy0 : 0 < y := by linarith
   have hT0 : 0 < T := by linarith
   set F : ℝ → ℂ := fun t ↦ twistIntegrand χ u y ((2 : ℝ) + t * I)
-  have hF_int : Integrable F := integrable_twistIntegrand χ u hy0
+  have hF_int  := integrable_twistIntegrand χ u hy0
   have hA : 0 ≤ A := tsum_nonneg fun _ ↦ norm_nonneg _
   -- Pointwise, `‖F t‖ ≤ A y² / t²`.
   have hF_le : ∀ t : ℝ, t ≠ 0 → ‖F t‖ ≤ A * y ^ 2 / t ^ 2 := by
@@ -274,7 +177,7 @@ theorem exists_norm_verticalIntegral_twist_sub_le :
         refine (norm_add_le _ _).trans_eq ?_
         simp
     _ ≤ A * y ^ 2 / T + A * y ^ 2 / T := add_le_add hlower hupper
-    _ = 2 * A * y ^ 2 / T := by ring
+    _ = _ := by ring
 
 /-- The twisted integrand is holomorphic at `w` when `re w > 7/8` and `w - iu ≠ 1`. -/
 theorem differentiableAt_twistIntegrand {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ k)
@@ -284,13 +187,13 @@ theorem differentiableAt_twistIntegrand {k : ℕ} [NeZero k] (χ : DirichletChar
   have hL : DifferentiableOn ℂ (LFunction χ) {s : ℂ | s ≠ 1} :=
     fun s hs ↦ (differentiableAt_LFunction χ s (Or.inl hs)).differentiableWithinAt
   have hshift : DifferentiableAt ℂ (fun w : ℂ ↦ w - u * I) w := by fun_prop
-  have hD' : DifferentiableAt ℂ (deriv (LFunction χ)) (w - u * I) :=
+  have hD'  :=
     (hL.deriv hopen).differentiableAt (hopen.mem_nhds hw1)
-  have hD : DifferentiableAt ℂ (deriv (LFunction χ) ∘ fun w ↦ w - u * I) w :=
+  have hD  :=
     hD'.comp w hshift
-  have hLw : DifferentiableAt ℂ (LFunction χ ∘ fun w ↦ w - u * I) w :=
+  have hLw  :=
     (differentiableAt_LFunction χ _ (Or.inl hw1)).comp w hshift
-  have hne : LFunction χ (w - u * I) ≠ 0 :=
+  have hne  :=
     LFunction_ne_zero_of_seven_eighths_lt_re χ (by simpa using hw) fun h ↦ hw1 h.2
   have hw0 : w ≠ 0 := fun h ↦ by
     rw [h, zero_re] at hw
@@ -340,7 +243,7 @@ theorem norm_perron_f_le_div_sq {y : ℝ} (hy : 0 < y) {w : ℂ} (hw : 0 ≤ w.r
     rw [Complex.sq_norm, Complex.sq_norm, normSq_apply, normSq_apply]
     simp only [add_re, one_re, add_im, one_im, add_zero]
     nlinarith
-  have hle : ‖w‖ ≤ ‖w + 1‖ :=
+  have hle  :=
     (pow_le_pow_iff_left₀ (norm_nonneg _) (norm_nonneg _) two_ne_zero).mp hsq
   refine div_le_div_of_nonneg_left (Real.rpow_nonneg hy.le _) (by positivity) ?_
   rw [sq]
@@ -376,9 +279,8 @@ theorem norm_term_vonMangoldt_succ_le {η : ℝ} (hη : 0 < η) (n : ℕ) :
     rw [← Real.rpow_add hn]
     ring_nf
   rw [hsplit, div_le_iff₀ (by positivity)]
-  calc Λ (n + 1) ≤ ((n : ℝ) + 1) ^ (η / 2) / (η / 2) := hlog
-    _ = 2 / η * (1 / ((n : ℝ) + 1) ^ (1 + η / 2)) *
-        (((n : ℝ) + 1) ^ (η / 2) * ((n : ℝ) + 1) ^ (1 + η / 2)) := by
+  calc _ ≤ ((n : ℝ) + 1) ^ (η / 2) / (η / 2) := hlog
+    _ = _ := by
       field_simp
 
 /-- Near `re s = 1`, `∑ Λ(n) / n^{1+η} ≤ 6 / η²`. -/
@@ -402,7 +304,7 @@ theorem tsum_norm_term_vonMangoldt_le {η : ℝ} (hη : 0 < η) (hη1 : η ≤ 1
     linarith
   rw [hsum.tsum_eq_zero_add]
   simp only [term_zero, norm_zero, zero_add]
-  calc ∑' n : ℕ, ‖term ↗Λ ((1 + η : ℝ) : ℂ) (n + 1)‖
+  calc _
       ≤ ∑' n : ℕ, 2 / η * (1 / ((n : ℝ) + 1) ^ (1 + η / 2)) :=
         Summable.tsum_le_tsum hterm
           (hsum.comp_injective (add_left_injective 1)) (hζ.mul_left _)
@@ -412,7 +314,7 @@ theorem tsum_norm_term_vonMangoldt_le {η : ℝ} (hη : 0 < η) (hη1 : η ≤ 1
     _ ≤ 4 / η ^ 2 + 2 / η ^ 2 := by
         gcongr
         exact pow_le_of_le_one hη.le hη1 two_ne_zero
-    _ = 6 / η ^ 2 := by ring
+    _ = _ := by ring
 
 /-- A horizontal segment integral is at most the length times a pointwise bound. -/
 theorem norm_hIntegral_le {F : ℂ → ℂ} {a b τ B : ℝ} (hab : a ≤ b)
@@ -441,17 +343,16 @@ theorem norm_vIntegral_le_mul_pi {F : ℂ → ℂ} {σ a b B : ℝ} (hab : a ≤
     have h := (norm_nonneg _).trans (hF a ⟨le_rfl, hab⟩)
     exact nonneg_of_mul_nonneg_left h (by positivity)
   have hint : IntervalIntegrable (fun t : ℝ ↦ B * (1 + t ^ 2)⁻¹) volume a b :=
-    (Continuous.intervalIntegrable (by
-      exact continuous_const.mul ((continuous_const.add (continuous_pow 2)).inv₀
+    (Continuous.intervalIntegrable (continuous_const.mul ((continuous_const.add (continuous_pow 2)).inv₀
         fun t ↦ (add_pos_of_pos_of_nonneg one_pos (sq_nonneg t)).ne')) _ _)
   rw [VIntegral, norm_smul, norm_I, one_mul]
-  calc ‖∫ t in a..b, F (σ + t * I)‖
+  calc _
       ≤ ∫ t in a..b, B * (1 + t ^ 2)⁻¹ :=
         intervalIntegral.norm_integral_le_of_norm_le hab
           (Filter.Eventually.of_forall fun t ht ↦ hF t (Ioc_subset_Icc_self ht)) hint
     _ = B * (Real.arctan b - Real.arctan a) := by
         rw [intervalIntegral.integral_const_mul, integral_inv_one_add_sq]
-    _ ≤ B * Real.pi := by
+    _ ≤ _ := by
         gcongr
         linarith [Real.arctan_lt_pi_div_two b, Real.neg_pi_div_two_lt_arctan a]
 
@@ -520,13 +421,7 @@ theorem vIntegral_two_twistIntegrand_eq {k : ℕ} [NeZero k] (χ : DirichletChar
     rw [intervalIntegral.integral_add_adjacent_intervals (hcont.intervalIntegrable _ _)
       (hcont.intervalIntegrable _ _), intervalIntegral.integral_add_adjacent_intervals
       (hcont.intervalIntegrable _ _) (hcont.intervalIntegrable _ _)]
-  have hid : VIntegral G 2 (-T) T =
-      VIntegral G (15 / 16) (-T) (u - 2) - HIntegral G (15 / 16) σ₁ (-T) +
-        HIntegral G (15 / 16) σ₁ (u - 2) + VIntegral G σ₁ (u - 2) (u + 2) +
-        VIntegral G (15 / 16) (u + 2) T - HIntegral G (15 / 16) σ₁ (u + 2) +
-        HIntegral G (15 / 16) σ₁ T - HIntegral G σ₁ 2 (-T) + HIntegral G σ₁ 2 T := by
-    linear_combination hRA + hsplit + hRB + hRC
-  exact hid
+  linear_combination hRA + hsplit + hRB + hRC
 
 /-- The bound on the right edge `re w = 2` of the truncated contour, given
 `|L'/L(s, χ)| ≤ C log(k (|t| + 3))` on `15/16 ≤ re s ≤ 2`, `|s - 1| ≥ 1`. -/
@@ -604,7 +499,7 @@ theorem norm_vIntegral_two_twistIntegrand_le {k : ℕ} [NeZero k] (χ : Dirichle
     gcongr
     calc y ^ σ / ‖(σ : ℂ) + τ * I‖ ^ 2 ≤ y ^ σ₁ / (u ^ 2 / 4) :=
           div_le_div₀ (by positivity) hyσ (by positivity) hw
-      _ = 4 * (y ^ σ₁ / u ^ 2) := by ring
+      _ = _ := by ring
   -- the notch `re w = 1 + η`, `|im w - u| ≤ 2`
   have hnotch : ∀ t ∈ Icc (u - 2) (u + 2),
       ‖G (σ₁ + t * I)‖ ≤ 6 / η ^ 2 * (4 * (y ^ σ₁ / u ^ 2)) := by
@@ -624,9 +519,9 @@ theorem norm_vIntegral_two_twistIntegrand_le {k : ℕ} [NeZero k] (χ : Dirichle
       rw [norm_sq_eq_re_sq_add_im_sq, him]
       nlinarith
     gcongr
-    calc y ^ σ₁ / ‖(σ₁ : ℂ) + t * I‖ ^ 2 ≤ y ^ σ₁ / (u ^ 2 / 4) :=
+    calc _ ≤ y ^ σ₁ / (u ^ 2 / 4) :=
           div_le_div_of_nonneg_left (by positivity) (by positivity) hw
-      _ = 4 * (y ^ σ₁ / u ^ 2) := by ring
+      _ = _ := by ring
   -- the left edge `re w = 15/16`, `|im w - u| ≥ 2`
   have hleft : ∀ t : ℝ, |t| ≤ T → 2 ≤ |t - u| →
       ‖G ((15 / 16 : ℝ) + t * I)‖ ≤ C * M * y ^ (15 / 16 : ℝ) * (256 / 225) * (1 + t ^ 2)⁻¹ := by
@@ -662,18 +557,15 @@ theorem norm_vIntegral_two_twistIntegrand_le {k : ℕ} [NeZero k] (χ : Dirichle
     norm_hIntegral_le (by linarith) fun σ hσ ↦ hedgeT (-T) hTabs' σ ⟨hσ.1, by linarith [hσ.2]⟩
   have hh₂ : ‖HIntegral G (15 / 16) σ₁ T‖ ≤ C * M * (y ^ 2 / T ^ 2) * (σ₁ - 15 / 16) :=
     norm_hIntegral_le (by linarith) fun σ hσ ↦ hedgeT T hTabs σ ⟨hσ.1, by linarith [hσ.2]⟩
-  have hh₃ : ‖HIntegral G σ₁ 2 (-T)‖ ≤ C * M * (y ^ 2 / T ^ 2) * (2 - σ₁) :=
+  have hh₃  :=
     norm_hIntegral_le hσ₁2 fun σ hσ ↦ hedgeT (-T) hTabs' σ ⟨by linarith [hσ.1], hσ.2⟩
-  have hh₄ : ‖HIntegral G σ₁ 2 T‖ ≤ C * M * (y ^ 2 / T ^ 2) * (2 - σ₁) :=
+  have hh₄  :=
     norm_hIntegral_le hσ₁2 fun σ hσ ↦ hedgeT T hTabs σ ⟨by linarith [hσ.1], hσ.2⟩
-  have hh₅ : ‖HIntegral G (15 / 16) σ₁ (u - 2)‖ ≤
-      C * M * (4 * (y ^ σ₁ / u ^ 2)) * (σ₁ - 15 / 16) :=
+  have hh₅  :=
     norm_hIntegral_le (by linarith) (hedgeU (u - 2) (by norm_num [show u - 2 - u = -2 by ring]))
-  have hh₆ : ‖HIntegral G (15 / 16) σ₁ (u + 2)‖ ≤
-      C * M * (4 * (y ^ σ₁ / u ^ 2)) * (σ₁ - 15 / 16) :=
+  have hh₆  :=
     norm_hIntegral_le (by linarith) (hedgeU (u + 2) (by norm_num))
-  have hn : ‖VIntegral G σ₁ (u - 2) (u + 2)‖ ≤
-      6 / η ^ 2 * (4 * (y ^ σ₁ / u ^ 2)) * (u + 2 - (u - 2)) :=
+  have hn  :=
     norm_vIntegral_le (by linarith) hnotch
   set b := y ^ 2 / T ^ 2
   set c := y ^ σ₁ / u ^ 2
@@ -688,9 +580,9 @@ theorem norm_vIntegral_two_twistIntegrand_le {k : ℕ} [NeZero k] (χ : Dirichle
     have h0 : 0 ≤ C * M * d := by positivity
     nlinarith
   have hCMb : 0 ≤ C * M * b := by positivity
-  have hb₃ : C * M * b * (σ₁ - 15 / 16) ≤ C * M * b * 2 :=
+  have hb₃  :=
     mul_le_mul_of_nonneg_left (by linarith) hCMb
-  have hb₄ : C * M * b * (2 - σ₁) ≤ C * M * b * 1 :=
+  have hb₄  :=
     mul_le_mul_of_nonneg_left (by linarith) hCMb
   have hb₅ : C * M * (4 * c) * (σ₁ - 15 / 16) ≤ C * M * (4 * c) * 2 :=
     mul_le_mul_of_nonneg_left (by linarith) (by positivity)
@@ -730,7 +622,7 @@ theorem exists_norm_twistCesaro_le : ∃ K : ℝ, 0 ≤ K ∧ ∀ {k : ℕ} [NeZ
       ‖deriv (LFunction χ) s / LFunction χ s‖ ≤ C * Real.log (k * (|s.im| + 3)) := by
     intro s h₁ h₂ h₃
     have hk : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (NeZero.ne k)
-    refine (hC₂ k χ s h₁ h₂ h₃).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) ?_)
+    refine (hC₂ k χ s h₁ h₂ (by linarith)).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) ?_)
     exact Real.log_nonneg (by nlinarith [abs_nonneg s.im])
   have hV := norm_vIntegral_two_twistIntegrand_le χ hC0 hLog hu hT hy hη hη1
   set G := twistIntegrand χ u y with hG
@@ -798,28 +690,28 @@ theorem cesaro_algebra {K y z M u T η ℓ S : ℝ} (hK0 : 0 ≤ K) (hy : 3 ≤ 
     positivity
   have hyT : y ^ 2 ≤ T := by rw [hT]; linarith [abs_nonneg u]
   have hT0 : 0 < T := by rw [hT]; positivity
-  have hq₁ : y ^ 2 / T ≤ 1 := div_le_one_of_le₀ hyT hT0.le
+  have hq₁  := div_le_one_of_le₀ hyT hT0.le
   have hy1 : 1 ≤ y := by linarith
   have hq₂ : y ^ 2 / T ^ 2 ≤ 1 / y := by
     rw [div_le_div_iff₀ (by positivity) hy0]
     have h₁ : y ^ 3 ≤ (y ^ 2) ^ 2 := by
       rw [← pow_mul]
       exact pow_le_pow_right₀ hy1 (by norm_num)
-    have h₂ : (y ^ 2) ^ 2 ≤ T ^ 2 := pow_le_pow_left₀ (by positivity) hyT 2
-    calc y ^ 2 * y = y ^ 3 := by ring
-      _ ≤ 1 * T ^ 2 := by linarith
+    have h₂  := pow_le_pow_left₀ (by positivity) hyT 2
+    calc _ = y ^ 3 := by ring
+      _ ≤ _ := by linarith
   have hy2z : y ≤ y ^ 2 * z := by
     calc y = y * 1 := (mul_one y).symm
       _ ≤ y * (y * z) := mul_le_mul_of_nonneg_left hyz hy0.le
-      _ = y ^ 2 * z := by ring
-  have hq₃ : y * (y ^ 2 / T) ≤ y ^ 2 * z :=
+      _ = _ := by ring
+  have hq₃  :=
     (mul_le_of_le_one_right hy0.le hq₁).trans hy2z
   have hq₄ : y * (M * (y ^ 2 / T ^ 2)) ≤ M * (y ^ 2 * z) := by
     have h₁ : y * (y ^ 2 / T ^ 2) ≤ 1 := by
-      calc y * (y ^ 2 / T ^ 2) ≤ y * (1 / y) := by gcongr
+      calc _ ≤ y * (1 / y) := by gcongr
         _ = 1 := by field_simp
-    calc y * (M * (y ^ 2 / T ^ 2)) = M * (y * (y ^ 2 / T ^ 2)) := by ring
-      _ ≤ M * (y ^ 2 * z) := mul_le_mul_of_nonneg_left (h₁.trans (hy1.trans hy2z)) hM0
+    calc _ = M * (y * (y ^ 2 / T ^ 2)) := by ring
+      _ ≤ _ := mul_le_mul_of_nonneg_left (h₁.trans (hy1.trans hy2z)) hM0
   have hq₅ : y * (M * (y * Real.exp 1 / u ^ 2)) ≤ 3 * M * (y ^ 2 / u ^ 2) := by
     rw [show y * (M * (y * Real.exp 1 / u ^ 2)) = Real.exp 1 * (M * (y ^ 2 / u ^ 2)) by ring]
     have : 0 ≤ M * (y ^ 2 / u ^ 2) := by positivity
@@ -847,11 +739,11 @@ theorem cesaro_algebra {K y z M u T η ℓ S : ℝ} (hK0 : 0 ≤ K) (hy : 3 ≤ 
       2 * (y ^ 2 * z) + M * (y ^ 2 * z) + 3 * (y ^ 2 / u ^ 2) +
         3 * (M * ℓ ^ 2 * (y ^ 2 / u ^ 2)) := by ring
   have h₁ : 0 ≤ M * ℓ ^ 2 * (y ^ 2 / u ^ 2) := by positivity
-  have h₂ : 0 ≤ M * (y ^ 2 * z) := mul_nonneg hM0 hyz2
-  calc y * S
+  have h₂  := mul_nonneg hM0 hyz2
+  calc _
       ≤ K * (3 * (y ^ 2 * ((M + 1) * (z + (1 + ℓ ^ 2) / u ^ 2)))) :=
         hmain.trans (mul_le_mul_of_nonneg_left (by linarith) hK0)
-    _ = 3 * K * y ^ 2 * ((M + 1) * (z + (1 + ℓ ^ 2) / u ^ 2)) := by ring
+    _ = _ := by ring
 
 /-- The Cesàro-weighted twisted sum, normalized: with `M = log(k (y² + 2|u| + 6))`,
 `y |S(y)| ≪ y² (M + 1) (y^{-1/16} + (1 + log² y) / u²)`. -/
@@ -901,7 +793,7 @@ theorem norm_twistCoeff_le {k : ℕ} (χ : DirichletCharacter ℂ k) (u : ℝ) (
   rw [twistCoeff, norm_mul, norm_mul, norm_natCast_cpow_of_pos (Nat.pos_of_ne_zero hn)]
   simp only [mul_re, ofReal_re, I_re, mul_zero, ofReal_im, I_im, mul_one, sub_self,
     Real.rpow_zero, Complex.norm_real, Real.norm_of_nonneg vonMangoldt_nonneg]
-  calc ‖χ n‖ * Λ n ≤ 1 * Λ n := by
+  calc _ ≤ 1 * Λ n := by
         gcongr
         exact DirichletCharacter.norm_le_one χ n
     _ = Λ n := one_mul _
@@ -921,71 +813,28 @@ theorem norm_sum_twistCoeff_le {k : ℕ} (χ : DirichletCharacter ℂ k) (u : �
         ((N : ℝ) + 1 / 2) * ‖∑ n ∈ Finset.Icc 1 ⌊(N : ℝ) + 1 / 2⌋₊,
           twistCoeff χ u n * (1 - n / (((N : ℝ) + 1 / 2 : ℝ) : ℂ))‖) / m +
         m * Real.log (N + m) := by
-  set a := twistCoeff χ u
-  set y₀ : ℝ := N + 1 / 2 with hy₀
-  set y₁ : ℝ := N + 1 / 2 + m with hy₁
-  have hm0 : (0 : ℝ) < m := by exact_mod_cast hm
-  have hy₀0 : 0 < y₀ := by positivity
-  have hy₁0 : 0 < y₁ := by positivity
-  have hfl₀ : ⌊y₀⌋₊ = N := by
-    rw [Nat.floor_eq_iff hy₀0.le]
-    constructor <;> linarith
-  have hfl₁ : ⌊y₁⌋₊ = N + m := by
-    rw [Nat.floor_eq_iff hy₁0.le, hy₁]
-    push_cast
-    constructor <;> linarith
-  -- `y S(y) = ∑ a(n) (y - n)`
-  have hΦ : ∀ y : ℝ, 0 < y → (y : ℂ) * ∑ n ∈ Finset.Icc 1 ⌊y⌋₊, a n * (1 - n / y) =
-      ∑ n ∈ Finset.Icc 1 ⌊y⌋₊, a n * ((y : ℂ) - n) := by
-    intro y hy
-    rw [Finset.mul_sum]
-    refine Finset.sum_congr rfl fun n _ ↦ ?_
-    have : (y : ℂ) ≠ 0 := ofReal_ne_zero.mpr hy.ne'
-    field_simp
-  set R := ∑ n ∈ Finset.Ioc N (N + m), a n * ((y₁ : ℂ) - n) with hR
-  have hid : (m : ℂ) * ∑ n ∈ Finset.Icc 1 N, a n =
-      (y₁ : ℂ) * ∑ n ∈ Finset.Icc 1 ⌊y₁⌋₊, a n * (1 - n / y₁) -
-        (y₀ : ℂ) * ∑ n ∈ Finset.Icc 1 ⌊y₀⌋₊, a n * (1 - n / y₀) - R := by
-    rw [hΦ y₁ hy₁0, hΦ y₀ hy₀0, hfl₀, hfl₁, Icc_one_eq_Ioc_zero, Icc_one_eq_Ioc_zero,
-      ← Finset.sum_Ioc_consecutive _ (Nat.zero_le N) (Nat.le_add_right N m), hR,
-      show ∀ X Y Z : ℂ, X + Y - Z - Y = X - Z from fun X Y Z ↦ by ring,
-      ← Finset.sum_sub_distrib, Finset.mul_sum]
-    refine Finset.sum_congr rfl fun n _ ↦ ?_
-    rw [hy₁, hy₀]
-    push_cast
-    ring
-  -- the remainder over `(N, N + m]`
-  have hRle : ‖R‖ ≤ m * (m * Real.log (N + m)) := by
-    have hm1 : (1 : ℝ) ≤ m := by exact_mod_cast hm
-    have hN0 : (0 : ℝ) ≤ N := N.cast_nonneg
-    have hlog : 0 ≤ Real.log (N + m) := Real.log_nonneg (by linarith)
-    calc ‖R‖ ≤ ∑ n ∈ Finset.Ioc N (N + m), ‖a n * ((y₁ : ℂ) - n)‖ := norm_sum_le _ _
-      _ ≤ ∑ n ∈ Finset.Ioc N (N + m), m * Real.log (N + m) := by
-          refine Finset.sum_le_sum fun n hn ↦ ?_
-          rw [Finset.mem_Ioc] at hn
-          have hn₁ : (N : ℝ) + 1 ≤ n := by exact_mod_cast hn.1
-          have hn₂ : (n : ℝ) ≤ N + m := by exact_mod_cast hn.2
-          have hyn : ‖(y₁ : ℂ) - n‖ ≤ m := by
-            rw [show (y₁ : ℂ) - n = ((y₁ - n : ℝ) : ℂ) by push_cast; ring, Complex.norm_real,
-              Real.norm_eq_abs, abs_of_nonneg (by linarith)]
-            linarith
-          have han : ‖a n‖ ≤ Real.log (N + m) :=
-            (norm_twistCoeff_le χ u n).trans (vonMangoldt_le_log.trans
-              (Real.log_le_log (by linarith) hn₂))
-          rw [norm_mul, mul_comm (m : ℝ)]
-          exact mul_le_mul han hyn (norm_nonneg _) hlog
-      _ = m * (m * Real.log (N + m)) := by
-          rw [Finset.sum_const, Nat.card_Ioc, Nat.add_sub_cancel_left, nsmul_eq_mul]
-  have hnorm := congrArg norm hid
-  rw [norm_mul, Complex.norm_natCast] at hnorm
-  have h₁ := norm_sub_le ((y₁ : ℂ) * ∑ n ∈ Finset.Icc 1 ⌊y₁⌋₊, a n * (1 - n / y₁) -
-    (y₀ : ℂ) * ∑ n ∈ Finset.Icc 1 ⌊y₀⌋₊, a n * (1 - n / y₀)) R
-  have h₂ := norm_sub_le ((y₁ : ℂ) * ∑ n ∈ Finset.Icc 1 ⌊y₁⌋₊, a n * (1 - n / y₁))
-    ((y₀ : ℂ) * ∑ n ∈ Finset.Icc 1 ⌊y₀⌋₊, a n * (1 - n / y₀))
-  rw [norm_mul, norm_mul, Complex.norm_real, Complex.norm_real, Real.norm_of_nonneg hy₁0.le,
-    Real.norm_of_nonneg hy₀0.le] at h₂
-  rw [div_add' _ _ _ hm0.ne', le_div_iff₀ hm0]
-  linarith
+  let x : ℝ := N + 1 / 2
+  let a := twistCoeff χ u
+  have hx : 0 < x := by dsimp [x]; positivity
+  have hm' : (0 : ℝ) < m := by exact_mod_cast hm
+  have hf : ⌊x⌋₊ = N := SmoothedPerron.floor_add_half _
+  have he := SmoothedPerron.ramp_error a hx.le m N hf.le (by rw [hf]; omega)
+    (B := Real.log (N + m)) (fun n hn => (norm_twistCoeff_le χ u n).trans
+      (vonMangoldt_le_log.trans (Real.log_le_log (Nat.cast_pos.mpr (Nat.zero_lt_of_lt (Finset.mem_Ioc.mp hn).1))
+        (by have := (Finset.mem_Ioc.mp hn).2; rw [hf] at this; exact_mod_cast this))))
+  set S := ∑ n ∈ Finset.Icc 1 N, a n
+  have h₁ := norm_sub_norm_le ((m : ℂ) * S) (SmoothedPerron.ramp a (x + m) - SmoothedPerron.ramp a x)
+  rw [norm_sub_rev ((m : ℂ) * S), norm_mul, Complex.norm_natCast] at h₁
+  have h₂ := norm_sub_le (SmoothedPerron.ramp a (x + m)) (SmoothedPerron.ramp a x)
+  have h₃ : (m : ℝ) * ‖S‖ ≤ ‖SmoothedPerron.ramp a (x + m)‖ + ‖SmoothedPerron.ramp a x‖ +
+      m ^ 2 * Real.log (N + m) := by linarith
+  rw [SmoothedPerron.ramp_eq_mul a (by positivity), SmoothedPerron.ramp_eq_mul a hx,
+    norm_mul, norm_mul, Complex.norm_real, Complex.norm_real, Real.norm_of_nonneg hx.le,
+    Real.norm_of_nonneg (show 0 ≤ x + m by positivity)] at h₃
+  rw [div_add' _ _ _ hm'.ne', le_div_iff₀ hm']
+  change ‖S‖ * m ≤ _
+  dsimp only [x, a] at h₃
+  linarith only [h₃]
 
 /-- The prime part `χ(p) p^{iu} log p` of `twistCoeff`. -/
 noncomputable def primeCoeff {k : ℕ} (χ : DirichletCharacter ℂ k) (u : ℝ) (n : ℕ) : ℂ :=
@@ -1011,11 +860,11 @@ theorem norm_sum_twistCoeff_sub_primeCoeff_le {k : ℕ} (χ : DirichletCharacter
   have hψθ := Chebyshev.psi_sub_theta_eq_sum_not_prime (N : ℝ)
   rw [Nat.floor_natCast, Finset.sum_filter] at hψθ
   rw [Icc_one_eq_Ioc_zero]
-  calc ∑ n ∈ Finset.Ioc 0 N, (if n.Prime then 0 else Λ n)
+  calc _
       = ∑ n ∈ Finset.Ioc 0 N, (if ¬n.Prime then Λ n else 0) :=
         Finset.sum_congr rfl fun n _ ↦ by split_ifs <;> rfl
     _ = Chebyshev.psi N - Chebyshev.theta N := hψθ.symm
-    _ ≤ 2 * √N * Real.log N := Chebyshev.psi_sub_theta_le (by exact_mod_cast hN)
+    _ ≤ _ := Chebyshev.psi_sub_theta_le (by exact_mod_cast hN)
 
 /-- Abel's inequality: for weights `w` nonincreasing and nonnegative on `(m, n + 1]`, a
 weighted sum is at most `w(m + 1)` times a bound on the partial sums. -/
@@ -1075,15 +924,6 @@ theorem sum_prime_eq_sum_primeCoeff {k : ℕ} (χ : DirichletCharacter ℂ k) (u
     field_simp
   · rw [mul_zero]
 
-/-- `j + 1/2` is not an integer. -/
-theorem natCast_ne_add_half (j n : ℕ) : (n : ℝ) ≠ j + 1 / 2 := by
-  intro h
-  have h₂ : ((2 * n : ℕ) : ℝ) = ((2 * j + 1 : ℕ) : ℝ) := by
-    push_cast
-    linarith
-  have := Nat.cast_injective h₂
-  omega
-
 /-- Partial sums of `primeCoeff`, given a bound `D` for the normalized Cesàro error on
 `[j, j + m + 1]`. -/
 theorem exists_norm_sum_primeCoeff_le : ∃ K : ℝ, 0 ≤ K ∧ ∀ {k : ℕ} [NeZero k]
@@ -1117,9 +957,9 @@ theorem exists_norm_sum_primeCoeff_le : ∃ K : ℝ, 0 ≤ K ∧ ∀ {k : ℕ} [
     rw [mul_assoc, mul_assoc]
     gcongr
     linarith
-  have h₀ := hS ((j : ℝ) + 1 / 2) (by linarith) (by linarith) (fun n ↦ natCast_ne_add_half j n)
+  have h₀ := hS ((j : ℝ) + 1 / 2) (by linarith) (by linarith) (fun n ↦ SmoothedPerron.natCast_ne_add_half j n)
   have h₁ := hS ((j : ℝ) + 1 / 2 + m) (by linarith) (by linarith) (fun n ↦ by
-    have := natCast_ne_add_half (j + m) n
+    have := SmoothedPerron.natCast_ne_add_half (j + m) n
     push_cast at this
     rwa [add_right_comm] at this)
   have hdiff := norm_sum_twistCoeff_le χ u j m hm
@@ -1188,10 +1028,10 @@ theorem cesaroError_le {A l x H y u : ℝ} {k : ℕ} (hA : 1 ≤ A) (hL : 3 ≤ 
       have := pow_le_pow_left₀ hy0.le (show y ≤ 4 * x by linarith) 2
       linarith [show (4 * x) ^ 2 = 16 * x ^ 2 by ring]
     have hpoly : k * (y ^ 2 + 2 * |u| + 6) ≤ x ^ 5 := by
-      calc k * (y ^ 2 + 2 * |u| + 6) ≤ x * (16 * x ^ 2 + 2 * x ^ 3 + 6) := by
+      calc _ ≤ x * (16 * x ^ 2 + 2 * x ^ 3 + 6) := by
             gcongr
           _ = 2 * x ^ 4 + 16 * x ^ 3 + 6 * x := by ring
-          _ ≤ x ^ 5 := by
+          _ ≤ _ := by
             have hx0 : 0 < x := by linarith
             have h3 := pow_pos hx0 3
             have h4 := pow_pos hx0 4
@@ -1214,13 +1054,13 @@ theorem cesaroError_le {A l x H y u : ℝ} {k : ℕ} (hA : 1 ≤ A) (hL : 3 ≤ 
         rw [show (4 : ℝ) = √16 by rw [show (16 : ℝ) = 4 ^ 2 by norm_num, Real.sqrt_sq]; norm_num]
         exact Real.sqrt_le_sqrt hH
       have := Real.sq_sqrt (show 0 ≤ H by linarith)
-      have h₂ : 4 * √H ≤ √H * √H := mul_le_mul_of_nonneg_right h4 (Real.sqrt_nonneg H)
+      have h₂  := mul_le_mul_of_nonneg_right h4 (Real.sqrt_nonneg H)
       nlinarith
     have h1 : H ^ (1 / 32 : ℝ) ≤ y ^ (1 / 16 : ℝ) := by
-      calc H ^ (1 / 32 : ℝ) = (H ^ (1 / 2 : ℝ)) ^ (1 / 16 : ℝ) := by
+      calc _ = (H ^ (1 / 2 : ℝ)) ^ (1 / 16 : ℝ) := by
             rw [← Real.rpow_mul (by linarith)]
             norm_num
-        _ ≤ y ^ (1 / 16 : ℝ) := Real.rpow_le_rpow (by positivity) hsq (by norm_num)
+        _ ≤ _ := Real.rpow_le_rpow (by positivity) hsq (by norm_num)
     rw [Real.rpow_neg hy0.le, ← hPA]
     exact inv_anti₀ (by positivity) (hHQ.trans h1)
   -- `(1 + log² y) / u² ≤ 5 l² / l^{2A+4}`
@@ -1230,14 +1070,14 @@ theorem cesaroError_le {A l x H y u : ℝ} {k : ℕ} (hA : 1 ≤ A) (hL : 3 ≤ 
       have h4 : Real.log 4 ≤ l := by
         rw [hLx]
         exact Real.log_le_log (by norm_num) (by linarith)
-      calc Real.log y ≤ Real.log (4 * x) := Real.log_le_log hy0 (by linarith)
+      calc _ ≤ Real.log (4 * x) := Real.log_le_log hy0 (by linarith)
         _ = Real.log 4 + l := by rw [Real.log_mul (by norm_num) (by linarith), hLx]
-        _ ≤ 2 * l := by linarith
+        _ ≤ _ := by linarith
     nlinarith
   have hu2 : (l ^ 2 * P) ^ 2 ≤ u ^ 2 := by
     rw [← hPE, ← sq_abs u]
     exact pow_le_pow_left₀ (by positivity) hu 2
-  have hw : (1 + Real.log y ^ 2) / u ^ 2 ≤ 5 * l ^ 2 / (l ^ 2 * P) ^ 2 :=
+  have hw  :=
     div_le_div₀ (by positivity) hlogy (by positivity) hu2
   have hM0 : 0 ≤ Real.log (k * (y ^ 2 + 2 * |u| + 6)) + 1 := by
     have : 0 ≤ Real.log (k * (y ^ 2 + 2 * |u| + 6)) :=
@@ -1250,12 +1090,12 @@ theorem cesaroError_le {A l x H y u : ℝ} {k : ℕ} (hA : 1 ≤ A) (hL : 3 ≤ 
     _ = 36 * (P⁻¹) ^ 2 / l := by
         field_simp
         ring
-    _ ≤ 36 * (P⁻¹) ^ 2 := div_le_self (by positivity) (by linarith)
+    _ ≤ _ := div_le_self (by positivity) (by linarith)
 
 /-- `log (c H) ≤ 2 log H` for `c ≤ H`. -/
 theorem log_mul_le_two_mul_log {c H : ℝ} (hc : 0 < c) (hcH : c ≤ H) :
     Real.log (c * H) ≤ 2 * Real.log H := by
-  have hH : 0 < H := hc.trans_le hcH
+  have hH  := hc.trans_le hcH
   rw [Real.log_mul hc.ne' hH.ne', two_mul]
   linarith [Real.log_le_log hc hcH]
 
@@ -1278,34 +1118,34 @@ theorem partial_bound_aux {K H ε j m : ℝ} (hK0 : 0 ≤ K) (hH16 : 16 ≤ H) (
       _ = 1152 * K * (H * ε) := by
           field_simp
           ring
-      _ ≤ 1152 * K * (H * ε * Real.log H) :=
+      _ ≤ _ :=
           mul_le_mul_of_nonneg_left (le_mul_of_one_le_right (by positivity) hlogH)
             (by positivity)
   -- the remainder of the differencing
   have hT₂ : (m : ℝ) * Real.log (j + m) ≤ 4 * (H * ε * Real.log H) := by
-    have hlog : Real.log (j + m) ≤ 2 * Real.log H :=
+    have hlog  :=
       (Real.log_le_log (by linarith) (by linarith : (j : ℝ) + m ≤ 3 * H)).trans
         (log_mul_le_two_mul_log (by norm_num) (by linarith))
-    calc (m : ℝ) * Real.log (j + m) ≤ (2 * (H * ε)) * (2 * Real.log H) :=
+    calc _ ≤ (2 * (H * ε)) * (2 * Real.log H) :=
           mul_le_mul hm2 hlog (Real.log_nonneg (by linarith)) (by positivity)
-      _ = 4 * (H * ε * Real.log H) := by ring
+      _ = _ := by ring
   -- the prime powers
   have hT₃ : 2 * √j * Real.log j ≤ 8 * (H * ε * Real.log H) := by
     have hsj : √(j : ℝ) ≤ 2 * √H := by
-      calc √(j : ℝ) ≤ √(2 * H) := Real.sqrt_le_sqrt hj₂'
+      calc _ ≤ √(2 * H) := Real.sqrt_le_sqrt hj₂'
         _ = √2 * √H := Real.sqrt_mul (by norm_num) H
-        _ ≤ 2 * √H := by
+        _ ≤ _ := by
             gcongr
             rw [Real.sqrt_le_left (by norm_num)]
             norm_num
-    have hlj : Real.log j ≤ 2 * Real.log H :=
+    have hlj  :=
       (Real.log_le_log (by linarith) hj₂').trans
         (log_mul_le_two_mul_log (by norm_num) (by linarith))
-    calc 2 * √j * Real.log j ≤ 2 * (2 * √H) * (2 * Real.log H) := by
+    calc _ ≤ 2 * (2 * √H) * (2 * Real.log H) := by
           gcongr
           exact Real.log_nonneg (by linarith)
       _ = 8 * (√H * Real.log H) := by ring
-      _ ≤ 8 * (H * ε * Real.log H) := by gcongr
+      _ ≤ _ := by gcongr
   linarith
 
 /-- The twisted prime sum at heights `H` with `H^{1/32} ≥ L^{2A + 2}`, for `k ≤ x` and
@@ -1385,7 +1225,7 @@ theorem exists_norm_sum_prime_le_of_large : ∃ κ : ℝ, ∀ {A l x H lo hi u :
     linarith
   -- the endpoints
   have hlo0 : 0 ≤ lo := by linarith
-  have hN₁ : H < (⌊lo⌋₊ : ℝ) + 1 := hlo.trans_lt (Nat.lt_floor_add_one lo)
+  have hN₁  := hlo.trans_lt (Nat.lt_floor_add_one lo)
   have hN₁15 : 15 ≤ ⌊lo⌋₊ := by
     have : (14 : ℝ) < ⌊lo⌋₊ := by linarith
     exact_mod_cast this
@@ -1421,9 +1261,9 @@ theorem exists_norm_sum_prime_le_of_large : ∃ κ : ℝ, ∀ {A l x H lo hi u :
     refine inv_anti₀ (by positivity) ?_
     push_cast
     exact mul_le_mul hN₁.le (Real.log_le_log hH0 hN₁.le) (by linarith) (by linarith)
-  calc 2 * B₀ * (((⌊lo⌋₊ + 1 : ℕ) : ℝ) * Real.log ((⌊lo⌋₊ + 1 : ℕ) : ℝ))⁻¹
+  calc _
       ≤ 2 * B₀ * (H * Real.log H)⁻¹ := by gcongr
-    _ = (2304 * K + 24) * ε := by
+    _ = _ := by
         rw [hB₀]
         field_simp
         ring
@@ -1443,7 +1283,7 @@ theorem eventually_log_bounds (Cm B : ℝ) (hB : 0 < B) : ∀ᶠ x : ℝ in atTo
     with x hL hx hx₁ hx₂
   simp only [Function.comp_apply, id, Real.norm_eq_abs] at hx₁ hx₂
   have hL0 : 0 < Real.log x := by linarith
-  have hT : 1 < Real.log (Real.log x) :=
+  have hT  :=
     one_lt_log_three.trans_le (Real.log_le_log (by norm_num) hL)
   rw [abs_of_pos hL0, abs_of_pos (by linarith : (0 : ℝ) < Real.log (Real.log x))] at hx₁
   rw [abs_of_pos hL0, abs_of_pos (pow_pos (by linarith) 23)] at hx₂
@@ -1474,7 +1314,7 @@ theorem eventually_log_bounds (Cm B : ℝ) (hB : 0 < B) : ∀ᶠ x : ℝ in atTo
         rw [div_le_one (by positivity)]
         linarith
       exact this.trans (mul_le_of_le_one_left hL0.le h₅)
-    calc T * B * (T ^ 22 * 32) = 32 * B * T ^ 23 := by ring
+    calc _ = 32 * B * T ^ 23 := by ring
       _ ≤ l := h₃
 
 end PrimeTwist
@@ -1504,16 +1344,16 @@ theorem eventually_primeTwistBound (A Cm : ℝ) :
   have hH1 : 1 ≤ H := (Real.one_le_exp hH0).trans hH
   have hHQ : l ^ (2 * A' + 2) ≤ H ^ (1 / 32 : ℝ) := by
     refine hLB.trans ?_
-    calc Real.exp (l / T ^ 22 / 32) = Real.exp (l / T ^ 22) ^ (1 / 32 : ℝ) := by
+    calc _ = Real.exp (l / T ^ 22) ^ (1 / 32 : ℝ) := by
           rw [← Real.exp_mul]
           ring_nf
-      _ ≤ H ^ (1 / 32 : ℝ) := Real.rpow_le_rpow (Real.exp_pos _).le hH (by norm_num)
+      _ ≤ _ := Real.rpow_le_rpow (Real.exp_pos _).le hH (by norm_num)
   have h := hκ χ hA'1 hL3 hx20 hLdef (hkL.trans hLCm) hHQ hH1 hHx hlo hhi huL hux
   refine h.trans ?_
   have hLA : l ^ (-A') ≤ l ^ (-A) :=
     Real.rpow_le_rpow_of_exponent_le (by linarith) (neg_le_neg (le_max_left _ _))
-  calc κ * l ^ (-A') ≤ max κ 0 * l ^ (-A') :=
+  calc _ ≤ max κ 0 * l ^ (-A') :=
         mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity)
-    _ ≤ max κ 0 * l ^ (-A) := mul_le_mul_of_nonneg_left hLA (le_max_right _ _)
+    _ ≤ _ := mul_le_mul_of_nonneg_left hLA (le_max_right _ _)
 
 end Erdos408

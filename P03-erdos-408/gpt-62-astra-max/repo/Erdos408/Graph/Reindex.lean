@@ -26,7 +26,7 @@ lemma mem_physicalLists_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) {M n : �
   simp only [physicalLists, Finset.mem_filter, Fintype.mem_piFinset]
   refine and_congr ?_ ?_
   · exact (e.forall_congr_right (q := fun k => ∀ i, p k i ∈ P (e.symm k))).symm.trans
-      (by simp only [Equiv.symm_apply_apply])
+      (by simp)
   · exact (e.forall_congr_right (q := fun k => Function.Injective (p k) ∧ ∀ i, p k i ∣ n)).symm
 
 /-- Auxiliary labels are those of the original groups, transported. -/
@@ -35,9 +35,7 @@ lemma mem_auxLabels_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) {J : ℕ} (C
     a ∈ auxLabels (fun k => P (e.symm k)) (fun k => C (e.symm k)) ↔
       (fun g => a (e g)) ∈ auxLabels P C := by
   simp only [auxLabels, Fintype.mem_piFinset]
-  exact (e.forall_congr_right (q := fun k => ∀ i, a k i ∈
-    if i ∈ C (e.symm k) then P (e.symm k) else {1})).symm.trans
-      (by simp only [Equiv.symm_apply_apply])
+  grind
 
 omit [DecidableEq ι] [DecidableEq κ] in
 /-- The edge product of transported lists. -/
@@ -47,14 +45,12 @@ lemma edgeProduct_reindex (e : ι ≃ κ) {J : ℕ} (C : ι → Finset (Fin J))
       edgeProduct C (fun g => p (e g)) fun g => a (e g) := by
   unfold edgeProduct
   rw [← Equiv.prod_comp e]
-  simp only [Equiv.symm_apply_apply]
+  simp
 
 omit [DecidableEq ι] [DecidableEq κ] in
 /-- `ω` is unchanged by reindexing. -/
 lemma groupPrimeCount_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) (n : ℕ) :
-    groupPrimeCount (fun k => P (e.symm k)) n = groupPrimeCount P n := by
-  unfold groupPrimeCount
-  exact Equiv.sum_comp e.symm fun g => primeCount (P g) n
+    groupPrimeCount (fun k => P (e.symm k)) n = groupPrimeCount P n := Equiv.sum_comp e.symm fun g => primeCount (P g) n
 
 /-- The physical norm is unchanged by reindexing. -/
 lemma physicalNormSq_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) (M : ℕ) (S : Finset ℕ)

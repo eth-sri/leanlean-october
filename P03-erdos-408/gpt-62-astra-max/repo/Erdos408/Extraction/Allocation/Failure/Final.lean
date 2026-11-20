@@ -14,7 +14,7 @@ The free-factor sum of a family, given the numerical facts at the scale `x`:
 
 namespace Erdos408
 
-open Finset Filter Real
+open Finset Real
 
 noncomputable section
 
@@ -24,40 +24,35 @@ lemma weightFacts_at {x γ : ℝ} (hx : 1 < x) (hγ0 : 0 < γ) (hγ : 1 ≤ x ^ 
     WeightFacts x γ j X (1 / (dampedDensity x j * (γ * Real.log x)))
       (Real.log X / (γ * Real.log x)) := by
   have hD := dampedDensity_pos x hj
-  have hL : 0 < Real.log x := Real.log_pos hx
-  have hγL : 0 < γ * Real.log x := mul_pos hγ0 hL
-  have hA1 : 1 ≤ ⌊x ^ γ⌋₊ := Nat.le_floor (by simpa using hγ)
+  have hγL := mul_pos hγ0 (Real.log_pos hx)
+  have hA1 : 1 ≤ ⌊x ^ γ⌋₊ := by simp_all
   have hx0 : 0 < x := by linarith
   -- above `A = ⌊x^γ⌋`, `log e > γ L`
-  have hlog : ∀ e : ℕ, ⌊x ^ γ⌋₊ < e → γ * Real.log x < Real.log e := by
+  have hlog : ∀ e > ⌊x ^ γ⌋₊, γ * Real.log x < Real.log e := by
     intro e he
-    have h1 : x ^ γ < e := (Nat.floor_lt (by positivity)).1 he
     rw [← Real.log_rpow hx0]
-    exact Real.log_lt_log (rpow_pos_of_pos hx0 γ) h1
+    exact Real.log_lt_log (rpow_pos_of_pos hx0 γ) ((Nat.floor_lt (by positivity)).1 he)
   refine ⟨fun e => ?_, fun e he => ?_, fun e he => ?_, fun e he heX => ?_⟩
   · unfold roughWeight
-    have : 0 ≤ Real.log (e : ℝ) := Real.log_natCast_nonneg e
     positivity
   · unfold roughWeight
     have h1 := hlog e he
-    have h2 : Real.log (e : ℝ) ≤ Real.log ((e + 1 : ℕ) : ℝ) :=
-      Real.log_le_log (by have := lt_trans hγL h1; exact_mod_cast (show 0 < e by omega))
-        (by push_cast; linarith)
+    have h2 : Real.log e ≤ Real.log (e + 1 : ℕ) :=
+      by bound
     exact one_div_le_one_div_of_le (by nlinarith) (by nlinarith)
-  · unfold roughWeight
-    exact one_div_le_one_div_of_le (by positivity) (by nlinarith [hlog e he])
+  · exact one_div_le_one_div_of_le (by positivity) (by nlinarith [hlog e he])
   · unfold roughWeight
     have h1 := hlog (⌊x ^ γ⌋₊ + 1) (by omega)
     have h2 := hlog e he
-    have h3 : Real.log (e : ℝ) ≤ Real.log X :=
-      Real.log_le_log (by exact_mod_cast (show 0 < e by omega)) (by exact_mod_cast heX)
-    have hle : 0 < Real.log (e : ℝ) := lt_trans hγL h2
-    calc 1 / (dampedDensity x j * Real.log ((⌊x ^ γ⌋₊ + 1 : ℕ) : ℝ))
+    have h3 : Real.log e ≤ Real.log X :=
+      Real.log_le_log (by bound) (by exact_mod_cast heX)
+    have hle : 0 < Real.log e := by linarith
+    calc _
         ≤ 1 / (dampedDensity x j * (γ * Real.log x)) :=
-          one_div_le_one_div_of_le (by positivity) (by nlinarith)
-      _ = Real.log (e : ℝ) / (γ * Real.log x) * (1 / (dampedDensity x j * Real.log (e : ℝ))) := by
+          by gcongr
+      _ = Real.log e / (γ * Real.log x) * (1 / (dampedDensity x j * Real.log e)) := by
           field_simp
-      _ ≤ Real.log X / (γ * Real.log x) * (1 / (dampedDensity x j * Real.log (e : ℝ))) := by
+      _ ≤ _ := by
           gcongr
 
 /-- Every core factor is at most `1/(D_j γ L)`. -/
@@ -68,13 +63,12 @@ lemma coreFactor_le_of {x γ : ℝ} (hx : 1 < x) {j : ℕ} (hj : 1 ≤ j) (e : �
   left
   push Not at hγ0
   have hD := dampedDensity_pos x hj
-  have hL : 0 < Real.log x := Real.log_pos hx
-  have hx0 : 0 < x := by linarith
+  have hL := Real.log_pos hx
   unfold coreFactor
   split_ifs with h
   · have hlog : γ * Real.log x < Real.log e := by
-      rw [← Real.log_rpow hx0]
-      exact Real.log_lt_log (rpow_pos_of_pos hx0 γ) h.1
+      rw [← Real.log_rpow (by linarith)]
+      bound
     exact one_div_le_one_div_of_le (by positivity) (by nlinarith)
   · positivity
 
@@ -84,15 +78,9 @@ lemma final_combine {X L κE Q δ G Err W e1 e2 e3 : ℝ} (hX : 0 ≤ X) (hL : 0
     (hG : G ≤ e3 / L) (hW : W ≤ 1) (hErr0 : 0 ≤ Err) (hErr : Err ≤ X * e2 / L) :
     X * κE * (Q + δ) * G + W * Err ≤ X / L * (2 * e3 * (e1 + e2) + e2) := by
   have h1 : X * κE * (Q + δ) * G ≤ X * 2 * (e1 + e2) * (e3 / L) := by
-    have a1 : X * κE ≤ X * 2 := mul_le_mul_of_nonneg_left hκE hX
-    have a2 : Q + δ ≤ e1 + e2 := add_le_add hQ hδ
-    have a3 : X * κE * (Q + δ) ≤ X * 2 * (e1 + e2) :=
-      mul_le_mul a1 a2 (by linarith) (by positivity)
-    exact mul_le_mul a3 hG hG0 (mul_nonneg (by positivity) (by linarith))
-  have h2 : W * Err ≤ X * e2 / L := (mul_le_of_le_one_left hErr0 hW).trans hErr
-  have h3 : X * 2 * (e1 + e2) * (e3 / L) + X * e2 / L = X / L * (2 * e3 * (e1 + e2) + e2) := by
-    field_simp
-  linarith
+    bound
+  have h2 := (mul_le_of_le_one_left hErr0 hW).trans hErr
+  grind
 
 /-- The free-factor sum of one family at one scale, given the numerical facts. -/
 theorem freeFactorSum_le_of_facts {x γ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset ℕ)} (a : ℝ)
@@ -121,8 +109,8 @@ theorem freeFactorSum_le_of_facts {x γ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finse
   have hj : 1 ≤ j' + 1 := by omega
   have hx0 : 0 < x := by linarith
   have hL : 0 < Real.log x := by linarith
-  have hγL : 0 < γ * Real.log x := mul_pos hγ0 hL
-  have hγx : 1 ≤ x ^ γ := one_le_rpow hx.le hγ0.le
+  have hγL : 0 < γ * Real.log x := by positivity
+  have hγx := one_le_rpow hx.le hγ0.le
   have hW1 : 1 / (dampedDensity x (j' + 1) * (γ * Real.log x)) ≤ 1 := by
     rw [div_le_one (by linarith)]
     exact hDγL
@@ -130,12 +118,10 @@ theorem freeFactorSum_le_of_facts {x γ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finse
     ((coreFactor_le_of hx hj e).resolve_right (not_le.2 hγ0)).trans hW1
   have hK1 : 1 ≤ Real.log X / (γ * Real.log x) := by
     rw [le_div_iff₀ hγL, one_mul]
-    have h1 : Real.log x ≤ Real.log X := Real.log_le_log hx0 hxX
+    have h1 := Real.log_le_log hx0 hxX
     nlinarith
   have hwf := weightFacts_at hx hγ0 hγx hj X
-  have hδ1 : 8 * (∑ u ∈ (primesIcc 2 (proxyCutoff x)).powersetCard (R + 1),
-      ∏ p ∈ u, (1 : ℝ) / p) * (Real.log X / (γ * Real.log x)) /
-        (∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (5 / 2) ^ F.card ≤ 1 :=
+  have hδ1 :=
     hδ.trans (by rw [exp_le_one_iff]; linarith [Real.log_nonneg hlogx, show 0 ≤ logLog x from
       Real.log_nonneg hlogx])
   have hmain := freeFactorSum_le_at (c₁ := 1 / 4) R hx0 hlogx hγL (by norm_num) (by norm_num) hg hFC
@@ -166,12 +152,11 @@ theorem freeFactorSum_le_of_facts {x γ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finse
       (2 + 4 * ∏ g ∈ F, ((lowSubsets g).card : ℝ)) *
       ((X : ℝ) / (⌊x ^ γ⌋₊ + 1) * (1 + Real.log X) ^ (j' + 1)) := by
     have : 0 ≤ ∏ g ∈ F, ((lowSubsets g).card : ℝ) := prod_nonneg fun _ _ => by positivity
-    have : 0 ≤ 1 + Real.log X := by linarith [Real.log_natCast_nonneg X]
+    have : 0 ≤ 1 + Real.log X := by positivity
     positivity
-  have h := final_combine (X := (X : ℝ)) (Nat.cast_nonneg X) hL hκE hQ0 hdecay hδ0 hδ hG0 hH
+  have h := final_combine  (Nat.cast_nonneg X) hL hκE hQ0 hdecay hδ0 hδ hG0 hH
     hW1 hErr0 herr
-  refine le_trans (le_of_eq ?_) h
-  ring
+  grind
 
 end
 

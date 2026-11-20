@@ -44,10 +44,10 @@ noncomputable def listDamping (P : ι → Finset ℕ) (q₀ : ℝ) (C : ι → F
 noncomputable def stripSum (x q₀ : ℝ) (P : ι → Finset ℕ) (C : ι → Finset (Fin J))
     (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
     (F G : ℕ → ℝ) (Ψ : ℝ → ℝ) : ℂ :=
-  ∑ a ∈ auxLabels P C, (labelMass P C a : ℂ) *
+  ∑ a ∈ auxLabels P C, (labelMass P C a) *
     ∑ w ∈ Icc 1 ⌊x ^ 2⌋₊,
-      ((Ψ (w / (x * slotProduct C a)) / w * F w * G (w + slotProduct C a) *
-          (listDamping P q₀ C w * listDamping P q₀ C (w + slotProduct C a)) : ℝ) : ℂ) *
+      (Ψ (w / (x * slotProduct C a)) / w * F w * G (w + slotProduct C a) *
+          (listDamping P q₀ C w * listDamping P q₀ C (w + slotProduct C a)) : ℝ) *
         ∑ l ∈ slotLists P (unsharedSlots C) w,
           ∑ l' ∈ slotLists P (unsharedSlots C) (w + slotProduct C a), K l l' a
 
@@ -57,9 +57,9 @@ noncomputable def stripTerm (x q₀ : ℝ) (P : ι → Finset ℕ) (C : ι → F
     (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
     (F G : ℕ → ℝ) (Ψ : ℝ → ℝ) (a s : ι → Fin J → ℕ) (l l' : ι → Fin (J + 1) → ℕ) (w : ℕ) :
     ℂ :=
-  ((labelMass P (sharedSlots C) s * labelMass P C a *
+  (labelMass P (sharedSlots C) s * labelMass P C a *
       (Ψ (w / (x * slotProduct C a)) / w * F w * G (w + slotProduct C a) *
-        (listDamping P q₀ C w * listDamping P q₀ C (w + slotProduct C a))) : ℝ) : ℂ) *
+        (listDamping P q₀ C w * listDamping P q₀ C (w + slotProduct C a))) : ℝ) *
     if l ∈ slotLists P (unsharedSlots C) w ∧
         l' ∈ slotLists P (unsharedSlots C) (w + slotProduct C a) then K l l' a else 0
 
@@ -90,14 +90,14 @@ lemma stripSum_eq_sum (x q₀ : ℝ) {P : ι → Finset ℕ} (hV : ∀ g, harmon
     G (w + slotProduct C a) *
     (listDamping P q₀ C w * listDamping P q₀ C (w + slotProduct C a))
   have hterm : ∀ s l l' w, stripTerm x q₀ P C K F G Ψ a s l l' w =
-      (labelMass P (sharedSlots C) s : ℂ) * ((labelMass P C a : ℂ) * ((X w : ℝ) : ℂ) *
+      (labelMass P (sharedSlots C) s) * ((labelMass P C a : ℂ) * ((X w : ℝ) : ℂ) *
         if l ∈ slotLists P (unsharedSlots C) w ∧
           l' ∈ slotLists P (unsharedSlots C) (w + slotProduct C a) then K l l' a else 0) := by
     intro s l l' w
     rw [stripTerm]
     simp only [X, Complex.ofReal_mul]
     ring
-  calc _ = ∑ w ∈ Icc 1 ⌊x ^ 2⌋₊, (labelMass P C a : ℂ) * ((X w : ℝ) : ℂ) *
+  calc _ = ∑ w ∈ Icc 1 ⌊x ^ 2⌋₊, (labelMass P C a) * (X w : ℝ) *
         ∑ l ∈ slotLists P (unsharedSlots C) w,
           ∑ l' ∈ slotLists P (unsharedSlots C) (w + slotProduct C a), K l l' a := by
         rw [mul_sum]
@@ -120,7 +120,7 @@ lemma stripSum_eq_sum (x q₀ : ℝ) {P : ι → Finset ℕ} (hV : ∀ g, harmon
             l' ∈ slotLists P (unsharedSlots C) (w + slotProduct C a) then K l l' a else 0 := by
         rw [sum_comm]
         exact sum_congr rfl fun l _ => sum_comm
-    _ = ∑ s ∈ auxLabels P (sharedSlots C), (labelMass P (sharedSlots C) s : ℂ) *
+    _ = ∑ s ∈ auxLabels P (sharedSlots C), (labelMass P (sharedSlots C) s) *
         ∑ l ∈ unsharedLists P C, ∑ l' ∈ unsharedLists P C, ∑ w ∈ Icc 1 ⌊x ^ 2⌋₊,
           (labelMass P C a : ℂ) * ((X w : ℝ) : ℂ) *
             if l ∈ slotLists P (unsharedSlots C) w ∧
@@ -142,16 +142,16 @@ lemma dvd_sharedProduct_iff {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P
   · intro h
     obtain ⟨g', -, hg'⟩ := (Prime.dvd_finsetProd_iff hpp.prime _).1 h
     obtain ⟨i, hi, hi'⟩ := (Prime.dvd_finsetProd_iff hpp.prime _).1 hg'
-    have hsi : s g' i ∈ P g' :=
+    have hsi :=
       mem_of_mem_sharedLabels hs (by simpa [sharedSlots] using hi)
-    have heq : p = s g' i :=
+    have heq :=
       (Nat.prime_dvd_prime_iff_eq hpp (hprime g' _ hsi)).1 hi'
     obtain rfl : g = g' := by
       by_contra hne
       exact disjoint_left.1 (hdisj g g' hne) hp (heq ▸ hsi)
     exact ⟨i, hi, heq.symm⟩
   · rintro ⟨i, hi, rfl⟩
-    exact (dvd_prod_of_mem _ hi).trans (dvd_prod_of_mem (fun g => ∏ i ∈ sharedSlots C g, s g i)
+    exact (dvd_prod_of_mem _ hi).trans (dvd_prod_of_mem _
       (mem_univ g))
 
 /-- The number of `P g`-primes of `D_R m`, when the shared labels are distinct and do not
@@ -166,22 +166,20 @@ lemma primeCount_sharedProduct_mul {P : ι → Finset ℕ} (hprime : ∀ g, ∀ 
   have hsplit : (P g).filter (· ∣ sharedProduct C s * m) =
       (sharedSlots C g).image (s g) ∪ (P g).filter (· ∣ m) := by
     ext p
-    simp only [mem_filter, mem_union, mem_image]
+    simp
     constructor
     · rintro ⟨hp, hdvd⟩
       rcases (Nat.Prime.dvd_mul (hprime g p hp)).1 hdvd with h | h
       · exact Or.inl ((dvd_sharedProduct_iff hprime hdisj hs hp).1 h)
       · exact Or.inr ⟨hp, h⟩
     · rintro (⟨i, hi, rfl⟩ | ⟨hp, h⟩)
-      · have hsi : s g i ∈ P g :=
+      · have hsi :=
           mem_of_mem_sharedLabels hs (by simpa [sharedSlots] using hi)
         exact ⟨hsi, ((dvd_sharedProduct_iff hprime hdisj hs hsi).2 ⟨i, hi, rfl⟩).mul_right m⟩
       · exact ⟨hp, h.mul_left _⟩
   rw [hsplit, card_union_of_disjoint, card_image_of_injOn (hinj g)]
   rw [disjoint_left]
-  rintro p hp hp'
-  obtain ⟨i, hi, rfl⟩ := mem_image.1 hp
-  exact hm g i hi (mem_filter.1 hp').2
+  grind
 
 /-- `ω(D_R m) = ∑_g |Sh_g| + ω(m)`, when the shared labels are distinct and do not divide
 `m`. -/
@@ -218,17 +216,15 @@ lemma edgeProduct_merge (C : ι → Finset (Fin J)) (s : ι → Fin J → ℕ)
   have h : ∀ i, (if i ∈ C g then a g i else merge C s l g i.castSucc) =
       if i ∈ C g then a g i else s g i := fun i => by
     by_cases hi : i ∈ C g
-    · rw [ite_eq_left hi, ite_eq_left hi]
-    · rw [ite_eq_right hi, ite_eq_right hi, merge_castSucc_of_notMem hi]
+    · simp_all
+    · rw [merge_castSucc_of_notMem hi]
   simp_rw [h]
   rw [prod_ite, mul_comm]
   congr 1
   · refine prod_congr ?_ fun _ _ => rfl
     ext i
     simp [sharedSlots]
-  · refine prod_congr ?_ fun _ _ => rfl
-    ext i
-    simp
+  simp
 
 /-! ### The physical conditions on merged lists -/
 
@@ -323,13 +319,13 @@ lemma physCond_merge_iff {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g,
       by_cases hj : j ∈ unsharedSlots C g
       · rw [merge_of_mem hj, merge_of_mem hj]
         refine ⟨fun he => haw g i hi (he ▸ (h₁ g).2 j hj), fun he => haw g i hi ?_⟩
-        have hD : a g i ∣ slotProduct C a :=
+        have hD :=
           (dvd_prod_of_mem _ hi).trans (dvd_prod_of_mem (fun g => ∏ i ∈ C g, a g i)
             (mem_univ g))
         exact (Nat.dvd_add_right hD).1 (by rw [add_comm]; exact he ▸ (h₂ g).2 j hj)
       · obtain ⟨i', hi', rfl⟩ := exists_castSucc_of_notMem hj
         rw [merge_castSucc_of_notMem hi', merge_castSucc_of_notMem hi']
-        exact ⟨has g i hi i' (hsh hi'), has g i hi i' (hsh hi')⟩
+        grind
 
 /-! ### The clean summands agree -/
 
@@ -389,10 +385,8 @@ lemma physWeight_eq {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, p.Pr
     refine prod_congr rfl fun g _ => ?_
     have h := card_sharedSlots_add C g
     rw [card_unsharedSlots] at h ⊢
-    rw [show J + 1 = (sharedSlots C g).card + ((C g).card + 1) from h.symm, pow_add]
-    ring
-  rw [hstep, ← hμ]
-  ring
+    grind
+  grind
 
 /-- **The clean summands agree** (PD (6.14)). At a clean `(a, s, w)`, the summand of the
 cutoff pairing after G4 is the summand of the stripped correlation, given the invariance of
@@ -412,12 +406,9 @@ lemma physTerm_eq_stripTerm {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀
   set DR := sharedProduct C s
   set DC := slotProduct C a
   have hDR : (DR : ℝ) ≠ 0 := Nat.cast_ne_zero.2 (sharedProduct_pos hprime hs).ne'
-  have hE : edgeProduct C (merge C s l) a = DR * DC := edgeProduct_merge C s l a
-  have hΨ : Ψ (((DR * w : ℕ) : ℝ) / (x * ((DR * DC : ℕ) : ℝ))) = Ψ (w / (x * DC)) := by
-    congr 1
-    push_cast
-    rw [show x * (DR * DC) = DR * (x * DC) by ring]
-    exact mul_div_mul_left _ _ hDR
+  have hE := edgeProduct_merge C s l a
+  have hΨ : Ψ ((DR * w : ℕ) / (x * (DR * DC : ℕ))) = Ψ (w / (x * DC)) := by
+    grind
   by_cases hψ : Ψ (w / (x * DC)) = 0
   · have h₁ : stripTerm x q₀ P C K F G Ψ a s l l' w = 0 := by
       unfold stripTerm
@@ -443,14 +434,13 @@ lemma physTerm_eq_stripTerm {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀
       pow_groupPrimeCount_sharedProduct_mul hprime hdisj hs hinj (fun g i hi => (hsw g i hi).1)
         (sum_card_le_groupPrimeCount hSL),
       pow_groupPrimeCount_sharedProduct_mul hprime hdisj hs hinj (fun g i hi => (hsw g i hi).2)
-        (sum_card_le_groupPrimeCount hSL'), physWeight_eq hprime hs a]
-    rw [mul_right_comm, ← Complex.ofReal_mul]
+        (sum_card_le_groupPrimeCount hSL'), physWeight_eq hprime hs a, mul_right_comm, ← Complex.ofReal_mul]
     congr 2
     unfold listDamping
     push_cast
     field_simp
     ring
-  · rw [ite_eq_right hcond, ite_eq_right fun h => hcond (hiff.2 h), mul_zero]
+  grind
 
 end Restore
 

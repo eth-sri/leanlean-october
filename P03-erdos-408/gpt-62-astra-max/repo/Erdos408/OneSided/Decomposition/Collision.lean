@@ -18,53 +18,50 @@ Label tuples and pads drawn independently with the harmonic laws `μ_i(p) = 1/(p
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 
 /-- The probability `∏_i μ_i(p_i)` of a label tuple. -/
 noncomputable def labelWeight (x : ℝ) (d : Data K) (p : Fin K → ℕ) : ℝ :=
-  ∏ i, 1 / ((p i : ℝ) * harmonicMass (band x (d.a i)))
+  ∏ i, 1 / ((p i) * harmonicMass (band x (d.a i)))
 
 /-- Each harmonic law has total mass one. -/
 theorem sum_one_div_mul_harmonicMass {S : Finset ℕ} (hS : 0 < harmonicMass S) :
-    ∑ y ∈ S, 1 / ((y : ℝ) * harmonicMass S) = 1 := by
-  calc ∑ y ∈ S, 1 / ((y : ℝ) * harmonicMass S) = ∑ y ∈ S, 1 / (y : ℝ) * (harmonicMass S)⁻¹ :=
+    ∑ y ∈ S, 1 / (y * harmonicMass S) = 1 := by
+  calc _ = ∑ y ∈ S, 1 / (y : ℝ) * (harmonicMass S)⁻¹ :=
         sum_congr rfl fun y _ => by ring
     _ = harmonicMass S * (harmonicMass S)⁻¹ := by rw [← sum_mul]; rfl
     _ = 1 := mul_inv_cancel₀ hS.ne'
 
 /-- The atoms of a harmonic law are nonnegative. -/
 theorem one_div_mul_harmonicMass_nonneg {S : Finset ℕ} (hS : 0 < harmonicMass S) (y : ℕ) :
-    0 ≤ 1 / ((y : ℝ) * harmonicMass S) := by
+    0 ≤ 1 / (y * harmonicMass S) := by
   positivity
 
 /-- The label tuples have total mass one. -/
 theorem sum_labelWeight {x : ℝ} {d : Data K} (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) :
-    ∑ p ∈ d.labels x, labelWeight x d p = 1 := by
-  unfold labelWeight Data.labels
-  exact sum_piFinset_prod_eq_one fun i => sum_one_div_mul_harmonicMass (hV i)
+    ∑ p ∈ d.labels x, labelWeight x d p = 1 := sum_piFinset_prod_eq_one fun i => sum_one_div_mul_harmonicMass (hV i)
 
 /-- The pads have total mass one. -/
 theorem sum_padWeight {x : ℝ} {d : Data K} (hV : ∀ i, 0 < harmonicMass (band x (d.a i)))
     (J : ℕ) : ∑ z ∈ padSet x d J, padWeight x d z = 1 := by
-  have h := sum_piFinset_prod_eq_one (S := fun c : Fin K × Fin J => band x (d.a c.1))
+  exact sum_piFinset_prod_eq_one (S := fun c : Fin K × Fin J => band x (d.a c.1))
     (w := fun c y => 1 / ((y : ℝ) * harmonicMass (band x (d.a c.1))))
     fun c => sum_one_div_mul_harmonicMass (hV c.1)
-  exact h
 
 open scoped Classical in
 /-- **Shared labels.** Two independent label tuples share a prime with probability at most
 `K² ε`. -/
 theorem sum_labelWeight_shared_le {x : ℝ} {d : Data K}
     (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) {ε : ℝ} (hε0 : 0 ≤ ε)
-    (hε : ∀ i, ∀ y ∈ band x (d.a i), 1 / ((y : ℝ) * harmonicMass (band x (d.a i))) ≤ ε) :
+    (hε : ∀ i, ∀ y ∈ band x (d.a i), 1 / (y * harmonicMass (band x (d.a i))) ≤ ε) :
     ∑ p ∈ d.labels x, ∑ p' ∈ d.labels x,
         (if Unshared p p' then 0 else labelWeight x d p * labelWeight x d p') ≤ K ^ 2 * ε := by
   have hw0 : ∀ p, 0 ≤ labelWeight x d p := fun p =>
     prod_nonneg fun i _ => one_div_mul_harmonicMass_nonneg (hV i) _
   -- a shared prime is some coincidence `p_i = p'_{i'}`
-  have hind : ∀ p p' : Fin K → ℕ,
+  have hind : ∀ p p',
       (if Unshared p p' then 0 else labelWeight x d p * labelWeight x d p') ≤
         ∑ i, ∑ i', labelWeight x d p *
           (if p' i' = p i then labelWeight x d p' else 0) := by
@@ -81,8 +78,7 @@ theorem sum_labelWeight_shared_le {x : ℝ} {d : Data K}
         (if p' i' = p i then labelWeight x d p' else 0)) (fun i' _ =>
           mul_nonneg (hw0 p) (by split_ifs <;> simp [hw0])) (mem_univ i'))
       rw [ite_eq_left hii.symm]
-  calc ∑ p ∈ d.labels x, ∑ p' ∈ d.labels x,
-        (if Unshared p p' then 0 else labelWeight x d p * labelWeight x d p')
+  calc _
       ≤ ∑ p ∈ d.labels x, ∑ p' ∈ d.labels x, ∑ i, ∑ i', labelWeight x d p *
           (if p' i' = p i then labelWeight x d p' else 0) :=
         sum_le_sum fun p _ => sum_le_sum fun p' _ => hind p p'
@@ -95,10 +91,10 @@ theorem sum_labelWeight_shared_le {x : ℝ} {d : Data K}
         refine sum_le_sum fun p _ => mul_le_mul_of_nonneg_left (sum_le_sum fun i _ =>
           sum_le_sum fun i' _ => ?_) (hw0 p)
         exact sum_piFinset_ite_eq_le (fun i y _ => one_div_mul_harmonicMass_nonneg (hV i) y)
-          (fun i => sum_one_div_mul_harmonicMass (hV i)) hε0 hε i' (p i)
-    _ = K ^ 2 * ε := by
+          (fun i => sum_one_div_mul_harmonicMass (hV i)) hε0 hε i' _
+    _ = _ := by
         rw [← sum_mul, sum_labelWeight hV, one_mul]
-        simp only [sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul]
+        simp
         ring
 
 open scoped Classical in
@@ -114,7 +110,7 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
   have hw0 : ∀ z, 0 ≤ μ z := fun z =>
     prod_nonneg fun c _ => one_div_mul_harmonicMass_nonneg (hV c.1) _
   have hite : ∀ (P : Prop) [Decidable P] (z : Fin K × Fin J → ℕ), 0 ≤ if P then μ z else 0 :=
-    fun P _ z => by split_ifs <;> simp [hw0]
+    by grind +splitImp
   -- a failure is a coincidence of two pads, or of a pad with a label
   have hind : ∀ z, (if GoodPads p p' z then 0 else μ z) ≤
       ∑ c, ∑ c', (if c ≠ c' then (if z c = z c' then μ z else 0) else 0) +
@@ -122,8 +118,8 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
     intro z
     have h₁ : 0 ≤ ∑ c, ∑ c', (if c ≠ c' then (if z c = z c' then μ z else 0) else 0) :=
       sum_nonneg fun c _ => sum_nonneg fun c' _ => by split_ifs <;> simp [hw0]
-    have h₂ : 0 ≤ ∑ c, (if z c = p c.1 then μ z else 0) := sum_nonneg fun c _ => hite _ z
-    have h₃ : 0 ≤ ∑ c, (if z c = p' c.1 then μ z else 0) := sum_nonneg fun c _ => hite _ z
+    have h₂ : 0 ≤ ∑ c, (if z c = p c.1 then μ z else 0) := by solve_by_elim [sum_nonneg]
+    have h₃ : 0 ≤ ∑ c, (if z c = p' c.1 then μ z else 0) := by solve_by_elim [sum_nonneg]
     split_ifs with hG
     · linarith
     · unfold GoodPads at hG
@@ -132,7 +128,7 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
       · obtain ⟨c, c', hzz, hcc⟩ : ∃ c c', z c = z c' ∧ c ≠ c' := by
           by_contra hno
           push Not at hno
-          exact hinj fun c c' h => hno c c' h
+          apply hinj <;> assumption
         have : μ z ≤ ∑ c, ∑ c', (if c ≠ c' then (if z c = z c' then μ z else 0) else 0) := by
           refine le_trans ?_ (single_le_sum (fun c _ => sum_nonneg fun c' _ => by
             split_ifs <;> simp [hw0]) (mem_univ c))
@@ -150,7 +146,7 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
             rw [ite_eq_left hcp]
           linarith
         · have : μ z ≤ ∑ c, (if z c = p' c.1 then μ z else 0) := by
-            refine le_trans ?_ (single_le_sum (f := fun c => if z c = p' c.1 then μ z else 0)
+            refine le_trans ?_ (single_le_sum
               (fun c _ => hite _ z) (mem_univ c))
             rw [ite_eq_left (hc hcp)]
           linarith
@@ -162,7 +158,7 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
     fun c => sum_one_div_mul_harmonicMass (hV c.1)
   have hεc : ∀ (c : Fin K × Fin J), ∀ y ∈ band x (d.a c.1),
       1 / ((y : ℝ) * harmonicMass (band x (d.a c.1))) ≤ ε := fun c => hε c.1
-  calc ∑ z ∈ padSet x d J, (if GoodPads p p' z then 0 else μ z)
+  calc _
       ≤ ∑ z ∈ padSet x d J,
           (∑ c, ∑ c', (if c ≠ c' then (if z c = z c' then μ z else 0) else 0) +
             ∑ c, (if z c = p c.1 then μ z else 0) + ∑ c, (if z c = p' c.1 then μ z else 0)) :=
@@ -186,7 +182,7 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
           · exact hε0
         · exact sum_piFinset_ite_eq_le hw0' hw1 hε0 hεc c (p c.1)
         · exact sum_piFinset_ite_eq_le hw0' hw1 hε0 hεc c (p' c.1)
-    _ = ((K * J : ℕ) ^ 2 + 2 * (K * J : ℕ)) * ε := by
+    _ = _ := by
         simp only [sum_const, card_univ, Fintype.card_prod, Fintype.card_fin, nsmul_eq_mul]
         push_cast
         ring

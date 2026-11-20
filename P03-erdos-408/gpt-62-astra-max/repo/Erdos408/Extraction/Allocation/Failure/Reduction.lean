@@ -54,8 +54,7 @@ lemma forall_primeFactors_lt_iff {Y : ℝ} {a : ℕ} (ha : a ≠ 0) :
   constructor
   · intro h p hp hpa
     obtain ⟨hpr, -, hpY⟩ := mem_primesIcc.1 hp
-    have := h p (Nat.mem_primeFactors.2 ⟨hpr, hpa, ha⟩)
-    linarith
+    grind
   · intro h p hp
     obtain ⟨hpr, hpa, -⟩ := Nat.mem_primeFactors.1 hp
     by_contra hY
@@ -77,7 +76,7 @@ lemma sideAlpha_congr {c₁ : ℝ} {g : Finset ℕ} {m n : ℕ} (h : primeCount 
     sideAlpha c₁ g m = sideAlpha c₁ g n := by
   unfold sideAlpha
   rw [markedWeight_singleton, markedWeight_singleton]
-  simp only [id, h]
+  simp_all
 
 /-- `0 ≤ α_g ≤ 1` from `V_g ≥ 1/2` and `c₁ ≤ 1/4`. -/
 lemma sideAlpha_mem_of_mass {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4) {g : Finset ℕ}
@@ -101,11 +100,11 @@ lemma sideProd_nonneg {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4
 
 /-- A sum over `(Fin (n + 1))`-tuples splits off the first coordinate. -/
 lemma sum_piFinset_succ (I : Finset ℕ) (n : ℕ) (f : (Fin (n + 1) → ℕ) → ℝ) :
-    ∑ e ∈ Fintype.piFinset (fun _ : Fin (n + 1) => I), f e =
+    ∑ e ∈ Fintype.piFinset (fun _ => I), f e =
       ∑ a ∈ I, ∑ e' ∈ Fintype.piFinset (fun _ : Fin n => I), f (Fin.cons a e') := by
   have h := Finset.filter_piFinset_eq_map_consEquiv (S := fun _ : Fin (n + 1) => I)
     (fun _ => True)
-  rw [filter_true_of_mem (fun _ _ => trivial), filter_true_of_mem (fun _ _ => trivial)] at h
+  simp at h
   rw [h, sum_map, sum_product]
   rfl
 
@@ -117,7 +116,7 @@ lemma failureProb_le_sideProd {c₁ c₂ x : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' :
     (hV : ∀ g ∈ candidateGroups x, 1 / 2 ≤ harmonicMass g) (w : ℕ) :
     failureProb c₁ c₂ x w ≤ Real.exp (c₂ * logLog x) *
       (sideProd c₁ (smallGroups x) (w + 1) w + sideProd c₁ (bigGroups x) (w + 1) w) := by
-  have hs : ∀ g ∈ candidateGroups x, 0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1 :=
+  have hs :=
     fun g hg => successCoin_mem hc₁ hc₁' (hV g hg) w
   refine (failureProb_le_exp_mul hs).trans (mul_le_mul_of_nonneg_left ?_ (exp_pos _).le)
   have hZ : ∀ F ⊆ candidateGroups x, ∏ g ∈ F, (1 - chernoffTheta * successCoin c₁ g w) ≤
@@ -126,7 +125,6 @@ lemma failureProb_le_sideProd {c₁ c₂ x : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' :
     refine prod_le_prod₀ (fun g hg => ?_) fun g hg => ?_
     · have := (hs g (hF hg)).2
       have := chernoffTheta_le_one
-      have := chernoffTheta_pos
       nlinarith [(hs g (hF hg)).1]
     · have hVg := hV g (hF hg)
       exact one_sub_mul_successCoin_le hc₁ (by linarith) w
@@ -148,7 +146,7 @@ lemma sum_proxyCore_mul_sideProd_le {x γ c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc�
   set I := Icc 1 (M + 1)
   set f : ℕ × (Fin j → ℕ) → ℝ := fun t => (∏ i, coreFactor x γ j (t.2 i)) *
     (if t.1 * ∏ i, t.2 i ≤ M + 1 then sideProd c₁ F t.1 (t.1 * ∏ i, t.2 i - 1) else 0)
-  have hFV : ∀ g ∈ F, 1 / 2 ≤ harmonicMass g := fun g hg => hV g (hF hg)
+  have hFV : ∀ g ∈ F, 1 / 2 ≤ harmonicMass g := by solve_by_elim
   have hf0 : ∀ t, 0 ≤ f t := fun t => mul_nonneg
     (prod_nonneg fun i _ => coreFactor_nonneg hj hγ _)
     (by split_ifs; exacts [sideProd_nonneg hc₁ hc₁' hFV _ _, le_rfl])
@@ -164,16 +162,14 @@ lemma sum_proxyCore_mul_sideProd_le {x γ c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc�
     rw [proxyCore, sum_mul]
     rfl
   -- the injection `(w, e) ↦ (v_P, e)`
-  set φ : (Σ _ : ℕ, Fin j → ℕ) → ℕ × (Fin j → ℕ) := fun t => (keepPrimes P (t.1 + 1), t.2)
+  set φ : (Σ _, Fin j → ℕ) → ℕ × (Fin j → ℕ) := fun t => (keepPrimes P (t.1 + 1), t.2)
   have hφ : ∀ t ∈ Sw, keepPrimes P (t.1 + 1) * ∏ i, t.2 i = t.1 + 1 := by
     intro t ht
     obtain ⟨-, he⟩ := mem_sigma.1 ht
     rw [Nat.prod_eq_of_mem_finMulAntidiag he, mul_comm, stripPrimes_mul_keepPrimes P (by omega)]
   have hinj : Set.InjOn φ Sw := by
     intro t ht t' ht' h
-    simp only [φ, Prod.mk.injEq] at h
-    have h1 : t.1 + 1 = t'.1 + 1 := by rw [← hφ t ht, ← hφ t' ht', h.1, h.2]
-    exact Sigma.ext (by omega) (heq_of_eq h.2)
+    grind
   have hmaps : ∀ t ∈ Sw, φ t ∈ D ×ˢ Fintype.piFinset (fun _ : Fin j => I) := by
     intro t ht
     obtain ⟨hw, he⟩ := mem_sigma.1 ht
@@ -192,16 +188,15 @@ lemma sum_proxyCore_mul_sideProd_le {x γ c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc�
   have hval : ∀ t ∈ Sw, (∏ i, coreFactor x γ j (t.2 i)) * sideProd c₁ F (t.1 + 1) t.1 =
       f (φ t) := by
     intro t ht
-    have h1 := hφ t ht
     have hw := (mem_Icc.1 (mem_sigma.1 ht).1).2
-    simp only [f, φ, h1, show t.1 + 1 ≤ M + 1 by omega, ↓reduceIte, Nat.add_sub_cancel]
+    simp only [f, φ, (hφ t ht), show t.1 + 1 ≤ M + 1 by omega, ↓reduceIte, Nat.add_sub_cancel]
     congr 1
     unfold sideProd
     refine prod_congr rfl fun g hg => ?_
     rw [sideAlpha_congr (primeCount_keepPrimes_of_subset (hgP g hg) (hgpr g hg) (by omega))]
-  rw [hlhs, sum_congr rfl hval, ← sum_image (f := f) hinj]
+  rw [hlhs, sum_congr rfl hval, ← sum_image hinj]
   refine (sum_le_sum_of_subset_of_nonneg (t := D ×ˢ Fintype.piFinset (fun _ : Fin j => I))
-    (fun s hs => by obtain ⟨t, ht, rfl⟩ := mem_image.1 hs; exact hmaps t ht)
+    (fun s hs => by grind)
     fun s _ _ => hf0 s).trans (le_of_eq ?_)
   rw [sum_product]
 
@@ -215,15 +210,15 @@ lemma sum_tuples_eq_freeFactorSum {x γ c₁ : ℝ} (hγ : 0 ≤ x ^ γ) (j' X :
       freeFactorSum x γ c₁ j' X F := by
   unfold freeFactorSum
   refine sum_congr rfl fun d hd => ?_
-  have hd1 : 1 ≤ d := (mem_Icc.1 (mem_filter.1 hd).1).1
+  have hd1 := (mem_Icc.1 (mem_filter.1 hd).1).1
   rw [sum_piFinset_succ, sum_comm]
   refine sum_congr rfl fun e he => ?_
   have hr1 : 1 ≤ ∏ i, e i := by
     rw [Nat.one_le_iff_ne_zero, prod_ne_zero_iff]
-    exact fun i _ => by have := (mem_Icc.1 (Fintype.mem_piFinset.1 he i)).1; omega
+    grind
   simp only [Fin.prod_univ_succ, Fin.cons_zero, Fin.cons_succ]
   generalize ∏ i, e i = r at hr1 ⊢
-  have hrd : 0 < r * d := Nat.mul_pos (by omega) (by omega)
+  have hrd : 0 < r * d := by positivity
   rw [mul_sum]
   have hsub : Ioc ⌊x ^ γ⌋₊ (X / (r * d)) ⊆ Icc 1 X := by
     intro a ha
@@ -232,17 +227,15 @@ lemma sum_tuples_eq_freeFactorSum {x γ c₁ : ℝ} (hγ : 0 ≤ x ^ γ) (j' X :
   rw [← sum_subset hsub]
   · refine sum_congr rfl fun a ha => ?_
     obtain ⟨h1, h2⟩ := mem_Ioc.1 ha
-    have hxa : x ^ γ < a := (Nat.floor_lt hγ).1 h1
+    have hxa := (Nat.floor_lt hγ).1 h1
     have hle : d * (a * r) ≤ X := by
       have := (Nat.le_div_iff_mul_le hrd).1 h2
-      calc d * (a * r) = a * (r * d) := by ring
-        _ ≤ X := this
+      grind
     have heq : d * (a * r) - 1 = a * (r * d) - 1 := by ring_nf
     rw [ite_eq_left hle, heq]
     by_cases hr : ∀ p ∈ primesIcc 2 (proxyCutoff x), ¬ p ∣ a
-    · have hr' := (forall_primeFactors_lt_iff (Y := proxyCutoff x) (by omega)).2 hr
-      rw [coreFactor, ite_eq_left ⟨hxa, hr'⟩, ite_eq_left hr, roughWeight]
-      ring
+    · have hr' := (forall_primeFactors_lt_iff (by omega)).2 hr
+      grind [coreFactor, roughWeight]
     · have hr' : ¬ (x ^ γ < a ∧ ∀ p ∈ a.primeFactors, proxyCutoff x < p) := fun h =>
         hr ((forall_primeFactors_lt_iff (by omega)).1 h.2)
       rw [coreFactor, ite_eq_right hr', ite_eq_right hr]
@@ -258,8 +251,7 @@ lemma sum_tuples_eq_freeFactorSum {x γ c₁ : ℝ} (hγ : 0 ≤ x ^ γ) (j' X :
         intro h'
         apply h
         rw [Nat.le_div_iff_mul_le hrd]
-        calc a * (r * d) = d * (a * r) := by ring
-          _ ≤ X := h'
+        linarith
       rw [ite_eq_right this]
       ring
 
@@ -276,7 +268,7 @@ theorem sum_proxyCoeff_mul_failureProb_le {x γ c₁ c₂ κ : ℝ} (hc₁ : 0 �
   have hs : ∀ w, ∀ g ∈ candidateGroups x, 0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1 :=
     fun w g hg => successCoin_mem hc₁ hc₁' (hV g hg) w
   have hF0 : ∀ w, 0 ≤ failureProb c₁ c₂ x w := fun w => failureProb_nonneg (hs w)
-  have hG0 : ∀ v, 0 ≤ proxyCore x γ (j' + 1) v := proxyCore_nonneg hj hγ
+  have hG0 := proxyCore_nonneg hj hγ
   have hAG : ∀ w, proxyCoeff x γ (j' + 1) (w + 1) ≤ proxyCore x γ (j' + 1) (w + 1) := by
     intro w
     rw [proxyCoeff_eq x γ _ (by omega)]
@@ -285,10 +277,7 @@ theorem sum_proxyCoeff_mul_failureProb_le {x γ c₁ c₂ κ : ℝ} (hc₁ : 0 �
     intro w
     rw [proxyCoeff_eq x γ _ (by omega)]
     exact mul_nonneg (hG0 _) (allocationFactor_nonneg x _ _)
-  have hFV : ∀ F ⊆ candidateGroups x, ∀ g ∈ F, 1 / 2 ≤ harmonicMass g :=
-    fun F hF g hg => hV g (hF hg)
-  calc ∑ w ∈ Icc 1 M with x / κ ≤ ((w : ℕ) : ℝ),
-        proxyCoeff x γ (j' + 1) (w + 1) * failureProb c₁ c₂ x w
+  calc _
       ≤ ∑ w ∈ Icc 1 M, proxyCoeff x γ (j' + 1) (w + 1) * failureProb c₁ c₂ x w :=
         sum_le_sum_of_subset_of_nonneg (filter_subset _ _) fun w _ _ =>
           mul_nonneg (hA0 w) (hF0 w)
@@ -304,10 +293,9 @@ theorem sum_proxyCoeff_mul_failureProb_le {x γ c₁ c₂ κ : ℝ} (hc₁ : 0 �
         exact sum_congr rfl fun w _ => by ring
     _ ≤ _ := by
         gcongr
-        · rw [← sum_tuples_eq_freeFactorSum (by linarith)]
-          exact sum_proxyCore_mul_sideProd_le hc₁ hc₁' hγ hV hj subset_union_left M
-        · rw [← sum_tuples_eq_freeFactorSum (by linarith)]
-          exact sum_proxyCore_mul_sideProd_le hc₁ hc₁' hγ hV hj subset_union_right M
+        all_goals rw [← sum_tuples_eq_freeFactorSum (by linarith)]
+        · exact sum_proxyCore_mul_sideProd_le hc₁ hc₁' hγ hV hj subset_union_left M
+        · exact sum_proxyCore_mul_sideProd_le hc₁ hc₁' hγ hV hj subset_union_right M
 
 end
 

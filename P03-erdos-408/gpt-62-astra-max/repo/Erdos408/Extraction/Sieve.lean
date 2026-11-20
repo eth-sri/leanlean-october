@@ -97,7 +97,7 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
     have hf : (0 : ℝ) < j.factorial := by exact_mod_cast Nat.factorial_pos j
     have hf1 : (1 : ℝ) ≤ j.factorial := by
       exact_mod_cast Nat.one_le_iff_ne_zero.2 (Nat.factorial_ne_zero j)
-    have hfi : ((j.factorial : ℝ))⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hf1
+    have hfi  := inv_le_one_of_one_le₀ hf1
     rw [abs_mul, abs_of_pos (inv_pos.2 hf)]
     set Comp := compositeSum (1 / 2) (1 / 12) K (30000 * K) x (presieveExponent c 200 x) κ j Φ u v B
     set Prox := proxySum (1 / 2) (1 / 12) K (30000 * K) x (presieveExponent c 200 x) κ j Φ u v B
@@ -115,7 +115,7 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
       have e3 := abs_sub_abs_le_abs_sub Comp Prox
       simp only [C₁₂]
       linarith
-    calc (j.factorial : ℝ)⁻¹ * |Comp| ≤ 1 * |Comp| := mul_le_mul_of_nonneg_right hfi (abs_nonneg _)
+    calc _ ≤ 1 * |Comp| := mul_le_mul_of_nonneg_right hfi (abs_nonneg _)
       _ ≤ _ := by rw [one_mul]; exact h3
   have hcompsum : |∑ j ∈ Icc 2 J, ((j.factorial : ℝ))⁻¹ *
       compositeSum (1 / 2) (1 / 12) K (30000 * K) x (presieveExponent c 200 x) κ j Φ u v B| ≤
@@ -124,7 +124,7 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
     rw [sum_const, Nat.card_Icc, nsmul_eq_mul]
     have hcard : ((J + 1 - 2 : ℕ) : ℝ) ≤ J := by exact_mod_cast (by omega : J + 1 - 2 ≤ J)
     have : 0 ≤ C₁₂ * (x / Real.log x * Real.log x ^ (-c')) := by positivity
-    calc ((J + 1 - 2 : ℕ) : ℝ) * (C₁₂ * (x / Real.log x * Real.log x ^ (-c')))
+    calc _
         ≤ J * (C₁₂ * (x / Real.log x * Real.log x ^ (-c'))) :=
           mul_le_mul_of_nonneg_right hcard this
       _ = _ := by ring
@@ -141,7 +141,7 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
     have h2 := (hsize k hk u v B hslot hB').2
     have h61 : T ^ 4 ≤ T ^ 61 := pow_le_pow_right₀ hT (by norm_num)
     have h62 : 2 * T ^ 61 ≤ T ^ 62 := by
-      have : T ^ 62 = T ^ 61 * T := pow_succ T 61
+      have  := pow_succ T 61
       have hT2 : (2 : ℝ) ≤ T := by
         have := abs_nonneg CP
         have := abs_nonneg C₃
@@ -152,7 +152,7 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
       have hT61 : 0 ≤ T ^ 61 := by positivity
       nlinarith
     calc _ ≤ |slotCount x u v B (p - 1)| + |slotMean x u v B| := abs_sub _ _
-      _ ≤ T ^ 62 := by linarith
+      _ ≤ _ := by linarith
   have hR : |∑ p ∈ primesIcc 2 (κ * x + 1),
       Φ (((p : ℝ) - 1) / x) * (1 - Pw (p - 1)) * (slotCount x u v B (p - 1) - slotMean x u v B)| ≤
       x / Real.log x * (T ^ 62 * (C₁₀ * (T ^ 22 *
@@ -168,7 +168,7 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
       exact mul_le_mul_of_nonneg_right (hfC p hp) h0
     refine (sum_le_sum h1).trans ?_
     rw [← mul_sum]
-    calc T ^ 62 * ∑ p ∈ primesIcc 2 (κ * x + 1), Φ (((p : ℝ) - 1) / x) * (1 - Pw (p - 1))
+    calc _
         ≤ T ^ 62 * (C₁₀ * (x / Real.log x) * (T ^ 22 *
           exp (-(inertPerCluster K (30000 * K) x / (12 * exp 1))) + 1 / Real.log x)) :=
           mul_le_mul_of_nonneg_left (h10x Φ hΦ) (by positivity)
@@ -227,11 +227,11 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
     (by positivity)
     (by linarith [abs_nonneg CP, abs_nonneg C₃, abs_nonneg C₁₀, abs_nonneg C₁, abs_nonneg C₂])
     (C₂ := CP) (C₃ := C₃) (C₁₂ := C₁₂) (C₁₀ := C₁₀)
-  calc Real.log x / x * |(S₀ - (S₀ - A - Sc) - Sc) + R|
+  calc _
       ≤ Real.log x / x * (x / Real.log x * _) :=
         mul_le_mul_of_nonneg_left hbound (by positivity)
     _ = _ := by field_simp
-    _ ≤ 7 * (T ^ 300)⁻¹ := hfin
+    _ ≤ _ := hfin
 
 /-- The smoothed rectangle statistic. -/
 theorem eventually_smooth_rectangle (h₁ : OneSidedTypeII) (h₂ : TwoSidedCorrelation)
@@ -269,9 +269,9 @@ theorem eventually_smooth_rectangle (h₁ : OneSidedTypeII) (h₂ : TwoSidedCorr
   have h2 := hx k hk u v B₂ Φ hslot hB₂ hΦ
   have hLx : 0 ≤ Real.log x / x := div_nonneg (Real.log_nonneg hx1) (by linarith)
   rw [rpow_neg hT.le, show (300 : ℝ) = ((300 : ℕ) : ℝ) by norm_num, rpow_natCast, hsplit]
-  calc Real.log x / x * |_ - _| ≤ Real.log x / x * (|_| + |_|) :=
+  calc _ ≤ Real.log x / x * (|_| + |_|) :=
         mul_le_mul_of_nonneg_left (abs_sub _ _) hLx
     _ ≤ 7 * (logLog x ^ 300)⁻¹ + 7 * (logLog x ^ 300)⁻¹ := by rw [mul_add]; linarith
-    _ = 14 * (logLog x ^ 300)⁻¹ := by ring
+    _ = _ := by ring
 
 end Erdos408

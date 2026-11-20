@@ -54,7 +54,7 @@ theorem lineAssignments_prod (x : ℝ) (d : Data K) {I : Finset ℕ} (hI : I ⊆
     ((lineAssignments x d).card : ℝ)⁻¹ * ∑ ℓ ∈ lineAssignments x d, ∏ p ∈ I, f p (ℓ p) =
       ∏ p ∈ I, (((p : ℝ) + 1)⁻¹ * ∑ l ∈ range (p + 1), f p l) := by
   classical
-  have h := lineAverage_prod x d fun p l => if p ∈ I then (f p l : ℂ) else 1
+  have h := lineAverage_prod x d fun p l => if p ∈ I then (f p l) else 1
   -- step: the product over the band primes is the product over `I`
   have hl : (fun ℓ : ℕ → ℕ => ∏ p ∈ bandPrimes x d, if p ∈ I then (f p (ℓ p) : ℂ) else 1) =
       fun ℓ => ((∏ p ∈ I, f p (ℓ p) : ℝ) : ℂ) := by
@@ -82,7 +82,7 @@ theorem abs_boxRoots_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist
     (d : Data K) {U V : ℝ} (hU : 2 ≤ U) (hV : 2 ≤ V) {a₁ b₁ a₂ b₂ a₃ b₃ : ℝ} (ha₁ : 1 ≤ a₁)
     (hab₁ : a₁ ≤ b₁) (hb₁ : b₁ ≤ 16) (ha₂ : 1 ≤ a₂) (hab₂ : a₂ ≤ b₂) (hb₂ : b₂ ≤ 2)
     (ha₃ : 0 ≤ a₃) (hab₃ : a₃ ≤ b₃) (hb₃ : b₃ ≤ 1) {S : Finset ℕ} (hS : S ⊆ bandPrimes x d)
-    (g : (ℕ → ℕ) → ℝ) (hg : ∀ ℓ ℓ' : ℕ → ℕ, (∀ p ∈ S, ℓ p = ℓ' p) → g ℓ = g ℓ')
+    (g : (ℕ → ℕ) → ℝ) (hg : ∀ ℓ ℓ', (∀ p ∈ S, ℓ p = ℓ' p) → g ℓ = g ℓ')
     (hg₁ : ∀ ℓ, |g ℓ| ≤ 1) {pmax : ℝ} (hpmax₁ : 1 ≤ pmax)
     (hpmax : ∀ p ∈ bandPrimes x d, (p : ℝ) ≤ pmax) {k : ℕ} (hk : S.card ≤ k) :
     |(U * V)⁻¹ * ∑ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃, g (rootLines P₀) -
@@ -90,8 +90,8 @@ theorem abs_boxRoots_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist
           (((lineAssignments x d).card : ℝ)⁻¹ * ∑ ℓ ∈ lineAssignments x d, g ℓ)| ≤
       C₀ * pmax ^ (6 * k) * min U V ^ (-(1 / 5 : ℝ)) := by
   have h := hE x d U V hU hV a₁ b₁ a₂ b₂ a₃ b₃ ha₁ hab₁ hb₁ ha₂ hab₂ hb₂ ha₃ hab₃ hb₃ S hS
-    (fun ℓ => (g ℓ : ℂ)) 1 (fun ℓ ℓ' h => by rw [hg ℓ ℓ' h])
-    (fun ℓ => by rw [Complex.norm_real, Real.norm_eq_abs]; exact hg₁ ℓ)
+    (fun ℓ => (g ℓ)) 1 (fun ℓ ℓ' h => by rw [hg ℓ ℓ' h])
+    (fun ℓ => by simp_all)
   rw [lineAverage_ofReal] at h
   set L := ((lineAssignments x d).card : ℝ)⁻¹ * ∑ ℓ ∈ lineAssignments x d, g ℓ
   set R₀ := ∑ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃, g (rootLines P₀)
@@ -104,28 +104,26 @@ theorem abs_boxRoots_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist
   rw [hc, Complex.norm_real, Real.norm_eq_abs] at h
   -- step: the modulus `S⁶ ≤ p_max^{6k}`
   have hprod : ∏ p ∈ S, (p : ℝ) ≤ pmax ^ k :=
-    calc ∏ p ∈ S, (p : ℝ) ≤ ∏ _p ∈ S, pmax :=
+    calc _ ≤ ∏ _p ∈ S, pmax :=
           prod_le_prod₀ (fun _ _ => Nat.cast_nonneg _) fun p hp => hpmax p (hS hp)
       _ = pmax ^ S.card := prod_const _
-      _ ≤ pmax ^ k := pow_le_pow_right₀ hpmax₁ hk
+      _ ≤ _ := by gcongr
   have hprod6 : (∏ p ∈ S, (p : ℝ)) ^ 6 ≤ pmax ^ (6 * k) := by
     rw [mul_comm, pow_mul]
-    exact pow_le_pow_left₀ (prod_nonneg fun _ _ => Nat.cast_nonneg _) hprod 6
+    gcongr
   have hUV : 0 < U * V := by positivity
-  have hm : 0 ≤ C₀ * min U V ^ (-(1 / 5 : ℝ)) :=
-    mul_nonneg hC₀ (Real.rpow_nonneg (le_min (by linarith) (by linarith)) _)
   have hid : (U * V)⁻¹ * R₀ - primitiveDensity * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃)) * L =
       (U * V)⁻¹ * (R₀ - primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) * L) := by
     field_simp
   rw [hid, abs_mul, abs_of_pos (inv_pos.2 hUV)]
-  calc (U * V)⁻¹ * |R₀ - primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) * L|
+  calc _
       ≤ (U * V)⁻¹ * (1 * (∏ p ∈ S, (p : ℝ)) ^ 6 * (C₀ * U * V * min U V ^ (-(1 / 5 : ℝ)))) :=
-        mul_le_mul_of_nonneg_left h (inv_nonneg.2 hUV.le)
+        by gcongr
     _ = (∏ p ∈ S, (p : ℝ)) ^ 6 * (C₀ * min U V ^ (-(1 / 5 : ℝ))) := by
         field_simp
     _ ≤ pmax ^ (6 * k) * (C₀ * min U V ^ (-(1 / 5 : ℝ))) :=
-        mul_le_mul_of_nonneg_right hprod6 hm
-    _ = C₀ * pmax ^ (6 * k) * min U V ^ (-(1 / 5 : ℝ)) := by ring
+        by gcongr
+    _ = _ := by ring
 
 /-- The subsets of `s` of size at most `T` number at most `(#s + 1)^T`. -/
 theorem card_powerset_card_lt_add_le (s : Finset ℕ) (T : ℕ) :
@@ -234,14 +232,11 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
     have hE₀ : 0 ≤ ∑ I ∈ Q.powersetCard T, h I ℓ :=
       sum_nonneg fun I hI => hh₀ ℓ I (mem_powersetCard.1 hI).1
     rw [hid, abs_mul, abs_of_nonneg (hact₀ ℓ)]
-    calc (∏ p ∈ act, lam p (ℓ p)) * |∏ p ∈ Q, lam p (ℓ p) -
-          ∑ I ∈ Q.powerset.filter (fun I => I.card < T),
-            (-1) ^ I.card * ∏ p ∈ I, (1 - lam p (ℓ p))|
+    calc _
         ≤ (∏ p ∈ act, lam p (ℓ p)) * ∑ I ∈ Q.powersetCard T, h I ℓ := by
           rw [hh]
           exact mul_le_mul_of_nonneg_left hB (hact₀ ℓ)
-      _ ≤ 1 * ∑ I ∈ Q.powersetCard T, h I ℓ := mul_le_mul_of_nonneg_right (hact₁ ℓ) hE₀
-      _ = ∑ I ∈ Q.powersetCard T, h I ℓ := one_mul _
+      _ ≤ _ := (mul_le_mul_of_nonneg_right (hact₁ ℓ) hE₀).trans_eq (one_mul _)
   -- step: root equidistribution for each monomial
   have hgI : ∀ I ∈ Q.powerset.filter (fun I => I.card < T),
       |w * ∑ P₀ ∈ box, g I (rootLines P₀) - c * vol * (z * ∑ ℓ ∈ LA, g I ℓ)| ≤
@@ -264,9 +259,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
       simp only [hg]
       rw [abs_mul, abs_pow, abs_neg, abs_one, one_pow, one_mul,
         abs_of_nonneg (mul_nonneg (hact₀ ℓ) h0)]
-      calc (∏ p ∈ act, lam p (ℓ p)) * ∏ p ∈ I, (1 - lam p (ℓ p)) ≤ 1 * 1 :=
-            mul_le_mul (hact₁ ℓ) h1 h0 zero_le_one
-        _ = 1 := one_mul 1
+      exact (mul_le_mul (hact₁ ℓ) h1 h0 zero_le_one).trans_eq (one_mul 1)
   have hhI : ∀ I ∈ Q.powersetCard T,
       |w * ∑ P₀ ∈ box, h I (rootLines P₀) - c * vol * (z * ∑ ℓ ∈ LA, h I ℓ)| ≤
         C₀ * pmax ^ (6 * (act.card + T)) * min U V ^ (-(1 / 5 : ℝ)) := by
@@ -284,7 +277,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
         ∑ I ∈ s, (w * ∑ P₀ ∈ box, f I (rootLines P₀) - c * vol * (z * ∑ ℓ ∈ LA, f I ℓ)) := by
     intro s f
     rw [sum_comm, sum_comm (s := LA), mul_sum s, mul_sum s, mul_sum s, ← sum_sub_distrib]
-  have hdev : ∀ (s : Finset (Finset ℕ)) (f : Finset ℕ → (ℕ → ℕ) → ℝ),
+  have hdev : ∀ s (f : Finset ℕ → (ℕ → ℕ) → ℝ),
       (∀ I ∈ s, |w * ∑ P₀ ∈ box, f I (rootLines P₀) - c * vol * (z * ∑ ℓ ∈ LA, f I ℓ)| ≤
         C₀ * pmax ^ (6 * (act.card + T)) * min U V ^ (-(1 / 5 : ℝ))) →
       |w * ∑ P₀ ∈ box, ∑ I ∈ s, f I (rootLines P₀) - c * vol * (z * ∑ ℓ ∈ LA, ∑ I ∈ s, f I ℓ)| ≤
@@ -321,7 +314,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
       rw [hQ]
       rfl
     rw [hσ]
-    calc ∑ I ∈ Q.powersetCard T, z * ∑ ℓ ∈ LA, h I ℓ =
+    calc _ =
         ∑ I ∈ Q.powersetCard T,
           ∏ p ∈ I, (((p : ℝ) + 1)⁻¹ * ∑ l ∈ range (p + 1), (1 - lam p l)) := by
           refine sum_congr rfl fun I hI => ?_

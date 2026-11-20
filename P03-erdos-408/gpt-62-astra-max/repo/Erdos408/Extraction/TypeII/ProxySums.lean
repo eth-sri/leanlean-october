@@ -23,7 +23,7 @@ that `D_j = ∏_{p ≤ Y} (1 - 1/p) · Π_P(1/j)`.
 
 namespace Erdos408.TypeII
 
-open Finset Real
+open Finset
 
 /-- Candidate primes lie below `Y` when `exp(L^{0.45}) < Y`. -/
 theorem candidate_lt_cutoff {x : ℝ} (hL : 1 ≤ Real.log x)
@@ -50,25 +50,24 @@ theorem prod_primes_split {x : ℝ} (hL : 1 ≤ Real.log x)
   · rw [mem_filter, mem_range]
     rcases mem_union.1 hp with h | h
     · obtain ⟨hpp, -, hle⟩ := mem_candidatePrimes hL h
-      have : (p : ℝ) ≤ N := (candidate_lt_cutoff hL hYP h).le.trans hYN
-      exact ⟨by exact_mod_cast (show (p : ℝ) < N + 1 by linarith), hpp⟩
+      have := (candidate_lt_cutoff hL hYP h).le.trans hYN
+      aesop
     · obtain ⟨hpp, -, hle⟩ := mem_primesIoc.1 h
-      exact ⟨by exact_mod_cast (show (p : ℝ) < N + 1 by linarith), hpp⟩
+      aesop
   · rw [mem_filter, mem_range] at hp
     rw [mem_union, not_or] at hnot
     have hpY : (p : ℝ) ≤ proxyCutoff x := by
       by_contra h
       push Not at h
-      exact hnot.2 (mem_primesIoc.2 ⟨hp.2, h, by exact_mod_cast (by omega : p ≤ N)⟩)
-    rw [hloc p hp.2 hpY hnot.1, sub_zero, inv_one]
+      exact hnot.2 (mem_primesIoc.2 ⟨hp.2, h, by simp_all⟩)
+    grind
 
 theorem proxyLoc_nonneg (x : ℝ) (j p : ℕ) : 0 ≤ proxyLoc x j p := by
   unfold proxyLoc; split_ifs <;> positivity
 
 theorem proxyLoc_le_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (p : ℕ) : proxyLoc x j p ≤ 1 := by
-  have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
   unfold proxyLoc; split_ifs
-  · exact inv_le_one_of_one_le₀ hj'
+  · exact inv_le_one_of_one_le₀ (by exact_mod_cast hj)
   · exact zero_le_one
   · exact le_rfl
 
@@ -101,7 +100,7 @@ theorem sum_dampedWeight_div_le {x : ℝ} (hL : 1 ≤ Real.log x)
   have hsum : ∑ m ∈ Icc 1 N, dampedWeight x j m / m =
       ∑ m ∈ Icc 1 N, cmul (fun p => proxyLoc x j p / p) m := by
     refine sum_congr rfl fun m hm => ?_
-    have hm0 : m ≠ 0 := by have := (mem_Icc.1 hm).1; omega
+    have hm0 : m ≠ 0 := by grind
     rw [dampedWeight_eq_cmul x j hm0, cmul_div hm0]
   rw [hsum]
   refine (sum_cmul_le_prod (fun p hp => by have := proxyLoc_nonneg x j p; positivity)
@@ -128,7 +127,7 @@ theorem sum_dampedWeight_sq_div_le {x : ℝ} (hL : 1 ≤ Real.log x)
   have hsum : ∑ m ∈ Icc 1 N, dampedWeight x j m ^ 2 * cmul (fun _ => r) m / m =
       ∑ m ∈ Icc 1 N, cmul (fun p => proxyLoc x j p * proxyLoc x j p * r / p) m := by
     refine sum_congr rfl fun m hm => ?_
-    have hm0 : m ≠ 0 := by have := (mem_Icc.1 hm).1; omega
+    have hm0 : m ≠ 0 := by grind
     rw [dampedWeight_eq_cmul x j hm0, sq, ← cmul_mul_loc, ← cmul_mul_loc, cmul_div hm0]
   rw [hsum]
   refine (sum_cmul_le_prod (fun p hp => by have := proxyLoc_nonneg x j p; positivity)
@@ -139,13 +138,12 @@ theorem sum_dampedWeight_sq_div_le {x : ℝ} (hL : 1 ≤ Real.log x)
     split_ifs with h1 h2
     · have : (j : ℝ)⁻¹ * (j : ℝ)⁻¹ * r ≤ 1 := by
         rw [mul_assoc, inv_mul_le_iff₀ (by linarith), mul_one]
-        calc (j : ℝ)⁻¹ * r ≤ (j : ℝ)⁻¹ * j := by gcongr
+        calc _ ≤ (j : ℝ)⁻¹ * j := by gcongr
           _ = 1 := inv_mul_cancel₀ (by linarith)
           _ ≤ j := hj'
       linarith
-    · simp only [mul_zero, zero_mul]; linarith
-    · have : proxyCutoff x < p := by push Not at h2; exact h2
-      linarith
+    · linarith
+    linarith
   · rw [prod_primes_split hL hYP hYN _ fun p hp hpY hP => by
       rw [proxyLoc_of_le hpY hP, zero_mul, zero_mul, zero_div]]
     congr 1
@@ -168,9 +166,7 @@ theorem factorization_eq_sum_dvd {p m N : ℕ} (hp : p.Prime) (hm : m ≠ 0) (hm
     ext a
     simp only [mem_filter, mem_Icc, hp.pow_dvd_iff_le_factorization hm]
     have := Nat.factorization_lt p hm
-    constructor
-    · rintro ⟨⟨h1, -⟩, h2⟩; exact ⟨h1, h2⟩
-    · rintro ⟨h1, h2⟩; exact ⟨⟨h1, by omega⟩, h2⟩
+    grind
   rw [this, Nat.card_Icc, Nat.add_sub_cancel]
 
 /-- The candidate logarithm: `∑_{m ≤ N} g(m) log(m / m̄) / m ≤ 2t (∑_P log p / p) ∑ g(m)/m`. -/
@@ -181,7 +177,6 @@ theorem sum_dampedWeight_log_div_le {x : ℝ} (hL : 1 ≤ Real.log x) {j : ℕ} 
       2 * (j : ℝ)⁻¹ * (∑ p ∈ candidatePrimes x, Real.log p / p) *
         ∑ m ∈ Icc 1 N, dampedWeight x j m / m := by
   have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
-  have ht0 : 0 ≤ (j : ℝ)⁻¹ := by positivity
   have ht1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hj'
   set S := ∑ m ∈ Icc 1 N, dampedWeight x j m / m with hS
   -- expand `log(m / m̄)` over the candidate prime powers dividing `m`
@@ -261,7 +256,7 @@ theorem sum_dampedWeight_log_div_le {x : ℝ} (hL : 1 ≤ Real.log x) {j : ℕ} 
   have hS0 : 0 ≤ S := sum_nonneg fun m _ =>
     div_nonneg (dampedWeight_nonneg x j m) (Nat.cast_nonneg m)
   clear_value S
-  calc ∑ m ∈ Icc 1 N, dampedWeight x j m * (Real.log m - Real.log (candidateStrip x m)) / m
+  calc _
       = ∑ p ∈ candidatePrimes x, ∑ a ∈ Icc 1 N, ∑ m ∈ Icc 1 N,
           dampedWeight x j m * (if p ^ a ∣ m then Real.log p else 0) / m := by
         rw [sum_congr rfl fun m hm => by rw [hexp m hm]]
@@ -301,7 +296,7 @@ theorem prod_primes_ite_le (P : Finset ℕ) (u : ℕ → ℝ) (h0 : ∀ p ∈ P,
 
 /-- The rough-count bound for the damped weight:
 `∑_{m ≤ W} g(m) ≤ (A W / log Y) Π_P(t) + W^θ ∏_P (1 - p^{-θ})⁻¹`. -/
-theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : ℕ) (θ : ℝ),
+theorem sum_dampedWeight_le : ∃ A C₁, 0 < A ∧ ∀ (x : ℝ) (j W : ℕ) (θ : ℝ),
     1 ≤ Real.log x → 1 ≤ j → 2 ≤ proxyCutoff x → C₁ ≤ Real.log (proxyCutoff x) → 0 < θ →
     ∑ m ∈ Icc 1 W, dampedWeight x j m ≤
       A * W / Real.log (proxyCutoff x) * ∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹ +
@@ -311,25 +306,23 @@ theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : �
   set Y := proxyCutoff x with hYdef
   set P := candidatePrimes x with hPdef
   have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
-  have ht0 : 0 ≤ (j : ℝ)⁻¹ := by positivity
   have ht1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hj'
   have hlY : 0 < Real.log Y := Real.log_pos (by linarith)
   have hPp : ∀ p ∈ P, p.Prime := fun p hp => (mem_candidatePrimes hL hp).1
   -- `g(m) ≤ [m̄ rough] g(m_P)`
-  set R : ℕ → Prop := fun n => ∀ p : ℕ, p ∈ n.primeFactors → Y < p with hRdef
+  set R : ℕ → Prop := fun n => ∀ p, p ∈ n.primeFactors → Y < p with hRdef
   have hsplit : ∀ m ∈ Icc 1 W, dampedWeight x j m ≤
       if R (stripPrimes P m) then dampedWeight x j (partPrimes P m) else 0 := by
     intro m hm
-    have hm0 : m ≠ 0 := by have := (mem_Icc.1 hm).1; omega
+    have hm0 : m ≠ 0 := by grind
     have hfac : dampedWeight x j m =
         dampedWeight x j (stripPrimes P m) * dampedWeight x j (partPrimes P m) := by
       rw [dampedWeight_eq_cmul x j hm0, dampedWeight_eq_cmul x j (stripPrimes_ne_zero P m),
         dampedWeight_eq_cmul x j (partPrimes_ne_zero P m), ← map_mul,
         stripPrimes_mul_partPrimes P hm0]
     rw [hfac]
-    have hpart0 := dampedWeight_nonneg x j (partPrimes P m)
     split_ifs with hR
-    · exact mul_le_of_le_one_left hpart0 (dampedWeight_le_one x hj _)
+    · exact mul_le_of_le_one_left (dampedWeight_nonneg x j (partPrimes P m)) (dampedWeight_le_one x hj _)
     · simp only [hRdef, not_forall, not_lt] at hR
       obtain ⟨p, hp, hpY⟩ := hR
       rw [primeFactors_stripPrimes, mem_filter] at hp
@@ -340,17 +333,14 @@ theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : �
   have hmaps : ∀ m ∈ Icc 1 W, partPrimes P m ∈ Icc 1 W := by
     intro m hm
     obtain ⟨h1, hmW⟩ := mem_Icc.1 hm
-    have hm0 : m ≠ 0 := by omega
     exact mem_Icc.2 ⟨Nat.pos_of_ne_zero (partPrimes_ne_zero P m),
-      (partPrimes_le P hm0).trans hmW⟩
+      (partPrimes_le P (by omega)).trans hmW⟩
   have hfiber : ∀ a ∈ Icc 1 W, ∑ m ∈ (Icc 1 W).filter (partPrimes P · = a),
       (if R (stripPrimes P m) then dampedWeight x j (partPrimes P m) else 0) ≤
         (if a.primeFactors ⊆ P then dampedWeight x j a else 0) *
           (A * W / (a * Real.log Y) + 1) := by
     intro a ha
-    have ha1 : 1 ≤ a := (mem_Icc.1 ha).1
-    have ha0 : (0 : ℝ) < a := by exact_mod_cast ha1
-    have hga := dampedWeight_nonneg x j a
+    have ha1 := (mem_Icc.1 ha).1
     by_cases haP : a.primeFactors ⊆ P
     · simp only [haP, ite_true]
       set F := (Icc 1 W).filter (partPrimes P · = a) with hF
@@ -360,7 +350,7 @@ theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : �
         rw [sum_congr rfl fun m hm => by rw [(mem_filter.1 hm).2], sum_ite, sum_const_zero,
           add_zero, sum_const, nsmul_eq_mul, mul_comm]
       rw [hsum]
-      refine mul_le_mul_of_nonneg_left ?_ hga
+      refine mul_le_mul_of_nonneg_left ?_ (dampedWeight_nonneg x j a)
       -- `m ↦ m̄` injects the fiber into the rough numbers up to `W / a`
       have hcard : (F.filter fun m => R (stripPrimes P m)).card ≤ roughCount Y (W / a) := by
         unfold roughCount
@@ -378,15 +368,13 @@ theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : �
           rw [mem_coe, mem_filter, hF, mem_filter, mem_Icc] at hm hm'
           have e1 := stripPrimes_mul_partPrimes P (show m ≠ 0 by omega)
           have e2 := stripPrimes_mul_partPrimes P (show m' ≠ 0 by omega)
-          rw [hm.1.2] at e1
-          rw [hm'.1.2] at e2
-          rw [← e1, ← e2, h]
+          grind
       have hW : ((W / a : ℕ) : ℝ) ≤ W / a := Nat.cast_div_le
       calc ((F.filter fun m => R (stripPrimes P m)).card : ℝ) ≤ roughCount Y (W / a) := by
             exact_mod_cast hcard
         _ ≤ A * ((W / a : ℕ) : ℝ) / Real.log Y + 1 := hrough Y hY2 hC₁ _
         _ ≤ A * (W / a) / Real.log Y + 1 := by gcongr
-        _ = A * W / (a * Real.log Y) + 1 := by field_simp
+        _ = _ := by field_simp
     · simp only [haP, ite_false, zero_mul]
       refine le_of_eq (sum_eq_zero fun m hm => ?_)
       exfalso
@@ -417,7 +405,7 @@ theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : �
   have hfirst : ∀ a ∈ Icc 1 W, (if a.primeFactors ⊆ P then dampedWeight x j a else 0) / a ≤
       cmul Ploc a := by
     intro a ha
-    have ha0 : a ≠ 0 := by have := (mem_Icc.1 ha).1; omega
+    have ha0 : a ≠ 0 := by grind
     split_ifs with haP
     · rw [dampedWeight_eq_cmul x j ha0, cmul_div ha0]
       refine le_of_eq (cmul_congr fun p hp => ?_)
@@ -428,34 +416,26 @@ theorem sum_dampedWeight_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ (x : ℝ) (j W : �
       (W : ℝ) ^ θ * cmul Qloc a := by
     intro a ha
     obtain ⟨ha1, haW⟩ := mem_Icc.1 ha
-    have ha0 : a ≠ 0 := by omega
     have hcQ := cmul_nonneg (loc := Qloc) (fun p _ => by
       simp only [hQloc]; split_ifs <;> positivity) a
     split_ifs with haP
     · have hQ : cmul Qloc a = (a : ℝ) ^ (-θ) := by
-        rw [← cmul_rpow (-θ) ha0]
+        rw [← cmul_rpow (-θ) (by omega)]
         exact cmul_congr fun p hp => by simp [hQloc, haP hp]
       rw [hQ]
       have haR : (1 : ℝ) ≤ a := by exact_mod_cast ha1
       have : (1 : ℝ) ≤ (W : ℝ) ^ θ * (a : ℝ) ^ (-θ) := by
         rw [Real.rpow_neg (by linarith), ← div_eq_mul_inv, le_div_iff₀ (by positivity), one_mul]
-        exact Real.rpow_le_rpow (by linarith) (by exact_mod_cast haW) hθ.le
+        gcongr
       linarith [dampedWeight_le_one x hj a]
     · positivity
-  calc ∑ m ∈ Icc 1 W, dampedWeight x j m
-      ≤ ∑ m ∈ Icc 1 W, (if R (stripPrimes P m) then dampedWeight x j (partPrimes P m) else 0) :=
-        sum_le_sum hsplit
-    _ = ∑ a ∈ Icc 1 W, ∑ m ∈ (Icc 1 W).filter (partPrimes P · = a),
-          (if R (stripPrimes P m) then dampedWeight x j (partPrimes P m) else 0) :=
-        (sum_fiberwise_of_maps_to hmaps _).symm
-    _ ≤ ∑ a ∈ Icc 1 W, (if a.primeFactors ⊆ P then dampedWeight x j a else 0) *
-          (A * W / (a * Real.log Y) + 1) := sum_le_sum hfiber
+  calc _ ≤ ∑ a ∈ Icc 1 W, (if a.primeFactors ⊆ P then dampedWeight x j a else 0) *
+          (A * W / (a * Real.log Y) + 1) := ((sum_le_sum hsplit).trans_eq (sum_fiberwise_of_maps_to hmaps _).symm).trans (sum_le_sum hfiber)
     _ = A * W / Real.log Y *
             ∑ a ∈ Icc 1 W, (if a.primeFactors ⊆ P then dampedWeight x j a else 0) / a +
           ∑ a ∈ Icc 1 W, (if a.primeFactors ⊆ P then dampedWeight x j a else 0) := by
         rw [mul_sum, ← sum_add_distrib]
         refine sum_congr rfl fun a ha => ?_
-        have : (0 : ℝ) < a := by have := (mem_Icc.1 ha).1; exact_mod_cast this
         field_simp
     _ ≤ A * W / Real.log Y * ∑ a ∈ Icc 1 W, cmul Ploc a +
           ∑ a ∈ Icc 1 W, (W : ℝ) ^ θ * cmul Qloc a := by

@@ -13,11 +13,11 @@ from the facts that hold at every large `x`.
 
 namespace Erdos408.TypeII
 
-open Finset Real Filter
+open Finset
 
 /-- The count `∑_{m ≤ w} W(m) ≤ (A₁/c₃ + 1) w / (γ L)` at one scale. -/
 theorem count_at {A₁ C₁r c₃ EM2 : ℝ} (hA₁ : 0 < A₁) (hc₃ : 0 < c₃)
-    (hG : ∀ (x : ℝ) (j W : ℕ) (θ : ℝ), 1 ≤ Real.log x → 1 ≤ j → 2 ≤ proxyCutoff x →
+    (hG : ∀ x j W (θ : ℝ), 1 ≤ Real.log x → 1 ≤ j → 2 ≤ proxyCutoff x →
       C₁r ≤ Real.log (proxyCutoff x) → 0 < θ →
       ∑ m ∈ Icc 1 W, dampedWeight x j m ≤
         A₁ * W / Real.log (proxyCutoff x) * ∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹ +
@@ -41,9 +41,7 @@ theorem count_at {A₁ C₁r c₃ EM2 : ℝ} (hA₁ : 0 < A₁) (hc₃ : 0 < c�
   have hη : Real.log x ^ (-(45 / 100) : ℝ) < 1 :=
     Real.rpow_lt_one_of_one_lt_of_neg hL (by norm_num)
   have hθ0 : 0 < θ := by linarith
-  have hθ1 : θ ≤ 1 := by have : 0 ≤ Real.log x ^ (-(45 / 100) : ℝ) := by positivity
-                         linarith
-  have hS := sum_candidate_inv_le (x := x) hsf.log_ge hEM2
+  have hS := sum_candidate_inv_le  hsf.log_ge hEM2
   have hsmall := rankin_small hsf.one_lt hsf.log_ge hL28 hc₃ hlogY hS hrank
   intro w hw
   exact sum_proxyEnv_count_le hsf.log_ge hsf.gamma_pos hsf.one_le_j hA₁ hc₃ hθ0 hlogY hPiY
@@ -55,7 +53,7 @@ noncomputable def endExp (q : ℝ) (K : ℕ) (CN c E₂ : ℝ) : ℝ :=
     |Real.log ((2 / c + 1) ^ 3 + (E₂ + 2) ^ 3)|
 
 /-- The facts used at one large scale `x`. -/
-structure LargeX (q : ℝ) (K : ℕ) (CN c Ch Cj κ CΦ C₂ c₃ C₁r E₂ L₀ EM1 EM2 : ℝ) (x : ℝ) :
+structure LargeX (q : ℝ) (K : ℕ) (CN c Ch Cj κ CΦ C₂ c₃ C₁r E₂ L₀ EM1 EM2 x : ℝ) :
     Prop where
   box : BoxBound q K c Ch Cj κ C₂ x
   x4 : 4 * κ + 4 ≤ x
@@ -152,8 +150,7 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
     hX.T25 hX.Tc (j := r + 2) (by omega) hjY
   have hsf1 := scaleFacts_of hc₃ hmert hκ hx2 hX.L16 hX.T50 hX.gamma_low hX.T21
     hX.T25 hX.Tc (j := 1) le_rfl (by
-      have : (0 : ℝ) ≤ (r + 2 : ℕ) := Nat.cast_nonneg _
-      push_cast at hjY ⊢; linarith)
+      grind)
   -- the endpoint
   have hV : ∀ a : ℝ, 1 / 10 ≤ a → 1 / 2 ≤ harmonicMass (band x a) := fun a ha =>
     hL₀ x a hX.LL0 ha
@@ -169,9 +166,8 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
   have hSE0 : 0 ≤ endBound q K CN c E₂ x := by
     have := hE.norm_pos
     unfold endBound
-    have : 0 < 1 - q := by linarith
     positivity
-  have hF1 : endBound q K CN c E₂ x ≤ L ^ (1 / 200 : ℝ) :=
+  have hF1 :=
     (endBound_le_exp hq hq₁ hK hc hE₂0 hT1 hs0).trans hX.expE
   have hF3 : (r + 2 : ℝ) ≤ L ^ (1 / 200 : ℝ) := by
     have := hX.F3
@@ -180,8 +176,8 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
   -- the factor sums
   have hlogY : Real.log (proxyCutoff x) = L / T ^ 25 := by unfold proxyCutoff; rw [Real.log_exp]
   have hγ2 : 2 ≤ x ^ γ := by
-    have h1 : Real.exp 2 ≤ Real.exp (L ^ (28 / 100 : ℝ)) := Real.exp_le_exp.2 hX.L28
-    have h2 : (2 : ℝ) ≤ Real.exp 2 := by linarith [Real.add_one_le_exp (2 : ℝ)]
+    have h1 := Real.exp_le_exp.2 hX.L28
+    have h2 : (2 : ℝ) ≤ Real.exp 2 := by linarith [Real.add_one_le_exp 2]
     linarith [hsf.exp_le_rpow]
   have hEγ : EM2 ≤ Real.log (x ^ γ) := by
     rw [Real.log_rpow hx0]
@@ -191,9 +187,9 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
   have hRY : 2 * (b * (s + 1)) ≤ proxyCutoff x := by
     have h1 : L ^ (1 / 2 : ℝ) ≤ L / T ^ 25 := by
       rw [le_div_iff₀ (by positivity)]
-      have : T ^ (25 : ℕ) = T ^ (25 : ℝ) := by norm_cast
+      have : T ^ 25 = T ^ (25 : ℝ) := by norm_cast
       rw [this]
-      calc L ^ (1 / 2 : ℝ) * T ^ (25 : ℝ) ≤ L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ) := by
+      calc _ ≤ L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ) := by
             gcongr; exact hX.T25
         _ = L := by rw [← Real.rpow_add hL0]; norm_num
     have h2 : L / T ^ 25 ≤ proxyCutoff x := by
@@ -204,17 +200,14 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
   have hN2' : ((N : ℕ) : ℝ) ≤ x ^ 2 := by linarith [hX.N2]
   have hfs := factor_sums_le hb0 hEM2 hκ hx2 hL1 hT1 hs0 hN2' hsf1 hX.gamma_low hX.gamma_le hγ2
     hEγ hEY hlogY hRY hX.expR (R := r + 1) (by
-      have : ((r + 1 : ℕ) : ℝ) ≤ ((r + 2 : ℕ) : ℝ) := by exact_mod_cast (by omega : r + 1 ≤ r + 2)
-      linarith) (by omega)
+      grind) (by omega)
   obtain ⟨hF4, hF5, hPr, hP1⟩ := hfs
   -- E4
   have hE4 := final_E4 hq₁ hE hV hX.box hC₂ hΦ hκ hX.x4 hL1 hT0 hX.N2 hX.L3 hsf hjs hSE0 hF1
     hF3 hF4 hF5 hX.TPhi
   -- E5
   have hPiY := hmert (proxyCutoff x) (by
-    have h1 : (1 : ℝ) ≤ L ^ (45 / 100 : ℝ) := Real.one_le_rpow hL1 (by norm_num)
-    have := Real.add_one_le_exp (L ^ (45 / 100 : ℝ))
-    linarith [hsf.cutoff_gt])
+    grind)
   have hlogY0 : 0 < Real.log (proxyCutoff x) := by rw [hlogY]; positivity
   have hcount := count_at (N := N) hA₁ hc₃ hG hEM2 hsf (by linarith [hX.L16]) hX.L28 hPiY hlogY0
     (by rw [hlogY]; exact hX.C1) (by
@@ -227,7 +220,7 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
     (by simpa using hPr) hP1 hX.T42
   -- combine
   rw [compositeSum_eq, proxySum_eq]
-  have hM0 : 0 ≤ M 0 := (abs_nonneg _).trans (by simpa using hΦ.2.2.2 0 0)
+  have hM0 := (abs_nonneg _).trans (by simpa using hΦ.2.2.2 0 0)
   have hM1 : 0 ≤ M 1 := by
     have h := cutoff_deriv_bound_nonneg hΦ 1
     push_cast at h

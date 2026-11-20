@@ -50,7 +50,7 @@ theorem presInd_le_one (π o : Option ℕ) : presInd π o ≤ 1 := by
 
 /-- With nothing prescribed the indicator is one. -/
 theorem presInd_none (o : Option ℕ) : presInd none o = 1 :=
-  ite_eq_left (Or.inl rfl)
+  by rfl
 
 /-- With the prime `p` prescribed the indicator is `[o = p]`. -/
 theorem presInd_some (p : ℕ) (o : Option ℕ) :
@@ -63,14 +63,14 @@ theorem atomCost_nonneg {c : ℝ} {ν : ℕ → ℝ} (hc : 0 ≤ c) (hν : ∀ p
     0 ≤ atomCost c ν π := by
   cases π with
   | none => exact zero_le_one
-  | some p => exact mul_nonneg hc (hν p)
+  | some p => solve_by_elim [mul_nonneg]
 
 /-- The atom cost is monotone in the constant. -/
 theorem atomCost_mono {c c' : ℝ} {ν : ℕ → ℝ} (hcc : c ≤ c') (hν : ∀ p, 0 ≤ ν p)
     (π : Option ℕ) : atomCost c ν π ≤ atomCost c' ν π := by
   cases π with
   | none => exact le_rfl
-  | some p => exact mul_le_mul_of_nonneg_right hcc (hν p)
+  | some p => solve_by_elim [mul_le_mul_of_nonneg_right]
 
 /-! ### Row iteration over histories -/
 
@@ -88,9 +88,7 @@ private theorem chainVisit_cons_succ {N : ℕ} (s : ChainState x d Y d₀ u v r 
   induction j using Fin.induction with
   | zero => rfl
   | succ j ih =>
-    simp only [chainVisit] at ih ⊢
-    rw [Fin.induction_succ, Fin.induction_succ, ← Fin.succ_castSucc, ih]
-    simp
+    simp_all [chainVisit]
 
 /-- The end of a history is the end of its tail from the state after its first edge. -/
 private theorem chainEnd_cons {N : ℕ} (s : ChainState x d Y d₀ u v r B)
@@ -105,16 +103,13 @@ private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℝ) :
     ∑ h ∈ histories x d Y d₀ u v r B 0, F h =
       ∑ c ∈ multBox B ×ˢ multBox B, F (fun _ => c, Fin.elim0) := by
   refine sum_nbij' (fun h => h.1 0) (fun c => (fun _ => c, Fin.elim0)) ?_ ?_ ?_ ?_ ?_
-  · intro h hh
-    simp only [histories, mem_product, Fintype.mem_piFinset] at hh ⊢
-    exact hh.1 0
+  · grind [histories]
   · intro c hc
     simp only [histories, mem_product, Fintype.mem_piFinset] at hc ⊢
     exact ⟨fun _ => hc, fun i => i.elim0⟩
   · intro h _
     exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
-  · intro c _
-    rfl
+  · simp
   · intro h _
     congr 1
     exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
@@ -133,13 +128,10 @@ private theorem sum_histories_succ {N : ℕ} (F : History x d Y d₀ u v r (N + 
     exact ⟨hh.1 0, hh.2 0, fun i => hh.1 _, fun i => hh.2 _⟩
   · intro t ht
     simp only [histories, mem_product, Fintype.mem_piFinset] at ht ⊢
-    exact ⟨fun i => Fin.cases ht.1 ht.2.2.1 i, fun i => Fin.cases ht.2.1 ht.2.2.2 i⟩
-  · intro h _
-    simp
-  · intro t _
-    simp
-  · intro h _
-    simp
+    exact ⟨Fin.cases ht.1 ht.2.2.1, Fin.cases ht.2.1 ht.2.2.2⟩
+  · simp
+  · simp
+  simp
 
 /-- **The row iteration**: for nonnegative ghost coefficients `G j` and edge coefficients
 `E j` whose weighted row sums against `h` are at most `a_j h` and `b_j h`, and for `f ≤ h`,
@@ -166,15 +158,15 @@ theorem sum_history_le_of_rows {h f : ChainState x d Y d₀ u v r B → ℝ} (hf
     rw [sum_histories_zero]
     simp only [Fin.prod_univ_succ, Fin.prod_univ_zero, mul_one]
     -- one ghost choice, then `f ≤ h`
-    calc ∑ c ∈ multBox B ×ˢ multBox B, G 0 s c * f (chainGhostOut x d Y d₀ u v r B s c)
+    calc _
         ≤ ∑ c ∈ multBox B ×ˢ multBox B, G 0 s c * h (chainGhostOut x d Y d₀ u v r B s c) :=
           sum_le_sum fun c _ => mul_le_mul_of_nonneg_left (hf _) (hG0 _ _ _)
-      _ ≤ a 0 * h s := hG 0 s
+      _ ≤ _ := hG 0 s
   | succ N ih =>
     intro G E a b hG0 hE0 ha hb hG hE s
     rw [sum_histories_succ]
     have h0 : ∀ hh : History x d Y d₀ u v r N, ∀ c e,
-        chainVisit (N := N + 1) s (Fin.cons c hh.1, Fin.cons e hh.2) 0 = s := fun _ _ _ => rfl
+        chainVisit  s (Fin.cons c hh.1, Fin.cons e hh.2) 0 = s := fun _ _ _ => rfl
     simp only [Fin.prod_univ_succ (n := N + 1), Fin.prod_univ_succ (n := N),
       ← Fin.succ_castSucc, Fin.castSucc_zero, chainVisit_cons_succ, chainEnd_cons, Fin.cons_succ,
       Fin.cons_zero, h0]

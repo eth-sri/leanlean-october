@@ -24,7 +24,7 @@ counted positions have their ratio in any `[α, β] ⊆ [0, 1]` (`RootBox.lean`)
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 variable {K : ℕ}
 
@@ -32,8 +32,8 @@ variable {K : ℕ}
 their root ratio in `[α, β]`, for every `[α, β] ⊆ [0, 1]`. -/
 def IntervalBound (T : Finset (ℕ × ℕ)) (Φ : ℕ × ℕ → Prop) [DecidablePred Φ] (A E : ℝ) :
     Prop :=
-  ∀ α β : ℝ, 0 ≤ α → α ≤ β → β ≤ 1 →
-    (#{P ∈ T | Φ P ∧ α ≤ rootRatio P ∧ rootRatio P ≤ β} : ℝ) ≤ A * (β - α) + E
+  ∀ α β, 0 ≤ α → α ≤ β → β ≤ 1 →
+    (#{P ∈ T | Φ P ∧ α ≤ rootRatio P ∧ rootRatio P ≤ β}) ≤ A * (β - α) + E
 
 /-- For a nonzero integer `n`, the positions with `‖n r‖ ≤ δ` number at most
 `6Aδ + (2|n| + 1) E`: their ratios lie within `δ/|n|` of one of the `2|n| + 1` points `k/n`,
@@ -41,12 +41,11 @@ def IntervalBound (T : Finset (ℕ × ℕ)) (Φ : ℕ × ℕ → Prop) [Decidabl
 theorem card_circleDist_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P.1)
     {Φ : ℕ × ℕ → Prop} [DecidablePred Φ] {A E : ℝ} (hA : 0 ≤ A) (hE : 0 ≤ E)
     (hI : IntervalBound T Φ A E) {n : ℤ} (hn : n ≠ 0) {δ : ℝ} (hδ : 0 ≤ δ) :
-    (#{P ∈ T | Φ P ∧ circleDist (n * rootRatio P) ≤ δ} : ℝ) ≤
+    (#{P ∈ T | Φ P ∧ circleDist (n * rootRatio P) ≤ δ}) ≤
       6 * A * δ + (2 * |(n : ℝ)| + 1) * E := by
   have hn1 : (1 : ℝ) ≤ |(n : ℝ)| := by
-    rw [← Int.cast_abs]
     exact_mod_cast Int.one_le_abs hn
-  have hn0 : (n : ℝ) ≠ 0 := Int.cast_ne_zero.2 hn
+  have hn0 : (n : ℝ) ≠ 0 := by positivity
   set w := δ / |(n : ℝ)|
   have hw : 0 ≤ w := by positivity
   set lo : ℤ → ℝ := fun k => max 0 ((k : ℝ) / n - w)
@@ -56,23 +55,21 @@ theorem card_circleDist_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P.1)
       (Icc (-|n|) |n|).biUnion fun k => {P ∈ T | Φ P ∧ lo k ≤ rootRatio P ∧
         rootRatio P ≤ hi k} := by
     intro P hP
-    rw [mem_filter] at hP
+    simp at hP
     obtain ⟨hPT, hΦ, hr⟩ := hP
     set r := rootRatio P
-    have hr0 : 0 ≤ r := rootRatio_nonneg P
-    have hr1 : r < 1 := rootRatio_lt_one (hT P hPT)
+    have hr0 := rootRatio_nonneg P
+    have hr1 := rootRatio_lt_one (hT P hPT)
     unfold circleDist at hr
     have hk := abs_sub_round ((n : ℝ) * r)
     have hnr : |(n : ℝ) * r| ≤ |(n : ℝ)| := by
       rw [abs_mul, abs_of_nonneg hr0]
-      exact mul_le_of_le_one_right (abs_nonneg _) hr1.le
+      nlinarith
     -- `|k| ≤ |n r| + 1/2 < |n| + 1`
     have hkn : |round ((n : ℝ) * r)| ≤ |n| := by
       have : ((|round ((n : ℝ) * r)| : ℤ) : ℝ) < |n| + 1 := by
         push_cast
-        have := abs_sub_abs_le_abs_sub ((round ((n : ℝ) * r) : ℤ) : ℝ) ((n : ℝ) * r)
-        rw [abs_sub_comm ((round ((n : ℝ) * r) : ℤ) : ℝ)] at this
-        linarith
+        grind
       exact Int.lt_add_one_iff.1 (by exact_mod_cast this)
     refine mem_biUnion.2 ⟨round ((n : ℝ) * r), mem_Icc.2 (abs_le.1 hkn), ?_⟩
     -- `|r - k/n| = |n r - k| / |n|`
@@ -80,8 +77,7 @@ theorem card_circleDist_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P.1)
       rw [show r - (round ((n : ℝ) * r) : ℝ) / n = ((n : ℝ) * r - round ((n : ℝ) * r)) / n by
         field_simp, abs_div]
       exact div_le_div_of_nonneg_right hr (abs_nonneg _)
-    rw [abs_le] at hdist
-    exact mem_filter.2 ⟨hPT, hΦ, max_le hr0 (by linarith), le_min hr1.le (by linarith)⟩
+    grind
   -- each interval has length at most `2δ/|n|`
   have hk : ∀ k, (#{P ∈ T | Φ P ∧ lo k ≤ rootRatio P ∧ rootRatio P ≤ hi k} : ℝ) ≤
       A * (2 * w) + E := by
@@ -89,12 +85,10 @@ theorem card_circleDist_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P.1)
     by_cases hlh : lo k ≤ hi k
     · refine (hI (lo k) (hi k) (le_max_left _ _) hlh (min_le_left _ _)).trans ?_
       have : hi k - lo k ≤ 2 * w := by
-        have := min_le_right 1 ((k : ℝ) / n + w)
-        have := le_max_right 0 ((k : ℝ) / n - w)
-        linarith
+        grind
       gcongr
     · have hempty : {P ∈ T | Φ P ∧ lo k ≤ rootRatio P ∧ rootRatio P ≤ hi k} = ∅ :=
-        filter_false_of_mem fun P _ h => hlh (h.2.1.trans h.2.2)
+        by grind
       rw [hempty, card_empty, Nat.cast_zero]
       positivity
   have hcard : ((Icc (-|n|) |n|).card : ℝ) = 2 * |(n : ℝ)| + 1 := by
@@ -104,17 +98,16 @@ theorem card_circleDist_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P.1)
     have := congrArg (fun z : ℤ => (z : ℝ)) h
     push_cast at this
     exact this
-  calc (#{P ∈ T | Φ P ∧ circleDist (n * rootRatio P) ≤ δ} : ℝ)
+  calc _
       ≤ ∑ k ∈ Icc (-|n|) |n|,
           (#{P ∈ T | Φ P ∧ lo k ≤ rootRatio P ∧ rootRatio P ≤ hi k} : ℝ) := by
         exact_mod_cast (card_le_card hsub).trans card_biUnion_le
     _ ≤ ∑ _k ∈ Icc (-|n|) |n|, (A * (2 * w) + E) := sum_le_sum fun k _ => hk k
     _ = (2 * |(n : ℝ)| + 1) * (A * (2 * w)) + (2 * |(n : ℝ)| + 1) * E := by
-        rw [sum_const, nsmul_eq_mul, hcard]
-        ring
-    _ ≤ 6 * A * δ + (2 * |(n : ℝ)| + 1) * E := by
+        simp_all
+    _ ≤ _ := by
         have h3 : (2 * |(n : ℝ)| + 1) * (2 * w) ≤ 6 * δ := by
-          simp only [w]
+          simp [w]
           rw [mul_div_assoc', mul_div_assoc', div_le_iff₀ (by linarith)]
           nlinarith
         nlinarith
@@ -124,21 +117,20 @@ carry weight more than `θ` number at most `θ⁻¹ ∑_t w_t #{B · t}`. -/
 theorem card_lt_sum_ite_le {ι : Type*} (T : Finset (ℕ × ℕ)) (Φ : ℕ × ℕ → Prop)
     [DecidablePred Φ] (s : Finset ι) {w : ι → ℝ} (hw : ∀ t ∈ s, 0 ≤ w t)
     (B : ℕ × ℕ → ι → Prop) [∀ P t, Decidable (B P t)] {θ : ℝ} (hθ : 0 < θ) :
-    (#{P ∈ T | Φ P ∧ θ < ∑ t ∈ s, if B P t then w t else 0} : ℝ) ≤
+    (#{P ∈ T | Φ P ∧ θ < ∑ t ∈ s, if B P t then w t else 0}) ≤
       θ⁻¹ * ∑ t ∈ s, w t * #{P ∈ T | Φ P ∧ B P t} := by
   rw [le_inv_mul_iff₀ hθ]
   have hnn : ∀ P, 0 ≤ ∑ t ∈ s, if B P t then w t else 0 := fun P =>
-    sum_nonneg fun t ht => by split_ifs; exacts [hw t ht, le_rfl]
-  calc θ * (#{P ∈ T | Φ P ∧ θ < ∑ t ∈ s, if B P t then w t else 0} : ℝ)
+    sum_nonneg fun t ht => by grind
+  calc _
       = ∑ _P ∈ {P ∈ T | Φ P ∧ θ < ∑ t ∈ s, if B P t then w t else 0}, θ := by
         rw [sum_const, nsmul_eq_mul, mul_comm]
     _ ≤ ∑ P ∈ {P ∈ T | Φ P ∧ θ < ∑ t ∈ s, if B P t then w t else 0},
           ∑ t ∈ s, if B P t then w t else 0 := sum_le_sum fun P hP => (mem_filter.1 hP).2.2.le
     _ ≤ ∑ P ∈ {P ∈ T | Φ P}, ∑ t ∈ s, if B P t then w t else 0 := by
         refine sum_le_sum_of_subset_of_nonneg (fun P hP => ?_) fun P _ _ => hnn P
-        rw [mem_filter] at hP ⊢
-        exact ⟨hP.1, hP.2.1⟩
-    _ = ∑ t ∈ s, w t * #{P ∈ T | Φ P ∧ B P t} := by
+        grind
+    _ = _ := by
         rw [sum_comm]
         refine sum_congr rfl fun t _ => ?_
         rw [← sum_filter, sum_const, nsmul_eq_mul, filter_filter, mul_comm]
@@ -155,7 +147,7 @@ theorem one_le_labelBound {x : ℝ} (hL : 0 ≤ Real.log x) (d : Data K) : 1 ≤
 
 /-- A product of at most one band prime per group is at most `B`. -/
 theorem prod_le_labelBound {x : ℝ} (hL : 0 ≤ Real.log x) {d : Data K} {Z : Fin K → ℕ}
-    (hZ : ∀ j, Z j = 1 ∨ Z j ∈ band x (d.a j)) : ((∏ j, Z j : ℕ) : ℝ) ≤ labelBound x d := by
+    (hZ : ∀ j, Z j = 1 ∨ Z j ∈ band x (d.a j)) : (∏ j, Z j : ℕ) ≤ labelBound x d := by
   rw [labelBound, mul_sum, Real.exp_sum, Nat.cast_prod]
   refine prod_le_prod₀ (fun j _ => Nat.cast_nonneg _) fun j _ => ?_
   rcases hZ j with h | h
@@ -165,14 +157,13 @@ theorem prod_le_labelBound {x : ℝ} (hL : 0 ≤ Real.log x) {d : Data K} {Z : F
 
 /-- The selections number at most `B`. -/
 theorem card_selections_le_labelBound {x : ℝ} (hL : 0 ≤ Real.log x) (d : Data K)
-    (I : Finset (Fin K)) (i : Fin K) : ((selections x d I i).card : ℝ) ≤ labelBound x d := by
+    (I : Finset (Fin K)) (i : Fin K) : (selections x d I i).card ≤ labelBound x d := by
   unfold selections
   rw [Fintype.card_piFinset, Nat.cast_prod, labelBound, mul_sum, Real.exp_sum]
   refine prod_le_prod₀ (fun j _ => Nat.cast_nonneg _) fun j _ => ?_
   split_ifs
   · exact card_band_le _ _
-  · rw [card_singleton, Nat.cast_one]
-    exact Real.one_le_exp (mul_nonneg zero_le_two (Real.rpow_nonneg hL _))
+  simpa using Real.one_le_exp (mul_nonneg zero_le_two (Real.rpow_nonneg hL _))
 
 /-- The inverse threshold `exp(L^{a_i}/4)` is at most `B`. -/
 theorem exp_div_four_le_labelBound {x : ℝ} (hL : 0 ≤ Real.log x) (d : Data K) (i : Fin K) :
@@ -181,7 +172,7 @@ theorem exp_div_four_le_labelBound {x : ℝ} (hL : 0 ≤ Real.log x) (d : Data K
   refine Real.exp_le_exp.2 ?_
   have h₁ : Real.log x ^ d.a i ≤ ∑ j, Real.log x ^ d.a j :=
     single_le_sum (fun j _ => Real.rpow_nonneg hL _) (mem_univ i)
-  have h₂ : 0 ≤ Real.log x ^ d.a i := Real.rpow_nonneg hL _
+  have h₂ : 0 ≤ Real.log x ^ d.a i := by positivity
   linarith
 
 /-- An omission product is at most the list product. -/
@@ -209,12 +200,10 @@ private theorem eventually_rpow_ge_affine' {alo : ℝ} (halo : 1 / 10 < alo) (K 
     Real.tendsto_log_atTop.eventually_ge_atTop 1] with x hx hL
   set u := Real.log x ^ (1 / 100 : ℝ) with hu_def
   have hx' : 8 * (3 * K + 600) + 1 ≤ u := hx
-  have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg K
-  -- `L^{a₋} ≥ L^{0.1} = u^{10} ≥ u^2`
-  have h10 : u ^ (10 : ℕ) ≤ Real.log x ^ alo := by
-    rw [hu_def, ← Real.rpow_natCast, ← Real.rpow_mul (by linarith)]
+  have h10 : u ^ 10 ≤ Real.log x ^ alo := by
+    rw [← Real.rpow_natCast, ← Real.rpow_mul (by linarith)]
     exact Real.rpow_le_rpow_of_exponent_le hL (by norm_num; linarith)
-  have h2 : u ^ 2 ≤ u ^ (10 : ℕ) := pow_le_pow_right₀ (by linarith) (by norm_num)
+  have h2 : u ^ 2 ≤ u ^ 10 := pow_le_pow_right₀ (by linarith) (by norm_num)
   nlinarith
 
 /-! ### The count of bad positions -/
@@ -226,8 +215,8 @@ theorem card_not_goodFirst_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P
     {Φ : ℕ × ℕ → Prop} [DecidablePred Φ] {A E : ℝ} (hA : 0 ≤ A) (hE : 0 ≤ E)
     (hI : IntervalBound T Φ A E) {Y : ℝ} (hY : 0 < Y) (d₀ : ℝ) {J : ℕ} {p : Lists K J}
     (hp : ∀ i h, p i h ≠ 0) :
-    (#{P ∈ T | Φ P ∧ ¬ GoodFirst Y d₀ (rootRatio P) p} : ℝ) ≤
-      ((J : ℝ) + 1) ^ K * ⌊Y ^ (1 / 5 : ℝ)⌋₊ *
+    (#{P ∈ T | Φ P ∧ ¬ GoodFirst Y d₀ (rootRatio P) p}) ≤
+      (J + 1) ^ K * ⌊Y ^ (1 / 5 : ℝ)⌋₊ *
         (6 * A * Y ^ (-(7 / 10 : ℝ)) + (2 * ⌊Y ^ (1 / 5 : ℝ)⌋₊ * listProd p + 1) * E) := by
   set n := ⌊Y ^ (1 / 5 : ℝ)⌋₊
   set δ := Y ^ (-(7 / 10 : ℝ))
@@ -235,10 +224,10 @@ theorem card_not_goodFirst_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P
     prod_ne_zero_iff.2 fun i _ => prod_ne_zero_iff.2 fun h _ => hp i h
   -- a failure is a pair `(D, l)` with `‖l D r‖ ≤ Y^{-0.7}`
   have hsub : {P ∈ T | Φ P ∧ ¬ GoodFirst Y d₀ (rootRatio P) p} ⊆
-      (univ : Finset (Fin K → Fin (J + 1))).biUnion fun o => (Icc 1 n).biUnion fun l =>
+      univ.biUnion fun o => (Icc 1 n).biUnion fun l =>
         {P ∈ T | Φ P ∧ circleDist ((((l * omitProd p o : ℕ) : ℤ) : ℝ) * rootRatio P) ≤ δ} := by
     intro P hP
-    rw [mem_filter] at hP
+    simp at hP
     obtain ⟨hPT, hΦ, hbad⟩ := hP
     unfold GoodFirst at hbad
     push Not at hbad
@@ -247,9 +236,7 @@ theorem card_not_goodFirst_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P
       mem_filter.2 ⟨hPT, hΦ, ?_⟩⟩⟩
     push_cast
     exact hl
-  have hδ : 0 ≤ δ := Real.rpow_nonneg hY.le _
-  have hn : (n : ℝ) ≤ Y ^ (1 / 5 : ℝ) := Nat.floor_le (by positivity)
-  -- each pair costs `6 A δ + (2 l D + 1) E ≤ 6 A δ + (2 n G + 1) E`
+  have hδ : 0 ≤ δ := by positivity
   have hpair : ∀ o, ∀ l ∈ Icc 1 n,
       (#{P ∈ T | Φ P ∧ circleDist ((((l * omitProd p o : ℕ) : ℤ) : ℝ) * rootRatio P) ≤ δ} : ℝ) ≤
         6 * A * δ + (2 * n * listProd p + 1) * E := by
@@ -260,11 +247,11 @@ theorem card_not_goodFirst_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P
     refine (card_circleDist_le hT hA hE hI hN hδ).trans ?_
     have habs : |((((l * omitProd p o : ℕ) : ℤ)) : ℝ)| ≤ n * listProd p := by
       rw [Int.cast_natCast, Nat.abs_cast, Nat.cast_mul]
-      have h₁ : (l : ℝ) ≤ n := by exact_mod_cast hl'.2
-      have h₂ : (omitProd p o : ℝ) ≤ listProd p := by exact_mod_cast omitProd_le_listProd hp o
+      have h₁ : l ≤ n := by exact_mod_cast hl'.2
+      have h₂ : (omitProd p o) ≤ listProd p := by exact_mod_cast omitProd_le_listProd hp o
       gcongr
     have h2 : (2 * |((((l * omitProd p o : ℕ) : ℤ)) : ℝ)| + 1) * E ≤
-        (2 * n * listProd p + 1) * E := mul_le_mul_of_nonneg_right (by linarith) hE
+        (2 * n * listProd p + 1) * E := by nlinarith
     linarith
   calc (#{P ∈ T | Φ P ∧ ¬ GoodFirst Y d₀ (rootRatio P) p} : ℝ)
       ≤ ∑ o : Fin K → Fin (J + 1), ∑ l ∈ Icc 1 n,
@@ -275,7 +262,7 @@ theorem card_not_goodFirst_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P
         exact sum_le_sum fun o _ => by exact_mod_cast card_biUnion_le
     _ ≤ ∑ _o : Fin K → Fin (J + 1), ∑ _l ∈ Icc 1 n,
           (6 * A * δ + (2 * n * listProd p + 1) * E) :=
-        sum_le_sum fun o _ => sum_le_sum fun l hl => hpair o l hl
+        by solve_by_elim [sum_le_sum]
     _ = _ := by
         rw [sum_const, sum_const, card_univ, Fintype.card_fun, Fintype.card_fin,
           Fintype.card_fin, Nat.card_Icc, Nat.add_sub_cancel, nsmul_eq_mul, nsmul_eq_mul]
@@ -294,7 +281,7 @@ theorem card_not_goodSecond_at_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0
     (hp : ∀ i h, p i h ≠ 0) {I : Finset (Fin K)} (hIne : I.Nonempty) :
     (#{P ∈ T | Φ P ∧ ¬ ∑ t ∈ (freshDraws x d I).filter
           (fun t => ¬ Separated x d d₀ I (I.max' hIne) (rootRatio P) p t), freshWeight x d I t ≤
-        Real.exp (-Real.log x ^ d.a (I.max' hIne) / 4)} : ℝ) ≤
+        Real.exp (-Real.log x ^ d.a (I.max' hIne) / 4)}) ≤
       (Real.exp (-Real.log x ^ d.a (I.max' hIne) / 4))⁻¹ *
         ((((J : ℝ) + 1) ^ K * (selections x d I (I.max' hIne)).card) ^ 2 *
           (6 * A * (100 * Real.exp (-Real.log x ^ d.a (I.max' hIne))) +
@@ -307,36 +294,31 @@ theorem card_not_goodSecond_at_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0
   set G := listProd p
   set N : (Fin K → Fin (J + 1)) × (Fin K → ℕ) → ℕ := fun q => omitProd p q.1 * ∏ j, q.2 j
   set Q := ((univ ×ˢ S) ×ˢ (univ ×ˢ S)).filter fun q => N q.1 ≠ N q.2
-  set X := (Q.card : ℝ) * (6 * A * δ + (2 * G * Bd ^ 2 + 1) * E)
-  have hδ : 0 ≤ δ := by positivity
+  set X := Q.card * (6 * A * δ + (2 * G * Bd ^ 2 + 1) * E)
   have hB1 := one_le_labelBound hL d
   -- the fresh draws consist of `1`s and band primes
   have hfresh : ∀ t ∈ freshDraws x d I, ∀ j, t j = 1 ∨ t j ∈ band x (d.a j) := by
     intro t ht j
     have htj := Fintype.mem_piFinset.1 ht j
-    split_ifs at htj
-    · exact Or.inl (mem_singleton.1 htj)
-    · exact Or.inr htj
+    grind
   have hsel : ∀ Z ∈ S, ∀ j, Z j = 1 ∨ Z j ∈ band x (d.a j) := by
     intro Z hZ j
     have hZj := Fintype.mem_piFinset.1 hZ j
-    split_ifs at hZj
-    · exact Or.inr hZj
-    · exact Or.inl (mem_singleton.1 hZj)
+    grind
   -- for one fresh draw, a failure is a pair of distinct trial integers at distance `< δ`
   have hsep : ∀ t ∈ freshDraws x d I,
       (#{P ∈ T | Φ P ∧ ¬ Separated x d d₀ I i (rootRatio P) p t} : ℝ) ≤ X := by
     intro t ht
     have hTt : ∏ j, t j ≠ 0 := prod_ne_zero_iff.2 fun j _ => by
       rcases hfresh t ht j with h | h
-      · rw [h]; exact one_ne_zero
+      · positivity
       · exact (TypeII.band_prime h).ne_zero
     set n : (Fin K → Fin (J + 1)) × (Fin K → ℕ) → (Fin K → Fin (J + 1)) × (Fin K → ℕ) → ℤ :=
-      fun q q' => ((N q : ℤ) - N q') * ∏ j, (t j : ℤ)
+      fun q q' => ((N q) - N q') * ∏ j, (t j)
     have hsub : {P ∈ T | Φ P ∧ ¬ Separated x d d₀ I i (rootRatio P) p t} ⊆
         Q.biUnion fun q => {P ∈ T | Φ P ∧ circleDist ((n q.1 q.2 : ℝ) * rootRatio P) ≤ δ} := by
       intro P hP
-      rw [mem_filter] at hP
+      simp at hP
       obtain ⟨hPT, hΦ, hbad⟩ := hP
       unfold Separated at hbad
       push Not at hbad
@@ -354,17 +336,16 @@ theorem card_not_goodSecond_at_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0
       rw [mem_product, mem_product, mem_product] at hmem
       have hn0 : n q.1 q.2 ≠ 0 :=
         mul_ne_zero (sub_ne_zero.2 (by exact_mod_cast hne)) (by exact_mod_cast hTt)
-      refine (card_circleDist_le hT hA hE hI hn0 hδ).trans ?_
+      refine (card_circleDist_le hT hA hE hI hn0 (by positivity)).trans ?_
       -- `|N| ≤ max (D Z, D' Z') ∏ T ≤ G B · B`
-      have hNle : ∀ q' : (Fin K → Fin (J + 1)) × (Fin K → ℕ), q'.2 ∈ S →
-          (N q' : ℝ) ≤ G * Bd := by
+      have hNle : ∀ q', q'.2 ∈ S →
+          (N q') ≤ G * Bd := by
         intro q' hq'
         simp only [N]
         push_cast
-        have h₁ : (omitProd p q'.1 : ℝ) ≤ G := by exact_mod_cast omitProd_le_listProd hp q'.1
         have h₂ := prod_le_labelBound hL (hsel q'.2 hq')
         push_cast at h₂
-        exact mul_le_mul h₁ h₂ (by positivity) (by positivity)
+        exact mul_le_mul (by exact_mod_cast omitProd_le_listProd hp q'.1) h₂ (by positivity) (by positivity)
       have hT' := prod_le_labelBound hL (hfresh t ht)
       push_cast at hT'
       have habs : |(n q.1 q.2 : ℝ)| ≤ G * Bd ^ 2 := by
@@ -377,11 +358,11 @@ theorem card_not_goodSecond_at_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0
           rw [abs_le]
           constructor <;> linarith [(Nat.cast_nonneg (N q.1) : (0 : ℝ) ≤ _),
             (Nat.cast_nonneg (N q.2) : (0 : ℝ) ≤ _)]
-        calc |(N q.1 : ℝ) - N q.2| * ∏ j, (t j : ℝ) ≤ G * Bd * Bd :=
-              mul_le_mul h₃ hT' (by positivity) (by positivity)
-          _ = G * Bd ^ 2 := by ring
+        calc _ ≤ G * Bd * Bd :=
+              by gcongr <;> positivity
+          _ = _ := by ring
       have h2 : (2 * |(n q.1 q.2 : ℝ)| + 1) * E ≤ (2 * G * Bd ^ 2 + 1) * E :=
-        mul_le_mul_of_nonneg_right (by linarith) hE
+        by nlinarith
       linarith
     calc (#{P ∈ T | Φ P ∧ ¬ Separated x d d₀ I i (rootRatio P) p t} : ℝ)
         ≤ ∑ q ∈ Q, (#{P ∈ T | Φ P ∧ circleDist ((n q.1 q.2 : ℝ) * rootRatio P) ≤ δ} : ℝ) := by
@@ -397,14 +378,13 @@ theorem card_not_goodSecond_at_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0
     rw [mem_filter] at hP ⊢
     rw [sum_filter, not_le] at hP
     exact hP
-  have hX : 0 ≤ X := by positivity
-  have hQ : (Q.card : ℝ) ≤ (((J : ℝ) + 1) ^ K * S.card) ^ 2 := by
+  have hQ : Q.card ≤ (((J : ℝ) + 1) ^ K * S.card) ^ 2 := by
     have := card_filter_le ((univ ×ˢ S) ×ˢ (univ ×ˢ S)) fun q => N q.1 ≠ N q.2
     rw [card_product, card_product, card_univ, Fintype.card_fun, Fintype.card_fin,
       Fintype.card_fin] at this
-    calc (Q.card : ℝ) ≤ (((J + 1) ^ K * S.card * ((J + 1) ^ K * S.card) : ℕ) : ℝ) := by
+    calc _ ≤ (((J + 1) ^ K * S.card * ((J + 1) ^ K * S.card) : ℕ) : ℝ) := by
           exact_mod_cast this
-      _ = (((J : ℝ) + 1) ^ K * S.card) ^ 2 := by push_cast; ring
+      _ = _ := by push_cast; ring
   calc _ ≤ (#{P ∈ T | Φ P ∧ θ < ∑ t ∈ freshDraws x d I,
         if ¬ Separated x d d₀ I i (rootRatio P) p t then freshWeight x d I t else 0} : ℝ) := by
         exact_mod_cast card_le_card hsub
@@ -416,7 +396,7 @@ theorem card_not_goodSecond_at_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0
         · exact freshWeight_nonneg I hV t
         · exact hsep t ht
     _ = θ⁻¹ * X := by rw [← sum_mul, sum_freshWeight I hV, one_mul]
-    _ ≤ θ⁻¹ * ((((J : ℝ) + 1) ^ K * S.card) ^ 2 * (6 * A * δ + (2 * G * Bd ^ 2 + 1) * E)) := by
+    _ ≤ _ := by
         gcongr
         exact mul_le_mul_of_nonneg_right hQ (by positivity)
 
@@ -467,7 +447,7 @@ theorem eventually_card_not_isGood_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < al
               (fun t => ¬ Separated x d d₀ I (I.max' hI) (rootRatio P) p t),
             freshWeight x d I t ≤ Real.exp (-Real.log x ^ d.a (I.max' hI) / 4)} := by
     intro P hP
-    rw [mem_filter] at hP
+    simp at hP
     obtain ⟨hPT, hΦ, hbad⟩ := hP
     by_cases h1 : GoodFirst Y d₀ (rootRatio P) p
     · have h2 : ¬ GoodSecond x d d₀ (rootRatio P) p := fun h2 => hbad ⟨h1, h2⟩
@@ -476,7 +456,7 @@ theorem eventually_card_not_isGood_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < al
       obtain ⟨I, hI', h⟩ := h2
       exact mem_union_right _ (mem_biUnion.2 ⟨I, mem_univ _,
         mem_filter.2 ⟨hPT, hΦ, hI', not_le.2 h⟩⟩)
-    · exact mem_union_left _ (mem_filter.2 ⟨hPT, hΦ, h1⟩)
+    grind
   -- test (i): the main term is `6 M^K Y^{-1/2} A ≤ ε/2 A`
   have hfirst : (#{P ∈ T | Φ P ∧ ¬ GoodFirst Y d₀ (rootRatio P) p} : ℝ) ≤
       A * (ε / 2) + E * (((padCount x : ℝ) + 1) ^ K * n * (2 * n * G + 1)) := by
@@ -493,9 +473,9 @@ theorem eventually_card_not_isGood_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < al
     have hYr : Y ^ (-(1 / 2 : ℝ)) ≤ Real.exp ((3 - Real.log x ^ alo) / 2) := by
       rw [Real.rpow_def_of_pos hY]
       exact Real.exp_le_exp.2 (by linarith)
-    have h12 : (12 : ℝ) ≤ Real.exp 11 := by linarith [Real.add_one_le_exp (11 : ℝ)]
+    have h12 : (12 : ℝ) ≤ Real.exp 11 := by linarith [Real.add_one_le_exp 11]
     have hmain : 6 * ((padCount x : ℝ) + 1) ^ K * Y ^ (-(1 / 2 : ℝ)) ≤ ε / 2 := by
-      calc 6 * ((padCount x : ℝ) + 1) ^ K * Y ^ (-(1 / 2 : ℝ))
+      calc _
           ≤ 6 * Real.exp (K * u) * Real.exp ((3 - Real.log x ^ alo) / 2) := by gcongr
         _ ≤ Real.exp 11 * Real.exp (K * u) * Real.exp ((3 - Real.log x ^ alo) / 2) / 2 := by
             rw [le_div_iff₀ two_pos]
@@ -503,15 +483,15 @@ theorem eventually_card_not_isGood_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < al
               (Real.exp_pos ((3 - Real.log x ^ alo) / 2))]
         _ = Real.exp (11 + K * u + (3 - Real.log x ^ alo) / 2) / 2 := by
             rw [Real.exp_add, Real.exp_add]
-        _ ≤ ε / 2 :=
+        _ ≤ _ :=
             div_le_div_of_nonneg_right (Real.exp_le_exp.2 (by linarith [mul_nonneg hK hu]))
               zero_le_two
     have hA6 : ((padCount x : ℝ) + 1) ^ K * n * (6 * A * Y ^ (-(7 / 10 : ℝ))) ≤ A * (ε / 2) := by
-      calc ((padCount x : ℝ) + 1) ^ K * n * (6 * A * Y ^ (-(7 / 10 : ℝ)))
+      calc _
           ≤ ((padCount x : ℝ) + 1) ^ K * Y ^ (1 / 5 : ℝ) * (6 * A * Y ^ (-(7 / 10 : ℝ))) := by
             gcongr
         _ = A * (6 * ((padCount x : ℝ) + 1) ^ K * Y ^ (-(1 / 2 : ℝ))) := by rw [← hδY]; ring
-        _ ≤ A * (ε / 2) := mul_le_mul_of_nonneg_left hmain hA
+        _ ≤ _ := by gcongr
     nlinarith
   -- test (ii): each nonempty `I` has main term at most `ε / 2^{K+1} A`
   have hsecond : ∀ I : Finset (Fin K), (#{P ∈ T | Φ P ∧ ∃ hI : I.Nonempty,
@@ -537,39 +517,36 @@ theorem eventually_card_not_isGood_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < al
         {P ∈ T | Φ P ∧ ¬ ∑ t ∈ (freshDraws x d I).filter
             (fun t => ¬ Separated x d d₀ I (I.max' hI') (rootRatio P) p t),
           freshWeight x d I t ≤ Real.exp (-Real.log x ^ d.a (I.max' hI') / 4)} := by
-      intro P hP
-      rw [mem_filter] at hP ⊢
-      obtain ⟨hPT, hΦ, _, h⟩ := hP
-      exact ⟨hPT, hΦ, h⟩
+      grind
     refine (Nat.cast_le.2 (card_le_card hsub')).trans
       ((card_not_goodSecond_at_le hT hA hE hI hL0 hV d₀ hp' hI').trans ?_)
     set a := d.a (I.max' hI')
     set S := ((selections x d I (I.max' hI')).card : ℝ)
     set θ := Real.exp (-Real.log x ^ a / 4)
     have ha : alo ≤ a := (hd.window _).1
-    have hLa : Real.log x ^ alo ≤ Real.log x ^ a := Real.rpow_le_rpow_of_exponent_le hL ha
+    have hLa : Real.log x ^ alo ≤ Real.log x ^ a := by gcongr
     have hS := card_selections_le hd hL hI'
     have hSB : S ≤ Bd := card_selections_le_labelBound hL0 d I _
     have hθB : θ⁻¹ ≤ Bd := exp_div_four_le_labelBound hL0 d _
     -- `4K L^{a - g} ≤ L^a / 8`, since `L^g ≥ 32K`
     have hgap : 4 * K * Real.log x ^ (a - g) ≤ Real.log x ^ a / 8 := by
       have h := Real.rpow_add (by linarith : (0 : ℝ) < Real.log x) (a - g) g
-      rw [sub_add_cancel] at h
+      simp at h
       have : 0 ≤ Real.log x ^ (a - g) := by positivity
       nlinarith
     have hMS : ((padCount x : ℝ) + 1) ^ K * S ≤
         Real.exp (K * u + 2 * K * Real.log x ^ (a - g)) := by
-      calc ((padCount x : ℝ) + 1) ^ K * S
+      calc _
           ≤ Real.exp (K * u) * Real.exp (2 * Real.log x ^ (a - g)) ^ K :=
-            mul_le_mul hM hS (Nat.cast_nonneg _) (Real.exp_pos _).le
-        _ = Real.exp (K * u + 2 * K * Real.log x ^ (a - g)) := by
+            by bound
+        _ = _ := by
             rw [← Real.exp_nat_mul, ← Real.exp_add]
             ring_nf
-    have h600 : (600 : ℝ) ≤ Real.exp 599 := by linarith [Real.add_one_le_exp (599 : ℝ)]
-    have h2 : (2 : ℝ) ≤ Real.exp 1 := by linarith [Real.add_one_le_exp (1 : ℝ)]
+    have h600 : (600 : ℝ) ≤ Real.exp 599 := by linarith [Real.add_one_le_exp 599]
+    have h2 : (2 : ℝ) ≤ Real.exp 1 := by linarith [Real.add_one_le_exp 1]
     have hmain : (((padCount x : ℝ) + 1) ^ K * S) ^ 2 * (600 * Real.exp (-Real.log x ^ a)) / θ ≤
         ε / 2 / 2 ^ K := by
-      calc (((padCount x : ℝ) + 1) ^ K * S) ^ 2 * (600 * Real.exp (-Real.log x ^ a)) / θ
+      calc _
           = (((padCount x : ℝ) + 1) ^ K * S) ^ 2 * 600 *
               Real.exp (-Real.log x ^ a - -Real.log x ^ a / 4) := by
             rw [Real.exp_sub]
@@ -585,9 +562,9 @@ theorem eventually_card_not_isGood_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < al
         _ ≤ Real.exp (-Real.log x ^ alo / 4 - (K + 1)) := by
             refine Real.exp_le_exp.2 ?_
             nlinarith
-        _ ≤ ε / 2 / 2 ^ K := by
+        _ ≤ _ := by
             rw [le_div_iff₀ (by positivity), le_div_iff₀ two_pos, Real.exp_sub]
-            calc Real.exp (-Real.log x ^ alo / 4) / Real.exp (K + 1) * 2 ^ K * 2
+            calc _
                 ≤ Real.exp (-Real.log x ^ alo / 4) / Real.exp (K + 1) * Real.exp 1 ^ K *
                     Real.exp 1 := by gcongr
               _ = ε := by
@@ -596,29 +573,23 @@ theorem eventually_card_not_isGood_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < al
                     show ε = Real.exp (-Real.log x ^ alo / 4) from rfl]
                   congr 1
                   ring
-    have hθ0 : 0 < θ⁻¹ := inv_pos.2 (Real.exp_pos _)
     have hA' : θ⁻¹ * ((((padCount x : ℝ) + 1) ^ K * S) ^ 2 *
         (6 * A * (100 * Real.exp (-Real.log x ^ a))))
         ≤ A * (ε / 2 / 2 ^ K) := by
-      calc θ⁻¹ * ((((padCount x : ℝ) + 1) ^ K * S) ^ 2 *
-            (6 * A * (100 * Real.exp (-Real.log x ^ a))))
+      calc _
           = A * ((((padCount x : ℝ) + 1) ^ K * S) ^ 2 * (600 * Real.exp (-Real.log x ^ a)) /
               θ) := by
-            rw [div_eq_mul_inv]
             ring
-        _ ≤ A * (ε / 2 / 2 ^ K) := mul_le_mul_of_nonneg_left hmain hA
+        _ ≤ _ := by gcongr
     have hE' : θ⁻¹ * ((((padCount x : ℝ) + 1) ^ K * S) ^ 2 * ((2 * G * Bd ^ 2 + 1) * E)) ≤
         E * (Bd * (((padCount x : ℝ) + 1) ^ K * Bd) ^ 2 * (2 * G * Bd ^ 2 + 1)) := by
-      have hS0 : 0 ≤ S := Nat.cast_nonneg _
-      have hc : 0 ≤ (2 * (G : ℝ) * Bd ^ 2 + 1) * E := by positivity
-      calc θ⁻¹ * ((((padCount x : ℝ) + 1) ^ K * S) ^ 2 * ((2 * G * Bd ^ 2 + 1) * E))
+      calc _
           ≤ Bd * ((((padCount x : ℝ) + 1) ^ K * Bd) ^ 2 * ((2 * G * Bd ^ 2 + 1) * E)) := by
             gcongr
         _ = _ := by ring
-    rw [mul_add, mul_add]
     linarith
   -- sum the two tests and the `2^K` sets `I`
-  calc (#{P ∈ T | Φ P ∧ ¬ IsGood x d Y d₀ P p} : ℝ)
+  calc _
       ≤ (#{P ∈ T | Φ P ∧ ¬ GoodFirst Y d₀ (rootRatio P) p} : ℝ) +
           ∑ I : Finset (Fin K), (#{P ∈ T | Φ P ∧ ∃ hI : I.Nonempty,
             ¬ ∑ t ∈ (freshDraws x d I).filter
@@ -632,7 +603,7 @@ theorem eventually_card_not_isGood_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < al
           ∑ _I : Finset (Fin K), (A * (ε / 2 / 2 ^ K) +
             E * (Bd * (((padCount x : ℝ) + 1) ^ K * Bd) ^ 2 * (2 * G * Bd ^ 2 + 1))) :=
         add_le_add hfirst (sum_le_sum fun I _ => hsecond I)
-    _ = A * ε + E * badIntervals x d Y p := by
+    _ = _ := by
         rw [sum_const, card_univ, Fintype.card_finset, Fintype.card_fin, nsmul_eq_mul,
           badIntervals]
         push_cast

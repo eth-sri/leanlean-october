@@ -28,7 +28,7 @@ bad states.
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 open scoped Matrix
 
 variable {K : ℕ}
@@ -75,16 +75,14 @@ private theorem norm_one_sub_goodVec_le {x : ℝ} {d : Data K} {Y d₀ : ℝ}
 private theorem norm_endVec_le {C CX alo ahi g x : ℝ} {d : Data K}
     (hd : Admissible C CX alo ahi g x d) (hL : 0 ≤ Real.log x) {Y d₀ : ℝ}
     (s : State x d Y d₀) : ‖endVec x d Y d₀ s‖ ≤ (Real.log x ^ C) ^ 2 := by
-  have hB : 0 ≤ Real.log x ^ C := Real.rpow_nonneg hL C
+  have hB := Real.rpow_nonneg hL C
   have hα : ‖d.α (s.1.1.1 / listProd s.1.2)‖ ≤ Real.log x ^ C := by
     by_cases h : d.α (s.1.1.1 / listProd s.1.2) = 0
-    · rw [h, norm_zero]
-      exact hB
+    · simp_all
     · exact (hd.α_supp _ h).2.2.2
   have hβ : ‖d.β s.1.1.2‖ ≤ Real.log x ^ C := by
     by_cases h : d.β s.1.1.2 = 0
-    · rw [h, norm_zero]
-      exact hB
+    · simp_all
     · exact (hd.β_supp _ h).2.2.2
   rw [endVec, norm_mul, norm_star, sq]
   exact mul_le_mul hα hβ (norm_nonneg _) hB
@@ -93,7 +91,7 @@ private theorem norm_endVec_le {C CX alo ahi g x : ℝ} {d : Data K}
 private theorem rowPairing_eq_sum (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) :
     rowPairing q A₀ x d Y d₀ = stateMass x d * ∑ s, ∑ s',
       star (endVec x d Y d₀ s) * (rowOp q A₀ x d Y d₀ s s' * endVec x d Y d₀ s') := by
-  simp only [rowPairing, stateInner, Matrix.mulVec, dotProduct, mul_sum]
+  simp [rowPairing, stateInner, Matrix.mulVec, dotProduct, mul_sum]
 
 /-- `⟨f, 𝒜 f⟩ = ⟨𝒢 f, 𝒯 𝒢 f⟩`: since `𝒢 f` is slot invariant, `𝒮` fixes it on both sides. -/
 private theorem pairing_eq (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) :
@@ -109,7 +107,7 @@ private theorem pairing_eq (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) :
   -- `𝒢 f` is slot invariant, so `𝒮 𝒢 f = 𝒢 f`
   have hGf : SlotInvariant fun s => goodVec x d Y d₀ s * endVec x d Y d₀ s :=
     fun s s' σ h₁ hσ => by
-      simp only [slotInvariant_goodVec s s' σ h₁ hσ, slotInvariant_endVec s s' σ h₁ hσ]
+      simp [slotInvariant_goodVec s s' σ h₁ hσ, slotInvariant_endVec s s' σ h₁ hσ]
   have hu : SlotInvariant fun s => star (goodVec x d Y d₀ s * endVec x d Y d₀ s) :=
     fun s s' σ h₁ hσ => congrArg star (hGf s s' σ h₁ hσ)
   have hSGf : symOp x d Y d₀ *ᵥ (fun s => goodVec x d Y d₀ s * endVec x d Y d₀ s) =
@@ -130,7 +128,7 @@ private theorem pairing_eq (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ) :
     _ = ∑ s, star (goodVec x d Y d₀ s * endVec x d Y d₀ s) *
           (rowOp q A₀ x d Y d₀ *ᵥ fun s => goodVec x d Y d₀ s * endVec x d Y d₀ s) s :=
         sum_mul_symOp_mulVec hu _
-    _ = _ := by simp only [Matrix.mulVec, dotProduct, mul_sum]
+    _ = _ := by simp [Matrix.mulVec, dotProduct, mul_sum]
 
 /-- Removing the projections costs at most `L^{4C}` times the bad mass: `|f| ≤ L^{2C}` at both
 ends. -/
@@ -139,7 +137,7 @@ theorem norm_rowPairing_sub_pairing_le {q C CX alo ahi g x : ℝ} {d : Data K}
     ‖rowPairing q A₀ x d Y d₀ - pairing q A₀ x d Y d₀‖ ≤
       stateMass x d * Real.log x ^ (4 * C) * badMass q A₀ x d Y d₀ := by
   classical
-  have hL : 0 ≤ Real.log x := Real.log_nonneg hx
+  have hL := Real.log_nonneg hx
   have hm := stateMass_nonneg x d
   have hL4 : Real.log x ^ (4 * C) = (Real.log x ^ C) ^ 4 := by
     rw [mul_comm, Real.rpow_mul hL, ← Real.rpow_natCast]
@@ -151,17 +149,17 @@ theorem norm_rowPairing_sub_pairing_le {q C CX alo ahi g x : ℝ} {d : Data K}
   refine mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (sum_le_sum fun s _ => ?_)) hm
   rw [mul_sum]
   refine (norm_sum_le _ _).trans (sum_le_sum fun s' _ => ?_)
-  have hdiff : star (endVec x d Y d₀ s) * (rowOp q A₀ x d Y d₀ s s' * endVec x d Y d₀ s') -
-      star (goodVec x d Y d₀ s * endVec x d Y d₀ s) *
-        (rowOp q A₀ x d Y d₀ s s' * (goodVec x d Y d₀ s' * endVec x d Y d₀ s')) =
-      star (endVec x d Y d₀ s) * rowOp q A₀ x d Y d₀ s s' * endVec x d Y d₀ s' *
+  let vec := endVec x d Y d₀
+  have hdiff : star (vec s) * (rowOp q A₀ x d Y d₀ s s' * vec s') -
+      star (goodVec x d Y d₀ s * vec s) *
+        (rowOp q A₀ x d Y d₀ s s' * (goodVec x d Y d₀ s' * vec s')) =
+      star (vec s) * rowOp q A₀ x d Y d₀ s s' * vec s' *
         (1 - goodVec x d Y d₀ s * goodVec x d Y d₀ s') := by
     rw [star_mul', star_goodVec]
     ring
   -- each factor `f` costs `L^{2C}`, and `1 - g g'` is at most the bad count
   rw [hdiff, norm_mul, norm_mul, norm_mul, norm_star]
-  calc ‖endVec x d Y d₀ s‖ * ‖rowOp q A₀ x d Y d₀ s s'‖ * ‖endVec x d Y d₀ s'‖ *
-        ‖1 - goodVec x d Y d₀ s * goodVec x d Y d₀ s'‖
+  calc _
       ≤ (Real.log x ^ C) ^ 2 * ‖rowOp q A₀ x d Y d₀ s s'‖ * (Real.log x ^ C) ^ 2 *
           ((if IsGood x d Y d₀ s.1.1 s.1.2 then 0 else 1) +
             (if IsGood x d Y d₀ s'.1.1 s'.1.2 then 0 else 1)) := by
@@ -174,10 +172,10 @@ theorem norm_rowPairing_sub_pairing_le {q C CX alo ahi g x : ℝ} {d : Data K}
 /-- The bad mass is at most `C₀ UV L^{3A₀} exp(-L^{α₋}/8)`, where `UV = d₀ Y X`. -/
 theorem eventually_badMass_le {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
     (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hg : 0 < g) (A₀ : ℝ) :
-    ∃ C₀ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
+    ∃ C₀, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
       stateMass x d * badMass q A₀ x d (2 ^ j) (2 ^ k) ≤
         C₀ * (2 ^ k * 2 ^ j * d.X) * Real.log x ^ (3 * A₀) *
           Real.exp (-Real.log x ^ alo / 8) :=
-  eventually_stateMass_mul_sum_le hq hq₁ hCX halo hahi hg A₀
+  by apply eventually_stateMass_mul_sum_le <;> assumption
 
 end Erdos408.OneSided

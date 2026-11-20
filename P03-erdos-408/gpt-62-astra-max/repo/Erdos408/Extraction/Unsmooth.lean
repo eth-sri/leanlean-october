@@ -43,7 +43,7 @@ namespace Unsmooth
 /-- Every derivative of the smooth transition is bounded. -/
 lemma exists_abs_iteratedDeriv_smoothTransition_le (r : ℕ) :
     ∃ K : ℝ, ∀ y, |iteratedDeriv r smoothTransition y| ≤ K := by
-  have hcont : Continuous (iteratedDeriv r smoothTransition) :=
+  have hcont  :=
     smoothTransition.contDiff.continuous_iteratedDeriv r (by exact_mod_cast le_top)
   obtain ⟨K, hK⟩ := (isCompact_Icc (a := (0 : ℝ)) (b := 1)).exists_bound_of_continuousOn
     hcont.continuousOn
@@ -164,7 +164,7 @@ lemma isCutoff_upperCutoff {x : ℝ} (hT : 3 ≤ logLog x) :
   refine ⟨contDiff_upperCutoff _, fun t => (upperCutoff_mem_Icc hW0 t).1, fun t ht => ?_,
     fun r t => ?_⟩
   · obtain ⟨h₁, h₂⟩ := mem_Ioo_of_upperCutoff_ne_zero hW0 ht
-    have : 1 / logLog x ^ 400 ≤ 1 / 3 := one_div_le_one_div_of_le (by norm_num) hW
+    have  := one_div_le_one_div_of_le (by norm_num) hW
     have h2 : 2 / logLog x ^ 400 = 2 * (1 / logLog x ^ 400) := by ring
     constructor <;> linarith
   · rw [show (400 : ℝ) * r = ((400 * r : ℕ) : ℝ) by push_cast; ring, Real.rpow_natCast,
@@ -189,8 +189,8 @@ lemma exists_abs_psi_sub_le : ∃ c > (0 : ℝ), c ≤ 1 ∧ ∃ C ≥ (0 : ℝ)
     simp
   simp only [hone, mul_one, ite_true] at h₁
   rw [hsum, Complex.norm_real, Real.norm_eq_abs, Nat.cast_one, Real.one_rpow, mul_one] at h₁
-  calc |ψ y - y| ≤ C * y ^ (1 - c) := h₁
-    _ ≤ max C 0 * y ^ (1 - min c 1) :=
+  calc _ ≤ C * y ^ (1 - c) := h₁
+    _ ≤ _ :=
       mul_le_mul (le_max_left _ _) (Real.rpow_le_rpow_of_exponent_le (by linarith)
         (by linarith [min_le_left c 1])) (by positivity) (le_max_right _ _)
 
@@ -212,7 +212,7 @@ lemma theta_sub_theta {a b : ℝ} (hab : a ≤ b) :
 lemma sum_log_primesIoc_le_psi_sub {a b : ℝ} (hab : a ≤ b) :
     ∑ p ∈ primesIoc a b, Real.log p ≤ ψ b - ψ a := by
   rw [psi_sub_psi hab, primesIoc]
-  calc ∑ p ∈ (Finset.Ioc ⌊a⌋₊ ⌊b⌋₊).filter Nat.Prime, Real.log p
+  calc _
       = ∑ p ∈ (Finset.Ioc ⌊a⌋₊ ⌊b⌋₊).filter Nat.Prime, ArithmeticFunction.vonMangoldt p :=
         Finset.sum_congr rfl fun p hp =>
           (ArithmeticFunction.vonMangoldt_apply_prime (Finset.mem_filter.1 hp).2).symm
@@ -292,11 +292,11 @@ lemma eventually_card_dyadicPrimes_ge :
   have h2x : (2 * x) ^ (1 - c) ≤ 2 * x ^ (1 - c) := by
     rw [Real.mul_rpow (by norm_num) hx0.le]
     gcongr
-    calc (2 : ℝ) ^ (1 - c) ≤ 2 ^ (1 : ℝ) :=
+    calc _ ≤ 2 ^ (1 : ℝ) :=
           Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith)
       _ = 2 := Real.rpow_one 2
   -- the prime powers: `2 √(2x) log (2x) ≤ 8 √x L ≤ x / 4`
-  have hsq : √x * √x = x := Real.mul_self_sqrt hx0.le
+  have hsq  := Real.mul_self_sqrt hx0.le
   have hs2 : √2 ≤ 2 := by
     have := Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)
     nlinarith [Real.sqrt_nonneg 2]
@@ -304,12 +304,12 @@ lemma eventually_card_dyadicPrimes_ge :
   rw [← Real.sqrt_eq_rpow] at h₂
   have hpp : 2 * √(2 * x) * Real.log (2 * x) ≤ x / 4 := by
     rw [hs2x, hl2x]
-    calc 2 * (√2 * √x) * (Real.log 2 + Real.log x) ≤ 2 * (2 * √x) * (2 * Real.log x) := by
+    calc _ ≤ 2 * (2 * √x) * (2 * Real.log x) := by
           gcongr
           linarith
       _ = 8 * (√x * Real.log x) := by ring
       _ ≤ 8 * (√x * (1 / 32 * √x)) := by gcongr
-      _ = x / 4 := by linear_combination (1 / 4) * hsq
+      _ = _ := by linear_combination (1 / 4) * hsq
   -- `θ(2x) - θ(x) ≥ x / 2`
   have hψ₂ := abs_le.1 (hψ (2 * x) (by linarith))
   have hψ₁ := abs_le.1 (hψ x (by linarith))
@@ -366,7 +366,7 @@ lemma abs_slotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} (hk : 
     rw [Real.rpow_le_rpow_left_iff hx] at h2
     rw [le_div_iff₀ hε]
     linarith
-  calc |slotCount x u v B n|
+  calc _
       ≤ ∑ Q ∈ (slotTuples x u v).filter (fun Q => ∏ i, Q i ∣ n), |B (Fin.init Q)| :=
         Finset.abs_sum_le_sum_abs _ _
     _ ≤ ∑ Q ∈ (slotTuples x u v).filter (fun Q => ∏ i, Q i ∣ n), (1 : ℝ) :=
@@ -379,7 +379,7 @@ lemma abs_slotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} (hk : 
         push_cast
         rfl
     _ ≤ (2 / ε + 1) ^ (k + 1) := by gcongr; linarith
-    _ ≤ (2 / ε + 1) ^ 3 :=
+    _ ≤ _ :=
         pow_le_pow_right₀ (by linarith [show 0 < 2 / ε by positivity]) (by omega)
 
 /-- The slot primes are at most `x`, so `|C_𝔟| ≤ (∑_{p ≤ x} 1/p)^{k+1}`. -/
@@ -402,13 +402,13 @@ lemma abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → �
     intro i
     obtain ⟨hQi, hp, -⟩ := Finset.mem_filter.1 (hQ.1 i)
     refine mem_primesIoc_one.2 ⟨hp, (hle i).1.trans ?_⟩
-    calc x ^ v i ≤ x ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hx.le
+    calc _ ≤ x ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hx.le
           ((Finset.single_le_sum (fun j _ => hv₀ j) (Finset.mem_univ i)).trans hv)
       _ = x := Real.rpow_one x
   have hpos : ∀ Q ∈ Fintype.piFinset (fun _ : Fin (k + 1) => primesIoc 1 x),
       0 < ∏ i, (Q i : ℝ) := fun Q hQ => Finset.prod_pos fun i _ => by
     exact_mod_cast (mem_primesIoc.1 (Fintype.mem_piFinset.1 hQ i)).1.pos
-  calc |slotMean x u v B|
+  calc _
       ≤ ∑ Q ∈ slotTuples x u v, |B (Fin.init Q) / ∏ i, (Q i : ℝ)| :=
         Finset.abs_sum_le_sum_abs _ _
     _ ≤ ∑ Q ∈ slotTuples x u v, 1 / ∏ i, (Q i : ℝ) := by
@@ -419,7 +419,7 @@ lemma abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → �
     _ ≤ ∑ Q ∈ Fintype.piFinset (fun _ : Fin (k + 1) => primesIoc 1 x),
           1 / ∏ i, (Q i : ℝ) :=
         Finset.sum_le_sum_of_subset_of_nonneg hsub fun Q hQ _ => (one_div_pos.2 (hpos Q hQ)).le
-    _ = (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) := by
+    _ = _ := by
         rw [← Fin.prod_const, Finset.prod_univ_sum]
         refine Finset.sum_congr rfl fun Q _ => ?_
         rw [one_div, ← Finset.prod_inv_distrib]
@@ -468,24 +468,24 @@ lemma eventually_abs_slotCount_sub_slotMean_le : ∀ᶠ x : ℝ in atTop,
   have h₁ := abs_slotCount_le (v := v) (by linarith) hε hk hu hB hn₀ hn
   have h₁' : (2 / (1 / logLog x ^ 20) + 1) ^ 3 ≤ 27 * logLog x ^ 60 := by
     rw [div_div_eq_mul_div, div_one]
-    calc (2 * logLog x ^ 20 + 1) ^ 3 ≤ (3 * logLog x ^ 20) ^ 3 := by gcongr; linarith
-      _ = 27 * logLog x ^ 60 := by ring
+    calc _ ≤ (3 * logLog x ^ 20) ^ 3 := by gcongr; linarith
+      _ = _ := by ring
   -- the harmonic model: `(T + E)^{k+1} ≤ (2T)³ ≤ 8 T⁶⁰`
   have hv₁ : ∑ i, v i ≤ 1 := by linarith
   have h₂ := abs_slotMean_le (x := x) (by linarith) (fun i => hε.le.trans (hu i)) hv₁ hB
   have hH₀ : 0 ≤ ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p :=
     Finset.sum_nonneg fun _ _ => by positivity
   have h₂' : (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) ≤ 8 * logLog x ^ 60 := by
-    calc (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) ≤ (2 * logLog x) ^ (k + 1) := by
+    calc _ ≤ (2 * logLog x) ^ (k + 1) := by
           gcongr
           linarith [hE x hx]
       _ ≤ (2 * logLog x) ^ 3 := pow_le_pow_right₀ (by linarith) (by omega)
       _ = 8 * logLog x ^ 3 := by ring
-      _ ≤ 8 * logLog x ^ 60 := by gcongr; norm_num
-  calc |slotCount x u v B n - slotMean x u v B|
+      _ ≤ _ := by gcongr; norm_num
+  calc _
       ≤ |slotCount x u v B n| + |slotMean x u v B| := abs_sub _ _
     _ ≤ 27 * logLog x ^ 60 + 8 * logLog x ^ 60 := add_le_add (h₁.trans h₁') (h₂.trans h₂')
-    _ = 35 * logLog x ^ 60 := by ring
+    _ = _ := by ring
 
 /-! ### The endpoint strips -/
 
@@ -494,7 +494,7 @@ lemma eventually_logLog_pow_le_rpow (n : ℕ) {c : ℝ} (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop, logLog x ^ n ≤ x ^ c := by
   filter_upwards [(isLittleO_log_rpow_rpow_atTop (n : ℝ) hc).bound one_pos,
     tendsto_logLog_atTop.eventually_ge_atTop 0, eventually_ge_atTop 1] with x hx hT hx₁
-  have hL : 0 ≤ Real.log x := Real.log_nonneg hx₁
+  have hL  := Real.log_nonneg hx₁
   rw [Real.rpow_natCast, Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (by positivity),
     abs_of_nonneg (by positivity), one_mul] at hx
   exact (pow_le_pow_left₀ hT (Real.log_le_self hL) n).trans hx
@@ -508,7 +508,7 @@ lemma abs_upperCutoff_sub_indicator_le {x W : ℝ} (hW : 4 ≤ W) (hWx : W ≤ x
         if p ∈ primesIoc (2 * x) (2 * x + 2 * x / W) then 1 else 0 := by
   have hW0 : 0 < W := by linarith
   have hx0 : 0 < x := by linarith
-  have hxW : 1 ≤ x / W := (one_le_div hW0).2 hWx
+  have hxW  := (one_le_div hW0).2 hWx
   have hS : 0 ≤ (if p ∈ primesIoc (x - 2 * x / W) x then (1 : ℝ) else 0) := by
     split_ifs <;> norm_num
   have hS' : 0 ≤ (if p ∈ primesIoc (2 * x) (2 * x + 2 * x / W) then (1 : ℝ) else 0) := by
@@ -587,12 +587,12 @@ theorem rectangleInput_of_oneSidedTypeII_of_twoSidedCorrelation (h₁ : OneSided
     rw [Real.rpow_neg hT0.le, Real.rpow_ofNat] at h
     calc _ = x / L * (L / x * |∑ p ∈ A, upperCutoff W (((p : ℝ) - 1) / x) * g p|) := by
           field_simp
-      _ ≤ x / L * (C₀ * τ) := by gcongr
+      _ ≤ _ := by gcongr
   -- the endpoint strips
   have hg₀ : ∀ p ∈ A, |g p| ≤ 35 * T ^ 60 := by
     intro p hp
     obtain ⟨hpI, hp⟩ := Finset.mem_filter.1 hp
-    have hp3 : (p : ℝ) ≤ 3 * x + 1 :=
+    have hp3  :=
       (Nat.le_floor_iff (by linarith)).1 (Finset.mem_Icc.1 hpI).2
     have hp1 : ((p - 1 : ℕ) : ℝ) = p - 1 := by
       rw [Nat.cast_sub hp.one_le, Nat.cast_one]
@@ -604,8 +604,7 @@ theorem rectangleInput_of_oneSidedTypeII_of_twoSidedCorrelation (h₁ : OneSided
       35 * T ^ 60 * ((primesIoc (x - 2 * x / W) x).card +
         (primesIoc (2 * x) (2 * x + 2 * x / W)).card) := by
     refine (Finset.abs_sum_le_sum_abs _ _).trans ?_
-    calc ∑ p ∈ A, |(upperCutoff W (((p : ℝ) - 1) / x) -
-          if p ∈ dyadicPrimes x then 1 else 0) * g p|
+    calc _
         ≤ ∑ p ∈ A, ((if p ∈ primesIoc (x - 2 * x / W) x then 1 else 0) +
             (if p ∈ primesIoc (2 * x) (2 * x + 2 * x / W) then 1 else 0)) *
               (35 * T ^ 60) := by
@@ -638,7 +637,7 @@ theorem rectangleInput_of_oneSidedTypeII_of_twoSidedCorrelation (h₁ : OneSided
   have hB' : T ^ 60 * (C * x ^ (1 - c)) ≤ C * x * τ := by
     have hpow : x ^ c * x ^ (1 - c) = x := by
       rw [← Real.rpow_add hx0, add_sub_cancel, Real.rpow_one]
-    have h360 : T ^ 360 * x ^ (1 - c) ≤ x :=
+    have h360  :=
       (mul_le_mul_of_nonneg_right hsave (by positivity)).trans_eq hpow
     have : T ^ 60 * (C * x ^ (1 - c)) = C * (T ^ 360 * x ^ (1 - c)) * τ := by
       rw [hτ]
@@ -650,13 +649,12 @@ theorem rectangleInput_of_oneSidedTypeII_of_twoSidedCorrelation (h₁ : OneSided
     have h := add_le_add hS₁ hS₂
     rw [show x - (x - 2 * x / W) = 2 * x / W by ring,
       show 2 * x + 2 * x / W - 2 * x = 2 * x / W by ring] at h
-    calc 35 * T ^ 60 * ((primesIoc (x - 2 * x / W) x).card +
-          (primesIoc (2 * x) (2 * x + 2 * x / W)).card)
+    calc _
         ≤ 35 * T ^ 60 * (2 / L * (2 * x / W + C * x ^ (1 - c)) +
             2 / L * (2 * x / W + C * x ^ (1 - c))) := by gcongr
       _ = 140 / L * (T ^ 60 * (2 * x / W) + T ^ 60 * (C * x ^ (1 - c))) := by ring
       _ ≤ 140 / L * (2 * x * τ + C * x * τ) := by gcongr
-      _ = x / L * (140 * (2 + C) * τ) := by ring
+      _ = _ := by ring
   -- unsmoothing
   have hsub : dyadicPrimes x ⊆ A := by
     intro p hp
@@ -678,7 +676,7 @@ theorem rectangleInput_of_oneSidedTypeII_of_twoSidedCorrelation (h₁ : OneSided
           add_le_add hΦ (hstrip.trans hstrip')
       _ = _ := by ring
   -- normalizing by `π_x ≥ x / (4L)`
-  have hN : 0 < ((dyadicPrimes x).card : ℝ) := lt_of_lt_of_le (by positivity) hdyad
+  have hN  := lt_of_lt_of_le (by positivity) hdyad
   have heq : (∑ p ∈ dyadicPrimes x, slotCount x u v B (p - 1)) / (dyadicPrimes x).card -
       slotMean x u v B = (∑ p ∈ dyadicPrimes x, g p) / (dyadicPrimes x).card := by
     rw [Finset.sum_sub_distrib, Finset.sum_const, nsmul_eq_mul]
@@ -686,8 +684,8 @@ theorem rectangleInput_of_oneSidedTypeII_of_twoSidedCorrelation (h₁ : OneSided
   change |(∑ p ∈ dyadicPrimes x, slotCount x u v B (p - 1)) / (dyadicPrimes x).card -
     slotMean x u v B| ≤ _
   rw [heq, abs_div, Nat.abs_cast]
-  have hK : 0 ≤ x / L * ((C₀ + 140 * (2 + C)) * τ) := (abs_nonneg _).trans hbound
-  calc |∑ p ∈ dyadicPrimes x, g p| / (dyadicPrimes x).card
+  have hK  := (abs_nonneg _).trans hbound
+  calc _
       ≤ x / L * ((C₀ + 140 * (2 + C)) * τ) / (dyadicPrimes x).card := by gcongr
     _ ≤ x / L * ((C₀ + 140 * (2 + C)) * τ) / (x / (4 * L)) :=
         div_le_div_of_nonneg_left hK (by positivity) hdyad

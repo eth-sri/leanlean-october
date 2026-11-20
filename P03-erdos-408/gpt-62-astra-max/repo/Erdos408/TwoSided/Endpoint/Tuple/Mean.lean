@@ -19,14 +19,13 @@ open MeasureTheory
 /-- `t ↦ ∑_{p ∈ s} c_p p^{it}` is measurable (`0^{it}` included). -/
 theorem measurable_dirichletSum (s : Finset ℕ) (c : ℕ → ℂ) :
     Measurable fun t : ℝ => ∑ p ∈ s, c p * (p : ℂ) ^ ((t : ℂ) * Complex.I) :=
-  Finset.measurable_sum _ fun _ _ =>
-    measurable_const.mul (measurable_const.pow (Complex.measurable_ofReal.mul_const _))
+  by fun_prop
 
 /-- `t ↦ ∑_{n ∈ [1, N]} c_n n^{it}` is continuous. -/
 theorem continuous_dirichletSum_Icc (N : ℕ) (c : ℕ → ℂ) :
     Continuous fun t : ℝ => ∑ n ∈ Finset.Icc 1 N, c n * (n : ℂ) ^ ((t : ℂ) * Complex.I) := by
   refine continuous_finsetSum _ fun n hn => continuous_const.mul ?_
-  have hn0 : n ≠ 0 := by rw [Finset.mem_Icc] at hn; omega
+  have hn0 : n ≠ 0 := by grind
   simp_rw [OneSided.natCast_cpow_mul_I hn0]
   fun_prop
 

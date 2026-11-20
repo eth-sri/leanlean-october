@@ -1,5 +1,8 @@
 module
 
+public import Erdos408.Hypotheses
+public import Erdos408.Scales
+
 public import Erdos408.Extraction.Defs
 
 /-!
@@ -27,9 +30,9 @@ namespace Erdos408.TwoSided
 def GroupAdmissible (c₀ C₀ vlo vhi x : ℝ) {ι : Type} [Fintype ι] [DecidableEq ι]
     (P : ι → Finset ℕ) (big : Finset ι) : Prop :=
   (∀ g h, g ≠ h → Disjoint (P g) (P h)) ∧
-  c₀ * Real.log (Real.log x) ≤ (Finset.univ \ big).card ∧
-  ((Finset.univ \ big).card : ℝ) ≤ C₀ * Real.log (Real.log x) ∧
-  c₀ * Real.log (Real.log x) ≤ big.card ∧ (big.card : ℝ) ≤ C₀ * Real.log (Real.log x) ∧
+  c₀ * logLog x ≤ (Finset.univ \ big).card ∧
+  ((Finset.univ \ big).card : ℝ) ≤ C₀ * logLog x ∧
+  c₀ * logLog x ≤ big.card ∧ (big.card : ℝ) ≤ C₀ * logLog x ∧
   (∀ g, vlo ≤ harmonicMass (P g) ∧ harmonicMass (P g) ≤ vhi) ∧
   (∀ g ∉ big, P g ⊆ primesIcc (Real.exp (Real.log x ^ (0.27 : ℝ)))
     (Real.exp (Real.log x ^ (0.36 : ℝ)))) ∧
@@ -39,8 +42,8 @@ def GroupAdmissible (c₀ C₀ vlo vhi x : ℝ) {ι : Type} [Fintype ι] [Decida
 
 /-- At most `K₀ + C_N s` disjoint inert bands with exponents in the window. -/
 def InertAdmissible (K₀ : ℕ) (CN alo ahi x : ℝ) {r : ℕ} (a : Fin r → ℝ) : Prop :=
-  (r : ℝ) ≤ K₀ + CN * Real.log (Real.log (Real.log x)) ∧ (∀ i, alo ≤ a i ∧ a i ≤ ahi) ∧
-    ∀ i j, i ≠ j → Disjoint (band x (a i)) (band x (a j))
+  (r : ℝ) ≤ K₀ + CN * logLogLog x ∧ (∀ i, alo ≤ a i ∧ a i ≤ ahi) ∧
+    DisjointBands x a
 
 /-- The clipped invariant core. -/
 def CoreAdmissible (B₀ x : ℝ) {ι : Type} [Fintype ι] (P : ι → Finset ℕ) (G : ℕ → ℝ) :
@@ -52,7 +55,7 @@ def CoreAdmissible (B₀ x : ℝ) {ι : Type} [Fintype ι] (P : ι → Finset �
 asks `0 ≤ Φ`). -/
 def CutoffAdmissible (κ CΨ : ℝ) (M : ℕ → ℝ) (x : ℝ) (Ψ : ℝ → ℝ) : Prop :=
   ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) Ψ ∧ (∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) ∧
-    ∀ (k : ℕ) (y : ℝ), |iteratedDeriv k Ψ y| ≤ M k * Real.log (Real.log x) ^ (CΨ * k)
+    ∀ (k : ℕ) (y : ℝ), |iteratedDeriv k Ψ y| ≤ M k * logLog x ^ (CΨ * k)
 
 /-- `F_x = 𝒲 (f_B − C_B)`, PD (6.4) with the spare slot (X1). -/
 noncomputable def centeredCore (x q : ℝ) {r d : ℕ} (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ)

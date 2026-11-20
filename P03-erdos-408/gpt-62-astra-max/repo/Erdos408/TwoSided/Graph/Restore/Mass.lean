@@ -33,9 +33,7 @@ noncomputable def slotMass (P : ι → Finset ℕ) (S : ι → Finset (Fin J)) (
 omit [DecidableEq ι] in
 /-- The label mass is a product over all slots. -/
 lemma labelMass_eq_prod (P : ι → Finset ℕ) (S : ι → Finset (Fin J)) (a : ι → Fin J → ℕ) :
-    labelMass P S a = ∏ g, ∏ i, slotMass P S g i (a g i) := by
-  unfold labelMass slotMass
-  exact prod_congr rfl fun g _ => (Fintype.prod_ite_mem (S g) _).symm
+    labelMass P S a = ∏ g, ∏ i, slotMass P S g i (a g i) := prod_congr rfl fun g _ => (Fintype.prod_ite_mem (S g) _).symm
 
 /-- The label mass is a product measure. -/
 lemma sum_auxLabels_prod (P : ι → Finset ℕ) (S : ι → Finset (Fin J))
@@ -43,9 +41,7 @@ lemma sum_auxLabels_prod (P : ι → Finset ℕ) (S : ι → Finset (Fin J))
     ∑ a ∈ auxLabels P S, ∏ g, ∏ i, f g i (a g i) =
       ∏ g, ∏ i, ∑ v ∈ (if i ∈ S g then P g else {1}), f g i v := by
   unfold auxLabels
-  calc _ = ∏ g, ∑ y ∈ Fintype.piFinset (fun i => if i ∈ S g then P g else {1}),
-        ∏ i, f g i (y i) := (prod_univ_sum _ _).symm
-    _ = _ := prod_congr rfl fun g _ => (prod_univ_sum _ _).symm
+  exact (prod_univ_sum _ _).symm.trans (prod_congr rfl fun g _ => (prod_univ_sum _ _).symm)
 
 omit [Fintype ι] [DecidableEq ι] in
 /-- Each slot has mass `1`. -/
@@ -57,8 +53,7 @@ lemma sum_slotMass {P : ι → Finset ℕ} (hV : ∀ g, harmonicMass (P g) ≠ 0
   · simp only [hi, ite_true, mul_inv]
     rw [← mul_sum]
     have h : ∑ p ∈ P g, (p : ℝ)⁻¹ = harmonicMass (P g) := by simp [harmonicMass]
-    rw [h]
-    exact inv_mul_cancel₀ (hV g)
+    grind
   · simp [hi]
 
 /-- The mass of the labels equal to `p` in the slots `R ⊆ S g₀` is `μ_{g₀}(p)^{|R|}`. -/
@@ -73,18 +68,15 @@ lemma sum_labelMass_mul_prod_ite {P : ι → Finset ℕ} (hV : ∀ g, harmonicMa
       ∏ i ∈ R, (if a g₀ i = p then (1 : ℝ) else 0) = ∏ g, ∏ i, e g i (a g i) := by
     intro a
     rw [Fintype.prod_eq_single g₀ fun g hg => prod_eq_one fun i _ => by simp [e, hg]]
-    rw [← Fintype.prod_ite_mem R]
-    exact prod_congr rfl fun i _ => by by_cases hi : i ∈ R <;> simp [e, hi]
+    aesop
   simp_rw [hprod, labelMass_eq_prod, ← prod_mul_distrib]
-  rw [sum_auxLabels_prod P S fun g i v => slotMass P S g i v * e g i v]
-  rw [Fintype.prod_eq_single g₀ fun g hg => prod_eq_one fun i _ => by
-    simp only [e, hg, false_and, ite_false, mul_one]; exact sum_slotMass hV S g i]
-  rw [← prod_const, ← Fintype.prod_ite_mem R]
+  rw [sum_auxLabels_prod P S fun g i v => slotMass P S g i v * e g i v, Fintype.prod_eq_single g₀ fun g hg => prod_eq_one fun i _ => by
+    simp [e, hg]; exact sum_slotMass hV S g i, ← prod_const, ← Fintype.prod_ite_mem R]
   refine prod_congr rfl fun i _ => ?_
   by_cases hi : i ∈ R
   · simp only [hi, ite_true, e, and_self, mul_ite, mul_one, mul_zero]
     rw [ite_eq_left (hR hi), sum_ite_eq' (P g₀) p, ite_eq_left hp, slotMass, ite_eq_left (hR hi)]
-  · simp only [hi, ite_false, e, and_false, mul_one]
+  · simp [hi, e]
     exact sum_slotMass hV S g₀ i
 
 /-- The mass of the labels satisfying `Q` in one slot `i₀ ∈ S g₀`. -/
@@ -99,11 +91,7 @@ lemma sum_labelMass_mul_ite {P : ι → Finset ℕ} (hV : ∀ g, harmonicMass (P
     have hmem : a g₀ i₀ ∈ P g₀ := by
       have := mem_auxLabels.1 ha g₀ i₀
       rwa [ite_eq_left hi₀] at this
-    simp only [prod_singleton]
-    rw [sum_ite_eq]
-    by_cases hQ : Q (a g₀ i₀)
-    · rw [ite_eq_left hQ, ite_eq_left (mem_filter.2 ⟨hmem, hQ⟩)]
-    · rw [ite_eq_right hQ, ite_eq_right fun h => hQ (mem_filter.1 h).2]
+    aesop
   rw [sum_congr rfl fun a ha => by rw [hsplit a ha], sum_congr rfl fun a _ => mul_sum _ _ _,
     sum_comm]
   refine sum_congr rfl fun p hp => ?_
@@ -122,8 +110,7 @@ lemma sum_labelMass_mul_ite_eq {P : ι → Finset ℕ} (hV : ∀ g, harmonicMass
     have hmem : a g₀ j₀ ∈ P g₀ := by
       have := mem_auxLabels.1 ha g₀ j₀
       rwa [ite_eq_left hj₀] at this
-    simp only [prod_pair hij, mul_ite, mul_one, mul_zero]
-    rw [sum_ite_eq, ite_eq_left hmem]
+    aesop
   rw [sum_congr rfl fun a ha => by rw [hsplit a ha], sum_congr rfl fun a _ => mul_sum _ _ _,
     sum_comm]
   refine sum_congr rfl fun p hp => ?_

@@ -65,8 +65,7 @@ theorem twoSidedCorrelation_of_graphTransference (hG : GraphTransference) :
     have hLA : L ^ C₁ * L ^ (-(A + max C₁ 0)) ≤ L ^ (-A) := by
       rw [← Real.rpow_add hL0]
       exact Real.rpow_le_rpow_of_exponent_le hL (by linarith [le_max_left C₁ 0])
-    calc ∑ ν, ‖β ν * strippedComparison x q₀ Subtype.val (Aν ν) (Bν ν) (φ ν) (φ' ν) (ψ ν)
-          (ψ' ν) (centeredCore x q a u v Bc) G Ψ‖
+    calc _
         ≤ ∑ ν, ‖β ν‖ * (|CC| * L ^ (-(A + max C₁ 0))) := by
           refine Finset.sum_le_sum fun ν _ => ?_
           rw [norm_mul]
@@ -76,19 +75,19 @@ theorem twoSidedCorrelation_of_graphTransference (hG : GraphTransference) :
       _ = (∑ ν, ‖β ν‖) * (|CC| * L ^ (-(A + max C₁ 0))) := by rw [Finset.sum_mul]
       _ ≤ L ^ C₁ * (|CC| * L ^ (-(A + max C₁ 0))) := by gcongr
       _ = |CC| * (L ^ C₁ * L ^ (-(A + max C₁ 0))) := by ring
-      _ ≤ |CC| * L ^ (-A) := by gcongr
+      _ ≤ _ := by gcongr
   -- `TwoSidedCorrelation`'s sum is `twoSidedSum` for `ι = ↥(Sg ∪ Bg)`
   have key : |TwoSided.twoSidedSum x q q₀ κ a u v Bc (Subtype.val : ↥(Sg ∪ Bg) → Finset ℕ) G Ψ| ≤
       (|CG| + |CC|) * L ^ (-A) := by
     rw [← Real.norm_eq_abs, ← Complex.norm_real]
-    calc ‖(TwoSided.twoSidedSum x q q₀ κ a u v Bc (Subtype.val : ↥(Sg ∪ Bg) → Finset ℕ) G Ψ : ℂ)‖
+    calc _
         = ‖((TwoSided.twoSidedSum x q q₀ κ a u v Bc Subtype.val G Ψ : ℂ) +
               ∑ ν, β ν * strippedComparison x q₀ Subtype.val (Aν ν) (Bν ν) (φ ν) (φ' ν) (ψ ν)
                 (ψ' ν) (centeredCore x q a u v Bc) G Ψ) -
             ∑ ν, β ν * strippedComparison x q₀ Subtype.val (Aν ν) (Bν ν) (φ ν) (φ' ν) (ψ ν)
               (ψ' ν) (centeredCore x q a u v Bc) G Ψ‖ := by rw [add_sub_cancel_right]
       _ ≤ CG * L ^ (-A) + |CC| * L ^ (-A) := (norm_sub_le _ _).trans (add_le_add hraw hcmp')
-      _ ≤ (|CG| + |CC|) * L ^ (-A) := by
+      _ ≤ _ := by
           rw [add_mul]
           gcongr
           exact le_abs_self _

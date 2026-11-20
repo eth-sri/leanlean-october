@@ -12,10 +12,10 @@ The pointwise facts at one large scale, and the assembly of `|Comp_j - Prox_j|`.
 
 namespace Erdos408.TypeII
 
-open Finset Real Filter
+open Finset
 
 /-- The scale facts at a large `x`. -/
-theorem scaleFacts_of {c Ch κ c₃ : ℝ} {x : ℝ} {j : ℕ} (hc₃ : 0 < c₃)
+theorem scaleFacts_of {c Ch κ c₃ x : ℝ} {j : ℕ} (hc₃ : 0 < c₃)
     (hmert : ∀ y : ℝ, 2 ≤ y → c₃ / Real.log y ≤ ∏ p ∈ primesIcc 2 y, (1 - (1 : ℝ) / p))
     (hκ : 1 < κ) (hx : 2 ≤ x) (hL : 16 ≤ Real.log x) (hT : 50 ≤ logLog x)
     (hγ : logLog x ^ (-21 : ℝ) ≤ presieveExponent c Ch x)
@@ -35,12 +35,10 @@ theorem scaleFacts_of {c Ch κ c₃ : ℝ} {x : ℝ} {j : ℕ} (hc₃ : 0 < c₃
     h25.trans (Real.rpow_le_rpow_of_exponent_le (by linarith) (by norm_num))
   have hexpγ := exp_le_rpow_gamma hx0 hL0 hT0 hγ h21
   have hexpY := exp_le_proxyCutoff hL0 hT0 h25'
-  have hT25 : T ^ (25 : ℕ) = T ^ (25 : ℝ) := by norm_cast
-  have hlogY : Real.log (proxyCutoff x) = L / T ^ 25 := by unfold proxyCutoff; rw [Real.log_exp]
-  -- `L / T^{25} ≥ L^{1/2}`
+  have hT25 : T ^ 25 = T ^ (25 : ℝ) := by norm_cast
   have hYL : L ^ (1 / 2 : ℝ) ≤ L / T ^ 25 := by
     rw [le_div_iff₀ (by positivity), hT25]
-    calc L ^ (1 / 2 : ℝ) * T ^ (25 : ℝ) ≤ L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ) := by gcongr
+    calc _ ≤ L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ) := by gcongr
       _ = L := by rw [← Real.rpow_add hL0]; norm_num
   have hY2 : 2 ≤ proxyCutoff x := by
     have h1 : (1 : ℝ) ≤ L ^ (28 / 100 : ℝ) := Real.one_le_rpow (by linarith) (by norm_num)
@@ -50,17 +48,16 @@ theorem scaleFacts_of {c Ch κ c₃ : ℝ} {x : ℝ} {j : ℕ} (hc₃ : 0 < c₃
   · exact one_le_prod_mul hc₃ hmert (by linarith) hT0 hγ hY2 hTc
   · -- `exp(L^{0.45}) < Y`
     unfold proxyCutoff
-    rw [Real.exp_lt_exp]
+    simp
     have h1 : L ^ (45 / 100 : ℝ) < L ^ (1 / 2 : ℝ) :=
       Real.rpow_lt_rpow_of_exponent_lt (by linarith) (by norm_num)
-    have h2 : L ^ (1 / 2 : ℝ) ≤ L / T ^ 25 := hYL
-    exact lt_of_lt_of_le h1 h2
+    grind
   · -- `Y ≤ x^γ`
-    have hγT : 1 ≤ γ * T ^ (25 : ℕ) := by
-      have h1 := mul_le_mul_of_nonneg_right hγ (show 0 ≤ T ^ (25 : ℕ) by positivity)
-      have h2 : T ^ (-21 : ℝ) * T ^ (25 : ℕ) = T ^ (4 : ℕ) := by
+    have hγT : 1 ≤ γ * T ^ 25 := by
+      have h1 := mul_le_mul_of_nonneg_right hγ (show 0 ≤ T ^ 25 by positivity)
+      have h2 : T ^ (-21 : ℝ) * T ^ 25 = T ^ 4 := by
         rw [hT25, ← Real.rpow_add hT0]; norm_num
-      have h3 : (1 : ℝ) ≤ T ^ (4 : ℕ) := one_le_pow₀ (by linarith)
+      have h3 : (1 : ℝ) ≤ T ^ 4 := one_le_pow₀ (by linarith)
       linarith
     unfold proxyCutoff
     rw [Real.rpow_def_of_pos hx0, Real.exp_le_exp, div_le_iff₀ (pow_pos hT0 25)]
@@ -69,18 +66,15 @@ theorem scaleFacts_of {c Ch κ c₃ : ℝ} {x : ℝ} {j : ℕ} (hc₃ : 0 < c₃
   · -- `Y ≤ M`
     have h1 : proxyCutoff x ≤ x := by
       have hle : L / T ^ 25 ≤ L := by
-        rw [div_le_iff₀ (pow_pos hT0 25)]
-        have : 1 ≤ T ^ 25 := one_le_pow₀ (by linarith)
-        nlinarith
-      calc proxyCutoff x = Real.exp (L / T ^ 25) := rfl
-        _ ≤ Real.exp L := Real.exp_le_exp.2 hle
+        bound
+      calc _ = Real.exp (L / T ^ 25) := rfl
+        _ ≤ Real.exp L := by gcongr
         _ = x := Real.exp_log hx0
     have h2 : x ≤ (⌊κ * x + 1⌋₊ : ℝ) := by
       have := Nat.lt_floor_add_one (κ * x + 1)
       nlinarith
     linarith
   · -- `j < Y`
-    have h1 : (j : ℝ) < L ^ (1 / 2 : ℝ) := by linarith
     have h2 : L / T ^ 25 ≤ proxyCutoff x := by
       unfold proxyCutoff
       have := Real.add_one_le_exp (L / T ^ 25)
@@ -114,22 +108,21 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
   set s := logLogLog x
   set T := logLog x
   set L := Real.log x
-  have hL0 : 0 < L := by linarith
   have hT0 : 0 < T := by linarith
   have hx0 : 0 < x := by linarith
   have hγ0 : 0 < γ := hsf.gamma_pos
   have hxγN : x ^ γ ≤ N := by
     have h1 : x ^ γ ≤ x := by
-      calc x ^ γ ≤ x ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by linarith) hγ1
+      calc _ ≤ x ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by linarith) hγ1
         _ = x := Real.rpow_one x
     have h2 : x ≤ (N : ℝ) := by
       have := Nat.lt_floor_add_one (κ * x + 1)
       nlinarith
     linarith
   have hlogN : Real.log N ≤ 2 * L := by
-    have hN0 : (0 : ℝ) < N := by linarith [Real.rpow_pos_of_pos hx0 γ]
-    calc Real.log N ≤ Real.log (x ^ 2) := Real.log_le_log hN0 hN2
-      _ = 2 * L := by rw [Real.log_pow]; push_cast; ring
+    have hN0 : (0 : ℝ) < N := by linarith
+    calc _ ≤ Real.log (x ^ 2) := by gcongr
+      _ = _ := by rw [Real.log_pow]; push_cast; ring
   -- `∑_{x^γ < p ≤ M} 1/p ≤ log 2 + 21 s + 1`
   have hrec : recipSum x γ N ≤ Real.log 2 + 21 * s + 1 := by
     refine (recipSum_le hEM2 hγ2 hxγN hEγ).trans ?_
@@ -142,20 +135,18 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
         norm_num; ring
       nlinarith
     have hq0 : 0 < Real.log N / Real.log (x ^ γ) := by
-      have h1 : 0 < Real.log N := Real.log_pos (by linarith)
-      have h2 : 0 < Real.log (x ^ γ) := Real.log_pos (by linarith)
-      positivity
+      bound
     have := Real.log_le_log hq0 hq
     rw [Real.log_mul (by norm_num) (by positivity), Real.log_rpow hT0] at this
-    have hs' : Real.log T = s := rfl
     linarith
   -- `∏_{Y < p ≤ M} (1 - ρ/p)⁻¹ ≤ exp(2ρ(log 2 + 25 s + 1))`
   have hY1 : 1 < proxyCutoff x := by
     have : (1 : ℝ) ≤ Real.exp (L ^ (45 / 100 : ℝ)) := Real.one_le_exp (by positivity)
     linarith [hsf.cutoff_gt]
-  have hN1 : (1 : ℝ) < N := lt_of_lt_of_le hY1 hsf.cutoff_le_N
+  have hN1 : (1 : ℝ) < N := by linarith
+  let logAt := Real.log 2 + 25 * s + 1
   have hhigh : ∀ ρ : ℝ, 0 ≤ ρ → 2 * ρ ≤ proxyCutoff x →
-      highProd x N ρ ≤ Real.exp (2 * ρ * (Real.log 2 + 25 * s + 1)) := by
+      highProd x N ρ ≤ Real.exp (2 * ρ * (logAt)) := by
     intro ρ hρ hρY
     have hY2 : 2 ≤ proxyCutoff x := by
       have h1 : (1 : ℝ) ≤ L ^ (45 / 100 : ℝ) := Real.one_le_rpow hL (by norm_num)
@@ -168,38 +159,32 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
       field_simp
       linarith
     have hq0 : 0 < Real.log N / Real.log (proxyCutoff x) := by
-      have h1 : 0 < Real.log N := Real.log_pos hN1
-      positivity
+      bound
     have := Real.log_le_log hq0 hq
     rw [Real.log_mul (by norm_num) (by positivity), Real.log_pow] at this
-    have hs' : Real.log T = s := rfl
     push_cast at this
     nlinarith
   -- apply the power bound
   have hR0 : (0 : ℝ) ≤ R := Nat.cast_nonneg R
   have hR1' : (1 : ℝ) ≤ R := by exact_mod_cast hR1
   have hrec0 := recipSum_nonneg x γ N
-  have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have hrec' : recipSum x γ N ≤ Real.log 2 + 25 * s + 1 := by linarith
+  have hrec' : recipSum x γ N ≤ logAt := by linarith
   have hYR : 2 * (R : ℝ) ≤ proxyCutoff x := by nlinarith
   have hY1' : 2 * (1 : ℝ) ≤ proxyCutoff x := by nlinarith
   have hhR := hhigh R hR0 hYR
   have hh1 := hhigh 1 zero_le_one hY1'
-  have hmono : Real.exp (2 * 1 * (Real.log 2 + 25 * s + 1)) ≤
-      Real.exp (2 * R * (Real.log 2 + 25 * s + 1)) := by
-    apply Real.exp_le_exp.2
-    have : 0 ≤ Real.log 2 + 25 * s + 1 := by positivity
-    nlinarith
+  have hmono : Real.exp (2 * 1 * (logAt)) ≤
+      Real.exp (2 * R * (logAt)) := by
+    gcongr
   have hhP0 : 0 ≤ highProd x N 1 := highProd_nonneg (by linarith)
   have hhPR0 : 0 ≤ highProd x N R := highProd_nonneg (by linarith)
   refine ⟨?_, ?_, ?_, ?_⟩
   · refine (factor_pow_le hs hR0 hb hR hrec' (by positivity) ?_ R le_rfl).trans hexp
     linarith
   · refine (factor_pow_le hs hR0 hb hR hrec' (by positivity) ?_ R le_rfl).trans hexp
-    have : recipSum x γ N ≤ R * recipSum x γ N := le_mul_of_one_le_left hrec0 hR1'
-    linarith
+    linarith [le_mul_of_one_le_left hrec0 hR1']
   · refine (factor_pow_le hs hR0 hb hR (by positivity) hhP0 ?_ (R - 1)
-      (by push_cast [Nat.cast_sub hR1]; linarith)).trans hexp
+      (by norm_num)).trans hexp
     linarith
   · have := (factor_pow_le hs hR0 hb hR (by positivity) hhP0 (by linarith) 1
       (by push_cast; linarith)).trans hexp
@@ -235,41 +220,35 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
   set γ := presieveExponent c Ch x
   set N := ⌊κ * x + 1⌋₊
   set L := Real.log x
-  have hL0 : 0 < L := by linarith
-  have hκ0 : 0 < κ := by linarith
   have hx0 : 0 < x := by linarith
   have hxκ : κ ≤ x := by linarith
   have hκx1 : 1 ≤ κ * x := by nlinarith
   have hsq : 4 * (κ * x + 1) ≤ x ^ 2 := by nlinarith
   set δ := L ^ (-3 : ℝ) with hδ
   have hδ0 : 0 < δ := by positivity
-  have hL3' : L ^ (3 : ℝ) = L ^ (3 : ℕ) := by exact_mod_cast Real.rpow_natCast L 3
-  have hδinv : δ = (L ^ (3 : ℕ))⁻¹ := by rw [hδ, Real.rpow_neg hL0.le, hL3']
+  have hδinv : δ = (L ^ 3)⁻¹ := by simp_all
   have hδ1 : δ ≤ 1 := by
     rw [hδinv]; exact inv_le_one_of_one_le₀ (one_le_pow₀ hL)
   have hxγ : 1 ≤ x ^ γ := Real.one_le_rpow hsf.one_lt.le hsf.gamma_pos.le
   set A := ⌈2 * Real.log (N + 1) / δ⌉₊ with hAdef
   have hA := gridPt_ge hxγ hδ0 hδ1 N
   have hAle : (A : ℝ) ≤ 5 * L ^ 4 := by
-    have h1 : (A : ℝ) < 2 * Real.log (N + 1) / δ + 1 := Nat.ceil_lt_add_one
-      (div_nonneg (mul_nonneg (by norm_num) (Real.log_nonneg (by
-        have := Nat.cast_nonneg (α := ℝ) N; linarith))) hδ0.le)
+    have h1 : (A : ℝ) < 2 * Real.log (N + 1) / δ + 1 := by bound
     have h2 : Real.log ((N : ℝ) + 1) ≤ 2 * L := by
-      calc Real.log ((N : ℝ) + 1) ≤ Real.log (x ^ 2) := Real.log_le_log (by positivity) hN2
+      calc Real.log ((N : ℝ) + 1) ≤ Real.log (x ^ 2) := by gcongr
         _ = 2 * L := by rw [Real.log_pow]; push_cast; ring
     have h3 : 2 * Real.log (N + 1) / δ ≤ 4 * L ^ 4 := by
       rw [hδinv, div_inv_eq_mul]
-      calc 2 * Real.log ((N : ℝ) + 1) * L ^ 3 ≤ 2 * (2 * L) * L ^ 3 := by gcongr
-        _ = 4 * L ^ 4 := by ring
+      calc _ ≤ 2 * (2 * L) * L ^ 3 := by gcongr
+        _ = _ := by ring
     have h4 : (1 : ℝ) ≤ L ^ 4 := one_le_pow₀ hL
     linarith
   have hE4 := abs_comp_sub_prox0_le hq₁ hE hV hbox hC₂ hΦ hκ hxκ hsq (R := r + 1) (by omega)
     hsf hj2 hδ0.le hδ1 hA
-  have hu : 1 ≤ L ^ (1 / 200 : ℝ) := Real.one_le_rpow hL (by norm_num)
+  have hu : 1 ≤ L ^ (1 / 200 : ℝ) := by linarith
   have hM0 : 0 ≤ M 0 := (abs_nonneg _).trans (by simpa using hΦ.2.2.2 0 0)
   have hM1 : 0 ≤ M 1 := by
     have h := cutoff_deriv_bound_nonneg hΦ 1
-    push_cast at h
     exact nonneg_of_mul_nonneg_left h (by positivity)
   have hF2 : 2 ^ (K * inertPerCluster K CN x) * normBound q K CN c E₂ x ≤
       L ^ (1 / 200 : ℝ) := by
@@ -280,10 +259,7 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
     have hN0 := hE.norm_pos
     have h2 : (0 : ℝ) < 2 ^ (K * inertPerCluster K CN x) := by positivity
     have h3 := mul_le_mul_of_nonneg_left h1 (mul_pos h2 hN0).le
-    calc 2 ^ (K * inertPerCluster K CN x) * normBound q K CN c E₂ x
-        = 2 ^ (K * inertPerCluster K CN x) * normBound q K CN c E₂ x * 1 := by ring
-      _ ≤ 2 ^ (K * inertPerCluster K CN x) * normBound q K CN c E₂ x * (2 / (1 - q)) ^ K := h3
-      _ = _ := by ring
+    grind
   have hN : (N : ℝ) ≤ 2 * κ * x := by
     have := Nat.floor_le (show 0 ≤ κ * x + 1 by positivity)
     linarith
@@ -291,7 +267,6 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
     rw [div_le_iff₀ hx0]
     have hδx : 1 ≤ κ * x * δ := by
       rw [hδinv, ← div_eq_mul_inv, le_div_iff₀ (by positivity), one_mul]; exact hL3
-    have h1 : 3 * δ ≤ 3 * δ * (κ * x) := le_mul_of_one_le_right (by positivity) hκx1
     linarith
   have hκx : 4 * (κ * x + 1) ≤ 8 * κ * x := by linarith
   have hb4 := bound4_le (A := A) hsf.one_lt hκ hL hu hM0 hM1 hC₂ hSE0 hF1 hF2 hE.norm_pos.le
@@ -308,9 +283,7 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
         push_cast at this
         linarith)
       positivity) hF6 hN hAle hτ hκx
-  refine hE4.trans (le_of_eq_of_le ?_ hb4)
-  push_cast
-  ring
+  grind
 
 /-- E5 at a large `x`: `|Prox_j^0 - Prox_j| ≤ C₅ x L^{-1} L^{-1/10} u⁶`. -/
 theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ : ℝ}
@@ -347,7 +320,6 @@ theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ :
   set T := logLog x
   have hL0 : 0 < L := by linarith
   have hT0 : 0 < T := by linarith
-  have hκ0 : 0 < κ := by linarith
   have hx0 : 0 < x := by linarith
   have hxκ : κ ≤ x := by linarith
   have hκx : κ * x ≤ x ^ 2 := by nlinarith
@@ -358,19 +330,20 @@ theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ :
     rw [hlogY, div_le_iff₀ (by positivity)]
     have : (1 : ℝ) ≤ T ^ 25 := one_le_pow₀ hT
     nlinarith
-  set K' := ⌈L ^ (9 / 10 : ℝ) / Real.log 2⌉₊ with hK'def
-  have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  let logAt := L ^ (9 / 10 : ℝ) / Real.log 2
+  set K' := ⌈logAt⌉₊ with hK'def
+  have hl2 : 0 < Real.log 2 := by positivity
   have hK' : Real.exp (L ^ (9 / 10 : ℝ)) ≤ 2 ^ K' := by
     have h2K : Real.exp (K' * Real.log 2) = (2 : ℝ) ^ K' := by
       rw [Real.exp_nat_mul, Real.exp_log (by norm_num)]
     rw [← h2K]
     apply Real.exp_le_exp.2
-    have := Nat.le_ceil (L ^ (9 / 10 : ℝ) / Real.log 2)
+    have := Nat.le_ceil (logAt)
     rw [div_le_iff₀ hl2] at this
     linarith
   have hK'le : (K' : ℝ) ≤ 3 * L ^ (9 / 10 : ℝ) := by
-    have h1 : (K' : ℝ) < L ^ (9 / 10 : ℝ) / Real.log 2 + 1 := Nat.ceil_lt_add_one (by positivity)
-    have h2 : L ^ (9 / 10 : ℝ) / Real.log 2 ≤ 2 * L ^ (9 / 10 : ℝ) := by
+    have h1 : (K' : ℝ) < logAt + 1 := Nat.ceil_lt_add_one (by positivity)
+    have h2 : logAt ≤ 2 * L ^ (9 / 10 : ℝ) := by
       rw [div_le_iff₀ hl2]
       have := Real.log_two_gt_d9
       nlinarith [Real.rpow_nonneg hL0.le (9 / 10 : ℝ)]
@@ -379,7 +352,7 @@ theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ :
   have hcW0 : 0 ≤ CW / (γ * L) := by positivity
   have hE5 := abs_prox0_sub_prox_le hq₁ hE hV hΦ hκ hxκ hκx hsf hγ1 hc₃ hlogY0 hPiY hcW0 hcount
     hSP hK'
-  have hu : 1 ≤ L ^ (1 / 200 : ℝ) := Real.one_le_rpow hL (by norm_num)
+  have hu : 1 ≤ L ^ (1 / 200 : ℝ) := by linarith
   have hM0 : 0 ≤ M 0 := (abs_nonneg _).trans (by simpa using hΦ.2.2.2 0 0)
   -- `1/γ ≤ T^{21} ≤ T^{42} ≤ u`
   have hγinv : 1 / γ ≤ T ^ (21 : ℝ) := by
@@ -389,16 +362,16 @@ theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ :
     linarith
   have hT2142 : T ^ (21 : ℝ) ≤ T ^ (42 : ℝ) := Real.rpow_le_rpow_of_exponent_le hT (by norm_num)
   have hcW : CW / (γ * L) ≤ CW * L ^ (1 / 200 : ℝ) / L := by
-    have h1 : 1 / γ ≤ L ^ (1 / 200 : ℝ) := hγinv.trans (hT2142.trans hT42)
-    calc CW / (γ * L) = CW / L * (1 / γ) := by field_simp
-      _ ≤ CW / L * L ^ (1 / 200 : ℝ) := mul_le_mul_of_nonneg_left h1 (by positivity)
-      _ = CW * L ^ (1 / 200 : ℝ) / L := by ring
+    have h1 : 1 / γ ≤ L ^ (1 / 200 : ℝ) := by linarith
+    calc _ = CW / L * (1 / γ) := by field_simp
+      _ ≤ CW / L * L ^ (1 / 200 : ℝ) := by gcongr
+      _ = _ := by ring
   have hγ2 : 1 / γ ^ 2 ≤ L ^ (1 / 200 : ℝ) := by
     refine le_trans ?_ hT42
-    have h1 : 1 / γ ^ 2 = (1 / γ) ^ 2 := by rw [one_div_pow]
+    have h1 : 1 / γ ^ 2 = (1 / γ) ^ 2 := by simp
     rw [h1]
-    calc (1 / γ) ^ 2 ≤ (T ^ (21 : ℝ)) ^ 2 := pow_le_pow_left₀ (by positivity) hγinv 2
-      _ = T ^ (42 : ℝ) := by rw [← Real.rpow_natCast, ← Real.rpow_mul hT0.le]; norm_num
+    calc _ ≤ (T ^ (21 : ℝ)) ^ 2 := by gcongr
+      _ = _ := by rw [← Real.rpow_natCast, ← Real.rpow_mul hT0.le]; norm_num
   have hN : (N : ℝ) ≤ 2 * κ * x := by
     have := Nat.floor_le (show 0 ≤ κ * x + 1 by positivity)
     have : 1 ≤ κ * x := by nlinarith
@@ -412,7 +385,6 @@ theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ :
     (x := x) (γ := γ) (cW := CW / (γ * L)) (SP := L ^ (45 / 100 : ℝ) + EM1) (c₃ := c₃)
     (CW := CW) (K' := K') (r := r) hsf.one_lt hκ hL hu hM0 hc₃ hCW hγ0 hSE0 hF1 hF3 hcW0 hcW hN
     hP0 hPr hP1 hK'le (by positivity) hSP2 hlogY0.le hlogYL hγ2
-  refine hE5.trans (le_of_eq_of_le ?_ hb5)
-  ring
+  grind
 
 end Erdos408.TypeII

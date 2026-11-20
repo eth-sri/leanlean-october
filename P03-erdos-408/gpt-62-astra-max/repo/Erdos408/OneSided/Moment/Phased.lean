@@ -32,7 +32,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 variable {K : ℕ}
 
@@ -77,7 +77,7 @@ def phasedProduct (N : ℕ) (ψ : BirthAddr (K := K) x B N → Option ℕ → �
 /-- The phased history expansion:
 `𝒢^ψ₀ ℰ^ψ ⋯ 𝒢^ψ_N f (s) = ∑_h w(s, h) ∏_{a not initial} ψ_a(β_a(s, h)) f(end(s, h))`. The
 initial addresses carry no operation; their phases multiply the initial vector. -/
-theorem phasedProduct_eq_sum_history (N : ℕ) (ψ : BirthAddr (K := K) x B N → Option ℕ → ℂ)
+theorem phasedProduct_eq_sum_history (N : ℕ) (ψ : BirthAddr x B N → Option ℕ → ℂ)
     (f : ChainState x d Y d₀ u v r B → ℂ) (s : ChainState x d Y d₀ u v r B) :
     phasedProduct q A₀ x d Y d₀ u v r B N ψ f s =
       ∑ h ∈ histories x d Y d₀ u v r B N, chainWeight q A₀ s h *
@@ -98,7 +98,7 @@ end Phased
 has norm at most `C₀` for the chain measure. -/
 theorem exists_phasedGhost_normLe {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
     (halo : 1 / 10 < alo) :
-    ∃ C₀ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
+    ∃ C₀, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
       ∀ (Y d₀ u v r : ℝ) (B N j : ℕ), (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ ψ : Fin B → Option ℕ → ℂ, (∀ k o, ‖ψ k o‖ ≤ 1) →
         NormLe (fun s => chainMeasure q x d Y d₀ u v r B N s)
@@ -141,18 +141,7 @@ theorem exists_phasedEdge_normLe {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q) (hq�
 
 /-- M9, the signed edge: for `K ≥ K₀` and `B ≤ L³`, the edge has norm at most `L^{-G}` for the
 chain measure, uniformly in the root box. -/
-theorem eventually_chainEdge_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
-    (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5)
-    (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
-      ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
-        NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
-          (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
-          (chainEdge q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N)
-          (Real.log x ^ (-edgePrec Dstar C)) :=
-  eventually_chainEdge_normLe_of_parts hq hq₁ hC hD hCX halo hahi hK hg
+alias eventually_chainEdge_normLe := Erdos408.OneSided.eventually_chainEdge_normLe_of_parts
 
 open scoped Classical in
 /-- M10, high rank: for `B ≤ L³`, the absolute history sum constrained by a block system of

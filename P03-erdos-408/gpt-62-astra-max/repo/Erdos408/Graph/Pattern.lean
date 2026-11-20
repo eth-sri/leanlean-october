@@ -44,7 +44,7 @@ lemma physical_iff (n : ℕ) (a : G.Labels M) :
 /-- Upstream compatibility: the label values agree in the shared slots. -/
 lemma compatible_iff (ν : Pattern G J 1 m) (a b : G.Labels (J + 1)) :
     ν.compatible a b ↔
-      ∀ g, ∀ i : Fin J, i ∉ ν.changed g → vals b g i.castSucc = vals a g i.castSucc := by
+      ∀ g, ∀ i, i ∉ ν.changed g → vals b g i.castSucc = vals a g i.castSucc := by
   constructor
   · intro h g i hi
     exact congrArg Subtype.val (h g i.castSucc ⟨i, rfl, hi⟩).symm
@@ -67,8 +67,7 @@ lemma D_eq (ν : Pattern G J 1 m) (a : G.Labels (J + 1)) (u : G.Aux J) :
   refine Finset.prod_congr rfl fun g _ => Finset.prod_congr rfl fun i _ => ?_
   by_cases hi : i ∈ ν.changed g
   · simp [trim, hi]
-  · simp only [hi, ite_false, vals]
-    rfl
+  · aesop
 
 /-- The edge product of upstream labels is positive. -/
 lemma edgeProduct_pos {C : Fin G.count → Finset (Fin J)} (a : G.Labels (J + 1))
@@ -168,9 +167,9 @@ lemma patternPairing_eq_sum {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι �
     (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ) (ζ : ℝ)
     (S : Finset ℕ) (f g : ℕ → ℂ) :
     patternPairing P q₀ C K ζ S f g =
-      ∑ n ∈ S, ∑ p ∈ Fintype.piFinset (fun h => Fintype.piFinset fun _ : Fin (J + 1) => P h),
+      ∑ n ∈ S, ∑ p ∈ Fintype.piFinset (fun h => Fintype.piFinset fun _ => P h),
         ∑ a ∈ auxLabels P C,
-          ∑ p' ∈ Fintype.piFinset (fun h => Fintype.piFinset fun _ : Fin (J + 1) => P h),
+          ∑ p' ∈ Fintype.piFinset (fun h => Fintype.piFinset fun _ => P h),
             pairTerm P q₀ C K ζ f g n p p' a *
               ((∏ h, ∏ i ∈ C h, (harmonicMass (P h) * a h i)⁻¹ : ℝ) : ℂ) := by
   unfold patternPairing physicalLists
@@ -190,7 +189,7 @@ lemma patternPairing_eq_sum {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι �
       simp only [Finset.prod_mul_distrib]
       push_cast
       ring
-    · rw [ite_eq_right hp', ite_eq_right fun h => hp' h.2, zero_mul]
+    grind
   · rw [ite_eq_right hp]
     refine (Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun p' _ => ?_).symm
     unfold pairTerm
@@ -203,25 +202,20 @@ lemma sum_labels_aux {J : ℕ} (C : Fin G.count → Finset (Fin J)) (hV : ∀ g,
       (Fin G.count → Fin J → ℕ) → ℂ) :
     ∑ a : G.Labels (J + 1), ∑ b : G.Labels (J + 1), ∑ u : G.Aux J,
         Φ (vals a) (vals b) (trim C u) * ((∏ g, ∏ i, G.mu g (u g i) : ℝ) : ℂ) =
-      ∑ p ∈ Fintype.piFinset (fun h => Fintype.piFinset fun _ : Fin (J + 1) => G.primes h),
+      ∑ p ∈ Fintype.piFinset (fun h => Fintype.piFinset fun _ => G.primes h),
         ∑ w ∈ auxLabels G.primes C,
-          ∑ p' ∈ Fintype.piFinset (fun h => Fintype.piFinset fun _ : Fin (J + 1) => G.primes h),
+          ∑ p' ∈ Fintype.piFinset (fun h => Fintype.piFinset fun _ => G.primes h),
             Φ p p' w * ((∏ h, ∏ i ∈ C h, (harmonicMass (G.primes h) * w h i)⁻¹ : ℝ) : ℂ) := by
-  calc _ = ∑ a : G.Labels (J + 1), ∑ b : G.Labels (J + 1), ∑ w ∈ auxLabels G.primes C,
+  calc _ = ∑ a : G.Labels (J + 1), ∑ w ∈ auxLabels G.primes C, ∑ b : G.Labels (J + 1),
           Φ (vals a) (vals b) w *
-            ((∏ h, ∏ i ∈ C h, (harmonicMass (G.primes h) * w h i)⁻¹ : ℝ) : ℂ) :=
-        Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun b _ =>
-          sum_trim C hV (Φ (vals a) (vals b))
-    _ = ∑ a : G.Labels (J + 1), ∑ w ∈ auxLabels G.primes C, ∑ b : G.Labels (J + 1),
-          Φ (vals a) (vals b) w *
-            ((∏ h, ∏ i ∈ C h, (harmonicMass (G.primes h) * w h i)⁻¹ : ℝ) : ℂ) :=
-        Finset.sum_congr rfl fun a _ => Finset.sum_comm
+            ((∏ h, ∏ i ∈ C h, (harmonicMass (G.primes h) * w h i)⁻¹ : ℝ) : ℂ) := (Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun b _ =>
+          sum_trim C hV (Φ (vals a) (vals b))).trans (Finset.sum_congr rfl fun a _ => Finset.sum_comm)
     _ = _ := by
         refine Eq.trans (Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun w _ =>
           sum_vals fun p' => Φ (vals a) p' w *
             ((∏ h, ∏ i ∈ C h, (harmonicMass (G.primes h) * w h i)⁻¹ : ℝ) : ℂ)) ?_
         exact sum_vals fun p => ∑ w ∈ auxLabels G.primes C,
-          ∑ p' ∈ Fintype.piFinset (fun h => Fintype.piFinset fun _ : Fin (J + 1) => G.primes h),
+          ∑ p' ∈ Fintype.piFinset (fun h => Fintype.piFinset fun _ => G.primes h),
             Φ p p' w * ((∏ h, ∏ i ∈ C h, (harmonicMass (G.primes h) * w h i)⁻¹ : ℝ) : ℂ)
 
 /-! ### Weights -/
@@ -253,7 +247,7 @@ variable {q₀ c₀ C₀ vlo vhi : ℝ} {hq₀ : 0 < q₀} {hq₁ : q₀ < 1} {h
 /-- Upstream physical lists have `ω(n) ≥ M s`. -/
 lemma le_groupPrimeCount_of_physical {M n : ℕ} {a : G.Labels M}
     (h : G.physical M (n : ℤ) a) : M * G.count ≤ groupPrimeCount G.primes n := by
-  have := le_groupPrimeCount (P := G.primes) (fun g i => (a g i).property)
+  have := le_groupPrimeCount  (fun g i => (a g i).property)
     ((physical_iff n a).mp h)
   rwa [Fintype.card_fin] at this
 
@@ -278,9 +272,9 @@ theorem rawPairing_eq (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ 
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun b _ => ?_
   -- expand the pattern term over the auxiliary labels
-  have hraw : ∀ n' : ℕ, patternRaw (B.model 1 ζ) v ((n : ℤ), a) ((n' : ℤ), b) =
+  have hraw : ∀ n', patternRaw (B.model 1 ζ) v (n, a) (n', b) =
       ∑ u : G.Aux J,
-        if G.physical (J + 1) (n : ℤ) a ∧ G.physical (J + 1) (n' : ℤ) b then
+        if G.physical (J + 1) n a ∧ G.physical (J + 1) n' b then
           (if (B.pattern v).compatible a b ∧ (B.pattern v).ban a b u ∧
               (n' : ℤ) = n + 1 * ((B.pattern v).D a u : ℤ) then
             (((B.pattern v).auxMass u * (B.pattern v).physicalTargetMass *
@@ -306,14 +300,14 @@ theorem rawPairing_eq (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ 
         ∀ h, (∀ i, i ∉ (B.pattern v).changed h → vals b h i.castSucc = vals a h i.castSucc) ∧
           ∀ i ∈ (B.pattern v).changed h, ∀ j, trim (B.pattern v).changed u h i ≠ vals a h j ∧
             trim (B.pattern v).changed u h i ≠ vals b h j) ↔
-        G.physical (J + 1) (n : ℤ) a ∧ G.physical (J + 1) (N : ℤ) b ∧
+        G.physical (J + 1) n a ∧ G.physical (J + 1) N b ∧
           (B.pattern v).compatible a b ∧ (B.pattern v).ban a b u := by
       rw [physical_iff, physical_iff, compatible_iff, ban_iff]
-      exact and_congr Iff.rfl (and_congr Iff.rfl forall_and)
-    by_cases hc : G.physical (J + 1) (n : ℤ) a ∧ G.physical (J + 1) (N : ℤ) b ∧
+      grind
+    by_cases hc : G.physical (J + 1) n a ∧ G.physical (J + 1) N b ∧
         (B.pattern v).compatible a b ∧ (B.pattern v).ban a b u
     · rw [ite_eq_left ⟨hc.1, hc.2.1⟩,
-        ite_eq_left ⟨hc.2.2.1, hc.2.2.2, by rw [hE, hN]; push_cast; ring⟩,
+        ite_eq_left ⟨hc.2.2.1, hc.2.2.2, by omega⟩,
         ite_eq_left (hiff.mpr hc), Model.stateMass, ite_eq_left hc.1,
         damping_eq rfl _ n (le_groupPrimeCount_of_physical hc.1),
         damping_eq rfl _ N (le_groupPrimeCount_of_physical hc.2.1), hK,
@@ -323,12 +317,8 @@ theorem rawPairing_eq (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ 
       push_cast
       ring
     · rw [ite_eq_right (mt hiff.mp hc), zero_mul]
-      split_ifs with h₁ h₂
-      · exact absurd ⟨h₁.1, h₁.2, h₂.1, h₂.2.1⟩ hc
-      all_goals simp
-  · split_ifs with h₁ h₂
-    · exact absurd h₂.2.2 (by rw [hE]; rw [hN] at hn'; omega)
-    all_goals simp
+      grind
+  · grind
   · rw [hg N hN', mul_zero]
 
 end Identity

@@ -39,22 +39,18 @@ lemma one_sub_pow_le_exp {n : ℕ} {T : ℝ} (hn : T / 15 ≤ n) :
     (1 - chernoffTheta * (1 / 4) / 75) ^ n ≤ Real.exp (-(failureDecay * T)) := by
   have hθ := chernoffTheta_pos
   have hθ1 := chernoffTheta_le_one
-  have h0 : 0 ≤ 1 - chernoffTheta * (1 / 4) / 75 := by linarith
-  calc (1 - chernoffTheta * (1 / 4) / 75) ^ n ≤ Real.exp (-(chernoffTheta * (1 / 4) / 75)) ^ n :=
-        pow_le_pow_left₀ h0 (one_sub_le_exp_neg _) n
+  calc _ ≤ Real.exp (-(chernoffTheta * (1 / 4) / 75)) ^ n :=
+        pow_le_pow_left₀ (by linarith) (one_sub_le_exp_neg _) n
     _ = Real.exp (-(chernoffTheta * (1 / 4) / 75 * n)) := by
         rw [← Real.exp_nat_mul]; ring_nf
-    _ ≤ Real.exp (-(failureDecay * T)) := by
+    _ ≤ _ := by
         refine exp_le_exp.2 ?_
         unfold failureDecay
-        have : chernoffTheta / 4500 * T ≤ chernoffTheta * (1 / 4) / 75 * n := by
-          have := mul_le_mul_of_nonneg_left hn (show 0 ≤ chernoffTheta / 300 by positivity)
-          linarith
-        linarith
+        nlinarith
 
 /-- For large `x`, each family's free-factor sum is small, uniformly in `2 ≤ j ≤ J_c`. -/
 theorem eventually_freeFactorSum_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 1 < κ) :
-    ∀ᶠ x : ℝ in atTop, ∀ j' : ℕ, j' + 1 ≤ compositeCutoff Cj x →
+    ∀ᶠ x : ℝ in atTop, ∀ j', j' + 1 ≤ compositeCutoff Cj x →
       ∀ F ∈ ({smallGroups x, bigGroups x} : Finset (Finset (Finset ℕ))),
         freeFactorSum x (presieveExponent c Ch x) (1 / 4) j' (⌊κ * x⌋₊ + 1) F ≤
           (⌊κ * x⌋₊ + 1 : ℕ) / Real.log x *
@@ -75,8 +71,8 @@ theorem eventually_freeFactorSum_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ
     · rw [mem_singleton.1 h]; exact subset_union_right
   have hFT : (F.card : ℝ) ≤ logLog x ∧ logLog x / 15 ≤ F.card := by
     rcases mem_insert.1 hF with h | h
-    · rw [h]; exact ⟨hgroups.2.2.2.2.1, hcard.1⟩
-    · rw [mem_singleton.1 h]; exact ⟨hgroups.2.2.2.2.2.1, hcard.2⟩
+    · grind
+    grind
   exact freeFactorSum_le_of_facts (⌈6 * logLog x⌉₊) failureDecay hx hlogx hγ0 hγ1 hside hFC
     (fun g hg => (hgS g (hFC hg)).1) hxX hPX (hDγL (j' + 1) (by omega)) (hκE (j' + 1) (by omega))
     (one_sub_pow_le_exp hFT.2) (hδ F.card hFT.1) (hH j' hj')
@@ -91,19 +87,16 @@ lemma final_le {a T L X x κ S₁ S₂ : ℝ} (ha0 : 0 < a) (ha1 : a ≤ 1) (hT 
       Real.exp (-T))) :
     Real.exp (a / 4 * T) * (S₁ + S₂) ≤ 20 * κ * (x / L) * L ^ (-(a / 2)) := by
   have hL0 : 0 < L := by rw [← hLT]; exact exp_pos T
-  have hxκ : 0 ≤ 2 * κ * x := hX0.trans hX
-  -- `e^{-T} ≤ e^{-aT}` and the bracket is at most `5 e^{-3aT/4}`
   have h1 : Real.exp (-T) ≤ Real.exp (-(a * T)) := exp_le_exp.2 (by nlinarith)
   have h2 : Real.exp (-(a * T)) ≤ Real.exp (-(3 * a * T / 4)) := exp_le_exp.2 (by nlinarith)
   have hB : 2 * Real.exp (a * T / 4) * (Real.exp (-(a * T)) + Real.exp (-T)) + Real.exp (-T) ≤
       5 * Real.exp (-(3 * a * T / 4)) := by
     have h3 : Real.exp (a * T / 4) * Real.exp (-(a * T)) = Real.exp (-(3 * a * T / 4)) := by
       rw [← exp_add]; ring_nf
-    have h4 : 0 ≤ Real.exp (a * T / 4) := (exp_pos _).le
     have h5 : Real.exp (a * T / 4) * Real.exp (-T) ≤ Real.exp (a * T / 4) * Real.exp (-(a * T)) :=
-      mul_le_mul_of_nonneg_left h1 h4
+      by gcongr
     nlinarith
-  have hXL : 0 ≤ X / L := div_nonneg hX0 hL0.le
+  have hXL : 0 ≤ X / L := by positivity
   have hsum : S₁ + S₂ ≤ X / L * (10 * Real.exp (-(3 * a * T / 4))) := by
     have := mul_le_mul_of_nonneg_left hB hXL
     linarith
@@ -113,14 +106,14 @@ lemma final_le {a T L X x κ S₁ S₂ : ℝ} (ha0 : 0 < a) (ha1 : a ≤ 1) (hT 
   rw [hrpow]
   calc Real.exp (a / 4 * T) * (S₁ + S₂)
       ≤ Real.exp (a / 4 * T) * (X / L * (10 * Real.exp (-(3 * a * T / 4)))) :=
-        mul_le_mul_of_nonneg_left hsum (exp_pos _).le
+        by gcongr
     _ = 10 * (X / L) * Real.exp (-(a / 2 * T)) := by
         rw [show Real.exp (-(a / 2 * T)) = Real.exp (a / 4 * T) * Real.exp (-(3 * a * T / 4)) by
           rw [← exp_add]; ring_nf]
         ring
     _ ≤ 10 * (2 * κ * x / L) * Real.exp (-(a / 2 * T)) := by
         gcongr
-    _ = 20 * κ * (x / L) * Real.exp (-(a / 2 * T)) := by ring
+    _ = _ := by ring
 
 end
 

@@ -26,9 +26,8 @@ lemma exists_forall_modEq_iff (V : Finset ℕ) (hV : ∀ p ∈ V, p.Prime) (a : 
   | empty => exact ⟨0, fun e => by simp [Nat.modEq_one]⟩
   | insert q V hq ih =>
     obtain ⟨k, hk⟩ := ih fun p hp => hV p (mem_insert_of_mem hp)
-    have hqp := hV q (mem_insert_self q V)
-    have hco : q.Coprime (∏ p ∈ V, p) := Nat.Coprime.prod_right fun p hp =>
-      (Nat.coprime_primes hqp (hV p (mem_insert_of_mem hp))).2 fun h => hq (h ▸ hp)
+    have hco := Nat.Coprime.prod_right fun p hp =>
+      (Nat.coprime_primes (hV q (mem_insert_self q V)) (hV p (mem_insert_of_mem hp))).2 fun h => hq (h ▸ hp)
     obtain ⟨k', hk'q, hk'M⟩ := Nat.chineseRemainder hco (a q) k
     refine ⟨k', fun e => ?_⟩
     rw [prod_insert hq, ← Nat.modEq_and_modEq_iff_modEq_mul hco, forall_mem_insert, hk]
@@ -47,7 +46,7 @@ lemma abs_card_filter_modEq_sub_le {M : ℕ} (hM : 0 < M) {A t : ℕ} (hAt : A �
   have hαβ : α ≤ β := by
     simp only [α, β]
     gcongr
-  have hfl : ⌊α⌋ ≤ ⌊β⌋ := Int.floor_mono hαβ
+  have hfl := Int.floor_mono hαβ
   rw [max_eq_left (by omega)] at h
   have hc : (((Ioc A t).filter (· ≡ k [MOD M])).card : ℝ) = ((⌊β⌋ - ⌊α⌋ : ℤ) : ℝ) := by
     exact_mod_cast h
@@ -57,11 +56,10 @@ lemma abs_card_filter_modEq_sub_le {M : ℕ} (hM : 0 < M) {A t : ℕ} (hAt : A �
     field_simp
     ring
   rw [hc, hdiff, abs_le]
-  have h1 := Int.floor_le α
   have h2 := Int.lt_floor_add_one α
   have h3 := Int.floor_le β
   have h4 := Int.lt_floor_add_one β
-  have e1 : ((⌊α⌋ : ℚ) : ℝ) ≤ (α : ℝ) := by exact_mod_cast h1
+  have e1 : ((⌊α⌋ : ℚ) : ℝ) ≤ (α : ℝ) := by exact_mod_cast (Int.floor_le α)
   have e2 : (α : ℝ) < ((⌊α⌋ : ℚ) : ℝ) + 1 := by exact_mod_cast h2
   have e3 : ((⌊β⌋ : ℚ) : ℝ) ≤ (β : ℝ) := by exact_mod_cast h3
   have e4 : (β : ℝ) < ((⌊β⌋ : ℚ) : ℝ) + 1 := by exact_mod_cast h4
@@ -75,12 +73,7 @@ lemma abs_card_filter_forall_modEq_sub_le (V : Finset ℕ) (hV : ∀ p ∈ V, p.
     |((((Ioc A t).filter fun e => ∀ p ∈ V, e ≡ a p [MOD p]).card : ℕ) : ℝ) -
         ((t : ℝ) - A) / ∏ p ∈ V, (p : ℝ)| ≤ 1 := by
   obtain ⟨k, hk⟩ := exists_forall_modEq_iff V hV a
-  have hM : 0 < ∏ p ∈ V, p := prod_pos fun p hp => (hV p hp).pos
-  have h := abs_card_filter_modEq_sub_le hM hAt k
-  have hfilt : ((Ioc A t).filter fun e => ∀ p ∈ V, e ≡ a p [MOD p]) =
-      (Ioc A t).filter (· ≡ k [MOD ∏ p ∈ V, p]) := filter_congr fun e _ => hk e
-  rw [hfilt]
-  push_cast at h
-  exact h
+  have h := abs_card_filter_modEq_sub_le (prod_pos fun p hp => (hV p hp).pos) hAt k
+  aesop
 
 end Erdos408

@@ -51,7 +51,7 @@ theorem wnormSq_nonneg {μ : ι → ℝ} (hμ : ∀ i, 0 ≤ μ i) (f : ι → �
 /-- A norm bound depends only on the modulus of the constant. -/
 theorem NormLe.abs {μ : ι → ℝ} {ν : κ → ℝ} {T : (κ → ℂ) → ι → ℂ} {c : ℝ}
     (hT : NormLe μ ν T c) : NormLe μ ν T |c| := fun f => by
-  rw [sq_abs]
+  simp
   exact hT f
 
 /-- A product `T_{b₁} ⋯ T_{b_m} S` of operators bounded on `ℓ²(μ)` is bounded by the product
@@ -77,17 +77,16 @@ theorem norm_sum_mul_le_of_normLe {μ : ι → ℝ} (hμ : ∀ i, 0 ≤ μ i)
     sum_nonneg fun i _ => mul_nonneg (mul_nonneg (hμ i) (norm_nonneg _)) (norm_nonneg _)
   -- `(∑ μ |f| |T f|)² ≤ ‖f‖²_μ ‖T f‖²_μ ≤ (c ‖f‖²_μ)²`
   have hsq : (∑ i, μ i * ‖f i‖ * ‖T f i‖) ^ 2 ≤ (c * wnormSq μ f) ^ 2 :=
-    calc (∑ i, μ i * ‖f i‖ * ‖T f i‖) ^ 2 ≤ wnormSq μ f * wnormSq μ (T f) :=
+    calc _ ≤ wnormSq μ f * wnormSq μ (T f) :=
           sum_sq_le_sum_mul_sum_of_sq_le_mul _ (fun i _ => mul_nonneg (hμ i) (sq_nonneg _))
             (fun i _ => mul_nonneg (hμ i) (sq_nonneg _)) fun i _ => le_of_eq (by ring)
-      _ ≤ wnormSq μ f * (c ^ 2 * wnormSq μ f) := mul_le_mul_of_nonneg_left (hT f) hW
+      _ ≤ wnormSq μ f * (c ^ 2 * wnormSq μ f) := by solve_by_elim [mul_le_mul_of_nonneg_left]
       _ = (c * wnormSq μ f) ^ 2 := by ring
-  calc ‖∑ i, (μ i : ℂ) * g i * T f i‖ ≤ ∑ i, μ i * ‖f i‖ * ‖T f i‖ := by
+  calc _ ≤ ∑ i, μ i * ‖f i‖ * ‖T f i‖ := by
         refine (norm_sum_le _ _).trans (sum_le_sum fun i _ => ?_)
         rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (hμ i)]
-        exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (hg i) (hμ i))
-          (norm_nonneg _)
-    _ ≤ c * wnormSq μ f := (sq_le_sq₀ hX (mul_nonneg hc hW)).1 hsq
+        bound
+    _ ≤ _ := (sq_le_sq₀ hX (mul_nonneg hc hW)).1 hsq
 
 end Norms
 
@@ -103,21 +102,20 @@ theorem norm_sum_blockCoef_mul_le {α : Type*} [Fintype α] [DecidableEq α]
   -- the coefficient mass of `S` at rank `r` is at most `Q^{2r}`
   have hcoef : ∀ r, ∑ 𝒞 ∈ S with blockRank 𝒞 = r, |(blockCoef 𝒞 : ℝ)| ≤
       (Fintype.card α : ℝ) ^ (2 * r) := fun r =>
-    calc ∑ 𝒞 ∈ S with blockRank 𝒞 = r, |(blockCoef 𝒞 : ℝ)| ≤
+    calc _ ≤
           ∑ 𝒞 ∈ blockSystems α with blockRank 𝒞 = r, |(blockCoef 𝒞 : ℝ)| :=
-          sum_le_sum_of_subset_of_nonneg (filter_subset_filter _ hS) fun _ _ _ => abs_nonneg _
-      _ ≤ (Fintype.card α : ℝ) ^ (2 * r) := by exact_mod_cast sum_abs_blockCoef_le (α := α) r
-  calc ‖∑ 𝒞 ∈ S, (blockCoef 𝒞 : ℂ) * z 𝒞‖ ≤ ∑ 𝒞 ∈ S, |(blockCoef 𝒞 : ℝ)| * f (blockRank 𝒞) :=
+          by gcongr
+      _ ≤ _ := by exact_mod_cast sum_abs_blockCoef_le  r
+  calc _ ≤ ∑ 𝒞 ∈ S, |(blockCoef 𝒞 : ℝ)| * f (blockRank 𝒞) :=
         (norm_sum_le _ _).trans (sum_le_sum fun 𝒞 h𝒞 => by
-          rw [norm_mul, Complex.norm_intCast]
-          exact mul_le_mul_of_nonneg_left (hz 𝒞 h𝒞) (abs_nonneg _))
+          simpa using mul_le_mul_of_nonneg_left (hz 𝒞 h𝒞) (abs_nonneg _))
     _ = ∑ r ∈ R, (∑ 𝒞 ∈ S with blockRank 𝒞 = r, |(blockCoef 𝒞 : ℝ)|) * f r := by
         rw [← sum_fiberwise_of_maps_to hR]
         refine sum_congr rfl fun r _ => ?_
         rw [sum_mul]
         exact sum_congr rfl fun 𝒞 h𝒞 => by rw [(mem_filter.1 h𝒞).2]
-    _ ≤ ∑ r ∈ R, (Fintype.card α : ℝ) ^ (2 * r) * f r :=
-        sum_le_sum fun r hr => mul_le_mul_of_nonneg_right (hcoef r) (hf r hr)
+    _ ≤ _ :=
+        by bound
 
 /-! ### The block sums -/
 
@@ -158,7 +156,7 @@ theorem distinctSum_eq_sum_blockSum (N : ℕ) :
     have := congrArg (Int.cast : ℤ → ℂ) (birthsDistinct_indicator_eq (births s h))
     push_cast at this
     exact this
-  calc distinctSum q A₀ x d Y d₀ u v r B N
+  calc _
       = ∑ s, ∑ h ∈ histories x d Y d₀ u v r B N, ∑ 𝒞 ∈ blockSystems (BirthAddr (K := K) x B N),
           (chainMeasure q x d Y d₀ u v r B N s : ℂ) * chainInit x d Y d₀ u v r B s *
             ((blockCoef 𝒞 : ℂ) * (chainWeight q A₀ s h *
@@ -171,8 +169,7 @@ theorem distinctSum_eq_sum_blockSum (N : ℕ) :
         rw [← mul_sum, ← boole_mul, hpart s h, sum_mul]
         congr 1
         exact sum_congr rfl fun 𝒞 _ => by ring
-    _ = ∑ 𝒞 ∈ blockSystems (BirthAddr (K := K) x B N),
-          (blockCoef 𝒞 : ℂ) * blockSum q A₀ x d Y d₀ u v r B N 𝒞 := by
+    _ = _ := by
         rw [funext fun s => sum_comm (s := histories x d Y d₀ u v r B N)
           (t := blockSystems (BirthAddr (K := K) x B N)), sum_comm]
         refine sum_congr rfl fun 𝒞 _ => ?_
@@ -193,15 +190,12 @@ variable {q A₀ x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B : ℕ}
 theorem chainState_mem_band (s : ChainState x d Y d₀ u v r B) (i : Fin K)
     (k : Fin (padCount x + 1)) : s.2.1.1 i k ∈ band x (d.a i) := by
   have h := s.2.1.2
-  unfold lists at h
   exact Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 (mem_filter.1 h).1 i) k
 
 /-- The prime of a particle is a band prime. -/
 theorem particle_mem_bandPrimes (xp : Particle x d) : xp.1.1 ∈ bandPrimes x d := by
   obtain ⟨p, hp, hxp⟩ := mem_biUnion.1 xp.2
-  obtain ⟨ℓ, -, hℓ⟩ := mem_image.1 hxp
-  rw [← hℓ]
-  exact hp
+  grind
 
 /-- Every performed birth of a history is a band prime. -/
 theorem births_mem_bandPrimes {N : ℕ} (s : ChainState x d Y d₀ u v r B)
@@ -219,7 +213,7 @@ theorem births_mem_bandPrimes {N : ℕ} (s : ChainState x d Y d₀ u v r B)
     simp only [edgeChoices, mem_product, Fintype.mem_piFinset] at he
     exact mem_biUnion.2 ⟨i, mem_univ _, (he.2.2.2.1 i).1⟩
   · -- a ghost birth
-    simp only [births] at hp
+    simp [births] at hp
     have hmem := List.mem_of_getElem? hp
     rw [batchPrimes, Multiset.mem_sort, Multiset.mem_sum] at hmem
     obtain ⟨xp, -, hxp⟩ := hmem
@@ -243,7 +237,7 @@ theorem primeWeight_le_two_div (hq : 0 ≤ q) {N p : ℕ} {i : Fin K}
     0 ≤ primeWeight q x d N p ∧
       primeWeight q x d N p ≤ 2 / (harmonicMass (band x (d.a i)) * p) := by
   set V := harmonicMass (band x (d.a i)) with hVdef
-  have hp1 : (1 : ℝ) ≤ p := by exact_mod_cast (by omega : 1 ≤ p)
+  have hp1 : (1 : ℝ) ≤ p := by bound
   -- `b'_p ≥ 1/2`: each defect is at most `1`
   have hb : 1 / 2 ≤ baseline q N p := by
     have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ N + 1 :=
@@ -270,16 +264,16 @@ theorem primeWeight_le_two_div (hq : 0 ≤ q) {N p : ℕ} {i : Fin K}
   have hV0 : 0 < V := by linarith
   -- the denominator is at least `V_i p / 2`
   have hpos : 0 < V * p / 2 := by positivity
-  have hden : V * p / 2 ≤ primeMass x d p * ((p : ℝ) + 1) * baseline q N p :=
+  have hden  :=
     calc V * p / 2 = V * p * (1 / 2) := by ring
       _ ≤ primeMass x d p * ((p : ℝ) + 1) * baseline q N p :=
           mul_le_mul (mul_le_mul hmass (by linarith) (by positivity) (by linarith)) hb
             (by norm_num) (mul_nonneg (by linarith) (by positivity))
   unfold primeWeight
   refine ⟨(one_div_pos.2 (hpos.trans_le hden)).le, ?_⟩
-  calc 1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p) ≤ 1 / (V * p / 2) :=
-        one_div_le_one_div_of_le hpos hden
-    _ = 2 / (V * p) := by field_simp
+  calc _ ≤ 1 / (V * p / 2) :=
+        by gcongr
+    _ = _ := by field_simp
 
 variable (q x d) in
 /-- Under the hypotheses of `primeWeight_le_two_div`, the birth weights of a band sum to at
@@ -289,12 +283,12 @@ theorem sum_band_primeWeight_le (hq : 0 ≤ q) {N : ℕ} {i : Fin K}
     (hpN : ∀ p ∈ band x (d.a i), 2 * (N + 1) ≤ p + 1) :
     ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 2 := by
   have hV0 : 0 < harmonicMass (band x (d.a i)) := by linarith
-  calc ∑ p ∈ band x (d.a i), primeWeight q x d N p
+  calc _
       ≤ ∑ p ∈ band x (d.a i), 2 / (harmonicMass (band x (d.a i)) * p) :=
         sum_le_sum fun p hp => (primeWeight_le_two_div q x d hq hp hV (hpN p hp)).2
     _ = 2 / harmonicMass (band x (d.a i)) * harmonicMass (band x (d.a i)) := by
         rw [harmonicMass, mul_sum]
-        exact sum_congr rfl fun p _ => by rw [div_mul_div_comm, mul_one]
+        ring
     _ = 2 := div_mul_cancel₀ _ hV0.ne'
 
 /-- **The boundary norm**: `‖𝐛‖² ≤ 2^{KM}`. On the support of `𝐛` the memory is empty, and
@@ -336,9 +330,8 @@ theorem wnormSq_chainInit_le {N : ℕ} (hν₀ : ∀ p ∈ bandPrimes x d, 0 ≤
     rw [sum_boole]
     exact_mod_cast hc
   -- the lists carry at most `2^{KM}`
-  have hlists : ∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k) ≤
-      2 ^ (K * (padCount x + 1)) :=
-    calc ∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k)
+  have hlists  :=
+    calc _
         = ∑ a ∈ lists x d (padCount x), ∏ i, ∏ k, primeWeight q x d N (a i k) :=
           sum_coe_sort _ (fun a : Lists K (padCount x) => ∏ i, ∏ k, primeWeight q x d N (a i k))
       _ ≤ ∑ a ∈ Fintype.piFinset fun i => Fintype.piFinset fun _ : Fin (padCount x + 1) =>
@@ -359,7 +352,7 @@ theorem wnormSq_chainInit_le {N : ℕ} (hν₀ : ∀ p ∈ bandPrimes x d, 0 ≤
             fun i _ => prod_le_prod₀ (fun k _ =>
               sum_nonneg fun p hp => hν₀ p (mem_biUnion.2 ⟨i, mem_univ _, hp⟩))
               fun k _ => hν i
-      _ = 2 ^ (K * (padCount x + 1)) := by
+      _ = _ := by
           rw [prod_const, prod_const, card_univ, card_univ, Fintype.card_fin, Fintype.card_fin,
             ← pow_mul, mul_comm]
   have hL : 0 ≤ ∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k) :=
@@ -378,7 +371,7 @@ theorem wnormSq_chainInit_le {N : ℕ} (hν₀ : ∀ p ∈ bandPrimes x d, 0 ≤
         simp only [Fintype.sum_prod_type, mul_sum]
     _ ≤ 1 * ((∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k)) * 1) := by
         gcongr
-    _ ≤ 2 ^ (K * (padCount x + 1)) := by rw [one_mul, mul_one]; exact hlists
+    _ ≤ _ := by rw [one_mul, mul_one]; exact hlists
 
 /-! ### The phased products -/
 
@@ -418,7 +411,7 @@ theorem normLe_phasedProduct {N : ℕ} {L G Ce C₀ : ℝ} (hL : 1 ≤ L) (hCe :
       have hone : (fun i => ψ (.inr (.inl (j, i)))) = fun _ _ => 1 := by
         funext i
         refine hψU _ fun hi => ?_
-        rw [hm, card_eq_zero, filter_eq_empty_iff] at hj
+        rw [card_eq_zero, filter_eq_empty_iff] at hj
         exact hj (mem_univ i) hi
       rw [hone, phasedEdge_one, hj, Nat.cast_zero, mul_zero, add_zero]
       exact hE₀
@@ -426,11 +419,11 @@ theorem normLe_phasedProduct {N : ℕ} {L G Ce C₀ : ℝ} (hL : 1 ≤ L) (hCe :
       have h1 : (1 : ℝ) ≤ m j := by exact_mod_cast Nat.one_le_iff_ne_zero.2 hj
       refine NormLe.mono hμ (Real.rpow_nonneg hL0.le _) ?_ (hE _ fun i o => hψ _ o)
       refine Real.rpow_le_rpow_of_exponent_le hL ?_
-      have : (Ce + G) * 1 ≤ (Ce + G) * m j := mul_le_mul_of_nonneg_left h1 hCe
+      have  := mul_le_mul_of_nonneg_left h1 hCe
       linarith
   -- compose along the chain
-  have hfold := normLe_foldr _ (fun j : Fin N => C₀ * L ^ (-G + (Ce + G) * m j))
-    (hG N (fun k => ψ (.inr (.inr (Fin.last N, k)))) fun k o => hψ _ o) (List.finRange N) hstep
+  have hfold := normLe_foldr _ _
+    (hG N (fun k => ψ (.inr (.inr (Fin.last N, k)))) fun k o => hψ _ o) _ hstep
   -- `∑_j m_j ≤ |U|`
   have hmU : ∑ j, m j ≤ #U := by
     have hsum : ∑ j, m j = #((univ : Finset (Fin N × Fin K)).filter fun ji =>
@@ -439,14 +432,12 @@ theorem normLe_phasedProduct {N : ℕ} {L G Ce C₀ : ℝ} (hL : 1 ≤ L) (hCe :
     rw [hsum]
     refine card_le_card_of_injOn (fun ji => .inr (.inl ji)) (fun ji hji => (mem_filter.1 hji).2)
       fun a _ b _ hab => ?_
-    exact Sum.inl_injective (Sum.inr_injective hab)
+    grind
   have hmU' : ∑ j, (m j : ℝ) ≤ #U := by exact_mod_cast hmU
   -- the constant is `C₀^{N+1} L^{-GN + (C_e + G) ∑_j m_j}`
   have hconst : ((List.finRange N).map fun j : Fin N => C₀ * L ^ (-G + (Ce + G) * m j)).prod *
       C₀ = C₀ ^ (N + 1) * L ^ (-G * N + (Ce + G) * ∑ j, (m j : ℝ)) := by
-    rw [← Fin.prod_univ_def, prod_mul_distrib, prod_const, card_univ, Fintype.card_fin,
-      ← Real.rpow_sum_of_pos hL0, sum_add_distrib, sum_const, card_univ, Fintype.card_fin,
-      ← mul_sum, nsmul_eq_mul, pow_succ]
+    rw [← Fin.prod_univ_def, prod_mul_distrib, prod_const, card_univ, ← Real.rpow_sum_of_pos hL0, sum_add_distrib, sum_const, card_univ, Fintype.card_fin, ← mul_sum, nsmul_eq_mul, pow_succ]
     ring_nf
   rw [hconst] at hfold
   refine NormLe.mono hμ (by positivity) ?_ hfold
@@ -484,9 +475,7 @@ theorem norm_blockSum_le {N : ℕ} (hμ : ∀ s, 0 ≤ chainMeasure q x d Y d₀
       ((P : ℂ) ^ Q)⁻¹ * ∑ κ ∈ F,
         ι κ s * phasedProduct q A₀ x d Y d₀ u v r B N (ψ κ) (chainInit x d Y d₀ u v r B) s := by
     intro s
-    calc ∑ h ∈ histories x d Y d₀ u v r B N, chainWeight q A₀ s h *
-          (∏ C ∈ 𝒞, if BlockRealized (births s h) C then 1 else 0) *
-            chainInit x d Y d₀ u v r B (chainEnd s h)
+    calc _
         = ∑ h ∈ histories x d Y d₀ u v r B N, chainWeight q A₀ s h *
           (((P : ℂ) ^ Q)⁻¹ * ∑ κ ∈ F, ∏ a, ψ κ a (births s h a)) *
             chainInit x d Y d₀ u v r B (chainEnd s h) :=
@@ -497,8 +486,7 @@ theorem norm_blockSum_le {N : ℕ} (hμ : ∀ s, 0 ≤ chainMeasure q x d Y d₀
           simp only [mul_sum, sum_mul]
           rw [sum_comm]
           exact sum_congr rfl fun _ _ => sum_congr rfl fun _ _ => by ring
-      _ = ((P : ℂ) ^ Q)⁻¹ * ∑ κ ∈ F, ι κ s *
-          phasedProduct q A₀ x d Y d₀ u v r B N (ψ κ) (chainInit x d Y d₀ u v r B) s := by
+      _ = _ := by
           congr 1
           refine sum_congr rfl fun κ _ => ?_
           rw [phasedProduct_eq_sum_history, mul_sum]
@@ -512,7 +500,7 @@ theorem norm_blockSum_le {N : ℕ} (hμ : ∀ s, 0 ≤ chainMeasure q x d Y d₀
       (chainMeasure q x d Y d₀ u v r B N s : ℂ) * (chainInit x d Y d₀ u v r B s * ι κ s) *
         phasedProduct q A₀ x d Y d₀ u v r B N (ψ κ) (chainInit x d Y d₀ u v r B) s := by
     rw [blockSum]
-    simp only [hs, mul_sum]
+    simp [hs, mul_sum]
     rw [sum_comm]
     exact sum_congr rfl fun _ _ => sum_congr rfl fun _ _ => by ring
   -- each phased matrix element is at most `c ‖𝐛‖²`
@@ -522,26 +510,24 @@ theorem norm_blockSum_le {N : ℕ} (hμ : ∀ s, 0 ≤ chainMeasure q x d Y d₀
       c * wnormSq (chainMeasure q x d Y d₀ u v r B N) (chainInit x d Y d₀ u v r B) :=
     fun κ _ => norm_sum_mul_le_of_normLe hμ hc (hT (ψ κ) (hψ κ) (hψU κ)) fun s => by
       have hι1 : ‖ι κ s‖ ≤ 1 := by
-        rw [hι, norm_prod]
+        rw [norm_prod]
         exact prod_le_one₀ (fun _ _ => norm_nonneg _) fun a _ => hψ κ _ _
       rw [norm_mul]
-      calc ‖chainInit x d Y d₀ u v r B s‖ * ‖ι κ s‖ ≤ ‖chainInit x d Y d₀ u v r B s‖ * 1 :=
+      calc _ ≤ ‖chainInit x d Y d₀ u v r B s‖ * 1 :=
             mul_le_mul_of_nonneg_left hι1 (norm_nonneg _)
-        _ = ‖chainInit x d Y d₀ u v r B s‖ := mul_one _
+        _ = _ := mul_one _
   -- `|F| = P^Q`
   have hcard : (#F : ℝ) = (P : ℝ) ^ Q := by
-    rw [hF, Fintype.card_piFinset, prod_const, card_range, card_univ]
+    rw [Fintype.card_piFinset, prod_const, card_range, card_univ]
     push_cast
     rfl
   have hPQ : (0 : ℝ) < (P : ℝ) ^ Q := by positivity
   rw [hsum, norm_mul, norm_inv, norm_pow, Complex.norm_natCast]
-  calc ((P : ℝ) ^ Q)⁻¹ * ‖∑ κ ∈ F, ∑ s, (chainMeasure q x d Y d₀ u v r B N s : ℂ) *
-        (chainInit x d Y d₀ u v r B s * ι κ s) *
-          phasedProduct q A₀ x d Y d₀ u v r B N (ψ κ) (chainInit x d Y d₀ u v r B) s‖
+  calc _
       ≤ ((P : ℝ) ^ Q)⁻¹ * ∑ _κ ∈ F,
           c * wnormSq (chainMeasure q x d Y d₀ u v r B N) (chainInit x d Y d₀ u v r B) :=
         mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (sum_le_sum hκ)) (by positivity)
-    _ = c * wnormSq (chainMeasure q x d Y d₀ u v r B N) (chainInit x d Y d₀ u v r B) := by
+    _ = _ := by
         rw [sum_const, nsmul_eq_mul, hcard, ← mul_assoc, inv_mul_cancel₀ hPQ.ne', one_mul]
 
 open scoped Classical in
@@ -560,7 +546,7 @@ theorem norm_blockSum_le_realized {N : ℕ} (hμ : ∀ s, 0 ≤ chainMeasure q x
   refine sum_congr rfl fun h _ => ?_
   have hind : ‖(∏ C ∈ 𝒞, if BlockRealized (births s h) C then 1 else 0 : ℂ)‖ =
       ∏ C ∈ 𝒞, (if BlockRealized (births s h) C then 1 else 0 : ℝ) := by
-    rw [norm_prod]
+    simp
     exact prod_congr rfl fun C _ => by split_ifs <;> simp
   rw [norm_mul, norm_mul, hind]
   ring

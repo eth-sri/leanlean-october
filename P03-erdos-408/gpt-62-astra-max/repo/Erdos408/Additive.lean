@@ -27,9 +27,8 @@ noncomputable def F (n : ℕ) : ℕ :=
     ∑ p ∈ n.primeFactors.attach, n.factorization p * if (p : ℕ) = 2 then 1 else F (p - 1)
 termination_by n
 decreasing_by
-  have hp := Nat.prime_of_mem_primeFactors p.2
   have hle := Nat.le_of_mem_primeFactors p.2
-  have := hp.two_le
+  have := (Nat.prime_of_mem_primeFactors p.2).two_le
   omega
 
 /-- Unfolding `F` at `n ≥ 2`. -/
@@ -110,21 +109,20 @@ private theorem induction_on_primes_mul {P : ℕ → Prop} (h1 : P 1)
     have hle := Nat.minFac_le (show 0 < n by omega)
     have hdvd := Nat.minFac_dvd n
     have hq : n / n.minFac < n := Nat.div_lt_self (by omega) hmin.one_lt
-    have hq0 : n / n.minFac ≠ 0 := (Nat.div_pos hle hmin.pos).ne'
+    have hq0 := (Nat.div_pos hle hmin.pos).ne'
     rw [← Nat.mul_div_cancel' hdvd]
     exact hmul _ _ hmin.ne_zero hq0
       (hp _ hmin fun m hm hlt => ih m (by omega) hm) (ih _ hq hq0)
 
 /-- The lower bound `log n / log 3 ≤ F n`. -/
 theorem log_div_log_three_le_F {n : ℕ} (hn : n ≠ 0) : Real.log n / Real.log 3 ≤ F n := by
-  have h3 : 0 < Real.log 3 := Real.log_pos (by norm_num)
+  have h3 : 0 < Real.log 3 := by positivity
   refine induction_on_primes_mul (P := fun n => Real.log n / Real.log 3 ≤ F n)
-    (by simp [F_one]) (fun p hp ih => ?_) (fun a b ha hb iha ihb => ?_) n hn
+    (by simp) (fun p hp ih => ?_) (fun a b ha hb iha ihb => ?_) n hn
   · by_cases h2 : p = 2
     · subst h2
       simp only [F_two, Nat.cast_one, Nat.cast_ofNat]
-      rw [div_le_one h3]
-      exact Real.log_le_log (by norm_num) (by norm_num)
+      bound
     obtain ⟨hm1, hpm, hF⟩ := F_odd_prime hp h2
     set m := (p - 1) / 2
     have ihm := ih m (by omega) (by omega)
@@ -138,11 +136,11 @@ theorem log_div_log_three_le_F {n : ℕ} (hn : n ≠ 0) : Real.log n / Real.log 
     linarith
   · rw [Nat.cast_mul, Real.log_mul (by positivity) (by positivity), add_div, F_mul ha hb,
       Nat.cast_add]
-    exact add_le_add iha ihb
+    gcongr
 
 /-- The upper bound `F n ≤ log n / log 2`. -/
 theorem F_le_log_div_log_two {n : ℕ} (hn : n ≠ 0) : (F n : ℝ) ≤ Real.log n / Real.log 2 := by
-  have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have h2 : 0 < Real.log 2 := by positivity
   refine induction_on_primes_mul (P := fun n => (F n : ℝ) ≤ Real.log n / Real.log 2)
     (by simp [F_one]) (fun p hp ih => ?_) (fun a b ha hb iha ihb => ?_) n hn
   · by_cases hp2 : p = 2
@@ -160,15 +158,14 @@ theorem F_le_log_div_log_two {n : ℕ} (hn : n ≠ 0) : (F n : ℝ) ≤ Real.log
     linarith
   · rw [Nat.cast_mul, Real.log_mul (by positivity) (by positivity), add_div, F_mul ha hb,
       Nat.cast_add]
-    exact add_le_add iha ihb
+    gcongr
 
 /-- `F` drops by one under `φ` at even arguments and is unchanged at odd ones. -/
 private theorem F_totient_add {n : ℕ} (hn : n ≠ 0) :
     F (Nat.totient n) + (if 2 ∣ n then 1 else 0) = F n := by
   induction n using Nat.recOnPosPrimePosCoprime with
   | prime_pow p k hp hk =>
-    have hp1 : p - 1 ≠ 0 := by have := hp.two_le; omega
-    rw [Nat.totient_prime_pow hp hk, F_mul (pow_ne_zero _ hp.ne_zero) hp1, F_pow hp.ne_zero,
+    rw [Nat.totient_prime_pow hp hk, F_mul (pow_ne_zero _ hp.ne_zero) (by have := hp.two_le; omega), F_pow hp.ne_zero,
       F_pow hp.ne_zero]
     by_cases h2 : p = 2
     · subst h2
@@ -180,10 +177,9 @@ private theorem F_totient_add {n : ℕ} (hn : n ≠ 0) :
           (Nat.prime_two.dvd_of_dvd_pow h)).symm
       rw [ite_eq_right hndvd, ← F_prime_of_ne_two hp h2]
       obtain ⟨j, rfl⟩ := Nat.exists_eq_add_of_lt hk
-      simp only [zero_add, Nat.add_sub_cancel]
-      ring
-  | zero => exact absurd rfl hn
-  | one => simp [F_one]
+      grind
+  | zero => omega
+  | one => rfl
   | coprime a b ha hb hab iha ihb =>
     have ha0 : a ≠ 0 := by omega
     have hb0 : b ≠ 0 := by omega
@@ -194,7 +190,6 @@ private theorem F_totient_add {n : ℕ} (hn : n ≠ 0) :
     -- `a` and `b` are not both even
     have hnot : ¬ (2 ∣ a ∧ 2 ∣ b) := fun h => by
       have := Nat.dvd_gcd h.1 h.2
-      rw [hab.gcd_eq_one] at this
       omega
     split_ifs at iha ihb ⊢ <;> omega
 
@@ -211,8 +206,7 @@ private theorem iterate_totient_eq_one_iff_of_even {n : ℕ} (hn : 2 ≤ n) (he 
   | zero =>
     obtain ⟨m, rfl⟩ := he
     rw [← two_mul, F_mul two_ne_zero (by omega), F_two]
-    simp only [Function.iterate_zero, id_eq]
-    omega
+    simp
   | succ k ih =>
     have hF := F_totient_add (show n ≠ 0 by omega)
     rw [ite_eq_left (even_iff_two_dvd.1 he)] at hF
@@ -220,7 +214,7 @@ private theorem iterate_totient_eq_one_iff_of_even {n : ℕ} (hn : 2 ≤ n) (he 
     by_cases h1 : Nat.totient n = 1
     · rw [h1, Function.iterate_fixed Nat.totient_one, ← hF, h1, F_one]
       simp
-    have h0 : Nat.totient n ≠ 0 := (Nat.totient_pos.2 (by omega)).ne'
+    have h0 : Nat.totient n ≠ 0 := by positivity
     have h3 : 2 < n := by
       by_contra h
       exact h1 (Nat.totient_eq_one_iff.2 (by omega))
@@ -230,16 +224,16 @@ private theorem iterate_totient_eq_one_iff_of_even {n : ℕ} (hn : 2 ≤ n) (he 
 /-- The height of an even `n ≥ 2` is `F n`. -/
 theorem f_eq_F_of_even {n : ℕ} (hn : 2 ≤ n) (he : Even n) : f n = F n := by
   have hF := (iterate_totient_eq_one_iff_of_even hn he 0).not.1
-    (by simp only [Function.iterate_zero, id_eq]; omega)
+    (by aesop)
   exact f_eq_of_iterate_iff (by omega) fun k _ => iterate_totient_eq_one_iff_of_even hn he k
 
 /-- The height of an odd `n ≥ 3` is `F n + 1`. -/
 theorem f_eq_F_add_one_of_odd {n : ℕ} (hn : 2 ≤ n) (ho : Odd n) : f n = F n + 1 := by
-  have h3 : 2 < n := by obtain ⟨m, rfl⟩ := ho; omega
+  have h3 : 2 < n := by grind
   have hF := F_totient_add (show n ≠ 0 by omega)
   rw [ite_eq_right (Nat.not_even_iff_odd.2 ho ∘ even_iff_two_dvd.2), add_zero] at hF
   have h2 : 2 ≤ Nat.totient n := by
-    have h0 : Nat.totient n ≠ 0 := (Nat.totient_pos.2 (by omega)).ne'
+    have h0 : Nat.totient n ≠ 0 := by positivity
     have h1 : Nat.totient n ≠ 1 := fun h => by have := Nat.totient_eq_one_iff.1 h; omega
     omega
   refine f_eq_of_iterate_iff (by omega) fun k hk => ?_

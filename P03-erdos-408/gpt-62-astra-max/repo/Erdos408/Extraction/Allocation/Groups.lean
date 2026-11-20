@@ -55,7 +55,7 @@ lemma band_eq_primesIcc (x a : ℝ) :
 /-- The groups of `doublingGroups x a b` are the dyadic groups at the scales
 `y = 2^i L^a` with `2y ≤ L^b`. -/
 lemma exists_of_mem_doublingGroups {x a b : ℝ} {g : Finset ℕ} (hg : g ∈ doublingGroups x a b) :
-    ∃ i : ℕ, g = dyadicGroup (2 ^ i * Real.log x ^ a) ∧
+    ∃ i, g = dyadicGroup (2 ^ i * Real.log x ^ a) ∧
       2 * (2 ^ i * Real.log x ^ a) ≤ Real.log x ^ b := by
   obtain ⟨i, hi, rfl⟩ := mem_image.1 hg
   refine ⟨i, rfl, ?_⟩
@@ -96,7 +96,7 @@ private lemma exp_sub_one_ge {y : ℝ} (hy : 2 ≤ Real.exp y) :
   nlinarith
 
 /-- The reciprocal mass of a dyadic group at a large scale lies in `[1/2, 3]`. -/
-lemma harmonicMass_dyadicGroup : ∃ Y₀ : ℝ, ∀ y : ℝ, Y₀ ≤ y →
+lemma harmonicMass_dyadicGroup : ∃ Y₀, ∀ y, Y₀ ≤ y →
     1 / 2 ≤ harmonicMass (dyadicGroup y) ∧ harmonicMass (dyadicGroup y) ≤ 3 := by
   obtain ⟨E, hE, hM⟩ := mertens_second
   refine ⟨6 * (E + 2) + 4, fun y hy => ?_⟩
@@ -104,44 +104,41 @@ lemma harmonicMass_dyadicGroup : ∃ Y₀ : ℝ, ∀ y : ℝ, Y₀ ≤ y →
   have hey : 2 ≤ Real.exp y - 1 := by
     have := add_one_le_exp y
     linarith
-  have he2y : Real.exp y ≤ Real.exp (2 * y) - 1 := by
+  let expAt := Real.exp (2 * y)
+  have he2y : Real.exp y ≤ expAt - 1 := by
     have h := exp_add y y
     rw [show y + y = 2 * y by ring] at h
-    have := add_one_le_exp y
     nlinarith
   have hlog1 : y - 1 ≤ Real.log (Real.exp y - 1) := by
     rw [← log_exp (y - 1)]
     exact log_le_log (exp_pos _) (exp_sub_one_ge (by linarith))
-  have hlog2 : 2 * y - 1 ≤ Real.log (Real.exp (2 * y) - 1) := by
+  have hlog2 : 2 * y - 1 ≤ Real.log (expAt - 1) := by
     rw [← log_exp (2 * y - 1)]
     exact log_le_log (exp_pos _) (exp_sub_one_ge (by linarith))
   constructor
   · -- lower bound from `(e^y, e^{2y} - 1]`
-    have hsub : primesIoc (Real.exp y) (Real.exp (2 * y) - 1) ⊆ dyadicGroup y := by
+    have hsub : primesIoc (Real.exp y) (expAt - 1) ⊆ dyadicGroup y := by
       intro q hq
       obtain ⟨hp, h1, h2⟩ := mem_primesIoc.1 hq
       exact mem_dyadicGroup.2 ⟨hp, h1.le, by linarith⟩
     have hS := sum_le_sum_of_subset_of_nonneg (f := fun q : ℕ => (1 : ℝ) / q) hsub
       fun q _ _ => by positivity
-    have hm := (abs_le.1 (hM (Real.exp y) (Real.exp (2 * y) - 1) (by linarith) he2y)).1
+    have hm := (abs_le.1 (hM (Real.exp y) (expAt - 1) (by linarith) he2y)).1
     rw [log_exp] at hm
     -- `log((2y - 1)/y) ≥ log 2 - 1/y`
-    have hl : Real.log 2 - 1 / y ≤ Real.log (Real.log (Real.exp (2 * y) - 1) / y) := by
-      have h1 : 2 - 1 / y ≤ Real.log (Real.exp (2 * y) - 1) / y := by
+    have hl : Real.log 2 - 1 / y ≤ Real.log (Real.log (expAt - 1) / y) := by
+      have h1 : 2 - 1 / y ≤ Real.log (expAt - 1) / y := by
         rw [le_div_iff₀ (by linarith)]
         field_simp
         linarith
-      have h2 : Real.log (2 - 1 / y) ≤ Real.log (Real.log (Real.exp (2 * y) - 1) / y) :=
+      have h2 :=
         log_le_log (by
           have : 1 / y ≤ 1 / 4 := by gcongr
           linarith) h1
       have h3 : Real.log 2 - 1 / y ≤ Real.log (2 - 1 / y) := by
         have h4 : 2 - 1 / y = 2 * (1 - 1 / (2 * y)) := by field_simp
         have h5 : 0 < 1 - 1 / (2 * y) := by
-          have : 1 / (2 * y) ≤ 1 / 8 := by
-            rw [div_le_div_iff₀ (by linarith) (by norm_num)]
-            linarith
-          linarith
+          bound
         rw [h4, log_mul (by norm_num) h5.ne']
         have h6 := one_sub_inv_le_log_of_pos h5
         have h7 : -(1 / y) ≤ 1 - (1 - 1 / (2 * y))⁻¹ := by
@@ -163,16 +160,15 @@ lemma harmonicMass_dyadicGroup : ∃ Y₀ : ℝ, ∀ y : ℝ, Y₀ ≤ y →
     unfold harmonicMass
     linarith
   · -- upper bound from `(e^y - 1, e^{2y}]`
-    have hsub : dyadicGroup y ⊆ primesIoc (Real.exp y - 1) (Real.exp (2 * y)) := by
+    have hsub : dyadicGroup y ⊆ primesIoc (Real.exp y - 1) (expAt) := by
       intro q hq
       obtain ⟨hp, h1, h2⟩ := mem_dyadicGroup.1 hq
       exact mem_primesIoc.2 ⟨hp, by linarith, h2.le⟩
     have hS := sum_le_sum_of_subset_of_nonneg (f := fun q : ℕ => (1 : ℝ) / q) hsub
       fun q _ _ => by positivity
-    have hexp : Real.exp y - 1 ≤ Real.exp (2 * y) := by
-      have := exp_le_exp.2 (show y ≤ 2 * y by linarith)
+    have hexp : Real.exp y - 1 ≤ expAt := by
       linarith
-    have hm := (abs_le.1 (hM (Real.exp y - 1) (Real.exp (2 * y)) hey hexp)).2
+    have hm := (abs_le.1 (hM (Real.exp y - 1) (expAt) hey hexp)).2
     rw [log_exp] at hm
     have hl0 : 0 < Real.log (Real.exp y - 1) := by linarith
     have hl : Real.log (2 * y / Real.log (Real.exp y - 1)) ≤ 2 := by
@@ -196,7 +192,7 @@ lemma exists_scale_of_mem_doublingGroups {x a b : ℝ} (hx : 1 ≤ Real.log x) {
   obtain ⟨i, rfl, hi⟩ := exists_of_mem_doublingGroups hg
   refine ⟨_, rfl, ?_, hi⟩
   have : (1 : ℝ) ≤ 2 ^ i := one_le_pow₀ (by norm_num)
-  have : 0 < Real.log x ^ a := rpow_pos_of_pos (by linarith) a
+  have : 0 < Real.log x ^ a := by positivity
   nlinarith
 
 /-- Distinct groups of one doubling family are disjoint. -/
@@ -205,7 +201,6 @@ lemma disjoint_of_mem_doublingGroups {x a b : ℝ} (hx : 1 ≤ Real.log x) {g g'
     Disjoint g g' := by
   obtain ⟨i, rfl, -⟩ := exists_of_mem_doublingGroups hg
   obtain ⟨i', rfl, -⟩ := exists_of_mem_doublingGroups hg'
-  have hL : 0 < Real.log x ^ a := rpow_pos_of_pos (by linarith) a
   have key : ∀ i i' : ℕ, i < i' → 2 * (2 ^ i * Real.log x ^ a) ≤ 2 ^ i' * Real.log x ^ a := by
     intro i i' h
     rw [← mul_assoc, ← pow_succ']
@@ -213,25 +208,25 @@ lemma disjoint_of_mem_doublingGroups {x a b : ℝ} (hx : 1 ≤ Real.log x) {g g'
     · norm_num
     · exact h
   rcases lt_trichotomy i i' with h | rfl | h
-  · exact disjoint_dyadicGroup (key i i' h)
+  · solve_by_elim [disjoint_dyadicGroup]
   · exact absurd rfl hne
   · exact (disjoint_dyadicGroup (key i' i h)).symm
 
 /-- A small group sits at a scale in `[L^{0.28}, L^{0.35}/2]`. -/
 lemma exists_scale_of_mem_smallGroups {x : ℝ} (hx : 1 ≤ Real.log x) {g : Finset ℕ}
-    (hg : g ∈ smallGroups x) : ∃ y : ℝ, g = dyadicGroup y ∧
+    (hg : g ∈ smallGroups x) : ∃ y, g = dyadicGroup y ∧
       Real.log x ^ (28 / 100 : ℝ) ≤ y ∧ 2 * y ≤ Real.log x ^ (35 / 100 : ℝ) :=
   exists_scale_of_mem_doublingGroups hx hg
 
 /-- A big group sits at a scale in `[L^{0.40}, L^{0.45}/2]`. -/
 lemma exists_scale_of_mem_bigGroups {x : ℝ} (hx : 1 ≤ Real.log x) {g : Finset ℕ}
-    (hg : g ∈ bigGroups x) : ∃ y : ℝ, g = dyadicGroup y ∧
+    (hg : g ∈ bigGroups x) : ∃ y, g = dyadicGroup y ∧
       Real.log x ^ (40 / 100 : ℝ) ≤ y ∧ 2 * y ≤ Real.log x ^ (45 / 100 : ℝ) :=
   exists_scale_of_mem_doublingGroups hx hg
 
 /-- Every candidate group sits at a scale in `[L^{0.28}, L^{0.45}/2]`. -/
 lemma exists_scale_of_mem_candidateGroups {x : ℝ} (hx : 1 ≤ Real.log x) {g : Finset ℕ}
-    (hg : g ∈ candidateGroups x) : ∃ y : ℝ, g = dyadicGroup y ∧
+    (hg : g ∈ candidateGroups x) : ∃ y, g = dyadicGroup y ∧
       Real.log x ^ (28 / 100 : ℝ) ≤ y ∧ 2 * y ≤ Real.log x ^ (45 / 100 : ℝ) := by
   rcases mem_union.1 hg with hg | hg
   · obtain ⟨y, rfl, h1, h2⟩ := exists_scale_of_mem_smallGroups hx hg
@@ -258,7 +253,7 @@ lemma pairwiseDisjoint_candidateGroups {x : ℝ} (hx : 1 ≤ Real.log x) :
 
 /-- The big groups are prime intervals. -/
 lemma exists_eq_primesIcc_of_mem_bigGroups {x : ℝ} {g : Finset ℕ} (hg : g ∈ bigGroups x) :
-    ∃ y z : ℝ, g = primesIcc y z := by
+    ∃ y z, g = primesIcc y z := by
   obtain ⟨i, rfl, -⟩ := exists_of_mem_doublingGroups hg
   exact ⟨_, _, rfl⟩
 
@@ -282,7 +277,7 @@ lemma eventually_candidateGroups : ∀ᶠ x : ℝ in atTop,
     intro g hg
     obtain ⟨y, rfl, h1, -⟩ := exists_scale_of_mem_candidateGroups hx hg
     exact hY₀ y (hY.trans h1)
-  have hcard : ∀ a b : ℝ, a ≤ b → b - a ≤ 1 / 2 →
+  have hcard : ∀ a b, a ≤ b → b - a ≤ 1 / 2 →
       ((doublingGroups x a b).card : ℝ) ≤ logLog x := by
     intro a b hab hba
     have hT : 0 ≤ logLog x := Real.log_nonneg hx
@@ -302,15 +297,11 @@ lemma eventually_candidateGroups : ∀ᶠ x : ℝ in atTop,
   · intro g hg q hq
     obtain ⟨y, rfl, h1, h2⟩ := exists_scale_of_mem_smallGroups hx hg
     obtain ⟨hp, h3, h4⟩ := mem_dyadicGroup.1 hq
-    refine mem_primesIcc.2 ⟨hp, le_trans (exp_le_exp.2 ?_) h3, le_trans h4.le (exp_le_exp.2 ?_)⟩
-    · exact (rpow_le_rpow_of_exponent_le hx (by norm_num)).trans h1
-    · exact h2.trans (rpow_le_rpow_of_exponent_le hx (by norm_num))
+    exact mem_primesIcc.2 ⟨hp, le_trans (exp_le_exp.2 ((rpow_le_rpow_of_exponent_le hx (by norm_num)).trans h1)) h3, le_trans h4.le (exp_le_exp.2 (h2.trans (rpow_le_rpow_of_exponent_le hx (by norm_num))))⟩
   · intro g hg q hq
     obtain ⟨y, rfl, h1, h2⟩ := exists_scale_of_mem_bigGroups hx hg
     obtain ⟨hp, h3, h4⟩ := mem_dyadicGroup.1 hq
-    refine mem_primesIcc.2 ⟨hp, le_trans (exp_le_exp.2 ?_) h3, le_trans h4.le (exp_le_exp.2 ?_)⟩
-    · exact (rpow_le_rpow_of_exponent_le hx (by norm_num)).trans h1
-    · exact h2.trans (rpow_le_rpow_of_exponent_le hx (by norm_num))
+    exact mem_primesIcc.2 ⟨hp, le_trans (exp_le_exp.2 ((rpow_le_rpow_of_exponent_le hx (by norm_num)).trans h1)) h3, le_trans h4.le (exp_le_exp.2 (h2.trans (rpow_le_rpow_of_exponent_le hx (by norm_num))))⟩
   · intro p hp
     obtain ⟨g, hg, hpg⟩ := mem_biUnion.1 hp
     obtain ⟨y, rfl, h1, -⟩ := exists_scale_of_mem_candidateGroups hx hg
@@ -339,10 +330,7 @@ lemma sum_one_div_candidatePrimes_le {x : ℝ} (hx : 1 ≤ Real.log x) (hg : Gro
     have : ((candidateGroups x).card : ℝ) ≤ (smallGroups x).card + (bigGroups x).card := by
       exact_mod_cast this
     linarith
-  calc ∑ g ∈ candidateGroups x, ∑ p ∈ id g, (1 : ℝ) / p
-      ≤ ∑ _g ∈ candidateGroups x, (3 : ℝ) := sum_le_sum fun g hg => (hmass g hg).2
-    _ = 3 * (candidateGroups x).card := by rw [sum_const, nsmul_eq_mul, mul_comm]
-    _ ≤ 6 * logLog x := by linarith
+  calc _ ≤ _ := ((sum_le_sum fun g hg => (hmass g hg).2).trans_eq (by rw [sum_const, nsmul_eq_mul, mul_comm])).trans (by linarith)
 
 /-! ### The inert bands -/
 
@@ -363,20 +351,20 @@ lemma disjoint_band {x a a' : ℝ} (hx : 1 ≤ Real.log x) (h : 1 ≤ (a' - a) *
   have h3 : Real.log x ^ a' = Real.log x ^ a * Real.log x ^ (a' - a) := by
     rw [← rpow_add hL]
     ring_nf
-  have h4 : 0 < Real.log x ^ a := rpow_pos_of_pos hL a
+  have h4 : 0 < Real.log x ^ a := by positivity
   have h5 : Real.exp (2 * Real.log x ^ a) < Real.exp (Real.log x ^ a') :=
-    exp_lt_exp.2 (by rw [h3]; nlinarith)
+    exp_lt_exp.2 (by nlinarith)
   linarith [hq.2.2, hq'.2.1]
 
 /-- For large `x`, every band of exponent at least `0.11` has reciprocal mass
 at least `1/2`. -/
 lemma eventually_harmonicMass_band : ∀ᶠ x : ℝ in atTop,
-    ∀ a : ℝ, 11 / 100 ≤ a → 1 / 2 ≤ harmonicMass (band x a) := by
+    ∀ a, 11 / 100 ≤ a → 1 / 2 ≤ harmonicMass (band x a) := by
   obtain ⟨E, hE, hM⟩ := mertens_second
   have hL : Tendsto (fun x : ℝ => Real.log x ^ (11 / 100 : ℝ)) atTop atTop :=
     (tendsto_rpow_atTop (by norm_num)).comp tendsto_log_atTop
   filter_upwards [hL.eventually_ge_atTop (6 * (E + 1)), eventually_le_log 1] with x hY hx a ha
-  have hLa : 6 * (E + 1) ≤ Real.log x ^ a :=
+  have hLa :=
     hY.trans (rpow_le_rpow_of_exponent_le hx ha)
   have hLa0 : 0 < Real.log x ^ a := by linarith
   have hsub : primesIoc (Real.exp (Real.log x ^ a)) (Real.exp (2 * Real.log x ^ a)) ⊆
@@ -408,11 +396,7 @@ private lemma natCeil_le_max_add_one (y : ℝ) : (⌈y⌉₊ : ℝ) ≤ max y 0 
 lemma inertPerCluster_le {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) {x : ℝ} (hs : 0 ≤ logLogLog x) :
     (inertPerCluster K CN x : ℝ) ≤ max CN 0 * logLogLog x / K + 1 := by
   refine (natCeil_le_max_add_one _).trans ?_
-  have hK0 : (0 : ℝ) < K := by exact_mod_cast hK
-  gcongr
-  refine max_le ?_ (by positivity)
-  gcongr
-  exact le_max_left _ _
+  bound
 
 /-- The inert bands for large `x`: exponents in `[0.11, 0.195]`, pairwise
 disjoint bands, and at most `K + C_N⁺ s` bands in all. -/
@@ -424,27 +408,21 @@ lemma eventually_inertBands {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ
         Disjoint (band x (inertExponent K x p.1 p.2)) (band x (inertExponent K x p'.1 p'.2))) ∧
     ((K * inertPerCluster K CN x : ℕ) : ℝ) ≤ K + max CN 0 * logLogLog x := by
   have hK0 : (0 : ℝ) < K := by exact_mod_cast hK
-  have hε : 0 < min (1 / 200 : ℝ) (1 / (25 * K)) := lt_min (by norm_num) (by positivity)
+  have hε : 0 < min (1 / 200 : ℝ) (1 / (25 * K)) := by positivity
   filter_upwards [eventually_mul_logLogLog_le (2 * max CN 0) hε,
     eventually_le_logLog (25 * K + Real.exp 1), eventually_le_log 1] with x hsT hT hx
-  have he1 : 1 ≤ Real.exp 1 := one_le_exp zero_le_one
-  have hT1 : 1 ≤ logLog x := by nlinarith
+  have he1 := one_le_exp zero_le_one
   have hT0 : 0 < logLog x := by linarith
   have hs : 0 ≤ logLogLog x := by
-    rw [logLogLog]
-    exact Real.log_nonneg hT1
+    exact Real.log_nonneg (by nlinarith)
   have hN := inertPerCluster_le hK CN hs
   set N := inertPerCluster K CN x
   -- the band offsets `i · 2/T` are at most `min (1/200) (1/(25K))`
   have hoff : ∀ i < N, (i : ℝ) * (2 / logLog x) ≤ min (1 / 200 : ℝ) (1 / (25 * K)) := by
     intro i hi
     have hi' : (i : ℝ) + 1 ≤ N := by exact_mod_cast hi
-    have h1 : (i : ℝ) ≤ max CN 0 * logLogLog x / K := by linarith
     have h2 : max CN 0 * logLogLog x / K ≤ max CN 0 * logLogLog x := by
-      rw [div_le_iff₀ hK0]
-      have : 0 ≤ max CN 0 * logLogLog x := mul_nonneg (le_max_right _ _) hs
-      have hK1 : (1 : ℝ) ≤ K := by exact_mod_cast hK
-      nlinarith
+      bound
     rw [mul_div_assoc', div_le_iff₀ hT0]
     nlinarith
   have hcl : ∀ c < K, (c : ℝ) * (8 / 100 / K) ≤ 8 / 100 - 8 / 100 / K := by
@@ -458,7 +436,7 @@ lemma eventually_inertBands {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ
     simp only [mem_product, mem_range] at hp
     have h1 := hoff i hp.2
     have h2 := hcl c hp.1
-    have h3 : min (1 / 200 : ℝ) (1 / (25 * K)) ≤ 1 / 200 := min_le_left _ _
+    have h3 : min (1 / 200 : ℝ) (1 / (25 * K)) ≤ 1 / 200 := by norm_num
     have h4 : 0 ≤ (c : ℝ) * (8 / 100 / K) := by positivity
     have h5 : 0 ≤ (i : ℝ) * (2 / logLog x) := by positivity
     have h6 : 0 ≤ 8 / 100 / (K : ℝ) := by positivity
@@ -474,7 +452,7 @@ lemma eventually_inertBands {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ
       rcases h with h | ⟨rfl, h⟩
       · have h1 := hoff i hp.2
         have h2 : (c : ℝ) + 1 ≤ c' := by exact_mod_cast h
-        have h3 : min (1 / 200 : ℝ) (1 / (25 * K)) ≤ 1 / (25 * K) := min_le_right _ _
+        have h3 : min (1 / 200 : ℝ) (1 / (25 * K)) ≤ 1 / (25 * K) := by norm_num
         have h4 : 0 ≤ (i' : ℝ) * (2 / logLog x) := by positivity
         have h5 : (c' : ℝ) * (8 / 100 / K) - c * (8 / 100 / K) ≥ 8 / 100 / K := by
           rw [← sub_mul]
@@ -492,18 +470,11 @@ lemma eventually_inertBands {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ
             2 * (i' - i) := by
           field_simp
           ring
-        rw [this]
         linarith
     intro p hp p' hp' hne
     have hlex : p.1 < p'.1 ∨ (p.1 = p'.1 ∧ p.2 < p'.2) ∨ p'.1 < p.1 ∨
         (p'.1 = p.1 ∧ p'.2 < p.2) := by
-      rcases lt_trichotomy p.1 p'.1 with h | h | h
-      · exact Or.inl h
-      · rcases lt_trichotomy p.2 p'.2 with h' | h' | h'
-        · exact Or.inr (Or.inl ⟨h, h'⟩)
-        · exact absurd (Prod.ext h h') hne
-        · exact Or.inr (Or.inr (Or.inr ⟨h.symm, h'⟩))
-      · exact Or.inr (Or.inr (Or.inl h))
+      grind
     rcases hlex with h | h | h | h
     · exact disjoint_band hx (key p hp p' hp' (Or.inl h))
     · exact disjoint_band hx (key p hp p' hp' (Or.inr h))

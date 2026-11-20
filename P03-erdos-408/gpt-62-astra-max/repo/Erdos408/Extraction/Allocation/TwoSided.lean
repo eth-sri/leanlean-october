@@ -141,7 +141,7 @@ theorem abs_twoSidedSum_le {q c₂ c B₀ κ CΦ A Cstar x γ CN : ℝ} {K d j :
   have hsub : Act ∩ smallGroups x ∪ Act ∩ bigGroups x ⊆ candidateGroups x := by
     rw [hunion]
     exact hAct
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL  := Real.log_pos hx
   have hL1 : 1 ≤ Real.log x := by
     have := Real.log_le_sub_one_of_pos hL
     rw [logLog] at hT
@@ -150,8 +150,7 @@ theorem abs_twoSidedSum_le {q c₂ c B₀ κ CΦ A Cstar x γ CN : ℝ} {K d j :
   have h := hbody (Act ∩ smallGroups x) (Act ∩ bigGroups x) S.card (monomialExponents K x S) u v
     B (fun n => min (proxyCore x γ j n) (Real.log x ^ B₀)) (fun y => y * Φ y)
     (disjoint_of_subset_left inter_subset_right (disjoint_of_subset_right inter_subset_right hdisj))
-    (by
-      exact (pairwiseDisjoint_candidateGroups hL1).subset
+    ((pairwiseDisjoint_candidateGroups hL1).subset
         (by rw [← coe_union]; exact coe_subset.2 hsub))
     (by simpa [logLog] using hS₁)
     (by

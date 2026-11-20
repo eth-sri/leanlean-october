@@ -44,9 +44,7 @@ lemma markedWeight_eq_prod {ι : Type*} (s : Finset ι) {q : ℝ} (hq : q ≠ 0)
     markedWeight s q G n = ∏ i ∈ s, markedWeight {i} q G n := by
   simp only [markedWeight, sum_singleton, card_singleton, prod_singleton]
   rw [prod_mul_distrib, prod_zpow_eq_zpow_sum s hq]
-  congr 2
-  push_cast
-  rw [sum_sub_distrib, sum_const, nsmul_eq_mul, mul_one]
+  simp
 
 /-- The single-band weight is the marked weight of one band. -/
 lemma bandWeight_eq (q x a : ℝ) (n : ℕ) {ι : Type*} (i : ι) (G : ι → Finset ℕ)
@@ -58,10 +56,9 @@ lemma bandWeight_eq (q x a : ℝ) (n : ℕ) {ι : Type*} (i : ι) (G : ι → Fi
 /-- `∏_{i ∈ s} (1 - y_i) = ∑_{t ⊆ s} (-1)^{|t|} ∏_{i ∈ t} y_i`. -/
 lemma prod_one_sub_eq_sum {ι : Type*} [DecidableEq ι] (s : Finset ι) (y : ι → ℝ) :
     ∏ i ∈ s, (1 - y i) = ∑ t ∈ s.powerset, (-1) ^ t.card * ∏ i ∈ t, y i := by
-  have h := prod_add (fun i => -y i) (fun _ => (1 : ℝ)) s
+  have h := prod_add (fun i => -y i) (fun _ => 1) s
   simp only [prod_const_one, mul_one, prod_neg] at h
-  rw [← h]
-  exact prod_congr rfl fun i _ => by ring
+  grind
 
 /-! ### Success coins -/
 
@@ -142,9 +139,8 @@ lemma successProb_eq (c₁ c₂ x : ℝ) (w : ℕ) :
   refine sum_congr rfl fun P _ => ?_
   rw [patternWeight, prod_one_sub_eq_sum, mul_sum]
   refine sum_congr rfl fun Q hQ => ?_
-  have hPQ : Disjoint P Q := disjoint_of_subset_right (mem_powerset.1 hQ) disjoint_sdiff
-  rw [show ∀ a b c d : ℝ, a * b * (c * d) = a * (b * c * d) by intros; ring,
-    ← prod_successCoin, prod_union hPQ]
+  rw [show ∀ a b c d, a * b * (c * d) = a * (b * c * d) by intros; ring,
+    ← prod_successCoin, prod_union (disjoint_of_subset_right (mem_powerset.1 hQ) disjoint_sdiff)]
   ring
 
 /-! ### The inert polynomial -/
@@ -169,11 +165,10 @@ lemma inertPoly_eq_sum (q cw : ℝ) (K : ℕ) (CN x : ℝ) (n : ℕ) :
 /-- A monomial is the marked weight of its bands, enumerated by `Fin |S|`. -/
 lemma inertMonomial_eq (q : ℝ) (hq : q ≠ 0) (K : ℕ) (x : ℝ) (S : Finset (ℕ × ℕ)) (n : ℕ) :
     inertMonomial q K x S n =
-      markedWeight Finset.univ q (fun i : Fin S.card =>
+      markedWeight Finset.univ q (fun i =>
         band x (inertExponent K x (S.equivFin.symm i).1.1 (S.equivFin.symm i).1.2)) n := by
-  rw [markedWeight_eq_prod _ hq, inertMonomial, ← prod_coe_sort S]
-  rw [← (S.equivFin.symm).prod_comp]
-  exact prod_congr rfl fun i _ => bandWeight_eq q x _ n i _ rfl
+  rw [markedWeight_eq_prod _ hq, inertMonomial, ← prod_coe_sort S, ← S.equivFin.symm.prod_comp]
+  rfl
 
 end
 

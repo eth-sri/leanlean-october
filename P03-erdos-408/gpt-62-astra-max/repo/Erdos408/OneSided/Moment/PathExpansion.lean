@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Hypotheses
+
 public import Erdos408.OneSided.Moment.PrimeFactor
 public import Erdos408.OneSided.Moment.PathExpansion.Average
 public import Erdos408.OneSided.Moment.PathExpansion.Hermitian
@@ -60,7 +62,7 @@ def pathWeight (A₀ x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) {N : ℕ}
 /-- The visits where the prime `p` is in the active lists. -/
 def activeSet {M : PosModel} {x : ℝ} {d : Data K} {N : ℕ} (p : ℕ)
     (path : Fin (N + 1) → M.State x d) : Finset ℕ :=
-  (univ.filter fun j : Fin (N + 1) => ∃ i h, (path j).1.2 i h = p).map Fin.valEmbedding
+  (univ.filter fun j => ∃ i h, (path j).1.2 i h = p).map Fin.valEmbedding
 
 /-- The lines `[z_j]_p` along a path, extended by `0` past the end. -/
 def pathLines {d : Data K} {Y d₀ u v r x : ℝ} {N : ℕ} (p : ℕ)
@@ -198,27 +200,19 @@ theorem symOp_mul_lineWeight (q : ℝ) (ℓ : ℕ → ℕ) :
 theorem goodOp_mul_lineWeight (q : ℝ) (ℓ : ℕ → ℕ) :
     (freeRootModel d Y d₀ u v r).goodOp x d Y d₀ * Matrix.diagonal (lineWeight q ℓ) =
       Matrix.diagonal (lineWeight q ℓ) * (freeRootModel d Y d₀ u v r).goodOp x d Y d₀ := by
-  simp only [PosModel.goodOp, Matrix.diagonal_mul_diagonal, mul_comm]
+  simp [PosModel.goodOp]
 
 /-- The validity indicator is one on the support of the line weights. -/
 theorem validInd_mul_lineWeight (q : ℝ) (ℓ : ℕ → ℕ) :
     Matrix.diagonal (validInd (d := d) (Y := Y) (d₀ := d₀) (u := u) (v := v) (r := r)
       (x := x) ℓ) * Matrix.diagonal (lineWeight q ℓ) = Matrix.diagonal (lineWeight q ℓ) := by
-  rw [Matrix.diagonal_mul_diagonal]
-  congr 1
-  funext s
-  simp only [validInd, lineWeight]
-  split_ifs <;> simp
+  simp_all [validInd, lineWeight]
 
 /-- The validity indicator is one on the support of the line weights, on the right. -/
 theorem lineWeight_mul_validInd (q : ℝ) (ℓ : ℕ → ℕ) :
     Matrix.diagonal (lineWeight q ℓ) * Matrix.diagonal (validInd (d := d) (Y := Y) (d₀ := d₀)
       (u := u) (v := v) (r := r) (x := x) ℓ) = Matrix.diagonal (lineWeight q ℓ) := by
-  rw [Matrix.diagonal_mul_diagonal]
-  congr 1
-  funext s
-  simp only [validInd, lineWeight]
-  split_ifs <;> simp
+  simp_all [validInd, lineWeight]
 
 /-- `𝒜_ℓ(s, s') = d_ℓ(z) A⁰(s, s') d_ℓ(z')` on the root states, with `A⁰` the line-free `𝒜`
 at `q = 1`. -/
@@ -235,10 +229,8 @@ theorem rootModel_edgeOp_eq {q : ℝ} (hq : 0 < q) (A₀ : ℝ) (ℓ : ℕ → �
   -- step: restrict the five factors, with the validity indicator between them
   have hι := toFree_injective (d := d) (Y := Y) (d₀ := d₀) (u := u) (v := v) (r := r)
     (x := x) ℓ
-  have h₁ := mul_apply_eq_restrict hι hv hv₀ (goodOp_toFree ℓ) (symOp_toFree ℓ)
-  have h₂ := mul_apply_eq_restrict hι hv hv₀ h₁ (rowOp_toFree hq A₀ ℓ)
-  have h₃ := mul_apply_eq_restrict hι hv hv₀ h₂ (symOp_toFree ℓ)
-  have h₄ := mul_apply_eq_restrict hι hv hv₀ h₃ (goodOp_toFree ℓ)
+  have h₂ := mul_apply_eq_restrict hι hv hv₀ (mul_apply_eq_restrict hι hv hv₀ (goodOp_toFree ℓ) (symOp_toFree ℓ)) (rowOp_toFree hq A₀ ℓ)
+  have h₄ := mul_apply_eq_restrict hι hv hv₀ (mul_apply_eq_restrict hι hv hv₀ h₂ (symOp_toFree ℓ)) (goodOp_toFree ℓ)
   rw [PosModel.edgeOp, h₄, edge_restrict_eq (goodOp_mul_lineWeight q ℓ)
     (symOp_mul_lineWeight q ℓ) (validInd_mul_lineWeight q ℓ) (lineWeight_mul_validInd q ℓ)]
   rfl
@@ -251,7 +243,7 @@ def inactiveHits (ℓ : ℕ → ℕ) (s : (freeRootModel d Y d₀ u v r).State x
     fun p => ℓ p = lineOf p s.1.1.1).card
 
 /-- With disjoint bands, the list primes of a state are `KM` distinct band primes. -/
-theorem card_filter_listed (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem card_filter_listed (hdisj : DisjointBands x d.a)
     (s : (freeRootModel d Y d₀ u v r).State x d) :
     ((bandPrimes x d).filter fun p => ∃ i h, s.1.2 i h = p).card = K * (padCount x + 1) := by
   classical
@@ -269,7 +261,7 @@ theorem card_filter_listed (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i
     Fintype.card_fin, sum_const, smul_eq_mul]
 
 /-- For a valid state, `ω_ℓ(z) = KM + #(inactive hits)`. -/
-theorem bandCount_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem bandCount_eq (hdisj : DisjointBands x d.a)
     (ℓ : ℕ → ℕ) {s : (freeRootModel d Y d₀ u v r).State x d} (hs : RootValid ℓ s) :
     (rootModel d Y d₀ u v r ℓ).bandCount x d s.1.1 = inactiveHits ℓ s + K * (padCount x + 1) := by
   classical
@@ -293,7 +285,7 @@ theorem bandCount_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (ba
 
 /-- The line weight of a valid state is `√q^{#(inactive hits)}`. -/
 theorem lineWeight_of_valid {q : ℝ} (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (ℓ : ℕ → ℕ)
+    (hdisj : DisjointBands x d.a) (ℓ : ℕ → ℕ)
     {s : (freeRootModel d Y d₀ u v r).State x d} (hs : RootValid ℓ s) :
     lineWeight q ℓ s = ((Real.sqrt q ^ inactiveHits ℓ s : ℝ) : ℂ) := by
   rw [lineWeight, ite_eq_left hs, bandCount_eq hdisj ℓ hs]
@@ -319,7 +311,7 @@ theorem prod_visit_eq (ℓ : ℕ → ℕ) (s : (freeRootModel d Y d₀ u v r).St
       else if ℓ p = lineOf p s.1.1.1 then Q else 1 := fun p => by
     rw [hL, hη]
     by_cases hp : A p
-    · rw [ite_eq_left hp, ite_eq_left ((hA p).1 hp)]
+    · simp_all
     · rw [ite_eq_right hp, ite_eq_right (mt (hA p).2 hp)]
       split_ifs <;> ring
   unfold inactiveHits
@@ -374,9 +366,9 @@ theorem prod_lineWeight_eq {q : ℝ} (hq : 0 < q)
     rw [prod_mul_distrib, prod_mul_distrib]
     congr 1
     · rw [Fin.prod_univ_castSucc]
-      simp [(Fin.castSucc_lt_last _).ne]
+      simp
     · rw [Fin.prod_univ_succ]
-      simp [Fin.succ_ne_zero]
+      simp
   rw [hends]
   simp only [lineFactor_eq_prod]
   rw [prod_comm, prod_range, Complex.ofReal_prod]
@@ -396,15 +388,11 @@ theorem prod_lineWeight_eq {q : ℝ} (hq : 0 < q)
     · simp [hl, hlast]
     -- step: an interior visit carries `√q^h √q^h = q^h`
     have hint : ¬((j : ℕ) = 0 ∨ (j : ℕ) = N) := by
-      rintro (h | h)
-      · exact h0 (Fin.ext h)
-      · exact hl (Fin.ext h)
+      grind
     rw [ite_eq_left hl, ite_eq_left h0, ite_eq_right hint, ← Complex.ofReal_mul, ← mul_pow,
       Real.mul_self_sqrt hq.le]
   · rw [lineWeight, ite_eq_right hs, ite_eq_right hs]
-    by_cases hj : j = 0
-    · simp [hj, hlast.symm]
-    · simp [hj]
+    aesop
 
 /-- The line weights are real. -/
 theorem star_lineWeight (q : ℝ) (ℓ : ℕ → ℕ) :
@@ -414,10 +402,10 @@ theorem star_lineWeight (q : ℝ) (ℓ : ℕ → ℕ) :
   rw [Pi.star_apply, lineWeight]
   split_ifs
   · exact Complex.conj_ofReal _
-  · exact star_zero _
+  simp
 
 /-- With disjoint bands, `d_ℓ A⁰ d_ℓ` is Hermitian. -/
-theorem conjTranspose_lineEdge (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem conjTranspose_lineEdge (hdisj : DisjointBands x d.a)
     (q A₀ : ℝ) (ℓ : ℕ → ℕ) :
     (Matrix.diagonal (lineWeight q ℓ) * (freeRootModel d Y d₀ u v r).edgeOp 1 A₀ x d Y d₀ *
       Matrix.diagonal (lineWeight q ℓ))ᴴ =
@@ -510,7 +498,7 @@ theorem rootMoment_eq_sum_lineFactor {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} 
 `σ ∑_paths A⁰-weight ∏_p primeFactor_p`, over the paths of line-free states from `e₁` to
 `e₁` with `N = 2R` edges. -/
 theorem lineAverage_rootMoment_eq {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ u v r : ℝ}
-    (hR : 0 < momentPower x) (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) :
+    (hR : 0 < momentPower x) (hdisj : DisjointBands x d.a) :
     lineAverage x d (rootMoment q A₀ x d Y d₀ u v r) =
       (stateMass x d : ℂ) *
         ∑ path : Fin (2 * momentPower x + 1) → (freeRootModel d Y d₀ u v r).State x d,
@@ -525,16 +513,16 @@ theorem lineAverage_rootMoment_eq {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y 
         (dampDefect q (2 * momentPower x)) (activeSet p path) : ℂ) =
       lineAverage x d fun ℓ => ∏ p ∈ bandPrimes x d, (lineFactor q p path (ℓ p) : ℂ) :=
     fun path => by
-      rw [lineAverage_prod x d fun p l => (lineFactor q p path l : ℂ)]
+      rw [lineAverage_prod x d fun p l => (lineFactor q p path l)]
       refine prod_congr rfl fun p _ => ?_
       rw [primeFactor_eq_sum_lineFactor]
       push_cast
       rfl
   -- step: average the path expansion at fixed lines
-  rw [funext (rootMoment_eq_sum_lineFactor (A₀ := A₀) (d := d) (Y := Y) (d₀ := d₀) (u := u)
-    (v := v) (r := r) hq hR hdisj)]
+  rw [funext (rootMoment_eq_sum_lineFactor
+      hq hR hdisj)]
   simp only [hprime, lineAverage, mul_sum]
   rw [sum_comm]
-  exact sum_congr rfl fun _ _ => sum_congr rfl fun _ _ => by ring
+  grind
 
 end Erdos408.OneSided

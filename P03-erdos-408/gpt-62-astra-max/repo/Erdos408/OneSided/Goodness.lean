@@ -31,7 +31,7 @@ in the lists and the varying data.
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real MeasureTheory
+open Finset
 
 variable {K : ℕ}
 
@@ -74,20 +74,18 @@ theorem card_selections_le {C CX alo ahi g x : ℝ} {d : Data K}
       Real.exp (2 * Real.log x ^ (d.a (I.max' hI) - g)) ^ K := by
   unfold selections
   rw [Fintype.card_piFinset, Nat.cast_prod]
-  calc ∏ j, ((if j ∈ I.erase (I.max' hI) then band x (d.a j) else {1}).card : ℝ)
+  calc _
       ≤ ∏ _j : Fin K, Real.exp (2 * Real.log x ^ (d.a (I.max' hI) - g)) := by
         refine prod_le_prod₀ (fun _ _ => Nat.cast_nonneg _) fun j _ => ?_
         split_ifs with hj
         · -- `j < i_*`, so `a_j ≤ a_{i_*} - g`
-          have hlt : j < I.max' hI :=
-            lt_of_le_of_ne (le_max' _ _ (mem_of_mem_erase hj)) (ne_of_mem_erase hj)
-          have hgap := hd.gap _ _ hlt
+          have hgap := hd.gap _ _ (lt_of_le_of_ne (le_max' _ _ (mem_of_mem_erase hj)) (ne_of_mem_erase hj))
           exact (card_band_le _ _).trans (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left
             (Real.rpow_le_rpow_of_exponent_le hL (by linarith)) zero_le_two))
         · rw [card_singleton, Nat.cast_one]
           exact Real.one_le_exp (by positivity)
-    _ = Real.exp (2 * Real.log x ^ (d.a (I.max' hI) - g)) ^ K := by
-        rw [prod_const, card_univ, Fintype.card_fin]
+    _ = _ := by
+        simp
 
 /-! ### Both tests -/
 

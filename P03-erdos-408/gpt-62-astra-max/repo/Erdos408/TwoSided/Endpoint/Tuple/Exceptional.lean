@@ -29,8 +29,8 @@ eventually, the integers `j` such that `[j, j + 1]` meets
 `{|t| ≤ T_max : |P⁻¹ ∑_{p ∈ s} coeff(p) p^{it}| > L^{-A}}` number at most
 `exp(K (L^{0.36} + L^{0.73} log L))`. -/
 theorem exists_card_exceptional_le (A : ℝ) (hA : 0 < A) :
-    ∃ K : ℝ, 0 < K ∧ ∀ᶠ x : ℝ in atTop,
-      ∀ (Y P Tmax : ℝ) (s : Finset ℕ) (coeff : ℕ → ℂ),
+    ∃ K, 0 < K ∧ ∀ᶠ x : ℝ in atTop,
+      ∀ Y P Tmax (s : Finset ℕ) (coeff : ℕ → ℂ),
         x ^ (1 / 2 : ℝ) ≤ Y → Y ≤ x ^ 2 → 0 ≤ Tmax → Tmax ≤ Y →
         Real.exp (Real.log x ^ (0.27 : ℝ)) / 2 ≤ P → P ≤ Real.exp (Real.log x ^ (0.36 : ℝ)) →
         (∀ p ∈ s, p.Prime ∧ P ≤ p ∧ (p : ℝ) ≤ 2 * P) → (∀ p ∈ s, ‖coeff p‖ ≤ 1) →
@@ -45,7 +45,7 @@ theorem exists_card_exceptional_le (A : ℝ) (hA : 0 < A) :
   refine ⟨K, hK, ?_⟩
   filter_upwards [hev, Real.tendsto_log_atTop.eventually_ge_atTop 2] with x hx hL
   intro Y P Tmax s coeff hY₁ hY₂ hT₀ hTY hP₁ hP₂ hs hcoeff
-  have hP0 : 0 < P := lt_of_lt_of_le (by positivity) hP₁
+  have hP0 := lt_of_lt_of_le (by positivity) hP₁
   set coeff' : ℕ → ℂ := fun p => coeff p * (p : ℂ) / (2 * P) with hcoeff'
   have hc' : ∀ p ∈ s, ‖coeff' p‖ ≤ 1 := by
     intro p hp
@@ -53,9 +53,9 @@ theorem exists_card_exceptional_le (A : ℝ) (hA : 0 < A) :
       rw [Complex.norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_of_nonneg hP0.le]
       positivity)]
     rw [Complex.norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_of_nonneg hP0.le]
-    calc ‖coeff p‖ * p ≤ 1 * (2 * P) :=
+    calc _ ≤ 1 * (2 * P) :=
           mul_le_mul (hcoeff p hp) (hs p hp).2.2 (Nat.cast_nonneg _) zero_le_one
-      _ = 2 * P := one_mul _
+      _ = _ := one_mul _
   obtain ⟨hfin, hcard⟩ := hx Y P Tmax s coeff' hY₁ hY₂ hT₀ hTY hP₁ hP₂ hs hc'
   rw [show (1 : ℝ) - 0.27 = 0.73 by norm_num] at hcard
   refine le_trans ?_ hcard
@@ -70,10 +70,9 @@ theorem exists_card_exceptional_le (A : ℝ) (hA : 0 < A) :
     rw [Erdos821.Blueprint.Analytic.primePolynomial, Erdos821.Blueprint.Analytic.dp,
       Finset.mul_sum, Finset.sum_div]
     refine Finset.sum_congr rfl fun p hp => ?_
-    have hp0 : (0 : ℝ) < p := lt_of_lt_of_le hP0 (hs p hp).2.1
+    have hp0 := lt_of_lt_of_le hP0 (hs p hp).2.1
     rw [mellin_eq_cpow hp0, Complex.ofReal_natCast, hcoeff']
     have : (p : ℂ) ≠ 0 := by exact_mod_cast hp0.ne'
-    have : (P : ℂ) ≠ 0 := by exact_mod_cast hP0.ne'
     field_simp
   rw [hpoly, norm_div, Complex.norm_ofNat]
   have hL0 : 0 < Real.log x := by linarith

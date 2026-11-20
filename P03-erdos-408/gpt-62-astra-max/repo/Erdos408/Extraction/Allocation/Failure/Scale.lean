@@ -31,10 +31,10 @@ noncomputable section
 lemma sum_local_le {g : Finset ℕ} (hg : SideGroup g) {X : ℕ} (hgX : ∀ p ∈ g, p ≤ X) {β : ℝ}
     (hβ : 0 ≤ β) :
     ∑ m ∈ (Icc 1 X).filter (· ∈ Nat.factoredNumbers g),
-        (1 - β * (if primeCount g m = 1 then 1 else 0)) * (1 / (m : ℝ)) ≤
+        (1 - β * (if primeCount g m = 1 then 1 else 0)) * (1 / m) ≤
       (1 - β / 15) * ∏ p ∈ g, (1 - (1 : ℝ) / p)⁻¹ := by
   set Dg := (Icc 1 X).filter (· ∈ Nat.factoredNumbers g)
-  have hgf : g.filter Nat.Prime = g := filter_true_of_mem hg.prime
+  have hgf := filter_true_of_mem hg.prime
   set Eg := ∏ p ∈ g, (1 - (1 : ℝ) / p)⁻¹
   have hsum : ∑ m ∈ Dg, (1 : ℝ) / m ≤ Eg := by
     have := sum_inv_le_prod_of_factored g Dg fun n hn => (mem_filter.1 hn).2
@@ -44,7 +44,7 @@ lemma sum_local_le {g : Finset ℕ} (hg : SideGroup g) {X : ℕ} (hgX : ∀ p �
     have hpr := hg.prime p hp
     refine mem_filter.2 ⟨mem_filter.2 ⟨mem_Icc.2 ⟨hpr.one_lt.le, hgX p hp⟩,
       Nat.mem_factoredNumbers_of_primeFactors_subset hpr.ne_zero (by
-        rw [hpr.primeFactors]; exact singleton_subset_iff.2 hp)⟩, ?_⟩
+        simp_all)⟩, ?_⟩
     unfold primeCount
     rw [card_eq_one]
     refine ⟨p, eq_singleton_iff_unique_mem.2 ⟨mem_filter.2 ⟨hp, dvd_rfl⟩, fun q hq => ?_⟩⟩
@@ -55,7 +55,7 @@ lemma sum_local_le {g : Finset ℕ} (hg : SideGroup g) {X : ℕ} (hgX : ∀ p �
     have : ∑ m ∈ Dg, (if primeCount g m = 1 then 1 else 0) * (1 / (m : ℝ)) =
         ∑ m ∈ Dg.filter (fun m => primeCount g m = 1), (1 : ℝ) / m := by
       rw [Finset.sum_filter (fun m => primeCount g m = 1) (fun m => (1 : ℝ) / m)]
-      exact sum_congr rfl fun m _ => by split_ifs <;> simp
+      simp
     rw [this]
     exact sum_le_sum_of_subset_of_nonneg hgD fun m _ _ => by positivity
   -- `V_g ≥ E_g / 15`
@@ -73,15 +73,14 @@ lemma sum_local_le {g : Finset ℕ} (hg : SideGroup g) {X : ℕ} (hgX : ∀ p �
       nlinarith [exp_pos 1]
     linarith
   have hV := hg.mass_ge
-  calc ∑ m ∈ Dg, (1 - β * (if primeCount g m = 1 then 1 else 0)) * (1 / (m : ℝ))
+  calc _
       = ∑ m ∈ Dg, (1 : ℝ) / m -
           β * ∑ m ∈ Dg, (if primeCount g m = 1 then 1 else 0) * (1 / (m : ℝ)) := by
         rw [mul_sum, ← sum_sub_distrib]
         exact sum_congr rfl fun m _ => by ring
     _ ≤ Eg - β * harmonicMass g := by
-        have := mul_le_mul_of_nonneg_left hlone hβ
-        linarith
-    _ ≤ (1 - β / 15) * Eg := by nlinarith
+        gcongr
+    _ ≤ _ := by nlinarith
 
 /-- The `v`-side sum: `∑_d (Φ_F(d) + δ)/d ≤ ∏_P (1 - 1/p)⁻¹ ((1 - θ c₁ / 75)^{|F|} + δ)`. -/
 theorem sum_loneFactor_div_le {x : ℝ} (hx : 1 ≤ Real.log x)
@@ -107,10 +106,6 @@ theorem sum_loneFactor_div_le {x : ℝ} (hx : 1 ≤ Real.log x)
     filter_true_of_mem fun p hp => prime_of_mem_candidatePrimes hp
   have hPP : ∏ p ∈ P, (1 - (1 : ℝ) / p)⁻¹ = ∏ g ∈ 𝒞, ∏ p ∈ g, (1 - (1 : ℝ) / p)⁻¹ :=
     prod_biUnion hdisj
-  have hEP0 : 0 ≤ ∏ p ∈ P, (1 - (1 : ℝ) / p)⁻¹ := prod_nonneg fun p hp => by
-    have : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
-    have : (1 : ℝ) / p ≤ 1 / 2 := one_div_le_one_div_of_le (by norm_num) this
-    exact inv_nonneg.2 (by linarith)
   have hD : ∀ d ∈ D, d ≠ 0 ∧ ∀ p ∈ d.primeFactors, p ∈ 𝒞.biUnion id := by
     intro d hd
     obtain ⟨hd, hdP⟩ := mem_filter.1 hd
@@ -118,7 +113,7 @@ theorem sum_loneFactor_div_le {x : ℝ} (hx : 1 ≤ Real.log x)
       Nat.primeFactors_subset_of_mem_factoredNumbers hdP hp⟩
   -- `Φ(d)/d` factors over the groups
   set h : Finset ℕ → ℕ → ℝ := fun g m =>
-    (if g ∈ F then 1 - β * (if primeCount g m = 1 then 1 else 0) else 1) * (1 / (m : ℝ))
+    (if g ∈ F then 1 - β * (if primeCount g m = 1 then 1 else 0) else 1) * (1 / m)
   have hfac : ∀ d ∈ D, loneFactor c₁ F d / d = ∏ g ∈ 𝒞, h g (keepPrimes g d) := by
     intro d hd
     obtain ⟨hd0, hdP⟩ := hD d hd
@@ -129,7 +124,7 @@ theorem sum_loneFactor_div_le {x : ℝ} (hx : 1 ≤ Real.log x)
     rw [hprod, loneFactor, div_eq_mul_one_div]
     congr 1
     refine prod_congr rfl fun g hgF => ?_
-    have hgpr : ∀ p ∈ g, p.Prime := (hg g (hF hgF)).prime
+    have hgpr := (hg g (hF hgF)).prime
     rw [primeCount_keepPrimes hgpr hd0]
   set Dg : Finset ℕ → Finset ℕ := fun g => (Icc 1 X).filter (· ∈ Nat.factoredNumbers g)
   have hDg : ∀ d ∈ D, ∀ g ∈ 𝒞, keepPrimes g d ∈ Dg g := by
@@ -149,7 +144,7 @@ theorem sum_loneFactor_div_le {x : ℝ} (hx : 1 ≤ Real.log x)
   have hloc : ∀ g ∈ 𝒞, ∑ m ∈ Dg g, h g m ≤
       (if g ∈ F then 1 - β / 15 else 1) * ∏ p ∈ g, (1 - (1 : ℝ) / p)⁻¹ := by
     intro g hg𝒞
-    have hgX : ∀ p ∈ g, p ≤ X := fun p hp => hX p (mem_biUnion.2 ⟨g, hg𝒞, hp⟩)
+    have hgX := fun p hp => hX p (mem_biUnion.2 ⟨g, hg𝒞, hp⟩)
     by_cases hgF : g ∈ F
     · simp only [h, hgF, ↓reduceIte]
       exact sum_local_le (hg g hg𝒞) hgX hβ
@@ -166,38 +161,36 @@ theorem sum_loneFactor_div_le {x : ℝ} (hx : 1 ≤ Real.log x)
   have h1 : ∑ d ∈ D, (1 : ℝ) / d ≤ ∏ p ∈ P, (1 - (1 : ℝ) / p)⁻¹ := by
     have := sum_inv_le_prod_of_factored P D fun n hn => (mem_filter.1 hn).2
     rwa [hPf] at this
-  have hβ15 : β / 15 = chernoffTheta * c₁ / 75 := by simp only [β]; ring
-  calc ∑ d ∈ D, (loneFactor c₁ F d + δ) / d
+  calc _
       = ∑ d ∈ D, loneFactor c₁ F d / d + δ * ∑ d ∈ D, (1 : ℝ) / d := by
         rw [mul_sum, ← sum_add_distrib]
         exact sum_congr rfl fun d _ => by ring
     _ ≤ (∏ p ∈ P, (1 - (1 : ℝ) / p)⁻¹) * (1 - β / 15) ^ F.card +
-          δ * ∏ p ∈ P, (1 - (1 : ℝ) / p)⁻¹ := add_le_add hΦ (mul_le_mul_of_nonneg_left h1 hδ)
-    _ = _ := by rw [hβ15]; ring
+          δ * ∏ p ∈ P, (1 - (1 : ℝ) / p)⁻¹ := by gcongr
+    _ = _ := by ring
 
 /-! ### Counting tuples -/
 
 /-- The `(d, e)` with `(A + 1) d ∏ e ≤ X` number at most `X/(A + 1) (1 + log X)^{m + 1}`. -/
 lemma card_tuples_le (X A m : ℕ) :
-    (((Icc 1 X ×ˢ Fintype.piFinset (fun _ : Fin m => Icc 1 X)).filter
-        fun t => (A + 1) * ((∏ i, t.2 i) * t.1) ≤ X).card : ℝ) ≤
-      (X : ℝ) / (A + 1) * (1 + Real.log X) ^ (m + 1) := by
+    ((Icc 1 X ×ˢ Fintype.piFinset (fun _ : Fin m => Icc 1 X)).filter
+        fun t => (A + 1) * ((∏ i, t.2 i) * t.1) ≤ X).card ≤
+      X / (A + 1) * (1 + Real.log X) ^ (m + 1) := by
   set T := Icc 1 X ×ˢ Fintype.piFinset (fun _ : Fin m => Icc 1 X)
   have hH : ∑ n ∈ Icc 1 X, (1 : ℝ) / n ≤ 1 + Real.log X := by
     have := harmonic_le_one_add_log X
     rw [harmonic_eq_sum_Icc] at this
-    push_cast at this
     simpa [one_div] using this
   have hpos : ∀ t ∈ T, (0 : ℝ) < t.1 * ∏ i, (t.2 i : ℝ) := by
     intro t ht
     obtain ⟨h1, h2⟩ := mem_product.1 ht
-    have : (1 : ℝ) ≤ t.1 := by exact_mod_cast (mem_Icc.1 h1).1
+    have : (1 : ℝ) ≤ t.1 := by simp_all
     exact mul_pos (by linarith) (prod_pos fun i _ => by
-      have : (1 : ℝ) ≤ t.2 i := by exact_mod_cast (mem_Icc.1 (Fintype.mem_piFinset.1 h2 i)).1
+      have : (1 : ℝ) ≤ t.2 i := by simp_all
       linarith)
-  calc (((T.filter fun t => (A + 1) * ((∏ i, t.2 i) * t.1) ≤ X).card : ℝ))
+  calc _
       ≤ ∑ t ∈ T.filter (fun t => (A + 1) * ((∏ i, t.2 i) * t.1) ≤ X),
-          (X : ℝ) / (A + 1) / (t.1 * ∏ i, (t.2 i : ℝ)) := by
+          X / (A + 1) / (t.1 * ∏ i, (t.2 i : ℝ)) := by
         rw [card_eq_sum_ones, Nat.cast_sum, Nat.cast_one]
         refine sum_le_sum fun t ht => ?_
         obtain ⟨ht, hle⟩ := mem_filter.1 ht
@@ -221,8 +214,7 @@ lemma card_tuples_le (X A m : ℕ) :
         refine sum_congr rfl fun f _ => ?_
         rw [prod_div_distrib, prod_const_one]
         field_simp
-    _ ≤ (X : ℝ) / (A + 1) * (1 + Real.log X) ^ (m + 1) := by
-        have h0 : 0 ≤ ∑ n ∈ Icc 1 X, (1 : ℝ) / n := sum_nonneg fun n _ => by positivity
+    _ ≤ X / (A + 1) * (1 + Real.log X) ^ (m + 1) := by
         rw [pow_succ']
         gcongr
 
@@ -262,26 +254,23 @@ lemma term_le_of {Bc inner S0 W N Cnt Pi ε Φ δ wA Xr Bn : ℝ} (hBc0 : 0 ≤ 
     (hBn : Bn ≤ Xr) (hwA : wA ≤ W) (hΦ0 : 0 ≤ Φ) (hΦ1 : Φ ≤ 1) (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1)
     (hW : 0 ≤ W) (hN : 0 ≤ N) (hCnt : 0 ≤ Cnt) (hPi : 0 ≤ Pi) (hε : 0 ≤ ε) :
     Bc * inner ≤ Bc * (W * Xr * (Pi + 2 * ε) * (Φ + δ)) + W * N * (2 + 4 * Cnt) := by
-  have hΦδ : 0 ≤ Φ + δ := by linarith
   have h1 : S0 * (Φ + δ) ≤ W * (Bn * (Pi + 2 * ε) + N) * (Φ + δ) :=
-    mul_le_mul_of_nonneg_right hS0 hΦδ
+    by gcongr
   have h2 : W * (Bn * (Pi + 2 * ε)) ≤ W * (Xr * (Pi + 2 * ε)) :=
-    mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hBn (by linarith)) hW
+    by gcongr
   have h3 : W * (Bn * (Pi + 2 * ε)) * (Φ + δ) ≤ W * (Xr * (Pi + 2 * ε)) * (Φ + δ) :=
-    mul_le_mul_of_nonneg_right h2 hΦδ
+    by gcongr
   have h4 : W * N * (Φ + δ) ≤ W * N * 2 :=
-    mul_le_mul_of_nonneg_left (by linarith) (mul_nonneg hW hN)
+    by bound
   have h5 : 4 * N * wA * Cnt ≤ 4 * N * W * Cnt :=
-    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hwA (by linarith)) hCnt
-  have hin : inner ≤ W * Xr * (Pi + 2 * ε) * (Φ + δ) + W * N * (2 + 4 * Cnt) := by
-    have : W * (Bn * (Pi + 2 * ε) + N) * (Φ + δ) =
-        W * (Bn * (Pi + 2 * ε)) * (Φ + δ) + W * N * (Φ + δ) := by ring
-    have : W * (Xr * (Pi + 2 * ε)) * (Φ + δ) = W * Xr * (Pi + 2 * ε) * (Φ + δ) := by ring
+    by gcongr
+  let cnt := W * N * (2 + 4 * Cnt)
+  have hin : inner ≤ W * Xr * (Pi + 2 * ε) * (Φ + δ) + cnt := by
     linarith
-  have hE0 : 0 ≤ W * N * (2 + 4 * Cnt) := by positivity
-  calc Bc * inner ≤ Bc * (W * Xr * (Pi + 2 * ε) * (Φ + δ) + W * N * (2 + 4 * Cnt)) :=
-        mul_le_mul_of_nonneg_left hin hBc0
-    _ = Bc * (W * Xr * (Pi + 2 * ε) * (Φ + δ)) + Bc * (W * N * (2 + 4 * Cnt)) := by ring
+  have hE0 : 0 ≤ cnt := by positivity
+  calc _ ≤ Bc * (W * Xr * (Pi + 2 * ε) * (Φ + δ) + cnt) :=
+        by gcongr
+    _ = Bc * (W * Xr * (Pi + 2 * ε) * (Φ + δ)) + Bc * (cnt) := by ring
     _ ≤ _ := add_le_add le_rfl (mul_le_of_le_one_left hE0 hBc1)
 
 /-- Summing the main terms: `∑_d ∑_e ∏ b(e_i) / (∏ e_i d) c f(d) = c ∑_d f(d)/d (∑_a b(a)/a)^m`. -/
@@ -297,36 +286,31 @@ lemma sum_sum_prod_div_mul (D I : Finset ℕ) (m : ℕ) (b : ℕ → ℝ) (c : �
   refine sum_congr rfl fun d _ => ?_
   rw [mul_sum]
   refine sum_congr rfl fun e _ => ?_
-  rw [prod_div_distrib]
-  by_cases hd : (d : ℝ) = 0
-  · simp [hd]
-  by_cases he : ∏ i, (e i : ℝ) = 0
-  · simp [he]
-  field_simp
+  simp
+  ring
 
 /-- Summing the rounding terms over the tuples with `(A + 1) ∏ e d ≤ X`. -/
 lemma sum_sum_ite_le (X A m : ℕ) {D : Finset ℕ} (hD : D ⊆ Icc 1 X) {c : ℝ} (hc : 0 ≤ c) :
     ∑ d ∈ D, ∑ e ∈ Fintype.piFinset (fun _ : Fin m => Icc 1 X),
         (if (A + 1) * ((∏ i, e i) * d) ≤ X then c else 0) ≤
-      c * ((X : ℝ) / (A + 1) * (1 + Real.log X) ^ (m + 1)) := by
-  have hcount := card_tuples_le X A m
+      c * (X / (A + 1) * (1 + Real.log X) ^ (m + 1)) := by
   have h1 : ∑ d ∈ D, ∑ e ∈ Fintype.piFinset (fun _ : Fin m => Icc 1 X),
       (if (A + 1) * ((∏ i, e i) * d) ≤ X then c else 0) ≤
-      c * (((Icc 1 X ×ˢ Fintype.piFinset (fun _ : Fin m => Icc 1 X)).filter
-        fun t => (A + 1) * ((∏ i, t.2 i) * t.1) ≤ X).card : ℝ) := by
+      c * ((Icc 1 X ×ˢ Fintype.piFinset (fun _ : Fin m => Icc 1 X)).filter
+        fun t => (A + 1) * ((∏ i, t.2 i) * t.1) ≤ X).card := by
     rw [card_eq_sum_ones, Nat.cast_sum, mul_sum, sum_filter, sum_product]
     refine (sum_le_sum_of_subset_of_nonneg hD fun d _ _ =>
       sum_nonneg fun e _ => by split_ifs <;> linarith).trans (le_of_eq ?_)
     refine sum_congr rfl fun d _ => sum_congr rfl fun e _ => ?_
     split_ifs <;> simp
-  exact h1.trans (mul_le_mul_of_nonneg_left hcount hc)
+  exact h1.trans (mul_le_mul_of_nonneg_left (card_tuples_le X A m) hc)
 
 /-- The hypotheses on the weight `w = 1/(D_j log e)` above `A = ⌊x^γ⌋`. -/
 structure WeightFacts (x γ : ℝ) (j X : ℕ) (W K : ℝ) : Prop where
   nonneg : ∀ e, 0 ≤ roughWeight x j e
-  anti : ∀ e, ⌊x ^ γ⌋₊ < e → roughWeight x j (e + 1) ≤ roughWeight x j e
-  le : ∀ e, ⌊x ^ γ⌋₊ < e → roughWeight x j e ≤ W
-  ratio : ∀ e, ⌊x ^ γ⌋₊ < e → e ≤ X → roughWeight x j (⌊x ^ γ⌋₊ + 1) ≤ K * roughWeight x j e
+  anti : ∀ e > ⌊x ^ γ⌋₊, roughWeight x j (e + 1) ≤ roughWeight x j e
+  le : ∀ e > ⌊x ^ γ⌋₊, roughWeight x j e ≤ W
+  ratio : ∀ e > ⌊x ^ γ⌋₊, e ≤ X → roughWeight x j (⌊x ^ γ⌋₊ + 1) ≤ K * roughWeight x j e
 
 /-- The bound for one `(d, e)`. -/
 lemma free_term_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset ℕ)}
@@ -382,7 +366,6 @@ lemma free_term_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset 
   have hlone := loneFactor_mem hc₁ hc₁' F d
   have hrd0 : (0 : ℝ) < (∏ i, (e i : ℝ)) * d := by
     have : (1 : ℝ) ≤ ∏ i, (e i : ℝ) := by exact_mod_cast hr1
-    have : (1 : ℝ) ≤ d := by exact_mod_cast hd
     positivity
   have hmain0 : 0 ≤ (∏ i, coreFactor x γ (j' + 1) (e i)) / ((∏ i, (e i : ℝ)) * d) *
       (X * W * (∏ p ∈ S, (1 - (1 : ℝ) / p) +
@@ -399,7 +382,7 @@ lemma free_term_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset 
   swap
   · rw [Ioc_eq_empty (by omega), sum_empty, mul_zero]
     linarith
-  have hrdpos : 0 < (∏ i, e i) * d := Nat.mul_pos (by omega) (by omega)
+  have hrdpos : 0 < (∏ i, e i) * d := by positivity
   have hAX : (⌊x ^ γ⌋₊ + 1) * ((∏ i, e i) * d) ≤ X :=
     (Nat.le_div_iff_mul_le hrdpos).1 (show ⌊x ^ γ⌋₊ + 1 ≤ X / ((∏ i, e i) * d) by omega)
   rw [ite_eq_left hAX]
@@ -409,14 +392,10 @@ lemma free_term_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset 
   have hS0 := sum_rough_weight_le S hS R (A := ⌊x ^ γ⌋₊) (B := X / ((∏ i, e i) * d))
     (w := roughWeight x (j' + 1)) (fun a ha => hwf.le a (mem_Ioc.1 ha).1) hW
   have hBn : ((X / ((∏ i, e i) * d) : ℕ) : ℝ) ≤ (X : ℝ) / ((∏ i, (e i : ℝ)) * d) := by
-    have := Nat.cast_div_le (m := X) (n := (∏ i, e i) * d) (α := ℝ)
-    push_cast at this
-    exact this
+    simpa using Nat.cast_div_le (m := X) (n := (∏ i, e i) * d) (α := ℝ)
   have h := term_le_of hB0 hB1 hinner hS0 hBn (hwf.le _ (by omega)) hlone.1 hlone.2 hδ0 hδ' hW
     (Nat.cast_nonneg _) hCnt0 hPi0 hε0
-  refine h.trans (le_of_eq ?_)
-  congr 1
-  field_simp
+  grind
 
 /-- The free-factor sum: a main term `X W (Π + 2ε) ∑_d (Φ_F(d) + δ)/d (∑_a b(a)/a)^{j-1}` and a
 rounding term `W N (2 + 4 ∏_g #K_g) X/(A + 1) (1 + log X)^j`. -/
@@ -448,11 +427,10 @@ theorem freeFactorSum_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (F
     fun i => (mem_Icc.1 (Fintype.mem_piFinset.1 he i)).1).trans ?_
   simp only [sum_add_distrib]
   refine add_le_add (le_of_eq ?_) ?_
-  · exact sum_sum_prod_div_mul _ _ _ _ _ _
+  · apply sum_sum_prod_div_mul
   · have hc : 0 ≤ W * (((primesIcc 2 (proxyCutoff x)).powerset.filter (·.card ≤ R + 1)).card : ℝ) *
         (2 + 4 * ∏ g ∈ F, ((lowSubsets g).card : ℝ)) := by
-      have : 0 ≤ ∏ g ∈ F, ((lowSubsets g).card : ℝ) := prod_nonneg fun _ _ => by positivity
-      exact mul_nonneg (mul_nonneg hW (Nat.cast_nonneg _)) (by linarith)
+      positivity
     exact sum_sum_ite_le X _ j' (filter_subset _ _) hc
 
 end

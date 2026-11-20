@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Scales
+
 public import Erdos408.Extraction.Defs
 
 /-!
@@ -31,20 +33,18 @@ lemma eventually_le_log (C : ℝ) : ∀ᶠ x : ℝ in atTop, C ≤ Real.log x :=
 /-- `s = o(T)`: eventually `D s ≤ ε T`. -/
 lemma eventually_mul_logLogLog_le (D : ℝ) {ε : ℝ} (hε : 0 < ε) :
     ∀ᶠ x : ℝ in atTop, D * logLogLog x ≤ ε * logLog x := by
-  have h := (isLittleO_log_id_atTop.bound (c := ε / (|D| + 1)) (by positivity))
-  filter_upwards [tendsto_logLog_atTop.eventually h, eventually_le_logLog 1] with x hx hT
+  filter_upwards [tendsto_logLog_atTop.eventually (isLittleO_log_id_atTop.bound (c := ε / (|D| + 1)) (by positivity)), eventually_le_logLog 1] with x hx hT
   simp only [norm_eq_abs, id] at hx
   rw [abs_of_pos (show 0 < logLog x by linarith)] at hx
   have hs : |logLogLog x| ≤ ε / (|D| + 1) * logLog x := by
-    rw [logLogLog]
-    exact hx
-  calc D * logLogLog x ≤ |D| * |logLogLog x| := by
+    assumption
+  calc _ ≤ |D| * |logLogLog x| := by
         rw [← abs_mul]
         exact le_abs_self _
     _ ≤ (|D| + 1) * (ε / (|D| + 1) * logLog x) := by
         gcongr
         linarith
-    _ = ε * logLog x := by field_simp
+    _ = _ := by field_simp
 
 /-- Every fixed power of `T` is eventually at most every fixed positive power
 of `L`. -/
@@ -54,7 +54,7 @@ lemma eventually_logLog_rpow_le (D : ℝ) {δ : ℝ} (hδ : 0 < δ) :
     eventually_le_log 1] with x hx hT hL
   rw [rpow_def_of_pos (by linarith), rpow_def_of_pos (by linarith)]
   refine exp_le_exp.2 ?_
-  rw [mul_comm, mul_comm (Real.log (Real.log x))]
+  rw [mul_comm, mul_comm (logLog x)]
   exact hx
 
 /-- `exp(-L^a)` is eventually below every fixed negative power of `L`. -/
@@ -84,8 +84,8 @@ lemma eventually_mul_logLogLog_cube_le (D : ℝ) :
     ∀ᶠ x : ℝ in atTop, D * (logLogLog x + 1) ^ 3 ≤ logLog x := by
   filter_upwards [eventually_le_logLog ((125 * |D| + 1) ^ 4)] with x hT
   set T := logLog x
-  have hD1 : 1 ≤ 125 * |D| + 1 := by linarith [abs_nonneg D]
-  have hT1 : 1 ≤ T := le_trans (one_le_pow₀ hD1) hT
+  have hD1 : 1 ≤ 125 * |D| + 1 := by norm_num
+  have hT1 := le_trans (one_le_pow₀ hD1) hT
   have hT0 : 0 < T := by linarith
   set q := T ^ (1 / 4 : ℝ) with hqdef
   have hq1 : 1 ≤ q := one_le_rpow hT1 (by norm_num)
@@ -95,22 +95,17 @@ lemma eventually_mul_logLogLog_cube_le (D : ℝ) :
   have hs : logLogLog x ≤ 4 * q := by
     have := Real.log_le_rpow_div hT0.le (show (0 : ℝ) < 1 / 4 by norm_num)
     rw [logLogLog]
-    rw [hqdef]
     linarith
-  have hs0 : 0 ≤ logLogLog x := Real.log_nonneg hT1
+  have hs0 := Real.log_nonneg hT1
   have hqD : 125 * |D| + 1 ≤ q := by
     by_contra h
     push Not at h
-    have : q ^ 4 < (125 * |D| + 1) ^ 4 := pow_lt_pow_left₀ h (by linarith) (by norm_num)
+    have : q ^ 4 < (125 * |D| + 1) ^ 4 := by gcongr
     linarith
   calc D * (logLogLog x + 1) ^ 3 ≤ |D| * (5 * q) ^ 3 := by
-        have h1 : (logLogLog x + 1) ^ 3 ≤ (5 * q) ^ 3 :=
-          pow_le_pow_left₀ (by linarith) (by linarith) 3
-        have h2 : D * (logLogLog x + 1) ^ 3 ≤ |D| * (logLogLog x + 1) ^ 3 :=
-          mul_le_mul_of_nonneg_right (le_abs_self D) (by positivity)
-        exact h2.trans (mul_le_mul_of_nonneg_left h1 (abs_nonneg D))
+        bound
     _ = 125 * |D| * q ^ 3 := by ring
     _ ≤ q * q ^ 3 := by gcongr; linarith
-    _ = T := by rw [← hq4]; ring
+    _ = T := by linarith
 
 end Erdos408

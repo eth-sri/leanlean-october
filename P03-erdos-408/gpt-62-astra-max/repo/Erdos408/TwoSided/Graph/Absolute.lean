@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Scales
+
 public import Erdos408.TwoSided.Graph.BoundsDamping
 public import Erdos408.TwoSided.Graph.Endpoint
 
@@ -35,7 +37,7 @@ theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀
           (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
           (κK : ℝ), (∀ p p' a, ‖K p p' a‖ ≤ κK) →
         ∀ (G : ℕ → ℝ), CoreAdmissible B₀ x P G →
-        ∀ m ∈ dyads x, ∀ (ζ : ℝ) (f : ℕ → ℂ), (∀ n, ‖f n‖ ≤ 1) →
+        ∀ m ∈ dyads x, ∀ (ζ : ℝ) (f : ℕ → ℂ), (OneBounded f) →
           ‖patternPairing P q₀ C K ζ (dyadSource (2 ^ m)) f
               (targetEndpoint q₀ P J G (2 ^ m))‖ ≤
             κK * 2 ^ m * Real.log x ^ Cabs := by
@@ -52,7 +54,7 @@ theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀
   have hX1 : 1 ≤ X := one_le_pow₀ (by norm_num)
   have hL0 : 0 < L := by linarith
   have hT0 : 0 ≤ T := Real.log_nonneg (by linarith)
-  have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK 0 0 0)
+  have hκ := (norm_nonneg _).trans (hK 0 0 0)
   have h := GraphBounds.norm_patternPairing_le P hvlo (fun g => (hP.2.2.2.2.2.1 g).1) hq₀ hq₀₁
     hc hc1 C K hK ζ (dyadSource X) hf (norm_targetEndpoint_le hx1 hq₀₁ hG J X)
   -- `|S_X| ≤ X + 1 ≤ L X`
@@ -65,7 +67,7 @@ theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀
   -- `s_P ≤ 2 C₀ T`, so `K₁^{s_P} ≤ L^{2 C₀ log K₁}`
   have hs : (Fintype.card ι : ℝ) ≤ 2 * C₀ * T := by
     have h := Finset.card_sdiff_add_card_eq_card (Finset.subset_univ big)
-    rw [Finset.card_univ] at h
+    simp at h
     have h₁ := hP.2.2.1
     have h₂ := hP.2.2.2.2.1
     rw [← h]
@@ -73,21 +75,17 @@ theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀
     linarith
   have hKs : K₁ ^ Fintype.card ι ≤ L ^ (2 * C₀ * Real.log K₁) := by
     rw [← Real.rpow_natCast]
-    calc K₁ ^ (Fintype.card ι : ℝ) ≤ K₁ ^ (2 * C₀ * T) :=
-          Real.rpow_le_rpow_of_exponent_le hK₁ hs
-      _ = L ^ (2 * C₀ * Real.log K₁) := by
+    calc _ ≤ K₁ ^ (2 * C₀ * T) :=
+          by gcongr
+      _ = _ := by
           rw [Real.rpow_def_of_pos (by linarith), Real.rpow_def_of_pos hL0]
           congr 1
           ring
   refine h.trans ?_
-  have hLB : 0 ≤ L ^ B₀ := Real.rpow_nonneg hL0.le _
   calc (Finset.card (dyadSource X) : ℝ) * κK * L ^ B₀ * K₁ ^ Fintype.card ι
       ≤ (L * X) * κK * L ^ B₀ * L ^ (2 * C₀ * Real.log K₁) := by
-        refine mul_le_mul (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hS hκ) hLB)
-          hKs (pow_nonneg (by linarith) _) ?_
-        have : 0 ≤ L * X := by positivity
-        positivity
-    _ = κK * X * L ^ (B₀ + 1 + 2 * C₀ * Real.log K₁) := by
+        gcongr <;> positivity
+    _ = _ := by
         rw [Real.rpow_add hL0, Real.rpow_add hL0, Real.rpow_one]
         ring
 

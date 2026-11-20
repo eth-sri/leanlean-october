@@ -46,7 +46,7 @@ private lemma F_factorial (x : ℝ) :
   refine sum_subset (fun q hq => ?_) (fun q _ hq => ?_)
   · have hp := Nat.prime_of_mem_primeFactors hq
     exact mem_primesIoc_one'.2 ⟨hp, hp.dvd_factorial.1 (Nat.dvd_of_mem_primeFactors hq)⟩
-  · rw [Finsupp.notMem_support_iff.1 (by rwa [Nat.support_factorization]), zero_mul]
+  · rw [Finsupp.notMem_support_iff.1 (by assumption), zero_mul]
 
 /-- Legendre's formula gives `N / p ≤ v_p(N!)`. -/
 private lemma div_le_factorization_factorial {p : ℕ} (hp : p.Prime) (N : ℕ) :
@@ -65,16 +65,14 @@ private lemma factorization_factorial_le {x : ℝ} (hx : 0 ≤ x) {p : ℕ} (hp 
     refine Nat.cast_div_le.trans ?_
     rw [Nat.cast_sub hp.one_le, Nat.cast_one]
     exact div_le_div_of_nonneg_right (Nat.floor_le hx) (by linarith)
-  calc _ ≤ x / (p - 1) := (Nat.cast_le.2 (Nat.factorization_factorial_le_div_pred hp _)).trans h
-    _ = _ := by field_simp; ring
+  calc _ ≤ _ := ((Nat.cast_le.2 (Nat.factorization_factorial_le_div_pred hp _)).trans h).trans_eq (by field_simp; ring)
 
 /-- `⌊x⌋ / d` is within `1` of `x / d`. -/
 private lemma abs_floor_div_sub_le {x : ℝ} (hx : 0 ≤ x) (d : ℕ) :
     |((⌊x⌋₊ / d : ℕ) : ℝ) - x / d| ≤ 1 := by
   rw [← Nat.floor_div_natCast]
-  have h0 : 0 ≤ x / d := div_nonneg hx d.cast_nonneg
   rw [abs_le]
-  constructor <;> linarith [Nat.floor_le h0, Nat.lt_floor_add_one (x / d)]
+  constructor <;> linarith [Nat.floor_le (div_nonneg hx d.cast_nonneg), Nat.lt_floor_add_one (x / d)]
 
 /-- `∑_{2 ≤ n ≤ N} log n / (n (n - 1)) ≤ 2 - (log N + 2) / N`, by telescoping. -/
 private lemma sum_log_div_mul_pred_le_aux {N : ℕ} (hN : 1 ≤ N) :
@@ -89,8 +87,7 @@ private lemma sum_log_div_mul_pred_le_aux {N : ℕ} (hN : 1 ≤ N) :
     have hlog : Real.log (N + 1) - Real.log N ≤ 1 / N := by
       rw [← Real.log_div (by positivity) (by positivity)]
       have h := Real.log_le_sub_one_of_pos (x := (N + 1) / N) (by positivity)
-      have h' : ((N : ℝ) + 1) / N - 1 = 1 / N := by field_simp; ring
-      linarith
+      grind
     have hmul : ((N : ℝ) + 1) * (Real.log (N + 1) - Real.log N) ≤ 2 := by
       have := mul_le_mul_of_nonneg_left hlog (by positivity : (0 : ℝ) ≤ N + 1)
       have h' : ((N : ℝ) + 1) * (1 / N) ≤ 2 := by
@@ -101,7 +98,7 @@ private lemma sum_log_div_mul_pred_le_aux {N : ℕ} (hN : 1 ≤ N) :
         (2 - (N + 1) * (Real.log (N + 1) - Real.log N)) / (N * (N + 1)) := by
       field_simp; ring
     have : 0 ≤ (2 - (N + 1) * (Real.log (N + 1) - Real.log N)) / (N * (N + 1)) :=
-      div_nonneg (by linarith) (by positivity)
+      by positivity
     push_cast
     rw [add_sub_cancel_right]
     linarith
@@ -112,14 +109,14 @@ private lemma sum_log_div_mul_pred_le (N : ℕ) :
   rcases Nat.eq_zero_or_pos N with rfl | hN
   · simp
   have h1 : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have := div_nonneg (by linarith [Real.log_nonneg h1] : 0 ≤ Real.log N + 2)
+  have := div_nonneg (by positivity : 0 ≤ Real.log N + 2)
     (by linarith : (0 : ℝ) ≤ N)
   linarith [sum_log_div_mul_pred_le_aux hN]
 
 /-- `∑_{q ≤ x} F q / (q (q - 1)) ≤ 2 / log 2`. -/
 private lemma sum_F_div_mul_pred_le (x : ℝ) :
     ∑ q ∈ primesIoc 1 x, (F q : ℝ) / (q * (q - 1)) ≤ 2 / Real.log 2 := by
-  have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have h2 : 0 < Real.log 2 := by positivity
   calc _ ≤ ∑ q ∈ primesIoc 1 x, Real.log q / (q * (q - 1)) / Real.log 2 := by
         refine sum_le_sum fun q hq => ?_
         have hp := (mem_primesIoc_one'.1 hq).1
@@ -133,18 +130,15 @@ private lemma sum_F_div_mul_pred_le (x : ℝ) :
           have := mem_primesIoc_one'.1 hq
           exact mem_Icc.2 ⟨this.1.two_le, this.2⟩
         · intro n hn _
-          have : (2 : ℝ) ≤ n := by exact_mod_cast (mem_Icc.1 hn).1
+          have : (2 : ℝ) ≤ n := by simp_all
           exact div_nonneg (Real.log_nonneg (by linarith)) (by nlinarith)
-    _ ≤ 2 / Real.log 2 := div_le_div_of_nonneg_right (sum_log_div_mul_pred_le _) h2.le
+    _ ≤ _ := div_le_div_of_nonneg_right (sum_log_div_mul_pred_le _) h2.le
 
 /-- `∑_{q ≤ x} F q ≤ x log 4 / log 2`. -/
 private lemma sum_F_primesIoc_le {x : ℝ} (hx : 0 ≤ x) :
     ∑ q ∈ primesIoc 1 x, (F q : ℝ) ≤ Real.log 4 * x / Real.log 2 := by
-  have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  calc _ ≤ ∑ q ∈ primesIoc 1 x, Real.log q / Real.log 2 :=
-        sum_le_sum fun q hq => F_le_log_div_log_two (mem_primesIoc_one'.1 hq).1.ne_zero
-    _ = (∑ q ∈ primesIoc 1 x, Real.log q) / Real.log 2 := by rw [sum_div]
-    _ ≤ _ := div_le_div_of_nonneg_right (sum_log_primesIoc_le hx) h2.le
+  have h2 : 0 < Real.log 2 := by positivity
+  calc _ ≤ _ := ((sum_le_sum fun q hq => F_le_log_div_log_two (mem_primesIoc_one'.1 hq).1.ne_zero).trans_eq (by rw [sum_div])).trans (div_le_div_of_nonneg_right (sum_log_primesIoc_le hx) h2.le)
 
 /-- `∑_{q ≤ x} F q (x / (q (q - 1)) + 1) ≤ (2 + log 4) / log 2 · x`. -/
 private lemma sum_F_error_le {x : ℝ} (hx : 0 ≤ x) :
@@ -154,13 +148,11 @@ private lemma sum_F_error_le {x : ℝ} (hx : 0 ≤ x) :
         ∑ q ∈ primesIoc 1 x, (F q : ℝ) := by
         rw [mul_sum, ← sum_add_distrib]
         exact sum_congr rfl fun q _ => by ring
-    _ ≤ x * (2 / Real.log 2) + Real.log 4 * x / Real.log 2 :=
-        add_le_add (mul_le_mul_of_nonneg_left (sum_F_div_mul_pred_le x) hx)
-          (sum_F_primesIoc_le hx)
-    _ = _ := by ring
+    _ ≤ _ := (add_le_add (mul_le_mul_of_nonneg_left (sum_F_div_mul_pred_le x) hx)
+          (sum_F_primesIoc_le hx)).trans_eq (by ring)
 
 /-- The first integer moment: `∑_{n ≤ x} F n = x B(x) + O(x)`. -/
-theorem integer_first_moment : ∃ K : ℝ, ∀ x : ℝ, 2 ≤ x →
+theorem integer_first_moment : ∃ K, ∀ x, 2 ≤ x →
     |∑ n ∈ Finset.Icc 1 ⌊x⌋₊, (F n : ℝ) - x * harmonicF x| ≤ K * x := by
   refine ⟨(2 + Real.log 4) / Real.log 2, fun x hx => ?_⟩
   have hx0 : 0 ≤ x := by linarith
@@ -168,7 +160,7 @@ theorem integer_first_moment : ∃ K : ℝ, ∀ x : ℝ, 2 ≤ x →
       ∑ q ∈ primesIoc 1 x, (F q : ℝ) * (⌊x⌋₊.factorial.factorization q - x / q) := by
     rw [← Nat.cast_sum, sum_F_Icc, F_factorial, harmonicF, mul_sum, Nat.cast_sum,
       ← sum_sub_distrib]
-    exact sum_congr rfl fun q _ => by push_cast; ring
+    grind
   rw [h]
   refine (abs_sum_le_sum_abs _ _).trans ((sum_le_sum fun q hq => ?_).trans (sum_F_error_le hx0))
   have hp := (mem_primesIoc_one'.1 hq).1
@@ -179,9 +171,8 @@ theorem integer_first_moment : ∃ K : ℝ, ∀ x : ℝ, 2 ≤ x →
     exact_mod_cast div_le_factorization_factorial hp _
   have h3 := abs_floor_div_sub_le hx0 q
   have hq1 : (1 : ℝ) < q := by exact_mod_cast hp.one_lt
-  have h4 : 0 ≤ x / (q * (q - 1)) := div_nonneg hx0 (by nlinarith)
-  rw [abs_le] at h3 ⊢
-  constructor <;> linarith
+  have h4 : 0 ≤ x / (q * (q - 1)) := by positivity
+  grind
 
 /-- `F` summed over the distinct prime factors. -/
 private noncomputable def distinctF (n : ℕ) : ℕ :=
@@ -191,7 +182,7 @@ private noncomputable def distinctF (n : ℕ) : ℕ :=
 private lemma distinctF_le_F {n : ℕ} (hn : n ≠ 0) : distinctF n ≤ F n := by
   rw [distinctF, F_eq_sum_factorization hn]
   refine sum_le_sum fun q hq => Nat.le_mul_of_pos_left _ (Nat.pos_of_ne_zero ?_)
-  exact Finsupp.mem_support_iff.1 (by rwa [Nat.support_factorization])
+  exact Finsupp.mem_support_iff.1 (by assumption)
 
 /-- For `1 ≤ n ≤ x`, the prime factors of `n` are the primes `q ≤ x` dividing `n`. -/
 private lemma primeFactors_eq_filter {x : ℝ} {n : ℕ} (hn : n ∈ Icc 1 ⌊x⌋₊) :
@@ -202,8 +193,7 @@ private lemma primeFactors_eq_filter {x : ℝ} {n : ℕ} (hn : n ∈ Icc 1 ⌊x�
   constructor
   · rintro ⟨hp, hq, -⟩
     exact ⟨⟨hp, (Nat.le_of_dvd h1 hq).trans h2⟩, hq⟩
-  · rintro ⟨⟨hp, -⟩, hq⟩
-    exact ⟨hp, hq, by omega⟩
+  grind
 
 /-- `#{n ≤ N : d ∣ n} = N / d`. -/
 private lemma card_filter_dvd_Icc (N d : ℕ) : #{n ∈ Icc 1 N | d ∣ n} = N / d := by
@@ -247,11 +237,10 @@ private lemma sum_distinctF_sq_eq (x : ℝ) :
   push_cast at h
   rw [h]
   refine sum_congr rfl fun q hq => ?_
-  have hp := (mem_primesIoc_one'.1 hq).1
   rw [← add_sum_erase _ _ hq, Nat.lcm_self, ← filter_ne', sq]
   congr 1
   rw [sum_congr rfl fun r hr => by
-    rw [Nat.Coprime.lcm_eq_mul ((Nat.coprime_primes hp (mem_primesIoc_one'.1
+    rw [Nat.Coprime.lcm_eq_mul ((Nat.coprime_primes (mem_primesIoc_one'.1 hq).1 (mem_primesIoc_one'.1
       (mem_filter.1 hr).1).1).2 (mem_filter.1 hr).2.symm)]]
   refine (sum_subset (fun r hr => ?_) fun r hr hr' => ?_).symm
   · obtain ⟨hr, hrq⟩ := mem_filter.1 hr
@@ -267,19 +256,17 @@ private lemma sum_distinctF_sq_eq (x : ℝ) :
     rw [← Nat.div_div_eq_div_mul, Nat.div_eq_of_lt hrx, Nat.cast_zero, mul_zero]
 
 /-- The second integer moment: `∑_{n ≤ x} F(n)² = x (C(x) + D(x)) + O(x log x)`. -/
-theorem integer_second_moment : ∃ K : ℝ, ∀ x : ℝ, 2 ≤ x →
+theorem integer_second_moment : ∃ K, ∀ x : ℝ, 2 ≤ x →
     |∑ n ∈ Finset.Icc 1 ⌊x⌋₊, (F n : ℝ) ^ 2 - x * (harmonicFSq x + harmonicFPair x)| ≤
       K * x * Real.log x := by
   obtain ⟨E, hE0, hE⟩ := mertens_first
-  have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have h4 : 0 < Real.log 4 := Real.log_pos (by norm_num)
+  have h2 : 0 < Real.log 2 := by positivity
   set K₁ := (2 + Real.log 4) / Real.log 2 with hK₁
   refine ⟨(2 * K₁ + 2 * Real.log 4 / Real.log 2 + Real.log 4 * E / Real.log 2 ^ 2) /
     Real.log 2, fun x hx => ?_⟩
   have hx0 : 0 ≤ x := by linarith
-  have hlogx : Real.log 2 ≤ Real.log x := Real.log_le_log two_pos hx
   set L := Real.log x / Real.log 2 with hL
-  have hL1 : 1 ≤ L := (one_le_div h2).2 hlogx
+  have hL1 := (one_le_div h2).2 (Real.log_le_log two_pos hx)
   -- `F n ≤ L` for `n ≤ x`
   have hFL : ∀ n ∈ Icc 1 ⌊x⌋₊, (F n : ℝ) ≤ L := by
     intro n hn
@@ -291,8 +278,7 @@ theorem integer_second_moment : ∃ K : ℝ, ∀ x : ℝ, 2 ≤ x →
     rw [sum_sub_distrib, ← Nat.cast_sum, ← Nat.cast_sum, sum_F_Icc, F_factorial, sum_distinctF,
       Nat.cast_sum, Nat.cast_sum, ← sum_sub_distrib]
     refine (sum_le_sum fun q hq => ?_).trans (sum_F_error_le hx0)
-    have hp := (mem_primesIoc_one'.1 hq).1
-    have h1 := factorization_factorial_le hx0 hp
+    have h1 := factorization_factorial_le hx0 (mem_primesIoc_one'.1 hq).1
     have h3 := (abs_le.1 (abs_floor_div_sub_le hx0 q)).1
     push_cast
     rw [mul_comm _ (F q : ℝ), ← mul_sub]
@@ -301,12 +287,10 @@ theorem integer_second_moment : ∃ K : ℝ, ∀ x : ℝ, 2 ≤ x →
   have hsq : |∑ n ∈ Icc 1 ⌊x⌋₊, (F n : ℝ) ^ 2 - ∑ n ∈ Icc 1 ⌊x⌋₊, (distinctF n : ℝ) ^ 2| ≤
       2 * L * (K₁ * x) := by
     have hle : ∀ n ∈ Icc 1 ⌊x⌋₊, (distinctF n : ℝ) ≤ F n := fun n hn =>
-      Nat.cast_le.2 (distinctF_le_F (by have := (mem_Icc.1 hn).1; omega))
+      Nat.cast_le.2 (distinctF_le_F (by grind))
     have h0 : 0 ≤ ∑ n ∈ Icc 1 ⌊x⌋₊, ((F n : ℝ) ^ 2 - (distinctF n : ℝ) ^ 2) := by
       refine sum_nonneg fun n hn => ?_
-      have := hle n hn
-      have : (0 : ℝ) ≤ distinctF n := Nat.cast_nonneg _
-      nlinarith
+      bound
     rw [← sum_sub_distrib, abs_of_nonneg h0]
     refine (sum_le_sum fun n hn => ?_).trans
       ((mul_sum ..).symm.le.trans (mul_le_mul_of_nonneg_left hdiff (by linarith)))
@@ -372,17 +356,15 @@ theorem integer_second_moment : ∃ K : ℝ, ∀ x : ℝ, 2 ≤ x →
         abs_sub_le _ _ _
     _ ≤ 2 * L * (K₁ * x) + (L * (Real.log 4 * x / Real.log 2) +
         Real.log 4 * x / Real.log 2 ^ 2 * (Real.log x + E)) :=
-        add_le_add hsq (hfloor.trans (add_le_add hdiag hcross))
+        by linarith
     _ ≤ _ := by
         have e : (2 * K₁ + 2 * Real.log 4 / Real.log 2 + Real.log 4 * E / Real.log 2 ^ 2) /
             Real.log 2 * x * Real.log x - (2 * L * (K₁ * x) + (L * (Real.log 4 * x /
               Real.log 2) + Real.log 4 * x / Real.log 2 ^ 2 * (Real.log x + E))) =
             Real.log 4 * E * x / Real.log 2 ^ 2 * (L - 1) := by
-          rw [hL]
-          field_simp
           ring
         have : 0 ≤ Real.log 4 * E * x / Real.log 2 ^ 2 * (L - 1) :=
-          mul_nonneg (by positivity) (by linarith)
+          by positivity
         linarith
 
 end Erdos408

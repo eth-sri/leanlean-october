@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Hypotheses
+
 public import Erdos408.OneSided.Moment.Chain.Induction
 
 /-!
@@ -49,12 +51,12 @@ theorem chainFree_chainOfFree (a : FreeState x d Y d₀ u v r) :
 /-- A prime is an initial birth exactly when it is listed. -/
 theorem mem_initBirths {J : ℕ} {act : Lists K J} {p : ℕ} :
     p ∈ initBirths act ↔ ∃ i h, act i h = p := by
-  simp only [initBirths, Multiset.mem_sum, mem_univ, true_and, Multiset.mem_singleton]
-  exact ⟨fun ⟨i, h, hp⟩ => ⟨i, h, hp.symm⟩, fun ⟨i, h, hp⟩ => ⟨i, h, hp.symm⟩⟩
+  simp [initBirths]
+  grind
 
 open scoped Classical in
 /-- With disjoint bands, the labels of valid lists are distinct. -/
-theorem initBirths_nodup (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem initBirths_nodup (hdisj : DisjointBands x d.a)
     {J : ℕ} {act : Lists K J} (hact : act ∈ lists x d J) : (initBirths act).Nodup := by
   refine Multiset.nodup_iff_count_le_one.2 fun p => ?_
   -- the multiplicity of `p` counts the slots with label `p`
@@ -62,7 +64,7 @@ theorem initBirths_nodup (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i))
       ∑ i, (univ.filter fun h => act i h = p).card := by
     simp only [initBirths, Multiset.count_sum', Multiset.count_singleton, card_eq_sum_ones,
       sum_filter]
-    exact sum_congr rfl fun i _ => sum_congr rfl fun h _ => by simp [eq_comm]
+    grind
   rw [hcount]
   by_cases hp : ∃ i h, act i h = p
   · obtain ⟨i, h, rfl⟩ := hp
@@ -73,12 +75,11 @@ theorem initBirths_nodup (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i))
       refine card_eq_zero.2 (filter_eq_empty_iff.2 fun k _ hk => ?_)
       exact disjoint_left.1 (hdisj j i hji) (mem_band_of_mem_lists hact j k)
         (hk ▸ mem_band_of_mem_lists hact i h)
-    · exact fun h' => absurd (mem_univ i) h'
-  · push Not at hp
-    simp [hp]
+    simp
+  · aesop
 
 /-- The initial state with empty memory is consistent with the births of its labels. -/
-theorem consistent_init (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem consistent_init (hdisj : DisjointBands x d.a)
     {J : ℕ} {act : Lists K J} (hact : act ∈ lists x d J) :
     Consistent act (0 : Particle x d → ℕ) (initBirths act) :=
   ⟨initBirths_nodup hdisj hact, fun i h => mem_initBirths.2 ⟨i, h, rfl⟩, fun _ => Nat.zero_le _,
@@ -93,21 +94,21 @@ theorem lifeTail_zero_eq_lineFactor {N : ℕ} (π : Fin (N + 1) → FreeState x 
 
 variable {q} in
 /-- The birth weight `ν(p)` of a prime of `𝒫_i` is `V_i⁻¹ c_p`. -/
-theorem primeWeight_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem primeWeight_eq (hdisj : DisjointBands x d.a)
     {N : ℕ} {i : Fin K} {p : ℕ} (hp : p ∈ band x (d.a i)) :
     primeWeight q x d N p = (harmonicMass (band x (d.a i)))⁻¹ * birthConst q N p := by
   rw [primeWeight, primeMass_eq hdisj hp, birthConst, one_div, mul_assoc, mul_inv]
 
 open scoped Classical in
 /-- The product over the slots of a valid list is the product over its labels. -/
-theorem prod_slots_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem prod_slots_eq (hdisj : DisjointBands x d.a)
     {J : ℕ} {act : Lists K J} (hact : act ∈ lists x d J) (f : ℕ → ℝ) :
     ∏ i, ∏ h, f (act i h) =
       ∏ p ∈ bandPrimes x d, if ∃ i h, act i h = p then f p else 1 := by
   rw [prod_ite, prod_const_one, mul_one, ← Fintype.prod_prod_type' (f := fun i h => f (act i h))]
   -- the slots are in bijection with the listed band primes
   have hinj : Set.InjOn (fun ih : Fin K × Fin (J + 1) => act ih.1 ih.2)
-      ((univ : Finset (Fin K × Fin (J + 1))) : Set (Fin K × Fin (J + 1))) := by
+      ((univ : Finset (Fin K × Fin (J + 1)))) := by
     rintro ⟨i, h⟩ - ⟨i', h'⟩ - he
     simp only at he
     have hii : i = i' := by
@@ -123,8 +124,7 @@ theorem prod_slots_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (b
     constructor
     · rintro ⟨i, h, rfl⟩
       exact ⟨mem_biUnion.2 ⟨i, mem_univ _, mem_band_of_mem_lists hact i h⟩, i, h, rfl⟩
-    · rintro ⟨-, i, h, rfl⟩
-      exact ⟨i, h, rfl⟩
+    simp
   rw [← himage, prod_image hinj]
 
 open scoped Classical in
@@ -141,7 +141,7 @@ theorem initial_weight_eq (hq : 0 < q)
         ∏ p ∈ bandPrimes x d, primeFactor p N (pathLines p π) (dampDefect q N) (activeSet p π) := by
   have hact := (freeRootModel d Y d₀ u v r).mem_lists a
   -- step: the initial measure is `σ ∏_{p listed} c_p`
-  have hmw : memWeight (fun xp : Particle x d => primeWeight q x d N xp.1.1) (0 : Particle x d → ℕ)
+  have hmw : memWeight (fun xp : Particle x d => primeWeight q x d N xp.1.1) 0
       = 1 := by
     simp [memWeight]
   have hμ : chainMeasure q x d Y d₀ u v r B N (chainOfFree a) =
@@ -156,10 +156,8 @@ theorem initial_weight_eq (hq : 0 < q)
       exact prod_congr rfl fun h _ => primeWeight_eq hdisj (mem_band_of_mem_lists hact i h)
     have h₂ : ∏ i, ∏ _h : Fin (padCount x + 1), (harmonicMass (band x (d.a i)))⁻¹ =
         stateMass x d := by
-      simp only [prod_const, card_univ, Fintype.card_fin, stateMass, Data.bandMass,
-        prod_pow, prod_inv_distrib]
+      simp [stateMass, Data.bandMass, prod_pow]
     rw [chainMeasure, chainOfFree, hmw, mul_one]
-    change ∏ i, ∏ h, primeWeight q x d N (a.1.2 i h) = _
     rw [h₁, h₂, prod_slots_eq hdisj hact]
   -- step: the lifespan values at the first visit
   have hlife : ∀ p ∈ bandPrimes x d,
@@ -167,15 +165,14 @@ theorem initial_weight_eq (hq : 0 < q)
       (if ∃ i h, a.1.2 i h = p then 1 else birthConst q N p) *
         ∑ ℓ ∈ range (p + 1), lineFactor q p π ℓ := by
     intro p hp
-    have hp₀ : 0 < p := (prime_of_mem_bandPrimes hp).pos
     simp only [← lifeTail_zero_eq_lineFactor q π p]
     by_cases hl : ∃ i h, a.1.2 i h = p
-    · have h0 : (0 : ℕ) ∈ activeSet p π := by
+    · have h0 : 0 ∈ activeSet p π := by
         have := mem_activeSet p π 0
         rw [hπ] at this
         exact this.2 hl
       rw [(statusOf_eq_active_iff p).2 hl, ite_eq_left hl, one_mul, primeLife,
-        lifeValue_zero_active (fun j _ => pathLines_le π hp₀ j) h0]
+        lifeValue_zero_active (fun j _ => pathLines_le π (prime_of_mem_bandPrimes hp).pos j) h0]
     · rw [statusOf_of_none (S := (0 : Particle x d → ℕ)) hl fun _ _ => rfl,
         ite_eq_right (mt mem_initBirths.1 hl),
         ite_eq_right hl, primeLife, lifeValue_zero_unborn]
@@ -186,7 +183,7 @@ theorem initial_weight_eq (hq : 0 < q)
   refine prod_congr rfl fun p hp => ?_
   -- step: `b'_p c_p ∑_ℓ Λ_0(ℓ) = primeFactor_p`
   have hb := (baseline_mul_pos hq (hbig p hp)).ne'
-  have hp1 : ((p : ℝ) + 1) ≠ 0 := by positivity
+  have hp1 : (p + 1) ≠ 0 := by positivity
   have hb' : baseline q N p ≠ 0 := fun h => hb (by rw [h, mul_zero])
   rw [primeFactor_eq_sum_lineFactor, birthConst]
   split_ifs
@@ -207,7 +204,7 @@ theorem sum_chainInit (F G : ChainState x d Y d₀ u v r B → ℂ) :
         if a.1.1.1 = (1, 0) then F (chainOfFree a) * G (chainOfFree a) else 0 := by
   symm
   refine sum_bij_ne_zero (fun a _ _ => chainOfFree a) (fun _ _ _ => mem_univ _)
-    (fun a _ _ a' _ _ h => by rw [← chainFree_chainOfFree (B := B) a, h, chainFree_chainOfFree])
+    (fun a _ _ a' _ _ h => by rw [← chainFree_chainOfFree a, h, chainFree_chainOfFree])
     (fun s _ hs => ?_) (fun a _ ha => ?_)
   · have hi : s.1.1 = (1, 0) ∧ memSize s.2.2.1 = 0 := by
       by_contra h
@@ -216,9 +213,7 @@ theorem sum_chainInit (F G : ChainState x d Y d₀ u v r B → ℂ) :
     rw [ite_eq_left (show (chainFree s).1.1.1 = (1, 0) from hi.1), chainOfFree_chainFree hi.2]
     rw [chainInit, ite_eq_left hi, mul_one] at hs
     exact hs
-  · by_cases h : a.1.1.1 = (1, 0)
-    · rw [ite_eq_left h, chainInit, ite_eq_left ⟨h, by simp [chainOfFree, memSize]⟩, mul_one]
-    · exact absurd (ite_eq_right h) ha
+  simp [chainInit, chainOfFree, memSize]
 
 variable (x d Y d₀ u v r) in
 /-- **S3, the memory identity**: with disjoint bands, band primes larger than `N`, and bands
@@ -264,7 +259,7 @@ theorem lineAverage_rootMoment_eq_chain (hq : 0 < q) (hR : 0 < momentPower x)
     exact ⟨fun h => h 0 rfl, fun h j hj => by rw [show j = 0 from Fin.ext hj, h]⟩
   rw [hset]
   refine sum_congr rfl fun π hπ => ?_
-  have hπ0 : π 0 = a := (mem_filter.1 hπ).2
+  have hπ0 := (mem_filter.1 hπ).2
   have hw : weightFrom A₀ π 0 = pathWeight A₀ x d Y d₀ u v r π := by
     rw [weightFrom, filter_true_of_mem fun j _ => Nat.zero_le _, pathWeight]
   have hinit := initial_weight_eq q (B := memCap x d) hq hdisj hbig π a hπ0
@@ -273,7 +268,7 @@ theorem lineAverage_rootMoment_eq_chain (hq : 0 < q) (hR : 0 < momentPower x)
   push_cast at hinit'
   have hl : lifeProd q N π 0 (chainOfFree (B := memCap x d) a).2.1.1
       (chainOfFree (B := memCap x d) a).2.2.1 (initBirths a.1.2) =
-      lifeProd q N π 0 a.1.2 (0 : Particle x d → ℕ) (initBirths a.1.2) := rfl
+      lifeProd q N π 0 a.1.2 0 (initBirths a.1.2) := rfl
   rw [hw, hend, hπ0, hl]
   by_cases hlast : (π (Fin.last N)).1.1.1 = (1, 0)
   · rw [ite_eq_left ⟨ha, hlast⟩, ite_eq_left hlast]

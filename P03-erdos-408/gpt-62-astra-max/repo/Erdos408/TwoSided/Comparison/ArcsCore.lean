@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Scales
+
 public import Erdos408.TwoSided.Comparison.ArcsBound
 public import Erdos408.TwoSided.Comparison.ArcsLabels
 
@@ -31,15 +33,15 @@ theorem eventually_add_le_rpow {a b : ℝ} (c₁ c₂ : ℝ) (ha : 0 ≤ a) (hab
     rw [← Real.rpow_add (by linarith)]
     ring_nf
   rw [hsplit]
-  have h₂ : c₁ * L ^ a ≤ |c₁| * L ^ a := mul_le_mul_of_nonneg_right (le_abs_self _) (by linarith)
+  have h₂ : c₁ * L ^ a ≤ |c₁| * L ^ a := by bound
   have h₃ : c₂ ≤ |c₂| * L ^ a := (le_abs_self _).trans (le_mul_of_one_le_right (abs_nonneg _) hLa)
   have h₄ : (|c₁| + |c₂|) * L ^ a ≤ L ^ (b - a) * L ^ a :=
-    mul_le_mul_of_nonneg_right h₁ (by linarith)
+    by gcongr
   linarith
 
 /-- `|n^{-iσ}| ≤ 1`, including `n = 0`. -/
 theorem norm_natCast_cpow_neg_le_one (n : ℕ) (σ : ℝ) :
-    ‖(n : ℂ) ^ (-((σ : ℂ) * Complex.I))‖ ≤ 1 := by
+    ‖(n : ℂ) ^ (-(σ * Complex.I))‖ ≤ 1 := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · by_cases h : -((σ : ℂ) * Complex.I) = 0
     · simp [h]
@@ -50,7 +52,7 @@ theorem norm_natCast_cpow_neg_le_one (n : ℕ) (σ : ℝ) :
 /-- `∑_t |h|² ≤ |t| b²` when `|h| ≤ b` on `t`. -/
 private theorem sum_norm_sq_le_card_mul {t : Finset ℕ} {h : ℕ → ℂ} {b : ℝ}
     (hb : ∀ n ∈ t, ‖h n‖ ≤ b) : ∑ n ∈ t, ‖h n‖ ^ 2 ≤ t.card * b ^ 2 := by
-  have := Finset.sum_le_card_nsmul t (fun n => ‖h n‖ ^ 2) (b ^ 2) fun n hn =>
+  have := Finset.sum_le_card_nsmul t _ _ fun n hn =>
     pow_le_pow_left₀ (norm_nonneg _) (hb n hn) 2
   rwa [nsmul_eq_mul] at this
 
@@ -62,12 +64,12 @@ private theorem sqrt_add_le {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
 
 /-- `|[⌈Y⌉, ⌊2Y⌋]| ≤ 2Y + 1`. -/
 private theorem card_Icc_ceil_floor_le {Y : ℝ} (hY : 0 ≤ Y) :
-    ((Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊).card : ℝ) ≤ 2 * Y + 1 := by
-  rw [Nat.card_Icc]
-  have h₁ : ⌊2 * Y⌋₊ + 1 - ⌈Y⌉₊ ≤ ⌊2 * Y⌋₊ + 1 := Nat.sub_le _ _
+    (Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊).card ≤ 2 * Y + 1 := by
+  simp
+  have h₁ : ⌊2 * Y⌋₊ + 1 - ⌈Y⌉₊ ≤ ⌊2 * Y⌋₊ + 1 := by omega
   have h₂ : (⌊2 * Y⌋₊ : ℝ) ≤ 2 * Y := Nat.floor_le (by positivity)
-  calc ((⌊2 * Y⌋₊ + 1 - ⌈Y⌉₊ : ℕ) : ℝ) ≤ ((⌊2 * Y⌋₊ + 1 : ℕ) : ℝ) := by exact_mod_cast h₁
-    _ ≤ 2 * Y + 1 := by push_cast; linarith
+  calc _ ≤ ((⌊2 * Y⌋₊ + 1 : ℕ) : ℝ) := by exact_mod_cast h₁
+    _ ≤ _ := by push_cast; linarith
 
 /-- **(6.19) for the first endpoint.** `∑_{Y ≤ w ≤ 2Y} |𝒰(w)|² ≤ Y L^{2C_W + 3}` from
 `|ψ₁| ≤ M₀`, `|F| ≤ L` (crude U7) and `|W| ≤ L^{C_W}` (U9), once `3M₀² ≤ L`. -/
@@ -80,24 +82,22 @@ theorem sum_norm_endpointCoeff_sq_le {x q q₀ : ℝ} {r d : ℕ} (a : Fin r →
     (hW : ∀ n, ‖markedListWeight P q₀ (unsharedSlots C) b n‖ ≤ L ^ CW) :
     ∑ w ∈ Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊, ‖endpointCoeff x q q₀ a u v Bc P C b ψ₁ Y σ w‖ ^ 2 ≤
       Y * L ^ (2 * CW + 3) := by
-  have hM0 : 0 ≤ M0 := (norm_nonneg _).trans (hψ 0)
+  have hM0 := (norm_nonneg _).trans (hψ 0)
   have hpt : ∀ w ∈ Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊,
       ‖endpointCoeff x q q₀ a u v Bc P C b ψ₁ Y σ w‖ ≤ M0 * L ^ (1 + CW) := by
     intro w hw
-    have hw1 : 1 ≤ w := le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne')
+    have hw1 := le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne')
       (Finset.mem_Icc.1 hw).1
     have hw2 : (w : ℝ) ≤ x ^ 3 :=
       ((Nat.le_floor_iff (by positivity)).1 (Finset.mem_Icc.1 hw).2).trans (by linarith)
     rw [endpointCoeff, norm_mul, norm_mul, norm_mul, Complex.norm_natCast_cpow_of_pos hw1,
       Complex.norm_real, Real.norm_eq_abs, Real.rpow_add hL, Real.rpow_one]
-    simp only [Complex.mul_re, Complex.ofReal_re, Complex.I_re, mul_zero, Complex.ofReal_im,
-      Complex.I_im, mul_one, sub_self, Real.rpow_zero, mul_one]
+    simp only [Complex.mul_re, Complex.I_re, mul_zero, Complex.ofReal_im, Complex.I_im, sub_self, Real.rpow_zero, mul_one]
     have := hF w hw1 hw2
     have := hW w
-    calc ‖ψ₁ (w / Y)‖ * |centeredCore x q a u v Bc w| *
-          ‖markedListWeight P q₀ (unsharedSlots C) b w‖
+    calc _
         ≤ M0 * L * L ^ CW := by gcongr; exact hψ _
-      _ = M0 * (L * L ^ CW) := by ring
+      _ = _ := by ring
   refine (sum_norm_sq_le_card_mul hpt).trans ?_
   have hsq : (M0 * L ^ (1 + CW)) ^ 2 = M0 ^ 2 * L ^ (2 * CW + 2) := by
     rw [mul_pow, ← Real.rpow_mul_natCast hL.le]
@@ -105,11 +105,11 @@ theorem sum_norm_endpointCoeff_sq_le {x q q₀ : ℝ} {r d : ℕ} (a : Fin r →
     ring_nf
   rw [hsq]
   have hcard := card_Icc_ceil_floor_le (show 0 ≤ Y by linarith)
-  calc ((Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊).card : ℝ) * (M0 ^ 2 * L ^ (2 * CW + 2))
+  calc _
       ≤ (3 * Y) * (M0 ^ 2 * L ^ (2 * CW + 2)) := by gcongr; linarith
     _ = Y * (3 * M0 ^ 2) * L ^ (2 * CW + 2) := by ring
     _ ≤ Y * L * L ^ (2 * CW + 2) := by gcongr
-    _ = Y * L ^ (2 * CW + 3) := by
+    _ = _ := by
         rw [show 2 * CW + 3 = 2 * CW + 2 + 1 by ring, Real.rpow_add hL (2 * CW + 2) 1,
           Real.rpow_one]
         ring
@@ -118,7 +118,7 @@ theorem sum_norm_endpointCoeff_sq_le {x q q₀ : ℝ} {r d : ℕ} (a : Fin r →
 from `0 ≤ G ≤ L^{B₀}` and `|W| ≤ L^{C_W}`, once `4 ≤ L`. -/
 theorem sum_norm_second_sq_le {L B₀ CW Y : ℝ} (hL : 4 ≤ L) (hY : 1 ≤ Y) (G : ℕ → ℝ)
     (W : ℕ → ℂ) (hG : ∀ n, 0 ≤ G n ∧ G n ≤ L ^ B₀) (hW : ∀ n, ‖W n‖ ≤ L ^ CW) :
-    ∑ w ∈ Finset.Icc 0 ⌊3 * Y⌋₊, ‖(G w : ℂ) * W w‖ ^ 2 ≤ Y * L ^ (2 * B₀ + 2 * CW + 1) := by
+    ∑ w ∈ Finset.Icc 0 ⌊3 * Y⌋₊, ‖(G w) * W w‖ ^ 2 ≤ Y * L ^ (2 * B₀ + 2 * CW + 1) := by
   have hL0 : 0 < L := by linarith
   have hpt : ∀ w ∈ Finset.Icc 0 ⌊3 * Y⌋₊, ‖(G w : ℂ) * W w‖ ≤ L ^ (B₀ + CW) := by
     intro w _
@@ -130,14 +130,14 @@ theorem sum_norm_second_sq_le {L B₀ CW Y : ℝ} (hL : 4 ≤ L) (hY : 1 ≤ Y) 
     push_cast
     ring_nf
   rw [hsq, Nat.card_Icc]
-  have hcard : ((⌊3 * Y⌋₊ + 1 - 0 : ℕ) : ℝ) ≤ 4 * Y := by
+  have hcard : (⌊3 * Y⌋₊ + 1 - 0 : ℕ) ≤ 4 * Y := by
     rw [Nat.sub_zero]
     push_cast
     linarith [Nat.floor_le (show 0 ≤ 3 * Y by linarith)]
-  calc ((⌊3 * Y⌋₊ + 1 - 0 : ℕ) : ℝ) * L ^ (2 * B₀ + 2 * CW)
+  calc _
       ≤ (4 * Y) * L ^ (2 * B₀ + 2 * CW) := by gcongr
     _ ≤ (L * Y) * L ^ (2 * B₀ + 2 * CW) := by gcongr
-    _ = Y * L ^ (2 * B₀ + 2 * CW + 1) := by
+    _ = _ := by
         rw [Real.rpow_add hL0 (2 * B₀ + 2 * CW) 1, Real.rpow_one]
         ring
 
@@ -154,8 +154,8 @@ private theorem sqrt_mul_rpow {Y L : ℝ} (hY : 0 ≤ Y) (hL : 0 < L) (c : ℝ) 
 theorem div_le_of_arcs {N Y L Kmin K₃ Am Am' A₀ CA CB Carc Ξ₀ E : ℝ} {R : ℕ} (hY : 0 < Y)
     (hL : 1 ≤ L) (hKmin : 0 ≤ Kmin) (hK₃ : 0 ≤ K₃) (hΞ : 0 ≤ Ξ₀)
     (hN : N ≤ 4 * (Kmin * L ^ (-Am')) * Real.sqrt (Y * L ^ CA) * Real.sqrt (Y * L ^ CB) +
-      4 * (R : ℝ) ^ 2 * Real.sqrt E * Real.sqrt (Y * L ^ CB))
-    (hE : E ≤ K₃ * (Y * (Ξ₀ + 2 * L ^ (-(2 * A₀))))) (hR : (R : ℝ) ≤ L ^ Carc)
+      4 * R ^ 2 * Real.sqrt E * Real.sqrt (Y * L ^ CB))
+    (hE : E ≤ K₃ * (Y * (Ξ₀ + 2 * L ^ (-(2 * A₀))))) (hR : R ≤ L ^ Carc)
     (hAm : -Am' + (CA + CB) / 2 ≤ -Am) :
     N / Y ≤ (4 * Kmin + 8 * Real.sqrt K₃) *
       (L ^ (-Am) + L ^ (2 * Carc + CB / 2) * (Real.sqrt Ξ₀ + L ^ (-A₀))) := by
@@ -168,15 +168,14 @@ theorem div_le_of_arcs {N Y L Kmin K₃ Am Am' A₀ CA CB Carc Ξ₀ E : ℝ} {R
     have he : L ^ (-Am') * (L ^ (CA / 2) * L ^ (CB / 2)) = L ^ (-Am' + (CA + CB) / 2) := by
       rw [← Real.rpow_add hL0, ← Real.rpow_add hL0]
       ring_nf
-    have hle : L ^ (-Am' + (CA + CB) / 2) ≤ L ^ (-Am) :=
+    have hle :=
       Real.rpow_le_rpow_of_exponent_le hL hAm
-    calc 4 * (Kmin * L ^ (-Am')) * (Real.sqrt Y * L ^ (CA / 2)) *
-          (Real.sqrt Y * L ^ (CB / 2))
+    calc _
         = (Real.sqrt Y * Real.sqrt Y) *
             (4 * Kmin * (L ^ (-Am') * (L ^ (CA / 2) * L ^ (CB / 2)))) := by ring
       _ = Y * (4 * Kmin * (L ^ (-Am') * (L ^ (CA / 2) * L ^ (CB / 2)))) := by
           rw [Real.mul_self_sqrt hY.le]
-      _ ≤ Y * (4 * Kmin * L ^ (-Am)) := by
+      _ ≤ _ := by
           rw [he]
           gcongr
   -- the arcs
@@ -188,30 +187,26 @@ theorem div_le_of_arcs {N Y L Kmin K₃ Am Am' A₀ CA CB Carc Ξ₀ E : ℝ} {R
     refine (sqrt_add_le hΞ (by positivity)).trans (add_le_add le_rfl ?_)
     rw [Real.sqrt_mul (by norm_num), show -(2 * A₀) = -A₀ * 2 by ring, Real.rpow_mul hL0.le,
       Real.rpow_two, Real.sqrt_sq hA0]
-    have : Real.sqrt 2 ≤ 2 := by
-      rw [Real.sqrt_le_left (by norm_num)]
-      norm_num
-    exact mul_le_mul_of_nonneg_right this hA0
-  have hR2 : (R : ℝ) ^ 2 ≤ L ^ (2 * Carc) := by
+    bound
+  have hR2 : R ^ 2 ≤ L ^ (2 * Carc) := by
     rw [mul_comm, Real.rpow_mul hL0.le, Real.rpow_two]
-    exact pow_le_pow_left₀ (Nat.cast_nonneg _) hR 2
-  have h₂ : 4 * (R : ℝ) ^ 2 * Real.sqrt E * Real.sqrt (Y * L ^ CB) ≤
+    gcongr
+  have h₂ : 4 * R ^ 2 * Real.sqrt E * Real.sqrt (Y * L ^ CB) ≤
       Y * (8 * Real.sqrt K₃ * (L ^ (2 * Carc + CB / 2) * (Real.sqrt Ξ₀ + L ^ (-A₀)))) := by
     rw [sqrt_mul_rpow hY.le hL0]
     have hK := Real.sqrt_nonneg K₃
-    have hΞs := Real.sqrt_nonneg Ξ₀
-    calc 4 * (R : ℝ) ^ 2 * Real.sqrt E * (Real.sqrt Y * L ^ (CB / 2))
+    calc _
         ≤ 4 * L ^ (2 * Carc) * (Real.sqrt K₃ * Real.sqrt Y * (Real.sqrt Ξ₀ + 2 * L ^ (-A₀))) *
             (Real.sqrt Y * L ^ (CB / 2)) := by gcongr
       _ = (Real.sqrt Y * Real.sqrt Y) * (4 * Real.sqrt K₃ * ((L ^ (2 * Carc) * L ^ (CB / 2)) *
             (Real.sqrt Ξ₀ + 2 * L ^ (-A₀)))) := by ring
       _ = Y * (4 * Real.sqrt K₃ * ((L ^ (2 * Carc) * L ^ (CB / 2)) *
             (Real.sqrt Ξ₀ + 2 * L ^ (-A₀)))) := by rw [Real.mul_self_sqrt hY.le]
-      _ ≤ Y * (8 * Real.sqrt K₃ * (L ^ (2 * Carc + CB / 2) * (Real.sqrt Ξ₀ + L ^ (-A₀)))) := by
+      _ ≤ _ := by
           rw [← Real.rpow_add hL0]
           have hp : 0 ≤ L ^ (2 * Carc + CB / 2) := by positivity
           refine mul_le_mul_of_nonneg_left ?_ hY.le
-          nlinarith [mul_nonneg hK hp, mul_nonneg (mul_nonneg hK hp) hΞs,
+          nlinarith [mul_nonneg hK hp, mul_nonneg (mul_nonneg hK hp) (Real.sqrt_nonneg Ξ₀),
             mul_nonneg (mul_nonneg hK hp) hA0]
   rw [div_le_iff₀ hY]
   have hm0 : 0 ≤ L ^ (-Am) := by positivity
@@ -219,11 +214,9 @@ theorem div_le_of_arcs {N Y L Kmin K₃ Am Am' A₀ CA CB Carc Ξ₀ E : ℝ} {R
   have hK := Real.sqrt_nonneg K₃
   calc N ≤ Y * (4 * Kmin * L ^ (-Am)) +
         Y * (8 * Real.sqrt K₃ * (L ^ (2 * Carc + CB / 2) * (Real.sqrt Ξ₀ + L ^ (-A₀)))) :=
-        hN.trans (add_le_add h₁ h₂)
+        by linarith
     _ ≤ _ := by
-        have h₃ := mul_nonneg (mul_nonneg hY.le hKmin) hp0
-        have h₄ := mul_nonneg (mul_nonneg hY.le hK) hm0
-        nlinarith
+        linarith [mul_nonneg (mul_nonneg hY.le hKmin) hp0, mul_nonneg (mul_nonneg hY.le hK) hm0]
 
 /-- **The weighted tail.** If `L ≤ T`, `0 ≤ Q ≤ L²` and `C_A + 2A_e + 2 ≤ m`, then
 `(1 + T)^{-m} Q L^{C_A} ≤ L^{-2A_e}`. -/
@@ -233,12 +226,12 @@ private theorem inv_pow_mul_le {L T Q CA A₀ : ℝ} {m : ℕ} (hL : 1 ≤ L) (h
   have hL0 : 0 < L := by linarith
   have h₁ : ((1 + T) ^ m)⁻¹ ≤ L ^ (-(m : ℝ)) := by
     rw [Real.rpow_neg hL0.le, Real.rpow_natCast]
-    exact inv_anti₀ (by positivity) (pow_le_pow_left₀ hL0.le (by linarith) m)
-  calc ((1 + T) ^ m)⁻¹ * Q * L ^ CA ≤ L ^ (-(m : ℝ)) * L ^ (2 : ℝ) * L ^ CA := by
+    bound
+  calc _ ≤ L ^ (-(m : ℝ)) * L ^ (2 : ℝ) * L ^ CA := by
         rw [Real.rpow_two]
         gcongr
     _ = L ^ (-(m : ℝ) + 2 + CA) := by rw [Real.rpow_add hL0, Real.rpow_add hL0]
-    _ ≤ L ^ (-(2 * A₀)) := Real.rpow_le_rpow_of_exponent_le hL (by linarith)
+    _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL (by linarith)
 
 /-- **The additive term.** If `0 ≤ H/Y ≤ 4κ/x`, `16κ² ≤ x` and `L^{C_A + 2A_e} ≤ x`, then
 `(H/Y)² L^{C_A} ≤ L^{-2A_e}`. -/
@@ -249,14 +242,13 @@ private theorem sq_mul_rpow_le {H Y x κ L CA A₀ : ℝ} (hx : 0 < x) (hL : 0 <
     rw [← Real.rpow_add hL]
     ring_nf
   have hsq : (H / Y) ^ 2 ≤ 16 * κ ^ 2 / x ^ 2 := by
-    calc (H / Y) ^ 2 ≤ (4 * κ / x) ^ 2 := pow_le_pow_left₀ hHY hHY' 2
-      _ = 16 * κ ^ 2 / x ^ 2 := by ring
-  have hp : 0 ≤ L ^ (-(2 * A₀)) := by positivity
-  calc (H / Y) ^ 2 * L ^ CA ≤ 16 * κ ^ 2 / x ^ 2 * (L ^ (CA + 2 * A₀) * L ^ (-(2 * A₀))) := by
+    calc _ ≤ (4 * κ / x) ^ 2 := by gcongr
+      _ = _ := by ring
+  calc _ ≤ 16 * κ ^ 2 / x ^ 2 * (L ^ (CA + 2 * A₀) * L ^ (-(2 * A₀))) := by
         rw [hsplit]
         gcongr
     _ ≤ x / x ^ 2 * (x * L ^ (-(2 * A₀))) := by gcongr
-    _ = L ^ (-(2 * A₀)) := by field_simp
+    _ = _ := by field_simp
 
 /-- **The minor arcs (S6–S7).** Off the arcs of radius `L^{C_arc}/(UU')` around the centres
 `u/r`, `r ≤ R`, `-R ≤ u ≤ 2R`, the multiplier `∑_a μ(a) b₁(D_A) b₂(D_B) e(-θ D_A D_B)` is at
@@ -265,7 +257,7 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
     {P : ι → Finset ℕ} {big : Finset ι} (hadm : GroupAdmissible c₀ C₀ vlo vhi x P big)
     (hvlo : 0 < vlo) {J : ℕ} {A B : ι → Finset (Fin J)} (hAB : ∀ g, Disjoint (A g) (B g))
     (φ φ' : ℕ → ℂ) (σ U U' θ C₇ C Carc Am' Kmin : ℝ) (R : ℕ)
-    (hφ : ∀ n, ‖φ n‖ ≤ 1) (hφ' : ∀ n, ‖φ' n‖ ≤ 1)
+    (hφ : OneBounded φ) (hφ' : OneBounded φ')
     (hsφ : ∀ n, φ n ≠ 0 → U ≤ n ∧ (n : ℝ) ≤ Real.exp 1 * U)
     (hsφ' : ∀ n, φ' n ≠ 0 → U' ≤ n ∧ (n : ℝ) ≤ Real.exp 1 * U')
     (hρA : ∀ n : ℕ, 1 ≤ n →
@@ -303,14 +295,13 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
   have hU0 : 0 < U := lt_of_lt_of_le (Real.exp_pos _) hU38
   have hU'0 : 0 < U' := lt_of_lt_of_le (Real.exp_pos _) hU'38
   have he4 : Real.exp 1 ≤ 4 := (Real.exp_one_lt_d9).le.trans (by norm_num)
-  have hV : ∀ g, harmonicMass (P g) ≠ 0 := fun g =>
-    (lt_of_lt_of_le hvlo (hadm.2.2.2.2.2.1 g).1).ne'
+  have hV : ∀ g, harmonicMass (P g) ≠ 0 := fun g => LT.lt.ne' (lt_of_lt_of_le hvlo (hadm.right.right.right.right.right.left g).left)
   have hμ : ∀ (S : ι → Finset (Fin J)) (l : ι → Fin J → ℕ), 0 ≤ labelMass P S l :=
     labelMass_nonneg P
   -- the multiplier as a double sum over the labels of `A` and of `B`
   have hbil : ∑ l ∈ auxLabels P (fun g => A g ∪ B g),
       (labelMass P (fun g => A g ∪ B g) l : ℂ) * b₁ (slotProduct A l) * b₂ (slotProduct B l) *
-        Erdos821.Blueprint.Analytic.e (-θ * (slotProduct (fun g => A g ∪ B g) l : ℕ)) =
+        Erdos821.Blueprint.Analytic.e (-θ * (slotProduct (fun g => A g ∪ B g) l)) =
       ∑ l₁ ∈ auxLabels P A, ∑ l₂ ∈ auxLabels P B,
         (labelMass P A l₁ : ℂ) * (labelMass P B l₂ : ℂ) *
           (b₁ (slotProduct A l₁) * b₂ (slotProduct B l₂) *
@@ -324,7 +315,7 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
   refine (le_of_eq (congrArg norm hbil)).trans ?_
   have hb : ∀ (f : ℕ → ℂ) (n : ℕ), ‖f n‖ ≤ 1 →
       ‖f n * (n : ℂ) ^ (-((σ : ℂ) * Complex.I))‖ ≤ 1 := fun f n h => by
-    rw [norm_mul]
+    simp
     exact (mul_le_mul h (norm_natCast_cpow_neg_le_one n σ) (norm_nonneg _) zero_le_one).trans
       (by norm_num)
   refine norm_sum_bilinear_le (auxLabels P A) (auxLabels P B) (labelMass P A)
@@ -333,10 +324,10 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
     (fun l _ => hμ B l) (sum_labelMass hV A) (sum_labelMass hV B)
     (fun n => hb φ n (hφ n)) (fun n => hb φ' n (hφ' n)) ?_ ?_ hρA hρB ?_
   · intro n hn
-    have h := hsφ n fun h0 => hn (by rw [hb₁]; simp [h0])
+    have h := hsφ n fun h0 => hn (by grind)
     exact ⟨h.1, h.2.trans (by nlinarith)⟩
   · intro n hn
-    have h := hsφ' n fun h0 => hn (by rw [hb₂]; simp [h0])
+    have h := hsφ' n fun h0 => hn (by grind)
     exact ⟨h.1, h.2.trans (by nlinarith)⟩
   -- each box is a minor-arc sum of C2
   intro U₀ V₀ s t α β hU₀ hV₀ hs ht hα hβ
@@ -345,23 +336,23 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
   have hU₀u : U₀ ≤ 2 * U := by rcases hU₀ with rfl | rfl <;> linarith
   have hV₀u : V₀ ≤ 2 * U' := by rcases hV₀ with rfl | rfl <;> linarith
   have hUV : U * U' ≤ U₀ * V₀ := mul_le_mul hU₀l hV₀l hU'0.le (by linarith)
-  have hUV0 : 0 < U * U' := mul_pos hU0 hU'0
+  have hUV0 := mul_pos hU0 hU'0
   have hrad : Real.log x ^ Carc / (U₀ * V₀) ≤ Real.log x ^ Carc / (U * U') :=
-    div_le_div_of_nonneg_left (Real.rpow_nonneg (by linarith) _) hUV0 hUV
+    by gcongr
   have hrad1 : Real.log x ^ Carc / (U * U') ≤ 1 := (div_le_one hUV0).2 hLCarc
   refine hC2x U₀ V₀ θ 1 s t α β (hU38.trans hU₀l) (hU'38.trans hV₀l) ?_ one_ne_zero
     (by simpa using hLC) hs ht (hα.trans (div_le_div_of_nonneg_right hC₇C (by linarith)))
     (hβ.trans (div_le_div_of_nonneg_right hC₇C (by linarith))) ?_
-  · calc U₀ * V₀ ≤ (2 * U) * (2 * U') := mul_le_mul hU₀u hV₀u (by linarith) (by linarith)
+  · calc _ ≤ (2 * U) * (2 * U') := mul_le_mul hU₀u hV₀u (by linarith) (by linarith)
       _ = 4 * (U * U') := by ring
-      _ ≤ x ^ 2 := hUUx
+      _ ≤ _ := hUUx
   · intro r u hr₁ hr₂
     have hrR := hR r hr₂
     have hr0 : (0 : ℝ) < r := by exact_mod_cast hr₁
     refine lt_of_le_of_lt hrad ?_
     by_cases hu₁ : -(R : ℤ) ≤ u
     · by_cases hu₂ : u ≤ 2 * R
-      · exact harc r u hr₁ hrR hu₁ hu₂
+      · apply harc <;> assumption
       · -- `u/r > 2`, so `|θ - u/r| > 1`
         have h₁ : (2 * r + 1 : ℝ) ≤ u := by
           have : (2 * (r : ℤ) + 1) ≤ u := by omega
@@ -385,37 +376,35 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
 term `(H/Y)² A`. -/
 theorem energy_le {x L Y H T₀ κ K₃ Ξ₀ CA A₀ : ℝ} {j : ℕ} (hx0 : 0 < x) (hLx : Real.log x = L)
     (hL7 : 7 ≤ L) (hY1 : 1 ≤ Y) (hY_hi : Y ≤ x * Real.exp (L ^ (0.47 : ℝ))) (hH1 : 1 ≤ H)
-    (hT₀H : 2 * Y * L ≤ T₀ * H) (hm : CA + 2 * A₀ + 2 ≤ ((j - 4 : ℕ) : ℝ))
+    (hT₀H : 2 * Y * L ≤ T₀ * H) (hm : CA + 2 * A₀ + 2 ≤ (j - 4 : ℕ))
     (hHY4 : H / Y ≤ 4 * κ / x) (hκx : 16 * κ ^ 2 ≤ x) (hLx' : L ^ (CA + 2 * A₀) ≤ x)
     (hK₃ : 0 ≤ K₃) :
     K₃ * (Y * Ξ₀ + ((1 + T₀ * H / (2 * Y)) ^ (j - 4))⁻¹ *
       (1 / H + 2 * Real.log (4 * Y)) * (Y * L ^ CA) + (H / Y) ^ 2 * (Y * L ^ CA)) ≤
       K₃ * (Y * (Ξ₀ + 2 * L ^ (-(2 * A₀)))) := by
-  have hL0 : 0 < L := by linarith
   have hL1 : 1 ≤ L := by linarith
   have hY0 : 0 < Y := by linarith
   have hlog4Y : Real.log (4 * Y) ≤ 3 * L := by
     have h₁ : Real.log Y ≤ L + L ^ (0.47 : ℝ) := by
       calc Real.log Y ≤ Real.log (x * Real.exp (L ^ (0.47 : ℝ))) :=
-            Real.log_le_log hY0 hY_hi
-        _ = L + L ^ (0.47 : ℝ) := by
+            by gcongr
+        _ = _ := by
             rw [Real.log_mul hx0.ne' (Real.exp_pos _).ne', Real.log_exp, hLx]
     have h₂ : L ^ (0.47 : ℝ) ≤ L := by
-      simpa using Real.rpow_le_rpow_of_exponent_le hL1 (show (0.47 : ℝ) ≤ 1 by norm_num)
+      simpa using Real.rpow_le_rpow_of_exponent_le hL1 (show 0.47 ≤ 1 by norm_num)
     have h₃ : Real.log 4 ≤ 3 := by
       have := Real.log_le_sub_one_of_pos (show (0 : ℝ) < 4 by norm_num)
       linarith
     rw [Real.log_mul (by norm_num) hY0.ne']
     linarith
   have hQ0 : 0 ≤ 1 / H + 2 * Real.log (4 * Y) :=
-    add_nonneg (by positivity) (mul_nonneg zero_le_two (Real.log_nonneg (by linarith)))
-  have hQL : 1 / H + 2 * Real.log (4 * Y) ≤ L ^ 2 := by
-    have h₁ : 1 / H ≤ 1 := by rw [div_le_one (by linarith)]; exact hH1
-    have h₂ : 7 * L ≤ L ^ 2 := by rw [sq]; exact mul_le_mul_of_nonneg_right hL7 hL0.le
-    linarith
+    by bound
   have hTL : L ≤ T₀ * H / (2 * Y) := by rw [le_div_iff₀ (by positivity)]; linarith
-  have hZ := inv_pow_mul_le hL1 hTL hQ0 hQL hm
-  have hHq := sq_mul_rpow_le hx0 hL0 (div_nonneg (by linarith) hY0.le) hHY4 hκx hLx'
+  have hZ := inv_pow_mul_le hL1 hTL hQ0 (by
+    have h₁ : 1 / H ≤ 1 := by bound
+    have h₂ : 7 * L ≤ L ^ 2 := by rw [sq]; gcongr
+    linarith) hm
+  have hHq := sq_mul_rpow_le hx0 (by linarith) (div_nonneg (by linarith) hY0.le) hHY4 hκx hLx'
   refine mul_le_mul_of_nonneg_left ?_ hK₃
   have e₁ : ((1 + T₀ * H / (2 * Y)) ^ (j - 4))⁻¹ * (1 / H + 2 * Real.log (4 * Y)) *
       (Y * L ^ CA) = Y * (((1 + T₀ * H / (2 * Y)) ^ (j - 4))⁻¹ *

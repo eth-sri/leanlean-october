@@ -51,10 +51,7 @@ theorem card_filter_mul_eq_le {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m ∈ I₁, 
   refine card_le_card_of_injOn Prod.fst (fun mn hmn => ?_) fun mn hmn mn' hmn' h => ?_
   · rw [mem_coe, mem_filter] at hmn
     exact Nat.mem_divisors.2 ⟨⟨mn.2, hmn.2.symm⟩, hl⟩
-  · rw [mem_coe, mem_filter, mem_product] at hmn hmn'
-    have h₁ : 0 < mn.1 := hI₁ _ hmn.1.1
-    have h₂ : mn.1 * mn.2 = mn.1 * mn'.2 := by rw [hmn.2, h, hmn'.2]
-    exact Prod.ext h (Nat.eq_of_mul_eq_mul_left h₁ h₂)
+  aesop
 
 /-- `|c_l| ≤ U V τ(l)` for `l ≠ 0`. -/
 theorem norm_mulCoeff_le {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m ∈ I₁, 1 ≤ m) {u v : ℕ → ℂ} {U V : ℝ}
@@ -63,17 +60,17 @@ theorem norm_mulCoeff_le {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m ∈ I₁, 1 ≤
     ‖mulCoeff I₁ I₂ u v l‖ ≤ U * V * #l.divisors := by
   unfold mulCoeff
   refine (norm_sum_le _ _).trans ?_
-  calc ∑ mn ∈ I₁ ×ˢ I₂ with mn.1 * mn.2 = l, ‖u mn.1 * v mn.2‖
+  calc _
       ≤ ∑ mn ∈ I₁ ×ˢ I₂ with mn.1 * mn.2 = l, U * V := by
         refine sum_le_sum fun mn hmn => ?_
         rw [mem_filter, mem_product] at hmn
         rw [norm_mul]
-        exact mul_le_mul (hu _ hmn.1.1) (hv _ hmn.1.2) (norm_nonneg _) hU
-    _ = #{mn ∈ I₁ ×ˢ I₂ | mn.1 * mn.2 = l} * (U * V) := by rw [sum_const, nsmul_eq_mul]
+        bound
+    _ = #{mn ∈ I₁ ×ˢ I₂ | mn.1 * mn.2 = l} * (U * V) := by simp
     _ ≤ #l.divisors * (U * V) := by
         gcongr
         exact card_filter_mul_eq_le hI₁ hl
-    _ = U * V * #l.divisors := by ring
+    _ = _ := by ring
 
 /-- PD `maj:product-mean`: for Dirichlet polynomials supported in `[1, N₁]` and `[1, N₂]` with
 coefficients at most `U` and `V`, and `N = N₁ N₂`,
@@ -88,20 +85,17 @@ theorem integral_norm_sum_mul_sum_sq_le {I₁ I₂ : Finset ℕ} {N₁ N₂ : �
         (U ^ 2 * V ^ 2 * ((N₁ * N₂ : ℕ) * (1 + Real.log (N₁ * N₂ : ℕ)) ^ 3)) := by
   simp_rw [sum_mul_sum_eq hI₁ hI₂ u v]
   refine (integral_norm_dirichlet_sq_le _ _ a b).trans ?_
-  have hlog := Real.log_natCast_nonneg (N₁ * N₂)
-  have hab' := sub_nonneg.2 hab
   gcongr
   -- `∑ |c_l|² ≤ U² V² ∑ τ(l)²`
-  calc ∑ l ∈ Icc 1 (N₁ * N₂), ‖mulCoeff I₁ I₂ u v l‖ ^ 2
+  calc _
       ≤ ∑ l ∈ Icc 1 (N₁ * N₂), (U * V * #l.divisors) ^ 2 := by
         refine sum_le_sum fun l hl => ?_
-        have hl0 : l ≠ 0 := by rw [mem_Icc] at hl; omega
         exact pow_le_pow_left₀ (norm_nonneg _)
-          (norm_mulCoeff_le (fun m hm => (hI₁ m hm).1) hU hV hu hv hl0) 2
+          (norm_mulCoeff_le (fun m hm => (hI₁ m hm).1) hU hV hu hv (by grind)) 2
     _ = U ^ 2 * V ^ 2 * ∑ l ∈ Icc 1 (N₁ * N₂), ((#l.divisors : ℕ) : ℝ) ^ 2 := by
         rw [mul_sum]
-        exact sum_congr rfl fun l _ => by ring
-    _ ≤ U ^ 2 * V ^ 2 * ((N₁ * N₂ : ℕ) * (1 + Real.log (N₁ * N₂ : ℕ)) ^ 3) := by
+        ring
+    _ ≤ _ := by
         gcongr
         exact sum_card_divisors_sq_le _
 

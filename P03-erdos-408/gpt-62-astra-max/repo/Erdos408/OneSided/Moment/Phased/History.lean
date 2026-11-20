@@ -33,19 +33,17 @@ after that edge. -/
 private theorem chainVisit_cons_succ {N : ℕ} (s : ChainState x d Y d₀ u v r B)
     (c : GhostChoice x d) (e : EdgeChoice x d Y d₀ u v r) (h : History x d Y d₀ u v r N)
     (j : Fin (N + 1)) :
-    chainVisit (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) j.succ =
+    chainVisit s (Fin.cons c h.1, Fin.cons e h.2) j.succ =
       chainVisit (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h j := by
   induction j using Fin.induction with
   | zero => rfl
   | succ j ih =>
-    simp only [chainVisit] at ih ⊢
-    rw [Fin.induction_succ, Fin.induction_succ, ← Fin.succ_castSucc, ih]
-    simp
+    simp_all [chainVisit]
 
 /-- The end of a history is the end of its tail from the state after its first edge. -/
 private theorem chainEnd_cons {N : ℕ} (s : ChainState x d Y d₀ u v r B)
     (c : GhostChoice x d) (e : EdgeChoice x d Y d₀ u v r) (h : History x d Y d₀ u v r N) :
-    chainEnd (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) =
+    chainEnd s (Fin.cons c h.1, Fin.cons e h.2) =
       chainEnd (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h := by
   rw [chainEnd, ← Fin.succ_last, chainVisit_cons_succ]
   rfl
@@ -55,16 +53,13 @@ private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℂ) :
     ∑ h ∈ histories x d Y d₀ u v r B 0, F h =
       ∑ c ∈ multBox B ×ˢ multBox B, F (fun _ => c, Fin.elim0) := by
   refine sum_nbij' (fun h => h.1 0) (fun c => (fun _ => c, Fin.elim0)) ?_ ?_ ?_ ?_ ?_
-  · intro h hh
-    simp only [histories, mem_product, Fintype.mem_piFinset] at hh ⊢
-    exact hh.1 0
+  · grind [histories]
   · intro c hc
     simp only [histories, mem_product, Fintype.mem_piFinset] at hc ⊢
     exact ⟨fun _ => hc, fun i => i.elim0⟩
   · intro h _
     exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
-  · intro c _
-    rfl
+  · simp
   · intro h _
     congr 1
     exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
@@ -75,21 +70,18 @@ private theorem sum_histories_succ {N : ℕ} (F : History x d Y d₀ u v r (N + 
     ∑ h ∈ histories x d Y d₀ u v r B (N + 1), F h =
       ∑ c ∈ multBox B ×ˢ multBox B, ∑ e ∈ edgeChoices x d Y d₀ u v r,
         ∑ h ∈ histories x d Y d₀ u v r B N, F (Fin.cons c h.1, Fin.cons e h.2) := by
-  simp only [← sum_product']
+  simp [← sum_product']
   refine sum_nbij' (fun h => (h.1 0, h.2 0, Fin.tail h.1, Fin.tail h.2))
     (fun t => (Fin.cons t.1 t.2.2.1, Fin.cons t.2.1 t.2.2.2)) ?_ ?_ ?_ ?_ ?_
   · intro h hh
-    simp only [histories, mem_product, Fintype.mem_piFinset] at hh ⊢
+    simp [histories] at hh ⊢
     exact ⟨hh.1 0, hh.2 0, fun i => hh.1 _, fun i => hh.2 _⟩
   · intro t ht
-    simp only [histories, mem_product, Fintype.mem_piFinset] at ht ⊢
-    exact ⟨fun i => Fin.cases ht.1 ht.2.2.1 i, fun i => Fin.cases ht.2.1 ht.2.2.2 i⟩
-  · intro h _
-    simp
-  · intro t _
-    simp
-  · intro h _
-    simp
+    simp [histories] at ht ⊢
+    exact ⟨Fin.cases ht.1 ht.2.2.1, Fin.cases ht.2.1 ht.2.2.2⟩
+  · simp
+  · simp
+  simp
 
 /-- The history expansion with visit-dependent coefficients: with ghost coefficients `G j` at
 the visits and edge coefficients `E j` at the edges, `𝒢^{G₀} ℰ^{E₀} ⋯ ℰ^{E_{N-1}} 𝒢^{G_N} f (s)`
@@ -114,17 +106,15 @@ theorem foldr_finRange_eq_sum_history (f : ChainState x d Y d₀ u v r B → ℂ
   | zero =>
     intro G E s
     rw [sum_histories_zero]
-    simp only [List.finRange_zero, List.foldr_nil, choiceOp, Fin.prod_univ_succ,
-      Fin.prod_univ_zero, mul_one]
-    rfl
+    aesop
   | succ N ih =>
     intro G E s
     -- peel off `𝒢^{G₀} ℰ^{E₀}` and expand the rest from the state after the first edge
     rw [List.finRange_succ, List.foldr_cons, List.foldr_map, sum_histories_succ]
-    simp only [← Fin.succ_castSucc, ← Fin.succ_last, Fin.castSucc_zero]
+    simp [← Fin.succ_last]
     rw [funext (ih (fun j => G j.succ) (fun j => E j.succ))]
     have h0 : ∀ h : History x d Y d₀ u v r N, ∀ c e,
-        chainVisit (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) 0 = s := fun _ _ _ => rfl
+        chainVisit  s (Fin.cons c h.1, Fin.cons e h.2) 0 = s := fun _ _ _ => rfl
     simp only [choiceOp, Fin.prod_univ_succ (n := N + 1), Fin.prod_univ_succ (n := N),
       ← Fin.succ_castSucc, Fin.castSucc_zero, chainVisit_cons_succ, chainEnd_cons, Fin.cons_succ,
       Fin.cons_zero, h0, mul_sum]

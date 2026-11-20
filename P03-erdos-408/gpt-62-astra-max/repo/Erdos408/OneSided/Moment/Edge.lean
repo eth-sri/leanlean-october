@@ -71,7 +71,7 @@ theorem chainEdgeCoef_eq (N : ℕ) (s : ChainState x d Y d₀ u v r B)
   by_cases hv : EdgeValid x d Y d₀ u v r B s c
   · -- `t = b - a ↔ t - b + a = 0`
     have hk : ∀ t b a : ℤ, (t = b - a) = (t - b + a = 0) := fun t b a => propext (by omega)
-    simp only [hv, ↓reduceIte, hk]
+    simp [hv, hk]
   · simp [hv]
 
 /-- The edge choices with stored groups `S` and promoted groups `I`. -/
@@ -114,8 +114,7 @@ theorem chainEdge_eq_parts (N : ℕ) (f : ChainState x d Y d₀ u v r B → ℂ)
         chainEdgeCoef q A₀ x d Y d₀ u v r B N s c * f (chainEdgeOut x d Y d₀ u v r B s c) := by
     rw [chainEdge, choiceOp, ← sum_fiberwise (edgeChoices x d Y d₀ u v r)
       (fun c => (c.2.1, univ.filter fun i => (c.2.2.2.1 i).2 = true))]
-    refine sum_congr rfl fun SI _ => ?_
-    rw [edgePartChoices, filter_congr fun c _ => Prod.ext_iff]
+    rfl
   -- the clean piece keeps the full kernel; each dirty piece splits into raw and comparison
   rw [hfib, ← add_sum_erase _ _ (mem_univ (∅, ∅))]
   simp only [Pi.add_apply, Finset.sum_apply]
@@ -135,8 +134,7 @@ theorem wnormSq_eq_norm_sq {ι : Type*} [Fintype ι] {μ : ι → ℝ} (hμ : �
       ‖(WithLp.toLp 2 fun i => (Real.sqrt (μ i) : ℂ) * g i : EuclideanSpace ℂ ι)‖ ^ 2 := by
   rw [EuclideanSpace.norm_sq_eq, wnormSq]
   refine sum_congr rfl fun i _ => ?_
-  rw [PiLp.toLp_apply, norm_mul, mul_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs,
-    Real.sq_sqrt (hμ i)]
+  rw [norm_mul, mul_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs, Real.sq_sqrt (hμ i)]
 
 /-- Norm bounds add (Minkowski): `‖∑_k T_k f‖ ≤ ∑_k c_k ‖f‖`. -/
 theorem NormLe.sum {ι κ γ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {ν : κ → ℝ}
@@ -149,31 +147,28 @@ theorem NormLe.sum {ι κ γ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ
   -- each piece has Euclidean norm at most `c_k ‖f‖_ν`
   have hk : ∀ k ∈ s, ‖φ (T k f)‖ ≤ c k * Real.sqrt (wnormSq ν f) := by
     intro k hk
-    rw [← Real.sqrt_sq (norm_nonneg _), hφ, ← wnormSq_eq_norm_sq hμ, ← Real.sqrt_sq (hc k hk),
-      ← Real.sqrt_mul (sq_nonneg _)]
-    exact Real.sqrt_le_sqrt (hT k hk f)
+    rw [← Real.sqrt_sq (norm_nonneg _), ← wnormSq_eq_norm_sq hμ, ← Real.sqrt_sq (hc k hk), ← Real.sqrt_mul (sq_nonneg _)]
+    solve_by_elim [Real.sqrt_le_sqrt]
   -- the embedding is additive, so Minkowski is the triangle inequality
   have hsum : ‖φ (∑ k ∈ s, T k f)‖ ≤ (∑ k ∈ s, c k) * Real.sqrt (wnormSq ν f) := by
     have : φ (∑ k ∈ s, T k f) = ∑ k ∈ s, φ (T k f) := by
       rw [hφ, ← WithLp.toLp_sum]
       refine congrArg (WithLp.toLp 2) (funext fun i => ?_)
-      simp [Finset.sum_apply, Finset.mul_sum]
+      simp [Finset.mul_sum]
     rw [this, Finset.sum_mul]
     exact (norm_sum_le _ _).trans (sum_le_sum hk)
   have hsq := pow_le_pow_left₀ (norm_nonneg _) hsum 2
-  rw [hφ, ← wnormSq_eq_norm_sq hμ, mul_pow] at hsq
+  rw [← wnormSq_eq_norm_sq hμ, mul_pow] at hsq
   by_cases hW : 0 ≤ wnormSq ν f
   · rwa [Real.sq_sqrt hW] at hsq
   · -- a negative `‖f‖²_ν` forces every `c_k = 0`
     push Not at hW
     have hc0 : ∀ k ∈ s, c k = 0 := by
       intro k hk
-      have h0 : 0 ≤ c k ^ 2 * wnormSq ν f :=
+      have h0  :=
         (sum_nonneg fun i _ => mul_nonneg (hμ i) (sq_nonneg _)).trans (hT k hk f)
-      have : c k ^ 2 ≤ 0 := nonpos_of_mul_nonneg_left h0 hW
-      exact pow_eq_zero_iff (n := 2) (by norm_num) |>.1 (le_antisymm this (sq_nonneg _))
-    rw [sum_eq_zero hc0] at hsq ⊢
-    simpa using hsq
+      simpa using nonpos_of_mul_nonneg_left h0 hW
+    aesop
 
 /-- Norm bounds add: `‖(S + T) f‖ ≤ (a + b) ‖f‖`. -/
 theorem NormLe.add {ι κ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {ν : κ → ℝ}
@@ -183,7 +178,7 @@ theorem NormLe.add {ι κ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {
   have h := NormLe.sum hμ (univ : Finset Bool) (T := fun k => bif k then S else T)
     (c := fun k => bif k then a else b) (fun k _ => by cases k <;> assumption)
     (fun k _ => by cases k <;> assumption)
-  simpa [Fintype.sum_bool] using h
+  simpa using h
 
 /-- A norm bound can be raised, for a nonnegative input measure. -/
 theorem NormLe.mono {ι κ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {ν : κ → ℝ}
@@ -205,7 +200,7 @@ theorem eventually_edgeClean_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) 
           (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
           (edgeClean q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N)
           (Real.log x ^ (-(edgePrec Dstar C + 1 / 2))) :=
-  eventually_cleanOp_normLe hq hq₁ hC hD hCX halo hahi hg
+  by apply eventually_cleanOp_normLe <;> assumption
 
 /-- M7, the dirty raw parts: for `K ≥ K₀` and `B ≤ L³`, each has norm at most `L^{-G - 1}`. -/
 theorem eventually_edgeRaw_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
@@ -251,8 +246,8 @@ private theorem eventually_edgeParts_le (G M : ℝ) :
       Real.log x ^ (-G) := by
   filter_upwards [Real.tendsto_log_atTop.eventually_ge_atTop (max 4 (4 * M))] with x hL
   set L := Real.log x with hLdef
-  have hL4 : 4 ≤ L := le_of_max_le_left hL
-  have hLM : 4 * M ≤ L := le_of_max_le_right hL
+  have hL4  := le_of_max_le_left hL
+  have hLM  := le_of_max_le_right hL
   have hL0 : 0 < L := by linarith
   -- `L^{-1/2} ≤ 1/2`, as `√L ≥ 2`
   have hhalf : L ^ (-(1 / 2 : ℝ)) ≤ 1 / 2 := by
@@ -260,18 +255,18 @@ private theorem eventually_edgeParts_le (G M : ℝ) :
       rw [← Real.sqrt_eq_rpow]
       exact Real.le_sqrt_of_sq_le (by linarith)
     rw [Real.rpow_neg hL0.le]
-    calc (L ^ (1 / 2 : ℝ))⁻¹ ≤ (2 : ℝ)⁻¹ := inv_anti₀ (by norm_num) h2
-      _ = 1 / 2 := by norm_num
+    calc _ ≤ (2 : ℝ)⁻¹ := by gcongr
+      _ = _ := by norm_num
   -- `M L^{-1} ≤ 1/4`
   have hone : M * L ^ (-1 : ℝ) ≤ 1 / 4 := by
     rw [Real.rpow_neg_one, ← div_eq_mul_inv, div_le_iff₀ hL0]
     linarith
   rw [neg_add, Real.rpow_add hL0, neg_add, Real.rpow_add hL0]
-  calc L ^ (-G) * L ^ (-(1 / 2 : ℝ)) + M * (2 * (L ^ (-G) * L ^ (-1 : ℝ)))
+  calc _
       = L ^ (-G) * (L ^ (-(1 / 2 : ℝ)) + 2 * (M * L ^ (-1 : ℝ))) := by ring
     _ ≤ L ^ (-G) * 1 :=
-        mul_le_mul_of_nonneg_left (by linarith) (Real.rpow_nonneg hL0.le _)
-    _ = L ^ (-G) := mul_one _
+        by bound
+    _ = _ := mul_one _
 
 /-- M9 from M6–M8: for `K ≥ K₀` and `B ≤ L³`, the edge has norm at most `L^{-G}`. Split it by
 `chainEdge_eq_parts` into the clean edge and the raw and comparison parts of the `4^K - 1`
@@ -290,7 +285,7 @@ theorem eventually_chainEdge_normLe_of_parts {q C CX alo ahi Dstar g : ℝ} (hq 
   set G := edgePrec Dstar C
   set dirty := (univ : Finset (Finset (Fin K) × Finset (Fin K))).erase (∅, ∅)
   filter_upwards [eventually_edgeClean_normLe hq hq₁ hC hD hCX halo hahi hg,
-    eventually_edgeRaw_normLe (CX := CX) (ahi := ahi) hq hq₁ hC hD halo hK hg,
+    eventually_edgeRaw_normLe   hq hq₁ hC hD halo hK hg,
     eventually_edgeComp_normLe (C := C) (CX := CX) (ahi := ahi) (Dstar := Dstar) hq hq₁ halo hg,
     eventually_chainMeasure_nonneg (C := C) (CX := CX) (ahi := ahi) (g := g) hq halo,
     eventually_edgeParts_le G dirty.card,
@@ -298,7 +293,7 @@ theorem eventually_chainEdge_normLe_of_parts {q C CX alo ahi Dstar g : ℝ} (hq 
     with x hclean hraw hcomp hμ hfin hL d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁ B N hB hN
   have hμ' := hμ d hd (2 ^ j) (2 ^ k) u v r B
   subst hN
-  have hc₁ : 0 ≤ Real.log x ^ (-(G + 1)) := Real.rpow_nonneg hL _
+  have hc₁ : 0 ≤ Real.log x ^ (-(G + 1)) := by positivity
   -- each dirty piece has norm at most `2 L^{-G - 1}`
   have hdirty : ∀ SI ∈ dirty, NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B _ s)
       (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B _ s)

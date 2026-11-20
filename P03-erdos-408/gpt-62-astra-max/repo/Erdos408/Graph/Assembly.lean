@@ -19,7 +19,7 @@ pairings (`pairing_eq_family`), and the term weights sum to at most
 namespace Erdos408.Graph
 
 open Erdos821.Blueprint.Graph
-open Erdos821.Blueprint.Analytic (cell charValue primitiveCharacters CharacterIndex)
+open Erdos821.Blueprint.Analytic (CharacterIndex)
 open scoped Classical
 
 variable {G : PrimeGroups} {J m : ℕ}
@@ -43,7 +43,7 @@ noncomputable def famPoint (ν : Fin (famIndex B raw block Q h ξ).card) :
 /-- Summing over the enumerated terms is summing over the comparison patterns
 and their terms. -/
 lemma sum_famPoint {R : Type*} [AddCommMonoid R]
-    (Φ : (Σ _ : Fin B.count, ℤ × CharacterIndex Q × ℤ × CharacterIndex Q) → R) :
+    (Φ : (Σ _, ℤ × CharacterIndex Q × ℤ × CharacterIndex Q) → R) :
     ∑ ν, Φ (famPoint B raw block Q h ξ ν) =
       ∑ v ∈ Finset.univ.erase raw, ∑ τ ∈ terms (B.pattern v) block Q h ξ, Φ ⟨v, τ⟩ := by
   unfold famPoint
@@ -59,7 +59,7 @@ theorem pairing_eq_family (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq
     (hraw : ∀ g, (B.pattern raw).changed g = ∅)
     (hraw' : ∀ a b u, (B.pattern raw).coefficient a b u = 1)
     (hcoef : ∀ v, v ≠ raw → ∀ a b u, (B.pattern v).coefficient a b u =
-      -((-1 : ℂ) ^ (∑ g, ((B.pattern v).changed g).card)) *
+      -((-1) ^ (∑ g, ((B.pattern v).changed g).card)) *
         selectedKernel (B.pattern v) block false Q h ξ
           (selectedProduct (B.pattern v) block false u)
           (selectedEndpoint (B.pattern v) block false b) *
@@ -67,7 +67,7 @@ theorem pairing_eq_family (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq
           (selectedProduct (B.pattern v) block true u)
           (selectedEndpoint (B.pattern v) block true a))
     (hV : ∀ g, G.V g ≠ 0) (ζ X : ℝ) (S S' : Finset ℕ) (f g : ℕ → ℂ)
-    (hS : ∀ n ∈ S, X ≤ n ∧ (n : ℝ) < 2 * X) (hg : ∀ n ∉ S', g n = 0) :
+    (hS : ∀ n ∈ S, X ≤ n ∧ n < 2 * X) (hg : ∀ n ∉ S', g n = 0) :
     (B.model 1 ζ).pairing X (targets (B.model 1 ζ) S') (extend S f) (fun z => g z.1.toNat) =
       patternPairing G.primes q₀ (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) ζ S f g +
         ∑ ν, patternPairing G.primes q₀
@@ -79,7 +79,7 @@ theorem pairing_eq_family (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq
   change ∑ v : Fin B.count, rawPairing (B.model 1 ζ) v S S' f g = _
   rw [← Finset.add_sum_erase _ _ (Finset.mem_univ raw)]
   congr 1
-  · rw [rawPairing_eq B ζ raw (fun _ _ _ => 1) (fun a b u => hraw' _ _ _) hV S S' f g hg]
+  · rw [rawPairing_eq B ζ raw (1) (fun a b u => hraw' _ _ _) hV S S' f g hg]
     congr 1
     exact funext hraw
   · rw [sum_famPoint B raw block Q h ξ fun σ => patternPairing G.primes q₀
@@ -98,7 +98,7 @@ lemma sum_norm_termWeight_family_le
     (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ hc₀ hvlo) G J m)
     (raw : Fin B.count) (block : G.BigGroup → Bool) (Q : ℕ) {h ξ : ℝ} (hξ : 0 < ξ)
     (hcoef : ∀ v, v ≠ raw → ∀ a b u, (B.pattern v).coefficient a b u =
-      -((-1 : ℂ) ^ (∑ g, ((B.pattern v).changed g).card)) *
+      -((-1) ^ (∑ g, ((B.pattern v).changed g).card)) *
         selectedKernel (B.pattern v) block false Q h ξ
           (selectedProduct (B.pattern v) block false u)
           (selectedEndpoint (B.pattern v) block false b) *
@@ -108,18 +108,13 @@ lemma sum_norm_termWeight_family_le
     (hne : ∀ v, v ≠ raw → ∃ g, ((B.pattern v).changed g).Nonempty) (hV : ∀ g, G.V g ≠ 0) :
     ∑ ν, ‖termWeight (B.pattern (famPoint B raw block Q h ξ ν).1) block h
         (famPoint B raw block Q h ξ ν).2‖ ≤
-      ξ⁻¹ ^ 2 * (Q : ℝ) ^ 4 * (B.model 1 0).patternMass := by
+      ξ⁻¹ ^ 2 * Q ^ 4 * (B.model 1 0).patternMass := by
   rw [sum_famPoint B raw block Q h ξ fun σ => ‖termWeight (B.pattern σ.1) block h σ.2‖]
-  have hle : ∀ v ∈ Finset.univ.erase raw,
-      ∑ τ ∈ terms (B.pattern v) block Q h ξ, ‖termWeight (B.pattern v) block h τ‖ ≤
-        ξ⁻¹ ^ 2 * (Q : ℝ) ^ 4 *
-          sSup (Set.range fun z : G.BigLabels (J + 1) × G.BigLabels (J + 1) × G.BigAux J =>
-            ‖(B.pattern v).coefficient z.1 z.2.1 z.2.2‖) := by
+  refine (Finset.sum_le_sum (by
     intro v hv
     have hv' := Finset.ne_of_mem_erase hv
     obtain ⟨g, i, -⟩ := hne v hv'
-    exact sum_norm_termWeight_le (B.pattern v) block hξ hV (Fin.pos i) (hcoef v hv')
-  refine (Finset.sum_le_sum hle).trans ?_
+    exact sum_norm_termWeight_le (B.pattern v) block hξ hV (Fin.pos i) (hcoef v hv'))).trans ?_
   rw [← Finset.mul_sum]
   refine mul_le_mul_of_nonneg_left ?_ (by positivity)
   exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)

@@ -27,7 +27,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 variable {K : ℕ}
 
@@ -48,24 +48,23 @@ theorem log_bound_le {L N M B Kr a b c : ℝ} (hL : 16 ≤ L) (hN0 : 0 ≤ N)
   have hss : s * s = L := by
     rw [hs, ← Real.rpow_add hL0]
     norm_num
-  have hs0 : 0 ≤ s := by positivity
   have hs4 : 4 ≤ s := by
     by_contra h
     push Not at h
-    have : s * s < 4 * 4 := mul_lt_mul'' h h hs0 hs0
+    have : s * s < 4 * 4 := by gcongr
     linarith
-  have hlog2 : 0.6931471803 < Real.log 2 := Real.log_two_gt_d9
+  have hlog2 := Real.log_two_gt_d9
   -- `N ≤ 2s ≤ L`, `N L^{1/5} ≤ 2L`, `M ≤ 2L`
   have hN2 : N ≤ 2 * s := by linarith
   have hsL : 2 * s ≤ L := by nlinarith
   have hfifth : L ^ (1 / 5 : ℝ) ≤ s :=
     Real.rpow_le_rpow_of_exponent_le hL1 (by norm_num)
   have hfifth0 : 0 ≤ L ^ (1 / 5 : ℝ) := by positivity
-  have hNf : N * L ^ (1 / 5 : ℝ) ≤ 2 * L :=
-    calc N * L ^ (1 / 5 : ℝ) ≤ (2 * s) * s := mul_le_mul hN2 hfifth hfifth0 (by linarith)
-      _ = 2 * L := by rw [mul_assoc, hss]
+  have hNf :=
+    calc _ ≤ (2 * s) * s := mul_le_mul hN2 hfifth hfifth0 (by linarith)
+      _ = _ := by rw [mul_assoc, hss]
   have hcent : L ^ (1 / 100 : ℝ) ≤ L := by
-    calc L ^ (1 / 100 : ℝ) ≤ L ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hL1 (by norm_num)
+    calc _ ≤ L ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hL1 (by norm_num)
       _ = L := Real.rpow_one L
   have hM2 : M ≤ 2 * L := by linarith
   have hNL : N ≤ L := by linarith
@@ -109,7 +108,7 @@ private theorem half_le_baseline' (hq : 0 < q) {p : ℕ} (hp : 2 * N + 1 ≤ p) 
   have hp1 : (0 : ℝ) < p + 1 := by positivity
   have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (show 2 * (N + 1) ≤ p + 1 by omega)
   have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (N : ℝ) + 1 :=
-    calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
+    calc _ ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
           sum_le_sum fun j _ => by
             have hs : 0 ≤ Real.sqrt q := Real.sqrt_nonneg q
             unfold dampDefect
@@ -131,14 +130,12 @@ private theorem primeMass_nonneg₃ (p : ℕ) : 0 ≤ primeMass x d p :=
 /-- With band masses at least `1/2`, a prime of a band has `V(p) ≥ 1/2`. -/
 private theorem half_le_primeMass₃ (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
     {i : Fin K} {p : ℕ} (hp : p ∈ band x (d.a i)) : 1 / 2 ≤ primeMass x d p :=
-  calc 1 / 2 ≤ harmonicMass (band x (d.a i)) := hV i
-    _ = if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0 := (ite_eq_left hp).symm
-    _ ≤ primeMass x d p :=
+  calc _ ≤ harmonicMass (band x (d.a i)) := hV i
+    _ = if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0 := by simp_all
+    _ ≤ _ :=
         single_le_sum (f := fun i => if p ∈ band x (d.a i) then harmonicMass (band x (d.a i))
           else 0) (fun j _ => by
-            split_ifs
-            · exact sum_nonneg fun p _ => by positivity
-            · exact le_rfl) (mem_univ i)
+            grind) (mem_univ i)
 
 /-- With baselines at least `1/2` at the band primes, every birth weight is nonnegative. -/
 private theorem primeWeight_nonneg₃ (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p)
@@ -156,15 +153,14 @@ private theorem primeWeight_nonneg₃ (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ 
 /-- At a band prime with `V(p) > 0` and `b'_p ≥ 1/2`, `V(p) ν(p) ≤ 2/p`. -/
 private theorem primeMass_mul_primeWeight_le {p : ℕ} (hp0 : 0 < p) (hV : 0 < primeMass x d p)
     (hb : 1 / 2 ≤ baseline q N p) : primeMass x d p * primeWeight q x d N p ≤ 2 * (1 / p) := by
-  have hp0' : (0 : ℝ) < p := by exact_mod_cast hp0
+  have hp0' : 0 < p := by exact_mod_cast hp0
   have hb0 : baseline q N p ≠ 0 := by linarith
   unfold primeWeight
-  calc primeMass x d p * (1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p))
-      = 1 / (((p : ℝ) + 1) * baseline q N p) := by field_simp
+  calc _
+      = 1 / ((p + 1) * baseline q N p) := by field_simp
     _ ≤ 1 / (p * (1 / 2)) :=
-        one_div_le_one_div_of_le (by positivity)
-          (mul_le_mul (by linarith) hb (by norm_num) (by linarith))
-    _ = 2 * (1 / p) := by field_simp
+        by bound
+    _ = _ := by field_simp
 
 end Facts
 
@@ -173,21 +169,20 @@ private theorem eventually_two_mul_add_one_le' {C CX alo ahi g : ℝ} (halo : 1 
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
       ∀ p ∈ bandPrimes x d, 2 * (2 * momentPower x) + 1 ≤ p := by
   have hL := (tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 2)).comp Real.tendsto_log_atTop
-  filter_upwards [eventually_rpow_lt_of_mem_band (by linarith : 0 < alo) 1,
+  filter_upwards [eventually_rpow_lt_of_mem_band (by linarith) 1,
     hL.eventually_ge_atTop 8, Real.tendsto_log_atTop.eventually_gt_atTop 0]
     with x hbig hs8 hL0 d hd p hp
   obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
   have hLp := hbig (d.a i) (hd.window i).1 p hpi
-  rw [Real.rpow_one] at hLp
+  simp at hLp
   set s := Real.log x ^ (1 / 2 : ℝ) with hs
   have hs8' : 8 ≤ s := hs8
   have hss : s * s = Real.log x := by
-    rw [hs, ← Real.rpow_add hL0]
+    rw [← Real.rpow_add hL0]
     norm_num
   have hR : (momentPower x : ℝ) < s / 2 + 1 := by
-    unfold momentPower
     exact Nat.ceil_lt_add_one (by linarith)
-  have h8 : 8 * s ≤ s * s := mul_le_mul_of_nonneg_right hs8' (by linarith)
+  have h8 : 8 * s ≤ s * s := by gcongr
   have : ((2 * (2 * momentPower x) + 1 : ℕ) : ℝ) < p := by
     push_cast
     linarith
@@ -197,15 +192,14 @@ private theorem eventually_two_mul_add_one_le' {C CX alo ahi g : ℝ} (halo : 1 
 and `L ≥ 1`. -/
 theorem memCap_le {x : ℝ} {d : Data K} {ahi : ℝ} (hahi : ahi ≤ 1 / 5)
     (ha : ∀ i, d.a i ≤ ahi) (hL : 1 ≤ Real.log x) :
-    (memCap x d : ℝ) ≤ K * Real.exp (2 * Real.log x ^ (1 / 5 : ℝ)) :=
-  calc (memCap x d : ℝ) ≤ ∑ i, ((band x (d.a i)).card : ℝ) := by
-        unfold memCap bandPrimes
+    (memCap x d) ≤ K * Real.exp (2 * Real.log x ^ (1 / 5 : ℝ)) :=
+  calc _ ≤ ∑ i, ((band x (d.a i)).card : ℝ) := by
         exact_mod_cast card_biUnion_le
     _ ≤ ∑ _i : Fin K, Real.exp (2 * Real.log x ^ (1 / 5 : ℝ)) :=
         sum_le_sum fun i _ => (card_band_le x (d.a i)).trans (Real.exp_le_exp.2
           (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hL
             ((ha i).trans hahi)) (by norm_num)))
-    _ = K * Real.exp (2 * Real.log x ^ (1 / 5 : ℝ)) := by simp
+    _ = _ := by simp
 
 /-- **The number of band primes is eventually at least `⌈L²⌉`**: a band of harmonic mass
 `≥ 1/2` whose primes exceed `L³` has at least `L³/2 ≥ L² + 1` primes. -/
@@ -218,7 +212,7 @@ theorem eventually_le_memCap {C CX alo ahi g : ℝ} (halo : 1 / 10 < alo) (hK : 
   set L := Real.log x with hLdef
   set i₀ : Fin K := ⟨0, hK⟩
   have hL3 : (0 : ℝ) < L ^ (3 : ℝ) := by positivity
-  have hL3' : L ^ (3 : ℝ) = L ^ 3 := by exact_mod_cast Real.rpow_natCast L 3
+  have hL3' : L ^ (3 : ℝ) = L ^ 3 := by simp
   -- `1/2 ≤ ∑_{p ∈ 𝒫_{i₀}} 1/p ≤ |𝒫_{i₀}| / L³`
   have hcard : L ^ (3 : ℝ) / 2 ≤ (band x (d.a i₀)).card := by
     have h₁ := (hV (d.a i₀) (hd.window i₀).1).1
@@ -227,9 +221,9 @@ theorem eventually_le_memCap {C CX alo ahi g : ℝ} (halo : 1 / 10 < alo) (hK : 
       calc ∑ p ∈ band x (d.a i₀), (1 : ℝ) / p ≤ ∑ _p ∈ band x (d.a i₀), 1 / L ^ (3 : ℝ) :=
             sum_le_sum fun p hp =>
               one_div_le_one_div_of_le hL3 (hbig (d.a i₀) (hd.window i₀).1 p hp).le
-        _ = (band x (d.a i₀)).card * (1 / L ^ (3 : ℝ)) := by
-            rw [sum_const, nsmul_eq_mul]
-    have h₃ : (1 : ℝ) / 2 ≤ (band x (d.a i₀)).card * (1 / L ^ (3 : ℝ)) := h₁.trans h₂
+        _ = _ := by
+            simp
+    have h₃ := h₁.trans h₂
     rw [mul_one_div, le_div_iff₀ hL3] at h₃
     linarith
   have hsub : (band x (d.a i₀)).card ≤ memCap x d :=
@@ -246,7 +240,7 @@ theorem eventually_le_memCap {C CX alo ahi g : ℝ} (halo : 1 / 10 < alo) (hK : 
 /-! ### The row constants -/
 
 /-- `2^n = exp(n log 2)`. -/
-private theorem two_pow_eq_exp (n : ℕ) : (2 : ℝ) ^ n = Real.exp (n * Real.log 2) := by
+private theorem two_pow_eq_exp (n : ℕ) : 2 ^ n = Real.exp (n * Real.log 2) := by
   rw [Real.exp_nat_mul, Real.exp_log two_pos]
 
 /-- **The edge row constant**: for `L ≥ 1`, `v₀ ≥ 1`, `A₀ ≥ 0` and a cap
@@ -260,7 +254,6 @@ theorem edgeRow_le_exp {L v₀ A₀ Bc : ℝ} (hL : 1 ≤ L) (hv₀ : 1 ≤ v₀
         Real.log 848) + (2 * K + 15 * A₀) * L ^ (1 / 5 : ℝ)) := by
   set e := Real.exp (2 * L ^ (1 / 5 : ℝ)) with he
   have he1 : 1 ≤ e := Real.one_le_exp (by positivity)
-  have hK0 : (0 : ℝ) ≤ K := Nat.cast_nonneg K
   have h₁ : 2 * Bc + 4 ≤ (2 * K + 4) * e := by nlinarith
   have hLp : 1 ≤ L ^ (3 * A₀) := Real.one_le_rpow hL (by positivity)
   have h₂ : 16 * (1 + 52 * L ^ (3 * A₀)) ≤ 848 * L ^ (3 * A₀) := by linarith
@@ -269,7 +262,7 @@ theorem edgeRow_le_exp {L v₀ A₀ Bc : ℝ} (hL : 1 ≤ L) (hv₀ : 1 ≤ v₀
     refine Real.exp_le_exp.2 ?_
     have hlog := Real.log_le_rpow_div (by linarith : 0 ≤ L) (by norm_num : (0 : ℝ) < 1 / 5)
     have : Real.log L * (3 * A₀) ≤ L ^ (1 / 5 : ℝ) / (1 / 5) * (3 * A₀) :=
-      mul_le_mul_of_nonneg_right hlog (by positivity)
+      by gcongr
     linarith
   have hexp : Real.exp ((K * Real.log v₀ + K * Real.log 2 + K * Real.log (2 * K + 4) +
       Real.log 848) + (2 * K + 15 * A₀) * L ^ (1 / 5 : ℝ)) =
@@ -286,7 +279,7 @@ theorem edgeRow_le_exp {L v₀ A₀ Bc : ℝ} (hL : 1 ≤ L) (hv₀ : 1 ≤ v₀
   rw [hexp]
   have h₄ : (2 * Bc + 4) ^ K ≤ (2 * K + 4) ^ K * e ^ K := by
     rw [← mul_pow]
-    exact pow_le_pow_left₀ (by positivity) h₁ K
+    gcongr
   exact mul_le_mul_of_nonneg_left (mul_le_mul (mul_le_mul_of_nonneg_left h₄ (by positivity))
     (h₂.trans (mul_le_mul_of_nonneg_left h₃ (by norm_num))) (by positivity) (by positivity))
     (by positivity)
@@ -300,16 +293,12 @@ variable {q x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B N : ℕ}
 /-- The active labels of group `i` are primes of `𝒫_i`. -/
 private theorem chainState_mem_band' (s : ChainState x d Y d₀ u v r B) (i : Fin K)
     (k : Fin (padCount x + 1)) : s.2.1.1 i k ∈ band x (d.a i) := by
-  have h := s.2.1.2
-  unfold lists at h
-  exact Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 (mem_filter.1 h).1 i) k
+  exact Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 (mem_filter.1 s.2.1.2).1 i) k
 
 /-- The prime of a particle is a band prime. -/
 private theorem particle_mem_bandPrimes' (xp : Particle x d) : xp.1.1 ∈ bandPrimes x d := by
   obtain ⟨p, hp, hxp⟩ := mem_biUnion.1 xp.2
-  obtain ⟨ℓ, -, hℓ⟩ := mem_image.1 hxp
-  rw [← hℓ]
-  exact hp
+  grind
 
 /-- The chain measure is nonnegative when the birth weights of band primes are. -/
 theorem chainMeasure_nonneg' (hν : ∀ p ∈ bandPrimes x d, 0 ≤ primeWeight q x d N p)
@@ -360,30 +349,23 @@ theorem sum_chainMeasure_norm_chainInit_le {c : ℝ}
     rw [sum_boole]
     exact_mod_cast hc
   -- the lists carry at most `c^{KM}`
-  have hlists : ∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k) ≤
-      c ^ (K * (padCount x + 1)) :=
-    calc ∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k)
+  have hlists :=
+    calc _
         = ∑ a ∈ lists x d (padCount x), ∏ i, ∏ k, primeWeight q x d N (a i k) :=
           sum_coe_sort _ (fun a : Lists K (padCount x) => ∏ i, ∏ k, primeWeight q x d N (a i k))
-      _ ≤ ∑ a ∈ Fintype.piFinset fun i => Fintype.piFinset fun _ : Fin (padCount x + 1) =>
+      _ ≤ ∑ a ∈ Fintype.piFinset fun i => Fintype.piFinset fun _ =>
             band x (d.a i), ∏ i, ∏ k, primeWeight q x d N (a i k) := by
           refine sum_le_sum_of_subset_of_nonneg (by unfold lists; exact filter_subset _ _)
             fun a ha _ => prod_nonneg fun i _ => prod_nonneg fun k _ => hν₀ _ ?_
           exact mem_biUnion.2 ⟨i, mem_univ _,
             Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 ha i) k⟩
-      _ = ∏ i, ∑ a ∈ Fintype.piFinset fun _ : Fin (padCount x + 1) => band x (d.a i),
-            ∏ k, primeWeight q x d N (a k) :=
-          (prod_univ_sum (fun i => Fintype.piFinset fun _ : Fin (padCount x + 1) =>
-            band x (d.a i)) fun i a => ∏ k, primeWeight q x d N (a k)).symm
-      _ = ∏ i, ∏ _k : Fin (padCount x + 1), ∑ p ∈ band x (d.a i), primeWeight q x d N p :=
-          prod_congr rfl fun i _ => sum_prod_piFinset _ _
-      _ ≤ ∏ _i : Fin K, ∏ _k : Fin (padCount x + 1), c :=
-          prod_le_prod₀ (fun i _ => prod_nonneg fun k _ =>
+      _ ≤ ∏ _i : Fin K, ∏ _k : Fin (padCount x + 1), c := (((prod_univ_sum (fun i => Fintype.piFinset fun _ : Fin (padCount x + 1) =>
+            band x (d.a i)) fun i a => ∏ k, primeWeight q x d N (a k)).symm).trans (prod_congr rfl fun i _ => sum_prod_piFinset _ _)).trans_le (prod_le_prod₀ (fun i _ => prod_nonneg fun k _ =>
               sum_nonneg fun p hp => hν₀ p (mem_biUnion.2 ⟨i, mem_univ _, hp⟩))
             fun i _ => prod_le_prod₀ (fun k _ =>
               sum_nonneg fun p hp => hν₀ p (mem_biUnion.2 ⟨i, mem_univ _, hp⟩))
-              fun k _ => hν i
-      _ = c ^ (K * (padCount x + 1)) := by
+              fun k _ => hν i)
+      _ = _ := by
           rw [prod_const, prod_const, card_univ, card_univ, Fintype.card_fin, Fintype.card_fin,
             ← pow_mul, mul_comm]
   have hL : 0 ≤ ∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k) :=
@@ -395,14 +377,14 @@ theorem sum_chainMeasure_norm_chainInit_le {c : ℝ}
           ((∏ i, ∏ k, primeWeight q x d N (s.2.1.1 i k)) *
             if memSize s.2.2.1 = 0 then 1 else 0) := sum_congr rfl fun s _ => hpt s
     _ = (∑ z : ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r),
-          (if z.1 = (1, 0) then (1 : ℝ) else 0)) *
+          (if z.1 = (1, 0) then 1 else 0)) *
         ((∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k)) *
-          ∑ S : MemState (Particle x d) B, (if memSize S.1 = 0 then (1 : ℝ) else 0)) := by
+          ∑ S : MemState (Particle x d) B, (if memSize S.1 = 0 then 1 else 0)) := by
         rw [sum_mul_sum, sum_mul_sum]
         simp only [Fintype.sum_prod_type, mul_sum]
     _ ≤ 1 * ((∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k)) * 1) := by
         gcongr
-    _ ≤ c ^ (K * (padCount x + 1)) := by rw [one_mul, mul_one]; exact hlists
+    _ ≤ _ := by rw [one_mul, mul_one]; exact hlists
 
 end Boundary
 
@@ -428,7 +410,6 @@ theorem eventually_norm_distinctSum_sub_le {q C CX alo ahi Dstar g : ℝ} (hq : 
     linarith
   have hv₀ : 1 ≤ truncV q := one_le_truncV hq hq₁
   have hρ0 : 0 < pendingWeight q := Real.rpow_pos_of_pos hq _
-  have hK0 : (0 : ℝ) ≤ K := Nat.cast_nonneg K
   have hlog2 : 0 ≤ Real.log 2 := Real.log_nonneg one_le_two
   set cG := truncV q * (4 * K / pendingWeight q) with hcG
   set a := K * Real.log (truncV q) + K * Real.log 2 + K * Real.log (2 * K + 4) +
@@ -436,10 +417,7 @@ theorem eventually_norm_distinctSum_sub_le {q C CX alo ahi Dstar g : ℝ} (hq : 
   set b := 2 * (K : ℝ) + 15 * A₀ with hb
   have hcG0 : 0 ≤ cG := by positivity
   have ha0 : 0 ≤ a := by
-    have h₁ := Real.log_nonneg hv₀
-    have h₃ : 0 ≤ Real.log (2 * K + 4) := Real.log_nonneg (by linarith)
-    have h₄ : 0 ≤ Real.log 848 := Real.log_nonneg (by norm_num)
-    positivity
+    bound
   have hb0 : 0 ≤ b := by positivity
   filter_upwards [eventually_le_memCap halo hK1, eventually_harmonicMass_band halo.le,
     eventually_two_mul_add_one_le' halo,
@@ -450,8 +428,8 @@ theorem eventually_norm_distinctSum_sub_le {q C CX alo ahi Dstar g : ℝ} (hq : 
   set N := 2 * momentPower x with hN
   set B := ⌈L ^ 2⌉₊ with hB
   set M := padCount x + 1 with hM
-  have hL16 : 16 ≤ L := le_of_max_le_left hL
-  have hL' : 6 * (4 * (2 * (K : ℝ)) * Real.log 2 + 3 * cG + 2 * a + 2 * b) ≤ L :=
+  have hL16 := le_of_max_le_left hL
+  have hL' :=
     le_of_max_le_right hL
   have hL0 : 0 < L := by linarith
   -- the band facts
@@ -459,7 +437,7 @@ theorem eventually_norm_distinctSum_sub_le {q C CX alo ahi Dstar g : ℝ} (hq : 
   have hV₁ : ∀ i, harmonicMass (band x (d.a i)) ≤ 1 := fun i => (hV _ (hd.window i).1).2
   have hbase : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p :=
     fun p hp => half_le_baseline' hq (hbig d hd p hp)
-  have hν : ∀ p, 0 ≤ primeWeight q x d N p := primeWeight_nonneg₃ hbase
+  have hν := primeWeight_nonneg₃ hbase
   have hVp : ∀ i, ∀ p ∈ band x (d.a i), 1 / 2 ≤ primeMass x d p :=
     fun i p hp => half_le_primeMass₃ hV₀ hp
   have hVν : ∀ p ∈ bandPrimes x d, primeMass x d p * primeWeight q x d N p ≤ 2 * (1 / p) := by
@@ -469,13 +447,10 @@ theorem eventually_norm_distinctSum_sub_le {q C CX alo ahi Dstar g : ℝ} (hq : 
       (by linarith [hVp i p hpi]) (hbase p hp)
   have hν4 : ∀ i, ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 4 := by
     intro i
-    calc ∑ p ∈ band x (d.a i), primeWeight q x d N p
+    calc _
         ≤ ∑ p ∈ band x (d.a i), 4 * (1 / (p : ℝ)) := by
           refine sum_le_sum fun p hp => ?_
-          have h₁ := hVν p (mem_biUnion.2 ⟨i, mem_univ i, hp⟩)
-          have h₂ : 1 / 2 * primeWeight q x d N p ≤ primeMass x d p * primeWeight q x d N p :=
-            mul_le_mul_of_nonneg_right (hVp i p hp) (hν p)
-          linarith
+          linarith [hVν p (mem_biUnion.2 ⟨i, mem_univ i, hp⟩), mul_le_mul_of_nonneg_right (hVp i p hp) (hν p)]
       _ = 4 * harmonicMass (band x (d.a i)) := (mul_sum _ _ _).symm
       _ ≤ 4 := by linarith [hV₁ i]
   have hd₀ : (0 : ℝ) < 2 ^ k := by positivity
@@ -485,7 +460,6 @@ theorem eventually_norm_distinctSum_sub_le {q C CX alo ahi Dstar g : ℝ} (hq : 
   -- the majorant
   set R := (2 : ℝ) ^ K * (2 * (memCap x d : ℝ) + 4) ^ K * (16 * (1 + 52 * L ^ (3 * A₀)))
     with hR
-  have hR0 : 0 ≤ R := by positivity
   have hmain := norm_distinctSum_sub_mul_le (q := q) (A₀ := A₀) (x := x) (d := d) (Y := 2 ^ j)
     (d₀ := 2 ^ k) (u := u) (v := v) (r := r) (B := B) (B' := memCap x d) (N := N) (hcap d hd)
     hv₀ (Real.exp_pos cG).le (by positivity : 0 ≤ truncV q ^ K * R)
@@ -514,7 +488,7 @@ theorem eventually_norm_distinctSum_sub_le {q C CX alo ahi Dstar g : ℝ} (hq : 
   have hBr : L ^ 2 ≤ (B : ℝ) := Nat.le_ceil _
   set E := (2 * (K : ℝ)) * N * Real.log 2 + (N + 1) * cG + N * (a + b * L ^ (1 / 5 : ℝ)) +
     (2 * (K : ℝ)) * M * Real.log 2 with hE
-  have hfin : E + L ^ 2 / 2 ≤ (B + 1) * Real.log 2 :=
+  have hfin :=
     log_bound_le hL16 (Nat.cast_nonneg _) hNr hMr hBr (by positivity) ha0 hb0 hcG0 hL'
   -- the product is at most `exp(E)`
   have hT : (2 : ℝ) ^ (K * N) * Real.exp cG ^ (N + 1) * (truncV q ^ K * R) ^ N * 4 ^ (K * M) ≤
@@ -536,7 +510,7 @@ theorem eventually_norm_distinctSum_sub_le {q C CX alo ahi Dstar g : ℝ} (hq : 
       rw [show (4 : ℝ) = 2 ^ 2 by norm_num, ← pow_mul, two_pow_eq_exp]
       push_cast
       ring_nf
-    rw [hE, Real.exp_add, Real.exp_add, Real.exp_add, e₂, e₄]
+    rw [Real.exp_add, Real.exp_add, Real.exp_add, e₂, e₄]
     gcongr
   -- divide by `2^{B + 1}`
   have h2B : (0 : ℝ) < 2 ^ (B + 1) := by positivity
@@ -555,6 +529,6 @@ theorem eventually_norm_distinctSum_sub_le {q C CX alo ahi Dstar g : ℝ} (hq : 
         mul_le_mul_of_nonneg_left hbdry hcoef
     _ ≤ Real.exp E := hT
     _ ≤ 2 ^ (B + 1) * Real.exp (-(L ^ 2 / 2)) := hexp
-    _ = Real.exp (-(L ^ 2 / 2)) * 2 ^ (B + 1) := mul_comm _ _
+    _ = _ := by ring
 
 end Erdos408.OneSided

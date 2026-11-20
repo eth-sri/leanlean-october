@@ -21,7 +21,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 variable {K : ℕ}
 
@@ -40,7 +40,7 @@ private theorem baseline_nonneg (hq : 0 < q) {N p : ℕ} (hp : N < p) : 0 ≤ ba
             unfold dampDefect
             split_ifs <;> linarith [Real.sqrt_nonneg q]
       _ = (N : ℝ) + 1 := by simp
-      _ ≤ (p : ℝ) + 1 := by gcongr
+      _ ≤ _ := by gcongr
   have h₁ : ((p : ℝ) + 1)⁻¹ * ∑ j ∈ range (N + 1), dampDefect q N j ≤ 1 := by
     rw [inv_mul_le_iff₀ hp1, mul_one]
     exact hsum
@@ -83,9 +83,8 @@ private theorem eventually_two_mul_momentPower_lt {C CX alo ahi g : ℝ} (halo :
     rw [hs, ← Real.rpow_add hL0]
     norm_num
   have hR : (momentPower x : ℝ) < s / 2 + 1 := by
-    unfold momentPower
     exact Nat.ceil_lt_add_one (by linarith)
-  have h2 : 2 * s ≤ s * s := mul_le_mul_of_nonneg_right hs2' (by linarith)
+  have h2 : 2 * s ≤ s * s := by gcongr
   have : ((2 * momentPower x : ℕ) : ℝ) < p := by
     push_cast
     linarith
@@ -95,7 +94,7 @@ private theorem eventually_two_mul_momentPower_lt {C CX alo ahi g : ℝ} (halo :
 theorem eventually_chainMeasure_nonneg {C CX alo ahi g : ℝ} (hq : 0 < q)
     (halo : 1 / 10 < alo) :
     ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
-      ∀ (Y d₀ u v r : ℝ) (B : ℕ) (s : ChainState x d Y d₀ u v r B),
+      ∀ Y d₀ u v r B (s : ChainState x d Y d₀ u v r B),
         0 ≤ chainMeasure q x d Y d₀ u v r B (2 * momentPower x) s := by
   filter_upwards [eventually_two_mul_momentPower_lt halo] with x hbig d hd Y d₀ u v r B s
   have hν := primeWeight_nonneg fun p hp => baseline_nonneg hq (hbig d hd p hp)

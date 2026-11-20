@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Scales
+
 public import Erdos408.TwoSided.Graph.Endpoint
 
 /-!
@@ -31,13 +33,12 @@ noncomputable def cutoffTerm (x q₀ : ℝ) {ι : Type} [Fintype ι] [DecidableE
     ∑ p' ∈ (physicalLists P (J + 1) (n + edgeProduct C p a)).filter (fun p' =>
         ∀ h, (∀ i, i ∉ C h → p' h i.castSucc = p h i.castSucc) ∧
           ∀ i ∈ C h, ∀ j, a h i ≠ p h j ∧ a h i ≠ p' h j),
-      ((∏ h, (harmonicMass (P h))⁻¹ ^ (J + 1) *
+      (∏ h, (harmonicMass (P h))⁻¹ ^ (J + 1) *
           (∏ i ∈ C h, (harmonicMass (P h) * a h i)⁻¹) *
-          (harmonicMass (P h))⁻¹ ^ ((C h).card + 1) : ℝ) : ℂ) * K p p' a *
-        ((Ψ (n / (x * edgeProduct C p a)) / n * F n * G (n + edgeProduct C p a) *
+          (harmonicMass (P h))⁻¹ ^ ((C h).card + 1) : ℝ) * K p p' a *
+        (Ψ (n / (x * edgeProduct C p a)) / n * F n * G (n + edgeProduct C p a) *
           q₀ ^ (groupPrimeCount P n - (J + 1) * Fintype.card ι) *
-          q₀ ^ (groupPrimeCount P (n + edgeProduct C p a) - (J + 1) * Fintype.card ι) : ℝ) :
-          ℂ)
+          q₀ ^ (groupPrimeCount P (n + edgeProduct C p a) - (J + 1) * Fintype.card ι) : ℝ)
 
 /-! ### Integrals against the density -/
 
@@ -49,7 +50,7 @@ private theorem integrable_and_integral_mul_sum {α : Type*} {a : ℝ → ℂ} (
   simp_rw [Finset.mul_sum]
   refine ⟨integrable_finsetSum _ fun i hi => (h i hi).1, ?_⟩
   rw [integral_finsetSum _ fun i hi => (h i hi).1]
-  exact Finset.sum_congr rfl fun i hi => (h i hi).2
+  simp_all
 
 /-- Integrability and the integral against `a` of a sum of two functions. -/
 private theorem integrable_and_integral_mul_add {a φ₁ φ₂ : ℝ → ℂ} {v₁ v₂ : ℂ}
@@ -61,8 +62,8 @@ private theorem integrable_and_integral_mul_add {a φ₁ φ₂ : ℝ → ℂ} {v
 
 /-- `u^{it} D^{-it} = (u/D)^{it}` for `u > 0` and `D ≥ 1`. -/
 private theorem cpow_mul_natCast_cpow {u : ℝ} (hu : 0 < u) {D : ℕ} (hD : 0 < D) (t : ℝ) :
-    (u : ℂ) ^ ((t : ℂ) * Complex.I) * (D : ℂ) ^ (((-t : ℝ) : ℂ) * Complex.I) =
-      ((u / D : ℝ) : ℂ) ^ ((t : ℂ) * Complex.I) := by
+    (u : ℂ) ^ (t * Complex.I) * D ^ ((-t : ℝ) * Complex.I) =
+      (u / D : ℝ) ^ (t * Complex.I) := by
   have hD' : (0 : ℝ) < D := by exact_mod_cast hD
   rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast hu.ne'),
     Complex.cpow_def_of_ne_zero (by exact_mod_cast hD.ne'),
@@ -78,24 +79,24 @@ private theorem cpow_mul_natCast_cpow {u : ℝ} (hu : 0 < u) {D : ℕ} (hD : 0 <
 theorem integrable_and_integral_mul_term {x q₀ : ℝ} (hx : 0 < x) (hq₀ : 0 ≤ q₀) {ι : Type}
     [Fintype ι] (P : ι → Finset ℕ) (J : ℕ) (F G : ℕ → ℝ) {Ψ : ℝ → ℝ} {a : ℝ → ℂ}
     (ha : Integrable a)
-    (hrep : ∀ y : ℝ, 0 < y →
-      (Ψ y : ℂ) = ∫ ξ, a ξ * (y : ℂ) ^ (((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I))
+    (hrep : ∀ y, 0 < y →
+      (Ψ y) = ∫ ξ, a ξ * y ^ ((2 * Real.pi * ξ : ℝ) * Complex.I))
     {X : ℝ} {n D : ℕ} (hn : n ∈ dyadSource X) (hX : 0 < X) (hD : 0 < D)
     (htgt : Ψ (n / (x * D)) ≠ 0 → n + D ∈ dyadTarget X) (w k : ℂ) :
     Integrable (fun ξ => a ξ * (w * starRingEnd ℂ (sourceEndpoint x q₀ P J F X ξ n) * k *
-        ((D : ℂ) ^ (((-(2 * Real.pi * ξ) : ℝ) : ℂ) * Complex.I)) *
-        ((Real.sqrt q₀ ^ (groupPrimeCount P n - (J + 1) * Fintype.card ι) *
-          Real.sqrt q₀ ^ (groupPrimeCount P (n + D) - (J + 1) * Fintype.card ι) : ℝ) : ℂ) *
+        (D ^ ((-(2 * Real.pi * ξ) : ℝ) * Complex.I)) *
+        (Real.sqrt q₀ ^ (groupPrimeCount P n - (J + 1) * Fintype.card ι) *
+          Real.sqrt q₀ ^ (groupPrimeCount P (n + D) - (J + 1) * Fintype.card ι) : ℝ) *
         targetEndpoint q₀ P J G X (n + D))) ∧
     ∫ ξ, a ξ * (w * starRingEnd ℂ (sourceEndpoint x q₀ P J F X ξ n) * k *
-        ((D : ℂ) ^ (((-(2 * Real.pi * ξ) : ℝ) : ℂ) * Complex.I)) *
-        ((Real.sqrt q₀ ^ (groupPrimeCount P n - (J + 1) * Fintype.card ι) *
-          Real.sqrt q₀ ^ (groupPrimeCount P (n + D) - (J + 1) * Fintype.card ι) : ℝ) : ℂ) *
+        (D ^ ((-(2 * Real.pi * ξ) : ℝ) * Complex.I)) *
+        (Real.sqrt q₀ ^ (groupPrimeCount P n - (J + 1) * Fintype.card ι) *
+          Real.sqrt q₀ ^ (groupPrimeCount P (n + D) - (J + 1) * Fintype.card ι) : ℝ) *
         targetEndpoint q₀ P J G X (n + D)) =
-      (((Real.log x)⁻¹ * X : ℝ) : ℂ) * (w * k *
-        ((Ψ (n / (x * D)) / n * F n * G (n + D) *
+      ((Real.log x)⁻¹ * X : ℝ) * (w * k *
+        (Ψ (n / (x * D)) / n * F n * G (n + D) *
           q₀ ^ (groupPrimeCount P n - (J + 1) * Fintype.card ι) *
-          q₀ ^ (groupPrimeCount P (n + D) - (J + 1) * Fintype.card ι) : ℝ) : ℂ)) := by
+          q₀ ^ (groupPrimeCount P (n + D) - (J + 1) * Fintype.card ι) : ℝ)) := by
   obtain ⟨hn₁, -⟩ := mem_dyadSource hn
   have hn0 : (0 : ℝ) < n := by linarith
   have hD' : (0 : ℝ) < D := by exact_mod_cast hD
@@ -108,9 +109,9 @@ theorem integrable_and_integral_mul_term {x q₀ : ℝ} (hx : 0 < x) (hq₀ : 0 
   set g := targetEndpoint q₀ P J G X (n + D)
   -- the phase of the source endpoint combines with `D^{-2πiξ}`
   have hfun : (fun ξ => a ξ * (w * starRingEnd ℂ (sourceEndpoint x q₀ P J F X ξ n) * k *
-        ((D : ℂ) ^ (((-(2 * Real.pi * ξ) : ℝ) : ℂ) * Complex.I)) * (s : ℂ) * g)) =
+        (D ^ ((-(2 * Real.pi * ξ) : ℝ) * Complex.I)) * s * g)) =
       fun ξ => (w * r * k * s * g) *
-        (a ξ * (y : ℂ) ^ (((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I)) := by
+        (a ξ * y ^ ((2 * Real.pi * ξ : ℝ) * Complex.I)) := by
     funext ξ
     rw [sourceEndpoint, ite_eq_left hn, Complex.conj_conj, hy, ← div_div,
       ← cpow_mul_natCast_cpow (div_pos hn0 hx) hD]
@@ -120,8 +121,8 @@ theorem integrable_and_integral_mul_term {x q₀ : ℝ} (hx : 0 < x) (hq₀ : 0 
   rw [integral_const_mul, ← hrep y hy0]
   by_cases hΨ : Ψ y = 0
   · simp [hΨ]
-  have hg : g = ((G (n + D) * physicalDamping q₀ P (J + 1) (n + D) : ℝ) : ℂ) := by
-    simp only [g, targetEndpoint, ite_eq_left (htgt hΨ)]
+  have hg : g = (G (n + D) * physicalDamping q₀ P (J + 1) (n + D) : ℝ) := by
+    simp [g, targetEndpoint, ite_eq_left (htgt hΨ)]
   have hs₁ : Real.sqrt q₀ ^ e₁ * Real.sqrt q₀ ^ e₁ = q₀ ^ e₁ := by
     rw [← mul_pow, Real.mul_self_sqrt hq₀]
   have hs₂ : Real.sqrt q₀ ^ e₂ * Real.sqrt q₀ ^ e₂ = q₀ ^ e₂ := by
@@ -130,9 +131,7 @@ theorem integrable_and_integral_mul_term {x q₀ : ℝ} (hx : 0 < x) (hq₀ : 0 
       (Real.log x)⁻¹ * X * (Ψ y / n * F n * G (n + D) * q₀ ^ e₁ * q₀ ^ e₂) := by
     have hd₁ : physicalDamping q₀ P (J + 1) n = Real.sqrt q₀ ^ e₁ := rfl
     have hd₂ : physicalDamping q₀ P (J + 1) (n + D) = Real.sqrt q₀ ^ e₂ := rfl
-    simp only [r, s]
-    rw [hd₁, hd₂, ← hs₁, ← hs₂]
-    field_simp
+    grind
   rw [hg]
   have key' := congrArg (fun z : ℝ => (z : ℂ)) key
   push_cast at key' ⊢
@@ -154,24 +153,24 @@ theorem mem_of_mem_auxLabels {ι : Type} [Fintype ι] [DecidableEq ι] {P : ι �
 /-- The edge product is positive and at most `B^{s J}` when every group label is positive and
 at most `B`. -/
 theorem edgeProduct_pos_and_le {ι : Type} [Fintype ι] [DecidableEq ι] {P : ι → Finset ℕ}
-    {B : ℝ} (hP : ∀ g, ∀ p ∈ P g, 0 < p ∧ (p : ℝ) ≤ B) {J : ℕ} {C : ι → Finset (Fin J)}
+    {B : ℝ} (hP : ∀ g, ∀ p ∈ P g, 0 < p ∧ p ≤ B) {J : ℕ} {C : ι → Finset (Fin J)}
     {n : ℕ} {p : ι → Fin (J + 1) → ℕ} (hp : p ∈ physicalLists P (J + 1) n)
     {a : ι → Fin J → ℕ} (ha : a ∈ auxLabels P C) :
-    0 < edgeProduct C p a ∧ (edgeProduct C p a : ℝ) ≤ B ^ (Fintype.card ι * J) := by
+    0 < edgeProduct C p a ∧ (edgeProduct C p a) ≤ B ^ (Fintype.card ι * J) := by
   have hmem : ∀ g i, (if i ∈ C g then a g i else p g i.castSucc) ∈ P g := by
     intro g i
     split_ifs with hi
     · exact mem_of_mem_auxLabels ha g hi
     · exact mem_of_mem_physicalLists hp g i.castSucc
   refine ⟨Finset.prod_pos fun g _ => Finset.prod_pos fun i _ => (hP g _ (hmem g i)).1, ?_⟩
-  calc (edgeProduct C p a : ℝ) =
+  calc _ =
         ∏ g, ∏ i, ((if i ∈ C g then a g i else p g i.castSucc : ℕ) : ℝ) := by
-        simp only [edgeProduct, Nat.cast_prod]
+        simp [edgeProduct]
     _ ≤ ∏ _g : ι, ∏ _i : Fin J, B :=
         Finset.prod_le_prod₀ (fun g _ => Finset.prod_nonneg fun i _ => Nat.cast_nonneg _)
           fun g _ => Finset.prod_le_prod₀ (fun i _ => Nat.cast_nonneg _)
             fun i _ => (hP g _ (hmem g i)).2
-    _ = B ^ (Fintype.card ι * J) := by
+    _ = _ := by
         rw [Finset.prod_const, Finset.prod_const, Finset.card_univ, Finset.card_univ,
           Fintype.card_fin, ← pow_mul, mul_comm]
 
@@ -179,7 +178,7 @@ theorem edgeProduct_pos_and_le {ι : Type} [Fintype ι] [DecidableEq ι] {P : ι
 
 /-- Membership in `S_{2^m}`. -/
 theorem mem_dyadSource_two_pow {m n : ℕ} :
-    n ∈ dyadSource ((2 : ℝ) ^ m) ↔ 2 ^ m ≤ n ∧ n < 2 ^ (m + 1) := by
+    n ∈ dyadSource (2 ^ m) ↔ 2 ^ m ≤ n ∧ n < 2 ^ (m + 1) := by
   have h₁ : ⌈(2 : ℝ) ^ m⌉₊ = 2 ^ m := by exact_mod_cast Nat.ceil_natCast (2 ^ m)
   have h₂ : ⌈2 * (2 : ℝ) ^ m⌉₊ = 2 ^ (m + 1) := by
     rw [pow_succ, mul_comm]
@@ -196,11 +195,11 @@ theorem pairwiseDisjoint_dyadSource (s : Finset ℕ) :
   rw [← Nat.log_eq_of_pow_le_of_lt_pow h₁ h₂, ← Nat.log_eq_of_pow_le_of_lt_pow h₁' h₂']
 
 /-- A position `n ∈ [2√x, x²]` lies in the source of the dyad `2^{⌊log₂ n⌋}`. -/
-theorem exists_mem_dyads {x : ℝ} (hx : 0 < x) {n : ℕ} (hn₁ : 2 * √x ≤ n) (hn₂ : (n : ℝ) ≤ x ^ 2)
-    (hn₀ : 0 < n) : ∃ m ∈ dyads x, n ∈ dyadSource ((2 : ℝ) ^ m) := by
+theorem exists_mem_dyads {x : ℝ} (hx : 0 < x) {n : ℕ} (hn₁ : 2 * √x ≤ n) (hn₂ : n ≤ x ^ 2)
+    (hn₀ : 0 < n) : ∃ m ∈ dyads x, n ∈ dyadSource (2 ^ m) := by
   set m := Nat.log 2 n
   have h₁ : 2 ^ m ≤ n := Nat.pow_log_le_self 2 hn₀.ne'
-  have h₂ : n < 2 ^ (m + 1) := Nat.lt_pow_succ_log_self (by norm_num) n
+  have h₂ : n < 2 ^ (m + 1) := by solve_by_elim [Nat.lt_pow_succ_log_self]
   have h₁' : (2 : ℝ) ^ m ≤ n := by exact_mod_cast h₁
   have h₂' : (n : ℝ) < 2 * 2 ^ m := by
     rw [← pow_succ']
@@ -219,8 +218,8 @@ theorem cutoffTerm_eq_zero {x q₀ κ : ℝ} (hx : 0 < x) (hκ : 0 < κ) {ι : T
     (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
     (F G : ℕ → ℝ) {Ψ : ℝ → ℝ} (hΨ : ∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) {n : ℕ}
     (hD : ∀ p ∈ physicalLists P (J + 1) n, ∀ a ∈ auxLabels P C,
-      0 < edgeProduct C p a ∧ (edgeProduct C p a : ℝ) ≤ x / κ)
-    (hn : ¬ (x / κ ≤ n ∧ (n : ℝ) ≤ x ^ 2)) : cutoffTerm x q₀ P C K F G Ψ n = 0 := by
+      0 < edgeProduct C p a ∧ (edgeProduct C p a) ≤ x / κ)
+    (hn : ¬ (x / κ ≤ n ∧ n ≤ x ^ 2)) : cutoffTerm x q₀ P C K F G Ψ n = 0 := by
   refine Finset.sum_eq_zero fun p hp => Finset.sum_eq_zero fun b hb =>
     Finset.sum_eq_zero fun p' _ => ?_
   obtain ⟨hD₀, hD₁⟩ := hD p hp b hb
@@ -236,9 +235,9 @@ theorem cutoffTerm_eq_zero {x q₀ κ : ℝ} (hx : 0 < x) (hκ : 0 < κ) {ι : T
     have := mul_le_mul_of_nonneg_left h₁ hκ.le
     rw [← mul_assoc, mul_inv_cancel₀ hκ.ne', one_mul] at this
     nlinarith
-  · calc (n : ℝ) ≤ κ * (x * edgeProduct C p b) := h₂
+  · calc _ ≤ κ * (x * edgeProduct C p b) := h₂
       _ ≤ κ * (x * (x / κ)) := by gcongr
-      _ = x ^ 2 := by field_simp
+      _ = _ := by field_simp
 
 /-- **The dyad partition.** When every edge satisfies `1 ≤ D ≤ x/κ` and `2√x ≤ x/κ`, the
 cutoff pairing over `n ≤ x²` is the sum over the dyads `X` of the terms on `S_X`. -/
@@ -266,14 +265,12 @@ theorem sum_Icc_cutoffTerm_eq_sum_dyads {x q₀ κ : ℝ} (hx : 0 < x) (hκ : 0 
     intro n hn hn'
     by_contra hne
     obtain ⟨h₁, h₂⟩ := hsupp n hne
-    have hn0 : (0 : ℝ) < n := hpos.trans_le h₁
-    refine hn' (Finset.mem_inter.2 ⟨Finset.mem_Icc.2 ⟨by exact_mod_cast hn0, ?_⟩, hn⟩)
+    refine hn' (Finset.mem_inter.2 ⟨Finset.mem_Icc.2 ⟨by exact_mod_cast (hpos.trans_le h₁), ?_⟩, hn⟩)
     exact Nat.le_floor h₂
   · intro n hn hn'
     by_contra hne
     obtain ⟨h₁, h₂⟩ := hsupp n hne
-    have hn0 : (0 : ℝ) < n := hpos.trans_le h₁
-    obtain ⟨m, hm, hnm⟩ := exists_mem_dyads hx (hxκ.trans h₁) h₂ (by exact_mod_cast hn0)
+    obtain ⟨m, hm, hnm⟩ := exists_mem_dyads hx (hxκ.trans h₁) h₂ (by exact_mod_cast (hpos.trans_le h₁))
     exact hn' (Finset.mem_inter.2 ⟨hn, Finset.mem_biUnion.2 ⟨m, hm, hnm⟩⟩)
 
 /-! ### One pattern at one dyad -/
@@ -284,18 +281,18 @@ against `a`, is `L⁻¹ X` times the cutoff pairing on `S_X`. Every target `n + 
 term lies in `S'_X`, since `D ≤ κ n / x < 2κX/x ≤ X`. -/
 theorem integrable_and_integral_mul_patternPairing {x q₀ κ : ℝ} (hx : 0 < x) (hxκ : 2 * κ ≤ x)
     (hκ : 0 < κ) (hq₀ : 0 ≤ q₀) {ι : Type} [Fintype ι] [DecidableEq ι] {P : ι → Finset ℕ}
-    {B : ℝ} (hP : ∀ g, ∀ p ∈ P g, 0 < p ∧ (p : ℝ) ≤ B) {J : ℕ} (C : ι → Finset (Fin J))
+    {B : ℝ} (hP : ∀ g, ∀ p ∈ P g, 0 < p ∧ p ≤ B) {J : ℕ} (C : ι → Finset (Fin J))
     (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
     (F G : ℕ → ℝ) {Ψ : ℝ → ℝ} (hΨ : ∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) {a : ℝ → ℂ}
     (ha : Integrable a)
-    (hrep : ∀ y : ℝ, 0 < y →
-      (Ψ y : ℂ) = ∫ ξ, a ξ * (y : ℂ) ^ (((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I))
+    (hrep : ∀ y, 0 < y →
+      (Ψ y) = ∫ ξ, a ξ * y ^ ((2 * Real.pi * ξ : ℝ) * Complex.I))
     {X : ℝ} (hX : 0 < X) :
     Integrable (fun ξ => a ξ * patternPairing P q₀ C K (-(2 * Real.pi * ξ)) (dyadSource X)
         (sourceEndpoint x q₀ P J F X ξ) (targetEndpoint q₀ P J G X)) ∧
       ∫ ξ, a ξ * patternPairing P q₀ C K (-(2 * Real.pi * ξ)) (dyadSource X)
           (sourceEndpoint x q₀ P J F X ξ) (targetEndpoint q₀ P J G X) =
-        (((Real.log x)⁻¹ * X : ℝ) : ℂ) * ∑ n ∈ dyadSource X, cutoffTerm x q₀ P C K F G Ψ n := by
+        ((Real.log x)⁻¹ * X : ℝ) * ∑ n ∈ dyadSource X, cutoffTerm x q₀ P C K F G Ψ n := by
   conv_rhs => simp only [cutoffTerm, Finset.mul_sum]
   unfold patternPairing
   refine integrable_and_integral_mul_sum _ fun n hn => integrable_and_integral_mul_sum _
@@ -306,15 +303,12 @@ theorem integrable_and_integral_mul_patternPairing {x q₀ κ : ℝ} (hx : 0 < x
   -- the target `n + D` lies in `S'_X`
   obtain ⟨h₁, -⟩ := hΨ _ hne
   obtain ⟨-, hn₂⟩ := mem_dyadSource hn
-  have hD' : (0 : ℝ) < edgeProduct C p b := by exact_mod_cast hD
   have hxD : 0 < x * edgeProduct C p b := by positivity
   rw [le_div_iff₀ hxD] at h₁
   have h₃ : x * edgeProduct C p b ≤ κ * n := by
     have := mul_le_mul_of_nonneg_left h₁ hκ.le
     rwa [← mul_assoc, mul_inv_cancel₀ hκ.ne', one_mul] at this
-  have h₄ : (edgeProduct C p b : ℝ) < X := by
-    by_contra h
-    have h' := not_lt.1 h
+  have h₄ : (edgeProduct C p b) < X := by
     nlinarith
   rw [dyadTarget, Finset.mem_Ico]
   refine ⟨(Finset.mem_Ico.1 hn).1.trans (Nat.le_add_right _ _), Nat.lt_ceil.2 ?_⟩
@@ -327,8 +321,8 @@ theorem integrable_and_integral_mul_patternPairing {x q₀ κ : ℝ} (hx : 0 < x
 `2 J |C₀| T L^{0.46} + log κ ≤ L`, the last for the edge sizes (U10). -/
 theorem eventually_insertion_conditions (C₀ κ : ℝ) (hκ : 1 < κ) (J : ℕ) :
     ∀ᶠ x : ℝ in atTop, 0 < x ∧ 2 * κ ≤ x ∧ 2 * √x ≤ x / κ ∧ 1 ≤ Real.log x ∧
-      0 ≤ Real.log (Real.log x) ∧
-      2 * J * |C₀| * Real.log (Real.log x) * Real.log x ^ (0.46 : ℝ) + Real.log κ ≤
+      0 ≤ logLog x ∧
+      2 * J * |C₀| * logLog x * Real.log x ^ (0.46 : ℝ) + Real.log κ ≤
         Real.log x := by
   have hκ0 : 0 < κ := by linarith
   set c : ℝ := 2 * J * |C₀|
@@ -340,7 +334,7 @@ theorem eventually_insertion_conditions (C₀ κ : ℝ) (hκ : 1 < κ) (J : ℕ)
     Real.tendsto_log_atTop.eventually_ge_atTop (2 * |Real.log κ|),
     Real.tendsto_log_atTop.eventually ho] with x hx h2κ h4κ hL1 hLκ hlo
   set L := Real.log x
-  have hT0 : 0 ≤ Real.log L := Real.log_nonneg hL1
+  have hT0 := Real.log_nonneg hL1
   refine ⟨hx, h2κ, ?_, hL1, hT0, ?_⟩
   · have hs : 2 * κ ≤ √x := Real.le_sqrt_of_sq_le (by nlinarith)
     rw [le_div_iff₀ hκ0]
@@ -350,13 +344,12 @@ theorem eventually_insertion_conditions (C₀ κ : ℝ) (hκ : 1 < κ) (J : ℕ)
     have hL : L ^ (0.54 : ℝ) * L ^ (0.46 : ℝ) = L := by
       rw [← Real.rpow_add (by linarith)]
       norm_num
-    have hp : 0 ≤ L ^ (0.46 : ℝ) := Real.rpow_nonneg (by linarith) _
     have h₁ : c * Real.log L * L ^ (0.46 : ℝ) ≤ c * (1 / (2 * (c + 1)) * L) := by
       rw [mul_assoc]
       refine mul_le_mul_of_nonneg_left ?_ hc0
-      calc Real.log L * L ^ (0.46 : ℝ) ≤ 1 / (2 * (c + 1)) * L ^ (0.54 : ℝ) * L ^ (0.46 : ℝ) :=
-            mul_le_mul_of_nonneg_right hlo hp
-        _ = 1 / (2 * (c + 1)) * L := by rw [mul_assoc, hL]
+      calc _ ≤ 1 / (2 * (c + 1)) * L ^ (0.54 : ℝ) * L ^ (0.46 : ℝ) :=
+            by gcongr
+        _ = _ := by rw [mul_assoc, hL]
     have h₂ : c * (1 / (2 * (c + 1)) * L) ≤ L / 2 := by
       rw [← mul_assoc, mul_one_div, div_mul_eq_mul_div, div_le_div_iff₀ (by positivity)
         (by norm_num)]
@@ -408,20 +401,19 @@ theorem eventually_sum_cutoffTerm_eq (q₀ c₀ C₀ vlo vhi κ : ℝ) (hq₀ : 
   -- `s ≤ 2 C₀ T`, so `B^{s J} ≤ x/κ`
   have hcard : (Fintype.card ι : ℝ) ≤ 2 * C₀ * T := by
     have h := Finset.card_sdiff_add_card_eq_card (Finset.subset_univ big)
-    rw [Finset.card_univ] at h
+    simp at h
     rw [← h]
     push_cast
     linarith
   have hB : B ^ (Fintype.card ι * J) ≤ x / κ := by
     rw [← Real.exp_nat_mul, ← Real.exp_log hx, ← Real.exp_log hκ0, ← Real.exp_sub]
     refine Real.exp_le_exp.2 ?_
-    have hp : 0 ≤ L ^ (0.46 : ℝ) := Real.rpow_nonneg (by linarith) _
-    have hJ : (0 : ℝ) ≤ J := Nat.cast_nonneg J
+    have hp : 0 ≤ L ^ (0.46 : ℝ) := by positivity
     have h₁ : (Fintype.card ι : ℝ) * J * L ^ (0.46 : ℝ) ≤
         2 * C₀ * T * J * L ^ (0.46 : ℝ) := by gcongr
     have h₂ : 2 * C₀ * T * J * L ^ (0.46 : ℝ) ≤ 2 * J * |C₀| * T * L ^ (0.46 : ℝ) := by
       have : C₀ * (T * J * L ^ (0.46 : ℝ)) ≤ |C₀| * (T * J * L ^ (0.46 : ℝ)) :=
-        mul_le_mul_of_nonneg_right (le_abs_self C₀) (by positivity)
+        by bound
       linarith
     push_cast
     linarith

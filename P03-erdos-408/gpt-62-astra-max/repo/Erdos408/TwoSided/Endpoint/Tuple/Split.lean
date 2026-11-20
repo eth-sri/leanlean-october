@@ -21,14 +21,14 @@ separated by its Mellin density (`boxSum_eq_integral`).
 
 namespace Erdos408.TwoSided.TupleHigh
 
-open Filter Finset MeasureTheory
+open Finset MeasureTheory
 
 /-! ### The tuple sum -/
 
 /-- `w ↦ (w/p_s/p_l)` is a bijection from the `w ∈ [⌈Y⌉, ⌊2Y⌋]` with `p_s ∣ w`, `p_l ∣ w/p_s`
 onto the `u ∈ (1, ⌊2Y⌋]` with `p_s p_l u ∈ [⌈Y⌉, ⌊2Y⌋]`, when `p_s p_l < Y`. -/
 theorem sum_filter_dvd_eq {Y : ℝ} {ps pl : ℕ} (hps : 0 < ps) (hpl : 0 < pl)
-    (hY : ((ps * pl : ℕ) : ℝ) < Y) (G : ℕ → ℕ → ℂ) :
+    (hY : (ps * pl : ℕ) < Y) (G : ℕ → ℕ → ℂ) :
     ∑ w ∈ Icc ⌈Y⌉₊ ⌊2 * Y⌋₊, (if ps ∣ w ∧ pl ∣ w / ps then G w (w / ps / pl) else 0) =
       ∑ u ∈ (Ioc 1 ⌊2 * Y⌋₊).filter (fun u => ps * pl * u ∈ Icc ⌈Y⌉₊ ⌊2 * Y⌋₊),
         G (ps * pl * u) u := by
@@ -38,27 +38,22 @@ theorem sum_filter_dvd_eq {Y : ℝ} {ps pl : ℕ} (hps : 0 < ps) (hpl : 0 < pl)
     simp only [mem_filter, mem_Icc] at hw
     obtain ⟨⟨hw₁, hw₂⟩, ⟨a, ha⟩, ⟨b, hb⟩⟩ := hw
     have hb' : w / ps / pl = b := by
-      rw [hb, Nat.mul_div_cancel_left _ hpl]
+      simp_all
     have hw : w = ps * pl * b := by
       rw [ha, Nat.mul_div_cancel_left _ hps] at hb
-      rw [ha, hb]
-      ring
+      grind
     simp only [mem_filter, mem_Ioc, mem_Icc, hb']
-    have hYw : Y ≤ w := (Nat.ceil_le.1 hw₁)
+    have hYw := (Nat.ceil_le.1 hw₁)
     refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
     · by_contra h
       have hb1 : b ≤ 1 := by omega
-      have : ((ps * pl * b : ℕ) : ℝ) ≤ ((ps * pl : ℕ) : ℝ) := by
-        have := Nat.mul_le_mul_left (ps * pl) hb1
-        rw [mul_one] at this
-        exact_mod_cast this
+      have : (ps * pl * b : ℕ) ≤ ((ps * pl : ℕ) : ℝ) := by
+        simp_all
       rw [← hw] at this
       linarith
-    · calc b ≤ ps * pl * b := Nat.le_mul_of_pos_left b (Nat.mul_pos hps hpl)
-        _ = w := hw.symm
-        _ ≤ ⌊2 * Y⌋₊ := hw₂
-    · rw [← hw]; exact hw₁
-    · rw [← hw]; exact hw₂
+    · exact Trans.trans (Trans.trans (Nat.le_mul_of_pos_left b (Nat.mul_pos hps hpl)) (Eq.symm hw)) hw₂
+    · omega
+    omega
   · intro u hu
     simp only [mem_filter] at hu ⊢
     refine ⟨hu.2, dvd_mul_of_dvd_left (dvd_mul_right ps pl) u, ?_⟩
@@ -75,11 +70,10 @@ theorem sum_filter_dvd_eq {Y : ℝ} {ps pl : ℕ} (hps : 0 < ps) (hpl : 0 < pl)
   · intro w hw
     simp only [mem_filter] at hw
     obtain ⟨-, ⟨a, ha⟩, ⟨b, hb⟩⟩ := hw
-    have hb' : w / ps / pl = b := by rw [hb, Nat.mul_div_cancel_left _ hpl]
+    have hb' : w / ps / pl = b := by simp_all
     have hw : w = ps * pl * b := by
       rw [ha, Nat.mul_div_cancel_left _ hps] at hb
-      rw [ha, hb]
-      ring
+      grind
     rw [hb', ← hw]
 
 /-- **The tuple sum.** For a cutoff `ψ₁` supported in `[1, 2]`, sets `s`, `sp` of positive
@@ -87,7 +81,7 @@ integers with `p_s p_l < Y`:
 `∑_{w ∈ [⌈Y⌉, ⌊2Y⌋]} ψ₁(w/Y) F(w) ∑_{p_s ∣ w} ∑_{p_l ∣ w/p_s} c(w/p_s/p_l) =
 ∑_{p_s, p_l} ∑_{u ∈ (1, ⌊2Y⌋]} ψ₁(p_s p_l u/Y) F(p_s p_l u) c(u)`. -/
 theorem twistedSum_eq {Y : ℝ} (s sp : Finset ℕ) (hs : ∀ p ∈ s, 0 < p) (hsp : ∀ p ∈ sp, 0 < p)
-    (hsmall : ∀ ps ∈ s, ∀ pl ∈ sp, ((ps * pl : ℕ) : ℝ) < Y) (ψ₁ : ℝ → ℂ)
+    (hsmall : ∀ ps ∈ s, ∀ pl ∈ sp, (ps * pl : ℕ) < Y) (ψ₁ : ℝ → ℂ)
     (hψ : ∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) (F cf : ℕ → ℂ) (hY : 0 < Y) :
     ∑ w ∈ Icc ⌈Y⌉₊ ⌊2 * Y⌋₊, ψ₁ (w / Y) * F w *
         ∑ ps ∈ s.filter (· ∣ w), ∑ pl ∈ sp.filter (· ∣ w / ps), cf (w / ps / pl) =
@@ -141,11 +135,7 @@ def boxIndex (p : ℕ) : ℕ := Nat.log 2 (p - 1)
 /-- `boxIndex p = i` iff `p ∈ (2^i, 2^{i+1}]`, for `p ≥ 2`. -/
 theorem boxIndex_eq_iff {p i : ℕ} (hp : 2 ≤ p) : boxIndex p = i ↔ 2 ^ i < p ∧ p ≤ 2 ^ (i + 1) := by
   rw [boxIndex, Nat.log_eq_iff (Or.inr ⟨one_lt_two, by omega⟩)]
-  constructor
-  · rintro ⟨h₁, h₂⟩
-    exact ⟨by omega, by omega⟩
-  · rintro ⟨h₁, h₂⟩
-    exact ⟨by omega, by omega⟩
+  grind
 
 /-- The boxes below `N₀ ≥ 1` cover `[1, 2^{N₀}]`. -/
 theorem boxIndex_lt {p N₀ : ℕ} (hN₀ : 1 ≤ N₀) (hp : p ≤ 2 ^ N₀) : boxIndex p < N₀ := by
@@ -165,9 +155,9 @@ theorem card_boxSet_le (N₀ k : ℕ) [NeZero k] : #(boxSet N₀ k) ≤ N₀ ^ 3
   rw [boxSet, card_product, card_product, card_product, card_product, card_product,
     card_range, card_range, card_univ]
   have := OneSided.card_dirichletCharacter_le k
-  calc N₀ * N₀ * N₀ * (k * k * Fintype.card (DirichletCharacter ℂ k)) ≤
+  calc _ ≤
       N₀ * N₀ * N₀ * (k * k * k) := by gcongr
-    _ = N₀ ^ 3 * k ^ 3 := by ring
+    _ = _ := by ring
 
 /-- The condition that `(p_s, p_l, u)` lies in the box and classes of `m`. -/
 def InBox {k : ℕ} (m : ((ℕ × ℕ) × ℕ) × ((ℕ × ℕ) × DirichletCharacter ℂ k))
@@ -197,21 +187,16 @@ theorem phase_eq_sum_boxSet {k : ℕ} (hk : 1 ≤ k) (h : ℤ) {N₀ ps pl u : �
     ext ⟨⟨⟨i, j⟩, l⟩, ⟨⟨α, β⟩, χ⟩⟩
     rw [mem_filter]
     simp only [boxSet, InBox, mem_product, mem_range, mem_singleton, mem_univ, and_true]
-    have h₁ : ps % k < k := Nat.mod_lt _ (by omega)
-    have h₂ : u % k < k := Nat.mod_lt _ (by omega)
-    constructor
-    · rintro ⟨-, ⟨rfl, rfl⟩, rfl, rfl, rfl⟩
-      exact ⟨⟨⟨rfl, rfl⟩, rfl⟩, rfl, rfl⟩
-    · rintro ⟨⟨⟨rfl, rfl⟩, rfl⟩, rfl, rfl⟩
-      exact ⟨⟨⟨⟨hps, hpl⟩, hu⟩, h₁, h₂⟩, ⟨rfl, rfl⟩, rfl, rfl, rfl⟩
+    have h₁ : ps % k < k := by apply Nat.mod_lt <;> assumption
+    have h₂ : u % k < k := by apply Nat.mod_lt <;> assumption
+    grind
   rw [hfil, singleton_product_singleton, singleton_product_singleton,
-    singleton_product_singleton, sum_product, sum_singleton, sum_product, sum_singleton]
-  rw [← Erdos821.P5Marked.e_eq_sum_cchi k hk h pl (ps % k * (u % k)) hcop]
+    singleton_product_singleton, sum_product, sum_singleton, sum_product, sum_singleton, ← Erdos821.P5Marked.e_eq_sum_cchi k hk h pl (ps % k * (u % k)) hcop]
   -- periodicity: `p_s u ≡ αβ mod k`
   set a := ps * u
   set b := ps % k * (u % k)
-  have hab : a % k = b % k := Nat.mul_mod ps u k
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (show k ≠ 0 by omega)
+  have hab := Nat.mul_mod ps u k
+  have hk0 : (k : ℝ) ≠ 0 := by positivity
   have hdecomp : (h : ℝ) * ((ps * pl * u : ℕ) : ℝ) / k =
       (h : ℝ) * ((pl * b : ℕ) : ℝ) / k +
         ((h * pl * (((a / k : ℕ) : ℤ) - ((b / k : ℕ) : ℤ)) : ℤ) : ℝ) := by
@@ -219,16 +204,10 @@ theorem phase_eq_sum_boxSet {k : ℕ} (hk : 1 ≤ k) (h : ℤ) {N₀ ps pl u : �
       exact_mod_cast (Nat.mod_add_div a k).symm
     have hb : (b : ℝ) = ((b % k : ℕ) : ℝ) + k * ((b / k : ℕ) : ℝ) := by
       exact_mod_cast (Nat.mod_add_div b k).symm
-    have hn : ((ps * pl * u : ℕ) : ℝ) = (pl : ℝ) * a := by
-      simp only [a]
-      push_cast
-      ring
     have hq : ((h * pl * (((a / k : ℕ) : ℤ) - ((b / k : ℕ) : ℤ)) : ℤ) : ℝ) =
         (h : ℝ) * pl * (((a / k : ℕ) : ℝ) - ((b / k : ℕ) : ℝ)) := by
       simp only [Int.cast_mul, Int.cast_sub, Int.cast_natCast]
-    rw [hq, hn, ha, hab, Nat.cast_mul pl b, hb]
-    field_simp
-    ring
+    grind
   rw [hdecomp, Erdos821.P5Marked.e_periodic]
 
 /-- Splitting a triple sum by boxes, classes and characters. -/
@@ -243,15 +222,11 @@ theorem tripleSum_eq_sum_boxSet {ι : Type*} (M : Finset ι) (C : ι → ℕ →
       ∑ m ∈ M, γ m * (if C m ps pl u then χ m pl * Φ ps pl u else 0) := by
     intro ps pl u
     rw [mul_sum]
-    refine sum_congr rfl fun m _ => ?_
-    split_ifs
-    · ring
-    · ring
-  calc ∑ ps ∈ s, ∑ pl ∈ sp, ∑ u ∈ U,
-        Φ ps pl u * ∑ m ∈ M, (if C m ps pl u then γ m * χ m pl else 0)
+    grind
+  calc _
       = ∑ ps ∈ s, ∑ pl ∈ sp, ∑ u ∈ U, ∑ m ∈ M,
           γ m * (if C m ps pl u then χ m pl * Φ ps pl u else 0) :=
-        sum_congr rfl fun ps _ => sum_congr rfl fun pl _ => sum_congr rfl fun u _ => h₁ ps pl u
+        by grind
     _ = ∑ ps ∈ s, ∑ pl ∈ sp, ∑ m ∈ M, ∑ u ∈ U,
           γ m * (if C m ps pl u then χ m pl * Φ ps pl u else 0) :=
         sum_congr rfl fun ps _ => sum_congr rfl fun pl _ => sum_comm
@@ -260,21 +235,21 @@ theorem tripleSum_eq_sum_boxSet {ι : Type*} (M : Finset ι) (C : ι → ℕ →
         sum_congr rfl fun ps _ => sum_comm
     _ = ∑ m ∈ M, ∑ ps ∈ s, ∑ pl ∈ sp, ∑ u ∈ U,
           γ m * (if C m ps pl u then χ m pl * Φ ps pl u else 0) := sum_comm
-    _ = _ := sum_congr rfl fun m _ => by simp only [mul_sum]
+    _ = _ := sum_congr rfl fun m _ => by simp [mul_sum]
 
 /-! ### Separation and Cauchy–Schwarz -/
 
 /-- `(y : ℂ)^{is} = exp(i s log y)` for `y > 0`. -/
 theorem ofReal_cpow_mul_I {y : ℝ} (hy : 0 < y) (s : ℝ) :
-    (y : ℂ) ^ ((s : ℂ) * Complex.I) = Complex.exp (((Real.log y * s : ℝ) : ℂ) * Complex.I) := by
+    y ^ (s * Complex.I) = Complex.exp ((Real.log y * s : ℝ) * Complex.I) := by
   rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast hy.ne'), ← Complex.ofReal_log hy.le]
   push_cast
   ring_nf
 
 /-- `(n/Y)^{iξ} n^{iτ} = Y^{-iξ} n^{i(τ + ξ)}` for `n, Y > 0`. -/
 theorem div_cpow_mul_cpow {n : ℕ} (hn : 0 < n) {Y : ℝ} (hY : 0 < Y) (ξ τ : ℝ) :
-    (((n : ℝ) / Y : ℝ) : ℂ) ^ ((ξ : ℂ) * Complex.I) * (n : ℂ) ^ ((τ : ℂ) * Complex.I) =
-      (Y : ℂ) ^ (((-ξ : ℝ) : ℂ) * Complex.I) * (n : ℂ) ^ (((τ + ξ : ℝ) : ℂ) * Complex.I) := by
+    (((n : ℝ) / Y : ℝ) : ℂ) ^ (ξ * Complex.I) * n ^ (τ * Complex.I) =
+      Y ^ ((-ξ : ℝ) * Complex.I) * n ^ ((τ + ξ : ℝ) * Complex.I) := by
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
   have e₁ : (n : ℂ) = ((n : ℝ) : ℂ) := by push_cast; rfl
   rw [e₁, ofReal_cpow_mul_I (div_pos hn' hY), ofReal_cpow_mul_I hn', ofReal_cpow_mul_I hY,
@@ -350,8 +325,7 @@ theorem boxSum_eq_integral {a : ℝ → ℂ} (ha : Integrable a) {ψ₁ : ℝ �
       (Filter.Eventually.of_forall fun ξ => by
         rw [ofReal_cpow_mul_I (div_pos (Nat.cast_pos.2 hn) hY), Complex.norm_exp_ofReal_mul_I])
     simpa only [mul_comm] using h
-  have hn : ∀ ps ∈ sP, ∀ pl ∈ spN, ∀ u ∈ uR, 0 < ps * pl * u := fun ps hps pl hpl u hu =>
-    Nat.mul_pos (Nat.mul_pos (hsP ps hps) (hspN pl hpl)) (huR u hu)
+  have hn : ∀ ps ∈ sP, ∀ pl ∈ spN, ∀ u ∈ uR, 0 < ps * pl * u := by aesop
   -- expand `ψ₁` and exchange the sums with the integral
   have h₁ : (((Y * V)⁻¹ : ℝ) : ℂ) * ∑ ps ∈ sP, ∑ pl ∈ spN, ∑ u ∈ uR,
         χ pl * (ψ₁ ((ps * pl * u : ℕ) / Y) *
@@ -383,8 +357,6 @@ theorem boxSum_eq_integral {a : ℝ → ℂ} (ha : Integrable a) {ψ₁ : ℝ �
   simp only [Finset.mul_sum]
   refine sum_congr rfl fun ps hps => sum_congr rfl fun pl hpl => sum_congr rfl fun u hu => ?_
   have h₃ := div_cpow_mul_cpow (hn ps hps pl hpl u hu) hY (2 * Real.pi * ξ) (t + σ)
-  push_cast at h₃ ⊢
-  rw [show ((t : ℂ) + σ + 2 * Real.pi * ξ) = (t + σ + 2 * Real.pi * ξ) by ring]
-  linear_combination ((Y : ℂ)⁻¹ * (V : ℂ)⁻¹ * χ pl * c u * a ξ) * h₃
+  grind
 
 end Erdos408.TwoSided.TupleHigh

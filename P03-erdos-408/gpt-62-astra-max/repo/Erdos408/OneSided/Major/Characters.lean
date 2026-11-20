@@ -54,12 +54,11 @@ private theorem norm_sum_mul_dirichletCharacter_le {k : ℕ} [NeZero k] (g : (ZM
     ‖∑ u : (ZMod k)ˣ, g u * χ (↑u)⁻¹‖ ≤ k.totient * B := by
   refine (norm_sum_le _ _).trans ?_
   -- each term is at most `B`, and there are `φ(k)` units
-  calc ∑ u : (ZMod k)ˣ, ‖g u * χ (↑u)⁻¹‖ ≤ ∑ _u : (ZMod k)ˣ, B := by
+  calc _ ≤ ∑ _u : (ZMod k)ˣ, B := by
         refine sum_le_sum fun u _ => ?_
-        rw [norm_mul]
-        exact (mul_le_of_le_one_right (norm_nonneg _) (χ.norm_le_one _)).trans (hg u)
-    _ = k.totient * B := by
-        rw [sum_const, card_univ, ZMod.card_units_eq_totient, nsmul_eq_mul]
+        simp_all
+    _ = _ := by
+        simp
 
 /-- A function of three units modulo `k` with `|f| ≤ 1` is a combination of products of
 three characters with coefficients of modulus at most one. -/
@@ -80,7 +79,7 @@ theorem exists_dirichletCharacter_expansion {k : ℕ} [NeZero k]
     have h₂ := fun w : (ZMod k)ˣ => norm_sum_mul_dirichletCharacter_le _ χ₂ (fun v => h₁ v w)
     have h₃ := norm_sum_mul_dirichletCharacter_le _ χ₃ h₂
     rw [norm_mul, norm_pow, norm_inv, Complex.norm_natCast]
-    calc (k.totient : ℝ)⁻¹ ^ 3 * _ ≤ (k.totient : ℝ)⁻¹ ^ 3 *
+    calc _ ≤ (k.totient : ℝ)⁻¹ ^ 3 *
           (k.totient * (k.totient * (k.totient * 1))) := by gcongr
       _ = 1 := by field_simp [hφ]
   · -- the expansion in `c` collapses the sum over `χ₃`
@@ -111,7 +110,7 @@ theorem exists_dirichletCharacter_expansion {k : ℕ} [NeZero k]
           simp_rw [hb']
           rw [mul_sum]
           exact sum_congr rfl fun χ₁ _ => by ring
-      _ = f a b c := by
+      _ = _ := by
           rw [ha']
           field_simp [hφ]
 

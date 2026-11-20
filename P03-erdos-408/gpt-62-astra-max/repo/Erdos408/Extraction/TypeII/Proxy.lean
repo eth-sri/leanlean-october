@@ -17,7 +17,7 @@ and `1` above `Y`.
 
 namespace Erdos408.TypeII
 
-open Finset Real
+open Finset
 
 /-! ### Stripping a set of primes -/
 
@@ -38,8 +38,7 @@ theorem factorization_stripPrimes (n : ℕ) :
     (stripPrimes P n).factorization = n.factorization.filter (· ∉ P) := by
   rw [stripPrimes_eq_prod]
   refine Nat.prod_pow_factorization_eq_self fun p hp => ?_
-  rw [Finsupp.support_filter, mem_filter, Nat.support_factorization] at hp
-  exact Nat.prime_of_mem_primeFactors hp.1
+  aesop
 
 theorem primeFactors_stripPrimes (n : ℕ) :
     (stripPrimes P n).primeFactors = n.primeFactors.filter (· ∉ P) := by
@@ -63,8 +62,7 @@ theorem stripPrimes_mul_partPrimes {n : ℕ} (hn : n ≠ 0) :
     (g := (· ^ ·))
   have hpart : (n.factorization.filter fun a => ¬a ∉ P).prod (· ^ ·) = partPrimes P n := by
     rw [Finsupp.prod_filter_index, Finsupp.support_filter, Nat.support_factorization]
-    unfold partPrimes
-    simp only [not_not]
+    aesop
   rw [Nat.prod_factorization_pow_eq_self hn, ← stripPrimes_eq_prod, hpart] at h
   exact h
 
@@ -85,8 +83,7 @@ theorem factorization_partPrimes (n : ℕ) :
     (partPrimes P n).factorization = n.factorization.filter (· ∈ P) := by
   rw [partPrimes_eq_prod]
   refine Nat.prod_pow_factorization_eq_self fun p hp => ?_
-  rw [Finsupp.support_filter, mem_filter, Nat.support_factorization] at hp
-  exact Nat.prime_of_mem_primeFactors hp.1
+  aesop
 
 theorem primeFactors_partPrimes (n : ℕ) :
     (partPrimes P n).primeFactors = n.primeFactors.filter (· ∈ P) := by
@@ -108,8 +105,7 @@ theorem log_eq_log_stripPrimes_add {n : ℕ} (hn : n ≠ 0) :
   rw [Nat.cast_prod, Real.log_prod (fun p hp => by
     have := (Nat.prime_of_mem_primeFactors (mem_filter.1 hp).1).ne_zero
     positivity)]
-  refine sum_congr rfl fun p _ => ?_
-  rw [Nat.cast_pow, Real.log_pow]
+  simp
 
 end Strip
 
@@ -117,7 +113,7 @@ end Strip
 
 /-- The prime values of the damped weight: `1/j` on candidate primes, `0` on the other
 primes up to `Y`, and `1` above `Y`. -/
-noncomputable def proxyLoc (x : ℝ) (j : ℕ) (p : ℕ) : ℝ :=
+noncomputable def proxyLoc (x : ℝ) (j p : ℕ) : ℝ :=
   if p ∈ candidatePrimes x then (j : ℝ)⁻¹ else if (p : ℝ) ≤ proxyCutoff x then 0 else 1
 
 /-- `g_j = cmul (proxyLoc x j)` on positive integers. -/
@@ -139,23 +135,18 @@ theorem dampedWeight_eq_cmul (x : ℝ) (j : ℕ) {n : ℕ} (hn : n ≠ 0) :
     obtain ⟨p, hp, hpY⟩ := h
     rw [prod_eq_zero hp, mul_zero]
     obtain ⟨hpn, hpP⟩ := mem_filter.1 hp
-    have hv : n.factorization p ≠ 0 :=
+    have hv :=
       (Nat.prime_of_mem_primeFactors hpn).factorization_pos_of_dvd hn
         (Nat.dvd_of_mem_primeFactors hpn) |>.ne'
     simp [proxyLoc, hpP, hpY, hv]
 
 theorem dampedWeight_nonneg (x : ℝ) (j n : ℕ) : 0 ≤ dampedWeight x j n := by
   unfold dampedWeight
-  split_ifs
-  · positivity
-  · exact le_rfl
+  positivity
 
 theorem dampedWeight_le_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (n : ℕ) : dampedWeight x j n ≤ 1 := by
   unfold dampedWeight
-  have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
-  split_ifs
-  · exact pow_le_one₀ (by positivity) (inv_le_one_of_one_le₀ hj')
-  · exact zero_le_one
+  bound
 
 /-! ### Candidate primes -/
 
@@ -166,7 +157,7 @@ theorem mem_candidatePrimes {x : ℝ} (hL : 1 ≤ Real.log x) {p : ℕ} (hp : p 
   unfold candidatePrimes at hp
   obtain ⟨G, hG, hpG⟩ := mem_biUnion.1 hp
   -- a group `[e^y, e^{2y})` with `L^a ≤ y` and `2y ≤ L^b`
-  have key : ∀ a b : ℝ, 28 / 100 ≤ a → b ≤ 45 / 100 → G ∈ doublingGroups x a b →
+  have key : ∀ a b, 28 / 100 ≤ a → b ≤ 45 / 100 → G ∈ doublingGroups x a b →
       p.Prime ∧ Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ p ∧
         (p : ℝ) ≤ Real.exp (Real.log x ^ (45 / 100 : ℝ)) := by
     intro a b ha hb hGab
@@ -175,14 +166,14 @@ theorem mem_candidatePrimes {x : ℝ} (hL : 1 ≤ Real.log x) {p : ℕ} (hp : p 
     have hi2 := (mem_filter.1 hi).2
     unfold dyadicGroup at hpG
     obtain ⟨hpp, hlo, hhi⟩ := mem_primesIcc.1 hpG
-    have hLa : Real.log x ^ (28 / 100 : ℝ) ≤ Real.log x ^ a :=
+    have hLa :=
       Real.rpow_le_rpow_of_exponent_le hL ha
-    have hLb : Real.log x ^ b ≤ Real.log x ^ (45 / 100 : ℝ) :=
+    have hLb :=
       Real.rpow_le_rpow_of_exponent_le hL hb
     have h2i : (1 : ℝ) ≤ 2 ^ i := one_le_pow₀ (by norm_num)
     have hLa0 : 0 ≤ Real.log x ^ a := by positivity
     refine ⟨hpp, ?_, ?_⟩
-    · calc Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ Real.exp (2 ^ i * Real.log x ^ a) := by
+    · calc _ ≤ Real.exp (2 ^ i * Real.log x ^ a) := by
             gcongr; nlinarith
         _ ≤ ⌈Real.exp (2 ^ i * Real.log x ^ a)⌉₊ := Nat.le_ceil _
         _ ≤ p := by exact_mod_cast hlo
@@ -190,11 +181,10 @@ theorem mem_candidatePrimes {x : ℝ} (hL : 1 ≤ Real.log x) {p : ℕ} (hp : p 
       have hlt : p < ⌈Real.exp (2 * (2 ^ i * Real.log x ^ a))⌉₊ := by
         have := Nat.ceil_pos.2 (Real.exp_pos (2 * (2 ^ i * Real.log x ^ a)))
         omega
-      have hlt' := Nat.lt_ceil.1 hlt
-      calc (p : ℝ) ≤ Real.exp (2 * (2 ^ i * Real.log x ^ a)) := hlt'.le
-        _ ≤ Real.exp (Real.log x ^ (45 / 100 : ℝ)) := by
+      calc _ ≤ Real.exp (2 * (2 ^ i * Real.log x ^ a)) := (Nat.lt_ceil.1 hlt).le
+        _ ≤ _ := by
           gcongr
-          calc 2 * (2 ^ i * Real.log x ^ a) = 2 ^ (i + 1) * Real.log x ^ a := by ring
+          calc _ = 2 ^ (i + 1) * Real.log x ^ a := by ring
             _ ≤ Real.log x ^ b := hi2
             _ ≤ _ := hLb
   rcases mem_union.1 hG with h | h
@@ -218,9 +208,7 @@ theorem prod_le_dampedDensity {x : ℝ} (hL : 1 ≤ Real.log x) {j : ℕ} (hj : 
   refine le_mul_of_one_le_right hpos.le (one_le_prod₀ fun p hp => ?_)
   have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (mem_candidatePrimes hL hp).1.two_le
   have ht : (j : ℝ)⁻¹ / p ≤ 1 / 2 := by
-    rw [div_le_iff₀ (by linarith)]
-    have := inv_le_one_of_one_le₀ hj'
-    linarith
+    bound
   have ht0 : 0 ≤ (j : ℝ)⁻¹ / p := by positivity
   rw [one_le_inv₀ (by linarith)]
   linarith
@@ -241,11 +229,10 @@ theorem unstrippedProxy_le {x γ : ℝ} (hx : 1 < x) (hL : 1 ≤ Real.log x) (h�
   split_ifs with h
   · have hn : γ * Real.log x < Real.log n := by
       rw [← Real.log_rpow (by linarith)]
-      exact Real.log_lt_log (by positivity) h
+      gcongr
     have hγL : 0 < γ * Real.log x := by positivity
     refine ⟨div_nonneg hg (mul_nonneg hD.le (hγL.trans hn).le), ?_⟩
-    exact div_le_div_of_nonneg_left hg (by positivity)
-      (mul_le_mul_of_nonneg_left hn.le hD.le)
+    gcongr
   · simp
 
 /-- `a_j(n) ≤ [x^γ < n] g_j(n) / (D_j γ L)`, since `n̄ ≤ n`. -/
@@ -256,16 +243,15 @@ theorem strippedProxy_le {x γ : ℝ} (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ 
         (dampedDensity x j * (γ * Real.log x)) := by
   have hD := dampedDensity_pos hL hj
   have hg := dampedWeight_nonneg x j n
-  have hxγ : 1 ≤ x ^ γ := Real.one_le_rpow hx.le hγ.le
+  have hxγ := Real.one_le_rpow hx.le hγ.le
   unfold strippedProxy
   split_ifs with h h'
   · have hn : γ * Real.log x < Real.log (candidateStrip x n) := by
       rw [← Real.log_rpow (by linarith)]
-      exact Real.log_lt_log (by positivity) h
+      gcongr
     have hγL : 0 < γ * Real.log x := by positivity
     refine ⟨div_nonneg hg (mul_nonneg hD.le (hγL.trans hn).le), ?_⟩
-    exact div_le_div_of_nonneg_left hg (by positivity)
-      (mul_le_mul_of_nonneg_left hn.le hD.le)
+    gcongr
   · exfalso
     apply h'
     rcases eq_or_ne n 0 with rfl | hn

@@ -98,16 +98,16 @@ theorem exists_comparison_bound
       rw [show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
       nlinarith [Real.pi_le_four, pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) hL 3]
     rw [abs_mul, abs_of_pos Real.two_pi_pos]
-    calc 2 * Real.pi * |ξ| ≤ L ^ (3 : ℝ) * L ^ Cf :=
+    calc _ ≤ L ^ (3 : ℝ) * L ^ Cf :=
           mul_le_mul hL3 hξ (abs_nonneg _) (by positivity)
       _ = L ^ (Cf + 3) := by rw [Real.rpow_add hL0]; ring
-      _ ≤ L ^ Cm := Real.rpow_le_rpow_of_exponent_le hL1 (le_max_right _ _)
+      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL1 (le_max_right _ _)
   have hsq : Real.sqrt (CE * L ^ (-(2 * (A'' + KΨ + Ccost)))) ≤
       Real.sqrt |CE| * L ^ (-(A'' + KΨ + Ccost)) := by
-    calc Real.sqrt (CE * L ^ (-(2 * (A'' + KΨ + Ccost))))
+    calc _
         ≤ Real.sqrt (|CE| * L ^ (-(2 * (A'' + KΨ + Ccost)))) :=
           Real.sqrt_le_sqrt (mul_le_mul_of_nonneg_right (le_abs_self _) (by positivity))
-      _ = Real.sqrt |CE| * L ^ (-(A'' + KΨ + Ccost)) := by
+      _ = _ := by
           rw [Real.sqrt_mul (abs_nonneg _), Real.sqrt_eq_rpow, Real.sqrt_eq_rpow,
             ← Real.rpow_mul hL0.le]
           congr 2
@@ -130,13 +130,12 @@ theorem exists_comparison_bound
       rw [← Real.rpow_add hL0]
       ring_nf
     have hp : 0 ≤ L ^ (-(A'' + KΨ)) := by positivity
-    calc Karc * (L ^ (-(A'' + KΨ)) + L ^ Ccost * (Real.sqrt (CE * L ^ (-(2 * (A'' + KΨ +
-          Ccost)))) + L ^ (-(A'' + KΨ + Ccost))))
+    calc _
         ≤ |Karc| * (L ^ (-(A'' + KΨ)) + L ^ Ccost * (Real.sqrt |CE| *
             L ^ (-(A'' + KΨ + Ccost)) + L ^ (-(A'' + KΨ + Ccost)))) := by
           refine mul_le_mul (le_abs_self _) ?_ (by positivity) (abs_nonneg _)
           gcongr
-      _ = |Karc| * (2 + Real.sqrt |CE|) * L ^ (-(A'' + KΨ)) := by
+      _ = _ := by
           rw [show L ^ Ccost * (Real.sqrt |CE| * L ^ (-(A'' + KΨ + Ccost)) +
               L ^ (-(A'' + KΨ + Ccost))) = (Real.sqrt |CE| + 1) *
               (L ^ Ccost * L ^ (-(A'' + KΨ + Ccost))) by ring, e₁]
@@ -157,15 +156,13 @@ theorem exists_comparison_bound
     intro ξ B hB0 hB
     rw [norm_mul, hxσ, one_mul]
     refine (norm_sum_le _ _).trans ?_
-    calc ∑ m, ‖(y m : ℂ) * ((((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ *
-            comparisonBilinear x q q₀ a u v Bc P Aν Bν φ φ' ψ ψ' G (ψ₁ m)
-              (y m * (x * U * U')) (2 * Real.pi * ξ))‖
+    calc _
         ≤ ∑ _m : Fin n, yb * B := by
           refine Finset.sum_le_sum fun m _ => ?_
-          have hy0 : 0 ≤ y m := le_trans (by positivity) (hy m).1
+          have hy0  := le_trans (by positivity) (hy m).1
           rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg hy0]
           exact mul_le_mul (hy m).2 (hB m) (norm_nonneg _) hyb0
-      _ = n * yb * B := by
+      _ = _ := by
           rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
           ring
   have h₁ : ∀ ξ : ℝ, |ξ| ≤ L ^ Cf →
@@ -190,8 +187,7 @@ theorem exists_comparison_bound
   have e₂ : L ^ C₅ * L ^ (-(|A''| + |C₅| + 1)) ≤ L ^ (-A'') := by
     rw [← Real.rpow_add hL0]
     exact Real.rpow_le_rpow_of_exponent_le hL1 (by linarith [le_abs_self A'', le_abs_self C₅])
-  calc n * yb * (|Karc| * (2 + Real.sqrt |CE|) * L ^ (-(A'' + KΨ))) * (∫ ξ, ‖α ξ‖) +
-        n * yb * L ^ C₅ * ∫ ξ in {ξ : ℝ | L ^ Cf < |ξ|}, ‖α ξ‖
+  calc _
       ≤ n * yb * (|Karc| * (2 + Real.sqrt |CE|) * L ^ (-(A'' + KΨ))) * L ^ KΨ +
           n * yb * L ^ C₅ * (KA * L ^ (-(|A''| + |C₅| + 1))) :=
         add_le_add (mul_le_mul_of_nonneg_left hα₁ (by positivity))
@@ -201,6 +197,6 @@ theorem exists_comparison_bound
     _ ≤ n * yb * (|Karc| * (2 + Real.sqrt |CE|) * L ^ (-A'') + KA * L ^ (-A'')) := by
         rw [e₁]
         gcongr
-    _ = n * yb * (|Karc| * (2 + Real.sqrt |CE|) + KA) * L ^ (-A'') := by ring
+    _ = _ := by ring
 
 end Erdos408.TwoSided

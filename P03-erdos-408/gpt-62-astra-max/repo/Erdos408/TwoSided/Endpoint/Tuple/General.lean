@@ -19,13 +19,12 @@ E + B_min)` there is `C_T`, with the mean square over any interval of times
 
 namespace Erdos408.TwoSided.TupleHigh
 
-open Filter Finset MeasureTheory
+open Filter Finset
 
 /-- **The tuple part at high times, for a general coefficient.** -/
 theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vlo) (hc : 0 < c)
     (M₁ : ℕ → ℝ) :
-    ∃ A' Bmin : ℝ, ∀ E κ' B' : ℝ, Bmin ≤ B' → E + Bmin ≤ B' → ∃ CT : ℝ, 0 ≤ CT ∧
-      ∀ᶠ x : ℝ in atTop,
+    ∃ A' Bmin, ∀ E κ' B', Bmin ≤ B' → E + Bmin ≤ B' → ∃ CT ≥ 0, ∀ᶠ x : ℝ in atTop,
         PrimeTwistBound x A' E Cm κ' → IntegerKernelBound x Cm κ' →
         ∀ (s : Finset ℕ) (V A B : ℝ) (cf : ℕ → ℂ) (ψ₁ : ℝ → ℂ) (Y σ : ℝ) (k : ℕ) (h : ℤ),
           (∀ p ∈ s, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
@@ -57,7 +56,7 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
     linarith
   set D := 6 * Cm + 6 + 2 * K + 2 * CU + 5 with hD
   set As := max ((A₀ + D) / 2) 1 with hAs
-  have hAs0 : 0 < As := lt_of_lt_of_le one_pos (le_max_right _ _)
+  have hAs0 : 0 < As := by positivity
   refine ⟨(A₀ + D - 1) / 2, max Cm Cf + 2, fun E κ' B' hB₁ hB₂ => ?_⟩
   set At := max (A₀ + (6 * Cm + 6 + K + 2 * CU + 5)) 1 with hAt
   obtain ⟨KA, hKA, hmelx⟩ := hmel At (lt_of_lt_of_le one_pos (le_max_right _ _))
@@ -76,7 +75,7 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
   set e := Real.exp (c * L / Real.log L ^ 20) with he
   have hxe : x / e ≤ x := div_le_self hx0.le (Real.one_le_exp (by positivity))
   have hBx : B ≤ x / e := by
-    rw [div_eq_mul_inv, he, ← Real.exp_neg]
+    rw [div_eq_mul_inv, ← Real.exp_neg]
     exact hB
   set sp := (Iic ⌊B⌋₊).filter fun p : ℕ => p.Prime ∧ A < p with hsp
   have hspP : ∀ p ∈ sp, p.Prime ∧ A < p ∧ (p : ℝ) ≤ B := by
@@ -100,8 +99,6 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
   have hbox : ∀ p : ℕ, (p : ℝ) ≤ x ^ 2 → boxIndex p < N₀ := fun p hp =>
     boxIndex_lt hN₀1 (by exact_mod_cast hp.trans hN₀x)
   have h36x : Real.exp (L ^ (0.36 : ℝ)) ≤ x / 2 := by
-    have h₁ := hf.m36
-    have h₂ := hf.m47
     have h₃ : Real.exp (L ^ (0.36 : ℝ)) ≤ Real.exp (L ^ (0.47 : ℝ)) :=
       Real.exp_le_exp.2 (Real.rpow_le_rpow_of_exponent_le hL1 (by norm_num))
     have h₄ := hf.box.2.2.2.1
@@ -115,7 +112,7 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
       have h₂ := (hspP pl hpl).2.2
       have he1 : 2 * Real.exp (L ^ (0.36 : ℝ)) ≤ e := hf.m36
       push_cast
-      calc (ps : ℝ) * pl ≤ Real.exp (L ^ (0.36 : ℝ)) * (x / e) :=
+      calc _ ≤ Real.exp (L ^ (0.36 : ℝ)) * (x / e) :=
             mul_le_mul h₁ (h₂.trans hBx) (Nat.cast_nonneg _) (by positivity)
         _ < x := by
             rw [mul_div_assoc', div_lt_iff₀ (Real.exp_pos _)]
@@ -161,21 +158,19 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
   rw [sum_const, nsmul_eq_mul]
   -- the number of indices
   have hcard : (#(boxSet N₀ k) : ℝ) ≤ 64 * L ^ (3 * Cm + 3) := by
-    have h₁ : (#(boxSet N₀ k) : ℝ) ≤ (N₀ : ℝ) ^ 3 * (k : ℝ) ^ 3 := by
+    have h₁ : (#(boxSet N₀ k) : ℝ) ≤ N₀ ^ 3 * k ^ 3 := by
       exact_mod_cast card_boxSet_le N₀ k
-    have h₂ : (k : ℝ) ^ 3 ≤ L ^ (3 * Cm) := by
-      calc (k : ℝ) ^ 3 ≤ (L ^ Cm) ^ 3 := pow_le_pow_left₀ (Nat.cast_nonneg _) hk₂ 3
-        _ = L ^ (3 * Cm) := by
+    have h₂ : k ^ 3 ≤ L ^ (3 * Cm) := by
+      calc _ ≤ (L ^ Cm) ^ 3 := pow_le_pow_left₀ (Nat.cast_nonneg _) hk₂ 3
+        _ = _ := by
             rw [← Real.rpow_natCast, ← Real.rpow_mul (by linarith)]
             ring_nf
-    have h₃ : (N₀ : ℝ) ^ 3 ≤ (4 * L) ^ 3 := pow_le_pow_left₀ (Nat.cast_nonneg _) hN₀L 3
+    have h₃ := pow_le_pow_left₀ (Nat.cast_nonneg _) hN₀L 3
     have h₄ : (4 * L) ^ 3 * L ^ (3 * Cm) = 64 * L ^ (3 * Cm + 3) := by
-      rw [Real.rpow_add (by linarith), mul_pow, show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num,
+      rw [Real.rpow_add (by linarith), mul_pow, show (3 : ℝ) = (3 : ℕ) by norm_num,
         Real.rpow_natCast]
       ring
-    calc (#(boxSet N₀ k) : ℝ) ≤ (N₀ : ℝ) ^ 3 * (k : ℝ) ^ 3 := h₁
-      _ ≤ (4 * L) ^ 3 * L ^ (3 * Cm) := mul_le_mul h₃ h₂ (by positivity) (by positivity)
-      _ = 64 * L ^ (3 * Cm + 3) := h₄
+    exact (h₁.trans (mul_le_mul h₃ h₂ (by positivity) (by positivity))).trans_eq h₄
   exact tupleBound_le hL1 hvlo hKA.le (Nat.cast_nonneg _) hcard
     (by rw [hAs]; linarith [le_max_left ((A₀ + D) / 2) 1]) (by rw [hD]; ring)
     (le_max_left _ _)

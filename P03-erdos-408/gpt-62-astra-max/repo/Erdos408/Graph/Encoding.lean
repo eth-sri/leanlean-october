@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Scales
+
 public import Erdos408.Hypotheses
 public import Erdos821.Blueprint.Ideal
 
@@ -103,18 +105,17 @@ lemma V_primeGroups (g : Fin n) : (primeGroups P big hP hd).V g = harmonicMass (
 lemma intervalBigGroups_primeGroups (h : ∀ g ∈ big, ∃ y z : ℝ, P g = primesIcc y z) :
     intervalBigGroups (primeGroups P big hP hd) := by
   rintro ⟨g, hg⟩
-  have hg' : g ∈ big := by simpa [primeGroups] using hg
-  obtain ⟨y, z, hyz⟩ := h g hg'
+  obtain ⟨y, z, hyz⟩ := h g (by simpa [primeGroups] using hg)
   exact ⟨y, z, fun p => by simp only [hyz]; exact mem_primesIcc_iff⟩
 
 /-- `GraphTransference`'s premises on the groups make `primeGroups` admissible
 for `fixedData`. -/
 lemma admissible {q₀ c₀ C₀ vlo vhi : ℝ} {hq₀ : 0 < q₀} {hq₁ : q₀ < 1} {hc₀ : 0 < c₀}
-    {hvlo : 0 < vlo} {x : ℝ} (hT : 0 ≤ Real.log (Real.log x))
-    (hs₁ : c₀ * Real.log (Real.log x) ≤ (Finset.univ \ big).card)
-    (hs₂ : ((Finset.univ \ big).card : ℝ) ≤ C₀ * Real.log (Real.log x))
-    (hb₁ : c₀ * Real.log (Real.log x) ≤ big.card)
-    (hb₂ : (big.card : ℝ) ≤ C₀ * Real.log (Real.log x))
+    {hvlo : 0 < vlo} {x : ℝ} (hT : 0 ≤ logLog x)
+    (hs₁ : c₀ * logLog x ≤ (Finset.univ \ big).card)
+    (hs₂ : ((Finset.univ \ big).card : ℝ) ≤ C₀ * logLog x)
+    (hb₁ : c₀ * logLog x ≤ big.card)
+    (hb₂ : (big.card : ℝ) ≤ C₀ * logLog x)
     (hV : ∀ g, vlo ≤ harmonicMass (P g) ∧ harmonicMass (P g) ≤ vhi)
     (hsmall : ∀ g ∉ big, P g ⊆ primesIcc (Real.exp (Real.log x ^ (0.27 : ℝ)))
       (Real.exp (Real.log x ^ (0.36 : ℝ))))
@@ -130,7 +131,7 @@ lemma admissible {q₀ c₀ C₀ vlo vhi : ℝ} {hq₀ : 0 < q₀} {hq₁ : q₀
   · rw [bigGroups_primeGroups]; exact hb₂.trans hC
   · change vlo ≤ (primeGroups P big hP hd).V g ∧ (primeGroups P big hP hd).V g ≤ max vhi 1
     rw [V_primeGroups]
-    exact ⟨(hV g).1, (hV g).2.trans (le_max_left _ _)⟩
+    grind
   · change p ∈ P g at hp
     change if decide (g ∈ big) = true then _ else _
     by_cases hg : g ∈ big

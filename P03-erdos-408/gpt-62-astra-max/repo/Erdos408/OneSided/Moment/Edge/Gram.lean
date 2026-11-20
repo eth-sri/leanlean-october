@@ -44,9 +44,9 @@ theorem circleDist_le_half (t : ℝ) : circleDist t ≤ 1 / 2 := abs_sub_round t
 
 /-- `‖s + t‖ ≤ ‖s‖ + |t|`. -/
 theorem circleDist_add_le (s t : ℝ) : circleDist (s + t) ≤ circleDist s + |t| := by
-  calc circleDist (s + t) ≤ |s + t - round s| := circleDist_le_abs_sub _ _
+  calc _ ≤ |s + t - round s| := circleDist_le_abs_sub _ _
     _ = |(s - round s) + t| := by ring_nf
-    _ ≤ |s - round s| + |t| := abs_add_le _ _
+    _ ≤ _ := abs_add_le _ _
 
 /-- For an integer `n` not divisible by `d ≥ 1`, `‖n/d‖ ≥ 1/d`. -/
 theorem one_div_le_circleDist_div {n : ℤ} {d : ℕ} (hd : 0 < d) (hn : ¬ (d : ℤ) ∣ n) :
@@ -108,7 +108,7 @@ theorem four_mul_circleDist_le (t : ℝ) : 4 * circleDist t ≤ ‖ephase t - 1�
   set y := t - round t with hy
   have hyt : ephase t = ephase y := by
     rw [hy, sub_eq_add_neg, ephase_add, ← Int.cast_neg, ephase_intCast, mul_one]
-  have hy2 : |y| ≤ 1 / 2 := abs_sub_round t
+  have hy2 := abs_sub_round t
   -- `|e(y) - 1| = 2 |sin(π y)| ≥ 4 |y|`
   have e : ephase y = Complex.exp (Complex.I * ((2 * π * y : ℝ) : ℂ)) := by
     rw [ephase]
@@ -145,9 +145,7 @@ def dirBound (n t : ℝ) : ℝ := if circleDist t = 0 then n else min n (1 / (2 
 /-- `dirBound n t ≤ n`. -/
 theorem dirBound_le (n t : ℝ) : dirBound n t ≤ n := by
   unfold dirBound
-  split_ifs
-  · exact le_rfl
-  · exact min_le_left _ _
+  grind
 
 /-- `dirBound n t ≥ 0` for `n ≥ 0`. -/
 theorem dirBound_nonneg {n : ℝ} (hn : 0 ≤ n) (t : ℝ) : 0 ≤ dirBound n t := by
@@ -159,8 +157,7 @@ theorem dirBound_nonneg {n : ℝ} (hn : 0 ≤ n) (t : ℝ) : 0 ≤ dirBound n t 
 /-- `dirBound n t ≤ 1/(2‖t‖)` when `‖t‖ ≠ 0`. -/
 theorem dirBound_le_inv {n t : ℝ} (ht : circleDist t ≠ 0) :
     dirBound n t ≤ 1 / (2 * circleDist t) := by
-  simp only [dirBound, ht, ↓reduceIte]
-  exact min_le_right _ _
+  simp_all [dirBound]
 
 /-- **The geometric sum**: `|∑_{|h| ≤ A} e(h t)| ≤ dirBound (2A + 1) t`. -/
 theorem norm_sum_ephase_le (A : ℕ) (t : ℝ) :
@@ -170,17 +167,10 @@ theorem norm_sum_ephase_le (A : ℕ) (t : ℝ) :
       ephase (-(A * t)) * ∑ j ∈ range (2 * A + 1), ephase t ^ j := by
     rw [mul_sum]
     refine sum_nbij' (fun h => (h + A).toNat) (fun j => (j : ℤ) - A) ?_ ?_ ?_ ?_ ?_
-    · intro h hh
-      simp only [mem_Icc, mem_range] at hh ⊢
-      omega
-    · intro j hj
-      simp only [mem_Icc, mem_range] at hj ⊢
-      omega
-    · intro h hh
-      simp only [mem_Icc] at hh ⊢
-      omega
-    · intro j _
-      simp
+    · grind
+    · grind
+    · grind
+    · simp
     · intro h hh
       simp only [mem_Icc] at hh
       rw [← ephase_natCast_mul, ← ephase_add]
@@ -201,23 +191,21 @@ theorem norm_sum_ephase_le (A : ℕ) (t : ℝ) :
   split_ifs with h0
   · exact htriv
   · refine le_min htriv ?_
-    have hpos : 0 < circleDist t := lt_of_le_of_ne (circleDist_nonneg t) (Ne.symm h0)
+    have hpos := lt_of_le_of_ne (circleDist_nonneg t) (Ne.symm h0)
     have h4 := four_mul_circleDist_le t
     have hne : ephase t - 1 ≠ 0 := by
       intro h
       rw [h, norm_zero] at h4
       linarith
-    have hne' : ephase t ≠ 1 := sub_ne_zero.1 hne
-    rw [e, geom_sum_eq hne', norm_mul, norm_ephase, one_mul, norm_div]
+    rw [e, geom_sum_eq (sub_ne_zero.1 hne), norm_mul, norm_ephase, one_mul, norm_div]
     have hnum : ‖ephase t ^ (2 * A + 1) - 1‖ ≤ 2 := by
       refine (norm_sub_le _ _).trans ?_
       rw [norm_pow, norm_ephase, one_pow, norm_one]
       norm_num
-    have hden : 0 < ‖ephase t - 1‖ := norm_pos_iff.2 hne
-    calc ‖ephase t ^ (2 * A + 1) - 1‖ / ‖ephase t - 1‖ ≤ 2 / ‖ephase t - 1‖ :=
-          div_le_div_of_nonneg_right hnum hden.le
-      _ ≤ 2 / (4 * circleDist t) := div_le_div_of_nonneg_left (by norm_num) (by positivity) h4
-      _ = 1 / (2 * circleDist t) := by field_simp; norm_num
+    calc _ ≤ 2 / ‖ephase t - 1‖ :=
+          by gcongr
+      _ ≤ 2 / (4 * circleDist t) := by gcongr
+      _ = _ := by field_simp; norm_num
 
 /-! ### The Gram bound -/
 
@@ -233,8 +221,8 @@ theorem kerLe_phaseBox (ϑ : ℝ) (A B : ℕ) :
   set IA := Icc (-(A : ℤ)) A
   set IB := Icc (-(B : ℤ)) B
   -- the Gram entries `G(k, k') = ∑_h e(ϑ h (k - k'))`
-  set G : ℤ → ℤ → ℂ := fun k k' => ∑ h ∈ IA, ephase (h * ((k - k' : ℤ) * ϑ)) with hG
-  have hGle : ∀ k k', ‖G k k'‖ ≤ dirBound (2 * A + 1) ((k - k' : ℤ) * ϑ) := fun k k' =>
+  set G : ℤ → ℤ → ℂ := fun k k' => ∑ h ∈ IA, ephase (h * ((k - k') * ϑ)) with hG
+  have hGle : ∀ k k', ‖G k k'‖ ≤ dirBound (2 * A + 1) ((k - k') * ϑ) := fun k k' =>
     norm_sum_ephase_le A _
   have hGsymm : ∀ k k', ‖G k' k‖ = ‖G k k'‖ := by
     intro k k'
@@ -251,12 +239,12 @@ theorem kerLe_phaseBox (ϑ : ℝ) (A B : ℕ) :
       ∑ k ∈ IB, ∑ k' ∈ IB, f k * star (f k') * G k k' := by
     push_cast
     have : ∀ h, ((‖∑ k ∈ IB, ephase (ϑ * h * k) * f k‖ : ℝ) : ℂ) ^ 2 =
-        ∑ k ∈ IB, ∑ k' ∈ IB, f k * star (f k') * ephase (h * ((k - k' : ℤ) * ϑ)) := by
+        ∑ k ∈ IB, ∑ k' ∈ IB, f k * star (f k') * ephase (h * ((k - k') * ϑ)) := by
       intro h
       rw [← Complex.mul_conj', ← Complex.star_def, star_sum, sum_mul_sum]
       refine sum_congr rfl fun k _ => sum_congr rfl fun k' _ => ?_
       rw [star_mul', star_ephase]
-      have : ephase (ϑ * h * k) * ephase (-(ϑ * h * k')) = ephase (h * ((k - k' : ℤ) * ϑ)) := by
+      have : ephase (ϑ * h * k) * ephase (-(ϑ * h * k')) = ephase (h * ((k - k') * ϑ)) := by
         rw [← ephase_add]
         congr 1
         push_cast
@@ -279,7 +267,7 @@ theorem kerLe_phaseBox (ϑ : ℝ) (A B : ℕ) :
           rw [hexp]
           refine (norm_sum_le _ _).trans (sum_le_sum fun k _ => (norm_sum_le _ _).trans
             (sum_le_sum fun k' _ => le_of_eq ?_))
-          rw [norm_mul, norm_mul, norm_star]
+          simp
   -- AM–GM and the symmetry of the Gram matrix
   have hamgm : ∑ k ∈ IB, ∑ k' ∈ IB, ‖f k‖ * ‖f k'‖ * ‖G k k'‖ ≤
       ∑ k ∈ IB, ‖f k‖ ^ 2 * ∑ k' ∈ IB, ‖G k k'‖ := by
@@ -301,21 +289,19 @@ theorem kerLe_phaseBox (ϑ : ℝ) (A B : ℕ) :
   -- each Gram row sum is at most `Γ`
   have hrow : ∀ k ∈ IB, ∑ k' ∈ IB, ‖G k k'‖ ≤ Γ := by
     intro k hk
-    calc ∑ k' ∈ IB, ‖G k k'‖ ≤ ∑ k' ∈ IB, dirBound (2 * A + 1) ((k - k' : ℤ) * ϑ) :=
-          sum_le_sum fun k' _ => hGle k k'
+    calc _ ≤ ∑ k' ∈ IB, dirBound (2 * A + 1) ((k - k') * ϑ) :=
+          by solve_by_elim [sum_le_sum]
       _ = ∑ m ∈ IB.image (fun k' => k - k'), dirBound (2 * A + 1) (m * ϑ) := by
-          rw [sum_image fun a _ b _ h => by simpa using h]
+          simp
       _ ≤ Γ := by
           refine sum_le_sum_of_subset_of_nonneg (fun m hm => ?_)
             fun m _ _ => dirBound_nonneg (by positivity) _
-          obtain ⟨k', hk', rfl⟩ := mem_image.1 hm
-          rw [mem_Icc] at hk hk' ⊢
-          constructor <;> omega
+          grind
   calc _ ≤ _ := hreal
     _ ≤ _ := hamgm
     _ ≤ ∑ k ∈ IB, ‖f k‖ ^ 2 * Γ :=
         sum_le_sum fun k hk => mul_le_mul_of_nonneg_left (hrow k hk) (sq_nonneg _)
-    _ = Γ * ∑ k ∈ IB, ‖f k‖ ^ 2 := by rw [mul_sum]; exact sum_congr rfl fun k _ => by ring
+    _ = _ := by rw [mul_sum]; exact sum_congr rfl fun k _ => by ring
 
 /-! ### The spacing bound -/
 
@@ -324,7 +310,6 @@ theorem kerLe_phaseBox (ϑ : ℝ) (A B : ℕ) :
 theorem circleDist_mul_ge {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d ≤ Q)
     (hcop : Int.gcd c d = 1) (happ : |ϑ - c / d| ≤ 1 / (d * Q)) {j : ℤ} (hj : j ≠ 0)
     (hjd : 2 * |j| ≤ d) : 1 / (2 * d) ≤ circleDist (j * ϑ) := by
-  have hd' : (0 : ℝ) < d := by exact_mod_cast hd
   have hQ' : (d : ℝ) ≤ Q := by exact_mod_cast hdQ
   -- `d ∤ j c`
   have hndvd : ¬ (d : ℤ) ∣ j * c := by
@@ -335,15 +320,14 @@ theorem circleDist_mul_ge {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d
         exact hcop
       exact hc.dvd_of_dvd_mul_right h
     have h2 := Int.le_of_dvd (abs_pos.2 hj) ((dvd_abs _ _).2 h1)
-    have : (1 : ℤ) ≤ |j| := Int.one_le_abs hj
     omega
   have h1 := one_div_le_circleDist_div hd hndvd
   have hjr : (2 : ℝ) * |(j : ℝ)| ≤ d := by exact_mod_cast hjd
   have herr : |(j : ℝ)| * |ϑ - c / d| ≤ 1 / (2 * d) := by
     calc |(j : ℝ)| * |ϑ - c / d| ≤ (d / 2) * (1 / (d * Q)) :=
-          mul_le_mul (by linarith) happ (abs_nonneg _) (by positivity)
+          by bound
       _ = 1 / (2 * Q) := by field_simp
-      _ ≤ 1 / (2 * d) := one_div_le_one_div_of_le (by positivity) (by linarith)
+      _ ≤ 1 / (2 * d) := by gcongr
   have h2 := circleDist_add_le ((j : ℝ) * ϑ) (((j * c : ℤ) : ℝ) / d - j * ϑ)
   rw [add_sub_cancel] at h2
   have e : |((j * c : ℤ) : ℝ) / d - j * ϑ| = |(j : ℝ)| * |ϑ - c / d| := by
@@ -373,9 +357,7 @@ private theorem card_bucket_le_two {ϑ : ℝ} {d : ℕ} (hd : 0 < d) (T : Finset
     set y := (m : ℝ) * ϑ - round ((m : ℝ) * ϑ)
     set y' := (m' : ℝ) * ϑ - round ((m' : ℝ) * ϑ)
     have hb : (0 ≤ y ↔ 0 ≤ y') := by
-      have h := hm.2.trans hm'.2.symm
-      simp only [sgn, decide_eq_decide] at h
-      exact h
+      grind
     -- `|y|, |y'| ∈ [j/(4d), (j+1)/(4d))`
     have hy0 : 0 ≤ 4 * d * |y| := by positivity
     have hy0' : 0 ≤ 4 * d * |y'| := by positivity
@@ -388,25 +370,20 @@ private theorem card_bucket_le_two {ϑ : ℝ} {d : ℕ} (hd : 0 < d) (T : Finset
     rw [hj'] at hyl' hyu'
     have key : |4 * d * y - 4 * d * y'| < 1 := by
       by_cases h : 0 ≤ y
-      · have h' := hb.1 h
-        rw [abs_of_nonneg h] at hyl hyu
-        rw [abs_of_nonneg h'] at hyl' hyu'
-        exact abs_sub_lt_iff.2 ⟨by linarith, by linarith⟩
-      · have h' : ¬ 0 ≤ y' := fun h' => h (hb.2 h')
-        push Not at h h'
-        rw [abs_of_neg h] at hyl hyu
-        rw [abs_of_neg h'] at hyl' hyu'
-        exact abs_sub_lt_iff.2 ⟨by linarith, by linarith⟩
+      · rw [abs_of_nonneg h] at hyl hyu
+        rw [abs_of_nonneg (hb.1 h)] at hyl' hyu'
+        grind
+      grind
     have hclose : |y - y'| < 1 / (4 * d) := by
       have e : |4 * d * y - 4 * d * y'| = 4 * d * |y - y'| := by
         rw [← mul_sub, abs_mul, abs_of_pos (by positivity)]
       rw [lt_div_iff₀ (by positivity)]
       linarith
     have hdist : circleDist ((m - m' : ℤ) * ϑ) ≤ |y - y'| := by
-      calc circleDist ((m - m' : ℤ) * ϑ)
+      calc _
           ≤ |((m - m' : ℤ) : ℝ) * ϑ - ((round ((m : ℝ) * ϑ) - round ((m' : ℝ) * ϑ) : ℤ) : ℝ)| :=
             circleDist_le_abs_sub _ _
-        _ = |y - y'| := by congr 1; push_cast; ring
+        _ = _ := by congr 1; push_cast; ring
     have : 1 / (4 * (d : ℝ)) < 1 / (2 * d) := one_div_lt_one_div_of_lt (by positivity)
       (by linarith)
     linarith
@@ -419,14 +396,12 @@ private theorem sum_inv_le_one_add_log (n : ℕ) :
     ∑ j ∈ Icc 1 n, (1 : ℝ) / j ≤ 1 + Real.log n := by
   have h := harmonic_le_one_add_log n
   rw [harmonic_eq_sum_Icc] at h
-  push_cast at h
   simpa [one_div] using h
 
 /-- Within a block of `1/(2d)`-separated points, `∑ dirBound n (m ϑ) ≤ 2n + 4d (1 + log 2d)`. -/
 private theorem sum_block_le {ϑ : ℝ} {d : ℕ} (hd : 0 < d) {n : ℝ} (hn : 0 ≤ n) (T : Finset ℤ)
     (hsep : ∀ m ∈ T, ∀ m' ∈ T, m ≠ m' → 1 / (2 * d) ≤ circleDist ((m - m' : ℤ) * ϑ)) :
     ∑ m ∈ T, dirBound n (m * ϑ) ≤ 2 * n + 4 * d * (1 + Real.log (2 * d)) := by
-  have hd' : (0 : ℝ) < d := by exact_mod_cast hd
   set bucket : ℤ → ℕ := fun m => ⌊4 * d * circleDist (m * ϑ)⌋₊
   have hmaps : ∀ m ∈ T, bucket m ∈ range (2 * d + 1) := by
     intro m _
@@ -456,35 +431,26 @@ private theorem sum_block_le {ϑ : ℝ} {d : ℕ} (hd : 0 < d) {n : ℝ} (hn : 0
           rw [← hj]
           exact Nat.floor_le (by have := circleDist_nonneg (m * ϑ); positivity)
         have hc : 0 < circleDist (m * ϑ) := by
-          by_contra hc
-          have : circleDist (m * ϑ) = 0 := le_antisymm (not_lt.1 hc) (circleDist_nonneg _)
-          rw [this] at hfl
-          linarith
-        calc dirBound n (m * ϑ) ≤ 1 / (2 * circleDist (m * ϑ)) := dirBound_le_inv hc.ne'
-          _ ≤ 2 * d / j := by
+          nlinarith
+        calc _ ≤ 1 / (2 * circleDist (m * ϑ)) := dirBound_le_inv hc.ne'
+          _ ≤ _ := by
               rw [div_le_div_iff₀ (by positivity) hjpos]
               nlinarith
     have hbj : 0 ≤ bnd j := by
-      rw [hbnd]
-      dsimp only
-      split_ifs
-      · exact hn
-      · positivity
-    calc ∑ m ∈ T with bucket m = j, dirBound n (m * ϑ) ≤ ∑ m ∈ T with bucket m = j, bnd j :=
+      positivity
+    calc _ ≤ ∑ m ∈ T with bucket m = j, bnd j :=
           sum_le_sum hpt
-      _ = (T.filter fun m => bucket m = j).card * bnd j := by rw [sum_const, nsmul_eq_mul]
-      _ ≤ 2 * bnd j := mul_le_mul_of_nonneg_right (by exact_mod_cast hcard) hbj
+      _ = (T.filter fun m => bucket m = j).card * bnd j := by simp
+      _ ≤ _ := mul_le_mul_of_nonneg_right (by exact_mod_cast hcard) hbj
   refine (sum_le_sum hb).trans ?_
   rw [← mul_sum, range_eq_Ico, sum_eq_sum_Ico_succ_bot (by omega)]
   have htail : ∑ j ∈ Ico (0 + 1) (2 * d + 1), bnd j = 2 * d * ∑ j ∈ Icc 1 (2 * d), (1 : ℝ) / j := by
     rw [mul_sum]
     refine sum_congr (by ext j; simp) fun j hj => ?_
-    have hj0 : j ≠ 0 := by simp at hj; omega
-    simp only [hbnd, hj0, ↓reduceIte]
-    ring
+    grind
   rw [htail]
   have hlog := sum_inv_le_one_add_log (2 * d)
-  have : bnd 0 = n := by simp [hbnd]
+  have : bnd 0 = n := by rfl
   rw [this]
   push_cast at hlog ⊢
   nlinarith
@@ -496,7 +462,6 @@ theorem sum_dirBound_le {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d �
     (hcop : Int.gcd c d = 1) (happ : |ϑ - c / d| ≤ 1 / (d * Q)) (M : ℕ) {n : ℝ} (hn : 0 ≤ n) :
     ∑ m ∈ Icc (-(M : ℤ)) M, dirBound n (m * ϑ) ≤
       (4 * M / d + 1) * (2 * n + 4 * d * (1 + Real.log (2 * d))) := by
-  have hd' : (0 : ℝ) < d := by exact_mod_cast hd
   set ℓ := d / 2 + 1 with hℓ
   have hℓ0 : 0 < ℓ := by omega
   -- blocks `q = ⌊(m + M)/ℓ⌋`
@@ -507,14 +472,12 @@ theorem sum_dirBound_le {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d �
     rw [mem_range, Nat.lt_succ_iff]
     exact Nat.div_le_div_right (by omega)
   rw [← sum_fiberwise_of_maps_to hmaps]
-  have hW : 0 ≤ 2 * n + 4 * d * (1 + Real.log (2 * d)) := by
-    have : 0 ≤ Real.log (2 * d) := Real.log_nonneg (by
-      have : (1 : ℝ) ≤ d := by exact_mod_cast hd
-      linarith)
-    positivity
+  let logAt := 2 * n + 4 * d * (1 + Real.log (2 * d))
+  have hW : 0 ≤ logAt := by
+    bound
   have hblock : ∀ q ∈ range (2 * M / ℓ + 1),
       ∑ m ∈ Icc (-(M : ℤ)) M with blk m = q, dirBound n (m * ϑ) ≤
-        2 * n + 4 * d * (1 + Real.log (2 * d)) := by
+        logAt := by
     intro q _
     refine sum_block_le hd hn _ fun m hm m' hm' hne => ?_
     rw [mem_filter, mem_Icc] at hm hm'
@@ -529,28 +492,23 @@ theorem sum_dirBound_le {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d �
     have hr2 := Nat.mod_lt (m' + M).toNat hℓ0
     rw [h1] at hq1
     rw [h2] at hq2
-    have e1 : (((m + M).toNat : ℕ) : ℤ) = m + M := Int.toNat_of_nonneg (by omega)
-    have e2 : (((m' + M).toNat : ℕ) : ℤ) = m' + M := Int.toNat_of_nonneg (by omega)
-    have : |m - m'| < ℓ := by
-      rw [abs_lt]
-      constructor <;> zify at hq1 hq2 hr1 hr2 <;> omega
-    omega
-  calc _ ≤ ∑ q ∈ range (2 * M / ℓ + 1), (2 * n + 4 * d * (1 + Real.log (2 * d))) :=
+    grind
+  calc _ ≤ ∑ q ∈ range (2 * M / ℓ + 1), (logAt) :=
         sum_le_sum hblock
-    _ = ((2 * M / ℓ : ℕ) + 1 : ℝ) * (2 * n + 4 * d * (1 + Real.log (2 * d))) := by
+    _ = ((2 * M / ℓ : ℕ) + 1 : ℝ) * (logAt) := by
         rw [sum_const, card_range, nsmul_eq_mul]
         push_cast
         ring
-    _ ≤ (4 * M / d + 1) * (2 * n + 4 * d * (1 + Real.log (2 * d))) := by
+    _ ≤ (4 * M / d + 1) * (logAt) := by
         refine mul_le_mul_of_nonneg_right ?_ hW
         have h1 : ((2 * M / ℓ : ℕ) : ℝ) ≤ (2 * M : ℕ) / (ℓ : ℝ) := Nat.cast_div_le
         have h2 : (d : ℝ) ≤ 2 * ℓ := by
           have : d ≤ 2 * ℓ := by omega
           exact_mod_cast this
         have h3 : ((2 * M : ℕ) : ℝ) / ℓ ≤ 4 * M / d := by
-          rw [div_le_div_iff₀ (by exact_mod_cast hℓ0) hd']
+          rw [div_le_div_iff₀ (by exact_mod_cast hℓ0) (by exact_mod_cast hd)]
           push_cast
-          nlinarith [(Nat.cast_nonneg M : (0 : ℝ) ≤ M)]
+          nlinarith
         linarith
 
 /-! ### The determinant matrix -/
@@ -578,7 +536,7 @@ theorem kerLe_detPhase (ϑ : ℝ) (A B : ℕ) {Γ₁ Γ₂ : ℝ}
     rw [← mul_assoc, ← ephase_add]
     congr 2
     ring
-  calc ∑ p ∈ IA ×ˢ IB, ‖∑ p' ∈ IA ×ˢ IB, ephase (ϑ * (p.1 * p'.2 - p.2 * p'.1)) * f p'‖ ^ 2
+  calc _
       = ∑ l₁ ∈ IB, ∑ h₁ ∈ IA, ‖∑ l₂ ∈ IB, ephase (ϑ * h₁ * l₂) * g l₁ l₂‖ ^ 2 := by
         rw [sum_product, sum_comm]
         exact sum_congr rfl fun l₁ _ => sum_congr rfl fun h₁ _ => by rw [hE]
@@ -588,7 +546,7 @@ theorem kerLe_detPhase (ϑ : ℝ) (A B : ℕ) {Γ₁ Γ₂ : ℝ}
     _ ≤ Γ₂ ^ 2 * ∑ l₂ ∈ IB, Γ₁ ^ 2 * ∑ h₂ ∈ IA, ‖f (h₂, l₂)‖ ^ 2 :=
         mul_le_mul_of_nonneg_left (sum_le_sum fun l₂ _ => h₁ fun h₂ => f (h₂, l₂))
           (sq_nonneg _)
-    _ = (Γ₁ * Γ₂) ^ 2 * ∑ p ∈ IA ×ˢ IB, ‖f p‖ ^ 2 := by
+    _ = _ := by
         rw [sum_product, sum_comm, ← mul_sum]
         ring
 

@@ -83,13 +83,12 @@ theorem sum_mul_successProb_eq (q cw : ℝ) (hq : q ≠ 0) (K : ℕ) (CN : ℝ) 
 lemma card_patternIndex_le (c₂ x : ℝ) :
     (patternIndex c₂ x).card ≤ 4 ^ (candidateGroups x).card := by
   rw [patternIndex, card_sigma]
-  calc ∑ P ∈ (candidateGroups x).powerset.filter (ManySuccesses c₂ x),
-        (candidateGroups x \ P).powerset.card
+  calc _
       ≤ ∑ _P ∈ (candidateGroups x).powerset, 2 ^ (candidateGroups x).card := by
         refine (sum_le_sum_of_subset (filter_subset _ _)).trans (sum_le_sum fun P _ => ?_)
         rw [card_powerset]
         exact Nat.pow_le_pow_right (by norm_num) (card_le_card sdiff_subset)
-    _ = 4 ^ (candidateGroups x).card := by
+    _ = _ := by
         rw [sum_const, card_powerset, smul_eq_mul, ← mul_pow]
         norm_num
 
@@ -97,7 +96,7 @@ lemma card_patternIndex_le (c₂ x : ℝ) :
 lemma card_monomialIndex_le (K : ℕ) (CN x : ℝ) :
     (monomialIndex K CN x).card ≤ 2 ^ K * 2 ^ (K * inertPerCluster K CN x) := by
   rw [monomialIndex, card_sigma]
-  calc ∑ U ∈ (range K).powerset, (U ×ˢ range (inertPerCluster K CN x)).powerset.card
+  calc _
       ≤ ∑ _U ∈ (range K).powerset, 2 ^ (K * inertPerCluster K CN x) := by
         refine sum_le_sum fun U hU => ?_
         rw [card_powerset, card_product, card_range]
@@ -131,9 +130,9 @@ theorem abs_sum_expansion_le {c₁ cw c₂ x : ℝ} {K : ℕ} {CN : ℝ} (hc₁ 
   rw [abs_mul, abs_mul, abs_of_nonneg hx]
   have h1 := abs_expansionCoeff_le hc₁ hc₁' hcw hcw' i m
   have h2 := hF i hi m hm
-  have hR : 0 ≤ R := (abs_nonneg _).trans h2
-  calc |expansionCoeff c₁ cw i m| * x * |F i m| ≤ 1 * x * R := by gcongr
-    _ = x * R := by ring
+  have hR  := (abs_nonneg _).trans h2
+  calc _ ≤ 1 * x * R := by gcongr
+    _ = _ := by ring
 
 end
 

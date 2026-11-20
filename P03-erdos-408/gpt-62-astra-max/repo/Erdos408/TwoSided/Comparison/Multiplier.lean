@@ -53,22 +53,22 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
   have hprime : ∀ g, ∀ p ∈ P g, p.Prime := by
     intro g p hp
     by_cases hg : g ∈ big
-    · exact (Finset.mem_filter.1 (hadm.2.2.2.2.2.2.2.1 g hg hp)).2
-    · exact (Finset.mem_filter.1 (hadm.2.2.2.2.2.2.1 g hg hp)).2
+    · exact (Finset.mem_filter.mp (hadm.right.right.right.right.right.right.right.left g hg hp)).right
+    · exact (Finset.mem_filter.mp (hadm.right.right.right.right.right.right.left g hg hp)).right
   -- each term is `∏_g V_g^{-|A g|} / n ≤ β^k / n`
-  have hterm : ∀ l ∈ S, ∏ g, ∏ i ∈ A g, (harmonicMass (P g) * l g i)⁻¹ ≤ β ^ k / n := by
+  have hterm : ∀ l ∈ S, (labelMass P A l) ≤ β ^ k / n := by
     intro l hl
     have hln := (Finset.mem_filter.1 hl).2
     have hcast : (n : ℝ) = ∏ g, ∏ i ∈ A g, (l g i : ℝ) := by
       rw [← hln, slotProduct]
       push_cast
       rfl
-    have hsplit : ∏ g, ∏ i ∈ A g, (harmonicMass (P g) * l g i)⁻¹ =
+    have hsplit : (labelMass P A l) =
         (∏ g, ∏ _i ∈ A g, (harmonicMass (P g))⁻¹) / n := by
       rw [hcast, div_eq_mul_inv, ← Finset.prod_inv_distrib, ← Finset.prod_mul_distrib]
       refine Finset.prod_congr rfl fun g _ => ?_
       rw [← Finset.prod_inv_distrib, ← Finset.prod_mul_distrib]
-      exact Finset.prod_congr rfl fun i _ => mul_inv _ _
+      ring
     rw [hsplit]
     refine div_le_div_of_nonneg_right ?_ hn0.le
     calc ∏ g, ∏ _i ∈ A g, (harmonicMass (P g))⁻¹ ≤ ∏ _g : ι, β ^ m₀ := by
@@ -77,20 +77,20 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
           rw [Finset.prod_const]
           have hV := hadm.2.2.2.2.2.1 g
           have hVβ : (harmonicMass (P g))⁻¹ ≤ β :=
-            (inv_anti₀ hvlo hV.1).trans (le_max_right _ _)
+            by bound
           exact (pow_le_pow_left₀ (inv_nonneg.2 (hvlo.le.trans hV.1)) hVβ _).trans
             (pow_le_pow_right₀ hβ1 (hA g))
-      _ = β ^ k := by rw [Finset.prod_const, Finset.card_univ, ← pow_mul]
+      _ = _ := by rw [Finset.prod_const, Finset.card_univ, ← pow_mul]
   -- the fibre has at most `max(1, m₀)^k` labels: each slot holds a prime factor of `n` in
   -- its group, and these number at most `|A g|`
-  have hcard : (S.card : ℝ) ≤ max 1 (m₀ : ℝ) ^ k := by
+  have hcard : S.card ≤ max 1 (m₀ : ℝ) ^ k := by
     rcases S.eq_empty_or_nonempty with hS | ⟨l₀, hl₀⟩
     · rw [hS, Finset.card_empty, Nat.cast_zero]
       positivity
     have hl₀n := (Finset.mem_filter.1 hl₀).2
     have hl₀a := Finset.mem_filter.1 hl₀ |>.1
-    simp only [auxLabels, Fintype.mem_piFinset] at hl₀a
-    have hc : ∀ g, ((P g).filter (· ∣ n)).card ≤ (A g).card := by
+    simp [auxLabels] at hl₀a
+    have hc : ∀ g, (primeCount (P g) n) ≤ (A g).card := by
       intro g
       refine (Finset.card_le_card fun p hp => ?_).trans (Finset.card_image_le (s := A g)
         (f := l₀ g))
@@ -100,19 +100,18 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
       obtain ⟨g', -, hg'⟩ := (Prime.dvd_finsetProd_iff hpp _).1 hpn
       obtain ⟨i, hi, hgi⟩ := (Prime.dvd_finsetProd_iff hpp _).1 hg'
       have hmem : l₀ g' i ∈ P g' := by simpa [hi] using hl₀a g' i
-      have heq : p = l₀ g' i := (Nat.prime_dvd_prime_iff_eq (hprime g p hpP)
+      have heq := (Nat.prime_dvd_prime_iff_eq (hprime g p hpP)
         (hprime g' _ hmem)).1 hgi
       have hgg : g' = g := by
         by_contra hne
         exact Finset.disjoint_left.1 (hadm.1 g g' (Ne.symm hne)) hpP (heq ▸ hmem)
-      subst hgg
-      exact Finset.mem_image.2 ⟨i, hi, heq.symm⟩
+      grind
     have hsub : S ⊆ Fintype.piFinset fun g =>
         Fintype.piFinset fun i => if i ∈ A g then (P g).filter (· ∣ n) else {1} := by
       intro l hl
       obtain ⟨hla, hln⟩ := Finset.mem_filter.1 hl
-      simp only [auxLabels, Fintype.mem_piFinset] at hla
-      simp only [Fintype.mem_piFinset]
+      simp [auxLabels] at hla
+      simp
       intro g i
       have := hla g i
       split_ifs with hi
@@ -125,25 +124,24 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
         Fintype.piFinset fun i => if i ∈ A g then (P g).filter (· ∣ n) else {1}).card ≤
           (max 1 m₀) ^ k := by
       rw [Fintype.card_piFinset]
-      calc ∏ g, (Fintype.piFinset fun i =>
-            if i ∈ A g then (P g).filter (· ∣ n) else {1}).card
+      calc _
           = ∏ g, ((P g).filter (· ∣ n)).card ^ (A g).card := by
             refine Finset.prod_congr rfl fun g _ => ?_
-            rw [Fintype.card_piFinset]
+            simp
             simp only [apply_ite Finset.card, Finset.card_singleton]
-            rw [Finset.prod_ite_mem, Finset.univ_inter, Finset.prod_const]
+            simp
         _ ≤ ∏ _g : ι, (max 1 m₀) ^ m₀ := by
             refine Finset.prod_le_prod fun g _ => ?_
             exact (Nat.pow_le_pow_left ((hc g).trans ((hA g).trans (le_max_right _ _))) _).trans
               (Nat.pow_le_pow_right (lt_of_lt_of_le Nat.one_pos (le_max_left 1 m₀)) (hA g))
-        _ = (max 1 m₀) ^ k := by rw [Finset.prod_const, Finset.card_univ, ← pow_mul]
+        _ = _ := by rw [Finset.prod_const, Finset.card_univ, ← pow_mul]
     have := (Finset.card_le_card hsub).trans hpi
-    calc (S.card : ℝ) ≤ ((max 1 m₀ ^ k : ℕ) : ℝ) := by exact_mod_cast this
-      _ = max 1 (m₀ : ℝ) ^ k := by push_cast; rfl
+    calc _ ≤ ((max 1 m₀ ^ k : ℕ) : ℝ) := by exact_mod_cast this
+      _ = _ := by push_cast; rfl
   -- `γ^k ≤ L^{C₇}`, as `|ι| ≤ 2 C₀ T`
   have hι : (Fintype.card ι : ℝ) ≤ 2 * C₀ * Real.log (Real.log x) := by
     have h := Finset.card_sdiff_add_card_eq_card (Finset.subset_univ big)
-    rw [Finset.card_univ] at h
+    simp at h
     rw [← h]
     push_cast
     linarith [hadm.2.2.1, hadm.2.2.2.2.1]
@@ -151,14 +149,14 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
     rw [← Real.rpow_natCast, Real.rpow_def_of_pos (by linarith), Real.rpow_def_of_pos hL,
       Real.exp_le_exp, hk]
     push_cast
-    have h₀ : (0 : ℝ) ≤ m₀ * Real.log γ := mul_nonneg (Nat.cast_nonneg _) (Real.log_nonneg hγ1)
+    have h₀ : (0 : ℝ) ≤ m₀ * Real.log γ := by bound
     nlinarith [mul_le_mul_of_nonneg_left hι h₀]
-  calc ∑ l ∈ S, ∏ g, ∏ i ∈ A g, (harmonicMass (P g) * l g i)⁻¹ ≤ S.card • (β ^ k / n) :=
+  calc _ ≤ S.card • (β ^ k / n) :=
         Finset.sum_le_card_nsmul _ _ _ hterm
-    _ = S.card * β ^ k / n := by rw [nsmul_eq_mul, mul_div_assoc]
+    _ = S.card * β ^ k / n := by ring
     _ ≤ max 1 (m₀ : ℝ) ^ k * β ^ k / n := by gcongr
-    _ = γ ^ k / n := by rw [hγ, mul_pow]
-    _ ≤ Real.log x ^ (2 * m₀ * C₀ * Real.log γ) / n := by gcongr
+    _ = γ ^ k / n := by ring
+    _ ≤ _ := by gcongr
 
 /-- **Lemma C2 (minor arcs).** WD's `MinorArcTask`: for `C, δ, A > 0` there are
 `C_arc, K > 0` such that, eventually, for `exp(L^δ) ≤ U, V` with `UV ≤ x²`, `0 < |k| ≤ L^C`,

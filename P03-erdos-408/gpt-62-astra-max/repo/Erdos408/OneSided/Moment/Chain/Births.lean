@@ -51,14 +51,14 @@ theorem birthsDistinct_iff_nodup {α : Type*} [Fintype α] (β : α → Option �
     rw [Multiset.count_sum', card_eq_sum_ones, sum_filter]
     refine sum_congr rfl fun a _ => ?_
     cases h : β a with
-    | none => simp [optBirth]
+    | none => rfl
     | some p' =>
       by_cases hp : p' = p
       · simp [optBirth, hp]
       · simp [optBirth, hp, Ne.symm hp]
   rw [Multiset.nodup_iff_count_le_one]
   simp only [hcount, card_le_one, mem_filter, mem_univ, true_and, BirthsDistinct]
-  exact ⟨fun h p a ha a' ha' => h a a' p ha ha', fun h a a' p ha ha' => h p a ha a' ha'⟩
+  grind
 
 variable {x d}
 
@@ -98,9 +98,7 @@ theorem sum_optBirth_getElem? (l : List ℕ) (hl : l.length ≤ B) :
   | cons a l ih =>
     obtain ⟨B, rfl⟩ : ∃ B', B = B' + 1 := ⟨B - 1, by simp at hl; omega⟩
     rw [Fin.sum_univ_succ]
-    simp only [Fin.val_zero, List.getElem?_cons_zero, Fin.val_succ, List.getElem?_cons_succ]
-    rw [ih B (by simpa using hl)]
-    simp [optBirth]
+    simp_all [optBirth]
 
 /-- With every batch within its `B` addresses, `BirthsDistinct` is the absence of duplicates
 among the initial labels and the new births. -/
@@ -127,14 +125,14 @@ theorem length_batchPrimes_le {N : ℕ} {s : ChainState x d Y d₀ u v r B}
     {h : History x d Y d₀ u v r N} (hw : chainWeight q A₀ s h ≠ 0) (j : Fin (N + 1)) :
     (batchPrimes x d (h.1 j).2).length ≤ B := by
   classical
-  have hg : chainGhostCoef q x d Y d₀ u v r B N j (chainVisit s h j) (h.1 j) ≠ 0 :=
+  have hg :=
     fun h0 => hw (by rw [chainWeight, prod_eq_zero (mem_univ j) h0, zero_mul])
   have hv : GhostValid (HitsAt x d (chainVisit s h j).1.1) B (chainVisit s h j).2.2.1 (h.1 j) := by
     by_contra hv
     exact hg (by rw [chainGhostCoef, ghostCoef, ite_eq_right hv])
   rw [length_batchPrimes]
   refine le_trans (sum_le_sum fun xp _ => ?_) hv.2.2
-  exact Nat.le_add_left _ _
+  omega
 
 /-! ### The running form -/
 
@@ -170,9 +168,7 @@ private theorem chainVisit_cons_succ {N : ℕ} (s : ChainState x d Y d₀ u v r 
   induction j using Fin.induction with
   | zero => rfl
   | succ j ih =>
-    simp only [chainVisit] at ih ⊢
-    rw [Fin.induction_succ, Fin.induction_succ, ← Fin.succ_castSucc, ih]
-    simp
+    simp_all [chainVisit]
 
 /-- The end of a history is the end of its tail. -/
 private theorem chainEnd_cons {N : ℕ} (s : ChainState x d Y d₀ u v r B)
@@ -187,16 +183,13 @@ private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℂ) :
     ∑ h ∈ histories x d Y d₀ u v r B 0, F h =
       ∑ c ∈ multBox B ×ˢ multBox B, F (fun _ => c, Fin.elim0) := by
   refine sum_nbij' (fun h => h.1 0) (fun c => (fun _ => c, Fin.elim0)) ?_ ?_ ?_ ?_ ?_
-  · intro h hh
-    simp only [histories, mem_product, Fintype.mem_piFinset] at hh ⊢
-    exact hh.1 0
+  · grind [histories]
   · intro c hc
     simp only [histories, mem_product, Fintype.mem_piFinset] at hc ⊢
     exact ⟨fun _ => hc, fun i => i.elim0⟩
   · intro h _
     exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
-  · intro c _
-    rfl
+  · simp
   · intro h _
     congr 1
     exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
@@ -215,18 +208,15 @@ private theorem sum_histories_succ {N : ℕ} (F : History x d Y d₀ u v r (N + 
     exact ⟨hh.1 0, hh.2 0, fun i => hh.1 _, fun i => hh.2 _⟩
   · intro t ht
     simp only [histories, mem_product, Fintype.mem_piFinset] at ht ⊢
-    exact ⟨fun i => Fin.cases ht.1 ht.2.2.1 i, fun i => Fin.cases ht.2.1 ht.2.2.2 i⟩
-  · intro h _
-    simp
-  · intro t _
-    simp
-  · intro h _
-    simp
+    exact ⟨Fin.cases ht.1 ht.2.2.1, Fin.cases ht.2.1 ht.2.2.2⟩
+  · simp
+  · simp
+  simp
 
 open scoped Classical in
 /-- `distinctFold` is the history sum restricted to births that are distinct and avoid `Bn`. -/
 theorem distinctFold_eq_sum (N : ℕ) :
-    ∀ (n t : ℕ) (s : ChainState x d Y d₀ u v r B) (Bn : Multiset ℕ),
+    ∀ n t s Bn,
       distinctFold q A₀ Y d₀ u v r B N n t s Bn =
         ∑ h ∈ histories x d Y d₀ u v r B n, offsetWeight q A₀ B N t s h *
           (if (Bn + newBirths h).Nodup then 1 else 0) *
@@ -245,8 +235,8 @@ theorem distinctFold_eq_sum (N : ℕ) :
     simp only [distinctFold, ih, mul_sum]
     refine sum_congr rfl fun c _ => sum_congr rfl fun e _ => sum_congr rfl fun h _ => ?_
     -- the first visit and edge, and the births of the tail
-    have h0 : chainVisit (N := n + 1) s (Fin.cons c h.1, Fin.cons e h.2) 0 = s := rfl
-    have hw : offsetWeight q A₀ B N t s (N := n + 1) (Fin.cons c h.1, Fin.cons e h.2) =
+    have h0 : chainVisit  s (Fin.cons c h.1, Fin.cons e h.2) 0 = s := rfl
+    have hw : offsetWeight q A₀ B N t s  (Fin.cons c h.1, Fin.cons e h.2) =
         chainGhostCoef q x d Y d₀ u v r B N t s c *
           chainEdgeCoef q A₀ x d Y d₀ u v r B N (chainGhostOut x d Y d₀ u v r B s c) e *
           offsetWeight q A₀ B N (t + 1)
@@ -254,9 +244,8 @@ theorem distinctFold_eq_sum (N : ℕ) :
       simp only [offsetWeight, Fin.prod_univ_succ (n := n + 1), Fin.prod_univ_succ (n := n),
         chainVisit_cons_succ, Fin.cons_succ, Fin.cons_zero, Fin.val_succ, Fin.val_zero,
         ← Fin.succ_castSucc, Fin.castSucc_zero, h0, zero_add]
-      simp only [add_assoc, add_comm 1 t]
       ring
-    have hb : newBirths (N := n + 1) (Fin.cons c h.1, Fin.cons e h.2) =
+    have hb : newBirths  (Fin.cons c h.1, Fin.cons e h.2) =
         batchBirths c.2 + freshBirths e + newBirths h := by
       simp only [newBirths, Fin.sum_univ_succ (n := n + 1), Fin.sum_univ_succ (n := n),
         Fin.cons_zero, Fin.cons_succ]
@@ -266,8 +255,7 @@ theorem distinctFold_eq_sum (N : ℕ) :
     by_cases hnd : (Bn + batchBirths c.2 + freshBirths e + newBirths h).Nodup
     · rw [ite_eq_left hnd, ite_eq_left (Multiset.nodup_add.1 hnd).1]
       ring
-    · rw [ite_eq_right hnd]
-      split_ifs <;> ring
+    · split_ifs <;> ring
 
 open scoped Classical in
 /-- The distinct-birth history sum through the running form. -/
@@ -281,7 +269,7 @@ theorem distinctSum_eq_sum_distinctFold (N : ℕ) :
   congr 1
   refine sum_congr rfl fun h _ => ?_
   have hw : offsetWeight q A₀ B N 0 s h = chainWeight q A₀ s h := by
-    simp [offsetWeight, chainWeight]
+    rfl
   rw [hw]
   by_cases h0 : chainWeight q A₀ s h = 0
   · simp [h0]

@@ -51,14 +51,11 @@ lemma iteratedDeriv_succ_mul_id {Φ : ℝ → ℝ} (hΦ : ContDiff ℝ ((⊤ : �
 lemma iteratedDeriv_eq_zero_of_lt {Φ : ℝ → ℝ} {κ : ℝ} (hκ : 1 < κ)
     (hsupp : ∀ y, Φ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) (r : ℕ) {y : ℝ} (hy : κ < |y|) :
     iteratedDeriv r Φ y = 0 := by
-  have hκ0 : 0 < κ⁻¹ := inv_pos.2 (by linarith)
+  have hκ0 : 0 < κ⁻¹ := by positivity
   have hopen : IsOpen {z : ℝ | κ < |z|} := isOpen_lt continuous_const continuous_abs
   have hzero : Φ =ᶠ[𝓝 y] fun _ => 0 := by
     filter_upwards [hopen.mem_nhds hy] with z hz
-    by_contra h
-    obtain ⟨h1, h2⟩ := hsupp z h
-    have : |z| = z := abs_of_pos (by linarith)
-    linarith
+    grind
   rw [(hzero.iteratedDeriv r).eq_of_nhds]
   simp
 
@@ -68,7 +65,7 @@ lemma abs_mul_iteratedDeriv_le {Φ : ℝ → ℝ} {κ : ℝ} (hκ : 1 < κ)
     |y * iteratedDeriv r Φ y| ≤ κ * |iteratedDeriv r Φ y| := by
   rcases le_or_gt |y| κ with h | h
   · rw [abs_mul]
-    exact mul_le_mul_of_nonneg_right h (abs_nonneg _)
+    gcongr
   · rw [iteratedDeriv_eq_zero_of_lt hκ hsupp r h]
     simp
 
@@ -84,7 +81,7 @@ theorem isCutoff_mul_id {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ →
   have hM : ∀ r, 0 ≤ M r := fun r => by
     have h := (abs_nonneg _).trans (hder r 0)
     exact nonneg_of_mul_nonneg_left h (rpow_pos_of_pos (by linarith) _)
-  have hT' : 1 ≤ Real.log (Real.log x) := hT
+  have hT'  := hT
   have hexp : ∀ (r : ℕ) (a : ℝ), a ≤ max CΦ 0 * r →
       Real.log (Real.log x) ^ a ≤ Real.log (Real.log x) ^ (max CΦ 0 * r) :=
     fun r a h => rpow_le_rpow_of_exponent_le hT' h
@@ -103,15 +100,12 @@ theorem isCutoff_mul_id {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ →
     have h1 := abs_mul_iteratedDeriv_le hκ hsupp (r + 1) y
     have h2 := hder (r + 1) y
     have h3 := hder r y
-    have e1 := hexp (r + 1) (CΦ * ↑(r + 1)) (by gcongr; exact le_max_left _ _)
+    have e1 := hexp (r + 1) (CΦ * ↑(r + 1)) (by gcongr; norm_num)
     have e2 := hexp (r + 1) (CΦ * r) (by
-      push_cast
-      have : CΦ * r ≤ max CΦ 0 * r := by gcongr; exact le_max_left _ _
-      have : 0 ≤ max CΦ 0 := le_max_right _ _
-      nlinarith)
+      bound)
     have hκ0 : 0 ≤ κ := by linarith
     have hr : (0 : ℝ) ≤ r + 1 := by positivity
-    calc |y * iteratedDeriv (r + 1) Φ y + (↑r + 1) * iteratedDeriv r Φ y|
+    calc _
         ≤ |y * iteratedDeriv (r + 1) Φ y| + (r + 1) * |iteratedDeriv r Φ y| := by
           refine (abs_add_le _ _).trans (le_of_eq ?_)
           rw [abs_mul ((r : ℝ) + 1), abs_of_nonneg hr]
@@ -119,15 +113,12 @@ theorem isCutoff_mul_id {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ →
             (r + 1) * (M r * Real.log (Real.log x) ^ (CΦ * r)) := by
           gcongr
           · exact h1.trans (mul_le_mul_of_nonneg_left h2 hκ0)
-          · exact h3
       _ ≤ κ * (M (r + 1) * Real.log (Real.log x) ^ (max CΦ 0 * ↑(r + 1))) +
             (r + 1) * (M r * Real.log (Real.log x) ^ (max CΦ 0 * ↑(r + 1))) := by
           gcongr
           · exact hM _
           · exact hM _
       _ = _ := by
-          simp only [Nat.add_sub_cancel]
-          push_cast
-          ring
+          grind
 
 end Erdos408

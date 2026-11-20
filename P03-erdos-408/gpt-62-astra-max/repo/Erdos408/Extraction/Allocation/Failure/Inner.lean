@@ -22,7 +22,7 @@ with `U = ∅`; above `x^γ` one may take `W = 1/(D_j γ L)`.
 
 namespace Erdos408
 
-open Finset Real
+open Finset
 
 noncomputable section
 
@@ -80,14 +80,12 @@ theorem sum_free_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) {F : Finset (Fi
   set Pi := ∏ p ∈ S, (1 - (1 : ℝ) / p)
   set N := ((S.powerset.filter (·.card ≤ R + 1)).card : ℝ)
   set S0 := ∑ a ∈ Ioc A B, (if ∀ p ∈ S, ¬ p ∣ a then w a else 0)
-  have hε0 : 0 ≤ ε := sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
   have hPi0 : 0 < Pi := prod_pos fun p hp => by
     have : (2 : ℝ) ≤ p := by exact_mod_cast (hS p hp).two_le
-    have : (1 : ℝ) / p < 1 := by rw [div_lt_one (by linarith)]; linarith
+    have : (1 : ℝ) / p < 1 := by bound
     linarith
   have hS00 : 0 ≤ S0 := sum_nonneg fun a _ => by split_ifs <;> simp [hw0 a]
-  have hcard0 : 0 ≤ ∏ g ∈ F, ((lowSubsets g).card : ℝ) := prod_nonneg fun _ _ => by positivity
-  have hE0 : 0 ≤ 4 * N * w (A + 1) := mul_nonneg (by positivity) (hw0 _)
+  have hE0 : 0 ≤ 4 * N * w (A + 1) := by bound
   have hδ0 : 0 ≤ 8 * ε * K / Pi := by positivity
   have hloneF0 : 0 ≤ loneFactor c₁ F d := prod_nonneg fun g _ => by
     have := chernoffTheta_le_one
@@ -97,7 +95,7 @@ theorem sum_free_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) {F : Finset (Fi
   swap
   · rw [Ioc_eq_empty (by omega), sum_empty]
     positivity
-  have hrd : 1 ≤ r * d := one_le_mul hr hd
+  have hrd := one_le_mul hr hd
   -- the relative residue estimate for every admissible `U`
   have hstar : ∀ U ⊆ S, (∀ p ∈ U, ¬ p ∣ r * d) →
       |∑ e ∈ Ioc A B, (if (∀ p ∈ S, ¬ p ∣ e) ∧ ∀ p ∈ U, e * (r * d) ≡ 1 [MOD p] then w e else 0) -
@@ -123,8 +121,7 @@ theorem sum_free_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) {F : Finset (Fi
   have habs := prod_model_abs_le hF hc₁ hc₁' d (r * d)
   have h1 := mul_le_mul_of_nonneg_left hmodel hS00
   have h2 := mul_le_mul_of_nonneg_left habs (mul_nonneg hδ0 hS00)
-  refine (add_le_add (add_le_add h1 h2) le_rfl).trans (le_of_eq ?_)
-  ring
+  grind
 
 /-- The total free weight: `S_∅ ≤ W (B (Π + 2ε) + N)` when `w ≤ W` on `(A, B]`. -/
 lemma sum_rough_weight_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (R : ℕ) {A B : ℕ}
@@ -140,8 +137,6 @@ lemma sum_rough_weight_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (R : ℕ)
       have : (2 : ℝ) ≤ p := by exact_mod_cast (hS p hp).two_le
       have : (1 : ℝ) / p ≤ 1 := by rw [div_le_one (by linarith)]; linarith
       linarith
-    have : 0 ≤ ∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p :=
-      sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
     positivity
   have h := abs_card_rough_cong_sub_le S ∅ hS (empty_subset S) (c := 1) (by simp) R hAB
   simp only [prod_empty, div_one, notMem_empty, IsEmpty.forall_iff, implies_true, and_true] at h
@@ -150,21 +145,15 @@ lemma sum_rough_weight_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (R : ℕ)
       W * (((Ioc A B).filter fun e => ∀ p ∈ S, ¬ p ∣ e).card : ℝ) := by
     rw [card_eq_sum_ones, Nat.cast_sum, Nat.cast_one, mul_sum, sum_filter]
     refine sum_le_sum fun a ha => ?_
-    split_ifs
-    · rw [mul_one]
-      exact hwW a ha
-    · exact le_rfl
+    grind
   refine hle.trans (mul_le_mul_of_nonneg_left ?_ hW)
-  have hB : (B : ℝ) - A ≤ B := by linarith [(Nat.cast_nonneg A : (0 : ℝ) ≤ A)]
-  have hBA : 0 ≤ (B : ℝ) - A := by
-    rw [sub_nonneg]
-    exact_mod_cast hAB
+  have hB : (B : ℝ) - A ≤ B := by linarith
   have hPi : 0 ≤ ∏ p ∈ S, (1 - (1 : ℝ) / p) := prod_nonneg fun p hp => by
     have : (2 : ℝ) ≤ p := by exact_mod_cast (hS p hp).two_le
     have : (1 : ℝ) / p ≤ 1 := by rw [div_le_one (by linarith)]; linarith
     linarith
   have hε : 0 ≤ ∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p :=
-    sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
+    by positivity
   have := mul_le_mul_of_nonneg_right hB (add_nonneg hPi (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hε))
   nlinarith
 

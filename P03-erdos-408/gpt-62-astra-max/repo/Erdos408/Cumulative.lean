@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Scales
+
 public import Erdos408.Mertens
 
 /-!
@@ -31,7 +33,7 @@ private lemma sum_primesIoc_dyadic (g : ℕ → ℝ) {t : ℝ} (n : ℕ) (h : 1 
   | succ n ih =>
     have ht : 0 < t := by
       have := lt_of_lt_of_le one_pos h
-      rwa [div_pos_iff_of_pos_right (by positivity)] at this
+      aesop
     have h2 : t / 2 ^ (n + 1) ≤ t / 2 ^ n := by gcongr <;> norm_num
     have hd : dyadicPrimes (t / 2 ^ (n + 1)) = primesIoc (t / 2 ^ (n + 1)) (t / 2 ^ n) := by
       rw [dyadicPrimes_eq_primesIoc, pow_succ]
@@ -43,7 +45,7 @@ private lemma sum_primesIoc_dyadic (g : ℕ → ℝ) {t : ℝ} (n : ℕ) (h : 1 
 /-- `∑_{i < n} (i + 2) / 2^{i+1} ≤ 3`. -/
 private lemma sum_range_div_two_pow_le (n : ℕ) :
     ∑ i ∈ Finset.range n, ((i : ℝ) + 2) / 2 ^ (i + 1) ≤ 3 := by
-  have key : ∀ n : ℕ, ∑ i ∈ Finset.range n, ((i : ℝ) + 2) / 2 ^ (i + 1) +
+  have key : ∀ n, ∑ i ∈ Finset.range n, ((i : ℝ) + 2) / 2 ^ (i + 1) +
       ((n : ℝ) + 3) / 2 ^ n = 3 := by
     intro n
     induction n with
@@ -60,21 +62,17 @@ private lemma sum_range_div_two_pow_le (n : ℕ) :
 
 /-- At most `s` primes lie in `(1, s]`. -/
 private lemma card_primesIoc_one_le {s : ℝ} (hs : 0 ≤ s) : ((primesIoc 1 s).card : ℝ) ≤ s := by
-  have h : (primesIoc 1 s).card ≤ ⌊s⌋₊ :=
-    (Finset.card_filter_le _ _).trans (by simp)
-  exact (Nat.cast_le.mpr h).trans (Nat.floor_le hs)
+  exact (Nat.cast_le.mpr ((Finset.card_filter_le _ _).trans (by simp))).trans (Nat.floor_le hs)
 
 /-- Mertens' first theorem bounds `∑_{y < q ≤ z} F(q) / q`. -/
 private lemma sum_F_div_le {E : ℝ}
-    (hE : ∀ y z : ℝ, 1 ≤ y → y ≤ z → |∑ p ∈ primesIoc y z, log p / p - log (z / y)| ≤ E)
+    (hE : ∀ y z, 1 ≤ y → y ≤ z → |∑ p ∈ primesIoc y z, log p / p - log (z / y)| ≤ E)
     {y z : ℝ} (hy : 1 ≤ y) (hyz : y ≤ z) :
     ∑ q ∈ primesIoc y z, (F q : ℝ) / q ≤ (log (z / y) + E) / log 2 := by
-  have hl2 : 0 < log 2 := log_pos one_lt_two
-  calc ∑ q ∈ primesIoc y z, (F q : ℝ) / q ≤ ∑ q ∈ primesIoc y z, log q / q / log 2 := by
+  calc _ ≤ ∑ q ∈ primesIoc y z, log q / q / log 2 := by
         refine Finset.sum_le_sum fun q hq => ?_
-        have hq0 := (mem_primesIoc.1 hq).1.pos
         rw [div_right_comm]
-        exact div_le_div_of_nonneg_right (F_le_log_div_log_two hq0.ne') (by positivity)
+        exact div_le_div_of_nonneg_right (F_le_log_div_log_two (mem_primesIoc.1 hq).1.pos.ne') (by positivity)
     _ = (∑ q ∈ primesIoc y z, log q / q) / log 2 := by rw [Finset.sum_div]
     _ ≤ _ := by
         gcongr
@@ -82,7 +80,7 @@ private lemma sum_F_div_le {E : ℝ}
 
 /-- `B` is increasing, with `B(z) - B(y) ≤ (log (z / y) + E) / log 2`. -/
 private lemma harmonicF_sub {E : ℝ}
-    (hE : ∀ y z : ℝ, 1 ≤ y → y ≤ z → |∑ p ∈ primesIoc y z, log p / p - log (z / y)| ≤ E)
+    (hE : ∀ y z, 1 ≤ y → y ≤ z → |∑ p ∈ primesIoc y z, log p / p - log (z / y)| ≤ E)
     {y z : ℝ} (hy : 1 ≤ y) (hyz : y ≤ z) :
     0 ≤ harmonicF z - harmonicF y ∧ harmonicF z - harmonicF y ≤ (log (z / y) + E) / log 2 := by
   have h : harmonicF z - harmonicF y = ∑ q ∈ primesIoc y z, (F q : ℝ) / q := by
@@ -93,21 +91,21 @@ private lemma harmonicF_sub {E : ℝ}
 
 /-- `C` is increasing, with `C(z) - C(y) ≤ log z (log (z / y) + E) / log² 2`. -/
 private lemma harmonicFSq_sub {E : ℝ}
-    (hE : ∀ y z : ℝ, 1 ≤ y → y ≤ z → |∑ p ∈ primesIoc y z, log p / p - log (z / y)| ≤ E)
+    (hE : ∀ y z, 1 ≤ y → y ≤ z → |∑ p ∈ primesIoc y z, log p / p - log (z / y)| ≤ E)
     {y z : ℝ} (hy : 1 ≤ y) (hyz : y ≤ z) :
     0 ≤ harmonicFSq z - harmonicFSq y ∧
       harmonicFSq z - harmonicFSq y ≤ log z * (log (z / y) + E) / log 2 ^ 2 := by
-  have hl2 : 0 < log 2 := log_pos one_lt_two
+  have hl2 := log_pos one_lt_two
   have h : harmonicFSq z - harmonicFSq y = ∑ q ∈ primesIoc y z, (F q : ℝ) ^ 2 / q := by
     rw [harmonicFSq, harmonicFSq, ← sum_primesIoc_add _ hy hyz]
     ring
   rw [h]
   refine ⟨Finset.sum_nonneg fun _ _ => by positivity, ?_⟩
-  calc ∑ q ∈ primesIoc y z, (F q : ℝ) ^ 2 / q
+  calc _
       ≤ ∑ q ∈ primesIoc y z, log z / log 2 * ((F q : ℝ) / q) := by
         refine Finset.sum_le_sum fun q hq => ?_
         obtain ⟨hq, -, hqz⟩ := mem_primesIoc.1 hq
-        have hlq : log q ≤ log z := log_le_log (by exact_mod_cast hq.pos) hqz
+        have hlq := log_le_log (by exact_mod_cast hq.pos) hqz
         have : (F q : ℝ) ≤ log z / log 2 :=
           (F_le_log_div_log_two hq.ne_zero).trans (by gcongr)
         rw [sq, mul_div_assoc]
@@ -115,36 +113,35 @@ private lemma harmonicFSq_sub {E : ℝ}
     _ = log z / log 2 * ∑ q ∈ primesIoc y z, (F q : ℝ) / q := by rw [Finset.mul_sum]
     _ ≤ log z / log 2 * ((log (z / y) + E) / log 2) := by
         gcongr
-        · exact div_nonneg (log_nonneg (by linarith)) hl2.le
+        · bound
         · exact sum_F_div_le hE hy hyz
     _ = _ := by ring
 
 /-- The inner sum of `D` over `(a, b]` is at most `F(q) / q · (log (b / a) + E) / log 2`. -/
 private lemma sum_pair_le {E : ℝ}
-    (hE : ∀ y z : ℝ, 1 ≤ y → y ≤ z → |∑ p ∈ primesIoc y z, log p / p - log (z / y)| ≤ E)
+    (hE : ∀ y z, 1 ≤ y → y ≤ z → |∑ p ∈ primesIoc y z, log p / p - log (z / y)| ≤ E)
     (q : ℕ) {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b) :
     ∑ r ∈ primesIoc a b with r ≠ q, (F q : ℝ) * F r / (q * r) ≤
       F q / q * ((log (b / a) + E) / log 2) := by
-  calc ∑ r ∈ primesIoc a b with r ≠ q, (F q : ℝ) * F r / (q * r)
+  calc _
       ≤ ∑ r ∈ primesIoc a b, (F q : ℝ) * F r / (q * r) :=
         Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
           fun _ _ _ => by positivity
     _ = F q / q * ∑ r ∈ primesIoc a b, (F r : ℝ) / r := by
         rw [Finset.mul_sum]
-        exact Finset.sum_congr rfl fun r _ => mul_div_mul_comm _ _ _ _
+        field_simp <;> ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (sum_F_div_le hE ha hab) (by positivity)
 
 /-- `D` is increasing, with
 `D(z) - D(y) ≤ 2 (log z + E) (log (z / y) + E) / log² 2`. -/
 private lemma harmonicFPair_sub {E : ℝ}
-    (hE : ∀ y z : ℝ, 1 ≤ y → y ≤ z → |∑ p ∈ primesIoc y z, log p / p - log (z / y)| ≤ E)
+    (hE : ∀ y z, 1 ≤ y → y ≤ z → |∑ p ∈ primesIoc y z, log p / p - log (z / y)| ≤ E)
     (hE0 : 0 ≤ E) {y z : ℝ} (hy : 1 ≤ y) (hyz : y ≤ z) :
     0 ≤ harmonicFPair z - harmonicFPair y ∧
       harmonicFPair z - harmonicFPair y ≤ 2 * (log z + E) * (log (z / y) + E) / log 2 ^ 2 := by
-  have hl2 : 0 < log 2 := log_pos one_lt_two
-  have hzy : 0 ≤ log (z / y) + E :=
+  have hzy :=
     add_nonneg (log_nonneg ((one_le_div (by linarith)).mpr hyz)) hE0
-  have hz : 0 ≤ log z + E := add_nonneg (log_nonneg (by linarith)) hE0
+  have hz : 0 ≤ log z + E := by bound
   -- Split the outer range at `y` and, for `q ≤ y`, the inner range at `y / q`.
   have h : harmonicFPair z - harmonicFPair y =
       ∑ q ∈ primesIoc 1 y, ∑ r ∈ primesIoc (y / q) (z / q) with r ≠ q,
@@ -168,8 +165,9 @@ private lemma harmonicFPair_sub {E : ℝ}
   rw [h]
   refine ⟨add_nonneg (Finset.sum_nonneg fun _ _ => hw _ _)
     (Finset.sum_nonneg fun _ _ => hw _ _), ?_⟩
+  let logAt'' := (log z + E) * (log (z / y) + E) / log 2 ^ 2
   have h1 : ∑ q ∈ primesIoc 1 y, ∑ r ∈ primesIoc (y / q) (z / q) with r ≠ q,
-      (F q : ℝ) * F r / (q * r) ≤ (log z + E) * (log (z / y) + E) / log 2 ^ 2 := by
+      (F q : ℝ) * F r / (q * r) ≤ logAt'' := by
     calc _ ≤ ∑ q ∈ primesIoc 1 y, (F q : ℝ) / q * ((log (z / y) + E) / log 2) := by
           refine Finset.sum_le_sum fun q hq => ?_
           obtain ⟨hq, -, hqy⟩ := mem_primesIoc.1 hq
@@ -186,7 +184,7 @@ private lemma harmonicFPair_sub {E : ℝ}
           gcongr
       _ = _ := by ring
   have h2 : ∑ q ∈ primesIoc y z, ∑ r ∈ primesIoc 1 (z / q) with r ≠ q,
-      (F q : ℝ) * F r / (q * r) ≤ (log z + E) * (log (z / y) + E) / log 2 ^ 2 := by
+      (F q : ℝ) * F r / (q * r) ≤ logAt'' := by
     calc _ ≤ ∑ q ∈ primesIoc y z, (F q : ℝ) / q * ((log z + E) / log 2) := by
           refine Finset.sum_le_sum fun q hq => ?_
           obtain ⟨hq, hyq, hqz⟩ := mem_primesIoc.1 hq
@@ -201,29 +199,26 @@ private lemma harmonicFPair_sub {E : ℝ}
       _ ≤ (log (z / y) + E) / log 2 * ((log z + E) / log 2) :=
           mul_le_mul_of_nonneg_right (sum_F_div_le hE hy hyz) (by positivity)
       _ = _ := by ring
-  have : 2 * (log z + E) * (log (z / y) + E) / log 2 ^ 2 =
-      (log z + E) * (log (z / y) + E) / log 2 ^ 2 +
-        (log z + E) * (log (z / y) + E) / log 2 ^ 2 := by ring
-  linarith
+  grind
 
 /-- Dyadic moments of `g` against `H` with errors `O(Π_y L^{k+1} T⁻⁶)` give cumulative
 moments with error `O(t L^k T⁻⁶)`, provided `|g(p)| ≪ (log p)^{k+1}`, `H(1) = 0` and
 `H(t) - H(y) ≪ L^k (log (t / y) + 1)`. -/
 private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ) {K M c K₀ : ℝ}
     (hK : 0 ≤ K) (hM : 0 ≤ M) (hc : 0 ≤ c) (hK₀ : 0 ≤ K₀)
-    (hπ : ∀ x : ℝ, 2 ≤ x → ((primesIoc 1 x).card : ℝ) ≤ K₀ * x / log x)
-    (hg : ∀ p : ℕ, p.Prime → |g p| ≤ c * log p ^ (k + 1)) (hH : H 1 = 0)
-    (hvar : ∀ y t : ℝ, 1 ≤ y → y ≤ t → 3 ≤ t →
+    (hπ : ∀ x, 2 ≤ x → ((primesIoc 1 x).card : ℝ) ≤ K₀ * x / log x)
+    (hg : ∀ p, p.Prime → |g p| ≤ c * log p ^ (k + 1)) (hH : H 1 = 0)
+    (hvar : ∀ y t, 1 ≤ y → y ≤ t → 3 ≤ t →
       |H t - H y| ≤ M * log t ^ k * (log (t / y) + 1))
     (hdy : ∀ᶠ y : ℝ in atTop,
       |∑ p ∈ dyadicPrimes y, g p - (dyadicPrimes y).card * H y| ≤
-        K * (dyadicPrimes y).card * log y ^ (k + 1) / log (log y) ^ 6) :
+        K * (dyadicPrimes y).card * log y ^ (k + 1) / logLog y ^ 6) :
     ∃ K' : ℝ, ∀ᶠ t : ℝ in atTop,
       |∑ p ∈ primesIoc 1 t, g p - (primesIoc 1 t).card * H t| ≤
         K' * t * log t ^ k / log (log t) ^ 6 := by
   obtain ⟨y₀, hy₀⟩ := eventually_atTop.mp hdy
   refine ⟨32 * (c + 2 * M) + 64 * K * K₀ + 12 * K₀ * M, ?_⟩
-  have hT6 : ∀ᶠ t : ℝ in atTop, log (log t) ^ 6 ≤ log t := by
+  have hT6 : ∀ᶠ t : ℝ in atTop, logLog t ^ 6 ≤ log t := by
     filter_upwards [((isLittleO_pow_log_id_atTop (n := 6)).comp_tendsto
       tendsto_log_atTop).bound one_pos, eventually_ge_atTop 1] with t ht ht1
     simp only [Function.comp, id, one_mul, Real.norm_eq_abs] at ht
@@ -240,7 +235,7 @@ private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ)
   simp only [Function.comp] at hT
   set L := log t with hLdef
   set T := log L with hTdef
-  have hst3 : 3 ≤ √t := (le_max_right _ _).trans hst
+  have hst3 : 3 ≤ √t := by simp_all
   have hsq : √t * √t = t := mul_self_sqrt (by
     by_contra h
     rw [sqrt_eq_zero_of_nonpos (by linarith)] at hst3
@@ -249,14 +244,13 @@ private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ)
   have ht0 : 0 < t := by linarith
   have hL0 : 0 < L := by linarith
   have hT0 : 0 < T := by linarith
-  have hT60 : 0 < T ^ 6 := pow_pos hT0 6
+  have hT60 : 0 < T ^ 6 := by positivity
   have hl2 : log 2 < 1 := log_two_lt_d9.trans (by norm_num)
   -- Choose `I` with `s = t / 2^I ∈ [√t, 2√t]`.
-  have hfl : ⌊√t⌋₊ ≠ 0 := (Nat.floor_pos.mpr (by linarith)).ne'
   set I := Nat.log 2 ⌊√t⌋₊ with hIdef
   have hI1 : (2 : ℝ) ^ I ≤ √t := by
-    calc (2 : ℝ) ^ I = ((2 ^ I : ℕ) : ℝ) := by push_cast; rfl
-      _ ≤ ⌊√t⌋₊ := Nat.cast_le.mpr (Nat.pow_log_le_self 2 hfl)
+    calc _ = ((2 ^ I : ℕ) : ℝ) := by push_cast; rfl
+      _ ≤ ⌊√t⌋₊ := Nat.cast_le.mpr (Nat.pow_log_le_self 2 (Nat.floor_pos.mpr (by linarith)).ne')
       _ ≤ √t := Nat.floor_le (sqrt_nonneg _)
   have hI2 : √t ≤ 2 * 2 ^ I := by
     have h' : ((⌊√t⌋₊ + 1 : ℕ) : ℝ) ≤ ((2 ^ (I + 1) : ℕ) : ℝ) :=
@@ -278,19 +272,18 @@ private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ)
     exact div_le_self ht0.le (one_le_pow₀ one_le_two)
   have hlog : ∀ y : ℝ, √t ≤ y → L / 2 ≤ log y := fun y hy => by
     rw [← log_sqrt ht0.le]
-    exact log_le_log (by linarith) hy
-  have hA := sum_primesIoc_dyadic g I hs
+    gcongr
   have hN : ((primesIoc 1 t).card : ℝ) = (primesIoc 1 (t / 2 ^ I)).card +
       ∑ i ∈ Finset.range I, ((dyadicPrimes (t / 2 ^ (i + 1))).card : ℝ) := by
     simp only [Finset.cast_card]
-    exact sum_primesIoc_dyadic (fun _ => 1) I hs
+    apply sum_primesIoc_dyadic <;> assumption
   have hsplit : ∑ p ∈ primesIoc 1 t, g p - (primesIoc 1 t).card * H t =
       (∑ p ∈ primesIoc 1 (t / 2 ^ I), g p - (primesIoc 1 (t / 2 ^ I)).card * H t) +
         ∑ i ∈ Finset.range I, (∑ p ∈ dyadicPrimes (t / 2 ^ (i + 1)), g p -
           (dyadicPrimes (t / 2 ^ (i + 1))).card * H (t / 2 ^ (i + 1))) +
         ∑ i ∈ Finset.range I, (dyadicPrimes (t / 2 ^ (i + 1))).card *
           (H (t / 2 ^ (i + 1)) - H t) := by
-    rw [hA, hN]
+    rw [(sum_primesIoc_dyadic g I hs), hN]
     simp only [Finset.sum_sub_distrib, mul_sub, add_mul, Finset.sum_mul]
     ring
   -- The primes up to `s`.
@@ -299,9 +292,9 @@ private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ)
     have hHt : |H t| ≤ 2 * M * L ^ (k + 1) := by
       have := hvar 1 t le_rfl (by linarith) (by linarith)
       rw [hH, sub_zero, div_one] at this
-      calc |H t| ≤ M * L ^ k * (L + 1) := this
+      calc _ ≤ M * L ^ k * (L + 1) := this
         _ ≤ M * L ^ k * (2 * L) := by gcongr; linarith
-        _ = 2 * M * L ^ (k + 1) := by ring
+        _ = _ := by ring
     have hsum : |∑ p ∈ primesIoc 1 (t / 2 ^ I), g p| ≤
         (primesIoc 1 (t / 2 ^ I)).card * (c * L ^ (k + 1)) := by
       refine (Finset.abs_sum_le_sum_abs _ _).trans
@@ -313,11 +306,11 @@ private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ)
         (hps.trans (div_le_self ht0.le (one_le_pow₀ one_le_two)))
     have key : 2 * √t * L ≤ 32 * t / T ^ 6 := by
       rw [le_div_iff₀ hT60]
-      have hL2 : L ^ 2 ≤ L ^ 4 := pow_le_pow_right₀ hL (by norm_num)
+      have hL2 : L ^ 2 ≤ L ^ 4 := by solve_by_elim [pow_le_pow_right₀]
       calc 2 * √t * L * T ^ 6 ≤ 2 * √t * L * L := by gcongr
         _ = 2 * √t * L ^ 2 := by ring
         _ ≤ 2 * √t * (16 * √t) := by gcongr; linarith
-        _ = 32 * t := by linear_combination 32 * hsq
+        _ = _ := by linarith
     calc _ ≤ |∑ p ∈ primesIoc 1 (t / 2 ^ I), g p| +
           |((primesIoc 1 (t / 2 ^ I)).card : ℝ) * H t| := abs_sub _ _
       _ ≤ (primesIoc 1 (t / 2 ^ I)).card * (c * L ^ (k + 1)) +
@@ -330,7 +323,7 @@ private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ)
           (mul_nonneg (by linarith) (by positivity))
       _ = 2 * √t * L * ((c + 2 * M) * L ^ k) := by ring
       _ ≤ 32 * t / T ^ 6 * ((c + 2 * M) * L ^ k) :=
-        mul_le_mul_of_nonneg_right key (mul_nonneg (by linarith) (by positivity))
+        by gcongr
       _ = _ := by ring
   -- The dyadic errors.
   have hmid : |∑ i ∈ Finset.range I, (∑ p ∈ dyadicPrimes (t / 2 ^ (i + 1)), g p -
@@ -338,7 +331,6 @@ private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ)
       64 * K * K₀ * (t * L ^ k / T ^ 6) := by
     refine (Finset.abs_sum_le_sum_abs _ _).trans ?_
     have hK' : 0 ≤ 64 * K * L ^ (k + 1) / T ^ 6 := by
-      have := mul_nonneg hK (pow_nonneg hL0.le (k + 1))
       positivity
     calc _ ≤ ∑ i ∈ Finset.range I, 64 * K * L ^ (k + 1) / T ^ 6 *
           (dyadicPrimes (t / 2 ^ (i + 1))).card := by
@@ -346,13 +338,13 @@ private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ)
           obtain ⟨hy1, hy2⟩ := hy i hi
           set y := t / 2 ^ (i + 1)
           have hly := hlog y hy1
-          have hly' : log y ≤ L := log_le_log (by linarith) hy2
+          have hly' := log_le_log (by linarith) hy2
           have hTy : T / 2 ≤ log (log y) := by
-            have : log (L / 2) ≤ log (log y) := log_le_log (by linarith) hly
+            have := log_le_log (by linarith) hly
             rw [log_div hL0.ne' two_ne_zero] at this
             linarith
           refine (hy₀ y ((le_max_left _ _).trans (hst.trans hy1))).trans ?_
-          calc K * (dyadicPrimes y).card * log y ^ (k + 1) / log (log y) ^ 6 =
+          calc _ =
               K * (dyadicPrimes y).card * (log y ^ (k + 1) / log (log y) ^ 6) := by ring
             _ ≤ K * (dyadicPrimes y).card * (L ^ (k + 1) / (T / 2) ^ 6) := by
               refine mul_le_mul_of_nonneg_left (div_le_div₀ (by positivity)
@@ -364,8 +356,7 @@ private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ)
           rw [Finset.mul_sum]
       _ ≤ 64 * K * L ^ (k + 1) / T ^ 6 * (K₀ * t / L) := by
           refine mul_le_mul_of_nonneg_left ?_ hK'
-          refine le_trans ?_ (hπ t (by linarith))
-          linarith [hN, (Nat.cast_nonneg _ : (0 : ℝ) ≤ (primesIoc 1 (t / 2 ^ I)).card)]
+          grind
       _ = _ := by
           field_simp
           ring
@@ -377,30 +368,26 @@ private lemma cumulative_of_dyadic (g : ℕ → ℝ) (H : ℝ → ℝ) (k : ℕ)
           (((i : ℝ) + 2) / 2 ^ (i + 1)) := by
           refine Finset.sum_le_sum fun i hi => ?_
           obtain ⟨hy1, hy2⟩ := hy i hi
-          have hty : t / (t / 2 ^ (i + 1)) = 2 ^ (i + 1) := div_div_cancel₀ ht0.ne'
           set y := t / 2 ^ (i + 1) with hydef
-          have hsub : dyadicPrimes y ⊆ primesIoc 1 (2 * y) := by
-            rw [dyadicPrimes_eq_primesIoc]
-            exact Finset.filter_subset_filter _
-              (Finset.Ioc_subset_Ioc_left (Nat.floor_le_floor (by linarith)))
           have hNy : ((dyadicPrimes y).card : ℝ) ≤ K₀ * (2 * y) / (L / 2) := by
-            refine (Nat.cast_le.mpr (Finset.card_le_card hsub)).trans
+            refine (Nat.cast_le.mpr (Finset.card_le_card (by
+              rw [dyadicPrimes_eq_primesIoc]
+              exact Finset.filter_subset_filter _
+                (Finset.Ioc_subset_Ioc_left (Nat.floor_le_floor (by linarith)))))).trans
               ((hπ _ (by linarith)).trans ?_)
             refine div_le_div_of_nonneg_left (by positivity) (by linarith) ?_
-            exact (hlog y hy1).trans (log_le_log (by linarith) (by linarith))
+            grind
           have hHy : |H t - H y| ≤ M * L ^ k * ((i : ℝ) + 2) := by
             refine (hvar y t (by linarith) hy2 (by linarith)).trans ?_
-            rw [hty, log_pow]
+            rw [(div_div_cancel₀ ht0.ne'), log_pow]
             refine mul_le_mul_of_nonneg_left ?_ (mul_nonneg hM (by positivity))
             push_cast
             nlinarith [mul_le_mul_of_nonneg_left hl2.le (by positivity : (0 : ℝ) ≤ i + 1)]
           rw [abs_mul, Nat.abs_cast, abs_sub_comm]
-          calc ((dyadicPrimes y).card : ℝ) * |H t - H y| ≤
+          calc _ ≤
               K₀ * (2 * y) / (L / 2) * (M * L ^ k * ((i : ℝ) + 2)) :=
                 mul_le_mul hNy hHy (abs_nonneg _) (by positivity)
             _ = _ := by
-                rw [hydef]
-                field_simp
                 ring
       _ = K₀ * M * (4 * t * L ^ k / L) *
           ∑ i ∈ Finset.range I, ((i : ℝ) + 2) / 2 ^ (i + 1) := by rw [Finset.mul_sum]
@@ -423,18 +410,17 @@ cumulative moments `A₁(t) = π(t) B(t) + O(t T⁻⁶)` and
 theorem cumulative_moments {K : ℝ}
     (h : ∀ᶠ y : ℝ in Filter.atTop,
       |∑ p ∈ dyadicPrimes y, (F p : ℝ) - (dyadicPrimes y).card * harmonicF y| ≤
-          K * (dyadicPrimes y).card * Real.log y / Real.log (Real.log y) ^ 6 ∧
+          K * (dyadicPrimes y).card * Real.log y / logLog y ^ 6 ∧
         |∑ p ∈ dyadicPrimes y, (F p : ℝ) ^ 2 -
             (dyadicPrimes y).card * (harmonicFSq y + harmonicFPair y)| ≤
-          K * (dyadicPrimes y).card * Real.log y ^ 2 / Real.log (Real.log y) ^ 6) :
-    ∃ K' : ℝ, ∀ᶠ t : ℝ in Filter.atTop,
+          K * (dyadicPrimes y).card * Real.log y ^ 2 / logLog y ^ 6) :
+    ∃ K', ∀ᶠ t : ℝ in Filter.atTop,
       |primeF t - (primesIoc 1 t).card * harmonicF t| ≤
-          K' * t / Real.log (Real.log t) ^ 6 ∧
+          K' * t / logLog t ^ 6 ∧
         |primeFSq t - (primesIoc 1 t).card * (harmonicFSq t + harmonicFPair t)| ≤
           K' * t * Real.log t / Real.log (Real.log t) ^ 6 := by
   obtain ⟨E, hE0, hE⟩ := mertens_first
   obtain ⟨K₀, hK₀, hπ⟩ := card_primesIoc_le
-  have hl2 : 0 < log 2 := log_pos one_lt_two
   have h3 : 1 ≤ log 3 := by
     rw [le_log_iff_exp_le (by norm_num)]
     exact (exp_one_lt_d9.trans (by norm_num)).le
@@ -445,7 +431,7 @@ theorem cumulative_moments {K : ℝ}
       (mul_le_mul_of_nonneg_right (le_max_left _ _) (Nat.cast_nonneg _))
       (pow_nonneg (log_nonneg hy) _)) (by positivity)
   -- The first moment.
-  obtain ⟨K₁, hK₁⟩ := cumulative_of_dyadic (fun p => (F p : ℝ)) harmonicF 0
+  obtain ⟨K₁, hK₁⟩ := cumulative_of_dyadic (fun p => (F p)) harmonicF 0
     (K := max K 0) (M := (1 + E) / log 2) (c := 1 / log 2) (le_max_right _ _)
     (by positivity) (by positivity) hK₀ hπ
     (fun p hp => by
@@ -454,9 +440,9 @@ theorem cumulative_moments {K : ℝ}
     (by simp [harmonicF, primesIoc])
     (fun y t hy hyt _ => by
       obtain ⟨h0, h1⟩ := harmonicF_sub hE hy hyt
-      have hb : 0 ≤ log (t / y) := log_nonneg ((one_le_div (by linarith)).mpr hyt)
+      have hb := log_nonneg ((one_le_div (by linarith)).mpr hyt)
       rw [abs_of_nonneg h0, pow_zero, mul_one, div_mul_eq_mul_div]
-      exact h1.trans (div_le_div_of_nonneg_right (by nlinarith [mul_nonneg hE0 hb]) hl2.le))
+      exact h1.trans (div_le_div_of_nonneg_right (by nlinarith [mul_nonneg hE0 hb]) (log_pos one_lt_two).le))
     (by
       filter_upwards [h, eventually_ge_atTop 1] with y hy hy1
       exact hy.1.trans (by simpa using hK y hy1 1 (dyadicPrimes y).card))
@@ -472,14 +458,15 @@ theorem cumulative_moments {K : ℝ}
     (fun y t hy hyt ht => by
       obtain ⟨c0, c1⟩ := harmonicFSq_sub hE hy hyt
       obtain ⟨d0, d1⟩ := harmonicFPair_sub hE hE0 hy hyt
-      have ha : 1 ≤ log t := h3.trans (log_le_log (by norm_num) ht)
-      have hb : 0 ≤ log (t / y) := log_nonneg ((one_le_div (by linarith)).mpr hyt)
+      have ha := h3.trans (log_le_log (by norm_num) ht)
+      have hb := log_nonneg ((one_le_div (by linarith)).mpr hyt)
       have hsplit : harmonicFSq t + harmonicFPair t - (harmonicFSq y + harmonicFPair y) =
           (harmonicFSq t - harmonicFSq y) + (harmonicFPair t - harmonicFPair y) := by ring
       rw [hsplit, abs_of_nonneg (by linarith), pow_one]
-      calc _ ≤ log t * (log (t / y) + E) / log 2 ^ 2 +
-            2 * (log t + E) * (log (t / y) + E) / log 2 ^ 2 := add_le_add c1 d1
-        _ = (log t * (log (t / y) + E) + 2 * (log t + E) * (log (t / y) + E)) /
+      let logAt := log (t / y) + E
+      calc _ ≤ log t * (logAt) / log 2 ^ 2 +
+            2 * (log t + E) * (logAt) / log 2 ^ 2 := by gcongr
+        _ = (log t * (logAt) + 2 * (log t + E) * (logAt)) /
             log 2 ^ 2 := by ring
         _ ≤ 3 * (1 + E) ^ 2 * log t * (log (t / y) + 1) / log 2 ^ 2 := by
           refine div_le_div_of_nonneg_right ?_ (by positivity)

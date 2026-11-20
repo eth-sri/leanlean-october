@@ -32,8 +32,7 @@ def chernoffTheta : ℝ := 1 - Real.exp (-1)
 
 /-- `θ > 0`. -/
 lemma chernoffTheta_pos : 0 < chernoffTheta := by
-  rw [chernoffTheta, sub_pos]
-  linarith [Real.exp_neg_one_lt_d9]
+  simp [chernoffTheta]
 
 /-- `θ ≤ 1`. -/
 lemma chernoffTheta_le_one : chernoffTheta ≤ 1 := by
@@ -76,7 +75,7 @@ theorem failureProb_le_exp_mul {c₁ c₂ x : ℝ} {w : ℕ}
   have hpw : ∀ P ∈ (candidateGroups x).powerset, 0 ≤ patternWeight c₁ x P w :=
     fun P hP => patternWeight_nonneg hs (mem_powerset.1 hP)
   -- pointwise: `[¬ many] ≤ e^{τ - |P ∩ S|} + e^{τ - |P ∩ B|}`
-  have hpt : ∀ P : Finset (Finset ℕ), ¬ ManySuccesses c₂ x P →
+  have hpt : ∀ P, ¬ ManySuccesses c₂ x P →
       1 ≤ Real.exp (τ - ((P ∩ smallGroups x).card : ℝ)) +
         Real.exp (τ - ((P ∩ bigGroups x).card : ℝ)) := by
     intro P hP
@@ -86,7 +85,7 @@ theorem failureProb_le_exp_mul {c₁ c₂ x : ℝ} {w : ℕ}
       linarith [exp_pos (τ - ((P ∩ bigGroups x).card : ℝ))]
     · have := one_le_exp (show 0 ≤ τ - ((P ∩ bigGroups x).card : ℝ) by linarith)
       linarith [exp_pos (τ - ((P ∩ smallGroups x).card : ℝ))]
-  calc failureProb c₁ c₂ x w
+  calc _
       ≤ ∑ P ∈ (candidateGroups x).powerset with ¬ ManySuccesses c₂ x P, patternWeight c₁ x P w *
           (Real.exp (τ - ((P ∩ smallGroups x).card : ℝ)) +
             Real.exp (τ - ((P ∩ bigGroups x).card : ℝ))) :=
@@ -122,7 +121,6 @@ lemma ell_le_one (n : ℕ) : ell n ≤ 1 := by
   · rw [Nat.choose_two_right]
     have h2 : (n : ℝ) * (n - 1) / 2 ≤ ((n * (n - 1) / 2 : ℕ) : ℝ) + 1 := by
       have := Nat.div_add_mod (n * (n - 1)) 2
-      have hm := Nat.mod_lt (n * (n - 1)) (show 0 < 2 by norm_num)
       have : ((n * (n - 1) : ℕ) : ℝ) = 2 * ((n * (n - 1) / 2 : ℕ) : ℝ) +
           ((n * (n - 1) % 2 : ℕ) : ℝ) := by exact_mod_cast this.symm
       have hm' : ((n * (n - 1) % 2 : ℕ) : ℝ) ≤ 1 := by exact_mod_cast (by omega)
@@ -160,15 +158,14 @@ lemma one_sub_mul_successCoin_le {c₁ : ℝ} (hc₁ : 0 ≤ c₁) {g : Finset �
         ell (primeCount g w) := by
   have hmw : 0 ≤ markedWeight {g} (1 / 2) id (w + 1) := by
     rw [markedWeight_singleton]
-    exact div_nonneg (by positivity) hg.le
-  have h := ell_div_le_markedWeight hg w
+    positivity
   have hθ := chernoffTheta_pos.le
   unfold successCoin
   have : chernoffTheta * c₁ * markedWeight {g} (1 / 2) id (w + 1) / harmonicMass g *
       ell (primeCount g w) = chernoffTheta * c₁ * markedWeight {g} (1 / 2) id (w + 1) *
         (ell (primeCount g w) / harmonicMass g) := by ring
   rw [this]
-  have := mul_le_mul_of_nonneg_left h (by positivity :
+  have := mul_le_mul_of_nonneg_left (ell_div_le_markedWeight hg w) (by positivity :
     0 ≤ chernoffTheta * c₁ * markedWeight {g} (1 / 2) id (w + 1))
   nlinarith
 
@@ -193,8 +190,7 @@ private lemma sum_range_choose_mul_eq (n : ℕ) (f : ℕ → ℝ) (hf : ∀ m, 2
   have h2 : ∑ m ∈ range 3, (n.choose m : ℝ) * f m =
       ∑ m ∈ range (n + 3), (n.choose m : ℝ) * f m := by
     refine sum_subset (range_subset_range.2 (by omega)) fun m hm hm' => ?_
-    rw [mem_range] at hm'
-    rw [hf m (by omega), mul_zero]
+    grind
   rw [h1, ← h2]
   simp [sum_range_succ]
 
@@ -203,23 +199,18 @@ lemma sum_lowSubsets_eq (g : Finset ℕ) (α : ℝ) (w : ℕ) :
     ∑ K ∈ lowSubsets g, lowCoeff α K.card * (if ∀ p ∈ K, p ∣ w then 1 else 0) =
       1 - α * ell (primeCount g w) := by
   set s := g.filter (· ∣ w)
-  have hfilt : (lowSubsets g).filter (fun K => ∀ p ∈ K, p ∣ w) =
+  let subsets := (lowSubsets g).filter (fun K => ∀ p ∈ K, p ∣ w)
+  have hfilt : subsets =
       s.powerset.filter (·.card ≤ 2) := by
-    ext K
-    simp only [lowSubsets, mem_filter, mem_powerset, s, subset_iff]
-    constructor
-    · rintro ⟨⟨h1, h2⟩, h3⟩
-      exact ⟨fun p hp => ⟨h1 hp, h3 p hp⟩, h2⟩
-    · rintro ⟨h1, h2⟩
-      exact ⟨⟨fun p hp => (h1 hp).1, h2⟩, fun p hp => (h1 hp).2⟩
+    grind [lowSubsets]
   have : ∑ K ∈ lowSubsets g, lowCoeff α K.card * (if ∀ p ∈ K, p ∣ w then 1 else 0) =
-      ∑ K ∈ (lowSubsets g).filter (fun K => ∀ p ∈ K, p ∣ w), lowCoeff α K.card := by
+      ∑ K ∈ subsets, lowCoeff α K.card := by
     rw [sum_filter]
-    exact sum_congr rfl fun K _ => by split_ifs <;> ring
+    simp
   rw [this, hfilt, sum_filter,
     sum_powerset_apply_card (fun m => if m ≤ 2 then lowCoeff α m else 0)]
   simp only [nsmul_eq_mul]
-  rw [sum_range_choose_mul_eq _ _ fun m hm => by simp [show ¬ m ≤ 2 by omega]]
+  rw [sum_range_choose_mul_eq _ _ fun m hm => by simp_all]
   simp only [lowCoeff, ell, primeCount, s]
   norm_num
   ring
@@ -228,7 +219,7 @@ lemma sum_lowSubsets_eq (g : Finset ℕ) (α : ℝ) (w : ℕ) :
 group: the term of `κ` is `∏_g c_{α_g}(|κ_g|)` times `[∀ p ∈ ⋃ κ_g, p ∣ u]`. -/
 theorem prod_one_sub_mul_ell_eq (F : Finset (Finset ℕ)) (α : Finset ℕ → ℝ) (w : ℕ) :
     ∏ g ∈ F, (1 - α g * ell (primeCount g w)) =
-      ∑ κ ∈ Fintype.piFinset (fun g : F => lowSubsets g.1),
+      ∑ κ ∈ Fintype.piFinset (fun g => lowSubsets g.1),
         (∏ g, lowCoeff (α g.1) (κ g).card) *
           (if ∀ p ∈ (Finset.univ : Finset F).biUnion κ, p ∣ w then 1 else 0) := by
   rw [← prod_coe_sort F]
@@ -241,7 +232,7 @@ theorem prod_one_sub_mul_ell_eq (F : Finset (Finset ℕ)) (α : Finset ℕ → �
   congr 1
   apply propext
   simp only [mem_biUnion, mem_univ, true_and, forall_exists_index]
-  exact ⟨fun h p g hp => h g trivial p hp, fun h g _ p hp => h p g hp⟩
+  grind
 
 end
 

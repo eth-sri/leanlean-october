@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Hypotheses
+
 public import Erdos408.OneSided.Bands
 public import Erdos408.OneSided.Moment.PathExpansion.Hermitian
 
@@ -30,7 +32,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 
@@ -45,12 +47,9 @@ theorem dvd_det_of_lineOf_eq {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ}
   push_cast
   unfold lineOf at h
   by_cases h₁ : (z.1 : ZMod p) = 0 <;> by_cases h₂ : (z'.1 : ZMod p) = 0
-  · rw [h₁, h₂]
-    ring
-  · simp only [h₁, h₂, ↓reduceIte] at h
-    exact absurd h (ZMod.val_lt _).ne'
-  · simp only [h₁, h₂, ↓reduceIte] at h
-    exact absurd h (ZMod.val_lt _).ne
+  · simp_all
+  · grind
+  · grind
   · simp only [h₁, h₂, ↓reduceIte] at h
     have h' := ZMod.val_injective p h
     field_simp at h'
@@ -78,33 +77,26 @@ theorem circleDist_le_of_anchor {U V u v r : ℝ} (hU : 0 < U) (hu : 0 < u) {z z
   -- `det(z, w_z) = gcd(z₁, z₂) = 1`
   have hw : z.1 * w.2 - z.2 * w.1 = 1 := by
     have := Int.gcd_eq_gcd_ab z.1 z.2
-    rw [hgcd] at this
-    simp only [hwdef, complement]
-    linear_combination -this
+    simp_all [complement]
   -- the coordinates `α_k = det(z_k, w_z)` along `z`
   set α₁ := z₁.1 * w.2 - z₁.2 * w.1 with hα₁
   set α₂ := z₂.1 * w.2 - z₂.2 * w.1 with hα₂
   have hpl : z₁.1 * z₂.2 - z₁.2 * z₂.1 =
       α₁ * (z.1 * z₂.2 - z.2 * z₂.1) - (z.1 * z₁.2 - z.2 * z₁.1) * α₂ := by
-    linear_combination (-(z₁.1 * z₂.2 - z₁.2 * z₂.1)) * hw
+    grind
   -- the line condition: `p ∣ P (α₁ - α₂)`, so `p ∣ α₁ - α₂`
   have hpα : (p : ℤ) ∣ α₁ - α₂ := by
-    have hPα : (p : ℤ) ∣ P * (α₁ - α₂) := by
+    exact ((Nat.prime_iff_prime_int.mp hp).dvd_or_dvd (by
       have : P * (α₁ - α₂) = (z₁.1 * z₂.2 - z₁.2 * z₂.1) + p * (α₁ * n₂ - n₁ * α₂) := by
-        rw [hpl, h₁, h₂]
-        ring
-      rw [this]
-      exact dvd_add hdvd (dvd_mul_right _ _)
-    exact ((Nat.prime_iff_prime_int.mp hp).dvd_or_dvd hPα).resolve_left hP
+        grind
+      aesop)).resolve_left hP
   obtain ⟨m, hm⟩ := hpα
   -- `τ(z_k) = α_k τ(z) + det(z, z_k) τ(w)`
-  have hτ : ∀ y : ℤ × ℤ, tau r y = ((y.1 * w.2 - y.2 * w.1 : ℤ) : ℝ) * tau r z +
+  have hτ : ∀ y, tau r y = ((y.1 * w.2 - y.2 * w.1 : ℤ) : ℝ) * tau r z +
       ((z.1 * y.2 - z.2 * y.1 : ℤ) : ℝ) * tau r w := by
     intro y
     have hw' : (z.1 : ℝ) * w.2 - z.2 * w.1 = 1 := by exact_mod_cast hw
-    unfold tau
-    push_cast
-    linear_combination (-(y.1 : ℝ) - r * y.2) * hw'
+    grind [tau]
   have hτ₁ := hτ z₁
   have hτ₂ := hτ z₂
   rw [h₁] at hτ₁
@@ -131,27 +123,26 @@ theorem circleDist_le_of_anchor {U V u v r : ℝ} (hU : 0 < U) (hu : 0 < u) {z z
   have hdiff : |tau r z₁ - tau r z₂| ≤ 15 * tau r z := by
     rw [abs_le]
     constructor <;> nlinarith
-  calc circleDist (((n₁ - n₂ : ℤ) : ℝ) * (tau r w / tau r z))
+  calc _
       ≤ |((n₁ - n₂ : ℤ) : ℝ) * (tau r w / tau r z) - m| := round_le _ m
     _ = |tau r z₁ - tau r z₂| / (p * tau r z) := by
         rw [hkey, neg_div, abs_neg, abs_div, abs_of_pos (mul_pos hp0 hτz)]
     _ ≤ 15 * tau r z / (p * tau r z) := by gcongr
-    _ = 15 / p := by field_simp
+    _ = _ := by field_simp
 
 /-! ### Prime factorization -/
 
 /-- **Products of band primes**: if `f i, g i` are both `1` or both primes of the band of
 group `i`, with disjoint bands, then `∏ f = ∏ g` forces `f = g`. -/
 theorem eq_of_prod_eq_of_band {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {f g : Fin K → ℕ}
+    (hdisj : DisjointBands x d.a) {f g : Fin K → ℕ}
     (hfg : ∀ i, (f i = 1 ∧ g i = 1) ∨ (f i ∈ band x (d.a i) ∧ g i ∈ band x (d.a i)))
     (h : ∏ i, f i = ∏ i, g i) : f = g := by
   funext i
   rcases hfg i with ⟨hf, hg⟩ | ⟨hf, -⟩
-  · rw [hf, hg]
+  · omega
   · have hfp := TypeII.band_prime hf
-    have hdvd : f i ∣ ∏ j, g j := h ▸ dvd_prod_of_mem f (mem_univ i)
-    obtain ⟨j, -, hj⟩ := (Prime.dvd_finsetProd_iff hfp.prime g).1 hdvd
+    obtain ⟨j, -, hj⟩ := (Prime.dvd_finsetProd_iff hfp.prime g).1 (h ▸ dvd_prod_of_mem f (mem_univ i))
     rcases hfg j with ⟨-, hg1⟩ | ⟨-, hgj⟩
     · rw [hg1] at hj
       exact absurd (Nat.eq_one_of_dvd_one hj) hfp.one_lt.ne'
@@ -177,7 +168,7 @@ theorem listProd_pos_of_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {p : Lists K 
 
 /-- With disjoint bands, the omission product of valid lists determines the omission tuple. -/
 theorem omitProd_injective {x : ℝ} {d : Data K} {J : ℕ}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {p : Lists K J}
+    (hdisj : DisjointBands x d.a) {p : Lists K J}
     (hp : p ∈ lists x d J) {o o' : Fin K → Fin (J + 1)} (h : omitProd p o = omitProd p o') :
     o = o' := by
   have h₁ := omitProd_mul_prod p o
@@ -189,7 +180,7 @@ theorem omitProd_injective {x : ℝ} {d : Data K} {J : ℕ}
     · exact h0
   have hb' : ∏ i, p i (o i) = ∏ i, p i (o' i) := by
     rw [h] at h₁
-    exact Nat.eq_of_mul_eq_mul_left (h ▸ hD) (h₁.trans h₂.symm)
+    nlinarith
   have := eq_of_prod_eq_of_band hdisj
     (fun i => Or.inr ⟨mem_band_of_mem_lists hp i _, mem_band_of_mem_lists hp i _⟩) hb'
   funext i
@@ -200,12 +191,9 @@ theorem omitProd_injective {x : ℝ} {d : Data K} {J : ℕ}
 theorem eq_of_mul_eq_of_coprime {D₁ D₂ Z₁ Z₂ P : ℕ} (h : D₁ * Z₁ = D₂ * Z₂) (hD₁ : D₁ ∣ P)
     (hD₂ : D₂ ∣ P) (hZ₁ : Nat.Coprime Z₁ P) (hZ₂ : Nat.Coprime Z₂ P) (hpos : 0 < D₁) :
     D₁ = D₂ ∧ Z₁ = Z₂ := by
-  have h₁ : D₁ ∣ D₂ := (hZ₂.coprime_dvd_right hD₁).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
-  have h₂ : D₂ ∣ D₁ := (hZ₁.coprime_dvd_right hD₂).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
-  have hD := Nat.dvd_antisymm h₁ h₂
-  refine ⟨hD, ?_⟩
-  rw [hD] at h
-  exact Nat.eq_of_mul_eq_mul_left (hD ▸ hpos) h
+  have h₁ := (hZ₂.coprime_dvd_right hD₁).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
+  have hD := Nat.dvd_antisymm h₁ ((hZ₁.coprime_dvd_right hD₂).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _))
+  aesop
 
 /-! ### Uniqueness of the omission tuple -/
 
@@ -216,7 +204,7 @@ band `i_*` banned from the source lists. Then two raw dirty edges with omission 
 other promoted primes `Z_k` (banned from the source lists) and targets `z_k` with the same line
 at `p_*` have `o₁ = o₂` and `Z₁ = Z₂`. -/
 theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < U) (hu : 0 < u)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : DisjointBands x d.a)
     {p : Lists K J} (hp : p ∈ lists x d J) {z : ℤ × ℤ} (hz : z ∈ rootPositions U V u v r)
     {I : Finset (Fin K)} (hI : I.Nonempty) {T : Fin K → ℕ}
     (hsep : Separated x d d₀ I (I.max' hI) (tau r (complement z) / tau r z) p T)
@@ -238,7 +226,7 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
   have hpsp := TypeII.band_prime hps
   set P := listProd p with hPdef
   -- `p_* ∤ P`, as `p_*` is banned from the source lists
-  have hP : ¬ (ps : ℤ) ∣ (P : ℤ) := by
+  have hP : ¬ (ps : ℤ) ∣ P := by
     rw [Int.natCast_dvd_natCast]
     intro hdvd
     obtain ⟨i, -, hi⟩ := (Prime.dvd_finsetProd_iff hpsp.prime _).1 hdvd
@@ -247,7 +235,7 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
   -- `det(z, z_k) = P - p_* (D_k Z_k T)`
   have hform : ∀ (o : Fin K → Fin (J + 1)) (Z : Fin K → ℕ) (y : ℤ × ℤ),
       z.1 * y.2 - z.2 * y.1 =
-        (omitProd p o : ℤ) * ((∏ i, p i (o i) : ℕ) - (ps * (∏ j, Z j) * ∏ j, T j : ℕ)) →
+        (omitProd p o : ℤ) * ((∏ i, p i (o i) : ℕ) - (ps * (∏ j, Z j) * ∏ j, T j)) →
       z.1 * y.2 - z.2 * y.1 = P - ps * ((omitProd p o * (∏ j, Z j) * ∏ j, T j : ℕ) : ℤ) := by
     intro o Z y hy
     rw [hy, hPdef, ← omitProd_mul_prod p o]
@@ -262,22 +250,20 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
     rw [Real.exp_neg, div_lt_iff₀ (hE.trans_le hle)]
     calc (15 : ℝ) < 100 * (Real.exp (Real.log x ^ d.a (I.max' hI)))⁻¹ *
           Real.exp (Real.log x ^ d.a (I.max' hI)) := by
-          rw [mul_assoc, inv_mul_cancel₀ hE.ne']
           norm_num
       _ ≤ _ := by gcongr
   -- the phase separation forces `D₁ Z₁ = D₂ Z₂`
   have hDZ : omitProd p o₁ * ∏ j, Z₁ j = omitProd p o₂ * ∏ j, Z₂ j := by
     by_contra hne
     have h := hsep o₁ o₂ Z₁ hZ₁ Z₂ hZ₂ hD₁ hD₁' hD₂ hD₂' hne
-    have heq : (((omitProd p o₁ * (∏ j, Z₁ j) * ∏ j, T j : ℕ) -
-        (omitProd p o₂ * (∏ j, Z₂ j) * ∏ j, T j : ℕ) : ℤ) : ℝ) *
+    have heq : (((omitProd p o₁ * (∏ j, Z₁ j) * ∏ j, T j) -
+        (omitProd p o₂ * (∏ j, Z₂ j) * ∏ j, T j) : ℤ) : ℝ) *
           (tau r (complement z) / tau r z) =
         (((omitProd p o₁ * ∏ j, Z₁ j : ℕ) : ℝ) - ((omitProd p o₂ * ∏ j, Z₂ j : ℕ) : ℝ)) *
           ((∏ j, T j : ℕ) : ℝ) * (tau r (complement z) / tau r z) := by
       push_cast
       ring
-    rw [heq] at hanc
-    linarith
+    grind
   -- prime factorization separates `D` and `Z`
   have hcop : ∀ Z ∈ selections x d I (I.max' hI), (∀ j i h, Z j ≠ p i h) →
       Nat.Coprime (∏ j, Z j) P := by
@@ -289,9 +275,8 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
     · exact (Nat.coprime_primes (TypeII.band_prime hZj) (hprime i h)).2 (hban j i h)
     · rw [mem_singleton.1 hZj]
       exact Nat.coprime_one_left _
-  have hDpos : 0 < omitProd p o₁ := prod_pos fun i _ => prod_pos fun h _ => (hprime i h).pos
   obtain ⟨hD, hZ⟩ := eq_of_mul_eq_of_coprime hDZ (Dvd.intro _ (omitProd_mul_prod p o₁))
-    (Dvd.intro _ (omitProd_mul_prod p o₂)) (hcop Z₁ hZ₁ hZban₁) (hcop Z₂ hZ₂ hZban₂) hDpos
+    (Dvd.intro _ (omitProd_mul_prod p o₂)) (hcop Z₁ hZ₁ hZban₁) (hcop Z₂ hZ₂ hZban₂) (prod_pos fun i _ => prod_pos fun h _ => (hprime i h).pos)
   refine ⟨omitProd_injective hdisj hp hD, eq_of_prod_eq_of_band hdisj (fun j => ?_) hZ⟩
   have h₁ := Fintype.mem_piFinset.1 hZ₁ j
   have h₂ := Fintype.mem_piFinset.1 hZ₂ j

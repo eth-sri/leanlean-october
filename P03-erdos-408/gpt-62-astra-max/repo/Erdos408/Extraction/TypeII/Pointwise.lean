@@ -74,9 +74,9 @@ theorem sum_step4_sq_le (h : ScaleFacts x γ j N) {r : ℕ} (hrj : r + 1 = j) (i
     ∑ m ∈ Icc 1 N, stepWeight4 x γ j i k m * cmul (fun p => proxyLoc x j p * r / p) m ≤
       r * recipSum x γ N + highProd x N r := by
   have hrY : (r : ℝ) < proxyCutoff x := by
-    have : (r : ℝ) ≤ j := by exact_mod_cast (show r ≤ j by omega)
+    have : (r : ℝ) ≤ j := by bound
     linarith [h.j_lt_cutoff]
-  have hrj' : (r : ℝ) ≤ j := by exact_mod_cast (show r ≤ j by omega)
+  have hrj' : (r : ℝ) ≤ j := by bound
   unfold stepWeight4
   split_ifs
   · exact (sum_unstrippedProxy_sq_le h.one_lt h.log_ge h.gamma_pos h.one_le_j h.prodY
@@ -101,7 +101,7 @@ theorem sum_step4_div_le (h : ScaleFacts x γ j N) {r : ℕ} (i : Fin (r + 1)) (
 /-- A product of factor sums. -/
 theorem prod_le_pow {r : ℕ} (f : Fin r → ℝ) (hf0 : ∀ k, 0 ≤ f k) {Q : ℝ} (hf : ∀ k, f k ≤ Q) :
     ∏ k, f k ≤ Q ^ r := by
-  rw [show Q ^ r = ∏ _k : Fin r, Q by rw [prod_const, card_univ, Fintype.card_fin]]
+  rw [show Q ^ r = ∏ _k : Fin r, Q by simp]
   exact prod_le_prod₀ (fun k _ => hf0 k) fun k _ => hf k
 
 end Factor
@@ -155,25 +155,22 @@ theorem abs_comp_sub_prox0_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj
       |endpoint q cw K CN x u v B h| ≤ endBound q K CN c E₂ x :=
     fun h h1 hh => abs_endpoint_le hq₁ hE hV h1 hh
   have ha01 := fun m => unstrippedProxy_le_one hx hsf.log_ge hsf.gamma_pos hsf.one_le_j
-    hsf.prodY (j := R + 1) m
+    hsf.prodY  m
   have hα : ∀ m, |primeProxyDiff x γ (R + 1) m| ≤ 1 := by
-    intro m
-    obtain ⟨h0, h1⟩ := ha01 m
-    unfold primeProxyDiff
-    split_ifs <;> rw [abs_le] <;> constructor <;> linarith
+    grind [primeProxyDiff]
   have hαs : ∀ m : ℕ, (m : ℝ) ≤ x ^ γ → primeProxyDiff x γ (R + 1) m = 0 := by
     intro m hm
     unfold primeProxyDiff
     rw [(proxies_eq_zero (j := R + 1) hx hsf.gamma_pos.le hm).1, sub_zero]
-    exact ite_eq_right fun h => absurd h.2 (not_lt.2 hm)
+    simp_all
   rw [sum_sub_sum_eq_steps]
   refine (abs_sum_le_sum_abs _ _).trans ?_
   rw [show ((R : ℝ) + 1) * bound4 q K CN c E₂ κ CΦ C₂ M x γ δ A R =
     ∑ _i : Fin (R + 1), bound4 q K CN c E₂ κ CΦ C₂ M x γ δ A R by
-      rw [sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul]; push_cast; ring]
+      simp]
   refine sum_le_sum fun i _ => ?_
   have hstep := abs_single_step_le hE hbox hC₂ hΦ hκ hx hxκ hxγ hsq hSE0 hSE hδ0 hδ1 hA
-    hsf.one_le_j hj2 hα hαs hR (stepWeight4 x γ (R + 1) i) (factorWeight_step4 hsf i)
+    hsf.one_le_j hj2 hα hαs hR _ (factorWeight_step4 hsf i)
   have hprod2 := prod_le_pow _ (fun k => sum_nonneg fun m _ => mul_nonneg
       ((factorWeight_step4 hsf i k).nonneg m) (cmul_nonneg (fun p _ => by
         have := proxyLoc_nonneg x (R + 1) p; positivity) m))
@@ -188,16 +185,12 @@ theorem abs_comp_sub_prox0_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj
   have hτ : 0 ≤ M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x) := by
     have := cutoff_deriv_bound_nonneg hΦ 1
     push_cast at this
-    have : 0 ≤ κ * x := by positivity
     positivity
   have hL0 : 0 ≤ Real.log x := by linarith [hsf.log_ge]
   have hL3 : 0 ≤ (N : ℝ) / Real.log x ^ (3 : ℝ) :=
     div_nonneg (Nat.cast_nonneg _) (Real.rpow_nonneg hL0 _)
   have hcard := card_clusterSets_le K (inertPerCluster K CN x)
   have hNb := hE.norm_pos
-  have hLr : 0 ≤ Real.log x ^ (-12 : ℝ) := Real.rpow_nonneg hL0 _
-  have hC : 0 ≤ C₂ * (κ * x) * Real.log x ^ (-12 : ℝ) :=
-    mul_nonneg (mul_nonneg hC₂ (by positivity)) hLr
   gcongr
 
 /-- E5 at one scale: `|Prox_j^0 - Prox_j| ≤ j B₅`. -/
@@ -230,15 +223,14 @@ theorem abs_prox0_sub_prox_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ
   have hSE0 : 0 ≤ endBound q K CN c E₂ x := by
     have := hE.norm_pos
     unfold endBound
-    have : 0 < 1 - q := by linarith
     positivity
   have hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 →
       |endpoint q cw K CN x u v B h| ≤ endBound q K CN c E₂ x :=
     fun h h1 hh => abs_endpoint_le hq₁ hE hV h1 hh
   have hΨ0 : ∀ h, N < h → cutPsi Φ (endpoint q cw K CN x u v B) x h = 0 :=
     fun h hh => cutPsi_eq_zero hΦ hx0 hκ0 hh
-  have hΨ := abs_cutPsi_le (E := endpoint q cw K CN x u v B) hΦ hx0 hκ0 hκx hxκ hSE0 hSE
-  have hδ := sum_abs_delta_le (N := N) (j := r + 2) hx hsf.log_ge hsf.gamma_pos hγ1
+  have hΨ := abs_cutPsi_le  hΦ hx0 hκ0 hκx hxκ hSE0 hSE
+  have hδ := sum_abs_delta_le   hx hsf.log_ge hsf.gamma_pos hγ1
     hsf.one_le_j hsf.cutoff_gt hsf.cutoff_le_N hc₃ hlogY hPiY hcount hSP hK'
   rw [sum_sub_sum_eq_steps]
   refine (abs_sum_le_sum_abs _ _).trans ?_
@@ -255,12 +247,12 @@ theorem abs_prox0_sub_prox_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ
   have hU : ∀ k m, stepWeight5 x γ (r + 2) i k m ≤ proxyEnv x γ (r + 2) m := by
     intro k m
     by_cases h : i.succAbove k < i
-    · simp only [stepWeight5, h, ↓reduceIte]
+    · simp [stepWeight5, h]
       exact (strippedProxy_le hx hsf.log_ge hsf.gamma_pos hsf.one_le_j m).2
-    · simp only [stepWeight5, h, ↓reduceIte]
+    · simp [stepWeight5, h]
       exact (unstrippedProxy_le hx hsf.log_ge hsf.gamma_pos hsf.one_le_j m).2
   have hstep := abs_strip_step_le hsf.log_ge hsf.gamma_pos hsf.one_le_j hsf.prodY
-    hsf.cutoff_gt hsf.cutoff_le_N _ hΨ0 hΨ hcW hcount (stepWeight5 x γ (r + 2) i) hU0 hU
+    hsf.cutoff_gt hsf.cutoff_le_N _ hΨ0 hΨ hcW hcount _ hU0 hU
   refine le_trans (le_of_eq ?_) (hstep.trans ?_)
   · rfl
   unfold bound5 highProd
@@ -269,8 +261,7 @@ theorem abs_prox0_sub_prox_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ
     highProd_nonneg (by
       have : (1 : ℝ) < proxyCutoff x := by
         have := hsf.j_lt_cutoff
-        have : (1 : ℝ) ≤ ((r + 2 : ℕ) : ℝ) := by exact_mod_cast (show 1 ≤ r + 2 by omega)
-        linarith
+        grind
       exact this)
   exact mul_le_mul_of_nonneg_left hδ (by positivity)
 

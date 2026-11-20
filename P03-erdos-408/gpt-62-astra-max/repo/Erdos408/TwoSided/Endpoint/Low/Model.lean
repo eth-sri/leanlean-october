@@ -33,9 +33,7 @@ theorem sum_divisors_eq_sum_filter {A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ 
     exact hd' (mem_inter.2 ⟨hd, hA d h⟩)
   rw [h₁]
   congr 1
-  ext d
-  simp only [mem_inter, Nat.mem_divisors, mem_filter]
-  tauto
+  grind
 
 /-- **Steps 2–3, the algebra.** For `H(mn) = H(n)` and a model supported on `D`,
 `P_m = ∑_d A_d ∑_{w ≤ N, md ∣ w} Φ(w) + ∑_{w ≤ N, m ∣ w} Φ(w) (H - ∑_{d ∣ ·} A_d)(w/m)`. -/
@@ -50,7 +48,7 @@ theorem sum_dvd_eq {Φ H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 
         Φ w * (H (w / m) - ∑ d ∈ (w / m).divisors, A d) := by
     intro w hw'
     obtain ⟨hw₁, hmw⟩ := mem_filter.1 hw'
-    have hw0 : w ≠ 0 := by have := (mem_Icc.1 hw₁).1; omega
+    have hw0 : w ≠ 0 := by grind
     have hq0 : w / m ≠ 0 := by
       intro h
       rw [Nat.div_eq_zero_iff_lt hm] at h
@@ -63,10 +61,8 @@ theorem sum_dvd_eq {Φ H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 
       by_cases hd : m * d ∣ w
       · rw [ite_eq_left ((Nat.dvd_div_iff_mul_dvd hmw).2 hd), ite_eq_left hd]
         ring
-      · rw [ite_eq_right fun h => hd ((Nat.dvd_div_iff_mul_dvd hmw).1 h), ite_eq_right hd]
-        ring
-    rw [sum_congr rfl this]
-    ring
+      simp_all
+    grind
   rw [sum_congr rfl hw, sum_add_distrib, sum_comm]
   congr 1
   refine sum_congr rfl fun d _ => ?_
@@ -74,21 +70,21 @@ theorem sum_dvd_eq {Φ H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 
   congr 2
   refine filter_congr fun w _ => ?_
   constructor
-  · exact fun h => h.2
+  · simp
   · exact fun h => ⟨(Dvd.intro d rfl).trans h, h⟩
 
 /-- **Step 2, the model error.** If `|Φ| ≤ M₀`, `Φ(w) ≠ 0 → Y < w`, `m ≤ Y` and the model
 error `E` has `∑_{R < n ≤ 2R} |E(n)|² ≤ C_N R ρ` at `R = Y/m`, then
 `|∑_{w ≤ 2Y, m ∣ w} Φ(w) E(w/m)| ≤ M₀ √2 √C_N (Y/m) √ρ`. -/
 theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM₀ : 0 ≤ M₀)
-    (hρ : 0 ≤ ρ) (hΦ : ∀ w, ‖Φ w‖ ≤ M₀) (hΦs : ∀ w : ℕ, Φ w ≠ 0 → Y < w) {m : ℕ}
-    (hm : 0 < m) (hmY : (m : ℝ) ≤ Y)
+    (hρ : 0 ≤ ρ) (hΦ : ∀ w, ‖Φ w‖ ≤ M₀) (hΦs : ∀ w, Φ w ≠ 0 → Y < w) {m : ℕ}
+    (hm : 0 < m) (hmY : m ≤ Y)
     (hE : ∑ n ∈ Ioc ⌊Y / m⌋₊ ⌊2 * (Y / m)⌋₊, ‖E n‖ ^ 2 ≤ CNN * (Y / m) * ρ) :
     ‖∑ w ∈ (Icc 1 ⌊2 * Y⌋₊).filter (m ∣ ·), Φ w * E (w / m)‖ ≤
       M₀ * (Real.sqrt 2 * Real.sqrt CNN * (Y / m) * Real.sqrt ρ) := by
   set R := Y / m with hR
   have hm' : (0 : ℝ) < m := by exact_mod_cast hm
-  have hR1 : 1 ≤ R := by rw [hR, le_div_iff₀ hm', one_mul]; exact hmY
+  have hR1 : 1 ≤ R := by rw [le_div_iff₀ hm', one_mul]; exact hmY
   set I := Ioc ⌊R⌋₊ ⌊2 * R⌋₊
   set F := ((Icc 1 ⌊2 * Y⌋₊).filter (m ∣ ·)).filter fun w : ℕ => Y < w
   -- only `Y < w ≤ 2Y` contribute, and `w ↦ w/m` maps them into `(R, 2R]`
@@ -99,13 +95,11 @@ theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM
       if Y < w then M₀ * ‖E (w / m)‖ else 0 from sum_filter _ _]
     refine sum_le_sum fun w _ => ?_
     split_ifs with hw
-    · rw [norm_mul]
-      exact mul_le_mul_of_nonneg_right (hΦ w) (norm_nonneg _)
+    · simpa using mul_le_mul_of_nonneg_right (hΦ w) (norm_nonneg _)
     · have : Φ w = 0 := by
-        by_contra h
-        exact hw (hΦs w h)
+        grind
       rw [this, zero_mul, norm_zero]
-  have hinj : Set.InjOn (· / m) (F : Set ℕ) := by
+  have hinj : Set.InjOn (· / m) F := by
     intro w₁ hw₁ w₂ hw₂ h
     have h₁ := (mem_filter.1 (mem_filter.1 hw₁).1).2
     have h₂ := (mem_filter.1 (mem_filter.1 hw₂).1).2
@@ -115,34 +109,26 @@ theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM
     intro n hn
     obtain ⟨w, hw, rfl⟩ := mem_image.1 hn
     obtain ⟨⟨hw₁, hmw⟩, hYw⟩ := mem_filter.1 hw |>.imp_left mem_filter.1
-    have hwN := (mem_Icc.1 hw₁).2
-    have hcast : ((w / m : ℕ) : ℝ) = w / m := Nat.cast_div hmw hm'.ne'
-    have hw2 : (w : ℝ) ≤ 2 * Y := (Nat.cast_le.2 hwN).trans (Nat.floor_le (by
-      have : (0 : ℝ) ≤ m := hm'.le
+    have hcast := Nat.cast_div hmw hm'.ne'
+    have hw2 := (Nat.cast_le.2 (mem_Icc.1 hw₁).2).trans (Nat.floor_le (by
       linarith))
     refine mem_Ioc.2 ⟨?_, ?_⟩
     · rw [← Nat.cast_lt (α := ℝ), hcast]
       refine (Nat.floor_le (by linarith)).trans_lt ?_
-      rw [hR]
       exact div_lt_div_of_pos_right hYw hm'
     · refine Nat.le_floor ?_
-      rw [hcast, hR, mul_div_assoc']
-      exact div_le_div_of_nonneg_right hw2 hm'.le
+      rw [hcast, mul_div_assoc']
+      gcongr
   have h2 : ∑ w ∈ F, ‖E (w / m)‖ ≤ ∑ n ∈ I, ‖E n‖ := by
     rw [← sum_image (f := fun n => ‖E n‖) hinj]
-    exact sum_le_sum_of_subset_of_nonneg himg fun _ _ _ => norm_nonneg _
+    gcongr
   -- Cauchy–Schwarz on `(R, 2R]`, which has at most `2R` points
-  have hcard : (#I : ℝ) ≤ 2 * R := by
+  have hcard : (#I) ≤ 2 * R := by
     rw [Nat.card_Ioc]
     have h₁ := Nat.floor_le (show 0 ≤ 2 * R by linarith)
     have h₂ := Nat.lt_floor_add_one R
     rw [Nat.cast_sub (Nat.floor_le_floor (by linarith))]
     linarith
-  have h3 : (∑ n ∈ I, ‖E n‖) ^ 2 ≤ 2 * R * (CNN * R * ρ) := by
-    have := sum_mul_sq_le_sq_mul_sq I (fun _ => (1 : ℝ)) fun n => ‖E n‖
-    simp only [one_mul, one_pow, sum_const, nsmul_eq_mul, mul_one] at this
-    refine this.trans ?_
-    exact mul_le_mul hcard hE (sum_nonneg fun _ _ => by positivity) (by linarith)
   have h4 : ∑ n ∈ I, ‖E n‖ ≤ Real.sqrt 2 * Real.sqrt CNN * R * Real.sqrt ρ := by
     have hsq : Real.sqrt (2 * R * (CNN * R * ρ)) =
         Real.sqrt 2 * Real.sqrt CNN * R * Real.sqrt ρ := by
@@ -151,10 +137,14 @@ theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM
         Real.sqrt_mul' _ hρ, Real.sqrt_sq (by linarith)]
       ring
     rw [← hsq]
-    exact Real.le_sqrt_of_sq_le h3
+    exact Real.le_sqrt_of_sq_le (by
+      have := sum_mul_sq_le_sq_mul_sq I (fun _ => (1 : ℝ)) fun n => ‖E n‖
+      simp at this
+      refine this.trans ?_
+      gcongr)
   calc _ ≤ M₀ * ∑ w ∈ F, ‖E (w / m)‖ := h1
-    _ ≤ M₀ * ∑ n ∈ I, ‖E n‖ := mul_le_mul_of_nonneg_left h2 hM₀
-    _ ≤ _ := mul_le_mul_of_nonneg_left h4 hM₀
+    _ ≤ M₀ * ∑ n ∈ I, ‖E n‖ := by gcongr
+    _ ≤ _ := by gcongr
 
 /-- **Steps 2–3 for one modulus.** With the hypotheses of `sum_dvd_eq` and
 `norm_sum_mul_sub_model_le`, `m d` coprime to `k` on the support and `G(0) = 0`,
@@ -162,8 +152,8 @@ theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM
 theorem norm_sum_dvd_sub_le {G H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 0 → d ∈ D)
     (hD : ∀ d ∈ D, 0 < d) {M₀ Y CNN ρ : ℝ} (hM₀ : 0 ≤ M₀) (hρ : 0 ≤ ρ) {h : ℤ} {k : ℕ}
     (hk : 0 < k) (hG0 : G 0 = 0) (hΦ : ∀ w, ‖G w * LowFreq.addTwist h k w‖ ≤ M₀)
-    (hΦs : ∀ w : ℕ, G w * LowFreq.addTwist h k w ≠ 0 → Y < w) {m : ℕ} (hm : 0 < m)
-    (hmY : (m : ℝ) ≤ Y) (hH : ∀ n, H (m * n) = H n)
+    (hΦs : ∀ w, G w * LowFreq.addTwist h k w ≠ 0 → Y < w) {m : ℕ} (hm : 0 < m)
+    (hmY : m ≤ Y) (hH : ∀ n, H (m * n) = H n)
     (hcop : ∀ d ∈ D, A d ≠ 0 → Nat.Coprime (m * d) k)
     (hE : ∑ n ∈ Ioc ⌊Y / m⌋₊ ⌊2 * (Y / m)⌋₊, ‖H n - ∑ d ∈ n.divisors, A d‖ ^ 2 ≤
       CNN * (Y / m) * ρ) :
@@ -174,7 +164,7 @@ theorem norm_sum_dvd_sub_le {G H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, 
   set Nw := ⌊2 * Y⌋₊
   set S := ∑ w ∈ Icc 1 Nw, G w
   set TV := ∑ w ∈ Icc 1 Nw, ‖G w - G (w - 1)‖
-  rw [sum_dvd_eq (Φ := fun w => G w * addTwist h k w) hA hm hH Nw]
+  rw [sum_dvd_eq hA hm hH Nw]
   have hmain : twistMean h k * S * (∑ d ∈ D, A d / d) / m =
       ∑ d ∈ D, A d * (twistMean h k * S / (m * d : ℕ)) := by
     rw [mul_sum, sum_div]

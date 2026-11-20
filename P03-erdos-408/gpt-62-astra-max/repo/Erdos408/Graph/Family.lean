@@ -1,5 +1,7 @@
 module
 
+public import Erdos408.Scales
+
 public import Erdos408.Graph.Reindex
 
 /-!
@@ -32,7 +34,7 @@ def FamilyBound (q₀ : ℝ) (m₀ J : ℕ) (C₁ C E C₃ C₄ x : ℝ) {ι : T
     -- the transferred pairing
     ∀ ζ : ℝ, |ζ| ≤ Real.log x ^ C₄ → ∀ X : ℝ, √x ≤ X → X ≤ x ^ 2 →
       ∀ (S S' : Finset ℕ) (f g : ℕ → ℂ), (∀ n ∈ S, X ≤ n ∧ (n : ℝ) < 2 * X) →
-        (∀ n, ‖f n‖ ≤ 1) → (∀ n ∉ S', g n = 0) →
+        (OneBounded f) → (∀ n ∉ S', g n = 0) →
         physicalNormSq P (J + 1) S f ≤ X * Real.log x ^ (2 * C₃) →
         physicalNormSq P (J + 1) S' g ≤ X * Real.log x ^ (2 * C₃) →
         ‖patternPairing P q₀ (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) ζ S f g +
@@ -50,7 +52,7 @@ lemma slotProduct_reindex (e : ι ≃ κ) {J : ℕ} (A : κ → Finset (Fin J)) 
     slotProduct (fun g => A (e g)) a = slotProduct A fun k => a (e.symm k) := by
   unfold slotProduct
   rw [← Equiv.prod_comp e]
-  simp only [Equiv.symm_apply_apply]
+  simp
 
 /-- `FamilyBound` for the reindexed groups gives it for the original ones. -/
 lemma FamilyBound.reindex (e : ι ≃ κ) {q₀ : ℝ} {m₀ J : ℕ} {C₁ C E C₃ C₄ x : ℝ}

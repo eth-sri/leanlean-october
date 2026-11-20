@@ -42,8 +42,8 @@ theorem eventually_kernelGrowth (Cm C K : ℝ) : ∀ᶠ L : ℝ in atTop,
   have hL0 : 0 < L := by linarith
   have ha := abs_nonneg Cm
   have hc := abs_nonneg C
-  have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
-  have hsq : Real.sqrt L = L ^ (1 / 2 : ℝ) := Real.sqrt_eq_rpow L
+  have hlog0  := Real.log_nonneg hL1
+  have hsq  := Real.sqrt_eq_rpow L
   -- `|Cm| log L ≤ L/8000` and `|C| √L ≤ L/8000`
   have hCm : |Cm| * Real.log L ≤ L / 8000 := by
     have h := mul_le_mul_of_nonneg_left hlog ha
@@ -84,8 +84,8 @@ theorem eventually_kernel_saving (Cm C K : ℝ) (hC : 0 ≤ C) :
     have := Real.log_le_log (by linarith) hkl
     rw [Real.log_rpow hl0] at this
     exact this.trans (mul_le_mul_of_nonneg_right (le_abs_self _) hloglog)
-  have hlogk0 : 0 ≤ Real.log k := Real.log_nonneg hk'
-  have hH0 : 0 < H := lt_of_lt_of_le (by positivity) hH
+  have hlogk0  := Real.log_nonneg hk'
+  have hH0  := lt_of_lt_of_le (by positivity) hH
   -- `log H ≥ 0.99 L - 2 L^{0.47}`
   have hlogH : 99 / 100 * l - 2 * l ^ (0.47 : ℝ) ≤ Real.log H := by
     have := Real.log_le_log (by positivity) hH
@@ -105,7 +105,7 @@ theorem eventually_kernel_saving (Cm C K : ℝ) (hC : 0 ≤ C) :
   · -- `log(k(|u| + 3)) ≤ 4L`
     have hlogku : Real.log (k * (|u| + 3)) ≤ 4 * l := by
       have hx3 : |u| + 3 ≤ 2 * x ^ 3 := by nlinarith [pow_le_pow_left₀ (by norm_num) hx2 3]
-      calc Real.log (k * (|u| + 3)) = Real.log k + Real.log (|u| + 3) :=
+      calc _ = Real.log k + Real.log (|u| + 3) :=
             Real.log_mul (by linarith) (by positivity)
         _ ≤ |Cm| * Real.log l + Real.log (2 * x ^ 3) := by
             gcongr
@@ -113,12 +113,12 @@ theorem eventually_kernel_saving (Cm C K : ℝ) (hC : 0 ≤ C) :
             rw [Real.log_mul (by norm_num) (by positivity), Real.log_pow]
             push_cast
             ring
-        _ ≤ 4 * l := by linarith
+        _ ≤ _ := by linarith
     have hE : C * Real.sqrt (Real.log (k * (|u| + 3))) ≤ |C| * (2 * Real.sqrt l) := by
       have : Real.sqrt (Real.log (k * (|u| + 3))) ≤ 2 * Real.sqrt l := by
-        calc Real.sqrt (Real.log (k * (|u| + 3))) ≤ Real.sqrt (4 * l) :=
+        calc _ ≤ Real.sqrt (4 * l) :=
               Real.sqrt_le_sqrt hlogku
-          _ = 2 * Real.sqrt l := by
+          _ = _ := by
               rw [Real.sqrt_mul (by norm_num), show (4 : ℝ) = 2 ^ 2 by norm_num,
                 Real.sqrt_sq (by norm_num)]
       rw [abs_of_nonneg hC]
@@ -135,14 +135,14 @@ theorem eventually_kernel_saving (Cm C K : ℝ) (hC : 0 ≤ C) :
       congr 1
       ring
     rw [hR, hx150]
-    calc K * Real.exp (C * Real.sqrt (Real.log (k * (|u| + 3)))) * Real.exp (-(ℓ / 128))
+    calc _
         ≤ Real.exp (Real.log (|K| + 1)) * Real.exp (|C| * (2 * Real.sqrt l)) *
             Real.exp (-(ℓ / 128)) := by
           gcongr
       _ = Real.exp (Real.log (|K| + 1) + |C| * (2 * Real.sqrt l) - ℓ / 128) := by
           rw [← Real.exp_add, ← Real.exp_add]
           ring_nf
-      _ ≤ Real.exp (-(l / 150)) := Real.exp_le_exp.2 (by nlinarith)
+      _ ≤ _ := Real.exp_le_exp.2 (by nlinarith)
 
 /-- The divisor sum of a model supported in `D`, exchanged with a sum over `n`:
 `∑_{n ∈ F} (∑_{d ∣ n} A_d) f(n) = ∑_{d ∈ D} A_d ∑_{n ∈ F, d ∣ n} f(n)`. -/
@@ -176,8 +176,8 @@ theorem filter_dvd_eq_image {d k e β lo hi : ℕ} (hd : 0 < d) (hde : d * e ≡
       exact hlo
     · rw [Nat.le_div_iff_mul_le hd, mul_comm]
       exact hhi
-    · have h1 : d * e * v ≡ 1 * v [MOD k] := hde.mul_right v
-      have h2 : e * (d * v) ≡ e * β [MOD k] := hβ.mul_left e
+    · have h1  := hde.mul_right v
+      have h2  := hβ.mul_left e
       rw [one_mul] at h1
       exact h1.symm.trans (by rw [show d * e * v = e * (d * v) by ring]; exact h2)
   · rintro ⟨v, ⟨⟨hlo, hhi⟩, hv⟩, rfl⟩
@@ -186,8 +186,8 @@ theorem filter_dvd_eq_image {d k e β lo hi : ℕ} (hd : 0 < d) (hde : d * e ≡
       exact hlo
     · rw [Nat.le_div_iff_mul_le hd, mul_comm] at hhi
       exact hhi
-    · have h1 : d * v ≡ d * (e * β) [MOD k] := hv.mul_left d
-      have h2 : d * e * β ≡ 1 * β [MOD k] := hde.mul_right β
+    · have h1  := hv.mul_left d
+      have h2  := hde.mul_right β
       rw [one_mul] at h2
       exact h1.trans (by rw [show d * (e * β) = d * e * β by ring]; exact h2)
 
@@ -226,7 +226,7 @@ theorem eventually_norm_modelProgression_Ioc_le (Cm C₈ : ℝ) :
   set D := Finset.Icc 1 ⌊E⌋₊ with hD
   set F := (Finset.Ioc lo hi).filter (· ≡ β [MOD k]) with hF
   set ε := x ^ (-(1 / 150 : ℝ)) with hε
-  have hR0 : 0 < R := lt_of_lt_of_le (by positivity) hR
+  have hR0  := lt_of_lt_of_le (by positivity) hR
   have hε0 : 0 ≤ ε := by positivity
   have hAD : ∀ d, A d ≠ 0 → d ∈ D := fun d hd =>
     Finset.mem_Icc.2 ⟨(hA d hd).1, Nat.le_floor (hA d hd).2.1⟩
@@ -241,7 +241,7 @@ theorem eventually_norm_modelProgression_Ioc_le (Cm C₈ : ℝ) :
     by_cases hAd : A d = 0
     · rw [hAd, zero_mul, norm_zero, zero_div, zero_mul]
     obtain ⟨hd1, hdE, hcop⟩ := hA d hAd
-    have hd0 : 0 < d := hd1
+    have hd0  := hd1
     have hd' : (0 : ℝ) < d := by exact_mod_cast hd0
     obtain ⟨e, he⟩ := exists_mul_modEq_one hcop
     rw [hF, filter_dvd_eq_image hd0 he, Finset.sum_image fun v _ w _ h =>
@@ -253,8 +253,8 @@ theorem eventually_norm_modelProgression_Ioc_le (Cm C₈ : ℝ) :
     have hHx : x ^ (99 / 100 : ℝ) * Real.exp (-(2 * Real.log x ^ (0.47 : ℝ))) ≤ H := by
       rw [hH, le_div_iff₀ hd', Real.exp_neg, ← div_eq_mul_inv, div_mul_eq_mul_div,
         div_le_iff₀ (Real.exp_pos _)]
-      calc x ^ (99 / 100 : ℝ) * d ≤ R * E := mul_le_mul hR hdE hd'.le hR0.le
-        _ = R * Real.exp (2 * Real.log x ^ (0.47 : ℝ)) := rfl
+      calc _ ≤ R * E := mul_le_mul hR hdE hd'.le hR0.le
+        _ = _ := rfl
     obtain ⟨hHk, hsv⟩ := hsave H k t hHx hk hkl htx
     have hHA : H ≤ ((lo / d : ℕ) : ℝ) + 1 := by
       rw [hH, div_le_iff₀ hd']
@@ -268,25 +268,23 @@ theorem eventually_norm_modelProgression_Ioc_le (Cm C₈ : ℝ) :
       exact (Nat.cast_div_le).trans (div_le_div_of_nonneg_right hhi hd'.le)
     have hb := hbound H (lo / d) (hi / d) k (e * β) t hHk hHA hBH hk ht1
     rw [inv_mul_le_iff₀ hH0] at hb
-    have hdI : ‖(d : ℂ) ^ ((t : ℂ) * Complex.I)‖ ≤ 1 := norm_natCast_cpow_I_mul_le t d
+    have hdI  := norm_natCast_cpow_I_mul_le t d
     have h12 : 12 / (1 + |t|) ≤ 12 / |t| :=
       div_le_div_of_nonneg_left (by norm_num) (by linarith) (by linarith)
     have hnorm : ‖∑ v ∈ (Finset.Ioc (lo / d) (hi / d)).filter (· ≡ e * β [MOD k]),
         (v : ℂ) ^ ((t : ℂ) * Complex.I)‖ ≤ H * (12 / |t| + ε) :=
       hb.trans (mul_le_mul_of_nonneg_left (by linarith) hH0.le)
-    calc ‖A d‖ * (‖(d : ℂ) ^ ((t : ℂ) * Complex.I)‖ *
-          ‖∑ v ∈ (Finset.Ioc (lo / d) (hi / d)).filter (· ≡ e * β [MOD k]),
-            (v : ℂ) ^ ((t : ℂ) * Complex.I)‖)
+    calc _
         ≤ ‖A d‖ * (1 * (H * (12 / |t| + ε))) := by gcongr
-      _ = ‖A d‖ / d * (R * (12 / |t| + ε)) := by
+      _ = _ := by
           rw [hH]
           field_simp
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hR0.le]
   have hsum := norm_sum_le_of_le D hterm
   rw [← Finset.sum_mul] at hsum
-  calc R⁻¹ * ‖∑ d ∈ D, A d * ∑ n ∈ F.filter (d ∣ ·), (n : ℂ) ^ ((t : ℂ) * Complex.I)‖
+  calc _
       ≤ R⁻¹ * ((∑ d ∈ D, ‖A d‖ / d) * (R * (12 / |t| + ε))) := by gcongr
     _ = (∑ d ∈ D, ‖A d‖ / d) * (12 / |t| + ε) := by field_simp
-    _ ≤ Real.log x ^ C₈ * (12 / |t| + ε) := by gcongr
+    _ ≤ _ := by gcongr
 
 end Erdos408.TwoSided.ConstHigh

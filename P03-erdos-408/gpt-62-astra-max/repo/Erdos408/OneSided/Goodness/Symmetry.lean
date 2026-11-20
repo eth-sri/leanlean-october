@@ -52,7 +52,7 @@ theorem omitProd_permuteLists {J : ℕ} (p : Lists K J) (σ : Fin K → Equiv.Pe
     (o : Fin K → Fin (J + 1)) :
     omitProd (permuteLists p σ) o = omitProd p fun i => σ i (o i) :=
   prod_congr rfl fun i _ =>
-    prod_equiv (σ i) (by simp [(σ i).injective.ne_iff]) fun _ _ => rfl
+    prod_equiv (σ i) (by simp) fun _ _ => rfl
 
 /-! ### Goodness does not see the order -/
 
@@ -63,7 +63,7 @@ theorem GoodFirst.permuteLists {Y d₀ r : ℝ} {J : ℕ} {p : Lists K J}
     GoodFirst Y d₀ r (permuteLists p σ) := by
   intro o h₁ h₂ l hl₁ hl₂
   rw [omitProd_permuteLists] at h₁ h₂ ⊢
-  exact h _ h₁ h₂ l hl₁ hl₂
+  apply h <;> assumption
 
 /-- Test (i) does not see the order. -/
 theorem goodFirst_permuteLists_iff {Y d₀ r : ℝ} {J : ℕ} (p : Lists K J)
@@ -77,7 +77,7 @@ theorem Separated.permuteLists {x : ℝ} {d : Data K} {d₀ : ℝ} {I : Finset (
     (σ : Fin K → Equiv.Perm (Fin (J + 1))) : Separated x d d₀ I i r (permuteLists p σ) T := by
   intro o o' Z hZ Z' hZ' h₁ h₂ h₁' h₂' hne
   simp only [omitProd_permuteLists] at h₁ h₂ h₁' h₂' hne ⊢
-  exact h _ _ Z hZ Z' hZ' h₁ h₂ h₁' h₂' hne
+  bound
 
 /-- The separation does not see the order. -/
 theorem separated_permuteLists_iff {x : ℝ} {d : Data K} {d₀ : ℝ} {I : Finset (Fin K)}
@@ -116,7 +116,7 @@ theorem mem_states_permuteLists (s : State x d Y d₀)
   refine mem_filter.2 ⟨mem_product.2 ⟨hP, mem_filter.2 ⟨?_, fun i =>
     (hinj i).comp (σ i).injective⟩⟩, fun i h => hdiv i (σ i h)⟩
   simp only [Fintype.mem_piFinset] at hband ⊢
-  exact fun i h => hband i (σ i h)
+  solve_by_elim
 
 /-- The reorderings of `s` are the `((J + 1)!)^K` states `s ∘ σ`: they are distinct, since
 the lists have distinct entries. -/
@@ -172,8 +172,8 @@ theorem symOp_comm (s s' : State x d Y d₀) : symOp x d Y d₀ s s' = symOp x d
   unfold symOp
   split_ifs with h h' h''
   · rfl
-  · exact absurd (hsymm s s' h) h'
-  · exact absurd (hsymm s' s h'') h
+  · solve_by_elim [absurd]
+  · solve_by_elim [absurd]
   · rfl
 
 /-- A vector on states is slot invariant when it does not see the order of the lists. -/
@@ -190,13 +190,13 @@ theorem slotInvariant_endVec : SlotInvariant (endVec x d Y d₀) := by
 /-- `𝒮` fixes a slot-invariant vector: `𝒮 v = v`. -/
 theorem sum_symOp_mul {v : State x d Y d₀ → ℂ} (hv : SlotInvariant v) (s : State x d Y d₀) :
     ∑ s', symOp x d Y d₀ s s' * v s' = v s := by
-  calc ∑ s', symOp x d Y d₀ s s' * v s' = ∑ s', symOp x d Y d₀ s s' * v s := by
+  calc _ = ∑ s', symOp x d Y d₀ s s' * v s := by
         refine sum_congr rfl fun s' _ => ?_
         unfold symOp
         split_ifs with h
         · obtain ⟨h₁, σ, hσ⟩ := h
           rw [hv s s' σ h₁ hσ]
-        · rw [zero_mul, zero_mul]
+        simp
     _ = v s := by rw [← sum_mul, sum_symOp, one_mul]
 
 /-- `𝒮` fixes a slot-invariant vector acting from the left: `⟨u, 𝒮 w⟩ = ⟨u, w⟩` without the
@@ -207,12 +207,12 @@ theorem sum_mul_symOp_mulVec {u : State x d Y d₀ → ℂ} (hu : SlotInvariant 
   simp only [Matrix.mulVec, dotProduct, mul_sum]
   rw [sum_comm]
   refine sum_congr rfl fun s' _ => ?_
-  calc ∑ s, u s * (symOp x d Y d₀ s s' * w s')
+  calc _
       = (∑ s, symOp x d Y d₀ s' s * u s) * w s' := by
         rw [sum_mul]
         refine sum_congr rfl fun s _ => ?_
         rw [symOp_comm]
         ring
-    _ = u s' * w s' := by rw [sum_symOp_mul hu]
+    _ = _ := by rw [sum_symOp_mul hu]
 
 end Erdos408.OneSided

@@ -30,7 +30,7 @@ variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddComm
 /-- A directional derivative of a smooth function is smooth. -/
 theorem contDiff_fderiv_apply {f : E → F} (hf : ContDiff ℝ ∞ f) (d : E) :
     ContDiff ℝ ∞ fun x => fderiv ℝ f x d :=
-  (hf.fderiv_right (by exact_mod_cast le_rfl)).clm_apply contDiff_const
+  by fun_prop
 
 /-- `‖D^k ∂_d f‖ ≤ ‖d‖ ‖D^{k + 1} f‖`. -/
 theorem norm_iteratedFDeriv_fderiv_apply_le {f : E → F} (hf : ContDiff ℝ ∞ f) (d : E) (k : ℕ)
@@ -59,28 +59,26 @@ theorem iteratedDeriv_two_comp_line {f : E → F} (hf : ContDiff ℝ ∞ f) (a d
   have hd : ∀ {g : E → F}, ContDiff ℝ ∞ g → Differentiable ℝ g := fun hg =>
     hg.differentiable (by simp)
   rw [iteratedDeriv_succ, iteratedDeriv_one]
-  have h : deriv (fun t => f (a + t • d)) = fun t => fderiv ℝ f (a + t • d) d :=
-    funext (deriv_comp_line (hd hf) a d)
-  rw [h]
-  exact deriv_comp_line (f := fun x => fderiv ℝ f x d) (hd (contDiff_fderiv_apply hf d)) a d t
+  rw [(funext (deriv_comp_line (hd hf) a d))]
+  exact deriv_comp_line  (hd (contDiff_fderiv_apply hf d)) a d t
 
 /-- A smooth function with compact support has bounded derivatives up to any order. -/
 theorem exists_norm_iteratedFDeriv_le {f : E → F} (hf : ContDiff ℝ ∞ f) (hc : HasCompactSupport f)
     (n : ℕ) : ∃ P : ℝ, ∀ j ≤ n, ∀ x, ‖iteratedFDeriv ℝ j f x‖ ≤ P := by
-  have hb : ∀ j : ℕ, ∃ P : ℝ, ∀ x, ‖iteratedFDeriv ℝ j f x‖ ≤ P := fun j =>
+  have hb := fun j =>
     (hf.continuous_iteratedFDeriv (by exact_mod_cast le_top)).bounded_above_of_compact_support
       (hc.iteratedFDeriv j)
   induction n with
   | zero =>
     obtain ⟨P, hP⟩ := hb 0
-    exact ⟨P, fun j hj x => by rw [Nat.le_zero.1 hj]; exact hP x⟩
+    aesop
   | succ n ih =>
     obtain ⟨P, hP⟩ := ih
     obtain ⟨Q, hQ⟩ := hb (n + 1)
     refine ⟨max P Q, fun j hj x => ?_⟩
     rcases Nat.le_succ_iff.1 hj with hj | rfl
-    · exact (hP j hj x).trans (le_max_left _ _)
-    · exact (hQ x).trans (le_max_right _ _)
+    · simp_all
+    simp_all
 
 /-- The derivatives of the twist `e(c y)`. -/
 theorem iteratedDeriv_twist (c : ℝ) (k : ℕ) :
@@ -117,19 +115,19 @@ theorem norm_iteratedFDeriv_twist_le {φ : ℝ → ℂ} (hφ : ContDiff ℝ ∞ 
         Complex.exp (2 * π * Complex.I * ((c * y : ℝ) : ℂ))) y‖ ≤
       (i.choose j : ℝ) * (P * (2 * π * (1 + |c|)) ^ i) := by
     intro j hj
-    have hj' : j ≤ i := Nat.lt_succ_iff.1 (Finset.mem_range.1 hj)
+    have hj' := Nat.lt_succ_iff.1 (Finset.mem_range.1 hj)
     have he' : ‖iteratedFDeriv ℝ (i - j) (fun y : ℝ =>
         Complex.exp (2 * π * Complex.I * ((c * y : ℝ) : ℂ))) y‖ = (2 * π * |c|) ^ (i - j) := by
       rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, iteratedDeriv_twist, norm_mul, norm_pow,
         Complex.norm_exp]
-      simp [abs_of_pos pi_pos]
+      simp
     rw [he', mul_assoc]
     refine mul_le_mul_of_nonneg_left (mul_le_mul (hP j hj' y) ?_ (by positivity)
       ((norm_nonneg _).trans (hP 0 (Nat.zero_le _) y))) (Nat.cast_nonneg _)
-    calc (2 * π * |c|) ^ (i - j) ≤ (2 * π * (1 + |c|)) ^ (i - j) := by
+    calc _ ≤ (2 * π * (1 + |c|)) ^ (i - j) := by
           gcongr
           linarith
-      _ ≤ (2 * π * (1 + |c|)) ^ i := pow_le_pow_right₀ hb (Nat.sub_le i j)
+      _ ≤ _ := pow_le_pow_right₀ hb (Nat.sub_le i j)
   refine (Finset.sum_le_sum hterm).trans (le_of_eq ?_)
   rw [← Finset.sum_mul, ← Nat.cast_sum, Nat.sum_range_choose]
   push_cast
@@ -146,9 +144,7 @@ theorem plateau_eq_mul (t : ℝ) :
 
 /-- The plateau `ψ` is smooth. -/
 theorem contDiff_plateau : ContDiff ℝ ∞ plateau := by
-  have h : plateau = fun t => smoothTransition (5 - t) * smoothTransition (5 + t) :=
-    funext plateau_eq_mul
-  rw [h]
+  rw [(funext plateau_eq_mul)]
   exact (smoothTransition.contDiff.comp (contDiff_const.sub contDiff_id)).mul
     (smoothTransition.contDiff.comp (contDiff_const.add contDiff_id))
 

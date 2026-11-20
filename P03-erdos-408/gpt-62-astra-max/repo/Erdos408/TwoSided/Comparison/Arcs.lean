@@ -25,7 +25,7 @@ crude U7 and U9 are in `Setup.lean`.
 
 namespace Erdos408.TwoSided
 
-open Filter MeasureTheory
+open Filter
 
 /-- **One bilinear form from the mean square (S6–S10).** For `m₀`, the derivative bounds
 `M₁` of the pieces and every minor-arc saving `A_m` there are `C_arc` (the arc exponent of
@@ -110,18 +110,16 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   clear hC1 hU9 hC2 hlogκ
   set L := Real.log x with hLdef
   set Y := y₀ * (x * U * U') with hYdef
-  have hκ0 : 0 < κ := by linarith only [hκ]
-  have he2 : 0 < Real.exp 2 := Real.exp_pos 2
+  have hκ0 : 0 < κ := by positivity
   have hM0sq : 0 ≤ M0 ^ 2 := sq_nonneg _
   have hκe : 0 ≤ 4 * κ * Real.exp 2 := by positivity
   have hκ2 : 0 ≤ 16 * κ ^ 2 := by positivity
-  have hL7 : 7 ≤ L := by linarith only [hF6, hκe, hM0sq]
-  have hL0 : 0 < L := by linarith only [hL7]
-  have hL1 : 1 ≤ L := by linarith only [hL7]
-  have hx10 : 10 ≤ x := by linarith only [hF7, hκ0, hκe, hκ2]
-  have hx0 : 0 < x := by linarith only [hx10]
+  have hL7 : 7 ≤ L := by linarith
+  have hL0 : 0 < L := by positivity
+  have hL1 : 1 ≤ L := by linarith
+  have hx10 : 10 ≤ x := by linarith
+  have hx0 : 0 < x := by positivity
   have hy₀0 : 0 < y₀ := lt_of_lt_of_le (by positivity) hy₀
-  have he1 : Real.exp 1 ≤ 4 := (Real.exp_one_lt_d9).le.trans (by norm_num)
   have he1' : 0 < Real.exp 1 := Real.exp_pos 1
   -- the coefficients of the bilinear form
   set 𝒰 : ℕ → ℂ := endpointCoeff x q q₀ a u v Bc P (fun g => A g ∪ B g)
@@ -137,7 +135,6 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   have h𝔅 : comparisonBilinear x q q₀ a u v Bc P A B φ φ' ψ ψ' G ψ₁ Y σ =
       ∑ l ∈ auxLabels P (fun g => A g ∪ B g),
         cl l * ∑ w ∈ Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊, 𝒰 w * 𝒱 (w + D l) := rfl
-  have hK0 : 0 ≤ 4 * Kmin + 8 * Real.sqrt K₃ := by positivity
   have hRHS0 : 0 ≤ (4 * Kmin + 8 * Real.sqrt K₃) * (L ^ (-Am) +
       L ^ (2 * Carc + CB / 2) * (Real.sqrt Ξ₀ + L ^ (-A₀))) := by positivity
   -- if no label has `φ(D_A) φ'(D_B) ≠ 0`, then `𝔅 = 0`
@@ -163,16 +160,14 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   have hCbig : ∀ g ∉ big, A g ∪ B g = ∅ := fun g hg => by
     rw [(hpat.2.1 g hg).1, (hpat.2.1 g hg).2, Finset.empty_union]
   obtain ⟨gA, iA, hiA⟩ : ∃ g, ∃ i, i ∈ A g := by
-    obtain ⟨g, hg⟩ := hpat.2.2.1.1
-    exact ⟨g, hg⟩
+    exact Exists.casesOn hpat.right.right.left.left fun g hg => Exists.intro g hg
   obtain ⟨gB, iB, hiB⟩ : ∃ g, ∃ i, i ∈ B g := by
-    obtain ⟨g, hg⟩ := hpat.2.2.1.2
-    exact ⟨g, hg⟩
+    exact Exists.casesOn hpat.right.right.left.right fun g hg => Exists.intro g hg
   have hDA_lo := Arcs.le_slotProduct hadm hCbig (fun g => Finset.subset_union_left) hl₀ hiA
   have hDB_lo := Arcs.le_slotProduct hadm hCbig (fun g => Finset.subset_union_right) hl₀ hiB
-  have hDA_hi := hscale P big hadm J (fun g => A g ∪ B g) A (fun g hg => (hpat.2.1 g hg).1) hAm
+  have hDA_hi := hscale P big hadm J _ A (fun g hg => (hpat.2.1 g hg).1) hAm
     (fun g => Finset.subset_union_left) l₀ hl₀
-  have hDB_hi := hscale P big hadm J (fun g => A g ∪ B g) B (fun g hg => (hpat.2.1 g hg).2) hBm
+  have hDB_hi := hscale P big hadm J _ B (fun g hg => (hpat.2.1 g hg).2) hBm
     (fun g => Finset.subset_union_right) l₀ hl₀
   have hUA := hpat.2.2.2.2.1 _ hφ₀
   have hUB := hpat.2.2.2.2.2 _ hφ₀'
@@ -189,11 +184,11 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   have hUU_lo : Real.exp (2 * L ^ (0.39 : ℝ) - 2) ≤ U * U' := by
     rw [show 2 * L ^ (0.39 : ℝ) - 2 = (L ^ (0.39 : ℝ) - 1) + (L ^ (0.39 : ℝ) - 1) by ring,
       Real.exp_add]
-    exact mul_le_mul hU_lo hU'_lo (Real.exp_pos _).le hU0.le
+    gcongr <;> positivity
   have hUU_hi : U * U' ≤ Real.exp (2 * L ^ (0.465 : ℝ)) := by
     rw [two_mul, Real.exp_add]
-    exact mul_le_mul hU_hi hU'_hi hU'0.le (Real.exp_pos _).le
-  have hUU0 : 0 < U * U' := mul_pos hU0 hU'0
+    gcongr <;> positivity
+  have hUU0 : 0 < U * U' := by positivity
   -- `exp(L^{0.38}) ≤ U, U'`
   have h38 : Real.exp (L ^ (0.38 : ℝ)) ≤ Real.exp (L ^ (0.39 : ℝ) - 1) :=
     Real.exp_le_exp.2 (by linarith only [hF1])
@@ -204,21 +199,21 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
       rw [← Real.exp_log (show 0 < 4 * κ by positivity), ← Real.exp_add, Real.exp_le_exp]
       linarith only [hF2]
     have h₂ : Real.exp (L ^ (0.38 : ℝ)) ≤ y₀ * (U * U') := by
-      calc Real.exp (L ^ (0.38 : ℝ)) = (4 * κ)⁻¹ * (4 * κ * Real.exp (L ^ (0.38 : ℝ))) := by
+      calc _ = (4 * κ)⁻¹ * (4 * κ * Real.exp (L ^ (0.38 : ℝ))) := by
             rw [← mul_assoc, inv_mul_cancel₀ (by positivity), one_mul]
-        _ ≤ y₀ * (U * U') := mul_le_mul hy₀ h₁ (by positivity) hy₀0.le
-    calc x * Real.exp (L ^ (0.38 : ℝ)) ≤ x * (y₀ * (U * U')) :=
-          mul_le_mul_of_nonneg_left h₂ hx0.le
-      _ = Y := by rw [hYdef]; ring
+        _ ≤ _ := by gcongr <;> positivity
+    calc _ ≤ x * (y₀ * (U * U')) :=
+          by gcongr
+      _ = Y := by ring
   have hY_hi : Y ≤ x * Real.exp (L ^ (0.47 : ℝ)) := by
     have h₁ : y₀ * (U * U') ≤ Real.exp (L ^ (0.47 : ℝ)) := by
-      calc y₀ * (U * U') ≤ 2 * κ * Real.exp 2 * Real.exp (2 * L ^ (0.465 : ℝ)) :=
-            mul_le_mul hy₀' hUU_hi hUU0.le (by positivity)
+      calc _ ≤ 2 * κ * Real.exp 2 * Real.exp (2 * L ^ (0.465 : ℝ)) :=
+            by gcongr <;> positivity
         _ = Real.exp (Real.log (2 * κ * Real.exp 2) + 2 * L ^ (0.465 : ℝ)) := by
             rw [Real.exp_add, Real.exp_log (by positivity)]
-        _ ≤ Real.exp (L ^ (0.47 : ℝ)) := Real.exp_le_exp.2 (by linarith only [hF4])
-    calc Y = x * (y₀ * (U * U')) := by rw [hYdef]; ring
-      _ ≤ x * Real.exp (L ^ (0.47 : ℝ)) := mul_le_mul_of_nonneg_left h₁ hx0.le
+        _ ≤ _ := Real.exp_le_exp.2 (by linarith only [hF4])
+    calc Y = x * (y₀ * (U * U')) := by ring
+      _ ≤ _ := by gcongr
   have hΞall := hΞ hY_lo hY_hi
   -- the arc parameters: `H = UU'/L^{C_arc}`, `T₀ = x L^{C_m + 2}`, `R = ⌊L^{C_arc}⌋`
   have hLCarc1 : 1 ≤ L ^ Carc := Real.one_le_rpow hL1 hCarc.le
@@ -230,10 +225,10 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
       rwa [Real.norm_of_nonneg (Real.log_nonneg hL1), Real.norm_of_nonneg (by positivity),
         one_mul] at this
     have h₂ : Real.log L * Carc ≤ |Carc| * L ^ (0.38 : ℝ) := by
-      calc Real.log L * Carc ≤ Real.log L * |Carc| :=
+      calc _ ≤ Real.log L * |Carc| :=
             mul_le_mul_of_nonneg_left (le_abs_self _) (Real.log_nonneg hL1)
-        _ ≤ L ^ (0.38 : ℝ) * |Carc| := mul_le_mul_of_nonneg_right h₁ (abs_nonneg _)
-        _ = |Carc| * L ^ (0.38 : ℝ) := mul_comm _ _
+        _ ≤ L ^ (0.38 : ℝ) * |Carc| := by gcongr
+        _ = _ := by ring
     linarith only [h₂, hF3]
   obtain ⟨H, hHdef⟩ : ∃ H : ℝ, H = U * U' / L ^ Carc := ⟨_, rfl⟩
   have hH1 : 1 ≤ H := by rw [hHdef, le_div_iff₀ (by positivity), one_mul]; exact hLCarc
@@ -242,32 +237,32 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
     have : (4 * κ)⁻¹ * (40 * κ) ≤ y₀ * x :=
       mul_le_mul hy₀ (by linarith only [hF7, hκe, hκ2]) (by positivity) hy₀0.le
     rwa [show (4 * κ)⁻¹ * (40 * κ) = 10 by
-      rw [inv_mul_eq_div, div_eq_iff (by positivity)]; ring] at this
-  have hY0 : 0 < Y := by rw [hYdef]; positivity
+      field_simp <;> ring] at this
+  have hY0 : 0 < Y := by positivity
   have hY10 : 10 ≤ Y :=
     hx10.trans (le_trans (le_mul_of_one_le_right hx0.le (Real.one_le_exp (by positivity)))
       hY_lo)
   have hHY : H ≤ Y / 10 := by
     refine hHle.trans ?_
     rw [le_div_iff₀ (by norm_num), hYdef]
-    calc U * U' * 10 ≤ U * U' * (y₀ * x) := mul_le_mul_of_nonneg_left hxy hUU0.le
-      _ = y₀ * (x * U * U') := by ring
+    calc _ ≤ U * U' * (y₀ * x) := mul_le_mul_of_nonneg_left hxy hUU0.le
+      _ = _ := by ring
   obtain ⟨T₀, hT₀def⟩ : ∃ T₀ : ℝ, T₀ = x * L ^ (Cm + 2) := ⟨_, rfl⟩
   have hratio : L ^ 2 * L ^ Carc ≤ L ^ (Cm + 2) := by
     rw [← Real.rpow_natCast, ← Real.rpow_add hL0]
     exact Real.rpow_le_rpow_of_exponent_le hL1 (by push_cast; linarith only [hCm])
   have hT₀H : 2 * Y * L ≤ T₀ * H := by
     have h₁ : 2 * y₀ ≤ L := by linarith only [hy₀', hF6, hM0sq]
-    calc 2 * Y * L = (2 * y₀) * L * (x * (U * U')) := by rw [hYdef]; ring
+    calc _ = (2 * y₀) * L * (x * (U * U')) := by ring
       _ ≤ L * L * (x * (U * U')) := by gcongr
       _ = x * (L ^ 2 * L ^ Carc) * (U * U') / L ^ Carc := by
-          rw [eq_div_iff (by positivity)]; ring
+          field_simp <;> ring
       _ ≤ x * L ^ (Cm + 2) * (U * U') / L ^ Carc := by gcongr
-      _ = T₀ * H := by rw [hT₀def, hHdef]; ring
+      _ = _ := by rw [hT₀def, hHdef]; ring
   have hT₀H' : 2 * Y ≤ T₀ * H := le_trans (le_mul_of_one_le_right (by positivity) hL1) hT₀H
   obtain ⟨R, hRdef⟩ : ∃ R : ℕ, R = ⌊L ^ Carc⌋₊ := ⟨_, rfl⟩
   have hRL : (R : ℝ) ≤ L ^ Carc := by rw [hRdef]; exact Nat.floor_le (by positivity)
-  have hLCm : L ^ Carc ≤ L ^ Cm := Real.rpow_le_rpow_of_exponent_le hL1 hCm
+  have hLCm : L ^ Carc ≤ L ^ Cm := by gcongr
   -- the mean square at the centres, and `Ξ₀ ≥ 0`
   have hΞR : ∀ (r : ℕ) (u : ℤ), 1 ≤ r → r ≤ R →
       ∫ t in (-T₀)..T₀, ‖twistedPoly Y 𝒰 (-u) r t‖ ^ 2 ≤ Ξ₀ := by
@@ -302,35 +297,33 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
         push_cast
         rfl
       rw [this, show (2 : ℝ) = 1 + 1 by norm_num, Real.exp_add]
-      calc (slotProduct A l : ℝ) * (slotProduct B l : ℝ)
+      calc _
           ≤ (Real.exp 1 * U) * (Real.exp 1 * U') :=
             mul_le_mul h₁ h₂ (Nat.cast_nonneg _) (by positivity)
-        _ = Real.exp 1 * Real.exp 1 * (U * U') := by ring
+        _ = _ := by ring
     have hDY : Real.exp 2 * (U * U') ≤ Y := by
       rw [hYdef]
-      calc Real.exp 2 * (U * U') ≤ (y₀ * x) * (U * U') :=
+      calc _ ≤ (y₀ * x) * (U * U') :=
             mul_le_mul_of_nonneg_right hxe hUU0.le
-        _ = y₀ * (x * U * U') := by ring
+        _ = _ := by ring
     have hn2 : (n : ℝ) ≤ 2 * Y := (Nat.le_floor_iff (by positivity)).1 (Finset.mem_Icc.1 hn).2
     refine Finset.mem_Icc.2 ⟨Nat.zero_le _, Nat.le_floor ?_⟩
     push_cast
     linarith only [hn2, hDl, hDY]
   -- the energies (6.19)
   have hexpx : Real.exp (L ^ (0.47 : ℝ)) ≤ x := by
-    calc Real.exp (L ^ (0.47 : ℝ)) ≤ Real.exp L := by
-          refine Real.exp_le_exp.2 ?_
+    calc _ ≤ Real.exp L := by
           simpa using Real.rpow_le_rpow_of_exponent_le hL1 (show (0.47 : ℝ) ≤ 1 by norm_num)
       _ = x := Real.exp_log hx0
   have hYx : Y ≤ x * x := hY_hi.trans (mul_le_mul_of_nonneg_left hexpx hx0.le)
   have hYx3 : 2 * Y ≤ x ^ 3 :=
-    calc 2 * Y ≤ 2 * (x * x) := by linarith only [hYx]
+    calc _ ≤ 2 * (x * x) := by gcongr
       _ ≤ x * (x * x) := mul_le_mul_of_nonneg_right (by linarith only [hx10]) (by positivity)
-      _ = x ^ 3 := by ring
+      _ = _ := by ring
   have hcardS : ∀ g, (unsharedSlots (fun g => A g ∪ B g) g).card ≤ m₀ + 1 := by
     intro g
     refine (Finset.card_insert_le _ _).trans ?_
-    rw [Finset.card_map]
-    exact Nat.add_le_add_right (hpat.1 g).2 1
+    simpa using Nat.add_le_add_right (hpat.1 g).2 1
   have hAen := Arcs.sum_norm_endpointCoeff_sq_le a u v Bc P (fun g => A g ∪ B g)
     (fun p => ψ' (slotProduct B fun g i => p g i.castSucc)) ψ₁ (Y := Y) (σ := σ) (M0 := M0) hL0
     (by linarith only [hY10]) hYx3 (by linarith only [hF6, hκe]) (fun z => by simpa using hψ₁M 0 z)
@@ -341,8 +334,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
     (hU9x P big hadm (J + 1) _ (fun p => ψ (slotProduct A fun g i => p g i.castSucc)) hcardS
       fun p => (hpat.2.2.2.1 _).2.2.1)
   -- the multiplier: mass `1`, and the minor arcs
-  have hV : ∀ g, harmonicMass (P g) ≠ 0 := fun g =>
-    (lt_of_lt_of_le hvlo (hadm.2.2.2.2.2.1 g).1).ne'
+  have hV : ∀ g, harmonicMass (P g) ≠ 0 := fun g => LT.lt.ne' (lt_of_lt_of_le hvlo (hadm.right.right.right.right.right.left g).left)
   have hM1 : ∀ θ ∈ Set.Icc (0 : ℝ) 1, ‖∑ l ∈ auxLabels P (fun g => A g ∪ B g),
       cl l * Erdos821.Blueprint.Analytic.e (-θ * D l)‖ ≤ 1 := by
     intro θ _
@@ -352,32 +344,31 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
     have hμ : 0 ≤ labelMass P (fun g => A g ∪ B g) l := labelMass_nonneg P _ l
     have hb : ∀ (f : ℕ → ℂ) (n : ℕ), ‖f n‖ ≤ 1 →
         ‖f n * (n : ℂ) ^ (-((σ : ℂ) * Complex.I))‖ ≤ 1 := fun f n h => by
-      rw [norm_mul]
+      simp
       exact (mul_le_mul h (Arcs.norm_natCast_cpow_neg_le_one n σ) (norm_nonneg _)
         zero_le_one).trans (by norm_num)
     rw [norm_mul, Arcs.norm_e, mul_one, hcl]
     simp only
     rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg hμ]
-    calc labelMass P (fun g => A g ∪ B g) l * ‖b₁ (slotProduct A l)‖ *
-          ‖b₂ (slotProduct B l)‖ ≤ labelMass P (fun g => A g ∪ B g) l * 1 * 1 := by
+    calc _ ≤ labelMass P (fun g => A g ∪ B g) l * 1 * 1 := by
           gcongr
           · exact hb φ _ (hpat.2.2.2.1 _).1
           · exact hb φ' _ (hpat.2.2.2.1 _).2.1
-      _ = labelMass P (fun g => A g ∪ B g) l := by ring
+      _ = _ := by ring
   have hUUx : 4 * (U * U') ≤ x ^ 2 := by
     have hx2 : x ^ 2 = Real.exp (2 * L) := by
       rw [show 2 * L = L + L by ring, Real.exp_add, Real.exp_log hx0]
       ring
     rw [hx2]
-    calc 4 * (U * U') ≤ 4 * Real.exp (2 * L ^ (0.465 : ℝ)) := by gcongr
+    calc _ ≤ 4 * Real.exp (2 * L ^ (0.465 : ℝ)) := by gcongr
       _ = Real.exp (Real.log 4 + 2 * L ^ (0.465 : ℝ)) := by
           rw [Real.exp_add, Real.exp_log (by norm_num)]
-      _ ≤ Real.exp (2 * L) := by
+      _ ≤ _ := by
           refine Real.exp_le_exp.2 ?_
           have h₁ : 2 * L ^ (0.465 : ℝ) + Real.log 4 ≤ L := by simpa using hF5
-          calc Real.log 4 + 2 * L ^ (0.465 : ℝ) = 2 * L ^ (0.465 : ℝ) + Real.log 4 := add_comm _ _
+          calc _ = 2 * L ^ (0.465 : ℝ) + Real.log 4 := by ring
             _ ≤ L := h₁
-            _ ≤ 2 * L := by linarith only [hL0]
+            _ ≤ _ := by linarith only [hL0]
   have hMε : ∀ θ ∈ Set.Icc (0 : ℝ) 1,
       (∀ (r : ℕ) (u : ℤ), 1 ≤ r → r ≤ R → -(R : ℤ) ≤ u → u ≤ 2 * R → 1 / H < |θ - u / r|) →
       ‖∑ l ∈ auxLabels P (fun g => A g ∪ B g),
@@ -388,7 +379,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
         L ^ Carc / (U * U') < |θ - u / r| := fun r u hr₁ hr₂ hu₁ hu₂ => by
       have := harc r u hr₁ hr₂ hu₁ hu₂
       rwa [hHdef, one_div_div] at this
-    exact Arcs.norm_multiplier_le hadm hvlo hAB φ φ' σ U U' θ C₇ (max C₇ 1) Carc Am' Kmin R
+    exact Arcs.norm_multiplier_le hadm hvlo hAB φ φ' σ U U' θ C₇ _ Carc Am' Kmin R
       (fun n => (hpat.2.2.2.1 n).1) (fun n => (hpat.2.2.2.1 n).2.1) hpat.2.2.2.2.1
       hpat.2.2.2.2.2 (hC1x P big hadm J A hAm) (hC1x P big hadm J B hBm) hC2x
       (h38.trans hU_lo) (h38.trans hU'_lo) hUUx hL1
@@ -396,13 +387,13 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
       (Real.one_le_rpow hL1 (le_trans zero_le_one (le_max_right _ _)))
       (fun r hr => hRdef ▸ Nat.le_floor hr) hLCarc hθ harc'
   -- S8–S10
-  have hmain := hshift Y H T₀ ε (Y * L ^ CA) (Y * L ^ CB) Ξ₀ R
-    (auxLabels P (fun g => A g ∪ B g)) cl D (Finset.Icc 0 ⌊3 * Y⌋₊) 𝒰 𝒱 hY10 hH1 hHY hT₀H'
+  have hmain := hshift Y H T₀ ε _ _ Ξ₀ R
+    _ cl D _ 𝒰 𝒱 hY10 hH1 hHY hT₀H'
     hε0 hΞ0 hsupp hAen hBen hM1 hMε hΞR
   rw [← h𝔅, hεdef] at hmain
   -- the arc energy: `E ≤ K₃ Y (Ξ₀ + 2L^{-2A_e})`
   have hm : CA + 2 * A₀ + 2 ≤ ((j - 4 : ℕ) : ℝ) := by
-    rw [hj, Nat.add_sub_cancel]
+    rw [Nat.add_sub_cancel]
     have := Nat.le_ceil (|CA| + 2 * |A₀| + 6)
     linarith only [this, le_abs_self CA, le_abs_self A₀]
   have hHY4 : H / Y ≤ 4 * κ / x := by
@@ -410,14 +401,13 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
     have h₁ : 1 ≤ 4 * κ * y₀ := by
       have := mul_le_mul_of_nonneg_left hy₀ (show 0 ≤ 4 * κ by positivity)
       rwa [mul_inv_cancel₀ (by positivity)] at this
-    calc H * x ≤ U * U' * x := mul_le_mul_of_nonneg_right hHle hx0.le
+    calc _ ≤ U * U' * x := mul_le_mul_of_nonneg_right hHle hx0.le
       _ ≤ (4 * κ * y₀) * (U * U' * x) := le_mul_of_one_le_left (by positivity) h₁
-      _ = 4 * κ * (y₀ * (x * U * U')) := by ring
+      _ = _ := by ring
   have hE := Arcs.energy_le (K₃ := K₃) (Ξ₀ := Ξ₀) hx0 hLdef.symm hL7
     (by linarith only [hY10]) hY_hi hH1 hT₀H hm hHY4 (by linarith only [hF7, hκ0, hκe]) hF8 hK₃.le
   -- the count
   have hAm : -Am' + (CA + CB) / 2 ≤ -Am := by
-    rw [hAm']
     linarith only [le_abs_self Am, le_abs_self CA, le_abs_self CB, abs_nonneg CA, abs_nonneg CB]
   have hfin := Arcs.div_le_of_arcs hY0 hL1 hKmin.le hK₃.le hΞ0 hmain hE hRL hAm
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hY0.le, inv_mul_eq_div]

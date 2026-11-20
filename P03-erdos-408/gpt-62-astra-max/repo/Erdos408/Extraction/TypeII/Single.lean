@@ -19,7 +19,7 @@ cutoff on each box, and bound each box by the Type II estimate.
 
 namespace Erdos408.TypeII
 
-open Finset Real
+open Finset
 
 section Weights
 
@@ -47,8 +47,7 @@ theorem factorWeight_prime (hL : 1 ≤ Real.log x)
     split_ifs at h with hm
     · refine ⟨hm.2, fun p hp => ?_⟩
       rw [Nat.Prime.primeFactors hm.1, mem_singleton] at hp
-      subst hp
-      exact hexpγ.trans hm.2.le
+      grind
     · exact absurd rfl h
 
 /-- The unstripped proxy is a factor weight. -/
@@ -68,10 +67,9 @@ theorem factorWeight_unstripped (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < 
       · exact (mem_candidatePrimes hL hpP).2.1
       · unfold dampedWeight at hg
         split_ifs at hg with hrough
-        · have hpm : p ∈ (candidateStrip x m).primeFactors := by
+        · exact hexpY.trans (hrough p (by
             rw [candidateStrip, primeFactors_stripPrimes, mem_filter]
-            exact ⟨hp, hpP⟩
-          exact hexpY.trans (hrough p hpm).le
+            exact ⟨hp, hpP⟩)).le
         · exact absurd rfl hg
     · exact absurd rfl h
 
@@ -86,7 +84,7 @@ theorem tupleWeight_support {r : ℕ} (hr : 1 ≤ r) {V : Fin r → ℕ → ℝ}
   refine ⟨?_, fun p hp => ?_⟩
   · rw [← hprod]
     calc x ^ γ < m ⟨0, hr⟩ := hk.1
-      _ ≤ ((∏ k, m k : ℕ) : ℝ) := by
+      _ ≤ _ := by
           exact_mod_cast Finset.single_le_prod (fun k _ => hpos k) (mem_univ _)
   · rw [← hprod] at hp
     obtain ⟨hpp, hpd, -⟩ := Nat.mem_primeFactors.1 hp
@@ -100,7 +98,7 @@ end Weights
 
 /-- The summand `Ψ(h) = Φ((h - 1)/x) E(h - 1)`. -/
 noncomputable def cutPsi (Φ : ℝ → ℝ) (E : ℕ → ℝ) (x : ℝ) (h : ℕ) : ℝ :=
-  Φ (((h : ℝ) - 1) / x) * E (h - 1)
+  Φ ((h - 1) / x) * E (h - 1)
 
 section Psi
 
@@ -110,10 +108,10 @@ theorem cutPsi_eq_zero (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ
     (hh : ⌊κ * x + 1⌋₊ < h) : cutPsi Φ E x h = 0 := by
   unfold cutPsi
   by_contra hne
-  have hΦ0 : Φ (((h : ℝ) - 1) / x) ≠ 0 := fun h0 => hne (by rw [h0, zero_mul])
+  have hΦ0 : Φ (((h : ℝ) - 1) / x) ≠ 0 := by simp_all
   have h1 := (hΦ.2.2.1 _ hΦ0).2
   rw [div_le_iff₀ hx] at h1
-  have h2 : κ * x + 1 < h := (Nat.floor_lt (by positivity)).1 hh
+  have h2 := (Nat.floor_lt (by positivity)).1 hh
   linarith
 
 /-- `|Ψ(h)| ≤ M₀ S_E` when `|E| ≤ S_E` on `[1, x²]`, `κ x ≤ x²` and `κ ≤ x`. -/
@@ -122,10 +120,9 @@ theorem abs_cutPsi_le (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ)
     (hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 → |E h| ≤ SE) (h : ℕ) :
     |cutPsi Φ E x h| ≤ M 0 * SE := by
   unfold cutPsi
-  have hM0 : ∀ y, |Φ y| ≤ M 0 := fun y => by
-    have := hΦ.2.2.2 0 y
-    simpa using this
-  have hM00 : 0 ≤ M 0 := (abs_nonneg _).trans (hM0 0)
+  have hM0 := fun y => by
+    simpa using hΦ.2.2.2 0 y
+  have hM00 := (abs_nonneg _).trans (hM0 0)
   by_cases hΦ0 : Φ (((h : ℝ) - 1) / x) = 0
   · rw [hΦ0, zero_mul, abs_zero]
     positivity
@@ -134,19 +131,15 @@ theorem abs_cutPsi_le (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ)
   rw [div_le_iff₀ hx] at h2
   have hx1 : 1 ≤ κ⁻¹ * x := by
     rw [← div_eq_inv_mul, le_div_iff₀ hκ]; linarith
-  have hh1 : (1 : ℝ) ≤ (h : ℝ) - 1 := by linarith
   have hh : 2 ≤ h := by
     have : (2 : ℝ) ≤ h := by linarith
     exact_mod_cast this
   have hcast : ((h - 1 : ℕ) : ℝ) = (h : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
   rw [abs_mul]
   refine mul_le_mul (hM0 _) (hSE _ (by omega) ?_) (abs_nonneg _) hM00
-  rw [hcast]
   linarith
 
 end Psi
-
-
 
 /-! ### One box -/
 
@@ -160,7 +153,7 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
     (hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 → |endpoint q cw K CN x u v B h| ≤ SE)
     {lam mu δ : ℝ} (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1) (hlam : x ^ presieveExponent c Ch x ≤ lam)
     (hmu : x ^ presieveExponent c Ch x ≤ mu) {j : ℕ} (hj1 : 1 ≤ j)
-    (hj2 : (j : ℝ) ≤ Cj * logLogLog x + 1)
+    (hj2 : j ≤ Cj * logLogLog x + 1)
     (hα : ∀ m, |primeProxyDiff x (presieveExponent c Ch x) j m| ≤ 1) (β βc : ℕ → ℝ)
     (hβc : ∀ n, βc n ≠ 0 → (∀ p ∈ n.primeFactors, Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ p) ∧
       0 ≤ βc n ∧ βc n ≤ Real.log x ^ (3 : ℝ))
@@ -177,12 +170,9 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
   set E := endpoint q cw K CN x u v B
   set α := primeProxyDiff x γ j
   have hx0 : 0 < x := by linarith
-  have hκ0 : 0 < κ := by linarith
-  have hlam1 : 1 ≤ lam := hxγ.trans hlam
-  have hmu1 : 1 ≤ mu := hxγ.trans hmu
   have hM0 : ∀ y, |Φ y| ≤ M 0 := fun y => by simpa using hΦ.2.2.2 0 y
-  have hM00 : 0 ≤ M 0 := (abs_nonneg _).trans (hM0 0)
-  have hLr : 0 ≤ Real.log x ^ (-12 : ℝ) := Real.rpow_nonneg (Real.log_pos hx).le _
+  have hM00 := (abs_nonneg _).trans (hM0 0)
+  have hLr : 0 ≤ Real.log x ^ (-12 : ℝ) := by bound
   -- split off the frozen cutoff
   have hsplit : ∑ m ∈ Ioc ⌊lam⌋₊ ⌊lam * (1 + δ)⌋₊, ∑ n ∈ Ioc ⌊mu⌋₊ ⌊mu * (1 + δ)⌋₊,
       cutPsi Φ E x (m * n) * α m * βc n =
@@ -211,8 +201,7 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
     rw [le_div_iff₀ hx0] at h1
     rw [div_le_iff₀ hx0] at h2
     have h1' : x / κ ≤ lam * mu := by
-      have : x / κ = κ⁻¹ * x := by ring
-      rw [this]; exact h1
+      grind
     have hsq' : 4 * (lam * mu) ≤ x ^ 2 := by linarith
     have hmain := abs_box_main_le hE hbox hδ0 hδ1 hlam hmu hxγ h1' h2 hsq' hj1 hj2 βc hβc
     refine mul_le_mul (hM0 _) (hmain.trans ?_) (abs_nonneg _) hM00
@@ -223,14 +212,12 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
     refine (abs_sum_le_sum_abs _ _).trans (sum_le_sum fun n hn => ?_)
     obtain ⟨hm1, hm2⟩ := mem_Ioc.1 hm
     obtain ⟨hn1, hn2⟩ := mem_Ioc.1 hn
-    have hlm : lam < m := (Nat.floor_lt (by linarith)).1 hm1
-    have hmn : mu < n := (Nat.floor_lt (by linarith)).1 hn1
-    have hm2' : (m : ℝ) ≤ lam * (1 + δ) := (Nat.le_floor_iff' (by
-      have : (0 : ℝ) < m := by linarith
-      exact_mod_cast this.ne')).1 hm2
-    have hn2' : (n : ℝ) ≤ mu * (1 + δ) := (Nat.le_floor_iff' (by
-      have : (0 : ℝ) < n := by linarith
-      exact_mod_cast this.ne')).1 hn2
+    have hlm := (Nat.floor_lt (by linarith)).1 hm1
+    have hmn := (Nat.floor_lt (by linarith)).1 hn1
+    have hm2' := (Nat.le_floor_iff' (by
+      omega)).1 hm2
+    have hn2' := (Nat.le_floor_iff' (by
+      omega)).1 hn2
     have hfr := abs_cutoff_freeze_le hΦ hx0 hκ (by linarith) (by linarith) hδ0 hδ1 hlm hm2' hmn
       hn2'
     have hβ0 := (hββ n).1
@@ -243,22 +230,21 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
       have hn2 : 2 ≤ n := by
         have : (1 : ℝ) < n := by linarith
         exact_mod_cast this
-      have hmn4 : 4 ≤ m * n := Nat.mul_le_mul hm2 hn2
+      have hmn4 := Nat.mul_le_mul hm2 hn2
       have hEb : |E (m * n - 1)| ≤ SE := by
         refine hSE _ (by omega) ?_
         rw [Nat.cast_sub (by omega)]
         push_cast
         linarith
-      have hτ : 0 ≤ M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x) :=
+      have hτ :=
         (abs_nonneg _).trans hfr
-      calc |Φ ((((m * n : ℕ) : ℝ) - 1) / x) - Φ (lam * mu / x)| * |E (m * n - 1)| * |α m| *
-            βc n ≤ (M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x)) * SE * 1 *
+      calc _ ≤ (M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x)) * SE * 1 *
               β n := by
             gcongr
             · exact hα m
             · exact (hββ n).2
         _ = _ := by ring
-    · have : |Φ ((((m * n : ℕ) : ℝ) - 1) / x) - Φ (lam * mu / x)| = 0 :=
+    · have :=
         le_antisymm hfr (abs_nonneg _)
       rw [this]
       simp
@@ -270,7 +256,7 @@ theorem sum_cells_variation_le (A : ℕ) (lam : ℕ → ℝ) (hmono : ∀ a, lam
     {τ SE X : ℝ} (hτ : 0 ≤ τ) (hSE : 0 ≤ SE) (hX : 0 ≤ X) (β : ℕ → ℝ)
     (hβ : ∀ n, 0 ≤ β n) :
     ∑ a ∈ range A, ∑ b ∈ range A, ∑ m ∈ Ioc ⌊lam a⌋₊ ⌊lam (a + 1)⌋₊,
-        ∑ n ∈ Ioc ⌊lam b⌋₊ ⌊lam (b + 1)⌋₊, (if (m * n : ℝ) ≤ X then τ else 0) * SE * β n ≤
+        ∑ n ∈ Ioc ⌊lam b⌋₊ ⌊lam (b + 1)⌋₊, (if (m * n) ≤ X then τ else 0) * SE * β n ≤
       τ * SE * X * ∑ n ∈ Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊, β n / n := by
   have hswap : ∑ a ∈ range A, ∑ b ∈ range A, ∑ m ∈ Ioc ⌊lam a⌋₊ ⌊lam (a + 1)⌋₊,
         ∑ n ∈ Ioc ⌊lam b⌋₊ ⌊lam (b + 1)⌋₊, (if (m * n : ℝ) ≤ X then τ else 0) * SE * β n =
@@ -283,28 +269,27 @@ theorem sum_cells_variation_le (A : ℕ) (lam : ℕ → ℝ) (hmono : ∀ a, lam
     exact sum_cells_eq _ lam hmono A
   rw [hswap, sum_comm, mul_sum]
   refine sum_le_sum fun n hn => ?_
-  have hn1 : 1 ≤ n := by have := (mem_Ioc.1 hn).1; omega
+  have hn1 : 1 ≤ n := by grind
   have hn0 : (0 : ℝ) < n := by exact_mod_cast hn1
-  have hcount : ∑ m ∈ Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊, (if (m * n : ℝ) ≤ X then (1 : ℝ) else 0) ≤ X / n := by
+  have hcount : ∑ m ∈ Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊, (if (m * n) ≤ X then 1 else 0) ≤ X / n := by
     rw [sum_ite, sum_const_zero, add_zero, sum_const, nsmul_one]
     have hsub : (Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊).filter (fun m : ℕ => (m * n : ℝ) ≤ X) ⊆
         Icc 1 ⌊X / n⌋₊ := by
       intro m hm
       obtain ⟨hmI, hmX⟩ := mem_filter.1 hm
-      have hm1 : 1 ≤ m := by have := (mem_Ioc.1 hmI).1; omega
+      have hm1 : 1 ≤ m := by grind
       refine mem_Icc.2 ⟨hm1, Nat.le_floor ?_⟩
       rw [le_div_iff₀ hn0]; exact hmX
-    calc (((Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊).filter (fun m : ℕ => (m * n : ℝ) ≤ X)).card : ℝ)
+    calc (((Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊).filter (fun m : ℕ => (m * n) ≤ X)).card : ℝ)
         ≤ (Icc 1 ⌊X / n⌋₊).card := by exact_mod_cast card_le_card hsub
       _ = ⌊X / n⌋₊ := by simp
-      _ ≤ X / n := Nat.floor_le (by positivity)
-  calc ∑ m ∈ Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊, (if (m * n : ℝ) ≤ X then τ else 0) * SE * β n
-      = τ * SE * β n * ∑ m ∈ Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊, (if (m * n : ℝ) ≤ X then (1 : ℝ) else 0) := by
+      _ ≤ _ := Nat.floor_le (by positivity)
+  calc _
+      = τ * SE * β n * ∑ m ∈ Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊, (if (m * n) ≤ X then 1 else 0) := by
         rw [mul_sum]
-        exact sum_congr rfl fun m _ => by split_ifs <;> ring
-    _ ≤ τ * SE * β n * (X / n) := mul_le_mul_of_nonneg_left hcount (by
-        have := hβ n; positivity)
-    _ = τ * SE * X * (β n / n) := by ring
+        simp
+    _ ≤ τ * SE * β n * (X / n) := by bound
+    _ = _ := by ring
 
 /-- The grid `λ_a = x^γ (1 + δ)^a`. -/
 noncomputable def gridPt (x γ δ : ℝ) (a : ℕ) : ℝ := x ^ γ * (1 + δ) ^ a
@@ -327,8 +312,8 @@ theorem abs_clipped_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE 
     (hSE0 : 0 ≤ SE)
     (hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 → |endpoint q cw K CN x u v B h| ≤ SE)
     (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1) {A : ℕ}
-    (hA : (⌊κ * x + 1⌋₊ : ℝ) ≤ gridPt x (presieveExponent c Ch x) δ A) {j : ℕ} (hj1 : 1 ≤ j)
-    (hj2 : (j : ℝ) ≤ Cj * logLogLog x + 1)
+    (hA : (⌊κ * x + 1⌋₊) ≤ gridPt x (presieveExponent c Ch x) δ A) {j : ℕ} (hj1 : 1 ≤ j)
+    (hj2 : j ≤ Cj * logLogLog x + 1)
     (hα : ∀ m, |primeProxyDiff x (presieveExponent c Ch x) j m| ≤ 1)
     (hαs : ∀ m : ℕ, (m : ℝ) ≤ x ^ presieveExponent c Ch x →
       primeProxyDiff x (presieveExponent c Ch x) j m = 0)
@@ -354,11 +339,10 @@ theorem abs_clipped_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE 
   have hx0 : 0 < x := by linarith
   have hκ0 : 0 < κ := by linarith
   have hΨ0 : ∀ h, N < h → cutPsi Φ E x h = 0 := fun h hh => cutPsi_eq_zero hΦ hx0 hκ0 hh
-  have hmono : ∀ a, lam a ≤ lam (a + 1) := gridPt_mono (by linarith) hδ0
+  have hmono := gridPt_mono (by linarith) hδ0
   have hlam0 : 0 ≤ lam 0 := by simp only [lam, gridPt]; positivity
   have hlam00 : lam 0 = x ^ γ := by simp [lam, gridPt]
   have hlamγ : ∀ a, x ^ γ ≤ lam a := fun a => by
-    simp only [lam, gridPt]
     exact le_mul_of_one_le_right (by linarith) (one_le_pow₀ (by linarith))
   -- cut `m₀` and `n` into the cells of the grid
   have hgrid : ∑ m₀ ∈ Icc 1 N, ∑ n ∈ Icc 1 N, cutPsi Φ E x (m₀ * n) * α m₀ * βc n =
@@ -371,7 +355,7 @@ theorem abs_clipped_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE 
           ∑ b ∈ range A, ∑ n ∈ Ioc ⌊lam b⌋₊ ⌊lam (b + 1)⌋₊,
             cutPsi Φ E x (m₀ * n) * α m₀ * βc n := by
         intro m₀ hm₀
-        have hm₀1 : 1 ≤ m₀ := by have := (mem_Ioc.1 hm₀).1; omega
+        have hm₀1 : 1 ≤ m₀ := by grind
         exact sum_Icc_eq_sum_cells _ lam hmono hlam0 hA
           (fun n _ hn => by rw [hβs n (hlam00 ▸ hn), mul_zero])
           (fun n hn => by rw [hΨ0 _ (lt_of_lt_of_le hn (Nat.le_mul_of_pos_left n hm₀1)),
@@ -420,8 +404,7 @@ theorem abs_clipped_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE 
         simp only [sum_add_distrib, sum_const, card_range, nsmul_eq_mul]
         ring
     _ ≤ _ := by
-        rw [hlam00] at hvar ⊢
-        exact add_le_add le_rfl hvar
+        gcongr
 
 /-- One telescoping step of E4. -/
 theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE δ : ℝ}
@@ -458,9 +441,8 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
   have hκ0 : 0 < κ := by linarith
   have hL0 : 0 < L := Real.log_pos hx
   have hL3 : 0 < L ^ (3 : ℝ) := by positivity
-  have hκx : κ * x ≤ x ^ 2 := by nlinarith
   have hΨ0 : ∀ h, N < h → cutPsi Φ E x h = 0 := fun h hh => cutPsi_eq_zero hΦ hx0 hκ0 hh
-  have hΨ := abs_cutPsi_le (E := E) hΦ hx0 hκ0 hκx hxκ hSE0 hSE
+  have hΨ := abs_cutPsi_le  hΦ hx0 hκ0 (by nlinarith) hxκ hSE0 hSE
   have hV0 : ∀ i m, 0 ≤ V i m := fun i => (hV i).nonneg
   set β := tupleWeight (Icc 1 N) V with hβdef
   have hβ0 : ∀ n, 0 ≤ β n := tupleWeight_nonneg _ hV0
@@ -474,13 +456,11 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
     rw [← sum_add_distrib]
     refine sum_congr rfl fun m₀ _ => ?_
     rw [← sum_add_distrib]
-    refine sum_congr rfl fun n _ => ?_
-    simp only [hβtdef]
-    ring
+    grind
   rw [hsplit, add_comm, add_assoc]
   refine (abs_add_le _ _).trans (add_le_add ?_ ?_)
   · -- the clipped tail, by the mean square of the companion
-    have hβle : ∀ n, n ≠ 0 → β n ≤ dampedWeight x j n * cmul (fun _ => (r : ℝ)) n :=
+    have hβle : ∀ n, n ≠ 0 → β n ≤ dampedWeight x j n * cmul (fun _ => r) n :=
       fun n hn => tupleWeight_le (fun m hm => (mem_Icc.1 hm).1) hV0
         (fun i m hm => (hV i).le_damped m hm) hn
     have hβz : β 0 = 0 := by
@@ -491,10 +471,10 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
       have hne : ∏ i, m i ≠ 0 := Finset.prod_ne_zero_iff.2 fun i _ => by
         have := (mem_Icc.1 (Fintype.mem_piFinset.1 hmS i)).1; omega
       exact hne hprod
-    have hβt : ∀ n, 0 ≤ βt n ∧ βt n ≤ β n * (dampedWeight x j n * cmul (fun _ => (r : ℝ)) n) /
+    have hβt : ∀ n, 0 ≤ βt n ∧ βt n ≤ β n * (dampedWeight x j n * cmul (fun _ => r) n) /
         L ^ (3 : ℝ) := by
       intro n
-      have hh0 : 0 ≤ dampedWeight x j n * cmul (fun _ => (r : ℝ)) n :=
+      have hh0 :=
         mul_nonneg (dampedWeight_nonneg x j n) (cmul_nonneg (fun _ _ => Nat.cast_nonneg r) n)
       simp only [hβtdef, hβcdef]
       split_ifs with h
@@ -503,60 +483,50 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
       · push Not at h
         rw [sub_zero]
         have hn : n ≠ 0 := by
-          intro hn; rw [hn, hβz] at h; linarith
+          grind
         have hle := hβle n hn
         refine ⟨hβ0 n, ?_⟩
         rw [le_div_iff₀ hL3]
         nlinarith [hβ0 n]
-    have htail := abs_sum_tail_le (M := N) (cutPsi Φ E x) α βt β
-      (fun n => dampedWeight x j n * cmul (fun _ => (r : ℝ)) n) hL3 hΨ0 hΨ hα hβt
+    have htail := abs_sum_tail_le  _ α βt β
+      _ hL3 hΨ0 hΨ hα hβt
     refine htail.trans ?_
-    have hconv : ∑ n ∈ Icc 1 N, β n * (dampedWeight x j n * cmul (fun _ => (r : ℝ)) n) / n =
+    have hconv : ∑ n ∈ Icc 1 N, β n * (dampedWeight x j n * cmul (fun _ => r) n) / n =
         ∑ n ∈ Icc 1 N, β n * cmul (fun p => proxyLoc x j p * r / p) n := by
       refine sum_congr rfl fun n hn => ?_
-      have hn0 : n ≠ 0 := by have := (mem_Icc.1 hn).1; omega
+      have hn0 : n ≠ 0 := by grind
       rw [dampedWeight_eq_cmul x j hn0, ← cmul_mul_loc, mul_div_assoc, cmul_div hn0]
     rw [hconv]
     have hprod := sum_tupleWeight_mul_le (Icc 1 N) hV0
       (l := fun p => proxyLoc x j p * r / p) (fun p _ => by
         have := proxyLoc_nonneg x j p; positivity) (Icc 1 N)
-    have hS : 0 ≤ M 0 * SE * (N / L ^ (3 : ℝ)) := by
+    exact mul_le_mul_of_nonneg_left hprod (by
       have := (abs_nonneg _).trans (hΨ 0)
-      positivity
-    exact mul_le_mul_of_nonneg_left hprod hS
+      positivity)
   · -- the clipped part, box by box
-    have hββ : ∀ n, 0 ≤ βc n ∧ βc n ≤ β n := fun n => by
-      simp only [hβcdef]; split_ifs <;> simp [hβ0 n]
-    have hβc : ∀ n, βc n ≠ 0 →
-        (∀ p ∈ n.primeFactors, Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ p) ∧
-        0 ≤ βc n ∧ βc n ≤ Real.log x ^ (3 : ℝ) := by
-      intro n hn
-      simp only [hβcdef] at hn ⊢
-      split_ifs at hn ⊢ with h
-      · exact ⟨(tupleWeight_support hr hV hn).2, hβ0 n, h⟩
-      · exact absurd rfl hn
-    have hβs : ∀ n : ℕ, (n : ℝ) ≤ x ^ γ → βc n = 0 := by
-      intro n hn
-      have : β n = 0 := by
-        by_contra h
-        have := (tupleWeight_support hr hV h).1
-        linarith
-      simp only [hβcdef, this]; split_ifs <;> rfl
     refine (abs_clipped_le hE hbox hC₂ hΦ hκ hx hxγ hsq hSE0 hSE hδ0 hδ1 hA hj1 hj2 hα hαs β βc
-      hβ0 hβc hββ hβs).trans (add_le_add le_rfl ?_)
-    have hτ : 0 ≤ M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x) * SE *
-        (4 * (κ * x + 1)) := by
+      hβ0 (by
+        intro n hn
+        simp only [hβcdef] at hn ⊢
+        split_ifs at hn ⊢ with h
+        · exact ⟨(tupleWeight_support hr hV hn).2, hβ0 n, h⟩
+        · exact absurd rfl hn) (by grind) (by
+        intro n hn
+        have : β n = 0 := by
+          by_contra h
+          have := (tupleWeight_support hr hV h).1
+          linarith
+        grind)).trans (add_le_add le_rfl ?_)
+    refine mul_le_mul_of_nonneg_left ?_ (by
       have := cutoff_deriv_bound_nonneg hΦ 1
       push_cast at this
-      positivity
-    refine mul_le_mul_of_nonneg_left ?_ hτ
+      positivity)
     have hconv : ∑ n ∈ Ioc ⌊gridPt x γ δ 0⌋₊ ⌊gridPt x γ δ A⌋₊, β n / n =
-        ∑ n ∈ Ioc ⌊gridPt x γ δ 0⌋₊ ⌊gridPt x γ δ A⌋₊, β n * cmul (fun p => (p : ℝ)⁻¹) n := by
+        ∑ n ∈ Ioc ⌊gridPt x γ δ 0⌋₊ ⌊gridPt x γ δ A⌋₊, β n * cmul (fun p => p⁻¹) n := by
       refine sum_congr rfl fun n hn => ?_
-      have hn0 : n ≠ 0 := by have := (mem_Ioc.1 hn).1; omega
-      rw [cmul_inv hn0, div_eq_mul_inv]
+      rw [cmul_inv (by grind), div_eq_mul_inv]
     rw [hconv]
-    exact sum_tupleWeight_mul_le (Icc 1 N) hV0 (l := fun p => (p : ℝ)⁻¹)
+    exact sum_tupleWeight_mul_le (Icc 1 N) hV0 (l := fun p => p⁻¹)
       (fun p _ => by positivity) _
 
 end Erdos408.TypeII
